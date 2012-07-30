@@ -1,38 +1,97 @@
 From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Mon, 30 Jul 2012 19:39:03 +0000
-Subject: [PATCH 7/7] HID: picoLCD: add myself to MAINTAINERS
-Message-Id: <20120730213903.30c6ba0b@neptune.home>
+Date: Mon, 30 Jul 2012 19:38:50 +0000
+Subject: [PATCH 3/7] HID: picoLCD: prevent NULL pointer dereference on unplug
+Message-Id: <20120730213850.02852941@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20120730213656.0a9f6d30@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>
 Cc: Jaya Kumar <jayalk@intworks.biz>, linux-fbdev@vger.kernel.org
 
+[  679.807480] BUG: unable to handle kernel NULL pointer dereference at 000=
+00074
+[  679.814457] IP: [<de93b5bf>] picolcd_led_set_brightness+0x1f/0xb0 [hid_p=
+icolcd]
+[  679.814457] *pde =3D 00000000
+[  679.814457] Oops: 0000 [#1]
+[  679.814457] Modules linked in: hid_picolcd fb_sys_fops sysimgblt sysfill=
+rect syscopyarea drm_kms_helper nfs lockd nfs_acl sunrpc [last unloaded: hi=
+d_picolcd]
+[  679.814457]
+[  679.814457] Pid: 272, comm: khubd Not tainted 3.5.0-jupiter-00006-g463a4=
+c0 #1 NVIDIA Corporation. nFORCE-MCP/MS-6373
+[  679.814457] EIP: 0060:[<de93b5bf>] EFLAGS: 00010246 CPU: 0
+[  679.814457] EIP is at picolcd_led_set_brightness+0x1f/0xb0 [hid_picolcd]
+[  679.814457] EAX: 00000000 EBX: d9f0c4e0 ECX: 00000000 EDX: 00000000
+[  679.814457] ESI: 00000000 EDI: dd6b79c0 EBP: dd4f7d90 ESP: dd4f7d80
+[  679.814457]  DS: 007b ES: 007b FS: 0000 GS: 00e0 SS: 0068
+[  679.814457] CR0: 8005003b CR2: 00000074 CR3: 1d74e000 CR4: 000007d0
+[  679.814457] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+[  679.814457] DR6: ffff0ff0 DR7: 00000400
+[  679.814457] Process khubd (pid: 272, ti=DD4f6000 task=DD442470 task.ti=
+=DD4f6000)
+[  679.814457] Stack:
+[  679.814457]  1d6c3300 d9f0c4e0 d9f0c4e0 dd6b79c0 dd4f7da0 c132912a 00000=
+000 d9f0c4e0
+[  679.814457]  dd4f7dac c132935d 00000000 dd4f7dc0 de93b847 dd6b79c0 00000=
+282 c700ecc8
+[  679.814457]  dd4f7ddc de93924f 00000004 c700ecc8 c700e060 c700ecbc c15ee=
+300 dd4f7dec
+[  679.814457] Call Trace:
+[  679.814457]  [<c132912a>] led_brightness_set+0x2a/0x30
+[  679.814457]  [<c132935d>] led_classdev_unregister+0xd/0x50
+[  679.814457]  [<de93b847>] picolcd_exit_leds+0x27/0x40 [hid_picolcd]
+[  679.814457]  [<de93924f>] picolcd_remove+0xbf/0x110 [hid_picolcd]
+[  679.814457]  [<c132c5dd>] hid_device_remove+0x3d/0x80
+[  679.814457]  [<c1294126>] __device_release_driver+0x56/0xa0
+[  679.814457]  [<c1294190>] device_release_driver+0x20/0x30
+[  679.814457]  [<c1293bbf>] bus_remove_device+0x9f/0xc0
+[  679.814457]  [<c1291a1d>] device_del+0xdd/0x150
+[  679.814457]  [<c132c205>] hid_destroy_device+0x25/0x60
+[  679.814457]  [<c13368cb>] usbhid_disconnect+0x1b/0x40
+[  679.814457]  [<c12f4976>] usb_unbind_interface+0x46/0x170
+[  679.814457]  [<c1294126>] __device_release_driver+0x56/0xa0
+[  679.814457]  [<c1294190>] device_release_driver+0x20/0x30
+[  679.814457]  [<c1293bbf>] bus_remove_device+0x9f/0xc0
+[  679.814457]  [<c1291a1d>] device_del+0xdd/0x150
+[  679.814457]  [<c12f2975>] usb_disable_device+0x85/0x1a0
+[  679.814457]  [<c1053146>] ? __cond_resched+0x16/0x30
+[  679.814457]  [<c12ebdb0>] usb_disconnect+0x80/0xf0
+[  679.814457]  [<c12ed61f>] hub_thread+0x3df/0x1030
+[  679.814457]  [<c10484a0>] ? wake_up_bit+0x30/0x30
+[  679.814457]  [<c12ed240>] ? usb_remote_wakeup+0x40/0x40
+[  679.814457]  [<c1047f94>] kthread+0x74/0x80
+[  679.814457]  [<c1047f20>] ? flush_kthread_worker+0x90/0x90
+[  679.814457]  [<c140e33e>] kernel_thread_helper+0x6/0xd
+[  679.814457] Code: e0 25 00 e0 ff ff ff 48 14 eb 99 90 55 89 e5 83 ec 10 =
+89 5d f4 89 75 f8 89 c3 89 7d fc 8b 40 1c 89 d6 8b 00 e8 13 89 95 e2 31 c9 =
+<39> 5c 88 74 74 13 41 83 f9 08 75 f4 8b 5d f4 8b 75 f8 8b 7d fc
+[  679.814457] EIP: [<de93b5bf>] picolcd_led_set_brightness+0x1f/0xb0 [hid_=
+picolcd] SS:ESP 0068:dd4f7d80
+[  679.814457] CR2: 0000000000000074
+[  680.116438] ---[ end trace 6f0d9d63bff280ff ]---
 
-Signed-off-by: Bruno Prémont <bonbons@linux-vserver.org>
+Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
 ---
- MAINTAINERS |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ drivers/hid/hid-picolcd_leds.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index fe643e7..0042553 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5283,6 +5283,12 @@ L:	linux-mtd@lists.infradead.org
- S:	Maintained
- F:	drivers/mtd/devices/phram.c
- 
-+PICOLCD HID DRIVER
-+M:	Bruno Prémont <bonbons@linux-vserver.org>
-+L:	linux-input@vger.kernel.org
-+S:	Maintained
-+F:	drivers/hid/hid-picolcd*
-+
- PICOXCELL SUPPORT
- M:	Jamie Iles <jamie@jamieiles.com>
- L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
--- 
+diff --git a/drivers/hid/hid-picolcd_leds.c b/drivers/hid/hid-picolcd_leds.c
+index 9249c06..5573cd8 100644
+--- a/drivers/hid/hid-picolcd_leds.c
++++ b/drivers/hid/hid-picolcd_leds.c
+@@ -69,6 +69,8 @@ static void picolcd_led_set_brightness(struct led_classde=
+v *led_cdev,
+ 	dev  =3D led_cdev->dev->parent;
+ 	hdev =3D container_of(dev, struct hid_device, dev);
+ 	data =3D hid_get_drvdata(hdev);
++	if (!data)
++		return;
+ 	for (i =3D 0; i < 8; i++) {
+ 		if (led_cdev !=3D data->led[i])
+ 			continue;
+--=20
 1.7.8.6
 

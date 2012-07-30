@@ -1,60 +1,93 @@
-From: Tony Breeds <tony@bakeyournoodle.com>
-Date: Thu, 19 Jul 2012 05:48:38 +0000
-Subject: Re: [PATCH] radeonfb: Add quirk for the graphics adapter in some JSxx
-Message-Id: <20120719054837.GA11960@thor.bakeyournoodle.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="jRHKVT23PllUwdXP"
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Mon, 30 Jul 2012 19:36:56 +0000
+Subject: [PATCH 0/7] HID: picoLCD updates
+Message-Id: <20120730213656.0a9f6d30@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1342630144-16350-1-git-send-email-olaf@aepfle.de>
-In-Reply-To: <1342630144-16350-1-git-send-email-olaf@aepfle.de>
-To: olaf@aepfle.de
-Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>
+Cc: Jaya Kumar <jayalk@intworks.biz>, linux-fbdev@vger.kernel.org
 
+Hi,
 
---jRHKVT23PllUwdXP
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This series updates picoLCD driver:
+- split the driver functions into separate files which get included
+  depending on Kconfig selection
+  (implementation for CIR using RC_CORE will follow later)
+- drop private framebuffer refcounting in favor of refcounting added
+  to fb_info some time ago
+- fix various bugs issues
+- disabled firmware version checking in probe() as it does not work
+  anymore since commit 4ea5454203d991ec85264f64f89ca8855fce69b0
+  [HID: Fix race condition between driver core and ll-driver]
 
-On Wed, Jul 18, 2012 at 06:49:04PM +0200, olaf@aepfle.de wrote:
+Note: I still get weird behavior on quick unbind/bind sequences
+issued via sysfs (CONFIG_SMP=n system) that are triggered by framebuffer
+support and apparently more specifically fb_defio part of it.
 
-Thanks for following this up.
+Unfortunately I'm out of ideas as to how to track down the problem which
+shows either as SLAB corruption (detected with SLUB debugging, e.g.
 
-> From: Tony Breeds <tony@bakeyournoodle.com>
->=20
-> These devices are set to 640x480 by firmware, switch them to 800x600@60
-> so that the graphical installer can run on remote console.
->=20
-> Reported by IBM during SLES10 SP2 beta testing:
->=20
-> https://bugzilla.novell.com/show_bug.cgi?id=3D461002
-> LTC50817
->=20
-> Signed-off-by: Olaf Hering <olaf@aepfle.de>
+[ 6383.521833] ======================================[ 6383.530020] BUG kmalloc-64 (Not tainted): Object already free
+[ 6383.530020] -----------------------------------------------------------------------------
+[ 6383.530020] 
+[ 6383.530020] INFO: Slab 0xdde0ea20 objectsQ used@ fp=0xcef516e0 flags=0x40000080
+[ 6383.530020] INFO: Object 0xcef51190 @offset@0 fp=0xcef51f50
+[ 6383.530020] 
+[ 6383.530020] Bytes b4 cef51180: cc cc cc cc d0 12 f5 ce 5a 5a 5a 5a 5a 5a 5a 5a  ........ZZZZZZZZ
+[ 6383.530020] Object cef51190: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b  kkkkkkkkkkkkkkkk
+[ 6383.530020] Object cef511a0: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b  kkkkkkkkkkkkkkkk
+[ 6383.530020] Object cef511b0: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b  kkkkkkkkkkkkkkkk
+[ 6383.530020] Object cef511c0: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b a5  kkkkkkkkkkkkkkk.
+[ 6383.530020] Redzone cef511d0: bb bb bb bb                                      ....
+[ 6383.530020] Padding cef511d8: 5a 5a 5a 5a 5a 5a 5a 5a                          ZZZZZZZZ
+[ 6383.530020] Pid: 1922, comm: bash Not tainted 3.5.0-jupiter-00003-g8d858b1-dirty #2
+[ 6383.530020] Call Trace:
+[ 6383.530020]  [<c10bd3cc>] print_trailer+0x11c/0x130
+[ 6383.530020]  [<c10bd415>] object_err+0x35/0x40
+[ 6383.530020]  [<c10be809>] free_debug_processing+0x99/0x200
+[ 6383.530020]  [<c10bf77e>] __slab_free+0x2e/0x280
+[ 6383.530020]  [<c1322284>] ? hid_submit_out+0xa4/0x120
+[ 6383.530020]  [<c1322870>] ? __usbhid_submit_report+0xc0/0x3c0
+[ 6383.530020]  [<c10bfbda>] ? kfree+0xfa/0x110
+[ 6383.530020]  [<de932aa4>] ? picolcd_debug_out_report+0x8c4/0x8e0 [hid_picolcd]
+[ 6383.530020]  [<c10bfbda>] kfree+0xfa/0x110
+[ 6383.530020]  [<c1322284>] ? hid_submit_out+0xa4/0x120
+[ 6383.530020]  [<c1322284>] ? hid_submit_out+0xa4/0x120
+[ 6383.530020]  [<c1322284>] ? hid_submit_out+0xa4/0x120
+[ 6383.530020]  [<c1322284>] hid_submit_out+0xa4/0x120
+[ 6383.530020]  [<c1322908>] __usbhid_submit_report+0x158/0x3c0
+[ 6383.530020]  [<c1322c2b>] usbhid_submit_report+0x1b/0x30
+[ 6383.530020]  [<de930789>] picolcd_fb_reset+0xb9/0x180 [hid_picolcd]
+[ 6383.530020]  [<de930f1d>] picolcd_init_framebuffer+0x20d/0x2e0 [hid_picolcd]
+[ 6383.530020]  [<de92fb9c>] picolcd_probe+0x3cc/0x580 [hid_picolcd]
+[ 6383.530020]  [<c1319147>] hid_device_probe+0x67/0xf0
+[ 6383.530020]  [<c1282f97>] ? driver_sysfs_add+0x57/0x80
+[ 6383.530020]  [<c128329d>] driver_probe_device+0xbd/0x1c0
+[ 6383.530020]  [<c1318a1b>] ? hid_match_device+0x7b/0x90
+[ 6383.530020]  [<c12821e5>] driver_bind+0x75/0xd0
+[ 6383.530020]  [<c1282170>] ? driver_unbind+0x90/0x90
+[ 6383.530020]  [<c12818b7>] drv_attr_store+0x27/0x30
+[ 6383.530020]  [<c1114aec>] sysfs_write_file+0xac/0xf0
+[ 6383.530020]  [<c10c794c>] vfs_write+0x9c/0x130
+[ 6383.530020]  [<c10d4a1f>] ? sys_dup3+0x11f/0x160
+[ 6383.530020]  [<c1114a40>] ? sysfs_poll+0x90/0x90
+[ 6383.530020]  [<c10c7bbd>] sys_write+0x3d/0x70
+[ 6383.530020]  [<c13f2557>] sysenter_do_call+0x12/0x26
+[ 6383.530020] FIX kmalloc-64: Object at 0xcef51190 not freed
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+or worse spontaneous reboot of the system without any trace on netconsole or
+serial console.
 
-Yours Tony
+echo $devid > bind; echo $devid > unbind
+or
+echo $devid > bind; echo $devid > unbind; sleep 0.2; echo $devid > bind; echo $devid > unbind
 
---jRHKVT23PllUwdXP
-Content-Type: application/pgp-signature
+is sufficient to trigger the above issue while waiting a few seconds between bind and unbind
+shows no sign of trouble.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Suggestions as to how to debug this and fix it are welcome!
 
-iQIcBAEBCAAGBQJQB5+1AAoJEEsCiJRY75GKoVkP/jij3zEa2ly3RoJesbf5CNdi
-LzbxmKfwuiamrEjWHS2+9syu/j51OXLK09rlpzeMPR+LARFKAL3coTK/hIo1o8Io
-AbUgxu17bvCrVHIKD6TcP4nLL9Pru7s2cNx/nBs/vu7YS2xw7v12bGxCKDpZ1Z9h
-y+IivjU65vgdCKxI/S1ojWe88ieDAK3RPHXHUlQq7vkcmwS4qsYXVu5VoNh0wUks
-jKSGhdighzHSURmObfAEua4+Ar/kknHKkghcXzpku3pYoo2Di8E3/zF6gVxa0C39
-/hI0Kjs0NCrtq0VH/vQGdZmUgoDQh1a3p0FU8ktU1TAXQCkHQzgpCC0o3kTTk5/a
-PohXqQ84BHwophsH8sTdteh0vqFFImRx8e9ZWlTh2Y/kb/OYUmkRm/kw+BdwMzbq
-6nDzkLtOtJ4sXeONDtecr00BwxKh22dlVUxP0dm6NoteS51172IpVIhwXMAxDSIU
-z+VROvckjrzONs+VBxG+pV+BRLEsfkApJejOiAjgagb4F5OBGu0oOXKNoA8Mr78d
-xOGV4Cv9Kat6Uq0opbeqAEaNi0lbtKmFNoS9VuzdQR5xRnAFPPWcN9KdncXo42dP
-aZN51dBZZ8khDv+j/9dB5gIFURStlc3knhgcbVi5peORLGjRU4ahXED6VGURoyXt
-cqsFLygSc7RqfIsxt5hr
-=sSrP
------END PGP SIGNATURE-----
-
---jRHKVT23PllUwdXP--
+Thanks,
+Bruno

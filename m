@@ -1,48 +1,54 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 25 Jul 2012 16:01:00 +0000
-Subject: [PATCH] ALSA: pcm - Don't define ARCH_HAS_DMA_MMAP_COHERENT privately for ARM
-Message-Id: <1343232060-17851-1-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Leela Krishna Amudala <l.krishna@samsung.com>
+Date: Mon, 30 Jul 2012 08:57:02 +0000
+Subject: [PATCH 0/3] ARM: SAMSUNG: Move FIMD headers to include/video/
+Message-Id: <1343637905-17764-1-git-send-email-l.krishna@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343197764-13659-1-git-send-email-hdk@igel.co.jp>
-In-Reply-To: <1343197764-13659-1-git-send-email-hdk@igel.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, inki.dae@samsung.com, kgene.kim@samsung.com, joshi@samsung.com, jg1.han@samsung.com
 
-The ARM architecture now defines ARCH_HAS_DMA_MMAP_COHERENT, there's no
-need to define it privately anymore.
+This patchset moves the contents of regs-fb-v4.h and regs-fb.h from arch side
+to include/video/samsung_fimd.h
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
----
- sound/core/pcm_native.c |    7 -------
- 1 files changed, 0 insertions(+), 7 deletions(-)
+This patchset is created and rebased against master branch of torvalds tree.
+Tested on smdk5250 board, build tested for other boards.
 
-Hi Eiraku-san,
+Leela Krishna Amudala (3):
+  Move FIMD register headers to include/video/
+  arm: samsung: Include the modified FIMD header file
+  driver: Include the modified FIMD header file
 
-Could you please add this cleanup patch to your "Use dma_mmap_coherent to
-support IOMMU mapper" series ?
-
-diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
-index 53b5ada..84ead60 100644
---- a/sound/core/pcm_native.c
-+++ b/sound/core/pcm_native.c
-@@ -3156,13 +3156,6 @@ static const struct vm_operations_struct snd_pcm_vm_ops_data_fault = {
- 	.fault =	snd_pcm_mmap_data_fault,
- };
- 
--#ifndef ARCH_HAS_DMA_MMAP_COHERENT
--/* This should be defined / handled globally! */
--#ifdef CONFIG_ARM
--#define ARCH_HAS_DMA_MMAP_COHERENT
--#endif
--#endif
--
- /*
-  * mmap the DMA buffer on RAM
-  */
--- 
-Regards,
-
-Laurent Pinchart
+ arch/arm/mach-exynos/mach-nuri.c                |    2 +-
+ arch/arm/mach-exynos/mach-origen.c              |    2 +-
+ arch/arm/mach-exynos/mach-smdk4x12.c            |    2 +-
+ arch/arm/mach-exynos/mach-smdkv310.c            |    2 +-
+ arch/arm/mach-exynos/mach-universal_c210.c      |    2 +-
+ arch/arm/mach-exynos/setup-fimd0.c              |    2 +-
+ arch/arm/mach-s3c24xx/mach-smdk2416.c           |    2 +-
+ arch/arm/mach-s3c64xx/mach-anw6410.c            |    2 +-
+ arch/arm/mach-s3c64xx/mach-crag6410.c           |    2 +-
+ arch/arm/mach-s3c64xx/mach-hmt.c                |    2 +-
+ arch/arm/mach-s3c64xx/mach-mini6410.c           |    2 +-
+ arch/arm/mach-s3c64xx/mach-ncp.c                |    2 +-
+ arch/arm/mach-s3c64xx/mach-real6410.c           |    2 +-
+ arch/arm/mach-s3c64xx/mach-smartq5.c            |    2 +-
+ arch/arm/mach-s3c64xx/mach-smartq7.c            |    2 +-
+ arch/arm/mach-s3c64xx/mach-smdk6410.c           |    2 +-
+ arch/arm/mach-s5p64x0/mach-smdk6440.c           |    2 +-
+ arch/arm/mach-s5p64x0/mach-smdk6450.c           |    2 +-
+ arch/arm/mach-s5pc100/mach-smdkc100.c           |    2 +-
+ arch/arm/mach-s5pv210/mach-aquila.c             |    2 +-
+ arch/arm/mach-s5pv210/mach-goni.c               |    2 +-
+ arch/arm/mach-s5pv210/mach-smdkv210.c           |    2 +-
+ arch/arm/plat-samsung/include/plat/regs-fb-v4.h |  159 -------
+ arch/arm/plat-samsung/include/plat/regs-fb.h    |  403 -----------------
+ drivers/gpu/drm/exynos/exynos_drm_fimd.c        |    2 +-
+ drivers/video/s3c-fb.c                          |    2 +-
+ include/video/samsung_fimd.h                    |  533 +++++++++++++++++++++++
+ 27 files changed, 557 insertions(+), 586 deletions(-)
+ delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb-v4.h
+ delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb.h
+ create mode 100644 include/video/samsung_fimd.h
 

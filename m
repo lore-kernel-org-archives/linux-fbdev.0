@@ -1,53 +1,52 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Fri, 27 Jul 2012 18:20:23 +0000
+From: Alex Courbot <acourbot@nvidia.com>
+Date: Mon, 30 Jul 2012 01:51:42 +0000
 Subject: Re: [RFC][PATCH v3 1/3] runtime interpreted power sequences
-Message-Id: <20120727182023.GC23564@kroah.com>
+Message-Id: <5015E8AE.8060404@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com>
- <1343390750-3642-2-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1343390750-3642-2-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com> <1343390750-3642-2-git-send-email-acourbot@nvidia.com> <20120727181923.GB23564@kroah.com>
+In-Reply-To: <20120727181923.GB23564-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+To: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Anton Vorontsov <cbou-JGs/UdohzUI@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
+Cc: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
 
-On Fri, Jul 27, 2012 at 09:05:48PM +0900, Alexandre Courbot wrote:
-> +++ b/include/linux/power_seq.h
-> @@ -0,0 +1,139 @@
-> +/*
-> + * power_seq.h
-> + *
-> + * Simple interpreter for defining power sequences as platform data or device
-> + * tree properties. Initially designed for use with backlight drivers.
-> + *
-> + * Power sequences are designed to replace the callbacks typically used in
-> + * board-specific files that implement board-specific power sequences of devices
-> + * such as backlights. A power sequence is an array of resources (which can a
-> + * regulator, a GPIO, a PWM, ...) with an action to perform on it (enable or
-> + * disable) and optional pre and post step delays. By having them interpreted
-> + * instead of arbitrarily executed, it is possible to describe these in the
-> + * device tree and thus remove board-specific code from the kernel.
-> + *
-> + * Author: Alexandre Courbot <acourbot@nvidia.com>
-> + *
-> + * Copyright (c) 2012 NVIDIA Corporation.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; version 2 of the License.
-> + *
-> + * This program is distributed in the hope that it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
-> + *
-> + * You should have received a copy of the GNU General Public License along
-> + * with this program; if not, write to the Free Software Foundation, Inc.,
-> + * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+On 07/28/2012 03:19 AM, Greg Kroah-Hartman wrote:
+> On Fri, Jul 27, 2012 at 09:05:48PM +0900, Alexandre Courbot wrote:
+>> Some device drivers (panel backlights especially) need to follow precise
+>> sequences for powering on and off, involving gpios, regulators, PWMs
+>> with a precise powering order and delays to respect between each steps.
+>> These sequences are board-specific, and do not belong to a particular
+>> driver - therefore they have been performed by board-specific hook
+>> functions to far.
+>>
+>> With the advent of the device tree and of ARM kernels that are not
+>> board-tied, we cannot rely on these board-specific hooks anymore but
+>> need a way to implement these sequences in a portable manner. This patch
+>> introduces a simple interpreter that can execute such power sequences
+>> encoded either as platform data or within the device tree.
+>>
+>> Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+>> ---
+>>   Documentation/power/power_seq.txt | 120 +++++++++++++++
+>>   drivers/base/Kconfig              |   4 +
+>>   drivers/base/Makefile             |   1 +
+>>   drivers/base/power_seq.c          | 300 ++++++++++++++++++++++++++++++++++++++
+>>   include/linux/power_seq.h         | 139 ++++++++++++++++++
+>
+> What's wrong with drivers/power/?  I sure don't want to maintain this
+> code, and it seems to not be part of the "driver core" infrastructure.
 
-As I always say:
-	Unless you want to track the office movements of the FSF for the
-	next 40 years, and keep this file up to date, drop that last
-	paragraph, it's pointless.
+I thought about drivers/power/ initially, but quickly realized it was 
+only about the power supply class and its drivers - so I felt like it 
+would be out of place there, as the power sequences have nothing to do 
+with power supply but instead control gpios, regulators and pwms.
+
+On the other hand I have just noticed that the apparently unrelated 
+Adaptive Voltage Scaling driver just appeared in drivers/power/avs. So 
+if Anton and David are ok with this, maybe I could put the power 
+sequences code in its own subdirectory within drivers/power.
+
+Thanks,
+Alex.
 

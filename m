@@ -1,315 +1,155 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Tue, 31 Jul 2012 10:19:31 +0000
+From: Alex Courbot <acourbot@nvidia.com>
+Date: Tue, 31 Jul 2012 10:32:20 +0000
 Subject: Re: [RFC][PATCH v3 1/3] runtime interpreted power sequences
-Message-Id: <20120731101931.GB16155@avionic-0098.adnet.avionic-design.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Fba/0zbH8Xs+Fj9o"
+Message-Id: <5017B434.2010706@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com>
- <1343390750-3642-2-git-send-email-acourbot@nvidia.com>
- <20120730113323.GA7303@avionic-0098.adnet.avionic-design.de>
- <5017AA87.2040503@nvidia.com>
-In-Reply-To: <5017AA87.2040503-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-To: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com> <1343390750-3642-2-git-send-email-acourbot@nvidia.com> <50170EA0.1010408@wwwdotorg.org>
+In-Reply-To: <50170EA0.1010408@wwwdotorg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Arnd Bergmann <arnd@arndb.de>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
 
+On 07/31/2012 07:45 AM, Stephen Warren wrote:
+>> +- Delay to wait before performing the action,
+>> +- Delay to wait after performing the action.
+>
+> I don't see a need to have a delay both before and after an action;
+> except at the start of the sequence, step n's post-delay is at the same
+> point in the sequence as step n+1's pre-delay. Perhaps make a "delay"
+> step type?
 
---Fba/0zbH8Xs+Fj9o
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+My first version used this actually - and you're right, having a "delay" 
+step type would be more flexible and less redundant.
 
-On Tue, Jul 31, 2012 at 06:51:03PM +0900, Alex Courbot wrote:
-> On 07/30/2012 08:33 PM, Thierry Reding wrote:
-> >>+You will need an instance of power_seq_resources to keep track of the =
-resources
-> >>+that are already allocated. On success, the function returns a devm al=
-located
-> >>+resolved sequence that is ready to be passed to power_seq_run(). In ca=
-se of
-> >>+failure, and error code is returned.
-> >
-> >I don't quite understand why the struct power_seq_resources is needed.
-> >Can this not be stored within power_seq?
->=20
-> power_seq_resources serves two purposes:
-> 1) When parsing sequences, it keeps track of the resources we have
-> already allocated to avoid getting the same resource twice
-> 2) On cleanup, it cleans the resources that needs to be freed (i.e.
-> those that are not devm-handled).
->=20
-> 2) can certainly be removed either by enforcing use of devm, or by
-> doing reference counting. 1) seems more difficult to avoid - we need
-> to keep track of the resources we already own between calls to
-> power_seq_build(). I'd certainly be glad to remove that structure
-> from public view and simplify the code if that is possible though.
+>> +Both new resources and parameters can be introduced, but the goal is of course
+>> +to keep things as simple and compact as possible.
+>
+>> +The platform data is a simple array of platform_power_seq_step instances, each
+>
+> Rather than jumping straight into platform data here, I'd expect an
+> enumeration of legal resource types, and what actions can be performed
+> on each, followed by a description of a sequence (very simply, just a
+> list of actions and their parameters). This could be followed by a
+> section describing the mapping of the abstract concepts to concrete
+> platform data representation (and concrete device tree representation).
 
-I still don't see the problem. Managing the resources should be part of
-the power_seq core and shouldn't be visible to users. Maybe what you are
-worried about is that you may need the same resource both for a power-up
-and a power-down sequence? I can see how that would require a global
-list of resources.
+Keeping that in mind for the next revision.
 
-However I still think it would be easier to encapsulate that completely.
-Maybe another level of abstraction is required. You could for example
-add another type to encapsulate several power sequences and that could
-keep a list of used resources. I can't think of a good name, but maybe
-the following DT snippet clarifies what I mean:
+>> +instance describing a step. The type as well as one of id or gpio members
+>> +(depending on the type) must be specified. The last step must be of type
+>> +POWER_SEQ_STOP.
+>
+> I'd certainly suggest having a step count rather than a sentinel value
+> in the list.
 
-	power-sequences {
-		#address-cells =3D <1>;
-		#size-cells =3D <0>;
+As Thierry did - I think I will go that way.
 
-		sequence@0 {
-			name =3D "up";
+>> Regulator and PWM resources are identified by name. GPIO are
+>> +identified by number.
+>
+> That's a little implementation-specific. I guess it's entirely true for
+> a platform data representation, but not when mapping this into device tree.
 
-			#address-cells =3D <1>;
-			#size-cells =3D <0>;
+If we can come with a way to properly use phandles within DT sequences 
+(and we should), then this will only apply to platform data.
 
-			step@0 {
-				...
-			};
+>> +You will need an instance of power_seq_resources to keep track of the resources
+>> +that are already allocated. On success, the function returns a devm allocated
+>> +resolved sequence that is ready to be passed to power_seq_run(). In case of
+>> +failure, and error code is returned.
+>
+> If the result is devm-allocated, the function probably should be named
+> devm_power_seq_build().
 
-			...
-		};
+Right - more generally this needs to have both devm and non-devm variants.
 
-		sequence@1 {
-			name =3D "down";
+> I wonder if using the same structure/array as input and output would
+> simplify the API; the platform data would fill in the fields mentioned
+> above, and power_seq_build() would parse those, then set other fields in
+> the same structs to the looked-up handle values?
 
-			#address-cells =3D <1>;
-			#size-cells =3D <0>;
+The thing is that I am not sure what happens to the platform data once 
+probe() is done. Isn't it customary to mark it with __devinit and have 
+it freed after probing is successful?
 
-			step@0 {
-				...
-			};
+More generally, I think it is a good practice to have data structures 
+tailored right for what they need to do - code with members that are 
+meaningful only at given points of an instance's life tends to be more 
+confusing.
 
-			...
-		};
-	};
+> You can make a custom devm free routine for the power_seq_resources
+> itself, so the overall free'ing of the content can be triggered by devm,
+> but the free'ing function can then call whatever non-devm APIs it wants
+> for the non-devm-allocated members.
 
-If you add a name property like this, you could extend the API to
-support running a named sequence:
+That sounds good.
 
-	power_seq_run(seq, "up");
-	...
-	power_seq_run(seq, "down);
+>> +Device tree
+>> +-----------
+>> +All the same, power sequences can be encoded as device tree nodes. The following
+>> +properties and nodes are equivalent to the platform data defined previously:
+>> +
+>> +		power-supply = <&mydevice_reg>;
+>> +		enable-gpio = <&gpio 6 0>;
+>> +
+>> +		power-on-sequence {
+>> +			regulator@0 {
+>
+> As Thierry mentioned, the step nodes should be named for the type of
+> object they are (a "step") not the type or name of resource they act
+> upon ("regulator" or "gpio").
 
-> >Also, is there some way we can make the id property for GPIOs not
-> >require the -gpio suffix? If the resource type is already GPIO, then it
-> >seems redundant to add -gpio to the ID.
->=20
-> There is unfortunately an inconsistency between the way regulators
-> and GPIOs are gotten by name. regulator_get(id) will expect to find
-> a property named "id-supply", while gpio_request_one(id) expects a
-> property named exactly "id". To workaround this we could sprintf the
-> correct property name from a non-suffixed property name within the
-> driver, but I think this actually speaks more in favor of having
-> phandles directly into the sequences.
+Will fix that.
 
-Yes, if it can be made to work by specifying the phandle directly that
-is certainly better.
+> If the nodes have a unit address (i.e. end in "@n"), which they will
+> have to if all named "step" and there's more than one of them, then they
+> will need a matching reg property. Equally, the parent node will need
+> #address-cells and #size-cells too. So, the last couple lines would be:
+>
+> 		power-on-sequence {
+> 			#address-cells = <1>;
+> 			#size-cells = <0>;
+> 			step@0 {
+> 				reg = <0>;
 
-> >>+static int power_seq_step_run(struct power_seq_step *step)
-> >>+{
-> >>+     int err =3D 0;
-> >>+
-> >>+     if (step->params.pre_delay)
-> >>+             mdelay(step->params.pre_delay);
-> >>+
-> >>+     switch (step->resource->type) {
-> >>+#ifdef CONFIG_REGULATOR
-> >>+     case POWER_SEQ_REGULATOR:
-> >>+             if (step->params.enable)
-> >>+                     err =3D regulator_enable(step->resource->regulato=
-r);
-> >>+             else
-> >>+                     err =3D regulator_disable(step->resource->regulat=
-or);
-> >>+             break;
-> >>+#endif
-> >>+#ifdef CONFIG_PWM
-> >>+     case POWER_SEQ_PWM:
-> >>+             if (step->params.enable)
-> >>+                     err =3D pwm_enable(step->resource->pwm);
-> >>+             else
-> >>+                     pwm_disable(step->resource->pwm);
-> >>+             break;
-> >>+#endif
-> >>+#ifdef CONFIG_GPIOLIB
-> >>+     case POWER_SEQ_GPIO:
-> >>+             gpio_set_value_cansleep(step->resource->gpio,
-> >>+                                     step->params.enable);
-> >>+             break;
-> >>+#endif
-> >
-> >This kind of #ifdef'ery is quite ugly. I don't know if adding separate
-> >*_run() functions for each type of resource would be any better, though.
-> >Alternatively, maybe POWER_SEQ should depend on the REGULATOR, PWM and
-> >GPIOLIB symbols to side-step the issue completely?
->=20
-> If it is not realistic to consider a kernel built without regulator,
-> pwm or gpiolib support, then we might as well do that. But isn't
-> that a possibility?
+That's precisely what I would like to avoid - I don't need the steps to 
+be numbered and I certainly have no use for a reg property. Isn't there 
+a way to make it simpler?
 
-I'd say that anything complex enough to make use of power-sequencing
-probably has all of these enabled anyway. But maybe I'm not very
-qualified to judge.
+>> +				id = "power";
+>
+> "id" is usually a name or identifier. I think you mean "type" or perhaps
+> "action" here:
+>
+> 				type = "regulator";
+> 				action = "enable";
+>
+> or:
+>
+> 				action = "enable-regulator";
 
->=20
-> >>+     if (!seq) return 0;
-> >
-> >I don't think this is acceptable according to the coding style. Also,
-> >perhaps returning -EINVAL would be more meaningful?
->=20
-> I neglected running checkpatch before submitting, apologies for
-> that. The return value seems correct to me, a NULL sequence has no
-> effect.
+Right, that was a clear misuse.
 
-But seq =3D=3D NULL should never happen anyway, right?
+> Oh I see. That's a little confusing. Why not just reference the relevant
+> resources directly in each step; something more like:
+>
+> 		gpio@1 {
+> 			action = "enable-gpio";
+> 			gpio = <&gpio 1 0>;
+> 		};
+>
+> I guess that might make parsing/building a little harder, since you'd
+> have to detect when you'd already done gpio_request() on a given GPIO
+> and not repeat it or something like that, but to me this makes the DT a
+> lot easier to comprehend.
 
->=20
-> >>+
-> >>+     while (seq->resource) {
-> >
-> >Perhaps this should check for POWER_SEQ_STOP instead?
->=20
-> There is no resource for POWER_SEQ_STOP - therefore, a NULL resource
-> is used instead.
+You can see my reply to Thierry for the reason - the only issue with 
+that is caused by PWM phandles. If we overcome this, then I agree we 
+should use phandles. The code should not even get more complex as I have 
+to check whether a resource is already allocated with strings as well.
 
-Still, you use POWER_SEQ_STOP as an explicit sentinel to mark the end of
-a sequence, so intuitively I'd be looking for that as a stop condition.
+Thanks,
+Alex.
 
-> >>+typedef struct platform_power_seq_step platform_power_seq;
-> >
-> >Why are the parameters kept in a separate structure? What are the
-> >disadvantages of keeping the in the sequence step structure directly?
->=20
-> This ensures the same parameters are used for the platform data and
-> resolved sequences, and also ensures they are all copied correctly
-> using memcpy. But maybe I am just making something complex out of
-> something that ought to be simpler.
->=20
-> >>+struct power_seq_step {
-> >>+     struct power_seq_resource *resource;
-> >>+     struct power_step_params params;
-> >>+};
-> >>+typedef struct power_seq_step power_seq;
-> >
-> >Would it make sense to make the struct power_seq opaque? I don't see why
-> >anyone but the power_seq code should access the internals.
->=20
-> I would like to do that actually. The issue is that it did not work
-> go well with the legacy pwm_backlight behavior: a power sequence
-> needs to be constructed out of a PWM obtained through
-> pwm_request(int pwm_id, char *label) and this behavior cannot be
-> emulated using the new platform data interface (which only works
-> with pwm_get()). But if I remove this old behavior, then I could
-> make power_seq opaque. I don't think many drivers are using it. What
-> do you think?
-
-I don't see how that is relevant here, since this power-sequencing code
-is supposed to be generic and not tied to any specific implementation.
-Can you explain further?
-
-In any case you shouldn't be using pwm_request() in new code.
-
-> >For resource
-> >managing it might also be easier to separate struct power_seq_step and
-> >struct power_seq, making the power_seq basically something like:
-> >
-> >         struct power_seq {
-> >                 struct power_seq_step *steps;
-> >                 unsigned int num_steps;
-> >         };
-> >
-> >Perhaps a name field can be included for diagnostic purposes.
->=20
-> Yes, looks like we are going in that direction. If this can be made
-> private then the number of public data structures will not be too
-> confusing (platform data only, basically).
-
-Yes, that sounds like a much cleaner approach.
-
->=20
-> >>+power_seq *power_seq_build(struct device *dev, power_seq_resources *re=
-ss,
-> >>+                        platform_power_seq *pseq);
-> >
-> >I already mentioned this above: I fail to see why the ress parameter is
-> >needed here. It is an internal implementation detail of the power
-> >sequence code. Maybe a better place would be to include it within the
-> >struct power_seq.
->=20
-> Problem is that I need to track which resources are already
-> allocated between calls to power_seq_build(). Even if I attach the
-> resources into struct power_seq, they won't be attainable by the
-> next call. So I'm afraid we are bound to pass a tracking structure
-> at least to power_seq_build.
-
-I think this could be solved nicely by what I proposed earlier.
-
-> >>+/**
-> >>+ * Free all the resources previously allocated by power_seq_allocate_r=
-esources.
-> >>+ */
-> >>+void power_seq_free_resources(power_seq_resources *ress);
-> >>+
-> >>+/**
-> >>+ * Run the given power sequence. Returns 0 on success, error code in c=
-ase of
-> >>+ * failure.
-> >>+ */
-> >>+int power_seq_run(struct device *dev, power_seq *seq);
-> >
-> >I think the API is too fine grained here. From a user's point of view,
-> >I'd expect a sequence like this:
-> >
-> >         seq =3D power_seq_build(dev, sequence);
-> >         ...
-> >         power_seq_run(seq);
-> >         ...
-> >         power_seq_free(seq);
-> >
-> >Perhaps with managed variants where the power_seq_free() is executed
-> >automatically:
-> >
-> >         seq =3D devm_power_seq_build(dev, sequence);
-> >         ...
-> >         power_seq_run(seq);
->=20
-> I agree. On top of that, of_parse_power_seq() should directly return
-> a resolved power sequence, not the platform data.
-
-I'm not sure. The idiom seems to be to use DT as an alternative source
-for platform data, which I guess is due to most drivers already using
-platform data. But it has the advantage that after you have the platform
-data, be it from DT or directly specified, the subsequent code remains
-the same.
-
-Of course you could provide a separate of_build_power_seq() that wraps
-both steps for convenience.
-
-Thierry
-
---Fba/0zbH8Xs+Fj9o
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQF7EzAAoJEN0jrNd/PrOhigMP/jSANbgrdwaOq6PfjxUUtXeI
-OcgtBTDfTDsu5rrO6dSJ3dlBLbv71eOLHpHpgOo71DCMkDz/oqeHu7XQ7fP1atPV
-7FMYomsS9jbWIZld1XDx6Phb3bmpTcqC6l5qGr11wKxU4+nU6hvWN2KZLQNjZSIj
-rLm1hxc5YwnIN1QofwLvTj/9c08gDD8ZQfFM2NJr2neKlCLUOmsT/43RHS4hJhW7
-xLw68ehTo0I+mPxCDburilAAoKWV+LCLC8GOonOUxD8bMTMXBXsokB2fG/aks42p
-JSDDvhMzRD43ay6OR0sYRKvs+JMAXdt5fgemQnKM3cKIfsrbo9b4udcgOQ873vft
-ko7Ai4201NdVenkcOKbrMYm4fxyD5iK41XNTrNhgiL7U2ZNmiiwKuChJ/EaWUpZE
-JcTgBfu2jg352UKqVWCTHAhPZJ6M2lNd0mJo0Gajv0qr3jrZlC04LFqAzDdIrcmw
-Ue6hcSg7ZpgnF8Qv7oOHg2UKsI1KFPNYBrVtLgc+ToCjo6MoIgvKRiIy7ai6tUtz
-8CxKi4Vw0QPC9zAeNsFq63je86SKksWE3xZ5+k5QUjaQB7zT1BJpxuBgtBcrnl0A
-F6m4nqasbefGBXLKqFyq6oTzZy3EIbue7ilVD34ycb5m3tuNcPfWBLJEYdqZILD3
-mkNUKXnS97+YBc1v0IpE
-=yifk
------END PGP SIGNATURE-----
-
---Fba/0zbH8Xs+Fj9o--

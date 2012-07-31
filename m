@@ -1,74 +1,84 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 25 Jul 2012 11:10:46 +0000
-Subject: Re: [PATCH 3/3] fbdev: sh_mobile_lcdc: use dma_mmap_coherent if available
-Message-Id: <9666926.0rOsjgUcAB@avalon>
+From: Damien Cassou <damien.cassou@lifl.fr>
+Date: Tue, 31 Jul 2012 16:39:19 +0000
+Subject: [PATCH 2/5] drivers/video/gbefb.c: use devm_ functions
+Message-Id: <1343752762-16861-3-git-send-email-damien.cassou@lifl.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343197764-13659-1-git-send-email-hdk@igel.co.jp>
- <1343197764-13659-4-git-send-email-hdk@igel.co.jp>
-In-Reply-To: <1343197764-13659-4-git-send-email-hdk@igel.co.jp>
+References: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
+In-Reply-To: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Eiraku-san,
+From: Damien Cassou <damien.cassou@lifl.fr>
 
-Thank you for the patch.
+The various devm_ functions allocate memory that is released when a driver
+detaches.  This patch uses these functions for data that is allocated in
+the probe function of a platform device and is only freed in the remove
+function.
 
-On Wednesday 25 July 2012 15:29:24 Hideki EIRAKU wrote:
-> fb_mmap() implemented in fbmem.c uses smem_start as the physical
-> address of the frame buffer.  In the sh_mobile_lcdc driver, the
-> smem_start is a dma_addr_t that is not a physical address when IOMMU is
-> enabled.  dma_mmap_coherent() maps the address correctly.  It is
-> available on ARM platforms.
+Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
 
-This looks good to me, but will need to be rebased on top of the 
-sh_mobile_lcdc patches currently queued for v3.6. You can find them in the 
-fbdev-next branch of git://github.com/schandinat/linux-2.6.git.
+---
+ drivers/video/gbefb.c |   15 +++++----------
+ 1 file changed, 5 insertions(+), 10 deletions(-)
 
-In particular, these patches add support for overlays exported through 
-additional fbdev devices. You will need to initialize .fb_mmap in both 
-sh_mobile_lcdc_overlay_ops and sh_mobile_lcdc_ops.
-
-> Signed-off-by: Hideki EIRAKU <hdk@igel.co.jp>
-> ---
->  drivers/video/sh_mobile_lcdcfb.c |   14 ++++++++++++++
->  1 files changed, 14 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/sh_mobile_lcdcfb.c
-> b/drivers/video/sh_mobile_lcdcfb.c index e672698..65732c4 100644
-> --- a/drivers/video/sh_mobile_lcdcfb.c
-> +++ b/drivers/video/sh_mobile_lcdcfb.c
-> @@ -1393,6 +1393,17 @@ static int sh_mobile_lcdc_blank(int blank, struct
-> fb_info *info) return 0;
->  }
-> 
-> +#ifdef ARCH_HAS_DMA_MMAP_COHERENT
-> +static int
-> +sh_mobile_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
-> +{
-> +	struct sh_mobile_lcdc_chan *ch = info->par;
-> +
-> +	return dma_mmap_coherent(ch->lcdc->dev, vma, ch->fb_mem,
-> +				 ch->dma_handle, ch->fb_size);
-> +}
-> +#endif
-> +
->  static struct fb_ops sh_mobile_lcdc_ops = {
->  	.owner          = THIS_MODULE,
->  	.fb_setcolreg	= sh_mobile_lcdc_setcolreg,
-> @@ -1408,6 +1419,9 @@ static struct fb_ops sh_mobile_lcdc_ops = {
->  	.fb_release	= sh_mobile_release,
->  	.fb_check_var	= sh_mobile_check_var,
->  	.fb_set_par	= sh_mobile_set_par,
-> +#ifdef ARCH_HAS_DMA_MMAP_COHERENT
-> +	.fb_mmap	= sh_mobile_fb_mmap,
-> +#endif
->  };
-> 
->  static void
--- 
-Regards,
-
-Laurent Pinchart
+diff --git a/drivers/video/gbefb.c b/drivers/video/gbefb.c
+index 7e7b7a9..9b79d38 100644
+--- a/drivers/video/gbefb.c
++++ b/drivers/video/gbefb.c
+@@ -1156,7 +1156,8 @@ static int __devinit gbefb_probe(struct platform_device *p_dev)
+ 		goto out_release_framebuffer;
+ 	}
+ 
+-	gbe = (struct sgi_gbe *) ioremap(GBE_BASE, sizeof(struct sgi_gbe));
++	gbe = (struct sgi_gbe *) devm_ioremap(&p_dev->dev, GBE_BASE,
++					      sizeof(struct sgi_gbe));
+ 	if (!gbe) {
+ 		printk(KERN_ERR "gbefb: couldn't map mmio region\n");
+ 		ret = -ENXIO;
+@@ -1170,12 +1171,13 @@ static int __devinit gbefb_probe(struct platform_device *p_dev)
+ 	if (!gbe_tiles.cpu) {
+ 		printk(KERN_ERR "gbefb: couldn't allocate tiles table\n");
+ 		ret = -ENOMEM;
+-		goto out_unmap;
++		goto out_release_mem_region;
+ 	}
+ 
+ 	if (gbe_mem_phys) {
+ 		/* memory was allocated at boot time */
+-		gbe_mem = ioremap_nocache(gbe_mem_phys, gbe_mem_size);
++		gbe_mem = devm_ioremap_nocache(&p_dev->dev, gbe_mem_phys,
++					       gbe_mem_size);
+ 		if (!gbe_mem) {
+ 			printk(KERN_ERR "gbefb: couldn't map framebuffer\n");
+ 			ret = -ENOMEM;
+@@ -1241,13 +1243,9 @@ static int __devinit gbefb_probe(struct platform_device *p_dev)
+ out_gbe_unmap:
+ 	if (gbe_dma_addr)
+ 		dma_free_coherent(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
+-	else
+-		iounmap(gbe_mem);
+ out_tiles_free:
+ 	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
+ 			  (void *)gbe_tiles.cpu, gbe_tiles.dma);
+-out_unmap:
+-	iounmap(gbe);
+ out_release_mem_region:
+ 	release_mem_region(GBE_BASE, sizeof(struct sgi_gbe));
+ out_release_framebuffer:
+@@ -1264,12 +1262,9 @@ static int __devexit gbefb_remove(struct platform_device* p_dev)
+ 	gbe_turn_off();
+ 	if (gbe_dma_addr)
+ 		dma_free_coherent(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
+-	else
+-		iounmap(gbe_mem);
+ 	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
+ 			  (void *)gbe_tiles.cpu, gbe_tiles.dma);
+ 	release_mem_region(GBE_BASE, sizeof(struct sgi_gbe));
+-	iounmap(gbe);
+ 	gbefb_remove_sysfs(&p_dev->dev);
+ 	framebuffer_release(info);
+ 
 

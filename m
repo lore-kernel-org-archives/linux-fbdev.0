@@ -1,10 +1,10 @@
 From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Tue, 17 Jul 2012 15:59:47 +0000
+Date: Tue, 31 Jul 2012 10:29:36 +0000
 Subject: [PATCH 4/4] ARM: dts: mxs: add oled support for the cfa-10036
-Message-Id: <1342540787-14930-5-git-send-email-maxime.ripard@free-electrons.com>
+Message-Id: <1343730576-20494-5-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1342540787-14930-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1342540787-14930-1-git-send-email-maxime.ripard@free-electrons.com>
+References: <1343730576-20494-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1343730576-20494-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,7 +17,7 @@ Cc: Brian Lilly <brian@crystalfontz.com>
  1 file changed, 20 insertions(+)
 
 diff --git a/arch/arm/boot/dts/imx28-cfa10036.dts b/arch/arm/boot/dts/imx28-cfa10036.dts
-index c03a577..0a5c722 100644
+index c03a577..92784a9 100644
 --- a/arch/arm/boot/dts/imx28-cfa10036.dts
 +++ b/arch/arm/boot/dts/imx28-cfa10036.dts
 @@ -33,11 +33,31 @@
@@ -45,8 +45,8 @@ index c03a577..0a5c722 100644
 +					compatible = "solomon,ssd1307fb-i2c";
 +					reg = <0x3c>;
 +					pwms = <&pwm 4 3000>;
-+					oled-reset-gpios = <&gpio2 7 1>;
-+					reset-active-low;
++					oled-reset-gpio = <&gpio2 7 1>;
++					oled-reset-active-low;
 +				};
 +			};
  		};

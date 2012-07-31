@@ -1,40 +1,29 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Tue, 31 Jul 2012 10:29:34 +0000
-Subject: [PATCH 2/4] ARM: dts: mxs: Add alternative I2C muxing options for imx28
-Message-Id: <1343730576-20494-3-git-send-email-maxime.ripard@free-electrons.com>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Tue, 31 Jul 2012 12:02:04 +0000
+Subject: Re: [PATCH 2/4] ARM: dts: mxs: Add alternative I2C muxing options for imx28
+Message-Id: <CAOMZO5AaLB5m7TYPC03wTSFTDUTFrtV4Xr6gHrvKuGnpyUsf8Q@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1343730576-20494-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1343730576-20494-1-git-send-email-maxime.ripard@free-electrons.com>
+ <1343730576-20494-3-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1343730576-20494-3-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: Brian Lilly <brian@crystalfontz.com>
----
- arch/arm/boot/dts/imx28.dtsi |    8 ++++++++
- 1 file changed, 8 insertions(+)
+On Tue, Jul 31, 2012 at 7:29 AM, Maxime Ripard
+<maxime.ripard@free-electrons.com> wrote:
 
-diff --git a/arch/arm/boot/dts/imx28.dtsi b/arch/arm/boot/dts/imx28.dtsi
-index 915db89..44ce1fd 100644
---- a/arch/arm/boot/dts/imx28.dtsi
-+++ b/arch/arm/boot/dts/imx28.dtsi
-@@ -410,6 +410,14 @@
- 					fsl,pull-up = <1>;
- 				};
- 
-+				i2c0_pins_b: i2c0@1 {
-+					reg = <1>;
-+					fsl,pinmux-ids = <0x3001 0x3011>;
-+					fsl,drive-strength = <1>;
-+					fsl,voltage = <1>;
-+					fsl,pull-up = <1>;
-+				};
-+
- 				saif0_pins_a: saif0@0 {
- 					reg = <0>;
- 					fsl,pinmux-ids = <
--- 
-1.7.9.5
+> +                               i2c0_pins_b: i2c0@1 {
+> +                                       reg = <1>;
+> +                                       fsl,pinmux-ids = <0x3001 0x3011>;
 
+Can you please also list the name of the pin as comment (just like you
+did for pwm4)?
+
+This would allow us to quickly identify the muxing option without the
+need of looking at the mxs pinctrl doc.
+
+Regards,
+
+Fabio Estevam

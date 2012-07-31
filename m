@@ -1,481 +1,156 @@
-From: Alexandre Courbot <acourbot@nvidia.com>
-Date: Fri, 27 Jul 2012 12:05:49 +0000
-Subject: [RFC][PATCH v3 2/3] pwm_backlight: use power sequences
-Message-Id: <1343390750-3642-3-git-send-email-acourbot@nvidia.com>
+From: Damien Cassou <damien.cassou@lifl.fr>
+Date: Tue, 31 Jul 2012 16:39:21 +0000
+Subject: [PATCH 4/5] drivers/video/exynos/exynos_mipi_dsi.c: use devm_ functions
+Message-Id: <1343752762-16861-5-git-send-email-damien.cassou@lifl.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1343390750-3642-1-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+References: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
+In-Reply-To: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
-Cc: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+To: Inki Dae <inki.dae@samsung.com>
+Cc: kernel-janitors@vger.kernel.org, Donghwa Lee <dh09.lee@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Make use of the power sequences specified in the device tree or platform
-data, if any.
+From: Damien Cassou <damien.cassou@lifl.fr>
 
-Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+The various devm_ functions allocate memory that is released when a driver
+detaches.  This patch uses these functions for data that is allocated in
+the probe function of a platform device and is only freed in the remove
+function.
+
+Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
+
 ---
- .../bindings/video/backlight/pwm-backlight.txt     |  55 +++++-
- drivers/video/backlight/Kconfig                    |   1 +
- drivers/video/backlight/pwm_bl.c                   | 213 +++++++++++++++------
- include/linux/pwm_backlight.h                      |  18 +-
- 4 files changed, 225 insertions(+), 62 deletions(-)
+ drivers/video/exynos/exynos_mipi_dsi.c |   41 ++++++++++++---------------------
+ 1 file changed, 15 insertions(+), 26 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
-index 1e4fc72..59abeba 100644
---- a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
-+++ b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
-@@ -2,7 +2,6 @@ pwm-backlight bindings
+diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
+index 4bc2b8a..c277a07 100644
+--- a/drivers/video/exynos/exynos_mipi_dsi.c
++++ b/drivers/video/exynos/exynos_mipi_dsi.c
+@@ -336,7 +336,8 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 	struct mipi_dsim_ddi *dsim_ddi;
+ 	int ret = -EINVAL;
  
- Required properties:
-   - compatible: "pwm-backlight"
--  - pwms: OF device-tree PWM specification (see PWM binding[0])
-   - brightness-levels: Array of distinct brightness levels. Typically these
-       are in the range from 0 to 255, but any range starting at 0 will do.
-       The actual brightness level (PWM duty cycle) will be interpolated
-@@ -10,10 +9,22 @@ Required properties:
-       last value in the array represents a 100% duty cycle (brightest).
-   - default-brightness-level: the default brightness level (index into the
-       array defined by the "brightness-levels" property)
-+  - pwms: OF device-tree PWM specification (see PWM binding[0]). Exactly one PWM
-+      must be specified
-+  - pwm-names: a list of names for the PWM devices specified in the
-+      "pwms" property (see PWM binding[0])
-+  - power-on-sequence: Power sequence that will bring the backlight on. This
-+      sequence must reference the PWM specified in the pwms property by its
-+      name. It can also reference extra GPIOs or regulators, and introduce
-+      delays between sequence steps
-+  - power-off-sequence: Power sequence that will bring the backlight off. This
-+      sequence must reference the PWM specified in the pwms property by its
-+      name. It can also reference extra GPIOs or regulators, and introduce
-+      delays between sequence steps
- 
- Optional properties:
--  - pwm-names: a list of names for the PWM devices specified in the
--               "pwms" property (see PWM binding[0])
-+  - *-supply: regulators used within a power sequence
-+  - *-gpio: GPIOs used within a power sequence
- 
- [0]: Documentation/devicetree/bindings/pwm/pwm.txt
- 
-@@ -21,8 +32,42 @@ Example:
- 
- 	backlight {
- 		compatible = "pwm-backlight";
--		pwms = <&pwm 0 5000000>;
--
- 		brightness-levels = <0 4 8 16 32 64 128 255>;
- 		default-brightness-level = <6>;
-+
-+		pwms = <&pwm 0 5000000>;
-+		pwm-names = "backlight";
-+		power-supply = <&backlight_reg>;
-+		enable-gpio = <&gpio 6 0>;
-+
-+		power-on-sequence {
-+			regulator@0 {
-+				id = "power";
-+				enable;
-+				post-delay = <10>;
-+			};
-+			pwm@1 {
-+				id = "backlight";
-+				enable;
-+			};
-+			gpio@2 {
-+				id = "enable-gpio";
-+				enable;
-+			};
-+		};
-+		power-off-sequence {
-+			gpio@0 {
-+				id = "enable-gpio";
-+				disable;
-+			};
-+			pwm@1 {
-+				id = "backlight";
-+				disable;
-+			};
-+			regulator@2 {
-+				id = "power";
-+				disable;
-+				pre-delay = <10>;
-+			};
-+		};
- 	};
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index cf28276..6fb8aa3 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -246,6 +246,7 @@ config BACKLIGHT_CARILLO_RANCH
- config BACKLIGHT_PWM
- 	tristate "Generic PWM based Backlight Driver"
- 	depends on PWM
-+	select POWER_SEQ
- 	help
- 	  If you have a LCD backlight adjustable by PWM, say Y to enable
- 	  this driver.
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 995f016..6e3a49e 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -27,6 +27,12 @@ struct pwm_bl_data {
- 	unsigned int		period;
- 	unsigned int		lth_brightness;
- 	unsigned int		*levels;
-+	bool			enabled;
-+	power_seq_resources	resources;
-+	power_seq		*power_on_seq;
-+	power_seq		*power_off_seq;
-+
-+	/* Legacy callbacks */
- 	int			(*notify)(struct device *,
- 					  int brightness);
- 	void			(*notify_after)(struct device *,
-@@ -35,6 +41,34 @@ struct pwm_bl_data {
- 	void			(*exit)(struct device *);
- };
- 
-+static void pwm_backlight_on(struct backlight_device *bl)
-+{
-+	struct pwm_bl_data *pb = dev_get_drvdata(&bl->dev);
-+	int ret;
-+
-+	if (pb->enabled)
-+		return;
-+
-+	if ((ret = power_seq_run(pb->dev, pb->power_on_seq)) < 0)
-+		dev_err(&bl->dev, "cannot run power on sequence\n");
-+
-+	pb->enabled = true;
-+}
-+
-+static void pwm_backlight_off(struct backlight_device *bl)
-+{
-+	struct pwm_bl_data *pb = dev_get_drvdata(&bl->dev);
-+	int ret;
-+
-+	if (!pb->enabled)
-+		return;
-+
-+	if ((ret = power_seq_run(pb->dev, pb->power_off_seq)) < 0)
-+		dev_err(&bl->dev, "cannot run power off sequence\n");
-+
-+	pb->enabled = false;
-+}
-+
- static int pwm_backlight_update_status(struct backlight_device *bl)
- {
- 	struct pwm_bl_data *pb = dev_get_drvdata(&bl->dev);
-@@ -51,8 +85,7 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
- 		brightness = pb->notify(pb->dev, brightness);
- 
- 	if (brightness = 0) {
--		pwm_config(pb->pwm, 0, pb->period);
--		pwm_disable(pb->pwm);
-+		pwm_backlight_off(bl);
- 	} else {
- 		int duty_cycle;
- 
-@@ -66,7 +99,7 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
- 		duty_cycle = pb->lth_brightness +
- 		     (duty_cycle * (pb->period - pb->lth_brightness) / max);
- 		pwm_config(pb->pwm, duty_cycle, pb->period);
--		pwm_enable(pb->pwm);
-+		pwm_backlight_on(bl);
+-	dsim = kzalloc(sizeof(struct mipi_dsim_device), GFP_KERNEL);
++	dsim = devm_kzalloc(&pdev->dev, sizeof(struct mipi_dsim_device),
++			    GFP_KERNEL);
+ 	if (!dsim) {
+ 		dev_err(&pdev->dev, "failed to allocate dsim object.\n");
+ 		return -ENOMEM;
+@@ -350,13 +351,13 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 	dsim_pd = (struct mipi_dsim_platform_data *)dsim->pd;
+ 	if (dsim_pd = NULL) {
+ 		dev_err(&pdev->dev, "failed to get platform data for dsim.\n");
+-		goto err_clock_get;
++		goto err_platform_get_irq;
+ 	}
+ 	/* get mipi_dsim_config. */
+ 	dsim_config = dsim_pd->dsim_config;
+ 	if (dsim_config = NULL) {
+ 		dev_err(&pdev->dev, "failed to get dsim config data.\n");
+-		goto err_clock_get;
++		goto err_platform_get_irq;
  	}
  
- 	if (pb->notify_after)
-@@ -145,12 +178,16 @@ static int pwm_backlight_parse_dt(struct device *dev,
- 		data->max_brightness--;
+ 	dsim->dsim_config = dsim_config;
+@@ -367,13 +368,13 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 	ret = regulator_bulk_get(&pdev->dev, ARRAY_SIZE(supplies), supplies);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to get regulators: %d\n", ret);
+-		goto err_clock_get;
++		goto err_platform_get_irq;
  	}
  
--	/*
--	 * TODO: Most users of this driver use a number of GPIOs to control
--	 *       backlight power. Support for specifying these needs to be
--	 *       added.
--	 */
-+	data->power_on_seq = of_parse_power_seq(dev, of_find_node_by_name(node,
-+							"power-on-sequence"));
-+	if (IS_ERR(data->power_on_seq))
-+		return PTR_ERR(data->power_on_seq);
-+	data->power_off_seq = of_parse_power_seq(dev, of_find_node_by_name(node,
-+							"power-off-sequence"));
-+	if (IS_ERR(data->power_off_seq))
-+		return PTR_ERR(data->power_off_seq);
- 
-+	data->use_power_sequences = true;
- 	return 0;
- }
- 
-@@ -168,73 +205,141 @@ static int pwm_backlight_parse_dt(struct device *dev,
- }
- #endif
- 
-+/**
-+ * Construct the power sequences corresponding to the legacy platform data.
-+ */
-+static int pwm_backlight_legacy_probe(struct platform_device *pdev,
-+				      struct pwm_bl_data *pb)
-+{
-+	struct platform_pwm_backlight_data *data = pdev->dev.platform_data;
-+	struct device *dev = &pdev->dev;
-+	struct power_seq_resource *res;
-+	struct power_seq_step *step;
-+
-+	pb->pwm = pwm_get(dev, NULL);
-+	if (IS_ERR(pb->pwm)) {
-+		dev_warn(dev, "unable to request PWM, trying legacy API\n");
-+
-+		pb->pwm = pwm_request(data->pwm_id, "pwm-backlight");
-+		if (IS_ERR(pb->pwm)) {
-+			dev_err(dev, "unable to request legacy PWM\n");
-+			return PTR_ERR(pb->pwm);
-+		}
-+		pwm_set_period(pb->pwm, data->pwm_period_ns);
-+	}
-+
-+	pb->notify = data->notify;
-+	pb->notify_after = data->notify_after;
-+	pb->check_fb = data->check_fb;
-+	pb->exit = data->exit;
-+	pb->dev = dev;
-+
-+	/* Now build the resources and sequences corresponding to this PWM */
-+	res = devm_kzalloc(dev, sizeof(*res), GFP_KERNEL);
-+	if (!res) return -ENOMEM;
-+	res->type = POWER_SEQ_PWM;
-+	res->id = "pwm-backlight";
-+	res->pwm = pb->pwm;
-+	list_add(&res->list, &pb->resources);
-+
-+	/* allocate both power on and off sequences at the same time */
-+	step = devm_kzalloc(dev, sizeof(*step) * 4, GFP_KERNEL);
-+	if (!step) return -ENOMEM;
-+	step->resource = res;
-+	memcpy(&step[2], &step[0], sizeof(*step));
-+	step[0].params.enable = 1;
-+	pb->power_on_seq = &step[0];
-+	pb->power_off_seq = &step[2];
-+
-+	return 0;
-+}
-+
- static int pwm_backlight_probe(struct platform_device *pdev)
- {
- 	struct platform_pwm_backlight_data *data = pdev->dev.platform_data;
- 	struct platform_pwm_backlight_data defdata;
-+	struct power_seq_resource *res;
- 	struct backlight_properties props;
- 	struct backlight_device *bl;
- 	struct pwm_bl_data *pb;
- 	unsigned int max;
- 	int ret;
- 
-+	pb = devm_kzalloc(&pdev->dev, sizeof(*pb), GFP_KERNEL);
-+	if (!pb) {
-+		dev_err(&pdev->dev, "no memory for state\n");
-+		return -ENOMEM;
-+	}
-+
-+	INIT_LIST_HEAD(&pb->resources);
-+
-+	/* using new interface or device tree */
- 	if (!data) {
-+		/* build platform data from device tree */
- 		ret = pwm_backlight_parse_dt(&pdev->dev, &defdata);
--		if (ret < 0) {
-+		if (ret = -EPROBE_DEFER) {
-+			return ret;
-+		} else if (ret < 0) {
- 			dev_err(&pdev->dev, "failed to find platform data\n");
- 			return ret;
- 		}
--
- 		data = &defdata;
+-	dsim->clock = clk_get(&pdev->dev, "dsim0");
++	dsim->clock = devm_clk_get(&pdev->dev, "dsim0");
+ 	if (IS_ERR(dsim->clock)) {
+ 		dev_err(&pdev->dev, "failed to get dsim clock source\n");
+-		goto err_clock_get;
++		goto err_platform_get_irq;
  	}
  
--	if (data->init) {
--		ret = data->init(&pdev->dev);
-+	if (!data->use_power_sequences) {
-+		/* using legacy interface */
-+		ret = pwm_backlight_legacy_probe(pdev, pb);
- 		if (ret < 0)
- 			return ret;
-+	} else {
-+		/* build sequences and allocate resources from platform data */
-+		if (data->power_on_seq) {
-+			pb->power_on_seq = power_seq_build(&pdev->dev,
-+							   &pb->resources,
-+							   data->power_on_seq);
-+			if (IS_ERR(pb->power_on_seq))
-+				return PTR_ERR(pb->power_on_seq);
-+		}
-+		if (data->power_off_seq) {
-+			pb->power_off_seq = power_seq_build(&pdev->dev,
-+							    &pb->resources,
-+							   data->power_off_seq);
-+			if (IS_ERR(pb->power_off_seq))
-+				return PTR_ERR(pb->power_off_seq);
-+		}
-+
-+		/* we must have exactly one PWM for this driver */
-+		list_for_each_entry(res, &pb->resources, list) {
-+			if (res->type != POWER_SEQ_PWM)
-+				continue;
-+			if (pb->pwm) {
-+				dev_err(&pdev->dev, "more than one PWM used\n");
-+				return -EINVAL;
-+			}
-+			/* keep the pwm at hand */
-+			pb->pwm = res->pwm;
-+		}
+ 	clk_enable(dsim->clock);
+@@ -384,15 +385,17 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 		goto err_platform_get;
  	}
  
--	pb = devm_kzalloc(&pdev->dev, sizeof(*pb), GFP_KERNEL);
--	if (!pb) {
--		dev_err(&pdev->dev, "no memory for state\n");
--		ret = -ENOMEM;
--		goto err_alloc;
-+	/* from here we should have a PWM */
-+	if (!pb->pwm) {
-+		dev_err(&pdev->dev, "no PWM defined!\n");
-+		return -EINVAL;
-+	}
-+
-+	if (data->init) {
-+		ret = data->init(&pdev->dev);
-+		if (ret < 0)
-+			goto err;
+-	dsim->res = request_mem_region(res->start, resource_size(res),
+-					dev_name(&pdev->dev));
++	dsim->res = devm_request_mem_region(&pdev->dev, res->start,
++					    resource_size(res),
++					    dev_name(&pdev->dev));
+ 	if (!dsim->res) {
+ 		dev_err(&pdev->dev, "failed to request io memory region\n");
+ 		ret = -ENOMEM;
+-		goto err_mem_region;
++		goto err_platform_get;
  	}
  
- 	if (data->levels) {
- 		max = data->levels[data->max_brightness];
- 		pb->levels = data->levels;
--	} else
-+	} else {
- 		max = data->max_brightness;
--
--	pb->notify = data->notify;
--	pb->notify_after = data->notify_after;
--	pb->check_fb = data->check_fb;
--	pb->exit = data->exit;
--	pb->dev = &pdev->dev;
--
--	pb->pwm = pwm_get(&pdev->dev, NULL);
--	if (IS_ERR(pb->pwm)) {
--		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
--
--		pb->pwm = pwm_request(data->pwm_id, "pwm-backlight");
--		if (IS_ERR(pb->pwm)) {
--			dev_err(&pdev->dev, "unable to request legacy PWM\n");
--			ret = PTR_ERR(pb->pwm);
--			goto err_alloc;
--		}
+-	dsim->reg_base = ioremap(res->start, resource_size(res));
++	dsim->reg_base = devm_ioremap(&pdev->dev, res->start,
++				      resource_size(res));
+ 	if (!dsim->reg_base) {
+ 		dev_err(&pdev->dev, "failed to remap io region\n");
+ 		ret = -ENOMEM;
+@@ -405,7 +408,7 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 	dsim_ddi = exynos_mipi_dsi_bind_lcd_ddi(dsim, dsim_pd->lcd_panel_name);
+ 	if (!dsim_ddi) {
+ 		dev_err(&pdev->dev, "mipi_dsim_ddi object not found.\n");
+-		goto err_bind;
++		goto err_ioremap;
  	}
  
--	dev_dbg(&pdev->dev, "got pwm for backlight\n");
--
--	/*
--	 * The DT case will set the pwm_period_ns field to 0 and store the
--	 * period, parsed from the DT, in the PWM device. For the non-DT case,
--	 * set the period from platform data.
--	 */
--	if (data->pwm_period_ns > 0)
--		pwm_set_period(pb->pwm, data->pwm_period_ns);
--
- 	pb->period = pwm_get_period(pb->pwm);
- 	pb->lth_brightness = data->lth_brightness * (pb->period / max);
- 
-@@ -246,20 +351,20 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	if (IS_ERR(bl)) {
- 		dev_err(&pdev->dev, "failed to register backlight\n");
- 		ret = PTR_ERR(bl);
--		goto err_bl;
-+		goto err;
+ 	dsim->irq = platform_get_irq(pdev, 0);
+@@ -424,7 +427,7 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 	if (ret != 0) {
+ 		dev_err(&pdev->dev, "failed to request dsim irq\n");
+ 		ret = -EINVAL;
+-		goto err_bind;
++		goto err_ioremap;
  	}
  
- 	bl->props.brightness = data->dft_brightness;
- 	backlight_update_status(bl);
+ 	/* enable interrupts */
+@@ -466,20 +469,11 @@ done:
  
- 	platform_set_drvdata(pdev, bl);
-+
  	return 0;
  
--err_bl:
--	pwm_put(pb->pwm);
--err_alloc:
-+err:
- 	if (data->exit)
- 		data->exit(&pdev->dev);
-+	power_seq_free_resources(&pb->resources);
+-err_bind:
+-	iounmap(dsim->reg_base);
+-
+ err_ioremap:
+ 	release_mem_region(dsim->res->start, resource_size(dsim->res));
+ 
+-err_mem_region:
+-	release_resource(dsim->res);
+-
+ err_platform_get:
+ 	clk_disable(dsim->clock);
+-	clk_put(dsim->clock);
+-err_clock_get:
+-	kfree(dsim);
+ 
+ err_platform_get_irq:
  	return ret;
- }
+@@ -491,12 +485,8 @@ static int __devexit exynos_mipi_dsi_remove(struct platform_device *pdev)
+ 	struct mipi_dsim_ddi *dsim_ddi, *next;
+ 	struct mipi_dsim_lcd_driver *dsim_lcd_drv;
  
-@@ -269,9 +374,9 @@ static int pwm_backlight_remove(struct platform_device *pdev)
- 	struct pwm_bl_data *pb = dev_get_drvdata(&bl->dev);
- 
- 	backlight_device_unregister(bl);
--	pwm_config(pb->pwm, 0, pb->period);
--	pwm_disable(pb->pwm);
--	pwm_put(pb->pwm);
-+	pwm_backlight_off(bl);
-+	power_seq_free_resources(&pb->resources);
-+
- 	if (pb->exit)
- 		pb->exit(&pdev->dev);
- 	return 0;
-@@ -285,8 +390,7 @@ static int pwm_backlight_suspend(struct device *dev)
- 
- 	if (pb->notify)
- 		pb->notify(pb->dev, 0);
--	pwm_config(pb->pwm, 0, pb->period);
--	pwm_disable(pb->pwm);
-+	pwm_backlight_off(bl);
- 	if (pb->notify_after)
- 		pb->notify_after(pb->dev, 0);
- 	return 0;
-@@ -323,4 +427,3 @@ module_platform_driver(pwm_backlight_driver);
- MODULE_DESCRIPTION("PWM based Backlight Driver");
- MODULE_LICENSE("GPL");
- MODULE_ALIAS("platform:pwm-backlight");
+-	iounmap(dsim->reg_base);
 -
-diff --git a/include/linux/pwm_backlight.h b/include/linux/pwm_backlight.h
-index 56f4a86..3e8bd2c 100644
---- a/include/linux/pwm_backlight.h
-+++ b/include/linux/pwm_backlight.h
-@@ -5,14 +5,28 @@
- #define __LINUX_PWM_BACKLIGHT_H
+ 	clk_disable(dsim->clock);
+-	clk_put(dsim->clock);
  
- #include <linux/backlight.h>
-+#include <linux/power_seq.h>
+-	release_resource(dsim->res);
+ 	release_mem_region(dsim->res->start, resource_size(dsim->res));
  
- struct platform_pwm_backlight_data {
--	int pwm_id;
- 	unsigned int max_brightness;
- 	unsigned int dft_brightness;
- 	unsigned int lth_brightness;
--	unsigned int pwm_period_ns;
- 	unsigned int *levels;
-+	/* Set this to true otherwise the legacy interface will be used */
-+	bool use_power_sequences;
-+	/*
-+	 * New interface - arrays of steps terminated by a STOP instance, or
-+	 * NULL if unused.
-+	 */
-+	struct platform_power_seq_step *power_on_seq;
-+	struct platform_power_seq_step *power_off_seq;
-+	/*
-+	 * Legacy interface - single PWM and callback methods to control
-+	 * the power sequence. pwm_id and pwm_period_ns need only be specified
-+	 * if get_pwm(dev, NULL) will return NULL.
-+	 */
-+	int pwm_id;
-+	unsigned int pwm_period_ns;
- 	int (*init)(struct device *dev);
- 	int (*notify)(struct device *dev, int brightness);
- 	void (*notify_after)(struct device *dev, int brightness);
--- 
-1.7.11.3
+ 	list_for_each_entry_safe(dsim_ddi, next, &dsim_ddi_list, list) {
+@@ -514,7 +504,6 @@ static int __devexit exynos_mipi_dsi_remove(struct platform_device *pdev)
+ 	}
+ 
+ 	regulator_bulk_free(ARRAY_SIZE(supplies), supplies);
+-	kfree(dsim);
+ 
+ 	return 0;
+ }
 

@@ -1,43 +1,42 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Date: Tue, 17 Jul 2012 16:05:19 +0000
-Subject: Re: [PATCH 3/4] ARM: dts: mxs: Add pwm4 muxing options for imx28
-Message-Id: <20120717180519.215f8d8d@skate>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Tue, 31 Jul 2012 10:29:35 +0000
+Subject: [PATCH 3/4] ARM: dts: mxs: Add pwm4 muxing options for imx28
+Message-Id: <1343730576-20494-4-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1342540787-14930-1-git-send-email-maxime.ripard@free-electrons.com>
- <1342540787-14930-4-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1342540787-14930-4-git-send-email-maxime.ripard@free-electrons.com>
+References: <1343730576-20494-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1343730576-20494-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Le Tue, 17 Jul 2012 17:59:46 +0200,
-Maxime Ripard <maxime.ripard@free-electrons.com> a =C3=A9crit :
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: Brian Lilly <brian@crystalfontz.com>
+---
+ arch/arm/boot/dts/imx28.dtsi |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-> Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-> Cc: Brian Lilly <brian@crystalfontz.com>
-> ---
->  arch/arm/boot/dts/imx28.dtsi |    9 +++++++++
->  1 file changed, 9 insertions(+)
->=20
-> diff --git a/arch/arm/boot/dts/imx28.dtsi b/arch/arm/boot/dts/imx28.dtsi
-> index 44ce1fd..0a565ef 100644
-> --- a/arch/arm/boot/dts/imx28.dtsi
-> +++ b/arch/arm/boot/dts/imx28.dtsi
-> @@ -461,6 +461,15 @@
->  					fsl,pull-up =3D <0>;
->  				};
-> =20
-> +				pwm4_pins_a: pwm4@0 {
-> +					reg =3D <0>;
-> +					fsl,pinmux-ids =3D <
-> +						0x31d0 /* MX28_PAD_PWM4__PWM_4 */
+diff --git a/arch/arm/boot/dts/imx28.dtsi b/arch/arm/boot/dts/imx28.dtsi
+index 44ce1fd..98891d8 100644
+--- a/arch/arm/boot/dts/imx28.dtsi
++++ b/arch/arm/boot/dts/imx28.dtsi
+@@ -461,6 +461,16 @@
+ 					fsl,pull-up = <0>;
+ 				};
+ 
++				pwm4_pins_a: pwm4@0 {
++					reg = <0>;
++					fsl,pinmux-ids = <
++						0x31d0 /* MX28_PAD_PWM4__PWM_4 */
++					>;
++					fsl,drive-strength = <0>;
++					fsl,voltage = <1>;
++					fsl,pull-up = <0>;
++				};
++
+ 				lcdif_24bit_pins_a: lcdif-24bit@0 {
+ 					reg = <0>;
+ 					fsl,pinmux-ids = <
+-- 
+1.7.9.5
 
-Unless my eyes are broken, it seems that the final >; is missing here.
-
-Thomas
---=20
-Thomas Petazzoni, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com

@@ -1,7 +1,7 @@
 From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Tue, 17 Jul 2012 15:59:43 +0000
-Subject: [PATCH 0/4] Add support for the OLED in the CFA10036
-Message-Id: <1342540787-14930-1-git-send-email-maxime.ripard@free-electrons.com>
+Date: Tue, 31 Jul 2012 10:29:32 +0000
+Subject: [PATCHv2 0/4] Add support for the OLED in the CFA10036
+Message-Id: <1343730576-20494-1-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -19,6 +19,13 @@ needed bits to enable it in the cfa10036 dts.
 Thanks,
 Maxime
 
+Changes from v1:
+  * Did some factorisation of the ssd1307fb_write* functions.
+  * Filled the smem_start field of the fb_fix_screeninfo structure
+  * Fixed the broken pwm declaration
+  * Change the names of oled-reset-gpios and reset-active-low properties in the
+    device tree to oled-reset-gpio and oled-reset-active-low for consistency
+
 Maxime Ripard (4):
   video: Add support for the Solomon SSD1307 OLED Controller
   ARM: dts: mxs: Add alternative I2C muxing options for imx28
@@ -27,11 +34,11 @@ Maxime Ripard (4):
 
  .../devicetree/bindings/video/ssd1307fb.txt        |   24 ++
  arch/arm/boot/dts/imx28-cfa10036.dts               |   20 +
- arch/arm/boot/dts/imx28.dtsi                       |   17 +
+ arch/arm/boot/dts/imx28.dtsi                       |   18 +
  drivers/video/Kconfig                              |   14 +
  drivers/video/Makefile                             |    1 +
- drivers/video/ssd1307fb.c                          |  414 ++++++++++++++++++++
- 6 files changed, 490 insertions(+)
+ drivers/video/ssd1307fb.c                          |  418 ++++++++++++++++++++
+ 6 files changed, 495 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/video/ssd1307fb.txt
  create mode 100644 drivers/video/ssd1307fb.c
 

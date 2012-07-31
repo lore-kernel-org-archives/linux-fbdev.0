@@ -1,10 +1,9 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Tue, 31 Jul 2012 16:19:54 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Tue, 31 Jul 2012 16:22:30 +0000
 Subject: Re: [RFC][PATCH v3 1/3] runtime interpreted power sequences
-Message-Id: <20120731161954.GB4941@kroah.com>
+Message-Id: <20120731162230.GE11892@opensource.wolfsonmicro.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com>
- <1343390750-3642-2-git-send-email-acourbot@nvidia.com>
+References: <1343390750-3642-2-git-send-email-acourbot@nvidia.com>
  <50170EA0.1010408@wwwdotorg.org>
  <5017B434.2010706@nvidia.com>
  <20120731105640.GD16155@avionic-0098.adnet.avionic-design.de>
@@ -13,33 +12,24 @@ References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com>
  <20120731142607.GV4468@opensource.wolfsonmicro.com>
  <20120731143235.GA21126@avionic-0098.adnet.avionic-design.de>
  <20120731153941.GF4468@opensource.wolfsonmicro.com>
-In-Reply-To: <20120731153941.GF4468@opensource.wolfsonmicro.com>
+ <20120731161954.GB4941@kroah.com>
+In-Reply-To: <20120731161954.GB4941-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Thierry Reding <thierry.reding@avionic-design.de>, Alex Courbot <acourbot@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Stephen Warren <swarren@nvidia.com>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Arnd Bergmann <arnd@arndb.de>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
+To: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Cc: Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
 
-On Tue, Jul 31, 2012 at 04:39:41PM +0100, Mark Brown wrote:
-> On Tue, Jul 31, 2012 at 04:32:35PM +0200, Thierry Reding wrote:
-> > On Tue, Jul 31, 2012 at 03:26:07PM +0100, Mark Brown wrote:
-> 
-> > > This is framework code - it doesn't have much option.  Disabling HOTPLUG
-> > > is totally reasonable on space constrained systems, there's no reason
-> > > for the code to break things for people.
-> 
-> > Still if you use this code and disable HOTPLUG, then you shouldn't be
-> > using modules either. I mean there is no way you can write a driver that
-> 
-> Of course.
-> 
-> > can gracefully handle its platform data being discarded.
-> 
-> Sure there is - take a copy of the platform data in probe().
+On Tue, Jul 31, 2012 at 09:19:54AM -0700, Greg Kroah-Hartman wrote:
+> On Tue, Jul 31, 2012 at 04:39:41PM +0100, Mark Brown wrote:
+> > On Tue, Jul 31, 2012 at 04:32:35PM +0200, Thierry Reding wrote:
 
-Ick ick ick, devdata needs to die as it's pretty much pointless these
-days.
+> > > can gracefully handle its platform data being discarded.
 
-It's on my TODO list actually...
+> > Sure there is - take a copy of the platform data in probe().
 
-greg k-h
+> Ick ick ick, devdata needs to die as it's pretty much pointless these
+> days.
+
+Hrm?  I'm not sure I understand the direct relevance here - we're
+talking about platform data.

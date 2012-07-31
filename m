@@ -1,43 +1,60 @@
-From: Jassi Brar <jaswinder.singh@linaro.org>
-Date: Tue, 24 Jul 2012 14:15:55 +0000
-Subject: [PATCH] OMAPDSS: DISPC: Use msleep instead of blocking mdelay
-Message-Id: <1343138635-2802-1-git-send-email-jaswinder.singh@linaro.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 31 Jul 2012 08:53:28 +0000
+Subject: Re: [PATCH] OMAPDSS: DISPC: Use msleep instead of blocking mdelay
+Message-Id: <1343724808.2633.25.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-ItR/pYeMus56yFdbE6du"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+References: <1343138635-2802-1-git-send-email-jaswinder.singh@linaro.org>
+In-Reply-To: <1343138635-2802-1-git-send-email-jaswinder.singh@linaro.org>
+To: Jassi Brar <jaswinder.singh@linaro.org>
+Cc: a0393947@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+
+
+--=-ItR/pYeMus56yFdbE6du
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 2012-07-24 at 19:33 +0530, Jassi Brar wrote:
+> We have no reason to block in the error handler workqueue, so use msleep.
+>=20
+> Signed-off-by: Jassi Brar <jaswinder.singh@linaro.org>
+> ---
+>  drivers/video/omap2/dss/dispc.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+
+Thanks, applied.
+
+As a side note, I hate that error handler =3D). It was a quick emergency
+hack to somehow handle certain situations, but generally it sucks.
+However, I don't really have a good idea what to do in case we get
+errors from DSS HW.
+
+ Tomi
+
+
+--=-ItR/pYeMus56yFdbE6du
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, a0393947@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Jassi Brar <jaswinder.singh@linaro.org>
 
-We have no reason to block in the error handler workqueue, so use msleep.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-Signed-off-by: Jassi Brar <jaswinder.singh@linaro.org>
----
- drivers/video/omap2/dss/dispc.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+iQIcBAABAgAGBQJQF50IAAoJEPo9qoy8lh71XFQP+wVr3Ypl0y/7OkK7/t4Dcy0S
+j1r/H0uGT5hNxGvOIsSMAyITI24whrdQ2Reig/gCvdW3nYujh2NUjFBcDxWuDXGK
+NGAh7ND7Ln80LlZnAqRkXm1H83Nt2940JnrlrHzvI0TWFsgxN+bmzsmX3F6bdGSD
+X3iutklMZyIdTfoZfmPrnWFuRcXw5meh8SlvQoUGlpPrhGj3A2AQ+UX0vnKap9GX
+ccJ8sedkT8lqUFkdgzxxta/iFmnDSRYx5pOKfNXTiqBs7YWA5uHddAA3WgSdNp+W
+yCHYzSc5Endq3IdPoVv5aRRKRLCqrFlA6UdoecIwqpb6D4co3etRTuy1dN65R+Bo
+YzVbHXmN8Lk1YcPO2ipG7GkaXdd+kmF0JkQyHh2x2V+ELTPVwR4uU2590pmtDg0Y
+3MoFdOLkOXEIbKEV5Pa/Pb6pmzsbRZuY5qvQO6Y2CwgZ3cNqygLB/nkpArxrRIrS
+gBnBzAHZZJlEaoAOx1hoYEp5l3ZtP2bQbtj/rImmnwiW908tOjyH6UYhddlD7Kxl
+atudfRQ4YGXc0Por1r18fqdspxeCzZM+gtHqLXrXBrUK31ZyzWNv3WZXhJoOe8tH
+m3PFy83CnrptQn3RnXwwkiOln5ZUg4s3Je+R9BnUEQja8uRJQT6xMRrsRCthq2PH
+vT7yoUMifgr7wTMHcx9C
+=k+8t
+-----END PGP SIGNATURE-----
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index c56a51a..0e3ad44 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -3492,7 +3492,7 @@ static void dispc_error_worker(struct work_struct *work)
- 					ovl->name);
- 			dispc_ovl_enable(ovl->id, false);
- 			dispc_mgr_go(ovl->manager->id);
--			mdelay(50);
-+			msleep(50);
- 		}
- 	}
- 
-@@ -3524,7 +3524,7 @@ static void dispc_error_worker(struct work_struct *work)
- 			}
- 
- 			dispc_mgr_go(mgr->id);
--			mdelay(50);
-+			msleep(50);
- 
- 			if (enable)
- 				dssdev->driver->enable(dssdev);
--- 
-1.7.4.1
+--=-ItR/pYeMus56yFdbE6du--
 

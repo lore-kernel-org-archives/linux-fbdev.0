@@ -1,35 +1,39 @@
-From: Alex Courbot <acourbot@nvidia.com>
-Date: Mon, 09 Jul 2012 05:27:38 +0000
-Subject: Re: [PATCH] pwm_backlight: pass correct brightness to callback
-Message-Id: <4FFA6BCA.2040101@nvidia.com>
+From: Leela Krishna Amudala <l.krishna@samsung.com>
+Date: Tue, 31 Jul 2012 12:35:02 +0000
+Subject: [PATCH V2 2/5] include/video: Add Exynos5 specific FIMD register offsets
+Message-Id: <1343737385-23337-3-git-send-email-l.krishna@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1341807700-7103-1-git-send-email-acourbot@nvidia.com> <20120709051001.GA10108@avionic-0098.mockup.avionic-design.de>
-In-Reply-To: <20120709051001.GA10108@avionic-0098.mockup.avionic-design.de>
+References: <1343737385-23337-1-git-send-email-l.krishna@samsung.com>
+In-Reply-To: <1343737385-23337-1-git-send-email-l.krishna@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@avionic-design.de>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, inki.dae@samsung.com, kgene.kim@samsung.com, joshi@samsung.com, jg1.han@samsung.com, m.szyprowski@samsung.com
 
-On 07/09/2012 02:10 PM, Thierry Reding wrote:
-> I had to actually read this patch a number of times and then realized I
-> was completely missing the context. Looking at the whole function makes
-> it more obvious what you mean.
->
-> However I think it'd be much clearer if we just passed the value of
-> bl->props.brightness into the callbacks, that way we can avoid the
-> additional variable.
+Exynos5 has VIDTCON and VIDCON registers at different offsets
+from the previous SOCs. Hence, adding the macros.
 
-This won't work I'm afraid, as brightness can be modified prior to being 
-passed to the callback function:
+Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
+---
+ include/video/samsung_fimd.h |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-	if (bl->props.power != FB_BLANK_UNBLANK)
-		brightness = 0;
+diff --git a/include/video/samsung_fimd.h b/include/video/samsung_fimd.h
+index e979f42..820f190 100644
+--- a/include/video/samsung_fimd.h
++++ b/include/video/samsung_fimd.h
+@@ -524,3 +524,10 @@
+  * 1110		-none-	 -none-	  -none-   -none-    -none-
+  * 1111		-none-	 -none-   -none-   -none-    -none-
+ */
++
++/*EXYNOS5 FIMD REG OFFSET */
++#define EXYNOS5_VIDTCON0	(0x20010)
++#define EXYNOS5_VIDTCON1	(0x20014)
++#define EXYNOS5_VIDTCON2	(0x20018)
++#define EXYNOS5_VIDTCON3	(0x2001C)
++#define EXYNOS5_VIDCON1		(0x20004)
+-- 
+1.7.0.4
 
-	if (bl->props.fb_blank != FB_BLANK_UNBLANK)
-		brightness = 0;
-
-	if (pb->notify)
-		brightness = pb->notify(pb->dev, brightness);
-
-Alex.

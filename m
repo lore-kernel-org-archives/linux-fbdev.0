@@ -1,81 +1,95 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Sun, 15 Jul 2012 19:04:35 +0000
-Subject: [PATCH v3 00/11] fblog: Framebuffer kernel log driver v3
-Message-Id: <1342379086-7583-1-git-send-email-dh.herrmann@googlemail.com>
+From: Damien Cassou <damien.cassou@lifl.fr>
+Date: Tue, 31 Jul 2012 13:54:16 +0000
+Subject: [PATCH 5/5] drivers/video/ep93xx-fb.c: use devm_ functions
+Message-Id: <1343742860-16213-2-git-send-email-damien.cassou@lifl.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1343742860-16213-1-git-send-email-damien.cassou@lifl.fr>
+In-Reply-To: <1343742860-16213-1-git-send-email-damien.cassou@lifl.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, David Herrmann <dh.herrmann@googlemail.com>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi
+From: Damien Cassou <damien.cassou@lifl.fr>
 
-This is revision 3 of the fblog driver. This driver is a replacement for fbcon
-for systems that do not want/need CONFIG_VT. It simply prints the kernel log to
-all connected framebuffers. Previous versions are available here:
-  v2: http://thread.gmane.org/gmane.linux.serial/8133
-  v1: http://marc.info/?l=linux-kernel&m3988465602225&w=2
+The various devm_ functions allocate memory that is released when a driver
+detaches.  This patch uses these functions for data that is allocated in
+the probe function of a platform device and is only freed in the remove
+function.
 
-This patchset is against linux-next from last week (Wednesday or Thursday).
+Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
 
-I've fixed all issues that were reported last week. They were all minor
-nitpicks:
-  - Changed EXPORT_SYMBOL to EXPORT_SYMBOL_GPL for exported fbdev functions
-  - Removed FBLOG_STR
-  - Added pr_fmt()
-  - Fixed two minor coding-style issues
-  - Fixed one possible subtle deadlock in device registration (switched locking
-    order)
+---
+ drivers/video/ep93xx-fb.c |   17 ++++++-----------
+ 1 file changed, 6 insertions(+), 11 deletions(-)
 
-If you want to test it but don't want to disable CONFIG_VT, simply remove the
-dependency to !VT of fblog. This will cause both fblog and fbcon to draw to the
-framebuffers but both draw only on changes so it will still be possible to debug
-and test fblog.
-
-It would be nice if someone could tell me what tree this will go through or how
-I can get it into linux-next as I have no idea who is maintaining fbcon. If
-there are other major or minor issues, please tell me so I can work on them.
-
-I am also working on improving the render-path by using dma-buf and partial
-redraws like fbcon. Furthermore, I will add a panic-handler so fblog draws
-oopses/panics to the framebuffers even though it is disabled. However, I want to
-get this basic driver in before making it more complex and making review too
-hard.
-
-Thanks! Regards
-David
-
-David Herrmann (11):
-  fbcon: move update_attr() into separate source file
-  fbcon: move bit_putcs() into separate source file
-  fblog: new framebuffer kernel log dummy driver
-  fbdev: export get_fb_info()/put_fb_info()
-  fblog: register one fblog object per framebuffer
-  fblog: open fb on registration
-  fblog: allow selecting fbs via sysfs
-  fblog: cache framebuffer BLANK and SUSPEND states
-  fblog: register console driver
-  fblog: draw console to framebuffers
-  MAINTAINERS: add fblog entry
-
- MAINTAINERS                     |   6 +
- drivers/video/Kconfig           |   5 +-
- drivers/video/Makefile          |   2 +-
- drivers/video/console/Kconfig   |  37 ++-
- drivers/video/console/Makefile  |   4 +-
- drivers/video/console/bitblit.c | 149 +--------
- drivers/video/console/fbcon.h   |   5 +-
- drivers/video/console/fbdraw.c  | 171 ++++++++++
- drivers/video/console/fbdraw.h  |  30 ++
- drivers/video/console/fblog.c   | 675 ++++++++++++++++++++++++++++++++++++++++
- drivers/video/fbmem.c           |   6 +-
- include/linux/fb.h              |   3 +
- 12 files changed, 935 insertions(+), 158 deletions(-)
- create mode 100644 drivers/video/console/fbdraw.c
- create mode 100644 drivers/video/console/fbdraw.h
- create mode 100644 drivers/video/console/fblog.c
-
--- 
-1.7.11.2
+diff --git a/drivers/video/ep93xx-fb.c b/drivers/video/ep93xx-fb.c
+index 345d962..69c89f2 100644
+--- a/drivers/video/ep93xx-fb.c
++++ b/drivers/video/ep93xx-fb.c
+@@ -529,7 +529,8 @@ static int __devinit ep93xxfb_probe(struct platform_device *pdev)
+ 	 * any of the framebuffer registers.
+ 	 */
+ 	fbi->res = res;
+-	fbi->mmio_base = ioremap(res->start, resource_size(res));
++	fbi->mmio_base = devm_ioremap(&pdev->dev, res->start,
++				      resource_size(res));
+ 	if (!fbi->mmio_base) {
+ 		err = -ENXIO;
+ 		goto failed_resource;
+@@ -553,20 +554,20 @@ static int __devinit ep93xxfb_probe(struct platform_device *pdev)
+ 	if (err = 0) {
+ 		dev_err(info->dev, "No suitable video mode found\n");
+ 		err = -EINVAL;
+-		goto failed_mode;
++		goto failed_resource;
+ 	}
+ 
+ 	if (mach_info->setup) {
+ 		err = mach_info->setup(pdev);
+ 		if (err)
+-			goto failed_mode;
++			goto failed_resource;
+ 	}
+ 
+ 	err = ep93xxfb_check_var(&info->var, info);
+ 	if (err)
+ 		goto failed_check;
+ 
+-	fbi->clk = clk_get(info->dev, NULL);
++	fbi->clk = devm_clk_get(&pdev->dev, NULL);
+ 	if (IS_ERR(fbi->clk)) {
+ 		err = PTR_ERR(fbi->clk);
+ 		fbi->clk = NULL;
+@@ -578,19 +579,15 @@ static int __devinit ep93xxfb_probe(struct platform_device *pdev)
+ 
+ 	err = register_framebuffer(info);
+ 	if (err)
+-		goto failed;
++		goto failed_check;
+ 
+ 	dev_info(info->dev, "registered. Mode = %dx%d-%d\n",
+ 		 info->var.xres, info->var.yres, info->var.bits_per_pixel);
+ 	return 0;
+ 
+-failed:
+-	clk_put(fbi->clk);
+ failed_check:
+ 	if (fbi->mach_info->teardown)
+ 		fbi->mach_info->teardown(pdev);
+-failed_mode:
+-	iounmap(fbi->mmio_base);
+ failed_resource:
+ 	ep93xxfb_dealloc_videomem(info);
+ failed_videomem:
+@@ -609,8 +606,6 @@ static int __devexit ep93xxfb_remove(struct platform_device *pdev)
+ 
+ 	unregister_framebuffer(info);
+ 	clk_disable(fbi->clk);
+-	clk_put(fbi->clk);
+-	iounmap(fbi->mmio_base);
+ 	ep93xxfb_dealloc_videomem(info);
+ 	fb_dealloc_cmap(&info->cmap);
+ 
 

@@ -1,48 +1,57 @@
-From: Alexandre Courbot <acourbot@nvidia.com>
-Date: Mon, 09 Jul 2012 06:08:22 +0000
-Subject: [RFC][PATCHv2 0/3] Power sequences interpreter for pwm_backlight
-Message-Id: <1341814105-20690-1-git-send-email-acourbot@nvidia.com>
+From: Damien Cassou <damien.cassou@lifl.fr>
+Date: Tue, 31 Jul 2012 13:54:18 +0000
+Subject: [PATCH 3/5] drivers/video/cobalt_lcdfb.c: use devm_ functions
+Message-Id: <1343742860-16213-4-git-send-email-damien.cassou@lifl.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1343742860-16213-1-git-send-email-damien.cassou@lifl.fr>
+In-Reply-To: <1343742860-16213-1-git-send-email-damien.cassou@lifl.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>
-Cc: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This is a RFC since this patch largely drifted beyond its original goal
-of supporting one GPIO and one regulator for the pwm_backlight driver.
+From: Damien Cassou <damien.cassou@lifl.fr>
 
-The issue to address is that backlight power sequences, which were
-implemented using board-specific callbacks so far, could not be used with
-the device tree. This series of patches adds a small power sequence 
-interpreter that allows to acquire and control regulators, GPIOs, and PWMs
-during sequences defined in the device tree. It is easy to use,
-low-footprint, and takes care of managing the resources that it acquires.
+The various devm_ functions allocate memory that is released when a driver
+detaches.  This patch uses these functions for data that is allocated in
+the probe function of a platform device and is only freed in the remove
+function.
 
-The implementation is working and should be complete, but documentation is
-lacking. Also since the interpreter could be used by other drivers (which
-ones?), it may make sense to have it in a better place than
-drivers/video/backlight/.
+Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
 
-The tegra device tree nodes are just here as an example usage.
+---
+ drivers/video/cobalt_lcdfb.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-Alexandre Courbot (3):
-  Power sequences interpreter for device tree
-  pwm-backlight: use power sequences
-  tegra: add pwm backlight device tree nodes
-
- .../bindings/video/backlight/pwm-backlight.txt     |  28 +-
- arch/arm/boot/dts/tegra20-ventana.dts              |  31 +++
- arch/arm/boot/dts/tegra20.dtsi                     |   2 +-
- drivers/video/backlight/Makefile                   |   2 +-
- drivers/video/backlight/power_seq.c                | 298 +++++++++++++++++++++
- drivers/video/backlight/pwm_bl.c                   | 212 +++++++++++----
- include/linux/power_seq.h                          |  96 +++++++
- include/linux/pwm_backlight.h                      |  37 ++-
- 8 files changed, 645 insertions(+), 61 deletions(-)
- create mode 100644 drivers/video/backlight/power_seq.c
- create mode 100644 include/linux/power_seq.h
-
--- 
-1.7.11.1
+diff --git a/drivers/video/cobalt_lcdfb.c b/drivers/video/cobalt_lcdfb.c
+index eae46f6..01a4ee7 100644
+--- a/drivers/video/cobalt_lcdfb.c
++++ b/drivers/video/cobalt_lcdfb.c
+@@ -348,7 +348,8 @@ static int __devinit cobalt_lcdfb_probe(struct platform_device *dev)
+ 	}
+ 
+ 	info->screen_size = resource_size(res);
+-	info->screen_base = ioremap(res->start, info->screen_size);
++	info->screen_base = devm_ioremap(&dev->dev, res->start,
++					 info->screen_size);
+ 	info->fbops = &cobalt_lcd_fbops;
+ 	info->fix = cobalt_lcdfb_fix;
+ 	info->fix.smem_start = res->start;
+@@ -359,7 +360,6 @@ static int __devinit cobalt_lcdfb_probe(struct platform_device *dev)
+ 
+ 	retval = register_framebuffer(info);
+ 	if (retval < 0) {
+-		iounmap(info->screen_base);
+ 		framebuffer_release(info);
+ 		return retval;
+ 	}
+@@ -380,7 +380,6 @@ static int __devexit cobalt_lcdfb_remove(struct platform_device *dev)
+ 
+ 	info = platform_get_drvdata(dev);
+ 	if (info) {
+-		iounmap(info->screen_base);
+ 		unregister_framebuffer(info);
+ 		framebuffer_release(info);
+ 	}
 

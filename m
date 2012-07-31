@@ -1,94 +1,91 @@
-From: Donghwa Lee <dh09.lee@samsung.com>
-Date: Thu, 19 Jul 2012 00:43:33 +0000
-Subject: [PATCH] video: ld9040: support early fb event of fb_blank()
-Message-Id: <50075835.2040703@samsung.com>
+From: Damien Cassou <damien.cassou@lifl.fr>
+Date: Tue, 31 Jul 2012 16:39:18 +0000
+Subject: [PATCH 3/5] drivers/video/mbx/mbxfb.c: use devm_ functions
+Message-Id: <1343752762-16861-2-git-send-email-damien.cassou@lifl.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <500757AE.3010202@samsung.com>
-In-Reply-To: <500757AE.3010202@samsung.com>
+References: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
+In-Reply-To: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This patch supports early fb event of fb_blank().
+From: Damien Cassou <damien.cassou@lifl.fr>
 
-- In case of lcd power off : call early_set_power() interface and lcd
-power is off. And then framebuffer is blanked.
+The various devm_ functions allocate memory that is released when a driver
+detaches.  This patch uses these functions for data that is allocated in
+the probe function of a platform device and is only freed in the remove
+function.
 
-- In case of lcd power on : First, framebuffer is unblanked, and then
-call set_power() interface to turn lcd on.
+Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
 
-Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
-Signed-off-by: Inki Dae <inki.dae@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/video/backlight/ld9040.c |   36 +++++++++++++++++++++++++++++++++++-
- 1 files changed, 35 insertions(+), 1 deletions(-)
+ drivers/video/mbx/mbxfb.c |   22 ++++++++--------------
+ 1 file changed, 8 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/video/backlight/ld9040.c b/drivers/video/backlight/ld9040.c
-index efd352b..221c843 100644
---- a/drivers/video/backlight/ld9040.c
-+++ b/drivers/video/backlight/ld9040.c
-@@ -642,17 +642,50 @@ static int ld9040_power(struct ld9040 *lcd, int power)
- 	return ret;
- }
+diff --git a/drivers/video/mbx/mbxfb.c b/drivers/video/mbx/mbxfb.c
+index 85e4f44..9229acf 100644
+--- a/drivers/video/mbx/mbxfb.c
++++ b/drivers/video/mbx/mbxfb.c
+@@ -939,8 +939,9 @@ static int __devinit mbxfb_probe(struct platform_device *dev)
+ 	}
+ 	mfbi->reg_phys_addr = mfbi->reg_res->start;
  
-+static int ld9040_early_set_power(struct lcd_device *ld, int power)
-+{
-+	struct ld9040 *lcd = lcd_get_data(ld);
-+	int ret = 0;
-+
-+	if (power != FB_BLANK_UNBLANK && power != FB_BLANK_POWERDOWN &&
-+		power != FB_BLANK_NORMAL) {
-+		dev_err(lcd->dev, "power value should be 0, 1 or 4.\n");
-+
-+		return -EINVAL;
-+	}
-+
-+	if (!power_is_on(power) && power_is_on(lcd->power)) {
-+		ret = ld9040_power(lcd, power);
-+		if (!ret)
-+			lcd->power = power;
-+	}
-+
-+	return ret;
-+}
-+
- static int ld9040_set_power(struct lcd_device *ld, int power)
- {
- 	struct ld9040 *lcd = lcd_get_data(ld);
-+	struct backlight_device *bd = lcd->bd;
-+	int ret = 0;
+-	mfbi->reg_virt_addr = ioremap_nocache(mfbi->reg_phys_addr,
+-					      res_size(mfbi->reg_req));
++	mfbi->reg_virt_addr = devm_ioremap_nocache(&dev->dev,
++						   mfbi->reg_phys_addr,
++						   res_size(mfbi->reg_req));
+ 	if (!mfbi->reg_virt_addr) {
+ 		dev_err(&dev->dev, "failed to ioremap Marathon registers\n");
+ 		ret = -EINVAL;
+@@ -948,12 +949,12 @@ static int __devinit mbxfb_probe(struct platform_device *dev)
+ 	}
+ 	virt_base_2700 = mfbi->reg_virt_addr;
  
- 	if (power != FB_BLANK_UNBLANK && power != FB_BLANK_POWERDOWN &&
- 		power != FB_BLANK_NORMAL) {
- 		dev_err(lcd->dev, "power value should be 0, 1 or 4.\n");
-+
- 		return -EINVAL;
+-	mfbi->fb_virt_addr = ioremap_nocache(mfbi->fb_phys_addr,
+-					     res_size(mfbi->fb_req));
++	mfbi->fb_virt_addr = devm_ioremap_nocache(&dev->dev, mfbi->fb_phys_addr,
++						  res_size(mfbi->fb_req));
+ 	if (!mfbi->fb_virt_addr) {
+ 		dev_err(&dev->dev, "failed to ioremap frame buffer\n");
+ 		ret = -EINVAL;
+-		goto err4;
++		goto err3;
  	}
  
--	return ld9040_power(lcd, power);
-+	if (power_is_on(power) && !power_is_on(lcd->power)) {
-+		ret = ld9040_power(lcd, power);
-+		if (!ret)
-+			lcd->power = power;
-+
-+		ld9040_gamma_ctl(lcd, bd->props.brightness);
-+	} else
-+		ld9040_early_set_power(ld, power);
-+
-+	return ret;
- }
+ 	fbi->screen_base = (char __iomem *)(mfbi->fb_virt_addr + 0x60000);
+@@ -971,7 +972,7 @@ static int __devinit mbxfb_probe(struct platform_device *dev)
+ 	if (ret < 0) {
+ 		dev_err(&dev->dev, "fb_alloc_cmap failed\n");
+ 		ret = -EINVAL;
+-		goto err5;
++		goto err3;
+ 	}
  
- static int ld9040_get_power(struct lcd_device *ld)
-@@ -689,6 +722,7 @@ static int ld9040_set_brightness(struct backlight_device *bd)
- }
+ 	platform_set_drvdata(dev, fbi);
+@@ -996,10 +997,6 @@ static int __devinit mbxfb_probe(struct platform_device *dev)
  
- static struct lcd_ops ld9040_lcd_ops = {
-+	.early_set_power = ld9040_early_set_power,
- 	.set_power = ld9040_set_power,
- 	.get_power = ld9040_get_power,
- };
--- 
-1.7.4.1
+ err6:
+ 	fb_dealloc_cmap(&fbi->cmap);
+-err5:
+-	iounmap(mfbi->fb_virt_addr);
+-err4:
+-	iounmap(mfbi->reg_virt_addr);
+ err3:
+ 	release_mem_region(mfbi->reg_res->start, res_size(mfbi->reg_res));
+ err2:
+@@ -1026,10 +1023,7 @@ static int __devexit mbxfb_remove(struct platform_device *dev)
+ 			if (mfbi->platform_remove)
+ 				mfbi->platform_remove(fbi);
+ 
+-			if (mfbi->fb_virt_addr)
+-				iounmap(mfbi->fb_virt_addr);
+-			if (mfbi->reg_virt_addr)
+-				iounmap(mfbi->reg_virt_addr);
++
+ 			if (mfbi->reg_req)
+ 				release_mem_region(mfbi->reg_req->start,
+ 						   res_size(mfbi->reg_req));
 

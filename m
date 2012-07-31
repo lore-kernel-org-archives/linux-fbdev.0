@@ -1,49 +1,112 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 29 Jul 2012 21:05:04 +0000
-Subject: Re: [PATCH v2] da8xx-fb: add missing FB_BLANK operations
-Message-Id: <5015A580.5030203@gmx.de>
+From: Damien Cassou <damien.cassou@lifl.fr>
+Date: Tue, 31 Jul 2012 13:54:19 +0000
+Subject: [PATCH 2/5] drivers/video/bfin-t350mcqb-fb.c: use devm_ functions
+Message-Id: <1343742860-16213-5-git-send-email-damien.cassou@lifl.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1341583288-30281-1-git-send-email-yegorslists@googlemail.com>
-In-Reply-To: <1341583288-30281-1-git-send-email-yegorslists@googlemail.com>
+References: <1343742860-16213-1-git-send-email-damien.cassou@lifl.fr>
+In-Reply-To: <1343742860-16213-1-git-send-email-damien.cassou@lifl.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 07/06/2012 02:01 PM, yegorslists@googlemail.com wrote:
-> From: Yegor Yefremov <yegorslists@googlemail.com>
-> 
-> add FB_BLANK_NORMAL, FB_BLANK_VSYNC_SUSPEND and FB_BLANK_HSYNC_SUSPEND
-> modes (copy drivers/video/omap2/omapfb/omapfb-main.c implementation).
-> Otherwise X-server will complain about invalid parameter.
-> 
-> Signed-off-by: Yegor Yefremov <yegorslists@googlemail.com>
+From: Damien Cassou <damien.cassou@lifl.fr>
 
-Applied.
+The various devm_ functions allocate memory that is released when a driver
+detaches.  This patch uses these functions for data that is allocated in
+the probe function of a platform device and is only freed in the remove
+function.
 
+Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
 
-Thanks,
+---
+ drivers/video/bfin-t350mcqb-fb.c |   28 +++++++++-------------------
+ 1 file changed, 9 insertions(+), 19 deletions(-)
 
-Florian Tobias Schandinat
-
-> ---
-> v2: add linux-fbdev as recipient 
-> 
->  drivers/video/da8xx-fb.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index 47118c7..8d745bf 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -1026,6 +1026,9 @@ static int cfb_blank(int blank, struct fb_info *info)
->  
->  		lcd_enable_raster();
->  		break;
-> +	case FB_BLANK_NORMAL:
-> +	case FB_BLANK_VSYNC_SUSPEND:
-> +	case FB_BLANK_HSYNC_SUSPEND:
->  	case FB_BLANK_POWERDOWN:
->  		if (par->panel_power_ctrl)
->  			par->panel_power_ctrl(0);
+diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
+index 7a0c05f..43e0d1b 100644
+--- a/drivers/video/bfin-t350mcqb-fb.c
++++ b/drivers/video/bfin-t350mcqb-fb.c
+@@ -490,9 +490,10 @@ static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
+ 	fbinfo->fbops = &bfin_t350mcqb_fb_ops;
+ 	fbinfo->flags = FBINFO_FLAG_DEFAULT;
+ 
+-	info->fb_buffer = dma_alloc_coherent(NULL, fbinfo->fix.smem_len +
+-				ACTIVE_VIDEO_MEM_OFFSET,
+-				&info->dma_handle, GFP_KERNEL);
++	info->fb_buffer = dmam_alloc_coherent(&pdev->dev, NULL,
++					      fbinfo->fix.smem_len +
++					      ACTIVE_VIDEO_MEM_OFFSET,
++					      &info->dma_handle, GFP_KERNEL);
+ 
+ 	if (NULL = info->fb_buffer) {
+ 		printk(KERN_ERR DRIVER_NAME
+@@ -514,7 +515,7 @@ static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
+ 		       "Fail to allocate colormap (%d entries)\n",
+ 		       BFIN_LCD_NBR_PALETTE_ENTRIES);
+ 		ret = -EFAULT;
+-		goto out4;
++		goto out3;
+ 	}
+ 
+ 	if (bfin_t350mcqb_request_ports(1)) {
+@@ -529,8 +530,8 @@ static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
+ 		goto out7;
+ 	}
+ 
+-	ret = request_irq(info->irq, bfin_t350mcqb_irq_error, 0,
+-			"PPI ERROR", info);
++	ret = devm_request_irq(&pdev->dev, info->irq, bfin_t350mcqb_irq_error,
++			       0, "PPI ERROR", info);
+ 	if (ret < 0) {
+ 		printk(KERN_ERR DRIVER_NAME
+ 		       ": unable to request PPI ERROR IRQ\n");
+@@ -541,7 +542,7 @@ static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
+ 		printk(KERN_ERR DRIVER_NAME
+ 		       ": unable to register framebuffer.\n");
+ 		ret = -EINVAL;
+-		goto out8;
++		goto out7;
+ 	}
+ #ifndef NO_BL_SUPPORT
+ 	memset(&props, 0, sizeof(struct backlight_properties));
+@@ -554,7 +555,7 @@ static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
+ 			": unable to register backlight.\n");
+ 		ret = -EINVAL;
+ 		unregister_framebuffer(fbinfo);
+-		goto out8;
++		goto out7;
+ 	}
+ 
+ 	lcd_dev = lcd_device_register(DRIVER_NAME, NULL, &bfin_lcd_ops);
+@@ -563,15 +564,10 @@ static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
+-out8:
+-	free_irq(info->irq, info);
+ out7:
+ 	bfin_t350mcqb_request_ports(0);
+ out6:
+ 	fb_dealloc_cmap(&fbinfo->cmap);
+-out4:
+-	dma_free_coherent(NULL, fbinfo->fix.smem_len + ACTIVE_VIDEO_MEM_OFFSET,
+-			 info->fb_buffer, info->dma_handle);
+ out3:
+ 	framebuffer_release(fbinfo);
+ out2:
+@@ -591,12 +587,6 @@ static int __devexit bfin_t350mcqb_remove(struct platform_device *pdev)
+ 	unregister_framebuffer(fbinfo);
+ 
+ 	free_dma(CH_PPI);
+-	free_irq(info->irq, info);
+-
+-	if (info->fb_buffer != NULL)
+-		dma_free_coherent(NULL, fbinfo->fix.smem_len +
+-			ACTIVE_VIDEO_MEM_OFFSET, info->fb_buffer,
+-			info->dma_handle);
+ 
+ 	fb_dealloc_cmap(&fbinfo->cmap);
+ 
 

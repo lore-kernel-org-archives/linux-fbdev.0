@@ -1,7 +1,7 @@
 From: Damien Cassou <damien.cassou@lifl.fr>
-Date: Tue, 31 Jul 2012 16:39:18 +0000
-Subject: [PATCH 3/5] drivers/video/mbx/mbxfb.c: use devm_ functions
-Message-Id: <1343752762-16861-2-git-send-email-damien.cassou@lifl.fr>
+Date: Tue, 31 Jul 2012 16:39:20 +0000
+Subject: [PATCH 1/5] drivers/video/fsl-diu-fb.c: use devm_ functions
+Message-Id: <1343752762-16861-4-git-send-email-damien.cassou@lifl.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
 In-Reply-To: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
@@ -21,71 +21,40 @@ function.
 Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
 
 ---
- drivers/video/mbx/mbxfb.c |   22 ++++++++--------------
- 1 file changed, 8 insertions(+), 14 deletions(-)
+ drivers/video/fsl-diu-fb.c |   11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/mbx/mbxfb.c b/drivers/video/mbx/mbxfb.c
-index 85e4f44..9229acf 100644
---- a/drivers/video/mbx/mbxfb.c
-+++ b/drivers/video/mbx/mbxfb.c
-@@ -939,8 +939,9 @@ static int __devinit mbxfb_probe(struct platform_device *dev)
- 	}
- 	mfbi->reg_phys_addr = mfbi->reg_res->start;
- 
--	mfbi->reg_virt_addr = ioremap_nocache(mfbi->reg_phys_addr,
--					      res_size(mfbi->reg_req));
-+	mfbi->reg_virt_addr = devm_ioremap_nocache(&dev->dev,
-+						   mfbi->reg_phys_addr,
-+						   res_size(mfbi->reg_req));
- 	if (!mfbi->reg_virt_addr) {
- 		dev_err(&dev->dev, "failed to ioremap Marathon registers\n");
- 		ret = -EINVAL;
-@@ -948,12 +949,12 @@ static int __devinit mbxfb_probe(struct platform_device *dev)
- 	}
- 	virt_base_2700 = mfbi->reg_virt_addr;
- 
--	mfbi->fb_virt_addr = ioremap_nocache(mfbi->fb_phys_addr,
--					     res_size(mfbi->fb_req));
-+	mfbi->fb_virt_addr = devm_ioremap_nocache(&dev->dev, mfbi->fb_phys_addr,
-+						  res_size(mfbi->fb_req));
- 	if (!mfbi->fb_virt_addr) {
- 		dev_err(&dev->dev, "failed to ioremap frame buffer\n");
- 		ret = -EINVAL;
--		goto err4;
-+		goto err3;
- 	}
- 
- 	fbi->screen_base = (char __iomem *)(mfbi->fb_virt_addr + 0x60000);
-@@ -971,7 +972,7 @@ static int __devinit mbxfb_probe(struct platform_device *dev)
- 	if (ret < 0) {
- 		dev_err(&dev->dev, "fb_alloc_cmap failed\n");
- 		ret = -EINVAL;
--		goto err5;
-+		goto err3;
- 	}
- 
- 	platform_set_drvdata(dev, fbi);
-@@ -996,10 +997,6 @@ static int __devinit mbxfb_probe(struct platform_device *dev)
- 
- err6:
- 	fb_dealloc_cmap(&fbi->cmap);
--err5:
--	iounmap(mfbi->fb_virt_addr);
--err4:
--	iounmap(mfbi->reg_virt_addr);
- err3:
- 	release_mem_region(mfbi->reg_res->start, res_size(mfbi->reg_res));
- err2:
-@@ -1026,10 +1023,7 @@ static int __devexit mbxfb_remove(struct platform_device *dev)
- 			if (mfbi->platform_remove)
- 				mfbi->platform_remove(fbi);
- 
--			if (mfbi->fb_virt_addr)
--				iounmap(mfbi->fb_virt_addr);
--			if (mfbi->reg_virt_addr)
--				iounmap(mfbi->reg_virt_addr);
-+
- 			if (mfbi->reg_req)
- 				release_mem_region(mfbi->reg_req->start,
- 						   res_size(mfbi->reg_req));
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 458c006..19194c5 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -1501,8 +1501,8 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 	unsigned int i;
+ 	int ret;
 
+-	data = dma_alloc_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
+-				  &dma_addr, GFP_DMA | __GFP_ZERO);
++	data = dmam_alloc_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
++				   &dma_addr, GFP_DMA | __GFP_ZERO);
+ 	if (!data)
+ 		return -ENOMEM;
+ 	data->dma_addr = dma_addr;
+@@ -1628,9 +1628,6 @@ error:
+
+ 	iounmap(data->diu_reg);
+
+-	dma_free_coherent(&pdev->dev, sizeof(struct fsl_diu_data), data,
+-			  data->dma_addr);
+-
+ 	return ret;
+ }
+
+@@ -1648,9 +1645,6 @@ static int fsl_diu_remove(struct platform_device *pdev)
+
+ 	iounmap(data->diu_reg);
+
+-	dma_free_coherent(&pdev->dev, sizeof(struct fsl_diu_data), data,
+-			  data->dma_addr);
+-
+ 	return 0;
+ }

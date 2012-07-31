@@ -1,10 +1,10 @@
 From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Tue, 17 Jul 2012 15:59:45 +0000
+Date: Tue, 31 Jul 2012 10:29:34 +0000
 Subject: [PATCH 2/4] ARM: dts: mxs: Add alternative I2C muxing options for imx28
-Message-Id: <1342540787-14930-3-git-send-email-maxime.ripard@free-electrons.com>
+Message-Id: <1343730576-20494-3-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1342540787-14930-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1342540787-14930-1-git-send-email-maxime.ripard@free-electrons.com>
+References: <1343730576-20494-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1343730576-20494-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

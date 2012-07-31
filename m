@@ -1,173 +1,78 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Mon, 30 Jul 2012 22:45:52 +0000
+From: Alex Courbot <acourbot@nvidia.com>
+Date: Tue, 31 Jul 2012 08:37:07 +0000
 Subject: Re: [RFC][PATCH v3 1/3] runtime interpreted power sequences
-Message-Id: <50170EA0.1010408@wwwdotorg.org>
+Message-Id: <50179933.9090501@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com> <1343390750-3642-2-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1343390750-3642-2-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com> <1343390750-3642-2-git-send-email-acourbot@nvidia.com> <CAPnjgZ0H2xrJcL-ytMaX11iYrrhCg7LEM00u_NgEaveM4gHMPw@mail.gmail.com>
+In-Reply-To: <CAPnjgZ0H2xrJcL-ytMaX11iYrrhCg7LEM00u_NgEaveM4gHMPw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+To: Simon Glass <sjg@chromium.org>
+Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Arnd Bergmann <arnd@arndb.de>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
 
-On 07/27/2012 06:05 AM, Alexandre Courbot wrote:
-> Some device drivers (panel backlights especially) need to follow precise
-> sequences for powering on and off, involving gpios, regulators, PWMs
-> with a precise powering order and delays to respect between each steps.
-> These sequences are board-specific, and do not belong to a particular
-> driver - therefore they have been performed by board-specific hook
-> functions to far.
+Hi Simon,
 
-> diff --git a/Documentation/power/power_seq.txt b/Documentation/power/power_seq.txt
+On 07/30/2012 08:00 PM, Simon Glass wrote:
+> For the delay, I think milliseconds is reasonable. I suppose there is
+> no reasonable need for microseconds?
 
-> +Sequences Format
-> +----------------
-> +Power sequences are a series of sequential steps during which an action is
-> +performed on a resource. The supported resources so far are:
-> +- GPIOs
-> +- Regulators
-> +- PWMs
-> +
-> +Each step designates a resource and the following parameters:
-> +- Whether the step should enable or disable the resource,
+I don't see any need for microseconds myself - anybody sees use for 
+finer-grained delays?
 
-At the highest level, i.e. what's being describe here, I wouldn't even
-talk about enable/disable, but rather the action to perform on the
-resource. The set of legal actions may be specific to the type of
-resource in question. Admittedly enable/disable are common though.
+Btw, I noticed I was using mdelay instead of msleep - caught and fixed that.
 
-> +- Delay to wait before performing the action,
-> +- Delay to wait after performing the action.
+>> +Device tree
+>> +-----------
+>> +All the same, power sequences can be encoded as device tree nodes. The following
+>> +properties and nodes are equivalent to the platform data defined previously:
+>> +
+>> +               power-supply = <&mydevice_reg>;
+>> +               enable-gpio = <&gpio 6 0>;
+>> +
+>> +               power-on-sequence {
+>> +                       regulator@0 {
+>> +                               id = "power";
+>
+> Is there a reason not to put the phandle here, like:
+>
+>                                     id = <&mydevice_reg>;
+>
+> (or maybe 'device' instead of id?)
 
-I don't see a need to have a delay both before and after an action;
-except at the start of the sequence, step n's post-delay is at the same
-point in the sequence as step n+1's pre-delay. Perhaps make a "delay"
-step type?
+There is one reason, but it might be a bad one. On Tegra, PWM phandle 
+uses an extra cell to encode the duty-cycle the PWM should have when we 
+call get_pwm(). This makes it possible to address the same PWM with 
+different phandles (and different duty cycles), which causes an issue to 
+know whether a PWM is already used in a sequence (potentially resulting 
+in multiple get_pwm calls on the same PWM, and also opens the door to 
+ambiguities in behavior (what is the correct duty-cycle to use if 
+several different values are passed?)
 
-> +Both new resources and parameters can be introduced, but the goal is of course
-> +to keep things as simple and compact as possible.
+Maybe the problem lies in how PWM phandles are handled - if duty-cycle 
+was not part of the information, we would not have this problem.
 
-> +The platform data is a simple array of platform_power_seq_step instances, each
+>> +Note that first, the phandles of the regulator and gpio used in the sequences
+>> +are defined as properties. Then the sequence references them through the id
+>> +property of every step. The name of sub-properties defines the type of the step.
+>> +Valid names are "regulator", "gpio" and "pwm". Steps must be numbered
+>> +sequentially.
+>
+> For the regulator and gpio types I think you only have an enable. For
+> the pwm, what is the intended binding? Is that documented elsewhere?
 
-Rather than jumping straight into platform data here, I'd expect an
-enumeration of legal resource types, and what actions can be performed
-on each, followed by a description of a sequence (very simply, just a
-list of actions and their parameters). This could be followed by a
-section describing the mapping of the abstract concepts to concrete
-platform data representation (and concrete device tree representation).
+Same thing, enable/disable which would call pwm_enable and pwm_disable. 
+One could also image an additional property to set the duty cycle if it 
+can be taken off the phandle.
 
-> +instance describing a step. The type as well as one of id or gpio members
-> +(depending on the type) must be specified. The last step must be of type
-> +POWER_SEQ_STOP.
+> Also it might be worth mentioning how you get a struct power_seq from
+> an fdt node, and perhaps given an example of a device which has an
+> attached node, so we can see how it is referenced from the device
+> (of_parse_power_seq I think). Do put the sequence inside the device
+> node or reference it with a phandle?
 
-I'd certainly suggest having a step count rather than a sentinel value
-in the list.
+Yes, this definitely needs more documentation - especially the DT part.
 
-> Regulator and PWM resources are identified by name. GPIO are
-> +identified by number.
+Thanks,
+Alex.
 
-That's a little implementation-specific. I guess it's entirely true for
-a platform data representation, but not when mapping this into device tree.
-
-> +Usage by Drivers and Resources Management
-> +-----------------------------------------
-> +Power sequences make use of resources that must be properly allocated and
-> +managed. The power_seq_build() function takes care of resolving the resources as
-> +they are met in the sequence and to allocate them if needed:
-> +
-> +power_seq *power_seq_build(struct device *dev, power_seq_resources *ress,
-> +			   platform_power_seq *pseq);
-> +
-> +You will need an instance of power_seq_resources to keep track of the resources
-> +that are already allocated. On success, the function returns a devm allocated
-> +resolved sequence that is ready to be passed to power_seq_run(). In case of
-> +failure, and error code is returned.
-
-If the result is devm-allocated, the function probably should be named
-devm_power_seq_build().
-
-I wonder if using the same structure/array as input and output would
-simplify the API; the platform data would fill in the fields mentioned
-above, and power_seq_build() would parse those, then set other fields in
-the same structs to the looked-up handle values?
-
-> +Finally, some resources that cannot be allocated through devm need to be freed
-> +manually. Therefore, be sure to call power_seq_free_resources() in your device
-> +remove function:
-> +
-> +void power_seq_free_resources(power_seq_resources *ress);
-
-You can make a custom devm free routine for the power_seq_resources
-itself, so the overall free'ing of the content can be triggered by devm,
-but the free'ing function can then call whatever non-devm APIs it wants
-for the non-devm-allocated members.
-
-> +Device tree
-> +-----------
-> +All the same, power sequences can be encoded as device tree nodes. The following
-> +properties and nodes are equivalent to the platform data defined previously:
-> +
-> +		power-supply = <&mydevice_reg>;
-> +		enable-gpio = <&gpio 6 0>;
-> +
-> +		power-on-sequence {
-> +			regulator@0 {
-
-As Thierry mentioned, the step nodes should be named for the type of
-object they are (a "step") not the type or name of resource they act
-upon ("regulator" or "gpio").
-
-If the nodes have a unit address (i.e. end in "@n"), which they will
-have to if all named "step" and there's more than one of them, then they
-will need a matching reg property. Equally, the parent node will need
-#address-cells and #size-cells too. So, the last couple lines would be:
-
-		power-on-sequence {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			step@0 {
-				reg = <0>;
-
-> +				id = "power";
-
-"id" is usually a name or identifier. I think you mean "type" or perhaps
-"action" here:
-
-				type = "regulator";
-				action = "enable";
-
-or:
-
-				action = "enable-regulator";
-
-I wish we had integer constants in DT so we didn't have to do all this
-with strings. Sigh.
-
-> +				enable;
-> +				post-delay = <10>;
-> +			};
-> +			gpio@1 {
-> +				id = "enable-gpio";
-> +				enable;
-> +			};
-> +		};
-> +
-> +Note that first, the phandles of the regulator and gpio used in the sequences
-> +are defined as properties. Then the sequence references them through the id
-> +property of every step. The name of sub-properties defines the type of the step.
-> +Valid names are "regulator", "gpio" and "pwm". Steps must be numbered
-> +sequentially.
-
-Oh I see. That's a little confusing. Why not just reference the relevant
-resources directly in each step; something more like:
-
-		gpio@1 {
-			action = "enable-gpio";
-			gpio = <&gpio 1 0>;
-		};
-
-I guess that might make parsing/building a little harder, since you'd
-have to detect when you'd already done gpio_request() on a given GPIO
-and not repeat it or something like that, but to me this makes the DT a
-lot easier to comprehend.

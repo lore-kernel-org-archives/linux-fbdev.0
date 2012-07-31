@@ -1,35 +1,46 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Tue, 31 Jul 2012 16:22:30 +0000
+From: Stephen Warren <swarren@wwwdotorg.org>
+Date: Tue, 31 Jul 2012 16:34:34 +0000
 Subject: Re: [RFC][PATCH v3 1/3] runtime interpreted power sequences
-Message-Id: <20120731162230.GE11892@opensource.wolfsonmicro.com>
+Message-Id: <5018091A.2020606@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343390750-3642-2-git-send-email-acourbot@nvidia.com>
- <50170EA0.1010408@wwwdotorg.org>
- <5017B434.2010706@nvidia.com>
- <20120731105640.GD16155@avionic-0098.adnet.avionic-design.de>
- <20120731141328.GS4468@opensource.wolfsonmicro.com>
- <20120731142216.GA19591@avionic-0098.adnet.avionic-design.de>
- <20120731142607.GV4468@opensource.wolfsonmicro.com>
- <20120731143235.GA21126@avionic-0098.adnet.avionic-design.de>
- <20120731153941.GF4468@opensource.wolfsonmicro.com>
- <20120731161954.GB4941@kroah.com>
-In-Reply-To: <20120731161954.GB4941-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
+References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com> <1343390750-3642-2-git-send-email-acourbot@nvidia.com> <50170EA0.1010408@wwwdotorg.org> <5017B434.2010706@nvidia.com>
+In-Reply-To: <5017B434.2010706@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
-Cc: Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+To: Alex Courbot <acourbot@nvidia.com>
+Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Arnd Bergmann <arnd@arndb.de>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
 
-On Tue, Jul 31, 2012 at 09:19:54AM -0700, Greg Kroah-Hartman wrote:
-> On Tue, Jul 31, 2012 at 04:39:41PM +0100, Mark Brown wrote:
-> > On Tue, Jul 31, 2012 at 04:32:35PM +0200, Thierry Reding wrote:
+On 07/31/2012 04:32 AM, Alex Courbot wrote:
+> On 07/31/2012 07:45 AM, Stephen Warren wrote:
+...
+>> If the nodes have a unit address (i.e. end in "@n"), which they will
+>> have to if all named "step" and there's more than one of them, then they
+>> will need a matching reg property. Equally, the parent node will need
+>> #address-cells and #size-cells too. So, the last couple lines would be:
+>>
+>>         power-on-sequence {
+>>             #address-cells = <1>;
+>>             #size-cells = <0>;
+>>             step@0 {
+>>                 reg = <0>;
+> 
+> That's precisely what I would like to avoid - I don't need the steps to
+> be numbered and I certainly have no use for a reg property. Isn't there
+> a way to make it simpler?
 
-> > > can gracefully handle its platform data being discarded.
+You may be able to get away without using the reg values in the code.
+However, to have a semantically correct device tree, you really do need
+all of those properties.
 
-> > Sure there is - take a copy of the platform data in probe().
+That said, I think you might need to use the reg values in code. I
+believe there's no guarantee of the order in which nodes enumerate in
+device tree, so you need to look at the reg property in order to find
+the order in which to execute the nodes/steps.
 
-> Ick ick ick, devdata needs to die as it's pretty much pointless these
-> days.
-
-Hrm?  I'm not sure I understand the direct relevance here - we're
-talking about platform data.
+... although perhaps the desire to avoid a dependency on DT ordering
+applies more to the order in which devices instantiated from DT get
+probed, rather than the order of low-level node enumeration, so I may be
+wrong here. I've definitely seen Grant caution people not to rely on
+device probe order, but perhaps he didn't make the same comment about
+node order.

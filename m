@@ -1,163 +1,92 @@
 From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Tue, 31 Jul 2012 10:46:35 +0000
+Date: Tue, 31 Jul 2012 10:56:40 +0000
 Subject: Re: [RFC][PATCH v3 1/3] runtime interpreted power sequences
-Message-Id: <20120731104635.GC16155@avionic-0098.adnet.avionic-design.de>
+Message-Id: <20120731105640.GD16155@avionic-0098.adnet.avionic-design.de>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="96YOpH+ONegL0A3E"
+Content-Type: multipart/mixed; boundary="d9ADC0YsG2v16Js0"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com>
  <1343390750-3642-2-git-send-email-acourbot@nvidia.com>
- <CAPnjgZ0H2xrJcL-ytMaX11iYrrhCg7LEM00u_NgEaveM4gHMPw@mail.gmail.com>
- <50179933.9090501@nvidia.com>
- <20120731091324.GA15557@avionic-0098.adnet.avionic-design.de>
- <5017AF5D.2010204@nvidia.com>
-In-Reply-To: <5017AF5D.2010204-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+ <50170EA0.1010408@wwwdotorg.org>
+ <5017B434.2010706@nvidia.com>
+In-Reply-To: <5017B434.2010706-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 To: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
 
 
---96YOpH+ONegL0A3E
+--d9ADC0YsG2v16Js0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jul 31, 2012 at 07:11:41PM +0900, Alex Courbot wrote:
-> On 07/31/2012 06:13 PM, Thierry Reding wrote:
-> >>I don't see any need for microseconds myself - anybody sees use for
-> >>finer-grained delays?
-> >>
-> >>Btw, I noticed I was using mdelay instead of msleep - caught and fixed =
-that.
+On Tue, Jul 31, 2012 at 07:32:20PM +0900, Alex Courbot wrote:
+> On 07/31/2012 07:45 AM, Stephen Warren wrote:
+> >I wonder if using the same structure/array as input and output would
+> >simplify the API; the platform data would fill in the fields mentioned
+> >above, and power_seq_build() would parse those, then set other fields in
+> >the same structs to the looked-up handle values?
+>=20
+> The thing is that I am not sure what happens to the platform data
+> once probe() is done. Isn't it customary to mark it with __devinit
+> and have it freed after probing is successful?
+
+No, platform data should stay around forever. Otherwise, consider what
+would happen if your driver is built as a module and you unload and load
+it again.
+
+> More generally, I think it is a good practice to have data
+> structures tailored right for what they need to do - code with
+> members that are meaningful only at given points of an instance's
+> life tends to be more confusing.
+
+I agree. Furthermore the driver unload/reload would be another reason
+not to reuse platform data as the output of the build() function.
+
+But maybe what Stephen meant was more like filling a structure with data
+taken from the platform data and pass that to a resolve() function which
+would fill in the missing pieces like pointers to actual resources. I
+imagine a managed interface would become a little trickier to do using
+such an approach.
+
+> >If the nodes have a unit address (i.e. end in "@n"), which they will
+> >have to if all named "step" and there's more than one of them, then they
+> >will need a matching reg property. Equally, the parent node will need
+> >#address-cells and #size-cells too. So, the last couple lines would be:
 > >
-> >You might want to take a look at Documentation/timers/timers-howto.txt.
-> >msleep() isn't very accurate for periods shorter than 20 ms.
+> >		power-on-sequence {
+> >			#address-cells =3D <1>;
+> >			#size-cells =3D <0>;
+> >			step@0 {
+> >				reg =3D <0>;
 >=20
-> Ok, looks like usleep_range is the way to go here. In that case it
-> would probably not hurt to specify delays in microseconds in the DT
-> and platform data as well.
+> That's precisely what I would like to avoid - I don't need the steps
+> to be numbered and I certainly have no use for a reg property. Isn't
+> there a way to make it simpler?
 
-
->=20
-> >>>>+Device tree
-> >>>>+-----------
-> >>>>+All the same, power sequences can be encoded as device tree nodes. T=
-he following
-> >>>>+properties and nodes are equivalent to the platform data defined pre=
-viously:
-> >>>>+
-> >>>>+               power-supply =3D <&mydevice_reg>;
-> >>>>+               enable-gpio =3D <&gpio 6 0>;
-> >>>>+
-> >>>>+               power-on-sequence {
-> >>>>+                       regulator@0 {
-> >>>>+                               id =3D "power";
-> >>>
-> >>>Is there a reason not to put the phandle here, like:
-> >>>
-> >>>                                    id =3D <&mydevice_reg>;
-> >>>
-> >>>(or maybe 'device' instead of id?)
-> >>
-> >>There is one reason, but it might be a bad one. On Tegra, PWM
-> >>phandle uses an extra cell to encode the duty-cycle the PWM should
-> >>have when we call get_pwm().
-> >
-> >This is not only the case on Tegra, but it is the default unless a
-> >driver specifically overrides it. The second cell specifies the index of
-> >the PWM device within the PWM chip.  The third cell doesn't specify the
-> >duty cycle but the period of the PWM.
->=20
-> Then I think there is a mistake in
-> Documentation/devicetree/bindings/pwm/nvidia,tegra20-pwm.txt:
->=20
-> "the second cell is the duty cycle in nanoseconds."
-
-Yes, that's a mistake. =3D\
-
-> >>This makes it possible to address the
-> >>same PWM with different phandles (and different duty cycles),
-> >
-> >How so? A phandle will always refer to a PWM chip. Paired with the
-> >second cell, of_pwm_request() will resolve that into the correct PWM
-> >device.
->=20
-> For tegra, we can only address PWMs this way IIRC:
->=20
-> pwm =3D <&pwm 2 5000000>;
->=20
-> If we had <&pwm 2>, I agree that there would be no problem. But here
-> the period of the PWM is also given - and in practice, we can
-> request the same PWM using different phandles. For instance, if the
-> above property was part of the power-on sequence, and the following
->=20
-> pwm =3D <&pwm 2 0>;
->=20
-> was part of power-off, how can I know that these two different
-> phandles refer to the same PWM without calling pwm_get a second time
-> and getting -EBUSY?
-
-You should specify the same period regardless of the sequence. But you
-are right, you still cannot request the device twice.
-
-> Of course if the same period is specified for both, I will not have
-> this issue as the phandles will be identical, but the possibility
-> remains open that we are given a faulty tree here.
-
-I think the phandle is in fact only the reference to the PWM chip, that
-is: &pwm. The second cell, the PWM index, is part of the PWM specifier.
-
-However the issue doesn't go away if you drop the period cell because
-you still won't be able to request the PWM device a second time. How is
-this solved for regulators and GPIOs? At least for GPIOs I'm pretty sure
-that you can't request them more than once either.
-
-> More generally speaking, wouldn't it make more sense to have the
-> period/duty cycle of a PWM encoded into separate properties when
-> needed and have the phandle just reference the PWM instance? This
-> also seems to stand from an API point of view, since the period is
-> not specified when invoking pwm_request or pwm_get, but set by its
-> own pwm_set_period function?
-
-The problem with specifying the period in a separate property is how to
-map them to the correct PWM device. From a hardware description point of
-view, making the period part of the specifier makes a lot of sense and
-hardware description is what DT is about.
-
-> On an unrelated note, I also don't understand why the period is also
-> a parameter of pwm_config and why pwm_set_period does not do
-> anything beyond setting a struct member that is returned by
-> pwm_get_period (but maybe I am missing something here).
-
-pwm_config() is the legacy API that we need to support for compatibility
-reasons. Eventually this interface should probably be changed.
-pwm_get_period() and pwm_set_period() were merely introduced to support
-DT, but I could imagine them becoming the canonical way for configuring
-PWM devices in the future, perhaps with a complementary
-pwm_set_duty_cycle().
-
-But first we need to convert drivers and users.
+It's not technically valid to not have the reg property. Or
+#address-cells and #size-cells properties for that matter.
 
 Thierry
 
---96YOpH+ONegL0A3E
+--d9ADC0YsG2v16Js0
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBAgAGBQJQF7eLAAoJEN0jrNd/PrOhCMQP/002Zx9soqEaEr/tIEcG3wLA
-Uc6bkJUOhcJPysPCKVNEHXx88E3wEf3xcUe+kXZabugGug2ZAKfRN1o2Mdwi1G7/
-0h2oXGy6b109ASUDfFT1pvFM6K+hzqXK9TEhUfI3vzNNJDEUYcCv5SNGOTNJKXDL
-lDBAZufpjiiDQEyZWVfQ+kml9yDrdPxTeixns9iCGLaDm5pxu+hdkHabga7JD0ln
-FaDqSjxHEpJC45+xml70U7SmF7EqjQjWZvBd1OB2NLP45nfhWjlp67+Is3iLdyQE
-c6CW1qGNHXVaK+qrstCurWVz7+6ttwkneXta9fCW/0/ntF3SRjDmldDLNd5nm6BC
-1FkymBE2Vz+wXoFcawcSrwKiIcUceF6NiMO95mCi6WsU2yfWS+sb4qOKWSvQrIDF
-IWpCACsOcOJI1UchTprMHnbgGWsdpNo8wkLNqlCm+71ibRoo0k8kIQS5uVHcnkUI
-mxWPK0V2i/FJ/zJJGRhMMp18lfpGuwpjBYzC2XMsXNiLOAucVyo/k8f+xNsj++Er
-Rya8SAoHSjkBE0cXAxJRmnfH0vT8e/BAMbiz0T9k5uuW/c/8Siut827ouMg2CTss
-DVpRZLTvkOVKw03wMSxfLlMKc68N3eQxAixR4OOLWXbKr0ePF/KTcYpWaYmTk9hq
-0Bh3uBhF9oKldlwqoNkJ
-=dhtd
+iQIcBAEBAgAGBQJQF7noAAoJEN0jrNd/PrOhQrIP/1aKVnCe0ismm9KHjsPrV5YR
+LEki71luehGkF0xbg6thde0y/r+Zi3QcA4oXRpvEznazgT+qqZBgK9LojCv36Q4+
+aTgI+VVi+H+WcbRZg3hS+jqP1r17EjQ9WP6S+FuWqYgSfPWao6K8NM/FuuEtC5az
+CHoZc0WabwI13D+zNlhjA7N1gx6vsYdMSf33Gf6aS+MUnuHuIduQWxC8AuCUvTT9
+72bYhDyRGG73a5ooIHqVxCj3MRnGQAu8FYVaSDVlhmT6nzgd6Gh0ms6n9qRC/2wH
+k96OenFkDgkVpFgPqg22sKR+0fJOniCNxrKhMQ8Tr9Hzb0T4OfFFtHI/FXL6z1gG
+fVwdVkkd9ViG580/21xA+i0TLSFtqNuNHUclaKNMwBJAC9VFs+JwaeHQ48fFe37n
++LNhyAFti+Lf6mc8h3/9/l455Ix7xnXYy8zPov5JwFCMyD4FFo0By4k7UGSmOEY/
+WRs0ODwDv0Md6OvDipRFbKLw+L1coYmsgEnndLDrrQcbEWo854lUEClcNmDl8yk8
+pmdXKc0pdGhDZF/hZDfp/e8NyGiH1VgmIupDF/JFJ6NTeWF/OprElSPJRwchEW8N
+/MkE2me+ruLrzNWqmUYqdJWurM9PZW0OwDwvq8TZr4hsCMmYjLAd+ANUkBod0xU6
+eQJZzZ4tJ6+KzprosuDC
+=Y3Sh
 -----END PGP SIGNATURE-----
 
---96YOpH+ONegL0A3E--
+--d9ADC0YsG2v16Js0--

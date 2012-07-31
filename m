@@ -1,140 +1,51 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 31 Jul 2012 23:21:48 +0000
-Subject: Re: [PATCH 5/5] drivers/video/exynos/exynos_dp_core.c: use devm_ functions
-Message-Id: <002c01cd6f73$4252b090$c6f811b0$%han@samsung.com>
+From: Leela Krishna Amudala <l.krishna@samsung.com>
+Date: Tue, 31 Jul 2012 12:35:04 +0000
+Subject: [PATCH V2 4/5] driver: Include the modified FIMD header file
+Message-Id: <1343737385-23337-5-git-send-email-l.krishna@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
- <1343752762-16861-6-git-send-email-damien.cassou@lifl.fr>
-In-Reply-To: <1343752762-16861-6-git-send-email-damien.cassou@lifl.fr>
+References: <1343737385-23337-1-git-send-email-l.krishna@samsung.com>
+In-Reply-To: <1343737385-23337-1-git-send-email-l.krishna@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Damien Cassou' <damien.cassou@lifl.fr>
-Cc: kernel-janitors@vger.kernel.org, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>
+To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, inki.dae@samsung.com, kgene.kim@samsung.com, joshi@samsung.com, jg1.han@samsung.com, m.szyprowski@samsung.com
 
-On Wednesday, August 01, 2012 1:39 AM Damien Cassou wrote:
-> 
-> From: Damien Cassou <damien.cassou@lifl.fr>
-> 
-> The various devm_ functions allocate memory that is released when a driver
-> detaches.  This patch uses these functions for data that is allocated in
-> the probe function of a platform device and is only freed in the remove
-> function.
-> 
-> Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
-> 
-> ---
->  drivers/video/exynos/exynos_dp_core.c |   27 +++++++--------------------
->  1 file changed, 7 insertions(+), 20 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-> index c6c016a..00fe4f0 100644
-> --- a/drivers/video/exynos/exynos_dp_core.c
-> +++ b/drivers/video/exynos/exynos_dp_core.c
-> @@ -872,7 +872,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
-> 
->  	dp->dev = &pdev->dev;
-> 
-> -	dp->clock = clk_get(&pdev->dev, "dp");
-> +	dp->clock = devm_clk_get(&pdev->dev, "dp");
->  	if (IS_ERR(dp->clock)) {
->  		dev_err(&pdev->dev, "failed to get clock\n");
->  		return PTR_ERR(dp->clock);
-> @@ -881,31 +881,24 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  	clk_enable(dp->clock);
-> 
->  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	if (!res) {
-> -		dev_err(&pdev->dev, "failed to get registers\n");
-> -		ret = -EINVAL;
-> -		goto err_clock;
-> -	}
+The fimd register headers have been moved to include/video/
+hence, modifying the driver files accordingly.
 
-Why do you remove this return check?
-If there is no reason, please, do it as follows:
+Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
+---
+ drivers/gpu/drm/exynos/exynos_drm_fimd.c |    2 +-
+ drivers/video/s3c-fb.c                   |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	if (!res) {
-		dev_err(&pdev->dev, "failed to get registers\n");
--		ret = -EINVAL;
--		goto err_clock;
-+		return -EINVAL;
-	}
-
-
-Best regards,
-Jingoo Han
-
-
-> 
->  	dp->reg_base = devm_request_and_ioremap(&pdev->dev, res);
->  	if (!dp->reg_base) {
->  		dev_err(&pdev->dev, "failed to ioremap\n");
-> -		ret = -ENOMEM;
-> -		goto err_clock;
-> +		return -ENOMEM;
->  	}
-> 
->  	dp->irq = platform_get_irq(pdev, 0);
->  	if (!dp->irq) {
->  		dev_err(&pdev->dev, "failed to get irq\n");
-> -		ret = -ENODEV;
-> -		goto err_clock;
-> +		return -ENODEV;
->  	}
-> 
->  	ret = devm_request_irq(&pdev->dev, dp->irq, exynos_dp_irq_handler, 0,
->  				"exynos-dp", dp);
->  	if (ret) {
->  		dev_err(&pdev->dev, "failed to request irq\n");
-> -		goto err_clock;
-> +		return ret;
->  	}
-> 
->  	dp->video_info = pdata->video_info;
-> @@ -917,7 +910,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  	ret = exynos_dp_detect_hpd(dp);
->  	if (ret) {
->  		dev_err(&pdev->dev, "unable to detect hpd\n");
-> -		goto err_clock;
-> +		return ret;
->  	}
-> 
->  	exynos_dp_handle_edid(dp);
-> @@ -926,7 +919,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  				dp->video_info->link_rate);
->  	if (ret) {
->  		dev_err(&pdev->dev, "unable to do link train\n");
-> -		goto err_clock;
-> +		return ret;
->  	}
-> 
->  	exynos_dp_enable_scramble(dp, 1);
-> @@ -940,17 +933,12 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  	ret = exynos_dp_config_video(dp, dp->video_info);
->  	if (ret) {
->  		dev_err(&pdev->dev, "unable to config video\n");
-> -		goto err_clock;
-> +		return ret;
->  	}
-> 
->  	platform_set_drvdata(pdev, dp);
-> 
->  	return 0;
-> -
-> -err_clock:
-> -	clk_put(dp->clock);
-> -
-> -	return ret;
->  }
-> 
->  static int __devexit exynos_dp_remove(struct platform_device *pdev)
-> @@ -962,7 +950,6 @@ static int __devexit exynos_dp_remove(struct platform_device *pdev)
->  		pdata->phy_exit();
-> 
->  	clk_disable(dp->clock);
-> -	clk_put(dp->clock);
-> 
->  	return 0;
->  }
+diff --git a/drivers/gpu/drm/exynos/exynos_drm_fimd.c b/drivers/gpu/drm/exynos/exynos_drm_fimd.c
+index 29fdbfe..8da90f9 100644
+--- a/drivers/gpu/drm/exynos/exynos_drm_fimd.c
++++ b/drivers/gpu/drm/exynos/exynos_drm_fimd.c
+@@ -20,7 +20,7 @@
+ #include <linux/pm_runtime.h>
+ 
+ #include <drm/exynos_drm.h>
+-#include <plat/regs-fb-v4.h>
++#include <video/samsung_fimd.h>
+ 
+ #include "exynos_drm_drv.h"
+ #include "exynos_drm_fbdev.h"
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 69bf9d0..1226fdd 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -26,7 +26,7 @@
+ #include <linux/pm_runtime.h>
+ 
+ #include <mach/map.h>
+-#include <plat/regs-fb-v4.h>
++#include <video/samsung_fimd.h>
+ #include <plat/fb.h>
+ 
+ /* This driver will export a number of framebuffer interfaces depending
+-- 
+1.7.0.4
 

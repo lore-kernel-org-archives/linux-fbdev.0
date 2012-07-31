@@ -1,57 +1,120 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 19 Jul 2012 10:20:56 +0000
-Subject: Re: [PATCH 7/9] fbdev: sh_mobile_lcdc: Support horizontal panning
-Message-Id: <1378125.jh0WrgotYt@avalon>
+From: Damien Cassou <damien.cassou@lifl.fr>
+Date: Tue, 31 Jul 2012 16:39:22 +0000
+Subject: [PATCH 5/5] drivers/video/exynos/exynos_dp_core.c: use devm_ functions
+Message-Id: <1343752762-16861-6-git-send-email-damien.cassou@lifl.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1342658362-19491-8-git-send-email-laurent.pinchart@ideasonboard.com>
-In-Reply-To: <1342658362-19491-8-git-send-email-laurent.pinchart@ideasonboard.com>
+References: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
+In-Reply-To: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: kernel-janitors@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Damian,
+From: Damien Cassou <damien.cassou@lifl.fr>
 
-Thank you for the review.
+The various devm_ functions allocate memory that is released when a driver
+detaches.  This patch uses these functions for data that is allocated in
+the probe function of a platform device and is only freed in the remove
+function.
 
-On Thursday 19 July 2012 10:40:03 Damian Hobson-Garcia wrote:
-> On 2012/07/19 9:39, Laurent Pinchart wrote:
-> > Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> > ---
-> > 
-> >  drivers/video/sh_mobile_lcdcfb.c |   22 ++++++++++++++++------
-> >  1 files changed, 16 insertions(+), 6 deletions(-)
-> > 
-> > -	if (ovl->format->fourcc = V4L2_PIX_FMT_NV12 ||
-> > -	    ovl->format->fourcc = V4L2_PIX_FMT_NV21)
-> > +	switch (ovl->format->fourcc) {
-> > +	case V4L2_PIX_FMT_NV16:
-> > +	case V4L2_PIX_FMT_NV61:
-> > +		info->fix.xpanstep = 2;
-> > +	case V4L2_PIX_FMT_NV12:
-> > +	case V4L2_PIX_FMT_NV21:
-> >  		info->fix.ypanstep = 2;
-> > +	}
-> > 
-> > 
-> > -	if (ch->format->fourcc = V4L2_PIX_FMT_NV12 ||
-> > -	    ch->format->fourcc = V4L2_PIX_FMT_NV21)
-> > +	switch (ch->format->fourcc) {
-> > +	case V4L2_PIX_FMT_NV16:
-> > +	case V4L2_PIX_FMT_NV61:
-> > +		info->fix.xpanstep = 2;
-> > +	case V4L2_PIX_FMT_NV12:
-> > +	case V4L2_PIX_FMT_NV21:
-> >  		info->fix.ypanstep = 2;
-> > +	}
-> 
-> I think that the panstep settings are backwards.  The pansteps should be
-> NV16: x = 2, y = 1; NV12: x = 2, y = 2.
+Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
 
-Good catch, thanks. I've fixed that.
+---
+ drivers/video/exynos/exynos_dp_core.c |   27 +++++++--------------------
+ 1 file changed, 7 insertions(+), 20 deletions(-)
 
--- 
-Regards,
-
-Laurent Pinchart
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index c6c016a..00fe4f0 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -872,7 +872,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 
+ 	dp->dev = &pdev->dev;
+ 
+-	dp->clock = clk_get(&pdev->dev, "dp");
++	dp->clock = devm_clk_get(&pdev->dev, "dp");
+ 	if (IS_ERR(dp->clock)) {
+ 		dev_err(&pdev->dev, "failed to get clock\n");
+ 		return PTR_ERR(dp->clock);
+@@ -881,31 +881,24 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 	clk_enable(dp->clock);
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (!res) {
+-		dev_err(&pdev->dev, "failed to get registers\n");
+-		ret = -EINVAL;
+-		goto err_clock;
+-	}
+ 
+ 	dp->reg_base = devm_request_and_ioremap(&pdev->dev, res);
+ 	if (!dp->reg_base) {
+ 		dev_err(&pdev->dev, "failed to ioremap\n");
+-		ret = -ENOMEM;
+-		goto err_clock;
++		return -ENOMEM;
+ 	}
+ 
+ 	dp->irq = platform_get_irq(pdev, 0);
+ 	if (!dp->irq) {
+ 		dev_err(&pdev->dev, "failed to get irq\n");
+-		ret = -ENODEV;
+-		goto err_clock;
++		return -ENODEV;
+ 	}
+ 
+ 	ret = devm_request_irq(&pdev->dev, dp->irq, exynos_dp_irq_handler, 0,
+ 				"exynos-dp", dp);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "failed to request irq\n");
+-		goto err_clock;
++		return ret;
+ 	}
+ 
+ 	dp->video_info = pdata->video_info;
+@@ -917,7 +910,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 	ret = exynos_dp_detect_hpd(dp);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "unable to detect hpd\n");
+-		goto err_clock;
++		return ret;
+ 	}
+ 
+ 	exynos_dp_handle_edid(dp);
+@@ -926,7 +919,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 				dp->video_info->link_rate);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "unable to do link train\n");
+-		goto err_clock;
++		return ret;
+ 	}
+ 
+ 	exynos_dp_enable_scramble(dp, 1);
+@@ -940,17 +933,12 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 	ret = exynos_dp_config_video(dp, dp->video_info);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "unable to config video\n");
+-		goto err_clock;
++		return ret;
+ 	}
+ 
+ 	platform_set_drvdata(pdev, dp);
+ 
+ 	return 0;
+-
+-err_clock:
+-	clk_put(dp->clock);
+-
+-	return ret;
+ }
+ 
+ static int __devexit exynos_dp_remove(struct platform_device *pdev)
+@@ -962,7 +950,6 @@ static int __devexit exynos_dp_remove(struct platform_device *pdev)
+ 		pdata->phy_exit();
+ 
+ 	clk_disable(dp->clock);
+-	clk_put(dp->clock);
+ 
+ 	return 0;
+ }
 

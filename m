@@ -1,78 +1,106 @@
-From: Alex Courbot <acourbot@nvidia.com>
-Date: Tue, 31 Jul 2012 08:37:07 +0000
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Tue, 31 Jul 2012 09:13:24 +0000
 Subject: Re: [RFC][PATCH v3 1/3] runtime interpreted power sequences
-Message-Id: <50179933.9090501@nvidia.com>
+Message-Id: <20120731091324.GA15557@avionic-0098.adnet.avionic-design.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="vkogqOf2sHV7VnPd"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com> <1343390750-3642-2-git-send-email-acourbot@nvidia.com> <CAPnjgZ0H2xrJcL-ytMaX11iYrrhCg7LEM00u_NgEaveM4gHMPw@mail.gmail.com>
-In-Reply-To: <CAPnjgZ0H2xrJcL-ytMaX11iYrrhCg7LEM00u_NgEaveM4gHMPw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Simon Glass <sjg@chromium.org>
-Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Arnd Bergmann <arnd@arndb.de>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
+References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com>
+ <1343390750-3642-2-git-send-email-acourbot@nvidia.com>
+ <CAPnjgZ0H2xrJcL-ytMaX11iYrrhCg7LEM00u_NgEaveM4gHMPw@mail.gmail.com>
+ <50179933.9090501@nvidia.com>
+In-Reply-To: <50179933.9090501-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+To: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
 
-Hi Simon,
 
-On 07/30/2012 08:00 PM, Simon Glass wrote:
-> For the delay, I think milliseconds is reasonable. I suppose there is
-> no reasonable need for microseconds?
+--vkogqOf2sHV7VnPd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I don't see any need for microseconds myself - anybody sees use for 
-finer-grained delays?
+On Tue, Jul 31, 2012 at 05:37:07PM +0900, Alex Courbot wrote:
+> Hi Simon,
+>=20
+> On 07/30/2012 08:00 PM, Simon Glass wrote:
+> >For the delay, I think milliseconds is reasonable. I suppose there is
+> >no reasonable need for microseconds?
+>=20
+> I don't see any need for microseconds myself - anybody sees use for
+> finer-grained delays?
+>=20
+> Btw, I noticed I was using mdelay instead of msleep - caught and fixed th=
+at.
 
-Btw, I noticed I was using mdelay instead of msleep - caught and fixed that.
+You might want to take a look at Documentation/timers/timers-howto.txt.
+msleep() isn't very accurate for periods shorter than 20 ms.
 
->> +Device tree
->> +-----------
->> +All the same, power sequences can be encoded as device tree nodes. The following
->> +properties and nodes are equivalent to the platform data defined previously:
->> +
->> +               power-supply = <&mydevice_reg>;
->> +               enable-gpio = <&gpio 6 0>;
->> +
->> +               power-on-sequence {
->> +                       regulator@0 {
->> +                               id = "power";
->
-> Is there a reason not to put the phandle here, like:
->
->                                     id = <&mydevice_reg>;
->
-> (or maybe 'device' instead of id?)
+> >>+Device tree
+> >>+-----------
+> >>+All the same, power sequences can be encoded as device tree nodes. The=
+ following
+> >>+properties and nodes are equivalent to the platform data defined previ=
+ously:
+> >>+
+> >>+               power-supply =3D <&mydevice_reg>;
+> >>+               enable-gpio =3D <&gpio 6 0>;
+> >>+
+> >>+               power-on-sequence {
+> >>+                       regulator@0 {
+> >>+                               id =3D "power";
+> >
+> >Is there a reason not to put the phandle here, like:
+> >
+> >                                    id =3D <&mydevice_reg>;
+> >
+> >(or maybe 'device' instead of id?)
+>=20
+> There is one reason, but it might be a bad one. On Tegra, PWM
+> phandle uses an extra cell to encode the duty-cycle the PWM should
+> have when we call get_pwm().
 
-There is one reason, but it might be a bad one. On Tegra, PWM phandle 
-uses an extra cell to encode the duty-cycle the PWM should have when we 
-call get_pwm(). This makes it possible to address the same PWM with 
-different phandles (and different duty cycles), which causes an issue to 
-know whether a PWM is already used in a sequence (potentially resulting 
-in multiple get_pwm calls on the same PWM, and also opens the door to 
-ambiguities in behavior (what is the correct duty-cycle to use if 
-several different values are passed?)
+This is not only the case on Tegra, but it is the default unless a
+driver specifically overrides it. The second cell specifies the index of
+the PWM device within the PWM chip. The third cell doesn't specify the
+duty cycle but the period of the PWM.
 
-Maybe the problem lies in how PWM phandles are handled - if duty-cycle 
-was not part of the information, we would not have this problem.
+> This makes it possible to address the
+> same PWM with different phandles (and different duty cycles),
 
->> +Note that first, the phandles of the regulator and gpio used in the sequences
->> +are defined as properties. Then the sequence references them through the id
->> +property of every step. The name of sub-properties defines the type of the step.
->> +Valid names are "regulator", "gpio" and "pwm". Steps must be numbered
->> +sequentially.
->
-> For the regulator and gpio types I think you only have an enable. For
-> the pwm, what is the intended binding? Is that documented elsewhere?
+How so? A phandle will always refer to a PWM chip. Paired with the
+second cell, of_pwm_request() will resolve that into the correct PWM
+device.
 
-Same thing, enable/disable which would call pwm_enable and pwm_disable. 
-One could also image an additional property to set the duty cycle if it 
-can be taken off the phandle.
+> which
+> causes an issue to know whether a PWM is already used in a sequence
+> (potentially resulting in multiple get_pwm calls on the same PWM,
+> and also opens the door to ambiguities in behavior (what is the
+> correct duty-cycle to use if several different values are passed?)
 
-> Also it might be worth mentioning how you get a struct power_seq from
-> an fdt node, and perhaps given an example of a device which has an
-> attached node, so we can see how it is referenced from the device
-> (of_parse_power_seq I think). Do put the sequence inside the device
-> node or reference it with a phandle?
+You can't request a PWM multiple times. The second call well return
+-EBUSY, or rather ERR_PTR(-EBUSY).
 
-Yes, this definitely needs more documentation - especially the DT part.
+Thierry
 
-Thanks,
-Alex.
+--vkogqOf2sHV7VnPd
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQF6G0AAoJEN0jrNd/PrOhMyUQAJfxn3CN8jL9eOfJvuydRKbI
+qtkNVM0Nf64njMM7HJeluKRH49Uz3hyCIQizb1yGO+M/Hw7dcWVOtod98RkVYj6V
+SdQPslaFZ8dLbkvgk096HK3W4yFQDWfBKjSxOyhkZbMpW0X0UPCH8oIJjIvnDjU6
+L+h14m32KM05G34fkWX1HEd0ZxQKFH6C26JG4NCoZAwUUyrnpzlpB3r6dW6vCcIq
+h0oLjpSKpbjW/A+4i8eHddVU1BCIF6uVz66xYxV5Bk+LyYOxo5xgC641WK9hqVUt
+HN9jjZFNVVEUHRCAKUFsXDl1xTd0MLnnCSqdtwaKWOIEY85GnN9qdmcoqAniU9os
+J4AU1MlOQH28pwqXpOqE2I3qtziRc58JTkW1byu6i+3KXHv9BtM6asAg7q368Bas
+ZVQXL1rG9RXAqnExfsIKp4/FGACNLcMRBs20U0pAmvxRWWvqBJU3Qgmhd/E6gZvo
+JTv6bS0lkCQVoXLExtLkX8fNyQQ/Qjuv5Si7FqJKXeaRTeTomc7HevLi1FCmOCL2
+LbGgY3psQtLHIpVILJ5HuYklO3qDYhN7S2wamymOBHLnvkr4+FwTjLEI6ssi31SA
+J+JgYwWDrf4uDFcJHzUfievMPHAare/iwtkkNanZQgqPtwH0t5CdAmqFxoYLeGzx
+AQggMaS+7U+NoQMl1L7m
+=rfpZ
+-----END PGP SIGNATURE-----
+
+--vkogqOf2sHV7VnPd--

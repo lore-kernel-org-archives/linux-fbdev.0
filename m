@@ -1,114 +1,80 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Wed, 22 Aug 2012 06:51:05 +0000
-Subject: [PATCH V6 6/6] OMAPDSS: DPI: Remove cpu_is_xxxx checks
-Message-Id: <0bd61a836b024c59265eb1a1919f823f37c227d4.1345616887.git.cmahapatra@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 01 Aug 2012 10:43:17 +0000
+Subject: [RFC 06/17] OMAPDSS: DPI displays: Take care of panel timings in the driver itself
+Message-Id: <1343817088-29645-7-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1345468541.git.cmahapatra@ti.com> <cover.1345616887.git.cmahapatra@ti.com>
-In-Reply-To: <cover.1345616887.git.cmahapatra@ti.com>
+References: <1343817088-29645-1-git-send-email-archit@ti.com>
+In-Reply-To: <1343817088-29645-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, sumit.semwal@ti.com, rob@ti.com, Archit Taneja <archit@ti.com>
 
-The OMAP3 checks have been removed and replaced by a dss feature
-FEAT_DPI_USES_VDDS_DSI for cleaner implementation. The patches
-"OMAP: DSS2: enable VDDS_DSI when using DPI" (8a2cfea8cc) by Tomi Valkeinen
-<tomi.valkeinen@nokia.com> and "ARM: omap: fix oops in
-drivers/video/omap2/dss/dpi.c" (4041071571) by Russell King
-<rmk+kernel@arm.linux.org.uk> had introduced these checks. As it is evident
-from these patches a dependency exists for some DSS pins on VDDS_DSI which is
-better shown by dss feature FEAT_DPI_USES_VDDS_DSI.
+The timings maintained in omap_dss_device(dssdev->panel.timings) should be
+maintained by the panel driver itself. It's the panel drivers responsibility
+to update it if a new set of timings is to be configured. The DPI interface
+driver shouldn't be responsible of updating the panel timings, it's responsible
+of maintianing it's own copy of timings.
 
-Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dpi.c          |   12 +++++++-----
- drivers/video/omap2/dss/dss_features.c |    1 +
- drivers/video/omap2/dss/dss_features.h |    1 +
- 3 files changed, 9 insertions(+), 5 deletions(-)
+ drivers/video/omap2/displays/panel-generic-dpi.c   |    2 ++
+ drivers/video/omap2/displays/panel-tfp410.c        |    1 +
+ .../video/omap2/displays/panel-tpo-td043mtea1.c    |    2 ++
+ drivers/video/omap2/dss/dpi.c                      |    1 -
+ 4 files changed, 5 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
+index 5e70313..e773594 100644
+--- a/drivers/video/omap2/displays/panel-generic-dpi.c
++++ b/drivers/video/omap2/displays/panel-generic-dpi.c
+@@ -698,6 +698,8 @@ static void generic_dpi_panel_set_timings(struct omap_dss_device *dssdev,
+ 		struct omap_video_timings *timings)
+ {
+ 	omapdss_dpi_set_timings(dssdev, timings);
++
++	dssdev->panel.timings = *timings;
+ }
+ 
+ static int generic_dpi_panel_check_timings(struct omap_dss_device *dssdev,
+diff --git a/drivers/video/omap2/displays/panel-tfp410.c b/drivers/video/omap2/displays/panel-tfp410.c
+index c6f9503..9397236 100644
+--- a/drivers/video/omap2/displays/panel-tfp410.c
++++ b/drivers/video/omap2/displays/panel-tfp410.c
+@@ -234,6 +234,7 @@ static void tfp410_set_timings(struct omap_dss_device *dssdev,
+ 
+ 	mutex_lock(&ddata->lock);
+ 	omapdss_dpi_set_timings(dssdev, timings);
++	dssdev->panel.timings = *timings;
+ 	mutex_unlock(&ddata->lock);
+ }
+ 
+diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+index ecb163e..3f47f5f 100644
+--- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
++++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+@@ -483,6 +483,8 @@ static void tpo_td043_set_timings(struct omap_dss_device *dssdev,
+ 		struct omap_video_timings *timings)
+ {
+ 	omapdss_dpi_set_timings(dssdev, timings);
++
++	dssdev->panel.timings = *timings;
+ }
+ 
+ static int tpo_td043_check_timings(struct omap_dss_device *dssdev,
 diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index f260343..25fb895 100644
+index 96dd1a4..6c43d80 100644
 --- a/drivers/video/omap2/dss/dpi.c
 +++ b/drivers/video/omap2/dss/dpi.c
-@@ -34,6 +34,7 @@
- #include <plat/cpu.h>
- 
- #include "dss.h"
-+#include "dss_features.h"
- 
- static struct {
- 	struct regulator *vdds_dsi_reg;
-@@ -175,7 +176,7 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
- 
+@@ -304,7 +304,6 @@ void omapdss_dpi_set_timings(struct omap_dss_device *dssdev,
  	mutex_lock(&dpi.lock);
  
--	if (cpu_is_omap34xx() && !dpi.vdds_dsi_reg) {
-+	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI) && !dpi.vdds_dsi_reg) {
- 		DSSERR("no VDSS_DSI regulator\n");
- 		r = -ENODEV;
- 		goto err_no_reg;
-@@ -193,7 +194,7 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
- 		goto err_start_dev;
- 	}
+ 	dpi.timings = *timings;
+-	dssdev->panel.timings = *timings;
  
--	if (cpu_is_omap34xx()) {
-+	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI)) {
- 		r = regulator_enable(dpi.vdds_dsi_reg);
- 		if (r)
- 			goto err_reg_enable;
-@@ -239,7 +240,7 @@ err_dsi_pll_init:
- err_get_dsi:
- 	dispc_runtime_put();
- err_get_dispc:
--	if (cpu_is_omap34xx())
-+	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI))
- 		regulator_disable(dpi.vdds_dsi_reg);
- err_reg_enable:
- 	omap_dss_stop_device(dssdev);
-@@ -265,7 +266,7 @@ void omapdss_dpi_display_disable(struct omap_dss_device *dssdev)
- 
- 	dispc_runtime_put();
- 
--	if (cpu_is_omap34xx())
-+	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI))
- 		regulator_disable(dpi.vdds_dsi_reg);
- 
- 	omap_dss_stop_device(dssdev);
-@@ -362,7 +363,8 @@ static int __init dpi_init_display(struct omap_dss_device *dssdev)
- {
- 	DSSDBG("init_display\n");
- 
--	if (cpu_is_omap34xx() && dpi.vdds_dsi_reg = NULL) {
-+	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI) &&
-+					dpi.vdds_dsi_reg = NULL) {
- 		struct regulator *vdds_dsi;
- 
- 		vdds_dsi = dss_get_vdds_dsi();
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index 9387097..2fe39d6 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -373,6 +373,7 @@ static const enum dss_feat_id omap3430_dss_feat_list[] = {
- 	FEAT_ALPHA_FIXED_ZORDER,
- 	FEAT_FIFO_MERGE,
- 	FEAT_OMAP3_DSI_FIFO_BUG,
-+	FEAT_DPI_USES_VDDS_DSI,
- };
- 
- static const enum dss_feat_id omap3630_dss_feat_list[] = {
-diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
-index 996ffcb..26d43a4 100644
---- a/drivers/video/omap2/dss/dss_features.h
-+++ b/drivers/video/omap2/dss/dss_features.h
-@@ -50,6 +50,7 @@ enum dss_feat_id {
- 	FEAT_DSI_VC_OCP_WIDTH,
- 	FEAT_DSI_REVERSE_TXCLKESC,
- 	FEAT_DSI_GNQ,
-+	FEAT_DPI_USES_VDDS_DSI,
- 	FEAT_HDMI_CTS_SWMODE,
- 	FEAT_HDMI_AUDIO_USE_MCLK,
- 	FEAT_HANDLE_UV_SEPARATE,
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
+ 		r = dispc_runtime_get();
 -- 
-1.7.10
+1.7.9.5
 

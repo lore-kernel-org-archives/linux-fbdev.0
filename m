@@ -1,98 +1,86 @@
-From: Alexandre Courbot <acourbot@nvidia.com>
-Date: Fri, 31 Aug 2012 11:34:06 +0000
-Subject: [PATCH v5 4/4] tegra: ventana: add pwm backlight DT nodes
-Message-Id: <1346412846-17102-5-git-send-email-acourbot@nvidia.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 01 Aug 2012 10:43:25 +0000
+Subject: [RFC 14/17] OMAPDSS: SDI: Maintain our own timings field in driver data
+Message-Id: <1343817088-29645-15-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1346412846-17102-1-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1346412846-17102-1-git-send-email-acourbot@nvidia.com>
+References: <1343817088-29645-1-git-send-email-archit@ti.com>
+In-Reply-To: <1343817088-29645-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>
-Cc: Leela Krishna Amudala <leelakrishna.a@gmail.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, Alexandre Courbot <acourbot@nvidia.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, sumit.semwal@ti.com, rob@ti.com, Archit Taneja <archit@ti.com>
 
-Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+The SDI driver currently relies on the timings in omap_dss_device struct to
+configure the DISPC accordingly. This makes the SDI interface driver dependent
+on the omap_dss_device struct.
+
+Make the SDI driver data maintain it's own timings field. The panel driver is
+expected to call omapdss_sdi_set_timings() to set these timings before the panel
+is enabled.
+
+Make the SDI panel driver configure the new timings is the omap_dss_device
+struct(dssdev->panel.timings). The SDI driver is responsible for maintaining
+only it's own copy of timings.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- arch/arm/boot/dts/tegra20-ventana.dts | 59 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 58 insertions(+), 1 deletion(-)
+ drivers/video/omap2/displays/panel-acx565akm.c |    4 ++++
+ drivers/video/omap2/dss/sdi.c                  |    5 +++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/tegra20-ventana.dts b/arch/arm/boot/dts/tegra20-ventana.dts
-index 4ec6b4c..025928d 100644
---- a/arch/arm/boot/dts/tegra20-ventana.dts
-+++ b/arch/arm/boot/dts/tegra20-ventana.dts
-@@ -467,6 +467,63 @@
- 		bus-width = <8>;
- 	};
+diff --git a/drivers/video/omap2/displays/panel-acx565akm.c b/drivers/video/omap2/displays/panel-acx565akm.c
+index 11bdc88..77fe59f 100644
+--- a/drivers/video/omap2/displays/panel-acx565akm.c
++++ b/drivers/video/omap2/displays/panel-acx565akm.c
+@@ -600,6 +600,8 @@ static int acx_panel_power_on(struct omap_dss_device *dssdev)
  
-+	backlight {
-+		compatible = "pwm-backlight";
-+		brightness-levels = <0 16 32 48 64 80 96 112 128 144 160 176 192 208 224 240 255>;
-+		default-brightness-level = <12>;
-+
-+		/* resources used by the power sequences */
-+		pwms = <&pwm 2 5000000>;
-+		pwm-names = "backlight";
-+		power-supply = <&vdd_bl_reg>;
-+
-+		power-sequences {
-+			power-on {
-+				step0 {
-+					type = "regulator";
-+					id = "power";
-+					enable;
-+				};
-+				step1 {
-+					type = "delay";
-+					delay_us = <10000>;
-+				};
-+				step2 {
-+					type = "pwm";
-+					id = "backlight";
-+					enable;
-+				};
-+				step3 {
-+					type = "gpio";
-+					number = <&gpio 28 0>;
-+					enable;
-+				};
-+			};
-+
-+			power-off {
-+				step0 {
-+					type = "gpio";
-+					number = <&gpio 28 0>;
-+					disable;
-+				};
-+				step1 {
-+					type = "pwm";
-+					id = "backlight";
-+					disable;
-+				};
-+				step2 {
-+					type = "delay";
-+					delay_us = <10000>;
-+				};
-+				step3 {
-+					type = "regulator";
-+					id = "power";
-+					disable;
-+				};
-+			};
-+		};
-+	};
-+
- 	regulators {
- 		compatible = "simple-bus";
- 		#address-cells = <1>;
-@@ -510,7 +567,7 @@
- 			enable-active-high;
- 		};
+ 	mutex_lock(&md->mutex);
  
--		regulator@4 {
-+		vdd_bl_reg: regulator@4 {
- 			compatible = "regulator-fixed";
- 			reg = <4>;
- 			regulator-name = "vdd_bl";
++	omapdss_sdi_set_timings(dssdev, &dssdev->panel.timings);
++
+ 	r = omapdss_sdi_display_enable(dssdev);
+ 	if (r) {
+ 		pr_err("%s sdi enable failed\n", __func__);
+@@ -732,6 +734,8 @@ static void acx_panel_set_timings(struct omap_dss_device *dssdev,
+ 		struct omap_video_timings *timings)
+ {
+ 	omapdss_sdi_set_timings(dssdev, timings);
++
++	dssdev->panel.timings = *timings;
+ }
+ 
+ static int acx_panel_check_timings(struct omap_dss_device *dssdev,
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index d88243f..917816d 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -34,6 +34,7 @@ static struct {
+ 	struct regulator *vdds_sdi_reg;
+ 
+ 	struct dss_lcd_mgr_config mgr_config;
++	struct omap_video_timings timings;
+ } sdi;
+ 
+ static void sdi_config_lcd_manager(struct omap_dss_device *dssdev)
+@@ -52,7 +53,7 @@ static void sdi_config_lcd_manager(struct omap_dss_device *dssdev)
+ static int sdi_set_mode(struct omap_dss_device *dssdev)
+ {
+ 	int r;
+-	struct omap_video_timings *t = &dssdev->panel.timings;
++	struct omap_video_timings *t = &sdi.timings;
+ 	struct dss_clock_info dss_cinfo;
+ 	struct dispc_clock_info dispc_cinfo;
+ 	unsigned long pck;
+@@ -160,7 +161,7 @@ void omapdss_sdi_set_timings(struct omap_dss_device *dssdev,
+ {
+ 	int r;
+ 
+-	dssdev->panel.timings = *timings;
++	sdi.timings = *timings;
+ 
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
+ 		r = dispc_runtime_get();
 -- 
-1.7.12
+1.7.9.5
 

@@ -1,85 +1,53 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Fri, 31 Aug 2012 12:15:45 +0000
-Subject: Re: [PATCH v2 02/23] OMAPDSS: outputs: Create and register output instances
-Message-Id: <5040A821.2030100@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Wed, 01 Aug 2012 01:49:38 +0000
+Subject: RE: [PATCH V2 2/5] include/video: Add Exynos5 specific FIMD register offsets
+Message-Id: <003301cd6f87$e8ed8240$bac886c0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>  <1346326845-16583-1-git-send-email-archit@ti.com>  <1346326845-16583-3-git-send-email-archit@ti.com> <1346414265.18766.9.camel@lappyti>
-In-Reply-To: <1346414265.18766.9.camel@lappyti>
+References: <1343737385-23337-1-git-send-email-l.krishna@samsung.com>
+ <1343737385-23337-3-git-send-email-l.krishna@samsung.com>
+In-Reply-To: <1343737385-23337-3-git-send-email-l.krishna@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Archit Taneja <archit@ti.com>, rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: 'Leela Krishna Amudala' <l.krishna@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, inki.dae@samsung.com, kgene.kim@samsung.com, joshi@samsung.com, m.szyprowski@samsung.com, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Jingoo Han' <jg1.han@samsung.com>
 
-On Friday 31 August 2012 05:27 PM, Tomi Valkeinen wrote:
-> On Thu, 2012-08-30 at 17:10 +0530, Archit Taneja wrote:
->> Add output structs to output driver's private data. Register output instances by
->> having an init function in the probes of the platform device drivers for
->> different outputs. The *_init_output for each output registers the output and
->> fill up the output's plaform device, type and id fields.
->>
->> In the probe of each interface driver, the output entities are initialized
->> before the *_probe_pdata() functions intentionally. This is done to ensure that
->> the output entity is prepared before the panels connected to the output are
->> registered. We need the output entities to be ready because OMAPDSS will try
->> to make connections between overlays, managers, outputs and devices during the
->> panel's probe.
->>
->> Signed-off-by: Archit Taneja <archit@ti.com>
->> ---
->>   drivers/video/omap2/dss/dpi.c  |   15 +++++++++++++++
->>   drivers/video/omap2/dss/dsi.c  |   18 ++++++++++++++++++
->>   drivers/video/omap2/dss/hdmi.c |   15 +++++++++++++++
->>   drivers/video/omap2/dss/rfbi.c |   17 +++++++++++++++++
->>   drivers/video/omap2/dss/sdi.c  |   15 +++++++++++++++
->>   drivers/video/omap2/dss/venc.c |   15 +++++++++++++++
->>   6 files changed, 95 insertions(+)
->>
->> diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
->> index 25fb895..9a7aee5 100644
->> --- a/drivers/video/omap2/dss/dpi.c
->> +++ b/drivers/video/omap2/dss/dpi.c
->> @@ -45,6 +45,8 @@ static struct {
->>   	struct omap_video_timings timings;
->>   	struct dss_lcd_mgr_config mgr_config;
->>   	int data_lines;
->> +
->> +	struct omap_dss_output output;
->>   } dpi;
->>
->>   static struct platform_device *dpi_get_dsidev(enum omap_dss_clk_source clk)
->> @@ -410,10 +412,23 @@ static void __init dpi_probe_pdata(struct platform_device *pdev)
->>   	}
->>   }
->>
->> +static void __init dpi_init_output(struct platform_device *pdev)
->> +{
->> +	struct omap_dss_output *out = &dpi.output;
->> +
->> +	dss_register_output(out);
->> +
->> +	out->pdev = pdev;
->> +	out->id = OMAP_DSS_OUTPUT_DPI;
->> +	out->type = OMAP_DISPLAY_TYPE_DPI;
->> +}
->
-> I think you should first initialize the output, and then register it.
-> Not the other way around.
+On Tuesday, July 31, 2012 9:23 PM Leela Krishna Amudala wrote:
+> 
+> Exynos5 has VIDTCON and VIDCON registers at different offsets
+> from the previous SOCs. Hence, adding the macros.
+> 
+> Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
+> ---
+>  include/video/samsung_fimd.h |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/video/samsung_fimd.h b/include/video/samsung_fimd.h
+> index e979f42..820f190 100644
+> --- a/include/video/samsung_fimd.h
+> +++ b/include/video/samsung_fimd.h
+> @@ -524,3 +524,10 @@
+>   * 1110		-none-	 -none-	  -none-   -none-    -none-
+>   * 1111		-none-	 -none-   -none-   -none-    -none-
+>  */
+> +
+> +/*EXYNOS5 FIMD REG OFFSET */
+     ^
+Please insert one space between '/*' and 'EXYNOS5'.
+As Sylwester Nawrocki mentioned, the following seems to be better.
 
-Ok.
+/* EXYNOS5 specific register offset definitions */
 
->
-> I believe you need to implement unregister also. Normally unregister
-> won't be done, but the probe of an output driver can fail after the
-> output has been registered, and thus the output needs to be unregistered
-> at cleanup.
 
-Ah, right.
+Best regards,
+Jingoo Han
 
->
-> And it doesn't harm to unregister at the driver's remove.
 
-I'll fix these, thanks.
-
-Archit
+> +#define EXYNOS5_VIDTCON0	(0x20010)
+> +#define EXYNOS5_VIDTCON1	(0x20014)
+> +#define EXYNOS5_VIDTCON2	(0x20018)
+> +#define EXYNOS5_VIDTCON3	(0x2001C)
+> +#define EXYNOS5_VIDCON1		(0x20004)
+> --
+> 1.7.0.4
 

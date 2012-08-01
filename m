@@ -1,73 +1,86 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 15 Aug 2012 08:41:11 +0000
-Subject: Re: [PATCH 0/5] Pass data lines and pixel format info from panel driver to interface
-Message-Id: <1345020071.3494.17.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-7wSZ73uZyOcU+BIQ4VKF"
+From: Kukjin Kim <kgene.kim@samsung.com>
+Date: Wed, 01 Aug 2012 02:28:39 +0000
+Subject: RE: [PATCH V2 0/5] arm: samsung: Move FIMD headers to include/video/
+Message-Id: <02f701cd6f8d$5ca3e850$15ebb8f0$%kim@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344595026-10607-1-git-send-email-archit@ti.com>
-In-Reply-To: <1344595026-10607-1-git-send-email-archit@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-
-
---=-7wSZ73uZyOcU+BIQ4VKF
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2012-08-10 at 16:07 +0530, Archit Taneja wrote:
-> This is a continuation of the work started in the series:
->=20
-> http://marc.info/?l=3Dlinux-omap&m=3D134381744304672&w=3D2
->=20
-> This makes the panel driver call interface specific functions to configur=
-e the
-> data lines and pixel format requested by the panel.
->=20
-> Configuration of data lines doesn't happen for DSI or HDMI. For DSI, this
-> information is more complex and is taken care by omapdss_dsi_configure_pi=
-ns(),
-> for HDMI, the number of TMDS lines is always fixed.
->=20
-> Configuration of pixel format is done only for DSI in command mode and RF=
-BI.
-> Currently, these new functions take different arguments,
-> omapdss_dsi_set_pixel_format() takes pixel format of type
-> omap_dss_dsi_pixel_format enum, and RFBI omapdss_rfbi_set_pixel_size() ta=
-kes
-> the pixel size directly. It would be good if these could be merged by usi=
-ng
-> some sort of MIPI standard for pixel formats. Having the same argument wo=
-uld
-> help in having a common interface op in the future.
-
-This series looks good.
-
- Tomi
-
-
---=-7wSZ73uZyOcU+BIQ4VKF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+References: <1343737385-23337-1-git-send-email-l.krishna@samsung.com>
+In-Reply-To: <1343737385-23337-1-git-send-email-l.krishna@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: 'Leela Krishna Amudala' <l.krishna@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, inki.dae@samsung.com, joshi@samsung.com, jg1.han@samsung.com, m.szyprowski@samsung.com, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+Leela Krishna Amudala wrote:
+> 
+> This patchset moves the contents of regs-fb-v4.h and regs-fb.h from arch
+> side
+> to include/video/samsung_fimd.h
+> 
+> This patchset is created and rebased against master branch of torvalds
+> tree.
+> Tested on smdk5250 board, build tested for other boards.
+> 
+(Cc'ed Florian Tobias Schandinat)
 
-iQIcBAABAgAGBQJQK2CnAAoJEPo9qoy8lh71/BEP/AxXJIjjMIqxJyIpyvX4jd3y
-G3mMv5DSVTj/UxLYxdsUKToyMbyEl+LXNVyFQp6ttqgxDF5EpniGsrMXFwjhHkA4
-m4z5r8dUI0rihrsGJM+EcJTKFcz7uySuIDdtGUT0cSyEdMAIKvt1lPo3nlmG5lXU
-YACHPEJYyNRICzOBelhKA4qXpSUoGM4ion56sINhQWifPA3rR10j3tGjaeBfBKHj
-OZYKE5iA0EWmZesA9YHc1p5nC7dLvA/Z0uQI4dra+b2g7r4BazbnBtmaOeuKeGlF
-uzDCoC6+ZA3iWPyAa9c8JMd9saLnbk8ZJWDRKwrmOchXzU0ztwQXiTGrqueJ5Xfr
-Tdgj5BCwjvzm4T0RGeOo9azmE/AwQjvQvI1J2rR/jQZMTkHungSlRN61ujWSvVjc
-TWn0s14mjlHaPWo/F6xnBDPVd9/q4Tc7H8Vb7rchLb95C2NPdvV4qjdXS0YjFyAJ
-W5RQ8GEH/wDYwFphoczlAGo1RxPHHpWxYd2qFVTujnS22U0IU58gKPIp/PPJ2Tz0
-GjtZiuEV9748Y6igH8QGdIHewLQgrssl/Iywd3R+Mfm4sNdEiFhLqiYJeXqDY1fP
-TS6pa4yCkQodOp50doJFeN74ajogfgDmHNO9kB0WrZ4Z9YLlJyzlmdjq1+4TI/d/
-t59RtxES+wKzXXIMvduu
-=4PQG
------END PGP SIGNATURE-----
+Yeah, since it's merge window, this series could be created against on
+mainline. And IMO, would be helpful to us if this series could be sent to
+upstream via samsung tree after reviewing, because this touches too many
+files in samsung tree and just adds include/video/samsung_fimd.h. But I'm
+not sure the added inclusion will be used in other file of drivers/video. If
+so, I can provide some topic branch can be merged into Florian's tree.
+Florian, how about?
 
---=-7wSZ73uZyOcU+BIQ4VKF--
+Thanks.
+
+Best regards,
+Kgene.
+--
+Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+SW Solution Development Team, Samsung Electronics Co., Ltd.
+
+> Changes from version 1:
+> 	- Split the patches as per Sylwester comments
+> 	- Changed FIMD_V8_xxx macro to EXYNOS5_xxx
+> 
+> Leela Krishna Amudala (5):
+>   include/video: Add samsung FIMD register header
+>   include/video: Add Exynos5 specific FIMD register offsets
+>   arm: samsung: Include the modified FIMD header file
+>   driver: Include the modified FIMD header file
+>   arm: samsung: delete frame buffer header files from platform
+> 
+>  arch/arm/mach-exynos/mach-nuri.c                   |    2 +-
+>  arch/arm/mach-exynos/mach-origen.c                 |    2 +-
+>  arch/arm/mach-exynos/mach-smdk4x12.c               |    2 +-
+>  arch/arm/mach-exynos/mach-smdkv310.c               |    2 +-
+>  arch/arm/mach-exynos/mach-universal_c210.c         |    2 +-
+>  arch/arm/mach-exynos/setup-fimd0.c                 |    2 +-
+>  arch/arm/mach-s3c24xx/mach-smdk2416.c              |    2 +-
+>  arch/arm/mach-s3c64xx/mach-anw6410.c               |    2 +-
+>  arch/arm/mach-s3c64xx/mach-crag6410.c              |    2 +-
+>  arch/arm/mach-s3c64xx/mach-hmt.c                   |    2 +-
+>  arch/arm/mach-s3c64xx/mach-mini6410.c              |    2 +-
+>  arch/arm/mach-s3c64xx/mach-ncp.c                   |    2 +-
+>  arch/arm/mach-s3c64xx/mach-real6410.c              |    2 +-
+>  arch/arm/mach-s3c64xx/mach-smartq5.c               |    2 +-
+>  arch/arm/mach-s3c64xx/mach-smartq7.c               |    2 +-
+>  arch/arm/mach-s3c64xx/mach-smdk6410.c              |    2 +-
+>  arch/arm/mach-s5p64x0/mach-smdk6440.c              |    2 +-
+>  arch/arm/mach-s5p64x0/mach-smdk6450.c              |    2 +-
+>  arch/arm/mach-s5pc100/mach-smdkc100.c              |    2 +-
+>  arch/arm/mach-s5pv210/mach-aquila.c                |    2 +-
+>  arch/arm/mach-s5pv210/mach-goni.c                  |    2 +-
+>  arch/arm/mach-s5pv210/mach-smdkv210.c              |    2 +-
+>  arch/arm/plat-samsung/include/plat/regs-fb-v4.h    |  159
+----------------
+> ----
+>  drivers/gpu/drm/exynos/exynos_drm_fimd.c           |    2 +-
+>  drivers/video/s3c-fb.c                             |    2 +-
+>  .../plat/regs-fb.h => include/video/samsung_fimd.h |  152
+> +++++++++++++++++--
+>  26 files changed, 165 insertions(+), 194 deletions(-)
+>  delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb-v4.h
+>  rename arch/arm/plat-samsung/include/plat/regs-fb.h =>
+> include/video/samsung_fimd.h (74%)
 

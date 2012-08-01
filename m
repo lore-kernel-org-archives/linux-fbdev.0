@@ -1,98 +1,69 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 16 Aug 2012 12:14:17 +0000
-Subject: Re: [PATCH 3/6] OMAPDSS: DSI: Maintain copy of video mode timings in driver data
-Message-Id: <1345119257.2534.24.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-v0lmn9B79eS1gyN8vpG8"
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Wed, 01 Aug 2012 01:36:32 +0000
+Subject: Re: [PATCH V2 4/5] driver: Include the modified FIMD header file
+Message-Id: <003101cd6f86$14ca1060$3e5e3120$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <343817088-29645-1-git-send-email-archit@ti.com>
-	  <1345102594-6222-1-git-send-email-archit@ti.com>
-	  <1345102594-6222-4-git-send-email-archit@ti.com>
-	 <1345116666.15132.4.camel@lappyti> <502CE016.6060404@ti.com>
-In-Reply-To: <502CE016.6060404@ti.com>
-To: Archit Taneja <a0393947@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-
---=-v0lmn9B79eS1gyN8vpG8
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2012-08-16 at 17:27 +0530, Archit Taneja wrote:
-> On Thursday 16 August 2012 05:01 PM, Tomi Valkeinen wrote:
-> > On Thu, 2012-08-16 at 13:06 +0530, Archit Taneja wrote:
-> >> The DSI driver currently relies on the omap_dss_device struct to recei=
-ve the
-> >> video mode timings requested by the panel driver. This makes the DSI i=
-nterface
-> >> driver dependent on the omap_dss_device struct.
-> >>
-> >> Make the DSI driver data maintain it's own video mode timings field. T=
-he panel
-> >> driver is expected to call omapdss_dsi_set_videomode_timings() to conf=
-igure the
-> >> video mode timings before the interface is enabled. The function takes=
- in a
-> >> void pointer rather than a pointer to omap_dss_dsi_videomode_timings s=
-truct.
-> >> This is because this function will finally be an output op shared acro=
-ss
-> >> different outputs to set custom or private timings.
-> >
-> > I don't think the function should take a void * in any case. If we want
-> > to share the function, it should take a struct that perhaps contains an
-> > union of rfbi and dsi timings.
-> >
-> > But I'm not sure if there's any benefit for that...
-> >
-> > So do you see us having just one set_timings, which would take either
-> > the normal video timings, rfbi timings or dsi timings?
->=20
-> I thought of having 2 timing ops, one is a standard "modeline like"=20
-> set_timings(), and the other a vague-ish set_custom_timings(). For=20
-> us(OMAP), we need to use it for DSI videomode and RFBI, we may reduce=20
-> that to only RFBI later if we calculate for DSI timings automatically.
->=20
-> For these extra timings to be consistent across SoCs, we would need to=
-=20
-> align to get a common struct of some sort, which could then have unions=
-=20
-> as you said. For now, I thought having a void pointer might suffice.
-
-I would only use void * when it's a must, i.e. when really anything can
-be passed as a parameter. In our case, I think having just two separate
-functions is best.
-
-I think the timings in videomode and rfbi structs should be SoC
-independent even now, at least more or less. But you're right, it should
-be verified. And any names in the structs should be according to DBI or
-DSI spec, not OMAP. But this is for later.
-
- Tomi
-
-
---=-v0lmn9B79eS1gyN8vpG8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+References: <1343737385-23337-1-git-send-email-l.krishna@samsung.com>
+ <1343737385-23337-5-git-send-email-l.krishna@samsung.com>
+In-Reply-To: <1343737385-23337-5-git-send-email-l.krishna@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: 'Leela Krishna Amudala' <l.krishna@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, inki.dae@samsung.com, kgene.kim@samsung.com, joshi@samsung.com, m.szyprowski@samsung.com, 'Jingoo Han' <jg1.han@samsung.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+On Tuesday, July 31, 2012 9:23 PM Leela Krishna Amudala wrote:
+> 
+> The fimd register headers have been moved to include/video/
+> hence, modifying the driver files accordingly.
+> 
+> Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
+> ---
+>  drivers/gpu/drm/exynos/exynos_drm_fimd.c |    2 +-
+>  drivers/video/s3c-fb.c                   |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/exynos/exynos_drm_fimd.c b/drivers/gpu/drm/exynos/exynos_drm_fimd.c
+> index 29fdbfe..8da90f9 100644
+> --- a/drivers/gpu/drm/exynos/exynos_drm_fimd.c
+> +++ b/drivers/gpu/drm/exynos/exynos_drm_fimd.c
+> @@ -20,7 +20,7 @@
+>  #include <linux/pm_runtime.h>
+> 
+>  #include <drm/exynos_drm.h>
+> -#include <plat/regs-fb-v4.h>
+> +#include <video/samsung_fimd.h>
+> 
+>  #include "exynos_drm_drv.h"
+>  #include "exynos_drm_fbdev.h"
+> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+> index 69bf9d0..1226fdd 100644
+> --- a/drivers/video/s3c-fb.c
+> +++ b/drivers/video/s3c-fb.c
+> @@ -26,7 +26,7 @@
+>  #include <linux/pm_runtime.h>
+> 
+>  #include <mach/map.h>
+> -#include <plat/regs-fb-v4.h>
+> +#include <video/samsung_fimd.h>
+>  #include <plat/fb.h>
 
-iQIcBAABAgAGBQJQLOQZAAoJEPo9qoy8lh71MMsP/1lmbY+x68a3Xw0SlKcJDWcJ
-qHw+5eVTv1A/3pCO0LB3hu0PrZUA73cHLx9Ex7o9h9NTQfWHKAJ9uBhyUPzXud1G
-4MnYcC7wGEyJnfEKILxogaE4iWuxv3v8lYb0IKbmMGe7/MDxfsclN1r+4dAMuLib
-II3+svvX9UMb/5UHxsPxKxE+rxaAzUCR46/zUILSAowSZ0VCWnyR8C7Pu/YnDoox
-5AImOaWSkJUjWosP+Pr+1gZb575sBxBDGmwro8qFFSzG/xGbTvLS7VjHPY0oNM9L
-tKFvOF6Kq37bHFkteANWRwOLaGlktvtF3RH0wydBOPebeorE/dRIszWHwlhIrH4j
-HUVKOKX8xG+EMPjRJhaQHo/tCZPmMXKUGLMDz0bq1p9APkhDIwrwLLNKdYAvHXHn
-XVaYrxcXjwZRgCzhIXdFmLSkl2ci+UxfJf6ITkP0SCqDSQqZG8ntcdylMMq55WPx
-M9umLTtUjteR6vPj+xoExpQ+55LjV8uELqzZMNgsOoTMYZ4G8BSmhjcEQmRResS6
-8JyOY6K/FjGOBkDljZA6ThbE74u4NOhuEAJjSQsdseQkQpIdAtw0IAat+hgt3wnA
-9u09HV8oIhJs9ABHnD886Sp0Mw+w5ND8KdP2sHDDPOCjMwzOBwwzr1CU1Zbkmrrl
-FpQ7M198P/pMCvpIIebq
-=Z0H9
------END PGP SIGNATURE-----
 
---=-v0lmn9B79eS1gyN8vpG8--
+Please move header include to proper place as bellows:
+
+#include <linux/pm_runtime.h>
+
+#include <video/samsung_fimd.h>
+
+#include <mach/map.h>
+#include <plat/fb.h>
+
+
+Best regards,
+Jingoo Han
+
+> 
+>  /* This driver will export a number of framebuffer interfaces depending
+> --
+> 1.7.0.4
 

@@ -1,61 +1,164 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 22 Aug 2012 08:44:27 +0000
-Subject: Re: [PATCH V6 0/6] OMAPDSS: Cleanup cpu_is checks
-Message-Id: <1345625067.3036.19.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-h6XDmBDIkbvuq3g8drL9"
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Wed, 01 Aug 2012 04:11:52 +0000
+Subject: Re: [PATCH 5/5] drivers/video/exynos/exynos_dp_core.c: use devm_ functions
+Message-Id: <CAK9yfHzje6NLqi5ixxA3J4aT1a9p6wJNJePzTi4xG9LN6AeLVw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1345468541.git.cmahapatra@ti.com>
- <cover.1345616887.git.cmahapatra@ti.com>
-In-Reply-To: <cover.1345616887.git.cmahapatra@ti.com>
-To: linux-arm-kernel@lists.infradead.org
-
-
---=-h6XDmBDIkbvuq3g8drL9
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2012-08-22 at 12:06 +0530, Chandrabhanu Mahapatra wrote:
-> Hi everyone,
-> this patch series aims at cleaning up of DSS of cpu_is checks thereby mak=
-ing it
-> more generic.
->=20
-> The 1st patch cleans up cpu_is checks from DISPC code.
-> The 2nd patch removes unused functions from DSS code.
-> The 3rd patch cleans up cpu_is checks from DSS code.
-> The 4th patch disables VENC support on OMAP4.
-> The 5th patch removes cpu_is checks from VENC code.
-> The 6th patch removes cpu_is checks from DPI code and replaces it with a
-> dss feature.
-
-Thanks, looks good. I'll apply this to omapdss tree.
-
- Tomi
-
-
---=-h6XDmBDIkbvuq3g8drL9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+References: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
+	<1343752762-16861-6-git-send-email-damien.cassou@lifl.fr>
+	<002c01cd6f73$4252b090$c6f811b0$%han@samsung.com>
+In-Reply-To: <002c01cd6f73$4252b090$c6f811b0$%han@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: Damien Cassou <damien.cassou@lifl.fr>, kernel-janitors@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+On 1 August 2012 04:51, Jingoo Han <jg1.han@samsung.com> wrote:
+> On Wednesday, August 01, 2012 1:39 AM Damien Cassou wrote:
+>>
+>> From: Damien Cassou <damien.cassou@lifl.fr>
+>>
+>> The various devm_ functions allocate memory that is released when a driver
+>> detaches.  This patch uses these functions for data that is allocated in
+>> the probe function of a platform device and is only freed in the remove
+>> function.
+>>
+>> Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
+>>
+>> ---
+>>  drivers/video/exynos/exynos_dp_core.c |   27 +++++++--------------------
+>>  1 file changed, 7 insertions(+), 20 deletions(-)
+>>
+>> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+>> index c6c016a..00fe4f0 100644
+>> --- a/drivers/video/exynos/exynos_dp_core.c
+>> +++ b/drivers/video/exynos/exynos_dp_core.c
+>> @@ -872,7 +872,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+>>
+>>       dp->dev = &pdev->dev;
+>>
+>> -     dp->clock = clk_get(&pdev->dev, "dp");
+>> +     dp->clock = devm_clk_get(&pdev->dev, "dp");
+>>       if (IS_ERR(dp->clock)) {
+>>               dev_err(&pdev->dev, "failed to get clock\n");
+>>               return PTR_ERR(dp->clock);
+>> @@ -881,31 +881,24 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+>>       clk_enable(dp->clock);
+>>
+>>       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>> -     if (!res) {
+>> -             dev_err(&pdev->dev, "failed to get registers\n");
+>> -             ret = -EINVAL;
+>> -             goto err_clock;
+>> -     }
+>
+> Why do you remove this return check?
+> If there is no reason, please, do it as follows:
+>
+>         res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>         if (!res) {
+>                 dev_err(&pdev->dev, "failed to get registers\n");
+> -               ret = -EINVAL;
+> -               goto err_clock;
+> +               return -EINVAL;
+>         }
+>
+>
 
-iQIcBAABAgAGBQJQNJvrAAoJEPo9qoy8lh71HE0P/j/XyQSVj5m+3L0RqaTK8SAb
-tpqVNn5r+n/rvgmJXE6NAviS+4dTMJqePDs4KFss56PQgrbR76ArkrEVpawE1YyC
-UOtq+lYp2eCC9LPZ5yxkAT2wQxvRPKfBrspj1MbynpL/Vvjj/G4Y/6tGXUTccY0I
-OIvpTW+95VPkInViVsPqLRgNmBdVW/3bFh6YXIZnRISgSGhXKEyI9yBaalFwz+4K
-34aq1x7mzdQHt69RNW4e31bffDQyVqfkfHqswW1tq0fwXn7mAE+VIyTwzTvja3Md
-mM3UQpW/YWm1PuikcczBydw8rRgB6wqKeykkpAo7YHrHkNhs9DeC0BY094OexYHy
-qH5SbFtMXkKB6fMISkQGAIYNTRm1NqC0xPTgZVLmGEOUMnXYeaeALgLzLhvvDCmc
-vi1vkAuCGZOQ8S/TGuoqHLiqtZoWMWi6gm2NhgBUk6g6csm1irCZRjS5QD6jLMVB
-3CHvVkOALZRPVxodSJmCaVKa9MoZhBJW0otpK+jF1RhYQ6nZPJZqQJQlPJFh/hel
-FhytT9QU8MGM8FhP0A9Cs2zDXNgOXAONQ+ODl8qdq1mkW0cyOheupBbkUVXmI/jD
-6IKCRqKQ4OMXXgT3HklUJBQFAYEOcBN7ZKGi7vZ40VI7vtHhamwLtL1fOcT3/R+X
-QESAMXC9pVFCFkgy04G3
-=WVaR
------END PGP SIGNATURE-----
+devm_request_and_ioremap function checks the validity of res. Hence
+this check above is redundant and can be removed.
 
---=-h6XDmBDIkbvuq3g8drL9--
+Damien,
+This patch only adds devm_clk_get() function. Hence you could make the
+subject line more specific.
 
+
+
+
+> Best regards,
+> Jingoo Han
+>
+>
+>>
+>>       dp->reg_base = devm_request_and_ioremap(&pdev->dev, res);
+>>       if (!dp->reg_base) {
+>>               dev_err(&pdev->dev, "failed to ioremap\n");
+>> -             ret = -ENOMEM;
+>> -             goto err_clock;
+>> +             return -ENOMEM;
+>>       }
+>>
+>>       dp->irq = platform_get_irq(pdev, 0);
+>>       if (!dp->irq) {
+>>               dev_err(&pdev->dev, "failed to get irq\n");
+>> -             ret = -ENODEV;
+>> -             goto err_clock;
+>> +             return -ENODEV;
+>>       }
+>>
+>>       ret = devm_request_irq(&pdev->dev, dp->irq, exynos_dp_irq_handler, 0,
+>>                               "exynos-dp", dp);
+>>       if (ret) {
+>>               dev_err(&pdev->dev, "failed to request irq\n");
+>> -             goto err_clock;
+>> +             return ret;
+>>       }
+>>
+>>       dp->video_info = pdata->video_info;
+>> @@ -917,7 +910,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+>>       ret = exynos_dp_detect_hpd(dp);
+>>       if (ret) {
+>>               dev_err(&pdev->dev, "unable to detect hpd\n");
+>> -             goto err_clock;
+>> +             return ret;
+>>       }
+>>
+>>       exynos_dp_handle_edid(dp);
+>> @@ -926,7 +919,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+>>                               dp->video_info->link_rate);
+>>       if (ret) {
+>>               dev_err(&pdev->dev, "unable to do link train\n");
+>> -             goto err_clock;
+>> +             return ret;
+>>       }
+>>
+>>       exynos_dp_enable_scramble(dp, 1);
+>> @@ -940,17 +933,12 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+>>       ret = exynos_dp_config_video(dp, dp->video_info);
+>>       if (ret) {
+>>               dev_err(&pdev->dev, "unable to config video\n");
+>> -             goto err_clock;
+>> +             return ret;
+>>       }
+>>
+>>       platform_set_drvdata(pdev, dp);
+>>
+>>       return 0;
+>> -
+>> -err_clock:
+>> -     clk_put(dp->clock);
+>> -
+>> -     return ret;
+>>  }
+>>
+>>  static int __devexit exynos_dp_remove(struct platform_device *pdev)
+>> @@ -962,7 +950,6 @@ static int __devexit exynos_dp_remove(struct platform_device *pdev)
+>>               pdata->phy_exit();
+>>
+>>       clk_disable(dp->clock);
+>> -     clk_put(dp->clock);
+>>
+>>       return 0;
+>>  }
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+
+
+-- 
+With warm regards,
+Sachin

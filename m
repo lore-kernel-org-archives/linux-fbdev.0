@@ -1,42 +1,99 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 16 Aug 2012 13:00:49 +0000
-Subject: [PATCH 14/19] sh: ap325rxa: Remove unused get_brightness LCDC callback
-Message-Id: <1345122054-16013-15-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 01 Aug 2012 10:43:27 +0000
+Subject: [RFC 16/17] OMAPDSS: VENC: Maintain our own timings field in driver data
+Message-Id: <1343817088-29645-17-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1343817088-29645-1-git-send-email-archit@ti.com>
+In-Reply-To: <1343817088-29645-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, sumit.semwal@ti.com, rob@ti.com, Archit Taneja <archit@ti.com>
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+The VENC driver currently relies on the timings in omap_dss_device struct to
+configure the DISPC and VENC blocks accordingly. This makes the VENC interface
+driver dependent on the omap_dss_device struct.
+
+Make the VENC driver data maintain it's own timings field. The panel driver is
+expected to call omapdss_venc_set_timings() to set these timings before the
+panel is enabled.
+
+Make the VENC panel driver configure the new timings is the omap_dss_device
+struct(dssdev->panel.timings). The VENC driver is responsible for maintaining
+only it's own copy of timings.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- arch/sh/boards/mach-ap325rxa/setup.c |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
+ drivers/video/omap2/dss/venc.c       |   12 +++++++-----
+ drivers/video/omap2/dss/venc_panel.c |    1 +
+ 2 files changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/arch/sh/boards/mach-ap325rxa/setup.c b/arch/sh/boards/mach-ap325rxa/setup.c
-index f33ebf4..8a5ea1a 100644
---- a/arch/sh/boards/mach-ap325rxa/setup.c
-+++ b/arch/sh/boards/mach-ap325rxa/setup.c
-@@ -171,11 +171,6 @@ static int ap320_wvga_set_brightness(int brightness)
- 	return 0;
- }
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index ffca542..d96025e 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -300,6 +300,8 @@ static struct {
+ 	struct regulator *vdda_dac_reg;
  
--static int ap320_wvga_get_brightness(void)
--{
--	return gpio_get_value(GPIO_PTS3);
--}
--
- static void ap320_wvga_power_on(void)
- {
- 	msleep(100);
-@@ -224,7 +219,6 @@ static struct sh_mobile_lcdc_info lcdc_info = {
- 			.name = "sh_mobile_lcdc_bl",
- 			.max_brightness = 1,
- 			.set_brightness = ap320_wvga_set_brightness,
--			.get_brightness = ap320_wvga_get_brightness,
- 		},
- 	}
- };
+ 	struct clk	*tv_dac_clk;
++
++	struct omap_video_timings timings;
+ } venc;
+ 
+ static inline void venc_write_reg(int idx, u32 val)
+@@ -432,7 +434,7 @@ static int venc_power_on(struct omap_dss_device *dssdev)
+ 		goto err0;
+ 
+ 	venc_reset();
+-	venc_write_config(venc_timings_to_config(&dssdev->panel.timings));
++	venc_write_config(venc_timings_to_config(&venc.timings));
+ 
+ 	dss_set_venc_output(dssdev->phy.venc.type);
+ 	dss_set_dac_pwrdn_bgz(1);
+@@ -449,7 +451,7 @@ static int venc_power_on(struct omap_dss_device *dssdev)
+ 
+ 	venc_write_reg(VENC_OUTPUT_CONTROL, l);
+ 
+-	dss_mgr_set_timings(dssdev->manager, &dssdev->panel.timings);
++	dss_mgr_set_timings(dssdev->manager, &venc.timings);
+ 
+ 	r = regulator_enable(venc.vdda_dac_reg);
+ 	if (r)
+@@ -556,10 +558,10 @@ void omapdss_venc_set_timings(struct omap_dss_device *dssdev,
+ 	mutex_lock(&venc.venc_lock);
+ 
+ 	/* Reset WSS data when the TV standard changes. */
+-	if (memcmp(&dssdev->panel.timings, timings, sizeof(*timings)))
++	if (memcmp(&venc.timings, timings, sizeof(*timings)))
+ 		venc.wss_data = 0;
+ 
+-	dssdev->panel.timings = *timings;
++	venc.timings = *timings;
+ 
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
+ 		int r;
+@@ -606,7 +608,7 @@ int omapdss_venc_set_wss(struct omap_dss_device *dssdev, u32 wss)
+ 
+ 	mutex_lock(&venc.venc_lock);
+ 
+-	config = venc_timings_to_config(&dssdev->panel.timings);
++	config = venc_timings_to_config(&venc.timings);
+ 
+ 	/* Invert due to VENC_L21_WC_CTL:INV=1 */
+ 	venc.wss_data = (wss ^ 0xfffff) << 8;
+diff --git a/drivers/video/omap2/dss/venc_panel.c b/drivers/video/omap2/dss/venc_panel.c
+index 6b31298..350b0d9 100644
+--- a/drivers/video/omap2/dss/venc_panel.c
++++ b/drivers/video/omap2/dss/venc_panel.c
+@@ -170,6 +170,7 @@ static void venc_panel_set_timings(struct omap_dss_device *dssdev,
+ 	mutex_lock(&venc_panel.lock);
+ 
+ 	omapdss_venc_set_timings(dssdev, timings);
++	dssdev->panel.timings = *timings;
+ 
+ 	mutex_unlock(&venc_panel.lock);
+ }
 -- 
-1.7.8.6
+1.7.9.5
 

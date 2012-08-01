@@ -1,61 +1,48 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 23 Aug 2012 20:42:07 +0000
-Subject: Re: [PATCH 5/5] drivers/video/msm/mddi_client_nt35399.c: use devm_ functions
-Message-Id: <5036959F.4010506@gmx.de>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Date: Wed, 01 Aug 2012 02:04:12 +0000
+Subject: RE: [PATCH V2 5/5] arm: samsung: delete frame buffer header files from platform
+Message-Id: <02ee01cd6f89$f218b2c0$d64a1840$%kim@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344008414-2894-1-git-send-email-damien.cassou@lifl.fr> <1344008414-2894-5-git-send-email-damien.cassou@lifl.fr>
-In-Reply-To: <1344008414-2894-5-git-send-email-damien.cassou@lifl.fr>
+References: <1343737385-23337-1-git-send-email-l.krishna@samsung.com>
+ <1343737385-23337-6-git-send-email-l.krishna@samsung.com>
+In-Reply-To: <1343737385-23337-6-git-send-email-l.krishna@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Damien Cassou <damien.cassou@lifl.fr>
-Cc: David Brown <davidb@codeaurora.org>, kernel-janitors@vger.kernel.org, Daniel Walker <dwalker@fifo99.com>, Bryan Huntsman <bryanh@codeaurora.org>, linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: 'Leela Krishna Amudala' <l.krishna@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, inki.dae@samsung.com, joshi@samsung.com, jg1.han@samsung.com, m.szyprowski@samsung.com
 
-On 08/03/2012 03:40 PM, Damien Cassou wrote:
-> From: Damien Cassou <damien.cassou@lifl.fr>
+Leela Krishna Amudala wrote:
 > 
-> The various devm_ functions allocate memory that is released when a driver
-> detaches. This patch replaces the use of kzalloc by devm_kzalloc.
+> The FIMD register headers are moved to include/video/
+> hence, deleting these files from platform side
 > 
-> Additionally, this patch fixes a memory leak: some memory was allocated for
-> 'panel' but not released when the subsequent call to setup_vsync fails.
-> 
-> Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
-
-Applied.
-
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> 
+> Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
 > ---
->  drivers/video/msm/mddi_client_nt35399.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+>  arch/arm/plat-samsung/include/plat/regs-fb-v4.h |  159 ---------
+>  arch/arm/plat-samsung/include/plat/regs-fb.h    |  403
+-------------------
+> ----
+>  2 files changed, 0 insertions(+), 562 deletions(-)
+>  delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb-v4.h
+>  delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb.h
 > 
-> diff --git a/drivers/video/msm/mddi_client_nt35399.c b/drivers/video/msm/mddi_client_nt35399.c
-> index 7fcd67e..66b314e 100644
-> --- a/drivers/video/msm/mddi_client_nt35399.c
-> +++ b/drivers/video/msm/mddi_client_nt35399.c
-> @@ -189,8 +189,9 @@ static int mddi_nt35399_probe(struct platform_device *pdev)
-> 
->  	int ret;
-> 
-> -	struct panel_info *panel = kzalloc(sizeof(struct panel_info),
-> -					   GFP_KERNEL);
-> +	struct panel_info *panel = devm_kzalloc(&pdev->dev,
-> +						sizeof(struct panel_info),
-> +						GFP_KERNEL);
-> 
->  	printk(KERN_DEBUG "%s: enter.\n", __func__);
-> 
-> @@ -233,7 +234,6 @@ static int mddi_nt35399_remove(struct platform_device *pdev)
->  	struct panel_info *panel = platform_get_drvdata(pdev);
-> 
->  	setup_vsync(panel, 0);
-> -	kfree(panel);
->  	return 0;
->  }
-> 
+No. This should be squashed into first patch on this series. See below.
+
+ arch/arm/plat-samsung/include/plat/regs-fb-v4.h    |  159
+--------------------
+ .../plat/regs-fb.h => include/video/samsung_fimd.h |  145
+++++++++++++++++--
+ 2 files changed, 134 insertions(+), 170 deletions(-)
+ delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb-v4.h
+ rename arch/arm/plat-samsung/include/plat/regs-fb.h =>
+include/video/samsung_fimd.h (74%)
+
+Thanks.
+
+Best regards,
+Kgene.
+--
+Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+SW Solution Development Team, Samsung Electronics Co., Ltd.
 

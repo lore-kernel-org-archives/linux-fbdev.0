@@ -1,60 +1,65 @@
 From: Kukjin Kim <kgene.kim@samsung.com>
-Date: Wed, 01 Aug 2012 01:46:31 +0000
+Date: Wed, 01 Aug 2012 01:50:46 +0000
 Subject: RE: [PATCH 1/3] Move FIMD register headers to include/video/
-Message-Id: <02e501cd6f87$79d9aff0$6d8d0fd0$%kim@samsung.com>
+Message-Id: <02ec01cd6f88$11d30590$357910b0$%kim@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1343637905-17764-1-git-send-email-l.krishna@samsung.com>
  <1343637905-17764-2-git-send-email-l.krishna@samsung.com>
-In-Reply-To: <1343637905-17764-2-git-send-email-l.krishna@samsung.com>
+ <000001cd6e30$da849520$8f8dbf60$%han@samsung.com>
+ <CAL1wa8e7Joghf9S=SgbQLJFWcYOrP5uK6qYXsV_N6rX1MVEALg@mail.gmail.com>
+ <000a01cd6eb6$2113a050$633ae0f0$%han@samsung.com>
+In-Reply-To: <000a01cd6eb6$2113a050$633ae0f0$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Leela Krishna Amudala' <l.krishna@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, inki.dae@samsung.com, joshi@samsung.com, jg1.han@samsung.com
+To: 'Jingoo Han' <jg1.han@samsung.com>, 'Leela Krishna Amudala' <l.krishna@samsung.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, inki.dae@samsung.com, joshi@samsung.com, 'Marek Szyprowski' <m.szyprowski@samsung.com>
 
-Leela Krishna Amudala wrote:
+Jingoo Han wrote:
 > 
-> Moved the contents of regs-fb-v4.h and regs-fb.h from arch side
-> to include/video/samsung_fimd.h
+> On Monday, July 30, 2012 8:16 PM, Leela Krishna Amudala wrote:
+> >
+> > Hello Jingoo Han,
+> >
+> > On Mon, Jul 30, 2012 at 2:23 PM, Jingoo Han <jg1.han@samsung.com> wrote:
+> > > On Monday, July 30, 2012 5:45 PM, Leela Krishna Amudala wrote:
+> > >>
+> > >> Moved the contents of regs-fb-v4.h and regs-fb.h from arch side
+> > >> to include/video/samsung_fimd.h
+> > >>
+> > >> Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
+> > >> ---
+> > >>  arch/arm/plat-samsung/include/plat/regs-fb-v4.h |  159 -------
+> > >>  arch/arm/plat-samsung/include/plat/regs-fb.h    |  403
+---------------
+> --
+> > >>  include/video/samsung_fimd.h                    |  533
+> +++++++++++++++++++++++
+> > >>  3 files changed, 533 insertions(+), 562 deletions(-)
+> > >>  delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb-v4.h
+> > >>  delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb.h
+> > >>  create mode 100644 include/video/samsung_fimd.h
+> > >>
+> > >> +*/
+> > >> +
+> > >> +/*FIMD V8 REG OFFSET */
+> > >> +#define FIMD_V8_VIDTCON0     (0x20010)
+> > >> +#define FIMD_V8_VIDTCON1     (0x20014)
+> > >> +#define FIMD_V8_VIDTCON2     (0x20018)
+> > >> +#define FIMD_V8_VIDTCON3     (0x2001C)
+> > >> +#define FIMD_V8_VIDCON1              (0x20004)
 > 
-> Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
-> ---
->  arch/arm/plat-samsung/include/plat/regs-fb-v4.h |  159 -------
->  arch/arm/plat-samsung/include/plat/regs-fb.h    |  403 -----------------
->  include/video/samsung_fimd.h                    |  533
-+++++++++++++++++++++++
->  3 files changed, 533 insertions(+), 562 deletions(-)
->  delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb-v4.h
->  delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb.h
->  create mode 100644 include/video/samsung_fimd.h
 > 
-
-+ I have some comments on this.
-
-[...]
-
-> +/* VIDCON0 */
-
-I don't think above comment is needed because everybody knows that from the
-name of VIDCON0_.
-
-> +
-> +#define VIDCON0					(0x00)
-> +#define VIDCON0_INTERLACE			(1 << 29)
-> +#define VIDCON0_VIDOUT_MASK			(0x3 << 26)
-> +#define VIDCON0_VIDOUT_SHIFT			(26)
-
-I think, you can use either of the following.
-
-+#define VIDCON0_VIDOUT_SHIFT			(26)
-+#define VIDCON0_VIDOUT_MASK			(0x3 <<
-VIDCON0_VIDOUT_SHIFT)
-
-Or just without XXX_SHIFT if the XXX_SHIFT is not used somewhere else,
-
-+#define VIDCON0_VIDOUT_MASK			(0x3 << 26)
-
-[...]
+> How about using soc_is_exynos5250()?
+> 
+> +#define VIDTCON0				(soc_is_exynos5250() ? \
+> +						(0x20010) : (0x10))
+> 
+> In this case, the FIMD driver does not need to change.
+> Also, one binary is available.
+> 
+I don't agree. Do you _really_ think the address will be fixed on other SoCs
+including upcoming SoCs? I'd prefer to use the version or something for it.
 
 Thanks.
 

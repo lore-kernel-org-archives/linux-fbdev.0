@@ -1,65 +1,44 @@
 From: Kukjin Kim <kgene.kim@samsung.com>
-Date: Wed, 01 Aug 2012 01:50:46 +0000
+Date: Wed, 01 Aug 2012 01:56:26 +0000
 Subject: RE: [PATCH 1/3] Move FIMD register headers to include/video/
-Message-Id: <02ec01cd6f88$11d30590$357910b0$%kim@samsung.com>
+Message-Id: <02ed01cd6f88$dc91caf0$95b560d0$%kim@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1343637905-17764-1-git-send-email-l.krishna@samsung.com>
  <1343637905-17764-2-git-send-email-l.krishna@samsung.com>
  <000001cd6e30$da849520$8f8dbf60$%han@samsung.com>
  <CAL1wa8e7Joghf9S=SgbQLJFWcYOrP5uK6qYXsV_N6rX1MVEALg@mail.gmail.com>
  <000a01cd6eb6$2113a050$633ae0f0$%han@samsung.com>
-In-Reply-To: <000a01cd6eb6$2113a050$633ae0f0$%han@samsung.com>
+ <032201cd6ee5$ad4a0d50$07de27f0$%szyprowski@samsung.com>
+ <000701cd6ef5$24315c70$6c941550$%han@samsung.com>
+ <033c01cd6ef6$fb514570$f1f3d050$%szyprowski@samsung.com>
+In-Reply-To: <033c01cd6ef6$fb514570$f1f3d050$%szyprowski@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Jingoo Han' <jg1.han@samsung.com>, 'Leela Krishna Amudala' <l.krishna@samsung.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, inki.dae@samsung.com, joshi@samsung.com, 'Marek Szyprowski' <m.szyprowski@samsung.com>
+To: 'Marek Szyprowski' <m.szyprowski@samsung.com>, 'Jingoo Han' <jg1.han@samsung.com>, 'Leela Krishna Amudala' <l.krishna@samsung.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, inki.dae@samsung.com, joshi@samsung.com
 
-Jingoo Han wrote:
+Marek Szyprowski wrote:
 > 
-> On Monday, July 30, 2012 8:16 PM, Leela Krishna Amudala wrote:
-> >
-> > Hello Jingoo Han,
-> >
-> > On Mon, Jul 30, 2012 at 2:23 PM, Jingoo Han <jg1.han@samsung.com> wrote:
-> > > On Monday, July 30, 2012 5:45 PM, Leela Krishna Amudala wrote:
-> > >>
-> > >> Moved the contents of regs-fb-v4.h and regs-fb.h from arch side
-> > >> to include/video/samsung_fimd.h
-> > >>
-> > >> Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
-> > >> ---
-> > >>  arch/arm/plat-samsung/include/plat/regs-fb-v4.h |  159 -------
-> > >>  arch/arm/plat-samsung/include/plat/regs-fb.h    |  403
----------------
-> --
-> > >>  include/video/samsung_fimd.h                    |  533
-> +++++++++++++++++++++++
-> > >>  3 files changed, 533 insertions(+), 562 deletions(-)
-> > >>  delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb-v4.h
-> > >>  delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb.h
-> > >>  create mode 100644 include/video/samsung_fimd.h
-> > >>
-> > >> +*/
-> > >> +
-> > >> +/*FIMD V8 REG OFFSET */
-> > >> +#define FIMD_V8_VIDTCON0     (0x20010)
-> > >> +#define FIMD_V8_VIDTCON1     (0x20014)
-> > >> +#define FIMD_V8_VIDTCON2     (0x20018)
-> > >> +#define FIMD_V8_VIDTCON3     (0x2001C)
-> > >> +#define FIMD_V8_VIDCON1              (0x20004)
+> Hello,
 > 
+Hi all,
+
+[...]
+
+> >  static struct s3c_fb_driverdata s3c_fb_data_exynos5 = {
+> >         .variant = {
+> >                 .nr_windows     = 5,
+> > -               .vidtcon        = VIDTCON0,
+> > +               .vidtcon        = FIMD_V8_VIDTCON0,
 > 
-> How about using soc_is_exynos5250()?
+> Yes, this method looks good imo. Maybe even having something like
+> vidtcon_base in
+> variant structure will be enough to cover all VIDTCON0-3 registers.
 > 
-> +#define VIDTCON0				(soc_is_exynos5250() ? \
-> +						(0x20010) : (0x10))
-> 
-> In this case, the FIMD driver does not need to change.
-> Also, one binary is available.
-> 
-I don't agree. Do you _really_ think the address will be fixed on other SoCs
-including upcoming SoCs? I'd prefer to use the version or something for it.
+Yes, I agree. And how about changing the name of s3c_fb_drvierdata to
+xxx_fimd_v8 not xxx_fimd_exynos5? It's time to use independent from SoC name
+because we don't have any guarantee of same address on all of EXYNOS5 SoCs.
 
 Thanks.
 

@@ -1,15 +1,15 @@
 From: Archit Taneja <archit@ti.com>
-Date: Thu, 09 Aug 2012 09:19:10 +0000
-Subject: [PATCH v2 5/5] OMAPDSS: Displays: Add locking in generic DPI panel driver
-Message-Id: <1344503230-18550-6-git-send-email-archit@ti.com>
+Date: Wed, 01 Aug 2012 10:43:18 +0000
+Subject: [RFC 07/17] OMAPDSS: Displays: Add locking in generic DPI panel driver
+Message-Id: <1343817088-29645-8-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344503230-18550-1-git-send-email-archit@ti.com>
-In-Reply-To: <1344503230-18550-1-git-send-email-archit@ti.com>
+References: <1343817088-29645-1-git-send-email-archit@ti.com>
+In-Reply-To: <1343817088-29645-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, sumit.semwal@ti.com, rob@ti.com, Archit Taneja <archit@ti.com>
 
 The generic DPI panel driver doesn't currently have locking to ensure that
 the display states and the driver data is maintained correctly. Add mutex
@@ -23,7 +23,7 @@ Signed-off-by: Archit Taneja <archit@ti.com>
  1 file changed, 62 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
-index bc5af25..69e78a5 100644
+index e773594..a07e18c 100644
 --- a/drivers/video/omap2/displays/panel-generic-dpi.c
 +++ b/drivers/video/omap2/displays/panel-generic-dpi.c
 @@ -545,6 +545,8 @@ struct panel_drv_data {
@@ -35,7 +35,7 @@ index bc5af25..69e78a5 100644
  };
  
  static inline struct panel_generic_dpi_data
-@@ -634,6 +636,8 @@ static int generic_dpi_panel_probe(struct omap_dss_device *dssdev)
+@@ -636,6 +638,8 @@ static int generic_dpi_panel_probe(struct omap_dss_device *dssdev)
  	drv_data->dssdev = dssdev;
  	drv_data->panel_config = panel_config;
  
@@ -44,7 +44,7 @@ index bc5af25..69e78a5 100644
  	dev_set_drvdata(&dssdev->dev, drv_data);
  
  	return 0;
-@@ -652,56 +656,106 @@ static void __exit generic_dpi_panel_remove(struct omap_dss_device *dssdev)
+@@ -654,58 +658,108 @@ static void __exit generic_dpi_panel_remove(struct omap_dss_device *dssdev)
  
  static int generic_dpi_panel_enable(struct omap_dss_device *dssdev)
  {
@@ -124,7 +124,9 @@ index bc5af25..69e78a5 100644
 +
 +	mutex_lock(&drv_data->lock);
 +
- 	dpi_set_timings(dssdev, timings);
+ 	omapdss_dpi_set_timings(dssdev, timings);
+ 
+ 	dssdev->panel.timings = *timings;
 +
 +	mutex_unlock(&drv_data->lock);
 +}
@@ -158,7 +160,7 @@ index bc5af25..69e78a5 100644
  }
  
  static struct omap_dss_driver dpi_driver = {
-@@ -714,6 +768,7 @@ static struct omap_dss_driver dpi_driver = {
+@@ -718,6 +772,7 @@ static struct omap_dss_driver dpi_driver = {
  	.resume		= generic_dpi_panel_resume,
  
  	.set_timings	= generic_dpi_panel_set_timings,

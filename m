@@ -1,36 +1,35 @@
-From: Simon Horman <horms@verge.net.au>
-Date: Mon, 27 Aug 2012 08:59:33 +0000
-Subject: Re: [PATCH 0/9] SH Mobile LCDC and MERAM patches
-Message-Id: <20120827085932.GJ29274@verge.net.au>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Wed, 01 Aug 2012 09:52:24 +0000
+Subject: Re: [PATCH] Fix newport con crashes
+Message-Id: <5018FC58.10605@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1342658362-19491-1-git-send-email-laurent.pinchart@ideasonboard.com>
-In-Reply-To: <1342658362-19491-1-git-send-email-laurent.pinchart@ideasonboard.com>
+References: <20120730105416.DBB961D1CF@solo.franken.de> <20120730133447.GA29993@linux-mips.org>
+In-Reply-To: <20120730133447.GA29993@linux-mips.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-mips@linux-mips.org, linux-fbdev@vger.kernel.org
 
-On Sat, Aug 25, 2012 at 11:54:44AM +0200, Laurent Pinchart wrote:
-> Hi Simon,
+On 07/30/2012 01:34 PM, Ralf Baechle wrote:
+> On Mon, Jul 30, 2012 at 12:54:16PM +0200, Thomas Bogendoerfer wrote:
 > 
-> On Saturday 25 August 2012 14:31:51 Simon Horman wrote:
-> > On Thu, Jul 19, 2012 at 02:39:13AM +0200, Laurent Pinchart wrote:
-> > > Hi,
-> > > 
-> > > Here are 9 patches for the SH Mobile LCDC and MERAM drivers. Patches 1/9
-> > > to 4/9 and 9/9 have previously been posted as part of the "SH Mobile LCDC
-> > > MERAM-based frame buffer backing store" RFC series. Patch 5/9 has also
-> > > been posted as part of the same series, albeit included in patch 9/9.
-> > > 
-> > > As most of those patches have already been posted for review (patches 6/9
-> > > to 8/9 that haven't been posted already are small fixes), I plan to send
-> > > a pull request soon, to get the patches in v3.6 if possible.
-> > 
-> > Hi Laurent,
-> > 
-> > could you let me know what the status of these patches is with regards to
-> > merging.
+>> Because of commit e84de0c61905030a0fe66b7210b6f1bb7c3e1eab
+>> [MIPS: GIO bus support for SGI IP22/28] newport con is now taking over
+>> console from dummy con, therefore it's necessary to resize the VC to
+>> the correct size to avoid crashes and garbage on console
+>>
+>> Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 > 
-> They have been merged in v3.6-rc.
+> I've applied your patch to master and the affected -stable branches of the
+> lmo git tree.
+> 
+> Florian, since this is a driver specific to certain MIPS platforms I'd like
+> to merge it through the MIPS tree with your ack, if that's ok?
 
-Thanks, sorry for not working that out myself.
+Yes, sounds good to me. The patch looks good.
+
+
+Best regards,
+
+Florian Tobias Schandinat

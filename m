@@ -1,206 +1,84 @@
 From: Archit Taneja <archit@ti.com>
-Date: Thu, 30 Aug 2012 11:52:23 +0000
-Subject: [PATCH v2 01/23] OMAPDSS: outputs: Create a new entity called outputs
-Message-Id: <1346326845-16583-2-git-send-email-archit@ti.com>
+Date: Wed, 01 Aug 2012 10:43:21 +0000
+Subject: [RFC 10/17] OMAPDSS: HDMI: Add a get_timing function for HDMI interface
+Message-Id: <1343817088-29645-11-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>
- <1346326845-16583-1-git-send-email-archit@ti.com>
-In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
+References: <1343817088-29645-1-git-send-email-archit@ti.com>
+In-Reply-To: <1343817088-29645-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, sumit.semwal@ti.com, rob@ti.com, Archit Taneja <archit@ti.com>
 
-The current OMAPDSS design contains 3 software entities: Overlays, Managers and
-Devices. These map to pipelines, overlay managers and the panels respectively in
-hardware. One or more overlays connect to a manager to represent a composition,
-the manager connects to a device(generally a display) to display the content.
+Add function omapdss_hdmi_display_get_timing() which returns the timings
+maintained by the HDMI interface driver in it's hdmi_config field. This
+prevents the need for the panel driver to configure default timings in it's
+probe.
 
-The part of DSS hardware which isn't represented by any of the above entities
-are interfaces/outputs that connect to an overlay manager, i.e blocks like DSI,
-HDMI, VENC and so on. Currently, an overlay manager directly connects to the
-display, and the output to which it is actually connected is ignored. The panel
-driver of the display is responsible of calling output specific functions to
-configure the output.
-
-Adding outputs as a new software entity gives us the following benefits:
-
-- Have exact information on the possible connections between managers and
-  outputs: A manager can't connect to each and every output, there only limited
-  hardware links between a manager's video port and some of the outputs.
-
-- Remove hacks related to connecting managers and devices: Currently, default
-  links between managers and devices are set in a not so clean way. Matching is
-  done via comparing the device type, and the display types supported by the
-  manager. This isn't sufficient to establish all the possible links between
-  managers, outputs and devices in hardware.
-
-- Make panel drivers more generic: The DSS panel drivers currently call
-  interface/output specific functions to configure the hardware IP. When making
-  these calls, the driver isn't actually aware of the underlying output. The
-  output driver extracts information from the panel's omap_dss_device pointer
-  to figure out which interface it is connected to, and then configures the
-  corresponding output block. An example of this is when a DSI panel calls
-  dsi functions, the dsi driver figures out whether the panel is connected
-  to DSI1 or DSI2. This isn't correct, and having output as entities will
-  give the panel driver the exact information on which output to configure.
-  Having outputs also gives the opportunity to make panel drivers generic
-  across different platforms/SoCs, this is achieved as omap specific output
-  calls can be replaced by ops of a particular output type.
-
-- Have more complex connections between managers, outputs and devices: OMAPDSS
-  currently doesn't support use cases like 2 outputs connect to a single
-  device. This can be achieved by extending properties of outputs to connect to
-  more managers or devices.
-
-- Represent writeback as an output: The writeback pipeline fits well in OMAPDSS
-  as compared to overlays, managers or devices.
-
-Add a new struct to represent outputs. An output struct holds pointers to the
-manager and device structs to which it is connected. Add functions which can
-register an output, or look for one. Create an enum which represent each output
-instance.
+This function is just intended to be used once during the panel driver's probe.
+It makes sense for those interfaces which can be configured to a default timing.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/Makefile |    2 +-
- drivers/video/omap2/dss/dss.h    |    3 +++
- drivers/video/omap2/dss/output.c |   43 ++++++++++++++++++++++++++++++++++++++
- include/video/omapdss.h          |   30 ++++++++++++++++++++++++++
- 4 files changed, 77 insertions(+), 1 deletion(-)
- create mode 100644 drivers/video/omap2/dss/output.c
+ drivers/video/omap2/dss/dss.h        |    2 ++
+ drivers/video/omap2/dss/hdmi.c       |    6 ++++++
+ drivers/video/omap2/dss/hdmi_panel.c |   10 +++++-----
+ 3 files changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
-index 30a48fb..645f8c3 100644
---- a/drivers/video/omap2/dss/Makefile
-+++ b/drivers/video/omap2/dss/Makefile
-@@ -1,6 +1,6 @@
- obj-$(CONFIG_OMAP2_DSS) += omapdss.o
- omapdss-y := core.o dss.o dss_features.o dispc.o dispc_coefs.o display.o \
--	manager.o overlay.o apply.o
-+	manager.o overlay.o output.o apply.o
- omapdss-$(CONFIG_OMAP2_DSS_DPI) += dpi.o
- omapdss-$(CONFIG_OMAP2_DSS_RFBI) += rfbi.o
- omapdss-$(CONFIG_OMAP2_DSS_VENC) += venc.o venc_panel.o
 diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index d6cca82..e77d8d2 100644
+index 7e38ffd..df49c5d 100644
 --- a/drivers/video/omap2/dss/dss.h
 +++ b/drivers/video/omap2/dss/dss.h
-@@ -222,6 +222,9 @@ int dss_ovl_set_manager(struct omap_overlay *ovl,
- 		struct omap_overlay_manager *mgr);
- int dss_ovl_unset_manager(struct omap_overlay *ovl);
+@@ -485,6 +485,8 @@ static inline unsigned long hdmi_get_pixel_clock(void)
+ #endif
+ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev);
+ void omapdss_hdmi_display_disable(struct omap_dss_device *dssdev);
++void omapdss_hdmi_display_get_timing(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings);
+ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev,
+ 		struct omap_video_timings *timings);
+ int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 01665fa..2de1f91 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -544,6 +544,12 @@ static void hdmi_power_off(struct omap_dss_device *dssdev)
+ 	hdmi_runtime_put();
+ }
  
-+/* output */
-+void dss_register_output(struct omap_dss_output *out);
-+
- /* display */
- int dss_suspend_all_devices(void);
- int dss_resume_all_devices(void);
-diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
-new file mode 100644
-index 0000000..7d81be5
---- /dev/null
-+++ b/drivers/video/omap2/dss/output.c
-@@ -0,0 +1,43 @@
-+/*
-+ * Copyright (C) 2012 Texas Instruments Ltd
-+ * Author: Archit Taneja <archit@ti.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+
-+#include <video/omapdss.h>
-+
-+#include "dss.h"
-+
-+static LIST_HEAD(output_list);
-+
-+void dss_register_output(struct omap_dss_output *out)
++void omapdss_hdmi_display_get_timing(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings)
 +{
-+	list_add_tail(&out->list, &output_list);
++	*timings = hdmi.ip_data.cfg.timings;
 +}
 +
-+struct omap_dss_output *omap_dss_get_output(enum omap_dss_output_id id)
-+{
-+	struct omap_dss_output *out;
-+
-+	list_for_each_entry(out, &output_list, list) {
-+		if (out->id = id)
-+			return out;
-+	}
-+
-+	return NULL;
-+}
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index b868123..2926a04 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -207,6 +207,16 @@ enum omap_hdmi_flags {
- 	OMAP_HDMI_SDA_SCL_EXTERNAL_PULLUP = 1 << 0,
- };
+ int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
+ 					struct omap_video_timings *timings)
+ {
+diff --git a/drivers/video/omap2/dss/hdmi_panel.c b/drivers/video/omap2/dss/hdmi_panel.c
+index 8dce206..8473193 100644
+--- a/drivers/video/omap2/dss/hdmi_panel.c
++++ b/drivers/video/omap2/dss/hdmi_panel.c
+@@ -41,13 +41,13 @@ static struct {
  
-+enum omap_dss_output_id {
-+	OMAP_DSS_OUTPUT_DPI	= 1 << 0,
-+	OMAP_DSS_OUTPUT_DBI	= 1 << 1,
-+	OMAP_DSS_OUTPUT_SDI	= 1 << 2,
-+	OMAP_DSS_OUTPUT_DSI1	= 1 << 3,
-+	OMAP_DSS_OUTPUT_DSI2	= 1 << 4,
-+	OMAP_DSS_OUTPUT_VENC	= 1 << 5,
-+	OMAP_DSS_OUTPUT_HDMI	= 1 << 6,
-+};
+ static int hdmi_panel_probe(struct omap_dss_device *dssdev)
+ {
++	struct omap_video_timings timings;
 +
- /* RFBI */
+ 	DSSDBG("ENTER hdmi_panel_probe\n");
  
- struct rfbi_timings {
-@@ -492,6 +502,24 @@ struct omap_dsi_pin_config {
- 	int pins[OMAP_DSS_MAX_DSI_PINS];
- };
+-	dssdev->panel.timings = (struct omap_video_timings)
+-			{ 640, 480, 25175, 96, 16, 48, 2, 11, 31,
+-				OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_LOW,
+-				false,
+-			};
++	omapdss_hdmi_display_get_timing(dssdev, &timings);
++
++	dssdev->panel.timings = timings;
  
-+struct omap_dss_output {
-+	struct list_head list;
-+
-+	/* display type supported by the output */
-+	enum omap_display_type type;
-+
-+	/* output instance */
-+	enum omap_dss_output_id id;
-+
-+	/* output's platform device pointer */
-+	struct platform_device *pdev;
-+
-+	/* dynamic fields */
-+	struct omap_overlay_manager *manager;
-+
-+	struct omap_dss_device *device;
-+};
-+
- struct omap_dss_device {
- 	struct device dev;
- 
-@@ -699,6 +727,8 @@ struct omap_overlay_manager *omap_dss_get_overlay_manager(int num);
- int omap_dss_get_num_overlays(void);
- struct omap_overlay *omap_dss_get_overlay(int num);
- 
-+struct omap_dss_output *omap_dss_get_output(enum omap_dss_output_id id);
-+
- void omapdss_default_get_resolution(struct omap_dss_device *dssdev,
- 		u16 *xres, u16 *yres);
- int omapdss_default_get_recommended_bpp(struct omap_dss_device *dssdev);
+ 	DSSDBG("hdmi_panel_probe x_res= %d y_res = %d\n",
+ 		dssdev->panel.timings.x_res,
 -- 
 1.7.9.5
 

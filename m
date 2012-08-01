@@ -1,107 +1,33 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Date: Wed, 01 Aug 2012 05:13:33 +0000
-Subject: RE: [PATCH 5/5] drivers/video/exynos/exynos_dp_core.c: use devm_ functions
-Message-Id: <alpine.DEB.2.02.1208010708140.1931@localhost6.localdomain6>
+From: Damien Cassou <damien.cassou@gmail.com>
+Date: Wed, 01 Aug 2012 16:36:48 +0000
+Subject: Re: [PATCH 5/5] drivers/video/exynos/exynos_dp_core.c: use devm_ functions
+Message-Id: <CA+y5ggiOuhLk9paN5L0Z8odwM0vAP88fxiFtTjxb-XckHg6Tjg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr> <1343752762-16861-6-git-send-email-damien.cassou@lifl.fr> <002c01cd6f73$4252b090$c6f811b0$%han@samsung.com> <CAK9yfHzje6NLqi5ixxA3J4aT1a9p6wJNJePzTi4xG9LN6AeLVw@mail.gmail.com>
- <003e01cd6f9e$5a1146d0$0e33d470$%han@samsung.com> <CAK9yfHyvHEPQRFvuX6q5CZEEN_6xeTqWvitdtayib6W8t0qCWw@mail.gmail.com> <003f01cd6fa2$36463bd0$a2d2b370$%han@samsung.com>
-In-Reply-To: <003f01cd6fa2$36463bd0$a2d2b370$%han@samsung.com>
+References: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
+ <1343752762-16861-6-git-send-email-damien.cassou@lifl.fr> <002c01cd6f73$4252b090$c6f811b0$%han@samsung.com>
+ <CAK9yfHzje6NLqi5ixxA3J4aT1a9p6wJNJePzTi4xG9LN6AeLVw@mail.gmail.com> <004201cd6fa3$b0538b70$10faa250$%han@samsung.com>
+In-Reply-To: <004201cd6fa3$b0538b70$10faa250$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jingoo Han <jg1.han@samsung.com>
-Cc: 'Sachin Kamat' <sachin.kamat@linaro.org>, 'Damien Cassou' <damien.cassou@lifl.fr>, kernel-janitors@vger.kernel.org, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Sachin Kamat <sachin.kamat@linaro.org>, kernel-janitors@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, 1 Aug 2012, Jingoo Han wrote:
-
-> On Wednesday, August 01, 2012 1:38 PM Sachin Kamat wrote:
->>
->> On 1 August 2012 10:00, Jingoo Han <jg1.han@samsung.com> wrote:
->>> On Wednesday, August 01, 2012 1:00 PMSachin Kamat wrote:
->>>>
->>>> On 1 August 2012 04:51, Jingoo Han <jg1.han@samsung.com> wrote:
->>>>> On Wednesday, August 01, 2012 1:39 AM Damien Cassou wrote:
->>>>>>
->>>>>> From: Damien Cassou <damien.cassou@lifl.fr>
->>>>>>
->>>>>> The various devm_ functions allocate memory that is released when a driver
->>>>>> detaches.  This patch uses these functions for data that is allocated in
->>>>>> the probe function of a platform device and is only freed in the remove
->>>>>> function.
->>>>>>
->>>>>> Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
->>>>>>
->>>>>> ---
->>>>>>  drivers/video/exynos/exynos_dp_core.c |   27 +++++++--------------------
->>>>>>  1 file changed, 7 insertions(+), 20 deletions(-)
->>>>>>
->>>>>> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
->>>>>> index c6c016a..00fe4f0 100644
->>>>>> --- a/drivers/video/exynos/exynos_dp_core.c
->>>>>> +++ b/drivers/video/exynos/exynos_dp_core.c
->>>>>> @@ -872,7 +872,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->>>>>>
->>>>>>       dp->dev = &pdev->dev;
->>>>>>
->>>>>> -     dp->clock = clk_get(&pdev->dev, "dp");
->>>>>> +     dp->clock = devm_clk_get(&pdev->dev, "dp");
->>>>>>       if (IS_ERR(dp->clock)) {
->>>>>>               dev_err(&pdev->dev, "failed to get clock\n");
->>>>>>               return PTR_ERR(dp->clock);
->>>>>> @@ -881,31 +881,24 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->>>>>>       clk_enable(dp->clock);
->>>>>>
->>>>>>       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->>>>>> -     if (!res) {
->>>>>> -             dev_err(&pdev->dev, "failed to get registers\n");
->>>>>> -             ret = -EINVAL;
->>>>>> -             goto err_clock;
->>>>>> -     }
->>>>>
->>>>> Why do you remove this return check?
->>>>> If there is no reason, please, do it as follows:
->>>>>
->>>>>         res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->>>>>         if (!res) {
->>>>>                 dev_err(&pdev->dev, "failed to get registers\n");
->>>>> -               ret = -EINVAL;
->>>>> -               goto err_clock;
->>>>> +               return -EINVAL;
->>>>>         }
->>>>>
->>>>>
->>>>
->>>> devm_request_and_ioremap function checks the validity of res. Hence
->>>> this check above is redundant and can be removed.
->>>
->>>
->>> I don't think so.
->>> Even though function called next checks the NULL value,
->>> for robustness, the return value of platform_get_resource() should be
->>> checked.
->>>
->>> It is possible that devm_request_and_ioremap() can be changed in the future,
->>> as request_mem_region() & ioremap() were changed to devm_request_and_ioremap().
->>
->> They are not changed. They still exist.  devm_request_and_ioremap() is
->> an additional function provided for device managed resources.
+On Wed, Aug 1, 2012 at 7:08 AM, Jingoo Han <jg1.han@samsung.com> wrote:
+> To Damien,
+> As Sachin Kamat mentioned, please change the subject more specific. For example,
 >
->
-> OK, I see. I accept it.
-> Anyway it is simpler.
+>     video: exynos_dp: use devm_clk_get function
 
-This thread contains a discussion about the issue 
-http://lkml.org/lkml/2012/1/28/10
-Look for the comments by Wolfram Sang, who 
-implemented devm_request_and_ioremap, and who suggests that the NULL test 
-be removed.
+ok, done in a new thread titled:
 
-I rather agree with the desire to be safe and uniform, but these 
-initialization functions are really large, and with error handling code 
-(although not in this case) there is always the danger of jumping to the 
-wrong place, and thus making more of a mess.  It would be nice if the 
-platform_get_resource could be merged with devm_request_and_ioremap, but I 
-think that I looked once and there were not enough calls that were similar 
-enough to make that compelling.
+[PATCH v2] video: exynos_dp: use devm_clk_get function
 
-julia
+Thank you for the feedback
+
+-- 
+Damien Cassou
+http://damiencassou.seasidehosting.st
+
+"Lambdas are relegated to relative obscurity until Java makes them
+popular by not having them." James Iry

@@ -1,41 +1,48 @@
-From: Jun Nie <niej0001@gmail.com>
-Date: Thu, 23 Aug 2012 06:23:01 +0000
-Subject: Re: [RFC 0/5] Generic panel framework
-Message-Id: <CAGA24MLnW-i0koFuAsnFQ2mNnrLupkmbxW5T8WYiV3QuoA2vig@mail.gmail.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Thu, 02 Aug 2012 06:26:11 +0000
+Subject: [PATCH] video: exynos-mipi-dsi: Add missing static storage class specifiers
+Message-Id: <1343888051-406-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345164583-18924-1-git-send-email-laurent.pinchart@ideasonboard.com>
-	<3937256.gcqPRVoNWN@avalon>
-	<1345528197.15491.8.camel@lappyti>
-	<3648908.jA5PYymWxV@avalon>
-In-Reply-To: <3648908.jA5PYymWxV@avalon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, linux-media@vger.kernel.org, Bryan Wu <bryan.wu@canonical.com>, Richard Purdie <rpurdie@rpsys.net>, Marcus Lorentzon <marcus.lorentzon@linaro.org>, Sumit Semwal <sumit.semwal@ti.com>, Archit Taneja <archit@ti.com>, Sebastien Guiriec <s-guiriec@ti.com>, Inki Dae <inki.dae@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+To: linux-fbdev@vger.kernel.org
 
-Hi Laurent,
-    Do you plan to add an API to get and parse EDID to mode list?
-video mode is tightly coupled with panel that is capable of hot-plug.
-Or you are busy on modifying EDID parsing code for sharing it amoung
-DRM/FB/etc? I see you mentioned this in Mar. It is great if you are
-considering add more info into video mode, such as pixel repeating, 3D
-timing related parameter. I have some code for CEA modes filtering and
-3D parsing, but still tight coupled with FB and with a little hack
-style.
+Fixes the following sparse warnings:
+drivers/video/exynos/exynos_mipi_dsi.c:208:22: warning:
+symbol 'exynos_mipi_dsi_find_lcd_device' was not declared. Should it be static?
+drivers/video/exynos/exynos_mipi_dsi.c:268:22: warning:
+symbol 'exynos_mipi_dsi_bind_lcd_ddi' was not declared. Should it be static?
 
-    My HDMI driver is implemented as lcd device as you mentioned here.
-But more complex than other lcd devices for a kthread is handling
-hot-plug/EDID/HDCP/ASoC etc.
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+---
+ drivers/video/exynos/exynos_mipi_dsi.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-    I also feel a little weird to add code parsing HDMI audio related
-info in fbmod.c in my current implementation, thought it is the only
-place to handle EDID in kernel. Your panel framework provide a better
-place to add panel related audio/HDCP code. panel notifier can also
-trigger hot-plug related feature, such as HDCP start.
+diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
+index 4bc2b8a..ef68228 100644
+--- a/drivers/video/exynos/exynos_mipi_dsi.c
++++ b/drivers/video/exynos/exynos_mipi_dsi.c
+@@ -205,7 +205,8 @@ int exynos_mipi_dsi_register_lcd_device(struct mipi_dsim_lcd_device *lcd_dev)
+ 	return 0;
+ }
+ 
+-struct mipi_dsim_ddi *exynos_mipi_dsi_find_lcd_device(struct mipi_dsim_lcd_driver *lcd_drv)
++static struct mipi_dsim_ddi *exynos_mipi_dsi_find_lcd_device(
++					struct mipi_dsim_lcd_driver *lcd_drv)
+ {
+ 	struct mipi_dsim_ddi *dsim_ddi, *next;
+ 	struct mipi_dsim_lcd_device *lcd_dev;
+@@ -265,7 +266,8 @@ int exynos_mipi_dsi_register_lcd_driver(struct mipi_dsim_lcd_driver *lcd_drv)
+ 
+ }
+ 
+-struct mipi_dsim_ddi *exynos_mipi_dsi_bind_lcd_ddi(struct mipi_dsim_device *dsim,
++static struct mipi_dsim_ddi *exynos_mipi_dsi_bind_lcd_ddi(
++						struct mipi_dsim_device *dsim,
+ 						const char *name)
+ {
+ 	struct mipi_dsim_ddi *dsim_ddi, *next;
+-- 
+1.7.4.1
 
-    Looking forward to your hot-plug panel patch. Or I can help add it
-if you would like me to.
-
-Thanks!
-Jun

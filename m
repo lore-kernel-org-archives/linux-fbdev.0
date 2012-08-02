@@ -1,123 +1,81 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 23 Aug 2012 20:48:55 +0000
-Subject: Re: [PATCH 01/10] video: exynos_dp: Change aux transaction failures
-Message-Id: <50369737.7080109@gmx.de>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Thu, 02 Aug 2012 18:03:27 +0000
+Subject: viafb on Clevo M5x0V laptop (+VT1631L)
+Message-Id: <201208022003.28404.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344398064-13563-2-git-send-email-seanpaul@chromium.org>
-In-Reply-To: <1344398064-13563-2-git-send-email-seanpaul@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-On 08/20/2012 09:02 AM, Jingoo Han wrote:
-> On Wednesday, August 08, 2012 12:54 PM Sean Paul wrote:
->>
->> This patch adds the function name to aux transaction failure messages
->> so we can tell which transaction is failing. It also changes the level
->> of Aux Transaction fail messages from error to debug. We retry the
->> transactions a few times and will report errors if warranted outside of
->> this function.
->>
->> Signed-off-by: Sean Paul <seanpaul@chromium.org>
->> Reviewed-by: Doug Anderson <dianders@chromium.org>
->> Reviewed-by: Bernie Thompson <bhthompson@chromium.org>
->> ---
-> 
-> 
-> Acked-by: Jingoo Han <jg1.han@samsung.com>
-> 
-> It looks good.
+Hello,
+I've got a Clevo M5x0V laptop which has VIA PM800 chipset (1106:3118) and 
+1280x768 LCD panel connected using VT1631L LVDS transmitter. There's a 
+schematic of this laptop available on the web which shows that VT1631L's I2C 
+port is not connected anywhere...
 
-Applied.
+viafb does not work properly - LCD panel (and backlight) is turned off upon 
+module load and there's 640x480 signal on VGA connector (even when monitor 
+was not connected during module load).
+
+Looking at the code, there's almost nothing for VT1631. What needs to be done 
+in order for the LCD to work? Xorg seems to work using openchrome (but it is 
+not able to restore the card on resume from S3):
+(II) CHROME(0): Unable to get panel size from EDID. Return code: 0
+(II) CHROME(0): ViaPanelGetNativeModeFromScratchPad
+(II) CHROME(0): Native Panel Resolution is 1280x768
 
 
-Thanks,
+This is from kernel 3.5 with VIAFB_DEBUG and VIAFB_WARN enabled:
 
-Florian Tobias Schandinat
+[  153.051061] VIA Graphics Integration Chipset framebuffer 2.4 initializing
+[  153.051765] viafb 0000:01:00.0: power state changed by ACPI to D0
+[  153.051773] viafb 0000:01:00.0: power state changed by ACPI to D0
+[  153.053535] Device ID = 3259
+[  153.053553] FB Size = 4000
+[  153.059984] VIAFB PCI Probe!!
+[  153.060044] viafb: Probing I2C bus 0x26
+[  153.092761] viafb: Probing I2C bus 0x31
+[  155.588019] viafb: Probing I2C bus 0x2C
+[  155.619016] viafb: Finished I2C bus probing
+[  155.619021] parse_lcd_port: viafb_lcd_port:,interface:0
+[  155.619023] parse_dvi_port: viafb_dvi_port:,interface:0
+[  155.713224] TMDS Chip = 0
+[  155.713227] viafb_init_dvi_size()
+[  155.713229] viafb_dvi_sense!!
+[  155.714415] viafb_dvi_query_EDID!!
+[  155.716820] viafb_dvi_query_EDID!!
+[  155.719179] viafb_lvds_identify_vt1636.
+[  155.812018] viafb_lvds_identify_vt1636.
+[  155.814383] viafb_init_lcd_size()
+[  155.814384] fp_get_panel_id()
+[  155.814387] LVDS Chip = 0
+[  155.814389] LVDS1 output_interface = 6
+[  155.814391] LVDS2 output_interface = 6
+[  155.814405] viafb_check_var!
+[  155.815250] fbcon: Via (fb0) is primary device
+[  155.815257] viafb_open!
+[  155.818608] viafb_set_par!
+[  155.818720] via_set_primary_pitch(0x00000A00)
+[  155.818723] via_set_secondary_pitch(0x00000A00)
+[  155.818727] via_set_primary_color_depth(24)
+[  155.818730] via_set_secondary_color_depth(24)
+[  155.818788] viafb_pan_display, address = 0
+[  155.818789] via_set_primary_address(0x00000000)
+[  155.818793] via_set_secondary_address(0x00000000)
+[  155.819020] viafb_pan_display, address = 0
+[  155.819021] via_set_primary_address(0x00000000)
+[  155.819025] via_set_secondary_address(0x00000000)
+[  155.819044] viafb 2D engine: imageblit
+...many imageblits...
+[  155.826516] Console: switching to colour frame buffer device 80x30
+[  155.826522] viafb_pan_display, address = 0
+[  155.826523] via_set_primary_address(0x00000000)
+[  155.826527] via_set_secondary_address(0x00000000)
+...many imageblits...
+[  155.833889] fb0: Via frame buffer device 640x480-32bpp
 
-> 
-> 
-> 
->>  drivers/video/exynos/exynos_dp_reg.c |   21 ++++++++++++++-------
->>  1 files changed, 14 insertions(+), 7 deletions(-)
->>
->> diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
->> index ce401c8..a121bed 100644
->> --- a/drivers/video/exynos/exynos_dp_reg.c
->> +++ b/drivers/video/exynos/exynos_dp_reg.c
->> @@ -471,7 +471,8 @@ int exynos_dp_write_byte_to_dpcd(struct exynos_dp_device *dp,
->>  		if (retval = 0)
->>  			break;
->>  		else
->> -			dev_err(dp->dev, "Aux Transaction fail!\n");
->> +			dev_dbg(dp->dev, "%s: Aux Transaction fail!\n",
->> +				__func__);
->>  	}
->>
->>  	return retval;
->> @@ -511,7 +512,8 @@ int exynos_dp_read_byte_from_dpcd(struct exynos_dp_device *dp,
->>  		if (retval = 0)
->>  			break;
->>  		else
->> -			dev_err(dp->dev, "Aux Transaction fail!\n");
->> +			dev_dbg(dp->dev, "%s: Aux Transaction fail!\n",
->> +				__func__);
->>  	}
->>
->>  	/* Read data buffer */
->> @@ -575,7 +577,8 @@ int exynos_dp_write_bytes_to_dpcd(struct exynos_dp_device *dp,
->>  			if (retval = 0)
->>  				break;
->>  			else
->> -				dev_err(dp->dev, "Aux Transaction fail!\n");
->> +				dev_dbg(dp->dev, "%s: Aux Transaction fail!\n",
->> +					__func__);
->>  		}
->>
->>  		start_offset += cur_data_count;
->> @@ -632,7 +635,8 @@ int exynos_dp_read_bytes_from_dpcd(struct exynos_dp_device *dp,
->>  			if (retval = 0)
->>  				break;
->>  			else
->> -				dev_err(dp->dev, "Aux Transaction fail!\n");
->> +				dev_dbg(dp->dev, "%s: Aux Transaction fail!\n",
->> +					__func__);
->>  		}
->>
->>  		for (cur_data_idx = 0; cur_data_idx < cur_data_count;
->> @@ -677,7 +681,7 @@ int exynos_dp_select_i2c_device(struct exynos_dp_device *dp,
->>  	/* Start AUX transaction */
->>  	retval = exynos_dp_start_aux_transaction(dp);
->>  	if (retval != 0)
->> -		dev_err(dp->dev, "Aux Transaction fail!\n");
->> +		dev_dbg(dp->dev, "%s: Aux Transaction fail!\n", __func__);
->>
->>  	return retval;
->>  }
->> @@ -717,7 +721,8 @@ int exynos_dp_read_byte_from_i2c(struct exynos_dp_device *dp,
->>  		if (retval = 0)
->>  			break;
->>  		else
->> -			dev_err(dp->dev, "Aux Transaction fail!\n");
->> +			dev_dbg(dp->dev, "%s: Aux Transaction fail!\n",
->> +				__func__);
->>  	}
->>
->>  	/* Read data */
->> @@ -777,7 +782,9 @@ int exynos_dp_read_bytes_from_i2c(struct exynos_dp_device *dp,
->>  				if (retval = 0)
->>  					break;
->>  				else
->> -					dev_err(dp->dev, "Aux Transaction fail!\n");
->> +					dev_dbg(dp->dev,
->> +						"%s: Aux Transaction fail!\n",
->> +						__func__);
->>  			}
->>  			/* Check if Rx sends defer */
->>  			reg = readl(dp->reg_base + EXYNOS_DP_AUX_RX_COMM);
->> --
->> 1.7.7.3
-> 
-> 
 
+-- 
+Ondrej Zary

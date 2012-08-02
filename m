@@ -1,71 +1,62 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Wed, 01 Aug 2012 14:01:21 +0000
+From: Alex Courbot <acourbot@nvidia.com>
+Date: Thu, 02 Aug 2012 08:00:13 +0000
 Subject: Re: [RFC][PATCH v3 1/3] runtime interpreted power sequences
-Message-Id: <20120801140121.GB19957@avionic-0098.adnet.avionic-design.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ZfOjI3PrQbgiZnxM"
+Message-Id: <501A338D.7080105@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120731105640.GD16155@avionic-0098.adnet.avionic-design.de>
- <20120731141328.GS4468@opensource.wolfsonmicro.com>
- <20120731142216.GA19591@avionic-0098.adnet.avionic-design.de>
- <20120731142607.GV4468@opensource.wolfsonmicro.com>
- <20120731143235.GA21126@avionic-0098.adnet.avionic-design.de>
- <20120731153941.GF4468@opensource.wolfsonmicro.com>
- <20120801074113.GF29673@avionic-0098.adnet.avionic-design.de>
- <20120801132651.GU11892@opensource.wolfsonmicro.com>
- <20120801133814.GA19771@avionic-0098.adnet.avionic-design.de>
- <20120801135531.GW11892@opensource.wolfsonmicro.com>
-In-Reply-To: <20120801135531.GW11892-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>
-To: Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>
-Cc: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com> <1343390750-3642-2-git-send-email-acourbot@nvidia.com> <50170EA0.1010408@wwwdotorg.org>
+In-Reply-To: <50170EA0.1010408@wwwdotorg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Arnd Bergmann <arnd@arndb.de>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
 
+On 07/31/2012 07:45 AM, Stephen Warren wrote:
+> Oh I see. That's a little confusing. Why not just reference the relevant
+> resources directly in each step; something more like:
+>
+> 		gpio@1 {
+> 			action = "enable-gpio";
+> 			gpio = <&gpio 1 0>;
+> 		};
+>
+> I guess that might make parsing/building a little harder, since you'd
+> have to detect when you'd already done gpio_request() on a given GPIO
+> and not repeat it or something like that, but to me this makes the DT a
+> lot easier to comprehend.
 
---ZfOjI3PrQbgiZnxM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I tried to move towards having the phandles directly in the sequences 
+themselves - that reminded me why I did not do that in the first place. 
+Let's say we have a sequence like this (reg property omitted on purpose):
 
-On Wed, Aug 01, 2012 at 02:55:31PM +0100, Mark Brown wrote:
-> On Wed, Aug 01, 2012 at 03:38:14PM +0200, Thierry Reding wrote:
-> > On Wed, Aug 01, 2012 at 02:26:51PM +0100, Mark Brown wrote:
->=20
-> > > This is why __devinit data will only be discarded when this is not
-> > > possible.
->=20
-> > That's exactly my point. But I seem to have miserably failed to get that
-> > across. =3D)
->=20
-> We must be talking at cross purposes then.  What I'm saying is that the
-> framework shouldn't rely on platform data and should assume that the
-> kernel might be configured so it can be discarded (by copying most
-> likely).
+	power-on-sequence {
+		step@0 {
+			regulator = <&backlight_reg>;
+			enable;
+		};
+		step@1 {
+			delay = <10000>;
+		};
+		step@2 {
+			pwm = <&pwm 2 5000000>;
+			enable;
+		};
+		step@3 {
+			gpio = <&gpio 28 0>;
+			enable;
+		};
+	};
 
-Yes. I think this should be solved by the power_seq_build() function
-which uses the platform data description of the sequence and builds it
-into something for internal use that doesn't rely on anything in the
-platform data.
+The problem is, how do we turn these phandles into the resource of 
+interest. The type of the resource can be infered by the name of the 
+property. The hard part is resolving the resource from the phandle - it 
+seems like the API just does not allow to do this. GPIO has 
+of_get_named_gpio, but AFAIK there are no equivalent for regulator 
+consumer and PWM: the only way to use the DT with them is through 
+get_regulator and get_pwm which work at the device level.
 
-Thierry
+Or is there a way that I overlooked?
 
---ZfOjI3PrQbgiZnxM
-Content-Type: application/pgp-signature
+Thanks,
+Alex.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQGTaxAAoJEN0jrNd/PrOhLqEP/05y+bxKQvC1868DzGqLgol/
-2SXAJyQp3CZrc3QNcOB8gxa8cocnTlwIpAmDN8tyBnNYH8YJTcGTI4N2xEQDsTMh
-7mhCUdbONE0DwprM29vIzcWKHcUNz/chZMAhdFTugcVgIx0+FUOF9LeYcvlkl67a
-ilYszPoMlVldvkLHy/A0/SCYjNJNAs2elHGWYlEmqsxFe8PxpMBpT2/eD/2VMZs3
-JunOJsCyW+DNmS+uJBnuqzU9Kvkb8hOkO3dE+/4/2b08f+D8O82ekkQHB9XkWV2j
-auqtMDf9yFSo/W1pyAHcHY9Fmz0x0GEGK85Ea3PL12BZOPkI0oAvJBCIRSXb1jBG
-LC8VZmbV6UViS7qO5msB4CMY/kp6mtIhtdKWKrm9CyfDzZXvNqBHqhAU4LRxahk9
-aqEYmJUDSAKudOq51TisaiHQoicOMNxnMwXD/KLwGUV+Xo/niNOttX2kiSP888Q7
-NP0fcwCEc67EIchfBlxsN1PCr5sM8N6rTDjaB+VKfJhgqKsthr0o8/Hxar09UFzS
-bbSIjxknnJVDWKIz/qU3DwnTRzpVx+7d+Si45ghfbzCGuuNdP/sw3MhLrFogkmwf
-Lqc3J93uNpPy7zdDK8nFtOFu1Hr3PGDgMq8cAXH49OM8bJCHUvApyehdgTzdEHiL
-b/DdJl+5uojR3XkIGElt
-=Qr+A
------END PGP SIGNATURE-----
-
---ZfOjI3PrQbgiZnxM--

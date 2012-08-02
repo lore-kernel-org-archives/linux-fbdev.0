@@ -1,48 +1,117 @@
-From: Dongjin Kim <Dongjin.Kim@agreeyamobility.net>
-Date: Tue, 07 Aug 2012 00:47:15 +0000
-Subject: RE: [PATCH] video: s3c-fb: Fix compile error/warning if CONFIG_OF is not selected
-Message-Id: <frxrb1h2wwxmdtvwst6uk43m.1344300433108@email.android.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Date: Thu, 02 Aug 2012 19:35:40 +0000
+Subject: Re: [PATCH v2] of: Add videomode helper
+Message-Id: <501AD68C.1000904@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344261462-14183-1-git-send-email-dongjin.kim@agreeyamobility.net>
- <1344261462-14183-5-git-send-email-dongjin.kim@agreeyamobility.net>,<000a01cd7433$07555780$16000680$%han@samsung.com>
-In-Reply-To: <000a01cd7433$07555780$16000680$%han@samsung.com>
+References: <1341388595-30672-1-git-send-email-s.hauer@pengutronix.de>
+In-Reply-To: <1341388595-30672-1-git-send-email-s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>
-Cc: 'Dongjin Kim' <tobetter@gmail.com>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Cc: "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org" <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, "kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org" <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 
-U29ycnksIHNlZW1zIGl0cyBteSBiYWQuDQoNCkkgdG9vayBjb3VwbGUgb2YgY29tbWl0cyBmcm9t
-IGxpbmFybyBrZXJuZWwgZ2l0IGZvciBzM2MtZmIgZHJpdmVyIHRlc3Rpbmcgb24gbXkgaGFyZHdh
-cmUgYW5kIGVuY291bnRlcmVkIHRoZSBjb21waWxlIHByb2JsZW0uIE5vdyBJIGdvdCB5b3VyIG1l
-YW5pbmcsIERUIGlzIG5vdCBtZXJnZWQgeWV0Lg0KDQpUaGFua3MsDQpEb25namluLg0KLS0tLS0g
-v/i6uyC43r3DwfYgLS0tLS0NCrq4s70gu+e29zpKaW5nb28gSGFuIDxqZzEuaGFuQHNhbXN1bmcu
-Y29tPg0Kud60wiC757b3OidEb25namluIEtpbScgPHRvYmV0dGVyQGdtYWlsLmNvbT4NCsL8wbY6
-RG9uZ2ppbiBLaW0gPERvbmdqaW4uS2ltQGFncmVleWFtb2JpbGl0eS5uZXQ+LCAnRmxvcmlhbiBU
-b2JpYXMgU2NoYW5kaW5hdCcgPEZsb3JpYW5TY2hhbmRpbmF0QGdteC5kZT4sICJsaW51eC1mYmRl
-dkB2Z2VyLmtlcm5lbC5vcmciIDxsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmc+LCAibGludXgt
-a2VybmVsQHZnZXIua2VybmVsLm9yZyIgPGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+LCAn
-SmluZ29vIEhhbicgPGpnMS5oYW5Ac2Ftc3VuZy5jb20+DQq6uLO9IL3DsKM6MjAxMi4gOC4gNy4g
-OToyNCC/wMD8DQrBprjxOlJlOiBbUEFUQ0hdIHZpZGVvOiBzM2MtZmI6IEZpeCBjb21waWxlIGVy
-cm9yL3dhcm5pbmcgaWYgQ09ORklHX09GIGlzIG5vdCBzZWxlY3RlZA0KDQoNCg0KT24gTW9uZGF5
-LCBBdWd1c3QgMDYsIDIwMTIgMTA6NTggUE0gRG9uZ2ppbiBLaW0gd3JvdGU6DQo+DQo+IENoYW5n
-ZS1JZDogSTVkN2ZmNmYwMDcwYTEwMjI1ZDViMDY0YjM2MmQzZDhmMjE0Nzg3ZmQNCj4gU2lnbmVk
-LW9mZi1ieTogRG9uZ2ppbiBLaW0gPGRvbmdqaW4ua2ltQGFncmVleWFtb2JpbGl0eS5uZXQ+DQo+
-IC0tLQ0KPiAgZHJpdmVycy92aWRlby9zM2MtZmIuYyB8ICAgIDYgKystLS0tDQo+ICAxIGZpbGUg
-Y2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQ0KPg0KPiBkaWZmIC0tZ2l0
-IGEvZHJpdmVycy92aWRlby9zM2MtZmIuYyBiL2RyaXZlcnMvdmlkZW8vczNjLWZiLmMNCj4gaW5k
-ZXggOGM4YWRiNS4uMjY4YmUwYyAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9zM2MtZmIu
-Yw0KPiArKysgYi9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jDQo+IEBAIC0xNTI3LDEzICsxNTI3LDEx
-IEBAIHN0YXRpYyBpbnQgczNjX2ZiX2R0X3BhcnNlX2dwaW9zKHN0cnVjdCBkZXZpY2UgKmRldiwg
-c3RydWN0IHMzY19mYiAqc2ZiLA0KPg0KPiAgc3RhdGljIHZvaWQgczNjX2ZiX2R0X2ZyZWVfZ3Bp
-b3Moc3RydWN0IHMzY19mYiAqc2ZiKQ0KPiAgew0KPiAtICAgICByZXR1cm4gMDsNCj4gIH0NCj4N
-Cj4gLXN0YXRpYyBpbnQgczNjX2ZiX2R0X3BhcnNlX3BkYXRhKHN0cnVjdCBkZXZpY2UgKmRldiwN
-Cj4gLSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJ1Y3QgczNjX2ZiX3Bs
-YXRkYXRhICoqcGRhdGEpDQo+ICtzdGF0aWMgc3RydWN0IHMzY19mYl9wbGF0ZGF0YSAqczNjX2Zi
-X2R0X3BhcnNlX3BkYXRhKHN0cnVjdCBkZXZpY2UgKmRldikNCj4gIHsNCj4gLSAgICAgcmV0dXJu
-IDA7DQo+ICsgICAgIHJldHVybiBOVUxMOw0KPiAgfQ0KPiAgI2VuZGlmIC8qIENPTkZJR19PRiAq
-Lw0KDQoNClVtLCBEVCBpcyBub3QgeWV0IG1lcmdlZCB0byBzM2MtZmIgZHJpdmVyLg0KczNjX2Zi
-X2R0X3BhcnNlX3BkYXRhKCkgYW5kIHMzY19mYl9kdF9mcmVlX2dwaW9zKCkgYXJlIG5vdCBhdmFp
-bGFibGUuDQoNClNvLCB0aGlzIHBhdGNoIGlzIHVubmVjZXNzYXJ5Lg0KDQpCZXN0IHJlZ2FyZHMs
-DQpKaW5nb28gSGFuDQoNCg0KPg0KPiAtLQ0KPiAxLjcuOS41DQoNCg0K
+On 07/04/2012 01:56 AM, Sascha Hauer wrote:
+> This patch adds a helper function for parsing videomodes from the devicetree.
+> The videomode can be either converted to a struct drm_display_mode or a
+> struct fb_videomode.
+
+> diff --git a/Documentation/devicetree/bindings/video/displaymode b/Documentation/devicetree/bindings/video/displaymode
+
+> +Required properties:
+> + - xres, yres: Display resolution
+> + - left-margin, right-margin, hsync-len: Horizontal Display timing parameters
+> +   in pixels
+> +   upper-margin, lower-margin, vsync-len: Vertical display timing parameters in
+> +   lines
+
+Perhaps bike-shedding, but...
+
+For the margin property names, wouldn't it be better to use terminology
+more commonly used for video timings rather than Linux FB naming. In
+other words naming like:
+
+hactive, hsync-len, hfront-porch, hback-porch?
+
+> + - clock: displayclock in Hz
+> +
+> +Optional properties:
+> + - width-mm, height-mm: Display dimensions in mm
+> + - hsync-active-high (bool): Hsync pulse is active high
+> + - vsync-active-high (bool): Vsync pulse is active high
+> + - interlaced (bool): This is an interlaced mode
+> + - doublescan (bool): This is a doublescan mode
+> +
+> +There are different ways of describing a display mode. The devicetree representation
+> +corresponds to the one used by the Linux Framebuffer framework described here in
+> +Documentation/fb/framebuffer.txt. This representation has been chosen because it's
+> +the only format which does not allow for inconsistent parameters.Unlike the Framebuffer
+> +framework the devicetree has the clock in Hz instead of ps.
+
+As Rob mentioned, I think there shouldn't be any mention of Linux FB here.
+
+> +
+> +Example:
+> +
+> +	display@0 {
+
+This node appears to describe a video mode, not a display, hence the
+node name seems wrong.
+
+Many displays can support multiple different video modes. As mentioned
+elsewhere, properties like display width/height are properties of the
+display not the mode.
+
+So, I might expect something more like the following (various overhead
+properties like reg/#address-cells etc. elided for simplicity):
+
+disp: display {
+    width-mm = <...>;
+    height-mm = <...>;
+    modes {
+        mode@0 {
+		/* 1920x1080p24 */
+		clock = <52000000>;
+		xres = <1920>;
+		yres = <1080>;
+		left-margin = <25>;
+		right-margin = <25>;
+		hsync-len = <25>;
+		lower-margin = <2>;
+		upper-margin = <2>;
+		vsync-len = <2>;
+		hsync-active-high;
+        };
+        mode@1 {
+        };
+    };
+};
+
+display-connector {
+    display = <&disp>;
+    // interface-specific properties such as pixel format here
+};
+
+Finally, have you considered just using an EDID instead of creating
+something custom? I know that creating an EDID is harder than writing a
+few simple properties into a DT, but EDIDs have the following advantages:
+
+a) They're already standardized and very common.
+
+b) They allow other information such as a display's HDMI audio
+capabilities to be represented, which can then feed into an ALSA driver.
+
+c) The few LCD panel datasheets I've seen actually quote their
+specification as an EDID already, so deriving the EDID may actually be easy.
+
+d) People familiar with displays are almost certainly familiar with
+EDID's mode representation. There are many ways of representing display
+modes (sync position vs. porch widths, htotal specified rather than
+specifying all the components and hence htotal being calculated etc.).
+Not everyone will be familiar with all representations. Conversion
+errors are less likely if the target is EDID's familiar format.
+
+e) You'll end up with exactly the same data as if you have a DDC-based
+external monitor rather than an internal panel, so you end up getting to
+a common path in display handling code much more quickly.
 

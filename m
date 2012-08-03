@@ -1,62 +1,64 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Thu, 02 Aug 2012 21:13:48 +0000
-Subject: Re: viafb on Clevo M5x0V laptop (+VT1631L)
-Message-Id: <201208022313.48729.linux@rainbow-software.org>
+From: Damien Cassou <damien.cassou@lifl.fr>
+Date: Fri, 03 Aug 2012 15:40:12 +0000
+Subject: [PATCH 2/5] drivers/video/bf54x-lq043fb.c: use devm_ functions
+Message-Id: <1344008414-2894-4-git-send-email-damien.cassou@lifl.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201208022003.28404.linux@rainbow-software.org> <501AE71A.80903@gmx.de>
-In-Reply-To: <501AE71A.80903@gmx.de>
+References: <1344008414-2894-1-git-send-email-damien.cassou@lifl.fr>
+In-Reply-To: <1344008414-2894-1-git-send-email-damien.cassou@lifl.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thursday 02 August 2012 22:46:18 Florian Tobias Schandinat wrote:
-> Hi Ondrej,
->
-> On 08/02/2012 06:03 PM, Ondrej Zary wrote:
-> > Hello,
-> > I've got a Clevo M5x0V laptop which has VIA PM800 chipset (1106:3118) and
-> > 1280x768 LCD panel connected using VT1631L LVDS transmitter. There's a
-> > schematic of this laptop available on the web which shows that VT1631L's
-> > I2C port is not connected anywhere...
-> >
-> > viafb does not work properly - LCD panel (and backlight) is turned off
-> > upon module load and there's 640x480 signal on VGA connector (even when
-> > monitor was not connected during module load).
->
-> Yes, that's the default (640x480-60 on the VGA output) that VIA selected
-> when they wrote the module. I tried to add some auto detect mechanism,
-> but I guess in your case it wouldn't help, even if it were complete. The
-> traditional way to use viafb is via module parameters as described in
-> Documentation/fb/viafb.txt
-> In your case something like this might work:
-> viafb_mode80x768 viafb_lcd_panel_id=3 viafb_active_dev=LCD
+From: Damien Cassou <damien.cassou@lifl.fr>
 
-Thank you very much, it works with these parameters! Looks like viafb can wake 
-up the chip from S3, only the colors are messed up (X<->VT switch fixes 
-that).
+The various devm_ functions allocate memory that is released when a driver
+detaches. This patch replaces the use of kzalloc by devm_kzalloc.
 
-> Additionally it might be required to add viafb_lcd_port with any of
-> DVP0, DVP1, DFP_HIGHLOW, DFP_HIGH, DFP_LOW.
->
-> > Looking at the code, there's almost nothing for VT1631. What needs to be
-> > done in order for the LCD to work? Xorg seems to work using openchrome
-> > (but it is not able to restore the card on resume from S3):
-> > (II) CHROME(0): Unable to get panel size from EDID. Return code: 0
-> > (II) CHROME(0): ViaPanelGetNativeModeFromScratchPad
-> > (II) CHROME(0): Native Panel Resolution is 1280x768
->
-> Interesting that they get the panel resolution from the scratch pad. The
-> official documentation does not contain any useful information about it
-> (and openchrome didn't work on any of my LCD devices that I tested,
-> hence I didn't care whether they did have any code in that area)
-> Maybe the above module parameters will help you, otherwise more
-> investigation will be required.
+Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
 
-Looking at openchrome and viafb code - the code is already present in viafb in 
-fp_id_to_vindex() function in lcd.c. It even finds correct panel_id for me 
-(3). But it looks like that the result is not used.
+---
+ drivers/video/bf54x-lq043fb.c |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
--- 
-Ondrej Zary
+diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
+index dc2f004..47702ee 100644
+--- a/drivers/video/bf54x-lq043fb.c
++++ b/drivers/video/bf54x-lq043fb.c
+@@ -601,7 +601,8 @@ static int __devinit bfin_bf54x_probe(struct platform_device *pdev)
+
+ 	fbinfo->fbops = &bfin_bf54x_fb_ops;
+
+-	fbinfo->pseudo_palette = kzalloc(sizeof(u32) * 16, GFP_KERNEL);
++	fbinfo->pseudo_palette = devm_kzalloc(&pdev->dev, sizeof(u32) * 16,
++					      GFP_KERNEL);
+ 	if (!fbinfo->pseudo_palette) {
+ 		printk(KERN_ERR DRIVER_NAME
+ 		       "Fail to allocate pseudo_palette\n");
+@@ -616,7 +617,7 @@ static int __devinit bfin_bf54x_probe(struct platform_device *pdev)
+ 		       "Fail to allocate colormap (%d entries)\n",
+ 		       BFIN_LCD_NBR_PALETTE_ENTRIES);
+ 		ret = -EFAULT;
+-		goto out5;
++		goto out4;
+ 	}
+
+ 	if (request_ports(info)) {
+@@ -671,8 +672,6 @@ out7:
+ 	free_ports(info);
+ out6:
+ 	fb_dealloc_cmap(&fbinfo->cmap);
+-out5:
+-	kfree(fbinfo->pseudo_palette);
+ out4:
+ 	dma_free_coherent(NULL, fbinfo->fix.smem_len, info->fb_buffer,
+ 			  info->dma_handle);
+@@ -699,7 +698,6 @@ static int __devexit bfin_bf54x_remove(struct platform_device *pdev)
+ 		dma_free_coherent(NULL, fbinfo->fix.smem_len, info->fb_buffer,
+ 				  info->dma_handle);
+
+-	kfree(fbinfo->pseudo_palette);
+ 	fb_dealloc_cmap(&fbinfo->cmap);
+
+ #ifndef NO_BL_SUPPORT

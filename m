@@ -1,38 +1,74 @@
-From: Rob Landley <rob@landley.net>
-Date: Thu, 23 Aug 2012 21:29:37 +0000
-Subject: Re: [PATCHv3 3/9] serial: vt8500: Add devicetree support for
-Message-Id: <5036A0C1.4030209@landley.net>
+From: Damien Cassou <damien.cassou@lifl.fr>
+Date: Fri, 03 Aug 2012 15:40:10 +0000
+Subject: [PATCH 1/5] drivers/video/epson1355fb.c: use devm_ functions
+Message-Id: <1344008414-2894-2-git-send-email-damien.cassou@lifl.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345582058-2291-1-git-send-email-linux@prisktech.co.nz>
- <20120821231255.71a7515a@pyramind.ukuu.org.uk>
- <1345617278.7491.4.camel@gitbox> <201208220644.18059.arnd@arndb.de>
-In-Reply-To: <201208220644.18059.arnd@arndb.de>
+References: <1344008414-2894-1-git-send-email-damien.cassou@lifl.fr>
+In-Reply-To: <1344008414-2894-1-git-send-email-damien.cassou@lifl.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Christopher Hoover <ch@murgatroid.com>
+Cc: kernel-janitors@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 08/22/2012 01:44 AM, Arnd Bergmann wrote:
-> On Wednesday 22 August 2012, Tony Prisk wrote:
->> The original patch was very simple, but I revisited it to fix other
->> issues and forgot to add the relevant comments.
->>
->> Port size is changed to fix a problem - WM8505 actually had 6 uart's
->> defined in platform data but the vt8500_ports variable was only 4.
->>
->> I have added devicetree port id support as well.
-> 
-> If you do multiple things in one driver, you should normally send multiple
-> patches as well, each with a description why that change is done.
-> It may seem silly at first to send out a one-line patch next to a 100-line
-> patch for the same file, but those cases are actually the ones where it's
-> most important.
+From: Damien Cassou <damien.cassou@lifl.fr>
 
-Think of us poor git-bisect monkeys who have no idea why something broke
-but can (purely mechanically) figure out which commit did it. If it's a
-patch that does three unrelated things, we're kinda stuck.
+The various devm_ functions allocate memory that is released when a driver
+detaches. This patch uses these functions for data that is allocated in the
+probe function of a platform device and is only freed in the remove function.
 
-Rob
--- 
-GNU/Linux isn't: Linux=GPLv2, GNU=GPLv3+, they can't share code.
-Either it's "mere aggregation", or a license violation.  Pick one.
+Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
+
+---
+ drivers/video/epson1355fb.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/video/epson1355fb.c b/drivers/video/epson1355fb.c
+index 68b9b51..246da1e 100644
+--- a/drivers/video/epson1355fb.c
++++ b/drivers/video/epson1355fb.c
+@@ -592,12 +592,8 @@ static int epson1355fb_remove(struct platform_device *dev)
+
+ 	if (info) {
+ 		fb_dealloc_cmap(&info->cmap);
+-		if (info->screen_base)
+-			iounmap(info->screen_base);
+ 		framebuffer_release(info);
+ 	}
+-	release_mem_region(EPSON1355FB_FB_PHYS, EPSON1355FB_FB_LEN);
+-	release_mem_region(EPSON1355FB_REGS_PHYS, EPSON1355FB_REGS_LEN);
+ 	return 0;
+ }
+
+@@ -608,15 +604,18 @@ static int __devinit epson1355fb_probe(struct platform_device *dev)
+ 	u8 revision;
+ 	int rc = 0;
+
+-	if (!request_mem_region(EPSON1355FB_REGS_PHYS, EPSON1355FB_REGS_LEN, "S1D13505 registers")) {
++	if (!devm_request_mem_region(&dev->dev, EPSON1355FB_REGS_PHYS,
++				     EPSON1355FB_REGS_LEN,
++				     "S1D13505 registers")) {
+ 		printk(KERN_ERR "epson1355fb: unable to reserve "
+ 		       "registers at 0x%0x\n", EPSON1355FB_REGS_PHYS);
+ 		rc = -EBUSY;
+ 		goto bail;
+ 	}
+
+-	if (!request_mem_region(EPSON1355FB_FB_PHYS, EPSON1355FB_FB_LEN,
+-				"S1D13505 framebuffer")) {
++	if (!devm_request_mem_region(&dev->dev, EPSON1355FB_FB_PHYS,
++				     EPSON1355FB_FB_LEN,
++				     "S1D13505 framebuffer")) {
+ 		printk(KERN_ERR "epson1355fb: unable to reserve "
+ 		       "framebuffer at 0x%0x\n", EPSON1355FB_FB_PHYS);
+ 		rc = -EBUSY;
+@@ -638,7 +637,8 @@ static int __devinit epson1355fb_probe(struct platform_device *dev)
+ 	}
+ 	info->pseudo_palette = default_par->pseudo_palette;
+
+-	info->screen_base = ioremap(EPSON1355FB_FB_PHYS, EPSON1355FB_FB_LEN);
++	info->screen_base = devm_ioremap(&dev->dev, EPSON1355FB_FB_PHYS,
++					 EPSON1355FB_FB_LEN);
+ 	if (!info->screen_base) {
+ 		printk(KERN_ERR "epson1355fb: unable to map framebuffer\n");
+ 		rc = -ENOMEM;

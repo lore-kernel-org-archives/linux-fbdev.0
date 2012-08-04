@@ -1,106 +1,38 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Tue, 14 Aug 2012 11:05:10 +0000
-Subject: Re: [PATCH 06/11] fblog: open fb on registration
-Message-Id: <CANq1E4Q+UvZ_koC0BbHrTrqaut96KV244JdHvHKxVWB6-9VFEw@mail.gmail.com>
+From: Grazvydas Ignotas <notasas@gmail.com>
+Date: Sat, 04 Aug 2012 16:19:13 +0000
+Subject: [PATCH] OMAPDSS: OMAPFB: fix framebuffer console colors
+Message-Id: <1344097153-13903-1-git-send-email-notasas@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
-	<1344783205-2384-7-git-send-email-dh.herrmann@googlemail.com>
-	<50284383.7020100@gmail.com>
-In-Reply-To: <50284383.7020100@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ryan Mallon <rmallon@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grazvydas Ignotas <notasas@gmail.com>
 
-Hi Ryan
+omapfb does not currently set pseudo palette correctly for color depths
+above 16bpp, making red text invisible, command like
+  echo -e '\e[0;31mRED' > /dev/tty1
+will display nothing on framebuffer console in 24bpp mode.
+This is because temporary variable is declared incorrectly, fix it.
 
-On Mon, Aug 13, 2012 at 2:00 AM, Ryan Mallon <rmallon@gmail.com> wrote:
-> On 13/08/12 00:53, David Herrmann wrote:
->>  /*
->> + * fblog_open/close()
->> + * These functions manage access to the underlying framebuffer. While opened, we
->> + * have a valid reference to the fb and can use it for drawing operations. When
->> + * the fb is unregistered, we drop our reference and close the fb so it can get
->> + * deleted properly. We also mark it as dead so no further fblog_open() call
->> + * will succeed.
->> + * Both functions must be called with the fb->info->lock mutex held! But make
->> + * sure to lock it _before_ locking the fblog-registration-lock. Otherwise, we
->> + * will dead-lock with fb-registration.
->> + */
->> +
->> +static int fblog_open(struct fblog_fb *fb)
->> +{
->> +     int ret;
->> +
->> +     mutex_lock(&fb->lock);
->> +
->> +     if (test_bit(FBLOG_KILLED, &fb->flags)) {
->> +             ret = -ENODEV;
->> +             goto unlock;
->> +     }
->> +
->> +     if (test_bit(FBLOG_OPEN, &fb->flags)) {
->> +             ret = 0;
->> +             goto unlock;
->> +     }
->> +
->> +     if (!try_module_get(fb->info->fbops->owner)) {
->> +             ret = -ENODEV;
->> +             goto out_killed;
->> +     }
->> +
->> +     if (fb->info->fbops->fb_open && fb->info->fbops->fb_open(fb->info, 0)) {
->
-> Should propagate the error here:
->
->         if (fb->info->fbops->fb_open) {
->                 ret = fb->info->fbops->fb_open(fb->info, 0);
->                 if (ret)
->                         gotou out_unref;
->         }
+Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
+---
+ drivers/video/omap2/omapfb/omapfb-main.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Nice catch, thanks.
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 70aa47d..f7c1753 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -1183,7 +1183,7 @@ static int _setcolreg(struct fb_info *fbi, u_int regno, u_int red, u_int green,
+ 			break;
+ 
+ 		if (regno < 16) {
+-			u16 pal;
++			u32 pal;
+ 			pal = ((red >> (16 - var->red.length)) <<
+ 					var->red.offset) |
+ 				((green >> (16 - var->green.length)) <<
+-- 
+1.7.0.4
 
->> +/*
->>   * fblog framebuffer list
->>   * The fblog_fbs[] array contains all currently registered framebuffers. If a
->>   * framebuffer is in that list, we always must make sure that we own a reference
->> @@ -77,6 +147,7 @@ static void fblog_do_unregister(struct fb_info *info)
->>
->>       fblog_fbs[info->node] = NULL;
->>
->> +     fblog_close(fb, true);
->>       device_del(&fb->dev);
->>       put_device(&fb->dev);
->
-> device_unregister?
-
-Heh, you already mentioned this in the previous patch. I definitely
-need to fix that.
-
->>  }
->> @@ -99,6 +170,7 @@ static void fblog_do_register(struct fb_info *info, bool force)
->>               return;
->>
->>       fb->info = info;
->> +     mutex_init(&fb->lock);
->>       __module_get(THIS_MODULE);
->>       device_initialize(&fb->dev);
->>       fb->dev.class = fb_class;
->> @@ -113,6 +185,8 @@ static void fblog_do_register(struct fb_info *info, bool force)
->>               put_device(&fb->dev);
->>               return;
->>       }
->> +
->> +     fblog_open(fb);
->>  }
->
-> This function should really return an errno value.
-
-I never used the return value in my code but as mentioned in the
-previous patches, fblog_scan() should check them. So yes, I will add
-this.
-
-Thanks!
-David

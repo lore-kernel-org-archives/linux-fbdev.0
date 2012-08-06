@@ -1,65 +1,36 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Thu, 16 Aug 2012 18:42:24 +0000
-Subject: Re: [PATCH v4 2/3] pwm_backlight: use power sequences
-Message-Id: <502D3F10.1020509@wwwdotorg.org>
+From: Hideki EIRAKU <hdk@igel.co.jp>
+Date: Mon, 06 Aug 2012 09:55:21 +0000
+Subject: [PATCH v3 1/4] ARM: dma-mapping: define ARCH_HAS_DMA_MMAP_COHERENT
+Message-Id: <1344246924-32620-2-git-send-email-hdk@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345097337-24170-1-git-send-email-acourbot@nvidia.com> <1345097337-24170-3-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1345097337-24170-3-git-send-email-acourbot@nvidia.com>
+References: <1344246924-32620-1-git-send-email-hdk@igel.co.jp>
+In-Reply-To: <1344246924-32620-1-git-send-email-hdk@igel.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexandre Courbot <acourbot@nvidia.com>
-Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Leela Krishna Amudala <leelakrishna.a@gmail.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org
+To: Russell King <linux@arm.linux.org.uk>, Pawel Osciak <pawel@osciak.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Mauro Carvalho Chehab <mchehab@infradead.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Katsuya MATSUBARA <matsu@igel.co.jp>, Hideki EIRAKU <hdk@igel.co.jp>
 
-On 08/16/2012 12:08 AM, Alexandre Courbot wrote:
-> Make use of the power sequences specified in the device tree or platform
-> data to control how the backlight is powered on and off.
+ARCH_HAS_DMA_MMAP_COHERENT indicates that there is dma_mmap_coherent() API
+in this architecture.  The name is already defined in PowerPC.
 
-> +++ b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
+Signed-off-by: Hideki EIRAKU <hdk@igel.co.jp>
+---
+ arch/arm/include/asm/dma-mapping.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
->  Required properties:
->    - compatible: "pwm-backlight"
-> -  - pwms: OF device-tree PWM specification (see PWM binding[0])
->    - brightness-levels: Array of distinct brightness levels. Typically these
->        are in the range from 0 to 255, but any range starting at 0 will do.
->        The actual brightness level (PWM duty cycle) will be interpolated
-> @@ -10,19 +9,72 @@ Required properties:
->        last value in the array represents a 100% duty cycle (brightest).
->    - default-brightness-level: the default brightness level (index into the
->        array defined by the "brightness-levels" property)
-> +  - pwms: OF device-tree PWM specification (see PWM binding[0]). Exactly one PWM
-> +      must be specified
+diff --git a/arch/arm/include/asm/dma-mapping.h b/arch/arm/include/asm/dma-mapping.h
+index bbef15d..f41cd30 100644
+--- a/arch/arm/include/asm/dma-mapping.h
++++ b/arch/arm/include/asm/dma-mapping.h
+@@ -187,6 +187,7 @@ extern int arm_dma_mmap(struct device *dev, struct vm_area_struct *vma,
+ 			struct dma_attrs *attrs);
+ 
+ #define dma_mmap_coherent(d, v, c, h, s) dma_mmap_attrs(d, v, c, h, s, NULL)
++#define ARCH_HAS_DMA_MMAP_COHERENT
+ 
+ static inline int dma_mmap_attrs(struct device *dev, struct vm_area_struct *vma,
+ 				  void *cpu_addr, dma_addr_t dma_addr,
+-- 
+1.7.0.4
 
-There's probably no need to move that entry just to change it?
-
->  Optional properties:
-> -  - pwm-names: a list of names for the PWM devices specified in the
-> -               "pwms" property (see PWM binding[0])
-
-> +  - *-supply: regulators used within a power sequence
-> +  - *-gpio: GPIOs used within a power sequence
-
-I don't think these really warrant mentioning here; such properties are
-part of the standard regulator and GPIO bindings, and are required as a
-side-effect of a power sequence using a resource of those types, rather
-than being something actively defined or needed directly by the
-pwm-backlight binding.
-
-> +  - pwm-names: name for the PWM device specified in the "pwms" property (see PWM
-> +      binding[0]). Necessary if power sequences are used
-
-> +  - power-on-sequence: Power sequence (see Power sequences[1]) used to bring the
-> +      backlight on. This sequence must reference the PWM specified in the pwms
-> +      property by its name. It can also reference other resources supported by
-> +      the power sequences mechanism
-> +  - power-off-sequence: Power sequence (see Power sequences[1]) used to bring
-> +      the backlight off. This sequence must reference the PWM specified in the
-> +      pwms property by its name. It can also reference other resources supported
-> +      by the power sequences mechanism
-
-For these two, I would personally simply say that the pwm-backlight
-binding requires that two power sequences named "on" and "off" must
-exists, and are to defined according to [1].
-
->  [0]: Documentation/devicetree/bindings/pwm/pwm.txt
-> +[1]: Documentation/devicetree/bindings/power_seq/power_seq.txt

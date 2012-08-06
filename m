@@ -1,58 +1,41 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Wed, 29 Aug 2012 10:58:45 +0000
-Subject: Re: [PATCH 01/23] OMAPDSS: outputs: Create a new entity called outputs
-Message-Id: <503DF581.8050809@ti.com>
+From: Dongjin Kim <tobetter@gmail.com>
+Date: Mon, 06 Aug 2012 13:57:42 +0000
+Subject: [PATCH] video: s3c-fb: Fix compile error/warning if CONFIG_OF is not selected
+Message-Id: <1344261462-14183-5-git-send-email-dongjin.kim@agreeyamobility.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>   <1345528711-27801-2-git-send-email-archit@ti.com>  <1345812069.9287.65.camel@lappyti> <503778E8.2060909@ti.com> <1346236370.2623.45.camel@deskari>
-In-Reply-To: <1346236370.2623.45.camel@deskari>
+References: <1344261462-14183-1-git-send-email-dongjin.kim@agreeyamobility.net>
+In-Reply-To: <1344261462-14183-1-git-send-email-dongjin.kim@agreeyamobility.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com
+Cc: Dongjin Kim <dongjin.kim@agreeyamobility.net>, Jingoo Han <jg1.han@samsung.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday 29 August 2012 04:02 PM, Tomi Valkeinen wrote:
-> On Fri, 2012-08-24 at 18:21 +0530, Archit Taneja wrote:
->
->>>> +enum omap_dss_output_id {
->>>> +	OMAP_DSS_OUTPUT_DPI	= 1 << 0,
->>>> +	OMAP_DSS_OUTPUT_DBI	= 1 << 1,
->>>> +	OMAP_DSS_OUTPUT_SDI	= 1 << 2,
->>>> +	OMAP_DSS_OUTPUT_DSI1	= 1 << 3,
->>>> +	OMAP_DSS_OUTPUT_VENC	= 1 << 4,
->>>> +	OMAP_DSS_OUTPUT_DSI2	= 1 << 5,
->>>> +	OMAP_DSS_OUTPUT_HDMI	= 1 << 6,
->>>> +};
->>>
->>> I'm not sure about this. We already have enum omap_display_type. If you
->>> need the instance number, you could have that as a separate int field.
->>>
->>> Where do you need the output_id?
->>
->> output_id is used to take care of situations where there our multiple
->> outputs of the same type, like DSI1 and DSI2. An enum helps when we
->> check if an overlay manager supports that output instance or not. For
->> ex, on OMAP4, LCD1 connects to DSI1 and not DSI2.
->>
->> I add a func called dss_feat_get_supported_outputs(channel) later to
->> check for this. When setting a new output for a manager, we just do an
->> '&' to see if the output in question is in the mask of the manager's set
->> of supported outputs.
->
-> After thinking about this, I think we should remove the
-> omap_display_type and the supported_displays stuff. It doesn't really
-> work anymore, as we have more complex connections with omap4+. With a
-> quick glance to the code, I think it should be quite easy to remove it.
->
-> And we need something like your omap_dss_output_id. I'm just not sure
-> about the enum. But perhaps it's the easiest option for now, as some
-> kind of array of similar would be more complex to implement, and I'm not
-> sure if it really gives anything. You could move the VENC away from
-> between DSI1 and DSI2, though. I'm not sure why you put VENC in between
-> =).
+Change-Id: I5d7ff6f0070a10225d5b064b362d3d8f214787fd
+Signed-off-by: Dongjin Kim <dongjin.kim@agreeyamobility.net>
+---
+ drivers/video/s3c-fb.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-I put the outputs in the order in which they were introduced in OMAPs, 
-I'm not sure why I did that, maybe I copied that approach after looking 
-at some other enum. I'll change it.
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 8c8adb5..268be0c 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -1527,13 +1527,11 @@ static int s3c_fb_dt_parse_gpios(struct device *dev, struct s3c_fb *sfb,
+ 
+ static void s3c_fb_dt_free_gpios(struct s3c_fb *sfb)
+ {
+-	return 0;
+ }
+ 
+-static int s3c_fb_dt_parse_pdata(struct device *dev,
+-					struct s3c_fb_platdata **pdata)
++static struct s3c_fb_platdata *s3c_fb_dt_parse_pdata(struct device *dev)
+ {
+-	return 0;
++	return NULL;
+ }
+ #endif /* CONFIG_OF */
+ 
+-- 
+1.7.9.5
 
-Archit

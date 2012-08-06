@@ -1,94 +1,44 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 30 Aug 2012 11:52:22 +0000
-Subject: [PATCH v2 00/23] OMAPDSS: Create output entities
-Message-Id: <1346326845-16583-1-git-send-email-archit@ti.com>
+From: Hideki EIRAKU <hdk@igel.co.jp>
+Date: Mon, 06 Aug 2012 09:55:22 +0000
+Subject: [PATCH v3 2/4] ALSA: pcm - Don't define ARCH_HAS_DMA_MMAP_COHERENT privately for ARM
+Message-Id: <1344246924-32620-3-git-send-email-hdk@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>
-In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
+References: <1344246924-32620-1-git-send-email-hdk@igel.co.jp>
+In-Reply-To: <1344246924-32620-1-git-send-email-hdk@igel.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: Russell King <linux@arm.linux.org.uk>, Pawel Osciak <pawel@osciak.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Mauro Carvalho Chehab <mchehab@infradead.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>
+Cc: Katsuya MATSUBARA <matsu@igel.co.jp>, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
 
-Create a new entity in OMAPDSS called outputs. These represent the
-interfaces/outputs like DSI, HDMI etc. that a panel connects to. An output
-sits in between an overlay manager and a panel. More details about outputs
-are explained in the first patch of the series.
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-This series adds omap_dss_output as an entity along with omap_overlay,
-omap_overlay_manager and omap_dss_device. It changes the code to establish
-links between managers and outputs, and outputs and devices.
+The ARM architecture now defines ARCH_HAS_DMA_MMAP_COHERENT, there's no
+need to define it privately anymore.
 
-Changes since v1:
-- Output drivers private data structs hold the output struct rather than
-  output.c allocating it. This struct is added to a list when
-  dss_register_output()is called.
-- Outputs are not passed from panel driver to output driver anymore. We are
-  sticking to passing omap_dss_device for now till we get a clearer picture on
-  how common panel framework turns out. Outputs are still used within the output
-  driver, rather than passing dssdev everywhere.
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ sound/core/pcm_native.c |    7 -------
+ 1 files changed, 0 insertions(+), 7 deletions(-)
 
-Reference tree:
-
-git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git 2-add-outputs
-
-Archit Taneja (23):
-  OMAPDSS: outputs: Create a new entity called outputs
-  OMAPDSS: outputs: Create and register output instances
-  OMAPDSS: output: Add set/unset device ops for omap_dss_output
-  OMAPDSS: APPLY: Add manager set/unset output ops for
-    omap_overlay_manager
-  OMAPDSS: Remove manager->device references
-  OMAP_VOUT: Remove manager->device references
-  OMAPFB: remove manager->device references
-  OMAPDRM: Remove manager->device references
-  OMAPDSS: Create links between managers, outputs and devices
-  OMAPDSS: DPI: Pass omap_dss_output within the driver
-  OMAPDSS: DSI: Remove dsi_pdev_map global struct
-  OMAPDSS: DSI: Pass omap_dss_output within the driver
-  OMAPDSS: SDI: Pass omap_dss_output within the driver
-  OMAPDSS: RFBI: Pass omap_dss_output within the driver
-  OMAPDSS: RFBI: Add dssdev pointers as arguments to all exported
-    functions
-  OMAPDSS: VENC: Pass omap_dss_output within the driver
-  OMAPDSS: HDMI: Pass omap_dss_output within the driver
-  OMAPDSS: HDMI: Add dssdev pointer as an argument to all functions
-    used by hdmi panel driver
-  OMAPDSS/OMAPFB: Change dssdev->manager references
-  OMAPDSS: MANAGER: Update display sysfs store
-  OMAPDSS: MANAGER: Get device via output
-  OMAPDSS: APPLY: Remove omap_dss_device references from
-    dss_ovl_enable/disable
-  OMAPDSS: Remove old way of setting manager and device links
-
- drivers/media/video/omap/omap_vout.c      |   81 +++++++---
- drivers/staging/omapdrm/omap_drv.c        |    5 +-
- drivers/video/omap2/displays/panel-n8x0.c |   55 ++++---
- drivers/video/omap2/dss/Makefile          |    2 +-
- drivers/video/omap2/dss/apply.c           |   52 +++---
- drivers/video/omap2/dss/dispc.c           |   10 +-
- drivers/video/omap2/dss/display.c         |   11 +-
- drivers/video/omap2/dss/dpi.c             |   70 +++++---
- drivers/video/omap2/dss/dsi.c             |  249 ++++++++++++++++++-----------
- drivers/video/omap2/dss/dss.h             |   23 ++-
- drivers/video/omap2/dss/dss_features.c    |   52 ++++++
- drivers/video/omap2/dss/dss_features.h    |    1 +
- drivers/video/omap2/dss/hdmi.c            |   72 ++++++---
- drivers/video/omap2/dss/hdmi_panel.c      |   20 +--
- drivers/video/omap2/dss/manager.c         |   48 ++++--
- drivers/video/omap2/dss/output.c          |  110 +++++++++++++
- drivers/video/omap2/dss/overlay.c         |   96 ++++++-----
- drivers/video/omap2/dss/rfbi.c            |   66 +++++---
- drivers/video/omap2/dss/sdi.c             |   35 ++--
- drivers/video/omap2/dss/venc.c            |   47 ++++--
- drivers/video/omap2/omapfb/omapfb-ioctl.c |    7 +-
- drivers/video/omap2/omapfb/omapfb-main.c  |    7 +-
- drivers/video/omap2/omapfb/omapfb.h       |    5 +-
- include/video/omapdss.h                   |   72 +++++++--
- 24 files changed, 848 insertions(+), 348 deletions(-)
- create mode 100644 drivers/video/omap2/dss/output.c
-
+diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+index 53b5ada..84ead60 100644
+--- a/sound/core/pcm_native.c
++++ b/sound/core/pcm_native.c
+@@ -3156,13 +3156,6 @@ static const struct vm_operations_struct snd_pcm_vm_ops_data_fault = {
+ 	.fault =	snd_pcm_mmap_data_fault,
+ };
+ 
+-#ifndef ARCH_HAS_DMA_MMAP_COHERENT
+-/* This should be defined / handled globally! */
+-#ifdef CONFIG_ARM
+-#define ARCH_HAS_DMA_MMAP_COHERENT
+-#endif
+-#endif
+-
+ /*
+  * mmap the DMA buffer on RAM
+  */
 -- 
-1.7.9.5
+1.7.0.4
 

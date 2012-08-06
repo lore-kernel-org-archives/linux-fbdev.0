@@ -1,82 +1,62 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 20 Aug 2012 09:13:10 +0000
-Subject: RE: [PATCH 04/10] video: exynos_dp: Get pll lock before pattern set
-Message-Id: <004a01cd7eb4$04ce1480$0e6a3d80$%han@samsung.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Mon, 06 Aug 2012 15:26:22 +0000
+Subject: Re: [PATCH] fbdev: sh_mobile_lcdc: Fix vertical panning step
+Message-Id: <2592496.cxtrKkfb7X@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344398064-13563-5-git-send-email-seanpaul@chromium.org>
-In-Reply-To: <1344398064-13563-5-git-send-email-seanpaul@chromium.org>
+References: <1343306215-20868-1-git-send-email-laurent.pinchart@ideasonboard.com>
+In-Reply-To: <1343306215-20868-1-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Wednesday, August 08, 2012 12:54 PM Sean Paul wrote:
-> 
-> According to the exynos datasheet (Figure 49-10), we should wait for PLL
-> lock before programming the training pattern when doing software eDP
-> link training.
-> 
-> Signed-off-by: Sean Paul <seanpaul@chromium.org>
-> Reviewed-by: Mandeep Singh Baines <msb@chromium.org>
-> ---
->  drivers/video/exynos/exynos_dp_core.c |   14 +++++++++++++-
->  1 files changed, 13 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-> index 3deded2..207bd7e 100644
-> --- a/drivers/video/exynos/exynos_dp_core.c
-> +++ b/drivers/video/exynos/exynos_dp_core.c
-> @@ -23,6 +23,8 @@
-> 
->  #include "exynos_dp_core.h"
-> 
-> +#define PLL_MAX_TRIES 100
-> +
->  static int exynos_dp_init_dp(struct exynos_dp_device *dp)
->  {
->  	exynos_dp_reset(dp);
-> @@ -260,7 +262,7 @@ static void exynos_dp_set_lane_lane_pre_emphasis(struct exynos_dp_device *dp,
-> 
->  static int exynos_dp_link_start(struct exynos_dp_device *dp)
->  {
-> -	int ret, lane, lane_count;
-> +	int ret, lane, lane_count, pll_tries;
->  	u8 buf[4];
-> 
->  	lane_count = dp->link_train.lane_count;
-> @@ -293,6 +295,16 @@ static int exynos_dp_link_start(struct exynos_dp_device *dp)
->  		exynos_dp_set_lane_lane_pre_emphasis(dp,
->  			PRE_EMPHASIS_LEVEL_0, lane);
-> 
-> +	/* Wait for PLL lock */
-> +	pll_tries = 0;
-> +	while (exynos_dp_get_pll_lock_status(dp) = PLL_UNLOCKED) {
-> +		if (pll_tries = PLL_MAX_TRIES)
-> +			return -ETIMEDOUT;
-> +
-> +		pll_tries++;
-> +		udelay(100);
-> +	}
-> +
+Hi Morimoto-san,
 
-You don't need to add 'PLL_MAX_TRIES', please use 'DP_TIMEOUT_LOOP_COUNT' as below:
-
-	/* Wait for PLL lock */
-	while (exynos_dp_get_pll_lock_status(dp) = PLL_UNLOCKED) {
-		timeout_loop++;
-		if (DP_TIMEOUT_LOOP_COUNT < timeout_loop) {
-			dev_err(dp->dev, "failed to get pll lock status\n");
-			return -ETIMEDOUT;
-		}
-		udelay(100);
-	}
-
-Also, could you use usleep_range() instead of udelay()? 
-
-
->  	/* Set training pattern 1 */
->  	exynos_dp_set_training_pattern(dp, TRAINING_PTN1);
+On Sunday 29 July 2012 18:25:59 Kuninori Morimoto wrote:
+> > diff --git a/drivers/video/sh_mobile_lcdcfb.c
+> > b/drivers/video/sh_mobile_lcdcfb.c index 8cb653b..699487c 100644
+> > --- a/drivers/video/sh_mobile_lcdcfb.c
+> > +++ b/drivers/video/sh_mobile_lcdcfb.c
+> > @@ -1716,11 +1716,11 @@ sh_mobile_lcdc_overlay_fb_init(struct
+> > sh_mobile_lcdc_overlay *ovl)> 
+> >  		info->fix.visual = FB_VISUAL_TRUECOLOR;
+> >  	
+> >  	switch (ovl->format->fourcc) {
+> > 
+> > -	case V4L2_PIX_FMT_NV16:
+> > -	case V4L2_PIX_FMT_NV61:
+> > -		info->fix.ypanstep = 2;
+> >  	case V4L2_PIX_FMT_NV12:
+> >  	case V4L2_PIX_FMT_NV21:
+> > +		info->fix.ypanstep = 2;
+> > +	case V4L2_PIX_FMT_NV16:
+> > +	case V4L2_PIX_FMT_NV61:
+> >  		info->fix.xpanstep = 2;
+> >  	}
+> > 
+> > @@ -2215,11 +2215,11 @@ sh_mobile_lcdc_channel_fb_init(struct
+> > sh_mobile_lcdc_chan *ch,
+> >  		info->fix.visual = FB_VISUAL_TRUECOLOR;
+> >  	
+> >  	switch (ch->format->fourcc) {
+> > -	case V4L2_PIX_FMT_NV16:
+> > -	case V4L2_PIX_FMT_NV61:
+> > -		info->fix.ypanstep = 2;
+> >  	case V4L2_PIX_FMT_NV12:
+> >  	case V4L2_PIX_FMT_NV21:
+> > +		info->fix.ypanstep = 2;
+> > +	case V4L2_PIX_FMT_NV16:
+> > +	case V4L2_PIX_FMT_NV61:
+> >  		info->fix.xpanstep = 2;
+> >  	}
 > 
-> --
-> 1.7.7.3
+> If possible, could you please add comment /* fall through */ ?
+> current code is a little bit confusing
+
+I'm afraid the code has already been pushed to v3.6-rc1 :-S
+
+-- 
+Regards,
+
+Laurent Pinchart
 

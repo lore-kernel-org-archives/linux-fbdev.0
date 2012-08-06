@@ -1,54 +1,87 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 20 Aug 2012 09:19:36 +0000
-Subject: Re: [PATCH 05/10] video: exynos_dp: Remove sink control to D0
-Message-Id: <004b01cd7eb4$eaf48980$c0dd9c80$%han@samsung.com>
+From: Hideki EIRAKU <hdk@igel.co.jp>
+Date: Mon, 06 Aug 2012 09:55:24 +0000
+Subject: [PATCH v3 4/4] fbdev: sh_mobile_lcdc: use dma_mmap_coherent if available
+Message-Id: <1344246924-32620-5-git-send-email-hdk@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344398064-13563-6-git-send-email-seanpaul@chromium.org>
-In-Reply-To: <1344398064-13563-6-git-send-email-seanpaul@chromium.org>
+References: <1344246924-32620-1-git-send-email-hdk@igel.co.jp>
+In-Reply-To: <1344246924-32620-1-git-send-email-hdk@igel.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Russell King <linux@arm.linux.org.uk>, Pawel Osciak <pawel@osciak.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Mauro Carvalho Chehab <mchehab@infradead.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Katsuya MATSUBARA <matsu@igel.co.jp>, Hideki EIRAKU <hdk@igel.co.jp>
 
-On Wednesday, August 08, 2012 12:54 PM Sean Paul wrote:
-> 
-> Don't reset the sink power to D0. Removing this for three reasons:
-> 
-> 1) It's not required in the SW link training documentation
-OK.
-> 2) The comment is incorrect, D0 is normal operation, not "power down"
-OK. As you mentioned, D0 is not 'power down', 'normal operation'.
-However, if comment is wrong, usually we fix comment, not remove it. :)
+fb_mmap() implemented in fbmem.c uses smem_start as the physical
+address of the frame buffer.  In the sh_mobile_lcdc driver, the
+smem_start is a dma_addr_t that is not a physical address when IOMMU is
+enabled.  dma_mmap_coherent() maps the address correctly.  It is
+available on ARM platforms.
 
-> 3) It seems to change things in the link training that causes glitches
+Signed-off-by: Hideki EIRAKU <hdk@igel.co.jp>
+---
+ drivers/video/sh_mobile_lcdcfb.c |   28 ++++++++++++++++++++++++++++
+ 1 files changed, 28 insertions(+), 0 deletions(-)
 
-Um, it seems that this problem depends on LCD panel.
-Other LCDs that I have tested do not have this kind of problem.
-Please, modify this comment.
-
-> 
-> Signed-off-by: Sean Paul <seanpaul@chromium.org>
-> ---
->  drivers/video/exynos/exynos_dp_core.c |    6 ------
->  1 files changed, 0 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-> index 207bd7e..1c998d9 100644
-> --- a/drivers/video/exynos/exynos_dp_core.c
-> +++ b/drivers/video/exynos/exynos_dp_core.c
-> @@ -273,12 +273,6 @@ static int exynos_dp_link_start(struct exynos_dp_device *dp)
->  	for (lane = 0; lane < lane_count; lane++)
->  		dp->link_train.cr_loop[lane] = 0;
-> 
-> -	/* Set sink to D0 (Sink Not Ready) mode. */
-> -	ret = exynos_dp_write_byte_to_dpcd(dp, DPCD_ADDR_SINK_POWER_STATE,
-> -				DPCD_SET_POWER_STATE_D0);
-> -	if (ret)
-> -		return ret;
-> -
->  	/* Set link rate and count as you want to establish*/
->  	exynos_dp_set_link_bandwidth(dp, dp->link_train.link_rate);
->  	exynos_dp_set_lane_count(dp, dp->link_train.lane_count);
-> --
-> 1.7.7.3
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 8cb653b..c8cba7a 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -1614,6 +1614,17 @@ static int sh_mobile_lcdc_overlay_blank(int blank, struct fb_info *info)
+ 	return 1;
+ }
+ 
++#ifdef ARCH_HAS_DMA_MMAP_COHERENT
++static int
++sh_mobile_lcdc_overlay_mmap(struct fb_info *info, struct vm_area_struct *vma)
++{
++	struct sh_mobile_lcdc_overlay *ovl = info->par;
++
++	return dma_mmap_coherent(ovl->channel->lcdc->dev, vma, ovl->fb_mem,
++				 ovl->dma_handle, ovl->fb_size);
++}
++#endif
++
+ static struct fb_ops sh_mobile_lcdc_overlay_ops = {
+ 	.owner          = THIS_MODULE,
+ 	.fb_read        = fb_sys_read,
+@@ -1626,6 +1637,9 @@ static struct fb_ops sh_mobile_lcdc_overlay_ops = {
+ 	.fb_ioctl       = sh_mobile_lcdc_overlay_ioctl,
+ 	.fb_check_var	= sh_mobile_lcdc_overlay_check_var,
+ 	.fb_set_par	= sh_mobile_lcdc_overlay_set_par,
++#ifdef ARCH_HAS_DMA_MMAP_COHERENT
++	.fb_mmap	= sh_mobile_lcdc_overlay_mmap,
++#endif
+ };
+ 
+ static void
+@@ -2093,6 +2107,17 @@ static int sh_mobile_lcdc_blank(int blank, struct fb_info *info)
+ 	return 0;
+ }
+ 
++#ifdef ARCH_HAS_DMA_MMAP_COHERENT
++static int
++sh_mobile_lcdc_mmap(struct fb_info *info, struct vm_area_struct *vma)
++{
++	struct sh_mobile_lcdc_chan *ch = info->par;
++
++	return dma_mmap_coherent(ch->lcdc->dev, vma, ch->fb_mem,
++				 ch->dma_handle, ch->fb_size);
++}
++#endif
++
+ static struct fb_ops sh_mobile_lcdc_ops = {
+ 	.owner          = THIS_MODULE,
+ 	.fb_setcolreg	= sh_mobile_lcdc_setcolreg,
+@@ -2108,6 +2133,9 @@ static struct fb_ops sh_mobile_lcdc_ops = {
+ 	.fb_release	= sh_mobile_lcdc_release,
+ 	.fb_check_var	= sh_mobile_lcdc_check_var,
+ 	.fb_set_par	= sh_mobile_lcdc_set_par,
++#ifdef ARCH_HAS_DMA_MMAP_COHERENT
++	.fb_mmap	= sh_mobile_lcdc_mmap,
++#endif
+ };
+ 
+ static void
+-- 
+1.7.0.4
 

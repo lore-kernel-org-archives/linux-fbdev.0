@@ -1,71 +1,40 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 23 Aug 2012 20:38:20 +0000
-Subject: Re: [PATCH 1/5] drivers/video/fsl-diu-fb.c: use devm_ functions
-Message-Id: <503694BC.8090707@gmx.de>
+From: Hideki EIRAKU <hdk@igel.co.jp>
+Date: Mon, 06 Aug 2012 09:55:20 +0000
+Subject: [PATCH v3 0/4] Use dma_mmap_coherent to support IOMMU mapper
+Message-Id: <1344246924-32620-1-git-send-email-hdk@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr> <1343752762-16861-4-git-send-email-damien.cassou@lifl.fr>
-In-Reply-To: <1343752762-16861-4-git-send-email-damien.cassou@lifl.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Damien Cassou <damien.cassou@lifl.fr>
-Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Russell King <linux@arm.linux.org.uk>, Pawel Osciak <pawel@osciak.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Mauro Carvalho Chehab <mchehab@infradead.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Katsuya MATSUBARA <matsu@igel.co.jp>, Hideki EIRAKU <hdk@igel.co.jp>
 
-On 07/31/2012 04:39 PM, Damien Cassou wrote:
-> From: Damien Cassou <damien.cassou@lifl.fr>
-> 
-> The various devm_ functions allocate memory that is released when a driver
-> detaches.  This patch uses these functions for data that is allocated in
-> the probe function of a platform device and is only freed in the remove
-> function.
-> 
-> Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
+There is a dma_mmap_coherent() API in some architectures.  This API
+provides a mmap function for memory allocated by dma_alloc_coherent().
+Some drivers mmap a dma_addr_t returned by dma_alloc_coherent() as a
+physical address.  But such drivers do not work correctly when IOMMU
+mapper is used.
 
-Applied.
+v3:
+- Remove an unnecessary line which sets page protection bits.
+v2:
+- Rebase on fbdev-next branch of
+  git://github.com/schandinat/linux-2.6.git.
+- Initialize .fb_mmap in both sh_mobile_lcdc_overlay_ops and
+  sh_mobile_lcdc_ops.
+- Add Laurent's clean up patch.
 
+Hideki EIRAKU (3):
+  ARM: dma-mapping: define ARCH_HAS_DMA_MMAP_COHERENT
+  media: videobuf2-dma-contig: use dma_mmap_coherent if available
+  fbdev: sh_mobile_lcdc: use dma_mmap_coherent if available
 
-Thanks,
+Laurent Pinchart (1):
+  ALSA: pcm - Don't define ARCH_HAS_DMA_MMAP_COHERENT privately for ARM
 
-Florian Tobias Schandinat
-
-> 
-> ---
->  drivers/video/fsl-diu-fb.c |   11 ++---------
->  1 file changed, 2 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-> index 458c006..19194c5 100644
-> --- a/drivers/video/fsl-diu-fb.c
-> +++ b/drivers/video/fsl-diu-fb.c
-> @@ -1501,8 +1501,8 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
->  	unsigned int i;
->  	int ret;
-> 
-> -	data = dma_alloc_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
-> -				  &dma_addr, GFP_DMA | __GFP_ZERO);
-> +	data = dmam_alloc_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
-> +				   &dma_addr, GFP_DMA | __GFP_ZERO);
->  	if (!data)
->  		return -ENOMEM;
->  	data->dma_addr = dma_addr;
-> @@ -1628,9 +1628,6 @@ error:
-> 
->  	iounmap(data->diu_reg);
-> 
-> -	dma_free_coherent(&pdev->dev, sizeof(struct fsl_diu_data), data,
-> -			  data->dma_addr);
-> -
->  	return ret;
->  }
-> 
-> @@ -1648,9 +1645,6 @@ static int fsl_diu_remove(struct platform_device *pdev)
-> 
->  	iounmap(data->diu_reg);
-> 
-> -	dma_free_coherent(&pdev->dev, sizeof(struct fsl_diu_data), data,
-> -			  data->dma_addr);
-> -
->  	return 0;
->  }
-> 
+ arch/arm/include/asm/dma-mapping.h         |    1 +
+ drivers/media/video/videobuf2-dma-contig.c |   17 +++++++++++++++++
+ drivers/video/sh_mobile_lcdcfb.c           |   28 ++++++++++++++++++++++++++++
+ sound/core/pcm_native.c                    |    7 -------
+ 4 files changed, 46 insertions(+), 7 deletions(-)
 

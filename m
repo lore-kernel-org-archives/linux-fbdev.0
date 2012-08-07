@@ -1,39 +1,39 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 23 Aug 2012 13:45:08 +0000
-Subject: [PATCH 2/8] OMAPDSS: HDMI: Add delay to wait for 5V power
-Message-Id: <1345729514-2441-3-git-send-email-tomi.valkeinen@ti.com>
+From: Leela Krishna Amudala <l.krishna@samsung.com>
+Date: Tue, 07 Aug 2012 09:49:56 +0000
+Subject: [PATCH V3 2/5] include/video: Add Exynos5 specific FIMD register offsets
+Message-Id: <1344332279-16736-3-git-send-email-l.krishna@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1344332279-16736-1-git-send-email-l.krishna@samsung.com>
+In-Reply-To: <1344332279-16736-1-git-send-email-l.krishna@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: archit@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, kgene.kim@samsung.com, m.szyprowski@samsung.com
 
-TPD12S015A spec says to wait 300us after setting CT_CP_HPD gpio for the
-5V power output to reach 90% of the voltage. This patch adds the delay
-to the driver.
+Exynos5 has VIDTCON and VIDCON registers at different offsets
+from the previous SOCs. Hence, adding the macros.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
 ---
- drivers/video/omap2/dss/hdmi.c |    3 +++
- 1 file changed, 3 insertions(+)
+ include/video/samsung_fimd.h |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 4fbe271..96a6e29 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -492,6 +492,9 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
- 	gpio_set_value(hdmi.ct_cp_hpd_gpio, 1);
- 	gpio_set_value(hdmi.ls_oe_gpio, 1);
- 
-+	/* wait 300us after CT_CP_HPD for the 5V power output to reach 90% */
-+	udelay(300);
+diff --git a/include/video/samsung_fimd.h b/include/video/samsung_fimd.h
+index e979f42..7ae6c07 100644
+--- a/include/video/samsung_fimd.h
++++ b/include/video/samsung_fimd.h
+@@ -524,3 +524,10 @@
+  * 1110		-none-	 -none-	  -none-   -none-    -none-
+  * 1111		-none-	 -none-   -none-   -none-    -none-
+ */
 +
- 	r = hdmi_runtime_get();
- 	if (r)
- 		goto err_runtime_get;
++/* FIMD Version 8 register offset definitions */
++#define FIMD_V8_VIDTCON0	(0x20010)
++#define FIMD_V8_VIDTCON1	(0x20014)
++#define FIMD_V8_VIDTCON2	(0x20018)
++#define FIMD_V8_VIDTCON3	(0x2001C)
++#define FIMD_V8_VIDCON1		(0x20004)
 -- 
-1.7.9.5
+1.7.0.4
 

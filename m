@@ -1,346 +1,459 @@
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Date: Mon, 20 Aug 2012 18:10:14 +0000
-Subject: [PATCH 6/7] tgafb: fix data copying
-Message-Id: <alpine.DEB.2.00.1208202009370.4009@artax.karlin.mff.cuni.cz>
+From: Leela Krishna Amudala <l.krishna@samsung.com>
+Date: Tue, 07 Aug 2012 09:49:57 +0000
+Subject: [PATCH V3 3/5] arm: samsung: Include the modified FIMD header file
+Message-Id: <1344332279-16736-4-git-send-email-l.krishna@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1344332279-16736-1-git-send-email-l.krishna@samsung.com>
+In-Reply-To: <1344332279-16736-1-git-send-email-l.krishna@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, kgene.kim@samsung.com, m.szyprowski@samsung.com
 
-tgafb: fix data copying
+The fimd register headers have been moved to include/video/
+hence, modifying the machine files accordingly.
 
-The functions for data copying copyarea_foreward_8bpp and
-copyarea_backward_8bpp are buggy, they produce screen corruption.
-
-This patch fixes the functions and moves the logic to one function
-"copyarea_8bpp". For simplicity, the function only handles copying that
-is aligned on 8 pixes. If we copy an unaligned area, generic function
-cfb_copyarea is used.
-
-Signed-off-by: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Cc: stable@kernel.org
-
+Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
 ---
- drivers/video/tgafb.c |  266 +++++++++-----------------------------------------
- 1 file changed, 52 insertions(+), 214 deletions(-)
+ arch/arm/mach-exynos/mach-nuri.c           |    2 +-
+ arch/arm/mach-exynos/mach-origen.c         |    2 +-
+ arch/arm/mach-exynos/mach-smdk4x12.c       |    2 +-
+ arch/arm/mach-exynos/mach-smdkv310.c       |    2 +-
+ arch/arm/mach-exynos/mach-universal_c210.c |    2 +-
+ arch/arm/mach-exynos/setup-fimd0.c         |    2 +-
+ arch/arm/mach-s3c24xx/mach-smdk2416.c      |    2 +-
+ arch/arm/mach-s3c64xx/mach-anw6410.c       |    2 +-
+ arch/arm/mach-s3c64xx/mach-crag6410.c      |    2 +-
+ arch/arm/mach-s3c64xx/mach-hmt.c           |    2 +-
+ arch/arm/mach-s3c64xx/mach-mini6410.c      |    2 +-
+ arch/arm/mach-s3c64xx/mach-ncp.c           |    2 +-
+ arch/arm/mach-s3c64xx/mach-real6410.c      |    2 +-
+ arch/arm/mach-s3c64xx/mach-smartq5.c       |    2 +-
+ arch/arm/mach-s3c64xx/mach-smartq7.c       |    2 +-
+ arch/arm/mach-s3c64xx/mach-smdk6410.c      |    2 +-
+ arch/arm/mach-s5p64x0/mach-smdk6440.c      |    2 +-
+ arch/arm/mach-s5p64x0/mach-smdk6450.c      |    2 +-
+ arch/arm/mach-s5pc100/mach-smdkc100.c      |    2 +-
+ arch/arm/mach-s5pv210/mach-aquila.c        |    2 +-
+ arch/arm/mach-s5pv210/mach-goni.c          |    2 +-
+ arch/arm/mach-s5pv210/mach-smdkv210.c      |    2 +-
+ 22 files changed, 22 insertions(+), 22 deletions(-)
 
-Index: linux-3.4.4-fast/drivers/video/tgafb.c
-=================================--- linux-3.4.4-fast.orig/drivers/video/tgafb.c	2012-07-03 22:58:32.000000000 +0200
-+++ linux-3.4.4-fast/drivers/video/tgafb.c	2012-07-04 02:32:47.000000000 +0200
-@@ -1149,222 +1149,57 @@ copyarea_line_32bpp(struct fb_info *info
- 	__raw_writel(TGA_MODE_SBM_24BPP|TGA_MODE_SIMPLE, tga_regs+TGA_MODE_REG);
- }
+diff --git a/arch/arm/mach-exynos/mach-nuri.c b/arch/arm/mach-exynos/mach-nuri.c
+index ea785fc..90d8daa 100644
+--- a/arch/arm/mach-exynos/mach-nuri.c
++++ b/arch/arm/mach-exynos/mach-nuri.c
+@@ -29,6 +29,7 @@
+ #include <drm/exynos_drm.h>
  
--/* The general case of forward copy in 8bpp mode.  */
-+/* The (almost) general case of backward copy in 8bpp mode.  */
- static inline void
--copyarea_foreward_8bpp(struct fb_info *info, u32 dx, u32 dy, u32 sx, u32 sy,
--		       u32 height, u32 width, u32 line_length)
-+copyarea_8bpp(struct fb_info *info, u32 dx, u32 dy, u32 sx, u32 sy,
-+	      u32 height, u32 width, u32 line_length,
-+	      const struct fb_copyarea *area)
- {
- 	struct tga_par *par = (struct tga_par *) info->par;
--	unsigned long i, copied, left;
--	unsigned long dpos, spos, dalign, salign, yincr;
--	u32 smask_first, dmask_first, dmask_last;
--	int pixel_shift, need_prime, need_second;
--	unsigned long n64, n32, xincr_first;
-+	unsigned i, yincr;
-+	int depos, sepos, backward, last_step, step;
-+	u32 mask_last;
-+	unsigned n32;
- 	void __iomem *tga_regs;
- 	void __iomem *tga_fb;
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ #include <media/m5mols.h>
+ #include <media/s5k6aa.h>
+ #include <media/s5p_fimc.h>
+@@ -39,7 +40,6 @@
+ #include <asm/mach-types.h>
  
--	yincr = line_length;
--	if (dy > sy) {
--		dy += height - 1;
--		sy += height - 1;
--		yincr = -yincr;
--	}
--
--	/* Compute the offsets and alignments in the frame buffer.
--	   More than anything else, these control how we do copies.  */
--	dpos = dy * line_length + dx;
--	spos = sy * line_length + sx;
--	dalign = dpos & 7;
--	salign = spos & 7;
--	dpos &= -8;
--	spos &= -8;
--
--	/* Compute the value for the PIXELSHIFT register.  This controls
--	   both non-co-aligned source and destination and copy direction.  */
--	if (dalign >= salign)
--		pixel_shift = dalign - salign;
--	else
--		pixel_shift = 8 - (salign - dalign);
--
--	/* Figure out if we need an additional priming step for the
--	   residue register.  */
--	need_prime = (salign > dalign);
--	if (need_prime)
--		dpos -= 8;
--
--	/* Begin by copying the leading unaligned destination.  Copy enough
--	   to make the next destination address 32-byte aligned.  */
--	copied = 32 - (dalign + (dpos & 31));
--	if (copied = 32)
--		copied = 0;
--	xincr_first = (copied + 7) & -8;
--	smask_first = dmask_first = (1ul << copied) - 1;
--	smask_first <<= salign;
--	dmask_first <<= dalign + need_prime*8;
--	if (need_prime && copied > 24)
--		copied -= 8;
--	left = width - copied;
--
--	/* Care for small copies.  */
--	if (copied > width) {
--		u32 t;
--		t = (1ul << width) - 1;
--		t <<= dalign + need_prime*8;
--		dmask_first &= t;
--		left = 0;
--	}
--
--	/* Attempt to use 64-byte copies.  This is only possible if the
--	   source and destination are co-aligned at 64 bytes.  */
--	n64 = need_second = 0;
--	if ((dpos & 63) = (spos & 63)
--	    && (height = 1 || line_length % 64 = 0)) {
--		/* We may need a 32-byte copy to ensure 64 byte alignment.  */
--		need_second = (dpos + xincr_first) & 63;
--		if ((need_second & 32) != need_second)
--			printk(KERN_ERR "tgafb: need_second wrong\n");
--		if (left >= need_second + 64) {
--			left -= need_second;
--			n64 = left / 64;
--			left %= 64;
--		} else
--			need_second = 0;
--	}
--
--	/* Copy trailing full 32-byte sections.  This will be the main
--	   loop if the 64 byte loop can't be used.  */
--	n32 = left / 32;
--	left %= 32;
--
--	/* Copy the trailing unaligned destination.  */
--	dmask_last = (1ul << left) - 1;
--
--	tga_regs = par->tga_regs_base;
--	tga_fb = par->tga_fb_base;
--
--	/* Set up the MODE and PIXELSHIFT registers.  */
--	__raw_writel(TGA_MODE_SBM_8BPP|TGA_MODE_COPY, tga_regs+TGA_MODE_REG);
--	__raw_writel(pixel_shift, tga_regs+TGA_PIXELSHIFT_REG);
--	wmb();
--
--	for (i = 0; i < height; ++i) {
--		unsigned long j;
--		void __iomem *sfb;
--		void __iomem *dfb;
--
--		sfb = tga_fb + spos;
--		dfb = tga_fb + dpos;
--		if (dmask_first) {
--			__raw_writel(smask_first, sfb);
--			wmb();
--			__raw_writel(dmask_first, dfb);
--			wmb();
--			sfb += xincr_first;
--			dfb += xincr_first;
--		}
--
--		if (need_second) {
--			__raw_writel(0xffffffff, sfb);
--			wmb();
--			__raw_writel(0xffffffff, dfb);
--			wmb();
--			sfb += 32;
--			dfb += 32;
--		}
--
--		if (n64 && (((unsigned long)sfb | (unsigned long)dfb) & 63))
--			printk(KERN_ERR
--			       "tgafb: misaligned copy64 (s:%p, d:%p)\n",
--			       sfb, dfb);
--
--		for (j = 0; j < n64; ++j) {
--			__raw_writel(sfb - tga_fb, tga_regs+TGA_COPY64_SRC);
--			wmb();
--			__raw_writel(dfb - tga_fb, tga_regs+TGA_COPY64_DST);
--			wmb();
--			sfb += 64;
--			dfb += 64;
--		}
--
--		for (j = 0; j < n32; ++j) {
--			__raw_writel(0xffffffff, sfb);
--			wmb();
--			__raw_writel(0xffffffff, dfb);
--			wmb();
--			sfb += 32;
--			dfb += 32;
--		}
--
--		if (dmask_last) {
--			__raw_writel(0xffffffff, sfb);
--			wmb();
--			__raw_writel(dmask_last, dfb);
--			wmb();
--		}
--
--		spos += yincr;
--		dpos += yincr;
-+	/* Do acceleration only if we are aligned on 8 pixels */
-+	if ((dx | sx | width) & 7) {
-+		cfb_copyarea(info, area);
-+		return;
- 	}
+ #include <plat/adc.h>
+-#include <plat/regs-fb-v4.h>
+ #include <plat/regs-serial.h>
+ #include <plat/cpu.h>
+ #include <plat/devs.h>
+diff --git a/arch/arm/mach-exynos/mach-origen.c b/arch/arm/mach-exynos/mach-origen.c
+index 5ca8030..4e245f1 100644
+--- a/arch/arm/mach-exynos/mach-origen.c
++++ b/arch/arm/mach-exynos/mach-origen.c
+@@ -29,9 +29,9 @@
+ #include <asm/mach-types.h>
  
--	/* Reset the MODE register to normal.  */
--	__raw_writel(TGA_MODE_SBM_8BPP|TGA_MODE_SIMPLE, tga_regs+TGA_MODE_REG);
--}
--
--/* The (almost) general case of backward copy in 8bpp mode.  */
--static inline void
--copyarea_backward_8bpp(struct fb_info *info, u32 dx, u32 dy, u32 sx, u32 sy,
--		       u32 height, u32 width, u32 line_length,
--		       const struct fb_copyarea *area)
--{
--	struct tga_par *par = (struct tga_par *) info->par;
--	unsigned long i, left, yincr;
--	unsigned long depos, sepos, dealign, sealign;
--	u32 mask_first, mask_last;
--	unsigned long n32;
--	void __iomem *tga_regs;
--	void __iomem *tga_fb;
--
- 	yincr = line_length;
- 	if (dy > sy) {
- 		dy += height - 1;
- 		sy += height - 1;
- 		yincr = -yincr;
- 	}
-+	backward = dy = sy && dx > sx && dx < sx + width;
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
  
- 	/* Compute the offsets and alignments in the frame buffer.
- 	   More than anything else, these control how we do copies.  */
--	depos = dy * line_length + dx + width;
--	sepos = sy * line_length + sx + width;
--	dealign = depos & 7;
--	sealign = sepos & 7;
--
--	/* ??? The documentation appears to be incorrect (or very
--	   misleading) wrt how pixel shifting works in backward copy
--	   mode, i.e. when PIXELSHIFT is negative.  I give up for now.
--	   Do handle the common case of co-aligned backward copies,
--	   but frob everything else back on generic code.  */
--	if (dealign != sealign) {
--		cfb_copyarea(info, area);
--		return;
--	}
--
--	/* We begin the copy with the trailing pixels of the
--	   unaligned destination.  */
--	mask_first = (1ul << dealign) - 1;
--	left = width - dealign;
--
--	/* Care for small copies.  */
--	if (dealign > width) {
--		mask_first ^= (1ul << (dealign - width)) - 1;
--		left = 0;
--	}
-+	depos = dy * line_length + dx;
-+	sepos = sy * line_length + sx;
-+	if (backward)
-+		depos += width, sepos += width;
+ #include <plat/regs-serial.h>
+-#include <plat/regs-fb-v4.h>
+ #include <plat/cpu.h>
+ #include <plat/devs.h>
+ #include <plat/sdhci.h>
+diff --git a/arch/arm/mach-exynos/mach-smdk4x12.c b/arch/arm/mach-exynos/mach-smdk4x12.c
+index b26beb1..ee069b4 100644
+--- a/arch/arm/mach-exynos/mach-smdk4x12.c
++++ b/arch/arm/mach-exynos/mach-smdk4x12.c
+@@ -26,6 +26,7 @@
+ #include <asm/hardware/gic.h>
+ #include <asm/mach-types.h>
  
- 	/* Next copy full words at a time.  */
--	n32 = left / 32;
--	left %= 32;
-+	n32 = width / 32;
-+	last_step = width % 32;
++#include <video/samsung_fimd.h>
+ #include <plat/backlight.h>
+ #include <plat/clock.h>
+ #include <plat/cpu.h>
+@@ -35,7 +36,6 @@
+ #include <plat/iic.h>
+ #include <plat/keypad.h>
+ #include <plat/mfc.h>
+-#include <plat/regs-fb.h>
+ #include <plat/regs-serial.h>
+ #include <plat/sdhci.h>
  
- 	/* Finally copy the unaligned head of the span.  */
--	mask_last = -1 << (32 - left);
-+	mask_last = (1ul << last_step) - 1;
-+
-+	if (!backward) {
-+		step = 32;
-+		last_step = 32;
-+	} else {
-+		step = -32;
-+		last_step = -last_step;
-+		sepos -= 32;
-+		depos -= 32;
-+	}
+diff --git a/arch/arm/mach-exynos/mach-smdkv310.c b/arch/arm/mach-exynos/mach-smdkv310.c
+index 3cfa688..b1c50da 100644
+--- a/arch/arm/mach-exynos/mach-smdkv310.c
++++ b/arch/arm/mach-exynos/mach-smdkv310.c
+@@ -26,9 +26,9 @@
+ #include <asm/mach-types.h>
  
- 	tga_regs = par->tga_regs_base;
- 	tga_fb = par->tga_fb_base;
-@@ -1381,25 +1216,33 @@ copyarea_backward_8bpp(struct fb_info *i
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ #include <plat/regs-serial.h>
+ #include <plat/regs-srom.h>
+-#include <plat/regs-fb-v4.h>
+ #include <plat/cpu.h>
+ #include <plat/devs.h>
+ #include <plat/fb.h>
+diff --git a/arch/arm/mach-exynos/mach-universal_c210.c b/arch/arm/mach-exynos/mach-universal_c210.c
+index 4d1f40d..8139cd2 100644
+--- a/arch/arm/mach-exynos/mach-universal_c210.c
++++ b/arch/arm/mach-exynos/mach-universal_c210.c
+@@ -30,6 +30,7 @@
+ #include <asm/hardware/gic.h>
+ #include <asm/mach-types.h>
  
- 		sfb = tga_fb + sepos;
- 		dfb = tga_fb + depos;
--		if (mask_first) {
--			__raw_writel(mask_first, sfb);
--			wmb();
--			__raw_writel(mask_first, dfb);
--			wmb();
--		}
++#include <video/samsung_fimd.h>
+ #include <plat/regs-serial.h>
+ #include <plat/clock.h>
+ #include <plat/cpu.h>
+@@ -39,7 +40,6 @@
+ #include <plat/fb.h>
+ #include <plat/mfc.h>
+ #include <plat/sdhci.h>
+-#include <plat/regs-fb-v4.h>
+ #include <plat/fimc-core.h>
+ #include <plat/s5p-time.h>
+ #include <plat/camport.h>
+diff --git a/arch/arm/mach-exynos/setup-fimd0.c b/arch/arm/mach-exynos/setup-fimd0.c
+index 07a6dbe..5665bb4 100644
+--- a/arch/arm/mach-exynos/setup-fimd0.c
++++ b/arch/arm/mach-exynos/setup-fimd0.c
+@@ -13,8 +13,8 @@
+ #include <linux/fb.h>
+ #include <linux/gpio.h>
  
--		for (j = 0; j < n32; ++j) {
--			sfb -= 32;
--			dfb -= 32;
-+		for (j = 0; j < n32; j++) {
-+			if (j < 2 && j + 1 < n32 && !backward &&
-+			    !(((unsigned long)sfb | (unsigned long)dfb) & 63)) {
-+				do {
-+					__raw_writel(sfb - tga_fb, tga_regs+TGA_COPY64_SRC);
-+					wmb();
-+					__raw_writel(dfb - tga_fb, tga_regs+TGA_COPY64_DST);
-+					wmb();
-+					sfb += 64;
-+					dfb += 64;
-+					j += 2;
-+				} while (j + 1 < n32);
-+				j--;
-+				continue;
-+			}
- 			__raw_writel(0xffffffff, sfb);
- 			wmb();
- 			__raw_writel(0xffffffff, dfb);
- 			wmb();
-+			sfb += step;
-+			dfb += step;
- 		}
++#include <video/samsung_fimd.h>
+ #include <plat/gpio-cfg.h>
+-#include <plat/regs-fb-v4.h>
  
- 		if (mask_last) {
--			sfb -= 32;
--			dfb -= 32;
-+			sfb += last_step - step;
-+			dfb += last_step - step;
- 			__raw_writel(mask_last, sfb);
- 			wmb();
- 			__raw_writel(mask_last, dfb);
-@@ -1460,14 +1303,9 @@ tgafb_copyarea(struct fb_info *info, con
- 	else if (bpp = 32)
- 		cfb_copyarea(info, area);
+ #include <mach/map.h>
  
--	/* Detect overlapping source and destination that requires
--	   a backward copy.  */
--	else if (dy = sy && dx > sx && dx < sx + width)
--		copyarea_backward_8bpp(info, dx, dy, sx, sy, height,
--				       width, line_length, area);
- 	else
--		copyarea_foreward_8bpp(info, dx, dy, sx, sy, height,
--				       width, line_length);
-+		copyarea_8bpp(info, dx, dy, sx, sy, height,
-+			      width, line_length, area);
- }
+diff --git a/arch/arm/mach-s3c24xx/mach-smdk2416.c b/arch/arm/mach-s3c24xx/mach-smdk2416.c
+index c3100a0..96478f0 100644
+--- a/arch/arm/mach-s3c24xx/mach-smdk2416.c
++++ b/arch/arm/mach-s3c24xx/mach-smdk2416.c
+@@ -29,6 +29,7 @@
+ #include <asm/mach/map.h>
+ #include <asm/mach/irq.h>
  
++#include <video/samsung_fimd.h>
+ #include <mach/hardware.h>
+ #include <asm/irq.h>
+ #include <asm/mach-types.h>
+@@ -52,7 +53,6 @@
+ #include <plat/udc.h>
+ #include <linux/platform_data/s3c-hsudc.h>
  
+-#include <plat/regs-fb-v4.h>
+ #include <plat/fb.h>
+ 
+ #include <plat/common-smdk.h>
+diff --git a/arch/arm/mach-s3c64xx/mach-anw6410.c b/arch/arm/mach-s3c64xx/mach-anw6410.c
+index ffa29dd..f7a108b 100644
+--- a/arch/arm/mach-s3c64xx/mach-anw6410.c
++++ b/arch/arm/mach-s3c64xx/mach-anw6410.c
+@@ -29,6 +29,7 @@
+ #include <linux/dm9000.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include <asm/hardware/vic.h>
+ #include <asm/mach/arch.h>
+@@ -44,7 +45,6 @@
+ #include <plat/regs-serial.h>
+ #include <plat/iic.h>
+ #include <plat/fb.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include <plat/clock.h>
+ #include <plat/devs.h>
+diff --git a/arch/arm/mach-s3c64xx/mach-crag6410.c b/arch/arm/mach-s3c64xx/mach-crag6410.c
+index 09cd812..0f882f9 100644
+--- a/arch/arm/mach-s3c64xx/mach-crag6410.c
++++ b/arch/arm/mach-s3c64xx/mach-crag6410.c
+@@ -46,6 +46,7 @@
+ #include <asm/mach/arch.h>
+ #include <asm/mach-types.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <mach/hardware.h>
+ #include <mach/map.h>
+ 
+@@ -57,7 +58,6 @@
+ #include <mach/regs-gpio-memport.h>
+ 
+ #include <plat/regs-serial.h>
+-#include <plat/regs-fb-v4.h>
+ #include <plat/fb.h>
+ #include <plat/sdhci.h>
+ #include <plat/gpio-cfg.h>
+diff --git a/arch/arm/mach-s3c64xx/mach-hmt.c b/arch/arm/mach-s3c64xx/mach-hmt.c
+index 6890881..8ad0bfc 100644
+--- a/arch/arm/mach-s3c64xx/mach-hmt.c
++++ b/arch/arm/mach-s3c64xx/mach-hmt.c
+@@ -26,6 +26,7 @@
+ #include <asm/mach/map.h>
+ #include <asm/mach/irq.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <mach/hardware.h>
+ #include <mach/map.h>
+ 
+@@ -41,7 +42,6 @@
+ #include <plat/clock.h>
+ #include <plat/devs.h>
+ #include <plat/cpu.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include "common.h"
+ 
+diff --git a/arch/arm/mach-s3c64xx/mach-mini6410.c b/arch/arm/mach-s3c64xx/mach-mini6410.c
+index 5539a25..96ebcc5 100644
+--- a/arch/arm/mach-s3c64xx/mach-mini6410.c
++++ b/arch/arm/mach-s3c64xx/mach-mini6410.c
+@@ -41,9 +41,9 @@
+ #include <plat/nand.h>
+ #include <plat/regs-serial.h>
+ #include <plat/ts.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include "common.h"
+ 
+diff --git a/arch/arm/mach-s3c64xx/mach-ncp.c b/arch/arm/mach-s3c64xx/mach-ncp.c
+index cad2e05..48599bc 100644
+--- a/arch/arm/mach-s3c64xx/mach-ncp.c
++++ b/arch/arm/mach-s3c64xx/mach-ncp.c
+@@ -24,6 +24,7 @@
+ #include <linux/delay.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include <asm/hardware/vic.h>
+ #include <asm/mach/arch.h>
+@@ -43,7 +44,6 @@
+ #include <plat/clock.h>
+ #include <plat/devs.h>
+ #include <plat/cpu.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include "common.h"
+ 
+diff --git a/arch/arm/mach-s3c64xx/mach-real6410.c b/arch/arm/mach-s3c64xx/mach-real6410.c
+index 326b216..76d3ffb 100644
+--- a/arch/arm/mach-s3c64xx/mach-real6410.c
++++ b/arch/arm/mach-s3c64xx/mach-real6410.c
+@@ -42,9 +42,9 @@
+ #include <plat/nand.h>
+ #include <plat/regs-serial.h>
+ #include <plat/ts.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include "common.h"
+ 
+diff --git a/arch/arm/mach-s3c64xx/mach-smartq5.c b/arch/arm/mach-s3c64xx/mach-smartq5.c
+index d6266d8..96d6da2 100644
+--- a/arch/arm/mach-s3c64xx/mach-smartq5.c
++++ b/arch/arm/mach-s3c64xx/mach-smartq5.c
+@@ -21,6 +21,7 @@
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <mach/map.h>
+ #include <mach/regs-gpio.h>
+ 
+@@ -28,7 +29,6 @@
+ #include <plat/devs.h>
+ #include <plat/fb.h>
+ #include <plat/gpio-cfg.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include "common.h"
+ #include "mach-smartq.h"
+diff --git a/arch/arm/mach-s3c64xx/mach-smartq7.c b/arch/arm/mach-s3c64xx/mach-smartq7.c
+index 0957d2a..7d1167b 100644
+--- a/arch/arm/mach-s3c64xx/mach-smartq7.c
++++ b/arch/arm/mach-s3c64xx/mach-smartq7.c
+@@ -21,6 +21,7 @@
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <mach/map.h>
+ #include <mach/regs-gpio.h>
+ 
+@@ -28,7 +29,6 @@
+ #include <plat/devs.h>
+ #include <plat/fb.h>
+ #include <plat/gpio-cfg.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include "common.h"
+ #include "mach-smartq.h"
+diff --git a/arch/arm/mach-s3c64xx/mach-smdk6410.c b/arch/arm/mach-s3c64xx/mach-smdk6410.c
+index 0fe4f15..d1378d7 100644
+--- a/arch/arm/mach-s3c64xx/mach-smdk6410.c
++++ b/arch/arm/mach-s3c64xx/mach-smdk6410.c
+@@ -43,6 +43,7 @@
+ #endif
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include <asm/hardware/vic.h>
+ #include <asm/mach/arch.h>
+@@ -72,7 +73,6 @@
+ #include <plat/ts.h>
+ #include <plat/keypad.h>
+ #include <plat/backlight.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include "common.h"
+ 
+diff --git a/arch/arm/mach-s5p64x0/mach-smdk6440.c b/arch/arm/mach-s5p64x0/mach-smdk6440.c
+index 92fefad..5d0b36e 100644
+--- a/arch/arm/mach-s5p64x0/mach-smdk6440.c
++++ b/arch/arm/mach-s5p64x0/mach-smdk6440.c
+@@ -27,6 +27,7 @@
+ #include <linux/mmc/host.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include <asm/hardware/vic.h>
+ #include <asm/mach/arch.h>
+@@ -52,7 +53,6 @@
+ #include <plat/s5p-time.h>
+ #include <plat/backlight.h>
+ #include <plat/fb.h>
+-#include <plat/regs-fb.h>
+ #include <plat/sdhci.h>
+ 
+ #include "common.h"
+diff --git a/arch/arm/mach-s5p64x0/mach-smdk6450.c b/arch/arm/mach-s5p64x0/mach-smdk6450.c
+index e2335ec..7522fb9 100644
+--- a/arch/arm/mach-s5p64x0/mach-smdk6450.c
++++ b/arch/arm/mach-s5p64x0/mach-smdk6450.c
+@@ -27,6 +27,7 @@
+ #include <linux/mmc/host.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include <asm/hardware/vic.h>
+ #include <asm/mach/arch.h>
+@@ -52,7 +53,6 @@
+ #include <plat/s5p-time.h>
+ #include <plat/backlight.h>
+ #include <plat/fb.h>
+-#include <plat/regs-fb.h>
+ #include <plat/sdhci.h>
+ 
+ #include "common.h"
+diff --git a/arch/arm/mach-s5pc100/mach-smdkc100.c b/arch/arm/mach-s5pc100/mach-smdkc100.c
+index 0c3ae38..c3dcafa 100644
+--- a/arch/arm/mach-s5pc100/mach-smdkc100.c
++++ b/arch/arm/mach-s5pc100/mach-smdkc100.c
+@@ -33,6 +33,7 @@
+ #include <mach/regs-gpio.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include <asm/irq.h>
+ #include <asm/mach-types.h>
+@@ -51,7 +52,6 @@
+ #include <plat/ts.h>
+ #include <plat/audio.h>
+ #include <plat/backlight.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include "common.h"
+ 
+diff --git a/arch/arm/mach-s5pv210/mach-aquila.c b/arch/arm/mach-s5pv210/mach-aquila.c
+index 78028df..ee9fa5c 100644
+--- a/arch/arm/mach-s5pv210/mach-aquila.c
++++ b/arch/arm/mach-s5pv210/mach-aquila.c
+@@ -28,6 +28,7 @@
+ #include <asm/setup.h>
+ #include <asm/mach-types.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <mach/map.h>
+ #include <mach/regs-clock.h>
+ 
+@@ -39,7 +40,6 @@
+ #include <plat/fimc-core.h>
+ #include <plat/sdhci.h>
+ #include <plat/s5p-time.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include "common.h"
+ 
+diff --git a/arch/arm/mach-s5pv210/mach-goni.c b/arch/arm/mach-s5pv210/mach-goni.c
+index 822a559..c552581 100644
+--- a/arch/arm/mach-s5pv210/mach-goni.c
++++ b/arch/arm/mach-s5pv210/mach-goni.c
+@@ -35,6 +35,7 @@
+ #include <asm/setup.h>
+ #include <asm/mach-types.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <mach/map.h>
+ #include <mach/regs-clock.h>
+ 
+@@ -49,7 +50,6 @@
+ #include <plat/clock.h>
+ #include <plat/s5p-time.h>
+ #include <plat/mfc.h>
+-#include <plat/regs-fb-v4.h>
+ #include <plat/camport.h>
+ 
+ #include <media/v4l2-mediabus.h>
+diff --git a/arch/arm/mach-s5pv210/mach-smdkv210.c b/arch/arm/mach-s5pv210/mach-smdkv210.c
+index 918b23d..9bfbedf 100644
+--- a/arch/arm/mach-s5pv210/mach-smdkv210.c
++++ b/arch/arm/mach-s5pv210/mach-smdkv210.c
+@@ -28,6 +28,7 @@
+ #include <asm/mach-types.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include <mach/map.h>
+ #include <mach/regs-clock.h>
+@@ -46,7 +47,6 @@
+ #include <plat/fb.h>
+ #include <plat/s5p-time.h>
+ #include <plat/backlight.h>
+-#include <plat/regs-fb-v4.h>
+ #include <plat/mfc.h>
+ #include <plat/clock.h>
+ 
+-- 
+1.7.0.4
 

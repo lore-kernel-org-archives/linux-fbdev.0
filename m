@@ -1,146 +1,96 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 01 Aug 2012 10:43:19 +0000
-Subject: [RFC 08/17] OMAPDSS: DSI: Maintain own copy of timings in driver data
-Message-Id: <1343817088-29645-9-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 07 Aug 2012 14:07:42 +0000
+Subject: Re: [RFC 08/17] OMAPDSS: DSI: Maintain own copy of timings in driver data
+Message-Id: <1344348462.7216.77.camel@lappyti>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-AGrwCg3rbo+ArQ9yDnh6"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1343817088-29645-1-git-send-email-archit@ti.com>
-In-Reply-To: <1343817088-29645-1-git-send-email-archit@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	 <1343817088-29645-9-git-send-email-archit@ti.com>
+In-Reply-To: <1343817088-29645-9-git-send-email-archit@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, sumit.semwal@ti.com, rob@ti.com
+
+
+--=-AGrwCg3rbo+ArQ9yDnh6
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2012-08-01 at 16:01 +0530, Archit Taneja wrote:
+> The DSI driver currently relies on the timings in omap_dss_device struct =
+to
+> configure the DISPC and DSI blocks accordingly. This makes the DSI interf=
+ace
+> driver dependent on the omap_dss_device struct.
+>=20
+> Make the DPI driver data maintain it's own timings field. The panel drive=
+r is
+          ^^^
+DSI
+
+> expected to call omapdss_dsi_set_timings() to set these timings before th=
+e panel
+> is enabled.
+>=20
+> Signed-off-by: Archit Taneja <archit@ti.com>d
+> ---
+>  drivers/video/omap2/displays/panel-taal.c |    2 ++
+>  drivers/video/omap2/dss/dsi.c             |   27 ++++++++++++++++++++++-=
+----
+>  include/video/omapdss.h                   |    2 ++
+>  3 files changed, 26 insertions(+), 5 deletions(-)
+>=20
+> diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/om=
+ap2/displays/panel-taal.c
+> index 3f5acc7..4775580 100644
+> --- a/drivers/video/omap2/displays/panel-taal.c
+> +++ b/drivers/video/omap2/displays/panel-taal.c
+> @@ -1060,6 +1060,8 @@ static int taal_power_on(struct omap_dss_device *ds=
+sdev)
+>  		goto err0;
+>  	};
+> =20
+> +	omapdss_dsi_set_timings(dssdev, &td->panel_config->timings);
+> +
+>  	r =3D omapdss_dsi_display_enable(dssdev);
+>  	if (r) {
+>  		dev_err(&dssdev->dev, "failed to enable DSI\n");
+
+Video timings for command mode panel are meaningless. If we need to pass
+the resolution of the panel, perhaps we should have a separate function
+for that.
+
+However, with a quick glance at dsi.c, we don't even use the
+dssdev->panel.timings for cmd mode panel. But we do use
+dssdev->get_resolution() in a few places. Those calls could be replaced
+by storing the panel size in dsi.c, given with omapdss_dsi_set_size() or
+such. We could use the timings field in dsi.c to store them, though.
+
+ Tomi
+
+
+--=-AGrwCg3rbo+ArQ9yDnh6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, sumit.semwal@ti.com, rob@ti.com, Archit Taneja <archit@ti.com>
 
-The DSI driver currently relies on the timings in omap_dss_device struct to
-configure the DISPC and DSI blocks accordingly. This makes the DSI interface
-driver dependent on the omap_dss_device struct.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-Make the DPI driver data maintain it's own timings field. The panel driver is
-expected to call omapdss_dsi_set_timings() to set these timings before the panel
-is enabled.
+iQIcBAABAgAGBQJQISEuAAoJEPo9qoy8lh71G+oQAKs0cpux4U1yKTBHHXyrE6wQ
+/LKrCBBE3Rap06WqKIjfy3rNBm8s8ffO5Lnv+vlsU8aVLXA/r4amiZederzIbNxL
+N39nXhHXH9Ho+Cd8snkS69RM7KzM25gBt0eCbzkp5ffAz3KK0QO2eZq4diRWXGcT
+wCNGFjfOANxjOBgzbiNLvL1lmPtjXY9BlNUKjKvE+uQicRaAQbdm/oF2xH9BOC5B
+3Q5XHDGOXgt2j3RdEDu0fwt7fKWiPpzQ4qLBBo2oTvgJ96QnBbJCRBubuhDEKlpg
+iYZZQwI+WrDULvggJrKnVyOmX0/vMo4qkroxnumwm9lRTeipjn2FMsZHWWQ2JiMt
+ACSI5RNDNDTyb3BP2u/v5+a7rqEa8XTrMZmuhMdeV0DGmiItZISV4S5ECY5xXian
+Y4T1BHIyKNUd+FmZ2oInIYzVGdKrng7EkuKuTblyYUl3H6Xzma+2EwUmUVhK5ciC
+33ognBYeoZ7QHkciWGqTMQHVPHD75MzbYQXNnwIPBBrK2xuzKZ9F5Wh9sfwEmD7k
+UJwUEPu7Ot+LMfhmfwrYCqWbAe7tJEB1PWnB8nP9WjPwkkYNVz3UiSWfb7rKO3HE
+S0sO19/CrV94z+X/bhTW+8AXX3mEWzgxl+wV4BDzoYknpvLrddbgE1wDiFz+6u0h
+QJAPyU6YhsVlrM9BfSkE
+=3cv0
+-----END PGP SIGNATURE-----
 
-Signed-off-by: Archit Taneja <archit@ti.com>d
----
- drivers/video/omap2/displays/panel-taal.c |    2 ++
- drivers/video/omap2/dss/dsi.c             |   27 ++++++++++++++++++++++-----
- include/video/omapdss.h                   |    2 ++
- 3 files changed, 26 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 3f5acc7..4775580 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -1060,6 +1060,8 @@ static int taal_power_on(struct omap_dss_device *dssdev)
- 		goto err0;
- 	};
- 
-+	omapdss_dsi_set_timings(dssdev, &td->panel_config->timings);
-+
- 	r = omapdss_dsi_display_enable(dssdev);
- 	if (r) {
- 		dev_err(&dssdev->dev, "failed to enable DSI\n");
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 27c27c4..598d965 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -333,6 +333,7 @@ struct dsi_data {
- 	unsigned scp_clk_refcount;
- 
- 	struct dss_lcd_mgr_config mgr_config;
-+	struct omap_video_timings timings;
- };
- 
- struct dsi_packet_sent_handler_data {
-@@ -3607,9 +3608,10 @@ static void dsi_config_vp_num_line_buffers(struct omap_dss_device *dssdev)
- 	int num_line_buffers;
- 
- 	if (dssdev->panel.dsi_mode = OMAP_DSS_DSI_VIDEO_MODE) {
-+		struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 		int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
- 		unsigned line_buf_size = dsi_get_line_buf_size(dsidev);
--		struct omap_video_timings *timings = &dssdev->panel.timings;
-+		struct omap_video_timings *timings = &dsi->timings;
- 		/*
- 		 * Don't use line buffers if width is greater than the video
- 		 * port's line buffer size
-@@ -3738,7 +3740,7 @@ static void dsi_config_cmd_mode_interleaving(struct omap_dss_device *dssdev)
- 	int ddr_clk_pre, ddr_clk_post, enter_hs_mode_lat, exit_hs_mode_lat;
- 	int tclk_trail, ths_exit, exiths_clk;
- 	bool ddr_alwon;
--	struct omap_video_timings *timings = &dssdev->panel.timings;
-+	struct omap_video_timings *timings = &dsi->timings;
- 	int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
- 	int ndl = dsi->num_lanes_used - 1;
- 	const struct omapdss_clock_config *clks;
-@@ -3996,7 +3998,7 @@ static void dsi_proto_timings(struct omap_dss_device *dssdev)
- 		int vbp = dssdev->panel.dsi_vm_data.vbp;
- 		int window_sync = dssdev->panel.dsi_vm_data.window_sync;
- 		bool hsync_end = dssdev->panel.dsi_vm_data.vp_hsync_end;
--		struct omap_video_timings *timings = &dssdev->panel.timings;
-+		struct omap_video_timings *timings = &dsi->timings;
- 		int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
- 		int tl, t_he, width_bytes;
- 
-@@ -4105,6 +4107,7 @@ EXPORT_SYMBOL(omapdss_dsi_configure_pins);
- int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel)
- {
- 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
-+	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 	int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
- 	u8 data_type;
- 	u16 word_count;
-@@ -4135,7 +4138,7 @@ int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel)
- 		/* MODE, 1 = video mode */
- 		REG_FLD_MOD(dsidev, DSI_VC_CTRL(channel), 1, 4, 4);
- 
--		word_count = DIV_ROUND_UP(dssdev->panel.timings.x_res * bpp, 8);
-+		word_count = DIV_ROUND_UP(dsi->timings.x_res * bpp, 8);
- 
- 		dsi_vc_write_long_header(dsidev, channel, data_type,
- 				word_count, 0);
-@@ -4401,7 +4404,7 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
- 		dsi->mgr_config.stallmode = true;
- 		dsi->mgr_config.fifohandcheck = true;
- 	} else {
--		timings = dssdev->panel.timings;
-+		timings = dsi->timings;
- 
- 		dsi->mgr_config.stallmode = false;
- 		dsi->mgr_config.fifohandcheck = false;
-@@ -4688,6 +4691,20 @@ int omapdss_dsi_enable_te(struct omap_dss_device *dssdev, bool enable)
- }
- EXPORT_SYMBOL(omapdss_dsi_enable_te);
- 
-+void omapdss_dsi_set_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings)
-+{
-+	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
-+	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
-+
-+	mutex_lock(&dsi->lock);
-+
-+	dsi->timings = *timings;
-+
-+	mutex_unlock(&dsi->lock);
-+}
-+EXPORT_SYMBOL(omapdss_dsi_set_timings);
-+
- static int __init dsi_init_display(struct omap_dss_device *dssdev)
- {
- 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index ebf2ebd..a2cd133 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -736,6 +736,8 @@ int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
- void omapdss_dsi_vc_enable_hs(struct omap_dss_device *dssdev, int channel,
- 		bool enable);
- int omapdss_dsi_enable_te(struct omap_dss_device *dssdev, bool enable);
-+void omapdss_dsi_set_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings);
- 
- int omap_dsi_update(struct omap_dss_device *dssdev, int channel,
- 		void (*callback)(int, void *), void *data);
--- 
-1.7.9.5
+--=-AGrwCg3rbo+ArQ9yDnh6--
 

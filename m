@@ -1,56 +1,48 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 07 Aug 2012 00:24:37 +0000
-Subject: Re: [PATCH] video: s3c-fb: Fix compile error/warning if CONFIG_OF is not selected
-Message-Id: <000a01cd7433$07555780$16000680$%han@samsung.com>
+From: Dongjin Kim <Dongjin.Kim@agreeyamobility.net>
+Date: Tue, 07 Aug 2012 00:47:15 +0000
+Subject: RE: [PATCH] video: s3c-fb: Fix compile error/warning if CONFIG_OF is not selected
+Message-Id: <frxrb1h2wwxmdtvwst6uk43m.1344300433108@email.android.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1344261462-14183-1-git-send-email-dongjin.kim@agreeyamobility.net>
- <1344261462-14183-5-git-send-email-dongjin.kim@agreeyamobility.net>
-In-Reply-To: <1344261462-14183-5-git-send-email-dongjin.kim@agreeyamobility.net>
+ <1344261462-14183-5-git-send-email-dongjin.kim@agreeyamobility.net>,<000a01cd7433$07555780$16000680$%han@samsung.com>
+In-Reply-To: <000a01cd7433$07555780$16000680$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Dongjin Kim' <tobetter@gmail.com>
-Cc: 'Dongjin Kim' <dongjin.kim@agreeyamobility.net>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: 'Dongjin Kim' <tobetter@gmail.com>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-On Monday, August 06, 2012 10:58 PM Dongjin Kim wrote:
-> 
-> Change-Id: I5d7ff6f0070a10225d5b064b362d3d8f214787fd
-> Signed-off-by: Dongjin Kim <dongjin.kim@agreeyamobility.net>
-> ---
->  drivers/video/s3c-fb.c |    6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-> index 8c8adb5..268be0c 100644
-> --- a/drivers/video/s3c-fb.c
-> +++ b/drivers/video/s3c-fb.c
-> @@ -1527,13 +1527,11 @@ static int s3c_fb_dt_parse_gpios(struct device *dev, struct s3c_fb *sfb,
-> 
->  static void s3c_fb_dt_free_gpios(struct s3c_fb *sfb)
->  {
-> -	return 0;
->  }
-> 
-> -static int s3c_fb_dt_parse_pdata(struct device *dev,
-> -					struct s3c_fb_platdata **pdata)
-> +static struct s3c_fb_platdata *s3c_fb_dt_parse_pdata(struct device *dev)
->  {
-> -	return 0;
-> +	return NULL;
->  }
->  #endif /* CONFIG_OF */
-
-
-Um, DT is not yet merged to s3c-fb driver.
-s3c_fb_dt_parse_pdata() and s3c_fb_dt_free_gpios() are not available.
-
-So, this patch is unnecessary.
-
-Best regards,
-Jingoo Han
-
-
-> 
-> --
-> 1.7.9.5
+U29ycnksIHNlZW1zIGl0cyBteSBiYWQuDQoNCkkgdG9vayBjb3VwbGUgb2YgY29tbWl0cyBmcm9t
+IGxpbmFybyBrZXJuZWwgZ2l0IGZvciBzM2MtZmIgZHJpdmVyIHRlc3Rpbmcgb24gbXkgaGFyZHdh
+cmUgYW5kIGVuY291bnRlcmVkIHRoZSBjb21waWxlIHByb2JsZW0uIE5vdyBJIGdvdCB5b3VyIG1l
+YW5pbmcsIERUIGlzIG5vdCBtZXJnZWQgeWV0Lg0KDQpUaGFua3MsDQpEb25namluLg0KLS0tLS0g
+v/i6uyC43r3DwfYgLS0tLS0NCrq4s70gu+e29zpKaW5nb28gSGFuIDxqZzEuaGFuQHNhbXN1bmcu
+Y29tPg0Kud60wiC757b3OidEb25namluIEtpbScgPHRvYmV0dGVyQGdtYWlsLmNvbT4NCsL8wbY6
+RG9uZ2ppbiBLaW0gPERvbmdqaW4uS2ltQGFncmVleWFtb2JpbGl0eS5uZXQ+LCAnRmxvcmlhbiBU
+b2JpYXMgU2NoYW5kaW5hdCcgPEZsb3JpYW5TY2hhbmRpbmF0QGdteC5kZT4sICJsaW51eC1mYmRl
+dkB2Z2VyLmtlcm5lbC5vcmciIDxsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmc+LCAibGludXgt
+a2VybmVsQHZnZXIua2VybmVsLm9yZyIgPGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+LCAn
+SmluZ29vIEhhbicgPGpnMS5oYW5Ac2Ftc3VuZy5jb20+DQq6uLO9IL3DsKM6MjAxMi4gOC4gNy4g
+OToyNCC/wMD8DQrBprjxOlJlOiBbUEFUQ0hdIHZpZGVvOiBzM2MtZmI6IEZpeCBjb21waWxlIGVy
+cm9yL3dhcm5pbmcgaWYgQ09ORklHX09GIGlzIG5vdCBzZWxlY3RlZA0KDQoNCg0KT24gTW9uZGF5
+LCBBdWd1c3QgMDYsIDIwMTIgMTA6NTggUE0gRG9uZ2ppbiBLaW0gd3JvdGU6DQo+DQo+IENoYW5n
+ZS1JZDogSTVkN2ZmNmYwMDcwYTEwMjI1ZDViMDY0YjM2MmQzZDhmMjE0Nzg3ZmQNCj4gU2lnbmVk
+LW9mZi1ieTogRG9uZ2ppbiBLaW0gPGRvbmdqaW4ua2ltQGFncmVleWFtb2JpbGl0eS5uZXQ+DQo+
+IC0tLQ0KPiAgZHJpdmVycy92aWRlby9zM2MtZmIuYyB8ICAgIDYgKystLS0tDQo+ICAxIGZpbGUg
+Y2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQ0KPg0KPiBkaWZmIC0tZ2l0
+IGEvZHJpdmVycy92aWRlby9zM2MtZmIuYyBiL2RyaXZlcnMvdmlkZW8vczNjLWZiLmMNCj4gaW5k
+ZXggOGM4YWRiNS4uMjY4YmUwYyAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9zM2MtZmIu
+Yw0KPiArKysgYi9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jDQo+IEBAIC0xNTI3LDEzICsxNTI3LDEx
+IEBAIHN0YXRpYyBpbnQgczNjX2ZiX2R0X3BhcnNlX2dwaW9zKHN0cnVjdCBkZXZpY2UgKmRldiwg
+c3RydWN0IHMzY19mYiAqc2ZiLA0KPg0KPiAgc3RhdGljIHZvaWQgczNjX2ZiX2R0X2ZyZWVfZ3Bp
+b3Moc3RydWN0IHMzY19mYiAqc2ZiKQ0KPiAgew0KPiAtICAgICByZXR1cm4gMDsNCj4gIH0NCj4N
+Cj4gLXN0YXRpYyBpbnQgczNjX2ZiX2R0X3BhcnNlX3BkYXRhKHN0cnVjdCBkZXZpY2UgKmRldiwN
+Cj4gLSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJ1Y3QgczNjX2ZiX3Bs
+YXRkYXRhICoqcGRhdGEpDQo+ICtzdGF0aWMgc3RydWN0IHMzY19mYl9wbGF0ZGF0YSAqczNjX2Zi
+X2R0X3BhcnNlX3BkYXRhKHN0cnVjdCBkZXZpY2UgKmRldikNCj4gIHsNCj4gLSAgICAgcmV0dXJu
+IDA7DQo+ICsgICAgIHJldHVybiBOVUxMOw0KPiAgfQ0KPiAgI2VuZGlmIC8qIENPTkZJR19PRiAq
+Lw0KDQoNClVtLCBEVCBpcyBub3QgeWV0IG1lcmdlZCB0byBzM2MtZmIgZHJpdmVyLg0KczNjX2Zi
+X2R0X3BhcnNlX3BkYXRhKCkgYW5kIHMzY19mYl9kdF9mcmVlX2dwaW9zKCkgYXJlIG5vdCBhdmFp
+bGFibGUuDQoNClNvLCB0aGlzIHBhdGNoIGlzIHVubmVjZXNzYXJ5Lg0KDQpCZXN0IHJlZ2FyZHMs
+DQpKaW5nb28gSGFuDQoNCg0KPg0KPiAtLQ0KPiAxLjcuOS41DQoNCg0K
 

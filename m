@@ -1,32 +1,62 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 07 Aug 2012 15:25:14 +0000
-Subject: Re: [PATCH V4 1/2] include/video: move fimd register headers from platform to include/video
-Message-Id: <201208071525.15032.arnd@arndb.de>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Tue, 07 Aug 2012 08:40:17 +0000
+Subject: [PATCH 4/6] OMAPDSS: VENC: Remove cpu_is_xxxx checks
+Message-Id: <75e516de4cb0787d52e4a9173d123df6903d561a.1343912533.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344342872-7904-1-git-send-email-l.krishna@samsung.com> <1344342872-7904-2-git-send-email-l.krishna@samsung.com> <201208071428.56290.arnd@arndb.de>
-In-Reply-To: <201208071428.56290.arnd@arndb.de>
+References: <cover.1343912532.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1343912532.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
-Cc: linux-fbdev@vger.kernel.org, kgene.kim@samsung.com, Leela Krishna Amudala <l.krishna@samsung.com>, dri-devel@lists.freedesktop.org, linux-samsung-soc@vger.kernel.org, ben-linux@fluff.org, m.szyprowski@samsung.com
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-On Tuesday 07 August 2012, Arnd Bergmann wrote:
-> On Tuesday 07 August 2012, Leela Krishna Amudala wrote:
-> > 
-> > This patch moves the contents from regs-fb-v4.h and regs-fb.h to
-> > include/video/samsung_fimd.h. Also updates the header inclusion in
-> > machine files and driver files accordingly.
-> > 
-> > Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
-> 
-> You are missing an explanation here about why the file is moved.
-> It does seem like a good idea but please say why you do this.
-> 
-> More importantly, I don't understany why you move regs-fb-v4.h
-> but not regs-fb.h, which is included by the former.
+OMAP4 checks are removed from VENC to provide it a cleaner interface. These
+checks were introduced by patches "HACK: OMAP: DSS2: VENC: disable VENC on OMAP4
+to prevent crash" (ba02fa37de) by Tomi Valkeinen <tomi.valkeinen@ti.com> and
+"OMAPDSS: VENC: fix NULL pointer dereference in DSS2 VENC sysfs debug attr on
+OMAP4" (cc1d3e032d)  by Danny Kukawka <danny.kukawka@bisect.de> to prevent VENC
+from crashing OMAP4 kernel. An alternative approach is used to do the same in
+later patches.
 
-Nevermind, I should have read your text better.
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+---
+ drivers/video/omap2/dss/venc.c |   11 -----------
+ 1 file changed, 11 deletions(-)
 
-	Arnd
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 3a22087..8fc165a 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -752,11 +752,6 @@ static void venc_dump_regs(struct seq_file *s)
+ {
+ #define DUMPREG(r) seq_printf(s, "%-35s %08x\n", #r, venc_read_reg(r))
+ 
+-	if (cpu_is_omap44xx()) {
+-		seq_printf(s, "VENC currently disabled on OMAP44xx\n");
+-		return;
+-	}
+-
+ 	if (venc_runtime_get())
+ 		return;
+ 
+@@ -971,16 +966,10 @@ static struct platform_driver omap_venchw_driver = {
+ 
+ int __init venc_init_platform_driver(void)
+ {
+-	if (cpu_is_omap44xx())
+-		return 0;
+-
+ 	return platform_driver_probe(&omap_venchw_driver, omap_venchw_probe);
+ }
+ 
+ void __exit venc_uninit_platform_driver(void)
+ {
+-	if (cpu_is_omap44xx())
+-		return;
+-
+ 	platform_driver_unregister(&omap_venchw_driver);
+ }
+-- 
+1.7.10
 

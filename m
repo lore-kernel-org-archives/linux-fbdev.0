@@ -1,76 +1,330 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 07 Aug 2012 13:00:56 +0000
-Subject: Re: [PATCH 1/6] OMAPDSS: DISPC: Remove cpu_is_xxxx checks
-Message-Id: <1344344456.7216.59.camel@lappyti>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-7WVbOYoUtuc5zJj001vG"
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Tue, 07 Aug 2012 08:40:04 +0000
+Subject: [PATCH 3/6] OMAPDSS: DSS: Remove cpu_is_xxxx checks
+Message-Id: <19a46cc15dc7add0671dd8c32f5398249c0420ab.1343912533.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1343912532.git.cmahapatra@ti.com>
-	  <5344e530a125ef5c5dfeb00e54b7d32df6169aa9.1343912532.git.cmahapatra@ti.com>
-	 <1344336723.7216.44.camel@lappyti> <502108A3.9060903@ti.com>
-In-Reply-To: <502108A3.9060903@ti.com>
-To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-
---=-7WVbOYoUtuc5zJj001vG
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2012-08-07 at 17:52 +0530, Chandrabhanu Mahapatra wrote:
-
-> Yes, this seems good to me. Its better to have all cpu_is checks of
-> dispc.c and dss.c in their probe functions and by the time
-> implementation of DSS version come to picture these can be move to dss
-> features or any other place appropriate. But how to handle OMAP revision
-> specific functions. Will Dss version handle that too, as like DSS1,
-> DSS1.1, DSS1.1.1, DSS2 say?
-
-Yes, something like that.
-
-I'm not sure how the version numbers should be created, though. If we
-had only OMAP, we could use the OMAP version as the DSS major version,
-and increasing minor version whenever the DSS is changed. So DSS3.2
-could be the DSS used on OMAP3 SoCs, and it's the second revision,
-meaning that early OMAP3 versions would have had an different DSS
-version.
-
-However, the same DSS is used for other SoCs also, so the versioning is
-not that simple. I guess the other SoCs still always use a DSS that is
-designed for OMAP, so the major version would be solved by that. For
-example, AM3xxx DSS version would be DSS3.x. Minor version is more
-tricky, because OMAP and AM3 DSS can evolve separately, which means that
-a higher minor version may not contain the fix that exists in a lower
-minor version.
-
-Well, at least currently the AM3xxx's DSS is almost the same as OMAP3's,
-so perhaps I'm worrying too much.
-
- Tomi
-
-
---=-7WVbOYoUtuc5zJj001vG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+In-Reply-To: <cover.1343912532.git.cmahapatra@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+The cpu_is checks have been removed from dss.c providing it a much generic and
+cleaner interface. The OMAP version and revision specific functions are
+initialized by dss_ops structure in dss features.
 
-iQIcBAABAgAGBQJQIRGIAAoJEPo9qoy8lh71qPUP/1cBNfEDppV7F0yHhqjDOU5b
-RNDMw+H93D13gUO6M887Tg+ik9osqSYyvpgcJtekvFwcEA10MdkyzkSzBw+PdFwo
-GmRdZF5e45geRmsBvXcNIGxzs8jhwS/k31qppSiEuSVbwR/WEAnQJ+pNIjyZKAMl
-tX1PG768AbBcIid50+aTWsqiBbU1xQdeg9+jhZ9Lz6XBJX0NEps9n6S7DNe9+j1c
-EfFAuRfyciVuvuieBMCJQa30VGyDhv75weslMTtEpd32b3R18rWSOhsX3m069iUP
-VtG097V+vOsmiopVmXNBhb0f7Wapjnu4Et6k7BKCgSJ+FhgXHl6mwVIqypipj0f2
-JKUsPrknkFekHANyZ1ZPiuwXD+/T51BjF+3KIIthclhSC7XBbndrnHCbC2Zx3E6W
-RHWmOuF91BYkvBp8fgZT4YrTQQ9YNjNV3Cjl8UAjeqVLD42GTMZ4Xfq2jwMQW4jH
-Nc4TAnxMFZqim8dqsZl0/+sMWPxW00iYTYMNpwh73HmeLN2lut+RIlRxKka8npUx
-qQMQOK6vORYy7uTG5B7Uu/ggUT/WgI25fmnVozt+iv2dNktnvQmRxgZ3sZ3qzM2x
-Y8hkn+OV5Q4IexA9icJbMAMzRZ4DwPn+jXOk6bPnn9F0iFyKXeFq2x8gh7uEHZTr
-CW1omFb9QRuWJyPSRr67
-=MaAm
------END PGP SIGNATURE-----
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+---
+ drivers/video/omap2/dss/dss.c          |  114 ++++++++++++++++++++++----------
+ drivers/video/omap2/dss/dss.h          |   23 ++++++-
+ drivers/video/omap2/dss/dss_features.c |   40 +++++++++++
+ drivers/video/omap2/dss/dss_features.h |    1 +
+ 4 files changed, 141 insertions(+), 37 deletions(-)
 
---=-7WVbOYoUtuc5zJj001vG--
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 7b1c6ac..c263da7 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -83,6 +83,8 @@ static struct {
+ 
+ 	bool		ctx_valid;
+ 	u32		ctx[DSS_SZ_REGS / sizeof(u32)];
++
++	const struct dss_ops *ops;
+ } dss;
+ 
+ static const char * const dss_generic_clk_source_names[] = {
+@@ -236,6 +238,15 @@ const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src)
+ 	return dss_generic_clk_source_names[clk_src];
+ }
+ 
++char *set_dump_clk_str_24_34(void)
++{
++	return "%s (%s) = %lu / %lu * 2  = %lu\n";
++}
++
++char *set_dump_clk_str(void)
++{
++	return "%s (%s) = %lu / %lu  = %lu\n";
++}
+ 
+ void dss_dump_clocks(struct seq_file *s)
+ {
+@@ -254,23 +265,15 @@ void dss_dump_clocks(struct seq_file *s)
+ 	fclk_rate = clk_get_rate(dss.dss_clk);
+ 
+ 	if (dss.dpll4_m4_ck) {
++		char *str = dss.ops->set_str();
++
+ 		dpll4_ck_rate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
+ 		dpll4_m4_ck_rate = clk_get_rate(dss.dpll4_m4_ck);
+ 
+ 		seq_printf(s, "dpll4_ck %lu\n", dpll4_ck_rate);
+ 
+-		if (cpu_is_omap3630() || cpu_is_omap44xx())
+-			seq_printf(s, "%s (%s) = %lu / %lu  = %lu\n",
+-					fclk_name, fclk_real_name,
+-					dpll4_ck_rate,
+-					dpll4_ck_rate / dpll4_m4_ck_rate,
+-					fclk_rate);
+-		else
+-			seq_printf(s, "%s (%s) = %lu / %lu * 2 = %lu\n",
+-					fclk_name, fclk_real_name,
+-					dpll4_ck_rate,
+-					dpll4_ck_rate / dpll4_m4_ck_rate,
+-					fclk_rate);
++		seq_printf(s, str, fclk_name, fclk_real_name, dpll4_ck_rate,
++				dpll4_ck_rate / dpll4_m4_ck_rate, fclk_rate);
+ 	} else {
+ 		seq_printf(s, "%s (%s) = %lu\n",
+ 				fclk_name, fclk_real_name,
+@@ -461,6 +464,35 @@ unsigned long dss_get_dpll4_rate(void)
+ 		return 0;
+ }
+ 
++u16 get_dss_fck_div_max_24_34(void)
++{
++	return 16;
++}
++
++u16 get_dss_fck_div_max(void)
++{
++	return 32;
++}
++
++bool set_dss_clock_info_34xx(void)
++{
++	unsigned long prate = dss_get_dpll4_rate();
++	unsigned long fck = clk_get_rate(dss.dss_clk);
++
++	if (prate = dss.cache_prate || dss.cache_dss_cinfo.fck = fck)
++		return true;
++	return false;
++}
++
++bool set_dss_clock_info(void)
++{
++	unsigned long fck = clk_get_rate(dss.dss_clk);
++
++	if (dss.cache_dss_cinfo.fck = fck)
++		return true;
++	return false;
++}
++
+ int dss_calc_clock_div(unsigned long req_pck, struct dss_clock_info *dss_cinfo,
+ 		struct dispc_clock_info *dispc_cinfo)
+ {
+@@ -470,7 +502,7 @@ int dss_calc_clock_div(unsigned long req_pck, struct dss_clock_info *dss_cinfo,
+ 
+ 	unsigned long fck, max_dss_fck;
+ 
+-	u16 fck_div, fck_div_max = 16;
++	u16 fck_div, fck_div_max;
+ 
+ 	int match = 0;
+ 	int min_fck_per_pck;
+@@ -479,10 +511,7 @@ int dss_calc_clock_div(unsigned long req_pck, struct dss_clock_info *dss_cinfo,
+ 
+ 	max_dss_fck = dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
+ 
+-	fck = clk_get_rate(dss.dss_clk);
+-	if (req_pck = dss.cache_req_pck &&
+-			((cpu_is_omap34xx() && prate = dss.cache_prate) ||
+-			 dss.cache_dss_cinfo.fck = fck)) {
++	if (req_pck = dss.cache_req_pck && dss.ops->set_dss_cinfo()) {
+ 		DSSDBG("dispc clock info found from cache.\n");
+ 		*dss_cinfo = dss.cache_dss_cinfo;
+ 		*dispc_cinfo = dss.cache_dispc_cinfo;
+@@ -519,8 +548,7 @@ retry:
+ 
+ 		goto found;
+ 	} else {
+-		if (cpu_is_omap3630() || cpu_is_omap44xx())
+-			fck_div_max = 32;
++		fck_div_max = dss.ops->get_fck_div_max();
+ 
+ 		for (fck_div = fck_div_max; fck_div > 0; --fck_div) {
+ 			struct dispc_clock_info cur_dispc;
+@@ -619,6 +647,32 @@ enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void)
+ 	return REG_GET(DSS_CONTROL, 15, 15);
+ }
+ 
++int dss_get_clk_24xx(struct clk *clk)
++{
++	clk = NULL;
++	return true;
++}
++
++int dss_get_clk_3xxx(struct clk *clk)
++{
++	clk = clk_get(NULL, "dpll4_m4_ck");
++	if (IS_ERR(clk)) {
++		DSSERR("Failed to get dpll4_m4_ck\n");
++		return PTR_ERR(clk);
++	}
++	return true;
++}
++
++int dss_get_clk_44xx(struct clk *clk)
++{
++	clk = clk_get(NULL, "dpll_per_m5x2_ck");
++	if (IS_ERR(clk)) {
++		DSSERR("Failed to get dpll_per_m5x2_ck\n");
++		return PTR_ERR(clk);
++	}
++	return true;
++}
++
+ static int dss_get_clocks(void)
+ {
+ 	struct clk *clk;
+@@ -633,23 +687,9 @@ static int dss_get_clocks(void)
+ 
+ 	dss.dss_clk = clk;
+ 
+-	if (cpu_is_omap34xx()) {
+-		clk = clk_get(NULL, "dpll4_m4_ck");
+-		if (IS_ERR(clk)) {
+-			DSSERR("Failed to get dpll4_m4_ck\n");
+-			r = PTR_ERR(clk);
+-			goto err;
+-		}
+-	} else if (cpu_is_omap44xx()) {
+-		clk = clk_get(NULL, "dpll_per_m5x2_ck");
+-		if (IS_ERR(clk)) {
+-			DSSERR("Failed to get dpll_per_m5x2_ck\n");
+-			r = PTR_ERR(clk);
+-			goto err;
+-		}
+-	} else { /* omap24xx */
+-		clk = NULL;
+-	}
++	r = dss.ops->get_clk(clk);
++	if (r != true)
++		goto err;
+ 
+ 	dss.dpll4_m4_ck = clk;
+ 
+@@ -750,6 +790,8 @@ static int __init omap_dsshw_probe(struct platform_device *pdev)
+ 	dss.lcd_clk_source[0] = OMAP_DSS_CLK_SRC_FCK;
+ 	dss.lcd_clk_source[1] = OMAP_DSS_CLK_SRC_FCK;
+ 
++	dss_init_ops(dss.ops);
++
+ 	rev = dss_read_reg(DSS_REVISION);
+ 	printk(KERN_INFO "OMAP DSS rev %d.%d\n",
+ 			FLD_GET(rev, 7, 4), FLD_GET(rev, 3, 0));
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 5773c86..b756ae1 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -19,7 +19,6 @@
+  * You should have received a copy of the GNU General Public License along with
+  * this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
+-
+ #ifndef __OMAP2_DSS_H
+ #define __OMAP2_DSS_H
+ 
+@@ -186,6 +185,15 @@ struct dispc_ops {
+ 			int hbp, int vsw, int vfp, int vbp);
+ };
+ 
++struct clk;
++
++struct dss_ops {
++	u16 (*get_fck_div_max) (void);
++	bool (*set_dss_cinfo) (void);
++	int (*get_clk) (struct clk *clk);
++	char *(*set_str) (void);
++};
++
+ struct seq_file;
+ struct platform_device;
+ 
+@@ -315,6 +323,19 @@ int dss_set_clock_div(struct dss_clock_info *cinfo);
+ int dss_calc_clock_div(unsigned long req_pck, struct dss_clock_info *dss_cinfo,
+ 		struct dispc_clock_info *dispc_cinfo);
+ 
++u16 get_dss_fck_div_max_24_34(void);
++u16 get_dss_fck_div_max(void);
++
++bool set_dss_clock_info(void);
++bool set_dss_clock_info_34xx(void);
++
++int dss_get_clk_24xx(struct clk *clk);
++int dss_get_clk_3xxx(struct clk *clk);
++int dss_get_clk_44xx(struct clk *clk);
++
++char *set_dump_clk_str_24_34(void);
++char *set_dump_clk_str(void);
++
+ /* SDI */
+ int sdi_init_platform_driver(void) __init;
+ void sdi_uninit_platform_driver(void) __exit;
+diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
+index b8d5095..6b35200 100644
+--- a/drivers/video/omap2/dss/dss_features.c
++++ b/drivers/video/omap2/dss/dss_features.c
+@@ -609,6 +609,46 @@ void dispc_init_ops(const struct dispc_ops *ops)
+ 	}
+ }
+ 
++static const struct dss_ops omap2_dss_ops = {
++	.get_fck_div_max	=	get_dss_fck_div_max_24_34,
++	.set_dss_cinfo		=	set_dss_clock_info,
++	.get_clk		=	dss_get_clk_24xx,
++	.set_str		=	set_dump_clk_str_24_34,
++};
++
++static const struct dss_ops omap34_dss_ops = {
++	.get_fck_div_max	=	get_dss_fck_div_max_24_34,
++	.set_dss_cinfo		=	set_dss_clock_info_34xx,
++	.get_clk		=	dss_get_clk_3xxx,
++	.set_str		=	set_dump_clk_str_24_34,
++};
++
++static const struct dss_ops omap36_dss_ops = {
++	.get_fck_div_max	=	get_dss_fck_div_max,
++	.set_dss_cinfo		=	set_dss_clock_info,
++	.get_clk		=	dss_get_clk_3xxx,
++	.set_str		=	set_dump_clk_str,
++};
++
++static const struct dss_ops omap4_dss_ops = {
++	.get_fck_div_max	=	get_dss_fck_div_max,
++	.set_dss_cinfo		=	set_dss_clock_info,
++	.get_clk		=	dss_get_clk_44xx,
++	.set_str		=	set_dump_clk_str,
++};
++
++void dss_init_ops(const struct dss_ops *ops)
++{
++	if (cpu_is_omap24xx())
++		ops = &omap2_dss_ops;
++	else if (cpu_is_omap34xx())
++		ops = &omap34_dss_ops;
++	else if (cpu_is_omap3630())
++		ops = &omap36_dss_ops;
++	else
++		ops = &omap4_dss_ops;
++}
++
+ #if defined(CONFIG_OMAP4_DSS_HDMI)
+ /* HDMI OMAP4 Functions*/
+ static const struct ti_hdmi_ip_ops omap4_hdmi_functions = {
+diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
+index d03777a..aa1e4b6 100644
+--- a/drivers/video/omap2/dss/dss_features.h
++++ b/drivers/video/omap2/dss/dss_features.h
+@@ -122,4 +122,5 @@ void dss_init_hdmi_ip_ops(struct hdmi_ip_data *ip_data);
+ #endif
+ 
+ void dispc_init_ops(const struct dispc_ops *ops);
++void dss_init_ops(const struct dss_ops *ops);
+ #endif
+-- 
+1.7.10
 

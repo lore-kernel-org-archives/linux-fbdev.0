@@ -1,99 +1,39 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 21 Aug 2012 06:10:07 +0000
-Subject: [PATCH 00/23] OMAPDSS: Create output entities
-Message-Id: <1345528711-27801-1-git-send-email-archit@ti.com>
+From: Leela Krishna Amudala <l.krishna@samsung.com>
+Date: Tue, 07 Aug 2012 12:46:32 +0000
+Subject: [PATCH V4 2/2] include/video: Add register offsets for FIMD version 8
+Message-Id: <1344342872-7904-3-git-send-email-l.krishna@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1344342872-7904-1-git-send-email-l.krishna@samsung.com>
+In-Reply-To: <1344342872-7904-1-git-send-email-l.krishna@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com, Archit Taneja <archit@ti.com>
+To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, kgene.kim@samsung.com, m.szyprowski@samsung.com
 
-Create a new entity in OMAPDSS called outputs. These represent the
-interfaces/outputs like DSI, HDMI etc. that a panel connects to. An output
-sits in between an overlay manager and a panel. More details about outputs
-are explained in the first patch of the series.
+FIMD version 8 has VIDTCON and VIDCON registers at different offsets
+from the previous versions. Hence, adding the macros.
 
-This series adds omap_dss_output as an entity along with omap_overlay,
-omap_overlay_manager and omap_dss_device. It changes the code to establish
-links between managers and outputs, and outputs and devices. The rest of the
-patches replace omap_dss_device with omap_dss_output as the argument exposed
-by interface driver functions(DSI, HDMI etc) for panel drivers.
+Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
+---
+ include/video/samsung_fimd.h |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-Reference tree:
-
-git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git 2-add-outputs
-
-Archit Taneja (23):
-  OMAPDSS: outputs: Create a new entity called outputs
-  OMAPDSS: outputs: Create and initialize output instances
-  OMAPDSS: output: Add set/unset device ops for omap_dss_output
-  OMAPDSS: APPLY: Add manager set/unset output ops for
-    omap_overlay_manager
-  OMAPDSS: Remove manager->device references
-  OMAP_VOUT: Remove manager->device references
-  OMAPFB: remove manager->device references
-  OMAPDRM: Remove manager->device references
-  OMAPDSS: Create links between managers, outputs and devices
-  OMAPDSS: DPI: Pass outputs from panel driver to DPI interface driver
-  OMAPDSS: DSI: Remove dsi_pdev_map global struct
-  OMAPDSS: DSI: Pass outputs from panel driver to DSI interface driver
-  OMAPDSS: SDI: Pass outputs from panel driver to SDI interface driver
-  OMAPDSS: RFBI: Pass outputs from panel driver to RFBI interface
-    driver
-  OMAPDSS: RFBI: Add output pointers as arguments to all exported
-    functions
-  OMAPDSS: VENC: Pass outputs from panel driver to VENC interface
-    driver
-  OMAPDSS: HDMI: Pass outputs from panel driver to HDMI interface
-    driver
-  OMAPDSS: HDMI: Add output pointers as arguments to all functions used
-    by hdmi panel driver
-  OMAPDSS/OMAPFB: Change dssdev->manager references
-  OMAPDSS: MANAGER: Update display sysfs store
-  OMAPDSS: MANAGER: Get device via output
-  OMAPDSS: APPLY: Remove omap_dss_device references from
-    dss_ovl_enable/disable
-  OMAPDSS: Remove old way of setting manager and device links
-
- drivers/media/video/omap/omap_vout.c               |   81 ++++--
- drivers/staging/omapdrm/omap_drv.c                 |    5 +-
- drivers/video/omap2/displays/panel-acx565akm.c     |   22 +-
- drivers/video/omap2/displays/panel-generic-dpi.c   |   27 +-
- .../omap2/displays/panel-lgphilips-lb035q02.c      |   16 +-
- drivers/video/omap2/displays/panel-n8x0.c          |  114 +++++---
- .../omap2/displays/panel-nec-nl8048hl11-01b.c      |   15 +-
- drivers/video/omap2/displays/panel-picodlp.c       |   15 +-
- .../video/omap2/displays/panel-sharp-ls037v7dw01.c |   16 +-
- drivers/video/omap2/displays/panel-taal.c          |  201 ++++++++-----
- drivers/video/omap2/displays/panel-tfp410.c        |   17 +-
- .../video/omap2/displays/panel-tpo-td043mtea1.c    |   29 +-
- drivers/video/omap2/dss/Makefile                   |    2 +-
- drivers/video/omap2/dss/apply.c                    |   52 ++--
- drivers/video/omap2/dss/core.c                     |    1 +
- drivers/video/omap2/dss/dispc.c                    |   10 +-
- drivers/video/omap2/dss/display.c                  |   11 +-
- drivers/video/omap2/dss/dpi.c                      |   84 ++++--
- drivers/video/omap2/dss/dsi.c                      |  307 +++++++++++---------
- drivers/video/omap2/dss/dss.h                      |   50 ++--
- drivers/video/omap2/dss/dss_features.c             |   52 ++++
- drivers/video/omap2/dss/dss_features.h             |    1 +
- drivers/video/omap2/dss/hdmi.c                     |   84 ++++--
- drivers/video/omap2/dss/hdmi_panel.c               |   85 ++++--
- drivers/video/omap2/dss/manager.c                  |   48 ++-
- drivers/video/omap2/dss/output.c                   |  125 ++++++++
- drivers/video/omap2/dss/overlay.c                  |   96 +++---
- drivers/video/omap2/dss/rfbi.c                     |   77 +++--
- drivers/video/omap2/dss/sdi.c                      |   54 ++--
- drivers/video/omap2/dss/venc.c                     |   78 +++--
- drivers/video/omap2/dss/venc_panel.c               |   53 +++-
- drivers/video/omap2/omapfb/omapfb-ioctl.c          |    4 +-
- drivers/video/omap2/omapfb/omapfb-main.c           |    7 +-
- drivers/video/omap2/omapfb/omapfb.h                |    5 +-
- include/video/omapdss.h                            |  172 ++++++-----
- 35 files changed, 1350 insertions(+), 666 deletions(-)
- create mode 100644 drivers/video/omap2/dss/output.c
-
+diff --git a/include/video/samsung_fimd.h b/include/video/samsung_fimd.h
+index e979f42..7ae6c07 100644
+--- a/include/video/samsung_fimd.h
++++ b/include/video/samsung_fimd.h
+@@ -524,3 +524,10 @@
+  * 1110		-none-	 -none-	  -none-   -none-    -none-
+  * 1111		-none-	 -none-   -none-   -none-    -none-
+ */
++
++/* FIMD Version 8 register offset definitions */
++#define FIMD_V8_VIDTCON0	(0x20010)
++#define FIMD_V8_VIDTCON1	(0x20014)
++#define FIMD_V8_VIDTCON2	(0x20018)
++#define FIMD_V8_VIDTCON3	(0x2001C)
++#define FIMD_V8_VIDCON1		(0x20004)
 -- 
-1.7.9.5
+1.7.0.4
 

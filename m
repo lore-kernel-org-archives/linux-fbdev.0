@@ -1,74 +1,52 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 07 Aug 2012 10:57:26 +0000
+From: Tony Lindgren <tony@atomide.com>
+Date: Tue, 07 Aug 2012 11:14:43 +0000
 Subject: Re: [PATCH 1/6] OMAPDSS: DISPC: Remove cpu_is_xxxx checks
-Message-Id: <1344337046.4091.32.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-E9WbgyGgSJLGHf/KYGnh"
+Message-Id: <20120807111442.GZ11011@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1343912532.git.cmahapatra@ti.com>
-	 <5344e530a125ef5c5dfeb00e54b7d32df6169aa9.1343912532.git.cmahapatra@ti.com>
-	 <20120807084815.GK8468@arwen.pp.htv.fi> <1344330329.4091.16.camel@deskari>
-	 <20120807091415.GN8468@arwen.pp.htv.fi> <1344331672.4091.22.camel@deskari>
-	 <20120807093207.GO8468@arwen.pp.htv.fi> <1344333436.7216.32.camel@lappyti>
-	 <20120807102712.GP8468@arwen.pp.htv.fi>
-In-Reply-To: <20120807102712.GP8468@arwen.pp.htv.fi>
-To: balbi@ti.com
-Cc: Chandrabhanu Mahapatra <cmahapatra@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Benoit Cousson <b-cousson@ti.com>
-
-
---=-E9WbgyGgSJLGHf/KYGnh
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2012-08-07 at 13:27 +0300, Felipe Balbi wrote:
-> Hi,
-
-> > Yes, they can be overridden, but I think it's still quite difficult to
-> > manage. DSS is modeled with multiple blocks, also in DT data. So you'd
-> > need to override multiple entries.
-> >=20
-> > And it'd also require a new dts file for each version of your board wit=
-h
-> > different ES version.
-> >=20
-> > Also, I don't really see why this information would need to be present
-> > in the DT data (especially as it's not simple). It's all trivially foun=
-d
-> > out in the code, by using cpu_is & soc_is.
->=20
-> Fair enough. I just think we should remove all cpu_is_* and soc_is_*
-> from drivers.
-
-I agree, that's part of the idea here. Instead of having cpu_is checks
-all around, we'll have them in only certain centralized places. Then
-it's easier to implement a way to move them totally out of the driver,
-when we come up with a good idea how to accomplish that.
-
- Tomi
-
-
---=-E9WbgyGgSJLGHf/KYGnh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+ <5344e530a125ef5c5dfeb00e54b7d32df6169aa9.1343912532.git.cmahapatra@ti.com>
+ <20120807084815.GK8468@arwen.pp.htv.fi>
+ <1344330329.4091.16.camel@deskari>
+ <20120807091415.GN8468@arwen.pp.htv.fi>
+ <1344331672.4091.22.camel@deskari>
+ <20120807093207.GO8468@arwen.pp.htv.fi>
+ <1344333436.7216.32.camel@lappyti>
+ <20120807102712.GP8468@arwen.pp.htv.fi>
+ <1344337046.4091.32.camel@deskari>
+In-Reply-To: <1344337046.4091.32.camel@deskari>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: balbi@ti.com, Chandrabhanu Mahapatra <cmahapatra@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Benoit Cousson <b-cousson@ti.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+* Tomi Valkeinen <tomi.valkeinen@ti.com> [120807 03:57]:
+> On Tue, 2012-08-07 at 13:27 +0300, Felipe Balbi wrote:
+> > Hi,
+> 
+> > > Yes, they can be overridden, but I think it's still quite difficult to
+> > > manage. DSS is modeled with multiple blocks, also in DT data. So you'd
+> > > need to override multiple entries.
+> > > 
+> > > And it'd also require a new dts file for each version of your board with
+> > > different ES version.
+> > > 
+> > > Also, I don't really see why this information would need to be present
+> > > in the DT data (especially as it's not simple). It's all trivially found
+> > > out in the code, by using cpu_is & soc_is.
+> > 
+> > Fair enough. I just think we should remove all cpu_is_* and soc_is_*
+> > from drivers.
+> 
+> I agree, that's part of the idea here. Instead of having cpu_is checks
+> all around, we'll have them in only certain centralized places. Then
+> it's easier to implement a way to move them totally out of the driver,
+> when we come up with a good idea how to accomplish that.
 
-iQIcBAABAgAGBQJQIPSWAAoJEPo9qoy8lh71yAAP/R81avoKPtGkrC4xuuV3sA7N
-yvoTE5/W34gVNsJYPdCx3HZG67OD5bLtw+DkOx71EgeMsjNVJgV2I6J49aVB0JFF
-qpqQdyXkL/N4VLFVExM453j/ooqAMnOC+Jy11eCpmGWfN1Vl5oveJhTZL4BWl+Xc
-zDIr/lnms4dK++lC1NXuT1b4oWHl6smN7WQwZLI0VnMU50tT66ZpgZKYSz01oybl
-qk9AqIlCIJhV0ZSn/1qOjIRnTjtrrEXznDZF13RkasEESwaMhi87XaC6eJ4UZg4k
-/+NCcXczgJW/2WEwWzIWOS3yc0omEtwyCKfWNwqmNAnrajxJdldC/JcIyx/iyVYi
-ypZXHYoIhM1+96QQyaRXgg0yDf9a35sSXgSR7Vu3Y+OjssdE3zMO4YiAIaYY0IBA
-s/XYfze8vH8Q00cii0WcNnB0OQ35/nXAM/S/xhPel3PaW1YJzXmyJQQVpWcPombw
-d0swocHxsGaPq3T5se321PReaAlLQJWJSNsY5xo6T3rEuZpF4W1l0ji4jz4xMem6
-mGbqQTnCoNdAWIBAyek9lHNm0KJGUimn/q7RgCuj9Des6rXsNaVohUpSl+SpC59o
-s/VWKb4EMMM3xHUcujdIczAwrlEkG3g+PtDoDk/Jq+IM1/OVvZz4ZB8IFEsZpdZk
-IxbFlRY8Da8R90szc1UP
-=j8CA
------END PGP SIGNATURE-----
+Yes limiting them to driver init and setting some driver specific flags
+based on that is a good start. But eventually no drivers should have
+those checks.
 
---=-E9WbgyGgSJLGHf/KYGnh--
+Regards,
 
+Tony

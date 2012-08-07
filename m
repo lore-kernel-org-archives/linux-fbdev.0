@@ -1,52 +1,61 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Tue, 07 Aug 2012 11:14:43 +0000
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Tue, 07 Aug 2012 12:34:59 +0000
 Subject: Re: [PATCH 1/6] OMAPDSS: DISPC: Remove cpu_is_xxxx checks
-Message-Id: <20120807111442.GZ11011@atomide.com>
+Message-Id: <502108A3.9060903@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1343912532.git.cmahapatra@ti.com>
- <5344e530a125ef5c5dfeb00e54b7d32df6169aa9.1343912532.git.cmahapatra@ti.com>
- <20120807084815.GK8468@arwen.pp.htv.fi>
- <1344330329.4091.16.camel@deskari>
- <20120807091415.GN8468@arwen.pp.htv.fi>
- <1344331672.4091.22.camel@deskari>
- <20120807093207.GO8468@arwen.pp.htv.fi>
- <1344333436.7216.32.camel@lappyti>
- <20120807102712.GP8468@arwen.pp.htv.fi>
- <1344337046.4091.32.camel@deskari>
-In-Reply-To: <1344337046.4091.32.camel@deskari>
+References: <cover.1343912532.git.cmahapatra@ti.com>  <5344e530a125ef5c5dfeb00e54b7d32df6169aa9.1343912532.git.cmahapatra@ti.com> <1344336723.7216.44.camel@lappyti>
+In-Reply-To: <1344336723.7216.44.camel@lappyti>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: balbi@ti.com, Chandrabhanu Mahapatra <cmahapatra@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Benoit Cousson <b-cousson@ti.com>
+Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [120807 03:57]:
-> On Tue, 2012-08-07 at 13:27 +0300, Felipe Balbi wrote:
-> > Hi,
-> 
-> > > Yes, they can be overridden, but I think it's still quite difficult to
-> > > manage. DSS is modeled with multiple blocks, also in DT data. So you'd
-> > > need to override multiple entries.
-> > > 
-> > > And it'd also require a new dts file for each version of your board with
-> > > different ES version.
-> > > 
-> > > Also, I don't really see why this information would need to be present
-> > > in the DT data (especially as it's not simple). It's all trivially found
-> > > out in the code, by using cpu_is & soc_is.
-> > 
-> > Fair enough. I just think we should remove all cpu_is_* and soc_is_*
-> > from drivers.
-> 
-> I agree, that's part of the idea here. Instead of having cpu_is checks
-> all around, we'll have them in only certain centralized places. Then
-> it's easier to implement a way to move them totally out of the driver,
-> when we come up with a good idea how to accomplish that.
+On Tuesday 07 August 2012 04:22 PM, Tomi Valkeinen wrote:
+> Hi,
+>
+> On Tue, 2012-08-07 at 13:57 +0530, Chandrabhanu Mahapatra wrote:
+>> The cpu_is checks have been removed from DISPC providing it a much generic and
+>> cleaner interface. The OMAP version and revision specific functions are
+>> initialized by dispc_ops structure in dss features.
+> I think this needs some changes. I think our general approach to these
+> version differences should be such that the component in question (dispc
+> in this case) should ask from somewhere what the DSS version is, and
+> then using that version, handle the different versions internally.
+>
+> What that means related to this patch is that we should keep all those
+> functions static, and initialize the dispc_ops structure inside dispc.c.
+>
+> However, we don't have any such "DSS version" yet. I have previously
+> wanted to move the cpu_is checks to one place (dss_features), but I
+> think it's probably cleaner if we allow cpu_is checks in the other files
+> also. However, there should be only one place in the file where those
+> should be.
+>
+> So I think we should have something like this, called from
+> omap_dispchw_probe():
+>
+> static void dispc_init_features(void)
+> {
+> 	if (cpu_is_foo())
+> 		setup features for this omap;
+> 	else if (...)
+> 		...
+> }
+>
+> This would setup the ops, or whatever is needed. This function would be
+> the only place in dispc.c that contains cpu_is checks.
+>
+>  Tomi
+>
+Yes, this seems good to me. Its better to have all cpu_is checks of
+dispc.c and dss.c in their probe functions and by the time
+implementation of DSS version come to picture these can be move to dss
+features or any other place appropriate. But how to handle OMAP revision
+specific functions. Will Dss version handle that too, as like DSS1,
+DSS1.1, DSS1.1.1, DSS2 say?
 
-Yes limiting them to driver init and setting some driver specific flags
-based on that is a good start. But eventually no drivers should have
-those checks.
+-- 
+Chandrabhanu Mahapatra
+Texas Instruments India Pvt. Ltd.
 
-Regards,
-
-Tony

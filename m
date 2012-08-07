@@ -1,61 +1,53 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 07 Aug 2012 10:52:03 +0000
+Date: Tue, 07 Aug 2012 10:57:26 +0000
 Subject: Re: [PATCH 1/6] OMAPDSS: DISPC: Remove cpu_is_xxxx checks
-Message-Id: <1344336723.7216.44.camel@lappyti>
+Message-Id: <1344337046.4091.32.camel@deskari>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-edqsgrFFLbjcrd/N7qrp"
+Content-Type: multipart/mixed; boundary="=-E9WbgyGgSJLGHf/KYGnh"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1343912532.git.cmahapatra@ti.com>
 	 <5344e530a125ef5c5dfeb00e54b7d32df6169aa9.1343912532.git.cmahapatra@ti.com>
-In-Reply-To: <5344e530a125ef5c5dfeb00e54b7d32df6169aa9.1343912532.git.cmahapatra@ti.com>
-To: Chandrabhanu Mahapatra <cmahapatra@ti.com>, Archit Taneja <archit@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+	 <20120807084815.GK8468@arwen.pp.htv.fi> <1344330329.4091.16.camel@deskari>
+	 <20120807091415.GN8468@arwen.pp.htv.fi> <1344331672.4091.22.camel@deskari>
+	 <20120807093207.GO8468@arwen.pp.htv.fi> <1344333436.7216.32.camel@lappyti>
+	 <20120807102712.GP8468@arwen.pp.htv.fi>
+In-Reply-To: <20120807102712.GP8468@arwen.pp.htv.fi>
+To: balbi@ti.com
+Cc: Chandrabhanu Mahapatra <cmahapatra@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Benoit Cousson <b-cousson@ti.com>
 
 
---=-edqsgrFFLbjcrd/N7qrp
+--=-E9WbgyGgSJLGHf/KYGnh
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Tue, 2012-08-07 at 13:27 +0300, Felipe Balbi wrote:
+> Hi,
 
-On Tue, 2012-08-07 at 13:57 +0530, Chandrabhanu Mahapatra wrote:
-> The cpu_is checks have been removed from DISPC providing it a much generi=
-c and
-> cleaner interface. The OMAP version and revision specific functions are
-> initialized by dispc_ops structure in dss features.
+> > Yes, they can be overridden, but I think it's still quite difficult to
+> > manage. DSS is modeled with multiple blocks, also in DT data. So you'd
+> > need to override multiple entries.
+> >=20
+> > And it'd also require a new dts file for each version of your board wit=
+h
+> > different ES version.
+> >=20
+> > Also, I don't really see why this information would need to be present
+> > in the DT data (especially as it's not simple). It's all trivially foun=
+d
+> > out in the code, by using cpu_is & soc_is.
+>=20
+> Fair enough. I just think we should remove all cpu_is_* and soc_is_*
+> from drivers.
 
-I think this needs some changes. I think our general approach to these
-version differences should be such that the component in question (dispc
-in this case) should ask from somewhere what the DSS version is, and
-then using that version, handle the different versions internally.
-
-What that means related to this patch is that we should keep all those
-functions static, and initialize the dispc_ops structure inside dispc.c.
-
-However, we don't have any such "DSS version" yet. I have previously
-wanted to move the cpu_is checks to one place (dss_features), but I
-think it's probably cleaner if we allow cpu_is checks in the other files
-also. However, there should be only one place in the file where those
-should be.
-
-So I think we should have something like this, called from
-omap_dispchw_probe():
-
-static void dispc_init_features(void)
-{
-	if (cpu_is_foo())
-		setup features for this omap;
-	else if (...)
-		...
-}
-
-This would setup the ops, or whatever is needed. This function would be
-the only place in dispc.c that contains cpu_is checks.
+I agree, that's part of the idea here. Instead of having cpu_is checks
+all around, we'll have them in only certain centralized places. Then
+it's easier to implement a way to move them totally out of the driver,
+when we come up with a good idea how to accomplish that.
 
  Tomi
 
 
---=-edqsgrFFLbjcrd/N7qrp
+--=-E9WbgyGgSJLGHf/KYGnh
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
@@ -63,20 +55,20 @@ Content-Transfer-Encoding: 7bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABAgAGBQJQIPNTAAoJEPo9qoy8lh715l8P/j26txlRVi7E6qyl9ECOixrC
-UnagaYUTT9mE+XN26JtL1WV+YbqyfD3JjlbydPRKZLiqNjO/h4FgnKLxfpfPjmlC
-VL/Pds/Ra+jYRfvNkr0S131yf+IGU3GvzMj+s0DZ0O85delI7Q/JZ0o5jUQdlL7h
-r2xhzh4vml3asdUtjqRMs5/ScOoQxmkOp39L9sL/Q7C6yTMADpcq0IkLx6gMem9S
-TjQVkxUEYR07CKWqT95aL6Qc6/sUnKub4R+AhgqF5MibngyZVeXonCyBnV/kVtsb
-ZTHpXTsYU0HHSyXb7iNnRF2MhloeG4o4rWs0/tXTl5uU1JKVkwVRTGzZXtcE3nBk
-uOTZf6+nFB7POtBi2cNN6PWL1CSKctF3BGcXst3oxfTUaIiaUAnszfu0fHXP5T+f
-iLTR0GhZJIzvrf74rEmeXpuwjNKk3m4luuxtPghDlT51mPglU3TE+9lum4ZXJvOa
-/VbjpwLu4YQ83xTX49tomYsifuKq9ssz84hfd6yDpyICoAXZLB5jeGzuJvW0nGzu
-IxkRsYolM3TE3N+qD7YuhYR/ur7zVuWG/c8dQ0ztWjiCIrbF3r/Ip2CVR6bGniEz
-xkh73QRaBOLvG/2n3gTxM+iXPcNGTIbxG3Om9nIjWXJzY0Jk887nH02jnBgQHy8s
-0zsZk/1k6heYSN9rCYT6
-=0ppW
+iQIcBAABAgAGBQJQIPSWAAoJEPo9qoy8lh71yAAP/R81avoKPtGkrC4xuuV3sA7N
+yvoTE5/W34gVNsJYPdCx3HZG67OD5bLtw+DkOx71EgeMsjNVJgV2I6J49aVB0JFF
+qpqQdyXkL/N4VLFVExM453j/ooqAMnOC+Jy11eCpmGWfN1Vl5oveJhTZL4BWl+Xc
+zDIr/lnms4dK++lC1NXuT1b4oWHl6smN7WQwZLI0VnMU50tT66ZpgZKYSz01oybl
+qk9AqIlCIJhV0ZSn/1qOjIRnTjtrrEXznDZF13RkasEESwaMhi87XaC6eJ4UZg4k
+/+NCcXczgJW/2WEwWzIWOS3yc0omEtwyCKfWNwqmNAnrajxJdldC/JcIyx/iyVYi
+ypZXHYoIhM1+96QQyaRXgg0yDf9a35sSXgSR7Vu3Y+OjssdE3zMO4YiAIaYY0IBA
+s/XYfze8vH8Q00cii0WcNnB0OQ35/nXAM/S/xhPel3PaW1YJzXmyJQQVpWcPombw
+d0swocHxsGaPq3T5se321PReaAlLQJWJSNsY5xo6T3rEuZpF4W1l0ji4jz4xMem6
+mGbqQTnCoNdAWIBAyek9lHNm0KJGUimn/q7RgCuj9Des6rXsNaVohUpSl+SpC59o
+s/VWKb4EMMM3xHUcujdIczAwrlEkG3g+PtDoDk/Jq+IM1/OVvZz4ZB8IFEsZpdZk
+IxbFlRY8Da8R90szc1UP
+=j8CA
 -----END PGP SIGNATURE-----
 
---=-edqsgrFFLbjcrd/N7qrp--
+--=-E9WbgyGgSJLGHf/KYGnh--
 

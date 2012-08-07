@@ -1,61 +1,76 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Tue, 07 Aug 2012 12:34:59 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 07 Aug 2012 13:00:56 +0000
 Subject: Re: [PATCH 1/6] OMAPDSS: DISPC: Remove cpu_is_xxxx checks
-Message-Id: <502108A3.9060903@ti.com>
+Message-Id: <1344344456.7216.59.camel@lappyti>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-7WVbOYoUtuc5zJj001vG"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1343912532.git.cmahapatra@ti.com>  <5344e530a125ef5c5dfeb00e54b7d32df6169aa9.1343912532.git.cmahapatra@ti.com> <1344336723.7216.44.camel@lappyti>
-In-Reply-To: <1344336723.7216.44.camel@lappyti>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <cover.1343912532.git.cmahapatra@ti.com>
+	  <5344e530a125ef5c5dfeb00e54b7d32df6169aa9.1343912532.git.cmahapatra@ti.com>
+	 <1344336723.7216.44.camel@lappyti> <502108A3.9060903@ti.com>
+In-Reply-To: <502108A3.9060903@ti.com>
+To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
 Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Tuesday 07 August 2012 04:22 PM, Tomi Valkeinen wrote:
-> Hi,
->
-> On Tue, 2012-08-07 at 13:57 +0530, Chandrabhanu Mahapatra wrote:
->> The cpu_is checks have been removed from DISPC providing it a much generic and
->> cleaner interface. The OMAP version and revision specific functions are
->> initialized by dispc_ops structure in dss features.
-> I think this needs some changes. I think our general approach to these
-> version differences should be such that the component in question (dispc
-> in this case) should ask from somewhere what the DSS version is, and
-> then using that version, handle the different versions internally.
->
-> What that means related to this patch is that we should keep all those
-> functions static, and initialize the dispc_ops structure inside dispc.c.
->
-> However, we don't have any such "DSS version" yet. I have previously
-> wanted to move the cpu_is checks to one place (dss_features), but I
-> think it's probably cleaner if we allow cpu_is checks in the other files
-> also. However, there should be only one place in the file where those
-> should be.
->
-> So I think we should have something like this, called from
-> omap_dispchw_probe():
->
-> static void dispc_init_features(void)
-> {
-> 	if (cpu_is_foo())
-> 		setup features for this omap;
-> 	else if (...)
-> 		...
-> }
->
-> This would setup the ops, or whatever is needed. This function would be
-> the only place in dispc.c that contains cpu_is checks.
->
->  Tomi
->
-Yes, this seems good to me. Its better to have all cpu_is checks of
-dispc.c and dss.c in their probe functions and by the time
-implementation of DSS version come to picture these can be move to dss
-features or any other place appropriate. But how to handle OMAP revision
-specific functions. Will Dss version handle that too, as like DSS1,
-DSS1.1, DSS1.1.1, DSS2 say?
 
--- 
-Chandrabhanu Mahapatra
-Texas Instruments India Pvt. Ltd.
+--=-7WVbOYoUtuc5zJj001vG
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 2012-08-07 at 17:52 +0530, Chandrabhanu Mahapatra wrote:
+
+> Yes, this seems good to me. Its better to have all cpu_is checks of
+> dispc.c and dss.c in their probe functions and by the time
+> implementation of DSS version come to picture these can be move to dss
+> features or any other place appropriate. But how to handle OMAP revision
+> specific functions. Will Dss version handle that too, as like DSS1,
+> DSS1.1, DSS1.1.1, DSS2 say?
+
+Yes, something like that.
+
+I'm not sure how the version numbers should be created, though. If we
+had only OMAP, we could use the OMAP version as the DSS major version,
+and increasing minor version whenever the DSS is changed. So DSS3.2
+could be the DSS used on OMAP3 SoCs, and it's the second revision,
+meaning that early OMAP3 versions would have had an different DSS
+version.
+
+However, the same DSS is used for other SoCs also, so the versioning is
+not that simple. I guess the other SoCs still always use a DSS that is
+designed for OMAP, so the major version would be solved by that. For
+example, AM3xxx DSS version would be DSS3.x. Minor version is more
+tricky, because OMAP and AM3 DSS can evolve separately, which means that
+a higher minor version may not contain the fix that exists in a lower
+minor version.
+
+Well, at least currently the AM3xxx's DSS is almost the same as OMAP3's,
+so perhaps I'm worrying too much.
+
+ Tomi
+
+
+--=-7WVbOYoUtuc5zJj001vG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJQIRGIAAoJEPo9qoy8lh71qPUP/1cBNfEDppV7F0yHhqjDOU5b
+RNDMw+H93D13gUO6M887Tg+ik9osqSYyvpgcJtekvFwcEA10MdkyzkSzBw+PdFwo
+GmRdZF5e45geRmsBvXcNIGxzs8jhwS/k31qppSiEuSVbwR/WEAnQJ+pNIjyZKAMl
+tX1PG768AbBcIid50+aTWsqiBbU1xQdeg9+jhZ9Lz6XBJX0NEps9n6S7DNe9+j1c
+EfFAuRfyciVuvuieBMCJQa30VGyDhv75weslMTtEpd32b3R18rWSOhsX3m069iUP
+VtG097V+vOsmiopVmXNBhb0f7Wapjnu4Et6k7BKCgSJ+FhgXHl6mwVIqypipj0f2
+JKUsPrknkFekHANyZ1ZPiuwXD+/T51BjF+3KIIthclhSC7XBbndrnHCbC2Zx3E6W
+RHWmOuF91BYkvBp8fgZT4YrTQQ9YNjNV3Cjl8UAjeqVLD42GTMZ4Xfq2jwMQW4jH
+Nc4TAnxMFZqim8dqsZl0/+sMWPxW00iYTYMNpwh73HmeLN2lut+RIlRxKka8npUx
+qQMQOK6vORYy7uTG5B7Uu/ggUT/WgI25fmnVozt+iv2dNktnvQmRxgZ3sZ3qzM2x
+Y8hkn+OV5Q4IexA9icJbMAMzRZ4DwPn+jXOk6bPnn9F0iFyKXeFq2x8gh7uEHZTr
+CW1omFb9QRuWJyPSRr67
+=MaAm
+-----END PGP SIGNATURE-----
+
+--=-7WVbOYoUtuc5zJj001vG--
 

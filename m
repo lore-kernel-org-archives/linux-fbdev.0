@@ -1,39 +1,53 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 30 Aug 2012 11:52:43 +0000
-Subject: [PATCH v2 21/23] OMAPDSS: MANAGER: Get device via output
-Message-Id: <1346326845-16583-22-git-send-email-archit@ti.com>
+From: Leela Krishna Amudala <l.krishna@samsung.com>
+Date: Tue, 07 Aug 2012 09:49:58 +0000
+Subject: [PATCH V3 4/5] driver: Include the modified FIMD header file
+Message-Id: <1344332279-16736-5-git-send-email-l.krishna@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>
- <1346326845-16583-1-git-send-email-archit@ti.com>
-In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
+References: <1344332279-16736-1-git-send-email-l.krishna@samsung.com>
+In-Reply-To: <1344332279-16736-1-git-send-email-l.krishna@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, kgene.kim@samsung.com, m.szyprowski@samsung.com
 
-A manager is not connected to a device directly any more. It first connects
-to an output, and then to the display. Update the manager's get_device op to
-return the device via the connected output.
+The fimd register headers have been moved to include/video/
+hence, modifying the driver files accordingly.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
 ---
- drivers/video/omap2/dss/manager.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/gpu/drm/exynos/exynos_drm_fimd.c |    2 +-
+ drivers/video/s3c-fb.c                   |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
-index d808ce2..d14ffc5 100644
---- a/drivers/video/omap2/dss/manager.c
-+++ b/drivers/video/omap2/dss/manager.c
-@@ -509,7 +509,7 @@ static struct kobj_type manager_ktype = {
+diff --git a/drivers/gpu/drm/exynos/exynos_drm_fimd.c b/drivers/gpu/drm/exynos/exynos_drm_fimd.c
+index a68d2b3..24c0bd4 100644
+--- a/drivers/gpu/drm/exynos/exynos_drm_fimd.c
++++ b/drivers/gpu/drm/exynos/exynos_drm_fimd.c
+@@ -19,8 +19,8 @@
+ #include <linux/clk.h>
+ #include <linux/pm_runtime.h>
  
- static inline struct omap_dss_device *dss_mgr_get_device(struct omap_overlay_manager *mgr)
- {
--	return mgr->device;
-+	return mgr->output ? mgr->output->device : NULL;
- }
++#include <video/samsung_fimd.h>
+ #include <drm/exynos_drm.h>
+-#include <plat/regs-fb-v4.h>
  
- static int dss_mgr_wait_for_vsync(struct omap_overlay_manager *mgr)
+ #include "exynos_drm_drv.h"
+ #include "exynos_drm_fbdev.h"
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 69bf9d0..901729e 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -25,8 +25,8 @@
+ #include <linux/interrupt.h>
+ #include <linux/pm_runtime.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <mach/map.h>
+-#include <plat/regs-fb-v4.h>
+ #include <plat/fb.h>
+ 
+ /* This driver will export a number of framebuffer interfaces depending
 -- 
-1.7.9.5
+1.7.0.4
 

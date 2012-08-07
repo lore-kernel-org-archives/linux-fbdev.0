@@ -1,148 +1,37 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 30 Aug 2012 11:52:45 +0000
-Subject: [PATCH v2 23/23] OMAPDSS: Remove old way of setting manager and device links
-Message-Id: <1346326845-16583-24-git-send-email-archit@ti.com>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Tue, 07 Aug 2012 08:40:59 +0000
+Subject: [PATCH 5/6] ARM: OMAP: Disable venc for OMAP4
+Message-Id: <e99477f7030c655ef6f560adafcb30a7328f12cb.1343912533.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>
- <1346326845-16583-1-git-send-email-archit@ti.com>
-In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
+References: <cover.1343912532.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1343912532.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Now that an omap_dss_output can be used to link between managers and devices, we
-can remove the old way of setting manager and device links. This involves
-removing the device and manager pointers from omap_overlay_manager and
-omap_dss_device respectively, and removing the set_device/unset_device ops from
-omap_overlay_manager.
+This is a alternative to "HACK: OMAP: DSS2: VENC: disable VENC on OMAP4 to
+prevent crash" (ba02fa37de) by Tomi Valkeinen <tomi.valkeinen@ti.com> to prevent
+VENC from crashing OMAP4 kernel. This prevents OMAPDSS from initial registration
+of a device for VENC on OMAP4.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
 ---
- drivers/video/omap2/dss/apply.c   |   64 -------------------------------------
- drivers/video/omap2/dss/manager.c |    2 --
- include/video/omapdss.h           |    5 ---
- 3 files changed, 71 deletions(-)
+ arch/arm/mach-omap2/display.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index d584f0c..0ae70ab 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -1247,70 +1247,6 @@ void dss_mgr_get_info(struct omap_overlay_manager *mgr,
- 	spin_unlock_irqrestore(&data_lock, flags);
- }
- 
--int dss_mgr_set_device(struct omap_overlay_manager *mgr,
--		struct omap_dss_device *dssdev)
--{
--	int r;
--
--	mutex_lock(&apply_lock);
--
--	if (dssdev->manager) {
--		DSSERR("display '%s' already has a manager '%s'\n",
--			       dssdev->name, dssdev->manager->name);
--		r = -EINVAL;
--		goto err;
--	}
--
--	if ((mgr->supported_displays & dssdev->type) = 0) {
--		DSSERR("display '%s' does not support manager '%s'\n",
--			       dssdev->name, mgr->name);
--		r = -EINVAL;
--		goto err;
--	}
--
--	dssdev->manager = mgr;
--	mgr->device = dssdev;
--
--	mutex_unlock(&apply_lock);
--
--	return 0;
--err:
--	mutex_unlock(&apply_lock);
--	return r;
--}
--
--int dss_mgr_unset_device(struct omap_overlay_manager *mgr)
--{
--	int r;
--
--	mutex_lock(&apply_lock);
--
--	if (!mgr->device) {
--		DSSERR("failed to unset display, display not set.\n");
--		r = -EINVAL;
--		goto err;
--	}
--
--	/*
--	 * Don't allow currently enabled displays to have the overlay manager
--	 * pulled out from underneath them
--	 */
--	if (mgr->device->state != OMAP_DSS_DISPLAY_DISABLED) {
--		r = -EINVAL;
--		goto err;
--	}
--
--	mgr->device->manager = NULL;
--	mgr->device = NULL;
--
--	mutex_unlock(&apply_lock);
--
--	return 0;
--err:
--	mutex_unlock(&apply_lock);
--	return r;
--}
--
- int dss_mgr_set_output(struct omap_overlay_manager *mgr,
- 		struct omap_dss_output *output)
- {
-diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
-index d14ffc5..953f5ee 100644
---- a/drivers/video/omap2/dss/manager.c
-+++ b/drivers/video/omap2/dss/manager.c
-@@ -570,8 +570,6 @@ int dss_init_overlay_managers(struct platform_device *pdev)
- 			break;
- 		}
- 
--		mgr->set_device = &dss_mgr_set_device;
--		mgr->unset_device = &dss_mgr_unset_device;
- 		mgr->set_output = &dss_mgr_set_output;
- 		mgr->unset_output = &dss_mgr_unset_output;
- 		mgr->apply = &omap_dss_mgr_apply;
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 0e73ef8..4ff43e6 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -466,7 +466,6 @@ struct omap_overlay_manager {
- 	enum omap_dss_output_id supported_outputs;
- 
- 	/* dynamic fields */
--	struct omap_dss_device *device;
- 	struct omap_dss_output *output;
- 
- 	/*
-@@ -480,9 +479,6 @@ struct omap_overlay_manager {
- 	 * interrupt context
- 	 */
- 
--	int (*set_device)(struct omap_overlay_manager *mgr,
--		struct omap_dss_device *dssdev);
--	int (*unset_device)(struct omap_overlay_manager *mgr);
- 	int (*set_output)(struct omap_overlay_manager *mgr,
- 		struct omap_dss_output *output);
- 	int (*unset_output)(struct omap_overlay_manager *mgr);
-@@ -634,7 +630,6 @@ struct omap_dss_device {
- 
- 	enum omap_display_caps caps;
- 
--	struct omap_overlay_manager *manager;
- 	struct omap_dss_output *output;
- 
- 	enum omap_dss_display_state state;
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index af1ed7d..ee40739 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -95,7 +95,6 @@ static const struct omap_dss_hwmod_data omap4_dss_hwmod_data[] __initdata = {
+ 	{ "dss_core", "omapdss_dss", -1 },
+ 	{ "dss_dispc", "omapdss_dispc", -1 },
+ 	{ "dss_rfbi", "omapdss_rfbi", -1 },
+-	{ "dss_venc", "omapdss_venc", -1 },
+ 	{ "dss_dsi1", "omapdss_dsi", 0 },
+ 	{ "dss_dsi2", "omapdss_dsi", 1 },
+ 	{ "dss_hdmi", "omapdss_hdmi", -1 },
 -- 
-1.7.9.5
+1.7.10
 

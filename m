@@ -1,741 +1,838 @@
-From: Phil Edworthy <phil.edworthy@renesas.com>
-Date: Wed, 08 Aug 2012 12:14:55 +0000
-Subject: [PATCH] fbdev: Add Renesas vdc4 framebuffer driver
-Message-Id: <1344428095-12203-1-git-send-email-phil.edworthy@renesas.com>
+From: Leela Krishna Amudala <l.krishna@samsung.com>
+Date: Tue, 07 Aug 2012 12:46:31 +0000
+Subject: [PATCH V4 1/2] include/video: move fimd register headers from platform to include/video
+Message-Id: <1344342872-7904-2-git-send-email-l.krishna@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1344342872-7904-1-git-send-email-l.krishna@samsung.com>
+In-Reply-To: <1344342872-7904-1-git-send-email-l.krishna@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, kgene.kim@samsung.com, m.szyprowski@samsung.com
 
-The vdc4 display hardware is found on the sh7269 device.
-Signed-off-by: Phil Edworthy <phil.edworthy@renesas.com>
+This patch moves the contents from regs-fb-v4.h and regs-fb.h to
+include/video/samsung_fimd.h. Also updates the header inclusion in
+machine files and driver files accordingly.
+
+Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
 ---
- drivers/video/Kconfig      |   10 +
- drivers/video/Makefile     |    1 +
- drivers/video/ren_vdc4fb.c |  653 ++++++++++++++++++++++++++++++++++++++++++++
- include/video/ren_vdc4fb.h |   19 ++
- 4 files changed, 683 insertions(+), 0 deletions(-)
- create mode 100644 drivers/video/ren_vdc4fb.c
- create mode 100644 include/video/ren_vdc4fb.h
+ arch/arm/mach-exynos/mach-nuri.c                   |    2 +-
+ arch/arm/mach-exynos/mach-origen.c                 |    2 +-
+ arch/arm/mach-exynos/mach-smdk4x12.c               |    2 +-
+ arch/arm/mach-exynos/mach-smdkv310.c               |    2 +-
+ arch/arm/mach-exynos/mach-universal_c210.c         |    2 +-
+ arch/arm/mach-exynos/setup-fimd0.c                 |    2 +-
+ arch/arm/mach-s3c24xx/mach-smdk2416.c              |    2 +-
+ arch/arm/mach-s3c64xx/mach-anw6410.c               |    2 +-
+ arch/arm/mach-s3c64xx/mach-crag6410.c              |    2 +-
+ arch/arm/mach-s3c64xx/mach-hmt.c                   |    2 +-
+ arch/arm/mach-s3c64xx/mach-mini6410.c              |    2 +-
+ arch/arm/mach-s3c64xx/mach-ncp.c                   |    2 +-
+ arch/arm/mach-s3c64xx/mach-real6410.c              |    2 +-
+ arch/arm/mach-s3c64xx/mach-smartq5.c               |    2 +-
+ arch/arm/mach-s3c64xx/mach-smartq7.c               |    2 +-
+ arch/arm/mach-s3c64xx/mach-smdk6410.c              |    2 +-
+ arch/arm/mach-s5p64x0/mach-smdk6440.c              |    2 +-
+ arch/arm/mach-s5p64x0/mach-smdk6450.c              |    2 +-
+ arch/arm/mach-s5pc100/mach-smdkc100.c              |    2 +-
+ arch/arm/mach-s5pv210/mach-aquila.c                |    2 +-
+ arch/arm/mach-s5pv210/mach-goni.c                  |    2 +-
+ arch/arm/mach-s5pv210/mach-smdkv210.c              |    2 +-
+ arch/arm/plat-samsung/include/plat/regs-fb-v4.h    |  159 --------------------
+ drivers/gpu/drm/exynos/exynos_drm_fimd.c           |    2 +-
+ drivers/video/s3c-fb.c                             |    2 +-
+ .../plat/regs-fb.h => include/video/samsung_fimd.h |  145 ++++++++++++++++--
+ 26 files changed, 158 insertions(+), 194 deletions(-)
+ delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb-v4.h
+ rename arch/arm/plat-samsung/include/plat/regs-fb.h => include/video/samsung_fimd.h (74%)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 0217f74..89c9250 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -1990,6 +1990,16 @@ config FB_W100
+diff --git a/arch/arm/mach-exynos/mach-nuri.c b/arch/arm/mach-exynos/mach-nuri.c
+index ea785fc..90d8daa 100644
+--- a/arch/arm/mach-exynos/mach-nuri.c
++++ b/arch/arm/mach-exynos/mach-nuri.c
+@@ -29,6 +29,7 @@
+ #include <drm/exynos_drm.h>
  
- 	  If unsure, say N.
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ #include <media/m5mols.h>
+ #include <media/s5k6aa.h>
+ #include <media/s5p_fimc.h>
+@@ -39,7 +40,6 @@
+ #include <asm/mach-types.h>
  
-+config FB_REN_VDC4FB
-+	tristate "Renesas VDC4 framebuffer support"
-+	depends on FB && CPU_SUBTYPE_SH7269
-+	select FB_SYS_FILLRECT
-+	select FB_SYS_COPYAREA
-+	select FB_SYS_IMAGEBLIT
-+	select FB_SYS_FOPS
-+	---help---
-+	  Frame buffer driver for the Renesas VDC4.
+ #include <plat/adc.h>
+-#include <plat/regs-fb-v4.h>
+ #include <plat/regs-serial.h>
+ #include <plat/cpu.h>
+ #include <plat/devs.h>
+diff --git a/arch/arm/mach-exynos/mach-origen.c b/arch/arm/mach-exynos/mach-origen.c
+index 5ca8030..4e245f1 100644
+--- a/arch/arm/mach-exynos/mach-origen.c
++++ b/arch/arm/mach-exynos/mach-origen.c
+@@ -29,9 +29,9 @@
+ #include <asm/mach-types.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include <plat/regs-serial.h>
+-#include <plat/regs-fb-v4.h>
+ #include <plat/cpu.h>
+ #include <plat/devs.h>
+ #include <plat/sdhci.h>
+diff --git a/arch/arm/mach-exynos/mach-smdk4x12.c b/arch/arm/mach-exynos/mach-smdk4x12.c
+index b26beb1..ee069b4 100644
+--- a/arch/arm/mach-exynos/mach-smdk4x12.c
++++ b/arch/arm/mach-exynos/mach-smdk4x12.c
+@@ -26,6 +26,7 @@
+ #include <asm/hardware/gic.h>
+ #include <asm/mach-types.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <plat/backlight.h>
+ #include <plat/clock.h>
+ #include <plat/cpu.h>
+@@ -35,7 +36,6 @@
+ #include <plat/iic.h>
+ #include <plat/keypad.h>
+ #include <plat/mfc.h>
+-#include <plat/regs-fb.h>
+ #include <plat/regs-serial.h>
+ #include <plat/sdhci.h>
+ 
+diff --git a/arch/arm/mach-exynos/mach-smdkv310.c b/arch/arm/mach-exynos/mach-smdkv310.c
+index 3cfa688..b1c50da 100644
+--- a/arch/arm/mach-exynos/mach-smdkv310.c
++++ b/arch/arm/mach-exynos/mach-smdkv310.c
+@@ -26,9 +26,9 @@
+ #include <asm/mach-types.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ #include <plat/regs-serial.h>
+ #include <plat/regs-srom.h>
+-#include <plat/regs-fb-v4.h>
+ #include <plat/cpu.h>
+ #include <plat/devs.h>
+ #include <plat/fb.h>
+diff --git a/arch/arm/mach-exynos/mach-universal_c210.c b/arch/arm/mach-exynos/mach-universal_c210.c
+index 4d1f40d..8139cd2 100644
+--- a/arch/arm/mach-exynos/mach-universal_c210.c
++++ b/arch/arm/mach-exynos/mach-universal_c210.c
+@@ -30,6 +30,7 @@
+ #include <asm/hardware/gic.h>
+ #include <asm/mach-types.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <plat/regs-serial.h>
+ #include <plat/clock.h>
+ #include <plat/cpu.h>
+@@ -39,7 +40,6 @@
+ #include <plat/fb.h>
+ #include <plat/mfc.h>
+ #include <plat/sdhci.h>
+-#include <plat/regs-fb-v4.h>
+ #include <plat/fimc-core.h>
+ #include <plat/s5p-time.h>
+ #include <plat/camport.h>
+diff --git a/arch/arm/mach-exynos/setup-fimd0.c b/arch/arm/mach-exynos/setup-fimd0.c
+index 07a6dbe..5665bb4 100644
+--- a/arch/arm/mach-exynos/setup-fimd0.c
++++ b/arch/arm/mach-exynos/setup-fimd0.c
+@@ -13,8 +13,8 @@
+ #include <linux/fb.h>
+ #include <linux/gpio.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <plat/gpio-cfg.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include <mach/map.h>
+ 
+diff --git a/arch/arm/mach-s3c24xx/mach-smdk2416.c b/arch/arm/mach-s3c24xx/mach-smdk2416.c
+index c3100a0..96478f0 100644
+--- a/arch/arm/mach-s3c24xx/mach-smdk2416.c
++++ b/arch/arm/mach-s3c24xx/mach-smdk2416.c
+@@ -29,6 +29,7 @@
+ #include <asm/mach/map.h>
+ #include <asm/mach/irq.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <mach/hardware.h>
+ #include <asm/irq.h>
+ #include <asm/mach-types.h>
+@@ -52,7 +53,6 @@
+ #include <plat/udc.h>
+ #include <linux/platform_data/s3c-hsudc.h>
+ 
+-#include <plat/regs-fb-v4.h>
+ #include <plat/fb.h>
+ 
+ #include <plat/common-smdk.h>
+diff --git a/arch/arm/mach-s3c64xx/mach-anw6410.c b/arch/arm/mach-s3c64xx/mach-anw6410.c
+index ffa29dd..f7a108b 100644
+--- a/arch/arm/mach-s3c64xx/mach-anw6410.c
++++ b/arch/arm/mach-s3c64xx/mach-anw6410.c
+@@ -29,6 +29,7 @@
+ #include <linux/dm9000.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include <asm/hardware/vic.h>
+ #include <asm/mach/arch.h>
+@@ -44,7 +45,6 @@
+ #include <plat/regs-serial.h>
+ #include <plat/iic.h>
+ #include <plat/fb.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include <plat/clock.h>
+ #include <plat/devs.h>
+diff --git a/arch/arm/mach-s3c64xx/mach-crag6410.c b/arch/arm/mach-s3c64xx/mach-crag6410.c
+index 09cd812..0f882f9 100644
+--- a/arch/arm/mach-s3c64xx/mach-crag6410.c
++++ b/arch/arm/mach-s3c64xx/mach-crag6410.c
+@@ -46,6 +46,7 @@
+ #include <asm/mach/arch.h>
+ #include <asm/mach-types.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <mach/hardware.h>
+ #include <mach/map.h>
+ 
+@@ -57,7 +58,6 @@
+ #include <mach/regs-gpio-memport.h>
+ 
+ #include <plat/regs-serial.h>
+-#include <plat/regs-fb-v4.h>
+ #include <plat/fb.h>
+ #include <plat/sdhci.h>
+ #include <plat/gpio-cfg.h>
+diff --git a/arch/arm/mach-s3c64xx/mach-hmt.c b/arch/arm/mach-s3c64xx/mach-hmt.c
+index 6890881..8ad0bfc 100644
+--- a/arch/arm/mach-s3c64xx/mach-hmt.c
++++ b/arch/arm/mach-s3c64xx/mach-hmt.c
+@@ -26,6 +26,7 @@
+ #include <asm/mach/map.h>
+ #include <asm/mach/irq.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <mach/hardware.h>
+ #include <mach/map.h>
+ 
+@@ -41,7 +42,6 @@
+ #include <plat/clock.h>
+ #include <plat/devs.h>
+ #include <plat/cpu.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include "common.h"
+ 
+diff --git a/arch/arm/mach-s3c64xx/mach-mini6410.c b/arch/arm/mach-s3c64xx/mach-mini6410.c
+index 5539a25..96ebcc5 100644
+--- a/arch/arm/mach-s3c64xx/mach-mini6410.c
++++ b/arch/arm/mach-s3c64xx/mach-mini6410.c
+@@ -41,9 +41,9 @@
+ #include <plat/nand.h>
+ #include <plat/regs-serial.h>
+ #include <plat/ts.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include "common.h"
+ 
+diff --git a/arch/arm/mach-s3c64xx/mach-ncp.c b/arch/arm/mach-s3c64xx/mach-ncp.c
+index cad2e05..48599bc 100644
+--- a/arch/arm/mach-s3c64xx/mach-ncp.c
++++ b/arch/arm/mach-s3c64xx/mach-ncp.c
+@@ -24,6 +24,7 @@
+ #include <linux/delay.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include <asm/hardware/vic.h>
+ #include <asm/mach/arch.h>
+@@ -43,7 +44,6 @@
+ #include <plat/clock.h>
+ #include <plat/devs.h>
+ #include <plat/cpu.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include "common.h"
+ 
+diff --git a/arch/arm/mach-s3c64xx/mach-real6410.c b/arch/arm/mach-s3c64xx/mach-real6410.c
+index 326b216..76d3ffb 100644
+--- a/arch/arm/mach-s3c64xx/mach-real6410.c
++++ b/arch/arm/mach-s3c64xx/mach-real6410.c
+@@ -42,9 +42,9 @@
+ #include <plat/nand.h>
+ #include <plat/regs-serial.h>
+ #include <plat/ts.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include "common.h"
+ 
+diff --git a/arch/arm/mach-s3c64xx/mach-smartq5.c b/arch/arm/mach-s3c64xx/mach-smartq5.c
+index d6266d8..96d6da2 100644
+--- a/arch/arm/mach-s3c64xx/mach-smartq5.c
++++ b/arch/arm/mach-s3c64xx/mach-smartq5.c
+@@ -21,6 +21,7 @@
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <mach/map.h>
+ #include <mach/regs-gpio.h>
+ 
+@@ -28,7 +29,6 @@
+ #include <plat/devs.h>
+ #include <plat/fb.h>
+ #include <plat/gpio-cfg.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include "common.h"
+ #include "mach-smartq.h"
+diff --git a/arch/arm/mach-s3c64xx/mach-smartq7.c b/arch/arm/mach-s3c64xx/mach-smartq7.c
+index 0957d2a..7d1167b 100644
+--- a/arch/arm/mach-s3c64xx/mach-smartq7.c
++++ b/arch/arm/mach-s3c64xx/mach-smartq7.c
+@@ -21,6 +21,7 @@
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <mach/map.h>
+ #include <mach/regs-gpio.h>
+ 
+@@ -28,7 +29,6 @@
+ #include <plat/devs.h>
+ #include <plat/fb.h>
+ #include <plat/gpio-cfg.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include "common.h"
+ #include "mach-smartq.h"
+diff --git a/arch/arm/mach-s3c64xx/mach-smdk6410.c b/arch/arm/mach-s3c64xx/mach-smdk6410.c
+index 0fe4f15..d1378d7 100644
+--- a/arch/arm/mach-s3c64xx/mach-smdk6410.c
++++ b/arch/arm/mach-s3c64xx/mach-smdk6410.c
+@@ -43,6 +43,7 @@
+ #endif
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include <asm/hardware/vic.h>
+ #include <asm/mach/arch.h>
+@@ -72,7 +73,6 @@
+ #include <plat/ts.h>
+ #include <plat/keypad.h>
+ #include <plat/backlight.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include "common.h"
+ 
+diff --git a/arch/arm/mach-s5p64x0/mach-smdk6440.c b/arch/arm/mach-s5p64x0/mach-smdk6440.c
+index 92fefad..5d0b36e 100644
+--- a/arch/arm/mach-s5p64x0/mach-smdk6440.c
++++ b/arch/arm/mach-s5p64x0/mach-smdk6440.c
+@@ -27,6 +27,7 @@
+ #include <linux/mmc/host.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include <asm/hardware/vic.h>
+ #include <asm/mach/arch.h>
+@@ -52,7 +53,6 @@
+ #include <plat/s5p-time.h>
+ #include <plat/backlight.h>
+ #include <plat/fb.h>
+-#include <plat/regs-fb.h>
+ #include <plat/sdhci.h>
+ 
+ #include "common.h"
+diff --git a/arch/arm/mach-s5p64x0/mach-smdk6450.c b/arch/arm/mach-s5p64x0/mach-smdk6450.c
+index e2335ec..7522fb9 100644
+--- a/arch/arm/mach-s5p64x0/mach-smdk6450.c
++++ b/arch/arm/mach-s5p64x0/mach-smdk6450.c
+@@ -27,6 +27,7 @@
+ #include <linux/mmc/host.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include <asm/hardware/vic.h>
+ #include <asm/mach/arch.h>
+@@ -52,7 +53,6 @@
+ #include <plat/s5p-time.h>
+ #include <plat/backlight.h>
+ #include <plat/fb.h>
+-#include <plat/regs-fb.h>
+ #include <plat/sdhci.h>
+ 
+ #include "common.h"
+diff --git a/arch/arm/mach-s5pc100/mach-smdkc100.c b/arch/arm/mach-s5pc100/mach-smdkc100.c
+index 0c3ae38..c3dcafa 100644
+--- a/arch/arm/mach-s5pc100/mach-smdkc100.c
++++ b/arch/arm/mach-s5pc100/mach-smdkc100.c
+@@ -33,6 +33,7 @@
+ #include <mach/regs-gpio.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include <asm/irq.h>
+ #include <asm/mach-types.h>
+@@ -51,7 +52,6 @@
+ #include <plat/ts.h>
+ #include <plat/audio.h>
+ #include <plat/backlight.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include "common.h"
+ 
+diff --git a/arch/arm/mach-s5pv210/mach-aquila.c b/arch/arm/mach-s5pv210/mach-aquila.c
+index 78028df..ee9fa5c 100644
+--- a/arch/arm/mach-s5pv210/mach-aquila.c
++++ b/arch/arm/mach-s5pv210/mach-aquila.c
+@@ -28,6 +28,7 @@
+ #include <asm/setup.h>
+ #include <asm/mach-types.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <mach/map.h>
+ #include <mach/regs-clock.h>
+ 
+@@ -39,7 +40,6 @@
+ #include <plat/fimc-core.h>
+ #include <plat/sdhci.h>
+ #include <plat/s5p-time.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include "common.h"
+ 
+diff --git a/arch/arm/mach-s5pv210/mach-goni.c b/arch/arm/mach-s5pv210/mach-goni.c
+index 822a559..c552581 100644
+--- a/arch/arm/mach-s5pv210/mach-goni.c
++++ b/arch/arm/mach-s5pv210/mach-goni.c
+@@ -35,6 +35,7 @@
+ #include <asm/setup.h>
+ #include <asm/mach-types.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <mach/map.h>
+ #include <mach/regs-clock.h>
+ 
+@@ -49,7 +50,6 @@
+ #include <plat/clock.h>
+ #include <plat/s5p-time.h>
+ #include <plat/mfc.h>
+-#include <plat/regs-fb-v4.h>
+ #include <plat/camport.h>
+ 
+ #include <media/v4l2-mediabus.h>
+diff --git a/arch/arm/mach-s5pv210/mach-smdkv210.c b/arch/arm/mach-s5pv210/mach-smdkv210.c
+index 918b23d..9bfbedf 100644
+--- a/arch/arm/mach-s5pv210/mach-smdkv210.c
++++ b/arch/arm/mach-s5pv210/mach-smdkv210.c
+@@ -28,6 +28,7 @@
+ #include <asm/mach-types.h>
+ 
+ #include <video/platform_lcd.h>
++#include <video/samsung_fimd.h>
+ 
+ #include <mach/map.h>
+ #include <mach/regs-clock.h>
+@@ -46,7 +47,6 @@
+ #include <plat/fb.h>
+ #include <plat/s5p-time.h>
+ #include <plat/backlight.h>
+-#include <plat/regs-fb-v4.h>
+ #include <plat/mfc.h>
+ #include <plat/clock.h>
+ 
+diff --git a/arch/arm/plat-samsung/include/plat/regs-fb-v4.h b/arch/arm/plat-samsung/include/plat/regs-fb-v4.h
+deleted file mode 100644
+index 4c3647f..0000000
+--- a/arch/arm/plat-samsung/include/plat/regs-fb-v4.h
++++ /dev/null
+@@ -1,159 +0,0 @@
+-/* arch/arm/plat-samsung/include/plat/regs-fb-v4.h
+- *
+- * Copyright 2008 Openmoko, Inc.
+- * Copyright 2008 Simtec Electronics
+- *      http://armlinux.simtec.co.uk/
+- *      Ben Dooks <ben@simtec.co.uk>
+- *
+- * S3C64XX - new-style framebuffer register definitions
+- *
+- * This is the register set for the new style framebuffer interface
+- * found from the S3C2443 onwards and specifically the S3C64XX series
+- * S3C6400 and S3C6410.
+- *
+- * The file contains the cpu specific items which change between whichever
+- * architecture is selected. See <plat/regs-fb.h> for the core definitions
+- * that are the same.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+-*/
+-
+-/* include the core definitions here, in case we really do need to
+- * override them at a later date.
+-*/
+-
+-#include <plat/regs-fb.h>
+-
+-#define S3C_FB_MAX_WIN (5)  /* number of hardware windows available. */
+-#define VIDCON1_FSTATUS_EVEN	(1 << 15)
+-
+-/* Video timing controls */
+-#define VIDTCON0				(0x10)
+-#define VIDTCON1				(0x14)
+-#define VIDTCON2				(0x18)
+-
+-/* Window position controls */
+-
+-#define WINCON(_win)				(0x20 + ((_win) * 4))
+-
+-/* OSD1 and OSD4 do not have register D */
+-
+-#define VIDOSD_BASE				(0x40)
+-
+-#define VIDINTCON0				(0x130)
+-
+-/* WINCONx */
+-
+-#define WINCONx_CSCWIDTH_MASK			(0x3 << 26)
+-#define WINCONx_CSCWIDTH_SHIFT			(26)
+-#define WINCONx_CSCWIDTH_WIDE			(0x0 << 26)
+-#define WINCONx_CSCWIDTH_NARROW			(0x3 << 26)
+-
+-#define WINCONx_ENLOCAL				(1 << 22)
+-#define WINCONx_BUFSTATUS			(1 << 21)
+-#define WINCONx_BUFSEL				(1 << 20)
+-#define WINCONx_BUFAUTOEN			(1 << 19)
+-#define WINCONx_YCbCr				(1 << 13)
+-
+-#define WINCON1_LOCALSEL_CAMIF			(1 << 23)
+-
+-#define WINCON2_LOCALSEL_CAMIF			(1 << 23)
+-#define WINCON2_BLD_PIX				(1 << 6)
+-
+-#define WINCON2_ALPHA_SEL			(1 << 1)
+-#define WINCON2_BPPMODE_MASK			(0xf << 2)
+-#define WINCON2_BPPMODE_SHIFT			(2)
+-#define WINCON2_BPPMODE_1BPP			(0x0 << 2)
+-#define WINCON2_BPPMODE_2BPP			(0x1 << 2)
+-#define WINCON2_BPPMODE_4BPP			(0x2 << 2)
+-#define WINCON2_BPPMODE_8BPP_1232		(0x4 << 2)
+-#define WINCON2_BPPMODE_16BPP_565		(0x5 << 2)
+-#define WINCON2_BPPMODE_16BPP_A1555		(0x6 << 2)
+-#define WINCON2_BPPMODE_16BPP_I1555		(0x7 << 2)
+-#define WINCON2_BPPMODE_18BPP_666		(0x8 << 2)
+-#define WINCON2_BPPMODE_18BPP_A1665		(0x9 << 2)
+-#define WINCON2_BPPMODE_19BPP_A1666		(0xa << 2)
+-#define WINCON2_BPPMODE_24BPP_888		(0xb << 2)
+-#define WINCON2_BPPMODE_24BPP_A1887		(0xc << 2)
+-#define WINCON2_BPPMODE_25BPP_A1888		(0xd << 2)
+-#define WINCON2_BPPMODE_28BPP_A4888		(0xd << 2)
+-
+-#define WINCON3_BLD_PIX				(1 << 6)
+-
+-#define WINCON3_ALPHA_SEL			(1 << 1)
+-#define WINCON3_BPPMODE_MASK			(0xf << 2)
+-#define WINCON3_BPPMODE_SHIFT			(2)
+-#define WINCON3_BPPMODE_1BPP			(0x0 << 2)
+-#define WINCON3_BPPMODE_2BPP			(0x1 << 2)
+-#define WINCON3_BPPMODE_4BPP			(0x2 << 2)
+-#define WINCON3_BPPMODE_16BPP_565		(0x5 << 2)
+-#define WINCON3_BPPMODE_16BPP_A1555		(0x6 << 2)
+-#define WINCON3_BPPMODE_16BPP_I1555		(0x7 << 2)
+-#define WINCON3_BPPMODE_18BPP_666		(0x8 << 2)
+-#define WINCON3_BPPMODE_18BPP_A1665		(0x9 << 2)
+-#define WINCON3_BPPMODE_19BPP_A1666		(0xa << 2)
+-#define WINCON3_BPPMODE_24BPP_888		(0xb << 2)
+-#define WINCON3_BPPMODE_24BPP_A1887		(0xc << 2)
+-#define WINCON3_BPPMODE_25BPP_A1888		(0xd << 2)
+-#define WINCON3_BPPMODE_28BPP_A4888		(0xd << 2)
+-
+-#define VIDINTCON0_FIFIOSEL_WINDOW2		(0x10 << 5)
+-#define VIDINTCON0_FIFIOSEL_WINDOW3		(0x20 << 5)
+-#define VIDINTCON0_FIFIOSEL_WINDOW4		(0x40 << 5)
+-
+-#define DITHMODE				(0x170)
+-#define WINxMAP(_win)				(0x180 + ((_win) * 4))
+-
+-
+-#define DITHMODE_R_POS_MASK			(0x3 << 5)
+-#define DITHMODE_R_POS_SHIFT			(5)
+-#define DITHMODE_R_POS_8BIT			(0x0 << 5)
+-#define DITHMODE_R_POS_6BIT			(0x1 << 5)
+-#define DITHMODE_R_POS_5BIT			(0x2 << 5)
+-
+-#define DITHMODE_G_POS_MASK			(0x3 << 3)
+-#define DITHMODE_G_POS_SHIFT			(3)
+-#define DITHMODE_G_POS_8BIT			(0x0 << 3)
+-#define DITHMODE_G_POS_6BIT			(0x1 << 3)
+-#define DITHMODE_G_POS_5BIT			(0x2 << 3)
+-
+-#define DITHMODE_B_POS_MASK			(0x3 << 1)
+-#define DITHMODE_B_POS_SHIFT			(1)
+-#define DITHMODE_B_POS_8BIT			(0x0 << 1)
+-#define DITHMODE_B_POS_6BIT			(0x1 << 1)
+-#define DITHMODE_B_POS_5BIT			(0x2 << 1)
+-
+-#define DITHMODE_DITH_EN			(1 << 0)
+-
+-#define WPALCON					(0x1A0)
+-
+-/* Palette control */
+-/* Note for S5PC100: you can still use those macros on WPALCON (aka WPALCON_L),
+- * but make sure that WPALCON_H W2PAL-W4PAL entries are zeroed out */
+-#define WPALCON_W4PAL_16BPP_A555		(1 << 8)
+-#define WPALCON_W3PAL_16BPP_A555		(1 << 7)
+-#define WPALCON_W2PAL_16BPP_A555		(1 << 6)
+-
+-
+-/* Notes on per-window bpp settings
+- *
+- * Value	Win0	 Win1	  Win2	   Win3	    Win 4
+- * 0000		1(P)	 1(P)	  1(P)	   1(P)	    1(P)
+- * 0001		2(P)	 2(P)     2(P)	   2(P)	    2(P)
+- * 0010		4(P)	 4(P)     4(P)	   4(P)     -none-
+- * 0011		8(P)	 8(P)     -none-   -none-   -none-
+- * 0100		-none-	 8(A232)  8(A232)  -none-   -none-
+- * 0101		16(565)	 16(565)  16(565)  16(565)   16(565)
+- * 0110		-none-	 16(A555) 16(A555) 16(A555)  16(A555)
+- * 0111		16(I555) 16(I565) 16(I555) 16(I555)  16(I555)
+- * 1000		18(666)	 18(666)  18(666)  18(666)   18(666)
+- * 1001		-none-	 18(A665) 18(A665) 18(A665)  16(A665)
+- * 1010		-none-	 19(A666) 19(A666) 19(A666)  19(A666)
+- * 1011		24(888)	 24(888)  24(888)  24(888)   24(888)
+- * 1100		-none-	 24(A887) 24(A887) 24(A887)  24(A887)
+- * 1101		-none-	 25(A888) 25(A888) 25(A888)  25(A888)
+- * 1110		-none-	 -none-	  -none-   -none-    -none-
+- * 1111		-none-	 -none-   -none-   -none-    -none-
+-*/
+diff --git a/drivers/gpu/drm/exynos/exynos_drm_fimd.c b/drivers/gpu/drm/exynos/exynos_drm_fimd.c
+index a68d2b3..24c0bd4 100644
+--- a/drivers/gpu/drm/exynos/exynos_drm_fimd.c
++++ b/drivers/gpu/drm/exynos/exynos_drm_fimd.c
+@@ -19,8 +19,8 @@
+ #include <linux/clk.h>
+ #include <linux/pm_runtime.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <drm/exynos_drm.h>
+-#include <plat/regs-fb-v4.h>
+ 
+ #include "exynos_drm_drv.h"
+ #include "exynos_drm_fbdev.h"
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 69bf9d0..901729e 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -25,8 +25,8 @@
+ #include <linux/interrupt.h>
+ #include <linux/pm_runtime.h>
+ 
++#include <video/samsung_fimd.h>
+ #include <mach/map.h>
+-#include <plat/regs-fb-v4.h>
+ #include <plat/fb.h>
+ 
+ /* This driver will export a number of framebuffer interfaces depending
+diff --git a/arch/arm/plat-samsung/include/plat/regs-fb.h b/include/video/samsung_fimd.h
+similarity index 74%
+rename from arch/arm/plat-samsung/include/plat/regs-fb.h
+rename to include/video/samsung_fimd.h
+index 9a78012..e979f42 100644
+--- a/arch/arm/plat-samsung/include/plat/regs-fb.h
++++ b/include/video/samsung_fimd.h
+@@ -1,13 +1,13 @@
+-/* arch/arm/plat-samsung/include/plat/regs-fb.h
++/* include/video/samsung_fimd.h
+  *
+  * Copyright 2008 Openmoko, Inc.
+  * Copyright 2008 Simtec Electronics
+  *      http://armlinux.simtec.co.uk/
+  *      Ben Dooks <ben@simtec.co.uk>
+  *
+- * S3C Platform - new-style framebuffer register definitions
++ * S3C Platform - new-style fimd and framebuffer register definitions
+  *
+- * This is the register set for the new style framebuffer interface
++ * This is the register set for the fimd and new style framebuffer interface
+  * found from the S3C2443 onwards into the S3C2416, S3C2450 and the
+  * S3C64XX series such as the S3C6400 and S3C6410.
+  *
+@@ -15,19 +15,11 @@
+  * whichever architecture is selected, it only contains the core of the
+  * register set. See <mach/regs-fb.h> to get the specifics.
+  *
+- * Note, we changed to using regs-fb.h as it avoids any clashes with
+- * the original regs-lcd.h so out of the way of regs-lcd.h as well as
+- * indicating the newer block is much more than just an LCD interface.
+- *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License version 2 as
+  * published by the Free Software Foundation.
+ */
+ 
+-/* Please do not include this file directly, use <mach/regs-fb.h> to
+- * ensure all the localised SoC support is included as necessary.
+-*/
+-
+ /* VIDCON0 */
+ 
+ #define VIDCON0					(0x00)
+@@ -401,3 +393,134 @@
+ #define BLENDCON_NEW_8BIT_ALPHA_VALUE		(1 << 0)
+ #define BLENDCON_NEW_4BIT_ALPHA_VALUE		(0 << 0)
+ 
++#define S3C_FB_MAX_WIN (5)  /* number of hardware windows available. */
++#define VIDCON1_FSTATUS_EVEN	(1 << 15)
 +
- config FB_SH_MOBILE_LCDC
- 	tristate "SuperH Mobile LCDC framebuffer support"
- 	depends on FB && (SUPERH || ARCH_SHMOBILE) && HAVE_CLK
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index ee8dafb..ba69fcb 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -140,6 +140,7 @@ obj-$(CONFIG_SH_MIPI_DSI)	  += sh_mipi_dsi.o
- obj-$(CONFIG_FB_SH_MOBILE_HDMI)	  += sh_mobile_hdmi.o
- obj-$(CONFIG_FB_SH_MOBILE_MERAM)  += sh_mobile_meram.o
- obj-$(CONFIG_FB_SH_MOBILE_LCDC)	  += sh_mobile_lcdcfb.o
-+obj-$(CONFIG_FB_REN_VDC4FB)	  += ren_vdc4fb.o
- obj-$(CONFIG_FB_OMAP)             += omap/
- obj-y                             += omap2/
- obj-$(CONFIG_XEN_FBDEV_FRONTEND)  += xen-fbfront.o
-diff --git a/drivers/video/ren_vdc4fb.c b/drivers/video/ren_vdc4fb.c
-new file mode 100644
-index 0000000..1a31e85
---- /dev/null
-+++ b/drivers/video/ren_vdc4fb.c
-@@ -0,0 +1,653 @@
-+/*
-+ * Renesas VDC4 Framebuffer
++/* Video timing controls */
++#define VIDTCON0				(0x10)
++#define VIDTCON1				(0x14)
++#define VIDTCON2				(0x18)
++
++/* Window position controls */
++
++#define WINCON(_win)				(0x20 + ((_win) * 4))
++
++/* OSD1 and OSD4 do not have register D */
++
++#define VIDOSD_BASE				(0x40)
++
++#define VIDINTCON0				(0x130)
++
++/* WINCONx */
++
++#define WINCONx_CSCWIDTH_MASK			(0x3 << 26)
++#define WINCONx_CSCWIDTH_SHIFT			(26)
++#define WINCONx_CSCWIDTH_WIDE			(0x0 << 26)
++#define WINCONx_CSCWIDTH_NARROW			(0x3 << 26)
++
++#define WINCONx_ENLOCAL				(1 << 22)
++#define WINCONx_BUFSTATUS			(1 << 21)
++#define WINCONx_BUFSEL				(1 << 20)
++#define WINCONx_BUFAUTOEN			(1 << 19)
++#define WINCONx_YCbCr				(1 << 13)
++
++#define WINCON1_LOCALSEL_CAMIF			(1 << 23)
++
++#define WINCON2_LOCALSEL_CAMIF			(1 << 23)
++#define WINCON2_BLD_PIX				(1 << 6)
++
++#define WINCON2_ALPHA_SEL			(1 << 1)
++#define WINCON2_BPPMODE_MASK			(0xf << 2)
++#define WINCON2_BPPMODE_SHIFT			(2)
++#define WINCON2_BPPMODE_1BPP			(0x0 << 2)
++#define WINCON2_BPPMODE_2BPP			(0x1 << 2)
++#define WINCON2_BPPMODE_4BPP			(0x2 << 2)
++#define WINCON2_BPPMODE_8BPP_1232		(0x4 << 2)
++#define WINCON2_BPPMODE_16BPP_565		(0x5 << 2)
++#define WINCON2_BPPMODE_16BPP_A1555		(0x6 << 2)
++#define WINCON2_BPPMODE_16BPP_I1555		(0x7 << 2)
++#define WINCON2_BPPMODE_18BPP_666		(0x8 << 2)
++#define WINCON2_BPPMODE_18BPP_A1665		(0x9 << 2)
++#define WINCON2_BPPMODE_19BPP_A1666		(0xa << 2)
++#define WINCON2_BPPMODE_24BPP_888		(0xb << 2)
++#define WINCON2_BPPMODE_24BPP_A1887		(0xc << 2)
++#define WINCON2_BPPMODE_25BPP_A1888		(0xd << 2)
++#define WINCON2_BPPMODE_28BPP_A4888		(0xd << 2)
++
++#define WINCON3_BLD_PIX				(1 << 6)
++
++#define WINCON3_ALPHA_SEL			(1 << 1)
++#define WINCON3_BPPMODE_MASK			(0xf << 2)
++#define WINCON3_BPPMODE_SHIFT			(2)
++#define WINCON3_BPPMODE_1BPP			(0x0 << 2)
++#define WINCON3_BPPMODE_2BPP			(0x1 << 2)
++#define WINCON3_BPPMODE_4BPP			(0x2 << 2)
++#define WINCON3_BPPMODE_16BPP_565		(0x5 << 2)
++#define WINCON3_BPPMODE_16BPP_A1555		(0x6 << 2)
++#define WINCON3_BPPMODE_16BPP_I1555		(0x7 << 2)
++#define WINCON3_BPPMODE_18BPP_666		(0x8 << 2)
++#define WINCON3_BPPMODE_18BPP_A1665		(0x9 << 2)
++#define WINCON3_BPPMODE_19BPP_A1666		(0xa << 2)
++#define WINCON3_BPPMODE_24BPP_888		(0xb << 2)
++#define WINCON3_BPPMODE_24BPP_A1887		(0xc << 2)
++#define WINCON3_BPPMODE_25BPP_A1888		(0xd << 2)
++#define WINCON3_BPPMODE_28BPP_A4888		(0xd << 2)
++
++#define VIDINTCON0_FIFIOSEL_WINDOW2		(0x10 << 5)
++#define VIDINTCON0_FIFIOSEL_WINDOW3		(0x20 << 5)
++#define VIDINTCON0_FIFIOSEL_WINDOW4		(0x40 << 5)
++
++#define DITHMODE				(0x170)
++#define WINxMAP(_win)				(0x180 + ((_win) * 4))
++
++
++#define DITHMODE_R_POS_MASK			(0x3 << 5)
++#define DITHMODE_R_POS_SHIFT			(5)
++#define DITHMODE_R_POS_8BIT			(0x0 << 5)
++#define DITHMODE_R_POS_6BIT			(0x1 << 5)
++#define DITHMODE_R_POS_5BIT			(0x2 << 5)
++
++#define DITHMODE_G_POS_MASK			(0x3 << 3)
++#define DITHMODE_G_POS_SHIFT			(3)
++#define DITHMODE_G_POS_8BIT			(0x0 << 3)
++#define DITHMODE_G_POS_6BIT			(0x1 << 3)
++#define DITHMODE_G_POS_5BIT			(0x2 << 3)
++
++#define DITHMODE_B_POS_MASK			(0x3 << 1)
++#define DITHMODE_B_POS_SHIFT			(1)
++#define DITHMODE_B_POS_8BIT			(0x0 << 1)
++#define DITHMODE_B_POS_6BIT			(0x1 << 1)
++#define DITHMODE_B_POS_5BIT			(0x2 << 1)
++
++#define DITHMODE_DITH_EN			(1 << 0)
++
++#define WPALCON					(0x1A0)
++
++/* Palette control */
++/* Note for S5PC100: you can still use those macros on WPALCON (aka WPALCON_L),
++ * but make sure that WPALCON_H W2PAL-W4PAL entries are zeroed out */
++#define WPALCON_W4PAL_16BPP_A555		(1 << 8)
++#define WPALCON_W3PAL_16BPP_A555		(1 << 7)
++#define WPALCON_W2PAL_16BPP_A555		(1 << 6)
++
++
++/* Notes on per-window bpp settings
 + *
-+ * Based on sh_mobile_lcdcfb.c
-+ * Copyright (c) 2012 Renesas Electronics Europe Ltd
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/mm.h>
-+#include <linux/clk.h>
-+#include <linux/sh_clk.h>
-+#include <linux/platform_device.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/interrupt.h>
-+#include <linux/vmalloc.h>
-+#include <linux/module.h>
-+#include <video/ren_vdc4fb.h>
-+
-+#define PALETTE_NR 16
-+
-+struct ren_vdc4_priv {
-+	void __iomem *base;
-+	int irq;
-+	struct clk *dot_clk;
-+	struct clk *clk;
-+	struct fb_info *info;
-+	dma_addr_t dma_handle;
-+	struct ren_vdc4_info *cfg;
-+	u32 pseudo_palette[PALETTE_NR];
-+};
-+
-+/* Register offsets/reading and writing functions */
-+enum {
-+	SCL0_UPDATE, SCL0_FRC1, SCL0_FRC2, SCL0_FRC3,
-+	SCL0_FRC4, SCL0_FRC5, SCL0_FRC6, SCL0_FRC7,
-+	SCL0_DS1, SCL0_US1,
-+
-+	GR1_UPDATE, GR1_AB1,
-+
-+	GR2_UPDATE, GR2_AB1,
-+
-+	GR3_UPDATE, GR3_FLM_RD, GR3_FLM1, GR3_FLM2,
-+	GR3_FLM3, GR3_FLM4, GR3_FLM5, GR3_FLM6, GR3_AB1,
-+	GR3_AB2, GR3_AB3, GR3_AB4, GR3_AB5, GR3_AB6,
-+	GR3_AB7, GR3_AB8, GR3_AB9, GR3_AB10, GR3_AB11,
-+	GR3_BASE, GR3_CLUT_INT, GR3_MON,
-+
-+	TCON_UPDATE, TCON_TIM, TCON_TIM_STVA1, TCON_TIM_STVA2,
-+	TCON_TIM_STVB1, TCON_TIM_STVB2, TCON_TIM_STH1,
-+	TCON_TIM_STH2, TCON_TIM_STB1, TCON_TIM_STB2,
-+	TCON_TIM_CPV1, TCON_TIM_CPV2, TCON_TIM_POLA1,
-+	TCON_TIM_POLA2, TCON_TIM_POLB1, TCON_TIM_POLB2,
-+	TCON_TIM_DE,
-+
-+	OUT_UPDATE, OUT_SET, OUT_BRIGHT1,
-+	OUT_BRIGHT2, OUT_CONTRAST, OUT_PDTHA, OUT_CLK_PHASE,
-+
-+	SYSCNT_INT1, SYSCNT_INT2, SYSCNT_INT3, SYSCNT_INT4,
-+	SYSCNT_PANEL_CLK, SYSCNT_CLUT
-+};
-+
-+static unsigned long vdc4_offsets[] = {
-+	[SCL0_UPDATE]		= 0x0100,
-+	[SCL0_FRC1]		= 0x0104,
-+	[SCL0_FRC2]		= 0x0108,
-+	[SCL0_FRC3]		= 0x010C,
-+	[SCL0_FRC4]		= 0x0110,
-+	[SCL0_FRC5]		= 0x0114,
-+	[SCL0_FRC6]		= 0x0118,
-+	[SCL0_FRC7]		= 0x011C,
-+	[SCL0_DS1]		= 0x012C,
-+	[SCL0_US1]		= 0x0148,
-+	[GR1_UPDATE]		= 0x0200,
-+	[GR1_AB1]		= 0x0220,
-+	[GR2_UPDATE]		= 0x0300,
-+	[GR2_AB1]		= 0x0320,
-+	[GR3_UPDATE]		= 0x0380,
-+	[GR3_FLM_RD]		= 0x0384,
-+	[GR3_FLM1]		= 0x0388,
-+	[GR3_FLM2]		= 0x038C,
-+	[GR3_FLM3]		= 0x0390,
-+	[GR3_FLM4]		= 0x0394,
-+	[GR3_FLM5]		= 0x0398,
-+	[GR3_FLM6]		= 0x039C,
-+	[GR3_AB1]		= 0x03A0,
-+	[GR3_AB2]		= 0x03A4,
-+	[GR3_AB3]		= 0x03A8,
-+	[GR3_AB4]		= 0x03AC,
-+	[GR3_AB5]		= 0x03B0,
-+	[GR3_AB6]		= 0x03B4,
-+	[GR3_AB7]		= 0x03B8,
-+	[GR3_AB8]		= 0x03BC,
-+	[GR3_AB9]		= 0x03C0,
-+	[GR3_AB10]		= 0x03C4,
-+	[GR3_AB11]		= 0x03C8,
-+	[GR3_BASE]		= 0x03CC,
-+	[GR3_CLUT_INT]		= 0x03D0,
-+	[GR3_MON]		= 0x03D4,
-+	[TCON_UPDATE]		= 0x0580,
-+	[TCON_TIM]		= 0x0584,
-+	[TCON_TIM_STVA1]	= 0x0588,
-+	[TCON_TIM_STVA2]	= 0x058C,
-+	[TCON_TIM_STVB1]	= 0x0590,
-+	[TCON_TIM_STVB2]	= 0x0594,
-+	[TCON_TIM_STH1]		= 0x0598,
-+	[TCON_TIM_STH2]		= 0x059C,
-+	[TCON_TIM_STB1]		= 0x05A0,
-+	[TCON_TIM_STB2]		= 0x05A4,
-+	[TCON_TIM_CPV1]		= 0x05A8,
-+	[TCON_TIM_CPV2]		= 0x05AC,
-+	[TCON_TIM_POLA1]	= 0x05B0,
-+	[TCON_TIM_POLA2]	= 0x05B4,
-+	[TCON_TIM_POLB1]	= 0x05B8,
-+	[TCON_TIM_POLB2]	= 0x05BC,
-+	[TCON_TIM_DE]		= 0x05C0,
-+	[OUT_UPDATE]		= 0x0600,
-+	[OUT_SET]		= 0x0604,
-+	[OUT_BRIGHT1]		= 0x0608,
-+	[OUT_BRIGHT2]		= 0x060C,
-+	[OUT_CONTRAST]		= 0x0610,
-+	[OUT_PDTHA]		= 0x0614,
-+	[OUT_CLK_PHASE]		= 0x0624,
-+	[SYSCNT_INT1]		= 0x0680,
-+	[SYSCNT_INT2]		= 0x0684,
-+	[SYSCNT_INT3]		= 0x0688,
-+	[SYSCNT_INT4]		= 0x068C,
-+	[SYSCNT_PANEL_CLK]	= 0x0690, /* 16-bit */
-+	[SYSCNT_CLUT]		= 0x0692, /* 16-bit */
-+};
-+
-+/* SYSCNT */
-+#define ICKEN			(1 << 8)
-+
-+/* SCL Syncs */
-+#define FREE_RUN_VSYNC		0x0001
-+
-+/* OUTPUT */
-+#define OUT_FMT_RGB666		(1 << 12)
-+
-+/* TCON Timings */
-+#define STVB_SEL_BITS		0x0007
-+#define STVB_HS_SEL		2
-+
-+#define STH2_SEL_BITS		0x0007
-+#define STH2_DE_SEL		7
-+
-+/* OUTCLK */
-+#define LCD_DATA_EDGE		0x0100
-+#define STVB_EDGE		0x0020
-+#define STH_EDGE		0x0010
-+
-+/* SCL_UPDATE */
-+#define SCL0_UPDATE_BIT		0x0100
-+#define SCL0_VEN_BIT		0x0010
-+
-+/* TCON_UPDATE */
-+#define TCON_VEN_BIT		0x0001
-+
-+/* OUT_UPDATE */
-+#define OUTCNT_VEN_BIT		0x0001
-+
-+/* GR_UPDATE */
-+#define P_VEN_UPDATE		0x0010
-+#define IBUS_VEN_UPDATE		0x0001
-+
-+/* GR_AB1 */
-+#define DISPSEL_BCKGND		0x0000
-+#define DISPSEL_LOWER		0x0001
-+#define DISPSEL_CUR		0x0002
-+
-+/* GR_FLM_RD */
-+#define FB_R_ENB		0x01
-+
-+
-+static void vdc4_write(struct ren_vdc4_priv *priv,
-+	unsigned long reg_offs, unsigned long data)
-+{
-+	if ((SYSCNT_PANEL_CLK = reg_offs) || (SYSCNT_CLUT = reg_offs))
-+		iowrite16(data, priv->base + vdc4_offsets[reg_offs]);
-+	else
-+		iowrite32(data, priv->base + vdc4_offsets[reg_offs]);
-+}
-+
-+static unsigned long vdc4_read(struct ren_vdc4_priv *priv,
-+	unsigned long reg_offs)
-+{
-+	if ((SYSCNT_PANEL_CLK = reg_offs) || (SYSCNT_CLUT = reg_offs))
-+		return ioread16(priv->base + vdc4_offsets[reg_offs]);
-+	else
-+		return ioread32(priv->base + vdc4_offsets[reg_offs]);
-+}
-+
-+static irqreturn_t ren_vdc4_irq(int irq, void *data)
-+{
-+	/* Not currently implemented/used */
-+	return IRQ_HANDLED;
-+}
-+
-+static void lcd_clear_display(struct ren_vdc4_priv *priv)
-+{
-+	unsigned char *pdest;
-+	unsigned long size;
-+
-+	pdest = (unsigned char *)priv->dma_handle;
-+	size = priv->cfg->lcd_cfg.xres * priv->cfg->lcd_cfg.yres * 2;
-+
-+	memset(pdest, 0, size);
-+}
-+
-+static void restart_tft_display(struct ren_vdc4_priv *priv,
-+	int clock_source)
-+{
-+	struct fb_videomode *lcd;
-+	unsigned long h;
-+	unsigned long v;
-+	unsigned long tmp;
-+
-+	/* FB setup */
-+	lcd = &priv->cfg->lcd_cfg;
-+	lcd_clear_display(priv);
-+
-+	/* VDC clock Setup */
-+	tmp = priv->cfg->clock_divider;
-+	tmp |= clock_source << 12;
-+	tmp |= ICKEN;
-+	vdc4_write(priv, SYSCNT_PANEL_CLK, tmp);
-+
-+	/* Clear and Disable all interrupts */
-+	vdc4_write(priv, SYSCNT_INT1, 0);
-+	vdc4_write(priv, SYSCNT_INT2, 0);
-+	vdc4_write(priv, SYSCNT_INT3, 0);
-+	vdc4_write(priv, SYSCNT_INT4, 0);
-+
-+	/* Setup free-running syncs */
-+	vdc4_write(priv, SCL0_FRC3, FREE_RUN_VSYNC);
-+
-+	/* Disable scale up/down */
-+	vdc4_write(priv, SCL0_DS1, 0);
-+	vdc4_write(priv, SCL0_US1, 0);
-+
-+	/* Timing registers */
-+	h = lcd->hsync_len + lcd->left_margin  + lcd->xres + lcd->right_margin;
-+	v = lcd->vsync_len + lcd->upper_margin + lcd->yres + lcd->lower_margin;
-+	tmp = (v - 1) << 16;
-+	tmp |= h - 1;
-+	vdc4_write(priv, SCL0_FRC4, tmp);
-+
-+	vdc4_write(priv, TCON_TIM, (((h - 1) / 2) << 16));
-+
-+	tmp = (lcd->vsync_len + lcd->upper_margin) << 16;
-+	tmp |= lcd->yres;
-+	vdc4_write(priv, SCL0_FRC6, tmp);
-+	vdc4_write(priv, TCON_TIM_STVB1, tmp);
-+	vdc4_write(priv, GR3_AB2, tmp);
-+
-+	tmp = lcd->left_margin << 16;
-+	tmp |= lcd->xres;
-+	vdc4_write(priv, SCL0_FRC7, tmp);
-+	vdc4_write(priv, TCON_TIM_STB1, tmp);
-+	vdc4_write(priv, GR3_AB3, tmp);
-+
-+	vdc4_write(priv, SCL0_FRC1, 0);
-+	vdc4_write(priv, SCL0_FRC2, 0);
-+	vdc4_write(priv, SCL0_FRC5, 0);
-+
-+	/* Set output format */
-+	vdc4_write(priv, OUT_SET, OUT_FMT_RGB666);
-+
-+	/* STH TCON Timing */
-+	tmp = priv->cfg->hs_pulse_width;
-+	tmp |= priv->cfg->hs_start_pos << 16;
-+	vdc4_write(priv, TCON_TIM_STH1, tmp);
-+
-+	/* Setup STVB as HSYNC */
-+	tmp = vdc4_read(priv, TCON_TIM_STVB2);
-+	tmp &= ~STVB_SEL_BITS;
-+	tmp |= STVB_HS_SEL;
-+	vdc4_write(priv, TCON_TIM_STVB2, tmp);
-+
-+	tmp = vdc4_read(priv, OUT_CLK_PHASE);
-+	tmp &= ~STVB_EDGE;
-+	vdc4_write(priv, OUT_CLK_PHASE, tmp);
-+
-+	/* Setup STH as DE */
-+	tmp = vdc4_read(priv, TCON_TIM_STH2);
-+	tmp &= ~STH2_SEL_BITS;
-+	tmp |= STH2_DE_SEL;
-+	vdc4_write(priv, TCON_TIM_STH2, tmp);
-+
-+	tmp = vdc4_read(priv, OUT_CLK_PHASE);
-+	tmp &= ~STH_EDGE;
-+	vdc4_write(priv, OUT_CLK_PHASE, tmp);
-+
-+	/* Output clock rising edge */
-+	tmp = vdc4_read(priv, OUT_CLK_PHASE);
-+	tmp &= ~LCD_DATA_EDGE;
-+	vdc4_write(priv, OUT_CLK_PHASE, tmp);
-+
-+	/* Setup graphics buffers and update all registers */
-+	vdc4_write(priv, GR1_AB1, DISPSEL_BCKGND);
-+	vdc4_write(priv, GR2_AB1, DISPSEL_LOWER);
-+	vdc4_write(priv, GR3_AB1, DISPSEL_CUR);
-+
-+	/* Setup framebuffer base/output */
-+	vdc4_write(priv, GR3_FLM_RD, FB_R_ENB);
-+
-+	vdc4_write(priv, GR3_FLM2, (unsigned long)priv->info->screen_base);
-+
-+	vdc4_write(priv, GR3_FLM3, (lcd->xres * 2) << 16);
-+
-+	tmp = vdc4_read(priv, GR3_FLM5);
-+	tmp |= lcd->yres << 16;
-+	vdc4_write(priv, GR3_FLM5, tmp);
-+
-+	tmp = lcd->xres << 16;
-+	vdc4_write(priv, GR3_FLM6, tmp);
-+
-+	/* Apply all register settings */
-+	vdc4_write(priv, SCL0_UPDATE, SCL0_VEN_BIT | SCL0_UPDATE_BIT);
-+	vdc4_write(priv, GR1_UPDATE, P_VEN_UPDATE);
-+	vdc4_write(priv, GR2_UPDATE, P_VEN_UPDATE);
-+	vdc4_write(priv, GR3_UPDATE, P_VEN_UPDATE | IBUS_VEN_UPDATE);
-+	vdc4_write(priv, OUT_UPDATE, OUTCNT_VEN_BIT);
-+	vdc4_write(priv, TCON_UPDATE, TCON_VEN_BIT);
-+}
-+
-+static int ren_vdc4_setup_clocks(struct platform_device *pdev,
-+	int clock_source,
-+	struct ren_vdc4_priv *priv)
-+{
-+	priv->clk = clk_get(&pdev->dev, "vdc4");
-+	if (IS_ERR(priv->clk)) {
-+		dev_err(&pdev->dev, "cannot get clock \"vdc4\"\n");
-+		return PTR_ERR(priv->clk);
-+	}
-+
-+	if (clock_source = VDC4_PERI_CLK) {
-+		priv->dot_clk = clk_get(&pdev->dev, "peripheral_clk");
-+		if (IS_ERR(priv->dot_clk)) {
-+			dev_err(&pdev->dev, "cannot get peripheral clock\n");
-+			clk_put(priv->clk);
-+			return PTR_ERR(priv->dot_clk);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int ren_vdc4_setcolreg(u_int regno,
-+	u_int red, u_int green, u_int blue,
-+	u_int transp, struct fb_info *info)
-+{
-+	u32 *palette = info->pseudo_palette;
-+
-+	if (regno >= PALETTE_NR)
-+		return -EINVAL;
-+
-+	/* only FB_VISUAL_TRUECOLOR supported */
-+
-+	red    >>= 16 - info->var.red.length;
-+	green  >>= 16 - info->var.green.length;
-+	blue   >>= 16 - info->var.blue.length;
-+	transp >>= 16 - info->var.transp.length;
-+
-+	palette[regno] = (red << info->var.red.offset) |
-+		(green << info->var.green.offset) |
-+		(blue << info->var.blue.offset) |
-+		(transp << info->var.transp.offset);
-+
-+	return 0;
-+}
-+
-+static struct fb_fix_screeninfo ren_vdc4_fix = {
-+	.id		= "Renesas VDC4FB",
-+	.type		= FB_TYPE_PACKED_PIXELS,
-+	.visual		= FB_VISUAL_TRUECOLOR,
-+	.accel		= FB_ACCEL_NONE,
-+};
-+
-+static struct fb_ops ren_vdc4_ops = {
-+	.owner          = THIS_MODULE,
-+	.fb_setcolreg	= ren_vdc4_setcolreg,
-+	.fb_read        = fb_sys_read,
-+	.fb_write       = fb_sys_write,
-+	.fb_fillrect	= sys_fillrect,
-+	.fb_copyarea	= sys_copyarea,
-+	.fb_imageblit	= sys_imageblit,
-+};
-+
-+static int ren_vdc4_set_bpp(struct fb_var_screeninfo *var, int bpp)
-+{
-+	switch (bpp) {
-+	case 16: /* RGB 565 */
-+		var->red.offset = 11;
-+		var->red.length = 5;
-+		var->green.offset = 5;
-+		var->green.length = 6;
-+		var->blue.offset = 0;
-+		var->blue.length = 5;
-+		var->transp.offset = 0;
-+		var->transp.length = 0;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	var->bits_per_pixel = bpp;
-+	var->red.msb_right = 0;
-+	var->green.msb_right = 0;
-+	var->blue.msb_right = 0;
-+	var->transp.msb_right = 0;
-+	return 0;
-+}
-+
-+/* PM Functions */
-+static int ren_vdc4_start(struct ren_vdc4_priv *priv,
-+	int clock_source)
-+{
-+	int ret;
-+
-+	ret = clk_enable(priv->clk);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (priv->dot_clk) {
-+		ret = clk_enable(priv->dot_clk);
-+		if (ret < 0)
-+			return ret;
-+	}
-+
-+	restart_tft_display(priv, clock_source);
-+
-+	return ret;
-+}
-+
-+static void ren_vdc4_stop(struct ren_vdc4_priv *priv)
-+{
-+	if (priv->dot_clk)
-+		clk_disable(priv->dot_clk);
-+	clk_disable(priv->clk);
-+}
-+
-+static int ren_vdc4_suspend(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+
-+	ren_vdc4_stop(platform_get_drvdata(pdev));
-+	return 0;
-+}
-+
-+static int ren_vdc4_resume(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct ren_vdc4_info *pdata = pdev->dev.platform_data;
-+
-+	return ren_vdc4_start(platform_get_drvdata(pdev), pdata->clock_source);
-+}
-+
-+static const struct dev_pm_ops ren_vdc4_dev_pm_ops = {
-+	.suspend = ren_vdc4_suspend,
-+	.resume = ren_vdc4_resume,
-+};
-+
-+static int ren_vdc4_remove(struct platform_device *pdev);
-+
-+static int __devinit ren_vdc4_probe(struct platform_device *pdev)
-+{
-+	struct fb_info *info;
-+	struct ren_vdc4_priv *priv;
-+	struct ren_vdc4_info *pdata = pdev->dev.platform_data;
-+	struct resource *res;
-+	void *buf;
-+	int irq, error;
-+
-+	if (!pdata) {
-+		dev_err(&pdev->dev, "no platform data defined\n");
-+		return -EINVAL;
-+	}
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	irq = platform_get_irq(pdev, 0);
-+	if (!res || irq < 0) {
-+		dev_err(&pdev->dev, "cannot get platform resources\n");
-+		return -ENOENT;
-+	}
-+
-+	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-+	if (!priv) {
-+		dev_err(&pdev->dev, "cannot allocate device data\n");
-+		return -ENOMEM;
-+	}
-+
-+	platform_set_drvdata(pdev, priv);
-+
-+	error = request_irq(irq, ren_vdc4_irq, 0, dev_name(&pdev->dev), priv);
-+	if (error) {
-+		dev_err(&pdev->dev, "unable to request irq\n");
-+		goto err1;
-+	}
-+
-+	priv->irq = irq;
-+	pdata = pdev->dev.platform_data;
-+
-+	priv->cfg = pdata;
-+
-+	error = ren_vdc4_setup_clocks(pdev, pdata->clock_source, priv);
-+	if (error) {
-+		dev_err(&pdev->dev, "unable to setup clocks\n");
-+		goto err1;
-+	}
-+
-+	priv->base = ioremap_nocache(res->start, resource_size(res));
-+	if (!priv->base) {
-+		dev_err(&pdev->dev, "unable to ioremap\n");
-+		goto err1;
-+	}
-+
-+	priv->info = framebuffer_alloc(0, &pdev->dev);
-+	if (!priv->info) {
-+		dev_err(&pdev->dev, "unable to allocate fb_info\n");
-+		goto err1;
-+	}
-+
-+	info = priv->info;
-+	info->fbops = &ren_vdc4_ops;
-+	info->var.xres = info->var.xres_virtual = pdata->lcd_cfg.xres;
-+	info->var.yres = info->var.yres_virtual = pdata->lcd_cfg.yres;
-+	info->var.width = pdata->panel_width;
-+	info->var.height = pdata->panel_height;
-+	info->var.activate = FB_ACTIVATE_NOW;
-+	info->pseudo_palette = priv->pseudo_palette;
-+	error = ren_vdc4_set_bpp(&info->var, pdata->bpp);
-+	if (error)
-+		goto err1;
-+
-+	info->fix = ren_vdc4_fix;
-+	info->fix.line_length = pdata->lcd_cfg.xres * (pdata->bpp / 8);
-+	info->fix.smem_len = info->fix.line_length * pdata->lcd_cfg.yres;
-+
-+	buf = dma_alloc_coherent(&pdev->dev, info->fix.smem_len,
-+				 &priv->dma_handle, GFP_KERNEL);
-+	if (!buf) {
-+		dev_err(&pdev->dev, "unable to allocate buffer\n");
-+		goto err1;
-+	}
-+
-+	info->flags = FBINFO_FLAG_DEFAULT;
-+
-+	error = fb_alloc_cmap(&info->cmap, PALETTE_NR, 0);
-+	if (error < 0) {
-+		dev_err(&pdev->dev, "unable to allocate cmap\n");
-+		goto err1;
-+	}
-+
-+	memset(buf, 0, info->fix.smem_len);
-+	info->fix.smem_start = priv->dma_handle;
-+	info->screen_base = buf;
-+	info->device = &pdev->dev;
-+	info->par = priv;
-+
-+	if (error)
-+		goto err1;
-+
-+	ren_vdc4_start(priv, pdata->clock_source);
-+	if (error) {
-+		dev_err(&pdev->dev, "unable to start hardware\n");
-+		goto err1;
-+	}
-+
-+	info = priv->info;
-+
-+	error = register_framebuffer(info);
-+	if (error < 0)
-+		goto err1;
-+
-+	dev_info(info->dev,
-+		"registered %s as %udx%ud %dbpp.\n",
-+		pdev->name,
-+		(int) pdata->lcd_cfg.xres,
-+		(int) pdata->lcd_cfg.yres,
-+		pdata->bpp);
-+
-+	return 0;
-+
-+err1:
-+	ren_vdc4_remove(pdev);
-+	return error;
-+}
-+
-+static int ren_vdc4_remove(struct platform_device *pdev)
-+{
-+	struct ren_vdc4_priv *priv = platform_get_drvdata(pdev);
-+	struct fb_info *info;
-+
-+	if (priv->info->dev)
-+		unregister_framebuffer(priv->info);
-+
-+	ren_vdc4_stop(priv);
-+
-+	info = priv->info;
-+
-+	if (!info || !info->device) {
-+		dev_err(&pdev->dev, "Failed to dealloc/release fb_info\n");
-+	} else {
-+		fb_dealloc_cmap(&info->cmap);
-+		framebuffer_release(info);
-+	}
-+
-+	if (priv->dot_clk)
-+		clk_put(priv->dot_clk);
-+	clk_put(priv->clk);
-+
-+	if (priv->base)
-+		iounmap(priv->base);
-+
-+	if (priv->irq)
-+		free_irq(priv->irq, priv);
-+
-+	kfree(priv);
-+	return 0;
-+}
-+
-+static struct platform_driver ren_vdc4_driver = {
-+	.driver		= {
-+		.name		= "ren_vdc4fb",
-+		.owner		= THIS_MODULE,
-+		.pm		= &ren_vdc4_dev_pm_ops,
-+	},
-+	.probe		= ren_vdc4_probe,
-+	.remove		= ren_vdc4_remove,
-+};
-+
-+static int __init ren_vdc4_init(void)
-+{
-+	return platform_driver_register(&ren_vdc4_driver);
-+}
-+
-+static void __exit ren_vdc4_exit(void)
-+{
-+	platform_driver_unregister(&ren_vdc4_driver);
-+}
-+
-+module_init(ren_vdc4_init);
-+module_exit(ren_vdc4_exit);
-+
-+MODULE_DESCRIPTION("Renesas VDC4 Framebuffer driver");
-+MODULE_AUTHOR("Phil Edworthy <phil.edworthy@renesas.com>");
-+MODULE_LICENSE("GPL v2");
-diff --git a/include/video/ren_vdc4fb.h b/include/video/ren_vdc4fb.h
-new file mode 100644
-index 0000000..e91a515
---- /dev/null
-+++ b/include/video/ren_vdc4fb.h
-@@ -0,0 +1,19 @@
-+#ifndef __REN_VDC4_H__
-+#define __REN_VDC4_H__
-+
-+#include <linux/fb.h>
-+
-+enum { VDC4_EXTCLK = 1, VDC4_PERI_CLK };
-+
-+struct ren_vdc4_info {
-+	int bpp;
-+	int clock_source;
-+	int clock_divider;
-+	int hs_pulse_width;
-+	int hs_start_pos;
-+	struct fb_videomode lcd_cfg;
-+	unsigned long panel_width;
-+	unsigned long panel_height;
-+};
-+
-+#endif
++ * Value	Win0	 Win1	  Win2	   Win3	    Win 4
++ * 0000		1(P)	 1(P)	  1(P)	   1(P)	    1(P)
++ * 0001		2(P)	 2(P)     2(P)	   2(P)	    2(P)
++ * 0010		4(P)	 4(P)     4(P)	   4(P)     -none-
++ * 0011		8(P)	 8(P)     -none-   -none-   -none-
++ * 0100		-none-	 8(A232)  8(A232)  -none-   -none-
++ * 0101		16(565)	 16(565)  16(565)  16(565)   16(565)
++ * 0110		-none-	 16(A555) 16(A555) 16(A555)  16(A555)
++ * 0111		16(I555) 16(I565) 16(I555) 16(I555)  16(I555)
++ * 1000		18(666)	 18(666)  18(666)  18(666)   18(666)
++ * 1001		-none-	 18(A665) 18(A665) 18(A665)  16(A665)
++ * 1010		-none-	 19(A666) 19(A666) 19(A666)  19(A666)
++ * 1011		24(888)	 24(888)  24(888)  24(888)   24(888)
++ * 1100		-none-	 24(A887) 24(A887) 24(A887)  24(A887)
++ * 1101		-none-	 25(A888) 25(A888) 25(A888)  25(A888)
++ * 1110		-none-	 -none-	  -none-   -none-    -none-
++ * 1111		-none-	 -none-   -none-   -none-    -none-
++*/
 -- 
-1.7.5.4
+1.7.0.4
 

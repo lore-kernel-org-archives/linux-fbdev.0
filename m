@@ -1,123 +1,82 @@
-From: Felipe Balbi <balbi@ti.com>
-Date: Tue, 07 Aug 2012 10:27:14 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 07 Aug 2012 10:52:03 +0000
 Subject: Re: [PATCH 1/6] OMAPDSS: DISPC: Remove cpu_is_xxxx checks
-Message-Id: <20120807102712.GP8468@arwen.pp.htv.fi>
+Message-Id: <1344336723.7216.44.camel@lappyti>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="+W7ryvxEk4RRyt+P"
+Content-Type: multipart/mixed; boundary="=-edqsgrFFLbjcrd/N7qrp"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1343912532.git.cmahapatra@ti.com>
- <5344e530a125ef5c5dfeb00e54b7d32df6169aa9.1343912532.git.cmahapatra@ti.com>
- <20120807084815.GK8468@arwen.pp.htv.fi>
- <1344330329.4091.16.camel@deskari>
- <20120807091415.GN8468@arwen.pp.htv.fi>
- <1344331672.4091.22.camel@deskari>
- <20120807093207.GO8468@arwen.pp.htv.fi>
- <1344333436.7216.32.camel@lappyti>
-In-Reply-To: <1344333436.7216.32.camel@lappyti>
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: balbi@ti.com, Chandrabhanu Mahapatra <cmahapatra@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Benoit Cousson <b-cousson@ti.com>
+	 <5344e530a125ef5c5dfeb00e54b7d32df6169aa9.1343912532.git.cmahapatra@ti.com>
+In-Reply-To: <5344e530a125ef5c5dfeb00e54b7d32df6169aa9.1343912532.git.cmahapatra@ti.com>
+To: Chandrabhanu Mahapatra <cmahapatra@ti.com>, Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
 
---+W7ryvxEk4RRyt+P
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--=-edqsgrFFLbjcrd/N7qrp
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Aug 07, 2012 at 12:57:16PM +0300, Tomi Valkeinen wrote:
-> On Tue, 2012-08-07 at 12:32 +0300, Felipe Balbi wrote:
-> > Hi,
-> >=20
-> > On Tue, Aug 07, 2012 at 12:27:52PM +0300, Tomi Valkeinen wrote:
-> > > On Tue, 2012-08-07 at 12:14 +0300, Felipe Balbi wrote:
-> > >=20
-> > > > Or you could use the driver_data field on the platform_device_id and
-> > > > of_device_id structures for that. Something like:
-> > > >=20
-> > > > static const struct platform_device_id dss_id_table[] __initconst =
-=3D {
-> > > > {
-> > > > 	{ "omap2-dss", omap2_dss_features },
-> > > > 	{ "omap3-dss", omap3_dss_features },
-> > > > 	{ "omap4-dss", omap4_dss_features },
-> > > > 	{ "omap5-dss", omap5_dss_features },
-> > > > 	{} /* Terminating entry */
-> > > > };
-> > > >=20
-> > > > then, on your probe, you just need to copy id->driver_data to your =
-own
-> > > > structures so you can reference them later. No need for cpu_is_* or
-> > > > soc_is_* or machine_is_* anywhere.
-> > > >=20
-> > > > On your platform_code, wherever you create the dss device, you need=
- to
-> > > > fix up the name though. The platform_device name should match
-> > > > platform_device_id name, not platform_driver name.
-> > >=20
-> > > I've thought about that, but we need versions even for different OMAP=
- ES
-> > > versions.
-> > >=20
-> > > So in the device tree data we couldn't have the DSS nodes in a, say,
-> > > common omap4 file. We'd need separate DT files for each OMAP ES versi=
-on.
-> >=20
-> > you can overwrite attributes on your board dts file, right ? Meaning
-> > that e.g. omap4.dtsi would have:
-> >=20
-> > dss1: dss@xxxx {
-> > 	compatible =3D "ti, omap4-dss";
-> > };
-> >=20
-> >=20
-> > then on omap4-based-board.dts:
-> >=20
-> > &dss1 {
-> > 	compatible =3D "ti,omap4-based-board-dss";
-> > };
-> >=20
-> > or something similar. Isn't that doable ? Benoit, would this work on
-> > DTS ?
-> >=20
->=20
-> Yes, they can be overridden, but I think it's still quite difficult to
-> manage. DSS is modeled with multiple blocks, also in DT data. So you'd
-> need to override multiple entries.
->=20
-> And it'd also require a new dts file for each version of your board with
-> different ES version.
->=20
-> Also, I don't really see why this information would need to be present
-> in the DT data (especially as it's not simple). It's all trivially found
-> out in the code, by using cpu_is & soc_is.
+On Tue, 2012-08-07 at 13:57 +0530, Chandrabhanu Mahapatra wrote:
+> The cpu_is checks have been removed from DISPC providing it a much generi=
+c and
+> cleaner interface. The OMAP version and revision specific functions are
+> initialized by dispc_ops structure in dss features.
 
-Fair enough. I just think we should remove all cpu_is_* and soc_is_*
-=66rom drivers.
+I think this needs some changes. I think our general approach to these
+version differences should be such that the component in question (dispc
+in this case) should ask from somewhere what the DSS version is, and
+then using that version, handle the different versions internally.
 
---=20
-balbi
+What that means related to this patch is that we should keep all those
+functions static, and initialize the dispc_ops structure inside dispc.c.
 
---+W7ryvxEk4RRyt+P
+However, we don't have any such "DSS version" yet. I have previously
+wanted to move the cpu_is checks to one place (dss_features), but I
+think it's probably cleaner if we allow cpu_is checks in the other files
+also. However, there should be only one place in the file where those
+should be.
+
+So I think we should have something like this, called from
+omap_dispchw_probe():
+
+static void dispc_init_features(void)
+{
+	if (cpu_is_foo())
+		setup features for this omap;
+	else if (...)
+		...
+}
+
+This would setup the ops, or whatever is needed. This function would be
+the only place in dispc.c that contains cpu_is checks.
+
+ Tomi
+
+
+--=-edqsgrFFLbjcrd/N7qrp
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAEBAgAGBQJQIO2AAAoJEIaOsuA1yqREZsEP/RaUkLCVYWdASsID2xJIZf6N
-P7ULu/6aJF3qZ2HwVHQfk3v6uJwBOKhWV+ZobJsfww4S3FWwFlaujbhPH5C8E7V7
-+OczQPFDRj8weofcTa/ssNnLm4CC0cSGCwgouUv1ajji/qJ5X3XWGxzOsVS+7ywm
-c+sXx1Pf3lp7Nse7Pe/7ZqKMln9bMSDSErvRqL7LANi8diIoLqXaNJlYxbZAjIad
-HaSZe093v0bABeIwmr+PzVH9lrsW3eGICtauaiSEbrgLpMK8Tmm0S8BqKZWa3O9d
-ZTp/0TS9650VZLxel106DqiWtwfOkzXouzOluhf2QWl1Ma8SaCHMnxKvZ2S4eVrY
-3GT1Lb+HpJ49blxdBubfWToh/7gm2ZZCZ3LJZDNR+ztoZmM4NVzxW+1sWDn6r/ha
-ZMQ3coPbPyhqjFj26h5wS82iq6TqGec8Jy6EQy8Co1XbmjZWDLSqDEJ3nNvUMEhx
-vN7tIBhnlML4QFTp43ZnrAu6bX9vfMA/Fe8P3NelcyKPQq4Xz5fFZQJgPHkYaz0x
-FyNAiZxln7BKzeiD4PnxMCB11RjLqOi//a7/wKMAnQ3EPCX5XGAZhjGE2IsdtjwF
-2/NVFEisfo0OM0Xwn4bPEmMGC/btwgQKXIsHa007f9g3kwiAnDaE/wrPOU7FgJXq
-p7hw7S03t2PTnD9Jq0gV
-=DK66
+iQIcBAABAgAGBQJQIPNTAAoJEPo9qoy8lh715l8P/j26txlRVi7E6qyl9ECOixrC
+UnagaYUTT9mE+XN26JtL1WV+YbqyfD3JjlbydPRKZLiqNjO/h4FgnKLxfpfPjmlC
+VL/Pds/Ra+jYRfvNkr0S131yf+IGU3GvzMj+s0DZ0O85delI7Q/JZ0o5jUQdlL7h
+r2xhzh4vml3asdUtjqRMs5/ScOoQxmkOp39L9sL/Q7C6yTMADpcq0IkLx6gMem9S
+TjQVkxUEYR07CKWqT95aL6Qc6/sUnKub4R+AhgqF5MibngyZVeXonCyBnV/kVtsb
+ZTHpXTsYU0HHSyXb7iNnRF2MhloeG4o4rWs0/tXTl5uU1JKVkwVRTGzZXtcE3nBk
+uOTZf6+nFB7POtBi2cNN6PWL1CSKctF3BGcXst3oxfTUaIiaUAnszfu0fHXP5T+f
+iLTR0GhZJIzvrf74rEmeXpuwjNKk3m4luuxtPghDlT51mPglU3TE+9lum4ZXJvOa
+/VbjpwLu4YQ83xTX49tomYsifuKq9ssz84hfd6yDpyICoAXZLB5jeGzuJvW0nGzu
+IxkRsYolM3TE3N+qD7YuhYR/ur7zVuWG/c8dQ0ztWjiCIrbF3r/Ip2CVR6bGniEz
+xkh73QRaBOLvG/2n3gTxM+iXPcNGTIbxG3Om9nIjWXJzY0Jk887nH02jnBgQHy8s
+0zsZk/1k6heYSN9rCYT6
+=0ppW
 -----END PGP SIGNATURE-----
 
---+W7ryvxEk4RRyt+P--
+--=-edqsgrFFLbjcrd/N7qrp--
+

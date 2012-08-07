@@ -1,50 +1,64 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 09 Aug 2012 09:19:08 +0000
-Subject: [PATCH v2 3/5] OMAPDSS: HDMI: Remove omap_dss_device argument from hdmi_compute_pll
-Message-Id: <1344503230-18550-4-git-send-email-archit@ti.com>
+From: Leela Krishna Amudala <l.krishna@samsung.com>
+Date: Tue, 07 Aug 2012 09:49:54 +0000
+Subject: [PATCH V3 0/5] arm: samsung: Move FIMD headers to include/video/
+Message-Id: <1344332279-16736-1-git-send-email-l.krishna@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344503230-18550-1-git-send-email-archit@ti.com>
-In-Reply-To: <1344503230-18550-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, kgene.kim@samsung.com, m.szyprowski@samsung.com
 
-The clock related info for DSS modules is not tied anymore to a panel's
-omap_dss_device struct. It's now passed via platform data. The function
-hdmi_compute_pll() do not need the omap_dss_device argument to retieve these
-clocks. They use the api dss_get_platform_clock_config() get the clocks. Remove
-the omap_dss_device argument from hdmi_compute_pll()
+This patchset moves the contents of regs-fb-v4.h and regs-fb.h from arch side
+to include/video/samsung_fimd.h
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/hdmi.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+This patchset is created and rebased against master branch of torvalds tree.
+Tested on smdk5250 board, build tested for other boards.
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 16b2386..6635b09 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -405,8 +405,7 @@ unsigned long hdmi_get_pixel_clock(void)
- 	return hdmi.ip_data.cfg.timings.pixel_clock * 1000;
- }
- 
--static void hdmi_compute_pll(struct omap_dss_device *dssdev, int phy,
--		struct hdmi_pll_info *pi)
-+static void hdmi_compute_pll(int phy, struct hdmi_pll_info *pi)
- {
- 	const struct omapdss_clock_config *clks;
- 	unsigned long clkin, refclk;
-@@ -491,7 +490,7 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
- 	}
- 	phy = p->pixel_clock;
- 
--	hdmi_compute_pll(dssdev, phy, &hdmi.ip_data.pll_data);
-+	hdmi_compute_pll(phy, &hdmi.ip_data.pll_data);
- 
- 	hdmi.ip_data.ops->video_disable(&hdmi.ip_data);
- 
--- 
-1.7.9.5
+Changes from version 2:
+	- Changed the EXYNOS5_xxx macro name to FIMD_V8_xxx
+	- Moved the header inclusion under same kind
+
+Changes from version 1:
+	- Split the patches as per Sylwester comments
+	- Changed FIMD_V8_xxx macro to EXYNOS5_xxx	
+
+Leela Krishna Amudala (5):
+  include/video: Add samsung FIMD register header
+  include/video: Add Exynos5 specific FIMD register offsets
+  arm: samsung: Include the modified FIMD header file
+  driver: Include the modified FIMD header file
+  arm: samsung: delete frame buffer header files from platform
+
+ arch/arm/mach-exynos/mach-nuri.c                |    2 +-
+ arch/arm/mach-exynos/mach-origen.c              |    2 +-
+ arch/arm/mach-exynos/mach-smdk4x12.c            |    2 +-
+ arch/arm/mach-exynos/mach-smdkv310.c            |    2 +-
+ arch/arm/mach-exynos/mach-universal_c210.c      |    2 +-
+ arch/arm/mach-exynos/setup-fimd0.c              |    2 +-
+ arch/arm/mach-s3c24xx/mach-smdk2416.c           |    2 +-
+ arch/arm/mach-s3c64xx/mach-anw6410.c            |    2 +-
+ arch/arm/mach-s3c64xx/mach-crag6410.c           |    2 +-
+ arch/arm/mach-s3c64xx/mach-hmt.c                |    2 +-
+ arch/arm/mach-s3c64xx/mach-mini6410.c           |    2 +-
+ arch/arm/mach-s3c64xx/mach-ncp.c                |    2 +-
+ arch/arm/mach-s3c64xx/mach-real6410.c           |    2 +-
+ arch/arm/mach-s3c64xx/mach-smartq5.c            |    2 +-
+ arch/arm/mach-s3c64xx/mach-smartq7.c            |    2 +-
+ arch/arm/mach-s3c64xx/mach-smdk6410.c           |    2 +-
+ arch/arm/mach-s5p64x0/mach-smdk6440.c           |    2 +-
+ arch/arm/mach-s5p64x0/mach-smdk6450.c           |    2 +-
+ arch/arm/mach-s5pc100/mach-smdkc100.c           |    2 +-
+ arch/arm/mach-s5pv210/mach-aquila.c             |    2 +-
+ arch/arm/mach-s5pv210/mach-goni.c               |    2 +-
+ arch/arm/mach-s5pv210/mach-smdkv210.c           |    2 +-
+ arch/arm/plat-samsung/include/plat/regs-fb-v4.h |  159 -------
+ arch/arm/plat-samsung/include/plat/regs-fb.h    |  403 -----------------
+ drivers/gpu/drm/exynos/exynos_drm_fimd.c        |    2 +-
+ drivers/video/s3c-fb.c                          |    2 +-
+ include/video/samsung_fimd.h                    |  533 +++++++++++++++++++++++
+ 27 files changed, 557 insertions(+), 586 deletions(-)
+ delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb-v4.h
+ delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb.h
+ create mode 100644 include/video/samsung_fimd.h
 

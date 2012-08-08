@@ -1,616 +1,249 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Wed, 08 Aug 2012 11:49:54 +0000
-Subject: [PATCH 1/6] OMAPDSS: DISPC: cleanup cpu_is_xxxx checks
-Message-Id: <1344425874-28222-1-git-send-email-cmahapatra@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 08 Aug 2012 12:36:00 +0000
+Subject: Re: [PATCH 1/6] OMAPDSS: DISPC: cleanup cpu_is_xxxx checks
+Message-Id: <1344429360.4932.58.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-7uGAkAuCkq2cTAocFBxa"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <5344e530a125ef5c5dfeb00e54b7d32df6169aa9.1343912532.git.cmahapatra@ti.com>
-In-Reply-To: <5344e530a125ef5c5dfeb00e54b7d32df6169aa9.1343912532.git.cmahapatra@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	 <1344425874-28222-1-git-send-email-cmahapatra@ti.com>
+In-Reply-To: <1344425874-28222-1-git-send-email-cmahapatra@ti.com>
+To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+
+
+--=-7uGAkAuCkq2cTAocFBxa
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2012-08-08 at 17:07 +0530, Chandrabhanu Mahapatra wrote:
+> All the cpu_is checks have been moved to dispc_init_features function pro=
+viding
+> a much more generic and cleaner interface. The OMAP version and revision
+> specific functions are initialized by dispc_features structure local to d=
+ispc.c.
+>=20
+> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+> ---
+>  drivers/video/omap2/dss/dispc.c |  476 ++++++++++++++++++++++++++-------=
+------
+>  1 file changed, 315 insertions(+), 161 deletions(-)
+>=20
+> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/di=
+spc.c
+> index 5b289c5..7e0b080 100644
+> --- a/drivers/video/omap2/dss/dispc.c
+> +++ b/drivers/video/omap2/dss/dispc.c
+> @@ -75,12 +75,60 @@ enum omap_burst_size {
+>  #define REG_FLD_MOD(idx, val, start, end)				\
+>  	dispc_write_reg(idx, FLD_MOD(dispc_read_reg(idx), val, start, end))
+> =20
+> +static int dispc_ovl_calc_scaling_24xx(enum omap_channel channel,
+> +	const struct omap_video_timings *mgr_timings, u16 width, u16 height,
+> +	u16 out_width, u16 out_height, enum omap_color_mode color_mode,
+> +	bool *five_taps, int *x_predecim, int *y_predecim, int *decim_x,
+> +	int *decim_y, u16 pos_x, unsigned long *core_clk);
+> +static int dispc_ovl_calc_scaling_34xx(enum omap_channel channel,
+> +	const struct omap_video_timings *mgr_timings, u16 width, u16 height,
+> +	u16 out_width, u16 out_height,  enum omap_color_mode color_mode,
+> +	bool *five_taps, int *x_predecim, int *y_predecim, int *decim_x,
+> +	int *decim_y, u16 pos_x, unsigned long *core_clk);
+> +static int dispc_ovl_calc_scaling_44xx(enum omap_channel channel,
+> +	const struct omap_video_timings *mgr_timings, u16 width, u16 height,
+> +	u16 out_width, u16 out_height,  enum omap_color_mode color_mode,
+> +	bool *five_taps, int *x_predecim, int *y_predecim, int *decim_x,
+> +	int *decim_y, u16 pos_x, unsigned long *core_clk);
+> +
+> +static unsigned long calc_core_clk_24xx(enum omap_channel channel, u16 w=
+idth,
+> +		u16 height, u16 out_width, u16 out_height);
+> +static unsigned long calc_core_clk_34xx(enum omap_channel channel, u16 w=
+idth,
+> +		u16 height, u16 out_width, u16 out_height);
+> +static unsigned long calc_core_clk_44xx(enum omap_channel channel, u16 w=
+idth,
+> +		u16 height, u16 out_width, u16 out_height);
+> +
+> +static bool _dispc_lcd_timings_ok_24xx(int hsw, int hfp, int hbp,
+> +		int vsw, int vfp, int vbp);
+> +static bool _dispc_lcd_timings_ok_44xx(int hsw, int hfp, int hbp,
+> +		int vsw, int vfp, int vbp);
+> +
+> +static void _dispc_mgr_set_lcd_timings_hv_24xx(enum omap_channel channel=
+,
+> +		int hsw, int hfp, int hbp, int vsw, int vfp, int vbp);
+> +static void _dispc_mgr_set_lcd_timings_hv_44xx(enum omap_channel channel=
+,
+> +		int hsw, int hfp, int hbp, int vsw, int vfp, int vbp);
+
+While it's nice to have the initialization of struct dispc_features in
+the beginning of dispc.c, it requires the above prototypes. And in the
+future we may require more. For that reason I think it's better to
+initialize the dispc_features at the end of dispc.c, just above
+dispc_init_features(). This would be kinda similar to how drivers often
+initialize their ops.=20
+
+> +static const struct dispc_features omap2_dispc_features =3D {
+> +	.calc_scaling		=3D	dispc_ovl_calc_scaling_24xx,
+> +	.calc_core_clk		=3D	calc_core_clk_24xx,
+> +	.lcd_timings_ok		=3D	_dispc_lcd_timings_ok_24xx,
+> +	.set_lcd_timings_hv	=3D	_dispc_mgr_set_lcd_timings_hv_24xx,
+> +};
+> +
+> +static const struct dispc_features omap3_2_1_dispc_features =3D {
+> +	.calc_scaling		=3D	dispc_ovl_calc_scaling_34xx,
+> +	.calc_core_clk		=3D	calc_core_clk_34xx,
+> +	.lcd_timings_ok		=3D	_dispc_lcd_timings_ok_24xx,
+> +	.set_lcd_timings_hv	=3D	_dispc_mgr_set_lcd_timings_hv_24xx,
+> +};
+> +
+> +static const struct dispc_features omap3_3_0_dispc_features =3D {
+> +	.calc_scaling		=3D	dispc_ovl_calc_scaling_34xx,
+> +	.calc_core_clk		=3D	calc_core_clk_34xx,
+> +	.lcd_timings_ok		=3D	_dispc_lcd_timings_ok_44xx,
+> +	.set_lcd_timings_hv	=3D	_dispc_mgr_set_lcd_timings_hv_44xx,
+> +};
+> +
+> +static const struct dispc_features omap4_dispc_features =3D {
+> +	.calc_scaling		=3D	dispc_ovl_calc_scaling_44xx,
+> +	.calc_core_clk		=3D	calc_core_clk_44xx,
+> +	.lcd_timings_ok		=3D	_dispc_lcd_timings_ok_44xx,
+> +	.set_lcd_timings_hv	=3D	_dispc_mgr_set_lcd_timings_hv_44xx,
+> +};
+
+During runtime we only require one of these, others can be discarded.
+This can be accomplished with the combination of "__initdata" for these,
+and "__init" for dispc_init_features().
+
+However, because even the one we need will be discarded, we need to copy
+the values. This could be done either by having the dispc_features
+struct inside dispc struct (instead of a pointer), or allocating memory
+for it with devm_kzalloc(). The latter allows us to keep it const, but
+I'm not sure which approach is better (if either).
+
+> -static bool _dispc_lcd_timings_ok(int hsw, int hfp, int hbp,
+> +static bool _dispc_lcd_timings_ok_24xx(int hsw, int hfp, int hbp,
+>  		int vsw, int vfp, int vbp)
+>  {
+> -	if (cpu_is_omap24xx() || omap_rev() < OMAP3430_REV_ES3_0) {
+> -		if (hsw < 1 || hsw > 64 ||
+> -				hfp < 1 || hfp > 256 ||
+> -				hbp < 1 || hbp > 256 ||
+> -				vsw < 1 || vsw > 64 ||
+> -				vfp < 0 || vfp > 255 ||
+> -				vbp < 0 || vbp > 255)
+> -			return false;
+> -	} else {
+> -		if (hsw < 1 || hsw > 256 ||
+> -				hfp < 1 || hfp > 4096 ||
+> -				hbp < 1 || hbp > 4096 ||
+> -				vsw < 1 || vsw > 256 ||
+> -				vfp < 0 || vfp > 4095 ||
+> -				vbp < 0 || vbp > 4095)
+> -			return false;
+> -	}
+> -
+> +	if (hsw < 1 || hsw > 64 ||
+> +			hfp < 1 || hfp > 256 ||
+> +			hbp < 1 || hbp > 256 ||
+> +			vsw < 1 || vsw > 64  ||
+> +			vfp < 0 || vfp > 255 ||
+> +			vbp < 0 || vbp > 255)
+> +		return false;
+> +	return true;
+> +}
+> +static bool _dispc_lcd_timings_ok_44xx(int hsw, int hfp, int hbp,
+> +		int vsw, int vfp, int vbp)
+> +{
+> +	if (hsw < 1 || hsw > 256 ||
+> +			hfp < 1  || hfp > 4096 ||
+> +			hbp < 1  || hbp > 4096 ||
+> +			vsw < 1  || vsw > 256  ||
+> +			vfp < 0  || vfp > 4095 ||
+> +			vbp < 0  || vbp > 4095)
+> +		return false;
+>  	return true;
+>  }
+
+I think we should use separate functions only when the code is
+different. Here the code is the same, we just use different max values.
+
+So instead of these functions, I suggest to add those max values into
+struct dispc_features.
+
+> @@ -2633,7 +2757,8 @@ bool dispc_mgr_timings_ok(enum omap_channel channel=
+,
+>  	timings_ok =3D _dispc_mgr_size_ok(timings->x_res, timings->y_res);
+> =20
+>  	if (dss_mgr_is_lcd(channel))
+> -		timings_ok =3D  timings_ok && _dispc_lcd_timings_ok(timings->hsw,
+> +		timings_ok =3D  timings_ok &&
+> +			dispc.feat->lcd_timings_ok(timings->hsw,
+>  						timings->hfp, timings->hbp,
+>  						timings->vsw, timings->vfp,
+>  						timings->vbp);
+> @@ -2641,6 +2766,34 @@ bool dispc_mgr_timings_ok(enum omap_channel channe=
+l,
+>  	return timings_ok;
+>  }
+> =20
+> +static void _dispc_mgr_set_lcd_timings_hv_24xx(enum omap_channel channel=
+,
+> +		int hsw, int hfp, int hbp, int vsw, int vfp, int vbp)
+> +{
+> +	u32 timing_h, timing_v;
+> +
+> +	timing_h =3D FLD_VAL(hsw-1, 5, 0) | FLD_VAL(hfp-1, 15, 8) |
+> +			FLD_VAL(hbp-1, 27, 20);
+> +	timing_v =3D FLD_VAL(vsw-1, 5, 0) | FLD_VAL(vfp, 15, 8) |
+> +			FLD_VAL(vbp, 27, 20);
+> +
+> +	dispc_write_reg(DISPC_TIMING_H(channel), timing_h);
+> +	dispc_write_reg(DISPC_TIMING_V(channel), timing_v);
+> +}
+> +
+> +static void _dispc_mgr_set_lcd_timings_hv_44xx(enum omap_channel channel=
+,
+> +		int hsw, int hfp, int hbp, int vsw, int vfp, int vbp)
+> +{
+> +	u32 timing_h, timing_v;
+> +
+> +	timing_h =3D FLD_VAL(hsw-1, 7, 0) | FLD_VAL(hfp-1, 19, 8) |
+> +			FLD_VAL(hbp-1, 31, 20);
+> +	timing_v =3D FLD_VAL(vsw-1, 7, 0) | FLD_VAL(vfp, 19, 8) |
+> +			FLD_VAL(vbp, 31, 20);
+> +
+> +	dispc_write_reg(DISPC_TIMING_H(channel), timing_h);
+> +	dispc_write_reg(DISPC_TIMING_V(channel), timing_v);
+> +}
+
+Same thing here. The code is the same, only the bit fields are larger.
+
+ Tomi
+
+
+--=-7uGAkAuCkq2cTAocFBxa
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-All the cpu_is checks have been moved to dispc_init_features function providing
-a much more generic and cleaner interface. The OMAP version and revision
-specific functions are initialized by dispc_features structure local to dispc.c.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
----
- drivers/video/omap2/dss/dispc.c |  476 ++++++++++++++++++++++++++-------------
- 1 file changed, 315 insertions(+), 161 deletions(-)
+iQIcBAABAgAGBQJQIl0wAAoJEPo9qoy8lh712gUP+QFx3IVdI7GoXkBSIqmgsM1t
+JSOGnLSJBqmfE4LV2amwnww8N6x3vtTguFXHGJbv0gUPUknmfFsqF3BqXS51Epy5
+h6g9/CXO6ZQ3FsFqlgv6DoH8ntjBvy+Zy+N0yz7KBUBAr8sWct83TzN8xYBtd7ew
+N1fSQf01Okpa7JpG0fTrckUes8QFF8dxAsjCej1sGOwO3Ry4/QS6a7g4ki/K97Fk
+oo0b0CIwejni2HWWcFFwp3o1bAAH/vNttVlZeoSXEfaMJgy3YWcapA454euCj6Uw
+6dstQYTS1e6kSgg902V8jsRFyWAbykfmf+VlmP9njHV0GDANEUjkKdrKmBN0+RNJ
+1iFIsRlSjw1GMSl+L6BaBwODqHHXZJ64umXW0Oq3Boe1i2scGDm1TI+g8DMPg/yO
+oM8pNm0Hbbuh4jL1cbGGp44pEjg1DEh+3OIjrsHyAI7sK8xMn2I718RNJDmdSFuu
+tMUKO9eP5UImycHDMSdhOznUguaP8DtaLoKTiTpPNzbVfgm1yllH6SRHWMzzzOzw
+7m7Ilf3Eb86vCfAZuGxxZ7uX9tjbquxD/3iaZT1WYg9XpK2NBxRmiWbSraB9YF2B
+L8/K/sN3ydhF5Yr8Pr0wKZuJhkE0u/+22QZPAeWXFxtO2XzIz6EicCZ9xPCPQev1
+M/FAR+hC3t4Dn/JLuO1n
+=hDtZ
+-----END PGP SIGNATURE-----
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 5b289c5..7e0b080 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -75,12 +75,60 @@ enum omap_burst_size {
- #define REG_FLD_MOD(idx, val, start, end)				\
- 	dispc_write_reg(idx, FLD_MOD(dispc_read_reg(idx), val, start, end))
- 
-+static int dispc_ovl_calc_scaling_24xx(enum omap_channel channel,
-+	const struct omap_video_timings *mgr_timings, u16 width, u16 height,
-+	u16 out_width, u16 out_height, enum omap_color_mode color_mode,
-+	bool *five_taps, int *x_predecim, int *y_predecim, int *decim_x,
-+	int *decim_y, u16 pos_x, unsigned long *core_clk);
-+static int dispc_ovl_calc_scaling_34xx(enum omap_channel channel,
-+	const struct omap_video_timings *mgr_timings, u16 width, u16 height,
-+	u16 out_width, u16 out_height,  enum omap_color_mode color_mode,
-+	bool *five_taps, int *x_predecim, int *y_predecim, int *decim_x,
-+	int *decim_y, u16 pos_x, unsigned long *core_clk);
-+static int dispc_ovl_calc_scaling_44xx(enum omap_channel channel,
-+	const struct omap_video_timings *mgr_timings, u16 width, u16 height,
-+	u16 out_width, u16 out_height,  enum omap_color_mode color_mode,
-+	bool *five_taps, int *x_predecim, int *y_predecim, int *decim_x,
-+	int *decim_y, u16 pos_x, unsigned long *core_clk);
-+
-+static unsigned long calc_core_clk_24xx(enum omap_channel channel, u16 width,
-+		u16 height, u16 out_width, u16 out_height);
-+static unsigned long calc_core_clk_34xx(enum omap_channel channel, u16 width,
-+		u16 height, u16 out_width, u16 out_height);
-+static unsigned long calc_core_clk_44xx(enum omap_channel channel, u16 width,
-+		u16 height, u16 out_width, u16 out_height);
-+
-+static bool _dispc_lcd_timings_ok_24xx(int hsw, int hfp, int hbp,
-+		int vsw, int vfp, int vbp);
-+static bool _dispc_lcd_timings_ok_44xx(int hsw, int hfp, int hbp,
-+		int vsw, int vfp, int vbp);
-+
-+static void _dispc_mgr_set_lcd_timings_hv_24xx(enum omap_channel channel,
-+		int hsw, int hfp, int hbp, int vsw, int vfp, int vbp);
-+static void _dispc_mgr_set_lcd_timings_hv_44xx(enum omap_channel channel,
-+		int hsw, int hfp, int hbp, int vsw, int vfp, int vbp);
-+
- struct dispc_irq_stats {
- 	unsigned long last_reset;
- 	unsigned irq_count;
- 	unsigned irqs[32];
- };
- 
-+struct dispc_features {
-+	int (*calc_scaling) (enum omap_channel channel,
-+		const struct omap_video_timings *mgr_timings,
-+		u16 width, u16 height, u16 out_width, u16 out_height,
-+		enum omap_color_mode color_mode, bool *five_taps,
-+		int *x_predecim, int *y_predecim, int *decim_x, int *decim_y,
-+		u16 pos_x, unsigned long *core_clk);
-+	unsigned long (*calc_core_clk) (enum omap_channel channel,
-+		u16 width, u16 height, u16 out_width, u16 out_height);
-+	bool (*lcd_timings_ok) (int hsw, int hfp, int hbp,
-+			int vsw, int vfp, int vbp);
-+	void (*set_lcd_timings_hv) (enum omap_channel channel, int hsw, int hfp,
-+			int hbp, int vsw, int vfp, int vbp);
-+};
-+
- static struct {
- 	struct platform_device *pdev;
- 	void __iomem    *base;
-@@ -101,6 +149,8 @@ static struct {
- 	bool		ctx_valid;
- 	u32		ctx[DISPC_SZ_REGS / sizeof(u32)];
- 
-+	const struct dispc_features *feat;
-+
- #ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
- 	spinlock_t irq_stats_lock;
- 	struct dispc_irq_stats irq_stats;
-@@ -210,6 +260,34 @@ static const struct {
- 	},
- };
- 
-+static const struct dispc_features omap2_dispc_features = {
-+	.calc_scaling		=	dispc_ovl_calc_scaling_24xx,
-+	.calc_core_clk		=	calc_core_clk_24xx,
-+	.lcd_timings_ok		=	_dispc_lcd_timings_ok_24xx,
-+	.set_lcd_timings_hv	=	_dispc_mgr_set_lcd_timings_hv_24xx,
-+};
-+
-+static const struct dispc_features omap3_2_1_dispc_features = {
-+	.calc_scaling		=	dispc_ovl_calc_scaling_34xx,
-+	.calc_core_clk		=	calc_core_clk_34xx,
-+	.lcd_timings_ok		=	_dispc_lcd_timings_ok_24xx,
-+	.set_lcd_timings_hv	=	_dispc_mgr_set_lcd_timings_hv_24xx,
-+};
-+
-+static const struct dispc_features omap3_3_0_dispc_features = {
-+	.calc_scaling		=	dispc_ovl_calc_scaling_34xx,
-+	.calc_core_clk		=	calc_core_clk_34xx,
-+	.lcd_timings_ok		=	_dispc_lcd_timings_ok_44xx,
-+	.set_lcd_timings_hv	=	_dispc_mgr_set_lcd_timings_hv_44xx,
-+};
-+
-+static const struct dispc_features omap4_dispc_features = {
-+	.calc_scaling		=	dispc_ovl_calc_scaling_44xx,
-+	.calc_core_clk		=	calc_core_clk_44xx,
-+	.lcd_timings_ok		=	_dispc_lcd_timings_ok_44xx,
-+	.set_lcd_timings_hv	=	_dispc_mgr_set_lcd_timings_hv_44xx,
-+};
-+
- static void _omap_dispc_set_irqs(void);
- 
- static inline void dispc_write_reg(const u16 idx, u32 val)
-@@ -1939,7 +2017,18 @@ static unsigned long calc_core_clk_five_taps(enum omap_channel channel,
- 	return core_clk;
- }
- 
--static unsigned long calc_core_clk(enum omap_channel channel, u16 width,
-+static unsigned long calc_core_clk_24xx(enum omap_channel channel, u16 width,
-+		u16 height, u16 out_width, u16 out_height)
-+{
-+	unsigned long pclk = dispc_mgr_pclk_rate(channel);
-+
-+	if (height > out_height && width > out_width)
-+		return pclk * 4;
-+	else
-+		return pclk * 2;
-+}
-+
-+static unsigned long calc_core_clk_34xx(enum omap_channel channel, u16 width,
- 		u16 height, u16 out_width, u16 out_height)
- {
- 	unsigned int hf, vf;
-@@ -1958,25 +2047,163 @@ static unsigned long calc_core_clk(enum omap_channel channel, u16 width,
- 		hf = 2;
- 	else
- 		hf = 1;
--
- 	if (height > out_height)
- 		vf = 2;
- 	else
- 		vf = 1;
- 
--	if (cpu_is_omap24xx()) {
--		if (vf > 1 && hf > 1)
--			return pclk * 4;
--		else
--			return pclk * 2;
--	} else if (cpu_is_omap34xx()) {
--		return pclk * vf * hf;
--	} else {
--		if (hf > 1)
--			return DIV_ROUND_UP(pclk, out_width) * width;
--		else
--			return pclk;
-+	return pclk * vf * hf;
-+}
-+
-+static unsigned long calc_core_clk_44xx(enum omap_channel channel, u16 width,
-+		u16 height, u16 out_width, u16 out_height)
-+{
-+	unsigned long pclk = dispc_mgr_pclk_rate(channel);
-+
-+	if (width > out_width)
-+		return DIV_ROUND_UP(pclk, out_width) * width;
-+	else
-+		return pclk;
-+}
-+
-+static int dispc_ovl_calc_scaling_24xx(enum omap_channel channel,
-+		const struct omap_video_timings *mgr_timings,
-+		u16 width, u16 height, u16 out_width, u16 out_height,
-+		enum omap_color_mode color_mode, bool *five_taps,
-+		int *x_predecim, int *y_predecim, int *decim_x, int *decim_y,
-+		u16 pos_x, unsigned long *core_clk)
-+{
-+	int error;
-+	u16 in_width, in_height;
-+	int min_factor = min(*decim_x, *decim_y);
-+	const int maxsinglelinewidth +			dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
-+	*five_taps = false;
-+
-+	do {
-+		in_height = DIV_ROUND_UP(height, *decim_y);
-+		in_width = DIV_ROUND_UP(width, *decim_x);
-+		*core_clk = dispc.feat->calc_core_clk(channel, in_width,
-+				in_height, out_width, out_height);
-+		error = (in_width > maxsinglelinewidth || !*core_clk ||
-+			*core_clk > dispc_core_clk_rate());
-+		if (error) {
-+			if (*decim_x = *decim_y) {
-+				*decim_x = min_factor;
-+				++*decim_y;
-+			} else {
-+				swap(*decim_x, *decim_y);
-+				if (*decim_x < *decim_y)
-+					++*decim_x;
-+			}
-+		}
-+	} while (*decim_x <= *x_predecim && *decim_y <= *y_predecim && error);
-+
-+	if (in_width > maxsinglelinewidth) {
-+		DSSERR("Cannot scale max input width exceeded");
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+static int dispc_ovl_calc_scaling_34xx(enum omap_channel channel,
-+		const struct omap_video_timings *mgr_timings,
-+		u16 width, u16 height, u16 out_width, u16 out_height,
-+		enum omap_color_mode color_mode, bool *five_taps,
-+		int *x_predecim, int *y_predecim, int *decim_x, int *decim_y,
-+		u16 pos_x, unsigned long *core_clk)
-+{
-+	int error;
-+	u16 in_width, in_height;
-+	int min_factor = min(*decim_x, *decim_y);
-+	const int maxsinglelinewidth +			dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
-+
-+	do {
-+		in_height = DIV_ROUND_UP(height, *decim_y);
-+		in_width = DIV_ROUND_UP(width, *decim_x);
-+		*core_clk = calc_core_clk_five_taps(channel, mgr_timings,
-+			in_width, in_height, out_width, out_height, color_mode);
-+
-+		error = check_horiz_timing_omap3(channel, mgr_timings, pos_x,
-+			in_width, in_height, out_width, out_height);
-+
-+		if (in_width > maxsinglelinewidth)
-+			if (in_height > out_height &&
-+						in_height < out_height * 2)
-+				*five_taps = false;
-+		if (!*five_taps)
-+			*core_clk = dispc.feat->calc_core_clk(channel, in_width,
-+					in_height, out_width, out_height);
-+
-+		error = (error || in_width > maxsinglelinewidth * 2 ||
-+			(in_width > maxsinglelinewidth && *five_taps) ||
-+			!*core_clk || *core_clk > dispc_core_clk_rate());
-+		if (error) {
-+			if (*decim_x = *decim_y) {
-+				*decim_x = min_factor;
-+				++*decim_y;
-+			} else {
-+				swap(*decim_x, *decim_y);
-+				if (*decim_x < *decim_y)
-+					++*decim_x;
-+			}
-+		}
-+	} while (*decim_x <= *x_predecim && *decim_y <= *y_predecim && error);
-+
-+	if (check_horiz_timing_omap3(channel, mgr_timings, pos_x, width, height,
-+		out_width, out_height)){
-+			DSSERR("horizontal timing too tight\n");
-+			return -EINVAL;
-+	}
-+
-+	if (in_width > (maxsinglelinewidth * 2)) {
-+		DSSERR("Cannot setup scaling");
-+		DSSERR("width exceeds maximum width possible");
-+		return -EINVAL;
-+	}
-+
-+	if (in_width > maxsinglelinewidth && *five_taps) {
-+		DSSERR("cannot setup scaling with five taps");
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+static int dispc_ovl_calc_scaling_44xx(enum omap_channel channel,
-+		const struct omap_video_timings *mgr_timings,
-+		u16 width, u16 height, u16 out_width, u16 out_height,
-+		enum omap_color_mode color_mode, bool *five_taps,
-+		int *x_predecim, int *y_predecim, int *decim_x, int *decim_y,
-+		u16 pos_x, unsigned long *core_clk)
-+{
-+	u16 in_width, in_width_max;
-+	int decim_x_min = *decim_x;
-+	u16 in_height = DIV_ROUND_UP(height, *decim_y);
-+	const int maxsinglelinewidth +				dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
-+
-+	in_width_max = dispc_core_clk_rate() /
-+			DIV_ROUND_UP(dispc_mgr_pclk_rate(channel), out_width);
-+	*decim_x = DIV_ROUND_UP(width, in_width_max);
-+
-+	*decim_x = *decim_x > decim_x_min ? *decim_x : decim_x_min;
-+	if (*decim_x > *x_predecim)
-+		return -EINVAL;
-+
-+	do {
-+		in_width = DIV_ROUND_UP(width, *decim_x);
-+	} while (*decim_x <= *x_predecim &&
-+			in_width > maxsinglelinewidth && ++*decim_x);
-+
-+	if (in_width > maxsinglelinewidth) {
-+		DSSERR("Cannot scale width exceeds max line width");
-+		return -EINVAL;
- 	}
-+
-+	*core_clk = dispc.feat->calc_core_clk(channel, in_width, in_height,
-+				out_width, out_height);
-+	return 0;
- }
- 
- static int dispc_ovl_calc_scaling(enum omap_plane plane,
-@@ -1988,12 +2215,9 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
- {
- 	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
- 	const int maxdownscale = dss_feat_get_param_max(FEAT_PARAM_DOWNSCALE);
--	const int maxsinglelinewidth -				dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
- 	const int max_decim_limit = 16;
- 	unsigned long core_clk = 0;
--	int decim_x, decim_y, error, min_factor;
--	u16 in_width, in_height, in_width_max = 0;
-+	int decim_x, decim_y, ret;
- 
- 	if (width = out_width && height = out_height)
- 		return 0;
-@@ -2017,118 +2241,17 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
- 	decim_x = DIV_ROUND_UP(DIV_ROUND_UP(width, out_width), maxdownscale);
- 	decim_y = DIV_ROUND_UP(DIV_ROUND_UP(height, out_height), maxdownscale);
- 
--	min_factor = min(decim_x, decim_y);
--
- 	if (decim_x > *x_predecim || out_width > width * 8)
- 		return -EINVAL;
- 
- 	if (decim_y > *y_predecim || out_height > height * 8)
- 		return -EINVAL;
- 
--	if (cpu_is_omap24xx()) {
--		*five_taps = false;
--
--		do {
--			in_height = DIV_ROUND_UP(height, decim_y);
--			in_width = DIV_ROUND_UP(width, decim_x);
--			core_clk = calc_core_clk(channel, in_width, in_height,
--					out_width, out_height);
--			error = (in_width > maxsinglelinewidth || !core_clk ||
--				core_clk > dispc_core_clk_rate());
--			if (error) {
--				if (decim_x = decim_y) {
--					decim_x = min_factor;
--					decim_y++;
--				} else {
--					swap(decim_x, decim_y);
--					if (decim_x < decim_y)
--						decim_x++;
--				}
--			}
--		} while (decim_x <= *x_predecim && decim_y <= *y_predecim &&
--				error);
--
--		if (in_width > maxsinglelinewidth) {
--			DSSERR("Cannot scale max input width exceeded");
--			return -EINVAL;
--		}
--	} else if (cpu_is_omap34xx()) {
--
--		do {
--			in_height = DIV_ROUND_UP(height, decim_y);
--			in_width = DIV_ROUND_UP(width, decim_x);
--			core_clk = calc_core_clk_five_taps(channel, mgr_timings,
--				in_width, in_height, out_width, out_height,
--				color_mode);
--
--			error = check_horiz_timing_omap3(channel, mgr_timings,
--				pos_x, in_width, in_height, out_width,
--				out_height);
--
--			if (in_width > maxsinglelinewidth)
--				if (in_height > out_height &&
--					in_height < out_height * 2)
--					*five_taps = false;
--			if (!*five_taps)
--				core_clk = calc_core_clk(channel, in_width,
--					in_height, out_width, out_height);
--			error = (error || in_width > maxsinglelinewidth * 2 ||
--				(in_width > maxsinglelinewidth && *five_taps) ||
--				!core_clk || core_clk > dispc_core_clk_rate());
--			if (error) {
--				if (decim_x = decim_y) {
--					decim_x = min_factor;
--					decim_y++;
--				} else {
--					swap(decim_x, decim_y);
--					if (decim_x < decim_y)
--						decim_x++;
--				}
--			}
--		} while (decim_x <= *x_predecim && decim_y <= *y_predecim
--			&& error);
--
--		if (check_horiz_timing_omap3(channel, mgr_timings, pos_x, width,
--			height, out_width, out_height)){
--				DSSERR("horizontal timing too tight\n");
--				return -EINVAL;
--		}
--
--		if (in_width > (maxsinglelinewidth * 2)) {
--			DSSERR("Cannot setup scaling");
--			DSSERR("width exceeds maximum width possible");
--			return -EINVAL;
--		}
--
--		if (in_width > maxsinglelinewidth && *five_taps) {
--			DSSERR("cannot setup scaling with five taps");
--			return -EINVAL;
--		}
--	} else {
--		int decim_x_min = decim_x;
--		in_height = DIV_ROUND_UP(height, decim_y);
--		in_width_max = dispc_core_clk_rate() /
--				DIV_ROUND_UP(dispc_mgr_pclk_rate(channel),
--						out_width);
--		decim_x = DIV_ROUND_UP(width, in_width_max);
--
--		decim_x = decim_x > decim_x_min ? decim_x : decim_x_min;
--		if (decim_x > *x_predecim)
--			return -EINVAL;
--
--		do {
--			in_width = DIV_ROUND_UP(width, decim_x);
--		} while (decim_x <= *x_predecim &&
--				in_width > maxsinglelinewidth && decim_x++);
--
--		if (in_width > maxsinglelinewidth) {
--			DSSERR("Cannot scale width exceeds max line width");
--			return -EINVAL;
--		}
--
--		core_clk = calc_core_clk(channel, in_width, in_height,
--				out_width, out_height);
--	}
-+	ret = dispc.feat->calc_scaling(channel, mgr_timings, width, height,
-+		out_width, out_height, color_mode, five_taps, x_predecim,
-+		y_predecim, &decim_x, &decim_y, pos_x, &core_clk);
-+	if (ret)
-+		return ret;
- 
- 	DSSDBG("required core clk rate = %lu Hz\n", core_clk);
- 	DSSDBG("current core clk rate = %lu Hz\n", dispc_core_clk_rate());
-@@ -2601,27 +2724,28 @@ static bool _dispc_mgr_size_ok(u16 width, u16 height)
- 		height <= dss_feat_get_param_max(FEAT_PARAM_MGR_HEIGHT);
- }
- 
--static bool _dispc_lcd_timings_ok(int hsw, int hfp, int hbp,
-+static bool _dispc_lcd_timings_ok_24xx(int hsw, int hfp, int hbp,
- 		int vsw, int vfp, int vbp)
- {
--	if (cpu_is_omap24xx() || omap_rev() < OMAP3430_REV_ES3_0) {
--		if (hsw < 1 || hsw > 64 ||
--				hfp < 1 || hfp > 256 ||
--				hbp < 1 || hbp > 256 ||
--				vsw < 1 || vsw > 64 ||
--				vfp < 0 || vfp > 255 ||
--				vbp < 0 || vbp > 255)
--			return false;
--	} else {
--		if (hsw < 1 || hsw > 256 ||
--				hfp < 1 || hfp > 4096 ||
--				hbp < 1 || hbp > 4096 ||
--				vsw < 1 || vsw > 256 ||
--				vfp < 0 || vfp > 4095 ||
--				vbp < 0 || vbp > 4095)
--			return false;
--	}
--
-+	if (hsw < 1 || hsw > 64 ||
-+			hfp < 1 || hfp > 256 ||
-+			hbp < 1 || hbp > 256 ||
-+			vsw < 1 || vsw > 64  ||
-+			vfp < 0 || vfp > 255 ||
-+			vbp < 0 || vbp > 255)
-+		return false;
-+	return true;
-+}
-+static bool _dispc_lcd_timings_ok_44xx(int hsw, int hfp, int hbp,
-+		int vsw, int vfp, int vbp)
-+{
-+	if (hsw < 1 || hsw > 256 ||
-+			hfp < 1  || hfp > 4096 ||
-+			hbp < 1  || hbp > 4096 ||
-+			vsw < 1  || vsw > 256  ||
-+			vfp < 0  || vfp > 4095 ||
-+			vbp < 0  || vbp > 4095)
-+		return false;
- 	return true;
- }
- 
-@@ -2633,7 +2757,8 @@ bool dispc_mgr_timings_ok(enum omap_channel channel,
- 	timings_ok = _dispc_mgr_size_ok(timings->x_res, timings->y_res);
- 
- 	if (dss_mgr_is_lcd(channel))
--		timings_ok =  timings_ok && _dispc_lcd_timings_ok(timings->hsw,
-+		timings_ok =  timings_ok &&
-+			dispc.feat->lcd_timings_ok(timings->hsw,
- 						timings->hfp, timings->hbp,
- 						timings->vsw, timings->vfp,
- 						timings->vbp);
-@@ -2641,6 +2766,34 @@ bool dispc_mgr_timings_ok(enum omap_channel channel,
- 	return timings_ok;
- }
- 
-+static void _dispc_mgr_set_lcd_timings_hv_24xx(enum omap_channel channel,
-+		int hsw, int hfp, int hbp, int vsw, int vfp, int vbp)
-+{
-+	u32 timing_h, timing_v;
-+
-+	timing_h = FLD_VAL(hsw-1, 5, 0) | FLD_VAL(hfp-1, 15, 8) |
-+			FLD_VAL(hbp-1, 27, 20);
-+	timing_v = FLD_VAL(vsw-1, 5, 0) | FLD_VAL(vfp, 15, 8) |
-+			FLD_VAL(vbp, 27, 20);
-+
-+	dispc_write_reg(DISPC_TIMING_H(channel), timing_h);
-+	dispc_write_reg(DISPC_TIMING_V(channel), timing_v);
-+}
-+
-+static void _dispc_mgr_set_lcd_timings_hv_44xx(enum omap_channel channel,
-+		int hsw, int hfp, int hbp, int vsw, int vfp, int vbp)
-+{
-+	u32 timing_h, timing_v;
-+
-+	timing_h = FLD_VAL(hsw-1, 7, 0) | FLD_VAL(hfp-1, 19, 8) |
-+			FLD_VAL(hbp-1, 31, 20);
-+	timing_v = FLD_VAL(vsw-1, 7, 0) | FLD_VAL(vfp, 19, 8) |
-+			FLD_VAL(vbp, 31, 20);
-+
-+	dispc_write_reg(DISPC_TIMING_H(channel), timing_h);
-+	dispc_write_reg(DISPC_TIMING_V(channel), timing_v);
-+}
-+
- static void _dispc_mgr_set_lcd_timings(enum omap_channel channel, int hsw,
- 		int hfp, int hbp, int vsw, int vfp, int vbp,
- 		enum omap_dss_signal_level vsync_level,
-@@ -2650,25 +2803,10 @@ static void _dispc_mgr_set_lcd_timings(enum omap_channel channel, int hsw,
- 		enum omap_dss_signal_edge sync_pclk_edge)
- 
- {
--	u32 timing_h, timing_v, l;
-+	u32 l;
- 	bool onoff, rf, ipc;
- 
--	if (cpu_is_omap24xx() || omap_rev() < OMAP3430_REV_ES3_0) {
--		timing_h = FLD_VAL(hsw-1, 5, 0) | FLD_VAL(hfp-1, 15, 8) |
--			FLD_VAL(hbp-1, 27, 20);
--
--		timing_v = FLD_VAL(vsw-1, 5, 0) | FLD_VAL(vfp, 15, 8) |
--			FLD_VAL(vbp, 27, 20);
--	} else {
--		timing_h = FLD_VAL(hsw-1, 7, 0) | FLD_VAL(hfp-1, 19, 8) |
--			FLD_VAL(hbp-1, 31, 20);
--
--		timing_v = FLD_VAL(vsw-1, 7, 0) | FLD_VAL(vfp, 19, 8) |
--			FLD_VAL(vbp, 31, 20);
--	}
--
--	dispc_write_reg(DISPC_TIMING_H(channel), timing_h);
--	dispc_write_reg(DISPC_TIMING_V(channel), timing_v);
-+	dispc.feat->set_lcd_timings_hv(channel, hsw, hfp, hbp, vsw, vfp, vbp);
- 
- 	switch (data_pclk_edge) {
- 	case OMAPDSS_DRIVE_SIG_RISING_EDGE:
-@@ -3671,6 +3809,20 @@ static void _omap_dispc_initial_config(void)
- 	dispc_ovl_enable_zorder_planes();
- }
- 
-+static void dispc_init_features(void)
-+{
-+	if (cpu_is_omap24xx()) {
-+		dispc.feat = &omap2_dispc_features;
-+	} else if (cpu_is_omap34xx()) {
-+		if (omap_rev() < OMAP3430_REV_ES3_0)
-+			dispc.feat = &omap3_2_1_dispc_features;
-+		else
-+			dispc.feat = &omap3_3_0_dispc_features;
-+	} else {
-+		dispc.feat = &omap4_dispc_features;
-+	}
-+}
-+
- /* DISPC HW IP initialisation */
- static int __init omap_dispchw_probe(struct platform_device *pdev)
- {
-@@ -3725,6 +3877,8 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
- 
- 	dispc.dss_clk = clk;
- 
-+	dispc_init_features();
-+
- 	pm_runtime_enable(&pdev->dev);
- 
- 	r = dispc_runtime_get();
--- 
-1.7.10
+--=-7uGAkAuCkq2cTAocFBxa--
 

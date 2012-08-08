@@ -1,50 +1,378 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 14 Aug 2012 19:30:22 +0000
-Subject: Re: [PATCH] video/mx3fb: remove stray l from debug output
-Message-Id: <CAMuHMdVpSx_dYUkrS7eNzgzanu6CLNAtzFejwDqcoJodCv++RQ@mail.gmail.com>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Wed, 08 Aug 2012 01:39:26 +0000
+Subject: [PATCH 8/8] ARM: vt8500: gpio: Devicetree support for arch-vt8500
+Message-Id: <1344389967-8465-9-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344843875-8174-1-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1344843875-8174-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1344389967-8465-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1344389967-8465-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-On Mon, Aug 13, 2012 at 7:09 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> On Mon, Aug 13, 2012 at 9:44 AM, Uwe Kleine-König
-> <u.kleine-koenig@pengutronix.de> wrote:
->> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
->> ---
->>  drivers/video/mx3fb.c |    2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
->> index c89f8a8..1dfdeb1 100644
->> --- a/drivers/video/mx3fb.c
->> +++ b/drivers/video/mx3fb.c
->> @@ -771,7 +771,7 @@ static int __set_par(struct fb_info *fbi, bool lock)
->>                 if (fbi->var.sync & FB_SYNC_SHARP_MODE)
->>                         mode = IPU_PANEL_SHARP_TFT;
->>
->> -               dev_dbg(fbi->device, "pixclock = %ul Hz\n",
->> +               dev_dbg(fbi->device, "pixclock = %u Hz\n",
->>                         (u32) (PICOS2KHZ(fbi->var.pixclock) * 1000UL));
->
-> I think a better fix is to change the dyslectic "%ul" to "%lu", and
-> drop the cast to
-> u32, which was probably only added to kill the compiler warning caused by the
-> dyslectia issue.
+Converted the existing arch-vt8500 gpio to a platform_device.
+Added support for WM8505 and WM8650 GPIO controllers.
 
-BTW, 'git grep "%ul"' shows a few more of these dyslectia issues.
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+---
+ drivers/gpio/Kconfig       |    6 +
+ drivers/gpio/Makefile      |    1 +
+ drivers/gpio/gpio-vt8500.c |  318 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 325 insertions(+)
+ create mode 100644 drivers/gpio/gpio-vt8500.c
 
-Gr{oetje,eeting}s,
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index 542f0c0..3c8897a 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -183,6 +183,12 @@ config GPIO_STA2X11
+ 	  Say yes here to support the STA2x11/ConneXt GPIO device.
+ 	  The GPIO module has 128 GPIO pins with alternate functions.
+ 
++config GPIO_VT8500
++	bool "VIA/Wondermedia SoC GPIO Support"
++	depends on ARCH_VT8500
++	help
++	  Say yes here to support the VT8500/WM8505/WM8650 GPIO controller.
++
+ config GPIO_XILINX
+ 	bool "Xilinx GPIO support"
+ 	depends on PPC_OF || MICROBLAZE
+diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+index 0f55662..2c014b9 100644
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -66,6 +66,7 @@ obj-$(CONFIG_GPIO_TPS65912)	+= gpio-tps65912.o
+ obj-$(CONFIG_GPIO_TWL4030)	+= gpio-twl4030.o
+ obj-$(CONFIG_GPIO_UCB1400)	+= gpio-ucb1400.o
+ obj-$(CONFIG_GPIO_VR41XX)	+= gpio-vr41xx.o
++obj-$(CONFIG_GPIO_VT8500)	+= gpio-vt8500.o
+ obj-$(CONFIG_GPIO_VX855)	+= gpio-vx855.o
+ obj-$(CONFIG_GPIO_WM831X)	+= gpio-wm831x.o
+ obj-$(CONFIG_GPIO_WM8350)	+= gpio-wm8350.o
+diff --git a/drivers/gpio/gpio-vt8500.c b/drivers/gpio/gpio-vt8500.c
+new file mode 100644
+index 0000000..3306634
+--- /dev/null
++++ b/drivers/gpio/gpio-vt8500.c
+@@ -0,0 +1,318 @@
++/* linux/arch/arm/mach-vt8500/gpio.c
++ *
++ * Copyright (C) 2012 Tony Prisk <linux@prisktech.co.nz>
++ * Based on gpio.c:
++ * - Copyright (C) 2010 Alexey Charkov <alchark@gmail.com>
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/err.h>
++#include <linux/io.h>
++#include <linux/gpio.h>
++#include <linux/platform_device.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++#include <linux/of_irq.h>
++#include <linux/of_device.h>
++
++/*
++	We handle GPIOs by bank, each bank containing up to 32 GPIOs covered
++	by one set of registers (although not all may be valid).
++
++	Because different SoC's have different register offsets, we pass the
++	register offsets as data in vt8500_gpio_dt_ids[].
++*/
++
++struct vt8500_gpio_bank_regs {
++	int	en;
++	int	dir;
++	int	data_out;
++	int	data_in;
++	int	ngpio;
++};
++
++struct vt8500_gpio_data {
++	unsigned int			num_banks;
++	struct vt8500_gpio_bank_regs	banks[];
++};
++
++#define VT8500_BANK(__en, __dir, __out, __in, __ngpio)		\
++{								\
++	.en = __en,						\
++	.dir = __dir,						\
++	.data_out = __out,					\
++	.data_in = __in,					\
++	.ngpio = __ngpio,					\
++}
++
++static struct vt8500_gpio_data vt8500_data = {
++	.num_banks	= 7,
++	.banks	= {
++		VT8500_BANK(0x00, 0x20, 0x40, 0x60, 26),
++		VT8500_BANK(0x04, 0x24, 0x44, 0x64, 28),
++		VT8500_BANK(0x08, 0x28, 0x48, 0x68, 31),
++		VT8500_BANK(0x0C, 0x2C, 0x4C, 0x6C, 19),
++		VT8500_BANK(0x10, 0x30, 0x50, 0x70, 19),
++		VT8500_BANK(0x14, 0x34, 0x54, 0x74, 23),
++		VT8500_BANK(-1, 0x3C, 0x5C, 0x7C, 9),	 /* external gpio */
++	},
++};
++
++static struct vt8500_gpio_data wm8505_data = {
++	.num_banks	= 10,
++	.banks	= {
++		VT8500_BANK(0x40, 0x68, 0x90, 0xB8, 8),
++		VT8500_BANK(0x44, 0x6C, 0x94, 0xBC, 32),
++		VT8500_BANK(0x48, 0x70, 0x98, 0xC0, 6),
++		VT8500_BANK(0x4C, 0x74, 0x9C, 0xC4, 16),
++		VT8500_BANK(0x50, 0x78, 0xA0, 0xC8, 25),
++		VT8500_BANK(0x54, 0x7C, 0xA4, 0xCC, 5),
++		VT8500_BANK(0x58, 0x80, 0xA8, 0xD0, 5),
++		VT8500_BANK(0x5C, 0x84, 0xAC, 0xD4, 12),
++		VT8500_BANK(0x60, 0x88, 0xB0, 0xD8, 16),
++		VT8500_BANK(0x64, 0x8C, 0xB4, 0xDC, 22),
++	},
++};
++
++/*
++ * No information about which bits are valid so we just make
++ * them all available until its figured out.
++ */
++static struct vt8500_gpio_data wm8650_data = {
++	.num_banks	= 9,
++	.banks	= {
++		VT8500_BANK(0x40, 0x80, 0xC0, 0x00, 32),
++		VT8500_BANK(0x44, 0x84, 0xC4, 0x04, 32),
++		VT8500_BANK(0x48, 0x88, 0xC8, 0x08, 32),
++		VT8500_BANK(0x4C, 0x8C, 0xCC, 0x0C, 32),
++		VT8500_BANK(0x50, 0x90, 0xD0, 0x10, 32),
++		VT8500_BANK(0x54, 0x94, 0xD4, 0x14, 32),
++		VT8500_BANK(0x58, 0x98, 0xD8, 0x18, 32),
++		VT8500_BANK(0x5C, 0x9C, 0xDC, 0x1C, 32),
++		VT8500_BANK(0x7C, 0xBC, 0xFC, 0x3C, 32),
++	},
++};
++
++struct vt8500_gpio_chip {
++	struct gpio_chip		chip;
++
++	const struct vt8500_gpio_bank_regs *regs;
++	void __iomem	*base;
++	unsigned int	regoff;
++};
++
++
++#define to_vt8500(__chip) container_of(__chip, struct vt8500_gpio_chip, chip)
++
++static int vt8500_gpio_request(struct gpio_chip *chip, unsigned offset)
++{
++	unsigned val;
++	struct vt8500_gpio_chip *vt8500_chip = to_vt8500(chip);
++
++	val = readl(vt8500_chip->base + vt8500_chip->regs->en +
++							vt8500_chip->regoff);
++	val |= (1 << offset);
++	writel(val, vt8500_chip->base + vt8500_chip->regs->en +
++							vt8500_chip->regoff);
++
++	return 0;
++}
++
++static void vt8500_gpio_free(struct gpio_chip *chip, unsigned offset)
++{
++	struct vt8500_gpio_chip *vt8500_chip = to_vt8500(chip);
++
++	unsigned val = readl(vt8500_chip->base + vt8500_chip->regs->en +
++							vt8500_chip->regoff);
++	val &= ~(1 << offset);
++	writel(val, vt8500_chip->base + vt8500_chip->regs->en +
++							vt8500_chip->regoff);
++}
++
++static int vt8500_gpio_direction_input(struct gpio_chip *chip, unsigned offset)
++{
++	struct vt8500_gpio_chip *vt8500_chip = to_vt8500(chip);
++
++	unsigned val = readl(vt8500_chip->base + vt8500_chip->regs->dir +
++							vt8500_chip->regoff);
++	val &= ~(1 << offset);
++	writel(val, vt8500_chip->base + vt8500_chip->regs->dir +
++							vt8500_chip->regoff);
++
++	return 0;
++}
++
++static int vt8500_gpio_direction_output(struct gpio_chip *chip, unsigned offset,
++								int value)
++{
++	struct vt8500_gpio_chip *vt8500_chip = to_vt8500(chip);
++
++	unsigned val = readl(vt8500_chip->base + vt8500_chip->regs->dir +
++							vt8500_chip->regoff);
++	val |= (1 << offset);
++	writel(val, vt8500_chip->base + vt8500_chip->regs->dir +
++							vt8500_chip->regoff);
++
++	if (value) {
++		val = readl(vt8500_chip->base + vt8500_chip->regs->data_out +
++							vt8500_chip->regoff);
++		val |= (1 << offset);
++		writel(val, vt8500_chip->base + vt8500_chip->regs->data_out +
++							vt8500_chip->regoff);
++	}
++	return 0;
++}
++
++static int vt8500_gpio_get_value(struct gpio_chip *chip, unsigned offset)
++{
++	struct vt8500_gpio_chip *vt8500_chip = to_vt8500(chip);
++
++	return (readl(vt8500_chip->base + vt8500_chip->regoff) >> offset) & 1;
++}
++
++static void vt8500_gpio_set_value(struct gpio_chip *chip, unsigned offset,
++								int value)
++{
++	struct vt8500_gpio_chip *vt8500_chip = to_vt8500(chip);
++
++	unsigned val = readl(vt8500_chip->base + vt8500_chip->regs->data_out +
++							vt8500_chip->regoff);
++	if (value)
++		val |= (1 << offset);
++	else
++		val &= ~(1 << offset);
++
++	writel(val, vt8500_chip->base + vt8500_chip->regs->data_out + 
++							vt8500_chip->regoff);
++}
++
++static int vt8500_of_xlate(struct gpio_chip *gc,
++			    const struct of_phandle_args *gpiospec, u32 *flags)
++{
++	/* bank if specificed in gpiospec->args[0] */
++	if (flags)
++		*flags = gpiospec->args[2];
++
++	return gpiospec->args[1];
++}
++
++static int vt8500_add_chips(struct platform_device *pdev, void __iomem *base,
++				const struct vt8500_gpio_data *data)
++{
++	struct vt8500_gpio_chip *vtchip;
++	struct gpio_chip *chip;
++	int i;
++	int pin_cnt = 0;
++
++	vtchip = devm_kzalloc(&pdev->dev,
++			sizeof(struct vt8500_gpio_chip) * data->num_banks,
++			GFP_KERNEL);
++	if (!vtchip) {
++		pr_err("%s: failed to allocate chip memory\n", __func__);
++		return -ENOMEM;
++	}
++
++	for (i = 0; i < data->num_banks; i++)
++	{
++		vtchip[i].base = base;
++		vtchip[i].regs = &data->banks[i];
++		vtchip[i].regoff = i << 2;
++
++		chip = &vtchip[i].chip;
++
++		chip->of_xlate = vt8500_of_xlate;
++		chip->of_gpio_n_cells = 3;
++		chip->of_node = pdev->dev.of_node;
++
++		chip->request = vt8500_gpio_request;
++		chip->free = vt8500_gpio_free;
++		chip->direction_input = vt8500_gpio_direction_input;
++		chip->direction_output = vt8500_gpio_direction_output;
++		chip->get = vt8500_gpio_get_value;
++		chip->set = vt8500_gpio_set_value;
++		chip->can_sleep = 0;
++		chip->base = pin_cnt;
++		chip->ngpio = data->banks[i].ngpio;
++
++		pin_cnt += data->banks[i].ngpio;
++
++		gpiochip_add(chip);
++	}
++	return 0;
++}
++
++static struct of_device_id vt8500_gpio_dt_ids[] = {
++	{ .compatible = "via,vt8500-gpio", .data = &vt8500_data, },
++	{ .compatible = "wm,wm8505-gpio", .data = &wm8505_data, },
++	{ .compatible = "wm,wm8650-gpio", .data = &wm8650_data, },
++	{ /* Sentinel */ },
++};
++
++static int __devinit vt8500_gpio_probe(struct platform_device *pdev)
++{
++	void __iomem *gpio_base;
++	struct device_node *np;
++	const struct of_device_id *of_id +				of_match_device(vt8500_gpio_dt_ids, &pdev->dev);
++
++	if (!of_id) {
++		dev_err(&pdev->dev, "Failed to find gpio controller\n");
++		return -ENODEV;
++	}
++
++	np = of_find_matching_node(NULL, vt8500_gpio_dt_ids);
++	if (!np) {
++		dev_err(&pdev->dev, "Missing GPIO description in devicetree\n");
++		return -EFAULT;
++	}
++
++	gpio_base = of_iomap(np, 0);
++	if (!gpio_base) {
++		dev_err(&pdev->dev, "Unable to map GPIO registers\n");
++		of_node_put(np);
++		return -ENOMEM;
++	}
++
++	of_node_put(np);
++
++	vt8500_add_chips(pdev, gpio_base, of_id->data);
++
++	return 0;
++}
++
++static struct platform_driver vt8500_gpio_driver = {
++	.probe		= vt8500_gpio_probe,
++	.driver		= {
++		.name	= "vt8500-gpio",
++		.owner	= THIS_MODULE,
++		.of_match_table = vt8500_gpio_dt_ids,
++	},
++};
++
++static int __init vt8500_gpio_init(void)
++{
++	return platform_driver_probe(&vt8500_gpio_driver, &vt8500_gpio_probe);
++}
++
++static void __exit vt8500_gpio_exit(void)
++{
++	return platform_driver_unregister(&vt8500_gpio_driver);
++}
++
++module_init(vt8500_gpio_init);
++module_exit(vt8500_gpio_exit);
++
++MODULE_DESCRIPTION("VT8500 GPIO Driver");
++MODULE_AUTHOR("Tony Prisk <linux@prisktech.co.nz>");
++MODULE_LICENSE("GPL");
++MODULE_DEVICE_TABLE(of, vt8500_gpio_dt_ids);
+-- 
+1.7.9.5
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

@@ -1,96 +1,77 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 07 Aug 2012 14:07:42 +0000
+From: Archit Taneja <a0393947@ti.com>
+Date: Wed, 08 Aug 2012 06:09:48 +0000
 Subject: Re: [RFC 08/17] OMAPDSS: DSI: Maintain own copy of timings in driver data
-Message-Id: <1344348462.7216.77.camel@lappyti>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-AGrwCg3rbo+ArQ9yDnh6"
+Message-Id: <5021FFDC.6080006@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343817088-29645-1-git-send-email-archit@ti.com>
-	 <1343817088-29645-9-git-send-email-archit@ti.com>
-In-Reply-To: <1343817088-29645-9-git-send-email-archit@ti.com>
-To: Archit Taneja <archit@ti.com>
+References: <1343817088-29645-1-git-send-email-archit@ti.com>  <1343817088-29645-9-git-send-email-archit@ti.com> <1344348462.7216.77.camel@lappyti>
+In-Reply-To: <1344348462.7216.77.camel@lappyti>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, sumit.semwal@ti.com, rob@ti.com
 
+On Tuesday 07 August 2012 07:37 PM, Tomi Valkeinen wrote:
+> On Wed, 2012-08-01 at 16:01 +0530, Archit Taneja wrote:
+>> The DSI driver currently relies on the timings in omap_dss_device struct to
+>> configure the DISPC and DSI blocks accordingly. This makes the DSI interface
+>> driver dependent on the omap_dss_device struct.
+>>
+>> Make the DPI driver data maintain it's own timings field. The panel driver is
+>            ^^^
+> DSI
+>
+>> expected to call omapdss_dsi_set_timings() to set these timings before the panel
+>> is enabled.
+>>
+>> Signed-off-by: Archit Taneja <archit@ti.com>d
+>> ---
+>>   drivers/video/omap2/displays/panel-taal.c |    2 ++
+>>   drivers/video/omap2/dss/dsi.c             |   27 ++++++++++++++++++++++-----
+>>   include/video/omapdss.h                   |    2 ++
+>>   3 files changed, 26 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+>> index 3f5acc7..4775580 100644
+>> --- a/drivers/video/omap2/displays/panel-taal.c
+>> +++ b/drivers/video/omap2/displays/panel-taal.c
+>> @@ -1060,6 +1060,8 @@ static int taal_power_on(struct omap_dss_device *dssdev)
+>>   		goto err0;
+>>   	};
+>>
+>> +	omapdss_dsi_set_timings(dssdev, &td->panel_config->timings);
+>> +
+>>   	r = omapdss_dsi_display_enable(dssdev);
+>>   	if (r) {
+>>   		dev_err(&dssdev->dev, "failed to enable DSI\n");
+>
+> Video timings for command mode panel are meaningless. If we need to pass
+> the resolution of the panel, perhaps we should have a separate function
+> for that.
+>
+> However, with a quick glance at dsi.c, we don't even use the
+> dssdev->panel.timings for cmd mode panel. But we do use
+> dssdev->get_resolution() in a few places. Those calls could be replaced
+> by storing the panel size in dsi.c, given with omapdss_dsi_set_size() or
+> such. We could use the timings field in dsi.c to store them, though.
 
---=-AGrwCg3rbo+ArQ9yDnh6
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I am a bit unclear about resolution when it comes to command mode panels.
 
-On Wed, 2012-08-01 at 16:01 +0530, Archit Taneja wrote:
-> The DSI driver currently relies on the timings in omap_dss_device struct =
-to
-> configure the DISPC and DSI blocks accordingly. This makes the DSI interf=
-ace
-> driver dependent on the omap_dss_device struct.
->=20
-> Make the DPI driver data maintain it's own timings field. The panel drive=
-r is
-          ^^^
-DSI
+For command mode panels, we can perform rotation at the panel side. That 
+is, the panel refreshes itself by fetching pixels from it's buffer in a 
+rotated way. Is that right?
 
-> expected to call omapdss_dsi_set_timings() to set these timings before th=
-e panel
-> is enabled.
->=20
-> Signed-off-by: Archit Taneja <archit@ti.com>d
-> ---
->  drivers/video/omap2/displays/panel-taal.c |    2 ++
->  drivers/video/omap2/dss/dsi.c             |   27 ++++++++++++++++++++++-=
-----
->  include/video/omapdss.h                   |    2 ++
->  3 files changed, 26 insertions(+), 5 deletions(-)
->=20
-> diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/om=
-ap2/displays/panel-taal.c
-> index 3f5acc7..4775580 100644
-> --- a/drivers/video/omap2/displays/panel-taal.c
-> +++ b/drivers/video/omap2/displays/panel-taal.c
-> @@ -1060,6 +1060,8 @@ static int taal_power_on(struct omap_dss_device *ds=
-sdev)
->  		goto err0;
->  	};
-> =20
-> +	omapdss_dsi_set_timings(dssdev, &td->panel_config->timings);
-> +
->  	r =3D omapdss_dsi_display_enable(dssdev);
->  	if (r) {
->  		dev_err(&dssdev->dev, "failed to enable DSI\n");
+If the original resolution is 864x480, and we set rotation at panel side 
+to make the rotation 480x864, the DISPC manager size should also be 
+configured at 480x864 right?
 
-Video timings for command mode panel are meaningless. If we need to pass
-the resolution of the panel, perhaps we should have a separate function
-for that.
+We seem to be setting the manager timings only once when DSI is enabled. 
+After that, setting rotation doesn't impact manager size.
 
-However, with a quick glance at dsi.c, we don't even use the
-dssdev->panel.timings for cmd mode panel. But we do use
-dssdev->get_resolution() in a few places. Those calls could be replaced
-by storing the panel size in dsi.c, given with omapdss_dsi_set_size() or
-such. We could use the timings field in dsi.c to store them, though.
+I am asking this to understand if we need to keep resolution as a 
+separate parameter than timings. That is, timings represents the initial 
+width and height of the panel, and resolution represents the current 
+width and height of the panel.
 
- Tomi
-
-
---=-AGrwCg3rbo+ArQ9yDnh6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJQISEuAAoJEPo9qoy8lh71G+oQAKs0cpux4U1yKTBHHXyrE6wQ
-/LKrCBBE3Rap06WqKIjfy3rNBm8s8ffO5Lnv+vlsU8aVLXA/r4amiZederzIbNxL
-N39nXhHXH9Ho+Cd8snkS69RM7KzM25gBt0eCbzkp5ffAz3KK0QO2eZq4diRWXGcT
-wCNGFjfOANxjOBgzbiNLvL1lmPtjXY9BlNUKjKvE+uQicRaAQbdm/oF2xH9BOC5B
-3Q5XHDGOXgt2j3RdEDu0fwt7fKWiPpzQ4qLBBo2oTvgJ96QnBbJCRBubuhDEKlpg
-iYZZQwI+WrDULvggJrKnVyOmX0/vMo4qkroxnumwm9lRTeipjn2FMsZHWWQ2JiMt
-ACSI5RNDNDTyb3BP2u/v5+a7rqEa8XTrMZmuhMdeV0DGmiItZISV4S5ECY5xXian
-Y4T1BHIyKNUd+FmZ2oInIYzVGdKrng7EkuKuTblyYUl3H6Xzma+2EwUmUVhK5ciC
-33ognBYeoZ7QHkciWGqTMQHVPHD75MzbYQXNnwIPBBrK2xuzKZ9F5Wh9sfwEmD7k
-UJwUEPu7Ot+LMfhmfwrYCqWbAe7tJEB1PWnB8nP9WjPwkkYNVz3UiSWfb7rKO3HE
-S0sO19/CrV94z+X/bhTW+8AXX3mEWzgxl+wV4BDzoYknpvLrddbgE1wDiFz+6u0h
-QJAPyU6YhsVlrM9BfSkE
-=3cv0
------END PGP SIGNATURE-----
-
---=-AGrwCg3rbo+ArQ9yDnh6--
+Archit
 

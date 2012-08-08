@@ -1,230 +1,79 @@
-From: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
-Date: Wed, 08 Aug 2012 13:13:41 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 08 Aug 2012 13:25:38 +0000
 Subject: Re: [PATCH 1/6] OMAPDSS: DISPC: cleanup cpu_is_xxxx checks
-Message-Id: <CAF0AtAv3uuS_GDuYEk4mpUKieZqqBnLUpRcLBx0M4zjbsSq2Nw@mail.gmail.com>
+Message-Id: <1344432338.4932.96.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-LGjvew1ct4NOrF9Gd2Az"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <5344e530a125ef5c5dfeb00e54b7d32df6169aa9.1343912532.git.cmahapatra@ti.com>
-	<1344425874-28222-1-git-send-email-cmahapatra@ti.com>
-	<1344429360.4932.58.camel@deskari>
-In-Reply-To: <1344429360.4932.58.camel@deskari>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+	 <1344425874-28222-1-git-send-email-cmahapatra@ti.com>
+	 <1344429360.4932.58.camel@deskari>
+	 <CAF0AtAv3uuS_GDuYEk4mpUKieZqqBnLUpRcLBx0M4zjbsSq2Nw@mail.gmail.com>
+In-Reply-To: <CAF0AtAv3uuS_GDuYEk4mpUKieZqqBnLUpRcLBx0M4zjbsSq2Nw@mail.gmail.com>
+To: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Wed, Aug 8, 2012 at 6:06 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On Wed, 2012-08-08 at 17:07 +0530, Chandrabhanu Mahapatra wrote:
->> All the cpu_is checks have been moved to dispc_init_features function providing
->> a much more generic and cleaner interface. The OMAP version and revision
->> specific functions are initialized by dispc_features structure local to dispc.c.
->>
->> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
->> ---
->>  drivers/video/omap2/dss/dispc.c |  476 ++++++++++++++++++++++++++-------------
->>  1 file changed, 315 insertions(+), 161 deletions(-)
->>
->> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
->> index 5b289c5..7e0b080 100644
->> --- a/drivers/video/omap2/dss/dispc.c
->> +++ b/drivers/video/omap2/dss/dispc.c
->> @@ -75,12 +75,60 @@ enum omap_burst_size {
->>  #define REG_FLD_MOD(idx, val, start, end)                            \
->>       dispc_write_reg(idx, FLD_MOD(dispc_read_reg(idx), val, start, end))
->>
->> +static int dispc_ovl_calc_scaling_24xx(enum omap_channel channel,
->> +     const struct omap_video_timings *mgr_timings, u16 width, u16 height,
->> +     u16 out_width, u16 out_height, enum omap_color_mode color_mode,
->> +     bool *five_taps, int *x_predecim, int *y_predecim, int *decim_x,
->> +     int *decim_y, u16 pos_x, unsigned long *core_clk);
->> +static int dispc_ovl_calc_scaling_34xx(enum omap_channel channel,
->> +     const struct omap_video_timings *mgr_timings, u16 width, u16 height,
->> +     u16 out_width, u16 out_height,  enum omap_color_mode color_mode,
->> +     bool *five_taps, int *x_predecim, int *y_predecim, int *decim_x,
->> +     int *decim_y, u16 pos_x, unsigned long *core_clk);
->> +static int dispc_ovl_calc_scaling_44xx(enum omap_channel channel,
->> +     const struct omap_video_timings *mgr_timings, u16 width, u16 height,
->> +     u16 out_width, u16 out_height,  enum omap_color_mode color_mode,
->> +     bool *five_taps, int *x_predecim, int *y_predecim, int *decim_x,
->> +     int *decim_y, u16 pos_x, unsigned long *core_clk);
->> +
->> +static unsigned long calc_core_clk_24xx(enum omap_channel channel, u16 width,
->> +             u16 height, u16 out_width, u16 out_height);
->> +static unsigned long calc_core_clk_34xx(enum omap_channel channel, u16 width,
->> +             u16 height, u16 out_width, u16 out_height);
->> +static unsigned long calc_core_clk_44xx(enum omap_channel channel, u16 width,
->> +             u16 height, u16 out_width, u16 out_height);
->> +
->> +static bool _dispc_lcd_timings_ok_24xx(int hsw, int hfp, int hbp,
->> +             int vsw, int vfp, int vbp);
->> +static bool _dispc_lcd_timings_ok_44xx(int hsw, int hfp, int hbp,
->> +             int vsw, int vfp, int vbp);
->> +
->> +static void _dispc_mgr_set_lcd_timings_hv_24xx(enum omap_channel channel,
->> +             int hsw, int hfp, int hbp, int vsw, int vfp, int vbp);
->> +static void _dispc_mgr_set_lcd_timings_hv_44xx(enum omap_channel channel,
->> +             int hsw, int hfp, int hbp, int vsw, int vfp, int vbp);
->
-> While it's nice to have the initialization of struct dispc_features in
-> the beginning of dispc.c, it requires the above prototypes. And in the
-> future we may require more. For that reason I think it's better to
-> initialize the dispc_features at the end of dispc.c, just above
-> dispc_init_features(). This would be kinda similar to how drivers often
-> initialize their ops.
->
 
-Yes, this sounds good, but I was just following general order of
-structure and function declarations, structures initializations
-followed by functions.
+--=-LGjvew1ct4NOrF9Gd2Az
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
->> +static const struct dispc_features omap2_dispc_features = {
->> +     .calc_scaling           =       dispc_ovl_calc_scaling_24xx,
->> +     .calc_core_clk          =       calc_core_clk_24xx,
->> +     .lcd_timings_ok         =       _dispc_lcd_timings_ok_24xx,
->> +     .set_lcd_timings_hv     =       _dispc_mgr_set_lcd_timings_hv_24xx,
->> +};
->> +
->> +static const struct dispc_features omap3_2_1_dispc_features = {
->> +     .calc_scaling           =       dispc_ovl_calc_scaling_34xx,
->> +     .calc_core_clk          =       calc_core_clk_34xx,
->> +     .lcd_timings_ok         =       _dispc_lcd_timings_ok_24xx,
->> +     .set_lcd_timings_hv     =       _dispc_mgr_set_lcd_timings_hv_24xx,
->> +};
->> +
->> +static const struct dispc_features omap3_3_0_dispc_features = {
->> +     .calc_scaling           =       dispc_ovl_calc_scaling_34xx,
->> +     .calc_core_clk          =       calc_core_clk_34xx,
->> +     .lcd_timings_ok         =       _dispc_lcd_timings_ok_44xx,
->> +     .set_lcd_timings_hv     =       _dispc_mgr_set_lcd_timings_hv_44xx,
->> +};
->> +
->> +static const struct dispc_features omap4_dispc_features = {
->> +     .calc_scaling           =       dispc_ovl_calc_scaling_44xx,
->> +     .calc_core_clk          =       calc_core_clk_44xx,
->> +     .lcd_timings_ok         =       _dispc_lcd_timings_ok_44xx,
->> +     .set_lcd_timings_hv     =       _dispc_mgr_set_lcd_timings_hv_44xx,
->> +};
->
-> During runtime we only require one of these, others can be discarded.
-> This can be accomplished with the combination of "__initdata" for these,
-> and "__init" for dispc_init_features().
->
+On Wed, 2012-08-08 at 18:31 +0530, Mahapatra, Chandrabhanu wrote:
 
-The same also applies for all structures in dss_features.c. Just a
-thought that __init and __initdata should have also been used there.
+> Yes, this sounds good, but I was just following general order of
+> structure and function declarations, structures initializations
+> followed by functions.
 
-> However, because even the one we need will be discarded, we need to copy
-> the values. This could be done either by having the dispc_features
-> struct inside dispc struct (instead of a pointer), or allocating memory
-> for it with devm_kzalloc(). The latter allows us to keep it const, but
-> I'm not sure which approach is better (if either).
->
+Yep, it's a good rule. But there are exceptions when we'll get bloated
+code by following the rule =3D).
 
-The latter approach seems better as we need to keep it const. I will
-try out both anyways.
+> > During runtime we only require one of these, others can be discarded.
+> > This can be accomplished with the combination of "__initdata" for these=
+,
+> > and "__init" for dispc_init_features().
+> >
+>=20
+> The same also applies for all structures in dss_features.c. Just a
+> thought that __init and __initdata should have also been used there.
 
->> -static bool _dispc_lcd_timings_ok(int hsw, int hfp, int hbp,
->> +static bool _dispc_lcd_timings_ok_24xx(int hsw, int hfp, int hbp,
->>               int vsw, int vfp, int vbp)
->>  {
->> -     if (cpu_is_omap24xx() || omap_rev() < OMAP3430_REV_ES3_0) {
->> -             if (hsw < 1 || hsw > 64 ||
->> -                             hfp < 1 || hfp > 256 ||
->> -                             hbp < 1 || hbp > 256 ||
->> -                             vsw < 1 || vsw > 64 ||
->> -                             vfp < 0 || vfp > 255 ||
->> -                             vbp < 0 || vbp > 255)
->> -                     return false;
->> -     } else {
->> -             if (hsw < 1 || hsw > 256 ||
->> -                             hfp < 1 || hfp > 4096 ||
->> -                             hbp < 1 || hbp > 4096 ||
->> -                             vsw < 1 || vsw > 256 ||
->> -                             vfp < 0 || vfp > 4095 ||
->> -                             vbp < 0 || vbp > 4095)
->> -                     return false;
->> -     }
->> -
->> +     if (hsw < 1 || hsw > 64 ||
->> +                     hfp < 1 || hfp > 256 ||
->> +                     hbp < 1 || hbp > 256 ||
->> +                     vsw < 1 || vsw > 64  ||
->> +                     vfp < 0 || vfp > 255 ||
->> +                     vbp < 0 || vbp > 255)
->> +             return false;
->> +     return true;
->> +}
->> +static bool _dispc_lcd_timings_ok_44xx(int hsw, int hfp, int hbp,
->> +             int vsw, int vfp, int vbp)
->> +{
->> +     if (hsw < 1 || hsw > 256 ||
->> +                     hfp < 1  || hfp > 4096 ||
->> +                     hbp < 1  || hbp > 4096 ||
->> +                     vsw < 1  || vsw > 256  ||
->> +                     vfp < 0  || vfp > 4095 ||
->> +                     vbp < 0  || vbp > 4095)
->> +             return false;
->>       return true;
->>  }
->
-> I think we should use separate functions only when the code is
-> different. Here the code is the same, we just use different max values.
->
-> So instead of these functions, I suggest to add those max values into
-> struct dispc_features.
+I agree. We should also see what things we can move from dss_features.c
+into dss.c, dispc.c, etc. Some things in dss_features are quite global,
+but some are really used only in one place in one file.
 
-Ok.
+Although this also makes me wonder, is it better to have all the
+hardware version information for all DSS modules in one place, as we
+tried with dss_features, or is it better to have the HW information in
+the respective DSS submodule, as you're doing with this patch.
 
->
->> @@ -2633,7 +2757,8 @@ bool dispc_mgr_timings_ok(enum omap_channel channel,
->>       timings_ok = _dispc_mgr_size_ok(timings->x_res, timings->y_res);
->>
->>       if (dss_mgr_is_lcd(channel))
->> -             timings_ok =  timings_ok && _dispc_lcd_timings_ok(timings->hsw,
->> +             timings_ok =  timings_ok &&
->> +                     dispc.feat->lcd_timings_ok(timings->hsw,
->>                                               timings->hfp, timings->hbp,
->>                                               timings->vsw, timings->vfp,
->>                                               timings->vbp);
->> @@ -2641,6 +2766,34 @@ bool dispc_mgr_timings_ok(enum omap_channel channel,
->>       return timings_ok;
->>  }
->>
->> +static void _dispc_mgr_set_lcd_timings_hv_24xx(enum omap_channel channel,
->> +             int hsw, int hfp, int hbp, int vsw, int vfp, int vbp)
->> +{
->> +     u32 timing_h, timing_v;
->> +
->> +     timing_h = FLD_VAL(hsw-1, 5, 0) | FLD_VAL(hfp-1, 15, 8) |
->> +                     FLD_VAL(hbp-1, 27, 20);
->> +     timing_v = FLD_VAL(vsw-1, 5, 0) | FLD_VAL(vfp, 15, 8) |
->> +                     FLD_VAL(vbp, 27, 20);
->> +
->> +     dispc_write_reg(DISPC_TIMING_H(channel), timing_h);
->> +     dispc_write_reg(DISPC_TIMING_V(channel), timing_v);
->> +}
->> +
->> +static void _dispc_mgr_set_lcd_timings_hv_44xx(enum omap_channel channel,
->> +             int hsw, int hfp, int hbp, int vsw, int vfp, int vbp)
->> +{
->> +     u32 timing_h, timing_v;
->> +
->> +     timing_h = FLD_VAL(hsw-1, 7, 0) | FLD_VAL(hfp-1, 19, 8) |
->> +                     FLD_VAL(hbp-1, 31, 20);
->> +     timing_v = FLD_VAL(vsw-1, 7, 0) | FLD_VAL(vfp, 19, 8) |
->> +                     FLD_VAL(vbp, 31, 20);
->> +
->> +     dispc_write_reg(DISPC_TIMING_H(channel), timing_h);
->> +     dispc_write_reg(DISPC_TIMING_V(channel), timing_v);
->> +}
->
-> Same thing here. The code is the same, only the bit fields are larger.
->
->  Tomi
->
-ok
+Both have benefits. Even though with the latter method there's no one
+place to look for DSS HW feature differences, I think it'll still give
+us cleaner code. So let's continue on this track.
+
+ Tomi
 
 
--- 
-Chandrabhanu Mahapatra
-Texas Instruments India Pvt. Ltd.
+--=-LGjvew1ct4NOrF9Gd2Az
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJQImjSAAoJEPo9qoy8lh71vxIP/3D6oPtB9EiGHux35Vt/hLGT
+w8MHJdD3pzQ5N+rKCzICJVCfIJ/i0djsqbOlRo2xru4opRYdqmDWXoyg7S/zFztB
+4R6zd2fE0HfKmJMTNpvYlxZu5B0QFeIxuCol2oGx8RR6kgD2TSXX/iGhlAdFsvzA
+D96q8gp2JdynAp3xdnYU95ztzS3gEX7RRUllOCV/74Z5I/0PJSSH6Lboz7eLJZrd
+NYMXK1q30HUVUw3OgS9WHD5U7vjQePNbh+m+M7UdMboY15a7w3JPg/yAVavUF/AI
+9Nf5og9pZ4zqr57s3DXGL5l1Vm0WZ4MmKmVhC3jmtT3X8QMU6+B+IBqaLPtTYjE0
+iftF7n6HIQU9slKQte5LG4u6uWbVNPt9iSdDpX24lQR+ADmUlD+nZYGkgvxa3Dr9
+KY5F1X5xpVul0M+/SMZzT/gj6i44c2MH6DMYgvPgLBkx03wTT1aVtxXq4v38RfqC
+zNuXuDL4+dKPBFbgGjYMwMc3x+S0mY+vdaVQOusq1buFp05rWfLIiUKre/EwUAU+
+TLJF8Doj/03AtUXwjIsUe0cfBbDbXHjyy4FVIq9UVSiS9frd0vZ3/1zPP/HVuyIi
+z030SkINEssjzpU8BCKkbKgCoSdIPkyUXfKWWPWTuMHOD8M7PWmziAB4dldipOfS
+sXmE9B1nC08uGSUIght8
+=tbsF
+-----END PGP SIGNATURE-----
+
+--=-LGjvew1ct4NOrF9Gd2Az--
+

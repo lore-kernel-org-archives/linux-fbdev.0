@@ -1,41 +1,33 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 16 Aug 2012 13:00:46 +0000
-Subject: [PATCH 11/19] fbdev: sh_mipi_dsi: Remove the unused sh_mipi_dsi_info lcd_chan field
-Message-Id: <1345122054-16013-12-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Sean Paul <seanpaul@chromium.org>
+Date: Wed, 08 Aug 2012 03:54:14 +0000
+Subject: [PATCH 00/10] Upstream patches from chromium os tree
+Message-Id: <1344398064-13563-1-git-send-email-seanpaul@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The field is unused, remove it from the structure.
+The following patch set includes changes that have been applied to the chromium
+os kernel, but have not been sent upstream.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
----
- include/video/sh_mipi_dsi.h |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+Sean Paul (10):
+  video: exynos_dp: Change aux transaction failures
+  video: exynos_dp: Check DPCD return codes
+  video: exynos_dp: Clean up SW link training
+  video: exynos_dp: Get pll lock before pattern set
+  video: exynos_dp: Remove sink control to D0
+  video: exynos_dp: Fix get_pll_lock_status return value
+  video: exynos_dp: Improve EDID error handling
+  video: exynos_dp: Move hotplug into a workqueue
+  video: exynos_dp: Fix bug when checking dp->irq
+  video: exynos_dp: Enable hotplug interrupts
 
-diff --git a/include/video/sh_mipi_dsi.h b/include/video/sh_mipi_dsi.h
-index eae71d9..a01f197 100644
---- a/include/video/sh_mipi_dsi.h
-+++ b/include/video/sh_mipi_dsi.h
-@@ -25,8 +25,6 @@ enum sh_mipi_dsi_data_fmt {
- 	MIPI_YUV420,
- };
- 
--struct sh_mobile_lcdc_chan_cfg;
--
- #define SH_MIPI_DSI_HSABM	(1 << 0)
- #define SH_MIPI_DSI_HBPBM	(1 << 1)
- #define SH_MIPI_DSI_HFPBM	(1 << 2)
-@@ -47,7 +45,6 @@ struct sh_mobile_lcdc_chan_cfg;
- 
- struct sh_mipi_dsi_info {
- 	enum sh_mipi_dsi_data_fmt	data_format;
--	struct sh_mobile_lcdc_chan_cfg	*lcd_chan;
- 	int				channel;
- 	int				lane;
- 	unsigned long			flags;
+ drivers/video/exynos/exynos_dp_core.c |  373 +++++++++++++++++----------------
+ drivers/video/exynos/exynos_dp_core.h |   12 +-
+ drivers/video/exynos/exynos_dp_reg.c  |   67 +++++--
+ 3 files changed, 256 insertions(+), 196 deletions(-)
+
 -- 
-1.7.8.6
+1.7.7.3
 

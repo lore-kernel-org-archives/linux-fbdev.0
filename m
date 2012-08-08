@@ -1,59 +1,177 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Fri, 31 Aug 2012 14:42:23 +0000
-Subject: Re: [PATCH v2 15/23] OMAPDSS: RFBI: Add dssdev pointers as arguments to all exported functions
-Message-Id: <5040CA7F.1040900@ti.com>
+From: Sean Paul <seanpaul@chromium.org>
+Date: Wed, 08 Aug 2012 03:54:22 +0000
+Subject: [PATCH 08/10] video: exynos_dp: Move hotplug into a workqueue
+Message-Id: <1344398064-13563-9-git-send-email-seanpaul@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>  <1346326845-16583-1-git-send-email-archit@ti.com>  <1346326845-16583-16-git-send-email-archit@ti.com> <1346422820.16067.21.camel@deskari>
-In-Reply-To: <1346422820.16067.21.camel@deskari>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Friday 31 August 2012 07:50 PM, Tomi Valkeinen wrote:
-> On Thu, 2012-08-30 at 17:10 +0530, Archit Taneja wrote:
->> All functions of an interface driver used by a panel driver should have an
->> omap_dss_device pointer as an argument. This may not be needed by some of the
->> interfaces now as driver data is globally visible in them. The correct way
->> to retrieve driver data is to extract the platform device from the output,
->> and then extract the driver data from the platform device.
->>
->> Add dssdev arguments from functions used by panel drivers which currently miss
->> it. This will come to use when the RFBI functions retrieve the driver data
->> in the correct manner.
->
-> This and the similar patch for HDMI could probably also be left out for
-> now. Again I agree that this is correct direction, but this is not
-> really needed (right?) for output work or writeback. And we'll
-> eventually just change these parameters again.
->
-> The motivation for this patch was probably to have common format for the
-> output driver's functions, so that you can use func pointers in an ops
-> struct?
+Move the hotplug related code from probe and resume into a workqueue.
+This allows us to initialize the DP driver (and resume it) when there
+is no monitor connected.
 
-Yes, or the fact that we need the function to pass something related to 
-the output to configure it. Things work now since we just have one 
-instance of hdmi/rfbi, and that we have a global struct from which we 
-can get the required info. We definitely need to pass something to these 
-functions, whether we should pass the panel, or the output itself isn't 
-clear yet.
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
+Reviewed-by: Olof Johansson <olofj@chromium.org>
+---
+ drivers/video/exynos/exynos_dp_core.c |   94 +++++++++++++++++----------------
+ drivers/video/exynos/exynos_dp_core.h |    1 +
+ 2 files changed, 50 insertions(+), 45 deletions(-)
 
->
-> Let's delay that work until the common panel framework gets a bit more
-> solid.
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index 2882362..68ad494 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -834,6 +834,45 @@ static irqreturn_t exynos_dp_irq_handler(int irq, void *arg)
+ 	return IRQ_HANDLED;
+ }
+ 
++static void exynos_dp_hotplug(struct work_struct *work)
++{
++	struct exynos_dp_device *dp;
++	int ret;
++
++	dp = container_of(work, struct exynos_dp_device, hotplug_work);
++
++	ret = exynos_dp_detect_hpd(dp);
++	if (ret) {
++		dev_err(dp->dev, "unable to detect hpd\n");
++		return;
++	}
++
++	ret = exynos_dp_handle_edid(dp);
++	if (ret) {
++		dev_err(dp->dev, "unable to handle edid\n");
++		return;
++	}
++
++	ret = exynos_dp_set_link_train(dp, dp->video_info->lane_count,
++					dp->video_info->link_rate);
++	if (ret) {
++		dev_err(dp->dev, "unable to do link train\n");
++		return;
++	}
++
++	exynos_dp_enable_scramble(dp, 1);
++	exynos_dp_enable_rx_to_enhanced_mode(dp, 1);
++	exynos_dp_enable_enhanced_mode(dp, 1);
++
++	exynos_dp_set_lane_count(dp, dp->video_info->lane_count);
++	exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
++
++	exynos_dp_init_video(dp);
++	ret = exynos_dp_config_video(dp, dp->video_info);
++	if (ret)
++		dev_err(&dp->dev, "unable to config video\n");
++}
++
+ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ {
+ 	struct resource *res;
+@@ -886,6 +925,8 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 		goto err_clock;
+ 	}
+ 
++	INIT_WORK(&dp->hotplug_work, exynos_dp_hotplug);
++
+ 	ret = devm_request_irq(&pdev->dev, dp->irq, exynos_dp_irq_handler, 0,
+ 				"exynos-dp", dp);
+ 	if (ret) {
+@@ -899,36 +940,8 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 
+ 	exynos_dp_init_dp(dp);
+ 
+-	ret = exynos_dp_detect_hpd(dp);
+-	if (ret) {
+-		dev_err(&pdev->dev, "unable to detect hpd\n");
+-		goto err_clock;
+-	}
+-
+-	exynos_dp_handle_edid(dp);
+-
+-	ret = exynos_dp_set_link_train(dp, dp->video_info->lane_count,
+-				dp->video_info->link_rate);
+-	if (ret) {
+-		dev_err(&pdev->dev, "unable to do link train\n");
+-		goto err_clock;
+-	}
+-
+-	exynos_dp_enable_scramble(dp, 1);
+-	exynos_dp_enable_rx_to_enhanced_mode(dp, 1);
+-	exynos_dp_enable_enhanced_mode(dp, 1);
+-
+-	exynos_dp_set_lane_count(dp, dp->video_info->lane_count);
+-	exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
+-
+-	exynos_dp_init_video(dp);
+-	ret = exynos_dp_config_video(dp, dp->video_info);
+-	if (ret) {
+-		dev_err(&pdev->dev, "unable to config video\n");
+-		goto err_clock;
+-	}
+-
+ 	platform_set_drvdata(pdev, dp);
++	schedule_work(&dp->hotplug_work);
+ 
+ 	return 0;
+ 
+@@ -943,6 +956,9 @@ static int __devexit exynos_dp_remove(struct platform_device *pdev)
+ 	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
+ 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
+ 
++	if (work_pending(&dp->hotplug_work))
++		flush_work_sync(&dp->hotplug_work);
++
+ 	if (pdata && pdata->phy_exit)
+ 		pdata->phy_exit();
+ 
+@@ -959,6 +975,9 @@ static int exynos_dp_suspend(struct device *dev)
+ 	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
+ 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
+ 
++	if (work_pending(&dp->hotplug_work))
++		flush_work_sync(&dp->hotplug_work);
++
+ 	if (pdata && pdata->phy_exit)
+ 		pdata->phy_exit();
+ 
+@@ -979,22 +998,7 @@ static int exynos_dp_resume(struct device *dev)
+ 	clk_enable(dp->clock);
+ 
+ 	exynos_dp_init_dp(dp);
+-
+-	exynos_dp_detect_hpd(dp);
+-	exynos_dp_handle_edid(dp);
+-
+-	exynos_dp_set_link_train(dp, dp->video_info->lane_count,
+-				dp->video_info->link_rate);
+-
+-	exynos_dp_enable_scramble(dp, 1);
+-	exynos_dp_enable_rx_to_enhanced_mode(dp, 1);
+-	exynos_dp_enable_enhanced_mode(dp, 1);
+-
+-	exynos_dp_set_lane_count(dp, dp->video_info->lane_count);
+-	exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
+-
+-	exynos_dp_init_video(dp);
+-	exynos_dp_config_video(dp, dp->video_info);
++	schedule_work(&dp->hotplug_work);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
+index 6431c65..cf1010b 100644
+--- a/drivers/video/exynos/exynos_dp_core.h
++++ b/drivers/video/exynos/exynos_dp_core.h
+@@ -32,6 +32,7 @@ struct exynos_dp_device {
+ 
+ 	struct video_info	*video_info;
+ 	struct link_train	link_train;
++	struct work_struct	hotplug_work;
+ };
+ 
+ /* exynos_dp_reg.c */
+-- 
+1.7.7.3
 
-I get your point. We might need to replace the dssdevs with outputs (or 
-something similar) in the future. Hence it would lead to churn.
-
->
-> Sorry if I'm saying "leave this patch out" for most of the patches =). I
-> just want to avoid extra churn, going back and forth with the code. The
-> most important things now are to get the output work in a state that WB
-> can be used, and on the other hand to remove the dssdev dependencies so
-> that at some point we can remove dssdev totally.
-
-That's okay. If we keep this stuff, it'll be us who have to change it 
-later :)
-
-Archit

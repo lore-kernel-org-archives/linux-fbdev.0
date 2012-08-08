@@ -1,69 +1,235 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Tue, 14 Aug 2012 09:42:13 +0000
-Subject: Re: [PATCH 03/11] fblog: new framebuffer kernel log dummy driver
-Message-Id: <CANq1E4Q1YHw7HJ7bu41PPnk6MhzZ7UTjM-sXBbVuNuA5GjeE7Q@mail.gmail.com>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Wed, 08 Aug 2012 15:47:45 +0000
+Subject: [PATCH v4] da8xx-fb: add 24bpp LCD configuration support
+Message-Id: <1344440145-27117-1-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
-	<1344783205-2384-4-git-send-email-dh.herrmann@googlemail.com>
-	<50283D7A.4090309@gmail.com>
-In-Reply-To: <50283D7A.4090309@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ryan Mallon <rmallon@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-fbdev@vger.kernel.org
 
-Hi Ryan
+LCD controller on am335x supports 24bpp raster configuration in addition
+to ones on da850. LCDC also supports 24bpp in unpacked format having
+ARGB:8888 32bpp format data in DDR, but it doesn't interpret alpha
+component of the data.
 
-On Mon, Aug 13, 2012 at 1:34 AM, Ryan Mallon <rmallon@gmail.com> wrote:
-> >  config VGA_CONSOLE
-> >       bool "VGA text console" if EXPERT || !X86
-> > -     depends on !4xx && !8xx && !SPARC && !M68K && !PARISC && !FRV &&
-> > !SUPERH && !BLACKFIN && !AVR32 && !MN10300 && (!ARM || ARCH_FOOTBRIDGE ||
-> > ARCH_INTEGRATOR || ARCH_NETWINDER)
-> > +     depends on VT && !4xx && !8xx && !SPARC && !M68K && !PARISC &&
-> > !FRV && !SUPERH && !BLACKFIN && !AVR32 && !MN10300 && (!ARM ||
-> > ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER)
-> >       default y
-> >       help
-> >         Saying Y here will allow you to use Linux in text mode through a
-> > @@ -45,7 +45,7 @@ config VGACON_SOFT_SCROLLBACK_SIZE
-> >        screenfuls of scrollback buffer
->
-> You could just place all of the CONFIG_VT options inside an if VT and
-> then the new fblog options in the else case rather than modifying all of
-> the (already overly long) depends statements.
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+Cc: Anatolij Gustschin <agust@denx.de>
+---
+Patch is dependent on earlier submitted patch "video: move CNVT_TOHW to a common place"[1]
+Since v3:
+Minor nit, declare pseudo_palette as u32 type.
+Since v2:
+Fixed additional configurations for 24bpp support.
+Since v1:
+Simplified calculation of pseudopalette for FB_VISUAL_TRUECOLOR type.
 
-Indeed, that sounds better.
+[1] http://marc.info/?l=linux-fbdev&m4442816627846&w=2
 
-> > +config FBLOG
-> > +     tristate "Framebuffer Kernel Log Driver"
-> > +     depends on !VT && FB
-> > +     default n
->
-> Default n is not required, all options are default n unless otherwise
-> specified. I don't think you need the dependency on FB either, since
-> this file should only get included if CONFIG_FB is set?
+ drivers/video/da8xx-fb.c |  124 +++++++++++++++++++++++++++++++++------------
+ 1 files changed, 91 insertions(+), 33 deletions(-)
 
-I will remove the default-line, but the FB-dependency is required. The
-"console/" directory includes also drivers like vgacon which do not
-depend on FB so it gets always included.
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 7ae9d53..1abcfa9 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -86,6 +86,8 @@
+ #define LCD_V2_LIDD_CLK_EN		BIT(1)
+ #define LCD_V2_CORE_CLK_EN		BIT(0)
+ #define LCD_V2_LPP_B10			26
++#define LCD_V2_TFT_24BPP_MODE		BIT(25)
++#define LCD_V2_TFT_24BPP_UNPACK		BIT(26)
+ 
+ /* LCD Raster Timing 2 Register */
+ #define LCD_AC_BIAS_TRANSITIONS_PER_INT(x)	((x) << 16)
+@@ -156,7 +158,6 @@ struct da8xx_fb_par {
+ 	unsigned int		dma_end;
+ 	struct clk *lcdc_clk;
+ 	int irq;
+-	unsigned short pseudo_palette[16];
+ 	unsigned int palette_sz;
+ 	unsigned int pxl_clk;
+ 	int blank;
+@@ -175,6 +176,7 @@ struct da8xx_fb_par {
+ 	unsigned int		lcd_fck_rate;
+ #endif
+ 	void (*panel_power_ctrl)(int);
++	u32 pseudo_palette[16];
+ };
+ 
+ /* Variable Screen Information */
+@@ -499,6 +501,9 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+ {
+ 	u32 reg;
+ 
++	if ((bpp > 16) && (lcd_revision = LCD_VERSION_1))
++		return -EINVAL;
++
+ 	/* Set the Panel Width */
+ 	/* Pixels per line = (PPL + 1)*16 */
+ 	if (lcd_revision = LCD_VERSION_1) {
+@@ -542,6 +547,12 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+ 	reg = lcdc_read(LCD_RASTER_CTRL_REG) & ~(1 << 8);
+ 	if (raster_order)
+ 		reg |= LCD_RASTER_ORDER;
++
++	if (bpp = 24)
++		reg |= LCD_V2_TFT_24BPP_MODE;
++	else if (bpp = 32)
++		reg |= (LCD_V2_TFT_24BPP_MODE | LCD_V2_TFT_24BPP_UNPACK);
++
+ 	lcdc_write(reg, LCD_RASTER_CTRL_REG);
+ 
+ 	switch (bpp) {
+@@ -549,6 +560,8 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+ 	case 2:
+ 	case 4:
+ 	case 16:
++	case 24:
++	case 32:
+ 		par->palette_sz = 16 * 2;
+ 		break;
+ 
+@@ -578,13 +591,36 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 	if (info->fix.visual = FB_VISUAL_DIRECTCOLOR)
+ 		return 1;
+ 
+-	if (info->var.bits_per_pixel = 4) {
+-		if (regno > 15)
+-			return 1;
++	if ((info->var.bits_per_pixel > 16) && (lcd_revision = LCD_VERSION_1))
++		return -EINVAL;
+ 
+-		if (info->var.grayscale) {
+-			pal = regno;
+-		} else {
++	switch (info->fix.visual) {
++	case FB_VISUAL_TRUECOLOR:
++		red = CNVT_TOHW(red, info->var.red.length);
++		green = CNVT_TOHW(green, info->var.green.length);
++		blue = CNVT_TOHW(blue, info->var.blue.length);
++		break;
++	case FB_VISUAL_PSEUDOCOLOR:
++		if (info->var.bits_per_pixel = 4) {
++			if (regno > 15)
++				return -EINVAL;
++
++			if (info->var.grayscale) {
++				pal = regno;
++			} else {
++				red >>= 4;
++				green >>= 8;
++				blue >>= 12;
++
++				pal = (red & 0x0f00);
++				pal |= (green & 0x00f0);
++				pal |= (blue & 0x000f);
++			}
++			if (regno = 0)
++				pal |= 0x2000;
++			palette[regno] = pal;
++
++		} else if (info->var.bits_per_pixel = 8) {
+ 			red >>= 4;
+ 			green >>= 8;
+ 			blue >>= 12;
+@@ -592,36 +628,35 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 			pal = (red & 0x0f00);
+ 			pal |= (green & 0x00f0);
+ 			pal |= (blue & 0x000f);
+-		}
+-		if (regno = 0)
+-			pal |= 0x2000;
+-		palette[regno] = pal;
+-
+-	} else if (info->var.bits_per_pixel = 8) {
+-		red >>= 4;
+-		green >>= 8;
+-		blue >>= 12;
+ 
+-		pal = (red & 0x0f00);
+-		pal |= (green & 0x00f0);
+-		pal |= (blue & 0x000f);
+-
+-		if (palette[regno] != pal) {
+-			update_hw = 1;
+-			palette[regno] = pal;
++			if (palette[regno] != pal) {
++				update_hw = 1;
++				palette[regno] = pal;
++			}
+ 		}
+-	} else if ((info->var.bits_per_pixel = 16) && regno < 16) {
+-		red >>= (16 - info->var.red.length);
+-		red <<= info->var.red.offset;
++		break;
++	}
+ 
+-		green >>= (16 - info->var.green.length);
+-		green <<= info->var.green.offset;
++	/* Truecolor has hardware independent palette */
++	if (info->fix.visual = FB_VISUAL_TRUECOLOR) {
++		u32 v;
+ 
+-		blue >>= (16 - info->var.blue.length);
+-		blue <<= info->var.blue.offset;
++		if (regno > 15)
++			return -EINVAL;
+ 
+-		par->pseudo_palette[regno] = red | green | blue;
++		v = (red << info->var.red.offset) |
++			(green << info->var.green.offset) |
++			(blue << info->var.blue.offset);
+ 
++		switch (info->var.bits_per_pixel) {
++		case 16:
++			((u16 *) (info->pseudo_palette))[regno] = v;
++			break;
++		case 24:
++		case 32:
++			((u32 *) (info->pseudo_palette))[regno] = v;
++			break;
++		}
+ 		if (palette[0] != 0x4000) {
+ 			update_hw = 1;
+ 			palette[0] = 0x4000;
+@@ -842,6 +877,9 @@ static int fb_check_var(struct fb_var_screeninfo *var,
+ {
+ 	int err = 0;
+ 
++	if ((var->bits_per_pixel > 16) && (lcd_revision = LCD_VERSION_1))
++		return -EINVAL;
++
+ 	switch (var->bits_per_pixel) {
+ 	case 1:
+ 	case 8:
+@@ -877,6 +915,26 @@ static int fb_check_var(struct fb_var_screeninfo *var,
+ 		var->transp.length = 0;
+ 		var->nonstd = 0;
+ 		break;
++	case 24:
++		var->red.offset = 16;
++		var->red.length = 8;
++		var->green.offset = 8;
++		var->green.length = 8;
++		var->blue.offset = 0;
++		var->blue.length = 8;
++		var->nonstd = 0;
++		break;
++	case 32:
++		var->transp.offset = 24;
++		var->transp.length = 8;
++		var->red.offset = 16;
++		var->red.length = 8;
++		var->green.offset = 8;
++		var->green.length = 8;
++		var->blue.offset = 0;
++		var->blue.length = 8;
++		var->nonstd = 0;
++		break;
+ 	default:
+ 		err = -EINVAL;
+ 	}
+-- 
+1.7.1
 
-> > +     help
-> > +       This driver displays all kernel log messages on all connected
-> > +       framebuffers. It is mutually exclusive with
-> > CONFIG_FRAMEBUFFER_CONSOLE
-> > +       and CONFIG_VT. It was mainly created for debugging purposes when
-> > +       CONFIG_VT is not selected but you still want kernel boot
-> > messages on
-> > +       the screen.
->
-> Do command line options exist to specify screens to write the debug log
-> to? It might be a useful feature to have.
-
-See patch-7. However, I am not entirely happy with it. I will probably
-have to rethink the parameters.
-
-Thanks for reviewing. I will fix all these in the next series.
-Regards
-David

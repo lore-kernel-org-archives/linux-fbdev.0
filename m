@@ -1,45 +1,71 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Wed, 08 Aug 2012 14:28:24 +0000
-Subject: Re: [rtc-linux] [PATCH 8/8] ARM: vt8500: gpio: Devicetree support for arch-vt8500
-Message-Id: <CACRpkdabUWpDsBhz4ZEJNhEuqw-U+v-HrX7NcWoNLeuenv5t9A@mail.gmail.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Date: Wed, 08 Aug 2012 18:38:58 +0000
+Subject: Re: [PATCH 8/8] ARM: vt8500: gpio: Devicetree support for arch-vt8500
+Message-Id: <5022B242.1050001@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1344389967-8465-1-git-send-email-linux@prisktech.co.nz>
  <1344389967-8465-9-git-send-email-linux@prisktech.co.nz>
- <CACRpkdbYxpN9RCu8j8KMBgrb=-DsYZHq7hx-ifmHhJ0ZZcRYjw@mail.gmail.com>
- <201208080919.52592.arnd@arndb.de>
-In-Reply-To: <201208080919.52592.arnd@arndb.de>
+In-Reply-To: <1344389967-8465-9-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Aug 8, 2012 at 11:19 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+On 08/07/2012 07:39 PM, Tony Prisk wrote:
+> Converted the existing arch-vt8500 gpio to a platform_device.
+> Added support for WM8505 and WM8650 GPIO controllers.
 
->> What on earth are all those magic numbers?
->>
->> I *guess* they're enabling some default GPIO settings etc.
->
-> No, they are the register offsets you quoted above, per bank.
+> diff --git a/drivers/gpio/gpio-vt8500.c b/drivers/gpio/gpio-vt8500.c
 
-Aha I was fooled by this:
+> +static struct of_device_id vt8500_gpio_dt_ids[] = {
+> +	{ .compatible = "via,vt8500-gpio", .data = &vt8500_data, },
+> +	{ .compatible = "wm,wm8505-gpio", .data = &wm8505_data, },
+> +	{ .compatible = "wm,wm8650-gpio", .data = &wm8650_data, },
+> +	{ /* Sentinel */ },
+> +};
+> +
+> +static int __devinit vt8500_gpio_probe(struct platform_device *pdev)
+> +{
+> +	void __iomem *gpio_base;
+> +	struct device_node *np;
+> +	const struct of_device_id *of_id > +				of_match_device(vt8500_gpio_dt_ids, &pdev->dev);
+> +
+> +	if (!of_id) {
+> +		dev_err(&pdev->dev, "Failed to find gpio controller\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	np = of_find_matching_node(NULL, vt8500_gpio_dt_ids);
 
-+struct vt8500_gpio_bank_regs {
-+       int     en;
-+       int     dir;
-+       int     data_out;
-+       int     data_in;
-+       int     ngpio;
-+};
+Can't you use pdev->dev.of_node instead of searching for it again?
 
-This needs to be named something intuitive like "vt8500_gpio_bank_regoffsets"
+...
+> +	of_node_put(np);
 
-Some kerneldoc intsead of the opaque comment above will also improve
-readability a lot:
+If so, you could also remove that.
 
-/**
-  * struct vt8500_gpio_bank_regoffsets
-  * @en: offset to enable register in the bank
-  * ...
+> +static int __init vt8500_gpio_init(void)
+> +{
+> +	return platform_driver_probe(&vt8500_gpio_driver, &vt8500_gpio_probe);
+> +}
+> +
+> +static void __exit vt8500_gpio_exit(void)
+> +{
+> +	return platform_driver_unregister(&vt8500_gpio_driver);
+> +}
+> +
+> +module_init(vt8500_gpio_init);
+> +module_exit(vt8500_gpio_exit);
 
-Yours,
-Linus Walleij
+I think that's all just:
+
+module_platform_driver(vt8500_gpio_driver);
+
+(except that _init uses platform_driver_probe() rather than
+platform_driver_register(), which seems unusual. I guess that explains
+the of_find_matching_node() above too.)
+
+> +MODULE_LICENSE("GPL");
+
+That should be "GPL v2" given the license header.
+

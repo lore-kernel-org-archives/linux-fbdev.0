@@ -1,47 +1,41 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Date: Thu, 23 Aug 2012 14:34:53 +0000
-Subject: Re: [PATCH 3/4] ARM: dts: mxs: Add pwm4 muxing options for imx28
-Message-Id: <20120823143450.GK24242@S2101-09.ap.freescale.net>
+From: Sean Paul <seanpaul@chromium.org>
+Date: Wed, 08 Aug 2012 03:54:19 +0000
+Subject: [PATCH 05/10] video: exynos_dp: Remove sink control to D0
+Message-Id: <1344398064-13563-6-git-send-email-seanpaul@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345711351-16367-1-git-send-email-maxime.ripard@free-electrons.com>
- <1345711351-16367-4-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1345711351-16367-4-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-On Thu, Aug 23, 2012 at 10:42:30AM +0200, Maxime Ripard wrote:
-> Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-> Cc: Brian Lilly <brian@crystalfontz.com>
+Don't reset the sink power to D0. Removing this for three reasons:
 
-Applied, thanks.
+1) It's not required in the SW link training documentation
+2) The comment is incorrect, D0 is normal operation, not "power down"
+3) It seems to change things in the link training that causes glitches
 
-> ---
->  arch/arm/boot/dts/imx28.dtsi |   10 ++++++++++
->  1 file changed, 10 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/imx28.dtsi b/arch/arm/boot/dts/imx28.dtsi
-> index f6ffcd9..60d10d7 100644
-> --- a/arch/arm/boot/dts/imx28.dtsi
-> +++ b/arch/arm/boot/dts/imx28.dtsi
-> @@ -464,6 +464,16 @@
->  					fsl,pull-up = <0>;
->  				};
->  
-> +				pwm4_pins_a: pwm4@0 {
-> +					reg = <0>;
-> +					fsl,pinmux-ids = <
-> +						0x31d0 /* MX28_PAD_PWM4__PWM_4 */
-> +					>;
-> +					fsl,drive-strength = <0>;
-> +					fsl,voltage = <1>;
-> +					fsl,pull-up = <0>;
-> +				};
-> +
->  				lcdif_24bit_pins_a: lcdif-24bit@0 {
->  					reg = <0>;
->  					fsl,pinmux-ids = <
-> -- 
-> 1.7.9.5
-> 
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
+---
+ drivers/video/exynos/exynos_dp_core.c |    6 ------
+ 1 files changed, 0 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index 207bd7e..1c998d9 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -273,12 +273,6 @@ static int exynos_dp_link_start(struct exynos_dp_device *dp)
+ 	for (lane = 0; lane < lane_count; lane++)
+ 		dp->link_train.cr_loop[lane] = 0;
+ 
+-	/* Set sink to D0 (Sink Not Ready) mode. */
+-	ret = exynos_dp_write_byte_to_dpcd(dp, DPCD_ADDR_SINK_POWER_STATE,
+-				DPCD_SET_POWER_STATE_D0);
+-	if (ret)
+-		return ret;
+-
+ 	/* Set link rate and count as you want to establish*/
+ 	exynos_dp_set_link_bandwidth(dp, dp->link_train.link_rate);
+ 	exynos_dp_set_lane_count(dp, dp->link_train.lane_count);
+-- 
+1.7.7.3
+

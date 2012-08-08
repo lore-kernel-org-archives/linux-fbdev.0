@@ -1,45 +1,40 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 23 Aug 2012 20:43:29 +0000
-Subject: Re: [PATCH] video:uvesafb: check the return value of kzalloc
-Message-Id: <503695F1.50207@gmx.de>
+From: Sean Paul <seanpaul@chromium.org>
+Date: Wed, 08 Aug 2012 03:54:23 +0000
+Subject: [PATCH 09/10] video: exynos_dp: Fix bug when checking dp->irq
+Message-Id: <1344398064-13563-10-git-send-email-seanpaul@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120813100232.GA16363@udknight>
-In-Reply-To: <20120813100232.GA16363@udknight>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wang YanQing <udknight@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, spock@gentoo.org
+To: linux-fbdev@vger.kernel.org
 
-On 08/13/2012 10:02 AM, Wang YanQing wrote:
-> 
-> Michal maybe forgot it merely, we should add code
-> to check the return value of kzalloc to make the
-> code more robust.
-> 
-> Signed-off-by: Wang YanQing <udknight@gmail.com>
+Fix a bug where we check !dp->irq instead of the correct check for
+-ENXIO.
 
-Applied.
+BUG=None
+TEST=None
 
+Change-Id: Ibcdd16fb71eb41e4380ac8911ad6063634ff80e2
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
+Reviewed-on: https://gerrit.chromium.org/gerrit/29144
+Reviewed-by: Olof Johansson <olofj@chromium.org>
+---
+ drivers/video/exynos/exynos_dp_core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/uvesafb.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-> index b0e2a42..2f8f82d 100644
-> --- a/drivers/video/uvesafb.c
-> +++ b/drivers/video/uvesafb.c
-> @@ -659,6 +659,8 @@ static int __devinit uvesafb_vbe_getedid(struct uvesafb_ktask *task,
->  	task->t.flags = TF_BUF_RET | TF_BUF_ESDI;
->  	task->t.buf_len = EDID_LENGTH;
->  	task->buf = kzalloc(EDID_LENGTH, GFP_KERNEL);
-> +	if (!task->buf)
-> +		return -ENOMEM;
->  
->  	err = uvesafb_exec(task);
->  
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index 68ad494..eb5816f 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -919,7 +919,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	dp->irq = platform_get_irq(pdev, 0);
+-	if (!dp->irq) {
++	if (dp->irq = -ENXIO) {
+ 		dev_err(&pdev->dev, "failed to get irq\n");
+ 		ret = -ENODEV;
+ 		goto err_clock;
+-- 
+1.7.7.3
 

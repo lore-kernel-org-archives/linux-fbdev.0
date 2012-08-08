@@ -1,100 +1,225 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 16 Aug 2012 12:23:35 +0000
-Subject: Re: [PATCH 1/6] OMAPDSS: DSI: Maintain copy of operation mode in driver data
-Message-Id: <1345119815.2534.32.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-1VDlbOb1FewgbMCcRtX+"
+From: Sean Paul <seanpaul@chromium.org>
+Date: Wed, 08 Aug 2012 03:54:16 +0000
+Subject: [PATCH 02/10] video: exynos_dp: Check DPCD return codes
+Message-Id: <1344398064-13563-3-git-send-email-seanpaul@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <343817088-29645-1-git-send-email-archit@ti.com>
-	  <1345102594-6222-1-git-send-email-archit@ti.com>
-	  <1345102594-6222-2-git-send-email-archit@ti.com>
-	 <1345115964.15132.2.camel@lappyti> <502CE36A.5020700@ti.com>
-In-Reply-To: <502CE36A.5020700@ti.com>
-To: Archit Taneja <a0393947@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-
---=-1VDlbOb1FewgbMCcRtX+
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2012-08-16 at 17:41 +0530, Archit Taneja wrote:
-> On Thursday 16 August 2012 04:49 PM, Tomi Valkeinen wrote:
-> > On Thu, 2012-08-16 at 13:06 +0530, Archit Taneja wrote:
-> >> The DSI driver currently relies on the omap_dss_device struct to know =
-the mode
-> >> of operation of the DSI protocol(command or video mode). This makes th=
-e DSI
-> >> interface driver dependent on the omap_dss_device struct.
-> >>
-> >> Make the DSI driver data maintain it's own operation mode field. The p=
-anel
-> >> driver is expected to call omapdss_dsi_set_operation_mode() before the=
- interface
-> >> is enabled.
-> >>
-> >> Signed-off-by: Archit Taneja <archit@ti.com>
-> >> ---
-> >>   drivers/video/omap2/displays/panel-taal.c |    1 +
-> >>   drivers/video/omap2/dss/dsi.c             |   42 +++++++++++++++++++=
-++--------
-> >>   include/video/omapdss.h                   |    2 ++
-> >>   3 files changed, 34 insertions(+), 11 deletions(-)
-> >>
-> >> diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video=
-/omap2/displays/panel-taal.c
-> >> index d220f19..649247f 100644
-> >> --- a/drivers/video/omap2/displays/panel-taal.c
-> >> +++ b/drivers/video/omap2/displays/panel-taal.c
-> >> @@ -1063,6 +1063,7 @@ static int taal_power_on(struct omap_dss_device =
-*dssdev)
-> >>   	omapdss_dsi_set_size(dssdev, dssdev->panel.timings.x_res,
-> >>   		dssdev->panel.timings.y_res);
-> >>   	omapdss_dsi_set_pixel_format(dssdev, dssdev->panel.dsi_pix_fmt);
-> >> +	omapdss_dsi_set_operation_mode(dssdev, dssdev->panel.dsi_mode);
-> >
-> > Taal is always in cmd mode. Shouldn't we just use a hardcoded value
-> > here?
-> >
-> > Actually I think the same goes for the pix_fmt above. It's always the
-> > same for Taal.
->=20
-> Yes, I'll do this. I guess we could gradually remove some of these=20
-> fields from omap_dss_device? Can't we? I mean, if there are no panels=20
-> which can ever support command and video mode together, then we can just=
-=20
-> leave it to the driver to hold this information.
-
-Yes, we can remove them. Even if there was a panel taht supports both
-cmd and video mode, it would be the panel driver's job to handle it, and
-any parameters passed to the driver would happen via the panel's own
-platform data, not via dssdev.
-
- Tomi
-
-
---=-1VDlbOb1FewgbMCcRtX+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+Add return code checks to the DPCD transactions in the SW link training.
 
-iQIcBAABAgAGBQJQLOZHAAoJEPo9qoy8lh71UnUP/2MGQgXKoCSXkOjJ5NQvvPz+
-d9tCHpkBQFZDM62HslnD2niAk4p+zPYYcwwR/R33YBxVkKU4H/nsWpg/ZfTHlWLo
-m2QXJdJDwSqpCNp4WYZWqZHLFhkXE01ty8K2q6nSHECYMtUC31pI3rk/uIr99gQJ
-jKNuaLcF+nP9hm4ctNikXDiJA+/f3pLKfT4OQuhbeAQ5ot7f5jT3IVrkmaDgj2vv
-y3Zh66GzbWSFZA5EIpPMPLjtqMrqkaYPdqFQg3QlW4OAKL25QOvxFwGhWXCfATm3
-N4NLeSbKgT5BzUJRsVFPTuQiKbqbeQkx8a3U/9YiQQI2mF6/YW+ARLYnULm63pfL
-a9YfSROfoXWPjL1KwIJO/gRqRJNRGiThayp4HEk/ABDFvg2PuGY7gyFtDldFgxsm
-UEtrgb/MY6pl/3RM5kALuMv8aJ9ZWPTPkfyc9NnMN3+1Ae7Bg6ksEdgYd3vVzoDM
-U15mnTyjFlCs7gSBC0BReehqwId9V+pzYvmb8BdyroelLzrVvh+jVwnP4O8Zkg7U
-IyjzNxxqYlG3XcGP2OxC3IMm91qoFtiG1LgDz+xDPozUk82jejZulpagIAWd0ihP
-FWTXwYxmFBkYqPzLACnkKOnc4NzK0d4YlLjrZ8DEIVlvCq+PlpurE2iqEwBBcolM
-v0MdPS4D1Mk3XsjlRkHY
-=Bogl
------END PGP SIGNATURE-----
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
+Reviewed-by: Mandeep Singh Baines <msb@chromium.org>
+---
+ drivers/video/exynos/exynos_dp_core.c |   65 ++++++++++++++++++++++-----------
+ 1 files changed, 44 insertions(+), 21 deletions(-)
 
---=-1VDlbOb1FewgbMCcRtX+--
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index c6c016a..1836e33 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -258,8 +258,9 @@ static void exynos_dp_set_lane_lane_pre_emphasis(struct exynos_dp_device *dp,
+ 	}
+ }
+ 
+-static void exynos_dp_link_start(struct exynos_dp_device *dp)
++static int exynos_dp_link_start(struct exynos_dp_device *dp)
+ {
++	int ret;
+ 	u8 buf[5];
+ 	int lane;
+ 	int lane_count;
+@@ -273,8 +274,10 @@ static void exynos_dp_link_start(struct exynos_dp_device *dp)
+ 		dp->link_train.cr_loop[lane] = 0;
+ 
+ 	/* Set sink to D0 (Sink Not Ready) mode. */
+-	exynos_dp_write_byte_to_dpcd(dp, DPCD_ADDR_SINK_POWER_STATE,
++	ret = exynos_dp_write_byte_to_dpcd(dp, DPCD_ADDR_SINK_POWER_STATE,
+ 				DPCD_SET_POWER_STATE_D0);
++	if (ret)
++		return ret;
+ 
+ 	/* Set link rate and count as you want to establish*/
+ 	exynos_dp_set_link_bandwidth(dp, dp->link_train.link_rate);
+@@ -283,8 +286,10 @@ static void exynos_dp_link_start(struct exynos_dp_device *dp)
+ 	/* Setup RX configuration */
+ 	buf[0] = dp->link_train.link_rate;
+ 	buf[1] = dp->link_train.lane_count;
+-	exynos_dp_write_bytes_to_dpcd(dp, DPCD_ADDR_LINK_BW_SET,
++	ret = exynos_dp_write_bytes_to_dpcd(dp, DPCD_ADDR_LINK_BW_SET,
+ 				2, buf);
++	if (ret)
++		return ret;
+ 
+ 	/* Set TX pre-emphasis to minimum */
+ 	for (lane = 0; lane < lane_count; lane++)
+@@ -303,9 +308,13 @@ static void exynos_dp_link_start(struct exynos_dp_device *dp)
+ 	for (lane = 0; lane < lane_count; lane++)
+ 		buf[lane] = DPCD_PRE_EMPHASIS_PATTERN2_LEVEL0 |
+ 			    DPCD_VOLTAGE_SWING_PATTERN1_LEVEL0;
+-	exynos_dp_write_bytes_to_dpcd(dp,
++	ret = exynos_dp_write_bytes_to_dpcd(dp,
+ 		DPCD_ADDR_TRAINING_LANE0_SET,
+ 		lane_count, buf);
++	if (ret)
++		return ret;
++
++	return ret;
+ }
+ 
+ static unsigned char exynos_dp_get_lane_status(u8 link_status[6], int lane)
+@@ -475,6 +484,7 @@ static int exynos_dp_check_max_cr_loop(struct exynos_dp_device *dp,
+ 
+ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ {
++	int ret;
+ 	u8 data;
+ 	u8 link_status[6];
+ 	int lane;
+@@ -488,8 +498,11 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 
+ 	usleep_range(100, 101);
+ 
+-	exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
++	ret = exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
+ 				6, link_status);
++	if (ret)
++		return ret;
++
+ 	lane_count = dp->link_train.lane_count;
+ 
+ 	if (exynos_dp_clock_recovery_ok(link_status, lane_count) = 0) {
+@@ -503,18 +516,22 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 
+ 		buf[0] = DPCD_SCRAMBLING_DISABLED |
+ 			 DPCD_TRAINING_PATTERN_2;
+-		exynos_dp_write_byte_to_dpcd(dp,
++		ret = exynos_dp_write_byte_to_dpcd(dp,
+ 			DPCD_ADDR_TRAINING_PATTERN_SET,
+ 			buf[0]);
++		if (ret)
++			return ret;
+ 
+ 		for (lane = 0; lane < lane_count; lane++) {
+ 			exynos_dp_set_lane_link_training(dp,
+ 				dp->link_train.training_lane[lane],
+ 				lane);
+ 			buf[lane] = dp->link_train.training_lane[lane];
+-			exynos_dp_write_byte_to_dpcd(dp,
++			ret = exynos_dp_write_byte_to_dpcd(dp,
+ 				DPCD_ADDR_TRAINING_LANE0_SET + lane,
+ 				buf[lane]);
++			if (ret)
++				return ret;
+ 		}
+ 		dp->link_train.lt_state = EQUALIZER_TRAINING;
+ 	} else {
+@@ -551,18 +568,21 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 					dp->link_train.training_lane[lane],
+ 					lane);
+ 				buf[lane] = dp->link_train.training_lane[lane];
+-				exynos_dp_write_byte_to_dpcd(dp,
++				ret = exynos_dp_write_byte_to_dpcd(dp,
+ 					DPCD_ADDR_TRAINING_LANE0_SET + lane,
+ 					buf[lane]);
++				if (ret)
++					return ret;
+ 			}
+ 		}
+ 	}
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
+ {
++	int ret;
+ 	u8 link_status[6];
+ 	int lane;
+ 	int lane_count;
+@@ -573,8 +593,10 @@ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
+ 
+ 	usleep_range(400, 401);
+ 
+-	exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
++	ret = exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
+ 				6, link_status);
++	if (ret)
++		return ret;
+ 	lane_count = dp->link_train.lane_count;
+ 
+ 	if (exynos_dp_clock_recovery_ok(link_status, lane_count) = 0) {
+@@ -614,9 +636,11 @@ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
+ 						dp->link_train.training_lane[lane],
+ 						lane);
+ 					buf[lane] = dp->link_train.training_lane[lane];
+-					exynos_dp_write_byte_to_dpcd(dp,
++					ret = exynos_dp_write_byte_to_dpcd(dp,
+ 						DPCD_ADDR_TRAINING_LANE0_SET + lane,
+ 						buf[lane]);
++					if (ret)
++						return ret;
+ 				}
+ 			}
+ 		}
+@@ -624,7 +648,7 @@ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
+ 		exynos_dp_reduce_link_rate(dp);
+ 	}
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ static void exynos_dp_get_max_rx_bandwidth(struct exynos_dp_device *dp,
+@@ -692,28 +716,25 @@ static void exynos_dp_init_training(struct exynos_dp_device *dp,
+ 
+ static int exynos_dp_sw_link_training(struct exynos_dp_device *dp)
+ {
+-	int retval = 0;
+-	int training_finished;
++	int ret = 0, training_finished = 0;
+ 
+ 	/* Turn off unnecessary lane */
+ 	if (dp->link_train.lane_count = 1)
+ 		exynos_dp_set_analog_power_down(dp, CH1_BLOCK, 1);
+ 
+-	training_finished = 0;
+-
+ 	dp->link_train.lt_state = START;
+ 
+ 	/* Process here */
+-	while (!training_finished) {
++	while (!ret && !training_finished) {
+ 		switch (dp->link_train.lt_state) {
+ 		case START:
+-			exynos_dp_link_start(dp);
++			ret = exynos_dp_link_start(dp);
+ 			break;
+ 		case CLOCK_RECOVERY:
+-			exynos_dp_process_clock_recovery(dp);
++			ret = exynos_dp_process_clock_recovery(dp);
+ 			break;
+ 		case EQUALIZER_TRAINING:
+-			exynos_dp_process_equalizer_training(dp);
++			ret = exynos_dp_process_equalizer_training(dp);
+ 			break;
+ 		case FINISHED:
+ 			training_finished = 1;
+@@ -722,8 +743,10 @@ static int exynos_dp_sw_link_training(struct exynos_dp_device *dp)
+ 			return -EREMOTEIO;
+ 		}
+ 	}
++	if (ret)
++		dev_err(dp->dev, "eDP link training failed (%d)\n", ret);
+ 
+-	return retval;
++	return ret;
+ }
+ 
+ static int exynos_dp_set_link_train(struct exynos_dp_device *dp,
+-- 
+1.7.7.3
 

@@ -1,405 +1,139 @@
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Date: Mon, 20 Aug 2012 18:05:41 +0000
-Subject: [PATCH 1/7] framebuffer: fix cfb_copyarea
-Message-Id: <alpine.DEB.2.00.1208202004420.4009@artax.karlin.mff.cuni.cz>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Wed, 08 Aug 2012 01:39:18 +0000
+Subject: [PATCH 0/8] *** ARM: Update arch-vt8500 to Devicetree ***
+Message-Id: <1344389967-8465-1-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-framebuffer: fix cfb_copyarea
+This patchset updates arch-vt8500 to devicetree and removes all the old-style
+code. Support for WM8650 has also been added.
 
-The function cfb_copyarea is buggy when the copy operation is not aligned on
-long boundary (4 bytes on 32-bit machines, 8 bytes on 64-bit machines).
+Example dts/dtsi files are given for the three currently supported models.
 
-How to reproduce:
-- use x86-64 machine
-- use a framebuffer driver without acceleration (for example uvesafb)
-- set the framebuffer to 8-bit depth
-	(for example fbset -a 1024x768-60 -depth 8)
-- load a font with character width that is not a multiple of 8 pixels
-	note: the console-tools package cannot load a font that has
-	width different from 8 pixels. You need to install the packages
-	"kbd" and "console-terminus" and use the program "setfont" to
-	set font width (for example: setfont Uni2-Terminus20x10)
-- move some text left and right on the bash command line and you get a
-	screen corruption
+Major changes:
 
-To expose more bugs,
-put this line to the end of uvesafb_init_info:
-info->flags |= FBINFO_HWACCEL_COPYAREA | FBINFO_READS_FAST;
-- Now framebuffer console will use cfb_copyarea for console scrolling.
-You get a screen corruption when console is scrolled.
+GPIO code has been converted to a platform_device and rewritten as WM8505
+support was broken. Add support for WM8650 gpio controller.
 
-This patch is a rewrite of cfb_copyarea. It fixes the bugs, with this
-patch, console scrolling in 8-bit depth with a font width that is not a
-multiple of 8 pixels works fine.
+UHCI support was missing. Added this as a generic non-pci uhci controller as
+it doesn't require anything special. Should be usable by any system that doesn't
+have special requirements to get the UHCI controller working.
 
-The cfb_copyarea code was very buggy and it looks like it was written
-and never tried with non-8-pixel font.
+Framebuffer code patched to support WM8650. The bindings for this are of concern
+but there doesn't seem to be a formalized binding yet. This patch is based off
+Sascha Hauer's current patch on the dri-devel mailing list and should be easily
+patched out when its finalized.
 
-Signed-off-by: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Cc: stable@kernel.org
+Patchset based on Arnd's arm-soc/for-next branch.
 
----
- drivers/video/cfbcopyarea.c |  153 ++++++++++++++++++++++----------------------
- 1 file changed, 78 insertions(+), 75 deletions(-)
 
-Index: linux-3.4.3-fast/drivers/video/cfbcopyarea.c
-=================================--- linux-3.4.3-fast.orig/drivers/video/cfbcopyarea.c	2012-07-02 02:02:08.000000000 +0200
-+++ linux-3.4.3-fast/drivers/video/cfbcopyarea.c	2012-07-02 02:03:33.000000000 +0200
-@@ -43,13 +43,22 @@
-      */
- 
- static void
--bitcpy(struct fb_info *p, unsigned long __iomem *dst, int dst_idx,
--		const unsigned long __iomem *src, int src_idx, int bits,
-+bitcpy(struct fb_info *p, unsigned long __iomem *dst, unsigned dst_idx,
-+		const unsigned long __iomem *src, unsigned src_idx, int bits,
- 		unsigned n, u32 bswapmask)
- {
- 	unsigned long first, last;
- 	int const shift = dst_idx-src_idx;
--	int left, right;
-+
-+#if 0
-+	/*
-+	 * If you suspect bug in this function, compare it with this simple
-+	 * memmove implementation.
-+	 */
-+	fb_memmove((char *)dst + ((dst_idx & (bits - 1))) / 8,
-+		   (char *)src + ((src_idx & (bits - 1))) / 8, n / 8);
-+	return;
-+#endif
- 
- 	first = fb_shifted_pixels_mask_long(p, dst_idx, bswapmask);
- 	last = ~fb_shifted_pixels_mask_long(p, (dst_idx+n) % bits, bswapmask);
-@@ -98,9 +107,8 @@ bitcpy(struct fb_info *p, unsigned long
- 		unsigned long d0, d1;
- 		int m;
- 
--		right = shift & (bits - 1);
--		left = -shift & (bits - 1);
--		bswapmask &= shift;
-+		int const left = shift & (bits - 1);
-+		int const right = -shift & (bits - 1);
- 
- 		if (dst_idx+n <= bits) {
- 			// Single destination word
-@@ -110,15 +118,15 @@ bitcpy(struct fb_info *p, unsigned long
- 			d0 = fb_rev_pixels_in_long(d0, bswapmask);
- 			if (shift > 0) {
- 				// Single source word
--				d0 >>= right;
-+				d0 <<= left;
- 			} else if (src_idx+n <= bits) {
- 				// Single source word
--				d0 <<= left;
-+				d0 >>= right;
- 			} else {
- 				// 2 source words
- 				d1 = FB_READL(src + 1);
- 				d1 = fb_rev_pixels_in_long(d1, bswapmask);
--				d0 = d0<<left | d1>>right;
-+				d0 = d0 >> right | d1 << left;
- 			}
- 			d0 = fb_rev_pixels_in_long(d0, bswapmask);
- 			FB_WRITEL(comp(d0, FB_READL(dst), first), dst);
-@@ -135,60 +143,59 @@ bitcpy(struct fb_info *p, unsigned long
- 			if (shift > 0) {
- 				// Single source word
- 				d1 = d0;
--				d0 >>= right;
--				dst++;
-+				d0 <<= left;
- 				n -= bits - dst_idx;
- 			} else {
- 				// 2 source words
- 				d1 = FB_READL(src++);
- 				d1 = fb_rev_pixels_in_long(d1, bswapmask);
- 
--				d0 = d0<<left | d1>>right;
--				dst++;
-+				d0 = d0 >> right | d1 << left;
- 				n -= bits - dst_idx;
- 			}
- 			d0 = fb_rev_pixels_in_long(d0, bswapmask);
- 			FB_WRITEL(comp(d0, FB_READL(dst), first), dst);
- 			d0 = d1;
-+			dst++;
- 
- 			// Main chunk
- 			m = n % bits;
- 			n /= bits;
- 			while ((n >= 4) && !bswapmask) {
- 				d1 = FB_READL(src++);
--				FB_WRITEL(d0 << left | d1 >> right, dst++);
-+				FB_WRITEL(d0 >> right | d1 << left, dst++);
- 				d0 = d1;
- 				d1 = FB_READL(src++);
--				FB_WRITEL(d0 << left | d1 >> right, dst++);
-+				FB_WRITEL(d0 >> right | d1 << left, dst++);
- 				d0 = d1;
- 				d1 = FB_READL(src++);
--				FB_WRITEL(d0 << left | d1 >> right, dst++);
-+				FB_WRITEL(d0 >> right | d1 << left, dst++);
- 				d0 = d1;
- 				d1 = FB_READL(src++);
--				FB_WRITEL(d0 << left | d1 >> right, dst++);
-+				FB_WRITEL(d0 >> right | d1 << left, dst++);
- 				d0 = d1;
- 				n -= 4;
- 			}
- 			while (n--) {
- 				d1 = FB_READL(src++);
- 				d1 = fb_rev_pixels_in_long(d1, bswapmask);
--				d0 = d0 << left | d1 >> right;
-+				d0 = d0 >> right | d1 << left;
- 				d0 = fb_rev_pixels_in_long(d0, bswapmask);
- 				FB_WRITEL(d0, dst++);
- 				d0 = d1;
- 			}
- 
- 			// Trailing bits
--			if (last) {
--				if (m <= right) {
-+			if (m) {
-+				if (m <= bits - right) {
- 					// Single source word
--					d0 <<= left;
-+					d0 >>= right;
- 				} else {
- 					// 2 source words
- 					d1 = FB_READL(src);
- 					d1 = fb_rev_pixels_in_long(d1,
- 								bswapmask);
--					d0 = d0<<left | d1>>right;
-+					d0 = d0 >> right | d1 << left;
- 				}
- 				d0 = fb_rev_pixels_in_long(d0, bswapmask);
- 				FB_WRITEL(comp(d0, FB_READL(dst), last), dst);
-@@ -202,43 +209,46 @@ bitcpy(struct fb_info *p, unsigned long
-      */
- 
- static void
--bitcpy_rev(struct fb_info *p, unsigned long __iomem *dst, int dst_idx,
--		const unsigned long __iomem *src, int src_idx, int bits,
-+bitcpy_rev(struct fb_info *p, unsigned long __iomem *dst, unsigned dst_idx,
-+		const unsigned long __iomem *src, unsigned src_idx, int bits,
- 		unsigned n, u32 bswapmask)
- {
- 	unsigned long first, last;
- 	int shift;
- 
--	dst += (n-1)/bits;
--	src += (n-1)/bits;
--	if ((n-1) % bits) {
--		dst_idx += (n-1) % bits;
--		dst += dst_idx >> (ffs(bits) - 1);
--		dst_idx &= bits - 1;
--		src_idx += (n-1) % bits;
--		src += src_idx >> (ffs(bits) - 1);
--		src_idx &= bits - 1;
--	}
-+#if 0
-+	/*
-+	 * If you suspect bug in this function, compare it with this simple
-+	 * memmove implementation.
-+	 */
-+	fb_memmove((char *)dst + ((dst_idx & (bits - 1))) / 8,
-+		   (char *)src + ((src_idx & (bits - 1))) / 8, n / 8);
-+	return;
-+#endif
-+
-+	dst += (dst_idx + n - 1) / bits;
-+	src += (src_idx + n - 1) / bits;
-+	dst_idx = (dst_idx + n - 1) % bits;
-+	src_idx = (src_idx + n - 1) % bits;
- 
- 	shift = dst_idx-src_idx;
- 
--	first = fb_shifted_pixels_mask_long(p, bits - 1 - dst_idx, bswapmask);
--	last = ~fb_shifted_pixels_mask_long(p, bits - 1 - ((dst_idx-n) % bits),
--					    bswapmask);
-+	first = ~fb_shifted_pixels_mask_long(p, (dst_idx + 1) % bits, bswapmask);
-+	last = fb_shifted_pixels_mask_long(p, (bits + dst_idx + 1 - n) % bits, bswapmask);
- 
- 	if (!shift) {
- 		// Same alignment for source and dest
- 
- 		if ((unsigned long)dst_idx+1 >= n) {
- 			// Single word
--			if (last)
--				first &= last;
--			FB_WRITEL( comp( FB_READL(src), FB_READL(dst), first), dst);
-+			if (first)
-+				last &= first;
-+			FB_WRITEL( comp( FB_READL(src), FB_READL(dst), last), dst);
- 		} else {
- 			// Multiple destination words
- 
- 			// Leading bits
--			if (first != ~0UL) {
-+			if (first) {
- 				FB_WRITEL( comp( FB_READL(src), FB_READL(dst), first), dst);
- 				dst--;
- 				src--;
-@@ -262,7 +272,7 @@ bitcpy_rev(struct fb_info *p, unsigned l
- 				FB_WRITEL(FB_READL(src--), dst--);
- 
- 			// Trailing bits
--			if (last)
-+			if (last != -1UL)
- 				FB_WRITEL( comp( FB_READL(src), FB_READL(dst), last), dst);
- 		}
- 	} else {
-@@ -270,29 +280,28 @@ bitcpy_rev(struct fb_info *p, unsigned l
- 		unsigned long d0, d1;
- 		int m;
- 
--		int const left = -shift & (bits-1);
--		int const right = shift & (bits-1);
--		bswapmask &= shift;
-+		int const left = shift & (bits-1);
-+		int const right = -shift & (bits-1);
- 
- 		if ((unsigned long)dst_idx+1 >= n) {
- 			// Single destination word
--			if (last)
--				first &= last;
-+			if (first)
-+				last &= first;
- 			d0 = FB_READL(src);
- 			if (shift < 0) {
- 				// Single source word
--				d0 <<= left;
-+				d0 >>= right;
- 			} else if (1+(unsigned long)src_idx >= n) {
- 				// Single source word
--				d0 >>= right;
-+				d0 <<= left;
- 			} else {
- 				// 2 source words
- 				d1 = FB_READL(src - 1);
- 				d1 = fb_rev_pixels_in_long(d1, bswapmask);
--				d0 = d0>>right | d1<<left;
-+				d0 = d0 << left | d1 >> right;
- 			}
- 			d0 = fb_rev_pixels_in_long(d0, bswapmask);
--			FB_WRITEL(comp(d0, FB_READL(dst), first), dst);
-+			FB_WRITEL(comp(d0, FB_READL(dst), last), dst);
- 		} else {
- 			// Multiple destination words
- 			/** We must always remember the last value read, because in case
-@@ -307,12 +316,12 @@ bitcpy_rev(struct fb_info *p, unsigned l
- 			if (shift < 0) {
- 				// Single source word
- 				d1 = d0;
--				d0 <<= left;
-+				d0 >>= right;
- 			} else {
- 				// 2 source words
- 				d1 = FB_READL(src--);
- 				d1 = fb_rev_pixels_in_long(d1, bswapmask);
--				d0 = d0>>right | d1<<left;
-+				d0 = d0 << left | d1 >> right;
- 			}
- 			d0 = fb_rev_pixels_in_long(d0, bswapmask);
- 			FB_WRITEL(comp(d0, FB_READL(dst), first), dst);
-@@ -325,39 +334,39 @@ bitcpy_rev(struct fb_info *p, unsigned l
- 			n /= bits;
- 			while ((n >= 4) && !bswapmask) {
- 				d1 = FB_READL(src--);
--				FB_WRITEL(d0 >> right | d1 << left, dst--);
-+				FB_WRITEL(d0 << left | d1 >> right, dst--);
- 				d0 = d1;
- 				d1 = FB_READL(src--);
--				FB_WRITEL(d0 >> right | d1 << left, dst--);
-+				FB_WRITEL(d0 << left | d1 >> right, dst--);
- 				d0 = d1;
- 				d1 = FB_READL(src--);
--				FB_WRITEL(d0 >> right | d1 << left, dst--);
-+				FB_WRITEL(d0 << left | d1 >> right, dst--);
- 				d0 = d1;
- 				d1 = FB_READL(src--);
--				FB_WRITEL(d0 >> right | d1 << left, dst--);
-+				FB_WRITEL(d0 << left | d1 >> right, dst--);
- 				d0 = d1;
- 				n -= 4;
- 			}
- 			while (n--) {
- 				d1 = FB_READL(src--);
- 				d1 = fb_rev_pixels_in_long(d1, bswapmask);
--				d0 = d0 >> right | d1 << left;
-+				d0 = d0 << left | d1 >> right;
- 				d0 = fb_rev_pixels_in_long(d0, bswapmask);
- 				FB_WRITEL(d0, dst--);
- 				d0 = d1;
- 			}
- 
- 			// Trailing bits
--			if (last) {
--				if (m <= left) {
-+			if (m) {
-+				if (m <= bits - left) {
- 					// Single source word
--					d0 >>= right;
-+					d0 <<= left;
- 				} else {
- 					// 2 source words
- 					d1 = FB_READL(src);
- 					d1 = fb_rev_pixels_in_long(d1,
- 								bswapmask);
--					d0 = d0>>right | d1<<left;
-+					d0 = d0 << left | d1 >> right;
- 				}
- 				d0 = fb_rev_pixels_in_long(d0, bswapmask);
- 				FB_WRITEL(comp(d0, FB_READL(dst), last), dst);
-@@ -371,9 +380,9 @@ void cfb_copyarea(struct fb_info *p, con
- 	u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy;
- 	u32 height = area->height, width = area->width;
- 	unsigned long const bits_per_line = p->fix.line_length*8u;
--	unsigned long __iomem *dst = NULL, *src = NULL;
-+	unsigned long __iomem *base = NULL;
- 	int bits = BITS_PER_LONG, bytes = bits >> 3;
--	int dst_idx = 0, src_idx = 0, rev_copy = 0;
-+	unsigned dst_idx = 0, src_idx = 0, rev_copy = 0;
- 	u32 bswapmask = fb_compute_bswapmask(p);
- 
- 	if (p->state != FBINFO_STATE_RUNNING)
-@@ -389,7 +398,7 @@ void cfb_copyarea(struct fb_info *p, con
- 
- 	// split the base of the framebuffer into a long-aligned address and the
- 	// index of the first bit
--	dst = src = (unsigned long __iomem *)((unsigned long)p->screen_base & ~(bytes-1));
-+	base = (unsigned long __iomem *)((unsigned long)p->screen_base & ~(bytes-1));
- 	dst_idx = src_idx = 8*((unsigned long)p->screen_base & (bytes-1));
- 	// add offset of source and target area
- 	dst_idx += dy*bits_per_line + dx*p->var.bits_per_pixel;
-@@ -402,20 +411,14 @@ void cfb_copyarea(struct fb_info *p, con
- 		while (height--) {
- 			dst_idx -= bits_per_line;
- 			src_idx -= bits_per_line;
--			dst += dst_idx >> (ffs(bits) - 1);
--			dst_idx &= (bytes - 1);
--			src += src_idx >> (ffs(bits) - 1);
--			src_idx &= (bytes - 1);
--			bitcpy_rev(p, dst, dst_idx, src, src_idx, bits,
-+			bitcpy_rev(p, base + (dst_idx / bits), dst_idx % bits,
-+				base + (src_idx / bits), src_idx % bits, bits,
- 				width*p->var.bits_per_pixel, bswapmask);
- 		}
- 	} else {
- 		while (height--) {
--			dst += dst_idx >> (ffs(bits) - 1);
--			dst_idx &= (bytes - 1);
--			src += src_idx >> (ffs(bits) - 1);
--			src_idx &= (bytes - 1);
--			bitcpy(p, dst, dst_idx, src, src_idx, bits,
-+			bitcpy(p, base + (dst_idx / bits), dst_idx % bits,
-+				base + (src_idx / bits), src_idx % bits, bits,
- 				width*p->var.bits_per_pixel, bswapmask);
- 			dst_idx += bits_per_line;
- 			src_idx += bits_per_line;
+Could I get this reviewed, hopefully for inclusion into v3.7.
+
+Regards
+Tony Prisk
+
+
+Tony Prisk (8):
+  arm: vt8500: Add device tree files for VIA/Wondermedia SoC's
+  rtc: vt8500: Add devicetree support for vt8500-rtc
+  serial: vt8500: Add devicetree support for vt8500-serial
+  usb: vt8500: Add devicetree support for vt8500-ehci and -uhci.
+  video: vt8500: Add devicetree support for vt8500-fb and wm8505-fb
+  arm: vt8500: Update arch-vt8500 to devicetree support.
+  arm: vt8500: doc: Add device tree bindings for arch-vt8500 devices
+  ARM: vt8500: gpio: Devicetree support for arch-vt8500
+
+ Documentation/devicetree/bindings/arm/vt8500.txt   |   15 +
+ .../bindings/arm/vt8500/via,vt8500-intc.txt        |   16 +
+ .../bindings/arm/vt8500/via,vt8500-pmc.txt         |   13 +
+ .../bindings/arm/vt8500/via,vt8500-timer.txt       |   15 +
+ .../devicetree/bindings/gpio/gpio_vt8500.txt       |   24 ++
+ .../devicetree/bindings/rtc/via,vt8500-rtc.txt     |   15 +
+ .../bindings/tty/serial/via,vt8500-uart.txt        |   15 +
+ .../devicetree/bindings/usb/platform-uhci.txt      |   15 +
+ .../devicetree/bindings/usb/via,vt8500-ehci.txt    |   15 +
+ .../devicetree/bindings/vendor-prefixes.txt        |    2 +
+ .../devicetree/bindings/video/via,vt8500-fb.txt    |   46 +++
+ .../devicetree/bindings/video/wm,prizm-ge-rops.txt |   13 +
+ .../devicetree/bindings/video/wm,wm8505-fb.txt     |   20 ++
+ arch/arm/Kconfig                                   |    2 +
+ arch/arm/boot/dts/vt8500.dtsi                      |   99 ++++++
+ arch/arm/boot/dts/vt8500_ref.dts                   |   31 ++
+ arch/arm/boot/dts/wm8505.dtsi                      |  125 ++++++++
+ arch/arm/boot/dts/wm8505_ref.dts                   |   31 ++
+ arch/arm/boot/dts/wm8650.dtsi                      |   95 ++++++
+ arch/arm/boot/dts/wm8650_ref.dts                   |   31 ++
+ arch/arm/mach-vt8500/Kconfig                       |   72 +----
+ arch/arm/mach-vt8500/Makefile                      |    9 +-
+ arch/arm/mach-vt8500/bv07.c                        |   80 -----
+ arch/arm/mach-vt8500/common.h                      |   25 ++
+ arch/arm/mach-vt8500/devices-vt8500.c              |   91 ------
+ arch/arm/mach-vt8500/devices-wm8505.c              |   99 ------
+ arch/arm/mach-vt8500/devices.c                     |  270 -----------------
+ arch/arm/mach-vt8500/devices.h                     |   88 ------
+ arch/arm/mach-vt8500/gpio.c                        |  240 ---------------
+ arch/arm/mach-vt8500/include/mach/restart.h        |    4 +-
+ arch/arm/mach-vt8500/include/mach/vt8500_irqs.h    |   88 ------
+ arch/arm/mach-vt8500/include/mach/vt8500_regs.h    |   79 -----
+ arch/arm/mach-vt8500/include/mach/wm8505_irqs.h    |  115 -------
+ arch/arm/mach-vt8500/include/mach/wm8505_regs.h    |   78 -----
+ arch/arm/mach-vt8500/irq.c                         |  160 +++++-----
+ arch/arm/mach-vt8500/restart.c                     |   54 ----
+ arch/arm/mach-vt8500/timer.c                       |   56 +++-
+ arch/arm/mach-vt8500/vt8500.c                      |  192 ++++++++++++
+ arch/arm/mach-vt8500/wm8505_7in.c                  |   79 -----
+ drivers/gpio/Kconfig                               |    6 +
+ drivers/gpio/Makefile                              |    1 +
+ drivers/gpio/gpio-vt8500.c                         |  318 ++++++++++++++++++++
+ drivers/rtc/rtc-vt8500.c                           |    7 +
+ drivers/tty/serial/vt8500_serial.c                 |    7 +
+ drivers/usb/host/Kconfig                           |    4 +-
+ drivers/usb/host/ehci-vt8500.c                     |   24 +-
+ drivers/usb/host/uhci-hcd.c                        |    5 +
+ drivers/usb/host/uhci-platform.c                   |  166 ++++++++++
+ drivers/video/Kconfig                              |    6 +-
+ drivers/video/vt8500lcdfb.c                        |   77 ++++-
+ drivers/video/wm8505fb.c                           |   95 +++++-
+ drivers/video/wmt_ge_rops.c                        |    7 +
+ 52 files changed, 1674 insertions(+), 1566 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/vt8500.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/vt8500/via,vt8500-intc.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/vt8500/via,vt8500-pmc.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/vt8500/via,vt8500-timer.txt
+ create mode 100644 Documentation/devicetree/bindings/gpio/gpio_vt8500.txt
+ create mode 100644 Documentation/devicetree/bindings/rtc/via,vt8500-rtc.txt
+ create mode 100644 Documentation/devicetree/bindings/tty/serial/via,vt8500-uart.txt
+ create mode 100644 Documentation/devicetree/bindings/usb/platform-uhci.txt
+ create mode 100644 Documentation/devicetree/bindings/usb/via,vt8500-ehci.txt
+ create mode 100644 Documentation/devicetree/bindings/video/via,vt8500-fb.txt
+ create mode 100644 Documentation/devicetree/bindings/video/wm,prizm-ge-rops.txt
+ create mode 100644 Documentation/devicetree/bindings/video/wm,wm8505-fb.txt
+ create mode 100644 arch/arm/boot/dts/vt8500.dtsi
+ create mode 100644 arch/arm/boot/dts/vt8500_ref.dts
+ create mode 100644 arch/arm/boot/dts/wm8505.dtsi
+ create mode 100644 arch/arm/boot/dts/wm8505_ref.dts
+ create mode 100644 arch/arm/boot/dts/wm8650.dtsi
+ create mode 100644 arch/arm/boot/dts/wm8650_ref.dts
+ delete mode 100644 arch/arm/mach-vt8500/bv07.c
+ create mode 100644 arch/arm/mach-vt8500/common.h
+ delete mode 100644 arch/arm/mach-vt8500/devices-vt8500.c
+ delete mode 100644 arch/arm/mach-vt8500/devices-wm8505.c
+ delete mode 100644 arch/arm/mach-vt8500/devices.c
+ delete mode 100644 arch/arm/mach-vt8500/devices.h
+ delete mode 100644 arch/arm/mach-vt8500/gpio.c
+ delete mode 100644 arch/arm/mach-vt8500/include/mach/vt8500_irqs.h
+ delete mode 100644 arch/arm/mach-vt8500/include/mach/vt8500_regs.h
+ delete mode 100644 arch/arm/mach-vt8500/include/mach/wm8505_irqs.h
+ delete mode 100644 arch/arm/mach-vt8500/include/mach/wm8505_regs.h
+ delete mode 100644 arch/arm/mach-vt8500/restart.c
+ create mode 100644 arch/arm/mach-vt8500/vt8500.c
+ delete mode 100644 arch/arm/mach-vt8500/wm8505_7in.c
+ create mode 100644 drivers/gpio/gpio-vt8500.c
+ create mode 100644 drivers/usb/host/uhci-platform.c
+
+-- 
+1.7.9.5
 

@@ -1,556 +1,61 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Thu, 16 Aug 2012 11:30:07 +0000
-Subject: [PATCH V4 1/6] OMAPDSS: DISPC: cleanup cpu_is_xxxx checks
-Message-Id: <1345115887-6730-1-git-send-email-cmahapatra@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 09 Aug 2012 09:19:06 +0000
+Subject: [PATCH v2 1/5] OMAPDSS: APPLY: Constify timings argument in dss_mgr_set_timings
+Message-Id: <1344503230-18550-2-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344859135-4470-1-git-send-email-cmahapatra@ti.com>
-In-Reply-To: <1344859135-4470-1-git-send-email-cmahapatra@ti.com>
+References: <1344503230-18550-1-git-send-email-archit@ti.com>
+In-Reply-To: <1344503230-18550-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-All the cpu_is checks have been moved to dispc_init_features function providing
-a much more generic and cleaner interface. The OMAP version and revision
-specific functions and data are initialized by dispc_features structure which is
-local to dispc.c.
+The function dss_mgr_set_timings is supposed to apply timings passed by an
+interface driver. It is not supposed to change the timings. Add const qualifier
+to the omap_video_timings pointer argument in dss_mgr_set_timings().
 
-Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |  428 +++++++++++++++++++++++++--------------
- 1 file changed, 273 insertions(+), 155 deletions(-)
+ drivers/video/omap2/dss/apply.c |    4 ++--
+ drivers/video/omap2/dss/dss.h   |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 5b289c5..0415845 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -81,6 +81,23 @@ struct dispc_irq_stats {
- 	unsigned irqs[32];
- };
- 
-+struct dispc_features {
-+	int hp_max;
-+	int vp_max;
-+	int sw_max;
-+	int sw_start;
-+	int fp_start;
-+	int bp_start;
-+	int (*calc_scaling) (enum omap_channel channel,
-+		const struct omap_video_timings *mgr_timings,
-+		u16 width, u16 height, u16 out_width, u16 out_height,
-+		enum omap_color_mode color_mode, bool *five_taps,
-+		int *x_predecim, int *y_predecim, int *decim_x, int *decim_y,
-+		u16 pos_x, unsigned long *core_clk);
-+	unsigned long (*calc_core_clk) (enum omap_channel channel,
-+		u16 width, u16 height, u16 out_width, u16 out_height);
-+};
-+
- static struct {
- 	struct platform_device *pdev;
- 	void __iomem    *base;
-@@ -101,6 +118,8 @@ static struct {
- 	bool		ctx_valid;
- 	u32		ctx[DISPC_SZ_REGS / sizeof(u32)];
- 
-+	const struct dispc_features *feat;
-+
- #ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
- 	spinlock_t irq_stats_lock;
- 	struct dispc_irq_stats irq_stats;
-@@ -1939,7 +1958,18 @@ static unsigned long calc_core_clk_five_taps(enum omap_channel channel,
- 	return core_clk;
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 0fefc68..52a5940 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -1302,7 +1302,7 @@ err:
  }
  
--static unsigned long calc_core_clk(enum omap_channel channel, u16 width,
-+static unsigned long calc_core_clk_24xx(enum omap_channel channel, u16 width,
-+		u16 height, u16 out_width, u16 out_height)
-+{
-+	unsigned long pclk = dispc_mgr_pclk_rate(channel);
-+
-+	if (height > out_height && width > out_width)
-+		return pclk * 4;
-+	else
-+		return pclk * 2;
-+}
-+
-+static unsigned long calc_core_clk_34xx(enum omap_channel channel, u16 width,
- 		u16 height, u16 out_width, u16 out_height)
+ static void dss_apply_mgr_timings(struct omap_overlay_manager *mgr,
+-		struct omap_video_timings *timings)
++		const struct omap_video_timings *timings)
  {
- 	unsigned int hf, vf;
-@@ -1958,25 +1988,163 @@ static unsigned long calc_core_clk(enum omap_channel channel, u16 width,
- 		hf = 2;
- 	else
- 		hf = 1;
--
- 	if (height > out_height)
- 		vf = 2;
- 	else
- 		vf = 1;
+ 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
  
--	if (cpu_is_omap24xx()) {
--		if (vf > 1 && hf > 1)
--			return pclk * 4;
--		else
--			return pclk * 2;
--	} else if (cpu_is_omap34xx()) {
--		return pclk * vf * hf;
--	} else {
--		if (hf > 1)
--			return DIV_ROUND_UP(pclk, out_width) * width;
--		else
--			return pclk;
-+	return pclk * vf * hf;
-+}
-+
-+static unsigned long calc_core_clk_44xx(enum omap_channel channel, u16 width,
-+		u16 height, u16 out_width, u16 out_height)
-+{
-+	unsigned long pclk = dispc_mgr_pclk_rate(channel);
-+
-+	if (width > out_width)
-+		return DIV_ROUND_UP(pclk, out_width) * width;
-+	else
-+		return pclk;
-+}
-+
-+static int dispc_ovl_calc_scaling_24xx(enum omap_channel channel,
-+		const struct omap_video_timings *mgr_timings,
-+		u16 width, u16 height, u16 out_width, u16 out_height,
-+		enum omap_color_mode color_mode, bool *five_taps,
-+		int *x_predecim, int *y_predecim, int *decim_x, int *decim_y,
-+		u16 pos_x, unsigned long *core_clk)
-+{
-+	int error;
-+	u16 in_width, in_height;
-+	int min_factor = min(*decim_x, *decim_y);
-+	const int maxsinglelinewidth +			dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
-+	*five_taps = false;
-+
-+	do {
-+		in_height = DIV_ROUND_UP(height, *decim_y);
-+		in_width = DIV_ROUND_UP(width, *decim_x);
-+		*core_clk = dispc.feat->calc_core_clk(channel, in_width,
-+				in_height, out_width, out_height);
-+		error = (in_width > maxsinglelinewidth || !*core_clk ||
-+			*core_clk > dispc_core_clk_rate());
-+		if (error) {
-+			if (*decim_x = *decim_y) {
-+				*decim_x = min_factor;
-+				++*decim_y;
-+			} else {
-+				swap(*decim_x, *decim_y);
-+				if (*decim_x < *decim_y)
-+					++*decim_x;
-+			}
-+		}
-+	} while (*decim_x <= *x_predecim && *decim_y <= *y_predecim && error);
-+
-+	if (in_width > maxsinglelinewidth) {
-+		DSSERR("Cannot scale max input width exceeded");
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+static int dispc_ovl_calc_scaling_34xx(enum omap_channel channel,
-+		const struct omap_video_timings *mgr_timings,
-+		u16 width, u16 height, u16 out_width, u16 out_height,
-+		enum omap_color_mode color_mode, bool *five_taps,
-+		int *x_predecim, int *y_predecim, int *decim_x, int *decim_y,
-+		u16 pos_x, unsigned long *core_clk)
-+{
-+	int error;
-+	u16 in_width, in_height;
-+	int min_factor = min(*decim_x, *decim_y);
-+	const int maxsinglelinewidth +			dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
-+
-+	do {
-+		in_height = DIV_ROUND_UP(height, *decim_y);
-+		in_width = DIV_ROUND_UP(width, *decim_x);
-+		*core_clk = calc_core_clk_five_taps(channel, mgr_timings,
-+			in_width, in_height, out_width, out_height, color_mode);
-+
-+		error = check_horiz_timing_omap3(channel, mgr_timings, pos_x,
-+			in_width, in_height, out_width, out_height);
-+
-+		if (in_width > maxsinglelinewidth)
-+			if (in_height > out_height &&
-+						in_height < out_height * 2)
-+				*five_taps = false;
-+		if (!*five_taps)
-+			*core_clk = dispc.feat->calc_core_clk(channel, in_width,
-+					in_height, out_width, out_height);
-+
-+		error = (error || in_width > maxsinglelinewidth * 2 ||
-+			(in_width > maxsinglelinewidth && *five_taps) ||
-+			!*core_clk || *core_clk > dispc_core_clk_rate());
-+		if (error) {
-+			if (*decim_x = *decim_y) {
-+				*decim_x = min_factor;
-+				++*decim_y;
-+			} else {
-+				swap(*decim_x, *decim_y);
-+				if (*decim_x < *decim_y)
-+					++*decim_x;
-+			}
-+		}
-+	} while (*decim_x <= *x_predecim && *decim_y <= *y_predecim && error);
-+
-+	if (check_horiz_timing_omap3(channel, mgr_timings, pos_x, width, height,
-+		out_width, out_height)){
-+			DSSERR("horizontal timing too tight\n");
-+			return -EINVAL;
- 	}
-+
-+	if (in_width > (maxsinglelinewidth * 2)) {
-+		DSSERR("Cannot setup scaling");
-+		DSSERR("width exceeds maximum width possible");
-+		return -EINVAL;
-+	}
-+
-+	if (in_width > maxsinglelinewidth && *five_taps) {
-+		DSSERR("cannot setup scaling with five taps");
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+static int dispc_ovl_calc_scaling_44xx(enum omap_channel channel,
-+		const struct omap_video_timings *mgr_timings,
-+		u16 width, u16 height, u16 out_width, u16 out_height,
-+		enum omap_color_mode color_mode, bool *five_taps,
-+		int *x_predecim, int *y_predecim, int *decim_x, int *decim_y,
-+		u16 pos_x, unsigned long *core_clk)
-+{
-+	u16 in_width, in_width_max;
-+	int decim_x_min = *decim_x;
-+	u16 in_height = DIV_ROUND_UP(height, *decim_y);
-+	const int maxsinglelinewidth +				dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
-+
-+	in_width_max = dispc_core_clk_rate() /
-+			DIV_ROUND_UP(dispc_mgr_pclk_rate(channel), out_width);
-+	*decim_x = DIV_ROUND_UP(width, in_width_max);
-+
-+	*decim_x = *decim_x > decim_x_min ? *decim_x : decim_x_min;
-+	if (*decim_x > *x_predecim)
-+		return -EINVAL;
-+
-+	do {
-+		in_width = DIV_ROUND_UP(width, *decim_x);
-+	} while (*decim_x <= *x_predecim &&
-+			in_width > maxsinglelinewidth && ++*decim_x);
-+
-+	if (in_width > maxsinglelinewidth) {
-+		DSSERR("Cannot scale width exceeds max line width");
-+		return -EINVAL;
-+	}
-+
-+	*core_clk = dispc.feat->calc_core_clk(channel, in_width, in_height,
-+				out_width, out_height);
-+	return 0;
+@@ -1311,7 +1311,7 @@ static void dss_apply_mgr_timings(struct omap_overlay_manager *mgr,
  }
  
- static int dispc_ovl_calc_scaling(enum omap_plane plane,
-@@ -1988,12 +2156,9 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
+ void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
+-		struct omap_video_timings *timings)
++		const struct omap_video_timings *timings)
  {
- 	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
- 	const int maxdownscale = dss_feat_get_param_max(FEAT_PARAM_DOWNSCALE);
--	const int maxsinglelinewidth -				dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
- 	const int max_decim_limit = 16;
- 	unsigned long core_clk = 0;
--	int decim_x, decim_y, error, min_factor;
--	u16 in_width, in_height, in_width_max = 0;
-+	int decim_x, decim_y, ret;
+ 	unsigned long flags;
  
- 	if (width = out_width && height = out_height)
- 		return 0;
-@@ -2017,118 +2182,17 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
- 	decim_x = DIV_ROUND_UP(DIV_ROUND_UP(width, out_width), maxdownscale);
- 	decim_y = DIV_ROUND_UP(DIV_ROUND_UP(height, out_height), maxdownscale);
- 
--	min_factor = min(decim_x, decim_y);
--
- 	if (decim_x > *x_predecim || out_width > width * 8)
- 		return -EINVAL;
- 
- 	if (decim_y > *y_predecim || out_height > height * 8)
- 		return -EINVAL;
- 
--	if (cpu_is_omap24xx()) {
--		*five_taps = false;
--
--		do {
--			in_height = DIV_ROUND_UP(height, decim_y);
--			in_width = DIV_ROUND_UP(width, decim_x);
--			core_clk = calc_core_clk(channel, in_width, in_height,
--					out_width, out_height);
--			error = (in_width > maxsinglelinewidth || !core_clk ||
--				core_clk > dispc_core_clk_rate());
--			if (error) {
--				if (decim_x = decim_y) {
--					decim_x = min_factor;
--					decim_y++;
--				} else {
--					swap(decim_x, decim_y);
--					if (decim_x < decim_y)
--						decim_x++;
--				}
--			}
--		} while (decim_x <= *x_predecim && decim_y <= *y_predecim &&
--				error);
--
--		if (in_width > maxsinglelinewidth) {
--			DSSERR("Cannot scale max input width exceeded");
--			return -EINVAL;
--		}
--	} else if (cpu_is_omap34xx()) {
--
--		do {
--			in_height = DIV_ROUND_UP(height, decim_y);
--			in_width = DIV_ROUND_UP(width, decim_x);
--			core_clk = calc_core_clk_five_taps(channel, mgr_timings,
--				in_width, in_height, out_width, out_height,
--				color_mode);
--
--			error = check_horiz_timing_omap3(channel, mgr_timings,
--				pos_x, in_width, in_height, out_width,
--				out_height);
--
--			if (in_width > maxsinglelinewidth)
--				if (in_height > out_height &&
--					in_height < out_height * 2)
--					*five_taps = false;
--			if (!*five_taps)
--				core_clk = calc_core_clk(channel, in_width,
--					in_height, out_width, out_height);
--			error = (error || in_width > maxsinglelinewidth * 2 ||
--				(in_width > maxsinglelinewidth && *five_taps) ||
--				!core_clk || core_clk > dispc_core_clk_rate());
--			if (error) {
--				if (decim_x = decim_y) {
--					decim_x = min_factor;
--					decim_y++;
--				} else {
--					swap(decim_x, decim_y);
--					if (decim_x < decim_y)
--						decim_x++;
--				}
--			}
--		} while (decim_x <= *x_predecim && decim_y <= *y_predecim
--			&& error);
--
--		if (check_horiz_timing_omap3(channel, mgr_timings, pos_x, width,
--			height, out_width, out_height)){
--				DSSERR("horizontal timing too tight\n");
--				return -EINVAL;
--		}
--
--		if (in_width > (maxsinglelinewidth * 2)) {
--			DSSERR("Cannot setup scaling");
--			DSSERR("width exceeds maximum width possible");
--			return -EINVAL;
--		}
--
--		if (in_width > maxsinglelinewidth && *five_taps) {
--			DSSERR("cannot setup scaling with five taps");
--			return -EINVAL;
--		}
--	} else {
--		int decim_x_min = decim_x;
--		in_height = DIV_ROUND_UP(height, decim_y);
--		in_width_max = dispc_core_clk_rate() /
--				DIV_ROUND_UP(dispc_mgr_pclk_rate(channel),
--						out_width);
--		decim_x = DIV_ROUND_UP(width, in_width_max);
--
--		decim_x = decim_x > decim_x_min ? decim_x : decim_x_min;
--		if (decim_x > *x_predecim)
--			return -EINVAL;
--
--		do {
--			in_width = DIV_ROUND_UP(width, decim_x);
--		} while (decim_x <= *x_predecim &&
--				in_width > maxsinglelinewidth && decim_x++);
--
--		if (in_width > maxsinglelinewidth) {
--			DSSERR("Cannot scale width exceeds max line width");
--			return -EINVAL;
--		}
--
--		core_clk = calc_core_clk(channel, in_width, in_height,
--				out_width, out_height);
--	}
-+	ret = dispc.feat->calc_scaling(channel, mgr_timings, width, height,
-+		out_width, out_height, color_mode, five_taps, x_predecim,
-+		y_predecim, &decim_x, &decim_y, pos_x, &core_clk);
-+	if (ret)
-+		return ret;
- 
- 	DSSDBG("required core clk rate = %lu Hz\n", core_clk);
- 	DSSDBG("current core clk rate = %lu Hz\n", dispc_core_clk_rate());
-@@ -2604,24 +2668,13 @@ static bool _dispc_mgr_size_ok(u16 width, u16 height)
- static bool _dispc_lcd_timings_ok(int hsw, int hfp, int hbp,
- 		int vsw, int vfp, int vbp)
- {
--	if (cpu_is_omap24xx() || omap_rev() < OMAP3430_REV_ES3_0) {
--		if (hsw < 1 || hsw > 64 ||
--				hfp < 1 || hfp > 256 ||
--				hbp < 1 || hbp > 256 ||
--				vsw < 1 || vsw > 64 ||
--				vfp < 0 || vfp > 255 ||
--				vbp < 0 || vbp > 255)
--			return false;
--	} else {
--		if (hsw < 1 || hsw > 256 ||
--				hfp < 1 || hfp > 4096 ||
--				hbp < 1 || hbp > 4096 ||
--				vsw < 1 || vsw > 256 ||
--				vfp < 0 || vfp > 4095 ||
--				vbp < 0 || vbp > 4095)
--			return false;
--	}
--
-+	if (hsw < 1 || hsw > dispc.feat->sw_max ||
-+			hfp < 1 || hfp > dispc.feat->hp_max ||
-+			hbp < 1 || hbp > dispc.feat->hp_max ||
-+			vsw < 1 || vsw > dispc.feat->sw_max ||
-+			vfp < 0 || vfp > dispc.feat->vp_max ||
-+			vbp < 0 || vbp > dispc.feat->vp_max)
-+		return false;
- 	return true;
- }
- 
-@@ -2653,19 +2706,12 @@ static void _dispc_mgr_set_lcd_timings(enum omap_channel channel, int hsw,
- 	u32 timing_h, timing_v, l;
- 	bool onoff, rf, ipc;
- 
--	if (cpu_is_omap24xx() || omap_rev() < OMAP3430_REV_ES3_0) {
--		timing_h = FLD_VAL(hsw-1, 5, 0) | FLD_VAL(hfp-1, 15, 8) |
--			FLD_VAL(hbp-1, 27, 20);
--
--		timing_v = FLD_VAL(vsw-1, 5, 0) | FLD_VAL(vfp, 15, 8) |
--			FLD_VAL(vbp, 27, 20);
--	} else {
--		timing_h = FLD_VAL(hsw-1, 7, 0) | FLD_VAL(hfp-1, 19, 8) |
--			FLD_VAL(hbp-1, 31, 20);
--
--		timing_v = FLD_VAL(vsw-1, 7, 0) | FLD_VAL(vfp, 19, 8) |
--			FLD_VAL(vbp, 31, 20);
--	}
-+	timing_h = FLD_VAL(hsw-1, dispc.feat->sw_start, 0) |
-+			FLD_VAL(hfp-1, dispc.feat->fp_start, 8) |
-+			FLD_VAL(hbp-1, dispc.feat->bp_start, 20);
-+	timing_v = FLD_VAL(vsw-1, dispc.feat->sw_start, 0) |
-+			FLD_VAL(vfp, dispc.feat->fp_start, 8) |
-+			FLD_VAL(vbp, dispc.feat->bp_start, 20);
- 
- 	dispc_write_reg(DISPC_TIMING_H(channel), timing_h);
- 	dispc_write_reg(DISPC_TIMING_V(channel), timing_v);
-@@ -3671,6 +3717,74 @@ static void _omap_dispc_initial_config(void)
- 	dispc_ovl_enable_zorder_planes();
- }
- 
-+static const struct dispc_features omap24xx_dispc_features __initconst = {
-+	.hp_max			=	256,
-+	.vp_max			=	255,
-+	.sw_max			=	64,
-+	.sw_start		=	5,
-+	.fp_start		=	15,
-+	.bp_start		=	27,
-+	.calc_scaling		=	dispc_ovl_calc_scaling_24xx,
-+	.calc_core_clk		=	calc_core_clk_24xx,
-+};
-+
-+static const struct dispc_features omap34xx_rev1_0_dispc_features __initconst = {
-+	.hp_max			=	256,
-+	.vp_max			=	255,
-+	.sw_max			=	64,
-+	.sw_start		=	5,
-+	.fp_start		=	15,
-+	.bp_start		=	27,
-+	.calc_scaling		=	dispc_ovl_calc_scaling_34xx,
-+	.calc_core_clk		=	calc_core_clk_34xx,
-+};
-+
-+static const struct dispc_features omap34xx_rev3_0_dispc_features __initconst = {
-+	.hp_max			=	4096,
-+	.vp_max			=	4095,
-+	.sw_max			=	256,
-+	.sw_start		=	7,
-+	.fp_start		=	19,
-+	.bp_start		=	31,
-+	.calc_scaling		=	dispc_ovl_calc_scaling_34xx,
-+	.calc_core_clk		=	calc_core_clk_34xx,
-+};
-+
-+static const struct dispc_features omap44xx_dispc_features __initconst = {
-+	.hp_max			=	4096,
-+	.vp_max			=	4095,
-+	.sw_max			=	256,
-+	.sw_start		=	7,
-+	.fp_start		=	19,
-+	.bp_start		=	31,
-+	.calc_scaling		=	dispc_ovl_calc_scaling_44xx,
-+	.calc_core_clk		=	calc_core_clk_44xx,
-+};
-+
-+static int __init dispc_init_features(struct device *dev)
-+{
-+	dispc.feat = devm_kzalloc(dev, sizeof(*dispc.feat), GFP_KERNEL);
-+	if (!dispc.feat) {
-+		dev_err(dev, "Failed to allocate DISPC Features\n");
-+		return -ENOMEM;
-+	}
-+
-+	if (cpu_is_omap24xx()) {
-+		dispc.feat = &omap24xx_dispc_features;
-+	} else if (cpu_is_omap34xx()) {
-+		if (omap_rev() < OMAP3430_REV_ES3_0)
-+			dispc.feat = &omap34xx_rev1_0_dispc_features;
-+		else
-+			dispc.feat = &omap34xx_rev3_0_dispc_features;
-+	} else if (cpu_is_omap44xx()) {
-+		dispc.feat = &omap44xx_dispc_features;
-+	} else {
-+		return -ENODEV;
-+	}
-+
-+	return 0;
-+}
-+
- /* DISPC HW IP initialisation */
- static int __init omap_dispchw_probe(struct platform_device *pdev)
- {
-@@ -3725,6 +3839,10 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
- 
- 	dispc.dss_clk = clk;
- 
-+	r = dispc_init_features(&dispc.pdev->dev);
-+	if (r)
-+		return r;
-+
- 	pm_runtime_enable(&pdev->dev);
- 
- 	r = dispc_runtime_get();
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 335ee93..8a9630b 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -207,7 +207,7 @@ int dss_mgr_set_device(struct omap_overlay_manager *mgr,
+ 		struct omap_dss_device *dssdev);
+ int dss_mgr_unset_device(struct omap_overlay_manager *mgr);
+ void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
+-		struct omap_video_timings *timings);
++		const struct omap_video_timings *timings);
+ void dss_mgr_set_lcd_config(struct omap_overlay_manager *mgr,
+ 		const struct dss_lcd_mgr_config *config);
+ const struct omap_video_timings *dss_mgr_get_timings(struct omap_overlay_manager *mgr);
 -- 
-1.7.10
+1.7.9.5
 
-changes since V1
-	V2 : moved dispc_ops structure definitions from dss_features.c to dispc.c
-	     renamed dispc_ops to dispc_features
-	V3 : moved dispc_features definitions close to dispc_init_features thereby
-		eliminating various functions declarations from top of dispc.c
-	     used __initdata before dispc_features definitions and __init before
-		dispc_init_features()
-	     initialized dispc.feat with devm_kzalloc
-	     removed definitions of _dispc_lcd_timings_ok_24xx,
-		_dispc_lcd_timings_ok_44xx, _dispc_mgr_set_lcd_timings_hv_24xx and
-		_dispc_mgr_set_lcd_timings_hv_44xx replacing them with appropiate
-		variables
-	V4 : replaced __initdata with __initconst as per guidelines in
-		include/linux/init.h
-	     renamed various dispc_features structures to give consistent naming
-	     removed dispc.feat deinitialization code from omap_dispchw_remove()
-	     added a check for omap4 in dispc_init_features()    
-	     

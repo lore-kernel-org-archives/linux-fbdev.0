@@ -1,134 +1,96 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 23 Aug 2012 20:38:47 +0000
-Subject: Re: [PATCH v2] video: exynos_dp: use devm_clk_get function
-Message-Id: <503694D7.9060407@gmx.de>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 09 Aug 2012 11:56:35 +0000
+Subject: [PATCH v2 09/13] OMAPDSS: SDI: Create a function to set timings
+Message-Id: <1344512989-4071-10-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <877gti1t48.fsf@gmail.com>
-In-Reply-To: <877gti1t48.fsf@gmail.com>
+References: <1343817088-29645-1-git-send-email-archit@ti.com>
+ <1344512989-4071-1-git-send-email-archit@ti.com>
+In-Reply-To: <1344512989-4071-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Damien Cassou <damien.cassou@gmail.com>
-Cc: Jingoo Han <jg1.han@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Sachin Kamat <sachin.kamat@linaro.org>
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-On 08/01/2012 04:20 PM, Damien Cassou wrote:
-> From: Damien Cassou <damien.cassou@lifl.fr>
-> 
-> The devm_clk_get function allocates memory that is released when a driver
-> detaches. This patch uses this function for data that is allocated in the probe
-> function of a platform device and is only freed in the remove function.
-> 
-> Additionally, this patch removes a null check after platform_get_resource that
-> is redundant with the one done by devm_request_and_ioremap.
-> 
-> Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
+Create function omapdss_sdi_set_timings(). Configuring new timings is done the
+same way as before, SDI is disabled, and re-enabled with the new timings in
+dssdev. This just moves the code from the panel drivers to the SDI driver.
 
-Applied.
+The panel drivers shouldn't be aware of how SDI manages to configure a new set
+of timings. This should be taken care of by the SDI driver itself.
 
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/displays/panel-acx565akm.c |   13 +------------
+ drivers/video/omap2/dss/sdi.c                  |   17 +++++++++++++++++
+ include/video/omapdss.h                        |    2 ++
+ 3 files changed, 20 insertions(+), 12 deletions(-)
 
-Thanks,
-
-Florian Tobias Schandinat
-
-> 
-> ---
-> Changed subject line and description
->  drivers/video/exynos/exynos_dp_core.c |   27 +++++++--------------------
->  1 file changed, 7 insertions(+), 20 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-> index c6c016a..00fe4f0 100644
-> --- a/drivers/video/exynos/exynos_dp_core.c
-> +++ b/drivers/video/exynos/exynos_dp_core.c
-> @@ -872,7 +872,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  
->  	dp->dev = &pdev->dev;
->  
-> -	dp->clock = clk_get(&pdev->dev, "dp");
-> +	dp->clock = devm_clk_get(&pdev->dev, "dp");
->  	if (IS_ERR(dp->clock)) {
->  		dev_err(&pdev->dev, "failed to get clock\n");
->  		return PTR_ERR(dp->clock);
-> @@ -881,31 +881,24 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  	clk_enable(dp->clock);
->  
->  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	if (!res) {
-> -		dev_err(&pdev->dev, "failed to get registers\n");
-> -		ret = -EINVAL;
-> -		goto err_clock;
-> -	}
->  
->  	dp->reg_base = devm_request_and_ioremap(&pdev->dev, res);
->  	if (!dp->reg_base) {
->  		dev_err(&pdev->dev, "failed to ioremap\n");
-> -		ret = -ENOMEM;
-> -		goto err_clock;
-> +		return -ENOMEM;
->  	}
->  
->  	dp->irq = platform_get_irq(pdev, 0);
->  	if (!dp->irq) {
->  		dev_err(&pdev->dev, "failed to get irq\n");
-> -		ret = -ENODEV;
-> -		goto err_clock;
-> +		return -ENODEV;
->  	}
->  
->  	ret = devm_request_irq(&pdev->dev, dp->irq, exynos_dp_irq_handler, 0,
->  				"exynos-dp", dp);
->  	if (ret) {
->  		dev_err(&pdev->dev, "failed to request irq\n");
-> -		goto err_clock;
-> +		return ret;
->  	}
->  
->  	dp->video_info = pdata->video_info;
-> @@ -917,7 +910,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  	ret = exynos_dp_detect_hpd(dp);
->  	if (ret) {
->  		dev_err(&pdev->dev, "unable to detect hpd\n");
-> -		goto err_clock;
-> +		return ret;
->  	}
->  
->  	exynos_dp_handle_edid(dp);
-> @@ -926,7 +919,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  				dp->video_info->link_rate);
->  	if (ret) {
->  		dev_err(&pdev->dev, "unable to do link train\n");
-> -		goto err_clock;
-> +		return ret;
->  	}
->  
->  	exynos_dp_enable_scramble(dp, 1);
-> @@ -940,17 +933,12 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  	ret = exynos_dp_config_video(dp, dp->video_info);
->  	if (ret) {
->  		dev_err(&pdev->dev, "unable to config video\n");
-> -		goto err_clock;
-> +		return ret;
->  	}
->  
->  	platform_set_drvdata(pdev, dp);
->  
->  	return 0;
-> -
-> -err_clock:
-> -	clk_put(dp->clock);
-> -
-> -	return ret;
->  }
->  
->  static int __devexit exynos_dp_remove(struct platform_device *pdev)
-> @@ -962,7 +950,6 @@ static int __devexit exynos_dp_remove(struct platform_device *pdev)
->  		pdata->phy_exit();
->  
->  	clk_disable(dp->clock);
-> -	clk_put(dp->clock);
->  
->  	return 0;
->  }
-> 
-> 
+diff --git a/drivers/video/omap2/displays/panel-acx565akm.c b/drivers/video/omap2/displays/panel-acx565akm.c
+index eaeed43..11bdc88 100644
+--- a/drivers/video/omap2/displays/panel-acx565akm.c
++++ b/drivers/video/omap2/displays/panel-acx565akm.c
+@@ -731,18 +731,7 @@ static int acx_panel_resume(struct omap_dss_device *dssdev)
+ static void acx_panel_set_timings(struct omap_dss_device *dssdev,
+ 		struct omap_video_timings *timings)
+ {
+-	int r;
+-
+-	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
+-		omapdss_sdi_display_disable(dssdev);
+-
+-	dssdev->panel.timings = *timings;
+-
+-	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
+-		r = omapdss_sdi_display_enable(dssdev);
+-		if (r)
+-			dev_err(&dssdev->dev, "%s enable failed\n", __func__);
+-	}
++	omapdss_sdi_set_timings(dssdev, timings);
+ }
+ 
+ static int acx_panel_check_timings(struct omap_dss_device *dssdev,
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 5d31699..0474962 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -146,6 +146,23 @@ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev)
+ }
+ EXPORT_SYMBOL(omapdss_sdi_display_disable);
+ 
++void omapdss_sdi_set_timings(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings)
++{
++	int r;
++
++	dssdev->panel.timings = *timings;
++
++	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
++		omapdss_sdi_display_disable(dssdev);
++
++		r = omapdss_sdi_display_enable(dssdev);
++		if (r)
++			DSSERR("failed to set new timings\n");
++	}
++}
++EXPORT_SYMBOL(omapdss_sdi_set_timings);
++
+ static int __init sdi_init_display(struct omap_dss_device *dssdev)
+ {
+ 	DSSDBG("SDI init\n");
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index a85b3fb..c5c013e 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -761,6 +761,8 @@ int dpi_check_timings(struct omap_dss_device *dssdev,
+ 
+ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev);
+ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev);
++void omapdss_sdi_set_timings(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings);
+ 
+ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev);
+ void omapdss_rfbi_display_disable(struct omap_dss_device *dssdev);
+-- 
+1.7.9.5
 

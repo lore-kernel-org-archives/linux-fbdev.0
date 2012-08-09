@@ -1,72 +1,50 @@
-From: Alexandre Courbot <acourbot@nvidia.com>
-Date: Fri, 31 Aug 2012 11:34:02 +0000
-Subject: [PATCH v5 0/4] Runtime Interpreted Power Sequences
-Message-Id: <1346412846-17102-1-git-send-email-acourbot@nvidia.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 09 Aug 2012 09:19:08 +0000
+Subject: [PATCH v2 3/5] OMAPDSS: HDMI: Remove omap_dss_device argument from hdmi_compute_pll
+Message-Id: <1344503230-18550-4-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1344503230-18550-1-git-send-email-archit@ti.com>
+In-Reply-To: <1344503230-18550-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>
-Cc: Leela Krishna Amudala <leelakrishna.a@gmail.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, Alexandre Courbot <acourbot@nvidia.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-New revision taking (hopefully) all the feedback received from the previous
-version into account. It's funny how a 30 lines patch to switch my backlight
-turned into a 1500 lines patchset introducing a new framework. And in the end
-my backlight switches just the same.
+The clock related info for DSS modules is not tied anymore to a panel's
+omap_dss_device struct. It's now passed via platform data. The function
+hdmi_compute_pll() do not need the omap_dss_device argument to retieve these
+clocks. They use the api dss_get_platform_clock_config() get the clocks. Remove
+the omap_dss_device argument from hdmi_compute_pll()
 
-So anyway, the main updates are:
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/hdmi.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-* Types of DT steps are now determined by a "type" property and not by the
-  presence of a specific property.
-* Power sequences and their resources are now encapsulated into a "set"
-  structure. I was reluctant to this idea but have to admit now that it is way
-  cleaner.
-* GPIO steps now refer the GPIO phandle directly in the DT instead of by name.
-  The GPIO framework does not work like regulator or PWM in that GPIOs cannot be
-  accessed by name, so it did not make sense anyway. And thanks to that we now
-  have perfect matching between the platform data members and the DT properties,
-  which makes everything more consistent.
-* Moved the implementations of resources into their own file (directly included
-  from the main file) and added an "ops" structure to abstract them. This
-  clearly separates the framework from the resources implementations and should
-  make it easier to add new resources types.
-
-Alexandre Courbot (4):
-  Runtime Interpreted Power Sequences
-  pwm_backlight: use power sequences
-  tegra: dt: add label to tegra20's PWM
-  tegra: ventana: add pwm backlight DT nodes
-
- .../devicetree/bindings/power_seq/power_seq.txt    | 117 ++++++
- .../bindings/video/backlight/pwm-backlight.txt     |  67 +++-
- Documentation/power/power_seq.txt                  | 225 +++++++++++
- arch/arm/boot/dts/tegra20-ventana.dts              |  59 ++-
- arch/arm/boot/dts/tegra20.dtsi                     |   2 +-
- drivers/power/Kconfig                              |   1 +
- drivers/power/Makefile                             |   1 +
- drivers/power/power_seq/Kconfig                    |   2 +
- drivers/power/power_seq/Makefile                   |   1 +
- drivers/power/power_seq/power_seq.c                | 446 +++++++++++++++++++++
- drivers/power/power_seq/power_seq_delay.c          |  51 +++
- drivers/power/power_seq/power_seq_gpio.c           |  81 ++++
- drivers/power/power_seq/power_seq_pwm.c            |  85 ++++
- drivers/power/power_seq/power_seq_regulator.c      |  86 ++++
- drivers/video/backlight/Kconfig                    |   1 +
- drivers/video/backlight/pwm_bl.c                   | 179 ++++++---
- include/linux/power_seq.h                          | 174 ++++++++
- include/linux/pwm_backlight.h                      |  15 +-
- 18 files changed, 1537 insertions(+), 56 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power_seq/power_seq.txt
- create mode 100644 Documentation/power/power_seq.txt
- create mode 100644 drivers/power/power_seq/Kconfig
- create mode 100644 drivers/power/power_seq/Makefile
- create mode 100644 drivers/power/power_seq/power_seq.c
- create mode 100644 drivers/power/power_seq/power_seq_delay.c
- create mode 100644 drivers/power/power_seq/power_seq_gpio.c
- create mode 100644 drivers/power/power_seq/power_seq_pwm.c
- create mode 100644 drivers/power/power_seq/power_seq_regulator.c
- create mode 100644 include/linux/power_seq.h
-
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 16b2386..6635b09 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -405,8 +405,7 @@ unsigned long hdmi_get_pixel_clock(void)
+ 	return hdmi.ip_data.cfg.timings.pixel_clock * 1000;
+ }
+ 
+-static void hdmi_compute_pll(struct omap_dss_device *dssdev, int phy,
+-		struct hdmi_pll_info *pi)
++static void hdmi_compute_pll(int phy, struct hdmi_pll_info *pi)
+ {
+ 	const struct omapdss_clock_config *clks;
+ 	unsigned long clkin, refclk;
+@@ -491,7 +490,7 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
+ 	}
+ 	phy = p->pixel_clock;
+ 
+-	hdmi_compute_pll(dssdev, phy, &hdmi.ip_data.pll_data);
++	hdmi_compute_pll(phy, &hdmi.ip_data.pll_data);
+ 
+ 	hdmi.ip_data.ops->video_disable(&hdmi.ip_data);
+ 
 -- 
-1.7.12
+1.7.9.5
 

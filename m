@@ -1,7 +1,7 @@
 From: Archit Taneja <archit@ti.com>
-Date: Wed, 01 Aug 2012 10:43:12 +0000
-Subject: [RFC 01/17] OMAPDSS: APPLY: Constify timings argument in dss_mgr_set_timings
-Message-Id: <1343817088-29645-2-git-send-email-archit@ti.com>
+Date: Thu, 09 Aug 2012 11:55:59 +0000
+Subject: [PATCH v2 00/13] OMAPDSS: Change way of passing timings from panel driver to interface
+Message-Id: <1344512989-4071-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1343817088-29645-1-git-send-email-archit@ti.com>
 In-Reply-To: <1343817088-29645-1-git-send-email-archit@ti.com>
@@ -9,53 +9,63 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, sumit.semwal@ti.com, rob@ti.com, Archit Taneja <archit@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The function dss_mgr_set_timings is supposed to apply timings passed by an
-interface driver. It is not supposed to change the timings. Add const qualifier
-to the omap_video_timings pointer argument in dss_mgr_set_timings().
+This is a follow up series. The orginal one can be seen here:
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/apply.c |    4 ++--
- drivers/video/omap2/dss/dss.h   |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+http://marc.info/?l=linux-omap&m4381744304672&w=2
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 0fefc68..52a5940 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -1302,7 +1302,7 @@ err:
- }
- 
- static void dss_apply_mgr_timings(struct omap_overlay_manager *mgr,
--		struct omap_video_timings *timings)
-+		const struct omap_video_timings *timings)
- {
- 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
- 
-@@ -1311,7 +1311,7 @@ static void dss_apply_mgr_timings(struct omap_overlay_manager *mgr,
- }
- 
- void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
--		struct omap_video_timings *timings)
-+		const struct omap_video_timings *timings)
- {
- 	unsigned long flags;
- 
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 335ee93..8a9630b 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -207,7 +207,7 @@ int dss_mgr_set_device(struct omap_overlay_manager *mgr,
- 		struct omap_dss_device *dssdev);
- int dss_mgr_unset_device(struct omap_overlay_manager *mgr);
- void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
--		struct omap_video_timings *timings);
-+		const struct omap_video_timings *timings);
- void dss_mgr_set_lcd_config(struct omap_overlay_manager *mgr,
- 		const struct dss_lcd_mgr_config *config);
- const struct omap_video_timings *dss_mgr_get_timings(struct omap_overlay_manager *mgr);
+Changes in v2:
+- Removed misc fixes out of this set
+- Not trying to optimize SDI when setting new timings, using the old strategy
+- Added a function for setting size for DSI command mode panels
+- Added a fix which ensures the manager sizes is correctly set for rotation in
+  command mode panels.
+
+The tree/branch can be found here:
+
+git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git pass_timings_interface_2
+
+Archit Taneja (13):
+  OMAPDSS: DPI: Maintain our own timings field in driver data
+  OMAPDSS: DPI displays: Take care of panel timings in the driver
+    itself
+  OMAPDSS: DSI: Maintain own copy of timings in driver data
+  OMAPDSS: DSI: Add function to set panel size for command mode panels
+  OMAPDSS: DSI: Update manager timings on a manual update
+  OMAPDSS: HDMI: Use our own omap_video_timings field when setting
+    interface timings
+  OMAPDSS: HDMI: Add a get_timing function for HDMI interface
+  OMAPDSS: HDMI: Add locking for hdmi interface get/set timing
+    functions
+  OMAPDSS: SDI: Create a function to set timings
+  OMAPDSS: SDI: Maintain our own timings field in driver data
+  OMAPDSS: VENC: Split VENC into interface and panel driver
+  OMAPDSS: VENC: Maintain our own timings field in driver data
+  OMAPDSS: VENC: Add a get_timing function for VENC interface
+
+ drivers/video/omap2/displays/panel-acx565akm.c     |   13 +-
+ drivers/video/omap2/displays/panel-generic-dpi.c   |    6 +-
+ .../omap2/displays/panel-lgphilips-lb035q02.c      |    2 +
+ .../omap2/displays/panel-nec-nl8048hl11-01b.c      |    2 +
+ drivers/video/omap2/displays/panel-picodlp.c       |    3 +
+ .../video/omap2/displays/panel-sharp-ls037v7dw01.c |    2 +
+ drivers/video/omap2/displays/panel-taal.c          |   14 ++
+ drivers/video/omap2/displays/panel-tfp410.c        |    5 +-
+ .../video/omap2/displays/panel-tpo-td043mtea1.c    |    6 +-
+ drivers/video/omap2/dss/Makefile                   |    2 +-
+ drivers/video/omap2/dss/dpi.c                      |   12 +-
+ drivers/video/omap2/dss/dsi.c                      |   86 +++++---
+ drivers/video/omap2/dss/dss.h                      |   17 +-
+ drivers/video/omap2/dss/hdmi.c                     |   55 +++--
+ drivers/video/omap2/dss/hdmi_panel.c               |   12 +-
+ drivers/video/omap2/dss/sdi.c                      |   20 +-
+ drivers/video/omap2/dss/venc.c                     |  233 ++++++--------------
+ drivers/video/omap2/dss/venc_panel.c               |  231 +++++++++++++++++++
+ include/video/omapdss.h                            |    9 +-
+ 19 files changed, 490 insertions(+), 240 deletions(-)
+ create mode 100644 drivers/video/omap2/dss/venc_panel.c
+
 -- 
 1.7.9.5
 

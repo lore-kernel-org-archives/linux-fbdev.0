@@ -1,63 +1,58 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 09 Aug 2012 11:56:32 +0000
-Subject: [PATCH v2 08/13] OMAPDSS: HDMI: Add locking for hdmi interface get/set timing functions
-Message-Id: <1344512989-4071-9-git-send-email-archit@ti.com>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Thu, 09 Aug 2012 01:54:54 +0000
+Subject: [PATCHv2 2/8] rtc: vt8500: Add devicetree support for vt8500-rtc
+Message-Id: <1344477300-25251-3-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343817088-29645-1-git-send-email-archit@ti.com>
- <1344512989-4071-1-git-send-email-archit@ti.com>
-In-Reply-To: <1344512989-4071-1-git-send-email-archit@ti.com>
+References: <1344477300-25251-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1344477300-25251-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-The hdmi interface driver exposes functions to the hdmi panel driver to
-get and configure the interface timings maintained by the hdmi driver.
-
-These timings(stored in hdmi.ip_data.cfg) should be protected by the hdmi lock
-to ensure they are called sequentially, this is similar to how hdmi enable and
-disable functions need locking.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
 ---
- drivers/video/omap2/dss/hdmi.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/rtc/rtc-vt8500.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index f577c8e..171c695 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -547,7 +547,11 @@ static void hdmi_power_off(struct omap_dss_device *dssdev)
- void omapdss_hdmi_display_get_timing(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
- {
-+	mutex_lock(&hdmi.lock);
-+
- 	*timings = hdmi.ip_data.cfg.timings;
-+
-+	mutex_unlock(&hdmi.lock);
+diff --git a/drivers/rtc/rtc-vt8500.c b/drivers/rtc/rtc-vt8500.c
+index 9e94fb1..07bf193 100644
+--- a/drivers/rtc/rtc-vt8500.c
++++ b/drivers/rtc/rtc-vt8500.c
+@@ -23,6 +23,7 @@
+ #include <linux/bcd.h>
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
++#include <linux/of.h>
+ 
+ /*
+  * Register definitions
+@@ -302,12 +303,18 @@ static int __devexit vt8500_rtc_remove(struct platform_device *pdev)
+ 	return 0;
  }
  
- int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
-@@ -570,6 +574,8 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev,
- 	struct hdmi_cm cm;
- 	const struct hdmi_config *t;
- 
-+	mutex_lock(&hdmi.lock);
++static const struct of_device_id wmt_dt_ids[] = {
++	{ .compatible = "via,vt8500-rtc", },
++	{}
++};
 +
- 	cm = hdmi_get_code(timings);
- 	hdmi.ip_data.cfg.cm = cm;
+ static struct platform_driver vt8500_rtc_driver = {
+ 	.probe		= vt8500_rtc_probe,
+ 	.remove		= __devexit_p(vt8500_rtc_remove),
+ 	.driver		= {
+ 		.name	= "vt8500-rtc",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = of_match_ptr(wmt_dt_ids),
+ 	},
+ };
  
-@@ -588,6 +594,8 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev,
- 	} else {
- 		dss_mgr_set_timings(dssdev->manager, &t->timings);
- 	}
-+
-+	mutex_unlock(&hdmi.lock);
- }
+@@ -315,5 +322,5 @@ module_platform_driver(vt8500_rtc_driver);
  
- static void hdmi_dump_regs(struct seq_file *s)
+ MODULE_AUTHOR("Alexey Charkov <alchark@gmail.com>");
+ MODULE_DESCRIPTION("VIA VT8500 SoC Realtime Clock Driver (RTC)");
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL v2");
+ MODULE_ALIAS("platform:vt8500-rtc");
 -- 
 1.7.9.5
 

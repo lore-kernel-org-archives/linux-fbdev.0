@@ -1,109 +1,159 @@
 From: Archit Taneja <archit@ti.com>
-Date: Thu, 16 Aug 2012 07:48:33 +0000
-Subject: [PATCH 5/6] OMAPDSS: VENC: Maintain copy of venc type in driver data
-Message-Id: <1345102594-6222-6-git-send-email-archit@ti.com>
+Date: Thu, 09 Aug 2012 11:56:26 +0000
+Subject: [PATCH v2 06/13] OMAPDSS: HDMI: Use our own omap_video_timings field when setting interface timings
+Message-Id: <1344512989-4071-7-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <343817088-29645-1-git-send-email-archit@ti.com>
- <1345102594-6222-1-git-send-email-archit@ti.com>
-In-Reply-To: <1345102594-6222-1-git-send-email-archit@ti.com>
+References: <1343817088-29645-1-git-send-email-archit@ti.com>
+ <1344512989-4071-1-git-send-email-archit@ti.com>
+In-Reply-To: <1344512989-4071-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The VENC driver currently relies on the omap_dss_device struct to configure the
-venc type. This makes the VENC interface driver dependent on the omap_dss_device
-struct.
+The hdmi driver currently updates only the 'code' member of hdmi_config when
+the op omapdss_hdmi_display_set_timing() is called by the hdmi panel driver.
+The 'timing' field of hdmi_config is updated only when hdmi_power_on is called.
+It makes more sense to configure the whole hdmi_config field in the set_timing
+op called by the panel driver. This way, we don't need to call both functions
+to ensure that our hdmi_config is configured correctly. Also, we don't need to
+calculate hdmi_config during hdmi_power_on, or rely on the omap_video_timings
+in the panel's omap_dss_device struct.
 
-Make the VENC driver data maintain it's own 'venc type' field. A panel driver
-is expected to call omapdss_venc_set_type() before enabling the interface or
-changing the type via display sysfs attributes.
+A default timing is now configured in hdmi's probe if the panel driver doesn't
+set any timing, or doesn't set a valid timing before enabling the panel. Also,
+when setting manager timings, use the omap_video_timing calculated by
+hdmi_get_timings(), this returns the timings as specified in the CEA/VESA
+tables, don't use the one provided by the panel driver directly.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dss.h        |    2 ++
- drivers/video/omap2/dss/venc.c       |   15 +++++++++++++--
- drivers/video/omap2/dss/venc_panel.c |    2 ++
- 3 files changed, 17 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/dss.h        |    3 ++-
+ drivers/video/omap2/dss/hdmi.c       |   41 +++++++++++++++++-----------------
+ drivers/video/omap2/dss/hdmi_panel.c |    2 +-
+ 3 files changed, 23 insertions(+), 23 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index f919dc8..c17d298 100644
+index 8a9630b..7e38ffd 100644
 --- a/drivers/video/omap2/dss/dss.h
 +++ b/drivers/video/omap2/dss/dss.h
-@@ -477,6 +477,8 @@ int omapdss_venc_check_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings);
- u32 omapdss_venc_get_wss(struct omap_dss_device *dssdev);
- int omapdss_venc_set_wss(struct omap_dss_device *dssdev, u32 wss);
-+void omapdss_venc_set_type(struct omap_dss_device *dssdev,
-+		enum omap_dss_venc_type type);
- int venc_panel_init(void);
- void venc_panel_exit(void);
+@@ -485,7 +485,8 @@ static inline unsigned long hdmi_get_pixel_clock(void)
+ #endif
+ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev);
+ void omapdss_hdmi_display_disable(struct omap_dss_device *dssdev);
+-void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev);
++void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings);
+ int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
+ 					struct omap_video_timings *timings);
+ int omapdss_hdmi_read_edid(u8 *buf, int len);
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 6635b09..bdf1c33 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -462,7 +462,6 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
+ {
+ 	const struct omapdss_clock_config *clks;
+ 	int r;
+-	const struct hdmi_config *timing;
+ 	struct omap_video_timings *p;
+ 	unsigned long phy;
  
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index d96025e..2d90fcf 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -302,6 +302,7 @@ static struct {
- 	struct clk	*tv_dac_clk;
+@@ -472,22 +471,10 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
  
- 	struct omap_video_timings timings;
-+	enum omap_dss_venc_type type;
- } venc;
+ 	dss_mgr_disable(dssdev->manager);
  
- static inline void venc_write_reg(int idx, u32 val)
-@@ -436,12 +437,12 @@ static int venc_power_on(struct omap_dss_device *dssdev)
- 	venc_reset();
- 	venc_write_config(venc_timings_to_config(&venc.timings));
+-	p = &dssdev->panel.timings;
++	p = &hdmi.ip_data.cfg.timings;
  
--	dss_set_venc_output(dssdev->phy.venc.type);
-+	dss_set_venc_output(venc.type);
- 	dss_set_dac_pwrdn_bgz(1);
+-	DSSDBG("hdmi_power_on x_res= %d y_res = %d\n",
+-		dssdev->panel.timings.x_res,
+-		dssdev->panel.timings.y_res);
++	DSSDBG("hdmi_power_on x_res= %d y_res = %d\n", p->x_res, p->y_res);
  
- 	l = 0;
+-	timing = hdmi_get_timings();
+-	if (timing = NULL) {
+-		/* HDMI code 4 corresponds to 640 * 480 VGA */
+-		hdmi.ip_data.cfg.cm.code = 4;
+-		/* DVI mode 1 corresponds to HDMI 0 to DVI */
+-		hdmi.ip_data.cfg.cm.mode = HDMI_DVI;
+-		hdmi.ip_data.cfg = vesa_timings[0];
+-	} else {
+-		hdmi.ip_data.cfg = *timing;
+-	}
+ 	phy = p->pixel_clock;
  
--	if (dssdev->phy.venc.type = OMAP_DSS_VENC_TYPE_COMPOSITE)
-+	if (venc.type = OMAP_DSS_VENC_TYPE_COMPOSITE)
- 		l |= 1 << 1;
- 	else /* S-Video */
- 		l |= (1 << 0) | (1 << 2);
-@@ -628,6 +629,16 @@ err:
- 	return r;
+ 	hdmi_compute_pll(phy, &hdmi.ip_data.pll_data);
+@@ -525,7 +512,7 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
+ 	dispc_enable_gamma_table(0);
+ 
+ 	/* tv size */
+-	dss_mgr_set_timings(dssdev->manager, &dssdev->panel.timings);
++	dss_mgr_set_timings(dssdev->manager, p);
+ 
+ 	r = hdmi.ip_data.ops->video_enable(&hdmi.ip_data);
+ 	if (r)
+@@ -571,13 +558,18 @@ int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
+ 
  }
  
-+void omapdss_venc_set_type(struct omap_dss_device *dssdev,
-+		enum omap_dss_venc_type type)
-+{
-+	mutex_lock(&venc.venc_lock);
-+
-+	venc.type = type;
-+
-+	mutex_unlock(&venc.venc_lock);
-+}
-+
- static int __init venc_init_display(struct omap_dss_device *dssdev)
+-void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev)
++void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings)
  {
- 	DSSDBG("init_display\n");
-diff --git a/drivers/video/omap2/dss/venc_panel.c b/drivers/video/omap2/dss/venc_panel.c
-index 8096369..ef21361 100644
---- a/drivers/video/omap2/dss/venc_panel.c
-+++ b/drivers/video/omap2/dss/venc_panel.c
-@@ -68,6 +68,7 @@ static ssize_t display_output_type_store(struct device *dev,
+ 	struct hdmi_cm cm;
++	const struct hdmi_config *t;
++
++	cm = hdmi_get_code(timings);
++	hdmi.ip_data.cfg.cm = cm;
  
- 	if (dssdev->phy.venc.type != new_type) {
- 		dssdev->phy.venc.type = new_type;
-+		omapdss_venc_set_type(dssdev, new_type);
- 		if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
- 			omapdss_venc_display_disable(dssdev);
- 			omapdss_venc_display_enable(dssdev);
-@@ -128,6 +129,7 @@ static int venc_panel_enable(struct omap_dss_device *dssdev)
+-	cm = hdmi_get_code(&dssdev->panel.timings);
+-	hdmi.ip_data.cfg.cm.code = cm.code;
+-	hdmi.ip_data.cfg.cm.mode = cm.mode;
++	t = hdmi_get_timings();
++	if (t != NULL)
++		hdmi.ip_data.cfg = *t;
+ 
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
+ 		int r;
+@@ -588,7 +580,7 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev)
+ 		if (r)
+ 			DSSERR("failed to power on device\n");
+ 	} else {
+-		dss_mgr_set_timings(dssdev->manager, &dssdev->panel.timings);
++		dss_mgr_set_timings(dssdev->manager, &t->timings);
  	}
+ }
  
- 	omapdss_venc_set_timings(dssdev, &dssdev->panel.timings);
-+	omapdss_venc_set_type(dssdev, dssdev->phy.venc.type);
+@@ -933,6 +925,13 @@ static int __init omapdss_hdmihw_probe(struct platform_device *pdev)
+ 	hdmi.ip_data.core_av_offset = HDMI_CORE_AV;
+ 	hdmi.ip_data.pll_offset = HDMI_PLLCTRL;
+ 	hdmi.ip_data.phy_offset = HDMI_PHY;
++
++	/*
++	 * initialize hdmi timings to default value:
++	 * HDMI code 4(VGA) and HDMI mode 1(DVI)
++	 */
++	hdmi.ip_data.cfg = vesa_timings[0];
++
+ 	mutex_init(&hdmi.ip_data.lock);
  
- 	r = omapdss_venc_display_enable(dssdev);
- 	if (r)
+ 	hdmi_panel_init();
+diff --git a/drivers/video/omap2/dss/hdmi_panel.c b/drivers/video/omap2/dss/hdmi_panel.c
+index e10844f..8dce206 100644
+--- a/drivers/video/omap2/dss/hdmi_panel.c
++++ b/drivers/video/omap2/dss/hdmi_panel.c
+@@ -336,8 +336,8 @@ static void hdmi_set_timings(struct omap_dss_device *dssdev,
+ 	 */
+ 	hdmi_panel_audio_disable(dssdev);
+ 
++	omapdss_hdmi_display_set_timing(dssdev, timings);
+ 	dssdev->panel.timings = *timings;
+-	omapdss_hdmi_display_set_timing(dssdev);
+ 
+ 	mutex_unlock(&hdmi.lock);
+ }
 -- 
 1.7.9.5
 

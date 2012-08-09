@@ -1,250 +1,87 @@
 From: Archit Taneja <archit@ti.com>
-Date: Tue, 21 Aug 2012 06:10:20 +0000
-Subject: [PATCH 13/23] OMAPDSS: SDI: Pass outputs from panel driver to SDI interface driver
-Message-Id: <1345528711-27801-14-git-send-email-archit@ti.com>
+Date: Thu, 09 Aug 2012 11:56:39 +0000
+Subject: [PATCH v2 10/13] OMAPDSS: SDI: Maintain our own timings field in driver data
+Message-Id: <1344512989-4071-11-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>
-In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
+References: <1343817088-29645-1-git-send-email-archit@ti.com>
+ <1344512989-4071-1-git-send-email-archit@ti.com>
+In-Reply-To: <1344512989-4071-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com, Archit Taneja <archit@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-With outputs introduces as new entities, we can now pass output pointer to
-functions used to configure the connected interface. These functions currently
-pass the omap_dss_device pointer, and extract output information via
-omap_dss_device. This is unnecessary, and it doesn't make sense for interface
-related functions to get the panel's/device's pointer, it should receive a
-pointer related to the connected interface, which in our case is the output
-entity.
+The SDI driver currently relies on the timings in omap_dss_device struct to
+configure the DISPC accordingly. This makes the SDI interface driver dependent
+on the omap_dss_device struct.
 
-With the addition of outputs. There is a possibility that an omap_dss_device
-isn't connected to an output yet. Ensure that panel drivers call the interface
-functions only if outputs are non NULL.
+Make the SDI driver data maintain it's own timings field. The panel driver is
+expected to call omapdss_sdi_set_timings() to set these timings before the panel
+is enabled.
 
-Modify SDI functions to pass omap_dss_output pointer instead of omap_dss_device
-pointer. Modify the panel drivers to call the updated functions.
+Make the SDI panel driver configure the new timings is the omap_dss_device
+struct(dssdev->panel.timings). The SDI driver is responsible for maintaining
+only it's own copy of timings.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/displays/panel-acx565akm.c |   22 ++++++++++-----
- drivers/video/omap2/dss/sdi.c                  |   34 ++++++++++++------------
- include/video/omapdss.h                        |    8 +++---
- 3 files changed, 37 insertions(+), 27 deletions(-)
+ drivers/video/omap2/displays/panel-acx565akm.c |    4 ++++
+ drivers/video/omap2/dss/sdi.c                  |    5 +++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/video/omap2/displays/panel-acx565akm.c b/drivers/video/omap2/displays/panel-acx565akm.c
-index c835aa7..c517b29 100644
+index 11bdc88..77fe59f 100644
 --- a/drivers/video/omap2/displays/panel-acx565akm.c
 +++ b/drivers/video/omap2/displays/panel-acx565akm.c
-@@ -591,19 +591,23 @@ static void acx_panel_remove(struct omap_dss_device *dssdev)
- static int acx_panel_power_on(struct omap_dss_device *dssdev)
- {
- 	struct acx565akm_device *md = &acx_dev;
-+	struct omap_dss_output *out = dssdev->output;
- 	int r;
- 
- 	dev_dbg(&dssdev->dev, "%s\n", __func__);
- 
-+	if (out = NULL)
-+		return -ENODEV;
-+
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
- 		return 0;
+@@ -600,6 +600,8 @@ static int acx_panel_power_on(struct omap_dss_device *dssdev)
  
  	mutex_lock(&md->mutex);
  
--	omapdss_sdi_set_timings(dssdev, &dssdev->panel.timings);
--	omapdss_sdi_set_datapairs(dssdev, dssdev->phy.sdi.datapairs);
-+	omapdss_sdi_set_timings(out, &dssdev->panel.timings);
-+	omapdss_sdi_set_datapairs(out, dssdev->phy.sdi.datapairs);
- 
--	r = omapdss_sdi_display_enable(dssdev);
-+	r = omapdss_sdi_display_enable(out);
++	omapdss_sdi_set_timings(dssdev, &dssdev->panel.timings);
++
+ 	r = omapdss_sdi_display_enable(dssdev);
  	if (r) {
  		pr_err("%s sdi enable failed\n", __func__);
- 		goto fail_unlock;
-@@ -646,7 +650,7 @@ static int acx_panel_power_on(struct omap_dss_device *dssdev)
- 
- 	return acx565akm_bl_update_status(md->bl_dev);
- fail:
--	omapdss_sdi_display_disable(dssdev);
-+	omapdss_sdi_display_disable(out);
- fail_unlock:
- 	mutex_unlock(&md->mutex);
- 	return r;
-@@ -655,6 +659,7 @@ fail_unlock:
- static void acx_panel_power_off(struct omap_dss_device *dssdev)
- {
- 	struct acx565akm_device *md = &acx_dev;
-+	struct omap_dss_output *out = dssdev->output;
- 
- 	dev_dbg(&dssdev->dev, "%s\n", __func__);
- 
-@@ -684,7 +689,7 @@ static void acx_panel_power_off(struct omap_dss_device *dssdev)
- 	/* FIXME need to tweak this delay */
- 	msleep(100);
- 
--	omapdss_sdi_display_disable(dssdev);
-+	omapdss_sdi_display_disable(out);
- 
- 	mutex_unlock(&md->mutex);
- }
-@@ -734,7 +739,12 @@ static int acx_panel_resume(struct omap_dss_device *dssdev)
- static void acx_panel_set_timings(struct omap_dss_device *dssdev,
+@@ -732,6 +734,8 @@ static void acx_panel_set_timings(struct omap_dss_device *dssdev,
  		struct omap_video_timings *timings)
  {
--	omapdss_sdi_set_timings(dssdev, timings);
-+	struct omap_dss_output *out = dssdev->output;
+ 	omapdss_sdi_set_timings(dssdev, timings);
 +
-+	if (out = NULL)
-+		return;
-+
-+	omapdss_sdi_set_timings(out, timings);
- 
- 	dssdev->panel.timings = *timings;
++	dssdev->panel.timings = *timings;
  }
+ 
+ static int acx_panel_check_timings(struct omap_dss_device *dssdev,
 diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index a5632d0..4f669be 100644
+index 0474962..243e96d 100644
 --- a/drivers/video/omap2/dss/sdi.c
 +++ b/drivers/video/omap2/dss/sdi.c
-@@ -38,7 +38,7 @@ static struct {
- 	int datapairs;
+@@ -34,6 +34,7 @@ static struct {
+ 	struct regulator *vdds_sdi_reg;
+ 
+ 	struct dss_lcd_mgr_config mgr_config;
++	struct omap_video_timings timings;
  } sdi;
  
--static void sdi_config_lcd_manager(struct omap_dss_device *dssdev)
-+static void sdi_config_lcd_manager(struct omap_dss_output *out)
+ static void sdi_config_lcd_manager(struct omap_dss_device *dssdev)
+@@ -51,7 +52,7 @@ static void sdi_config_lcd_manager(struct omap_dss_device *dssdev)
+ 
+ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
  {
- 	sdi.mgr_config.io_pad_mode = DSS_IO_PAD_MODE_BYPASS;
- 
-@@ -48,10 +48,10 @@ static void sdi_config_lcd_manager(struct omap_dss_device *dssdev)
- 	sdi.mgr_config.video_port_width = 24;
- 	sdi.mgr_config.lcden_sig_polarity = 1;
- 
--	dss_mgr_set_lcd_config(dssdev->manager, &sdi.mgr_config);
-+	dss_mgr_set_lcd_config(out->manager, &sdi.mgr_config);
- }
- 
--int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
-+int omapdss_sdi_display_enable(struct omap_dss_output *out)
- {
- 	struct omap_video_timings *t = &sdi.timings;
+-	struct omap_video_timings *t = &dssdev->panel.timings;
++	struct omap_video_timings *t = &sdi.timings;
  	struct dss_clock_info dss_cinfo;
-@@ -59,12 +59,12 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+ 	struct dispc_clock_info dispc_cinfo;
  	unsigned long pck;
- 	int r;
- 
--	if (dssdev->manager = NULL) {
-+	if (out->manager = NULL) {
- 		DSSERR("failed to enable display: no manager\n");
- 		return -ENODEV;
- 	}
- 
--	r = omap_dss_start_device(dssdev);
-+	r = omap_dss_start_device(out->device);
- 	if (r) {
- 		DSSERR("failed to start device\n");
- 		goto err_start_dev;
-@@ -98,14 +98,13 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- 		t->pixel_clock = pck;
- 	}
- 
--
--	dss_mgr_set_timings(dssdev->manager, t);
-+	dss_mgr_set_timings(out->manager, t);
- 
- 	r = dss_set_clock_div(&dss_cinfo);
- 	if (r)
- 		goto err_set_dss_clock_div;
- 
--	sdi_config_lcd_manager(dssdev);
-+	sdi_config_lcd_manager(out);
- 
- 	dss_sdi_init(sdi.datapairs);
- 
-@@ -114,7 +113,7 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- 		goto err_sdi_enable;
- 	mdelay(2);
- 
--	r = dss_mgr_enable(dssdev->manager);
-+	r = dss_mgr_enable(out->manager);
- 	if (r)
- 		goto err_mgr_enable;
- 
-@@ -129,15 +128,15 @@ err_calc_clock_div:
- err_get_dispc:
- 	regulator_disable(sdi.vdds_sdi_reg);
- err_reg_enable:
--	omap_dss_stop_device(dssdev);
-+	omap_dss_stop_device(out->device);
- err_start_dev:
- 	return r;
- }
- EXPORT_SYMBOL(omapdss_sdi_display_enable);
- 
--void omapdss_sdi_display_disable(struct omap_dss_device *dssdev)
-+void omapdss_sdi_display_disable(struct omap_dss_output *out)
- {
--	dss_mgr_disable(dssdev->manager);
-+	dss_mgr_disable(out->manager);
- 
- 	dss_sdi_disable();
- 
-@@ -145,28 +144,29 @@ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev)
- 
- 	regulator_disable(sdi.vdds_sdi_reg);
- 
--	omap_dss_stop_device(dssdev);
-+	omap_dss_stop_device(out->device);
- }
- EXPORT_SYMBOL(omapdss_sdi_display_disable);
- 
--void omapdss_sdi_set_timings(struct omap_dss_device *dssdev,
-+void omapdss_sdi_set_timings(struct omap_dss_output *out,
- 		struct omap_video_timings *timings)
+@@ -151,7 +152,7 @@ void omapdss_sdi_set_timings(struct omap_dss_device *dssdev,
  {
  	int r;
-+	struct omap_dss_device *dssdev = out->device;
  
- 	sdi.timings = *timings;
+-	dssdev->panel.timings = *timings;
++	sdi.timings = *timings;
  
  	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
--		omapdss_sdi_display_disable(dssdev);
-+		omapdss_sdi_display_disable(out);
- 
--		r = omapdss_sdi_display_enable(dssdev);
-+		r = omapdss_sdi_display_enable(out);
- 		if (r)
- 			DSSERR("failed to set new timings\n");
- 	}
- }
- EXPORT_SYMBOL(omapdss_sdi_set_timings);
- 
--void omapdss_sdi_set_datapairs(struct omap_dss_device *dssdev, int datapairs)
-+void omapdss_sdi_set_datapairs(struct omap_dss_output *out, int datapairs)
- {
- 	sdi.datapairs = datapairs;
- }
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index f8902f9..cf881c0 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -792,11 +792,11 @@ int dpi_check_timings(struct omap_dss_output *out,
- 		struct omap_video_timings *timings);
- void omapdss_dpi_set_data_lines(struct omap_dss_output *out, int data_lines);
- 
--int omapdss_sdi_display_enable(struct omap_dss_device *dssdev);
--void omapdss_sdi_display_disable(struct omap_dss_device *dssdev);
--void omapdss_sdi_set_timings(struct omap_dss_device *dssdev,
-+int omapdss_sdi_display_enable(struct omap_dss_output *out);
-+void omapdss_sdi_display_disable(struct omap_dss_output *out);
-+void omapdss_sdi_set_timings(struct omap_dss_output *out,
- 		struct omap_video_timings *timings);
--void omapdss_sdi_set_datapairs(struct omap_dss_device *dssdev, int datapairs);
-+void omapdss_sdi_set_datapairs(struct omap_dss_output *out, int datapairs);
- 
- int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev);
- void omapdss_rfbi_display_disable(struct omap_dss_device *dssdev);
+ 		omapdss_sdi_display_disable(dssdev);
 -- 
 1.7.9.5
 

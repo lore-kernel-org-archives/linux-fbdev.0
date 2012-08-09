@@ -1,55 +1,47 @@
-From: Grazvydas Ignotas <notasas@gmail.com>
-Date: Wed, 08 Aug 2012 11:07:55 +0000
-Subject: Re: [PATCH 1/2] ARM: pgtable: add pgprot_writethrough() macro
-Message-Id: <CANOLnOMTFLMNidjyML5XFF3Wz4oXWCnRH1WCqvFD7FqOgO20Sg@mail.gmail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 09 Aug 2012 09:19:05 +0000
+Subject: [PATCH v2 0/5] OMAPDSS: Misc Cleanups/Fixes
+Message-Id: <1344503230-18550-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1337716444-30139-1-git-send-email-siarhei.siamashka@gmail.com>
- <1337716444-30139-2-git-send-email-siarhei.siamashka@gmail.com>
-In-Reply-To: <1337716444-30139-2-git-send-email-siarhei.siamashka@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-On Tue, May 22, 2012 at 10:54 PM, Siarhei Siamashka
-<siarhei.siamashka@gmail.com> wrote:
-> Needed for remapping pages with write-through cacheable
-> attribute. May be useful for framebuffers.
+These are minor cleanups and fixes which make some of the future work of making
+outputs less dependant a bit easier. Some patches remove a few omap_dss_device
+references which aren't needed any more after the patch:
 
-With this series applied, some of my framebuffer programs get over 70%
-performance improvement, could we get this patch in? OMAP DSS
-maintainer agreed to take the second patch if this can be merged.
+"OMAPDSS: move clock settings from dssdev to dss pdata"
 
-> Signed-off-by: Siarhei Siamashka <siarhei.siamashka@gmail.com>
-> ---
->  arch/arm/include/asm/pgtable.h |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/arm/include/asm/pgtable.h b/arch/arm/include/asm/pgtabl=
-e.h
-> index f66626d..04297fa 100644
-> --- a/arch/arm/include/asm/pgtable.h
-> +++ b/arch/arm/include/asm/pgtable.h
-> @@ -103,6 +103,9 @@ extern pgprot_t             pgprot_kernel;
->  #define pgprot_stronglyordered(prot) \
->         __pgprot_modify(prot, L_PTE_MT_MASK, L_PTE_MT_UNCACHED)
->
-> +#define pgprot_writethrough(prot) \
-> +       __pgprot_modify(prot, L_PTE_MT_MASK, L_PTE_MT_WRITETHROUGH)
-> +
->  #ifdef CONFIG_ARM_DMA_MEM_BUFFERABLE
->  #define pgprot_dmacoherent(prot) \
->         __pgprot_modify(prot, L_PTE_MT_MASK, L_PTE_MT_BUFFERABLE | L_PTE_=
-XN)
-> --
-> 1.7.3.4
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+The rest add locking required in the DPI driver and the generic dpi panel
+driver.
+
+The commits are on the tree:
+
+git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git misc_cleanup_3_7
+
+Changes since v2:
+- Misc patches just taken out from the series which changes the way of passing
+  timings from panel to interace driver.
+
+Archit Taneja (5):
+  OMAPDSS: APPLY: Constify timings argument in dss_mgr_set_timings
+  OMAPDSS: DPI: Remove omap_dss_device arguments in
+    dpi_set_dsi_clk/dpi_set_dispc_clk
+  OMAPDSS: HDMI: Remove omap_dss_device argument from hdmi_compute_pll
+  OMAPDSS: DPI: Add locking for DPI interface
+  OMAPDSS: Displays: Add locking in generic DPI panel driver
 
 
+ drivers/video/omap2/displays/panel-generic-dpi.c |   69 +++++++++++++++++++---
+ drivers/video/omap2/dss/apply.c                  |    4 +-
+ drivers/video/omap2/dss/dpi.c                    |   40 +++++++++----
+ drivers/video/omap2/dss/dss.h                    |    2 +-
+ drivers/video/omap2/dss/hdmi.c                   |    5 +-
+ 5 files changed, 97 insertions(+), 23 deletions(-)
 
---=20
-Gra=C5=BEvydas
+-- 
+1.7.9.5
+

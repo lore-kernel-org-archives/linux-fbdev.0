@@ -1,357 +1,186 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Wed, 08 Aug 2012 01:39:25 +0000
-Subject: [PATCH 7/8] arm: vt8500: doc: Add device tree bindings for arch-vt8500 devices
-Message-Id: <1344389967-8465-8-git-send-email-linux@prisktech.co.nz>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 09 Aug 2012 11:56:11 +0000
+Subject: [PATCH v2 03/13] OMAPDSS: DSI: Maintain own copy of timings in driver data
+Message-Id: <1344512989-4071-4-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344389967-8465-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1344389967-8465-1-git-send-email-linux@prisktech.co.nz>
+References: <1343817088-29645-1-git-send-email-archit@ti.com>
+ <1344512989-4071-1-git-send-email-archit@ti.com>
+In-Reply-To: <1344512989-4071-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Bindings for gpio, interrupt controller, power management controller,
-timer, realtime clock, serial uart, ehci and uhci controllers and
-framebuffer controllers used on the arch-vt8500 platform.
+The DSI driver currently relies on the timings in omap_dss_device struct to
+configure the DISPC and DSI blocks accordingly. This makes the DSI interface
+driver dependent on the omap_dss_device struct.
 
-Framebuffer binding also specifies a 'display' node which is required
-for determining the lcd panel data.
+Make the DSI driver data maintain it's own timings field. A DSI video mode panel
+driver is expected to call omapdss_dsi_set_timings() to set these timings before
+the panel is enabled.
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- Documentation/devicetree/bindings/arm/vt8500.txt   |   15 +++++++
- .../bindings/arm/vt8500/via,vt8500-intc.txt        |   16 +++++++
- .../bindings/arm/vt8500/via,vt8500-pmc.txt         |   13 ++++++
- .../bindings/arm/vt8500/via,vt8500-timer.txt       |   15 +++++++
- .../devicetree/bindings/gpio/gpio_vt8500.txt       |   24 ++++++++++
- .../devicetree/bindings/rtc/via,vt8500-rtc.txt     |   15 +++++++
- .../bindings/tty/serial/via,vt8500-uart.txt        |   15 +++++++
- .../devicetree/bindings/usb/platform-uhci.txt      |   15 +++++++
- .../devicetree/bindings/usb/via,vt8500-ehci.txt    |   15 +++++++
- .../devicetree/bindings/vendor-prefixes.txt        |    2 +
- .../devicetree/bindings/video/via,vt8500-fb.txt    |   46 ++++++++++++++++++++
- .../devicetree/bindings/video/wm,prizm-ge-rops.txt |   13 ++++++
- .../devicetree/bindings/video/wm,wm8505-fb.txt     |   20 +++++++++
- 13 files changed, 224 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/arm/vt8500.txt
- create mode 100644 Documentation/devicetree/bindings/arm/vt8500/via,vt8500-intc.txt
- create mode 100644 Documentation/devicetree/bindings/arm/vt8500/via,vt8500-pmc.txt
- create mode 100644 Documentation/devicetree/bindings/arm/vt8500/via,vt8500-timer.txt
- create mode 100644 Documentation/devicetree/bindings/gpio/gpio_vt8500.txt
- create mode 100644 Documentation/devicetree/bindings/rtc/via,vt8500-rtc.txt
- create mode 100644 Documentation/devicetree/bindings/tty/serial/via,vt8500-uart.txt
- create mode 100644 Documentation/devicetree/bindings/usb/platform-uhci.txt
- create mode 100644 Documentation/devicetree/bindings/usb/via,vt8500-ehci.txt
- create mode 100644 Documentation/devicetree/bindings/video/via,vt8500-fb.txt
- create mode 100644 Documentation/devicetree/bindings/video/wm,prizm-ge-rops.txt
- create mode 100644 Documentation/devicetree/bindings/video/wm,wm8505-fb.txt
+ drivers/video/omap2/dss/dsi.c |   58 +++++++++++++++++++++++++----------------
+ include/video/omapdss.h       |    2 ++
+ 2 files changed, 38 insertions(+), 22 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/vt8500.txt b/Documentation/devicetree/bindings/arm/vt8500.txt
-new file mode 100644
-index 0000000..1b3b187
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/vt8500.txt
-@@ -0,0 +1,15 @@
-+VIA/Wondermedia VT8500 Platforms Device Tree Bindings
-+---------------------------------------
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 27c27c4..815b606 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -333,6 +333,7 @@ struct dsi_data {
+ 	unsigned scp_clk_refcount;
+ 
+ 	struct dss_lcd_mgr_config mgr_config;
++	struct omap_video_timings timings;
+ };
+ 
+ struct dsi_packet_sent_handler_data {
+@@ -3607,9 +3608,10 @@ static void dsi_config_vp_num_line_buffers(struct omap_dss_device *dssdev)
+ 	int num_line_buffers;
+ 
+ 	if (dssdev->panel.dsi_mode = OMAP_DSS_DSI_VIDEO_MODE) {
++		struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 		int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
+ 		unsigned line_buf_size = dsi_get_line_buf_size(dsidev);
+-		struct omap_video_timings *timings = &dssdev->panel.timings;
++		struct omap_video_timings *timings = &dsi->timings;
+ 		/*
+ 		 * Don't use line buffers if width is greater than the video
+ 		 * port's line buffer size
+@@ -3738,7 +3740,7 @@ static void dsi_config_cmd_mode_interleaving(struct omap_dss_device *dssdev)
+ 	int ddr_clk_pre, ddr_clk_post, enter_hs_mode_lat, exit_hs_mode_lat;
+ 	int tclk_trail, ths_exit, exiths_clk;
+ 	bool ddr_alwon;
+-	struct omap_video_timings *timings = &dssdev->panel.timings;
++	struct omap_video_timings *timings = &dsi->timings;
+ 	int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
+ 	int ndl = dsi->num_lanes_used - 1;
+ 	const struct omapdss_clock_config *clks;
+@@ -3996,7 +3998,7 @@ static void dsi_proto_timings(struct omap_dss_device *dssdev)
+ 		int vbp = dssdev->panel.dsi_vm_data.vbp;
+ 		int window_sync = dssdev->panel.dsi_vm_data.window_sync;
+ 		bool hsync_end = dssdev->panel.dsi_vm_data.vp_hsync_end;
+-		struct omap_video_timings *timings = &dssdev->panel.timings;
++		struct omap_video_timings *timings = &dsi->timings;
+ 		int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
+ 		int tl, t_he, width_bytes;
+ 
+@@ -4105,6 +4107,7 @@ EXPORT_SYMBOL(omapdss_dsi_configure_pins);
+ int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel)
+ {
+ 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
++	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
+ 	u8 data_type;
+ 	u16 word_count;
+@@ -4135,7 +4138,7 @@ int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel)
+ 		/* MODE, 1 = video mode */
+ 		REG_FLD_MOD(dsidev, DSI_VC_CTRL(channel), 1, 4, 4);
+ 
+-		word_count = DIV_ROUND_UP(dssdev->panel.timings.x_res * bpp, 8);
++		word_count = DIV_ROUND_UP(dsi->timings.x_res * bpp, 8);
+ 
+ 		dsi_vc_write_long_header(dsidev, channel, data_type,
+ 				word_count, 0);
+@@ -4370,7 +4373,6 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
+ {
+ 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+-	struct omap_video_timings timings;
+ 	const struct omapdss_clock_config *clks;
+ 	int r, lcd_id;
+ 	u32 irq = 0;
+@@ -4380,14 +4382,14 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
+ 
+ 		dssdev->driver->get_resolution(dssdev, &dw, &dh);
+ 
+-		timings.x_res = dw;
+-		timings.y_res = dh;
+-		timings.hsw = 1;
+-		timings.hfp = 1;
+-		timings.hbp = 1;
+-		timings.vsw = 1;
+-		timings.vfp = 0;
+-		timings.vbp = 0;
++		dsi->timings.x_res = dw;
++		dsi->timings.y_res = dh;
++		dsi->timings.hsw = 1;
++		dsi->timings.hfp = 1;
++		dsi->timings.hbp = 1;
++		dsi->timings.vsw = 1;
++		dsi->timings.vfp = 0;
++		dsi->timings.vbp = 0;
+ 
+ 		irq = dispc_mgr_get_framedone_irq(dssdev->manager->id);
+ 
+@@ -4401,8 +4403,6 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
+ 		dsi->mgr_config.stallmode = true;
+ 		dsi->mgr_config.fifohandcheck = true;
+ 	} else {
+-		timings = dssdev->panel.timings;
+-
+ 		dsi->mgr_config.stallmode = false;
+ 		dsi->mgr_config.fifohandcheck = false;
+ 	}
+@@ -4411,14 +4411,14 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
+ 	 * override interlace, logic level and edge related parameters in
+ 	 * omap_video_timings with default values
+ 	 */
+-	timings.interlace = false;
+-	timings.hsync_level = OMAPDSS_SIG_ACTIVE_HIGH;
+-	timings.vsync_level = OMAPDSS_SIG_ACTIVE_HIGH;
+-	timings.data_pclk_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE;
+-	timings.de_level = OMAPDSS_SIG_ACTIVE_HIGH;
+-	timings.sync_pclk_edge = OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES;
++	dsi->timings.interlace = false;
++	dsi->timings.hsync_level = OMAPDSS_SIG_ACTIVE_HIGH;
++	dsi->timings.vsync_level = OMAPDSS_SIG_ACTIVE_HIGH;
++	dsi->timings.data_pclk_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE;
++	dsi->timings.de_level = OMAPDSS_SIG_ACTIVE_HIGH;
++	dsi->timings.sync_pclk_edge = OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES;
+ 
+-	dss_mgr_set_timings(dssdev->manager, &timings);
++	dss_mgr_set_timings(dssdev->manager, &dsi->timings);
+ 
+ 	switch (dssdev->manager->id) {
+ 	case OMAP_DSS_CHANNEL_LCD:
+@@ -4688,6 +4688,20 @@ int omapdss_dsi_enable_te(struct omap_dss_device *dssdev, bool enable)
+ }
+ EXPORT_SYMBOL(omapdss_dsi_enable_te);
+ 
++void omapdss_dsi_set_timings(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings)
++{
++	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
++	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
 +
-+Boards with the VIA VT8500 SoC shall have the following properties:
-+Required root node property:
-+compatible = "via,vt8500";
++	mutex_lock(&dsi->lock);
 +
-+Boards with the Wondermedia WM8505 SoC shall have the following properties:
-+Required root node property:
-+compatible = "wm,wm8505";
++	dsi->timings = *timings;
 +
-+Boards with the Wondermedia WM8650 SoC shall have the following properties:
-+Required root node property:
-+compatible = "wm,wm8650";
++	mutex_unlock(&dsi->lock);
++}
++EXPORT_SYMBOL(omapdss_dsi_set_timings);
 +
-diff --git a/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-intc.txt b/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-intc.txt
-new file mode 100644
-index 0000000..0a4ce10
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-intc.txt
-@@ -0,0 +1,16 @@
-+VIA/Wondermedia VT8500 Interrupt Controller
-+-----------------------------------------------------
-+
-+Required properties:
-+- compatible : "via,vt8500-intc"
-+- reg : Should contain 1 register ranges(address and length)
-+- #interrupt-cells : should be <1>
-+
-+Example:
-+
-+	intc: interrupt-controller@d8140000 {
-+		compatible = "via,vt8500-intc";
-+		interrupt-controller;
-+		reg = <0xd8140000 0x10000>;
-+		#interrupt-cells = <1>;
-+	};
-diff --git a/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-pmc.txt b/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-pmc.txt
-new file mode 100644
-index 0000000..521b9c7
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-pmc.txt
-@@ -0,0 +1,13 @@
-+VIA/Wondermedia VT8500 Power Management Controller
-+-----------------------------------------------------
-+
-+Required properties:
-+- compatible : "via,vt8500-pmc"
-+- reg : Should contain 1 register ranges(address and length)
-+
-+Example:
-+
-+	pmc@d8130000 {
-+		compatible = "via,vt8500-pmc";
-+		reg = <0xd8130000 0x1000>;
-+	};
-diff --git a/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-timer.txt b/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-timer.txt
-new file mode 100644
-index 0000000..901c73f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-timer.txt
-@@ -0,0 +1,15 @@
-+VIA/Wondermedia VT8500 Timer
-+-----------------------------------------------------
-+
-+Required properties:
-+- compatible : "via,vt8500-timer"
-+- reg : Should contain 1 register ranges(address and length)
-+- interrupts : interrupt for the timer
-+
-+Example:
-+
-+	timer@d8130100 {
-+		compatible = "via,vt8500-timer";
-+		reg = <0xd8130100 0x28>;
-+		interrupts = <36>;
-+	};
-diff --git a/Documentation/devicetree/bindings/gpio/gpio_vt8500.txt b/Documentation/devicetree/bindings/gpio/gpio_vt8500.txt
-new file mode 100644
-index 0000000..1a122bf
---- /dev/null
-+++ b/Documentation/devicetree/bindings/gpio/gpio_vt8500.txt
-@@ -0,0 +1,24 @@
-+VIA/Wondermedia VT8500 GPIO Controller
-+-----------------------------------------------------
-+
-+Required properties:
-+- compatible : "via,vt8500-gpio", "wm,wm8505-gpio"
-+	or "wm,wm8650-gpio" depending on your SoC
-+- reg : Should contain 1 register range (address and length)
-+- #gpio-cells : should be <3>.
-+	1) bank
-+	2) pin number
-+	3) flags
-+
-+Example:
-+
-+	gpio: gpio-controller@d8110000 {
-+		compatible = "via,vt8500-gpio";
-+		gpio-controller;
-+		reg = <0xd8110000 0x10000>;
-+		#gpio-cells = <3>;
-+	};
-+
-+	vibrate {
-+		gpios = <&gpio 0 1 0>; /* Bank 0, Pin 1, No flags */
-+	};
-diff --git a/Documentation/devicetree/bindings/rtc/via,vt8500-rtc.txt b/Documentation/devicetree/bindings/rtc/via,vt8500-rtc.txt
-new file mode 100644
-index 0000000..3c0484c
---- /dev/null
-+++ b/Documentation/devicetree/bindings/rtc/via,vt8500-rtc.txt
-@@ -0,0 +1,15 @@
-+VIA/Wondermedia VT8500 Realtime Clock Controller
-+-----------------------------------------------------
-+
-+Required properties:
-+- compatible : "via,vt8500-rtc"
-+- reg : Should contain 1 register ranges(address and length)
-+- interrupts : alarm interrupt
-+
-+Example:
-+
-+	rtc@d8100000 {
-+		compatible = "via,vt8500-rtc";
-+		reg = <0xd8100000 0x10000>;
-+		interrupts = <48>;
-+	};
-diff --git a/Documentation/devicetree/bindings/tty/serial/via,vt8500-uart.txt b/Documentation/devicetree/bindings/tty/serial/via,vt8500-uart.txt
-new file mode 100644
-index 0000000..3222502
---- /dev/null
-+++ b/Documentation/devicetree/bindings/tty/serial/via,vt8500-uart.txt
-@@ -0,0 +1,15 @@
-+VIA/Wondermedia VT8500 UART Controller
-+-----------------------------------------------------
-+
-+Required properties:
-+- compatible : "via,vt8500-uart"
-+- reg : Should contain 1 register ranges(address and length)
-+- interrupts : UART interrupt
-+
-+Example:
-+
-+	uart@d8210000 {
-+		compatible = "via,vt8500-uart";
-+		reg = <0xd8210000 0x1040>;
-+		interrupts = <47>;
-+	};
-diff --git a/Documentation/devicetree/bindings/usb/platform-uhci.txt b/Documentation/devicetree/bindings/usb/platform-uhci.txt
-new file mode 100644
-index 0000000..a4fb071
---- /dev/null
-+++ b/Documentation/devicetree/bindings/usb/platform-uhci.txt
-@@ -0,0 +1,15 @@
-+Generic Platform UHCI Controller
-+-----------------------------------------------------
-+
-+Required properties:
-+- compatible : "platform-uhci"
-+- reg : Should contain 1 register ranges(address and length)
-+- interrupts : UHCI controller interrupt
-+
-+Example:
-+
-+	uhci@d8007b00 {
-+		compatible = "platform-uhci";
-+		reg = <0xd8007b00 0x200>;
-+		interrupts = <43>;
-+	};
-diff --git a/Documentation/devicetree/bindings/usb/via,vt8500-ehci.txt b/Documentation/devicetree/bindings/usb/via,vt8500-ehci.txt
-new file mode 100644
-index 0000000..17b3ad1
---- /dev/null
-+++ b/Documentation/devicetree/bindings/usb/via,vt8500-ehci.txt
-@@ -0,0 +1,15 @@
-+VIA/Wondermedia VT8500 EHCI Controller
-+-----------------------------------------------------
-+
-+Required properties:
-+- compatible : "via,vt8500-ehci"
-+- reg : Should contain 1 register ranges(address and length)
-+- interrupts : ehci controller interrupt
-+
-+Example:
-+
-+	ehci@d8007900 {
-+		compatible = "via,vt8500-ehci";
-+		reg = <0xd8007900 0x200>;
-+		interrupts = <43>;
-+	};
-diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
-index db4d3af..5c63da2 100644
---- a/Documentation/devicetree/bindings/vendor-prefixes.txt
-+++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
-@@ -47,5 +47,7 @@ sirf	SiRF Technology, Inc.
- st	STMicroelectronics
- stericsson	ST-Ericsson
- ti	Texas Instruments
-+via	VIA Technologies, Inc.
- wlf	Wolfson Microelectronics
-+wm	Wondermedia Technologies, Inc.
- xlnx	Xilinx
-diff --git a/Documentation/devicetree/bindings/video/via,vt8500-fb.txt b/Documentation/devicetree/bindings/video/via,vt8500-fb.txt
-new file mode 100644
-index 0000000..ccd15b9
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/via,vt8500-fb.txt
-@@ -0,0 +1,46 @@
-+VIA VT8500 Framebuffer
-+-----------------------------------------------------
-+
-+Required properties:
-+- compatible : "via,vt8500-fb"
-+- reg : Should contain 1 register ranges(address and length)
-+- interrupts : framebuffer controller interrupt
-+
-+Required nodes:
-+- display: a display node is required to initialize the lcd panel
-+	This should be in the board dts.
-+
-+Example:
-+
-+	fb@d800e400 {
-+		compatible = "via,vt8500-fb";
-+		reg = <0xd800e400 0x400>;
-+		interrupts = <12>;
-+	};
-+
-+VIA VT8500 Display
-+-----------------------------------------------------
-+Required properties:
-+- xres : lcd panel horizontal resolution
-+- yres : lcd panel vertical resolution
-+- left-margin,
-+- right-margin,
-+- hsync-len: lcd panel horizontal timings in pixels
-+- upper-margin,
-+- lower-margin,
-+- vsync-len: lcd panel verticals timings in pixels
-+- bpp: lcd panel bit-depth.
-+	<16> for RGB565, <32> for RGB888
-+
-+Example:
-+	display {
-+		xres = <800>;
-+		yres = <480>;
-+		left-margin = <88>;
-+		right-margin = <40>;
-+		hsync-len = <0>;
-+		upper-margin = <32>;
-+		lower-margin = <11>;
-+		vsync-len = <1>;
-+		bpp = <16>;
-+	};
-diff --git a/Documentation/devicetree/bindings/video/wm,prizm-ge-rops.txt b/Documentation/devicetree/bindings/video/wm,prizm-ge-rops.txt
-new file mode 100644
-index 0000000..a850fa0
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/wm,prizm-ge-rops.txt
-@@ -0,0 +1,13 @@
-+VIA/Wondermedia Graphics Engine Controller
-+-----------------------------------------------------
-+
-+Required properties:
-+- compatible : "wm,prizm-ge-rops"
-+- reg : Should contain 1 register ranges(address and length)
-+
-+Example:
-+
-+	ge_rops@d8050400 {
-+		compatible = "wm,prizm-ge-rops";
-+		reg = <0xd8050400 0x100>;
-+	};
-diff --git a/Documentation/devicetree/bindings/video/wm,wm8505-fb.txt b/Documentation/devicetree/bindings/video/wm,wm8505-fb.txt
-new file mode 100644
-index 0000000..ab67382
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/wm,wm8505-fb.txt
-@@ -0,0 +1,20 @@
-+Wondermedia WM8505 Framebuffer
-+-----------------------------------------------------
-+
-+Required properties:
-+- compatible : "wm,wm8505-fb"
-+- reg : Should contain 1 register ranges(address and length)
-+
-+Required nodes:
-+- display: a display node is required to initialize the lcd panel
-+	This should be in the board dts. See definition in
-+	Documentation/devicetree/bindings/video/via,vt8500-fb.txt
-+
-+
-+Example:
-+
-+	fb@d8050800 {
-+		compatible = "wm,wm8505-fb";
-+		reg = <0xd8050800 0x200>;
-+	};
-+
+ static int __init dsi_init_display(struct omap_dss_device *dssdev)
+ {
+ 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index ebf2ebd..a2cd133 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -736,6 +736,8 @@ int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
+ void omapdss_dsi_vc_enable_hs(struct omap_dss_device *dssdev, int channel,
+ 		bool enable);
+ int omapdss_dsi_enable_te(struct omap_dss_device *dssdev, bool enable);
++void omapdss_dsi_set_timings(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings);
+ 
+ int omap_dsi_update(struct omap_dss_device *dssdev, int channel,
+ 		void (*callback)(int, void *), void *data);
 -- 
 1.7.9.5
 

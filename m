@@ -1,241 +1,482 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 21 Aug 2012 06:10:13 +0000
-Subject: [PATCH 06/23] OMAP_VOUT: Remove manager->device references
-Message-Id: <1345528711-27801-7-git-send-email-archit@ti.com>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Thu, 09 Aug 2012 01:54:53 +0000
+Subject: [PATCHv2 1/8] arm: vt8500: Add device tree files for VIA/Wondermedia SoC's
+Message-Id: <1344477300-25251-2-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>
-In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
+References: <1344477300-25251-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1344477300-25251-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com, Archit Taneja <archit@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-With the introduction of output entities, managers will now connect to outputs.
-Use the helper op for managers named get_device. This will abstract away the
-information on how to get the device from an overlay manager.
+Add device tree files for VT8500, WM8505 and WM8650 SoC's and
+reference boards.
 
-Using the helper function will reduce the number of pointer dereferences a user
-of OMAPDSS needs to do and reduce risk of a NULL dereference.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
 ---
- drivers/media/video/omap/omap_vout.c |   81 ++++++++++++++++++++++++----------
- 1 file changed, 57 insertions(+), 24 deletions(-)
+ arch/arm/boot/dts/vt8500-bv07.dts |   31 +++++++++
+ arch/arm/boot/dts/vt8500.dtsi     |   99 +++++++++++++++++++++++++++++
+ arch/arm/boot/dts/wm8505-ref.dts  |   31 +++++++++
+ arch/arm/boot/dts/wm8505.dtsi     |  125 +++++++++++++++++++++++++++++++++++++
+ arch/arm/boot/dts/wm8650-mid.dts  |   31 +++++++++
+ arch/arm/boot/dts/wm8650.dtsi     |   95 ++++++++++++++++++++++++++++
+ 6 files changed, 412 insertions(+)
+ create mode 100644 arch/arm/boot/dts/vt8500-bv07.dts
+ create mode 100644 arch/arm/boot/dts/vt8500.dtsi
+ create mode 100644 arch/arm/boot/dts/wm8505-ref.dts
+ create mode 100644 arch/arm/boot/dts/wm8505.dtsi
+ create mode 100644 arch/arm/boot/dts/wm8650-mid.dts
+ create mode 100644 arch/arm/boot/dts/wm8650.dtsi
 
-diff --git a/drivers/media/video/omap/omap_vout.c b/drivers/media/video/omap/omap_vout.c
-index 88cf9d9..0ebf87e 100644
---- a/drivers/media/video/omap/omap_vout.c
-+++ b/drivers/media/video/omap/omap_vout.c
-@@ -454,11 +454,16 @@ static int omapvid_init(struct omap_vout_device *vout, u32 addr)
- 
- 	win = &vout->win;
- 	for (i = 0; i < ovid->num_overlays; i++) {
-+		struct omap_dss_device *dssdev;
+diff --git a/arch/arm/boot/dts/vt8500-bv07.dts b/arch/arm/boot/dts/vt8500-bv07.dts
+new file mode 100644
+index 0000000..20dda12
+--- /dev/null
++++ b/arch/arm/boot/dts/vt8500-bv07.dts
+@@ -0,0 +1,31 @@
++/*
++ * vt8500-bv07.dts - Device tree file for Benign BV07 Netbook
++ *
++ * Copyright (C) 2012 Tony Prisk <linux@prisktech.co.nz>
++ *
++ * Licensed under GPLv2 or later
++ */
 +
- 		ovl = ovid->overlays[i];
--		if (!ovl->manager || !ovl->manager->device)
-+		dssdev = ovl->manager ?
-+			ovl->manager->get_device(ovl->manager) : NULL;
++/dts-v1/;
++/include/ "vt8500.dtsi"
 +
-+		if (!dssdev)
- 			return -EINVAL;
- 
--		timing = &ovl->manager->device->panel.timings;
-+		timing = &dssdev->panel.timings;
- 
- 		outw = win->w.width;
- 		outh = win->w.height;
-@@ -515,8 +520,12 @@ static int omapvid_apply_changes(struct omap_vout_device *vout)
- 	struct omapvideo_info *ovid = &vout->vid_info;
- 
- 	for (i = 0; i < ovid->num_overlays; i++) {
-+		struct omap_dss_device *dssdev;
++/ {
++	model = "Benign BV07 Netbook";
 +
- 		ovl = ovid->overlays[i];
--		if (!ovl->manager || !ovl->manager->device)
-+		dssdev = ovl->manager ?
-+			ovl->manager->get_device(ovl->manager) : NULL;
-+		if (!dssdev)
- 			return -EINVAL;
- 		ovl->manager->apply(ovl->manager);
- 	}
-@@ -579,12 +588,15 @@ static void omap_vout_isr(void *arg, unsigned int irqstatus)
- 
- 	ovid = &vout->vid_info;
- 	ovl = ovid->overlays[0];
--	/* get the display device attached to the overlay */
--	if (!ovl->manager || !ovl->manager->device)
--		return;
- 
- 	mgr_id = ovl->manager->id;
--	cur_display = ovl->manager->device;
++	/*
++	 * Display node is based on Sascha Hauer's patch on dri-devel.
++	 * Added a bpp property to calculate the size of the framebuffer
++	 * until the binding is formalized.
++	 */
++	display {
++		xres = <800>;
++		yres = <480>;
++		left-margin = <88>;
++		right-margin = <40>;
++		hsync-len = <0>;
++		upper-margin = <32>;
++		lower-margin = <11>;
++		vsync-len = <1>;
++		bpp = <16>;
++	};
++};
+diff --git a/arch/arm/boot/dts/vt8500.dtsi b/arch/arm/boot/dts/vt8500.dtsi
+new file mode 100644
+index 0000000..7a2fe0e
+--- /dev/null
++++ b/arch/arm/boot/dts/vt8500.dtsi
+@@ -0,0 +1,99 @@
++/*
++ * vt8500.dtsi - Device tree file for VIA VT8500 SoC
++ *
++ * Copyright (C) 2012 Tony Prisk <linux@prisktech.co.nz>
++ *
++ * Licensed under GPLv2 or later
++ */
 +
-+	/* get the display device attached to the overlay */
-+	cur_display = ovl->manager ?
-+		ovl->manager->get_device(ovl->manager) : NULL;
++/include/ "skeleton.dtsi"
 +
-+	if (!cur_display)
-+		return;
- 
- 	spin_lock(&vout->vbq_lock);
- 	do_gettimeofday(&timevalue);
-@@ -948,7 +960,10 @@ static int omap_vout_release(struct file *file)
- 	/* Disable all the overlay managers connected with this interface */
- 	for (i = 0; i < ovid->num_overlays; i++) {
- 		struct omap_overlay *ovl = ovid->overlays[i];
--		if (ovl->manager && ovl->manager->device)
-+		struct omap_dss_device *dssdev = ovl->manager ?
-+			ovl->manager->get_device(ovl->manager) : NULL;
++/ {
++	compatible = "via,vt8500";
 +
-+		if (dssdev)
- 			ovl->disable(ovl);
- 	}
- 	/* Turn off the pipeline */
-@@ -1081,14 +1096,17 @@ static int vidioc_try_fmt_vid_out(struct file *file, void *fh,
- 	struct omapvideo_info *ovid;
- 	struct omap_video_timings *timing;
- 	struct omap_vout_device *vout = fh;
-+	struct omap_dss_device *dssdev;
- 
- 	ovid = &vout->vid_info;
- 	ovl = ovid->overlays[0];
-+	/* get the display device attached to the overlay */
-+	dssdev = ovl->manager ? ovl->manager->get_device(ovl->manager) : NULL;
- 
--	if (!ovl->manager || !ovl->manager->device)
-+	if (!dssdev)
- 		return -EINVAL;
--	/* get the display device attached to the overlay */
--	timing = &ovl->manager->device->panel.timings;
++	soc {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "simple-bus";
++		ranges;
++		interrupt-parent = <&intc>;
 +
-+	timing = &dssdev->panel.timings;
- 
- 	vout->fbuf.fmt.height = timing->y_res;
- 	vout->fbuf.fmt.width = timing->x_res;
-@@ -1105,6 +1123,7 @@ static int vidioc_s_fmt_vid_out(struct file *file, void *fh,
- 	struct omapvideo_info *ovid;
- 	struct omap_video_timings *timing;
- 	struct omap_vout_device *vout = fh;
-+	struct omap_dss_device *dssdev;
- 
- 	if (vout->streaming)
- 		return -EBUSY;
-@@ -1113,13 +1132,14 @@ static int vidioc_s_fmt_vid_out(struct file *file, void *fh,
- 
- 	ovid = &vout->vid_info;
- 	ovl = ovid->overlays[0];
-+	dssdev = ovl->manager ? ovl->manager->get_device(ovl->manager) : NULL;
- 
- 	/* get the display device attached to the overlay */
--	if (!ovl->manager || !ovl->manager->device) {
-+	if (!dssdev) {
- 		ret = -EINVAL;
- 		goto s_fmt_vid_out_exit;
- 	}
--	timing = &ovl->manager->device->panel.timings;
-+	timing = &dssdev->panel.timings;
- 
- 	/* We dont support RGB24-packed mode if vrfb rotation
- 	 * is enabled*/
-@@ -1298,6 +1318,7 @@ static int vidioc_s_crop(struct file *file, void *fh, struct v4l2_crop *crop)
- 	struct omapvideo_info *ovid;
- 	struct omap_overlay *ovl;
- 	struct omap_video_timings *timing;
-+	struct omap_dss_device *dssdev;
- 
- 	if (vout->streaming)
- 		return -EBUSY;
-@@ -1305,13 +1326,15 @@ static int vidioc_s_crop(struct file *file, void *fh, struct v4l2_crop *crop)
- 	mutex_lock(&vout->lock);
- 	ovid = &vout->vid_info;
- 	ovl = ovid->overlays[0];
-+	/* get the display device attached to the overlay */
-+	dssdev = ovl->manager ? ovl->manager->get_device(ovl->manager) : NULL;
- 
--	if (!ovl->manager || !ovl->manager->device) {
-+	if (!dssdev) {
- 		ret = -EINVAL;
- 		goto s_crop_err;
- 	}
--	/* get the display device attached to the overlay */
--	timing = &ovl->manager->device->panel.timings;
++		intc: interrupt-controller@d8140000 {
++			compatible = "via,vt8500-intc";
++			interrupt-controller;
++			reg = <0xd8140000 0x10000>;
++			#interrupt-cells = <1>;
++		};
 +
-+	timing = &dssdev->panel.timings;
- 
- 	if (is_rotation_90_or_270(vout)) {
- 		vout->fbuf.fmt.height = timing->x_res;
-@@ -1666,8 +1689,9 @@ static int vidioc_streamon(struct file *file, void *fh, enum v4l2_buf_type i)
- 
- 	for (j = 0; j < ovid->num_overlays; j++) {
- 		struct omap_overlay *ovl = ovid->overlays[j];
-+		struct omap_overlay_manager *mgr = ovl->manager;
- 
--		if (ovl->manager && ovl->manager->device) {
-+		if (mgr && mgr->get_device(mgr)) {
- 			struct omap_overlay_info info;
- 			ovl->get_overlay_info(ovl, &info);
- 			info.paddr = addr;
-@@ -1690,8 +1714,10 @@ static int vidioc_streamon(struct file *file, void *fh, enum v4l2_buf_type i)
- 
- 	for (j = 0; j < ovid->num_overlays; j++) {
- 		struct omap_overlay *ovl = ovid->overlays[j];
-+		struct omap_dss_device *dssdev = ovl->manager ?
-+			ovl->manager->get_device(ovl->manager) : NULL;
- 
--		if (ovl->manager && ovl->manager->device) {
-+		if (dssdev) {
- 			ret = ovl->enable(ovl);
- 			if (ret)
- 				goto streamon_err1;
-@@ -1726,8 +1752,10 @@ static int vidioc_streamoff(struct file *file, void *fh, enum v4l2_buf_type i)
- 
- 	for (j = 0; j < ovid->num_overlays; j++) {
- 		struct omap_overlay *ovl = ovid->overlays[j];
-+		struct omap_dss_device *dssdev = ovl->manager ?
-+			ovl->manager->get_device(ovl->manager) : NULL;
- 
--		if (ovl->manager && ovl->manager->device)
-+		if (dssdev)
- 			ovl->disable(ovl);
- 	}
- 
-@@ -1890,8 +1918,9 @@ static int __init omap_vout_setup_video_data(struct omap_vout_device *vout)
- 	struct video_device *vfd;
- 	struct v4l2_pix_format *pix;
- 	struct v4l2_control *control;
-+	struct omap_overlay *ovl = vout->vid_info.overlays[0];
- 	struct omap_dss_device *display -		vout->vid_info.overlays[0]->manager->device;
-+		ovl->manager->get_device(ovl->manager);
- 
- 	/* set the default pix */
- 	pix = &vout->pix;
-@@ -2205,8 +2234,10 @@ static int __init omap_vout_probe(struct platform_device *pdev)
- 	 */
- 	for (i = 1; i < vid_dev->num_overlays; i++) {
- 		ovl = omap_dss_get_overlay(i);
--		if (ovl->manager && ovl->manager->device) {
--			def_display = ovl->manager->device;
-+		dssdev = ovl->manager ? ovl->manager->get_device(ovl->manager) :
-+				NULL;
-+		if (dssdev) {
-+			def_display = dssdev;
- 		} else {
- 			dev_warn(&pdev->dev, "cannot find display\n");
- 			def_display = NULL;
-@@ -2253,8 +2284,10 @@ probe_err1:
- 	for (i = 1; i < vid_dev->num_overlays; i++) {
- 		def_display = NULL;
- 		ovl = omap_dss_get_overlay(i);
--		if (ovl->manager && ovl->manager->device)
--			def_display = ovl->manager->device;
-+		dssdev = ovl->manager ? ovl->manager->get_device(ovl->manager) :
-+				NULL;
-+		if (dssdev)
-+			def_display = dssdev;
- 
- 		if (def_display && def_display->driver)
- 			def_display->driver->disable(def_display);
++		gpio: gpio-controller@d8110000 {
++			compatible = "via,vt8500-gpio";
++			gpio-controller;
++			reg = <0xd8110000 0x10000>;
++			#gpio-cells = <3>;
++		};
++
++		pmc@d8130000 {
++			compatible = "via,vt8500-pmc";
++			reg = <0xd8130000 0x1000>;
++		};
++
++		timer@d8130100 {
++			compatible = "via,vt8500-timer";
++			reg = <0xd8130100 0x28>;
++			interrupts = <36>;
++		};
++
++		ehci@d8007900 {
++			compatible = "via,vt8500-ehci";
++			reg = <0xd8007900 0x200>;
++			interrupts = <43>;
++		};
++
++		uhci@d8007b00 {
++			compatible = "platform-uhci";
++			reg = <0xd8007b00 0x200>;
++			interrupts = <43>;
++		};
++
++		fb@d800e400 {
++			compatible = "via,vt8500-fb";
++			reg = <0xd800e400 0x400>;
++			interrupts = <12>;
++		};
++
++		ge_rops@d8050400 {
++			compatible = "wm,prizm-ge-rops";
++			reg = <0xd8050400 0x100>;
++		};
++
++		uart@d8200000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd8200000 0x1040>;
++			interrupts = <32>;
++		};
++
++		uart@d82b0000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd82b0000 0x1040>;
++			interrupts = <33>;
++		};
++
++		uart@d8210000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd8210000 0x1040>;
++			interrupts = <47>;
++		};
++
++		uart@d82c0000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd82c0000 0x1040>;
++			interrupts = <50>;
++		};
++
++		rtc@d8100000 {
++			compatible = "via,vt8500-rtc";
++			reg = <0xd8100000 0x10000>;
++			interrupts = <48>;
++		};
++	};
++};
+diff --git a/arch/arm/boot/dts/wm8505-ref.dts b/arch/arm/boot/dts/wm8505-ref.dts
+new file mode 100644
+index 0000000..2b10282
+--- /dev/null
++++ b/arch/arm/boot/dts/wm8505-ref.dts
+@@ -0,0 +1,31 @@
++/*
++ * wm8505-ref.dts - Device tree file for Wondermedia WM8505 reference netbook
++ *
++ * Copyright (C) 2012 Tony Prisk <linux@prisktech.co.nz>
++ *
++ * Licensed under GPLv2 or later
++ */
++
++/dts-v1/;
++/include/ "wm8505.dtsi"
++
++/ {
++	model = "Wondermedia WM8505 Netbook";
++
++	/*
++	 * Display node is based on Sascha Hauer's patch on dri-devel.
++	 * Added a bpp property to calculate the size of the framebuffer
++	 * until the binding is formalized.
++	 */
++	display {
++		xres = <800>;
++		yres = <480>;
++		left-margin = <88>;
++		right-margin = <40>;
++		hsync-len = <0>;
++		upper-margin = <32>;
++		lower-margin = <11>;
++		vsync-len = <1>;
++		bpp = <32>;
++	};
++};
+diff --git a/arch/arm/boot/dts/wm8505.dtsi b/arch/arm/boot/dts/wm8505.dtsi
+new file mode 100644
+index 0000000..76dbfdc
+--- /dev/null
++++ b/arch/arm/boot/dts/wm8505.dtsi
+@@ -0,0 +1,125 @@
++/*
++ * wm8505.dtsi - Device tree file for Wondermedia WM8505 SoC
++ *
++ * Copyright (C) 2012 Tony Prisk <linux@prisktech.co.nz>
++ *
++ * Licensed under GPLv2 or later
++ */
++
++/include/ "skeleton.dtsi"
++
++/ {
++	compatible = "wm,wm8505";
++
++	cpus {
++		cpu@0 {
++			compatible = "arm,arm926ejs";
++		};
++	};
++
++	soc {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "simple-bus";
++		ranges;
++		interrupt-parent = <&intc0>;
++
++		intc0: interrupt-controller@d8140000 {
++			compatible = "via,vt8500-intc";
++			interrupt-controller;
++			reg = <0xd8140000 0x10000>;
++			#interrupt-cells = <1>;
++		};
++
++		/* Secondary IC cascaded to intc0 */
++		intc1: interrupt-controller@d8150000 {
++			compatible = "via,vt8500-intc";
++			interrupt-controller;
++			#interrupt-cells = <1>;
++			reg = <0xD8150000 0x10000>;
++			interrupts = <56 57 58 59 60 61 62 63>;
++		};
++
++		gpio: gpio-controller@d8110000 {
++			compatible = "wm,wm8505-gpio";
++			gpio-controller;
++			reg = <0xd8110000 0x10000>;
++			#gpio-cells = <3>;
++		};
++
++		pmc@d8130000 {
++			compatible = "via,vt8500-pmc";
++			reg = <0xd8130000 0x1000>;
++		};
++
++		timer@d8130100 {
++			compatible = "via,vt8500-timer";
++			reg = <0xd8130100 0x28>;
++			interrupts = <36>;
++		};
++
++		ehci@d8007100 {
++			compatible = "via,vt8500-ehci";
++			reg = <0xd8007100 0x200>;
++			interrupts = <43>;
++		};
++
++		uhci@d8007300 {
++			compatible = "platform-uhci";
++			reg = <0xd8007300 0x200>;
++			interrupts = <43>;
++		};
++
++		fb@d8050800 {
++			compatible = "wm,wm8505-fb";
++			reg = <0xd8050800 0x200>;
++		};
++
++		ge_rops@d8050400 {
++			compatible = "wm,prizm-ge-rops";
++			reg = <0xd8050400 0x100>;
++		};
++
++		uart@d8200000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd8200000 0x1040>;
++			interrupts = <32>;
++		};
++
++		uart@d82b0000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd82b0000 0x1040>;
++			interrupts = <33>;
++		};
++
++		uart@d8210000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd8210000 0x1040>;
++			interrupts = <47>;
++		};
++
++		uart@d82c0000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd82c0000 0x1040>;
++			interrupts = <50>;
++		};
++
++		uart@d8370000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd8370000 0x1040>;
++			interrupts = <31>;
++		};
++
++		uart@d8380000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd8380000 0x1040>;
++			interrupts = <30>;
++		};
++
++		rtc@d8100000 {
++			compatible = "via,vt8500-rtc";
++			reg = <0xd8100000 0x10000>;
++			interrupts = <48>;
++		};
++	};
++};
+diff --git a/arch/arm/boot/dts/wm8650-mid.dts b/arch/arm/boot/dts/wm8650-mid.dts
+new file mode 100644
+index 0000000..8e0119e
+--- /dev/null
++++ b/arch/arm/boot/dts/wm8650-mid.dts
+@@ -0,0 +1,31 @@
++/*
++ * wm8650-mid.dts - Device tree file for Wondermedia WM8650-MID Tablet
++ *
++ * Copyright (C) 2012 Tony Prisk <linux@prisktech.co.nz>
++ *
++ * Licensed under GPLv2 or later
++ */
++
++/dts-v1/;
++/include/ "wm8650.dtsi"
++
++/ {
++	model = "Wondermedia WM8650-MID Tablet";
++
++	/*
++	 * Display node is based on Sascha Hauer's patch on dri-devel.
++	 * Added a bpp property to calculate the size of the framebuffer
++	 * until the binding is formalized.
++	 */
++	display {
++		xres = <800>;
++		yres = <480>;
++		left-margin = <88>;
++		right-margin = <40>;
++		hsync-len = <0>;
++		upper-margin = <32>;
++		lower-margin = <11>;
++		vsync-len = <1>;
++		bpp = <16>;
++	};
++};
+diff --git a/arch/arm/boot/dts/wm8650.dtsi b/arch/arm/boot/dts/wm8650.dtsi
+new file mode 100644
+index 0000000..fab4ead
+--- /dev/null
++++ b/arch/arm/boot/dts/wm8650.dtsi
+@@ -0,0 +1,95 @@
++/*
++ * wm8650.dtsi - Device tree file for Wondermedia WM8650 SoC
++ *
++ * Copyright (C) 2012 Tony Prisk <linux@prisktech.co.nz>
++ *
++ * Licensed under GPLv2 or later
++ */
++
++/include/ "skeleton.dtsi"
++
++/ {
++	compatible = "wm,wm8650";
++
++	soc {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "simple-bus";
++		ranges;
++		interrupt-parent = <&intc0>;
++
++		intc0: interrupt-controller@d8140000 {
++			compatible = "via,vt8500-intc";
++			interrupt-controller;
++			reg = <0xd8140000 0x10000>;
++			#interrupt-cells = <1>;
++		};
++
++		/* Secondary IC cascaded to intc0 */
++		intc1: interrupt-controller@d8150000 {
++			compatible = "via,vt8500-intc";
++			interrupt-controller;
++			#interrupt-cells = <1>;
++			reg = <0xD8150000 0x10000>;
++			interrupts = <56 57 58 59 60 61 62 63>;
++		};
++
++		gpio: gpio-controller@d8110000 {
++			compatible = "wm,wm8650-gpio";
++			gpio-controller;
++			reg = <0xd8110000 0x10000>;
++			#gpio-cells = <3>;
++		};
++
++		pmc@d8130000 {
++			compatible = "via,vt8500-pmc";
++			reg = <0xd8130000 0x1000>;
++		};
++
++		timer@d8130100 {
++			compatible = "via,vt8500-timer";
++			reg = <0xd8130100 0x28>;
++			interrupts = <36>;
++		};
++
++		ehci@d8007900 {
++			compatible = "via,vt8500-ehci";
++			reg = <0xd8007900 0x200>;
++			interrupts = <43>;
++		};
++
++		uhci@d8007b00 {
++			compatible = "platform-uhci";
++			reg = <0xd8007b00 0x200>;
++			interrupts = <43>;
++		};
++
++		fb@d8050800 {
++			compatible = "wm,wm8505-fb";
++			reg = <0xd8050800 0x200>;
++		};
++
++		ge_rops@d8050400 {
++			compatible = "wm,prizm-ge-rops";
++			reg = <0xd8050400 0x100>;
++		};
++
++		uart@d8200000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd8200000 0x1040>;
++			interrupts = <32>;
++		};
++
++		uart@d82b0000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd82b0000 0x1040>;
++			interrupts = <33>;
++		};
++
++		rtc@d8100000 {
++			compatible = "via,vt8500-rtc";
++			reg = <0xd8100000 0x10000>;
++			interrupts = <48>;
++		};
++	};
++};
 -- 
 1.7.9.5
 

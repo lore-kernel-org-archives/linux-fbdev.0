@@ -1,126 +1,121 @@
 From: Archit Taneja <archit@ti.com>
-Date: Thu, 30 Aug 2012 11:52:36 +0000
-Subject: [PATCH v2 14/23] OMAPDSS: RFBI: Pass omap_dss_output within the driver
-Message-Id: <1346326845-16583-15-git-send-email-archit@ti.com>
+Date: Fri, 10 Aug 2012 10:49:06 +0000
+Subject: [PATCH 5/5] OMAPDSS: SDI: Maintain copy of data pairs in driver data
+Message-Id: <1344595026-10607-6-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>
- <1346326845-16583-1-git-send-email-archit@ti.com>
-In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
+References: <1344595026-10607-1-git-send-email-archit@ti.com>
+In-Reply-To: <1344595026-10607-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-When a panel driver calls a RFBI function, it passes the omap_dss_device
-pointer, this pointer currently propagates within the RFBI driver to configure
-the interface.
+The SDI driver currently relies on the omap_dss_device struct to configure the
+number of data pairs as specified by the panel. This makes the SDI interface
+driver dependent on the omap_dss_device struct.
 
-Extract the omap_dss_output pointer from omap_dss_device received from the panel
-driver, pass the output pointer to RFBI functions local to the driver to
-configure the interface, these functions no longer need omap_dss_device since
-the driver now maintains a copy of output parameters.
-
-Replace dssdev->manager references with out->manager references as only these
-will be valid later.
-
-With the addition of outputs. There is a possibility that an omap_dss_device
-isn't connected to an output, or a manager isn't connected to an output yet.
-Ensure that the RFBI interface functions proceed only if the output is non NULL.
+Make the SDI driver data maintain it's own data lines field. A panel driver
+is expected to call omapdss_sdi_set_datapairs() before enabling the interface.
+Even though we configure the number of data pairs here, this function would be
+finally mapped to a generic interface op called set_data_lines. The datapairs
+argument type has been changed from u8 to int at some places to be in sync with
+the 'set_data_lines' ops of other interfaces.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/rfbi.c |   24 ++++++++++++++----------
- 1 file changed, 14 insertions(+), 10 deletions(-)
+ drivers/video/omap2/displays/panel-acx565akm.c |    1 +
+ drivers/video/omap2/dss/dss.c                  |    2 +-
+ drivers/video/omap2/dss/dss.h                  |    2 +-
+ drivers/video/omap2/dss/sdi.c                  |   10 +++++++++-
+ include/video/omapdss.h                        |    1 +
+ 5 files changed, 13 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index 3450f51..545e14f 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -307,11 +307,12 @@ void omap_rfbi_write_pixels(const void __iomem *buf, int scr_width,
- }
- EXPORT_SYMBOL(omap_rfbi_write_pixels);
+diff --git a/drivers/video/omap2/displays/panel-acx565akm.c b/drivers/video/omap2/displays/panel-acx565akm.c
+index 77fe59f..c835aa7 100644
+--- a/drivers/video/omap2/displays/panel-acx565akm.c
++++ b/drivers/video/omap2/displays/panel-acx565akm.c
+@@ -601,6 +601,7 @@ static int acx_panel_power_on(struct omap_dss_device *dssdev)
+ 	mutex_lock(&md->mutex);
  
--static int rfbi_transfer_area(struct omap_dss_device *dssdev,
-+static int rfbi_transfer_area(struct omap_dss_output *out,
- 		void (*callback)(void *data), void *data)
+ 	omapdss_sdi_set_timings(dssdev, &dssdev->panel.timings);
++	omapdss_sdi_set_datapairs(dssdev, dssdev->phy.sdi.datapairs);
+ 
+ 	r = omapdss_sdi_display_enable(dssdev);
+ 	if (r) {
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 04b4586..d692047 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -144,7 +144,7 @@ static void dss_restore_context(void)
+ #undef SR
+ #undef RR
+ 
+-void dss_sdi_init(u8 datapairs)
++void dss_sdi_init(int datapairs)
  {
  	u32 l;
- 	int r;
-+	struct omap_overlay_manager *mgr = out->manager;
- 	u16 width = rfbi.timings.x_res;
- 	u16 height = rfbi.timings.y_res;
  
-@@ -320,9 +321,9 @@ static int rfbi_transfer_area(struct omap_dss_device *dssdev,
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 3fe76c0..e70e702 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -280,7 +280,7 @@ void dss_dump_clocks(struct seq_file *s);
+ void dss_debug_dump_clocks(struct seq_file *s);
+ #endif
  
- 	DSSDBG("rfbi_transfer_area %dx%d\n", width, height);
+-void dss_sdi_init(u8 datapairs);
++void dss_sdi_init(int datapairs);
+ int dss_sdi_enable(void);
+ void dss_sdi_disable(void);
  
--	dss_mgr_set_timings(dssdev->manager, &rfbi.timings);
-+	dss_mgr_set_timings(mgr, &rfbi.timings);
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 243e96d..c667ef1 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -35,6 +35,7 @@ static struct {
  
--	r = dss_mgr_enable(dssdev->manager);
-+	r = dss_mgr_enable(mgr);
- 	if (r)
- 		return r;
- 
-@@ -779,7 +780,9 @@ EXPORT_SYMBOL(omap_rfbi_configure);
- int omap_rfbi_update(struct omap_dss_device *dssdev, void (*callback)(void *),
- 		void *data)
- {
--	return rfbi_transfer_area(dssdev, callback, data);
-+	struct omap_dss_output *out = dssdev->output;
-+
-+	return rfbi_transfer_area(out, callback, data);
- }
- EXPORT_SYMBOL(omap_rfbi_update);
- 
-@@ -849,7 +852,7 @@ static void rfbi_dump_regs(struct seq_file *s)
- #undef DUMPREG
- }
- 
--static void rfbi_config_lcd_manager(struct omap_dss_device *dssdev)
-+static void rfbi_config_lcd_manager(struct omap_dss_output *out)
- {
  	struct dss_lcd_mgr_config mgr_config;
+ 	struct omap_video_timings timings;
++	int datapairs;
+ } sdi;
  
-@@ -862,7 +865,7 @@ static void rfbi_config_lcd_manager(struct omap_dss_device *dssdev)
- 	mgr_config.video_port_width = rfbi.pixel_size;
- 	mgr_config.lcden_sig_polarity = 0;
+ static void sdi_config_lcd_manager(struct omap_dss_device *dssdev)
+@@ -106,7 +107,8 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
  
--	dss_mgr_set_lcd_config(dssdev->manager, &mgr_config);
-+	dss_mgr_set_lcd_config(out->manager, &mgr_config);
+ 	sdi_config_lcd_manager(dssdev);
  
- 	/*
- 	 * Set rfbi.timings with default values, the x_res and y_res fields
-@@ -883,15 +886,16 @@ static void rfbi_config_lcd_manager(struct omap_dss_device *dssdev)
- 	rfbi.timings.de_level = OMAPDSS_SIG_ACTIVE_HIGH;
- 	rfbi.timings.sync_pclk_edge = OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES;
- 
--	dss_mgr_set_timings(dssdev->manager, &rfbi.timings);
-+	dss_mgr_set_timings(out->manager, &rfbi.timings);
+-	dss_sdi_init(dssdev->phy.sdi.datapairs);
++	dss_sdi_init(sdi.datapairs);
++
+ 	r = dss_sdi_enable();
+ 	if (r)
+ 		goto err_sdi_enable;
+@@ -164,6 +166,12 @@ void omapdss_sdi_set_timings(struct omap_dss_device *dssdev,
  }
+ EXPORT_SYMBOL(omapdss_sdi_set_timings);
  
- int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
++void omapdss_sdi_set_datapairs(struct omap_dss_device *dssdev, int datapairs)
++{
++	sdi.datapairs = datapairs;
++}
++EXPORT_SYMBOL(omapdss_sdi_set_datapairs);
++
+ static int __init sdi_init_display(struct omap_dss_device *dssdev)
  {
-+	struct omap_dss_output *out = dssdev->output;
- 	int r;
+ 	DSSDBG("SDI init\n");
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 47f29b7..bb77dc2 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -766,6 +766,7 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev);
+ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev);
+ void omapdss_sdi_set_timings(struct omap_dss_device *dssdev,
+ 		struct omap_video_timings *timings);
++void omapdss_sdi_set_datapairs(struct omap_dss_device *dssdev, int datapairs);
  
--	if (dssdev->manager = NULL) {
--		DSSERR("failed to enable display: no manager\n");
-+	if (out = NULL || out->manager = NULL) {
-+		DSSERR("failed to enable display: no output/manager\n");
- 		return -ENODEV;
- 	}
- 
-@@ -912,7 +916,7 @@ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
- 		goto err1;
- 	}
- 
--	rfbi_config_lcd_manager(dssdev);
-+	rfbi_config_lcd_manager(out);
- 
- 	rfbi_configure(dssdev->phy.rfbi.channel, rfbi.pixel_size,
- 			rfbi.data_lines);
+ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev);
+ void omapdss_rfbi_display_disable(struct omap_dss_device *dssdev);
 -- 
 1.7.9.5
 

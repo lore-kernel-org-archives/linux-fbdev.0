@@ -1,211 +1,170 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 16 Aug 2012 13:00:39 +0000
-Subject: [PATCH 04/19] ARM: mach-shmobile: ag5evm: Add LCDC tx_dev field to platform data
-Message-Id: <1345122054-16013-5-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Archit Taneja <archit@ti.com>
+Date: Fri, 10 Aug 2012 10:49:05 +0000
+Subject: [PATCH 4/5] OMAPDSS: DPI: Maitain copy of number of data lines in driver data
+Message-Id: <1344595026-10607-5-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1344595026-10607-1-git-send-email-archit@ti.com>
+In-Reply-To: <1344595026-10607-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Reference the MIPI-DSI transceiver in the LCDC platform data and make
-sure it gets registered before the LCDC.
+The DPI driver currently relies on the omap_dss_device struct to configure the
+number of data lines as specified by the panel. This makes the DPI interface
+driver dependent on the omap_dss_device struct.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Make the DPI driver data maintain it's own data lines field. A panel driver
+is expected to call omapdss_dpi_set_data_lines() before enabling the interface.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- arch/arm/mach-shmobile/board-ag5evm.c |  157 +++++++++++++++++----------------
- 1 files changed, 80 insertions(+), 77 deletions(-)
+ drivers/video/omap2/displays/panel-generic-dpi.c   |    1 +
+ .../omap2/displays/panel-lgphilips-lb035q02.c      |    1 +
+ .../omap2/displays/panel-nec-nl8048hl11-01b.c      |    1 +
+ drivers/video/omap2/displays/panel-picodlp.c       |    1 +
+ .../video/omap2/displays/panel-sharp-ls037v7dw01.c |    1 +
+ drivers/video/omap2/displays/panel-tfp410.c        |    1 +
+ .../video/omap2/displays/panel-tpo-td043mtea1.c    |    1 +
+ drivers/video/omap2/dss/dpi.c                      |   13 ++++++++++++-
+ include/video/omapdss.h                            |    1 +
+ 9 files changed, 20 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-shmobile/board-ag5evm.c b/arch/arm/mach-shmobile/board-ag5evm.c
-index 5a6f22f..afae573 100644
---- a/arch/arm/mach-shmobile/board-ag5evm.c
-+++ b/arch/arm/mach-shmobile/board-ag5evm.c
-@@ -199,6 +199,84 @@ static struct platform_device irda_device = {
- 	.num_resources  = ARRAY_SIZE(irda_resources),
- };
+diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
+index a07e18c..88295c5 100644
+--- a/drivers/video/omap2/displays/panel-generic-dpi.c
++++ b/drivers/video/omap2/displays/panel-generic-dpi.c
+@@ -566,6 +566,7 @@ static int generic_dpi_panel_power_on(struct omap_dss_device *dssdev)
+ 		return 0;
  
-+/* MIPI-DSI */
-+static struct resource mipidsi0_resources[] = {
-+	[0] = {
-+		.name	= "DSI0",
-+		.start  = 0xfeab0000,
-+		.end    = 0xfeab3fff,
-+		.flags  = IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.name	= "DSI0",
-+		.start  = 0xfeab4000,
-+		.end    = 0xfeab7fff,
-+		.flags  = IORESOURCE_MEM,
-+	},
-+};
-+
-+static int sh_mipi_set_dot_clock(struct platform_device *pdev,
-+				 void __iomem *base,
-+				 int enable)
+ 	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
++	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
+ 
+ 	r = omapdss_dpi_display_enable(dssdev);
+ 	if (r)
+diff --git a/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c b/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
+index 7e52aee..90c1cab 100644
+--- a/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
++++ b/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
+@@ -56,6 +56,7 @@ static int lb035q02_panel_power_on(struct omap_dss_device *dssdev)
+ 		return 0;
+ 
+ 	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
++	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
+ 
+ 	r = omapdss_dpi_display_enable(dssdev);
+ 	if (r)
+diff --git a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+index e501c40..908fd26 100644
+--- a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
++++ b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+@@ -176,6 +176,7 @@ static int nec_8048_panel_power_on(struct omap_dss_device *dssdev)
+ 		return 0;
+ 
+ 	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
++	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
+ 
+ 	r = omapdss_dpi_display_enable(dssdev);
+ 	if (r)
+diff --git a/drivers/video/omap2/displays/panel-picodlp.c b/drivers/video/omap2/displays/panel-picodlp.c
+index 0d7a8ff..9df8764 100644
+--- a/drivers/video/omap2/displays/panel-picodlp.c
++++ b/drivers/video/omap2/displays/panel-picodlp.c
+@@ -379,6 +379,7 @@ static int picodlp_panel_power_on(struct omap_dss_device *dssdev)
+ 	msleep(1000);
+ 
+ 	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
++	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
+ 
+ 	r = omapdss_dpi_display_enable(dssdev);
+ 	if (r) {
+diff --git a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
+index 1486a81..1ec3b27 100644
+--- a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
++++ b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
+@@ -143,6 +143,7 @@ static int sharp_ls_power_on(struct omap_dss_device *dssdev)
+ 		return 0;
+ 
+ 	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
++	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
+ 
+ 	r = omapdss_dpi_display_enable(dssdev);
+ 	if (r)
+diff --git a/drivers/video/omap2/displays/panel-tfp410.c b/drivers/video/omap2/displays/panel-tfp410.c
+index 9397236..4be9a59 100644
+--- a/drivers/video/omap2/displays/panel-tfp410.c
++++ b/drivers/video/omap2/displays/panel-tfp410.c
+@@ -66,6 +66,7 @@ static int tfp410_power_on(struct omap_dss_device *dssdev)
+ 		return 0;
+ 
+ 	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
++	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
+ 
+ 	r = omapdss_dpi_display_enable(dssdev);
+ 	if (r)
+diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+index 3f47f5f..b5e6dbc 100644
+--- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
++++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+@@ -338,6 +338,7 @@ static int tpo_td043_enable_dss(struct omap_dss_device *dssdev)
+ 		return 0;
+ 
+ 	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
++	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
+ 
+ 	r = omapdss_dpi_display_enable(dssdev);
+ 	if (r)
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 6c43d80..8c860c0 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -43,6 +43,7 @@ static struct {
+ 
+ 	struct omap_video_timings timings;
+ 	struct dss_lcd_mgr_config mgr_config;
++	int data_lines;
+ } dpi;
+ 
+ static struct platform_device *dpi_get_dsidev(enum omap_dss_clk_source clk)
+@@ -176,7 +177,7 @@ static void dpi_config_lcd_manager(struct omap_dss_device *dssdev)
+ 	dpi.mgr_config.stallmode = false;
+ 	dpi.mgr_config.fifohandcheck = false;
+ 
+-	dpi.mgr_config.video_port_width = dssdev->phy.dpi.data_lines;
++	dpi.mgr_config.video_port_width = dpi.data_lines;
+ 
+ 	dpi.mgr_config.lcden_sig_polarity = 0;
+ 
+@@ -368,6 +369,16 @@ int dpi_check_timings(struct omap_dss_device *dssdev,
+ }
+ EXPORT_SYMBOL(dpi_check_timings);
+ 
++void omapdss_dpi_set_data_lines(struct omap_dss_device *dssdev, int data_lines)
 +{
-+	struct clk *pck, *phy;
-+	int ret;
++	mutex_lock(&dpi.lock);
 +
-+	pck = clk_get(&pdev->dev, "dsip_clk");
-+	if (IS_ERR(pck)) {
-+		ret = PTR_ERR(pck);
-+		goto sh_mipi_set_dot_clock_pck_err;
-+	}
++	dpi.data_lines = data_lines;
 +
-+	phy = clk_get(&pdev->dev, "dsiphy_clk");
-+	if (IS_ERR(phy)) {
-+		ret = PTR_ERR(phy);
-+		goto sh_mipi_set_dot_clock_phy_err;
-+	}
-+
-+	if (enable) {
-+		clk_set_rate(pck, clk_round_rate(pck,  24000000));
-+		clk_set_rate(phy, clk_round_rate(pck, 510000000));
-+		clk_enable(pck);
-+		clk_enable(phy);
-+	} else {
-+		clk_disable(pck);
-+		clk_disable(phy);
-+	}
-+
-+	ret = 0;
-+
-+	clk_put(phy);
-+sh_mipi_set_dot_clock_phy_err:
-+	clk_put(pck);
-+sh_mipi_set_dot_clock_pck_err:
-+	return ret;
++	mutex_unlock(&dpi.lock);
 +}
++EXPORT_SYMBOL(omapdss_dpi_set_data_lines);
 +
-+static struct sh_mobile_lcdc_info lcdc0_info;
-+
-+static struct sh_mipi_dsi_info mipidsi0_info = {
-+	.data_format	= MIPI_RGB888,
-+	.lcd_chan	= &lcdc0_info.ch[0],
-+	.lane		= 2,
-+	.vsynw_offset	= 20,
-+	.clksrc		= 1,
-+	.flags		= SH_MIPI_DSI_HSABM		|
-+			  SH_MIPI_DSI_SYNC_PULSES_MODE	|
-+			  SH_MIPI_DSI_HSbyteCLK,
-+	.set_dot_clock	= sh_mipi_set_dot_clock,
-+};
-+
-+static struct platform_device mipidsi0_device = {
-+	.name           = "sh-mipi-dsi",
-+	.num_resources  = ARRAY_SIZE(mipidsi0_resources),
-+	.resource       = mipidsi0_resources,
-+	.id             = 0,
-+	.dev	= {
-+		.platform_data	= &mipidsi0_info,
-+	},
-+};
-+
- static unsigned char lcd_backlight_seq[3][2] = {
- 	{ 0x04, 0x07 },
- 	{ 0x23, 0x80 },
-@@ -261,6 +339,7 @@ static struct sh_mobile_lcdc_info lcdc0_info = {
- 			.display_on = lcd_backlight_on,
- 			.display_off = lcd_backlight_reset,
- 		},
-+		.tx_dev = &mipidsi0_device,
- 	}
- };
+ static int __init dpi_init_display(struct omap_dss_device *dssdev)
+ {
+ 	DSSDBG("init_display\n");
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index e4fcc89..47f29b7 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -760,6 +760,7 @@ void omapdss_dpi_set_timings(struct omap_dss_device *dssdev,
+ 		struct omap_video_timings *timings);
+ int dpi_check_timings(struct omap_dss_device *dssdev,
+ 			struct omap_video_timings *timings);
++void omapdss_dpi_set_data_lines(struct omap_dss_device *dssdev, int data_lines);
  
-@@ -288,82 +367,6 @@ static struct platform_device lcdc0_device = {
- 	},
- };
- 
--/* MIPI-DSI */
--static struct resource mipidsi0_resources[] = {
--	[0] = {
--		.name	= "DSI0",
--		.start  = 0xfeab0000,
--		.end    = 0xfeab3fff,
--		.flags  = IORESOURCE_MEM,
--	},
--	[1] = {
--		.name	= "DSI0",
--		.start  = 0xfeab4000,
--		.end    = 0xfeab7fff,
--		.flags  = IORESOURCE_MEM,
--	},
--};
--
--static int sh_mipi_set_dot_clock(struct platform_device *pdev,
--				 void __iomem *base,
--				 int enable)
--{
--	struct clk *pck, *phy;
--	int ret;
--
--	pck = clk_get(&pdev->dev, "dsip_clk");
--	if (IS_ERR(pck)) {
--		ret = PTR_ERR(pck);
--		goto sh_mipi_set_dot_clock_pck_err;
--	}
--
--	phy = clk_get(&pdev->dev, "dsiphy_clk");
--	if (IS_ERR(phy)) {
--		ret = PTR_ERR(phy);
--		goto sh_mipi_set_dot_clock_phy_err;
--	}
--
--	if (enable) {
--		clk_set_rate(pck, clk_round_rate(pck,  24000000));
--		clk_set_rate(phy, clk_round_rate(pck, 510000000));
--		clk_enable(pck);
--		clk_enable(phy);
--	} else {
--		clk_disable(pck);
--		clk_disable(phy);
--	}
--
--	ret = 0;
--
--	clk_put(phy);
--sh_mipi_set_dot_clock_phy_err:
--	clk_put(pck);
--sh_mipi_set_dot_clock_pck_err:
--	return ret;
--}
--
--static struct sh_mipi_dsi_info mipidsi0_info = {
--	.data_format	= MIPI_RGB888,
--	.lcd_chan	= &lcdc0_info.ch[0],
--	.lane		= 2,
--	.vsynw_offset	= 20,
--	.clksrc		= 1,
--	.flags		= SH_MIPI_DSI_HSABM		|
--			  SH_MIPI_DSI_SYNC_PULSES_MODE	|
--			  SH_MIPI_DSI_HSbyteCLK,
--	.set_dot_clock	= sh_mipi_set_dot_clock,
--};
--
--static struct platform_device mipidsi0_device = {
--	.name           = "sh-mipi-dsi",
--	.num_resources  = ARRAY_SIZE(mipidsi0_resources),
--	.resource       = mipidsi0_resources,
--	.id             = 0,
--	.dev	= {
--		.platform_data	= &mipidsi0_info,
--	},
--};
--
- /* SDHI0 */
- static struct sh_mobile_sdhi_info sdhi0_info = {
- 	.dma_slave_tx	= SHDMA_SLAVE_SDHI0_TX,
-@@ -460,8 +463,8 @@ static struct platform_device *ag5evm_devices[] __initdata = {
- 	&fsi_device,
- 	&mmc_device,
- 	&irda_device,
--	&lcdc0_device,
- 	&mipidsi0_device,
-+	&lcdc0_device,
- 	&sdhi0_device,
- 	&sdhi1_device,
- };
+ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev);
+ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev);
 -- 
-1.7.8.6
+1.7.9.5
 

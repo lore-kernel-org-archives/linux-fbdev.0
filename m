@@ -1,7 +1,7 @@
 From: Archit Taneja <archit@ti.com>
-Date: Fri, 10 Aug 2012 10:49:05 +0000
-Subject: [PATCH 4/5] OMAPDSS: DPI: Maitain copy of number of data lines in driver data
-Message-Id: <1344595026-10607-5-git-send-email-archit@ti.com>
+Date: Fri, 10 Aug 2012 10:49:03 +0000
+Subject: [PATCH 2/5] OMAPDSS: RFBI: Maintain copy of pixel size in driver data
+Message-Id: <1344595026-10607-3-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1344595026-10607-1-git-send-email-archit@ti.com>
 In-Reply-To: <1344595026-10607-1-git-send-email-archit@ti.com>
@@ -11,160 +11,124 @@ Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The DPI driver currently relies on the omap_dss_device struct to configure the
-number of data lines as specified by the panel. This makes the DPI interface
-driver dependent on the omap_dss_device struct.
+The RFBI driver currently relies on the omap_dss_device struct to receive the
+desired pixel size of the panel. This makes the RFBI interface driver dependent
+on the omap_dss_device struct.
 
-Make the DPI driver data maintain it's own data lines field. A panel driver
-is expected to call omapdss_dpi_set_data_lines() before enabling the interface.
+Make the RFBI driver data maintain it's own pixel format field. A panel driver
+is expected to call omapdss_rfbi_set_pixel_size() to configure the pixel format
+before enabling the interface or calling omap_rfbi_configure().
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/displays/panel-generic-dpi.c   |    1 +
- .../omap2/displays/panel-lgphilips-lb035q02.c      |    1 +
- .../omap2/displays/panel-nec-nl8048hl11-01b.c      |    1 +
- drivers/video/omap2/displays/panel-picodlp.c       |    1 +
- .../video/omap2/displays/panel-sharp-ls037v7dw01.c |    1 +
- drivers/video/omap2/displays/panel-tfp410.c        |    1 +
- .../video/omap2/displays/panel-tpo-td043mtea1.c    |    1 +
- drivers/video/omap2/dss/dpi.c                      |   13 ++++++++++++-
- include/video/omapdss.h                            |    1 +
- 9 files changed, 20 insertions(+), 1 deletion(-)
+ drivers/video/omap2/displays/panel-n8x0.c |   10 ++++++++--
+ drivers/video/omap2/dss/rfbi.c            |   21 ++++++++++++++-------
+ include/video/omapdss.h                   |    5 +++--
+ 3 files changed, 25 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
-index a07e18c..88295c5 100644
---- a/drivers/video/omap2/displays/panel-generic-dpi.c
-+++ b/drivers/video/omap2/displays/panel-generic-dpi.c
-@@ -566,6 +566,7 @@ static int generic_dpi_panel_power_on(struct omap_dss_device *dssdev)
- 		return 0;
+diff --git a/drivers/video/omap2/displays/panel-n8x0.c b/drivers/video/omap2/displays/panel-n8x0.c
+index e6c1153..f758378 100644
+--- a/drivers/video/omap2/displays/panel-n8x0.c
++++ b/drivers/video/omap2/displays/panel-n8x0.c
+@@ -150,11 +150,15 @@ static void blizzard_ctrl_setup_update(struct omap_dss_device *dssdev,
+ 			BLIZZARD_SRC_WRITE_LCD :
+ 			BLIZZARD_SRC_WRITE_LCD_DESTRUCTIVE;
  
- 	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
-+	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
+-	omap_rfbi_configure(dssdev, 16, 8);
++	omapdss_rfbi_set_pixel_size(dssdev, 16);
++
++	omap_rfbi_configure(dssdev, 8);
  
- 	r = omapdss_dpi_display_enable(dssdev);
- 	if (r)
-diff --git a/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c b/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
-index 7e52aee..90c1cab 100644
---- a/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
-+++ b/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
-@@ -56,6 +56,7 @@ static int lb035q02_panel_power_on(struct omap_dss_device *dssdev)
- 		return 0;
+ 	blizzard_write(BLIZZARD_INPUT_WIN_X_START_0, tmp, 18);
  
- 	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
-+	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
- 
- 	r = omapdss_dpi_display_enable(dssdev);
- 	if (r)
-diff --git a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-index e501c40..908fd26 100644
---- a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-+++ b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-@@ -176,6 +176,7 @@ static int nec_8048_panel_power_on(struct omap_dss_device *dssdev)
- 		return 0;
- 
- 	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
-+	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
- 
- 	r = omapdss_dpi_display_enable(dssdev);
- 	if (r)
-diff --git a/drivers/video/omap2/displays/panel-picodlp.c b/drivers/video/omap2/displays/panel-picodlp.c
-index 0d7a8ff..9df8764 100644
---- a/drivers/video/omap2/displays/panel-picodlp.c
-+++ b/drivers/video/omap2/displays/panel-picodlp.c
-@@ -379,6 +379,7 @@ static int picodlp_panel_power_on(struct omap_dss_device *dssdev)
- 	msleep(1000);
- 
- 	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
-+	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
- 
- 	r = omapdss_dpi_display_enable(dssdev);
- 	if (r) {
-diff --git a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
-index 1486a81..1ec3b27 100644
---- a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
-+++ b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
-@@ -143,6 +143,7 @@ static int sharp_ls_power_on(struct omap_dss_device *dssdev)
- 		return 0;
- 
- 	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
-+	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
- 
- 	r = omapdss_dpi_display_enable(dssdev);
- 	if (r)
-diff --git a/drivers/video/omap2/displays/panel-tfp410.c b/drivers/video/omap2/displays/panel-tfp410.c
-index 9397236..4be9a59 100644
---- a/drivers/video/omap2/displays/panel-tfp410.c
-+++ b/drivers/video/omap2/displays/panel-tfp410.c
-@@ -66,6 +66,7 @@ static int tfp410_power_on(struct omap_dss_device *dssdev)
- 		return 0;
- 
- 	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
-+	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
- 
- 	r = omapdss_dpi_display_enable(dssdev);
- 	if (r)
-diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-index 3f47f5f..b5e6dbc 100644
---- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-+++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-@@ -338,6 +338,7 @@ static int tpo_td043_enable_dss(struct omap_dss_device *dssdev)
- 		return 0;
- 
- 	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
-+	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
- 
- 	r = omapdss_dpi_display_enable(dssdev);
- 	if (r)
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index 6c43d80..8c860c0 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -43,6 +43,7 @@ static struct {
- 
- 	struct omap_video_timings timings;
- 	struct dss_lcd_mgr_config mgr_config;
-+	int data_lines;
- } dpi;
- 
- static struct platform_device *dpi_get_dsidev(enum omap_dss_clk_source clk)
-@@ -176,7 +177,7 @@ static void dpi_config_lcd_manager(struct omap_dss_device *dssdev)
- 	dpi.mgr_config.stallmode = false;
- 	dpi.mgr_config.fifohandcheck = false;
- 
--	dpi.mgr_config.video_port_width = dssdev->phy.dpi.data_lines;
-+	dpi.mgr_config.video_port_width = dpi.data_lines;
- 
- 	dpi.mgr_config.lcden_sig_polarity = 0;
- 
-@@ -368,6 +369,16 @@ int dpi_check_timings(struct omap_dss_device *dssdev,
+-	omap_rfbi_configure(dssdev, 16, 16);
++	omapdss_rfbi_set_pixel_size(dssdev, 16);
++
++	omap_rfbi_configure(dssdev, 16);
  }
- EXPORT_SYMBOL(dpi_check_timings);
  
-+void omapdss_dpi_set_data_lines(struct omap_dss_device *dssdev, int data_lines)
-+{
-+	mutex_lock(&dpi.lock);
+ static void mipid_transfer(struct spi_device *spi, int cmd, const u8 *wbuf,
+@@ -297,6 +301,8 @@ static int n8x0_panel_power_on(struct omap_dss_device *dssdev)
+ 			goto err_plat_en;
+ 	}
+ 
++	omapdss_rfbi_set_pixel_size(dssdev, dssdev->ctrl.pixel_size);
 +
-+	dpi.data_lines = data_lines;
+ 	r = omapdss_rfbi_display_enable(dssdev);
+ 	if (r)
+ 		goto err_rfbi_en;
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 7c08742..72d1a8c 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -111,6 +111,8 @@ static struct {
+ 	struct omap_dss_device *dssdev[2];
+ 
+ 	struct semaphore bus_lock;
 +
-+	mutex_unlock(&dpi.lock);
-+}
-+EXPORT_SYMBOL(omapdss_dpi_set_data_lines);
-+
- static int __init dpi_init_display(struct omap_dss_device *dssdev)
++	int pixel_size;
+ } rfbi;
+ 
+ static inline void rfbi_write_reg(const struct rfbi_reg idx, u32 val)
+@@ -770,13 +772,19 @@ static int rfbi_configure(int rfbi_module, int bpp, int lines)
+ 	return 0;
+ }
+ 
+-int omap_rfbi_configure(struct omap_dss_device *dssdev, int pixel_size,
+-		int data_lines)
++int omap_rfbi_configure(struct omap_dss_device *dssdev, int data_lines)
  {
- 	DSSDBG("init_display\n");
+-	return rfbi_configure(dssdev->phy.rfbi.channel, pixel_size, data_lines);
++	return rfbi_configure(dssdev->phy.rfbi.channel, rfbi.pixel_size,
++			data_lines);
+ }
+ EXPORT_SYMBOL(omap_rfbi_configure);
+ 
++void omapdss_rfbi_set_pixel_size(struct omap_dss_device *dssdev, int pixel_size)
++{
++	rfbi.pixel_size = pixel_size;
++}
++EXPORT_SYMBOL(omapdss_rfbi_set_pixel_size);
++
+ int omap_rfbi_prepare_update(struct omap_dss_device *dssdev,
+ 		u16 *x, u16 *y, u16 *w, u16 *h)
+ {
+@@ -877,7 +885,7 @@ static void rfbi_config_lcd_manager(struct omap_dss_device *dssdev)
+ 	/* Do we need fifohandcheck for RFBI? */
+ 	mgr_config.fifohandcheck = false;
+ 
+-	mgr_config.video_port_width = dssdev->ctrl.pixel_size;
++	mgr_config.video_port_width = rfbi.pixel_size;
+ 	mgr_config.lcden_sig_polarity = 0;
+ 
+ 	dss_mgr_set_lcd_config(dssdev->manager, &mgr_config);
+@@ -911,9 +919,8 @@ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
+ 
+ 	rfbi_config_lcd_manager(dssdev);
+ 
+-	rfbi_configure(dssdev->phy.rfbi.channel,
+-			       dssdev->ctrl.pixel_size,
+-			       dssdev->phy.rfbi.data_lines);
++	rfbi_configure(dssdev->phy.rfbi.channel, rfbi.pixel_size,
++			dssdev->phy.rfbi.data_lines);
+ 
+ 	rfbi_set_timings(dssdev->phy.rfbi.channel,
+ 			 &dssdev->ctrl.rfbi_timings);
 diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index e4fcc89..47f29b7 100644
+index 6e33c6f..5d5335c 100644
 --- a/include/video/omapdss.h
 +++ b/include/video/omapdss.h
-@@ -760,6 +760,7 @@ void omapdss_dpi_set_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings);
- int dpi_check_timings(struct omap_dss_device *dssdev,
- 			struct omap_video_timings *timings);
-+void omapdss_dpi_set_data_lines(struct omap_dss_device *dssdev, int data_lines);
+@@ -773,7 +773,8 @@ int omap_rfbi_prepare_update(struct omap_dss_device *dssdev,
+ int omap_rfbi_update(struct omap_dss_device *dssdev,
+ 		u16 x, u16 y, u16 w, u16 h,
+ 		void (*callback)(void *), void *data);
+-int omap_rfbi_configure(struct omap_dss_device *dssdev, int pixel_size,
+-		int data_lines);
++int omap_rfbi_configure(struct omap_dss_device *dssdev, int data_lines);
++void omapdss_rfbi_set_pixel_size(struct omap_dss_device *dssdev,
++		int pixel_size);
  
- int omapdss_sdi_display_enable(struct omap_dss_device *dssdev);
- void omapdss_sdi_display_disable(struct omap_dss_device *dssdev);
+ #endif
 -- 
 1.7.9.5
 

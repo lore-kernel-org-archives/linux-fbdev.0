@@ -1,212 +1,167 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 20 Aug 2012 09:29:46 +0000
-Subject: Re: [PATCH 10/10] video: exynos_dp: Enable hotplug interrupts
-Message-Id: <004f01cd7eb6$56888e70$0399ab50$%han@samsung.com>
+From: Thomas Meyer <thomas@m3y3r.de>
+Date: Sun, 12 Aug 2012 10:34:32 +0000
+Subject: [UDL] general protection fault in fb_deferred_io_mkwrite()
+Message-Id: <1344767672.1272.7.camel@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344398064-13563-11-git-send-email-seanpaul@chromium.org>
-In-Reply-To: <1344398064-13563-11-git-send-email-seanpaul@chromium.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, airlied@linux.ie, dri-devel@lists.freedesktop.org
 
-On Wednesday, August 08, 2012 12:54 PM Sean Paul wrote:
-> 
-> Enable hotplug interrupts and move the hotplug scheduling into the
-> interrupt handler. This allows us to introduce a screen at any time
-> while we're running.
-> 
-> Signed-off-by: Sean Paul <seanpaul@chromium.org>
-> Reviewed-by: Olof Johansson <olofj@chromium.org>
-> ---
->  drivers/video/exynos/exynos_dp_core.c |   40 +++++++++++++++++++++++++-------
->  drivers/video/exynos/exynos_dp_core.h |    9 +++++++
->  drivers/video/exynos/exynos_dp_reg.c  |   35 ++++++++++++++++++++++++++++-
->  3 files changed, 74 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-> index eb5816f..5279027 100644
-> --- a/drivers/video/exynos/exynos_dp_core.c
-> +++ b/drivers/video/exynos/exynos_dp_core.c
-> @@ -47,10 +47,6 @@ static int exynos_dp_detect_hpd(struct exynos_dp_device *dp)
->  {
->  	int timeout_loop = 0;
-> 
-> -	exynos_dp_init_hpd(dp);
-> -
-> -	usleep_range(200, 210);
-> -
->  	while (exynos_dp_get_plug_in_status(dp) != 0) {
->  		timeout_loop++;
->  		if (DP_TIMEOUT_LOOP_COUNT < timeout_loop) {
-> @@ -829,8 +825,32 @@ static void exynos_dp_enable_scramble(struct exynos_dp_device *dp, bool enable)
->  static irqreturn_t exynos_dp_irq_handler(int irq, void *arg)
->  {
->  	struct exynos_dp_device *dp = arg;
-> -
-> -	dev_err(dp->dev, "exynos_dp_irq_handler\n");
-> +	enum dp_irq_type irq_type;
-> +
-> +	irq_type = exynos_dp_get_irq_type(dp);
-> +	switch (irq_type) {
-> +	case DP_IRQ_TYPE_HP_CABLE_IN:
-> +		dev_dbg(dp->dev, "Received irq - cable in\n");
-> +		schedule_work(&dp->hotplug_work);
-> +		exynos_dp_clear_hotplug_interrupts(dp);
-> +		break;
-> +	case DP_IRQ_TYPE_HP_CABLE_OUT:
-> +		dev_dbg(dp->dev, "Received irq - cable out\n");
-> +		exynos_dp_clear_hotplug_interrupts(dp);
-> +		break;
-> +	case DP_IRQ_TYPE_HP_CHANGE:
-> +		/*
-> +		 * We get these change notifications once in a while, but there
-> +		 * is nothing we can do with them. Just ignore it for now and
-> +		 * only handle cable changes.
-> +		 */
-> +		dev_dbg(dp->dev, "Received irq - hotplug change; ignoring.\n");
-> +		exynos_dp_clear_hotplug_interrupts(dp);
-> +		break;
-> +	default:
-> +		dev_err(dp->dev, "Received irq - unknown type!\n");
-> +		break;
-> +	}
->  	return IRQ_HANDLED;
->  }
-> 
-> @@ -843,7 +863,7 @@ static void exynos_dp_hotplug(struct work_struct *work)
-> 
->  	ret = exynos_dp_detect_hpd(dp);
->  	if (ret) {
-> -		dev_err(dp->dev, "unable to detect hpd\n");
-> +		/* Cable has been disconnected, we're done */
->  		return;
->  	}
-> 
-> @@ -941,7 +961,6 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  	exynos_dp_init_dp(dp);
-> 
->  	platform_set_drvdata(pdev, dp);
-> -	schedule_work(&dp->hotplug_work);
-> 
->  	return 0;
-> 
-> @@ -975,6 +994,8 @@ static int exynos_dp_suspend(struct device *dev)
->  	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
->  	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
-> 
-> +	disable_irq(dp->irq);
-> +
->  	if (work_pending(&dp->hotplug_work))
->  		flush_work_sync(&dp->hotplug_work);
-> 
-> @@ -998,7 +1019,8 @@ static int exynos_dp_resume(struct device *dev)
->  	clk_enable(dp->clock);
-> 
->  	exynos_dp_init_dp(dp);
-> -	schedule_work(&dp->hotplug_work);
-> +
-> +	enable_irq(dp->irq);
-> 
->  	return 0;
->  }
-> diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
-> index cf1010b..a5795dd 100644
-> --- a/drivers/video/exynos/exynos_dp_core.h
-> +++ b/drivers/video/exynos/exynos_dp_core.h
-> @@ -13,6 +13,13 @@
->  #ifndef _EXYNOS_DP_CORE_H
->  #define _EXYNOS_DP_CORE_H
-> 
-> +enum dp_irq_type {
-> +	DP_IRQ_TYPE_HP_CABLE_IN,
-> +	DP_IRQ_TYPE_HP_CABLE_OUT,
-> +	DP_IRQ_TYPE_HP_CHANGE,
-> +	DP_IRQ_TYPE_UNKNOWN,
-> +};
-> +
->  struct link_train {
->  	int eq_loop;
->  	int cr_loop[4];
-> @@ -51,6 +58,8 @@ void exynos_dp_set_analog_power_down(struct exynos_dp_device *dp,
->  				bool enable);
->  void exynos_dp_init_analog_func(struct exynos_dp_device *dp);
->  void exynos_dp_init_hpd(struct exynos_dp_device *dp);
-> +enum dp_irq_type exynos_dp_get_irq_type(struct exynos_dp_device *dp);
-> +void exynos_dp_clear_hotplug_interrupts(struct exynos_dp_device *dp);
->  void exynos_dp_reset_aux(struct exynos_dp_device *dp);
->  void exynos_dp_init_aux(struct exynos_dp_device *dp);
->  int exynos_dp_get_plug_in_status(struct exynos_dp_device *dp);
-> diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
-> index 389e0f0..5906fc7 100644
-> --- a/drivers/video/exynos/exynos_dp_reg.c
-> +++ b/drivers/video/exynos/exynos_dp_reg.c
-> @@ -327,7 +327,7 @@ void exynos_dp_init_analog_func(struct exynos_dp_device *dp)
->  	writel(reg, dp->reg_base + EXYNOS_DP_FUNC_EN_2);
->  }
-> 
-> -void exynos_dp_init_hpd(struct exynos_dp_device *dp)
-> +void exynos_dp_clear_hotplug_interrupts(struct exynos_dp_device *dp)
->  {
->  	u32 reg;
-> 
-> @@ -336,10 +336,43 @@ void exynos_dp_init_hpd(struct exynos_dp_device *dp)
-> 
->  	reg = INT_HPD;
->  	writel(reg, dp->reg_base + EXYNOS_DP_INT_STA);
-> +}
-> +
-> +void exynos_dp_init_hpd(struct exynos_dp_device *dp)
-> +{
-> +	u32 reg;
-> +
-> +	exynos_dp_clear_hotplug_interrupts(dp);
-> 
->  	reg = readl(dp->reg_base + EXYNOS_DP_SYS_CTL_3);
->  	reg &= ~(F_HPD | HPD_CTRL);
->  	writel(reg, dp->reg_base + EXYNOS_DP_SYS_CTL_3);
-> +
-> +	/* Unmask hotplug interrupts */
-> +	reg = HOTPLUG_CHG | HPD_LOST | PLUG;
-> +	writel(reg, dp->reg_base + EXYNOS_DP_COMMON_INT_MASK_4);
+Hi,
 
+guilty driver is probably udl_fb.c
+any ideas?
 
-Please don't handle mask bits in init_hpd.
+[   42.890551] open /dev/fb1 user=3D1 fb_info=FFff880130e0a800 count=3D1
+[   42.890585] released /dev/fb1 user=3D1 count=3D0
+[   42.890702] open /dev/fb1 user=3D1 fb_info=FFff880130e0a800 count=3D1
+[   43.053034] type=1400 audit(1344698343.496:9): avc:  denied  { execmem }=
+ for  pidc1 comm=3D"java" scontext=3Dsystem_u:system_r:httpd_t:s0 tcontext=
+=3Dsystem_u:system_r:httpd_t:s0 tclass=3Dprocess
+[   43.093084] IPv6: ADDRCONF(NETDEV_UP): eth1: link is not ready
+[   43.140051] [drm] write mode info 144
+[   43.140786] IPv6: ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
+[   43.164482] asix 2-1.3:1.0: eth1: link down
+[   44.791884] asix 2-1.3:1.0: eth1: link up, 100Mbps, full-duplex, lpa 0x4=
+1E1
+[   45.289464] general protection fault: 0000 [#1]=20
+[   45.289512] CPU 0=20
+[   45.289529] Modules linked in: ip6t_REJECT nf_conntrack_ipv6 nf_defrag_i=
+pv6 ip6table_filter ip6_tables snd_usb_audio snd_usbmidi_lib snd_rawmidi ud=
+l syscopyarea sysfillrect sysimgblt asix uvcvideo videobuf2_vmalloc videobu=
+f2_memops videobuf2_core videodev usbnet snd_seq_device drm_usb arc4 btusb =
+iwlwifi bluetooth snd_hda_codec_hdmi acer_wmi joydev mac80211 snd_hda_codec=
+_realtek cfg80211 acerhdf atl1c snd_hda_intel sparse_keymap pcspkr snd_hda_=
+codec snd_hwdep snd_pcm snd_page_alloc snd_timer snd rfkill soundcore wmi k=
+vm_intel kvm ipv6 [last unloaded: scsi_wait_scan]
+[   45.290003]=20
+[   45.290003] Pid: 629, comm: X Not tainted 3.5.1 #3 Acer Aspire 1810T/JM1=
+1-MS
+[   45.290003] RIP: 0010:[<ffffffff8123becc>]  [<ffffffff8123becc>] fb_defe=
+rred_io_mkwrite+0xdc/0xf0
+[   45.290003] RSP: 0000:ffff880138e93c98  EFLAGS: 00010246
+[   45.290003] RAX: 7672645f6e6f6564 RBX: ffffea0004bd6180 RCX: 00000000000=
+00036
+[   45.290003] RDX: ffff88013369b460 RSI: ffff880138e93cf8 RDI: ffff880130e=
+0a800
+[   45.290003] RBP: ffff880138e93cb8 R08: 0c00000000000000 R09: a80012f5860=
+00000
+[   45.290003] R10: 57ffd70a7ebd6180 R11: 0000003ccd37a850 R12: ffff880130e=
+0a800
+[   45.290003] R13: ffff88013369b448 R14: ffff88013369b440 R15: 00000000000=
+00000
+[   45.290003] FS:  00007f981237a8c0(0000) GS:ffffffff8168a000(0000) knlGS:=
+0000000000000000
+[   45.290003] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[   45.290003] CR2: 00007f9810821010 CR3: 000000012f191000 CR4: 00000000000=
+407f0
+[   45.290003] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 00000000000=
+00000
+[   45.290003] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 00000000000=
+00400
+[   45.290003] Process X (pid: 629, threadinfo ffff880138e92000, task ffff8=
+80130c16b50)
+[   45.290003] Stack:
+[   45.290003]  ffff880130f37dc8 0000000000000001 ffff88013b2049c0 ffffea00=
+04bd6180
+[   45.290003]  ffff880138e93d48 ffffffff810b658c ffff880138e93d48 ffffffff=
+810b740a
+[   45.290003]  ffff88012f183210 00007f9810821010 ffff880127c23420 00000000=
+30c16b50
+[   45.290003] Call Trace:
+[   45.290003]  [<ffffffff810b658c>] __do_fault+0xbc/0x420
+[   45.290003]  [<ffffffff810b740a>] ? do_wp_page.isra.77+0x2aa/0x640
+[   45.290003]  [<ffffffff810b8acc>] handle_pte_fault+0x8c/0x7f0
+[   45.290003]  [<ffffffff8103b3f0>] ? __send_signal.part.24+0x130/0x300
+[   45.290003]  [<ffffffff810264aa>] ? pte_alloc_one+0x1a/0x40
+[   45.290003]  [<ffffffff810b9948>] handle_mm_fault+0x208/0x2c0
+[   45.290003]  [<ffffffff814c0543>] do_page_fault+0x143/0x490
+[   45.290003]  [<ffffffff8104fe85>] ? check_preempt_curr+0x85/0xa0
+[   45.290003]  [<ffffffff81052a2a>] ? __dequeue_entity+0x2a/0x50
+[   45.290003]  [<ffffffff81052fee>] ? pick_next_task_fair+0x6e/0x180
+[   45.290003]  [<ffffffff814bc6ad>] ? __schedule+0x22d/0x500
+[   45.290003]  [<ffffffff814bd72f>] page_fault+0x1f/0x30
+[   45.290003] Code: 89 0a 4c 89 ef e8 35 fd 27 00 49 8b 36 49 8d bc 24 90 =
+02 00 00 e8 95 66 e0 ff 5b b8 00 02 00 00 41 5c 41 5d 41 5e 5d c3 4c 89 e7 =
+<ff> d0 e9 5e ff ff ff 66 66 66 66 2e 0f 1f 84 00 00 00 00 00 55=20
+[   45.290003] RIP  [<ffffffff8123becc>] fb_deferred_io_mkwrite+0xdc/0xf0
+[   45.290003]  RSP <ffff880138e93c98>
+[   45.316388] ---[ end trace d4732d5a0bf375fa ]---
+[   45.347642] released /dev/fb1 user=3D1 count=3D0
+[   45.454869] open /dev/fb1 user=3D1 fb_info=FFff880130e0a800 count=3D1
+[   45.454903] released /dev/fb1 user=3D1 count=3D0
+[   45.455020] open /dev/fb1 user=3D1 fb_info=FFff880130e0a800 count=3D1
+[   45.456389] [drm] write mode info 144
+[   45.631358] [drm] write mode info 144
+[   45.632075] general protection fault: 0000 [#2]=20
+[   45.632121] CPU 0=20
+[   45.632139] Modules linked in: ip6t_REJECT nf_conntrack_ipv6 nf_defrag_i=
+pv6 ip6table_filter ip6_tables snd_usb_audio snd_usbmidi_lib snd_rawmidi ud=
+l syscopyarea sysfillrect sysimgblt asix uvcvideo videobuf2_vmalloc videobu=
+f2_memops videobuf2_core videodev usbnet snd_seq_device drm_usb arc4 btusb =
+iwlwifi bluetooth snd_hda_codec_hdmi acer_wmi joydev mac80211 snd_hda_codec=
+_realtek cfg80211 acerhdf atl1c snd_hda_intel sparse_keymap pcspkr snd_hda_=
+codec snd_hwdep snd_pcm snd_page_alloc snd_timer snd rfkill soundcore wmi k=
+vm_intel kvm ipv6 [last unloaded: scsi_wait_scan]
+[   45.633336]=20
+[   45.633336] Pid: 836, comm: X Tainted: G      D      3.5.1 #3 Acer Aspir=
+e 1810T/JM11-MS
+[   45.633336] RIP: 0010:[<ffffffff8123becc>]  [<ffffffff8123becc>] fb_defe=
+rred_io_mkwrite+0xdc/0xf0
+[   45.633336] RSP: 0000:ffff880126559c98  EFLAGS: 00010246
+[   45.633336] RAX: 006f732e61786562 RBX: ffffea0004bd6180 RCX: 00000000000=
+00036
+[   45.633336] RDX: ffff8801265482e0 RSI: ffff880126559cf8 RDI: ffff880130e=
+0a800
+[   45.633336] RBP: ffff880126559cb8 R08: 0c00000000000000 R09: a80012f5860=
+00000
+[   45.633336] R10: 57ffd70a7ebd6180 R11: 0000003ccd37a850 R12: ffff880130e=
+0a800
+[   45.633336] R13: ffff8801265482c8 R14: ffff8801265482c0 R15: 00000000000=
+00000
+[   45.633336] FS:  00007f06d7a628c0(0000) GS:ffffffff8168a000(0000) knlGS:=
+0000000000000000
+[   45.633336] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[   45.633336] CR2: 00007f06d5f09010 CR3: 000000012f138000 CR4: 00000000000=
+407f0
+[   45.633336] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 00000000000=
+00000
+[   45.633336] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 00000000000=
+00400
+[   45.633336] Process X (pid: 836, threadinfo ffff880126558000, task ffff8=
+801264dd290)
+[   45.633336] Stack:
+[   45.633336]  ffff880127c64738 0000000000000001 ffff880138db5040 ffffea00=
+04bd6180
+[   45.633336]  ffff880126559d48 ffffffff810b658c ffff880126559d48 ffffffff=
+810b740a
+[   45.633336]  ffff880126581210 00007f06d5f09010 ffff880126574578 00000000=
+264dd290
+[   45.633336] Call Trace:
+[   45.633336]  [<ffffffff810b658c>] __do_fault+0xbc/0x420
+[   45.633336]  [<ffffffff810b740a>] ? do_wp_page.isra.77+0x2aa/0x640
+[   45.633336]  [<ffffffff810b8acc>] handle_pte_fault+0x8c/0x7f0
+[   45.633336]  [<ffffffff8103b3f0>] ? __send_signal.part.24+0x130/0x300
+[   45.633336]  [<ffffffff810264aa>] ? pte_alloc_one+0x1a/0x40
+[   45.633336]  [<ffffffff810b9948>] handle_mm_fault+0x208/0x2c0
+[   45.633336]  [<ffffffff814c0543>] do_page_fault+0x143/0x490
+[   45.633336]  [<ffffffff8104fe85>] ? check_preempt_curr+0x85/0xa0
+[   45.633336]  [<ffffffff81052a2a>] ? __dequeue_entity+0x2a/0x50
+[   45.633336]  [<ffffffff81052fee>] ? pick_next_task_fair+0x6e/0x180
+[   45.633336]  [<ffffffff814bc6ad>] ? __schedule+0x22d/0x500
+[   45.633336]  [<ffffffff814bd72f>] page_fault+0x1f/0x30
+[   45.633336] Code: 89 0a 4c 89 ef e8 35 fd 27 00 49 8b 36 49 8d bc 24 90 =
+02 00 00 e8 95 66 e0 ff 5b b8 00 02 00 00 41 5c 41 5d 41 5e 5d c3 4c 89 e7 =
+<ff> d0 e9 5e ff ff ff 66 66 66 66 2e 0f 1f 84 00 00 00 00 00 55=20
+[   45.633336] RIP  [<ffffffff8123becc>] fb_deferred_io_mkwrite+0xdc/0xf0
+[   45.633336]  RSP <ffff880126559c98>
+[   45.711547] ---[ end trace d4732d5a0bf375fb ]---
+[   45.720961] released /dev/fb1 user=3D1 count=3D0
+[   45.756516] open /dev/fb1 user=3D1 fb_info=FFff880130e0a800 count=3D1
+[   45.756550] released /dev/fb1 user=3D1 count=3D0
+[   45.756632] open /dev/fb1 user=3D1 fb_info=FFff880130e0a800 count=3D1
+[   45.758195] [drm] write mode info 144
+[   45.994657] [drm] write mode info 144
 
-This masking bits are easily changed by modifying definition of masking bits
-as below:
-
-- #define COMMON_INT_MASK_4 (0)
-+ #define COMMON_INT_MASK_4 (HOTPLUG_CHG | HPD_LOST | PLUG)
-
-Then, it can be used in exynos_dp_config_interrupt().
-
-
-> +
-> +	reg = INT_HPD;
-> +	writel(reg, dp->reg_base + EXYNOS_DP_INT_STA_MASK);
-> +}
-> +
-> +enum dp_irq_type exynos_dp_get_irq_type(struct exynos_dp_device *dp)
-> +{
-> +	u32 reg;
-> +
-> +	/* Parse hotplug interrupt status register */
-> +	reg = readl(dp->reg_base + EXYNOS_DP_COMMON_INT_STA_4);
-> +
-> +	if (reg & PLUG)
-> +		return DP_IRQ_TYPE_HP_CABLE_IN;
-> +
-> +	if (reg & HPD_LOST)
-> +		return DP_IRQ_TYPE_HP_CABLE_OUT;
-> +
-> +	if (reg & HOTPLUG_CHG)
-> +		return DP_IRQ_TYPE_HP_CHANGE;
-> +
-> +	return DP_IRQ_TYPE_UNKNOWN;
->  }
-> 
->  void exynos_dp_reset_aux(struct exynos_dp_device *dp)
-> --
-> 1.7.7.3
 

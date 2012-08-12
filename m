@@ -1,131 +1,169 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Fri, 31 Aug 2012 12:36:01 +0000
-Subject: Re: [PATCH v2 03/23] OMAPDSS: output: Add set/unset device ops for omap_dss_output
-Message-Id: <5040ACE1.8080502@ti.com>
+From: David Herrmann <dh.herrmann@googlemail.com>
+Date: Sun, 12 Aug 2012 14:53:21 +0000
+Subject: [PATCH 07/11] fblog: allow selecting fbs via sysfs and module-parameters
+Message-Id: <1344783205-2384-8-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>  <1346326845-16583-1-git-send-email-archit@ti.com>  <1346326845-16583-4-git-send-email-archit@ti.com> <1346414621.18766.13.camel@lappyti>
-In-Reply-To: <1346414621.18766.13.camel@lappyti>
+References: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
+In-Reply-To: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, David Herrmann <dh.herrmann@googlemail.com>
 
-On Friday 31 August 2012 05:33 PM, Tomi Valkeinen wrote:
-> On Thu, 2012-08-30 at 17:10 +0530, Archit Taneja wrote:
->> An output entity represented by the struct omap_dss_output connects to a
->> omap_dss_device entity. Add functions to set or unset an output's device. This
->> is similar to how managers and devices were connected previously. An output can
->> connect to a device without being connected to a manager. However, the output
->> needs to eventually connect to a manager so that the connected panel can be
->> enabled.
->>
->> Keep the omap_overlay_manager pointer in omap_dss_device for now to prevent
->> breaking things. This will be removed later when outputs are supported
->> completely.
->>
->> Signed-off-by: Archit Taneja <archit@ti.com>
->> ---
->>   drivers/video/omap2/dss/output.c |   67 ++++++++++++++++++++++++++++++++++++++
->>   include/video/omapdss.h          |    5 +++
->>   2 files changed, 72 insertions(+)
->>
->> diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
->> index 7d81be5..abc3aa2 100644
->> --- a/drivers/video/omap2/dss/output.c
->> +++ b/drivers/video/omap2/dss/output.c
->> @@ -24,9 +24,76 @@
->>   #include "dss.h"
->>
->>   static LIST_HEAD(output_list);
->> +static DEFINE_MUTEX(output_lock);
->> +
->> +static int dss_output_set_device(struct omap_dss_output *out,
->> +		struct omap_dss_device *dssdev)
->> +{
->> +	int r;
->> +
->> +	mutex_lock(&output_lock);
->> +
->> +	if (out->device) {
->> +		DSSERR("output already has device %s connected to it\n",
->> +			out->device->name);
->> +		r = -EINVAL;
->> +		goto err;
->> +	}
->> +
->> +	if (out->type != dssdev->type) {
->> +		DSSERR("output type and display type don't match\n");
->> +		r = -EINVAL;
->> +		goto err;
->> +	}
->> +
->> +	out->device = dssdev;
->> +	dssdev->output = out;
->> +
->> +	mutex_unlock(&output_lock);
->> +
->> +	return 0;
->> +err:
->> +	mutex_unlock(&output_lock);
->> +
->> +	return r;
->> +}
->> +
->> +static int dss_output_unset_device(struct omap_dss_output *out)
->> +{
->> +	int r;
->> +
->> +	mutex_lock(&output_lock);
->> +
->> +	if (!out->device) {
->> +		DSSERR("output doesn't have a device connected to it\n");
->> +		r = -EINVAL;
->> +		goto err;
->> +	}
->> +
->> +	if (out->device->state != OMAP_DSS_DISPLAY_DISABLED) {
->> +		DSSERR("device %s is not disabled, cannot unset device\n",
->> +				out->device->name);
->> +		r = -EINVAL;
->> +		goto err;
->> +	}
->> +
->> +	out->device->output = NULL;
->> +	out->device = NULL;
->> +
->> +	mutex_unlock(&output_lock);
->> +
->> +	return 0;
->> +err:
->> +	mutex_unlock(&output_lock);
->> +
->> +	return r;
->> +}
->>
->>   void dss_register_output(struct omap_dss_output *out)
->>   {
->> +	out->set_device = &dss_output_set_device;
->> +	out->unset_device = &dss_output_unset_device;
->> +
->>   	list_add_tail(&out->list, &output_list);
->>   }
->
-> I don't think there's need for this indirection. We should use function
-> pointers only when the func pointer may lead to different functions.
-> Here we'll always have just one function, dss_output_set_device. We can
-> as well call the function directly.
+fblog is mainly useful during boot, reboot, panics and maintenance. In all
+cases you often want to control which monitors are used for console
+output. Moreover, in multi-seat environments it is desireable to reduce
+system-overhead by not drawing the console to all framebuffers. Four
+mechanisms to select framebuffers for fblog are added:
 
-Okay. I understand that. But in general, don't func pointers prevent us 
-from exporting more symbols?
+1) "active" module parameter: This parameter selects whether fblog has
+access to available framebuffer devices. If it is true, then fblog will
+open devices following the rules described below and rendering will take
+place. If it is false, new hotplugged devices will not be activated and no
+more rendering to currently active devices takes place. However, active
+devices will continue rendering after this is set to true again.
 
->
-> I know we have similar func pointers for ovls/mgrs currently, but I
-> don't think they are good either. They are a relic from the time we
-> supported "virtual" overlays and managers, and thus could have different
-> implementations for the operations.
+2) "active" sysfs attribute for each fblog object. Reading this value
+returns whether a framebuffer is currently active. Writing it opens/closes
+the framebuffer. This allows runtime control which fbs are used. For
+instance, init can set these to 0 after bootup.
+Note that a framebuffer is only active if this is 1 _and_ the "active"
+module parameter is set to "true".
 
-Oh okay, I guess you mean the L4/sDMA updates for DSI command mode.
+3) "activate_on_hotplug" module parameter: This selects whether a device
+is activated by default when hotplugged. This is true by default so new
+devices will be automatically activated.
 
-Archit
+4) "main_only" module parameter: This selects what devices are activated
+on hotplug. This has no effect if "activate_on_hotplug" is false.
+Otherwise, if this is true then only fb0 will be activated on hotplug.
+This is false by default.
+
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+---
+ drivers/video/console/fblog.c | 66 ++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 65 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
+index 1c526c5..aed77dc 100644
+--- a/drivers/video/console/fblog.c
++++ b/drivers/video/console/fblog.c
+@@ -44,6 +44,9 @@ struct fblog_fb {
+ 
+ static DEFINE_MUTEX(fblog_registration_lock);
+ static struct fblog_fb *fblog_fbs[FB_MAX];
++static bool active = true;
++static bool activate_on_hotplug = true;
++static bool main_only = false;
+ 
+ #define to_fblog_dev(_d) container_of(_d, struct fblog_fb, dev)
+ 
+@@ -63,6 +66,9 @@ static int fblog_open(struct fblog_fb *fb)
+ {
+ 	int ret;
+ 
++	if (!active)
++		return -EPERM;
++
+ 	mutex_lock(&fb->lock);
+ 
+ 	if (test_bit(FBLOG_KILLED, &fb->flags)) {
+@@ -115,6 +121,40 @@ static void fblog_close(struct fblog_fb *fb, bool kill_dev)
+ 	mutex_unlock(&fb->lock);
+ }
+ 
++static ssize_t fblog_dev_active_show(struct device *dev,
++				     struct device_attribute *attr,
++				     char *buf)
++{
++	struct fblog_fb *fb = to_fblog_dev(dev);
++
++	return snprintf(buf, PAGE_SIZE, "%d\n",
++			!!test_bit(FBLOG_OPEN, &fb->flags));
++}
++
++static ssize_t fblog_dev_active_store(struct device *dev,
++				      struct device_attribute *attr,
++				      const char *buf,
++				      size_t count)
++{
++	struct fblog_fb *fb = to_fblog_dev(dev);
++	unsigned long num;
++	int ret = 0;
++
++	num = simple_strtoul(buf, NULL, 10);
++
++	mutex_lock(&fb->info->lock);
++	if (num)
++		ret = fblog_open(fb);
++	else
++		fblog_close(fb, false);
++	mutex_unlock(&fb->info->lock);
++
++	return ret ? ret : count;
++}
++
++static DEVICE_ATTR(active, S_IRUGO | S_IWUSR | S_IWGRP, fblog_dev_active_show,
++		   fblog_dev_active_store);
++
+ /*
+  * fblog framebuffer list
+  * The fblog_fbs[] array contains all currently registered framebuffers. If a
+@@ -148,6 +188,7 @@ static void fblog_do_unregister(struct fb_info *info)
+ 	fblog_fbs[info->node] = NULL;
+ 
+ 	fblog_close(fb, true);
++	device_remove_file(&fb->dev, &dev_attr_active);
+ 	device_del(&fb->dev);
+ 	put_device(&fb->dev);
+ }
+@@ -156,6 +197,7 @@ static void fblog_do_register(struct fb_info *info, bool force)
+ {
+ 	struct fblog_fb *fb;
+ 	int ret;
++	bool do_open = true;
+ 
+ 	fb = fblog_fbs[info->node];
+ 	if (fb && fb->info != info) {
+@@ -186,7 +228,20 @@ static void fblog_do_register(struct fb_info *info, bool force)
+ 		return;
+ 	}
+ 
+-	fblog_open(fb);
++	ret = device_create_file(&fb->dev, &dev_attr_active);
++	if (ret) {
++		pr_err("fblog: cannot create sysfs entry");
++		/* do not open fb if we cannot create control file */
++		do_open = false;
++	}
++
++	if (!activate_on_hotplug)
++		do_open = false;
++	if (main_only && info->node != 0)
++		do_open = false;
++
++	if (do_open)
++		fblog_open(fb);
+ }
+ 
+ static void fblog_register(struct fb_info *info, bool force)
+@@ -321,6 +376,15 @@ static void __exit fblog_exit(void)
+ 	}
+ }
+ 
++module_param(active, bool, S_IRUGO | S_IWUSR | S_IWGRP);
++MODULE_PARM_DESC(active, "Activate fblog rendering");
++
++module_param(activate_on_hotplug, bool, S_IRUGO | S_IWUSR | S_IWGRP);
++MODULE_PARM_DESC(activate_on_hotplug, "Activate fblog on hotplugged devices");
++
++module_param(main_only, bool, S_IRUGO);
++MODULE_PARM_DESC(main_only, "Activate fblog by default only on main devices");
++
+ module_init(fblog_init);
+ module_exit(fblog_exit);
+ MODULE_LICENSE("GPL");
+-- 
+1.7.11.4
 

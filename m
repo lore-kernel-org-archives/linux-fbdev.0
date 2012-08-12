@@ -1,106 +1,200 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 14 Aug 2012 12:16:19 +0000
-Subject: Re: [PATCH 1/6] OMAPDSS: DISPC: cleanup cpu_is_xxxx checks
-Message-Id: <1344946579.4845.35.camel@lappyti>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-sKm24bRloHoNU/qrHebS"
+From: David Herrmann <dh.herrmann@googlemail.com>
+Date: Sun, 12 Aug 2012 14:53:20 +0000
+Subject: [PATCH 06/11] fblog: open fb on registration
+Message-Id: <1344783205-2384-7-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344425874-28222-1-git-send-email-cmahapatra@ti.com>
-	 <1344859135-4470-1-git-send-email-cmahapatra@ti.com>
-	 <CAF0AtAt9SakEnavHMFXYZ2+nPXXreGcQNyXiJ7TuarRa1tATXA@mail.gmail.com>
-In-Reply-To: <CAF0AtAt9SakEnavHMFXYZ2+nPXXreGcQNyXiJ7TuarRa1tATXA@mail.gmail.com>
-To: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-
---=-sKm24bRloHoNU/qrHebS
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2012-08-14 at 17:33 +0530, Mahapatra, Chandrabhanu wrote:
-> > +static const struct __initdata dispc_features omap2_dispc_features =3D=
- {
-> > +       .hp_max                 =3D       256,
-> > +       .vp_max                 =3D       255,
-> > +       .sw_max                 =3D       64,
-> > +       .sw_start               =3D       5,
-> > +       .fp_start               =3D       15,
-> > +       .bp_start               =3D       27,
-> > +       .calc_scaling           =3D       dispc_ovl_calc_scaling_24xx,
-> > +       .calc_core_clk          =3D       calc_core_clk_24xx,
-> > +};
-> > +
-> > +static const struct __initdata dispc_features omap3_2_1_dispc_features=
- =3D {
-> > +       .hp_max                 =3D       256,
-> > +       .vp_max                 =3D       255,
-> > +       .sw_max                 =3D       64,
-> > +       .sw_start               =3D       5,
-> > +       .fp_start               =3D       15,
-> > +       .bp_start               =3D       27,
-> > +       .calc_scaling           =3D       dispc_ovl_calc_scaling_34xx,
-> > +       .calc_core_clk          =3D       calc_core_clk_34xx,
-> > +};
-> > +
-> > +static const struct __initdata dispc_features omap3_3_0_dispc_features=
- =3D {
-> > +       .hp_max                 =3D       4096,
-> > +       .vp_max                 =3D       4095,
-> > +       .sw_max                 =3D       256,
-> > +       .sw_start               =3D       7,
-> > +       .fp_start               =3D       19,
-> > +       .bp_start               =3D       31,
-> > +       .calc_scaling           =3D       dispc_ovl_calc_scaling_34xx,
-> > +       .calc_core_clk          =3D       calc_core_clk_34xx,
-> > +};
-> > +
-> > +static const struct __initdata dispc_features omap4_dispc_features =3D=
- {
-> > +       .hp_max                 =3D       4096,
-> > +       .vp_max                 =3D       4095,
-> > +       .sw_max                 =3D       256,
-> > +       .sw_start               =3D       7,
-> > +       .fp_start               =3D       19,
-> > +       .bp_start               =3D       31,
-> > +       .calc_scaling           =3D       dispc_ovl_calc_scaling_44xx,
-> > +       .calc_core_clk          =3D       calc_core_clk_44xx,
-> > +};
-> > +
->=20
-> Here the dispc_features not only mention the omap name but also the
-> revision like omap3_3_0_dispc_features which initializes data for
-> OMAP3430_REV_ES3_0 and higher. May be omap34xx_rev3_0_dispc_features
-> is a better name for this. For others omap44xx_dispc_features kind of
-> name should be ok without revision number being mentioned. What d you
-> say?
-
-Sounds ok to me.
-
- Tomi
-
-
---=-sKm24bRloHoNU/qrHebS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+References: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
+In-Reply-To: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, David Herrmann <dh.herrmann@googlemail.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+This opens the framebuffer upon registration so we can use it for
+drawing-operations. On unregistration we close it again.
 
-iQIcBAABAgAGBQJQKkGTAAoJEPo9qoy8lh7175IP/iRjyeUd5ObaqYshpVysTd8P
-SBf00jwg99dBzn4YfoQElAekicvMNEPaJXyYEzAxw7609UjUy0WYIYYfzs095fnM
-VC71sTGnxTnVhO4LFFYbT3S5yzSm2audg/k6DaHFiKVgSFRPfWs6uR3+kY2oxufD
-efxATMlNKnX1/+5uApTUCUlaHvJM63n4EjA0abHPgK6ZjhckO2JI8lXuM86nMQah
-ktSpXOFK5x+Sf7aHigjv66cjwInKGy9Jd941ztkZQFtY9bxWZXl9UzQ1ZiphDAIe
-b/is540Pt/l4wZFH6aFgb7TuNXmqJzDdoy8/FxvsJJYhyOb5/sZYeYVcdhZrfKOb
-JFi0k5yetR9boHtYUalfch1JGkKfaXtTwfr/LcNmM8vf1tbJDgSz4tkaC+6xhM/y
-HE6MoVwkTQDkr1XGtojNvSzxtzLbnh5vSOSEFZyDJfdyVTnq2NQkaVKYWIGSjIF/
-qii6FY+4KKOq47zrrkSUxg++h3uI6iXQoNAYdSyku0geUUcI775b4WC5mU8SZ6Ch
-sZwNld8TRMRs/dTAMu+GPCbmV1+IU0PUSYSZIVVqIGQsWYAMJjJMWbSNw7wdkKYr
-RfvVa3Ocq9fXu7t34cYHaLjgMo1r0XNbPYeq1qbwk3tXhbIGdjH5rkJd/ffisMvA
-U3n7xmxiOkwkFaYS4j6x
-=Pm4l
------END PGP SIGNATURE-----
+While opening/closing or accessing the fb in any other way, we must hold
+the fb-mutex. However, since the notifiers are often called with the mutex
+already held, we cannot lock it _after_ taking the
+fblog_registration_lock. Therefore, we require the caller to make sure the
+fb-mutex is held.
 
---=-sKm24bRloHoNU/qrHebS--
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+---
+ drivers/video/console/fblog.c | 94 ++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 93 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
+index 279f4d8..1c526c5 100644
+--- a/drivers/video/console/fblog.c
++++ b/drivers/video/console/fblog.c
+@@ -32,12 +32,14 @@
+ 
+ enum fblog_flags {
+ 	FBLOG_KILLED,
++	FBLOG_OPEN,
+ };
+ 
+ struct fblog_fb {
+ 	unsigned long flags;
+ 	struct fb_info *info;
+ 	struct device dev;
++	struct mutex lock;
+ };
+ 
+ static DEFINE_MUTEX(fblog_registration_lock);
+@@ -46,6 +48,74 @@ static struct fblog_fb *fblog_fbs[FB_MAX];
+ #define to_fblog_dev(_d) container_of(_d, struct fblog_fb, dev)
+ 
+ /*
++ * fblog_open/close()
++ * These functions manage access to the underlying framebuffer. While opened, we
++ * have a valid reference to the fb and can use it for drawing operations. When
++ * the fb is unregistered, we drop our reference and close the fb so it can get
++ * deleted properly. We also mark it as dead so no further fblog_open() call
++ * will succeed.
++ * Both functions must be called with the fb->info->lock mutex held! But make
++ * sure to lock it _before_ locking the fblog-registration-lock. Otherwise, we
++ * will dead-lock with fb-registration.
++ */
++
++static int fblog_open(struct fblog_fb *fb)
++{
++	int ret;
++
++	mutex_lock(&fb->lock);
++
++	if (test_bit(FBLOG_KILLED, &fb->flags)) {
++		ret = -ENODEV;
++		goto unlock;
++	}
++
++	if (test_bit(FBLOG_OPEN, &fb->flags)) {
++		ret = 0;
++		goto unlock;
++	}
++
++	if (!try_module_get(fb->info->fbops->owner)) {
++		ret = -ENODEV;
++		goto out_killed;
++	}
++
++	if (fb->info->fbops->fb_open && fb->info->fbops->fb_open(fb->info, 0)) {
++		ret = -EIO;
++		goto out_unref;
++	}
++
++	set_bit(FBLOG_OPEN, &fb->flags);
++	mutex_unlock(&fb->lock);
++	return 0;
++
++out_unref:
++	module_put(fb->info->fbops->owner);
++out_killed:
++	set_bit(FBLOG_KILLED, &fb->flags);
++unlock:
++	mutex_unlock(&fb->lock);
++	return ret;
++}
++
++static void fblog_close(struct fblog_fb *fb, bool kill_dev)
++{
++	mutex_lock(&fb->lock);
++
++	if (test_bit(FBLOG_OPEN, &fb->flags)) {
++		if (fb->info->fbops->fb_release)
++			fb->info->fbops->fb_release(fb->info, 0);
++		module_put(fb->info->fbops->owner);
++		clear_bit(FBLOG_OPEN, &fb->flags);
++	}
++
++	if (kill_dev)
++		set_bit(FBLOG_KILLED, &fb->flags);
++
++	mutex_unlock(&fb->lock);
++}
++
++/*
+  * fblog framebuffer list
+  * The fblog_fbs[] array contains all currently registered framebuffers. If a
+  * framebuffer is in that list, we always must make sure that we own a reference
+@@ -77,6 +147,7 @@ static void fblog_do_unregister(struct fb_info *info)
+ 
+ 	fblog_fbs[info->node] = NULL;
+ 
++	fblog_close(fb, true);
+ 	device_del(&fb->dev);
+ 	put_device(&fb->dev);
+ }
+@@ -99,6 +170,7 @@ static void fblog_do_register(struct fb_info *info, bool force)
+ 		return;
+ 
+ 	fb->info = info;
++	mutex_init(&fb->lock);
+ 	__module_get(THIS_MODULE);
+ 	device_initialize(&fb->dev);
+ 	fb->dev.class = fb_class;
+@@ -113,6 +185,8 @@ static void fblog_do_register(struct fb_info *info, bool force)
+ 		put_device(&fb->dev);
+ 		return;
+ 	}
++
++	fblog_open(fb);
+ }
+ 
+ static void fblog_register(struct fb_info *info, bool force)
+@@ -134,6 +208,7 @@ static int fblog_event(struct notifier_block *self, unsigned long action,
+ {
+ 	struct fb_event *event = data;
+ 	struct fb_info *info = event->info;
++	struct fblog_fb *fb;
+ 
+ 	switch(action) {
+ 	case FB_EVENT_FB_REGISTERED:
+@@ -145,8 +220,21 @@ static int fblog_event(struct notifier_block *self, unsigned long action,
+ 	case FB_EVENT_FB_UNREGISTERED:
+ 		/* This is called when a low-level system driver unregisters a
+ 		 * framebuffer. The registration lock is held but the console
+-		 * lock might not be held. */
++		 * lock might not be held. The fb-lock is not held, either! */
++		mutex_lock(&info->lock);
+ 		fblog_unregister(info);
++		mutex_unlock(&info->lock);
++		break;
++	case FB_EVENT_FB_UNBIND:
++		/* Called directly before unregistering an FB. The FB is still
++		 * valid here and the registration lock is held but the console
++		 * lock might not be held (really?). */
++		mutex_lock(&fblog_registration_lock);
++		fb = fblog_fbs[info->node];
++		mutex_unlock(&fblog_registration_lock);
++
++		if (fb)
++			fblog_close(fb, true);
+ 		break;
+ 	}
+ 
+@@ -163,7 +251,9 @@ static void fblog_scan(void)
+ 		if (!info || IS_ERR(info))
+ 			continue;
+ 
++		mutex_lock(&info->lock);
+ 		fblog_register(info, false);
++		mutex_unlock(&info->lock);
+ 
+ 		/* There is a very subtle race-condition. Even though we might
+ 		 * own a reference to the fb, it may still get unregistered
+@@ -224,7 +314,9 @@ static void __exit fblog_exit(void)
+ 		if (!info || IS_ERR(info))
+ 			continue;
+ 
++		mutex_lock(&info->lock);
+ 		fblog_unregister(info);
++		mutex_unlock(&info->lock);
+ 		put_fb_info(info);
+ 	}
+ }
+-- 
+1.7.11.4
 

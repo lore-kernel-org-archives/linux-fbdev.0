@@ -1,226 +1,203 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 01 Aug 2012 10:43:16 +0000
-Subject: [RFC 05/17] OMAPDSS: DPI: Maintain our own timings field in driver data
-Message-Id: <1343817088-29645-6-git-send-email-archit@ti.com>
+From: David Herrmann <dh.herrmann@googlemail.com>
+Date: Sun, 12 Aug 2012 14:53:24 +0000
+Subject: [PATCH 10/11] fblog: draw console to framebuffers
+Message-Id: <1344783205-2384-11-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343817088-29645-1-git-send-email-archit@ti.com>
-In-Reply-To: <1343817088-29645-1-git-send-email-archit@ti.com>
+References: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
+In-Reply-To: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, sumit.semwal@ti.com, rob@ti.com, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, David Herrmann <dh.herrmann@googlemail.com>
 
-The DPI driver currently relies on the timings in omap_dss_device struct to
-configure the DISPC accordingly. This makes the DPI interface driver dependent
-on the omap_dss_device struct.
+If not disabled or suspended, we now blit the console data to each
+framebuffer. We only redraw on changes to avoid consuming too much CPU
+power.
 
-Make the DPI driver data maintain it's own timings field. The panel driver is
-expected to call dpi_set_timings()(renamed to omapdss_dpi_set_timings) to set
-these timings before the panel is enabled.
+This isn't optimized for speed, currently. However, fblog is mainly used
+for debugging purposes so this can be optimized later.
 
-In the set_timings() op, we still ensure that the omap_dss_device timings
-(dssdev->panel.timings) are configured. This will later be configured only by
-the DPI panel drivers.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
 ---
- drivers/video/omap2/displays/panel-generic-dpi.c   |    4 +++-
- .../omap2/displays/panel-lgphilips-lb035q02.c      |    2 ++
- .../omap2/displays/panel-nec-nl8048hl11-01b.c      |    2 ++
- drivers/video/omap2/displays/panel-picodlp.c       |    3 +++
- .../video/omap2/displays/panel-sharp-ls037v7dw01.c |    2 ++
- drivers/video/omap2/displays/panel-tfp410.c        |    4 +++-
- .../video/omap2/displays/panel-tpo-td043mtea1.c    |    4 +++-
- drivers/video/omap2/dss/dpi.c                      |   11 +++++++----
- include/video/omapdss.h                            |    4 ++--
- 9 files changed, 27 insertions(+), 9 deletions(-)
+ drivers/video/console/fblog.c | 110 +++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 109 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
-index bc5af25..5e70313 100644
---- a/drivers/video/omap2/displays/panel-generic-dpi.c
-+++ b/drivers/video/omap2/displays/panel-generic-dpi.c
-@@ -563,6 +563,8 @@ static int generic_dpi_panel_power_on(struct omap_dss_device *dssdev)
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
- 		return 0;
+diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
+index 2e39577..25bb63d 100644
+--- a/drivers/video/console/fblog.c
++++ b/drivers/video/console/fblog.c
+@@ -28,8 +28,11 @@
+ #include <linux/console.h>
+ #include <linux/device.h>
+ #include <linux/fb.h>
++#include <linux/font.h>
++#include <linux/kd.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
++#include "fbdraw.h"
  
-+	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
-+
- 	r = omapdss_dpi_display_enable(dssdev);
- 	if (r)
- 		goto err0;
-@@ -695,7 +697,7 @@ static int generic_dpi_panel_resume(struct omap_dss_device *dssdev)
- static void generic_dpi_panel_set_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
- {
--	dpi_set_timings(dssdev, timings);
-+	omapdss_dpi_set_timings(dssdev, timings);
- }
- 
- static int generic_dpi_panel_check_timings(struct omap_dss_device *dssdev,
-diff --git a/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c b/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
-index 8028077..7e52aee 100644
---- a/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
-+++ b/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
-@@ -55,6 +55,8 @@ static int lb035q02_panel_power_on(struct omap_dss_device *dssdev)
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
- 		return 0;
- 
-+	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
-+
- 	r = omapdss_dpi_display_enable(dssdev);
- 	if (r)
- 		goto err0;
-diff --git a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-index b122b0f..e501c40 100644
---- a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-+++ b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-@@ -175,6 +175,8 @@ static int nec_8048_panel_power_on(struct omap_dss_device *dssdev)
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
- 		return 0;
- 
-+	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
-+
- 	r = omapdss_dpi_display_enable(dssdev);
- 	if (r)
- 		goto err0;
-diff --git a/drivers/video/omap2/displays/panel-picodlp.c b/drivers/video/omap2/displays/panel-picodlp.c
-index 2d35bd3..0d7a8ff 100644
---- a/drivers/video/omap2/displays/panel-picodlp.c
-+++ b/drivers/video/omap2/displays/panel-picodlp.c
-@@ -377,6 +377,9 @@ static int picodlp_panel_power_on(struct omap_dss_device *dssdev)
- 	 * then only i2c commands can be successfully sent to dpp2600
- 	 */
- 	msleep(1000);
-+
-+	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
-+
- 	r = omapdss_dpi_display_enable(dssdev);
- 	if (r) {
- 		dev_err(&dssdev->dev, "failed to enable DPI\n");
-diff --git a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
-index bd86ba9..1486a81 100644
---- a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
-+++ b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
-@@ -142,6 +142,8 @@ static int sharp_ls_power_on(struct omap_dss_device *dssdev)
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
- 		return 0;
- 
-+	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
-+
- 	r = omapdss_dpi_display_enable(dssdev);
- 	if (r)
- 		goto err0;
-diff --git a/drivers/video/omap2/displays/panel-tfp410.c b/drivers/video/omap2/displays/panel-tfp410.c
-index 40cc0cfa..c6f9503 100644
---- a/drivers/video/omap2/displays/panel-tfp410.c
-+++ b/drivers/video/omap2/displays/panel-tfp410.c
-@@ -65,6 +65,8 @@ static int tfp410_power_on(struct omap_dss_device *dssdev)
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
- 		return 0;
- 
-+	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
-+
- 	r = omapdss_dpi_display_enable(dssdev);
- 	if (r)
- 		goto err0;
-@@ -231,7 +233,7 @@ static void tfp410_set_timings(struct omap_dss_device *dssdev,
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
- 
- 	mutex_lock(&ddata->lock);
--	dpi_set_timings(dssdev, timings);
-+	omapdss_dpi_set_timings(dssdev, timings);
- 	mutex_unlock(&ddata->lock);
- }
- 
-diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-index fa7baa6..ecb163e 100644
---- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-+++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-@@ -337,6 +337,8 @@ static int tpo_td043_enable_dss(struct omap_dss_device *dssdev)
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
- 		return 0;
- 
-+	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
-+
- 	r = omapdss_dpi_display_enable(dssdev);
- 	if (r)
- 		goto err0;
-@@ -480,7 +482,7 @@ static void tpo_td043_remove(struct omap_dss_device *dssdev)
- static void tpo_td043_set_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
- {
--	dpi_set_timings(dssdev, timings);
-+	omapdss_dpi_set_timings(dssdev, timings);
- }
- 
- static int tpo_td043_check_timings(struct omap_dss_device *dssdev,
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index add47fe..96dd1a4 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -41,6 +41,7 @@ static struct {
- 
+ /**
+  * struct fblog_buf: Console text buffer
+@@ -66,6 +69,7 @@ struct fblog_fb {
+ 	struct device dev;
  	struct mutex lock;
+ 	struct fblog_buf buf;
++	struct console_font font;
+ };
  
-+	struct omap_video_timings timings;
- 	struct dss_lcd_mgr_config mgr_config;
- } dpi;
- 
-@@ -138,7 +139,7 @@ static int dpi_set_dispc_clk(unsigned long pck_req, unsigned long *fck,
- 
- static int dpi_set_mode(struct omap_dss_device *dssdev)
- {
--	struct omap_video_timings *t = &dssdev->panel.timings;
-+	struct omap_video_timings *t = &dpi.timings;
- 	int lck_div = 0, pck_div = 0;
- 	unsigned long fck = 0;
- 	unsigned long pck;
-@@ -293,8 +294,8 @@ void omapdss_dpi_display_disable(struct omap_dss_device *dssdev)
+ static DEFINE_MUTEX(fblog_registration_lock);
+@@ -176,6 +180,61 @@ static void fblog_buf_write(struct fblog_buf *buf, const char *str, size_t len)
+ 	}
  }
- EXPORT_SYMBOL(omapdss_dpi_display_disable);
  
--void dpi_set_timings(struct omap_dss_device *dssdev,
--			struct omap_video_timings *timings)
-+void omapdss_dpi_set_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings)
- {
- 	int r;
- 
-@@ -302,7 +303,9 @@ void dpi_set_timings(struct omap_dss_device *dssdev,
- 
- 	mutex_lock(&dpi.lock);
- 
-+	dpi.timings = *timings;
- 	dssdev->panel.timings = *timings;
++static void fblog_redraw_clear(struct fblog_fb *fb)
++{
++	struct fb_fillrect region;
++	struct fb_info *info = fb->info;
 +
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
- 		r = dispc_runtime_get();
- 		if (r)
-@@ -317,7 +320,7 @@ void dpi_set_timings(struct omap_dss_device *dssdev,
++	region.color = 0;
++	region.dx = 0;
++	region.dy = 0;
++	region.width = info->var.xres;
++	region.height = info->var.yres;
++	region.rop = ROP_COPY;
++
++	info->fbops->fb_fillrect(info, &region);
++}
++
++static void fblog_redraw(struct fblog_fb *fb)
++{
++	size_t i;
++
++	if (!active)
++		return;
++
++	mutex_lock(&fb->lock);
++	if (!test_bit(FBLOG_OPEN, &fb->flags) ||
++	    test_bit(FBLOG_SUSPENDED, &fb->flags) ||
++	    test_bit(FBLOG_BLANKED, &fb->flags)) {
++		mutex_unlock(&fb->lock);
++		return;
++	}
++
++	fblog_redraw_clear(fb);
++
++	for (i = 0; i < fb->buf.height; ++i) {
++		fbdraw_font(fb->info, &fb->font, false, 0, i, 7, 0, 0,
++			    fb->buf.lines[i], fb->buf.width);
++	}
++
++	mutex_unlock(&fb->lock);
++}
++
++static void fblog_refresh(struct fblog_fb *fb)
++{
++	unsigned int width, height;
++
++	mutex_lock(&fb->lock);
++	if (test_bit(FBLOG_OPEN, &fb->flags)) {
++		width = fb->info->var.xres / fb->font.width;
++		height = fb->info->var.yres / fb->font.height;
++		fblog_buf_resize(&fb->buf, width, height);
++	}
++	mutex_unlock(&fb->lock);
++
++	fblog_redraw(fb);
++}
++
+ /*
+  * fblog_open/close()
+  * These functions manage access to the underlying framebuffer. While opened, we
+@@ -192,6 +251,10 @@ static int fblog_open(struct fblog_fb *fb)
+ {
+ 	static const char init_str[] = "Framebuffer log initialized\n";
+ 	int ret;
++	struct fb_var_screeninfo var;
++	const struct fb_videomode *mode;
++	unsigned int width, height;
++	const struct font_desc *font;
  
- 	mutex_unlock(&dpi.lock);
- }
--EXPORT_SYMBOL(dpi_set_timings);
-+EXPORT_SYMBOL(omapdss_dpi_set_timings);
+ 	if (!active)
+ 		return -EPERM;
+@@ -208,6 +271,13 @@ static int fblog_open(struct fblog_fb *fb)
+ 		goto unlock;
+ 	}
  
- int dpi_check_timings(struct omap_dss_device *dssdev,
- 			struct omap_video_timings *timings)
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 6f7581b..ebf2ebd 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -751,8 +751,8 @@ void omapdss_dsi_display_disable(struct omap_dss_device *dssdev,
++	font = get_default_font(var.xres, var.yres, fb->info->pixmap.blit_x,
++				fb->info->pixmap.blit_y);
++	if (!font) {
++		ret = -ENODEV;
++		goto unlock;
++	}
++
+ 	if (!try_module_get(fb->info->fbops->owner)) {
+ 		ret = -ENODEV;
+ 		goto out_killed;
+@@ -218,10 +288,22 @@ static int fblog_open(struct fblog_fb *fb)
+ 		goto out_unref;
+ 	}
  
- int omapdss_dpi_display_enable(struct omap_dss_device *dssdev);
- void omapdss_dpi_display_disable(struct omap_dss_device *dssdev);
--void dpi_set_timings(struct omap_dss_device *dssdev,
--			struct omap_video_timings *timings);
-+void omapdss_dpi_set_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings);
- int dpi_check_timings(struct omap_dss_device *dssdev,
- 			struct omap_video_timings *timings);
+-	fblog_buf_resize(&fb->buf, 80, 24);
++	var = fb->info->var;
++	mode = fb_find_best_mode(&var, &fb->info->modelist);
++	var.activate = FB_ACTIVATE_NOW | FB_ACTIVATE_FORCE;
++	fb_set_var(fb->info, &var);
++
++	fb->font.width = font->width;
++	fb->font.height = font->height;
++	fb->font.data = (void*)font->data;
++
++	width = var.xres / fb->font.width;
++	height = var.yres / fb->font.height;
++	fblog_buf_resize(&fb->buf, width, height);
+ 	fblog_buf_write(&fb->buf, init_str, sizeof(init_str) - 1);
+ 	set_bit(FBLOG_OPEN, &fb->flags);
+ 	mutex_unlock(&fb->lock);
++	fblog_redraw(fb);
+ 	return 0;
  
+ out_unref:
+@@ -460,6 +542,31 @@ static int fblog_event(struct notifier_block *self, unsigned long action,
+ 		else
+ 			set_bit(FBLOG_BLANKED, &fb->flags);
+ 		break;
++	case FB_EVENT_MODE_DELETE:
++		/* This is sent when a video mode is removed. The current video
++		 * mode is never removed! The console lock is held while this is
++		 * called. */
++		/* fallthrough */
++	case FB_EVENT_NEW_MODELIST:
++		/* This is sent when the modelist got changed. The console-lock
++		 * is held and we should reset the mode. */
++		/* fallthrough */
++	case FB_EVENT_MODE_CHANGE_ALL:
++		/* This is the same as below but notifies us that the user used
++		 * the FB_ACTIVATE_ALL flag when setting the video mode. */
++		/* fallthrough */
++	case FB_EVENT_MODE_CHANGE:
++		/* This is called when the _user_ changes the video mode via
++		 * ioctls. It is not sent, when the kernel changes the mode
++		 * internally. This callback is called inside fb_set_var() so
++		 * the console lock is held. */
++		mutex_lock(&fblog_registration_lock);
++		fb = fblog_fbs[info->node];
++		mutex_unlock(&fblog_registration_lock);
++
++		if (fb)
++			fblog_refresh(fb);
++		break;
+ 	}
+ 
+ 	return 0;
+@@ -516,6 +623,7 @@ static void fblog_con_write(struct console *con, const char *buf,
+ 	for (i = 0; i < FB_MAX; ++i) {
+ 		if (fblog_fbs[i]) {
+ 			fblog_buf_write(&fblog_fbs[i]->buf, buf, len);
++			fblog_redraw(fblog_fbs[i]);
+ 		}
+ 	}
+ 	mutex_unlock(&fblog_registration_lock);
 -- 
-1.7.9.5
+1.7.11.4
 

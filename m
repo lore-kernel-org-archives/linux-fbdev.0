@@ -1,874 +1,248 @@
-From: Damien Cassou <damien.cassou@lifl.fr>
-Date: Fri, 03 Aug 2012 15:40:09 +0000
-Subject: [PATCH 0/5] use devm_ functions
-Message-Id: <1344008414-2894-1-git-send-email-damien.cassou@lifl.fr>
+From: David Herrmann <dh.herrmann@googlemail.com>
+Date: Sun, 12 Aug 2012 14:53:19 +0000
+Subject: [PATCH 05/11] fblog: register one fblog object per framebuffer
+Message-Id: <1344783205-2384-6-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343742860-16213-1-git-send-email-damien.cassou@lifl.fr>
-In-Reply-To: <1343742860-16213-1-git-send-email-damien.cassou@lifl.fr>
+References: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
+In-Reply-To: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, David Herrmann <dh.herrmann@googlemail.com>
+
+One fblog object is associated to each registered framebuffer. This way,
+we can draw the console to each framebuffer. When a framebuffer driver
+unregisters a framebuffer, we also unregister our fblog object. That is,
+our lifetime is coupled to the lifetime of the framebuffer. However, this
+does not mean that we are always active. On the contrary, we do not even
+own a reference to the framebuffer. We don't need it as we are notified
+_before_ the last reference is dropped.
+
+However, if other users have a reference to our object, we simply mark it
+as dead when the associated framebuffer dies and leave it alone. When the
+last reference is dropped, it will be automatically freed.
+
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+---
+ drivers/video/console/fblog.c | 195 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 195 insertions(+)
+
+diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
+index fb39737..279f4d8 100644
+--- a/drivers/video/console/fblog.c
++++ b/drivers/video/console/fblog.c
+@@ -23,15 +23,210 @@
+  * all fblog instances before running other graphics applications.
+  */
+ 
++#define pr_fmt(_fmt) KBUILD_MODNAME ": " _fmt
++
++#include <linux/device.h>
++#include <linux/fb.h>
+ #include <linux/module.h>
++#include <linux/mutex.h>
++
++enum fblog_flags {
++	FBLOG_KILLED,
++};
++
++struct fblog_fb {
++	unsigned long flags;
++	struct fb_info *info;
++	struct device dev;
++};
++
++static DEFINE_MUTEX(fblog_registration_lock);
++static struct fblog_fb *fblog_fbs[FB_MAX];
++
++#define to_fblog_dev(_d) container_of(_d, struct fblog_fb, dev)
++
++/*
++ * fblog framebuffer list
++ * The fblog_fbs[] array contains all currently registered framebuffers. If a
++ * framebuffer is in that list, we always must make sure that we own a reference
++ * to it. If it is added through the notifier callbacks, then this is always
++ * guaranteed.
++ * We are only interested in registered framebuffers. That is, if a driver calls
++ * unregister_framebuffer() we directly unlink it from our list. This guarantees
++ * that the associated fb_info is always valid. However, we might still have
++ * pending users so we mark it as dead so no further framebuffer actions are
++ * done. If the last user then drops a reference, the memory gets freed
++ * automatically.
++ */
++
++static void fblog_release(struct device *dev)
++{
++	struct fblog_fb *fb = to_fblog_dev(dev);
++
++	kfree(fb);
++	module_put(THIS_MODULE);
++}
++
++static void fblog_do_unregister(struct fb_info *info)
++{
++	struct fblog_fb *fb;
++
++	fb = fblog_fbs[info->node];
++	if (!fb || fb->info != info)
++		return;
++
++	fblog_fbs[info->node] = NULL;
++
++	device_del(&fb->dev);
++	put_device(&fb->dev);
++}
++
++static void fblog_do_register(struct fb_info *info, bool force)
++{
++	struct fblog_fb *fb;
++	int ret;
++
++	fb = fblog_fbs[info->node];
++	if (fb && fb->info != info) {
++		if (!force)
++			return;
++
++		fblog_do_unregister(fb->info);
++	}
++
++	fb = kzalloc(sizeof(*fb), GFP_KERNEL);
++	if (!fb)
++		return;
++
++	fb->info = info;
++	__module_get(THIS_MODULE);
++	device_initialize(&fb->dev);
++	fb->dev.class = fb_class;
++	fb->dev.release = fblog_release;
++	dev_set_name(&fb->dev, "fblog%d", info->node);
++	fblog_fbs[info->node] = fb;
++
++	ret = device_add(&fb->dev);
++	if (ret) {
++		fblog_fbs[info->node] = NULL;
++		set_bit(FBLOG_KILLED, &fb->flags);
++		put_device(&fb->dev);
++		return;
++	}
++}
++
++static void fblog_register(struct fb_info *info, bool force)
++{
++	mutex_lock(&fblog_registration_lock);
++	fblog_do_register(info, force);
++	mutex_unlock(&fblog_registration_lock);
++}
++
++static void fblog_unregister(struct fb_info *info)
++{
++	mutex_lock(&fblog_registration_lock);
++	fblog_do_unregister(info);
++	mutex_unlock(&fblog_registration_lock);
++}
++
++static int fblog_event(struct notifier_block *self, unsigned long action,
++		       void *data)
++{
++	struct fb_event *event = data;
++	struct fb_info *info = event->info;
++
++	switch(action) {
++	case FB_EVENT_FB_REGISTERED:
++		/* This is called when a low-level system driver registers a new
++		 * framebuffer. The registration lock is held but the console
++		 * lock might not be held when this is called. */
++		fblog_register(info, true);
++		break;
++	case FB_EVENT_FB_UNREGISTERED:
++		/* This is called when a low-level system driver unregisters a
++		 * framebuffer. The registration lock is held but the console
++		 * lock might not be held. */
++		fblog_unregister(info);
++		break;
++	}
++
++	return 0;
++}
++
++static void fblog_scan(void)
++{
++	unsigned int i;
++	struct fb_info *info, *tmp;
++
++	for (i = 0; i < FB_MAX; ++i) {
++		info = get_fb_info(i);
++		if (!info || IS_ERR(info))
++			continue;
++
++		fblog_register(info, false);
++
++		/* There is a very subtle race-condition. Even though we might
++		 * own a reference to the fb, it may still get unregistered
++		 * between our call from get_fb_info() and fblog_register().
++		 * Therefore, we simply check whether the same fb still is
++		 * registered by calling get_fb_info() again. Only if they
++		 * differ we know that it got unregistered, therefore, we
++		 * call fblog_unregister() with the old pointer. */
++
++		tmp = get_fb_info(i);
++		if (tmp && !IS_ERR(tmp))
++			put_fb_info(tmp);
++		if (tmp != info)
++			fblog_unregister(info);
++
++		/* Here we either called fblog_unregister() and therefore do not
++		 * need any reference to the fb, or we can be sure that the FB
++		 * is registered and FB_EVENT_FB_UNREGISTERED will be called
++		 * before the last reference is dropped. Hence, we can drop our
++		 * reference here. */
++
++		put_fb_info(info);
++	}
++}
++
++static struct notifier_block fblog_notifier = {
++	.notifier_call = fblog_event,
++};
+ 
+ static int __init fblog_init(void)
+ {
++	int ret;
++
++	ret = fb_register_client(&fblog_notifier);
++	if (ret) {
++		pr_err("cannot register framebuffer notifier\n");
++		return ret;
++	}
++
++	fblog_scan();
++
+ 	return 0;
+ }
+ 
+ static void __exit fblog_exit(void)
+ {
++	unsigned int i;
++	struct fb_info *info;
++
++	fb_unregister_client(&fblog_notifier);
++
++	/* We scan through the whole registered_fb array here instead of
++	 * fblog_fbs because we need to get the device lock _before_ the
++	 * fblog-registration-lock. */
++
++	for (i = 0; i < FB_MAX; ++i) {
++		info = get_fb_info(i);
++		if (!info || IS_ERR(info))
++			continue;
++
++		fblog_unregister(info);
++		put_fb_info(info);
++	}
+ }
+ 
+ module_init(fblog_init);
+-- 
+1.7.11.4
 
-These patches introduce devm_ functions in some video drivers. They have been
-generated using Coccinelle (http://coccinelle.lip6.fr/) and the following
-semantic patch:
-
-virtual after_start
-
-virtual returned
-virtual returnedDup
-virtual arg
-virtual argDup
-virtual all_args
-virtual get
-virtual nonull
-
-virtual report
-
-// ---------------------------------------------------------------------
-// find functions
-
-@plat depends on !after_start@
-identifier i,pfn,rfn;
-position p;
-@@
-
-struct platform_driver i@p = {
-  .probe = pfn,
-  .remove = (<+...rfn...+>),
-};
-
-// ---------------------------------------------------------------------
-// set up iteration
-
-@initialize:ocaml@
-
-let reporting = ref false
-
-type ret      UseReturned | UseReturned2 of string | UseReturnedDup | UseReturnedNN
-     | UseArg | UseArgDup | UseArgNN | UseAllArgs | UseGet
-
-let add pfn rfn alloc free devm_alloc file rule    let it = new iteration() in
-   it#set_files [file];
-   it#add_virtual_rule After_start;
-   (match rule with
-      UseReturned -> it#add_virtual_rule Returned
-    | UseReturnedNN -> it#add_virtual_rule Returned; it#add_virtual_rule Nonull
-    | UseReturnedDup -> it#add_virtual_rule ReturnedDup
-    | UseReturned2(free) -> it#add_virtual_rule Returned;
-      it#add_virtual_identifier Second_free free
-    | UseArg -> it#add_virtual_rule Arg
-    | UseArgNN -> it#add_virtual_rule Arg; it#add_virtual_rule Nonull
-    | UseArgDup -> it#add_virtual_rule ArgDup
-    | UseAllArgs -> it#add_virtual_rule All_args
-    | UseGet -> it#add_virtual_rule Get);
-   if !reporting then it#add_virtual_rule Report;
-   if not (pfn="") then it#add_virtual_identifier Pfn pfn;
-   if not (rfn="") then it#add_virtual_identifier Rfn rfn;
-   if not (alloc="") then it#add_virtual_identifier Alloc alloc;
-   if not (free="") then it#add_virtual_identifier Free free;
-   if not (devm_alloc="") then it#add_virtual_identifier Devm_alloc devm_alloc;
-   it#register()
-
-@script:ocaml depends on report && !after_start@
-@@
-reporting := true
-
-@script:ocaml@
-pfn << plat.pfn;
-rfn << plat.rfn;
-p << plat.p;
-@@
-
-let file = (List.hd p).file in
-add pfn rfn "kmalloc" "kfree" "devm_kzalloc" file UseReturned;
-add pfn rfn "kzalloc" "kfree" "devm_kzalloc" file UseReturned;
-add pfn rfn "ioremap" "iounmap" "devm_ioremap" file UseReturned;
-add pfn rfn "ioremap_nocache" "iounmap" "devm_ioremap_nocache" file
-   UseReturned;
-
-add pfn rfn "clk_get" "clk_put" "devm_clk_get" file UseReturnedDup;
-add pfn rfn "clk_get" "clk_put" "devm_clk_get_bad" file UseReturnedNN;
-
-add pfn rfn "usb_get_phy" "usb_put_phy" "devm_usb_get_phy" file UseReturned;
-
-add pfn rfn "pinctrl_get" "pinctrl_put" "devm_pinctrl_get" file UseReturned;
-add pfn rfn "pinctrl_get_select_default" "pinctrl_put"
-            "devm_pinctrl_get_select_default" file UseReturned;
-
-add pfn rfn "regulator_get" "regulator_put" "devm_regulator_get"
-            file UseReturned;
-add pfn rfn "regulator_bulk_get" "regulator_bulk_free"
-            "devm_regulator_bulk_get" file UseAllArgs;
-
-add pfn rfn "gpio_request" "gpio_free" "devm_gpio_request" file UseArg;
-add pfn rfn "gpio_request_one" "gpio_free" "devm_gpio_request_one" file UseArg;
-
-(*
-add pfn rfn "request_irq" "free_irq" "devm_request_irq" file UseArg;
-add pfn rfn "request_threaded_irq" "free_irq" "devm_request_threaded_irq" file
-  UseArg;
-*)
-add pfn rfn "dma_alloc_coherent" "dma_free_coherent" "dmam_alloc_coherent"
-  file UseReturnedDup;
-add pfn rfn "dma_alloc_noncoherent" "dma_free_noncoherent"
-  "dmam_alloc_noncoherent" file UseReturnedDup;
-add pfn rfn "dma_alloc_coherent" "dma_free_coherent" "dmam_alloc_coherent_bad"
-  file UseReturnedNN;
-add pfn rfn "dma_alloc_noncoherent" "dma_free_noncoherent"
-  "dmam_alloc_noncoherent_bad" file UseReturnedNN;
-
-(* several possibilities... *)
-add pfn rfn "request_region" "release_region" "devm_request_region" file
-  UseGet;
-add pfn rfn "request_mem_region" "release_mem_region"
-  "devm_request_mem_region" file UseGet;
-add pfn rfn "request_region" "release_region" "devm_request_region" file
-  UseArg;
-add pfn rfn "request_mem_region" "release_mem_region"
-  "devm_request_mem_region" file UseArg;
-(* fix a bug at the same time *)
-add pfn rfn "request_region" "release_resource" "devm_request_region" file
-  (UseReturned2("kfree"));
-add pfn rfn "request_mem_region" "release_resource"
-  "devm_request_mem_region" file (UseReturned2("kfree"));
-add pfn rfn "ioport_map" "ioport_unmap" "devm_ioport_map" file UseReturned
-
-// ---------------------------------------------------------------------
-// process the initial definition of the probe function
-
-@preprobe@
-identifier virtual.pfn;
-position p;
-@@
-
-pfn@p(...) { ... }
-
-@probe@
-identifier pfn;
-position preprobe.p;
-@@
-
-pfn@p(...) { ... }
-
-@labelled_return@
-identifier probe.pfn,l;
-expression e;
-@@
-
-pfn(...) { <+... l: return e; ...+> }
-
-// ---------------------------------------------------------------------
-// transform functions where free uses the result
-
-@prb depends on returned exists@
-identifier probe.pfn,pdev,virtual.alloc,virtual.free,virtual.second_free;
-expression x,y,e,a;
-position p1,p2,p3;
-type T1,T2,T3;
-@@
-
-pfn(struct platform_device *pdev) { ... when any
-x = (T1)alloc@p1(a,...)
-<... when strict
-     when any
-     when forall
-(
-y = x;
-... when != y = e
-    when != &y
-free@p2(...,(T2)y,...);
-... when != x
-    when != y
-second_free@p3(...,(T3)y,...);
-|
-y = x;
-... when != y = e
-    when != &y
-free@p2(...,(T2)y,...);
-|
-free@p2(...,(T2)x,...);
-... when != x
-second_free@p3(...,(T3)x,...);
-|
-free@p2(...,(T2)x,...);
-)
-...>
-}
-
-@script:ocaml@
-a << prb.a;
-@@
-
-if a = "NULL" then Coccilib.include_match false
-
-@reme exists@
-identifier virtual.rfn,virtual.free;
-expression prb.x,prb.y;
-type T;
-@@
-
-rfn(...) { ... free(...,(T)\(x\|y\),...); ... }
-
-@rem depends on reme@
-identifier virtual.rfn,virtual.free,virtual.second_free;
-expression prb.x,prb.y;
-position p4,p5;
-type T,T1;
-@@
-
-rfn(...) {
-<... when strict
-(
-free@p4(...,(T)\(x\|y\),...);
-... when != x
-second_free@p5(...,(T1)\(x\|y\),...);
-|
-free@p4(...,(T)\(x\|y\),...);
-)
-...>
-}
-
-@bad@
-identifier virtual.free;
-expression prb.x,prb.y;
-position p != {prb.p2,rem.p4};
-type T;
-@@
-
-free@p(...,(T)\(x\|y\),...)
-
-@modif depends on rem && !bad && !report@
-expression x;
-identifier prb.pdev,virtual.alloc,virtual.free,virtual.devm_alloc;
-identifier virtual.second_free;
-expression list args;
-position prb.p1,prb.p2,prb.p3,rem.p4,rem.p5;
-type T;
-@@
-
-(
-- free@p2(...);
-|
-- second_free@p3(...);
-|
-- free@p4(...);
-|
-- second_free@p5(...);
-|
-  x - alloc@p1(
-+ devm_alloc(&pdev->dev,
-    args)
-|
-  x - (T)alloc@p1(
-+ (T)devm_alloc(&pdev->dev,
-    args)
-)
-
-@script:python depends on rem && !bad && report@
-p1 << prb.p1;
-alloc << virtual.devm_alloc;
-@@
-msg = "WARNING opportunity for %s" % (alloc)
-coccilib.report.print_report(p1[0], msg)
-
-// ---------------------------------------------------------------------
-// transform functions where free uses the result
-// special case for clk where don't add &pdev->dev
-
-@prbdup depends on returnedDup exists@
-identifier probe.pfn,pdev,virtual.alloc,virtual.free,virtual.second_free;
-expression x,y,e;
-expression list args;
-position p1,p2,p3;
-type T1,T2,T3;
-@@
-
-pfn(struct platform_device *pdev) { ... when any
-x = (T1)alloc@p1(&pdev->dev,args)
-<... when strict
-     when any
-     when forall
-(
-y = x;
-... when != y = e
-    when != &y
-free@p2(...,(T2)y,...);
-... when != x
-    when != y
-second_free@p3(...,(T3)y,...);
-|
-y = x;
-... when != y = e
-    when != &y
-free@p2(...,(T2)y,...);
-|
-free@p2(...,(T2)x,...);
-... when != x
-second_free@p3(...,(T3)x,...);
-|
-free@p2(...,(T2)x,...);
-)
-...>
-}
-
-@remdupe exists@
-identifier virtual.rfn,virtual.free;
-expression prbdup.x,prbdup.y;
-type T;
-@@
-
-rfn(...) { ... free(...,(T)\(x\|y\),...); ... }
-
-@remdup depends on remdupe@
-identifier virtual.rfn,virtual.free,virtual.second_free;
-expression prbdup.x,prbdup.y;
-position p4,p5;
-type T,T1;
-@@
-
-rfn(...) {
-<... when strict
-(
-free@p4(...,(T)\(x\|y\),...);
-... when != x
-second_free@p5(...,(T1)\(x\|y\),...);
-|
-free@p4(...,(T)\(x\|y\),...);
-)
-...>
-}
-
-@baddup@
-identifier virtual.free;
-expression prbdup.x,prbdup.y;
-position p != {prbdup.p2,remdup.p4};
-type T;
-@@
-
-free@p(...,(T)\(x\|y\),...)
-
-@modifdup depends on remdup && !baddup && !report@
-expression x;
-identifier virtual.alloc,virtual.free,virtual.devm_alloc;
-identifier virtual.second_free;
-expression list args;
-position prbdup.p1,prbdup.p2,prbdup.p3,remdup.p4,remdup.p5;
-type T;
-@@
-
-(
-- free@p2(...);
-|
-- second_free@p3(...);
-|
-- free@p4(...);
-|
-- second_free@p5(...);
-|
-  x - alloc@p1
-+ devm_alloc
-    (args)
-|
-  x - (T)alloc@p1
-+ (T)devm_alloc
-    (args)
-)
-
-@script:python depends on remdup && !baddup && report@
-p1 << prbdup.p1;
-alloc << virtual.devm_alloc;
-@@
-msg = "WARNING opportunity for %s" % (alloc)
-coccilib.report.print_report(p1[0], msg)
-
-// ---------------------------------------------------------------------
-// transform functions where free uses the first argument
-
-@prbx depends on arg exists@
-identifier probe.pfn,pdev,virtual.alloc,virtual.free;
-expression x,y,e;
-expression list args;
-position p1,p2;
-@@
-
-pfn(struct platform_device *pdev) { ... when any
-alloc@p1(x,args)
-<... when strict
-     when any
-     when forall
-(
-y = x;
-... when != y = e
-    when != &y
-free@p2(y,...);
-|
-free@p2(x,...)
-)
-...>
-}
-
-@script:ocaml@
-x << prbx.x;
-@@
-
-if x = "NULL" then Coccilib.include_match false
-
-@remxe exists@
-identifier virtual.rfn, virtual.free;
-expression prbx.x,prbx.y;
-@@
-
-rfn(...) { ... free(\(x\|y\),...); ... }
-
-@remx depends on remxe@
-identifier virtual.rfn, virtual.free;
-expression prbx.x,prbx.y;
-position p3;
-@@
-
-rfn(...) {
-<... when strict
-free@p3(\(x\|y\),...)
-...>
-}
-
-@badx@
-identifier virtual.free;
-expression prbx.x,prbx.y;
-position p != {prbx.p2,remx.p3};
-@@
-
-free@p(\(x\|y\),...)
-
-@modifx depends on remx && !badx && !report@
-expression x;
-identifier prbx.pdev,virtual.alloc,virtual.free,virtual.devm_alloc;
-expression list args;
-position prbx.p1,prbx.p2,remx.p3;
-@@
-
-(
-- free@p2(...);
-|
-- free@p3(...);
-|
-- alloc@p1(
-+ devm_alloc(&pdev->dev,
-   x,args)
-)
-
-@script:python depends on remx && !badx && report@
-p1 << prbx.p1;
-alloc << virtual.devm_alloc;
-@@
-msg = "WARNING opportunity for %s" % (alloc)
-coccilib.report.print_report(p1[0], msg)
-
-// ---------------------------------------------------------------------
-// transform functions where free uses the first argument
-
-@prbxdup depends on argDup exists@
-identifier probe.pfn,pdev,virtual.alloc,virtual.free;
-expression y,e;
-expression list args;
-position p1,p2;
-@@
-
-pfn(struct platform_device *pdev) { ... when any
-alloc@p1(&pdev->dev,args)
-<... when strict
-     when any
-     when forall
-(
-y = &pdev->dev;
-... when != y = e
-    when != &y
-free@p2(y,...);
-|
-free@p2(&pdev->dev,...)
-)
-...>
-}
-
-@remxedup exists@
-identifier virtual.rfn, virtual.free, prbxdup.pdev;
-expression prbxdup.y;
-@@
-
-rfn(...) { ... free(\(&pdev->dev\|y\),...); ... }
-
-@remxdup depends on remxedup@
-identifier virtual.rfn, virtual.free, prbxdup.pdev;
-expression prbxdup.y;
-position p3;
-@@
-
-rfn(...) {
-<... when strict
-free@p3(\(&pdev->dev\|y\),...)
-...>
-}
-
-@badxdup@
-identifier virtual.free,prbxdup.pdev;
-expression prbxdup.y;
-position p != {prbxdup.p2,remxdup.p3};
-@@
-
-free@p(\(&pdev->dev\|y\),...)
-
-@modifxdup depends on remxdup && !badxdup && !report@
-identifier virtual.alloc,virtual.free,virtual.devm_alloc;
-expression list args;
-position prbxdup.p1,prbxdup.p2,remxdup.p3;
-@@
-
-(
-- free@p2(...);
-|
-- free@p3(...);
-|
-- alloc@p1
-+ devm_alloc
-   (args)
-)
-
-@script:python depends on remxdup && !badxdup && report@
-p1 << prbxdup.p1;
-alloc << virtual.devm_alloc;
-@@
-msg = "WARNING opportunity for %s" % (alloc)
-coccilib.report.print_report(p1[0], msg)
-
-// ---------------------------------------------------------------------
-// transform functions where free uses all arguments
-
-@prbax depends on all_args exists@
-identifier probe.pfn,pdev,virtual.alloc,virtual.free;
-expression list x;
-position p1,p2;
-@@
-
-pfn(struct platform_device *pdev) { ... when any
-alloc@p1(x)
-<... when strict
-     when any
-     when forall
-free@p2(x)
-...>
-}
-
-@remaxe exists@
-identifier virtual.rfn, virtual.free;
-expression list prbax.x;
-@@
-
-rfn(...) { ... free(x); ... }
-
-@remax depends on remaxe@
-identifier virtual.rfn, virtual.free;
-expression list prbax.x;
-position p3;
-@@
-
-rfn(...) {
-<... when strict
-free@p3(x)
-...>
-}
-
-@badax@
-identifier virtual.free;
-expression list prbax.x;
-position p != {prbax.p2,remax.p3};
-@@
-
-free@p(x)
-
-@modifax depends on remax && !badax && !report@
-identifier prbax.pdev,virtual.alloc,virtual.free,virtual.devm_alloc;
-expression list x;
-position prbax.p1,prbax.p2,remax.p3;
-@@
-
-(
-- free@p2(...);
-|
-- free@p3(...);
-|
-- alloc@p1(
-+ devm_alloc(&pdev->dev,
-   x)
-)
-
-@script:python depends on remax && !badax && report@
-p1 << prbax.p1;
-alloc << virtual.devm_alloc;
-@@
-msg = "WARNING opportunity for %s" % (alloc)
-coccilib.report.print_report(p1[0], msg)
-
-// ---------------------------------------------------------------------
-// transform functions where free uses the result of platform_get_resource
-
-@prbg depends on get exists@
-identifier probe.pfn,pdev,virtual.alloc,virtual.free;
-expression x,y,e;
-expression list args;
-position p1,p2;
-@@
-
-pfn(struct platform_device *pdev) { ... when any
-alloc@p1(x,args)
-<... when strict
-     when any
-     when forall
-(
-y = x;
-... when != y = e
-    when != &y
-free@p2(y,...);
-|
-free@p2(x,...)
-)
-...>
-}
-
-@remge exists@
-identifier virtual.rfn, virtual.free;
-identifier z;
-identifier pdev;
-expression e,n;
-@@
-
-rfn(struct platform_device *pdev) { ... when any
-z = platform_get_resource(pdev, IORESOURCE_MEM, n)
-... when != z = e
-    when != &z
-free(z->start,...)
-...
-}
-
-@remg depends on remge@
-identifier virtual.rfn, virtual.free;
-identifier z;
-identifier pdev;
-position p3;
-expression e,n;
-@@
-
-rfn(struct platform_device *pdev) {
-<... when strict
-z = platform_get_resource(pdev, IORESOURCE_MEM, n)
-... when strict
-    when != z = e
-    when != &z
-free@p3(z->start,...)
-...>
-}
-
-@badg@
-identifier virtual.free;
-position p != {prbg.p2,remg.p3};
-@@
-
-free@p(...)
-
-@modifg depends on remg && !badg && !report@
-expression x;
-identifier prbg.pdev,virtual.alloc,virtual.free,virtual.devm_alloc;
-expression list args;
-position prbg.p1,prbg.p2,remg.p3;
-@@
-
-(
-- free@p2(...);
-|
-- free@p3(...);
-|
-- alloc@p1(
-+ devm_alloc(&pdev->dev,
-   x,args)
-)
-
-@script:python depends on remg && !badg && report@
-p1 << prbg.p1;
-alloc << virtual.devm_alloc;
-@@
-msg = "WARNING opportunity for %s" % (alloc)
-coccilib.report.print_report(p1[0], msg)
-
-// ---------------------------------------------------------------------
-// cleanup, if the drvdata was only used to enable the free
-// probably only relevant for kmalloc/kzalloc
-
-@dclean depends on modif || modifdup || modifx || modifxdup || modifax || modifg@
-identifier virtual.rfn, pdev, i;
-type T;
-@@
-
-rfn(struct platform_device *pdev) { ...
-(
-- T i = platform_get_drvdata(pdev);
-|
-- T i = dev_get_drvdata(&pdev->drv);
-|
-- T i;
-  ... when != i
-(
-- i = platform_get_drvdata(pdev);
-|
-- i = dev_get_drvdata(&pdev->drv);
-)
-)
-... when != i
-}
-
-@rclean depends on modif || modifdup || modifx || modifxdup || modifax || modifg@
-identifier virtual.rfn, pdev, i;
-type T;
-@@
-
-rfn(struct platform_device *pdev) { ...
-(
-- T i = platform_get_resource(pdev,...);
-|
-- T i;
-  ... when != i
-- i = platform_get_resource(pdev,...);
-)
-... when != i
-}
-
-// ---------------------------------------------------------------------
-// cleanup empty ifs, etc
-
-@depends on modif || modifdup || modifx || modifxdup || modifax || modifg@
-identifier probe.pfn;
-@@
-
-pfn(...) { <...
-- if (...) {}
-...> }
-
-@depends on modif || modifdup || modifx || modifxdup || modifax || modifg@
-identifier virtual.rfn;
-@@
-
-rfn(...) { <...
-- if (...) {}
-...> }
-
-@depends on modif || modifdup || modifx || modifxdup || modifax || modifg@
-identifier probe.pfn;
-expression ret,e;
-@@
-
-pfn(...) { <...
-+ return
-- ret  e;
-- return ret;
-...> }
-
-@depends on modif || modifdup || modifx || modifxdup || modifax || modifg@
-identifier virtual.rfn;
-expression ret,e;
-@@
-
-rfn(...) { <...
-+ return
-- ret  e;
-- return ret;
-...> }
-
-// ---------------------------------------------------------------------
-
-// this is likely to leave dead code, if l: is preceded by a return
-// because we are control-flow based, there is no way to match on that
-@depends on labelled_return && (modif || modifdup || modifx || modifxdup || modifax || modifg)@
-identifier l,l1,l2;
-expression e;
-statement S;
-identifier probe.pfn;
-identifier i;
-statement S1,S2;
-@@
-
-pfn(...) { <...
-- goto l;
-+ goto l2;
-...
--l:
-<... when != S
-     when any
-l1:
-...>
-l2:
-(
- (<+...i...+>);
-|
- if (...) S1 else S2
-|
- while (...) S1
-|
- for (...;...;...) S1
-|
- return e;
-)
-...> }
-
-@depends on !labelled_return && (modif || modifdup || modifx || modifxdup || modifax || modifg)@
-identifier l,l1,l2;
-expression e;
-statement S;
-identifier probe.pfn;
-identifier i;
-statement S1,S2;
-@@
-
-pfn(...) { <...
-(
-- goto l;
-+ goto l2;
-...
--l:
-<... when != S
-     when any
-l1:
-...>
-l2:
-(
- (<+...i...+>);
-|
- if (...) S1 else S2
-|
- while (...) S1
-|
- for (...;...;...) S1
-)
-|
-- goto l;
-+ return e;
-...
--l:
-<... when != S
-     when any
-l1:
-...>
-return e;
-)
-...> }
-
-@depends on !labelled_return && (modif || modifdup || modifx || modifxdup || modifax || modifg)@
-expression e1,e2;
-identifier probe.pfn;
-@@
-
-pfn(...) { <...
--e1 = e2;
--return e1;
-+return e2;
-...> }

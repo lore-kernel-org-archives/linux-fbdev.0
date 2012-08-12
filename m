@@ -1,81 +1,40 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 23 Aug 2012 20:29:24 +0000
-Subject: Re: [PATCH] fbcon: Fix bit_putcs() call to kmalloc(s, GFP_KERNEL)
-Message-Id: <503692A4.7000209@gmx.de>
+From: David Herrmann <dh.herrmann@googlemail.com>
+Date: Sun, 12 Aug 2012 14:53:25 +0000
+Subject: [PATCH 11/11] MAINTAINERS: add fblog entry
+Message-Id: <1344783205-2384-12-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120730210949.5ccc5164@neptune.home>
-In-Reply-To: <20120730210949.5ccc5164@neptune.home>
+References: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
+In-Reply-To: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: =?UTF-8?B?QnJ1bm8gUHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, David Herrmann <dh.herrmann@googlemail.com>
 
-On 07/30/2012 07:09 PM, Bruno Prémont wrote:
-> Switch to kmalloc(,GFP_ATOMIC) in bit_putcs to fix below trace:
-> 
-> [    9.771812] BUG: sleeping function called from invalid context at /usr/src/linux-git/mm/slub.c:943
-> [    9.771814] in_atomic(): 1, irqs_disabled(): 1, pid: 1063, name: mount
-> [    9.771818] Pid: 1063, comm: mount Not tainted 3.5.0-jupiter-00003-g8d858b1-dirty #2
-> [    9.771819] Call Trace:
-> [    9.771838]  [<c104f79b>] __might_sleep+0xcb/0xe0
-> [    9.771844]  [<c10c00d4>] __kmalloc+0xb4/0x1c0
-> [    9.771851]  [<c1041d4a>] ? queue_work+0x1a/0x30
-> [    9.771854]  [<c1041dcf>] ? queue_delayed_work+0xf/0x30
-> [    9.771862]  [<c1205832>] ? bit_putcs+0xf2/0x3e0
-> [    9.771865]  [<c1041e01>] ? schedule_delayed_work+0x11/0x20
-> [    9.771868]  [<c1205832>] bit_putcs+0xf2/0x3e0
-> [    9.771875]  [<c12002b8>] ? get_color.clone.14+0x28/0x100
-> [    9.771878]  [<c1200d2f>] fbcon_putcs+0x11f/0x130
-> [    9.771882]  [<c1205740>] ? bit_clear+0xe0/0xe0
-> [    9.771885]  [<c1200f6d>] fbcon_redraw.clone.21+0x11d/0x160
-> [    9.771889]  [<c120383d>] fbcon_scroll+0x79d/0xe10
-> [    9.771892]  [<c12002b8>] ? get_color.clone.14+0x28/0x100
-> [    9.771897]  [<c124c0b4>] scrup+0x64/0xd0
-> [    9.771900]  [<c124c22b>] lf+0x2b/0x60
-> [    9.771903]  [<c124cc95>] vt_console_print+0x1d5/0x2f0
-> [    9.771907]  [<c124cac0>] ? register_vt_notifier+0x20/0x20
-> [    9.771913]  [<c102b335>] call_console_drivers.clone.5+0xa5/0xc0
-> [    9.771916]  [<c102c58e>] console_unlock+0x2fe/0x3c0
-> [    9.771920]  [<c102ca16>] vprintk_emit+0x2e6/0x300
-> [    9.771924]  [<c13f01ae>] printk+0x38/0x3a
-> [    9.771931]  [<c112e8fe>] reiserfs_remount+0x2ae/0x3e0
-> [    9.771934]  [<c112e650>] ? reiserfs_fill_super+0xb00/0xb00
-> [    9.771939]  [<c10ca0ab>] do_remount_sb+0xab/0x150
-> [    9.771943]  [<c1034476>] ? ns_capable+0x46/0x70
-> [    9.771948]  [<c10e059c>] do_mount+0x20c/0x6b0
-> [    9.771955]  [<c10a7044>] ? strndup_user+0x34/0x50
-> [    9.771958]  [<c10e0acc>] sys_mount+0x6c/0xa0
-> [    9.771964]  [<c13f2557>] sysenter_do_call+0x12/0x26
-> 
-> According to comment in bit_putcs() that kammloc() call only happens
-> when fbcon is drawing to a monochrome framebuffer (which is my case with
-> hid-picolcd).
-> 
-> Signed-off-by: Bruno Prémont <bonbons@linux-vserver.org>
+Add myself as maintainer for the fblog driver to the MAINTAINERS file.
 
-Applied.
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+---
+ MAINTAINERS | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/console/bitblit.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/console/bitblit.c b/drivers/video/console/bitblit.c
-> index 28b1a83..61b182b 100644
-> --- a/drivers/video/console/bitblit.c
-> +++ b/drivers/video/console/bitblit.c
-> @@ -162,7 +162,7 @@ static void bit_putcs(struct vc_data *vc, struct fb_info *info,
->  	image.depth = 1;
->  
->  	if (attribute) {
-> -		buf = kmalloc(cellsize, GFP_KERNEL);
-> +		buf = kmalloc(cellsize, GFP_ATOMIC);
->  		if (!buf)
->  			return;
->  	}
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 375b1fd..40a10b54 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2895,6 +2895,12 @@ F:	drivers/video/
+ F:	include/video/
+ F:	include/linux/fb.h
+ 
++FRAMEBUFFER LOG DRIVER
++M:	David Herrmann <dh.herrmann@googlemail.com>
++L:	linux-fbdev@vger.kernel.org
++S:	Maintained
++F:	drivers/video/console/fblog.c
++
+ FREESCALE DMA DRIVER
+ M:	Li Yang <leoli@freescale.com>
+ M:	Zhang Wei <zw@zh-kernel.org>
+-- 
+1.7.11.4
 

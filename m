@@ -1,31 +1,46 @@
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=  <u.kleine-koenig@pengutronix.de>
-Date: Mon, 13 Aug 2012 07:44:35 +0000
-Subject: [PATCH] video/mx3fb: remove stray l from debug output
-Message-Id: <1344843875-8174-1-git-send-email-u.kleine-koenig@pengutronix.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 13 Aug 2012 17:09:40 +0000
+Subject: Re: [PATCH] video/mx3fb: remove stray l from debug output
+Message-Id: <CAMuHMdXPJhpMiBuc5Op+n5spSfsHrqoLZqjkLWNLeH2txnj=Pw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1344843875-8174-1-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1344843875-8174-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: linux-fbdev@vger.kernel.org
 
-Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
----
- drivers/video/mx3fb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Mon, Aug 13, 2012 at 9:44 AM, Uwe Kleine-König
+<u.kleine-koenig@pengutronix.de> wrote:
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> ---
+>  drivers/video/mx3fb.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+> index c89f8a8..1dfdeb1 100644
+> --- a/drivers/video/mx3fb.c
+> +++ b/drivers/video/mx3fb.c
+> @@ -771,7 +771,7 @@ static int __set_par(struct fb_info *fbi, bool lock)
+>                 if (fbi->var.sync & FB_SYNC_SHARP_MODE)
+>                         mode = IPU_PANEL_SHARP_TFT;
+>
+> -               dev_dbg(fbi->device, "pixclock = %ul Hz\n",
+> +               dev_dbg(fbi->device, "pixclock = %u Hz\n",
+>                         (u32) (PICOS2KHZ(fbi->var.pixclock) * 1000UL));
 
-diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-index c89f8a8..1dfdeb1 100644
---- a/drivers/video/mx3fb.c
-+++ b/drivers/video/mx3fb.c
-@@ -771,7 +771,7 @@ static int __set_par(struct fb_info *fbi, bool lock)
- 		if (fbi->var.sync & FB_SYNC_SHARP_MODE)
- 			mode =3D IPU_PANEL_SHARP_TFT;
-=20
--		dev_dbg(fbi->device, "pixclock =3D %ul Hz\n",
-+		dev_dbg(fbi->device, "pixclock =3D %u Hz\n",
- 			(u32) (PICOS2KHZ(fbi->var.pixclock) * 1000UL));
-=20
- 		if (sdc_init_panel(mx3fb, mode,
---=20
-1.7.10.4
+I think a better fix is to change the dyslectic "%ul" to "%lu", and
+drop the cast to
+u32, which was probably only added to kill the compiler warning caused by the
+dyslectia issue.
 
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

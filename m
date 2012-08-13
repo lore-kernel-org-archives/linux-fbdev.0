@@ -1,70 +1,31 @@
-From: Daniel Drake <dsd@laptop.org>
-Date: Sat, 18 Aug 2012 15:53:34 +0000
-Subject: viafb PLL/clock tweaking causes XO-1.5 instability
-Message-Id: <CAMLZHHRxE1zJ9nDPEG7owU6qNxYz1iVDM5CjedqBKKUY+VfBjg@mail.gmail.com>
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Date: Mon, 13 Aug 2012 18:03:14 +0000
+Subject: Re: =?utf-8?B?6L2s5Y+R?= =?utf-8?Q?=3A?= Siliconmotion new kernel driver initial patch
+Message-Id: <20120813180314.GE26088@phenom.dumpdata.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <4CE6A5494DEECD498EBCD4C5488B1AFCD04CD1@CNDC08.cn.smi.ad>
+In-Reply-To: <4CE6A5494DEECD498EBCD4C5488B1AFCD04CD1@CNDC08.cn.smi.ad>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: =?utf-8?B?QWFyb24uQ2hlbiAg6ZmI5L+K5p2w?= <aaron.chen@siliconmotion.com>
+Cc: linux-fbdev@vger.kernel.org, =?utf-8?B?bWlsbC5jaGVuIOmZiOWGmw==?= <mill.chen@siliconmotion.com>, =?utf-8?B?TWFuZHkuV2FuZyDnjovlsJHlqpo=?= <Mandy.Wang@siliconmotion.com>, dri-devel@lists.freedesktop.org, =?utf-8?B?UGF1bC5DaGVuIOmZiOazog==?= <paul.chen2@siliconmotion.com>, =?utf-8?B?Y2Flc2FyLnFpdSDoo5jotZvmtbc=?= <caesar.qiu@siliconmotion.com>, =?utf-8?B?U3VubnkuWWFuZyDmnajlhYk=?= <sunny.yang@siliconmotion.com>
 
-Hi,
+On Mon, Aug 13, 2012 at 04:56:33PM +0800, Aaron.Chen  陈俊杰 wrote:
+> 
+> Since there is no response for the last mail. Maybe it didn't sent successfully. So I send it again. Here is the initial patch for siliconmotion kernel driver.
 
-I've been investigating a strange regression where in recent kernel
-releases, the XO-1.5 cannot reliably suspend/resume when on a virtual
-terminal (driven by viafb). Under X there is no instability.
+What's with the #ifdef 0 or #ifdef 1?
 
-The test case is to suspend and resume a lot (about 10 times a
-minute). In less than an hour the system will fail to resume - the
-system RAM becomes corrupt on resume and the firmware can't find its
-way back into Linux, so it reboots. This is presumably because the GPU
-is accessing main memory while the system is suspended, causing the
-RAM to come out of self-refresh and lose all its contents before the
-CPU wakes up to resume the system.
-
-I have bisected this to find the first bad commit:
-
-commit b692a63af8b63a7a7e84702a713d0072e336b326
-Author: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date:   Thu Mar 24 14:25:51 2011 +0000
-
-    viafb: add VIA slapping capability
+Why is there a bunch of ddkxxx something? Can those header files
+be squashed together?
+> 
+> Aaron
+> 
 
 
-On the XO-1.5 this code tries to set IGA1=off IGA2=on. However, a
-later commit causes them both to be turned on, since we enable
-X_COMPATIBILITY (we use X, and we find that setting to be necessary
-for X to work).
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> http://lists.freedesktop.org/mailman/listinfo/dri-devel
 
-
-If I comment the code that modifies IGA1, I find that setting IGA2=on
-causes the crashyness, setting IGA2=off results in the display not
-working at all. The only non-crashy setting here I can find is to not
-touch the IGA2 configuration.
-
-If I comment out the code that modifies IGA2, I find that setting
-IGA1=on causes the crashyness, and setting IGA1=off is stable.
-
-Going one step lower to find exactly which calls are responsible for
-triggering the crashyness, by only enabling one function call at a
-time, I find:
-set_secondary_pll_state(on) only = stable
-set_secondary_clock_state(on) only = crashy
-
-set_primary_pll_state(on) only = stable
-set_primary_clock_state(on) only = crashy
-
-Looking at the set_secondary_clock_state(on) case, I find that the
-Secondary Display Engine (Gated Clock <LCK>) bits 7:6 in IO Port
-3C5.1B are 11 when untouched, and 10 after
-set_secondary_clock_state(on) has run. So the code seems to be doing
-what it intends to do, but its not clear why modifying this register
-effectively switches between 3 behavioural states (stable, no display
-at all, display active but crashy suspend/resume). Also is there
-really any need to modify it or would the default (enable clock only
-if its needed) suffice?
-
-Any ideas?
-
-Thanks,
-Daniel

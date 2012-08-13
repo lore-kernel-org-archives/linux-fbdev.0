@@ -1,7 +1,7 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 08 Aug 2012 17:02:51 +0000
-Subject: Re: [PATCH] video: move CNVT_TOHW to a common place
-Message-Id: <CAMuHMdW11JpHg40QshVx5cG=CS2KG0RfAegv8K5eOco68asX4A@mail.gmail.com>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Mon, 13 Aug 2012 05:27:40 +0000
+Subject: RE: [PATCH] video: move CNVT_TOHW to a common place
+Message-Id: <A73F36158E33644199EB82C5EC81C7BC3E9A3626@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1344426866-8789-1-git-send-email-prakash.pm@ti.com>
 In-Reply-To: <1344426866-8789-1-git-send-email-prakash.pm@ti.com>
@@ -10,39 +10,35 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Wed, Aug 8, 2012 at 1:54 PM, Manjunathappa, Prakash
-<prakash.pm@ti.com> wrote:
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -397,6 +397,11 @@ struct fb_cursor {
->         struct fb_image image;  /* Cursor image */
->  };
->
-> +static inline __u32 CNVT_TOHW(__u32 val, __u32 width)
-
-"__u32" is a bit misleading, as "val" is actually an unsigned 16-bit value.
-
-> +{
-> +       return ((val << width) + 0x7FFF - val) >> 16;
-> +}
-
-Also, if you move it to a public header, perhaps the function needs a more
-descriptive name? What it does is remap a 16-bit value "val" onto a value with
-"width" bits of resolution, where "width" must be smaller than 16.
-"reduce_resolution()"?
-
-Also, it can become more generic, not limiting to 16-bit input values.
-The "0x7fff" part is "(1 << (width -1)) - 1". But I'm not sure it's
-worth the effort
-(are there places where this is needed?).
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+SGkgR2VlcnQgVXl0dGVyaG9ldmVuLA0KDQpUaGFua3MgZm9yIHJldmlld2luZyB0aGUgcGF0Y2gu
+DQoNCk9uIFdlZCwgQXVnIDA4LCAyMDEyIGF0IDIyOjMyOjUxLCBHZWVydCBVeXR0ZXJob2V2ZW4g
+d3JvdGU6DQo+IE9uIFdlZCwgQXVnIDgsIDIwMTIgYXQgMTo1NCBQTSwgTWFuanVuYXRoYXBwYSwg
+UHJha2FzaA0KPiA8cHJha2FzaC5wbUB0aS5jb20+IHdyb3RlOg0KPiA+IC0tLSBhL2luY2x1ZGUv
+bGludXgvZmIuaA0KPiA+ICsrKyBiL2luY2x1ZGUvbGludXgvZmIuaA0KPiA+IEBAIC0zOTcsNiAr
+Mzk3LDExIEBAIHN0cnVjdCBmYl9jdXJzb3Igew0KPiA+ICAgICAgICAgc3RydWN0IGZiX2ltYWdl
+IGltYWdlOyAgLyogQ3Vyc29yIGltYWdlICovDQo+ID4gIH07DQo+ID4NCj4gPiArc3RhdGljIGlu
+bGluZSBfX3UzMiBDTlZUX1RPSFcoX191MzIgdmFsLCBfX3UzMiB3aWR0aCkNCj4gDQo+ICJfX3Uz
+MiIgaXMgYSBiaXQgbWlzbGVhZGluZywgYXMgInZhbCIgaXMgYWN0dWFsbHkgYW4gdW5zaWduZWQg
+MTYtYml0IHZhbHVlLg0KPiANCg0KSSBhZ3JlZSwgd2lsbCBjb3JyZWN0IHRoaXMuDQoNCj4gPiAr
+ew0KPiA+ICsgICAgICAgcmV0dXJuICgodmFsIDw8IHdpZHRoKSArIDB4N0ZGRiAtIHZhbCkgPj4g
+MTY7DQo+ID4gK30NCj4gDQo+IEFsc28sIGlmIHlvdSBtb3ZlIGl0IHRvIGEgcHVibGljIGhlYWRl
+ciwgcGVyaGFwcyB0aGUgZnVuY3Rpb24gbmVlZHMgYSBtb3JlDQo+IGRlc2NyaXB0aXZlIG5hbWU/
+IFdoYXQgaXQgZG9lcyBpcyByZW1hcCBhIDE2LWJpdCB2YWx1ZSAidmFsIiBvbnRvIGEgdmFsdWUg
+d2l0aA0KPiAid2lkdGgiIGJpdHMgb2YgcmVzb2x1dGlvbiwgd2hlcmUgIndpZHRoIiBtdXN0IGJl
+IHNtYWxsZXIgdGhhbiAxNi4NCj4gInJlZHVjZV9yZXNvbHV0aW9uKCkiPw0KPiANCg0KSSBhZ3Jl
+ZSB0aGF0IGl0IHJlZHVjZXMgdGhlIHJlc29sdXRpb24sIGJ1dCBpdCByZWR1Y2VzIHRvIG1hdGNo
+IHRoZSBoYXJkd2FyZS4NClNvICJDTlZUX1RPSFciOiBjb252ZXJ0IHRvIGhhcmR3YXJlIHN1cHBv
+cnRlZCByZXNvbHV0aW9uLCBpc24ndCBpdCBtb3JlIGFwcHJvcHJpYXRlPw0KDQpJIHdpbGwgYWRk
+IGRlc2NyaXB0aW9uIGFzIGl0IGlzIGdvaW5nIHRvIHB1YmxpYyBoZWFkZXIgZmlsZS4NCg0KPiBB
+bHNvLCBpdCBjYW4gYmVjb21lIG1vcmUgZ2VuZXJpYywgbm90IGxpbWl0aW5nIHRvIDE2LWJpdCBp
+bnB1dCB2YWx1ZXMuDQo+IFRoZSAiMHg3ZmZmIiBwYXJ0IGlzICIoMSA8PCAod2lkdGggLTEpKSAt
+IDEiLiBCdXQgSSdtIG5vdCBzdXJlIGl0J3MNCj4gd29ydGggdGhlIGVmZm9ydA0KPiAoYXJlIHRo
+ZXJlIHBsYWNlcyB3aGVyZSB0aGlzIGlzIG5lZWRlZD8pLg0KPiANCg0KRmxvcmlhbiBUb2JpYXMg
+U2NoYW5kaW5hdDogQ291bGQgeW91IHBsZWFzZSBjb21tZW50IGhlcmU/DQoNClRoYW5rcywNClBy
+YWthc2gNCg0KPiBHcntvZXRqZSxlZXRpbmd9cywNCj4gDQo+ICAgICAgICAgICAgICAgICAgICAg
+ICAgIEdlZXJ0DQo+IA0KPiAtLQ0KPiBHZWVydCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUncyBsb3Rz
+IG9mIExpbnV4IGJleW9uZCBpYTMyIC0tIGdlZXJ0QGxpbnV4LW02OGsub3JnDQo+IA0KPiBJbiBw
+ZXJzb25hbCBjb252ZXJzYXRpb25zIHdpdGggdGVjaG5pY2FsIHBlb3BsZSwgSSBjYWxsIG15c2Vs
+ZiBhIGhhY2tlci4gQnV0DQo+IHdoZW4gSSdtIHRhbGtpbmcgdG8gam91cm5hbGlzdHMgSSBqdXN0
+IHNheSAicHJvZ3JhbW1lciIgb3Igc29tZXRoaW5nIGxpa2UgdGhhdC4NCj4gICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAtLSBMaW51cyBUb3J2YWxkcw0KPiANCg0K

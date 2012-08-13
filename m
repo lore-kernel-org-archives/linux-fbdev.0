@@ -1,35 +1,31 @@
-From: Adam Jackson <ajax@redhat.com>
-Date: Fri, 17 Aug 2012 17:10:44 +0000
-Subject: [PATCH] fbdev: Make the switch from generic to native driver less alarming
-Message-Id: <1345223444-15852-1-git-send-email-ajax@redhat.com>
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=  <u.kleine-koenig@pengutronix.de>
+Date: Mon, 13 Aug 2012 07:44:35 +0000
+Subject: [PATCH] video/mx3fb: remove stray l from debug output
+Message-Id: <1344843875-8174-1-git-send-email-u.kleine-koenig@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-Calling this "conflicting" just makes people think there's a problem
-when there's not.
-
-Signed-off-by: Adam Jackson <ajax@redhat.com>
+Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
 ---
- drivers/video/fbmem.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ drivers/video/mx3fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 0dff12a..42be978 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1582,8 +1582,7 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
- 			(primary && gen_aper && gen_aper->count &&
- 			 gen_aper->ranges[0].base = VGA_FB_PHYS)) {
- 
--			printk(KERN_INFO "fb: conflicting fb hw usage "
--			       "%s vs %s - removing generic driver\n",
-+			printk(KERN_INFO "fb: switching to %s from %s\n",
- 			       name, registered_fb[i]->fix.id);
- 			do_unregister_framebuffer(registered_fb[i]);
- 		}
--- 
-1.7.7.6
+diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+index c89f8a8..1dfdeb1 100644
+--- a/drivers/video/mx3fb.c
++++ b/drivers/video/mx3fb.c
+@@ -771,7 +771,7 @@ static int __set_par(struct fb_info *fbi, bool lock)
+ 		if (fbi->var.sync & FB_SYNC_SHARP_MODE)
+ 			mode =3D IPU_PANEL_SHARP_TFT;
+=20
+-		dev_dbg(fbi->device, "pixclock =3D %ul Hz\n",
++		dev_dbg(fbi->device, "pixclock =3D %u Hz\n",
+ 			(u32) (PICOS2KHZ(fbi->var.pixclock) * 1000UL));
+=20
+ 		if (sdc_init_panel(mx3fb, mode,
+--=20
+1.7.10.4
 

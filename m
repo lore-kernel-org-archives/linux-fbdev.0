@@ -1,53 +1,39 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 16 Aug 2012 07:48:28 +0000
-Subject: [PATCH 0/6] OMAPDSS: Pass output specific parameters from panel driver to output
-Message-Id: <1345102594-6222-1-git-send-email-archit@ti.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 13 Aug 2012 16:39:08 +0000
+Subject: re: s3fb: fix up DDC build with MTRR disabled.
+Message-Id: <20120813163908.GA18576@elgon.mountain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <343817088-29645-1-git-send-email-archit@ti.com>
-In-Reply-To: <343817088-29645-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-This is a continuation of the series below:
+[Sorry this is reall old.  I don't think I've emailed about it before]
 
-http://marc.info/?l=linux-omap&m4381744304672&w=2
+Hello Paul Mundt,
 
-This series tries to pass output specific parameters from panel driver to the
-connected output. These are basically parameters which can't really be shared
-across different outputs. An attempt has been made to have similar looking
-functions for setting DSI videomode timings and RFBI timings. But all the other
-parameters in the series take output specific arguments.
+This is a semi-automatic email about new static checker warnings.
 
-After this series, the interface drivers look more independent of
-omap_dss_device. It'll now be easier to add outputs as another DSS entity, and
-pass them rather than passing omap_dss_device from panel drivers to
-output/interface drivers.
+The patch 4f2970b9f622: "s3fb: fix up DDC build with MTRR disabled." 
+from Apr 20, 2011, leads to the following Smatch complaint:
 
-git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git pass_output_specific
+drivers/video/s3fb.c:1411 s3_pci_remove()
+	 warn: variable dereferenced before check 'info' (see line 1409)
 
-Tested on 4430SDP and 3430SDP
+drivers/video/s3fb.c
+  1408		struct fb_info *info = pci_get_drvdata(dev);
+  1409		struct s3fb_info __maybe_unused *par = info->par;
+                                                       ^^^^^^^^^
+New dereference.
 
-Archit Taneja (6):
-  OMAPDSS: DSI: Maintain copy of operation mode in driver data
-  OMAPDSS: DSI: Rename dsi_videomode_data to dsi_videomode_timings
-  OMAPDSS: DSI: Maintain copy of video mode timings in driver data
-  OMAPDSS: RFBI: Maitain copy of rfbi timings in driver data
-  OMAPDSS: VENC: Maintain copy of venc type in driver data
-  OMAPDSS: VENC: Maintian copy of video output polarity in private data
+  1410	
+  1411		if (info) {
+                    ^^^^
+Old check.
 
- drivers/video/omap2/displays/panel-n8x0.c |    2 +
- drivers/video/omap2/displays/panel-taal.c |    1 +
- drivers/video/omap2/dss/dsi.c             |   94 ++++++++++++++++++++---------
- drivers/video/omap2/dss/dss.h             |    4 ++
- drivers/video/omap2/dss/rfbi.c            |   14 ++++-
- drivers/video/omap2/dss/venc.c            |   28 ++++++++-
- drivers/video/omap2/dss/venc_panel.c      |    8 +++
- include/video/omapdss.h                   |   10 ++-
- 8 files changed, 126 insertions(+), 35 deletions(-)
+  1412	
+  1413	#ifdef CONFIG_MTRR
 
--- 
-1.7.9.5
+regards,
+dan carpenter
 

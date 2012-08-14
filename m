@@ -1,85 +1,73 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 09 Aug 2012 11:56:28 +0000
-Subject: [PATCH v2 07/13] OMAPDSS: HDMI: Add a get_timing function for HDMI interface
-Message-Id: <1344512989-4071-8-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 14 Aug 2012 13:02:28 +0000
+Subject: Re: [PATCH v2 07/13] OMAPDSS: HDMI: Add a get_timing function for HDMI interface
+Message-Id: <1344949348.4845.46.camel@lappyti>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-zzZWEabsRIeQGa2fTdkt"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1343817088-29645-1-git-send-email-archit@ti.com>
- <1344512989-4071-1-git-send-email-archit@ti.com>
-In-Reply-To: <1344512989-4071-1-git-send-email-archit@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+	 <1344512989-4071-1-git-send-email-archit@ti.com>
+	 <1344512989-4071-8-git-send-email-archit@ti.com>
+In-Reply-To: <1344512989-4071-8-git-send-email-archit@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-Add function omapdss_hdmi_display_get_timing() which returns the timings
-maintained by the HDMI interface driver in it's hdmi_config field. This
-prevents the need for the panel driver to configure default timings in it's
+
+--=-zzZWEabsRIeQGa2fTdkt
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Thu, 2012-08-09 at 17:19 +0530, Archit Taneja wrote:
+> Add function omapdss_hdmi_display_get_timing() which returns the timings
+> maintained by the HDMI interface driver in it's hdmi_config field. This
+> prevents the need for the panel driver to configure default timings in it=
+'s
+> probe.
+>=20
+> This function is just intended to be used once during the panel driver's =
 probe.
+> It makes sense for those interfaces which can be configured to a default =
+timing.
 
-This function is just intended to be used once during the panel driver's probe.
-It makes sense for those interfaces which can be configured to a default timing.
+I'm not sure about this patch. So I think the basic idea here is that
+HDMI will use VGA video mode if, for whatever reason, no better mode is
+found out.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/dss.h        |    2 ++
- drivers/video/omap2/dss/hdmi.c       |    6 ++++++
- drivers/video/omap2/dss/hdmi_panel.c |   10 +++++-----
- 3 files changed, 13 insertions(+), 5 deletions(-)
+After this change, the panel driver doesn't seem to do that. Instead it
+uses whatever mode was used previously by the hdmi output driver.
 
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 7e38ffd..df49c5d 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -485,6 +485,8 @@ static inline unsigned long hdmi_get_pixel_clock(void)
- #endif
- int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev);
- void omapdss_hdmi_display_disable(struct omap_dss_device *dssdev);
-+void omapdss_hdmi_display_get_timing(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings);
- void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings);
- int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index bdf1c33..f577c8e 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -544,6 +544,12 @@ static void hdmi_power_off(struct omap_dss_device *dssdev)
- 	hdmi_runtime_put();
- }
- 
-+void omapdss_hdmi_display_get_timing(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings)
-+{
-+	*timings = hdmi.ip_data.cfg.timings;
-+}
-+
- int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
- 					struct omap_video_timings *timings)
- {
-diff --git a/drivers/video/omap2/dss/hdmi_panel.c b/drivers/video/omap2/dss/hdmi_panel.c
-index 8dce206..8473193 100644
---- a/drivers/video/omap2/dss/hdmi_panel.c
-+++ b/drivers/video/omap2/dss/hdmi_panel.c
-@@ -41,13 +41,13 @@ static struct {
- 
- static int hdmi_panel_probe(struct omap_dss_device *dssdev)
- {
-+	struct omap_video_timings timings;
-+
- 	DSSDBG("ENTER hdmi_panel_probe\n");
- 
--	dssdev->panel.timings = (struct omap_video_timings)
--			{ 640, 480, 25175, 96, 16, 48, 2, 11, 31,
--				OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_LOW,
--				false,
--			};
-+	omapdss_hdmi_display_get_timing(dssdev, &timings);
-+
-+	dssdev->panel.timings = timings;
- 
- 	DSSDBG("hdmi_panel_probe x_res= %d y_res = %d\n",
- 		dssdev->panel.timings.x_res,
--- 
-1.7.9.5
+Is the only reason for this patch to clean up the hdmi_panel driver? We
+could have a dss helper function which returns the timings for VGA
+(well, just a public const variable would be enough), and the panel
+driver could use that to initialize the timings struct.
+
+ Tomi
+
+
+--=-zzZWEabsRIeQGa2fTdkt
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJQKkxkAAoJEPo9qoy8lh71khcP/j12s1dA6ZjQp9icWvEhJCN6
+8nWr4oZ+gatqMTqNUK5HPavRh5ndzvzde3GdK99j/9b8aiPVbFTctOezGoWxbyW1
+u/HWdoDBgS+WYKBM2J9RpdJ1sSxibJ7suVN7SKHa59TtgM3nT5mj5roAoEsgk96e
+8bpitdFfHkiNyPAtV4uH1m908+Pz53fLOXdyv+jKs4UPcW3FCgkLbW/2G/wn1dvg
+pgNAhXfdtXsc1+I36bOxG7nFGbXBdNKILrGeQhOUVQ4SA53fpG2Rn3qu9WuJekh9
+9b0j+OdL4KbcV4JRcAdGY02yBf1TG1mfsOdBXZAdDt7lrZF8t6cFDJEUEgZyJ+5l
+nDD0djvc2yOfjb93Db/cMFdvxybNtVqwYLgYFxxJcKe0fCoKVGyfVgov6dNwqCW+
+CcLlxLewWRwOc1eVEi3i2r8J73cMFOdZ5tj/glv46vDcdYJcixE5+f3l2KKNwmye
+fVXcAcCPf5bF/W1/sycAjWLK7mloZvfa5he7lrumKNcNgHJxZXjUrssJP0c/Pj3l
+Lkefw2E+xQZouWoVYHlAPUiyymI0RP/4lY0qB18Bk9gLlONlQHl5AmhT9ccJlGsu
+H6hKXqlFtGR28+kjN9d3yc5rMiqLDe/VWdfuT4jHx+E+Iu/h1qM0v9JgFNnC6mVp
+A9Ml7nFWWhKv20cnwWL4
+=MeHT
+-----END PGP SIGNATURE-----
+
+--=-zzZWEabsRIeQGa2fTdkt--
 

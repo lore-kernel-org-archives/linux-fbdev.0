@@ -1,72 +1,97 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 14 Aug 2012 17:08:02 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 14 Aug 2012 17:33:20 +0000
 Subject: Re: [PATCH v2 09/13] OMAPDSS: SDI: Create a function to set timings
-Message-Id: <502A8322.6000309@ti.com>
+Message-Id: <1344965600.2345.70.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-JslMYqJWCSwidz20NEbw"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343817088-29645-1-git-send-email-archit@ti.com>  <1344512989-4071-1-git-send-email-archit@ti.com>  <1344512989-4071-10-git-send-email-archit@ti.com> <1344951845.4845.58.camel@lappyti>
-In-Reply-To: <1344951845.4845.58.camel@lappyti>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1343817088-29645-1-git-send-email-archit@ti.com>
+	  <1344512989-4071-1-git-send-email-archit@ti.com>
+	  <1344512989-4071-10-git-send-email-archit@ti.com>
+	 <1344951845.4845.58.camel@lappyti> <502A8322.6000309@ti.com>
+In-Reply-To: <502A8322.6000309@ti.com>
+To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Tuesday 14 August 2012 07:14 PM, Tomi Valkeinen wrote:
-> On Thu, 2012-08-09 at 17:19 +0530, Archit Taneja wrote:
->> Create function omapdss_sdi_set_timings(). Configuring new timings is done the
->> same way as before, SDI is disabled, and re-enabled with the new timings in
->> dssdev. This just moves the code from the panel drivers to the SDI driver.
->>
->> The panel drivers shouldn't be aware of how SDI manages to configure a new set
->> of timings. This should be taken care of by the SDI driver itself.
->
-> I'm not sure about this one. Although I see that dpi.c does currently
-> the same thing as you're doing in your patch.
 
-Even HDMI does the same thing.
+--=-JslMYqJWCSwidz20NEbw
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
->
-> One thing is that we should try to remove dssdev uses from the output
-> drivers, including use of dssdev->state.
+On Tue, 2012-08-14 at 22:26 +0530, Archit Taneja wrote:
+> On Tuesday 14 August 2012 07:14 PM, Tomi Valkeinen wrote:
 
-Yes, we could do that by keeping a state of the output(and also checking 
-state of the manager)
+> I guess it depends on how drm/fb want to use it. I guess an output=20
+> should have a set_timings() kind of op if it can do it seamlessly. I=20
+> guess we can do that easily in DPI, for example, we could reduce the fps=
+=20
+> from 60 to 30 without causing an artefacts(I think). For outputs which=
+=20
 
->
-> The other thing is that I don't think the output driver should disable &
-> enable the output during set timings. I think sdi's set_timings should
-> return EBUSY if the output is enabled. The same way as other
-> configuration functions should (like dpi_set_data_lines or such).
->
-> I'm actually not sure if even the panel driver should disable & enable
-> the output during set_timings. Perhaps it should be the caller's
-> (omapdrm or such) responsibility....
->
-> My reasoning here is that disabling & enabling the video output is not
-> invisible to the upper layers, so doing it "in secret" may be bad.
->
-> Then again, perhaps timings can be changed freely on some other
-> platforms, and then it'd be nice if the panel driver wouldn't disable &
-> enable the output.
->
-> So I'm again not quite sure what's the best way to handle this... (of
-> the dssdev->state I'm sure, its use should be removed from omapdss). Any
-> thoughts?
+Yes, that kind of thing is easy to do by just changing the pck divider,
+which is in a shadow register. I mean, "easy" in theory, at least. Our
+clock calculation doesn't work like that currently, though, so it could
+end up changing DSS fck.
 
-I guess it depends on how drm/fb want to use it. I guess an output 
-should have a set_timings() kind of op if it can do it seamlessly. I 
-guess we can do that easily in DPI, for example, we could reduce the fps 
-from 60 to 30 without causing an artefacts(I think). For outputs which 
-can't do it, we could remove the set_timings totally.
+> can't do it, we could remove the set_timings totally.
 
-However, it'll be kind of inconsistent for some outputs to set timings, 
-and for others to not, and if in the future drm/fb gets exposed to ops 
-too, we may have dirty checks to see if set_timings is populated or not.
+But we do need set_timings for other outputs also (like sdi). We just
+can't change them just like that. Only outputs that do not need timings
+are DSI command mode and rfbi.
 
-The easiest way would be to make all set_timings just update the copy of 
-the timings output has, and expect drm/fb to disable and re enable the 
-panel. We may end up doing unnecessary gpio resets and configuration of 
-the panels though.
+> However, it'll be kind of inconsistent for some outputs to set timings,=
+=20
+> and for others to not, and if in the future drm/fb gets exposed to ops=
+=20
+> too, we may have dirty checks to see if set_timings is populated or not.
+>=20
+> The easiest way would be to make all set_timings just update the copy of=
+=20
+> the timings output has, and expect drm/fb to disable and re enable the=
+=20
+> panel. We may end up doing unnecessary gpio resets and configuration of=
+=20
+> the panels though.
 
-Archit
+I think changing things like timings is quite a rare operation. The only
+case it'd be necessary to change timings often, with speed, and without
+artifacts would be the fps drop you mentioned, for lower power use with
+panels that don't mind the fps drop.
+
+If I understood correctly, Rob said that drm already disables the output
+when changing the mode, when I asked if it's ok for the apply's
+set_timings to require the output to be off.
+
+In any case this is not a big issue, I mean, it's not causing any
+problems. Somebody is going to disable the output anyway when changing
+the timings. Perhaps even these patches are good, because they make the
+set_timings consistent across the output drivers (don't they?).
+
+ Tomi
+
+
+--=-JslMYqJWCSwidz20NEbw
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJQKovgAAoJEPo9qoy8lh717lMP/A053sRFCptQ+Gi6w3oVy8OJ
+fzC8RE5m0XUfNku8XpcVEV93p1lJNvjvEGZcVHQpNd4Oe66gThEy5BGi5+HSB8qK
+n+jDMuV09UWTqztCXFty0cd16Qfuuj0C3XlV2pyLfKEQdntu2w4w4GE20qlh1PRR
+azfTYRm4H9NQUY8kEXpgywnfd+tsKyUj7N/aXu6v5FkatUK7k1ObWcvEKXqbR0f6
+UTf6xPaybPNffnXvhRWr5/2lyJBKWHBuhvdOFH/lfGwfAxwtyxIDyiWG4bmYKhKz
+87lqvU2+BhgUzaX6mwxXuDf90d1qzcUMRw9eDXjXi04xqTxrqUUHwkTQFJ34eZls
+gpQwj1fhyko9W0dBxObNCRVfPNAZX1QQ+5jGNQK5mWRWJBmVykDAxYIp5LW9c1KR
+IStVUKuSJN9Dwq+3lstfc5STAqXBoty4flQcQwjCtzxU7BRm2UWuaFiwKSmV4pbq
+4Zp8QVOJA7khsIC+5i8t+p+twKR8fft+4WbHX/d80bOK9Ts4p32l0jtYYH2Qh0s/
+IgDEyReZdlNu2rodh6XcI3+T7nbWu//qOxasaBmxKkyWrhyDA+ESvUxfJDUrJKi+
+nI5x0v5Ej181EGyle8ehz8K2e9AmBVSawM7QMJNzYJ9blUgmUtC0lfn8PqQAHBpO
+Pwj1wmv6aBNoIdqbveN/
+=lZ3d
+-----END PGP SIGNATURE-----
+
+--=-JslMYqJWCSwidz20NEbw--
 

@@ -1,59 +1,35 @@
-From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Date: Tue, 21 Aug 2012 05:52:07 +0000
-Subject: RE: [PATCH v3] da8xx-fb: allow frame to complete after disabling LCDC
-Message-Id: <A73F36158E33644199EB82C5EC81C7BC3E9A6AB7@DBDE01.ent.ti.com>
+From: Alexander Holler <holler@ahsoftware.de>
+Date: Tue, 14 Aug 2012 07:11:09 +0000
+Subject: [PATCH RESEND] video/udlfb: fix line counting in fb_write
+Message-Id: <5029FA0D.1090107@ahsoftware.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344950605-18945-1-git-send-email-prakash.pm@ti.com>
-In-Reply-To: <1344950605-18945-1-git-send-email-prakash.pm@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Bernie Thompson <bernie@plugable.com>, Alexander Holler <holler@ahsoftware.de>, linux-fbdev@vger.kernel.org
 
-SGkgU2VraGFyLA0KDQpPbiBGcmksIEF1ZyAxNywgMjAxMiBhdCAxMjoxNTowMSwgTm9yaSwgU2Vr
-aGFyIHdyb3RlOg0KPiBIaSBQcmFrYXNoLA0KPiANCj4gT24gOC8xNC8yMDEyIDY6NTMgUE0sIE1h
-bmp1bmF0aGFwcGEsIFByYWthc2ggd3JvdGU6DQo+ID4gV2FpdCBmb3IgYWN0aXZlIGZyYW1lIHRy
-YW5zZmVyIHRvIGNvbXBsZXRlIGFmdGVyIGRpc2FibGluZyBMQ0RDLg0KPiA+IEF0IHRoZSBzYW1l
-IHRoaXMgd2FpdCBpcyBub3QgYmUgcmVxdWlyZWQgd2hlbiB0aGVyZSBhcmUgc3luYyBhbmQNCj4g
-PiB1bmRlcmZsb3cgZXJyb3JzLg0KPiA+IE1vcmUgaW5mb3JtYXRpb24gb24gZGlzYWJsZSBhbmQg
-cmVzZXQgc2VxdWVuY2UgY2FuIGJlIGZvdW5kIGluDQo+ID4gc2VjdGlvbiAxMy40LjYgb2YgQU0z
-MzV4IFRSTSBAd3d3LnRpLmNvbS9hbTMzNXguDQo+ID4gDQo+ID4gU2lnbmVkLW9mZi1ieTogTWFu
-anVuYXRoYXBwYSwgUHJha2FzaCA8cHJha2FzaC5wbUB0aS5jb20+DQo+ID4gLS0tDQo+ID4gQXBw
-bGllcyBvbiB0b3Agb2YgZmJkZXYtbmV4dCBvZiBGbG9yaWFuIFRvYmlhcyBTY2hhbmRpbmF0J3Mg
-dHJlZS4NCj4gPiBTaW5jZSB2MjoNCj4gPiBPcHRpbWl6ZWQgdGhlIGxjZF9kaXNhYmxlX3Jhc3Rl
-ciBmdW5jdGlvbi4NCj4gPiBTaW5jZSB2MToNCj4gPiBDaGFuZ2VkIHRoZSBjb21taXQgbWVzc2Fn
-ZSwgYWxzbyBhZGRlZCBsaW5rIHRvIGhhcmR3YXJlIHNwZWNpZmljYXRpb24uDQo+ID4gDQo+ID4g
-IGRyaXZlcnMvdmlkZW8vZGE4eHgtZmIuYyB8ICAgNDkgKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrLS0tLS0tLS0tDQo+ID4gIDEgZmlsZXMgY2hhbmdlZCwgMzkgaW5zZXJ0aW9u
-cygrKSwgMTAgZGVsZXRpb25zKC0pDQo+ID4gDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlk
-ZW8vZGE4eHgtZmIuYyBiL2RyaXZlcnMvdmlkZW8vZGE4eHgtZmIuYw0KPiA+IGluZGV4IDdhZTlk
-NTMuLmNiNjk2ZmYgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy92aWRlby9kYTh4eC1mYi5jDQo+
-ID4gKysrIGIvZHJpdmVycy92aWRlby9kYTh4eC1mYi5jDQo+ID4gQEAgLTQ4LDYgKzQ4LDcgQEAN
-Cj4gPiAgI2RlZmluZSBMQ0RfUExfTE9BRF9ET05FCQlCSVQoNikNCj4gPiAgI2RlZmluZSBMQ0Rf
-RklGT19VTkRFUkZMT1cJCUJJVCg1KQ0KPiA+ICAjZGVmaW5lIExDRF9TWU5DX0xPU1QJCQlCSVQo
-MikNCj4gPiArI2RlZmluZSBMQ0RfRlJBTUVfRE9ORQkJCUJJVCgwKQ0KPiA+ICANCj4gPiAgLyog
-TENEIERNQSBDb250cm9sIFJlZ2lzdGVyICovDQo+ID4gICNkZWZpbmUgTENEX0RNQV9CVVJTVF9T
-SVpFKHgpCQkoKHgpIDw8IDQpDQo+ID4gQEAgLTI4OCwxMyArMjg5LDQxIEBAIHN0YXRpYyBpbmxp
-bmUgdm9pZCBsY2RfZW5hYmxlX3Jhc3Rlcih2b2lkKQ0KPiA+ICB9DQo+ID4gIA0KPiA+ICAvKiBE
-aXNhYmxlIHRoZSBSYXN0ZXIgRW5naW5lIG9mIHRoZSBMQ0QgQ29udHJvbGxlciAqLw0KPiA+IC1z
-dGF0aWMgaW5saW5lIHZvaWQgbGNkX2Rpc2FibGVfcmFzdGVyKHZvaWQpDQo+ID4gK3N0YXRpYyBp
-bmxpbmUgdm9pZCBsY2RfZGlzYWJsZV9yYXN0ZXIoYm9vbCB3YWl0X2Zvcl9mcmFtZV9kb25lKQ0K
-PiA+ICB7DQo+ID4gIAl1MzIgcmVnOw0KPiA+ICsJdTMyIHN0YXRfcmVnID0gTENEX1NUQVRfUkVH
-Ow0KPiA+ICsJdTMyIGxvb3BfY250ID0gMDsNCj4gPiAgDQo+ID4gIAlyZWcgPSBsY2RjX3JlYWQo
-TENEX1JBU1RFUl9DVFJMX1JFRyk7DQo+ID4gIAlpZiAocmVnICYgTENEX1JBU1RFUl9FTkFCTEUp
-DQo+ID4gIAkJbGNkY193cml0ZShyZWcgJiB+TENEX1JBU1RFUl9FTkFCTEUsIExDRF9SQVNURVJf
-Q1RSTF9SRUcpOw0KPiA+ICsNCj4gPiArCWlmIChsY2RfcmV2aXNpb24gPT0gTENEX1ZFUlNJT05f
-MikNCj4gPiArCQlzdGF0X3JlZyA9IExDRF9SQVdfU1RBVF9SRUc7DQo+ID4gKw0KPiA+ICsJaWYg
-KHdhaXRfZm9yX2ZyYW1lX2RvbmUpIHsNCj4gPiArCQkvKg0KPiA+ICsJCSAqIDUwIG1pbGxpIHNl
-Y29uZHMgc2hvdWxkIGJlIHN1ZmZpY2llbnQgZm9yIGEgZnJhbWUgdG8NCj4gPiArCQkgKiBjb21w
-bGV0ZQ0KPiA+ICsJCSAqLw0KPiA+ICsJCWxvb3BfY250ID0gNTA7DQo+ID4gKwkJd2hpbGUgKCEo
-bGNkY19yZWFkKHN0YXRfcmVnKSAmIExDRF9GUkFNRV9ET05FKSkgew0KPiA+ICsJCQkvKiBIYW5k
-bGUgdGltZW91dCAqLw0KPiA+ICsJCQlpZiAodW5saWtlbHkoMCA9PSAtLWxvb3BfY250KSkgew0K
-PiA+ICsJCQkJcHJfZXJyKCJMQ0QgQ29udHJvbGxlciB0aW1lZCBvdXRcbiIpOw0KPiA+ICsJCQkJ
-YnJlYWs7DQo+ID4gKwkJCX0NCj4gPiArCQkJbWRlbGF5KDEpOw0KPiA+ICsJCX0NCj4gPiArCX0N
-Cj4gDQo+IFRoZSBUUk0geW91IHJlZmVyZW5jZWQgaW4gdGhlIHBhdGNoIGRlc2NyaXB0aW9uIHN1
-Z2dlc3RzIHdhaXRpbmcgZm9yDQo+IGZyYW1lIGRvbmUgaW50ZXJydXB0LiBDYW4gd2UgYWN0dWFs
-bHkgd2FpdCBmb3IgdGhlIGludGVycnVwdCBoZXJlDQo+IGluc3RlYWQgb2YgYnVzeSBsb29waW5n
-Pw0KPiANCg0KSSBhZ3JlZSwgd2lsbCBzdWJtaXQgbmV4dCB2ZXJzaW9uIG9mIHBhdGNoIGNvbnNp
-ZGVyaW5nIGFib3ZlLg0KDQpUaGFua3MsDQpQcmFrYXNoDQoNCj4gVGhhbmtzLA0KPiBTZWtoYXIN
-Cj4gDQoNCg=
+Line 0 and 1 were both written to line 0 (on the display) and all subsequent
+lines had an offset of -1. The result was that the last line on the display
+was never overwritten by writes to /dev/fbN.
+
+Cc: stable@vger.kernel.org
+Signed-off-by: Alexander Holler <holler@ahsoftware.de>
+---
+  drivers/video/udlfb.c |    2 +-
+  1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
+index a159b63..85d8110 100644
+--- a/drivers/video/udlfb.c
++++ b/drivers/video/udlfb.c
+@@ -647,7 +647,7 @@ static ssize_t dlfb_ops_write(struct fb_info *info, 
+const char __user *buf,
+  	result = fb_sys_write(info, buf, count, ppos);
+   	if (result > 0) {
+-		int start = max((int)(offset / info->fix.line_length) - 1, 0);
++		int start = max((int)(offset / info->fix.line_length), 0);
+  		int lines = min((u32)((result / info->fix.line_length) + 1),
+  				(u32)info->var.yres);
+  -- 1.7.6.5
+

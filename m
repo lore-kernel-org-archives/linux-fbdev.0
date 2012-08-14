@@ -1,107 +1,49 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 24 Aug 2012 06:28:36 +0000
-Subject: Re: [PATCH 1/8] OMAPDSS: HDMI: Move GPIO handling to HDMI driver
-Message-Id: <1345789716.9287.8.camel@lappyti>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-Qz/mRs70RCGo5TpgzdVz"
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Tue, 14 Aug 2012 06:31:16 +0000
+Subject: RE: [PATCH v3] video: da8xx-fb: add 24bpp LCD configuration support
+Message-Id: <A73F36158E33644199EB82C5EC81C7BC3E9A4C28@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1345729514-2441-2-git-send-email-tomi.valkeinen@ti.com>
-	 <50371899.6030706@ti.com>
-In-Reply-To: <50371899.6030706@ti.com>
-To: Archit Taneja <a0393947@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tony Lindgren <tony@atomide.com>
-
-
---=-Qz/mRs70RCGo5TpgzdVz
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2012-08-24 at 11:30 +0530, Archit Taneja wrote:
-> On Thursday 23 August 2012 07:15 PM, Tomi Valkeinen wrote:
-> > We currently manage HDMI GPIOs in the board files via
-> > platform_enable/disable calls. This won't work with device tree, and in
-> > any case the correct place to manage the GPIOs is in the HDMI driver.
-> >
-> > This patch moves the handling of the GPIOs to the HDMI driver. The GPIO
-> > handling is moved to the common hdmi.c file, and this probably needs to
-> > be revisited when adding OMAP5 HDMI support to see if the GPIO handling
-> > needs to be moved to IP specific files.
-
-<snip>
-
-> >   static int __init hdmi_init_display(struct omap_dss_device *dssdev)
-> >   {
-> > +	int r;
-> > +
-> > +	struct gpio gpios[] =3D {
-> > +		{ hdmi.ct_cp_hpd_gpio, GPIOF_OUT_INIT_LOW, "hdmi_ct_cp_hpd" },
-> > +		{ hdmi.ls_oe_gpio, GPIOF_OUT_INIT_LOW, "hdmi_ls_oe" },
-> > +		{ hdmi.hpd_gpio, GPIOF_DIR_IN, "hdmi_hpd" },
-> > +	};
-> > +
-> >   	DSSDBG("init_display\n");
-> >
-> >   	dss_init_hdmi_ip_ops(&hdmi.ip_data);
-> > +
-> > +	r =3D gpio_request_array(gpios, ARRAY_SIZE(gpios));
-> > +	if (r)
-> > +		return r;
-> > +
->=20
-> Is there a reason to request these gpios in hdmi_init_display()? Why=20
-> can't these be requested simply in the probe of the hdmi platform=20
-> device. These gpios are sort of specific to the hdmi output on OMAP,=20
-> aren't they?
-
-Well, it is a bit ugly, agreed. But I'm not sure it can be helped
-easily.
-
-First, the struct omap_dss_hdmi_data where the gpios are passed from
-board file, is really "panel" platform data. I.e. it's attached to the
-hdmi dssdev, and thus we can't handle it in hdmi output driver's probe,
-as we don't have dssdevs there.
-
-Second, the gpios are actually not OMAP HDMI stuff. They belong to the
-tpd12s015 chip, sitting between OMAP HDMI output and the HDMI connector,
-which is the ESD/level shifter/whatnot (I don't remember exactly what it
-does =3D). So making the GPIOs a property of the OMAP HDMI device wouldn't
-be right either.
-
-tpd12s015 is rather simple chip, but it still has the gpios and require
-special handling. I think the only way to properly handle this would be
-to have a chain of external display devices, and the tpd12s015 would be
-handled by a separate driver. Until then, the gpio handling is quite
-hacky.
-
-We could move the gpios to omapdss's platform data, but it would still
-be wrong, and I'm not sure if it'd be any cleaner hack.
-
- Tomi
-
-
---=-Qz/mRs70RCGo5TpgzdVz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+References: <1342712266-4381-1-git-send-email-prakash.pm@ti.com>
+In-Reply-To: <1342712266-4381-1-git-send-email-prakash.pm@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+Hi,
 
-iQIcBAABAgAGBQJQNx8UAAoJEPo9qoy8lh71ESQP/21lx2u9jR8HgJV0Yxv9l0sz
-E3KDFmhA/owfMV6CaOxtPmv4oD82W+yB1IBbem+cZ3S61khAN4jS9yiqrFoyPed7
-dIkY3ksY7uwE2aNysKwUg2ianrSBa9qPd5LzyX//mHuHYbunTfQ28l/Ev3S0H2ny
-KDabHHYpG4HiXfZsX+Awr31cYOpZgs0OT6u4LD7kVBx0rIqwt+UUUO4DJuByIDlM
-g0QhdmNDD0AkPAc8sZyH2WPpYR1xamswdbQPTvQM2jhn62wurBldkHsr/f475uR3
-PsuyGbLIb/Bo1d7ARFHUEy0FkvEsk9nRdU7NxGWWsP/YYH9WlMx/I9yyIVjFTz/q
-vQae3lG9WB8B7QIaTZfetdXYQqbNT8R1txQx5cNO4nvcXvwTeJkq8H8VQ8YpsvMA
-p+7ha9HCVXqoMrwv6F8d/gTT2/z2DwbORavZ1oSLfA0KfSWrGVUUE6RrR4EUBUt3
-WEDYtfhc9ryI4i4J1mOxQ6lLRSoYWWzW9coLEe7UfBO75LHTgP3zVKhQVySl1Jca
-LHtN3ou5yVVQqZr42gbG7zjfE+n0OMLiOi8i1zSa25nlTp+Hz3gVkkNJdNZKIFJR
-v2HAZTOrtNh/BpPoculMZWF4lBOviWousbNUWbUyG7nLm+zUkw4tZ7StZ8kxCEy4
-3+7TRfu82SQKSj6ayv+L
-=5B6C
------END PGP SIGNATURE-----
+On Mon, Jul 23, 2012 at 13:56:42, Manjunathappa, Prakash wrote:
+> Hi,
+> 
+> On Thu, Jul 19, 2012 at 21:07:46, Manjunathappa, Prakash wrote:
+> > LCD controller on am335x supports 24bpp raster configuration in addition
+> > to ones on da850. LCDC also supports 24bpp in unpacked format having
+> > ARGB:8888 32bpp format data in DDR, but it doesn't interpret alpha
+> > component of the data.
+> > 
+> > Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+> > Cc: Anatolij Gustschin <agust@denx.de>
+> > ---
+[...]
+> > @@ -546,6 +559,8 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+> >  	return 0;
+> >  }
+> >  
+> > +
+> > +#define CNVT_TOHW(val, width) ((((val)<<(width))+0x7FFF-(val))>>16)
+> 
+> since multiple FB drivers have re-defined this macro, I will move this to common place(linux/fb.h) and
+> convert it as inline function.
+> 
 
---=-Qz/mRs70RCGo5TpgzdVz--
+This macro has lot of variations in various hardware and as I do not have bigger picture to address them
+all, so for now I will be dropping the attempt of moving it to common place. This will be taken up later
+point of time.
+
+Thanks,
+Prakash
+> 
+> >  static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+> [...]
+> 
 

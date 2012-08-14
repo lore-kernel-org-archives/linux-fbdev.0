@@ -1,304 +1,158 @@
-From: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
-Date: Tue, 14 Aug 2012 12:42:19 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 14 Aug 2012 14:34:55 +0000
 Subject: Re: [PATCH 3/6] OMAPDSS: DSS: Cleanup cpu_is_xxxx checks
-Message-Id: <CAF0AtAsgTHwnUKaU8AzO5b7sThQTaocDGdb1Ebknuev_DgC0hg@mail.gmail.com>
+Message-Id: <1344954895.2345.37.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-QpV+2diOZZsAXkQJG9Rs"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1344425899-28267-1-git-send-email-cmahapatra@ti.com>
-	<1344859176-4512-1-git-send-email-cmahapatra@ti.com>
-	<1344937705.2345.17.camel@deskari>
-In-Reply-To: <1344937705.2345.17.camel@deskari>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+	 <1344859176-4512-1-git-send-email-cmahapatra@ti.com>
+	 <1344937705.2345.17.camel@deskari>
+	 <CAF0AtAsgTHwnUKaU8AzO5b7sThQTaocDGdb1Ebknuev_DgC0hg@mail.gmail.com>
+In-Reply-To: <CAF0AtAsgTHwnUKaU8AzO5b7sThQTaocDGdb1Ebknuev_DgC0hg@mail.gmail.com>
+To: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Tue, Aug 14, 2012 at 3:18 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On Mon, 2012-08-13 at 17:29 +0530, Chandrabhanu Mahapatra wrote:
->> All the cpu_is checks have been moved to dss_init_features function providing a
->> much more generic and cleaner interface. The OMAP version and revision specific
->> initializations in various functions are cleaned and the necessary data are
->> moved to dss_features structure which is local to dss.c.
->
-> It'd be good to have some version information here. Even just [PATCH v3
-> 3/6] in the subject is good, but of course the best is if there's a
-> short change log
->
 
-Is it ok to have short change log in the individual patch description
-itself. I normally prefer the cover letter for this.
+--=-QpV+2diOZZsAXkQJG9Rs
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
->> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
->> ---
->>  drivers/video/omap2/dss/dss.c |  115 ++++++++++++++++++++++++++---------------
->>  1 file changed, 74 insertions(+), 41 deletions(-)
->>
->> diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
->> index 7b1c6ac..6ab236e 100644
->> --- a/drivers/video/omap2/dss/dss.c
->> +++ b/drivers/video/omap2/dss/dss.c
->> @@ -31,6 +31,7 @@
->>  #include <linux/clk.h>
->>  #include <linux/platform_device.h>
->>  #include <linux/pm_runtime.h>
->> +#include <linux/dma-mapping.h>
->
-> Hmm, what is this for?
->
+On Tue, 2012-08-14 at 18:00 +0530, Mahapatra, Chandrabhanu wrote:
+> On Tue, Aug 14, 2012 at 3:18 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> w=
+rote:
+> > On Mon, 2012-08-13 at 17:29 +0530, Chandrabhanu Mahapatra wrote:
+> >> All the cpu_is checks have been moved to dss_init_features function pr=
+oviding a
+> >> much more generic and cleaner interface. The OMAP version and revision=
+ specific
+> >> initializations in various functions are cleaned and the necessary dat=
+a are
+> >> moved to dss_features structure which is local to dss.c.
+> >
+> > It'd be good to have some version information here. Even just [PATCH v3
+> > 3/6] in the subject is good, but of course the best is if there's a
+> > short change log
+> >
+>=20
+> Is it ok to have short change log in the individual patch description
+> itself. I normally prefer the cover letter for this.
 
-I should have included "include/linux/gfp.h" instead. It defines GFP_KERNEL.
+No, the patch description is added to git repository, and shouldn't
+contain that kind of "extra" information. But you can add the version
+information to the posted patch.
 
->>  #include <video/omapdss.h>
->>
->> @@ -65,6 +66,13 @@ struct dss_reg {
->>  static int dss_runtime_get(void);
->>  static void dss_runtime_put(void);
->>
->> +struct dss_features {
->> +     u16 fck_div_max;
->> +     int factor;
->> +     char *clk_name;
->> +     bool (*check_cinfo_fck) (void);
->> +};
->
-> Is the check_cinfo_fck a leftover from previous versions?
->
+The diff stats below, after the "---" line, are discarded by git when
+applying the patch. So I think you can just insert any text below ---
+(but before the actual diffs) and they do not appear in the final git
+commit.
 
-Sorry, to have skipped that.
+I've not actually used that myself, and I can't find notes about it in
+the documentation, so I'm not sure if there are any restrictions about
+it. I've seen it used, though.
 
-> I think "factor" name is too vague. If I remember right, it's some kind
-> of implicit multiplier for the dss fck. So "dss_fck_multiplier"? You
-> could check the clock trees to verify what the multiplier exactly was,
-> and see if you can come up with a better name =).
->
+> >> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+> >> ---
+> >>  drivers/video/omap2/dss/dss.c |  115 ++++++++++++++++++++++++++------=
+---------
+> >>  1 file changed, 74 insertions(+), 41 deletions(-)
+> >>
+> >> diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/d=
+ss.c
+> >> index 7b1c6ac..6ab236e 100644
+> >> --- a/drivers/video/omap2/dss/dss.c
+> >> +++ b/drivers/video/omap2/dss/dss.c
+> >> @@ -31,6 +31,7 @@
+> >>  #include <linux/clk.h>
+> >>  #include <linux/platform_device.h>
+> >>  #include <linux/pm_runtime.h>
+> >> +#include <linux/dma-mapping.h>
+> >
+> > Hmm, what is this for?
+> >
+>=20
+> I should have included "include/linux/gfp.h" instead. It defines GFP_KERN=
+EL.
+>=20
+> >>  #include <video/omapdss.h>
+> >>
+> >> @@ -65,6 +66,13 @@ struct dss_reg {
+> >>  static int dss_runtime_get(void);
+> >>  static void dss_runtime_put(void);
+> >>
+> >> +struct dss_features {
+> >> +     u16 fck_div_max;
+> >> +     int factor;
+> >> +     char *clk_name;
+> >> +     bool (*check_cinfo_fck) (void);
+> >> +};
+> >
+> > Is the check_cinfo_fck a leftover from previous versions?
+> >
+>=20
+> Sorry, to have skipped that.
+>=20
+> > I think "factor" name is too vague. If I remember right, it's some kind
+> > of implicit multiplier for the dss fck. So "dss_fck_multiplier"? You
+> > could check the clock trees to verify what the multiplier exactly was,
+> > and see if you can come up with a better name =3D).
+> >
+>=20
+> dss_fck_multiplier sounds good to me. DSS clocks trees do not seem to
 
-dss_fck_multiplier sounds good to me. DSS clocks trees do not seem to
-mention anything about this multiplier. I found clock "dpll4_mx4_clk"
-in omap3 trm but nothing called "dpll_per_m5x2_clk" in omap4 trm. Any
-references please you know about?
+Yes, it's not really DSS thing, but PRCM. If things were perfect, DSS
+wouldn't even need to know about the clock.
 
->> +
->>  static struct {
->>       struct platform_device *pdev;
->>       void __iomem    *base;
->> @@ -83,6 +91,8 @@ static struct {
->>
->>       bool            ctx_valid;
->>       u32             ctx[DSS_SZ_REGS / sizeof(u32)];
->> +
->> +     const struct dss_features *feat;
->>  } dss;
->>
->>  static const char * const dss_generic_clk_source_names[] = {
->> @@ -91,6 +101,30 @@ static const char * const dss_generic_clk_source_names[] = {
->>       [OMAP_DSS_CLK_SRC_FCK]                  = "DSS_FCK",
->>  };
->>
->> +static const struct __initdata dss_features omap2_dss_features = {
->> +     .fck_div_max            =       16,
->> +     .factor                 =       2,
->> +     .clk_name               =       NULL,
->> +};
->
-> include/linux/init.h says says __initdata should be used like:
->
-> static int init_variable __initdata = 0;
->
-> And there actually seems to be __initconst also, which I think is the
-> correct one to use here. Didn't know about that =):
->
-> static const char linux_logo[] __initconst = { 0x32, 0x36, ... };
+> mention anything about this multiplier. I found clock "dpll4_mx4_clk"
+> in omap3 trm but nothing called "dpll_per_m5x2_clk" in omap4 trm. Any
+> references please you know about?
 
-Thanks for mentioning.
+Hmm, I think that's the linux's name for it. TRM seems to call it
+CLKOUTX2_M5 (in the power, reset and clock management section).
 
->
->> +static const struct __initdata dss_features omap34_dss_features = {
->
-> Perhaps the names could be more consistent. "omap34" doesn't sound like
-> any omap we have ;). So maybe just omap2xxx, omap34xx, etc, the same way
-> we have in the cpu_is calls.
->
+> >> +     if (cpu_is_omap24xx())
+> >> +             dss.feat =3D &omap2_dss_features;
+> >> +     else if (cpu_is_omap34xx())
+> >> +             dss.feat =3D &omap34_dss_features;
+> >> +     else if (cpu_is_omap3630())
+> >> +             dss.feat =3D &omap36_dss_features;
+> >> +     else
+> >> +             dss.feat =3D &omap4_dss_features;
+> >
+> > Check for omap4 also, and if the cpu is none of the above, return error=
+.
+> >
+>=20
+> I was wondering what error value to return. I was considering EINVAL
+> (error in value) and ENODEV (no such device). But nothing seems to fit
+> this case.
 
-ok.
+ENODEV sounds fine to me. I think EINVAL should be used when some given
+parameter was wrong.
 
->> +     .fck_div_max            =       16,
->> +     .factor                 =       2,
->> +     .clk_name               =       "dpll4_m4_ck",
->> +};
->> +
->> +static const struct __initdata dss_features omap36_dss_features = {
->> +     .fck_div_max            =       32,
->> +     .factor                 =       1,
->> +     .clk_name               =       "dpll4_m4_ck",
->> +};
->> +
->> +static const struct __initdata dss_features omap4_dss_features = {
->> +     .fck_div_max            =       32,
->> +     .factor                 =       1,
->> +     .clk_name               =       "dpll_per_m5x2_ck",
->> +};
->> +
->>  static inline void dss_write_reg(const struct dss_reg idx, u32 val)
->>  {
->>       __raw_writel(val, dss.base + idx.idx);
->> @@ -236,7 +270,6 @@ const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src)
->>       return dss_generic_clk_source_names[clk_src];
->>  }
->>
->> -
->>  void dss_dump_clocks(struct seq_file *s)
->>  {
->>       unsigned long dpll4_ck_rate;
->> @@ -259,18 +292,10 @@ void dss_dump_clocks(struct seq_file *s)
->>
->>               seq_printf(s, "dpll4_ck %lu\n", dpll4_ck_rate);
->>
->> -             if (cpu_is_omap3630() || cpu_is_omap44xx())
->> -                     seq_printf(s, "%s (%s) = %lu / %lu  = %lu\n",
->> -                                     fclk_name, fclk_real_name,
->> -                                     dpll4_ck_rate,
->> -                                     dpll4_ck_rate / dpll4_m4_ck_rate,
->> -                                     fclk_rate);
->> -             else
->> -                     seq_printf(s, "%s (%s) = %lu / %lu * 2 = %lu\n",
->> -                                     fclk_name, fclk_real_name,
->> -                                     dpll4_ck_rate,
->> -                                     dpll4_ck_rate / dpll4_m4_ck_rate,
->> -                                     fclk_rate);
->> +             seq_printf(s, "%s (%s) = %lu / %lu * %d  = %lu\n",
->> +                             fclk_name, fclk_real_name, dpll4_ck_rate,
->> +                             dpll4_ck_rate / dpll4_m4_ck_rate,
->> +                             dss.feat->factor, fclk_rate);
->>       } else {
->>               seq_printf(s, "%s (%s) = %lu\n",
->>                               fclk_name, fclk_real_name,
->> @@ -470,7 +495,7 @@ int dss_calc_clock_div(unsigned long req_pck, struct dss_clock_info *dss_cinfo,
->>
->>       unsigned long fck, max_dss_fck;
->>
->> -     u16 fck_div, fck_div_max = 16;
->> +     u16 fck_div;
->>
->>       int match = 0;
->>       int min_fck_per_pck;
->> @@ -480,9 +505,8 @@ int dss_calc_clock_div(unsigned long req_pck, struct dss_clock_info *dss_cinfo,
->>       max_dss_fck = dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
->>
->>       fck = clk_get_rate(dss.dss_clk);
->> -     if (req_pck = dss.cache_req_pck &&
->> -                     ((cpu_is_omap34xx() && prate = dss.cache_prate) ||
->> -                      dss.cache_dss_cinfo.fck = fck)) {
->> +     if (req_pck = dss.cache_req_pck && prate = dss.cache_prate &&
->> +             dss.cache_dss_cinfo.fck = fck) {
->>               DSSDBG("dispc clock info found from cache.\n");
->>               *dss_cinfo = dss.cache_dss_cinfo;
->>               *dispc_cinfo = dss.cache_dispc_cinfo;
->> @@ -519,16 +543,10 @@ retry:
->>
->>               goto found;
->>       } else {
->> -             if (cpu_is_omap3630() || cpu_is_omap44xx())
->> -                     fck_div_max = 32;
->> -
->> -             for (fck_div = fck_div_max; fck_div > 0; --fck_div) {
->> +             for (fck_div = dss.feat->fck_div_max; fck_div > 0; --fck_div) {
->>                       struct dispc_clock_info cur_dispc;
->>
->> -                     if (fck_div_max = 32)
->> -                             fck = prate / fck_div;
->> -                     else
->> -                             fck = prate / fck_div * 2;
->> +                     fck = prate / fck_div * dss.feat->factor;
->>
->>                       if (fck > max_dss_fck)
->>                               continue;
->> @@ -633,22 +651,11 @@ static int dss_get_clocks(void)
->>
->>       dss.dss_clk = clk;
->>
->> -     if (cpu_is_omap34xx()) {
->> -             clk = clk_get(NULL, "dpll4_m4_ck");
->> -             if (IS_ERR(clk)) {
->> -                     DSSERR("Failed to get dpll4_m4_ck\n");
->> -                     r = PTR_ERR(clk);
->> -                     goto err;
->> -             }
->> -     } else if (cpu_is_omap44xx()) {
->> -             clk = clk_get(NULL, "dpll_per_m5x2_ck");
->> -             if (IS_ERR(clk)) {
->> -                     DSSERR("Failed to get dpll_per_m5x2_ck\n");
->> -                     r = PTR_ERR(clk);
->> -                     goto err;
->> -             }
->> -     } else { /* omap24xx */
->> -             clk = NULL;
->> +     clk = clk_get(NULL, dss.feat->clk_name);
->> +     if (IS_ERR(clk)) {
->> +             DSSERR("Failed to get %s\n", dss.feat->clk_name);
->> +             r = PTR_ERR(clk);
->> +             goto err;
->>       }
->>
->>       dss.dpll4_m4_ck = clk;
->> @@ -704,6 +711,26 @@ void dss_debug_dump_clocks(struct seq_file *s)
->>  }
->>  #endif
->>
->> +static int __init dss_init_features(struct device *dev)
->> +{
->> +     dss.feat = devm_kzalloc(dev, sizeof(*dss.feat), GFP_KERNEL);
->> +     if (!dss.feat) {
->> +             dev_err(dev, "Failed to allocate local DSS Features\n");
->> +             return -ENOMEM;
->> +     }
->> +
->> +     if (cpu_is_omap24xx())
->> +             dss.feat = &omap2_dss_features;
->> +     else if (cpu_is_omap34xx())
->> +             dss.feat = &omap34_dss_features;
->> +     else if (cpu_is_omap3630())
->> +             dss.feat = &omap36_dss_features;
->> +     else
->> +             dss.feat = &omap4_dss_features;
->
-> Check for omap4 also, and if the cpu is none of the above, return error.
->
 
-I was wondering what error value to return. I was considering EINVAL
-(error in value) and ENODEV (no such device). But nothing seems to fit
-this case.
+--=-QpV+2diOZZsAXkQJG9Rs
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
->> +
->> +     return 0;
->> +}
->> +
->>  /* DSS HW IP initialisation */
->>  static int __init omap_dsshw_probe(struct platform_device *pdev)
->>  {
->> @@ -750,6 +777,10 @@ static int __init omap_dsshw_probe(struct platform_device *pdev)
->>       dss.lcd_clk_source[0] = OMAP_DSS_CLK_SRC_FCK;
->>       dss.lcd_clk_source[1] = OMAP_DSS_CLK_SRC_FCK;
->>
->> +     r = dss_init_features(&dss.pdev->dev);
->> +     if (r)
->> +             return r;
->> +
->>       rev = dss_read_reg(DSS_REVISION);
->>       printk(KERN_INFO "OMAP DSS rev %d.%d\n",
->>                       FLD_GET(rev, 7, 4), FLD_GET(rev, 3, 0));
->> @@ -772,6 +803,8 @@ static int __exit omap_dsshw_remove(struct platform_device *pdev)
->>
->>       dss_put_clocks();
->>
->> +     devm_kfree(&dss.pdev->dev, (void *)dss.feat);
->
-> You don't need to free the memory allocated with devm_kzalloc. The
-> framework will free it automatically on unload (that's the idea of
-> devm_* functions).
->
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-Ok.
+iQIcBAABAgAGBQJQKmIPAAoJEPo9qoy8lh71glUP/iHP23XQK5WDfBvU9Oq7duu8
+KcaEh2tamp34NR7YusoWvnNE5NZBJZYj5IQ/8FdiHUboGzAdxA5bIlWfSCFrHBK4
+mkAXWLhqtcYKw54uXQJvHahJApyCOQGvVUBbN4shR/JrGpHnPEZPxNrEJSe+zEMP
+ZNT2V+oCt/48gpim19q+i02JLqO/Re/PRuoX1+oLyI/bmh9k4rArKNHneCQDhNWg
+Fy7ikj5vG+RIvVEBtjv8wq5YDgcwmaLY+rwRtS3EfG+BFsQS46qE3U9Tix3zecrA
+UYihG35G1XrdVKs6GcuNZas1tQUjunrAz+OHVmu8mnJUp9Efz600jIQ+fNihB4B6
+wIuPU6OpYyLgYyffNRlsxiajhFUdqoK0RLLsKtG6YVVj+MnkzICqT+Xn4Mw2GKII
+4CioP0Ddcz/le3XYQGHOq8CfAYszkYQ+VyLr/T0exWTiT3gctJ2LS02ZGeISB8aX
+KMqD6Gq78VQObQQaumhvThDl/TWVIcbYqL3w4t9BAdW76aweuQYO/SqRY3vW8eVd
+7qwTEvxDXBonfSCXrU8oD2B/e7M0TiySScD/s2Osr2/ibU9zivWBQetjkDMqcEG6
+ka56t2KHsfQScvTM85QaFZeA/LF1HiQkiqY3nVeHN1Vvn77CfDq8nvM2P5peEg08
+omq2zfYnIklPN5ylvl9g
+=BtiT
+-----END PGP SIGNATURE-----
 
--- 
-Chandrabhanu Mahapatra
-Texas Instruments India Pvt. Ltd.
+--=-QpV+2diOZZsAXkQJG9Rs--
+

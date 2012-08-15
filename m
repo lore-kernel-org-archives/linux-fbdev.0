@@ -1,114 +1,59 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Mon, 20 Aug 2012 13:36:59 +0000
-Subject: [PATCH V5 6/6] OMAPDSS: DPI: Remove cpu_is_xxxx checks
-Message-Id: <41ec21395229bc8671d68165a0d6b5198f7b87fc.1345468541.git.cmahapatra@ti.com>
+From: Jiri Kosina <jkosina@suse.cz>
+Date: Wed, 15 Aug 2012 08:15:29 +0000
+Subject: Re: [PATCH 6/7] HID: picoLCD: disable version check during probe
+Message-Id: <alpine.LNX.2.00.1208151015220.7026@pobox.suse.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1343912532.git.cmahapatra@ti.com> <cover.1345468541.git.cmahapatra@ti.com>
-In-Reply-To: <cover.1345468541.git.cmahapatra@ti.com>
+References: <20120730213656.0a9f6d30@neptune.home> <20120730213859.063173c1@neptune.home>
+In-Reply-To: <20120730213859.063173c1@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-The OMAP3 checks have been removed and replaced by a dss feature
-FEAT_DPI_USES_VDDS_DSI for cleaner implementation. The patches
-"OMAP: DSS2: enable VDDS_DSI when using DPI" (8a2cfea8cc) by Tomi Valkeinen
-<tomi.valkeinen@nokia.com> and "ARM: omap: fix oops in
-drivers/video/omap2/dss/dpi.c" (4041071571) by Russell King
-<rmk+kernel@arm.linux.org.uk> had introduced these checks. As it is evident
-from these patches a dependency exists for some DSS pins on VDDS_DSI which is
-better shown by dss feature FEAT_DPI_USES_VDDS_DSI.
+On Mon, 30 Jul 2012, Bruno Prémont wrote:
 
-Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
----
- drivers/video/omap2/dss/dpi.c          |   12 +++++++-----
- drivers/video/omap2/dss/dss_features.c |    1 +
- drivers/video/omap2/dss/dss_features.h |    1 +
- 3 files changed, 9 insertions(+), 5 deletions(-)
+> Commit 4ea5454203d991ec85264f64f89ca8855fce69b0
+> [HID: Fix race condition between driver core and ll-driver] introduced
+> new locking around proce/remove functions that prevent any report/reply
+> from hardware to reach driver until it returned from probe.
+> 
+> As such, the ask-reply way to checking picoLCD firmware version during
+> probe is bound to timeout and let probe fail.
+> 
+> Disabling the check lets driver sucessfully probe again.
+> 
+> Signed-off-by: Bruno Prémont <bonbons@linux-vserver.org>
+> ---
+>  drivers/hid/hid-picolcd_core.c |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/hid/hid-picolcd_core.c b/drivers/hid/hid-picolcd_core.c
+> index 2d7ef68..42d0791 100644
+> --- a/drivers/hid/hid-picolcd_core.c
+> +++ b/drivers/hid/hid-picolcd_core.c
+> @@ -478,13 +478,13 @@ static int picolcd_probe_lcd(struct hid_device *hdev, struct picolcd_data *data)
+>  {
+>  	int error;
+>  
+> -	error = picolcd_check_version(hdev);
+> +/*	error = picolcd_check_version(hdev);
+>  	if (error)
+>  		return error;
+>  
+>  	if (data->version[0] != 0 && data->version[1] != 3)
+>  		hid_info(hdev, "Device with untested firmware revision, please submit /sys/kernel/debug/hid/%s/rdesc for this device.\n",
+> -			 dev_name(&hdev->dev));
+> +			 dev_name(&hdev->dev)); */
 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index 3266be2..b97f7b8 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -34,6 +34,7 @@
- #include <plat/cpu.h>
- 
- #include "dss.h"
-+#include "dss_features.h"
- 
- static struct {
- 	struct regulator *vdds_dsi_reg;
-@@ -169,7 +170,7 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
- {
- 	int r;
- 
--	if (cpu_is_omap34xx() && !dpi.vdds_dsi_reg) {
-+	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI) && !dpi.vdds_dsi_reg) {
- 		DSSERR("no VDSS_DSI regulator\n");
- 		return -ENODEV;
- 	}
-@@ -185,7 +186,7 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
- 		goto err_start_dev;
- 	}
- 
--	if (cpu_is_omap34xx()) {
-+	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI)) {
- 		r = regulator_enable(dpi.vdds_dsi_reg);
- 		if (r)
- 			goto err_reg_enable;
-@@ -229,7 +230,7 @@ err_dsi_pll_init:
- err_get_dsi:
- 	dispc_runtime_put();
- err_get_dispc:
--	if (cpu_is_omap34xx())
-+	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI))
- 		regulator_disable(dpi.vdds_dsi_reg);
- err_reg_enable:
- 	omap_dss_stop_device(dssdev);
-@@ -250,7 +251,7 @@ void omapdss_dpi_display_disable(struct omap_dss_device *dssdev)
- 
- 	dispc_runtime_put();
- 
--	if (cpu_is_omap34xx())
-+	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI))
- 		regulator_disable(dpi.vdds_dsi_reg);
- 
- 	omap_dss_stop_device(dssdev);
-@@ -329,7 +330,8 @@ static int __init dpi_init_display(struct omap_dss_device *dssdev)
- {
- 	DSSDBG("init_display\n");
- 
--	if (cpu_is_omap34xx() && dpi.vdds_dsi_reg = NULL) {
-+	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI) &&
-+					dpi.vdds_dsi_reg = NULL) {
- 		struct regulator *vdds_dsi;
- 
- 		vdds_dsi = dss_get_vdds_dsi();
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index 9387097..2fe39d6 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -373,6 +373,7 @@ static const enum dss_feat_id omap3430_dss_feat_list[] = {
- 	FEAT_ALPHA_FIXED_ZORDER,
- 	FEAT_FIFO_MERGE,
- 	FEAT_OMAP3_DSI_FIFO_BUG,
-+	FEAT_DPI_USES_VDDS_DSI,
- };
- 
- static const enum dss_feat_id omap3630_dss_feat_list[] = {
-diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
-index 996ffcb..26d43a4 100644
---- a/drivers/video/omap2/dss/dss_features.h
-+++ b/drivers/video/omap2/dss/dss_features.h
-@@ -50,6 +50,7 @@ enum dss_feat_id {
- 	FEAT_DSI_VC_OCP_WIDTH,
- 	FEAT_DSI_REVERSE_TXCLKESC,
- 	FEAT_DSI_GNQ,
-+	FEAT_DPI_USES_VDDS_DSI,
- 	FEAT_HDMI_CTS_SWMODE,
- 	FEAT_HDMI_AUDIO_USE_MCLK,
- 	FEAT_HANDLE_UV_SEPARATE,
+Please just remove it altogether, I don't see a reason to keep the 
+commented-out code in the in-tree driver.
+
+Once the locking mess is sorted out, we can re-introduce it again as 
+necessary.
+
+Thanks.
+
 -- 
-1.7.10
-
+Jiri Kosina
+SUSE Labs

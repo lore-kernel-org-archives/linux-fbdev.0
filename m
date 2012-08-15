@@ -1,104 +1,67 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Date: Wed, 15 Aug 2012 12:11:32 +0000
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Wed, 15 Aug 2012 15:16:35 +0000
 Subject: Re: [PATCH 0/7] HID: picoLCD updates
-Message-Id: <alpine.LNX.2.00.1208151409500.7026@pobox.suse.cz>
+Message-Id: <20120815171635.2564a4a8@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120730213656.0a9f6d30@neptune.home> <alpine.LNX.2.00.1208151016221.7026@pobox.suse.cz> <20120815114236.0f7db40e@neptune.home>
-In-Reply-To: <20120815114236.0f7db40e@neptune.home>
+References: <20120730213656.0a9f6d30@neptune.home>
+	<alpine.LNX.2.00.1208151016221.7026@pobox.suse.cz>
+	<20120815114236.0f7db40e@neptune.home>
+	<alpine.LNX.2.00.1208151409500.7026@pobox.suse.cz>
+In-Reply-To: <alpine.LNX.2.00.1208151409500.7026@pobox.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jiri Kosina <jkosina@suse.cz>
 Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Wed, 15 Aug 2012, Bruno Pr=C3=A9mont wrote:
+Hi Jiri,
 
-> > > [ 6383.521833] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D> > > [ 6383.53=
-0020] BUG kmalloc-64 (Not tainted): Object already free
-> > > [ 6383.530020] ------------------------------------------------------=
------------------------
-> > > [ 6383.530020]=20
-> > > [ 6383.530020] INFO: Slab 0xdde0ea20 objectsQ used@ fp=3D0xcef516e0 f=
-lags=3D0x40000080
-> > > [ 6383.530020] INFO: Object 0xcef51190 @offset@0 fp=3D0xcef51f50
-> > > [ 6383.530020]=20
-> > > [ 6383.530020] Bytes b4 cef51180: cc cc cc cc d0 12 f5 ce 5a 5a 5a 5a=
- 5a 5a 5a 5a  ........ZZZZZZZZ
-> > > [ 6383.530020] Object cef51190: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6=
-b 6b 6b 6b  kkkkkkkkkkkkkkkk
-> > > [ 6383.530020] Object cef511a0: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6=
-b 6b 6b 6b  kkkkkkkkkkkkkkkk
-> > > [ 6383.530020] Object cef511b0: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6=
-b 6b 6b 6b  kkkkkkkkkkkkkkkk
-> > > [ 6383.530020] Object cef511c0: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6=
-b 6b 6b a5  kkkkkkkkkkkkkkk.
-> > > [ 6383.530020] Redzone cef511d0: bb bb bb bb                         =
-             ....
-> > > [ 6383.530020] Padding cef511d8: 5a 5a 5a 5a 5a 5a 5a 5a             =
-             ZZZZZZZZ
-> > > [ 6383.530020] Pid: 1922, comm: bash Not tainted 3.5.0-jupiter-00003-=
-g8d858b1-dirty #2
-> > > [ 6383.530020] Call Trace:
-> > > [ 6383.530020]  [<c10bd3cc>] print_trailer+0x11c/0x130
-> > > [ 6383.530020]  [<c10bd415>] object_err+0x35/0x40
-> > > [ 6383.530020]  [<c10be809>] free_debug_processing+0x99/0x200
-> > > [ 6383.530020]  [<c10bf77e>] __slab_free+0x2e/0x280
-> > > [ 6383.530020]  [<c1322284>] ? hid_submit_out+0xa4/0x120
-> > > [ 6383.530020]  [<c1322870>] ? __usbhid_submit_report+0xc0/0x3c0
-> > > [ 6383.530020]  [<c10bfbda>] ? kfree+0xfa/0x110
-> > > [ 6383.530020]  [<de932aa4>] ? picolcd_debug_out_report+0x8c4/0x8e0 [=
-hid_picolcd]
-> > > [ 6383.530020]  [<c10bfbda>] kfree+0xfa/0x110
-> > > [ 6383.530020]  [<c1322284>] ? hid_submit_out+0xa4/0x120
-> > > [ 6383.530020]  [<c1322284>] ? hid_submit_out+0xa4/0x120
-> > > [ 6383.530020]  [<c1322284>] ? hid_submit_out+0xa4/0x120
-> > > [ 6383.530020]  [<c1322284>] hid_submit_out+0xa4/0x120
-> > > [ 6383.530020]  [<c1322908>] __usbhid_submit_report+0x158/0x3c0
-> > > [ 6383.530020]  [<c1322c2b>] usbhid_submit_report+0x1b/0x30
-> > > [ 6383.530020]  [<de930789>] picolcd_fb_reset+0xb9/0x180 [hid_picolcd]
-> > > [ 6383.530020]  [<de930f1d>] picolcd_init_framebuffer+0x20d/0x2e0 [hi=
-d_picolcd]
-> > > [ 6383.530020]  [<de92fb9c>] picolcd_probe+0x3cc/0x580 [hid_picolcd]
-> > > [ 6383.530020]  [<c1319147>] hid_device_probe+0x67/0xf0
-> > > [ 6383.530020]  [<c1282f97>] ? driver_sysfs_add+0x57/0x80
-> > > [ 6383.530020]  [<c128329d>] driver_probe_device+0xbd/0x1c0
-> > > [ 6383.530020]  [<c1318a1b>] ? hid_match_device+0x7b/0x90
-> > > [ 6383.530020]  [<c12821e5>] driver_bind+0x75/0xd0
-> > > [ 6383.530020]  [<c1282170>] ? driver_unbind+0x90/0x90
-> > > [ 6383.530020]  [<c12818b7>] drv_attr_store+0x27/0x30
-> > > [ 6383.530020]  [<c1114aec>] sysfs_write_file+0xac/0xf0
-> > > [ 6383.530020]  [<c10c794c>] vfs_write+0x9c/0x130
-> > > [ 6383.530020]  [<c10d4a1f>] ? sys_dup3+0x11f/0x160
-> > > [ 6383.530020]  [<c1114a40>] ? sysfs_poll+0x90/0x90
-> > > [ 6383.530020]  [<c10c7bbd>] sys_write+0x3d/0x70
-> > > [ 6383.530020]  [<c13f2557>] sysenter_do_call+0x12/0x26
-> >=20
-> > So I am wondering whether the path this happens on is
-> >=20
-> >                 if (!test_bit(HID_OUT_RUNNING, &usbhid->iofl)) {
-> >                         usbhid_restart_out_queue(usbhid);
-> >=20
-> > in __usbhid_submit_report(). It would then indicate perhaps some race w=
-ith=20
-> > iofl handling.
->=20
-> Huh, that specific test_bit hunk I can't find in __usbhid_submit_report,
-> is that 3.6 material?
-> I'm running my tests against 3.5...
+On Wed, 15 August 2012 Jiri Kosina <jkosina@suse.cz> wrote:
+> I see. Alan Stern has fixed a huge pile of things in this area in 3.6-rc1. 
+> I have expected all of those to actually be on theoretical problems not 
+> ever having happened in the wild, but it might be that you are actually 
+> chasing on of those.
+>
+> Could you please retest with latest Linus' tree (or at least eb055fd0560b) 
+> to see whether this hasn't actually been fixed already by Alan's series?
 
-I see. Alan Stern has fixed a huge pile of things in this area in 3.6-rc1. =
+I've started trying that out, it seems Alan's work improved things.
 
-I have expected all of those to actually be on theoretical problems not=20
-ever having happened in the wild, but it might be that you are actually=20
-chasing on of those.
+For the first few attempts I have not seen SLAB corruptions, though after
+a few rounds I hit accumulation of the following messages:
+[  297.174828] hid-picolcd 0003:04D8:C002.0003: output queue full
+[  297.181098] hid-picolcd 0003:04D8:C002.0003: output queue full
+[  297.187820] hid-picolcd 0003:04D8:C002.0003: output queue full
+[  297.194087] hid-picolcd 0003:04D8:C002.0003: output queue full
 
-Could you please retest with latest Linus' tree (or at least eb055fd0560b) =
+with sporadically in between:
+[  292.668019] hid-picolcd 0003:04D8:C002.0003: usb_submit_urb(out) failed: -1
 
-to see whether this hasn't actually been fixed already by Alan's series?
+At first glance I think the queue filling up and never draining is caused
+by hid_hw_stop() stalling the queue and the time between both being just too
+short.
+Maybe me (un)binding on hid-picolcd driver level is the major cause of this
+and (un)binding at lower usb level would kill the queue thus preventing
+it just growing until full...
+
+
+Is there a proper way to do rate-limiting or throttling when submitting
+reports (which are the urbs deeper in the stack) and catch -ENODEV early
+while remove() is delayed for locking reasons?
+At least until 3.5 submitting reports provides no return value for driver
+which could convey errors like -ENODEV, -EBUSY.
+
+
+
+After a few bind-unbind iterations I have also hit a race in hid-picolcd
+with regard to fbdefio.
+That looks like chicken-egg release sequencing between hid-picolcd and
+fb_info subdev -- though I'm wondering how that happens as the only framebuffer
+user I know of - fbcon - should have stopped using it after
+unregister_framebuffer() returned and released the last reference!
+
+But that part can be improved rather easily with a new spinlock synchronizing
+interoperation between hid side and framebuffer side.
 
 Thanks,
-
---=20
-Jiri Kosina
-SUSE Labs
+Bruno

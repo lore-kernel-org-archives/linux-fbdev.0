@@ -1,99 +1,211 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 16 Aug 2012 07:48:32 +0000
-Subject: [PATCH 4/6] OMAPDSS: RFBI: Maitain copy of rfbi timings in driver data
-Message-Id: <1345102594-6222-5-git-send-email-archit@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 16 Aug 2012 13:00:39 +0000
+Subject: [PATCH 04/19] ARM: mach-shmobile: ag5evm: Add LCDC tx_dev field to platform data
+Message-Id: <1345122054-16013-5-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <343817088-29645-1-git-send-email-archit@ti.com>
- <1345102594-6222-1-git-send-email-archit@ti.com>
-In-Reply-To: <1345102594-6222-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-The RFBI driver currently relies on the omap_dss_device struct to receive the
-rfbi specific timings requested by the panel driver. This makes the RFBI
-interface driver dependent on the omap_dss_device struct.
+Reference the MIPI-DSI transceiver in the LCDC platform data and make
+sure it gets registered before the LCDC.
 
-Make the RFBI driver data maintain it's own rfbi specific timings field. The
-panel driver is expected to call omapdss_rfbi_set_interface_timings() to
-configure the rfbi timings before the interface is enabled. The function takes
-a void pointer rather than a pointer to rfbi_timings struct. This is because
-this function will finally be an output op shared across different outputs to
-set custom or private timings.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/omap2/displays/panel-n8x0.c |    2 ++
- drivers/video/omap2/dss/rfbi.c            |   14 +++++++++++---
- include/video/omapdss.h                   |    2 ++
- 3 files changed, 15 insertions(+), 3 deletions(-)
+ arch/arm/mach-shmobile/board-ag5evm.c |  157 +++++++++++++++++----------------
+ 1 files changed, 80 insertions(+), 77 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-n8x0.c b/drivers/video/omap2/displays/panel-n8x0.c
-index 3ffd987..14adc1d 100644
---- a/drivers/video/omap2/displays/panel-n8x0.c
-+++ b/drivers/video/omap2/displays/panel-n8x0.c
-@@ -307,6 +307,8 @@ static int n8x0_panel_power_on(struct omap_dss_device *dssdev)
- 		dssdev->panel.timings.y_res);
- 	omapdss_rfbi_set_pixel_size(dssdev, dssdev->ctrl.pixel_size);
- 	omapdss_rfbi_set_data_lines(dssdev, dssdev->phy.rfbi.data_lines);
-+	omapdss_rfbi_set_interface_timings(dssdev,
-+		(void *) &dssdev->ctrl.rfbi_timings);
+diff --git a/arch/arm/mach-shmobile/board-ag5evm.c b/arch/arm/mach-shmobile/board-ag5evm.c
+index 5a6f22f..afae573 100644
+--- a/arch/arm/mach-shmobile/board-ag5evm.c
++++ b/arch/arm/mach-shmobile/board-ag5evm.c
+@@ -199,6 +199,84 @@ static struct platform_device irda_device = {
+ 	.num_resources  = ARRAY_SIZE(irda_resources),
+ };
  
- 	r = omapdss_rfbi_display_enable(dssdev);
- 	if (r)
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index 698d5b9..b5b0bc6 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -115,6 +115,7 @@ static struct {
- 	struct omap_video_timings timings;
- 	int pixel_size;
- 	int data_lines;
-+	struct rfbi_timings intf_timings;
- } rfbi;
- 
- static inline void rfbi_write_reg(const struct rfbi_reg idx, u32 val)
-@@ -799,6 +800,15 @@ void omapdss_rfbi_set_data_lines(struct omap_dss_device *dssdev, int data_lines)
- }
- EXPORT_SYMBOL(omapdss_rfbi_set_data_lines);
- 
-+void omapdss_rfbi_set_interface_timings(struct omap_dss_device *dssdev,
-+		void *timings)
++/* MIPI-DSI */
++static struct resource mipidsi0_resources[] = {
++	[0] = {
++		.name	= "DSI0",
++		.start  = 0xfeab0000,
++		.end    = 0xfeab3fff,
++		.flags  = IORESOURCE_MEM,
++	},
++	[1] = {
++		.name	= "DSI0",
++		.start  = 0xfeab4000,
++		.end    = 0xfeab7fff,
++		.flags  = IORESOURCE_MEM,
++	},
++};
++
++static int sh_mipi_set_dot_clock(struct platform_device *pdev,
++				 void __iomem *base,
++				 int enable)
 +{
-+	struct rfbi_timings *t = (struct rfbi_timings *) timings;
++	struct clk *pck, *phy;
++	int ret;
 +
-+	rfbi.intf_timings = *t;
++	pck = clk_get(&pdev->dev, "dsip_clk");
++	if (IS_ERR(pck)) {
++		ret = PTR_ERR(pck);
++		goto sh_mipi_set_dot_clock_pck_err;
++	}
++
++	phy = clk_get(&pdev->dev, "dsiphy_clk");
++	if (IS_ERR(phy)) {
++		ret = PTR_ERR(phy);
++		goto sh_mipi_set_dot_clock_phy_err;
++	}
++
++	if (enable) {
++		clk_set_rate(pck, clk_round_rate(pck,  24000000));
++		clk_set_rate(phy, clk_round_rate(pck, 510000000));
++		clk_enable(pck);
++		clk_enable(phy);
++	} else {
++		clk_disable(pck);
++		clk_disable(phy);
++	}
++
++	ret = 0;
++
++	clk_put(phy);
++sh_mipi_set_dot_clock_phy_err:
++	clk_put(pck);
++sh_mipi_set_dot_clock_pck_err:
++	return ret;
 +}
-+EXPORT_SYMBOL(omapdss_rfbi_set_interface_timings);
 +
- static void rfbi_dump_regs(struct seq_file *s)
- {
- #define DUMPREG(r) seq_printf(s, "%-35s %08x\n", #r, rfbi_read_reg(r))
-@@ -907,9 +917,7 @@ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
- 	rfbi_configure(dssdev->phy.rfbi.channel, rfbi.pixel_size,
- 			rfbi.data_lines);
++static struct sh_mobile_lcdc_info lcdc0_info;
++
++static struct sh_mipi_dsi_info mipidsi0_info = {
++	.data_format	= MIPI_RGB888,
++	.lcd_chan	= &lcdc0_info.ch[0],
++	.lane		= 2,
++	.vsynw_offset	= 20,
++	.clksrc		= 1,
++	.flags		= SH_MIPI_DSI_HSABM		|
++			  SH_MIPI_DSI_SYNC_PULSES_MODE	|
++			  SH_MIPI_DSI_HSbyteCLK,
++	.set_dot_clock	= sh_mipi_set_dot_clock,
++};
++
++static struct platform_device mipidsi0_device = {
++	.name           = "sh-mipi-dsi",
++	.num_resources  = ARRAY_SIZE(mipidsi0_resources),
++	.resource       = mipidsi0_resources,
++	.id             = 0,
++	.dev	= {
++		.platform_data	= &mipidsi0_info,
++	},
++};
++
+ static unsigned char lcd_backlight_seq[3][2] = {
+ 	{ 0x04, 0x07 },
+ 	{ 0x23, 0x80 },
+@@ -261,6 +339,7 @@ static struct sh_mobile_lcdc_info lcdc0_info = {
+ 			.display_on = lcd_backlight_on,
+ 			.display_off = lcd_backlight_reset,
+ 		},
++		.tx_dev = &mipidsi0_device,
+ 	}
+ };
  
--	rfbi_set_timings(dssdev->phy.rfbi.channel,
--			 &dssdev->ctrl.rfbi_timings);
+@@ -288,82 +367,6 @@ static struct platform_device lcdc0_device = {
+ 	},
+ };
+ 
+-/* MIPI-DSI */
+-static struct resource mipidsi0_resources[] = {
+-	[0] = {
+-		.name	= "DSI0",
+-		.start  = 0xfeab0000,
+-		.end    = 0xfeab3fff,
+-		.flags  = IORESOURCE_MEM,
+-	},
+-	[1] = {
+-		.name	= "DSI0",
+-		.start  = 0xfeab4000,
+-		.end    = 0xfeab7fff,
+-		.flags  = IORESOURCE_MEM,
+-	},
+-};
 -
-+	rfbi_set_timings(dssdev->phy.rfbi.channel, &rfbi.intf_timings);
- 
- 	return 0;
- err1:
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index faac986..91eba93 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -765,5 +765,7 @@ void omapdss_rfbi_set_pixel_size(struct omap_dss_device *dssdev,
- 		int pixel_size);
- void omapdss_rfbi_set_data_lines(struct omap_dss_device *dssdev,
- 		int data_lines);
-+void omapdss_rfbi_set_interface_timings(struct omap_dss_device *dssdev,
-+		void *timings);
- 
- #endif
+-static int sh_mipi_set_dot_clock(struct platform_device *pdev,
+-				 void __iomem *base,
+-				 int enable)
+-{
+-	struct clk *pck, *phy;
+-	int ret;
+-
+-	pck = clk_get(&pdev->dev, "dsip_clk");
+-	if (IS_ERR(pck)) {
+-		ret = PTR_ERR(pck);
+-		goto sh_mipi_set_dot_clock_pck_err;
+-	}
+-
+-	phy = clk_get(&pdev->dev, "dsiphy_clk");
+-	if (IS_ERR(phy)) {
+-		ret = PTR_ERR(phy);
+-		goto sh_mipi_set_dot_clock_phy_err;
+-	}
+-
+-	if (enable) {
+-		clk_set_rate(pck, clk_round_rate(pck,  24000000));
+-		clk_set_rate(phy, clk_round_rate(pck, 510000000));
+-		clk_enable(pck);
+-		clk_enable(phy);
+-	} else {
+-		clk_disable(pck);
+-		clk_disable(phy);
+-	}
+-
+-	ret = 0;
+-
+-	clk_put(phy);
+-sh_mipi_set_dot_clock_phy_err:
+-	clk_put(pck);
+-sh_mipi_set_dot_clock_pck_err:
+-	return ret;
+-}
+-
+-static struct sh_mipi_dsi_info mipidsi0_info = {
+-	.data_format	= MIPI_RGB888,
+-	.lcd_chan	= &lcdc0_info.ch[0],
+-	.lane		= 2,
+-	.vsynw_offset	= 20,
+-	.clksrc		= 1,
+-	.flags		= SH_MIPI_DSI_HSABM		|
+-			  SH_MIPI_DSI_SYNC_PULSES_MODE	|
+-			  SH_MIPI_DSI_HSbyteCLK,
+-	.set_dot_clock	= sh_mipi_set_dot_clock,
+-};
+-
+-static struct platform_device mipidsi0_device = {
+-	.name           = "sh-mipi-dsi",
+-	.num_resources  = ARRAY_SIZE(mipidsi0_resources),
+-	.resource       = mipidsi0_resources,
+-	.id             = 0,
+-	.dev	= {
+-		.platform_data	= &mipidsi0_info,
+-	},
+-};
+-
+ /* SDHI0 */
+ static struct sh_mobile_sdhi_info sdhi0_info = {
+ 	.dma_slave_tx	= SHDMA_SLAVE_SDHI0_TX,
+@@ -460,8 +463,8 @@ static struct platform_device *ag5evm_devices[] __initdata = {
+ 	&fsi_device,
+ 	&mmc_device,
+ 	&irda_device,
+-	&lcdc0_device,
+ 	&mipidsi0_device,
++	&lcdc0_device,
+ 	&sdhi0_device,
+ 	&sdhi1_device,
+ };
 -- 
-1.7.9.5
+1.7.8.6
 

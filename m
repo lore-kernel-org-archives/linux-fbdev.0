@@ -1,75 +1,53 @@
 From: Archit Taneja <archit@ti.com>
-Date: Thu, 30 Aug 2012 11:52:33 +0000
-Subject: [PATCH v2 11/23] OMAPDSS: DSI: Remove dsi_pdev_map global struct
-Message-Id: <1346326845-16583-12-git-send-email-archit@ti.com>
+Date: Thu, 16 Aug 2012 07:48:28 +0000
+Subject: [PATCH 0/6] OMAPDSS: Pass output specific parameters from panel driver to output
+Message-Id: <1345102594-6222-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>
- <1346326845-16583-1-git-send-email-archit@ti.com>
-In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
+References: <343817088-29645-1-git-send-email-archit@ti.com>
+In-Reply-To: <343817088-29645-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-dsi_pdev_map is a struct visible globally in the DSI driver to get the platform
-device pointer of the DSI device corresponding to it's module ID. This was
-required because there was no clean way to derive the platform device from
-the DSI module instance number or from the connected panel.
+This is a continuation of the series below:
 
-With the new output entity, it is possible to retrieve the platform device
-pointer if the omap_dss_output pointer is available. Modify the functions
-dsi_get_dsidev_from_dssdev() dsi_get_dsidev_from_id() so that they use output
-instead of dsi_pdev_map to retrieve the dsi platform device pointer.
+http://marc.info/?l=linux-omap&m4381744304672&w=2
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/dsi.c |   14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+This series tries to pass output specific parameters from panel driver to the
+connected output. These are basically parameters which can't really be shared
+across different outputs. An attempt has been made to have similar looking
+functions for setting DSI videomode timings and RFBI timings. But all the other
+parameters in the series take output specific arguments.
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 6a83ab7..78212c4 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -346,8 +346,6 @@ struct dsi_packet_sent_handler_data {
- 	struct completion *completion;
- };
- 
--static struct platform_device *dsi_pdev_map[MAX_NUM_DSI];
--
- #ifdef DEBUG
- static bool dsi_perf;
- module_param(dsi_perf, bool, 0644);
-@@ -360,12 +358,19 @@ static inline struct dsi_data *dsi_get_dsidrv_data(struct platform_device *dside
- 
- static inline struct platform_device *dsi_get_dsidev_from_dssdev(struct omap_dss_device *dssdev)
- {
--	return dsi_pdev_map[dssdev->phy.dsi.module];
-+	return dssdev->output->pdev;
- }
- 
- struct platform_device *dsi_get_dsidev_from_id(int module)
- {
--	return dsi_pdev_map[module];
-+	struct omap_dss_output *out;
-+	enum omap_dss_output_id	id;
-+
-+	id = module = 0 ? OMAP_DSS_OUTPUT_DSI1 : OMAP_DSS_OUTPUT_DSI2;
-+
-+	out = omap_dss_get_output(id);
-+
-+	return out->pdev;
- }
- 
- static inline void dsi_write_reg(struct platform_device *dsidev,
-@@ -4933,7 +4938,6 @@ static int __init omap_dsihw_probe(struct platform_device *dsidev)
- 
- 	dsi->module_id = dsidev->id;
- 	dsi->pdev = dsidev;
--	dsi_pdev_map[dsi->module_id] = dsidev;
- 	dev_set_drvdata(&dsidev->dev, dsi);
- 
- 	spin_lock_init(&dsi->irq_lock);
+After this series, the interface drivers look more independent of
+omap_dss_device. It'll now be easier to add outputs as another DSS entity, and
+pass them rather than passing omap_dss_device from panel drivers to
+output/interface drivers.
+
+git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git pass_output_specific
+
+Tested on 4430SDP and 3430SDP
+
+Archit Taneja (6):
+  OMAPDSS: DSI: Maintain copy of operation mode in driver data
+  OMAPDSS: DSI: Rename dsi_videomode_data to dsi_videomode_timings
+  OMAPDSS: DSI: Maintain copy of video mode timings in driver data
+  OMAPDSS: RFBI: Maitain copy of rfbi timings in driver data
+  OMAPDSS: VENC: Maintain copy of venc type in driver data
+  OMAPDSS: VENC: Maintian copy of video output polarity in private data
+
+ drivers/video/omap2/displays/panel-n8x0.c |    2 +
+ drivers/video/omap2/displays/panel-taal.c |    1 +
+ drivers/video/omap2/dss/dsi.c             |   94 ++++++++++++++++++++---------
+ drivers/video/omap2/dss/dss.h             |    4 ++
+ drivers/video/omap2/dss/rfbi.c            |   14 ++++-
+ drivers/video/omap2/dss/venc.c            |   28 ++++++++-
+ drivers/video/omap2/dss/venc_panel.c      |    8 +++
+ include/video/omapdss.h                   |   10 ++-
+ 8 files changed, 126 insertions(+), 35 deletions(-)
+
 -- 
 1.7.9.5
 

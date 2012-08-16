@@ -1,61 +1,99 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Aug 2012 06:09:47 +0000
-Subject: [PATCH 1/2] OMAPDSS: Fix SDI PLL locking
-Message-Id: <1345529388-3509-2-git-send-email-tomi.valkeinen@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 16 Aug 2012 07:48:32 +0000
+Subject: [PATCH 4/6] OMAPDSS: RFBI: Maitain copy of rfbi timings in driver data
+Message-Id: <1345102594-6222-5-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345529388-3509-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1345529388-3509-1-git-send-email-tomi.valkeinen@ti.com>
+References: <343817088-29645-1-git-send-email-archit@ti.com>
+ <1345102594-6222-1-git-send-email-archit@ti.com>
+In-Reply-To: <1345102594-6222-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Commit f476ae9dab3234532d41d36beb4ba7be838fa786 (OMAPDSS: APPLY: Remove
-DISPC writes to manager's lcd parameters in interface) broke the SDI
-output, as it causes the SDI PLL locking to fail.
+The RFBI driver currently relies on the omap_dss_device struct to receive the
+rfbi specific timings requested by the panel driver. This makes the RFBI
+interface driver dependent on the omap_dss_device struct.
 
-LCLK and PCLK divisors are located in shadow registers, and we normally
-write them to DISPC registers when enabling the output.  However, SDI
-uses pck-free as source clock for its PLL, and pck-free is affected by
-the divisors. And as we need the PLL before enabling the output, we need
-to write the divisors early.
+Make the RFBI driver data maintain it's own rfbi specific timings field. The
+panel driver is expected to call omapdss_rfbi_set_interface_timings() to
+configure the rfbi timings before the interface is enabled. The function takes
+a void pointer rather than a pointer to rfbi_timings struct. This is because
+this function will finally be an output op shared across different outputs to
+set custom or private timings.
 
-It seems just writing to the DISPC register is enough, and we don't need
-to care about the shadow register mechanism for pck-free. The exact
-reason for this is unknown.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Reported-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/sdi.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ drivers/video/omap2/displays/panel-n8x0.c |    2 ++
+ drivers/video/omap2/dss/rfbi.c            |   14 +++++++++++---
+ include/video/omapdss.h                   |    2 ++
+ 3 files changed, 15 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index 5d31699..f43bfe1 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -105,6 +105,20 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+diff --git a/drivers/video/omap2/displays/panel-n8x0.c b/drivers/video/omap2/displays/panel-n8x0.c
+index 3ffd987..14adc1d 100644
+--- a/drivers/video/omap2/displays/panel-n8x0.c
++++ b/drivers/video/omap2/displays/panel-n8x0.c
+@@ -307,6 +307,8 @@ static int n8x0_panel_power_on(struct omap_dss_device *dssdev)
+ 		dssdev->panel.timings.y_res);
+ 	omapdss_rfbi_set_pixel_size(dssdev, dssdev->ctrl.pixel_size);
+ 	omapdss_rfbi_set_data_lines(dssdev, dssdev->phy.rfbi.data_lines);
++	omapdss_rfbi_set_interface_timings(dssdev,
++		(void *) &dssdev->ctrl.rfbi_timings);
  
- 	sdi_config_lcd_manager(dssdev);
- 
-+	/*
-+	 * LCLK and PCLK divisors are located in shadow registers, and we
-+	 * normally write them to DISPC registers when enabling the output.
-+	 * However, SDI uses pck-free as source clock for its PLL, and pck-free
-+	 * is affected by the divisors. And as we need the PLL before enabling
-+	 * the output, we need to write the divisors early.
-+	 *
-+	 * It seems just writing to the DISPC register is enough, and we don't
-+	 * need to care about the shadow register mechanism for pck-free. The
-+	 * exact reason for this is unknown.
-+	 */
-+	dispc_mgr_set_clock_div(dssdev->manager->id,
-+			&sdi.mgr_config.clock_info);
-+
- 	dss_sdi_init(dssdev->phy.sdi.datapairs);
- 	r = dss_sdi_enable();
+ 	r = omapdss_rfbi_display_enable(dssdev);
  	if (r)
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 698d5b9..b5b0bc6 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -115,6 +115,7 @@ static struct {
+ 	struct omap_video_timings timings;
+ 	int pixel_size;
+ 	int data_lines;
++	struct rfbi_timings intf_timings;
+ } rfbi;
+ 
+ static inline void rfbi_write_reg(const struct rfbi_reg idx, u32 val)
+@@ -799,6 +800,15 @@ void omapdss_rfbi_set_data_lines(struct omap_dss_device *dssdev, int data_lines)
+ }
+ EXPORT_SYMBOL(omapdss_rfbi_set_data_lines);
+ 
++void omapdss_rfbi_set_interface_timings(struct omap_dss_device *dssdev,
++		void *timings)
++{
++	struct rfbi_timings *t = (struct rfbi_timings *) timings;
++
++	rfbi.intf_timings = *t;
++}
++EXPORT_SYMBOL(omapdss_rfbi_set_interface_timings);
++
+ static void rfbi_dump_regs(struct seq_file *s)
+ {
+ #define DUMPREG(r) seq_printf(s, "%-35s %08x\n", #r, rfbi_read_reg(r))
+@@ -907,9 +917,7 @@ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
+ 	rfbi_configure(dssdev->phy.rfbi.channel, rfbi.pixel_size,
+ 			rfbi.data_lines);
+ 
+-	rfbi_set_timings(dssdev->phy.rfbi.channel,
+-			 &dssdev->ctrl.rfbi_timings);
+-
++	rfbi_set_timings(dssdev->phy.rfbi.channel, &rfbi.intf_timings);
+ 
+ 	return 0;
+ err1:
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index faac986..91eba93 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -765,5 +765,7 @@ void omapdss_rfbi_set_pixel_size(struct omap_dss_device *dssdev,
+ 		int pixel_size);
+ void omapdss_rfbi_set_data_lines(struct omap_dss_device *dssdev,
+ 		int data_lines);
++void omapdss_rfbi_set_interface_timings(struct omap_dss_device *dssdev,
++		void *timings);
+ 
+ #endif
 -- 
 1.7.9.5
 

@@ -1,69 +1,61 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Wed, 08 Aug 2012 18:58:54 +0000
-Subject: Re: [PATCH 6/8] arm: vt8500: Update arch-vt8500 to devicetree support.
-Message-Id: <5022B6EE.7060006@wwwdotorg.org>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 16 Aug 2012 13:00:35 +0000
+Subject: [PATCH 00/19] SH Mobile LCDC panel cleanup (including board code)
+Message-Id: <1345122054-16013-1-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344389967-8465-1-git-send-email-linux@prisktech.co.nz>
- <1344389967-8465-7-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1344389967-8465-7-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-On 08/07/2012 07:39 PM, Tony Prisk wrote:
-> Merged existing board files to a single dt-capable file.
-> Converted irq and timer code to devicetree.
-> Removed existing device files that are no longer required with
-> devicetree support.
->
-> All existing platform devices are converted to devicetree nodes
-> except GPIO and PWM.
+Hi everybody,
 
-Perhaps that also explains what I was commenting on in the GPIO driver
-patch. Why not convert GPIO too?
+As part of a general panel API implementation (more on that a bit later), I've
+cleaned up panel support in the LCDC driver and in the related board code. The
+result is 19 patches independent of the generic panel API that I would like to
+get reviewed by the respective board maintainers.
 
-> diff --git a/arch/arm/mach-vt8500/irq.c b/arch/arm/mach-vt8500/irq.c
+Laurent Pinchart (19):
+  fbdev: sh_mobile_lcdc: Get display dimensions from the channel
+    structure
+  fbdev: sh_mobile_lcdc: Rename mode argument to modes
+  fbdev: sh_mobile_lcdc: Remove priv argument from channel and overlay
+    init
+  ARM: mach-shmobile: ag5evm: Add LCDC tx_dev field to platform data
+  fbdev: sh_mipi_dsi: Add channel field to platform data
+  ARM: mach-shmobile: Initiliaze the new sh_mipi_dsi_info channel field
+  fbdev: sh_mipi_dsi: Use the sh_mipi_dsi_info channel field
+  fbdev: sh_mipi_dsi: Use the LCDC entity default mode
+  fbdev: sh_mipi_dsi: Remove last reference to LCDC platform data
+  ARM: mach-shmobile: Remove the unused sh_mipi_dsi_info lcd_chan field
+  fbdev: sh_mipi_dsi: Remove the unused sh_mipi_dsi_info lcd_chan field
+  fbdev: sh_mobile_lcdc: Store the backlight brightness internally
+  ARM: mach-shmobile: mackerel: Removed unused get_brightness callback
+  sh: ap325rxa: Remove unused get_brightness LCDC callback
+  sh: ecovec24: Remove unused get_brightness LCDC callback
+  fbdev: sh_mobile_lcdc: Remove unused get_brightness pdata callback
+  ARM: mach-shmobile: ag5evm: Use the backlight API for brightness
+    control
+  sh: kfr2r09: Use the backlight API for brightness control
+  fbdev: sh_mobile_lcdc: Make sh_mobile_lcdc_sys_bus_ops static
 
->  /*
-> - *  arch/arm/mach-vt8500/irq.c
-> + *  arch/arm/mach-vt8500/irq_dt.c
+ arch/arm/mach-shmobile/board-ag5evm.c       |  198 ++++++++++++++-------------
+ arch/arm/mach-shmobile/board-ap4evb.c       |    4 +-
+ arch/arm/mach-shmobile/board-mackerel.c     |    6 -
+ arch/sh/boards/mach-ap325rxa/setup.c        |    6 -
+ arch/sh/boards/mach-ecovec24/setup.c        |    6 -
+ arch/sh/boards/mach-kfr2r09/lcd_wqvga.c     |   16 +--
+ arch/sh/boards/mach-kfr2r09/setup.c         |    7 +-
+ arch/sh/include/mach-kfr2r09/mach/kfr2r09.h |    6 +-
+ drivers/video/sh_mipi_dsi.c                 |   69 ++++------
+ drivers/video/sh_mobile_lcdcfb.c            |   54 ++++----
+ drivers/video/sh_mobile_lcdcfb.h            |    1 +
+ include/video/sh_mipi_dsi.h                 |    4 +-
+ include/video/sh_mobile_lcdc.h              |    1 -
+ 13 files changed, 172 insertions(+), 206 deletions(-)
 
-This file didn't get renamed?
+-- 
+Regards,
 
-> diff --git a/arch/arm/mach-vt8500/vt8500.c b/arch/arm/mach-vt8500/vt8500.c
+Laurent Pinchart
 
-> +void __init vt8500_init(void)
-> +{
-> +	struct device_node *np, *fb;
-> +	void __iomem *gpio_base;
-> +
-> +#ifdef CONFIG_FB_VT8500
-> +	fb = of_find_compatible_node(NULL, NULL, "via,vt8500-fb");
-> +	if (fb) {
-> +		np = of_find_compatible_node(NULL, NULL, "via,vt8500-gpio");
-> +		if (np) {
-> +			gpio_base = of_iomap(np, 0);
-> +
-> +			if (!gpio_base)
-> +				pr_err("%s:of_iomap(gpio_mux) failed\n", __func__);
-> +
-> +			of_node_put(np);
-> +		} else {
-> +			gpio_base = ioremap(LEGACY_GPIO_BASE, 0x1000);
-> +			if (!gpio_base)
-> +				pr_err("%s:ioremap(legacy_gpio_mux) failed\n", __func__);
-> +		}
-> +		if (gpio_base) {
-> +			writel(readl(gpio_base + VT8500_GPIO_MUX_REG) | 1,
-> +				gpio_base + VT8500_GPIO_MUX_REG);
-> +			iounmap(gpio_base);
-> +		} else
-> +			pr_err("%s: Could not remap GPIO mux\n", __func__);
-> +
-> +		of_node_put(fb);
-> +	}
-> +#endif
-
-That looks quite suspicious. What's it doing? Is this something that
-should be part of a pinctrl driver, or the GPIO driver?

@@ -1,106 +1,86 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Aug 2012 11:20:06 +0000
-Subject: Re: [PATCH V5 3/6] OMAPDSS: DSS: Cleanup cpu_is_xxxx checks
-Message-Id: <1345548006.4085.55.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-YqJYHBZAnaLNqPfuuO+2"
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Thu, 16 Aug 2012 06:08:54 +0000
+Subject: [PATCH v4 0/3] Runtime Interpreted Power Sequences
+Message-Id: <1345097337-24170-1-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1343912532.git.cmahapatra@ti.com>
-	 <cover.1345468541.git.cmahapatra@ti.com>
-	 <94a123bbc0a4ecd48fc71275fd5efbe0aac93b87.1345468541.git.cmahapatra@ti.com>
-	 <1345545312.4085.46.camel@deskari>
-	 <CAF0AtAtvyKdW-J97NJ+YNi5pUGQFyxk=B2Eqn_74MZD4dWebEA@mail.gmail.com>
-In-Reply-To: <CAF0AtAtvyKdW-J97NJ+YNi5pUGQFyxk=B2Eqn_74MZD4dWebEA@mail.gmail.com>
-To: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-
---=-YqJYHBZAnaLNqPfuuO+2
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2012-08-21 at 16:36 +0530, Mahapatra, Chandrabhanu wrote:
-> On Tue, Aug 21, 2012 at 4:05 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> w=
-rote:
-> > On Mon, 2012-08-20 at 18:53 +0530, Chandrabhanu Mahapatra wrote:
-> >> All the cpu_is checks have been moved to dss_init_features function pr=
-oviding a
-> >> much more generic and cleaner interface. The OMAP version and revision=
- specific
-> >> initializations in various functions are cleaned and the necessary dat=
-a are
-> >> moved to dss_features structure which is local to dss.c.
-> >>
-> >> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-> >> ---
-> >>  drivers/video/omap2/dss/dss.c |  117 ++++++++++++++++++++++++++------=
----------
-> >>  1 file changed, 76 insertions(+), 41 deletions(-)
-> >>
-> >> diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/d=
-ss.c
-> >> index 10566ae..f6d3d0a 100644
-> >> --- a/drivers/video/omap2/dss/dss.c
-> >> +++ b/drivers/video/omap2/dss/dss.c
-> >> @@ -31,6 +31,7 @@
-> >>  #include <linux/clk.h>
-> >>  #include <linux/platform_device.h>
-> >>  #include <linux/pm_runtime.h>
-> >> +#include <linux/gfp.h>
-> >>
-> >>  #include <video/omapdss.h>
-> >>
-> >> @@ -65,6 +66,12 @@ struct dss_reg {
-> >>  static int dss_runtime_get(void);
-> >>  static void dss_runtime_put(void);
-> >>
-> >> +struct dss_features {
-> >> +     u16 fck_div_max;
-> >> +     int dss_fck_multiplier;
-> >> +     char *clk_name;
-> >
-> > const char *
-> >
-> >  Tomi
-> >
->=20
-> All the values are const. So we have a const pointer dss.feat to hold
-> this structure. Is a separate
-> const char *clk_name required?
-
-Yes, the values are const, so the pointer itself is const. However, the
-chars where the pointer points are not const. So:
-
-feat.clk_name =3D 1234; // this is rejected by the compiler
-feat.clk_name[0] =3D 0; // this would be accepted
-
- Tomi
-
-
-
-
---=-YqJYHBZAnaLNqPfuuO+2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: Leela Krishna Amudala <leelakrishna.a@gmail.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, Alexandre Courbot <acourbot@nvidia.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+Overdue revision of this new feature, some changes required additional thought
+and rework.
 
-iQIcBAABAgAGBQJQM27mAAoJEPo9qoy8lh715HQP/2jenDKhEKKpYMY0adyBUyAC
-s6HwR0s1msnqo9wLCrqFGTiu8ZTuI7fYJrylIhpuv+9WD6XTmdLNvnqVHHQVCU/A
-GWtUKE/G0eb3lEmCVCLPVrq/8z21rcBANoFB7DxGfQGqJrxdOyGnA3FXonhapGyE
-mwq1dJekQWOJKWd32/gvXX1PhDfAyjYBIgKUBnqj48F6fJqDlgJ7GdNmcxK45AgC
-WXJHD5EeVN3Z4j6vf3NHPokwgHgnPcdLMrQ/mtxdlitRQ+Rv57qNfkcb5A+za1l2
-lg56amEeI/B9HGKpsF1FNOvOE9zLIfDfAWOfg9SrKtBiP+8zyLjGjoAoH4c/4n0u
-fCbCuLAeevNOWHSLdWP+4VJoa786Qby6AFhWVAqkGD2bzoblBsCH724V7qU0csik
-ga6GPo9iYi1n4uU9gLu/4Uu4zy1eG63S4cQAwSbFhTT2DP32EkCCotv5BSXE2W//
-1DcN71kAqTS4nv6gD6viUjUPwCEaEgChyn/V0RLyTCCXhfdHGVTs83F4AT+6+0FO
-26iXYkH0sIidB6r+tDn0NRzPcyt0ZUYMq3q9uI0XJUAiDPDmrCm2h4UvrYbf1G5O
-WWvo0q8clmr67k6PZOE0YpCA5c6osCVh5o6lNW/Jj0S9mSdOwXwplZQxXe3Fzjgh
-U5+wfWf6V6evvO8Kcc8L
-=21pZ
------END PGP SIGNATURE-----
+The most important change is in the way power sequences are expressed in the
+device tree. In order to avoid having to specify #address-cells, #size-cells and
+reg properties, the @ notation in the step names is dropped, and instead a
+fixed, sequential naming is adopted. The type of the resource used by a step is
+decided by the presence of some recognized properties:
 
---=-YqJYHBZAnaLNqPfuuO+2--
+power-on-sequence {
+	step0 {
+		regulator = "power";
+		enable;
+	};
+	step1 {
+		delay = <10000>;
+	};
+	step2 {
+		pwm = "backlight";
+		enable;
+	};
+	...
+
+To me this looks safe, clear and close to the platform data representation, but
+needs approval from DT experts.
+
+Resources are still referenced by name instead of having their phandles defined
+directly inside the sequences, as previous discussion came to the conclusion
+that doing so would require controversial changes to the regulator and PWM
+frameworks, and that having the resources declared at the device level was
+making sense logically speaking.
+
+Other changes/fixes since last revision:
+* Move to drivers/power/ (hope this is ok with the maintainers?)
+* Use microseconds for delay
+* Use devm for PWM resources and remove cleanup function as all resources are
+  devm-managed
+* Remove "-gpio" suffix for GPIO reference in the driver
+* Remove params structure
+* Make power_seq structure private
+* Number of steps in a sequence is explicitly stated instead of resorting to a
+  "stop" sequence step
+* Delays are a step instead of being a step parameter
+* Use flexible member arrays to limit number of memory allocations
+* Add documentation to DT bindings
+
+There was a lot of feedback on the previous version (thanks!) so if I forgot
+to address some important point, please bring it to my attention again.
+
+Alexandre Courbot (3):
+  Runtime Interpreted Power Sequences
+  pwm_backlight: use power sequences
+  tegra: add pwm backlight device tree nodes
+
+ .../devicetree/bindings/power_seq/power_seq.txt    | 101 +++++
+ .../bindings/video/backlight/pwm-backlight.txt     |  62 ++-
+ Documentation/power/power_seq.txt                  | 129 +++++++
+ arch/arm/boot/dts/tegra20-ventana.dts              |  58 +++
+ arch/arm/boot/dts/tegra20.dtsi                     |   2 +-
+ drivers/power/Kconfig                              |   3 +
+ drivers/power/Makefile                             |   1 +
+ drivers/power/power_seq.c                          | 420 +++++++++++++++++++++
+ drivers/video/backlight/Kconfig                    |   1 +
+ drivers/video/backlight/pwm_bl.c                   | 192 +++++++---
+ include/linux/power_seq.h                          | 142 +++++++
+ include/linux/pwm_backlight.h                      |  16 +-
+ 12 files changed, 1071 insertions(+), 56 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power_seq/power_seq.txt
+ create mode 100644 Documentation/power/power_seq.txt
+ create mode 100644 drivers/power/power_seq.c
+ create mode 100644 include/linux/power_seq.h
+
+-- 
+1.7.11.4
 

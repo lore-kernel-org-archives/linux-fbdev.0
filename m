@@ -1,44 +1,34 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Aug 2012 06:09:48 +0000
-Subject: [PATCH 2/2] OMAPFB: fix framebuffer console colors
-Message-Id: <1345529388-3509-3-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 16 Aug 2012 13:00:40 +0000
+Subject: [PATCH 05/19] fbdev: sh_mipi_dsi: Add channel field to platform data
+Message-Id: <1345122054-16013-6-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345529388-3509-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1345529388-3509-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Grazvydas Ignotas <notasas@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-From: Grazvydas Ignotas <notasas@gmail.com>
+The channel field stores the LCDC channel corresponding to the MIPI-DSI
+transmitter. The information is currently obtained through the lcd_chan
+field that will be removed.
 
-omapfb does not currently set pseudo palette correctly for color depths
-above 16bpp, making red text invisible, command like
-  echo -e '\e[0;31mRED' > /dev/tty1
-will display nothing on framebuffer console in 24bpp mode.
-This is because temporary variable is declared incorrectly, fix it.
-
-Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
-Cc: stable@vger.kernel.org # v3.x
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/video/sh_mipi_dsi.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 08ec1a7..fc671d3 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -1192,7 +1192,7 @@ static int _setcolreg(struct fb_info *fbi, u_int regno, u_int red, u_int green,
- 			break;
- 
- 		if (regno < 16) {
--			u16 pal;
-+			u32 pal;
- 			pal = ((red >> (16 - var->red.length)) <<
- 					var->red.offset) |
- 				((green >> (16 - var->green.length)) <<
+diff --git a/include/video/sh_mipi_dsi.h b/include/video/sh_mipi_dsi.h
+index 06c67fb..eae71d9 100644
+--- a/include/video/sh_mipi_dsi.h
++++ b/include/video/sh_mipi_dsi.h
+@@ -48,6 +48,7 @@ struct sh_mobile_lcdc_chan_cfg;
+ struct sh_mipi_dsi_info {
+ 	enum sh_mipi_dsi_data_fmt	data_format;
+ 	struct sh_mobile_lcdc_chan_cfg	*lcd_chan;
++	int				channel;
+ 	int				lane;
+ 	unsigned long			flags;
+ 	u32				clksrc;
 -- 
-1.7.9.5
+1.7.8.6
 

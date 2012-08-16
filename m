@@ -1,89 +1,104 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 16 Aug 2012 12:16:32 +0000
-Subject: Re: [PATCH v4] fbdev: sh_mobile_lcdc: use dma_mmap_coherent
-Message-Id: <14014166.3JMiBq7jRA@avalon>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Thu, 16 Aug 2012 06:08:57 +0000
+Subject: [PATCH v4 3/3] tegra: add pwm backlight device tree nodes
+Message-Id: <1345097337-24170-4-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345112000-22738-1-git-send-email-hdk@igel.co.jp>
-In-Reply-To: <1345112000-22738-1-git-send-email-hdk@igel.co.jp>
+References: <1345097337-24170-1-git-send-email-acourbot@nvidia.com>
+In-Reply-To: <1345097337-24170-1-git-send-email-acourbot@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hideki EIRAKU <hdk@igel.co.jp>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>, Katsuya MATSUBARA <matsu@igel.co.jp>, Damian Hobson-Garcia <dhobsong@igel.co.jp>
+To: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: Leela Krishna Amudala <leelakrishna.a@gmail.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, Alexandre Courbot <acourbot@nvidia.com>
 
-Hi Eiraku-san,
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+---
+ arch/arm/boot/dts/tegra20-ventana.dts | 58 +++++++++++++++++++++++++++++++++++
+ arch/arm/boot/dts/tegra20.dtsi        |  2 +-
+ 2 files changed, 59 insertions(+), 1 deletion(-)
 
-On Thursday 16 August 2012 19:13:20 Hideki EIRAKU wrote:
-> fb_mmap() implemented in fbmem.c uses smem_start as the physical
-> address of the frame buffer.  In the sh_mobile_lcdc driver, the
-> smem_start is a dma_addr_t that is not a physical address when IOMMU is
-> enabled.  dma_mmap_coherent() maps the address correctly.
-> 
-> Signed-off-by: Hideki EIRAKU <hdk@igel.co.jp>
-
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-
-I will push the patch to v3.7 through my tree.
-
-> ---
->  drivers/video/sh_mobile_lcdcfb.c |   20 ++++++++++++++++++++
->  1 files changed, 20 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/sh_mobile_lcdcfb.c
-> b/drivers/video/sh_mobile_lcdcfb.c index 699487c..bccfd7e 100644
-> --- a/drivers/video/sh_mobile_lcdcfb.c
-> +++ b/drivers/video/sh_mobile_lcdcfb.c
-> @@ -1614,6 +1614,15 @@ static int sh_mobile_lcdc_overlay_blank(int blank,
-> struct fb_info *info) return 1;
->  }
-> 
-> +static int
-> +sh_mobile_lcdc_overlay_mmap(struct fb_info *info, struct vm_area_struct
-> *vma) +{
-> +	struct sh_mobile_lcdc_overlay *ovl = info->par;
-> +
-> +	return dma_mmap_coherent(ovl->channel->lcdc->dev, vma, ovl->fb_mem,
-> +				 ovl->dma_handle, ovl->fb_size);
-> +}
-> +
->  static struct fb_ops sh_mobile_lcdc_overlay_ops = {
->  	.owner          = THIS_MODULE,
->  	.fb_read        = fb_sys_read,
-> @@ -1626,6 +1635,7 @@ static struct fb_ops sh_mobile_lcdc_overlay_ops = {
->  	.fb_ioctl       = sh_mobile_lcdc_overlay_ioctl,
->  	.fb_check_var	= sh_mobile_lcdc_overlay_check_var,
->  	.fb_set_par	= sh_mobile_lcdc_overlay_set_par,
-> +	.fb_mmap	= sh_mobile_lcdc_overlay_mmap,
->  };
-> 
->  static void
-> @@ -2093,6 +2103,15 @@ static int sh_mobile_lcdc_blank(int blank, struct
-> fb_info *info) return 0;
->  }
-> 
-> +static int
-> +sh_mobile_lcdc_mmap(struct fb_info *info, struct vm_area_struct *vma)
-> +{
-> +	struct sh_mobile_lcdc_chan *ch = info->par;
-> +
-> +	return dma_mmap_coherent(ch->lcdc->dev, vma, ch->fb_mem,
-> +				 ch->dma_handle, ch->fb_size);
-> +}
-> +
->  static struct fb_ops sh_mobile_lcdc_ops = {
->  	.owner          = THIS_MODULE,
->  	.fb_setcolreg	= sh_mobile_lcdc_setcolreg,
-> @@ -2108,6 +2127,7 @@ static struct fb_ops sh_mobile_lcdc_ops = {
->  	.fb_release	= sh_mobile_lcdc_release,
->  	.fb_check_var	= sh_mobile_lcdc_check_var,
->  	.fb_set_par	= sh_mobile_lcdc_set_par,
-> +	.fb_mmap	= sh_mobile_lcdc_mmap,
->  };
-> 
->  static void
-
+diff --git a/arch/arm/boot/dts/tegra20-ventana.dts b/arch/arm/boot/dts/tegra20-ventana.dts
+index be90544..b253697 100644
+--- a/arch/arm/boot/dts/tegra20-ventana.dts
++++ b/arch/arm/boot/dts/tegra20-ventana.dts
+@@ -317,6 +317,64 @@
+ 		bus-width = <8>;
+ 	};
+ 
++	backlight {
++		compatible = "pwm-backlight";
++		brightness-levels = <0 16 32 48 64 80 96 112 128 144 160 176 192 208 224 240 255>;
++		default-brightness-level = <12>;
++
++		/* resources used by the power sequences */
++		pwms = <&pwm 2 5000000>;
++		pwm-names = "backlight";
++		power-supply = <&backlight_reg>;
++		enable-gpio = <&gpio 28 0>;
++
++		power-on-sequence {
++			step0 {
++				regulator = "power";
++				enable;
++			};
++			step1 {
++				delay = <10000>;
++			};
++			step2 {
++				pwm = "backlight";
++				enable;
++			};
++			step3 {
++				gpio = "enable";
++				enable;
++			};
++		};
++		power-off-sequence {
++			step0 {
++				gpio = "enable";
++				disable;
++			};
++			step1 {
++				pwm = "backlight";
++				disable;
++			};
++			step2 {
++				delay = <10000>;
++			};
++			step3 {
++				regulator = "power";
++				disable;
++			};
++		};
++	};
++
++	backlight_reg: fixedregulator@176 {
++		compatible = "regulator-fixed";
++		regulator-name = "backlight_regulator";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		gpio = <&gpio 176 0>;
++		startup-delay-us = <0>;
++		enable-active-high;
++		regulator-boot-off;
++	};
++
+ 	sound {
+ 		compatible = "nvidia,tegra-audio-wm8903-ventana",
+ 			     "nvidia,tegra-audio-wm8903";
+diff --git a/arch/arm/boot/dts/tegra20.dtsi b/arch/arm/boot/dts/tegra20.dtsi
+index 405d167..67a6cd9 100644
+--- a/arch/arm/boot/dts/tegra20.dtsi
++++ b/arch/arm/boot/dts/tegra20.dtsi
+@@ -123,7 +123,7 @@
+ 		status = "disabled";
+ 	};
+ 
+-	pwm {
++	pwm: pwm {
+ 		compatible = "nvidia,tegra20-pwm";
+ 		reg = <0x7000a000 0x100>;
+ 		#pwm-cells = <2>;
 -- 
-Regards,
-
-Laurent Pinchart
+1.7.11.4
 

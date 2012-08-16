@@ -1,129 +1,42 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 09 Aug 2012 09:19:09 +0000
-Subject: [PATCH v2 4/5] OMAPDSS: DPI: Add locking for DPI interface
-Message-Id: <1344503230-18550-5-git-send-email-archit@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 16 Aug 2012 13:00:49 +0000
+Subject: [PATCH 14/19] sh: ap325rxa: Remove unused get_brightness LCDC callback
+Message-Id: <1345122054-16013-15-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344503230-18550-1-git-send-email-archit@ti.com>
-In-Reply-To: <1344503230-18550-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-The DPI interface driver currently relies on the panel driver to ensure calls
-like omapdss_dpi_display_enable() and omapdss_dpi_display_disable() are executed
-sequentially. Also, currently, there is no way to protect the DPI driver data.
-
-All DPI panel drivers don't ensure this, and in general, a DPI panel driver
-should use it's lock to that ensure it's own driver data and omap_dss_device
-states are taken care of, and not worry about the DPI interface.
-
-Add mutex locking in the DPI enable/disable/set_timings ops.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/omap2/dss/dpi.c |   26 ++++++++++++++++++++++++--
- 1 file changed, 24 insertions(+), 2 deletions(-)
+ arch/sh/boards/mach-ap325rxa/setup.c |    6 ------
+ 1 files changed, 0 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index c20fe23..add47fe 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -39,6 +39,8 @@ static struct {
- 	struct regulator *vdds_dsi_reg;
- 	struct platform_device *dsidev;
- 
-+	struct mutex lock;
-+
- 	struct dss_lcd_mgr_config mgr_config;
- } dpi;
- 
-@@ -184,14 +186,18 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
- {
- 	int r;
- 
-+	mutex_lock(&dpi.lock);
-+
- 	if (cpu_is_omap34xx() && !dpi.vdds_dsi_reg) {
- 		DSSERR("no VDSS_DSI regulator\n");
--		return -ENODEV;
-+		r = -ENODEV;
-+		goto err_no_reg;
- 	}
- 
- 	if (dssdev->manager = NULL) {
- 		DSSERR("failed to enable display: no manager\n");
--		return -ENODEV;
-+		r = -ENODEV;
-+		goto err_no_mgr;
- 	}
- 
- 	if (dpi_use_dsi_pll(dssdev)) {
-@@ -238,6 +244,8 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err_mgr_enable;
- 
-+	mutex_unlock(&dpi.lock);
-+
+diff --git a/arch/sh/boards/mach-ap325rxa/setup.c b/arch/sh/boards/mach-ap325rxa/setup.c
+index f33ebf4..8a5ea1a 100644
+--- a/arch/sh/boards/mach-ap325rxa/setup.c
++++ b/arch/sh/boards/mach-ap325rxa/setup.c
+@@ -171,11 +171,6 @@ static int ap320_wvga_set_brightness(int brightness)
  	return 0;
- 
- err_mgr_enable:
-@@ -255,12 +263,17 @@ err_get_dispc:
- err_reg_enable:
- 	omap_dss_stop_device(dssdev);
- err_start_dev:
-+err_no_mgr:
-+err_no_reg:
-+	mutex_unlock(&dpi.lock);
- 	return r;
  }
- EXPORT_SYMBOL(omapdss_dpi_display_enable);
  
- void omapdss_dpi_display_disable(struct omap_dss_device *dssdev)
+-static int ap320_wvga_get_brightness(void)
+-{
+-	return gpio_get_value(GPIO_PTS3);
+-}
+-
+ static void ap320_wvga_power_on(void)
  {
-+	mutex_lock(&dpi.lock);
-+
- 	dss_mgr_disable(dssdev->manager);
- 
- 	if (dpi_use_dsi_pll(dssdev)) {
-@@ -275,6 +288,8 @@ void omapdss_dpi_display_disable(struct omap_dss_device *dssdev)
- 		regulator_disable(dpi.vdds_dsi_reg);
- 
- 	omap_dss_stop_device(dssdev);
-+
-+	mutex_unlock(&dpi.lock);
- }
- EXPORT_SYMBOL(omapdss_dpi_display_disable);
- 
-@@ -284,6 +299,9 @@ void dpi_set_timings(struct omap_dss_device *dssdev,
- 	int r;
- 
- 	DSSDBG("dpi_set_timings\n");
-+
-+	mutex_lock(&dpi.lock);
-+
- 	dssdev->panel.timings = *timings;
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
- 		r = dispc_runtime_get();
-@@ -296,6 +314,8 @@ void dpi_set_timings(struct omap_dss_device *dssdev,
- 	} else {
- 		dss_mgr_set_timings(dssdev->manager, timings);
+ 	msleep(100);
+@@ -224,7 +219,6 @@ static struct sh_mobile_lcdc_info lcdc_info = {
+ 			.name = "sh_mobile_lcdc_bl",
+ 			.max_brightness = 1,
+ 			.set_brightness = ap320_wvga_set_brightness,
+-			.get_brightness = ap320_wvga_get_brightness,
+ 		},
  	}
-+
-+	mutex_unlock(&dpi.lock);
- }
- EXPORT_SYMBOL(dpi_set_timings);
- 
-@@ -392,6 +412,8 @@ static void __init dpi_probe_pdata(struct platform_device *pdev)
- 
- static int __init omap_dpi_probe(struct platform_device *pdev)
- {
-+	mutex_init(&dpi.lock);
-+
- 	dpi_probe_pdata(pdev);
- 
- 	return 0;
+ };
 -- 
-1.7.9.5
+1.7.8.6
 

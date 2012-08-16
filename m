@@ -1,101 +1,128 @@
 From: Archit Taneja <archit@ti.com>
-Date: Thu, 09 Aug 2012 11:56:51 +0000
-Subject: [PATCH v2 13/13] OMAPDSS: VENC: Add a get_timing function for VENC interface
-Message-Id: <1344512989-4071-14-git-send-email-archit@ti.com>
+Date: Thu, 16 Aug 2012 07:48:30 +0000
+Subject: [PATCH 2/6] OMAPDSS: DSI: Rename dsi_videomode_data to dsi_videomode_timings
+Message-Id: <1345102594-6222-3-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343817088-29645-1-git-send-email-archit@ti.com>
- <1344512989-4071-1-git-send-email-archit@ti.com>
-In-Reply-To: <1344512989-4071-1-git-send-email-archit@ti.com>
+References: <343817088-29645-1-git-send-email-archit@ti.com>
+ <1345102594-6222-1-git-send-email-archit@ti.com>
+In-Reply-To: <1345102594-6222-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Add function omapdss_venc_get_timing() which returns the timings
-maintained by the VENC interface driver in it's driver data. This is just used
-once by the driver during it's probe. This prevents the need for the panel
-driver to configure default timings in it's probe.
+The struct omap_dss_dsi_videomode_data holds fields which need to be configured
+for DSI to operate in video mode. Rename the struct to dsi_videomode_timings.
 
-Int the VENC interface's probe, the timings field is set to PAL as a default
-value. The get_timing op makes more sense for interfaces which can be configured
-to a default timing.
+One reason to do this is because most of the fields in the struct are timings
+related. The other reason is to create a generic op for output specific
+timings. This generic op can be considered as a way to set custom or private
+timings for the output.
+
+In the case of OMAP, DSI and RFBI require some more timings apart from the
+regular DISPC timings. The structs omap_dss_videomode_timings and rfbi_timings
+can be considered as these output specific timings respectively.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dss.h        |    2 ++
- drivers/video/omap2/dss/venc.c       |   13 +++++++++++++
- drivers/video/omap2/dss/venc_panel.c |   11 +++++------
- 3 files changed, 20 insertions(+), 6 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   32 ++++++++++++++++----------------
+ include/video/omapdss.h       |    4 ++--
+ 2 files changed, 18 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 69b6ab9..3fe76c0 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -474,6 +474,8 @@ int omapdss_venc_display_enable(struct omap_dss_device *dssdev);
- void omapdss_venc_display_disable(struct omap_dss_device *dssdev);
- void omapdss_venc_set_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings);
-+void omapdss_venc_get_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings);
- int omapdss_venc_check_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings);
- u32 omapdss_venc_get_wss(struct omap_dss_device *dssdev);
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index d96025e..42f97ac 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -579,6 +579,18 @@ void omapdss_venc_set_timings(struct omap_dss_device *dssdev,
- 	mutex_unlock(&venc.venc_lock);
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index c10c8cb..62549f6 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -2366,7 +2366,7 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
+ 	if (dsi->mode = OMAP_DSS_DSI_VIDEO_MODE) {
+ 		/* DDR_CLK_ALWAYS_ON */
+ 		REG_FLD_MOD(dsidev, DSI_CLK_CTRL,
+-			dssdev->panel.dsi_vm_data.ddr_clk_always_on, 13, 13);
++			dssdev->panel.dsi_vm_timings.ddr_clk_always_on, 13, 13);
+ 	}
+ 
+ 	dsi->ulps_enabled = false;
+@@ -2704,7 +2704,7 @@ void omapdss_dsi_vc_enable_hs(struct omap_dss_device *dssdev, int channel,
+ 	dsi_force_tx_stop_mode_io(dsidev);
+ 
+ 	/* start the DDR clock by sending a NULL packet */
+-	if (dssdev->panel.dsi_vm_data.ddr_clk_always_on && enable)
++	if (dssdev->panel.dsi_vm_timings.ddr_clk_always_on && enable)
+ 		dsi_vc_send_null(dssdev, channel);
  }
- 
-+void omapdss_venc_get_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings)
-+{
-+	DSSDBG("venc_set_timings\n");
-+
-+	mutex_lock(&venc.venc_lock);
-+
-+	*timings = venc.timings;
-+
-+	mutex_unlock(&venc.venc_lock);
-+}
-+
- int omapdss_venc_check_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
+ EXPORT_SYMBOL(omapdss_dsi_vc_enable_hs);
+@@ -3638,8 +3638,8 @@ static void dsi_config_vp_num_line_buffers(struct omap_dss_device *dssdev)
+ static void dsi_config_vp_sync_events(struct omap_dss_device *dssdev)
  {
-@@ -768,6 +780,7 @@ static int __init omap_venchw_probe(struct platform_device *pdev)
- 	mutex_init(&venc.venc_lock);
+ 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+-	bool vsync_end = dssdev->panel.dsi_vm_data.vp_vsync_end;
+-	bool hsync_end = dssdev->panel.dsi_vm_data.vp_hsync_end;
++	bool vsync_end = dssdev->panel.dsi_vm_timings.vp_vsync_end;
++	bool hsync_end = dssdev->panel.dsi_vm_timings.vp_hsync_end;
+ 	u32 r;
  
- 	venc.wss_data = 0;
-+	venc.timings = omap_dss_pal_timings;
- 
- 	venc_mem = platform_get_resource(venc.pdev, IORESOURCE_MEM, 0);
- 	if (!venc_mem) {
-diff --git a/drivers/video/omap2/dss/venc_panel.c b/drivers/video/omap2/dss/venc_panel.c
-index 350b0d9..fe9958d 100644
---- a/drivers/video/omap2/dss/venc_panel.c
-+++ b/drivers/video/omap2/dss/venc_panel.c
-@@ -84,14 +84,13 @@ static DEVICE_ATTR(output_type, S_IRUGO | S_IWUSR,
- 
- static int venc_panel_probe(struct omap_dss_device *dssdev)
+ 	r = dsi_read_reg(dsidev, DSI_CTRL);
+@@ -3656,10 +3656,10 @@ static void dsi_config_vp_sync_events(struct omap_dss_device *dssdev)
+ static void dsi_config_blanking_modes(struct omap_dss_device *dssdev)
  {
-+	struct omap_video_timings timings;
-+
- 	mutex_init(&venc_panel.lock);
+ 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+-	int blanking_mode = dssdev->panel.dsi_vm_data.blanking_mode;
+-	int hfp_blanking_mode = dssdev->panel.dsi_vm_data.hfp_blanking_mode;
+-	int hbp_blanking_mode = dssdev->panel.dsi_vm_data.hbp_blanking_mode;
+-	int hsa_blanking_mode = dssdev->panel.dsi_vm_data.hsa_blanking_mode;
++	int blanking_mode = dssdev->panel.dsi_vm_timings.blanking_mode;
++	int hfp_blanking_mode = dssdev->panel.dsi_vm_timings.hfp_blanking_mode;
++	int hbp_blanking_mode = dssdev->panel.dsi_vm_timings.hbp_blanking_mode;
++	int hsa_blanking_mode = dssdev->panel.dsi_vm_timings.hsa_blanking_mode;
+ 	u32 r;
  
--	/* set initial timings to PAL */
--	dssdev->panel.timings = (struct omap_video_timings)
--		{ 720, 574, 13500, 64, 12, 68, 5, 5, 41,
--			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
--			true,
--		};
-+	omapdss_venc_get_timings(dssdev, &timings);
-+
-+	dssdev->panel.timings = timings;
+ 	/*
+@@ -3992,14 +3992,14 @@ static void dsi_proto_timings(struct omap_dss_device *dssdev)
  
- 	return device_create_file(&dssdev->dev, &dev_attr_output_type);
- }
+ 	 if (dsi->mode = OMAP_DSS_DSI_VIDEO_MODE) {
+ 		/* TODO: Implement a video mode check_timings function */
+-		int hsa = dssdev->panel.dsi_vm_data.hsa;
+-		int hfp = dssdev->panel.dsi_vm_data.hfp;
+-		int hbp = dssdev->panel.dsi_vm_data.hbp;
+-		int vsa = dssdev->panel.dsi_vm_data.vsa;
+-		int vfp = dssdev->panel.dsi_vm_data.vfp;
+-		int vbp = dssdev->panel.dsi_vm_data.vbp;
+-		int window_sync = dssdev->panel.dsi_vm_data.window_sync;
+-		bool hsync_end = dssdev->panel.dsi_vm_data.vp_hsync_end;
++		int hsa = dssdev->panel.dsi_vm_timings.hsa;
++		int hfp = dssdev->panel.dsi_vm_timings.hfp;
++		int hbp = dssdev->panel.dsi_vm_timings.hbp;
++		int vsa = dssdev->panel.dsi_vm_timings.vsa;
++		int vfp = dssdev->panel.dsi_vm_timings.vfp;
++		int vbp = dssdev->panel.dsi_vm_timings.vbp;
++		int window_sync = dssdev->panel.dsi_vm_timings.window_sync;
++		bool hsync_end = dssdev->panel.dsi_vm_timings.vp_hsync_end;
+ 		struct omap_video_timings *timings = &dsi->timings;
+ 		int bpp = dsi_get_pixel_size(dsi->pix_fmt);
+ 		int tl, t_he, width_bytes;
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index ef14ac5..363235c 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -243,7 +243,7 @@ void rfbi_bus_unlock(void);
+ 
+ /* DSI */
+ 
+-struct omap_dss_dsi_videomode_data {
++struct omap_dss_dsi_videomode_timings {
+ 	/* DSI video mode blanking data */
+ 	/* Unit: byte clock cycles */
+ 	u16 hsa;
+@@ -564,7 +564,7 @@ struct omap_dss_device {
+ 
+ 		enum omap_dss_dsi_pixel_format dsi_pix_fmt;
+ 		enum omap_dss_dsi_mode dsi_mode;
+-		struct omap_dss_dsi_videomode_data dsi_vm_data;
++		struct omap_dss_dsi_videomode_timings dsi_vm_timings;
+ 	} panel;
+ 
+ 	struct {
 -- 
 1.7.9.5
 

@@ -1,58 +1,43 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Thu, 09 Aug 2012 01:54:54 +0000
-Subject: [PATCHv2 2/8] rtc: vt8500: Add devicetree support for vt8500-rtc
-Message-Id: <1344477300-25251-3-git-send-email-linux@prisktech.co.nz>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 16 Aug 2012 13:00:41 +0000
+Subject: [PATCH 06/19] ARM: mach-shmobile: Initiliaze the new sh_mipi_dsi_info channel field
+Message-Id: <1345122054-16013-7-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344477300-25251-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1344477300-25251-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/rtc/rtc-vt8500.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ arch/arm/mach-shmobile/board-ag5evm.c |    1 +
+ arch/arm/mach-shmobile/board-ap4evb.c |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/rtc/rtc-vt8500.c b/drivers/rtc/rtc-vt8500.c
-index 9e94fb1..07bf193 100644
---- a/drivers/rtc/rtc-vt8500.c
-+++ b/drivers/rtc/rtc-vt8500.c
-@@ -23,6 +23,7 @@
- #include <linux/bcd.h>
- #include <linux/platform_device.h>
- #include <linux/slab.h>
-+#include <linux/of.h>
- 
- /*
-  * Register definitions
-@@ -302,12 +303,18 @@ static int __devexit vt8500_rtc_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct of_device_id wmt_dt_ids[] = {
-+	{ .compatible = "via,vt8500-rtc", },
-+	{}
-+};
-+
- static struct platform_driver vt8500_rtc_driver = {
- 	.probe		= vt8500_rtc_probe,
- 	.remove		= __devexit_p(vt8500_rtc_remove),
- 	.driver		= {
- 		.name	= "vt8500-rtc",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = of_match_ptr(wmt_dt_ids),
- 	},
- };
- 
-@@ -315,5 +322,5 @@ module_platform_driver(vt8500_rtc_driver);
- 
- MODULE_AUTHOR("Alexey Charkov <alchark@gmail.com>");
- MODULE_DESCRIPTION("VIA VT8500 SoC Realtime Clock Driver (RTC)");
--MODULE_LICENSE("GPL");
-+MODULE_LICENSE("GPL v2");
- MODULE_ALIAS("platform:vt8500-rtc");
+diff --git a/arch/arm/mach-shmobile/board-ag5evm.c b/arch/arm/mach-shmobile/board-ag5evm.c
+index afae573..5523bc8 100644
+--- a/arch/arm/mach-shmobile/board-ag5evm.c
++++ b/arch/arm/mach-shmobile/board-ag5evm.c
+@@ -258,6 +258,7 @@ static struct sh_mobile_lcdc_info lcdc0_info;
+ static struct sh_mipi_dsi_info mipidsi0_info = {
+ 	.data_format	= MIPI_RGB888,
+ 	.lcd_chan	= &lcdc0_info.ch[0],
++	.channel	= LCDC_CHAN_MAINLCD,
+ 	.lane		= 2,
+ 	.vsynw_offset	= 20,
+ 	.clksrc		= 1,
+diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
+index ace6024..5fbd176 100644
+--- a/arch/arm/mach-shmobile/board-ap4evb.c
++++ b/arch/arm/mach-shmobile/board-ap4evb.c
+@@ -532,6 +532,7 @@ static struct sh_mobile_lcdc_info lcdc_info;
+ static struct sh_mipi_dsi_info mipidsi0_info = {
+ 	.data_format	= MIPI_RGB888,
+ 	.lcd_chan	= &lcdc_info.ch[0],
++	.channel	= LCDC_CHAN_MAINLCD,
+ 	.lane		= 2,
+ 	.vsynw_offset	= 17,
+ 	.phyctrl	= 0x6 << 8,
 -- 
-1.7.9.5
+1.7.8.6
 

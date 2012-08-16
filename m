@@ -1,65 +1,76 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 08 Aug 2012 12:41:02 +0000
-Subject: Re: [PATCH v2] of: Add videomode helper
-Message-Id: <10187437.QhpLWeWMHq@avalon>
+From: Hideki EIRAKU <hdk@igel.co.jp>
+Date: Thu, 16 Aug 2012 10:13:20 +0000
+Subject: [PATCH v4] fbdev: sh_mobile_lcdc: use dma_mmap_coherent
+Message-Id: <1345112000-22738-1-git-send-email-hdk@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1341388595-30672-1-git-send-email-s.hauer@pengutronix.de>
- <3714247.L7zNpJpvuy@avalon> <20120705165029.GU30009@pengutronix.de>
-In-Reply-To: <20120705165029.GU30009-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Katsuya MATSUBARA <matsu@igel.co.jp>, Damian Hobson-Garcia <dhobsong@igel.co.jp>, Hideki EIRAKU <hdk@igel.co.jp>
 
-Hi Sascha,
+fb_mmap() implemented in fbmem.c uses smem_start as the physical
+address of the frame buffer.  In the sh_mobile_lcdc driver, the
+smem_start is a dma_addr_t that is not a physical address when IOMMU is
+enabled.  dma_mmap_coherent() maps the address correctly.
 
-Sorry for the late reply.
+Signed-off-by: Hideki EIRAKU <hdk@igel.co.jp>
+---
+ drivers/video/sh_mobile_lcdcfb.c |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+), 0 deletions(-)
 
-On Thursday 05 July 2012 18:50:29 Sascha Hauer wrote:
-> On Thu, Jul 05, 2012 at 04:08:07PM +0200, Laurent Pinchart wrote:
-> > > +++ b/Documentation/devicetree/bindings/video/displaymode
-> > > @@ -0,0 +1,40 @@
-> > > +videomode bindings
-> > > +=========
-> > > +
-> > > +Required properties:
-> > > + - xres, yres: Display resolution
-> > > + - left-margin, right-margin, hsync-len: Horizontal Display timing
-> > > parameters +   in pixels
-> > > +   upper-margin, lower-margin, vsync-len: Vertical display timing
-> > > parameters in +   lines
-> > > + - clock: displayclock in Hz
-> > > +
-> > > +Optional properties:
-> > > + - width-mm, height-mm: Display dimensions in mm
-> > 
-> > I've always had mixed feelings about the physical display dimension being
-> > part of the display mode. Those are properties of the panel/display
-> > instead of the mode. Storing them as part of the mode can be convenient,
-> > but we then run into consistency issues (developers have to remember in
-> > which display mode instances the values are available, and in which
-> > instances they're set to 0 for instance). If we want to clean this up,
-> > this patch would be a good occasion.
-> 
-> This sounds like a display node with one or more node subnodes, like:
-> 
-> display {
-> 	width_mm = <>;
-> 	height_mm = <>;
-> 	mode {
-> 		xres = <>;
-> 		yres = <>;
-> 		...
-> 	};
-> };
-> 
-> Is that what you mean or are you thinking of something else?
-
-Yes, that's exactly what I meant.
-
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 699487c..bccfd7e 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -1614,6 +1614,15 @@ static int sh_mobile_lcdc_overlay_blank(int blank, struct fb_info *info)
+ 	return 1;
+ }
+ 
++static int
++sh_mobile_lcdc_overlay_mmap(struct fb_info *info, struct vm_area_struct *vma)
++{
++	struct sh_mobile_lcdc_overlay *ovl = info->par;
++
++	return dma_mmap_coherent(ovl->channel->lcdc->dev, vma, ovl->fb_mem,
++				 ovl->dma_handle, ovl->fb_size);
++}
++
+ static struct fb_ops sh_mobile_lcdc_overlay_ops = {
+ 	.owner          = THIS_MODULE,
+ 	.fb_read        = fb_sys_read,
+@@ -1626,6 +1635,7 @@ static struct fb_ops sh_mobile_lcdc_overlay_ops = {
+ 	.fb_ioctl       = sh_mobile_lcdc_overlay_ioctl,
+ 	.fb_check_var	= sh_mobile_lcdc_overlay_check_var,
+ 	.fb_set_par	= sh_mobile_lcdc_overlay_set_par,
++	.fb_mmap	= sh_mobile_lcdc_overlay_mmap,
+ };
+ 
+ static void
+@@ -2093,6 +2103,15 @@ static int sh_mobile_lcdc_blank(int blank, struct fb_info *info)
+ 	return 0;
+ }
+ 
++static int
++sh_mobile_lcdc_mmap(struct fb_info *info, struct vm_area_struct *vma)
++{
++	struct sh_mobile_lcdc_chan *ch = info->par;
++
++	return dma_mmap_coherent(ch->lcdc->dev, vma, ch->fb_mem,
++				 ch->dma_handle, ch->fb_size);
++}
++
+ static struct fb_ops sh_mobile_lcdc_ops = {
+ 	.owner          = THIS_MODULE,
+ 	.fb_setcolreg	= sh_mobile_lcdc_setcolreg,
+@@ -2108,6 +2127,7 @@ static struct fb_ops sh_mobile_lcdc_ops = {
+ 	.fb_release	= sh_mobile_lcdc_release,
+ 	.fb_check_var	= sh_mobile_lcdc_check_var,
+ 	.fb_set_par	= sh_mobile_lcdc_set_par,
++	.fb_mmap	= sh_mobile_lcdc_mmap,
+ };
+ 
+ static void
 -- 
-Regards,
-
-Laurent Pinchart
+1.7.0.4
 

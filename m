@@ -1,62 +1,48 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 01 Aug 2012 10:43:22 +0000
-Subject: [RFC 11/17] OMAPDSS: HDMI: Add locking for hdmi interface get/set timing functions
-Message-Id: <1343817088-29645-12-git-send-email-archit@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 16 Aug 2012 13:00:36 +0000
+Subject: [PATCH 01/19] fbdev: sh_mobile_lcdc: Get display dimensions from the channel structure
+Message-Id: <1345122054-16013-2-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343817088-29645-1-git-send-email-archit@ti.com>
-In-Reply-To: <1343817088-29645-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, sumit.semwal@ti.com, rob@ti.com, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-The hdmi interface driver exposes functions to the hdmi panel driver to
-get and configure the interface timings maintained by the hdmi driver.
+Get the display dimensions directly from the channel structure instead
+of recomputing them from the monitor specs or accessing the platform
+data.
 
-These timings(stored in hdmi.ip_data.cfg) should be protected by the hdmi lock
-to ensure they are called sequentially, this is similar to how hdmi enable and
-disable functions need locking.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/omap2/dss/hdmi.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/video/sh_mobile_lcdcfb.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 2de1f91..dfd582e 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -547,7 +547,11 @@ static void hdmi_power_off(struct omap_dss_device *dssdev)
- void omapdss_hdmi_display_get_timing(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
- {
-+	mutex_lock(&hdmi.lock);
-+
- 	*timings = hdmi.ip_data.cfg.timings;
-+
-+	mutex_unlock(&hdmi.lock);
- }
- 
- int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
-@@ -570,6 +574,8 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev,
- 	struct hdmi_cm cm;
- 	const struct hdmi_config *timing;
- 
-+	mutex_lock(&hdmi.lock);
-+
- 	cm = hdmi_get_code(timings);
- 	hdmi.ip_data.cfg.cm = cm;
- 
-@@ -588,6 +594,8 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev,
- 	} else {
- 		dss_mgr_set_timings(dssdev->manager, &timing->timings);
- 	}
-+
-+	mutex_unlock(&hdmi.lock);
- }
- 
- static void hdmi_dump_regs(struct seq_file *s)
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index bccfd7e..7375dbf 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -586,8 +586,8 @@ static int sh_mobile_lcdc_display_notify(struct sh_mobile_lcdc_chan *ch,
+ 				 * Just turn on, if we run a resume here, the
+ 				 * logo disappears.
+ 				 */
+-				info->var.width = monspec->max_x * 10;
+-				info->var.height = monspec->max_y * 10;
++				info->var.width = ch->display.width;
++				info->var.height = ch->display.height;
+ 				sh_mobile_lcdc_display_on(ch);
+ 			} else {
+ 				/* New monitor or have to wake up */
+@@ -2248,8 +2248,8 @@ sh_mobile_lcdc_channel_fb_init(struct sh_mobile_lcdc_chan *ch,
+ 	 */
+ 	var = &info->var;
+ 	fb_videomode_to_var(var, mode);
+-	var->width = ch->cfg->panel_cfg.width;
+-	var->height = ch->cfg->panel_cfg.height;
++	var->width = ch->display.width;
++	var->height = ch->display.height;
+ 	var->xres_virtual = ch->xres_virtual;
+ 	var->yres_virtual = ch->yres_virtual;
+ 	var->activate = FB_ACTIVATE_NOW;
 -- 
-1.7.9.5
+1.7.8.6
 

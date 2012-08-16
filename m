@@ -1,198 +1,131 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Thu, 16 Aug 2012 09:52:51 +0000
+From: Alex Courbot <acourbot@nvidia.com>
+Date: Thu, 16 Aug 2012 10:33:27 +0000
 Subject: Re: [PATCH v4 1/3] Runtime Interpreted Power Sequences
-Message-Id: <20120816095251.GA30646@avionic-0098.mockup.avionic-design.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="x+6KMIRAuhnl3hBn"
+Message-Id: <502CCC77.2010005@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345097337-24170-1-git-send-email-acourbot@nvidia.com>
- <1345097337-24170-2-git-send-email-acourbot@nvidia.com>
- <20120816074232.GA17917@avionic-0098.mockup.avionic-design.de>
- <502CBB0C.70102@nvidia.com>
-In-Reply-To: <502CBB0C.70102@nvidia.com>
-To: Alex Courbot <acourbot@nvidia.com>
+References: <1345097337-24170-1-git-send-email-acourbot@nvidia.com> <1345097337-24170-2-git-send-email-acourbot@nvidia.com> <20120816074232.GA17917@avionic-0098.mockup.avionic-design.de> <502CBB0C.70102@nvidia.com> <20120816095251.GA30646@avionic-0098.mockup.avionic-design.de>
+In-Reply-To: <20120816095251.GA30646@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding@avionic-design.de>
 Cc: Stephen Warren <swarren@nvidia.com>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Leela Krishna Amudala <leelakrishna.a@gmail.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
 
+On 08/16/2012 06:52 PM, Thierry Reding wrote:
+> * PGP Signed by an unknown key
+>
+> On Thu, Aug 16, 2012 at 06:19:08PM +0900, Alex Courbot wrote:
+>> On 08/16/2012 04:42 PM, Thierry Reding wrote:
+>>>> Old Signed by an unknown key
+>>>
+>>> On Thu, Aug 16, 2012 at 03:08:55PM +0900, Alexandre Courbot wrote:
+> [...]
+>>>> +Usage by Drivers and Resources Management
+>>>> +-----------------------------------------
+>>>> +Power sequences make use of resources that must be properly allocated and
+>>>> +managed. The power_seq_build() function builds a power sequence from the
+>>>> +platform data. It also takes care of resolving and allocating the resources
+>>>> +referenced by the sequence if needed:
+>>>> +
+>>>> +  struct power_seq *power_seq_build(struct device *dev, struct list_head *ress,
+>>>> +                                    struct platform_power_seq *pseq);
+>>>> +
+>>>> +The 'dev' argument is the device in the name of which the resources are to be
+>>>> +allocated.
+>>>> +
+>>>> +The 'ress' argument is a list to which the resolved resources are appended. This
+>>>> +avoids allocating a resource referenced in several power sequences multiple
+>>>> +times.
+>>>> +
+>>>> +On success, the function returns a devm allocated resolved sequence that is
+>>>> +ready to be passed to power_seq_run(). In case of failure, and error code is
+>>>> +returned.
+>>>> +
+>>>> +A resolved power sequence returned by power_seq_build can be run by
+>>>> +power_run_run():
+>>>> +
+>>>> +  int power_seq_run(power_seq *seq);
+>>>> +
+>>>> +It returns 0 if the sequence has successfully been run, or an error code if a
+>>>> +problem occured.
+>>>> +
+>>>> +There is no need to explicitly free the resources used by the sequence as they
+>>>> +are devm-allocated.
+>>>
+>>> I had some comments about this particular interface for creating
+>>> sequences in the last series. My point was that explicitly requiring
+>>> drivers to manage a list of already allocated resources may be too much
+>>> added complexity. Power sequences should be easy to use, and I find the
+>>> requirement for a separately managed list of resources cumbersome.
+>>>
+>>> What I proposed last time was to collect all power sequences under a
+>>> common parent object, which in turn would take care of managing the
+>>> resources.
+>>
+>> Yes, I remember that. While I see why you don't like this list,
+>> having a common parent object to all sequences will not reduce the
+>> number of arguments to pass to power_seq_build() (which is the only
+>> function that has to handle this list now). Also having the list of
+>> resources at hand is needed for some drivers: for instance,
+>> pwm-backlight needs to check that exactly one PWM has been
+>> allocated, and takes a reference to it from this list in order to
+>> control the brightness.
+>
+> I'm not complaining about the additional argument to power_seq_build()
+> but about the missing encapsulation. I just think that keeping a list
+> external to the power sequencing code is error-prone. Drivers could do
+> just about anything with it between calls to power_seq_build(). If you
+> do all of this internally, then you don't depend on the driver at all
+> and power sequencing code can just do the right thing.
 
---x+6KMIRAuhnl3hBn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On the opposite side, I am concerned about over-encapsulation. :) IIRC 
+you proposed to have a top structure to hold the power sequences, their 
+resources and the associated device. Power sequences would then have a 
+name and be run through a 2 arguments power_seq_run():
 
-On Thu, Aug 16, 2012 at 06:19:08PM +0900, Alex Courbot wrote:
-> On 08/16/2012 04:42 PM, Thierry Reding wrote:
-> >* PGP Signed by an unknown key
-> >
-> >On Thu, Aug 16, 2012 at 03:08:55PM +0900, Alexandre Courbot wrote:
-[...]
-> >>+Usage by Drivers and Resources Management
-> >>+-----------------------------------------
-> >>+Power sequences make use of resources that must be properly allocated =
-and
-> >>+managed. The power_seq_build() function builds a power sequence from t=
-he
-> >>+platform data. It also takes care of resolving and allocating the reso=
-urces
-> >>+referenced by the sequence if needed:
-> >>+
-> >>+  struct power_seq *power_seq_build(struct device *dev, struct list_he=
-ad *ress,
-> >>+                                    struct platform_power_seq *pseq);
-> >>+
-> >>+The 'dev' argument is the device in the name of which the resources ar=
-e to be
-> >>+allocated.
-> >>+
-> >>+The 'ress' argument is a list to which the resolved resources are appe=
-nded. This
-> >>+avoids allocating a resource referenced in several power sequences mul=
-tiple
-> >>+times.
-> >>+
-> >>+On success, the function returns a devm allocated resolved sequence th=
-at is
-> >>+ready to be passed to power_seq_run(). In case of failure, and error c=
-ode is
-> >>+returned.
-> >>+
-> >>+A resolved power sequence returned by power_seq_build can be run by
-> >>+power_run_run():
-> >>+
-> >>+  int power_seq_run(power_seq *seq);
-> >>+
-> >>+It returns 0 if the sequence has successfully been run, or an error co=
-de if a
-> >>+problem occured.
-> >>+
-> >>+There is no need to explicitly free the resources used by the sequence=
- as they
-> >>+are devm-allocated.
-> >
-> >I had some comments about this particular interface for creating
-> >sequences in the last series. My point was that explicitly requiring
-> >drivers to manage a list of already allocated resources may be too much
-> >added complexity. Power sequences should be easy to use, and I find the
-> >requirement for a separately managed list of resources cumbersome.
-> >
-> >What I proposed last time was to collect all power sequences under a
-> >common parent object, which in turn would take care of managing the
-> >resources.
->=20
-> Yes, I remember that. While I see why you don't like this list,
-> having a common parent object to all sequences will not reduce the
-> number of arguments to pass to power_seq_build() (which is the only
-> function that has to handle this list now). Also having the list of
-> resources at hand is needed for some drivers: for instance,
-> pwm-backlight needs to check that exactly one PWM has been
-> allocated, and takes a reference to it from this list in order to
-> control the brightness.
+   power_seq_run(sequences, "up");
 
-I'm not complaining about the additional argument to power_seq_build()
-but about the missing encapsulation. I just think that keeping a list
-external to the power sequencing code is error-prone. Drivers could do
-just about anything with it between calls to power_seq_build(). If you
-do all of this internally, then you don't depend on the driver at all
-and power sequencing code can just do the right thing.
+There are two things that bother me with this solution. First is that 
+addressing power sequences by name looks a little bit overkill, when a 
+single pointer should be enough. It would also complicate the design. 
+Second thing is that this design would place the power sequences 
+structure on top of the device - in effect, you could perfectly have 
+several of these structures all using the same device and failing to see 
+each other's resources. While that would be a error from the device 
+driver's side, the design allows it.
 
-Obtaining a reference to the PWM, or any other resource for that matter,
-=66rom the power sequence could be done via an explicit API.
+>
+> Obtaining a reference to the PWM, or any other resource for that matter,
+> from the power sequence could be done via an explicit API.
+>
+>> Ideally we could embed the list into the device structure, but I
+>> don't see how we can do that without modifying it (and we don't want
+>> to modify it). Another solution would be to keep a static mapping
+>> table that associates a device to its power_seq related resources
+>> within power_seq.c. If we protect it for concurrent access this
+>> should make it possible to make resources management transparent.
+>> How does this sound? Only drawback I see is that we would need to
+>> explicitly clean it up through a dedicated function when the driver
+>> exits.
+>
+> I don't think that's much better. Since the power sequences will be very
+> tightly coupled to a specific device, tying the sequences and their
+> resources to the device makes a lot of sense. Keeping a global list of
+> resources doesn't in my opinion.
 
-> Ideally we could embed the list into the device structure, but I
-> don't see how we can do that without modifying it (and we don't want
-> to modify it). Another solution would be to keep a static mapping
-> table that associates a device to its power_seq related resources
-> within power_seq.c. If we protect it for concurrent access this
-> should make it possible to make resources management transparent.
-> How does this sound? Only drawback I see is that we would need to
-> explicitly clean it up through a dedicated function when the driver
-> exits.
+That is not what would happen actually - what I proposed is to have a 
+mapping (hash map, or more likely binary tree) between a device and the 
+list_head of the resources for that device. In C++ (forgive me, this 
+makes the types more explicit) that would be:
 
-I don't think that's much better. Since the power sequences will be very
-tightly coupled to a specific device, tying the sequences and their
-resources to the device makes a lot of sense. Keeping a global list of
-resources doesn't in my opinion.
+static std::map<struct device *, struct list_head> device_resources;
 
-> >>+static int power_seq_step_run(struct power_seq_step *step)
-> >>+{
-> >>+     struct platform_power_seq_step *pdata =3D &step->pdata;
-> >>+     int err =3D 0;
-> >>+
-> >>+     switch (pdata->type) {
-> >>+     case POWER_SEQ_DELAY:
-> >>+             usleep_range(pdata->delay.delay_us,
-> >>+                          pdata->delay.delay_us + 1000);
-> >>+             break;
-> >>+#ifdef CONFIG_REGULATOR
-> >>+     case POWER_SEQ_REGULATOR:
-> >>+             if (pdata->regulator.enable)
-> >>+                     err =3D regulator_enable(step->resource->regulato=
-r);
-> >>+             else
-> >>+                     err =3D regulator_disable(step->resource->regulat=
-or);
-> >>+             break;
-> >>+#endif
-> >>+#ifdef CONFIG_PWM
-> >>+     case POWER_SEQ_PWM:
-> >>+             if (pdata->gpio.enable)
-> >>+                     err =3D pwm_enable(step->resource->pwm);
-> >>+             else
-> >>+                     pwm_disable(step->resource->pwm);
-> >>+             break;
-> >>+#endif
-> >>+#ifdef CONFIG_GPIOLIB
-> >>+     case POWER_SEQ_GPIO:
-> >>+             gpio_set_value_cansleep(pdata->gpio.gpio, pdata->gpio.ena=
-ble);
-> >>+             break;
-> >>+#endif
-> >>+     /*
-> >>+      * should never happen unless the sequence includes a step which
-> >>+      * type does not have support compiled in
-> >
-> >I think this should be "whose type"? I also remember commenting on the
-> >whole #ifdef'ery here. I really don't think it is necessary. At least
-> >for regulators I know that the functions can be used even if the
-> >subsystem itself isn't supported. The same seems to hold for GPIO and we
-> >can probably add something similar for PWM.
->=20
-> Actually I kept them because I don't really like the empty function
-> definitions in the regulator framework. They all return 0 as if the
-> function completed successfully - here we should at least warn the
-> user that proper support for that resource is missing.
->=20
-> >
-> >It might also be a good idea to just skip unsupported resource types
-> >when the sequence is built, accompanied by runtime warnings that the
-> >type is not supported.
->=20
-> Agreed.
+That way you would have exactly one list per device, could keep 
+resource-management totally transparent without exposing the list_head, 
+and keep the API and design simple.
 
-If you do this, then I think the above #ifdef'ery becomes obsolete
-because any errors that could potentially be hidden have already been
-caught when the list was built.
+For special cases (like pwm-backlight which needs to get the PWM), the 
+list_head could be obtained through a dedicated API.
 
-Thierry
+Alex.
 
---x+6KMIRAuhnl3hBn
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQLMLzAAoJEN0jrNd/PrOhgLEP/AwkfHRlQ/IFdAYFDDhQuhI5
-u7L2DLROBm7fIQpu2muXBbI+mfzPPN7fnQRrWbqWICAAsuKEEAlqDctfK2HfKBtC
-N4TCaSp2oJ9AfhKJXuqaGfScYGOIAT0/cuGC5RFmLVfj9A/POSXrnE/darZqPJJq
-O+AR2+nSdsIr7ms3rDfH8xOLLof7DqcLiIyiOWrlX7T+4JXiZiqQ2imzQ1GRRndO
-9PySg0D2Q+BcNS6qyXMjDhtEBH/UHl1Bc5+aregtFCbHCuwq6R50l+1LSNDGRFhX
-zaHRRB3UySu3Z3EQHTORcQOdgZIJfEuvYdOVgdajMYYL6ibw9l2gL/anzVYhxEy6
-7AaOwIud0w/avyQr/ZTKHxEi0V8U1DqMtFBg9PW0KpJvGo0aHZThhn6lfUC5MZCn
-YAyvYgj7UVVXXggKmEh+UI4t9/nw3Y269iEwhQmIna0+yKolPXjt5Kc/mNzjJ5iD
-Pa0q7H99pmRZ0c0enc2iRj/5CAJYu1j5klR3hFcpGvinkjQefHVUec7JrLcgg7Nb
-RU1KgRi2qaSjU5xoVXINYndl7klrK+JC33dodMOCZ0t4HUuMO7KJXfQjXA7RddK7
-k7p/5Pd9LlKBPz8i4SAQ+I5XxrD+v1dH27w4n4oieF0rLrbf9G80Es12o/P5INtx
-QJL4mf9cC8zuXYnT0Uwx
-=ZgR6
------END PGP SIGNATURE-----
-
---x+6KMIRAuhnl3hBn--

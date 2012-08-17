@@ -1,87 +1,117 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Tue, 14 Aug 2012 11:07:06 +0000
-Subject: Re: [PATCH 07/11] fblog: allow selecting fbs via sysfs and module-parameters
-Message-Id: <CANq1E4TawZ7d=dvKjCi_r3ai9yo3kyMMYJAPh_0wV4T68Xpqng@mail.gmail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Fri, 17 Aug 2012 10:51:33 +0000
+Subject: [PATCH 2/3] OMAPDSS: APPLY: Remove omap_dss_device references in wait_for_go functions
+Message-Id: <1345200551-28712-3-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
-	<1344783205-2384-8-git-send-email-dh.herrmann@googlemail.com>
-	<5028447E.7000208@gmail.com>
-In-Reply-To: <5028447E.7000208@gmail.com>
+References: <343817088-29645-1-git-send-email-archit@ti.com>
+ <1345200551-28712-1-git-send-email-archit@ti.com>
+In-Reply-To: <1345200551-28712-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ryan Mallon <rmallon@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Hi Ryan
+The functions dss_mgr_wait_for_go() and dss_mgr_wait_for_go_ovl() check if there
+is an enabled display connected to the manager before trying to see the state of
+the GO bit.
 
-On Mon, Aug 13, 2012 at 2:04 AM, Ryan Mallon <rmallon@gmail.com> wrote:
-> On 13/08/12 00:53, David Herrmann wrote:
->> +static ssize_t fblog_dev_active_show(struct device *dev,
->> +                                  struct device_attribute *attr,
->> +                                  char *buf)
->> +{
->> +     struct fblog_fb *fb = to_fblog_dev(dev);
->> +
->> +     return snprintf(buf, PAGE_SIZE, "%d\n",
->> +                     !!test_bit(FBLOG_OPEN, &fb->flags));
->
-> Nitpick. sprintf is okay here, %d is rarely longer than PAGE_SIZE :-).
->
->> +}
->> +
->> +static ssize_t fblog_dev_active_store(struct device *dev,
->> +                                   struct device_attribute *attr,
->> +                                   const char *buf,
->> +                                   size_t count)
->> +{
->> +     struct fblog_fb *fb = to_fblog_dev(dev);
->> +     unsigned long num;
->> +     int ret = 0;
->> +
->> +     num = simple_strtoul(buf, NULL, 10);
->
-> kstrtoul is preferred these days I think, it also catches errors.
->
->> +
->> +     mutex_lock(&fb->info->lock);
->> +     if (num)
->> +             ret = fblog_open(fb);
->> +     else
->> +             fblog_close(fb, false);
->> +     mutex_unlock(&fb->info->lock);
->> +
->> +     return ret ? ret : count;
->
-> Nitpick, you can use gcc's shortcut form of the ? operator here:
->
->         return ret ?: count;
->
->> @@ -186,7 +228,20 @@ static void fblog_do_register(struct fb_info *info, bool force)
->>               return;
->>       }
->>
->> -     fblog_open(fb);
->> +     ret = device_create_file(&fb->dev, &dev_attr_active);
->> +     if (ret) {
->> +             pr_err("fblog: cannot create sysfs entry");
->
-> Shouldn't need the "fblog: " prefix, since you have pr_fmt defined.
->
->> +             /* do not open fb if we cannot create control file */
->> +             do_open = false;
->> +     }
->> +
->> +     if (!activate_on_hotplug)
->> +             do_open = false;
->> +     if (main_only && info->node != 0)
->> +             do_open = false;
->> +
->> +     if (do_open)
->> +             fblog_open(fb);
->>  }
->>
->>  static void fblog_register(struct fb_info *info, bool force)
+The checks related to the display can be replaced by checking the state of the
+manager, i.e, whether the manager is enabled or not. This makes more sense than
+checking with the connected display as the GO bit behaviour is more connected
+with the manager state rather than the display state. A GO bit can only be set
+if the manager is enabled. If a manager isn't enabled, we can safely assume that
+the GO bit is not set.
 
-All four fixes make sense, thanks!
-David
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/apply.c |   32 +++++++++++++++++++++-----------
+ 1 file changed, 21 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 52a5940..74f1a58 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -424,17 +424,23 @@ static void wait_pending_extra_info_updates(void)
+ int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr)
+ {
+ 	unsigned long timeout = msecs_to_jiffies(500);
+-	struct mgr_priv_data *mp;
++	struct mgr_priv_data *mp = get_mgr_priv(mgr);
+ 	u32 irq;
++	unsigned long flags;
+ 	int r;
+ 	int i;
+-	struct omap_dss_device *dssdev = mgr->device;
+ 
+-	if (!dssdev || dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
++	if (mgr_manual_update(mgr))
+ 		return 0;
+ 
+-	if (mgr_manual_update(mgr))
++	spin_lock_irqsave(&data_lock, flags);
++
++	if (!mp->enabled) {
++		spin_unlock_irqrestore(&data_lock, flags);
+ 		return 0;
++	}
++
++	spin_unlock_irqrestore(&data_lock, flags);
+ 
+ 	r = dispc_runtime_get();
+ 	if (r)
+@@ -442,10 +448,8 @@ int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr)
+ 
+ 	irq = dispc_mgr_get_vsync_irq(mgr->id);
+ 
+-	mp = get_mgr_priv(mgr);
+ 	i = 0;
+ 	while (1) {
+-		unsigned long flags;
+ 		bool shadow_dirty, dirty;
+ 
+ 		spin_lock_irqsave(&data_lock, flags);
+@@ -489,21 +493,28 @@ int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl)
+ {
+ 	unsigned long timeout = msecs_to_jiffies(500);
+ 	struct ovl_priv_data *op;
+-	struct omap_dss_device *dssdev;
++	struct mgr_priv_data *mp;
+ 	u32 irq;
++	unsigned long flags;
+ 	int r;
+ 	int i;
+ 
+ 	if (!ovl->manager)
+ 		return 0;
+ 
+-	dssdev = ovl->manager->device;
++	mp = get_mgr_priv(ovl->manager);
+ 
+-	if (!dssdev || dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
++	if (ovl_manual_update(ovl))
+ 		return 0;
+ 
+-	if (ovl_manual_update(ovl))
++	spin_lock_irqsave(&data_lock, flags);
++
++	if (!mp->enabled) {
++		spin_unlock_irqrestore(&data_lock, flags);
+ 		return 0;
++	}
++
++	spin_unlock_irqrestore(&data_lock, flags);
+ 
+ 	r = dispc_runtime_get();
+ 	if (r)
+@@ -514,7 +525,6 @@ int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl)
+ 	op = get_ovl_priv(ovl);
+ 	i = 0;
+ 	while (1) {
+-		unsigned long flags;
+ 		bool shadow_dirty, dirty;
+ 
+ 		spin_lock_irqsave(&data_lock, flags);
+-- 
+1.7.9.5
+

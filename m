@@ -1,186 +1,161 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 17 Aug 2012 11:10:00 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 17 Aug 2012 11:42:31 +0000
 Subject: Re: [RFC 0/5] Generic panel framework
-Message-Id: <15644929.x7ZB0fPYJx@avalon>
+Message-Id: <1345203751.3158.99.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-VAhwn8HaoPhm4iVBbvZQ"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345164583-18924-1-git-send-email-laurent.pinchart@ideasonboard.com> <1345192694.3158.49.camel@deskari>
-In-Reply-To: <1345192694.3158.49.camel@deskari>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1345164583-18924-1-git-send-email-laurent.pinchart@ideasonboard.com>
+	 <1345192694.3158.49.camel@deskari> <15644929.x7ZB0fPYJx@avalon>
+In-Reply-To: <15644929.x7ZB0fPYJx@avalon>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, linux-media@vger.kernel.org, Bryan Wu <bryan.wu@canonical.com>, Richard Purdie <rpurdie@rpsys.net>, Marcus Lorentzon <marcus.lorentzon@linaro.org>, Sumit Semwal <sumit.semwal@ti.com>, Archit Taneja <archit@ti.com>, Sebastien Guiriec <s-guiriec@ti.com>, Inki Dae <inki.dae@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-Hi Tomi,
 
-Thanks a lot for the review.
+--=-VAhwn8HaoPhm4iVBbvZQ
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Friday 17 August 2012 11:38:14 Tomi Valkeinen wrote:
-> On Fri, 2012-08-17 at 02:49 +0200, Laurent Pinchart wrote:
-> > I will appreciate all reviews, comments, criticisms, ideas, remarks, ...
-> > If
-> 
-> Oookay, where to start... ;)
-> 
-> A few cosmetic/general comments first.
-> 
-> I find the file naming a bit strange. You have panel.c, which is the
-> core framework, panel-dbi.c, which is the DBI bus, panel-r61517.c, which
-> is driver for r61517 panel...
-> 
-> Perhaps something in this direction (in order): panel-core.c,
-> mipi-dbi-bus.c, panel-r61517.c?
+On Fri, 2012-08-17 at 13:10 +0200, Laurent Pinchart wrote:
 
-That looks good to me. I'll then rename panel_dbi_* to mipi_dbi_*.
+> What kind of directory structure do you have in mind ? Panels are already=
+=20
+> isolated in drivers/video/panel/ so we could already ditch the panel- pre=
+fix=20
+> in drivers.
 
-> And we probably end up with quite a lot of panel drivers, perhaps we should
-> already divide these into separate directories, and then we wouldn't need to
-> prefix each panel with "panel-" at all.
+The same directory also contains files for the framework and buses. But
+perhaps there's no need for additional directories if the amount of
+non-panel files is small. And you can easily see from the name that they
+are not panel drivers (e.g. mipi_dbi_bus.c).
 
-What kind of directory structure do you have in mind ? Panels are already 
-isolated in drivers/video/panel/ so we could already ditch the panel- prefix 
-in drivers.
+> Would you also create include/video/panel/ ?
 
-Would you also create include/video/panel/ ?
+Perhaps that would be good. Well, having all the files prefixed with
+panel- is not bad as such, but just feel extra.
 
-> ---
-> 
-> Should we aim for DT only solution from the start? DT is the direction we
-> are going, and I feel the older platform data stuff would be deprecated
-> soon.
+> > ---
+> >=20
+> > Should we aim for DT only solution from the start? DT is the direction =
+we
+> > are going, and I feel the older platform data stuff would be deprecated
+> > soon.
+>=20
+> Don't forget about non-ARM architectures :-/ We need panel drivers for SH=
+ as=20
+> well, which doesn't use DT. I don't think that would be a big issue, a DT=
+-
+> compliant solution should be easy to use through board code and platform =
+data=20
+> as well.
 
-Don't forget about non-ARM architectures :-/ We need panel drivers for SH as 
-well, which doesn't use DT. I don't think that would be a big issue, a DT-
-compliant solution should be easy to use through board code and platform data 
-as well.
+I didn't forget about them as I didn't even think about them ;). I
+somehow had the impression that other architectures would also use DT,
+sooner or later. I could be mistaken, though.
 
-> ---
-> 
-> Something missing from the intro is how this whole thing should be used.
-> It doesn't help if we know how to turn on the panel, we also need to
-> display something on it =). So I think some kind of diagram/example of
-> how, say, drm would use this thing, and also how the SoC specific DBI
-> bus driver would be done, would clarify things.
+And true, it's not a big issue to support both DT and non-DT versions,
+but I've been porting omap stuff for DT and keeping the old platform
+data stuff also there, and it just feels burdensome. For very simple
+panels it's easy, but when you've passing lots of parameters the code
+starts to get longer.
 
-Of course. If I had all that information already I would have shared it :-) 
-This is really a first RFC, my goal is to make sure that I'm going in the 
-right direction.
+> > This one would be rather impossible with the upper layer handling the
+> > enabling of the video stream. Thus I see that the panel driver needs to
+> > control the sequences, and the Sharp panel driver's enable would look
+> > something like:
+> >=20
+> > regulator_enable(...);
+> > sleep();
+> > dpi_enable_video();
+> > sleep();
+> > gpip_set(..);
+>=20
+> I have to admit I have no better solution to propose at the moment, even =
+if I=20
+> don't really like making the panel control the video stream. When several=
+=20
+> devices will be present in the chain all of them might have similar annoy=
+ing=20
+> requirements, and my feeling is that the resulting code will be quite mes=
+sy.=20
+> At the end of the day the only way to really find out is to write an=20
+> implementation.
 
-> ---
-> 
-> We have discussed face to face about the different hardware setups and
-> scenarios that we should support, but I'll list some of them here for
-> others:
-> 
-> 1) We need to support chains of external display chips and panels. A
-> simple example is a chip that takes DSI in, and outputs DPI. In that
-> case we'd have a chain of SoC -> DSI2DPI -> DPI panel.
-> 
-> In final products I think two external devices is the maximum (at least
-> I've never seen three devices in a row), but in theory and in
-> development environments the chain can be arbitrarily long. Also the
-> connections are not necessarily 1-to-1, but a device can take one input
-> while it has two outputs, or a device can take two inputs.
-> 
-> Now, I think two external devices is a must requirement. I'm not sure if
-> supporting more is an important requirement. However, if we support two
-> devices, it could be that it's trivial to change the framework to
-> support n devices.
-> 
-> 2) Panels and display chips are all but standard. They very often have
-> their own sequences how to do things, have bugs, or implement some
-> feature in slightly different way than some other panel. This is why the
-> panel driver should be able to control or define the way things happen.
-> 
-> As an example, Sharp LQ043T1DG01 panel
-> (www.sharpsme.com/download/LQ043T1DG01-SP-072106pdf). It is enabled with
-> the following sequence:
-> 
-> - Enable VCC and AVDD regulators
-> - Wait min 50ms
-> - Enable full video stream (pck, syncs, pixels) from SoC
-> - Wait min 0.5ms
-> - Set DISP GPIO, which turns on the display panel
-> 
-> Here we could split the enabling of panel to two parts, prepare (in this
-> case starts regulators and waits 50ms) and finish (wait 0.5ms and set
-> DISP GPIO), and the upper layer would start the video stream in between.
-> 
-> I realize this could be done with the PANEL_ENABLE_* levels in your RFC,
-> but I don't think the concepts quite match:
-> 
-> - PANEL_ENABLE_BLANK level is needed for "smart panels", as we need to
-> configure them and send the initial frame at that operating level. With
-> dummy panels there's really no such level, there's just one enable
-> sequence that is always done right away.
-> 
-> - I find waiting at the beginning of a function very ugly (what are we
-> waiting for?) and we'd need that when changing the panel to
-> PANEL_ENABLE_ON level.
-> 
-> - It's still limited if the panel is a stranger one (see following
-> example).
-> 
-> Consider the following theoretical panel enable example, taken to absurd
-> level just to show the general problem:
-> 
-> - Enable regulators
-> - Enable video stream
-> - Wait 50ms
-> - Disable video stream
-> - Set enable GPIO
-> - Enable video stream
-> 
-> This one would be rather impossible with the upper layer handling the
-> enabling of the video stream. Thus I see that the panel driver needs to
-> control the sequences, and the Sharp panel driver's enable would look
-> something like:
-> 
-> regulator_enable(...);
-> sleep();
-> dpi_enable_video();
-> sleep();
-> gpip_set(..);
+If we have a chain of devices, and each device uses the bus interface
+from the previous device in the chain, there shouldn't be a problem. In
+that model each device can handle the task however is best for it.
 
-I have to admit I have no better solution to propose at the moment, even if I 
-don't really like making the panel control the video stream. When several 
-devices will be present in the chain all of them might have similar annoying 
-requirements, and my feeling is that the resulting code will be quite messy. 
-At the end of the day the only way to really find out is to write an 
-implementation.
+I think the problems come from the divided control we'll have. I mean,
+if the panel driver would decide itself what to send to its output, and
+it would provide the data (think of an i2c device), this would be very
+simple. And it actually is for things like configuration data etc, but
+not so for video stream.
 
-> Note that even with this model we still need the PANEL_ENABLE levels you
-> have.
-> 
-> ---
-> 
-> I'm not sure I understand the panel unload problem you mentioned. Nobody
-> should have direct references to the panel functions, so there shouldn't
-> be any automatic references that would prevent module unloading. So when
-> the user does rmmod panel-mypanel, the panel driver's remove will be
-> called. It'll unregister itself from the panel framework, which causes
-> notifications and the display driver will stop using the panel. After
-> that nobody has pointers to the panel, and it can safely be unloaded.
-> 
-> It could cause some locking issues, though. First the panel's remove
-> could take a lock, but the remove sequence would cause the display
-> driver to call disable on the panel, which could again try to take the
-> same lock...
+> > It could cause some locking issues, though. First the panel's remove
+> > could take a lock, but the remove sequence would cause the display
+> > driver to call disable on the panel, which could again try to take the
+> > same lock...
+>=20
+> We have two possible ways of calling panel operations, either directly (p=
+anel-
+> >bus->ops->enable(...)) or indirectly (panel_enable(...)).
+>=20
+> The former is what V4L2 currently does with subdevs, and requires display=
+=20
+> drivers to hold a reference to the panel. The later can do without a dire=
+ct=20
+> reference only if we use a global lock, which is something I would like t=
+o=20
 
-We have two possible ways of calling panel operations, either directly (panel-
->bus->ops->enable(...)) or indirectly (panel_enable(...)).
+Wouldn't panel_enable() just do the same panel->bus->ops->enable()
+anyway, and both require a panel reference? I don't see the difference.
 
-The former is what V4L2 currently does with subdevs, and requires display 
-drivers to hold a reference to the panel. The later can do without a direct 
-reference only if we use a global lock, which is something I would like to 
-avoid. A panel-wide lock wouldn't work, as the access function would need to 
-take the lock on a panel instance that can be removed at any time.
+> avoid. A panel-wide lock wouldn't work, as the access function would need=
+ to=20
+> take the lock on a panel instance that can be removed at any time.
 
-Note that this issue is not specific to panels, V4L2 will need a solution as 
-well when V4L2 subdevs will be instantiated from the DT.
+Can't this be handled with some kind of get/put refcounting? If there's
+a ref, it can't be removed.
 
--- 
-Regards,
+Generally about locks, if we define that panel ops may only be called
+exclusively, does it simplify things? I think we can make such
+requirements, as there should be only one display framework that handles
+the panel. Then we don't need locking for things like enable/disable.
 
-Laurent Pinchart
+Of course we need to be careful about things where calls come from
+"outside" the display framework. I guess one such thing is rmmod, but if
+that causes a notification to the display framework, which again handles
+locking, it shouldn't be a problem.
+
+Another thing to be careful about is if the panel internally uses irqs,
+workqueues, sysfs files or such. In that case it needs to handle
+locking.
+
+ Tomi
+
+
+--=-VAhwn8HaoPhm4iVBbvZQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJQLi4nAAoJEPo9qoy8lh71EJ0QAJwilwuDC1p2408vlpTdzXos
+M6W0j9ZoAkd8TxBIhalwJtbhZCRyIUztwX7gN/mlhCqLWEQRrtmu7VXouSoxBfe2
+ycwoaIs94suupIUIYRv/RXlcmZhVhn897uVIxgXmR34fEtT3G0wkGlHUBa1Gapml
+NFC19zbRHqROu+dpHBG76fDUc61woVRBPGAEVJuxIKOdMhlPFxy08rjDC08IAQqA
+n/M7WlGP0/4diG9Eb2MHljDjL85sSm0dcddyQO+xEeA6HG/LvvH/wapNfLme5GOv
+mcuJYi+smzESYEqtnWKW2J9azyn+jkH6dKquMfyigIyFTgOTFSWjlsMWH759hBfI
+3TucSImBUK6J+Paohll/BJOoFns1e3d+lb36lwA8ouKTfI+JT46h4EnSuOWPcFU8
+Oclmu+r0kNNysmF43FQTYbLDQ/wi9DRAvTtxbc1AuL5iFKX43yR9Ct/VRFzkpDst
++KgVRJgoOjGkyurSjd5DT2hAeeecS2PXA14oRhGS3ePf74G57XhK4yHlFdVHtQPX
+/g9WTQP/XIXmc91R0WfX2CfDooDZDuNw75RsumfcZ+gxRmLmWzwmPmCnA0OJpVWE
+mQefEk5SQw1/VtBZP2as8tlpu22+i1Ur61Gq5+T+uGMeDfO2oTcKo4Z8MvSFFxuz
+Wvx8OzMf/UdDoZtMT0iV
+=qbm2
+-----END PGP SIGNATURE-----
+
+--=-VAhwn8HaoPhm4iVBbvZQ--
 

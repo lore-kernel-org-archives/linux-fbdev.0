@@ -1,61 +1,41 @@
 From: Archit Taneja <archit@ti.com>
-Date: Thu, 09 Aug 2012 09:19:06 +0000
-Subject: [PATCH v2 1/5] OMAPDSS: APPLY: Constify timings argument in dss_mgr_set_timings
-Message-Id: <1344503230-18550-2-git-send-email-archit@ti.com>
+Date: Fri, 17 Aug 2012 10:51:36 +0000
+Subject: [PATCH 3/3] OMAPDSS: Remove unnecessary acb/acbi pin fields from omap_dss_device
+Message-Id: <1345200551-28712-4-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344503230-18550-1-git-send-email-archit@ti.com>
-In-Reply-To: <1344503230-18550-1-git-send-email-archit@ti.com>
+References: <343817088-29645-1-git-send-email-archit@ti.com>
+ <1345200551-28712-1-git-send-email-archit@ti.com>
+In-Reply-To: <1345200551-28712-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The function dss_mgr_set_timings is supposed to apply timings passed by an
-interface driver. It is not supposed to change the timings. Add const qualifier
-to the omap_video_timings pointer argument in dss_mgr_set_timings().
+Passive matrix support was removed recently. The acb and acbi pin declarations
+in omap_dss_device struct weren't removed by accident. Remove these fields
+from omap_dss_device.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/apply.c |    4 ++--
- drivers/video/omap2/dss/dss.h   |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ include/video/omapdss.h |    4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 0fefc68..52a5940 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -1302,7 +1302,7 @@ err:
- }
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index b868123..bc686f4 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -558,10 +558,6 @@ struct omap_dss_device {
+ 	struct {
+ 		struct omap_video_timings timings;
  
- static void dss_apply_mgr_timings(struct omap_overlay_manager *mgr,
--		struct omap_video_timings *timings)
-+		const struct omap_video_timings *timings)
- {
- 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
- 
-@@ -1311,7 +1311,7 @@ static void dss_apply_mgr_timings(struct omap_overlay_manager *mgr,
- }
- 
- void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
--		struct omap_video_timings *timings)
-+		const struct omap_video_timings *timings)
- {
- 	unsigned long flags;
- 
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 335ee93..8a9630b 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -207,7 +207,7 @@ int dss_mgr_set_device(struct omap_overlay_manager *mgr,
- 		struct omap_dss_device *dssdev);
- int dss_mgr_unset_device(struct omap_overlay_manager *mgr);
- void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
--		struct omap_video_timings *timings);
-+		const struct omap_video_timings *timings);
- void dss_mgr_set_lcd_config(struct omap_overlay_manager *mgr,
- 		const struct dss_lcd_mgr_config *config);
- const struct omap_video_timings *dss_mgr_get_timings(struct omap_overlay_manager *mgr);
+-		int acbi;	/* ac-bias pin transitions per interrupt */
+-		/* Unit: line clocks */
+-		int acb;	/* ac-bias pin frequency */
+-
+ 		enum omap_dss_dsi_pixel_format dsi_pix_fmt;
+ 		enum omap_dss_dsi_mode dsi_mode;
+ 		struct omap_dss_dsi_videomode_timings dsi_vm_timings;
 -- 
 1.7.9.5
 

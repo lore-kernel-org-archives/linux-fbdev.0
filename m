@@ -1,209 +1,463 @@
-From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Date: Fri, 24 Aug 2012 13:25:00 +0000
-Subject: [PATCH v5] da8xx-fb: allow frame to complete after disabling LCDC
-Message-Id: <1345813980-14758-1-git-send-email-prakash.pm@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Fri, 17 Aug 2012 00:49:39 +0000
+Subject: [RFC 1/5] video: Add generic display panel core
+Message-Id: <1345164583-18924-2-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1345164583-18924-1-git-send-email-laurent.pinchart@ideasonboard.com>
+In-Reply-To: <1345164583-18924-1-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org
+Cc: linux-media@vger.kernel.org, Bryan Wu <bryan.wu@canonical.com>, Richard Purdie <rpurdie@rpsys.net>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Marcus Lorentzon <marcus.lorentzon@linaro.org>, Sumit Semwal <sumit.semwal@ti.com>, Archit Taneja <archit@ti.com>, Sebastien Guiriec <s-guiriec@ti.com>, Inki Dae <inki.dae@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-Wait for active frame transfer to complete after disabling LCDC.
-At the same this wait is not be required when there are sync and
-underflow errors.
-Patch applies for revision 2 of LCDC present am335x.
-More information on disable and reset sequence can be found in
-section 13.4.6 of AM335x TRM @www.ti.com/am335x.
-
-Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
-Applies on top of fbdev-next of Florian Tobias Schandinat's tree.
-Since v4:
-Minor nit, removed extra line.
-Since v3:
-Rely on frame done interrupt instead of polling for it.
-Since v2:
-Optimized the lcd_disable_raster function.
-Since v1:
-Changed the commit message, also added link to hardware specification.
- drivers/video/da8xx-fb.c |   52 +++++++++++++++++++++++++++++++++++----------
- 1 files changed, 40 insertions(+), 12 deletions(-)
+ drivers/video/Kconfig        |    1 +
+ drivers/video/Makefile       |    1 +
+ drivers/video/panel/Kconfig  |    4 +
+ drivers/video/panel/Makefile |    1 +
+ drivers/video/panel/panel.c  |  269 ++++++++++++++++++++++++++++++++++++++++++
+ include/video/panel.h        |  111 +++++++++++++++++
+ 6 files changed, 387 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/panel/Kconfig
+ create mode 100644 drivers/video/panel/Makefile
+ create mode 100644 drivers/video/panel/panel.c
+ create mode 100644 include/video/panel.h
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 7ae9d53..32f0d06 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -27,6 +27,7 @@
- #include <linux/platform_device.h>
- #include <linux/uaccess.h>
- #include <linux/interrupt.h>
-+#include <linux/wait.h>
- #include <linux/clk.h>
- #include <linux/cpufreq.h>
- #include <linux/console.h>
-@@ -48,6 +49,7 @@
- #define LCD_PL_LOAD_DONE		BIT(6)
- #define LCD_FIFO_UNDERFLOW		BIT(5)
- #define LCD_SYNC_LOST			BIT(2)
-+#define LCD_FRAME_DONE			BIT(0)
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 0217f74..2cc394e 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2448,6 +2448,7 @@ source "drivers/video/omap/Kconfig"
+ source "drivers/video/omap2/Kconfig"
+ source "drivers/video/exynos/Kconfig"
+ source "drivers/video/backlight/Kconfig"
++source "drivers/video/panel/Kconfig"
  
- /* LCD DMA Control Register */
- #define LCD_DMA_BURST_SIZE(x)		((x) << 4)
-@@ -135,6 +137,8 @@ static resource_size_t da8xx_fb_reg_base;
- static struct resource *lcdc_regs;
- static unsigned int lcd_revision;
- static irq_handler_t lcdc_irq_handler;
-+static wait_queue_head_t frame_done_wq;
-+static int frame_done_flag;
+ if VT
+ 	source "drivers/video/console/Kconfig"
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index ee8dafb..577240c 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -14,6 +14,7 @@ fb-objs                           := $(fb-y)
+ obj-$(CONFIG_VT)		  += console/
+ obj-$(CONFIG_LOGO)		  += logo/
+ obj-y				  += backlight/
++obj-y				  += panel/
  
- static inline unsigned int lcdc_read(unsigned int addr)
- {
-@@ -288,13 +292,26 @@ static inline void lcd_enable_raster(void)
- }
+ obj-$(CONFIG_EXYNOS_VIDEO)     += exynos/
  
- /* Disable the Raster Engine of the LCD Controller */
--static inline void lcd_disable_raster(void)
-+static inline void lcd_disable_raster(bool wait_for_frame_done)
- {
- 	u32 reg;
+diff --git a/drivers/video/panel/Kconfig b/drivers/video/panel/Kconfig
+new file mode 100644
+index 0000000..26b1787
+--- /dev/null
++++ b/drivers/video/panel/Kconfig
+@@ -0,0 +1,4 @@
++menuconfig DISPLAY_PANEL
++	tristate "Display Panel"
++	---help---
++	  Support for display panels for graphics devices.
+diff --git a/drivers/video/panel/Makefile b/drivers/video/panel/Makefile
+new file mode 100644
+index 0000000..cf5c5e2
+--- /dev/null
++++ b/drivers/video/panel/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_DISPLAY_PANEL) += panel.o
+diff --git a/drivers/video/panel/panel.c b/drivers/video/panel/panel.c
+new file mode 100644
+index 0000000..cfca804
+--- /dev/null
++++ b/drivers/video/panel/panel.c
+@@ -0,0 +1,269 @@
++/*
++ * Display Panel
++ *
++ * Copyright (C) 2012 Renesas Solutions Corp.
++ *
++ * Contacts: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/export.h>
++#include <linux/kernel.h>
++#include <linux/list.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++
++#include <video/panel.h>
++
++static LIST_HEAD(panel_list);
++static LIST_HEAD(panel_notifiers);
++static DEFINE_MUTEX(panel_mutex);
++
++/**
++ * panel_enable - Set the panel operation mode
++ * @panel: The panel
++ * @enable: Panel operation mode
++ *
++ * - PANEL_ENABLE_OFF turns the panel off completely, possibly including its
++ *   power supplies. Communication with a panel in that mode is not possible.
++ * - PANEL_ENABLE_BLANK turns the panel on but keep the output blanked. Full
++ *   communication with the panel is supported, including pixel data transfer.
++ * - PANEL_ENABLE_ON turns the whole panel on, including the output.
++ *
++ * Return 0 on success or a negative error code otherwise.
++ */
++int panel_enable(struct panel *panel, enum panel_enable_mode enable)
++{
 +	int ret;
- 
- 	reg = lcdc_read(LCD_RASTER_CTRL_REG);
- 	if (reg & LCD_RASTER_ENABLE)
- 		lcdc_write(reg & ~LCD_RASTER_ENABLE, LCD_RASTER_CTRL_REG);
-+	else
-+		/* return if already disabled */
-+		return;
 +
-+	if ((wait_for_frame_done = true) && (lcd_revision = LCD_VERSION_2)) {
-+		frame_done_flag = 0;
-+		ret = wait_event_interruptible_timeout(frame_done_wq,
-+				frame_done_flag != 0,
-+				msecs_to_jiffies(50));
-+		if (ret = 0)
-+			pr_err("LCD Controller timed out\n");
-+	}
- }
- 
- static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
-@@ -321,7 +338,8 @@ static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
- 		} else {
- 			reg_int = lcdc_read(LCD_INT_ENABLE_SET_REG) |
- 				LCD_V2_END_OF_FRAME0_INT_ENA |
--				LCD_V2_END_OF_FRAME1_INT_ENA;
-+				LCD_V2_END_OF_FRAME1_INT_ENA |
-+				LCD_FRAME_DONE;
- 			lcdc_write(reg_int, LCD_INT_ENABLE_SET_REG);
- 		}
- 		reg_dma |= LCD_DUAL_FRAME_BUFFER_ENABLE;
-@@ -638,7 +656,7 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
- static void lcd_reset(struct da8xx_fb_par *par)
- {
- 	/* Disable the Raster if previously Enabled */
--	lcd_disable_raster();
-+	lcd_disable_raster(false);
- 
- 	/* DMA has to be disabled */
- 	lcdc_write(0, LCD_DMA_CTRL_REG);
-@@ -734,7 +752,7 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
- 	u32 stat = lcdc_read(LCD_MASKED_STAT_REG);
- 
- 	if ((stat & LCD_SYNC_LOST) && (stat & LCD_FIFO_UNDERFLOW)) {
--		lcd_disable_raster();
-+		lcd_disable_raster(false);
- 		lcdc_write(stat, LCD_MASKED_STAT_REG);
- 		lcd_enable_raster();
- 	} else if (stat & LCD_PL_LOAD_DONE) {
-@@ -744,7 +762,7 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
- 		 * interrupt via the following write to the status register. If
- 		 * this is done after then one gets multiple PL done interrupts.
- 		 */
--		lcd_disable_raster();
-+		lcd_disable_raster(false);
- 
- 		lcdc_write(stat, LCD_MASKED_STAT_REG);
- 
-@@ -775,6 +793,14 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
- 			par->vsync_flag = 1;
- 			wake_up_interruptible(&par->vsync_wait);
- 		}
++	if (panel->enable = enable)
++		return 0;
 +
-+		/* Set only when controller is disabled and at the end of
-+		 * active frame
-+		 */
-+		if (stat & BIT(0)) {
-+			frame_done_flag = 1;
-+			wake_up_interruptible(&frame_done_wq);
-+		}
- 	}
- 
- 	lcdc_write(0, LCD_END_OF_INT_IND_REG);
-@@ -789,7 +815,7 @@ static irqreturn_t lcdc_irq_handler_rev01(int irq, void *arg)
- 	u32 reg_ras;
- 
- 	if ((stat & LCD_SYNC_LOST) && (stat & LCD_FIFO_UNDERFLOW)) {
--		lcd_disable_raster();
-+		lcd_disable_raster(false);
- 		lcdc_write(stat, LCD_STAT_REG);
- 		lcd_enable_raster();
- 	} else if (stat & LCD_PL_LOAD_DONE) {
-@@ -799,7 +825,7 @@ static irqreturn_t lcdc_irq_handler_rev01(int irq, void *arg)
- 		 * interrupt via the following write to the status register. If
- 		 * this is done after then one gets multiple PL done interrupts.
- 		 */
--		lcd_disable_raster();
-+		lcd_disable_raster(false);
- 
- 		lcdc_write(stat, LCD_STAT_REG);
- 
-@@ -898,7 +924,7 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
- 	if (val = CPUFREQ_POSTCHANGE) {
- 		if (par->lcd_fck_rate != clk_get_rate(par->lcdc_clk)) {
- 			par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
--			lcd_disable_raster();
-+			lcd_disable_raster(true);
- 			lcd_calc_clk_divider(par);
- 			lcd_enable_raster();
- 		}
-@@ -935,7 +961,7 @@ static int __devexit fb_remove(struct platform_device *dev)
- 		if (par->panel_power_ctrl)
- 			par->panel_power_ctrl(0);
- 
--		lcd_disable_raster();
-+		lcd_disable_raster(true);
- 		lcdc_write(0, LCD_RASTER_CTRL_REG);
- 
- 		/* disable DMA  */
-@@ -1051,7 +1077,7 @@ static int cfb_blank(int blank, struct fb_info *info)
- 		if (par->panel_power_ctrl)
- 			par->panel_power_ctrl(0);
- 
--		lcd_disable_raster();
-+		lcd_disable_raster(true);
- 		break;
- 	default:
- 		ret = -EINVAL;
-@@ -1356,8 +1382,10 @@ static int __devinit fb_probe(struct platform_device *device)
- 
- 	if (lcd_revision = LCD_VERSION_1)
- 		lcdc_irq_handler = lcdc_irq_handler_rev01;
--	else
-+	else {
-+		init_waitqueue_head(&frame_done_wq);
- 		lcdc_irq_handler = lcdc_irq_handler_rev02;
++	if (!panel->ops || !panel->ops->enable)
++		return 0;
++
++	ret = panel->ops->enable(panel, enable);
++	if (ret < 0)
++		return ret;
++
++	panel->enable = enable;
++	return 0;
++}
++EXPORT_SYMBOL_GPL(panel_enable);
++
++/**
++ * panel_start_transfer - Start frame transfer
++ * @panel: The panel
++ *
++ * Make the panel ready to receive pixel data and start frame transfer. This
++ * operation can only be called if the panel is in BLANK or ON mode.
++ *
++ * Return 0 on success or a negative error code otherwise.
++ */
++int panel_start_transfer(struct panel *panel)
++{
++	if (!panel->ops || !panel->ops->start_transfer)
++		return 0;
++
++	return panel->ops->start_transfer(panel);
++}
++
++/**
++ * panel_get_modes - Get video modes supported by the panel
++ * @panel: The panel
++ * @modes: Pointer to an array of modes
++ *
++ * Fill the modes argument with a pointer to an array of video modes. The array
++ * is owned by the panel.
++ *
++ * Return the number of supported modes on success (including 0 if no mode is
++ * supported) or a negative error code otherwise.
++ */
++int panel_get_modes(struct panel *panel, const struct fb_videomode **modes)
++{
++	if (!panel->ops || !panel->ops->get_modes)
++		return 0;
++
++	return panel->ops->get_modes(panel, modes);
++}
++EXPORT_SYMBOL_GPL(panel_get_modes);
++
++static void panel_release(struct kref *ref)
++{
++	struct panel *panel = container_of(ref, struct panel, ref);
++
++	if (panel->release)
++		panel->release(panel);
++}
++
++/**
++ * panel_get - get a reference to a panel
++ * @panel: the panel
++ *
++ * Return the panel pointer.
++ */
++struct panel *panel_get(struct panel *panel)
++{
++	if (panel = NULL)
++		return NULL;
++
++	kref_get(&panel->ref);
++	return panel;
++}
++EXPORT_SYMBOL_GPL(panel_get);
++
++/**
++ * panel_put - release a reference to a panel
++ * @panel: the panel
++ *
++ * Releasing the last reference to a panel releases the panel itself.
++ */
++void panel_put(struct panel *panel)
++{
++	kref_put(&panel->ref, panel_release);
++}
++EXPORT_SYMBOL_GPL(panel_put);
++
++static int panel_notifier_match(struct panel *panel,
++				struct panel_notifier *notifier)
++{
++	return notifier->dev = NULL ||
++	       notifier->dev = panel->dev;
++}
++
++/**
++ * panel_register_notifier - register a display panel notifier
++ * @notifier: panel notifier structure we want to register
++ *
++ * Panel notifiers are called to notify drivers of panel-related events for
++ * matching panels.
++ *
++ * Notifiers and panels are matched through the device they correspond to. If
++ * the notifier dev field is equal to the panel dev field the notifier will be
++ * called when an event is reported. Notifiers with a NULL dev field act as
++ * catch-all and will be called for all panels.
++ *
++ * Supported events are
++ *
++ * - PANEL_NOTIFIER_CONNECT reports panel connection and is sent at panel or
++ *   notifier registration time
++ * - PANEL_NOTIFIER_DISCONNECT reports panel disconnection and is sent at panel
++ *   unregistration time
++ *
++ * Registering a notifier sends PANEL_NOTIFIER_CONNECT events for all previously
++ * registered panels that match the notifiers.
++ *
++ * Return 0 on success.
++ */
++int panel_register_notifier(struct panel_notifier *notifier)
++{
++	struct panel *panel;
++
++	mutex_lock(&panel_mutex);
++	list_add_tail(&notifier->list, &panel_notifiers);
++
++	list_for_each_entry(panel, &panel_list, list) {
++		if (!panel_notifier_match(panel, notifier))
++			continue;
++
++		if (notifier->notify(notifier, panel, PANEL_NOTIFIER_CONNECT))
++			break;
 +	}
- 
- 	ret = request_irq(par->irq, lcdc_irq_handler, 0,
- 			DRIVER_NAME, par);
-@@ -1411,7 +1439,7 @@ static int fb_suspend(struct platform_device *dev, pm_message_t state)
- 		par->panel_power_ctrl(0);
- 
- 	fb_set_suspend(info, 1);
--	lcd_disable_raster();
-+	lcd_disable_raster(true);
- 	clk_disable(par->lcdc_clk);
- 	console_unlock();
- 
++	mutex_unlock(&panel_mutex);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(panel_register_notifier);
++
++/**
++ * panel_unregister_notifier - unregister a display panel notifier
++ * @notifier: panel notifier to be unregistered
++ *
++ * Unregistration guarantees that the notifier will never be called upon return
++ * of this function.
++ */
++void panel_unregister_notifier(struct panel_notifier *notifier)
++{
++	mutex_lock(&panel_mutex);
++	list_del(&notifier->list);
++	mutex_unlock(&panel_mutex);
++}
++EXPORT_SYMBOL_GPL(panel_unregister_notifier);
++
++/**
++ * panel_register - register a display panel
++ * @panel: panel to be registered
++ *
++ * Register the panel and send the PANEL_NOTIFIER_CONNECT event to all
++ * matching registered notifiers.
++ *
++ * Return 0 on success.
++ */
++int __must_check __panel_register(struct panel *panel, struct module *owner)
++{
++	struct panel_notifier *notifier;
++
++	kref_init(&panel->ref);
++	panel->owner = owner;
++	panel->enable = PANEL_ENABLE_OFF;
++
++	mutex_lock(&panel_mutex);
++	list_add(&panel->list, &panel_list);
++
++	list_for_each_entry(notifier, &panel_notifiers, list) {
++		if (!panel_notifier_match(panel, notifier))
++			continue;
++
++		if (notifier->notify(notifier, panel, PANEL_NOTIFIER_CONNECT))
++			break;
++	}
++	mutex_unlock(&panel_mutex);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(__panel_register);
++
++/**
++ * panel_unregister - unregister a display panel
++ * @panel: panel to be unregistered
++ *
++ * Unregister the panel and send the PANEL_NOTIFIER_DISCONNECT event to all
++ * matching registered notifiers.
++ */
++void panel_unregister(struct panel *panel)
++{
++	struct panel_notifier *notifier;
++
++	mutex_lock(&panel_mutex);
++	list_for_each_entry(notifier, &panel_notifiers, list) {
++		if (!panel_notifier_match(panel, notifier))
++			continue;
++
++		notifier->notify(notifier, panel, PANEL_NOTIFIER_DISCONNECT);
++	}
++
++	list_del(&panel->list);
++	mutex_unlock(&panel_mutex);
++
++	panel_put(panel);
++}
++EXPORT_SYMBOL_GPL(panel_unregister);
++
++static int __init panel_init(void)
++{
++	return 0;
++}
++
++static void __exit panel_exit(void)
++{
++}
++
++module_init(panel_init);
++module_exit(panel_exit)
++
++MODULE_AUTHOR("Laurent Pinchart <laurent.pinchart@ideasonboard.com>");
++MODULE_DESCRIPTION("Display Panel Core");
++MODULE_LICENSE("GPL");
+diff --git a/include/video/panel.h b/include/video/panel.h
+new file mode 100644
+index 0000000..bb11141
+--- /dev/null
++++ b/include/video/panel.h
+@@ -0,0 +1,111 @@
++/*
++ * Display Panel
++ *
++ * Copyright (C) 2012 Renesas Solutions Corp.
++ *
++ * Contacts: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef __PANEL_H__
++#define __PANEL_H__
++
++#include <linux/fb.h>
++#include <linux/kref.h>
++#include <linux/list.h>
++#include <linux/module.h>
++
++struct panel;
++
++#define PANEL_NOTIFIER_CONNECT		1
++#define PANEL_NOTIFIER_DISCONNECT	2
++
++struct panel_notifier {
++	int (*notify)(struct panel_notifier *, struct panel *, int);
++	struct device *dev;
++	struct list_head list;
++};
++
++enum panel_enable_mode {
++	PANEL_ENABLE_OFF,
++	PANEL_ENABLE_BLANK,
++	PANEL_ENABLE_ON,
++};
++
++struct panel_ops {
++	int (*enable)(struct panel *panel, enum panel_enable_mode enable);
++	int (*start_transfer)(struct panel *panel);
++	int (*get_modes)(struct panel *panel,
++			 const struct fb_videomode **modes);
++};
++
++struct panel {
++	struct list_head list;
++	struct device *dev;
++	struct module *owner;
++	struct kref ref;
++
++	const struct panel_ops *ops;
++	void(*release)(struct panel *panel);
++
++	unsigned int width;
++	unsigned int height;
++
++	enum panel_enable_mode enable;
++};
++
++/**
++ * panel_enable - Set the panel operation mode
++ * @panel: The panel
++ * @enable: Panel operation mode
++ *
++ * - PANEL_ENABLE_OFF turns the panel off completely, possibly including its
++ *   power supplies. Communication with a panel in that mode is not possible.
++ * - PANEL_ENABLE_BLANK turns the panel on but keep the output blanked. Full
++ *   communication with the panel is supported, including pixel data transfer.
++ * - PANEL_ENABLE_ON turns the whole panel on, including the output.
++ *
++ * Return 0 on success or a negative error code otherwise.
++ */
++int panel_enable(struct panel *panel, enum panel_enable_mode enable);
++
++/**
++ * panel_start_transfer - Start frame transfer
++ * @panel: The panel
++ *
++ * Make the panel ready to receive pixel data and start frame transfer. This
++ * operation can only be called if the panel is in BLANK or ON mode.
++ *
++ * Return 0 on success or a negative error code otherwise.
++ */
++int panel_start_transfer(struct panel *panel);
++
++/**
++ * panel_get_modes - Get video modes supported by the panel
++ * @panel: The panel
++ * @modes: Pointer to an array of modes
++ *
++ * Fill the modes argument with a pointer to an array of video modes. The array
++ * is owned by the panel.
++ *
++ * Return the number of supported modes on success (including 0 if no mode is
++ * supported) or a negative error code otherwise.
++ */
++int panel_get_modes(struct panel *panel, const struct fb_videomode **modes);
++
++struct panel *panel_get(struct panel *panel);
++void panel_put(struct panel *panel);
++
++int __must_check __panel_register(struct panel *panel, struct module *owner);
++void panel_unregister(struct panel *panel);
++
++int panel_register_notifier(struct panel_notifier *notifier);
++void panel_unregister_notifier(struct panel_notifier *notifier);
++
++#define panel_register(panel) \
++	__panel_register(panel, THIS_MODULE)
++
++#endif /* __PANEL_H__ */
 -- 
-1.7.1
+1.7.8.6
 

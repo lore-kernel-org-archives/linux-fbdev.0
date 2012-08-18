@@ -1,316 +1,70 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Tue, 21 Aug 2012 20:47:33 +0000
-Subject: [PATCHv3 4/9] usb: vt8500: Add devicetree support for vt8500-ehci and -uhci.
-Message-Id: <1345582058-2291-5-git-send-email-linux@prisktech.co.nz>
+From: Daniel Drake <dsd@laptop.org>
+Date: Sat, 18 Aug 2012 15:53:34 +0000
+Subject: viafb PLL/clock tweaking causes XO-1.5 instability
+Message-Id: <CAMLZHHRxE1zJ9nDPEG7owU6qNxYz1iVDM5CjedqBKKUY+VfBjg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345582058-2291-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1345582058-2291-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Add devicetree support for vt8500-ehci.
-Convert vt8500-uhci to a generic non-pci platform-uhci with
-device tree support.
+Hi,
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
----
- drivers/usb/host/Kconfig         |    4 +-
- drivers/usb/host/ehci-vt8500.c   |   25 ++++--
- drivers/usb/host/uhci-hcd.c      |    5 ++
- drivers/usb/host/uhci-platform.c |  169 ++++++++++++++++++++++++++++++++++++++
- 4 files changed, 195 insertions(+), 8 deletions(-)
- create mode 100644 drivers/usb/host/uhci-platform.c
+I've been investigating a strange regression where in recent kernel
+releases, the XO-1.5 cannot reliably suspend/resume when on a virtual
+terminal (driven by viafb). Under X there is no instability.
 
-diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
-index dcfaaa9..d7a6b10 100644
---- a/drivers/usb/host/Kconfig
-+++ b/drivers/usb/host/Kconfig
-@@ -450,7 +450,7 @@ config USB_OHCI_LITTLE_ENDIAN
- 
- config USB_UHCI_HCD
- 	tristate "UHCI HCD (most Intel and VIA) support"
--	depends on USB && (PCI || SPARC_LEON)
-+	depends on USB && (PCI || SPARC_LEON || ARCH_VT8500)
- 	---help---
- 	  The Universal Host Controller Interface is a standard by Intel for
- 	  accessing the USB hardware in the PC (which is also called the USB
-@@ -468,7 +468,7 @@ config USB_UHCI_HCD
- config USB_UHCI_SUPPORT_NON_PCI_HC
- 	bool
- 	depends on USB_UHCI_HCD
--	default y if SPARC_LEON
-+	default y if (SPARC_LEON  || ARCH_VT8500)
- 
- config USB_UHCI_BIG_ENDIAN_MMIO
- 	bool
-diff --git a/drivers/usb/host/ehci-vt8500.c b/drivers/usb/host/ehci-vt8500.c
-index c1eda73..0e1637b 100644
---- a/drivers/usb/host/ehci-vt8500.c
-+++ b/drivers/usb/host/ehci-vt8500.c
-@@ -16,6 +16,7 @@
-  *
-  */
- 
-+#include <linux/of.h>
- #include <linux/platform_device.h>
- 
- static int ehci_update_device(struct usb_hcd *hcd, struct usb_device *udev)
-@@ -84,20 +85,23 @@ static const struct hc_driver vt8500_ehci_hc_driver = {
- 	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
- };
- 
-+static u64 wmt_ehci_dma_mask = DMA_BIT_MASK(32);
-+
- static int vt8500_ehci_drv_probe(struct platform_device *pdev)
- {
- 	struct usb_hcd *hcd;
- 	struct ehci_hcd *ehci;
- 	struct resource *res;
-+	int irq;
- 	int ret;
- 
- 	if (usb_disabled())
- 		return -ENODEV;
- 
--	if (pdev->resource[1].flags != IORESOURCE_IRQ) {
--		pr_debug("resource[1] is not IORESOURCE_IRQ");
--		return -ENOMEM;
--	}
-+	/* devicetree created devices don't specify a dma mask */
-+	if (!pdev->dev.dma_mask)
-+		pdev->dev.dma_mask = &wmt_ehci_dma_mask;
-+
- 	hcd = usb_create_hcd(&vt8500_ehci_hc_driver, &pdev->dev, "VT8500");
- 	if (!hcd)
- 		return -ENOMEM;
-@@ -134,8 +138,9 @@ static int vt8500_ehci_drv_probe(struct platform_device *pdev)
- 
- 	ehci_reset(ehci);
- 
--	ret = usb_add_hcd(hcd, pdev->resource[1].start,
--			  IRQF_SHARED);
-+	irq = platform_get_irq(pdev, 0);
-+
-+	ret = usb_add_hcd(hcd, irq, IRQF_SHARED);
- 	if (ret = 0) {
- 		platform_set_drvdata(pdev, hcd);
- 		return ret;
-@@ -162,6 +167,11 @@ static int vt8500_ehci_drv_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct of_device_id vt8500_ehci_ids[] = {
-+	{ .compatible = "via,vt8500-ehci", },
-+	{}
-+};
-+
- static struct platform_driver vt8500_ehci_driver = {
- 	.probe		= vt8500_ehci_drv_probe,
- 	.remove		= vt8500_ehci_drv_remove,
-@@ -169,7 +179,10 @@ static struct platform_driver vt8500_ehci_driver = {
- 	.driver = {
- 		.name	= "vt8500-ehci",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = of_match_ptr(vt8500_ehci_ids),
- 	}
- };
- 
- MODULE_ALIAS("platform:vt8500-ehci");
-+MODULE_LICENSE("GPL v2");
-+MODULE_DEVICE_TABLE(of, vt8500_ehci_ids);
-diff --git a/drivers/usb/host/uhci-hcd.c b/drivers/usb/host/uhci-hcd.c
-index e4db350..5da5c99 100644
---- a/drivers/usb/host/uhci-hcd.c
-+++ b/drivers/usb/host/uhci-hcd.c
-@@ -846,6 +846,11 @@ static const char hcd_name[] = "uhci_hcd";
- #define PLATFORM_DRIVER		uhci_grlib_driver
- #endif
- 
-+#ifdef CONFIG_ARCH_VT8500
-+#include "uhci-platform.c"
-+#define PLATFORM_DRIVER		uhci_platform_driver
-+#endif
-+
- #if !defined(PCI_DRIVER) && !defined(PLATFORM_DRIVER)
- #error "missing bus glue for uhci-hcd"
- #endif
-diff --git a/drivers/usb/host/uhci-platform.c b/drivers/usb/host/uhci-platform.c
-new file mode 100644
-index 0000000..35ca094
---- /dev/null
-+++ b/drivers/usb/host/uhci-platform.c
-@@ -0,0 +1,169 @@
-+/*
-+ * Generic UHCI HCD (Host Controller Driver) for Platform Devices
-+ *
-+ * Copyright (c) 2011 Tony Prisk <linux@prisktech.co.nz>
-+ *
-+ * This file is based on uhci-grlib.c
-+ * (C) Copyright 2004-2007 Alan Stern, stern@rowland.harvard.edu
-+ */
-+
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+
-+static int uhci_platform_init(struct usb_hcd *hcd)
-+{
-+	struct uhci_hcd *uhci = hcd_to_uhci(hcd);
-+
-+	uhci->rh_numports = uhci_count_ports(hcd);
-+
-+	/* Set up pointers to to generic functions */
-+	uhci->reset_hc = uhci_generic_reset_hc;
-+	uhci->check_and_reset_hc = uhci_generic_check_and_reset_hc;
-+
-+	/* No special actions need to be taken for the functions below */
-+	uhci->configure_hc = NULL;
-+	uhci->resume_detect_interrupts_are_broken = NULL;
-+	uhci->global_suspend_mode_is_broken = NULL;
-+
-+	/* Reset if the controller isn't already safely quiescent. */
-+	check_and_reset_hc(uhci);
-+	return 0;
-+}
-+
-+static const struct hc_driver uhci_platform_hc_driver = {
-+	.description =          hcd_name,
-+	.product_desc =         "Generic UHCI Host Controller",
-+	.hcd_priv_size =        sizeof(struct uhci_hcd),
-+
-+	/* Generic hardware linkage */
-+	.irq =                  uhci_irq,
-+	.flags =                HCD_MEMORY | HCD_USB11,
-+
-+	/* Basic lifecycle operations */
-+	.reset =                uhci_platform_init,
-+	.start =                uhci_start,
-+#ifdef CONFIG_PM
-+	.pci_suspend =          NULL,
-+	.pci_resume =           NULL,
-+	.bus_suspend =          uhci_rh_suspend,
-+	.bus_resume =           uhci_rh_resume,
-+#endif
-+	.stop =                 uhci_stop,
-+
-+	.urb_enqueue =          uhci_urb_enqueue,
-+	.urb_dequeue =          uhci_urb_dequeue,
-+
-+	.endpoint_disable =     uhci_hcd_endpoint_disable,
-+	.get_frame_number =     uhci_hcd_get_frame_number,
-+
-+	.hub_status_data =      uhci_hub_status_data,
-+	.hub_control =          uhci_hub_control,
-+};
-+
-+static u64 platform_uhci_dma_mask = DMA_BIT_MASK(32);
-+
-+static int __devinit uhci_hcd_platform_probe(struct platform_device *pdev)
-+{
-+	struct usb_hcd *hcd;
-+	struct uhci_hcd *uhci;
-+	struct resource *res;
-+	int ret;
-+
-+	if (usb_disabled())
-+		return -ENODEV;
-+
-+	/* Right now device-tree probed devices don't get dma_mask set.
-+	 * Since shared usb code relies on it, set it here for now.
-+	 * Once we have dma capability bindings this can go away.
-+	 */
-+	if (!pdev->dev.dma_mask)
-+		pdev->dev.dma_mask = &platform_uhci_dma_mask;
-+
-+	hcd = usb_create_hcd(&uhci_platform_hc_driver, &pdev->dev,
-+				pdev->name);
-+	if (!hcd)
-+		return -ENOMEM;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	hcd->rsrc_start = res->start;
-+	hcd->rsrc_len = resource_size(res);
-+
-+	if (!request_mem_region(hcd->rsrc_start, hcd->rsrc_len, hcd_name)) {
-+		pr_err("%s: request_mem_region failed\n", __func__);
-+		ret = -EBUSY;
-+		goto err_rmr;
-+	}
-+
-+	hcd->regs = ioremap(hcd->rsrc_start, hcd->rsrc_len);
-+	if (!hcd->regs) {
-+		pr_err("%s: ioremap failed\n", __func__);
-+		ret = -ENOMEM;
-+		goto err_irq;
-+	}
-+	uhci = hcd_to_uhci(hcd);
-+
-+	uhci->regs = hcd->regs;
-+
-+	ret = usb_add_hcd(hcd, pdev->resource[1].start, IRQF_DISABLED |
-+								IRQF_SHARED);
-+	if (ret)
-+		goto err_uhci;
-+
-+	return 0;
-+
-+err_uhci:
-+	iounmap(hcd->regs);
-+err_irq:
-+	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
-+err_rmr:
-+	usb_put_hcd(hcd);
-+
-+	return ret;
-+}
-+
-+static int uhci_hcd_platform_remove(struct platform_device *pdev)
-+{
-+	struct usb_hcd *hcd = platform_get_drvdata(pdev);
-+
-+	usb_remove_hcd(hcd);
-+	iounmap(hcd->regs);
-+	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
-+	usb_put_hcd(hcd);
-+	platform_set_drvdata(pdev, NULL);
-+
-+	return 0;
-+}
-+
-+/* Make sure the controller is quiescent and that we're not using it
-+ * any more.  This is mainly for the benefit of programs which, like kexec,
-+ * expect the hardware to be idle: not doing DMA or generating IRQs.
-+ *
-+ * This routine may be called in a damaged or failing kernel.  Hence we
-+ * do not acquire the spinlock before shutting down the controller.
-+ */
-+static void uhci_hcd_platform_shutdown(struct platform_device *op)
-+{
-+	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
-+
-+	uhci_hc_died(hcd_to_uhci(hcd));
-+}
-+
-+static const struct of_device_id platform_uhci_ids[] = {
-+	{ .compatible = "platform-uhci", },
-+	{}
-+};
-+
-+static struct platform_driver uhci_platform_driver = {
-+	.probe          = uhci_hcd_platform_probe,
-+	.remove         = uhci_hcd_platform_remove,
-+	.shutdown       = uhci_hcd_platform_shutdown,
-+	.driver = {
-+		.name = "platform-uhci",
-+		.owner = THIS_MODULE,
-+		.of_match_table = of_match_ptr(platform_uhci_ids),
-+	},
-+};
-+
-+MODULE_ALIAS("platform:platform-uhci");
-+MODULE_LICENSE("GPL v2");
-+MODULE_DEVICE_TABLE(of, platform_uhci_ids);
--- 
-1.7.9.5
+The test case is to suspend and resume a lot (about 10 times a
+minute). In less than an hour the system will fail to resume - the
+system RAM becomes corrupt on resume and the firmware can't find its
+way back into Linux, so it reboots. This is presumably because the GPU
+is accessing main memory while the system is suspended, causing the
+RAM to come out of self-refresh and lose all its contents before the
+CPU wakes up to resume the system.
 
+I have bisected this to find the first bad commit:
+
+commit b692a63af8b63a7a7e84702a713d0072e336b326
+Author: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date:   Thu Mar 24 14:25:51 2011 +0000
+
+    viafb: add VIA slapping capability
+
+
+On the XO-1.5 this code tries to set IGA1=off IGA2=on. However, a
+later commit causes them both to be turned on, since we enable
+X_COMPATIBILITY (we use X, and we find that setting to be necessary
+for X to work).
+
+
+If I comment the code that modifies IGA1, I find that setting IGA2=on
+causes the crashyness, setting IGA2=off results in the display not
+working at all. The only non-crashy setting here I can find is to not
+touch the IGA2 configuration.
+
+If I comment out the code that modifies IGA2, I find that setting
+IGA1=on causes the crashyness, and setting IGA1=off is stable.
+
+Going one step lower to find exactly which calls are responsible for
+triggering the crashyness, by only enabling one function call at a
+time, I find:
+set_secondary_pll_state(on) only = stable
+set_secondary_clock_state(on) only = crashy
+
+set_primary_pll_state(on) only = stable
+set_primary_clock_state(on) only = crashy
+
+Looking at the set_secondary_clock_state(on) case, I find that the
+Secondary Display Engine (Gated Clock <LCK>) bits 7:6 in IO Port
+3C5.1B are 11 when untouched, and 10 after
+set_secondary_clock_state(on) has run. So the code seems to be doing
+what it intends to do, but its not clear why modifying this register
+effectively switches between 3 behavioural states (stable, no display
+at all, display active but crashy suspend/resume). Also is there
+really any need to modify it or would the default (enable clock only
+if its needed) suffice?
+
+Any ideas?
+
+Thanks,
+Daniel

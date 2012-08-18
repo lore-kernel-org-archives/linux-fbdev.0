@@ -1,45 +1,28 @@
-From: Thomas Meyer <thomas@m3y3r.de>
-Date: Sat, 18 Aug 2012 11:00:38 +0000
-Subject: Re: [UDL] general protection fault in fb_deferred_io_mkwrite()
-Message-Id: <1345287638.19305.4.camel@localhost.localdomain>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Sat, 18 Aug 2012 15:55:41 +0000
+Subject: [patch] video: mb862xxfb: prevent divide by zero bug
+Message-Id: <20120818155541.GB22424@elgon.mountain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344767672.1272.7.camel@localhost.localdomain>
-	 <CAO1w=s8AdkbSNMe8v0HqkosYNKp05+Udk4d-r1TbRb3GMC-MNw@mail.gmail.com>
-In-Reply-To: <CAO1w=s8AdkbSNMe8v0HqkosYNKp05+Udk4d-r1TbRb3GMC-MNw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: Bernie Thompson <bernie@plugable.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, airlied@linux.ie, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, H Hartley Sweeten <hsweeten-3FF4nKcrg1dE2c76skzGb0EOCMrvLtNR@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, kernel-janitors-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Paul Gortmaker <paul.gortmaker-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, David Brown <davidb-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 
-QW0gU29ubnRhZywgZGVuIDEyLjA4LjIwMTIsIDE0OjIyIC0wNzAwIHNjaHJpZWIgQmVybmllIFRo
-b21wc29uOgo+IE9uIFN1biwgQXVnIDEyLCAyMDEyIGF0IDM6MzQgQU0sIFRob21hcyBNZXllciA8
-dGhvbWFzQG0zeTNyLmRlPiB3cm90ZToKPiAgICAgICAgIGd1aWx0eSBkcml2ZXIgaXMgcHJvYmFi
-bHkgdWRsX2ZiLmMKPiAgICAgICAgIGFueSBpZGVhcz8KPiAKPiAKPiBIaSBUaG9tYXMsCgpIaSBC
-ZXJuaWUhCgoKPiBXZSB3ZXJlIHNlZWluZyBzaW1pbGFyIGlzc3VlcyBpbiB1ZGxmYiAodGhlIG9y
-aWdpbmFsIGZiZGV2IHZlcnNpb24gb2YKPiB0aGlzIGRyaXZlciksIHdoaWNoIHdlcmUgZml4ZWQg
-ZWFybGllciB0aGlzIHllYXIgYnkgZ2V0dGluZyBhbGwKPiByZW5kZXJpbmcgb3BlcmF0aW9ucyBv
-dXQgb2YgcHJvYmUvZGlzY29ubmVjdCAtLSB0aG9zZSB3aGljaCBtaWdodAo+IHRyaWdnZXIgZmJf
-ZGVmaW8gcGFnZSBmYXVsdHMgaW4gYW4gaW5hcHByb3ByaWF0ZSBjb250ZXh0LCBvciBiZQo+IGxv
-bmctcnVubmluZy4gSGVyZSdzIHNvbWUgbW9yZSBkZXRhaWw6Cj4gaHR0cDovL3BsdWdhYmxlLmNv
-bS8yMDEyLzA2LzIxL2Rpc3BsYXlsaW5rLXVzYi1kZXZpY2VzLW9uLWxpbnV4LWtlcm5lbC0zLTQt
-MC9jb21tZW50LXBhZ2UtMS8jY29tbWVudC01ODk2IAo+IAo+IAo+IFVuZm9ydHVuYXRlbHksIEkg
-aGF2ZW4ndCBoYWQgdGltZSB0byBnZXQgZ29pbmcgd2l0aCB1ZGwgbXlzZWxmLCBzbwo+IGhhdmVu
-J3QgYmVlbiBhYmxlIHRvIHBvcnQgYW5kIGNvbmZpcm0uICBUaGFua3MgZm9yIHJhaXNpbmcgYW5k
-IHN0YXlpbmcKPiBvbiB0aGlzLgoKT2theSwgSSBzZWUuIEknbGwgc3dpdGNoIHRvIEZCX1VETCBm
-b3Igbm93IGFuZCByZW1vdmUgRFJNX1VETCBmcm9tIG15CmNvbmZpZy4KCklzIHNvbWVib2R5IHdv
-cmtpbmcgb24gcG9ydGluZyBjb21taXQKaHR0cHM6Ly9naXQua2VybmVsLm9yZy8/cD1saW51eC9r
-ZXJuZWwvZ2l0L3RvcnZhbGRzL2xpbnV4LmdpdDthPWNvbW1pdGRpZmY7aI0yMTU0N2QzYzljM2Jj
-NjUzMjYxZjI2ZDU1NGNmYWJjNGEwODNkZSB0byB0aGUgRFJNX1VETCBkcml2ZXI/CgpJbiBBaXJs
-aWUncyB0cmVlIHNlZW1zIHRvIGJlIG5vIGNvbW1pdCByZWxhdGVkIHRvIHRoaXM6CgpodHRwOi8v
-Y2dpdC5mcmVlZGVza3RvcC5vcmcvfmFpcmxpZWQvbGludXgvCgp3aXRoIGtpbmQgcmVnYXJkcwp0
-aG9tYXMKCj4gCj4gCj4gQmVzdCB3aXNoZXMsCj4gQmVybmllIAo+IAo+IAo+ICAgICAgICAgWyAg
-IDQ1LjYzMzMzNl0gUklQICBbPGZmZmZmZmZmODEyM2JlY2M+XQo+ICAgICAgICAgZmJfZGVmZXJy
-ZWRfaW9fbWt3cml0ZSsweGRjLzB4ZjAKPiAgICAgICAgIFsgICA0NS42MzMzMzZdICBSU1AgPGZm
-ZmY4ODAxMjY1NTljOTg+Cj4gICAgICAgICBbICAgNDUuNzExNTQ3XSAtLS1bIGVuZCB0cmFjZSBk
-NDczMmQ1YTBiZjM3NWZiIF0tLS0KPiAgICAgICAgIFsgICA0NS43MjA5NjFdIHJlbGVhc2VkIC9k
-ZXYvZmIxIHVzZXI9MSBjb3VudD0wCj4gICAgICAgICAKPiAKCgoKLS0KVG8gdW5zdWJzY3JpYmUg
-ZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LWZiZGV2IiBp
-bgp0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZwpNb3Jl
-IG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZv
-Lmh0bWw=
+Do a sanity check on these before using them as divisors.
+
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+
+diff --git a/drivers/video/mb862xx/mb862xxfbdrv.c b/drivers/video/mb862xx/mb862xxfbdrv.c
+index 00ce1f3..57d940b 100644
+--- a/drivers/video/mb862xx/mb862xxfbdrv.c
++++ b/drivers/video/mb862xx/mb862xxfbdrv.c
+@@ -328,6 +328,8 @@ static int mb862xxfb_ioctl(struct fb_info *fbi, unsigned int cmd,
+ 	case MB862XX_L1_SET_CFG:
+ 		if (copy_from_user(l1_cfg, argp, sizeof(*l1_cfg)))
+ 			return -EFAULT;
++		if (l1_cfg->dh = 0 || l1_cfg->dw = 0)
++			return -EINVAL;
+ 		if ((l1_cfg->sw >= l1_cfg->dw) && (l1_cfg->sh >= l1_cfg->dh)) {
+ 			/* downscaling */
+ 			outreg(cap, GC_CAP_CSC,

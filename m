@@ -1,58 +1,28 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Thu, 23 Aug 2012 07:35:38 +0000
-Subject: [PATCHv4 2/9] rtc: vt8500: Add devicetree support for vt8500-rtc
-Message-Id: <1345707346-9035-3-git-send-email-linux@prisktech.co.nz>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Sun, 19 Aug 2012 17:28:59 +0000
+Subject: [PATCH 0/6] HID: picoLCD additional fixes + CIR support
+Message-Id: <20120819192859.74136bb0@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345707346-9035-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1345707346-9035-1-git-send-email-linux@prisktech.co.nz>
+References: <20120730213656.0a9f6d30@neptune.home>
+In-Reply-To: <20120730213656.0a9f6d30@neptune.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, Mauro Carvalho Chehab <mchehab@redhat.com>, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
----
- drivers/rtc/rtc-vt8500.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+Hi,
 
-diff --git a/drivers/rtc/rtc-vt8500.c b/drivers/rtc/rtc-vt8500.c
-index 9e94fb1..07bf193 100644
---- a/drivers/rtc/rtc-vt8500.c
-+++ b/drivers/rtc/rtc-vt8500.c
-@@ -23,6 +23,7 @@
- #include <linux/bcd.h>
- #include <linux/platform_device.h>
- #include <linux/slab.h>
-+#include <linux/of.h>
- 
- /*
-  * Register definitions
-@@ -302,12 +303,18 @@ static int __devexit vt8500_rtc_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct of_device_id wmt_dt_ids[] = {
-+	{ .compatible = "via,vt8500-rtc", },
-+	{}
-+};
-+
- static struct platform_driver vt8500_rtc_driver = {
- 	.probe		= vt8500_rtc_probe,
- 	.remove		= __devexit_p(vt8500_rtc_remove),
- 	.driver		= {
- 		.name	= "vt8500-rtc",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = of_match_ptr(wmt_dt_ids),
- 	},
- };
- 
-@@ -315,5 +322,5 @@ module_platform_driver(vt8500_rtc_driver);
- 
- MODULE_AUTHOR("Alexey Charkov <alchark@gmail.com>");
- MODULE_DESCRIPTION("VIA VT8500 SoC Realtime Clock Driver (RTC)");
--MODULE_LICENSE("GPL");
-+MODULE_LICENSE("GPL v2");
- MODULE_ALIAS("platform:vt8500-rtc");
--- 
-1.7.9.5
+This series fixes some race conditions in picoLCD driver during remove()
+and adds support for IR functionality.
 
+Repeatedly binding/unbinding device at hid-picolcd driver level or at
+usbhid level now works properly (except in rare occasions which trigger
+a paging error in interrupt context (memcopy) and seem to come from
+usbhid internals when usbhid gets interrupt between hid_hw_close() and
+hid_hw_stop()).
+
+CIR support is added using RC_CORE for the decoding and handling of
+IR-event stream and works for a Sony and a JVC remote.
+
+Bruno

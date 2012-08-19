@@ -1,189 +1,492 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 30 Aug 2012 11:52:39 +0000
-Subject: [PATCH v2 17/23] OMAPDSS: HDMI: Pass omap_dss_output within the driver
-Message-Id: <1346326845-16583-18-git-send-email-archit@ti.com>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Sun, 19 Aug 2012 17:32:04 +0000
+Subject: [PATCH 2/6] HID: picoLCD: rework hid-fbdev interaction
+Message-Id: <20120819193204.75a35508@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>
- <1346326845-16583-1-git-send-email-archit@ti.com>
-In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
+References: <20120819192859.74136bb0@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-When a panel driver calls a HDMI function, it passes the omap_dss_device
-pointer, this pointer currently propagates within the HDMI driver to configure
-the interface.
+Split out all FB related data out of struct picolcd_data into a struct
+picolcd_fb_data that is allocated with fb_info. This way fb_info may
+cleanly outlive struct picolcd_data for as long as needed for its last
+user to drop his reference.
 
-Extract the omap_dss_output pointer from omap_dss_device received from the panel
-driver, pass the output pointer to HDMI functions local to the driver to
-configure the interface, these functions no longer need omap_dss_device since
-the driver now maintains a copy of output parameters.
+Access to struct picolcd_data is now protected with struct
+picolcd_fb_data's lock and tile  update reports are only generated
+while picolcd_fbdata->picolcd is not NULL and is not marked as failed
+(which indicates unplug in progress).
 
-Replace dssdev->manager references with out->manager references as only these
-will be valid later.
-
-With the addition of outputs. There is a possibility that an omap_dss_device
-isn't connected to an output, or a manager isn't connected to an output yet.
-Ensure that the HDMI interface functions proceed only if the output is non NULL.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
 ---
- drivers/video/omap2/dss/hdmi.c |   40 ++++++++++++++++++++++++----------------
- 1 file changed, 24 insertions(+), 16 deletions(-)
+ drivers/hid/hid-picolcd.h    |   19 +++-
+ drivers/hid/hid-picolcd_fb.c |  216 ++++++++++++++++++++++----------------=
+----
+ 2 files changed, 126 insertions(+), 109 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index d93954d..3c89904 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -407,9 +407,10 @@ unsigned long hdmi_get_pixel_clock(void)
- 	return hdmi.ip_data.cfg.timings.pixel_clock * 1000;
- }
- 
--static void hdmi_compute_pll(struct omap_dss_device *dssdev, int phy,
-+static void hdmi_compute_pll(struct omap_dss_output *out, int phy,
- 		struct hdmi_pll_info *pi)
+diff --git a/drivers/hid/hid-picolcd.h b/drivers/hid/hid-picolcd.h
+index 9200be1..dc4c795 100644
+--- a/drivers/hid/hid-picolcd.h
++++ b/drivers/hid/hid-picolcd.h
+@@ -90,11 +90,6 @@ struct picolcd_data {
+=20
+ #ifdef CONFIG_HID_PICOLCD_FB
+ 	/* Framebuffer stuff */
+-	u8 fb_update_rate;
+-	u8 fb_bpp;
+-	u8 fb_force;
+-	u8 *fb_vbitmap;		/* local copy of what was sent to PicoLCD */
+-	u8 *fb_bitmap;		/* framebuffer */
+ 	struct fb_info *fb_info;
+ #endif /* CONFIG_HID_PICOLCD_FB */
+ #ifdef CONFIG_HID_PICOLCD_LCD
+@@ -119,9 +114,21 @@ struct picolcd_data {
+ 	int status;
+ #define PICOLCD_BOOTLOADER 1
+ #define PICOLCD_FAILED 2
+-#define PICOLCD_READY_FB 4
+ };
+=20
++#ifdef CONFIG_HID_PICOLCD_FB
++struct picolcd_fb_data {
++	/* Framebuffer stuff */
++	spinlock_t lock;
++	struct picolcd_data *picolcd;
++	u8 update_rate;
++	u8 bpp;
++	u8 force;
++	u8 ready;
++	u8 *vbitmap;		/* local copy of what was sent to PicoLCD */
++	u8 *bitmap;		/* framebuffer */
++};
++#endif /* CONFIG_HID_PICOLCD_FB */
+=20
+ /* Find a given report */
+ #define picolcd_in_report(id, dev) picolcd_report(id, dev, HID_INPUT_REPOR=
+T)
+diff --git a/drivers/hid/hid-picolcd_fb.c b/drivers/hid/hid-picolcd_fb.c
+index 4d8e22c..5905bbd 100644
+--- a/drivers/hid/hid-picolcd_fb.c
++++ b/drivers/hid/hid-picolcd_fb.c
+@@ -98,19 +98,26 @@ static const struct fb_var_screeninfo picolcdfb_var =3D=
  {
-+	struct omap_dss_device *dssdev = out->device;
- 	unsigned long clkin, refclk;
- 	u32 mf;
- 
-@@ -458,7 +459,7 @@ static void hdmi_compute_pll(struct omap_dss_device *dssdev, int phy,
- 	DSSDBG("range = %d sd = %d\n", pi->dcofreq, pi->regsd);
- }
- 
--static int hdmi_power_on(struct omap_dss_device *dssdev)
-+static int hdmi_power_on(struct omap_dss_output *out)
+ };
+=20
+ /* Send a given tile to PicoLCD */
+-static int picolcd_fb_send_tile(struct hid_device *hdev, int chip, int til=
+e)
++static int picolcd_fb_send_tile(struct picolcd_data *data, u8 *vbitmap,
++		int chip, int tile)
  {
- 	int r;
- 	struct omap_video_timings *p;
-@@ -468,7 +469,7 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
- 	if (r)
- 		return r;
- 
--	dss_mgr_disable(dssdev->manager);
-+	dss_mgr_disable(out->manager);
- 
- 	p = &hdmi.ip_data.cfg.timings;
- 
-@@ -476,7 +477,7 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
- 
- 	phy = p->pixel_clock;
- 
--	hdmi_compute_pll(dssdev, phy, &hdmi.ip_data.pll_data);
-+	hdmi_compute_pll(out, phy, &hdmi.ip_data.pll_data);
- 
- 	hdmi.ip_data.ops->video_disable(&hdmi.ip_data);
- 
-@@ -504,19 +505,19 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
- 	 * dynamically by user. This can be moved to single location , say
- 	 * Boardfile.
+-	struct picolcd_data *data =3D hid_get_drvdata(hdev);
+-	struct hid_report *report1 =3D picolcd_out_report(REPORT_LCD_CMD_DATA, hd=
+ev);
+-	struct hid_report *report2 =3D picolcd_out_report(REPORT_LCD_DATA, hdev);
++	struct hid_report *report1, *report2;
+ 	unsigned long flags;
+ 	u8 *tdata;
+ 	int i;
+=20
+-	if (!report1 || report1->maxfield !=3D 1 || !report2 || report2->maxfield=
+ !=3D 1)
++	report1 =3D picolcd_out_report(REPORT_LCD_CMD_DATA, data->hdev);
++	if (!report1 || report1->maxfield !=3D 1)
++		return -ENODEV;
++	report2 =3D picolcd_out_report(REPORT_LCD_DATA, data->hdev);
++	if (!report2 || report2->maxfield !=3D 1)
+ 		return -ENODEV;
+=20
+ 	spin_lock_irqsave(&data->lock, flags);
++	if ((data->status & PICOLCD_FAILED)) {
++		spin_unlock_irqrestore(&data->lock, flags);
++		return -ENODEV;
++	}
+ 	hid_set_field(report1->field[0],  0, chip << 2);
+ 	hid_set_field(report1->field[0],  1, 0x02);
+ 	hid_set_field(report1->field[0],  2, 0x00);
+@@ -128,7 +135,7 @@ static int picolcd_fb_send_tile(struct hid_device *hdev=
+, int chip, int tile)
+ 	hid_set_field(report2->field[0],  2, 0x00);
+ 	hid_set_field(report2->field[0],  3,   32);
+=20
+-	tdata =3D data->fb_vbitmap + (tile * 4 + chip) * 64;
++	tdata =3D vbitmap + (tile * 4 + chip) * 64;
+ 	for (i =3D 0; i < 64; i++)
+ 		if (i < 32)
+ 			hid_set_field(report1->field[0], 11 + i, tdata[i]);
+@@ -189,6 +196,7 @@ void picolcd_fb_refresh(struct picolcd_data *data)
+ int picolcd_fb_reset(struct picolcd_data *data, int clear)
+ {
+ 	struct hid_report *report =3D picolcd_out_report(REPORT_LCD_CMD, data->hd=
+ev);
++	struct picolcd_fb_data *fbdata =3D data->fb_info->par;
+ 	int i, j;
+ 	unsigned long flags;
+ 	static const u8 mapcmd[8] =3D { 0x00, 0x02, 0x00, 0x64, 0x3f, 0x00, 0x64,=
+ 0xc0 };
+@@ -207,20 +215,19 @@ int picolcd_fb_reset(struct picolcd_data *data, int c=
+lear)
+ 				hid_set_field(report->field[0], j, 0);
+ 		usbhid_submit_report(data->hdev, report, USB_DIR_OUT);
+ 	}
+-
+-	data->status |=3D PICOLCD_READY_FB;
+ 	spin_unlock_irqrestore(&data->lock, flags);
+=20
+-	if (data->fb_bitmap) {
+-		if (clear) {
+-			memset(data->fb_vbitmap, 0, PICOLCDFB_SIZE);
+-			memset(data->fb_bitmap, 0, PICOLCDFB_SIZE*data->fb_bpp);
+-		}
+-		data->fb_force =3D 1;
++	if (clear) {
++		memset(fbdata->vbitmap, 0, PICOLCDFB_SIZE);
++		memset(fbdata->bitmap, 0, PICOLCDFB_SIZE*fbdata->bpp);
+ 	}
++	fbdata->force =3D 1;
+=20
+ 	/* schedule first output of framebuffer */
+-	picolcd_fb_refresh(data);
++	if (fbdata->ready)
++		schedule_delayed_work(&data->fb_info->deferred_work, 0);
++	else
++		fbdata->ready =3D 1;
+=20
+ 	return 0;
+ }
+@@ -230,20 +237,15 @@ static void picolcd_fb_update(struct fb_info *info)
+ {
+ 	int chip, tile, n;
+ 	unsigned long flags;
++	struct picolcd_fb_data *fbdata =3D info->par;
+ 	struct picolcd_data *data;
+=20
+ 	mutex_lock(&info->lock);
+-	data =3D info->par;
+-	if (!data)
+-		goto out;
+=20
+-	spin_lock_irqsave(&data->lock, flags);
+-	if (!(data->status & PICOLCD_READY_FB)) {
+-		spin_unlock_irqrestore(&data->lock, flags);
+-		picolcd_fb_reset(data, 0);
+-	} else {
+-		spin_unlock_irqrestore(&data->lock, flags);
+-	}
++	spin_lock_irqsave(&fbdata->lock, flags);
++	if (!fbdata->ready && fbdata->picolcd)
++		picolcd_fb_reset(fbdata->picolcd, 0);
++	spin_unlock_irqrestore(&fbdata->lock, flags);
+=20
+ 	/*
+ 	 * Translate the framebuffer into the format needed by the PicoLCD.
+@@ -254,32 +256,38 @@ static void picolcd_fb_update(struct fb_info *info)
  	 */
--	dss_select_dispc_clk_source(dssdev->clocks.dispc.dispc_fclk_src);
-+	dss_select_dispc_clk_source(out->device->clocks.dispc.dispc_fclk_src);
- 
- 	/* bypass TV gamma table */
- 	dispc_enable_gamma_table(0);
- 
- 	/* tv size */
--	dss_mgr_set_timings(dssdev->manager, p);
-+	dss_mgr_set_timings(out->manager, p);
- 
- 	r = hdmi.ip_data.ops->video_enable(&hdmi.ip_data);
- 	if (r)
- 		goto err_vid_enable;
- 
--	r = dss_mgr_enable(dssdev->manager);
-+	r = dss_mgr_enable(out->manager);
- 	if (r)
- 		goto err_mgr_enable;
- 
-@@ -533,9 +534,9 @@ err:
- 	return -EIO;
+ 	n =3D 0;
+ 	for (chip =3D 0; chip < 4; chip++)
+-		for (tile =3D 0; tile < 8; tile++)
+-			if (picolcd_fb_update_tile(data->fb_vbitmap,
+-					data->fb_bitmap, data->fb_bpp, chip, tile) ||
+-				data->fb_force) {
+-				n +=3D 2;
+-				if (n >=3D HID_OUTPUT_FIFO_SIZE / 2) {
+-					mutex_unlock(&info->lock);
+-					usbhid_wait_io(data->hdev);
+-					mutex_lock(&info->lock);
+-					data =3D info->par;
+-					if (!data)
+-						goto out;
+-					spin_lock_irqsave(&data->lock, flags);
+-					if (data->status & PICOLCD_FAILED) {
+-						spin_unlock_irqrestore(&data->lock, flags);
+-						goto out;
+-					}
+-					spin_unlock_irqrestore(&data->lock, flags);
+-					n =3D 0;
+-				}
+-				picolcd_fb_send_tile(data->hdev, chip, tile);
++		for (tile =3D 0; tile < 8; tile++) {
++			if (!fbdata->force && !picolcd_fb_update_tile(
++					fbdata->vbitmap, fbdata->bitmap,
++					fbdata->bpp, chip, tile))
++				continue;
++			n +=3D 2;
++			if (n >=3D HID_OUTPUT_FIFO_SIZE / 2) {
++				spin_lock_irqsave(&fbdata->lock, flags);
++				data =3D fbdata->picolcd;
++				spin_unlock_irqrestore(&fbdata->lock, flags);
++				mutex_unlock(&info->lock);
++				if (!data)
++					return;
++				usbhid_wait_io(data->hdev);
++				mutex_lock(&info->lock);
++				n =3D 0;
+ 			}
+-	data->fb_force =3D false;
++			spin_lock_irqsave(&fbdata->lock, flags);
++			data =3D fbdata->picolcd;
++			spin_unlock_irqrestore(&fbdata->lock, flags);
++			if (!data || picolcd_fb_send_tile(data,
++					fbdata->vbitmap, chip, tile))
++				goto out;
++		}
++	fbdata->force =3D false;
+ 	if (n) {
++		spin_lock_irqsave(&fbdata->lock, flags);
++		data =3D fbdata->picolcd;
++		spin_unlock_irqrestore(&fbdata->lock, flags);
+ 		mutex_unlock(&info->lock);
+-		usbhid_wait_io(data->hdev);
++		if (data)
++			usbhid_wait_io(data->hdev);
+ 		return;
+ 	}
+ out:
+@@ -336,20 +344,22 @@ static ssize_t picolcd_fb_write(struct fb_info *info,=
+ const char __user *buf,
+=20
+ static int picolcd_fb_blank(int blank, struct fb_info *info)
+ {
+-	if (!info->par)
+-		return -ENODEV;
+ 	/* We let fb notification do this for us via lcd/backlight device */
+ 	return 0;
  }
- 
--static void hdmi_power_off(struct omap_dss_device *dssdev)
-+static void hdmi_power_off(struct omap_dss_output *out)
+=20
+ static void picolcd_fb_destroy(struct fb_info *info)
  {
--	dss_mgr_disable(dssdev->manager);
-+	dss_mgr_disable(out->manager);
- 
- 	hdmi.ip_data.ops->video_disable(&hdmi.ip_data);
- 	hdmi.ip_data.ops->phy_disable(&hdmi.ip_data);
-@@ -560,9 +561,13 @@ int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
- void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
- {
-+	struct omap_dss_output *out = dssdev->output;
- 	struct hdmi_cm cm;
- 	const struct hdmi_config *t;
- 
-+	if (out = NULL)
-+		return;
++	struct picolcd_fb_data *fbdata =3D info->par;
 +
- 	mutex_lock(&hdmi.lock);
- 
- 	cm = hdmi_get_code(timings);
-@@ -575,13 +580,13 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev,
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
- 		int r;
- 
--		hdmi_power_off(dssdev);
-+		hdmi_power_off(out);
- 
--		r = hdmi_power_on(dssdev);
-+		r = hdmi_power_on(out);
- 		if (r)
- 			DSSERR("failed to power on device\n");
- 	} else {
--		dss_mgr_set_timings(dssdev->manager, &t->timings);
-+		dss_mgr_set_timings(out->manager, &t->timings);
- 	}
- 
- 	mutex_unlock(&hdmi.lock);
-@@ -640,14 +645,15 @@ bool omapdss_hdmi_detect(void)
- int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
- {
- 	struct omap_dss_hdmi_data *priv = dssdev->data;
-+	struct omap_dss_output *out = dssdev->output;
- 	int r = 0;
- 
- 	DSSDBG("ENTER hdmi_display_enable\n");
- 
- 	mutex_lock(&hdmi.lock);
- 
--	if (dssdev->manager = NULL) {
--		DSSERR("failed to enable display: no manager\n");
-+	if (out = NULL || out->manager = NULL) {
-+		DSSERR("failed to enable display: no output/manager\n");
- 		r = -ENODEV;
- 		goto err0;
- 	}
-@@ -668,7 +674,7 @@ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
- 		}
- 	}
- 
--	r = hdmi_power_on(dssdev);
-+	r = hdmi_power_on(out);
- 	if (r) {
- 		DSSERR("failed to power on device\n");
- 		goto err2;
-@@ -689,11 +695,13 @@ err0:
- 
- void omapdss_hdmi_display_disable(struct omap_dss_device *dssdev)
- {
-+	struct omap_dss_output *out = dssdev->output;
+ 	/* make sure no work is deferred */
+ 	fb_deferred_io_cleanup(info);
+=20
++	/* No thridparty should ever unregister our framebuffer! */
++	WARN_ON(fbdata->picolcd !=3D NULL);
 +
- 	DSSDBG("Enter hdmi_display_disable\n");
- 
- 	mutex_lock(&hdmi.lock);
- 
--	hdmi_power_off(dssdev);
-+	hdmi_power_off(out);
- 
- 	if (dssdev->platform_disable)
- 		dssdev->platform_disable(dssdev);
--- 
-1.7.9.5
+ 	vfree((u8 *)info->fix.smem_start);
+ 	framebuffer_release(info);
+-	printk(KERN_DEBUG "picolcd_fb_destroy(%p)\n", info);
+ }
+=20
+ static int picolcd_fb_check_var(struct fb_var_screeninfo *var, struct fb_i=
+nfo *info)
+@@ -376,17 +386,15 @@ static int picolcd_fb_check_var(struct fb_var_screeni=
+nfo *var, struct fb_info *i
+=20
+ static int picolcd_set_par(struct fb_info *info)
+ {
+-	struct picolcd_data *data =3D info->par;
++	struct picolcd_fb_data *fbdata =3D info->par;
+ 	u8 *tmp_fb, *o_fb;
+-	if (!data)
+-		return -ENODEV;
+-	if (info->var.bits_per_pixel =3D data->fb_bpp)
++	if (info->var.bits_per_pixel =3D fbdata->bpp)
+ 		return 0;
+ 	/* switch between 1/8 bit depths */
+ 	if (info->var.bits_per_pixel !=3D 1 && info->var.bits_per_pixel !=3D 8)
+ 		return -EINVAL;
+=20
+-	o_fb   =3D data->fb_bitmap;
++	o_fb   =3D fbdata->bitmap;
+ 	tmp_fb =3D kmalloc(PICOLCDFB_SIZE*info->var.bits_per_pixel, GFP_KERNEL);
+ 	if (!tmp_fb)
+ 		return -ENOMEM;
+@@ -415,7 +423,7 @@ static int picolcd_set_par(struct fb_info *info)
+ 	}
+=20
+ 	kfree(tmp_fb);
+-	data->fb_bpp      =3D info->var.bits_per_pixel;
++	fbdata->bpp =3D info->var.bits_per_pixel;
+ 	return 0;
+ }
+=20
+@@ -453,7 +461,8 @@ static ssize_t picolcd_fb_update_rate_show(struct devic=
+e *dev,
+ 		struct device_attribute *attr, char *buf)
+ {
+ 	struct picolcd_data *data =3D dev_get_drvdata(dev);
+-	unsigned i, fb_update_rate =3D data->fb_update_rate;
++	struct picolcd_fb_data *fbdata =3D data->fb_info->par;
++	unsigned i, fb_update_rate =3D fbdata->update_rate;
+ 	size_t ret =3D 0;
+=20
+ 	for (i =3D 1; i <=3D PICOLCDFB_UPDATE_RATE_LIMIT; i++)
+@@ -472,6 +481,7 @@ static ssize_t picolcd_fb_update_rate_store(struct devi=
+ce *dev,
+ 		struct device_attribute *attr, const char *buf, size_t count)
+ {
+ 	struct picolcd_data *data =3D dev_get_drvdata(dev);
++	struct picolcd_fb_data *fbdata =3D data->fb_info->par;
+ 	int i;
+ 	unsigned u;
+=20
+@@ -487,8 +497,8 @@ static ssize_t picolcd_fb_update_rate_store(struct devi=
+ce *dev,
+ 	else if (u =3D 0)
+ 		u =3D PICOLCDFB_UPDATE_RATE_DEFAULT;
+=20
+-	data->fb_update_rate =3D u;
+-	data->fb_info->fbdefio->delay =3D HZ / data->fb_update_rate;
++	fbdata->update_rate =3D u;
++	data->fb_info->fbdefio->delay =3D HZ / fbdata->update_rate;
+ 	return count;
+ }
+=20
+@@ -500,30 +510,18 @@ int picolcd_init_framebuffer(struct picolcd_data *dat=
+a)
+ {
+ 	struct device *dev =3D &data->hdev->dev;
+ 	struct fb_info *info =3D NULL;
++	struct picolcd_fb_data *fbdata =3D NULL;
+ 	int i, error =3D -ENOMEM;
+-	u8 *fb_vbitmap =3D NULL;
+-	u8 *fb_bitmap  =3D NULL;
+ 	u32 *palette;
+=20
+-	fb_bitmap =3D vmalloc(PICOLCDFB_SIZE*8);
+-	if (fb_bitmap =3D NULL) {
+-		dev_err(dev, "can't get a free page for framebuffer\n");
+-		goto err_nomem;
+-	}
+-
+-	fb_vbitmap =3D kmalloc(PICOLCDFB_SIZE, GFP_KERNEL);
+-	if (fb_vbitmap =3D NULL) {
+-		dev_err(dev, "can't alloc vbitmap image buffer\n");
+-		goto err_nomem;
+-	}
+-
+-	data->fb_update_rate =3D PICOLCDFB_UPDATE_RATE_DEFAULT;
+ 	/* The extra memory is:
+ 	 * - 256*u32 for pseudo_palette
+ 	 * - struct fb_deferred_io
+ 	 */
+ 	info =3D framebuffer_alloc(256 * sizeof(u32) +
+-			sizeof(struct fb_deferred_io), dev);
++			sizeof(struct fb_deferred_io) +
++			sizeof(struct picolcd_fb_data) +
++			PICOLCDFB_SIZE, dev);
+ 	if (info =3D NULL) {
+ 		dev_err(dev, "failed to allocate a framebuffer\n");
+ 		goto err_nomem;
+@@ -531,74 +529,86 @@ int picolcd_init_framebuffer(struct picolcd_data *dat=
+a)
+=20
+ 	info->fbdefio =3D info->par;
+ 	*info->fbdefio =3D picolcd_fb_defio;
+-	palette  =3D info->par + sizeof(struct fb_deferred_io);
++	info->par +=3D sizeof(struct fb_deferred_io);
++	palette =3D info->par;
++	info->par +=3D 256 * sizeof(u32);
+ 	for (i =3D 0; i < 256; i++)
+ 		palette[i] =3D i > 0 && i < 16 ? 0xff : 0;
+ 	info->pseudo_palette =3D palette;
+-	info->screen_base =3D (char __force __iomem *)fb_bitmap;
+ 	info->fbops =3D &picolcdfb_ops;
+ 	info->var =3D picolcdfb_var;
+ 	info->fix =3D picolcdfb_fix;
+ 	info->fix.smem_len   =3D PICOLCDFB_SIZE*8;
+-	info->fix.smem_start =3D (unsigned long)fb_bitmap;
+-	info->par =3D data;
+ 	info->flags =3D FBINFO_FLAG_DEFAULT;
+=20
+-	data->fb_vbitmap =3D fb_vbitmap;
+-	data->fb_bitmap  =3D fb_bitmap;
+-	data->fb_bpp     =3D picolcdfb_var.bits_per_pixel;
++	fbdata =3D info->par;
++	spin_lock_init(&fbdata->lock);
++	fbdata->picolcd =3D data;
++	fbdata->update_rate =3D PICOLCDFB_UPDATE_RATE_DEFAULT;
++	fbdata->bpp     =3D picolcdfb_var.bits_per_pixel;
++	fbdata->force   =3D 1;
++	fbdata->vbitmap =3D info->par + sizeof(struct picolcd_fb_data);
++	fbdata->bitmap  =3D vmalloc(PICOLCDFB_SIZE*8);
++	if (fbdata->bitmap =3D NULL) {
++		dev_err(dev, "can't get a free page for framebuffer\n");
++		goto err_nomem;
++	}
++	info->screen_base =3D (char __force __iomem *)fbdata->bitmap;
++	info->fix.smem_start =3D (unsigned long)fbdata->bitmap;
++	memset(fbdata->vbitmap, 0xff, PICOLCDFB_SIZE);
++	data->fb_info =3D info;
++
+ 	error =3D picolcd_fb_reset(data, 1);
+ 	if (error) {
+ 		dev_err(dev, "failed to configure display\n");
+ 		goto err_cleanup;
+ 	}
++
+ 	error =3D device_create_file(dev, &dev_attr_fb_update_rate);
+ 	if (error) {
+ 		dev_err(dev, "failed to create sysfs attributes\n");
+ 		goto err_cleanup;
+ 	}
++
+ 	fb_deferred_io_init(info);
+-	data->fb_info    =3D info;
+ 	error =3D register_framebuffer(info);
+ 	if (error) {
+ 		dev_err(dev, "failed to register framebuffer\n");
+ 		goto err_sysfs;
+ 	}
+-	/* schedule first output of framebuffer */
+-	data->fb_force =3D 1;
+-	schedule_delayed_work(&info->deferred_work, 0);
+ 	return 0;
+=20
+ err_sysfs:
+-	fb_deferred_io_cleanup(info);
+ 	device_remove_file(dev, &dev_attr_fb_update_rate);
++	fb_deferred_io_cleanup(info);
+ err_cleanup:
+-	data->fb_vbitmap =3D NULL;
+-	data->fb_bitmap  =3D NULL;
+-	data->fb_bpp     =3D 0;
+ 	data->fb_info    =3D NULL;
+=20
+ err_nomem:
++	if (fbdata)
++		vfree(fbdata->bitmap);
+ 	framebuffer_release(info);
+-	vfree(fb_bitmap);
+-	kfree(fb_vbitmap);
+ 	return error;
+ }
+=20
+ void picolcd_exit_framebuffer(struct picolcd_data *data)
+ {
+ 	struct fb_info *info =3D data->fb_info;
+-	u8 *fb_vbitmap =3D data->fb_vbitmap;
+-
+-	if (!info)
+-		return;
++	struct picolcd_fb_data *fbdata =3D info->par;
++	unsigned long flags;
+=20
+ 	device_remove_file(&data->hdev->dev, &dev_attr_fb_update_rate);
+-	info->par =3D NULL;
++
++	/* disconnect framebuffer from HID dev */
++	spin_lock_irqsave(&fbdata->lock, flags);
++	fbdata->picolcd =3D NULL;
++	spin_unlock_irqrestore(&fbdata->lock, flags);
++
++	/* make sure there is no running update - thus that fbdata->picolcd
++	 * once obtained under lock is guaranteed not to get free() under
++	 * the feet of the deferred work */
++	flush_delayed_work_sync(&info->deferred_work);
++
++	data->fb_info =3D NULL;
+ 	unregister_framebuffer(info);
+-	data->fb_vbitmap =3D NULL;
+-	data->fb_bitmap  =3D NULL;
+-	data->fb_bpp     =3D 0;
+-	data->fb_info    =3D NULL;
+-	kfree(fb_vbitmap);
+ }
+--=20
+1.7.8.6
 

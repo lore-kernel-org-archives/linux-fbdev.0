@@ -1,128 +1,130 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 16 Aug 2012 07:48:30 +0000
-Subject: [PATCH 2/6] OMAPDSS: DSI: Rename dsi_videomode_data to dsi_videomode_timings
-Message-Id: <1345102594-6222-3-git-send-email-archit@ti.com>
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+Date: Mon, 20 Aug 2012 18:09:33 +0000
+Subject: [PATCH 5/7] tgafb: fix mode setting with fbset
+Message-Id: <alpine.DEB.2.00.1208202008131.4009@artax.karlin.mff.cuni.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <343817088-29645-1-git-send-email-archit@ti.com>
- <1345102594-6222-1-git-send-email-archit@ti.com>
-In-Reply-To: <1345102594-6222-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-The struct omap_dss_dsi_videomode_data holds fields which need to be configured
-for DSI to operate in video mode. Rename the struct to dsi_videomode_timings.
+tgafb: fix mode setting with fbset
 
-One reason to do this is because most of the fields in the struct are timings
-related. The other reason is to create a generic op for output specific
-timings. This generic op can be considered as a way to set custom or private
-timings for the output.
+Mode setting in the TGA driver is broken for these reasons:
 
-In the case of OMAP, DSI and RFBI require some more timings apart from the
-regular DISPC timings. The structs omap_dss_videomode_timings and rfbi_timings
-can be considered as these output specific timings respectively.
+- info->fix.line_length is set just once in tgafb_init_fix function. If
+  we change videomode, info->fix.line_length is not recalculated - so
+  the video mode is changed but screen is corrupted because of wrong
+  info->fix.line_length
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+- info->fix.smem_len is set in tgafb_init_fix to the size of the default
+  video mode (640x480). If we set a higher resolution,
+  info->fix.smem_len is smaller than the current screen size, preventing
+  the userspace program from mapping the framebuffer.
+
+This patch fixes it:
+
+- info->fix.line_length initialization is moved to tgafb_set_par so that
+  it is recalculated with each mode change.
+
+- info->fix.smem_len is set to a fixed value representing the real
+  amount of video ram (the values are taken from xfree86 driver).
+
+- add a check to tgafb_check_var to prevent us from setting a videomode
+  that doesn't fit into videoram.
+
+- in tgafb_register, tgafb_init_fix is moved upwards, to be called
+  before fb_find_mode (because fb_find_mode already needs the videoram
+  size set in tgafb_init_fix).
+
+Signed-off-by: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+Cc: stable@kernel.org
+
 ---
- drivers/video/omap2/dss/dsi.c |   32 ++++++++++++++++----------------
- include/video/omapdss.h       |    4 ++--
- 2 files changed, 18 insertions(+), 18 deletions(-)
+ drivers/video/tgafb.c |   15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index c10c8cb..62549f6 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -2366,7 +2366,7 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
- 	if (dsi->mode = OMAP_DSS_DSI_VIDEO_MODE) {
- 		/* DDR_CLK_ALWAYS_ON */
- 		REG_FLD_MOD(dsidev, DSI_CLK_CTRL,
--			dssdev->panel.dsi_vm_data.ddr_clk_always_on, 13, 13);
-+			dssdev->panel.dsi_vm_timings.ddr_clk_always_on, 13, 13);
+Index: linux-3.4.4-fast/drivers/video/tgafb.c
+=================================--- linux-3.4.4-fast.orig/drivers/video/tgafb.c	2012-07-02 02:15:43.000000000 +0200
++++ linux-3.4.4-fast/drivers/video/tgafb.c	2012-07-02 02:16:48.000000000 +0200
+@@ -192,6 +192,8 @@ tgafb_check_var(struct fb_var_screeninfo
+ 
+ 	if (var->xres_virtual != var->xres || var->yres_virtual != var->yres)
+ 		return -EINVAL;
++	if (var->xres * var->yres * (var->bits_per_pixel >> 3) > info->fix.smem_len)
++		return -EINVAL;
+ 	if (var->nonstd)
+ 		return -EINVAL;
+ 	if (1000000000 / var->pixclock > TGA_PLL_MAX_FREQ)
+@@ -272,6 +274,7 @@ tgafb_set_par(struct fb_info *info)
+ 	par->yres = info->var.yres;
+ 	par->pll_freq = pll_freq = 1000000000 / info->var.pixclock;
+ 	par->bits_per_pixel = info->var.bits_per_pixel;
++	info->fix.line_length = par->xres * (par->bits_per_pixel >> 3);
+ 
+ 	tga_type = par->tga_type;
+ 
+@@ -1480,6 +1483,7 @@ tgafb_init_fix(struct fb_info *info)
+ 	int tga_bus_tc = TGA_BUS_TC(par->dev);
+ 	u8 tga_type = par->tga_type;
+ 	const char *tga_type_name = NULL;
++	unsigned memory_size;
+ 
+ 	switch (tga_type) {
+ 	case TGA_TYPE_8PLANE:
+@@ -1487,21 +1491,25 @@ tgafb_init_fix(struct fb_info *info)
+ 			tga_type_name = "Digital ZLXp-E1";
+ 		if (tga_bus_tc)
+ 			tga_type_name = "Digital ZLX-E1";
++		memory_size = 2097152;
+ 		break;
+ 	case TGA_TYPE_24PLANE:
+ 		if (tga_bus_pci)
+ 			tga_type_name = "Digital ZLXp-E2";
+ 		if (tga_bus_tc)
+ 			tga_type_name = "Digital ZLX-E2";
++		memory_size = 8388608;
+ 		break;
+ 	case TGA_TYPE_24PLUSZ:
+ 		if (tga_bus_pci)
+ 			tga_type_name = "Digital ZLXp-E3";
+ 		if (tga_bus_tc)
+ 			tga_type_name = "Digital ZLX-E3";
++		memory_size = 16777216;
+ 		break;
+ 	default:
+ 		tga_type_name = "Unknown";
++		memory_size = 16777216;
+ 		break;
  	}
  
- 	dsi->ulps_enabled = false;
-@@ -2704,7 +2704,7 @@ void omapdss_dsi_vc_enable_hs(struct omap_dss_device *dssdev, int channel,
- 	dsi_force_tx_stop_mode_io(dsidev);
+@@ -1513,9 +1521,8 @@ tgafb_init_fix(struct fb_info *info)
+ 			    ? FB_VISUAL_PSEUDOCOLOR
+ 			    : FB_VISUAL_DIRECTCOLOR);
  
- 	/* start the DDR clock by sending a NULL packet */
--	if (dssdev->panel.dsi_vm_data.ddr_clk_always_on && enable)
-+	if (dssdev->panel.dsi_vm_timings.ddr_clk_always_on && enable)
- 		dsi_vc_send_null(dssdev, channel);
- }
- EXPORT_SYMBOL(omapdss_dsi_vc_enable_hs);
-@@ -3638,8 +3638,8 @@ static void dsi_config_vp_num_line_buffers(struct omap_dss_device *dssdev)
- static void dsi_config_vp_sync_events(struct omap_dss_device *dssdev)
- {
- 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
--	bool vsync_end = dssdev->panel.dsi_vm_data.vp_vsync_end;
--	bool hsync_end = dssdev->panel.dsi_vm_data.vp_hsync_end;
-+	bool vsync_end = dssdev->panel.dsi_vm_timings.vp_vsync_end;
-+	bool hsync_end = dssdev->panel.dsi_vm_timings.vp_hsync_end;
- 	u32 r;
+-	info->fix.line_length = par->xres * (par->bits_per_pixel >> 3);
+ 	info->fix.smem_start = (size_t) par->tga_fb_base;
+-	info->fix.smem_len = info->fix.line_length * par->yres;
++	info->fix.smem_len = memory_size;
+ 	info->fix.mmio_start = (size_t) par->tga_regs_base;
+ 	info->fix.mmio_len = 512;
  
- 	r = dsi_read_reg(dsidev, DSI_CTRL);
-@@ -3656,10 +3656,10 @@ static void dsi_config_vp_sync_events(struct omap_dss_device *dssdev)
- static void dsi_config_blanking_modes(struct omap_dss_device *dssdev)
- {
- 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
--	int blanking_mode = dssdev->panel.dsi_vm_data.blanking_mode;
--	int hfp_blanking_mode = dssdev->panel.dsi_vm_data.hfp_blanking_mode;
--	int hbp_blanking_mode = dssdev->panel.dsi_vm_data.hbp_blanking_mode;
--	int hsa_blanking_mode = dssdev->panel.dsi_vm_data.hsa_blanking_mode;
-+	int blanking_mode = dssdev->panel.dsi_vm_timings.blanking_mode;
-+	int hfp_blanking_mode = dssdev->panel.dsi_vm_timings.hfp_blanking_mode;
-+	int hbp_blanking_mode = dssdev->panel.dsi_vm_timings.hbp_blanking_mode;
-+	int hsa_blanking_mode = dssdev->panel.dsi_vm_timings.hsa_blanking_mode;
- 	u32 r;
+@@ -1640,6 +1647,9 @@ tgafb_register(struct device *dev)
+ 		modedb_tga = &modedb_tc;
+ 		modedbsize_tga = 1;
+ 	}
++
++	tgafb_init_fix(info);
++
+ 	ret = fb_find_mode(&info->var, info,
+ 			   mode_option ? mode_option : mode_option_tga,
+ 			   modedb_tga, modedbsize_tga, NULL,
+@@ -1657,7 +1667,6 @@ tgafb_register(struct device *dev)
+ 	}
  
- 	/*
-@@ -3992,14 +3992,14 @@ static void dsi_proto_timings(struct omap_dss_device *dssdev)
+ 	tgafb_set_par(info);
+-	tgafb_init_fix(info);
  
- 	 if (dsi->mode = OMAP_DSS_DSI_VIDEO_MODE) {
- 		/* TODO: Implement a video mode check_timings function */
--		int hsa = dssdev->panel.dsi_vm_data.hsa;
--		int hfp = dssdev->panel.dsi_vm_data.hfp;
--		int hbp = dssdev->panel.dsi_vm_data.hbp;
--		int vsa = dssdev->panel.dsi_vm_data.vsa;
--		int vfp = dssdev->panel.dsi_vm_data.vfp;
--		int vbp = dssdev->panel.dsi_vm_data.vbp;
--		int window_sync = dssdev->panel.dsi_vm_data.window_sync;
--		bool hsync_end = dssdev->panel.dsi_vm_data.vp_hsync_end;
-+		int hsa = dssdev->panel.dsi_vm_timings.hsa;
-+		int hfp = dssdev->panel.dsi_vm_timings.hfp;
-+		int hbp = dssdev->panel.dsi_vm_timings.hbp;
-+		int vsa = dssdev->panel.dsi_vm_timings.vsa;
-+		int vfp = dssdev->panel.dsi_vm_timings.vfp;
-+		int vbp = dssdev->panel.dsi_vm_timings.vbp;
-+		int window_sync = dssdev->panel.dsi_vm_timings.window_sync;
-+		bool hsync_end = dssdev->panel.dsi_vm_timings.vp_hsync_end;
- 		struct omap_video_timings *timings = &dsi->timings;
- 		int bpp = dsi_get_pixel_size(dsi->pix_fmt);
- 		int tl, t_he, width_bytes;
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index ef14ac5..363235c 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -243,7 +243,7 @@ void rfbi_bus_unlock(void);
- 
- /* DSI */
- 
--struct omap_dss_dsi_videomode_data {
-+struct omap_dss_dsi_videomode_timings {
- 	/* DSI video mode blanking data */
- 	/* Unit: byte clock cycles */
- 	u16 hsa;
-@@ -564,7 +564,7 @@ struct omap_dss_device {
- 
- 		enum omap_dss_dsi_pixel_format dsi_pix_fmt;
- 		enum omap_dss_dsi_mode dsi_mode;
--		struct omap_dss_dsi_videomode_data dsi_vm_data;
-+		struct omap_dss_dsi_videomode_timings dsi_vm_timings;
- 	} panel;
- 
- 	struct {
--- 
-1.7.9.5
+ 	if (register_framebuffer(info) < 0) {
+ 		printk(KERN_ERR "tgafb: Could not register framebuffer\n");
 

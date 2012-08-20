@@ -1,229 +1,62 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 30 Aug 2012 11:52:40 +0000
-Subject: [PATCH v2 18/23] OMAPDSS: HDMI: Add dssdev pointer as an argument to all functions used by hdmi pane
-Message-Id: <1346326845-16583-19-git-send-email-archit@ti.com>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Mon, 20 Aug 2012 13:36:35 +0000
+Subject: [PATCH V5 4/6] OMAPDSS: VENC: Remove cpu_is_xxxx checks
+Message-Id: <20da18d29ba948e3cab7cc87184a33d7407c5ada.1345468541.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>
- <1346326845-16583-1-git-send-email-archit@ti.com>
-In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
+References: <cover.1343912532.git.cmahapatra@ti.com> <cover.1345468541.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1345468541.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-All functions of an output driver used by a panel driver should have an
-omap_dss_device pointer as an argument. This is needed as the function would
-somehow need to retrieve the output driver's private data. It may not be needed
-by some of the outputs for now as driver data is globally visible within them.
-The correct way to retrieve driver data is to extract the platform device from
-the output, and then extract the driver data from the platform device.
+OMAP4 checks are removed from VENC to provide it a cleaner interface. These
+checks were introduced by patches "HACK: OMAP: DSS2: VENC: disable VENC on OMAP4
+to prevent crash" (ba02fa37de) by Tomi Valkeinen <tomi.valkeinen@ti.com> and
+"OMAPDSS: VENC: fix NULL pointer dereference in DSS2 VENC sysfs debug attr on
+OMAP4" (cc1d3e032d)  by Danny Kukawka <danny.kukawka@bisect.de> to prevent VENC
+from crashing OMAP4 kernel. An alternative approach is used to do the same in
+later patches.
 
-Add dssdev arguments to functions used by panel drivers which currently miss it.
-This will come to use when the HDMI functions retrieve the driver data in the
-correct manner.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
 ---
- drivers/video/omap2/dss/dss.h        |   17 +++++++++--------
- drivers/video/omap2/dss/hdmi.c       |   17 +++++++++--------
- drivers/video/omap2/dss/hdmi_panel.c |   20 ++++++++++----------
- 3 files changed, 28 insertions(+), 26 deletions(-)
+ drivers/video/omap2/dss/venc.c |   11 -----------
+ 1 file changed, 11 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index de2fb9d..11c245d 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -506,17 +506,18 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings);
- int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
- 					struct omap_video_timings *timings);
--int omapdss_hdmi_read_edid(u8 *buf, int len);
--bool omapdss_hdmi_detect(void);
-+int omapdss_hdmi_read_edid(struct omap_dss_device *dssdev, u8 *buf, int len);
-+bool omapdss_hdmi_detect(struct omap_dss_device *dssdev);
- int hdmi_panel_init(void);
- void hdmi_panel_exit(void);
- #ifdef CONFIG_OMAP4_DSS_HDMI_AUDIO
--int hdmi_audio_enable(void);
--void hdmi_audio_disable(void);
--int hdmi_audio_start(void);
--void hdmi_audio_stop(void);
--bool hdmi_mode_has_audio(void);
--int hdmi_audio_config(struct omap_dss_audio *audio);
-+int hdmi_audio_enable(struct omap_dss_device *dssdev);
-+void hdmi_audio_disable(struct omap_dss_device *dssdev);
-+int hdmi_audio_start(struct omap_dss_device *dssdev);
-+void hdmi_audio_stop(struct omap_dss_device *dssdev);
-+bool hdmi_mode_has_audio(struct omap_dss_device *dssdev);
-+int hdmi_audio_config(struct omap_dss_device *dssdev,
-+		struct omap_dss_audio *audio);
- #endif
- 
- /* RFBI */
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 3c89904..2d3b959 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -608,7 +608,7 @@ static void hdmi_dump_regs(struct seq_file *s)
- 	mutex_unlock(&hdmi.lock);
- }
- 
--int omapdss_hdmi_read_edid(u8 *buf, int len)
-+int omapdss_hdmi_read_edid(struct omap_dss_device *dssdev, u8 *buf, int len)
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 3a22087..8fc165a 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -752,11 +752,6 @@ static void venc_dump_regs(struct seq_file *s)
  {
- 	int r;
+ #define DUMPREG(r) seq_printf(s, "%-35s %08x\n", #r, venc_read_reg(r))
  
-@@ -625,7 +625,7 @@ int omapdss_hdmi_read_edid(u8 *buf, int len)
- 	return r;
- }
+-	if (cpu_is_omap44xx()) {
+-		seq_printf(s, "VENC currently disabled on OMAP44xx\n");
+-		return;
+-	}
+-
+ 	if (venc_runtime_get())
+ 		return;
  
--bool omapdss_hdmi_detect(void)
-+bool omapdss_hdmi_detect(struct omap_dss_device *dssdev)
+@@ -971,16 +966,10 @@ static struct platform_driver omap_venchw_driver = {
+ 
+ int __init venc_init_platform_driver(void)
  {
- 	int r;
- 
-@@ -833,35 +833,35 @@ int hdmi_compute_acr(u32 sample_freq, u32 *n, u32 *cts)
- 	return 0;
+-	if (cpu_is_omap44xx())
+-		return 0;
+-
+ 	return platform_driver_probe(&omap_venchw_driver, omap_venchw_probe);
  }
  
--int hdmi_audio_enable(void)
-+int hdmi_audio_enable(struct omap_dss_device *dssdev)
+ void __exit venc_uninit_platform_driver(void)
  {
- 	DSSDBG("audio_enable\n");
- 
- 	return hdmi.ip_data.ops->audio_enable(&hdmi.ip_data);
+-	if (cpu_is_omap44xx())
+-		return;
+-
+ 	platform_driver_unregister(&omap_venchw_driver);
  }
- 
--void hdmi_audio_disable(void)
-+void hdmi_audio_disable(struct omap_dss_device *dssdev)
- {
- 	DSSDBG("audio_disable\n");
- 
- 	hdmi.ip_data.ops->audio_disable(&hdmi.ip_data);
- }
- 
--int hdmi_audio_start(void)
-+int hdmi_audio_start(struct omap_dss_device *dssdev)
- {
- 	DSSDBG("audio_start\n");
- 
- 	return hdmi.ip_data.ops->audio_start(&hdmi.ip_data);
- }
- 
--void hdmi_audio_stop(void)
-+void hdmi_audio_stop(struct omap_dss_device *dssdev)
- {
- 	DSSDBG("audio_stop\n");
- 
- 	hdmi.ip_data.ops->audio_stop(&hdmi.ip_data);
- }
- 
--bool hdmi_mode_has_audio(void)
-+bool hdmi_mode_has_audio(struct omap_dss_device *dssdev)
- {
- 	if (hdmi.ip_data.cfg.cm.mode = HDMI_HDMI)
- 		return true;
-@@ -869,7 +869,8 @@ bool hdmi_mode_has_audio(void)
- 		return false;
- }
- 
--int hdmi_audio_config(struct omap_dss_audio *audio)
-+int hdmi_audio_config(struct omap_dss_device *dssdev,
-+		struct omap_dss_audio *audio)
- {
- 	return hdmi.ip_data.ops->audio_config(&hdmi.ip_data, audio);
- }
-diff --git a/drivers/video/omap2/dss/hdmi_panel.c b/drivers/video/omap2/dss/hdmi_panel.c
-index 69fb115..ef3fc86 100644
---- a/drivers/video/omap2/dss/hdmi_panel.c
-+++ b/drivers/video/omap2/dss/hdmi_panel.c
-@@ -88,13 +88,13 @@ static int hdmi_panel_audio_enable(struct omap_dss_device *dssdev)
- 
- 	/* enable audio only if the display is active and supports audio */
- 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE ||
--	    !hdmi_mode_has_audio()) {
-+	    !hdmi_mode_has_audio(dssdev)) {
- 		DSSERR("audio not supported or display is off\n");
- 		r = -EPERM;
- 		goto err;
- 	}
- 
--	r = hdmi_audio_enable();
-+	r = hdmi_audio_enable(dssdev);
- 
- 	if (!r)
- 		dssdev->audio_state = OMAP_DSS_AUDIO_ENABLED;
-@@ -111,7 +111,7 @@ static void hdmi_panel_audio_disable(struct omap_dss_device *dssdev)
- 
- 	spin_lock_irqsave(&hdmi.audio_lock, flags);
- 
--	hdmi_audio_disable();
-+	hdmi_audio_disable(dssdev);
- 
- 	dssdev->audio_state = OMAP_DSS_AUDIO_DISABLED;
- 
-@@ -134,7 +134,7 @@ static int hdmi_panel_audio_start(struct omap_dss_device *dssdev)
- 		goto err;
- 	}
- 
--	r = hdmi_audio_start();
-+	r = hdmi_audio_start(dssdev);
- 
- 	if (!r)
- 		dssdev->audio_state = OMAP_DSS_AUDIO_PLAYING;
-@@ -150,7 +150,7 @@ static void hdmi_panel_audio_stop(struct omap_dss_device *dssdev)
- 
- 	spin_lock_irqsave(&hdmi.audio_lock, flags);
- 
--	hdmi_audio_stop();
-+	hdmi_audio_stop(dssdev);
- 	dssdev->audio_state = OMAP_DSS_AUDIO_ENABLED;
- 
- 	spin_unlock_irqrestore(&hdmi.audio_lock, flags);
-@@ -165,7 +165,7 @@ static bool hdmi_panel_audio_supported(struct omap_dss_device *dssdev)
- 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
- 		goto err;
- 
--	if (!hdmi_mode_has_audio())
-+	if (!hdmi_mode_has_audio(dssdev))
- 		goto err;
- 
- 	r = true;
-@@ -185,13 +185,13 @@ static int hdmi_panel_audio_config(struct omap_dss_device *dssdev,
- 
- 	/* config audio only if the display is active and supports audio */
- 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE ||
--	    !hdmi_mode_has_audio()) {
-+	    !hdmi_mode_has_audio(dssdev)) {
- 		DSSERR("audio not supported or display is off\n");
- 		r = -EPERM;
- 		goto err;
- 	}
- 
--	r = hdmi_audio_config(audio);
-+	r = hdmi_audio_config(dssdev, audio);
- 
- 	if (!r)
- 		dssdev->audio_state = OMAP_DSS_AUDIO_CONFIGURED;
-@@ -388,7 +388,7 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev, u8 *buf, int len)
- 			goto err;
- 	}
- 
--	r = omapdss_hdmi_read_edid(buf, len);
-+	r = omapdss_hdmi_read_edid(dssdev, buf, len);
- 
- 	if (dssdev->state = OMAP_DSS_DISPLAY_DISABLED ||
- 			dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED)
-@@ -411,7 +411,7 @@ static bool hdmi_detect(struct omap_dss_device *dssdev)
- 			goto err;
- 	}
- 
--	r = omapdss_hdmi_detect();
-+	r = omapdss_hdmi_detect(dssdev);
- 
- 	if (dssdev->state = OMAP_DSS_DISPLAY_DISABLED ||
- 			dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED)
 -- 
-1.7.9.5
+1.7.10
 

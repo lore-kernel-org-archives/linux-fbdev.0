@@ -1,102 +1,56 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Wed, 22 Aug 2012 06:49:56 +0000
-Subject: [PATCH V6 2/6] OMAPDSS: DSS: Remove redundant functions
-Message-Id: <5480ad3e240884585b85c152cdef145457564f03.1345616887.git.cmahapatra@ti.com>
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+Date: Mon, 20 Aug 2012 18:12:33 +0000
+Subject: [PATCH 7/7] tgafb: avoid restriction on modes with line length not a multiple of 64
+Message-Id: <alpine.DEB.2.00.1208202010180.4009@artax.karlin.mff.cuni.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1345468541.git.cmahapatra@ti.com> <cover.1345616887.git.cmahapatra@ti.com>
-In-Reply-To: <cover.1345616887.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Functions dss_calc_clock_rates() and dss_get_clock_div() are removed as these
-functions have become redundant and no longer used.
+tgafb: avoid restriction on modes with line length not a multiple of 64
 
-Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+In tgafb there is a restriction that prevents the user from setting a
+videomode with line length not a multiple of 64 bytes (for example
+800x600 is not allowed).
+
+The reason for this restriction it that functions copyarea_line_8bpp and
+copyarea_line_32bpp can not handle a line length that is not a multiple
+of 64 bytes.
+
+This patch removes this restriction on mode setting and makes sure that
+the functions copyarea_line_8bpp and copyarea_line_32bpp are called only
+if line length is a multiple of 64 bytes. If we set a mode 800x600,
+the functions copyarea_line_8bpp and copyarea_line_32bpp are not used,
+generic functions for copying are used instead and it works just fine.
+
+Signed-off-by: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+
 ---
- drivers/video/omap2/dss/dss.c |   45 -----------------------------------------
- drivers/video/omap2/dss/dss.h |    2 --
- 2 files changed, 47 deletions(-)
+ drivers/video/tgafb.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 92353be..e2e0fa4 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -431,31 +431,6 @@ enum omap_dss_clk_source dss_get_lcd_clk_source(enum omap_channel channel)
- 	}
- }
+Index: linux-3.6-rc2-fast/drivers/video/tgafb.c
+=================================--- linux-3.6-rc2-fast.orig/drivers/video/tgafb.c	2012-08-20 19:40:02.000000000 +0200
++++ linux-3.6-rc2-fast/drivers/video/tgafb.c	2012-08-20 19:40:33.000000000 +0200
+@@ -202,8 +202,8 @@ tgafb_check_var(struct fb_var_screeninfo
+ 		return -EINVAL;
  
--/* calculate clock rates using dividers in cinfo */
--int dss_calc_clock_rates(struct dss_clock_info *cinfo)
--{
--	if (dss.dpll4_m4_ck) {
--		unsigned long prate;
--		u16 fck_div_max = 16;
--
--		if (cpu_is_omap3630() || cpu_is_omap44xx())
--			fck_div_max = 32;
--
--		if (cinfo->fck_div > fck_div_max || cinfo->fck_div = 0)
--			return -EINVAL;
--
--		prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
--
--		cinfo->fck = prate / cinfo->fck_div;
--	} else {
--		if (cinfo->fck_div != 0)
--			return -EINVAL;
--		cinfo->fck = clk_get_rate(dss.dss_clk);
--	}
--
--	return 0;
--}
--
- int dss_set_clock_div(struct dss_clock_info *cinfo)
- {
- 	if (dss.dpll4_m4_ck) {
-@@ -478,26 +453,6 @@ int dss_set_clock_div(struct dss_clock_info *cinfo)
+ 	/* Some of the acceleration routines assume the line width is
+-	   a multiple of 64 bytes.  */
+-	if (var->xres * (par->tga_type = TGA_TYPE_8PLANE ? 1 : 4) % 64)
++	   a multiple of 8 bytes.  */
++	if (var->xres % 8)
+ 		return -EINVAL;
+ 
  	return 0;
- }
+@@ -1290,7 +1290,7 @@ tgafb_copyarea(struct fb_info *info, con
+ 	bpp = info->var.bits_per_pixel;
  
--int dss_get_clock_div(struct dss_clock_info *cinfo)
--{
--	cinfo->fck = clk_get_rate(dss.dss_clk);
--
--	if (dss.dpll4_m4_ck) {
--		unsigned long prate;
--
--		prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
--
--		if (cpu_is_omap3630() || cpu_is_omap44xx())
--			cinfo->fck_div = prate / (cinfo->fck);
--		else
--			cinfo->fck_div = prate / (cinfo->fck / 2);
--	} else {
--		cinfo->fck_div = 0;
--	}
--
--	return 0;
--}
--
- unsigned long dss_get_dpll4_rate(void)
- {
- 	if (dss.dpll4_m4_ck)
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 41c00dc..d6cca82 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -296,9 +296,7 @@ void dss_set_venc_output(enum omap_dss_venc_type type);
- void dss_set_dac_pwrdn_bgz(bool enable);
- 
- unsigned long dss_get_dpll4_rate(void);
--int dss_calc_clock_rates(struct dss_clock_info *cinfo);
- int dss_set_clock_div(struct dss_clock_info *cinfo);
--int dss_get_clock_div(struct dss_clock_info *cinfo);
- int dss_calc_clock_div(unsigned long req_pck, struct dss_clock_info *dss_cinfo,
- 		struct dispc_clock_info *dispc_cinfo);
- 
--- 
-1.7.10
+ 	/* Detect copies of the entire line.  */
+-	if (width * (bpp >> 3) = line_length) {
++	if (!(line_length & 63) && width * (bpp >> 3) = line_length) {
+ 		if (bpp = 8)
+ 			copyarea_line_8bpp(info, dy, sy, height, width);
+ 		else
 

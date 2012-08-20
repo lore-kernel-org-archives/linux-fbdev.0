@@ -1,75 +1,37 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 20 Aug 2012 08:42:04 +0000
+Date: Mon, 20 Aug 2012 10:46:22 +0000
 Subject: Re: [PATCH V4 3/6] OMAPDSS: DSS: Cleanup cpu_is_xxxx checks
-Message-Id: <1345452124.2684.7.camel@deskari>
+Message-Id: <1345459582.2684.9.camel@deskari>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-4ZmKEQr5AnnWLbAMg10a"
+Content-Type: multipart/mixed; boundary="=-bDEtVfhFTiIa77Of8X68"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1344859176-4512-1-git-send-email-cmahapatra@ti.com>
 	 <1345115913-6773-1-git-send-email-cmahapatra@ti.com>
-	 <1345211692.3158.160.camel@deskari>
-In-Reply-To: <1345211692.3158.160.camel@deskari>
-To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+	 <1345211692.3158.160.camel@deskari> <1345452124.2684.7.camel@deskari>
+	 <CAF0AtAtePhxTsoCyatfXWR+e4sc3WHmg=Wq_ZXkowoGpOg63FA@mail.gmail.com>
+In-Reply-To: <CAF0AtAtePhxTsoCyatfXWR+e4sc3WHmg=Wq_ZXkowoGpOg63FA@mail.gmail.com>
+To: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
 
---=-4ZmKEQr5AnnWLbAMg10a
+--=-bDEtVfhFTiIa77Of8X68
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2012-08-17 at 16:54 +0300, Tomi Valkeinen wrote:
-> On Thu, 2012-08-16 at 16:48 +0530, Chandrabhanu Mahapatra wrote:
-> > All the cpu_is checks have been moved to dss_init_features function pro=
-viding a
-> > much more generic and cleaner interface. The OMAP version and revision =
-specific
-> > initializations in various functions are cleaned and the necessary data=
- are
-> > moved to dss_features structure which is local to dss.c.
-> >=20
-> > Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
->=20
-> > +static int __init dss_init_features(struct device *dev)
-> > +{
-> > +	dss.feat =3D devm_kzalloc(dev, sizeof(*dss.feat), GFP_KERNEL);
-> > +	if (!dss.feat) {
-> > +		dev_err(dev, "Failed to allocate local DSS Features\n");
-> > +		return -ENOMEM;
-> > +	}
-> > +
-> > +	if (cpu_is_omap24xx())
-> > +		dss.feat =3D &omap24xx_dss_features;
-> > +	else if (cpu_is_omap34xx())
-> > +		dss.feat =3D &omap34xx_dss_features;
-> > +	else if (cpu_is_omap3630())
-> > +		dss.feat =3D &omap3630_dss_features;
-> > +	else if (cpu_is_omap44xx())
-> > +		dss.feat =3D &omap44xx_dss_features;
-> > +	else
-> > +		return -ENODEV;
-> > +
-> > +	return 0;
-> > +}
->=20
-> This is not correct (and same problem in dispc). You allocate the feat
-> struct and assign the pointer to dss.feat, but then overwrite dss.feat
-> pointer with the pointer to omap24xx_dss_features (which is freed
-> later). You need to memcpy it.
->=20
-> I also get a crash on omap3 overo board when loading omapdss:
+On Mon, 2012-08-20 at 16:06 +0530, Mahapatra, Chandrabhanu wrote:
 
-The crash happens because dss_get_clocks uses the feat stuff, but the
-dss_init_features is only called later. Did you test this? I can't see
-how that can work on any board.
+> By releasing resources did you mean the dss.feat memory? I think
+> dss_init_features call is wrongly placed and should be placed at the
+> very beginning of the probe function.
 
-Also, in the current place you have dss_init_features call, in case
-there's an error you can't just return, you need to release the
-resources. The same problem is in the dispc.c.
+I meant e.g. pm_runtime_disable() etc. But if the call is moved t the
+beginning, there's nothing to release.
 
  Tomi
 
 
---=-4ZmKEQr5AnnWLbAMg10a
+
+--=-bDEtVfhFTiIa77Of8X68
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
@@ -77,20 +39,20 @@ Content-Transfer-Encoding: 7bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABAgAGBQJQMfhcAAoJEPo9qoy8lh71w0EP/RI+8sPuYBQjdd0sX+aOmrDW
-Vr4tbMj4p1vDLZY743Sovx16yUvgiEZnc0I9q5pR/LeUGayGlQq0pNTWR/xjR+wY
-FUF9VRcIl4r+ywdQtKUABDpji/jXI1yC3oS9qIjpekD1rh+K+8CMyCA+RXhOepRr
-fm0oHtgfEswQ86A0SRftkIdbd+plRdv4w82LoioF6tfmLhVeipj1q9fwMAxAY24g
-MjnTHEd1d+ucRBvEkG6YkdxiBcBdvJjWRPCU+I/yLULD78grUlSmWS/AmE4LvzHp
-l/AWsPQbdpSiiylRN7xBQ6srT7daoj1pf8iLAlspZXw+We+bVrvwV+8a4bVZNGpe
-Iz9cuAq3JXhBOcejLWy35QUKCwhmE6sSbCQmvBSkstb3LPzkJ4Gd7k2dZMNBURZa
-S10HYl9gha5BUNtGiz0KCuWQ/bUml9psyhriPpG6D2/Clw4seH0dLK7mID8X/o+R
-h3LxjFi2q+MPrURThA2VhTKObTncwFQrsh8bs289YinU+jqxAX8wnX/ysLFZsZox
-s7z9CIiU3tJZazuzjYq0PuqyaOnHAojiIG0M02V7Tm5DFgdAYEqz+2nrayAbCyXa
-GTV8kHwyo0UEA3nDD0590+86ytmUehcgWPoLS1tW4GRkgiY67zV4BC8UBF2Akyms
-HNBXonhlfYU9JtTsF3/5
-=JhDh
+iQIcBAABAgAGBQJQMhV+AAoJEPo9qoy8lh71ljkP/0R9L1ziunE67/SOmmyLE/KN
+J0eKRSjOr48znKXaAgw758mkvtc+MscoF8vJjHGAQiTMnMXyP3obWQFk0inIsmTI
+KYXGJGkRWMkNCq4/y0Dr9SZ7YC0BVY0+ORlbczf6Tbrj+jlY/CMCeaLwaD8DWo8/
+FEg4d4Upgbyv2nq3YWeNsnQMml+TPCBW9nIbvTuAlwliTCR/fxfLnJCY+kfx8mEJ
+M2iwVecU8iJZxJmsu33/SAFNj4NiKeeWlrw5yfYiFIteITghGlpcnNH0vPLGkeWA
+uSveE5xL2KIG70/FGfJ1e69hYRrV+W/YEDCfoOcqlOqRyNaM7JEV6gtWqkQqMvSX
+kNrozxCnuPpHGT1ILsmX1pbybifOXTBPR0mUPKRsyKjomf+j1cTs2EZifpyuwViz
+lsstPcvn0UfBgO1qIi7lZtWzoMRAceeKbC67me91WYFXgMpRQmrozFaCljFA5TRB
+K5n2a3+uXmGLP/y23PZg491KeX1mrknEaWhDOqfJ4Uejh5ZBFs+St3IuCyszc6gV
+oOg9YUHDo0CKI/lNpqsrFPaKGPHZXTAesoQcTT4L7LnJrwLx2MgTcT2yuw7genef
+Q+D6yC2lvT27ZEEo5tthDMWBKMlXmOzwOTBetal5e0o1jYsEMzbnROrUWh92NJAV
+LA3wQp5BHygf7KIxaX9O
+=6U+6
 -----END PGP SIGNATURE-----
 
---=-4ZmKEQr5AnnWLbAMg10a--
+--=-bDEtVfhFTiIa77Of8X68--
 

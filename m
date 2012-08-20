@@ -1,56 +1,82 @@
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Date: Mon, 20 Aug 2012 18:12:33 +0000
-Subject: [PATCH 7/7] tgafb: avoid restriction on modes with line length not a multiple of 64
-Message-Id: <alpine.DEB.2.00.1208202010180.4009@artax.karlin.mff.cuni.cz>
+From: Emil Goode <emilgoode@gmail.com>
+Date: Mon, 20 Aug 2012 18:32:25 +0000
+Subject: [PATCH] video: hpfb: Fix error handling
+Message-Id: <1345487545-9590-1-git-send-email-emilgoode@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Emil Goode <emilgoode@gmail.com>
 
-tgafb: avoid restriction on modes with line length not a multiple of 64
+This patch solves problems with the error handling by
+introducing labels for proper error paths and it also
+frees resources that where missed.
 
-In tgafb there is a restriction that prevents the user from setting a
-videomode with line length not a multiple of 64 bytes (for example
-800x600 is not allowed).
-
-The reason for this restriction it that functions copyarea_line_8bpp and
-copyarea_line_32bpp can not handle a line length that is not a multiple
-of 64 bytes.
-
-This patch removes this restriction on mode setting and makes sure that
-the functions copyarea_line_8bpp and copyarea_line_32bpp are called only
-if line length is a multiple of 64 bytes. If we set a mode 800x600,
-the functions copyarea_line_8bpp and copyarea_line_32bpp are not used,
-generic functions for copying are used instead and it works just fine.
-
-Signed-off-by: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-
+Signed-off-by: Emil Goode <emilgoode@gmail.com>
 ---
- drivers/video/tgafb.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/hpfb.c |   28 +++++++++++++++++++++-------
+ 1 file changed, 21 insertions(+), 7 deletions(-)
 
-Index: linux-3.6-rc2-fast/drivers/video/tgafb.c
-=================================--- linux-3.6-rc2-fast.orig/drivers/video/tgafb.c	2012-08-20 19:40:02.000000000 +0200
-+++ linux-3.6-rc2-fast/drivers/video/tgafb.c	2012-08-20 19:40:33.000000000 +0200
-@@ -202,8 +202,8 @@ tgafb_check_var(struct fb_var_screeninfo
- 		return -EINVAL;
+diff --git a/drivers/video/hpfb.c b/drivers/video/hpfb.c
+index ebf8495..7324865 100644
+--- a/drivers/video/hpfb.c
++++ b/drivers/video/hpfb.c
+@@ -210,6 +210,7 @@ static int __devinit hpfb_init_one(unsigned long phys_base,
+ 				   unsigned long virt_base)
+ {
+ 	unsigned long fboff, fb_width, fb_height, fb_start;
++	int ret;
  
- 	/* Some of the acceleration routines assume the line width is
--	   a multiple of 64 bytes.  */
--	if (var->xres * (par->tga_type = TGA_TYPE_8PLANE ? 1 : 4) % 64)
-+	   a multiple of 8 bytes.  */
-+	if (var->xres % 8)
- 		return -EINVAL;
+ 	fb_regs = virt_base;
+ 	fboff = (in_8(fb_regs + HPFB_FBOMSB) << 8) | in_8(fb_regs + HPFB_FBOLSB);
+@@ -290,19 +291,29 @@ static int __devinit hpfb_init_one(unsigned long phys_base,
+ 	fb_info.var   = hpfb_defined;
+ 	fb_info.screen_base = (char *)fb_start;
+ 
+-	fb_alloc_cmap(&fb_info.cmap, 1 << hpfb_defined.bits_per_pixel, 0);
++	ret = fb_alloc_cmap(&fb_info.cmap, 1 << hpfb_defined.bits_per_pixel, 0);
++	if (ret < 0)
++		goto unmap_screen_base;
+ 
+-	if (register_framebuffer(&fb_info) < 0) {
+-		fb_dealloc_cmap(&fb_info.cmap);
+-		iounmap(fb_info.screen_base);
+-		fb_info.screen_base = NULL;
+-		return 1;
+-	}
++	ret = register_framebuffer(&fb_info);
++	if (ret < 0)
++		goto dealloc_cmap;
+ 
+ 	printk(KERN_INFO "fb%d: %s frame buffer device\n",
+ 	       fb_info.node, fb_info.fix.id);
  
  	return 0;
-@@ -1290,7 +1290,7 @@ tgafb_copyarea(struct fb_info *info, con
- 	bpp = info->var.bits_per_pixel;
++
++dealloc_cmap:
++	fb_dealloc_cmap(&fb_info.cmap);
++
++unmap_screen_base:
++	if (fb_info.screen_base) {
++		iounmap(fb_info.screen_base);
++		fb_info.screen_base = NULL;
++	}
++
++	return ret;
+ }
  
- 	/* Detect copies of the entire line.  */
--	if (width * (bpp >> 3) = line_length) {
-+	if (!(line_length & 63) && width * (bpp >> 3) = line_length) {
- 		if (bpp = 8)
- 			copyarea_line_8bpp(info, dy, sy, height, width);
- 		else
+ /* 
+@@ -345,6 +356,9 @@ static void __devexit hpfb_remove_one(struct dio_dev *d)
+ 	if (d->scode >= DIOII_SCBASE)
+ 		iounmap((void *)fb_regs);
+ 	release_mem_region(d->resource.start, resource_size(&d->resource));
++	fb_dealloc_cmap(&fb_info.cmap);
++	if (fb_info.screen_base)
++		iounmap(fb_info.screen_base);
+ }
+ 
+ static struct dio_device_id hpfb_dio_tbl[] = {
+-- 
+1.7.10.4
 

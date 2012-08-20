@@ -1,98 +1,74 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Fri, 24 Aug 2012 05:52:50 +0000
-Subject: Re: [PATCH 8/8] OMAPDSS: fix use of dssdev->caps
-Message-Id: <50371652.2000405@ti.com>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Mon, 20 Aug 2012 13:33:20 +0000
+Subject: [PATCH V5 0/6] OMAPDSS: Cleanup cpu_is checks
+Message-Id: <cover.1345468541.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com> <1345729514-2441-9-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1345729514-2441-9-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1343912532.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1343912532.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com, tony@atomide.com, paul@pwsan.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-On Thursday 23 August 2012 07:15 PM, Tomi Valkeinen wrote:
-> Recent commit dca2b1522ccab28d03fb79f6e70e70ea78033d52 (OMAPDSS: DSI:
-> Maintain copy of operation mode in driver data) broke DSI for video mode
-> displays. The commit changed the way dssdev->caps are initialized, and
-> the result was that every DSI display is initialized with manual-update
-> and tear-elim caps.
+Hi everyone,
+this patch series aims at cleaning up of DSS of cpu_is checks thereby making it
+more generic.
 
-Ah, I didn't realise that. Thanks for catching this.
+The 1st patch cleans up cpu_is checks from DISPC code.
+The 2nd patch removes unused functions from DSS code.
+The 3rd patch cleans up cpu_is checks from DSS code.
+The 4th patch removes cpu_is checks from VENC code.
+The 5th patch disables VENC support on OMAP4.
+The 6th patch removes cpu_is checks from DPI code and replaces it with a
+dss feature.
 
->
-> The code that sets dssdev->caps is not very good, even when fixed.
-> omapdss driver shouldn't be writing dssdev->caps at all.
->
-> This patch fixes the problem with video mode displays by moving the
-> initialization of dssdev->caps to the panel driver. The same change is
-> done for RFBI.
+Changes with respect to V1 series:
+ 1st patch :
+	* moved dispc_ops structure definitions from dss_features.c to dispc.c
+	  and renamed it to dispc_features
+	* moved dispc_features definitions close to dispc_init_features() thereby
+	  eliminating various functions declarations from top of dispc.c
+	* used __initconst before dispc_features definitions and __init before
+	  dispc_init_features()
+	* removed definitions of _dispc_lcd_timings_ok_24xx,
+	  _dispc_lcd_timings_ok_44xx, _dispc_mgr_set_lcd_timings_hv_24xx and
+	  _dispc_mgr_set_lcd_timings_hv_44xx replacing them with appropiate variables
+	* renamed various dispc_features structures to give consistent naming
 
-Yes, it makes more sense to configure these in the panel driver.
+ 3rd patch :
+	* moved dss_ops structure definitions from dss_features.c to dss.c and
+	  renamed it to dss_features
+	* removed all functions from dss_features structure and replaced them with
+	  appropiate variables
+	* used __initconst before dss_features definitions and __init before 
+	  dss_init_features()
+	* renamed various dss_features structures to give consistent naming
+	* renamed factor variable of dss_features structure to dss_fck_multiplier
 
-Archit
+All your comments and suggestions are welcome.
 
->
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->   drivers/video/omap2/displays/panel-n8x0.c |    1 +
->   drivers/video/omap2/displays/panel-taal.c |    2 ++
->   drivers/video/omap2/dss/dsi.c             |    5 -----
->   drivers/video/omap2/dss/rfbi.c            |    1 -
->   4 files changed, 3 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/video/omap2/displays/panel-n8x0.c b/drivers/video/omap2/displays/panel-n8x0.c
-> index 17ae85e..3fc5ad0 100644
-> --- a/drivers/video/omap2/displays/panel-n8x0.c
-> +++ b/drivers/video/omap2/displays/panel-n8x0.c
-> @@ -489,6 +489,7 @@ static int n8x0_panel_probe(struct omap_dss_device *dssdev)
->   	dssdev->panel.timings.y_res = 480;
->   	dssdev->ctrl.pixel_size = 16;
->   	dssdev->ctrl.rfbi_timings = n8x0_panel_timings;
-> +	dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE;
->
->   	memset(&props, 0, sizeof(props));
->   	props.max_brightness = 127;
-> diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-> index ddda96a..7b2d7bb 100644
-> --- a/drivers/video/omap2/displays/panel-taal.c
-> +++ b/drivers/video/omap2/displays/panel-taal.c
-> @@ -884,6 +884,8 @@ static int taal_probe(struct omap_dss_device *dssdev)
->
->   	dssdev->panel.timings = panel_config->timings;
->   	dssdev->panel.dsi_pix_fmt = OMAP_DSS_DSI_FMT_RGB888;
-> +	dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE |
-> +		OMAP_DSS_DISPLAY_CAP_TEAR_ELIM;
->
->   	td = kzalloc(sizeof(*td), GFP_KERNEL);
->   	if (!td) {
-> diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-> index 340c832..254666f 100644
-> --- a/drivers/video/omap2/dss/dsi.c
-> +++ b/drivers/video/omap2/dss/dsi.c
-> @@ -4866,11 +4866,6 @@ static int __init dsi_init_display(struct omap_dss_device *dssdev)
->
->   	DSSDBG("DSI init\n");
->
-> -	if (dsi->mode = OMAP_DSS_DSI_CMD_MODE) {
-> -		dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE |
-> -			OMAP_DSS_DISPLAY_CAP_TEAR_ELIM;
-> -	}
-> -
->   	if (dsi->vdds_dsi_reg = NULL) {
->   		struct regulator *vdds_dsi;
->
-> diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-> index 5a9c0e9..2e520d3 100644
-> --- a/drivers/video/omap2/dss/rfbi.c
-> +++ b/drivers/video/omap2/dss/rfbi.c
-> @@ -939,7 +939,6 @@ EXPORT_SYMBOL(omapdss_rfbi_display_disable);
->   static int __init rfbi_init_display(struct omap_dss_device *dssdev)
->   {
->   	rfbi.dssdev[dssdev->phy.rfbi.channel] = dssdev;
-> -	dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE;
->   	return 0;
->   }
->
->
+Refenence Tree:
+git@gitorious.org:~chandrabhanu/linux-omap-dss2/chandrabhanus-linux.git dss_cleanup
+
+Chandrabhanu Mahapatra (6):
+  OMAPDSS: DISPC: cleanup cpu_is_xxxx checks
+  OMAPDSS: DSS: Remove redundant functions
+  OMAPDSS: DSS: Cleanup cpu_is_xxxx checks
+  OMAPDSS: VENC: Remove cpu_is_xxxx checks
+  ARM: OMAP: Disable venc for OMAP4
+  OMAPDSS: DPI: Remove cpu_is_xxxx checks
+
+ arch/arm/mach-omap2/display.c          |    1 -
+ drivers/video/omap2/dss/dispc.c        |  433 ++++++++++++++++++++------------
+ drivers/video/omap2/dss/dpi.c          |   12 +-
+ drivers/video/omap2/dss/dss.c          |  162 ++++++------
+ drivers/video/omap2/dss/dss.h          |    2 -
+ drivers/video/omap2/dss/dss_features.c |    1 +
+ drivers/video/omap2/dss/dss_features.h |    1 +
+ drivers/video/omap2/dss/venc.c         |   11 -
+ 8 files changed, 363 insertions(+), 260 deletions(-)
+
+-- 
+1.7.10
 

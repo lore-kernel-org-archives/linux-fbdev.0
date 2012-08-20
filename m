@@ -1,74 +1,346 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 21 Aug 2012 06:10:18 +0000
-Subject: [PATCH 11/23] OMAPDSS: DSI: Remove dsi_pdev_map global struct
-Message-Id: <1345528711-27801-12-git-send-email-archit@ti.com>
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+Date: Mon, 20 Aug 2012 18:10:14 +0000
+Subject: [PATCH 6/7] tgafb: fix data copying
+Message-Id: <alpine.DEB.2.00.1208202009370.4009@artax.karlin.mff.cuni.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>
-In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-dsi_pdev_map is a struct visible globally in the DSI driver to get the platform
-device pointer of the DSI device corresponding to it's module ID. This was
-required because there was no clean way to derive the platform device from
-the DSI module instance number or from the connected panel.
+tgafb: fix data copying
 
-With the new output entity, it is possible to retrieve the platform device
-pointer if the omap_dss_output pointer is available. Modify the functions
-dsi_get_dsidev_from_dssdev() dsi_get_dsidev_from_id() so that they use output
-instead of dsi_pdev_map to retrieve the dsi platform device pointer.
+The functions for data copying copyarea_foreward_8bpp and
+copyarea_backward_8bpp are buggy, they produce screen corruption.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+This patch fixes the functions and moves the logic to one function
+"copyarea_8bpp". For simplicity, the function only handles copying that
+is aligned on 8 pixes. If we copy an unaligned area, generic function
+cfb_copyarea is used.
+
+Signed-off-by: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+Cc: stable@kernel.org
+
 ---
- drivers/video/omap2/dss/dsi.c |   14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ drivers/video/tgafb.c |  266 +++++++++-----------------------------------------
+ 1 file changed, 52 insertions(+), 214 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 22e0873..19a4d4d 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -344,8 +344,6 @@ struct dsi_packet_sent_handler_data {
- 	struct completion *completion;
- };
+Index: linux-3.4.4-fast/drivers/video/tgafb.c
+=================================--- linux-3.4.4-fast.orig/drivers/video/tgafb.c	2012-07-03 22:58:32.000000000 +0200
++++ linux-3.4.4-fast/drivers/video/tgafb.c	2012-07-04 02:32:47.000000000 +0200
+@@ -1149,222 +1149,57 @@ copyarea_line_32bpp(struct fb_info *info
+ 	__raw_writel(TGA_MODE_SBM_24BPP|TGA_MODE_SIMPLE, tga_regs+TGA_MODE_REG);
+ }
  
--static struct platform_device *dsi_pdev_map[MAX_NUM_DSI];
+-/* The general case of forward copy in 8bpp mode.  */
++/* The (almost) general case of backward copy in 8bpp mode.  */
+ static inline void
+-copyarea_foreward_8bpp(struct fb_info *info, u32 dx, u32 dy, u32 sx, u32 sy,
+-		       u32 height, u32 width, u32 line_length)
++copyarea_8bpp(struct fb_info *info, u32 dx, u32 dy, u32 sx, u32 sy,
++	      u32 height, u32 width, u32 line_length,
++	      const struct fb_copyarea *area)
+ {
+ 	struct tga_par *par = (struct tga_par *) info->par;
+-	unsigned long i, copied, left;
+-	unsigned long dpos, spos, dalign, salign, yincr;
+-	u32 smask_first, dmask_first, dmask_last;
+-	int pixel_shift, need_prime, need_second;
+-	unsigned long n64, n32, xincr_first;
++	unsigned i, yincr;
++	int depos, sepos, backward, last_step, step;
++	u32 mask_last;
++	unsigned n32;
+ 	void __iomem *tga_regs;
+ 	void __iomem *tga_fb;
+ 
+-	yincr = line_length;
+-	if (dy > sy) {
+-		dy += height - 1;
+-		sy += height - 1;
+-		yincr = -yincr;
+-	}
 -
- #ifdef DEBUG
- static bool dsi_perf;
- module_param(dsi_perf, bool, 0644);
-@@ -358,12 +356,19 @@ static inline struct dsi_data *dsi_get_dsidrv_data(struct platform_device *dside
+-	/* Compute the offsets and alignments in the frame buffer.
+-	   More than anything else, these control how we do copies.  */
+-	dpos = dy * line_length + dx;
+-	spos = sy * line_length + sx;
+-	dalign = dpos & 7;
+-	salign = spos & 7;
+-	dpos &= -8;
+-	spos &= -8;
+-
+-	/* Compute the value for the PIXELSHIFT register.  This controls
+-	   both non-co-aligned source and destination and copy direction.  */
+-	if (dalign >= salign)
+-		pixel_shift = dalign - salign;
+-	else
+-		pixel_shift = 8 - (salign - dalign);
+-
+-	/* Figure out if we need an additional priming step for the
+-	   residue register.  */
+-	need_prime = (salign > dalign);
+-	if (need_prime)
+-		dpos -= 8;
+-
+-	/* Begin by copying the leading unaligned destination.  Copy enough
+-	   to make the next destination address 32-byte aligned.  */
+-	copied = 32 - (dalign + (dpos & 31));
+-	if (copied = 32)
+-		copied = 0;
+-	xincr_first = (copied + 7) & -8;
+-	smask_first = dmask_first = (1ul << copied) - 1;
+-	smask_first <<= salign;
+-	dmask_first <<= dalign + need_prime*8;
+-	if (need_prime && copied > 24)
+-		copied -= 8;
+-	left = width - copied;
+-
+-	/* Care for small copies.  */
+-	if (copied > width) {
+-		u32 t;
+-		t = (1ul << width) - 1;
+-		t <<= dalign + need_prime*8;
+-		dmask_first &= t;
+-		left = 0;
+-	}
+-
+-	/* Attempt to use 64-byte copies.  This is only possible if the
+-	   source and destination are co-aligned at 64 bytes.  */
+-	n64 = need_second = 0;
+-	if ((dpos & 63) = (spos & 63)
+-	    && (height = 1 || line_length % 64 = 0)) {
+-		/* We may need a 32-byte copy to ensure 64 byte alignment.  */
+-		need_second = (dpos + xincr_first) & 63;
+-		if ((need_second & 32) != need_second)
+-			printk(KERN_ERR "tgafb: need_second wrong\n");
+-		if (left >= need_second + 64) {
+-			left -= need_second;
+-			n64 = left / 64;
+-			left %= 64;
+-		} else
+-			need_second = 0;
+-	}
+-
+-	/* Copy trailing full 32-byte sections.  This will be the main
+-	   loop if the 64 byte loop can't be used.  */
+-	n32 = left / 32;
+-	left %= 32;
+-
+-	/* Copy the trailing unaligned destination.  */
+-	dmask_last = (1ul << left) - 1;
+-
+-	tga_regs = par->tga_regs_base;
+-	tga_fb = par->tga_fb_base;
+-
+-	/* Set up the MODE and PIXELSHIFT registers.  */
+-	__raw_writel(TGA_MODE_SBM_8BPP|TGA_MODE_COPY, tga_regs+TGA_MODE_REG);
+-	__raw_writel(pixel_shift, tga_regs+TGA_PIXELSHIFT_REG);
+-	wmb();
+-
+-	for (i = 0; i < height; ++i) {
+-		unsigned long j;
+-		void __iomem *sfb;
+-		void __iomem *dfb;
+-
+-		sfb = tga_fb + spos;
+-		dfb = tga_fb + dpos;
+-		if (dmask_first) {
+-			__raw_writel(smask_first, sfb);
+-			wmb();
+-			__raw_writel(dmask_first, dfb);
+-			wmb();
+-			sfb += xincr_first;
+-			dfb += xincr_first;
+-		}
+-
+-		if (need_second) {
+-			__raw_writel(0xffffffff, sfb);
+-			wmb();
+-			__raw_writel(0xffffffff, dfb);
+-			wmb();
+-			sfb += 32;
+-			dfb += 32;
+-		}
+-
+-		if (n64 && (((unsigned long)sfb | (unsigned long)dfb) & 63))
+-			printk(KERN_ERR
+-			       "tgafb: misaligned copy64 (s:%p, d:%p)\n",
+-			       sfb, dfb);
+-
+-		for (j = 0; j < n64; ++j) {
+-			__raw_writel(sfb - tga_fb, tga_regs+TGA_COPY64_SRC);
+-			wmb();
+-			__raw_writel(dfb - tga_fb, tga_regs+TGA_COPY64_DST);
+-			wmb();
+-			sfb += 64;
+-			dfb += 64;
+-		}
+-
+-		for (j = 0; j < n32; ++j) {
+-			__raw_writel(0xffffffff, sfb);
+-			wmb();
+-			__raw_writel(0xffffffff, dfb);
+-			wmb();
+-			sfb += 32;
+-			dfb += 32;
+-		}
+-
+-		if (dmask_last) {
+-			__raw_writel(0xffffffff, sfb);
+-			wmb();
+-			__raw_writel(dmask_last, dfb);
+-			wmb();
+-		}
+-
+-		spos += yincr;
+-		dpos += yincr;
++	/* Do acceleration only if we are aligned on 8 pixels */
++	if ((dx | sx | width) & 7) {
++		cfb_copyarea(info, area);
++		return;
+ 	}
  
- static inline struct platform_device *dsi_get_dsidev_from_dssdev(struct omap_dss_device *dssdev)
- {
--	return dsi_pdev_map[dssdev->phy.dsi.module];
-+	return dssdev->output->pdev;
+-	/* Reset the MODE register to normal.  */
+-	__raw_writel(TGA_MODE_SBM_8BPP|TGA_MODE_SIMPLE, tga_regs+TGA_MODE_REG);
+-}
+-
+-/* The (almost) general case of backward copy in 8bpp mode.  */
+-static inline void
+-copyarea_backward_8bpp(struct fb_info *info, u32 dx, u32 dy, u32 sx, u32 sy,
+-		       u32 height, u32 width, u32 line_length,
+-		       const struct fb_copyarea *area)
+-{
+-	struct tga_par *par = (struct tga_par *) info->par;
+-	unsigned long i, left, yincr;
+-	unsigned long depos, sepos, dealign, sealign;
+-	u32 mask_first, mask_last;
+-	unsigned long n32;
+-	void __iomem *tga_regs;
+-	void __iomem *tga_fb;
+-
+ 	yincr = line_length;
+ 	if (dy > sy) {
+ 		dy += height - 1;
+ 		sy += height - 1;
+ 		yincr = -yincr;
+ 	}
++	backward = dy = sy && dx > sx && dx < sx + width;
+ 
+ 	/* Compute the offsets and alignments in the frame buffer.
+ 	   More than anything else, these control how we do copies.  */
+-	depos = dy * line_length + dx + width;
+-	sepos = sy * line_length + sx + width;
+-	dealign = depos & 7;
+-	sealign = sepos & 7;
+-
+-	/* ??? The documentation appears to be incorrect (or very
+-	   misleading) wrt how pixel shifting works in backward copy
+-	   mode, i.e. when PIXELSHIFT is negative.  I give up for now.
+-	   Do handle the common case of co-aligned backward copies,
+-	   but frob everything else back on generic code.  */
+-	if (dealign != sealign) {
+-		cfb_copyarea(info, area);
+-		return;
+-	}
+-
+-	/* We begin the copy with the trailing pixels of the
+-	   unaligned destination.  */
+-	mask_first = (1ul << dealign) - 1;
+-	left = width - dealign;
+-
+-	/* Care for small copies.  */
+-	if (dealign > width) {
+-		mask_first ^= (1ul << (dealign - width)) - 1;
+-		left = 0;
+-	}
++	depos = dy * line_length + dx;
++	sepos = sy * line_length + sx;
++	if (backward)
++		depos += width, sepos += width;
+ 
+ 	/* Next copy full words at a time.  */
+-	n32 = left / 32;
+-	left %= 32;
++	n32 = width / 32;
++	last_step = width % 32;
+ 
+ 	/* Finally copy the unaligned head of the span.  */
+-	mask_last = -1 << (32 - left);
++	mask_last = (1ul << last_step) - 1;
++
++	if (!backward) {
++		step = 32;
++		last_step = 32;
++	} else {
++		step = -32;
++		last_step = -last_step;
++		sepos -= 32;
++		depos -= 32;
++	}
+ 
+ 	tga_regs = par->tga_regs_base;
+ 	tga_fb = par->tga_fb_base;
+@@ -1381,25 +1216,33 @@ copyarea_backward_8bpp(struct fb_info *i
+ 
+ 		sfb = tga_fb + sepos;
+ 		dfb = tga_fb + depos;
+-		if (mask_first) {
+-			__raw_writel(mask_first, sfb);
+-			wmb();
+-			__raw_writel(mask_first, dfb);
+-			wmb();
+-		}
+ 
+-		for (j = 0; j < n32; ++j) {
+-			sfb -= 32;
+-			dfb -= 32;
++		for (j = 0; j < n32; j++) {
++			if (j < 2 && j + 1 < n32 && !backward &&
++			    !(((unsigned long)sfb | (unsigned long)dfb) & 63)) {
++				do {
++					__raw_writel(sfb - tga_fb, tga_regs+TGA_COPY64_SRC);
++					wmb();
++					__raw_writel(dfb - tga_fb, tga_regs+TGA_COPY64_DST);
++					wmb();
++					sfb += 64;
++					dfb += 64;
++					j += 2;
++				} while (j + 1 < n32);
++				j--;
++				continue;
++			}
+ 			__raw_writel(0xffffffff, sfb);
+ 			wmb();
+ 			__raw_writel(0xffffffff, dfb);
+ 			wmb();
++			sfb += step;
++			dfb += step;
+ 		}
+ 
+ 		if (mask_last) {
+-			sfb -= 32;
+-			dfb -= 32;
++			sfb += last_step - step;
++			dfb += last_step - step;
+ 			__raw_writel(mask_last, sfb);
+ 			wmb();
+ 			__raw_writel(mask_last, dfb);
+@@ -1460,14 +1303,9 @@ tgafb_copyarea(struct fb_info *info, con
+ 	else if (bpp = 32)
+ 		cfb_copyarea(info, area);
+ 
+-	/* Detect overlapping source and destination that requires
+-	   a backward copy.  */
+-	else if (dy = sy && dx > sx && dx < sx + width)
+-		copyarea_backward_8bpp(info, dx, dy, sx, sy, height,
+-				       width, line_length, area);
+ 	else
+-		copyarea_foreward_8bpp(info, dx, dy, sx, sy, height,
+-				       width, line_length);
++		copyarea_8bpp(info, dx, dy, sx, sy, height,
++			      width, line_length, area);
  }
  
- struct platform_device *dsi_get_dsidev_from_id(int module)
- {
--	return dsi_pdev_map[module];
-+	struct omap_dss_output *out;
-+	enum omap_dss_output_id	id;
-+
-+	id = module = 0 ? OMAP_DSS_OUTPUT_DSI1 : OMAP_DSS_OUTPUT_DSI2;
-+
-+	out = omap_dss_get_output(id);
-+
-+	return out->pdev;
- }
  
- static inline void dsi_write_reg(struct platform_device *dsidev,
-@@ -4934,7 +4939,6 @@ static int __init omap_dsihw_probe(struct platform_device *dsidev)
- 
- 	dsi->module_id = dsidev->id;
- 	dsi->pdev = dsidev;
--	dsi_pdev_map[dsi->module_id] = dsidev;
- 	dev_set_drvdata(&dsidev->dev, dsi);
- 
- 	spin_lock_init(&dsi->irq_lock);
--- 
-1.7.9.5
 

@@ -1,116 +1,38 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 07 Aug 2012 13:14:21 +0000
-Subject: Re: [PATCH 3/6] OMAPDSS: DSS: Remove cpu_is_xxxx checks
-Message-Id: <1344345261.7216.64.camel@lappyti>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-ay1L9GS0DbG7vYSCMEhz"
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Mon, 20 Aug 2012 13:36:47 +0000
+Subject: [PATCH V5 5/6] ARM: OMAP: Disable venc for OMAP4
+Message-Id: <a07a3a216827e830cfa249f4f39ad26e75dc0afd.1345468541.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1343912532.git.cmahapatra@ti.com>
-	 <19a46cc15dc7add0671dd8c32f5398249c0420ab.1343912533.git.cmahapatra@ti.com>
-In-Reply-To: <19a46cc15dc7add0671dd8c32f5398249c0420ab.1343912533.git.cmahapatra@ti.com>
-To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-
---=-ay1L9GS0DbG7vYSCMEhz
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2012-08-07 at 13:58 +0530, Chandrabhanu Mahapatra wrote:
-> The cpu_is checks have been removed from dss.c providing it a much generi=
-c and
-> cleaner interface. The OMAP version and revision specific functions are
-> initialized by dss_ops structure in dss features.
->=20
-> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-> ---
->  drivers/video/omap2/dss/dss.c          |  114 ++++++++++++++++++++++----=
-------
->  drivers/video/omap2/dss/dss.h          |   23 ++++++-
->  drivers/video/omap2/dss/dss_features.c |   40 +++++++++++
->  drivers/video/omap2/dss/dss_features.h |    1 +
->  4 files changed, 141 insertions(+), 37 deletions(-)
->=20
-> diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.=
-c
-> index 7b1c6ac..c263da7 100644
-> --- a/drivers/video/omap2/dss/dss.c
-> +++ b/drivers/video/omap2/dss/dss.c
-> @@ -83,6 +83,8 @@ static struct {
-> =20
->  	bool		ctx_valid;
->  	u32		ctx[DSS_SZ_REGS / sizeof(u32)];
-> +
-> +	const struct dss_ops *ops;
->  } dss;
-> =20
->  static const char * const dss_generic_clk_source_names[] =3D {
-> @@ -236,6 +238,15 @@ const char *dss_get_generic_clk_source_name(enum oma=
-p_dss_clk_source clk_src)
->  	return dss_generic_clk_source_names[clk_src];
->  }
-> =20
-> +char *set_dump_clk_str_24_34(void)
-> +{
-> +	return "%s (%s) =3D %lu / %lu * 2  =3D %lu\n";
-> +}
-> +
-> +char *set_dump_clk_str(void)
-> +{
-> +	return "%s (%s) =3D %lu / %lu  =3D %lu\n";
-> +}
-
-You don't need functions for these, or for the max fck div. Just add the
-string or the number to the struct.
-
-And I don't really like the format string being separately. It would
-probably be better if you instead had just a flag for the x2 multiplier,
-and the dump function would check the flag to see which format string it
-uses.
-
-> @@ -479,10 +511,7 @@ int dss_calc_clock_div(unsigned long req_pck, struct=
- dss_clock_info *dss_cinfo,
-> =20
->  	max_dss_fck =3D dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
-> =20
-> -	fck =3D clk_get_rate(dss.dss_clk);
-> -	if (req_pck =3D=3D dss.cache_req_pck &&
-> -			((cpu_is_omap34xx() && prate =3D=3D dss.cache_prate) ||
-> -			 dss.cache_dss_cinfo.fck =3D=3D fck)) {
-> +	if (req_pck =3D=3D dss.cache_req_pck && dss.ops->set_dss_cinfo()) {
->  		DSSDBG("dispc clock info found from cache.\n");
->  		*dss_cinfo =3D dss.cache_dss_cinfo;
->  		*dispc_cinfo =3D dss.cache_dispc_cinfo;
-
-This is quite confusing. "set" function should set something, normally
-something that is given as a parameter. Your function seems to be
-checking some values.
-
- Tomi
-
-
---=-ay1L9GS0DbG7vYSCMEhz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+References: <cover.1343912532.git.cmahapatra@ti.com> <cover.1345468541.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1345468541.git.cmahapatra@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com, tony@atomide.com, paul@pwsan.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+This is a alternative to "HACK: OMAP: DSS2: VENC: disable VENC on OMAP4 to
+prevent crash" (ba02fa37de) by Tomi Valkeinen <tomi.valkeinen@ti.com> to prevent
+VENC from crashing OMAP4 kernel. This prevents OMAPDSS from initial registration
+of a device for VENC on OMAP4.
 
-iQIcBAABAgAGBQJQIRStAAoJEPo9qoy8lh71LrkP/j8sOZGimgZfnEw0f58sQxC4
-HsPhh77NwWq56D8GH75+CmnSMA+ntdKJXOAdEIctQPhnAfPuQ9CMOL/Y7CQaxKF7
-oTU316/fH71gumnB0ZL8VMl42oKFQ5sPLeGf4Dt4OSnF9F5lpOIvt4OdnGQtNR08
-nmq8niwz+EV/xAFMXviHavFmGHYywQ1NTH7YRobEtovky3DnEg0XFxIKXvGuU4u5
-7qtYKVpeI1jdMywiZNlLRI1jurJvkrtRpkJxipkXrAT/Nqw3QYHATHHlfwZwEoNO
-TNVPqDzUr31zElOBT4fFiB2u04y9cakhaWMl+9wKyDeVnSX0bbalp7YKJ0UbEj2/
-1wQlZ5vG6RKZpZhKohsrAJYxAeMHNs31SD8W6AXkW9HincDDaeViLYmLQKAzDnuh
-YYEvlo0G/zPFI518EmybYtWP24zv+rDq0YLH4iaUIBj42bE80y7b9JHQgEd/EQ9B
-1sR6jUDhy5rDvL9kaYlhpqZeE0StJkV92xSeYrVQwUa9lCMH2sEVGB//c3APdNF9
-jzXYfmGPgjgVlxu3zd4a5AGGl+XxxeJzKGVY+9LrGDFSokLKowGD8y1ZkZWiVRUa
-83YKKh+78Mr9NzCodi1ndyYkekyGN34VMY9WP5vlGQ9c3dyUvNrW9GuAgKTdFp+c
-AK4pm1elw4vXxKHhtRL6
-=/ZTX
------END PGP SIGNATURE-----
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+---
+ arch/arm/mach-omap2/display.c |    1 -
+ 1 file changed, 1 deletion(-)
 
---=-ay1L9GS0DbG7vYSCMEhz--
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index af1ed7d..ee40739 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -95,7 +95,6 @@ static const struct omap_dss_hwmod_data omap4_dss_hwmod_data[] __initdata = {
+ 	{ "dss_core", "omapdss_dss", -1 },
+ 	{ "dss_dispc", "omapdss_dispc", -1 },
+ 	{ "dss_rfbi", "omapdss_rfbi", -1 },
+-	{ "dss_venc", "omapdss_venc", -1 },
+ 	{ "dss_dsi1", "omapdss_dsi", 0 },
+ 	{ "dss_dsi2", "omapdss_dsi", 1 },
+ 	{ "dss_hdmi", "omapdss_hdmi", -1 },
+-- 
+1.7.10
 

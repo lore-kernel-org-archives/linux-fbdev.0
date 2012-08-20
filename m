@@ -1,48 +1,23 @@
-From: Bjarni Ingi Gislason <bjarniig@rhi.hi.is>
-Date: Sun, 12 Aug 2012 15:05:10 +0000
-Subject: [PATCH] drivers: console: font_: Change a glyph from "broken bar" to "vertical line"
-Message-Id: <20120812150510.GA21931@rhi.hi.is>
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+Date: Mon, 20 Aug 2012 18:04:39 +0000
+Subject: [PATCH 0/7] framebuffer fixes
+Message-Id: <alpine.DEB.2.00.1208202000250.4009@artax.karlin.mff.cuni.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-  The code 124 (0x7C, |) is rendered as a broken line in two
-fonts, instead of a continuous line.  Some keyboards show a
-"broken bar" on one of theirs keys, other show a (continuous)
-"vertical line".
+Hi
 
-Signed-off-by: Bjarni Ingi Gislason <bjarniig@rhi.hi.is>
----
- linux-3.5/drivers/video/console/font_mini_4x6.c |    2 +-
- linux-3.5/drivers/video/console/font_sun8x16.c  |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Here I'm sending 7 patches for Linux framebuffer.
 
-diff -upr -X linux-3.5/Documentation/dontdiff linux-3.5/drivers/video/console/font_mini_4x6.c devel/linux-3.5/drivers/video/console/font_mini_4x6.c
---- linux-3.5/drivers/video/console/font_mini_4x6.c	2012-07-21 20:58:29.000000000 +0000
-+++ devel/linux-3.5/drivers/video/console/font_mini_4x6.c	2012-08-11 15:27:41.778918653 +0000
-@@ -1092,7 +1092,7 @@ static const unsigned char fontdata_mini
- 	/*{*/ 	/*   Char 124: '|' */
- 	0x44,	/*=   [ *  ]        */
- 	0x44,	/*=   [ *  ]        */
--	0x00,	/*=   [    ]        */
-+	0x44,	/*=   [ *  ]        */
- 	0x44,	/*=   [ *  ]        */
- 	0x44,	/*=   [ *  ]        */
- 	0x00,	/*=   [    ]        */
-diff -upr -X linux-3.5/Documentation/dontdiff linux-3.5/drivers/video/console/font_sun8x16.c devel/linux-3.5/drivers/video/console/font_sun8x16.c
---- linux-3.5/drivers/video/console/font_sun8x16.c	2012-07-21 20:58:29.000000000 +0000
-+++ devel/linux-3.5/drivers/video/console/font_sun8x16.c	2012-08-11 15:28:22.490299722 +0000
-@@ -127,7 +127,7 @@ static const unsigned char fontdata_sun8
- /*y*/ 0x00,0x00,0x00,0x00,0x00,0xc6,0xc6,0xc6,0xc6,0xc6,0xc6,0x7e,0x06,0x0c,0xf8,0x00,
- /*z*/ 0x00,0x00,0x00,0x00,0x00,0xfe,0xcc,0x18,0x30,0x60,0xc6,0xfe,0x00,0x00,0x00,0x00,
- /*{*/ 0x00,0x00,0x0e,0x18,0x18,0x18,0x70,0x18,0x18,0x18,0x18,0x0e,0x00,0x00,0x00,0x00,
--/*|*/ 0x00,0x00,0x18,0x18,0x18,0x18,0x00,0x18,0x18,0x18,0x18,0x18,0x00,0x00,0x00,0x00,
-+/*|*/ 0x00,0x00,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x00,0x00,0x00,0x00,
- /*}*/ 0x00,0x00,0x70,0x18,0x18,0x18,0x0e,0x18,0x18,0x18,0x18,0x70,0x00,0x00,0x00,0x00,
- /*~*/ 0x00,0x00,0x76,0xdc,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
- /* */ 0x00,0x00,0x00,0x00,0x10,0x38,0x6c,0xc6,0xc6,0xc6,0xfe,0x00,0x00,0x00,0x00,0x00,
+The first patch fixes a bug in cfb_copyarea if the position is not aligned 
+on 4-byte or 8-byte boundary.
 
--- 
-Bjarni I. Gislason
+The next three patches fix bugs on mach64 and remove videomode 
+restriction.
+
+The next three patches fix bugs on tga and remove videomode restriction.
+
+Mikulas

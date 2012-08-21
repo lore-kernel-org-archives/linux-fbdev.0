@@ -1,45 +1,69 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Wed, 08 Aug 2012 18:47:32 +0000
-Subject: Re: [PATCH 5/8] video: vt8500: Add devicetree support for vt8500-fb and wm8505-fb
-Message-Id: <5022B444.2020501@wwwdotorg.org>
+From: Dave Airlie <airlied@redhat.com>
+Date: Tue, 21 Aug 2012 06:40:07 +0000
+Subject: [PATCH] fbcon: fix race condition between console lock and cursor timer
+Message-Id: <1345531207-24926-1-git-send-email-airlied@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344389967-8465-1-git-send-email-linux@prisktech.co.nz>
- <1344389967-8465-6-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1344389967-8465-6-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org, Linus <torvalds@linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Randy Dunlap <rdunlap@xenotime.net>, Josh Boyer <jwboyer@gmail.com>, Dave Airlie <airlied@redhat.com>
 
-On 08/07/2012 07:39 PM, Tony Prisk wrote:
-> Update vt8500-fb, wm8505-fb and wmt-ge-rops to support device
-> tree bindings.
+So we've had a fair few reports of fbcon handover breakage between
+efi/vesafb and i915 surface recently, so I dedicated a couple of
+days to finding the problem.
 
-> Small change in wm8505-fb.c to support WM8650 framebuffer color
-> format.
+Essentially the last thing we saw was the conflicting framebuffer
+message and that was all.
 
-That might warrant a separate patch?
+So after much tracing with direct netconsole writes (printks
+under console_lock not so useful), I think I found the race.
 
-> diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
+Thread A (driver load)    Thread B (timer thread)
+  unbind_con_driver ->              |
+  bind_con_driver ->                |
+  vc->vc_sw->con_deinit ->          |
+  fbcon_deinit ->                   |
+  console_lock()                    |
+      |                             |
+      |                       fbcon_flashcursor timer fires
+      |                       console_lock() <- blocked for A
+      |
+      |
+fbcon_del_cursor_timer ->
+  del_timer_sync
+  (BOOM)
 
-> +	np = of_find_node_by_name(NULL, "display");
-> +	if (!np) {
-> +		pr_err("%s: No display description in Device Tree\n", __func__);
-> +		ret = -EINVAL;
-> +		goto failed_free_res;
-> +	}
+Of course because all of this is under the console lock,
+we never see anything, also since we also just unbound the active
+console guess what we never see anything.
 
-I believe that using hard-coded node names is frowned upon. Better would
-be to put a phandle into the display controller's node that points at
-the node representing the display, e.g.:
+Hopefully this fixes the problem for anyone seeing vesafb->kms
+driver handoff.
 
-    fb@d800e400 {
-        compatible = "via,vt8500-fb";
-        reg = <0xd800e400 0x400>;
-        interrupts = <12>;
-        via,display = <&display>;
-    };
-    display: display {
-        ...
-    };
+Signed-off-by: David Airlie <airlied@redhat.com>
+---
+ drivers/video/console/fbcon.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 2e471c2..f8a79fc 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -372,8 +372,12 @@ static void fb_flashcursor(struct work_struct *work)
+ 	struct vc_data *vc = NULL;
+ 	int c;
+ 	int mode;
++	int ret;
++
++	ret = console_trylock();
++	if (ret = 0)
++		return;
+ 
+-	console_lock();
+ 	if (ops && ops->currcon != -1)
+ 		vc = vc_cons[ops->currcon].d;
+ 
+-- 
+1.7.10.2
 

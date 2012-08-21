@@ -1,69 +1,28 @@
-From: Dave Airlie <airlied@redhat.com>
-Date: Tue, 21 Aug 2012 06:40:07 +0000
-Subject: [PATCH] fbcon: fix race condition between console lock and cursor timer
-Message-Id: <1345531207-24926-1-git-send-email-airlied@redhat.com>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Date: Tue, 21 Aug 2012 09:15:05 +0000
+Subject: Re: [PATCH] fbcon: fix race condition between console lock and cursor timer
+Message-Id: <20120821101505.61c0221a@pyramind.ukuu.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1345531207-24926-1-git-send-email-airlied@redhat.com>
+In-Reply-To: <1345531207-24926-1-git-send-email-airlied@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org, Linus <torvalds@linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Randy Dunlap <rdunlap@xenotime.net>, Josh Boyer <jwboyer@gmail.com>, Dave Airlie <airlied@redhat.com>
+To: Dave Airlie <airlied@redhat.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.sf.net, linux-kernel@vger.kernel.org, Linus <torvalds@linux-foundation.org>, Randy Dunlap <rdunlap@xenotime.net>, Josh Boyer <jwboyer@gmail.com>
 
-So we've had a fair few reports of fbcon handover breakage between
-efi/vesafb and i915 surface recently, so I dedicated a couple of
-days to finding the problem.
+> So after much tracing with direct netconsole writes (printks
+> under console_lock not so useful), I think I found the race.
 
-Essentially the last thing we saw was the conflicting framebuffer
-message and that was all.
+Direct netconsole write would be a useful patch to have mainline I think
+8)
 
-So after much tracing with direct netconsole writes (printks
-under console_lock not so useful), I think I found the race.
+> Hopefully this fixes the problem for anyone seeing vesafb->kms
+> driver handoff.
 
-Thread A (driver load)    Thread B (timer thread)
-  unbind_con_driver ->              |
-  bind_con_driver ->                |
-  vc->vc_sw->con_deinit ->          |
-  fbcon_deinit ->                   |
-  console_lock()                    |
-      |                             |
-      |                       fbcon_flashcursor timer fires
-      |                       console_lock() <- blocked for A
-      |
-      |
-fbcon_del_cursor_timer ->
-  del_timer_sync
-  (BOOM)
+Not really the proper fix but its clear and is probably the best thing to
+go in initially with a cc: stable. Can you at least stick a large 
 
-Of course because all of this is under the console lock,
-we never see anything, also since we also just unbound the active
-console guess what we never see anything.
++ /* FIXME: we should sort out the unbind locking instead */
 
-Hopefully this fixes the problem for anyone seeing vesafb->kms
-driver handoff.
-
-Signed-off-by: David Airlie <airlied@redhat.com>
----
- drivers/video/console/fbcon.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 2e471c2..f8a79fc 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -372,8 +372,12 @@ static void fb_flashcursor(struct work_struct *work)
- 	struct vc_data *vc = NULL;
- 	int c;
- 	int mode;
-+	int ret;
-+
-+	ret = console_trylock();
-+	if (ret = 0)
-+		return;
- 
--	console_lock();
- 	if (ops && ops->currcon != -1)
- 		vc = vc_cons[ops->currcon].d;
- 
--- 
-1.7.10.2
-
+on the patch however.

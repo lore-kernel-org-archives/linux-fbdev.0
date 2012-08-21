@@ -1,102 +1,145 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Mon, 20 Aug 2012 13:35:19 +0000
-Subject: [PATCH V5 2/6] OMAPDSS: DSS: Remove redundant functions
-Message-Id: <122018dc5f6786c1315c34822b9baf5d00743007.1345468541.git.cmahapatra@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 21 Aug 2012 06:10:16 +0000
+Subject: [PATCH 09/23] OMAPDSS: Create links between managers, outputs and devices
+Message-Id: <1345528711-27801-10-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1343912532.git.cmahapatra@ti.com> <cover.1345468541.git.cmahapatra@ti.com>
-In-Reply-To: <cover.1345468541.git.cmahapatra@ti.com>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com, Archit Taneja <archit@ti.com>
 
-Functions dss_calc_clock_rates() and dss_get_clock_div() are removed as these
-functions have become redundant and no longer used.
+Links between DSS entities are made in dss_recheck_connections when a new panel
+is probed. Rewrite the code in dss_recheck_connections to link managers to
+outputs, and outputs to devices.
 
-Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+The fields in omap_dss_device struct gives information on which output and
+manager to connect to. The desired manager and output pointers are retrieved and
+prepared(existing outputs/devices unset, if default display)) to form the
+desired links. The output is linked to the device, and then the manager to the
+output. If a probed device's required manager isn't free, the required output
+is still connected to the device so that it's easier to use the panel in the
+future.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dss.c |   45 -----------------------------------------
- drivers/video/omap2/dss/dss.h |    2 --
- 2 files changed, 47 deletions(-)
+ drivers/video/omap2/dss/overlay.c |   96 +++++++++++++++++++++----------------
+ 1 file changed, 56 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 4491ab7..10566ae 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -431,31 +431,6 @@ enum omap_dss_clk_source dss_get_lcd_clk_source(enum omap_channel channel)
+diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
+index 952c6fa..07605f1 100644
+--- a/drivers/video/omap2/dss/overlay.c
++++ b/drivers/video/omap2/dss/overlay.c
+@@ -525,51 +525,67 @@ void dss_init_overlays(struct platform_device *pdev)
+ void dss_recheck_connections(struct omap_dss_device *dssdev, bool force)
+ {
+ 	int i;
+-	struct omap_overlay_manager *lcd_mgr;
+-	struct omap_overlay_manager *tv_mgr;
+-	struct omap_overlay_manager *lcd2_mgr = NULL;
+-	struct omap_overlay_manager *lcd3_mgr = NULL;
+ 	struct omap_overlay_manager *mgr = NULL;
++	struct omap_dss_output *out = NULL;
++	enum omap_dss_output_id id;
++
++	switch (dssdev->type) {
++	case OMAP_DISPLAY_TYPE_DPI:
++		out = omap_dss_get_output(OMAP_DSS_OUTPUT_DPI);
++		break;
++	case OMAP_DISPLAY_TYPE_DBI:
++		out = omap_dss_get_output(OMAP_DSS_OUTPUT_DBI);
++		break;
++	case OMAP_DISPLAY_TYPE_SDI:
++		out = omap_dss_get_output(OMAP_DSS_OUTPUT_SDI);
++		break;
++	case OMAP_DISPLAY_TYPE_VENC:
++		out = omap_dss_get_output(OMAP_DSS_OUTPUT_VENC);
++		break;
++	case OMAP_DISPLAY_TYPE_HDMI:
++		out = omap_dss_get_output(OMAP_DSS_OUTPUT_HDMI);
++		break;
++	case OMAP_DISPLAY_TYPE_DSI:
++		id = dssdev->phy.dsi.module = 0 ? OMAP_DSS_OUTPUT_DSI1 :
++					OMAP_DSS_OUTPUT_DSI2;
++		out = omap_dss_get_output(id);
++		break;
++	default:
++		break;
++	}
+ 
+-	lcd_mgr = omap_dss_get_overlay_manager(OMAP_DSS_CHANNEL_LCD);
+-	tv_mgr = omap_dss_get_overlay_manager(OMAP_DSS_CHANNEL_DIGIT);
+-	if (dss_has_feature(FEAT_MGR_LCD3))
+-		lcd3_mgr = omap_dss_get_overlay_manager(OMAP_DSS_CHANNEL_LCD3);
+-	if (dss_has_feature(FEAT_MGR_LCD2))
+-		lcd2_mgr = omap_dss_get_overlay_manager(OMAP_DSS_CHANNEL_LCD2);
+-
+-	if (dssdev->channel = OMAP_DSS_CHANNEL_LCD3) {
+-		if (!lcd3_mgr->device || force) {
+-			if (lcd3_mgr->device)
+-				lcd3_mgr->unset_device(lcd3_mgr);
+-			lcd3_mgr->set_device(lcd3_mgr, dssdev);
+-			mgr = lcd3_mgr;
+-		}
+-	} else if (dssdev->channel = OMAP_DSS_CHANNEL_LCD2) {
+-		if (!lcd2_mgr->device || force) {
+-			if (lcd2_mgr->device)
+-				lcd2_mgr->unset_device(lcd2_mgr);
+-			lcd2_mgr->set_device(lcd2_mgr, dssdev);
+-			mgr = lcd2_mgr;
+-		}
+-	} else if (dssdev->type != OMAP_DISPLAY_TYPE_VENC
+-			&& dssdev->type != OMAP_DISPLAY_TYPE_HDMI) {
+-		if (!lcd_mgr->device || force) {
+-			if (lcd_mgr->device)
+-				lcd_mgr->unset_device(lcd_mgr);
+-			lcd_mgr->set_device(lcd_mgr, dssdev);
+-			mgr = lcd_mgr;
+-		}
++	/*
++	 * We don't want to touch board files and mention channel for VENC
++	 * devices. Force the channel as DIGIT for HDMI and VENC devices
++	 */
++	if (dssdev->type = OMAP_DISPLAY_TYPE_VENC ||
++			dssdev->type = OMAP_DISPLAY_TYPE_HDMI)
++		dssdev->channel = OMAP_DSS_CHANNEL_DIGIT;
++
++	mgr = omap_dss_get_overlay_manager(dssdev->channel);
++
++	if (!mgr || !out) {
++		DSSERR("Incorrect manager or output\n");
++		return;
  	}
- }
  
--/* calculate clock rates using dividers in cinfo */
--int dss_calc_clock_rates(struct dss_clock_info *cinfo)
--{
--	if (dss.dpll4_m4_ck) {
--		unsigned long prate;
--		u16 fck_div_max = 16;
--
--		if (cpu_is_omap3630() || cpu_is_omap44xx())
--			fck_div_max = 32;
--
--		if (cinfo->fck_div > fck_div_max || cinfo->fck_div = 0)
--			return -EINVAL;
--
--		prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
--
--		cinfo->fck = prate / cinfo->fck_div;
--	} else {
--		if (cinfo->fck_div != 0)
--			return -EINVAL;
--		cinfo->fck = clk_get_rate(dss.dss_clk);
--	}
--
--	return 0;
--}
--
- int dss_set_clock_div(struct dss_clock_info *cinfo)
- {
- 	if (dss.dpll4_m4_ck) {
-@@ -478,26 +453,6 @@ int dss_set_clock_div(struct dss_clock_info *cinfo)
- 	return 0;
- }
+-	if (dssdev->type = OMAP_DISPLAY_TYPE_VENC
+-			|| dssdev->type = OMAP_DISPLAY_TYPE_HDMI) {
+-		if (!tv_mgr->device || force) {
+-			if (tv_mgr->device)
+-				tv_mgr->unset_device(tv_mgr);
+-			tv_mgr->set_device(tv_mgr, dssdev);
+-			mgr = tv_mgr;
++	if (!mgr->output || force) {
++		struct omap_dss_output *curr_out = mgr->output;
++
++		if (curr_out) {
++			if (curr_out->device)
++				curr_out->unset_device(curr_out);
++			mgr->unset_output(mgr);
+ 		}
++		out->set_device(out, dssdev);
++		mgr->set_output(mgr, out);
++	} else {
++		/*
++		 * connect a floating output to the device even if the desired
++		 * manager is in use
++		 */
++		if (!out->manager && !out->device)
++			out->set_device(out, dssdev);
+ 	}
  
--int dss_get_clock_div(struct dss_clock_info *cinfo)
--{
--	cinfo->fck = clk_get_rate(dss.dss_clk);
--
--	if (dss.dpll4_m4_ck) {
--		unsigned long prate;
--
--		prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
--
--		if (cpu_is_omap3630() || cpu_is_omap44xx())
--			cinfo->fck_div = prate / (cinfo->fck);
--		else
--			cinfo->fck_div = prate / (cinfo->fck / 2);
--	} else {
--		cinfo->fck_div = 0;
--	}
--
--	return 0;
--}
--
- unsigned long dss_get_dpll4_rate(void)
- {
- 	if (dss.dpll4_m4_ck)
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index f67afe7..33c0952 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -296,9 +296,7 @@ void dss_set_venc_output(enum omap_dss_venc_type type);
- void dss_set_dac_pwrdn_bgz(bool enable);
- 
- unsigned long dss_get_dpll4_rate(void);
--int dss_calc_clock_rates(struct dss_clock_info *cinfo);
- int dss_set_clock_div(struct dss_clock_info *cinfo);
--int dss_get_clock_div(struct dss_clock_info *cinfo);
- int dss_calc_clock_div(unsigned long req_pck, struct dss_clock_info *dss_cinfo,
- 		struct dispc_clock_info *dispc_cinfo);
- 
+ 	if (mgr) {
 -- 
-1.7.10
+1.7.9.5
 

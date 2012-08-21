@@ -1,100 +1,38 @@
 From: Archit Taneja <archit@ti.com>
-Date: Thu, 09 Aug 2012 11:56:48 +0000
-Subject: [PATCH v2 12/13] OMAPDSS: VENC: Maintain our own timings field in driver data
-Message-Id: <1344512989-4071-13-git-send-email-archit@ti.com>
+Date: Tue, 21 Aug 2012 06:10:28 +0000
+Subject: [PATCH 21/23] OMAPDSS: MANAGER: Get device via output
+Message-Id: <1345528711-27801-22-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343817088-29645-1-git-send-email-archit@ti.com>
- <1344512989-4071-1-git-send-email-archit@ti.com>
-In-Reply-To: <1344512989-4071-1-git-send-email-archit@ti.com>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com, Archit Taneja <archit@ti.com>
 
-The VENC driver currently relies on the timings in omap_dss_device struct to
-configure the DISPC and VENC blocks accordingly. This makes the VENC interface
-driver dependent on the omap_dss_device struct.
-
-Make the VENC driver data maintain it's own timings field. The panel driver is
-expected to call omapdss_venc_set_timings() to set these timings before the
-panel is enabled.
-
-Make the VENC panel driver configure the new timings is the omap_dss_device
-struct(dssdev->panel.timings). The VENC driver is responsible for maintaining
-only it's own copy of timings.
+A manager is not connected to a device directly any more. It first connects
+to an output, and then to the display. Update the manager's get_device op to
+return the device via the connected output.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/venc.c       |   12 +++++++-----
- drivers/video/omap2/dss/venc_panel.c |    1 +
- 2 files changed, 8 insertions(+), 5 deletions(-)
+ drivers/video/omap2/dss/manager.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index ffca542..d96025e 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -300,6 +300,8 @@ static struct {
- 	struct regulator *vdda_dac_reg;
+diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+index d808ce2..d14ffc5 100644
+--- a/drivers/video/omap2/dss/manager.c
++++ b/drivers/video/omap2/dss/manager.c
+@@ -509,7 +509,7 @@ static struct kobj_type manager_ktype = {
  
- 	struct clk	*tv_dac_clk;
-+
-+	struct omap_video_timings timings;
- } venc;
- 
- static inline void venc_write_reg(int idx, u32 val)
-@@ -432,7 +434,7 @@ static int venc_power_on(struct omap_dss_device *dssdev)
- 		goto err0;
- 
- 	venc_reset();
--	venc_write_config(venc_timings_to_config(&dssdev->panel.timings));
-+	venc_write_config(venc_timings_to_config(&venc.timings));
- 
- 	dss_set_venc_output(dssdev->phy.venc.type);
- 	dss_set_dac_pwrdn_bgz(1);
-@@ -449,7 +451,7 @@ static int venc_power_on(struct omap_dss_device *dssdev)
- 
- 	venc_write_reg(VENC_OUTPUT_CONTROL, l);
- 
--	dss_mgr_set_timings(dssdev->manager, &dssdev->panel.timings);
-+	dss_mgr_set_timings(dssdev->manager, &venc.timings);
- 
- 	r = regulator_enable(venc.vdda_dac_reg);
- 	if (r)
-@@ -556,10 +558,10 @@ void omapdss_venc_set_timings(struct omap_dss_device *dssdev,
- 	mutex_lock(&venc.venc_lock);
- 
- 	/* Reset WSS data when the TV standard changes. */
--	if (memcmp(&dssdev->panel.timings, timings, sizeof(*timings)))
-+	if (memcmp(&venc.timings, timings, sizeof(*timings)))
- 		venc.wss_data = 0;
- 
--	dssdev->panel.timings = *timings;
-+	venc.timings = *timings;
- 
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
- 		int r;
-@@ -606,7 +608,7 @@ int omapdss_venc_set_wss(struct omap_dss_device *dssdev, u32 wss)
- 
- 	mutex_lock(&venc.venc_lock);
- 
--	config = venc_timings_to_config(&dssdev->panel.timings);
-+	config = venc_timings_to_config(&venc.timings);
- 
- 	/* Invert due to VENC_L21_WC_CTL:INV=1 */
- 	venc.wss_data = (wss ^ 0xfffff) << 8;
-diff --git a/drivers/video/omap2/dss/venc_panel.c b/drivers/video/omap2/dss/venc_panel.c
-index 6b31298..350b0d9 100644
---- a/drivers/video/omap2/dss/venc_panel.c
-+++ b/drivers/video/omap2/dss/venc_panel.c
-@@ -170,6 +170,7 @@ static void venc_panel_set_timings(struct omap_dss_device *dssdev,
- 	mutex_lock(&venc_panel.lock);
- 
- 	omapdss_venc_set_timings(dssdev, timings);
-+	dssdev->panel.timings = *timings;
- 
- 	mutex_unlock(&venc_panel.lock);
+ static inline struct omap_dss_device *dss_mgr_get_device(struct omap_overlay_manager *mgr)
+ {
+-	return mgr->device;
++	return mgr->output ? mgr->output->device : NULL;
  }
+ 
+ static int dss_mgr_wait_for_vsync(struct omap_overlay_manager *mgr)
 -- 
 1.7.9.5
 

@@ -1,159 +1,738 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Tue, 21 Aug 2012 22:34:32 +0000
-Subject: [PATCH 2/2] console: implement lockdep support for console_lock
-Message-Id: <1345588472-4055-3-git-send-email-daniel.vetter@ffwll.ch>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 21 Aug 2012 06:10:17 +0000
+Subject: [PATCH 10/23] OMAPDSS: DPI: Pass outputs from panel driver to DPI interface driver
+Message-Id: <1345528711-27801-11-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345588472-4055-1-git-send-email-daniel.vetter@ffwll.ch>
-In-Reply-To: <1345588472-4055-1-git-send-email-daniel.vetter@ffwll.ch>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: DRI Development <dri-devel@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@gmail.com>, Thomas Gleixner <tglx@linutronix.de>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com, Archit Taneja <archit@ti.com>
 
-Dave Airlie recently discovered a locking bug in the fbcon layer,
-where a timer_del_sync (for the blinking cursor) deadlocks with the
-timer itself, since both (want to) hold the console_lock:
+With outputs introduces as new entities, we can now pass output pointer to
+functions used to configure the connected interface. These functions currently
+pass the omap_dss_device pointer, and extract output information via
+omap_dss_device. This is unnecessary, and it doesn't make sense for interface
+related functions to get the panel's/device's pointer, it should receive a
+pointer related to the connected interface, which in our case is the output
+entity.
 
-https://lkml.org/lkml/2012/8/21/36
+With the addition of outputs. There is a possibility that an omap_dss_device
+isn't connected to an output yet. Ensure that panel drivers call the interface
+functions only if outputs are non NULL.
 
-Unfortunately the console_lock isn't a plain mutex and hence has no
-lockdep support. Which resulted in a few days wasted of tracking down
-this bug (complicated by the fact that printk doesn't show anything
-when the console is locked) instead of noticing the bug much earlier
-with the lockdep splat.
+Modify DPI functions to pass omap_dss_output pointer instead of omap_dss_device
+pointer. Modify the panel drivers to call the updated functions.
 
-Hence I've figured I need to fix that for the next deadlock involving
-console_lock - and with kms/drm growing ever more complex locking
-that'll eventually happen.
-
-Now the console_lock has rather funky semantics, so after a quick irc
-discussion with Thomas Gleixner and Dave Airlie I've quickly ditched
-the original idead of switching to a real mutex (since it won't work)
-and instead opted to annotate the console_lock with lockdep
-information manually.
-
-There are a few special cases:
-- The console_lock state is protected by the console_sem, and usually
-  grabbed/dropped at _lock/_unlock time. But the suspend/resume code
-  drops the semaphore without dropping the console_lock (see
-  suspend_console/resume_console). But since the same thread that did
-  the suspend will do the resume, we don't need to fix up anything.
-
-- In the printk code there's a special trylock, only used to kick off
-  the logbuffer printk'ing in console_unlock. But all that happens
-  while lockdep is disable (since printk does a few other evil
-  tricks). So no issue there, either.
-
-- The console_lock can also be acquired form irq context (but only
-  with a trylock). lockdep already handles that.
-
-This all leaves us with annotating the normal console_lock, _unlock
-and _trylock functions.
-
-And yes, it works - simply unloading a drm kms driver resulted in
-lockdep complaining about the deadlock in fbcon_deinit:
-
-===========================
-[ INFO: possible circular locking dependency detected ]
-3.6.0-rc2+ #552 Not tainted
--------------------------------------------------------
-kms-reload/3577 is trying to acquire lock:
- ((&info->queue)){+.+...}, at: [<ffffffff81058c70>] wait_on_work+0x0/0xa7
-
-but task is already holding lock:
- (console_lock){+.+.+.}, at: [<ffffffff81264686>] bind_con_driver+0x38/0x263
-
-which lock already depends on the new lock.
-
-the existing dependency chain (in reverse order) is:
-
--> #1 (console_lock){+.+.+.}:
-       [<ffffffff81087440>] lock_acquire+0x95/0x105
-       [<ffffffff81040190>] console_lock+0x59/0x5b
-       [<ffffffff81209cb6>] fb_flashcursor+0x2e/0x12c
-       [<ffffffff81057c3e>] process_one_work+0x1d9/0x3b4
-       [<ffffffff810584a2>] worker_thread+0x1a7/0x24b
-       [<ffffffff8105ca29>] kthread+0x7f/0x87
-       [<ffffffff813b1204>] kernel_thread_helper+0x4/0x10
-
--> #0 ((&info->queue)){+.+...}:
-       [<ffffffff81086cb3>] __lock_acquire+0x999/0xcf6
-       [<ffffffff81087440>] lock_acquire+0x95/0x105
-       [<ffffffff81058cab>] wait_on_work+0x3b/0xa7
-       [<ffffffff81058dd6>] __cancel_work_timer+0xbf/0x102
-       [<ffffffff81058e33>] cancel_work_sync+0xb/0xd
-       [<ffffffff8120a3b3>] fbcon_deinit+0x11c/0x1dc
-       [<ffffffff81264793>] bind_con_driver+0x145/0x263
-       [<ffffffff81264a45>] unbind_con_driver+0x14f/0x195
-       [<ffffffff8126540c>] store_bind+0x1ad/0x1c1
-       [<ffffffff8127cbb7>] dev_attr_store+0x13/0x1f
-       [<ffffffff8116d884>] sysfs_write_file+0xe9/0x121
-       [<ffffffff811145b2>] vfs_write+0x9b/0xfd
-       [<ffffffff811147b7>] sys_write+0x3e/0x6b
-       [<ffffffff813b0039>] system_call_fastpath+0x16/0x1b
-
-other info that might help us debug this:
-
- Possible unsafe locking scenario:
-
-       CPU0                    CPU1
-       ----                    ----
-  lock(console_lock);
-                               lock((&info->queue));
-                               lock(console_lock);
-  lock((&info->queue));
-
- *** DEADLOCK ***
-
-Cc: Dave Airlie <airlied@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- kernel/printk.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/video/omap2/displays/panel-generic-dpi.c   |   27 ++++++---
+ .../omap2/displays/panel-lgphilips-lb035q02.c      |   16 +++--
+ .../omap2/displays/panel-nec-nl8048hl11-01b.c      |   15 +++--
+ drivers/video/omap2/displays/panel-picodlp.c       |   15 +++--
+ .../video/omap2/displays/panel-sharp-ls037v7dw01.c |   16 +++--
+ drivers/video/omap2/displays/panel-tfp410.c        |   17 ++++--
+ .../video/omap2/displays/panel-tpo-td043mtea1.c    |   29 ++++++---
+ drivers/video/omap2/dss/dpi.c                      |   64 ++++++++++----------
+ include/video/omapdss.h                            |   12 ++--
+ 9 files changed, 133 insertions(+), 78 deletions(-)
 
-diff --git a/kernel/printk.c b/kernel/printk.c
-index ed9af6a..ab2ab24 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -87,6 +87,12 @@ static DEFINE_SEMAPHORE(console_sem);
- struct console *console_drivers;
- EXPORT_SYMBOL_GPL(console_drivers);
- 
-+#ifdef CONFIG_LOCKDEP
-+struct lockdep_map console_lock_dep_map = {
-+	.name = "console_lock"
-+};
-+#endif
+diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
+index 88295c5..76ee8df 100644
+--- a/drivers/video/omap2/displays/panel-generic-dpi.c
++++ b/drivers/video/omap2/displays/panel-generic-dpi.c
+@@ -561,14 +561,18 @@ static int generic_dpi_panel_power_on(struct omap_dss_device *dssdev)
+ 	struct panel_generic_dpi_data *panel_data = get_panel_data(dssdev);
+ 	struct panel_drv_data *drv_data = dev_get_drvdata(&dssdev->dev);
+ 	struct panel_config *panel_config = drv_data->panel_config;
++	struct omap_dss_output *out = dssdev->output;
 +
- /*
-  * This is used for debugging the mess that is the VT code by
-  * keeping track if we have the console semaphore held. It's
-@@ -1916,6 +1922,7 @@ void console_lock(void)
++	if (out = NULL)
++		return -ENODEV;
+ 
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
+ 		return 0;
+ 
+-	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
+-	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
++	omapdss_dpi_set_timings(out, &dssdev->panel.timings);
++	omapdss_dpi_set_data_lines(out, dssdev->phy.dpi.data_lines);
+ 
+-	r = omapdss_dpi_display_enable(dssdev);
++	r = omapdss_dpi_display_enable(out);
+ 	if (r)
+ 		goto err0;
+ 
+@@ -584,7 +588,7 @@ static int generic_dpi_panel_power_on(struct omap_dss_device *dssdev)
+ 
+ 	return 0;
+ err1:
+-	omapdss_dpi_display_disable(dssdev);
++	omapdss_dpi_display_disable(out);
+ err0:
+ 	return r;
+ }
+@@ -594,6 +598,7 @@ static void generic_dpi_panel_power_off(struct omap_dss_device *dssdev)
+ 	struct panel_generic_dpi_data *panel_data = get_panel_data(dssdev);
+ 	struct panel_drv_data *drv_data = dev_get_drvdata(&dssdev->dev);
+ 	struct panel_config *panel_config = drv_data->panel_config;
++	struct omap_dss_output *out = dssdev->output;
+ 
+ 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
  		return;
- 	console_locked = 1;
- 	console_may_schedule = 1;
-+	mutex_acquire(&console_lock_dep_map, 0, 0, _RET_IP_);
- }
- EXPORT_SYMBOL(console_lock);
+@@ -605,7 +610,7 @@ static void generic_dpi_panel_power_off(struct omap_dss_device *dssdev)
+ 	if (panel_config->power_off_delay)
+ 		msleep(panel_config->power_off_delay);
  
-@@ -1937,6 +1944,7 @@ int console_trylock(void)
- 	}
- 	console_locked = 1;
- 	console_may_schedule = 0;
-+	mutex_acquire(&console_lock_dep_map, 0, 1, _RET_IP_);
- 	return 1;
+-	omapdss_dpi_display_disable(dssdev);
++	omapdss_dpi_display_disable(out);
  }
- EXPORT_SYMBOL(console_trylock);
-@@ -2097,6 +2105,7 @@ skip:
- 		local_irq_restore(flags);
- 	}
- 	console_locked = 0;
-+	mutex_release(&console_lock_dep_map, 1, _RET_IP_);
  
- 	/* Release the exclusive_console once it is used */
- 	if (unlikely(exclusive_console))
+ static int generic_dpi_panel_probe(struct omap_dss_device *dssdev)
+@@ -726,10 +731,14 @@ static void generic_dpi_panel_set_timings(struct omap_dss_device *dssdev,
+ 		struct omap_video_timings *timings)
+ {
+ 	struct panel_drv_data *drv_data = dev_get_drvdata(&dssdev->dev);
++	struct omap_dss_output *out = dssdev->output;
++
++	if (out = NULL)
++		return;
+ 
+ 	mutex_lock(&drv_data->lock);
+ 
+-	omapdss_dpi_set_timings(dssdev, timings);
++	omapdss_dpi_set_timings(out, timings);
+ 
+ 	dssdev->panel.timings = *timings;
+ 
+@@ -752,11 +761,15 @@ static int generic_dpi_panel_check_timings(struct omap_dss_device *dssdev,
+ 		struct omap_video_timings *timings)
+ {
+ 	struct panel_drv_data *drv_data = dev_get_drvdata(&dssdev->dev);
++	struct omap_dss_output *out = dssdev->output;
+ 	int r;
+ 
++	if (out = NULL)
++		return -ENODEV;
++
+ 	mutex_lock(&drv_data->lock);
+ 
+-	r = dpi_check_timings(dssdev, timings);
++	r = dpi_check_timings(out, timings);
+ 
+ 	mutex_unlock(&drv_data->lock);
+ 
+diff --git a/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c b/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
+index 90c1cab..2764c32 100644
+--- a/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
++++ b/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
+@@ -50,15 +50,19 @@ static struct omap_video_timings lb035q02_timings = {
+ 
+ static int lb035q02_panel_power_on(struct omap_dss_device *dssdev)
+ {
++	struct omap_dss_output *out = dssdev->output;
+ 	int r;
+ 
++	if (out = NULL)
++		return -ENODEV;
++
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
+ 		return 0;
+ 
+-	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
+-	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
++	omapdss_dpi_set_timings(out, &dssdev->panel.timings);
++	omapdss_dpi_set_data_lines(out, dssdev->phy.dpi.data_lines);
+ 
+-	r = omapdss_dpi_display_enable(dssdev);
++	r = omapdss_dpi_display_enable(out);
+ 	if (r)
+ 		goto err0;
+ 
+@@ -70,20 +74,22 @@ static int lb035q02_panel_power_on(struct omap_dss_device *dssdev)
+ 
+ 	return 0;
+ err1:
+-	omapdss_dpi_display_disable(dssdev);
++	omapdss_dpi_display_disable(out);
+ err0:
+ 	return r;
+ }
+ 
+ static void lb035q02_panel_power_off(struct omap_dss_device *dssdev)
+ {
++	struct omap_dss_output *out = dssdev->output;
++
+ 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
+ 		return;
+ 
+ 	if (dssdev->platform_disable)
+ 		dssdev->platform_disable(dssdev);
+ 
+-	omapdss_dpi_display_disable(dssdev);
++	omapdss_dpi_display_disable(out);
+ }
+ 
+ static int lb035q02_panel_probe(struct omap_dss_device *dssdev)
+diff --git a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+index 908fd26..906bc48 100644
+--- a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
++++ b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+@@ -171,14 +171,18 @@ static int nec_8048_panel_power_on(struct omap_dss_device *dssdev)
+ 	int r;
+ 	struct nec_8048_data *necd = dev_get_drvdata(&dssdev->dev);
+ 	struct backlight_device *bl = necd->bl;
++	struct omap_dss_output *out = dssdev->output;
++
++	if (out = NULL)
++		return -ENODEV;
+ 
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
+ 		return 0;
+ 
+-	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
+-	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
++	omapdss_dpi_set_timings(out, &dssdev->panel.timings);
++	omapdss_dpi_set_data_lines(out, dssdev->phy.dpi.data_lines);
+ 
+-	r = omapdss_dpi_display_enable(dssdev);
++	r = omapdss_dpi_display_enable(out);
+ 	if (r)
+ 		goto err0;
+ 
+@@ -194,7 +198,7 @@ static int nec_8048_panel_power_on(struct omap_dss_device *dssdev)
+ 
+ 	return 0;
+ err1:
+-	omapdss_dpi_display_disable(dssdev);
++	omapdss_dpi_display_disable(out);
+ err0:
+ 	return r;
+ }
+@@ -203,6 +207,7 @@ static void nec_8048_panel_power_off(struct omap_dss_device *dssdev)
+ {
+ 	struct nec_8048_data *necd = dev_get_drvdata(&dssdev->dev);
+ 	struct backlight_device *bl = necd->bl;
++	struct omap_dss_output *out = dssdev->output;
+ 
+ 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
+ 		return;
+@@ -213,7 +218,7 @@ static void nec_8048_panel_power_off(struct omap_dss_device *dssdev)
+ 	if (dssdev->platform_disable)
+ 		dssdev->platform_disable(dssdev);
+ 
+-	omapdss_dpi_display_disable(dssdev);
++	omapdss_dpi_display_disable(out);
+ }
+ 
+ static int nec_8048_panel_enable(struct omap_dss_device *dssdev)
+diff --git a/drivers/video/omap2/displays/panel-picodlp.c b/drivers/video/omap2/displays/panel-picodlp.c
+index 9df8764..2bd4f7b 100644
+--- a/drivers/video/omap2/displays/panel-picodlp.c
++++ b/drivers/video/omap2/displays/panel-picodlp.c
+@@ -352,6 +352,10 @@ static int picodlp_panel_power_on(struct omap_dss_device *dssdev)
+ 	int r, trial = 100;
+ 	struct picodlp_data *picod = dev_get_drvdata(&dssdev->dev);
+ 	struct picodlp_panel_data *picodlp_pdata = get_panel_data(dssdev);
++	struct omap_dss_output *out = dssdev->output;
++
++	if (out = NULL)
++		return -ENODEV;
+ 
+ 	if (dssdev->platform_enable) {
+ 		r = dssdev->platform_enable(dssdev);
+@@ -378,10 +382,10 @@ static int picodlp_panel_power_on(struct omap_dss_device *dssdev)
+ 	 */
+ 	msleep(1000);
+ 
+-	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
+-	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
++	omapdss_dpi_set_timings(out, &dssdev->panel.timings);
++	omapdss_dpi_set_data_lines(out, dssdev->phy.dpi.data_lines);
+ 
+-	r = omapdss_dpi_display_enable(dssdev);
++	r = omapdss_dpi_display_enable(out);
+ 	if (r) {
+ 		dev_err(&dssdev->dev, "failed to enable DPI\n");
+ 		goto err1;
+@@ -395,7 +399,7 @@ static int picodlp_panel_power_on(struct omap_dss_device *dssdev)
+ 
+ 	return r;
+ err:
+-	omapdss_dpi_display_disable(dssdev);
++	omapdss_dpi_display_disable(out);
+ err1:
+ 	if (dssdev->platform_disable)
+ 		dssdev->platform_disable(dssdev);
+@@ -406,8 +410,9 @@ err1:
+ static void picodlp_panel_power_off(struct omap_dss_device *dssdev)
+ {
+ 	struct picodlp_panel_data *picodlp_pdata = get_panel_data(dssdev);
++	struct omap_dss_output *out = dssdev->output;
+ 
+-	omapdss_dpi_display_disable(dssdev);
++	omapdss_dpi_display_disable(out);
+ 
+ 	gpio_set_value(picodlp_pdata->emu_done_gpio, 0);
+ 	gpio_set_value(picodlp_pdata->pwrgood_gpio, 0);
+diff --git a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
+index 1ec3b27..dffd85a 100644
+--- a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
++++ b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
+@@ -137,15 +137,19 @@ static void __exit sharp_ls_panel_remove(struct omap_dss_device *dssdev)
+ 
+ static int sharp_ls_power_on(struct omap_dss_device *dssdev)
+ {
++	struct omap_dss_output *out = dssdev->output;
+ 	int r = 0;
+ 
++	if (out = NULL)
++		return -ENODEV;
++
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
+ 		return 0;
+ 
+-	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
+-	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
++	omapdss_dpi_set_timings(out, &dssdev->panel.timings);
++	omapdss_dpi_set_data_lines(out, dssdev->phy.dpi.data_lines);
+ 
+-	r = omapdss_dpi_display_enable(dssdev);
++	r = omapdss_dpi_display_enable(out);
+ 	if (r)
+ 		goto err0;
+ 
+@@ -160,13 +164,15 @@ static int sharp_ls_power_on(struct omap_dss_device *dssdev)
+ 
+ 	return 0;
+ err1:
+-	omapdss_dpi_display_disable(dssdev);
++	omapdss_dpi_display_disable(out);
+ err0:
+ 	return r;
+ }
+ 
+ static void sharp_ls_power_off(struct omap_dss_device *dssdev)
+ {
++	struct omap_dss_output *out = dssdev->output;
++
+ 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
+ 		return;
+ 
+@@ -177,7 +183,7 @@ static void sharp_ls_power_off(struct omap_dss_device *dssdev)
+ 
+ 	msleep(100);
+ 
+-	omapdss_dpi_display_disable(dssdev);
++	omapdss_dpi_display_disable(out);
+ }
+ 
+ static int sharp_ls_panel_enable(struct omap_dss_device *dssdev)
+diff --git a/drivers/video/omap2/displays/panel-tfp410.c b/drivers/video/omap2/displays/panel-tfp410.c
+index 4be9a59..88a1507 100644
+--- a/drivers/video/omap2/displays/panel-tfp410.c
++++ b/drivers/video/omap2/displays/panel-tfp410.c
+@@ -60,15 +60,19 @@ struct panel_drv_data {
+ static int tfp410_power_on(struct omap_dss_device *dssdev)
+ {
+ 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
++	struct omap_dss_output *out = dssdev->output;
+ 	int r;
+ 
++	if (out = NULL)
++		return -ENODEV;
++
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
+ 		return 0;
+ 
+-	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
+-	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
++	omapdss_dpi_set_timings(out, &dssdev->panel.timings);
++	omapdss_dpi_set_data_lines(out, dssdev->phy.dpi.data_lines);
+ 
+-	r = omapdss_dpi_display_enable(dssdev);
++	r = omapdss_dpi_display_enable(out);
+ 	if (r)
+ 		goto err0;
+ 
+@@ -83,6 +87,7 @@ err0:
+ static void tfp410_power_off(struct omap_dss_device *dssdev)
+ {
+ 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
++	struct omap_dss_output *out = dssdev->output;
+ 
+ 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
+ 		return;
+@@ -90,7 +95,7 @@ static void tfp410_power_off(struct omap_dss_device *dssdev)
+ 	if (gpio_is_valid(ddata->pd_gpio))
+ 		gpio_set_value_cansleep(ddata->pd_gpio, 0);
+ 
+-	omapdss_dpi_display_disable(dssdev);
++	omapdss_dpi_display_disable(out);
+ }
+ 
+ static int tfp410_probe(struct omap_dss_device *dssdev)
+@@ -234,7 +239,7 @@ static void tfp410_set_timings(struct omap_dss_device *dssdev,
+ 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
+ 
+ 	mutex_lock(&ddata->lock);
+-	omapdss_dpi_set_timings(dssdev, timings);
++	omapdss_dpi_set_timings(dssdev->output, timings);
+ 	dssdev->panel.timings = *timings;
+ 	mutex_unlock(&ddata->lock);
+ }
+@@ -256,7 +261,7 @@ static int tfp410_check_timings(struct omap_dss_device *dssdev,
+ 	int r;
+ 
+ 	mutex_lock(&ddata->lock);
+-	r = dpi_check_timings(dssdev, timings);
++	r = dpi_check_timings(dssdev->output, timings);
+ 	mutex_unlock(&ddata->lock);
+ 
+ 	return r;
+diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+index b5e6dbc..792e9ff 100644
+--- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
++++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+@@ -331,16 +331,20 @@ static void tpo_td043_power_off(struct tpo_td043_device *tpo_td043)
+ 
+ static int tpo_td043_enable_dss(struct omap_dss_device *dssdev)
+ {
++	struct omap_dss_output *out = dssdev->output;
+ 	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(&dssdev->dev);
+ 	int r;
+ 
++	if (out = NULL)
++		return -ENODEV;
++
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
+ 		return 0;
+ 
+-	omapdss_dpi_set_timings(dssdev, &dssdev->panel.timings);
+-	omapdss_dpi_set_data_lines(dssdev, dssdev->phy.dpi.data_lines);
++	omapdss_dpi_set_timings(out, &dssdev->panel.timings);
++	omapdss_dpi_set_data_lines(out, dssdev->phy.dpi.data_lines);
+ 
+-	r = omapdss_dpi_display_enable(dssdev);
++	r = omapdss_dpi_display_enable(out);
+ 	if (r)
+ 		goto err0;
+ 
+@@ -364,7 +368,7 @@ static int tpo_td043_enable_dss(struct omap_dss_device *dssdev)
+ 
+ 	return 0;
+ err1:
+-	omapdss_dpi_display_disable(dssdev);
++	omapdss_dpi_display_disable(out);
+ err0:
+ 	return r;
+ }
+@@ -372,6 +376,7 @@ err0:
+ static void tpo_td043_disable_dss(struct omap_dss_device *dssdev)
+ {
+ 	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(&dssdev->dev);
++	struct omap_dss_output *out = dssdev->output;
+ 
+ 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
+ 		return;
+@@ -379,7 +384,7 @@ static void tpo_td043_disable_dss(struct omap_dss_device *dssdev)
+ 	if (dssdev->platform_disable)
+ 		dssdev->platform_disable(dssdev);
+ 
+-	omapdss_dpi_display_disable(dssdev);
++	omapdss_dpi_display_disable(out);
+ 
+ 	if (!tpo_td043->spi_suspended)
+ 		tpo_td043_power_off(tpo_td043);
+@@ -483,7 +488,12 @@ static void tpo_td043_remove(struct omap_dss_device *dssdev)
+ static void tpo_td043_set_timings(struct omap_dss_device *dssdev,
+ 		struct omap_video_timings *timings)
+ {
+-	omapdss_dpi_set_timings(dssdev, timings);
++	struct omap_dss_output *out = dssdev->output;
++
++	if (out = NULL)
++		return;
++
++	omapdss_dpi_set_timings(out, timings);
+ 
+ 	dssdev->panel.timings = *timings;
+ }
+@@ -491,7 +501,12 @@ static void tpo_td043_set_timings(struct omap_dss_device *dssdev,
+ static int tpo_td043_check_timings(struct omap_dss_device *dssdev,
+ 		struct omap_video_timings *timings)
+ {
+-	return dpi_check_timings(dssdev, timings);
++	struct omap_dss_output *out = dssdev->output;
++
++	if (out = NULL)
++		return -ENODEV;
++
++	return dpi_check_timings(out, timings);
+ }
+ 
+ static struct omap_dss_driver tpo_td043_driver = {
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 4eca2e7..6506e40 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -70,7 +70,7 @@ static bool dpi_use_dsi_pll(struct omap_dss_device *dssdev)
+ 		return false;
+ }
+ 
+-static int dpi_set_dsi_clk(struct omap_dss_device *dssdev,
++static int dpi_set_dsi_clk(struct omap_dss_output *out,
+ 		unsigned long pck_req, unsigned long *fck, int *lck_div,
+ 		int *pck_div)
+ {
+@@ -87,7 +87,7 @@ static int dpi_set_dsi_clk(struct omap_dss_device *dssdev,
+ 	if (r)
+ 		return r;
+ 
+-	dss_select_dispc_clk_source(dssdev->clocks.dispc.dispc_fclk_src);
++	dss_select_dispc_clk_source(out->device->clocks.dispc.dispc_fclk_src);
+ 
+ 	dpi.mgr_config.clock_info = dispc_cinfo;
+ 
+@@ -98,7 +98,7 @@ static int dpi_set_dsi_clk(struct omap_dss_device *dssdev,
+ 	return 0;
+ }
+ 
+-static int dpi_set_dispc_clk(struct omap_dss_device *dssdev,
++static int dpi_set_dispc_clk(struct omap_dss_output *out,
+ 		unsigned long pck_req, unsigned long *fck, int *lck_div,
+ 		int *pck_div)
+ {
+@@ -123,7 +123,7 @@ static int dpi_set_dispc_clk(struct omap_dss_device *dssdev,
+ 	return 0;
+ }
+ 
+-static int dpi_set_mode(struct omap_dss_device *dssdev)
++static int dpi_set_mode(struct omap_dss_output *out)
+ {
+ 	struct omap_video_timings *t = &dpi.timings;
+ 	int lck_div = 0, pck_div = 0;
+@@ -131,11 +131,11 @@ static int dpi_set_mode(struct omap_dss_device *dssdev)
+ 	unsigned long pck;
+ 	int r = 0;
+ 
+-	if (dpi_use_dsi_pll(dssdev))
+-		r = dpi_set_dsi_clk(dssdev, t->pixel_clock * 1000, &fck,
++	if (dpi_use_dsi_pll(out->device))
++		r = dpi_set_dsi_clk(out, t->pixel_clock * 1000, &fck,
+ 				&lck_div, &pck_div);
+ 	else
+-		r = dpi_set_dispc_clk(dssdev, t->pixel_clock * 1000, &fck,
++		r = dpi_set_dispc_clk(out, t->pixel_clock * 1000, &fck,
+ 				&lck_div, &pck_div);
+ 	if (r)
+ 		return r;
+@@ -150,12 +150,12 @@ static int dpi_set_mode(struct omap_dss_device *dssdev)
+ 		t->pixel_clock = pck;
+ 	}
+ 
+-	dss_mgr_set_timings(dssdev->manager, t);
++	dss_mgr_set_timings(out->manager, t);
+ 
+ 	return 0;
+ }
+ 
+-static void dpi_config_lcd_manager(struct omap_dss_device *dssdev)
++static void dpi_config_lcd_manager(struct omap_dss_output *out)
+ {
+ 	dpi.mgr_config.io_pad_mode = DSS_IO_PAD_MODE_BYPASS;
+ 
+@@ -166,10 +166,10 @@ static void dpi_config_lcd_manager(struct omap_dss_device *dssdev)
+ 
+ 	dpi.mgr_config.lcden_sig_polarity = 0;
+ 
+-	dss_mgr_set_lcd_config(dssdev->manager, &dpi.mgr_config);
++	dss_mgr_set_lcd_config(out->manager, &dpi.mgr_config);
+ }
+ 
+-int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
++int omapdss_dpi_display_enable(struct omap_dss_output *out)
+ {
+ 	int r;
+ 
+@@ -181,13 +181,13 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
+ 		goto err_no_reg;
+ 	}
+ 
+-	if (dssdev->manager = NULL) {
++	if (out->manager = NULL) {
+ 		DSSERR("failed to enable display: no manager\n");
+ 		r = -ENODEV;
+ 		goto err_no_mgr;
+ 	}
+ 
+-	r = omap_dss_start_device(dssdev);
++	r = omap_dss_start_device(out->device);
+ 	if (r) {
+ 		DSSERR("failed to start device\n");
+ 		goto err_start_dev;
+@@ -203,7 +203,7 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err_get_dispc;
+ 
+-	if (dpi_use_dsi_pll(dssdev)) {
++	if (dpi_use_dsi_pll(out->device)) {
+ 		r = dsi_runtime_get(dpi.dsidev);
+ 		if (r)
+ 			goto err_get_dsi;
+@@ -213,15 +213,15 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
+ 			goto err_dsi_pll_init;
+ 	}
+ 
+-	r = dpi_set_mode(dssdev);
++	r = dpi_set_mode(out);
+ 	if (r)
+ 		goto err_set_mode;
+ 
+-	dpi_config_lcd_manager(dssdev);
++	dpi_config_lcd_manager(out);
+ 
+ 	mdelay(2);
+ 
+-	r = dss_mgr_enable(dssdev->manager);
++	r = dss_mgr_enable(out->manager);
+ 	if (r)
+ 		goto err_mgr_enable;
+ 
+@@ -231,10 +231,10 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
+ 
+ err_mgr_enable:
+ err_set_mode:
+-	if (dpi_use_dsi_pll(dssdev))
++	if (dpi_use_dsi_pll(out->device))
+ 		dsi_pll_uninit(dpi.dsidev, true);
+ err_dsi_pll_init:
+-	if (dpi_use_dsi_pll(dssdev))
++	if (dpi_use_dsi_pll(out->device))
+ 		dsi_runtime_put(dpi.dsidev);
+ err_get_dsi:
+ 	dispc_runtime_put();
+@@ -242,7 +242,7 @@ err_get_dispc:
+ 	if (cpu_is_omap34xx())
+ 		regulator_disable(dpi.vdds_dsi_reg);
+ err_reg_enable:
+-	omap_dss_stop_device(dssdev);
++	omap_dss_stop_device(out->device);
+ err_start_dev:
+ err_no_mgr:
+ err_no_reg:
+@@ -251,13 +251,13 @@ err_no_reg:
+ }
+ EXPORT_SYMBOL(omapdss_dpi_display_enable);
+ 
+-void omapdss_dpi_display_disable(struct omap_dss_device *dssdev)
++void omapdss_dpi_display_disable(struct omap_dss_output *out)
+ {
+ 	mutex_lock(&dpi.lock);
+ 
+-	dss_mgr_disable(dssdev->manager);
++	dss_mgr_disable(out->manager);
+ 
+-	if (dpi_use_dsi_pll(dssdev)) {
++	if (dpi_use_dsi_pll(out->device)) {
+ 		dss_select_dispc_clk_source(OMAP_DSS_CLK_SRC_FCK);
+ 		dsi_pll_uninit(dpi.dsidev, true);
+ 		dsi_runtime_put(dpi.dsidev);
+@@ -268,13 +268,13 @@ void omapdss_dpi_display_disable(struct omap_dss_device *dssdev)
+ 	if (cpu_is_omap34xx())
+ 		regulator_disable(dpi.vdds_dsi_reg);
+ 
+-	omap_dss_stop_device(dssdev);
++	omap_dss_stop_device(out->device);
+ 
+ 	mutex_unlock(&dpi.lock);
+ }
+ EXPORT_SYMBOL(omapdss_dpi_display_disable);
+ 
+-void omapdss_dpi_set_timings(struct omap_dss_device *dssdev,
++void omapdss_dpi_set_timings(struct omap_dss_output *out,
+ 		struct omap_video_timings *timings)
+ {
+ 	int r;
+@@ -285,23 +285,23 @@ void omapdss_dpi_set_timings(struct omap_dss_device *dssdev,
+ 
+ 	dpi.timings = *timings;
+ 
+-	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
++	if (out->device->state = OMAP_DSS_DISPLAY_ACTIVE) {
+ 		r = dispc_runtime_get();
+ 		if (r)
+ 			return;
+ 
+-		dpi_set_mode(dssdev);
++		dpi_set_mode(out);
+ 
+ 		dispc_runtime_put();
+ 	} else {
+-		dss_mgr_set_timings(dssdev->manager, timings);
++		dss_mgr_set_timings(out->manager, timings);
+ 	}
+ 
+ 	mutex_unlock(&dpi.lock);
+ }
+ EXPORT_SYMBOL(omapdss_dpi_set_timings);
+ 
+-int dpi_check_timings(struct omap_dss_device *dssdev,
++int dpi_check_timings(struct omap_dss_output *out,
+ 			struct omap_video_timings *timings)
+ {
+ 	int r;
+@@ -310,13 +310,13 @@ int dpi_check_timings(struct omap_dss_device *dssdev,
+ 	unsigned long pck;
+ 	struct dispc_clock_info dispc_cinfo;
+ 
+-	if (dss_mgr_check_timings(dssdev->manager, timings))
++	if (dss_mgr_check_timings(out->manager, timings))
+ 		return -EINVAL;
+ 
+ 	if (timings->pixel_clock = 0)
+ 		return -EINVAL;
+ 
+-	if (dpi_use_dsi_pll(dssdev)) {
++	if (dpi_use_dsi_pll(out->device)) {
+ 		struct dsi_clock_info dsi_cinfo;
+ 		r = dsi_pll_calc_clock_div_pck(dpi.dsidev,
+ 				timings->pixel_clock * 1000,
+@@ -348,7 +348,7 @@ int dpi_check_timings(struct omap_dss_device *dssdev,
+ }
+ EXPORT_SYMBOL(dpi_check_timings);
+ 
+-void omapdss_dpi_set_data_lines(struct omap_dss_device *dssdev, int data_lines)
++void omapdss_dpi_set_data_lines(struct omap_dss_output *out, int data_lines)
+ {
+ 	mutex_lock(&dpi.lock);
+ 
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 361d41e..da3f070 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -783,13 +783,13 @@ int omapdss_dsi_display_enable(struct omap_dss_device *dssdev);
+ void omapdss_dsi_display_disable(struct omap_dss_device *dssdev,
+ 		bool disconnect_lanes, bool enter_ulps);
+ 
+-int omapdss_dpi_display_enable(struct omap_dss_device *dssdev);
+-void omapdss_dpi_display_disable(struct omap_dss_device *dssdev);
+-void omapdss_dpi_set_timings(struct omap_dss_device *dssdev,
++int omapdss_dpi_display_enable(struct omap_dss_output *out);
++void omapdss_dpi_display_disable(struct omap_dss_output *out);
++void omapdss_dpi_set_timings(struct omap_dss_output *out,
+ 		struct omap_video_timings *timings);
+-int dpi_check_timings(struct omap_dss_device *dssdev,
+-			struct omap_video_timings *timings);
+-void omapdss_dpi_set_data_lines(struct omap_dss_device *dssdev, int data_lines);
++int dpi_check_timings(struct omap_dss_output *out,
++		struct omap_video_timings *timings);
++void omapdss_dpi_set_data_lines(struct omap_dss_output *out, int data_lines);
+ 
+ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev);
+ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev);
 -- 
-1.7.10.4
+1.7.9.5
 

@@ -1,7 +1,7 @@
-From: Sekhar Nori <nsekhar@ti.com>
-Date: Fri, 17 Aug 2012 06:57:01 +0000
-Subject: Re: [PATCH v3] da8xx-fb: allow frame to complete after disabling LCDC
-Message-Id: <502DE86D.6060808@ti.com>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Tue, 21 Aug 2012 05:52:07 +0000
+Subject: RE: [PATCH v3] da8xx-fb: allow frame to complete after disabling LCDC
+Message-Id: <A73F36158E33644199EB82C5EC81C7BC3E9A6AB7@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1344950605-18945-1-git-send-email-prakash.pm@ti.com>
 In-Reply-To: <1344950605-18945-1-git-send-email-prakash.pm@ti.com>
@@ -10,75 +10,50 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Prakash,
-
-On 8/14/2012 6:53 PM, Manjunathappa, Prakash wrote:
-> Wait for active frame transfer to complete after disabling LCDC.
-> At the same this wait is not be required when there are sync and
-> underflow errors.
-> More information on disable and reset sequence can be found in
-> section 13.4.6 of AM335x TRM @www.ti.com/am335x.
-> 
-> Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
-> ---
-> Applies on top of fbdev-next of Florian Tobias Schandinat's tree.
-> Since v2:
-> Optimized the lcd_disable_raster function.
-> Since v1:
-> Changed the commit message, also added link to hardware specification.
-> 
->  drivers/video/da8xx-fb.c |   49 ++++++++++++++++++++++++++++++++++++---------
->  1 files changed, 39 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index 7ae9d53..cb696ff 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -48,6 +48,7 @@
->  #define LCD_PL_LOAD_DONE		BIT(6)
->  #define LCD_FIFO_UNDERFLOW		BIT(5)
->  #define LCD_SYNC_LOST			BIT(2)
-> +#define LCD_FRAME_DONE			BIT(0)
->  
->  /* LCD DMA Control Register */
->  #define LCD_DMA_BURST_SIZE(x)		((x) << 4)
-> @@ -288,13 +289,41 @@ static inline void lcd_enable_raster(void)
->  }
->  
->  /* Disable the Raster Engine of the LCD Controller */
-> -static inline void lcd_disable_raster(void)
-> +static inline void lcd_disable_raster(bool wait_for_frame_done)
->  {
->  	u32 reg;
-> +	u32 stat_reg = LCD_STAT_REG;
-> +	u32 loop_cnt = 0;
->  
->  	reg = lcdc_read(LCD_RASTER_CTRL_REG);
->  	if (reg & LCD_RASTER_ENABLE)
->  		lcdc_write(reg & ~LCD_RASTER_ENABLE, LCD_RASTER_CTRL_REG);
-> +
-> +	if (lcd_revision = LCD_VERSION_2)
-> +		stat_reg = LCD_RAW_STAT_REG;
-> +
-> +	if (wait_for_frame_done) {
-> +		/*
-> +		 * 50 milli seconds should be sufficient for a frame to
-> +		 * complete
-> +		 */
-> +		loop_cnt = 50;
-> +		while (!(lcdc_read(stat_reg) & LCD_FRAME_DONE)) {
-> +			/* Handle timeout */
-> +			if (unlikely(0 = --loop_cnt)) {
-> +				pr_err("LCD Controller timed out\n");
-> +				break;
-> +			}
-> +			mdelay(1);
-> +		}
-> +	}
-
-The TRM you referenced in the patch description suggests waiting for
-frame done interrupt. Can we actually wait for the interrupt here
-instead of busy looping?
-
-Thanks,
-Sekhar
+SGkgU2VraGFyLA0KDQpPbiBGcmksIEF1ZyAxNywgMjAxMiBhdCAxMjoxNTowMSwgTm9yaSwgU2Vr
+aGFyIHdyb3RlOg0KPiBIaSBQcmFrYXNoLA0KPiANCj4gT24gOC8xNC8yMDEyIDY6NTMgUE0sIE1h
+bmp1bmF0aGFwcGEsIFByYWthc2ggd3JvdGU6DQo+ID4gV2FpdCBmb3IgYWN0aXZlIGZyYW1lIHRy
+YW5zZmVyIHRvIGNvbXBsZXRlIGFmdGVyIGRpc2FibGluZyBMQ0RDLg0KPiA+IEF0IHRoZSBzYW1l
+IHRoaXMgd2FpdCBpcyBub3QgYmUgcmVxdWlyZWQgd2hlbiB0aGVyZSBhcmUgc3luYyBhbmQNCj4g
+PiB1bmRlcmZsb3cgZXJyb3JzLg0KPiA+IE1vcmUgaW5mb3JtYXRpb24gb24gZGlzYWJsZSBhbmQg
+cmVzZXQgc2VxdWVuY2UgY2FuIGJlIGZvdW5kIGluDQo+ID4gc2VjdGlvbiAxMy40LjYgb2YgQU0z
+MzV4IFRSTSBAd3d3LnRpLmNvbS9hbTMzNXguDQo+ID4gDQo+ID4gU2lnbmVkLW9mZi1ieTogTWFu
+anVuYXRoYXBwYSwgUHJha2FzaCA8cHJha2FzaC5wbUB0aS5jb20+DQo+ID4gLS0tDQo+ID4gQXBw
+bGllcyBvbiB0b3Agb2YgZmJkZXYtbmV4dCBvZiBGbG9yaWFuIFRvYmlhcyBTY2hhbmRpbmF0J3Mg
+dHJlZS4NCj4gPiBTaW5jZSB2MjoNCj4gPiBPcHRpbWl6ZWQgdGhlIGxjZF9kaXNhYmxlX3Jhc3Rl
+ciBmdW5jdGlvbi4NCj4gPiBTaW5jZSB2MToNCj4gPiBDaGFuZ2VkIHRoZSBjb21taXQgbWVzc2Fn
+ZSwgYWxzbyBhZGRlZCBsaW5rIHRvIGhhcmR3YXJlIHNwZWNpZmljYXRpb24uDQo+ID4gDQo+ID4g
+IGRyaXZlcnMvdmlkZW8vZGE4eHgtZmIuYyB8ICAgNDkgKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrLS0tLS0tLS0tDQo+ID4gIDEgZmlsZXMgY2hhbmdlZCwgMzkgaW5zZXJ0aW9u
+cygrKSwgMTAgZGVsZXRpb25zKC0pDQo+ID4gDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlk
+ZW8vZGE4eHgtZmIuYyBiL2RyaXZlcnMvdmlkZW8vZGE4eHgtZmIuYw0KPiA+IGluZGV4IDdhZTlk
+NTMuLmNiNjk2ZmYgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy92aWRlby9kYTh4eC1mYi5jDQo+
+ID4gKysrIGIvZHJpdmVycy92aWRlby9kYTh4eC1mYi5jDQo+ID4gQEAgLTQ4LDYgKzQ4LDcgQEAN
+Cj4gPiAgI2RlZmluZSBMQ0RfUExfTE9BRF9ET05FCQlCSVQoNikNCj4gPiAgI2RlZmluZSBMQ0Rf
+RklGT19VTkRFUkZMT1cJCUJJVCg1KQ0KPiA+ICAjZGVmaW5lIExDRF9TWU5DX0xPU1QJCQlCSVQo
+MikNCj4gPiArI2RlZmluZSBMQ0RfRlJBTUVfRE9ORQkJCUJJVCgwKQ0KPiA+ICANCj4gPiAgLyog
+TENEIERNQSBDb250cm9sIFJlZ2lzdGVyICovDQo+ID4gICNkZWZpbmUgTENEX0RNQV9CVVJTVF9T
+SVpFKHgpCQkoKHgpIDw8IDQpDQo+ID4gQEAgLTI4OCwxMyArMjg5LDQxIEBAIHN0YXRpYyBpbmxp
+bmUgdm9pZCBsY2RfZW5hYmxlX3Jhc3Rlcih2b2lkKQ0KPiA+ICB9DQo+ID4gIA0KPiA+ICAvKiBE
+aXNhYmxlIHRoZSBSYXN0ZXIgRW5naW5lIG9mIHRoZSBMQ0QgQ29udHJvbGxlciAqLw0KPiA+IC1z
+dGF0aWMgaW5saW5lIHZvaWQgbGNkX2Rpc2FibGVfcmFzdGVyKHZvaWQpDQo+ID4gK3N0YXRpYyBp
+bmxpbmUgdm9pZCBsY2RfZGlzYWJsZV9yYXN0ZXIoYm9vbCB3YWl0X2Zvcl9mcmFtZV9kb25lKQ0K
+PiA+ICB7DQo+ID4gIAl1MzIgcmVnOw0KPiA+ICsJdTMyIHN0YXRfcmVnID0gTENEX1NUQVRfUkVH
+Ow0KPiA+ICsJdTMyIGxvb3BfY250ID0gMDsNCj4gPiAgDQo+ID4gIAlyZWcgPSBsY2RjX3JlYWQo
+TENEX1JBU1RFUl9DVFJMX1JFRyk7DQo+ID4gIAlpZiAocmVnICYgTENEX1JBU1RFUl9FTkFCTEUp
+DQo+ID4gIAkJbGNkY193cml0ZShyZWcgJiB+TENEX1JBU1RFUl9FTkFCTEUsIExDRF9SQVNURVJf
+Q1RSTF9SRUcpOw0KPiA+ICsNCj4gPiArCWlmIChsY2RfcmV2aXNpb24gPT0gTENEX1ZFUlNJT05f
+MikNCj4gPiArCQlzdGF0X3JlZyA9IExDRF9SQVdfU1RBVF9SRUc7DQo+ID4gKw0KPiA+ICsJaWYg
+KHdhaXRfZm9yX2ZyYW1lX2RvbmUpIHsNCj4gPiArCQkvKg0KPiA+ICsJCSAqIDUwIG1pbGxpIHNl
+Y29uZHMgc2hvdWxkIGJlIHN1ZmZpY2llbnQgZm9yIGEgZnJhbWUgdG8NCj4gPiArCQkgKiBjb21w
+bGV0ZQ0KPiA+ICsJCSAqLw0KPiA+ICsJCWxvb3BfY250ID0gNTA7DQo+ID4gKwkJd2hpbGUgKCEo
+bGNkY19yZWFkKHN0YXRfcmVnKSAmIExDRF9GUkFNRV9ET05FKSkgew0KPiA+ICsJCQkvKiBIYW5k
+bGUgdGltZW91dCAqLw0KPiA+ICsJCQlpZiAodW5saWtlbHkoMCA9PSAtLWxvb3BfY250KSkgew0K
+PiA+ICsJCQkJcHJfZXJyKCJMQ0QgQ29udHJvbGxlciB0aW1lZCBvdXRcbiIpOw0KPiA+ICsJCQkJ
+YnJlYWs7DQo+ID4gKwkJCX0NCj4gPiArCQkJbWRlbGF5KDEpOw0KPiA+ICsJCX0NCj4gPiArCX0N
+Cj4gDQo+IFRoZSBUUk0geW91IHJlZmVyZW5jZWQgaW4gdGhlIHBhdGNoIGRlc2NyaXB0aW9uIHN1
+Z2dlc3RzIHdhaXRpbmcgZm9yDQo+IGZyYW1lIGRvbmUgaW50ZXJydXB0LiBDYW4gd2UgYWN0dWFs
+bHkgd2FpdCBmb3IgdGhlIGludGVycnVwdCBoZXJlDQo+IGluc3RlYWQgb2YgYnVzeSBsb29waW5n
+Pw0KPiANCg0KSSBhZ3JlZSwgd2lsbCBzdWJtaXQgbmV4dCB2ZXJzaW9uIG9mIHBhdGNoIGNvbnNp
+ZGVyaW5nIGFib3ZlLg0KDQpUaGFua3MsDQpQcmFrYXNoDQoNCj4gVGhhbmtzLA0KPiBTZWtoYXIN
+Cj4gDQoNCg=

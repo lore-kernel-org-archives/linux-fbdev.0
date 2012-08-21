@@ -1,53 +1,50 @@
-From: Leela Krishna Amudala <l.krishna@samsung.com>
-Date: Tue, 07 Aug 2012 09:49:58 +0000
-Subject: [PATCH V3 4/5] driver: Include the modified FIMD header file
-Message-Id: <1344332279-16736-5-git-send-email-l.krishna@samsung.com>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 21 Aug 2012 06:10:15 +0000
+Subject: [PATCH 08/23] OMAPDRM: Remove manager->device references
+Message-Id: <1345528711-27801-9-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344332279-16736-1-git-send-email-l.krishna@samsung.com>
-In-Reply-To: <1344332279-16736-1-git-send-email-l.krishna@samsung.com>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, kgene.kim@samsung.com, m.szyprowski@samsung.com
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com, Archit Taneja <archit@ti.com>
 
-The fimd register headers have been moved to include/video/
-hence, modifying the driver files accordingly.
+With the introduction of output entities, managers will now connect to outputs.
+Use the helper op for managers named get_device. This will abstract away the
+information on how to get the device from an overlay manager.
 
-Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
+Using the helper function will reduce the number of pointer dereferences a user
+of OMAPDSS needs to do and reduce risk of a NULL dereference.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/gpu/drm/exynos/exynos_drm_fimd.c |    2 +-
- drivers/video/s3c-fb.c                   |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/staging/omapdrm/omap_drv.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/exynos/exynos_drm_fimd.c b/drivers/gpu/drm/exynos/exynos_drm_fimd.c
-index a68d2b3..24c0bd4 100644
---- a/drivers/gpu/drm/exynos/exynos_drm_fimd.c
-+++ b/drivers/gpu/drm/exynos/exynos_drm_fimd.c
-@@ -19,8 +19,8 @@
- #include <linux/clk.h>
- #include <linux/pm_runtime.h>
- 
-+#include <video/samsung_fimd.h>
- #include <drm/exynos_drm.h>
--#include <plat/regs-fb-v4.h>
- 
- #include "exynos_drm_drv.h"
- #include "exynos_drm_fbdev.h"
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 69bf9d0..901729e 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -25,8 +25,8 @@
- #include <linux/interrupt.h>
- #include <linux/pm_runtime.h>
- 
-+#include <video/samsung_fimd.h>
- #include <mach/map.h>
--#include <plat/regs-fb-v4.h>
- #include <plat/fb.h>
- 
- /* This driver will export a number of framebuffer interfaces depending
+diff --git a/drivers/staging/omapdrm/omap_drv.c b/drivers/staging/omapdrm/omap_drv.c
+index 4beab94..64a354a 100644
+--- a/drivers/staging/omapdrm/omap_drv.c
++++ b/drivers/staging/omapdrm/omap_drv.c
+@@ -106,7 +106,8 @@ static void dump_video_chains(void)
+ 	for (i = 0; i < omap_dss_get_num_overlays(); i++) {
+ 		struct omap_overlay *ovl = omap_dss_get_overlay(i);
+ 		struct omap_overlay_manager *mgr = ovl->manager;
+-		struct omap_dss_device *dssdev = mgr ? mgr->device : NULL;
++		struct omap_dss_device *dssdev = mgr ?
++					mgr->get_device(mgr) : NULL;
+ 		if (dssdev) {
+ 			DBG("%d: %s -> %s -> %s", i, ovl->name, mgr->name,
+ 						dssdev->name);
+@@ -185,7 +186,7 @@ static int create_connector(struct drm_device *dev,
+ 	for (j = 0; j < priv->num_encoders; j++) {
+ 		struct omap_overlay_manager *mgr  			omap_encoder_get_manager(priv->encoders[j]);
+-		if (mgr->device = dssdev) {
++		if (mgr->get_device(mgr) = dssdev) {
+ 			drm_mode_connector_attach_encoder(connector,
+ 					priv->encoders[j]);
+ 		}
 -- 
-1.7.0.4
+1.7.9.5
 

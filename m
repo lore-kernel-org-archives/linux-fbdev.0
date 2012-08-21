@@ -1,51 +1,74 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 16 Aug 2012 13:00:45 +0000
-Subject: [PATCH 10/19] ARM: mach-shmobile: Remove the unused sh_mipi_dsi_info lcd_chan field
-Message-Id: <1345122054-16013-11-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 21 Aug 2012 06:10:18 +0000
+Subject: [PATCH 11/23] OMAPDSS: DSI: Remove dsi_pdev_map global struct
+Message-Id: <1345528711-27801-12-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com, Archit Taneja <archit@ti.com>
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+dsi_pdev_map is a struct visible globally in the DSI driver to get the platform
+device pointer of the DSI device corresponding to it's module ID. This was
+required because there was no clean way to derive the platform device from
+the DSI module instance number or from the connected panel.
+
+With the new output entity, it is possible to retrieve the platform device
+pointer if the omap_dss_output pointer is available. Modify the functions
+dsi_get_dsidev_from_dssdev() dsi_get_dsidev_from_id() so that they use output
+instead of dsi_pdev_map to retrieve the dsi platform device pointer.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- arch/arm/mach-shmobile/board-ag5evm.c |    3 ---
- arch/arm/mach-shmobile/board-ap4evb.c |    3 ---
- 2 files changed, 0 insertions(+), 6 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm/mach-shmobile/board-ag5evm.c b/arch/arm/mach-shmobile/board-ag5evm.c
-index 5523bc8..7d6b96b 100644
---- a/arch/arm/mach-shmobile/board-ag5evm.c
-+++ b/arch/arm/mach-shmobile/board-ag5evm.c
-@@ -253,11 +253,8 @@ sh_mipi_set_dot_clock_pck_err:
- 	return ret;
- }
- 
--static struct sh_mobile_lcdc_info lcdc0_info;
--
- static struct sh_mipi_dsi_info mipidsi0_info = {
- 	.data_format	= MIPI_RGB888,
--	.lcd_chan	= &lcdc0_info.ch[0],
- 	.channel	= LCDC_CHAN_MAINLCD,
- 	.lane		= 2,
- 	.vsynw_offset	= 20,
-diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
-index 5fbd176..09f4e0a 100644
---- a/arch/arm/mach-shmobile/board-ap4evb.c
-+++ b/arch/arm/mach-shmobile/board-ap4evb.c
-@@ -527,11 +527,8 @@ static struct resource mipidsi0_resources[] = {
- 	},
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 22e0873..19a4d4d 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -344,8 +344,6 @@ struct dsi_packet_sent_handler_data {
+ 	struct completion *completion;
  };
  
--static struct sh_mobile_lcdc_info lcdc_info;
+-static struct platform_device *dsi_pdev_map[MAX_NUM_DSI];
 -
- static struct sh_mipi_dsi_info mipidsi0_info = {
- 	.data_format	= MIPI_RGB888,
--	.lcd_chan	= &lcdc_info.ch[0],
- 	.channel	= LCDC_CHAN_MAINLCD,
- 	.lane		= 2,
- 	.vsynw_offset	= 17,
+ #ifdef DEBUG
+ static bool dsi_perf;
+ module_param(dsi_perf, bool, 0644);
+@@ -358,12 +356,19 @@ static inline struct dsi_data *dsi_get_dsidrv_data(struct platform_device *dside
+ 
+ static inline struct platform_device *dsi_get_dsidev_from_dssdev(struct omap_dss_device *dssdev)
+ {
+-	return dsi_pdev_map[dssdev->phy.dsi.module];
++	return dssdev->output->pdev;
+ }
+ 
+ struct platform_device *dsi_get_dsidev_from_id(int module)
+ {
+-	return dsi_pdev_map[module];
++	struct omap_dss_output *out;
++	enum omap_dss_output_id	id;
++
++	id = module = 0 ? OMAP_DSS_OUTPUT_DSI1 : OMAP_DSS_OUTPUT_DSI2;
++
++	out = omap_dss_get_output(id);
++
++	return out->pdev;
+ }
+ 
+ static inline void dsi_write_reg(struct platform_device *dsidev,
+@@ -4934,7 +4939,6 @@ static int __init omap_dsihw_probe(struct platform_device *dsidev)
+ 
+ 	dsi->module_id = dsidev->id;
+ 	dsi->pdev = dsidev;
+-	dsi_pdev_map[dsi->module_id] = dsidev;
+ 	dev_set_drvdata(&dsidev->dev, dsi);
+ 
+ 	spin_lock_init(&dsi->irq_lock);
 -- 
-1.7.8.6
+1.7.9.5
 

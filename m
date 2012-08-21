@@ -1,56 +1,32 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Date: Wed, 01 Aug 2012 02:14:38 +0000
-Subject: RE: [PATCH V2 2/5] include/video: Add Exynos5 specific FIMD register offsets
-Message-Id: <02f201cd6f8b$673b9df0$35b2d9d0$%kim@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 21 Aug 2012 06:09:46 +0000
+Subject: [PATCH 0/2] OMAPDSS: fixes for -rc
+Message-Id: <1345529388-3509-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343737385-23337-1-git-send-email-l.krishna@samsung.com>
- <1343737385-23337-3-git-send-email-l.krishna@samsung.com>
-In-Reply-To: <1343737385-23337-3-git-send-email-l.krishna@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Leela Krishna Amudala' <l.krishna@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, inki.dae@samsung.com, joshi@samsung.com, jg1.han@samsung.com, m.szyprowski@samsung.com
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Leela Krishna Amudala wrote:
-> 
-> Exynos5 has VIDTCON and VIDCON registers at different offsets
-> from the previous SOCs. Hence, adding the macros.
-> 
-> Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
-> ---
->  include/video/samsung_fimd.h |    7 +++++++
->  1 files changed, 7 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/video/samsung_fimd.h b/include/video/samsung_fimd.h
-> index e979f42..820f190 100644
-> --- a/include/video/samsung_fimd.h
-> +++ b/include/video/samsung_fimd.h
-> @@ -524,3 +524,10 @@
->   * 1110		-none-	 -none-	  -none-   -none-    -none-
->   * 1111		-none-	 -none-   -none-   -none-    -none-
->  */
-> +
-> +/*EXYNOS5 FIMD REG OFFSET */
-> +#define EXYNOS5_VIDTCON0	(0x20010)
-> +#define EXYNOS5_VIDTCON1	(0x20014)
-> +#define EXYNOS5_VIDTCON2	(0x20018)
-> +#define EXYNOS5_VIDTCON3	(0x2001C)
-> +#define EXYNOS5_VIDCON1		(0x20004)
-> --
-> 1.7.0.4
+Hi Florian,
 
-All of EXYNOS5 SoCs including upcoming SoCs _really_ have same address like
-above?
+Here are two small fixes for omapfb and omapdss. The first one fixes an old bug
+that causes colors to be wrong on fb console. The other fixes SDI output that
+got broken in the previous merge window.
 
-I don't think so. You need to consider its flexibility or some compatibility
-when definitions are added.
+ Tomi
 
-Thanks.
+Grazvydas Ignotas (1):
+  OMAPFB: fix framebuffer console colors
 
-Best regards,
-Kgene.
---
-Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-SW Solution Development Team, Samsung Electronics Co., Ltd.
+Tomi Valkeinen (1):
+  OMAPDSS: Fix SDI PLL locking
+
+ drivers/video/omap2/dss/sdi.c            |   14 ++++++++++++++
+ drivers/video/omap2/omapfb/omapfb-main.c |    2 +-
+ 2 files changed, 15 insertions(+), 1 deletion(-)
+
+-- 
+1.7.9.5
 

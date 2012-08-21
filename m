@@ -1,125 +1,527 @@
-From: Archit Taneja <archit@ti.com>
-Date: Fri, 10 Aug 2012 10:49:04 +0000
-Subject: [PATCH 3/5] OMAPDSS: RFBI: Maintain copy of number of data lines in driver data
-Message-Id: <1344595026-10607-4-git-send-email-archit@ti.com>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Tue, 21 Aug 2012 20:47:30 +0000
+Subject: [PATCHv3 1/9] arm: vt8500: Add device tree files for VIA/Wondermedia SoC's
+Message-Id: <1345582058-2291-2-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344595026-10607-1-git-send-email-archit@ti.com>
-In-Reply-To: <1344595026-10607-1-git-send-email-archit@ti.com>
+References: <1345582058-2291-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1345582058-2291-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-The RFBI driver currently relies on the omap_dss_device struct to configure the
-number of data lines as specified by the panel. This makes the RFBI interface
-driver dependent on the omap_dss_device struct.
+Add device tree files for VT8500, WM8505 and WM8650 SoC's and
+reference boards.
 
-Make the RFBI driver data maintain it's own data lines field. A panel driver
-is expected to call omapdss_rfbi_set_data_lines() to configure the pixel format
-before enabling the interface or calling omap_rfbi_configure().
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
 ---
- drivers/video/omap2/displays/panel-n8x0.c |    7 +++++--
- drivers/video/omap2/dss/rfbi.c            |   13 ++++++++++---
- include/video/omapdss.h                   |    4 +++-
- 3 files changed, 18 insertions(+), 6 deletions(-)
+ arch/arm/boot/dts/vt8500-bv07.dts |   31 +++++++++
+ arch/arm/boot/dts/vt8500.dtsi     |  100 +++++++++++++++++++++++++++
+ arch/arm/boot/dts/wm8505-ref.dts  |   31 +++++++++
+ arch/arm/boot/dts/wm8505.dtsi     |  126 +++++++++++++++++++++++++++++++++
+ arch/arm/boot/dts/wm8650-mid.dts  |   31 +++++++++
+ arch/arm/boot/dts/wm8650.dtsi     |  138 +++++++++++++++++++++++++++++++++++++
+ 6 files changed, 457 insertions(+)
+ create mode 100644 arch/arm/boot/dts/vt8500-bv07.dts
+ create mode 100644 arch/arm/boot/dts/vt8500.dtsi
+ create mode 100644 arch/arm/boot/dts/wm8505-ref.dts
+ create mode 100644 arch/arm/boot/dts/wm8505.dtsi
+ create mode 100644 arch/arm/boot/dts/wm8650-mid.dts
+ create mode 100644 arch/arm/boot/dts/wm8650.dtsi
 
-diff --git a/drivers/video/omap2/displays/panel-n8x0.c b/drivers/video/omap2/displays/panel-n8x0.c
-index f758378..a67729b 100644
---- a/drivers/video/omap2/displays/panel-n8x0.c
-+++ b/drivers/video/omap2/displays/panel-n8x0.c
-@@ -151,14 +151,16 @@ static void blizzard_ctrl_setup_update(struct omap_dss_device *dssdev,
- 			BLIZZARD_SRC_WRITE_LCD_DESTRUCTIVE;
- 
- 	omapdss_rfbi_set_pixel_size(dssdev, 16);
-+	omapdss_rfbi_set_data_lines(dssdev, 8);
- 
--	omap_rfbi_configure(dssdev, 8);
-+	omap_rfbi_configure(dssdev);
- 
- 	blizzard_write(BLIZZARD_INPUT_WIN_X_START_0, tmp, 18);
- 
- 	omapdss_rfbi_set_pixel_size(dssdev, 16);
-+	omapdss_rfbi_set_data_lines(dssdev, 16);
- 
--	omap_rfbi_configure(dssdev, 16);
-+	omap_rfbi_configure(dssdev);
- }
- 
- static void mipid_transfer(struct spi_device *spi, int cmd, const u8 *wbuf,
-@@ -302,6 +304,7 @@ static int n8x0_panel_power_on(struct omap_dss_device *dssdev)
- 	}
- 
- 	omapdss_rfbi_set_pixel_size(dssdev, dssdev->ctrl.pixel_size);
-+	omapdss_rfbi_set_data_lines(dssdev, dssdev->phy.rfbi.data_lines);
- 
- 	r = omapdss_rfbi_display_enable(dssdev);
- 	if (r)
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index 72d1a8c..a39b1d8 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -113,6 +113,7 @@ static struct {
- 	struct semaphore bus_lock;
- 
- 	int pixel_size;
-+	int data_lines;
- } rfbi;
- 
- static inline void rfbi_write_reg(const struct rfbi_reg idx, u32 val)
-@@ -772,10 +773,10 @@ static int rfbi_configure(int rfbi_module, int bpp, int lines)
- 	return 0;
- }
- 
--int omap_rfbi_configure(struct omap_dss_device *dssdev, int data_lines)
-+int omap_rfbi_configure(struct omap_dss_device *dssdev)
- {
- 	return rfbi_configure(dssdev->phy.rfbi.channel, rfbi.pixel_size,
--			data_lines);
-+			rfbi.data_lines);
- }
- EXPORT_SYMBOL(omap_rfbi_configure);
- 
-@@ -785,6 +786,12 @@ void omapdss_rfbi_set_pixel_size(struct omap_dss_device *dssdev, int pixel_size)
- }
- EXPORT_SYMBOL(omapdss_rfbi_set_pixel_size);
- 
-+void omapdss_rfbi_set_data_lines(struct omap_dss_device *dssdev, int data_lines)
-+{
-+	rfbi.data_lines = data_lines;
-+}
-+EXPORT_SYMBOL(omapdss_rfbi_set_data_lines);
+diff --git a/arch/arm/boot/dts/vt8500-bv07.dts b/arch/arm/boot/dts/vt8500-bv07.dts
+new file mode 100644
+index 0000000..339a664
+--- /dev/null
++++ b/arch/arm/boot/dts/vt8500-bv07.dts
+@@ -0,0 +1,31 @@
++/*
++ * vt8500-bv07.dts - Device tree file for Benign BV07 Netbook
++ *
++ * Copyright (C) 2012 Tony Prisk <linux@prisktech.co.nz>
++ *
++ * Licensed under GPLv2 or later
++ */
 +
- int omap_rfbi_prepare_update(struct omap_dss_device *dssdev,
- 		u16 *x, u16 *y, u16 *w, u16 *h)
- {
-@@ -920,7 +927,7 @@ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
- 	rfbi_config_lcd_manager(dssdev);
- 
- 	rfbi_configure(dssdev->phy.rfbi.channel, rfbi.pixel_size,
--			dssdev->phy.rfbi.data_lines);
-+			rfbi.data_lines);
- 
- 	rfbi_set_timings(dssdev->phy.rfbi.channel,
- 			 &dssdev->ctrl.rfbi_timings);
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 5d5335c..e4fcc89 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -773,8 +773,10 @@ int omap_rfbi_prepare_update(struct omap_dss_device *dssdev,
- int omap_rfbi_update(struct omap_dss_device *dssdev,
- 		u16 x, u16 y, u16 w, u16 h,
- 		void (*callback)(void *), void *data);
--int omap_rfbi_configure(struct omap_dss_device *dssdev, int data_lines);
-+int omap_rfbi_configure(struct omap_dss_device *dssdev);
- void omapdss_rfbi_set_pixel_size(struct omap_dss_device *dssdev,
- 		int pixel_size);
-+void omapdss_rfbi_set_data_lines(struct omap_dss_device *dssdev,
-+		int data_lines);
- 
- #endif
++/dts-v1/;
++/include/ "vt8500.dtsi"
++
++/ {
++	model = "Benign BV07 Netbook";
++
++	/*
++	 * Display node is based on Sascha Hauer's patch on dri-devel.
++	 * Added a bpp property to calculate the size of the framebuffer
++	 * until the binding is formalized.
++	 */
++	display: display {
++		xres = <800>;
++		yres = <480>;
++		left-margin = <88>;
++		right-margin = <40>;
++		hsync-len = <0>;
++		upper-margin = <32>;
++		lower-margin = <11>;
++		vsync-len = <1>;
++		bpp = <16>;
++	};
++};
+diff --git a/arch/arm/boot/dts/vt8500.dtsi b/arch/arm/boot/dts/vt8500.dtsi
+new file mode 100644
+index 0000000..78571d5
+--- /dev/null
++++ b/arch/arm/boot/dts/vt8500.dtsi
+@@ -0,0 +1,100 @@
++/*
++ * vt8500.dtsi - Device tree file for VIA VT8500 SoC
++ *
++ * Copyright (C) 2012 Tony Prisk <linux@prisktech.co.nz>
++ *
++ * Licensed under GPLv2 or later
++ */
++
++/include/ "skeleton.dtsi"
++
++/ {
++	compatible = "via,vt8500";
++
++	soc {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "simple-bus";
++		ranges;
++		interrupt-parent = <&intc>;
++
++		intc: interrupt-controller@d8140000 {
++			compatible = "via,vt8500-intc";
++			interrupt-controller;
++			reg = <0xd8140000 0x10000>;
++			#interrupt-cells = <1>;
++		};
++
++		gpio: gpio-controller@d8110000 {
++			compatible = "via,vt8500-gpio";
++			gpio-controller;
++			reg = <0xd8110000 0x10000>;
++			#gpio-cells = <3>;
++		};
++
++		pmc@d8130000 {
++			compatible = "via,vt8500-pmc";
++			reg = <0xd8130000 0x1000>;
++		};
++
++		timer@d8130100 {
++			compatible = "via,vt8500-timer";
++			reg = <0xd8130100 0x28>;
++			interrupts = <36>;
++		};
++
++		ehci@d8007900 {
++			compatible = "via,vt8500-ehci";
++			reg = <0xd8007900 0x200>;
++			interrupts = <43>;
++		};
++
++		uhci@d8007b00 {
++			compatible = "platform-uhci";
++			reg = <0xd8007b00 0x200>;
++			interrupts = <43>;
++		};
++
++		fb@d800e400 {
++			compatible = "via,vt8500-fb";
++			reg = <0xd800e400 0x400>;
++			interrupts = <12>;
++			via,display = <&display>;
++		};
++
++		ge_rops@d8050400 {
++			compatible = "wm,prizm-ge-rops";
++			reg = <0xd8050400 0x100>;
++		};
++
++		uart@d8200000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd8200000 0x1040>;
++			interrupts = <32>;
++		};
++
++		uart@d82b0000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd82b0000 0x1040>;
++			interrupts = <33>;
++		};
++
++		uart@d8210000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd8210000 0x1040>;
++			interrupts = <47>;
++		};
++
++		uart@d82c0000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd82c0000 0x1040>;
++			interrupts = <50>;
++		};
++
++		rtc@d8100000 {
++			compatible = "via,vt8500-rtc";
++			reg = <0xd8100000 0x10000>;
++			interrupts = <48>;
++		};
++	};
++};
+diff --git a/arch/arm/boot/dts/wm8505-ref.dts b/arch/arm/boot/dts/wm8505-ref.dts
+new file mode 100644
+index 0000000..fcd9836
+--- /dev/null
++++ b/arch/arm/boot/dts/wm8505-ref.dts
+@@ -0,0 +1,31 @@
++/*
++ * wm8505-ref.dts - Device tree file for Wondermedia WM8505 reference netbook
++ *
++ * Copyright (C) 2012 Tony Prisk <linux@prisktech.co.nz>
++ *
++ * Licensed under GPLv2 or later
++ */
++
++/dts-v1/;
++/include/ "wm8505.dtsi"
++
++/ {
++	model = "Wondermedia WM8505 Netbook";
++
++	/*
++	 * Display node is based on Sascha Hauer's patch on dri-devel.
++	 * Added a bpp property to calculate the size of the framebuffer
++	 * until the binding is formalized.
++	 */
++	display: display {
++		xres = <800>;
++		yres = <480>;
++		left-margin = <88>;
++		right-margin = <40>;
++		hsync-len = <0>;
++		upper-margin = <32>;
++		lower-margin = <11>;
++		vsync-len = <1>;
++		bpp = <32>;
++	};
++};
+diff --git a/arch/arm/boot/dts/wm8505.dtsi b/arch/arm/boot/dts/wm8505.dtsi
+new file mode 100644
+index 0000000..64a3d7f
+--- /dev/null
++++ b/arch/arm/boot/dts/wm8505.dtsi
+@@ -0,0 +1,126 @@
++/*
++ * wm8505.dtsi - Device tree file for Wondermedia WM8505 SoC
++ *
++ * Copyright (C) 2012 Tony Prisk <linux@prisktech.co.nz>
++ *
++ * Licensed under GPLv2 or later
++ */
++
++/include/ "skeleton.dtsi"
++
++/ {
++	compatible = "wm,wm8505";
++
++	cpus {
++		cpu@0 {
++			compatible = "arm,arm926ejs";
++		};
++	};
++
++	soc {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "simple-bus";
++		ranges;
++		interrupt-parent = <&intc0>;
++
++		intc0: interrupt-controller@d8140000 {
++			compatible = "via,vt8500-intc";
++			interrupt-controller;
++			reg = <0xd8140000 0x10000>;
++			#interrupt-cells = <1>;
++		};
++
++		/* Secondary IC cascaded to intc0 */
++		intc1: interrupt-controller@d8150000 {
++			compatible = "via,vt8500-intc";
++			interrupt-controller;
++			#interrupt-cells = <1>;
++			reg = <0xD8150000 0x10000>;
++			interrupts = <56 57 58 59 60 61 62 63>;
++		};
++
++		gpio: gpio-controller@d8110000 {
++			compatible = "wm,wm8505-gpio";
++			gpio-controller;
++			reg = <0xd8110000 0x10000>;
++			#gpio-cells = <3>;
++		};
++
++		pmc@d8130000 {
++			compatible = "via,vt8500-pmc";
++			reg = <0xd8130000 0x1000>;
++		};
++
++		timer@d8130100 {
++			compatible = "via,vt8500-timer";
++			reg = <0xd8130100 0x28>;
++			interrupts = <36>;
++		};
++
++		ehci@d8007100 {
++			compatible = "via,vt8500-ehci";
++			reg = <0xd8007100 0x200>;
++			interrupts = <43>;
++		};
++
++		uhci@d8007300 {
++			compatible = "platform-uhci";
++			reg = <0xd8007300 0x200>;
++			interrupts = <43>;
++		};
++
++		fb@d8050800 {
++			compatible = "wm,wm8505-fb";
++			reg = <0xd8050800 0x200>;
++			via,display = <&display>;
++		};
++
++		ge_rops@d8050400 {
++			compatible = "wm,prizm-ge-rops";
++			reg = <0xd8050400 0x100>;
++		};
++
++		uart@d8200000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd8200000 0x1040>;
++			interrupts = <32>;
++		};
++
++		uart@d82b0000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd82b0000 0x1040>;
++			interrupts = <33>;
++		};
++
++		uart@d8210000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd8210000 0x1040>;
++			interrupts = <47>;
++		};
++
++		uart@d82c0000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd82c0000 0x1040>;
++			interrupts = <50>;
++		};
++
++		uart@d8370000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd8370000 0x1040>;
++			interrupts = <31>;
++		};
++
++		uart@d8380000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd8380000 0x1040>;
++			interrupts = <30>;
++		};
++
++		rtc@d8100000 {
++			compatible = "via,vt8500-rtc";
++			reg = <0xd8100000 0x10000>;
++			interrupts = <48>;
++		};
++	};
++};
+diff --git a/arch/arm/boot/dts/wm8650-mid.dts b/arch/arm/boot/dts/wm8650-mid.dts
+new file mode 100644
+index 0000000..d37dbf0
+--- /dev/null
++++ b/arch/arm/boot/dts/wm8650-mid.dts
+@@ -0,0 +1,31 @@
++/*
++ * wm8650-mid.dts - Device tree file for Wondermedia WM8650-MID Tablet
++ *
++ * Copyright (C) 2012 Tony Prisk <linux@prisktech.co.nz>
++ *
++ * Licensed under GPLv2 or later
++ */
++
++/dts-v1/;
++/include/ "wm8650.dtsi"
++
++/ {
++	model = "Wondermedia WM8650-MID Tablet";
++
++	/*
++	 * Display node is based on Sascha Hauer's patch on dri-devel.
++	 * Added a bpp property to calculate the size of the framebuffer
++	 * until the binding is formalized.
++	 */
++	display: display {
++		xres = <800>;
++		yres = <480>;
++		left-margin = <88>;
++		right-margin = <40>;
++		hsync-len = <0>;
++		upper-margin = <32>;
++		lower-margin = <11>;
++		vsync-len = <1>;
++		bpp = <16>;
++	};
++};
+diff --git a/arch/arm/boot/dts/wm8650.dtsi b/arch/arm/boot/dts/wm8650.dtsi
+new file mode 100644
+index 0000000..e4ca840
+--- /dev/null
++++ b/arch/arm/boot/dts/wm8650.dtsi
+@@ -0,0 +1,138 @@
++/*
++ * wm8650.dtsi - Device tree file for Wondermedia WM8650 SoC
++ *
++ * Copyright (C) 2012 Tony Prisk <linux@prisktech.co.nz>
++ *
++ * Licensed under GPLv2 or later
++ */
++
++/include/ "skeleton.dtsi"
++
++/ {
++	compatible = "wm,wm8650";
++
++	soc {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "simple-bus";
++		ranges;
++		interrupt-parent = <&intc0>;
++
++		intc0: interrupt-controller@d8140000 {
++			compatible = "via,vt8500-intc";
++			interrupt-controller;
++			reg = <0xd8140000 0x10000>;
++			#interrupt-cells = <1>;
++		};
++
++		/* Secondary IC cascaded to intc0 */
++		intc1: interrupt-controller@d8150000 {
++			compatible = "via,vt8500-intc";
++			interrupt-controller;
++			#interrupt-cells = <1>;
++			reg = <0xD8150000 0x10000>;
++			interrupts = <56 57 58 59 60 61 62 63>;
++		};
++
++		gpio: gpio-controller@d8110000 {
++			compatible = "wm,wm8650-gpio";
++			gpio-controller;
++			reg = <0xd8110000 0x10000>;
++			#gpio-cells = <3>;
++		};
++
++		pmc@d8130000 {
++			compatible = "via,vt8500-pmc";
++			reg = <0xd8130000 0x1000>;
++
++			clocks {
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				ref25: ref25M {
++					#clock-cells = <0>;
++					compatible = "fixed-clock";
++					clock-frequency = <25000000>;
++				};
++
++				plla: plla {
++					#clock-cells = <0>;
++					compatible = "wm,wm8650-pll-clock";
++					clocks = <&ref25>;
++					reg = <0x200>;
++				};
++
++				pllb: pllb {
++					#clock-cells = <0>;
++					compatible = "wm,wm8650-pll-clock";
++					clocks = <&ref25>;
++					reg = <0x204>;
++				};
++
++				arm: arm {
++					#clock-cells = <0>;
++					compatible = "via,vt8500-device-clock";
++					clocks = <&plla>;
++					divisor-reg = <0x300>;
++				};
++
++				sdhc: sdhc {
++					#clock-cells = <0>;
++					compatible = "via,vt8500-device-clock";
++					clocks = <&pllb>;
++					divisor-reg = <0x328>;
++					divisor-mask = <0x3f>;
++					enable-reg = <0x254>;
++					enable-bit = <18>;
++				};
++			};
++		};
++
++		timer@d8130100 {
++			compatible = "via,vt8500-timer";
++			reg = <0xd8130100 0x28>;
++			interrupts = <36>;
++		};
++
++		ehci@d8007900 {
++			compatible = "via,vt8500-ehci";
++			reg = <0xd8007900 0x200>;
++			interrupts = <43>;
++		};
++
++		uhci@d8007b00 {
++			compatible = "platform-uhci";
++			reg = <0xd8007b00 0x200>;
++			interrupts = <43>;
++		};
++
++		fb@d8050800 {
++			compatible = "wm,wm8505-fb";
++			reg = <0xd8050800 0x200>;
++			via,display = <&display>;
++		};
++
++		ge_rops@d8050400 {
++			compatible = "wm,prizm-ge-rops";
++			reg = <0xd8050400 0x100>;
++		};
++
++		uart@d8200000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd8200000 0x1040>;
++			interrupts = <32>;
++		};
++
++		uart@d82b0000 {
++			compatible = "via,vt8500-uart";
++			reg = <0xd82b0000 0x1040>;
++			interrupts = <33>;
++		};
++
++		rtc@d8100000 {
++			compatible = "via,vt8500-rtc";
++			reg = <0xd8100000 0x10000>;
++			interrupts = <48>;
++		};
++	};
++};
 -- 
 1.7.9.5
 

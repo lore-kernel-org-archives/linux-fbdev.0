@@ -1,463 +1,234 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 17 Aug 2012 00:49:39 +0000
-Subject: [RFC 1/5] video: Add generic display panel core
-Message-Id: <1345164583-18924-2-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 21 Aug 2012 06:10:08 +0000
+Subject: [PATCH 01/23] OMAPDSS: outputs: Create a new entity called outputs
+Message-Id: <1345528711-27801-2-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345164583-18924-1-git-send-email-laurent.pinchart@ideasonboard.com>
-In-Reply-To: <1345164583-18924-1-git-send-email-laurent.pinchart@ideasonboard.com>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org
-Cc: linux-media@vger.kernel.org, Bryan Wu <bryan.wu@canonical.com>, Richard Purdie <rpurdie@rpsys.net>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Marcus Lorentzon <marcus.lorentzon@linaro.org>, Sumit Semwal <sumit.semwal@ti.com>, Archit Taneja <archit@ti.com>, Sebastien Guiriec <s-guiriec@ti.com>, Inki Dae <inki.dae@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com, Archit Taneja <archit@ti.com>
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+The current OMAPDSS design contains 3 software entities: Overlays, Managers and
+Devices. These map to pipelines, overlay managers and the panels respectively in
+hardware. One or more overlays connect to a manager to represent a composition,
+the manager connects to a device(generally a display) to display the content.
+
+The part of DSS hardware which isn't represented by any of the above entities
+are interfaces/outputs that connect to an overlay manager, i.e blocks like DSI,
+HDMI, VENC and so on. Currently, an overlay manager directly connects to the
+display, and the output to which it is actually connected is ignored. The panel
+driver of the display is responsible of calling output specific functions to
+configure the output.
+
+Adding outputs as a new software entity gives us the following benefits:
+
+- Have exact information on the possible connections between managers and
+  outputs: A manager can't connect to each and every output, there only limited
+  hardware links between a manager's video port and some of the outputs.
+
+- Remove hacks related to connecting managers and devices: Currently, default
+  links between managers and devices are set in a not so clean way. Matching is
+  done via comparing the device type, and the display types supported by the
+  manager. This isn't sufficient to establish all the possible links between
+  managers, outputs and devices in hardware.
+
+- Make panel drivers more generic: The DSS panel drivers currently call
+  interface/output specific functions to configure the hardware IP. When making
+  these calls, the driver isn't actually aware of the underlying output. The
+  output driver extracts information from the panel's omap_dss_device pointer
+  to figure out which interface it is connected to, and then configures the
+  corresponding output block. An example of this is when a DSI panel calls
+  dsi functions, the dsi driver figures out whether the panel is connected
+  to DSI1 or DSI2. This isn't correct, and having output as entities will
+  give the panel driver the exact information on which output to configure.
+  Having outputs also gives the opportunity to make panel drivers generic
+  across different platforms/SoCs, this is achieved as omap specific output
+  calls can be replaced by ops of a particular output type.
+
+- Have more complex connections between managers, outputs and devices: OMAPDSS
+  currently doesn't support use cases like 2 outputs connect to a single
+  device. This can be achieved by extending properties of outputs to connect to
+  more managers or devices.
+
+- Represent writeback as an output: The writeback pipeline fits well in OMAPDSS
+  as compared to overlays, managers or devices.
+
+Add a new struct to represent outputs. An output struct holds pointers to the
+manager and device structs to which it is connected. Add functions which can
+add an output, or look for one. Create an enum which represent each output
+instance.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/Kconfig        |    1 +
- drivers/video/Makefile       |    1 +
- drivers/video/panel/Kconfig  |    4 +
- drivers/video/panel/Makefile |    1 +
- drivers/video/panel/panel.c  |  269 ++++++++++++++++++++++++++++++++++++++++++
- include/video/panel.h        |  111 +++++++++++++++++
- 6 files changed, 387 insertions(+), 0 deletions(-)
- create mode 100644 drivers/video/panel/Kconfig
- create mode 100644 drivers/video/panel/Makefile
- create mode 100644 drivers/video/panel/panel.c
- create mode 100644 include/video/panel.h
+ drivers/video/omap2/dss/Makefile |    2 +-
+ drivers/video/omap2/dss/core.c   |    1 +
+ drivers/video/omap2/dss/dss.h    |    4 +++
+ drivers/video/omap2/dss/output.c |   58 ++++++++++++++++++++++++++++++++++++++
+ include/video/omapdss.h          |   30 ++++++++++++++++++++
+ 5 files changed, 94 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/video/omap2/dss/output.c
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 0217f74..2cc394e 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2448,6 +2448,7 @@ source "drivers/video/omap/Kconfig"
- source "drivers/video/omap2/Kconfig"
- source "drivers/video/exynos/Kconfig"
- source "drivers/video/backlight/Kconfig"
-+source "drivers/video/panel/Kconfig"
+diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
+index 30a48fb..645f8c3 100644
+--- a/drivers/video/omap2/dss/Makefile
++++ b/drivers/video/omap2/dss/Makefile
+@@ -1,6 +1,6 @@
+ obj-$(CONFIG_OMAP2_DSS) += omapdss.o
+ omapdss-y := core.o dss.o dss_features.o dispc.o dispc_coefs.o display.o \
+-	manager.o overlay.o apply.o
++	manager.o overlay.o output.o apply.o
+ omapdss-$(CONFIG_OMAP2_DSS_DPI) += dpi.o
+ omapdss-$(CONFIG_OMAP2_DSS_RFBI) += rfbi.o
+ omapdss-$(CONFIG_OMAP2_DSS_VENC) += venc.o venc_panel.o
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index c35a248..2eccd74 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -239,6 +239,7 @@ static int __init omap_dss_probe(struct platform_device *pdev)
  
- if VT
- 	source "drivers/video/console/Kconfig"
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index ee8dafb..577240c 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -14,6 +14,7 @@ fb-objs                           := $(fb-y)
- obj-$(CONFIG_VT)		  += console/
- obj-$(CONFIG_LOGO)		  += logo/
- obj-y				  += backlight/
-+obj-y				  += panel/
+ 	dss_init_overlay_managers(pdev);
+ 	dss_init_overlays(pdev);
++	dss_init_outputs();
  
- obj-$(CONFIG_EXYNOS_VIDEO)     += exynos/
+ 	r = dss_initialize_debugfs();
+ 	if (r)
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 41c00dc..8a7c94c 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -222,6 +222,10 @@ int dss_ovl_set_manager(struct omap_overlay *ovl,
+ 		struct omap_overlay_manager *mgr);
+ int dss_ovl_unset_manager(struct omap_overlay *ovl);
  
-diff --git a/drivers/video/panel/Kconfig b/drivers/video/panel/Kconfig
++/* output */
++struct omap_dss_output *dss_create_output(struct platform_device *pdev);
++void dss_init_outputs(void);
++
+ /* display */
+ int dss_suspend_all_devices(void);
+ int dss_resume_all_devices(void);
+diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
 new file mode 100644
-index 0000000..26b1787
+index 0000000..034ebbe
 --- /dev/null
-+++ b/drivers/video/panel/Kconfig
-@@ -0,0 +1,4 @@
-+menuconfig DISPLAY_PANEL
-+	tristate "Display Panel"
-+	---help---
-+	  Support for display panels for graphics devices.
-diff --git a/drivers/video/panel/Makefile b/drivers/video/panel/Makefile
-new file mode 100644
-index 0000000..cf5c5e2
---- /dev/null
-+++ b/drivers/video/panel/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_DISPLAY_PANEL) += panel.o
-diff --git a/drivers/video/panel/panel.c b/drivers/video/panel/panel.c
-new file mode 100644
-index 0000000..cfca804
---- /dev/null
-+++ b/drivers/video/panel/panel.c
-@@ -0,0 +1,269 @@
++++ b/drivers/video/omap2/dss/output.c
+@@ -0,0 +1,58 @@
 +/*
-+ * Display Panel
++ * Copyright (C) 2012 Texas Instruments Ltd
++ * Author: Archit Taneja <archit@ti.com>
 + *
-+ * Copyright (C) 2012 Renesas Solutions Corp.
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
 + *
-+ * Contacts: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
 + */
 +
-+#include <linux/export.h>
 +#include <linux/kernel.h>
-+#include <linux/list.h>
-+#include <linux/module.h>
-+#include <linux/mutex.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
 +
-+#include <video/panel.h>
++#include <video/omapdss.h>
 +
-+static LIST_HEAD(panel_list);
-+static LIST_HEAD(panel_notifiers);
-+static DEFINE_MUTEX(panel_mutex);
++#include "dss.h"
 +
-+/**
-+ * panel_enable - Set the panel operation mode
-+ * @panel: The panel
-+ * @enable: Panel operation mode
-+ *
-+ * - PANEL_ENABLE_OFF turns the panel off completely, possibly including its
-+ *   power supplies. Communication with a panel in that mode is not possible.
-+ * - PANEL_ENABLE_BLANK turns the panel on but keep the output blanked. Full
-+ *   communication with the panel is supported, including pixel data transfer.
-+ * - PANEL_ENABLE_ON turns the whole panel on, including the output.
-+ *
-+ * Return 0 on success or a negative error code otherwise.
-+ */
-+int panel_enable(struct panel *panel, enum panel_enable_mode enable)
++static struct list_head output_list;
++
++struct omap_dss_output *dss_create_output(struct platform_device *pdev)
 +{
-+	int ret;
++	struct omap_dss_output *out;
 +
-+	if (panel->enable = enable)
-+		return 0;
-+
-+	if (!panel->ops || !panel->ops->enable)
-+		return 0;
-+
-+	ret = panel->ops->enable(panel, enable);
-+	if (ret < 0)
-+		return ret;
-+
-+	panel->enable = enable;
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(panel_enable);
-+
-+/**
-+ * panel_start_transfer - Start frame transfer
-+ * @panel: The panel
-+ *
-+ * Make the panel ready to receive pixel data and start frame transfer. This
-+ * operation can only be called if the panel is in BLANK or ON mode.
-+ *
-+ * Return 0 on success or a negative error code otherwise.
-+ */
-+int panel_start_transfer(struct panel *panel)
-+{
-+	if (!panel->ops || !panel->ops->start_transfer)
-+		return 0;
-+
-+	return panel->ops->start_transfer(panel);
-+}
-+
-+/**
-+ * panel_get_modes - Get video modes supported by the panel
-+ * @panel: The panel
-+ * @modes: Pointer to an array of modes
-+ *
-+ * Fill the modes argument with a pointer to an array of video modes. The array
-+ * is owned by the panel.
-+ *
-+ * Return the number of supported modes on success (including 0 if no mode is
-+ * supported) or a negative error code otherwise.
-+ */
-+int panel_get_modes(struct panel *panel, const struct fb_videomode **modes)
-+{
-+	if (!panel->ops || !panel->ops->get_modes)
-+		return 0;
-+
-+	return panel->ops->get_modes(panel, modes);
-+}
-+EXPORT_SYMBOL_GPL(panel_get_modes);
-+
-+static void panel_release(struct kref *ref)
-+{
-+	struct panel *panel = container_of(ref, struct panel, ref);
-+
-+	if (panel->release)
-+		panel->release(panel);
-+}
-+
-+/**
-+ * panel_get - get a reference to a panel
-+ * @panel: the panel
-+ *
-+ * Return the panel pointer.
-+ */
-+struct panel *panel_get(struct panel *panel)
-+{
-+	if (panel = NULL)
++	out = kzalloc(sizeof(struct omap_dss_output *), GFP_KERNEL);
++	if (!out)
 +		return NULL;
 +
-+	kref_get(&panel->ref);
-+	return panel;
-+}
-+EXPORT_SYMBOL_GPL(panel_get);
++	out->pdev = pdev;
 +
-+/**
-+ * panel_put - release a reference to a panel
-+ * @panel: the panel
-+ *
-+ * Releasing the last reference to a panel releases the panel itself.
-+ */
-+void panel_put(struct panel *panel)
-+{
-+	kref_put(&panel->ref, panel_release);
-+}
-+EXPORT_SYMBOL_GPL(panel_put);
++	list_add_tail(&out->list, &output_list);
 +
-+static int panel_notifier_match(struct panel *panel,
-+				struct panel_notifier *notifier)
-+{
-+	return notifier->dev = NULL ||
-+	       notifier->dev = panel->dev;
++	return out;
 +}
 +
-+/**
-+ * panel_register_notifier - register a display panel notifier
-+ * @notifier: panel notifier structure we want to register
-+ *
-+ * Panel notifiers are called to notify drivers of panel-related events for
-+ * matching panels.
-+ *
-+ * Notifiers and panels are matched through the device they correspond to. If
-+ * the notifier dev field is equal to the panel dev field the notifier will be
-+ * called when an event is reported. Notifiers with a NULL dev field act as
-+ * catch-all and will be called for all panels.
-+ *
-+ * Supported events are
-+ *
-+ * - PANEL_NOTIFIER_CONNECT reports panel connection and is sent at panel or
-+ *   notifier registration time
-+ * - PANEL_NOTIFIER_DISCONNECT reports panel disconnection and is sent at panel
-+ *   unregistration time
-+ *
-+ * Registering a notifier sends PANEL_NOTIFIER_CONNECT events for all previously
-+ * registered panels that match the notifiers.
-+ *
-+ * Return 0 on success.
-+ */
-+int panel_register_notifier(struct panel_notifier *notifier)
++struct omap_dss_output *omap_dss_get_output(enum omap_dss_output_id id)
 +{
-+	struct panel *panel;
++	struct omap_dss_output *out;
 +
-+	mutex_lock(&panel_mutex);
-+	list_add_tail(&notifier->list, &panel_notifiers);
-+
-+	list_for_each_entry(panel, &panel_list, list) {
-+		if (!panel_notifier_match(panel, notifier))
-+			continue;
-+
-+		if (notifier->notify(notifier, panel, PANEL_NOTIFIER_CONNECT))
-+			break;
-+	}
-+	mutex_unlock(&panel_mutex);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(panel_register_notifier);
-+
-+/**
-+ * panel_unregister_notifier - unregister a display panel notifier
-+ * @notifier: panel notifier to be unregistered
-+ *
-+ * Unregistration guarantees that the notifier will never be called upon return
-+ * of this function.
-+ */
-+void panel_unregister_notifier(struct panel_notifier *notifier)
-+{
-+	mutex_lock(&panel_mutex);
-+	list_del(&notifier->list);
-+	mutex_unlock(&panel_mutex);
-+}
-+EXPORT_SYMBOL_GPL(panel_unregister_notifier);
-+
-+/**
-+ * panel_register - register a display panel
-+ * @panel: panel to be registered
-+ *
-+ * Register the panel and send the PANEL_NOTIFIER_CONNECT event to all
-+ * matching registered notifiers.
-+ *
-+ * Return 0 on success.
-+ */
-+int __must_check __panel_register(struct panel *panel, struct module *owner)
-+{
-+	struct panel_notifier *notifier;
-+
-+	kref_init(&panel->ref);
-+	panel->owner = owner;
-+	panel->enable = PANEL_ENABLE_OFF;
-+
-+	mutex_lock(&panel_mutex);
-+	list_add(&panel->list, &panel_list);
-+
-+	list_for_each_entry(notifier, &panel_notifiers, list) {
-+		if (!panel_notifier_match(panel, notifier))
-+			continue;
-+
-+		if (notifier->notify(notifier, panel, PANEL_NOTIFIER_CONNECT))
-+			break;
-+	}
-+	mutex_unlock(&panel_mutex);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(__panel_register);
-+
-+/**
-+ * panel_unregister - unregister a display panel
-+ * @panel: panel to be unregistered
-+ *
-+ * Unregister the panel and send the PANEL_NOTIFIER_DISCONNECT event to all
-+ * matching registered notifiers.
-+ */
-+void panel_unregister(struct panel *panel)
-+{
-+	struct panel_notifier *notifier;
-+
-+	mutex_lock(&panel_mutex);
-+	list_for_each_entry(notifier, &panel_notifiers, list) {
-+		if (!panel_notifier_match(panel, notifier))
-+			continue;
-+
-+		notifier->notify(notifier, panel, PANEL_NOTIFIER_DISCONNECT);
++	list_for_each_entry(out, &output_list, list) {
++		if (out->id = id)
++			return out;
 +	}
 +
-+	list_del(&panel->list);
-+	mutex_unlock(&panel_mutex);
-+
-+	panel_put(panel);
++	return NULL;
 +}
-+EXPORT_SYMBOL_GPL(panel_unregister);
 +
-+static int __init panel_init(void)
++void dss_init_outputs(void)
 +{
-+	return 0;
++	INIT_LIST_HEAD(&output_list);
 +}
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index b868123..0ba613f 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -207,6 +207,16 @@ enum omap_hdmi_flags {
+ 	OMAP_HDMI_SDA_SCL_EXTERNAL_PULLUP = 1 << 0,
+ };
+ 
++enum omap_dss_output_id {
++	OMAP_DSS_OUTPUT_DPI	= 1 << 0,
++	OMAP_DSS_OUTPUT_DBI	= 1 << 1,
++	OMAP_DSS_OUTPUT_SDI	= 1 << 2,
++	OMAP_DSS_OUTPUT_DSI1	= 1 << 3,
++	OMAP_DSS_OUTPUT_VENC	= 1 << 4,
++	OMAP_DSS_OUTPUT_DSI2	= 1 << 5,
++	OMAP_DSS_OUTPUT_HDMI	= 1 << 6,
++};
 +
-+static void __exit panel_exit(void)
-+{
-+}
-+
-+module_init(panel_init);
-+module_exit(panel_exit)
-+
-+MODULE_AUTHOR("Laurent Pinchart <laurent.pinchart@ideasonboard.com>");
-+MODULE_DESCRIPTION("Display Panel Core");
-+MODULE_LICENSE("GPL");
-diff --git a/include/video/panel.h b/include/video/panel.h
-new file mode 100644
-index 0000000..bb11141
---- /dev/null
-+++ b/include/video/panel.h
-@@ -0,0 +1,111 @@
-+/*
-+ * Display Panel
-+ *
-+ * Copyright (C) 2012 Renesas Solutions Corp.
-+ *
-+ * Contacts: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#ifndef __PANEL_H__
-+#define __PANEL_H__
-+
-+#include <linux/fb.h>
-+#include <linux/kref.h>
-+#include <linux/list.h>
-+#include <linux/module.h>
-+
-+struct panel;
-+
-+#define PANEL_NOTIFIER_CONNECT		1
-+#define PANEL_NOTIFIER_DISCONNECT	2
-+
-+struct panel_notifier {
-+	int (*notify)(struct panel_notifier *, struct panel *, int);
-+	struct device *dev;
+ /* RFBI */
+ 
+ struct rfbi_timings {
+@@ -492,6 +502,24 @@ struct omap_dsi_pin_config {
+ 	int pins[OMAP_DSS_MAX_DSI_PINS];
+ };
+ 
++struct omap_dss_output {
 +	struct list_head list;
++
++	/* display type supported by the output */
++	enum omap_display_type type;
++
++	/* output instance */
++	enum omap_dss_output_id id;
++
++	/* output's platform device pointer */
++	struct platform_device *pdev;
++
++	/* dynamic fields */
++	struct omap_overlay_manager *manager;
++
++	struct omap_dss_device *device;
 +};
 +
-+enum panel_enable_mode {
-+	PANEL_ENABLE_OFF,
-+	PANEL_ENABLE_BLANK,
-+	PANEL_ENABLE_ON,
-+};
+ struct omap_dss_device {
+ 	struct device dev;
+ 
+@@ -699,6 +727,8 @@ struct omap_overlay_manager *omap_dss_get_overlay_manager(int num);
+ int omap_dss_get_num_overlays(void);
+ struct omap_overlay *omap_dss_get_overlay(int num);
+ 
++struct omap_dss_output *omap_dss_get_output(enum omap_dss_output_id id);
 +
-+struct panel_ops {
-+	int (*enable)(struct panel *panel, enum panel_enable_mode enable);
-+	int (*start_transfer)(struct panel *panel);
-+	int (*get_modes)(struct panel *panel,
-+			 const struct fb_videomode **modes);
-+};
-+
-+struct panel {
-+	struct list_head list;
-+	struct device *dev;
-+	struct module *owner;
-+	struct kref ref;
-+
-+	const struct panel_ops *ops;
-+	void(*release)(struct panel *panel);
-+
-+	unsigned int width;
-+	unsigned int height;
-+
-+	enum panel_enable_mode enable;
-+};
-+
-+/**
-+ * panel_enable - Set the panel operation mode
-+ * @panel: The panel
-+ * @enable: Panel operation mode
-+ *
-+ * - PANEL_ENABLE_OFF turns the panel off completely, possibly including its
-+ *   power supplies. Communication with a panel in that mode is not possible.
-+ * - PANEL_ENABLE_BLANK turns the panel on but keep the output blanked. Full
-+ *   communication with the panel is supported, including pixel data transfer.
-+ * - PANEL_ENABLE_ON turns the whole panel on, including the output.
-+ *
-+ * Return 0 on success or a negative error code otherwise.
-+ */
-+int panel_enable(struct panel *panel, enum panel_enable_mode enable);
-+
-+/**
-+ * panel_start_transfer - Start frame transfer
-+ * @panel: The panel
-+ *
-+ * Make the panel ready to receive pixel data and start frame transfer. This
-+ * operation can only be called if the panel is in BLANK or ON mode.
-+ *
-+ * Return 0 on success or a negative error code otherwise.
-+ */
-+int panel_start_transfer(struct panel *panel);
-+
-+/**
-+ * panel_get_modes - Get video modes supported by the panel
-+ * @panel: The panel
-+ * @modes: Pointer to an array of modes
-+ *
-+ * Fill the modes argument with a pointer to an array of video modes. The array
-+ * is owned by the panel.
-+ *
-+ * Return the number of supported modes on success (including 0 if no mode is
-+ * supported) or a negative error code otherwise.
-+ */
-+int panel_get_modes(struct panel *panel, const struct fb_videomode **modes);
-+
-+struct panel *panel_get(struct panel *panel);
-+void panel_put(struct panel *panel);
-+
-+int __must_check __panel_register(struct panel *panel, struct module *owner);
-+void panel_unregister(struct panel *panel);
-+
-+int panel_register_notifier(struct panel_notifier *notifier);
-+void panel_unregister_notifier(struct panel_notifier *notifier);
-+
-+#define panel_register(panel) \
-+	__panel_register(panel, THIS_MODULE)
-+
-+#endif /* __PANEL_H__ */
+ void omapdss_default_get_resolution(struct omap_dss_device *dssdev,
+ 		u16 *xres, u16 *yres);
+ int omapdss_default_get_recommended_bpp(struct omap_dss_device *dssdev);
 -- 
-1.7.8.6
+1.7.9.5
 

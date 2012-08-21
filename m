@@ -1,45 +1,51 @@
-From: Axel Lin <axel.lin@gmail.com>
-Date: Fri, 31 Aug 2012 13:39:03 +0000
-Subject: [PATCH] video: mbxfb: Include linux/io.h instead of asm/io.h
-Message-Id: <1346420343.3107.0.camel@phoenix>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 21 Aug 2012 06:10:29 +0000
+Subject: [PATCH 22/23] OMAPDSS: APPLY: Remove omap_dss_device references from dss_ovl_enable/disable
+Message-Id: <1345528711-27801-23-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, Mathieu Poirier <mathieu.poirier@linaro.org>, Damien Cassou <damien.cassou@lifl.fr>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com, Archit Taneja <archit@ti.com>
 
-This fixes below build error:
+An overlay isn't allowed to be enabled/disabled if it isn't connected to an
+omap_dss_device. This requirement isn't needed any more. An overlay can be
+enabled/disabled as long as it has an output connected to it. The output may
+not be connected to a device, but we can be assured that the connected
+manager's output is in use by an output interface.
 
-  CC [M]  drivers/video/mbx/mbxfb.o
-drivers/video/mbx/mbxfb.c: In function 'mbxfb_probe':
-drivers/video/mbx/mbxfb.c:942:2: error: implicit declaration of function 'devm_ioremap_nocache' [-Werror=implicit-function-declaration]
-drivers/video/mbx/mbxfb.c:942:22: warning: assignment makes pointer from integer without a cast [enabled by default]
-drivers/video/mbx/mbxfb.c:952:21: warning: assignment makes pointer from integer without a cast [enabled by default]
-cc1: some warnings being treated as errors
-
-Signed-off-by: Axel Lin <axel.lin@gmail.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/mbx/mbxfb.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/omap2/dss/apply.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/mbx/mbxfb.c b/drivers/video/mbx/mbxfb.c
-index 9229acf..6563e50 100644
---- a/drivers/video/mbx/mbxfb.c
-+++ b/drivers/video/mbx/mbxfb.c
-@@ -26,8 +26,7 @@
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/uaccess.h>
--
--#include <asm/io.h>
-+#include <linux/io.h>
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 8a05cbc..d584f0c 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -1607,8 +1607,7 @@ int dss_ovl_enable(struct omap_overlay *ovl)
+ 		goto err1;
+ 	}
  
- #include <video/mbxfb.h>
+-	if (ovl->manager = NULL ||
+-			ovl->manager->get_device(ovl->manager) = NULL) {
++	if (ovl->manager = NULL || ovl->manager->output = NULL) {
+ 		r = -EINVAL;
+ 		goto err1;
+ 	}
+@@ -1677,8 +1676,7 @@ int dss_ovl_disable(struct omap_overlay *ovl)
+ 		goto err;
+ 	}
  
+-	if (ovl->manager = NULL ||
+-			ovl->manager->get_device(ovl->manager) = NULL) {
++	if (ovl->manager = NULL || ovl->manager->output = NULL) {
+ 		r = -EINVAL;
+ 		goto err;
+ 	}
 -- 
 1.7.9.5
-
-
-
 

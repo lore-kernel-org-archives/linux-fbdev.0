@@ -1,99 +1,316 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 01 Aug 2012 10:43:27 +0000
-Subject: [RFC 16/17] OMAPDSS: VENC: Maintain our own timings field in driver data
-Message-Id: <1343817088-29645-17-git-send-email-archit@ti.com>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Tue, 21 Aug 2012 20:47:33 +0000
+Subject: [PATCHv3 4/9] usb: vt8500: Add devicetree support for vt8500-ehci and -uhci.
+Message-Id: <1345582058-2291-5-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343817088-29645-1-git-send-email-archit@ti.com>
-In-Reply-To: <1343817088-29645-1-git-send-email-archit@ti.com>
+References: <1345582058-2291-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1345582058-2291-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, sumit.semwal@ti.com, rob@ti.com, Archit Taneja <archit@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-The VENC driver currently relies on the timings in omap_dss_device struct to
-configure the DISPC and VENC blocks accordingly. This makes the VENC interface
-driver dependent on the omap_dss_device struct.
+Add devicetree support for vt8500-ehci.
+Convert vt8500-uhci to a generic non-pci platform-uhci with
+device tree support.
 
-Make the VENC driver data maintain it's own timings field. The panel driver is
-expected to call omapdss_venc_set_timings() to set these timings before the
-panel is enabled.
-
-Make the VENC panel driver configure the new timings is the omap_dss_device
-struct(dssdev->panel.timings). The VENC driver is responsible for maintaining
-only it's own copy of timings.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
 ---
- drivers/video/omap2/dss/venc.c       |   12 +++++++-----
- drivers/video/omap2/dss/venc_panel.c |    1 +
- 2 files changed, 8 insertions(+), 5 deletions(-)
+ drivers/usb/host/Kconfig         |    4 +-
+ drivers/usb/host/ehci-vt8500.c   |   25 ++++--
+ drivers/usb/host/uhci-hcd.c      |    5 ++
+ drivers/usb/host/uhci-platform.c |  169 ++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 195 insertions(+), 8 deletions(-)
+ create mode 100644 drivers/usb/host/uhci-platform.c
 
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index ffca542..d96025e 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -300,6 +300,8 @@ static struct {
- 	struct regulator *vdda_dac_reg;
+diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
+index dcfaaa9..d7a6b10 100644
+--- a/drivers/usb/host/Kconfig
++++ b/drivers/usb/host/Kconfig
+@@ -450,7 +450,7 @@ config USB_OHCI_LITTLE_ENDIAN
  
- 	struct clk	*tv_dac_clk;
+ config USB_UHCI_HCD
+ 	tristate "UHCI HCD (most Intel and VIA) support"
+-	depends on USB && (PCI || SPARC_LEON)
++	depends on USB && (PCI || SPARC_LEON || ARCH_VT8500)
+ 	---help---
+ 	  The Universal Host Controller Interface is a standard by Intel for
+ 	  accessing the USB hardware in the PC (which is also called the USB
+@@ -468,7 +468,7 @@ config USB_UHCI_HCD
+ config USB_UHCI_SUPPORT_NON_PCI_HC
+ 	bool
+ 	depends on USB_UHCI_HCD
+-	default y if SPARC_LEON
++	default y if (SPARC_LEON  || ARCH_VT8500)
+ 
+ config USB_UHCI_BIG_ENDIAN_MMIO
+ 	bool
+diff --git a/drivers/usb/host/ehci-vt8500.c b/drivers/usb/host/ehci-vt8500.c
+index c1eda73..0e1637b 100644
+--- a/drivers/usb/host/ehci-vt8500.c
++++ b/drivers/usb/host/ehci-vt8500.c
+@@ -16,6 +16,7 @@
+  *
+  */
+ 
++#include <linux/of.h>
+ #include <linux/platform_device.h>
+ 
+ static int ehci_update_device(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -84,20 +85,23 @@ static const struct hc_driver vt8500_ehci_hc_driver = {
+ 	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
+ };
+ 
++static u64 wmt_ehci_dma_mask = DMA_BIT_MASK(32);
 +
-+	struct omap_video_timings timings;
- } venc;
+ static int vt8500_ehci_drv_probe(struct platform_device *pdev)
+ {
+ 	struct usb_hcd *hcd;
+ 	struct ehci_hcd *ehci;
+ 	struct resource *res;
++	int irq;
+ 	int ret;
  
- static inline void venc_write_reg(int idx, u32 val)
-@@ -432,7 +434,7 @@ static int venc_power_on(struct omap_dss_device *dssdev)
- 		goto err0;
+ 	if (usb_disabled())
+ 		return -ENODEV;
  
- 	venc_reset();
--	venc_write_config(venc_timings_to_config(&dssdev->panel.timings));
-+	venc_write_config(venc_timings_to_config(&venc.timings));
+-	if (pdev->resource[1].flags != IORESOURCE_IRQ) {
+-		pr_debug("resource[1] is not IORESOURCE_IRQ");
+-		return -ENOMEM;
+-	}
++	/* devicetree created devices don't specify a dma mask */
++	if (!pdev->dev.dma_mask)
++		pdev->dev.dma_mask = &wmt_ehci_dma_mask;
++
+ 	hcd = usb_create_hcd(&vt8500_ehci_hc_driver, &pdev->dev, "VT8500");
+ 	if (!hcd)
+ 		return -ENOMEM;
+@@ -134,8 +138,9 @@ static int vt8500_ehci_drv_probe(struct platform_device *pdev)
  
- 	dss_set_venc_output(dssdev->phy.venc.type);
- 	dss_set_dac_pwrdn_bgz(1);
-@@ -449,7 +451,7 @@ static int venc_power_on(struct omap_dss_device *dssdev)
+ 	ehci_reset(ehci);
  
- 	venc_write_reg(VENC_OUTPUT_CONTROL, l);
- 
--	dss_mgr_set_timings(dssdev->manager, &dssdev->panel.timings);
-+	dss_mgr_set_timings(dssdev->manager, &venc.timings);
- 
- 	r = regulator_enable(venc.vdda_dac_reg);
- 	if (r)
-@@ -556,10 +558,10 @@ void omapdss_venc_set_timings(struct omap_dss_device *dssdev,
- 	mutex_lock(&venc.venc_lock);
- 
- 	/* Reset WSS data when the TV standard changes. */
--	if (memcmp(&dssdev->panel.timings, timings, sizeof(*timings)))
-+	if (memcmp(&venc.timings, timings, sizeof(*timings)))
- 		venc.wss_data = 0;
- 
--	dssdev->panel.timings = *timings;
-+	venc.timings = *timings;
- 
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
- 		int r;
-@@ -606,7 +608,7 @@ int omapdss_venc_set_wss(struct omap_dss_device *dssdev, u32 wss)
- 
- 	mutex_lock(&venc.venc_lock);
- 
--	config = venc_timings_to_config(&dssdev->panel.timings);
-+	config = venc_timings_to_config(&venc.timings);
- 
- 	/* Invert due to VENC_L21_WC_CTL:INV=1 */
- 	venc.wss_data = (wss ^ 0xfffff) << 8;
-diff --git a/drivers/video/omap2/dss/venc_panel.c b/drivers/video/omap2/dss/venc_panel.c
-index 6b31298..350b0d9 100644
---- a/drivers/video/omap2/dss/venc_panel.c
-+++ b/drivers/video/omap2/dss/venc_panel.c
-@@ -170,6 +170,7 @@ static void venc_panel_set_timings(struct omap_dss_device *dssdev,
- 	mutex_lock(&venc_panel.lock);
- 
- 	omapdss_venc_set_timings(dssdev, timings);
-+	dssdev->panel.timings = *timings;
- 
- 	mutex_unlock(&venc_panel.lock);
+-	ret = usb_add_hcd(hcd, pdev->resource[1].start,
+-			  IRQF_SHARED);
++	irq = platform_get_irq(pdev, 0);
++
++	ret = usb_add_hcd(hcd, irq, IRQF_SHARED);
+ 	if (ret = 0) {
+ 		platform_set_drvdata(pdev, hcd);
+ 		return ret;
+@@ -162,6 +167,11 @@ static int vt8500_ehci_drv_remove(struct platform_device *pdev)
+ 	return 0;
  }
+ 
++static const struct of_device_id vt8500_ehci_ids[] = {
++	{ .compatible = "via,vt8500-ehci", },
++	{}
++};
++
+ static struct platform_driver vt8500_ehci_driver = {
+ 	.probe		= vt8500_ehci_drv_probe,
+ 	.remove		= vt8500_ehci_drv_remove,
+@@ -169,7 +179,10 @@ static struct platform_driver vt8500_ehci_driver = {
+ 	.driver = {
+ 		.name	= "vt8500-ehci",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = of_match_ptr(vt8500_ehci_ids),
+ 	}
+ };
+ 
+ MODULE_ALIAS("platform:vt8500-ehci");
++MODULE_LICENSE("GPL v2");
++MODULE_DEVICE_TABLE(of, vt8500_ehci_ids);
+diff --git a/drivers/usb/host/uhci-hcd.c b/drivers/usb/host/uhci-hcd.c
+index e4db350..5da5c99 100644
+--- a/drivers/usb/host/uhci-hcd.c
++++ b/drivers/usb/host/uhci-hcd.c
+@@ -846,6 +846,11 @@ static const char hcd_name[] = "uhci_hcd";
+ #define PLATFORM_DRIVER		uhci_grlib_driver
+ #endif
+ 
++#ifdef CONFIG_ARCH_VT8500
++#include "uhci-platform.c"
++#define PLATFORM_DRIVER		uhci_platform_driver
++#endif
++
+ #if !defined(PCI_DRIVER) && !defined(PLATFORM_DRIVER)
+ #error "missing bus glue for uhci-hcd"
+ #endif
+diff --git a/drivers/usb/host/uhci-platform.c b/drivers/usb/host/uhci-platform.c
+new file mode 100644
+index 0000000..35ca094
+--- /dev/null
++++ b/drivers/usb/host/uhci-platform.c
+@@ -0,0 +1,169 @@
++/*
++ * Generic UHCI HCD (Host Controller Driver) for Platform Devices
++ *
++ * Copyright (c) 2011 Tony Prisk <linux@prisktech.co.nz>
++ *
++ * This file is based on uhci-grlib.c
++ * (C) Copyright 2004-2007 Alan Stern, stern@rowland.harvard.edu
++ */
++
++#include <linux/of.h>
++#include <linux/platform_device.h>
++
++static int uhci_platform_init(struct usb_hcd *hcd)
++{
++	struct uhci_hcd *uhci = hcd_to_uhci(hcd);
++
++	uhci->rh_numports = uhci_count_ports(hcd);
++
++	/* Set up pointers to to generic functions */
++	uhci->reset_hc = uhci_generic_reset_hc;
++	uhci->check_and_reset_hc = uhci_generic_check_and_reset_hc;
++
++	/* No special actions need to be taken for the functions below */
++	uhci->configure_hc = NULL;
++	uhci->resume_detect_interrupts_are_broken = NULL;
++	uhci->global_suspend_mode_is_broken = NULL;
++
++	/* Reset if the controller isn't already safely quiescent. */
++	check_and_reset_hc(uhci);
++	return 0;
++}
++
++static const struct hc_driver uhci_platform_hc_driver = {
++	.description =          hcd_name,
++	.product_desc =         "Generic UHCI Host Controller",
++	.hcd_priv_size =        sizeof(struct uhci_hcd),
++
++	/* Generic hardware linkage */
++	.irq =                  uhci_irq,
++	.flags =                HCD_MEMORY | HCD_USB11,
++
++	/* Basic lifecycle operations */
++	.reset =                uhci_platform_init,
++	.start =                uhci_start,
++#ifdef CONFIG_PM
++	.pci_suspend =          NULL,
++	.pci_resume =           NULL,
++	.bus_suspend =          uhci_rh_suspend,
++	.bus_resume =           uhci_rh_resume,
++#endif
++	.stop =                 uhci_stop,
++
++	.urb_enqueue =          uhci_urb_enqueue,
++	.urb_dequeue =          uhci_urb_dequeue,
++
++	.endpoint_disable =     uhci_hcd_endpoint_disable,
++	.get_frame_number =     uhci_hcd_get_frame_number,
++
++	.hub_status_data =      uhci_hub_status_data,
++	.hub_control =          uhci_hub_control,
++};
++
++static u64 platform_uhci_dma_mask = DMA_BIT_MASK(32);
++
++static int __devinit uhci_hcd_platform_probe(struct platform_device *pdev)
++{
++	struct usb_hcd *hcd;
++	struct uhci_hcd *uhci;
++	struct resource *res;
++	int ret;
++
++	if (usb_disabled())
++		return -ENODEV;
++
++	/* Right now device-tree probed devices don't get dma_mask set.
++	 * Since shared usb code relies on it, set it here for now.
++	 * Once we have dma capability bindings this can go away.
++	 */
++	if (!pdev->dev.dma_mask)
++		pdev->dev.dma_mask = &platform_uhci_dma_mask;
++
++	hcd = usb_create_hcd(&uhci_platform_hc_driver, &pdev->dev,
++				pdev->name);
++	if (!hcd)
++		return -ENOMEM;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	hcd->rsrc_start = res->start;
++	hcd->rsrc_len = resource_size(res);
++
++	if (!request_mem_region(hcd->rsrc_start, hcd->rsrc_len, hcd_name)) {
++		pr_err("%s: request_mem_region failed\n", __func__);
++		ret = -EBUSY;
++		goto err_rmr;
++	}
++
++	hcd->regs = ioremap(hcd->rsrc_start, hcd->rsrc_len);
++	if (!hcd->regs) {
++		pr_err("%s: ioremap failed\n", __func__);
++		ret = -ENOMEM;
++		goto err_irq;
++	}
++	uhci = hcd_to_uhci(hcd);
++
++	uhci->regs = hcd->regs;
++
++	ret = usb_add_hcd(hcd, pdev->resource[1].start, IRQF_DISABLED |
++								IRQF_SHARED);
++	if (ret)
++		goto err_uhci;
++
++	return 0;
++
++err_uhci:
++	iounmap(hcd->regs);
++err_irq:
++	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
++err_rmr:
++	usb_put_hcd(hcd);
++
++	return ret;
++}
++
++static int uhci_hcd_platform_remove(struct platform_device *pdev)
++{
++	struct usb_hcd *hcd = platform_get_drvdata(pdev);
++
++	usb_remove_hcd(hcd);
++	iounmap(hcd->regs);
++	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
++	usb_put_hcd(hcd);
++	platform_set_drvdata(pdev, NULL);
++
++	return 0;
++}
++
++/* Make sure the controller is quiescent and that we're not using it
++ * any more.  This is mainly for the benefit of programs which, like kexec,
++ * expect the hardware to be idle: not doing DMA or generating IRQs.
++ *
++ * This routine may be called in a damaged or failing kernel.  Hence we
++ * do not acquire the spinlock before shutting down the controller.
++ */
++static void uhci_hcd_platform_shutdown(struct platform_device *op)
++{
++	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
++
++	uhci_hc_died(hcd_to_uhci(hcd));
++}
++
++static const struct of_device_id platform_uhci_ids[] = {
++	{ .compatible = "platform-uhci", },
++	{}
++};
++
++static struct platform_driver uhci_platform_driver = {
++	.probe          = uhci_hcd_platform_probe,
++	.remove         = uhci_hcd_platform_remove,
++	.shutdown       = uhci_hcd_platform_shutdown,
++	.driver = {
++		.name = "platform-uhci",
++		.owner = THIS_MODULE,
++		.of_match_table = of_match_ptr(platform_uhci_ids),
++	},
++};
++
++MODULE_ALIAS("platform:platform-uhci");
++MODULE_LICENSE("GPL v2");
++MODULE_DEVICE_TABLE(of, platform_uhci_ids);
 -- 
 1.7.9.5
 

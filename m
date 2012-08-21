@@ -1,186 +1,61 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 09 Aug 2012 11:56:11 +0000
-Subject: [PATCH v2 03/13] OMAPDSS: DSI: Maintain own copy of timings in driver data
-Message-Id: <1344512989-4071-4-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 21 Aug 2012 06:09:47 +0000
+Subject: [PATCH 1/2] OMAPDSS: Fix SDI PLL locking
+Message-Id: <1345529388-3509-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343817088-29645-1-git-send-email-archit@ti.com>
- <1344512989-4071-1-git-send-email-archit@ti.com>
-In-Reply-To: <1344512989-4071-1-git-send-email-archit@ti.com>
+References: <1345529388-3509-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1345529388-3509-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The DSI driver currently relies on the timings in omap_dss_device struct to
-configure the DISPC and DSI blocks accordingly. This makes the DSI interface
-driver dependent on the omap_dss_device struct.
+Commit f476ae9dab3234532d41d36beb4ba7be838fa786 (OMAPDSS: APPLY: Remove
+DISPC writes to manager's lcd parameters in interface) broke the SDI
+output, as it causes the SDI PLL locking to fail.
 
-Make the DSI driver data maintain it's own timings field. A DSI video mode panel
-driver is expected to call omapdss_dsi_set_timings() to set these timings before
-the panel is enabled.
+LCLK and PCLK divisors are located in shadow registers, and we normally
+write them to DISPC registers when enabling the output.  However, SDI
+uses pck-free as source clock for its PLL, and pck-free is affected by
+the divisors. And as we need the PLL before enabling the output, we need
+to write the divisors early.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+It seems just writing to the DISPC register is enough, and we don't need
+to care about the shadow register mechanism for pck-free. The exact
+reason for this is unknown.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Reported-by: Aaro Koskinen <aaro.koskinen@iki.fi>
 ---
- drivers/video/omap2/dss/dsi.c |   58 +++++++++++++++++++++++++----------------
- include/video/omapdss.h       |    2 ++
- 2 files changed, 38 insertions(+), 22 deletions(-)
+ drivers/video/omap2/dss/sdi.c |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 27c27c4..815b606 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -333,6 +333,7 @@ struct dsi_data {
- 	unsigned scp_clk_refcount;
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 5d31699..f43bfe1 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -105,6 +105,20 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
  
- 	struct dss_lcd_mgr_config mgr_config;
-+	struct omap_video_timings timings;
- };
+ 	sdi_config_lcd_manager(dssdev);
  
- struct dsi_packet_sent_handler_data {
-@@ -3607,9 +3608,10 @@ static void dsi_config_vp_num_line_buffers(struct omap_dss_device *dssdev)
- 	int num_line_buffers;
- 
- 	if (dssdev->panel.dsi_mode = OMAP_DSS_DSI_VIDEO_MODE) {
-+		struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 		int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
- 		unsigned line_buf_size = dsi_get_line_buf_size(dsidev);
--		struct omap_video_timings *timings = &dssdev->panel.timings;
-+		struct omap_video_timings *timings = &dsi->timings;
- 		/*
- 		 * Don't use line buffers if width is greater than the video
- 		 * port's line buffer size
-@@ -3738,7 +3740,7 @@ static void dsi_config_cmd_mode_interleaving(struct omap_dss_device *dssdev)
- 	int ddr_clk_pre, ddr_clk_post, enter_hs_mode_lat, exit_hs_mode_lat;
- 	int tclk_trail, ths_exit, exiths_clk;
- 	bool ddr_alwon;
--	struct omap_video_timings *timings = &dssdev->panel.timings;
-+	struct omap_video_timings *timings = &dsi->timings;
- 	int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
- 	int ndl = dsi->num_lanes_used - 1;
- 	const struct omapdss_clock_config *clks;
-@@ -3996,7 +3998,7 @@ static void dsi_proto_timings(struct omap_dss_device *dssdev)
- 		int vbp = dssdev->panel.dsi_vm_data.vbp;
- 		int window_sync = dssdev->panel.dsi_vm_data.window_sync;
- 		bool hsync_end = dssdev->panel.dsi_vm_data.vp_hsync_end;
--		struct omap_video_timings *timings = &dssdev->panel.timings;
-+		struct omap_video_timings *timings = &dsi->timings;
- 		int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
- 		int tl, t_he, width_bytes;
- 
-@@ -4105,6 +4107,7 @@ EXPORT_SYMBOL(omapdss_dsi_configure_pins);
- int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel)
- {
- 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
-+	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 	int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
- 	u8 data_type;
- 	u16 word_count;
-@@ -4135,7 +4138,7 @@ int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel)
- 		/* MODE, 1 = video mode */
- 		REG_FLD_MOD(dsidev, DSI_VC_CTRL(channel), 1, 4, 4);
- 
--		word_count = DIV_ROUND_UP(dssdev->panel.timings.x_res * bpp, 8);
-+		word_count = DIV_ROUND_UP(dsi->timings.x_res * bpp, 8);
- 
- 		dsi_vc_write_long_header(dsidev, channel, data_type,
- 				word_count, 0);
-@@ -4370,7 +4373,6 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
- {
- 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
--	struct omap_video_timings timings;
- 	const struct omapdss_clock_config *clks;
- 	int r, lcd_id;
- 	u32 irq = 0;
-@@ -4380,14 +4382,14 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
- 
- 		dssdev->driver->get_resolution(dssdev, &dw, &dh);
- 
--		timings.x_res = dw;
--		timings.y_res = dh;
--		timings.hsw = 1;
--		timings.hfp = 1;
--		timings.hbp = 1;
--		timings.vsw = 1;
--		timings.vfp = 0;
--		timings.vbp = 0;
-+		dsi->timings.x_res = dw;
-+		dsi->timings.y_res = dh;
-+		dsi->timings.hsw = 1;
-+		dsi->timings.hfp = 1;
-+		dsi->timings.hbp = 1;
-+		dsi->timings.vsw = 1;
-+		dsi->timings.vfp = 0;
-+		dsi->timings.vbp = 0;
- 
- 		irq = dispc_mgr_get_framedone_irq(dssdev->manager->id);
- 
-@@ -4401,8 +4403,6 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
- 		dsi->mgr_config.stallmode = true;
- 		dsi->mgr_config.fifohandcheck = true;
- 	} else {
--		timings = dssdev->panel.timings;
--
- 		dsi->mgr_config.stallmode = false;
- 		dsi->mgr_config.fifohandcheck = false;
- 	}
-@@ -4411,14 +4411,14 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
- 	 * override interlace, logic level and edge related parameters in
- 	 * omap_video_timings with default values
- 	 */
--	timings.interlace = false;
--	timings.hsync_level = OMAPDSS_SIG_ACTIVE_HIGH;
--	timings.vsync_level = OMAPDSS_SIG_ACTIVE_HIGH;
--	timings.data_pclk_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE;
--	timings.de_level = OMAPDSS_SIG_ACTIVE_HIGH;
--	timings.sync_pclk_edge = OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES;
-+	dsi->timings.interlace = false;
-+	dsi->timings.hsync_level = OMAPDSS_SIG_ACTIVE_HIGH;
-+	dsi->timings.vsync_level = OMAPDSS_SIG_ACTIVE_HIGH;
-+	dsi->timings.data_pclk_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE;
-+	dsi->timings.de_level = OMAPDSS_SIG_ACTIVE_HIGH;
-+	dsi->timings.sync_pclk_edge = OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES;
- 
--	dss_mgr_set_timings(dssdev->manager, &timings);
-+	dss_mgr_set_timings(dssdev->manager, &dsi->timings);
- 
- 	switch (dssdev->manager->id) {
- 	case OMAP_DSS_CHANNEL_LCD:
-@@ -4688,6 +4688,20 @@ int omapdss_dsi_enable_te(struct omap_dss_device *dssdev, bool enable)
- }
- EXPORT_SYMBOL(omapdss_dsi_enable_te);
- 
-+void omapdss_dsi_set_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings)
-+{
-+	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
-+	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
++	/*
++	 * LCLK and PCLK divisors are located in shadow registers, and we
++	 * normally write them to DISPC registers when enabling the output.
++	 * However, SDI uses pck-free as source clock for its PLL, and pck-free
++	 * is affected by the divisors. And as we need the PLL before enabling
++	 * the output, we need to write the divisors early.
++	 *
++	 * It seems just writing to the DISPC register is enough, and we don't
++	 * need to care about the shadow register mechanism for pck-free. The
++	 * exact reason for this is unknown.
++	 */
++	dispc_mgr_set_clock_div(dssdev->manager->id,
++			&sdi.mgr_config.clock_info);
 +
-+	mutex_lock(&dsi->lock);
-+
-+	dsi->timings = *timings;
-+
-+	mutex_unlock(&dsi->lock);
-+}
-+EXPORT_SYMBOL(omapdss_dsi_set_timings);
-+
- static int __init dsi_init_display(struct omap_dss_device *dssdev)
- {
- 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index ebf2ebd..a2cd133 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -736,6 +736,8 @@ int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
- void omapdss_dsi_vc_enable_hs(struct omap_dss_device *dssdev, int channel,
- 		bool enable);
- int omapdss_dsi_enable_te(struct omap_dss_device *dssdev, bool enable);
-+void omapdss_dsi_set_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings);
- 
- int omap_dsi_update(struct omap_dss_device *dssdev, int channel,
- 		void (*callback)(int, void *), void *data);
+ 	dss_sdi_init(dssdev->phy.sdi.datapairs);
+ 	r = dss_sdi_enable();
+ 	if (r)
 -- 
 1.7.9.5
 

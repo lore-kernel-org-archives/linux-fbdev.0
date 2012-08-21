@@ -1,139 +1,118 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Aug 2012 10:31:42 +0000
+From: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
+Date: Tue, 21 Aug 2012 11:32:04 +0000
 Subject: Re: [PATCH V5 1/6] OMAPDSS: DISPC: cleanup cpu_is_xxxx checks
-Message-Id: <1345545102.4085.44.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-1EKOmOgCFTNJsn0vIvFC"
+Message-Id: <CAF0AtAthngfxcpm=y61pHMVf00+M7DxekkFamT7=xpx-PNa=Xw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1343912532.git.cmahapatra@ti.com>
-	 <cover.1345468541.git.cmahapatra@ti.com>
-	 <978118e2c23e2da40ceb740665fd19f86810b58a.1345468541.git.cmahapatra@ti.com>
-In-Reply-To: <978118e2c23e2da40ceb740665fd19f86810b58a.1345468541.git.cmahapatra@ti.com>
-To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+	<cover.1345468541.git.cmahapatra@ti.com>
+	<978118e2c23e2da40ceb740665fd19f86810b58a.1345468541.git.cmahapatra@ti.com>
+	<1345545102.4085.44.camel@deskari>
+In-Reply-To: <1345545102.4085.44.camel@deskari>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
+On Tue, Aug 21, 2012 at 4:01 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+> On Mon, 2012-08-20 at 18:52 +0530, Chandrabhanu Mahapatra wrote:
+>> All the cpu_is checks have been moved to dispc_init_features function providing
+>> a much more generic and cleaner interface. The OMAP version and revision
+>> specific functions and data are initialized by dispc_features structure which is
+>> local to dispc.c.
+>>
+>> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+>> ---
+>>  drivers/video/omap2/dss/dispc.c |  433 +++++++++++++++++++++++++--------------
+>>  1 file changed, 278 insertions(+), 155 deletions(-)
+>>
+>> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+>> index ff52702..3fad33a 100644
+>> --- a/drivers/video/omap2/dss/dispc.c
+>> +++ b/drivers/video/omap2/dss/dispc.c
+>> @@ -81,6 +81,23 @@ struct dispc_irq_stats {
+>>       unsigned irqs[32];
+>>  };
+>>
+>> +struct dispc_features {
+>> +     int hp_max;
+>> +     int vp_max;
+>> +     int sw_max;
+>> +     int sw_start;
+>> +     int fp_start;
+>> +     int bp_start;
+>
+> Here you could use a bit smaller datatype. u16 should probably be more
+> than enough.
+>
 
---=-1EKOmOgCFTNJsn0vIvFC
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+After looking at the values that these variables take I think hp_max,
+vp_max and sw_max can be u16 and the rest three sw_start, fp_start and
+bp_start can be u8.
 
-On Mon, 2012-08-20 at 18:52 +0530, Chandrabhanu Mahapatra wrote:
-> All the cpu_is checks have been moved to dispc_init_features function pro=
-viding
-> a much more generic and cleaner interface. The OMAP version and revision
-> specific functions and data are initialized by dispc_features structure w=
-hich is
-> local to dispc.c.
->=20
-> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-> ---
->  drivers/video/omap2/dss/dispc.c |  433 +++++++++++++++++++++++++--------=
-------
->  1 file changed, 278 insertions(+), 155 deletions(-)
->=20
-> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/di=
-spc.c
-> index ff52702..3fad33a 100644
-> --- a/drivers/video/omap2/dss/dispc.c
-> +++ b/drivers/video/omap2/dss/dispc.c
-> @@ -81,6 +81,23 @@ struct dispc_irq_stats {
->  	unsigned irqs[32];
->  };
-> =20
-> +struct dispc_features {
-> +	int hp_max;
-> +	int vp_max;
-> +	int sw_max;
-> +	int sw_start;
-> +	int fp_start;
-> +	int bp_start;
+>> +static int __init dispc_init_features(struct device *dev)
+>> +{
+>> +     struct dispc_features *feat = devm_kzalloc(dev, sizeof(*feat),
+>> +                                                             GFP_KERNEL);
+>> +     if (!feat) {
+>> +             dev_err(dev, "Failed to allocate DISPC Features\n");
+>> +             return -ENOMEM;
+>> +     }
+>> +
+>> +     if (cpu_is_omap24xx()) {
+>> +             memcpy(feat, &omap24xx_dispc_feats, sizeof(*feat));
+>> +     } else if (cpu_is_omap34xx()) {
+>> +             if (omap_rev() < OMAP3430_REV_ES3_0)
+>> +                     memcpy(feat, &omap34xx_rev1_0_dispc_feats,
+>> +                                                     sizeof(*feat));
+>> +             else
+>> +                     memcpy(feat, &omap34xx_rev3_0_dispc_feats,
+>> +                                                     sizeof(*feat));
+>> +     } else if (cpu_is_omap44xx()) {
+>> +             memcpy(feat, &omap44xx_dispc_feats, sizeof(*feat));
+>> +     } else {
+>> +             return -ENODEV;
+>> +     }
+>> +
+>> +     dispc.feat = feat;
+>> +
+>> +     return 0;
+>> +}
+>
+> This becomes much cleaner with something like the following (same could
+> be used in dss.c also):
+>
+>         const struct dispc_features *src;
+>         struct dispc_features *dst;
+>
+>         dst = devm_kzalloc(dev, sizeof(*dst), GFP_KERNEL);
+>         if (!dsst) {
+>                 dev_err(dev, "Failed to allocate DISPC Features\n");
+>                 return -ENOMEM;
+>         }
+>
+>         if (cpu_is_omap24xx()) {
+>                 src = &omap24xx_dispc_feats;
+>         } else if (cpu_is_omap34xx()) {
+>                 if (omap_rev() < OMAP3430_REV_ES3_0)
+>                         src = &omap34xx_rev1_0_dispc_feats;
+>                 else
+>                         src = &omap34xx_rev3_0_dispc_feats;
+>         } else if (cpu_is_omap44xx()) {
+>                 src = &omap44xx_dispc_feats;
+>         } else {
+>                 return -ENODEV;
+>         }
+>
+>         memcpy(dst, src, sizeof(*dst));
+>
+>         dispc.feat = dst;
+>
+>  Tomi
+>
 
-Here you could use a bit smaller datatype. u16 should probably be more
-than enough.
+ok, looks cleaner.
 
-> +static int __init dispc_init_features(struct device *dev)
-> +{
-> +	struct dispc_features *feat =3D devm_kzalloc(dev, sizeof(*feat),
-> +								GFP_KERNEL);
-> +	if (!feat) {
-> +		dev_err(dev, "Failed to allocate DISPC Features\n");
-> +		return -ENOMEM;
-> +	}
-> +
-> +	if (cpu_is_omap24xx()) {
-> +		memcpy(feat, &omap24xx_dispc_feats, sizeof(*feat));
-> +	} else if (cpu_is_omap34xx()) {
-> +		if (omap_rev() < OMAP3430_REV_ES3_0)
-> +			memcpy(feat, &omap34xx_rev1_0_dispc_feats,
-> +							sizeof(*feat));
-> +		else
-> +			memcpy(feat, &omap34xx_rev3_0_dispc_feats,
-> +							sizeof(*feat));
-> +	} else if (cpu_is_omap44xx()) {
-> +		memcpy(feat, &omap44xx_dispc_feats, sizeof(*feat));
-> +	} else {
-> +		return -ENODEV;
-> +	}
-> +
-> +	dispc.feat =3D feat;
-> +
-> +	return 0;
-> +}
-
-This becomes much cleaner with something like the following (same could
-be used in dss.c also):
-
-	const struct dispc_features *src;
-	struct dispc_features *dst;
-
-	dst =3D devm_kzalloc(dev, sizeof(*dst), GFP_KERNEL);
-	if (!dsst) {
-		dev_err(dev, "Failed to allocate DISPC Features\n");
-		return -ENOMEM;
-	}
-
-	if (cpu_is_omap24xx()) {
-		src =3D &omap24xx_dispc_feats;
-	} else if (cpu_is_omap34xx()) {
-		if (omap_rev() < OMAP3430_REV_ES3_0)
-			src =3D &omap34xx_rev1_0_dispc_feats;
-		else
-			src =3D &omap34xx_rev3_0_dispc_feats;
-	} else if (cpu_is_omap44xx()) {
-		src =3D &omap44xx_dispc_feats;
-	} else {
-		return -ENODEV;
-	}
-
-	memcpy(dst, src, sizeof(*dst));
-
-	dispc.feat =3D dst;
-
- Tomi
-
-
---=-1EKOmOgCFTNJsn0vIvFC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJQM2OOAAoJEPo9qoy8lh71wQQP/R5Etq9s7LJ4a/7Tb7nM0Qfr
-Jp0R3mz7vh482nZuSxCIDW7MB0a+snXZCAlr9Bxyat0Lct3pwaJpXW5rE8BP0JDI
-6c/MQI8n3JaOGw1/x79iKrc+lzEsotEHjGecF/J2wHpi2ivHPMdSfOeWnLYf28GN
-w9dj/ud42pgwj0NQdWxT08QdHa/4vi++OCN28ufcyrM5hcpc2Yujpto1Q7wLs8MV
-23ptVODrXjRYFqjHIUCTZ42MdKW9gV1c2YtG7r9cMjeYgaEWAoMW8g94y3MibEPP
-Zwp6YqcEksVPXZJbG3D5+EgIgFUeISMRczyH8dLstRDbyIHVJkDwf7V47Ihlefqw
-XqKkdRbik3vpaY0PDWEpwBt3fS1yvueasqS2XMSCvBqecgFxrkYK1d8otaoba6Hi
-qkfH/qc2yQ23xYiFDJwceAOwPZOIb9tQBlDe5ODEhNF1vDVtWghYGs8rG9LMLaws
-PQ+OAoMkAx/O02F38tnkTfYaaTpUhy17XXjTjGtQnxh4d5eG2M0X7qC28prWDc5J
-TGYMOPD98//xfXvFW0qUI1ML0W0OaRnZ1yvynF0mkv3yMkYe7AQ8fDsPzOBjULnw
-sHYNRPFbK4w+1uF23IgdlZ01STU9iciWLxhvnsNynYxOAV/so04w9AufnZky5+5z
-kGHa3IOukVdjHyTttyFC
-=Baaa
------END PGP SIGNATURE-----
-
---=-1EKOmOgCFTNJsn0vIvFC--
-
+-- 
+Chandrabhanu Mahapatra
+Texas Instruments India Pvt. Ltd.

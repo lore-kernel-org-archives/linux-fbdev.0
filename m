@@ -1,492 +1,373 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Thu, 23 Aug 2012 08:42:28 +0000
-Subject: [PATCH 1/4] video: Add support for the Solomon SSD1307 OLED Controller
-Message-Id: <1345711351-16367-2-git-send-email-maxime.ripard@free-electrons.com>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Tue, 21 Aug 2012 20:47:37 +0000
+Subject: [PATCHv3 8/9] arm: vt8500: gpio: Devicetree support for arch-vt8500
+Message-Id: <1345582058-2291-9-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345711351-16367-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1345711351-16367-1-git-send-email-maxime.ripard@free-electrons.com>
+References: <1345582058-2291-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1345582058-2291-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-This patch adds support for the Solomon SSD1307 OLED
-controller found on the Crystalfontz CFA10036 board.
+Converted the existing arch-vt8500 gpio to a platform_device.
+Added support for WM8505 and WM8650 GPIO controllers.
 
-This controller can drive a display with a resolution up
-to 128x39 and can operate over I2C or SPI.
-
-The current driver has only been tested on the CFA-10036,
-that is using this controller over I2C to driver a 96x16
-OLED screen.
-
-Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: Brian Lilly <brian@crystalfontz.com>
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
 ---
- .../devicetree/bindings/video/ssd1307fb.txt        |   24 ++
- drivers/video/Kconfig                              |   13 +
- drivers/video/Makefile                             |    1 +
- drivers/video/ssd1307fb.c                          |  386 ++++++++++++++++++++
- 4 files changed, 424 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/ssd1307fb.txt
- create mode 100644 drivers/video/ssd1307fb.c
+ drivers/gpio/Kconfig       |    6 +
+ drivers/gpio/Makefile      |    1 +
+ drivers/gpio/gpio-vt8500.c |  313 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 320 insertions(+)
+ create mode 100644 drivers/gpio/gpio-vt8500.c
 
-diff --git a/Documentation/devicetree/bindings/video/ssd1307fb.txt b/Documentation/devicetree/bindings/video/ssd1307fb.txt
-new file mode 100644
-index 0000000..a709efa
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/ssd1307fb.txt
-@@ -0,0 +1,24 @@
-+* Solomon SSD1307 Framebuffer Driver
-+
-+Required properties:
-+  - compatible: Should be "solomon,ssd1307fb-<bus>". The only supported bus for
-+    now is i2c.
-+  - reg: Should contain address of the controller on the I2C bus. Most likely
-+         0x3c or 0x3d
-+  - pwm: Should contain the pwm to use according to the OF device tree PWM
-+         specification [0]
-+  - oled-reset-gpio: Should contain the GPIO used to reset the OLED display
-+
-+Optional properties:
-+  - oled-reset-active-low: Is the reset gpio is active on physical low?
-+
-+[0]: Documentation/devicetree/bindings/pwm/pwm.txt
-+
-+Examples:
-+ssd1307: oled@3c {
-+        compatible = "solomon,ssd1307fb-i2c";
-+        reg = <0x3c>;
-+        pwms = <&pwm 4 3000>;
-+        oled-reset-gpio = <&gpio2 7>;
-+        oled-reset-active-low;
-+};
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 0217f74..2776829 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2469,4 +2469,17 @@ config FB_SH_MOBILE_MERAM
- 	  Up to 4 memory channels can be configured, allowing 4 RGB or
- 	  2 YCbCr framebuffers to be configured.
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index 542f0c0..3c8897a 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -183,6 +183,12 @@ config GPIO_STA2X11
+ 	  Say yes here to support the STA2x11/ConneXt GPIO device.
+ 	  The GPIO module has 128 GPIO pins with alternate functions.
  
-+config FB_SSD1307
-+	tristate "Solomon SSD1307 framebuffer support"
-+	depends on FB && I2C
-+	select FB_SYS_FOPS
-+	select FB_SYS_FILLRECT
-+	select FB_SYS_COPYAREA
-+	select FB_SYS_IMAGEBLIT
-+	select FB_DEFERRED_IO
-+	select PWM
++config GPIO_VT8500
++	bool "VIA/Wondermedia SoC GPIO Support"
++	depends on ARCH_VT8500
 +	help
-+	  This driver implements support for the Solomon SSD1307
-+	  OLED controller over I2C.
++	  Say yes here to support the VT8500/WM8505/WM8650 GPIO controller.
 +
- endmenu
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index ee8dafb..6bbb72c 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -164,6 +164,7 @@ obj-$(CONFIG_FB_BFIN_7393)        += bfin_adv7393fb.o
- obj-$(CONFIG_FB_MX3)		  += mx3fb.o
- obj-$(CONFIG_FB_DA8XX)		  += da8xx-fb.o
- obj-$(CONFIG_FB_MXS)		  += mxsfb.o
-+obj-$(CONFIG_FB_SSD1307)	  += ssd1307fb.o
- 
- # the test framebuffer is last
- obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
-diff --git a/drivers/video/ssd1307fb.c b/drivers/video/ssd1307fb.c
+ config GPIO_XILINX
+ 	bool "Xilinx GPIO support"
+ 	depends on PPC_OF || MICROBLAZE
+diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+index 0f55662..2c014b9 100644
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -66,6 +66,7 @@ obj-$(CONFIG_GPIO_TPS65912)	+= gpio-tps65912.o
+ obj-$(CONFIG_GPIO_TWL4030)	+= gpio-twl4030.o
+ obj-$(CONFIG_GPIO_UCB1400)	+= gpio-ucb1400.o
+ obj-$(CONFIG_GPIO_VR41XX)	+= gpio-vr41xx.o
++obj-$(CONFIG_GPIO_VT8500)	+= gpio-vt8500.o
+ obj-$(CONFIG_GPIO_VX855)	+= gpio-vx855.o
+ obj-$(CONFIG_GPIO_WM831X)	+= gpio-wm831x.o
+ obj-$(CONFIG_GPIO_WM8350)	+= gpio-wm8350.o
+diff --git a/drivers/gpio/gpio-vt8500.c b/drivers/gpio/gpio-vt8500.c
 new file mode 100644
-index 0000000..544dca6
+index 0000000..19b12d9
 --- /dev/null
-+++ b/drivers/video/ssd1307fb.c
-@@ -0,0 +1,386 @@
-+/*
-+ * Driver for the Solomon SSD1307 OLED controler
++++ b/drivers/gpio/gpio-vt8500.c
+@@ -0,0 +1,313 @@
++/* linux/arch/arm/mach-vt8500/gpio.c
 + *
-+ * Copyright 2012 Free Electrons
++ * Copyright (C) 2012 Tony Prisk <linux@prisktech.co.nz>
++ * Based on gpio.c:
++ * - Copyright (C) 2010 Alexey Charkov <alchark@gmail.com>
 + *
-+ * Licensed under the GPLv2 or later.
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
 + */
 +
 +#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/i2c.h>
-+#include <linux/fb.h>
-+#include <linux/uaccess.h>
++#include <linux/err.h>
++#include <linux/io.h>
++#include <linux/gpio.h>
++#include <linux/platform_device.h>
++#include <linux/bitops.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++#include <linux/of_irq.h>
 +#include <linux/of_device.h>
-+#include <linux/of_gpio.h>
-+#include <linux/pwm.h>
-+#include <linux/delay.h>
 +
-+#define SSD1307FB_WIDTH			96
-+#define SSD1307FB_HEIGHT		16
++/*
++	We handle GPIOs by bank, each bank containing up to 32 GPIOs covered
++	by one set of registers (although not all may be valid).
 +
-+#define SSD1307FB_DATA			0x40
-+#define SSD1307FB_COMMAND		0x80
++	Because different SoC's have different register offsets, we pass the
++	register offsets as data in vt8500_gpio_dt_ids[].
 +
-+#define SSD1307FB_CONTRAST		0x81
-+#define SSD1307FB_SEG_REMAP_ON		0xa1
-+#define SSD1307FB_DISPLAY_OFF		0xae
-+#define SSD1307FB_DISPLAY_ON		0xaf
-+#define SSD1307FB_START_PAGE_ADDRESS	0xb0
++	A value of NO_REG is used to indicate that this register is not
++	supported. Only used for ->en at the moment.
++*/
 +
-+struct ssd1307fb_par {
-+	struct i2c_client *client;
-+	struct fb_info *info;
-+	struct pwm_device *pwm;
-+	u32 pwm_period;
-+	int reset;
++#define NO_REG	0xFFFF
++
++/*
++ * struct vt8500_gpio_bank_regoffsets
++ * @en: offset to enable register of the bank
++ * @dir: offset to direction register of the bank
++ * @data_out: offset to the data out register of the bank
++ * @data_in: offset to the data in register of the bank
++ * @ngpio: highest valid pin in this bank
++ */
++
++struct vt8500_gpio_bank_regoffsets {
++	unsigned int	en;
++	unsigned int	dir;
++	unsigned int	data_out;
++	unsigned int	data_in;
++	unsigned char	ngpio;
 +};
 +
-+static struct fb_fix_screeninfo ssd1307fb_fix __devinitdata = {
-+	.id		= "Solomon SSD1307",
-+	.type		= FB_TYPE_PACKED_PIXELS,
-+	.visual		= FB_VISUAL_MONO10,
-+	.xpanstep	= 0,
-+	.ypanstep	= 0,
-+	.ywrapstep	= 0,
-+	.line_length	= SSD1307FB_WIDTH / 8,
-+	.accel		= FB_ACCEL_NONE,
++struct vt8500_gpio_data {
++	unsigned int				num_banks;
++	struct vt8500_gpio_bank_regoffsets	banks[];
 +};
 +
-+static struct fb_var_screeninfo ssd1307fb_var __devinitdata = {
-+	.xres		= SSD1307FB_WIDTH,
-+	.yres		= SSD1307FB_HEIGHT,
-+	.xres_virtual	= SSD1307FB_WIDTH,
-+	.yres_virtual	= SSD1307FB_HEIGHT,
-+	.bits_per_pixel	= 1,
-+};
-+
-+static int ssd1307fb_write_array(struct i2c_client *client, u8 type, u8* cmd, u32 len)
-+{
-+	u8 *buf;
-+	int ret = 0;
-+
-+	buf = kzalloc(len + 1, GFP_KERNEL);
-+	if (!buf) {
-+		dev_err(&client->dev, "Couldn't allocate sending buffer.\n");
-+		return -ENOMEM;
-+	}
-+
-+	buf[0] = type;
-+	memcpy(buf + 1, cmd, len);
-+
-+	ret = i2c_master_send(client, buf, len + 1);
-+	if (ret != len + 1) {
-+		dev_err(&client->dev, "Couldn't send I2C command.\n");
-+		goto error;
-+	}
-+
-+error:
-+	kfree(buf);
-+	return ret;
++#define VT8500_BANK(__en, __dir, __out, __in, __ngpio)		\
++{								\
++	.en = __en,						\
++	.dir = __dir,						\
++	.data_out = __out,					\
++	.data_in = __in,					\
++	.ngpio = __ngpio,					\
 +}
 +
-+static inline int ssd1307fb_write_cmd_array(struct i2c_client *client, u8* cmd, u32 len)
-+{
-+	return ssd1307fb_write_array(client, SSD1307FB_COMMAND, cmd, len);
-+}
-+
-+static inline int ssd1307fb_write_cmd(struct i2c_client *client, u8 cmd)
-+{
-+	return ssd1307fb_write_cmd_array(client, &cmd, 1);
-+}
-+
-+static inline int ssd1307fb_write_data_array(struct i2c_client *client, u8* cmd, u32 len)
-+{
-+	return ssd1307fb_write_array(client, SSD1307FB_DATA, cmd, len);
-+}
-+
-+static inline int ssd1307fb_write_data(struct i2c_client *client, u8 data)
-+{
-+	return ssd1307fb_write_data_array(client, &data, 1);
-+}
-+
-+static void ssd1307fb_update_display(struct ssd1307fb_par *par)
-+{
-+	u8 *vmem = par->info->screen_base;
-+	int i, j, k;
-+
-+	/*
-+	 * The screen is divided in pages, each having a height of 8
-+	 * pixels, and the width of the screen. When sending a byte of
-+	 * data to the controller, it gives the 8 bits for the current
-+	 * column. I.e, the first byte are the 8 bits of the first
-+	 * column, then the 8 bits for the second column, etc.
-+	 *
-+	 *
-+	 * Representation of the screen, assuming it is 5 bits
-+	 * wide. Each letter-number combination is a bit that controls
-+	 * one pixel.
-+	 *
-+	 * A0 A1 A2 A3 A4
-+	 * B0 B1 B2 B3 B4
-+	 * C0 C1 C2 C3 C4
-+	 * D0 D1 D2 D3 D4
-+	 * E0 E1 E2 E3 E4
-+	 * F0 F1 F2 F3 F4
-+	 * G0 G1 G2 G3 G4
-+	 * H0 H1 H2 H3 H4
-+	 *
-+	 * If you want to update this screen, you need to send 5 bytes:
-+	 *  (1) A0 B0 C0 D0 E0 F0 G0 H0
-+	 *  (2) A1 B1 C1 D1 E1 F1 G1 H1
-+	 *  (3) A2 B2 C2 D2 E2 F2 G2 H2
-+	 *  (4) A3 B3 C3 D3 E3 F3 G3 H3
-+	 *  (5) A4 B4 C4 D4 E4 F4 G4 H4
-+	 */
-+
-+	for (i = 0; i < (SSD1307FB_HEIGHT / 8); i++) {
-+		ssd1307fb_write_cmd(par->client, SSD1307FB_START_PAGE_ADDRESS + (i + 1));
-+		ssd1307fb_write_cmd(par->client, 0x00);
-+		ssd1307fb_write_cmd(par->client, 0x10);
-+
-+		for (j = 0; j < SSD1307FB_WIDTH; j++) {
-+			u8 buf = 0;
-+			for (k = 0; k < 8; k++) {
-+				u32 page_length = SSD1307FB_WIDTH * i;
-+				u32 index = page_length + (SSD1307FB_WIDTH * k + j) / 8;
-+				u8 byte = *(vmem + index);
-+				u8 bit = byte & (1 << (7 - (j % 8)));
-+				bit = bit >> (7 - (j % 8));
-+				buf |= bit << k;
-+			}
-+			ssd1307fb_write_data(par->client, buf);
-+		}
-+	}
-+}
-+
-+
-+static ssize_t ssd1307fb_write(struct fb_info *info, const char __user *buf,
-+		size_t count, loff_t *ppos)
-+{
-+	struct ssd1307fb_par *par = info->par;
-+	unsigned long p = *ppos;
-+	void *dst;
-+	int err = 0;
-+
-+	dst = (void __force *) (info->screen_base + p);
-+
-+	if (copy_from_user(dst, buf, count))
-+		err = -EFAULT;
-+
-+	if  (!err)
-+		*ppos += count;
-+
-+	ssd1307fb_update_display(par);
-+
-+	return (err) ? err : count;
-+}
-+
-+static void ssd1307fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
-+{
-+	struct ssd1307fb_par *par = info->par;
-+	sys_fillrect(info, rect);
-+	ssd1307fb_update_display(par);
-+}
-+
-+static void ssd1307fb_copyarea(struct fb_info *info, const struct fb_copyarea *area) 
-+{
-+	struct ssd1307fb_par *par = info->par;
-+	sys_copyarea(info, area);
-+	ssd1307fb_update_display(par);
-+}
-+
-+static void ssd1307fb_imageblit(struct fb_info *info, const struct fb_image *image) 
-+{
-+	struct ssd1307fb_par *par = info->par;
-+	sys_imageblit(info, image);
-+	ssd1307fb_update_display(par);
-+}
-+
-+static struct fb_ops ssd1307fb_ops = {
-+	.owner		= THIS_MODULE,
-+	.fb_read	= fb_sys_read,
-+	.fb_write	= ssd1307fb_write,
-+	.fb_fillrect	= ssd1307fb_fillrect,
-+	.fb_copyarea	= ssd1307fb_copyarea,
-+	.fb_imageblit	= ssd1307fb_imageblit,
-+};
-+
-+static void ssd1307fb_deferred_io(struct fb_info *info,
-+				struct list_head *pagelist)
-+{
-+	ssd1307fb_update_display(info->par);
-+}
-+
-+static struct fb_deferred_io ssd1307fb_defio = {
-+	.delay		= HZ,
-+	.deferred_io	= ssd1307fb_deferred_io,
-+};
-+
-+static int __devinit ssd1307fb_probe(struct i2c_client *client, const struct i2c_device_id *id)
-+{
-+	struct fb_info *info;
-+	u32 vmem_size = SSD1307FB_WIDTH * SSD1307FB_HEIGHT / 8;
-+	struct ssd1307fb_par *par;
-+	u8 *vmem;
-+	int ret;
-+
-+	if (!client->dev.of_node) {
-+		dev_err(&client->dev, "No device tree data found!\n");
-+		return -EINVAL;
-+	}
-+
-+	info = framebuffer_alloc(sizeof(struct ssd1307fb_par), &client->dev);
-+	if (!info) {
-+		dev_err(&client->dev, "Couldn't allocate framebuffer.\n");
-+		return -ENOMEM;
-+	}
-+
-+	vmem = devm_kzalloc(&client->dev, vmem_size, GFP_KERNEL);
-+	if (!vmem) {
-+		dev_err(&client->dev, "Couldn't allocate graphical memory.\n");
-+		ret = -ENOMEM;
-+		goto fb_alloc_error;
-+	}
-+
-+	info->fbops = &ssd1307fb_ops;
-+	info->fix = ssd1307fb_fix;
-+	info->fbdefio = &ssd1307fb_defio;
-+
-+	info->var = ssd1307fb_var;
-+	info->var.red.length = 1;
-+	info->var.red.offset = 0;
-+	info->var.green.length = 1;
-+	info->var.green.offset = 0;
-+	info->var.blue.length = 1;
-+	info->var.blue.offset = 0;
-+
-+	info->screen_base = (u8 __force __iomem *)vmem;
-+	info->fix.smem_start = (unsigned long)vmem;
-+	info->fix.smem_len = vmem_size;
-+
-+	fb_deferred_io_init(info);
-+
-+	par = info->par;
-+	par->info = info;
-+	par->client = client;
-+
-+	par->reset = of_get_named_gpio(client->dev.of_node,
-+					 "oled-reset-gpio", 0);
-+	if (gpio_is_valid(par->reset)) {
-+		int flags = GPIOF_OUT_INIT_HIGH;
-+		if (of_get_property(client->dev.of_node,
-+				    "oled-reset-active-low", NULL))
-+			flags = GPIOF_OUT_INIT_LOW;
-+		ret = devm_gpio_request_one(&client->dev, par->reset,
-+					    flags, "oled-reset");
-+		if (ret) {
-+			dev_err(&client->dev,
-+				"failed to request gpio %d: %d\n",
-+				par->reset, ret);
-+			goto reset_oled_error;
-+		}
-+	}
-+
-+	par->pwm = pwm_get(&client->dev, NULL);
-+	if (IS_ERR(par->pwm)) {
-+		dev_err(&client->dev, "Could not get PWM from device tree!\n");
-+		ret = PTR_ERR(par->pwm);
-+		goto pwm_error;
-+	}
-+
-+	par->pwm_period = pwm_get_period(par->pwm);
-+
-+	dev_dbg(&client->dev, "Using PWM%d with a %dns period.\n", par->pwm->pwm, par->pwm_period);
-+
-+	ret = register_framebuffer(info);
-+	if (ret) {
-+		dev_err(&client->dev, "Couldn't register the framebuffer\n");
-+		goto fbreg_error;
-+	}
-+
-+	i2c_set_clientdata(client, info);
-+
-+	/* Reset the screen */
-+	gpio_set_value(par->reset, 1);
-+	udelay(4);
-+	gpio_set_value(par->reset, 0);
-+	udelay(4);
-+
-+	/* Enable the PWM */
-+	pwm_config(par->pwm, par->pwm_period / 2, par->pwm_period);
-+	pwm_enable(par->pwm);
-+
-+	/* Map column 127 of the OLED to segment 0 */
-+	ret = ssd1307fb_write_cmd(client, SSD1307FB_SEG_REMAP_ON);
-+	if (ret < 0) {
-+		dev_err(&client->dev, "Couldn't remap the screen.\n");
-+		goto remap_error;
-+	}
-+
-+	/* Turn on the display */
-+	ret = ssd1307fb_write_cmd(client, SSD1307FB_DISPLAY_ON);
-+	if (ret < 0) {
-+		dev_err(&client->dev, "Couldn't turn the display on.\n");
-+		goto remap_error;
-+	}
-+
-+	dev_info(&client->dev, "fb%d: %s framebuffer device registered, using %d bytes of video memory\n", info->node, info->fix.id, vmem_size);
-+
-+	return 0;
-+
-+remap_error:
-+	unregister_framebuffer(info);
-+	pwm_disable(par->pwm);
-+fbreg_error:
-+	pwm_put(par->pwm);
-+pwm_error:
-+reset_oled_error:
-+	fb_deferred_io_cleanup(info);
-+fb_alloc_error:
-+	framebuffer_release(info);
-+	return ret;
-+}
-+
-+static int __devexit ssd1307fb_remove(struct i2c_client *client)
-+{
-+	struct fb_info *info = i2c_get_clientdata(client);
-+	struct ssd1307fb_par *par = info->par;
-+
-+	unregister_framebuffer(info);
-+	pwm_disable(par->pwm);
-+	pwm_put(par->pwm);
-+	fb_deferred_io_cleanup(info);
-+	framebuffer_release(info);
-+
-+	return 0;
-+}
-+
-+static const struct i2c_device_id ssd1307fb_i2c_id[] = {
-+	{ "ssd1307fb", 0 },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(i2c, ssd1307fb_i2c_id);
-+
-+static const struct of_device_id ssd1307fb_of_match[] = {
-+	{ .compatible = "solomon,ssd1307fb-i2c" },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, ssd1307fb_of_match);
-+
-+static struct i2c_driver ssd1307fb_driver = {
-+	.probe = ssd1307fb_probe,
-+	.remove = __devexit_p(ssd1307fb_remove),
-+	.id_table = ssd1307fb_i2c_id,
-+	.driver = {
-+		.name = "ssd1307fb",
-+		.of_match_table = of_match_ptr(ssd1307fb_of_match),
-+		.owner = THIS_MODULE,
++static struct vt8500_gpio_data vt8500_data = {
++	.num_banks	= 7,
++	.banks	= {
++		VT8500_BANK(0x00, 0x20, 0x40, 0x60, 26),
++		VT8500_BANK(0x04, 0x24, 0x44, 0x64, 28),
++		VT8500_BANK(0x08, 0x28, 0x48, 0x68, 31),
++		VT8500_BANK(0x0C, 0x2C, 0x4C, 0x6C, 19),
++		VT8500_BANK(0x10, 0x30, 0x50, 0x70, 19),
++		VT8500_BANK(0x14, 0x34, 0x54, 0x74, 23),
++		VT8500_BANK(NO_REG, 0x3C, 0x5C, 0x7C, 9),
 +	},
 +};
 +
-+module_i2c_driver(ssd1307fb_driver);
++static struct vt8500_gpio_data wm8505_data = {
++	.num_banks	= 10,
++	.banks	= {
++		VT8500_BANK(0x40, 0x68, 0x90, 0xB8, 8),
++		VT8500_BANK(0x44, 0x6C, 0x94, 0xBC, 32),
++		VT8500_BANK(0x48, 0x70, 0x98, 0xC0, 6),
++		VT8500_BANK(0x4C, 0x74, 0x9C, 0xC4, 16),
++		VT8500_BANK(0x50, 0x78, 0xA0, 0xC8, 25),
++		VT8500_BANK(0x54, 0x7C, 0xA4, 0xCC, 5),
++		VT8500_BANK(0x58, 0x80, 0xA8, 0xD0, 5),
++		VT8500_BANK(0x5C, 0x84, 0xAC, 0xD4, 12),
++		VT8500_BANK(0x60, 0x88, 0xB0, 0xD8, 16),
++		VT8500_BANK(0x64, 0x8C, 0xB4, 0xDC, 22),
++	},
++};
 +
-+MODULE_DESCRIPTION("FB driver for the Solomon SSD1307 OLED controler");
-+MODULE_AUTHOR("Maxime Ripard <maxime.ripard@free-electrons.com>");
-+MODULE_LICENSE("GPL");
++/*
++ * No information about which bits are valid so we just make
++ * them all available until its figured out.
++ */
++static struct vt8500_gpio_data wm8650_data = {
++	.num_banks	= 9,
++	.banks	= {
++		VT8500_BANK(0x40, 0x80, 0xC0, 0x00, 32),
++		VT8500_BANK(0x44, 0x84, 0xC4, 0x04, 32),
++		VT8500_BANK(0x48, 0x88, 0xC8, 0x08, 32),
++		VT8500_BANK(0x4C, 0x8C, 0xCC, 0x0C, 32),
++		VT8500_BANK(0x50, 0x90, 0xD0, 0x10, 32),
++		VT8500_BANK(0x54, 0x94, 0xD4, 0x14, 32),
++		VT8500_BANK(0x58, 0x98, 0xD8, 0x18, 32),
++		VT8500_BANK(0x5C, 0x9C, 0xDC, 0x1C, 32),
++		VT8500_BANK(0x7C, 0xBC, 0xFC, 0x3C, 32),
++	},
++};
++
++struct vt8500_gpio_chip {
++	struct gpio_chip		chip;
++
++	const struct vt8500_gpio_bank_regoffsets *regs;
++	void __iomem	*base;
++};
++
++
++#define to_vt8500(__chip) container_of(__chip, struct vt8500_gpio_chip, chip)
++
++static int vt8500_gpio_request(struct gpio_chip *chip, unsigned offset)
++{
++	unsigned val;
++	struct vt8500_gpio_chip *vt8500_chip = to_vt8500(chip);
++
++	if (vt8500_chip->regs->en = NO_REG)
++		return 0;
++
++	val = readl(vt8500_chip->base + vt8500_chip->regs->en);
++	val |= BIT(offset);
++	writel(val, vt8500_chip->base + vt8500_chip->regs->en);
++
++	return 0;
++}
++
++static void vt8500_gpio_free(struct gpio_chip *chip, unsigned offset)
++{
++	struct vt8500_gpio_chip *vt8500_chip = to_vt8500(chip);
++	unsigned val;
++
++	if (vt8500_chip->regs->en = NO_REG)
++		return;
++
++	val = readl(vt8500_chip->base + vt8500_chip->regs->en);
++	val &= ~BIT(offset);
++	writel(val, vt8500_chip->base + vt8500_chip->regs->en);
++}
++
++static int vt8500_gpio_direction_input(struct gpio_chip *chip, unsigned offset)
++{
++	struct vt8500_gpio_chip *vt8500_chip = to_vt8500(chip);
++
++	unsigned val = readl(vt8500_chip->base + vt8500_chip->regs->dir);
++	val &= ~BIT(offset);
++	writel(val, vt8500_chip->base + vt8500_chip->regs->dir);
++
++	return 0;
++}
++
++static int vt8500_gpio_direction_output(struct gpio_chip *chip, unsigned offset,
++								int value)
++{
++	struct vt8500_gpio_chip *vt8500_chip = to_vt8500(chip);
++
++	unsigned val = readl(vt8500_chip->base + vt8500_chip->regs->dir);
++	val |= BIT(offset);
++	writel(val, vt8500_chip->base + vt8500_chip->regs->dir);
++
++	if (value) {
++		val = readl(vt8500_chip->base + vt8500_chip->regs->data_out);
++		val |= BIT(offset);
++		writel(val, vt8500_chip->base + vt8500_chip->regs->data_out);
++	}
++	return 0;
++}
++
++static int vt8500_gpio_get_value(struct gpio_chip *chip, unsigned offset)
++{
++	struct vt8500_gpio_chip *vt8500_chip = to_vt8500(chip);
++
++	return (readl(vt8500_chip->base + vt8500_chip->regs->data_in) >>
++								offset) & 1;
++}
++
++static void vt8500_gpio_set_value(struct gpio_chip *chip, unsigned offset,
++								int value)
++{
++	struct vt8500_gpio_chip *vt8500_chip = to_vt8500(chip);
++
++	unsigned val = readl(vt8500_chip->base + vt8500_chip->regs->data_out);
++	if (value)
++		val |= BIT(offset);
++	else
++		val &= ~BIT(offset);
++
++	writel(val, vt8500_chip->base + vt8500_chip->regs->data_out);
++}
++
++static int vt8500_of_xlate(struct gpio_chip *gc,
++			    const struct of_phandle_args *gpiospec, u32 *flags)
++{
++	/* bank if specificed in gpiospec->args[0] */
++	if (flags)
++		*flags = gpiospec->args[2];
++
++	return gpiospec->args[1];
++}
++
++static int vt8500_add_chips(struct platform_device *pdev, void __iomem *base,
++				const struct vt8500_gpio_data *data)
++{
++	struct vt8500_gpio_chip *vtchip;
++	struct gpio_chip *chip;
++	int i;
++	int pin_cnt = 0;
++
++	vtchip = devm_kzalloc(&pdev->dev,
++			sizeof(struct vt8500_gpio_chip) * data->num_banks,
++			GFP_KERNEL);
++	if (!vtchip) {
++		pr_err("%s: failed to allocate chip memory\n", __func__);
++		return -ENOMEM;
++	}
++
++	for (i = 0; i < data->num_banks; i++) {
++		vtchip[i].base = base;
++		vtchip[i].regs = &data->banks[i];
++
++		chip = &vtchip[i].chip;
++
++		chip->of_xlate = vt8500_of_xlate;
++		chip->of_gpio_n_cells = 3;
++		chip->of_node = pdev->dev.of_node;
++
++		chip->request = vt8500_gpio_request;
++		chip->free = vt8500_gpio_free;
++		chip->direction_input = vt8500_gpio_direction_input;
++		chip->direction_output = vt8500_gpio_direction_output;
++		chip->get = vt8500_gpio_get_value;
++		chip->set = vt8500_gpio_set_value;
++		chip->can_sleep = 0;
++		chip->base = pin_cnt;
++		chip->ngpio = data->banks[i].ngpio;
++
++		pin_cnt += data->banks[i].ngpio;
++
++		gpiochip_add(chip);
++	}
++	return 0;
++}
++
++static struct of_device_id vt8500_gpio_dt_ids[] = {
++	{ .compatible = "via,vt8500-gpio", .data = &vt8500_data, },
++	{ .compatible = "wm,wm8505-gpio", .data = &wm8505_data, },
++	{ .compatible = "wm,wm8650-gpio", .data = &wm8650_data, },
++	{ /* Sentinel */ },
++};
++
++static int __devinit vt8500_gpio_probe(struct platform_device *pdev)
++{
++	void __iomem *gpio_base;
++	struct device_node *np;
++	const struct of_device_id *of_id +				of_match_device(vt8500_gpio_dt_ids, &pdev->dev);
++
++	if (!of_id) {
++		dev_err(&pdev->dev, "Failed to find gpio controller\n");
++		return -ENODEV;
++	}
++
++	np = pdev->dev.of_node;
++	if (!np) {
++		dev_err(&pdev->dev, "Missing GPIO description in devicetree\n");
++		return -EFAULT;
++	}
++
++	gpio_base = of_iomap(np, 0);
++	if (!gpio_base) {
++		dev_err(&pdev->dev, "Unable to map GPIO registers\n");
++		of_node_put(np);
++		return -ENOMEM;
++	}
++
++	vt8500_add_chips(pdev, gpio_base, of_id->data);
++
++	return 0;
++}
++
++static struct platform_driver vt8500_gpio_driver = {
++	.probe		= vt8500_gpio_probe,
++	.driver		= {
++		.name	= "vt8500-gpio",
++		.owner	= THIS_MODULE,
++		.of_match_table = vt8500_gpio_dt_ids,
++	},
++};
++
++module_platform_driver(vt8500_gpio_driver);
++
++MODULE_DESCRIPTION("VT8500 GPIO Driver");
++MODULE_AUTHOR("Tony Prisk <linux@prisktech.co.nz>");
++MODULE_LICENSE("GPL v2");
++MODULE_DEVICE_TABLE(of, vt8500_gpio_dt_ids);
 -- 
 1.7.9.5
 

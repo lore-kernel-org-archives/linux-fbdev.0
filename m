@@ -1,130 +1,81 @@
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Date: Mon, 20 Aug 2012 18:09:33 +0000
-Subject: [PATCH 5/7] tgafb: fix mode setting with fbset
-Message-Id: <alpine.DEB.2.00.1208202008131.4009@artax.karlin.mff.cuni.cz>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 21 Aug 2012 06:10:27 +0000
+Subject: [PATCH 20/23] OMAPDSS: MANAGER: Update display sysfs store
+Message-Id: <1345528711-27801-21-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com, Archit Taneja <archit@ti.com>
 
-tgafb: fix mode setting with fbset
+The display sysfs attribute's store function needs to be changed with the
+introduction of outputs.
 
-Mode setting in the TGA driver is broken for these reasons:
+Providing a manager to the display isn't enough to create a link now, the
+manager needs and output to connect to. A manager's display store file only
+has the information of the manager and the desired display, it is not aware
+of which output should the manager connect to.
 
-- info->fix.line_length is set just once in tgafb_init_fix function. If
-  we change videomode, info->fix.line_length is not recalculated - so
-  the video mode is changed but screen is corrupted because of wrong
-  info->fix.line_length
+Because of this, a new constraint needs to be set up when setting a display via
+this sysfs file. The constraint is that the desired display should already be
+connected to an output before calling this sysfs function.
 
-- info->fix.smem_len is set in tgafb_init_fix to the size of the default
-  video mode (640x480). If we set a higher resolution,
-  info->fix.smem_len is smaller than the current screen size, preventing
-  the userspace program from mapping the framebuffer.
+This might break some existing user space stuff which uses sysfs directly. But
+in most cases dss_recheck_connections will connect displays to floating outputs.
+DSS sysfs files are being planned to be remove anyway, so it's not much of a
+harm.
 
-This patch fixes it:
-
-- info->fix.line_length initialization is moved to tgafb_set_par so that
-  it is recalculated with each mode change.
-
-- info->fix.smem_len is set to a fixed value representing the real
-  amount of video ram (the values are taken from xfree86 driver).
-
-- add a check to tgafb_check_var to prevent us from setting a videomode
-  that doesn't fit into videoram.
-
-- in tgafb_register, tgafb_init_fix is moved upwards, to be called
-  before fb_find_mode (because fb_find_mode already needs the videoram
-  size set in tgafb_init_fix).
-
-Signed-off-by: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Cc: stable@kernel.org
-
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/tgafb.c |   15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+ drivers/video/omap2/dss/manager.c |   25 ++++++++++++++++++++-----
+ 1 file changed, 20 insertions(+), 5 deletions(-)
 
-Index: linux-3.4.4-fast/drivers/video/tgafb.c
-=================================--- linux-3.4.4-fast.orig/drivers/video/tgafb.c	2012-07-02 02:15:43.000000000 +0200
-+++ linux-3.4.4-fast/drivers/video/tgafb.c	2012-07-02 02:16:48.000000000 +0200
-@@ -192,6 +192,8 @@ tgafb_check_var(struct fb_var_screeninfo
+diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+index fd39f66..d808ce2 100644
+--- a/drivers/video/omap2/dss/manager.c
++++ b/drivers/video/omap2/dss/manager.c
+@@ -74,18 +74,33 @@ static ssize_t manager_display_store(struct omap_overlay_manager *mgr,
+ 	if (dssdev)
+ 		DSSDBG("display %s found\n", dssdev->name);
  
- 	if (var->xres_virtual != var->xres || var->yres_virtual != var->yres)
- 		return -EINVAL;
-+	if (var->xres * var->yres * (var->bits_per_pixel >> 3) > info->fix.smem_len)
-+		return -EINVAL;
- 	if (var->nonstd)
- 		return -EINVAL;
- 	if (1000000000 / var->pixclock > TGA_PLL_MAX_FREQ)
-@@ -272,6 +274,7 @@ tgafb_set_par(struct fb_info *info)
- 	par->yres = info->var.yres;
- 	par->pll_freq = pll_freq = 1000000000 / info->var.pixclock;
- 	par->bits_per_pixel = info->var.bits_per_pixel;
-+	info->fix.line_length = par->xres * (par->bits_per_pixel >> 3);
- 
- 	tga_type = par->tga_type;
- 
-@@ -1480,6 +1483,7 @@ tgafb_init_fix(struct fb_info *info)
- 	int tga_bus_tc = TGA_BUS_TC(par->dev);
- 	u8 tga_type = par->tga_type;
- 	const char *tga_type_name = NULL;
-+	unsigned memory_size;
- 
- 	switch (tga_type) {
- 	case TGA_TYPE_8PLANE:
-@@ -1487,21 +1491,25 @@ tgafb_init_fix(struct fb_info *info)
- 			tga_type_name = "Digital ZLXp-E1";
- 		if (tga_bus_tc)
- 			tga_type_name = "Digital ZLX-E1";
-+		memory_size = 2097152;
- 		break;
- 	case TGA_TYPE_24PLANE:
- 		if (tga_bus_pci)
- 			tga_type_name = "Digital ZLXp-E2";
- 		if (tga_bus_tc)
- 			tga_type_name = "Digital ZLX-E2";
-+		memory_size = 8388608;
- 		break;
- 	case TGA_TYPE_24PLUSZ:
- 		if (tga_bus_pci)
- 			tga_type_name = "Digital ZLXp-E3";
- 		if (tga_bus_tc)
- 			tga_type_name = "Digital ZLX-E3";
-+		memory_size = 16777216;
- 		break;
- 	default:
- 		tga_type_name = "Unknown";
-+		memory_size = 16777216;
- 		break;
- 	}
- 
-@@ -1513,9 +1521,8 @@ tgafb_init_fix(struct fb_info *info)
- 			    ? FB_VISUAL_PSEUDOCOLOR
- 			    : FB_VISUAL_DIRECTCOLOR);
- 
--	info->fix.line_length = par->xres * (par->bits_per_pixel >> 3);
- 	info->fix.smem_start = (size_t) par->tga_fb_base;
--	info->fix.smem_len = info->fix.line_length * par->yres;
-+	info->fix.smem_len = memory_size;
- 	info->fix.mmio_start = (size_t) par->tga_regs_base;
- 	info->fix.mmio_len = 512;
- 
-@@ -1640,6 +1647,9 @@ tgafb_register(struct device *dev)
- 		modedb_tga = &modedb_tc;
- 		modedbsize_tga = 1;
- 	}
+-	if (mgr->get_device(mgr)) {
+-		r = mgr->unset_device(mgr);
++	if (mgr->output) {
++		if (mgr->output->device) {
++			r = mgr->output->unset_device(mgr->output);
++			if (r) {
++				goto put_device;
++				DSSERR("failed to unset device from output\n");
++			}
++		}
 +
-+	tgafb_init_fix(info);
-+
- 	ret = fb_find_mode(&info->var, info,
- 			   mode_option ? mode_option : mode_option_tga,
- 			   modedb_tga, modedbsize_tga, NULL,
-@@ -1657,7 +1667,6 @@ tgafb_register(struct device *dev)
++		r = mgr->unset_output(mgr);
+ 		if (r) {
+-			DSSERR("failed to unset display\n");
++			DSSERR("failed to unset current output\n");
+ 			goto put_device;
+ 		}
  	}
  
- 	tgafb_set_par(info);
--	tgafb_init_fix(info);
+ 	if (dssdev) {
+-		r = mgr->set_device(mgr, dssdev);
++		struct omap_dss_output *out = dssdev->output;
++
++		if (!out) {
++			DSSERR("no output connected to device\n");
++			goto put_device;
++		}
++
++		r = mgr->set_output(mgr, out);
+ 		if (r) {
+-			DSSERR("failed to set manager\n");
++			DSSERR("failed to set manager output\n");
+ 			goto put_device;
+ 		}
  
- 	if (register_framebuffer(info) < 0) {
- 		printk(KERN_ERR "tgafb: Could not register framebuffer\n");
+-- 
+1.7.9.5
 

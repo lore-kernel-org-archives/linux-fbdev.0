@@ -1,81 +1,39 @@
-From: Josh Boyer <jwboyer@gmail.com>
-Date: Tue, 21 Aug 2012 13:19:04 +0000
+From: Dave Airlie <airlied@gmail.com>
+Date: Wed, 22 Aug 2012 04:00:05 +0000
 Subject: Re: [PATCH] fbcon: fix race condition between console lock and cursor timer
-Message-Id: <CA+5PVA5sbks_5_G_nWmfjV0Xns93sSr8R+p1jLpQJ8ZBCvOcyA@mail.gmail.com>
+Message-Id: <CAPM=9tzv=YKEfvmN+18huXGd7ZO-AGvcAsrD8m7NQh5twEfbhw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1345531207-24926-1-git-send-email-airlied@redhat.com>
-In-Reply-To: <1345531207-24926-1-git-send-email-airlied@redhat.com>
+	<20120821101505.61c0221a@pyramind.ukuu.org.uk>
+In-Reply-To: <20120821101505.61c0221a@pyramind.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Airlie <airlied@redhat.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.sf.net, linux-kernel@vger.kernel.org, Linus <torvalds@linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Randy Dunlap <rdunlap@xenotime.net>, kernel-team@fedoraproject.org
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>, dri-devel@lists.sf.net, Dave Airlie <airlied@redhat.com>, Josh Boyer <jwboyer@gmail.com>, Linus <torvalds@linux-foundation.org>
 
-On Tue, Aug 21, 2012 at 2:40 AM, Dave Airlie <airlied@redhat.com> wrote:
-> So we've had a fair few reports of fbcon handover breakage between
-> efi/vesafb and i915 surface recently, so I dedicated a couple of
-> days to finding the problem.
+On Tue, Aug 21, 2012 at 7:15 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> So after much tracing with direct netconsole writes (printks
+>> under console_lock not so useful), I think I found the race.
 >
-> Essentially the last thing we saw was the conflicting framebuffer
-> message and that was all.
->
-> So after much tracing with direct netconsole writes (printks
-> under console_lock not so useful), I think I found the race.
->
-> Thread A (driver load)    Thread B (timer thread)
->   unbind_con_driver ->              |
->   bind_con_driver ->                |
->   vc->vc_sw->con_deinit ->          |
->   fbcon_deinit ->                   |
->   console_lock()                    |
->       |                             |
->       |                       fbcon_flashcursor timer fires
->       |                       console_lock() <- blocked for A
->       |
->       |
-> fbcon_del_cursor_timer ->
->   del_timer_sync
->   (BOOM)
->
-> Of course because all of this is under the console lock,
-> we never see anything, also since we also just unbound the active
-> console guess what we never see anything.
->
-> Hopefully this fixes the problem for anyone seeing vesafb->kms
-> driver handoff.
->
-> Signed-off-by: David Airlie <airlied@redhat.com>
-> ---
->  drivers/video/console/fbcon.c |    6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-> index 2e471c2..f8a79fc 100644
-> --- a/drivers/video/console/fbcon.c
-> +++ b/drivers/video/console/fbcon.c
-> @@ -372,8 +372,12 @@ static void fb_flashcursor(struct work_struct *work)
->         struct vc_data *vc = NULL;
->         int c;
->         int mode;
-> +       int ret;
-> +
-> +       ret = console_trylock();
-> +       if (ret = 0)
-> +               return;
->
-> -       console_lock();
->         if (ops && ops->currcon != -1)
->                 vc = vc_cons[ops->currcon].d;
->
+> Direct netconsole write would be a useful patch to have mainline I think
+> 8)
 
-I have a Dell XPS 8300 machine with a Radeon card in it that started
-showing this problem yesterday with 3.6-rc2 kernels.  I tested this
-patch on top of v3.6-rc2-206-g10c63c9 this morning and the problem
-seems to have been cleared up for me.  That includes making sure the
-grub2 file has the gfxterm set, etc.
+Well I used a one line wrapper around the netconsole write_msg, which
+just passed
+NULL as the first arg, then sprinkled netconsole_write_msg around the
+place, not having
+printf stuff could be an annoyance for some people, for this it didn't matter.
 
-I know we've been seeing this quite a bit more on Fedora 17, so we'll
-want to have some people test a 3.5 build with it but things are
-looking better.
+Peter I wish I had a serial port to work with :-)
 
-josh
+>
+> Not really the proper fix but its clear and is probably the best thing to
+> go in initially with a cc: stable. Can you at least stick a large
+>
+> + /* FIXME: we should sort out the unbind locking instead */
+
+Done, and cc stable, I'll send this to Linus via my tree as its fairly
+urgent from my pov.
+
+Dave.

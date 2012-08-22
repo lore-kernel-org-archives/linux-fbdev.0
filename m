@@ -1,88 +1,61 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Wed, 22 Aug 2012 06:48:53 +0000
-Subject: [PATCH V6 0/6] OMAPDSS: Cleanup cpu_is checks
-Message-Id: <cover.1345616887.git.cmahapatra@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 22 Aug 2012 08:44:27 +0000
+Subject: Re: [PATCH V6 0/6] OMAPDSS: Cleanup cpu_is checks
+Message-Id: <1345625067.3036.19.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-h6XDmBDIkbvuq3g8drL9"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1345468541.git.cmahapatra@ti.com>
-In-Reply-To: <cover.1345468541.git.cmahapatra@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <cover.1345616887.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1345616887.git.cmahapatra@ti.com>
 To: linux-arm-kernel@lists.infradead.org
 
-Hi everyone,
-this patch series aims at cleaning up of DSS of cpu_is checks thereby making it
-more generic.
 
-The 1st patch cleans up cpu_is checks from DISPC code.
-The 2nd patch removes unused functions from DSS code.
-The 3rd patch cleans up cpu_is checks from DSS code.
-The 4th patch disables VENC support on OMAP4.
-The 5th patch removes cpu_is checks from VENC code.
-The 6th patch removes cpu_is checks from DPI code and replaces it with a
-dss feature.
+--=-h6XDmBDIkbvuq3g8drL9
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Changes from V1 to V5 series:
- 1st patch :
-	* moved dispc_ops structure definitions from dss_features.c to dispc.c
-	  and renamed it to dispc_features
-	* moved dispc_features definitions close to dispc_init_features() thereby
-	  eliminating various functions declarations from top of dispc.c
-	* used __initconst before dispc_features definitions and __init before
-	  dispc_init_features()
-	* removed definitions of _dispc_lcd_timings_ok_24xx,
-	  _dispc_lcd_timings_ok_44xx, _dispc_mgr_set_lcd_timings_hv_24xx and
-	  _dispc_mgr_set_lcd_timings_hv_44xx replacing them with appropiate variables
-	* renamed various dispc_features structures to give consistent naming
+On Wed, 2012-08-22 at 12:06 +0530, Chandrabhanu Mahapatra wrote:
+> Hi everyone,
+> this patch series aims at cleaning up of DSS of cpu_is checks thereby mak=
+ing it
+> more generic.
+>=20
+> The 1st patch cleans up cpu_is checks from DISPC code.
+> The 2nd patch removes unused functions from DSS code.
+> The 3rd patch cleans up cpu_is checks from DSS code.
+> The 4th patch disables VENC support on OMAP4.
+> The 5th patch removes cpu_is checks from VENC code.
+> The 6th patch removes cpu_is checks from DPI code and replaces it with a
+> dss feature.
 
- 3rd patch :
-	* moved dss_ops structure definitions from dss_features.c to dss.c and
-	  renamed it to dss_features
-	* removed all functions from dss_features structure and replaced them with
-	  appropiate variables
-	* used __initconst before dss_features definitions and __init before 
-	  dss_init_features()
-	* renamed various dss_features structures to give consistent naming
-	* renamed factor variable of dss_features structure to dss_fck_multiplier
+Thanks, looks good. I'll apply this to omapdss tree.
 
-Changes from V5 to V6 series:
-	* The "ARM: OMAP: Disable venc for OMAP4" patch has been placed before
-	  "OMAPDSS: VENC: Remove cpu_is_xxxx checks" patch
- 1st patch:
-	* The dispc_init_features() implementation has been corrected
-	* The variables types of variables in dispc_features has been changed
-	  to u8 and u16 as found appropiate
- 2nd patch:
-	* The dss_init_features() implementation has been corrected
-	* In dss_features struct char * has been changed to const char * and
-	  int replaced with u8
+ Tomi
 
-All your comments and suggestions are welcome.
 
-Refenence Tree:
-git@gitorious.org:~chandrabhanu/linux-omap-dss2/chandrabhanus-linux.git dss_cleanup
+--=-h6XDmBDIkbvuq3g8drL9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
-Regards,
-Chandrabhanu
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-Chandrabhanu Mahapatra (6):
-  OMAPDSS: DISPC: Cleanup cpu_is_xxxx checks
-  OMAPDSS: DSS: Remove redundant functions
-  OMAPDSS: DSS: Cleanup cpu_is_xxxx checks
-  ARM: OMAP: Disable venc for OMAP4
-  OMAPDSS: VENC: Remove cpu_is_xxxx checks
-  OMAPDSS: DPI: Remove cpu_is_xxxx checks
+iQIcBAABAgAGBQJQNJvrAAoJEPo9qoy8lh71HE0P/j/XyQSVj5m+3L0RqaTK8SAb
+tpqVNn5r+n/rvgmJXE6NAviS+4dTMJqePDs4KFss56PQgrbR76ArkrEVpawE1YyC
+UOtq+lYp2eCC9LPZ5yxkAT2wQxvRPKfBrspj1MbynpL/Vvjj/G4Y/6tGXUTccY0I
+OIvpTW+95VPkInViVsPqLRgNmBdVW/3bFh6YXIZnRISgSGhXKEyI9yBaalFwz+4K
+34aq1x7mzdQHt69RNW4e31bffDQyVqfkfHqswW1tq0fwXn7mAE+VIyTwzTvja3Md
+mM3UQpW/YWm1PuikcczBydw8rRgB6wqKeykkpAo7YHrHkNhs9DeC0BY094OexYHy
+qH5SbFtMXkKB6fMISkQGAIYNTRm1NqC0xPTgZVLmGEOUMnXYeaeALgLzLhvvDCmc
+vi1vkAuCGZOQ8S/TGuoqHLiqtZoWMWi6gm2NhgBUk6g6csm1irCZRjS5QD6jLMVB
+3CHvVkOALZRPVxodSJmCaVKa9MoZhBJW0otpK+jF1RhYQ6nZPJZqQJQlPJFh/hel
+FhytT9QU8MGM8FhP0A9Cs2zDXNgOXAONQ+ODl8qdq1mkW0cyOheupBbkUVXmI/jD
+6IKCRqKQ4OMXXgT3HklUJBQFAYEOcBN7ZKGi7vZ40VI7vtHhamwLtL1fOcT3/R+X
+QESAMXC9pVFCFkgy04G3
+=WVaR
+-----END PGP SIGNATURE-----
 
- arch/arm/mach-omap2/display.c          |    1 -
- drivers/video/omap2/dss/dispc.c        |  434 ++++++++++++++++++++------------
- drivers/video/omap2/dss/dpi.c          |   12 +-
- drivers/video/omap2/dss/dss.c          |  165 ++++++------
- drivers/video/omap2/dss/dss.h          |    2 -
- drivers/video/omap2/dss/dss_features.c |    1 +
- drivers/video/omap2/dss/dss_features.h |    1 +
- drivers/video/omap2/dss/venc.c         |   11 -
- 8 files changed, 367 insertions(+), 260 deletions(-)
-
--- 
-1.7.10
+--=-h6XDmBDIkbvuq3g8drL9--
 

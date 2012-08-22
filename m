@@ -1,70 +1,102 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 21 Aug 2012 06:10:14 +0000
-Subject: [PATCH 07/23] OMAPFB: remove manager->device references
-Message-Id: <1345528711-27801-8-git-send-email-archit@ti.com>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Wed, 22 Aug 2012 06:49:56 +0000
+Subject: [PATCH V6 2/6] OMAPDSS: DSS: Remove redundant functions
+Message-Id: <5480ad3e240884585b85c152cdef145457564f03.1345616887.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>
-In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
+References: <cover.1345468541.git.cmahapatra@ti.com> <cover.1345616887.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1345616887.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com, Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-With the introduction of output entities, managers will now connect to outputs.
-Use the helper op for managers named get_device. This will abstract away the
-information on how to get the device from an overlay manager.
+Functions dss_calc_clock_rates() and dss_get_clock_div() are removed as these
+functions have become redundant and no longer used.
 
-Using the helper function will reduce the number of pointer dereferences a user
-of OMAPDSS needs to do and reduce risk of a NULL dereference.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c |    7 +++++--
- drivers/video/omap2/omapfb/omapfb.h      |    5 +++--
- 2 files changed, 8 insertions(+), 4 deletions(-)
+ drivers/video/omap2/dss/dss.c |   45 -----------------------------------------
+ drivers/video/omap2/dss/dss.h |    2 --
+ 2 files changed, 47 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index fc671d3..c6992be 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -2353,6 +2353,7 @@ static int __init omapfb_probe(struct platform_device *pdev)
- 	struct omap_overlay *ovl;
- 	struct omap_dss_device *def_display;
- 	struct omap_dss_device *dssdev;
-+	struct omap_dss_device *mgr_device;
- 
- 	DBG("omapfb_probe\n");
- 
-@@ -2426,8 +2427,10 @@ static int __init omapfb_probe(struct platform_device *pdev)
- 	/* gfx overlay should be the default one. find a display
- 	 * connected to that, and use it as default display */
- 	ovl = omap_dss_get_overlay(0);
--	if (ovl->manager && ovl->manager->device) {
--		def_display = ovl->manager->device;
-+	mgr_device = ovl->manager ?
-+		ovl->manager->get_device(ovl->manager) : NULL;
-+	if (mgr_device) {
-+		def_display = mgr_device;
- 	} else {
- 		dev_warn(&pdev->dev, "cannot find default display\n");
- 		def_display = NULL;
-diff --git a/drivers/video/omap2/omapfb/omapfb.h b/drivers/video/omap2/omapfb/omapfb.h
-index 30361a0..2782b1f 100644
---- a/drivers/video/omap2/omapfb/omapfb.h
-+++ b/drivers/video/omap2/omapfb/omapfb.h
-@@ -148,8 +148,9 @@ static inline struct omap_dss_device *fb2display(struct fb_info *fbi)
- 
- 	/* XXX: returns the display connected to first attached overlay */
- 	for (i = 0; i < ofbi->num_overlays; i++) {
--		if (ofbi->overlays[i]->manager)
--			return ofbi->overlays[i]->manager->device;
-+		struct omap_overlay_manager *mgr = ofbi->overlays[i]->manager;
-+		if (mgr)
-+			return mgr->get_device(mgr);
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 92353be..e2e0fa4 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -431,31 +431,6 @@ enum omap_dss_clk_source dss_get_lcd_clk_source(enum omap_channel channel)
  	}
+ }
  
- 	return NULL;
+-/* calculate clock rates using dividers in cinfo */
+-int dss_calc_clock_rates(struct dss_clock_info *cinfo)
+-{
+-	if (dss.dpll4_m4_ck) {
+-		unsigned long prate;
+-		u16 fck_div_max = 16;
+-
+-		if (cpu_is_omap3630() || cpu_is_omap44xx())
+-			fck_div_max = 32;
+-
+-		if (cinfo->fck_div > fck_div_max || cinfo->fck_div = 0)
+-			return -EINVAL;
+-
+-		prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
+-
+-		cinfo->fck = prate / cinfo->fck_div;
+-	} else {
+-		if (cinfo->fck_div != 0)
+-			return -EINVAL;
+-		cinfo->fck = clk_get_rate(dss.dss_clk);
+-	}
+-
+-	return 0;
+-}
+-
+ int dss_set_clock_div(struct dss_clock_info *cinfo)
+ {
+ 	if (dss.dpll4_m4_ck) {
+@@ -478,26 +453,6 @@ int dss_set_clock_div(struct dss_clock_info *cinfo)
+ 	return 0;
+ }
+ 
+-int dss_get_clock_div(struct dss_clock_info *cinfo)
+-{
+-	cinfo->fck = clk_get_rate(dss.dss_clk);
+-
+-	if (dss.dpll4_m4_ck) {
+-		unsigned long prate;
+-
+-		prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
+-
+-		if (cpu_is_omap3630() || cpu_is_omap44xx())
+-			cinfo->fck_div = prate / (cinfo->fck);
+-		else
+-			cinfo->fck_div = prate / (cinfo->fck / 2);
+-	} else {
+-		cinfo->fck_div = 0;
+-	}
+-
+-	return 0;
+-}
+-
+ unsigned long dss_get_dpll4_rate(void)
+ {
+ 	if (dss.dpll4_m4_ck)
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 41c00dc..d6cca82 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -296,9 +296,7 @@ void dss_set_venc_output(enum omap_dss_venc_type type);
+ void dss_set_dac_pwrdn_bgz(bool enable);
+ 
+ unsigned long dss_get_dpll4_rate(void);
+-int dss_calc_clock_rates(struct dss_clock_info *cinfo);
+ int dss_set_clock_div(struct dss_clock_info *cinfo);
+-int dss_get_clock_div(struct dss_clock_info *cinfo);
+ int dss_calc_clock_div(unsigned long req_pck, struct dss_clock_info *dss_cinfo,
+ 		struct dispc_clock_info *dispc_cinfo);
+ 
 -- 
-1.7.9.5
+1.7.10
 

@@ -1,316 +1,236 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Thu, 23 Aug 2012 07:35:40 +0000
-Subject: [PATCHv4 4/9] usb: vt8500: Add devicetree support for vt8500-ehci and -uhci.
-Message-Id: <1345707346-9035-5-git-send-email-linux@prisktech.co.nz>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Wed, 22 Aug 2012 06:50:20 +0000
+Subject: [PATCH V6 3/6] OMAPDSS: DSS: Cleanup cpu_is_xxxx checks
+Message-Id: <af60f374b771fd4f9ec228a99ec6581d9d0f3054.1345616887.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345707346-9035-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1345707346-9035-1-git-send-email-linux@prisktech.co.nz>
+References: <cover.1345468541.git.cmahapatra@ti.com> <cover.1345616887.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1345616887.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-Add devicetree support for vt8500-ehci.
-Convert vt8500-uhci to a generic non-pci platform-uhci with
-device tree support.
+All the cpu_is checks have been moved to dss_init_features function providing a
+much more generic and cleaner interface. The OMAP version and revision specific
+initializations in various functions are cleaned and the necessary data are
+moved to dss_features structure which is local to dss.c.
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
 ---
- drivers/usb/host/Kconfig         |    4 +-
- drivers/usb/host/ehci-vt8500.c   |   25 ++++--
- drivers/usb/host/uhci-hcd.c      |    5 ++
- drivers/usb/host/uhci-platform.c |  169 ++++++++++++++++++++++++++++++++++++++
- 4 files changed, 195 insertions(+), 8 deletions(-)
- create mode 100644 drivers/usb/host/uhci-platform.c
+ drivers/video/omap2/dss/dss.c |  120 +++++++++++++++++++++++++++--------------
+ 1 file changed, 79 insertions(+), 41 deletions(-)
 
-diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
-index dcfaaa9..d7a6b10 100644
---- a/drivers/usb/host/Kconfig
-+++ b/drivers/usb/host/Kconfig
-@@ -450,7 +450,7 @@ config USB_OHCI_LITTLE_ENDIAN
- 
- config USB_UHCI_HCD
- 	tristate "UHCI HCD (most Intel and VIA) support"
--	depends on USB && (PCI || SPARC_LEON)
-+	depends on USB && (PCI || SPARC_LEON || ARCH_VT8500)
- 	---help---
- 	  The Universal Host Controller Interface is a standard by Intel for
- 	  accessing the USB hardware in the PC (which is also called the USB
-@@ -468,7 +468,7 @@ config USB_UHCI_HCD
- config USB_UHCI_SUPPORT_NON_PCI_HC
- 	bool
- 	depends on USB_UHCI_HCD
--	default y if SPARC_LEON
-+	default y if (SPARC_LEON  || ARCH_VT8500)
- 
- config USB_UHCI_BIG_ENDIAN_MMIO
- 	bool
-diff --git a/drivers/usb/host/ehci-vt8500.c b/drivers/usb/host/ehci-vt8500.c
-index c1eda73..0e1637b 100644
---- a/drivers/usb/host/ehci-vt8500.c
-+++ b/drivers/usb/host/ehci-vt8500.c
-@@ -16,6 +16,7 @@
-  *
-  */
- 
-+#include <linux/of.h>
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index e2e0fa4..31a553a 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -31,6 +31,7 @@
+ #include <linux/clk.h>
  #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
++#include <linux/gfp.h>
  
- static int ehci_update_device(struct usb_hcd *hcd, struct usb_device *udev)
-@@ -84,20 +85,23 @@ static const struct hc_driver vt8500_ehci_hc_driver = {
- 	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
+ #include <video/omapdss.h>
+ 
+@@ -65,6 +66,12 @@ struct dss_reg {
+ static int dss_runtime_get(void);
+ static void dss_runtime_put(void);
+ 
++struct dss_features {
++	u8 fck_div_max;
++	u8 dss_fck_multiplier;
++	const char *clk_name;
++};
++
+ static struct {
+ 	struct platform_device *pdev;
+ 	void __iomem    *base;
+@@ -83,6 +90,8 @@ static struct {
+ 
+ 	bool		ctx_valid;
+ 	u32		ctx[DSS_SZ_REGS / sizeof(u32)];
++
++	const struct dss_features *feat;
+ } dss;
+ 
+ static const char * const dss_generic_clk_source_names[] = {
+@@ -91,6 +100,30 @@ static const char * const dss_generic_clk_source_names[] = {
+ 	[OMAP_DSS_CLK_SRC_FCK]			= "DSS_FCK",
  };
  
-+static u64 wmt_ehci_dma_mask = DMA_BIT_MASK(32);
++static const struct dss_features omap24xx_dss_feats __initconst = {
++	.fck_div_max		=	16,
++	.dss_fck_multiplier	=	2,
++	.clk_name		=	NULL,
++};
 +
- static int vt8500_ehci_drv_probe(struct platform_device *pdev)
++static const struct dss_features omap34xx_dss_feats __initconst = {
++	.fck_div_max		=	16,
++	.dss_fck_multiplier	=	2,
++	.clk_name		=	"dpll4_m4_ck",
++};
++
++static const struct dss_features omap3630_dss_feats __initconst = {
++	.fck_div_max		=	32,
++	.dss_fck_multiplier	=	1,
++	.clk_name		=	"dpll4_m4_ck",
++};
++
++static const struct dss_features omap44xx_dss_feats __initconst = {
++	.fck_div_max		=	32,
++	.dss_fck_multiplier	=	1,
++	.clk_name		=	"dpll_per_m5x2_ck",
++};
++
+ static inline void dss_write_reg(const struct dss_reg idx, u32 val)
  {
- 	struct usb_hcd *hcd;
- 	struct ehci_hcd *ehci;
- 	struct resource *res;
-+	int irq;
- 	int ret;
- 
- 	if (usb_disabled())
- 		return -ENODEV;
- 
--	if (pdev->resource[1].flags != IORESOURCE_IRQ) {
--		pr_debug("resource[1] is not IORESOURCE_IRQ");
--		return -ENOMEM;
--	}
-+	/* devicetree created devices don't specify a dma mask */
-+	if (!pdev->dev.dma_mask)
-+		pdev->dev.dma_mask = &wmt_ehci_dma_mask;
-+
- 	hcd = usb_create_hcd(&vt8500_ehci_hc_driver, &pdev->dev, "VT8500");
- 	if (!hcd)
- 		return -ENOMEM;
-@@ -134,8 +138,9 @@ static int vt8500_ehci_drv_probe(struct platform_device *pdev)
- 
- 	ehci_reset(ehci);
- 
--	ret = usb_add_hcd(hcd, pdev->resource[1].start,
--			  IRQF_SHARED);
-+	irq = platform_get_irq(pdev, 0);
-+
-+	ret = usb_add_hcd(hcd, irq, IRQF_SHARED);
- 	if (ret = 0) {
- 		platform_set_drvdata(pdev, hcd);
- 		return ret;
-@@ -162,6 +167,11 @@ static int vt8500_ehci_drv_remove(struct platform_device *pdev)
- 	return 0;
+ 	__raw_writel(val, dss.base + idx.idx);
+@@ -236,7 +269,6 @@ const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src)
+ 	return dss_generic_clk_source_names[clk_src];
  }
  
-+static const struct of_device_id vt8500_ehci_ids[] = {
-+	{ .compatible = "via,vt8500-ehci", },
-+	{}
-+};
-+
- static struct platform_driver vt8500_ehci_driver = {
- 	.probe		= vt8500_ehci_drv_probe,
- 	.remove		= vt8500_ehci_drv_remove,
-@@ -169,7 +179,10 @@ static struct platform_driver vt8500_ehci_driver = {
- 	.driver = {
- 		.name	= "vt8500-ehci",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = of_match_ptr(vt8500_ehci_ids),
+-
+ void dss_dump_clocks(struct seq_file *s)
+ {
+ 	unsigned long dpll4_ck_rate;
+@@ -259,18 +291,10 @@ void dss_dump_clocks(struct seq_file *s)
+ 
+ 		seq_printf(s, "dpll4_ck %lu\n", dpll4_ck_rate);
+ 
+-		if (cpu_is_omap3630() || cpu_is_omap44xx())
+-			seq_printf(s, "%s (%s) = %lu / %lu  = %lu\n",
+-					fclk_name, fclk_real_name,
+-					dpll4_ck_rate,
+-					dpll4_ck_rate / dpll4_m4_ck_rate,
+-					fclk_rate);
+-		else
+-			seq_printf(s, "%s (%s) = %lu / %lu * 2 = %lu\n",
+-					fclk_name, fclk_real_name,
+-					dpll4_ck_rate,
+-					dpll4_ck_rate / dpll4_m4_ck_rate,
+-					fclk_rate);
++		seq_printf(s, "%s (%s) = %lu / %lu * %d  = %lu\n",
++				fclk_name, fclk_real_name, dpll4_ck_rate,
++				dpll4_ck_rate / dpll4_m4_ck_rate,
++				dss.feat->dss_fck_multiplier, fclk_rate);
+ 	} else {
+ 		seq_printf(s, "%s (%s) = %lu\n",
+ 				fclk_name, fclk_real_name,
+@@ -470,7 +494,7 @@ int dss_calc_clock_div(unsigned long req_pck, struct dss_clock_info *dss_cinfo,
+ 
+ 	unsigned long fck, max_dss_fck;
+ 
+-	u16 fck_div, fck_div_max = 16;
++	u16 fck_div;
+ 
+ 	int match = 0;
+ 	int min_fck_per_pck;
+@@ -480,9 +504,8 @@ int dss_calc_clock_div(unsigned long req_pck, struct dss_clock_info *dss_cinfo,
+ 	max_dss_fck = dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
+ 
+ 	fck = clk_get_rate(dss.dss_clk);
+-	if (req_pck = dss.cache_req_pck &&
+-			((cpu_is_omap34xx() && prate = dss.cache_prate) ||
+-			 dss.cache_dss_cinfo.fck = fck)) {
++	if (req_pck = dss.cache_req_pck && prate = dss.cache_prate &&
++		dss.cache_dss_cinfo.fck = fck) {
+ 		DSSDBG("dispc clock info found from cache.\n");
+ 		*dss_cinfo = dss.cache_dss_cinfo;
+ 		*dispc_cinfo = dss.cache_dispc_cinfo;
+@@ -519,16 +542,10 @@ retry:
+ 
+ 		goto found;
+ 	} else {
+-		if (cpu_is_omap3630() || cpu_is_omap44xx())
+-			fck_div_max = 32;
+-
+-		for (fck_div = fck_div_max; fck_div > 0; --fck_div) {
++		for (fck_div = dss.feat->fck_div_max; fck_div > 0; --fck_div) {
+ 			struct dispc_clock_info cur_dispc;
+ 
+-			if (fck_div_max = 32)
+-				fck = prate / fck_div;
+-			else
+-				fck = prate / fck_div * 2;
++			fck = prate / fck_div * dss.feat->dss_fck_multiplier;
+ 
+ 			if (fck > max_dss_fck)
+ 				continue;
+@@ -645,22 +662,11 @@ static int dss_get_clocks(void)
+ 
+ 	dss.dss_clk = clk;
+ 
+-	if (cpu_is_omap34xx()) {
+-		clk = clk_get(NULL, "dpll4_m4_ck");
+-		if (IS_ERR(clk)) {
+-			DSSERR("Failed to get dpll4_m4_ck\n");
+-			r = PTR_ERR(clk);
+-			goto err;
+-		}
+-	} else if (cpu_is_omap44xx()) {
+-		clk = clk_get(NULL, "dpll_per_m5x2_ck");
+-		if (IS_ERR(clk)) {
+-			DSSERR("Failed to get dpll_per_m5x2_ck\n");
+-			r = PTR_ERR(clk);
+-			goto err;
+-		}
+-	} else { /* omap24xx */
+-		clk = NULL;
++	clk = clk_get(NULL, dss.feat->clk_name);
++	if (IS_ERR(clk)) {
++		DSSERR("Failed to get %s\n", dss.feat->clk_name);
++		r = PTR_ERR(clk);
++		goto err;
  	}
- };
  
- MODULE_ALIAS("platform:vt8500-ehci");
-+MODULE_LICENSE("GPL v2");
-+MODULE_DEVICE_TABLE(of, vt8500_ehci_ids);
-diff --git a/drivers/usb/host/uhci-hcd.c b/drivers/usb/host/uhci-hcd.c
-index e4db350..5da5c99 100644
---- a/drivers/usb/host/uhci-hcd.c
-+++ b/drivers/usb/host/uhci-hcd.c
-@@ -846,6 +846,11 @@ static const char hcd_name[] = "uhci_hcd";
- #define PLATFORM_DRIVER		uhci_grlib_driver
+ 	dss.dpll4_m4_ck = clk;
+@@ -716,6 +722,34 @@ void dss_debug_dump_clocks(struct seq_file *s)
+ }
  #endif
  
-+#ifdef CONFIG_ARCH_VT8500
-+#include "uhci-platform.c"
-+#define PLATFORM_DRIVER		uhci_platform_driver
-+#endif
-+
- #if !defined(PCI_DRIVER) && !defined(PLATFORM_DRIVER)
- #error "missing bus glue for uhci-hcd"
- #endif
-diff --git a/drivers/usb/host/uhci-platform.c b/drivers/usb/host/uhci-platform.c
-new file mode 100644
-index 0000000..35ca094
---- /dev/null
-+++ b/drivers/usb/host/uhci-platform.c
-@@ -0,0 +1,169 @@
-+/*
-+ * Generic UHCI HCD (Host Controller Driver) for Platform Devices
-+ *
-+ * Copyright (c) 2011 Tony Prisk <linux@prisktech.co.nz>
-+ *
-+ * This file is based on uhci-grlib.c
-+ * (C) Copyright 2004-2007 Alan Stern, stern@rowland.harvard.edu
-+ */
-+
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+
-+static int uhci_platform_init(struct usb_hcd *hcd)
++static int __init dss_init_features(struct device *dev)
 +{
-+	struct uhci_hcd *uhci = hcd_to_uhci(hcd);
++	const struct dss_features *src;
++	struct dss_features *dst;
 +
-+	uhci->rh_numports = uhci_count_ports(hcd);
++	dst = devm_kzalloc(dev, sizeof(*dst), GFP_KERNEL);
++	if (!dst) {
++		dev_err(dev, "Failed to allocate local DSS Features\n");
++		return -ENOMEM;
++	}
 +
-+	/* Set up pointers to to generic functions */
-+	uhci->reset_hc = uhci_generic_reset_hc;
-+	uhci->check_and_reset_hc = uhci_generic_check_and_reset_hc;
-+
-+	/* No special actions need to be taken for the functions below */
-+	uhci->configure_hc = NULL;
-+	uhci->resume_detect_interrupts_are_broken = NULL;
-+	uhci->global_suspend_mode_is_broken = NULL;
-+
-+	/* Reset if the controller isn't already safely quiescent. */
-+	check_and_reset_hc(uhci);
-+	return 0;
-+}
-+
-+static const struct hc_driver uhci_platform_hc_driver = {
-+	.description =          hcd_name,
-+	.product_desc =         "Generic UHCI Host Controller",
-+	.hcd_priv_size =        sizeof(struct uhci_hcd),
-+
-+	/* Generic hardware linkage */
-+	.irq =                  uhci_irq,
-+	.flags =                HCD_MEMORY | HCD_USB11,
-+
-+	/* Basic lifecycle operations */
-+	.reset =                uhci_platform_init,
-+	.start =                uhci_start,
-+#ifdef CONFIG_PM
-+	.pci_suspend =          NULL,
-+	.pci_resume =           NULL,
-+	.bus_suspend =          uhci_rh_suspend,
-+	.bus_resume =           uhci_rh_resume,
-+#endif
-+	.stop =                 uhci_stop,
-+
-+	.urb_enqueue =          uhci_urb_enqueue,
-+	.urb_dequeue =          uhci_urb_dequeue,
-+
-+	.endpoint_disable =     uhci_hcd_endpoint_disable,
-+	.get_frame_number =     uhci_hcd_get_frame_number,
-+
-+	.hub_status_data =      uhci_hub_status_data,
-+	.hub_control =          uhci_hub_control,
-+};
-+
-+static u64 platform_uhci_dma_mask = DMA_BIT_MASK(32);
-+
-+static int __devinit uhci_hcd_platform_probe(struct platform_device *pdev)
-+{
-+	struct usb_hcd *hcd;
-+	struct uhci_hcd *uhci;
-+	struct resource *res;
-+	int ret;
-+
-+	if (usb_disabled())
++	if (cpu_is_omap24xx())
++		src = &omap24xx_dss_feats;
++	else if (cpu_is_omap34xx())
++		src = &omap34xx_dss_feats;
++	else if (cpu_is_omap3630())
++		src = &omap3630_dss_feats;
++	else if (cpu_is_omap44xx())
++		src = &omap44xx_dss_feats;
++	else
 +		return -ENODEV;
 +
-+	/* Right now device-tree probed devices don't get dma_mask set.
-+	 * Since shared usb code relies on it, set it here for now.
-+	 * Once we have dma capability bindings this can go away.
-+	 */
-+	if (!pdev->dev.dma_mask)
-+		pdev->dev.dma_mask = &platform_uhci_dma_mask;
-+
-+	hcd = usb_create_hcd(&uhci_platform_hc_driver, &pdev->dev,
-+				pdev->name);
-+	if (!hcd)
-+		return -ENOMEM;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	hcd->rsrc_start = res->start;
-+	hcd->rsrc_len = resource_size(res);
-+
-+	if (!request_mem_region(hcd->rsrc_start, hcd->rsrc_len, hcd_name)) {
-+		pr_err("%s: request_mem_region failed\n", __func__);
-+		ret = -EBUSY;
-+		goto err_rmr;
-+	}
-+
-+	hcd->regs = ioremap(hcd->rsrc_start, hcd->rsrc_len);
-+	if (!hcd->regs) {
-+		pr_err("%s: ioremap failed\n", __func__);
-+		ret = -ENOMEM;
-+		goto err_irq;
-+	}
-+	uhci = hcd_to_uhci(hcd);
-+
-+	uhci->regs = hcd->regs;
-+
-+	ret = usb_add_hcd(hcd, pdev->resource[1].start, IRQF_DISABLED |
-+								IRQF_SHARED);
-+	if (ret)
-+		goto err_uhci;
-+
-+	return 0;
-+
-+err_uhci:
-+	iounmap(hcd->regs);
-+err_irq:
-+	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
-+err_rmr:
-+	usb_put_hcd(hcd);
-+
-+	return ret;
-+}
-+
-+static int uhci_hcd_platform_remove(struct platform_device *pdev)
-+{
-+	struct usb_hcd *hcd = platform_get_drvdata(pdev);
-+
-+	usb_remove_hcd(hcd);
-+	iounmap(hcd->regs);
-+	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
-+	usb_put_hcd(hcd);
-+	platform_set_drvdata(pdev, NULL);
++	memcpy(dst, src, sizeof(*dst));
++	dss.feat = dst;
 +
 +	return 0;
 +}
 +
-+/* Make sure the controller is quiescent and that we're not using it
-+ * any more.  This is mainly for the benefit of programs which, like kexec,
-+ * expect the hardware to be idle: not doing DMA or generating IRQs.
-+ *
-+ * This routine may be called in a damaged or failing kernel.  Hence we
-+ * do not acquire the spinlock before shutting down the controller.
-+ */
-+static void uhci_hcd_platform_shutdown(struct platform_device *op)
-+{
-+	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
+ /* DSS HW IP initialisation */
+ static int __init omap_dsshw_probe(struct platform_device *pdev)
+ {
+@@ -725,6 +759,10 @@ static int __init omap_dsshw_probe(struct platform_device *pdev)
+ 
+ 	dss.pdev = pdev;
+ 
++	r = dss_init_features(&dss.pdev->dev);
++	if (r)
++		return r;
 +
-+	uhci_hc_died(hcd_to_uhci(hcd));
-+}
-+
-+static const struct of_device_id platform_uhci_ids[] = {
-+	{ .compatible = "platform-uhci", },
-+	{}
-+};
-+
-+static struct platform_driver uhci_platform_driver = {
-+	.probe          = uhci_hcd_platform_probe,
-+	.remove         = uhci_hcd_platform_remove,
-+	.shutdown       = uhci_hcd_platform_shutdown,
-+	.driver = {
-+		.name = "platform-uhci",
-+		.owner = THIS_MODULE,
-+		.of_match_table = of_match_ptr(platform_uhci_ids),
-+	},
-+};
-+
-+MODULE_ALIAS("platform:platform-uhci");
-+MODULE_LICENSE("GPL v2");
-+MODULE_DEVICE_TABLE(of, platform_uhci_ids);
+ 	dss_mem = platform_get_resource(dss.pdev, IORESOURCE_MEM, 0);
+ 	if (!dss_mem) {
+ 		DSSERR("can't get IORESOURCE_MEM DSS\n");
 -- 
-1.7.9.5
+1.7.10
 

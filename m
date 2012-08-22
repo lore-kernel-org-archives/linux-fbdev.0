@@ -1,56 +1,38 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 16 Aug 2012 13:00:47 +0000
-Subject: [PATCH 12/19] fbdev: sh_mobile_lcdc: Store the backlight brightness internally
-Message-Id: <1345122054-16013-13-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Wed, 22 Aug 2012 06:50:38 +0000
+Subject: [PATCH V6 4/6] ARM: OMAP: Disable venc for OMAP4
+Message-Id: <1f7081278149b234ce8a03e0621a7a7f927e48d6.1345616887.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1345468541.git.cmahapatra@ti.com>
+ <cover.1345616887.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1345616887.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-There's no need to query the hardware for the currenty brightness value
-through a platform data callback when we can cache the value internally
-in the LCDC driver.
+This is a alternative to "HACK: OMAP: DSS2: VENC: disable VENC on OMAP4 to
+prevent crash" (ba02fa37de) by Tomi Valkeinen <tomi.valkeinen@ti.com> to prevent
+VENC from crashing OMAP4 kernel. This prevents OMAPDSS from initial registration
+of a device for VENC on OMAP4.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |    3 ++-
- drivers/video/sh_mobile_lcdcfb.h |    1 +
- 2 files changed, 3 insertions(+), 1 deletions(-)
+ arch/arm/mach-omap2/display.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index c169581..dd8dd41 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -2282,6 +2282,7 @@ static int sh_mobile_lcdc_update_bl(struct backlight_device *bdev)
- 	    bdev->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
- 		brightness = 0;
- 
-+	ch->bl_brightness = brightness;
- 	return ch->cfg->bl_info.set_brightness(brightness);
- }
- 
-@@ -2289,7 +2290,7 @@ static int sh_mobile_lcdc_get_brightness(struct backlight_device *bdev)
- {
- 	struct sh_mobile_lcdc_chan *ch = bl_get_data(bdev);
- 
--	return ch->cfg->bl_info.get_brightness();
-+	return ch->bl_brightness;
- }
- 
- static int sh_mobile_lcdc_check_fb(struct backlight_device *bdev,
-diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
-index 0f92f65..f839ade 100644
---- a/drivers/video/sh_mobile_lcdcfb.h
-+++ b/drivers/video/sh_mobile_lcdcfb.h
-@@ -94,6 +94,7 @@ struct sh_mobile_lcdc_chan {
- 
- 	/* Backlight */
- 	struct backlight_device *bl;
-+	unsigned int bl_brightness;
- 
- 	/* FB */
- 	struct fb_info *info;
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index af1ed7d..ee40739 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -95,7 +95,6 @@ static const struct omap_dss_hwmod_data omap4_dss_hwmod_data[] __initdata = {
+ 	{ "dss_core", "omapdss_dss", -1 },
+ 	{ "dss_dispc", "omapdss_dispc", -1 },
+ 	{ "dss_rfbi", "omapdss_rfbi", -1 },
+-	{ "dss_venc", "omapdss_venc", -1 },
+ 	{ "dss_dsi1", "omapdss_dsi", 0 },
+ 	{ "dss_dsi2", "omapdss_dsi", 1 },
+ 	{ "dss_hdmi", "omapdss_hdmi", -1 },
 -- 
-1.7.8.6
+1.7.10
 

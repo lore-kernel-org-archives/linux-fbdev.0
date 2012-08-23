@@ -1,95 +1,57 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Wed, 22 Aug 2012 21:32:35 +0000
-Subject: Re: [PATCHv3 7/9] arm: vt8500: doc: Add device tree bindings for arch-vt8500 devices
-Message-Id: <1345671155.2090.8.camel@gitbox>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 23 Aug 2012 13:45:06 +0000
+Subject: [PATCH 0/8] OMAPDSS: Misc improvements
+Message-Id: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345582058-2291-1-git-send-email-linux@prisktech.co.nz>
- <1345582058-2291-8-git-send-email-linux@prisktech.co.nz>
- <50354A09.7070507@wwwdotorg.org>
-In-Reply-To: <50354A09.7070507@wwwdotorg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: archit@ti.com, Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Wed, 2012-08-22 at 15:07 -0600, Stephen Warren wrote:
-> On 08/21/2012 02:47 PM, Tony Prisk wrote:
-> > Bindings for gpio, interrupt controller, power management controller,
-> > timer, realtime clock, serial uart, ehci and uhci controllers and
-> > framebuffer controllers used on the arch-vt8500 platform.
-> > 
-> > Framebuffer binding also specifies a 'display' node which is required
-> > for determining the lcd panel data.
-> 
-> > diff --git a/Documentation/devicetree/bindings/gpio/gpio_vt8500.txt b/Documentation/devicetree/bindings/gpio/gpio_vt8500.txt
-> 
-> > +- #gpio-cells : should be <3>.
-> > +	1) bank
-> > +	2) pin number
-> > +	3) flags
-> 
-> Should this enumerate what legal values are for flags, or point at a
-> standard document that does?
+Hi,
 
-There currently are no supported flags - guess this was an oversight.
-I'll take a look if there are any that we might require in the future
-and implement them otherwise I'll drop the flags reference.
+This series contains miscellaneous improvements for omapdss, which I've made
+while implementing device tree support for omapdss. This includes some changes
+to arch/arm/:
 
-> 
-> > diff --git a/Documentation/devicetree/bindings/tty/serial/via,vt8500-uart.txt b/Documentation/devicetree/bindings/tty/serial/via,vt8500-uart.txt
-> 
-> > +	uart@d8210000 {
-> > +		compatible = "via,vt8500-uart";
-> > +		reg = <0xd8210000 0x1040>;
-> > +		interrupts = <47>;
-> > +	};
-> 
-> How does the UART know what frequency its clock input is, in order to
-> calculate dividers? Should there be a clocks property to link to the
-> input clock, so the rate can be queried? If so, a reference to the
-> common clock binding, plus a specification of which clocks must be
-> listed in the clock property should be included here.
-> 
+* remove OMAP4 HDMI gpio handling from board files
+* add vdda_hdmi_dac supply for HDMI to twl-common.c
+* remove DSS clock dividers from 4430sdp board file
 
-I didn't revisit the code that had already been posted in v1/v2 when I
-added the common clock code and there was no clock handling code at that
-point. The uart's are all clocked via a clkgen that outputs 24Mhz and
-this was hardcoded in the driver.
-I will correct this and add the appropriate device tree entries and
-documentation.
+Tony, omapdss has dependencies to those changes, and the first change also has
+a dependency to omapdss header file. Is it ok to merge them with other omapdss
+changes?
 
-> > diff --git a/Documentation/devicetree/bindings/video/via,vt8500-fb.txt b/Documentation/devicetree/bindings/video/via,vt8500-fb.txt
-> 
-> > +VIA VT8500 Display
-> > +-----------------------------------------------------
-> > +Required properties:
-> > +- xres : lcd panel horizontal resolution
-> > +- yres : lcd panel vertical resolution
-> > +- left-margin,
-> > +- right-margin,
-> > +- hsync-len: lcd panel horizontal timings in pixels
-> > +- upper-margin,
-> > +- lower-margin,
-> > +- vsync-len: lcd panel verticals timings in pixels
-> > +- bpp: lcd panel bit-depth.
-> > +	<16> for RGB565, <32> for RGB888
-> 
-> Shouldn't this reference Sascha Hauer's binding document (although I
-> suppose it isn't checked in yet), and just document the additions? I
-> wonder if this binding should be written assuming Sascha's binding doc
-> will be checked in?
+Chances for conflict are probably pretty small, 1st and 3rd change are
+pure display stuff, and the 2nd adds the supply to a regulator not used by
+anyone else than DSS.
 
-I haven't seen Sascha's binding yet - I'm not even sure its been agreed
-upon but it does seem to be the most likely candidate so far. Hopefully
-it will get accepted in this window, and I will have time to do exactly
-as you commented, which was the plan from the start. This binding was
-based on the most current one I had seen suggested at the time.
+ Tomi
 
+Tomi Valkeinen (8):
+  OMAPDSS: HDMI: Move GPIO handling to HDMI driver
+  OMAPDSS: HDMI: Add delay to wait for 5V power
+  OMAP4: TWL: add vdda_hdmi_dac regulator supply
+  OMAPDSS: HDMI: use vdda_hdmi_dac
+  OMAPDSS: Add DSI fclk maximum to dss_features
+  OMAPDSS: DSI: calculate dsi clock
+  OMAP: 4430SDP: remove DSI clock config from board file
+  OMAPDSS: fix use of dssdev->caps
 
-Given the additional comments for this patch set, and the required
-changes I'll hold off posting v4 until everything is tidied up.
+ arch/arm/mach-omap2/board-4430sdp.c       |   73 +---------------
+ arch/arm/mach-omap2/board-omap4panda.c    |   27 +-----
+ arch/arm/mach-omap2/twl-common.c          |    6 ++
+ drivers/video/omap2/displays/panel-n8x0.c |    1 +
+ drivers/video/omap2/displays/panel-taal.c |    8 ++
+ drivers/video/omap2/dss/dsi.c             |  131 +++++++++++++++++++++++++++--
+ drivers/video/omap2/dss/dss_features.c    |    2 +
+ drivers/video/omap2/dss/dss_features.h    |    1 +
+ drivers/video/omap2/dss/hdmi.c            |  101 +++++++++++++++++-----
+ drivers/video/omap2/dss/rfbi.c            |    1 -
+ include/video/omapdss.h                   |    4 +
+ 11 files changed, 233 insertions(+), 122 deletions(-)
 
-Regards
-
-Tony Prisk
+-- 
+1.7.9.5
 

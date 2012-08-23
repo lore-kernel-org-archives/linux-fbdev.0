@@ -1,59 +1,56 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Date: Wed, 15 Aug 2012 08:15:29 +0000
-Subject: Re: [PATCH 6/7] HID: picoLCD: disable version check during probe
-Message-Id: <alpine.LNX.2.00.1208151015220.7026@pobox.suse.cz>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 23 Aug 2012 13:45:09 +0000
+Subject: [PATCH 3/8] OMAP4: TWL: add vdda_hdmi_dac regulator supply
+Message-Id: <1345729514-2441-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120730213656.0a9f6d30@neptune.home> <20120730213859.063173c1@neptune.home>
-In-Reply-To: <20120730213859.063173c1@neptune.home>
+References: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: archit@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Tony Lindgren <tony@atomide.com>
 
-On Mon, 30 Jul 2012, Bruno Prémont wrote:
+HDMI requires vdda_hdmi_dac (vdac) power for operation. The regulator,
+or the regulator supplying the vdac, has been enabled by default and
+things have worked without the HDMI driver enabling the vdac.
 
-> Commit 4ea5454203d991ec85264f64f89ca8855fce69b0
-> [HID: Fix race condition between driver core and ll-driver] introduced
-> new locking around proce/remove functions that prevent any report/reply
-> from hardware to reach driver until it returned from probe.
-> 
-> As such, the ask-reply way to checking picoLCD firmware version during
-> probe is bound to timeout and let probe fail.
-> 
-> Disabling the check lets driver sucessfully probe again.
-> 
-> Signed-off-by: Bruno Prémont <bonbons@linux-vserver.org>
-> ---
->  drivers/hid/hid-picolcd_core.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/hid/hid-picolcd_core.c b/drivers/hid/hid-picolcd_core.c
-> index 2d7ef68..42d0791 100644
-> --- a/drivers/hid/hid-picolcd_core.c
-> +++ b/drivers/hid/hid-picolcd_core.c
-> @@ -478,13 +478,13 @@ static int picolcd_probe_lcd(struct hid_device *hdev, struct picolcd_data *data)
->  {
->  	int error;
->  
-> -	error = picolcd_check_version(hdev);
-> +/*	error = picolcd_check_version(hdev);
->  	if (error)
->  		return error;
->  
->  	if (data->version[0] != 0 && data->version[1] != 3)
->  		hid_info(hdev, "Device with untested firmware revision, please submit /sys/kernel/debug/hid/%s/rdesc for this device.\n",
-> -			 dev_name(&hdev->dev));
-> +			 dev_name(&hdev->dev)); */
+I encountered the problem when implementing HDMI device tree support,
+where the regulator was not enabled by default.
 
-Please just remove it altogether, I don't see a reason to keep the 
-commented-out code in the in-tree driver.
+This patch adds the vdda_hdmi_dac to twl-common.c so that the HDMI
+driver can use it.
 
-Once the locking mess is sorted out, we can re-introduce it again as 
-necessary.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/twl-common.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Thanks.
-
+diff --git a/arch/arm/mach-omap2/twl-common.c b/arch/arm/mach-omap2/twl-common.c
+index 119d5a9..bf90356 100644
+--- a/arch/arm/mach-omap2/twl-common.c
++++ b/arch/arm/mach-omap2/twl-common.c
+@@ -257,6 +257,10 @@ static struct twl4030_usb_data omap4_usb_pdata = {
+ 	.phy_suspend	= omap4430_phy_suspend,
+ };
+ 
++static struct regulator_consumer_supply omap4_vdda_hdmi_dac_supplies[] = {
++	REGULATOR_SUPPLY("vdda_hdmi_dac", "omapdss_hdmi"),
++};
++
+ static struct regulator_init_data omap4_vdac_idata = {
+ 	.constraints = {
+ 		.min_uV			= 1800000,
+@@ -266,6 +270,8 @@ static struct regulator_init_data omap4_vdac_idata = {
+ 		.valid_ops_mask		= REGULATOR_CHANGE_MODE
+ 					| REGULATOR_CHANGE_STATUS,
+ 	},
++	.num_consumer_supplies	= ARRAY_SIZE(omap4_vdda_hdmi_dac_supplies),
++	.consumer_supplies	= omap4_vdda_hdmi_dac_supplies,
+ 	.supply_regulator	= "V2V1",
+ };
+ 
 -- 
-Jiri Kosina
-SUSE Labs
+1.7.9.5
+

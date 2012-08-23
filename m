@@ -1,134 +1,227 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 15 Aug 2012 06:43:26 +0000
-Subject: Re: [PATCH v2 09/13] OMAPDSS: SDI: Create a function to set timings
-Message-Id: <1345013006.11980.14.camel@lappyti>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-zj86KZQ7MY3NrZHmty5P"
+Date: Thu, 23 Aug 2012 13:45:12 +0000
+Subject: [PATCH 6/8] OMAPDSS: DSI: calculate dsi clock
+Message-Id: <1345729514-2441-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343817088-29645-1-git-send-email-archit@ti.com>
-	   <1344512989-4071-1-git-send-email-archit@ti.com>
-	   <1344512989-4071-10-git-send-email-archit@ti.com>
-	  <1344951845.4845.58.camel@lappyti> <502A8322.6000309@ti.com>
-	 <1344965600.2345.70.camel@deskari> <502AA232.1040305@ti.com>
-In-Reply-To: <502AA232.1040305@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: Rob Clark <rob@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-
-
---=-zj86KZQ7MY3NrZHmty5P
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2012-08-15 at 00:38 +0530, Archit Taneja wrote:
-> On Tuesday 14 August 2012 11:03 PM, Tomi Valkeinen wrote:
-> > On Tue, 2012-08-14 at 22:26 +0530, Archit Taneja wrote:
-> >> On Tuesday 14 August 2012 07:14 PM, Tomi Valkeinen wrote:
-> >
-> >> I guess it depends on how drm/fb want to use it. I guess an output
-> >> should have a set_timings() kind of op if it can do it seamlessly. I
-> >> guess we can do that easily in DPI, for example, we could reduce the f=
-ps
-> >> from 60 to 30 without causing an artefacts(I think). For outputs which
-> >
-> > Yes, that kind of thing is easy to do by just changing the pck divider,
-> > which is in a shadow register. I mean, "easy" in theory, at least. Our
-> > clock calculation doesn't work like that currently, though, so it could
-> > end up changing DSS fck.
-> >
-> >> can't do it, we could remove the set_timings totally.
-> >
-> > But we do need set_timings for other outputs also (like sdi). We just
-> > can't change them just like that. Only outputs that do not need timings
-> > are DSI command mode and rfbi.
-> >
-> >> However, it'll be kind of inconsistent for some outputs to set timings=
-,
-> >> and for others to not, and if in the future drm/fb gets exposed to ops
-> >> too, we may have dirty checks to see if set_timings is populated or no=
-t.
-> >>
-> >> The easiest way would be to make all set_timings just update the copy =
-of
-> >> the timings output has, and expect drm/fb to disable and re enable the
-> >> panel. We may end up doing unnecessary gpio resets and configuration o=
-f
-> >> the panels though.
-> >
-> > I think changing things like timings is quite a rare operation. The onl=
-y
-> > case it'd be necessary to change timings often, with speed, and without
-> > artifacts would be the fps drop you mentioned, for lower power use with
-> > panels that don't mind the fps drop.
-> >
-> > If I understood correctly, Rob said that drm already disables the outpu=
-t
-> > when changing the mode, when I asked if it's ok for the apply's
-> > set_timings to require the output to be off.
-> >
-> > In any case this is not a big issue, I mean, it's not causing any
-> > problems. Somebody is going to disable the output anyway when changing
-> > the timings. Perhaps even these patches are good, because they make the
-> > set_timings consistent across the output drivers (don't they?).
->=20
-> Yes, they do, there isn't a set_timings for RFBI though, only a=20
-> set_size, and DSI has set_timings for video mode and a set_size for=20
-> command mode, I haven't put checks in the ops for a panel driver to=20
-> wrongly call set_timings in commmand mode, and set_size in video mode.
-
-Ok. Well, perhaps we should go forward with these patches then. They
-make things consistent, and we don't really know which would be the best
-way to handle this, so the method in your patches is as good as some
-other.
-
-The dssdev->state needs to be removed at some point, but that can be a
-separate task.
-
-> I haven't done that yet because a future patch of mine will have a DSI=
-=20
-> specific op called set_operation_mode() to make us independent of=20
-> dssdev->panel.dsi_mode, there is no guarantee that the panel driver to=
-=20
-> first call set_operation_mode(), and then set_timings(), so I'm not sure=
-=20
-> yet how to deal with that. Probably having a mode/state which says that=
-=20
-> a field is unintialized might help, but that would overcomplicate things.
-
-Well, we can define that set_operation_mode needs to be called before
-any other dsi functions. They are kernel drivers, we can presume they
-act correctly (although we should of course try to handle error cases
-anyway). If they don't, we need to fix them.
-
-If you want to be extra safe there, you could add third value to the
-dsi_mode enum: UNDEFINED or such (I guess this is what you meant also).
-By default dsi's mode would be undefined, and functions could check it.
-But I agree it'd add lots of checks all around.
-
- Tomi
-
-
---=-zj86KZQ7MY3NrZHmty5P
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+References: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: archit@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+Currently the way to configure clocks related to DSI (both DSI and DISPC
+clocks) happens via omapdss platform data. The reason for this is that
+configuring the DSS clocks is a very complex problem, and it's
+impossible for the SW to know requirements about things like
+interference.
 
-iQIcBAABAgAGBQJQK0UOAAoJEPo9qoy8lh71dnIP/RbR3fx18cgizFtBUbroWz2j
-TSrIQdAqr+e7rt3k/QgvH5WwhODXbm9LihGv7MzG0ARqeCxP8xifHg8Q0s/AV1zV
-/ZX3u61aRuur3jawGC2daDDmpIsieENlbLNn76HDw5OIbpQultSinECIwXO58qQL
-e8ZsmWpm3FEKWE5GikjL2HNMq/FFNk+VyDeMcGbvwK+m3XfoTxWTxSM1e3QYpnaS
-leduxNuW5sbKUeRvK8A20f0zjscs6OfjfW2lSaxf3RqX4upeQqQ2XBj5OOqRU5eU
-dlsF1/LUhZhGG4KmIRZc38SAdmkdFrOWmg8iRwyNbTP7jGFLxGy4AfnL8LQy/qiC
-wYNSL6iBa6HSJBpS6/WIZULXYmpxO+wXuox5dsopCeznkpzB+0oNqEr7ppRwtiIS
-nAJxRo/d8ceBZmVP6TrVtQxtt4Xbo6PQ+sdqDGtraP104bGRYcytR2H89FgvhG/Z
-9Z0mPFGnFbBM9VyoKmbBZiO8739E/uxzJriHdqpjZFYwcD9d/3IVyBwE2898QOHy
-KGku0HkSvt/URGNEO7B+W6FMhXqd/pJX/fc2ned1RsBvXINZp0WqmUD09DURMUIo
-tPrRuHZS7LwgC5gm5spfLQjgEwomimpGu/jOz44saS89H4w6Oakqnfj4jzmwj1bF
-EFhTVE7nVZ3AA/p5tLkn
-=bAaK
------END PGP SIGNATURE-----
+However, for general cases it should be fine to calculate the dividers
+for clocks in the SW. The calculated clocks are probably not perfect,
+but should work.
 
---=-zj86KZQ7MY3NrZHmty5P--
+This patch adds support to calculate the dividers when using DSI command
+mode panels. The panel gives the required DDR clock rate and LP clock
+rate, and the DSI driver configures itself and DISPC accordingly.
+
+This patch is somewhat ugly, though. The code does its job by modifying
+the platform data where the clock dividers would be if the board file
+gave them. This is not how it's going to be in the future, but allows us
+to have quite simple patch and keep the backward compatibility.
+
+It also allows the developer to still give the exact dividers from the
+board file when there's need for that, as long as the panel driver does
+not override them.
+
+There are also other areas for improvement. For example, it would be
+better if the panel driver could ask for a DSI clock in a certain range,
+as, at least command mode panels, the panel can work fine with many
+different clock speeds.
+
+While the patch is not perfect, it allows us to remove the hardcoded
+clock dividers from the board file, making it easier to bring up a new
+panel and to use device tree from omapdss.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/displays/panel-taal.c |    6 ++
+ drivers/video/omap2/dss/dsi.c             |  126 +++++++++++++++++++++++++++++
+ include/video/omapdss.h                   |    2 +
+ 3 files changed, 134 insertions(+)
+
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 77aed0e..ddda96a 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -1065,6 +1065,12 @@ static int taal_power_on(struct omap_dss_device *dssdev)
+ 	omapdss_dsi_set_pixel_format(dssdev, OMAP_DSS_DSI_FMT_RGB888);
+ 	omapdss_dsi_set_operation_mode(dssdev, OMAP_DSS_DSI_CMD_MODE);
+ 
++	r = omapdss_dsi_set_clocks(dssdev, 216000000, 10000000);
++	if (r) {
++		dev_err(&dssdev->dev, "failed to set HS and LP clocks\n");
++		goto err0;
++	}
++
+ 	r = omapdss_dsi_display_enable(dssdev);
+ 	if (r) {
+ 		dev_err(&dssdev->dev, "failed to enable DSI\n");
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 96d0024..340c832 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -1454,6 +1454,68 @@ found:
+ 	return 0;
+ }
+ 
++static int dsi_pll_calc_ddrfreq(struct platform_device *dsidev,
++		unsigned long req_clk, struct dsi_clock_info *cinfo)
++{
++	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
++	struct dsi_clock_info cur, best;
++	unsigned long dss_sys_clk, max_dss_fck, max_dsi_fck;
++	unsigned long req_clkin4ddr;
++
++	DSSDBG("dsi_pll_calc_ddrfreq\n");
++
++	dss_sys_clk = clk_get_rate(dsi->sys_clk);
++
++	max_dss_fck = dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
++	max_dsi_fck = dss_feat_get_param_max(FEAT_PARAM_DSI_FCK);
++
++	memset(&best, 0, sizeof(best));
++	memset(&cur, 0, sizeof(cur));
++
++	cur.clkin = dss_sys_clk;
++
++	req_clkin4ddr = req_clk * 4;
++
++	for (cur.regn = 1; cur.regn < dsi->regn_max; ++cur.regn) {
++		cur.fint = cur.clkin / cur.regn;
++
++		if (cur.fint > dsi->fint_max || cur.fint < dsi->fint_min)
++			continue;
++
++		/* DSIPHY(MHz) = (2 * regm / regn) * clkin */
++		for (cur.regm = 1; cur.regm < dsi->regm_max; ++cur.regm) {
++			unsigned long a, b;
++
++			a = 2 * cur.regm * (cur.clkin/1000);
++			b = cur.regn;
++			cur.clkin4ddr = a / b * 1000;
++
++			if (cur.clkin4ddr > 1800 * 1000 * 1000)
++				break;
++
++			if (abs(cur.clkin4ddr - req_clkin4ddr) <
++					abs(best.clkin4ddr - req_clkin4ddr)) {
++				best = cur;
++				DSSDBG("best %ld\n", best.clkin4ddr);
++			}
++
++			if (cur.clkin4ddr = req_clkin4ddr)
++				goto found;
++		}
++	}
++found:
++	best.regm_dispc = DIV_ROUND_UP(best.clkin4ddr, max_dss_fck);
++	best.dsi_pll_hsdiv_dispc_clk = best.clkin4ddr / best.regm_dispc;
++
++	best.regm_dsi = DIV_ROUND_UP(best.clkin4ddr, max_dsi_fck);
++	best.dsi_pll_hsdiv_dsi_clk = best.clkin4ddr / best.regm_dsi;
++
++	if (cinfo)
++		*cinfo = best;
++
++	return 0;
++}
++
+ int dsi_pll_set_clock_div(struct platform_device *dsidev,
+ 		struct dsi_clock_info *cinfo)
+ {
+@@ -4110,6 +4172,70 @@ int omapdss_dsi_configure_pins(struct omap_dss_device *dssdev,
+ }
+ EXPORT_SYMBOL(omapdss_dsi_configure_pins);
+ 
++int omapdss_dsi_set_clocks(struct omap_dss_device *dssdev,
++		unsigned long ddr_clk, unsigned long lp_clk)
++{
++	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
++	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
++	struct dsi_clock_info cinfo;
++	struct dispc_clock_info dispc_cinfo;
++	unsigned lp_clk_div;
++	unsigned long dsi_fclk;
++	int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
++	unsigned long pck;
++	int r;
++
++	DSSDBGF("ddr_clk %lu, lp_clk %lu", ddr_clk, lp_clk);
++
++	mutex_lock(&dsi->lock);
++
++	r = dsi_pll_calc_ddrfreq(dsidev, ddr_clk, &cinfo);
++	if (r)
++		goto err;
++
++	dssdev->clocks.dsi.regn = cinfo.regn;
++	dssdev->clocks.dsi.regm = cinfo.regm;
++	dssdev->clocks.dsi.regm_dispc = cinfo.regm_dispc;
++	dssdev->clocks.dsi.regm_dsi = cinfo.regm_dsi;
++
++
++	dsi_fclk = cinfo.dsi_pll_hsdiv_dsi_clk;
++	lp_clk_div = DIV_ROUND_UP(dsi_fclk, lp_clk * 2);
++
++	dssdev->clocks.dsi.lp_clk_div = lp_clk_div;
++
++	/* pck = TxByteClkHS * datalanes * 8 / bitsperpixel */
++
++	pck = cinfo.clkin4ddr / 16 * (dsi->num_lanes_used - 1) * 8 / bpp;
++
++	DSSDBG("finding dispc dividers for pck %lu\n", pck);
++
++	dispc_find_clk_divs(pck, cinfo.dsi_pll_hsdiv_dispc_clk, &dispc_cinfo);
++
++	dssdev->clocks.dispc.channel.lck_div = dispc_cinfo.lck_div;
++	dssdev->clocks.dispc.channel.pck_div = dispc_cinfo.pck_div;
++
++
++	dssdev->clocks.dispc.dispc_fclk_src = OMAP_DSS_CLK_SRC_FCK;
++
++	dssdev->clocks.dispc.channel.lcd_clk_src +		dsi->module_id = 0 ?
++		OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC :
++		OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC;
++
++	dssdev->clocks.dsi.dsi_fclk_src +		dsi->module_id = 0 ?
++		OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DSI :
++		OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DSI;
++
++	mutex_unlock(&dsi->lock);
++	return 0;
++err:
++	mutex_unlock(&dsi->lock);
++	return r;
++}
++EXPORT_SYMBOL(omapdss_dsi_set_clocks);
++
+ int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel)
+ {
+ 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index c6ffe88..8a926f8 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -738,6 +738,8 @@ int omap_dsi_set_vc_id(struct omap_dss_device *dssdev, int channel, int vc_id);
+ void omap_dsi_release_vc(struct omap_dss_device *dssdev, int channel);
+ int omapdss_dsi_configure_pins(struct omap_dss_device *dssdev,
+ 		const struct omap_dsi_pin_config *pin_cfg);
++int omapdss_dsi_set_clocks(struct omap_dss_device *dssdev,
++		unsigned long ddr_clk, unsigned long lp_clk);
+ 
+ int omapdss_dsi_display_enable(struct omap_dss_device *dssdev);
+ void omapdss_dsi_display_disable(struct omap_dss_device *dssdev,
+-- 
+1.7.9.5
 

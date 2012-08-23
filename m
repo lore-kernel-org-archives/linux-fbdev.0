@@ -1,158 +1,190 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 14 Aug 2012 14:34:55 +0000
-Subject: Re: [PATCH 3/6] OMAPDSS: DSS: Cleanup cpu_is_xxxx checks
-Message-Id: <1344954895.2345.37.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-QpV+2diOZZsAXkQJG9Rs"
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Thu, 23 Aug 2012 07:35:36 +0000
+Subject: [PATCHv4 0/9] *** ARM: Update arch-vt8500 to Devicetree ***
+Message-Id: <1345707346-9035-1-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344425899-28267-1-git-send-email-cmahapatra@ti.com>
-	 <1344859176-4512-1-git-send-email-cmahapatra@ti.com>
-	 <1344937705.2345.17.camel@deskari>
-	 <CAF0AtAsgTHwnUKaU8AzO5b7sThQTaocDGdb1Ebknuev_DgC0hg@mail.gmail.com>
-In-Reply-To: <CAF0AtAsgTHwnUKaU8AzO5b7sThQTaocDGdb1Ebknuev_DgC0hg@mail.gmail.com>
-To: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-
---=-QpV+2diOZZsAXkQJG9Rs
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2012-08-14 at 18:00 +0530, Mahapatra, Chandrabhanu wrote:
-> On Tue, Aug 14, 2012 at 3:18 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> w=
-rote:
-> > On Mon, 2012-08-13 at 17:29 +0530, Chandrabhanu Mahapatra wrote:
-> >> All the cpu_is checks have been moved to dss_init_features function pr=
-oviding a
-> >> much more generic and cleaner interface. The OMAP version and revision=
- specific
-> >> initializations in various functions are cleaned and the necessary dat=
-a are
-> >> moved to dss_features structure which is local to dss.c.
-> >
-> > It'd be good to have some version information here. Even just [PATCH v3
-> > 3/6] in the subject is good, but of course the best is if there's a
-> > short change log
-> >
->=20
-> Is it ok to have short change log in the individual patch description
-> itself. I normally prefer the cover letter for this.
-
-No, the patch description is added to git repository, and shouldn't
-contain that kind of "extra" information. But you can add the version
-information to the posted patch.
-
-The diff stats below, after the "---" line, are discarded by git when
-applying the patch. So I think you can just insert any text below ---
-(but before the actual diffs) and they do not appear in the final git
-commit.
-
-I've not actually used that myself, and I can't find notes about it in
-the documentation, so I'm not sure if there are any restrictions about
-it. I've seen it used, though.
-
-> >> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-> >> ---
-> >>  drivers/video/omap2/dss/dss.c |  115 ++++++++++++++++++++++++++------=
----------
-> >>  1 file changed, 74 insertions(+), 41 deletions(-)
-> >>
-> >> diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/d=
-ss.c
-> >> index 7b1c6ac..6ab236e 100644
-> >> --- a/drivers/video/omap2/dss/dss.c
-> >> +++ b/drivers/video/omap2/dss/dss.c
-> >> @@ -31,6 +31,7 @@
-> >>  #include <linux/clk.h>
-> >>  #include <linux/platform_device.h>
-> >>  #include <linux/pm_runtime.h>
-> >> +#include <linux/dma-mapping.h>
-> >
-> > Hmm, what is this for?
-> >
->=20
-> I should have included "include/linux/gfp.h" instead. It defines GFP_KERN=
-EL.
->=20
-> >>  #include <video/omapdss.h>
-> >>
-> >> @@ -65,6 +66,13 @@ struct dss_reg {
-> >>  static int dss_runtime_get(void);
-> >>  static void dss_runtime_put(void);
-> >>
-> >> +struct dss_features {
-> >> +     u16 fck_div_max;
-> >> +     int factor;
-> >> +     char *clk_name;
-> >> +     bool (*check_cinfo_fck) (void);
-> >> +};
-> >
-> > Is the check_cinfo_fck a leftover from previous versions?
-> >
->=20
-> Sorry, to have skipped that.
->=20
-> > I think "factor" name is too vague. If I remember right, it's some kind
-> > of implicit multiplier for the dss fck. So "dss_fck_multiplier"? You
-> > could check the clock trees to verify what the multiplier exactly was,
-> > and see if you can come up with a better name =3D).
-> >
->=20
-> dss_fck_multiplier sounds good to me. DSS clocks trees do not seem to
-
-Yes, it's not really DSS thing, but PRCM. If things were perfect, DSS
-wouldn't even need to know about the clock.
-
-> mention anything about this multiplier. I found clock "dpll4_mx4_clk"
-> in omap3 trm but nothing called "dpll_per_m5x2_clk" in omap4 trm. Any
-> references please you know about?
-
-Hmm, I think that's the linux's name for it. TRM seems to call it
-CLKOUTX2_M5 (in the power, reset and clock management section).
-
-> >> +     if (cpu_is_omap24xx())
-> >> +             dss.feat =3D &omap2_dss_features;
-> >> +     else if (cpu_is_omap34xx())
-> >> +             dss.feat =3D &omap34_dss_features;
-> >> +     else if (cpu_is_omap3630())
-> >> +             dss.feat =3D &omap36_dss_features;
-> >> +     else
-> >> +             dss.feat =3D &omap4_dss_features;
-> >
-> > Check for omap4 also, and if the cpu is none of the above, return error=
-.
-> >
->=20
-> I was wondering what error value to return. I was considering EINVAL
-> (error in value) and ENODEV (no such device). But nothing seems to fit
-> this case.
-
-ENODEV sounds fine to me. I think EINVAL should be used when some given
-parameter was wrong.
-
-
---=-QpV+2diOZZsAXkQJG9Rs
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+This patchset updates arch-vt8500 to devicetree and removes all the old-style
+code. Support for WM8650 has also been added.
 
-iQIcBAABAgAGBQJQKmIPAAoJEPo9qoy8lh71glUP/iHP23XQK5WDfBvU9Oq7duu8
-KcaEh2tamp34NR7YusoWvnNE5NZBJZYj5IQ/8FdiHUboGzAdxA5bIlWfSCFrHBK4
-mkAXWLhqtcYKw54uXQJvHahJApyCOQGvVUBbN4shR/JrGpHnPEZPxNrEJSe+zEMP
-ZNT2V+oCt/48gpim19q+i02JLqO/Re/PRuoX1+oLyI/bmh9k4rArKNHneCQDhNWg
-Fy7ikj5vG+RIvVEBtjv8wq5YDgcwmaLY+rwRtS3EfG+BFsQS46qE3U9Tix3zecrA
-UYihG35G1XrdVKs6GcuNZas1tQUjunrAz+OHVmu8mnJUp9Efz600jIQ+fNihB4B6
-wIuPU6OpYyLgYyffNRlsxiajhFUdqoK0RLLsKtG6YVVj+MnkzICqT+Xn4Mw2GKII
-4CioP0Ddcz/le3XYQGHOq8CfAYszkYQ+VyLr/T0exWTiT3gctJ2LS02ZGeISB8aX
-KMqD6Gq78VQObQQaumhvThDl/TWVIcbYqL3w4t9BAdW76aweuQYO/SqRY3vW8eVd
-7qwTEvxDXBonfSCXrU8oD2B/e7M0TiySScD/s2Osr2/ibU9zivWBQetjkDMqcEG6
-ka56t2KHsfQScvTM85QaFZeA/LF1HiQkiqY3nVeHN1Vvn77CfDq8nvM2P5peEg08
-omq2zfYnIklPN5ylvl9g
-=BtiT
------END PGP SIGNATURE-----
+Example dts/dtsi files are given for the three currently supported models.
 
---=-QpV+2diOZZsAXkQJG9Rs--
+Major changes:
+
+GPIO code has been converted to a platform_device and rewritten as WM8505
+support was broken. Add support for WM8650 gpio controller.
+
+UHCI support was missing. Added this as a generic non-pci uhci controller as
+it doesn't require anything special. Should be usable by any system that doesn't
+have special requirements to get the UHCI controller working.
+
+Framebuffer code patched to support WM8650. The bindings for this are of concern
+but there doesn't seem to be a formalized binding yet. This patch is based off
+Sascha Hauer's current patch on the dri-devel mailing list and should be easily
+patched out when its finalized.
+
+Patchset based on Arnd's arm-soc/for-next branch.
+
+
+Could I get this reviewed, hopefully for inclusion into v3.7.
+
+Regards
+Tony Prisk
+
+Changes
+v2:
+Cleanup style/formatting errors
+Removed erroneous commit message about GPIO not being converted to devicetree
+Corrected arch-vt8500/irq.c header to correct filename
+Changed GPIO driver to use module_platform_driver()
+Renamed vt8500_gpio_bank_regs -> vt8500_gpio_bank_regoffsets
+Changed vt8500_gpio_bank_regoffset fields to unsigned int
+Changed bit-setting code to use BIT() macro
+Removed of_find_compatible() and use pdev->dev.of_node in _probe()
+Removed regoff field and related code - leftover from old design
+Added kerneldoc regarding struct vt8500_gpio_bank_regoffsets fields
+Update MODULE_LICENSE on all platform devices to "GPL v2" to match their headers
+Renamed dts board files to clarify product names
+
+v3:
+Corrected serial driver issue after porting to device tree. pdev->id no longer
+valid.
+Corrected irq.c to properly initialize slaved interrupt controller.
+Updated framebuffer drivers to use phandles for display node.
+Corrected dts definitions for updated framebuffer driver.
+
+EHCI/UHCI patch (Patch 4/9) already in -next via usb-next tree.
+
+Included common clock frame support.
+Added initialization code to arch/arm/mach-vt8500/vt8500.c for clocks.
+Updated wm8650.dtsi to include basic clocks.
+
+v4:
+Added missing GPL header to clk-vt8500.c
+Corrected unsigned variables in gpio-vt8500.c
+Changed gpio-vt8500.c to use readl/writel _relaxed variants.
+Update serial driver to get clock source from device tree.
+Update dtsi files for uart clock sources.
+Renamed vt8500_gpio.txt to vt8500-gpio.txt
+Describe gpio flags property - currently no flags are defined, but will need
+to be when gpio interrupts are supported. Kept for future compatibility.
+
+Stephen W: I've taken a look on dri-devel mailing list and -next but haven't
+seen a new binding document for Sascha's of_videomode_helper yet. I've left the
+code as is for now - hopefully the OF helper will be formalized in this cycle.
+I took a look at the GPIO flags - this was added on Arnd's recommendation as it
+will be needed later once the GPIO controller is also an interrupt-controller.
+I've add documentation that it should be =0 for now.
+
+
+Tony Prisk (9):
+  arm: vt8500: Add device tree files for VIA/Wondermedia SoC's
+  rtc: vt8500: Add devicetree support for vt8500-rtc
+  serial: vt8500: Add devicetree support for vt8500-serial
+  usb: vt8500: Add devicetree support for vt8500-ehci and -uhci.
+  video: vt8500: Add devicetree support for vt8500-fb and wm8505-fb
+  arm: vt8500: Update arch-vt8500 to devicetree support.
+  arm: vt8500: doc: Add device tree bindings for arch-vt8500 devices
+  arm: vt8500: gpio: Devicetree support for arch-vt8500
+  arm: vt8500: clk: Add Common Clock Framework support
+
+ Documentation/devicetree/bindings/arm/vt8500.txt   |   15 +
+ .../bindings/arm/vt8500/via,vt8500-intc.txt        |   16 +
+ .../bindings/arm/vt8500/via,vt8500-pmc.txt         |   13 +
+ .../bindings/arm/vt8500/via,vt8500-timer.txt       |   15 +
+ Documentation/devicetree/bindings/clock/vt8500.txt |   72 +++
+ .../devicetree/bindings/gpio/gpio-vt8500.txt       |   24 +
+ .../devicetree/bindings/rtc/via,vt8500-rtc.txt     |   15 +
+ .../bindings/tty/serial/via,vt8500-uart.txt        |   17 +
+ .../devicetree/bindings/usb/platform-uhci.txt      |   15 +
+ .../devicetree/bindings/usb/via,vt8500-ehci.txt    |   15 +
+ .../devicetree/bindings/vendor-prefixes.txt        |    2 +
+ .../devicetree/bindings/video/via,vt8500-fb.txt    |   48 ++
+ .../devicetree/bindings/video/wm,prizm-ge-rops.txt |   13 +
+ .../devicetree/bindings/video/wm,wm8505-fb.txt     |   22 +
+ arch/arm/Kconfig                                   |    5 +
+ arch/arm/boot/dts/vt8500-bv07.dts                  |   31 ++
+ arch/arm/boot/dts/vt8500.dtsi                      |  115 +++++
+ arch/arm/boot/dts/wm8505-ref.dts                   |   31 ++
+ arch/arm/boot/dts/wm8505.dtsi                      |  142 ++++++
+ arch/arm/boot/dts/wm8650-mid.dts                   |   31 ++
+ arch/arm/boot/dts/wm8650.dtsi                      |  146 ++++++
+ arch/arm/mach-vt8500/Kconfig                       |   72 +--
+ arch/arm/mach-vt8500/Makefile                      |    9 +-
+ arch/arm/mach-vt8500/bv07.c                        |   80 ---
+ arch/arm/mach-vt8500/common.h                      |   28 ++
+ arch/arm/mach-vt8500/devices-vt8500.c              |   91 ----
+ arch/arm/mach-vt8500/devices-wm8505.c              |   99 ----
+ arch/arm/mach-vt8500/devices.c                     |  270 -----------
+ arch/arm/mach-vt8500/devices.h                     |   88 ----
+ arch/arm/mach-vt8500/gpio.c                        |  240 ---------
+ arch/arm/mach-vt8500/include/mach/restart.h        |    4 +-
+ arch/arm/mach-vt8500/include/mach/vt8500_irqs.h    |   88 ----
+ arch/arm/mach-vt8500/include/mach/vt8500_regs.h    |   79 ---
+ arch/arm/mach-vt8500/include/mach/wm8505_irqs.h    |  115 -----
+ arch/arm/mach-vt8500/include/mach/wm8505_regs.h    |   78 ---
+ arch/arm/mach-vt8500/irq.c                         |  209 ++++----
+ arch/arm/mach-vt8500/restart.c                     |   54 ---
+ arch/arm/mach-vt8500/timer.c                       |   67 ++-
+ arch/arm/mach-vt8500/vt8500.c                      |  196 ++++++++
+ arch/arm/mach-vt8500/wm8505_7in.c                  |   79 ---
+ drivers/clk/Makefile                               |    1 +
+ drivers/clk/clk-vt8500.c                           |  511 ++++++++++++++++++++
+ drivers/gpio/Kconfig                               |    6 +
+ drivers/gpio/Makefile                              |    1 +
+ drivers/gpio/gpio-vt8500.c                         |  316 ++++++++++++
+ drivers/rtc/rtc-vt8500.c                           |    9 +-
+ drivers/tty/serial/vt8500_serial.c                 |   58 ++-
+ drivers/usb/host/Kconfig                           |    4 +-
+ drivers/usb/host/ehci-vt8500.c                     |   25 +-
+ drivers/usb/host/uhci-hcd.c                        |    5 +
+ drivers/usb/host/uhci-platform.c                   |  169 +++++++
+ drivers/video/Kconfig                              |    6 +-
+ drivers/video/vt8500lcdfb.c                        |   79 ++-
+ drivers/video/wm8505fb.c                           |   97 +++-
+ drivers/video/wmt_ge_rops.c                        |    9 +-
+ 55 files changed, 2463 insertions(+), 1582 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/vt8500.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/vt8500/via,vt8500-intc.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/vt8500/via,vt8500-pmc.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/vt8500/via,vt8500-timer.txt
+ create mode 100644 Documentation/devicetree/bindings/clock/vt8500.txt
+ create mode 100644 Documentation/devicetree/bindings/gpio/gpio-vt8500.txt
+ create mode 100644 Documentation/devicetree/bindings/rtc/via,vt8500-rtc.txt
+ create mode 100644 Documentation/devicetree/bindings/tty/serial/via,vt8500-uart.txt
+ create mode 100644 Documentation/devicetree/bindings/usb/platform-uhci.txt
+ create mode 100644 Documentation/devicetree/bindings/usb/via,vt8500-ehci.txt
+ create mode 100644 Documentation/devicetree/bindings/video/via,vt8500-fb.txt
+ create mode 100644 Documentation/devicetree/bindings/video/wm,prizm-ge-rops.txt
+ create mode 100644 Documentation/devicetree/bindings/video/wm,wm8505-fb.txt
+ create mode 100644 arch/arm/boot/dts/vt8500-bv07.dts
+ create mode 100644 arch/arm/boot/dts/vt8500.dtsi
+ create mode 100644 arch/arm/boot/dts/wm8505-ref.dts
+ create mode 100644 arch/arm/boot/dts/wm8505.dtsi
+ create mode 100644 arch/arm/boot/dts/wm8650-mid.dts
+ create mode 100644 arch/arm/boot/dts/wm8650.dtsi
+ delete mode 100644 arch/arm/mach-vt8500/bv07.c
+ create mode 100644 arch/arm/mach-vt8500/common.h
+ delete mode 100644 arch/arm/mach-vt8500/devices-vt8500.c
+ delete mode 100644 arch/arm/mach-vt8500/devices-wm8505.c
+ delete mode 100644 arch/arm/mach-vt8500/devices.c
+ delete mode 100644 arch/arm/mach-vt8500/devices.h
+ delete mode 100644 arch/arm/mach-vt8500/gpio.c
+ delete mode 100644 arch/arm/mach-vt8500/include/mach/vt8500_irqs.h
+ delete mode 100644 arch/arm/mach-vt8500/include/mach/vt8500_regs.h
+ delete mode 100644 arch/arm/mach-vt8500/include/mach/wm8505_irqs.h
+ delete mode 100644 arch/arm/mach-vt8500/include/mach/wm8505_regs.h
+ delete mode 100644 arch/arm/mach-vt8500/restart.c
+ create mode 100644 arch/arm/mach-vt8500/vt8500.c
+ delete mode 100644 arch/arm/mach-vt8500/wm8505_7in.c
+ create mode 100644 drivers/clk/clk-vt8500.c
+ create mode 100644 drivers/gpio/gpio-vt8500.c
+ create mode 100644 drivers/usb/host/uhci-platform.c
+
+-- 
+1.7.9.5
 

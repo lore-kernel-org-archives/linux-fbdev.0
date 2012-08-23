@@ -1,81 +1,106 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 21 Aug 2012 06:10:27 +0000
-Subject: [PATCH 20/23] OMAPDSS: MANAGER: Update display sysfs store
-Message-Id: <1345528711-27801-21-git-send-email-archit@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Thu, 23 Aug 2012 20:35:43 +0000
+Subject: Re: [PATCH 5/5] drivers/video/ep93xx-fb.c: use devm_ functions
+Message-Id: <5036941F.2070305@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>
-In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
+References: <1343742860-16213-1-git-send-email-damien.cassou@lifl.fr> <1343742860-16213-2-git-send-email-damien.cassou@lifl.fr>
+In-Reply-To: <1343742860-16213-2-git-send-email-damien.cassou@lifl.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com, Archit Taneja <archit@ti.com>
+To: Damien Cassou <damien.cassou@lifl.fr>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The display sysfs attribute's store function needs to be changed with the
-introduction of outputs.
+On 07/31/2012 01:54 PM, Damien Cassou wrote:
+> From: Damien Cassou <damien.cassou@lifl.fr>
+> 
+> The various devm_ functions allocate memory that is released when a driver
+> detaches.  This patch uses these functions for data that is allocated in
+> the probe function of a platform device and is only freed in the remove
+> function.
+> 
+> Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
 
-Providing a manager to the display isn't enough to create a link now, the
-manager needs and output to connect to. A manager's display store file only
-has the information of the manager and the desired display, it is not aware
-of which output should the manager connect to.
+Applied.
 
-Because of this, a new constraint needs to be set up when setting a display via
-this sysfs file. The constraint is that the desired display should already be
-connected to an output before calling this sysfs function.
 
-This might break some existing user space stuff which uses sysfs directly. But
-in most cases dss_recheck_connections will connect displays to floating outputs.
-DSS sysfs files are being planned to be remove anyway, so it's not much of a
-harm.
+Thanks,
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/manager.c |   25 ++++++++++++++++++++-----
- 1 file changed, 20 insertions(+), 5 deletions(-)
+Florian Tobias Schandinat
 
-diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
-index fd39f66..d808ce2 100644
---- a/drivers/video/omap2/dss/manager.c
-+++ b/drivers/video/omap2/dss/manager.c
-@@ -74,18 +74,33 @@ static ssize_t manager_display_store(struct omap_overlay_manager *mgr,
- 	if (dssdev)
- 		DSSDBG("display %s found\n", dssdev->name);
- 
--	if (mgr->get_device(mgr)) {
--		r = mgr->unset_device(mgr);
-+	if (mgr->output) {
-+		if (mgr->output->device) {
-+			r = mgr->output->unset_device(mgr->output);
-+			if (r) {
-+				goto put_device;
-+				DSSERR("failed to unset device from output\n");
-+			}
-+		}
-+
-+		r = mgr->unset_output(mgr);
- 		if (r) {
--			DSSERR("failed to unset display\n");
-+			DSSERR("failed to unset current output\n");
- 			goto put_device;
- 		}
- 	}
- 
- 	if (dssdev) {
--		r = mgr->set_device(mgr, dssdev);
-+		struct omap_dss_output *out = dssdev->output;
-+
-+		if (!out) {
-+			DSSERR("no output connected to device\n");
-+			goto put_device;
-+		}
-+
-+		r = mgr->set_output(mgr, out);
- 		if (r) {
--			DSSERR("failed to set manager\n");
-+			DSSERR("failed to set manager output\n");
- 			goto put_device;
- 		}
- 
--- 
-1.7.9.5
+> 
+> ---
+>  drivers/video/ep93xx-fb.c |   17 ++++++-----------
+>  1 file changed, 6 insertions(+), 11 deletions(-)
+> 
+> diff --git a/drivers/video/ep93xx-fb.c b/drivers/video/ep93xx-fb.c
+> index 345d962..69c89f2 100644
+> --- a/drivers/video/ep93xx-fb.c
+> +++ b/drivers/video/ep93xx-fb.c
+> @@ -529,7 +529,8 @@ static int __devinit ep93xxfb_probe(struct platform_device *pdev)
+>  	 * any of the framebuffer registers.
+>  	 */
+>  	fbi->res = res;
+> -	fbi->mmio_base = ioremap(res->start, resource_size(res));
+> +	fbi->mmio_base = devm_ioremap(&pdev->dev, res->start,
+> +				      resource_size(res));
+>  	if (!fbi->mmio_base) {
+>  		err = -ENXIO;
+>  		goto failed_resource;
+> @@ -553,20 +554,20 @@ static int __devinit ep93xxfb_probe(struct platform_device *pdev)
+>  	if (err = 0) {
+>  		dev_err(info->dev, "No suitable video mode found\n");
+>  		err = -EINVAL;
+> -		goto failed_mode;
+> +		goto failed_resource;
+>  	}
+>  
+>  	if (mach_info->setup) {
+>  		err = mach_info->setup(pdev);
+>  		if (err)
+> -			goto failed_mode;
+> +			goto failed_resource;
+>  	}
+>  
+>  	err = ep93xxfb_check_var(&info->var, info);
+>  	if (err)
+>  		goto failed_check;
+>  
+> -	fbi->clk = clk_get(info->dev, NULL);
+> +	fbi->clk = devm_clk_get(&pdev->dev, NULL);
+>  	if (IS_ERR(fbi->clk)) {
+>  		err = PTR_ERR(fbi->clk);
+>  		fbi->clk = NULL;
+> @@ -578,19 +579,15 @@ static int __devinit ep93xxfb_probe(struct platform_device *pdev)
+>  
+>  	err = register_framebuffer(info);
+>  	if (err)
+> -		goto failed;
+> +		goto failed_check;
+>  
+>  	dev_info(info->dev, "registered. Mode = %dx%d-%d\n",
+>  		 info->var.xres, info->var.yres, info->var.bits_per_pixel);
+>  	return 0;
+>  
+> -failed:
+> -	clk_put(fbi->clk);
+>  failed_check:
+>  	if (fbi->mach_info->teardown)
+>  		fbi->mach_info->teardown(pdev);
+> -failed_mode:
+> -	iounmap(fbi->mmio_base);
+>  failed_resource:
+>  	ep93xxfb_dealloc_videomem(info);
+>  failed_videomem:
+> @@ -609,8 +606,6 @@ static int __devexit ep93xxfb_remove(struct platform_device *pdev)
+>  
+>  	unregister_framebuffer(info);
+>  	clk_disable(fbi->clk);
+> -	clk_put(fbi->clk);
+> -	iounmap(fbi->mmio_base);
+>  	ep93xxfb_dealloc_videomem(info);
+>  	fb_dealloc_cmap(&info->cmap);
+>  
+> 
+> 
 

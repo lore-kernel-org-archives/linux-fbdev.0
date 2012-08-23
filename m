@@ -1,87 +1,84 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 09 Aug 2012 11:56:39 +0000
-Subject: [PATCH v2 10/13] OMAPDSS: SDI: Maintain our own timings field in driver data
-Message-Id: <1344512989-4071-11-git-send-email-archit@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Thu, 23 Aug 2012 20:36:48 +0000
+Subject: Re: [PATCH 1/5] drivers/video/bf537-lq035.c: use devm_ functions
+Message-Id: <50369460.7010303@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343817088-29645-1-git-send-email-archit@ti.com>
- <1344512989-4071-1-git-send-email-archit@ti.com>
-In-Reply-To: <1344512989-4071-1-git-send-email-archit@ti.com>
+References: <1343742860-16213-1-git-send-email-damien.cassou@lifl.fr> <1343742860-16213-6-git-send-email-damien.cassou@lifl.fr>
+In-Reply-To: <1343742860-16213-6-git-send-email-damien.cassou@lifl.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: Damien Cassou <damien.cassou@lifl.fr>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The SDI driver currently relies on the timings in omap_dss_device struct to
-configure the DISPC accordingly. This makes the SDI interface driver dependent
-on the omap_dss_device struct.
+On 07/31/2012 01:54 PM, Damien Cassou wrote:
+> From: Damien Cassou <damien.cassou@lifl.fr>
+> 
+> The various devm_ functions allocate memory that is released when a driver
+> detaches.  This patch uses these functions for data that is allocated in
+> the probe function of a platform device and is only freed in the remove
+> function.
+> 
+> Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
 
-Make the SDI driver data maintain it's own timings field. The panel driver is
-expected to call omapdss_sdi_set_timings() to set these timings before the panel
-is enabled.
+Applied.
 
-Make the SDI panel driver configure the new timings is the omap_dss_device
-struct(dssdev->panel.timings). The SDI driver is responsible for maintaining
-only it's own copy of timings.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/displays/panel-acx565akm.c |    4 ++++
- drivers/video/omap2/dss/sdi.c                  |    5 +++--
- 2 files changed, 7 insertions(+), 2 deletions(-)
+Thanks,
 
-diff --git a/drivers/video/omap2/displays/panel-acx565akm.c b/drivers/video/omap2/displays/panel-acx565akm.c
-index 11bdc88..77fe59f 100644
---- a/drivers/video/omap2/displays/panel-acx565akm.c
-+++ b/drivers/video/omap2/displays/panel-acx565akm.c
-@@ -600,6 +600,8 @@ static int acx_panel_power_on(struct omap_dss_device *dssdev)
- 
- 	mutex_lock(&md->mutex);
- 
-+	omapdss_sdi_set_timings(dssdev, &dssdev->panel.timings);
-+
- 	r = omapdss_sdi_display_enable(dssdev);
- 	if (r) {
- 		pr_err("%s sdi enable failed\n", __func__);
-@@ -732,6 +734,8 @@ static void acx_panel_set_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
- {
- 	omapdss_sdi_set_timings(dssdev, timings);
-+
-+	dssdev->panel.timings = *timings;
- }
- 
- static int acx_panel_check_timings(struct omap_dss_device *dssdev,
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index 0474962..243e96d 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -34,6 +34,7 @@ static struct {
- 	struct regulator *vdds_sdi_reg;
- 
- 	struct dss_lcd_mgr_config mgr_config;
-+	struct omap_video_timings timings;
- } sdi;
- 
- static void sdi_config_lcd_manager(struct omap_dss_device *dssdev)
-@@ -51,7 +52,7 @@ static void sdi_config_lcd_manager(struct omap_dss_device *dssdev)
- 
- int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- {
--	struct omap_video_timings *t = &dssdev->panel.timings;
-+	struct omap_video_timings *t = &sdi.timings;
- 	struct dss_clock_info dss_cinfo;
- 	struct dispc_clock_info dispc_cinfo;
- 	unsigned long pck;
-@@ -151,7 +152,7 @@ void omapdss_sdi_set_timings(struct omap_dss_device *dssdev,
- {
- 	int r;
- 
--	dssdev->panel.timings = *timings;
-+	sdi.timings = *timings;
- 
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
- 		omapdss_sdi_display_disable(dssdev);
--- 
-1.7.9.5
+Florian Tobias Schandinat
+
+> 
+> ---
+>  drivers/video/bf537-lq035.c |   12 +++++-------
+>  1 file changed, 5 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/video/bf537-lq035.c b/drivers/video/bf537-lq035.c
+> index befbc80..7347aa1 100644
+> --- a/drivers/video/bf537-lq035.c
+> +++ b/drivers/video/bf537-lq035.c
+> @@ -760,18 +760,20 @@ static int __devinit bfin_lq035_probe(struct platform_device *pdev)
+>  	bfin_lq035_fb.flags = FBINFO_DEFAULT;
+>  
+>  
+> -	bfin_lq035_fb.pseudo_palette = kzalloc(sizeof(u32) * 16, GFP_KERNEL);
+> +	bfin_lq035_fb.pseudo_palette = devm_kzalloc(&pdev->dev,
+> +						    sizeof(u32) * 16,
+> +						    GFP_KERNEL);
+>  	if (bfin_lq035_fb.pseudo_palette = NULL) {
+>  		pr_err("failed to allocate pseudo_palette\n");
+>  		ret = -ENOMEM;
+> -		goto out_palette;
+> +		goto out_table;
+>  	}
+>  
+>  	if (fb_alloc_cmap(&bfin_lq035_fb.cmap, NBR_PALETTE, 0) < 0) {
+>  		pr_err("failed to allocate colormap (%d entries)\n",
+>  			NBR_PALETTE);
+>  		ret = -EFAULT;
+> -		goto out_cmap;
+> +		goto out_table;
+>  	}
+>  
+>  	if (register_framebuffer(&bfin_lq035_fb) < 0) {
+> @@ -804,9 +806,6 @@ out_lcd:
+>  	unregister_framebuffer(&bfin_lq035_fb);
+>  out_reg:
+>  	fb_dealloc_cmap(&bfin_lq035_fb.cmap);
+> -out_cmap:
+> -	kfree(bfin_lq035_fb.pseudo_palette);
+> -out_palette:
+>  out_table:
+>  	dma_free_coherent(NULL, TOTAL_VIDEO_MEM_SIZE, fb_buffer, 0);
+>  	fb_buffer = NULL;
+> @@ -834,7 +833,6 @@ static int __devexit bfin_lq035_remove(struct platform_device *pdev)
+>  	free_dma(CH_PPI);
+>  
+>  
+> -	kfree(bfin_lq035_fb.pseudo_palette);
+>  	fb_dealloc_cmap(&bfin_lq035_fb.cmap);
+>  
+>  
+> 
+> 
 

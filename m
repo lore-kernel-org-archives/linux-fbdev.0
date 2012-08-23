@@ -1,141 +1,81 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 21 Aug 2012 06:10:10 +0000
-Subject: [PATCH 03/23] OMAPDSS: output: Add set/unset device ops for omap_dss_output
-Message-Id: <1345528711-27801-4-git-send-email-archit@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Thu, 23 Aug 2012 20:29:24 +0000
+Subject: Re: [PATCH] fbcon: Fix bit_putcs() call to kmalloc(s, GFP_KERNEL)
+Message-Id: <503692A4.7000209@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>
-In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
+References: <20120730210949.5ccc5164@neptune.home>
+In-Reply-To: <20120730210949.5ccc5164@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com, Archit Taneja <archit@ti.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: =?UTF-8?B?QnJ1bm8gUHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-An output entity represented by the struct omap_dss_output connects to a
-omap_dss_device entity. Add functions to set or unset an output's device. This
-is similar to how managers and devices were connected previously. An output can
-connect to a device without being connected to a manager. However, the output
-needs to eventually connect to a manager so that the connected panel can be
-enabled.
+On 07/30/2012 07:09 PM, Bruno Prémont wrote:
+> Switch to kmalloc(,GFP_ATOMIC) in bit_putcs to fix below trace:
+> 
+> [    9.771812] BUG: sleeping function called from invalid context at /usr/src/linux-git/mm/slub.c:943
+> [    9.771814] in_atomic(): 1, irqs_disabled(): 1, pid: 1063, name: mount
+> [    9.771818] Pid: 1063, comm: mount Not tainted 3.5.0-jupiter-00003-g8d858b1-dirty #2
+> [    9.771819] Call Trace:
+> [    9.771838]  [<c104f79b>] __might_sleep+0xcb/0xe0
+> [    9.771844]  [<c10c00d4>] __kmalloc+0xb4/0x1c0
+> [    9.771851]  [<c1041d4a>] ? queue_work+0x1a/0x30
+> [    9.771854]  [<c1041dcf>] ? queue_delayed_work+0xf/0x30
+> [    9.771862]  [<c1205832>] ? bit_putcs+0xf2/0x3e0
+> [    9.771865]  [<c1041e01>] ? schedule_delayed_work+0x11/0x20
+> [    9.771868]  [<c1205832>] bit_putcs+0xf2/0x3e0
+> [    9.771875]  [<c12002b8>] ? get_color.clone.14+0x28/0x100
+> [    9.771878]  [<c1200d2f>] fbcon_putcs+0x11f/0x130
+> [    9.771882]  [<c1205740>] ? bit_clear+0xe0/0xe0
+> [    9.771885]  [<c1200f6d>] fbcon_redraw.clone.21+0x11d/0x160
+> [    9.771889]  [<c120383d>] fbcon_scroll+0x79d/0xe10
+> [    9.771892]  [<c12002b8>] ? get_color.clone.14+0x28/0x100
+> [    9.771897]  [<c124c0b4>] scrup+0x64/0xd0
+> [    9.771900]  [<c124c22b>] lf+0x2b/0x60
+> [    9.771903]  [<c124cc95>] vt_console_print+0x1d5/0x2f0
+> [    9.771907]  [<c124cac0>] ? register_vt_notifier+0x20/0x20
+> [    9.771913]  [<c102b335>] call_console_drivers.clone.5+0xa5/0xc0
+> [    9.771916]  [<c102c58e>] console_unlock+0x2fe/0x3c0
+> [    9.771920]  [<c102ca16>] vprintk_emit+0x2e6/0x300
+> [    9.771924]  [<c13f01ae>] printk+0x38/0x3a
+> [    9.771931]  [<c112e8fe>] reiserfs_remount+0x2ae/0x3e0
+> [    9.771934]  [<c112e650>] ? reiserfs_fill_super+0xb00/0xb00
+> [    9.771939]  [<c10ca0ab>] do_remount_sb+0xab/0x150
+> [    9.771943]  [<c1034476>] ? ns_capable+0x46/0x70
+> [    9.771948]  [<c10e059c>] do_mount+0x20c/0x6b0
+> [    9.771955]  [<c10a7044>] ? strndup_user+0x34/0x50
+> [    9.771958]  [<c10e0acc>] sys_mount+0x6c/0xa0
+> [    9.771964]  [<c13f2557>] sysenter_do_call+0x12/0x26
+> 
+> According to comment in bit_putcs() that kammloc() call only happens
+> when fbcon is drawing to a monochrome framebuffer (which is my case with
+> hid-picolcd).
+> 
+> Signed-off-by: Bruno Prémont <bonbons@linux-vserver.org>
 
-Keep the omap_overlay_manager pointer in omap_dss_device for now to prevent
-breaking things. This will be removed later when outputs are supported
-completely.
+Applied.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/output.c |   67 ++++++++++++++++++++++++++++++++++++++
- include/video/omapdss.h          |    5 +++
- 2 files changed, 72 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
-index 034ebbe..ac57b19 100644
---- a/drivers/video/omap2/dss/output.c
-+++ b/drivers/video/omap2/dss/output.c
-@@ -24,6 +24,70 @@
- #include "dss.h"
- 
- static struct list_head output_list;
-+static DEFINE_MUTEX(output_lock);
-+
-+static int dss_output_set_device(struct omap_dss_output *out,
-+		struct omap_dss_device *dssdev)
-+{
-+	int r;
-+
-+	mutex_lock(&output_lock);
-+
-+	if (out->device) {
-+		DSSERR("output already has device %s connected to it\n",
-+			out->device->name);
-+		r = -EINVAL;
-+		goto err;
-+	}
-+
-+	if (out->type != dssdev->type) {
-+		DSSERR("output type and display type don't match\n");
-+		r = -EINVAL;
-+		goto err;
-+	}
-+
-+	out->device = dssdev;
-+	dssdev->output = out;
-+
-+	mutex_unlock(&output_lock);
-+
-+	return 0;
-+err:
-+	mutex_unlock(&output_lock);
-+
-+	return r;
-+}
-+
-+static int dss_output_unset_device(struct omap_dss_output *out)
-+{
-+	int r;
-+
-+	mutex_lock(&output_lock);
-+
-+	if (!out->device) {
-+		DSSERR("output doesn't have a device connected to it\n");
-+		r = -EINVAL;
-+		goto err;
-+	}
-+
-+	if (out->device->state != OMAP_DSS_DISPLAY_DISABLED) {
-+		DSSERR("device %s is not disabled, cannot unset device\n",
-+				out->device->name);
-+		r = -EINVAL;
-+		goto err;
-+	}
-+
-+	out->device->output = NULL;
-+	out->device = NULL;
-+
-+	mutex_unlock(&output_lock);
-+
-+	return 0;
-+err:
-+	mutex_unlock(&output_lock);
-+
-+	return r;
-+}
- 
- struct omap_dss_output *dss_create_output(struct platform_device *pdev)
- {
-@@ -35,6 +99,9 @@ struct omap_dss_output *dss_create_output(struct platform_device *pdev)
- 
- 	out->pdev = pdev;
- 
-+	out->set_device = &dss_output_set_device;
-+	out->unset_device = &dss_output_unset_device;
-+
- 	list_add_tail(&out->list, &output_list);
- 
- 	return out;
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 0ba613f..2e40f27 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -518,6 +518,10 @@ struct omap_dss_output {
- 	struct omap_overlay_manager *manager;
- 
- 	struct omap_dss_device *device;
-+
-+	int (*set_device) (struct omap_dss_output *out,
-+		struct omap_dss_device *dssdev);
-+	int (*unset_device) (struct omap_dss_output *out);
- };
- 
- struct omap_dss_device {
-@@ -619,6 +623,7 @@ struct omap_dss_device {
- 	enum omap_display_caps caps;
- 
- 	struct omap_overlay_manager *manager;
-+	struct omap_dss_output *output;
- 
- 	enum omap_dss_display_state state;
- 
--- 
-1.7.9.5
+Thanks,
+
+Florian Tobias Schandinat
+
+> ---
+>  drivers/video/console/bitblit.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/video/console/bitblit.c b/drivers/video/console/bitblit.c
+> index 28b1a83..61b182b 100644
+> --- a/drivers/video/console/bitblit.c
+> +++ b/drivers/video/console/bitblit.c
+> @@ -162,7 +162,7 @@ static void bit_putcs(struct vc_data *vc, struct fb_info *info,
+>  	image.depth = 1;
+>  
+>  	if (attribute) {
+> -		buf = kmalloc(cellsize, GFP_KERNEL);
+> +		buf = kmalloc(cellsize, GFP_ATOMIC);
+>  		if (!buf)
+>  			return;
+>  	}
 

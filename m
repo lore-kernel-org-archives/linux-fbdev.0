@@ -1,492 +1,443 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Sun, 19 Aug 2012 17:32:04 +0000
-Subject: [PATCH 2/6] HID: picoLCD: rework hid-fbdev interaction
-Message-Id: <20120819193204.75a35508@neptune.home>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Thu, 23 Aug 2012 07:35:43 +0000
+Subject: [PATCHv4 7/9] arm: vt8500: doc: Add device tree bindings for arch-vt8500 devices
+Message-Id: <1345707346-9035-8-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120819192859.74136bb0@neptune.home>
+References: <1345707346-9035-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1345707346-9035-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-Split out all FB related data out of struct picolcd_data into a struct
-picolcd_fb_data that is allocated with fb_info. This way fb_info may
-cleanly outlive struct picolcd_data for as long as needed for its last
-user to drop his reference.
+Bindings for gpio, interrupt controller, power management controller,
+timer, realtime clock, serial uart, ehci and uhci controllers and
+framebuffer controllers used on the arch-vt8500 platform.
 
-Access to struct picolcd_data is now protected with struct
-picolcd_fb_data's lock and tile  update reports are only generated
-while picolcd_fbdata->picolcd is not NULL and is not marked as failed
-(which indicates unplug in progress).
+Framebuffer binding also specifies a 'display' node which is required
+for determining the lcd panel data.
 
-Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
 ---
- drivers/hid/hid-picolcd.h    |   19 +++-
- drivers/hid/hid-picolcd_fb.c |  216 ++++++++++++++++++++++----------------=
-----
- 2 files changed, 126 insertions(+), 109 deletions(-)
+ Documentation/devicetree/bindings/arm/vt8500.txt   |   15 ++++
+ .../bindings/arm/vt8500/via,vt8500-intc.txt        |   16 +++++
+ .../bindings/arm/vt8500/via,vt8500-pmc.txt         |   13 ++++
+ .../bindings/arm/vt8500/via,vt8500-timer.txt       |   15 ++++
+ Documentation/devicetree/bindings/clock/vt8500.txt |   72 ++++++++++++++++++++
+ .../devicetree/bindings/gpio/gpio-vt8500.txt       |   24 +++++++
+ .../devicetree/bindings/rtc/via,vt8500-rtc.txt     |   15 ++++
+ .../bindings/tty/serial/via,vt8500-uart.txt        |   17 +++++
+ .../devicetree/bindings/usb/platform-uhci.txt      |   15 ++++
+ .../devicetree/bindings/usb/via,vt8500-ehci.txt    |   15 ++++
+ .../devicetree/bindings/vendor-prefixes.txt        |    2 +
+ .../devicetree/bindings/video/via,vt8500-fb.txt    |   48 +++++++++++++
+ .../devicetree/bindings/video/wm,prizm-ge-rops.txt |   13 ++++
+ .../devicetree/bindings/video/wm,wm8505-fb.txt     |   22 ++++++
+ 14 files changed, 302 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/arm/vt8500.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/vt8500/via,vt8500-intc.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/vt8500/via,vt8500-pmc.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/vt8500/via,vt8500-timer.txt
+ create mode 100644 Documentation/devicetree/bindings/clock/vt8500.txt
+ create mode 100644 Documentation/devicetree/bindings/gpio/gpio-vt8500.txt
+ create mode 100644 Documentation/devicetree/bindings/rtc/via,vt8500-rtc.txt
+ create mode 100644 Documentation/devicetree/bindings/tty/serial/via,vt8500-uart.txt
+ create mode 100644 Documentation/devicetree/bindings/usb/platform-uhci.txt
+ create mode 100644 Documentation/devicetree/bindings/usb/via,vt8500-ehci.txt
+ create mode 100644 Documentation/devicetree/bindings/video/via,vt8500-fb.txt
+ create mode 100644 Documentation/devicetree/bindings/video/wm,prizm-ge-rops.txt
+ create mode 100644 Documentation/devicetree/bindings/video/wm,wm8505-fb.txt
 
-diff --git a/drivers/hid/hid-picolcd.h b/drivers/hid/hid-picolcd.h
-index 9200be1..dc4c795 100644
---- a/drivers/hid/hid-picolcd.h
-+++ b/drivers/hid/hid-picolcd.h
-@@ -90,11 +90,6 @@ struct picolcd_data {
-=20
- #ifdef CONFIG_HID_PICOLCD_FB
- 	/* Framebuffer stuff */
--	u8 fb_update_rate;
--	u8 fb_bpp;
--	u8 fb_force;
--	u8 *fb_vbitmap;		/* local copy of what was sent to PicoLCD */
--	u8 *fb_bitmap;		/* framebuffer */
- 	struct fb_info *fb_info;
- #endif /* CONFIG_HID_PICOLCD_FB */
- #ifdef CONFIG_HID_PICOLCD_LCD
-@@ -119,9 +114,21 @@ struct picolcd_data {
- 	int status;
- #define PICOLCD_BOOTLOADER 1
- #define PICOLCD_FAILED 2
--#define PICOLCD_READY_FB 4
- };
-=20
-+#ifdef CONFIG_HID_PICOLCD_FB
-+struct picolcd_fb_data {
-+	/* Framebuffer stuff */
-+	spinlock_t lock;
-+	struct picolcd_data *picolcd;
-+	u8 update_rate;
-+	u8 bpp;
-+	u8 force;
-+	u8 ready;
-+	u8 *vbitmap;		/* local copy of what was sent to PicoLCD */
-+	u8 *bitmap;		/* framebuffer */
+diff --git a/Documentation/devicetree/bindings/arm/vt8500.txt b/Documentation/devicetree/bindings/arm/vt8500.txt
+new file mode 100644
+index 0000000..1b3b187
+--- /dev/null
++++ b/Documentation/devicetree/bindings/arm/vt8500.txt
+@@ -0,0 +1,15 @@
++VIA/Wondermedia VT8500 Platforms Device Tree Bindings
++---------------------------------------
++
++Boards with the VIA VT8500 SoC shall have the following properties:
++Required root node property:
++compatible = "via,vt8500";
++
++Boards with the Wondermedia WM8505 SoC shall have the following properties:
++Required root node property:
++compatible = "wm,wm8505";
++
++Boards with the Wondermedia WM8650 SoC shall have the following properties:
++Required root node property:
++compatible = "wm,wm8650";
++
+diff --git a/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-intc.txt b/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-intc.txt
+new file mode 100644
+index 0000000..0a4ce10
+--- /dev/null
++++ b/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-intc.txt
+@@ -0,0 +1,16 @@
++VIA/Wondermedia VT8500 Interrupt Controller
++-----------------------------------------------------
++
++Required properties:
++- compatible : "via,vt8500-intc"
++- reg : Should contain 1 register ranges(address and length)
++- #interrupt-cells : should be <1>
++
++Example:
++
++	intc: interrupt-controller@d8140000 {
++		compatible = "via,vt8500-intc";
++		interrupt-controller;
++		reg = <0xd8140000 0x10000>;
++		#interrupt-cells = <1>;
++	};
+diff --git a/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-pmc.txt b/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-pmc.txt
+new file mode 100644
+index 0000000..521b9c7
+--- /dev/null
++++ b/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-pmc.txt
+@@ -0,0 +1,13 @@
++VIA/Wondermedia VT8500 Power Management Controller
++-----------------------------------------------------
++
++Required properties:
++- compatible : "via,vt8500-pmc"
++- reg : Should contain 1 register ranges(address and length)
++
++Example:
++
++	pmc@d8130000 {
++		compatible = "via,vt8500-pmc";
++		reg = <0xd8130000 0x1000>;
++	};
+diff --git a/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-timer.txt b/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-timer.txt
+new file mode 100644
+index 0000000..901c73f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/arm/vt8500/via,vt8500-timer.txt
+@@ -0,0 +1,15 @@
++VIA/Wondermedia VT8500 Timer
++-----------------------------------------------------
++
++Required properties:
++- compatible : "via,vt8500-timer"
++- reg : Should contain 1 register ranges(address and length)
++- interrupts : interrupt for the timer
++
++Example:
++
++	timer@d8130100 {
++		compatible = "via,vt8500-timer";
++		reg = <0xd8130100 0x28>;
++		interrupts = <36>;
++	};
+diff --git a/Documentation/devicetree/bindings/clock/vt8500.txt b/Documentation/devicetree/bindings/clock/vt8500.txt
+new file mode 100644
+index 0000000..a880c70
+--- /dev/null
++++ b/Documentation/devicetree/bindings/clock/vt8500.txt
+@@ -0,0 +1,72 @@
++Device Tree Clock bindings for arch-vt8500
++
++This binding uses the common clock binding[1].
++
++[1] Documentation/devicetree/bindings/clock/clock-bindings.txt
++
++Required properties:
++- compatible : shall be one of the following:
++	"via,vt8500-pll-clock" - for a VT8500/WM8505 PLL clock
++	"wm,wm8650-pll-clock" - for a WM8650 PLL clock
++	"via,vt8500-device-clock" - for a VT/WM device clock
++
++Required properties for PLL clocks:
++- reg : shall be the control register offset from PMC base for the pll clock.
++- clocks : shall be the input parent clock phandle for the clock. This should
++	be the reference clock.
++- #clock-cells : from common clock binding; shall be set to 0.
++
++Required properties for device clocks:
++- clocks : shall be the input parent clock phandle for the clock. This should
++	be a pll output.
++- #clock-cells : from common clock binding; shall be set to 0.
++
++
++Device Clocks
++
++Device clocks are required to have one or both of the following sets of
++properties:
++
++
++Gated device clocks:
++
++Required properties:
++- enable-reg : shall be the register offset from PMC base for the enable
++	register.
++- enable-bit : shall be the bit within enable-reg to enable/disable the clock.
++
++
++Divisor device clocks:
++
++Required property:
++- divisor-reg : shall be the register offset from PMC base for the divisor
++	register.
++Optional property:
++- divisor-mask : shall be the mask for the divisor register. Defaults to 0x1f
++	if not specified.
++
++
++For example:
++
++ref25: ref25M {
++	#clock-cells = <0>;
++	compatible = "fixed-clock";
++	clock-frequency = <25000000>;
 +};
-+#endif /* CONFIG_HID_PICOLCD_FB */
-=20
- /* Find a given report */
- #define picolcd_in_report(id, dev) picolcd_report(id, dev, HID_INPUT_REPOR=
-T)
-diff --git a/drivers/hid/hid-picolcd_fb.c b/drivers/hid/hid-picolcd_fb.c
-index 4d8e22c..5905bbd 100644
---- a/drivers/hid/hid-picolcd_fb.c
-+++ b/drivers/hid/hid-picolcd_fb.c
-@@ -98,19 +98,26 @@ static const struct fb_var_screeninfo picolcdfb_var =3D=
- {
- };
-=20
- /* Send a given tile to PicoLCD */
--static int picolcd_fb_send_tile(struct hid_device *hdev, int chip, int til=
-e)
-+static int picolcd_fb_send_tile(struct picolcd_data *data, u8 *vbitmap,
-+		int chip, int tile)
- {
--	struct picolcd_data *data =3D hid_get_drvdata(hdev);
--	struct hid_report *report1 =3D picolcd_out_report(REPORT_LCD_CMD_DATA, hd=
-ev);
--	struct hid_report *report2 =3D picolcd_out_report(REPORT_LCD_DATA, hdev);
-+	struct hid_report *report1, *report2;
- 	unsigned long flags;
- 	u8 *tdata;
- 	int i;
-=20
--	if (!report1 || report1->maxfield !=3D 1 || !report2 || report2->maxfield=
- !=3D 1)
-+	report1 =3D picolcd_out_report(REPORT_LCD_CMD_DATA, data->hdev);
-+	if (!report1 || report1->maxfield !=3D 1)
-+		return -ENODEV;
-+	report2 =3D picolcd_out_report(REPORT_LCD_DATA, data->hdev);
-+	if (!report2 || report2->maxfield !=3D 1)
- 		return -ENODEV;
-=20
- 	spin_lock_irqsave(&data->lock, flags);
-+	if ((data->status & PICOLCD_FAILED)) {
-+		spin_unlock_irqrestore(&data->lock, flags);
-+		return -ENODEV;
-+	}
- 	hid_set_field(report1->field[0],  0, chip << 2);
- 	hid_set_field(report1->field[0],  1, 0x02);
- 	hid_set_field(report1->field[0],  2, 0x00);
-@@ -128,7 +135,7 @@ static int picolcd_fb_send_tile(struct hid_device *hdev=
-, int chip, int tile)
- 	hid_set_field(report2->field[0],  2, 0x00);
- 	hid_set_field(report2->field[0],  3,   32);
-=20
--	tdata =3D data->fb_vbitmap + (tile * 4 + chip) * 64;
-+	tdata =3D vbitmap + (tile * 4 + chip) * 64;
- 	for (i =3D 0; i < 64; i++)
- 		if (i < 32)
- 			hid_set_field(report1->field[0], 11 + i, tdata[i]);
-@@ -189,6 +196,7 @@ void picolcd_fb_refresh(struct picolcd_data *data)
- int picolcd_fb_reset(struct picolcd_data *data, int clear)
- {
- 	struct hid_report *report =3D picolcd_out_report(REPORT_LCD_CMD, data->hd=
-ev);
-+	struct picolcd_fb_data *fbdata =3D data->fb_info->par;
- 	int i, j;
- 	unsigned long flags;
- 	static const u8 mapcmd[8] =3D { 0x00, 0x02, 0x00, 0x64, 0x3f, 0x00, 0x64,=
- 0xc0 };
-@@ -207,20 +215,19 @@ int picolcd_fb_reset(struct picolcd_data *data, int c=
-lear)
- 				hid_set_field(report->field[0], j, 0);
- 		usbhid_submit_report(data->hdev, report, USB_DIR_OUT);
- 	}
--
--	data->status |=3D PICOLCD_READY_FB;
- 	spin_unlock_irqrestore(&data->lock, flags);
-=20
--	if (data->fb_bitmap) {
--		if (clear) {
--			memset(data->fb_vbitmap, 0, PICOLCDFB_SIZE);
--			memset(data->fb_bitmap, 0, PICOLCDFB_SIZE*data->fb_bpp);
--		}
--		data->fb_force =3D 1;
-+	if (clear) {
-+		memset(fbdata->vbitmap, 0, PICOLCDFB_SIZE);
-+		memset(fbdata->bitmap, 0, PICOLCDFB_SIZE*fbdata->bpp);
- 	}
-+	fbdata->force =3D 1;
-=20
- 	/* schedule first output of framebuffer */
--	picolcd_fb_refresh(data);
-+	if (fbdata->ready)
-+		schedule_delayed_work(&data->fb_info->deferred_work, 0);
-+	else
-+		fbdata->ready =3D 1;
-=20
- 	return 0;
- }
-@@ -230,20 +237,15 @@ static void picolcd_fb_update(struct fb_info *info)
- {
- 	int chip, tile, n;
- 	unsigned long flags;
-+	struct picolcd_fb_data *fbdata =3D info->par;
- 	struct picolcd_data *data;
-=20
- 	mutex_lock(&info->lock);
--	data =3D info->par;
--	if (!data)
--		goto out;
-=20
--	spin_lock_irqsave(&data->lock, flags);
--	if (!(data->status & PICOLCD_READY_FB)) {
--		spin_unlock_irqrestore(&data->lock, flags);
--		picolcd_fb_reset(data, 0);
--	} else {
--		spin_unlock_irqrestore(&data->lock, flags);
--	}
-+	spin_lock_irqsave(&fbdata->lock, flags);
-+	if (!fbdata->ready && fbdata->picolcd)
-+		picolcd_fb_reset(fbdata->picolcd, 0);
-+	spin_unlock_irqrestore(&fbdata->lock, flags);
-=20
- 	/*
- 	 * Translate the framebuffer into the format needed by the PicoLCD.
-@@ -254,32 +256,38 @@ static void picolcd_fb_update(struct fb_info *info)
- 	 */
- 	n =3D 0;
- 	for (chip =3D 0; chip < 4; chip++)
--		for (tile =3D 0; tile < 8; tile++)
--			if (picolcd_fb_update_tile(data->fb_vbitmap,
--					data->fb_bitmap, data->fb_bpp, chip, tile) ||
--				data->fb_force) {
--				n +=3D 2;
--				if (n >=3D HID_OUTPUT_FIFO_SIZE / 2) {
--					mutex_unlock(&info->lock);
--					usbhid_wait_io(data->hdev);
--					mutex_lock(&info->lock);
--					data =3D info->par;
--					if (!data)
--						goto out;
--					spin_lock_irqsave(&data->lock, flags);
--					if (data->status & PICOLCD_FAILED) {
--						spin_unlock_irqrestore(&data->lock, flags);
--						goto out;
--					}
--					spin_unlock_irqrestore(&data->lock, flags);
--					n =3D 0;
--				}
--				picolcd_fb_send_tile(data->hdev, chip, tile);
-+		for (tile =3D 0; tile < 8; tile++) {
-+			if (!fbdata->force && !picolcd_fb_update_tile(
-+					fbdata->vbitmap, fbdata->bitmap,
-+					fbdata->bpp, chip, tile))
-+				continue;
-+			n +=3D 2;
-+			if (n >=3D HID_OUTPUT_FIFO_SIZE / 2) {
-+				spin_lock_irqsave(&fbdata->lock, flags);
-+				data =3D fbdata->picolcd;
-+				spin_unlock_irqrestore(&fbdata->lock, flags);
-+				mutex_unlock(&info->lock);
-+				if (!data)
-+					return;
-+				usbhid_wait_io(data->hdev);
-+				mutex_lock(&info->lock);
-+				n =3D 0;
- 			}
--	data->fb_force =3D false;
-+			spin_lock_irqsave(&fbdata->lock, flags);
-+			data =3D fbdata->picolcd;
-+			spin_unlock_irqrestore(&fbdata->lock, flags);
-+			if (!data || picolcd_fb_send_tile(data,
-+					fbdata->vbitmap, chip, tile))
-+				goto out;
-+		}
-+	fbdata->force =3D false;
- 	if (n) {
-+		spin_lock_irqsave(&fbdata->lock, flags);
-+		data =3D fbdata->picolcd;
-+		spin_unlock_irqrestore(&fbdata->lock, flags);
- 		mutex_unlock(&info->lock);
--		usbhid_wait_io(data->hdev);
-+		if (data)
-+			usbhid_wait_io(data->hdev);
- 		return;
- 	}
- out:
-@@ -336,20 +344,22 @@ static ssize_t picolcd_fb_write(struct fb_info *info,=
- const char __user *buf,
-=20
- static int picolcd_fb_blank(int blank, struct fb_info *info)
- {
--	if (!info->par)
--		return -ENODEV;
- 	/* We let fb notification do this for us via lcd/backlight device */
- 	return 0;
- }
-=20
- static void picolcd_fb_destroy(struct fb_info *info)
- {
-+	struct picolcd_fb_data *fbdata =3D info->par;
 +
- 	/* make sure no work is deferred */
- 	fb_deferred_io_cleanup(info);
-=20
-+	/* No thridparty should ever unregister our framebuffer! */
-+	WARN_ON(fbdata->picolcd !=3D NULL);
++plla: plla {
++	#clock-cells = <0>;
++	compatible = "wm,wm8650-pll-clock";
++	clocks = <&ref25>;
++	reg = <0x200>;
++};
 +
- 	vfree((u8 *)info->fix.smem_start);
- 	framebuffer_release(info);
--	printk(KERN_DEBUG "picolcd_fb_destroy(%p)\n", info);
- }
-=20
- static int picolcd_fb_check_var(struct fb_var_screeninfo *var, struct fb_i=
-nfo *info)
-@@ -376,17 +386,15 @@ static int picolcd_fb_check_var(struct fb_var_screeni=
-nfo *var, struct fb_info *i
-=20
- static int picolcd_set_par(struct fb_info *info)
- {
--	struct picolcd_data *data =3D info->par;
-+	struct picolcd_fb_data *fbdata =3D info->par;
- 	u8 *tmp_fb, *o_fb;
--	if (!data)
--		return -ENODEV;
--	if (info->var.bits_per_pixel =3D data->fb_bpp)
-+	if (info->var.bits_per_pixel =3D fbdata->bpp)
- 		return 0;
- 	/* switch between 1/8 bit depths */
- 	if (info->var.bits_per_pixel !=3D 1 && info->var.bits_per_pixel !=3D 8)
- 		return -EINVAL;
-=20
--	o_fb   =3D data->fb_bitmap;
-+	o_fb   =3D fbdata->bitmap;
- 	tmp_fb =3D kmalloc(PICOLCDFB_SIZE*info->var.bits_per_pixel, GFP_KERNEL);
- 	if (!tmp_fb)
- 		return -ENOMEM;
-@@ -415,7 +423,7 @@ static int picolcd_set_par(struct fb_info *info)
- 	}
-=20
- 	kfree(tmp_fb);
--	data->fb_bpp      =3D info->var.bits_per_pixel;
-+	fbdata->bpp =3D info->var.bits_per_pixel;
- 	return 0;
- }
-=20
-@@ -453,7 +461,8 @@ static ssize_t picolcd_fb_update_rate_show(struct devic=
-e *dev,
- 		struct device_attribute *attr, char *buf)
- {
- 	struct picolcd_data *data =3D dev_get_drvdata(dev);
--	unsigned i, fb_update_rate =3D data->fb_update_rate;
-+	struct picolcd_fb_data *fbdata =3D data->fb_info->par;
-+	unsigned i, fb_update_rate =3D fbdata->update_rate;
- 	size_t ret =3D 0;
-=20
- 	for (i =3D 1; i <=3D PICOLCDFB_UPDATE_RATE_LIMIT; i++)
-@@ -472,6 +481,7 @@ static ssize_t picolcd_fb_update_rate_store(struct devi=
-ce *dev,
- 		struct device_attribute *attr, const char *buf, size_t count)
- {
- 	struct picolcd_data *data =3D dev_get_drvdata(dev);
-+	struct picolcd_fb_data *fbdata =3D data->fb_info->par;
- 	int i;
- 	unsigned u;
-=20
-@@ -487,8 +497,8 @@ static ssize_t picolcd_fb_update_rate_store(struct devi=
-ce *dev,
- 	else if (u =3D 0)
- 		u =3D PICOLCDFB_UPDATE_RATE_DEFAULT;
-=20
--	data->fb_update_rate =3D u;
--	data->fb_info->fbdefio->delay =3D HZ / data->fb_update_rate;
-+	fbdata->update_rate =3D u;
-+	data->fb_info->fbdefio->delay =3D HZ / fbdata->update_rate;
- 	return count;
- }
-=20
-@@ -500,30 +510,18 @@ int picolcd_init_framebuffer(struct picolcd_data *dat=
-a)
- {
- 	struct device *dev =3D &data->hdev->dev;
- 	struct fb_info *info =3D NULL;
-+	struct picolcd_fb_data *fbdata =3D NULL;
- 	int i, error =3D -ENOMEM;
--	u8 *fb_vbitmap =3D NULL;
--	u8 *fb_bitmap  =3D NULL;
- 	u32 *palette;
-=20
--	fb_bitmap =3D vmalloc(PICOLCDFB_SIZE*8);
--	if (fb_bitmap =3D NULL) {
--		dev_err(dev, "can't get a free page for framebuffer\n");
--		goto err_nomem;
--	}
--
--	fb_vbitmap =3D kmalloc(PICOLCDFB_SIZE, GFP_KERNEL);
--	if (fb_vbitmap =3D NULL) {
--		dev_err(dev, "can't alloc vbitmap image buffer\n");
--		goto err_nomem;
--	}
--
--	data->fb_update_rate =3D PICOLCDFB_UPDATE_RATE_DEFAULT;
- 	/* The extra memory is:
- 	 * - 256*u32 for pseudo_palette
- 	 * - struct fb_deferred_io
- 	 */
- 	info =3D framebuffer_alloc(256 * sizeof(u32) +
--			sizeof(struct fb_deferred_io), dev);
-+			sizeof(struct fb_deferred_io) +
-+			sizeof(struct picolcd_fb_data) +
-+			PICOLCDFB_SIZE, dev);
- 	if (info =3D NULL) {
- 		dev_err(dev, "failed to allocate a framebuffer\n");
- 		goto err_nomem;
-@@ -531,74 +529,86 @@ int picolcd_init_framebuffer(struct picolcd_data *dat=
-a)
-=20
- 	info->fbdefio =3D info->par;
- 	*info->fbdefio =3D picolcd_fb_defio;
--	palette  =3D info->par + sizeof(struct fb_deferred_io);
-+	info->par +=3D sizeof(struct fb_deferred_io);
-+	palette =3D info->par;
-+	info->par +=3D 256 * sizeof(u32);
- 	for (i =3D 0; i < 256; i++)
- 		palette[i] =3D i > 0 && i < 16 ? 0xff : 0;
- 	info->pseudo_palette =3D palette;
--	info->screen_base =3D (char __force __iomem *)fb_bitmap;
- 	info->fbops =3D &picolcdfb_ops;
- 	info->var =3D picolcdfb_var;
- 	info->fix =3D picolcdfb_fix;
- 	info->fix.smem_len   =3D PICOLCDFB_SIZE*8;
--	info->fix.smem_start =3D (unsigned long)fb_bitmap;
--	info->par =3D data;
- 	info->flags =3D FBINFO_FLAG_DEFAULT;
-=20
--	data->fb_vbitmap =3D fb_vbitmap;
--	data->fb_bitmap  =3D fb_bitmap;
--	data->fb_bpp     =3D picolcdfb_var.bits_per_pixel;
-+	fbdata =3D info->par;
-+	spin_lock_init(&fbdata->lock);
-+	fbdata->picolcd =3D data;
-+	fbdata->update_rate =3D PICOLCDFB_UPDATE_RATE_DEFAULT;
-+	fbdata->bpp     =3D picolcdfb_var.bits_per_pixel;
-+	fbdata->force   =3D 1;
-+	fbdata->vbitmap =3D info->par + sizeof(struct picolcd_fb_data);
-+	fbdata->bitmap  =3D vmalloc(PICOLCDFB_SIZE*8);
-+	if (fbdata->bitmap =3D NULL) {
-+		dev_err(dev, "can't get a free page for framebuffer\n");
-+		goto err_nomem;
-+	}
-+	info->screen_base =3D (char __force __iomem *)fbdata->bitmap;
-+	info->fix.smem_start =3D (unsigned long)fbdata->bitmap;
-+	memset(fbdata->vbitmap, 0xff, PICOLCDFB_SIZE);
-+	data->fb_info =3D info;
++sdhc: sdhc {
++	#clock-cells = <0>;
++	compatible = "via,vt8500-device-clock";
++	clocks = <&pllb>;
++	divisor-reg = <0x328>;
++	divisor-mask = <0x3f>;
++	enable-reg = <0x254>;
++	enable-bit = <18>;
++};
+diff --git a/Documentation/devicetree/bindings/gpio/gpio-vt8500.txt b/Documentation/devicetree/bindings/gpio/gpio-vt8500.txt
+new file mode 100644
+index 0000000..f4dc523
+--- /dev/null
++++ b/Documentation/devicetree/bindings/gpio/gpio-vt8500.txt
+@@ -0,0 +1,24 @@
++VIA/Wondermedia VT8500 GPIO Controller
++-----------------------------------------------------
 +
- 	error =3D picolcd_fb_reset(data, 1);
- 	if (error) {
- 		dev_err(dev, "failed to configure display\n");
- 		goto err_cleanup;
- 	}
++Required properties:
++- compatible : "via,vt8500-gpio", "wm,wm8505-gpio"
++	or "wm,wm8650-gpio" depending on your SoC
++- reg : Should contain 1 register range (address and length)
++- #gpio-cells : should be <3>.
++	1) bank
++	2) pin number
++	3) flags - should be 0
 +
- 	error =3D device_create_file(dev, &dev_attr_fb_update_rate);
- 	if (error) {
- 		dev_err(dev, "failed to create sysfs attributes\n");
- 		goto err_cleanup;
- 	}
++Example:
 +
- 	fb_deferred_io_init(info);
--	data->fb_info    =3D info;
- 	error =3D register_framebuffer(info);
- 	if (error) {
- 		dev_err(dev, "failed to register framebuffer\n");
- 		goto err_sysfs;
- 	}
--	/* schedule first output of framebuffer */
--	data->fb_force =3D 1;
--	schedule_delayed_work(&info->deferred_work, 0);
- 	return 0;
-=20
- err_sysfs:
--	fb_deferred_io_cleanup(info);
- 	device_remove_file(dev, &dev_attr_fb_update_rate);
-+	fb_deferred_io_cleanup(info);
- err_cleanup:
--	data->fb_vbitmap =3D NULL;
--	data->fb_bitmap  =3D NULL;
--	data->fb_bpp     =3D 0;
- 	data->fb_info    =3D NULL;
-=20
- err_nomem:
-+	if (fbdata)
-+		vfree(fbdata->bitmap);
- 	framebuffer_release(info);
--	vfree(fb_bitmap);
--	kfree(fb_vbitmap);
- 	return error;
- }
-=20
- void picolcd_exit_framebuffer(struct picolcd_data *data)
- {
- 	struct fb_info *info =3D data->fb_info;
--	u8 *fb_vbitmap =3D data->fb_vbitmap;
--
--	if (!info)
--		return;
-+	struct picolcd_fb_data *fbdata =3D info->par;
-+	unsigned long flags;
-=20
- 	device_remove_file(&data->hdev->dev, &dev_attr_fb_update_rate);
--	info->par =3D NULL;
++	gpio: gpio-controller@d8110000 {
++		compatible = "via,vt8500-gpio";
++		gpio-controller;
++		reg = <0xd8110000 0x10000>;
++		#gpio-cells = <3>;
++	};
 +
-+	/* disconnect framebuffer from HID dev */
-+	spin_lock_irqsave(&fbdata->lock, flags);
-+	fbdata->picolcd =3D NULL;
-+	spin_unlock_irqrestore(&fbdata->lock, flags);
++	vibrate {
++		gpios = <&gpio 0 1 0>; /* Bank 0, Pin 1, No flags */
++	};
+diff --git a/Documentation/devicetree/bindings/rtc/via,vt8500-rtc.txt b/Documentation/devicetree/bindings/rtc/via,vt8500-rtc.txt
+new file mode 100644
+index 0000000..3c0484c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/rtc/via,vt8500-rtc.txt
+@@ -0,0 +1,15 @@
++VIA/Wondermedia VT8500 Realtime Clock Controller
++-----------------------------------------------------
 +
-+	/* make sure there is no running update - thus that fbdata->picolcd
-+	 * once obtained under lock is guaranteed not to get free() under
-+	 * the feet of the deferred work */
-+	flush_delayed_work_sync(&info->deferred_work);
++Required properties:
++- compatible : "via,vt8500-rtc"
++- reg : Should contain 1 register ranges(address and length)
++- interrupts : alarm interrupt
 +
-+	data->fb_info =3D NULL;
- 	unregister_framebuffer(info);
--	data->fb_vbitmap =3D NULL;
--	data->fb_bitmap  =3D NULL;
--	data->fb_bpp     =3D 0;
--	data->fb_info    =3D NULL;
--	kfree(fb_vbitmap);
- }
---=20
-1.7.8.6
++Example:
++
++	rtc@d8100000 {
++		compatible = "via,vt8500-rtc";
++		reg = <0xd8100000 0x10000>;
++		interrupts = <48>;
++	};
+diff --git a/Documentation/devicetree/bindings/tty/serial/via,vt8500-uart.txt b/Documentation/devicetree/bindings/tty/serial/via,vt8500-uart.txt
+new file mode 100644
+index 0000000..5feef1e
+--- /dev/null
++++ b/Documentation/devicetree/bindings/tty/serial/via,vt8500-uart.txt
+@@ -0,0 +1,17 @@
++VIA/Wondermedia VT8500 UART Controller
++-----------------------------------------------------
++
++Required properties:
++- compatible : "via,vt8500-uart"
++- reg : Should contain 1 register ranges(address and length)
++- interrupts : UART interrupt
++- clocks : phandle to the uart source clock (usually a 24Mhz fixed clock)
++
++Example:
++
++	uart@d8210000 {
++		compatible = "via,vt8500-uart";
++		reg = <0xd8210000 0x1040>;
++		interrupts = <47>;
++		clocks = <&ref24>;
++	};
+diff --git a/Documentation/devicetree/bindings/usb/platform-uhci.txt b/Documentation/devicetree/bindings/usb/platform-uhci.txt
+new file mode 100644
+index 0000000..a4fb071
+--- /dev/null
++++ b/Documentation/devicetree/bindings/usb/platform-uhci.txt
+@@ -0,0 +1,15 @@
++Generic Platform UHCI Controller
++-----------------------------------------------------
++
++Required properties:
++- compatible : "platform-uhci"
++- reg : Should contain 1 register ranges(address and length)
++- interrupts : UHCI controller interrupt
++
++Example:
++
++	uhci@d8007b00 {
++		compatible = "platform-uhci";
++		reg = <0xd8007b00 0x200>;
++		interrupts = <43>;
++	};
+diff --git a/Documentation/devicetree/bindings/usb/via,vt8500-ehci.txt b/Documentation/devicetree/bindings/usb/via,vt8500-ehci.txt
+new file mode 100644
+index 0000000..17b3ad1
+--- /dev/null
++++ b/Documentation/devicetree/bindings/usb/via,vt8500-ehci.txt
+@@ -0,0 +1,15 @@
++VIA/Wondermedia VT8500 EHCI Controller
++-----------------------------------------------------
++
++Required properties:
++- compatible : "via,vt8500-ehci"
++- reg : Should contain 1 register ranges(address and length)
++- interrupts : ehci controller interrupt
++
++Example:
++
++	ehci@d8007900 {
++		compatible = "via,vt8500-ehci";
++		reg = <0xd8007900 0x200>;
++		interrupts = <43>;
++	};
+diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
+index db4d3af..5c63da2 100644
+--- a/Documentation/devicetree/bindings/vendor-prefixes.txt
++++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
+@@ -47,5 +47,7 @@ sirf	SiRF Technology, Inc.
+ st	STMicroelectronics
+ stericsson	ST-Ericsson
+ ti	Texas Instruments
++via	VIA Technologies, Inc.
+ wlf	Wolfson Microelectronics
++wm	Wondermedia Technologies, Inc.
+ xlnx	Xilinx
+diff --git a/Documentation/devicetree/bindings/video/via,vt8500-fb.txt b/Documentation/devicetree/bindings/video/via,vt8500-fb.txt
+new file mode 100644
+index 0000000..98ad14c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/via,vt8500-fb.txt
+@@ -0,0 +1,48 @@
++VIA VT8500 Framebuffer
++-----------------------------------------------------
++
++Required properties:
++- compatible : "via,vt8500-fb"
++- reg : Should contain 1 register ranges(address and length)
++- interrupts : framebuffer controller interrupt
++- via,display: a phandle pointing to the display node
++
++Required nodes:
++- display: a display node is required to initialize the lcd panel
++	This should be in the board dts.
++
++Example:
++
++	fb@d800e400 {
++		compatible = "via,vt8500-fb";
++		reg = <0xd800e400 0x400>;
++		interrupts = <12>;
++		via,display = <&display>;
++	};
++
++VIA VT8500 Display
++-----------------------------------------------------
++Required properties:
++- xres : lcd panel horizontal resolution
++- yres : lcd panel vertical resolution
++- left-margin,
++- right-margin,
++- hsync-len: lcd panel horizontal timings in pixels
++- upper-margin,
++- lower-margin,
++- vsync-len: lcd panel verticals timings in pixels
++- bpp: lcd panel bit-depth.
++	<16> for RGB565, <32> for RGB888
++
++Example:
++	display {
++		xres = <800>;
++		yres = <480>;
++		left-margin = <88>;
++		right-margin = <40>;
++		hsync-len = <0>;
++		upper-margin = <32>;
++		lower-margin = <11>;
++		vsync-len = <1>;
++		bpp = <16>;
++	};
+diff --git a/Documentation/devicetree/bindings/video/wm,prizm-ge-rops.txt b/Documentation/devicetree/bindings/video/wm,prizm-ge-rops.txt
+new file mode 100644
+index 0000000..a850fa0
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/wm,prizm-ge-rops.txt
+@@ -0,0 +1,13 @@
++VIA/Wondermedia Graphics Engine Controller
++-----------------------------------------------------
++
++Required properties:
++- compatible : "wm,prizm-ge-rops"
++- reg : Should contain 1 register ranges(address and length)
++
++Example:
++
++	ge_rops@d8050400 {
++		compatible = "wm,prizm-ge-rops";
++		reg = <0xd8050400 0x100>;
++	};
+diff --git a/Documentation/devicetree/bindings/video/wm,wm8505-fb.txt b/Documentation/devicetree/bindings/video/wm,wm8505-fb.txt
+new file mode 100644
+index 0000000..64f016a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/wm,wm8505-fb.txt
+@@ -0,0 +1,22 @@
++Wondermedia WM8505 Framebuffer
++-----------------------------------------------------
++
++Required properties:
++- compatible : "wm,wm8505-fb"
++- reg : Should contain 1 register ranges(address and length)
++- via,display: a phandle pointing to the display node
++
++Required nodes:
++- display: a display node is required to initialize the lcd panel
++	This should be in the board dts. See definition in
++	Documentation/devicetree/bindings/video/via,vt8500-fb.txt
++
++
++Example:
++
++	fb@d8050800 {
++		compatible = "wm,wm8505-fb";
++		reg = <0xd8050800 0x200>;
++		via,display = <&display>;
++	};
++
+-- 
+1.7.9.5
 

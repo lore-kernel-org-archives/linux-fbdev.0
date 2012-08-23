@@ -1,44 +1,99 @@
-From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Date: Mon, 13 Aug 2012 05:27:40 +0000
-Subject: RE: [PATCH] video: move CNVT_TOHW to a common place
-Message-Id: <A73F36158E33644199EB82C5EC81C7BC3E9A3626@DBDE01.ent.ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 23 Aug 2012 13:45:10 +0000
+Subject: [PATCH 4/8] OMAPDSS: HDMI: use vdda_hdmi_dac
+Message-Id: <1345729514-2441-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344426866-8789-1-git-send-email-prakash.pm@ti.com>
-In-Reply-To: <1344426866-8789-1-git-send-email-prakash.pm@ti.com>
+References: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: archit@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-SGkgR2VlcnQgVXl0dGVyaG9ldmVuLA0KDQpUaGFua3MgZm9yIHJldmlld2luZyB0aGUgcGF0Y2gu
-DQoNCk9uIFdlZCwgQXVnIDA4LCAyMDEyIGF0IDIyOjMyOjUxLCBHZWVydCBVeXR0ZXJob2V2ZW4g
-d3JvdGU6DQo+IE9uIFdlZCwgQXVnIDgsIDIwMTIgYXQgMTo1NCBQTSwgTWFuanVuYXRoYXBwYSwg
-UHJha2FzaA0KPiA8cHJha2FzaC5wbUB0aS5jb20+IHdyb3RlOg0KPiA+IC0tLSBhL2luY2x1ZGUv
-bGludXgvZmIuaA0KPiA+ICsrKyBiL2luY2x1ZGUvbGludXgvZmIuaA0KPiA+IEBAIC0zOTcsNiAr
-Mzk3LDExIEBAIHN0cnVjdCBmYl9jdXJzb3Igew0KPiA+ICAgICAgICAgc3RydWN0IGZiX2ltYWdl
-IGltYWdlOyAgLyogQ3Vyc29yIGltYWdlICovDQo+ID4gIH07DQo+ID4NCj4gPiArc3RhdGljIGlu
-bGluZSBfX3UzMiBDTlZUX1RPSFcoX191MzIgdmFsLCBfX3UzMiB3aWR0aCkNCj4gDQo+ICJfX3Uz
-MiIgaXMgYSBiaXQgbWlzbGVhZGluZywgYXMgInZhbCIgaXMgYWN0dWFsbHkgYW4gdW5zaWduZWQg
-MTYtYml0IHZhbHVlLg0KPiANCg0KSSBhZ3JlZSwgd2lsbCBjb3JyZWN0IHRoaXMuDQoNCj4gPiAr
-ew0KPiA+ICsgICAgICAgcmV0dXJuICgodmFsIDw8IHdpZHRoKSArIDB4N0ZGRiAtIHZhbCkgPj4g
-MTY7DQo+ID4gK30NCj4gDQo+IEFsc28sIGlmIHlvdSBtb3ZlIGl0IHRvIGEgcHVibGljIGhlYWRl
-ciwgcGVyaGFwcyB0aGUgZnVuY3Rpb24gbmVlZHMgYSBtb3JlDQo+IGRlc2NyaXB0aXZlIG5hbWU/
-IFdoYXQgaXQgZG9lcyBpcyByZW1hcCBhIDE2LWJpdCB2YWx1ZSAidmFsIiBvbnRvIGEgdmFsdWUg
-d2l0aA0KPiAid2lkdGgiIGJpdHMgb2YgcmVzb2x1dGlvbiwgd2hlcmUgIndpZHRoIiBtdXN0IGJl
-IHNtYWxsZXIgdGhhbiAxNi4NCj4gInJlZHVjZV9yZXNvbHV0aW9uKCkiPw0KPiANCg0KSSBhZ3Jl
-ZSB0aGF0IGl0IHJlZHVjZXMgdGhlIHJlc29sdXRpb24sIGJ1dCBpdCByZWR1Y2VzIHRvIG1hdGNo
-IHRoZSBoYXJkd2FyZS4NClNvICJDTlZUX1RPSFciOiBjb252ZXJ0IHRvIGhhcmR3YXJlIHN1cHBv
-cnRlZCByZXNvbHV0aW9uLCBpc24ndCBpdCBtb3JlIGFwcHJvcHJpYXRlPw0KDQpJIHdpbGwgYWRk
-IGRlc2NyaXB0aW9uIGFzIGl0IGlzIGdvaW5nIHRvIHB1YmxpYyBoZWFkZXIgZmlsZS4NCg0KPiBB
-bHNvLCBpdCBjYW4gYmVjb21lIG1vcmUgZ2VuZXJpYywgbm90IGxpbWl0aW5nIHRvIDE2LWJpdCBp
-bnB1dCB2YWx1ZXMuDQo+IFRoZSAiMHg3ZmZmIiBwYXJ0IGlzICIoMSA8PCAod2lkdGggLTEpKSAt
-IDEiLiBCdXQgSSdtIG5vdCBzdXJlIGl0J3MNCj4gd29ydGggdGhlIGVmZm9ydA0KPiAoYXJlIHRo
-ZXJlIHBsYWNlcyB3aGVyZSB0aGlzIGlzIG5lZWRlZD8pLg0KPiANCg0KRmxvcmlhbiBUb2JpYXMg
-U2NoYW5kaW5hdDogQ291bGQgeW91IHBsZWFzZSBjb21tZW50IGhlcmU/DQoNClRoYW5rcywNClBy
-YWthc2gNCg0KPiBHcntvZXRqZSxlZXRpbmd9cywNCj4gDQo+ICAgICAgICAgICAgICAgICAgICAg
-ICAgIEdlZXJ0DQo+IA0KPiAtLQ0KPiBHZWVydCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUncyBsb3Rz
-IG9mIExpbnV4IGJleW9uZCBpYTMyIC0tIGdlZXJ0QGxpbnV4LW02OGsub3JnDQo+IA0KPiBJbiBw
-ZXJzb25hbCBjb252ZXJzYXRpb25zIHdpdGggdGVjaG5pY2FsIHBlb3BsZSwgSSBjYWxsIG15c2Vs
-ZiBhIGhhY2tlci4gQnV0DQo+IHdoZW4gSSdtIHRhbGtpbmcgdG8gam91cm5hbGlzdHMgSSBqdXN0
-IHNheSAicHJvZ3JhbW1lciIgb3Igc29tZXRoaW5nIGxpa2UgdGhhdC4NCj4gICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAtLSBMaW51cyBUb3J2YWxkcw0KPiANCg0K
+The HDMI driver requires vdda_hdmi_dac power for operation, but does not
+enable it. This has worked because the regulator has been always
+enabled.
+
+But this may not always be the case, as I encountered when implementing
+HDMI device tree support.
+
+This patch changes the HDMI driver to use the vdda_hdmi_dac.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/hdmi.c |   23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 96a6e29..ccfc677 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -33,6 +33,7 @@
+ #include <linux/pm_runtime.h>
+ #include <linux/clk.h>
+ #include <linux/gpio.h>
++#include <linux/regulator/consumer.h>
+ #include <video/omapdss.h>
+ 
+ #include "ti_hdmi.h"
+@@ -62,6 +63,7 @@ static struct {
+ 	struct hdmi_ip_data ip_data;
+ 
+ 	struct clk *sys_clk;
++	struct regulator *vdda_hdmi_dac_reg;
+ 
+ 	int ct_cp_hpd_gpio;
+ 	int ls_oe_gpio;
+@@ -331,6 +333,19 @@ static int __init hdmi_init_display(struct omap_dss_device *dssdev)
+ 
+ 	dss_init_hdmi_ip_ops(&hdmi.ip_data);
+ 
++	if (hdmi.vdda_hdmi_dac_reg = NULL) {
++		struct regulator *reg;
++
++		reg = devm_regulator_get(&hdmi.pdev->dev, "vdda_hdmi_dac");
++
++		if (IS_ERR(reg)) {
++			DSSERR("can't get VDDA_HDMI_DAC regulator\n");
++			return PTR_ERR(reg);
++		}
++
++		hdmi.vdda_hdmi_dac_reg = reg;
++	}
++
+ 	r = gpio_request_array(gpios, ARRAY_SIZE(gpios));
+ 	if (r)
+ 		return r;
+@@ -495,6 +510,10 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
+ 	/* wait 300us after CT_CP_HPD for the 5V power output to reach 90% */
+ 	udelay(300);
+ 
++	r = regulator_enable(hdmi.vdda_hdmi_dac_reg);
++	if (r)
++		goto err_vdac_enable;
++
+ 	r = hdmi_runtime_get();
+ 	if (r)
+ 		goto err_runtime_get;
+@@ -562,6 +581,8 @@ err_phy_enable:
+ err_pll_enable:
+ 	hdmi_runtime_put();
+ err_runtime_get:
++	regulator_disable(hdmi.vdda_hdmi_dac_reg);
++err_vdac_enable:
+ 	gpio_set_value(hdmi.ct_cp_hpd_gpio, 0);
+ 	gpio_set_value(hdmi.ls_oe_gpio, 0);
+ 	return -EIO;
+@@ -576,6 +597,8 @@ static void hdmi_power_off(struct omap_dss_device *dssdev)
+ 	hdmi.ip_data.ops->pll_disable(&hdmi.ip_data);
+ 	hdmi_runtime_put();
+ 
++	regulator_disable(hdmi.vdda_hdmi_dac_reg);
++
+ 	gpio_set_value(hdmi.ct_cp_hpd_gpio, 0);
+ 	gpio_set_value(hdmi.ls_oe_gpio, 0);
+ }
+-- 
+1.7.9.5
+

@@ -1,64 +1,71 @@
-From: Leela Krishna Amudala <l.krishna@samsung.com>
-Date: Tue, 07 Aug 2012 09:49:54 +0000
-Subject: [PATCH V3 0/5] arm: samsung: Move FIMD headers to include/video/
-Message-Id: <1344332279-16736-1-git-send-email-l.krishna@samsung.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Thu, 23 Aug 2012 20:38:20 +0000
+Subject: Re: [PATCH 1/5] drivers/video/fsl-diu-fb.c: use devm_ functions
+Message-Id: <503694BC.8090707@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr> <1343752762-16861-4-git-send-email-damien.cassou@lifl.fr>
+In-Reply-To: <1343752762-16861-4-git-send-email-damien.cassou@lifl.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, kgene.kim@samsung.com, m.szyprowski@samsung.com
+To: Damien Cassou <damien.cassou@lifl.fr>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This patchset moves the contents of regs-fb-v4.h and regs-fb.h from arch side
-to include/video/samsung_fimd.h
+On 07/31/2012 04:39 PM, Damien Cassou wrote:
+> From: Damien Cassou <damien.cassou@lifl.fr>
+> 
+> The various devm_ functions allocate memory that is released when a driver
+> detaches.  This patch uses these functions for data that is allocated in
+> the probe function of a platform device and is only freed in the remove
+> function.
+> 
+> Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
 
-This patchset is created and rebased against master branch of torvalds tree.
-Tested on smdk5250 board, build tested for other boards.
+Applied.
 
-Changes from version 2:
-	- Changed the EXYNOS5_xxx macro name to FIMD_V8_xxx
-	- Moved the header inclusion under same kind
 
-Changes from version 1:
-	- Split the patches as per Sylwester comments
-	- Changed FIMD_V8_xxx macro to EXYNOS5_xxx	
+Thanks,
 
-Leela Krishna Amudala (5):
-  include/video: Add samsung FIMD register header
-  include/video: Add Exynos5 specific FIMD register offsets
-  arm: samsung: Include the modified FIMD header file
-  driver: Include the modified FIMD header file
-  arm: samsung: delete frame buffer header files from platform
+Florian Tobias Schandinat
 
- arch/arm/mach-exynos/mach-nuri.c                |    2 +-
- arch/arm/mach-exynos/mach-origen.c              |    2 +-
- arch/arm/mach-exynos/mach-smdk4x12.c            |    2 +-
- arch/arm/mach-exynos/mach-smdkv310.c            |    2 +-
- arch/arm/mach-exynos/mach-universal_c210.c      |    2 +-
- arch/arm/mach-exynos/setup-fimd0.c              |    2 +-
- arch/arm/mach-s3c24xx/mach-smdk2416.c           |    2 +-
- arch/arm/mach-s3c64xx/mach-anw6410.c            |    2 +-
- arch/arm/mach-s3c64xx/mach-crag6410.c           |    2 +-
- arch/arm/mach-s3c64xx/mach-hmt.c                |    2 +-
- arch/arm/mach-s3c64xx/mach-mini6410.c           |    2 +-
- arch/arm/mach-s3c64xx/mach-ncp.c                |    2 +-
- arch/arm/mach-s3c64xx/mach-real6410.c           |    2 +-
- arch/arm/mach-s3c64xx/mach-smartq5.c            |    2 +-
- arch/arm/mach-s3c64xx/mach-smartq7.c            |    2 +-
- arch/arm/mach-s3c64xx/mach-smdk6410.c           |    2 +-
- arch/arm/mach-s5p64x0/mach-smdk6440.c           |    2 +-
- arch/arm/mach-s5p64x0/mach-smdk6450.c           |    2 +-
- arch/arm/mach-s5pc100/mach-smdkc100.c           |    2 +-
- arch/arm/mach-s5pv210/mach-aquila.c             |    2 +-
- arch/arm/mach-s5pv210/mach-goni.c               |    2 +-
- arch/arm/mach-s5pv210/mach-smdkv210.c           |    2 +-
- arch/arm/plat-samsung/include/plat/regs-fb-v4.h |  159 -------
- arch/arm/plat-samsung/include/plat/regs-fb.h    |  403 -----------------
- drivers/gpu/drm/exynos/exynos_drm_fimd.c        |    2 +-
- drivers/video/s3c-fb.c                          |    2 +-
- include/video/samsung_fimd.h                    |  533 +++++++++++++++++++++++
- 27 files changed, 557 insertions(+), 586 deletions(-)
- delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb-v4.h
- delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb.h
- create mode 100644 include/video/samsung_fimd.h
+> 
+> ---
+>  drivers/video/fsl-diu-fb.c |   11 ++---------
+>  1 file changed, 2 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+> index 458c006..19194c5 100644
+> --- a/drivers/video/fsl-diu-fb.c
+> +++ b/drivers/video/fsl-diu-fb.c
+> @@ -1501,8 +1501,8 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+>  	unsigned int i;
+>  	int ret;
+> 
+> -	data = dma_alloc_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
+> -				  &dma_addr, GFP_DMA | __GFP_ZERO);
+> +	data = dmam_alloc_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
+> +				   &dma_addr, GFP_DMA | __GFP_ZERO);
+>  	if (!data)
+>  		return -ENOMEM;
+>  	data->dma_addr = dma_addr;
+> @@ -1628,9 +1628,6 @@ error:
+> 
+>  	iounmap(data->diu_reg);
+> 
+> -	dma_free_coherent(&pdev->dev, sizeof(struct fsl_diu_data), data,
+> -			  data->dma_addr);
+> -
+>  	return ret;
+>  }
+> 
+> @@ -1648,9 +1645,6 @@ static int fsl_diu_remove(struct platform_device *pdev)
+> 
+>  	iounmap(data->diu_reg);
+> 
+> -	dma_free_coherent(&pdev->dev, sizeof(struct fsl_diu_data), data,
+> -			  data->dma_addr);
+> -
+>  	return 0;
+>  }
+> 
 

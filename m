@@ -1,80 +1,53 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Sun, 19 Aug 2012 16:56:31 +0000
-Subject: Re: [PATCH 6/7 v2] HID: picoLCD: drop version check during probe
-Message-Id: <20120819185631.3a984aa4@neptune.home>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 23 Aug 2012 10:55:13 +0000
+Subject: [PATCH 2/2] video: exynos_dp: move setting analog parameter and interrupt to after sw reset
+Message-Id: <000b01cd811d$c5890b60$509b2220$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120730213656.0a9f6d30@neptune.home>
-	<20120730213859.063173c1@neptune.home>
-	<alpine.LNX.2.00.1208151015220.7026@pobox.suse.cz>
-In-Reply-To: <alpine.LNX.2.00.1208151015220.7026@pobox.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-Commit 4ea5454203d991ec85264f64f89ca8855fce69b0
-[HID: Fix race condition between driver core and ll-driver] introduced
-new locking around probe/remove functions that prevents any report/reply
-from hardware to reach driver until it returned from probe.
+SW reset sets DP TX to initial value, so configurations for analog parameter
+and interrupt are not set properly. Therefore, exynos_dp_init_analog_param()
+and exynos_dp_init_interrupt() should be moved to after sw reset is called,
+in order to set these values properly.
 
-As such, the ask-reply way to checking picoLCD firmware version during
-probe is bound to timeout and let probe fail.
-
-Drop the check to let driver successfully probe again (until locking issues
-are resolved allowing to reinstate the check).
-
-Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
+ drivers/video/exynos/exynos_dp_core.c |    3 +++
+ drivers/video/exynos/exynos_dp_reg.c  |    3 ---
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-Changes since v1:
-- drop version check during probe instead of commenting it out.
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index c6c016a..8113698 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -29,6 +29,9 @@ static int exynos_dp_init_dp(struct exynos_dp_device *dp)
+ 
+ 	exynos_dp_swreset(dp);
+ 
++	exynos_dp_init_analog_param(dp);
++	exynos_dp_init_interrupt(dp);
++
+ 	/* SW defined function Normal operation */
+ 	exynos_dp_enable_sw_function(dp);
+ 
+diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
+index e29497b..9a862f5 100644
+--- a/drivers/video/exynos/exynos_dp_reg.c
++++ b/drivers/video/exynos/exynos_dp_reg.c
+@@ -148,9 +148,6 @@ void exynos_dp_reset(struct exynos_dp_device *dp)
+ 	writel(0x2, dp->reg_base + EXYNOS_DP_M_AUD_GEN_FILTER_TH);
+ 
+ 	writel(0x00000101, dp->reg_base + EXYNOS_DP_SOC_GENERAL_CTL);
+-
+-	exynos_dp_init_analog_param(dp);
+-	exynos_dp_init_interrupt(dp);
+ }
+ 
+ void exynos_dp_swreset(struct exynos_dp_device *dp)
+-- 
+1.7.1
 
-
- drivers/hid/hid-picolcd_core.c |   18 ------------------
- 1 files changed, 0 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/hid/hid-picolcd_core.c b/drivers/hid/hid-picolcd_core.c
-index 7b566ee..e08ffd2 100644
---- a/drivers/hid/hid-picolcd_core.c
-+++ b/drivers/hid/hid-picolcd_core.c
-@@ -478,14 +478,6 @@ static int picolcd_probe_lcd(struct hid_device *hdev, =
-struct picolcd_data *data)
- {
- 	int error;
-=20
--	error =3D picolcd_check_version(hdev);
--	if (error)
--		return error;
--
--	if (data->version[0] !=3D 0 && data->version[1] !=3D 3)
--		hid_info(hdev, "Device with untested firmware revision, please submit /s=
-ys/kernel/debug/hid/%s/rdesc for this device.\n",
--			 dev_name(&hdev->dev));
--
- 	/* Setup keypad input device */
- 	error =3D picolcd_init_keys(data, picolcd_in_report(REPORT_KEY_STATE, hde=
-v));
- 	if (error)
-@@ -534,16 +526,6 @@ err:
-=20
- static int picolcd_probe_bootloader(struct hid_device *hdev, struct picolc=
-d_data *data)
- {
--	int error;
--
--	error =3D picolcd_check_version(hdev);
--	if (error)
--		return error;
--
--	if (data->version[0] !=3D 1 && data->version[1] !=3D 0)
--		hid_info(hdev, "Device with untested bootloader revision, please submit =
-/sys/kernel/debug/hid/%s/rdesc for this device.\n",
--			 dev_name(&hdev->dev));
--
- 	picolcd_init_devfs(data, NULL, NULL,
- 			picolcd_out_report(REPORT_BL_READ_MEMORY, hdev),
- 			picolcd_out_report(REPORT_BL_WRITE_MEMORY, hdev), NULL);
---=20
-1.7.8.6
 

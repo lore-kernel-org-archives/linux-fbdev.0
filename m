@@ -1,36 +1,58 @@
-From: Alexandre Courbot <acourbot@nvidia.com>
-Date: Fri, 31 Aug 2012 11:34:05 +0000
-Subject: [PATCH v5 3/4] tegra: dt: add label to tegra20's PWM
-Message-Id: <1346412846-17102-4-git-send-email-acourbot@nvidia.com>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Thu, 23 Aug 2012 07:35:38 +0000
+Subject: [PATCHv4 2/9] rtc: vt8500: Add devicetree support for vt8500-rtc
+Message-Id: <1345707346-9035-3-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1346412846-17102-1-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1346412846-17102-1-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+References: <1345707346-9035-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1345707346-9035-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Anton Vorontsov <cbou-JGs/UdohzUI@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-arm-kernel@lists.infradead.org
 
-This is necessary to reference the PWM in board device trees.
-
-Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
 ---
- arch/arm/boot/dts/tegra20.dtsi | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/rtc/rtc-vt8500.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/tegra20.dtsi b/arch/arm/boot/dts/tegra20.dtsi
-index 405d167..67a6cd9 100644
---- a/arch/arm/boot/dts/tegra20.dtsi
-+++ b/arch/arm/boot/dts/tegra20.dtsi
-@@ -123,7 +123,7 @@
- 		status = "disabled";
- 	};
+diff --git a/drivers/rtc/rtc-vt8500.c b/drivers/rtc/rtc-vt8500.c
+index 9e94fb1..07bf193 100644
+--- a/drivers/rtc/rtc-vt8500.c
++++ b/drivers/rtc/rtc-vt8500.c
+@@ -23,6 +23,7 @@
+ #include <linux/bcd.h>
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
++#include <linux/of.h>
  
--	pwm {
-+	pwm: pwm {
- 		compatible = "nvidia,tegra20-pwm";
- 		reg = <0x7000a000 0x100>;
- 		#pwm-cells = <2>;
+ /*
+  * Register definitions
+@@ -302,12 +303,18 @@ static int __devexit vt8500_rtc_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id wmt_dt_ids[] = {
++	{ .compatible = "via,vt8500-rtc", },
++	{}
++};
++
+ static struct platform_driver vt8500_rtc_driver = {
+ 	.probe		= vt8500_rtc_probe,
+ 	.remove		= __devexit_p(vt8500_rtc_remove),
+ 	.driver		= {
+ 		.name	= "vt8500-rtc",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = of_match_ptr(wmt_dt_ids),
+ 	},
+ };
+ 
+@@ -315,5 +322,5 @@ module_platform_driver(vt8500_rtc_driver);
+ 
+ MODULE_AUTHOR("Alexey Charkov <alchark@gmail.com>");
+ MODULE_DESCRIPTION("VIA VT8500 SoC Realtime Clock Driver (RTC)");
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL v2");
+ MODULE_ALIAS("platform:vt8500-rtc");
 -- 
-1.7.12
+1.7.9.5
 

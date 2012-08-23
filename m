@@ -1,35 +1,57 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 01 Aug 2012 09:52:24 +0000
-Subject: Re: [PATCH] Fix newport con crashes
-Message-Id: <5018FC58.10605@gmx.de>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Thu, 23 Aug 2012 08:42:31 +0000
+Subject: [PATCH 4/4] ARM: dts: mxs: add oled support for the cfa-10036
+Message-Id: <1345711351-16367-5-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120730105416.DBB961D1CF@solo.franken.de> <20120730133447.GA29993@linux-mips.org>
-In-Reply-To: <20120730133447.GA29993@linux-mips.org>
+References: <1345711351-16367-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1345711351-16367-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-mips@linux-mips.org, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On 07/30/2012 01:34 PM, Ralf Baechle wrote:
-> On Mon, Jul 30, 2012 at 12:54:16PM +0200, Thomas Bogendoerfer wrote:
-> 
->> Because of commit e84de0c61905030a0fe66b7210b6f1bb7c3e1eab
->> [MIPS: GIO bus support for SGI IP22/28] newport con is now taking over
->> console from dummy con, therefore it's necessary to resize the VC to
->> the correct size to avoid crashes and garbage on console
->>
->> Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-> 
-> I've applied your patch to master and the affected -stable branches of the
-> lmo git tree.
-> 
-> Florian, since this is a driver specific to certain MIPS platforms I'd like
-> to merge it through the MIPS tree with your ack, if that's ok?
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: Brian Lilly <brian@crystalfontz.com>
+---
+ arch/arm/boot/dts/imx28-cfa10036.dts |   20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-Yes, sounds good to me. The patch looks good.
+diff --git a/arch/arm/boot/dts/imx28-cfa10036.dts b/arch/arm/boot/dts/imx28-cfa10036.dts
+index c03a577..92784a9 100644
+--- a/arch/arm/boot/dts/imx28-cfa10036.dts
++++ b/arch/arm/boot/dts/imx28-cfa10036.dts
+@@ -33,11 +33,31 @@
+ 		};
+ 
+ 		apbx@80040000 {
++			pwm: pwm@80064000 {
++				pinctrl-names = "default";
++				pinctrl-0 = <&pwm4_pins_a>;
++				status = "okay";
++			};
++
+ 			duart: serial@80074000 {
+ 				pinctrl-names = "default";
+ 				pinctrl-0 = <&duart_pins_b>;
+ 				status = "okay";
+ 			};
++
++			i2c0: i2c@80058000 {
++				pinctrl-names = "default";
++				pinctrl-0 = <&i2c0_pins_b>;
++				status = "okay";
++
++				ssd1307: oled@3c {
++					compatible = "solomon,ssd1307fb-i2c";
++					reg = <0x3c>;
++					pwms = <&pwm 4 3000>;
++					oled-reset-gpio = <&gpio2 7 1>;
++					oled-reset-active-low;
++				};
++			};
+ 		};
+ 	};
+ 
+-- 
+1.7.9.5
 
-
-Best regards,
-
-Florian Tobias Schandinat

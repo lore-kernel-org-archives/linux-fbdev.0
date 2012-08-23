@@ -1,42 +1,43 @@
 From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Wed, 01 Aug 2012 09:46:45 +0000
-Subject: Re: [PATCH 2/4] ARM: dts: mxs: Add alternative I2C muxing options for imx28
-Message-Id: <5018FB05.3020902@free-electrons.com>
+Date: Thu, 23 Aug 2012 08:42:29 +0000
+Subject: [PATCH 2/4] ARM: dts: mxs: Add alternative I2C muxing options for imx28
+Message-Id: <1345711351-16367-3-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343730576-20494-1-git-send-email-maxime.ripard@free-electrons.com>
- <1343730576-20494-3-git-send-email-maxime.ripard@free-electrons.com>
- <CAOMZO5AaLB5m7TYPC03wTSFTDUTFrtV4Xr6gHrvKuGnpyUsf8Q@mail.gmail.com>
-In-Reply-To: <CAOMZO5AaLB5m7TYPC03wTSFTDUTFrtV4Xr6gHrvKuGnpyUsf8Q@mail.gmail.com>
+References: <1345711351-16367-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1345711351-16367-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: Brian Lilly <brian@crystalfontz.com>
+---
+ arch/arm/boot/dts/imx28.dtsi |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Le 31/07/2012 14:02, Fabio Estevam a =C3=A9crit :
-> On Tue, Jul 31, 2012 at 7:29 AM, Maxime Ripard
-> <maxime.ripard@free-electrons.com> wrote:
->=20
->> +                               i2c0_pins_b: i2c0@1 {
->> +                                       reg =3D <1>;
->> +                                       fsl,pinmux-ids =3D <0x3001 0x301=
-1>;
->=20
-> Can you please also list the name of the pin as comment (just like you
-> did for pwm4)?
->=20
-> This would allow us to quickly identify the muxing option without the
-> need of looking at the mxs pinctrl doc.
+diff --git a/arch/arm/boot/dts/imx28.dtsi b/arch/arm/boot/dts/imx28.dtsi
+index 787efac..f6ffcd9 100644
+--- a/arch/arm/boot/dts/imx28.dtsi
++++ b/arch/arm/boot/dts/imx28.dtsi
+@@ -410,6 +410,17 @@
+ 					fsl,pull-up = <1>;
+ 				};
+ 
++				i2c0_pins_b: i2c0@1 {
++					reg = <1>;
++					fsl,pinmux-ids = <
++						0x3001 /* MX28_PAD_AUART0_RX__DUART_CTS */
++						0x3011 /* MX28_PAD_AUART0_TX__DUART_RTS */
++					>;
++					fsl,drive-strength = <1>;
++					fsl,voltage = <1>;
++					fsl,pull-up = <1>;
++				};
++
+ 				saif0_pins_a: saif0@0 {
+ 					reg = <0>;
+ 					fsl,pinmux-ids = <
+-- 
+1.7.9.5
 
-You're right, this will be in the next version.
-
-Thanks!
-
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com

@@ -1,72 +1,57 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 09 Aug 2012 11:56:21 +0000
-Subject: [PATCH v2 05/13] OMAPDSS: DSI: Update manager timings on a manual update
-Message-Id: <1344512989-4071-6-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 23 Aug 2012 13:45:11 +0000
+Subject: [PATCH 5/8] OMAPDSS: Add DSI fclk maximum to dss_features
+Message-Id: <1345729514-2441-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343817088-29645-1-git-send-email-archit@ti.com>
- <1344512989-4071-1-git-send-email-archit@ti.com>
-In-Reply-To: <1344512989-4071-1-git-send-email-archit@ti.com>
+References: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: archit@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-During a command mode update using DISPC video port, we may need to swap the
-connected overlay manager's width and height when 90 or 270 degree rotation is
-done via the panel by changing it's address mode.
+Add max value of DSI functional clock to dss_features, so that DSI
+driver can use it.
 
-Call dss_mgr_set_timings() in update_screen_dispc() before starting the manager
-update. The new manager size is updated in the 'timings' field of DSI driver's
-private data via omapdss_dsi_set_size(). A panel driver is expected to call this
-when performing rotation.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dsi.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ drivers/video/omap2/dss/dss_features.c |    2 ++
+ drivers/video/omap2/dss/dss_features.h |    1 +
+ 2 files changed, 3 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index eb364d4..6e1c74b 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -4180,8 +4180,7 @@ void dsi_disable_video_output(struct omap_dss_device *dssdev, int channel)
- }
- EXPORT_SYMBOL(dsi_disable_video_output);
- 
--static void dsi_update_screen_dispc(struct omap_dss_device *dssdev,
--		u16 w, u16 h)
-+static void dsi_update_screen_dispc(struct omap_dss_device *dssdev)
- {
- 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
-@@ -4195,6 +4194,8 @@ static void dsi_update_screen_dispc(struct omap_dss_device *dssdev,
- 	int r;
- 	const unsigned channel = dsi->update_channel;
- 	const unsigned line_buf_size = dsi_get_line_buf_size(dsidev);
-+	u16 w = dsi->timings.x_res;
-+	u16 h = dsi->timings.y_res;
- 
- 	DSSDBG("dsi_update_screen_dispc(%dx%d)\n", w, h);
- 
-@@ -4244,6 +4245,8 @@ static void dsi_update_screen_dispc(struct omap_dss_device *dssdev,
- 		msecs_to_jiffies(250));
- 	BUG_ON(r = 0);
- 
-+	dss_mgr_set_timings(dssdev->manager, &dsi->timings);
-+
- 	dss_mgr_start_update(dssdev->manager);
- 
- 	if (dsi->te_enabled) {
-@@ -4337,7 +4340,7 @@ int omap_dsi_update(struct omap_dss_device *dssdev, int channel,
- 	dsi->update_bytes = dw * dh *
- 		dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt) / 8;
- #endif
--	dsi_update_screen_dispc(dssdev, dw, dh);
-+	dsi_update_screen_dispc(dssdev);
- 
- 	return 0;
- }
+diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
+index 2fe39d6..c26fc1f 100644
+--- a/drivers/video/omap2/dss/dss_features.c
++++ b/drivers/video/omap2/dss/dss_features.c
+@@ -326,6 +326,7 @@ static const struct dss_param_range omap3_dss_param_range[] = {
+ 	[FEAT_PARAM_DSIPLL_REGM_DSI]		= { 0, (1 << 4) - 1 },
+ 	[FEAT_PARAM_DSIPLL_FINT]		= { 750000, 2100000 },
+ 	[FEAT_PARAM_DSIPLL_LPDIV]		= { 1, (1 << 13) - 1},
++	[FEAT_PARAM_DSI_FCK]			= { 0, 173000000 },
+ 	[FEAT_PARAM_DOWNSCALE]			= { 1, 4 },
+ 	[FEAT_PARAM_LINEWIDTH]			= { 1, 1024 },
+ 	[FEAT_PARAM_MGR_WIDTH]			= { 1, 2048 },
+@@ -341,6 +342,7 @@ static const struct dss_param_range omap4_dss_param_range[] = {
+ 	[FEAT_PARAM_DSIPLL_REGM_DSI]		= { 0, (1 << 5) - 1 },
+ 	[FEAT_PARAM_DSIPLL_FINT]		= { 500000, 2500000 },
+ 	[FEAT_PARAM_DSIPLL_LPDIV]		= { 0, (1 << 13) - 1 },
++	[FEAT_PARAM_DSI_FCK]			= { 0, 170000000 },
+ 	[FEAT_PARAM_DOWNSCALE]			= { 1, 4 },
+ 	[FEAT_PARAM_LINEWIDTH]			= { 1, 2048 },
+ 	[FEAT_PARAM_MGR_WIDTH]			= { 1, 2048 },
+diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
+index 26d43a4..b81d603 100644
+--- a/drivers/video/omap2/dss/dss_features.h
++++ b/drivers/video/omap2/dss/dss_features.h
+@@ -92,6 +92,7 @@ enum dss_range_param {
+ 	FEAT_PARAM_DSIPLL_REGM_DSI,
+ 	FEAT_PARAM_DSIPLL_FINT,
+ 	FEAT_PARAM_DSIPLL_LPDIV,
++	FEAT_PARAM_DSI_FCK,
+ 	FEAT_PARAM_DOWNSCALE,
+ 	FEAT_PARAM_LINEWIDTH,
+ 	FEAT_PARAM_MGR_WIDTH,
 -- 
 1.7.9.5
 

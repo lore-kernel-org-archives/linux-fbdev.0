@@ -1,58 +1,90 @@
-From: Alex Courbot <acourbot@nvidia.com>
-Date: Tue, 07 Aug 2012 05:10:10 +0000
-Subject: Re: [RFC][PATCH v3 1/3] runtime interpreted power sequences
-Message-Id: <5020A332.3010206@nvidia.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 23 Aug 2012 13:45:14 +0000
+Subject: [PATCH 8/8] OMAPDSS: fix use of dssdev->caps
+Message-Id: <1345729514-2441-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com> <1343390750-3642-2-git-send-email-acourbot@nvidia.com> <50170EA0.1010408@wwwdotorg.org> <501A338D.7080105@nvidia.com> <20120802082157.GA14866@avionic-0098.adnet.avionic-design.de> <20120802181111.GM4537@opensource.wolfsonmicro.com> <501B2642.4080805@nvidia.com> <20120804141155.GJ10523@opensource.wolfsonmicro.com> <501F2BAA.8000808@nvidia.com> <501FEDE7.1060202@wwwdotorg.org>
-In-Reply-To: <501FEDE7.1060202@wwwdotorg.org>
+References: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Stephen Warren <swarren@nvidia.com>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Arnd Bergmann <arnd@arndb.de>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, Thierry Reding <thierry.reding@avionic-design.de>
+To: archit@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 08/07/2012 01:16 AM, Stephen Warren wrote:
-> On 08/05/2012 08:27 PM, Alex Courbot wrote:
->> On 08/04/2012 11:12 PM, Mark Brown wrote:
->>> On Fri, Aug 03, 2012 at 10:15:46AM +0900, Alex Courbot wrote:
->>>> On Fri 03 Aug 2012 03:11:12 AM JST, Mark Brown wrote:
->>>
->>>>> I missed some of the earlier bits of the thread here but why can't
->>>>> we do
->>>>> device based lookups?
-> ...
->> I think we only have two choices for this:
->>
->> 1) Stick to the scheme where resources are declared at the device level,
->> such as they can be referenced by name in the sub-nodes (basically what
->> I did in this patch):
->>
->> backlight {
->>       compatible = "pwm-backlight";
->>       ...
->>       backlight-supply = <&backlight_reg>;
->>
->>       power-on-sequence {
->>           step@0 {
->>               regulator = "backlight";
->>               enable;
->>           };
->>
->> This would translate by a get_regulator(dev, "backlight") in the code
->> which would be properly resolved.
->
-> Yes, upon reflection, that scheme does make sense. I withdraw the
-> comments I made re: whether it'd be better to just stick the phandles
-> into the steps.
+Recent commit dca2b1522ccab28d03fb79f6e70e70ea78033d52 (OMAPDSS: DSI:
+Maintain copy of operation mode in driver data) broke DSI for video mode
+displays. The commit changed the way dssdev->caps are initialized, and
+the result was that every DSI display is initialized with manual-update
+and tear-elim caps.
 
-Right - having the phandles directly in the sequences has its merits, 
-but logically speaking resources are related to a device, so this 
-declarative approach is probably closer to reality anyway.
+The code that sets dssdev->caps is not very good, even when fixed.
+omapdss driver shouldn't be writing dssdev->caps at all.
 
-I will revise the patch according to all the feedback received and 
-submit a new version soon.
+This patch fixes the problem with video mode displays by moving the
+initialization of dssdev->caps to the panel driver. The same change is
+done for RFBI.
 
-Thanks,
-Alex.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/displays/panel-n8x0.c |    1 +
+ drivers/video/omap2/displays/panel-taal.c |    2 ++
+ drivers/video/omap2/dss/dsi.c             |    5 -----
+ drivers/video/omap2/dss/rfbi.c            |    1 -
+ 4 files changed, 3 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/video/omap2/displays/panel-n8x0.c b/drivers/video/omap2/displays/panel-n8x0.c
+index 17ae85e..3fc5ad0 100644
+--- a/drivers/video/omap2/displays/panel-n8x0.c
++++ b/drivers/video/omap2/displays/panel-n8x0.c
+@@ -489,6 +489,7 @@ static int n8x0_panel_probe(struct omap_dss_device *dssdev)
+ 	dssdev->panel.timings.y_res = 480;
+ 	dssdev->ctrl.pixel_size = 16;
+ 	dssdev->ctrl.rfbi_timings = n8x0_panel_timings;
++	dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE;
+ 
+ 	memset(&props, 0, sizeof(props));
+ 	props.max_brightness = 127;
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index ddda96a..7b2d7bb 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -884,6 +884,8 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 
+ 	dssdev->panel.timings = panel_config->timings;
+ 	dssdev->panel.dsi_pix_fmt = OMAP_DSS_DSI_FMT_RGB888;
++	dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE |
++		OMAP_DSS_DISPLAY_CAP_TEAR_ELIM;
+ 
+ 	td = kzalloc(sizeof(*td), GFP_KERNEL);
+ 	if (!td) {
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 340c832..254666f 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -4866,11 +4866,6 @@ static int __init dsi_init_display(struct omap_dss_device *dssdev)
+ 
+ 	DSSDBG("DSI init\n");
+ 
+-	if (dsi->mode = OMAP_DSS_DSI_CMD_MODE) {
+-		dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE |
+-			OMAP_DSS_DISPLAY_CAP_TEAR_ELIM;
+-	}
+-
+ 	if (dsi->vdds_dsi_reg = NULL) {
+ 		struct regulator *vdds_dsi;
+ 
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 5a9c0e9..2e520d3 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -939,7 +939,6 @@ EXPORT_SYMBOL(omapdss_rfbi_display_disable);
+ static int __init rfbi_init_display(struct omap_dss_device *dssdev)
+ {
+ 	rfbi.dssdev[dssdev->phy.rfbi.channel] = dssdev;
+-	dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE;
+ 	return 0;
+ }
+ 
+-- 
+1.7.9.5
 

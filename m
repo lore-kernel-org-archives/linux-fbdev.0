@@ -1,76 +1,127 @@
-From: Alex Courbot <acourbot@nvidia.com>
-Date: Fri, 17 Aug 2012 08:54:32 +0000
-Subject: Re: [PATCH v4 0/3] Runtime Interpreted Power Sequences
-Message-Id: <502E06C8.8090508@nvidia.com>
+From: =?utf-8?Q?Beno=C3=AEt_Th=C3=A9baudeau?=  <benoit.thebaudeau@advansee.com>
+Date: Thu, 23 Aug 2012 20:58:35 +0000
+Subject: [PATCH] pwm-imx: Fix config / enable / disable
+Message-Id: <1305545087.2775440.1345755837651.JavaMail.root@advansee.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345097337-24170-1-git-send-email-acourbot@nvidia.com> <201208162347.34810.rjw@sisk.pl>
-In-Reply-To: <201208162347.34810.rjw@sisk.pl>
+In-Reply-To: <20120823191108.GB8127@avionic-0098.mockup.avionic-design.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Leela Krishna Amudala <leelakrishna.a@gmail.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-arm-kernel@lists.infradead.org
 
-On 08/17/2012 06:47 AM, Rafael J. Wysocki wrote:
-> On Thursday, August 16, 2012, Alexandre Courbot wrote:
->> Overdue revision of this new feature, some changes required additional thought
->> and rework.
->>
->> The most important change is in the way power sequences are expressed in the
->> device tree. In order to avoid having to specify #address-cells, #size-cells and
->> reg properties, the @ notation in the step names is dropped, and instead a
->> fixed, sequential naming is adopted. The type of the resource used by a step is
->> decided by the presence of some recognized properties:
->>
->> power-on-sequence {
->> 	step0 {
->> 		regulator = "power";
->> 		enable;
->> 	};
->> 	step1 {
->> 		delay = <10000>;
->> 	};
->> 	step2 {
->> 		pwm = "backlight";
->> 		enable;
->> 	};
->> 	...
->>
->> To me this looks safe, clear and close to the platform data representation, but
->> needs approval from DT experts.
->>
->> Resources are still referenced by name instead of having their phandles defined
->> directly inside the sequences, as previous discussion came to the conclusion
->> that doing so would require controversial changes to the regulator and PWM
->> frameworks, and that having the resources declared at the device level was
->> making sense logically speaking.
->>
->> Other changes/fixes since last revision:
->> * Move to drivers/power/ (hope this is ok with the maintainers?)
->> * Use microseconds for delay
->> * Use devm for PWM resources and remove cleanup function as all resources are
->>    devm-managed
->> * Remove "-gpio" suffix for GPIO reference in the driver
->> * Remove params structure
->> * Make power_seq structure private
->> * Number of steps in a sequence is explicitly stated instead of resorting to a
->>    "stop" sequence step
->> * Delays are a step instead of being a step parameter
->> * Use flexible member arrays to limit number of memory allocations
->> * Add documentation to DT bindings
->>
->> There was a lot of feedback on the previous version (thanks!) so if I forgot
->> to address some important point, please bring it to my attention again.
->>
->> Alexandre Courbot (3):
->>    Runtime Interpreted Power Sequences
->>    pwm_backlight: use power sequences
->>    tegra: add pwm backlight device tree nodes
->
-> May I ask that the next version of this patchset be CCed to
-> linux-pm@vger.kernel.org?
+imx_pwm_config() did not enable the PWM IP clock while accessing the registers.
+Hence, a call to pwm_config() had no effect before pwm_enable() had been called,
+which does not comply to the PWM API.
 
-Will do.
+Moreover, calling pwm_disable() then pwm_enable() must be a transparent
+operation.
 
-Alex.
+This fixes the first setting of brightness through sysfs that had no effect with
+leds-pwm.
 
+Cc: Thierry Reding <thierry.reding@avionic-design.de>
+Cc: <linux-kernel@vger.kernel.org>
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: <linux-arm-kernel@lists.infradead.org>
+Cc: Benoît Thébaudeau <benoit.thebaudeau@advansee.com>
+Signed-off-by: Benoît Thébaudeau <benoit.thebaudeau@advansee.com>
+---
+ .../drivers/pwm/pwm-imx.c                          |   55 +++++++++++++++-----
+ 1 file changed, 43 insertions(+), 12 deletions(-)
+
+diff --git linux-next-c94456b.orig/drivers/pwm/pwm-imx.c linux-next-c94456b/drivers/pwm/pwm-imx.c
+index 2a0b353..0519bf2 100644
+--- linux-next-c94456b.orig/drivers/pwm/pwm-imx.c
++++ linux-next-c94456b/drivers/pwm/pwm-imx.c
+@@ -55,6 +55,16 @@ static int imx_pwm_config(struct pwm_chip *chip,
+ {
+ 	struct imx_chip *imx = to_imx_chip(chip);
+ 
++	/*
++	 * If the PWM is disabled, make sure to turn on the clock before
++	 * accessing the registers.
++	 */
++	if (!imx->clk_enabled) {
++		int rc = clk_prepare_enable(imx->clk);
++		if (rc)
++			return rc;
++	}
++
+ 	if (!(cpu_is_mx1() || cpu_is_mx21())) {
+ 		unsigned long long c;
+ 		unsigned long period_cycles, duty_cycles, prescale;
+@@ -85,8 +95,11 @@ static int imx_pwm_config(struct pwm_chip *chip,
+ 		writel(period_cycles, imx->mmio_base + MX3_PWMPR);
+ 
+ 		cr = MX3_PWMCR_PRESCALER(prescale) |
+-			MX3_PWMCR_DOZEEN | MX3_PWMCR_WAITEN |
+-			MX3_PWMCR_DBGEN | MX3_PWMCR_EN;
++			MX3_PWMCR_DOZEEN | MX3_PWMCR_WAITEN | MX3_PWMCR_DBGEN;
++
++		/* If the PWM is enabled, keep it so. */
++		if (imx->clk_enabled)
++			cr |= MX3_PWMCR_EN;
+ 
+ 		if (cpu_is_mx25())
+ 			cr |= MX3_PWMCR_CLKSRC_IPG;
+@@ -118,32 +131,50 @@ static int imx_pwm_config(struct pwm_chip *chip,
+ 		BUG();
+ 	}
+ 
++	/* If the PWM is disabled, turn the clock off again to save power. */
++	if (!imx->clk_enabled)
++		clk_disable_unprepare(imx->clk);
++
+ 	return 0;
+ }
+ 
+ static int imx_pwm_enable(struct pwm_chip *chip, struct pwm_device *pwm)
+ {
+ 	struct imx_chip *imx = to_imx_chip(chip);
+-	int rc = 0;
++	int rc;
+ 
+-	if (!imx->clk_enabled) {
+-		rc = clk_prepare_enable(imx->clk);
+-		if (!rc)
+-			imx->clk_enabled = 1;
++	if (imx->clk_enabled)
++		return 0;
++
++	rc = clk_prepare_enable(imx->clk);
++	if (rc)
++		return rc;
++
++	if (!(cpu_is_mx1() || cpu_is_mx21())) {
++		u32 cr = readl(imx->mmio_base + MX3_PWMCR);
++		cr |= MX3_PWMCR_EN;
++		writel(cr, imx->mmio_base + MX3_PWMCR);
+ 	}
+-	return rc;
++
++	imx->clk_enabled = 1;
++	return 0;
+ }
+ 
+ static void imx_pwm_disable(struct pwm_chip *chip, struct pwm_device *pwm)
+ {
+ 	struct imx_chip *imx = to_imx_chip(chip);
+ 
+-	writel(0, imx->mmio_base + MX3_PWMCR);
++	if (!imx->clk_enabled)
++		return;
+ 
+-	if (imx->clk_enabled) {
+-		clk_disable_unprepare(imx->clk);
+-		imx->clk_enabled = 0;
++	if (!(cpu_is_mx1() || cpu_is_mx21())) {
++		u32 cr = readl(imx->mmio_base + MX3_PWMCR);
++		cr &= ~MX3_PWMCR_EN;
++		writel(cr, imx->mmio_base + MX3_PWMCR);
+ 	}
++
++	clk_disable_unprepare(imx->clk);
++	imx->clk_enabled = 0;
+ }
+ 
+ static struct pwm_ops imx_pwm_ops = {

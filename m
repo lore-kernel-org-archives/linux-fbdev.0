@@ -1,177 +1,338 @@
-From: Sean Paul <seanpaul@chromium.org>
-Date: Wed, 08 Aug 2012 03:54:22 +0000
-Subject: [PATCH 08/10] video: exynos_dp: Move hotplug into a workqueue
-Message-Id: <1344398064-13563-9-git-send-email-seanpaul@chromium.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 23 Aug 2012 13:45:07 +0000
+Subject: [PATCH 1/8] OMAPDSS: HDMI: Move GPIO handling to HDMI driver
+Message-Id: <1345729514-2441-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: archit@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Tony Lindgren <tony@atomide.com>
 
-Move the hotplug related code from probe and resume into a workqueue.
-This allows us to initialize the DP driver (and resume it) when there
-is no monitor connected.
+We currently manage HDMI GPIOs in the board files via
+platform_enable/disable calls. This won't work with device tree, and in
+any case the correct place to manage the GPIOs is in the HDMI driver.
 
-Signed-off-by: Sean Paul <seanpaul@chromium.org>
-Reviewed-by: Olof Johansson <olofj@chromium.org>
+This patch moves the handling of the GPIOs to the HDMI driver. The GPIO
+handling is moved to the common hdmi.c file, and this probably needs to
+be revisited when adding OMAP5 HDMI support to see if the GPIO handling
+needs to be moved to IP specific files.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tony Lindgren <tony@atomide.com>
 ---
- drivers/video/exynos/exynos_dp_core.c |   94 +++++++++++++++++----------------
- drivers/video/exynos/exynos_dp_core.h |    1 +
- 2 files changed, 50 insertions(+), 45 deletions(-)
+ arch/arm/mach-omap2/board-4430sdp.c    |   27 +-----------
+ arch/arm/mach-omap2/board-omap4panda.c |   27 +-----------
+ drivers/video/omap2/dss/hdmi.c         |   75 +++++++++++++++++++++++---------
+ include/video/omapdss.h                |    2 +
+ 4 files changed, 61 insertions(+), 70 deletions(-)
 
-diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-index 2882362..68ad494 100644
---- a/drivers/video/exynos/exynos_dp_core.c
-+++ b/drivers/video/exynos/exynos_dp_core.c
-@@ -834,6 +834,45 @@ static irqreturn_t exynos_dp_irq_handler(int irq, void *arg)
- 	return IRQ_HANDLED;
+diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+index 8e17284..852e05c 100644
+--- a/arch/arm/mach-omap2/board-4430sdp.c
++++ b/arch/arm/mach-omap2/board-4430sdp.c
+@@ -601,29 +601,6 @@ static void __init omap_sfh7741prox_init(void)
+ 			__func__, OMAP4_SFH7741_ENABLE_GPIO, error);
  }
  
-+static void exynos_dp_hotplug(struct work_struct *work)
-+{
-+	struct exynos_dp_device *dp;
-+	int ret;
-+
-+	dp = container_of(work, struct exynos_dp_device, hotplug_work);
-+
-+	ret = exynos_dp_detect_hpd(dp);
-+	if (ret) {
-+		dev_err(dp->dev, "unable to detect hpd\n");
-+		return;
-+	}
-+
-+	ret = exynos_dp_handle_edid(dp);
-+	if (ret) {
-+		dev_err(dp->dev, "unable to handle edid\n");
-+		return;
-+	}
-+
-+	ret = exynos_dp_set_link_train(dp, dp->video_info->lane_count,
-+					dp->video_info->link_rate);
-+	if (ret) {
-+		dev_err(dp->dev, "unable to do link train\n");
-+		return;
-+	}
-+
-+	exynos_dp_enable_scramble(dp, 1);
-+	exynos_dp_enable_rx_to_enhanced_mode(dp, 1);
-+	exynos_dp_enable_enhanced_mode(dp, 1);
-+
-+	exynos_dp_set_lane_count(dp, dp->video_info->lane_count);
-+	exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
-+
-+	exynos_dp_init_video(dp);
-+	ret = exynos_dp_config_video(dp, dp->video_info);
-+	if (ret)
-+		dev_err(&dp->dev, "unable to config video\n");
-+}
-+
- static int __devinit exynos_dp_probe(struct platform_device *pdev)
- {
- 	struct resource *res;
-@@ -886,6 +925,8 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
- 		goto err_clock;
- 	}
- 
-+	INIT_WORK(&dp->hotplug_work, exynos_dp_hotplug);
-+
- 	ret = devm_request_irq(&pdev->dev, dp->irq, exynos_dp_irq_handler, 0,
- 				"exynos-dp", dp);
- 	if (ret) {
-@@ -899,36 +940,8 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
- 
- 	exynos_dp_init_dp(dp);
- 
--	ret = exynos_dp_detect_hpd(dp);
--	if (ret) {
--		dev_err(&pdev->dev, "unable to detect hpd\n");
--		goto err_clock;
--	}
+-static struct gpio sdp4430_hdmi_gpios[] = {
+-	{ HDMI_GPIO_CT_CP_HPD, GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ct_cp_hpd" },
+-	{ HDMI_GPIO_LS_OE,	GPIOF_OUT_INIT_HIGH,	"hdmi_gpio_ls_oe" },
+-	{ HDMI_GPIO_HPD, GPIOF_DIR_IN, "hdmi_gpio_hpd" },
+-};
 -
--	exynos_dp_handle_edid(dp);
+-static int sdp4430_panel_enable_hdmi(struct omap_dss_device *dssdev)
+-{
+-	int status;
 -
--	ret = exynos_dp_set_link_train(dp, dp->video_info->lane_count,
--				dp->video_info->link_rate);
--	if (ret) {
--		dev_err(&pdev->dev, "unable to do link train\n");
--		goto err_clock;
--	}
+-	status = gpio_request_array(sdp4430_hdmi_gpios,
+-				    ARRAY_SIZE(sdp4430_hdmi_gpios));
+-	if (status)
+-		pr_err("%s: Cannot request HDMI GPIOs\n", __func__);
 -
--	exynos_dp_enable_scramble(dp, 1);
--	exynos_dp_enable_rx_to_enhanced_mode(dp, 1);
--	exynos_dp_enable_enhanced_mode(dp, 1);
+-	return status;
+-}
 -
--	exynos_dp_set_lane_count(dp, dp->video_info->lane_count);
--	exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
+-static void sdp4430_panel_disable_hdmi(struct omap_dss_device *dssdev)
+-{
+-	gpio_free_array(sdp4430_hdmi_gpios, ARRAY_SIZE(sdp4430_hdmi_gpios));
+-}
 -
--	exynos_dp_init_video(dp);
--	ret = exynos_dp_config_video(dp, dp->video_info);
--	if (ret) {
--		dev_err(&pdev->dev, "unable to config video\n");
--		goto err_clock;
--	}
--
- 	platform_set_drvdata(pdev, dp);
-+	schedule_work(&dp->hotplug_work);
- 
- 	return 0;
- 
-@@ -943,6 +956,9 @@ static int __devexit exynos_dp_remove(struct platform_device *pdev)
- 	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
- 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
- 
-+	if (work_pending(&dp->hotplug_work))
-+		flush_work_sync(&dp->hotplug_work);
-+
- 	if (pdata && pdata->phy_exit)
- 		pdata->phy_exit();
- 
-@@ -959,6 +975,9 @@ static int exynos_dp_suspend(struct device *dev)
- 	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
- 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
- 
-+	if (work_pending(&dp->hotplug_work))
-+		flush_work_sync(&dp->hotplug_work);
-+
- 	if (pdata && pdata->phy_exit)
- 		pdata->phy_exit();
- 
-@@ -979,22 +998,7 @@ static int exynos_dp_resume(struct device *dev)
- 	clk_enable(dp->clock);
- 
- 	exynos_dp_init_dp(dp);
--
--	exynos_dp_detect_hpd(dp);
--	exynos_dp_handle_edid(dp);
--
--	exynos_dp_set_link_train(dp, dp->video_info->lane_count,
--				dp->video_info->link_rate);
--
--	exynos_dp_enable_scramble(dp, 1);
--	exynos_dp_enable_rx_to_enhanced_mode(dp, 1);
--	exynos_dp_enable_enhanced_mode(dp, 1);
--
--	exynos_dp_set_lane_count(dp, dp->video_info->lane_count);
--	exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
--
--	exynos_dp_init_video(dp);
--	exynos_dp_config_video(dp, dp->video_info);
-+	schedule_work(&dp->hotplug_work);
- 
- 	return 0;
- }
-diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
-index 6431c65..cf1010b 100644
---- a/drivers/video/exynos/exynos_dp_core.h
-+++ b/drivers/video/exynos/exynos_dp_core.h
-@@ -32,6 +32,7 @@ struct exynos_dp_device {
- 
- 	struct video_info	*video_info;
- 	struct link_train	link_train;
-+	struct work_struct	hotplug_work;
+ static struct nokia_dsi_panel_data dsi1_panel = {
+ 		.name		= "taal",
+ 		.reset_gpio	= 102,
+@@ -718,6 +695,8 @@ static struct omap_dss_device sdp4430_lcd2_device = {
  };
  
- /* exynos_dp_reg.c */
+ static struct omap_dss_hdmi_data sdp4430_hdmi_data = {
++	.ct_cp_hpd_gpio = HDMI_GPIO_CT_CP_HPD,
++	.ls_oe_gpio = HDMI_GPIO_LS_OE,
+ 	.hpd_gpio = HDMI_GPIO_HPD,
+ };
+ 
+@@ -725,8 +704,6 @@ static struct omap_dss_device sdp4430_hdmi_device = {
+ 	.name = "hdmi",
+ 	.driver_name = "hdmi_panel",
+ 	.type = OMAP_DISPLAY_TYPE_HDMI,
+-	.platform_enable = sdp4430_panel_enable_hdmi,
+-	.platform_disable = sdp4430_panel_disable_hdmi,
+ 	.channel = OMAP_DSS_CHANNEL_DIGIT,
+ 	.data = &sdp4430_hdmi_data,
+ };
+diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
+index 982fb26..5415faa 100644
+--- a/arch/arm/mach-omap2/board-omap4panda.c
++++ b/arch/arm/mach-omap2/board-omap4panda.c
+@@ -405,30 +405,9 @@ static struct omap_dss_device omap4_panda_dvi_device = {
+ 	.channel		= OMAP_DSS_CHANNEL_LCD2,
+ };
+ 
+-static struct gpio panda_hdmi_gpios[] = {
+-	{ HDMI_GPIO_CT_CP_HPD, GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ct_cp_hpd" },
+-	{ HDMI_GPIO_LS_OE,	GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ls_oe" },
+-	{ HDMI_GPIO_HPD, GPIOF_DIR_IN, "hdmi_gpio_hpd" },
+-};
+-
+-static int omap4_panda_panel_enable_hdmi(struct omap_dss_device *dssdev)
+-{
+-	int status;
+-
+-	status = gpio_request_array(panda_hdmi_gpios,
+-				    ARRAY_SIZE(panda_hdmi_gpios));
+-	if (status)
+-		pr_err("Cannot request HDMI GPIOs\n");
+-
+-	return status;
+-}
+-
+-static void omap4_panda_panel_disable_hdmi(struct omap_dss_device *dssdev)
+-{
+-	gpio_free_array(panda_hdmi_gpios, ARRAY_SIZE(panda_hdmi_gpios));
+-}
+-
+ static struct omap_dss_hdmi_data omap4_panda_hdmi_data = {
++	.ct_cp_hpd_gpio = HDMI_GPIO_CT_CP_HPD,
++	.ls_oe_gpio = HDMI_GPIO_LS_OE,
+ 	.hpd_gpio = HDMI_GPIO_HPD,
+ };
+ 
+@@ -436,8 +415,6 @@ static struct omap_dss_device  omap4_panda_hdmi_device = {
+ 	.name = "hdmi",
+ 	.driver_name = "hdmi_panel",
+ 	.type = OMAP_DISPLAY_TYPE_HDMI,
+-	.platform_enable = omap4_panda_panel_enable_hdmi,
+-	.platform_disable = omap4_panda_panel_disable_hdmi,
+ 	.channel = OMAP_DSS_CHANNEL_DIGIT,
+ 	.data = &omap4_panda_hdmi_data,
+ };
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 0cdf246..4fbe271 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -32,6 +32,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/clk.h>
++#include <linux/gpio.h>
+ #include <video/omapdss.h>
+ 
+ #include "ti_hdmi.h"
+@@ -61,6 +62,10 @@ static struct {
+ 	struct hdmi_ip_data ip_data;
+ 
+ 	struct clk *sys_clk;
++
++	int ct_cp_hpd_gpio;
++	int ls_oe_gpio;
++	int hpd_gpio;
+ } hdmi;
+ 
+ /*
+@@ -314,12 +319,34 @@ static void hdmi_runtime_put(void)
+ 
+ static int __init hdmi_init_display(struct omap_dss_device *dssdev)
+ {
++	int r;
++
++	struct gpio gpios[] = {
++		{ hdmi.ct_cp_hpd_gpio, GPIOF_OUT_INIT_LOW, "hdmi_ct_cp_hpd" },
++		{ hdmi.ls_oe_gpio, GPIOF_OUT_INIT_LOW, "hdmi_ls_oe" },
++		{ hdmi.hpd_gpio, GPIOF_DIR_IN, "hdmi_hpd" },
++	};
++
+ 	DSSDBG("init_display\n");
+ 
+ 	dss_init_hdmi_ip_ops(&hdmi.ip_data);
++
++	r = gpio_request_array(gpios, ARRAY_SIZE(gpios));
++	if (r)
++		return r;
++
+ 	return 0;
+ }
+ 
++static void __exit hdmi_uninit_display(struct omap_dss_device *dssdev)
++{
++	DSSDBG("uninit_display\n");
++
++	gpio_free(hdmi.ct_cp_hpd_gpio);
++	gpio_free(hdmi.ls_oe_gpio);
++	gpio_free(hdmi.hpd_gpio);
++}
++
+ static const struct hdmi_config *hdmi_find_timing(
+ 					const struct hdmi_config *timings_arr,
+ 					int len)
+@@ -462,9 +489,12 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
+ 	struct omap_video_timings *p;
+ 	unsigned long phy;
+ 
++	gpio_set_value(hdmi.ct_cp_hpd_gpio, 1);
++	gpio_set_value(hdmi.ls_oe_gpio, 1);
++
+ 	r = hdmi_runtime_get();
+ 	if (r)
+-		return r;
++		goto err_runtime_get;
+ 
+ 	dss_mgr_disable(dssdev->manager);
+ 
+@@ -482,7 +512,7 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
+ 	r = hdmi.ip_data.ops->pll_enable(&hdmi.ip_data);
+ 	if (r) {
+ 		DSSDBG("Failed to lock PLL\n");
+-		goto err;
++		goto err_pll_enable;
+ 	}
+ 
+ 	r = hdmi.ip_data.ops->phy_enable(&hdmi.ip_data);
+@@ -526,8 +556,11 @@ err_vid_enable:
+ 	hdmi.ip_data.ops->phy_disable(&hdmi.ip_data);
+ err_phy_enable:
+ 	hdmi.ip_data.ops->pll_disable(&hdmi.ip_data);
+-err:
++err_pll_enable:
+ 	hdmi_runtime_put();
++err_runtime_get:
++	gpio_set_value(hdmi.ct_cp_hpd_gpio, 0);
++	gpio_set_value(hdmi.ls_oe_gpio, 0);
+ 	return -EIO;
+ }
+ 
+@@ -539,6 +572,9 @@ static void hdmi_power_off(struct omap_dss_device *dssdev)
+ 	hdmi.ip_data.ops->phy_disable(&hdmi.ip_data);
+ 	hdmi.ip_data.ops->pll_disable(&hdmi.ip_data);
+ 	hdmi_runtime_put();
++
++	gpio_set_value(hdmi.ct_cp_hpd_gpio, 0);
++	gpio_set_value(hdmi.ls_oe_gpio, 0);
+ }
+ 
+ int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
+@@ -637,7 +673,6 @@ bool omapdss_hdmi_detect(void)
+ 
+ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
+ {
+-	struct omap_dss_hdmi_data *priv = dssdev->data;
+ 	int r = 0;
+ 
+ 	DSSDBG("ENTER hdmi_display_enable\n");
+@@ -650,7 +685,7 @@ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
+ 		goto err0;
+ 	}
+ 
+-	hdmi.ip_data.hpd_gpio = priv->hpd_gpio;
++	hdmi.ip_data.hpd_gpio = hdmi.hpd_gpio;
+ 
+ 	r = omap_dss_start_device(dssdev);
+ 	if (r) {
+@@ -658,26 +693,15 @@ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
+ 		goto err0;
+ 	}
+ 
+-	if (dssdev->platform_enable) {
+-		r = dssdev->platform_enable(dssdev);
+-		if (r) {
+-			DSSERR("failed to enable GPIO's\n");
+-			goto err1;
+-		}
+-	}
+-
+ 	r = hdmi_power_on(dssdev);
+ 	if (r) {
+ 		DSSERR("failed to power on device\n");
+-		goto err2;
++		goto err1;
+ 	}
+ 
+ 	mutex_unlock(&hdmi.lock);
+ 	return 0;
+ 
+-err2:
+-	if (dssdev->platform_disable)
+-		dssdev->platform_disable(dssdev);
+ err1:
+ 	omap_dss_stop_device(dssdev);
+ err0:
+@@ -693,9 +717,6 @@ void omapdss_hdmi_display_disable(struct omap_dss_device *dssdev)
+ 
+ 	hdmi_power_off(dssdev);
+ 
+-	if (dssdev->platform_disable)
+-		dssdev->platform_disable(dssdev);
+-
+ 	omap_dss_stop_device(dssdev);
+ 
+ 	mutex_unlock(&hdmi.lock);
+@@ -873,10 +894,15 @@ static void __init hdmi_probe_pdata(struct platform_device *pdev)
+ 
+ 	for (i = 0; i < pdata->num_devices; ++i) {
+ 		struct omap_dss_device *dssdev = pdata->devices[i];
++		struct omap_dss_hdmi_data *priv = dssdev->data;
+ 
+ 		if (dssdev->type != OMAP_DISPLAY_TYPE_HDMI)
+ 			continue;
+ 
++		hdmi.ct_cp_hpd_gpio = priv->ct_cp_hpd_gpio;
++		hdmi.ls_oe_gpio = priv->ls_oe_gpio;
++		hdmi.hpd_gpio = priv->hpd_gpio;
++
+ 		r = hdmi_init_display(dssdev);
+ 		if (r) {
+ 			DSSERR("device %s init failed: %d\n", dssdev->name, r);
+@@ -938,8 +964,17 @@ static int __init omapdss_hdmihw_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int __exit hdmi_remove_child(struct device *dev, void *data)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	hdmi_uninit_display(dssdev);
++	return 0;
++}
++
+ static int __exit omapdss_hdmihw_remove(struct platform_device *pdev)
+ {
++	device_for_each_child(&pdev->dev, NULL, hdmi_remove_child);
++
+ 	omap_dss_unregister_child_devices(&pdev->dev);
+ 
+ 	hdmi_panel_exit();
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index b868123..c6ffe88 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -605,6 +605,8 @@ struct omap_dss_device {
+ 
+ struct omap_dss_hdmi_data
+ {
++	int ct_cp_hpd_gpio;
++	int ls_oe_gpio;
+ 	int hpd_gpio;
+ };
+ 
 -- 
-1.7.7.3
+1.7.9.5
 

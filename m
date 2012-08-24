@@ -1,234 +1,177 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 21 Aug 2012 06:10:08 +0000
-Subject: [PATCH 01/23] OMAPDSS: outputs: Create a new entity called outputs
-Message-Id: <1345528711-27801-2-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 24 Aug 2012 12:41:09 +0000
+Subject: Re: [PATCH 01/23] OMAPDSS: outputs: Create a new entity called outputs
+Message-Id: <1345812069.9287.65.camel@lappyti>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-+d9Q1DlkXL4vSkRCaNhO"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1345528711-27801-1-git-send-email-archit@ti.com>
-In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	 <1345528711-27801-2-git-send-email-archit@ti.com>
+In-Reply-To: <1345528711-27801-2-git-send-email-archit@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com
+
+
+--=-+d9Q1DlkXL4vSkRCaNhO
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 2012-08-21 at 11:28 +0530, Archit Taneja wrote:
+
+> diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/o=
+utput.c
+> new file mode 100644
+> index 0000000..034ebbe
+> --- /dev/null
+> +++ b/drivers/video/omap2/dss/output.c
+> @@ -0,0 +1,58 @@
+> +/*
+> + * Copyright (C) 2012 Texas Instruments Ltd
+> + * Author: Archit Taneja <archit@ti.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify =
+it
+> + * under the terms of the GNU General Public License version 2 as publis=
+hed by
+> + * the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful, but W=
+ITHOUT
+> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License=
+ for
+> + * more details.
+> + *
+> + * You should have received a copy of the GNU General Public License alo=
+ng with
+> + * this program.  If not, see <http://www.gnu.org/licenses/>.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/slab.h>
+> +
+> +#include <video/omapdss.h>
+> +
+> +#include "dss.h"
+> +
+> +static struct list_head output_list;
+
+You can do:
+
+static LIST_HEAD(output_list);
+
+Then you don't need to initialize it separately.
+
+> +
+> +struct omap_dss_output *dss_create_output(struct platform_device *pdev)
+> +{
+> +	struct omap_dss_output *out;
+> +
+> +	out =3D kzalloc(sizeof(struct omap_dss_output *), GFP_KERNEL);
+> +	if (!out)
+> +		return NULL;
+
+A patch that adds kzalloc but no free is always a bit suspicious =3D).
+
+> +
+> +	out->pdev =3D pdev;
+> +
+> +	list_add_tail(&out->list, &output_list);
+> +
+> +	return out;
+> +}
+
+Instead of allocating omap_dss_output here, you could let the caller do
+it, and only initialize it here with default values (if that's even
+needed). Then the caller can use kzalloc, or can just embed the stuct
+into its own data-struct, which may be often a better choice.
+
+> +struct omap_dss_output *omap_dss_get_output(enum omap_dss_output_id id)
+> +{
+> +	struct omap_dss_output *out;
+> +
+> +	list_for_each_entry(out, &output_list, list) {
+> +		if (out->id =3D=3D id)
+> +			return out;
+> +	}
+> +
+> +	return NULL;
+> +}
+> +
+> +void dss_init_outputs(void)
+> +{
+> +	INIT_LIST_HEAD(&output_list);
+> +}
+> diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+> index b868123..0ba613f 100644
+> --- a/include/video/omapdss.h
+> +++ b/include/video/omapdss.h
+> @@ -207,6 +207,16 @@ enum omap_hdmi_flags {
+>  	OMAP_HDMI_SDA_SCL_EXTERNAL_PULLUP =3D 1 << 0,
+>  };
+> =20
+> +enum omap_dss_output_id {
+> +	OMAP_DSS_OUTPUT_DPI	=3D 1 << 0,
+> +	OMAP_DSS_OUTPUT_DBI	=3D 1 << 1,
+> +	OMAP_DSS_OUTPUT_SDI	=3D 1 << 2,
+> +	OMAP_DSS_OUTPUT_DSI1	=3D 1 << 3,
+> +	OMAP_DSS_OUTPUT_VENC	=3D 1 << 4,
+> +	OMAP_DSS_OUTPUT_DSI2	=3D 1 << 5,
+> +	OMAP_DSS_OUTPUT_HDMI	=3D 1 << 6,
+> +};
+
+I'm not sure about this. We already have enum omap_display_type. If you
+need the instance number, you could have that as a separate int field.
+
+Where do you need the output_id?
+
+> +
+>  /* RFBI */
+> =20
+>  struct rfbi_timings {
+> @@ -492,6 +502,24 @@ struct omap_dsi_pin_config {
+>  	int pins[OMAP_DSS_MAX_DSI_PINS];
+>  };
+> =20
+> +struct omap_dss_output {
+> +	struct list_head list;
+> +
+> +	/* display type supported by the output */
+> +	enum omap_display_type type;
+> +
+> +	/* output instance */
+> +	enum omap_dss_output_id id;
+
+So instead of omap_dss_output_id, you'd have omap_display_type type and
+int id, which together tell the supported output and also the output
+driver instance.
+
+ Tomi
+
+
+--=-+d9Q1DlkXL4vSkRCaNhO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com, sumit.semwal@ti.com, Archit Taneja <archit@ti.com>
 
-The current OMAPDSS design contains 3 software entities: Overlays, Managers and
-Devices. These map to pipelines, overlay managers and the panels respectively in
-hardware. One or more overlays connect to a manager to represent a composition,
-the manager connects to a device(generally a display) to display the content.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-The part of DSS hardware which isn't represented by any of the above entities
-are interfaces/outputs that connect to an overlay manager, i.e blocks like DSI,
-HDMI, VENC and so on. Currently, an overlay manager directly connects to the
-display, and the output to which it is actually connected is ignored. The panel
-driver of the display is responsible of calling output specific functions to
-configure the output.
+iQIcBAABAgAGBQJQN3ZlAAoJEPo9qoy8lh71ow4QALH2jk6BLhh97pVtx7hDWbAG
++1JMP27ctqn6Uof+NEVJEheDTKIFEN+nFxMTNkdnisqpgfTkdtCu2yMlpP3vzC+e
+jjipuxBsezj7b7dGj8eTAtvZ6XP0sfE7O/hjAXP8sFEdmObCQajWPJb6pcJqsW8i
+BJ412wdoIk2XZlkF4xQEM+xtdAHNE8/miOwWj8+FqPANEPQUwDTIJI9Ek8I6nwnM
+gBOOAut7C4y74O8OsYZGO/9Ovv495U+d0sNtEhv82I5zTrmfIvfZfN16AQzOO4vM
+Gmge4F+WXrJxCdHKrLnvJ4dITsPaaL35sZyDy3isbJNGtHdxTIxlil2ZUqGN0Ots
+jluiitHXKwdb8kt+IPYiZu9eMqbKlQaLKWJGS7j6mNZSQShv32GPrnxsmGOiSOMd
+jchfV+QNlWEzXwlBj30K7/rf4Fo1h+3Pg+meepQgGfkx/if8YKI0wxH05Xw1vaSL
+kFU4HAdoDwii8BIzQF7cFQGMxVOcjvsUi0wM1eTGxoQ1VkI25pCAPtRRj/zKu/G1
+v7XplTyLM59Fj/OsbfxzbFgr8i8EaG+1dXMjdybuL+pxlwUPzzF/5azV4lHdJY2c
+heXda0pu+8auMhaG4njxQU3QSnnAMK1I8TBuY06XkmA6ILZopySndK5zgWAvyvTG
+6NwFBd1o2OI4JJ/b1Ee5
+=ksHH
+-----END PGP SIGNATURE-----
 
-Adding outputs as a new software entity gives us the following benefits:
-
-- Have exact information on the possible connections between managers and
-  outputs: A manager can't connect to each and every output, there only limited
-  hardware links between a manager's video port and some of the outputs.
-
-- Remove hacks related to connecting managers and devices: Currently, default
-  links between managers and devices are set in a not so clean way. Matching is
-  done via comparing the device type, and the display types supported by the
-  manager. This isn't sufficient to establish all the possible links between
-  managers, outputs and devices in hardware.
-
-- Make panel drivers more generic: The DSS panel drivers currently call
-  interface/output specific functions to configure the hardware IP. When making
-  these calls, the driver isn't actually aware of the underlying output. The
-  output driver extracts information from the panel's omap_dss_device pointer
-  to figure out which interface it is connected to, and then configures the
-  corresponding output block. An example of this is when a DSI panel calls
-  dsi functions, the dsi driver figures out whether the panel is connected
-  to DSI1 or DSI2. This isn't correct, and having output as entities will
-  give the panel driver the exact information on which output to configure.
-  Having outputs also gives the opportunity to make panel drivers generic
-  across different platforms/SoCs, this is achieved as omap specific output
-  calls can be replaced by ops of a particular output type.
-
-- Have more complex connections between managers, outputs and devices: OMAPDSS
-  currently doesn't support use cases like 2 outputs connect to a single
-  device. This can be achieved by extending properties of outputs to connect to
-  more managers or devices.
-
-- Represent writeback as an output: The writeback pipeline fits well in OMAPDSS
-  as compared to overlays, managers or devices.
-
-Add a new struct to represent outputs. An output struct holds pointers to the
-manager and device structs to which it is connected. Add functions which can
-add an output, or look for one. Create an enum which represent each output
-instance.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/Makefile |    2 +-
- drivers/video/omap2/dss/core.c   |    1 +
- drivers/video/omap2/dss/dss.h    |    4 +++
- drivers/video/omap2/dss/output.c |   58 ++++++++++++++++++++++++++++++++++++++
- include/video/omapdss.h          |   30 ++++++++++++++++++++
- 5 files changed, 94 insertions(+), 1 deletion(-)
- create mode 100644 drivers/video/omap2/dss/output.c
-
-diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
-index 30a48fb..645f8c3 100644
---- a/drivers/video/omap2/dss/Makefile
-+++ b/drivers/video/omap2/dss/Makefile
-@@ -1,6 +1,6 @@
- obj-$(CONFIG_OMAP2_DSS) += omapdss.o
- omapdss-y := core.o dss.o dss_features.o dispc.o dispc_coefs.o display.o \
--	manager.o overlay.o apply.o
-+	manager.o overlay.o output.o apply.o
- omapdss-$(CONFIG_OMAP2_DSS_DPI) += dpi.o
- omapdss-$(CONFIG_OMAP2_DSS_RFBI) += rfbi.o
- omapdss-$(CONFIG_OMAP2_DSS_VENC) += venc.o venc_panel.o
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index c35a248..2eccd74 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -239,6 +239,7 @@ static int __init omap_dss_probe(struct platform_device *pdev)
- 
- 	dss_init_overlay_managers(pdev);
- 	dss_init_overlays(pdev);
-+	dss_init_outputs();
- 
- 	r = dss_initialize_debugfs();
- 	if (r)
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 41c00dc..8a7c94c 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -222,6 +222,10 @@ int dss_ovl_set_manager(struct omap_overlay *ovl,
- 		struct omap_overlay_manager *mgr);
- int dss_ovl_unset_manager(struct omap_overlay *ovl);
- 
-+/* output */
-+struct omap_dss_output *dss_create_output(struct platform_device *pdev);
-+void dss_init_outputs(void);
-+
- /* display */
- int dss_suspend_all_devices(void);
- int dss_resume_all_devices(void);
-diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
-new file mode 100644
-index 0000000..034ebbe
---- /dev/null
-+++ b/drivers/video/omap2/dss/output.c
-@@ -0,0 +1,58 @@
-+/*
-+ * Copyright (C) 2012 Texas Instruments Ltd
-+ * Author: Archit Taneja <archit@ti.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+
-+#include <video/omapdss.h>
-+
-+#include "dss.h"
-+
-+static struct list_head output_list;
-+
-+struct omap_dss_output *dss_create_output(struct platform_device *pdev)
-+{
-+	struct omap_dss_output *out;
-+
-+	out = kzalloc(sizeof(struct omap_dss_output *), GFP_KERNEL);
-+	if (!out)
-+		return NULL;
-+
-+	out->pdev = pdev;
-+
-+	list_add_tail(&out->list, &output_list);
-+
-+	return out;
-+}
-+
-+struct omap_dss_output *omap_dss_get_output(enum omap_dss_output_id id)
-+{
-+	struct omap_dss_output *out;
-+
-+	list_for_each_entry(out, &output_list, list) {
-+		if (out->id = id)
-+			return out;
-+	}
-+
-+	return NULL;
-+}
-+
-+void dss_init_outputs(void)
-+{
-+	INIT_LIST_HEAD(&output_list);
-+}
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index b868123..0ba613f 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -207,6 +207,16 @@ enum omap_hdmi_flags {
- 	OMAP_HDMI_SDA_SCL_EXTERNAL_PULLUP = 1 << 0,
- };
- 
-+enum omap_dss_output_id {
-+	OMAP_DSS_OUTPUT_DPI	= 1 << 0,
-+	OMAP_DSS_OUTPUT_DBI	= 1 << 1,
-+	OMAP_DSS_OUTPUT_SDI	= 1 << 2,
-+	OMAP_DSS_OUTPUT_DSI1	= 1 << 3,
-+	OMAP_DSS_OUTPUT_VENC	= 1 << 4,
-+	OMAP_DSS_OUTPUT_DSI2	= 1 << 5,
-+	OMAP_DSS_OUTPUT_HDMI	= 1 << 6,
-+};
-+
- /* RFBI */
- 
- struct rfbi_timings {
-@@ -492,6 +502,24 @@ struct omap_dsi_pin_config {
- 	int pins[OMAP_DSS_MAX_DSI_PINS];
- };
- 
-+struct omap_dss_output {
-+	struct list_head list;
-+
-+	/* display type supported by the output */
-+	enum omap_display_type type;
-+
-+	/* output instance */
-+	enum omap_dss_output_id id;
-+
-+	/* output's platform device pointer */
-+	struct platform_device *pdev;
-+
-+	/* dynamic fields */
-+	struct omap_overlay_manager *manager;
-+
-+	struct omap_dss_device *device;
-+};
-+
- struct omap_dss_device {
- 	struct device dev;
- 
-@@ -699,6 +727,8 @@ struct omap_overlay_manager *omap_dss_get_overlay_manager(int num);
- int omap_dss_get_num_overlays(void);
- struct omap_overlay *omap_dss_get_overlay(int num);
- 
-+struct omap_dss_output *omap_dss_get_output(enum omap_dss_output_id id);
-+
- void omapdss_default_get_resolution(struct omap_dss_device *dssdev,
- 		u16 *xres, u16 *yres);
- int omapdss_default_get_recommended_bpp(struct omap_dss_device *dssdev);
--- 
-1.7.9.5
+--=-+d9Q1DlkXL4vSkRCaNhO--
 

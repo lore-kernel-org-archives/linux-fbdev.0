@@ -1,73 +1,47 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Wed, 22 Aug 2012 05:42:05 +0000
+From: Alex Courbot <acourbot@nvidia.com>
+Date: Fri, 24 Aug 2012 09:24:54 +0000
 Subject: Re: [PATCH v4 1/3] Runtime Interpreted Power Sequences
-Message-Id: <20120822054205.GA28845@avionic-0098.mockup.avionic-design.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="C7zPtVaVf+AK4Oqc"
+Message-Id: <6044581.2jEzZBWCu1@percival>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345097337-24170-1-git-send-email-acourbot@nvidia.com>
- <1345097337-24170-2-git-send-email-acourbot@nvidia.com>
- <1345535069.4085.7.camel@deskari> <1562509.b0FYTUZ1D8@percival>
- <20120821083329.GA28992@avionic-0098.adnet.avionic-design.de>
- <1345539465.4085.22.camel@deskari>
- <20120821091306.GA4819@avionic-0098.mockup.avionic-design.de>
- <1345542860.4085.40.camel@deskari>
- <20120821165738.GY7995@opensource.wolfsonmicro.com>
-In-Reply-To: <20120821165738.GY7995-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>
-To: Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>
-Cc: "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Anton Vorontsov <cbou-JGs/UdohzUI@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+References: <1345097337-24170-1-git-send-email-acourbot@nvidia.com> <20120821091306.GA4819@avionic-0098.mockup.avionic-design.de> <1345542860.4085.40.camel@deskari>
+In-Reply-To: <1345542860.4085.40.camel@deskari>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Thierry Reding <thierry.reding@avionic-design.de>, Stephen Warren <swarren@nvidia.com>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Leela Krishna Amudala <leelakrishna.a@gmail.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
 
+On Tuesday 21 August 2012 17:54:20 Tomi Valkeinen wrote:
+> > However this also means we'll essentially just be moving the board code.
+> 
+> 
+> What do you mean "just"? Wasn't the point of the whole "arm board file
+> mess" to get rid of the code from the board files? If the code in the
+> board file is device specific code, not board specific, then the driver
+> of the device is a logical place to place it.
 
---C7zPtVaVf+AK4Oqc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I think Tomi has a point here - these sequences were not belonging to the 
+board code in the first place. They are definitely tied to the device, hence 
+should have been handled by the driver all along, with the board code 
+assigning the correct resources to the device (like the vast majority of 
+device drivers do).
 
-On Tue, Aug 21, 2012 at 05:57:38PM +0100, Mark Brown wrote:
-> On Tue, Aug 21, 2012 at 12:54:20PM +0300, Tomi Valkeinen wrote:
->=20
-> > However, if we already have a generic driver for that type of panel,
-> > (which we would need anyway for the DT based approach), the developer
-> > only needs to add the name of the panel and the data for the power
-> > sequence to the panel driver's database, which is about the same amount
-> > of work as with DT.
->=20
-> > So it's really just a question of where to put the data in question, DT
-> > or driver. Both contain the same data, and the data structure may also
-> > be the same. In DT's case it just needs to be parsed first, whereas in
-> > database case you'll enter the data in structs.
->=20
-> I think the device tree idiomatic way of doing this is to have a bunch
-> of .dtsi files for the panels which then get included by reference in
-> the board files.  This isn't helpful to people working on non-DT
-> architectures though.
+> And as I said, I don't have any problems with some kind of generic power
+> sequences. So the code in the board file could be moved and converted to
+> use the power sequences, if that is better than just plain c code.
 
-One problem that's likely to crop up here again is that the panels won't
-be properly describable in the DT. Typically there is no device that can
-be addressed by the CPU. This is the same as for backlights and fixed
-regulators.
+My concern now is, provided that all drivers to their job and handle how their 
+devices are switched on and off, when (if at all) are encoded power sequences 
+better than their equivalent C code? There is the matching database size issue 
+that you mentionned, is it a sufficient concern to justify a new kernel feature?
 
-Thierry
+On the other hand some devices like panels are typically not used in many 
+different appliances, so maybe it is not worth to separate them from their 
+board definition. As Mark mentionned, having .dtsi files for the DT (and their 
+equivalent .h for kernels that use platform data) might be a good middle 
+ground.
 
---C7zPtVaVf+AK4Oqc
-Content-Type: application/pgp-signature
+But the line is really tight between what is code and what is data here.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+Alex.
 
-iQIcBAEBAgAGBQJQNHEtAAoJEN0jrNd/PrOhUUIQAJDp2eepbgrmwXCTk4WKJ8mS
-seP2HOS9qyr4MfJemkP2jTBtFLb0H4xuyT7Npv2AWPsuoRk//ifmfgyOGw7xQabY
-tj9e8KmGQIEXx0TTOV0qxP9fo3+A+HS8itYvvc0u8+QmRkmj7Z6eIY7jTXQjVSPe
-QcvHQqPcYnIZTfbg1l9GEeXFTJwr7iDlnVMwtttoDkX8rRsj1+YfpMkk4DvkPCwh
-vdcTlTIz/0eJnk1sp7MffE1muFGiVy+wOBMnBe6MgQ2gjseh/yPtBlkQa2U6bik2
-Usr/+lwZ6MTKYa0VKA4Ct8YvK4Ep15s4rEaO9OUHUBCV4H3KtkOm7YMwNEw2tre4
-gYHi+yH3dIm9LgN+e372A6kqquBa553ClqtFfy5yZd1/nVKWEF1VnHnH3arV3vHR
-jJsRHajbrE1EZkbdmTV9WdSAZaqru4MWMCGBRVGskviABXboAwlPIU6NVWZspXtn
-paLLMzFY0kzNz6WLMSKg9leDoO+2PrPFfUR8RQUpH1uWvGQUiGWbA7KeI8+HPX30
-g2WgAKTzql9O6Rkf3H/85LbqM5WOYg9NBn7FsKWNi6yUVLQj4TYio2QDrggl4G7b
-pTTKK/gfxfl2pSd7qQBUgvvKhCwkUNwim2asr4iZJ0AomAj5rMRLEedeLHDsRoSQ
-mDDcSMWoaaklQj/lcMaQ
-=yaLS
------END PGP SIGNATURE-----
-
---C7zPtVaVf+AK4Oqc--

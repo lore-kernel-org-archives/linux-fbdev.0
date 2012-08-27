@@ -1,111 +1,43 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 23 Aug 2012 20:41:03 +0000
-Subject: Re: [PATCH 3/5] drivers/video/jz4740_fb.c: use devm_ functions
-Message-Id: <5036955F.6000806@gmx.de>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Mon, 27 Aug 2012 08:55:11 +0000
+Subject: [PATCH] OMAPDSS: Correct DISPC_IRQ bit definitions for LCD3
+Message-Id: <1346057599-5691-1-git-send-email-cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344008414-2894-1-git-send-email-damien.cassou@lifl.fr> <1344008414-2894-3-git-send-email-damien.cassou@lifl.fr>
-In-Reply-To: <1344008414-2894-3-git-send-email-damien.cassou@lifl.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Damien Cassou <damien.cassou@lifl.fr>
-Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: mark.tyler@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-On 08/03/2012 03:40 PM, Damien Cassou wrote:
-> From: Damien Cassou <damien.cassou@lifl.fr>
-> 
-> The various devm_ functions allocate memory that is released when a driver
-> detaches. This patch uses these functions for data that is allocated in the
-> probe function of a platform device and is only freed in the remove function.
-> 
-> Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
+The DISPC_IRQ bit definitions pertaining to channel LCD3 as DISPC_IRQ_VSYNC3,
+DISPC_IRQ_SYNC_LOST3, DISPC_IRQ_ACBIAS_COUNT_STAT3 AND DISPC_IRQ_FRAMEDONE3
+which were incorrectly set in previous LCD3 patches have been corrected here.
 
-Applied.
+Reported-by: Mark Tyler <mark.tyler@ti.com>
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+---
+ include/video/omapdss.h |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> 
-> ---
->  drivers/video/jz4740_fb.c |   22 ++++++----------------
->  1 file changed, 6 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/video/jz4740_fb.c b/drivers/video/jz4740_fb.c
-> index de36693..7669770 100644
-> --- a/drivers/video/jz4740_fb.c
-> +++ b/drivers/video/jz4740_fb.c
-> @@ -659,25 +659,25 @@ static int __devinit jzfb_probe(struct platform_device *pdev)
->  	jzfb->pdata = pdata;
->  	jzfb->mem = mem;
-> 
-> -	jzfb->ldclk = clk_get(&pdev->dev, "lcd");
-> +	jzfb->ldclk = devm_clk_get(&pdev->dev, "lcd");
->  	if (IS_ERR(jzfb->ldclk)) {
->  		ret = PTR_ERR(jzfb->ldclk);
->  		dev_err(&pdev->dev, "Failed to get lcd clock: %d\n", ret);
->  		goto err_framebuffer_release;
->  	}
-> 
-> -	jzfb->lpclk = clk_get(&pdev->dev, "lcd_pclk");
-> +	jzfb->lpclk = devm_clk_get(&pdev->dev, "lcd_pclk");
->  	if (IS_ERR(jzfb->lpclk)) {
->  		ret = PTR_ERR(jzfb->lpclk);
->  		dev_err(&pdev->dev, "Failed to get lcd pixel clock: %d\n", ret);
-> -		goto err_put_ldclk;
-> +		goto err_framebuffer_release;
->  	}
-> 
-> -	jzfb->base = ioremap(mem->start, resource_size(mem));
-> +	jzfb->base = devm_ioremap(&pdev->dev, mem->start, resource_size(mem));
->  	if (!jzfb->base) {
->  		dev_err(&pdev->dev, "Failed to ioremap register memory region\n");
->  		ret = -EBUSY;
-> -		goto err_put_lpclk;
-> +		goto err_framebuffer_release;
->  	}
-> 
->  	platform_set_drvdata(pdev, jzfb);
-> @@ -693,7 +693,7 @@ static int __devinit jzfb_probe(struct platform_device *pdev)
->  	ret = jzfb_alloc_devmem(jzfb);
->  	if (ret) {
->  		dev_err(&pdev->dev, "Failed to allocate video memory\n");
-> -		goto err_iounmap;
-> +		goto err_framebuffer_release;
->  	}
-> 
->  	fb->fix = jzfb_fix;
-> @@ -734,12 +734,6 @@ err_free_devmem:
-> 
->  	fb_dealloc_cmap(&fb->cmap);
->  	jzfb_free_devmem(jzfb);
-> -err_iounmap:
-> -	iounmap(jzfb->base);
-> -err_put_lpclk:
-> -	clk_put(jzfb->lpclk);
-> -err_put_ldclk:
-> -	clk_put(jzfb->ldclk);
->  err_framebuffer_release:
->  	framebuffer_release(fb);
->  err_release_mem_region:
-> @@ -756,7 +750,6 @@ static int __devexit jzfb_remove(struct platform_device *pdev)
->  	jz_gpio_bulk_free(jz_lcd_ctrl_pins, jzfb_num_ctrl_pins(jzfb));
->  	jz_gpio_bulk_free(jz_lcd_data_pins, jzfb_num_data_pins(jzfb));
-> 
-> -	iounmap(jzfb->base);
->  	release_mem_region(jzfb->mem->start, resource_size(jzfb->mem));
-> 
->  	fb_dealloc_cmap(&jzfb->fb->cmap);
-> @@ -764,9 +757,6 @@ static int __devexit jzfb_remove(struct platform_device *pdev)
-> 
->  	platform_set_drvdata(pdev, NULL);
-> 
-> -	clk_put(jzfb->lpclk);
-> -	clk_put(jzfb->ldclk);
-> -
->  	framebuffer_release(jzfb->fb);
-> 
->  	return 0;
-> 
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index b868123..9c7cca3 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -48,10 +48,10 @@
+ #define DISPC_IRQ_FRAMEDONEWB		(1 << 23)
+ #define DISPC_IRQ_FRAMEDONETV		(1 << 24)
+ #define DISPC_IRQ_WBBUFFEROVERFLOW	(1 << 25)
+-#define DISPC_IRQ_FRAMEDONE3		(1 << 26)
+-#define DISPC_IRQ_VSYNC3		(1 << 27)
+-#define DISPC_IRQ_ACBIAS_COUNT_STAT3	(1 << 28)
+-#define DISPC_IRQ_SYNC_LOST3		(1 << 29)
++#define DISPC_IRQ_SYNC_LOST3		(1 << 27)
++#define DISPC_IRQ_VSYNC3		(1 << 28)
++#define DISPC_IRQ_ACBIAS_COUNT_STAT3	(1 << 29)
++#define DISPC_IRQ_FRAMEDONE3		(1 << 30)
+ 
+ struct omap_dss_device;
+ struct omap_overlay_manager;
+-- 
+1.7.10
 

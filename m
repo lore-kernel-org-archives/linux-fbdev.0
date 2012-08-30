@@ -1,108 +1,71 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 16 Aug 2012 13:00:53 +0000
-Subject: [PATCH 18/19] sh: kfr2r09: Use the backlight API for brightness control
-Message-Id: <1345122054-16013-19-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 30 Aug 2012 11:52:29 +0000
+Subject: [PATCH v2 07/23] OMAPFB: remove manager->device references
+Message-Id: <1346326845-16583-8-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+ <1346326845-16583-1-git-send-email-archit@ti.com>
+In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Don't hook up brightness control in the display on/off operations, use
-the backlight API instead.
+With the introduction of output entities, managers will now connect to outputs.
+Use the helper op for managers named get_device. This will abstract away the
+information on how to get the device from an overlay manager.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Using the helper function will reduce the number of pointer dereferences a user
+of OMAPDSS needs to do and reduce risk of a NULL dereference.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- arch/sh/boards/mach-kfr2r09/lcd_wqvga.c     |   16 +++-------------
- arch/sh/boards/mach-kfr2r09/setup.c         |    7 +++++--
- arch/sh/include/mach-kfr2r09/mach/kfr2r09.h |    6 ++----
- 3 files changed, 10 insertions(+), 19 deletions(-)
+ drivers/video/omap2/omapfb/omapfb-main.c |    7 +++++--
+ drivers/video/omap2/omapfb/omapfb.h      |    5 +++--
+ 2 files changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c b/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
-index c148b36..c620503 100644
---- a/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
-+++ b/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
-@@ -283,7 +283,7 @@ void kfr2r09_lcd_start(void *sohandle, struct sh_mobile_lcdc_sys_bus_ops *so)
- #define MAIN_MLED4      0x40
- #define MAIN_MSW        0x80
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index fc671d3..c6992be 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -2353,6 +2353,7 @@ static int __init omapfb_probe(struct platform_device *pdev)
+ 	struct omap_overlay *ovl;
+ 	struct omap_dss_device *def_display;
+ 	struct omap_dss_device *dssdev;
++	struct omap_dss_device *mgr_device;
  
--static int kfr2r09_lcd_backlight(int on)
-+int kfr2r09_lcd_set_brightness(int brightness)
- {
- 	struct i2c_adapter *a;
- 	struct i2c_msg msg;
-@@ -295,7 +295,7 @@ static int kfr2r09_lcd_backlight(int on)
- 		return -ENODEV;
+ 	DBG("omapfb_probe\n");
  
- 	buf[0] = 0x00;
--	if (on)
-+	if (brightness)
- 		buf[1] = CTRL_CPSW | CTRL_C10 | CTRL_CKSW;
- 	else
- 		buf[1] = 0;
-@@ -309,7 +309,7 @@ static int kfr2r09_lcd_backlight(int on)
- 		return -ENODEV;
+@@ -2426,8 +2427,10 @@ static int __init omapfb_probe(struct platform_device *pdev)
+ 	/* gfx overlay should be the default one. find a display
+ 	 * connected to that, and use it as default display */
+ 	ovl = omap_dss_get_overlay(0);
+-	if (ovl->manager && ovl->manager->device) {
+-		def_display = ovl->manager->device;
++	mgr_device = ovl->manager ?
++		ovl->manager->get_device(ovl->manager) : NULL;
++	if (mgr_device) {
++		def_display = mgr_device;
+ 	} else {
+ 		dev_warn(&pdev->dev, "cannot find default display\n");
+ 		def_display = NULL;
+diff --git a/drivers/video/omap2/omapfb/omapfb.h b/drivers/video/omap2/omapfb/omapfb.h
+index 30361a0..2782b1f 100644
+--- a/drivers/video/omap2/omapfb/omapfb.h
++++ b/drivers/video/omap2/omapfb/omapfb.h
+@@ -148,8 +148,9 @@ static inline struct omap_dss_device *fb2display(struct fb_info *fbi)
  
- 	buf[0] = 0x01;
--	if (on)
-+	if (brightness)
- 		buf[1] = MAIN_MSW | MAIN_MLED4 | 0x0c;
- 	else
- 		buf[1] = 0;
-@@ -324,13 +324,3 @@ static int kfr2r09_lcd_backlight(int on)
+ 	/* XXX: returns the display connected to first attached overlay */
+ 	for (i = 0; i < ofbi->num_overlays; i++) {
+-		if (ofbi->overlays[i]->manager)
+-			return ofbi->overlays[i]->manager->device;
++		struct omap_overlay_manager *mgr = ofbi->overlays[i]->manager;
++		if (mgr)
++			return mgr->get_device(mgr);
+ 	}
  
- 	return 0;
- }
--
--void kfr2r09_lcd_on(void)
--{
--	kfr2r09_lcd_backlight(1);
--}
--
--void kfr2r09_lcd_off(void)
--{
--	kfr2r09_lcd_backlight(0);
--}
-diff --git a/arch/sh/boards/mach-kfr2r09/setup.c b/arch/sh/boards/mach-kfr2r09/setup.c
-index 158c917..ecf40b8 100644
---- a/arch/sh/boards/mach-kfr2r09/setup.c
-+++ b/arch/sh/boards/mach-kfr2r09/setup.c
-@@ -156,8 +156,11 @@ static struct sh_mobile_lcdc_info kfr2r09_sh_lcdc_info = {
- 			.height = 58,
- 			.setup_sys = kfr2r09_lcd_setup,
- 			.start_transfer = kfr2r09_lcd_start,
--			.display_on = kfr2r09_lcd_on,
--			.display_off = kfr2r09_lcd_off,
-+		},
-+		.bl_info = {
-+			.name = "sh_mobile_lcdc_bl",
-+			.max_brightness = 1,
-+			.set_brightness = kfr2r09_lcd_set_brightness,
- 		},
- 		.sys_bus_cfg = {
- 			.ldmt2r = 0x07010904,
-diff --git a/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h b/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
-index ba3d93d..c20c9e5 100644
---- a/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
-+++ b/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
-@@ -4,15 +4,13 @@
- #include <video/sh_mobile_lcdc.h>
- 
- #if defined(CONFIG_FB_SH_MOBILE_LCDC) || defined(CONFIG_FB_SH_MOBILE_LCDC_MODULE)
--void kfr2r09_lcd_on(void);
--void kfr2r09_lcd_off(void);
-+int kfr2r09_lcd_set_brightness(int brightness);
- int kfr2r09_lcd_setup(void *sys_ops_handle,
- 		      struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
- void kfr2r09_lcd_start(void *sys_ops_handle,
- 		       struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
- #else
--static void kfr2r09_lcd_on(void) {}
--static void kfr2r09_lcd_off(void) {}
-+static int kfr2r09_lcd_set_brightness(int brightness) {}
- static int kfr2r09_lcd_setup(void *sys_ops_handle,
- 				struct sh_mobile_lcdc_sys_bus_ops *sys_ops)
- {
+ 	return NULL;
 -- 
-1.7.8.6
+1.7.9.5
 

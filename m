@@ -1,80 +1,75 @@
 From: Archit Taneja <archit@ti.com>
-Date: Wed, 01 Aug 2012 10:43:17 +0000
-Subject: [RFC 06/17] OMAPDSS: DPI displays: Take care of panel timings in the driver itself
-Message-Id: <1343817088-29645-7-git-send-email-archit@ti.com>
+Date: Thu, 30 Aug 2012 11:52:33 +0000
+Subject: [PATCH v2 11/23] OMAPDSS: DSI: Remove dsi_pdev_map global struct
+Message-Id: <1346326845-16583-12-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343817088-29645-1-git-send-email-archit@ti.com>
-In-Reply-To: <1343817088-29645-1-git-send-email-archit@ti.com>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+ <1346326845-16583-1-git-send-email-archit@ti.com>
+In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, sumit.semwal@ti.com, rob@ti.com, Archit Taneja <archit@ti.com>
+Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The timings maintained in omap_dss_device(dssdev->panel.timings) should be
-maintained by the panel driver itself. It's the panel drivers responsibility
-to update it if a new set of timings is to be configured. The DPI interface
-driver shouldn't be responsible of updating the panel timings, it's responsible
-of maintianing it's own copy of timings.
+dsi_pdev_map is a struct visible globally in the DSI driver to get the platform
+device pointer of the DSI device corresponding to it's module ID. This was
+required because there was no clean way to derive the platform device from
+the DSI module instance number or from the connected panel.
+
+With the new output entity, it is possible to retrieve the platform device
+pointer if the omap_dss_output pointer is available. Modify the functions
+dsi_get_dsidev_from_dssdev() dsi_get_dsidev_from_id() so that they use output
+instead of dsi_pdev_map to retrieve the dsi platform device pointer.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/displays/panel-generic-dpi.c   |    2 ++
- drivers/video/omap2/displays/panel-tfp410.c        |    1 +
- .../video/omap2/displays/panel-tpo-td043mtea1.c    |    2 ++
- drivers/video/omap2/dss/dpi.c                      |    1 -
- 4 files changed, 5 insertions(+), 1 deletion(-)
+ drivers/video/omap2/dss/dsi.c |   14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
-index 5e70313..e773594 100644
---- a/drivers/video/omap2/displays/panel-generic-dpi.c
-+++ b/drivers/video/omap2/displays/panel-generic-dpi.c
-@@ -698,6 +698,8 @@ static void generic_dpi_panel_set_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 6a83ab7..78212c4 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -346,8 +346,6 @@ struct dsi_packet_sent_handler_data {
+ 	struct completion *completion;
+ };
+ 
+-static struct platform_device *dsi_pdev_map[MAX_NUM_DSI];
+-
+ #ifdef DEBUG
+ static bool dsi_perf;
+ module_param(dsi_perf, bool, 0644);
+@@ -360,12 +358,19 @@ static inline struct dsi_data *dsi_get_dsidrv_data(struct platform_device *dside
+ 
+ static inline struct platform_device *dsi_get_dsidev_from_dssdev(struct omap_dss_device *dssdev)
  {
- 	omapdss_dpi_set_timings(dssdev, timings);
-+
-+	dssdev->panel.timings = *timings;
+-	return dsi_pdev_map[dssdev->phy.dsi.module];
++	return dssdev->output->pdev;
  }
  
- static int generic_dpi_panel_check_timings(struct omap_dss_device *dssdev,
-diff --git a/drivers/video/omap2/displays/panel-tfp410.c b/drivers/video/omap2/displays/panel-tfp410.c
-index c6f9503..9397236 100644
---- a/drivers/video/omap2/displays/panel-tfp410.c
-+++ b/drivers/video/omap2/displays/panel-tfp410.c
-@@ -234,6 +234,7 @@ static void tfp410_set_timings(struct omap_dss_device *dssdev,
- 
- 	mutex_lock(&ddata->lock);
- 	omapdss_dpi_set_timings(dssdev, timings);
-+	dssdev->panel.timings = *timings;
- 	mutex_unlock(&ddata->lock);
- }
- 
-diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-index ecb163e..3f47f5f 100644
---- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-+++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-@@ -483,6 +483,8 @@ static void tpo_td043_set_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
+ struct platform_device *dsi_get_dsidev_from_id(int module)
  {
- 	omapdss_dpi_set_timings(dssdev, timings);
+-	return dsi_pdev_map[module];
++	struct omap_dss_output *out;
++	enum omap_dss_output_id	id;
 +
-+	dssdev->panel.timings = *timings;
++	id = module = 0 ? OMAP_DSS_OUTPUT_DSI1 : OMAP_DSS_OUTPUT_DSI2;
++
++	out = omap_dss_get_output(id);
++
++	return out->pdev;
  }
  
- static int tpo_td043_check_timings(struct omap_dss_device *dssdev,
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index 96dd1a4..6c43d80 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -304,7 +304,6 @@ void omapdss_dpi_set_timings(struct omap_dss_device *dssdev,
- 	mutex_lock(&dpi.lock);
+ static inline void dsi_write_reg(struct platform_device *dsidev,
+@@ -4933,7 +4938,6 @@ static int __init omap_dsihw_probe(struct platform_device *dsidev)
  
- 	dpi.timings = *timings;
--	dssdev->panel.timings = *timings;
+ 	dsi->module_id = dsidev->id;
+ 	dsi->pdev = dsidev;
+-	dsi_pdev_map[dsi->module_id] = dsidev;
+ 	dev_set_drvdata(&dsidev->dev, dsi);
  
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
- 		r = dispc_runtime_get();
+ 	spin_lock_init(&dsi->irq_lock);
 -- 
 1.7.9.5
 

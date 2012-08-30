@@ -1,102 +1,52 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Tue, 07 Aug 2012 08:39:52 +0000
-Subject: [PATCH 2/6] OMAPDSS: DSS: Remove redundant functions
-Message-Id: <ccdea286ee482194f1ae8182ca0022e30946b5ff.1343912533.git.cmahapatra@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 30 Aug 2012 11:52:44 +0000
+Subject: [PATCH v2 22/23] OMAPDSS: APPLY: Remove omap_dss_device references from dss_ovl_enable/disable
+Message-Id: <1346326845-16583-23-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1343912532.git.cmahapatra@ti.com>
-In-Reply-To: <cover.1343912532.git.cmahapatra@ti.com>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+ <1346326845-16583-1-git-send-email-archit@ti.com>
+In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Functions dss_calc_clock_rates() and dss_get_clock_div() are removed as these
-functions have become redundant and no longer used.
+An overlay isn't allowed to be enabled/disabled if it isn't connected to an
+omap_dss_device. This requirement isn't needed any more. An overlay can be
+enabled/disabled as long as it has an output connected to it. The output may
+not be connected to a device, but we can be assured that the connected
+manager's output is in use by an output interface.
 
-Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dss.c |   45 -----------------------------------------
- drivers/video/omap2/dss/dss.h |    2 --
- 2 files changed, 47 deletions(-)
+ drivers/video/omap2/dss/apply.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 04b4586..7b1c6ac 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -431,31 +431,6 @@ enum omap_dss_clk_source dss_get_lcd_clk_source(enum omap_channel channel)
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 8a05cbc..d584f0c 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -1607,8 +1607,7 @@ int dss_ovl_enable(struct omap_overlay *ovl)
+ 		goto err1;
  	}
- }
  
--/* calculate clock rates using dividers in cinfo */
--int dss_calc_clock_rates(struct dss_clock_info *cinfo)
--{
--	if (dss.dpll4_m4_ck) {
--		unsigned long prate;
--		u16 fck_div_max = 16;
--
--		if (cpu_is_omap3630() || cpu_is_omap44xx())
--			fck_div_max = 32;
--
--		if (cinfo->fck_div > fck_div_max || cinfo->fck_div = 0)
--			return -EINVAL;
--
--		prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
--
--		cinfo->fck = prate / cinfo->fck_div;
--	} else {
--		if (cinfo->fck_div != 0)
--			return -EINVAL;
--		cinfo->fck = clk_get_rate(dss.dss_clk);
--	}
--
--	return 0;
--}
--
- int dss_set_clock_div(struct dss_clock_info *cinfo)
- {
- 	if (dss.dpll4_m4_ck) {
-@@ -478,26 +453,6 @@ int dss_set_clock_div(struct dss_clock_info *cinfo)
- 	return 0;
- }
+-	if (ovl->manager = NULL ||
+-			ovl->manager->get_device(ovl->manager) = NULL) {
++	if (ovl->manager = NULL || ovl->manager->output = NULL) {
+ 		r = -EINVAL;
+ 		goto err1;
+ 	}
+@@ -1677,8 +1676,7 @@ int dss_ovl_disable(struct omap_overlay *ovl)
+ 		goto err;
+ 	}
  
--int dss_get_clock_div(struct dss_clock_info *cinfo)
--{
--	cinfo->fck = clk_get_rate(dss.dss_clk);
--
--	if (dss.dpll4_m4_ck) {
--		unsigned long prate;
--
--		prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
--
--		if (cpu_is_omap3630() || cpu_is_omap44xx())
--			cinfo->fck_div = prate / (cinfo->fck);
--		else
--			cinfo->fck_div = prate / (cinfo->fck / 2);
--	} else {
--		cinfo->fck_div = 0;
--	}
--
--	return 0;
--}
--
- unsigned long dss_get_dpll4_rate(void)
- {
- 	if (dss.dpll4_m4_ck)
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index d87b885..5773c86 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -311,9 +311,7 @@ void dss_set_venc_output(enum omap_dss_venc_type type);
- void dss_set_dac_pwrdn_bgz(bool enable);
- 
- unsigned long dss_get_dpll4_rate(void);
--int dss_calc_clock_rates(struct dss_clock_info *cinfo);
- int dss_set_clock_div(struct dss_clock_info *cinfo);
--int dss_get_clock_div(struct dss_clock_info *cinfo);
- int dss_calc_clock_div(unsigned long req_pck, struct dss_clock_info *dss_cinfo,
- 		struct dispc_clock_info *dispc_cinfo);
- 
+-	if (ovl->manager = NULL ||
+-			ovl->manager->get_device(ovl->manager) = NULL) {
++	if (ovl->manager = NULL || ovl->manager->output = NULL) {
+ 		r = -EINVAL;
+ 		goto err;
+ 	}
 -- 
-1.7.10
+1.7.9.5
 

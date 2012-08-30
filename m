@@ -1,93 +1,243 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Date: Wed, 01 Aug 2012 02:19:27 +0000
-Subject: RE: [PATCH V2 3/5] arm: samsung: Include the modified FIMD header file
-Message-Id: <02f301cd6f8c$137016f0$3a5044d0$%kim@samsung.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 30 Aug 2012 11:52:28 +0000
+Subject: [PATCH v2 06/23] OMAP_VOUT: Remove manager->device references
+Message-Id: <1346326845-16583-7-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343737385-23337-1-git-send-email-l.krishna@samsung.com>
- <1343737385-23337-4-git-send-email-l.krishna@samsung.com>
-In-Reply-To: <1343737385-23337-4-git-send-email-l.krishna@samsung.com>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+ <1346326845-16583-1-git-send-email-archit@ti.com>
+In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Leela Krishna Amudala' <l.krishna@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, inki.dae@samsung.com, joshi@samsung.com, jg1.han@samsung.com, m.szyprowski@samsung.com
+To: tomi.valkeinen@ti.com
+Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>, Vaibhav Hiremath <hvaibhav@ti.com>
 
-Leela Krishna Amudala wrote:
-> 
-> The fimd register headers have been moved to include/video/
-> hence, modifying the machine files accordingly.
-> 
-> Signed-off-by: Leela Krishna Amudala <l.krishna@samsung.com>
-> ---
->  arch/arm/mach-exynos/mach-nuri.c           |    2 +-
->  arch/arm/mach-exynos/mach-origen.c         |    2 +-
->  arch/arm/mach-exynos/mach-smdk4x12.c       |    2 +-
->  arch/arm/mach-exynos/mach-smdkv310.c       |    2 +-
->  arch/arm/mach-exynos/mach-universal_c210.c |    2 +-
->  arch/arm/mach-exynos/setup-fimd0.c         |    2 +-
->  arch/arm/mach-s3c24xx/mach-smdk2416.c      |    2 +-
->  arch/arm/mach-s3c64xx/mach-anw6410.c       |    2 +-
->  arch/arm/mach-s3c64xx/mach-crag6410.c      |    2 +-
->  arch/arm/mach-s3c64xx/mach-hmt.c           |    2 +-
->  arch/arm/mach-s3c64xx/mach-mini6410.c      |    2 +-
->  arch/arm/mach-s3c64xx/mach-ncp.c           |    2 +-
->  arch/arm/mach-s3c64xx/mach-real6410.c      |    2 +-
->  arch/arm/mach-s3c64xx/mach-smartq5.c       |    2 +-
->  arch/arm/mach-s3c64xx/mach-smartq7.c       |    2 +-
->  arch/arm/mach-s3c64xx/mach-smdk6410.c      |    2 +-
->  arch/arm/mach-s5p64x0/mach-smdk6440.c      |    2 +-
->  arch/arm/mach-s5p64x0/mach-smdk6450.c      |    2 +-
->  arch/arm/mach-s5pc100/mach-smdkc100.c      |    2 +-
->  arch/arm/mach-s5pv210/mach-aquila.c        |    2 +-
->  arch/arm/mach-s5pv210/mach-goni.c          |    2 +-
->  arch/arm/mach-s5pv210/mach-smdkv210.c      |    2 +-
->  22 files changed, 22 insertions(+), 22 deletions(-)
-> 
-> diff --git a/arch/arm/mach-exynos/mach-nuri.c b/arch/arm/mach-exynos/mach-
-> nuri.c
-> index f98a83a..573a0c4 100644
-> --- a/arch/arm/mach-exynos/mach-nuri.c
-> +++ b/arch/arm/mach-exynos/mach-nuri.c
-> @@ -39,7 +39,7 @@
->  #include <asm/mach-types.h>
-> 
->  #include <plat/adc.h>
-> -#include <plat/regs-fb-v4.h>
-> +#include <video/samsung_fimd.h>
->  #include <plat/regs-serial.h>
->  #include <plat/cpu.h>
->  #include <plat/devs.h>
+With the introduction of output entities, managers will now connect to outputs.
+Use the helper op for managers named get_device. This will abstract away the
+information on how to get the device from an overlay manager.
 
-NO! Don't just replace it. Please put the inclusions with the same kind like
-following.
+Using the helper function will reduce the number of pointer dereferences a user
+of OMAPDSS needs to do and reduce risk of a NULL dereference.
 
-diff --git a/arch/arm/mach-exynos/mach-nuri.c
-b/arch/arm/mach-exynos/mach-nuri.c
-index ea785fc..90d8daa 100644
---- a/arch/arm/mach-exynos/mach-nuri.c
-+++ b/arch/arm/mach-exynos/mach-nuri.c
-@@ -29,6 +29,7 @@
- #include <drm/exynos_drm.h>
+Cc: Vaibhav Hiremath <hvaibhav@ti.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/media/video/omap/omap_vout.c |   81 ++++++++++++++++++++++++----------
+ 1 file changed, 57 insertions(+), 24 deletions(-)
 
- #include <video/platform_lcd.h>
-+#include <video/samsung_fimd.h>
- #include <media/m5mols.h>
- #include <media/s5k6aa.h>
- #include <media/s5p_fimc.h>
-@@ -39,7 +40,6 @@
- #include <asm/mach-types.h>
-
- #include <plat/adc.h>
--#include <plat/regs-fb-v4.h>
- #include <plat/regs-serial.h>
- #include <plat/cpu.h>
- #include <plat/devs.h>
-
-Thanks.
-
-Best regards,
-Kgene.
---
-Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-SW Solution Development Team, Samsung Electronics Co., Ltd.
+diff --git a/drivers/media/video/omap/omap_vout.c b/drivers/media/video/omap/omap_vout.c
+index 88cf9d9..0ebf87e 100644
+--- a/drivers/media/video/omap/omap_vout.c
++++ b/drivers/media/video/omap/omap_vout.c
+@@ -454,11 +454,16 @@ static int omapvid_init(struct omap_vout_device *vout, u32 addr)
+ 
+ 	win = &vout->win;
+ 	for (i = 0; i < ovid->num_overlays; i++) {
++		struct omap_dss_device *dssdev;
++
+ 		ovl = ovid->overlays[i];
+-		if (!ovl->manager || !ovl->manager->device)
++		dssdev = ovl->manager ?
++			ovl->manager->get_device(ovl->manager) : NULL;
++
++		if (!dssdev)
+ 			return -EINVAL;
+ 
+-		timing = &ovl->manager->device->panel.timings;
++		timing = &dssdev->panel.timings;
+ 
+ 		outw = win->w.width;
+ 		outh = win->w.height;
+@@ -515,8 +520,12 @@ static int omapvid_apply_changes(struct omap_vout_device *vout)
+ 	struct omapvideo_info *ovid = &vout->vid_info;
+ 
+ 	for (i = 0; i < ovid->num_overlays; i++) {
++		struct omap_dss_device *dssdev;
++
+ 		ovl = ovid->overlays[i];
+-		if (!ovl->manager || !ovl->manager->device)
++		dssdev = ovl->manager ?
++			ovl->manager->get_device(ovl->manager) : NULL;
++		if (!dssdev)
+ 			return -EINVAL;
+ 		ovl->manager->apply(ovl->manager);
+ 	}
+@@ -579,12 +588,15 @@ static void omap_vout_isr(void *arg, unsigned int irqstatus)
+ 
+ 	ovid = &vout->vid_info;
+ 	ovl = ovid->overlays[0];
+-	/* get the display device attached to the overlay */
+-	if (!ovl->manager || !ovl->manager->device)
+-		return;
+ 
+ 	mgr_id = ovl->manager->id;
+-	cur_display = ovl->manager->device;
++
++	/* get the display device attached to the overlay */
++	cur_display = ovl->manager ?
++		ovl->manager->get_device(ovl->manager) : NULL;
++
++	if (!cur_display)
++		return;
+ 
+ 	spin_lock(&vout->vbq_lock);
+ 	do_gettimeofday(&timevalue);
+@@ -948,7 +960,10 @@ static int omap_vout_release(struct file *file)
+ 	/* Disable all the overlay managers connected with this interface */
+ 	for (i = 0; i < ovid->num_overlays; i++) {
+ 		struct omap_overlay *ovl = ovid->overlays[i];
+-		if (ovl->manager && ovl->manager->device)
++		struct omap_dss_device *dssdev = ovl->manager ?
++			ovl->manager->get_device(ovl->manager) : NULL;
++
++		if (dssdev)
+ 			ovl->disable(ovl);
+ 	}
+ 	/* Turn off the pipeline */
+@@ -1081,14 +1096,17 @@ static int vidioc_try_fmt_vid_out(struct file *file, void *fh,
+ 	struct omapvideo_info *ovid;
+ 	struct omap_video_timings *timing;
+ 	struct omap_vout_device *vout = fh;
++	struct omap_dss_device *dssdev;
+ 
+ 	ovid = &vout->vid_info;
+ 	ovl = ovid->overlays[0];
++	/* get the display device attached to the overlay */
++	dssdev = ovl->manager ? ovl->manager->get_device(ovl->manager) : NULL;
+ 
+-	if (!ovl->manager || !ovl->manager->device)
++	if (!dssdev)
+ 		return -EINVAL;
+-	/* get the display device attached to the overlay */
+-	timing = &ovl->manager->device->panel.timings;
++
++	timing = &dssdev->panel.timings;
+ 
+ 	vout->fbuf.fmt.height = timing->y_res;
+ 	vout->fbuf.fmt.width = timing->x_res;
+@@ -1105,6 +1123,7 @@ static int vidioc_s_fmt_vid_out(struct file *file, void *fh,
+ 	struct omapvideo_info *ovid;
+ 	struct omap_video_timings *timing;
+ 	struct omap_vout_device *vout = fh;
++	struct omap_dss_device *dssdev;
+ 
+ 	if (vout->streaming)
+ 		return -EBUSY;
+@@ -1113,13 +1132,14 @@ static int vidioc_s_fmt_vid_out(struct file *file, void *fh,
+ 
+ 	ovid = &vout->vid_info;
+ 	ovl = ovid->overlays[0];
++	dssdev = ovl->manager ? ovl->manager->get_device(ovl->manager) : NULL;
+ 
+ 	/* get the display device attached to the overlay */
+-	if (!ovl->manager || !ovl->manager->device) {
++	if (!dssdev) {
+ 		ret = -EINVAL;
+ 		goto s_fmt_vid_out_exit;
+ 	}
+-	timing = &ovl->manager->device->panel.timings;
++	timing = &dssdev->panel.timings;
+ 
+ 	/* We dont support RGB24-packed mode if vrfb rotation
+ 	 * is enabled*/
+@@ -1298,6 +1318,7 @@ static int vidioc_s_crop(struct file *file, void *fh, struct v4l2_crop *crop)
+ 	struct omapvideo_info *ovid;
+ 	struct omap_overlay *ovl;
+ 	struct omap_video_timings *timing;
++	struct omap_dss_device *dssdev;
+ 
+ 	if (vout->streaming)
+ 		return -EBUSY;
+@@ -1305,13 +1326,15 @@ static int vidioc_s_crop(struct file *file, void *fh, struct v4l2_crop *crop)
+ 	mutex_lock(&vout->lock);
+ 	ovid = &vout->vid_info;
+ 	ovl = ovid->overlays[0];
++	/* get the display device attached to the overlay */
++	dssdev = ovl->manager ? ovl->manager->get_device(ovl->manager) : NULL;
+ 
+-	if (!ovl->manager || !ovl->manager->device) {
++	if (!dssdev) {
+ 		ret = -EINVAL;
+ 		goto s_crop_err;
+ 	}
+-	/* get the display device attached to the overlay */
+-	timing = &ovl->manager->device->panel.timings;
++
++	timing = &dssdev->panel.timings;
+ 
+ 	if (is_rotation_90_or_270(vout)) {
+ 		vout->fbuf.fmt.height = timing->x_res;
+@@ -1666,8 +1689,9 @@ static int vidioc_streamon(struct file *file, void *fh, enum v4l2_buf_type i)
+ 
+ 	for (j = 0; j < ovid->num_overlays; j++) {
+ 		struct omap_overlay *ovl = ovid->overlays[j];
++		struct omap_overlay_manager *mgr = ovl->manager;
+ 
+-		if (ovl->manager && ovl->manager->device) {
++		if (mgr && mgr->get_device(mgr)) {
+ 			struct omap_overlay_info info;
+ 			ovl->get_overlay_info(ovl, &info);
+ 			info.paddr = addr;
+@@ -1690,8 +1714,10 @@ static int vidioc_streamon(struct file *file, void *fh, enum v4l2_buf_type i)
+ 
+ 	for (j = 0; j < ovid->num_overlays; j++) {
+ 		struct omap_overlay *ovl = ovid->overlays[j];
++		struct omap_dss_device *dssdev = ovl->manager ?
++			ovl->manager->get_device(ovl->manager) : NULL;
+ 
+-		if (ovl->manager && ovl->manager->device) {
++		if (dssdev) {
+ 			ret = ovl->enable(ovl);
+ 			if (ret)
+ 				goto streamon_err1;
+@@ -1726,8 +1752,10 @@ static int vidioc_streamoff(struct file *file, void *fh, enum v4l2_buf_type i)
+ 
+ 	for (j = 0; j < ovid->num_overlays; j++) {
+ 		struct omap_overlay *ovl = ovid->overlays[j];
++		struct omap_dss_device *dssdev = ovl->manager ?
++			ovl->manager->get_device(ovl->manager) : NULL;
+ 
+-		if (ovl->manager && ovl->manager->device)
++		if (dssdev)
+ 			ovl->disable(ovl);
+ 	}
+ 
+@@ -1890,8 +1918,9 @@ static int __init omap_vout_setup_video_data(struct omap_vout_device *vout)
+ 	struct video_device *vfd;
+ 	struct v4l2_pix_format *pix;
+ 	struct v4l2_control *control;
++	struct omap_overlay *ovl = vout->vid_info.overlays[0];
+ 	struct omap_dss_device *display -		vout->vid_info.overlays[0]->manager->device;
++		ovl->manager->get_device(ovl->manager);
+ 
+ 	/* set the default pix */
+ 	pix = &vout->pix;
+@@ -2205,8 +2234,10 @@ static int __init omap_vout_probe(struct platform_device *pdev)
+ 	 */
+ 	for (i = 1; i < vid_dev->num_overlays; i++) {
+ 		ovl = omap_dss_get_overlay(i);
+-		if (ovl->manager && ovl->manager->device) {
+-			def_display = ovl->manager->device;
++		dssdev = ovl->manager ? ovl->manager->get_device(ovl->manager) :
++				NULL;
++		if (dssdev) {
++			def_display = dssdev;
+ 		} else {
+ 			dev_warn(&pdev->dev, "cannot find display\n");
+ 			def_display = NULL;
+@@ -2253,8 +2284,10 @@ probe_err1:
+ 	for (i = 1; i < vid_dev->num_overlays; i++) {
+ 		def_display = NULL;
+ 		ovl = omap_dss_get_overlay(i);
+-		if (ovl->manager && ovl->manager->device)
+-			def_display = ovl->manager->device;
++		dssdev = ovl->manager ? ovl->manager->get_device(ovl->manager) :
++				NULL;
++		if (dssdev)
++			def_display = dssdev;
+ 
+ 		if (def_display && def_display->driver)
+ 			def_display->driver->disable(def_display);
+-- 
+1.7.9.5
 

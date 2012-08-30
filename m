@@ -1,40 +1,51 @@
-From: Hideki EIRAKU <hdk@igel.co.jp>
-Date: Mon, 06 Aug 2012 09:55:20 +0000
-Subject: [PATCH v3 0/4] Use dma_mmap_coherent to support IOMMU mapper
-Message-Id: <1344246924-32620-1-git-send-email-hdk@igel.co.jp>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 30 Aug 2012 11:52:30 +0000
+Subject: [PATCH v2 08/23] OMAPDRM: Remove manager->device references
+Message-Id: <1346326845-16583-9-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+ <1346326845-16583-1-git-send-email-archit@ti.com>
+In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <linux@arm.linux.org.uk>, Pawel Osciak <pawel@osciak.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Mauro Carvalho Chehab <mchehab@infradead.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Katsuya MATSUBARA <matsu@igel.co.jp>, Hideki EIRAKU <hdk@igel.co.jp>
+To: tomi.valkeinen@ti.com
+Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-There is a dma_mmap_coherent() API in some architectures.  This API
-provides a mmap function for memory allocated by dma_alloc_coherent().
-Some drivers mmap a dma_addr_t returned by dma_alloc_coherent() as a
-physical address.  But such drivers do not work correctly when IOMMU
-mapper is used.
+With the introduction of output entities, managers will now connect to outputs.
+Use the helper op for managers named get_device. This will abstract away the
+information on how to get the device from an overlay manager.
 
-v3:
-- Remove an unnecessary line which sets page protection bits.
-v2:
-- Rebase on fbdev-next branch of
-  git://github.com/schandinat/linux-2.6.git.
-- Initialize .fb_mmap in both sh_mobile_lcdc_overlay_ops and
-  sh_mobile_lcdc_ops.
-- Add Laurent's clean up patch.
+Using the helper function will reduce the number of pointer dereferences a user
+of OMAPDSS needs to do and reduce risk of a NULL dereference.
 
-Hideki EIRAKU (3):
-  ARM: dma-mapping: define ARCH_HAS_DMA_MMAP_COHERENT
-  media: videobuf2-dma-contig: use dma_mmap_coherent if available
-  fbdev: sh_mobile_lcdc: use dma_mmap_coherent if available
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/staging/omapdrm/omap_drv.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Laurent Pinchart (1):
-  ALSA: pcm - Don't define ARCH_HAS_DMA_MMAP_COHERENT privately for ARM
-
- arch/arm/include/asm/dma-mapping.h         |    1 +
- drivers/media/video/videobuf2-dma-contig.c |   17 +++++++++++++++++
- drivers/video/sh_mobile_lcdcfb.c           |   28 ++++++++++++++++++++++++++++
- sound/core/pcm_native.c                    |    7 -------
- 4 files changed, 46 insertions(+), 7 deletions(-)
+diff --git a/drivers/staging/omapdrm/omap_drv.c b/drivers/staging/omapdrm/omap_drv.c
+index 4beab94..64a354a 100644
+--- a/drivers/staging/omapdrm/omap_drv.c
++++ b/drivers/staging/omapdrm/omap_drv.c
+@@ -106,7 +106,8 @@ static void dump_video_chains(void)
+ 	for (i = 0; i < omap_dss_get_num_overlays(); i++) {
+ 		struct omap_overlay *ovl = omap_dss_get_overlay(i);
+ 		struct omap_overlay_manager *mgr = ovl->manager;
+-		struct omap_dss_device *dssdev = mgr ? mgr->device : NULL;
++		struct omap_dss_device *dssdev = mgr ?
++					mgr->get_device(mgr) : NULL;
+ 		if (dssdev) {
+ 			DBG("%d: %s -> %s -> %s", i, ovl->name, mgr->name,
+ 						dssdev->name);
+@@ -185,7 +186,7 @@ static int create_connector(struct drm_device *dev,
+ 	for (j = 0; j < priv->num_encoders; j++) {
+ 		struct omap_overlay_manager *mgr  			omap_encoder_get_manager(priv->encoders[j]);
+-		if (mgr->device = dssdev) {
++		if (mgr->get_device(mgr) = dssdev) {
+ 			drm_mode_connector_attach_encoder(connector,
+ 					priv->encoders[j]);
+ 		}
+-- 
+1.7.9.5
 

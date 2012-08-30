@@ -1,7 +1,7 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 30 Aug 2012 01:37:17 +0000
-Subject: Re: [PATCH 1/4] video: mmp display subsystem
-Message-Id: <001401cd864f$fd91edb0$f8b5c910$%han@samsung.com>
+From: Zhou Zhu <zzhu3@marvell.com>
+Date: Thu, 30 Aug 2012 02:26:12 +0000
+Subject: RE: [PATCH 1/4] video: mmp display subsystem
+Message-Id: <ED64882F200EF5419CDAC2E6B5C4B3A208EC1B37F6@SC-VEXCH1.marvell.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1346234684-12532-1-git-send-email-zzhu3@marvell.com>
 In-Reply-To: <1346234684-12532-1-git-send-email-zzhu3@marvell.com>
@@ -10,19 +10,35 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
+Hi, Jingoo,
+Thank you very much for your review!
+I have updated patch according your review results.
+Also for the follow patches, I will also remove 'Change-Id' later after your review.
+
+Thanks,
+-Zhou
+
+
+-----Original Message-----
+From: Jingoo Han [mailto:jg1.han@samsung.com]
+Sent: Thursday, August 30, 2012 9:37 AM
+To: Zhou Zhu
+Cc: linux-fbdev@vger.kernel.org; FlorianSchandinat@gmx.de; Qing Xu; zzhu84@gmail.com; Lisa Du; 'Jingoo Han'
+Subject: Re: [PATCH 1/4] video: mmp display subsystem
+
 On Wednesday, August 29, 2012 7:05 PM Zhou Zhu wrote:
-> 
+>
 > Added mmp display subsystem to support Marvell MMP display controllers.
-> 
+>
 > This subsystem contains 4 parts:
 > --fb folder
 > --core.c
 > --hw folder
 > --panel folder
-> 
+>
 > 1. fb folder contains implementation of fb.
 > fb get path and ovly from common interface and operates on these structures.
-> 
+>
 > 2. core.c provides common interface for a hardware abstraction.
 > Major parts of this interface are:
 > a) Path: path is a output device connected to a panel or HDMI TV.
@@ -32,14 +48,14 @@ On Wednesday, August 29, 2012 7:05 PM Zhou Zhu wrote:
 > Ovly describes frame buffer and its source/destination size, offset, input
 > color, buffer address, z-order, and so on.
 > Each fb device maps to one ovly.
-> 
+>
 > 3. hw folder contains implementation of hardware operations defined by core.c.
 > It registers paths for fb use.
-> 
+>
 > 4. panel folder contains implementation of panels.
 > It's connected to path. Panel drivers would also regiester panels and linked
 > to path when probe.
-> 
+>
 > Change-Id: I830e34af9aad3196c2db021b4fb90ceeafbf73d2
 
 Please remove unnecessary 'Change-Id'.
@@ -59,7 +75,7 @@ Please remove unnecessary 'Change-Id'.
 >  create mode 100644 drivers/video/mmp/Makefile
 >  create mode 100644 drivers/video/mmp/core.c
 >  create mode 100644 include/video/mmp_disp.h
-> 
+>
 > diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
 > index 0217f74..b71a5c9 100644
 > --- a/drivers/video/Kconfig
@@ -70,20 +86,20 @@ Please remove unnecessary 'Change-Id'.
 >  source "drivers/video/exynos/Kconfig"
 > +source "drivers/video/mmp/Kconfig"
 >  source "drivers/video/backlight/Kconfig"
-> 
+>
 >  if VT
 > diff --git a/drivers/video/Makefile b/drivers/video/Makefile
 > index ee8dafb..6b0ae31 100644
 > --- a/drivers/video/Makefile
 > +++ b/drivers/video/Makefile
-> @@ -106,6 +106,7 @@ obj-$(CONFIG_FB_ASILIANT)	  += asiliantfb.o
->  obj-$(CONFIG_FB_PXA)		  += pxafb.o
->  obj-$(CONFIG_FB_PXA168)		  += pxa168fb.o
->  obj-$(CONFIG_PXA3XX_GCU)	  += pxa3xx-gcu.o
+> @@ -106,6 +106,7 @@ obj-$(CONFIG_FB_ASILIANT)   += asiliantfb.o
+>  obj-$(CONFIG_FB_PXA)           += pxafb.o
+>  obj-$(CONFIG_FB_PXA168)                += pxa168fb.o
+>  obj-$(CONFIG_PXA3XX_GCU)       += pxa3xx-gcu.o
 > +obj-$(CONFIG_MMP_DISP)           += mmp/
->  obj-$(CONFIG_FB_W100)		  += w100fb.o
->  obj-$(CONFIG_FB_TMIO)		  += tmiofb.o
->  obj-$(CONFIG_FB_AU1100)		  += au1100fb.o
+>  obj-$(CONFIG_FB_W100)                  += w100fb.o
+>  obj-$(CONFIG_FB_TMIO)                  += tmiofb.o
+>  obj-$(CONFIG_FB_AU1100)                += au1100fb.o
 > diff --git a/drivers/video/mmp/Kconfig b/drivers/video/mmp/Kconfig
 > new file mode 100644
 > index 0000000..0554336
@@ -94,7 +110,7 @@ Please remove unnecessary 'Change-Id'.
 > +        tristate "Marvell MMP Display Subsystem support"
 > +        depends on CPU_PXA910 || CPU_MMP2 || CPU_MMP3 || CPU_PXA988
 > +        help
-> +	  Marvell Display Subsystem support.
+> +       Marvell Display Subsystem support.
 > diff --git a/drivers/video/mmp/Makefile b/drivers/video/mmp/Makefile
 > new file mode 100644
 > index 0000000..820eb10
@@ -136,21 +152,21 @@ Please remove unnecessary 'Change-Id'.
 > +#include <video/mmp_disp.h>
 > +
 > +static struct mmp_ovly *path_get_ovly(struct mmp_path *path,
-> +		int ovly_id)
+> +             int ovly_id)
 > +{
-> +	if (path && ovly_id < path->ovly_num)
-> +		return &path->ovlys[ovly_id];
-> +	return 0;
+> +     if (path && ovly_id < path->ovly_num)
+> +             return &path->ovlys[ovly_id];
+> +     return 0;
 > +}
 > +
 > +static int path_check_status(struct mmp_path *path)
 > +{
-> +	int i;
-> +	for (i = 0; i < path->ovly_num; i++)
-> +		if (path->ovlys[i].status)
-> +			return 1;
+> +     int i;
+> +     for (i = 0; i < path->ovly_num; i++)
+> +             if (path->ovlys[i].status)
+> +                     return 1;
 > +
-> +	return 0;
+> +     return 0;
 > +}
 > +
 > +/*
@@ -161,36 +177,36 @@ Please remove unnecessary 'Change-Id'.
 > + *   or get from panel
 > + */
 > +static int path_get_modelist(struct mmp_path *path,
-> +		struct mmp_mode **modelist)
+> +             struct mmp_mode **modelist)
 > +{
-> +	BUG_ON(!path || !modelist);
+> +     BUG_ON(!path || !modelist);
 > +
-> +	if (path->panel && path->panel->get_modelist)
-> +		return path->panel->get_modelist(path->panel, modelist);
+> +     if (path->panel && path->panel->get_modelist)
+> +             return path->panel->get_modelist(path->panel, modelist);
 > +
-> +	return 0;
+> +     return 0;
 > +}
 > +
 > +#define list_find(_item, _list, _field, _name) \
-> +	do {\
-> +		int found = 0;\
-> +		list_for_each_entry(_item, &_list, node) {\
-> +			dev_dbg(_item->dev, "checking %s, target %s",\
-> +					_item->_field, _name);\
-> +			if (strcmp(_name, _item->_field) = 0) {\
-> +				found = 1;\
-> +				break;\
-> +			} \
-> +		} \
-> +		if (!found)\
-> +			_item = NULL;\
-> +	} while (0);
+> +     do {\
+> +             int found = 0;\
+> +             list_for_each_entry(_item, &_list, node) {\
+> +                     dev_dbg(_item->dev, "checking %s, target %s",\
+> +                                     _item->_field, _name);\
+> +                     if (strcmp(_name, _item->_field) = 0) {\
+> +                             found = 1;\
+> +                             break;\
+> +                     } \
+> +             } \
+> +             if (!found)\
+> +                     _item = NULL;\
+> +     } while (0);
 
 It makes checkpatch warning as below.
     WARNING: do {} while (0) macros should not be semicolon terminated
 
 Please remove semicolon as below.
-	} while (0)
+        } while (0)
 
 > +
 > +/*
@@ -206,130 +222,130 @@ Please remove semicolon as below.
 > +
 > +int mmp_register_panel(struct mmp_panel *panel)
 > +{
-> +	struct mmp_path *path;
+> +     struct mmp_path *path;
 > +
-> +	mutex_lock(&disp_lock);
+> +     mutex_lock(&disp_lock);
 > +
-> +	/* add */
-> +	list_add_tail(&panel->node, &panel_list);
+> +     /* add */
+> +     list_add_tail(&panel->node, &panel_list);
 > +
-> +	/* try to register to path */
-> +	list_find(path, path_list, name, panel->plat_path_name);
-> +	if (path) {
-> +		dev_info(panel->dev, "register to path %s\n",
-> +				panel->plat_path_name);
-> +		path->panel = panel;
-> +	}
+> +     /* try to register to path */
+> +     list_find(path, path_list, name, panel->plat_path_name);
+> +     if (path) {
+> +             dev_info(panel->dev, "register to path %s\n",
+> +                             panel->plat_path_name);
+> +             path->panel = panel;
+> +     }
 > +
-> +	mutex_unlock(&disp_lock);
-> +	return 1;
+> +     mutex_unlock(&disp_lock);
+> +     return 1;
 > +}
 > +EXPORT_SYMBOL_GPL(mmp_register_panel);
 > +
 > +void mmp_unregister_panel(struct mmp_panel *panel)
 > +{
-> +	mutex_lock(&disp_lock);
-> +	list_del(&panel->node);
-> +	mutex_unlock(&disp_lock);
+> +     mutex_lock(&disp_lock);
+> +     list_del(&panel->node);
+> +     mutex_unlock(&disp_lock);
 > +}
 > +EXPORT_SYMBOL_GPL(mmp_unregister_panel);
 > +
 > +struct mmp_path *mmp_get_path(const char *name)
 > +{
-> +	struct mmp_path *path;
+> +     struct mmp_path *path;
 > +
-> +	mutex_lock(&disp_lock);
-> +	list_find(path, path_list, name, name);
-> +	mutex_unlock(&disp_lock);
+> +     mutex_lock(&disp_lock);
+> +     list_find(path, path_list, name, name);
+> +     mutex_unlock(&disp_lock);
 > +
-> +	return path;
+> +     return path;
 > +}
 > +EXPORT_SYMBOL_GPL(mmp_get_path);
 > +
 > +struct mmp_path *mmp_register_path(struct mmp_path_info *info)
 > +{
-> +	int i, size;
-> +	struct mmp_path *path = NULL;
-> +	struct mmp_panel *panel;
+> +     int i, size;
+> +     struct mmp_path *path = NULL;
+> +     struct mmp_panel *panel;
 > +
-> +	size = sizeof(struct mmp_path)
-> +		+ sizeof(struct mmp_ovly) * info->ovly_num;
-> +	path = kzalloc(size, GFP_KERNEL);
-> +	if (!path)
-> +		goto failed;
+> +     size = sizeof(struct mmp_path)
+> +             + sizeof(struct mmp_ovly) * info->ovly_num;
+> +     path = kzalloc(size, GFP_KERNEL);
+> +     if (!path)
+> +             goto failed;
 > +
-> +	/* path set */
-> +	path->ovlys = (void *)path + sizeof(struct mmp_path);
-> +	mutex_init(&path->access_ok);
-> +	path->dev = info->dev;
-> +	path->id = info->id;
-> +	path->name = info->name;
-> +	path->output_type = info->output_type;
-> +	path->ovly_num = info->ovly_num;
-> +	path->plat_data = info->plat_data;
-> +	path->ops.set_mode = info->set_mode;
+> +     /* path set */
+> +     path->ovlys = (void *)path + sizeof(struct mmp_path);
+> +     mutex_init(&path->access_ok);
+> +     path->dev = info->dev;
+> +     path->id = info->id;
+> +     path->name = info->name;
+> +     path->output_type = info->output_type;
+> +     path->ovly_num = info->ovly_num;
+> +     path->plat_data = info->plat_data;
+> +     path->ops.set_mode = info->set_mode;
 > +
-> +	mutex_lock(&disp_lock);
-> +	/* get panel */
-> +	list_find(panel, panel_list, plat_path_name, info->name);
-> +	if (panel) {
-> +		dev_info(path->dev, "get panel %s\n", panel->name);
-> +		path->panel = panel;
-> +	}
+> +     mutex_lock(&disp_lock);
+> +     /* get panel */
+> +     list_find(panel, panel_list, plat_path_name, info->name);
+> +     if (panel) {
+> +             dev_info(path->dev, "get panel %s\n", panel->name);
+> +             path->panel = panel;
+> +     }
 > +
-> +	dev_info(path->dev, "register %s, ovly_num %d\n",
-> +			path->name, path->ovly_num);
+> +     dev_info(path->dev, "register %s, ovly_num %d\n",
+> +                     path->name, path->ovly_num);
 > +
-> +	/* default op set: if already set by driver, never cover it */
-> +	if (!path->ops.check_status)
-> +		path->ops.check_status = path_check_status;
-> +	if (!path->ops.get_ovly)
-> +		path->ops.get_ovly = path_get_ovly;
-> +	if (!path->ops.get_modelist)
-> +		path->ops.get_modelist = path_get_modelist;
+> +     /* default op set: if already set by driver, never cover it */
+> +     if (!path->ops.check_status)
+> +             path->ops.check_status = path_check_status;
+> +     if (!path->ops.get_ovly)
+> +             path->ops.get_ovly = path_get_ovly;
+> +     if (!path->ops.get_modelist)
+> +             path->ops.get_modelist = path_get_modelist;
 > +
-> +	/* step3: init ovlys */
-> +	for (i = 0; i < path->ovly_num; i++) {
-> +		path->ovlys[i].path = path;
-> +		path->ovlys[i].id = i;
-> +		mutex_init(&path->ovlys[i].access_ok);
-> +		path->ovlys[i].ops = info->ovly_ops;
-> +	}
+> +     /* step3: init ovlys */
+> +     for (i = 0; i < path->ovly_num; i++) {
+> +             path->ovlys[i].path = path;
+> +             path->ovlys[i].id = i;
+> +             mutex_init(&path->ovlys[i].access_ok);
+> +             path->ovlys[i].ops = info->ovly_ops;
+> +     }
 > +
-> +	/* add to pathlist */
-> +	list_add_tail(&path->node, &path_list);
+> +     /* add to pathlist */
+> +     list_add_tail(&path->node, &path_list);
 > +
-> +	mutex_unlock(&disp_lock);
-> +	return path;
+> +     mutex_unlock(&disp_lock);
+> +     return path;
 > +
 > +failed:
-> +	kfree(path);
-> +	mutex_unlock(&disp_lock);
-> +	return 0;
+> +     kfree(path);
+> +     mutex_unlock(&disp_lock);
+> +     return 0;
 > +}
 > +EXPORT_SYMBOL_GPL(mmp_register_path);
 > +
 > +void mmp_unregister_path(struct mmp_path *path)
 > +{
-> +	int i;
+> +     int i;
 > +
-> +	if (!path)
-> +		return;
+> +     if (!path)
+> +             return;
 > +
-> +	mutex_lock(&disp_lock);
-> +	/* del from pathlist */
-> +	list_del(&path->node);
+> +     mutex_lock(&disp_lock);
+> +     /* del from pathlist */
+> +     list_del(&path->node);
 > +
-> +	/* deinit ovlys */
-> +	for (i = 0; i < path->ovly_num; i++)
-> +		mutex_destroy(&path->ovlys[i].access_ok);
+> +     /* deinit ovlys */
+> +     for (i = 0; i < path->ovly_num; i++)
+> +             mutex_destroy(&path->ovlys[i].access_ok);
 > +
-> +	mutex_destroy(&path->access_ok);
+> +     mutex_destroy(&path->access_ok);
 > +
-> +	kfree(path);
-> +	mutex_unlock(&disp_lock);
+> +     kfree(path);
+> +     mutex_unlock(&disp_lock);
 > +
-> +	dev_info(path->dev, "de-register %s\n", path->name);
+> +     dev_info(path->dev, "de-register %s\n", path->name);
 > +}
 > +EXPORT_SYMBOL_GPL(mmp_unregister_path);
 > diff --git a/include/video/mmp_disp.h b/include/video/mmp_disp.h
@@ -365,96 +381,96 @@ Please remove semicolon as below.
 > +#include <linux/kthread.h>
 > +
 > +enum {
-> +	PIXFMT_UYVY = 0,
-> +	PIXFMT_VYUY,
-> +	PIXFMT_YUYV,
-> +	PIXFMT_YUV422P,
-> +	PIXFMT_YVU422P,
-> +	PIXFMT_YUV420P,
-> +	PIXFMT_YVU420P,
-> +	PIXFMT_RGB565 = 0x100,
-> +	PIXFMT_BGR565,
-> +	PIXFMT_RGB1555,
-> +	PIXFMT_BGR1555,
-> +	PIXFMT_RGB888PACK,
-> +	PIXFMT_BGR888PACK,
-> +	PIXFMT_RGB888UNPACK,
-> +	PIXFMT_BGR888UNPACK,
-> +	PIXFMT_RGBA888,
-> +	PIXFMT_BGRA888,
-> +	PIXFMT_RGB666, /* for output usage */
-> +	PIXFMT_PSEUDOCOLOR = 0x200,
+> +     PIXFMT_UYVY = 0,
+> +     PIXFMT_VYUY,
+> +     PIXFMT_YUYV,
+> +     PIXFMT_YUV422P,
+> +     PIXFMT_YVU422P,
+> +     PIXFMT_YUV420P,
+> +     PIXFMT_YVU420P,
+> +     PIXFMT_RGB565 = 0x100,
+> +     PIXFMT_BGR565,
+> +     PIXFMT_RGB1555,
+> +     PIXFMT_BGR1555,
+> +     PIXFMT_RGB888PACK,
+> +     PIXFMT_BGR888PACK,
+> +     PIXFMT_RGB888UNPACK,
+> +     PIXFMT_BGR888UNPACK,
+> +     PIXFMT_RGBA888,
+> +     PIXFMT_BGRA888,
+> +     PIXFMT_RGB666, /* for output usage */
+> +     PIXFMT_PSEUDOCOLOR = 0x200,
 > +};
 > +
 > +static inline int pixfmt_to_stride(int pix_fmt)
 > +{
-> +	switch (pix_fmt) {
-> +	case PIXFMT_RGB565:
-> +	case PIXFMT_BGR565:
-> +	case PIXFMT_RGB1555:
-> +	case PIXFMT_BGR1555:
-> +	case PIXFMT_UYVY:
-> +	case PIXFMT_VYUY:
-> +	case PIXFMT_YUYV:
-> +		return 2;
-> +	case PIXFMT_RGB888UNPACK:
-> +	case PIXFMT_BGR888UNPACK:
-> +	case PIXFMT_RGBA888:
-> +	case PIXFMT_BGRA888:
-> +		return 4;
-> +	case PIXFMT_RGB888PACK:
-> +	case PIXFMT_BGR888PACK:
-> +		return 3;
-> +	case PIXFMT_YUV422P:
-> +	case PIXFMT_YVU422P:
-> +	case PIXFMT_YUV420P:
-> +	case PIXFMT_YVU420P:
-> +	case PIXFMT_PSEUDOCOLOR:
-> +		return 1;
-> +	default:
-> +		return 0;
-> +	}
+> +     switch (pix_fmt) {
+> +     case PIXFMT_RGB565:
+> +     case PIXFMT_BGR565:
+> +     case PIXFMT_RGB1555:
+> +     case PIXFMT_BGR1555:
+> +     case PIXFMT_UYVY:
+> +     case PIXFMT_VYUY:
+> +     case PIXFMT_YUYV:
+> +             return 2;
+> +     case PIXFMT_RGB888UNPACK:
+> +     case PIXFMT_BGR888UNPACK:
+> +     case PIXFMT_RGBA888:
+> +     case PIXFMT_BGRA888:
+> +             return 4;
+> +     case PIXFMT_RGB888PACK:
+> +     case PIXFMT_BGR888PACK:
+> +             return 3;
+> +     case PIXFMT_YUV422P:
+> +     case PIXFMT_YVU422P:
+> +     case PIXFMT_YUV420P:
+> +     case PIXFMT_YVU420P:
+> +     case PIXFMT_PSEUDOCOLOR:
+> +             return 1;
+> +     default:
+> +             return 0;
+> +     }
 > +}
 > +
 > +/* parameters used by path/ovly */
 > +/* ovly related para: win/addr */
 > +struct mmp_win {
-> +	/* position/size of window */
-> +	u16	xsrc;
-> +	u16	ysrc;
-> +	u16	xdst;
-> +	u16	ydst;
-> +	u16	xpos;
-> +	u16	ypos;
-> +	u16	left_crop;
-> +	u16	right_crop;
-> +	u16	up_crop;
-> +	u16	bottom_crop;
-> +	int	pix_fmt;
+> +     /* position/size of window */
+> +     u16     xsrc;
+> +     u16     ysrc;
+> +     u16     xdst;
+> +     u16     ydst;
+> +     u16     xpos;
+> +     u16     ypos;
+> +     u16     left_crop;
+> +     u16     right_crop;
+> +     u16     up_crop;
+> +     u16     bottom_crop;
+> +     int     pix_fmt;
 > +};
 > +
 > +struct mmp_addr {
-> +	/* phys address */
-> +	u32	phys[6];
+> +     /* phys address */
+> +     u32     phys[6];
 > +};
 > +
 > +/* path related para: mode */
 > +struct mmp_mode {
-> +	const char *name;
-> +	u32 refresh;
-> +	u32 xres;
-> +	u32 yres;
-> +	u32 left_margin;
-> +	u32 right_margin;
-> +	u32 upper_margin;
-> +	u32 lower_margin;
-> +	u32 hsync_len;
-> +	u32 vsync_len;
-> +	u32 hsync_invert;
-> +	u32 vsync_invert;
-> +	u32 invert_pixclock;
-> +	u32 pixclock_freq;
-> +	int pix_fmt_out;
+> +     const char *name;
+> +     u32 refresh;
+> +     u32 xres;
+> +     u32 yres;
+> +     u32 left_margin;
+> +     u32 right_margin;
+> +     u32 upper_margin;
+> +     u32 lower_margin;
+> +     u32 hsync_len;
+> +     u32 vsync_len;
+> +     u32 hsync_invert;
+> +     u32 vsync_invert;
+> +     u32 invert_pixclock;
+> +     u32 pixclock_freq;
+> +     int pix_fmt_out;
 > +};
 > +
 > +/* main structures */
@@ -468,201 +484,201 @@ Please remove unnecessary line.
 
 > +/* status types */
 > +enum {
-> +	mmp_OFF = 0,
-> +	mmp_ON,
+> +     mmp_OFF = 0,
+> +     mmp_ON,
 > +};
 > +
 > +static inline const char *stat_name(int stat)
 > +{
-> +	switch (stat) {
-> +	case mmp_OFF:
-> +		return "OFF";
-> +	case mmp_ON:
-> +		return "ON";
-> +	default:
-> +		return "UNKNOWNSTAT";
-> +	}
+> +     switch (stat) {
+> +     case mmp_OFF:
+> +             return "OFF";
+> +     case mmp_ON:
+> +             return "ON";
+> +     default:
+> +             return "UNKNOWNSTAT";
+> +     }
 > +}
 > +
 > +struct mmp_ovly_ops {
-> +	/* should be provided by driver */
-> +	void (*set_fetch)(struct mmp_ovly *ovly, int fetch_id);
-> +	void (*set_onoff)(struct mmp_ovly *ovly, int status);
-> +	void (*set_win)(struct mmp_ovly *ovly, struct mmp_win *win);
-> +	int (*set_addr)(struct mmp_ovly *ovly, struct mmp_addr *addr);
+> +     /* should be provided by driver */
+> +     void (*set_fetch)(struct mmp_ovly *ovly, int fetch_id);
+> +     void (*set_onoff)(struct mmp_ovly *ovly, int status);
+> +     void (*set_win)(struct mmp_ovly *ovly, struct mmp_win *win);
+> +     int (*set_addr)(struct mmp_ovly *ovly, struct mmp_addr *addr);
 > +};
 > +
 > +/* ovly describes a z-order indexed slot in each path. */
 > +struct mmp_ovly {
-> +	int id;
-> +	const char *name;
-> +	struct mmp_path *path;
+> +     int id;
+> +     const char *name;
+> +     struct mmp_path *path;
 > +
-> +	/* ovly info: private data */
-> +	int dmafetch_id;
-> +	struct mmp_addr addr;
-> +	struct mmp_win win;
+> +     /* ovly info: private data */
+> +     int dmafetch_id;
+> +     struct mmp_addr addr;
+> +     struct mmp_win win;
 > +
-> +	/* state */
-> +	int open_count;
-> +	int status;
-> +	struct mutex access_ok;
+> +     /* state */
+> +     int open_count;
+> +     int status;
+> +     struct mutex access_ok;
 > +
-> +	struct mmp_ovly_ops *ops;
+> +     struct mmp_ovly_ops *ops;
 > +};
 > +
 > +/* panel type */
 > +enum {
-> +	PANELTYPE_Active = 0,
-> +	PANELTYPE_Smart,
-> +	PANELTYPE_TV,
-> +	PANELTYPE_DSI_CMD,
-> +	PANELTYPE_DSI_VIDEO,
+> +     PANELTYPE_Active = 0,
+> +     PANELTYPE_Smart,
+> +     PANELTYPE_TV,
+> +     PANELTYPE_DSI_CMD,
+> +     PANELTYPE_DSI_VIDEO,
 > +};
 > +
 > +enum {
-> +	PANEL_CMDS_SPI,
-> +	PANEL_CMDS_DSI,
+> +     PANEL_CMDS_SPI,
+> +     PANEL_CMDS_DSI,
 > +};
 > +
 > +/* commands for panel: commands and sleep time in ms */
 > +struct mmp_panel_cmds {
-> +	u16 *cmds;
-> +	int cmds_num;
-> +	int sleep;
+> +     u16 *cmds;
+> +     int cmds_num;
+> +     int sleep;
 > +};
 > +
 > +struct mmp_spi_cfg {
-> +	u32 clk_cnt;
-> +	u32 rx_bits;
-> +	u32 tx_bits;
-> +	u32 wire_num;
+> +     u32 clk_cnt;
+> +     u32 rx_bits;
+> +     u32 tx_bits;
+> +     u32 wire_num;
 > +};
 > +
 > +struct mmp_panel_cmd_sets {
-> +	int type;
-> +	struct mmp_panel_cmds *on_cmds;
-> +	int on_cmds_num;
-> +	struct mmp_panel_cmds *off_cmds;
-> +	int off_cmds_num;
-> +	void  *config;
+> +     int type;
+> +     struct mmp_panel_cmds *on_cmds;
+> +     int on_cmds_num;
+> +     struct mmp_panel_cmds *off_cmds;
+> +     int off_cmds_num;
+> +     void  *config;
 > +};
 > +
 > +struct mmp_panel {
-> +	/* use node to register to list */
-> +	struct list_head node;
-> +	const char *name;
-> +	/* path name used to connect to proper path configed */
-> +	const char *plat_path_name;
-> +	struct device *dev;
-> +	int panel_type;
-> +	int (*get_modelist)(struct mmp_panel *panel,
-> +			struct mmp_mode **modelist);
-> +	void (*set_mode)(struct mmp_panel *panel,
-> +			struct mmp_mode *mode);
-> +	void (*plat_set_onoff)(int status);
-> +	struct mmp_panel_cmd_sets *cmd_set;
-> +	/* todo: add query */
+> +     /* use node to register to list */
+> +     struct list_head node;
+> +     const char *name;
+> +     /* path name used to connect to proper path configed */
+> +     const char *plat_path_name;
+> +     struct device *dev;
+> +     int panel_type;
+> +     int (*get_modelist)(struct mmp_panel *panel,
+> +                     struct mmp_mode **modelist);
+> +     void (*set_mode)(struct mmp_panel *panel,
+> +                     struct mmp_mode *mode);
+> +     void (*plat_set_onoff)(int status);
+> +     struct mmp_panel_cmd_sets *cmd_set;
+> +     /* todo: add query */
 > +};
 > +
 > +struct mmp_path_ops {
-> +	int (*check_status)(struct mmp_path *path);
-> +	struct mmp_ovly *(*get_ovly)(struct mmp_path *path,
-> +			int ovly_id);
-> +	int (*get_modelist)(struct mmp_path *path,
-> +			struct mmp_mode **modelist);
+> +     int (*check_status)(struct mmp_path *path);
+> +     struct mmp_ovly *(*get_ovly)(struct mmp_path *path,
+> +                     int ovly_id);
+> +     int (*get_modelist)(struct mmp_path *path,
+> +                     struct mmp_mode **modelist);
 > +
-> +	/* follow ops should be provided by driver */
-> +	void (*set_mode)(struct mmp_path *path, struct mmp_mode *mode);
-> +	void (*set_onoff)(struct mmp_path *path, int status);
-> +	/* todo: add query */
+> +     /* follow ops should be provided by driver */
+> +     void (*set_mode)(struct mmp_path *path, struct mmp_mode *mode);
+> +     void (*set_onoff)(struct mmp_path *path, int status);
+> +     /* todo: add query */
 > +};
 > +
 > +/* path output types */
 > +enum {
-> +	PATH_OUT_PARALLEL,
-> +	PATH_OUT_DSI,
-> +	PATH_OUT_HDMI,
+> +     PATH_OUT_PARALLEL,
+> +     PATH_OUT_DSI,
+> +     PATH_OUT_HDMI,
 > +};
 > +
 > +/* path is main part of mmp-disp */
 > +struct mmp_path {
-> +	/* use node to register to list */
-> +	struct list_head node;
+> +     /* use node to register to list */
+> +     struct list_head node;
 > +
-> +	/* init data */
-> +	struct device *dev;
+> +     /* init data */
+> +     struct device *dev;
 > +
-> +	int id;
-> +	const char *name;
-> +	int output_type;
-> +	struct mmp_panel *panel;
-> +	void *plat_data;
+> +     int id;
+> +     const char *name;
+> +     int output_type;
+> +     struct mmp_panel *panel;
+> +     void *plat_data;
 > +
-> +	/* dynamic use */
-> +	struct mmp_mode mode;
+> +     /* dynamic use */
+> +     struct mmp_mode mode;
 > +
-> +	/* state */
-> +	int open_count;
-> +	int status;
-> +	struct mutex access_ok;
+> +     /* state */
+> +     int open_count;
+> +     int status;
+> +     struct mutex access_ok;
 > +
-> +	struct mmp_path_ops ops;
+> +     struct mmp_path_ops ops;
 > +
-> +	/* layers */
-> +	int ovly_num;
-> +	struct mmp_ovly *ovlys;
+> +     /* layers */
+> +     int ovly_num;
+> +     struct mmp_ovly *ovlys;
 > +};
 > +
 > +extern struct mmp_path *mmp_get_path(const char *name);
 > +static inline void mmp_path_set_mode(struct mmp_path *path,
-> +		struct mmp_mode *mode)
+> +             struct mmp_mode *mode)
 > +{
-> +	if (path)
-> +		path->ops.set_mode(path, mode);
+> +     if (path)
+> +             path->ops.set_mode(path, mode);
 > +}
 > +static inline void mmp_path_set_onoff(struct mmp_path *path, int status)
 > +{
-> +	if (path)
-> +		path->ops.set_onoff(path, status);
+> +     if (path)
+> +             path->ops.set_onoff(path, status);
 > +}
 > +static inline int mmp_path_get_modelist(struct mmp_path *path,
-> +		struct mmp_mode **modelist)
+> +             struct mmp_mode **modelist)
 > +{
-> +	if (path)
-> +		return path->ops.get_modelist(path, modelist);
-> +	return 0;
+> +     if (path)
+> +             return path->ops.get_modelist(path, modelist);
+> +     return 0;
 > +}
 > +static inline struct mmp_ovly *mmp_path_get_ovly(
-> +		struct mmp_path *path, int ovly_id)
+> +             struct mmp_path *path, int ovly_id)
 > +{
-> +	if (path)
-> +		return path->ops.get_ovly(path, ovly_id);
-> +	return NULL;
+> +     if (path)
+> +             return path->ops.get_ovly(path, ovly_id);
+> +     return NULL;
 > +}
 > +static inline void mmp_ovly_set_fetch(struct mmp_ovly *ovly,
-> +		int fetch_id)
+> +             int fetch_id)
 > +{
-> +	if (ovly)
-> +		ovly->ops->set_fetch(ovly, fetch_id);
+> +     if (ovly)
+> +             ovly->ops->set_fetch(ovly, fetch_id);
 > +}
 > +static inline void mmp_ovly_set_onoff(struct mmp_ovly *ovly, int status)
 > +{
-> +	if (ovly)
-> +		ovly->ops->set_onoff(ovly, status);
+> +     if (ovly)
+> +             ovly->ops->set_onoff(ovly, status);
 > +}
 > +static inline void mmp_ovly_set_win(struct mmp_ovly *ovly,
-> +		struct mmp_win *win)
+> +             struct mmp_win *win)
 > +{
-> +	if (ovly)
-> +		ovly->ops->set_win(ovly, win);
+> +     if (ovly)
+> +             ovly->ops->set_win(ovly, win);
 > +}
 > +static inline int mmp_ovly_set_addr(struct mmp_ovly *ovly,
-> +		struct mmp_addr *addr)
+> +             struct mmp_addr *addr)
 > +{
-> +	if (ovly)
-> +		return ovly->ops->set_addr(ovly, addr);
-> +	return 0;
+> +     if (ovly)
+> +             return ovly->ops->set_addr(ovly, addr);
+> +     return 0;
 > +}
 > +
 > +/*
@@ -670,20 +686,20 @@ Please remove unnecessary line.
 > + * it defined a common interface that plat driver need to implement
 > + */
 > +struct mmp_path_info {
-> +	/* driver data, set when registed*/
-> +	const char *name;
-> +	struct device *dev;
-> +	int id;
-> +	int output_type;
-> +	int ovly_num;
-> +	void (*set_mode)(struct mmp_path *path, struct mmp_mode *mode);
-> +	void (*set_onoff)(struct mmp_path *path, int status);
-> +	struct mmp_ovly_ops *ovly_ops;
-> +	void *plat_data;
+> +     /* driver data, set when registed*/
+> +     const char *name;
+> +     struct device *dev;
+> +     int id;
+> +     int output_type;
+> +     int ovly_num;
+> +     void (*set_mode)(struct mmp_path *path, struct mmp_mode *mode);
+> +     void (*set_onoff)(struct mmp_path *path, int status);
+> +     struct mmp_ovly_ops *ovly_ops;
+> +     void *plat_data;
 > +};
 > +
 > +extern struct mmp_path *mmp_register_path(
-> +		struct mmp_path_info *info);
+> +             struct mmp_path_info *info);
 > +extern void mmp_unregister_path(struct mmp_path *path);
 > +extern int mmp_register_panel(struct mmp_panel *panel);
 > +extern void mmp_unregister_panel(struct mmp_panel *panel);
@@ -691,40 +707,40 @@ Please remove unnecessary line.
 > +/* defintions for platform data */
 > +/* interface for buffer driver */
 > +struct mmp_buffer_driver_mach_info {
-> +	const char	*name;
-> +	const char	*path_name;
-> +	int	ovly_id;
-> +	int	dmafetch_id;
-> +	int	default_pixfmt;
-> +	u32	irq_mask;
+> +     const char      *name;
+> +     const char      *path_name;
+> +     int     ovly_id;
+> +     int     dmafetch_id;
+> +     int     default_pixfmt;
+> +     u32     irq_mask;
 > +};
 > +
 > +/* interface for controllers driver */
 > +struct mmp_mach_path_config {
-> +	const char *name;
-> +	int ovly_num;
-> +	int output_type;
-> +	u32 path_config;
-> +	u32 link_config;
+> +     const char *name;
+> +     int ovly_num;
+> +     int output_type;
+> +     u32 path_config;
+> +     u32 link_config;
 > +};
 > +
 > +struct mmp_mach_plat_info {
-> +	const char *name;
-> +	const char *clk_name;
-> +	int path_num;
-> +	struct mmp_mach_path_config *paths;
+> +     const char *name;
+> +     const char *clk_name;
+> +     int path_num;
+> +     struct mmp_mach_path_config *paths;
 > +};
 > +
 > +/* interface for panel drivers */
 > +struct mmp_mach_panel_info {
-> +	const char *name;
-> +	void (*plat_set_onoff)(int status);
-> +	const char *plat_path_name;
+> +     const char *name;
+> +     void (*plat_set_onoff)(int status);
+> +     const char *plat_path_name;
 > +};
-> +#endif	/* _MMP_DISP_H_ */
+> +#endif       /* _MMP_DISP_H_ */
 > --
 > 1.7.0.4
-> 
+>
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
 > the body of a message to majordomo@vger.kernel.org

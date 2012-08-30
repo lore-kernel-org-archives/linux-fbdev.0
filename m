@@ -1,91 +1,276 @@
-From: Igor Grinberg <grinberg@compulab.co.il>
-Date: Wed, 29 Aug 2012 21:42:40 +0000
-Subject: Re: [PATCH 6/9] ARM: OMAP1: move omap1_bl pdata out of arch/arm/*
-Message-Id: <503E8CD0.2090608@compulab.co.il>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 30 Aug 2012 11:52:24 +0000
+Subject: [PATCH v2 02/23] OMAPDSS: outputs: Create and register output instances
+Message-Id: <1346326845-16583-3-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1346195937-6383-1-git-send-email-grinberg@compulab.co.il>
- <1346195937-6383-7-git-send-email-grinberg@compulab.co.il>
- <1346252664.12380.0.camel@deskari>
-In-Reply-To: <1346252664.12380.0.camel@deskari>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+ <1346326845-16583-1-git-send-email-archit@ti.com>
+In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Add output structs to output driver's private data. Register output instances by
+having an init function in the probes of the platform device drivers for
+different outputs. The *_init_output for each output registers the output and
+fill up the output's plaform device, type and id fields.
 
-On 08/29/12 18:04, Tomi Valkeinen wrote:
-> On Wed, 2012-08-29 at 02:18 +0300, Igor Grinberg wrote:
->> omap1 backlight platform data resides inside plat/board.h while it
->> should be inside include/linux/...
->> Move the omap1 backlight platform data to
->> include/linux/platform_data/.
->>
->> Cc: Richard Purdie <rpurdie@rpsys.net>
->> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
->> Cc: linux-fbdev@vger.kernel.org
->> Signed-off-by: Igor Grinberg <grinberg@compulab.co.il>
->> ---
->>  arch/arm/mach-omap1/board-osk.c         |    1 +
->>  arch/arm/mach-omap1/board-palmte.c      |    1 +
->>  arch/arm/mach-omap1/board-palmtt.c      |    1 +
->>  arch/arm/mach-omap1/board-palmz71.c     |    1 +
->>  arch/arm/plat-omap/include/plat/board.h |    7 -------
->>  drivers/video/backlight/omap1_bl.c      |    2 +-
->>  include/linux/platform_data/omap1_bl.h  |   11 +++++++++++
->>  7 files changed, 16 insertions(+), 8 deletions(-)
->>  create mode 100644 include/linux/platform_data/omap1_bl.h
+In the probe of each interface driver, the output entities are initialized
+before the *_probe_pdata() functions intentionally. This is done to ensure that
+the output entity is prepared before the panels connected to the output are
+registered. We need the output entities to be ready because OMAPDSS will try
+to make connections between overlays, managers, outputs and devices during the
+panel's probe.
 
-[...]
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/dpi.c  |   15 +++++++++++++++
+ drivers/video/omap2/dss/dsi.c  |   18 ++++++++++++++++++
+ drivers/video/omap2/dss/hdmi.c |   15 +++++++++++++++
+ drivers/video/omap2/dss/rfbi.c |   17 +++++++++++++++++
+ drivers/video/omap2/dss/sdi.c  |   15 +++++++++++++++
+ drivers/video/omap2/dss/venc.c |   15 +++++++++++++++
+ 6 files changed, 95 insertions(+)
 
->> diff --git a/include/linux/platform_data/omap1_bl.h b/include/linux/platform_data/omap1_bl.h
->> new file mode 100644
->> index 0000000..881a8e9
->> --- /dev/null
->> +++ b/include/linux/platform_data/omap1_bl.h
->> @@ -0,0 +1,11 @@
->> +#ifndef __OMAP1_BL_H__
->> +#define __OMAP1_BL_H__
->> +
->> +#include <linux/device.h>
-> 
-> You could use struct device; here.
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 25fb895..9a7aee5 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -45,6 +45,8 @@ static struct {
+ 	struct omap_video_timings timings;
+ 	struct dss_lcd_mgr_config mgr_config;
+ 	int data_lines;
++
++	struct omap_dss_output output;
+ } dpi;
+ 
+ static struct platform_device *dpi_get_dsidev(enum omap_dss_clk_source clk)
+@@ -410,10 +412,23 @@ static void __init dpi_probe_pdata(struct platform_device *pdev)
+ 	}
+ }
+ 
++static void __init dpi_init_output(struct platform_device *pdev)
++{
++	struct omap_dss_output *out = &dpi.output;
++
++	dss_register_output(out);
++
++	out->pdev = pdev;
++	out->id = OMAP_DSS_OUTPUT_DPI;
++	out->type = OMAP_DISPLAY_TYPE_DPI;
++}
++
+ static int __init omap_dpi_probe(struct platform_device *pdev)
+ {
+ 	mutex_init(&dpi.lock);
+ 
++	dpi_init_output(pdev);
++
+ 	dpi_probe_pdata(pdev);
+ 
+ 	return 0;
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 659b6cd..6a83ab7 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -337,6 +337,8 @@ struct dsi_data {
+ 	enum omap_dss_dsi_pixel_format pix_fmt;
+ 	enum omap_dss_dsi_mode mode;
+ 	struct omap_dss_dsi_videomode_timings vm_timings;
++
++	struct omap_dss_output output;
+ };
+ 
+ struct dsi_packet_sent_handler_data {
+@@ -4903,6 +4905,20 @@ static void __init dsi_probe_pdata(struct platform_device *dsidev)
+ 	}
+ }
+ 
++static void __init dsi_init_output(struct platform_device *dsidev,
++		struct dsi_data *dsi)
++{
++	struct omap_dss_output *out = &dsi->output;
++
++	dss_register_output(out);
++
++	out->pdev = dsidev;
++	out->id = dsi->module_id = 0 ?
++			OMAP_DSS_OUTPUT_DSI1 : OMAP_DSS_OUTPUT_DSI2;
++
++	out->type = OMAP_DISPLAY_TYPE_DSI;
++}
++
+ /* DSI1 HW IP initialisation */
+ static int __init omap_dsihw_probe(struct platform_device *dsidev)
+ {
+@@ -4997,6 +5013,8 @@ static int __init omap_dsihw_probe(struct platform_device *dsidev)
+ 	else
+ 		dsi->num_lanes_supported = 3;
+ 
++	dsi_init_output(dsidev, dsi);
++
+ 	dsi_probe_pdata(dsidev);
+ 
+ 	dsi_runtime_put(dsidev);
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 0cdf246..d93954d 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -61,6 +61,8 @@ static struct {
+ 	struct hdmi_ip_data ip_data;
+ 
+ 	struct clk *sys_clk;
++
++	struct omap_dss_output output;
+ } hdmi;
+ 
+ /*
+@@ -890,6 +892,17 @@ static void __init hdmi_probe_pdata(struct platform_device *pdev)
+ 	}
+ }
+ 
++static void __init hdmi_init_output(struct platform_device *pdev)
++{
++	struct omap_dss_output *out = &hdmi.output;
++
++	dss_register_output(out);
++
++	out->pdev = pdev;
++	out->id = OMAP_DSS_OUTPUT_HDMI;
++	out->type = OMAP_DISPLAY_TYPE_HDMI;
++}
++
+ /* HDMI HW IP initialisation */
+ static int __init omapdss_hdmihw_probe(struct platform_device *pdev)
+ {
+@@ -933,6 +946,8 @@ static int __init omapdss_hdmihw_probe(struct platform_device *pdev)
+ 
+ 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
+ 
++	hdmi_init_output(pdev);
++
+ 	hdmi_probe_pdata(pdev);
+ 
+ 	return 0;
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 5a9c0e9..3450f51 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -116,6 +116,8 @@ static struct {
+ 	int pixel_size;
+ 	int data_lines;
+ 	struct rfbi_timings intf_timings;
++
++	struct omap_dss_output output;
+ } rfbi;
+ 
+ static inline void rfbi_write_reg(const struct rfbi_reg idx, u32 val)
+@@ -967,6 +969,19 @@ static void __init rfbi_probe_pdata(struct platform_device *pdev)
+ 	}
+ }
+ 
++static void __init rfbi_init_output(struct platform_device *pdev)
++{
++	struct omap_dss_output *out = &rfbi.output;
++
++	dss_register_output(out);
++
++	out->pdev = pdev;
++	out->id = OMAP_DSS_OUTPUT_DBI;
++	out->type = OMAP_DISPLAY_TYPE_DBI;
++
++	return 0;
++}
++
+ /* RFBI HW IP initialisation */
+ static int __init omap_rfbihw_probe(struct platform_device *pdev)
+ {
+@@ -1018,6 +1033,8 @@ static int __init omap_rfbihw_probe(struct platform_device *pdev)
+ 
+ 	dss_debugfs_create_file("rfbi", rfbi_dump_regs);
+ 
++	rfbi_init_output(pdev);
++
+ 	rfbi_probe_pdata(pdev);
+ 
+ 	return 0;
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 3bf1bfe..d8879f3 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -36,6 +36,8 @@ static struct {
+ 	struct dss_lcd_mgr_config mgr_config;
+ 	struct omap_video_timings timings;
+ 	int datapairs;
++
++	struct omap_dss_output output;
+ } sdi;
+ 
+ static void sdi_config_lcd_manager(struct omap_dss_device *dssdev)
+@@ -216,8 +218,21 @@ static void __init sdi_probe_pdata(struct platform_device *pdev)
+ 	}
+ }
+ 
++static void __init sdi_init_output(struct platform_device *pdev)
++{
++	struct omap_dss_output *out = &sdi.output;
++
++	dss_register_output(out);
++
++	out->pdev = pdev;
++	out->id = OMAP_DSS_OUTPUT_SDI;
++	out->type = OMAP_DISPLAY_TYPE_SDI;
++}
++
+ static int __init omap_sdi_probe(struct platform_device *pdev)
+ {
++	sdi_init_output(pdev);
++
+ 	sdi_probe_pdata(pdev);
+ 
+ 	return 0;
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 4a6caf9..942a378 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -304,6 +304,8 @@ static struct {
+ 	struct omap_video_timings timings;
+ 	enum omap_dss_venc_type type;
+ 	bool invert_polarity;
++
++	struct omap_dss_output output;
+ } venc;
+ 
+ static inline void venc_write_reg(int idx, u32 val)
+@@ -773,6 +775,17 @@ static void __init venc_probe_pdata(struct platform_device *pdev)
+ 	}
+ }
+ 
++static void __init venc_init_output(struct platform_device *pdev)
++{
++	struct omap_dss_output *out = &venc.output;
++
++	dss_register_output(out);
++
++	out->pdev = pdev;
++	out->id = OMAP_DSS_OUTPUT_VENC;
++	out->type = OMAP_DISPLAY_TYPE_VENC;
++}
++
+ /* VENC HW IP initialisation */
+ static int __init omap_venchw_probe(struct platform_device *pdev)
+ {
+@@ -820,6 +833,8 @@ static int __init omap_venchw_probe(struct platform_device *pdev)
+ 
+ 	dss_debugfs_create_file("venc", venc_dump_regs);
+ 
++	venc_init_output(pdev);
++
+ 	venc_probe_pdata(pdev);
+ 
+ 	return 0;
+-- 
+1.7.9.5
 
-Yes I know, but I don't think it is any better.
-
-> 
->> +
->> +struct omap_backlight_config {
->> +	int default_intensity;
->> +	int (*set_power)(struct device *dev, int state);
->> +};
->> +
->> +#endif
-> 
-> Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-
-Thanks!
-
-
-- -- 
-Regards,
-Igor.
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.17 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iQIcBAEBAgAGBQJQPozJAAoJEBDE8YO64EfasmQP/2v38LY4t30rnl3jOvs6vvsa
-RPFFQG1lxkFTpMHMkOvb4pW/k00IHxkcv2hRrGmoBWbEJqel7b0LyEFVV+M+uCSo
-nCVsnd/Pu7jftCwC2Ggy2PBE16n+9I6UttN4Vsh7a8f2qwtXdOxL01xxyM7cVtn4
-YQRhyVrKMiiKhNfKtvQV2V0npsVVksgnKm0K1zNRiZkTuKjZ4sJrliGYaU6B5F32
-MHx31U0r1VbxZwOi9m19Ucyuf1CYvVKhlmeMop1fE4+3Dkt1708pMWOpK9iknMQU
-m5cA+25a7YolDIluvfXlH+7hDFZixDUd5pFeJA0llaqOv2PSHGT0kYDOTmtRyKvD
-D3mq22amwPlqgjXdxJMS5gckF6N3KrBjA3AHW4FpoTQjdCciiql3k+DMaRNM6Dzm
-WjCCZBOQHy5dSRn6HzNo2iSP+B8mANh8eoJJAoyS3JJ+ihf4hiV1PEC9jXxWTg1H
-M449feGQccXUfYj8pTlXtTXEk8L5x3kBlU9VMMzlA1kQN0VoFOQRhSl+UVdu2ckA
-SPotVgiUCUzT9x1xEoIBjrz+kLAk0bYvRv2vUflzzH8lf+/MYz4UxDikSCsifpF1
-s/5evCRgSUokm1VxlFEMLiUG0gb8FJR3TylJU4CD5U9dbkel2urKoE1zfc4LyPRT
-ycdLeCP+C7ZcsaNApWMS
-=kElj
------END PGP SIGNATURE-----

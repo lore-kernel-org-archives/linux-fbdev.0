@@ -1,33 +1,39 @@
-From: Sean Paul <seanpaul@chromium.org>
-Date: Wed, 08 Aug 2012 03:54:14 +0000
-Subject: [PATCH 00/10] Upstream patches from chromium os tree
-Message-Id: <1344398064-13563-1-git-send-email-seanpaul@chromium.org>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 30 Aug 2012 11:52:43 +0000
+Subject: [PATCH v2 21/23] OMAPDSS: MANAGER: Get device via output
+Message-Id: <1346326845-16583-22-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+ <1346326845-16583-1-git-send-email-archit@ti.com>
+In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The following patch set includes changes that have been applied to the chromium
-os kernel, but have not been sent upstream.
+A manager is not connected to a device directly any more. It first connects
+to an output, and then to the display. Update the manager's get_device op to
+return the device via the connected output.
 
-Sean Paul (10):
-  video: exynos_dp: Change aux transaction failures
-  video: exynos_dp: Check DPCD return codes
-  video: exynos_dp: Clean up SW link training
-  video: exynos_dp: Get pll lock before pattern set
-  video: exynos_dp: Remove sink control to D0
-  video: exynos_dp: Fix get_pll_lock_status return value
-  video: exynos_dp: Improve EDID error handling
-  video: exynos_dp: Move hotplug into a workqueue
-  video: exynos_dp: Fix bug when checking dp->irq
-  video: exynos_dp: Enable hotplug interrupts
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/manager.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/video/exynos/exynos_dp_core.c |  373 +++++++++++++++++----------------
- drivers/video/exynos/exynos_dp_core.h |   12 +-
- drivers/video/exynos/exynos_dp_reg.c  |   67 +++++--
- 3 files changed, 256 insertions(+), 196 deletions(-)
-
+diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+index d808ce2..d14ffc5 100644
+--- a/drivers/video/omap2/dss/manager.c
++++ b/drivers/video/omap2/dss/manager.c
+@@ -509,7 +509,7 @@ static struct kobj_type manager_ktype = {
+ 
+ static inline struct omap_dss_device *dss_mgr_get_device(struct omap_overlay_manager *mgr)
+ {
+-	return mgr->device;
++	return mgr->output ? mgr->output->device : NULL;
+ }
+ 
+ static int dss_mgr_wait_for_vsync(struct omap_overlay_manager *mgr)
 -- 
-1.7.7.3
+1.7.9.5
 

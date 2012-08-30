@@ -1,90 +1,206 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Sun, 12 Aug 2012 14:53:22 +0000
-Subject: [PATCH 08/11] fblog: cache framebuffer BLANK and SUSPEND states
-Message-Id: <1344783205-2384-9-git-send-email-dh.herrmann@googlemail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 30 Aug 2012 11:52:23 +0000
+Subject: [PATCH v2 01/23] OMAPDSS: outputs: Create a new entity called outputs
+Message-Id: <1346326845-16583-2-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
-In-Reply-To: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+ <1346326845-16583-1-git-send-email-archit@ti.com>
+In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, David Herrmann <dh.herrmann@googlemail.com>
+To: tomi.valkeinen@ti.com
+Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-We must cache these states so we will never draw to the framebuffer while
-it is suspended or blanked.
+The current OMAPDSS design contains 3 software entities: Overlays, Managers and
+Devices. These map to pipelines, overlay managers and the panels respectively in
+hardware. One or more overlays connect to a manager to represent a composition,
+the manager connects to a device(generally a display) to display the content.
 
-Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+The part of DSS hardware which isn't represented by any of the above entities
+are interfaces/outputs that connect to an overlay manager, i.e blocks like DSI,
+HDMI, VENC and so on. Currently, an overlay manager directly connects to the
+display, and the output to which it is actually connected is ignored. The panel
+driver of the display is responsible of calling output specific functions to
+configure the output.
+
+Adding outputs as a new software entity gives us the following benefits:
+
+- Have exact information on the possible connections between managers and
+  outputs: A manager can't connect to each and every output, there only limited
+  hardware links between a manager's video port and some of the outputs.
+
+- Remove hacks related to connecting managers and devices: Currently, default
+  links between managers and devices are set in a not so clean way. Matching is
+  done via comparing the device type, and the display types supported by the
+  manager. This isn't sufficient to establish all the possible links between
+  managers, outputs and devices in hardware.
+
+- Make panel drivers more generic: The DSS panel drivers currently call
+  interface/output specific functions to configure the hardware IP. When making
+  these calls, the driver isn't actually aware of the underlying output. The
+  output driver extracts information from the panel's omap_dss_device pointer
+  to figure out which interface it is connected to, and then configures the
+  corresponding output block. An example of this is when a DSI panel calls
+  dsi functions, the dsi driver figures out whether the panel is connected
+  to DSI1 or DSI2. This isn't correct, and having output as entities will
+  give the panel driver the exact information on which output to configure.
+  Having outputs also gives the opportunity to make panel drivers generic
+  across different platforms/SoCs, this is achieved as omap specific output
+  calls can be replaced by ops of a particular output type.
+
+- Have more complex connections between managers, outputs and devices: OMAPDSS
+  currently doesn't support use cases like 2 outputs connect to a single
+  device. This can be achieved by extending properties of outputs to connect to
+  more managers or devices.
+
+- Represent writeback as an output: The writeback pipeline fits well in OMAPDSS
+  as compared to overlays, managers or devices.
+
+Add a new struct to represent outputs. An output struct holds pointers to the
+manager and device structs to which it is connected. Add functions which can
+register an output, or look for one. Create an enum which represent each output
+instance.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/console/fblog.c | 41 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
+ drivers/video/omap2/dss/Makefile |    2 +-
+ drivers/video/omap2/dss/dss.h    |    3 +++
+ drivers/video/omap2/dss/output.c |   43 ++++++++++++++++++++++++++++++++++++++
+ include/video/omapdss.h          |   30 ++++++++++++++++++++++++++
+ 4 files changed, 77 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/video/omap2/dss/output.c
 
-diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
-index aed77dc..8bcd0ce 100644
---- a/drivers/video/console/fblog.c
-+++ b/drivers/video/console/fblog.c
-@@ -33,6 +33,8 @@
- enum fblog_flags {
- 	FBLOG_KILLED,
- 	FBLOG_OPEN,
-+	FBLOG_SUSPENDED,
-+	FBLOG_BLANKED,
+diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
+index 30a48fb..645f8c3 100644
+--- a/drivers/video/omap2/dss/Makefile
++++ b/drivers/video/omap2/dss/Makefile
+@@ -1,6 +1,6 @@
+ obj-$(CONFIG_OMAP2_DSS) += omapdss.o
+ omapdss-y := core.o dss.o dss_features.o dispc.o dispc_coefs.o display.o \
+-	manager.o overlay.o apply.o
++	manager.o overlay.o output.o apply.o
+ omapdss-$(CONFIG_OMAP2_DSS_DPI) += dpi.o
+ omapdss-$(CONFIG_OMAP2_DSS_RFBI) += rfbi.o
+ omapdss-$(CONFIG_OMAP2_DSS_VENC) += venc.o venc_panel.o
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index d6cca82..e77d8d2 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -222,6 +222,9 @@ int dss_ovl_set_manager(struct omap_overlay *ovl,
+ 		struct omap_overlay_manager *mgr);
+ int dss_ovl_unset_manager(struct omap_overlay *ovl);
+ 
++/* output */
++void dss_register_output(struct omap_dss_output *out);
++
+ /* display */
+ int dss_suspend_all_devices(void);
+ int dss_resume_all_devices(void);
+diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
+new file mode 100644
+index 0000000..7d81be5
+--- /dev/null
++++ b/drivers/video/omap2/dss/output.c
+@@ -0,0 +1,43 @@
++/*
++ * Copyright (C) 2012 Texas Instruments Ltd
++ * Author: Archit Taneja <archit@ti.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include <linux/kernel.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++
++#include <video/omapdss.h>
++
++#include "dss.h"
++
++static LIST_HEAD(output_list);
++
++void dss_register_output(struct omap_dss_output *out)
++{
++	list_add_tail(&out->list, &output_list);
++}
++
++struct omap_dss_output *omap_dss_get_output(enum omap_dss_output_id id)
++{
++	struct omap_dss_output *out;
++
++	list_for_each_entry(out, &output_list, list) {
++		if (out->id = id)
++			return out;
++	}
++
++	return NULL;
++}
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index b868123..2926a04 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -207,6 +207,16 @@ enum omap_hdmi_flags {
+ 	OMAP_HDMI_SDA_SCL_EXTERNAL_PULLUP = 1 << 0,
  };
  
- struct fblog_fb {
-@@ -264,6 +266,7 @@ static int fblog_event(struct notifier_block *self, unsigned long action,
- 	struct fb_event *event = data;
- 	struct fb_info *info = event->info;
- 	struct fblog_fb *fb;
-+	int *blank;
++enum omap_dss_output_id {
++	OMAP_DSS_OUTPUT_DPI	= 1 << 0,
++	OMAP_DSS_OUTPUT_DBI	= 1 << 1,
++	OMAP_DSS_OUTPUT_SDI	= 1 << 2,
++	OMAP_DSS_OUTPUT_DSI1	= 1 << 3,
++	OMAP_DSS_OUTPUT_DSI2	= 1 << 4,
++	OMAP_DSS_OUTPUT_VENC	= 1 << 5,
++	OMAP_DSS_OUTPUT_HDMI	= 1 << 6,
++};
++
+ /* RFBI */
  
- 	switch(action) {
- 	case FB_EVENT_FB_REGISTERED:
-@@ -291,6 +294,44 @@ static int fblog_event(struct notifier_block *self, unsigned long action,
- 		if (fb)
- 			fblog_close(fb, true);
- 		break;
-+	case FB_EVENT_SUSPEND:
-+		/* This is called when the low-level display driver suspends the
-+		 * video system. We should not access the video system while it
-+		 * is suspended. This is called with the console lock held. */
-+		mutex_lock(&fblog_registration_lock);
-+		fb = fblog_fbs[info->node];
-+		mutex_unlock(&fblog_registration_lock);
-+
-+		if (fb)
-+			set_bit(FBLOG_SUSPENDED, &fb->flags);
-+		break;
-+	case FB_EVENT_RESUME:
-+		/* This is called when the low-level display driver resumes
-+		 * operating. It is called with the console lock held. */
-+		mutex_lock(&fblog_registration_lock);
-+		fb = fblog_fbs[info->node];
-+		mutex_unlock(&fblog_registration_lock);
-+
-+		if (fb)
-+			clear_bit(FBLOG_SUSPENDED, &fb->flags);
-+		break;
-+	case FB_EVENT_BLANK:
-+		/* This gets called _after_ the framebuffer was successfully
-+		 * blanked. The console-lock is always held while fb_blank is
-+		 * called and during this callback. */
-+		mutex_lock(&fblog_registration_lock);
-+		fb = fblog_fbs[info->node];
-+		mutex_unlock(&fblog_registration_lock);
-+
-+		if (!fb)
-+			break;
-+
-+		blank = (int*)event->data;
-+		if (*blank = FB_BLANK_UNBLANK)
-+			clear_bit(FBLOG_BLANKED, &fb->flags);
-+		else
-+			set_bit(FBLOG_BLANKED, &fb->flags);
-+		break;
- 	}
+ struct rfbi_timings {
+@@ -492,6 +502,24 @@ struct omap_dsi_pin_config {
+ 	int pins[OMAP_DSS_MAX_DSI_PINS];
+ };
  
- 	return 0;
++struct omap_dss_output {
++	struct list_head list;
++
++	/* display type supported by the output */
++	enum omap_display_type type;
++
++	/* output instance */
++	enum omap_dss_output_id id;
++
++	/* output's platform device pointer */
++	struct platform_device *pdev;
++
++	/* dynamic fields */
++	struct omap_overlay_manager *manager;
++
++	struct omap_dss_device *device;
++};
++
+ struct omap_dss_device {
+ 	struct device dev;
+ 
+@@ -699,6 +727,8 @@ struct omap_overlay_manager *omap_dss_get_overlay_manager(int num);
+ int omap_dss_get_num_overlays(void);
+ struct omap_overlay *omap_dss_get_overlay(int num);
+ 
++struct omap_dss_output *omap_dss_get_output(enum omap_dss_output_id id);
++
+ void omapdss_default_get_resolution(struct omap_dss_device *dssdev,
+ 		u16 *xres, u16 *yres);
+ int omapdss_default_get_recommended_bpp(struct omap_dss_device *dssdev);
 -- 
-1.7.11.4
+1.7.9.5
 

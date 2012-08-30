@@ -1,239 +1,229 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 01 Aug 2012 13:03:19 +0000
-Subject: [GIT PULL] fbdev updates for 3.6
-Message-Id: <50192917.2020809@gmx.de>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 30 Aug 2012 11:52:40 +0000
+Subject: [PATCH v2 18/23] OMAPDSS: HDMI: Add dssdev pointer as an argument to all functions used by hdmi pane
+Message-Id: <1346326845-16583-19-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+ <1346326845-16583-1-git-send-email-archit@ti.com>
+In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: tomi.valkeinen@ti.com
+Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Hi Linus,
+All functions of an output driver used by a panel driver should have an
+omap_dss_device pointer as an argument. This is needed as the function would
+somehow need to retrieve the output driver's private data. It may not be needed
+by some of the outputs for now as driver data is globally visible within them.
+The correct way to retrieve driver data is to extract the platform device from
+the output, and then extract the driver data from the platform device.
 
-please pull the changes below.
+Add dssdev arguments to functions used by panel drivers which currently miss it.
+This will come to use when the HDMI functions retrieve the driver data in the
+correct manner.
 
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/dss.h        |   17 +++++++++--------
+ drivers/video/omap2/dss/hdmi.c       |   17 +++++++++--------
+ drivers/video/omap2/dss/hdmi_panel.c |   20 ++++++++++----------
+ 3 files changed, 28 insertions(+), 26 deletions(-)
 
-Thanks,
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index de2fb9d..11c245d 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -506,17 +506,18 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev,
+ 		struct omap_video_timings *timings);
+ int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
+ 					struct omap_video_timings *timings);
+-int omapdss_hdmi_read_edid(u8 *buf, int len);
+-bool omapdss_hdmi_detect(void);
++int omapdss_hdmi_read_edid(struct omap_dss_device *dssdev, u8 *buf, int len);
++bool omapdss_hdmi_detect(struct omap_dss_device *dssdev);
+ int hdmi_panel_init(void);
+ void hdmi_panel_exit(void);
+ #ifdef CONFIG_OMAP4_DSS_HDMI_AUDIO
+-int hdmi_audio_enable(void);
+-void hdmi_audio_disable(void);
+-int hdmi_audio_start(void);
+-void hdmi_audio_stop(void);
+-bool hdmi_mode_has_audio(void);
+-int hdmi_audio_config(struct omap_dss_audio *audio);
++int hdmi_audio_enable(struct omap_dss_device *dssdev);
++void hdmi_audio_disable(struct omap_dss_device *dssdev);
++int hdmi_audio_start(struct omap_dss_device *dssdev);
++void hdmi_audio_stop(struct omap_dss_device *dssdev);
++bool hdmi_mode_has_audio(struct omap_dss_device *dssdev);
++int hdmi_audio_config(struct omap_dss_device *dssdev,
++		struct omap_dss_audio *audio);
+ #endif
+ 
+ /* RFBI */
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 3c89904..2d3b959 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -608,7 +608,7 @@ static void hdmi_dump_regs(struct seq_file *s)
+ 	mutex_unlock(&hdmi.lock);
+ }
+ 
+-int omapdss_hdmi_read_edid(u8 *buf, int len)
++int omapdss_hdmi_read_edid(struct omap_dss_device *dssdev, u8 *buf, int len)
+ {
+ 	int r;
+ 
+@@ -625,7 +625,7 @@ int omapdss_hdmi_read_edid(u8 *buf, int len)
+ 	return r;
+ }
+ 
+-bool omapdss_hdmi_detect(void)
++bool omapdss_hdmi_detect(struct omap_dss_device *dssdev)
+ {
+ 	int r;
+ 
+@@ -833,35 +833,35 @@ int hdmi_compute_acr(u32 sample_freq, u32 *n, u32 *cts)
+ 	return 0;
+ }
+ 
+-int hdmi_audio_enable(void)
++int hdmi_audio_enable(struct omap_dss_device *dssdev)
+ {
+ 	DSSDBG("audio_enable\n");
+ 
+ 	return hdmi.ip_data.ops->audio_enable(&hdmi.ip_data);
+ }
+ 
+-void hdmi_audio_disable(void)
++void hdmi_audio_disable(struct omap_dss_device *dssdev)
+ {
+ 	DSSDBG("audio_disable\n");
+ 
+ 	hdmi.ip_data.ops->audio_disable(&hdmi.ip_data);
+ }
+ 
+-int hdmi_audio_start(void)
++int hdmi_audio_start(struct omap_dss_device *dssdev)
+ {
+ 	DSSDBG("audio_start\n");
+ 
+ 	return hdmi.ip_data.ops->audio_start(&hdmi.ip_data);
+ }
+ 
+-void hdmi_audio_stop(void)
++void hdmi_audio_stop(struct omap_dss_device *dssdev)
+ {
+ 	DSSDBG("audio_stop\n");
+ 
+ 	hdmi.ip_data.ops->audio_stop(&hdmi.ip_data);
+ }
+ 
+-bool hdmi_mode_has_audio(void)
++bool hdmi_mode_has_audio(struct omap_dss_device *dssdev)
+ {
+ 	if (hdmi.ip_data.cfg.cm.mode = HDMI_HDMI)
+ 		return true;
+@@ -869,7 +869,8 @@ bool hdmi_mode_has_audio(void)
+ 		return false;
+ }
+ 
+-int hdmi_audio_config(struct omap_dss_audio *audio)
++int hdmi_audio_config(struct omap_dss_device *dssdev,
++		struct omap_dss_audio *audio)
+ {
+ 	return hdmi.ip_data.ops->audio_config(&hdmi.ip_data, audio);
+ }
+diff --git a/drivers/video/omap2/dss/hdmi_panel.c b/drivers/video/omap2/dss/hdmi_panel.c
+index 69fb115..ef3fc86 100644
+--- a/drivers/video/omap2/dss/hdmi_panel.c
++++ b/drivers/video/omap2/dss/hdmi_panel.c
+@@ -88,13 +88,13 @@ static int hdmi_panel_audio_enable(struct omap_dss_device *dssdev)
+ 
+ 	/* enable audio only if the display is active and supports audio */
+ 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE ||
+-	    !hdmi_mode_has_audio()) {
++	    !hdmi_mode_has_audio(dssdev)) {
+ 		DSSERR("audio not supported or display is off\n");
+ 		r = -EPERM;
+ 		goto err;
+ 	}
+ 
+-	r = hdmi_audio_enable();
++	r = hdmi_audio_enable(dssdev);
+ 
+ 	if (!r)
+ 		dssdev->audio_state = OMAP_DSS_AUDIO_ENABLED;
+@@ -111,7 +111,7 @@ static void hdmi_panel_audio_disable(struct omap_dss_device *dssdev)
+ 
+ 	spin_lock_irqsave(&hdmi.audio_lock, flags);
+ 
+-	hdmi_audio_disable();
++	hdmi_audio_disable(dssdev);
+ 
+ 	dssdev->audio_state = OMAP_DSS_AUDIO_DISABLED;
+ 
+@@ -134,7 +134,7 @@ static int hdmi_panel_audio_start(struct omap_dss_device *dssdev)
+ 		goto err;
+ 	}
+ 
+-	r = hdmi_audio_start();
++	r = hdmi_audio_start(dssdev);
+ 
+ 	if (!r)
+ 		dssdev->audio_state = OMAP_DSS_AUDIO_PLAYING;
+@@ -150,7 +150,7 @@ static void hdmi_panel_audio_stop(struct omap_dss_device *dssdev)
+ 
+ 	spin_lock_irqsave(&hdmi.audio_lock, flags);
+ 
+-	hdmi_audio_stop();
++	hdmi_audio_stop(dssdev);
+ 	dssdev->audio_state = OMAP_DSS_AUDIO_ENABLED;
+ 
+ 	spin_unlock_irqrestore(&hdmi.audio_lock, flags);
+@@ -165,7 +165,7 @@ static bool hdmi_panel_audio_supported(struct omap_dss_device *dssdev)
+ 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
+ 		goto err;
+ 
+-	if (!hdmi_mode_has_audio())
++	if (!hdmi_mode_has_audio(dssdev))
+ 		goto err;
+ 
+ 	r = true;
+@@ -185,13 +185,13 @@ static int hdmi_panel_audio_config(struct omap_dss_device *dssdev,
+ 
+ 	/* config audio only if the display is active and supports audio */
+ 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE ||
+-	    !hdmi_mode_has_audio()) {
++	    !hdmi_mode_has_audio(dssdev)) {
+ 		DSSERR("audio not supported or display is off\n");
+ 		r = -EPERM;
+ 		goto err;
+ 	}
+ 
+-	r = hdmi_audio_config(audio);
++	r = hdmi_audio_config(dssdev, audio);
+ 
+ 	if (!r)
+ 		dssdev->audio_state = OMAP_DSS_AUDIO_CONFIGURED;
+@@ -388,7 +388,7 @@ static int hdmi_read_edid(struct omap_dss_device *dssdev, u8 *buf, int len)
+ 			goto err;
+ 	}
+ 
+-	r = omapdss_hdmi_read_edid(buf, len);
++	r = omapdss_hdmi_read_edid(dssdev, buf, len);
+ 
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_DISABLED ||
+ 			dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED)
+@@ -411,7 +411,7 @@ static bool hdmi_detect(struct omap_dss_device *dssdev)
+ 			goto err;
+ 	}
+ 
+-	r = omapdss_hdmi_detect();
++	r = omapdss_hdmi_detect(dssdev);
+ 
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_DISABLED ||
+ 			dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED)
+-- 
+1.7.9.5
 
-Florian Tobias Schandinat
-
-
-The following changes since commit 485802a6c524e62b5924849dd727ddbb1497cc71:
-
-  Linux 3.5-rc3 (2012-06-16 17:25:17 -0700)
-
-are available in the git repository at:
-
-  git://github.com/schandinat/linux-2.6.git fbdev-updates-for-3.6
-
-for you to fetch changes up to a0239073fd75489d25575cf3aaf71ab55b416020:
-
-  da8xx-fb: fix compile issue due to missing include (2012-07-29 16:47:40 +0000)
-
-----------------------------------------------------------------
-fbdev updates for 3.6
-
-It includes:
-- large updates for OMAP
-  - support for LCD3 overlay manager (omap5)
-  - omapdss output cleanup
-  - removal of passive matrix LCD support as there are no drivers for
-    such panels for DSS or DSS2 and nobody complained (cleanup)
-- large updates for SH Mobile
-  - overlay support
-  - separating MERAM (cache) from framebuffer driver
-- some updates for Exynos and da8xx-fb
-- various other small patches
-
-----------------------------------------------------------------
-Aditya Nellutla (1):
-      da8xx-fb: Rounding FB size to satisfy SGX buffer requirements
-
-Alexander Holler (1):
-      video/smscufx: fix line counting in fb_write
-
-Alexander Shiyan (1):
-      fb: epson1355fb: Fix section mismatch
-
-Archit Taneja (27):
-      OMAPDSS: Remove passive matrix LCD support (part 1)
-      OMAPDSS: Remove passive matrix LCD support (part 2)
-      OMAPDSS: Remove passive matrix LCD support (part 3)
-      OMAPDSS: Remove passive matrix LCD support (part 4)
-      OMAPDSS: Add some new fields to omap_video_timings
-      OMAPDSS: DISPLAY: Ignore newly added omap_video_timings fields for display timings sysfs file
-      OMAPDSS: DISPC: Configure newly added omap_video_timing fields
-      OMAPDSS: DISPC: Remove dispc_mgr_set_pol_freq()
-      OMAPFB: Map the newly added omap_video_timings fields with fb sync flags
-      OMAPDSS: Remove omap_panel_config enum from omap_dss_device
-      OMAPDSS: Add interlace parameter to omap_video_timings
-      OMAPDSS: DISPC/APPLY: Use interlace info in manager timings for dispc_ovl_setup()
-      OMAPFB: Map interlace field in omap_video_timings with fb vmode flags
-      OMAPDSS: HDMI: Remove custom hdmi_video_timings struct
-      OMAPDSS: DSI: Fix HSYNC, VSYNC and DE polarities between DISPC and DSI
-      OMAPDSS: DISPC: Change return type of dispc_mgr_set_clock_div()
-      OMAPDSS: Add struct to hold LCD overlay manager configuration
-      OMAPDSS: DPI: Configure dss_lcd_mgr_config struct with lcd manager parameters
-      OMAPDSS: RFBI: Configure dss_lcd_mgr_config struct with lcd manager parameters
-      OMAPDSS: DSI: Configure dss_lcd_mgr_config struct with lcd manager parameters
-      OMAPDSS: SDI: Configure dss_lcd_mgr_config struct with lcd manager parameters
-      OMAPDSS: APPLY: Remove DISPC writes to manager's lcd parameters in interface drivers
-      OMAPDSS: MANAGER: Check LCD related overlay manager parameters
-      OMAPDSS: APPLY: Remove usage of omap_dss_device from manual/auto update checks
-      OMAPDSS: DISPC: Remove a redundant function
-      OMAPDSS: RFBI: Use dss_mgr_enable to enable the overlay manager
-      OMAPDSS: OVERLAY: Clean up replication checking
-
-Benjamin Herrenschmidt (1):
-      fbdev: Make pixel_to_pat() failure mode more friendly
-
-Chandrabhanu Mahapatra (5):
-      OMAPDSS: Cleanup implementation of LCD channels
-      OMAPDSS: Add support for LCD3 channel
-      OMAPDSS: Add LCD3 overlay manager and Clock and IRQ support
-      OMAPDSS: Add dump and debug support for LCD3
-      ARM: OMAP2PLUS: DSS: Disable LCD3 output when resetting DSS
-
-Donghwa Lee (1):
-      video: exynos mipi dsi: Fix mipi dsi regulators handling issue
-
-Emil Goode (2):
-      grvga: Fix error handling issues
-      aty128fb: Fix coding style issues
-
-Florian Tobias Schandinat (5):
-      Merge branch 'planes' of git://linuxtv.org/pinchartl/fbdev into fbdev-next
-      Merge branch 'fbdev-for-linus' into fbdev-next
-      Merge branch 'for-next' of git://linuxtv.org/pinchartl/fbdev into fbdev-next
-      Merge branch 'for-florian' of git://gitorious.org/linux-omap-dss2/linux into fbdev-next
-      da8xx-fb: fix compile issue due to missing include
-
-Guennadi Liakhovetski (1):
-      fbdev: sh_mipi_dsi: fix a section mismatch
-
-Jassi Brar (2):
-      OMAPDSS: HDMI: Discard phy_tx_enabled member
-      OMAPDSS: HDMI: Replace spinlock with mutex in hdmi_check_hpd_state
-
-Jingoo Han (5):
-      video: exynos_dp: fix build warning due to uninitialized value
-      video: exynos_dp: remove duplicated declarations from header file
-      video: exynos_dp: fix wrong DPCD address during Link Training
-      video: exynos_dp: check the only INTERLANE_ALIGN_DONE bit during Link Training
-      video: exynos_dp: use usleep_range instead of delay
-
-Laurent Pinchart (13):
-      fbdev: sh_mobile_lcdc: Constify sh_mobile_lcdc_fix structure
-      fbdev: sh_mobile_lcdc: Rename fb operation handlers with a common prefix
-      fbdev: sh_mobile_lcdc: Implement overlays support
-      sh_mobile_meram: Rename operations to cache_[alloc|free|update]
-      sh_mobile_meram: Use direct function calls for the public API
-      sh_mobile_meram: Add direct MERAM allocation API
-      fbdev: sh_mobile_lcdc: Destroy mutex at remove time
-      fbdev: sh_mobile_lcdc: Fix line pitch computation
-      fbdev: sh_mobile_lcdc: Use channel configuration to initialize fb device
-      fbdev: sh_mobile_lcdc: Support horizontal panning
-      fbdev: sh_mobile_lcdc: Fix overlay registers update during pan operation
-      fbdev: sh_mobile_lcdc: Fix pan offset computation in YUV mode
-      fbdev: sh_mobile_lcdc: Fix vertical panning step
-
-Liu Ying (2):
-      mx3fb: support pan display with fb_set_var
-      mx3fb: avoid screen flash when panning with fb_set_var
-
-Manjunathappa, Prakash (6):
-      video: da8xx-fb rev2: fix disabling of palette completion interrupt
-      video: da8xx-fb: fix flicker due to 1 frame delay in updated frame
-      video: da8xx-fb: configure FIFO threshold to reduce underflow errors
-      arm: da850: configure LCDC fifo threshold
-      video: da8xx-fb: do clock reset of revision 2 LCDC before enabling
-      da8xx-fb: do not turn ON LCD backlight unless LCDC is enabled
-
-Ondrej Zary (1):
-      s3fb: Add Virge/MX (86C260)
-
-Paul Bolle (1):
-      video: backlight: remove unused header
-
-Paul Parsons (1):
-      video: w100fb: Reduce sleep mode battery discharge
-
-Peter Meerwald (1):
-      OMAPDSS: fix specification spelling in Kconfig
-
-Rajendra Nayak (1):
-      OMAPDSS: add clk_prepare_enable and clk_disable_unprepare
-
-Tomi Valkeinen (8):
-      Merge tag 'v3.5-rc2'
-      OMAPDSS: remove enum omap_dss_overlay_managers
-      OMAPDSS: Use PM notifiers for system suspend
-      OMAPDSS: fix warnings if CONFIG_PM_RUNTIME=n
-      Merge Misc DSS clean ups from Archit
-      Merge "Apply LCD manager related parameters" from Archit
-      OMAPDSS: Use PM notifiers for system suspend
-      OMAPDSS: fix warnings if CONFIG_PM_RUNTIME=n
-
-Yegor Yefremov (1):
-      da8xx-fb: add missing FB_BLANK operations
-
- .../sysfs-devices-platform-sh_mobile_lcdc_fb       |   44 +
- arch/arm/mach-davinci/devices-da8xx.c              |    1 +
- arch/arm/mach-omap2/display.c                      |   25 +-
- drivers/video/aty/aty128fb.c                       |  180 ++--
- drivers/video/da8xx-fb.c                           |   78 ++-
- drivers/video/epson1355fb.c                        |    8 +-
- drivers/video/exynos/exynos_dp_core.c              |   23 +-
- drivers/video/exynos/exynos_dp_core.h              |    4 -
- drivers/video/exynos/exynos_dp_reg.c               |    4 +-
- drivers/video/exynos/exynos_mipi_dsi.c             |    2 +-
- drivers/video/exynos/s6e8ax0.h                     |   21 -
- drivers/video/fb_draw.h                            |    7 +-
- drivers/video/grvga.c                              |   47 +-
- drivers/video/mx3fb.c                              |   55 +-
- drivers/video/omap2/displays/panel-acx565akm.c     |   10 +-
- drivers/video/omap2/displays/panel-generic-dpi.c   |  179 ++--
- .../omap2/displays/panel-lgphilips-lb035q02.c      |    8 +-
- drivers/video/omap2/displays/panel-n8x0.c          |    1 -
- .../omap2/displays/panel-nec-nl8048hl11-01b.c      |    9 +-
- drivers/video/omap2/displays/panel-picodlp.c       |    9 +-
- .../video/omap2/displays/panel-sharp-ls037v7dw01.c |    9 +-
- drivers/video/omap2/displays/panel-taal.c          |    1 -
- drivers/video/omap2/displays/panel-tfp410.c        |    7 +-
- .../video/omap2/displays/panel-tpo-td043mtea1.c    |    8 +-
- drivers/video/omap2/dss/Kconfig                    |    4 +-
- drivers/video/omap2/dss/apply.c                    |   91 ++-
- drivers/video/omap2/dss/core.c                     |   43 +-
- drivers/video/omap2/dss/dispc.c                    |  496 +++++-----
- drivers/video/omap2/dss/dispc.h                    |   28 +
- drivers/video/omap2/dss/display.c                  |   40 +-
- drivers/video/omap2/dss/dpi.c                      |   64 +-
- drivers/video/omap2/dss/dsi.c                      |  154 ++--
- drivers/video/omap2/dss/dss.c                      |   21 +-
- drivers/video/omap2/dss/dss.h                      |   54 +-
- drivers/video/omap2/dss/dss_features.h             |    5 +-
- drivers/video/omap2/dss/hdmi.c                     |  248 ++++-
- drivers/video/omap2/dss/hdmi_panel.c               |    9 +-
- drivers/video/omap2/dss/manager.c                  |   51 +-
- drivers/video/omap2/dss/overlay.c                  |   33 +-
- drivers/video/omap2/dss/rfbi.c                     |   42 +-
- drivers/video/omap2/dss/sdi.c                      |   42 +-
- drivers/video/omap2/dss/ti_hdmi.h                  |   21 +-
- drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c          |   26 +-
- drivers/video/omap2/dss/venc.c                     |   10 +-
- drivers/video/omap2/omapfb/omapfb-main.c           |   51 +-
- drivers/video/s3fb.c                               |   31 +-
- drivers/video/sh_mipi_dsi.c                        |    7 +-
- drivers/video/sh_mobile_lcdcfb.c                   | 1117 +++++++++++++++++---
- drivers/video/sh_mobile_lcdcfb.h                   |    5 +-
- drivers/video/sh_mobile_meram.c                    |  235 +++--
- drivers/video/smscufx.c                            |    2 +-
- drivers/video/w100fb.c                             |   12 +
- include/video/da8xx-fb.h                           |    3 +
- include/video/omapdss.h                            |   51 +-
- include/video/sh_mobile_lcdc.h                     |    7 +
- include/video/sh_mobile_meram.h                    |   71 +-
- 56 files changed, 2654 insertions(+), 1160 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-devices-platform-sh_mobile_lcdc_fb
- delete mode 100644 drivers/video/exynos/s6e8ax0.h

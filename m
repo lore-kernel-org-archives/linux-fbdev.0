@@ -1,129 +1,94 @@
 From: Archit Taneja <archit@ti.com>
-Date: Wed, 01 Aug 2012 10:43:15 +0000
-Subject: [RFC 04/17] OMAPDSS: DPI: Add locking for DPI interface
-Message-Id: <1343817088-29645-5-git-send-email-archit@ti.com>
+Date: Thu, 30 Aug 2012 11:52:22 +0000
+Subject: [PATCH v2 00/23] OMAPDSS: Create output entities
+Message-Id: <1346326845-16583-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343817088-29645-1-git-send-email-archit@ti.com>
-In-Reply-To: <1343817088-29645-1-git-send-email-archit@ti.com>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+In-Reply-To: <1345528711-27801-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, sumit.semwal@ti.com, rob@ti.com, Archit Taneja <archit@ti.com>
+Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The DPI interface driver currently relies on the panel driver to ensure calls
-like omapdss_dpi_display_enable() and omapdss_dpi_display_disable() are executed
-sequentially. Also, currently, there is no way to protect the DPI driver data.
+Create a new entity in OMAPDSS called outputs. These represent the
+interfaces/outputs like DSI, HDMI etc. that a panel connects to. An output
+sits in between an overlay manager and a panel. More details about outputs
+are explained in the first patch of the series.
 
-All DPI panel drivers don't ensure this, and in general, a DPI panel driver
-should use it's lock to that ensure it's own driver data and omap_dss_device
-states are taken care of, and not worry about the DPI interface.
+This series adds omap_dss_output as an entity along with omap_overlay,
+omap_overlay_manager and omap_dss_device. It changes the code to establish
+links between managers and outputs, and outputs and devices.
 
-Add mutex locking in the DPI enable/disable/set_timings ops.
+Changes since v1:
+- Output drivers private data structs hold the output struct rather than
+  output.c allocating it. This struct is added to a list when
+  dss_register_output()is called.
+- Outputs are not passed from panel driver to output driver anymore. We are
+  sticking to passing omap_dss_device for now till we get a clearer picture on
+  how common panel framework turns out. Outputs are still used within the output
+  driver, rather than passing dssdev everywhere.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/dpi.c |   26 ++++++++++++++++++++++++--
- 1 file changed, 24 insertions(+), 2 deletions(-)
+Reference tree:
 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index c20fe23..add47fe 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -39,6 +39,8 @@ static struct {
- 	struct regulator *vdds_dsi_reg;
- 	struct platform_device *dsidev;
- 
-+	struct mutex lock;
-+
- 	struct dss_lcd_mgr_config mgr_config;
- } dpi;
- 
-@@ -184,14 +186,18 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
- {
- 	int r;
- 
-+	mutex_lock(&dpi.lock);
-+
- 	if (cpu_is_omap34xx() && !dpi.vdds_dsi_reg) {
- 		DSSERR("no VDSS_DSI regulator\n");
--		return -ENODEV;
-+		r = -ENODEV;
-+		goto err_no_reg;
- 	}
- 
- 	if (dssdev->manager = NULL) {
- 		DSSERR("failed to enable display: no manager\n");
--		return -ENODEV;
-+		r = -ENODEV;
-+		goto err_no_mgr;
- 	}
- 
- 	if (dpi_use_dsi_pll(dssdev)) {
-@@ -238,6 +244,8 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err_mgr_enable;
- 
-+	mutex_unlock(&dpi.lock);
-+
- 	return 0;
- 
- err_mgr_enable:
-@@ -255,12 +263,17 @@ err_get_dispc:
- err_reg_enable:
- 	omap_dss_stop_device(dssdev);
- err_start_dev:
-+err_no_mgr:
-+err_no_reg:
-+	mutex_unlock(&dpi.lock);
- 	return r;
- }
- EXPORT_SYMBOL(omapdss_dpi_display_enable);
- 
- void omapdss_dpi_display_disable(struct omap_dss_device *dssdev)
- {
-+	mutex_lock(&dpi.lock);
-+
- 	dss_mgr_disable(dssdev->manager);
- 
- 	if (dpi_use_dsi_pll(dssdev)) {
-@@ -275,6 +288,8 @@ void omapdss_dpi_display_disable(struct omap_dss_device *dssdev)
- 		regulator_disable(dpi.vdds_dsi_reg);
- 
- 	omap_dss_stop_device(dssdev);
-+
-+	mutex_unlock(&dpi.lock);
- }
- EXPORT_SYMBOL(omapdss_dpi_display_disable);
- 
-@@ -284,6 +299,9 @@ void dpi_set_timings(struct omap_dss_device *dssdev,
- 	int r;
- 
- 	DSSDBG("dpi_set_timings\n");
-+
-+	mutex_lock(&dpi.lock);
-+
- 	dssdev->panel.timings = *timings;
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
- 		r = dispc_runtime_get();
-@@ -296,6 +314,8 @@ void dpi_set_timings(struct omap_dss_device *dssdev,
- 	} else {
- 		dss_mgr_set_timings(dssdev->manager, timings);
- 	}
-+
-+	mutex_unlock(&dpi.lock);
- }
- EXPORT_SYMBOL(dpi_set_timings);
- 
-@@ -392,6 +412,8 @@ static void __init dpi_probe_pdata(struct platform_device *pdev)
- 
- static int __init omap_dpi_probe(struct platform_device *pdev)
- {
-+	mutex_init(&dpi.lock);
-+
- 	dpi_probe_pdata(pdev);
- 
- 	return 0;
+git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git 2-add-outputs
+
+Archit Taneja (23):
+  OMAPDSS: outputs: Create a new entity called outputs
+  OMAPDSS: outputs: Create and register output instances
+  OMAPDSS: output: Add set/unset device ops for omap_dss_output
+  OMAPDSS: APPLY: Add manager set/unset output ops for
+    omap_overlay_manager
+  OMAPDSS: Remove manager->device references
+  OMAP_VOUT: Remove manager->device references
+  OMAPFB: remove manager->device references
+  OMAPDRM: Remove manager->device references
+  OMAPDSS: Create links between managers, outputs and devices
+  OMAPDSS: DPI: Pass omap_dss_output within the driver
+  OMAPDSS: DSI: Remove dsi_pdev_map global struct
+  OMAPDSS: DSI: Pass omap_dss_output within the driver
+  OMAPDSS: SDI: Pass omap_dss_output within the driver
+  OMAPDSS: RFBI: Pass omap_dss_output within the driver
+  OMAPDSS: RFBI: Add dssdev pointers as arguments to all exported
+    functions
+  OMAPDSS: VENC: Pass omap_dss_output within the driver
+  OMAPDSS: HDMI: Pass omap_dss_output within the driver
+  OMAPDSS: HDMI: Add dssdev pointer as an argument to all functions
+    used by hdmi panel driver
+  OMAPDSS/OMAPFB: Change dssdev->manager references
+  OMAPDSS: MANAGER: Update display sysfs store
+  OMAPDSS: MANAGER: Get device via output
+  OMAPDSS: APPLY: Remove omap_dss_device references from
+    dss_ovl_enable/disable
+  OMAPDSS: Remove old way of setting manager and device links
+
+ drivers/media/video/omap/omap_vout.c      |   81 +++++++---
+ drivers/staging/omapdrm/omap_drv.c        |    5 +-
+ drivers/video/omap2/displays/panel-n8x0.c |   55 ++++---
+ drivers/video/omap2/dss/Makefile          |    2 +-
+ drivers/video/omap2/dss/apply.c           |   52 +++---
+ drivers/video/omap2/dss/dispc.c           |   10 +-
+ drivers/video/omap2/dss/display.c         |   11 +-
+ drivers/video/omap2/dss/dpi.c             |   70 +++++---
+ drivers/video/omap2/dss/dsi.c             |  249 ++++++++++++++++++-----------
+ drivers/video/omap2/dss/dss.h             |   23 ++-
+ drivers/video/omap2/dss/dss_features.c    |   52 ++++++
+ drivers/video/omap2/dss/dss_features.h    |    1 +
+ drivers/video/omap2/dss/hdmi.c            |   72 ++++++---
+ drivers/video/omap2/dss/hdmi_panel.c      |   20 +--
+ drivers/video/omap2/dss/manager.c         |   48 ++++--
+ drivers/video/omap2/dss/output.c          |  110 +++++++++++++
+ drivers/video/omap2/dss/overlay.c         |   96 ++++++-----
+ drivers/video/omap2/dss/rfbi.c            |   66 +++++---
+ drivers/video/omap2/dss/sdi.c             |   35 ++--
+ drivers/video/omap2/dss/venc.c            |   47 ++++--
+ drivers/video/omap2/omapfb/omapfb-ioctl.c |    7 +-
+ drivers/video/omap2/omapfb/omapfb-main.c  |    7 +-
+ drivers/video/omap2/omapfb/omapfb.h       |    5 +-
+ include/video/omapdss.h                   |   72 +++++++--
+ 24 files changed, 848 insertions(+), 348 deletions(-)
+ create mode 100644 drivers/video/omap2/dss/output.c
+
 -- 
 1.7.9.5
 

@@ -1,443 +1,305 @@
-From: Alexandre Courbot <acourbot@nvidia.com>
-Date: Fri, 31 Aug 2012 11:34:04 +0000
-Subject: [PATCH v5 2/4] pwm_backlight: use power sequences
-Message-Id: <1346412846-17102-3-git-send-email-acourbot@nvidia.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 30 Aug 2012 11:52:37 +0000
+Subject: [PATCH v2 15/23] OMAPDSS: RFBI: Add dssdev pointers as arguments to all exported functions
+Message-Id: <1346326845-16583-16-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1346412846-17102-1-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1346412846-17102-1-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+References: <1345528711-27801-1-git-send-email-archit@ti.com>
+ <1346326845-16583-1-git-send-email-archit@ti.com>
+In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Anton Vorontsov <cbou-JGs/UdohzUI@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: tomi.valkeinen@ti.com
+Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Make use of the power sequences specified in the device tree or platform
-data to control how the backlight is powered on and off.
+All functions of an interface driver used by a panel driver should have an
+omap_dss_device pointer as an argument. This may not be needed by some of the
+interfaces now as driver data is globally visible in them. The correct way
+to retrieve driver data is to extract the platform device from the output,
+and then extract the driver data from the platform device.
 
-Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+Add dssdev arguments from functions used by panel drivers which currently miss
+it. This will come to use when the RFBI functions retrieve the driver data
+in the correct manner.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- .../bindings/video/backlight/pwm-backlight.txt     |  67 +++++++-
- drivers/video/backlight/Kconfig                    |   1 +
- drivers/video/backlight/pwm_bl.c                   | 179 +++++++++++++++------
- include/linux/pwm_backlight.h                      |  15 +-
- 4 files changed, 208 insertions(+), 54 deletions(-)
+ drivers/video/omap2/displays/panel-n8x0.c |   55 ++++++++++++++++-------------
+ drivers/video/omap2/dss/rfbi.c            |   25 +++++++------
+ include/video/omapdss.h                   |   25 +++++++------
+ 3 files changed, 60 insertions(+), 45 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
-index 1e4fc72..873b993 100644
---- a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
-+++ b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
-@@ -2,7 +2,8 @@ pwm-backlight bindings
+diff --git a/drivers/video/omap2/displays/panel-n8x0.c b/drivers/video/omap2/displays/panel-n8x0.c
+index 17ae85e..e3a8c44 100644
+--- a/drivers/video/omap2/displays/panel-n8x0.c
++++ b/drivers/video/omap2/displays/panel-n8x0.c
+@@ -88,27 +88,30 @@ struct panel_drv_data *get_drv_data(const struct omap_dss_device *dssdev)
+ }
  
- Required properties:
-   - compatible: "pwm-backlight"
--  - pwms: OF device-tree PWM specification (see PWM binding[0])
-+  - pwms: OF device-tree PWM specification (see PWM binding[0]). Exactly one PWM
-+      must be specified
-   - brightness-levels: Array of distinct brightness levels. Typically these
-       are in the range from 0 to 255, but any range starting at 0 will do.
-       The actual brightness level (PWM duty cycle) will be interpolated
-@@ -12,17 +13,73 @@ Required properties:
-       array defined by the "brightness-levels" property)
  
- Optional properties:
--  - pwm-names: a list of names for the PWM devices specified in the
--               "pwms" property (see PWM binding[0])
-+  - pwm-names: name for the PWM device specified in the "pwms" property (see PWM
-+      binding[0]). Necessary if power sequences are used
-+  - power-sequences: Power sequences (see Power sequences[1]) used to bring the
-+      backlight on and off. If this property is present, then two power
-+      sequences named "power-on" and "power-off" must be defined to control how
-+      the backlight is to be powered on and off. These sequences must reference
-+      the PWM specified in the pwms property by its name, and can also reference
-+      other resources supported by the power sequences mechanism
+-static inline void blizzard_cmd(u8 cmd)
++static inline void blizzard_cmd(struct omap_dss_device *dssdev, u8 cmd)
+ {
+-	omap_rfbi_write_command(&cmd, 1);
++	omap_rfbi_write_command(dssdev, &cmd, 1);
+ }
  
- [0]: Documentation/devicetree/bindings/pwm/pwm.txt
-+[1]: Documentation/devicetree/bindings/power_seq/power_seq.txt
+-static inline void blizzard_write(u8 cmd, const u8 *buf, int len)
++static inline void blizzard_write(struct omap_dss_device *dssdev, u8 cmd,
++		const u8 *buf, int len)
+ {
+-	omap_rfbi_write_command(&cmd, 1);
+-	omap_rfbi_write_data(buf, len);
++	omap_rfbi_write_command(dssdev, &cmd, 1);
++	omap_rfbi_write_data(dssdev, buf, len);
+ }
  
- Example:
+-static inline void blizzard_read(u8 cmd, u8 *buf, int len)
++static inline void blizzard_read(struct omap_dss_device *dssdev, u8 cmd,
++		u8 *buf, int len)
+ {
+-	omap_rfbi_write_command(&cmd, 1);
+-	omap_rfbi_read_data(buf, len);
++	omap_rfbi_write_command(dssdev, &cmd, 1);
++	omap_rfbi_read_data(dssdev, buf, len);
+ }
  
- 	backlight {
- 		compatible = "pwm-backlight";
--		pwms = <&pwm 0 5000000>;
--
- 		brightness-levels = <0 4 8 16 32 64 128 255>;
- 		default-brightness-level = <6>;
+-static u8 blizzard_read_reg(u8 cmd)
++static u8 blizzard_read_reg(struct omap_dss_device *dssdev, u8 cmd)
+ {
+ 	u8 data;
+-	blizzard_read(cmd, &data, 1);
 +
-+		/* resources used by the sequences */
-+		pwms = <&pwm 2 5000000>;
-+		pwm-names = "backlight";
-+		power-supply = <&backlight_reg>;
++	blizzard_read(dssdev, cmd, &data, 1);
+ 	return data;
+ }
+ 
+@@ -155,7 +158,7 @@ static void blizzard_ctrl_setup_update(struct omap_dss_device *dssdev,
+ 
+ 	omap_rfbi_configure(dssdev);
+ 
+-	blizzard_write(BLIZZARD_INPUT_WIN_X_START_0, tmp, 18);
++	blizzard_write(dssdev, BLIZZARD_INPUT_WIN_X_START_0, tmp, 18);
+ 
+ 	omapdss_rfbi_set_pixel_size(dssdev, 16);
+ 	omapdss_rfbi_set_data_lines(dssdev, 16);
+@@ -313,8 +316,8 @@ static int n8x0_panel_power_on(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err_rfbi_en;
+ 
+-	rev = blizzard_read_reg(BLIZZARD_REV_CODE);
+-	conf = blizzard_read_reg(BLIZZARD_CONFIG);
++	rev = blizzard_read_reg(dssdev, BLIZZARD_REV_CODE);
++	conf = blizzard_read_reg(dssdev, BLIZZARD_CONFIG);
+ 
+ 	switch (rev & 0xfc) {
+ 	case 0x9c:
+@@ -536,11 +539,11 @@ static int n8x0_panel_enable(struct omap_dss_device *dssdev)
+ 
+ 	mutex_lock(&ddata->lock);
+ 
+-	rfbi_bus_lock();
++	rfbi_bus_lock(dssdev);
+ 
+ 	r = n8x0_panel_power_on(dssdev);
+ 
+-	rfbi_bus_unlock();
++	rfbi_bus_unlock(dssdev);
+ 
+ 	if (r) {
+ 		mutex_unlock(&ddata->lock);
+@@ -562,11 +565,11 @@ static void n8x0_panel_disable(struct omap_dss_device *dssdev)
+ 
+ 	mutex_lock(&ddata->lock);
+ 
+-	rfbi_bus_lock();
++	rfbi_bus_lock(dssdev);
+ 
+ 	n8x0_panel_power_off(dssdev);
+ 
+-	rfbi_bus_unlock();
++	rfbi_bus_unlock(dssdev);
+ 
+ 	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
+ 
+@@ -581,11 +584,11 @@ static int n8x0_panel_suspend(struct omap_dss_device *dssdev)
+ 
+ 	mutex_lock(&ddata->lock);
+ 
+-	rfbi_bus_lock();
++	rfbi_bus_lock(dssdev);
+ 
+ 	n8x0_panel_power_off(dssdev);
+ 
+-	rfbi_bus_unlock();
++	rfbi_bus_unlock(dssdev);
+ 
+ 	dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED;
+ 
+@@ -603,11 +606,11 @@ static int n8x0_panel_resume(struct omap_dss_device *dssdev)
+ 
+ 	mutex_lock(&ddata->lock);
+ 
+-	rfbi_bus_lock();
++	rfbi_bus_lock(dssdev);
+ 
+ 	r = n8x0_panel_power_on(dssdev);
+ 
+-	rfbi_bus_unlock();
++	rfbi_bus_unlock(dssdev);
+ 
+ 	if (r) {
+ 		mutex_unlock(&ddata->lock);
+@@ -630,7 +633,9 @@ static void n8x0_panel_get_resolution(struct omap_dss_device *dssdev,
+ 
+ static void update_done(void *data)
+ {
+-	rfbi_bus_unlock();
++	struct omap_dss_device *dssdev = (struct omap_dss_device *) data;
 +
-+		power-sequences {
-+			power-on {
-+				step0 {
-+					type = "regulator";
-+					id = "power";
-+					enable;
-+				};
-+				step1 {
-+					type = "delay";
-+					delay_us = <10000>;
-+				};
-+				step2 {
-+					type = "pwm";
-+					id = "backlight";
-+					enable;
-+				};
-+				step3 {
-+					type = "gpio";
-+					number = <&gpio 28 0>;
-+					enable;
-+				};
-+			};
-+
-+			power-off {
-+				step0 {
-+					type = "gpio";
-+					number = <&gpio 28 0>;
-+					disable;
-+				};
-+				step1 {
-+					type = "pwm";
-+					id = "backlight";
-+					disable;
-+				};
-+				step2 {
-+					type = "delay";
-+					delay_us = <10000>;
-+				};
-+				step3 {
-+					type = "regulator";
-+					id = "power";
-+					disable;
-+				};
-+			};
-+		};
- 	};
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index cf28276..6fb8aa3 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -246,6 +246,7 @@ config BACKLIGHT_CARILLO_RANCH
- config BACKLIGHT_PWM
- 	tristate "Generic PWM based Backlight Driver"
- 	depends on PWM
-+	select POWER_SEQ
- 	help
- 	  If you have a LCD backlight adjustable by PWM, say Y to enable
- 	  this driver.
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 995f016..45d6edd 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -27,6 +27,12 @@ struct pwm_bl_data {
- 	unsigned int		period;
- 	unsigned int		lth_brightness;
- 	unsigned int		*levels;
-+	bool			enabled;
-+	bool			use_power_seqs;
-+	struct power_seq	*power_on_seq;
-+	struct power_seq	*power_off_seq;
-+
-+	/* Legacy callbacks */
- 	int			(*notify)(struct device *,
- 					  int brightness);
- 	void			(*notify_after)(struct device *,
-@@ -35,6 +41,49 @@ struct pwm_bl_data {
- 	void			(*exit)(struct device *);
++	rfbi_bus_unlock(dssdev);
+ }
+ 
+ static int n8x0_panel_update(struct omap_dss_device *dssdev,
+@@ -651,7 +656,7 @@ static int n8x0_panel_update(struct omap_dss_device *dssdev,
+ 	}
+ 
+ 	mutex_lock(&ddata->lock);
+-	rfbi_bus_lock();
++	rfbi_bus_lock(dssdev);
+ 
+ 	blizzard_ctrl_setup_update(dssdev, x, y, w, h);
+ 
+@@ -669,8 +674,8 @@ static int n8x0_panel_sync(struct omap_dss_device *dssdev)
+ 	dev_dbg(&dssdev->dev, "sync\n");
+ 
+ 	mutex_lock(&ddata->lock);
+-	rfbi_bus_lock();
+-	rfbi_bus_unlock();
++	rfbi_bus_lock(dssdev);
++	rfbi_bus_unlock(dssdev);
+ 	mutex_unlock(&ddata->lock);
+ 
+ 	return 0;
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 545e14f..b9d5b96 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -151,19 +151,20 @@ static void rfbi_runtime_put(void)
+ 	WARN_ON(r < 0 && r != -ENOSYS);
+ }
+ 
+-void rfbi_bus_lock(void)
++void rfbi_bus_lock(struct omap_dss_device *dssdev)
+ {
+ 	down(&rfbi.bus_lock);
+ }
+ EXPORT_SYMBOL(rfbi_bus_lock);
+ 
+-void rfbi_bus_unlock(void)
++void rfbi_bus_unlock(struct omap_dss_device *dssdev)
+ {
+ 	up(&rfbi.bus_lock);
+ }
+ EXPORT_SYMBOL(rfbi_bus_unlock);
+ 
+-void omap_rfbi_write_command(const void *buf, u32 len)
++void omap_rfbi_write_command(struct omap_dss_device *dssdev, const void *buf,
++		u32 len)
+ {
+ 	switch (rfbi.parallelmode) {
+ 	case OMAP_DSS_RFBI_PARALLELMODE_8:
+@@ -191,7 +192,7 @@ void omap_rfbi_write_command(const void *buf, u32 len)
+ }
+ EXPORT_SYMBOL(omap_rfbi_write_command);
+ 
+-void omap_rfbi_read_data(void *buf, u32 len)
++void omap_rfbi_read_data(struct omap_dss_device *dssdev, void *buf, u32 len)
+ {
+ 	switch (rfbi.parallelmode) {
+ 	case OMAP_DSS_RFBI_PARALLELMODE_8:
+@@ -223,7 +224,8 @@ void omap_rfbi_read_data(void *buf, u32 len)
+ }
+ EXPORT_SYMBOL(omap_rfbi_read_data);
+ 
+-void omap_rfbi_write_data(const void *buf, u32 len)
++void omap_rfbi_write_data(struct omap_dss_device *dssdev, const void *buf,
++		u32 len)
+ {
+ 	switch (rfbi.parallelmode) {
+ 	case OMAP_DSS_RFBI_PARALLELMODE_8:
+@@ -252,7 +254,8 @@ void omap_rfbi_write_data(const void *buf, u32 len)
+ }
+ EXPORT_SYMBOL(omap_rfbi_write_data);
+ 
+-void omap_rfbi_write_pixels(const void __iomem *buf, int scr_width,
++void omap_rfbi_write_pixels(struct omap_dss_device *dssdev,
++		const void __iomem *buf, int scr_width,
+ 		u16 x, u16 y,
+ 		u16 w, u16 h)
+ {
+@@ -574,9 +577,10 @@ static int rfbi_convert_timings(struct rfbi_timings *t)
+ }
+ 
+ /* xxx FIX module selection missing */
+-int omap_rfbi_setup_te(enum omap_rfbi_te_mode mode,
+-			     unsigned hs_pulse_time, unsigned vs_pulse_time,
+-			     int hs_pol_inv, int vs_pol_inv, int extif_div)
++int omap_rfbi_setup_te(struct omap_dss_device *dssdev,
++			enum omap_rfbi_te_mode mode, unsigned hs_pulse_time,
++			unsigned vs_pulse_time, int hs_pol_inv, int vs_pol_inv,
++			int extif_div)
+ {
+ 	int hs, vs;
+ 	int min;
+@@ -616,7 +620,8 @@ int omap_rfbi_setup_te(enum omap_rfbi_te_mode mode,
+ EXPORT_SYMBOL(omap_rfbi_setup_te);
+ 
+ /* xxx FIX module selection missing */
+-int omap_rfbi_enable_te(bool enable, unsigned line)
++int omap_rfbi_enable_te(struct omap_dss_device *dssdev, bool enable,
++		unsigned line)
+ {
+ 	u32 l;
+ 
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 29c1440..0e73ef8 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -238,18 +238,23 @@ struct rfbi_timings {
+ 	int converted;
  };
  
-+static void pwm_backlight_on(struct backlight_device *bl)
-+{
-+	struct pwm_bl_data *pb = dev_get_drvdata(&bl->dev);
-+	int ret;
-+
-+	if (pb->enabled)
-+		return;
-+
-+	/* Legacy framework? */
-+	if (!pb->use_power_seqs) {
-+		pwm_config(pb->pwm, 0, pb->period);
-+		pwm_disable(pb->pwm);
-+		return;
-+	}
-+
-+	ret = power_seq_run(pb->power_on_seq);
-+	if (ret < 0)
-+		dev_err(&bl->dev, "cannot run power on sequence\n");
-+
-+	pb->enabled = true;
-+}
-+
-+static void pwm_backlight_off(struct backlight_device *bl)
-+{
-+	struct pwm_bl_data *pb = dev_get_drvdata(&bl->dev);
-+	int ret;
-+
-+	if (!pb->enabled)
-+		return;
-+
-+	/* Legacy framework? */
-+	if (!pb->use_power_seqs) {
-+		pwm_enable(pb->pwm);
-+		return;
-+	}
-+
-+	ret = power_seq_run(pb->power_off_seq);
-+	if (ret < 0)
-+		dev_err(&bl->dev, "cannot run power off sequence\n");
-+
-+	pb->enabled = false;
-+}
-+
- static int pwm_backlight_update_status(struct backlight_device *bl)
- {
- 	struct pwm_bl_data *pb = dev_get_drvdata(&bl->dev);
-@@ -51,8 +100,7 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
- 		brightness = pb->notify(pb->dev, brightness);
+-void omap_rfbi_write_command(const void *buf, u32 len);
+-void omap_rfbi_read_data(void *buf, u32 len);
+-void omap_rfbi_write_data(const void *buf, u32 len);
+-void omap_rfbi_write_pixels(const void __iomem *buf, int scr_width,
++void omap_rfbi_write_command(struct omap_dss_device *dssdev, const void *buf,
++		u32 len);
++void omap_rfbi_read_data(struct omap_dss_device *dssdev, void *buf, u32 len);
++void omap_rfbi_write_data(struct omap_dss_device *dssdev, const void *buf,
++		u32 len);
++void omap_rfbi_write_pixels(struct omap_dss_device *dssdev,
++		const void __iomem *buf, int scr_width,
+ 		u16 x, u16 y,
+ 		u16 w, u16 h);
+-int omap_rfbi_enable_te(bool enable, unsigned line);
+-int omap_rfbi_setup_te(enum omap_rfbi_te_mode mode,
+-			     unsigned hs_pulse_time, unsigned vs_pulse_time,
+-			     int hs_pol_inv, int vs_pol_inv, int extif_div);
+-void rfbi_bus_lock(void);
+-void rfbi_bus_unlock(void);
++int omap_rfbi_enable_te(struct omap_dss_device *dssdev, bool enable,
++		unsigned line);
++int omap_rfbi_setup_te(struct omap_dss_device *dssdev,
++			enum omap_rfbi_te_mode mode, unsigned hs_pulse_time,
++			unsigned vs_pulse_time, int hs_pol_inv, int vs_pol_inv,
++			int extif_div);
++void rfbi_bus_lock(struct omap_dss_device *dssdev);
++void rfbi_bus_unlock(struct omap_dss_device *dssdev);
  
- 	if (brightness = 0) {
--		pwm_config(pb->pwm, 0, pb->period);
--		pwm_disable(pb->pwm);
-+		pwm_backlight_off(bl);
- 	} else {
- 		int duty_cycle;
+ /* DSI */
  
-@@ -66,7 +114,7 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
- 		duty_cycle = pb->lth_brightness +
- 		     (duty_cycle * (pb->period - pb->lth_brightness) / max);
- 		pwm_config(pb->pwm, duty_cycle, pb->period);
--		pwm_enable(pb->pwm);
-+		pwm_backlight_on(bl);
- 	}
- 
- 	if (pb->notify_after)
-@@ -145,11 +193,10 @@ static int pwm_backlight_parse_dt(struct device *dev,
- 		data->max_brightness--;
- 	}
- 
--	/*
--	 * TODO: Most users of this driver use a number of GPIOs to control
--	 *       backlight power. Support for specifying these needs to be
--	 *       added.
--	 */
-+	/* parse power sequences and extract those we will use */
-+	data->power_seqs = devm_of_parse_power_seq_set(dev);
-+	if (IS_ERR(data->power_seqs))
-+		return PTR_ERR(data->power_seqs);
- 
- 	return 0;
- }
-@@ -172,33 +219,96 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- {
- 	struct platform_pwm_backlight_data *data = pdev->dev.platform_data;
- 	struct platform_pwm_backlight_data defdata;
-+	struct power_seq_resource *res;
- 	struct backlight_properties props;
- 	struct backlight_device *bl;
- 	struct pwm_bl_data *pb;
-+	bool use_dt = false;
- 	unsigned int max;
- 	int ret;
- 
-+	pb = devm_kzalloc(&pdev->dev, sizeof(*pb), GFP_KERNEL);
-+	if (!pb) {
-+		dev_err(&pdev->dev, "no memory for state\n");
-+		return -ENOMEM;
-+	}
-+
-+	/* using new interface or device tree */
- 	if (!data) {
-+		/* build platform data from device tree */
- 		ret = pwm_backlight_parse_dt(&pdev->dev, &defdata);
--		if (ret < 0) {
-+		if (ret = -EPROBE_DEFER) {
-+			return ret;
-+		} else if (ret < 0) {
- 			dev_err(&pdev->dev, "failed to find platform data\n");
- 			return ret;
- 		}
--
- 		data = &defdata;
-+		use_dt = true;
-+	}
-+
-+	/* using legacy interface? */
-+	if (!data->power_seqs) {
-+		pb->pwm = devm_pwm_get(&pdev->dev, NULL);
-+		if (IS_ERR(pb->pwm)) {
-+			dev_err(&pdev->dev,
-+				"unable to request PWM, trying legacy API\n");
-+
-+			pb->pwm = pwm_request(data->pwm_id, "pwm-backlight");
-+			if (IS_ERR(pb->pwm)) {
-+				dev_err(&pdev->dev,
-+					"unable to request legacy PWM\n");
-+				return PTR_ERR(pb->pwm);
-+			}
-+		}
-+
-+		/*
-+		* The DT case will set the pwm_period_ns field to 0 and store
-+		* the period, parsed from the DT, in the PWM device. For the
-+		* non-DT case, set the period from platform data.
-+		*/
-+		if (data->pwm_period_ns > 0)
-+			pwm_set_period(pb->pwm, data->pwm_period_ns);
-+	} else {
-+		/* build power sequences from platform data */
-+		struct power_seq_set *seqs;
-+
-+		seqs = devm_power_seq_set_build(&pdev->dev, data->power_seqs);
-+		if (IS_ERR(seqs))
-+			return PTR_ERR(seqs);
-+
-+		if (use_dt)
-+			devm_platform_power_seq_set_free(&pdev->dev,
-+							 data->power_seqs);
-+
-+		pb->power_on_seq = power_seq_lookup(seqs, "power-on");
-+		pb->power_off_seq = power_seq_lookup(seqs, "power-off");
-+
-+		/* we must have exactly one PWM for this driver */
-+		power_seq_for_each_resource(res, seqs) {
-+			if (res->pdata->type != POWER_SEQ_PWM)
-+				continue;
-+			if (pb->pwm) {
-+				dev_err(&pdev->dev, "more than one PWM used\n");
-+				return -EINVAL;
-+			}
-+			/* keep the pwm at hand */
-+			pb->pwm = res->pwm;
-+		}
-+
-+		pb->use_power_seqs = true;
- 	}
- 
- 	if (data->init) {
- 		ret = data->init(&pdev->dev);
- 		if (ret < 0)
--			return ret;
-+			goto err;
- 	}
- 
--	pb = devm_kzalloc(&pdev->dev, sizeof(*pb), GFP_KERNEL);
--	if (!pb) {
--		dev_err(&pdev->dev, "no memory for state\n");
--		ret = -ENOMEM;
--		goto err_alloc;
-+	/* from here we should have a PWM */
-+	if (!pb->pwm) {
-+		dev_err(&pdev->dev, "no PWM defined!\n");
-+		return -EINVAL;
- 	}
- 
- 	if (data->levels) {
-@@ -213,28 +323,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	pb->exit = data->exit;
- 	pb->dev = &pdev->dev;
- 
--	pb->pwm = pwm_get(&pdev->dev, NULL);
--	if (IS_ERR(pb->pwm)) {
--		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
--
--		pb->pwm = pwm_request(data->pwm_id, "pwm-backlight");
--		if (IS_ERR(pb->pwm)) {
--			dev_err(&pdev->dev, "unable to request legacy PWM\n");
--			ret = PTR_ERR(pb->pwm);
--			goto err_alloc;
--		}
--	}
--
--	dev_dbg(&pdev->dev, "got pwm for backlight\n");
--
--	/*
--	 * The DT case will set the pwm_period_ns field to 0 and store the
--	 * period, parsed from the DT, in the PWM device. For the non-DT case,
--	 * set the period from platform data.
--	 */
--	if (data->pwm_period_ns > 0)
--		pwm_set_period(pb->pwm, data->pwm_period_ns);
--
- 	pb->period = pwm_get_period(pb->pwm);
- 	pb->lth_brightness = data->lth_brightness * (pb->period / max);
- 
-@@ -246,18 +334,17 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	if (IS_ERR(bl)) {
- 		dev_err(&pdev->dev, "failed to register backlight\n");
- 		ret = PTR_ERR(bl);
--		goto err_bl;
-+		goto err;
- 	}
- 
- 	bl->props.brightness = data->dft_brightness;
- 	backlight_update_status(bl);
- 
- 	platform_set_drvdata(pdev, bl);
-+
- 	return 0;
- 
--err_bl:
--	pwm_put(pb->pwm);
--err_alloc:
-+err:
- 	if (data->exit)
- 		data->exit(&pdev->dev);
- 	return ret;
-@@ -269,9 +356,8 @@ static int pwm_backlight_remove(struct platform_device *pdev)
- 	struct pwm_bl_data *pb = dev_get_drvdata(&bl->dev);
- 
- 	backlight_device_unregister(bl);
--	pwm_config(pb->pwm, 0, pb->period);
--	pwm_disable(pb->pwm);
--	pwm_put(pb->pwm);
-+	pwm_backlight_off(bl);
-+
- 	if (pb->exit)
- 		pb->exit(&pdev->dev);
- 	return 0;
-@@ -285,8 +371,7 @@ static int pwm_backlight_suspend(struct device *dev)
- 
- 	if (pb->notify)
- 		pb->notify(pb->dev, 0);
--	pwm_config(pb->pwm, 0, pb->period);
--	pwm_disable(pb->pwm);
-+	pwm_backlight_off(bl);
- 	if (pb->notify_after)
- 		pb->notify_after(pb->dev, 0);
- 	return 0;
-diff --git a/include/linux/pwm_backlight.h b/include/linux/pwm_backlight.h
-index 56f4a86..70d22f2 100644
---- a/include/linux/pwm_backlight.h
-+++ b/include/linux/pwm_backlight.h
-@@ -5,14 +5,25 @@
- #define __LINUX_PWM_BACKLIGHT_H
- 
- #include <linux/backlight.h>
-+#include <linux/power_seq.h>
- 
- struct platform_pwm_backlight_data {
--	int pwm_id;
- 	unsigned int max_brightness;
- 	unsigned int dft_brightness;
- 	unsigned int lth_brightness;
--	unsigned int pwm_period_ns;
- 	unsigned int *levels;
-+	/*
-+	 * New interface using power sequences
-+	 */
-+	struct platform_power_seq_set *power_seqs;
-+	/*
-+	 * Legacy interface - use power sequences instead!
-+	 *
-+	 * pwm_id and pwm_period_ns need only be specified
-+	 * if get_pwm(dev, NULL) would return NULL.
-+	 */
-+	int pwm_id;
-+	unsigned int pwm_period_ns;
- 	int (*init)(struct device *dev);
- 	int (*notify)(struct device *dev, int brightness);
- 	void (*notify_after)(struct device *dev, int brightness);
 -- 
-1.7.12
+1.7.9.5
 

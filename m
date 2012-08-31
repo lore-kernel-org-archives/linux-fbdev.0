@@ -1,96 +1,98 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Fri, 31 Aug 2012 11:52:26 +0000
-Subject: [PATCH] video: s3c2410fb: Use pr_* and dev_* instead of printk
-Message-Id: <1346413790-13393-1-git-send-email-sachin.kamat@linaro.org>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Fri, 31 Aug 2012 11:34:06 +0000
+Subject: [PATCH v5 4/4] tegra: ventana: add pwm backlight DT nodes
+Message-Id: <1346412846-17102-5-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1346412846-17102-1-git-send-email-acourbot@nvidia.com>
+In-Reply-To: <1346412846-17102-1-git-send-email-acourbot@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: Leela Krishna Amudala <leelakrishna.a@gmail.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, Alexandre Courbot <acourbot@nvidia.com>
 
-printk calls are replaced by pr_* and dev_* calls to silence
-checkpatch warnings.
-
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
 ---
- drivers/video/s3c2410fb.c |   18 ++++++++++--------
- 1 files changed, 10 insertions(+), 8 deletions(-)
+ arch/arm/boot/dts/tegra20-ventana.dts | 59 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 58 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
-index 77f34c6..a54e3f9 100644
---- a/drivers/video/s3c2410fb.c
-+++ b/drivers/video/s3c2410fb.c
-@@ -11,6 +11,8 @@
-  * Driver based on skeletonfb.c, sa1100fb.c and others.
- */
+diff --git a/arch/arm/boot/dts/tegra20-ventana.dts b/arch/arm/boot/dts/tegra20-ventana.dts
+index 4ec6b4c..025928d 100644
+--- a/arch/arm/boot/dts/tegra20-ventana.dts
++++ b/arch/arm/boot/dts/tegra20-ventana.dts
+@@ -467,6 +467,63 @@
+ 		bus-width = <8>;
+ 	};
  
-+#define pr_fmt(fmt) "s3c2410fb: " fmt
++	backlight {
++		compatible = "pwm-backlight";
++		brightness-levels = <0 16 32 48 64 80 96 112 128 144 160 176 192 208 224 240 255>;
++		default-brightness-level = <12>;
 +
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/err.h>
-@@ -48,7 +50,7 @@ static int debug	= 1;
- static int debug;
- #endif
++		/* resources used by the power sequences */
++		pwms = <&pwm 2 5000000>;
++		pwm-names = "backlight";
++		power-supply = <&vdd_bl_reg>;
++
++		power-sequences {
++			power-on {
++				step0 {
++					type = "regulator";
++					id = "power";
++					enable;
++				};
++				step1 {
++					type = "delay";
++					delay_us = <10000>;
++				};
++				step2 {
++					type = "pwm";
++					id = "backlight";
++					enable;
++				};
++				step3 {
++					type = "gpio";
++					number = <&gpio 28 0>;
++					enable;
++				};
++			};
++
++			power-off {
++				step0 {
++					type = "gpio";
++					number = <&gpio 28 0>;
++					disable;
++				};
++				step1 {
++					type = "pwm";
++					id = "backlight";
++					disable;
++				};
++				step2 {
++					type = "delay";
++					delay_us = <10000>;
++				};
++				step3 {
++					type = "regulator";
++					id = "power";
++					disable;
++				};
++			};
++		};
++	};
++
+ 	regulators {
+ 		compatible = "simple-bus";
+ 		#address-cells = <1>;
+@@ -510,7 +567,7 @@
+ 			enable-active-high;
+ 		};
  
--#define dprintk(msg...)	if (debug) printk(KERN_DEBUG "s3c2410fb: " msg);
-+#define dprintk(msg...)	if (debug) pr_debug(msg);
- 
- /* useful functions */
- 
-@@ -598,11 +600,11 @@ static int s3c2410fb_debug_store(struct device *dev,
- 	if (strnicmp(buf, "on", 2) = 0 ||
- 	    strnicmp(buf, "1", 1) = 0) {
- 		debug = 1;
--		printk(KERN_DEBUG "s3c2410fb: Debug On");
-+		dev_dbg(dev, "s3c2410fb: Debug On");
- 	} else if (strnicmp(buf, "off", 3) = 0 ||
- 		   strnicmp(buf, "0", 1) = 0) {
- 		debug = 0;
--		printk(KERN_DEBUG "s3c2410fb: Debug Off");
-+		dev_dbg(dev, "s3c2410fb: Debug Off");
- 	} else {
- 		return -EINVAL;
- 	}
-@@ -921,7 +923,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
- 
- 	info->clk = clk_get(NULL, "lcd");
- 	if (IS_ERR(info->clk)) {
--		printk(KERN_ERR "failed to get lcd clock source\n");
-+		dev_err(&pdev->dev, "failed to get lcd clock source\n");
- 		ret = PTR_ERR(info->clk);
- 		goto release_irq;
- 	}
-@@ -947,7 +949,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
- 	/* Initialize video memory */
- 	ret = s3c2410fb_map_video_memory(fbinfo);
- 	if (ret) {
--		printk(KERN_ERR "Failed to allocate video RAM: %d\n", ret);
-+		dev_err(&pdev->dev, "Failed to allocate video RAM: %d\n", ret);
- 		ret = -ENOMEM;
- 		goto release_clock;
- 	}
-@@ -970,7 +972,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
- 
- 	ret = register_framebuffer(fbinfo);
- 	if (ret < 0) {
--		printk(KERN_ERR "Failed to register framebuffer device: %d\n",
-+		dev_err(&pdev->dev, "Failed to register framebuffer device: %d\n",
- 			ret);
- 		goto free_cpufreq;
- 	}
-@@ -978,9 +980,9 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
- 	/* create device files */
- 	ret = device_create_file(&pdev->dev, &dev_attr_debug);
- 	if (ret)
--		printk(KERN_ERR "failed to add debug attribute\n");
-+		dev_err(&pdev->dev, "failed to add debug attribute\n");
- 
--	printk(KERN_INFO "fb%d: %s frame buffer device\n",
-+	dev_info(&pdev->dev, "fb%d: %s frame buffer device\n",
- 		fbinfo->node, fbinfo->fix.id);
- 
- 	return 0;
+-		regulator@4 {
++		vdd_bl_reg: regulator@4 {
+ 			compatible = "regulator-fixed";
+ 			reg = <4>;
+ 			regulator-name = "vdd_bl";
 -- 
-1.7.4.1
+1.7.12
 

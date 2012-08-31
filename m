@@ -1,82 +1,443 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 12 Aug 2012 15:28:56 +0000
-Subject: Re: [PATCH 00/11] fblog: Framebuffer kernel log driver v4
-Message-Id: <5027CBB8.7030201@gmx.de>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Fri, 31 Aug 2012 11:34:04 +0000
+Subject: [PATCH v5 2/4] pwm_backlight: use power sequences
+Message-Id: <1346412846-17102-3-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
-In-Reply-To: <1344783205-2384-1-git-send-email-dh.herrmann@googlemail.com>
+References: <1346412846-17102-1-git-send-email-acourbot@nvidia.com>
+In-Reply-To: <1346412846-17102-1-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Herrmann <dh.herrmann@googlemail.com>
-Cc: linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+To: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Anton Vorontsov <cbou-JGs/UdohzUI@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On 08/12/2012 02:53 PM, David Herrmann wrote:
-> Hi
-> 
-> This is revision 4 of the fblog driver. It is a replacement for fbcon for
-> systems that do not want/need CONFIG_VT. It simply prints the kernel-log to all
-> connected framebuffers. Previous versions are available here:
->   v3: http://thread.gmane.org/gmane.linux.kernel/1328164
->   v2: http://thread.gmane.org/gmane.linux.serial/8133
->   v1: http://marc.info/?l=linux-kernel&m3988465602225&w=2
-> 
-> This patchset is based on linux-next.
-> 
-> Changes from previous version:
->   - Changed mailinglist to linux-fbdev instead of linux-serial
->   - Added "main_only" and "activate_on_hotplug" module parameters to provide
->     more fine-grained control over which framebuffers are used
-> 
-> As always simply remove the !VT dependency if you want to test this with VTs
-> enabled. Some more background information on deprecating CONFIG_VT can be found
-> here:
->   http://dvdhrm.wordpress.com/2012/08/12/killing-off-config_vt/
-> 
-> I am still looking for someone who is willing to push this to linux-next through
-> his or her tree. Feedback is much appreciated!
+Make use of the power sequences specified in the device tree or platform
+data to control how the backlight is powered on and off.
 
-I'll take care of this. But I'm currently very busy writing a thesis, so
-it could take some time. It would be great if someone would find time to
-give this a complete thorough review.
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+---
+ .../bindings/video/backlight/pwm-backlight.txt     |  67 +++++++-
+ drivers/video/backlight/Kconfig                    |   1 +
+ drivers/video/backlight/pwm_bl.c                   | 179 +++++++++++++++------
+ include/linux/pwm_backlight.h                      |  15 +-
+ 4 files changed, 208 insertions(+), 54 deletions(-)
 
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> 
-> Thanks
-> David
-> 
-> David Herrmann (11):
->   fbcon: move update_attr() into separate source file
->   fbcon: move bit_putcs() into separate source file
->   fblog: new framebuffer kernel log dummy driver
->   fbdev: export get_fb_info()/put_fb_info()
->   fblog: register one fblog object per framebuffer
->   fblog: open fb on registration
->   fblog: allow selecting fbs via sysfs and module-parameters
->   fblog: cache framebuffer BLANK and SUSPEND states
->   fblog: register console driver
->   fblog: draw console to framebuffers
->   MAINTAINERS: add fblog entry
-> 
->  MAINTAINERS                     |   6 +
->  drivers/video/Kconfig           |   5 +-
->  drivers/video/Makefile          |   2 +-
->  drivers/video/console/Kconfig   |  37 ++-
->  drivers/video/console/Makefile  |   4 +-
->  drivers/video/console/bitblit.c | 149 +--------
->  drivers/video/console/fbcon.h   |   5 +-
->  drivers/video/console/fbdraw.c  | 171 ++++++++++
->  drivers/video/console/fbdraw.h  |  30 ++
->  drivers/video/console/fblog.c   | 691 ++++++++++++++++++++++++++++++++++++++++
->  drivers/video/fbmem.c           |   6 +-
->  include/linux/fb.h              |   3 +
->  12 files changed, 951 insertions(+), 158 deletions(-)
->  create mode 100644 drivers/video/console/fbdraw.c
->  create mode 100644 drivers/video/console/fbdraw.h
->  create mode 100644 drivers/video/console/fblog.c
-> 
+diff --git a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
+index 1e4fc72..873b993 100644
+--- a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
++++ b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
+@@ -2,7 +2,8 @@ pwm-backlight bindings
+ 
+ Required properties:
+   - compatible: "pwm-backlight"
+-  - pwms: OF device-tree PWM specification (see PWM binding[0])
++  - pwms: OF device-tree PWM specification (see PWM binding[0]). Exactly one PWM
++      must be specified
+   - brightness-levels: Array of distinct brightness levels. Typically these
+       are in the range from 0 to 255, but any range starting at 0 will do.
+       The actual brightness level (PWM duty cycle) will be interpolated
+@@ -12,17 +13,73 @@ Required properties:
+       array defined by the "brightness-levels" property)
+ 
+ Optional properties:
+-  - pwm-names: a list of names for the PWM devices specified in the
+-               "pwms" property (see PWM binding[0])
++  - pwm-names: name for the PWM device specified in the "pwms" property (see PWM
++      binding[0]). Necessary if power sequences are used
++  - power-sequences: Power sequences (see Power sequences[1]) used to bring the
++      backlight on and off. If this property is present, then two power
++      sequences named "power-on" and "power-off" must be defined to control how
++      the backlight is to be powered on and off. These sequences must reference
++      the PWM specified in the pwms property by its name, and can also reference
++      other resources supported by the power sequences mechanism
+ 
+ [0]: Documentation/devicetree/bindings/pwm/pwm.txt
++[1]: Documentation/devicetree/bindings/power_seq/power_seq.txt
+ 
+ Example:
+ 
+ 	backlight {
+ 		compatible = "pwm-backlight";
+-		pwms = <&pwm 0 5000000>;
+-
+ 		brightness-levels = <0 4 8 16 32 64 128 255>;
+ 		default-brightness-level = <6>;
++
++		/* resources used by the sequences */
++		pwms = <&pwm 2 5000000>;
++		pwm-names = "backlight";
++		power-supply = <&backlight_reg>;
++
++		power-sequences {
++			power-on {
++				step0 {
++					type = "regulator";
++					id = "power";
++					enable;
++				};
++				step1 {
++					type = "delay";
++					delay_us = <10000>;
++				};
++				step2 {
++					type = "pwm";
++					id = "backlight";
++					enable;
++				};
++				step3 {
++					type = "gpio";
++					number = <&gpio 28 0>;
++					enable;
++				};
++			};
++
++			power-off {
++				step0 {
++					type = "gpio";
++					number = <&gpio 28 0>;
++					disable;
++				};
++				step1 {
++					type = "pwm";
++					id = "backlight";
++					disable;
++				};
++				step2 {
++					type = "delay";
++					delay_us = <10000>;
++				};
++				step3 {
++					type = "regulator";
++					id = "power";
++					disable;
++				};
++			};
++		};
+ 	};
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index cf28276..6fb8aa3 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -246,6 +246,7 @@ config BACKLIGHT_CARILLO_RANCH
+ config BACKLIGHT_PWM
+ 	tristate "Generic PWM based Backlight Driver"
+ 	depends on PWM
++	select POWER_SEQ
+ 	help
+ 	  If you have a LCD backlight adjustable by PWM, say Y to enable
+ 	  this driver.
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 995f016..45d6edd 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -27,6 +27,12 @@ struct pwm_bl_data {
+ 	unsigned int		period;
+ 	unsigned int		lth_brightness;
+ 	unsigned int		*levels;
++	bool			enabled;
++	bool			use_power_seqs;
++	struct power_seq	*power_on_seq;
++	struct power_seq	*power_off_seq;
++
++	/* Legacy callbacks */
+ 	int			(*notify)(struct device *,
+ 					  int brightness);
+ 	void			(*notify_after)(struct device *,
+@@ -35,6 +41,49 @@ struct pwm_bl_data {
+ 	void			(*exit)(struct device *);
+ };
+ 
++static void pwm_backlight_on(struct backlight_device *bl)
++{
++	struct pwm_bl_data *pb = dev_get_drvdata(&bl->dev);
++	int ret;
++
++	if (pb->enabled)
++		return;
++
++	/* Legacy framework? */
++	if (!pb->use_power_seqs) {
++		pwm_config(pb->pwm, 0, pb->period);
++		pwm_disable(pb->pwm);
++		return;
++	}
++
++	ret = power_seq_run(pb->power_on_seq);
++	if (ret < 0)
++		dev_err(&bl->dev, "cannot run power on sequence\n");
++
++	pb->enabled = true;
++}
++
++static void pwm_backlight_off(struct backlight_device *bl)
++{
++	struct pwm_bl_data *pb = dev_get_drvdata(&bl->dev);
++	int ret;
++
++	if (!pb->enabled)
++		return;
++
++	/* Legacy framework? */
++	if (!pb->use_power_seqs) {
++		pwm_enable(pb->pwm);
++		return;
++	}
++
++	ret = power_seq_run(pb->power_off_seq);
++	if (ret < 0)
++		dev_err(&bl->dev, "cannot run power off sequence\n");
++
++	pb->enabled = false;
++}
++
+ static int pwm_backlight_update_status(struct backlight_device *bl)
+ {
+ 	struct pwm_bl_data *pb = dev_get_drvdata(&bl->dev);
+@@ -51,8 +100,7 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+ 		brightness = pb->notify(pb->dev, brightness);
+ 
+ 	if (brightness = 0) {
+-		pwm_config(pb->pwm, 0, pb->period);
+-		pwm_disable(pb->pwm);
++		pwm_backlight_off(bl);
+ 	} else {
+ 		int duty_cycle;
+ 
+@@ -66,7 +114,7 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+ 		duty_cycle = pb->lth_brightness +
+ 		     (duty_cycle * (pb->period - pb->lth_brightness) / max);
+ 		pwm_config(pb->pwm, duty_cycle, pb->period);
+-		pwm_enable(pb->pwm);
++		pwm_backlight_on(bl);
+ 	}
+ 
+ 	if (pb->notify_after)
+@@ -145,11 +193,10 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 		data->max_brightness--;
+ 	}
+ 
+-	/*
+-	 * TODO: Most users of this driver use a number of GPIOs to control
+-	 *       backlight power. Support for specifying these needs to be
+-	 *       added.
+-	 */
++	/* parse power sequences and extract those we will use */
++	data->power_seqs = devm_of_parse_power_seq_set(dev);
++	if (IS_ERR(data->power_seqs))
++		return PTR_ERR(data->power_seqs);
+ 
+ 	return 0;
+ }
+@@ -172,33 +219,96 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ {
+ 	struct platform_pwm_backlight_data *data = pdev->dev.platform_data;
+ 	struct platform_pwm_backlight_data defdata;
++	struct power_seq_resource *res;
+ 	struct backlight_properties props;
+ 	struct backlight_device *bl;
+ 	struct pwm_bl_data *pb;
++	bool use_dt = false;
+ 	unsigned int max;
+ 	int ret;
+ 
++	pb = devm_kzalloc(&pdev->dev, sizeof(*pb), GFP_KERNEL);
++	if (!pb) {
++		dev_err(&pdev->dev, "no memory for state\n");
++		return -ENOMEM;
++	}
++
++	/* using new interface or device tree */
+ 	if (!data) {
++		/* build platform data from device tree */
+ 		ret = pwm_backlight_parse_dt(&pdev->dev, &defdata);
+-		if (ret < 0) {
++		if (ret = -EPROBE_DEFER) {
++			return ret;
++		} else if (ret < 0) {
+ 			dev_err(&pdev->dev, "failed to find platform data\n");
+ 			return ret;
+ 		}
+-
+ 		data = &defdata;
++		use_dt = true;
++	}
++
++	/* using legacy interface? */
++	if (!data->power_seqs) {
++		pb->pwm = devm_pwm_get(&pdev->dev, NULL);
++		if (IS_ERR(pb->pwm)) {
++			dev_err(&pdev->dev,
++				"unable to request PWM, trying legacy API\n");
++
++			pb->pwm = pwm_request(data->pwm_id, "pwm-backlight");
++			if (IS_ERR(pb->pwm)) {
++				dev_err(&pdev->dev,
++					"unable to request legacy PWM\n");
++				return PTR_ERR(pb->pwm);
++			}
++		}
++
++		/*
++		* The DT case will set the pwm_period_ns field to 0 and store
++		* the period, parsed from the DT, in the PWM device. For the
++		* non-DT case, set the period from platform data.
++		*/
++		if (data->pwm_period_ns > 0)
++			pwm_set_period(pb->pwm, data->pwm_period_ns);
++	} else {
++		/* build power sequences from platform data */
++		struct power_seq_set *seqs;
++
++		seqs = devm_power_seq_set_build(&pdev->dev, data->power_seqs);
++		if (IS_ERR(seqs))
++			return PTR_ERR(seqs);
++
++		if (use_dt)
++			devm_platform_power_seq_set_free(&pdev->dev,
++							 data->power_seqs);
++
++		pb->power_on_seq = power_seq_lookup(seqs, "power-on");
++		pb->power_off_seq = power_seq_lookup(seqs, "power-off");
++
++		/* we must have exactly one PWM for this driver */
++		power_seq_for_each_resource(res, seqs) {
++			if (res->pdata->type != POWER_SEQ_PWM)
++				continue;
++			if (pb->pwm) {
++				dev_err(&pdev->dev, "more than one PWM used\n");
++				return -EINVAL;
++			}
++			/* keep the pwm at hand */
++			pb->pwm = res->pwm;
++		}
++
++		pb->use_power_seqs = true;
+ 	}
+ 
+ 	if (data->init) {
+ 		ret = data->init(&pdev->dev);
+ 		if (ret < 0)
+-			return ret;
++			goto err;
+ 	}
+ 
+-	pb = devm_kzalloc(&pdev->dev, sizeof(*pb), GFP_KERNEL);
+-	if (!pb) {
+-		dev_err(&pdev->dev, "no memory for state\n");
+-		ret = -ENOMEM;
+-		goto err_alloc;
++	/* from here we should have a PWM */
++	if (!pb->pwm) {
++		dev_err(&pdev->dev, "no PWM defined!\n");
++		return -EINVAL;
+ 	}
+ 
+ 	if (data->levels) {
+@@ -213,28 +323,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	pb->exit = data->exit;
+ 	pb->dev = &pdev->dev;
+ 
+-	pb->pwm = pwm_get(&pdev->dev, NULL);
+-	if (IS_ERR(pb->pwm)) {
+-		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
+-
+-		pb->pwm = pwm_request(data->pwm_id, "pwm-backlight");
+-		if (IS_ERR(pb->pwm)) {
+-			dev_err(&pdev->dev, "unable to request legacy PWM\n");
+-			ret = PTR_ERR(pb->pwm);
+-			goto err_alloc;
+-		}
+-	}
+-
+-	dev_dbg(&pdev->dev, "got pwm for backlight\n");
+-
+-	/*
+-	 * The DT case will set the pwm_period_ns field to 0 and store the
+-	 * period, parsed from the DT, in the PWM device. For the non-DT case,
+-	 * set the period from platform data.
+-	 */
+-	if (data->pwm_period_ns > 0)
+-		pwm_set_period(pb->pwm, data->pwm_period_ns);
+-
+ 	pb->period = pwm_get_period(pb->pwm);
+ 	pb->lth_brightness = data->lth_brightness * (pb->period / max);
+ 
+@@ -246,18 +334,17 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	if (IS_ERR(bl)) {
+ 		dev_err(&pdev->dev, "failed to register backlight\n");
+ 		ret = PTR_ERR(bl);
+-		goto err_bl;
++		goto err;
+ 	}
+ 
+ 	bl->props.brightness = data->dft_brightness;
+ 	backlight_update_status(bl);
+ 
+ 	platform_set_drvdata(pdev, bl);
++
+ 	return 0;
+ 
+-err_bl:
+-	pwm_put(pb->pwm);
+-err_alloc:
++err:
+ 	if (data->exit)
+ 		data->exit(&pdev->dev);
+ 	return ret;
+@@ -269,9 +356,8 @@ static int pwm_backlight_remove(struct platform_device *pdev)
+ 	struct pwm_bl_data *pb = dev_get_drvdata(&bl->dev);
+ 
+ 	backlight_device_unregister(bl);
+-	pwm_config(pb->pwm, 0, pb->period);
+-	pwm_disable(pb->pwm);
+-	pwm_put(pb->pwm);
++	pwm_backlight_off(bl);
++
+ 	if (pb->exit)
+ 		pb->exit(&pdev->dev);
+ 	return 0;
+@@ -285,8 +371,7 @@ static int pwm_backlight_suspend(struct device *dev)
+ 
+ 	if (pb->notify)
+ 		pb->notify(pb->dev, 0);
+-	pwm_config(pb->pwm, 0, pb->period);
+-	pwm_disable(pb->pwm);
++	pwm_backlight_off(bl);
+ 	if (pb->notify_after)
+ 		pb->notify_after(pb->dev, 0);
+ 	return 0;
+diff --git a/include/linux/pwm_backlight.h b/include/linux/pwm_backlight.h
+index 56f4a86..70d22f2 100644
+--- a/include/linux/pwm_backlight.h
++++ b/include/linux/pwm_backlight.h
+@@ -5,14 +5,25 @@
+ #define __LINUX_PWM_BACKLIGHT_H
+ 
+ #include <linux/backlight.h>
++#include <linux/power_seq.h>
+ 
+ struct platform_pwm_backlight_data {
+-	int pwm_id;
+ 	unsigned int max_brightness;
+ 	unsigned int dft_brightness;
+ 	unsigned int lth_brightness;
+-	unsigned int pwm_period_ns;
+ 	unsigned int *levels;
++	/*
++	 * New interface using power sequences
++	 */
++	struct platform_power_seq_set *power_seqs;
++	/*
++	 * Legacy interface - use power sequences instead!
++	 *
++	 * pwm_id and pwm_period_ns need only be specified
++	 * if get_pwm(dev, NULL) would return NULL.
++	 */
++	int pwm_id;
++	unsigned int pwm_period_ns;
+ 	int (*init)(struct device *dev);
+ 	int (*notify)(struct device *dev, int brightness);
+ 	void (*notify_after)(struct device *dev, int brightness);
+-- 
+1.7.12
 

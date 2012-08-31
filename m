@@ -1,118 +1,85 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 31 Aug 2012 11:57:45 +0000
+From: Archit Taneja <a0393947@ti.com>
+Date: Fri, 31 Aug 2012 12:15:45 +0000
 Subject: Re: [PATCH v2 02/23] OMAPDSS: outputs: Create and register output instances
-Message-Id: <1346414265.18766.9.camel@lappyti>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-G3THlJ8axr1hfUbfHqcv"
+Message-Id: <5040A821.2030100@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>
-	 <1346326845-16583-1-git-send-email-archit@ti.com>
-	 <1346326845-16583-3-git-send-email-archit@ti.com>
-In-Reply-To: <1346326845-16583-3-git-send-email-archit@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-
---=-G3THlJ8axr1hfUbfHqcv
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2012-08-30 at 17:10 +0530, Archit Taneja wrote:
-> Add output structs to output driver's private data. Register output insta=
-nces by
-> having an init function in the probes of the platform device drivers for
-> different outputs. The *_init_output for each output registers the output=
- and
-> fill up the output's plaform device, type and id fields.
->=20
-> In the probe of each interface driver, the output entities are initialize=
-d
-> before the *_probe_pdata() functions intentionally. This is done to ensur=
-e that
-> the output entity is prepared before the panels connected to the output a=
-re
-> registered. We need the output entities to be ready because OMAPDSS will =
-try
-> to make connections between overlays, managers, outputs and devices durin=
-g the
-> panel's probe.
->=20
-> Signed-off-by: Archit Taneja <archit@ti.com>
-> ---
->  drivers/video/omap2/dss/dpi.c  |   15 +++++++++++++++
->  drivers/video/omap2/dss/dsi.c  |   18 ++++++++++++++++++
->  drivers/video/omap2/dss/hdmi.c |   15 +++++++++++++++
->  drivers/video/omap2/dss/rfbi.c |   17 +++++++++++++++++
->  drivers/video/omap2/dss/sdi.c  |   15 +++++++++++++++
->  drivers/video/omap2/dss/venc.c |   15 +++++++++++++++
->  6 files changed, 95 insertions(+)
->=20
-> diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.=
-c
-> index 25fb895..9a7aee5 100644
-> --- a/drivers/video/omap2/dss/dpi.c
-> +++ b/drivers/video/omap2/dss/dpi.c
-> @@ -45,6 +45,8 @@ static struct {
->  	struct omap_video_timings timings;
->  	struct dss_lcd_mgr_config mgr_config;
->  	int data_lines;
-> +
-> +	struct omap_dss_output output;
->  } dpi;
-> =20
->  static struct platform_device *dpi_get_dsidev(enum omap_dss_clk_source c=
-lk)
-> @@ -410,10 +412,23 @@ static void __init dpi_probe_pdata(struct platform_=
-device *pdev)
->  	}
->  }
-> =20
-> +static void __init dpi_init_output(struct platform_device *pdev)
-> +{
-> +	struct omap_dss_output *out =3D &dpi.output;
-> +
-> +	dss_register_output(out);
-> +
-> +	out->pdev =3D pdev;
-> +	out->id =3D OMAP_DSS_OUTPUT_DPI;
-> +	out->type =3D OMAP_DISPLAY_TYPE_DPI;
-> +}
-
-I think you should first initialize the output, and then register it.
-Not the other way around.
-
-I believe you need to implement unregister also. Normally unregister
-won't be done, but the probe of an output driver can fail after the
-output has been registered, and thus the output needs to be unregistered
-at cleanup.
-
-And it doesn't harm to unregister at the driver's remove.
-
- Tomi
-
-
---=-G3THlJ8axr1hfUbfHqcv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+References: <1345528711-27801-1-git-send-email-archit@ti.com>  <1346326845-16583-1-git-send-email-archit@ti.com>  <1346326845-16583-3-git-send-email-archit@ti.com> <1346414265.18766.9.camel@lappyti>
+In-Reply-To: <1346414265.18766.9.camel@lappyti>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Archit Taneja <archit@ti.com>, rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+On Friday 31 August 2012 05:27 PM, Tomi Valkeinen wrote:
+> On Thu, 2012-08-30 at 17:10 +0530, Archit Taneja wrote:
+>> Add output structs to output driver's private data. Register output instances by
+>> having an init function in the probes of the platform device drivers for
+>> different outputs. The *_init_output for each output registers the output and
+>> fill up the output's plaform device, type and id fields.
+>>
+>> In the probe of each interface driver, the output entities are initialized
+>> before the *_probe_pdata() functions intentionally. This is done to ensure that
+>> the output entity is prepared before the panels connected to the output are
+>> registered. We need the output entities to be ready because OMAPDSS will try
+>> to make connections between overlays, managers, outputs and devices during the
+>> panel's probe.
+>>
+>> Signed-off-by: Archit Taneja <archit@ti.com>
+>> ---
+>>   drivers/video/omap2/dss/dpi.c  |   15 +++++++++++++++
+>>   drivers/video/omap2/dss/dsi.c  |   18 ++++++++++++++++++
+>>   drivers/video/omap2/dss/hdmi.c |   15 +++++++++++++++
+>>   drivers/video/omap2/dss/rfbi.c |   17 +++++++++++++++++
+>>   drivers/video/omap2/dss/sdi.c  |   15 +++++++++++++++
+>>   drivers/video/omap2/dss/venc.c |   15 +++++++++++++++
+>>   6 files changed, 95 insertions(+)
+>>
+>> diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+>> index 25fb895..9a7aee5 100644
+>> --- a/drivers/video/omap2/dss/dpi.c
+>> +++ b/drivers/video/omap2/dss/dpi.c
+>> @@ -45,6 +45,8 @@ static struct {
+>>   	struct omap_video_timings timings;
+>>   	struct dss_lcd_mgr_config mgr_config;
+>>   	int data_lines;
+>> +
+>> +	struct omap_dss_output output;
+>>   } dpi;
+>>
+>>   static struct platform_device *dpi_get_dsidev(enum omap_dss_clk_source clk)
+>> @@ -410,10 +412,23 @@ static void __init dpi_probe_pdata(struct platform_device *pdev)
+>>   	}
+>>   }
+>>
+>> +static void __init dpi_init_output(struct platform_device *pdev)
+>> +{
+>> +	struct omap_dss_output *out = &dpi.output;
+>> +
+>> +	dss_register_output(out);
+>> +
+>> +	out->pdev = pdev;
+>> +	out->id = OMAP_DSS_OUTPUT_DPI;
+>> +	out->type = OMAP_DISPLAY_TYPE_DPI;
+>> +}
+>
+> I think you should first initialize the output, and then register it.
+> Not the other way around.
 
-iQIcBAABAgAGBQJQQKa5AAoJEPo9qoy8lh71bUkP+gIvo2hbr7c5JyxOrkOBp56V
-r0ELwA4aOJB1527J8Q+s8Db8VzYJsB3jWRLye3PzkLigELWDs53Ej+Oy//9lUYG2
-xxmCSrznxx41ziqeFPfGzV+Clr/GXKB9cUjsxHcEcJWc+KbQPvyx+el/5w6EwG1y
-PqJ9XH4Y7T1YoMde432NC84u4tKOPGjVcZ3pRLLIaked4YXEVeJBvRmqbW7042cA
-+uOemy7zlbZfkzDt4Zte4cncOj52o1BISdDYdGJ6XhIN8OkAa7nn2fbz+Trpgq5n
-SOYU7ML2/wIY+Uncit2a6sqH4fQyfplx+Ejem0foiSxEmAjkz0+cmbdxcMdiEryd
-SGNqh7zVSwKzuD1HOUycvcyiCIIhKlX2sy4WOBRpGnTSuvuYjnrtD+QfkR3SY6P3
-8G6GszMOMVKhOeIJ0h+yqDv0nf503r2nBxyBOu7iS4uRNNhTh8dDMlCUXdt5xlSQ
-/8LZrb2JM6ydr7gBjP0FyXg6D7nprFl5uQ4HdoTacQgd8ura4/9DXUn6lx8BfsHo
-t6nqNlPXKwYdWOsBUCqswms6FPTItlme2u7zhIr0SGJ1qF8YNXMeYsdvtpoJRj+s
-wz9InTaDYOMU0c+56gZwjhLwYgzRh2OraEzYllXysZ6cedmeAHwr9Xm8HTqPcaaz
-P29z1P9wEtTYBOjjlTIB
-=fysR
------END PGP SIGNATURE-----
+Ok.
 
---=-G3THlJ8axr1hfUbfHqcv--
+>
+> I believe you need to implement unregister also. Normally unregister
+> won't be done, but the probe of an output driver can fail after the
+> output has been registered, and thus the output needs to be unregistered
+> at cleanup.
+
+Ah, right.
+
+>
+> And it doesn't harm to unregister at the driver's remove.
+
+I'll fix these, thanks.
+
+Archit
 

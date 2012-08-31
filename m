@@ -1,33 +1,59 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Tue, 07 Aug 2012 12:48:31 +0000
-Subject: Re: [PATCH 4/6] OMAPDSS: VENC: Remove cpu_is_xxxx checks
-Message-Id: <50210BCF.20100@ti.com>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Fri, 31 Aug 2012 13:12:20 +0000
+Subject: [PATCH] da8xx-fb: enable LCDC if FB is unblanked
+Message-Id: <1346418020-31779-1-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1343912532.git.cmahapatra@ti.com> <75e516de4cb0787d52e4a9173d123df6903d561a.1343912533.git.cmahapatra@ti.com> <20120807085103.GM8468@arwen.pp.htv.fi>
-In-Reply-To: <20120807085103.GM8468@arwen.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: balbi@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Tuesday 07 August 2012 02:21 PM, Felipe Balbi wrote:
-> On Tue, Aug 07, 2012 at 01:58:17PM +0530, Chandrabhanu Mahapatra wrote:
->> OMAP4 checks are removed from VENC to provide it a cleaner interface. These
->> checks were introduced by patches "HACK: OMAP: DSS2: VENC: disable VENC on OMAP4
->> to prevent crash" (ba02fa37de) by Tomi Valkeinen <tomi.valkeinen@ti.com> and
->> "OMAPDSS: VENC: fix NULL pointer dereference in DSS2 VENC sysfs debug attr on
->> OMAP4" (cc1d3e032d)  by Danny Kukawka <danny.kukawka@bisect.de> to prevent VENC
->> from crashing OMAP4 kernel. An alternative approach is used to do the same in
->> later patches.
-> in later patches ? This means you're causing a regression here. Just
-> swap the patches around to avoid it.
->
-Hi! Yes I do agree with you. But as VENC is disabled on omap4, the basic
-idea here was to remove unnecessary cpu_is checks and achieve the same
-through a better approach.
+Check for FB_BLANK_UNBLANK before enabling LCDC from PM resume
+and DVFS. Without this, behavior in case of below used case is
+not be not expected,
+1) Issue FB_BLANK, LCDC disabled.
+2) Do suspend/resume cycle or DVFS.
+3) Do not expect LCDC to get enabled at this point.
 
+Re-enabling of LCDC is done when FB_BLANK_UNBLANK is issued.
+
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+---
+Applies on top of fbdev-next of Florian Tobias Schandinat's tree.
+
+ drivers/video/da8xx-fb.c |   11 +++++++----
+ 1 files changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 761c8d1..1273354 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -962,7 +962,8 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
+ 			par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
+ 			lcd_disable_raster();
+ 			lcd_calc_clk_divider(par);
+-			lcd_enable_raster();
++			if (par->blank = FB_BLANK_UNBLANK)
++				lcd_enable_raster();
+ 		}
+ 	}
+ 
+@@ -1486,10 +1487,12 @@ static int fb_resume(struct platform_device *dev)
+ 
+ 	console_lock();
+ 	clk_enable(par->lcdc_clk);
+-	lcd_enable_raster();
++	if (par->blank = FB_BLANK_UNBLANK) {
++		lcd_enable_raster();
+ 
+-	if (par->panel_power_ctrl)
+-		par->panel_power_ctrl(1);
++		if (par->panel_power_ctrl)
++			par->panel_power_ctrl(1);
++	}
+ 
+ 	fb_set_suspend(info, 0);
+ 	console_unlock();
 -- 
-Chandrabhanu Mahapatra
-Texas Instruments India Pvt. Ltd.
+1.7.1
 

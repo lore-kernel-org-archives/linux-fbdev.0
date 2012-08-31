@@ -1,243 +1,63 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 30 Aug 2012 11:52:28 +0000
-Subject: [PATCH v2 06/23] OMAP_VOUT: Remove manager->device references
-Message-Id: <1346326845-16583-7-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 31 Aug 2012 12:11:58 +0000
+Subject: Re: [PATCH v2 06/23] OMAP_VOUT: Remove manager->device references
+Message-Id: <1346415118.18766.15.camel@lappyti>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-nHNPyOJ2Pj2gjdLn9OlO"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1345528711-27801-1-git-send-email-archit@ti.com>
- <1346326845-16583-1-git-send-email-archit@ti.com>
-In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	 <1346326845-16583-1-git-send-email-archit@ti.com>
+	 <1346326845-16583-7-git-send-email-archit@ti.com>
+In-Reply-To: <1346326845-16583-7-git-send-email-archit@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Vaibhav Hiremath <hvaibhav@ti.com>
+
+
+--=-nHNPyOJ2Pj2gjdLn9OlO
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 2012-08-30 at 17:10 +0530, Archit Taneja wrote:
+> With the introduction of output entities, managers will now connect to ou=
+tputs.
+> Use the helper op for managers named get_device. This will abstract away =
+the
+> information on how to get the device from an overlay manager.
+>=20
+> Using the helper function will reduce the number of pointer dereferences =
+a user
+> of OMAPDSS needs to do and reduce risk of a NULL dereference.
+
+Almost all the uses here seem to be getting the dssdev from an overlay.
+Would it make sense to implement get_device for an ovl? That would
+reduce all the ovl->manager ? ovl->manager->get_device(ovl->manager) :
+NULL; code to ovl->get_device(ovl).
+
+ Tomi
+
+
+--=-nHNPyOJ2Pj2gjdLn9OlO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>, Vaibhav Hiremath <hvaibhav@ti.com>
 
-With the introduction of output entities, managers will now connect to outputs.
-Use the helper op for managers named get_device. This will abstract away the
-information on how to get the device from an overlay manager.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-Using the helper function will reduce the number of pointer dereferences a user
-of OMAPDSS needs to do and reduce risk of a NULL dereference.
+iQIcBAABAgAGBQJQQKoPAAoJEPo9qoy8lh71M0EP/0j1/LW5NpeZYwFt/wpq3DN6
+BHB4XptEumKAv+yHLfx1zqIJovg17c1cZS47ndmSja/sgZJ4LyMwW9qD9GPF50CU
+g7fMPkECwyGyjqWzuVm3jq2ItADOhrSsgqIIBB5RWBemPLKLqcEMsvMGcN2MhW6l
+5xm0zdGq2pAiFfxiSq8iL73ide+2gCyBwv2HgQI5g5mJ3kNfmDO0XBGw1UBSfEx6
+qQ5FQwXBap7A8fHfyfkG7i43C3j5lHRqeD3I0cIn0AI2ssetGWUlvpiUSMl47GN2
+MGR0raRk1NBLfPB9D84/nOaT3+9elj4WGG56O9MgIchbgpVu6ldOhRguWn5upDDp
+TzOHq3Yf92Z26XLJcOmRQvHULKTpXYBTvGjXcu7upf9u71AiK5Fy5ez8qmleN7XH
+1w+Hkn/B/jurydYt5cdF/Ile+s5cWxiDKn7ND3vPPpBx4cFGezoeyMFrOwSsKsLI
+tdXd1OA75qqPerc/koVFiwqk7PhKQWoPlfwOIhHzxx8MpCFFohbw7ET1WKH5htJn
+jytB4JEfRxWKUB5WzNsHy/T3EhxE8WZCPAc06y/OOVvVGHHEhfAxqltqtGz6Y255
+ke77lDdeEFbJavqYCrXepRlGN6o31y2L3xhdfLFjqcWmZnE5zDHfcuYii1tHL+Ef
+FrX4wVp1ST2lvfsDteoX
+=Tzlf
+-----END PGP SIGNATURE-----
 
-Cc: Vaibhav Hiremath <hvaibhav@ti.com>
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/media/video/omap/omap_vout.c |   81 ++++++++++++++++++++++++----------
- 1 file changed, 57 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/media/video/omap/omap_vout.c b/drivers/media/video/omap/omap_vout.c
-index 88cf9d9..0ebf87e 100644
---- a/drivers/media/video/omap/omap_vout.c
-+++ b/drivers/media/video/omap/omap_vout.c
-@@ -454,11 +454,16 @@ static int omapvid_init(struct omap_vout_device *vout, u32 addr)
- 
- 	win = &vout->win;
- 	for (i = 0; i < ovid->num_overlays; i++) {
-+		struct omap_dss_device *dssdev;
-+
- 		ovl = ovid->overlays[i];
--		if (!ovl->manager || !ovl->manager->device)
-+		dssdev = ovl->manager ?
-+			ovl->manager->get_device(ovl->manager) : NULL;
-+
-+		if (!dssdev)
- 			return -EINVAL;
- 
--		timing = &ovl->manager->device->panel.timings;
-+		timing = &dssdev->panel.timings;
- 
- 		outw = win->w.width;
- 		outh = win->w.height;
-@@ -515,8 +520,12 @@ static int omapvid_apply_changes(struct omap_vout_device *vout)
- 	struct omapvideo_info *ovid = &vout->vid_info;
- 
- 	for (i = 0; i < ovid->num_overlays; i++) {
-+		struct omap_dss_device *dssdev;
-+
- 		ovl = ovid->overlays[i];
--		if (!ovl->manager || !ovl->manager->device)
-+		dssdev = ovl->manager ?
-+			ovl->manager->get_device(ovl->manager) : NULL;
-+		if (!dssdev)
- 			return -EINVAL;
- 		ovl->manager->apply(ovl->manager);
- 	}
-@@ -579,12 +588,15 @@ static void omap_vout_isr(void *arg, unsigned int irqstatus)
- 
- 	ovid = &vout->vid_info;
- 	ovl = ovid->overlays[0];
--	/* get the display device attached to the overlay */
--	if (!ovl->manager || !ovl->manager->device)
--		return;
- 
- 	mgr_id = ovl->manager->id;
--	cur_display = ovl->manager->device;
-+
-+	/* get the display device attached to the overlay */
-+	cur_display = ovl->manager ?
-+		ovl->manager->get_device(ovl->manager) : NULL;
-+
-+	if (!cur_display)
-+		return;
- 
- 	spin_lock(&vout->vbq_lock);
- 	do_gettimeofday(&timevalue);
-@@ -948,7 +960,10 @@ static int omap_vout_release(struct file *file)
- 	/* Disable all the overlay managers connected with this interface */
- 	for (i = 0; i < ovid->num_overlays; i++) {
- 		struct omap_overlay *ovl = ovid->overlays[i];
--		if (ovl->manager && ovl->manager->device)
-+		struct omap_dss_device *dssdev = ovl->manager ?
-+			ovl->manager->get_device(ovl->manager) : NULL;
-+
-+		if (dssdev)
- 			ovl->disable(ovl);
- 	}
- 	/* Turn off the pipeline */
-@@ -1081,14 +1096,17 @@ static int vidioc_try_fmt_vid_out(struct file *file, void *fh,
- 	struct omapvideo_info *ovid;
- 	struct omap_video_timings *timing;
- 	struct omap_vout_device *vout = fh;
-+	struct omap_dss_device *dssdev;
- 
- 	ovid = &vout->vid_info;
- 	ovl = ovid->overlays[0];
-+	/* get the display device attached to the overlay */
-+	dssdev = ovl->manager ? ovl->manager->get_device(ovl->manager) : NULL;
- 
--	if (!ovl->manager || !ovl->manager->device)
-+	if (!dssdev)
- 		return -EINVAL;
--	/* get the display device attached to the overlay */
--	timing = &ovl->manager->device->panel.timings;
-+
-+	timing = &dssdev->panel.timings;
- 
- 	vout->fbuf.fmt.height = timing->y_res;
- 	vout->fbuf.fmt.width = timing->x_res;
-@@ -1105,6 +1123,7 @@ static int vidioc_s_fmt_vid_out(struct file *file, void *fh,
- 	struct omapvideo_info *ovid;
- 	struct omap_video_timings *timing;
- 	struct omap_vout_device *vout = fh;
-+	struct omap_dss_device *dssdev;
- 
- 	if (vout->streaming)
- 		return -EBUSY;
-@@ -1113,13 +1132,14 @@ static int vidioc_s_fmt_vid_out(struct file *file, void *fh,
- 
- 	ovid = &vout->vid_info;
- 	ovl = ovid->overlays[0];
-+	dssdev = ovl->manager ? ovl->manager->get_device(ovl->manager) : NULL;
- 
- 	/* get the display device attached to the overlay */
--	if (!ovl->manager || !ovl->manager->device) {
-+	if (!dssdev) {
- 		ret = -EINVAL;
- 		goto s_fmt_vid_out_exit;
- 	}
--	timing = &ovl->manager->device->panel.timings;
-+	timing = &dssdev->panel.timings;
- 
- 	/* We dont support RGB24-packed mode if vrfb rotation
- 	 * is enabled*/
-@@ -1298,6 +1318,7 @@ static int vidioc_s_crop(struct file *file, void *fh, struct v4l2_crop *crop)
- 	struct omapvideo_info *ovid;
- 	struct omap_overlay *ovl;
- 	struct omap_video_timings *timing;
-+	struct omap_dss_device *dssdev;
- 
- 	if (vout->streaming)
- 		return -EBUSY;
-@@ -1305,13 +1326,15 @@ static int vidioc_s_crop(struct file *file, void *fh, struct v4l2_crop *crop)
- 	mutex_lock(&vout->lock);
- 	ovid = &vout->vid_info;
- 	ovl = ovid->overlays[0];
-+	/* get the display device attached to the overlay */
-+	dssdev = ovl->manager ? ovl->manager->get_device(ovl->manager) : NULL;
- 
--	if (!ovl->manager || !ovl->manager->device) {
-+	if (!dssdev) {
- 		ret = -EINVAL;
- 		goto s_crop_err;
- 	}
--	/* get the display device attached to the overlay */
--	timing = &ovl->manager->device->panel.timings;
-+
-+	timing = &dssdev->panel.timings;
- 
- 	if (is_rotation_90_or_270(vout)) {
- 		vout->fbuf.fmt.height = timing->x_res;
-@@ -1666,8 +1689,9 @@ static int vidioc_streamon(struct file *file, void *fh, enum v4l2_buf_type i)
- 
- 	for (j = 0; j < ovid->num_overlays; j++) {
- 		struct omap_overlay *ovl = ovid->overlays[j];
-+		struct omap_overlay_manager *mgr = ovl->manager;
- 
--		if (ovl->manager && ovl->manager->device) {
-+		if (mgr && mgr->get_device(mgr)) {
- 			struct omap_overlay_info info;
- 			ovl->get_overlay_info(ovl, &info);
- 			info.paddr = addr;
-@@ -1690,8 +1714,10 @@ static int vidioc_streamon(struct file *file, void *fh, enum v4l2_buf_type i)
- 
- 	for (j = 0; j < ovid->num_overlays; j++) {
- 		struct omap_overlay *ovl = ovid->overlays[j];
-+		struct omap_dss_device *dssdev = ovl->manager ?
-+			ovl->manager->get_device(ovl->manager) : NULL;
- 
--		if (ovl->manager && ovl->manager->device) {
-+		if (dssdev) {
- 			ret = ovl->enable(ovl);
- 			if (ret)
- 				goto streamon_err1;
-@@ -1726,8 +1752,10 @@ static int vidioc_streamoff(struct file *file, void *fh, enum v4l2_buf_type i)
- 
- 	for (j = 0; j < ovid->num_overlays; j++) {
- 		struct omap_overlay *ovl = ovid->overlays[j];
-+		struct omap_dss_device *dssdev = ovl->manager ?
-+			ovl->manager->get_device(ovl->manager) : NULL;
- 
--		if (ovl->manager && ovl->manager->device)
-+		if (dssdev)
- 			ovl->disable(ovl);
- 	}
- 
-@@ -1890,8 +1918,9 @@ static int __init omap_vout_setup_video_data(struct omap_vout_device *vout)
- 	struct video_device *vfd;
- 	struct v4l2_pix_format *pix;
- 	struct v4l2_control *control;
-+	struct omap_overlay *ovl = vout->vid_info.overlays[0];
- 	struct omap_dss_device *display -		vout->vid_info.overlays[0]->manager->device;
-+		ovl->manager->get_device(ovl->manager);
- 
- 	/* set the default pix */
- 	pix = &vout->pix;
-@@ -2205,8 +2234,10 @@ static int __init omap_vout_probe(struct platform_device *pdev)
- 	 */
- 	for (i = 1; i < vid_dev->num_overlays; i++) {
- 		ovl = omap_dss_get_overlay(i);
--		if (ovl->manager && ovl->manager->device) {
--			def_display = ovl->manager->device;
-+		dssdev = ovl->manager ? ovl->manager->get_device(ovl->manager) :
-+				NULL;
-+		if (dssdev) {
-+			def_display = dssdev;
- 		} else {
- 			dev_warn(&pdev->dev, "cannot find display\n");
- 			def_display = NULL;
-@@ -2253,8 +2284,10 @@ probe_err1:
- 	for (i = 1; i < vid_dev->num_overlays; i++) {
- 		def_display = NULL;
- 		ovl = omap_dss_get_overlay(i);
--		if (ovl->manager && ovl->manager->device)
--			def_display = ovl->manager->device;
-+		dssdev = ovl->manager ? ovl->manager->get_device(ovl->manager) :
-+				NULL;
-+		if (dssdev)
-+			def_display = dssdev;
- 
- 		if (def_display && def_display->driver)
- 			def_display->driver->disable(def_display);
--- 
-1.7.9.5
+--=-nHNPyOJ2Pj2gjdLn9OlO--
 

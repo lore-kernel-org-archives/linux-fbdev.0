@@ -1,42 +1,96 @@
-From: Marcos Paulo de Souza <marcos.souza.org@gmail.com>
-Date: Tue, 28 Aug 2012 04:38:03 +0000
-Subject: [PATCH] drivrs/video/jz4740_fb.c: Use SIMPLE_DEV_PM_OPS instead of dev_pm_ops
-Message-Id: <1346128683-21487-1-git-send-email-marcos.souza.org@gmail.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Fri, 31 Aug 2012 11:52:26 +0000
+Subject: [PATCH] video: s3c2410fb: Use pr_* and dev_* instead of printk
+Message-Id: <1346413790-13393-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: FlorianSchandinat@gmx.de
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@sisk.pl, Marcos Paulo de Souza <marcos.souza.org@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-Just a cleanup, not functional changes.
+printk calls are replaced by pr_* and dev_* calls to silence
+checkpatch warnings.
 
-Signed-off-by: Marcos Paulo de Souza <marcos.souza.org@gmail.com>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 ---
+ drivers/video/s3c2410fb.c |   18 ++++++++++--------
+ 1 files changed, 10 insertions(+), 8 deletions(-)
 
- Just compile test. Please double check.
-
- drivers/video/jz4740_fb.c |    7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
-
-diff --git a/drivers/video/jz4740_fb.c b/drivers/video/jz4740_fb.c
-index de36693..a53fb7d 100644
---- a/drivers/video/jz4740_fb.c
-+++ b/drivers/video/jz4740_fb.c
-@@ -807,12 +807,7 @@ static int jzfb_resume(struct device *dev)
+diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
+index 77f34c6..a54e3f9 100644
+--- a/drivers/video/s3c2410fb.c
++++ b/drivers/video/s3c2410fb.c
+@@ -11,6 +11,8 @@
+  * Driver based on skeletonfb.c, sa1100fb.c and others.
+ */
+ 
++#define pr_fmt(fmt) "s3c2410fb: " fmt
++
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/err.h>
+@@ -48,7 +50,7 @@ static int debug	= 1;
+ static int debug;
+ #endif
+ 
+-#define dprintk(msg...)	if (debug) printk(KERN_DEBUG "s3c2410fb: " msg);
++#define dprintk(msg...)	if (debug) pr_debug(msg);
+ 
+ /* useful functions */
+ 
+@@ -598,11 +600,11 @@ static int s3c2410fb_debug_store(struct device *dev,
+ 	if (strnicmp(buf, "on", 2) = 0 ||
+ 	    strnicmp(buf, "1", 1) = 0) {
+ 		debug = 1;
+-		printk(KERN_DEBUG "s3c2410fb: Debug On");
++		dev_dbg(dev, "s3c2410fb: Debug On");
+ 	} else if (strnicmp(buf, "off", 3) = 0 ||
+ 		   strnicmp(buf, "0", 1) = 0) {
+ 		debug = 0;
+-		printk(KERN_DEBUG "s3c2410fb: Debug Off");
++		dev_dbg(dev, "s3c2410fb: Debug Off");
+ 	} else {
+ 		return -EINVAL;
+ 	}
+@@ -921,7 +923,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+ 
+ 	info->clk = clk_get(NULL, "lcd");
+ 	if (IS_ERR(info->clk)) {
+-		printk(KERN_ERR "failed to get lcd clock source\n");
++		dev_err(&pdev->dev, "failed to get lcd clock source\n");
+ 		ret = PTR_ERR(info->clk);
+ 		goto release_irq;
+ 	}
+@@ -947,7 +949,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+ 	/* Initialize video memory */
+ 	ret = s3c2410fb_map_video_memory(fbinfo);
+ 	if (ret) {
+-		printk(KERN_ERR "Failed to allocate video RAM: %d\n", ret);
++		dev_err(&pdev->dev, "Failed to allocate video RAM: %d\n", ret);
+ 		ret = -ENOMEM;
+ 		goto release_clock;
+ 	}
+@@ -970,7 +972,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+ 
+ 	ret = register_framebuffer(fbinfo);
+ 	if (ret < 0) {
+-		printk(KERN_ERR "Failed to register framebuffer device: %d\n",
++		dev_err(&pdev->dev, "Failed to register framebuffer device: %d\n",
+ 			ret);
+ 		goto free_cpufreq;
+ 	}
+@@ -978,9 +980,9 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+ 	/* create device files */
+ 	ret = device_create_file(&pdev->dev, &dev_attr_debug);
+ 	if (ret)
+-		printk(KERN_ERR "failed to add debug attribute\n");
++		dev_err(&pdev->dev, "failed to add debug attribute\n");
+ 
+-	printk(KERN_INFO "fb%d: %s frame buffer device\n",
++	dev_info(&pdev->dev, "fb%d: %s frame buffer device\n",
+ 		fbinfo->node, fbinfo->fix.id);
+ 
  	return 0;
- }
- 
--static const struct dev_pm_ops jzfb_pm_ops = {
--	.suspend	= jzfb_suspend,
--	.resume		= jzfb_resume,
--	.poweroff	= jzfb_suspend,
--	.restore	= jzfb_resume,
--};
-+static SIMPLE_DEV_PM_OPS(jzfb_pm_ops, jzfb_suspend, jzfb_resume);
- 
- #define JZFB_PM_OPS (&jzfb_pm_ops)
- 
 -- 
-1.7.9.5
+1.7.4.1
 

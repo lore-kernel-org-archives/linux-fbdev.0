@@ -1,51 +1,60 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 30 Aug 2012 11:52:30 +0000
-Subject: [PATCH v2 08/23] OMAPDRM: Remove manager->device references
-Message-Id: <1346326845-16583-9-git-send-email-archit@ti.com>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Fri, 31 Aug 2012 14:30:59 +0000
+Subject: [PATCH v2] da8xx-fb: enable LCDC if FB is unblanked
+Message-Id: <1346422739-11362-1-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345528711-27801-1-git-send-email-archit@ti.com>
- <1346326845-16583-1-git-send-email-archit@ti.com>
-In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-With the introduction of output entities, managers will now connect to outputs.
-Use the helper op for managers named get_device. This will abstract away the
-information on how to get the device from an overlay manager.
+It is expected that LCDC to continue to be disabled after
+resume if it is blanked before suspend. This is also true
+for DVFS. But it is observed that LCDC being enabled after
+suspend/resume cycle or DVFS.
 
-Using the helper function will reduce the number of pointer dereferences a user
-of OMAPDSS needs to do and reduce risk of a NULL dereference.
+Correcting it by having check for FB_BLANK_UNBLANK before
+enabling.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
 ---
- drivers/staging/omapdrm/omap_drv.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Applies on top of fbdev-next of Florian Tobias Schandinat's tree.
+Since v1:
+Re-written commit message.
 
-diff --git a/drivers/staging/omapdrm/omap_drv.c b/drivers/staging/omapdrm/omap_drv.c
-index 4beab94..64a354a 100644
---- a/drivers/staging/omapdrm/omap_drv.c
-+++ b/drivers/staging/omapdrm/omap_drv.c
-@@ -106,7 +106,8 @@ static void dump_video_chains(void)
- 	for (i = 0; i < omap_dss_get_num_overlays(); i++) {
- 		struct omap_overlay *ovl = omap_dss_get_overlay(i);
- 		struct omap_overlay_manager *mgr = ovl->manager;
--		struct omap_dss_device *dssdev = mgr ? mgr->device : NULL;
-+		struct omap_dss_device *dssdev = mgr ?
-+					mgr->get_device(mgr) : NULL;
- 		if (dssdev) {
- 			DBG("%d: %s -> %s -> %s", i, ovl->name, mgr->name,
- 						dssdev->name);
-@@ -185,7 +186,7 @@ static int create_connector(struct drm_device *dev,
- 	for (j = 0; j < priv->num_encoders; j++) {
- 		struct omap_overlay_manager *mgr  			omap_encoder_get_manager(priv->encoders[j]);
--		if (mgr->device = dssdev) {
-+		if (mgr->get_device(mgr) = dssdev) {
- 			drm_mode_connector_attach_encoder(connector,
- 					priv->encoders[j]);
+ drivers/video/da8xx-fb.c |   11 +++++++----
+ 1 files changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 761c8d1..1273354 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -962,7 +962,8 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
+ 			par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
+ 			lcd_disable_raster();
+ 			lcd_calc_clk_divider(par);
+-			lcd_enable_raster();
++			if (par->blank = FB_BLANK_UNBLANK)
++				lcd_enable_raster();
  		}
+ 	}
+ 
+@@ -1486,10 +1487,12 @@ static int fb_resume(struct platform_device *dev)
+ 
+ 	console_lock();
+ 	clk_enable(par->lcdc_clk);
+-	lcd_enable_raster();
++	if (par->blank = FB_BLANK_UNBLANK) {
++		lcd_enable_raster();
+ 
+-	if (par->panel_power_ctrl)
+-		par->panel_power_ctrl(1);
++		if (par->panel_power_ctrl)
++			par->panel_power_ctrl(1);
++	}
+ 
+ 	fb_set_suspend(info, 0);
+ 	console_unlock();
 -- 
-1.7.9.5
+1.7.1
 

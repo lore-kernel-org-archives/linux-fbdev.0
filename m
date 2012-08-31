@@ -1,146 +1,91 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 30 Aug 2012 11:52:31 +0000
-Subject: [PATCH v2 09/23] OMAPDSS: Create links between managers, outputs and devices
-Message-Id: <1346326845-16583-10-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 31 Aug 2012 14:10:42 +0000
+Subject: Re: [PATCH v2 09/23] OMAPDSS: Create links between managers, outputs and devices
+Message-Id: <1346422242.7508.18.camel@lappyti>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-026/UfIt/izKG37eaYBx"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1345528711-27801-1-git-send-email-archit@ti.com>
- <1346326845-16583-1-git-send-email-archit@ti.com>
-In-Reply-To: <1346326845-16583-1-git-send-email-archit@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	 <1346326845-16583-1-git-send-email-archit@ti.com>
+	 <1346326845-16583-10-git-send-email-archit@ti.com>
+In-Reply-To: <1346326845-16583-10-git-send-email-archit@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+
+
+--=-026/UfIt/izKG37eaYBx
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 2012-08-30 at 17:10 +0530, Archit Taneja wrote:
+> Links between DSS entities are made in dss_recheck_connections when a new=
+ panel
+> is probed. Rewrite the code in dss_recheck_connections to link managers t=
+o
+> outputs, and outputs to devices.
+>=20
+> The fields in omap_dss_device struct gives information on which output an=
+d
+> manager to connect to. The desired manager and output pointers are retrie=
+ved and
+> prepared(existing outputs/devices unset, if default display)) to form the
+> desired links. The output is linked to the device, and then the manager t=
+o the
+> output. If a probed device's required manager isn't free, the required ou=
+tput
+> is still connected to the device so that it's easier to use the panel in =
+the
+> future.
+
+I've been pondering this one, and I can't come to a conclusion. The
+recheck_connections is just so ugly that I'd like to get rid of it =3D). I
+guess this patch doesn't make it any more ugly, so we can include it in
+the patch series.
+
+And as I mentioned earlier, I think we should get rid of the
+OMAP_DISPLAY_TYPE_* enum, as it's kinda extra now. But doing that would
+require changing all board files. That's not out of the question, but I
+think we should first make sure we know what we are doing with the board
+files so we don't go back and forth there.
+
+Just gathering my thoughts:
+
+When we define a panel in DT/board file, we should also define the
+output instance, because that's part of the hardware design. But there
+are no hardcoded links between mgrs and outputs, so that doesn't belong
+to the DT/board file. For example, omap4460's DSI1 can take input from
+LCD1 or LCD2.
+
+So who could/should make the decision which mgr to use... Well, I don't
+know on what basis the decision can be made, but I still think omapdss
+can't make good decisions on that, so probably the whole "chain" should
+be configured in the omapfb/omapdrm level.
+
+ Tomi
+
+
+--=-026/UfIt/izKG37eaYBx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: rob@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Links between DSS entities are made in dss_recheck_connections when a new panel
-is probed. Rewrite the code in dss_recheck_connections to link managers to
-outputs, and outputs to devices.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-The fields in omap_dss_device struct gives information on which output and
-manager to connect to. The desired manager and output pointers are retrieved and
-prepared(existing outputs/devices unset, if default display)) to form the
-desired links. The output is linked to the device, and then the manager to the
-output. If a probed device's required manager isn't free, the required output
-is still connected to the device so that it's easier to use the panel in the
-future.
+iQIcBAABAgAGBQJQQMXiAAoJEPo9qoy8lh71sNUP/33I6noff5fEGvJkFOvoDLuL
+xNFRNpSJY1+Ot/LUOblYH+6yCWNaYIbJ3P/uoztocSfllQH85LAzAAoW/6L8IX+I
+uzOX+7J9uwtAIjv+1KC0AK/nz7r08HHP0Jg9TB0s7b6EwlBn+TDnsT0vdsqHjmLX
+WOARcD1EqDTyE+UqIx+t4Zj+Dg/J2u3M82+bonHtQrieQ/oLZWo+8hVbBytDjaSW
+FWiXuPUIZI2VHtUYzOP1NuVEQrIAau1aSLWDDT4JQQgohMe1lGsFM9ZfzwV9Ssq6
+CKbNOJlr8iT0hszziRka71t5SugOQYPsG/8msgwrRc6oJxMHc9zAoSfayGDBSrUP
+DP4v6CxJD7731TivkEA5+CZb6jYRBFtnJE7EwKkqONH4v0x0Q4GT1ZPX3bGh1vDd
+ndsJCpz0zPQY/azxAbmRlmqdjJxg5K7hAgNPaWc3BwknivWFjO/0+u8+veQGN0lg
+p3P6UVkhI8ububGmYgCABNr9f8iqqQCWksoHXBzTV2DCCZCtw8o0tJlfSx3LaTFM
+6uiKpaqw1fVT4hCsSgNHbcI/SkhiC8XvaSesJRck9AihZY2Lv7gIZt3GGQ3MN2M0
+haarcoUvjMlqDU3K3+KJNOVmA9mHDJSg8rfjRRFit4v+sfPKaRykVjrxzlqttYm1
+RBkzogaeXJSPYDlVzSPd
+=IIRG
+-----END PGP SIGNATURE-----
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/overlay.c |   96 +++++++++++++++++++++----------------
- 1 file changed, 56 insertions(+), 40 deletions(-)
-
-diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
-index 952c6fa..07605f1 100644
---- a/drivers/video/omap2/dss/overlay.c
-+++ b/drivers/video/omap2/dss/overlay.c
-@@ -525,51 +525,67 @@ void dss_init_overlays(struct platform_device *pdev)
- void dss_recheck_connections(struct omap_dss_device *dssdev, bool force)
- {
- 	int i;
--	struct omap_overlay_manager *lcd_mgr;
--	struct omap_overlay_manager *tv_mgr;
--	struct omap_overlay_manager *lcd2_mgr = NULL;
--	struct omap_overlay_manager *lcd3_mgr = NULL;
- 	struct omap_overlay_manager *mgr = NULL;
-+	struct omap_dss_output *out = NULL;
-+	enum omap_dss_output_id id;
-+
-+	switch (dssdev->type) {
-+	case OMAP_DISPLAY_TYPE_DPI:
-+		out = omap_dss_get_output(OMAP_DSS_OUTPUT_DPI);
-+		break;
-+	case OMAP_DISPLAY_TYPE_DBI:
-+		out = omap_dss_get_output(OMAP_DSS_OUTPUT_DBI);
-+		break;
-+	case OMAP_DISPLAY_TYPE_SDI:
-+		out = omap_dss_get_output(OMAP_DSS_OUTPUT_SDI);
-+		break;
-+	case OMAP_DISPLAY_TYPE_VENC:
-+		out = omap_dss_get_output(OMAP_DSS_OUTPUT_VENC);
-+		break;
-+	case OMAP_DISPLAY_TYPE_HDMI:
-+		out = omap_dss_get_output(OMAP_DSS_OUTPUT_HDMI);
-+		break;
-+	case OMAP_DISPLAY_TYPE_DSI:
-+		id = dssdev->phy.dsi.module = 0 ? OMAP_DSS_OUTPUT_DSI1 :
-+					OMAP_DSS_OUTPUT_DSI2;
-+		out = omap_dss_get_output(id);
-+		break;
-+	default:
-+		break;
-+	}
- 
--	lcd_mgr = omap_dss_get_overlay_manager(OMAP_DSS_CHANNEL_LCD);
--	tv_mgr = omap_dss_get_overlay_manager(OMAP_DSS_CHANNEL_DIGIT);
--	if (dss_has_feature(FEAT_MGR_LCD3))
--		lcd3_mgr = omap_dss_get_overlay_manager(OMAP_DSS_CHANNEL_LCD3);
--	if (dss_has_feature(FEAT_MGR_LCD2))
--		lcd2_mgr = omap_dss_get_overlay_manager(OMAP_DSS_CHANNEL_LCD2);
--
--	if (dssdev->channel = OMAP_DSS_CHANNEL_LCD3) {
--		if (!lcd3_mgr->device || force) {
--			if (lcd3_mgr->device)
--				lcd3_mgr->unset_device(lcd3_mgr);
--			lcd3_mgr->set_device(lcd3_mgr, dssdev);
--			mgr = lcd3_mgr;
--		}
--	} else if (dssdev->channel = OMAP_DSS_CHANNEL_LCD2) {
--		if (!lcd2_mgr->device || force) {
--			if (lcd2_mgr->device)
--				lcd2_mgr->unset_device(lcd2_mgr);
--			lcd2_mgr->set_device(lcd2_mgr, dssdev);
--			mgr = lcd2_mgr;
--		}
--	} else if (dssdev->type != OMAP_DISPLAY_TYPE_VENC
--			&& dssdev->type != OMAP_DISPLAY_TYPE_HDMI) {
--		if (!lcd_mgr->device || force) {
--			if (lcd_mgr->device)
--				lcd_mgr->unset_device(lcd_mgr);
--			lcd_mgr->set_device(lcd_mgr, dssdev);
--			mgr = lcd_mgr;
--		}
-+	/*
-+	 * We don't want to touch board files and mention channel for VENC
-+	 * devices. Force the channel as DIGIT for HDMI and VENC devices
-+	 */
-+	if (dssdev->type = OMAP_DISPLAY_TYPE_VENC ||
-+			dssdev->type = OMAP_DISPLAY_TYPE_HDMI)
-+		dssdev->channel = OMAP_DSS_CHANNEL_DIGIT;
-+
-+	mgr = omap_dss_get_overlay_manager(dssdev->channel);
-+
-+	if (!mgr || !out) {
-+		DSSERR("Incorrect manager or output\n");
-+		return;
- 	}
- 
--	if (dssdev->type = OMAP_DISPLAY_TYPE_VENC
--			|| dssdev->type = OMAP_DISPLAY_TYPE_HDMI) {
--		if (!tv_mgr->device || force) {
--			if (tv_mgr->device)
--				tv_mgr->unset_device(tv_mgr);
--			tv_mgr->set_device(tv_mgr, dssdev);
--			mgr = tv_mgr;
-+	if (!mgr->output || force) {
-+		struct omap_dss_output *curr_out = mgr->output;
-+
-+		if (curr_out) {
-+			if (curr_out->device)
-+				curr_out->unset_device(curr_out);
-+			mgr->unset_output(mgr);
- 		}
-+		out->set_device(out, dssdev);
-+		mgr->set_output(mgr, out);
-+	} else {
-+		/*
-+		 * connect a floating output to the device even if the desired
-+		 * manager is in use
-+		 */
-+		if (!out->manager && !out->device)
-+			out->set_device(out, dssdev);
- 	}
- 
- 	if (mgr) {
--- 
-1.7.9.5
+--=-026/UfIt/izKG37eaYBx--
 

@@ -1,69 +1,56 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 25 Sep 2012 06:31:35 +0000
-Subject: [PATCH v2 00/18] OMAPDSS: DISPC changes for writeback pipeline
-Message-Id: <1348553993-8083-1-git-send-email-archit@ti.com>
+From: Lars-Peter Clausen <lars@metafoo.de>
+Date: Sun, 02 Sep 2012 15:19:56 +0000
+Subject: Re: [PATCH 3/5] drivers/video/jz4740_fb.c: use devm_ functions
+Message-Id: <5043791C.4050202@metafoo.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>
-In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
+References: <1344008414-2894-1-git-send-email-damien.cassou@lifl.fr> <1344008414-2894-3-git-send-email-damien.cassou@lifl.fr> <5036955F.6000806@gmx.de>
+In-Reply-To: <5036955F.6000806@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Damien Cassou <damien.cassou@lifl.fr>, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This series prepares the low level DISPC driver(dispc.c) to configure writeback
-registers. Original series can be seen here:
+On 08/23/2012 10:41 PM, Florian Tobias Schandinat wrote:
+> On 08/03/2012 03:40 PM, Damien Cassou wrote:
+>> From: Damien Cassou <damien.cassou@lifl.fr>
+>>
+>> The various devm_ functions allocate memory that is released when a driver
+>> detaches. This patch uses these functions for data that is allocated in the
+>> probe function of a platform device and is only freed in the remove function.
+>>
+>> Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
+> 
+> Applied.
+> 
+> 
+> Thanks,
+> 
+> Florian Tobias Schandinat
+> 
+>>
+>> ---
+>>  drivers/video/jz4740_fb.c |   22 ++++++----------------
+>>  1 file changed, 6 insertions(+), 16 deletions(-)
+>>
+>> diff --git a/drivers/video/jz4740_fb.c b/drivers/video/jz4740_fb.c
+>> index de36693..7669770 100644
+>> --- a/drivers/video/jz4740_fb.c
+>> +++ b/drivers/video/jz4740_fb.c
+>> @@ -659,25 +659,25 @@ static int __devinit jzfb_probe(struct platform_device *pdev)
+>>  	jzfb->pdata = pdata;
+>>  	jzfb->mem = mem;
+>>
+>> -	jzfb->ldclk = clk_get(&pdev->dev, "lcd");
+>> +	jzfb->ldclk = devm_clk_get(&pdev->dev, "lcd");
 
-http://marc.info/?l=linux-fbdev&m4753851619354&w=2
+I guess I'm a bit late, but we do not have devm_clk_get on jz4740 (yet), so
+this patch breaks linking for this driver in next. I'll to to have this added
+for the next release, but if I do not succeed we'll have to revert part of this
+patch.
 
-Changes since v2:
+Also the driver does not include #include <linux/io.h>, since it is required
+for devm_ioremap compilation is also broken. This one is easy to fix though,
+will send a follow-up patch.
 
-- Removed patches which rename dispc_ovl_* functions to dispc_plane_*
-- Revisited the scaling related code a bit. Removed the usage of 'output rate'
-  to fit in writeback. Instead, added a new parameter called mem_to_mem, passed
-  by APPLY. This tells whether we have to consider a display pixel clock for
-  scaling limitations or not.
-- All 'Scalar' references renamed to 'Scaler'.
-- Minor cleanups.
-
-Reference branch:
-
-git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git 1-writeback-dispc
-
-Archit Taneja (18):
-  OMAPDSS: DISPC: Constify omap_overlay_info in dispc_ovl_setup()
-  OMAPDSS: DISPC: Simplify function names for setting pipeline input
-    and output sizes
-  OMAPDSS: DISPC: Pass overlay caps as a parameter to dispc plane
-    functions
-  OMAPDSS: OVERLAY: Add position and replication as overlay caps
-  OMAPDSS: DISPC: Make dispc_ovl_setup call dispc_ovl_setup_common
-  OMAPDSS: DISPC: Don't pass channel out when configuring overlays
-  OMAPDSS: DIPSC: Relax scaling limitations when in memory to memory
-    mode
-  OMAPDSS: DISPC: Allow both upscaling and downscaling of chroma
-  OMAPDSS: DISPC: Add writeback register offsets and dss features
-    structs
-  OMAPDSS: DISPC: Configure input and output sizes for writeback
-  OMAPDSS: DISPC: Downscale chroma if plane is writeback
-  OMAPDSS: DISPC: Don't set chroma resampling bit for writeback
-  OMAPDSS: DISPC: Add function to set channel in for writeback
-  OMAPDSS: DISPC: Configure overlay-like parameters in dispc_wb_setup
-  OMAPDSS: DISPC: Configure writeback specific parameters in
-    dispc_wb_setup()
-  OMAPDSS: DISPC: Configure writeback FIFOs
-  OMAPDSS: DISPC: Add manager like functions for writeback
-  OMAPDSS: DISPC: Configure color conversion coefficients for writeback
-
- drivers/video/omap2/dss/apply.c        |    2 +-
- drivers/video/omap2/dss/dispc.c        |  561 ++++++++++++++++++++++----------
- drivers/video/omap2/dss/dispc.h        |   33 ++
- drivers/video/omap2/dss/dss.h          |   25 +-
- drivers/video/omap2/dss/dss_features.c |   57 +++-
- drivers/video/omap2/dss/dss_features.h |    1 +
- include/video/omapdss.h                |   15 +
- 7 files changed, 510 insertions(+), 184 deletions(-)
-
--- 
-1.7.9.5
-
+- Lars

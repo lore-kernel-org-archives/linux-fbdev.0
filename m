@@ -1,85 +1,115 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 13 Sep 2012 12:26:45 +0000
-Subject: [PATCH 01/21] OMAPDSS: DISPC: Constify omap_overlay_info in dispc_ovl_setup()
-Message-Id: <1347538505-25359-2-git-send-email-archit@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 03 Sep 2012 00:54:48 +0000
+Subject: Re: [PATCH] video: s3c2410fb: Use pr_* and dev_* instead of printk
+Message-Id: <003401cd896e$b8007ce0$280176a0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>
-In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-The struct omap_overlay_info passed to dispc_ovl_setup() is used to configure
-DISPC registers. It shouldn't modify the overlay_info structure. The pos_y field
-was being changed in dispc_ovl_setup in the case of interlaced displays. Fix
-this and const qualifier to the omap_overlay_info argument.
+On Friday, August 31, 2012 8:50 PM Sachin Kamat wrote:
+> 
+> printk calls are replaced by pr_* and dev_* calls to silence
+> checkpatch warnings.
+> 
+> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+> ---
+>  drivers/video/s3c2410fb.c |   18 ++++++++++--------
+>  1 files changed, 10 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
+> index 77f34c6..a54e3f9 100644
+> --- a/drivers/video/s3c2410fb.c
+> +++ b/drivers/video/s3c2410fb.c
+> @@ -11,6 +11,8 @@
+>   * Driver based on skeletonfb.c, sa1100fb.c and others.
+>  */
+> 
+> +#define pr_fmt(fmt) "s3c2410fb: " fmt
+> +
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/dispc.c |    9 +++++----
- drivers/video/omap2/dss/dss.h   |    2 +-
- 2 files changed, 6 insertions(+), 5 deletions(-)
+Hi Sachin Kamat,
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 33db882..cd3d532 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -2253,7 +2253,7 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
- 	return 0;
- }
- 
--int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
-+int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
- 		bool replication, const struct omap_video_timings *mgr_timings)
- {
- 	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
-@@ -2271,6 +2271,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
- 	enum omap_channel channel;
- 	int x_predecim = 1, y_predecim = 1;
- 	bool ilace = mgr_timings->interlace;
-+	u16 pos_y = oi->pos_y;
- 
- 	channel = dispc_ovl_get_channel_out(plane);
- 
-@@ -2293,12 +2294,12 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
- 	if (ilace) {
- 		if (fieldmode)
- 			in_height /= 2;
--		oi->pos_y /= 2;
-+		pos_y /= 2;
- 		out_height /= 2;
- 
- 		DSSDBG("adjusting for ilace: height %d, pos_y %d, "
- 				"out_height %d\n",
--				in_height, oi->pos_y, out_height);
-+				in_height, pos_y, out_height);
- 	}
- 
- 	if (!dss_feat_color_mode_supported(plane, oi->color_mode))
-@@ -2381,7 +2382,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
- 	DSSDBG("%d,%d %dx%d -> %dx%d\n", oi->pos_x, oi->pos_y, in_width,
- 			in_height, out_width, out_height);
- 
--	dispc_ovl_set_pos(plane, oi->pos_x, oi->pos_y);
-+	dispc_ovl_set_pos(plane, oi->pos_x, pos_y);
- 
- 	dispc_ovl_set_pic_size(plane, in_width, in_height);
- 
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index c2bc092..43210b8 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -440,7 +440,7 @@ void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high);
- void dispc_ovl_compute_fifo_thresholds(enum omap_plane plane,
- 		u32 *fifo_low, u32 *fifo_high, bool use_fifomerge,
- 		bool manual_update);
--int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
-+int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
- 		bool replication, const struct omap_video_timings *mgr_timings);
- int dispc_ovl_enable(enum omap_plane plane, bool enable);
- void dispc_ovl_set_channel_out(enum omap_plane plane,
--- 
-1.7.9.5
+How about using KBUILD_MODNAME instead of "s3c2410fb: "?
+It is because prefix is the same with module name.
+
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+
+
+Best regards,
+Jingoo Han
+
+>  #include <linux/module.h>
+>  #include <linux/kernel.h>
+>  #include <linux/err.h>
+> @@ -48,7 +50,7 @@ static int debug	= 1;
+>  static int debug;
+>  #endif
+> 
+> -#define dprintk(msg...)	if (debug) printk(KERN_DEBUG "s3c2410fb: " msg);
+> +#define dprintk(msg...)	if (debug) pr_debug(msg);
+> 
+>  /* useful functions */
+> 
+> @@ -598,11 +600,11 @@ static int s3c2410fb_debug_store(struct device *dev,
+>  	if (strnicmp(buf, "on", 2) = 0 ||
+>  	    strnicmp(buf, "1", 1) = 0) {
+>  		debug = 1;
+> -		printk(KERN_DEBUG "s3c2410fb: Debug On");
+> +		dev_dbg(dev, "s3c2410fb: Debug On");
+>  	} else if (strnicmp(buf, "off", 3) = 0 ||
+>  		   strnicmp(buf, "0", 1) = 0) {
+>  		debug = 0;
+> -		printk(KERN_DEBUG "s3c2410fb: Debug Off");
+> +		dev_dbg(dev, "s3c2410fb: Debug Off");
+>  	} else {
+>  		return -EINVAL;
+>  	}
+> @@ -921,7 +923,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+> 
+>  	info->clk = clk_get(NULL, "lcd");
+>  	if (IS_ERR(info->clk)) {
+> -		printk(KERN_ERR "failed to get lcd clock source\n");
+> +		dev_err(&pdev->dev, "failed to get lcd clock source\n");
+>  		ret = PTR_ERR(info->clk);
+>  		goto release_irq;
+>  	}
+> @@ -947,7 +949,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+>  	/* Initialize video memory */
+>  	ret = s3c2410fb_map_video_memory(fbinfo);
+>  	if (ret) {
+> -		printk(KERN_ERR "Failed to allocate video RAM: %d\n", ret);
+> +		dev_err(&pdev->dev, "Failed to allocate video RAM: %d\n", ret);
+>  		ret = -ENOMEM;
+>  		goto release_clock;
+>  	}
+> @@ -970,7 +972,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+> 
+>  	ret = register_framebuffer(fbinfo);
+>  	if (ret < 0) {
+> -		printk(KERN_ERR "Failed to register framebuffer device: %d\n",
+> +		dev_err(&pdev->dev, "Failed to register framebuffer device: %d\n",
+>  			ret);
+>  		goto free_cpufreq;
+>  	}
+> @@ -978,9 +980,9 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+>  	/* create device files */
+>  	ret = device_create_file(&pdev->dev, &dev_attr_debug);
+>  	if (ret)
+> -		printk(KERN_ERR "failed to add debug attribute\n");
+> +		dev_err(&pdev->dev, "failed to add debug attribute\n");
+> 
+> -	printk(KERN_INFO "fb%d: %s frame buffer device\n",
+> +	dev_info(&pdev->dev, "fb%d: %s frame buffer device\n",
+>  		fbinfo->node, fbinfo->fix.id);
+> 
+>  	return 0;
+> --
+> 1.7.4.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 

@@ -1,69 +1,36 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 06 Sep 2012 12:55:42 +0000
-Subject: Re: [PATCH 13/17] Revert "OMAPDSS: APPLY: add fifo-merge support"
-Message-Id: <1346936142.2737.55.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-+KY5Zb2x+aJ9AepnGnZV"
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 03 Sep 2012 08:50:24 +0000
+Subject: [PATCH] video: exynos_dp: replace link_status with link_align to check channel equalization
+Message-Id: <000001cd89b1$2852e3b0$78f8ab10$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1346833555-31258-14-git-send-email-tomi.valkeinen@ti.com>
-	 <5047570D.1030601@ti.com>
-In-Reply-To: <5047570D.1030601@ti.com>
-To: Archit Taneja <a0393947@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-
---=-+KY5Zb2x+aJ9AepnGnZV
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2012-09-05 at 19:13 +0530, Archit Taneja wrote:
-> On Wednesday 05 September 2012 01:55 PM, Tomi Valkeinen wrote:
-> > This reverts commit 1d71f42b35ed66d90a9a39bc515bb16cfe2d4a46.
-> >
-> > Adding fifo merge feature as an omapdss internal configuration was a
-> > mistake. We cannot hide from the users of omapdss the complexities of
-> > fifo merge.
-> >
-> > This commit removes the fifo merge support, which luckily is easily don=
-e
-> > as it was handled totally inside apply.c.
-> >
-> > The plan is to try fifo merge again later when it is more clear how the
-> > hardware acts in various situations, and how the omapdrm wants to use
-> > fifo merge.
->=20
-> Nitpick: This isn't an exact revert right? Maybe we should mention that,=
-=20
-> so that if someone tries to apply the old patch, it doesn't fail.
-
-Yep, I added a note.
-
- Tomi
-
-
---=-+KY5Zb2x+aJ9AepnGnZV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+To check channel equalization, the value of LANE_ALIGN_STATUS_UPDATED is
+necessary in exynos_dp_channel_eq_ok(). Also, link_align includes this value.
+However, link_status does not include this value, so it makes the problem
+that channel equalization is failed during link training.
 
-iQIcBAABAgAGBQJQSJ1OAAoJEPo9qoy8lh71SF0P/0uopqVA0uuEDmp2wxCcj+ak
-KAVbAy5vq9Y0GOyHRtWtvszN7i7FC1yHFRmhSisFPfy0SGuEGhXXtoO8ckNAba8p
-k7F4Z2ltJyyVGJ2bJeCd7nqHzS3P1K8l1gL/KJEKQxdB0t30WnFOWvNv6+BYi2OZ
-Go05XV7ieHcPkXhjJrYyaWVxLjChVfiScML8Wxlne1KhP7NCRPsK4gmYoNvr/ead
-/3BlOZSb68Njwdu+fnPHbnfK206n8W3+pzS3tVT/pbEY85bIlOFSYDu9p4xg9enN
-P1FnZlN0YZ8qOrzUwC8ZotnPkvak2lkLgsgM3H+R4IB1CFfXT9uEYUFRT5kqHfFK
-FccDRnG73mdQc1jeWHsrIHW/K2gH1+qZQMonEWMjQ0E+OrBB1FO7cuRQE+UPnDrg
-/F+m2gAyHXUNjmqfPdY2aUsSW6yjmkwvr+UbDu2BaMr/+IpsYQx6c4J1Lh8UmkDz
-h4qTwHY8CMnRtJoFCRFBsuoIY0EfktHChCQ7EZ8av77Ivo5MtKvVabfLuH/MrBge
-YtEFKfk8Dkl8CvoTlBzz4W9K9u7h7LofBK1DsV4WoNfacbNVMFDRc5iox+r+Dhz/
-0Djj7Au+sOqsaXpXNCH1YzHBoF+xmak1Uaf8tdEjC5nCEEhrLr1nr/yRmeysticd
-DQ0RvGm/iABM3TtJFsKR
-=KQ9r
------END PGP SIGNATURE-----
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/exynos/exynos_dp_core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
---=-+KY5Zb2x+aJ9AepnGnZV--
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index f57c915..cdc1398 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -587,7 +587,7 @@ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
+ 			dp->link_train.training_lane[lane] = training_lane;
+ 		}
+ 
+-		if (exynos_dp_channel_eq_ok(link_status, lane_count) = 0) {
++		if (exynos_dp_channel_eq_ok(link_align, lane_count) = 0) {
+ 			/* traing pattern Set to Normal */
+ 			exynos_dp_training_pattern_dis(dp);
+ 
+-- 
+1.7.1
 

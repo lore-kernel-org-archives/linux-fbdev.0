@@ -1,56 +1,221 @@
-From: Lars-Peter Clausen <lars@metafoo.de>
-Date: Sun, 02 Sep 2012 15:19:56 +0000
-Subject: Re: [PATCH 3/5] drivers/video/jz4740_fb.c: use devm_ functions
-Message-Id: <5043791C.4050202@metafoo.de>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Tue, 04 Sep 2012 03:20:19 +0000
+Subject: RE: [PATCH v5] da8xx-fb: allow frame to complete after disabling LCDC
+Message-Id: <A73F36158E33644199EB82C5EC81C7BC3E9B53A4@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344008414-2894-1-git-send-email-damien.cassou@lifl.fr> <1344008414-2894-3-git-send-email-damien.cassou@lifl.fr> <5036955F.6000806@gmx.de>
-In-Reply-To: <5036955F.6000806@gmx.de>
+References: <1345813980-14758-1-git-send-email-prakash.pm@ti.com>
+In-Reply-To: <1345813980-14758-1-git-send-email-prakash.pm@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Damien Cassou <damien.cassou@lifl.fr>, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On 08/23/2012 10:41 PM, Florian Tobias Schandinat wrote:
-> On 08/03/2012 03:40 PM, Damien Cassou wrote:
->> From: Damien Cassou <damien.cassou@lifl.fr>
->>
->> The various devm_ functions allocate memory that is released when a driver
->> detaches. This patch uses these functions for data that is allocated in the
->> probe function of a platform device and is only freed in the remove function.
->>
->> Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
-> 
-> Applied.
-> 
-> 
-> Thanks,
-> 
-> Florian Tobias Schandinat
-> 
->>
->> ---
->>  drivers/video/jz4740_fb.c |   22 ++++++----------------
->>  1 file changed, 6 insertions(+), 16 deletions(-)
->>
->> diff --git a/drivers/video/jz4740_fb.c b/drivers/video/jz4740_fb.c
->> index de36693..7669770 100644
->> --- a/drivers/video/jz4740_fb.c
->> +++ b/drivers/video/jz4740_fb.c
->> @@ -659,25 +659,25 @@ static int __devinit jzfb_probe(struct platform_device *pdev)
->>  	jzfb->pdata = pdata;
->>  	jzfb->mem = mem;
->>
->> -	jzfb->ldclk = clk_get(&pdev->dev, "lcd");
->> +	jzfb->ldclk = devm_clk_get(&pdev->dev, "lcd");
+Hi Florian Tobias Schandinat,
 
-I guess I'm a bit late, but we do not have devm_clk_get on jz4740 (yet), so
-this patch breaks linking for this driver in next. I'll to to have this added
-for the next release, but if I do not succeed we'll have to revert part of this
-patch.
+If you do not have any review comments, could you please accept this patch?
 
-Also the driver does not include #include <linux/io.h>, since it is required
-for devm_ioremap compilation is also broken. This one is easy to fix though,
-will send a follow-up patch.
+Thanks,
+Prakash
 
-- Lars
+On Fri, Aug 24, 2012 at 18:43:00, Manjunathappa, Prakash wrote:
+> Wait for active frame transfer to complete after disabling LCDC.
+> At the same this wait is not be required when there are sync and
+> underflow errors.
+> Patch applies for revision 2 of LCDC present am335x.
+> More information on disable and reset sequence can be found in
+> section 13.4.6 of AM335x TRM @www.ti.com/am335x.
+> 
+> Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+> ---
+> Applies on top of fbdev-next of Florian Tobias Schandinat's tree.
+> Since v4:
+> Minor nit, removed extra line.
+> Since v3:
+> Rely on frame done interrupt instead of polling for it.
+> Since v2:
+> Optimized the lcd_disable_raster function.
+> Since v1:
+> Changed the commit message, also added link to hardware specification.
+>  drivers/video/da8xx-fb.c |   52 +++++++++++++++++++++++++++++++++++----------
+>  1 files changed, 40 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+> index 7ae9d53..32f0d06 100644
+> --- a/drivers/video/da8xx-fb.c
+> +++ b/drivers/video/da8xx-fb.c
+> @@ -27,6 +27,7 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/uaccess.h>
+>  #include <linux/interrupt.h>
+> +#include <linux/wait.h>
+>  #include <linux/clk.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/console.h>
+> @@ -48,6 +49,7 @@
+>  #define LCD_PL_LOAD_DONE		BIT(6)
+>  #define LCD_FIFO_UNDERFLOW		BIT(5)
+>  #define LCD_SYNC_LOST			BIT(2)
+> +#define LCD_FRAME_DONE			BIT(0)
+>  
+>  /* LCD DMA Control Register */
+>  #define LCD_DMA_BURST_SIZE(x)		((x) << 4)
+> @@ -135,6 +137,8 @@ static resource_size_t da8xx_fb_reg_base;
+>  static struct resource *lcdc_regs;
+>  static unsigned int lcd_revision;
+>  static irq_handler_t lcdc_irq_handler;
+> +static wait_queue_head_t frame_done_wq;
+> +static int frame_done_flag;
+>  
+>  static inline unsigned int lcdc_read(unsigned int addr)
+>  {
+> @@ -288,13 +292,26 @@ static inline void lcd_enable_raster(void)
+>  }
+>  
+>  /* Disable the Raster Engine of the LCD Controller */
+> -static inline void lcd_disable_raster(void)
+> +static inline void lcd_disable_raster(bool wait_for_frame_done)
+>  {
+>  	u32 reg;
+> +	int ret;
+>  
+>  	reg = lcdc_read(LCD_RASTER_CTRL_REG);
+>  	if (reg & LCD_RASTER_ENABLE)
+>  		lcdc_write(reg & ~LCD_RASTER_ENABLE, LCD_RASTER_CTRL_REG);
+> +	else
+> +		/* return if already disabled */
+> +		return;
+> +
+> +	if ((wait_for_frame_done = true) && (lcd_revision = LCD_VERSION_2)) {
+> +		frame_done_flag = 0;
+> +		ret = wait_event_interruptible_timeout(frame_done_wq,
+> +				frame_done_flag != 0,
+> +				msecs_to_jiffies(50));
+> +		if (ret = 0)
+> +			pr_err("LCD Controller timed out\n");
+> +	}
+>  }
+>  
+>  static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
+> @@ -321,7 +338,8 @@ static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
+>  		} else {
+>  			reg_int = lcdc_read(LCD_INT_ENABLE_SET_REG) |
+>  				LCD_V2_END_OF_FRAME0_INT_ENA |
+> -				LCD_V2_END_OF_FRAME1_INT_ENA;
+> +				LCD_V2_END_OF_FRAME1_INT_ENA |
+> +				LCD_FRAME_DONE;
+>  			lcdc_write(reg_int, LCD_INT_ENABLE_SET_REG);
+>  		}
+>  		reg_dma |= LCD_DUAL_FRAME_BUFFER_ENABLE;
+> @@ -638,7 +656,7 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+>  static void lcd_reset(struct da8xx_fb_par *par)
+>  {
+>  	/* Disable the Raster if previously Enabled */
+> -	lcd_disable_raster();
+> +	lcd_disable_raster(false);
+>  
+>  	/* DMA has to be disabled */
+>  	lcdc_write(0, LCD_DMA_CTRL_REG);
+> @@ -734,7 +752,7 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
+>  	u32 stat = lcdc_read(LCD_MASKED_STAT_REG);
+>  
+>  	if ((stat & LCD_SYNC_LOST) && (stat & LCD_FIFO_UNDERFLOW)) {
+> -		lcd_disable_raster();
+> +		lcd_disable_raster(false);
+>  		lcdc_write(stat, LCD_MASKED_STAT_REG);
+>  		lcd_enable_raster();
+>  	} else if (stat & LCD_PL_LOAD_DONE) {
+> @@ -744,7 +762,7 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
+>  		 * interrupt via the following write to the status register. If
+>  		 * this is done after then one gets multiple PL done interrupts.
+>  		 */
+> -		lcd_disable_raster();
+> +		lcd_disable_raster(false);
+>  
+>  		lcdc_write(stat, LCD_MASKED_STAT_REG);
+>  
+> @@ -775,6 +793,14 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
+>  			par->vsync_flag = 1;
+>  			wake_up_interruptible(&par->vsync_wait);
+>  		}
+> +
+> +		/* Set only when controller is disabled and at the end of
+> +		 * active frame
+> +		 */
+> +		if (stat & BIT(0)) {
+> +			frame_done_flag = 1;
+> +			wake_up_interruptible(&frame_done_wq);
+> +		}
+>  	}
+>  
+>  	lcdc_write(0, LCD_END_OF_INT_IND_REG);
+> @@ -789,7 +815,7 @@ static irqreturn_t lcdc_irq_handler_rev01(int irq, void *arg)
+>  	u32 reg_ras;
+>  
+>  	if ((stat & LCD_SYNC_LOST) && (stat & LCD_FIFO_UNDERFLOW)) {
+> -		lcd_disable_raster();
+> +		lcd_disable_raster(false);
+>  		lcdc_write(stat, LCD_STAT_REG);
+>  		lcd_enable_raster();
+>  	} else if (stat & LCD_PL_LOAD_DONE) {
+> @@ -799,7 +825,7 @@ static irqreturn_t lcdc_irq_handler_rev01(int irq, void *arg)
+>  		 * interrupt via the following write to the status register. If
+>  		 * this is done after then one gets multiple PL done interrupts.
+>  		 */
+> -		lcd_disable_raster();
+> +		lcd_disable_raster(false);
+>  
+>  		lcdc_write(stat, LCD_STAT_REG);
+>  
+> @@ -898,7 +924,7 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
+>  	if (val = CPUFREQ_POSTCHANGE) {
+>  		if (par->lcd_fck_rate != clk_get_rate(par->lcdc_clk)) {
+>  			par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
+> -			lcd_disable_raster();
+> +			lcd_disable_raster(true);
+>  			lcd_calc_clk_divider(par);
+>  			lcd_enable_raster();
+>  		}
+> @@ -935,7 +961,7 @@ static int __devexit fb_remove(struct platform_device *dev)
+>  		if (par->panel_power_ctrl)
+>  			par->panel_power_ctrl(0);
+>  
+> -		lcd_disable_raster();
+> +		lcd_disable_raster(true);
+>  		lcdc_write(0, LCD_RASTER_CTRL_REG);
+>  
+>  		/* disable DMA  */
+> @@ -1051,7 +1077,7 @@ static int cfb_blank(int blank, struct fb_info *info)
+>  		if (par->panel_power_ctrl)
+>  			par->panel_power_ctrl(0);
+>  
+> -		lcd_disable_raster();
+> +		lcd_disable_raster(true);
+>  		break;
+>  	default:
+>  		ret = -EINVAL;
+> @@ -1356,8 +1382,10 @@ static int __devinit fb_probe(struct platform_device *device)
+>  
+>  	if (lcd_revision = LCD_VERSION_1)
+>  		lcdc_irq_handler = lcdc_irq_handler_rev01;
+> -	else
+> +	else {
+> +		init_waitqueue_head(&frame_done_wq);
+>  		lcdc_irq_handler = lcdc_irq_handler_rev02;
+> +	}
+>  
+>  	ret = request_irq(par->irq, lcdc_irq_handler, 0,
+>  			DRIVER_NAME, par);
+> @@ -1411,7 +1439,7 @@ static int fb_suspend(struct platform_device *dev, pm_message_t state)
+>  		par->panel_power_ctrl(0);
+>  
+>  	fb_set_suspend(info, 1);
+> -	lcd_disable_raster();
+> +	lcd_disable_raster(true);
+>  	clk_disable(par->lcdc_clk);
+>  	console_unlock();
+>  
+> -- 
+> 1.7.1
+> 
+> 
+

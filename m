@@ -1,89 +1,61 @@
-From: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
-Date: Fri, 28 Sep 2012 12:23:21 +0000
-Subject: Re: [PATCH V3 0/3] OMAPDSS: Enable dynamic debug printing
-Message-Id: <CAF0AtAsbBd_P7_=Swtre1MGrE_gW4JikYt3MaJ1kFO1ALzB36w@mail.gmail.com>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Date: Tue, 04 Sep 2012 09:24:46 +0000
+Subject: Re: [RFC 1/5] video: Add generic display panel core
+Message-Id: <20120904092446.GN24458@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1348636132.git.cmahapatra@ti.com>
-	<cover.1348826106.git.cmahapatra@ti.com>
-	<1348832057.2437.24.camel@deskari>
-In-Reply-To: <1348832057.2437.24.camel@deskari>
+References: <1345164583-18924-1-git-send-email-laurent.pinchart@ideasonboard.com>
+ <1345164583-18924-2-git-send-email-laurent.pinchart@ideasonboard.com>
+In-Reply-To: <1345164583-18924-2-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, linux-media@vger.kernel.org, Bryan Wu <bryan.wu@canonical.com>, Richard Purdie <rpurdie@rpsys.net>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Marcus Lorentzon <marcus.lorentzon@linaro.org>, Sumit Semwal <sumit.semwal@ti.com>, Archit Taneja <archit@ti.com>, Sebastien Guiriec <s-guiriec@ti.com>, Inki Dae <inki.dae@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-On Fri, Sep 28, 2012 at 5:04 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On Fri, 2012-09-28 at 15:53 +0530, Chandrabhanu Mahapatra wrote:
->> Hi everyone,
->> this patch series aims at cleaning up of DSS of printk()'s enabled with
->> dss_debug and replace them with generic dynamic debug printing.
->>
->> The 1st patch
->>  * moved DEBUG flag definition to Makefile
->> The 2nd patch
->>  * replaces printk() in DSSDBG definition with pr_debug()
->>  * removes DSSDBGF definition and replaces its instances with DSSDBG()
->> The 3rd patch
->>  * cleans up printk()'s in omap_dispc_unregister_isr() and
->>    _dsi_print_reset_status() with pr_debug()
->>  * removes dss_debug variable
->>
->> Changes from V1 to V2:
->>  * added debug messages to DSSDBG calls
->>  * added patch "OMAPDSS: Remove dss_debug variable"
->>
->> Changes from V2 to V3
->>  * added patch "OMAPDSS: Move definition of DEBUG flag to Makefile"
->>
->> All your comments and suggestions are welcome.
->
-> There's one thing that's not quite nice about omapdss's debug print
-> behavior after this series.
->
-> CONFIG_OMAP2_DSS_DEBUG_SUPPORT is marked "default y", and it's also been
-> safe to enable earlier as we had the dss_debug variable to prevent the
-> debug prints. But after this series, the debug prints are enabled, and
-> will spam the kernel log quite heavily.
->
-> And that happens with both dynamic debugging enabled and disabled.
+Hi Laurent,
 
-Yes, I had noticed that but I thought a better way to disable debug
-prints is to disable both dynamic debugging (CONFIG_DYNAMIC_DEBUG) and
-CONFIG_OMAP2_DSS_DEBUG_SUPPORT. May be CONFIG_OMAP2_DSS_DEBUG_SUPPORT
-should have been false by default.
+On Fri, Aug 17, 2012 at 02:49:39AM +0200, Laurent Pinchart wrote:
+> +/**
+> + * panel_get_modes - Get video modes supported by the panel
+> + * @panel: The panel
+> + * @modes: Pointer to an array of modes
+> + *
+> + * Fill the modes argument with a pointer to an array of video modes. The array
+> + * is owned by the panel.
+> + *
+> + * Return the number of supported modes on success (including 0 if no mode is
+> + * supported) or a negative error code otherwise.
+> + */
+> +int panel_get_modes(struct panel *panel, const struct fb_videomode **modes)
+> +{
+> +	if (!panel->ops || !panel->ops->get_modes)
+> +		return 0;
+> +
+> +	return panel->ops->get_modes(panel, modes);
+> +}
+> +EXPORT_SYMBOL_GPL(panel_get_modes);
 
-> How things should work:
->
-> For kernels with dynamic debugging disabled: by default the dss debugs
-> are not compiled, and the user needs to explicitly enable them in the
-> kernel config.
->
-> For kernels with dynamic debugging enabled: by default the dss debugs
-> are compiled in, but not enabled. A Kconfig option can be set to make
-> the debugs enabled by default.
->
-> In addition to those, we have the debugfs files. Those should be usable
-> regardless of the debug prints.
->
-> So I suggest the following:
->
-> - Remove CONFIG_OMAP2_DSS_DEBUG_SUPPORT. We can't re-use it, because it
-> may be enabled in user's kernel configs.
-> - Add new Kconfig option: CONFIG_OMAP2_DSS_DEBUG. This will set DEBUG in
-> the makefile. This is off by default.
-> - Add new Kconfig option: CONFIG_OMAP2_DSS_DEBUGFS. This will be use to
-> decide if debugfs functionality is compiled in or not. This is off by
-> default.
->
->  Tomi
->
+You have seen my of videomode helper proposal. One result there was that
+we want to have ranges for the margin/synclen fields. Does it make sense
+to base this new panel framework on a more sophisticated internal
+reprentation of the panel parameters? This could then be converted to
+struct fb_videomode / struct drm_display_mode as needed. This would also
+make it more suitable for drm drivers which are not interested in struct
+fb_videomode.
 
-Well, I had a different perception. If one needs to debug then both
-debugfs and debug prints should be enabled. If one needs only debug
-prints then CONFIG_DEBUG_FS can be disabled.
-But above approach seems to provide more flexibilty.
+Related to this I suggest to change the API to be able to iterate over
+the different modes, like:
+
+struct videomode *panel_get_mode(struct panel *panel, int num);
+
+This was we do not have to have an array of modes in memory, which may
+be a burden for some panel drivers.
+
+Sascha
+
 
 -- 
-Chandrabhanu Mahapatra
-Texas Instruments India Pvt. Ltd.
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

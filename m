@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 05 Sep 2012 08:25:52 +0000
-Subject: [PATCH 14/17] Revert "OMAPDSS: APPLY: add fifo merge support funcs"
-Message-Id: <1346833555-31258-15-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 05 Sep 2012 08:25:43 +0000
+Subject: [PATCH 05/17] OMAPFB: clear framebuffers with CPU
+Message-Id: <1346833555-31258-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,100 +11,69 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This reverts commit fb0119742291b6f30cd97026ee137b2d3d1f4de8.
+Currently vram.c clears the allocated memory automatically using OMAP
+system DMA. In an effort to reduce OMAP dependencies, we'll do the
+memory clear with CPU from now on.
 
-Adding fifo merge feature as an omapdss internal configuration was a
-mistake. We cannot hide from the users of omapdss the complexities of
-fifo merge.
-
-The previous commit removed fifo merge itself, and this removes the
-remaining fifo merge support functions.
+This patch implements clearing of the framebuffer in omapfb, using
+cfb_fillrect() to do the actual clear.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/apply.c |   43 ---------------------------------------
- 1 file changed, 43 deletions(-)
+ drivers/video/omap2/omapfb/omapfb-main.c |   26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 02943a5..32b5379 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -111,9 +111,6 @@ static struct {
- 	struct ovl_priv_data ovl_priv_data_array[MAX_DSS_OVERLAYS];
- 	struct mgr_priv_data mgr_priv_data_array[MAX_DSS_MANAGERS];
- 
--	bool fifo_merge_dirty;
--	bool fifo_merge;
--
- 	bool irq_enabled;
- } dss_data;
- 
-@@ -677,40 +674,11 @@ static void dss_mgr_write_regs_extra(struct omap_overlay_manager *mgr)
- 		mp->shadow_extra_info_dirty = true;
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index fc671d3..7afdfcf 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -1592,6 +1592,20 @@ static int omapfb_allocate_all_fbs(struct omapfb2_device *fbdev)
+ 	return 0;
  }
  
--static void dss_write_regs_common(void)
--{
--	const int num_mgrs = omap_dss_get_num_overlay_managers();
--	int i;
--
--	if (!dss_data.fifo_merge_dirty)
--		return;
--
--	for (i = 0; i < num_mgrs; ++i) {
--		struct omap_overlay_manager *mgr;
--		struct mgr_priv_data *mp;
--
--		mgr = omap_dss_get_overlay_manager(i);
--		mp = get_mgr_priv(mgr);
--
--		if (mp->enabled) {
--			if (dss_data.fifo_merge_dirty) {
--				dispc_enable_fifomerge(dss_data.fifo_merge);
--				dss_data.fifo_merge_dirty = false;
--			}
--
--			if (mp->updating)
--				mp->shadow_info_dirty = true;
--		}
--	}
--}
--
- static void dss_write_regs(void)
++static void omapfb_clear_fb(struct fb_info *fbi)
++{
++	const struct fb_fillrect rect = {
++		.dx = 0,
++		.dy = 0,
++		.width = fbi->var.xres_virtual,
++		.height = fbi->var.yres_virtual,
++		.color = 0,
++		.rop = ROP_COPY,
++	};
++
++	cfb_fillrect(fbi, &rect);
++}
++
+ int omapfb_realloc_fbmem(struct fb_info *fbi, unsigned long size, int type)
  {
- 	const int num_mgrs = omap_dss_get_num_overlay_managers();
- 	int i;
+ 	struct omapfb_info *ofbi = FB2OFB(fbi);
+@@ -1661,6 +1675,8 @@ int omapfb_realloc_fbmem(struct fb_info *fbi, unsigned long size, int type)
+ 			goto err;
+ 	}
  
--	dss_write_regs_common();
--
- 	for (i = 0; i < num_mgrs; ++i) {
- 		struct omap_overlay_manager *mgr;
- 		struct mgr_priv_data *mp;
-@@ -799,8 +767,6 @@ void dss_mgr_start_update(struct omap_overlay_manager *mgr)
- 	dss_mgr_write_regs(mgr);
- 	dss_mgr_write_regs_extra(mgr);
++	omapfb_clear_fb(fbi);
++
+ 	return 0;
+ err:
+ 	omapfb_free_fbmem(fbi);
+@@ -1972,6 +1988,16 @@ static int omapfb_create_framebuffers(struct omapfb2_device *fbdev)
+ 		}
+ 	}
  
--	dss_write_regs_common();
--
- 	mp->updating = true;
- 
- 	if (!dss_data.irq_enabled && need_isr())
-@@ -984,15 +950,6 @@ static void dss_apply_ovl_fifo_thresholds(struct omap_overlay *ovl,
- 	op->extra_info_dirty = true;
- }
- 
--static void dss_apply_fifo_merge(bool use_fifo_merge)
--{
--	if (dss_data.fifo_merge = use_fifo_merge)
--		return;
--
--	dss_data.fifo_merge = use_fifo_merge;
--	dss_data.fifo_merge_dirty = true;
--}
--
- static void dss_ovl_setup_fifo(struct omap_overlay *ovl)
- {
- 	struct ovl_priv_data *op = get_ovl_priv(ovl);
++	for (i = 0; i < fbdev->num_fbs; i++) {
++		struct fb_info *fbi = fbdev->fbs[i];
++		struct omapfb_info *ofbi = FB2OFB(fbi);
++
++		if (ofbi->region->size = 0)
++			continue;
++
++		omapfb_clear_fb(fbi);
++	}
++
+ 	/* Enable fb0 */
+ 	if (fbdev->num_fbs > 0) {
+ 		struct omapfb_info *ofbi = FB2OFB(fbdev->fbs[0]);
 -- 
 1.7.9.5
 

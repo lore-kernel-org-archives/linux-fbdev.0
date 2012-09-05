@@ -1,60 +1,23 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 05 Sep 2012 08:25:49 +0000
-Subject: [PATCH 11/17] OMAPDSS: clean up dss_mgr_set_lcd_config
-Message-Id: <1346833555-31258-12-git-send-email-tomi.valkeinen@ti.com>
+From: Jiri Kosina <jkosina@suse.cz>
+Date: Wed, 05 Sep 2012 09:50:55 +0000
+Subject: Re: [PATCH 0/6] HID: picoLCD additional fixes + CIR support
+Message-Id: <alpine.LNX.2.00.1209051150390.11079@pobox.suse.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
+References: <20120730213656.0a9f6d30@neptune.home> <20120819192859.74136bb0@neptune.home>
+In-Reply-To: <20120819192859.74136bb0@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, Mauro Carvalho Chehab <mchehab@redhat.com>, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
 
-dss_mgr_set_lcd_config() can only be called when the output is not
-active. This means that most of the code in the function is extra, as
-there's no need to write the values to registers, etc, because that will
-be handled when the output will be enabled.
+On Sun, 19 Aug 2012, Bruno Pr=E9mont wrote:
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/apply.c |   14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+> This series fixes some race conditions in picoLCD driver during remove()
+> and adds support for IR functionality.
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 52a5940..53629dd 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -1346,7 +1346,7 @@ void dss_mgr_set_lcd_config(struct omap_overlay_manager *mgr,
- 	unsigned long flags;
- 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
- 
--	mutex_lock(&apply_lock);
-+	spin_lock_irqsave(&data_lock, flags);
- 
- 	if (mp->enabled) {
- 		DSSERR("cannot apply lcd config for %s: manager needs to be disabled\n",
-@@ -1354,19 +1354,9 @@ void dss_mgr_set_lcd_config(struct omap_overlay_manager *mgr,
- 		goto out;
- 	}
- 
--	spin_lock_irqsave(&data_lock, flags);
--
- 	dss_apply_mgr_lcd_config(mgr, config);
--
--	dss_write_regs();
--	dss_set_go_bits();
--
--	spin_unlock_irqrestore(&data_lock, flags);
--
--	wait_pending_extra_info_updates();
--
- out:
--	mutex_unlock(&apply_lock);
-+	spin_unlock_irqrestore(&data_lock, flags);
- }
- 
- int dss_ovl_set_info(struct omap_overlay *ovl,
--- 
-1.7.9.5
+I have now applied the series, thanks Bruno.
 
+--=20
+Jiri Kosina
+SUSE Labs

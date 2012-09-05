@@ -1,138 +1,110 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 13 Sep 2012 12:27:04 +0000
-Subject: [PATCH 20/21] OMAPDSS: DISPC: Add manager like functions for writeback
-Message-Id: <1347538505-25359-21-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 05 Sep 2012 08:25:52 +0000
+Subject: [PATCH 14/17] Revert "OMAPDSS: APPLY: add fifo merge support funcs"
+Message-Id: <1346833555-31258-15-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>
-In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
+References: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add functions to enable writeback, and set/check state of GO bit. These bits are
-identical in behaviour with the corresponding overlay manager bits. Configure
-them in a similar way to mgr_enable() and mgr_go_* functions. Add a helper to
-get the FRAMEDONE irq corresponding to writeback.
+This reverts commit fb0119742291b6f30cd97026ee137b2d3d1f4de8.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+Adding fifo merge feature as an omapdss internal configuration was a
+mistake. We cannot hide from the users of omapdss the complexities of
+fifo merge.
+
+The previous commit removed fifo merge itself, and this removes the
+remaining fifo merge support functions.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |   70 +++++++++++++++++++++++++++++++++++++++
- drivers/video/omap2/dss/dss.h   |    5 +++
- 2 files changed, 75 insertions(+)
+ drivers/video/omap2/dss/apply.c |   43 ---------------------------------------
+ 1 file changed, 43 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 6068271..1623c9b 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -535,6 +535,11 @@ u32 dispc_mgr_get_framedone_irq(enum omap_channel channel)
- 	return mgr_desc[channel].framedone_irq;
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 02943a5..32b5379 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -111,9 +111,6 @@ static struct {
+ 	struct ovl_priv_data ovl_priv_data_array[MAX_DSS_OVERLAYS];
+ 	struct mgr_priv_data mgr_priv_data_array[MAX_DSS_MANAGERS];
+ 
+-	bool fifo_merge_dirty;
+-	bool fifo_merge;
+-
+ 	bool irq_enabled;
+ } dss_data;
+ 
+@@ -677,40 +674,11 @@ static void dss_mgr_write_regs_extra(struct omap_overlay_manager *mgr)
+ 		mp->shadow_extra_info_dirty = true;
  }
  
-+u32 dispc_wb_get_framedone_irq(void)
-+{
-+	return DISPC_IRQ_FRAMEDONEWB;
-+}
-+
- bool dispc_mgr_go_busy(enum omap_channel channel)
+-static void dss_write_regs_common(void)
+-{
+-	const int num_mgrs = omap_dss_get_num_overlay_managers();
+-	int i;
+-
+-	if (!dss_data.fifo_merge_dirty)
+-		return;
+-
+-	for (i = 0; i < num_mgrs; ++i) {
+-		struct omap_overlay_manager *mgr;
+-		struct mgr_priv_data *mp;
+-
+-		mgr = omap_dss_get_overlay_manager(i);
+-		mp = get_mgr_priv(mgr);
+-
+-		if (mp->enabled) {
+-			if (dss_data.fifo_merge_dirty) {
+-				dispc_enable_fifomerge(dss_data.fifo_merge);
+-				dss_data.fifo_merge_dirty = false;
+-			}
+-
+-			if (mp->updating)
+-				mp->shadow_info_dirty = true;
+-		}
+-	}
+-}
+-
+ static void dss_write_regs(void)
  {
- 	return mgr_fld_read(channel, DISPC_MGR_FLD_GO) = 1;
-@@ -562,6 +567,30 @@ void dispc_mgr_go(enum omap_channel channel)
- 	mgr_fld_write(channel, DISPC_MGR_FLD_GO, 1);
+ 	const int num_mgrs = omap_dss_get_num_overlay_managers();
+ 	int i;
+ 
+-	dss_write_regs_common();
+-
+ 	for (i = 0; i < num_mgrs; ++i) {
+ 		struct omap_overlay_manager *mgr;
+ 		struct mgr_priv_data *mp;
+@@ -799,8 +767,6 @@ void dss_mgr_start_update(struct omap_overlay_manager *mgr)
+ 	dss_mgr_write_regs(mgr);
+ 	dss_mgr_write_regs_extra(mgr);
+ 
+-	dss_write_regs_common();
+-
+ 	mp->updating = true;
+ 
+ 	if (!dss_data.irq_enabled && need_isr())
+@@ -984,15 +950,6 @@ static void dss_apply_ovl_fifo_thresholds(struct omap_overlay *ovl,
+ 	op->extra_info_dirty = true;
  }
  
-+bool dispc_wb_go_busy(void)
-+{
-+	return REG_GET(DISPC_CONTROL2, 6, 6) = 1;
-+}
-+
-+void dispc_wb_go(void)
-+{
-+	enum omap_plane plane = OMAP_DSS_WB;
-+	bool enable, go;
-+
-+	enable = REG_GET(DISPC_OVL_ATTRIBUTES(plane), 0, 0) = 1;
-+
-+	if (!enable)
-+		return;
-+
-+	go = REG_GET(DISPC_CONTROL2, 6, 6) = 1;
-+	if (go) {
-+		DSSERR("GO bit not down for WB\n");
-+		return;
-+	}
-+
-+	REG_FLD_MOD(DISPC_CONTROL2, 1, 6, 6);
-+}
-+
- static void dispc_plane_write_firh_reg(enum omap_plane plane, int reg,
- 		u32 value)
+-static void dss_apply_fifo_merge(bool use_fifo_merge)
+-{
+-	if (dss_data.fifo_merge = use_fifo_merge)
+-		return;
+-
+-	dss_data.fifo_merge = use_fifo_merge;
+-	dss_data.fifo_merge_dirty = true;
+-}
+-
+ static void dss_ovl_setup_fifo(struct omap_overlay *ovl)
  {
-@@ -2678,6 +2707,47 @@ void dispc_mgr_enable(enum omap_channel channel, bool enable)
- 		BUG();
- }
- 
-+void dispc_wb_enable(bool enable)
-+{
-+	enum omap_plane plane = OMAP_DSS_WB;
-+	struct completion frame_done_completion;
-+	bool is_on;
-+	int r;
-+	u32 irq;
-+
-+	is_on = REG_GET(DISPC_OVL_ATTRIBUTES(plane), 0, 0);
-+	irq = DISPC_IRQ_FRAMEDONEWB;
-+
-+	if (!enable && is_on) {
-+		init_completion(&frame_done_completion);
-+
-+		r = omap_dispc_register_isr(dispc_disable_isr,
-+				&frame_done_completion, irq);
-+		if (r)
-+			DSSERR("failed to register FRAMEDONEWB isr\n");
-+	}
-+
-+	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), enable ? 1 : 0, 0, 0);
-+
-+	if (!enable && is_on) {
-+		if (!wait_for_completion_timeout(&frame_done_completion,
-+					msecs_to_jiffies(100)))
-+			DSSERR("timeout waiting for FRAMEDONEWB\n");
-+
-+		r = omap_dispc_unregister_isr(dispc_disable_isr,
-+				&frame_done_completion, irq);
-+		if (r)
-+			DSSERR("failed to unregister FRAMEDONEWB isr\n");
-+	}
-+}
-+
-+bool dispc_wb_is_enabled(void)
-+{
-+	enum omap_plane plane = OMAP_DSS_WB;
-+
-+	return REG_GET(DISPC_OVL_ATTRIBUTES(plane), 0, 0);
-+}
-+
- void dispc_lcd_enable_signal_polarity(bool act_high)
- {
- 	if (!dss_has_feature(FEAT_LCDENABLEPOL))
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index c49c054..59ea86a 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -481,6 +481,11 @@ int dispc_mgr_get_clock_div(enum omap_channel channel,
- void dispc_mgr_setup(enum omap_channel channel,
- 		struct omap_overlay_manager_info *info);
- 
-+u32 dispc_wb_get_framedone_irq(void);
-+bool dispc_wb_go_busy(void);
-+void dispc_wb_go(void);
-+void dispc_wb_enable(bool enable);
-+bool dispc_wb_is_enabled(void);
- void dispc_wb_set_channel_in(enum dss_writeback_channel channel);
- int dispc_wb_setup(const struct omap_dss_writeback_info *wi,
- 		bool mem_to_mem, const struct omap_video_timings *timings);
+ 	struct ovl_priv_data *op = get_ovl_priv(ovl);
 -- 
 1.7.9.5
 

@@ -1,56 +1,101 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 25 Sep 2012 06:31:47 +0000
-Subject: [PATCH v2 12/18] OMAPDSS: DISPC: Don't set chroma resampling bit for writeback
-Message-Id: <1348553993-8083-13-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 05 Sep 2012 08:25:42 +0000
+Subject: [PATCH 04/17] OMAPDSS: remove unnecessary includes
+Message-Id: <1346833555-31258-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>
- <1348553993-8083-1-git-send-email-archit@ti.com>
-In-Reply-To: <1348553993-8083-1-git-send-email-archit@ti.com>
+References: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The bit YUVCHROMARESAMPLING isn't there for writeback in DISPC_WB_ATTRIBUTES2.
-It isn't there because we don't upsample chroma like for video pipelines, we
-downsample chroma in writeback to get YUV422 or NV12 formats from the YUV444
-input.
+Remove unnecessary includes from omapdss.
 
-Ignore this bit in dispc_ovl_set_scaling_uv() if the plane is OMAP_DSS_WB.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ drivers/video/omap2/dss/dispc.c   |    2 --
+ drivers/video/omap2/dss/dpi.c     |    1 -
+ drivers/video/omap2/dss/dsi.c     |    1 -
+ drivers/video/omap2/dss/dss.c     |    1 -
+ drivers/video/omap2/dss/overlay.c |    1 -
+ drivers/video/omap2/dss/venc.c    |    1 -
+ 6 files changed, 7 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 4f36e83..d9ca7bf 100644
+index 0de9a7e..e934abb 100644
 --- a/drivers/video/omap2/dss/dispc.c
 +++ b/drivers/video/omap2/dss/dispc.c
-@@ -1468,7 +1468,8 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
- 			color_mode != OMAP_DSS_COLOR_UYVY &&
- 			color_mode != OMAP_DSS_COLOR_NV12)) {
- 		/* reset chroma resampling for RGB formats  */
--		REG_FLD_MOD(DISPC_OVL_ATTRIBUTES2(plane), 0, 8, 8);
-+		if (plane != OMAP_DSS_WB)
-+			REG_FLD_MOD(DISPC_OVL_ATTRIBUTES2(plane), 0, 8, 8);
- 		return;
- 	}
+@@ -37,8 +37,6 @@
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
  
-@@ -1520,8 +1521,10 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
- 			out_width, out_height, five_taps,
- 				rotation, DISPC_COLOR_COMPONENT_UV);
+-#include <plat/clock.h>
+-
+ #include <video/omapdss.h>
  
--	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES2(plane),
--		(scale_x || scale_y) ? 1 : 0, 8, 8);
-+	if (plane != OMAP_DSS_WB)
-+		REG_FLD_MOD(DISPC_OVL_ATTRIBUTES2(plane),
-+			(scale_x || scale_y) ? 1 : 0, 8, 8);
-+
- 	/* set H scaling */
- 	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), scale_x ? 1 : 0, 5, 5);
- 	/* set V scaling */
+ #include "dss.h"
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 25fb895..99b9851 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -31,7 +31,6 @@
+ #include <linux/regulator/consumer.h>
+ 
+ #include <video/omapdss.h>
+-#include <plat/cpu.h>
+ 
+ #include "dss.h"
+ #include "dss_features.h"
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 254666f..8d815e3 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -41,7 +41,6 @@
+ 
+ #include <video/omapdss.h>
+ #include <video/mipi_display.h>
+-#include <plat/clock.h>
+ 
+ #include "dss.h"
+ #include "dss_features.h"
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 31a553a..759dbee 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -36,7 +36,6 @@
+ #include <video/omapdss.h>
+ 
+ #include <plat/cpu.h>
+-#include <plat/clock.h>
+ 
+ #include "dss.h"
+ #include "dss_features.h"
+diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
+index 952c6fa..94e74be 100644
+--- a/drivers/video/omap2/dss/overlay.c
++++ b/drivers/video/omap2/dss/overlay.c
+@@ -32,7 +32,6 @@
+ #include <linux/slab.h>
+ 
+ #include <video/omapdss.h>
+-#include <plat/cpu.h>
+ 
+ #include "dss.h"
+ #include "dss_features.h"
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 4a6caf9..45252cf 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -36,7 +36,6 @@
+ #include <linux/pm_runtime.h>
+ 
+ #include <video/omapdss.h>
+-#include <plat/cpu.h>
+ 
+ #include "dss.h"
+ #include "dss_features.h"
 -- 
 1.7.9.5
 

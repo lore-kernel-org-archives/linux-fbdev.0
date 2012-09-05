@@ -1,78 +1,40 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 20 Sep 2012 21:58:46 +0000
-Subject: Re: [PATCH 2/5] drivers/video/gbefb.c: use devm_ functions
-Message-Id: <505B9196.3040203@gmx.de>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Date: Wed, 05 Sep 2012 17:25:27 +0000
+Subject: Re: [PATCH v5 2/4] pwm_backlight: use power sequences
+Message-Id: <50478B07.4080708@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>	<1343752762-16861-3-git-send-email-damien.cassou@lifl.fr>	<50369498.4010006@gmx.de> <CAMuHMdWsiXmt=2uo3C8ZC_apnHRV2aHi3yZrYV_jgwB22=3Mfw@mail.gmail.com>
-In-Reply-To: <CAMuHMdWsiXmt=2uo3C8ZC_apnHRV2aHi3yZrYV_jgwB22=3Mfw@mail.gmail.com>
+References: <1346412846-17102-1-git-send-email-acourbot@nvidia.com> <1346412846-17102-3-git-send-email-acourbot@nvidia.com>
+In-Reply-To: <1346412846-17102-3-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Damien Cassou <damien.cassou@lifl.fr>
-Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Anton Vorontsov <cbou-JGs/UdohzUI@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-Hi Geert,
+On 08/31/2012 05:34 AM, Alexandre Courbot wrote:
+> Make use of the power sequences specified in the device tree or platform
+> data to control how the backlight is powered on and off.
 
-On 09/13/2012 07:06 PM, Geert Uytterhoeven wrote:
-> On Thu, Aug 23, 2012 at 10:37 PM, Florian Tobias Schandinat
-> <FlorianSchandinat@gmx.de> wrote:
->> On 07/31/2012 04:39 PM, Damien Cassou wrote:
->>> From: Damien Cassou <damien.cassou@lifl.fr>
->>>
->>> The various devm_ functions allocate memory that is released when a driver
->>> detaches.  This patch uses these functions for data that is allocated in
->>> the probe function of a platform device and is only freed in the remove
->>> function.
->>>
->>> Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
->>
->> Applied.
-> 
->>> diff --git a/drivers/video/gbefb.c b/drivers/video/gbefb.c
->>> index 7e7b7a9..9b79d38 100644
->>> --- a/drivers/video/gbefb.c
->>> +++ b/drivers/video/gbefb.c
->>> @@ -1156,7 +1156,8 @@ static int __devinit gbefb_probe(struct platform_device *p_dev)
->>>               goto out_release_framebuffer;
->>>       }
->>>
->>> -     gbe = (struct sgi_gbe *) ioremap(GBE_BASE, sizeof(struct sgi_gbe));
->>> +     gbe = (struct sgi_gbe *) devm_ioremap(&p_dev->dev, GBE_BASE,
->>> +                                           sizeof(struct sgi_gbe));
-> 
-> drivers/video/gbefb.c:1159:16: error: implicit declaration of function
-> 'devm_ioremap' [-Werror=implicit-function-declaration]
-> drivers/video/gbefb.c:1179:3: error: implicit declaration of function
-> 'devm_ioremap_nocache' [-Werror=implicit-function-declaration]
+> +++ b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
 
-Thanks for pointing this out. I guess the solution is to replace the
-include asm/io.h by linux/io.h as Axel Lin did for some other driver in
-this patch series.
+>  Optional properties:
+> -  - pwm-names: a list of names for the PWM devices specified in the
+> -               "pwms" property (see PWM binding[0])
+> +  - pwm-names: name for the PWM device specified in the "pwms" property (see PWM
+> +      binding[0]). Necessary if power sequences are used
 
-@Damien:
-Can you please do a patch as I suggested and preferable also recheck the
-other drivers you touched?
-And it probably would have been a good idea to mention that you didn't
-compile-test it. I do some compile tests before pushing my branch but
-that is far from complete due to arch and platform specific drivers.
+So this implies that power sequence are completely optional in the pwm
+binding...
 
+> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
 
-Best regards,
+>  config BACKLIGHT_PWM
+>  	tristate "Generic PWM based Backlight Driver"
+>  	depends on PWM
+> +	select POWER_SEQ
 
-Florian Tobias Schandinat
+... but that implies they're basically mandatory.
 
-> 
-> http://kisskb.ellerman.id.au/kisskb/buildresult/7187731/
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
-> 
-
+Briefly looking at the code, power sequences don't appear to be
+optional, at least for the DT case, so perhaps you just need to update
+the documentation to make "pwm-names" non-optional?

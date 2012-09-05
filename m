@@ -1,314 +1,221 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 13 Sep 2012 12:26:55 +0000
-Subject: [PATCH 11/21] OMAPDSS: DISPC: Add writeback register offsets and dss features structs
-Message-Id: <1347538505-25359-12-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 05 Sep 2012 08:25:39 +0000
+Subject: [PATCH 01/17] OMAPDSS: Taal: use devm_* functions
+Message-Id: <1346833555-31258-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>
-In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
+References: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Since writeback has many overlay like properties, and most of it's registers are
-similar to that of overlays, it's possible to reuse most of the overlay related
-DISPC code for writeback when considering it as a plane. Writeback was added as
-a plane in the omap_plane field as OMAP_DSS_WB.
+Use devm_ functions in panel-taal.c's probe when possible. Also reorder
+the initialization sequence so that devm_ allocations are done before
+things that require explicit freeing. This simplifies the probe and
+remove functions.
 
-Add the writeback register offsets in dispc.h, add minimal WB plane related info
-needed in dss_features. Add a function which returns the number of writeback
-pipelines an OMAP version has.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.h        |   33 ++++++++++++++++++++++++++++++++
- drivers/video/omap2/dss/dss_features.c |   19 ++++++++++++++++++
- drivers/video/omap2/dss/dss_features.h |    1 +
- 3 files changed, 53 insertions(+)
+ drivers/video/omap2/displays/panel-taal.c |  118 +++++++++++------------------
+ 1 file changed, 44 insertions(+), 74 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.h b/drivers/video/omap2/dss/dispc.h
-index 84cc472..2b008f7 100644
---- a/drivers/video/omap2/dss/dispc.h
-+++ b/drivers/video/omap2/dss/dispc.h
-@@ -373,6 +373,7 @@ static inline u16 DISPC_BA0_OFFSET(enum omap_plane plane)
- 	case OMAP_DSS_VIDEO2:
- 		return 0x0000;
- 	case OMAP_DSS_VIDEO3:
-+	case OMAP_DSS_WB:
- 		return 0x0008;
- 	default:
- 		BUG();
-@@ -388,6 +389,7 @@ static inline u16 DISPC_BA1_OFFSET(enum omap_plane plane)
- 	case OMAP_DSS_VIDEO2:
- 		return 0x0004;
- 	case OMAP_DSS_VIDEO3:
-+	case OMAP_DSS_WB:
- 		return 0x000C;
- 	default:
- 		BUG();
-@@ -407,6 +409,8 @@ static inline u16 DISPC_BA0_UV_OFFSET(enum omap_plane plane)
- 		return 0x04BC;
- 	case OMAP_DSS_VIDEO3:
- 		return 0x0310;
-+	case OMAP_DSS_WB:
-+		return 0x0118;
- 	default:
- 		BUG();
- 		return 0;
-@@ -425,6 +429,8 @@ static inline u16 DISPC_BA1_UV_OFFSET(enum omap_plane plane)
- 		return 0x04C0;
- 	case OMAP_DSS_VIDEO3:
- 		return 0x0314;
-+	case OMAP_DSS_WB:
-+		return 0x011C;
- 	default:
- 		BUG();
- 		return 0;
-@@ -454,6 +460,7 @@ static inline u16 DISPC_SIZE_OFFSET(enum omap_plane plane)
- 	case OMAP_DSS_VIDEO2:
- 		return 0x000C;
- 	case OMAP_DSS_VIDEO3:
-+	case OMAP_DSS_WB:
- 		return 0x00A8;
- 	default:
- 		BUG();
-@@ -470,6 +477,7 @@ static inline u16 DISPC_ATTR_OFFSET(enum omap_plane plane)
- 	case OMAP_DSS_VIDEO2:
- 		return 0x0010;
- 	case OMAP_DSS_VIDEO3:
-+	case OMAP_DSS_WB:
- 		return 0x0070;
- 	default:
- 		BUG();
-@@ -489,6 +497,8 @@ static inline u16 DISPC_ATTR2_OFFSET(enum omap_plane plane)
- 		return 0x04DC;
- 	case OMAP_DSS_VIDEO3:
- 		return 0x032C;
-+	case OMAP_DSS_WB:
-+		return 0x0310;
- 	default:
- 		BUG();
- 		return 0;
-@@ -504,6 +514,7 @@ static inline u16 DISPC_FIFO_THRESH_OFFSET(enum omap_plane plane)
- 	case OMAP_DSS_VIDEO2:
- 		return 0x0014;
- 	case OMAP_DSS_VIDEO3:
-+	case OMAP_DSS_WB:
- 		return 0x008C;
- 	default:
- 		BUG();
-@@ -537,6 +548,7 @@ static inline u16 DISPC_ROW_INC_OFFSET(enum omap_plane plane)
- 	case OMAP_DSS_VIDEO2:
- 		return 0x001C;
- 	case OMAP_DSS_VIDEO3:
-+	case OMAP_DSS_WB:
- 		return 0x00A4;
- 	default:
- 		BUG();
-@@ -553,6 +565,7 @@ static inline u16 DISPC_PIX_INC_OFFSET(enum omap_plane plane)
- 	case OMAP_DSS_VIDEO2:
- 		return 0x0020;
- 	case OMAP_DSS_VIDEO3:
-+	case OMAP_DSS_WB:
- 		return 0x0098;
- 	default:
- 		BUG();
-@@ -602,6 +615,7 @@ static inline u16 DISPC_FIR_OFFSET(enum omap_plane plane)
- 	case OMAP_DSS_VIDEO2:
- 		return 0x0024;
- 	case OMAP_DSS_VIDEO3:
-+	case OMAP_DSS_WB:
- 		return 0x0090;
- 	default:
- 		BUG();
-@@ -621,6 +635,8 @@ static inline u16 DISPC_FIR2_OFFSET(enum omap_plane plane)
- 		return 0x055C;
- 	case OMAP_DSS_VIDEO3:
- 		return 0x0424;
-+	case OMAP_DSS_WB:
-+		return 0x290;
- 	default:
- 		BUG();
- 		return 0;
-@@ -637,6 +653,7 @@ static inline u16 DISPC_PIC_SIZE_OFFSET(enum omap_plane plane)
- 	case OMAP_DSS_VIDEO2:
- 		return 0x0028;
- 	case OMAP_DSS_VIDEO3:
-+	case OMAP_DSS_WB:
- 		return 0x0094;
- 	default:
- 		BUG();
-@@ -655,6 +672,7 @@ static inline u16 DISPC_ACCU0_OFFSET(enum omap_plane plane)
- 	case OMAP_DSS_VIDEO2:
- 		return 0x002C;
- 	case OMAP_DSS_VIDEO3:
-+	case OMAP_DSS_WB:
- 		return 0x0000;
- 	default:
- 		BUG();
-@@ -674,6 +692,8 @@ static inline u16 DISPC_ACCU2_0_OFFSET(enum omap_plane plane)
- 		return 0x0560;
- 	case OMAP_DSS_VIDEO3:
- 		return 0x0428;
-+	case OMAP_DSS_WB:
-+		return 0x0294;
- 	default:
- 		BUG();
- 		return 0;
-@@ -690,6 +710,7 @@ static inline u16 DISPC_ACCU1_OFFSET(enum omap_plane plane)
- 	case OMAP_DSS_VIDEO2:
- 		return 0x0030;
- 	case OMAP_DSS_VIDEO3:
-+	case OMAP_DSS_WB:
- 		return 0x0004;
- 	default:
- 		BUG();
-@@ -709,6 +730,8 @@ static inline u16 DISPC_ACCU2_1_OFFSET(enum omap_plane plane)
- 		return 0x0564;
- 	case OMAP_DSS_VIDEO3:
- 		return 0x042C;
-+	case OMAP_DSS_WB:
-+		return 0x0298;
- 	default:
- 		BUG();
- 		return 0;
-@@ -726,6 +749,7 @@ static inline u16 DISPC_FIR_COEF_H_OFFSET(enum omap_plane plane, u16 i)
- 	case OMAP_DSS_VIDEO2:
- 		return 0x0034 + i * 0x8;
- 	case OMAP_DSS_VIDEO3:
-+	case OMAP_DSS_WB:
- 		return 0x0010 + i * 0x8;
- 	default:
- 		BUG();
-@@ -746,6 +770,8 @@ static inline u16 DISPC_FIR_COEF_H2_OFFSET(enum omap_plane plane, u16 i)
- 		return 0x0568 + i * 0x8;
- 	case OMAP_DSS_VIDEO3:
- 		return 0x0430 + i * 0x8;
-+	case OMAP_DSS_WB:
-+		return 0x02A0 + i * 0x8;
- 	default:
- 		BUG();
- 		return 0;
-@@ -763,6 +789,7 @@ static inline u16 DISPC_FIR_COEF_HV_OFFSET(enum omap_plane plane, u16 i)
- 	case OMAP_DSS_VIDEO2:
- 		return 0x0038 + i * 0x8;
- 	case OMAP_DSS_VIDEO3:
-+	case OMAP_DSS_WB:
- 		return 0x0014 + i * 0x8;
- 	default:
- 		BUG();
-@@ -783,6 +810,8 @@ static inline u16 DISPC_FIR_COEF_HV2_OFFSET(enum omap_plane plane, u16 i)
- 		return 0x056C + i * 0x8;
- 	case OMAP_DSS_VIDEO3:
- 		return 0x0434 + i * 0x8;
-+	case OMAP_DSS_WB:
-+		return 0x02A4 + i * 0x8;
- 	default:
- 		BUG();
- 		return 0;
-@@ -799,6 +828,7 @@ static inline u16 DISPC_CONV_COEF_OFFSET(enum omap_plane plane, u16 i)
- 	case OMAP_DSS_VIDEO1:
- 	case OMAP_DSS_VIDEO2:
- 	case OMAP_DSS_VIDEO3:
-+	case OMAP_DSS_WB:
- 		return 0x0074 + i * 0x4;
- 	default:
- 		BUG();
-@@ -818,6 +848,7 @@ static inline u16 DISPC_FIR_COEF_V_OFFSET(enum omap_plane plane, u16 i)
- 	case OMAP_DSS_VIDEO2:
- 		return 0x00B4 + i * 0x4;
- 	case OMAP_DSS_VIDEO3:
-+	case OMAP_DSS_WB:
- 		return 0x0050 + i * 0x4;
- 	default:
- 		BUG();
-@@ -838,6 +869,8 @@ static inline u16 DISPC_FIR_COEF_V2_OFFSET(enum omap_plane plane, u16 i)
- 		return 0x05A8 + i * 0x4;
- 	case OMAP_DSS_VIDEO3:
- 		return 0x0470 + i * 0x4;
-+	case OMAP_DSS_WB:
-+		return 0x02E0 + i * 0x4;
- 	default:
- 		BUG();
- 		return 0;
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index 8b6c79f..5968fd8 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -46,6 +46,7 @@ struct omap_dss_features {
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 7b2d7bb..1255864 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -865,10 +865,8 @@ static int taal_probe(struct omap_dss_device *dssdev)
  
- 	const int num_mgrs;
- 	const int num_ovls;
-+	const int num_wbs;
- 	const enum omap_display_type *supported_displays;
- 	const enum omap_dss_output_id *supported_outputs;
- 	const enum omap_color_mode *supported_color_modes;
-@@ -265,6 +266,16 @@ static const enum omap_color_mode omap4_dss_supported_color_modes[] = {
- 	OMAP_DSS_COLOR_ARGB16 | OMAP_DSS_COLOR_XRGB16_1555 |
- 	OMAP_DSS_COLOR_ARGB32 | OMAP_DSS_COLOR_RGBX16 |
- 	OMAP_DSS_COLOR_RGBX32,
+ 	dev_dbg(&dssdev->dev, "probe\n");
+ 
+-	if (!panel_data || !panel_data->name) {
+-		r = -EINVAL;
+-		goto err;
+-	}
++	if (!panel_data || !panel_data->name)
++		return -EINVAL;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(panel_configs); i++) {
+ 		if (strcmp(panel_data->name, panel_configs[i].name) = 0) {
+@@ -877,21 +875,17 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 		}
+ 	}
+ 
+-	if (!panel_config) {
+-		r = -EINVAL;
+-		goto err;
+-	}
++	if (!panel_config)
++		return -EINVAL;
+ 
+ 	dssdev->panel.timings = panel_config->timings;
+ 	dssdev->panel.dsi_pix_fmt = OMAP_DSS_DSI_FMT_RGB888;
+ 	dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE |
+ 		OMAP_DSS_DISPLAY_CAP_TEAR_ELIM;
+ 
+-	td = kzalloc(sizeof(*td), GFP_KERNEL);
+-	if (!td) {
+-		r = -ENOMEM;
+-		goto err;
+-	}
++	td = devm_kzalloc(&dssdev->dev, sizeof(*td), GFP_KERNEL);
++	if (!td)
++		return -ENOMEM;
+ 	td->dssdev = dssdev;
+ 	td->panel_config = panel_config;
+ 	td->esd_interval = panel_data->esd_interval;
+@@ -902,26 +896,51 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 
+ 	atomic_set(&td->do_update, 0);
+ 
+-	td->workqueue = create_singlethread_workqueue("taal_esd");
+-	if (td->workqueue = NULL) {
+-		dev_err(&dssdev->dev, "can't create ESD workqueue\n");
+-		r = -ENOMEM;
+-		goto err_wq;
+-	}
+-	INIT_DELAYED_WORK_DEFERRABLE(&td->esd_work, taal_esd_work);
+-	INIT_DELAYED_WORK(&td->ulps_work, taal_ulps_work);
+-
+ 	dev_set_drvdata(&dssdev->dev, td);
+ 
+ 	if (gpio_is_valid(panel_data->reset_gpio)) {
+-		r = gpio_request_one(panel_data->reset_gpio, GPIOF_OUT_INIT_LOW,
+-				"taal rst");
++		r = devm_gpio_request_one(&dssdev->dev, panel_data->reset_gpio,
++				GPIOF_OUT_INIT_LOW, "taal rst");
+ 		if (r) {
+ 			dev_err(&dssdev->dev, "failed to request reset gpio\n");
+-			goto err_rst_gpio;
++			return r;
+ 		}
+ 	}
+ 
++	if (panel_data->use_ext_te) {
++		int gpio = panel_data->ext_te_gpio;
 +
-+	/* OMAP_DSS_WB */
-+	OMAP_DSS_COLOR_RGB16 | OMAP_DSS_COLOR_RGB12U |
-+	OMAP_DSS_COLOR_YUV2 | OMAP_DSS_COLOR_ARGB16_1555 |
-+	OMAP_DSS_COLOR_RGBA32 | OMAP_DSS_COLOR_NV12 |
-+	OMAP_DSS_COLOR_RGBA16 | OMAP_DSS_COLOR_RGB24U |
-+	OMAP_DSS_COLOR_RGB24P | OMAP_DSS_COLOR_UYVY |
-+	OMAP_DSS_COLOR_ARGB16 | OMAP_DSS_COLOR_XRGB16_1555 |
-+	OMAP_DSS_COLOR_ARGB32 | OMAP_DSS_COLOR_RGBX16 |
-+	OMAP_DSS_COLOR_RGBX32,
- };
++		r = devm_gpio_request_one(&dssdev->dev, gpio, GPIOF_IN,
++				"taal irq");
++		if (r) {
++			dev_err(&dssdev->dev, "GPIO request failed\n");
++			return r;
++		}
++
++		r = devm_request_irq(&dssdev->dev, gpio_to_irq(gpio),
++				taal_te_isr,
++				IRQF_TRIGGER_RISING,
++				"taal vsync", dssdev);
++
++		if (r) {
++			dev_err(&dssdev->dev, "IRQ request failed\n");
++			return r;
++		}
++
++		INIT_DELAYED_WORK_DEFERRABLE(&td->te_timeout_work,
++					taal_te_timeout_work_callback);
++
++		dev_dbg(&dssdev->dev, "Using GPIO TE\n");
++	}
++
++	td->workqueue = create_singlethread_workqueue("taal_esd");
++	if (td->workqueue = NULL) {
++		dev_err(&dssdev->dev, "can't create ESD workqueue\n");
++		return -ENOMEM;
++	}
++	INIT_DELAYED_WORK_DEFERRABLE(&td->esd_work, taal_esd_work);
++	INIT_DELAYED_WORK(&td->ulps_work, taal_ulps_work);
++
+ 	taal_hw_reset(dssdev);
  
- static const enum omap_overlay_caps omap2_dss_overlay_caps[] = {
-@@ -576,6 +587,7 @@ static const struct omap_dss_features omap4430_es1_0_dss_features  = {
+ 	if (panel_data->use_dsi_backlight) {
+@@ -945,31 +964,6 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 		taal_bl_update_status(bldev);
+ 	}
  
- 	.num_mgrs = 3,
- 	.num_ovls = 4,
-+	.num_wbs = 1,
- 	.supported_displays = omap4_dss_supported_displays,
- 	.supported_outputs = omap4_dss_supported_outputs,
- 	.supported_color_modes = omap4_dss_supported_color_modes,
-@@ -597,6 +609,7 @@ static const struct omap_dss_features omap4430_es2_0_1_2_dss_features = {
- 
- 	.num_mgrs = 3,
- 	.num_ovls = 4,
-+	.num_wbs = 1,
- 	.supported_displays = omap4_dss_supported_displays,
- 	.supported_outputs = omap4_dss_supported_outputs,
- 	.supported_color_modes = omap4_dss_supported_color_modes,
-@@ -618,6 +631,7 @@ static const struct omap_dss_features omap4_dss_features = {
- 
- 	.num_mgrs = 3,
- 	.num_ovls = 4,
-+	.num_wbs = 1,
- 	.supported_displays = omap4_dss_supported_displays,
- 	.supported_outputs = omap4_dss_supported_outputs,
- 	.supported_color_modes = omap4_dss_supported_color_modes,
-@@ -674,6 +688,11 @@ int dss_feat_get_num_ovls(void)
- 	return omap_current_dss_features->num_ovls;
+-	if (panel_data->use_ext_te) {
+-		int gpio = panel_data->ext_te_gpio;
+-
+-		r = gpio_request_one(gpio, GPIOF_IN, "taal irq");
+-		if (r) {
+-			dev_err(&dssdev->dev, "GPIO request failed\n");
+-			goto err_gpio;
+-		}
+-
+-		r = request_irq(gpio_to_irq(gpio), taal_te_isr,
+-				IRQF_TRIGGER_RISING,
+-				"taal vsync", dssdev);
+-
+-		if (r) {
+-			dev_err(&dssdev->dev, "IRQ request failed\n");
+-			gpio_free(gpio);
+-			goto err_irq;
+-		}
+-
+-		INIT_DELAYED_WORK_DEFERRABLE(&td->te_timeout_work,
+-					taal_te_timeout_work_callback);
+-
+-		dev_dbg(&dssdev->dev, "Using GPIO TE\n");
+-	}
+-
+ 	r = omap_dsi_request_vc(dssdev, &td->channel);
+ 	if (r) {
+ 		dev_err(&dssdev->dev, "failed to get virtual channel\n");
+@@ -993,29 +987,16 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ err_vc_id:
+ 	omap_dsi_release_vc(dssdev, td->channel);
+ err_req_vc:
+-	if (panel_data->use_ext_te)
+-		free_irq(gpio_to_irq(panel_data->ext_te_gpio), dssdev);
+-err_irq:
+-	if (panel_data->use_ext_te)
+-		gpio_free(panel_data->ext_te_gpio);
+-err_gpio:
+ 	if (bldev != NULL)
+ 		backlight_device_unregister(bldev);
+ err_bl:
+-	if (gpio_is_valid(panel_data->reset_gpio))
+-		gpio_free(panel_data->reset_gpio);
+-err_rst_gpio:
+ 	destroy_workqueue(td->workqueue);
+-err_wq:
+-	kfree(td);
+-err:
+ 	return r;
  }
  
-+int dss_feat_get_num_wbs(void)
-+{
-+	return omap_current_dss_features->num_wbs;
-+}
-+
- unsigned long dss_feat_get_param_min(enum dss_range_param param)
+ static void __exit taal_remove(struct omap_dss_device *dssdev)
  {
- 	return omap_current_dss_features->dss_params[param].min;
-diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
-index fb8ed59..66fd9f7 100644
---- a/drivers/video/omap2/dss/dss_features.h
-+++ b/drivers/video/omap2/dss/dss_features.h
-@@ -102,6 +102,7 @@ enum dss_range_param {
- /* DSS Feature Functions */
- int dss_feat_get_num_mgrs(void);
- int dss_feat_get_num_ovls(void);
-+int dss_feat_get_num_wbs(void);
- unsigned long dss_feat_get_param_min(enum dss_range_param param);
- unsigned long dss_feat_get_param_max(enum dss_range_param param);
- enum omap_display_type dss_feat_get_supported_displays(enum omap_channel channel);
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+-	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
+ 	struct backlight_device *bldev;
+ 
+ 	dev_dbg(&dssdev->dev, "remove\n");
+@@ -1023,12 +1004,6 @@ static void __exit taal_remove(struct omap_dss_device *dssdev)
+ 	sysfs_remove_group(&dssdev->dev.kobj, &taal_attr_group);
+ 	omap_dsi_release_vc(dssdev, td->channel);
+ 
+-	if (panel_data->use_ext_te) {
+-		int gpio = panel_data->ext_te_gpio;
+-		free_irq(gpio_to_irq(gpio), dssdev);
+-		gpio_free(gpio);
+-	}
+-
+ 	bldev = td->bldev;
+ 	if (bldev != NULL) {
+ 		bldev->props.power = FB_BLANK_POWERDOWN;
+@@ -1042,11 +1017,6 @@ static void __exit taal_remove(struct omap_dss_device *dssdev)
+ 
+ 	/* reset, to be sure that the panel is in a valid state */
+ 	taal_hw_reset(dssdev);
+-
+-	if (gpio_is_valid(panel_data->reset_gpio))
+-		gpio_free(panel_data->reset_gpio);
+-
+-	kfree(td);
+ }
+ 
+ static int taal_power_on(struct omap_dss_device *dssdev)
 -- 
 1.7.9.5
 

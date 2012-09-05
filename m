@@ -1,35 +1,71 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 27 Sep 2012 10:41:29 +0000
-Subject: [PATCH] video: s3c-fb: fix help message for FB_S3C_DEBUG_REGWRITE
-Message-Id: <001501cd9c9c$a74fd2b0$f5ef7810$%han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 05 Sep 2012 08:25:38 +0000
+Subject: [PATCH 00/17] Misc OMAP DSS patches part 2
+Message-Id: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The help message of config FB_S3C_DEBUG_REGWRITE is fixed,
-because printk(KERN_DEBUG) was replaced with pr_debug().
+This series contains miscellaneous patches for omapdss. These are based on the
+previous misc patches series
+(http://www.mail-archive.com/linux-omap@vger.kernel.org/msg74279.html).
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
----
- drivers/video/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Some cleanups, but three a bit more important things:
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index ab621f8..d823064 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2057,7 +2057,7 @@ config FB_S3C_DEBUG_REGWRITE
-        bool "Debug register writes"
-        depends on FB_S3C
-        ---help---
--         Show all register writes via printk(KERN_DEBUG)
-+         Show all register writes via pr_debug()
- 
- config FB_S3C2410
- 	tristate "S3C2410 LCD framebuffer support"
+* vram.c no longer uses OMAP's sDMA to clear the memory
+* fifomerge has been reverted
+* Swap GFX and WB fifos to avoid underflows
+
+ Tomi
+
+Tomi Valkeinen (17):
+  OMAPDSS: Taal: use devm_* functions
+  OMAPFB1: remove unnecessary includes
+  OMAPFB1: remove a non-used table
+  OMAPDSS: remove unnecessary includes
+  OMAPFB: clear framebuffers with CPU
+  OMAPDSS: VRAM: Remove clearing with sDMA
+  OMAPDSS: Taal: Reogranize for device tree
+  OMAPDSS: TFP410: use devm_gpio_request_one
+  OMAPDSS: split overlay sysfs code
+  OMAPDSS: split manager sysfs code
+  OMAPDSS: clean up dss_mgr_set_lcd_config
+  OMAPDSS: clean up dss_mgr_set_timings
+  Revert "OMAPDSS: APPLY: add fifo-merge support"
+  Revert "OMAPDSS: APPLY: add fifo merge support funcs"
+  OMAPDSS: remove extra_info completion code
+  OMAPDSS: Improve fifo management code
+  OMAPDSS: Use WB fifo for GFX overlay
+
+ drivers/video/omap/hwa742.c                 |    1 -
+ drivers/video/omap/lcd_ams_delta.c          |    1 -
+ drivers/video/omap/lcd_palmte.c             |    1 -
+ drivers/video/omap/omapfb_main.c            |    9 -
+ drivers/video/omap2/displays/panel-taal.c   |  215 ++++++------
+ drivers/video/omap2/displays/panel-tfp410.c |   14 +-
+ drivers/video/omap2/dss/Makefile            |    2 +-
+ drivers/video/omap2/dss/apply.c             |  298 +---------------
+ drivers/video/omap2/dss/dispc.c             |   68 +++-
+ drivers/video/omap2/dss/dispc.h             |    4 +
+ drivers/video/omap2/dss/dpi.c               |    1 -
+ drivers/video/omap2/dss/dsi.c               |    1 -
+ drivers/video/omap2/dss/dss.c               |    1 -
+ drivers/video/omap2/dss/dss.h               |    7 +
+ drivers/video/omap2/dss/manager-sysfs.c     |  499 +++++++++++++++++++++++++++
+ drivers/video/omap2/dss/manager.c           |  462 +------------------------
+ drivers/video/omap2/dss/overlay-sysfs.c     |  456 ++++++++++++++++++++++++
+ drivers/video/omap2/dss/overlay.c           |  421 +---------------------
+ drivers/video/omap2/dss/venc.c              |    1 -
+ drivers/video/omap2/omapfb/omapfb-main.c    |   26 ++
+ drivers/video/omap2/vram.c                  |   56 ---
+ include/video/omapdss.h                     |    1 +
+ 22 files changed, 1180 insertions(+), 1365 deletions(-)
+ create mode 100644 drivers/video/omap2/dss/manager-sysfs.c
+ create mode 100644 drivers/video/omap2/dss/overlay-sysfs.c
+
 -- 
-1.7.1
-
+1.7.9.5
 

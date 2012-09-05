@@ -1,54 +1,60 @@
-From: Inki Dae <inki.dae@samsung.com>
-Date: Fri, 21 Sep 2012 06:01:52 +0000
-Subject: RE: [PATCH v2 2/2] video: exynos_mipi_dsi: Remove unnecessary NULL check
-Message-Id: <005c01cd97be$98d8d520$ca8a7f60$%dae@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 05 Sep 2012 08:25:50 +0000
+Subject: [PATCH 12/17] OMAPDSS: clean up dss_mgr_set_timings
+Message-Id: <1346833555-31258-13-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348204007-1347-2-git-send-email-sachin.kamat@linaro.org>
-In-Reply-To: <1348204007-1347-2-git-send-email-sachin.kamat@linaro.org>
+References: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Acked-by: Inki Dae <inki.dae@samsung.com>
+dss_mgr_set_timings() can only be called when the output is not active.
+This means that most of the code in the function is extra, as there's no
+need to write the values to registers, etc, because that will be handled
+when the output will be enabled.
 
-> -----Original Message-----
-> From: Sachin Kamat [mailto:sachin.kamat@linaro.org]
-> Sent: Friday, September 21, 2012 2:07 PM
-> To: linux-fbdev@vger.kernel.org
-> Cc: inki.dae@samsung.com; FlorianSchandinat@gmx.de;
-> sachin.kamat@linaro.org; patches@linaro.org
-> Subject: [PATCH v2 2/2] video: exynos_mipi_dsi: Remove unnecessary NULL
-> check
-> 
-> 'dsim' is allocated and checked for NULL in the probe function.
-> Hence this check is redundant. This cleanup also fixes a potential NULL
-> pointer dereference error when dsim which is NULL references its member
-> in the error print message.
-> 
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> ---
->  drivers/video/exynos/exynos_mipi_dsi_common.c |    5 -----
->  1 files changed, 0 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_mipi_dsi_common.c
-> b/drivers/video/exynos/exynos_mipi_dsi_common.c
-> index 7cc4113..3cd29a4 100644
-> --- a/drivers/video/exynos/exynos_mipi_dsi_common.c
-> +++ b/drivers/video/exynos/exynos_mipi_dsi_common.c
-> @@ -79,11 +79,6 @@ irqreturn_t exynos_mipi_dsi_interrupt_handler(int irq,
-> void *dev_id)
->  	struct mipi_dsim_device *dsim = dev_id;
->  	unsigned int intsrc, intmsk;
-> 
-> -	if (dsim = NULL) {
-> -		dev_err(dsim->dev, "%s: wrong parameter\n", __func__);
-> -		return IRQ_NONE;
-> -	}
-> -
->  	intsrc = exynos_mipi_dsi_read_interrupt(dsim);
->  	intmsk = exynos_mipi_dsi_read_interrupt_mask(dsim);
->  	intmsk = ~intmsk & intsrc;
-> --
-> 1.7.4.1
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/apply.c |   18 ++++++++----------
+ 1 file changed, 8 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 53629dd..1b49019 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -1314,21 +1314,19 @@ void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
+ 		const struct omap_video_timings *timings)
+ {
+ 	unsigned long flags;
+-
+-	mutex_lock(&apply_lock);
++	struct mgr_priv_data *mp = get_mgr_priv(mgr);
+ 
+ 	spin_lock_irqsave(&data_lock, flags);
+ 
+-	dss_apply_mgr_timings(mgr, timings);
+-
+-	dss_write_regs();
+-	dss_set_go_bits();
++	if (mp->enabled) {
++		DSSERR("cannot set timings for %s: manager needs to be disabled\n",
++			mgr->name);
++		goto out;
++	}
+ 
++	dss_apply_mgr_timings(mgr, timings);
++out:
+ 	spin_unlock_irqrestore(&data_lock, flags);
+-
+-	wait_pending_extra_info_updates();
+-
+-	mutex_unlock(&apply_lock);
+ }
+ 
+ static void dss_apply_mgr_lcd_config(struct omap_overlay_manager *mgr,
+-- 
+1.7.9.5
 

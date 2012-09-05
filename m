@@ -1,55 +1,60 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 19 Sep 2012 08:30:34 +0000
-Subject: [PATCH 4/8] OMAPDSS: explicitely initialize dssdev->channel for new displays
-Message-Id: <1348043438-2624-5-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 05 Sep 2012 08:25:49 +0000
+Subject: [PATCH 11/17] OMAPDSS: clean up dss_mgr_set_lcd_config
+Message-Id: <1346833555-31258-12-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348043438-2624-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1348043438-2624-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-HDMI and VENC outputs always use the DIGIT output from DISPC. The dssdev
-struct contains "channel" field which is used to specify the DISPC
-output for the display, but this was not used for HDMI and VENC.
-
-This patch fills the channel field explicitely for HDMI and VENC
-displays so that we can always rely on the channel field.
+dss_mgr_set_lcd_config() can only be called when the output is not
+active. This means that most of the code in the function is extra, as
+there's no need to write the values to registers, etc, because that will
+be handled when the output will be enabled.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/hdmi.c |    2 ++
- drivers/video/omap2/dss/venc.c |    2 ++
- 2 files changed, 4 insertions(+)
+ drivers/video/omap2/dss/apply.c |   14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 76d100b..3b10e18 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -946,6 +946,8 @@ static void __init hdmi_probe_pdata(struct platform_device *pdev)
- 	hdmi.ls_oe_gpio = priv->ls_oe_gpio;
- 	hdmi.hpd_gpio = priv->hpd_gpio;
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 52a5940..53629dd 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -1346,7 +1346,7 @@ void dss_mgr_set_lcd_config(struct omap_overlay_manager *mgr,
+ 	unsigned long flags;
+ 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
  
-+	dssdev->channel = OMAP_DSS_CHANNEL_DIGIT;
-+
- 	r = hdmi_init_display(dssdev);
- 	if (r) {
- 		DSSERR("device %s init failed: %d\n", dssdev->name, r);
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index b9c0a8f..88fa6ea 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -773,6 +773,8 @@ static void __init venc_probe_pdata(struct platform_device *pdev)
- 	if (!dssdev)
- 		return;
+-	mutex_lock(&apply_lock);
++	spin_lock_irqsave(&data_lock, flags);
  
-+	dssdev->channel = OMAP_DSS_CHANNEL_DIGIT;
-+
- 	r = venc_init_display(dssdev);
- 	if (r) {
- 		DSSERR("device %s init failed: %d\n", dssdev->name, r);
+ 	if (mp->enabled) {
+ 		DSSERR("cannot apply lcd config for %s: manager needs to be disabled\n",
+@@ -1354,19 +1354,9 @@ void dss_mgr_set_lcd_config(struct omap_overlay_manager *mgr,
+ 		goto out;
+ 	}
+ 
+-	spin_lock_irqsave(&data_lock, flags);
+-
+ 	dss_apply_mgr_lcd_config(mgr, config);
+-
+-	dss_write_regs();
+-	dss_set_go_bits();
+-
+-	spin_unlock_irqrestore(&data_lock, flags);
+-
+-	wait_pending_extra_info_updates();
+-
+ out:
+-	mutex_unlock(&apply_lock);
++	spin_unlock_irqrestore(&data_lock, flags);
+ }
+ 
+ int dss_ovl_set_info(struct omap_overlay *ovl,
 -- 
 1.7.9.5
 

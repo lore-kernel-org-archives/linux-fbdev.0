@@ -1,111 +1,60 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 27 Sep 2012 11:01:12 +0000
-Subject: Re: [PATCH V2 0/2] OMAPDSS: Enable dynamic debug printing
-Message-Id: <1348743672.2913.6.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-EmPLWrbZBML73VpnjsVt"
+From: Tony Lindgren <tony@atomide.com>
+Date: Thu, 06 Sep 2012 20:08:54 +0000
+Subject: Re: [PATCH V5 0/6] OMAPDSS: Cleanup cpu_is checks
+Message-Id: <20120906200853.GC1303@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348552998-6596-1-git-send-email-cmahapatra@ti.com>
-	 <cover.1348636132.git.cmahapatra@ti.com> <1348669792.2376.51.camel@deskari>
-	 <CAF0AtAvT-NnsREJWpRtYAGpYCS06O32tzQwWTDoFp+xepHyX8w@mail.gmail.com>
-In-Reply-To: <CAF0AtAvT-NnsREJWpRtYAGpYCS06O32tzQwWTDoFp+xepHyX8w@mail.gmail.com>
-To: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-
---=-EmPLWrbZBML73VpnjsVt
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2012-09-27 at 16:20 +0530, Mahapatra, Chandrabhanu wrote:
-> On Wed, Sep 26, 2012 at 7:59 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> w=
-rote:
->=20
-> > This doesn't work quite correctly. The problem is in dss.h, where we
-> > define DEBUG if CONFIG_OMAP2_DSS_DEBUG_SUPPORT is set. The thing is,
-> > DEBUG should be defined before including the kernel headers where the
-> > pr_debug etc are defined.
-> >
-> > So if you try the patches without dynamic debugging enabled, you won't
-> > get any debug outputs at all, even if CONFIG_OMAP2_DSS_DEBUG_SUPPORT is
-> > set.
-> >
-> > And for dynamic debug, the Kconfig help says:
-> >
-> > If a source file is compiled with DEBUG flag set, any
-> > pr_debug() calls in it are enabled by default, but can be
-> > disabled at runtime as below.  Note that DEBUG flag is
-> > turned on by many CONFIG_*DEBUG* options.
-> >
-> > So if we have CONFIG_OMAP2_DSS_DEBUG_SUPPORT set, all the pr_debugs
-> > should be enabled by default, which is not the case, again because DEBU=
-G
-> > is defined too late.
-> >
-> > I think setting DEBUG in dss.h should be removed, and instead DEBUG
-> > should be set in the makefile if CONFIG_OMAP2_DSS_DEBUG_SUPPORT is set.
-> >
-> >  Tomi
-> >
->=20
-> Well the documentation lags in describing about the DEBUG flag. I
-> should have checked DYNAMIC_DEBUG in Kconfig and pr_debug definition
-> in printk.h file.
->=20
-> #if defined(CONFIG_DYNAMIC_DEBUG)
-> /* dynamic_pr_debug() uses pr_fmt() internally so we don't need it here *=
-/
-> #define pr_debug(fmt, ...) \
->         dynamic_pr_debug(fmt, ##__VA_ARGS__)
-> #elif defined(DEBUG)
-> #define pr_debug(fmt, ...) \
->         printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-> #else
-> #define pr_debug(fmt, ...) \
->         no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-> #endif
->=20
-> As per the definition above pr_debug is dynamic with
-> CONFIG_DYNAMIC_DEBUG set or else with DEBUG set it is just a normal
-> kernel debug printk as you have mentioned.
-> I still don't get how even if DEBUG is set before DSSDBG() is defined
-> in dss.c pr_debug() fails to enable.
-
-Because printk.h is included without DEBUG, thus pr_debug is defined as
-no_printk.
-
-> Well anyways, how to do the same in the Makefile? I tried adding
-> ccflags-$(CONFIG_OMAP2_DSS_DEBUG_SUPPORT) +=3D -DEBUG
-> to makefile in dss directory but of no use.
-
--D option for the compiler is used to set defines. So it should be
--DDEBUG
-
- Tomi
-
-
---=-EmPLWrbZBML73VpnjsVt
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+References: <cover.1343912532.git.cmahapatra@ti.com>
+ <cover.1345468541.git.cmahapatra@ti.com>
+ <20120830002039.GP1303@atomide.com>
+ <1346312061.2327.27.camel@deskari>
+ <20120830171908.GQ1303@atomide.com>
+ <1346412220.16067.8.camel@deskari>
+In-Reply-To: <1346412220.16067.8.camel@deskari>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Chandrabhanu Mahapatra <cmahapatra@ti.com>, paul@pwsan.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+* Tomi Valkeinen <tomi.valkeinen@ti.com> [120831 04:24]:
+> On Thu, 2012-08-30 at 10:19 -0700, Tony Lindgren wrote:
+> > Hi,
+> > 
+> > * Tomi Valkeinen <tomi.valkeinen@ti.com> [120830 00:35]:
+> > > On Wed, 2012-08-29 at 17:20 -0700, Tony Lindgren wrote:
+> > > > 
+> > > > Good to see this, we need this badly to avoid blocking
+> > > > single zImage effort on omaps. Can you also please take
+> > > 
+> > > What is the issue with single zImage? How do cpu_is_ check affect it?
+> > 
+> > The usage for that should only be limited to arch/arm/mach-omap2
+> > so we can make cpu.h local as we can't include mach and plat
+> > header files from the drivers with single zImage.
+> 
+> Ok.
+> 
+> > > $ git grep -E "<plat|<mach" drivers/video/omap*
+> > > drivers/video/omap/lcd_ams_delta.c:#include <plat/board-ams-delta.h>
+> > > * Needs to be moved
+> > 
+> > Yes, that should be either mach/board-ams-delta.h, or separate driver
+> > specific headers in include/linux/platform_data. For omap1 we are not
+> > planning common zImage support, so let's just make sure we're not
+> > breaking anything there as people are still using it.
+> 
+> Hmm, so did I understand right, for omap1 stuff we can still include
+> from arch/arm/mach-omap1/include/mach?
 
-iQIcBAABAgAGBQJQZDH4AAoJEPo9qoy8lh718aUP/AlcB4lWglCxUwzpBX9KHw1j
-KneFLapNGGQOEAGunj0bjUuy6f222YxSUj19DhH+QFcATZaIVpTWRHXf1Ysqvyvv
-S59Uun6vF/Dy1TNPZK3MD3a+6vHs+uQQ0ex4wrOcM15tL/j/zKeyUPvHri892iqB
-Nv7rEXAX6nxJb9Mh2ooAentZowyr2bbfXhwNsd+eKXTpBfQO5ATjTfoghoqb+7YS
-mGcby0dJE2k5jDKmtME5gH04qb9apvzt8oW6xVw5YtzQWjK3Bh7EPjasiHINmZGu
-VLGpxAtJiRrv7GC4EYm1bEpGDiByJRVHCQmHDhcd+1E4N1jWAvbcsyCLU6X+sR8u
-/Y1DAe8bMhc30haa1jVRaIP2Lp+9I+zhNQk4UuPZRkwZG8polFaTrb5L0/Vn2Dry
-mTuOucyOcogDN0XyUZqbt+nyx9bWDnTw+TjW6RwnSTt10d7Jgkn7qzwv2U4D72QK
-hqCA6mSp/CQCXuR0vqlYh/o+8XfOxPyk3zte8bjl+xGkXjV2WgW/ZfBjajakrye1
-LQqKQb3cMJCd+xKn7A0pN57Vw4GcvofL7P5ynEMoM/PW6KpBpUGxhg0gqssX4moy
-lBoFCDqEH7/Tw1EDAmPmosiE1psOsDsqQSGUnqleYPtc7P+KpEnXIKOUtPgJSaxq
-B2EPUMga4xlKO/W09phP
-=ZaV2
------END PGP SIGNATURE-----
+Yes that's a separate issue to fix that up for armv4/5 common
+zImage support if people want to do that later on.
+ 
+> If so, that makes things easier. I can manage the omap2+ stuff fine, but
+> I have no experience with omap1, nor do I have any omap1 devices. So I'd
+> rather keep the omap1 code as it is, in fear that I'd just break it
+> totally, and I'd rather spend my time on omap2+ code.
 
---=-EmPLWrbZBML73VpnjsVt--
+Regards,
+
+Tony
 

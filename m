@@ -1,64 +1,56 @@
-From: Zhou Zhu <zzhu84@gmail.com>
-Date: Sat, 29 Sep 2012 05:34:04 +0000
-Subject: Re: [PATCHv3 1/4] video: mmp display subsystem
-Message-Id: <CAJATT-6MtSUOKuft_Nynf_woFjt2Oz6nbfCAugkRNBEtQrqzDA@mail.gmail.com>
+From: Jean Delvare <khali@linux-fr.org>
+Date: Thu, 06 Sep 2012 07:23:11 +0000
+Subject: [PATCH] video: bf*: Add missing spinlock init
+Message-Id: <20120906092311.22961acd@endymion.delvare>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347007704-27645-1-git-send-email-zzhu3@marvell.com>
-In-Reply-To: <1347007704-27645-1-git-send-email-zzhu3@marvell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi, Florian,
-Would you please help to review my patches? Thanks!
+It doesn't seem these spinlocks were properly initialized.
 
-On Fri, Sep 21, 2012 at 3:50 PM, Zhou Zhu <zzhu84@gmail.com> wrote:
-> Hi, Florian,
-> Would you please help to apply these patches?
-> Looks they have already been submitted for a long time, and no more
-> review comments recently.
-> Thank you for your help!
->
->> On Fri, Sep 7, 2012 at 4:48 PM, Zhou Zhu <zzhu3@marvell.com> wrote:
->>> Added mmp display subsystem to support Marvell MMP display controllers.
->>>
->>> This subsystem contains 4 parts:
->>> --fb folder
->>> --core.c
->>> --hw folder
->>> --panel folder
->>>
->>> 1. fb folder contains implementation of fb.
->>> fb get path and ovly from common interface and operates on these structures.
->>>
->>> 2. core.c provides common interface for a hardware abstraction.
->>> Major parts of this interface are:
->>> a) Path: path is a output device connected to a panel or HDMI TV.
->>> Main operations of the path is set/get timing/output color.
->>> fb operates output device through path structure.
->>> b) Ovly: Ovly is a buffer shown on the path.
->>> Ovly describes frame buffer and its source/destination size, offset, input
->>> color, buffer address, z-order, and so on.
->>> Each fb device maps to one ovly.
->>>
->>> 3. hw folder contains implementation of hardware operations defined by core.c.
->>> It registers paths for fb use.
->>>
->>> 4. panel folder contains implementation of panels.
->>> It's connected to path. Panel drivers would also regiester panels and linked
->>> to path when probe.
->>>
->>> Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
->>> Signed-off-by: Lisa Du <cldu@marvell.com>
->>
->> Thanks,
->> -Zhou
->
-> --
-> Thanks,
-> -Zhou
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+---
+I can't even build-test this.
+
+ drivers/video/bf54x-lq043fb.c    |    1 +
+ drivers/video/bfin-lq035q1-fb.c  |    1 +
+ drivers/video/bfin-t350mcqb-fb.c |    1 +
+ 3 files changed, 3 insertions(+)
+
+--- linux-3.6-rc4.orig/drivers/video/bf54x-lq043fb.c	2012-07-21 22:58:29.000000000 +0200
++++ linux-3.6-rc4/drivers/video/bf54x-lq043fb.c	2012-09-06 08:49:37.812899185 +0200
+@@ -525,6 +525,7 @@ static int __devinit bfin_bf54x_probe(st
+ 	info = fbinfo->par;
+ 	info->fb = fbinfo;
+ 	info->dev = &pdev->dev;
++	spin_lock_init(&info->lock);
+ 
+ 	platform_set_drvdata(pdev, fbinfo);
+ 
+--- linux-3.6-rc4.orig/drivers/video/bfin-lq035q1-fb.c	2012-07-21 22:58:29.000000000 +0200
++++ linux-3.6-rc4/drivers/video/bfin-lq035q1-fb.c	2012-09-06 08:48:50.618858480 +0200
+@@ -577,6 +577,7 @@ static int __devinit bfin_lq035q1_probe(
+ 	info = fbinfo->par;
+ 	info->fb = fbinfo;
+ 	info->dev = &pdev->dev;
++	spin_lock_init(&info->lock);
+ 
+ 	info->disp_info = pdev->dev.platform_data;
+ 
+--- linux-3.6-rc4.orig/drivers/video/bfin-t350mcqb-fb.c	2012-07-21 22:58:29.000000000 +0200
++++ linux-3.6-rc4/drivers/video/bfin-t350mcqb-fb.c	2012-09-06 08:48:12.310825601 +0200
+@@ -447,6 +447,7 @@ static int __devinit bfin_t350mcqb_probe
+ 	info = fbinfo->par;
+ 	info->fb = fbinfo;
+ 	info->dev = &pdev->dev;
++	spin_lock_init(&info->lock);
+ 
+ 	platform_set_drvdata(pdev, fbinfo);
+ 
+
 
 -- 
-Thanks,
--Zhou
+Jean Delvare

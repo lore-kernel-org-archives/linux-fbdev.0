@@ -1,135 +1,70 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Wed, 05 Sep 2012 13:43:48 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 06 Sep 2012 13:04:41 +0000
 Subject: Re: [PATCH 15/17] OMAPDSS: remove extra_info completion code
-Message-Id: <50475444.2080509@ti.com>
+Message-Id: <1346936681.2737.61.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-eRix5lGB9BPPNb98Ex/t"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com> <1346833555-31258-16-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1346833555-31258-16-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
+	 <1346833555-31258-16-git-send-email-tomi.valkeinen@ti.com>
+	 <50475444.2080509@ti.com>
+In-Reply-To: <50475444.2080509@ti.com>
+To: Archit Taneja <a0393947@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Wednesday 05 September 2012 01:55 PM, Tomi Valkeinen wrote:
-> Now that fifo merge has been removed, nobody uses the extra_info related
-> completion code, which can be removed.
 
-I think this might come into use when we fix the usage of channel out 
-field. That is, since channel out is an immediate write field, when we 
-set a new manager for an overlay, we may need to wait till the overlay 
-disable kicks in, only then we should change channel out.
+--=-eRix5lGB9BPPNb98Ex/t
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-For this, we would need some wait for extra_info, right?
+On Wed, 2012-09-05 at 19:01 +0530, Archit Taneja wrote:
+> On Wednesday 05 September 2012 01:55 PM, Tomi Valkeinen wrote:
+> > Now that fifo merge has been removed, nobody uses the extra_info relate=
+d
+> > completion code, which can be removed.
+>=20
+> I think this might come into use when we fix the usage of channel out=20
+> field. That is, since channel out is an immediate write field, when we=
+=20
+> set a new manager for an overlay, we may need to wait till the overlay=
+=20
+> disable kicks in, only then we should change channel out.
+>=20
+> For this, we would need some wait for extra_info, right?
 
-Archit
+Hmm, yes, I think you are right. Previously the ovl_disable waited until
+the overlay is not used anymore, but now it doesn't.
 
->
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->   drivers/video/omap2/dss/apply.c |   69 ---------------------------------------
->   1 file changed, 69 deletions(-)
->
-> diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-> index 32b5379..2579d15 100644
-> --- a/drivers/video/omap2/dss/apply.c
-> +++ b/drivers/video/omap2/dss/apply.c
-> @@ -118,7 +118,6 @@ static struct {
->   static spinlock_t data_lock;
->   /* lock for blocking functions */
->   static DEFINE_MUTEX(apply_lock);
-> -static DECLARE_COMPLETION(extra_updated_completion);
->
->   static void dss_register_vsync_isr(void);
->
-> @@ -355,69 +354,6 @@ static bool need_go(struct omap_overlay_manager *mgr)
->   	return false;
->   }
->
-> -/* returns true if an extra_info field is currently being updated */
-> -static bool extra_info_update_ongoing(void)
-> -{
-> -	const int num_mgrs = dss_feat_get_num_mgrs();
-> -	int i;
-> -
-> -	for (i = 0; i < num_mgrs; ++i) {
-> -		struct omap_overlay_manager *mgr;
-> -		struct omap_overlay *ovl;
-> -		struct mgr_priv_data *mp;
-> -
-> -		mgr = omap_dss_get_overlay_manager(i);
-> -		mp = get_mgr_priv(mgr);
-> -
-> -		if (!mp->enabled)
-> -			continue;
-> -
-> -		if (!mp->updating)
-> -			continue;
-> -
-> -		if (mp->extra_info_dirty || mp->shadow_extra_info_dirty)
-> -			return true;
-> -
-> -		list_for_each_entry(ovl, &mgr->overlays, list) {
-> -			struct ovl_priv_data *op = get_ovl_priv(ovl);
-> -
-> -			if (op->extra_info_dirty || op->shadow_extra_info_dirty)
-> -				return true;
-> -		}
-> -	}
-> -
-> -	return false;
-> -}
-> -
-> -/* wait until no extra_info updates are pending */
-> -static void wait_pending_extra_info_updates(void)
-> -{
-> -	bool updating;
-> -	unsigned long flags;
-> -	unsigned long t;
-> -	int r;
-> -
-> -	spin_lock_irqsave(&data_lock, flags);
-> -
-> -	updating = extra_info_update_ongoing();
-> -
-> -	if (!updating) {
-> -		spin_unlock_irqrestore(&data_lock, flags);
-> -		return;
-> -	}
-> -
-> -	init_completion(&extra_updated_completion);
-> -
-> -	spin_unlock_irqrestore(&data_lock, flags);
-> -
-> -	t = msecs_to_jiffies(500);
-> -	r = wait_for_completion_timeout(&extra_updated_completion, t);
-> -	if (r = 0)
-> -		DSSWARN("timeout in wait_pending_extra_info_updates\n");
-> -	else if (r < 0)
-> -		DSSERR("wait_pending_extra_info_updates failed: %d\n", r);
-> -}
-> -
->   int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr)
->   {
->   	unsigned long timeout = msecs_to_jiffies(500);
-> @@ -823,7 +759,6 @@ static void dss_apply_irq_handler(void *data, u32 mask)
->   {
->   	const int num_mgrs = dss_feat_get_num_mgrs();
->   	int i;
-> -	bool extra_updating;
->
->   	spin_lock(&data_lock);
->
-> @@ -854,10 +789,6 @@ static void dss_apply_irq_handler(void *data, u32 mask)
->   	dss_write_regs();
->   	dss_set_go_bits();
->
-> -	extra_updating = extra_info_update_ongoing();
-> -	if (!extra_updating)
-> -		complete_all(&extra_updated_completion);
-> -
->   	if (!need_isr())
->   		dss_unregister_vsync_isr();
->
->
+So I think I need to add wait_pending_extra_info_updates() call to the
+beginning of dss_ovl_set_manager(). Or, should it be in unset_manager...
+I think unset is better, then a "free" overlay always disabled also in
+the HW level.
+
+ Tomi
+
+
+--=-eRix5lGB9BPPNb98Ex/t
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJQSJ9pAAoJEPo9qoy8lh71pJQP/0PrKEwtxxxDiAOLppjsu+Br
+hcl55hkAUhV7uRm1H4KI6sk9lIpHx7V08urRCd25NaXbg4lCEpKh4r4jPQhYqADg
+heYr9Xru7noPn2K4aILmUnEwrKkxaUvN8rg1rWlwT1AfM8Jhv/osm05gmz+pC+e6
+eHaBnd3MLcn4VMtX+CB0FRiaM2LhYxF9SGUt4t5s/tu9z7Bmmb6ti8rtYmZ3sK+w
+Y27T5+YAwX7FRsEzr2LlVcMzGFbDdtCUAG4RDAc/hdY/44qVLEefh8pn4S/J501b
+PqjfiXwdATp1gbYgQHOgZMNNbJWIq3bTxbs4kKkm+1E+LlVoH7LaGQ/ubQVLEg6g
+oc2jMqEp16pJ5r+dHp9v1DFbnbQ5n6kfLuSPR8AJFuGh9V2bAxOnF7ZUylQjPNr2
+09kabA9uKUclzod/Sg/sOESUOARUJvenOYYmp3ltmB3baztStSuWOKPUJHt2NOp0
+L4NYA9USRKTln/N1LzYvBfFYAWkGh+Uf4YcFbYRH2O/o5EpqSfhagUvQTMXnmIWS
+8bJcXIh605JtHl9kVEZUOVubPJgsM+2O7YwInPJL3d40j8TadpLOwOAVLoOOjBDa
+PstSHiRrwhUxvcK3+egcgqVZQxPUH6/VKASmnZr5/qluNijx93MO5mF6raJlIKwH
+f/GWpZ6rOL8qNT+2LkOg
+=XqoN
+-----END PGP SIGNATURE-----
+
+--=-eRix5lGB9BPPNb98Ex/t--
 

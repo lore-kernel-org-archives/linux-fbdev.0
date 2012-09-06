@@ -1,55 +1,24 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 13 Sep 2012 12:27:03 +0000
-Subject: [PATCH 19/21] OMAPDSS: DISPC: Configure writeback FIFOs
-Message-Id: <1347538505-25359-20-git-send-email-archit@ti.com>
+From: Tony Lindgren <tony@atomide.com>
+Date: Thu, 06 Sep 2012 20:11:55 +0000
+Subject: Re: [PATCH 7/8] OMAP: 4430SDP: remove DSI clock config from board file
+Message-Id: <20120906201155.GD1303@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>
-In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
+References: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
+ <1345729514-2441-8-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1345729514-2441-8-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Extend the DISPC fifo functions to also configure the writeback FIFO thresholds.
+* Tomi Valkeinen <tomi.valkeinen@ti.com> [120823 06:46]:
+> DSI clocks are now configured dynamically by the DSI driver, so we can
+> remove the hardcoded clock configuration from the board file.
+> 
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: Tony Lindgren <tony@atomide.com>
 
-The most optimal configuration for writeback is to push out data to the
-interconnect the moment writeback pushes enough pixels in the FIFO to form a
-burst. This reduces the chance of writeback overflowing it's FIFO.
+This should be safe to merge via fb tree:
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/dispc.c |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index a44cbac..6068271 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -997,7 +997,7 @@ void dispc_wb_set_channel_in(enum dss_writeback_channel channel)
- static void dispc_plane_set_burst_size(enum omap_plane plane,
- 		enum omap_burst_size burst_size)
- {
--	static const unsigned shifts[] = { 6, 14, 14, 14, };
-+	static const unsigned shifts[] = { 6, 14, 14, 14, 14, };
- 	int shift;
- 
- 	shift = shifts[plane];
-@@ -1229,6 +1229,14 @@ void dispc_plane_compute_fifo_thresholds(enum omap_plane plane,
- 	if (manual_update && dss_has_feature(FEAT_OMAP3_DSI_FIFO_BUG)) {
- 		*fifo_low = plane_fifo_size - burst_size * 2;
- 		*fifo_high = total_fifo_size - burst_size;
-+	} else if (plane = OMAP_DSS_WB) {
-+		/*
-+		 * Most optimal configuration for writeback is to push out data
-+		 * to the interconnect the moment writeback pushes enough pixels
-+		 * in the FIFO to form a burst
-+		 */
-+		*fifo_low = 0;
-+		*fifo_high = burst_size;
- 	} else {
- 		*fifo_low = plane_fifo_size - burst_size;
- 		*fifo_high = total_fifo_size - buf_unit;
--- 
-1.7.9.5
-
+Acked-by: Tony Lindgren <tony@atomide.com>

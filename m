@@ -1,64 +1,97 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Wed, 05 Sep 2012 11:48:40 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 07 Sep 2012 10:11:13 +0000
 Subject: Re: [PATCH 12/17] OMAPDSS: clean up dss_mgr_set_timings
-Message-Id: <50473C02.4060503@ti.com>
+Message-Id: <1347012673.2646.3.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-O/JyR9SOGwz+s/Rkhb2a"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>   <1346833555-31258-13-git-send-email-tomi.valkeinen@ti.com>   <5047182F.3030507@ti.com> <1346841713.32747.6.camel@deskari>  <504738C4.7060005@ti.com> <1346845276.32747.11.camel@deskari>
-In-Reply-To: <1346845276.32747.11.camel@deskari>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+References: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
+	 <1346833555-31258-13-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1346833555-31258-13-git-send-email-tomi.valkeinen@ti.com>
+To: archit@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+
+
+--=-O/JyR9SOGwz+s/Rkhb2a
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2012-09-05 at 11:25 +0300, Tomi Valkeinen wrote:
+> dss_mgr_set_timings() can only be called when the output is not active.
+> This means that most of the code in the function is extra, as there's no
+> need to write the values to registers, etc, because that will be handled
+> when the output will be enabled.
+>=20
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> ---
+>  drivers/video/omap2/dss/apply.c |   18 ++++++++----------
+>  1 file changed, 8 insertions(+), 10 deletions(-)
+>=20
+> diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/ap=
+ply.c
+> index 53629dd..1b49019 100644
+> --- a/drivers/video/omap2/dss/apply.c
+> +++ b/drivers/video/omap2/dss/apply.c
+> @@ -1314,21 +1314,19 @@ void dss_mgr_set_timings(struct omap_overlay_mana=
+ger *mgr,
+>  		const struct omap_video_timings *timings)
+>  {
+>  	unsigned long flags;
+> -
+> -	mutex_lock(&apply_lock);
+> +	struct mgr_priv_data *mp =3D get_mgr_priv(mgr);
+> =20
+>  	spin_lock_irqsave(&data_lock, flags);
+> =20
+> -	dss_apply_mgr_timings(mgr, timings);
+> -
+> -	dss_write_regs();
+> -	dss_set_go_bits();
+> +	if (mp->enabled) {
+> +		DSSERR("cannot set timings for %s: manager needs to be disabled\n",
+> +			mgr->name);
+> +		goto out;
+> +	}
+
+There was a problem with this one. When using manual update display, we
+call set_timings before each update, and the mgr is enabled at that
+time.
+
+I'll fix this by changing the check from mp->enabled to mp->updating.
+That flag tells if the DISPC channel is actually enabled or not. Enabled
+flag just tells that the channel is being reserved, although for auto
+update displays that also implies "updating".
+
+But do you see any reason to call set_timings before each update? It was
+required when we have partial update support, but now we support only
+full screen updates, so isn't it enough to set the timings just once
+when configuring?
+
+ Tomi
+
+
+--=-O/JyR9SOGwz+s/Rkhb2a
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Wednesday 05 September 2012 05:11 PM, Tomi Valkeinen wrote:
-> On Wed, 2012-09-05 at 17:04 +0530, Archit Taneja wrote:
->> On Wednesday 05 September 2012 04:11 PM, Tomi Valkeinen wrote:
->>> On Wed, 2012-09-05 at 14:45 +0530, Archit Taneja wrote:
->>>> On Wednesday 05 September 2012 01:55 PM, Tomi Valkeinen wrote:
->>>>> dss_mgr_set_timings() can only be called when the output is not active.
->>>>> This means that most of the code in the function is extra, as there's no
->>>>> need to write the values to registers, etc, because that will be handled
->>>>> when the output will be enabled.
->>>>
->>>> We need to fix dpi_set_timings() before we can make this change. DPI
->>>> still tries to change timings on the fly, i.e, with manager enabled. We
->>>> need to disable and enable the DPI output like we do for other outputs.
->>>
->>> Yep, and for HDMI also (I didn't check the others yet).
->>
->> I don't think HDMI is impacted, we do the full power off and power on
->> for HDMI, so the manager would be disabled when we set the timings.
->
-> Ah right.
->
->>> I think the simplest way to handle this is to only write the dpi.timings
->>> in omapdss_dpi_set_timings, and remove the call to dss_mgr_set_timings.
->>> This is not perfect, as a call to omapdss_dpi_set_timings when the
->>> display is enabled would result in changing the dpi.timings, but the
->>> changes wouldn't be actually in use.
->>
->> The simplest way would be to do what other outputs do, disable the
->> output and re-enable the output with the new timings value, if the panel
->> is enabled.
->
-> Not quite, as there's the mutex in dpi so we can't call enable/disable
-> from set_timings. I could create separate non-locked internal functions
-> for enable and disable, but that feels more complex than just removing
-> the enable & disable from set_timings.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-Okay, right.
+iQIcBAABAgAGBQJQSchBAAoJEPo9qoy8lh71lOAP/iNAycI1mPgK99Gcm5ToG0JA
+DNyxEYI3gJLX2tpfWaMPgffL6eDtcDkhan+AUg8pUjjwCrbTaJioZ0qF99eH0E5J
+2VO5dDL+jtcikMoy/v2SgB2zl1KXpd5PTXH25jPSlryUUKDgNEQIcSAKinPxaMdb
+ESnmeq6v1XPjGntERmZ7CY/iiRVfpjdpsHcd7QxbUNzJwJP3CAWNOfODRi0mnunl
+Zr6r7roCafC7RrPGJ4NVYs1jeJWaRGWyKbrVSZ2t9tXF5OyN9FQ0aSyAbj6g4QMx
+xgxonBGKKA6iTjWBH/rFIWhkfdDY5UA65jb7nw2r+DfPbGuiH6k6Q6sK9hW6bd78
+E4/edeTgECnj9Fxa8hDvhxq8F6pJnqsLzTYkqzZc8xxgk7rL0yn5/w2ipX0iBVxS
+p6ic1pSg/K0YPSmFLHJY2CcbLYmnDlj1k40mgzBRrnejlvzs6pAO+8E01uu+rTuz
+9OIoEB8rVa17V1FelPfeOUR/gQ16IcyF7BcepfQO9nPvB9pFm0n8J9d4Jv5G7VMH
+AgC1b1BLd4C5JeA6H9gz2gZ4u60jTU2ns20/3nuPlT0ueeRi5AYepM3Yzqn5s8Lz
+8dee69zh5RI8Z4B78jn1i95lk6h3Ng4lKcemKxFq9KI8SkLfsPSqHiU2XHazURFU
+n3Lky2vYA/T/5GQJTVNB
+=Yyud
+-----END PGP SIGNATURE-----
 
->
-> In the end we'll anyway only allow changing timings when the output is
-> disabled.
->
-> The only change I had to do, in addition to removing code from
-> set_timings functions, was to add display disable & enable calls to the
-> "timings" sysfs write. omapfb already only calls set_timings when the
-> output is disabled, and omapdrm does the same.
-
-Okay, that sounds good then.
-
-Archit
+--=-O/JyR9SOGwz+s/Rkhb2a--
 

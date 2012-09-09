@@ -1,21 +1,95 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Wed, 12 Sep 2012 22:15:33 +0000
-Subject: Re: [PATCH v6 2/4] pwm_backlight: use power sequences
-Message-Id: <50510985.40308@wwwdotorg.org>
+From: Lars-Peter Clausen <lars@metafoo.de>
+Date: Sun, 09 Sep 2012 15:38:41 +0000
+Subject: [PATCH] fbdev: jz4740: Use devm_request_and_ioremap
+Message-Id: <1347205121-5551-1-git-send-email-lars@metafoo.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347443867-18868-1-git-send-email-acourbot@nvidia.com> <1347443867-18868-3-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1347443867-18868-3-git-send-email-acourbot@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexandre Courbot <acourbot@nvidia.com>
-Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Leela Krishna Amudala <l.krishna@samsung.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Damien Cassou <damien.cassou@lifl.fr>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>
 
-On 09/12/2012 03:57 AM, Alexandre Courbot wrote:
-> Make use of the power sequences specified in the device tree or platform
-> data to control how the backlight is powered on and off.
-> 
-> Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+Use devm_request_and_ioremap instead of request_mem_region + devm_ioremap.
 
-Reviewed-by: Stephen Warren <swarren@wwwdotorg.org>
+This also fixes the following compile error introduced in commit b2ca7f4d
+("drivers/video/jz4740_fb.c: use devm_ functions"):
+
+drivers/video/jz4740_fb.c: In function 'jzfb_probe':
+	drivers/video/jz4740_fb.c:676:2: error: implicit declaration of function 'devm_ioremap'
+	drivers/video/jz4740_fb.c:676:13: warning: assignment makes pointer from integer without a cast
+
+Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+---
+ drivers/video/jz4740_fb.c |   24 +++---------------------
+ 1 files changed, 3 insertions(+), 21 deletions(-)
+
+diff --git a/drivers/video/jz4740_fb.c b/drivers/video/jz4740_fb.c
+index 7669770..b0df279 100644
+--- a/drivers/video/jz4740_fb.c
++++ b/drivers/video/jz4740_fb.c
+@@ -632,23 +632,10 @@ static int __devinit jzfb_probe(struct platform_device *pdev)
+ 		return -ENXIO;
+ 	}
+ 
+-	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (!mem) {
+-		dev_err(&pdev->dev, "Failed to get register memory resource\n");
+-		return -ENXIO;
+-	}
+-
+-	mem = request_mem_region(mem->start, resource_size(mem), pdev->name);
+-	if (!mem) {
+-		dev_err(&pdev->dev, "Failed to request register memory region\n");
+-		return -EBUSY;
+-	}
+-
+ 	fb = framebuffer_alloc(sizeof(struct jzfb), &pdev->dev);
+ 	if (!fb) {
+ 		dev_err(&pdev->dev, "Failed to allocate framebuffer device\n");
+-		ret = -ENOMEM;
+-		goto err_release_mem_region;
++		return -ENOMEM;
+ 	}
+ 
+ 	fb->fbops = &jzfb_ops;
+@@ -657,7 +644,6 @@ static int __devinit jzfb_probe(struct platform_device *pdev)
+ 	jzfb = fb->par;
+ 	jzfb->pdev = pdev;
+ 	jzfb->pdata = pdata;
+-	jzfb->mem = mem;
+ 
+ 	jzfb->ldclk = devm_clk_get(&pdev->dev, "lcd");
+ 	if (IS_ERR(jzfb->ldclk)) {
+@@ -673,9 +659,9 @@ static int __devinit jzfb_probe(struct platform_device *pdev)
+ 		goto err_framebuffer_release;
+ 	}
+ 
+-	jzfb->base = devm_ioremap(&pdev->dev, mem->start, resource_size(mem));
++	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	jzfb->base = devm_request_and_ioremap(&pdev->dev, mem);
+ 	if (!jzfb->base) {
+-		dev_err(&pdev->dev, "Failed to ioremap register memory region\n");
+ 		ret = -EBUSY;
+ 		goto err_framebuffer_release;
+ 	}
+@@ -736,8 +722,6 @@ err_free_devmem:
+ 	jzfb_free_devmem(jzfb);
+ err_framebuffer_release:
+ 	framebuffer_release(fb);
+-err_release_mem_region:
+-	release_mem_region(mem->start, resource_size(mem));
+ 	return ret;
+ }
+ 
+@@ -750,8 +734,6 @@ static int __devexit jzfb_remove(struct platform_device *pdev)
+ 	jz_gpio_bulk_free(jz_lcd_ctrl_pins, jzfb_num_ctrl_pins(jzfb));
+ 	jz_gpio_bulk_free(jz_lcd_data_pins, jzfb_num_data_pins(jzfb));
+ 
+-	release_mem_region(jzfb->mem->start, resource_size(jzfb->mem));
+-
+ 	fb_dealloc_cmap(&jzfb->fb->cmap);
+ 	jzfb_free_devmem(jzfb);
+ 
+-- 
+1.7.2.5
 

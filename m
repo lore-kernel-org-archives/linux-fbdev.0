@@ -1,52 +1,104 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 16 Aug 2012 13:00:37 +0000
-Subject: [PATCH 02/19] fbdev: sh_mobile_lcdc: Rename mode argument to modes
-Message-Id: <1345122054-16013-3-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 10 Sep 2012 10:54:21 +0000
+Subject: [PATCH 1/2] video: s3c2410: Use pr_* and dev_* instead of printk
+Message-Id: <002c01cd8f42$a2104080$e630c180$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The sh_mobile_lcdc_channel_fb_init() mode argument is used to pass a
-list of modes, rename it to modes.
+From: Sachin Kamat <sachin.kamat@linaro.org>
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+printk calls are replaced by pr_* and dev_* calls to silence
+checkpatch warnings.
+
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/s3c2410fb.c |   22 ++++++++++++++--------
+ 1 files changed, 14 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 7375dbf..82b53f7 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -2187,7 +2187,7 @@ sh_mobile_lcdc_channel_fb_cleanup(struct sh_mobile_lcdc_chan *ch)
+diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
+index 77f34c6..1aa37ea 100644
+--- a/drivers/video/s3c2410fb.c
++++ b/drivers/video/s3c2410fb.c
+@@ -11,6 +11,8 @@
+  * Driver based on skeletonfb.c, sa1100fb.c and others.
+ */
  
- static int __devinit
- sh_mobile_lcdc_channel_fb_init(struct sh_mobile_lcdc_chan *ch,
--			       const struct fb_videomode *mode,
-+			       const struct fb_videomode *modes,
- 			       unsigned int num_modes)
- {
- 	struct sh_mobile_lcdc_priv *priv = ch->lcdc;
-@@ -2213,7 +2213,7 @@ sh_mobile_lcdc_channel_fb_init(struct sh_mobile_lcdc_chan *ch,
- 	info->pseudo_palette = &ch->pseudo_palette;
- 	info->par = ch;
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/err.h>
+@@ -48,7 +50,11 @@ static int debug	= 1;
+ static int debug;
+ #endif
  
--	fb_videomode_to_modelist(mode, num_modes, &info->modelist);
-+	fb_videomode_to_modelist(modes, num_modes, &info->modelist);
+-#define dprintk(msg...)	if (debug) printk(KERN_DEBUG "s3c2410fb: " msg);
++#define dprintk(msg...) \
++do { \
++	if (debug) \
++		pr_debug(msg); \
++} while (0)
  
- 	ret = fb_alloc_cmap(&info->cmap, PALETTE_NR, 0);
+ /* useful functions */
+ 
+@@ -598,11 +604,11 @@ static int s3c2410fb_debug_store(struct device *dev,
+ 	if (strnicmp(buf, "on", 2) = 0 ||
+ 	    strnicmp(buf, "1", 1) = 0) {
+ 		debug = 1;
+-		printk(KERN_DEBUG "s3c2410fb: Debug On");
++		dev_dbg(dev, "s3c2410fb: Debug On");
+ 	} else if (strnicmp(buf, "off", 3) = 0 ||
+ 		   strnicmp(buf, "0", 1) = 0) {
+ 		debug = 0;
+-		printk(KERN_DEBUG "s3c2410fb: Debug Off");
++		dev_dbg(dev, "s3c2410fb: Debug Off");
+ 	} else {
+ 		return -EINVAL;
+ 	}
+@@ -921,7 +927,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+ 
+ 	info->clk = clk_get(NULL, "lcd");
+ 	if (IS_ERR(info->clk)) {
+-		printk(KERN_ERR "failed to get lcd clock source\n");
++		dev_err(&pdev->dev, "failed to get lcd clock source\n");
+ 		ret = PTR_ERR(info->clk);
+ 		goto release_irq;
+ 	}
+@@ -947,7 +953,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+ 	/* Initialize video memory */
+ 	ret = s3c2410fb_map_video_memory(fbinfo);
+ 	if (ret) {
+-		printk(KERN_ERR "Failed to allocate video RAM: %d\n", ret);
++		dev_err(&pdev->dev, "Failed to allocate video RAM: %d\n", ret);
+ 		ret = -ENOMEM;
+ 		goto release_clock;
+ 	}
+@@ -970,7 +976,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+ 
+ 	ret = register_framebuffer(fbinfo);
  	if (ret < 0) {
-@@ -2247,7 +2247,7 @@ sh_mobile_lcdc_channel_fb_init(struct sh_mobile_lcdc_chan *ch,
- 	 * default.
- 	 */
- 	var = &info->var;
--	fb_videomode_to_var(var, mode);
-+	fb_videomode_to_var(var, modes);
- 	var->width = ch->display.width;
- 	var->height = ch->display.height;
- 	var->xres_virtual = ch->xres_virtual;
+-		printk(KERN_ERR "Failed to register framebuffer device: %d\n",
++		dev_err(&pdev->dev, "Failed to register framebuffer device: %d\n",
+ 			ret);
+ 		goto free_cpufreq;
+ 	}
+@@ -978,9 +984,9 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+ 	/* create device files */
+ 	ret = device_create_file(&pdev->dev, &dev_attr_debug);
+ 	if (ret)
+-		printk(KERN_ERR "failed to add debug attribute\n");
++		dev_err(&pdev->dev, "failed to add debug attribute\n");
+ 
+-	printk(KERN_INFO "fb%d: %s frame buffer device\n",
++	dev_info(&pdev->dev, "fb%d: %s frame buffer device\n",
+ 		fbinfo->node, fbinfo->fix.id);
+ 
+ 	return 0;
 -- 
-1.7.8.6
+1.7.1
+
 

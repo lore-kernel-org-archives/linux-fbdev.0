@@ -1,94 +1,200 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 13 Sep 2012 12:27:02 +0000
-Subject: [PATCH 18/21] OMAPDSS: DISPC: Configure writeback specific parameters in dispc_wb_setup()
-Message-Id: <1347538505-25359-19-git-send-email-archit@ti.com>
+From: Dimitar Dimitrov <dinuxbg@gmail.com>
+Date: Mon, 10 Sep 2012 19:34:45 +0000
+Subject: [PATCH v3] OMAPDSS: Fix IRQ unregister race
+Message-Id: <1347305685-18182-1-git-send-email-dinuxbg@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>
-In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
+References: <201209102219.29105.dinuxbg@gmail.com>
+In-Reply-To: <201209102219.29105.dinuxbg@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Dimitar Dimitrov <dinuxbg@gmail.com>, stable <stable@vger.kernel.org>
 
-Configure some of the writeback specific parameters in dispc_wb_setup(). The
-writeback parameters configured are:
+Very rare kernel crashes are reported on a custom OMAP4 board. Kernel
+panics due to corrupted completion structure while executing
+dispc_irq_wait_handler(). Excerpt from kernel log:
 
-truncation: This needs to be set if the color depth input to writeback is more
-than the color depth of the color mode we want to store in memory.
+  Internal error: Oops - undefined instruction: 0 [#1] PREEMPT SMP
+  Unable to handle kernel paging request at virtual address 00400130
+  ...
+  PC is at 0xebf205bc
+  LR is at __wake_up_common+0x54/0x94
+  ...
+  (__wake_up_common+0x0/0x94)
+  (complete+0x0/0x60)
+  (dispc_irq_wait_handler.36902+0x0/0x14)
+  (omap_dispc_irq_handler+0x0/0x354)
+  (handle_irq_event_percpu+0x0/0x188)
+  (handle_irq_event+0x0/0x64)
+  (handle_fasteoi_irq+0x0/0x10c)
+  (generic_handle_irq+0x0/0x48)
+  (asm_do_IRQ+0x0/0xc0)
 
-writeback mode: This configures whether we want to use writeback in mem to mem
-or capture mode. This information will be directly passed by APPLY later.
+DISPC IRQ executes callbacks with dispc.irq_lock released. Hence
+unregister_isr() and DISPC IRQ might be running in parallel on different
+CPUs. So there is a chance that a callback is executed even though it
+has been unregistered. As omap_dispc_wait_for_irq_timeout() declares a
+completion on stack, the dispc_irq_wait_handler() callback might try to
+access a completion structure that is invalid. This leads to crashes and
+hangs.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+Solution is to divide unregister calls into two sets:
+  1. Non-strict unregistering of callbacks. Callbacks could safely be
+     executed after unregistering them. This is the case with unregister
+     calls from the IRQ handler itself.
+  2. Strict (synchronized) unregistering. Callbacks are not allowed
+     after unregistering. This is the case with completion waiting.
+
+The above solution should satisfy one of the original intentions of the
+driver: callbacks should be able to unregister themselves.
+
+Also fix DSI IRQ unregister which has similar logic to DISPC IRQ handling.
+
+Cc: stable <stable@vger.kernel.org>
+Signed-off-by: Dimitar Dimitrov <dinuxbg@gmail.com>
 ---
- drivers/video/omap2/dss/dispc.c |   26 +++++++++++++++++++++++++-
- drivers/video/omap2/dss/dss.h   |    2 +-
- 2 files changed, 26 insertions(+), 2 deletions(-)
+Changes since v2:
+  - Fix formatting per Tomi Valkeinen's comments.
+  - Restored accidental removal of EXPORT_SYMBOL for omap_dispc_register_isr.
 
+ drivers/staging/omapdrm/omap_plane.c |    2 +-
+ drivers/video/omap2/dss/apply.c      |    2 +-
+ drivers/video/omap2/dss/dispc.c      |   34 +++++++++++++++++++++++++++++++++-
+ drivers/video/omap2/dss/dsi.c        |   15 +++++++++++++++
+ include/video/omapdss.h              |    1 +
+ 5 files changed, 51 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/staging/omapdrm/omap_plane.c b/drivers/staging/omapdrm/omap_plane.c
+index 7997be7..8d8aa5b 100644
+--- a/drivers/staging/omapdrm/omap_plane.c
++++ b/drivers/staging/omapdrm/omap_plane.c
+@@ -82,7 +82,7 @@ static void dispc_isr(void *arg, uint32_t mask)
+ 	struct omap_plane *omap_plane = to_omap_plane(plane);
+ 	struct omap_drm_private *priv = plane->dev->dev_private;
+ 
+-	omap_dispc_unregister_isr(dispc_isr, plane,
++	omap_dispc_unregister_isr_nosync(dispc_isr, plane,
+ 			id2irq[omap_plane->ovl->id]);
+ 
+ 	queue_work(priv->wq, &omap_plane->work);
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 0fefc68..9386834 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -847,7 +847,7 @@ static void dss_unregister_vsync_isr(void)
+ 	for (i = 0; i < num_mgrs; ++i)
+ 		mask |= dispc_mgr_get_framedone_irq(i);
+ 
+-	r = omap_dispc_unregister_isr(dss_apply_irq_handler, NULL, mask);
++	r = omap_dispc_unregister_isr_nosync(dss_apply_irq_handler, NULL, mask);
+ 	WARN_ON(r);
+ 
+ 	dss_data.irq_enabled = false;
 diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index f575875..a44cbac 100644
+index ee9e296..6032252 100644
 --- a/drivers/video/omap2/dss/dispc.c
 +++ b/drivers/video/omap2/dss/dispc.c
-@@ -2465,13 +2465,15 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+@@ -3320,7 +3320,8 @@ err:
  }
+ EXPORT_SYMBOL(omap_dispc_register_isr);
  
- int dispc_wb_setup(const struct omap_dss_writeback_info *wi,
--		const struct omap_video_timings *mgr_timings)
-+		bool mem_to_mem, const struct omap_video_timings *mgr_timings)
+-int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask)
++/* WARNING: callback might be executed even after this function returns! */
++int omap_dispc_unregister_isr_nosync(omap_dispc_isr_t isr, void *arg, u32 mask)
  {
- 	int r;
-+	u32 l;
- 	enum omap_plane plane = OMAP_DSS_WB;
- 	const int pos_x = 0, pos_y = 0;
- 	const u8 zorder = 0, global_alpha = 0;
- 	const bool replication = false;
-+	bool truncation;
- 	int in_width = mgr_timings->x_res;
- 	int in_height = mgr_timings->y_res;
- 	unsigned long out_rate;
-@@ -2491,6 +2493,28 @@ int dispc_wb_setup(const struct omap_dss_writeback_info *wi,
- 		wi->mirror, zorder, wi->pre_mult_alpha, global_alpha,
- 		wi->rotation_type, replication, mgr_timings);
+ 	int i;
+ 	unsigned long flags;
+@@ -3352,6 +3353,37 @@ int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask)
  
-+	switch (wi->color_mode) {
-+	case OMAP_DSS_COLOR_RGB16:
-+	case OMAP_DSS_COLOR_RGB24P:
-+	case OMAP_DSS_COLOR_ARGB16:
-+	case OMAP_DSS_COLOR_RGBA16:
-+	case OMAP_DSS_COLOR_RGB12U:
-+	case OMAP_DSS_COLOR_ARGB16_1555:
-+	case OMAP_DSS_COLOR_XRGB16_1555:
-+	case OMAP_DSS_COLOR_RGBX16:
-+		truncation = true;
-+		break;
-+	default:
-+		truncation = false;
-+		break;
-+	}
+ 	return ret;
+ }
++EXPORT_SYMBOL(omap_dispc_unregister_isr_nosync);
 +
-+	/* setup extra DISPC_WB_ATTRIBUTES */
-+	l = dispc_read_reg(DISPC_OVL_ATTRIBUTES(plane));
-+	l = FLD_MOD(l, truncation, 10, 10);	/* TRUNCATIONENABLE */
-+	l = FLD_MOD(l, mem_to_mem, 19, 19);	/* WRITEBACKMODE */
-+	dispc_write_reg(DISPC_OVL_ATTRIBUTES(plane), l);
++/*
++ * Ensure that callback <isr> will NOT be executed after this function
++ * returns. Must be called from sleepable context, though!
++ */
++int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask)
++{
++	int ret;
++
++	ret = omap_dispc_unregister_isr_nosync(isr, arg, mask);
++
++	/*
++	 * Task context is not really needed. But if we're called from atomic
++	 * context, it is probably from DISPC IRQ, where we will deadlock.
++	 * So use might_sleep() to catch potential deadlocks.
++	 */
++	might_sleep();
++
++	/*
++	 * DISPC IRQ executes callbacks with dispc.irq_lock released. Hence
++	 * unregister_isr() and DISPC IRQ might be running in parallel on
++	 * different CPUs. So there is a chance that a callback is executed
++	 * even though it has been unregistered. Add a barrier, in order to
++	 * ensure that after returning from this function, the new DISPC IRQ
++	 * will use an updated callback array, and NOT its cached copy.
++	 */
++	synchronize_irq(dispc.irq);
++
++	return ret;
++}
+ EXPORT_SYMBOL(omap_dispc_unregister_isr);
+ 
+ #ifdef DEBUG
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index b07e886..c0fcb68 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -960,6 +960,11 @@ static int dsi_unregister_isr(struct platform_device *dsidev,
+ 
+ 	spin_unlock_irqrestore(&dsi->irq_lock, flags);
+ 
++	might_sleep();
++
++	/* See notes for dispc.c:omap_dispc_unregister_isr() . */
++	synchronize_irq(dsi->irq);
 +
  	return r;
  }
  
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index bd7c5cf..c49c054 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -483,7 +483,7 @@ void dispc_mgr_setup(enum omap_channel channel,
+@@ -1002,6 +1007,11 @@ static int dsi_unregister_isr_vc(struct platform_device *dsidev, int channel,
  
- void dispc_wb_set_channel_in(enum dss_writeback_channel channel);
- int dispc_wb_setup(const struct omap_dss_writeback_info *wi,
--		const struct omap_video_timings *timings);
-+		bool mem_to_mem, const struct omap_video_timings *timings);
+ 	spin_unlock_irqrestore(&dsi->irq_lock, flags);
  
- /* VENC */
- #ifdef CONFIG_OMAP2_DSS_VENC
++	might_sleep();
++
++	/* See notes for dispc.c:omap_dispc_unregister_isr() . */
++	synchronize_irq(dsi->irq);
++
+ 	return r;
+ }
+ 
+@@ -1042,6 +1052,11 @@ static int dsi_unregister_isr_cio(struct platform_device *dsidev,
+ 
+ 	spin_unlock_irqrestore(&dsi->irq_lock, flags);
+ 
++	might_sleep();
++
++	/* See notes for dispc.c:omap_dispc_unregister_isr() . */
++	synchronize_irq(dsi->irq);
++
+ 	return r;
+ }
+ 
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index a6267a2..769f981 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -708,6 +708,7 @@ void omapdss_default_get_timings(struct omap_dss_device *dssdev,
+ typedef void (*omap_dispc_isr_t) (void *arg, u32 mask);
+ int omap_dispc_register_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
+ int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
++int omap_dispc_unregister_isr_nosync(omap_dispc_isr_t isr, void *arg, u32 mask);
+ 
+ int omap_dispc_wait_for_irq_timeout(u32 irqmask, unsigned long timeout);
+ int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
 -- 
-1.7.9.5
+1.7.10.4
 

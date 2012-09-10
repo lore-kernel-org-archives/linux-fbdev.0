@@ -1,91 +1,75 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Thu, 13 Sep 2012 15:44:17 +0000
-Subject: Re: [PATCH v6 1/4] Runtime Interpreted Power Sequences
-Message-Id: <5051FF51.1080800@wwwdotorg.org>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 10 Sep 2012 10:55:12 +0000
+Subject: [PATCH 2/2] video: s3c2410: fix checkpatch warnings
+Message-Id: <002d01cd8f42$c06b6690$414233b0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347443867-18868-1-git-send-email-acourbot@nvidia.com>
- <1347443867-18868-2-git-send-email-acourbot@nvidia.com>
- <50510791.8080302@wwwdotorg.org> <3678448.5nUOr4ZZV4@percival>
-In-Reply-To: <3678448.5nUOr4ZZV4@percival>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Leela Krishna Amudala <l.krishna-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Anton Vorontsov <cbou-JGs/UdohzUI@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+To: linux-fbdev@vger.kernel.org
 
-On 09/13/2012 12:02 AM, Alex Courbot wrote:
-> On Thursday 13 September 2012 06:07:13 Stephen Warren wrote:
->> On 09/12/2012 03:57 AM, Alexandre Courbot wrote:
->>> Some device drivers (panel backlights especially) need to follow precise
->>> sequences for powering on and off, involving gpios, regulators, PWMs
->>> with a precise powering order and delays to respect between each steps.
->>> These sequences are board-specific, and do not belong to a particular
->>> driver - therefore they have been performed by board-specific hook
->>> functions to far.
->>>
->>> With the advent of the device tree and of ARM kernels that are not
->>> board-tied, we cannot rely on these board-specific hooks anymore but
->>> need a way to implement these sequences in a portable manner. This patch
->>> introduces a simple interpreter that can execute such power sequences
->>> encoded either as platform data or within the device tree.
->>>
->>> Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
->>>
->>> diff --git a/Documentation/power/power_seq.txt
->>> b/Documentation/power/power_seq.txt
->>>
->>> +Sometimes, you may want to browse the list of resources allocated by a
->>> sequence, +for instance to ensure that a resource of a given type is
->>> present. The +power_seq_set_resources() function returns a list head that
->>> can be used with +the power_seq_for_each_resource() macro to browse all
->>> the resources of a set: +
->>> +  struct list_head *power_seq_set_resources(struct power_seq_set *seqs);
->>> +  power_seq_for_each_resource(pos, seqs)
->>> +
->>> +Here "pos" will be a pointer to a struct power_seq_resource. This
->>> structure +contains the type of the resource, the information used for
->>> identifying it, and +the resolved resource itself.
->>
->> I don't think you need to include that [power_seq_set_resources] prototype
->> here?
-> 
-> Why not? I thought it was customary to include the prototypes in the 
-> documentation, and this seems to be the right place for this function.
+This patch fixes the checkpatch warnings listed below:
 
-It's something used internally to the macro; what the user cares about
-is which macro to use for the functionality you're describing, not any
-prototypes needed by the internal implementation of the macro, which are
-always provided by the appropriate header.
+WARNING: usleep_range should not use min = max args; see Documentation/timers/timers-howto.txt
+WARNING: quoted string split across lines
 
->>> diff --git a/drivers/power/power_seq/power_seq.c
->>> b/drivers/power/power_seq/power_seq.c
->>>
->>> +struct power_seq_step {
->>> +	/* Copy of the platform data */
->>> +	struct platform_power_seq_step pdata;
->>
->> I'd reword the comment to "Copy of the step", and name the field "step".
-> 
-> That would make a step within a step - doesn't pdata make it more explicit 
-> what this member is for (containing the platform data for this step)?
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/s3c2410fb.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-Well, it's not always platform data; it could come from device tree.
-Sorry for bike-shedding slightly, but how about just "data",
-"step_data", "config", or "step_config"?
+diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
+index 1aa37ea..1083bb9 100644
+--- a/drivers/video/s3c2410fb.c
++++ b/drivers/video/s3c2410fb.c
+@@ -935,7 +935,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+ 	clk_enable(info->clk);
+ 	dprintk("got and enabled clock\n");
+ 
+-	usleep_range(1000, 1000);
++	usleep_range(1000, 1100);
+ 
+ 	info->clk_rate = clk_get_rate(info->clk);
+ 
+@@ -1034,7 +1034,7 @@ static int __devexit s3c2410fb_remove(struct platform_device *pdev)
+ 	s3c2410fb_cpufreq_deregister(info);
+ 
+ 	s3c2410fb_lcd_enable(info, 0);
+-	usleep_range(1000, 1000);
++	usleep_range(1000, 1100);
+ 
+ 	s3c2410fb_unmap_video_memory(fbinfo);
+ 
+@@ -1071,7 +1071,7 @@ static int s3c2410fb_suspend(struct platform_device *dev, pm_message_t state)
+ 	 * the LCD DMA engine is not going to get back on the bus
+ 	 * before the clock goes off again (bjd) */
+ 
+-	usleep_range(1000, 1000);
++	usleep_range(1000, 1100);
+ 	clk_disable(info->clk);
+ 
+ 	return 0;
+@@ -1083,7 +1083,7 @@ static int s3c2410fb_resume(struct platform_device *dev)
+ 	struct s3c2410fb_info *info = fbinfo->par;
+ 
+ 	clk_enable(info->clk);
+-	usleep_range(1000, 1000);
++	usleep_range(1000, 1100);
+ 
+ 	s3c2410fb_init_registers(fbinfo);
+ 
+@@ -1140,8 +1140,8 @@ static void __exit s3c2410fb_cleanup(void)
+ module_init(s3c2410fb_init);
+ module_exit(s3c2410fb_cleanup);
+ 
+-MODULE_AUTHOR("Arnaud Patard <arnaud.patard@rtp-net.org>, "
+-	      "Ben Dooks <ben-linux@fluff.org>");
++MODULE_AUTHOR("Arnaud Patard <arnaud.patard@rtp-net.org>");
++MODULE_AUTHOR("Ben Dooks <ben-linux@fluff.org>");
+ MODULE_DESCRIPTION("Framebuffer driver for the s3c2410");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS("platform:s3c2410-lcd");
+-- 
+1.7.1
 
->>> +static const struct power_seq_res_ops
->>> power_seq_types[POWER_SEQ_NUM_TYPES] = { +	[POWER_SEQ_DELAY] >>> POWER_SEQ_DELAY_TYPE,
->>> +	[POWER_SEQ_REGULATOR] = POWER_SEQ_REGULATOR_TYPE,
->>> +	[POWER_SEQ_PWM] = POWER_SEQ_PWM_TYPE,
->>> +	[POWER_SEQ_GPIO] = POWER_SEQ_GPIO_TYPE,
->>> +};
->>
->> Ah, I see why you're using #include now.
-> 
-> We could also go with something more dynamic and compile these files 
-> separately, but that would require some registration mechanism which I don't 
-> think is needed for such a simple feature.
 
-Sure. There are already examples in the kernel of basically what you're
-doing anyway, and it's not like it'd be hard to change this if we want
-to do something different in the future too.

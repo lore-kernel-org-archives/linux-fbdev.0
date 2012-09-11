@@ -1,40 +1,60 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Wed, 19 Sep 2012 03:01:16 +0000
-Subject: Re: [PATCH v6 0/4] Runtime Interpreted Power Sequences
-Message-Id: <20120919030116.GN8832@opensource.wolfsonmicro.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Tue, 11 Sep 2012 08:54:29 +0000
+Subject: [PATCH] pwm-backlight: Use devm_pwm_get in pwm_bl.c
+Message-Id: <1347352949-17515-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347443867-18868-1-git-send-email-acourbot@nvidia.com>
- <4473898.CeAQBgUhKL@percival>
- <20120913071928.GA20959@opensource.wolfsonmicro.com>
- <1378218.yLeQheNFT0@percival>
- <20120913072943.GB20959@opensource.wolfsonmicro.com>
- <5051FAC5.40501@wwwdotorg.org>
-In-Reply-To: <5051FAC5.40501@wwwdotorg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Alex Courbot <acourbot@nvidia.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Stephen Warren <swarren@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Leela Krishna Amudala <l.krishna@samsung.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <rob.herring@calxeda.com>, Anton Vorontsov <cbou@mail.ru>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
+To: linux-fbdev@vger.kernel.org
 
-On Thu, Sep 13, 2012 at 09:24:53AM -0600, Stephen Warren wrote:
-> On 09/13/2012 01:29 AM, Mark Brown wrote:
+This file already makes use of device managed functions.
+Convert pwm_get() too to use it.
 
-> > The driver knows the power sequence.  Having to type the same sequence
-> > into the DT or platform data for each board using the device wouuld be
-> > retarded so we need the drivers to be able to give the sequence to the
-> > library if they're going to be able to reuse it (which is a lot of what
-> > Tomi is talking about).
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+---
+ drivers/video/backlight/pwm_bl.c |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
 
-> I believe that's trivial to implement. The relevant function is:
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 4965408..0c91023 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -218,7 +218,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	pb->exit = data->exit;
+ 	pb->dev = &pdev->dev;
+ 
+-	pb->pwm = pwm_get(&pdev->dev, NULL);
++	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
+ 	if (IS_ERR(pb->pwm)) {
+ 		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
+ 
+@@ -251,7 +251,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	if (IS_ERR(bl)) {
+ 		dev_err(&pdev->dev, "failed to register backlight\n");
+ 		ret = PTR_ERR(bl);
+-		goto err_bl;
++		goto err_alloc;
+ 	}
+ 
+ 	bl->props.brightness = data->dft_brightness;
+@@ -260,8 +260,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, bl);
+ 	return 0;
+ 
+-err_bl:
+-	pwm_put(pb->pwm);
+ err_alloc:
+ 	if (data->exit)
+ 		data->exit(&pdev->dev);
+@@ -276,7 +274,6 @@ static int pwm_backlight_remove(struct platform_device *pdev)
+ 	backlight_device_unregister(bl);
+ 	pwm_config(pb->pwm, 0, pb->period);
+ 	pwm_disable(pb->pwm);
+-	pwm_put(pb->pwm);
+ 	if (pb->exit)
+ 		pb->exit(&pdev->dev);
+ 	return 0;
+-- 
+1.7.4.1
 
-Right, that's what I'm saying - the code is mostly there now.
-
-> It's up to the driver whether pseq comes from platform data or is
-> hard-coded into the driver (or not provided at all, for the DT case).
-> So, the only change needed to convert a "hard-coded" driver to this API
-> is to convert the current custom data structure (or code) that describes
-> the sequence into a struct platform_power_seq_set.
-
-The framework could still help by providing ways to avoid having to copy
-the structure and fill in the blanks for GPIO numbers (and anything else
-that is numbered rather than named) by hand.

@@ -1,80 +1,85 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 10 Sep 2012 01:31:22 +0000
-Subject: Re: video: exynos_dp: Add device tree based discovery support
-Message-Id: <001301cd8ef3$fc594b80$f50be280$%han@samsung.com>
+Date: Wed, 12 Sep 2012 04:34:24 +0000
+Subject: [PATCH] video: exynos_dp: add bit-masking for LINK_TRAINING_CTL register
+Message-Id: <002701cd909f$e2b2c960$a8185c20$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1346835251-1276-1-git-send-email-~@samsung.com>
-In-Reply-To: <1346835251-1276-1-git-send-email-~@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Ajay Kumar' <ajaykumar.rs@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org, FlorianSchandinat@gmx.de, 'Jingoo Han' <jg1.han@samsung.com>
+To: linux-fbdev@vger.kernel.org
 
-On Wednesday, September 05, 2012 5:54 PM Ajay Kumar wrote
-> 
-> From: Ajay Kumar <ajaykumar.rs@samsung.com>
-> 
-> Add device tree match table for Exynos DP
-> Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
+This patch adds bit-masking for LINK_TRAINING_CTL register, when
+pre-emphasis level is set. The bit 3 and bit 2 of LINK_TRAINING_CTL
+register are used for pre-emphasis level setting, so other bits
+should be masked.
 
-Please insert one line between the commit message and Signed-off-by.
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/exynos/exynos_dp_reg.c |   16 ++++++++++++----
+ drivers/video/exynos/exynos_dp_reg.h |    1 +
+ 2 files changed, 13 insertions(+), 4 deletions(-)
 
-Also, add '[PATCH]' to subject as follow:
-     [PATCH] video: exynos_dp: Add device tree based discovery support
+diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
+index 20e441f..365be69 100644
+--- a/drivers/video/exynos/exynos_dp_reg.c
++++ b/drivers/video/exynos/exynos_dp_reg.c
+@@ -895,7 +895,9 @@ void exynos_dp_set_lane0_pre_emphasis(struct exynos_dp_device *dp, u32 level)
+ {
+ 	u32 reg;
+ 
+-	reg = level << PRE_EMPHASIS_SET_SHIFT;
++	reg = readl(dp->reg_base + EXYNOS_DP_LN0_LINK_TRAINING_CTL);
++	reg &= ~PRE_EMPHASIS_SET_MASK;
++	reg |= level << PRE_EMPHASIS_SET_SHIFT;
+ 	writel(reg, dp->reg_base + EXYNOS_DP_LN0_LINK_TRAINING_CTL);
+ }
+ 
+@@ -903,7 +905,9 @@ void exynos_dp_set_lane1_pre_emphasis(struct exynos_dp_device *dp, u32 level)
+ {
+ 	u32 reg;
+ 
+-	reg = level << PRE_EMPHASIS_SET_SHIFT;
++	reg = readl(dp->reg_base + EXYNOS_DP_LN1_LINK_TRAINING_CTL);
++	reg &= ~PRE_EMPHASIS_SET_MASK;
++	reg |= level << PRE_EMPHASIS_SET_SHIFT;
+ 	writel(reg, dp->reg_base + EXYNOS_DP_LN1_LINK_TRAINING_CTL);
+ }
+ 
+@@ -911,7 +915,9 @@ void exynos_dp_set_lane2_pre_emphasis(struct exynos_dp_device *dp, u32 level)
+ {
+ 	u32 reg;
+ 
+-	reg = level << PRE_EMPHASIS_SET_SHIFT;
++	reg = readl(dp->reg_base + EXYNOS_DP_LN2_LINK_TRAINING_CTL);
++	reg &= ~PRE_EMPHASIS_SET_MASK;
++	reg |= level << PRE_EMPHASIS_SET_SHIFT;
+ 	writel(reg, dp->reg_base + EXYNOS_DP_LN2_LINK_TRAINING_CTL);
+ }
+ 
+@@ -919,7 +925,9 @@ void exynos_dp_set_lane3_pre_emphasis(struct exynos_dp_device *dp, u32 level)
+ {
+ 	u32 reg;
+ 
+-	reg = level << PRE_EMPHASIS_SET_SHIFT;
++	reg = readl(dp->reg_base + EXYNOS_DP_LN3_LINK_TRAINING_CTL);
++	reg &= ~PRE_EMPHASIS_SET_MASK;
++	reg |= level << PRE_EMPHASIS_SET_SHIFT;
+ 	writel(reg, dp->reg_base + EXYNOS_DP_LN3_LINK_TRAINING_CTL);
+ }
+ 
+diff --git a/drivers/video/exynos/exynos_dp_reg.h b/drivers/video/exynos/exynos_dp_reg.h
+index 125b27c..9e9af50 100644
+--- a/drivers/video/exynos/exynos_dp_reg.h
++++ b/drivers/video/exynos/exynos_dp_reg.h
+@@ -285,6 +285,7 @@
+ #define SW_TRAINING_PATTERN_SET_NORMAL		(0x0 << 0)
+ 
+ /* EXYNOS_DP_LN0_LINK_TRAINING_CTL */
++#define PRE_EMPHASIS_SET_MASK			(0x3 << 3)
+ #define PRE_EMPHASIS_SET_SHIFT			(3)
+ 
+ /* EXYNOS_DP_DEBUG_CTL */
+-- 
+1.7.1
 
-Last, pay attention of your mail address and name.
-Um, now, you are using "~@samsung.com" as mail address and name.
-Please configure your mail program in order to set "Ajay Kumar"
-and "ajaykumar.rs@samsung.com".
-
-If you want to get reviewed, please keep the basic rules
-as I mentioned above.
-
-
-Best regards,
-Jingoo Han
-
-
-> ---
->  drivers/video/exynos/exynos_dp_core.c |   10 ++++++++++
->  1 files changed, 10 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-> index c6c016a..3bccd6b 100644
-> --- a/drivers/video/exynos/exynos_dp_core.c
-> +++ b/drivers/video/exynos/exynos_dp_core.c
-> @@ -18,6 +18,7 @@
->  #include <linux/io.h>
->  #include <linux/interrupt.h>
->  #include <linux/delay.h>
-> +#include <linux/of.h>
-> 
->  #include <video/exynos_dp.h>
-> 
-> @@ -1019,6 +1020,14 @@ static const struct dev_pm_ops exynos_dp_pm_ops = {
->  	SET_SYSTEM_SLEEP_PM_OPS(exynos_dp_suspend, exynos_dp_resume)
->  };
-> 
-> +#ifdef CONFIG_OF
-> +static const struct of_device_id exynos_dp_match[] = {
-> +	{ .compatible = "samsung,exynos5-dp" },
-> +	{},
-> +};
-> +MODULE_DEVICE_TABLE(of, exynos_dp_match);
-> +#endif
-> +
->  static struct platform_driver exynos_dp_driver = {
->  	.probe		= exynos_dp_probe,
->  	.remove		= __devexit_p(exynos_dp_remove),
-> @@ -1026,6 +1035,7 @@ static struct platform_driver exynos_dp_driver = {
->  		.name	= "exynos-dp",
->  		.owner	= THIS_MODULE,
->  		.pm	= &exynos_dp_pm_ops,
-> +		.of_match_table = of_match_ptr(exynos_dp_match),
->  	},
->  };
-> 
-> --
-> 1.7.0.4
 

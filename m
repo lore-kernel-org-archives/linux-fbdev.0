@@ -1,98 +1,21 @@
-From: Alexandre Courbot <acourbot@nvidia.com>
-Date: Wed, 12 Sep 2012 09:57:47 +0000
-Subject: [PATCH v6 4/4] tegra: ventana: add pwm backlight DT nodes
-Message-Id: <1347443867-18868-5-git-send-email-acourbot@nvidia.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Date: Wed, 12 Sep 2012 21:23:10 +0000
+Subject: Re: [PATCH v6 4/4] tegra: ventana: add pwm backlight DT nodes
+Message-Id: <5050FD3E.6000107@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347443867-18868-1-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1347443867-18868-1-git-send-email-acourbot@nvidia.com>
+References: <1347443867-18868-1-git-send-email-acourbot@nvidia.com> <1347443867-18868-5-git-send-email-acourbot@nvidia.com>
+In-Reply-To: <1347443867-18868-5-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>
-Cc: Leela Krishna Amudala <l.krishna@samsung.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, Alexandre Courbot <acourbot@nvidia.com>
+To: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Anton Vorontsov <cbou-JGs/UdohzUI@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Leela Krishna Amudala <l.krishna-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
----
- arch/arm/boot/dts/tegra20-ventana.dts | 59 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 58 insertions(+), 1 deletion(-)
+On 09/12/2012 03:57 AM, Alexandre Courbot wrote:
+> Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
 
-diff --git a/arch/arm/boot/dts/tegra20-ventana.dts b/arch/arm/boot/dts/tegra20-ventana.dts
-index 3e5952f..4ca3ceb 100644
---- a/arch/arm/boot/dts/tegra20-ventana.dts
-+++ b/arch/arm/boot/dts/tegra20-ventana.dts
-@@ -469,6 +469,63 @@
- 		bus-width = <8>;
- 	};
- 
-+	backlight {
-+		compatible = "pwm-backlight";
-+		brightness-levels = <0 16 32 48 64 80 96 112 128 144 160 176 192 208 224 240 255>;
-+		default-brightness-level = <12>;
-+
-+		/* resources used by the power sequences */
-+		pwms = <&pwm 2 5000000>;
-+		pwm-names = "backlight";
-+		power-supply = <&vdd_bl_reg>;
-+
-+		power-sequences {
-+			power-on {
-+				step0 {
-+					type = "regulator";
-+					id = "power";
-+					enable;
-+				};
-+				step1 {
-+					type = "delay";
-+					delay = <10000>;
-+				};
-+				step2 {
-+					type = "pwm";
-+					id = "backlight";
-+					enable;
-+				};
-+				step3 {
-+					type = "gpio";
-+					gpio = <&gpio 28 0>;
-+					value = <1>;
-+				};
-+			};
-+
-+			power-off {
-+				step0 {
-+					type = "gpio";
-+					gpio = <&gpio 28 0>;
-+					value = <0>;
-+				};
-+				step1 {
-+					type = "pwm";
-+					id = "backlight";
-+					disable;
-+				};
-+				step2 {
-+					type = "delay";
-+					delay = <10000>;
-+				};
-+				step3 {
-+					type = "regulator";
-+					id = "power";
-+					disable;
-+				};
-+			};
-+		};
-+	};
-+
- 	regulators {
- 		compatible = "simple-bus";
- 		#address-cells = <1>;
-@@ -512,7 +569,7 @@
- 			enable-active-high;
- 		};
- 
--		regulator@4 {
-+		vdd_bl_reg: regulator@4 {
- 			compatible = "regulator-fixed";
- 			reg = <4>;
- 			regulator-name = "vdd_bl";
--- 
-1.7.12
+Both patches 3 and 4 in the series,
+Acked-by: Stephen Warren <swarren@wwwdotorg.org>
 
+I will take those patches into the Tegra tree when (hopefully rather
+than if) patches 1 and 2 are accepted.

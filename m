@@ -1,60 +1,55 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Thu, 06 Sep 2012 20:08:54 +0000
-Subject: Re: [PATCH V5 0/6] OMAPDSS: Cleanup cpu_is checks
-Message-Id: <20120906200853.GC1303@atomide.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Wed, 12 Sep 2012 07:52:09 +0000
+Subject: [PATCH] video: exynos_dp: increase AUX channel voltage level
+Message-Id: <003e01cd90bb$8332a1b0$8997e510$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1343912532.git.cmahapatra@ti.com>
- <cover.1345468541.git.cmahapatra@ti.com>
- <20120830002039.GP1303@atomide.com>
- <1346312061.2327.27.camel@deskari>
- <20120830171908.GQ1303@atomide.com>
- <1346412220.16067.8.camel@deskari>
-In-Reply-To: <1346412220.16067.8.camel@deskari>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Chandrabhanu Mahapatra <cmahapatra@ti.com>, paul@pwsan.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [120831 04:24]:
-> On Thu, 2012-08-30 at 10:19 -0700, Tony Lindgren wrote:
-> > Hi,
-> > 
-> > * Tomi Valkeinen <tomi.valkeinen@ti.com> [120830 00:35]:
-> > > On Wed, 2012-08-29 at 17:20 -0700, Tony Lindgren wrote:
-> > > > 
-> > > > Good to see this, we need this badly to avoid blocking
-> > > > single zImage effort on omaps. Can you also please take
-> > > 
-> > > What is the issue with single zImage? How do cpu_is_ check affect it?
-> > 
-> > The usage for that should only be limited to arch/arm/mach-omap2
-> > so we can make cpu.h local as we can't include mach and plat
-> > header files from the drivers with single zImage.
-> 
-> Ok.
-> 
-> > > $ git grep -E "<plat|<mach" drivers/video/omap*
-> > > drivers/video/omap/lcd_ams_delta.c:#include <plat/board-ams-delta.h>
-> > > * Needs to be moved
-> > 
-> > Yes, that should be either mach/board-ams-delta.h, or separate driver
-> > specific headers in include/linux/platform_data. For omap1 we are not
-> > planning common zImage support, so let's just make sure we're not
-> > breaking anything there as people are still using it.
-> 
-> Hmm, so did I understand right, for omap1 stuff we can still include
-> from arch/arm/mach-omap1/include/mach?
+The value of AUX channel differential amplitude current is changed
+from 8 mA to 16 mA, in order to increase AUX channel voltage level.
+In this case, AUX channel voltage level can be changed from 400 mV
+to 800 mV, when resistance between AUX TX and RX is 100 ohm.
 
-Yes that's a separate issue to fix that up for armv4/5 common
-zImage support if people want to do that later on.
+According to DP spec, although the normative voltage level is 390 mV,
+the informative voltage level is 430 mV. So, 800 mV can be helpful
+to improve voltage margin of AUX channel.
+
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/exynos/exynos_dp_reg.c |    2 +-
+ drivers/video/exynos/exynos_dp_reg.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
+index 20e441f..5fd1214 100644
+--- a/drivers/video/exynos/exynos_dp_reg.c
++++ b/drivers/video/exynos/exynos_dp_reg.c
+@@ -77,7 +77,7 @@ void exynos_dp_init_analog_param(struct exynos_dp_device *dp)
+ 	writel(reg, dp->reg_base + EXYNOS_DP_ANALOG_CTL_3);
  
-> If so, that makes things easier. I can manage the omap2+ stuff fine, but
-> I have no experience with omap1, nor do I have any omap1 devices. So I'd
-> rather keep the omap1 code as it is, in fear that I'd just break it
-> totally, and I'd rather spend my time on omap2+ code.
+ 	reg = PD_RING_OSC | AUX_TERMINAL_CTRL_50_OHM |
+-		TX_CUR1_2X | TX_CUR_8_MA;
++		TX_CUR1_2X | TX_CUR_16_MA;
+ 	writel(reg, dp->reg_base + EXYNOS_DP_PLL_FILTER_CTL_1);
+ 
+ 	reg = CH3_AMP_400_MV | CH2_AMP_400_MV |
+diff --git a/drivers/video/exynos/exynos_dp_reg.h b/drivers/video/exynos/exynos_dp_reg.h
+index 125b27c..0e79031 100644
+--- a/drivers/video/exynos/exynos_dp_reg.h
++++ b/drivers/video/exynos/exynos_dp_reg.h
+@@ -187,7 +187,7 @@
+ #define PD_RING_OSC				(0x1 << 6)
+ #define AUX_TERMINAL_CTRL_50_OHM		(0x2 << 4)
+ #define TX_CUR1_2X				(0x1 << 2)
+-#define TX_CUR_8_MA				(0x2 << 0)
++#define TX_CUR_16_MA				(0x3 << 0)
+ 
+ /* EXYNOS_DP_TX_AMP_TUNING_CTL */
+ #define CH3_AMP_400_MV				(0x0 << 24)
+-- 
+1.7.1
 
-Regards,
-
-Tony
 

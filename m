@@ -1,85 +1,98 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 23 Sep 2012 19:41:18 +0000
-Subject: Re: [PATCH] viafb: don't touch clock state on OLPC XO-1.5
-Message-Id: <505F65DE.5050902@gmx.de>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Wed, 12 Sep 2012 09:57:47 +0000
+Subject: [PATCH v6 4/4] tegra: ventana: add pwm backlight DT nodes
+Message-Id: <1347443867-18868-5-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120904154533.1DC4AFAA0F@dev.laptop.org>
-In-Reply-To: <20120904154533.1DC4AFAA0F@dev.laptop.org>
+References: <1347443867-18868-1-git-send-email-acourbot@nvidia.com>
+In-Reply-To: <1347443867-18868-1-git-send-email-acourbot@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: Leela Krishna Amudala <l.krishna@samsung.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, Alexandre Courbot <acourbot@nvidia.com>
 
-On 09/04/2012 03:45 PM, Daniel Drake wrote:
-> As detailed in the thread titled "viafb PLL/clock tweaking causes XO-1.5
-> instability," enabling or disabling the IGA1/IGA2 clocks causes occasional
-> stability problems during suspend/resume cycles on this platform.
-> 
-> This is rather odd, as the documentation suggests that clocks have two
-> states (on/off) and the default (stable) configuration is configured to
-> enable the clock only when it is needed. However, explicitly enabling *or*
-> disabling the clock triggers this system instability, suggesting that there
-> is a 3rd state at play here.
-> 
-> Leaving the clock enable/disable registers alone solves this problem.
-> This fixes spurious reboots during suspend/resume behaviour introduced by
-> commit b692a63a.
-> 
-> Signed-off-by: Daniel Drake <dsd@laptop.org>
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+---
+ arch/arm/boot/dts/tegra20-ventana.dts | 59 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 58 insertions(+), 1 deletion(-)
 
-Applied. Thanks for investigating it. I didn't have the time to look at
-it due to writing my thesis. Patch looks okay, at least it is a clean
-workaround. I did Cc stable when committing it to fix older releases.
-
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/via/via_clock.c | 19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
-> 
-> diff --git a/drivers/video/via/via_clock.c b/drivers/video/via/via_clock.c
-> index af8f26b..db1e392 100644
-> --- a/drivers/video/via/via_clock.c
-> +++ b/drivers/video/via/via_clock.c
-> @@ -25,6 +25,7 @@
->  
->  #include <linux/kernel.h>
->  #include <linux/via-core.h>
-> +#include <asm/olpc.h>
->  #include "via_clock.h"
->  #include "global.h"
->  #include "debug.h"
-> @@ -289,6 +290,10 @@ static void dummy_set_pll(struct via_pll_config config)
->  	printk(KERN_INFO "Using undocumented set PLL.\n%s", via_slap);
->  }
->  
-> +static void noop_set_clock_state(u8 state)
-> +{
-> +}
-> +
->  void via_clock_init(struct via_clock *clock, int gfx_chip)
->  {
->  	switch (gfx_chip) {
-> @@ -346,4 +351,18 @@ void via_clock_init(struct via_clock *clock, int gfx_chip)
->  		break;
->  
->  	}
-> +
-> +	if (machine_is_olpc()) {
-> +		/* The OLPC XO-1.5 cannot suspend/resume reliably if the
-> +		 * IGA1/IGA2 clocks are set as on or off (memory rot
-> +		 * occasionally happens during suspend under such
-> +		 * configurations).
-> +		 *
-> +		 * The only known stable scenario is to leave this bits as-is,
-> +		 * which in their default states are documented to enable the
-> +		 * clock only when it is needed.
-> +		 */
-> +		clock->set_primary_clock_state = noop_set_clock_state;
-> +		clock->set_secondary_clock_state = noop_set_clock_state;
-> +	}
->  }
+diff --git a/arch/arm/boot/dts/tegra20-ventana.dts b/arch/arm/boot/dts/tegra20-ventana.dts
+index 3e5952f..4ca3ceb 100644
+--- a/arch/arm/boot/dts/tegra20-ventana.dts
++++ b/arch/arm/boot/dts/tegra20-ventana.dts
+@@ -469,6 +469,63 @@
+ 		bus-width = <8>;
+ 	};
+ 
++	backlight {
++		compatible = "pwm-backlight";
++		brightness-levels = <0 16 32 48 64 80 96 112 128 144 160 176 192 208 224 240 255>;
++		default-brightness-level = <12>;
++
++		/* resources used by the power sequences */
++		pwms = <&pwm 2 5000000>;
++		pwm-names = "backlight";
++		power-supply = <&vdd_bl_reg>;
++
++		power-sequences {
++			power-on {
++				step0 {
++					type = "regulator";
++					id = "power";
++					enable;
++				};
++				step1 {
++					type = "delay";
++					delay = <10000>;
++				};
++				step2 {
++					type = "pwm";
++					id = "backlight";
++					enable;
++				};
++				step3 {
++					type = "gpio";
++					gpio = <&gpio 28 0>;
++					value = <1>;
++				};
++			};
++
++			power-off {
++				step0 {
++					type = "gpio";
++					gpio = <&gpio 28 0>;
++					value = <0>;
++				};
++				step1 {
++					type = "pwm";
++					id = "backlight";
++					disable;
++				};
++				step2 {
++					type = "delay";
++					delay = <10000>;
++				};
++				step3 {
++					type = "regulator";
++					id = "power";
++					disable;
++				};
++			};
++		};
++	};
++
+ 	regulators {
+ 		compatible = "simple-bus";
+ 		#address-cells = <1>;
+@@ -512,7 +569,7 @@
+ 			enable-active-high;
+ 		};
+ 
+-		regulator@4 {
++		vdd_bl_reg: regulator@4 {
+ 			compatible = "regulator-fixed";
+ 			reg = <4>;
+ 			regulator-name = "vdd_bl";
+-- 
+1.7.12
 

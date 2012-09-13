@@ -1,221 +1,111 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 05 Sep 2012 08:25:39 +0000
-Subject: [PATCH 01/17] OMAPDSS: Taal: use devm_* functions
-Message-Id: <1346833555-31258-2-git-send-email-tomi.valkeinen@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 13 Sep 2012 12:27:01 +0000
+Subject: [PATCH 17/21] OMAPDSS: DISPC: Configure overlay-like parameters in dispc_wb_setup
+Message-Id: <1347538505-25359-18-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Use devm_ functions in panel-taal.c's probe when possible. Also reorder
-the initialization sequence so that devm_ allocations are done before
-things that require explicit freeing. This simplifies the probe and
-remove functions.
+Create struct omap_dss_writeback_info, this is similar to omap_overlay_info,
+the major difference is that there is no parameter which describes the input
+size to writeback, this is because this is always fixed, and decided by the
+connected overlay or overlay manager. One more difference is that screen_width
+is renamed to buf_width, to give the value of stride the writeback buffer has.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Call dispc_plane_setup() through dispc_wb_setup() to configure overlay-like
+parameters. The parameters in dispc_plane_setup() which do not hold for
+writeback are filled passed as zeroes or false, dispc_plane_setup() takes
+care of not configuring them as they won't possess the needed overlay caps.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/displays/panel-taal.c |  118 +++++++++++------------------
- 1 file changed, 44 insertions(+), 74 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   30 ++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/dss.h   |    2 ++
+ include/video/omapdss.h         |   13 +++++++++++++
+ 3 files changed, 45 insertions(+)
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 7b2d7bb..1255864 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -865,10 +865,8 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 
- 	dev_dbg(&dssdev->dev, "probe\n");
- 
--	if (!panel_data || !panel_data->name) {
--		r = -EINVAL;
--		goto err;
--	}
-+	if (!panel_data || !panel_data->name)
-+		return -EINVAL;
- 
- 	for (i = 0; i < ARRAY_SIZE(panel_configs); i++) {
- 		if (strcmp(panel_data->name, panel_configs[i].name) = 0) {
-@@ -877,21 +875,17 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 		}
- 	}
- 
--	if (!panel_config) {
--		r = -EINVAL;
--		goto err;
--	}
-+	if (!panel_config)
-+		return -EINVAL;
- 
- 	dssdev->panel.timings = panel_config->timings;
- 	dssdev->panel.dsi_pix_fmt = OMAP_DSS_DSI_FMT_RGB888;
- 	dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE |
- 		OMAP_DSS_DISPLAY_CAP_TEAR_ELIM;
- 
--	td = kzalloc(sizeof(*td), GFP_KERNEL);
--	if (!td) {
--		r = -ENOMEM;
--		goto err;
--	}
-+	td = devm_kzalloc(&dssdev->dev, sizeof(*td), GFP_KERNEL);
-+	if (!td)
-+		return -ENOMEM;
- 	td->dssdev = dssdev;
- 	td->panel_config = panel_config;
- 	td->esd_interval = panel_data->esd_interval;
-@@ -902,26 +896,51 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 
- 	atomic_set(&td->do_update, 0);
- 
--	td->workqueue = create_singlethread_workqueue("taal_esd");
--	if (td->workqueue = NULL) {
--		dev_err(&dssdev->dev, "can't create ESD workqueue\n");
--		r = -ENOMEM;
--		goto err_wq;
--	}
--	INIT_DELAYED_WORK_DEFERRABLE(&td->esd_work, taal_esd_work);
--	INIT_DELAYED_WORK(&td->ulps_work, taal_ulps_work);
--
- 	dev_set_drvdata(&dssdev->dev, td);
- 
- 	if (gpio_is_valid(panel_data->reset_gpio)) {
--		r = gpio_request_one(panel_data->reset_gpio, GPIOF_OUT_INIT_LOW,
--				"taal rst");
-+		r = devm_gpio_request_one(&dssdev->dev, panel_data->reset_gpio,
-+				GPIOF_OUT_INIT_LOW, "taal rst");
- 		if (r) {
- 			dev_err(&dssdev->dev, "failed to request reset gpio\n");
--			goto err_rst_gpio;
-+			return r;
- 		}
- 	}
- 
-+	if (panel_data->use_ext_te) {
-+		int gpio = panel_data->ext_te_gpio;
-+
-+		r = devm_gpio_request_one(&dssdev->dev, gpio, GPIOF_IN,
-+				"taal irq");
-+		if (r) {
-+			dev_err(&dssdev->dev, "GPIO request failed\n");
-+			return r;
-+		}
-+
-+		r = devm_request_irq(&dssdev->dev, gpio_to_irq(gpio),
-+				taal_te_isr,
-+				IRQF_TRIGGER_RISING,
-+				"taal vsync", dssdev);
-+
-+		if (r) {
-+			dev_err(&dssdev->dev, "IRQ request failed\n");
-+			return r;
-+		}
-+
-+		INIT_DELAYED_WORK_DEFERRABLE(&td->te_timeout_work,
-+					taal_te_timeout_work_callback);
-+
-+		dev_dbg(&dssdev->dev, "Using GPIO TE\n");
-+	}
-+
-+	td->workqueue = create_singlethread_workqueue("taal_esd");
-+	if (td->workqueue = NULL) {
-+		dev_err(&dssdev->dev, "can't create ESD workqueue\n");
-+		return -ENOMEM;
-+	}
-+	INIT_DELAYED_WORK_DEFERRABLE(&td->esd_work, taal_esd_work);
-+	INIT_DELAYED_WORK(&td->ulps_work, taal_ulps_work);
-+
- 	taal_hw_reset(dssdev);
- 
- 	if (panel_data->use_dsi_backlight) {
-@@ -945,31 +964,6 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 		taal_bl_update_status(bldev);
- 	}
- 
--	if (panel_data->use_ext_te) {
--		int gpio = panel_data->ext_te_gpio;
--
--		r = gpio_request_one(gpio, GPIOF_IN, "taal irq");
--		if (r) {
--			dev_err(&dssdev->dev, "GPIO request failed\n");
--			goto err_gpio;
--		}
--
--		r = request_irq(gpio_to_irq(gpio), taal_te_isr,
--				IRQF_TRIGGER_RISING,
--				"taal vsync", dssdev);
--
--		if (r) {
--			dev_err(&dssdev->dev, "IRQ request failed\n");
--			gpio_free(gpio);
--			goto err_irq;
--		}
--
--		INIT_DELAYED_WORK_DEFERRABLE(&td->te_timeout_work,
--					taal_te_timeout_work_callback);
--
--		dev_dbg(&dssdev->dev, "Using GPIO TE\n");
--	}
--
- 	r = omap_dsi_request_vc(dssdev, &td->channel);
- 	if (r) {
- 		dev_err(&dssdev->dev, "failed to get virtual channel\n");
-@@ -993,29 +987,16 @@ static int taal_probe(struct omap_dss_device *dssdev)
- err_vc_id:
- 	omap_dsi_release_vc(dssdev, td->channel);
- err_req_vc:
--	if (panel_data->use_ext_te)
--		free_irq(gpio_to_irq(panel_data->ext_te_gpio), dssdev);
--err_irq:
--	if (panel_data->use_ext_te)
--		gpio_free(panel_data->ext_te_gpio);
--err_gpio:
- 	if (bldev != NULL)
- 		backlight_device_unregister(bldev);
- err_bl:
--	if (gpio_is_valid(panel_data->reset_gpio))
--		gpio_free(panel_data->reset_gpio);
--err_rst_gpio:
- 	destroy_workqueue(td->workqueue);
--err_wq:
--	kfree(td);
--err:
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index a33ed8e..f575875 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2464,6 +2464,36 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
  	return r;
  }
  
- static void __exit taal_remove(struct omap_dss_device *dssdev)
++int dispc_wb_setup(const struct omap_dss_writeback_info *wi,
++		const struct omap_video_timings *mgr_timings)
++{
++	int r;
++	enum omap_plane plane = OMAP_DSS_WB;
++	const int pos_x = 0, pos_y = 0;
++	const u8 zorder = 0, global_alpha = 0;
++	const bool replication = false;
++	int in_width = mgr_timings->x_res;
++	int in_height = mgr_timings->y_res;
++	unsigned long out_rate;
++	enum omap_overlay_caps caps +		OMAP_DSS_OVL_CAP_SCALE | OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA;
++
++	DSSDBG("dispc_wb_setup, pa %x, pa_uv %x, %d,%d -> %dx%d, cmode %x, "
++		"rot %d, mir %d\n", wi->paddr, wi->p_uv_addr, in_width,
++		in_height, wi->width, wi->height, wi->color_mode, wi->rotation,
++		wi->mirror);
++
++	out_rate = dispc_plane_output_rate(plane);
++
++	r = dispc_plane_setup(plane, caps, out_rate, wi->paddr, wi->p_uv_addr,
++		wi->buf_width, pos_x, pos_y, in_width, in_height,
++		wi->width, wi->height, wi->color_mode, wi->rotation,
++		wi->mirror, zorder, wi->pre_mult_alpha, global_alpha,
++		wi->rotation_type, replication, mgr_timings);
++
++	return r;
++}
++
+ int dispc_ovl_enable(enum omap_plane plane, bool enable)
  {
- 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
--	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
- 	struct backlight_device *bldev;
+ 	DSSDBG("dispc_enable_plane %d, %d\n", plane, enable);
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index ea17d68..bd7c5cf 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -482,6 +482,8 @@ void dispc_mgr_setup(enum omap_channel channel,
+ 		struct omap_overlay_manager_info *info);
  
- 	dev_dbg(&dssdev->dev, "remove\n");
-@@ -1023,12 +1004,6 @@ static void __exit taal_remove(struct omap_dss_device *dssdev)
- 	sysfs_remove_group(&dssdev->dev.kobj, &taal_attr_group);
- 	omap_dsi_release_vc(dssdev, td->channel);
+ void dispc_wb_set_channel_in(enum dss_writeback_channel channel);
++int dispc_wb_setup(const struct omap_dss_writeback_info *wi,
++		const struct omap_video_timings *timings);
  
--	if (panel_data->use_ext_te) {
--		int gpio = panel_data->ext_te_gpio;
--		free_irq(gpio_to_irq(gpio), dssdev);
--		gpio_free(gpio);
--	}
--
- 	bldev = td->bldev;
- 	if (bldev != NULL) {
- 		bldev->props.power = FB_BLANK_POWERDOWN;
-@@ -1042,11 +1017,6 @@ static void __exit taal_remove(struct omap_dss_device *dssdev)
+ /* VENC */
+ #ifdef CONFIG_OMAP2_DSS_VENC
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 46097bd..3729173 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -510,6 +510,19 @@ struct omap_dsi_pin_config {
+ 	int pins[OMAP_DSS_MAX_DSI_PINS];
+ };
  
- 	/* reset, to be sure that the panel is in a valid state */
- 	taal_hw_reset(dssdev);
--
--	if (gpio_is_valid(panel_data->reset_gpio))
--		gpio_free(panel_data->reset_gpio);
--
--	kfree(td);
- }
++struct omap_dss_writeback_info {
++	u32 paddr;
++	u32 p_uv_addr;
++	u16 buf_width;
++	u16 width;
++	u16 height;
++	enum omap_color_mode color_mode;
++	u8 rotation;
++	enum omap_dss_rotation_type rotation_type;
++	bool mirror;
++	u8 pre_mult_alpha;
++};
++
+ struct omap_dss_output {
+ 	struct list_head list;
  
- static int taal_power_on(struct omap_dss_device *dssdev)
 -- 
 1.7.9.5
 

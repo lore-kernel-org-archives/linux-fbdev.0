@@ -1,93 +1,78 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 23 Sep 2012 19:46:51 +0000
-Subject: Re: [PATCH] video: exynos_dp: add bit-masking for LINK_TRAINING_CTL register
-Message-Id: <505F672B.3080106@gmx.de>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 13 Sep 2012 12:27:05 +0000
+Subject: [PATCH 21/21] OMAPDSS: DISPC: Configure color conversion coefficients for writeback
+Message-Id: <1347538505-25359-22-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <002701cd909f$e2b2c960$a8185c20$%han@samsung.com>
-In-Reply-To: <002701cd909f$e2b2c960$a8185c20$%han@samsung.com>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-On 09/12/2012 04:34 AM, Jingoo Han wrote:
-> This patch adds bit-masking for LINK_TRAINING_CTL register, when
-> pre-emphasis level is set. The bit 3 and bit 2 of LINK_TRAINING_CTL
-> register are used for pre-emphasis level setting, so other bits
-> should be masked.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Writeback pipeline receives RGB data from one of the overlays or one of the
+overlay managers. If the target color mode is YUV422 or NV12, we need to convert
+the RGB pixels to YUV. The scalar in WB then converts it to the target color
+mode.
 
-Applied.
+Hence, the color conversion coefficients that need to be programmed are the ones
+which convert a RGB24 pixel to YUV444. Program these coefficients for writeback
+pipeline.
 
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/dispc.c |   20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/exynos/exynos_dp_reg.c |   16 ++++++++++++----
->  drivers/video/exynos/exynos_dp_reg.h |    1 +
->  2 files changed, 13 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
-> index 20e441f..365be69 100644
-> --- a/drivers/video/exynos/exynos_dp_reg.c
-> +++ b/drivers/video/exynos/exynos_dp_reg.c
-> @@ -895,7 +895,9 @@ void exynos_dp_set_lane0_pre_emphasis(struct exynos_dp_device *dp, u32 level)
->  {
->  	u32 reg;
->  
-> -	reg = level << PRE_EMPHASIS_SET_SHIFT;
-> +	reg = readl(dp->reg_base + EXYNOS_DP_LN0_LINK_TRAINING_CTL);
-> +	reg &= ~PRE_EMPHASIS_SET_MASK;
-> +	reg |= level << PRE_EMPHASIS_SET_SHIFT;
->  	writel(reg, dp->reg_base + EXYNOS_DP_LN0_LINK_TRAINING_CTL);
->  }
->  
-> @@ -903,7 +905,9 @@ void exynos_dp_set_lane1_pre_emphasis(struct exynos_dp_device *dp, u32 level)
->  {
->  	u32 reg;
->  
-> -	reg = level << PRE_EMPHASIS_SET_SHIFT;
-> +	reg = readl(dp->reg_base + EXYNOS_DP_LN1_LINK_TRAINING_CTL);
-> +	reg &= ~PRE_EMPHASIS_SET_MASK;
-> +	reg |= level << PRE_EMPHASIS_SET_SHIFT;
->  	writel(reg, dp->reg_base + EXYNOS_DP_LN1_LINK_TRAINING_CTL);
->  }
->  
-> @@ -911,7 +915,9 @@ void exynos_dp_set_lane2_pre_emphasis(struct exynos_dp_device *dp, u32 level)
->  {
->  	u32 reg;
->  
-> -	reg = level << PRE_EMPHASIS_SET_SHIFT;
-> +	reg = readl(dp->reg_base + EXYNOS_DP_LN2_LINK_TRAINING_CTL);
-> +	reg &= ~PRE_EMPHASIS_SET_MASK;
-> +	reg |= level << PRE_EMPHASIS_SET_SHIFT;
->  	writel(reg, dp->reg_base + EXYNOS_DP_LN2_LINK_TRAINING_CTL);
->  }
->  
-> @@ -919,7 +925,9 @@ void exynos_dp_set_lane3_pre_emphasis(struct exynos_dp_device *dp, u32 level)
->  {
->  	u32 reg;
->  
-> -	reg = level << PRE_EMPHASIS_SET_SHIFT;
-> +	reg = readl(dp->reg_base + EXYNOS_DP_LN3_LINK_TRAINING_CTL);
-> +	reg &= ~PRE_EMPHASIS_SET_MASK;
-> +	reg |= level << PRE_EMPHASIS_SET_SHIFT;
->  	writel(reg, dp->reg_base + EXYNOS_DP_LN3_LINK_TRAINING_CTL);
->  }
->  
-> diff --git a/drivers/video/exynos/exynos_dp_reg.h b/drivers/video/exynos/exynos_dp_reg.h
-> index 125b27c..9e9af50 100644
-> --- a/drivers/video/exynos/exynos_dp_reg.h
-> +++ b/drivers/video/exynos/exynos_dp_reg.h
-> @@ -285,6 +285,7 @@
->  #define SW_TRAINING_PATTERN_SET_NORMAL		(0x0 << 0)
->  
->  /* EXYNOS_DP_LN0_LINK_TRAINING_CTL */
-> +#define PRE_EMPHASIS_SET_MASK			(0x3 << 3)
->  #define PRE_EMPHASIS_SET_SHIFT			(3)
->  
->  /* EXYNOS_DP_DEBUG_CTL */
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 1623c9b..5811a18 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -681,20 +681,30 @@ static void dispc_plane_set_scale_coef(enum omap_plane plane, int fir_hinc,
+ static void _dispc_setup_color_conv_coef(void)
+ {
+ 	int i;
++	int num_ovl = dss_feat_get_num_ovls();
++	int num_wb = dss_feat_get_num_wbs();
++
+ 	const struct color_conv_coef {
+ 		int  ry,  rcr,  rcb,   gy,  gcr,  gcb,   by,  bcr,  bcb;
+ 		int  full_range;
+-	}  ctbl_bt601_5 = {
+-		298,  409,    0,  298, -208, -100,  298,    0,  517, 0,
++	}  ctbl_bt601_5[2] = {
++		{ 298,  409, 0, 298, -208, -100, 298, 0, 517, 0, },
++		{ 66, 112, -38, 129, -94, -74, 25, -18, 112, 0, },
+ 	};
+ 
+ 	const struct color_conv_coef *ct;
+ 
+ #define CVAL(x, y) (FLD_VAL(x, 26, 16) | FLD_VAL(y, 10, 0))
++#define YUVTORGB 0
++#define RGBTOYUV 1
+ 
+-	ct = &ctbl_bt601_5;
++	ct = &ctbl_bt601_5[YUVTORGB];
++
++	for (i = 1; i < num_ovl + num_wb; i++) {
++
++		if (i >= num_ovl)
++			ct = &ctbl_bt601_5[RGBTOYUV];
+ 
+-	for (i = 1; i < dss_feat_get_num_ovls(); i++) {
+ 		dispc_write_reg(DISPC_OVL_CONV_COEF(i, 0),
+ 			CVAL(ct->rcr, ct->ry));
+ 		dispc_write_reg(DISPC_OVL_CONV_COEF(i, 1),
+@@ -710,6 +720,8 @@ static void _dispc_setup_color_conv_coef(void)
+ 			11, 11);
+ 	}
+ 
++#undef RGBTOYUV
++#undef YUVTORGB
+ #undef CVAL
+ }
+ 
+-- 
+1.7.9.5
 

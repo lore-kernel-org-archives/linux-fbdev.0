@@ -1,34 +1,72 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 27 Sep 2012 10:40:42 +0000
-Subject: [PATCH] video: s3c-fb: fix typo in comment
-Message-Id: <001401cd9c9c$8b6a8ea0$a23fabe0$%han@samsung.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 13 Sep 2012 12:26:57 +0000
+Subject: [PATCH 13/21] OMAPDSS: DISPC: Pass dummy scalar output rates for writeback pipeline
+Message-Id: <1347538505-25359-14-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-"sturucture" should be "structure".
+The scalar output rate for writeback pipeline when configured in memory to
+memory mode isn't a fixed rate, it can increase or reduce based on the time
+it needs to downscale. It also depends on the rate at which it can receive
+and push out data from/to the interconnect.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Set the scalar output rates for writeback to a low dummy value(set to 1) to
+represent that it can output at low rates, this is done so that maximum
+downscaling is possible in memory to memory mode.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/s3c-fb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   23 ++++++++++++++++-------
+ 1 file changed, 16 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 52b744f..b855867 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -189,7 +189,7 @@ struct s3c_fb_vsync {
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 8673a33..1d5dddf 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -3011,21 +3011,30 @@ unsigned long dispc_core_clk_rate(void)
  
- /**
-  * struct s3c_fb - overall hardware state of the hardware
-- * @slock: The spinlock protection for this data sturucture.
-+ * @slock: The spinlock protection for this data structure.
-  * @dev: The device that we bound to, for printing, etc.
-  * @bus_clk: The clk (hclk) feeding our interface and possibly pixclk.
-  * @lcd_clk: The clk (sclk) feeding pixclk.
+ static unsigned long dispc_plane_output_rate(enum omap_plane plane)
+ {
+-	enum omap_channel channel = dispc_ovl_get_channel_out(plane);
++	if (plane != OMAP_DSS_WB) {
++		enum omap_channel channel = dispc_ovl_get_channel_out(plane);
+ 
+-	return dispc_mgr_pclk_rate(channel);
++		return dispc_mgr_pclk_rate(channel);
++	} else {
++		return 1;
++	}
+ }
+ 
+ static unsigned long dispc_plane_lclk_rate(enum omap_plane plane)
+ {
+-	enum omap_channel channel = dispc_ovl_get_channel_out(plane);
+ 
+-	if (dss_mgr_is_lcd(channel))
+-		return dispc_mgr_lclk_rate(channel);
+-	else
+-		return dispc_fclk_rate();
++	if (plane != OMAP_DSS_WB) {
++		enum omap_channel channel = dispc_ovl_get_channel_out(plane);
+ 
++		if (dss_mgr_is_lcd(channel))
++			return dispc_mgr_lclk_rate(channel);
++		else
++			return dispc_fclk_rate();
++	} else {
++		return 1;
++	}
+ }
++
+ static void dispc_dump_clocks_channel(struct seq_file *s, enum omap_channel channel)
+ {
+ 	int lcd, pcd;
 -- 
-1.7.1
-
+1.7.9.5
 

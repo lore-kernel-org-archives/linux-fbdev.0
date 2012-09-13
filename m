@@ -1,59 +1,32 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 13 Sep 2012 06:48:08 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Thu, 13 Sep 2012 07:19:30 +0000
 Subject: Re: [PATCH v6 0/4] Runtime Interpreted Power Sequences
-Message-Id: <1347518888.7471.38.camel@lappyti>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-fAdGNzRhttcXPFVhUejd"
+Message-Id: <20120913071928.GA20959@opensource.wolfsonmicro.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1347443867-18868-1-git-send-email-acourbot@nvidia.com>
-	 <1347515447.7471.12.camel@lappyti> <1749811.4qrG1GZfBf@percival>
-In-Reply-To: <1749811.4qrG1GZfBf@percival>
-To: Alex Courbot <acourbot@nvidia.com>
-Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Leela Krishna Amudala <l.krishna@samsung.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
-
-
---=-fAdGNzRhttcXPFVhUejd
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2012-09-13 at 15:23 +0900, Alex Courbot wrote:
-
-> DT support is actually the main point of power sequences, as outside of t=
-he DT=20
-> we can always work the old way and use callbacks. If we were to remove DT=
-=20
-> support, I am not sure this work would still be worth being merged.
-
-Ah, I guess you meant hooks in the driver, not hooks to board files?
-Yes, that would work, but if all the hooks do essentially the same
-things with just minor modifications like sleep-time, it makes more
-sense to have just one piece of code which gets the sequence as data.
-
- Tomi
-
-
---=-fAdGNzRhttcXPFVhUejd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+ <1749811.4qrG1GZfBf@percival>
+ <20120913062552.GB17869@opensource.wolfsonmicro.com>
+ <4473898.CeAQBgUhKL@percival>
+In-Reply-To: <4473898.CeAQBgUhKL@percival>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Leela Krishna Amudala <l.krishna-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Anton Vorontsov <cbou-JGs/UdohzUI@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+On Thu, Sep 13, 2012 at 03:42:11PM +0900, Alex Courbot wrote:
+> On Thursday 13 September 2012 14:25:53 Mark Brown wrote:
 
-iQIcBAABAgAGBQJQUYGoAAoJEPo9qoy8lh71l38P/3+BcNUPNUVaUMSBT8HhxKR4
-StxDb/+IIhZUkkauxkGOflFlQdp7oQtkoV28/5+R5khDzbUNCA2shDCLGq22xg3o
-SN44j9UbySCjwbqwLnhCph2B4g+dvVLilS6bYieQaL2oCJAoJVJ54UKLC+DMmGdj
-J+vlHx+byyWEq57/EY7Nk8/qMMHVYRLV+yaSz5vct+AEmQIDNEou6yQHYOEtUml/
-juK/KIE6dR41NEwc/+nhchao5PwUlhdiVGCImtqJS+9h1xLxtFbNYti6fcnxgryK
-1HSBK+jbTVGB09+zwqGiX4/hXGTr3L1ASXGBgMFjq8/I9UQU4u4PJ4RZ2ZhPxxyS
-DFRljioAQbyys5RMwyjqIAvwid3yd3g786WEeSphggB/tUxKRm7HObcaclhgdeEL
-D7N1/UUrbSUPSgNTVndXAW09IQfr4vpAg/V4gUQkRRqDlhkMR5xYHli1DH2L0M8g
-Lgx//ha90WgTCpxRinl+NzUzuByM4L+m75Ud73NntU1Vpgn4PQak5jcdsWkokVfo
-yqioF32iHq4r1i1aI8o8sjFaqYzqLjNGGVc6jVwtJdm1UysyGjy8beRJ59oHWq+r
-C8zxeAmb+IH1/V/uXN366y2KXXsAv8BpO/istze+M4kXMeXxVZBDRXj0aSlqbJiO
-vnWS0FGfYFh47qrNdiwJ
-=vBoM
------END PGP SIGNATURE-----
+> > It would be sensible to make sure that the framework is done in such a
+> > way that drivers can use it - there will be drivers (perhaps not display
+> > ones) that have a known power sequence and which could benefit from the
+> > ability to use library code to implement it based on the user simply
+> > supplying named resources.
 
---=-fAdGNzRhttcXPFVhUejd--
+> Not sure I understand what you mean, but things should be working this way 
+> already - regulators and PWMs are acquired by name using the standard 
+> regulator_get() and pwm_get() functions. GPIOs do not, AFAIK, have a way to be 
+> referenced by name so their number is used instead.
 
+Right, but the sequencing for enabling them is currently open coded in
+each driver.

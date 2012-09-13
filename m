@@ -1,540 +1,343 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Mon, 24 Sep 2012 15:35:23 +0000
-Subject: =?UTF-8?q?=5BPATCH=201/2=5D=20of=3A=20add=20helper=20to=20parse=20display=20specs?=
-Message-Id: <1348500924-8551-2-git-send-email-s.trumtrar@pengutronix.de>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 13 Sep 2012 12:26:46 +0000
+Subject: [PATCH 02/21] OMAPDSS: DISPC: Rename scalar related functions from dispc_ovl_* to dispc_plane_*
+Message-Id: <1347538505-25359-3-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348500924-8551-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1348500924-8551-1-git-send-email-s.trumtrar@pengutronix.de>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, kernel@pengutronix.de, linux-media@vger.kernel.org, Hans Verkuil <hverkuil@xs4all.nl>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Parse a display-node with timings and hardware-specs from devictree.
+Writeback pipeline has an identical scalar block as in video pipelines. Rename
+the scalar related function from dispc_ovl_* to dispc_plane_*. The actual
+registers are kept as DISPC_OVL_* only to prevent too much change.
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+All functions which are common to overlays and writeback are to be named as
+dispc_plane_*, functions which are specific to overlays are to be named as
+dispc_ovl_*, and writeback as dispc_wb_*.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- Documentation/devicetree/bindings/video/display |  208 +++++++++++++++++++++++
- drivers/of/Kconfig                              |    5 +
- drivers/of/Makefile                             |    1 +
- drivers/of/of_display.c                         |  157 +++++++++++++++++
- include/linux/display.h                         |   85 +++++++++
- include/linux/of_display.h                      |   15 ++
- 6 files changed, 471 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/display
- create mode 100644 drivers/of/of_display.c
- create mode 100644 include/linux/display.h
- create mode 100644 include/linux/of_display.h
+ drivers/video/omap2/dss/dispc.c       |   92 ++++++++++++++++++---------------
+ drivers/video/omap2/dss/dispc.h       |    2 +-
+ drivers/video/omap2/dss/dispc_coefs.c |    2 +-
+ 3 files changed, 51 insertions(+), 45 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/display b/Documentation/devicetree/bindings/video/display
-new file mode 100644
-index 0000000..722766a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/display
-@@ -0,0 +1,208 @@
-+display bindings
-+=========
-+
-+display-node
-+------------
-+
-+required properties:
-+ - none
-+
-+optional properties:
-+ - default-timing: the default timing value
-+ - width-mm, height-mm: Display dimensions in mm
-+ - hsync-active-high (bool): Hsync pulse is active high
-+ - vsync-active-high (bool): Vsync pulse is active high
-+ - de-active-high (bool): Data-Enable pulse is active high
-+ - pixelclk-inverted (bool): pixelclock is inverted
-+ - pixel-per-clk
-+ - link-width: number of channels (e.g. LVDS)
-+ - bpp: bits-per-pixel
-+
-+timings-subnode
-+---------------
-+
-+required properties:
-+subnodes that specify
-+ - hactive, vactive: Display resolution
-+ - hfront-porch, hback-porch, hsync-len: Horizontal Display timing parameters
-+   in pixels
-+   vfront-porch, vback-porch, vsync-len: Vertical display timing parameters in
-+   lines
-+ - clock: displayclock in Hz
-+
-+There are different ways of describing a display and its capabilities. The devicetree
-+representation corresponds to the one commonly found in datasheets for displays.
-+The description of the display and its timing is split in two parts: first the display
-+properties like size in mm and (optionally) multiple subnodes with the supported timings.
-+If a display supports multiple signal timings, the default-timing can be specified.
-+
-+Example:
-+
-+	display@0 {
-+		width-mm = <800>;
-+		height-mm = <480>;
-+		default-timing = <&timing0>;
-+		timings {
-+			timing0: timing@0 {
-+				/* 1920x1080p24 */
-+				clock = <52000000>;
-+				hactive = <1920>;
-+				vactive = <1080>;
-+				hfront-porch = <25>;
-+				hback-porch = <25>;
-+				hsync-len = <25>;
-+				vback-porch = <2>;
-+				vfront-porch = <2>;
-+				vsync-len = <2>;
-+				hsync-active-high;
-+			};
-+		};
-+	};
-+
-+Every property also supports the use of ranges, so the commonly used datasheet
-+description with <min typ max>-tuples can be used.
-+
-+Example:
-+
-+	timing1: timing@1 {
-+		/* 1920x1080p24 */
-+		clock = <148500000>;
-+		hactive = <1920>;
-+		vactive = <1080>;
-+		hsync-len = <0 44 60>;
-+		hfront-porch = <80 88 95>;
-+		hback-porch = <100 148 160>;
-+		vfront-porch = <0 4 6>;
-+		vback-porch = <0 36 50>;
-+		vsync-len = <0 5 6>;
-+	};
-+
-+The "display"-property in a connector-node (e.g. hdmi, ldb,...) is used to connect
-+the display to that driver. 
-+of_display expects a phandle, that specifies the display-node, in that property.
-+
-+Example:
-+
-+	hdmi@00120000 {
-+		status = "okay";
-+		display = <&acme>;
-+	};
-+
-+Usage in backend
-+========
-+
-+A backend driver may choose to use the display directly and convert the timing
-+ranges to a suitable mode. Or it may just use the conversion of the display timings
-+to the required mode via the generic videomode struct.
-+
-+					dtb
-+					 |
-+					 |  of_get_display
-+					 ↓
-+				   struct display
-+					 |
-+					 |  videomode_from_timings
-+					 ↓
-+			    ---  struct videomode ---
-+			    |			    |
-+ videomode_to_displaymode   |			    |   videomode_to_fb_videomode
-+		            ↓			    ↓
-+		     drm_display_mode         fb_videomode
-+
-+
-+Conversion to videomode
-+===========+
-+As device drivers normally work with some kind of video mode, the timings can be
-+converted (may be just a simple copying of the typical value) to a generic videomode
-+structure which then can be converted to the according mode used by the backend.
-+
-+Supported modes
-+=======+
-+The generic videomode read in by the driver can be converted to the following
-+modes with the following parameters
-+
-+struct fb_videomode
-+=========+
-+  +----------+---------------------------------------------+----------+-------+
-+  |          |                ↑                            |          |       |
-+  |          |                |upper_margin                |          |       |
-+  |          |                ↓                            |          |       |
-+  +----------###############################################----------+-------+
-+  |          #                ↑                            #          |       |
-+  |          #                |                            #          |       |
-+  |          #                |                            #          |       |
-+  |          #                |                            #          |       |
-+  |   left   #                |                            #  right   | hsync |
-+  |  margin  #                |       xres                 #  margin  |  len  |
-+  |<-------->#<---------------+--------------------------->#<-------->|<----->|
-+  |          #                |                            #          |       |
-+  |          #                |                            #          |       |
-+  |          #                |                            #          |       |
-+  |          #                |yres                        #          |       |
-+  |          #                |                            #          |       |
-+  |          #                |                            #          |       |
-+  |          #                |                            #          |       |
-+  |          #                |                            #          |       |
-+  |          #                |                            #          |       |
-+  |          #                |                            #          |       |
-+  |          #                |                            #          |       |
-+  |          #                |                            #          |       |
-+  |          #                ↓                            #          |       |
-+  +----------###############################################----------+-------+
-+  |          |                ↑                            |          |       |
-+  |          |                |lower_margin                |          |       |
-+  |          |                ↓                            |          |       |
-+  +----------+---------------------------------------------+----------+-------+
-+  |          |                ↑                            |          |       |
-+  |          |                |vsync_len                   |          |       |
-+  |          |                ↓                            |          |       |
-+  +----------+---------------------------------------------+----------+-------+
-+
-+clock in nanoseconds
-+
-+struct drm_display_mode
-+===========+
-+  +----------+---------------------------------------------+----------+-------+
-+  |          |                                             |          |       |  ↑
-+  |          |                                             |          |       |  |
-+  |          |                                             |          |       |  |
-+  +----------###############################################----------+-------+  |
-+  |          #   ↑         ↑          ↑                    #          |       |  |
-+  |          #   |         |          |                    #          |       |  |
-+  |          #   |         |          |                    #          |       |  |
-+  |          #   |         |          |                    #          |       |  |
-+  |          #   |         |          |                    #          |       |  |
-+  |          #   |         |          |       hdisplay     #          |       |  |
-+  |          #<--+--------------------+------------------->#          |       |  |
-+  |          #   |         |          |                    #          |       |  |
-+  |          #   |vsync_start         |                    #          |       |  |
-+  |          #   |         |          |                    #          |       |  |
-+  |          #   |         |vsync_end |                    #          |       |  |
-+  |          #   |         |          |vdisplay            #          |       |  |
-+  |          #   |         |          |                    #          |       |  |
-+  |          #   |         |          |                    #          |       |  |
-+  |          #   |         |          |                    #          |       |  | vtotal
-+  |          #   |         |          |                    #          |       |  |
-+  |          #   |         |          |     hsync_start    #          |       |  |
-+  |          #<--+---------+----------+------------------------------>|       |  |
-+  |          #   |         |          |                    #          |       |  |
-+  |          #   |         |          |     hsync_end      #          |       |  |
-+  |          #<--+---------+----------+-------------------------------------->|  |
-+  |          #   |         |          ↓                    #          |       |  |
-+  +----------####|#########|################################----------+-------+  |
-+  |          |   |         |                               |          |       |  |
-+  |          |   |         |                               |          |       |  |
-+  |          |   ↓         |                               |          |       |  |
-+  +----------+-------------+-------------------------------+----------+-------+  |
-+  |          |             |                               |          |       |  |
-+  |          |             |                               |          |       |  |
-+  |          |             ↓                               |          |       |  ↓
-+  +----------+---------------------------------------------+----------+-------+
-+                                   htotal
-+   <------------------------------------------------------------------------->
-+
-+clock in kilohertz
-diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
-index dfba3e6..a4e3074 100644
---- a/drivers/of/Kconfig
-+++ b/drivers/of/Kconfig
-@@ -83,4 +83,9 @@ config OF_MTD
- 	depends on MTD
- 	def_bool y
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index cd3d532..eae9da4 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -560,29 +560,33 @@ void dispc_mgr_go(enum omap_channel channel)
+ 	mgr_fld_write(channel, DISPC_MGR_FLD_GO, 1);
+ }
  
-+config OF_DISPLAY
-+	def_bool y
-+	help
-+	  helper to parse displays from the devicetree
-+
- endmenu # OF
-diff --git a/drivers/of/Makefile b/drivers/of/Makefile
-index e027f44..0756bee 100644
---- a/drivers/of/Makefile
-+++ b/drivers/of/Makefile
-@@ -11,3 +11,4 @@ obj-$(CONFIG_OF_MDIO)	+= of_mdio.o
- obj-$(CONFIG_OF_PCI)	+= of_pci.o
- obj-$(CONFIG_OF_PCI_IRQ)  += of_pci_irq.o
- obj-$(CONFIG_OF_MTD)	+= of_mtd.o
-+obj-$(CONFIG_OF_DISPLAY) += of_display.o
-diff --git a/drivers/of/of_display.c b/drivers/of/of_display.c
-new file mode 100644
-index 0000000..632a351
---- /dev/null
-+++ b/drivers/of/of_display.c
-@@ -0,0 +1,157 @@
-+/*
-+ * OF helpers for parsing display timings
-+ * 
-+ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
-+ * 
-+ * based on of_videomode.c by Sascha Hauer <s.hauer@pengutronix.de>
-+ *
-+ * This file is released under the GPLv2
-+ */
-+#include <linux/of.h>
-+#include <linux/slab.h>
-+#include <linux/display.h>
-+#include <linux/of_display.h>
-+#include <linux/fb.h>
-+
-+/* every signal_timing can be specified with either
-+ * just the typical value or a range consisting of
-+ * min/typ/max.
-+ * This function helps handling this
-+ */
-+static int of_display_parse_property(struct device_node *np, char *name,
-+				struct timing_entry *result)
-+{
-+	struct property *prop;
-+	int length;
-+	int cells;
-+	int ret;
-+
-+	prop = of_find_property(np, name, &length);
-+	if (!prop) {
-+		pr_err("%s: could not find property %s\n", __func__,
-+			name);
-+		return -EINVAL;
-+	}
-+
-+	cells = length / sizeof(u32);
-+
-+	if (cells = 1)
-+		ret = of_property_read_u32_array(np, name, &result->typ, cells);
-+	else if (cells = 3)
-+		ret = of_property_read_u32_array(np, name, &result->min, cells);
-+	else {
-+		pr_err("%s: illegal timing specification in %s\n", __func__,
-+			name);
-+		return -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
-+struct display *of_get_display(struct device_node *np)
-+{
-+	struct device_node *display_np;
-+	struct device_node *timing_np;
-+	struct device_node *timings;
-+	struct display *disp;
-+	char *default_timing;
-+
-+	if (!np) {
-+		pr_err("%s: no devicenode given\n", __func__);
-+		return NULL;
-+	}
-+
-+	display_np = of_parse_phandle(np, "display", 0);
-+
-+	if (!display_np) {
-+		pr_err("%s: could not find display node\n", __func__);
-+		return NULL;
-+	}
-+
-+	disp = kmalloc(sizeof(struct display *), GFP_KERNEL);
-+
-+	memset(disp, 0, sizeof(struct display *));
-+
-+	of_property_read_u32(display_np, "width-mm", &disp->width_mm);
-+	of_property_read_u32(display_np, "height-mm", &disp->height_mm);
-+
-+	timing_np = of_parse_phandle(display_np, "default-timing", 0);
-+
-+	if (!timing_np) {
-+		pr_info("%s: no default-timing specified\n", __func__);
-+		timing_np = of_find_node_by_name(np, "timing");
-+	}
-+
-+	if (!timing_np) {
-+		pr_info("%s: no timing specifications given\n", __func__);
-+		return disp;
-+	}
-+
-+	default_timing = (char *)timing_np->full_name;
-+
-+	timings = of_find_node_by_name(np, "timings");
-+
-+	disp->num_timings = 0;
-+
-+	disp->timings = kmalloc(sizeof(struct signal_timing *), GFP_KERNEL);
-+
-+	for_each_child_of_node(timings, timing_np) {
-+		struct signal_timing *st;
-+		int ret;
-+
-+		st = kmalloc(sizeof(struct signal_timing *), GFP_KERNEL);
-+		disp->timings[disp->num_timings] = kmalloc(sizeof(struct signal_timing *), GFP_KERNEL);
-+
-+		ret |= of_display_parse_property(timing_np, "hback-porch", &st->hback_porch);
-+		ret |= of_display_parse_property(timing_np, "hfront-porch", &st->hfront_porch);
-+		ret |= of_display_parse_property(timing_np, "hactive", &st->hactive);
-+		ret |= of_display_parse_property(timing_np, "hsync-len", &st->hsync_len);
-+		ret |= of_display_parse_property(timing_np, "vback-porch", &st->vback_porch);
-+		ret |= of_display_parse_property(timing_np, "vfront-porch", &st->vfront_porch);
-+		ret |= of_display_parse_property(timing_np, "vactive", &st->vactive);
-+		ret |= of_display_parse_property(timing_np, "vsync-len", &st->vsync_len);
-+		ret |= of_display_parse_property(timing_np, "clock", &st->pixelclock);
-+
-+		if (strcmp(default_timing, timing_np->full_name) = 0)
-+			disp->default_timing = disp->num_timings;
-+
-+		disp->timings[disp->num_timings] = st;
-+		disp->num_timings++;
-+	}
-+
-+	disp->vsync_pol_active_high = of_property_read_bool(display_np, "vsync-active-high");
-+	disp->hsync_pol_active_high = of_property_read_bool(display_np, "hsync-active-high");
-+	disp->de_pol_active_high = of_property_read_bool(display_np, "de-active-high");
-+	disp->pixelclk_pol_inverted = of_property_read_bool(display_np, "pixelclk-inverted");
-+	of_property_read_u32(display_np, "pixel-per-clk", &disp->if_pixel_per_clk);
-+	of_property_read_u32(display_np, "link-width", &disp->if_link_width);
-+	of_property_read_u32(display_np, "bpp", &disp->if_bpp);
-+
-+
-+	pr_info("%s: got %d timings. Using #%d as default\n", __func__, disp->num_timings, disp->default_timing + 1);
-+
-+	return disp;
-+}
-+EXPORT_SYMBOL(of_get_display);
-+
-+int of_display_exists(struct device_node *np)
-+{
-+	struct device_node *display_np;
-+	struct device_node *timing_np;
-+
-+	if (!np)
-+		return -EINVAL;
-+
-+	display_np = of_parse_phandle(np, "display", 0);
-+
-+	if (!display_np)
-+		return -EINVAL;
-+
-+	timing_np = of_parse_phandle(np, "default-timing", 0);
-+
-+	if (timing_np)
-+		return 0;
-+
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL_GPL(of_display_exists);
-diff --git a/include/linux/display.h b/include/linux/display.h
-new file mode 100644
-index 0000000..bb84ed9
---- /dev/null
-+++ b/include/linux/display.h
-@@ -0,0 +1,85 @@
-+/*
-+ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
-+ *
-+ * Hardware-description of a display
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#ifndef __LINUX_DISPLAY_H
-+#define __LINUX_DISPLAY_H
-+
-+#include <linux/list.h>
-+
-+#define OF_DEFAULT_TIMING -1
-+
-+struct display {
-+	u32 width_mm;
-+	u32 height_mm;
-+	unsigned int num_timings;
-+	unsigned int default_timing;
-+
-+	struct signal_timing **timings;
-+
-+	bool vsync_pol_active_high;
-+	bool hsync_pol_active_high;
-+	bool de_pol_active_high;
-+	bool pixelclk_pol_inverted;
-+
-+	u32 if_bpp;
-+	u32 if_link_width;
-+	u32 if_pixel_per_clk;
-+};
-+
-+struct timing_entry {
-+	u32 min;
-+	u32 typ;
-+	u32 max;
-+};
-+
-+struct signal_timing {
-+	struct timing_entry pixelclock;
-+
-+	struct timing_entry hactive;
-+	struct timing_entry hfront_porch;
-+	struct timing_entry hback_porch;
-+	struct timing_entry hsync_len;
-+
-+	struct timing_entry vactive;
-+	struct timing_entry vfront_porch;
-+	struct timing_entry vback_porch;
-+	struct timing_entry vsync_len;
-+};
-+
-+/* placeholder function until ranges are really needed */
-+static inline u32 signal_timing_get_value(struct timing_entry *te, int index)
-+{
-+	return te->typ;
-+}
-+
-+static inline void timings_release(struct display *disp)
-+{
-+	int i;
-+	for (i = 0; i < disp->num_timings; i++)
-+		kfree(disp->timings[i]);
-+}
-+
-+static inline void display_release(struct display *disp)
-+{
-+	timings_release(disp);
-+	kfree(disp->timings);
-+}
-+
-+static inline struct signal_timing *display_get_timing(struct display *disp, int index)
-+{
-+	if (disp->num_timings >= index)
-+		return disp->timings[index];
-+	else
-+		return NULL;
-+}
-+
-+
-+int of_display_exists(struct device_node *np);
-+struct display *of_get_display(struct device_node *np);
-+
-+#endif /* __LINUX_DISPLAY_H */
-diff --git a/include/linux/of_display.h b/include/linux/of_display.h
-new file mode 100644
-index 0000000..500ff94
---- /dev/null
-+++ b/include/linux/of_display.h
-@@ -0,0 +1,15 @@
-+/*
-+ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#ifndef __LINUX_OF_DISPLAY_H
-+#define __LINUX_OF_DISPALY_H
-+
-+#include <linux/fb.h>
-+
-+struct display *of_get_display(struct device_node *np);
-+int of_display_exists(struct device_node *np);
-+
-+#endif
+-static void dispc_ovl_write_firh_reg(enum omap_plane plane, int reg, u32 value)
++static void dispc_plane_write_firh_reg(enum omap_plane plane, int reg,
++		u32 value)
+ {
+ 	dispc_write_reg(DISPC_OVL_FIR_COEF_H(plane, reg), value);
+ }
+ 
+-static void dispc_ovl_write_firhv_reg(enum omap_plane plane, int reg, u32 value)
++static void dispc_plane_write_firhv_reg(enum omap_plane plane, int reg,
++		u32 value)
+ {
+ 	dispc_write_reg(DISPC_OVL_FIR_COEF_HV(plane, reg), value);
+ }
+ 
+-static void dispc_ovl_write_firv_reg(enum omap_plane plane, int reg, u32 value)
++static void dispc_plane_write_firv_reg(enum omap_plane plane, int reg,
++		u32 value)
+ {
+ 	dispc_write_reg(DISPC_OVL_FIR_COEF_V(plane, reg), value);
+ }
+ 
+-static void dispc_ovl_write_firh2_reg(enum omap_plane plane, int reg, u32 value)
++static void dispc_plane_write_firh2_reg(enum omap_plane plane, int reg,
++		u32 value)
+ {
+ 	BUG_ON(plane = OMAP_DSS_GFX);
+ 
+ 	dispc_write_reg(DISPC_OVL_FIR_COEF_H2(plane, reg), value);
+ }
+ 
+-static void dispc_ovl_write_firhv2_reg(enum omap_plane plane, int reg,
++static void dispc_plane_write_firhv2_reg(enum omap_plane plane, int reg,
+ 		u32 value)
+ {
+ 	BUG_ON(plane = OMAP_DSS_GFX);
+@@ -590,22 +594,23 @@ static void dispc_ovl_write_firhv2_reg(enum omap_plane plane, int reg,
+ 	dispc_write_reg(DISPC_OVL_FIR_COEF_HV2(plane, reg), value);
+ }
+ 
+-static void dispc_ovl_write_firv2_reg(enum omap_plane plane, int reg, u32 value)
++static void dispc_plane_write_firv2_reg(enum omap_plane plane, int reg,
++		u32 value)
+ {
+ 	BUG_ON(plane = OMAP_DSS_GFX);
+ 
+ 	dispc_write_reg(DISPC_OVL_FIR_COEF_V2(plane, reg), value);
+ }
+ 
+-static void dispc_ovl_set_scale_coef(enum omap_plane plane, int fir_hinc,
+-				int fir_vinc, int five_taps,
+-				enum omap_color_component color_comp)
++static void dispc_plane_set_scale_coef(enum omap_plane plane, int fir_hinc,
++		int fir_vinc, int five_taps,
++		enum omap_color_component color_comp)
+ {
+ 	const struct dispc_coef *h_coef, *v_coef;
+ 	int i;
+ 
+-	h_coef = dispc_ovl_get_scale_coef(fir_hinc, true);
+-	v_coef = dispc_ovl_get_scale_coef(fir_vinc, five_taps);
++	h_coef = dispc_plane_get_scale_coef(fir_hinc, true);
++	v_coef = dispc_plane_get_scale_coef(fir_vinc, five_taps);
+ 
+ 	for (i = 0; i < 8; i++) {
+ 		u32 h, hv;
+@@ -620,11 +625,11 @@ static void dispc_ovl_set_scale_coef(enum omap_plane plane, int fir_hinc,
+ 			| FLD_VAL(v_coef[i].hc3_vc2, 31, 24);
+ 
+ 		if (color_comp = DISPC_COLOR_COMPONENT_RGB_Y) {
+-			dispc_ovl_write_firh_reg(plane, i, h);
+-			dispc_ovl_write_firhv_reg(plane, i, hv);
++			dispc_plane_write_firh_reg(plane, i, h);
++			dispc_plane_write_firhv_reg(plane, i, hv);
+ 		} else {
+-			dispc_ovl_write_firh2_reg(plane, i, h);
+-			dispc_ovl_write_firhv2_reg(plane, i, hv);
++			dispc_plane_write_firh2_reg(plane, i, h);
++			dispc_plane_write_firhv2_reg(plane, i, hv);
+ 		}
+ 
+ 	}
+@@ -635,9 +640,9 @@ static void dispc_ovl_set_scale_coef(enum omap_plane plane, int fir_hinc,
+ 			v = FLD_VAL(v_coef[i].hc0_vc00, 7, 0)
+ 				| FLD_VAL(v_coef[i].hc4_vc22, 15, 8);
+ 			if (color_comp = DISPC_COLOR_COMPONENT_RGB_Y)
+-				dispc_ovl_write_firv_reg(plane, i, v);
++				dispc_plane_write_firv_reg(plane, i, v);
+ 			else
+-				dispc_ovl_write_firv2_reg(plane, i, v);
++				dispc_plane_write_firv2_reg(plane, i, v);
+ 		}
+ 	}
+ }
+@@ -1208,9 +1213,8 @@ void dispc_ovl_compute_fifo_thresholds(enum omap_plane plane,
+ 	}
+ }
+ 
+-static void dispc_ovl_set_fir(enum omap_plane plane,
+-				int hinc, int vinc,
+-				enum omap_color_component color_comp)
++static void dispc_plane_set_fir(enum omap_plane plane, int hinc, int vinc,
++		enum omap_color_component color_comp)
+ {
+ 	u32 val;
+ 
+@@ -1231,7 +1235,8 @@ static void dispc_ovl_set_fir(enum omap_plane plane,
+ 	}
+ }
+ 
+-static void dispc_ovl_set_vid_accu0(enum omap_plane plane, int haccu, int vaccu)
++static void dispc_plane_set_vid_accu0(enum omap_plane plane, int haccu,
++		int vaccu)
+ {
+ 	u32 val;
+ 	u8 hor_start, hor_end, vert_start, vert_end;
+@@ -1245,7 +1250,8 @@ static void dispc_ovl_set_vid_accu0(enum omap_plane plane, int haccu, int vaccu)
+ 	dispc_write_reg(DISPC_OVL_ACCU0(plane), val);
+ }
+ 
+-static void dispc_ovl_set_vid_accu1(enum omap_plane plane, int haccu, int vaccu)
++static void dispc_plane_set_vid_accu1(enum omap_plane plane, int haccu,
++		int vaccu)
+ {
+ 	u32 val;
+ 	u8 hor_start, hor_end, vert_start, vert_end;
+@@ -1259,7 +1265,7 @@ static void dispc_ovl_set_vid_accu1(enum omap_plane plane, int haccu, int vaccu)
+ 	dispc_write_reg(DISPC_OVL_ACCU1(plane), val);
+ }
+ 
+-static void dispc_ovl_set_vid_accu2_0(enum omap_plane plane, int haccu,
++static void dispc_plane_set_vid_accu2_0(enum omap_plane plane, int haccu,
+ 		int vaccu)
+ {
+ 	u32 val;
+@@ -1268,7 +1274,7 @@ static void dispc_ovl_set_vid_accu2_0(enum omap_plane plane, int haccu,
+ 	dispc_write_reg(DISPC_OVL_ACCU2_0(plane), val);
+ }
+ 
+-static void dispc_ovl_set_vid_accu2_1(enum omap_plane plane, int haccu,
++static void dispc_plane_set_vid_accu2_1(enum omap_plane plane, int haccu,
+ 		int vaccu)
+ {
+ 	u32 val;
+@@ -1277,7 +1283,7 @@ static void dispc_ovl_set_vid_accu2_1(enum omap_plane plane, int haccu,
+ 	dispc_write_reg(DISPC_OVL_ACCU2_1(plane), val);
+ }
+ 
+-static void dispc_ovl_set_scale_param(enum omap_plane plane,
++static void dispc_plane_set_scale_param(enum omap_plane plane,
+ 		u16 orig_width, u16 orig_height,
+ 		u16 out_width, u16 out_height,
+ 		bool five_taps, u8 rotation,
+@@ -1288,12 +1294,12 @@ static void dispc_ovl_set_scale_param(enum omap_plane plane,
+ 	fir_hinc = 1024 * orig_width / out_width;
+ 	fir_vinc = 1024 * orig_height / out_height;
+ 
+-	dispc_ovl_set_scale_coef(plane, fir_hinc, fir_vinc, five_taps,
++	dispc_plane_set_scale_coef(plane, fir_hinc, fir_vinc, five_taps,
+ 				color_comp);
+-	dispc_ovl_set_fir(plane, fir_hinc, fir_vinc, color_comp);
++	dispc_plane_set_fir(plane, fir_hinc, fir_vinc, color_comp);
+ }
+ 
+-static void dispc_ovl_set_accu_uv(enum omap_plane plane,
++static void dispc_plane_set_accu_uv(enum omap_plane plane,
+ 		u16 orig_width,	u16 orig_height, u16 out_width, u16 out_height,
+ 		bool ilace, enum omap_color_mode color_mode, u8 rotation)
+ {
+@@ -1377,11 +1383,11 @@ static void dispc_ovl_set_accu_uv(enum omap_plane plane,
+ 	v_accu2_0 = (accu_val->v0_m * chroma_vinc / accu_val->v0_n) % 1024;
+ 	v_accu2_1 = (accu_val->v1_m * chroma_vinc / accu_val->v1_n) % 1024;
+ 
+-	dispc_ovl_set_vid_accu2_0(plane, h_accu2_0, v_accu2_0);
+-	dispc_ovl_set_vid_accu2_1(plane, h_accu2_1, v_accu2_1);
++	dispc_plane_set_vid_accu2_0(plane, h_accu2_0, v_accu2_0);
++	dispc_plane_set_vid_accu2_1(plane, h_accu2_1, v_accu2_1);
+ }
+ 
+-static void dispc_ovl_set_scaling_common(enum omap_plane plane,
++static void dispc_plane_set_scaling_common(enum omap_plane plane,
+ 		u16 orig_width, u16 orig_height,
+ 		u16 out_width, u16 out_height,
+ 		bool ilace, bool five_taps,
+@@ -1392,7 +1398,7 @@ static void dispc_ovl_set_scaling_common(enum omap_plane plane,
+ 	int accu1 = 0;
+ 	u32 l;
+ 
+-	dispc_ovl_set_scale_param(plane, orig_width, orig_height,
++	dispc_plane_set_scale_param(plane, orig_width, orig_height,
+ 				out_width, out_height, five_taps,
+ 				rotation, DISPC_COLOR_COMPONENT_RGB_Y);
+ 	l = dispc_read_reg(DISPC_OVL_ATTRIBUTES(plane));
+@@ -1431,11 +1437,11 @@ static void dispc_ovl_set_scaling_common(enum omap_plane plane,
+ 		}
+ 	}
+ 
+-	dispc_ovl_set_vid_accu0(plane, 0, accu0);
+-	dispc_ovl_set_vid_accu1(plane, 0, accu1);
++	dispc_plane_set_vid_accu0(plane, 0, accu0);
++	dispc_plane_set_vid_accu1(plane, 0, accu1);
+ }
+ 
+-static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
++static void dispc_plane_set_scaling_uv(enum omap_plane plane,
+ 		u16 orig_width, u16 orig_height,
+ 		u16 out_width, u16 out_height,
+ 		bool ilace, bool five_taps,
+@@ -1455,7 +1461,7 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
+ 		return;
+ 	}
+ 
+-	dispc_ovl_set_accu_uv(plane, orig_width, orig_height, out_width,
++	dispc_plane_set_accu_uv(plane, orig_width, orig_height, out_width,
+ 			out_height, ilace, color_mode, rotation);
+ 
+ 	switch (color_mode) {
+@@ -1488,7 +1494,7 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
+ 	if (out_height != orig_height)
+ 		scale_y = true;
+ 
+-	dispc_ovl_set_scale_param(plane, orig_width, orig_height,
++	dispc_plane_set_scale_param(plane, orig_width, orig_height,
+ 			out_width, out_height, five_taps,
+ 				rotation, DISPC_COLOR_COMPONENT_UV);
+ 
+@@ -1500,7 +1506,7 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
+ 	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), scale_y ? 1 : 0, 6, 6);
+ }
+ 
+-static void dispc_ovl_set_scaling(enum omap_plane plane,
++static void dispc_plane_set_scaling(enum omap_plane plane,
+ 		u16 orig_width, u16 orig_height,
+ 		u16 out_width, u16 out_height,
+ 		bool ilace, bool five_taps,
+@@ -1509,14 +1515,14 @@ static void dispc_ovl_set_scaling(enum omap_plane plane,
+ {
+ 	BUG_ON(plane = OMAP_DSS_GFX);
+ 
+-	dispc_ovl_set_scaling_common(plane,
++	dispc_plane_set_scaling_common(plane,
+ 			orig_width, orig_height,
+ 			out_width, out_height,
+ 			ilace, five_taps,
+ 			fieldmode, color_mode,
+ 			rotation);
+ 
+-	dispc_ovl_set_scaling_uv(plane,
++	dispc_plane_set_scaling_uv(plane,
+ 		orig_width, orig_height,
+ 		out_width, out_height,
+ 		ilace, five_taps,
+@@ -2190,7 +2196,7 @@ static int dispc_ovl_calc_scaling_44xx(enum omap_channel channel,
+ 	return 0;
+ }
+ 
+-static int dispc_ovl_calc_scaling(enum omap_plane plane,
++static int dispc_plane_calc_scaling(enum omap_plane plane,
+ 		enum omap_channel channel,
+ 		const struct omap_video_timings *mgr_timings,
+ 		u16 width, u16 height, u16 out_width, u16 out_height,
+@@ -2305,7 +2311,7 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ 	if (!dss_feat_color_mode_supported(plane, oi->color_mode))
+ 		return -EINVAL;
+ 
+-	r = dispc_ovl_calc_scaling(plane, channel, mgr_timings, in_width,
++	r = dispc_plane_calc_scaling(plane, channel, mgr_timings, in_width,
+ 			in_height, out_width, out_height, oi->color_mode,
+ 			&five_taps, &x_predecim, &y_predecim, oi->pos_x);
+ 	if (r)
+@@ -2387,7 +2393,7 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ 	dispc_ovl_set_pic_size(plane, in_width, in_height);
+ 
+ 	if (ovl->caps & OMAP_DSS_OVL_CAP_SCALE) {
+-		dispc_ovl_set_scaling(plane, in_width, in_height, out_width,
++		dispc_plane_set_scaling(plane, in_width, in_height, out_width,
+ 				   out_height, ilace, five_taps, fieldmode,
+ 				   oi->color_mode, oi->rotation);
+ 		dispc_ovl_set_vid_size(plane, out_width, out_height);
+diff --git a/drivers/video/omap2/dss/dispc.h b/drivers/video/omap2/dss/dispc.h
+index 42e56cc..84cc472 100644
+--- a/drivers/video/omap2/dss/dispc.h
++++ b/drivers/video/omap2/dss/dispc.h
+@@ -109,7 +109,7 @@ struct dispc_coef {
+ 	s8 hc0_vc00;
+ };
+ 
+-const struct dispc_coef *dispc_ovl_get_scale_coef(int inc, int five_taps);
++const struct dispc_coef *dispc_plane_get_scale_coef(int inc, int five_taps);
+ 
+ /* DISPC manager/channel specific registers */
+ static inline u16 DISPC_DEFAULT_COLOR(enum omap_channel channel)
+diff --git a/drivers/video/omap2/dss/dispc_coefs.c b/drivers/video/omap2/dss/dispc_coefs.c
+index 038c15b..21d8c82 100644
+--- a/drivers/video/omap2/dss/dispc_coefs.c
++++ b/drivers/video/omap2/dss/dispc_coefs.c
+@@ -286,7 +286,7 @@ static const struct dispc_coef coef5_M32[8] = {
+ 	{   5,  29,  48,  36,  10 },
+ };
+ 
+-const struct dispc_coef *dispc_ovl_get_scale_coef(int inc, int five_taps)
++const struct dispc_coef *dispc_plane_get_scale_coef(int inc, int five_taps)
+ {
+ 	int i;
+ 	static const struct {
 -- 
-1.7.10.4
+1.7.9.5
 

@@ -1,200 +1,314 @@
-From: Dimitar Dimitrov <dinuxbg@gmail.com>
-Date: Mon, 10 Sep 2012 19:34:45 +0000
-Subject: [PATCH v3] OMAPDSS: Fix IRQ unregister race
-Message-Id: <1347305685-18182-1-git-send-email-dinuxbg@gmail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 13 Sep 2012 12:26:55 +0000
+Subject: [PATCH 11/21] OMAPDSS: DISPC: Add writeback register offsets and dss features structs
+Message-Id: <1347538505-25359-12-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201209102219.29105.dinuxbg@gmail.com>
-In-Reply-To: <201209102219.29105.dinuxbg@gmail.com>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Dimitar Dimitrov <dinuxbg@gmail.com>, stable <stable@vger.kernel.org>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Very rare kernel crashes are reported on a custom OMAP4 board. Kernel
-panics due to corrupted completion structure while executing
-dispc_irq_wait_handler(). Excerpt from kernel log:
+Since writeback has many overlay like properties, and most of it's registers are
+similar to that of overlays, it's possible to reuse most of the overlay related
+DISPC code for writeback when considering it as a plane. Writeback was added as
+a plane in the omap_plane field as OMAP_DSS_WB.
 
-  Internal error: Oops - undefined instruction: 0 [#1] PREEMPT SMP
-  Unable to handle kernel paging request at virtual address 00400130
-  ...
-  PC is at 0xebf205bc
-  LR is at __wake_up_common+0x54/0x94
-  ...
-  (__wake_up_common+0x0/0x94)
-  (complete+0x0/0x60)
-  (dispc_irq_wait_handler.36902+0x0/0x14)
-  (omap_dispc_irq_handler+0x0/0x354)
-  (handle_irq_event_percpu+0x0/0x188)
-  (handle_irq_event+0x0/0x64)
-  (handle_fasteoi_irq+0x0/0x10c)
-  (generic_handle_irq+0x0/0x48)
-  (asm_do_IRQ+0x0/0xc0)
+Add the writeback register offsets in dispc.h, add minimal WB plane related info
+needed in dss_features. Add a function which returns the number of writeback
+pipelines an OMAP version has.
 
-DISPC IRQ executes callbacks with dispc.irq_lock released. Hence
-unregister_isr() and DISPC IRQ might be running in parallel on different
-CPUs. So there is a chance that a callback is executed even though it
-has been unregistered. As omap_dispc_wait_for_irq_timeout() declares a
-completion on stack, the dispc_irq_wait_handler() callback might try to
-access a completion structure that is invalid. This leads to crashes and
-hangs.
-
-Solution is to divide unregister calls into two sets:
-  1. Non-strict unregistering of callbacks. Callbacks could safely be
-     executed after unregistering them. This is the case with unregister
-     calls from the IRQ handler itself.
-  2. Strict (synchronized) unregistering. Callbacks are not allowed
-     after unregistering. This is the case with completion waiting.
-
-The above solution should satisfy one of the original intentions of the
-driver: callbacks should be able to unregister themselves.
-
-Also fix DSI IRQ unregister which has similar logic to DISPC IRQ handling.
-
-Cc: stable <stable@vger.kernel.org>
-Signed-off-by: Dimitar Dimitrov <dinuxbg@gmail.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
-Changes since v2:
-  - Fix formatting per Tomi Valkeinen's comments.
-  - Restored accidental removal of EXPORT_SYMBOL for omap_dispc_register_isr.
+ drivers/video/omap2/dss/dispc.h        |   33 ++++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/dss_features.c |   19 ++++++++++++++++++
+ drivers/video/omap2/dss/dss_features.h |    1 +
+ 3 files changed, 53 insertions(+)
 
- drivers/staging/omapdrm/omap_plane.c |    2 +-
- drivers/video/omap2/dss/apply.c      |    2 +-
- drivers/video/omap2/dss/dispc.c      |   34 +++++++++++++++++++++++++++++++++-
- drivers/video/omap2/dss/dsi.c        |   15 +++++++++++++++
- include/video/omapdss.h              |    1 +
- 5 files changed, 51 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/staging/omapdrm/omap_plane.c b/drivers/staging/omapdrm/omap_plane.c
-index 7997be7..8d8aa5b 100644
---- a/drivers/staging/omapdrm/omap_plane.c
-+++ b/drivers/staging/omapdrm/omap_plane.c
-@@ -82,7 +82,7 @@ static void dispc_isr(void *arg, uint32_t mask)
- 	struct omap_plane *omap_plane = to_omap_plane(plane);
- 	struct omap_drm_private *priv = plane->dev->dev_private;
+diff --git a/drivers/video/omap2/dss/dispc.h b/drivers/video/omap2/dss/dispc.h
+index 84cc472..2b008f7 100644
+--- a/drivers/video/omap2/dss/dispc.h
++++ b/drivers/video/omap2/dss/dispc.h
+@@ -373,6 +373,7 @@ static inline u16 DISPC_BA0_OFFSET(enum omap_plane plane)
+ 	case OMAP_DSS_VIDEO2:
+ 		return 0x0000;
+ 	case OMAP_DSS_VIDEO3:
++	case OMAP_DSS_WB:
+ 		return 0x0008;
+ 	default:
+ 		BUG();
+@@ -388,6 +389,7 @@ static inline u16 DISPC_BA1_OFFSET(enum omap_plane plane)
+ 	case OMAP_DSS_VIDEO2:
+ 		return 0x0004;
+ 	case OMAP_DSS_VIDEO3:
++	case OMAP_DSS_WB:
+ 		return 0x000C;
+ 	default:
+ 		BUG();
+@@ -407,6 +409,8 @@ static inline u16 DISPC_BA0_UV_OFFSET(enum omap_plane plane)
+ 		return 0x04BC;
+ 	case OMAP_DSS_VIDEO3:
+ 		return 0x0310;
++	case OMAP_DSS_WB:
++		return 0x0118;
+ 	default:
+ 		BUG();
+ 		return 0;
+@@ -425,6 +429,8 @@ static inline u16 DISPC_BA1_UV_OFFSET(enum omap_plane plane)
+ 		return 0x04C0;
+ 	case OMAP_DSS_VIDEO3:
+ 		return 0x0314;
++	case OMAP_DSS_WB:
++		return 0x011C;
+ 	default:
+ 		BUG();
+ 		return 0;
+@@ -454,6 +460,7 @@ static inline u16 DISPC_SIZE_OFFSET(enum omap_plane plane)
+ 	case OMAP_DSS_VIDEO2:
+ 		return 0x000C;
+ 	case OMAP_DSS_VIDEO3:
++	case OMAP_DSS_WB:
+ 		return 0x00A8;
+ 	default:
+ 		BUG();
+@@ -470,6 +477,7 @@ static inline u16 DISPC_ATTR_OFFSET(enum omap_plane plane)
+ 	case OMAP_DSS_VIDEO2:
+ 		return 0x0010;
+ 	case OMAP_DSS_VIDEO3:
++	case OMAP_DSS_WB:
+ 		return 0x0070;
+ 	default:
+ 		BUG();
+@@ -489,6 +497,8 @@ static inline u16 DISPC_ATTR2_OFFSET(enum omap_plane plane)
+ 		return 0x04DC;
+ 	case OMAP_DSS_VIDEO3:
+ 		return 0x032C;
++	case OMAP_DSS_WB:
++		return 0x0310;
+ 	default:
+ 		BUG();
+ 		return 0;
+@@ -504,6 +514,7 @@ static inline u16 DISPC_FIFO_THRESH_OFFSET(enum omap_plane plane)
+ 	case OMAP_DSS_VIDEO2:
+ 		return 0x0014;
+ 	case OMAP_DSS_VIDEO3:
++	case OMAP_DSS_WB:
+ 		return 0x008C;
+ 	default:
+ 		BUG();
+@@ -537,6 +548,7 @@ static inline u16 DISPC_ROW_INC_OFFSET(enum omap_plane plane)
+ 	case OMAP_DSS_VIDEO2:
+ 		return 0x001C;
+ 	case OMAP_DSS_VIDEO3:
++	case OMAP_DSS_WB:
+ 		return 0x00A4;
+ 	default:
+ 		BUG();
+@@ -553,6 +565,7 @@ static inline u16 DISPC_PIX_INC_OFFSET(enum omap_plane plane)
+ 	case OMAP_DSS_VIDEO2:
+ 		return 0x0020;
+ 	case OMAP_DSS_VIDEO3:
++	case OMAP_DSS_WB:
+ 		return 0x0098;
+ 	default:
+ 		BUG();
+@@ -602,6 +615,7 @@ static inline u16 DISPC_FIR_OFFSET(enum omap_plane plane)
+ 	case OMAP_DSS_VIDEO2:
+ 		return 0x0024;
+ 	case OMAP_DSS_VIDEO3:
++	case OMAP_DSS_WB:
+ 		return 0x0090;
+ 	default:
+ 		BUG();
+@@ -621,6 +635,8 @@ static inline u16 DISPC_FIR2_OFFSET(enum omap_plane plane)
+ 		return 0x055C;
+ 	case OMAP_DSS_VIDEO3:
+ 		return 0x0424;
++	case OMAP_DSS_WB:
++		return 0x290;
+ 	default:
+ 		BUG();
+ 		return 0;
+@@ -637,6 +653,7 @@ static inline u16 DISPC_PIC_SIZE_OFFSET(enum omap_plane plane)
+ 	case OMAP_DSS_VIDEO2:
+ 		return 0x0028;
+ 	case OMAP_DSS_VIDEO3:
++	case OMAP_DSS_WB:
+ 		return 0x0094;
+ 	default:
+ 		BUG();
+@@ -655,6 +672,7 @@ static inline u16 DISPC_ACCU0_OFFSET(enum omap_plane plane)
+ 	case OMAP_DSS_VIDEO2:
+ 		return 0x002C;
+ 	case OMAP_DSS_VIDEO3:
++	case OMAP_DSS_WB:
+ 		return 0x0000;
+ 	default:
+ 		BUG();
+@@ -674,6 +692,8 @@ static inline u16 DISPC_ACCU2_0_OFFSET(enum omap_plane plane)
+ 		return 0x0560;
+ 	case OMAP_DSS_VIDEO3:
+ 		return 0x0428;
++	case OMAP_DSS_WB:
++		return 0x0294;
+ 	default:
+ 		BUG();
+ 		return 0;
+@@ -690,6 +710,7 @@ static inline u16 DISPC_ACCU1_OFFSET(enum omap_plane plane)
+ 	case OMAP_DSS_VIDEO2:
+ 		return 0x0030;
+ 	case OMAP_DSS_VIDEO3:
++	case OMAP_DSS_WB:
+ 		return 0x0004;
+ 	default:
+ 		BUG();
+@@ -709,6 +730,8 @@ static inline u16 DISPC_ACCU2_1_OFFSET(enum omap_plane plane)
+ 		return 0x0564;
+ 	case OMAP_DSS_VIDEO3:
+ 		return 0x042C;
++	case OMAP_DSS_WB:
++		return 0x0298;
+ 	default:
+ 		BUG();
+ 		return 0;
+@@ -726,6 +749,7 @@ static inline u16 DISPC_FIR_COEF_H_OFFSET(enum omap_plane plane, u16 i)
+ 	case OMAP_DSS_VIDEO2:
+ 		return 0x0034 + i * 0x8;
+ 	case OMAP_DSS_VIDEO3:
++	case OMAP_DSS_WB:
+ 		return 0x0010 + i * 0x8;
+ 	default:
+ 		BUG();
+@@ -746,6 +770,8 @@ static inline u16 DISPC_FIR_COEF_H2_OFFSET(enum omap_plane plane, u16 i)
+ 		return 0x0568 + i * 0x8;
+ 	case OMAP_DSS_VIDEO3:
+ 		return 0x0430 + i * 0x8;
++	case OMAP_DSS_WB:
++		return 0x02A0 + i * 0x8;
+ 	default:
+ 		BUG();
+ 		return 0;
+@@ -763,6 +789,7 @@ static inline u16 DISPC_FIR_COEF_HV_OFFSET(enum omap_plane plane, u16 i)
+ 	case OMAP_DSS_VIDEO2:
+ 		return 0x0038 + i * 0x8;
+ 	case OMAP_DSS_VIDEO3:
++	case OMAP_DSS_WB:
+ 		return 0x0014 + i * 0x8;
+ 	default:
+ 		BUG();
+@@ -783,6 +810,8 @@ static inline u16 DISPC_FIR_COEF_HV2_OFFSET(enum omap_plane plane, u16 i)
+ 		return 0x056C + i * 0x8;
+ 	case OMAP_DSS_VIDEO3:
+ 		return 0x0434 + i * 0x8;
++	case OMAP_DSS_WB:
++		return 0x02A4 + i * 0x8;
+ 	default:
+ 		BUG();
+ 		return 0;
+@@ -799,6 +828,7 @@ static inline u16 DISPC_CONV_COEF_OFFSET(enum omap_plane plane, u16 i)
+ 	case OMAP_DSS_VIDEO1:
+ 	case OMAP_DSS_VIDEO2:
+ 	case OMAP_DSS_VIDEO3:
++	case OMAP_DSS_WB:
+ 		return 0x0074 + i * 0x4;
+ 	default:
+ 		BUG();
+@@ -818,6 +848,7 @@ static inline u16 DISPC_FIR_COEF_V_OFFSET(enum omap_plane plane, u16 i)
+ 	case OMAP_DSS_VIDEO2:
+ 		return 0x00B4 + i * 0x4;
+ 	case OMAP_DSS_VIDEO3:
++	case OMAP_DSS_WB:
+ 		return 0x0050 + i * 0x4;
+ 	default:
+ 		BUG();
+@@ -838,6 +869,8 @@ static inline u16 DISPC_FIR_COEF_V2_OFFSET(enum omap_plane plane, u16 i)
+ 		return 0x05A8 + i * 0x4;
+ 	case OMAP_DSS_VIDEO3:
+ 		return 0x0470 + i * 0x4;
++	case OMAP_DSS_WB:
++		return 0x02E0 + i * 0x4;
+ 	default:
+ 		BUG();
+ 		return 0;
+diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
+index 8b6c79f..5968fd8 100644
+--- a/drivers/video/omap2/dss/dss_features.c
++++ b/drivers/video/omap2/dss/dss_features.c
+@@ -46,6 +46,7 @@ struct omap_dss_features {
  
--	omap_dispc_unregister_isr(dispc_isr, plane,
-+	omap_dispc_unregister_isr_nosync(dispc_isr, plane,
- 			id2irq[omap_plane->ovl->id]);
- 
- 	queue_work(priv->wq, &omap_plane->work);
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 0fefc68..9386834 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -847,7 +847,7 @@ static void dss_unregister_vsync_isr(void)
- 	for (i = 0; i < num_mgrs; ++i)
- 		mask |= dispc_mgr_get_framedone_irq(i);
- 
--	r = omap_dispc_unregister_isr(dss_apply_irq_handler, NULL, mask);
-+	r = omap_dispc_unregister_isr_nosync(dss_apply_irq_handler, NULL, mask);
- 	WARN_ON(r);
- 
- 	dss_data.irq_enabled = false;
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index ee9e296..6032252 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -3320,7 +3320,8 @@ err:
- }
- EXPORT_SYMBOL(omap_dispc_register_isr);
- 
--int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask)
-+/* WARNING: callback might be executed even after this function returns! */
-+int omap_dispc_unregister_isr_nosync(omap_dispc_isr_t isr, void *arg, u32 mask)
- {
- 	int i;
- 	unsigned long flags;
-@@ -3352,6 +3353,37 @@ int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask)
- 
- 	return ret;
- }
-+EXPORT_SYMBOL(omap_dispc_unregister_isr_nosync);
+ 	const int num_mgrs;
+ 	const int num_ovls;
++	const int num_wbs;
+ 	const enum omap_display_type *supported_displays;
+ 	const enum omap_dss_output_id *supported_outputs;
+ 	const enum omap_color_mode *supported_color_modes;
+@@ -265,6 +266,16 @@ static const enum omap_color_mode omap4_dss_supported_color_modes[] = {
+ 	OMAP_DSS_COLOR_ARGB16 | OMAP_DSS_COLOR_XRGB16_1555 |
+ 	OMAP_DSS_COLOR_ARGB32 | OMAP_DSS_COLOR_RGBX16 |
+ 	OMAP_DSS_COLOR_RGBX32,
 +
-+/*
-+ * Ensure that callback <isr> will NOT be executed after this function
-+ * returns. Must be called from sleepable context, though!
-+ */
-+int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask)
++	/* OMAP_DSS_WB */
++	OMAP_DSS_COLOR_RGB16 | OMAP_DSS_COLOR_RGB12U |
++	OMAP_DSS_COLOR_YUV2 | OMAP_DSS_COLOR_ARGB16_1555 |
++	OMAP_DSS_COLOR_RGBA32 | OMAP_DSS_COLOR_NV12 |
++	OMAP_DSS_COLOR_RGBA16 | OMAP_DSS_COLOR_RGB24U |
++	OMAP_DSS_COLOR_RGB24P | OMAP_DSS_COLOR_UYVY |
++	OMAP_DSS_COLOR_ARGB16 | OMAP_DSS_COLOR_XRGB16_1555 |
++	OMAP_DSS_COLOR_ARGB32 | OMAP_DSS_COLOR_RGBX16 |
++	OMAP_DSS_COLOR_RGBX32,
+ };
+ 
+ static const enum omap_overlay_caps omap2_dss_overlay_caps[] = {
+@@ -576,6 +587,7 @@ static const struct omap_dss_features omap4430_es1_0_dss_features  = {
+ 
+ 	.num_mgrs = 3,
+ 	.num_ovls = 4,
++	.num_wbs = 1,
+ 	.supported_displays = omap4_dss_supported_displays,
+ 	.supported_outputs = omap4_dss_supported_outputs,
+ 	.supported_color_modes = omap4_dss_supported_color_modes,
+@@ -597,6 +609,7 @@ static const struct omap_dss_features omap4430_es2_0_1_2_dss_features = {
+ 
+ 	.num_mgrs = 3,
+ 	.num_ovls = 4,
++	.num_wbs = 1,
+ 	.supported_displays = omap4_dss_supported_displays,
+ 	.supported_outputs = omap4_dss_supported_outputs,
+ 	.supported_color_modes = omap4_dss_supported_color_modes,
+@@ -618,6 +631,7 @@ static const struct omap_dss_features omap4_dss_features = {
+ 
+ 	.num_mgrs = 3,
+ 	.num_ovls = 4,
++	.num_wbs = 1,
+ 	.supported_displays = omap4_dss_supported_displays,
+ 	.supported_outputs = omap4_dss_supported_outputs,
+ 	.supported_color_modes = omap4_dss_supported_color_modes,
+@@ -674,6 +688,11 @@ int dss_feat_get_num_ovls(void)
+ 	return omap_current_dss_features->num_ovls;
+ }
+ 
++int dss_feat_get_num_wbs(void)
 +{
-+	int ret;
-+
-+	ret = omap_dispc_unregister_isr_nosync(isr, arg, mask);
-+
-+	/*
-+	 * Task context is not really needed. But if we're called from atomic
-+	 * context, it is probably from DISPC IRQ, where we will deadlock.
-+	 * So use might_sleep() to catch potential deadlocks.
-+	 */
-+	might_sleep();
-+
-+	/*
-+	 * DISPC IRQ executes callbacks with dispc.irq_lock released. Hence
-+	 * unregister_isr() and DISPC IRQ might be running in parallel on
-+	 * different CPUs. So there is a chance that a callback is executed
-+	 * even though it has been unregistered. Add a barrier, in order to
-+	 * ensure that after returning from this function, the new DISPC IRQ
-+	 * will use an updated callback array, and NOT its cached copy.
-+	 */
-+	synchronize_irq(dispc.irq);
-+
-+	return ret;
++	return omap_current_dss_features->num_wbs;
 +}
- EXPORT_SYMBOL(omap_dispc_unregister_isr);
- 
- #ifdef DEBUG
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index b07e886..c0fcb68 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -960,6 +960,11 @@ static int dsi_unregister_isr(struct platform_device *dsidev,
- 
- 	spin_unlock_irqrestore(&dsi->irq_lock, flags);
- 
-+	might_sleep();
 +
-+	/* See notes for dispc.c:omap_dispc_unregister_isr() . */
-+	synchronize_irq(dsi->irq);
-+
- 	return r;
- }
- 
-@@ -1002,6 +1007,11 @@ static int dsi_unregister_isr_vc(struct platform_device *dsidev, int channel,
- 
- 	spin_unlock_irqrestore(&dsi->irq_lock, flags);
- 
-+	might_sleep();
-+
-+	/* See notes for dispc.c:omap_dispc_unregister_isr() . */
-+	synchronize_irq(dsi->irq);
-+
- 	return r;
- }
- 
-@@ -1042,6 +1052,11 @@ static int dsi_unregister_isr_cio(struct platform_device *dsidev,
- 
- 	spin_unlock_irqrestore(&dsi->irq_lock, flags);
- 
-+	might_sleep();
-+
-+	/* See notes for dispc.c:omap_dispc_unregister_isr() . */
-+	synchronize_irq(dsi->irq);
-+
- 	return r;
- }
- 
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index a6267a2..769f981 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -708,6 +708,7 @@ void omapdss_default_get_timings(struct omap_dss_device *dssdev,
- typedef void (*omap_dispc_isr_t) (void *arg, u32 mask);
- int omap_dispc_register_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
- int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
-+int omap_dispc_unregister_isr_nosync(omap_dispc_isr_t isr, void *arg, u32 mask);
- 
- int omap_dispc_wait_for_irq_timeout(u32 irqmask, unsigned long timeout);
- int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
+ unsigned long dss_feat_get_param_min(enum dss_range_param param)
+ {
+ 	return omap_current_dss_features->dss_params[param].min;
+diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
+index fb8ed59..66fd9f7 100644
+--- a/drivers/video/omap2/dss/dss_features.h
++++ b/drivers/video/omap2/dss/dss_features.h
+@@ -102,6 +102,7 @@ enum dss_range_param {
+ /* DSS Feature Functions */
+ int dss_feat_get_num_mgrs(void);
+ int dss_feat_get_num_ovls(void);
++int dss_feat_get_num_wbs(void);
+ unsigned long dss_feat_get_param_min(enum dss_range_param param);
+ unsigned long dss_feat_get_param_max(enum dss_range_param param);
+ enum omap_display_type dss_feat_get_supported_displays(enum omap_channel channel);
 -- 
-1.7.10.4
+1.7.9.5
 

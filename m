@@ -1,62 +1,78 @@
-From: Peter Senna Tschudin <peter.senna@gmail.com>
-Date: Tue, 18 Sep 2012 12:07:57 +0000
-Subject: [PATCH 07/10] drivers/video/bw2.c: fix error return code
-Message-Id: <1347970080-25175-7-git-send-email-peter.senna@gmail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 13 Sep 2012 12:27:00 +0000
+Subject: [PATCH 16/21] OMAPDSS: DISPC: Add function to set channel in for writeback
+Message-Id: <1347538505-25359-17-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
-In-Reply-To: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: FlorianSchandinat@gmx.de
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Peter Senna Tschudin <peter.senna@gmail.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-From: Peter Senna Tschudin <peter.senna@gmail.com>
+Writeback can take input from either one of the overlays, or one of the overlay
+managers. Add an enum which represents the channel_in for writeback, and maps
+to the register field programming.
 
-Convert a nonnegative error return code to a negative one, as returned
-elsewhere in the function.
+Add a function to configure channel in for writeback. This will be used later in
+APPLY.
 
-A simplified version of the semantic match that finds this problem is as
-follows: (http://coccinelle.lip6.fr/)
-
-// <smpl>
-(
-if@p1 (\(ret < 0\|ret != 0\))
- { ... return ret; }
-|
-ret@p1 = 0
-)
-... when != ret = e1
-    when != &ret
-*if(...)
-{
-  ... when != ret = e2
-      when forall
- return ret;
-}
-// </smpl>
-
-Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/bw2.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/video/omap2/dss/dispc.c |    7 +++++++
+ drivers/video/omap2/dss/dss.h   |   13 +++++++++++++
+ 2 files changed, 20 insertions(+)
 
-diff --git a/drivers/video/bw2.c b/drivers/video/bw2.c
-index 7ba74cd..6bea9a9 100644
---- a/drivers/video/bw2.c
-+++ b/drivers/video/bw2.c
-@@ -319,8 +319,10 @@ static int __devinit bw2_probe(struct platform_device *op)
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index b0f14c0..a33ed8e 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -987,6 +987,13 @@ static enum omap_channel dispc_ovl_get_channel_out(enum omap_plane plane)
+ 	return channel;
+ }
  
- 	info->screen_base = of_ioremap(&op->resource[0], 0,
- 				       info->fix.smem_len, "bw2 ram");
--	if (!info->screen_base)
-+	if (!info->screen_base) {
-+		err = -ENOMEM;
- 		goto out_unmap_regs;
-+	}
++void dispc_wb_set_channel_in(enum dss_writeback_channel channel)
++{
++	enum omap_plane plane = OMAP_DSS_WB;
++
++	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), channel, 18, 16);
++}
++
+ static void dispc_plane_set_burst_size(enum omap_plane plane,
+ 		enum omap_burst_size burst_size)
+ {
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 4b1ca03..ea17d68 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -113,6 +113,17 @@ enum dss_dsi_content_type {
+ 	DSS_DSI_CONTENT_GENERIC,
+ };
  
- 	bw2_blank(FB_BLANK_UNBLANK, info);
++enum dss_writeback_channel {
++	DSS_WB_LCD1_MGR =	0,
++	DSS_WB_LCD2_MGR =	1,
++	DSS_WB_TV_MGR =		2,
++	DSS_WB_OVL0 =		3,
++	DSS_WB_OVL1 =		4,
++	DSS_WB_OVL2 =		5,
++	DSS_WB_OVL3 =		6,
++	DSS_WB_LCD3_MGR =	7,
++};
++
+ struct dss_clock_info {
+ 	/* rates that we get with dividers below */
+ 	unsigned long fck;
+@@ -470,6 +481,8 @@ int dispc_mgr_get_clock_div(enum omap_channel channel,
+ void dispc_mgr_setup(enum omap_channel channel,
+ 		struct omap_overlay_manager_info *info);
  
++void dispc_wb_set_channel_in(enum dss_writeback_channel channel);
++
+ /* VENC */
+ #ifdef CONFIG_OMAP2_DSS_VENC
+ int venc_init_platform_driver(void) __init;
 -- 
-1.7.11.4
+1.7.9.5
 

@@ -1,41 +1,89 @@
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-Date: Thu, 13 Sep 2012 19:32:26 +0000
-Subject: Re: [RFC 1/5] video: Add generic display panel core
-Message-Id: <20120913193226.GT21896@pengutronix.de>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 13 Sep 2012 12:26:44 +0000
+Subject: [PATCH 00/21] OMAPDSS: DISPC changes for writeback pipeline
+Message-Id: <1347538505-25359-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345164583-18924-1-git-send-email-laurent.pinchart@ideasonboard.com>
- <1345164583-18924-2-git-send-email-laurent.pinchart@ideasonboard.com>
- <20120904092446.GN24458@pengutronix.de>
- <224585745.5E32B1Gv1v@avalon>
- <20120913112954.GI6180@pengutronix.de>
-In-Reply-To: <20120913112954.GI6180@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, Marcus Lorentzon <marcus.lorentzon@linaro.org>, dri-devel@lists.freedesktop.org, Kyungmin Park <kyungmin.park@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Sebastien Guiriec <s-guiriec@ti.com>, Bryan Wu <bryan.wu@canonical.com>, linux-leds@vger.kernel.org, linux-media@vger.kernel.org, Steffen Trumtrar <str@pengutronix.de>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-On Thu, Sep 13, 2012 at 01:29:54PM +0200, Sascha Hauer wrote:
-> > > You have seen my of videomode helper proposal. One result there
-> > > was that we want to have ranges for the margin/synclen fields.
-> > > Does it make sense to base this new panel framework on a more
-> > > sophisticated internal reprentation of the panel parameters?
-> >
-> > I think it does, yes. We need a common video mode structure, and the
-> > panel framework should use it. I'll try to rebase my patches on top
-> > of your proposal. Have you posted the latest version ?
->
-> V2 is the newest version. I'd like to implement ranges for the display
-> timings which then makes for a new common video mode structure, which
-> then could be used by drm and fbdev, probably with helper functions to
-> convert from common videomode to drm/fbdev specific variants.
+DSS HW on OMAP4 onwards supports a new pipeline called writeback. Unlike other
+pipelines(called overlays in OMAPDSS), writeback takes pixel data from an
+overlay output or a overlay manager output and writes it back into a specified
+address in memory.
 
-Steffen has a reworked series with the latest changes and will post them
-soon.
+writeback pipeline allows us to take benefit of the hardware processing
+available inside the DISPC like color space conversion, rescaling, compositing
+etc and do either a) perform memory-to-memory transfer with data processing,
+b) capture a displayed frame. The former is known as memory to memory mode of
+the writeback pipeline, and the latter is known as capture mode. More details
+about writeback can be found in the Display Subsystem section of the OMAP4/5 TRMs.
 
-rsc
+witeback has properties of both overlays and overlay managers. It is like an
+overlay as it has programmable base addresses and contains blocks like scalar,
+color conversion unit, truncation unit, DISPC DMA FIFO. It is like a manager as
+enabling it immediately starts transfer to the memory, and it has a GO bit to use
+a new writeback configuration.
+
+This series prepares the low level DISPC driver(dispc.c) to configure writeback
+registers. The aim is to reuse most of the code as most of its registers are
+like overlay or manager registers, and are configured in the same way in most
+cases. The first few patches rename dispc_ovl_* functions to dispc_plane_*
+functions. The next few patches change how overlay caps are used within the
+dispc functions, this helps reusing more functions between overlays and
+writeback. The patches in the end add writeback register offsets, and make
+changes in the code where writeback behaves differently than
+
+The changes are made only keeping writeback mem to mem support in mind. There
+would be a few changes required when capture mode is added, but those are
+minimal.
+
+Reference branch:
+
+git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git 1-writeback-dispc
+
+Archit Taneja (21):
+  OMAPDSS: DISPC: Constify omap_overlay_info in dispc_ovl_setup()
+  OMAPDSS: DISPC: Rename scalar related functions from dispc_ovl_* to
+    dispc_plane_*
+  OMAPDSS: DISPC: Rename fifo/burst related functions from dispc_ovl_*
+    to dispc_plane_*
+  OMAPDSS: DISPC: Rename misc functions from dispc_ovl_* to
+    dispc_plane_*
+  OMAPDSS: DISPC: Simplify function names for setting pipeline input
+    and output sizes
+  OMAPDSS: DISPC: Pass overlay caps as a parameter to dispc plane
+    functions
+  OMAPDSS: OVERLAY: Add position and replication as overlay caps
+  OMAPDSS: DISPC: Make dispc_ovl_setup call dispc_plane_setup
+  OMAPDSS: DISPC: Calculate scaling limits in a more generic way
+  OMAPDSS: DISPC: Allow both upscaling and downscaling of chroma
+  OMAPDSS: DISPC: Add writeback register offsets and dss features
+    structs
+  OMAPDSS: DISPC: Configure input and output sizes for writeback
+  OMAPDSS: DISPC: Pass dummy scalar output rates for writeback pipeline
+  OMAPDSS: DISPC: Downscale chroma if plane is writeback
+  OMAPDSS: DISPC: Don't set chroma resampling bit for writeback
+  OMAPDSS: DISPC: Add function to set channel in for writeback
+  OMAPDSS: DISPC: Configure overlay-like parameters in dispc_wb_setup
+  OMAPDSS: DISPC: Configure writeback specific parameters in
+    dispc_wb_setup()
+  OMAPDSS: DISPC: Configure writeback FIFOs
+  OMAPDSS: DISPC: Add manager like functions for writeback
+  OMAPDSS: DISPC: Configure color conversion coefficients for writeback
+
+ drivers/video/omap2/dss/apply.c        |    4 +-
+ drivers/video/omap2/dss/dispc.c        |  659 +++++++++++++++++++++-----------
+ drivers/video/omap2/dss/dispc.h        |   35 +-
+ drivers/video/omap2/dss/dispc_coefs.c  |    2 +-
+ drivers/video/omap2/dss/dss.h          |   26 +-
+ drivers/video/omap2/dss/dss_features.c |   57 ++-
+ drivers/video/omap2/dss/dss_features.h |    1 +
+ include/video/omapdss.h                |   15 +
+ 8 files changed, 564 insertions(+), 235 deletions(-)
+
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+1.7.9.5
+

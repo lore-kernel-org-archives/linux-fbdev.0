@@ -1,24 +1,55 @@
-From: Fabbrica del Talento <fabbricadeltalento@unicatt.it>
-Date: Fri, 28 Sep 2012 07:52:34 +0000
-Subject: Contact Email: dhldeliveryservice21@gmail.com
-Message-Id: <D8DAD1BFB2468340B547B31F94584F0D047FA56218D0@MIGE332.unicatt.it>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 13 Sep 2012 12:27:03 +0000
+Subject: [PATCH 19/21] OMAPDSS: DISPC: Configure writeback FIFOs
+Message-Id: <1347538505-25359-20-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
+Extend the DISPC fifo functions to also configure the writeback FIFO thresholds.
 
+The most optimal configuration for writeback is to push out data to the
+interconnect the moment writeback pushes enough pixels in the FIFO to form a
+burst. This reduces the chance of writeback overflowing it's FIFO.
 
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/dispc.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-This is to re-notify you of the 21,870.56 us dollar cheque that was deposited here in the DHL office in your name. You should contact Dispatch Officer Collins Gianni you are therefore advice to contact the delivery officer
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index a44cbac..6068271 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -997,7 +997,7 @@ void dispc_wb_set_channel_in(enum dss_writeback_channel channel)
+ static void dispc_plane_set_burst_size(enum omap_plane plane,
+ 		enum omap_burst_size burst_size)
+ {
+-	static const unsigned shifts[] = { 6, 14, 14, 14, };
++	static const unsigned shifts[] = { 6, 14, 14, 14, 14, };
+ 	int shift;
+ 
+ 	shift = shifts[plane];
+@@ -1229,6 +1229,14 @@ void dispc_plane_compute_fifo_thresholds(enum omap_plane plane,
+ 	if (manual_update && dss_has_feature(FEAT_OMAP3_DSI_FIFO_BUG)) {
+ 		*fifo_low = plane_fifo_size - burst_size * 2;
+ 		*fifo_high = total_fifo_size - burst_size;
++	} else if (plane = OMAP_DSS_WB) {
++		/*
++		 * Most optimal configuration for writeback is to push out data
++		 * to the interconnect the moment writeback pushes enough pixels
++		 * in the FIFO to form a burst
++		 */
++		*fifo_low = 0;
++		*fifo_high = burst_size;
+ 	} else {
+ 		*fifo_low = plane_fifo_size - burst_size;
+ 		*fifo_high = total_fifo_size - buf_unit;
+-- 
+1.7.9.5
 
-Contact Email: dhldeliveryservice21@gmail.com 
-Contact Person: Collins Gianni
-
-Full Name:............ Address:............. 
-City:........Country:.......... Phone:......... 
-
-Regards,
-Eric Morrow
-United Nations donation coordinator

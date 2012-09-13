@@ -1,182 +1,156 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 24 Sep 2012 13:58:34 +0000
-Subject: [PATCH 4/9] OMAPDSS: Add support for DPI source selection
-Message-Id: <1348495119-8262-5-git-send-email-tomi.valkeinen@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 13 Sep 2012 12:26:50 +0000
+Subject: [PATCH 06/21] OMAPDSS: DISPC: Pass overlay caps as a parameter to dispc plane functions
+Message-Id: <1347538505-25359-7-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348495119-8262-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1348495119-8262-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, David Anders <x0132446@ti.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-We can select the video source for DPI output as follows:
+Currently, the functions below take the omap_plane parameter and derive the
+overlay caps within them. Pass the overlay caps as a parameter to the function
+to allow these to be used by writeback too.
 
-OMAP2/3: always LCD1
-OMAP4: LCD2 or DIGIT
-OMAP5: LCD1/LCD2/LCD3/DIGIT
+- dispc_plane_set_zorder()
+- dispc_plane_set_pre_mult_alpha()
+- dispc_plane_setup_global_alpha()
+- dispc_plane_calc_scaling()
+- dispc_ovl_setup()
 
-This patch adds support to select the source, and makes dpi.c call the
-function to set the source.
+These functions will be used for writeback later, and the caps will help in
+deciding if they are to be used for writeback or not. This allows reuse of
+overlay caps for writeback.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: David Anders <x0132446@ti.com>
+Using omap_overlay_caps for writeback seems a bit incorrect, but caps is
+something already in use by users of OMAPDSS(omapfb/omap_vout), so we use
+overlay caps for overlay like features of writeback too.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dpi.c |    5 ++++
- drivers/video/omap2/dss/dss.c |   65 +++++++++++++++++++++++++++++++++++++++++
- drivers/video/omap2/dss/dss.h |    1 +
- 3 files changed, 71 insertions(+)
+ drivers/video/omap2/dss/dispc.c |   40 +++++++++++++++++++--------------------
+ 1 file changed, 19 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index 5ccce9b..b723388 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -203,6 +203,10 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err_get_dispc;
- 
-+	r = dss_dpi_select_source(dssdev->channel);
-+	if (r)
-+		goto err_src_sel;
-+
- 	if (dpi_use_dsi_pll(dssdev)) {
- 		r = dsi_runtime_get(dpi.dsidev);
- 		if (r)
-@@ -237,6 +241,7 @@ err_dsi_pll_init:
- 	if (dpi_use_dsi_pll(dssdev))
- 		dsi_runtime_put(dpi.dsidev);
- err_get_dsi:
-+err_src_sel:
- 	dispc_runtime_put();
- err_get_dispc:
- 	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI))
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 660813b..2ab1c3e9 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -69,6 +69,7 @@ struct dss_features {
- 	u8 fck_div_max;
- 	u8 dss_fck_multiplier;
- 	const char *clk_name;
-+	int (*dpi_select_source)(enum omap_channel channel);
- };
- 
- static struct {
-@@ -623,6 +624,65 @@ enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void)
- 	return REG_GET(DSS_CONTROL, 15, 15);
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index f60fcf4..3a0a576 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -733,11 +733,10 @@ static void dispc_plane_set_output_size(enum omap_plane plane, int width,
+ 	dispc_write_reg(DISPC_OVL_SIZE(plane), val);
  }
  
-+static int dss_dpi_select_source_omap2_omap3(enum omap_channel channel)
-+{
-+	if (channel != OMAP_DSS_CHANNEL_LCD)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static int dss_dpi_select_source_omap4(enum omap_channel channel)
-+{
-+	int val;
-+
-+	switch (channel) {
-+	case OMAP_DSS_CHANNEL_LCD2:
-+		val = 0;
-+		break;
-+	case OMAP_DSS_CHANNEL_DIGIT:
-+		val = 1;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	REG_FLD_MOD(DSS_CONTROL, val, 17, 17);
-+
-+	return 0;
-+}
-+
-+static int dss_dpi_select_source_omap5(enum omap_channel channel)
-+{
-+	int val;
-+
-+	switch (channel) {
-+	case OMAP_DSS_CHANNEL_LCD:
-+		val = 1;
-+		break;
-+	case OMAP_DSS_CHANNEL_LCD2:
-+		val = 2;
-+		break;
-+	case OMAP_DSS_CHANNEL_LCD3:
-+		val = 3;
-+		break;
-+	case OMAP_DSS_CHANNEL_DIGIT:
-+		val = 0;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	REG_FLD_MOD(DSS_CONTROL, val, 17, 16);
-+
-+	return 0;
-+}
-+
-+int dss_dpi_select_source(enum omap_channel channel)
-+{
-+	return dss.feat->dpi_select_source(channel);
-+}
-+
- static int dss_get_clocks(void)
+-static void dispc_plane_set_zorder(enum omap_plane plane, u8 zorder)
++static void dispc_plane_set_zorder(enum omap_plane plane,
++		enum omap_overlay_caps caps, u8 zorder)
  {
- 	struct clk *clk;
-@@ -701,30 +761,35 @@ static const struct dss_features omap24xx_dss_feats __initconst = {
- 	.fck_div_max		=	16,
- 	.dss_fck_multiplier	=	2,
- 	.clk_name		=	NULL,
-+	.dpi_select_source	=	&dss_dpi_select_source_omap2_omap3,
- };
+-	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
+-
+-	if ((ovl->caps & OMAP_DSS_OVL_CAP_ZORDER) = 0)
++	if ((caps & OMAP_DSS_OVL_CAP_ZORDER) = 0)
+ 		return;
  
- static const struct dss_features omap34xx_dss_feats __initconst = {
- 	.fck_div_max		=	16,
- 	.dss_fck_multiplier	=	2,
- 	.clk_name		=	"dpll4_m4_ck",
-+	.dpi_select_source	=	&dss_dpi_select_source_omap2_omap3,
- };
+ 	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), zorder, 27, 26);
+@@ -754,24 +753,22 @@ static void dispc_ovl_enable_zorder_planes(void)
+ 		REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(i), 1, 25, 25);
+ }
  
- static const struct dss_features omap3630_dss_feats __initconst = {
- 	.fck_div_max		=	32,
- 	.dss_fck_multiplier	=	1,
- 	.clk_name		=	"dpll4_m4_ck",
-+	.dpi_select_source	=	&dss_dpi_select_source_omap2_omap3,
- };
+-static void dispc_plane_set_pre_mult_alpha(enum omap_plane plane, bool enable)
++static void dispc_plane_set_pre_mult_alpha(enum omap_plane plane,
++		enum omap_overlay_caps caps, bool enable)
+ {
+-	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
+-
+-	if ((ovl->caps & OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA) = 0)
++	if ((caps & OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA) = 0)
+ 		return;
  
- static const struct dss_features omap44xx_dss_feats __initconst = {
- 	.fck_div_max		=	32,
- 	.dss_fck_multiplier	=	1,
- 	.clk_name		=	"dpll_per_m5x2_ck",
-+	.dpi_select_source	=	&dss_dpi_select_source_omap4,
- };
+ 	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), enable ? 1 : 0, 28, 28);
+ }
  
- static const struct dss_features omap54xx_dss_feats __initconst = {
- 	.fck_div_max		=	64,
- 	.dss_fck_multiplier	=	1,
- 	.clk_name		=	"dpll_per_h12x2_ck",
-+	.dpi_select_source	=	&dss_dpi_select_source_omap5,
- };
+ static void dispc_plane_setup_global_alpha(enum omap_plane plane,
+-		u8 global_alpha)
++		enum omap_overlay_caps caps, u8 global_alpha)
+ {
+ 	static const unsigned shifts[] = { 0, 8, 16, 24, };
+ 	int shift;
+-	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
  
- static int __init dss_init_features(struct device *dev)
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 5e9fd769..2a51ae9 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -277,6 +277,7 @@ void dss_overlay_kobj_uninit(struct omap_overlay *ovl);
- int dss_init_platform_driver(void) __init;
- void dss_uninit_platform_driver(void);
+-	if ((ovl->caps & OMAP_DSS_OVL_CAP_GLOBAL_ALPHA) = 0)
++	if ((caps & OMAP_DSS_OVL_CAP_GLOBAL_ALPHA) = 0)
+ 		return;
  
-+int dss_dpi_select_source(enum omap_channel channel);
- void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select);
- enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void);
- const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
+ 	shift = shifts[plane];
+@@ -2200,13 +2197,12 @@ static int dispc_ovl_calc_scaling_44xx(enum omap_channel channel,
+ }
+ 
+ static int dispc_plane_calc_scaling(enum omap_plane plane,
+-		enum omap_channel channel,
++		enum omap_overlay_caps caps, enum omap_channel channel,
+ 		const struct omap_video_timings *mgr_timings,
+ 		u16 width, u16 height, u16 out_width, u16 out_height,
+ 		enum omap_color_mode color_mode, bool *five_taps,
+ 		int *x_predecim, int *y_predecim, u16 pos_x)
+ {
+-	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
+ 	const int maxdownscale = dss_feat_get_param_max(FEAT_PARAM_DOWNSCALE);
+ 	const int max_decim_limit = 16;
+ 	unsigned long core_clk = 0;
+@@ -2215,7 +2211,7 @@ static int dispc_plane_calc_scaling(enum omap_plane plane,
+ 	if (width = out_width && height = out_height)
+ 		return 0;
+ 
+-	if ((ovl->caps & OMAP_DSS_OVL_CAP_SCALE) = 0)
++	if ((caps & OMAP_DSS_OVL_CAP_SCALE) = 0)
+ 		return -EINVAL;
+ 
+ 	*x_predecim = max_decim_limit;
+@@ -2266,6 +2262,7 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ 		bool replication, const struct omap_video_timings *mgr_timings)
+ {
+ 	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
++	enum omap_overlay_caps caps = ovl->caps;
+ 	bool five_taps = true;
+ 	bool fieldmode = 0;
+ 	int r, cconv = 0;
+@@ -2314,9 +2311,10 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ 	if (!dss_feat_color_mode_supported(plane, oi->color_mode))
+ 		return -EINVAL;
+ 
+-	r = dispc_plane_calc_scaling(plane, channel, mgr_timings, in_width,
+-			in_height, out_width, out_height, oi->color_mode,
+-			&five_taps, &x_predecim, &y_predecim, oi->pos_x);
++	r = dispc_plane_calc_scaling(plane, caps, channel, mgr_timings,
++			in_width, in_height, out_width, out_height,
++			oi->color_mode, &five_taps, &x_predecim, &y_predecim,
++			oi->pos_x);
+ 	if (r)
+ 		return r;
+ 
+@@ -2395,7 +2393,7 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ 
+ 	dispc_plane_set_input_size(plane, in_width, in_height);
+ 
+-	if (ovl->caps & OMAP_DSS_OVL_CAP_SCALE) {
++	if (caps & OMAP_DSS_OVL_CAP_SCALE) {
+ 		dispc_plane_set_scaling(plane, in_width, in_height, out_width,
+ 				   out_height, ilace, five_taps, fieldmode,
+ 				   oi->color_mode, oi->rotation);
+@@ -2406,9 +2404,9 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ 	dispc_plane_set_rotation_attrs(plane, oi->rotation, oi->mirror,
+ 			oi->color_mode);
+ 
+-	dispc_plane_set_zorder(plane, oi->zorder);
+-	dispc_plane_set_pre_mult_alpha(plane, oi->pre_mult_alpha);
+-	dispc_plane_setup_global_alpha(plane, oi->global_alpha);
++	dispc_plane_set_zorder(plane, caps, oi->zorder);
++	dispc_plane_set_pre_mult_alpha(plane, caps, oi->pre_mult_alpha);
++	dispc_plane_setup_global_alpha(plane, caps, oi->global_alpha);
+ 
+ 	dispc_plane_enable_replication(plane, replication);
+ 
 -- 
 1.7.9.5
 

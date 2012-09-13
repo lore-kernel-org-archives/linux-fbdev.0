@@ -1,32 +1,110 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Thu, 13 Sep 2012 08:09:55 +0000
+From: Alex Courbot <acourbot@nvidia.com>
+Date: Thu, 13 Sep 2012 08:21:10 +0000
 Subject: Re: [PATCH v6 1/4] Runtime Interpreted Power Sequences
-Message-Id: <20120913080953.GC20959@opensource.wolfsonmicro.com>
+Message-Id: <1469388.zjfDz88nxK@percival>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347443867-18868-1-git-send-email-acourbot@nvidia.com>
- <1347443867-18868-2-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1347443867-18868-2-git-send-email-acourbot@nvidia.com>
+References: <1347443867-18868-1-git-send-email-acourbot@nvidia.com> <20120913072920.GA11459@avionic-0098.mockup.avionic-design.de> <20120913075037.GG6180@pengutronix.de>
+In-Reply-To: <20120913075037.GG6180@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexandre Courbot <acourbot@nvidia.com>
-Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Leela Krishna Amudala <l.krishna@samsung.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Thierry Reding <thierry.reding@avionic-design.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@nvidia.com>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Leela Krishna Amudala <l.krishna@samsung.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
 
-On Wed, Sep 12, 2012 at 06:57:44PM +0900, Alexandre Courbot wrote:
-> Some device drivers (panel backlights especially) need to follow precise
-> sequences for powering on and off, involving gpios, regulators, PWMs
-> with a precise powering order and delays to respect between each steps.
-> These sequences are board-specific, and do not belong to a particular
-> driver - therefore they have been performed by board-specific hook
-> functions to far.
+On Thursday 13 September 2012 15:50:37 Sascha Hauer wrote:
+> On Thu, Sep 13, 2012 at 09:29:20AM +0200, Thierry Reding wrote:
+> > On Thu, Sep 13, 2012 at 10:03:27AM +0300, Tomi Valkeinen wrote:
+> > > On Thu, 2012-09-13 at 09:00 +0200, Sascha Hauer wrote:
+> > > > On Thu, Sep 13, 2012 at 09:54:09AM +0300, Tomi Valkeinen wrote:
+> > > > > On Thu, 2012-09-13 at 15:36 +0900, Alex Courbot wrote:
+> > > > > > On Thursday 13 September 2012 14:22:57 Tomi Valkeinen wrote:
+> > > > > > > However, I fear these board specific things may be quite a bit
+> > > > > > > anything,
+> > > > > > > so it may well be pwm, gpios and regulators are not enough for
+> > > > > > > them. For
+> > > > > > > example, there could be an FPGA on the board which requires some
+> > > > > > > configuration to accomplish the task at hand. It could be rather
+> > > > > > > difficult to handle it with a generic power sequence.
+> > > > > > 
+> > > > > > Right. Note that this framework is supposed to be extended - I
+> > > > > > would like to at least add regulator voltage setting, and maybe
+> > > > > > even support for clocks and pinmux (but that might be out of
+> > > > > > place).
+> > > > > 
+> > > > > Yes, that's one concern of mine... I already can imagine someone
+> > > > > suggesting adding conditionals to the power sequence data. Perhaps
+> > > > > also
+> > > > > direct memory read/writes so you can twiddle registers directly. And
+> > > > > so
+> > > > > on. Where's the limit what it should contain? Can we soon write full
+> > > > > drivers with the DT data? =)
+> > > > 
+> > > > I have this concern aswell, that's why I'm sceptical about this patch
+> > > > set. But what are the alternatives? Adding power code to the drivers
+> > > > and
+> > > > thus adding board specific code to them is backwards.
+> > > 
+> > > As was pointed out in earlier posts in this thread, these are almost
+> > > always device specific, not board specific.
+> > > 
+> > > Do you have examples of board specific power sequences or such?
+> > 
+> > It is true that most (perhaps all) power sequences can be associated
+> > with a specific device, but if we go and implement drivers for these
+> > kinds of devices we will probably end up with loads of variations of
+> > the same scheme.
+> > 
+> > Lets take display panels as an example. One of the devices that we build
+> > has gone through two generations so far and both are slightly different
+> > in how they control the panel backlight: one has an external backlight
+> > controller, the other has the display controller built into the panel.
+> > However, from the board's perspective the control of the backlight
+> > doesn't change, because both devices get the same inputs (an enable pin
+> > and a PWM) that map to the same pins on the SoC.
+> > 
+> > This may not be a very good example because the timing isn't relevant,
+> > but the basic point is still valid: if we provide a driver for both
+> > panel devices, the code will be exactly the same. So we end up having to
+> > refactor to avoid code duplication and use the same driver for a number
+> > of backlight/panel combinations. Which in itself isn't very bad, but it
+> > also means that we'll probably get to see a large number of "generic"
+> > drivers which aren't very generic after all.
+> > 
+> > Another problem, which also applies to the case of power-sequences, is
+> > that often the panel and backlight are not the same device.
+> 
+> Maybe that is the problem that needs to be addressed? They *are* not the
+> same device, still they are handled in a single platform callback (or
+> now power sequence). Maybe the amount of combinations dastrically go
+> down if we really make them two devices.
+> 
+> Most of our panels have:
+> 
+> - A regulator (or gpio) for turning them on
+> 
+> And the backlights have:
+> 
+> - A regulator (or gpio) for turning them on
+> - A PWM for controlling brightness.
+> 
+> The power sequence for the above is clear: Turn on the panel the panel,
+> wait until it stabilized and afterwards turn on the backlight.
 
-It does make me a little sad that the DT bindings need to specify the
-number of steps but otherwise this looks good (modulo the minor comments
-Stephen had as well):
+Actually the sequence I submitted in this patchset only takes care of the 
+backlight device (the panel - or LCD - should have its own). The regulator 
+controls the power supply, the PWM the intensity, and on top of that it also 
+has an enable GPIO. These 3 resources are exclusively for the LED - the LCD 
+uses other ones. So as of now it seems that the LCD/backlight separation is 
+effective and the resources needed are not so uniform across backlights (not 
+even mentioning the delays).
 
-Reviewed-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+The LCD's power sequence is even weirder - VDD must take at least 0.5ms for 
+going from 10% to 90% of its power, you must wait 400ms after switching it off 
+before switching it on again, and you should also transmit data for 200ms 
+before switching the backlight's LED on (using its own sequence). That last 
+point is interesting since it somehow makes the LCD and LED dependent on each 
+other - on an unrelated note, this might be something to consider in Laurent's 
+proposal for a panel framework.
 
-I think regardless of the current discussion about some of the
-applications (like pwm-backlight) there are going to be cases where this
-is useful even if it ends up being more as library code for drivers than 
-as something that users work with directly.
+Alex.
+

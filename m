@@ -1,44 +1,138 @@
-From: Ryan Harkin <ryan.harkin@linaro.org>
-Date: Wed, 19 Sep 2012 16:04:23 +0000
-Subject: [RFC PATCH 0/3] amba-clcd: add device tree support
-Message-Id: <1348070666-9153-1-git-send-email-ryan.harkin@linaro.org>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 13 Sep 2012 12:27:04 +0000
+Subject: [PATCH 20/21] OMAPDSS: DISPC: Add manager like functions for writeback
+Message-Id: <1347538505-25359-21-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Hi all,
+Add functions to enable writeback, and set/check state of GO bit. These bits are
+identical in behaviour with the corresponding overlay manager bits. Configure
+them in a similar way to mgr_enable() and mgr_go_* functions. Add a helper to
+get the FRAMEDONE irq corresponding to writeback.
 
-The first patch adds device tree support to the amba-clcd video driver.
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/dispc.c |   70 +++++++++++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/dss.h   |    5 +++
+ 2 files changed, 75 insertions(+)
 
-The next two modify the Versatile Express platform to use device tree for CLCD.
-
-I've tested this code on Versatile Express A5, A9, A15-TC1, A15-A7-TC2 Core
-Tiles and on RTSM.
-
-I'd appreciate it if users of this driver and vexpress could please review
-these patches and provide feedback.  I'd like to get them into shape so that
-I can upstream in a format suitable for all users of the driver.
-
-Regards,
-Ryan.
-
-Ryan Harkin (3):
-  amba-clcd: Add Device Tree support to amba-clcd driver
-  ARM: vexpress: Add device tree support for CLCD driver
-  ARM: vexpress: configure CLCD driver device tree support for A9
-    CoreTile
-
- arch/arm/boot/dts/clcd-panels.dtsi      |   52 +++++++
- arch/arm/boot/dts/vexpress-v2m-rs1.dtsi |    8 +-
- arch/arm/boot/dts/vexpress-v2m.dtsi     |    8 +-
- arch/arm/boot/dts/vexpress-v2p-ca9.dts  |    6 +
- arch/arm/mach-vexpress/v2m.c            |   58 +++++++
- drivers/video/amba-clcd.c               |  253 +++++++++++++++++++++++++++++++
- 6 files changed, 373 insertions(+), 12 deletions(-)
- create mode 100644 arch/arm/boot/dts/clcd-panels.dtsi
-
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 6068271..1623c9b 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -535,6 +535,11 @@ u32 dispc_mgr_get_framedone_irq(enum omap_channel channel)
+ 	return mgr_desc[channel].framedone_irq;
+ }
+ 
++u32 dispc_wb_get_framedone_irq(void)
++{
++	return DISPC_IRQ_FRAMEDONEWB;
++}
++
+ bool dispc_mgr_go_busy(enum omap_channel channel)
+ {
+ 	return mgr_fld_read(channel, DISPC_MGR_FLD_GO) = 1;
+@@ -562,6 +567,30 @@ void dispc_mgr_go(enum omap_channel channel)
+ 	mgr_fld_write(channel, DISPC_MGR_FLD_GO, 1);
+ }
+ 
++bool dispc_wb_go_busy(void)
++{
++	return REG_GET(DISPC_CONTROL2, 6, 6) = 1;
++}
++
++void dispc_wb_go(void)
++{
++	enum omap_plane plane = OMAP_DSS_WB;
++	bool enable, go;
++
++	enable = REG_GET(DISPC_OVL_ATTRIBUTES(plane), 0, 0) = 1;
++
++	if (!enable)
++		return;
++
++	go = REG_GET(DISPC_CONTROL2, 6, 6) = 1;
++	if (go) {
++		DSSERR("GO bit not down for WB\n");
++		return;
++	}
++
++	REG_FLD_MOD(DISPC_CONTROL2, 1, 6, 6);
++}
++
+ static void dispc_plane_write_firh_reg(enum omap_plane plane, int reg,
+ 		u32 value)
+ {
+@@ -2678,6 +2707,47 @@ void dispc_mgr_enable(enum omap_channel channel, bool enable)
+ 		BUG();
+ }
+ 
++void dispc_wb_enable(bool enable)
++{
++	enum omap_plane plane = OMAP_DSS_WB;
++	struct completion frame_done_completion;
++	bool is_on;
++	int r;
++	u32 irq;
++
++	is_on = REG_GET(DISPC_OVL_ATTRIBUTES(plane), 0, 0);
++	irq = DISPC_IRQ_FRAMEDONEWB;
++
++	if (!enable && is_on) {
++		init_completion(&frame_done_completion);
++
++		r = omap_dispc_register_isr(dispc_disable_isr,
++				&frame_done_completion, irq);
++		if (r)
++			DSSERR("failed to register FRAMEDONEWB isr\n");
++	}
++
++	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), enable ? 1 : 0, 0, 0);
++
++	if (!enable && is_on) {
++		if (!wait_for_completion_timeout(&frame_done_completion,
++					msecs_to_jiffies(100)))
++			DSSERR("timeout waiting for FRAMEDONEWB\n");
++
++		r = omap_dispc_unregister_isr(dispc_disable_isr,
++				&frame_done_completion, irq);
++		if (r)
++			DSSERR("failed to unregister FRAMEDONEWB isr\n");
++	}
++}
++
++bool dispc_wb_is_enabled(void)
++{
++	enum omap_plane plane = OMAP_DSS_WB;
++
++	return REG_GET(DISPC_OVL_ATTRIBUTES(plane), 0, 0);
++}
++
+ void dispc_lcd_enable_signal_polarity(bool act_high)
+ {
+ 	if (!dss_has_feature(FEAT_LCDENABLEPOL))
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index c49c054..59ea86a 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -481,6 +481,11 @@ int dispc_mgr_get_clock_div(enum omap_channel channel,
+ void dispc_mgr_setup(enum omap_channel channel,
+ 		struct omap_overlay_manager_info *info);
+ 
++u32 dispc_wb_get_framedone_irq(void);
++bool dispc_wb_go_busy(void);
++void dispc_wb_go(void);
++void dispc_wb_enable(bool enable);
++bool dispc_wb_is_enabled(void);
+ void dispc_wb_set_channel_in(enum dss_writeback_channel channel);
+ int dispc_wb_setup(const struct omap_dss_writeback_info *wi,
+ 		bool mem_to_mem, const struct omap_video_timings *timings);
 -- 
 1.7.9.5
 

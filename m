@@ -1,71 +1,84 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 14 Sep 2012 08:46:32 +0000
+From: Archit Taneja <a0393947@ti.com>
+Date: Fri, 14 Sep 2012 10:25:59 +0000
 Subject: Re: [PATCH 00/21] OMAPDSS: DISPC changes for writeback pipeline
-Message-Id: <1347612392.2559.54.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-xP1g4GOkMwWWMzz6kEiC"
+Message-Id: <50530367.5030303@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>
-	 <1347611263.2559.44.camel@deskari>
+References: <1347538505-25359-1-git-send-email-archit@ti.com> <1347611263.2559.44.camel@deskari>
 In-Reply-To: <1347611263.2559.44.camel@deskari>
-To: Archit Taneja <archit@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-
---=-xP1g4GOkMwWWMzz6kEiC
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2012-09-14 at 11:27 +0300, Tomi Valkeinen wrote:
+On Friday 14 September 2012 01:57 PM, Tomi Valkeinen wrote:
 > On Thu, 2012-09-13 at 17:44 +0530, Archit Taneja wrote:
+>> DSS HW on OMAP4 onwards supports a new pipeline called writeback. Unlike other
+>> pipelines(called overlays in OMAPDSS), writeback takes pixel data from an
+>> overlay output or a overlay manager output and writes it back into a specified
+>> address in memory.
+>>
+>> writeback pipeline allows us to take benefit of the hardware processing
+>> available inside the DISPC like color space conversion, rescaling, compositing
+>> etc and do either a) perform memory-to-memory transfer with data processing,
+>> b) capture a displayed frame. The former is known as memory to memory mode of
+>> the writeback pipeline, and the latter is known as capture mode. More details
+>> about writeback can be found in the Display Subsystem section of the OMAP4/5 TRMs.
+>>
+>> witeback has properties of both overlays and overlay managers. It is like an
+>> overlay as it has programmable base addresses and contains blocks like scalar,
+>
+> You consistently use the term "scalar" in the patches, but I believe the
+> correct term is "scaler".
 
-> > This series prepares the low level DISPC driver(dispc.c) to configure w=
-riteback
-> > registers. The aim is to reuse most of the code as most of its register=
-s are
-> > like overlay or manager registers, and are configured in the same way i=
-n most
-> > cases. The first few patches rename dispc_ovl_* functions to dispc_plan=
-e_*
->=20
+Yes, my bad, I'll fix this.
+
+>
+>> color conversion unit, truncation unit, DISPC DMA FIFO. It is like a manager as
+>> enabling it immediately starts transfer to the memory, and it has a GO bit to use
+>> a new writeback configuration.
+>>
+>> This series prepares the low level DISPC driver(dispc.c) to configure writeback
+>> registers. The aim is to reuse most of the code as most of its registers are
+>> like overlay or manager registers, and are configured in the same way in most
+>> cases. The first few patches rename dispc_ovl_* functions to dispc_plane_*
+>
 > I'm not sure if the renaming causes more confusion than clarity... It
 > kinda creates a mishmash of ovl/plane names, and the term "plane"
 > doesn't really sound like it's a base for both overlays and wb. Could we
 > consider the wb as a special case, and keep the ovl name for most of the
 > things and have "wb" used for wb specific things?
 
-And while WB is a combination of overlays and ovl managers, do you think
-it'd be difficult to consider WB as a special, extended overlay? So just
-call it an overlay, and consider it as an overlay with special features,
-at least inside dispc.c. We probably need to have it as a totally
-different entity from user's point of view (i.e. the list of overlays
-wouldn't return WB, etc).
+I initially kept all of this the same, but I changed my mind at some 
+point, not totally sure why. Even if we stick to the dispc_ovl_* names, 
+we would still need to create q common function which dispc_ovl_setup() 
+and dispc_wb_setup() could call. I called this dispc_plane_setup(), and 
+then it felt weird to call everything else ovl specifuic, hence renamed 
+all of them to dispc_plane_*.
 
- Tomi
+Could you suggest a better name than dispc_plane_setup?
 
+>
+>> functions. The next few patches change how overlay caps are used within the
+>> dispc functions, this helps reusing more functions between overlays and
+>
+> I dislike this a bit, I think dispc driver should know what HW it has,
+> you shouldn't need to pass caps to it. So I'd prefer the dispc driver to
+> to have this information in dispc_features. I believe all OVL_CAPS
+> should be there, and then exported to other drivers via some means. I
+> guess this means could for now be just initializing ovl->caps with data
+> from dispc.c.
 
---=-xP1g4GOkMwWWMzz6kEiC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+Currently, we pass the plane id to these low level functions, it 
+extracts out the ovl struct usingthe plane id, and checks the ovl caps.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+What I'm doing now is just passing the caps directly to these low level 
+functions. So that I don't need to have complicated checks in every 
+function to extract caps between overlays or writeback.
 
-iQIcBAABAgAGBQJQUu7oAAoJEPo9qoy8lh71cLcP/3z8g7Q3ri4JJnJCEf4yUorI
-5kBgSLkOkt1il1E6g9wLiCURI5iphHO9rWDPMifXA6ozfNcZ4TNLRybOiRJWTtaX
-4dxHBbH/SQJsqnVmAKFTNDWftq0Nwi1+k1Zj5bMkCfFka8bUNUUPmIRpwYG3Kp8V
-8gAWNb8XeJw0Fx8c2WcUU0i80167zHF/0kzYYTPe8US/c+zQsjemqNJ3XnhA5YC2
-KDXWCehHeSoUXSPe6oskrK6Pm7Pb5u6GqVyYkqfn6sLvgVzkOJeWfx6/WJIuf4qg
-wFqhy+e3IkF/SE2hvl6nTes4igivY2hQdlcH2vAJ7uef5qvo4f3UG3ISqQwPu3lD
-Qnqj6eOPuJ4dSxFfIZpkTyIKhFOKG/tbUVPjvfoUYWE3vRxUZaOzPWrnGpb2FHDf
-2WZGcGMvDbL9Fgq6ddlWASKh+NJFMFRM/6+5IN3qK0iLOjJJfwk+rmvO7hfqJy/t
-kaZeVO9xk2I4c3SJahJIC757wv3jcjL39bp0cRUnuHNjQyMONirp4oHNztPoPD13
-g9hU+dB9Aj5qexL0SVCIJlJ3R/Tkriw76LTxhsYQsaj7cXAGf811PPDB1SFVOO/+
-/a5u3FA5r8GgrZR7ebVtfV/GYShYeseraRGFgUzc7FmGgbwzRthxdrcDVSt5MkKl
-iZBFpYwYkFMcUqTBonBA
-=pX0o
------END PGP SIGNATURE-----
+Archit
 
---=-xP1g4GOkMwWWMzz6kEiC--
+>
+>   Tomi
+>
 

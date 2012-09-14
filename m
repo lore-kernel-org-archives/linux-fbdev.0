@@ -1,47 +1,106 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Fri, 14 Sep 2012 10:36:50 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 14 Sep 2012 10:53:16 +0000
 Subject: Re: [PATCH 00/21] OMAPDSS: DISPC changes for writeback pipeline
-Message-Id: <505305F2.4000602@ti.com>
+Message-Id: <1347619996.2559.83.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-EmQvhPtJMjJ/Fm2WctMQ"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>  <1347611263.2559.44.camel@deskari> <1347612392.2559.54.camel@deskari>
-In-Reply-To: <1347612392.2559.54.camel@deskari>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+	 <1347611263.2559.44.camel@deskari> <50530367.5030303@ti.com>
+In-Reply-To: <50530367.5030303@ti.com>
+To: Archit Taneja <a0393947@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Friday 14 September 2012 02:16 PM, Tomi Valkeinen wrote:
-> On Fri, 2012-09-14 at 11:27 +0300, Tomi Valkeinen wrote:
->> On Thu, 2012-09-13 at 17:44 +0530, Archit Taneja wrote:
->
->>> This series prepares the low level DISPC driver(dispc.c) to configure writeback
->>> registers. The aim is to reuse most of the code as most of its registers are
->>> like overlay or manager registers, and are configured in the same way in most
->>> cases. The first few patches rename dispc_ovl_* functions to dispc_plane_*
->>
->> I'm not sure if the renaming causes more confusion than clarity... It
->> kinda creates a mishmash of ovl/plane names, and the term "plane"
->> doesn't really sound like it's a base for both overlays and wb. Could we
->> consider the wb as a special case, and keep the ovl name for most of the
->> things and have "wb" used for wb specific things?
->
-> And while WB is a combination of overlays and ovl managers, do you think
-> it'd be difficult to consider WB as a special, extended overlay? So just
-> call it an overlay, and consider it as an overlay with special features,
-> at least inside dispc.c. We probably need to have it as a totally
-> different entity from user's point of view (i.e. the list of overlays
-> wouldn't return WB, etc).
 
-Yes, we could do that within dispc.c, we would still need some manager 
-like functions which set GO or ENABLE. But apart from that it should be 
-okay.
+--=-EmQvhPtJMjJ/Fm2WctMQ
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-I think for dispc.c in general, for future, it might be a good idea to 
-represent each piece of HW(like scalar or color converter, or a timing 
-FSM) as a little function/module, and construct 
-overlay/writeback/manager out of those, it might be cleaner. However, 
-this may be an overkill, and not needed much if there aren't any new 
-blocks comprising of these little blocks.
+On Fri, 2012-09-14 at 15:43 +0530, Archit Taneja wrote:
+> On Friday 14 September 2012 01:57 PM, Tomi Valkeinen wrote:
 
-Archit
+> I initially kept all of this the same, but I changed my mind at some=20
+> point, not totally sure why. Even if we stick to the dispc_ovl_* names,=
+=20
+> we would still need to create q common function which dispc_ovl_setup()=
+=20
+> and dispc_wb_setup() could call. I called this dispc_plane_setup(), and=
+=20
+> then it felt weird to call everything else ovl specifuic, hence renamed=
+=20
+> all of them to dispc_plane_*.
+>=20
+> Could you suggest a better name than dispc_plane_setup?
+
+Well... dispc_ovl_setup_common?
+
+The function is also quite big, with huge number of arguments. Makes me
+wonder if we could split it up to some sensible parts. Would it be
+possible to have functions to setup, say, input related parameters
+(base-address, pix format, etc.), output related parameters (ovl
+position, ...).
+
+Well, it could just make it more confusing, as some things are shared
+between input and output, like scaling related things. But just an idea.
+
+>=20
+> >
+> >> functions. The next few patches change how overlay caps are used withi=
+n the
+> >> dispc functions, this helps reusing more functions between overlays an=
+d
+> >
+> > I dislike this a bit, I think dispc driver should know what HW it has,
+> > you shouldn't need to pass caps to it. So I'd prefer the dispc driver t=
+o
+> > to have this information in dispc_features. I believe all OVL_CAPS
+> > should be there, and then exported to other drivers via some means. I
+> > guess this means could for now be just initializing ovl->caps with data
+> > from dispc.c.
+>=20
+> Currently, we pass the plane id to these low level functions, it=20
+> extracts out the ovl struct usingthe plane id, and checks the ovl caps.
+>=20
+> What I'm doing now is just passing the caps directly to these low level=
+=20
+> functions. So that I don't need to have complicated checks in every=20
+> function to extract caps between overlays or writeback.
+
+Yep, I see. It's ok.
+
+My main dislike is the use of omap_dss_get_overlay() in dispc.c. I'd
+like dispc.c to be self-contained, so what I mean is that instead of
+initializing the caps in dss_features.c, and calling the above function
+in dispc.c, we should have a dispc.c internal table for dispc's HW,
+which would contain the caps and other necessary information.
+
+But that's not really related to this series.
+
+ Tomi
+
+
+--=-EmQvhPtJMjJ/Fm2WctMQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJQUwycAAoJEPo9qoy8lh71BdAP/AuKSplf6mMRD3HXsfeiDWvA
+xM131F7MiKTBsADpV73tdhUEkqEE7MUlVBjTeoGNG/mNlbIoTm1Xu8ZklgMRGMsh
+tMwv8TEdfHG+ud/5jm8DGXXQ8JGxHgVhaMpfgZxuR2wOrv+Xk3Kc7iZUDIiJYrk9
+NbkDPgtgHfh4pGhQNPUkYEUJ7piezO+SJrpTYfZU9LxZ+CiBqHjyCkclFkoBkn2i
+yK/WpMnLjT7wQkWvpCNx9X98dyY+jakC4mha24fXw/uN4NdROSVq8ZS5MSOx9QDC
+2AcbjK1DYibJoCsECnxarcduFFmXni4OdnMkzWHshh8MKLfqK/vmse52zspYs96J
+OEAUfHdIu9dPlLNue/nSlyHuvGt3wvptEfLXNTToR3ZRSsEGgog9M76fPM6TKmvz
++AMukB4IUZbyVAJy5m6+L+ENTHNlRaQfj//puw2/p2FoFymoUrMFDMmxzuSy1MSv
+VJ4tZVkBL8En3fhQYGd9auguC/kvauytlyZv7bdBsWNPw2yF6g0GdRF3c3xz5tWK
+pGDcOglQOY0+2qx7wGQCMj7Elysc9rud+PAkredv7gTiMZ0u8iuxKxpbfj3QxyAQ
+OTptQnnnxh08hvK9jVqCrQoiujhn30dmSc2PfwamP/k7GGU5Pu40O9Tmp4RjcsVu
+gLRxPrOKWRd+fDzneA3+
+=M+lZ
+-----END PGP SIGNATURE-----
+
+--=-EmQvhPtJMjJ/Fm2WctMQ--
+

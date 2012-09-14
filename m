@@ -1,89 +1,105 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 13 Sep 2012 12:26:44 +0000
-Subject: [PATCH 00/21] OMAPDSS: DISPC changes for writeback pipeline
-Message-Id: <1347538505-25359-1-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 14 Sep 2012 08:27:43 +0000
+Subject: Re: [PATCH 00/21] OMAPDSS: DISPC changes for writeback pipeline
+Message-Id: <1347611263.2559.44.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-GXE1kr1MhAey7Y/cKhBo"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+
+
+--=-GXE1kr1MhAey7Y/cKhBo
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 2012-09-13 at 17:44 +0530, Archit Taneja wrote:
+> DSS HW on OMAP4 onwards supports a new pipeline called writeback. Unlike =
+other
+> pipelines(called overlays in OMAPDSS), writeback takes pixel data from an
+> overlay output or a overlay manager output and writes it back into a spec=
+ified
+> address in memory.
+>=20
+> writeback pipeline allows us to take benefit of the hardware processing
+> available inside the DISPC like color space conversion, rescaling, compos=
+iting
+> etc and do either a) perform memory-to-memory transfer with data processi=
+ng,
+> b) capture a displayed frame. The former is known as memory to memory mod=
+e of
+> the writeback pipeline, and the latter is known as capture mode. More det=
+ails
+> about writeback can be found in the Display Subsystem section of the OMAP=
+4/5 TRMs.
+>=20
+> witeback has properties of both overlays and overlay managers. It is like=
+ an
+> overlay as it has programmable base addresses and contains blocks like sc=
+alar,
+
+You consistently use the term "scalar" in the patches, but I believe the
+correct term is "scaler".
+
+> color conversion unit, truncation unit, DISPC DMA FIFO. It is like a mana=
+ger as
+> enabling it immediately starts transfer to the memory, and it has a GO bi=
+t to use
+> a new writeback configuration.
+>=20
+> This series prepares the low level DISPC driver(dispc.c) to configure wri=
+teback
+> registers. The aim is to reuse most of the code as most of its registers =
+are
+> like overlay or manager registers, and are configured in the same way in =
+most
+> cases. The first few patches rename dispc_ovl_* functions to dispc_plane_=
+*
+
+I'm not sure if the renaming causes more confusion than clarity... It
+kinda creates a mishmash of ovl/plane names, and the term "plane"
+doesn't really sound like it's a base for both overlays and wb. Could we
+consider the wb as a special case, and keep the ovl name for most of the
+things and have "wb" used for wb specific things?
+
+> functions. The next few patches change how overlay caps are used within t=
+he
+> dispc functions, this helps reusing more functions between overlays and
+
+I dislike this a bit, I think dispc driver should know what HW it has,
+you shouldn't need to pass caps to it. So I'd prefer the dispc driver to
+to have this information in dispc_features. I believe all OVL_CAPS
+should be there, and then exported to other drivers via some means. I
+guess this means could for now be just initializing ovl->caps with data
+from dispc.c.
+
+ Tomi
+
+
+--=-GXE1kr1MhAey7Y/cKhBo
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-DSS HW on OMAP4 onwards supports a new pipeline called writeback. Unlike other
-pipelines(called overlays in OMAPDSS), writeback takes pixel data from an
-overlay output or a overlay manager output and writes it back into a specified
-address in memory.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-writeback pipeline allows us to take benefit of the hardware processing
-available inside the DISPC like color space conversion, rescaling, compositing
-etc and do either a) perform memory-to-memory transfer with data processing,
-b) capture a displayed frame. The former is known as memory to memory mode of
-the writeback pipeline, and the latter is known as capture mode. More details
-about writeback can be found in the Display Subsystem section of the OMAP4/5 TRMs.
+iQIcBAABAgAGBQJQUup/AAoJEPo9qoy8lh71Pi8P/39FOBwXSRyPEgaOujbcZ1nl
+ZRf2eqe2VvmDCR+iAe5WVS1AEb8fzK1Y5ej4MHiYKQb7bnD6y3KhFBOIHueqet1n
+X01V1rMIa1UFN1SKS+BzCUzOtYw1yemOhh65/0ueZsjizeLKDdgkYrWkc4eiSG/Y
+MuiJjRy9qKW9HBQUH8oTfh2EznSOX9rGwMiXHKI4wUNuof580EvsxVgWukbZgat8
+Q3gRnD2Xd78GRTny/o5UdyrNjHfOvptMhDyuqNRaIFLaz0Gvs6mGVYLyMkQLzP/L
+HJ7OE14t1HCDsMSFwUa8PBuRY1SOTp012P9jwchxBA9WI0KMcVehS4w60oSK2U8c
+k3HSs4IMHt7GG7f2+gi1WAkdJ5wsdnKJrLkdGH8MZQzZtDedBk5+kPNZvv3QRBGU
+uhDNqfNn/cr/T+n479obCjMi2HyKRpW37sITAmzaK2YLwXdpXTdWJvPR6kmA92h8
+/zkrEy+pUmdKJL06If25HAG+Y/36YZROp0zSRjW6Xhhc7R6c/HZxldh5om6SWQY5
+NjERMIDVCMorKHpF2baCkrUcS5q9tYw/zNzHyWgCt757ZQH3jDf9OpJs81MTKDMm
+LgG8vV/HxbLwqkYKdGQ/S/5DaWczj/+bRctHug04SG0T23xgEpp+p70SgGMp31Ua
+H9xKgC/+g3QzbXe+qN/o
+=akSR
+-----END PGP SIGNATURE-----
 
-witeback has properties of both overlays and overlay managers. It is like an
-overlay as it has programmable base addresses and contains blocks like scalar,
-color conversion unit, truncation unit, DISPC DMA FIFO. It is like a manager as
-enabling it immediately starts transfer to the memory, and it has a GO bit to use
-a new writeback configuration.
-
-This series prepares the low level DISPC driver(dispc.c) to configure writeback
-registers. The aim is to reuse most of the code as most of its registers are
-like overlay or manager registers, and are configured in the same way in most
-cases. The first few patches rename dispc_ovl_* functions to dispc_plane_*
-functions. The next few patches change how overlay caps are used within the
-dispc functions, this helps reusing more functions between overlays and
-writeback. The patches in the end add writeback register offsets, and make
-changes in the code where writeback behaves differently than
-
-The changes are made only keeping writeback mem to mem support in mind. There
-would be a few changes required when capture mode is added, but those are
-minimal.
-
-Reference branch:
-
-git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git 1-writeback-dispc
-
-Archit Taneja (21):
-  OMAPDSS: DISPC: Constify omap_overlay_info in dispc_ovl_setup()
-  OMAPDSS: DISPC: Rename scalar related functions from dispc_ovl_* to
-    dispc_plane_*
-  OMAPDSS: DISPC: Rename fifo/burst related functions from dispc_ovl_*
-    to dispc_plane_*
-  OMAPDSS: DISPC: Rename misc functions from dispc_ovl_* to
-    dispc_plane_*
-  OMAPDSS: DISPC: Simplify function names for setting pipeline input
-    and output sizes
-  OMAPDSS: DISPC: Pass overlay caps as a parameter to dispc plane
-    functions
-  OMAPDSS: OVERLAY: Add position and replication as overlay caps
-  OMAPDSS: DISPC: Make dispc_ovl_setup call dispc_plane_setup
-  OMAPDSS: DISPC: Calculate scaling limits in a more generic way
-  OMAPDSS: DISPC: Allow both upscaling and downscaling of chroma
-  OMAPDSS: DISPC: Add writeback register offsets and dss features
-    structs
-  OMAPDSS: DISPC: Configure input and output sizes for writeback
-  OMAPDSS: DISPC: Pass dummy scalar output rates for writeback pipeline
-  OMAPDSS: DISPC: Downscale chroma if plane is writeback
-  OMAPDSS: DISPC: Don't set chroma resampling bit for writeback
-  OMAPDSS: DISPC: Add function to set channel in for writeback
-  OMAPDSS: DISPC: Configure overlay-like parameters in dispc_wb_setup
-  OMAPDSS: DISPC: Configure writeback specific parameters in
-    dispc_wb_setup()
-  OMAPDSS: DISPC: Configure writeback FIFOs
-  OMAPDSS: DISPC: Add manager like functions for writeback
-  OMAPDSS: DISPC: Configure color conversion coefficients for writeback
-
- drivers/video/omap2/dss/apply.c        |    4 +-
- drivers/video/omap2/dss/dispc.c        |  659 +++++++++++++++++++++-----------
- drivers/video/omap2/dss/dispc.h        |   35 +-
- drivers/video/omap2/dss/dispc_coefs.c  |    2 +-
- drivers/video/omap2/dss/dss.h          |   26 +-
- drivers/video/omap2/dss/dss_features.c |   57 ++-
- drivers/video/omap2/dss/dss_features.h |    1 +
- include/video/omapdss.h                |   15 +
- 8 files changed, 564 insertions(+), 235 deletions(-)
-
--- 
-1.7.9.5
+--=-GXE1kr1MhAey7Y/cKhBo--
 

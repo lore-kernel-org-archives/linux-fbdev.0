@@ -1,75 +1,61 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Wed, 12 Sep 2012 00:55:48 +0000
-Subject: RE: [PATCH] pwm-backlight: Use devm_pwm_get in pwm_bl.c
-Message-Id: <001601cd9081$5b2d0370$11870a50$%han@samsung.com>
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Mon, 17 Sep 2012 06:04:44 +0000
+Subject: Re: [PATCH] pwm-backlight: Use devm_pwm_get in pwm_bl.c
+Message-Id: <20120917060444.GA848@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="vtzGhvizbBRQ85DL"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1347352949-17515-1-git-send-email-sachin.kamat@linaro.org>
 In-Reply-To: <1347352949-17515-1-git-send-email-sachin.kamat@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Tuesday, September 11, 2012 5:42 PM Sachin Kamat wrote
-> 
-> This file already makes use of device managed functions.
-> Convert pwm_get() too to use it.
-> 
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 
-CC'ed Thierry Reding.
+--vtzGhvizbBRQ85DL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Jingoo Han <jg1.han@samsung.com>
+On Wed, Sep 12, 2012 at 09:55:48AM +0900, Jingoo Han wrote:
+> On Tuesday, September 11, 2012 5:42 PM Sachin Kamat wrote
+> >=20
+> > This file already makes use of device managed functions.
+> > Convert pwm_get() too to use it.
+> >=20
+> > Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+>=20
+> CC'ed Thierry Reding.
+>=20
+> Acked-by: Jingoo Han <jg1.han@samsung.com>
 
+Hi Sachin,
 
-> ---
->  drivers/video/backlight/pwm_bl.c |    7 ++-----
->  1 files changed, 2 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> index 4965408..0c91023 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -218,7 +218,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->  	pb->exit = data->exit;
->  	pb->dev = &pdev->dev;
-> 
-> -	pb->pwm = pwm_get(&pdev->dev, NULL);
-> +	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
->  	if (IS_ERR(pb->pwm)) {
->  		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
-> 
-> @@ -251,7 +251,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->  	if (IS_ERR(bl)) {
->  		dev_err(&pdev->dev, "failed to register backlight\n");
->  		ret = PTR_ERR(bl);
-> -		goto err_bl;
-> +		goto err_alloc;
->  	}
-> 
->  	bl->props.brightness = data->dft_brightness;
-> @@ -260,8 +260,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->  	platform_set_drvdata(pdev, bl);
->  	return 0;
-> 
-> -err_bl:
-> -	pwm_put(pb->pwm);
->  err_alloc:
->  	if (data->exit)
->  		data->exit(&pdev->dev);
-> @@ -276,7 +274,6 @@ static int pwm_backlight_remove(struct platform_device *pdev)
->  	backlight_device_unregister(bl);
->  	pwm_config(pb->pwm, 0, pb->period);
->  	pwm_disable(pb->pwm);
-> -	pwm_put(pb->pwm);
->  	if (pb->exit)
->  		pb->exit(&pdev->dev);
->  	return 0;
-> --
-> 1.7.4.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+As discussed elsewhere I'm taking over maintenance of the pwm-backlight
+driver as part of the PWM subsystem. I hadn't been Cc'ed on your first
+send and I'm not subscribed to linux-fbdev so I didn't receive a copy of
+the patch.
 
+Thanks,
+Thierry
+
+--vtzGhvizbBRQ85DL
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQVr18AAoJEN0jrNd/PrOhpJEQAILIxyRD3aKZ5C/FcAkk/z6i
+nSOAW2gwf39O+OqrZHJxPnpVE5m2qTzYHQycD7YLDmqdo9m5VZXokzhZZh6ah8Yv
+w+KcJSV2EXUetLZnWLQKirJccjx7xxBk9EZbrTXG5cN3TiMm7FCS2QzNt+abci6y
+C3cZKsj0H/xFk5wOUIR1y8/Oz831A5lfUD16J6I/Dgf7CmXn0wIUO5kV9+VicljX
+ruOpQghiQ3SMZIoXJ4nMjg53VW755mzih6c7dwxbzu1ENxJ+dgX4mpwBOBRTFe+v
+Eba70ieaOH/TINo9VIMAzNgY0DbXJ0vtZ41n/VrF5UUI8p2G/8n9UuIiyfJD+9DV
+frlasSl3n4HpNi6EJ3zY9gvBdqjttmzxTNI+mX6/wwLIP+iVKjHqC6IL1fEPppOB
+Y+t9eT6QQS8/ZRLwQXWTOCdkP/boFWbT9qlDjk3DD9WINwIo3cLAA5Fb+OFYz+Pm
+zlWSIq+nc8+ehsUuSjskVChoRjVe4QN6iHvQURQK/8MnmzrFedEGrze4rvygBYkK
+/w6qNZ+gKkHcd0z+c6ICD0v1uwcadtzg/WAbE6bxH5uwqJryBdWgGjuhIdy+am48
+bH6/iFyeTT1mrbe1rJOx8ScZr0wb3cVwTdqkyOPAQZ7YuV7+IlIiMC3zKkHH2vyB
+YqxQGIMVrz6DAHnk/9UZ
+=xwtc
+-----END PGP SIGNATURE-----
+
+--vtzGhvizbBRQ85DL--

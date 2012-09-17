@@ -1,65 +1,121 @@
-From: Shubhrajyoti Datta <omaplinuxkernel@gmail.com>
-Date: Tue, 25 Sep 2012 04:06:46 +0000
-Subject: Re: [PATCH] matroxfb: Convert struct i2c_msg initialization to C99 format
-Message-Id: <CAM=Q2cv8ewLvKafU_iaxM4cq+G54K2rDu4Hd6Cj5cEtpZVf1qw@mail.gmail.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Date: Mon, 17 Sep 2012 05:34:43 +0000
+Subject: [PATCH 14/34] dma: ipu: rename mach/ipu.h to include/linux/dma/ipu-dma.h
+Message-Id: <1347860103-4141-15-git-send-email-shawn.guo@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347897325-20684-1-git-send-email-shubhrajyoti@ti.com>
-In-Reply-To: <1347897325-20684-1-git-send-email-shubhrajyoti@ti.com>
+References: <1347860103-4141-1-git-send-email-shawn.guo@linaro.org>
+In-Reply-To: <1347860103-4141-1-git-send-email-shawn.guo@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Shubhrajyoti D <shubhrajyoti@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, julia.lawall@lip6.fr
+To: linux-arm-kernel@lists.infradead.org
 
-On Mon, Sep 17, 2012 at 9:25 PM, Shubhrajyoti D <shubhrajyoti@ti.com> wrote:
-> Convert the struct i2c_msg initialization to C99 format. This makes
-> maintaining and editing the code simpler. Also helps once other fields
-> like transferred are added in future.
->
-> Thanks to Julia Lawall <julia.lawall@lip6.fr>  for automating the conversion
+The header ipu.h really belongs to dma subsystem rather than imx
+platform.  Rename it to ipu-dma.h and put it into include/linux/dma/.
 
-ping.
+Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+Cc: Vinod Koul <vinod.koul@intel.com>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-media@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+---
+ drivers/dma/ipu/ipu_idmac.c                        |    3 +--
+ drivers/dma/ipu/ipu_irq.c                          |    3 +--
+ drivers/media/video/mx3_camera.c                   |    2 +-
+ drivers/video/mx3fb.c                              |    2 +-
+ .../mach/ipu.h => include/linux/dma/ipu-dma.h      |    6 +++---
+ 5 files changed, 7 insertions(+), 9 deletions(-)
+ rename arch/arm/mach-imx/include/mach/ipu.h => include/linux/dma/ipu-dma.h (97%)
 
->
-> Signed-off-by: Shubhrajyoti D <shubhrajyoti@ti.com>
-> ---
-> the cocci file was posted
-> http://www.mail-archive.com/cocci@diku.dk/msg02753.html
->
->  drivers/video/matrox/matroxfb_maven.c |   15 +++++++++++++--
->  1 files changed, 13 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/matrox/matroxfb_maven.c b/drivers/video/matrox/matroxfb_maven.c
-> index 217678e..fb5c123 100644
-> --- a/drivers/video/matrox/matroxfb_maven.c
-> +++ b/drivers/video/matrox/matroxfb_maven.c
-> @@ -137,8 +137,19 @@ static int* get_ctrl_ptr(struct maven_data* md, int idx) {
->
->  static int maven_get_reg(struct i2c_client* c, char reg) {
->         char dst;
-> -       struct i2c_msg msgs[] = {{ c->addr, I2C_M_REV_DIR_ADDR, sizeof(reg), &reg },
-> -                                { c->addr, I2C_M_RD | I2C_M_NOSTART, sizeof(dst), &dst }};
-> +       struct i2c_msg msgs[] = {{
-> +                                       .addr = c->addr,
-> +                                       .flags = I2C_M_REV_DIR_ADDR,
-> +                                       .len = sizeof(reg),
-> +                                       .buf = &reg
-> +                               },
-> +                               {
-> +                                       .addr = c->addr,
-> +                                       .flags = I2C_M_RD | I2C_M_NOSTART,
-> +                                       .len = sizeof(dst),
-> +                                       .buf = &dst
-> +                               }
-> +       };
->         s32 err;
->
->         err = i2c_transfer(c->adapter, msgs, 2);
-> --
-> 1.7.5.4
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+diff --git a/drivers/dma/ipu/ipu_idmac.c b/drivers/dma/ipu/ipu_idmac.c
+index c7573e5..6585537 100644
+--- a/drivers/dma/ipu/ipu_idmac.c
++++ b/drivers/dma/ipu/ipu_idmac.c
+@@ -22,8 +22,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
+ #include <linux/module.h>
+-
+-#include <mach/ipu.h>
++#include <linux/dma/ipu-dma.h>
+ 
+ #include "../dmaengine.h"
+ #include "ipu_intern.h"
+diff --git a/drivers/dma/ipu/ipu_irq.c b/drivers/dma/ipu/ipu_irq.c
+index fa95bcc..a5ee37d 100644
+--- a/drivers/dma/ipu/ipu_irq.c
++++ b/drivers/dma/ipu/ipu_irq.c
+@@ -15,8 +15,7 @@
+ #include <linux/irq.h>
+ #include <linux/io.h>
+ #include <linux/module.h>
+-
+-#include <mach/ipu.h>
++#include <linux/dma/ipu-dma.h>
+ 
+ #include "ipu_intern.h"
+ 
+diff --git a/drivers/media/video/mx3_camera.c b/drivers/media/video/mx3_camera.c
+index 1481b0d..892cba5 100644
+--- a/drivers/media/video/mx3_camera.c
++++ b/drivers/media/video/mx3_camera.c
+@@ -17,6 +17,7 @@
+ #include <linux/vmalloc.h>
+ #include <linux/interrupt.h>
+ #include <linux/sched.h>
++#include <linux/dma/ipu-dma.h>
+ 
+ #include <media/v4l2-common.h>
+ #include <media/v4l2-dev.h>
+@@ -24,7 +25,6 @@
+ #include <media/soc_camera.h>
+ #include <media/soc_mediabus.h>
+ 
+-#include <mach/ipu.h>
+ #include <linux/platform_data/camera-mx3.h>
+ #include <linux/platform_data/dma-imx.h>
+ 
+diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+index d738108..3b63ad8 100644
+--- a/drivers/video/mx3fb.c
++++ b/drivers/video/mx3fb.c
+@@ -26,10 +26,10 @@
+ #include <linux/console.h>
+ #include <linux/clk.h>
+ #include <linux/mutex.h>
++#include <linux/dma/ipu-dma.h>
+ 
+ #include <linux/platform_data/dma-imx.h>
+ #include <mach/hardware.h>
+-#include <mach/ipu.h>
+ #include <linux/platform_data/video-mx3fb.h>
+ 
+ #include <asm/io.h>
+diff --git a/arch/arm/mach-imx/include/mach/ipu.h b/include/linux/dma/ipu-dma.h
+similarity index 97%
+rename from arch/arm/mach-imx/include/mach/ipu.h
+rename to include/linux/dma/ipu-dma.h
+index 539e559..1803111 100644
+--- a/arch/arm/mach-imx/include/mach/ipu.h
++++ b/include/linux/dma/ipu-dma.h
+@@ -9,8 +9,8 @@
+  * published by the Free Software Foundation.
+  */
+ 
+-#ifndef _IPU_H_
+-#define _IPU_H_
++#ifndef __LINUX_DMA_IPU_DMA_H
++#define __LINUX_DMA_IPU_DMA_H
+ 
+ #include <linux/types.h>
+ #include <linux/dmaengine.h>
+@@ -174,4 +174,4 @@ struct idmac_channel {
+ #define to_tx_desc(tx) container_of(tx, struct idmac_tx_desc, txd)
+ #define to_idmac_chan(c) container_of(c, struct idmac_channel, dma_chan)
+ 
+-#endif
++#endif /* __LINUX_DMA_IPU_DMA_H */
+-- 
+1.7.9.5
+

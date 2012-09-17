@@ -1,145 +1,62 @@
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-Date: Thu, 27 Sep 2012 07:38:07 +0000
-Subject: Re: [PATCH 14/34] dma: ipu: rename mach/ipu.h to include/linux/dma/ipu-dma.h
-Message-Id: <5064025F.8040508@redhat.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Mon, 17 Sep 2012 06:32:47 +0000
+Subject: [PATCH Re-send] pwm-backlight: Use devm_pwm_get in pwm_bl.c
+Message-Id: <1347862847-2774-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347860103-4141-1-git-send-email-shawn.guo@linaro.org>
- <1347860103-4141-15-git-send-email-shawn.guo@linaro.org>
- <Pine.LNX.4.64.1209171124130.1689@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1209171124130.1689@axis700.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Em 17-09-2012 06:26, Guennadi Liakhovetski escreveu:
-> On Mon, 17 Sep 2012, Shawn Guo wrote:
-> 
->> The header ipu.h really belongs to dma subsystem rather than imx
->> platform.  Rename it to ipu-dma.h and put it into include/linux/dma/.
->>
->> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
->> Cc: Vinod Koul <vinod.koul@intel.com>
->> Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
->> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
->> Cc: linux-media@vger.kernel.org
->> Cc: linux-fbdev@vger.kernel.org
-> 
-> Acked-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+This file already makes use of device managed functions.
+Convert pwm_get() too to use it.
 
-Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-> 
-> Thanks
-> Guennadi
-> 
->> ---
->>  drivers/dma/ipu/ipu_idmac.c                        |    3 +--
->>  drivers/dma/ipu/ipu_irq.c                          |    3 +--
->>  drivers/media/video/mx3_camera.c                   |    2 +-
->>  drivers/video/mx3fb.c                              |    2 +-
->>  .../mach/ipu.h => include/linux/dma/ipu-dma.h      |    6 +++---
->>  5 files changed, 7 insertions(+), 9 deletions(-)
->>  rename arch/arm/mach-imx/include/mach/ipu.h => include/linux/dma/ipu-dma.h (97%)
->>
->> diff --git a/drivers/dma/ipu/ipu_idmac.c b/drivers/dma/ipu/ipu_idmac.c
->> index c7573e5..6585537 100644
->> --- a/drivers/dma/ipu/ipu_idmac.c
->> +++ b/drivers/dma/ipu/ipu_idmac.c
->> @@ -22,8 +22,7 @@
->>  #include <linux/interrupt.h>
->>  #include <linux/io.h>
->>  #include <linux/module.h>
->> -
->> -#include <mach/ipu.h>
->> +#include <linux/dma/ipu-dma.h>
->>  
->>  #include "../dmaengine.h"
->>  #include "ipu_intern.h"
->> diff --git a/drivers/dma/ipu/ipu_irq.c b/drivers/dma/ipu/ipu_irq.c
->> index fa95bcc..a5ee37d 100644
->> --- a/drivers/dma/ipu/ipu_irq.c
->> +++ b/drivers/dma/ipu/ipu_irq.c
->> @@ -15,8 +15,7 @@
->>  #include <linux/irq.h>
->>  #include <linux/io.h>
->>  #include <linux/module.h>
->> -
->> -#include <mach/ipu.h>
->> +#include <linux/dma/ipu-dma.h>
->>  
->>  #include "ipu_intern.h"
->>  
->> diff --git a/drivers/media/video/mx3_camera.c b/drivers/media/video/mx3_camera.c
->> index 1481b0d..892cba5 100644
->> --- a/drivers/media/video/mx3_camera.c
->> +++ b/drivers/media/video/mx3_camera.c
->> @@ -17,6 +17,7 @@
->>  #include <linux/vmalloc.h>
->>  #include <linux/interrupt.h>
->>  #include <linux/sched.h>
->> +#include <linux/dma/ipu-dma.h>
->>  
->>  #include <media/v4l2-common.h>
->>  #include <media/v4l2-dev.h>
->> @@ -24,7 +25,6 @@
->>  #include <media/soc_camera.h>
->>  #include <media/soc_mediabus.h>
->>  
->> -#include <mach/ipu.h>
->>  #include <linux/platform_data/camera-mx3.h>
->>  #include <linux/platform_data/dma-imx.h>
->>  
->> diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
->> index d738108..3b63ad8 100644
->> --- a/drivers/video/mx3fb.c
->> +++ b/drivers/video/mx3fb.c
->> @@ -26,10 +26,10 @@
->>  #include <linux/console.h>
->>  #include <linux/clk.h>
->>  #include <linux/mutex.h>
->> +#include <linux/dma/ipu-dma.h>
->>  
->>  #include <linux/platform_data/dma-imx.h>
->>  #include <mach/hardware.h>
->> -#include <mach/ipu.h>
->>  #include <linux/platform_data/video-mx3fb.h>
->>  
->>  #include <asm/io.h>
->> diff --git a/arch/arm/mach-imx/include/mach/ipu.h b/include/linux/dma/ipu-dma.h
->> similarity index 97%
->> rename from arch/arm/mach-imx/include/mach/ipu.h
->> rename to include/linux/dma/ipu-dma.h
->> index 539e559..1803111 100644
->> --- a/arch/arm/mach-imx/include/mach/ipu.h
->> +++ b/include/linux/dma/ipu-dma.h
->> @@ -9,8 +9,8 @@
->>   * published by the Free Software Foundation.
->>   */
->>  
->> -#ifndef _IPU_H_
->> -#define _IPU_H_
->> +#ifndef __LINUX_DMA_IPU_DMA_H
->> +#define __LINUX_DMA_IPU_DMA_H
->>  
->>  #include <linux/types.h>
->>  #include <linux/dmaengine.h>
->> @@ -174,4 +174,4 @@ struct idmac_channel {
->>  #define to_tx_desc(tx) container_of(tx, struct idmac_tx_desc, txd)
->>  #define to_idmac_chan(c) container_of(c, struct idmac_channel, dma_chan)
->>  
->> -#endif
->> +#endif /* __LINUX_DMA_IPU_DMA_H */
->> -- 
->> 1.7.9.5
->>
-> 
-> ---
-> Guennadi Liakhovetski, Ph.D.
-> Freelance Open-Source Software Developer
-> http://www.open-technology.de/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-media" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Cc: Thierry Reding <thierry.reding@avionic-design.de>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Acked-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/backlight/pwm_bl.c |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 4965408..0c91023 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -218,7 +218,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	pb->exit = data->exit;
+ 	pb->dev = &pdev->dev;
+ 
+-	pb->pwm = pwm_get(&pdev->dev, NULL);
++	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
+ 	if (IS_ERR(pb->pwm)) {
+ 		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
+ 
+@@ -251,7 +251,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	if (IS_ERR(bl)) {
+ 		dev_err(&pdev->dev, "failed to register backlight\n");
+ 		ret = PTR_ERR(bl);
+-		goto err_bl;
++		goto err_alloc;
+ 	}
+ 
+ 	bl->props.brightness = data->dft_brightness;
+@@ -260,8 +260,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, bl);
+ 	return 0;
+ 
+-err_bl:
+-	pwm_put(pb->pwm);
+ err_alloc:
+ 	if (data->exit)
+ 		data->exit(&pdev->dev);
+@@ -276,7 +274,6 @@ static int pwm_backlight_remove(struct platform_device *pdev)
+ 	backlight_device_unregister(bl);
+ 	pwm_config(pb->pwm, 0, pb->period);
+ 	pwm_disable(pb->pwm);
+-	pwm_put(pb->pwm);
+ 	if (pb->exit)
+ 		pb->exit(&pdev->dev);
+ 	return 0;
+-- 
+1.7.4.1
 

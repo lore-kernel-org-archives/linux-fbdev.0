@@ -1,68 +1,48 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Tue, 25 Sep 2012 06:40:20 +0000
-Subject: linux-next: manual merge of the arm-soc tree with the fbdev tree
-Message-Id: <20120925164020.8c83339ae70d5eed5fc4b05c@canb.auug.org.au>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Signature=_Tue__25_Sep_2012_16_40_20_+1000_TAAx0Ds7zh/TpTr/"
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Mon, 17 Sep 2012 18:21:08 +0000
+Subject: Re: [PATCH 6/7 v2] HID: picoLCD: drop version check during probe
+Message-Id: <20120917202108.3e39dedb@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120924191508.6100b0603d2642c1e7a36679@canb.auug.org.au>
-In-Reply-To: <20120924191508.6100b0603d2642c1e7a36679@canb.auug.org.au>
-To: linux-arm-kernel@lists.infradead.org
+References: <20120730213656.0a9f6d30@neptune.home>
+	<20120730213859.063173c1@neptune.home>
+	<alpine.LNX.2.00.1208151015220.7026@pobox.suse.cz>
+	<20120819185631.3a984aa4@neptune.home>
+In-Reply-To: <20120819185631.3a984aa4@neptune.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
---Signature=_Tue__25_Sep_2012_16_40_20_+1000_TAAx0Ds7zh/TpTr/
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Jiri,
 
-Hi all,
+You seem not to have applied this one yet (it doesn't show up in picolcd
+branch).
 
-Today's linux-next merge of the arm-soc tree got a conflict in
-drivers/video/msm/mdp_hw.h between commit 8abf0b31e161 ("video: msm:
-Remove useless mach/* includes") from the fbdev tree and commit
-1ef21f6343ff ("ARM: msm: move platform_data definitions") from the
-arm-soc tree.
+Could you please apply it?
+(or did I miss locking changes making it obsolete?)
 
-I fixed it up (see below) and can carry the fix as necessary (no action
-is required).
+Thanks,
+Bruno
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc drivers/video/msm/mdp_hw.h
-index 2a84137,a0bacf5..0000000
---- a/drivers/video/msm/mdp_hw.h
-+++ b/drivers/video/msm/mdp_hw.h
-@@@ -15,7 -15,8 +15,7 @@@
-  #ifndef _MDP_HW_H_
-  #define _MDP_HW_H_
- =20
-- #include <mach/msm_fb.h>
- -#include <mach/msm_iomap.h>
-+ #include <linux/platform_data/video-msm_fb.h>
- =20
-  struct mdp_info {
-  	struct mdp_device mdp_dev;
-
---Signature=_Tue__25_Sep_2012_16_40_20_+1000_TAAx0Ds7zh/TpTr/
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJQYVHUAAoJEECxmPOUX5FEGfEQAI6yEp4Hsc8ABR+YG92XH5aQ
-I7/MrR+NJ0nevrNwTcW1nq9l1Y5TJvlDmcrIpPhkTVMz8LlUt2nr2SOzUxpWIO06
-dKf/0bHOkkoYxSPKielu8AcexSJDoOzx7/ChgUOp5MNS2D45osy9jC0luCDBYhQo
-8xkCTREecPbNKJtAfpfGNwKrPVWf/6vXeEQC+BnrNfzO4q7GWe1+UVScz0Nqawmg
-sHvqwA/jjZ6d03BxA7WXq67kVilrjMSjoMsP4hdnAENSxkgNtIDQIfl15xtNRMnf
-G3bI2e0sgRH5bjyBq4yxqs8lFaAAmw9vvfdtom6TodZRK43MnvsNCtJyupIHWY4r
-83xsobLHUkFZA7qJ2Cu7+iVOYMit6eclFmerAbPq9UfSeOeDYDrE572a8EoEfTxE
-+rUWh8EVasU6UgtmCgqYPFyGizK22gxr2d9aCMbX1gqQbkGLRNxaxAMLQv1sPx7j
-p/zzjeAWxSgu1j1EEed7pVGQFqKkYZH2K0rvawIlv0FAfhklPtdiVI1Hb++2zF4b
-XAyRSOTNeZz4iYEKL+OkaSlYkFQxbQO5HbpBOo5Yqc+bzQMsasJfu0kimChzGuAD
-Mgrhawa5B+lJtlT2xuD0+xPVjO0EnfGEBO1w9k570jervA7QCtyy5p3IJXMMRbAZ
-VhmDXY1SDX3Oj7+GHjVr
-=vJ68
------END PGP SIGNATURE-----
-
---Signature=_Tue__25_Sep_2012_16_40_20_+1000_TAAx0Ds7zh/TpTr/--
+On Sun, 19 August 2012 Bruno Prémont <bonbons@linux-vserver.org> wrote:
+> Commit 4ea5454203d991ec85264f64f89ca8855fce69b0
+> [HID: Fix race condition between driver core and ll-driver] introduced
+> new locking around probe/remove functions that prevents any report/reply
+> from hardware to reach driver until it returned from probe.
+> 
+> As such, the ask-reply way to checking picoLCD firmware version during
+> probe is bound to timeout and let probe fail.
+> 
+> Drop the check to let driver successfully probe again (until locking issues
+> are resolved allowing to reinstate the check).
+> 
+> Signed-off-by: Bruno Prémont <bonbons@linux-vserver.org>
+> ---
+> 
+> Changes since v1:
+> - drop version check during probe instead of commenting it out.
+> 
+> 
+>  drivers/hid/hid-picolcd_core.c |   18 ------------------
+>  1 files changed, 0 insertions(+), 18 deletions(-)

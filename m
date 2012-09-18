@@ -1,85 +1,62 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 25 Sep 2012 06:31:43 +0000
-Subject: [PATCH v2 08/18] OMAPDSS: DISPC: Allow both upscaling and downscaling of chroma
-Message-Id: <1348553993-8083-9-git-send-email-archit@ti.com>
+From: Peter Senna Tschudin <peter.senna@gmail.com>
+Date: Tue, 18 Sep 2012 12:07:57 +0000
+Subject: [PATCH 07/10] drivers/video/bw2.c: fix error return code
+Message-Id: <1347970080-25175-7-git-send-email-peter.senna@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>
- <1348553993-8083-1-git-send-email-archit@ti.com>
-In-Reply-To: <1348553993-8083-1-git-send-email-archit@ti.com>
+References: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
+In-Reply-To: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Peter Senna Tschudin <peter.senna@gmail.com>
 
-In the function dispc_plane_set_scaling_uv(), create a parameter which tells if
-we want to upscale or downscale the chroma plane.
+From: Peter Senna Tschudin <peter.senna@gmail.com>
 
-Downscaling of chroma is required by writeback pipeline for converting the input
-YUV444 color format to YUV422 or NV12.
+Convert a nonnegative error return code to a negative one, as returned
+elsewhere in the function.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+A simplified version of the semantic match that finds this problem is as
+follows: (http://coccinelle.lip6.fr/)
+
+// <smpl>
+(
+if@p1 (\(ret < 0\|ret != 0\))
+ { ... return ret; }
+|
+ret@p1 = 0
+)
+... when != ret = e1
+    when != &ret
+*if(...)
+{
+  ... when != ret = e2
+      when forall
+ return ret;
+}
+// </smpl>
+
+Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
 ---
- drivers/video/omap2/dss/dispc.c |   32 ++++++++++++++++++++++----------
- 1 file changed, 22 insertions(+), 10 deletions(-)
+ drivers/video/bw2.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index ba65ebd..e42e902 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -1457,6 +1457,7 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
- {
- 	int scale_x = out_width != orig_width;
- 	int scale_y = out_height != orig_height;
-+	bool chroma_upscale = true;
+diff --git a/drivers/video/bw2.c b/drivers/video/bw2.c
+index 7ba74cd..6bea9a9 100644
+--- a/drivers/video/bw2.c
++++ b/drivers/video/bw2.c
+@@ -319,8 +319,10 @@ static int __devinit bw2_probe(struct platform_device *op)
  
- 	if (!dss_has_feature(FEAT_HANDLE_UV_SEPARATE))
- 		return;
-@@ -1473,23 +1474,34 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
+ 	info->screen_base = of_ioremap(&op->resource[0], 0,
+ 				       info->fix.smem_len, "bw2 ram");
+-	if (!info->screen_base)
++	if (!info->screen_base) {
++		err = -ENOMEM;
+ 		goto out_unmap_regs;
++	}
  
- 	switch (color_mode) {
- 	case OMAP_DSS_COLOR_NV12:
--		/* UV is subsampled by 2 vertically*/
--		orig_height >>= 1;
--		/* UV is subsampled by 2 horz.*/
--		orig_width >>= 1;
-+		if (chroma_upscale) {
-+			/* UV is subsampled by 2 horizontally and vertically */
-+			orig_height >>= 1;
-+			orig_width >>= 1;
-+		} else {
-+			/* UV is downsampled by 2 horizontally and vertically */
-+			orig_height <<= 1;
-+			orig_width <<= 1;
-+		}
-+
- 		break;
- 	case OMAP_DSS_COLOR_YUV2:
- 	case OMAP_DSS_COLOR_UYVY:
--		/*For YUV422 with 90/270 rotation,
--		 *we don't upsample chroma
--		 */
-+		/* For YUV422 with 90/270 rotation, we don't upsample chroma */
- 		if (rotation = OMAP_DSS_ROT_0 ||
--			rotation = OMAP_DSS_ROT_180)
--			/* UV is subsampled by 2 hrz*/
--			orig_width >>= 1;
-+				rotation = OMAP_DSS_ROT_180) {
-+			if (chroma_upscale)
-+				/* UV is subsampled by 2 horizontally */
-+				orig_width >>= 1;
-+			else
-+				/* UV is downsampled by 2 horizontally */
-+				orig_width <<= 1;
-+		}
-+
- 		/* must use FIR for YUV422 if rotated */
- 		if (rotation != OMAP_DSS_ROT_0)
- 			scale_x = scale_y = true;
-+
- 		break;
- 	default:
- 		BUG();
+ 	bw2_blank(FB_BLANK_UNBLANK, info);
+ 
 -- 
-1.7.9.5
+1.7.11.4
 

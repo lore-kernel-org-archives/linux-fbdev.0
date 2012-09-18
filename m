@@ -1,81 +1,80 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 07 Sep 2012 16:59:00 +0000
-Subject: Re: [PATCH 0/8] OMAPDSS: Misc improvements
-Message-Id: <1347037140.2646.60.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-u/KRcP6vnzuwphJUaaDA"
+From: Peter Senna Tschudin <peter.senna@gmail.com>
+Date: Tue, 18 Sep 2012 12:07:51 +0000
+Subject: [PATCH 01/10] drivers/video/mb862xx/mb862xxfbdrv.c: fix error return code
+Message-Id: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345729514-2441-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1346743368.2586.1.camel@deskari> <20120906201330.GF1303@atomide.com>
-	 <1347012960.2646.5.camel@deskari> <20120907162258.GT1303@atomide.com>
-In-Reply-To: <20120907162258.GT1303@atomide.com>
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
-
-
---=-u/KRcP6vnzuwphJUaaDA
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2012-09-07 at 09:22 -0700, Tony Lindgren wrote:
-> * Tomi Valkeinen <tomi.valkeinen@ti.com> [120907 03:16]:
-> > On Thu, 2012-09-06 at 13:13 -0700, Tony Lindgren wrote:
-> > > * Tomi Valkeinen <tomi.valkeinen@ti.com> [120904 00:23]:
-> > > > Hi Tony,
-> > > >=20
-> > > > Can you check the arch/arm patches below, and suggest how you'd lik=
-e to
-> > > > go forward with them?
-> > >=20
-> > > Acked them, then as soon as we have the initial immutable header
-> > > move branch available, you should merge with that to avoid
-> > > merge conflicts in upstream.
-> >=20
-> > Thanks, but you missed the first patch "[PATCH 1/8] OMAPDSS: HDMI: Move
-> > GPIO handling to HDMI driver".
->=20
-> Oops sorry, that's a nice one, acked that too. BTW, do you have any
-> platform code callbacks remaining for DSS?
-
-Yes, for quite many boards:
-
-$ git grep platform_enable arch/arm/mach-omap2/|wc -l
-17
-
-Some of those are trivial, I just need to move the panel's reset gpio
-handling to the panel driver. But some fiddle around with board specific
-gpios that do not belong to the panel driver. Also some board files
-contain backlight handling.
-
-Those are for panel drivers, then there's also callbacks for the omapdss
-driver itself. get_context_loss_count, set_min_bus_tput, and dsi pin
-enable/disable.
-
- Tomi
-
-
---=-u/KRcP6vnzuwphJUaaDA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: FlorianSchandinat@gmx.de
+Cc: paul.gortmaker@windriver.com, hsweeten@visionengravers.com, agust@denx.de, davidb@codeaurora.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Peter Senna Tschudin <peter.senna@gmail.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+From: Peter Senna Tschudin <peter.senna@gmail.com>
 
-iQIcBAABAgAGBQJQSifUAAoJEPo9qoy8lh71KYcQAI2Qexe4KZBCMDISgBbUaQs9
-IdQulM12jhdPf+qp6e/shrIidgpgKcXEhS0jMk1kcUiNm0PoK0geBk2Uwu+RI8rJ
-RA/AiZfxi2mJ+xj4Zwyi11SwwXrKnf8s0/rjlAYKIQo9NdH9GKeGThWWw2RWz56j
-JWUs2NRXepjb2TxyrtwQFma4tMcovwjbtkVBw96B1Ok53irHsg+hlyrCeJsCsPSr
-pQqaLU5R4qSFRPfI/tf+qWmX0LcplSAnCDiZVtMps7Jo9S32Yg2VeHTVOhTESjm4
-8eh1pNNtvvVh0bgqKiDQckv0yZDLEw1yibOpbdfJiQek6Sq3ZEvA7wqdoefzN5L9
-ZqYKoPHYNoBCd+q0lrssuLHKr/J6xvb7vsmBO3v8ovDtBWMSr9MMnmgqbTaFo3QH
-WuHRDbLTpaCEH+/ebKVBsV5cMZwkTPrLephkGQnPIMQyn1H6mWbkvBSs6AUui+K+
-ETnMBUWwPmBf7U7ObhJCsN/4nbpQBze45dwmLM4Lg53sDX1HHf6P4SkX1Nfrd9ya
-Sgeg45B6HXqBKvexeAlAuweQ3Gh6+Sv6pRB5veUN6qxyCLne6YupfTYjiKtCqlE5
-xwHAr8uVYw7DnibYJQhL+5JapVqalQN0QidMdhnoDEUEmvURVN2o10hmUzoprcWX
-GqqTgrMgnFJQZfOtIJz6
-=BzcY
------END PGP SIGNATURE-----
+Convert a nonnegative error return code to a negative one, as returned
+elsewhere in the function.
 
---=-u/KRcP6vnzuwphJUaaDA--
+A simplified version of the semantic match that finds this problem is as
+follows: (http://coccinelle.lip6.fr/)
+
+// <smpl>
+(
+if@p1 (\(ret < 0\|ret != 0\))
+ { ... return ret; }
+|
+ret@p1 = 0
+)
+... when != ret = e1
+    when != &ret
+*if(...)
+{
+  ... when != ret = e2
+      when forall
+ return ret;
+}
+// </smpl>
+
+Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
+---
+ drivers/video/mb862xx/mb862xxfbdrv.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/mb862xx/mb862xxfbdrv.c b/drivers/video/mb862xx/mb862xxfbdrv.c
+index 57d940b..d68e332 100644
+--- a/drivers/video/mb862xx/mb862xxfbdrv.c
++++ b/drivers/video/mb862xx/mb862xxfbdrv.c
+@@ -1052,12 +1052,14 @@ static int __devinit mb862xx_pci_probe(struct pci_dev *pdev,
+ 		break;
+ 	default:
+ 		/* should never occur */
++		ret = -EIO;
+ 		goto rel_reg;
+ 	}
+ 
+ 	par->fb_base = ioremap(par->fb_base_phys, par->mapped_vram);
+ 	if (par->fb_base = NULL) {
+ 		dev_err(dev, "Cannot map framebuffer\n");
++		ret = -EIO;
+ 		goto rel_reg;
+ 	}
+ 
+@@ -1073,11 +1075,13 @@ static int __devinit mb862xx_pci_probe(struct pci_dev *pdev,
+ 	dev_dbg(dev, "mmio phys 0x%llx 0x%lx\n",
+ 		(unsigned long long)par->mmio_base_phys, (ulong)par->mmio_len);
+ 
+-	if (mb862xx_pci_gdc_init(par))
++	ret = mb862xx_pci_gdc_init(par);
++	if (ret)
+ 		goto io_unmap;
+ 
+-	if (request_irq(par->irq, mb862xx_intr, IRQF_SHARED,
+-			DRV_NAME, (void *)par)) {
++	ret = request_irq(par->irq, mb862xx_intr, IRQF_SHARED,
++			  DRV_NAME, (void *)par);
++	if (ret) {
+ 		dev_err(dev, "Cannot request irq\n");
+ 		goto io_unmap;
+ 	}
+-- 
+1.7.11.4
 

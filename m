@@ -1,50 +1,70 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 28 Sep 2012 10:35:27 +0000
-Subject: [PATCH 6/6] OMAPDSS: remove <plat/cpu.h> includes
-Message-Id: <1348828527-13309-7-git-send-email-tomi.valkeinen@ti.com>
+From: Peter Senna Tschudin <peter.senna@gmail.com>
+Date: Tue, 18 Sep 2012 12:07:55 +0000
+Subject: [PATCH 05/10] drivers/video/atmel_lcdfb.c: fix error return code
+Message-Id: <1347970080-25175-5-git-send-email-peter.senna@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
+In-Reply-To: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Archit Taneja <a0393947@ti.com>, Chandrabhanu Mahapatra <cmahapatra@ti.com>, =?UTF-8?q?Rapha=C3=ABl=20Ass=C3=A9nat?= <raph@8d.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: nicolas.ferre@atmel.com
+Cc: FlorianSchandinat@gmx.de, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Peter Senna Tschudin <peter.senna@gmail.com>
 
-cpu_is_* calls are no longer used in omapdss, so the includes for
-<plat/cpu.h> can be removed.
+From: Peter Senna Tschudin <peter.senna@gmail.com>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Convert a nonnegative error return code to a negative one, as returned
+elsewhere in the function.
+
+A simplified version of the semantic match that finds this problem is as
+follows: (http://coccinelle.lip6.fr/)
+
+// <smpl>
+(
+if@p1 (\(ret < 0\|ret != 0\))
+ { ... return ret; }
+|
+ret@p1 = 0
+)
+... when != ret = e1
+    when != &ret
+*if(...)
+{
+  ... when != ret = e2
+      when forall
+ return ret;
+}
+// </smpl>
+
+Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
 ---
- drivers/video/omap2/dss/dss.c          |    2 --
- drivers/video/omap2/dss/dss_features.c |    1 -
- 2 files changed, 3 deletions(-)
+ drivers/video/atmel_lcdfb.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 2e74eef..363852a 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -35,8 +35,6 @@
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 1505539..94cac9f 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -931,8 +931,10 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
+ 		}
  
- #include <video/omapdss.h>
+ 		info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
+-		if (!info->screen_base)
++		if (!info->screen_base) {
++			ret = -ENOMEM;
+ 			goto release_intmem;
++		}
  
--#include <plat/cpu.h>
--
- #include "dss.h"
- #include "dss_features.h"
+ 		/*
+ 		 * Don't clear the framebuffer -- someone may have set
+@@ -960,6 +962,7 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
+ 	sinfo->mmio = ioremap(info->fix.mmio_start, info->fix.mmio_len);
+ 	if (!sinfo->mmio) {
+ 		dev_err(dev, "cannot map LCDC registers\n");
++		ret = -ENOMEM;
+ 		goto release_mem;
+ 	}
  
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index e2c2e2b..3e8287c 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -23,7 +23,6 @@
- #include <linux/slab.h>
- 
- #include <video/omapdss.h>
--#include <plat/cpu.h>
- 
- #include "dss.h"
- #include "dss_features.h"
 -- 
-1.7.9.5
+1.7.11.4
 

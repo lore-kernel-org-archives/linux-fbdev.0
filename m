@@ -1,110 +1,60 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 05 Sep 2012 08:25:44 +0000
-Subject: [PATCH 06/17] OMAPDSS: VRAM: Remove clearing with sDMA
-Message-Id: <1346833555-31258-7-git-send-email-tomi.valkeinen@ti.com>
+From: Peter Senna Tschudin <peter.senna@gmail.com>
+Date: Tue, 18 Sep 2012 12:07:53 +0000
+Subject: [PATCH 03/10] drivers/video/cg3.c: fix error return code
+Message-Id: <1347970080-25175-3-git-send-email-peter.senna@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
+In-Reply-To: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Peter Senna Tschudin <peter.senna@gmail.com>
 
-Currently vram.c clears the allocated memory automatically using OMAP
-system DMA. In an effort to reduce OMAP dependencies, we'll do the
-memory clear with CPU from now on.
+From: Peter Senna Tschudin <peter.senna@gmail.com>
 
-The previous patch implemented memory clear in the omapfb driver, and
-this patch removes the now obsolete clear functionality from vram.c.
+Convert a nonnegative error return code to a negative one, as returned
+elsewhere in the function.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>
+A simplified version of the semantic match that finds this problem is as
+follows: (http://coccinelle.lip6.fr/)
+
+// <smpl>
+(
+if@p1 (\(ret < 0\|ret != 0\))
+ { ... return ret; }
+|
+ret@p1 = 0
+)
+... when != ret = e1
+    when != &ret
+*if(...)
+{
+  ... when != ret = e2
+      when forall
+ return ret;
+}
+// </smpl>
+
+Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
 ---
- drivers/video/omap2/vram.c |   56 --------------------------------------------
- 1 file changed, 56 deletions(-)
+ drivers/video/cg3.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/vram.c b/drivers/video/omap2/vram.c
-index 87e421e..f2b15c4 100644
---- a/drivers/video/omap2/vram.c
-+++ b/drivers/video/omap2/vram.c
-@@ -34,7 +34,6 @@
- #include <asm/setup.h>
- 
- #include <plat/vram.h>
--#include <plat/dma.h>
- 
- #ifdef DEBUG
- #define DBG(format, ...) pr_debug("VRAM: " format, ## __VA_ARGS__)
-@@ -250,59 +249,6 @@ int omap_vram_reserve(unsigned long paddr, size_t size)
- }
- EXPORT_SYMBOL(omap_vram_reserve);
- 
--static void _omap_vram_dma_cb(int lch, u16 ch_status, void *data)
--{
--	struct completion *compl = data;
--	complete(compl);
--}
--
--static int _omap_vram_clear(u32 paddr, unsigned pages)
--{
--	struct completion compl;
--	unsigned elem_count;
--	unsigned frame_count;
--	int r;
--	int lch;
--
--	init_completion(&compl);
--
--	r = omap_request_dma(OMAP_DMA_NO_DEVICE, "VRAM DMA",
--			_omap_vram_dma_cb,
--			&compl, &lch);
--	if (r) {
--		pr_err("VRAM: request_dma failed for memory clear\n");
--		return -EBUSY;
--	}
--
--	elem_count = pages * PAGE_SIZE / 4;
--	frame_count = 1;
--
--	omap_set_dma_transfer_params(lch, OMAP_DMA_DATA_TYPE_S32,
--			elem_count, frame_count,
--			OMAP_DMA_SYNC_ELEMENT,
--			0, 0);
--
--	omap_set_dma_dest_params(lch, 0, OMAP_DMA_AMODE_POST_INC,
--			paddr, 0, 0);
--
--	omap_set_dma_color_mode(lch, OMAP_DMA_CONSTANT_FILL, 0x000000);
--
--	omap_start_dma(lch);
--
--	if (wait_for_completion_timeout(&compl, msecs_to_jiffies(1000)) = 0) {
--		omap_stop_dma(lch);
--		pr_err("VRAM: dma timeout while clearing memory\n");
--		r = -EIO;
--		goto err;
--	}
--
--	r = 0;
--err:
--	omap_free_dma(lch);
--
--	return r;
--}
--
- static int _omap_vram_alloc(unsigned pages, unsigned long *paddr)
- {
- 	struct vram_region *rm;
-@@ -337,8 +283,6 @@ found:
- 
- 		*paddr = start;
- 
--		_omap_vram_clear(start, pages);
--
- 		return 0;
+diff --git a/drivers/video/cg3.c b/drivers/video/cg3.c
+index f927a7b..c5e7612 100644
+--- a/drivers/video/cg3.c
++++ b/drivers/video/cg3.c
+@@ -398,7 +398,8 @@ static int __devinit cg3_probe(struct platform_device *op)
+ 			goto out_unmap_screen;
  	}
  
+-	if (fb_alloc_cmap(&info->cmap, 256, 0))
++	err = fb_alloc_cmap(&info->cmap, 256, 0);
++	if (err)
+ 		goto out_unmap_screen;
+ 
+ 	fb_set_cmap(&info->cmap, info);
 -- 
-1.7.9.5
+1.7.11.4
 

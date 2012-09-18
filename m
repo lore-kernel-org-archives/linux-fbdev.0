@@ -1,115 +1,272 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 03 Sep 2012 00:54:48 +0000
-Subject: Re: [PATCH] video: s3c2410fb: Use pr_* and dev_* instead of printk
-Message-Id: <003401cd896e$b8007ce0$280176a0$%han@samsung.com>
+From: Pawel Moll <pawel.moll@arm.com>
+Date: Tue, 18 Sep 2012 14:17:44 +0000
+Subject: [PATCH v2 02/13] video: Versatile Express display output driver
+Message-Id: <1347977875-16855-3-git-send-email-pawel.moll@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1347977875-16855-1-git-send-email-pawel.moll@arm.com>
+In-Reply-To: <1347977875-16855-1-git-send-email-pawel.moll@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Friday, August 31, 2012 8:50 PM Sachin Kamat wrote:
-> 
-> printk calls are replaced by pr_* and dev_* calls to silence
-> checkpatch warnings.
-> 
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> ---
->  drivers/video/s3c2410fb.c |   18 ++++++++++--------
->  1 files changed, 10 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
-> index 77f34c6..a54e3f9 100644
-> --- a/drivers/video/s3c2410fb.c
-> +++ b/drivers/video/s3c2410fb.c
-> @@ -11,6 +11,8 @@
->   * Driver based on skeletonfb.c, sa1100fb.c and others.
->  */
-> 
-> +#define pr_fmt(fmt) "s3c2410fb: " fmt
-> +
+Versatile Express' DVI video output can be connected to one the three
+sources - motherboard's CLCD controller or a video signal generated
+by one of the daughterboards.
 
-Hi Sachin Kamat,
+This driver configures the muxer FPGA so the output displays
+content of one of the framebuffers in the system (0 by default,
+can be changed by user writing to "fb" attribute of the muxfpga
+device). The decision is based on an educated guess in case of
+DT-less system or on the "arm,vexpress,site" property of the
+display controller's DT node.
 
-How about using KBUILD_MODNAME instead of "s3c2410fb: "?
-It is because prefix is the same with module name.
+It will also set up the display formatter mode and keep it up
+to date with mode changes requested by the user (eg. with fbset
+tool).
 
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+Signed-off-by: Pawel Moll <pawel.moll@arm.com>
+---
+ drivers/video/Makefile       |    3 +
+ drivers/video/vexpress-dvi.c |  208 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 211 insertions(+)
+ create mode 100644 drivers/video/vexpress-dvi.c
 
+Hi Florian,
 
-Best regards,
-Jingoo Han
+Assuming it's not totally crap ;-) what would be you preference about
+merging this patch? Would you take it through your tree?
 
->  #include <linux/module.h>
->  #include <linux/kernel.h>
->  #include <linux/err.h>
-> @@ -48,7 +50,7 @@ static int debug	= 1;
->  static int debug;
->  #endif
-> 
-> -#define dprintk(msg...)	if (debug) printk(KERN_DEBUG "s3c2410fb: " msg);
-> +#define dprintk(msg...)	if (debug) pr_debug(msg);
-> 
->  /* useful functions */
-> 
-> @@ -598,11 +600,11 @@ static int s3c2410fb_debug_store(struct device *dev,
->  	if (strnicmp(buf, "on", 2) = 0 ||
->  	    strnicmp(buf, "1", 1) = 0) {
->  		debug = 1;
-> -		printk(KERN_DEBUG "s3c2410fb: Debug On");
-> +		dev_dbg(dev, "s3c2410fb: Debug On");
->  	} else if (strnicmp(buf, "off", 3) = 0 ||
->  		   strnicmp(buf, "0", 1) = 0) {
->  		debug = 0;
-> -		printk(KERN_DEBUG "s3c2410fb: Debug Off");
-> +		dev_dbg(dev, "s3c2410fb: Debug Off");
->  	} else {
->  		return -EINVAL;
->  	}
-> @@ -921,7 +923,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
-> 
->  	info->clk = clk_get(NULL, "lcd");
->  	if (IS_ERR(info->clk)) {
-> -		printk(KERN_ERR "failed to get lcd clock source\n");
-> +		dev_err(&pdev->dev, "failed to get lcd clock source\n");
->  		ret = PTR_ERR(info->clk);
->  		goto release_irq;
->  	}
-> @@ -947,7 +949,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
->  	/* Initialize video memory */
->  	ret = s3c2410fb_map_video_memory(fbinfo);
->  	if (ret) {
-> -		printk(KERN_ERR "Failed to allocate video RAM: %d\n", ret);
-> +		dev_err(&pdev->dev, "Failed to allocate video RAM: %d\n", ret);
->  		ret = -ENOMEM;
->  		goto release_clock;
->  	}
-> @@ -970,7 +972,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
-> 
->  	ret = register_framebuffer(fbinfo);
->  	if (ret < 0) {
-> -		printk(KERN_ERR "Failed to register framebuffer device: %d\n",
-> +		dev_err(&pdev->dev, "Failed to register framebuffer device: %d\n",
->  			ret);
->  		goto free_cpufreq;
->  	}
-> @@ -978,9 +980,9 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
->  	/* create device files */
->  	ret = device_create_file(&pdev->dev, &dev_attr_debug);
->  	if (ret)
-> -		printk(KERN_ERR "failed to add debug attribute\n");
-> +		dev_err(&pdev->dev, "failed to add debug attribute\n");
-> 
-> -	printk(KERN_INFO "fb%d: %s frame buffer device\n",
-> +	dev_info(&pdev->dev, "fb%d: %s frame buffer device\n",
->  		fbinfo->node, fbinfo->fix.id);
-> 
->  	return 0;
-> --
-> 1.7.4.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Regards
+
+Pawel
+
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index ee8dafb..01d28d5 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -170,3 +170,6 @@ obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
+ 
+ #video output switch sysfs driver
+ obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) += output.o
++
++# platform specific output drivers
++obj-$(CONFIG_VEXPRESS_CONFIG)	  += vexpress-dvi.o
+diff --git a/drivers/video/vexpress-dvi.c b/drivers/video/vexpress-dvi.c
+new file mode 100644
+index 0000000..fc50fc6
+--- /dev/null
++++ b/drivers/video/vexpress-dvi.c
+@@ -0,0 +1,208 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * Copyright (C) 2012 ARM Limited
++ */
++
++#define pr_fmt(fmt) "vexpress-dvi: " fmt
++
++#include <linux/fb.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
++#include <linux/vexpress.h>
++
++
++static struct vexpress_config_func *vexpress_dvimode_func;
++
++static struct {
++	u32 xres, yres, mode;
++} vexpress_dvi_dvimodes[] = {
++	{ 640, 480, 0 }, /* VGA */
++	{ 800, 600, 1 }, /* SVGA */
++	{ 1024, 768, 2 }, /* XGA */
++	{ 1280, 1024, 3 }, /* SXGA */
++	{ 1600, 1200, 4 }, /* UXGA */
++	{ 1920, 1080, 5 }, /* HD1080 */
++};
++
++static void vexpress_dvi_mode_set(struct fb_info *info, u32 xres, u32 yres)
++{
++	int err = -ENOENT;
++	int i;
++
++	if (!vexpress_dvimode_func)
++		return;
++
++	for (i = 0; i < ARRAY_SIZE(vexpress_dvi_dvimodes); i++) {
++		if (vexpress_dvi_dvimodes[i].xres == xres &&
++				vexpress_dvi_dvimodes[i].yres == yres) {
++			pr_debug("mode: %ux%u = %d\n", xres, yres,
++					vexpress_dvi_dvimodes[i].mode);
++			err = vexpress_config_write(vexpress_dvimode_func, 0,
++					vexpress_dvi_dvimodes[i].mode);
++			break;
++		}
++	}
++
++	if (err)
++		pr_warn("Failed to set %ux%u mode! (%d)\n", xres, yres, err);
++}
++
++
++static struct vexpress_config_func *vexpress_muxfpga_func;
++static int vexpress_dvi_fb = -1;
++
++static int vexpress_dvi_mux_set(struct fb_info *info)
++{
++	u32 site = vexpress_get_site_by_dev(info->device);
++	int err = vexpress_config_write(vexpress_muxfpga_func, 0, site);
++
++	if (!err) {
++		pr_debug("Selected MUXFPGA input %d (fb%d)\n", site,
++				info->node);
++		vexpress_dvi_fb = info->node;
++		vexpress_dvi_mode_set(info, info->var.xres,
++				info->var.yres);
++	} else {
++		pr_warn("Failed to select MUXFPGA input %d (fb%d)! (%d)\n",
++				site, info->node, err);
++	}
++
++	return err;
++}
++
++static int vexpress_dvi_fb_select(int fb)
++{
++	int err;
++	struct fb_info *info = registered_fb[fb];
++
++	if (!info || !lock_fb_info(info))
++		return -ENODEV;
++
++	err = vexpress_dvi_mux_set(info);
++
++	unlock_fb_info(info);
++
++	return err;
++}
++
++static ssize_t vexpress_dvi_fb_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%d\n", vexpress_dvi_fb);
++}
++
++static ssize_t vexpress_dvi_fb_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	long value;
++	int err = kstrtol(buf, 0, &value);
++
++	if (!err)
++		err = vexpress_dvi_fb_select(value);
++
++	return err ? err : count;
++}
++
++DEVICE_ATTR(fb, S_IRUGO | S_IWUSR, vexpress_dvi_fb_show,
++		vexpress_dvi_fb_store);
++
++
++static int vexpress_dvi_fb_event_notify(struct notifier_block *self,
++			      unsigned long action, void *data)
++{
++	struct fb_event *event = data;
++	struct fb_info *info = event->info;
++	struct fb_videomode *mode = event->data;
++
++	switch (action) {
++	case FB_EVENT_FB_REGISTERED:
++		if (vexpress_dvi_fb < 0)
++			vexpress_dvi_mux_set(info);
++		break;
++	case FB_EVENT_MODE_CHANGE:
++	case FB_EVENT_MODE_CHANGE_ALL:
++		if (info->node == vexpress_dvi_fb)
++			vexpress_dvi_mode_set(info, mode->xres, mode->yres);
++		break;
++	}
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block vexpress_dvi_fb_notifier = {
++	.notifier_call = vexpress_dvi_fb_event_notify,
++};
++
++
++enum vexpress_dvi_func { FUNC_MUXFPGA, FUNC_DVIMODE };
++
++static struct of_device_id vexpress_dvi_of_match[] = {
++	{
++		.compatible = "arm,vexpress-muxfpga",
++		.data = (void *)FUNC_MUXFPGA,
++	}, {
++		.compatible = "arm,vexpress-dvimode",
++		.data = (void *)FUNC_DVIMODE,
++	},
++	{}
++};
++
++static int vexpress_dvi_probe(struct platform_device *pdev)
++{
++	enum vexpress_dvi_func func;
++	const struct of_device_id *match =
++			of_match_device(vexpress_dvi_of_match, &pdev->dev);
++
++	if (match)
++		func = (enum vexpress_dvi_func)match->data;
++	else
++		func = pdev->id_entry->driver_data;
++
++	switch (func) {
++	case FUNC_MUXFPGA:
++		vexpress_muxfpga_func =
++				vexpress_config_func_get_by_dev(&pdev->dev);
++		device_create_file(&pdev->dev, &dev_attr_fb);
++		break;
++	case FUNC_DVIMODE:
++		vexpress_dvimode_func =
++				vexpress_config_func_get_by_dev(&pdev->dev);
++		break;
++	}
++
++	if (vexpress_muxfpga_func && vexpress_dvimode_func) {
++		fb_register_client(&vexpress_dvi_fb_notifier);
++		vexpress_dvi_fb_select(0);
++	}
++
++	return 0;
++}
++
++static const struct platform_device_id vexpress_dvi_id_table[] = {
++	{ .name = "vexpress-muxfpga", .driver_data = FUNC_MUXFPGA, },
++	{ .name = "vexpress-dvimode", .driver_data = FUNC_DVIMODE, },
++	{}
++};
++
++static struct platform_driver vexpress_dvi_driver = {
++	.probe = vexpress_dvi_probe,
++	.driver = {
++		.name = "vexpress-dvi",
++		.of_match_table = vexpress_dvi_of_match,
++	},
++	.id_table = vexpress_dvi_id_table,
++};
++
++static int __init vexpress_dvi_init(void)
++{
++	return platform_driver_register(&vexpress_dvi_driver);
++}
++device_initcall(vexpress_dvi_init);
+-- 
+1.7.9.5
+
 

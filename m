@@ -1,86 +1,68 @@
-From: Peter Senna Tschudin <peter.senna@gmail.com>
-Date: Tue, 18 Sep 2012 12:07:59 +0000
-Subject: [PATCH 09/10] drivers/video/ps3fb.c: fix error return code
-Message-Id: <1347970080-25175-9-git-send-email-peter.senna@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 19 Sep 2012 08:30:30 +0000
+Subject: [PATCH 0/8] OMAPDSS: dss device model changes
+Message-Id: <1348043438-2624-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
-In-Reply-To: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: geoff@infradead.org
-Cc: cbe-oss-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org, FlorianSchandinat@gmx.de, Peter Senna Tschudin <peter.senna@gmail.com>, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Steve Sakoman <steve@sakoman.com>, Lajos Molnar <lajos@ti.com>, Jassi Brar <jaswinder.singh@linaro.org>, Grazvydas Ignotas <notasas@gmail.com>, Vaibhav Hiremath <hvaibhav@ti.com>
 
-From: Peter Senna Tschudin <peter.senna@gmail.com>
+Hi,
 
-Convert a nonnegative error return code to a negative one, as returned
-elsewhere in the function.
+This series contains patches that change how omapdss's panel devices
+(omap_dss_device) are initialized and registered. There are two patches that
+change behaviour, the rest should be just cleanups:
 
-A simplified version of the semantic match that finds this problem is as
-follows: (http://coccinelle.lip6.fr/)
+The patch "omap_dss_register_device() doesn't take display index" affects the
+number for the "displayX" sysfs files. This hopefully doesn't affect the
+userspace, as the number has never been a clear indication of what the
+particular display is.
 
-// <smpl>
-(
-if@p1 (\(ret < 0\|ret != 0\))
- { ... return ret; }
-|
-ret@p1 = 0
-)
-... when != ret = e1
-    when != &ret
-*if(...)
-{
-  ... when != ret = e2
-      when forall
- return ret;
-}
-// </smpl>
+The patch "register only one display device per output" affects how panel
+devices are created. Currently we support multiple panels per output, i.e. you
+could have DVI and an LCD displays using the same DPI output, as long as the
+DVI and LCD are not used at the same time.
 
-Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
----
- drivers/video/ps3fb.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+This patch changes the omapdss driver to only register one display device per
+output. If there are multiple displays for the output, either the first one is
+picked or, if def_display has been defined in kernel parameters and the
+def_display is one of the displays for this output, the def_display is picked.
+See the patch for more information.
 
-diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
-index 4e292f2..0b340d6 100644
---- a/drivers/video/ps3fb.c
-+++ b/drivers/video/ps3fb.c
-@@ -1034,6 +1034,7 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
- 	if (status) {
- 		dev_err(&dev->core, "%s: lv1_gpu_memory_allocate failed: %d\n",
- 			__func__, status);
-+		retval = -ENOMEM;
- 		goto err_close_device;
- 	}
- 	dev_dbg(&dev->core, "ddr:lpar:0x%llx\n", ddr_lpar);
-@@ -1046,6 +1047,7 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
- 		dev_err(&dev->core,
- 			"%s: lv1_gpu_context_allocate failed: %d\n", __func__,
- 			status);
-+		retval = -ENOMEM;
- 		goto err_gpu_memory_free;
- 	}
- 
-@@ -1053,6 +1055,7 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
- 	dinfo = (void __force *)ioremap(lpar_driver_info, 128 * 1024);
- 	if (!dinfo) {
- 		dev_err(&dev->core, "%s: ioremap failed\n", __func__);
-+		retval = -ENOMEM;
- 		goto err_gpu_context_free;
- 	}
- 
-@@ -1121,8 +1124,10 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
- 	}
- 
- 	info = framebuffer_alloc(sizeof(struct ps3fb_par), &dev->core);
--	if (!info)
-+	if (!info) {
-+		retval = -ENOMEM;
- 		goto err_context_fb_close;
-+	}
- 
- 	par = info->par;
- 	par->mode_id = ~ps3fb_mode;	/* != ps3fb_mode, to trigger change */
+My belief is that neither patch should break things, but there's the
+possibility. So I've tried to cc people who might have an opinion about this,
+or perhaps test their setup with these patches.
+
+The series is based on the latest omapdss master branch, and is available at:
+
+git://gitorious.org/linux-omap-dss2/linux.git work/devtree-base
+
+ Tomi
+
+Tomi Valkeinen (8):
+  OMAPDSS: omap_dss_register_device() doesn't take display index
+  OMAPDSS: Add dss_get_default_display_name()
+  OMAPDSS: register only one display device per output
+  OMAPDSS: explicitely initialize dssdev->channel for new displays
+  OMAPDSS: handle errors in dss_init_device
+  OMAPDSS: cleanup dss_recheck_connections
+  OMAPDSS: cleanup dss_recheck_connections further
+  OMAPDSS: alloc dssdevs dynamically
+
+ drivers/video/omap2/dss/core.c    |   91 +++++++++++++++++++------------------
+ drivers/video/omap2/dss/display.c |   85 +++++++++++++++++++++++++++++++---
+ drivers/video/omap2/dss/dpi.c     |   58 ++++++++++++++++++-----
+ drivers/video/omap2/dss/dsi.c     |   62 +++++++++++++++++++------
+ drivers/video/omap2/dss/dss.h     |   15 +++---
+ drivers/video/omap2/dss/hdmi.c    |   70 ++++++++++++++++++++++------
+ drivers/video/omap2/dss/overlay.c |   69 ----------------------------
+ drivers/video/omap2/dss/rfbi.c    |   58 ++++++++++++++++++-----
+ drivers/video/omap2/dss/sdi.c     |   58 ++++++++++++++++++-----
+ drivers/video/omap2/dss/venc.c    |   60 +++++++++++++++++++-----
+ 10 files changed, 428 insertions(+), 198 deletions(-)
+
 -- 
-1.7.11.4
+1.7.9.5
 

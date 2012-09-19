@@ -1,41 +1,125 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 11 Sep 2012 02:31:23 +0000
-Subject: Re: [PATCH v2] fbdev: Add Renesas vdc4 framebuffer driver
-Message-Id: <000801cd8fc5$8931bd40$9b9537c0$%han@samsung.com>
+From: Ryan Harkin <ryan.harkin@linaro.org>
+Date: Wed, 19 Sep 2012 16:04:25 +0000
+Subject: [RFC PATCH 2/3] ARM: vexpress: Add device tree support for CLCD driver
+Message-Id: <1348070666-9153-3-git-send-email-ryan.harkin@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347267372-22949-1-git-send-email-phil.edworthy@renesas.com>
-In-Reply-To: <1347267372-22949-1-git-send-email-phil.edworthy@renesas.com>
+References: <1348070666-9153-1-git-send-email-ryan.harkin@linaro.org>
+In-Reply-To: <1348070666-9153-1-git-send-email-ryan.harkin@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Monday, September 10, 2012 5:56 PM Phil Edworthy wrote
-> 
-> The vdc4 display hardware is found on the sh7269 device.
-> 
-> Signed-off-by: Phil Edworthy <phil.edworthy@renesas.com>
+Add support for device tree in the amba-clcd PL111 video driver.
 
+Special case support is added for the A9 CoreTile which uses the "legacy"
+address map and has a PL111 device on-board.  The default case is to configure
+the device on the motherboard.
 
-Reviewed-by: Jingoo Han <jg1.han@samsung.com>
+Oscillator support is added for the A9 CoreTile's CLCD driver.
 
-Best regards,
-Jingoo Han
+Signed-off-by: Ryan Harkin <ryan.harkin@linaro.org>
+---
+ arch/arm/mach-vexpress/v2m.c |   58 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
 
-
-> ---
-> v2:
->  * Use devm_ variants of clk_get, ioremap_nocache, request_irq.
->  * Replace spaces with tabs.
->  * Check ren_vdc4_start return value.
->  * Fix headers used.
-> 
->  drivers/video/Kconfig      |   10 +
->  drivers/video/Makefile     |    1 +
->  drivers/video/ren_vdc4fb.c |  641 ++++++++++++++++++++++++++++++++++++++++++++
->  include/video/ren_vdc4fb.h |   19 ++
->  4 files changed, 671 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/video/ren_vdc4fb.c
->  create mode 100644 include/video/ren_vdc4fb.h
-
+diff --git a/arch/arm/mach-vexpress/v2m.c b/arch/arm/mach-vexpress/v2m.c
+index 37608f2..799e00e 100644
+--- a/arch/arm/mach-vexpress/v2m.c
++++ b/arch/arm/mach-vexpress/v2m.c
+@@ -3,6 +3,7 @@
+  */
+ #include <linux/device.h>
+ #include <linux/amba/bus.h>
++#include <linux/amba/clcd.h>
+ #include <linux/amba/mmci.h>
+ #include <linux/io.h>
+ #include <linux/init.h>
+@@ -37,6 +38,7 @@
+ #include <mach/ct-ca9x4.h>
+ #include <mach/motherboard.h>
+ 
++#include <plat/clcd.h>
+ #include <plat/sched_clock.h>
+ 
+ #include "core.h"
+@@ -541,6 +543,54 @@ MACHINE_END
+ 
+ #if defined(CONFIG_ARCH_VEXPRESS_DT)
+ 
++static struct v2m_osc v2m_dt_clcd_osc = {
++	.rate_min = 10000000,
++	.rate_max = 165000000,
++	.rate_default = 23750000,
++};
++
++static int v2m_dt_clcd_init(void)
++{
++	struct device_node *node;
++	u32 osc;
++	u32 clcd_site;
++	u32 dvimode;
++	const __be32 *prop;
++	int len, na, ns;
++	phys_addr_t reg_base;
++
++	node = of_find_compatible_node(NULL, NULL, "arm,pl111");
++	if (!node)
++		return -ENODEV;
++
++	na = of_n_addr_cells(node);
++	ns = of_n_size_cells(node);
++
++	prop = of_get_property(node, "reg", &len);
++	if (WARN_ON(!prop || len < (na + ns) * sizeof(*prop)))
++		return -EINVAL;
++	reg_base = of_read_number(prop, na);
++
++	switch (reg_base) {
++	case CT_CA9X4_CLCDC:
++		clcd_site = v2m_get_master_site();
++		dvimode = 2;
++		break;
++	default:
++		clcd_site = SYS_CFG_SITE_MB;
++		dvimode = 0;
++		break;
++	}
++
++	if (of_property_read_u32(node, "arm,vexpress-osc", &osc) != 0)
++		return -EINVAL;
++	v2m_dt_clcd_osc.site = clcd_site;
++	v2m_dt_clcd_osc.osc = osc;
++	v2m_cfg_write(SYS_CFG_MUXFPGA | clcd_site, clcd_site);
++	v2m_cfg_write(SYS_CFG_DVIMODE | clcd_site, dvimode);
++	return 0;
++}
++
+ static struct map_desc v2m_rs1_io_desc __initdata = {
+ 	.virtual	= V2M_PERIPH,
+ 	.pfn		= __phys_to_pfn(0x1c000000),
+@@ -598,6 +648,8 @@ void __init v2m_dt_init_early(void)
+ 			pr_warning("vexpress: DT HBI (%x) is not matching "
+ 					"hardware (%x)!\n", dt_hbi, hbi);
+ 	}
++
++	v2m_dt_clcd_init();
+ }
+ 
+ static  struct of_device_id vexpress_irq_match[] __initdata = {
+@@ -631,6 +683,12 @@ static void __init v2m_dt_timer_init(void)
+ 
+ 	if (arch_timer_sched_clock_init() != 0)
+ 		versatile_sched_clock_init(v2m_sysreg_base + V2M_SYS_24MHZ, 24000000);
++
++	if (v2m_dt_clcd_osc.site) {
++		/* core tile clcd controller for A9 */
++		clk = v2m_osc_register("10020000.clcd", &v2m_dt_clcd_osc);
++		clk_register_clkdev(clk, NULL, "10020000.clcd");
++	}
+ }
+ 
+ static struct sys_timer v2m_dt_timer = {
+-- 
+1.7.9.5
 

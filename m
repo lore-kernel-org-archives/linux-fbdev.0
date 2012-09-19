@@ -1,72 +1,42 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 13 Sep 2012 12:26:57 +0000
-Subject: [PATCH 13/21] OMAPDSS: DISPC: Pass dummy scalar output rates for writeback pipeline
-Message-Id: <1347538505-25359-14-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 19 Sep 2012 08:30:32 +0000
+Subject: [PATCH 2/8] OMAPDSS: Add dss_get_default_display_name()
+Message-Id: <1348043438-2624-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>
-In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
+References: <1348043438-2624-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1348043438-2624-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The scalar output rate for writeback pipeline when configured in memory to
-memory mode isn't a fixed rate, it can increase or reduce based on the time
-it needs to downscale. It also depends on the rate at which it can receive
-and push out data from/to the interconnect.
+Add function dss_get_default_display_name() which returns the name of
+the default display, given from the board file or via module parameters.
+The default display name can be used by output drivers to decide which
+display is the wanted one.
 
-Set the scalar output rates for writeback to a low dummy value(set to 1) to
-represent that it can output at low rates, this is done so that maximum
-downscaling is possible in memory to memory mode.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |   23 ++++++++++++++++-------
- 1 file changed, 16 insertions(+), 7 deletions(-)
+ drivers/video/omap2/dss/core.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 8673a33..1d5dddf 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -3011,21 +3011,30 @@ unsigned long dispc_core_clk_rate(void)
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 20c8bc8..315f557 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -57,6 +57,11 @@ bool dss_debug;
+ module_param_named(debug, dss_debug, bool, 0644);
+ #endif
  
- static unsigned long dispc_plane_output_rate(enum omap_plane plane)
- {
--	enum omap_channel channel = dispc_ovl_get_channel_out(plane);
-+	if (plane != OMAP_DSS_WB) {
-+		enum omap_channel channel = dispc_ovl_get_channel_out(plane);
- 
--	return dispc_mgr_pclk_rate(channel);
-+		return dispc_mgr_pclk_rate(channel);
-+	} else {
-+		return 1;
-+	}
- }
- 
- static unsigned long dispc_plane_lclk_rate(enum omap_plane plane)
- {
--	enum omap_channel channel = dispc_ovl_get_channel_out(plane);
- 
--	if (dss_mgr_is_lcd(channel))
--		return dispc_mgr_lclk_rate(channel);
--	else
--		return dispc_fclk_rate();
-+	if (plane != OMAP_DSS_WB) {
-+		enum omap_channel channel = dispc_ovl_get_channel_out(plane);
- 
-+		if (dss_mgr_is_lcd(channel))
-+			return dispc_mgr_lclk_rate(channel);
-+		else
-+			return dispc_fclk_rate();
-+	} else {
-+		return 1;
-+	}
- }
++const char *dss_get_default_display_name(void)
++{
++	return core.default_display_name;
++}
 +
- static void dispc_dump_clocks_channel(struct seq_file *s, enum omap_channel channel)
- {
- 	int lcd, pcd;
+ /* REGULATORS */
+ 
+ struct regulator *dss_get_vdds_dsi(void)
 -- 
 1.7.9.5
 

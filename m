@@ -1,89 +1,56 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 23 Sep 2012 19:52:00 +0000
-Subject: Re: [PATCH 01/10] drivers/video/mb862xx/mb862xxfbdrv.c: fix error return code
-Message-Id: <505F6860.7000908@gmx.de>
+From: Tony Lindgren <tony@atomide.com>
+Date: Wed, 19 Sep 2012 21:05:52 +0000
+Subject: [PATCH 07/29] ARM: OMAP1: Move lcd_mipid.h from plat to mach
+Message-Id: <20120919210552.28074.21443.stgit@muffinssi>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
-In-Reply-To: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
+References: <20120919205732.28074.43697.stgit@muffinssi>
+In-Reply-To: <20120919205732.28074.43697.stgit@muffinssi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Peter Senna Tschudin <peter.senna@gmail.com>
-Cc: paul.gortmaker@windriver.com, hsweeten@visionengravers.com, agust@denx.de, davidb@codeaurora.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Applied all 10 patches of this series.
+This is only used by omap1.
 
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap1/board-nokia770.c         |    2 +-
+ arch/arm/mach-omap1/include/mach/lcd_mipid.h |    0 
+ drivers/video/omap/lcd_mipid.c               |    2 +-
+ 3 files changed, 2 insertions(+), 2 deletions(-)
+ rename arch/arm/{plat-omap/include/plat/lcd_mipid.h => mach-omap1/include/mach/lcd_mipid.h} (100%)
 
-Thanks,
-
-Florian Tobias Schandinat
-
-
-On 09/18/2012 12:07 PM, Peter Senna Tschudin wrote:
-> From: Peter Senna Tschudin <peter.senna@gmail.com>
-> 
-> Convert a nonnegative error return code to a negative one, as returned
-> elsewhere in the function.
-> 
-> A simplified version of the semantic match that finds this problem is as
-> follows: (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> (
-> if@p1 (\(ret < 0\|ret != 0\))
->  { ... return ret; }
-> |
-> ret@p1 = 0
-> )
-> ... when != ret = e1
->     when != &ret
-> *if(...)
-> {
->   ... when != ret = e2
->       when forall
->  return ret;
-> }
-> // </smpl>
-> 
-> Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
-> ---
->  drivers/video/mb862xx/mb862xxfbdrv.c | 10 +++++++---
->  1 file changed, 7 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/mb862xx/mb862xxfbdrv.c b/drivers/video/mb862xx/mb862xxfbdrv.c
-> index 57d940b..d68e332 100644
-> --- a/drivers/video/mb862xx/mb862xxfbdrv.c
-> +++ b/drivers/video/mb862xx/mb862xxfbdrv.c
-> @@ -1052,12 +1052,14 @@ static int __devinit mb862xx_pci_probe(struct pci_dev *pdev,
->  		break;
->  	default:
->  		/* should never occur */
-> +		ret = -EIO;
->  		goto rel_reg;
->  	}
->  
->  	par->fb_base = ioremap(par->fb_base_phys, par->mapped_vram);
->  	if (par->fb_base = NULL) {
->  		dev_err(dev, "Cannot map framebuffer\n");
-> +		ret = -EIO;
->  		goto rel_reg;
->  	}
->  
-> @@ -1073,11 +1075,13 @@ static int __devinit mb862xx_pci_probe(struct pci_dev *pdev,
->  	dev_dbg(dev, "mmio phys 0x%llx 0x%lx\n",
->  		(unsigned long long)par->mmio_base_phys, (ulong)par->mmio_len);
->  
-> -	if (mb862xx_pci_gdc_init(par))
-> +	ret = mb862xx_pci_gdc_init(par);
-> +	if (ret)
->  		goto io_unmap;
->  
-> -	if (request_irq(par->irq, mb862xx_intr, IRQF_SHARED,
-> -			DRV_NAME, (void *)par)) {
-> +	ret = request_irq(par->irq, mb862xx_intr, IRQF_SHARED,
-> +			  DRV_NAME, (void *)par);
-> +	if (ret) {
->  		dev_err(dev, "Cannot request irq\n");
->  		goto io_unmap;
->  	}
+diff --git a/arch/arm/mach-omap1/board-nokia770.c b/arch/arm/mach-omap1/board-nokia770.c
+index bfc2b06..a2699eb 100644
+--- a/arch/arm/mach-omap1/board-nokia770.c
++++ b/arch/arm/mach-omap1/board-nokia770.c
+@@ -27,7 +27,7 @@
+ 
+ #include <mach/mux.h>
+ #include <mach/keypad.h>
+-#include <plat/lcd_mipid.h>
++#include <mach/lcd_mipid.h>
+ #include <plat/mmc.h>
+ #include <plat/clock.h>
+ 
+diff --git a/arch/arm/plat-omap/include/plat/lcd_mipid.h b/arch/arm/mach-omap1/include/mach/lcd_mipid.h
+similarity index 100%
+rename from arch/arm/plat-omap/include/plat/lcd_mipid.h
+rename to arch/arm/mach-omap1/include/mach/lcd_mipid.h
+diff --git a/drivers/video/omap/lcd_mipid.c b/drivers/video/omap/lcd_mipid.c
+index e3880c4..2b64d07 100644
+--- a/drivers/video/omap/lcd_mipid.c
++++ b/drivers/video/omap/lcd_mipid.c
+@@ -25,7 +25,7 @@
+ #include <linux/spi/spi.h>
+ #include <linux/module.h>
+ 
+-#include <plat/lcd_mipid.h>
++#include <mach/lcd_mipid.h>
+ 
+ #include "omapfb.h"
+ 
 

@@ -1,139 +1,166 @@
-From: Sumit Semwal <sumit.semwal@linaro.org>
-Date: Sat, 29 Sep 2012 15:27:50 +0000
-Subject: Re: [PATCH V4 2/5] OMAPDSS: Create new debug config options
-Message-Id: <506710A6.3030207@linaro.org>
+From: Ryan Harkin <ryan.harkin@linaro.org>
+Date: Wed, 19 Sep 2012 16:04:26 +0000
+Subject: [RFC PATCH 3/3] ARM: vexpress: configure CLCD driver device tree support for A9 CoreTile
+Message-Id: <1348070666-9153-4-git-send-email-ryan.harkin@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1348826106.git.cmahapatra@ti.com> <cover.1348914940.git.cmahapatra@ti.com> <af097b99b4d2eab96850fd6d8a0c260917aa4f98.1348914940.git.cmahapatra@ti.com>
-In-Reply-To: <af097b99b4d2eab96850fd6d8a0c260917aa4f98.1348914940.git.cmahapatra@ti.com>
+References: <1348070666-9153-1-git-send-email-ryan.harkin@linaro.org>
+In-Reply-To: <1348070666-9153-1-git-send-email-ryan.harkin@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Cc: tomi.valkeinen@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Hi Chandrabhanu,
+Configuration for the amba-clcd PL111 driver is added to the A9 CoreTile's DTS
+file.
 
-On Saturday 29 September 2012 04:19 PM, Chandrabhanu Mahapatra wrote:
-> The config option CONFIG_OMAP2_DSS_DEBUG_SUPPORT has been removed and replaced
-> with CONFIG_OMAP2_DSS_DEBUG and CONFIG_OMAP2_DSS_DEBUGFS. CONFIG_OMAP2_DSS_DEBUG
-> enables DEBUG flag and CONFIG_OMAP2_DSS_DEBUGFS enables creation of debugfs for
-> OMAPDSS. Both the config options are disabled by default and can be enabled
-> independently of one another as per convenience.
->
-> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-> ---
->   drivers/video/omap2/dss/Kconfig  |   21 +++++++++++++++------
->   drivers/video/omap2/dss/Makefile |    2 +-
->   drivers/video/omap2/dss/core.c   |    6 +++---
->   drivers/video/omap2/dss/dss.c    |    2 +-
->   drivers/video/omap2/dss/dss.h    |    2 +-
->   5 files changed, 21 insertions(+), 12 deletions(-)
->
-> diff --git a/drivers/video/omap2/dss/Kconfig b/drivers/video/omap2/dss/Kconfig
-> index 80f5390..866a563 100644
-> --- a/drivers/video/omap2/dss/Kconfig
-> +++ b/drivers/video/omap2/dss/Kconfig
-> @@ -18,16 +18,25 @@ config OMAP2_VRAM_SIZE
->   	  You can also set this with "vram=<bytes>" kernel argument, or
->   	  in the board file.
->
-> -config OMAP2_DSS_DEBUG_SUPPORT
-> -        bool "Debug support"
-> -	default y
-> +config OMAP2_DSS_DEBUG
-> +	bool "Debug support"
-> +	default n
-> +	help
-> +	  This enables printing of debug messages. Alternatively, debug messages
-> +	  can also be enabled by setting CONFIG_DYNAMIC_DEBUG and then setting
-> +	  appropriate flags in <debugfs>/dynamic_debug/control.
-> +
-> +config OMAP2_DSS_DEBUGFS
-> +	bool "Debugfs filesystem support"
-> +	default n
-You can make it as 'depends on CONFIG_DEBUG_FS', so that your check 
-below [1] becomes cleaner.
->   	help
-> -	  This enables debug messages. You need to enable printing
-> -	  with 'debug' module parameter.
-> +	  This enables debugfs for OMAPDSS at <debugfs>/omapdss. This enables
-> +	  querying about clock configuration and register configuration of dss,
-> +	  dispc, dsi, hdmi and rfbi.
->
->   config OMAP2_DSS_COLLECT_IRQ_STATS
->   	bool "Collect DSS IRQ statistics"
-> -	depends on OMAP2_DSS_DEBUG_SUPPORT
-> +	depends on OMAP2_DSS_DEBUGFS
->   	default n
->   	help
->   	  Collect DSS IRQ statistics, printable via debugfs.
-> diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
-> index 86493e3..4070191 100644
-> --- a/drivers/video/omap2/dss/Makefile
-> +++ b/drivers/video/omap2/dss/Makefile
-> @@ -8,4 +8,4 @@ omapdss-$(CONFIG_OMAP2_DSS_SDI) += sdi.o
->   omapdss-$(CONFIG_OMAP2_DSS_DSI) += dsi.o
->   omapdss-$(CONFIG_OMAP4_DSS_HDMI) += hdmi.o \
->   				    hdmi_panel.o ti_hdmi_4xxx_ip.o
-> -ccflags-$(CONFIG_OMAP2_DSS_DEBUG_SUPPORT) += -DDEBUG
-> +ccflags-$(CONFIG_OMAP2_DSS_DEBUG) += -DDEBUG
-> diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-> index b2af72d..1e1f50f 100644
-> --- a/drivers/video/omap2/dss/core.c
-> +++ b/drivers/video/omap2/dss/core.c
-> @@ -138,7 +138,7 @@ int dss_set_min_bus_tput(struct device *dev, unsigned long tput)
->   		return 0;
->   }
->
-> -#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
-> +#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUGFS)
-[1]: here.
->   static int dss_debug_show(struct seq_file *s, void *unused)
->   {
->   	void (*func)(struct seq_file *) = s->private;
-> @@ -193,7 +193,7 @@ int dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *))
->
->   	return 0;
->   }
-> -#else /* CONFIG_DEBUG_FS && CONFIG_OMAP2_DSS_DEBUG_SUPPORT */
-> +#else /* CONFIG_DEBUG_FS && CONFIG_OMAP2_DSS_DEBUGFS */
->   static inline int dss_initialize_debugfs(void)
->   {
->   	return 0;
-> @@ -205,7 +205,7 @@ int dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *))
->   {
->   	return 0;
->   }
-> -#endif /* CONFIG_DEBUG_FS && CONFIG_OMAP2_DSS_DEBUG_SUPPORT */
-> +#endif /* CONFIG_DEBUG_FS && CONFIG_OMAP2_DSS_DEBUGFS */
->
->   /* PLATFORM DEVICE */
->   static int omap_dss_pm_notif(struct notifier_block *b, unsigned long v, void *d)
-> diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-> index 2ab1c3e..fe30855 100644
-> --- a/drivers/video/omap2/dss/dss.c
-> +++ b/drivers/video/omap2/dss/dss.c
-> @@ -746,7 +746,7 @@ static void dss_runtime_put(void)
->   }
->
->   /* DEBUGFS */
-> -#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
-> +#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUGFS)
->   void dss_debug_dump_clocks(struct seq_file *s)
->   {
->   	dss_dump_clocks(s);
-> diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-> index ffbba7e..a8a1ab4 100644
-> --- a/drivers/video/omap2/dss/dss.h
-> +++ b/drivers/video/omap2/dss/dss.h
-> @@ -301,7 +301,7 @@ enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void);
->   const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
->   void dss_dump_clocks(struct seq_file *s);
->
-> -#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
-> +#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUGFS)
->   void dss_debug_dump_clocks(struct seq_file *s);
->   #endif
->
->
+Configuration of the motherboard CLCD driver is removed from the DTSI files to
+prevent duplicate CLCD drivers being registered.
+
+A generic set of CLCD panel descriptions has been split into its own DTSI file.
+Currently, only XVGA and VGA monitors are described.
+
+Signed-off-by: Ryan Harkin <ryan.harkin@linaro.org>
+---
+ arch/arm/boot/dts/clcd-panels.dtsi      |   52 +++++++++++++++++++++++++++++++
+ arch/arm/boot/dts/vexpress-v2m-rs1.dtsi |    8 ++---
+ arch/arm/boot/dts/vexpress-v2m.dtsi     |    8 ++---
+ arch/arm/boot/dts/vexpress-v2p-ca9.dts  |    6 ++++
+ 4 files changed, 62 insertions(+), 12 deletions(-)
+
+diff --git a/arch/arm/boot/dts/clcd-panels.dtsi b/arch/arm/boot/dts/clcd-panels.dtsi
+new file mode 100644
+index 0000000..0b0ff6e
+--- /dev/null
++++ b/arch/arm/boot/dts/clcd-panels.dtsi
+@@ -0,0 +1,52 @@
++/*
++ * ARM Ltd. Versatile Express
++ *
++ */
++
++/ {
++	panels {
++		panel@0 {
++			compatible	= "panel";
++			mode		= "VGA";
++			refresh		= <60>;
++			xres		= <640>;
++			yres		= <480>;
++			pixclock	= <39721>;
++			left_margin	= <40>;
++			right_margin	= <24>;
++			upper_margin	= <32>;
++			lower_margin	= <11>;
++			hsync_len	= <96>;
++			vsync_len	= <2>;
++			sync		= <0>;
++			vmode		= "FB_VMODE_NONINTERLACED";
++
++			tim2		= "TIM2_BCD", "TIM2_IPC";
++			cntl		= "CNTL_LCDTFT", "CNTL_BGR", "CNTL_LCDVCOMP(1)";
++			caps		= "CLCD_CAP_5551", "CLCD_CAP_565", "CLCD_CAP_888";
++			bpp		= <16>;
++		};
++
++		panel@1 {
++			compatible	= "panel";
++			mode		= "XVGA";
++			refresh		= <60>;
++			xres		= <1024>;
++			yres		= <768>;
++			pixclock	= <15748>;
++			left_margin	= <152>;
++			right_margin	= <48>;
++			upper_margin	= <23>;
++			lower_margin	= <3>;
++			hsync_len	= <104>;
++			vsync_len	= <4>;
++			sync		= <0>;
++			vmode		= "FB_VMODE_NONINTERLACED";
++
++			tim2		= "TIM2_BCD", "TIM2_IPC";
++			cntl		= "CNTL_LCDTFT", "CNTL_BGR", "CNTL_LCDVCOMP(1)";
++			caps		= "CLCD_CAP_5551", "CLCD_CAP_565", "CLCD_CAP_888";
++			bpp		= <16>;
++		};
++	};
++};
+diff --git a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
+index d8a827b..301d3f6 100644
+--- a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
++++ b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
+@@ -17,6 +17,8 @@
+  * CHANGES TO vexpress-v2m.dtsi!
+  */
+ 
++/include/ "clcd-panels.dtsi"
++
+ / {
+ 	aliases {
+ 		arm,v2m_timer = &v2m_timer01;
+@@ -193,12 +195,6 @@
+ 				       0x1a0100 0xf00>;
+ 				reg-shift = <2>;
+ 			};
+-
+-			clcd@1f0000 {
+-				compatible = "arm,pl111", "arm,primecell";
+-				reg = <0x1f0000 0x1000>;
+-				interrupts = <14>;
+-			};
+ 		};
+ 
+ 		v2m_fixed_3v3: fixedregulator@0 {
+diff --git a/arch/arm/boot/dts/vexpress-v2m.dtsi b/arch/arm/boot/dts/vexpress-v2m.dtsi
+index dba53fd..43cd86f 100644
+--- a/arch/arm/boot/dts/vexpress-v2m.dtsi
++++ b/arch/arm/boot/dts/vexpress-v2m.dtsi
+@@ -17,6 +17,8 @@
+  * CHANGES TO vexpress-v2m-rs1.dtsi!
+  */
+ 
++/include/ "clcd-panels.dtsi"
++
+ / {
+ 	aliases {
+ 		arm,v2m_timer = &v2m_timer01;
+@@ -192,12 +194,6 @@
+ 				       0x1a100 0xf00>;
+ 				reg-shift = <2>;
+ 			};
+-
+-			clcd@1f000 {
+-				compatible = "arm,pl111", "arm,primecell";
+-				reg = <0x1f000 0x1000>;
+-				interrupts = <14>;
+-			};
+ 		};
+ 
+ 		v2m_fixed_3v3: fixedregulator@0 {
+diff --git a/arch/arm/boot/dts/vexpress-v2p-ca9.dts b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
+index 3f0c736..2ebb132 100644
+--- a/arch/arm/boot/dts/vexpress-v2p-ca9.dts
++++ b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
+@@ -9,6 +9,8 @@
+ 
+ /dts-v1/;
+ 
++/memreserve/ 0x9f000000 0x01000000;
++
+ / {
+ 	model = "V2P-CA9";
+ 	arm,hbi = <0x191>;
+@@ -70,6 +72,10 @@
+ 		compatible = "arm,pl111", "arm,primecell";
+ 		reg = <0x10020000 0x1000>;
+ 		interrupts = <0 44 4>;
++		mode = "XVGA";
++		arm,vexpress-osc = <1>;
++		use_dma = <1>;
++		framebuffer = <0x9f000000 0x01000000>;
+ 	};
+ 
+ 	memory-controller@100e0000 {
+-- 
+1.7.9.5
 

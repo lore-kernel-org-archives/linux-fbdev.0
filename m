@@ -1,61 +1,55 @@
-From: Peter Senna Tschudin <peter.senna@gmail.com>
-Date: Tue, 18 Sep 2012 12:07:58 +0000
-Subject: [PATCH 08/10] drivers/video/cyber2000fb.c: fix error return code
-Message-Id: <1347970080-25175-8-git-send-email-peter.senna@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 19 Sep 2012 08:30:34 +0000
+Subject: [PATCH 4/8] OMAPDSS: explicitely initialize dssdev->channel for new displays
+Message-Id: <1348043438-2624-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
-In-Reply-To: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
+References: <1348043438-2624-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1348043438-2624-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Peter Senna Tschudin <peter.senna@gmail.com>
+HDMI and VENC outputs always use the DIGIT output from DISPC. The dssdev
+struct contains "channel" field which is used to specify the DISPC
+output for the display, but this was not used for HDMI and VENC.
 
-Convert a nonnegative error return code to a negative one, as returned
-elsewhere in the function.
+This patch fills the channel field explicitely for HDMI and VENC
+displays so that we can always rely on the channel field.
 
-A simplified version of the semantic match that finds this problem is as
-follows: (http://coccinelle.lip6.fr/)
-
-// <smpl>
-(
-if@p1 (\(ret < 0\|ret != 0\))
- { ... return ret; }
-|
-ret@p1 = 0
-)
-... when != ret = e1
-    when != &ret
-*if(...)
-{
-  ... when != ret = e2
-      when forall
- return ret;
-}
-// </smpl>
-
-Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/cyber2000fb.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/video/omap2/dss/hdmi.c |    2 ++
+ drivers/video/omap2/dss/venc.c |    2 ++
+ 2 files changed, 4 insertions(+)
 
-diff --git a/drivers/video/cyber2000fb.c b/drivers/video/cyber2000fb.c
-index c1527f5..e40125c 100644
---- a/drivers/video/cyber2000fb.c
-+++ b/drivers/video/cyber2000fb.c
-@@ -1804,8 +1804,10 @@ cyberpro_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 76d100b..3b10e18 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -946,6 +946,8 @@ static void __init hdmi_probe_pdata(struct platform_device *pdev)
+ 	hdmi.ls_oe_gpio = priv->ls_oe_gpio;
+ 	hdmi.hpd_gpio = priv->hpd_gpio;
  
- 	cfb->irq = dev->irq;
- 	cfb->region = pci_ioremap_bar(dev, 0);
--	if (!cfb->region)
-+	if (!cfb->region) {
-+		err = -ENOMEM;
- 		goto failed_ioremap;
-+	}
++	dssdev->channel = OMAP_DSS_CHANNEL_DIGIT;
++
+ 	r = hdmi_init_display(dssdev);
+ 	if (r) {
+ 		DSSERR("device %s init failed: %d\n", dssdev->name, r);
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index b9c0a8f..88fa6ea 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -773,6 +773,8 @@ static void __init venc_probe_pdata(struct platform_device *pdev)
+ 	if (!dssdev)
+ 		return;
  
- 	cfb->regs = cfb->region + MMIO_OFFSET;
- 	cfb->fb.device = &dev->dev;
++	dssdev->channel = OMAP_DSS_CHANNEL_DIGIT;
++
+ 	r = venc_init_display(dssdev);
+ 	if (r) {
+ 		DSSERR("device %s init failed: %d\n", dssdev->name, r);
 -- 
-1.7.11.4
+1.7.9.5
 

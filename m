@@ -1,148 +1,138 @@
-From: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
-Date: Fri, 28 Sep 2012 11:42:18 +0000
-Subject: Re: [PATCH V3 2/3] OMAPDSS: Cleanup DSSDBG with dynamic pr_debug function
-Message-Id: <CAF0AtAvfnnBzTgPtNBJhxXTp9dZfPQOnotNmCQ+Fz=tkHY65gA@mail.gmail.com>
+From: Tony Lindgren <tony@atomide.com>
+Date: Wed, 19 Sep 2012 21:05:43 +0000
+Subject: [PATCH 04/29] ARM: OMAP1: Move board-ams-delta.h from plat to mach
+Message-Id: <20120919210543.28074.10214.stgit@muffinssi>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1348636132.git.cmahapatra@ti.com>
-	<cover.1348826106.git.cmahapatra@ti.com>
-	<2fc91980de4af940ac59b26fd49da6498865db8b.1348826106.git.cmahapatra@ti.com>
-	<1348831358.2437.14.camel@deskari>
-In-Reply-To: <1348831358.2437.14.camel@deskari>
+References: <20120919205732.28074.43697.stgit@muffinssi>
+In-Reply-To: <20120919205732.28074.43697.stgit@muffinssi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: linux-fbdev@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>, Artem Bityutskiy <Artem.Bityutskiy@linux.intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, alsa-devel@alsa-project.org, Peter Ujfalusi <peter.ujfalusi@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-mtd@lists.infradead.org, linux-input@vger.kernel.org, linux-omap@vger.kernel.org, Liam Girdwood <lrg@ti.com>
 
-On Fri, Sep 28, 2012 at 4:52 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On Fri, 2012-09-28 at 15:53 +0530, Chandrabhanu Mahapatra wrote:
->> The printk in DSSDBG function definition is replaced with dynamic debug enabled
->> pr_debug(). The use of dynamic debugging provides more flexibility as each debug
->> statement can be enabled or disabled dynamically on basis of source filename,
->> line number, module name etc. by writing to a control file in debugfs
->> filesystem. For better understanding please refer to
->> Documentation/dynamic-debug-howto.txt.
->>
->> The DSSDBGF() differs from DSSDBG() by providing function name. However,
->> function name, line number, module name and thread ID can be printed through
->> dynamic debug by setting appropriate flags 'f','l','m' and 't' in the debugfs
->> control file. So, DSSDBGF instances are replaced with DSSDBG.
->>
->> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
->> ---
->>  drivers/video/omap2/dss/apply.c |    8 ++++----
->>  drivers/video/omap2/dss/dsi.c   |   12 ++++++------
->>  drivers/video/omap2/dss/dss.h   |   34 ++++++++--------------------------
->>  3 files changed, 18 insertions(+), 36 deletions(-)
->>
->
->> -     DSSDBGF("%d", channel);
->> +     DSSDBG("Initial Config of Virtual Channel %d", channel);
->
-> A Bit Too Much Capital Letters here for my taste =). Use just one at the
-> beginning of the print, or none at all.
->
->>
->>       r = dsi_read_reg(dsidev, DSI_VC_CTRL(channel));
->>
->> @@ -2814,7 +2814,7 @@ static int dsi_vc_config_source(struct platform_device *dsidev, int channel,
->>       if (dsi->vc[channel].source = source)
->>               return 0;
->>
->> -     DSSDBGF("%d", channel);
->> +     DSSDBG("Source Config of Virtual Channel %d", channel);
->
-> Here also.
->
+This is only used by omap1.
 
-Ok.
+And to fix things properly, this should not be included
+from the drivers at all.
 
->>
->>       dsi_sync_vc(dsidev, channel);
->>
->> @@ -3572,7 +3572,7 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
->>       int r, i;
->>       unsigned mask;
->>
->> -     DSSDBGF();
->> +     DSSDBG("Entering ULPS");
->>
->>       WARN_ON(!dsi_bus_is_locked(dsidev));
->>
->> @@ -4276,7 +4276,7 @@ int omapdss_dsi_set_clocks(struct omap_dss_device *dssdev,
->>       unsigned long pck;
->>       int r;
->>
->> -     DSSDBGF("ddr_clk %lu, lp_clk %lu", ddr_clk, lp_clk);
->> +     DSSDBG("Setting DSI clocks: ddr_clk %lu, lp_clk %lu", ddr_clk, lp_clk);
->>
->>       mutex_lock(&dsi->lock);
->>
->> diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
->> index ffbba7e..5ef4e17 100644
->> --- a/drivers/video/omap2/dss/dss.h
->> +++ b/drivers/video/omap2/dss/dss.h
->> @@ -25,38 +25,20 @@
->>
->>  #ifdef DEBUG
->>  extern bool dss_debug;
->> -#ifdef DSS_SUBSYS_NAME
->> -#define DSSDBG(format, ...) \
->> -     if (dss_debug) \
->> -             printk(KERN_DEBUG "omapdss " DSS_SUBSYS_NAME ": " format, \
->> -             ## __VA_ARGS__)
->> -#else
->> -#define DSSDBG(format, ...) \
->> -     if (dss_debug) \
->> -             printk(KERN_DEBUG "omapdss: " format, ## __VA_ARGS__)
->>  #endif
->>
->> -#ifdef DSS_SUBSYS_NAME
->> -#define DSSDBGF(format, ...) \
->> -     if (dss_debug) \
->> -             printk(KERN_DEBUG "omapdss " DSS_SUBSYS_NAME \
->> -                             ": %s(" format ")\n", \
->> -                             __func__, \
->> -                             ## __VA_ARGS__)
->> -#else
->> -#define DSSDBGF(format, ...) \
->> -     if (dss_debug) \
->> -             printk(KERN_DEBUG "omapdss: " \
->> -                             ": %s(" format ")\n", \
->> -                             __func__, \
->> -                             ## __VA_ARGS__)
->> +#ifdef pr_fmt
->> +#undef pr_fmt
->>  #endif
->>
->> -#else /* DEBUG */
->> -#define DSSDBG(format, ...)
->> -#define DSSDBGF(format, ...)
->> +#ifdef DSS_SUBSYS_NAME
->> +#define pr_fmt(fmt) DSS_SUBSYS_NAME ": " fmt
->> +#else
->> +#define pr_fmt(fmt) fmt
->>  #endif
->
-> I think you could just do:
->
-> #ifdef DSS_SUBSYS_NAME
-> #ifdef pr_fmt
-> #undef pr_fmt
-> #endif
-> #define pr_fmt(fmt) DSS_SUBSYS_NAME ": " fmt
-> #endif
->
-> For the case where there's no DSS_SUBSYS_NAME, there's no need to undef
-> pr_fmt, only to redefine it again back to the original.
->
->  Tomi
->
+Cc: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Artem Bityutskiy <Artem.Bityutskiy@linux.intel.com>
+Cc: linux-mtd@lists.infradead.org
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org
+Cc: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Cc: Liam Girdwood <lrg@ti.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: alsa-devel@alsa-project.org
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap1/ams-delta-fiq-handler.S        |    2 +-
+ arch/arm/mach-omap1/ams-delta-fiq.c                |    2 +-
+ arch/arm/mach-omap1/board-ams-delta.c              |    2 +-
+ arch/arm/mach-omap1/include/mach/board-ams-delta.h |    0 
+ drivers/input/serio/ams_delta_serio.c              |    2 +-
+ drivers/mtd/nand/ams-delta.c                       |    2 +-
+ drivers/video/omap/lcd_ams_delta.c                 |    2 +-
+ sound/soc/omap/ams-delta.c                         |    2 +-
+ 8 files changed, 7 insertions(+), 7 deletions(-)
+ rename arch/arm/{plat-omap/include/plat/board-ams-delta.h => mach-omap1/include/mach/board-ams-delta.h} (100%)
 
-Ok. But I thought it could be more clearer if the definition of pr_fmt
-is more clearer in both the cases, when DSS_SUBSYS_NAME is defined and
-when not.
+diff --git a/arch/arm/mach-omap1/ams-delta-fiq-handler.S b/arch/arm/mach-omap1/ams-delta-fiq-handler.S
+index d2b6acc..3d1e1c2 100644
+--- a/arch/arm/mach-omap1/ams-delta-fiq-handler.S
++++ b/arch/arm/mach-omap1/ams-delta-fiq-handler.S
+@@ -16,7 +16,7 @@
+ #include <linux/linkage.h>
+ #include <asm/assembler.h>
+ 
+-#include <plat/board-ams-delta.h>
++#include <mach/board-ams-delta.h>
+ 
+ #include <mach/irqs.h>
+ #include <mach/ams-delta-fiq.h>
+diff --git a/arch/arm/mach-omap1/ams-delta-fiq.c b/arch/arm/mach-omap1/ams-delta-fiq.c
+index 68e8e56..f12a12a 100644
+--- a/arch/arm/mach-omap1/ams-delta-fiq.c
++++ b/arch/arm/mach-omap1/ams-delta-fiq.c
+@@ -19,7 +19,7 @@
+ #include <linux/module.h>
+ #include <linux/io.h>
+ 
+-#include <plat/board-ams-delta.h>
++#include <mach/board-ams-delta.h>
+ 
+ #include <asm/fiq.h>
+ 
+diff --git a/arch/arm/mach-omap1/board-ams-delta.c b/arch/arm/mach-omap1/board-ams-delta.c
+index 05af063..b9929cb 100644
+--- a/arch/arm/mach-omap1/board-ams-delta.c
++++ b/arch/arm/mach-omap1/board-ams-delta.c
+@@ -35,7 +35,7 @@
+ #include <asm/mach/arch.h>
+ #include <asm/mach/map.h>
+ 
+-#include <plat/board-ams-delta.h>
++#include <mach/board-ams-delta.h>
+ #include <plat/keypad.h>
+ #include <mach/mux.h>
+ 
+diff --git a/arch/arm/plat-omap/include/plat/board-ams-delta.h b/arch/arm/mach-omap1/include/mach/board-ams-delta.h
+similarity index 100%
+rename from arch/arm/plat-omap/include/plat/board-ams-delta.h
+rename to arch/arm/mach-omap1/include/mach/board-ams-delta.h
+diff --git a/drivers/input/serio/ams_delta_serio.c b/drivers/input/serio/ams_delta_serio.c
+index f5fbdf9..45887e3 100644
+--- a/drivers/input/serio/ams_delta_serio.c
++++ b/drivers/input/serio/ams_delta_serio.c
+@@ -27,7 +27,7 @@
+ #include <linux/module.h>
+ 
+ #include <asm/mach-types.h>
+-#include <plat/board-ams-delta.h>
++#include <mach/board-ams-delta.h>
+ 
+ #include <mach/ams-delta-fiq.h>
+ 
+diff --git a/drivers/mtd/nand/ams-delta.c b/drivers/mtd/nand/ams-delta.c
+index c28eec0..9e7723a 100644
+--- a/drivers/mtd/nand/ams-delta.c
++++ b/drivers/mtd/nand/ams-delta.c
+@@ -29,7 +29,7 @@
+ #include <asm/io.h>
+ #include <asm/sizes.h>
+ 
+-#include <plat/board-ams-delta.h>
++#include <mach/board-ams-delta.h>
+ 
+ #include <mach/hardware.h>
+ 
+diff --git a/drivers/video/omap/lcd_ams_delta.c b/drivers/video/omap/lcd_ams_delta.c
+index 5cca6b3..ed4cad8 100644
+--- a/drivers/video/omap/lcd_ams_delta.c
++++ b/drivers/video/omap/lcd_ams_delta.c
+@@ -27,7 +27,7 @@
+ #include <linux/lcd.h>
+ #include <linux/gpio.h>
+ 
+-#include <plat/board-ams-delta.h>
++#include <mach/board-ams-delta.h>
+ 
+ #include "omapfb.h"
+ 
+diff --git a/sound/soc/omap/ams-delta.c b/sound/soc/omap/ams-delta.c
+index 7b18b74..98e25d5 100644
+--- a/sound/soc/omap/ams-delta.c
++++ b/sound/soc/omap/ams-delta.c
+@@ -32,7 +32,7 @@
+ 
+ #include <asm/mach-types.h>
+ 
+-#include <plat/board-ams-delta.h>
++#include <mach/board-ams-delta.h>
+ #include <plat/mcbsp.h>
+ 
+ #include "omap-mcbsp.h"
 
--- 
-Chandrabhanu Mahapatra
-Texas Instruments India Pvt. Ltd.

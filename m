@@ -1,118 +1,157 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 28 Sep 2012 10:35:23 +0000
-Subject: [PATCH 2/6] OMAPDSS: use omapdss_version in dss_features.c
-Message-Id: <1348828527-13309-3-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 19 Sep 2012 08:30:31 +0000
+Subject: [PATCH 1/8] OMAPDSS: omap_dss_register_device() doesn't take display index
+Message-Id: <1348043438-2624-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1348043438-2624-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1348043438-2624-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Archit Taneja <a0393947@ti.com>, Chandrabhanu Mahapatra <cmahapatra@ti.com>, =?UTF-8?q?Rapha=C3=ABl=20Ass=C3=A9nat?= <raph@8d.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Pass the omapdss_version to dss_features.c and use it to select the
-proper dss features.
+We used to have all the displays of the board in one list, and we made a
+"displayX" directory in the sysfs, where X was the index of the display
+in the list.
+
+This doesn't work anymore with device tree, as there's no single list to
+get the number from, and it doesn't work very well even with non-DT as
+we need to do some tricks to get the index nowadays.
+
+This patch changes omap_dss_register_device() so that it doesn't take
+disp_num as a parameter anymore, but uses a private increasing counter
+for the display number.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/core.c         |    2 +-
- drivers/video/omap2/dss/dss_features.c |   49 +++++++++++++++++++++-----------
- drivers/video/omap2/dss/dss_features.h |    2 +-
- 3 files changed, 34 insertions(+), 19 deletions(-)
+ drivers/video/omap2/dss/core.c |    9 +++++----
+ drivers/video/omap2/dss/dpi.c  |    2 +-
+ drivers/video/omap2/dss/dsi.c  |    2 +-
+ drivers/video/omap2/dss/dss.h  |    2 +-
+ drivers/video/omap2/dss/hdmi.c |    2 +-
+ drivers/video/omap2/dss/rfbi.c |    2 +-
+ drivers/video/omap2/dss/sdi.c  |    2 +-
+ drivers/video/omap2/dss/venc.c |    2 +-
+ 8 files changed, 12 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index b2af72d..d94ef9e 100644
+index 58bd9c2..20c8bc8 100644
 --- a/drivers/video/omap2/dss/core.c
 +++ b/drivers/video/omap2/dss/core.c
-@@ -237,7 +237,7 @@ static int __init omap_dss_probe(struct platform_device *pdev)
- 
- 	core.pdev = pdev;
- 
--	dss_features_init();
-+	dss_features_init(pdata->version);
- 
- 	dss_apply_init();
- 
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index acbc1e1..5936ba7 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -929,29 +929,44 @@ bool dss_feat_rotation_type_supported(enum omap_dss_rotation_type rot_type)
- 	return omap_current_dss_features->supported_rotation_types & rot_type;
+@@ -450,16 +450,17 @@ static void omap_dss_dev_release(struct device *dev)
+ 	reset_device(dev, 0);
  }
  
--void dss_features_init(void)
-+void dss_features_init(enum omapdss_version version)
++static int disp_num_counter;
++
+ int omap_dss_register_device(struct omap_dss_device *dssdev,
+-		struct device *parent, int disp_num)
++		struct device *parent)
  {
--	if (cpu_is_omap24xx())
-+	switch (version) {
-+	case OMAPDSS_VER_OMAP24xx:
- 		omap_current_dss_features = &omap2_dss_features;
--	else if (cpu_is_omap3630())
-+		break;
+-	WARN_ON(!dssdev->driver_name);
+-
+ 	reset_device(&dssdev->dev, 1);
 +
-+	case OMAPDSS_VER_OMAP34xx_ES1:
-+	case OMAPDSS_VER_OMAP34xx_ES3:
-+		omap_current_dss_features = &omap3430_dss_features;
-+		break;
-+
-+	case OMAPDSS_VER_OMAP3630:
- 		omap_current_dss_features = &omap3630_dss_features;
--	else if (cpu_is_omap34xx()) {
--		if (soc_is_am35xx()) {
--			omap_current_dss_features = &am35xx_dss_features;
--		} else {
--			omap_current_dss_features = &omap3430_dss_features;
--		}
--	}
--	else if (omap_rev() = OMAP4430_REV_ES1_0)
-+		break;
-+
-+	case OMAPDSS_VER_OMAP4430_ES1:
- 		omap_current_dss_features = &omap4430_es1_0_dss_features;
--	else if (omap_rev() = OMAP4430_REV_ES2_0 ||
--		omap_rev() = OMAP4430_REV_ES2_1 ||
--		omap_rev() = OMAP4430_REV_ES2_2)
-+		break;
-+
-+	case OMAPDSS_VER_OMAP4430_ES2:
- 		omap_current_dss_features = &omap4430_es2_0_1_2_dss_features;
--	else if (cpu_is_omap44xx())
-+		break;
-+
-+	case OMAPDSS_VER_OMAP4:
- 		omap_current_dss_features = &omap4_dss_features;
--	else if (soc_is_omap54xx())
-+		break;
-+
-+	case OMAPDSS_VER_OMAP5:
- 		omap_current_dss_features = &omap5_dss_features;
--	else
-+		break;
-+
-+	case OMAPDSS_VER_AM35xx:
-+		omap_current_dss_features = &am35xx_dss_features;
-+		break;
-+
-+	default:
- 		DSSWARN("Unsupported OMAP version");
-+		break;
-+	}
+ 	dssdev->dev.bus = &dss_bus_type;
+ 	dssdev->dev.parent = parent;
+ 	dssdev->dev.release = omap_dss_dev_release;
+-	dev_set_name(&dssdev->dev, "display%d", disp_num);
++	dev_set_name(&dssdev->dev, "display%d", disp_num_counter++);
+ 	return device_register(&dssdev->dev);
  }
-diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
-index 9218113..14a412e 100644
---- a/drivers/video/omap2/dss/dss_features.h
-+++ b/drivers/video/omap2/dss/dss_features.h
-@@ -123,7 +123,7 @@ bool dss_feat_rotation_type_supported(enum omap_dss_rotation_type rot_type);
  
- bool dss_has_feature(enum dss_feat_id id);
- void dss_feat_get_reg_field(enum dss_feat_reg_field id, u8 *start, u8 *end);
--void dss_features_init(void);
-+void dss_features_init(enum omapdss_version version);
- #if defined(CONFIG_OMAP4_DSS_HDMI)
- void dss_init_hdmi_ip_ops(struct hdmi_ip_data *ip_data);
- #endif
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 5ccce9b..703fc1d 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -388,7 +388,7 @@ static void __init dpi_probe_pdata(struct platform_device *pdev)
+ 			continue;
+ 		}
+ 
+-		r = omap_dss_register_device(dssdev, &pdev->dev, i);
++		r = omap_dss_register_device(dssdev, &pdev->dev);
+ 		if (r)
+ 			DSSERR("device %s register failed: %d\n",
+ 					dssdev->name, r);
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 8d815e3..f7078fc 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -5027,7 +5027,7 @@ static void __init dsi_probe_pdata(struct platform_device *dsidev)
+ 			continue;
+ 		}
+ 
+-		r = omap_dss_register_device(dssdev, &dsidev->dev, i);
++		r = omap_dss_register_device(dssdev, &dsidev->dev);
+ 		if (r)
+ 			DSSERR("device %s register failed: %d\n",
+ 					dssdev->name, r);
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 5e9fd769..7bac8ee 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -185,7 +185,7 @@ int dss_set_min_bus_tput(struct device *dev, unsigned long tput);
+ int dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *));
+ 
+ int omap_dss_register_device(struct omap_dss_device *dssdev,
+-		struct device *parent, int disp_num);
++		struct device *parent);
+ void omap_dss_unregister_device(struct omap_dss_device *dssdev);
+ void omap_dss_unregister_child_devices(struct device *parent);
+ 
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 83f1845..bb07143 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -923,7 +923,7 @@ static void __init hdmi_probe_pdata(struct platform_device *pdev)
+ 			continue;
+ 		}
+ 
+-		r = omap_dss_register_device(dssdev, &pdev->dev, i);
++		r = omap_dss_register_device(dssdev, &pdev->dev);
+ 		if (r)
+ 			DSSERR("device %s register failed: %d\n",
+ 					dssdev->name, r);
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 2e520d3..845b4e7 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -959,7 +959,7 @@ static void __init rfbi_probe_pdata(struct platform_device *pdev)
+ 			continue;
+ 		}
+ 
+-		r = omap_dss_register_device(dssdev, &pdev->dev, i);
++		r = omap_dss_register_device(dssdev, &pdev->dev);
+ 		if (r)
+ 			DSSERR("device %s register failed: %d\n",
+ 				dssdev->name, r);
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 66c8de4..c9a9045 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -212,7 +212,7 @@ static void __init sdi_probe_pdata(struct platform_device *pdev)
+ 			continue;
+ 		}
+ 
+-		r = omap_dss_register_device(dssdev, &pdev->dev, i);
++		r = omap_dss_register_device(dssdev, &pdev->dev);
+ 		if (r)
+ 			DSSERR("device %s register failed: %d\n",
+ 					dssdev->name, r);
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 17b3102..60bfc58 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -752,7 +752,7 @@ static void __init venc_probe_pdata(struct platform_device *pdev)
+ 			continue;
+ 		}
+ 
+-		r = omap_dss_register_device(dssdev, &pdev->dev, i);
++		r = omap_dss_register_device(dssdev, &pdev->dev);
+ 		if (r)
+ 			DSSERR("device %s register failed: %d\n",
+ 					dssdev->name, r);
 -- 
 1.7.9.5
 

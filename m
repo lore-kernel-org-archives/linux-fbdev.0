@@ -1,50 +1,30 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Tue, 25 Sep 2012 05:32:29 +0000
-Subject: Re: [PATCH 0/9] OMAPDSS: OMAP5 related patches
-Message-Id: <50613F1D.30006@ti.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Thu, 20 Sep 2012 19:03:42 +0000
+Subject: Re: [PATCH] pwm: Call pwm_enable() before pwm_config()
+Message-Id: <20120920190342.GA13264@sirena.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348495119-8262-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1348495119-8262-1-git-send-email-tomi.valkeinen@ti.com>
+References: <36966374.2768747.1345741025741.JavaMail.root@advansee.com>
+ <50366464.4070801@metafoo.de>
+In-Reply-To: <50366464.4070801@metafoo.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Monday 24 September 2012 07:28 PM, Tomi Valkeinen wrote:
-> Hi,
->
-> This series adds basic OMAP5 DSS functionality, mainly related to DSS core, DPI
-> and DSI.
+On Thu, Aug 23, 2012 at 07:12:04PM +0200, Lars-Peter Clausen wrote:
+> On 08/23/2012 06:57 PM, Beno??t Th??baudeau wrote:
 
-Looks good to me.
+> > exists with several other PWM drivers.
 
-Archit
+> Since this seems to be a common pattern in a number of PWM drivers it might
+> make sense to simply add support for enabling/disabling a clk to the pwm core.
+> Or maybe just use the runtime pm API for this. This probably makes even more
+> sense and grab a reference to the pm context when the enable() is called,
+> release it when disable() is called and also grab it before calling the
+> device's config callback and release it afterward.
 
->
->   Tomi
->
-> Archit Taneja (1):
->    OMAPDSS: Add basic omap5 features to dss and dispc
->
-> Tomi Valkeinen (8):
->    OMAPDSS: DSI: improve DSI clock calcs for DISPC
->    OMAPDSS: move dss feats to the end of dss.c
->    OMAPDSS: Add support for DPI source selection
->    OMAPDSS: DSI: Add FEAT_DSI_PLL_SELFREQDCO
->    OMAPDSS: DSI: Add FEAT_DSI_PLL_REFSEL
->    OMAPDSS: DSI: Add new linebuffer size for OMAP5
->    OMAPDSS: DSI: Add code to disable PHY DCC
->    OMAPDSS: DSI: make OMAP2_DSS_DSI depend on ARCH_OMAP5
->
->   drivers/video/omap2/dss/Kconfig        |    2 +-
->   drivers/video/omap2/dss/dispc.c        |    2 +
->   drivers/video/omap2/dss/dpi.c          |    5 +
->   drivers/video/omap2/dss/dsi.c          |  167 +++++++++++++++++++++++++-------
->   drivers/video/omap2/dss/dss.c          |  121 ++++++++++++++++++-----
->   drivers/video/omap2/dss/dss.h          |    1 +
->   drivers/video/omap2/dss/dss_features.c |   96 ++++++++++++++++++
->   drivers/video/omap2/dss/dss_features.h |    3 +
->   8 files changed, 337 insertions(+), 60 deletions(-)
->
-
+It's a problem with IPs in general, a good proportion of modern SoCs
+need a clock supplying in order to interact with the registers on most
+of their IPs.  runtime PM is the normal way forwards, Tegra recently
+started using regmap's cache code to handle this transparently in the
+driver.

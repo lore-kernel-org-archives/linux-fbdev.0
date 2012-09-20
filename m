@@ -1,86 +1,61 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 28 Sep 2012 10:35:26 +0000
-Subject: [PATCH 5/6] OMAPDSS: HDMI: use omapdss_version
-Message-Id: <1348828527-13309-6-git-send-email-tomi.valkeinen@ti.com>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Thu, 20 Sep 2012 16:33:18 +0000
+Subject: [PATCHv5 0/2] Add support for the OLED in the CFA10036
+Message-Id: <1348158800-23039-1-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Archit Taneja <a0393947@ti.com>, Chandrabhanu Mahapatra <cmahapatra@ti.com>, =?UTF-8?q?Rapha=C3=ABl=20Ass=C3=A9nat?= <raph@8d.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Use omapdss_version in hdmi.c to select the proper hdmi features.
+Hi everyone,
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/dss_features.c |   14 ++++++++++++--
- drivers/video/omap2/dss/dss_features.h |    3 ++-
- drivers/video/omap2/dss/hdmi.c         |    3 ++-
- 3 files changed, 16 insertions(+), 4 deletions(-)
+This patchset adds support for the solomon SSD1307 OLED controller present
+in the CFA-10036 board.
 
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index 5936ba7..e2c2e2b 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -825,10 +825,20 @@ static const struct ti_hdmi_ip_ops omap4_hdmi_functions = {
- 
- };
- 
--void dss_init_hdmi_ip_ops(struct hdmi_ip_data *ip_data)
-+void dss_init_hdmi_ip_ops(struct hdmi_ip_data *ip_data,
-+		enum omapdss_version version)
- {
--	if (cpu_is_omap44xx())
-+	switch (version) {
-+	case OMAPDSS_VER_OMAP4430_ES1:
-+	case OMAPDSS_VER_OMAP4430_ES2:
-+	case OMAPDSS_VER_OMAP4:
- 		ip_data->ops = &omap4_hdmi_functions;
-+		break;
-+	default:
-+		ip_data->ops = NULL;
-+	}
-+
-+	WARN_ON(ip_data->ops = NULL);
- }
- #endif
- 
-diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
-index 14a412e..fc492ef 100644
---- a/drivers/video/omap2/dss/dss_features.h
-+++ b/drivers/video/omap2/dss/dss_features.h
-@@ -125,6 +125,7 @@ bool dss_has_feature(enum dss_feat_id id);
- void dss_feat_get_reg_field(enum dss_feat_reg_field id, u8 *start, u8 *end);
- void dss_features_init(enum omapdss_version version);
- #if defined(CONFIG_OMAP4_DSS_HDMI)
--void dss_init_hdmi_ip_ops(struct hdmi_ip_data *ip_data);
-+void dss_init_hdmi_ip_ops(struct hdmi_ip_data *ip_data,
-+		enum omapdss_version version);
- #endif
- #endif
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index a48a7dd..adcc906 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -323,6 +323,7 @@ static void hdmi_runtime_put(void)
- 
- static int __init hdmi_init_display(struct omap_dss_device *dssdev)
- {
-+	struct omap_dss_board_info *pdata = hdmi.pdev->dev.platform_data;
- 	int r;
- 
- 	struct gpio gpios[] = {
-@@ -333,7 +334,7 @@ static int __init hdmi_init_display(struct omap_dss_device *dssdev)
- 
- 	DSSDBG("init_display\n");
- 
--	dss_init_hdmi_ip_ops(&hdmi.ip_data);
-+	dss_init_hdmi_ip_ops(&hdmi.ip_data, pdata->version);
- 
- 	if (hdmi.vdda_hdmi_dac_reg = NULL) {
- 		struct regulator *reg;
+It first adds the framebuffer driver for this controller, and then the
+needed bits to enable it in the cfa10036 dts.
+
+Considering that the driver has been around since almost two months now, and
+I have not received any comments on the framebuffer part, I'd very much like it
+to be included in 3.7 if possible.
+
+Thanks,
+Maxime
+
+Changes from v4:
+  * Fix kernel crash when writing more data than the internal buffer space by
+    adding boundary check for the fb_write function
+
+Changes from v3:
+  * Changed the dt property name to remove the leading oled- and changed the
+    reset-gpio property to reset-gpios
+
+Changes from v2:
+  * Add the pin name as comment to the pwm4 pinctrl declaration
+  * Change slightly the documentation of the dt bindings for the gpios to remove
+    the mxs-specific cell.
+
+Changes from v1:
+  * Did some factorisation of the ssd1307fb_write* functions.
+  * Filled the smem_start field of the fb_fix_screeninfo structure
+  * Fixed the broken pwm declaration
+  * Change the names of oled-reset-gpios and reset-active-low properties in the
+    device tree to oled-reset-gpio and oled-reset-active-low for consistency
+
+Maxime Ripard (2):
+  video: Add support for the Solomon SSD1307 OLED Controller
+  ARM: dts: mxs: add oled support for the cfa-10036
+
+ .../devicetree/bindings/video/ssd1307fb.txt        |   24 ++
+ arch/arm/boot/dts/imx28-cfa10036.dts               |   20 +
+ drivers/video/Kconfig                              |   13 +
+ drivers/video/Makefile                             |    1 +
+ drivers/video/ssd1307fb.c                          |  407 ++++++++++++++++++++
+ 5 files changed, 465 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/ssd1307fb.txt
+ create mode 100644 drivers/video/ssd1307fb.c
+
 -- 
 1.7.9.5
 

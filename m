@@ -1,10 +1,10 @@
 From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Wed, 05 Sep 2012 09:35:32 +0000
+Date: Thu, 20 Sep 2012 16:33:19 +0000
 Subject: [PATCH 1/2] video: Add support for the Solomon SSD1307 OLED Controller
-Message-Id: <1346837733-7264-2-git-send-email-maxime.ripard@free-electrons.com>
+Message-Id: <1348158800-23039-2-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1346837733-7264-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1346837733-7264-1-git-send-email-maxime.ripard@free-electrons.com>
+References: <1348158800-23039-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1348158800-23039-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -26,8 +26,8 @@ Cc: Brian Lilly <brian@crystalfontz.com>
  .../devicetree/bindings/video/ssd1307fb.txt        |   24 ++
  drivers/video/Kconfig                              |   13 +
  drivers/video/Makefile                             |    1 +
- drivers/video/ssd1307fb.c                          |  386 ++++++++++++++++++++
- 4 files changed, 424 insertions(+)
+ drivers/video/ssd1307fb.c                          |  407 ++++++++++++++++++++
+ 4 files changed, 445 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/video/ssd1307fb.txt
  create mode 100644 drivers/video/ssd1307fb.c
 
@@ -97,10 +97,10 @@ index ee8dafb..6bbb72c 100644
  obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
 diff --git a/drivers/video/ssd1307fb.c b/drivers/video/ssd1307fb.c
 new file mode 100644
-index 0000000..fc77a8f
+index 0000000..49e42ed
 --- /dev/null
 +++ b/drivers/video/ssd1307fb.c
-@@ -0,0 +1,386 @@
+@@ -0,0 +1,407 @@
 +/*
 + * Driver for the Solomon SSD1307 OLED controler
 + *
@@ -262,9 +262,30 @@ index 0000000..fc77a8f
 +		size_t count, loff_t *ppos)
 +{
 +	struct ssd1307fb_par *par = info->par;
++	unsigned long total_size;
 +	unsigned long p = *ppos;
-+	void *dst;
++	u8 __iomem *dst;
 +	int err = 0;
++
++	total_size = info->screen_size;
++
++	if (total_size = 0)
++		total_size = info->fix.smem_len;
++
++	if (p > total_size)
++		return -EFBIG;
++
++	if (count > total_size) {
++		err = -EFBIG;
++		count = total_size;
++	}
++
++	if (count + p > total_size) {
++		if (!err)
++			err = -ENOSPC;
++
++		count = total_size - p;
++	}
 +
 +	dst = (void __force *) (info->screen_base + p);
 +

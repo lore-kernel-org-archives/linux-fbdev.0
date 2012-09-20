@@ -1,71 +1,39 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 05 Sep 2012 08:25:38 +0000
-Subject: [PATCH 00/17] Misc OMAP DSS patches part 2
-Message-Id: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Date: Thu, 20 Sep 2012 06:45:30 +0000
+Subject: [PATCH v2 17/34] video: mx3fb: remove unneeded mach/hardware.h inclusion
+Message-Id: <1348123547-31082-18-git-send-email-shawn.guo@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1348123547-31082-1-git-send-email-shawn.guo@linaro.org>
+In-Reply-To: <1348123547-31082-1-git-send-email-shawn.guo@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-This series contains miscellaneous patches for omapdss. These are based on the
-previous misc patches series
-(http://www.mail-archive.com/linux-omap@vger.kernel.org/msg74279.html).
+The inclusion of mach/hardware.h is not used by the driver at all.
+Remove it.
 
-Some cleanups, but three a bit more important things:
+Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+Acked-by: Sascha Hauer <s.hauer@pengutronix.de>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+---
+ drivers/video/mx3fb.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-* vram.c no longer uses OMAP's sDMA to clear the memory
-* fifomerge has been reverted
-* Swap GFX and WB fifos to avoid underflows
-
- Tomi
-
-Tomi Valkeinen (17):
-  OMAPDSS: Taal: use devm_* functions
-  OMAPFB1: remove unnecessary includes
-  OMAPFB1: remove a non-used table
-  OMAPDSS: remove unnecessary includes
-  OMAPFB: clear framebuffers with CPU
-  OMAPDSS: VRAM: Remove clearing with sDMA
-  OMAPDSS: Taal: Reogranize for device tree
-  OMAPDSS: TFP410: use devm_gpio_request_one
-  OMAPDSS: split overlay sysfs code
-  OMAPDSS: split manager sysfs code
-  OMAPDSS: clean up dss_mgr_set_lcd_config
-  OMAPDSS: clean up dss_mgr_set_timings
-  Revert "OMAPDSS: APPLY: add fifo-merge support"
-  Revert "OMAPDSS: APPLY: add fifo merge support funcs"
-  OMAPDSS: remove extra_info completion code
-  OMAPDSS: Improve fifo management code
-  OMAPDSS: Use WB fifo for GFX overlay
-
- drivers/video/omap/hwa742.c                 |    1 -
- drivers/video/omap/lcd_ams_delta.c          |    1 -
- drivers/video/omap/lcd_palmte.c             |    1 -
- drivers/video/omap/omapfb_main.c            |    9 -
- drivers/video/omap2/displays/panel-taal.c   |  215 ++++++------
- drivers/video/omap2/displays/panel-tfp410.c |   14 +-
- drivers/video/omap2/dss/Makefile            |    2 +-
- drivers/video/omap2/dss/apply.c             |  298 +---------------
- drivers/video/omap2/dss/dispc.c             |   68 +++-
- drivers/video/omap2/dss/dispc.h             |    4 +
- drivers/video/omap2/dss/dpi.c               |    1 -
- drivers/video/omap2/dss/dsi.c               |    1 -
- drivers/video/omap2/dss/dss.c               |    1 -
- drivers/video/omap2/dss/dss.h               |    7 +
- drivers/video/omap2/dss/manager-sysfs.c     |  499 +++++++++++++++++++++++++++
- drivers/video/omap2/dss/manager.c           |  462 +------------------------
- drivers/video/omap2/dss/overlay-sysfs.c     |  456 ++++++++++++++++++++++++
- drivers/video/omap2/dss/overlay.c           |  421 +---------------------
- drivers/video/omap2/dss/venc.c              |    1 -
- drivers/video/omap2/omapfb/omapfb-main.c    |   26 ++
- drivers/video/omap2/vram.c                  |   56 ---
- include/video/omapdss.h                     |    1 +
- 22 files changed, 1180 insertions(+), 1365 deletions(-)
- create mode 100644 drivers/video/omap2/dss/manager-sysfs.c
- create mode 100644 drivers/video/omap2/dss/overlay-sysfs.c
-
+diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+index 3b63ad8..fc50320 100644
+--- a/drivers/video/mx3fb.c
++++ b/drivers/video/mx3fb.c
+@@ -29,7 +29,6 @@
+ #include <linux/dma/ipu-dma.h>
+ 
+ #include <linux/platform_data/dma-imx.h>
+-#include <mach/hardware.h>
+ #include <linux/platform_data/video-mx3fb.h>
+ 
+ #include <asm/io.h>
 -- 
 1.7.9.5
 

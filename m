@@ -1,121 +1,122 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 14 Sep 2012 09:07:29 +0000
-Subject: Re: [PATCH 21/21] OMAPDSS: DISPC: Configure color conversion coefficients for writeback
-Message-Id: <1347613649.2559.63.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-Z+d2E2s4sqrujWcWgC3+"
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 23 Sep 2012 19:26:05 +0000
+Subject: Re: [PATCH V2 0/5] arm: samsung: Move FIMD headers to include/video/
+Message-Id: <505F624D.6020909@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>
-	 <1347538505-25359-22-git-send-email-archit@ti.com>
-In-Reply-To: <1347538505-25359-22-git-send-email-archit@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-
---=-Z+d2E2s4sqrujWcWgC3+
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2012-09-13 at 17:45 +0530, Archit Taneja wrote:
-> Writeback pipeline receives RGB data from one of the overlays or one of t=
-he
-> overlay managers. If the target color mode is YUV422 or NV12, we need to =
-convert
-> the RGB pixels to YUV. The scalar in WB then converts it to the target co=
-lor
-> mode.
->=20
-> Hence, the color conversion coefficients that need to be programmed are t=
-he ones
-> which convert a RGB24 pixel to YUV444. Program these coefficients for wri=
-teback
-> pipeline.
->=20
-> Signed-off-by: Archit Taneja <archit@ti.com>
-> ---
->  drivers/video/omap2/dss/dispc.c |   20 ++++++++++++++++----
->  1 file changed, 16 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/di=
-spc.c
-> index 1623c9b..5811a18 100644
-> --- a/drivers/video/omap2/dss/dispc.c
-> +++ b/drivers/video/omap2/dss/dispc.c
-> @@ -681,20 +681,30 @@ static void dispc_plane_set_scale_coef(enum omap_pl=
-ane plane, int fir_hinc,
->  static void _dispc_setup_color_conv_coef(void)
->  {
->  	int i;
-> +	int num_ovl =3D dss_feat_get_num_ovls();
-> +	int num_wb =3D dss_feat_get_num_wbs();
-> +
->  	const struct color_conv_coef {
->  		int  ry,  rcr,  rcb,   gy,  gcr,  gcb,   by,  bcr,  bcb;
->  		int  full_range;
-> -	}  ctbl_bt601_5 =3D {
-> -		298,  409,    0,  298, -208, -100,  298,    0,  517, 0,
-> +	}  ctbl_bt601_5[2] =3D {
-> +		{ 298,  409, 0, 298, -208, -100, 298, 0, 517, 0, },
-> +		{ 66, 112, -38, 129, -94, -74, 25, -18, 112, 0, },
->  	};
-> =20
->  	const struct color_conv_coef *ct;
-> =20
->  #define CVAL(x, y) (FLD_VAL(x, 26, 16) | FLD_VAL(y, 10, 0))
-> +#define YUVTORGB 0
-> +#define RGBTOYUV 1
-> =20
-> -	ct =3D &ctbl_bt601_5;
-> +	ct =3D &ctbl_bt601_5[YUVTORGB];
-> +
-> +	for (i =3D 1; i < num_ovl + num_wb; i++) {
-> +
-> +		if (i >=3D num_ovl)
-> +			ct =3D &ctbl_bt601_5[RGBTOYUV];
-> =20
-> -	for (i =3D 1; i < dss_feat_get_num_ovls(); i++) {
->  		dispc_write_reg(DISPC_OVL_CONV_COEF(i, 0),
->  			CVAL(ct->rcr, ct->ry));
->  		dispc_write_reg(DISPC_OVL_CONV_COEF(i, 1),
-
-This looks a bit funny. I'd suggest to take the actual register writes
-to a separate function, and have a separate tables for ovls and wb, and
-have two for loops, first for ovls and then for wbs.
-
-Btw, I wonder if we could consider WB as a single special entity, i.e.
-no need for "num_wbs" or such. I know things may change in the future
-HW, but I got the impression that adding overlays to DSS is costly, and
-single WB is enough.
-
-Then again, I'm not sure if handling only single WB would simplify much.
-If you think it's no issue to have support for multiple WBs, perhaps we
-can have it, just in case.
-
- Tomi
-
-
---=-Z+d2E2s4sqrujWcWgC3+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+References: <1343737385-23337-1-git-send-email-l.krishna@samsung.com> <02f701cd6f8d$5ca3e850$15ebb8f0$%kim@samsung.com> <5018FDF6.4020205@gmx.de> <1d5a01cd8115$7251eb40$56f5c1c0$%kim@samsung.com>
+In-Reply-To: <1d5a01cd8115$7251eb40$56f5c1c0$%kim@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: 'Leela Krishna Amudala' <l.krishna@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+On 08/23/2012 09:55 AM, Kukjin Kim wrote:
+> Florian Tobias Schandinat wrote:
+>>
+>> On 08/01/2012 02:28 AM, Kukjin Kim wrote:
+>>> Leela Krishna Amudala wrote:
+>>>>
+>>>> This patchset moves the contents of regs-fb-v4.h and regs-fb.h from
+>> arch
+>>>> side
+>>>> to include/video/samsung_fimd.h
+>>>>
+>>>> This patchset is created and rebased against master branch of torvalds
+>>>> tree.
+>>>> Tested on smdk5250 board, build tested for other boards.
+>>>>
+>>> (Cc'ed Florian Tobias Schandinat)
+>>>
+>>> Yeah, since it's merge window, this series could be created against on
+>>> mainline. And IMO, would be helpful to us if this series could be sent
+>> to
+>>> upstream via samsung tree after reviewing, because this touches too many
+>>> files in samsung tree and just adds include/video/samsung_fimd.h. But
+>> I'm
+>>> not sure the added inclusion will be used in other file of
+> drivers/video.
+>> If
+>>> so, I can provide some topic branch can be merged into Florian's tree.
+>>> Florian, how about?
+>>
+>> Using a topic branch to merge it in both trees sounds like a good plan
+>> to me.
+>>
+> Florian,
+> 
+> Please pull following topic branch we talked. I already merged it into my
+> -next.
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/kgene/linux-samsung.git
+> v3.7-for-florian
+> 
+> Note, I applied Leela's V4 patches not this V2 series.
 
-iQIcBAABAgAGBQJQUvPRAAoJEPo9qoy8lh712EwQAIl+IHo1OfFsjEjPd/0W32Wa
-1ZeaZVcwM0wpCd6TB4Nmlhy27ZA21FIkUlj3kqqS8bAAvuLYralWUebxZNl403wa
-QPww+jHf2KGcVZR1gFwbhVGODhV3TUMXl4p9rEO/zRitGWA79rg/nw+BGjPDUjfs
-HAgSMaECoBYZTZhWHZ2/ddLjgRsltB64HJ2D+KLnA64gVA85ab6oj3al85DLZUXa
-gj8+6eSnTUnjQ+yiYWhjyHqx5+AbTSpHK7AZe5KmGeH4sj7jtYf42c286djU5LRQ
-O2+wv2pH03ZCDSlV6jbyVAHH7hDwPhGhzSsakVp1oPDdxk6lcDIWERWGyHqErfr1
-noT7F3FbKjSC3hhEQWQRf16AHHPd0vdCMMW34CRWruHxV4f6o9PwVU6fsoMA5qED
-XQE3mycvDigm8VxzCabzCEv6NOks0dMCKKVxMuW2l3Yq3rbw3Q2d9bewATj1T5Ka
-pe+woI1QnRBIX5ns8p1O8oRpXuD3HnKgUxq3de/Idg9uWDfdYGH4jAAmpGL4gDwP
-uC0HmNkBarcGx1e3wgYC4p4TFJqYjr1U0lLEgsUJeaiWLJ4qTv/b04jo7ngW3MRQ
-MgTFJhs5HWAfhgsRrhBKWwmC/2IGQutfbAgJ2iSf7IM/Da4X7s/MwhOUenF5KeVC
-7x+PezK4yVuWZsAp58Ki
-=5RuS
------END PGP SIGNATURE-----
+Merged, just as I wrote in another thread. Took a bit longer as I was
+writing my thesis...
 
---=-Z+d2E2s4sqrujWcWgC3+--
+
+Best regards,
+
+Florian Tobias Schandinat
+
+> 
+> If any problems, please kindly let me know.
+> 
+> Thanks.
+> 
+> Best regards,
+> Kgene.
+> --
+> Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+> SW Solution Development Team, Samsung Electronics Co., Ltd.
+> 
+> The following changes since commit 0d7614f09c1ebdbaa1599a5aba7593f147bf96ee:
+> 
+>   Linux 3.6-rc1 (2012-08-02 16:38:10 -0700)
+> 
+> are available in the git repository at:
+>   git://git.kernel.org/pub/scm/linux/kernel/git/kgene/linux-samsung.git
+> v3.7-for-florian
+> 
+> Leela Krishna Amudala (2):
+>       include/video: move fimd register headers from platform to
+> include/video
+>       include/video: Add register offsets for FIMD version 8
+> 
+>  arch/arm/mach-exynos/mach-nuri.c                   |    2 +-
+>  arch/arm/mach-exynos/mach-origen.c                 |    2 +-
+>  arch/arm/mach-exynos/mach-smdk4x12.c               |    2 +-
+>  arch/arm/mach-exynos/mach-smdkv310.c               |    2 +-
+>  arch/arm/mach-exynos/mach-universal_c210.c         |    2 +-
+>  arch/arm/mach-exynos/setup-fimd0.c                 |    2 +-
+>  arch/arm/mach-s3c24xx/mach-smdk2416.c              |    2 +-
+>  arch/arm/mach-s3c64xx/mach-anw6410.c               |    2 +-
+>  arch/arm/mach-s3c64xx/mach-crag6410.c              |    2 +-
+>  arch/arm/mach-s3c64xx/mach-hmt.c                   |    2 +-
+>  arch/arm/mach-s3c64xx/mach-mini6410.c              |    2 +-
+>  arch/arm/mach-s3c64xx/mach-ncp.c                   |    2 +-
+>  arch/arm/mach-s3c64xx/mach-real6410.c              |    2 +-
+>  arch/arm/mach-s3c64xx/mach-smartq5.c               |    2 +-
+>  arch/arm/mach-s3c64xx/mach-smartq7.c               |    2 +-
+>  arch/arm/mach-s3c64xx/mach-smdk6410.c              |    2 +-
+>  arch/arm/mach-s5p64x0/mach-smdk6440.c              |    2 +-
+>  arch/arm/mach-s5p64x0/mach-smdk6450.c              |    2 +-
+>  arch/arm/mach-s5pc100/mach-smdkc100.c              |    2 +-
+>  arch/arm/mach-s5pv210/mach-aquila.c                |    2 +-
+>  arch/arm/mach-s5pv210/mach-goni.c                  |    2 +-
+>  arch/arm/mach-s5pv210/mach-smdkv210.c              |    2 +-
+>  arch/arm/plat-samsung/include/plat/regs-fb-v4.h    |  159
+> --------------------
+>  drivers/gpu/drm/exynos/exynos_drm_fimd.c           |    2 +-
+>  drivers/video/s3c-fb.c                             |    2 +-
+>  .../plat/regs-fb.h => include/video/samsung_fimd.h |  152
+> +++++++++++++++++--
+>  26 files changed, 165 insertions(+), 194 deletions(-)
+>  delete mode 100644 arch/arm/plat-samsung/include/plat/regs-fb-v4.h
+>  rename arch/arm/plat-samsung/include/plat/regs-fb.h =>
+> include/video/samsung_fimd.h (73%)
+> 
+> 
 

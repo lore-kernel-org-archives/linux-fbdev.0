@@ -1,7 +1,7 @@
-From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Date: Tue, 04 Sep 2012 03:20:19 +0000
-Subject: RE: [PATCH v5] da8xx-fb: allow frame to complete after disabling LCDC
-Message-Id: <A73F36158E33644199EB82C5EC81C7BC3E9B53A4@DBDE01.ent.ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 23 Sep 2012 19:28:49 +0000
+Subject: Re: [PATCH v5] da8xx-fb: allow frame to complete after disabling LCDC
+Message-Id: <505F62F1.3010907@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1345813980-14758-1-git-send-email-prakash.pm@ti.com>
 In-Reply-To: <1345813980-14758-1-git-send-email-prakash.pm@ti.com>
@@ -10,14 +10,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Florian Tobias Schandinat,
-
-If you do not have any review comments, could you please accept this patch?
-
-Thanks,
-Prakash
-
-On Fri, Aug 24, 2012 at 18:43:00, Manjunathappa, Prakash wrote:
+On 08/24/2012 01:13 PM, Manjunathappa, Prakash wrote:
 > Wait for active frame transfer to complete after disabling LCDC.
 > At the same this wait is not be required when there are sync and
 > underflow errors.
@@ -26,6 +19,14 @@ On Fri, Aug 24, 2012 at 18:43:00, Manjunathappa, Prakash wrote:
 > section 13.4.6 of AM335x TRM @www.ti.com/am335x.
 > 
 > Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+
+Applied.
+
+
+Thanks,
+
+Florian Tobias Schandinat
+
 > ---
 > Applies on top of fbdev-next of Florian Tobias Schandinat's tree.
 > Since v4:
@@ -214,8 +215,4 @@ On Fri, Aug 24, 2012 at 18:43:00, Manjunathappa, Prakash wrote:
 >  	clk_disable(par->lcdc_clk);
 >  	console_unlock();
 >  
-> -- 
-> 1.7.1
-> 
-> 
 

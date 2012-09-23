@@ -1,7 +1,7 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Sat, 22 Sep 2012 03:55:34 +0000
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 23 Sep 2012 19:45:43 +0000
 Subject: Re: [PATCH 1/2] video: s3c2410: Use pr_* and dev_* instead of printk
-Message-Id: <CAK9yfHwyWNd=bNTh9JOcaSF+8gn-kqPCj6kj=9r7ZyCOciLZdA@mail.gmail.com>
+Message-Id: <505F66E7.5070200@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <002c01cd8f42$a2104080$e630c180$%han@samsung.com>
 In-Reply-To: <002c01cd8f42$a2104080$e630c180$%han@samsung.com>
@@ -10,22 +10,26 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi,
-
-Any comments on this patch?
-
-On 10 September 2012 16:24, Jingoo Han <jg1.han@samsung.com> wrote:
+On 09/10/2012 10:54 AM, Jingoo Han wrote:
 > From: Sachin Kamat <sachin.kamat@linaro.org>
->
+> 
 > printk calls are replaced by pr_* and dev_* calls to silence
 > checkpatch warnings.
->
+> 
 > Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 > Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+
+Applied.
+
+
+Thanks,
+
+Florian Tobias Schandinat
+
 > ---
 >  drivers/video/s3c2410fb.c |   22 ++++++++++++++--------
 >  1 files changed, 14 insertions(+), 8 deletions(-)
->
+> 
 > diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
 > index 77f34c6..1aa37ea 100644
 > --- a/drivers/video/s3c2410fb.c
@@ -33,85 +37,76 @@ On 10 September 2012 16:24, Jingoo Han <jg1.han@samsung.com> wrote:
 > @@ -11,6 +11,8 @@
 >   * Driver based on skeletonfb.c, sa1100fb.c and others.
 >  */
->
+>  
 > +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 > +
 >  #include <linux/module.h>
 >  #include <linux/kernel.h>
 >  #include <linux/err.h>
-> @@ -48,7 +50,11 @@ static int debug     = 1;
+> @@ -48,7 +50,11 @@ static int debug	= 1;
 >  static int debug;
 >  #endif
->
-> -#define dprintk(msg...)        if (debug) printk(KERN_DEBUG "s3c2410fb: " msg);
+>  
+> -#define dprintk(msg...)	if (debug) printk(KERN_DEBUG "s3c2410fb: " msg);
 > +#define dprintk(msg...) \
 > +do { \
-> +       if (debug) \
-> +               pr_debug(msg); \
+> +	if (debug) \
+> +		pr_debug(msg); \
 > +} while (0)
->
+>  
 >  /* useful functions */
->
+>  
 > @@ -598,11 +604,11 @@ static int s3c2410fb_debug_store(struct device *dev,
->         if (strnicmp(buf, "on", 2) = 0 ||
->             strnicmp(buf, "1", 1) = 0) {
->                 debug = 1;
-> -               printk(KERN_DEBUG "s3c2410fb: Debug On");
-> +               dev_dbg(dev, "s3c2410fb: Debug On");
->         } else if (strnicmp(buf, "off", 3) = 0 ||
->                    strnicmp(buf, "0", 1) = 0) {
->                 debug = 0;
-> -               printk(KERN_DEBUG "s3c2410fb: Debug Off");
-> +               dev_dbg(dev, "s3c2410fb: Debug Off");
->         } else {
->                 return -EINVAL;
->         }
+>  	if (strnicmp(buf, "on", 2) = 0 ||
+>  	    strnicmp(buf, "1", 1) = 0) {
+>  		debug = 1;
+> -		printk(KERN_DEBUG "s3c2410fb: Debug On");
+> +		dev_dbg(dev, "s3c2410fb: Debug On");
+>  	} else if (strnicmp(buf, "off", 3) = 0 ||
+>  		   strnicmp(buf, "0", 1) = 0) {
+>  		debug = 0;
+> -		printk(KERN_DEBUG "s3c2410fb: Debug Off");
+> +		dev_dbg(dev, "s3c2410fb: Debug Off");
+>  	} else {
+>  		return -EINVAL;
+>  	}
 > @@ -921,7 +927,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
->
->         info->clk = clk_get(NULL, "lcd");
->         if (IS_ERR(info->clk)) {
-> -               printk(KERN_ERR "failed to get lcd clock source\n");
-> +               dev_err(&pdev->dev, "failed to get lcd clock source\n");
->                 ret = PTR_ERR(info->clk);
->                 goto release_irq;
->         }
+>  
+>  	info->clk = clk_get(NULL, "lcd");
+>  	if (IS_ERR(info->clk)) {
+> -		printk(KERN_ERR "failed to get lcd clock source\n");
+> +		dev_err(&pdev->dev, "failed to get lcd clock source\n");
+>  		ret = PTR_ERR(info->clk);
+>  		goto release_irq;
+>  	}
 > @@ -947,7 +953,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
->         /* Initialize video memory */
->         ret = s3c2410fb_map_video_memory(fbinfo);
->         if (ret) {
-> -               printk(KERN_ERR "Failed to allocate video RAM: %d\n", ret);
-> +               dev_err(&pdev->dev, "Failed to allocate video RAM: %d\n", ret);
->                 ret = -ENOMEM;
->                 goto release_clock;
->         }
+>  	/* Initialize video memory */
+>  	ret = s3c2410fb_map_video_memory(fbinfo);
+>  	if (ret) {
+> -		printk(KERN_ERR "Failed to allocate video RAM: %d\n", ret);
+> +		dev_err(&pdev->dev, "Failed to allocate video RAM: %d\n", ret);
+>  		ret = -ENOMEM;
+>  		goto release_clock;
+>  	}
 > @@ -970,7 +976,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
->
->         ret = register_framebuffer(fbinfo);
->         if (ret < 0) {
-> -               printk(KERN_ERR "Failed to register framebuffer device: %d\n",
-> +               dev_err(&pdev->dev, "Failed to register framebuffer device: %d\n",
->                         ret);
->                 goto free_cpufreq;
->         }
+>  
+>  	ret = register_framebuffer(fbinfo);
+>  	if (ret < 0) {
+> -		printk(KERN_ERR "Failed to register framebuffer device: %d\n",
+> +		dev_err(&pdev->dev, "Failed to register framebuffer device: %d\n",
+>  			ret);
+>  		goto free_cpufreq;
+>  	}
 > @@ -978,9 +984,9 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
->         /* create device files */
->         ret = device_create_file(&pdev->dev, &dev_attr_debug);
->         if (ret)
-> -               printk(KERN_ERR "failed to add debug attribute\n");
-> +               dev_err(&pdev->dev, "failed to add debug attribute\n");
->
-> -       printk(KERN_INFO "fb%d: %s frame buffer device\n",
-> +       dev_info(&pdev->dev, "fb%d: %s frame buffer device\n",
->                 fbinfo->node, fbinfo->fix.id);
->
->         return 0;
-> --
-> 1.7.1
->
->
+>  	/* create device files */
+>  	ret = device_create_file(&pdev->dev, &dev_attr_debug);
+>  	if (ret)
+> -		printk(KERN_ERR "failed to add debug attribute\n");
+> +		dev_err(&pdev->dev, "failed to add debug attribute\n");
+>  
+> -	printk(KERN_INFO "fb%d: %s frame buffer device\n",
+> +	dev_info(&pdev->dev, "fb%d: %s frame buffer device\n",
+>  		fbinfo->node, fbinfo->fix.id);
+>  
+>  	return 0;
 
-
-
--- 
-With warm regards,
-Sachin

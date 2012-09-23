@@ -1,42 +1,59 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 19 Sep 2012 08:30:32 +0000
-Subject: [PATCH 2/8] OMAPDSS: Add dss_get_default_display_name()
-Message-Id: <1348043438-2624-3-git-send-email-tomi.valkeinen@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 23 Sep 2012 19:20:57 +0000
+Subject: Re: [PATCH] drivers: console: font_: Change a glyph from "broken bar" to "vertical line"
+Message-Id: <505F6119.4030705@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348043438-2624-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1348043438-2624-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Add function dss_get_default_display_name() which returns the name of
-the default display, given from the board file or via module parameters.
-The default display name can be used by output drivers to decide which
-display is the wanted one.
+On 08/12/2012 03:05 PM, Bjarni Ingi Gislason wrote:
+>   The code 124 (0x7C, |) is rendered as a broken line in two
+> fonts, instead of a continuous line.  Some keyboards show a
+> "broken bar" on one of theirs keys, other show a (continuous)
+> "vertical line".
+> 
+> Signed-off-by: Bjarni Ingi Gislason <bjarniig@rhi.hi.is>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/core.c |    5 +++++
- 1 file changed, 5 insertions(+)
+Applied, as I think you're right and don't know any policy to not change
+existing fonts. But it would be better if you use git to create your
+patches.
 
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index 20c8bc8..315f557 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -57,6 +57,11 @@ bool dss_debug;
- module_param_named(debug, dss_debug, bool, 0644);
- #endif
- 
-+const char *dss_get_default_display_name(void)
-+{
-+	return core.default_display_name;
-+}
-+
- /* REGULATORS */
- 
- struct regulator *dss_get_vdds_dsi(void)
--- 
-1.7.9.5
+
+Best regards,
+
+Florian Tobias Schandinat
+
+
+> ---
+>  linux-3.5/drivers/video/console/font_mini_4x6.c |    2 +-
+>  linux-3.5/drivers/video/console/font_sun8x16.c  |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff -upr -X linux-3.5/Documentation/dontdiff linux-3.5/drivers/video/console/font_mini_4x6.c devel/linux-3.5/drivers/video/console/font_mini_4x6.c
+> --- linux-3.5/drivers/video/console/font_mini_4x6.c	2012-07-21 20:58:29.000000000 +0000
+> +++ devel/linux-3.5/drivers/video/console/font_mini_4x6.c	2012-08-11 15:27:41.778918653 +0000
+> @@ -1092,7 +1092,7 @@ static const unsigned char fontdata_mini
+>  	/*{*/ 	/*   Char 124: '|' */
+>  	0x44,	/*=   [ *  ]        */
+>  	0x44,	/*=   [ *  ]        */
+> -	0x00,	/*=   [    ]        */
+> +	0x44,	/*=   [ *  ]        */
+>  	0x44,	/*=   [ *  ]        */
+>  	0x44,	/*=   [ *  ]        */
+>  	0x00,	/*=   [    ]        */
+> diff -upr -X linux-3.5/Documentation/dontdiff linux-3.5/drivers/video/console/font_sun8x16.c devel/linux-3.5/drivers/video/console/font_sun8x16.c
+> --- linux-3.5/drivers/video/console/font_sun8x16.c	2012-07-21 20:58:29.000000000 +0000
+> +++ devel/linux-3.5/drivers/video/console/font_sun8x16.c	2012-08-11 15:28:22.490299722 +0000
+> @@ -127,7 +127,7 @@ static const unsigned char fontdata_sun8
+>  /*y*/ 0x00,0x00,0x00,0x00,0x00,0xc6,0xc6,0xc6,0xc6,0xc6,0xc6,0x7e,0x06,0x0c,0xf8,0x00,
+>  /*z*/ 0x00,0x00,0x00,0x00,0x00,0xfe,0xcc,0x18,0x30,0x60,0xc6,0xfe,0x00,0x00,0x00,0x00,
+>  /*{*/ 0x00,0x00,0x0e,0x18,0x18,0x18,0x70,0x18,0x18,0x18,0x18,0x0e,0x00,0x00,0x00,0x00,
+> -/*|*/ 0x00,0x00,0x18,0x18,0x18,0x18,0x00,0x18,0x18,0x18,0x18,0x18,0x00,0x00,0x00,0x00,
+> +/*|*/ 0x00,0x00,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x18,0x00,0x00,0x00,0x00,
+>  /*}*/ 0x00,0x00,0x70,0x18,0x18,0x18,0x0e,0x18,0x18,0x18,0x18,0x70,0x00,0x00,0x00,0x00,
+>  /*~*/ 0x00,0x00,0x76,0xdc,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+>  /* */ 0x00,0x00,0x00,0x00,0x10,0x38,0x6c,0xc6,0xc6,0xc6,0xfe,0x00,0x00,0x00,0x00,0x00,
+> 
 

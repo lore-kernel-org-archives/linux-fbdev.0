@@ -1,190 +1,72 @@
-From: Liviu Dudau <Liviu.Dudau@arm.com>
-Date: Thu, 20 Sep 2012 10:29:44 +0000
-Subject: Re: [RFC PATCH 3/3] ARM: vexpress: configure CLCD driver device tree support for A9 CoreTile
-Message-Id: <20120920102943.GH32603@e102652-lin.cambridge.arm.com>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 24 Sep 2012 09:15:08 +0000
+Subject: linux-next: manual merge of the arm-soc tree with the fbdev tree
+Message-Id: <20120924191508.6100b0603d2642c1e7a36679@canb.auug.org.au>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Signature=_Mon__24_Sep_2012_19_15_08_+1000_3grHwFrw7HYV=6AS"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348070666-9153-1-git-send-email-ryan.harkin@linaro.org>
- <1348070666-9153-4-git-send-email-ryan.harkin@linaro.org>
-In-Reply-To: <1348070666-9153-4-git-send-email-ryan.harkin@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Sep 19, 2012 at 05:04:26PM +0100, Ryan Harkin wrote:
-> Configuration for the amba-clcd PL111 driver is added to the A9 CoreTile's DTS
-> file.
->
-> Configuration of the motherboard CLCD driver is removed from the DTSI files to
-> prevent duplicate CLCD drivers being registered.
->
-> A generic set of CLCD panel descriptions has been split into its own DTSI file.
-> Currently, only XVGA and VGA monitors are described.
+--Signature=_Mon__24_Sep_2012_19_15_08_+1000_3grHwFrw7HYV=6AS
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Ryan,
+Hi all,
 
-For this and [2/3] patch:
+Today's linux-next merge of the arm-soc tree got a conflict in arch/arm/mac=
+h-s3c64xx/mach-mini6410.c between commit 5a213a55c6d3 ("include/video: move=
+ fimd register headers from platform to include/video") from the fbdev tree=
+ and commit 436d42c61c3e ("ARM: samsung: move platform_data definitions") f=
+rom the arm-soc tree.
 
-Reviewed-by: Liviu Dudau <Liviu.Dudau@arm.com>
+I fixed it up (see below) and can carry the fix as necessary (no action
+is required).
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
->
-> Signed-off-by: Ryan Harkin <ryan.harkin@linaro.org>
-> ---
->  arch/arm/boot/dts/clcd-panels.dtsi      |   52 +++++++++++++++++++++++++++++++
->  arch/arm/boot/dts/vexpress-v2m-rs1.dtsi |    8 ++---
->  arch/arm/boot/dts/vexpress-v2m.dtsi     |    8 ++---
->  arch/arm/boot/dts/vexpress-v2p-ca9.dts  |    6 ++++
->  4 files changed, 62 insertions(+), 12 deletions(-)
->
-> diff --git a/arch/arm/boot/dts/clcd-panels.dtsi b/arch/arm/boot/dts/clcd-panels.dtsi
-> new file mode 100644
-> index 0000000..0b0ff6e
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/clcd-panels.dtsi
-> @@ -0,0 +1,52 @@
-> +/*
-> + * ARM Ltd. Versatile Express
-> + *
-> + */
-> +
-> +/ {
-> +     panels {
-> +             panel@0 {
-> +                     compatible      = "panel";
-> +                     mode            = "VGA";
-> +                     refresh         = <60>;
-> +                     xres            = <640>;
-> +                     yres            = <480>;
-> +                     pixclock        = <39721>;
-> +                     left_margin     = <40>;
-> +                     right_margin    = <24>;
-> +                     upper_margin    = <32>;
-> +                     lower_margin    = <11>;
-> +                     hsync_len       = <96>;
-> +                     vsync_len       = <2>;
-> +                     sync            = <0>;
-> +                     vmode           = "FB_VMODE_NONINTERLACED";
-> +
-> +                     tim2            = "TIM2_BCD", "TIM2_IPC";
-> +                     cntl            = "CNTL_LCDTFT", "CNTL_BGR", "CNTL_LCDVCOMP(1)";
-> +                     caps            = "CLCD_CAP_5551", "CLCD_CAP_565", "CLCD_CAP_888";
-> +                     bpp             = <16>;
-> +             };
-> +
-> +             panel@1 {
-> +                     compatible      = "panel";
-> +                     mode            = "XVGA";
-> +                     refresh         = <60>;
-> +                     xres            = <1024>;
-> +                     yres            = <768>;
-> +                     pixclock        = <15748>;
-> +                     left_margin     = <152>;
-> +                     right_margin    = <48>;
-> +                     upper_margin    = <23>;
-> +                     lower_margin    = <3>;
-> +                     hsync_len       = <104>;
-> +                     vsync_len       = <4>;
-> +                     sync            = <0>;
-> +                     vmode           = "FB_VMODE_NONINTERLACED";
-> +
-> +                     tim2            = "TIM2_BCD", "TIM2_IPC";
-> +                     cntl            = "CNTL_LCDTFT", "CNTL_BGR", "CNTL_LCDVCOMP(1)";
-> +                     caps            = "CLCD_CAP_5551", "CLCD_CAP_565", "CLCD_CAP_888";
-> +                     bpp             = <16>;
-> +             };
-> +     };
-> +};
-> diff --git a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
-> index d8a827b..301d3f6 100644
-> --- a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
-> +++ b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
-> @@ -17,6 +17,8 @@
->   * CHANGES TO vexpress-v2m.dtsi!
->   */
->
-> +/include/ "clcd-panels.dtsi"
-> +
->  / {
->       aliases {
->               arm,v2m_timer = &v2m_timer01;
-> @@ -193,12 +195,6 @@
->                                      0x1a0100 0xf00>;
->                               reg-shift = <2>;
->                       };
-> -
-> -                     clcd@1f0000 {
-> -                             compatible = "arm,pl111", "arm,primecell";
-> -                             reg = <0x1f0000 0x1000>;
-> -                             interrupts = <14>;
-> -                     };
->               };
->
->               v2m_fixed_3v3: fixedregulator@0 {
-> diff --git a/arch/arm/boot/dts/vexpress-v2m.dtsi b/arch/arm/boot/dts/vexpress-v2m.dtsi
-> index dba53fd..43cd86f 100644
-> --- a/arch/arm/boot/dts/vexpress-v2m.dtsi
-> +++ b/arch/arm/boot/dts/vexpress-v2m.dtsi
-> @@ -17,6 +17,8 @@
->   * CHANGES TO vexpress-v2m-rs1.dtsi!
->   */
->
-> +/include/ "clcd-panels.dtsi"
-> +
->  / {
->       aliases {
->               arm,v2m_timer = &v2m_timer01;
-> @@ -192,12 +194,6 @@
->                                      0x1a100 0xf00>;
->                               reg-shift = <2>;
->                       };
-> -
-> -                     clcd@1f000 {
-> -                             compatible = "arm,pl111", "arm,primecell";
-> -                             reg = <0x1f000 0x1000>;
-> -                             interrupts = <14>;
-> -                     };
->               };
->
->               v2m_fixed_3v3: fixedregulator@0 {
-> diff --git a/arch/arm/boot/dts/vexpress-v2p-ca9.dts b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
-> index 3f0c736..2ebb132 100644
-> --- a/arch/arm/boot/dts/vexpress-v2p-ca9.dts
-> +++ b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
-> @@ -9,6 +9,8 @@
->
->  /dts-v1/;
->
-> +/memreserve/ 0x9f000000 0x01000000;
-> +
->  / {
->       model = "V2P-CA9";
->       arm,hbi = <0x191>;
-> @@ -70,6 +72,10 @@
->               compatible = "arm,pl111", "arm,primecell";
->               reg = <0x10020000 0x1000>;
->               interrupts = <0 44 4>;
-> +             mode = "XVGA";
-> +             arm,vexpress-osc = <1>;
-> +             use_dma = <1>;
-> +             framebuffer = <0x9f000000 0x01000000>;
->       };
->
->       memory-controller@100e0000 {
-> --
-> 1.7.9.5
->
->
+diff --cc arch/arm/mach-s3c64xx/mach-mini6410.c
+index 96ebcc5,09311cc..0000000
+--- a/arch/arm/mach-s3c64xx/mach-mini6410.c
++++ b/arch/arm/mach-s3c64xx/mach-mini6410.c
+@@@ -38,12 -38,12 +38,12 @@@
+  #include <plat/cpu.h>
+  #include <plat/devs.h>
+  #include <plat/fb.h>
+- #include <plat/nand.h>
++ #include <linux/platform_data/mtd-nand-s3c2410.h>
+  #include <plat/regs-serial.h>
+- #include <plat/ts.h>
++ #include <linux/platform_data/touchscreen-s3c2410.h>
+ -#include <plat/regs-fb-v4.h>
+ =20
+  #include <video/platform_lcd.h>
+ +#include <video/samsung_fimd.h>
+ =20
+  #include "common.h"
+ =20
 
---
-==========
-| I would like to |
-| fix the world,  |
-| but they're not |
-| giving me the   |
- \ source code!  /
-  ---------------
-    ¯\_(ツ)_/¯
+--Signature=_Mon__24_Sep_2012_19_15_08_+1000_3grHwFrw7HYV=6AS
+Content-Type: application/pgp-signature
 
--- IMPORTANT NOTICE: The contents of this email and any attachments are confidential and may also be privileged. If you are not the intended recipient, please notify the sender immediately and do not disclose the contents to any other person, use it for any purpose, or store or copy the information in any medium.  Thank you.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
+iQIcBAEBCAAGBQJQYCScAAoJEECxmPOUX5FEOFoP/3PWBwFkMKXOOQ5eZk5BtKVS
+eR4yeDichFtUFVFTKmjo31wPr6h6qkB5b+mpIQCgg+aLpTp/zgkBt9jlU/G3YIHa
+pHgYEiSeb3R3L56G0WlIh9xfLQm4GjkTtxZH34TbJ5ghO4Bh++wgcegufD8DEH8y
+jdwDg68Ugu0FU2N0rB+gCy+xYHSGYYY4IU+LyBw7O/fwPh61zKMBOR36rtpLVjqS
+7ULBRzflWMcKec40g4b/up7QFBcSetBeZd3n+0Fr+8Heruy1veNRUmaRMbo/UGP4
+187W4XLpcoYg7jgSZGe6yQhQdv7Ams700heWsoNhtR/U6pF5Q21NRQxpXFAFYlyG
+mEhibkPMRCJyVtnv6cfMREuTNVzBB+fdX4F77q6tQq73m6AK5+khNAQcv5UMVswb
+TypAMigNFNAAurnvSjIS9FnRq5GWq03rmKLJq0z1J1wz6lqZlqWlQvVk6zsvF20r
+CGbphS927/7X68VOPze0+K51oqGYJ15P4AGFtVNI1r/00cZVNtOGCg+KEG7faRFN
+8dVlRkDN4VLks6MbuLud2I93Cl9dbfm1renDX4KFdDI6awC9rT3kQ4HmvCDj0cSE
+siUvHAuGnHsamMbTyNEJA/nIat3pLdEg0qZgpZP5YxnBjR1/srjj4SqUr+/AOHP2
+cMrIDIfk2F+JtcRl7FzT
+=L4mg
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__24_Sep_2012_19_15_08_+1000_3grHwFrw7HYV=6AS--

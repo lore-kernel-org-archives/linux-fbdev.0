@@ -1,52 +1,230 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Fri, 28 Sep 2012 10:35:18 +0000
-Subject: [PATCH V3 1/3] OMAPDSS: Move definition of DEBUG flag to Makefile
-Message-Id: <fbaf2825628b01a7b660993a83a8f3de37cfcd04.1348826106.git.cmahapatra@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 24 Sep 2012 13:58:31 +0000
+Subject: [PATCH 1/9] OMAPDSS: DSI: improve DSI clock calcs for DISPC
+Message-Id: <1348495119-8262-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1348636132.git.cmahapatra@ti.com> <cover.1348826106.git.cmahapatra@ti.com>
-In-Reply-To: <cover.1348826106.git.cmahapatra@ti.com>
+References: <1348495119-8262-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1348495119-8262-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-In OMAPDSS the DEBUG flag is set only after the OMAPDSS module is called, for
-which the debugging capabilities are available only after its proper
-initialization. As a result of which tracking of bugs prior to or during initial
-process becomes difficult. So, the definition of DEBUG is being moved to the
-corresponding Makefile.
+Commit ee144e645a081daad5de1ccac77f0a0e98e6a67b added
+dsi_pll_calc_ddrfreq() which calculates PLL dividers based on given DSI
+bus clock speed. The function works ok, but it can be improved for the
+DISPC clock calc.
 
-Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+The current version calculates the clock going from the PLL to the DISPC
+simply by setting the clock as close to DISPC maximum as possible, and
+the pixel clock is calculated based on that.
+
+This patch changes the function to calculate DISPC clock more
+dynamically, iterating through different DISPC clocks and pixel clock
+values, and thus we'll get more suitable pixel clocks.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/Makefile |    1 +
- drivers/video/omap2/dss/dss.h    |    4 ----
- 2 files changed, 1 insertion(+), 4 deletions(-)
+ drivers/video/omap2/dss/dsi.c |  144 ++++++++++++++++++++++++++++++++---------
+ 1 file changed, 113 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
-index 4549869..86493e3 100644
---- a/drivers/video/omap2/dss/Makefile
-+++ b/drivers/video/omap2/dss/Makefile
-@@ -8,3 +8,4 @@ omapdss-$(CONFIG_OMAP2_DSS_SDI) += sdi.o
- omapdss-$(CONFIG_OMAP2_DSS_DSI) += dsi.o
- omapdss-$(CONFIG_OMAP4_DSS_HDMI) += hdmi.o \
- 				    hdmi_panel.o ti_hdmi_4xxx_ip.o
-+ccflags-$(CONFIG_OMAP2_DSS_DEBUG_SUPPORT) += -DDEBUG
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 6728892..ffbba7e 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -23,10 +23,6 @@
- #ifndef __OMAP2_DSS_H
- #define __OMAP2_DSS_H
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 8d815e3..8d47fb7 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -1454,26 +1454,17 @@ found:
+ }
  
--#ifdef CONFIG_OMAP2_DSS_DEBUG_SUPPORT
--#define DEBUG
--#endif
+ static int dsi_pll_calc_ddrfreq(struct platform_device *dsidev,
+-		unsigned long req_clk, struct dsi_clock_info *cinfo)
++		unsigned long req_clkin4ddr, struct dsi_clock_info *cinfo)
+ {
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	struct dsi_clock_info cur, best;
+-	unsigned long dss_sys_clk, max_dss_fck, max_dsi_fck;
+-	unsigned long req_clkin4ddr;
+ 
+ 	DSSDBG("dsi_pll_calc_ddrfreq\n");
+ 
+-	dss_sys_clk = clk_get_rate(dsi->sys_clk);
 -
- #ifdef DEBUG
- extern bool dss_debug;
- #ifdef DSS_SUBSYS_NAME
--- 
-1.7.10
+-	max_dss_fck = dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
+-	max_dsi_fck = dss_feat_get_param_max(FEAT_PARAM_DSI_FCK);
+-
+ 	memset(&best, 0, sizeof(best));
+ 	memset(&cur, 0, sizeof(cur));
+ 
+-	cur.clkin = dss_sys_clk;
+-
+-	req_clkin4ddr = req_clk * 4;
++	cur.clkin = clk_get_rate(dsi->sys_clk);
+ 
+ 	for (cur.regn = 1; cur.regn < dsi->regn_max; ++cur.regn) {
+ 		cur.fint = cur.clkin / cur.regn;
+@@ -1503,18 +1494,107 @@ static int dsi_pll_calc_ddrfreq(struct platform_device *dsidev,
+ 		}
+ 	}
+ found:
+-	best.regm_dispc = DIV_ROUND_UP(best.clkin4ddr, max_dss_fck);
+-	best.dsi_pll_hsdiv_dispc_clk = best.clkin4ddr / best.regm_dispc;
+-
+-	best.regm_dsi = DIV_ROUND_UP(best.clkin4ddr, max_dsi_fck);
+-	best.dsi_pll_hsdiv_dsi_clk = best.clkin4ddr / best.regm_dsi;
+-
+ 	if (cinfo)
+ 		*cinfo = best;
+ 
+ 	return 0;
+ }
+ 
++static void dsi_pll_calc_dsi_fck(struct platform_device *dsidev,
++		struct dsi_clock_info *cinfo)
++{
++	unsigned long max_dsi_fck;
++
++	max_dsi_fck = dss_feat_get_param_max(FEAT_PARAM_DSI_FCK);
++
++	cinfo->regm_dsi = DIV_ROUND_UP(cinfo->clkin4ddr, max_dsi_fck);
++	cinfo->dsi_pll_hsdiv_dsi_clk = cinfo->clkin4ddr / cinfo->regm_dsi;
++}
++
++static int dsi_pll_calc_dispc_fck(struct platform_device *dsidev,
++		unsigned long req_pck, struct dsi_clock_info *cinfo,
++		struct dispc_clock_info *dispc_cinfo)
++{
++	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
++	unsigned regm_dispc, best_regm_dispc;
++	unsigned long dispc_clk, best_dispc_clk;
++	int min_fck_per_pck;
++	unsigned long max_dss_fck;
++	struct dispc_clock_info best_dispc;
++	bool match;
++
++	max_dss_fck = dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
++
++	min_fck_per_pck = CONFIG_OMAP2_DSS_MIN_FCK_PER_PCK;
++
++	if (min_fck_per_pck &&
++			req_pck * min_fck_per_pck > max_dss_fck) {
++		DSSERR("Requested pixel clock not possible with the current "
++				"OMAP2_DSS_MIN_FCK_PER_PCK setting. Turning "
++				"the constraint off.\n");
++		min_fck_per_pck = 0;
++	}
++
++retry:
++	best_regm_dispc = 0;
++	best_dispc_clk = 0;
++	memset(&best_dispc, 0, sizeof(best_dispc));
++	match = false;
++
++	for (regm_dispc = 1; regm_dispc < dsi->regm_dispc_max; ++regm_dispc) {
++		struct dispc_clock_info cur_dispc;
++
++		dispc_clk = cinfo->clkin4ddr / regm_dispc;
++
++		/* this will narrow down the search a bit,
++		 * but still give pixclocks below what was
++		 * requested */
++		if (dispc_clk  < req_pck)
++			break;
++
++		if (dispc_clk > max_dss_fck)
++			continue;
++
++		if (min_fck_per_pck && dispc_clk < req_pck * min_fck_per_pck)
++			continue;
++
++		match = true;
++
++		dispc_find_clk_divs(req_pck, dispc_clk, &cur_dispc);
++
++		if (abs(cur_dispc.pck - req_pck) <
++				abs(best_dispc.pck - req_pck)) {
++			best_regm_dispc = regm_dispc;
++			best_dispc_clk = dispc_clk;
++			best_dispc = cur_dispc;
++
++			if (cur_dispc.pck = req_pck)
++				goto found;
++		}
++	}
++
++	if (!match) {
++		if (min_fck_per_pck) {
++			DSSERR("Could not find suitable clock settings.\n"
++					"Turning FCK/PCK constraint off and"
++					"trying again.\n");
++			min_fck_per_pck = 0;
++			goto retry;
++		}
++
++		DSSERR("Could not find suitable clock settings.\n");
++
++		return -EINVAL;
++	}
++found:
++	cinfo->regm_dispc = best_regm_dispc;
++	cinfo->dsi_pll_hsdiv_dispc_clk = best_dispc_clk;
++
++	*dispc_cinfo = best_dispc;
++
++	return 0;
++}
++
+ int dsi_pll_set_clock_div(struct platform_device *dsidev,
+ 		struct dsi_clock_info *cinfo)
+ {
+@@ -4188,33 +4268,35 @@ int omapdss_dsi_set_clocks(struct omap_dss_device *dssdev,
+ 
+ 	mutex_lock(&dsi->lock);
+ 
+-	r = dsi_pll_calc_ddrfreq(dsidev, ddr_clk, &cinfo);
++	/* Calculate PLL output clock */
++	r = dsi_pll_calc_ddrfreq(dsidev, ddr_clk * 4, &cinfo);
+ 	if (r)
+ 		goto err;
+ 
+-	dssdev->clocks.dsi.regn = cinfo.regn;
+-	dssdev->clocks.dsi.regm = cinfo.regm;
+-	dssdev->clocks.dsi.regm_dispc = cinfo.regm_dispc;
+-	dssdev->clocks.dsi.regm_dsi = cinfo.regm_dsi;
++	/* Calculate PLL's DSI clock */
++	dsi_pll_calc_dsi_fck(dsidev, &cinfo);
+ 
++	/* Calculate PLL's DISPC clock and pck & lck divs */
++	pck = cinfo.clkin4ddr / 16 * (dsi->num_lanes_used - 1) * 8 / bpp;
++	DSSDBG("finding dispc dividers for pck %lu\n", pck);
++	r = dsi_pll_calc_dispc_fck(dsidev, pck, &cinfo, &dispc_cinfo);
++	if (r)
++		goto err;
+ 
++	/* Calculate LP clock */
+ 	dsi_fclk = cinfo.dsi_pll_hsdiv_dsi_clk;
+ 	lp_clk_div = DIV_ROUND_UP(dsi_fclk, lp_clk * 2);
+ 
+-	dssdev->clocks.dsi.lp_clk_div = lp_clk_div;
+-
+-	/* pck = TxByteClkHS * datalanes * 8 / bitsperpixel */
+-
+-	pck = cinfo.clkin4ddr / 16 * (dsi->num_lanes_used - 1) * 8 / bpp;
+-
+-	DSSDBG("finding dispc dividers for pck %lu\n", pck);
++	dssdev->clocks.dsi.regn = cinfo.regn;
++	dssdev->clocks.dsi.regm = cinfo.regm;
++	dssdev->clocks.dsi.regm_dispc = cinfo.regm_dispc;
++	dssdev->clocks.dsi.regm_dsi = cinfo.regm_dsi;
+ 
+-	dispc_find_clk_divs(pck, cinfo.dsi_pll_hsdiv_dispc_clk, &dispc_cinfo);
++	dssdev->clocks.dsi.lp_clk_div = lp_clk_div;
+ 
+ 	dssdev->clocks.dispc.channel.lck_div = dispc_cinfo.lck_div;
+ 	dssdev->clocks.dispc.channel.pck_div = dispc_cinfo.pck_div;
+ 
+-
+ 	dssdev->clocks.dispc.dispc_fclk_src = OMAP_DSS_CLK_SRC_FCK;
+ 
+ 	dssdev->clocks.dispc.channel.lcd_clk_src -- 
+1.7.9.5
 

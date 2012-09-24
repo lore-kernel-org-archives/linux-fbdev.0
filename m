@@ -1,91 +1,94 @@
-From: Rob Herring <robherring2@gmail.com>
-Date: Mon, 24 Sep 2012 18:26:29 +0000
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Date: Mon, 24 Sep 2012 19:16:28 +0000
 Subject: Re: [PATCH v4] of: Add videomode helper
-Message-Id: <5060A5D5.7040908@gmail.com>
+Message-Id: <20120924191628.GR1322@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1348042843-24673-1-git-send-email-s.trumtrar@pengutronix.de>
- <50606334.7030902@gmail.com> <50608000.6050007@wwwdotorg.org>
-In-Reply-To: <50608000.6050007-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+ <50606334.7030902@gmail.com> <20120924141233.GN1322@pengutronix.de>
+ <506079CF.40902@gmail.com>
+In-Reply-To: <506079CF.40902-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+To: Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 
-On 09/24/2012 10:45 AM, Stephen Warren wrote:
-> On 09/24/2012 07:42 AM, Rob Herring wrote:
->> On 09/19/2012 03:20 AM, Steffen Trumtrar wrote:
->>> This patch adds a helper function for parsing videomodes from the devicetree.
->>> The videomode can be either converted to a struct drm_display_mode or a
->>> struct fb_videomode.
+On Mon, Sep 24, 2012 at 10:18:39AM -0500, Rob Herring wrote:
+> On 09/24/2012 09:12 AM, Sascha Hauer wrote:
+> >>
+> >> A major piece missing is the LCD controller to display interface width
+> >> and component ordering.
+> > 
+> > Psst. We silently skipped this for now...
+> > 
+> > I think having such a videomode helper is useful without having the
+> > data order part. We are aware that this should be added later, but
+> > I think currently it makes sense to concentrate on the basics.
 > 
->>> +++ b/Documentation/devicetree/bindings/video/displaymode
->>> @@ -0,0 +1,74 @@
->>> +videomode bindings
->>> +=========
->>> +
->>> +Required properties:
->>> + - hactive, vactive: Display resolution
->>> + - hfront-porch, hback-porch, hsync-len: Horizontal Display timing parameters
->>> +   in pixels
->>> +   vfront-porch, vback-porch, vsync-len: Vertical display timing parameters in
->>> +   lines
->>> + - clock: displayclock in Hz
->>
->> A major piece missing is the LCD controller to display interface width
->> and component ordering.
+> Evolving bindings is not a good thing. We know this is needed, so we
+> should address it now. If Linux had a standard way to describe the
+> interface (it didn't a few years ago and I haven't kept up), then I
+> would bet it would already be part of this binding. Defining the
+> bindings in terms of what an OS uses or not is the wrong way around.
+
+I see your point. I'm just afraid that if we start a discussion about
+this now, it will take a long time we get something merged. In the
+meantime we will get a lot of ad-hoc bindings like this one
+suggested for the exynos:
+
+> +       lcd_fimd0: lcd_panel0 {
+> +                       lcd-htiming = <4 4 4 480>;
+> +                       lcd-vtiming = <4 4 4 320>;
+> +                       supports-mipi-panel;
+> +       };
+
+Or this one for the AMBA LCD controller;
+
+> +       panel.mode.refresh      = get_val(node, "refresh");
+> +       panel.mode.xres         = get_val(node, "xres");
+> +       panel.mode.yres         = get_val(node, "yres");
+> +       panel.mode.pixclock     = get_val(node, "pixclock");
+> +       panel.mode.left_margin  = get_val(node, "left_margin");
+> +       panel.mode.right_margin = get_val(node, "right_margin");
+> +       panel.mode.upper_margin = get_val(node, "upper_margin");
+> +       panel.mode.lower_margin = get_val(node, "lower_margin");
+> +       panel.mode.hsync_len    = get_val(node, "hsync_len");
+> +       panel.mode.vsync_len    = get_val(node, "vsync_len");
+> +       panel.mode.sync         = get_val(node, "sync");
+> +       panel.bpp               = get_val(node, "bpp");
+> +       panel.width             = (signed short) get_val(node, "width");
+> +       panel.height            = (signed short) get_val(node, "height");
+
+(get_val() is a wrapper around of_property_read_u32)
+
+BTW the SoC-camera guys will need a wire format description for their
+cameras aswell.
+
+> > 
+> > We expect the display nodes being subnodes of a driver (which of course
+> > has a compatible), or maybe referred to from a driver using phandles. So
+> > I don't see why the display node itself should have a compatible
+> > property. The display information is only ever useful in the context of
+> > a driver.
 > 
-> I thought this binding was solely defining the timing of the video
-> signal (hence "video mode"). Any definition of the physical interface to
-> the LCD/display-connector is something entirely orthogonal, so it seems
-> entirely reasonable to represent that separately.
-
-It is not orthogonal because in many cases the LCD panel defines the
-mode. It is only cases where you just have a connector like hdmi that
-you have multiple modes. Ideally, you would use EDID in those cases, but
-obviously there are boards where that is missing or broken.
-
->>> +Example:
->>> +
->>> +	display@0 {
->>
->> It would be useful to have a compatible string here. We may not always
->> know the panel type or have a fixed panel though. We could define
->> "generic-lcd" or something for cases where the panel type is unknown.
->>
->>> +		width-mm = <800>;
->>> +		height-mm = <480>;
+> A subnode or phandle will describe the h/w connection, but you need a
+> name to describe what is at each end of the connection.
 > 
-> I would hope that everything in the example above this point is just
-> that - an example, and this binding only covers the display mode
-> definition - i.e. that part of the example below.
-> 
+> Where would the model number of an lcd panel be captured then? The
+> timing parameters are a property of a specific panel, so both should be
+> described together. You may not have any use for the compatible string
+> now, but more information is better than less and adding it would not
+> hurt anything. For pretty much any other device sitting on a board, we
+> describe the manufacturer and type of device. LCD panels should be no
+> different.
 
-It's fairly clear this binding is being defined based on what Linux
-supports vs. what the h/w looks like.
+You convinced me. Lets add a compatible property, it won't hurt.
 
-> If that's not the intent, as Rob says, there's a /ton/ of stuff missing.
+Sascha
 
-Assuming not, what all is missing?
 
-Rob
-
-> 
->>> +		modes {
->>> +			mode0: mode@0 {
->>> +				/* 1920x1080p24 */
->>> +				clock = <52000000>;
->>> +				hactive = <1920>;
->>> +				vactive = <1080>;
->>> +				hfront-porch = <25>;
->>> +				hback-porch = <25>;
->>> +				hsync-len = <25>;
->>> +				vback-porch = <2>;
->>> +				vfront-porch = <2>;
->>> +				vsync-len = <2>;
->>> +				hsync-active-high;
->>> +			};
->>> +		};
->>> +	};
-> 
-
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

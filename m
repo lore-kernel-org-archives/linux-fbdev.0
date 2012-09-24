@@ -1,17 +1,17 @@
-From: Hans Verkuil <hverkuil@xs4all.nl>
-Date: Fri, 21 Sep 2012 13:07:04 +0000
+From: Rob Herring <robherring2@gmail.com>
+Date: Mon, 24 Sep 2012 13:42:12 +0000
 Subject: Re: [PATCH v4] of: Add videomode helper
-Message-Id: <201209211507.04866.hverkuil@xs4all.nl>
+Message-Id: <50606334.7030902@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1348042843-24673-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1348042843-24673-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1348042843-24673-1-git-send-email-s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org
-Cc: devicetree-discuss@lists.ozlabs.org, Steffen Trumtrar <s.trumtrar@pengutronix.de>, linux-fbdev@vger.kernel.org, kernel@pengutronix.de, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 
-On Wed September 19 2012 10:20:43 Steffen Trumtrar wrote:
+On 09/19/2012 03:20 AM, Steffen Trumtrar wrote:
 > This patch adds a helper function for parsing videomodes from the devicetree.
 > The videomode can be either converted to a struct drm_display_mode or a
 > struct fb_videomode.
@@ -55,18 +55,10 @@ On Wed September 19 2012 10:20:43 Steffen Trumtrar wrote:
 > +   in pixels
 > +   vfront-porch, vback-porch, vsync-len: Vertical display timing parameters in
 > +   lines
-
-In the case of interlaced formats, can the vfront-porch, vback-porch and vsync-len
-for the second field always be calculated from these values? Is that fully
-standardized or can there be exceptions? struct v4l2_bt_timings has separate fields
-for these, but that may have been overkill.
-
 > + - clock: displayclock in Hz
 
-CEA-861 defined the option to slightly lower the clock frequency by 1.000/1.001 to
-achieve frequencies like 29.97 or 59.94. In v4l2_bt_timings I made a flag for that.
-I'm not sure whether it is better to just set the clock to the correct frequency
-(which is a weird value) or mark it with a bool.
+A major piece missing is the LCD controller to display interface width
+and component ordering.
 
 > +
 > +Optional properties:
@@ -84,6 +76,11 @@ I'm not sure whether it is better to just set the clock to the correct frequency
 > +Example:
 > +
 > +	display@0 {
+
+It would be useful to have a compatible string here. We may not always
+know the panel type or have a fixed panel though. We could define
+"generic-lcd" or something for cases where the panel type is unknown.
+
 > +		width-mm = <800>;
 > +		height-mm = <480>;
 > +		modes {
@@ -123,6 +120,15 @@ I'm not sure whether it is better to just set the clock to the correct frequency
 > +
 > +The videomode can be linked to a connector via phandles. The connector has to
 > +support the display- and default-mode-property to link to and select a mode.
+
+Could also be phandle in the lcd controller node? What are the '-' for?
+Is "display-blah" a valid name or something?
+
+"default-mode" is pretty generic. How about display-mode or
+display-default-mode?
+
+Rob
+
 > +
 > +Example:
 > +
@@ -469,19 +475,6 @@ I'm not sure whether it is better to just set the clock to the correct frequency
 > +	u32 typ;
 > +	u32 max;
 > +};
-
-For what purpose are the min and max values added? To specify hardware limitations?
-If it is the latter, then I think it would be a better approach to split that off
-in its own struct.
-
-For V4L2 we made a separate capability struct:
-
-http://hverkuil.home.xs4all.nl/spec/media.html#vidioc-dv-timings-cap
-
-Regards,
-
-	Hans
-
 > +
 > +struct display {
 > +	u32 width_mm;
@@ -520,3 +513,4 @@ Regards,
 > +int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fbmode, int index);
 > +#endif /* __LINUX_OF_VIDEOMODE_H */
 > 
+

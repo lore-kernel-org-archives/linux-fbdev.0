@@ -1,109 +1,103 @@
-From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Date: Tue, 25 Sep 2012 14:23:41 +0000
-Subject: [PATCH] da8xx-fb: save and restore LCDC context across suspend/resume cycle
-Message-Id: <1348582301-27373-1-git-send-email-prakash.pm@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 24 Sep 2012 13:58:33 +0000
+Subject: [PATCH 3/9] OMAPDSS: move dss feats to the end of dss.c
+Message-Id: <1348495119-8262-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1348495119-8262-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1348495119-8262-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Save and restore register context of LCDC respectively
-before suspend and after resume.
+Move dss_features to the end of dss.c the same way they are in dispc.c,
+so that we don't have to declare prototypes for static feat-related
+functions.
 
-Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
-Applies on top of below patch under review:
-"da8xx-fb: add pm_runtime support"
- drivers/video/da8xx-fb.c |   65 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 65 insertions(+), 0 deletions(-)
+ drivers/video/omap2/dss/dss.c |   60 ++++++++++++++++++++---------------------
+ 1 file changed, 30 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 4280d23..65a11ef 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -1491,6 +1491,69 @@ err_request_mem:
- }
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 4524c17..660813b 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -99,36 +99,6 @@ static const char * const dss_generic_clk_source_names[] = {
+ 	[OMAP_DSS_CLK_SRC_FCK]			= "DSS_FCK",
+ };
  
- #ifdef CONFIG_PM
-+struct lcdc_context {
-+	u32 clk_enable;
-+	u32 ctrl;
-+	u32 dma_ctrl;
-+	u32 raster_timing_0;
-+	u32 raster_timing_1;
-+	u32 raster_timing_2;
-+	u32 int_enable_set;
-+	u32 dma_frm_buf_base_addr_0;
-+	u32 dma_frm_buf_ceiling_addr_0;
-+	u32 dma_frm_buf_base_addr_1;
-+	u32 dma_frm_buf_ceiling_addr_1;
-+	u32 raster_ctrl;
-+} reg_context;
-+
-+static void lcd_context_save(void)
-+{
-+	if (lcd_revision = LCD_VERSION_2) {
-+		reg_context.clk_enable = lcdc_read(LCD_CLK_ENABLE_REG);
-+		reg_context.int_enable_set = lcdc_read(LCD_INT_ENABLE_SET_REG);
-+	}
-+
-+	reg_context.ctrl = lcdc_read(LCD_CTRL_REG);
-+	reg_context.dma_ctrl = lcdc_read(LCD_DMA_CTRL_REG);
-+	reg_context.raster_timing_0 = lcdc_read(LCD_RASTER_TIMING_0_REG);
-+	reg_context.raster_timing_1 = lcdc_read(LCD_RASTER_TIMING_1_REG);
-+	reg_context.raster_timing_2 = lcdc_read(LCD_RASTER_TIMING_2_REG);
-+	reg_context.dma_frm_buf_base_addr_0 +		lcdc_read(LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
-+	reg_context.dma_frm_buf_ceiling_addr_0 +		lcdc_read(LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
-+	reg_context.dma_frm_buf_base_addr_1 +		lcdc_read(LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
-+	reg_context.dma_frm_buf_ceiling_addr_1 +		lcdc_read(LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
-+	reg_context.raster_ctrl = lcdc_read(LCD_RASTER_CTRL_REG);
-+	return;
-+}
-+
-+static void lcd_context_restore(void)
-+{
-+	if (lcd_revision = LCD_VERSION_2) {
-+		lcdc_write(reg_context.clk_enable, LCD_CLK_ENABLE_REG);
-+		lcdc_write(reg_context.int_enable_set, LCD_INT_ENABLE_SET_REG);
-+	}
-+
-+	lcdc_write(reg_context.ctrl, LCD_CTRL_REG);
-+	lcdc_write(reg_context.dma_ctrl, LCD_DMA_CTRL_REG);
-+	lcdc_write(reg_context.raster_timing_0, LCD_RASTER_TIMING_0_REG);
-+	lcdc_write(reg_context.raster_timing_1, LCD_RASTER_TIMING_1_REG);
-+	lcdc_write(reg_context.raster_timing_2, LCD_RASTER_TIMING_2_REG);
-+	lcdc_write(reg_context.dma_frm_buf_base_addr_0,
-+			LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
-+	lcdc_write(reg_context.dma_frm_buf_ceiling_addr_0,
-+			LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
-+	lcdc_write(reg_context.dma_frm_buf_base_addr_1,
-+			LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
-+	lcdc_write(reg_context.dma_frm_buf_ceiling_addr_1,
-+			LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
-+	lcdc_write(reg_context.raster_ctrl, LCD_RASTER_CTRL_REG);
-+	return;
-+}
-+
- static int fb_suspend(struct platform_device *dev, pm_message_t state)
+-static const struct dss_features omap24xx_dss_feats __initconst = {
+-	.fck_div_max		=	16,
+-	.dss_fck_multiplier	=	2,
+-	.clk_name		=	NULL,
+-};
+-
+-static const struct dss_features omap34xx_dss_feats __initconst = {
+-	.fck_div_max		=	16,
+-	.dss_fck_multiplier	=	2,
+-	.clk_name		=	"dpll4_m4_ck",
+-};
+-
+-static const struct dss_features omap3630_dss_feats __initconst = {
+-	.fck_div_max		=	32,
+-	.dss_fck_multiplier	=	1,
+-	.clk_name		=	"dpll4_m4_ck",
+-};
+-
+-static const struct dss_features omap44xx_dss_feats __initconst = {
+-	.fck_div_max		=	32,
+-	.dss_fck_multiplier	=	1,
+-	.clk_name		=	"dpll_per_m5x2_ck",
+-};
+-
+-static const struct dss_features omap54xx_dss_feats __initconst = {
+-	.fck_div_max		=	64,
+-	.dss_fck_multiplier	=	1,
+-	.clk_name		=	"dpll_per_h12x2_ck",
+-};
+-
+ static inline void dss_write_reg(const struct dss_reg idx, u32 val)
  {
- 	struct fb_info *info = platform_get_drvdata(dev);
-@@ -1502,6 +1565,7 @@ static int fb_suspend(struct platform_device *dev, pm_message_t state)
+ 	__raw_writel(val, dss.base + idx.idx);
+@@ -727,6 +697,36 @@ void dss_debug_dump_clocks(struct seq_file *s)
+ }
+ #endif
  
- 	fb_set_suspend(info, 1);
- 	lcd_disable_raster(true);
-+	lcd_context_save();
- 	pm_runtime_put_sync(&dev->dev);
- 	console_unlock();
- 
-@@ -1514,6 +1578,7 @@ static int fb_resume(struct platform_device *dev)
- 
- 	console_lock();
- 	pm_runtime_get_sync(&dev->dev);
-+	lcd_context_restore();
- 	if (par->blank = FB_BLANK_UNBLANK) {
- 		lcd_enable_raster();
- 
++static const struct dss_features omap24xx_dss_feats __initconst = {
++	.fck_div_max		=	16,
++	.dss_fck_multiplier	=	2,
++	.clk_name		=	NULL,
++};
++
++static const struct dss_features omap34xx_dss_feats __initconst = {
++	.fck_div_max		=	16,
++	.dss_fck_multiplier	=	2,
++	.clk_name		=	"dpll4_m4_ck",
++};
++
++static const struct dss_features omap3630_dss_feats __initconst = {
++	.fck_div_max		=	32,
++	.dss_fck_multiplier	=	1,
++	.clk_name		=	"dpll4_m4_ck",
++};
++
++static const struct dss_features omap44xx_dss_feats __initconst = {
++	.fck_div_max		=	32,
++	.dss_fck_multiplier	=	1,
++	.clk_name		=	"dpll_per_m5x2_ck",
++};
++
++static const struct dss_features omap54xx_dss_feats __initconst = {
++	.fck_div_max		=	64,
++	.dss_fck_multiplier	=	1,
++	.clk_name		=	"dpll_per_h12x2_ck",
++};
++
+ static int __init dss_init_features(struct device *dev)
+ {
+ 	const struct dss_features *src;
 -- 
-1.7.0.4
+1.7.9.5
 

@@ -1,103 +1,182 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 19 Sep 2012 08:30:35 +0000
-Subject: [PATCH 5/8] OMAPDSS: handle errors in dss_init_device
-Message-Id: <1348043438-2624-6-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 24 Sep 2012 13:58:34 +0000
+Subject: [PATCH 4/9] OMAPDSS: Add support for DPI source selection
+Message-Id: <1348495119-8262-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348043438-2624-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1348043438-2624-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1348495119-8262-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1348495119-8262-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, David Anders <x0132446@ti.com>
 
-Add error handling to dss_init_device(), which has, for some reason,
-been missing.
+We can select the video source for DPI output as follows:
+
+OMAP2/3: always LCD1
+OMAP4: LCD2 or DIGIT
+OMAP5: LCD1/LCD2/LCD3/DIGIT
+
+This patch adds support to select the source, and makes dpi.c call the
+function to set the source.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: David Anders <x0132446@ti.com>
 ---
- drivers/video/omap2/dss/core.c    |    4 +++-
- drivers/video/omap2/dss/display.c |   23 ++++++++++++++++++-----
- drivers/video/omap2/dss/dss.h     |    2 +-
- 3 files changed, 22 insertions(+), 7 deletions(-)
+ drivers/video/omap2/dss/dpi.c |    5 ++++
+ drivers/video/omap2/dss/dss.c |   65 +++++++++++++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/dss.h |    1 +
+ 3 files changed, 71 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index 315f557..9315ece 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -358,7 +358,9 @@ static int dss_driver_probe(struct device *dev)
- 				dev_name(dev), dssdev->driver_name,
- 				dssdrv->driver.name);
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 5ccce9b..b723388 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -203,6 +203,10 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err_get_dispc;
  
--	dss_init_device(core.pdev, dssdev);
-+	r = dss_init_device(core.pdev, dssdev);
++	r = dss_dpi_select_source(dssdev->channel);
 +	if (r)
-+		return r;
++		goto err_src_sel;
++
+ 	if (dpi_use_dsi_pll(dssdev)) {
+ 		r = dsi_runtime_get(dpi.dsidev);
+ 		if (r)
+@@ -237,6 +241,7 @@ err_dsi_pll_init:
+ 	if (dpi_use_dsi_pll(dssdev))
+ 		dsi_runtime_put(dpi.dsidev);
+ err_get_dsi:
++err_src_sel:
+ 	dispc_runtime_put();
+ err_get_dispc:
+ 	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI))
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 660813b..2ab1c3e9 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -69,6 +69,7 @@ struct dss_features {
+ 	u8 fck_div_max;
+ 	u8 dss_fck_multiplier;
+ 	const char *clk_name;
++	int (*dpi_select_source)(enum omap_channel channel);
+ };
  
- 	force = core.default_display_name &&
- 		strcmp(core.default_display_name, dssdev->name) = 0;
-diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
-index 5f09d503..f719010 100644
---- a/drivers/video/omap2/dss/display.c
-+++ b/drivers/video/omap2/dss/display.c
-@@ -320,26 +320,39 @@ void omapdss_default_get_timings(struct omap_dss_device *dssdev,
+ static struct {
+@@ -623,6 +624,65 @@ enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void)
+ 	return REG_GET(DSS_CONTROL, 15, 15);
  }
- EXPORT_SYMBOL(omapdss_default_get_timings);
  
--void dss_init_device(struct platform_device *pdev,
-+int dss_init_device(struct platform_device *pdev,
- 		struct omap_dss_device *dssdev)
- {
- 	struct device_attribute *attr;
--	int i;
--	int r;
-+	int i, r;
- 
- 	/* create device sysfs files */
- 	i = 0;
- 	while ((attr = display_sysfs_attrs[i++]) != NULL) {
- 		r = device_create_file(&dssdev->dev, attr);
--		if (r)
-+		if (r) {
-+			for (i = i - 2; i >= 0; i--) {
-+				attr = display_sysfs_attrs[i];
-+				device_remove_file(&dssdev->dev, attr);
-+			}
-+
- 			DSSERR("failed to create sysfs file\n");
-+			return r;
-+		}
- 	}
- 
- 	/* create display? sysfs links */
- 	r = sysfs_create_link(&pdev->dev.kobj, &dssdev->dev.kobj,
- 			dev_name(&dssdev->dev));
--	if (r)
-+	if (r) {
-+		while ((attr = display_sysfs_attrs[i++]) != NULL)
-+			device_remove_file(&dssdev->dev, attr);
-+
- 		DSSERR("failed to create sysfs display link\n");
-+		return r;
-+	}
++static int dss_dpi_select_source_omap2_omap3(enum omap_channel channel)
++{
++	if (channel != OMAP_DSS_CHANNEL_LCD)
++		return -EINVAL;
 +
 +	return 0;
- }
++}
++
++static int dss_dpi_select_source_omap4(enum omap_channel channel)
++{
++	int val;
++
++	switch (channel) {
++	case OMAP_DSS_CHANNEL_LCD2:
++		val = 0;
++		break;
++	case OMAP_DSS_CHANNEL_DIGIT:
++		val = 1;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	REG_FLD_MOD(DSS_CONTROL, val, 17, 17);
++
++	return 0;
++}
++
++static int dss_dpi_select_source_omap5(enum omap_channel channel)
++{
++	int val;
++
++	switch (channel) {
++	case OMAP_DSS_CHANNEL_LCD:
++		val = 1;
++		break;
++	case OMAP_DSS_CHANNEL_LCD2:
++		val = 2;
++		break;
++	case OMAP_DSS_CHANNEL_LCD3:
++		val = 3;
++		break;
++	case OMAP_DSS_CHANNEL_DIGIT:
++		val = 0;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	REG_FLD_MOD(DSS_CONTROL, val, 17, 16);
++
++	return 0;
++}
++
++int dss_dpi_select_source(enum omap_channel channel)
++{
++	return dss.feat->dpi_select_source(channel);
++}
++
+ static int dss_get_clocks(void)
+ {
+ 	struct clk *clk;
+@@ -701,30 +761,35 @@ static const struct dss_features omap24xx_dss_feats __initconst = {
+ 	.fck_div_max		=	16,
+ 	.dss_fck_multiplier	=	2,
+ 	.clk_name		=	NULL,
++	.dpi_select_source	=	&dss_dpi_select_source_omap2_omap3,
+ };
  
- void dss_uninit_device(struct platform_device *pdev,
+ static const struct dss_features omap34xx_dss_feats __initconst = {
+ 	.fck_div_max		=	16,
+ 	.dss_fck_multiplier	=	2,
+ 	.clk_name		=	"dpll4_m4_ck",
++	.dpi_select_source	=	&dss_dpi_select_source_omap2_omap3,
+ };
+ 
+ static const struct dss_features omap3630_dss_feats __initconst = {
+ 	.fck_div_max		=	32,
+ 	.dss_fck_multiplier	=	1,
+ 	.clk_name		=	"dpll4_m4_ck",
++	.dpi_select_source	=	&dss_dpi_select_source_omap2_omap3,
+ };
+ 
+ static const struct dss_features omap44xx_dss_feats __initconst = {
+ 	.fck_div_max		=	32,
+ 	.dss_fck_multiplier	=	1,
+ 	.clk_name		=	"dpll_per_m5x2_ck",
++	.dpi_select_source	=	&dss_dpi_select_source_omap4,
+ };
+ 
+ static const struct dss_features omap54xx_dss_feats __initconst = {
+ 	.fck_div_max		=	64,
+ 	.dss_fck_multiplier	=	1,
+ 	.clk_name		=	"dpll_per_h12x2_ck",
++	.dpi_select_source	=	&dss_dpi_select_source_omap5,
+ };
+ 
+ static int __init dss_init_features(struct device *dev)
 diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index a977826..98e8273 100644
+index 5e9fd769..2a51ae9 100644
 --- a/drivers/video/omap2/dss/dss.h
 +++ b/drivers/video/omap2/dss/dss.h
-@@ -228,7 +228,7 @@ int dss_suspend_all_devices(void);
- int dss_resume_all_devices(void);
- void dss_disable_all_devices(void);
+@@ -277,6 +277,7 @@ void dss_overlay_kobj_uninit(struct omap_overlay *ovl);
+ int dss_init_platform_driver(void) __init;
+ void dss_uninit_platform_driver(void);
  
--void dss_init_device(struct platform_device *pdev,
-+int dss_init_device(struct platform_device *pdev,
- 		struct omap_dss_device *dssdev);
- void dss_uninit_device(struct platform_device *pdev,
- 		struct omap_dss_device *dssdev);
++int dss_dpi_select_source(enum omap_channel channel);
+ void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select);
+ enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void);
+ const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
 -- 
 1.7.9.5
 

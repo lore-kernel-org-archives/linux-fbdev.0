@@ -1,49 +1,44 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Wed, 26 Sep 2012 05:43:28 +0000
-Subject: Re: [PATCH v2 16/18] OMAPDSS: DISPC: Configure writeback FIFOs
-Message-Id: <50629330.5090902@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 24 Sep 2012 13:58:30 +0000
+Subject: [PATCH 0/9] OMAPDSS: OMAP5 related patches
+Message-Id: <1348495119-8262-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>  <1348553993-8083-1-git-send-email-archit@ti.com>  <1348553993-8083-17-git-send-email-archit@ti.com> <1348584652.21717.7.camel@lappyti>
-In-Reply-To: <1348584652.21717.7.camel@lappyti>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Tuesday 25 September 2012 08:20 PM, Tomi Valkeinen wrote:
-> On Tue, 2012-09-25 at 11:49 +0530, Archit Taneja wrote:
->> Extend the DISPC fifo functions to also configure the writeback FIFO thresholds.
->>
->> The most optimal configuration for writeback is to push out data to the
->> interconnect the moment writeback pushes enough pixels in the FIFO to form a
->> burst. This reduces the chance of writeback overflowing it's FIFO.
->
-> Hmm, why is this optimal?
->
-> The FIFO for WB is the output fifo, right? In mem-to-mem mode the whole
-> WB pipeline can stall, so the fifo can't overflow? If so, isn't it
-> better to collect more data and flush all that to the memory, instead of
-> sending each burst-size piece one by one?
+Hi,
 
-I guess this configuration is optimal for capture mode. Where the input 
-side will push out data at the rate of pixel clock, and writeback has to 
-collect this data and flush to memory. Writeback can't stall here.
+This series adds basic OMAP5 DSS functionality, mainly related to DSS core, DPI
+and DSI.
 
-About writeback FIFO overflowing in mem-to-mem mode, I'm not totally 
-sure about this. But what you are saying seems valid, writeback would 
-stall the input. So it should be safe to accumulate content in the FIFO, 
-and push out large number of bursts together.
+ Tomi
 
->
-> Then again, if the input side is reading pixels from the memory all the
-> time, even if the output fifo helps to keep the output side idle for
-> longer periods, it probably doesn't help as the input side keeps the
-> memory bus awake.
+Archit Taneja (1):
+  OMAPDSS: Add basic omap5 features to dss and dispc
 
-Maybe if the FIFOs are adjusted such that reading of the pixels from 
-input side and writeback flushing out can be done at the same time, then 
-we might idle the memory bus more. I don't know if this is possible though.
+Tomi Valkeinen (8):
+  OMAPDSS: DSI: improve DSI clock calcs for DISPC
+  OMAPDSS: move dss feats to the end of dss.c
+  OMAPDSS: Add support for DPI source selection
+  OMAPDSS: DSI: Add FEAT_DSI_PLL_SELFREQDCO
+  OMAPDSS: DSI: Add FEAT_DSI_PLL_REFSEL
+  OMAPDSS: DSI: Add new linebuffer size for OMAP5
+  OMAPDSS: DSI: Add code to disable PHY DCC
+  OMAPDSS: DSI: make OMAP2_DSS_DSI depend on ARCH_OMAP5
 
-Archit
+ drivers/video/omap2/dss/Kconfig        |    2 +-
+ drivers/video/omap2/dss/dispc.c        |    2 +
+ drivers/video/omap2/dss/dpi.c          |    5 +
+ drivers/video/omap2/dss/dsi.c          |  167 +++++++++++++++++++++++++-------
+ drivers/video/omap2/dss/dss.c          |  121 ++++++++++++++++++-----
+ drivers/video/omap2/dss/dss.h          |    1 +
+ drivers/video/omap2/dss/dss_features.c |   96 ++++++++++++++++++
+ drivers/video/omap2/dss/dss_features.h |    3 +
+ 8 files changed, 337 insertions(+), 60 deletions(-)
+
+-- 
+1.7.9.5
 

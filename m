@@ -1,57 +1,60 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Thu, 20 Sep 2012 16:33:20 +0000
-Subject: [PATCH 2/2] ARM: dts: mxs: add oled support for the cfa-10036
-Message-Id: <1348158800-23039-3-git-send-email-maxime.ripard@free-electrons.com>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Mon, 24 Sep 2012 06:50:27 +0000
+Subject: [PATCH] OMAPDSS: DISPC: Add predecimation limit for TILER based rotations
+Message-Id: <1348468707-5142-1-git-send-email-cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348158800-23039-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1348158800-23039-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: Brian Lilly <brian@crystalfontz.com>
+In OMAP4 and OMAP5 when TILER 2D burst mode is used, a maximum of one line can
+be skipped as per the respective TRMs. The MBlockStride OCP signal, which is
+sum of ROWINC and image width in memory, is only 17 bits wide. In 2D mode TILER
+supports 8192, 16384, 32768 and 65536 values of MBlockStride. In case when 2 or
+more lines are skipped the ROWINC value exceeds 65536 resulting in OCP errors.
+So, maximum vertical predecimation achievable is 2.
+
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
 ---
- arch/arm/boot/dts/imx28-cfa10036.dts |   20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ drivers/video/omap2/dss/dispc.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/boot/dts/imx28-cfa10036.dts b/arch/arm/boot/dts/imx28-cfa10036.dts
-index c03a577..e5ee46e 100644
---- a/arch/arm/boot/dts/imx28-cfa10036.dts
-+++ b/arch/arm/boot/dts/imx28-cfa10036.dts
-@@ -33,11 +33,31 @@
- 		};
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index d512c38..61f8369 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2195,7 +2195,8 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
+ 		const struct omap_video_timings *mgr_timings,
+ 		u16 width, u16 height, u16 out_width, u16 out_height,
+ 		enum omap_color_mode color_mode, bool *five_taps,
+-		int *x_predecim, int *y_predecim, u16 pos_x)
++		int *x_predecim, int *y_predecim, u16 pos_x,
++		enum omap_dss_rotation_type rotation_type)
+ {
+ 	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
+ 	const int maxdownscale = dss_feat_get_param_max(FEAT_PARAM_DOWNSCALE);
+@@ -2210,7 +2211,8 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
+ 		return -EINVAL;
  
- 		apbx@80040000 {
-+			pwm: pwm@80064000 {
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&pwm4_pins_a>;
-+				status = "okay";
-+			};
-+
- 			duart: serial@80074000 {
- 				pinctrl-names = "default";
- 				pinctrl-0 = <&duart_pins_b>;
- 				status = "okay";
- 			};
-+
-+			i2c0: i2c@80058000 {
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&i2c0_pins_b>;
-+				status = "okay";
-+
-+				ssd1307: oled@3c {
-+					compatible = "solomon,ssd1307fb-i2c";
-+					reg = <0x3c>;
-+					pwms = <&pwm 4 3000>;
-+					reset-gpios = <&gpio2 7 1>;
-+					reset-active-low;
-+				};
-+			};
- 		};
- 	};
+ 	*x_predecim = max_decim_limit;
+-	*y_predecim = max_decim_limit;
++	*y_predecim = (rotation_type = OMAP_DSS_ROT_TILER &&
++			dss_has_feature(FEAT_BURST_2D)) ? 2 : max_decim_limit;
+ 
+ 	if (color_mode = OMAP_DSS_COLOR_CLUT1 ||
+ 	    color_mode = OMAP_DSS_COLOR_CLUT2 ||
+@@ -2306,7 +2308,8 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 
+ 	r = dispc_ovl_calc_scaling(plane, channel, mgr_timings, in_width,
+ 			in_height, out_width, out_height, oi->color_mode,
+-			&five_taps, &x_predecim, &y_predecim, oi->pos_x);
++			&five_taps, &x_predecim, &y_predecim, oi->pos_x,
++			oi->rotation_type);
+ 	if (r)
+ 		return r;
  
 -- 
-1.7.9.5
+1.7.10
 

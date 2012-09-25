@@ -1,56 +1,68 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 25 Sep 2012 06:31:51 +0000
-Subject: [PATCH v2 16/18] OMAPDSS: DISPC: Configure writeback FIFOs
-Message-Id: <1348553993-8083-17-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 25 Sep 2012 14:50:52 +0000
+Subject: Re: [PATCH v2 16/18] OMAPDSS: DISPC: Configure writeback FIFOs
+Message-Id: <1348584652.21717.7.camel@lappyti>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-/BG6wGrE22j7iPzsUcJQ"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1347538505-25359-1-git-send-email-archit@ti.com>
- <1348553993-8083-1-git-send-email-archit@ti.com>
-In-Reply-To: <1348553993-8083-1-git-send-email-archit@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	 <1348553993-8083-1-git-send-email-archit@ti.com>
+	 <1348553993-8083-17-git-send-email-archit@ti.com>
+In-Reply-To: <1348553993-8083-17-git-send-email-archit@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+
+
+--=-/BG6wGrE22j7iPzsUcJQ
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 2012-09-25 at 11:49 +0530, Archit Taneja wrote:
+> Extend the DISPC fifo functions to also configure the writeback FIFO thre=
+sholds.
+>=20
+> The most optimal configuration for writeback is to push out data to the
+> interconnect the moment writeback pushes enough pixels in the FIFO to for=
+m a
+> burst. This reduces the chance of writeback overflowing it's FIFO.
+
+Hmm, why is this optimal?
+
+The FIFO for WB is the output fifo, right? In mem-to-mem mode the whole
+WB pipeline can stall, so the fifo can't overflow? If so, isn't it
+better to collect more data and flush all that to the memory, instead of
+sending each burst-size piece one by one?
+
+Then again, if the input side is reading pixels from the memory all the
+time, even if the output fifo helps to keep the output side idle for
+longer periods, it probably doesn't help as the input side keeps the
+memory bus awake.
+
+ Tomi
+
+
+--=-/BG6wGrE22j7iPzsUcJQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Extend the DISPC fifo functions to also configure the writeback FIFO thresholds.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-The most optimal configuration for writeback is to push out data to the
-interconnect the moment writeback pushes enough pixels in the FIFO to form a
-burst. This reduces the chance of writeback overflowing it's FIFO.
+iQIcBAABAgAGBQJQYcTMAAoJEPo9qoy8lh712kkP/3OovpBy+so/ua3DOFGofrsP
+sb+g+SHl/kjLx72yFmhD3ENptxjovmbPFK5Hk16kA0K/krlwgKvQWTf3vyThkHZu
+Hb2Dv8IPqtK9Wk5nh8DsRGlINt1qAREXqXbFFfiS4TcOrywKYFDchqpqk7IsSI+z
+jqSUt1o0nun/UQzc9fgC47RmfOBTw9McPQI86Q7CYJPWiGyLYN2in588Pl2hdq/T
+hYbLgkSwA4Ae4qPHMnjxwInOo1SH8TrSE9dTHOL3j2WsuAuQHDOnA/rxnmgv+ACs
+TtZwyVuplv8/6FS/XAvaTFmGPAcTZ7oQ7+QY2MZ8Q76U3jHVQHA3jHRigDmxqsBB
+AglitTLjMmtC6EmMYCgKoi9+F/b6zuUfLtp7PGWveTF49rfg0764dWyWfGHw/auI
++15Jx9GDiaeaZphBCQRVAqfVuiCSKSn3HJfW1w3xtKhBoB1ObexjA4qazuGhQ6uI
+ubXiNLA4NuEz4nw6wKxynYRgGCEE0CdyjnjCslKnuHyePuikUXLOTxs4U8Ka40JR
+Vku9H8RmzMmdGd9ytYupoaJ8l6dLWljrKqng5TfIx3R4pYRZOPMOJjbIhcEQJV6U
+DxjvAYIfpXRjN/s5ygIfW7C+oSU7xTvx1Dfa/CyZNRZUWt9FAl5nZRLXEOyxzbhB
+NlC0ZCGsGYdOHNS+SMiC
+=lqOm
+-----END PGP SIGNATURE-----
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/dispc.c |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index ca28a88..d6f120d 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -993,7 +993,7 @@ void dispc_wb_set_channel_in(enum dss_writeback_channel channel)
- static void dispc_ovl_set_burst_size(enum omap_plane plane,
- 		enum omap_burst_size burst_size)
- {
--	static const unsigned shifts[] = { 6, 14, 14, 14, };
-+	static const unsigned shifts[] = { 6, 14, 14, 14, 14, };
- 	int shift;
- 
- 	shift = shifts[plane];
-@@ -1225,6 +1225,14 @@ void dispc_ovl_compute_fifo_thresholds(enum omap_plane plane,
- 	if (manual_update && dss_has_feature(FEAT_OMAP3_DSI_FIFO_BUG)) {
- 		*fifo_low = ovl_fifo_size - burst_size * 2;
- 		*fifo_high = total_fifo_size - burst_size;
-+	} else if (plane = OMAP_DSS_WB) {
-+		/*
-+		 * Most optimal configuration for writeback is to push out data
-+		 * to the interconnect the moment writeback pushes enough pixels
-+		 * in the FIFO to form a burst
-+		 */
-+		*fifo_low = 0;
-+		*fifo_high = burst_size;
- 	} else {
- 		*fifo_low = ovl_fifo_size - burst_size;
- 		*fifo_high = total_fifo_size - buf_unit;
--- 
-1.7.9.5
+--=-/BG6wGrE22j7iPzsUcJQ--
 

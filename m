@@ -1,23 +1,139 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Date: Wed, 05 Sep 2012 09:50:55 +0000
-Subject: Re: [PATCH 0/6] HID: picoLCD additional fixes + CIR support
-Message-Id: <alpine.LNX.2.00.1209051150390.11079@pobox.suse.cz>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 25 Sep 2012 06:31:52 +0000
+Subject: [PATCH v2 17/18] OMAPDSS: DISPC: Add manager like functions for writeback
+Message-Id: <1348553993-8083-18-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120730213656.0a9f6d30@neptune.home> <20120819192859.74136bb0@neptune.home>
-In-Reply-To: <20120819192859.74136bb0@neptune.home>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+ <1348553993-8083-1-git-send-email-archit@ti.com>
+In-Reply-To: <1348553993-8083-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, Mauro Carvalho Chehab <mchehab@redhat.com>, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-On Sun, 19 Aug 2012, Bruno Pr=E9mont wrote:
+Add functions to enable writeback, and set/check state of GO bit. These bits are
+identical in behaviour with the corresponding overlay manager bits. Configure
+them in a similar way to mgr_enable() and mgr_go_* functions. Add a helper to
+get the FRAMEDONE irq corresponding to writeback.
 
-> This series fixes some race conditions in picoLCD driver during remove()
-> and adds support for IR functionality.
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/dispc.c |   70 +++++++++++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/dss.h   |    5 +++
+ 2 files changed, 75 insertions(+)
 
-I have now applied the series, thanks Bruno.
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index d6f120d..034ecb5 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -536,6 +536,11 @@ u32 dispc_mgr_get_framedone_irq(enum omap_channel channel)
+ 	return mgr_desc[channel].framedone_irq;
+ }
+ 
++u32 dispc_wb_get_framedone_irq(void)
++{
++	return DISPC_IRQ_FRAMEDONEWB;
++}
++
+ bool dispc_mgr_go_busy(enum omap_channel channel)
+ {
+ 	return mgr_fld_read(channel, DISPC_MGR_FLD_GO) = 1;
+@@ -563,6 +568,30 @@ void dispc_mgr_go(enum omap_channel channel)
+ 	mgr_fld_write(channel, DISPC_MGR_FLD_GO, 1);
+ }
+ 
++bool dispc_wb_go_busy(void)
++{
++	return REG_GET(DISPC_CONTROL2, 6, 6) = 1;
++}
++
++void dispc_wb_go(void)
++{
++	enum omap_plane plane = OMAP_DSS_WB;
++	bool enable, go;
++
++	enable = REG_GET(DISPC_OVL_ATTRIBUTES(plane), 0, 0) = 1;
++
++	if (!enable)
++		return;
++
++	go = REG_GET(DISPC_CONTROL2, 6, 6) = 1;
++	if (go) {
++		DSSERR("GO bit not down for WB\n");
++		return;
++	}
++
++	REG_FLD_MOD(DISPC_CONTROL2, 1, 6, 6);
++}
++
+ static void dispc_ovl_write_firh_reg(enum omap_plane plane, int reg, u32 value)
+ {
+ 	dispc_write_reg(DISPC_OVL_FIR_COEF_H(plane, reg), value);
+@@ -2690,6 +2719,47 @@ void dispc_mgr_enable(enum omap_channel channel, bool enable)
+ 		BUG();
+ }
+ 
++void dispc_wb_enable(bool enable)
++{
++	enum omap_plane plane = OMAP_DSS_WB;
++	struct completion frame_done_completion;
++	bool is_on;
++	int r;
++	u32 irq;
++
++	is_on = REG_GET(DISPC_OVL_ATTRIBUTES(plane), 0, 0);
++	irq = DISPC_IRQ_FRAMEDONEWB;
++
++	if (!enable && is_on) {
++		init_completion(&frame_done_completion);
++
++		r = omap_dispc_register_isr(dispc_disable_isr,
++				&frame_done_completion, irq);
++		if (r)
++			DSSERR("failed to register FRAMEDONEWB isr\n");
++	}
++
++	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), enable ? 1 : 0, 0, 0);
++
++	if (!enable && is_on) {
++		if (!wait_for_completion_timeout(&frame_done_completion,
++					msecs_to_jiffies(100)))
++			DSSERR("timeout waiting for FRAMEDONEWB\n");
++
++		r = omap_dispc_unregister_isr(dispc_disable_isr,
++				&frame_done_completion, irq);
++		if (r)
++			DSSERR("failed to unregister FRAMEDONEWB isr\n");
++	}
++}
++
++bool dispc_wb_is_enabled(void)
++{
++	enum omap_plane plane = OMAP_DSS_WB;
++
++	return REG_GET(DISPC_OVL_ATTRIBUTES(plane), 0, 0);
++}
++
+ void dispc_lcd_enable_signal_polarity(bool act_high)
+ {
+ 	if (!dss_has_feature(FEAT_LCDENABLEPOL))
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 442c06a..a71cc88 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -482,6 +482,11 @@ int dispc_mgr_get_clock_div(enum omap_channel channel,
+ void dispc_mgr_setup(enum omap_channel channel,
+ 		struct omap_overlay_manager_info *info);
+ 
++u32 dispc_wb_get_framedone_irq(void);
++bool dispc_wb_go_busy(void);
++void dispc_wb_go(void);
++void dispc_wb_enable(bool enable);
++bool dispc_wb_is_enabled(void);
+ void dispc_wb_set_channel_in(enum dss_writeback_channel channel);
+ int dispc_wb_setup(const struct omap_dss_writeback_info *wi,
+ 		bool mem_to_mem, const struct omap_video_timings *timings);
+-- 
+1.7.9.5
 
---=20
-Jiri Kosina
-SUSE Labs

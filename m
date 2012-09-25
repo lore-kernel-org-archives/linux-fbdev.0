@@ -1,7 +1,7 @@
 From: Archit Taneja <archit@ti.com>
-Date: Tue, 25 Sep 2012 06:30:20 +0000
+Date: Tue, 25 Sep 2012 06:31:35 +0000
 Subject: [PATCH v2 00/18] OMAPDSS: DISPC changes for writeback pipeline
-Message-Id: <1348553919-7905-1-git-send-email-archit@ti.com>
+Message-Id: <1348553993-8083-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1347538505-25359-1-git-send-email-archit@ti.com>
 In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>

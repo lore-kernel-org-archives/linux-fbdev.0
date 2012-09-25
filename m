@@ -1,270 +1,186 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Date: Mon, 17 Sep 2012 05:34:59 +0000
-Subject: [PATCH 30/34] video: imxfb: remove mach/hardware.h inclusion
-Message-Id: <1347860103-4141-31-git-send-email-shawn.guo@linaro.org>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 25 Sep 2012 06:31:39 +0000
+Subject: [PATCH v2 04/18] OMAPDSS: OVERLAY: Add position and replication as overlay caps
+Message-Id: <1348553993-8083-5-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347860103-4141-1-git-send-email-shawn.guo@linaro.org>
-In-Reply-To: <1347860103-4141-1-git-send-email-shawn.guo@linaro.org>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+ <1348553993-8083-1-git-send-email-archit@ti.com>
+In-Reply-To: <1348553993-8083-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-It changes the driver to use platform_device_id rather than cpu_is_xxx
-to determine the controller type, and updates the platform code
-accordingly.
+Add position and replication as overlay caps, and pass overlay caps as an
+argument to the corresponding functions. Adding position and replication to
+overlay caps seems a bit unnecessary, but it allows us to use the
+corresponding functions for writeback too.
 
-As the result, mach/hardware.h inclusion gets removed from the driver.
+These caps will be set for all overlays, but not for writeback. This is done
+so writeback can reuse dispc_ovl_setup() to the maximum.
 
-Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- arch/arm/mach-imx/clk-imx1.c                |    6 ++---
- arch/arm/mach-imx/clk-imx21.c               |    6 ++---
- arch/arm/mach-imx/clk-imx25.c               |    6 ++---
- arch/arm/mach-imx/clk-imx27.c               |    6 ++---
- arch/arm/mach-imx/devices/devices-common.h  |    1 +
- arch/arm/mach-imx/devices/platform-imx-fb.c |   11 ++++----
- drivers/video/imxfb.c                       |   38 ++++++++++++++++++++++-----
- 7 files changed, 51 insertions(+), 23 deletions(-)
+ drivers/video/omap2/dss/dispc.c        |   20 ++++++++++++-----
+ drivers/video/omap2/dss/dss_features.c |   38 +++++++++++++++++++++-----------
+ include/video/omapdss.h                |    2 ++
+ 3 files changed, 42 insertions(+), 18 deletions(-)
 
-diff --git a/arch/arm/mach-imx/clk-imx1.c b/arch/arm/mach-imx/clk-imx1.c
-index 6b9407b..4bff66a 100644
---- a/arch/arm/mach-imx/clk-imx1.c
-+++ b/arch/arm/mach-imx/clk-imx1.c
-@@ -100,9 +100,9 @@ int __init mx1_clocks_init(unsigned long fref)
- 	clk_register_clkdev(clk[per2], "per", "imx1-cspi.1");
- 	clk_register_clkdev(clk[dummy], "ipg", "imx1-cspi.1");
- 	clk_register_clkdev(clk[per2], NULL, "imx-mmc.0");
--	clk_register_clkdev(clk[per2], "per", "imx-fb.0");
--	clk_register_clkdev(clk[dummy], "ipg", "imx-fb.0");
--	clk_register_clkdev(clk[dummy], "ahb", "imx-fb.0");
-+	clk_register_clkdev(clk[per2], "per", "imx1-fb.0");
-+	clk_register_clkdev(clk[dummy], "ipg", "imx1-fb.0");
-+	clk_register_clkdev(clk[dummy], "ahb", "imx1-fb.0");
- 	clk_register_clkdev(clk[hclk], "mshc", NULL);
- 	clk_register_clkdev(clk[per3], "ssi", NULL);
- 	clk_register_clkdev(clk[clk32], NULL, "imx1-rtc.0");
-diff --git a/arch/arm/mach-imx/clk-imx21.c b/arch/arm/mach-imx/clk-imx21.c
-index 96a4788..e981b48 100644
---- a/arch/arm/mach-imx/clk-imx21.c
-+++ b/arch/arm/mach-imx/clk-imx21.c
-@@ -157,9 +157,9 @@ int __init mx21_clocks_init(unsigned long lref, unsigned long href)
- 	clk_register_clkdev(clk[cspi2_ipg_gate], "ipg", "imx21-cspi.1");
- 	clk_register_clkdev(clk[per2], "per", "imx21-cspi.2");
- 	clk_register_clkdev(clk[cspi3_ipg_gate], "ipg", "imx21-cspi.2");
--	clk_register_clkdev(clk[per3], "per", "imx-fb.0");
--	clk_register_clkdev(clk[lcdc_ipg_gate], "ipg", "imx-fb.0");
--	clk_register_clkdev(clk[lcdc_hclk_gate], "ahb", "imx-fb.0");
-+	clk_register_clkdev(clk[per3], "per", "imx21-fb.0");
-+	clk_register_clkdev(clk[lcdc_ipg_gate], "ipg", "imx21-fb.0");
-+	clk_register_clkdev(clk[lcdc_hclk_gate], "ahb", "imx21-fb.0");
- 	clk_register_clkdev(clk[usb_gate], "per", "imx21-hcd.0");
- 	clk_register_clkdev(clk[usb_hclk_gate], "ahb", "imx21-hcd.0");
- 	clk_register_clkdev(clk[nfc_gate], NULL, "imx21-nand.0");
-diff --git a/arch/arm/mach-imx/clk-imx25.c b/arch/arm/mach-imx/clk-imx25.c
-index 71fe521..da7155d 100644
---- a/arch/arm/mach-imx/clk-imx25.c
-+++ b/arch/arm/mach-imx/clk-imx25.c
-@@ -219,9 +219,9 @@ int __init mx25_clocks_init(void)
- 	clk_register_clkdev(clk[fec_ipg], "ipg", "imx25-fec.0");
- 	clk_register_clkdev(clk[fec_ahb], "ahb", "imx25-fec.0");
- 	clk_register_clkdev(clk[dryice_ipg], NULL, "imxdi_rtc.0");
--	clk_register_clkdev(clk[lcdc_ipg_per], "per", "imx-fb.0");
--	clk_register_clkdev(clk[lcdc_ipg], "ipg", "imx-fb.0");
--	clk_register_clkdev(clk[lcdc_ahb], "ahb", "imx-fb.0");
-+	clk_register_clkdev(clk[lcdc_ipg_per], "per", "imx21-fb.0");
-+	clk_register_clkdev(clk[lcdc_ipg], "ipg", "imx21-fb.0");
-+	clk_register_clkdev(clk[lcdc_ahb], "ahb", "imx21-fb.0");
- 	clk_register_clkdev(clk[wdt_ipg], NULL, "imx2-wdt.0");
- 	clk_register_clkdev(clk[ssi1_ipg], NULL, "imx-ssi.0");
- 	clk_register_clkdev(clk[ssi2_ipg], NULL, "imx-ssi.1");
-diff --git a/arch/arm/mach-imx/clk-imx27.c b/arch/arm/mach-imx/clk-imx27.c
-index 114be46..f3a66a9 100644
---- a/arch/arm/mach-imx/clk-imx27.c
-+++ b/arch/arm/mach-imx/clk-imx27.c
-@@ -221,9 +221,9 @@ int __init mx27_clocks_init(unsigned long fref)
- 	clk_register_clkdev(clk[cspi1_ipg_gate], NULL, "imx27-cspi.0");
- 	clk_register_clkdev(clk[cspi2_ipg_gate], NULL, "imx27-cspi.1");
- 	clk_register_clkdev(clk[cspi3_ipg_gate], NULL, "imx27-cspi.2");
--	clk_register_clkdev(clk[per3_gate], "per", "imx-fb.0");
--	clk_register_clkdev(clk[lcdc_ipg_gate], "ipg", "imx-fb.0");
--	clk_register_clkdev(clk[lcdc_ahb_gate], "ahb", "imx-fb.0");
-+	clk_register_clkdev(clk[per3_gate], "per", "imx21-fb.0");
-+	clk_register_clkdev(clk[lcdc_ipg_gate], "ipg", "imx21-fb.0");
-+	clk_register_clkdev(clk[lcdc_ahb_gate], "ahb", "imx21-fb.0");
- 	clk_register_clkdev(clk[csi_ahb_gate], "ahb", "imx27-camera.0");
- 	clk_register_clkdev(clk[usb_div], "per", "fsl-usb2-udc");
- 	clk_register_clkdev(clk[usb_ipg_gate], "ipg", "fsl-usb2-udc");
-diff --git a/arch/arm/mach-imx/devices/devices-common.h b/arch/arm/mach-imx/devices/devices-common.h
-index 7fa3ef7..c32279b 100644
---- a/arch/arm/mach-imx/devices/devices-common.h
-+++ b/arch/arm/mach-imx/devices/devices-common.h
-@@ -100,6 +100,7 @@ struct platform_device *__init imx_add_imxdi_rtc(
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 955db56..0ff1c07 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -698,9 +698,15 @@ static void dispc_ovl_set_ba1_uv(enum omap_plane plane, u32 paddr)
+ 	dispc_write_reg(DISPC_OVL_BA1_UV(plane), paddr);
+ }
  
- #include <linux/platform_data/video-imxfb.h>
- struct imx_imx_fb_data {
-+	const char *devid;
- 	resource_size_t iobase;
- 	resource_size_t iosize;
- 	resource_size_t irq;
-diff --git a/arch/arm/mach-imx/devices/platform-imx-fb.c b/arch/arm/mach-imx/devices/platform-imx-fb.c
-index 4e6f857..abea28b 100644
---- a/arch/arm/mach-imx/devices/platform-imx-fb.c
-+++ b/arch/arm/mach-imx/devices/platform-imx-fb.c
-@@ -10,8 +10,9 @@
- #include <mach/hardware.h>
- #include "devices-common.h"
- 
--#define imx_imx_fb_data_entry_single(soc, _size)			\
-+#define imx_imx_fb_data_entry_single(soc, _devid, _size)		\
- 	{								\
-+		.devid = _devid,					\
- 		.iobase = soc ## _LCDC_BASE_ADDR,			\
- 		.iosize = _size,					\
- 		.irq = soc ## _INT_LCDC,				\
-@@ -19,22 +20,22 @@
- 
- #ifdef CONFIG_SOC_IMX1
- const struct imx_imx_fb_data imx1_imx_fb_data __initconst -	imx_imx_fb_data_entry_single(MX1, SZ_4K);
-+	imx_imx_fb_data_entry_single(MX1, "imx1-fb", SZ_4K);
- #endif /* ifdef CONFIG_SOC_IMX1 */
- 
- #ifdef CONFIG_SOC_IMX21
- const struct imx_imx_fb_data imx21_imx_fb_data __initconst -	imx_imx_fb_data_entry_single(MX21, SZ_4K);
-+	imx_imx_fb_data_entry_single(MX21, "imx21-fb", SZ_4K);
- #endif /* ifdef CONFIG_SOC_IMX21 */
- 
- #ifdef CONFIG_SOC_IMX25
- const struct imx_imx_fb_data imx25_imx_fb_data __initconst -	imx_imx_fb_data_entry_single(MX25, SZ_16K);
-+	imx_imx_fb_data_entry_single(MX25, "imx21-fb", SZ_16K);
- #endif /* ifdef CONFIG_SOC_IMX25 */
- 
- #ifdef CONFIG_SOC_IMX27
- const struct imx_imx_fb_data imx27_imx_fb_data __initconst -	imx_imx_fb_data_entry_single(MX27, SZ_4K);
-+	imx_imx_fb_data_entry_single(MX27, "imx21-fb", SZ_4K);
- #endif /* ifdef CONFIG_SOC_IMX27 */
- 
- struct platform_device *__init imx_add_imx_fb(
-diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 53ffdfc..64a39e7 100644
---- a/drivers/video/imxfb.c
-+++ b/drivers/video/imxfb.c
-@@ -33,7 +33,6 @@
- #include <linux/math64.h>
- 
- #include <linux/platform_data/video-imxfb.h>
--#include <mach/hardware.h>
- 
- /*
-  * Complain if VAR is out of range.
-@@ -53,8 +52,8 @@
- #define LCDC_SIZE	0x04
- #define SIZE_XMAX(x)	((((x) >> 4) & 0x3f) << 20)
- 
--#define YMAX_MASK       (cpu_is_mx1() ? 0x1ff : 0x3ff)
--#define SIZE_YMAX(y)	((y) & YMAX_MASK)
-+#define YMAX_MASK_IMX1	0x1ff
-+#define YMAX_MASK_IMX21	0x3ff
- 
- #define LCDC_VPW	0x08
- #define VPW_VPW(x)	((x) & 0x3ff)
-@@ -128,12 +127,18 @@ struct imxfb_rgb {
- 	struct fb_bitfield	transp;
- };
- 
-+enum imxfb_type {
-+	IMX1_FB,
-+	IMX21_FB,
-+};
-+
- struct imxfb_info {
- 	struct platform_device  *pdev;
- 	void __iomem		*regs;
- 	struct clk		*clk_ipg;
- 	struct clk		*clk_ahb;
- 	struct clk		*clk_per;
-+	enum imxfb_type		devtype;
- 
- 	/*
- 	 * These are the addresses we mapped
-@@ -168,6 +173,24 @@ struct imxfb_info {
- 	void (*backlight_power)(int);
- };
- 
-+static struct platform_device_id imxfb_devtype[] = {
-+	{
-+		.name = "imx1-fb",
-+		.driver_data = IMX1_FB,
-+	}, {
-+		.name = "imx21-fb",
-+		.driver_data = IMX21_FB,
-+	}, {
-+		/* sentinel */
-+	}
-+};
-+MODULE_DEVICE_TABLE(platform, imxfb_devtype);
-+
-+static inline int is_imx1_fb(struct imxfb_info *fbi)
-+{
-+	return fbi->devtype = IMX1_FB;
-+}
-+
- #define IMX_NAME	"IMX"
- 
- /*
-@@ -366,7 +389,7 @@ static int imxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 		break;
- 	case 16:
- 	default:
--		if (cpu_is_mx1())
-+		if (is_imx1_fb(fbi))
- 			pcr |= PCR_BPIX_12;
- 		else
- 			pcr |= PCR_BPIX_16;
-@@ -596,6 +619,7 @@ static struct fb_ops imxfb_ops = {
- static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *info)
+-static void dispc_ovl_set_pos(enum omap_plane plane, int x, int y)
++static void dispc_ovl_set_pos(enum omap_plane plane,
++		enum omap_overlay_caps caps, int x, int y)
  {
- 	struct imxfb_info *fbi = info->par;
-+	u32 ymax_mask = is_imx1_fb(fbi) ? YMAX_MASK_IMX1 : YMAX_MASK_IMX21;
+-	u32 val = FLD_VAL(y, 26, 16) | FLD_VAL(x, 10, 0);
++	u32 val;
++
++	if ((caps & OMAP_DSS_OVL_CAP_POS) = 0)
++		return;
++
++	val = FLD_VAL(y, 26, 16) | FLD_VAL(x, 10, 0);
  
- 	pr_debug("var: xres=%d hslen=%d lm=%d rm=%d\n",
- 		var->xres, var->hsync_len,
-@@ -617,7 +641,7 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
- 	if (var->right_margin > 255)
- 		printk(KERN_ERR "%s: invalid right_margin %d\n",
- 			info->fix.id, var->right_margin);
--	if (var->yres < 1 || var->yres > YMAX_MASK)
-+	if (var->yres < 1 || var->yres > ymax_mask)
- 		printk(KERN_ERR "%s: invalid yres %d\n",
- 			info->fix.id, var->yres);
- 	if (var->vsync_len > 100)
-@@ -645,7 +669,7 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
- 		VCR_V_WAIT_2(var->upper_margin),
- 		fbi->regs + LCDC_VCR);
+ 	dispc_write_reg(DISPC_OVL_POSITION(plane), val);
+ }
+@@ -1051,11 +1057,15 @@ static void dispc_ovl_set_vid_color_conv(enum omap_plane plane, bool enable)
+ 	dispc_write_reg(DISPC_OVL_ATTRIBUTES(plane), val);
+ }
  
--	writel(SIZE_XMAX(var->xres) | SIZE_YMAX(var->yres),
-+	writel(SIZE_XMAX(var->xres) | (var->yres & ymax_mask),
- 			fbi->regs + LCDC_SIZE);
+-static void dispc_ovl_enable_replication(enum omap_plane plane, bool enable)
++static void dispc_ovl_enable_replication(enum omap_plane plane,
++		enum omap_overlay_caps caps, bool enable)
+ {
+ 	static const unsigned shifts[] = { 5, 10, 10, 10 };
+ 	int shift;
  
- 	writel(fbi->pcr, fbi->regs + LCDC_PCR);
-@@ -765,6 +789,7 @@ static int __init imxfb_probe(struct platform_device *pdev)
- 		return -ENOMEM;
++	if ((caps & OMAP_DSS_OVL_CAP_REPLICATION) = 0)
++		return;
++
+ 	shift = shifts[plane];
+ 	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), enable, shift, shift);
+ }
+@@ -2383,7 +2393,7 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ 	DSSDBG("%d,%d %dx%d -> %dx%d\n", oi->pos_x, oi->pos_y, in_width,
+ 			in_height, out_width, out_height);
  
- 	fbi = info->par;
-+	fbi->devtype = pdev->id_entry->driver_data;
+-	dispc_ovl_set_pos(plane, oi->pos_x, pos_y);
++	dispc_ovl_set_pos(plane, caps, oi->pos_x, pos_y);
  
- 	if (!fb_mode)
- 		fb_mode = pdata->mode[0].mode.name;
-@@ -938,6 +963,7 @@ static struct platform_driver imxfb_driver = {
- 	.driver		= {
- 		.name	= DRIVER_NAME,
- 	},
-+	.id_table	= imxfb_devtype,
+ 	dispc_ovl_set_input_size(plane, in_width, in_height);
+ 
+@@ -2403,7 +2413,7 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ 	dispc_ovl_set_pre_mult_alpha(plane, caps, oi->pre_mult_alpha);
+ 	dispc_ovl_setup_global_alpha(plane, caps, oi->global_alpha);
+ 
+-	dispc_ovl_enable_replication(plane, replication);
++	dispc_ovl_enable_replication(plane, caps, replication);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
+index 63d109f..8b6c79f 100644
+--- a/drivers/video/omap2/dss/dss_features.c
++++ b/drivers/video/omap2/dss/dss_features.c
+@@ -269,54 +269,66 @@ static const enum omap_color_mode omap4_dss_supported_color_modes[] = {
+ 
+ static const enum omap_overlay_caps omap2_dss_overlay_caps[] = {
+ 	/* OMAP_DSS_GFX */
+-	0,
++	OMAP_DSS_OVL_CAP_POS | OMAP_DSS_OVL_CAP_REPLICATION,
+ 
+ 	/* OMAP_DSS_VIDEO1 */
+-	OMAP_DSS_OVL_CAP_SCALE,
++	OMAP_DSS_OVL_CAP_SCALE | OMAP_DSS_OVL_CAP_POS |
++		OMAP_DSS_OVL_CAP_REPLICATION,
+ 
+ 	/* OMAP_DSS_VIDEO2 */
+-	OMAP_DSS_OVL_CAP_SCALE,
++	OMAP_DSS_OVL_CAP_SCALE | OMAP_DSS_OVL_CAP_POS |
++		OMAP_DSS_OVL_CAP_REPLICATION,
  };
  
- static int imxfb_setup(void)
+ static const enum omap_overlay_caps omap3430_dss_overlay_caps[] = {
+ 	/* OMAP_DSS_GFX */
+-	OMAP_DSS_OVL_CAP_GLOBAL_ALPHA,
++	OMAP_DSS_OVL_CAP_GLOBAL_ALPHA | OMAP_DSS_OVL_CAP_POS |
++		OMAP_DSS_OVL_CAP_REPLICATION,
+ 
+ 	/* OMAP_DSS_VIDEO1 */
+-	OMAP_DSS_OVL_CAP_SCALE,
++	OMAP_DSS_OVL_CAP_SCALE | OMAP_DSS_OVL_CAP_POS |
++		OMAP_DSS_OVL_CAP_REPLICATION,
+ 
+ 	/* OMAP_DSS_VIDEO2 */
+-	OMAP_DSS_OVL_CAP_SCALE | OMAP_DSS_OVL_CAP_GLOBAL_ALPHA,
++	OMAP_DSS_OVL_CAP_SCALE | OMAP_DSS_OVL_CAP_GLOBAL_ALPHA |
++		OMAP_DSS_OVL_CAP_POS | OMAP_DSS_OVL_CAP_REPLICATION,
+ };
+ 
+ static const enum omap_overlay_caps omap3630_dss_overlay_caps[] = {
+ 	/* OMAP_DSS_GFX */
+-	OMAP_DSS_OVL_CAP_GLOBAL_ALPHA | OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA,
++	OMAP_DSS_OVL_CAP_GLOBAL_ALPHA | OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA |
++		OMAP_DSS_OVL_CAP_POS | OMAP_DSS_OVL_CAP_REPLICATION,
+ 
+ 	/* OMAP_DSS_VIDEO1 */
+-	OMAP_DSS_OVL_CAP_SCALE,
++	OMAP_DSS_OVL_CAP_SCALE | OMAP_DSS_OVL_CAP_POS |
++		OMAP_DSS_OVL_CAP_REPLICATION,
+ 
+ 	/* OMAP_DSS_VIDEO2 */
+ 	OMAP_DSS_OVL_CAP_SCALE | OMAP_DSS_OVL_CAP_GLOBAL_ALPHA |
+-		OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA,
++		OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA | OMAP_DSS_OVL_CAP_POS |
++		OMAP_DSS_OVL_CAP_REPLICATION,
+ };
+ 
+ static const enum omap_overlay_caps omap4_dss_overlay_caps[] = {
+ 	/* OMAP_DSS_GFX */
+ 	OMAP_DSS_OVL_CAP_GLOBAL_ALPHA | OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA |
+-		OMAP_DSS_OVL_CAP_ZORDER,
++		OMAP_DSS_OVL_CAP_ZORDER | OMAP_DSS_OVL_CAP_POS |
++		OMAP_DSS_OVL_CAP_REPLICATION,
+ 
+ 	/* OMAP_DSS_VIDEO1 */
+ 	OMAP_DSS_OVL_CAP_SCALE | OMAP_DSS_OVL_CAP_GLOBAL_ALPHA |
+-		OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA | OMAP_DSS_OVL_CAP_ZORDER,
++		OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA | OMAP_DSS_OVL_CAP_ZORDER |
++		OMAP_DSS_OVL_CAP_POS | OMAP_DSS_OVL_CAP_REPLICATION,
+ 
+ 	/* OMAP_DSS_VIDEO2 */
+ 	OMAP_DSS_OVL_CAP_SCALE | OMAP_DSS_OVL_CAP_GLOBAL_ALPHA |
+-		OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA | OMAP_DSS_OVL_CAP_ZORDER,
++		OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA | OMAP_DSS_OVL_CAP_ZORDER |
++		OMAP_DSS_OVL_CAP_POS | OMAP_DSS_OVL_CAP_REPLICATION,
+ 
+ 	/* OMAP_DSS_VIDEO3 */
+ 	OMAP_DSS_OVL_CAP_SCALE | OMAP_DSS_OVL_CAP_GLOBAL_ALPHA |
+-		OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA | OMAP_DSS_OVL_CAP_ZORDER,
++		OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA | OMAP_DSS_OVL_CAP_ZORDER |
++		OMAP_DSS_OVL_CAP_POS | OMAP_DSS_OVL_CAP_REPLICATION,
+ };
+ 
+ static const char * const omap2_dss_clk_source_names[] = {
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index e65e2e9..46097bd 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -187,6 +187,8 @@ enum omap_overlay_caps {
+ 	OMAP_DSS_OVL_CAP_GLOBAL_ALPHA = 1 << 1,
+ 	OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA = 1 << 2,
+ 	OMAP_DSS_OVL_CAP_ZORDER = 1 << 3,
++	OMAP_DSS_OVL_CAP_POS = 1 << 4,
++	OMAP_DSS_OVL_CAP_REPLICATION = 1 << 5,
+ };
+ 
+ enum omap_overlay_manager_caps {
 -- 
 1.7.9.5
 

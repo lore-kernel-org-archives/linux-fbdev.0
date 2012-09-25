@@ -1,28 +1,69 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Date: Wed, 19 Sep 2012 11:45:11 +0000
-Subject: Re: [PATCH 6/7 v2] HID: picoLCD: drop version check during probe
-Message-Id: <alpine.LNX.2.00.1209191344500.31149@pobox.suse.cz>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 25 Sep 2012 06:30:20 +0000
+Subject: [PATCH v2 00/18] OMAPDSS: DISPC changes for writeback pipeline
+Message-Id: <1348553919-7905-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120730213656.0a9f6d30@neptune.home> <20120730213859.063173c1@neptune.home> <alpine.LNX.2.00.1208151015220.7026@pobox.suse.cz> <20120819185631.3a984aa4@neptune.home> <20120917202108.3e39dedb@neptune.home>
-In-Reply-To: <20120917202108.3e39dedb@neptune.home>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-On Mon, 17 Sep 2012, Bruno Pr=C3=A9mont wrote:
+This series prepares the low level DISPC driver(dispc.c) to configure writeback
+registers. Original series can be seen here:
 
-> You seem not to have applied this one yet (it doesn't show up in picolcd
-> branch).
->=20
-> Could you please apply it?
-> (or did I miss locking changes making it obsolete?)
+http://marc.info/?l=linux-fbdev&m4753851619354&w=2
 
-No, sorry, I lost that one. Applied now.
+Changes since v2:
 
-Have you and David made any progress with the locking?
+- Removed patches which rename dispc_ovl_* functions to dispc_plane_*
+- Revisited the scaling related code a bit. Removed the usage of 'output rate'
+  to fit in writeback. Instead, added a new parameter called mem_to_mem, passed
+  by APPLY. This tells whether we have to consider a display pixel clock for
+  scaling limitations or not.
+- All 'Scalar' references renamed to 'Scaler'.
+- Minor cleanups.
 
---=20
-Jiri Kosina
-SUSE Labs
+Reference branch:
+
+git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git 1-writeback-dispc
+
+Archit Taneja (18):
+  OMAPDSS: DISPC: Constify omap_overlay_info in dispc_ovl_setup()
+  OMAPDSS: DISPC: Simplify function names for setting pipeline input
+    and output sizes
+  OMAPDSS: DISPC: Pass overlay caps as a parameter to dispc plane
+    functions
+  OMAPDSS: OVERLAY: Add position and replication as overlay caps
+  OMAPDSS: DISPC: Make dispc_ovl_setup call dispc_ovl_setup_common
+  OMAPDSS: DISPC: Don't pass channel out when configuring overlays
+  OMAPDSS: DIPSC: Relax scaling limitations when in memory to memory
+    mode
+  OMAPDSS: DISPC: Allow both upscaling and downscaling of chroma
+  OMAPDSS: DISPC: Add writeback register offsets and dss features
+    structs
+  OMAPDSS: DISPC: Configure input and output sizes for writeback
+  OMAPDSS: DISPC: Downscale chroma if plane is writeback
+  OMAPDSS: DISPC: Don't set chroma resampling bit for writeback
+  OMAPDSS: DISPC: Add function to set channel in for writeback
+  OMAPDSS: DISPC: Configure overlay-like parameters in dispc_wb_setup
+  OMAPDSS: DISPC: Configure writeback specific parameters in
+    dispc_wb_setup()
+  OMAPDSS: DISPC: Configure writeback FIFOs
+  OMAPDSS: DISPC: Add manager like functions for writeback
+  OMAPDSS: DISPC: Configure color conversion coefficients for writeback
+
+ drivers/video/omap2/dss/apply.c        |    2 +-
+ drivers/video/omap2/dss/dispc.c        |  561 ++++++++++++++++++++++----------
+ drivers/video/omap2/dss/dispc.h        |   33 ++
+ drivers/video/omap2/dss/dss.h          |   25 +-
+ drivers/video/omap2/dss/dss_features.c |   57 +++-
+ drivers/video/omap2/dss/dss_features.h |    1 +
+ include/video/omapdss.h                |   15 +
+ 7 files changed, 510 insertions(+), 184 deletions(-)
+
+-- 
+1.7.9.5
+

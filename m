@@ -1,198 +1,145 @@
-From: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
-Date: Tue, 25 Sep 2012 09:42:49 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 25 Sep 2012 09:57:36 +0000
 Subject: Re: [PATCH] OMAPDSS: Cleanup DSSDBG with dynamic pr_debug function
-Message-Id: <CAF0AtAukV_5FXXc79yuXr50+1XXWNiFKdN5MWLgRy2N6Ux-adg@mail.gmail.com>
+Message-Id: <1348567056.2342.28.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-SbNWpPWqhfUoX2ZpWIu3"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1348552998-6596-1-git-send-email-cmahapatra@ti.com>
-	<1348554291.2342.8.camel@deskari>
-In-Reply-To: <1348554291.2342.8.camel@deskari>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+	 <1348554291.2342.8.camel@deskari>
+	 <CAF0AtAukV_5FXXc79yuXr50+1XXWNiFKdN5MWLgRy2N6Ux-adg@mail.gmail.com>
+In-Reply-To: <CAF0AtAukV_5FXXc79yuXr50+1XXWNiFKdN5MWLgRy2N6Ux-adg@mail.gmail.com>
+To: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
->> diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
->> index 6354bb8..cb86d94 100644
->> --- a/drivers/video/omap2/dss/apply.c
->> +++ b/drivers/video/omap2/dss/apply.c
->> @@ -559,7 +559,7 @@ static void dss_ovl_write_regs(struct omap_overlay *ovl)
->>       struct mgr_priv_data *mp;
->>       int r;
->>
->> -     DSSDBGF("%d", ovl->id);
->> +     DSSDBG("%d", ovl->id);
->
-> I don't think this is good. It's true that dyn-debug can print the
-> function name, but that's optional. The debug message should be somehow
-> sensible independently, but in this case only a number is printed which
-> is totally meaningless.
->
-> Either the messages should be modified to give a hint what's going on,
-> or the DSSDBGF could be kept for now. In the above case the debug
-> message could be something like "writing ovl %d regs".
->
-> However, I think it'd be easier just to keep the DSSDBGF for now, and
-> remove it gradually.
->
->>       if (!op->enabled || !op->info_dirty)
->>               return;
->> @@ -594,7 +594,7 @@ static void dss_ovl_write_regs_extra(struct omap_overlay *ovl)
->>       struct ovl_priv_data *op = get_ovl_priv(ovl);
->>       struct mgr_priv_data *mp;
->>
->> -     DSSDBGF("%d", ovl->id);
->> +     DSSDBG("%d", ovl->id);
->>
->>       if (!op->extra_info_dirty)
->>               return;
->> @@ -618,7 +618,7 @@ static void dss_mgr_write_regs(struct omap_overlay_manager *mgr)
->>       struct mgr_priv_data *mp = get_mgr_priv(mgr);
->>       struct omap_overlay *ovl;
->>
->> -     DSSDBGF("%d", mgr->id);
->> +     DSSDBG("%d", mgr->id);
->>
->>       if (!mp->enabled)
->>               return;
->> @@ -644,7 +644,7 @@ static void dss_mgr_write_regs_extra(struct omap_overlay_manager *mgr)
->>  {
->>       struct mgr_priv_data *mp = get_mgr_priv(mgr);
->>
->> -     DSSDBGF("%d", mgr->id);
->> +     DSSDBG("%d", mgr->id);
->>
->>       if (!mp->extra_info_dirty)
->>               return;
->> diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
->> index 8d815e3..8304cc6b 100644
->> --- a/drivers/video/omap2/dss/dsi.c
->> +++ b/drivers/video/omap2/dss/dsi.c
->> @@ -1525,8 +1525,6 @@ int dsi_pll_set_clock_div(struct platform_device *dsidev,
->>       u8 regn_start, regn_end, regm_start, regm_end;
->>       u8 regm_dispc_start, regm_dispc_end, regm_dsi_start, regm_dsi_end;
->>
->> -     DSSDBGF();
->> -
->>       dsi->current_cinfo.clkin = cinfo->clkin;
->>       dsi->current_cinfo.fint = cinfo->fint;
->>       dsi->current_cinfo.clkin4ddr = cinfo->clkin4ddr;
->> @@ -2334,8 +2332,6 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
->>       int r;
->>       u32 l;
->>
->> -     DSSDBGF();
->> -
->>       r = dss_dsi_enable_pads(dsi->module_id, dsi_get_lane_mask(dssdev));
->>       if (r)
->>               return r;
->> @@ -2686,7 +2682,7 @@ static void dsi_vc_initial_config(struct platform_device *dsidev, int channel)
->>  {
->>       u32 r;
->>
->> -     DSSDBGF("%d", channel);
->> +     DSSDBG("%d", channel);
->>
->>       r = dsi_read_reg(dsidev, DSI_VC_CTRL(channel));
->>
->> @@ -2718,7 +2714,7 @@ static int dsi_vc_config_source(struct platform_device *dsidev, int channel,
->>       if (dsi->vc[channel].source = source)
->>               return 0;
->>
->> -     DSSDBGF("%d", channel);
->> +     DSSDBG("%d", channel);
->>
->>       dsi_sync_vc(dsidev, channel);
->>
->> @@ -3475,7 +3471,7 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
->>       int r, i;
->>       unsigned mask;
->>
->> -     DSSDBGF();
->> +     DSSDBG("");
->
-> This debug message is even less meaningful than the overlay number =).
-> Again, I think either keep the DSSDBGF, or print something sensible,
-> like "entering ULPS".
->
 
-I dont think it would be wise enough to update code for one and keep
-the older version for another when both DSSDBG and DSSDBGF are almost
-one and the same. Its better to add something meaningful to the prints
-as you have mentioned like "writing ovl %d regs" and "DSI entering
-ULPS".
+--=-SbNWpPWqhfUoX2ZpWIu3
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
->>
->>       WARN_ON(!dsi_bus_is_locked(dsidev));
->>
->> @@ -4184,7 +4180,7 @@ int omapdss_dsi_set_clocks(struct omap_dss_device *dssdev,
->>       unsigned long pck;
->>       int r;
->>
->> -     DSSDBGF("ddr_clk %lu, lp_clk %lu", ddr_clk, lp_clk);
->> +     DSSDBG("ddr_clk %lu, lp_clk %lu", ddr_clk, lp_clk);
->>
->>       mutex_lock(&dsi->lock);
->>
->> diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
->> index 5e9fd769..3a2caab 100644
->> --- a/drivers/video/omap2/dss/dss.h
->> +++ b/drivers/video/omap2/dss/dss.h
->> @@ -29,38 +29,20 @@
->>
->>  #ifdef DEBUG
->>  extern bool dss_debug;
->
-> You still left the dss_debug option here, even if it's not used by the
-> DSSDBG anymore. What's your plan about this?
->
->  Tomi
->
+On Tue, 2012-09-25 at 15:00 +0530, Mahapatra, Chandrabhanu wrote:
 
-dss_debug and DEBUG need to remain here as it is being used by
-functions omap_dispc_irq_handler() and _dsi_print_reset_status() in
-dispc.c and dsi.c. I am little bit unsure of how to deal with it.
-There could be a single print in omap_dispc_irq_handler() but it is a
-bit tricky in _dsi_print_reset_status().
+> > This debug message is even less meaningful than the overlay number =3D)=
+.
+> > Again, I think either keep the DSSDBGF, or print something sensible,
+> > like "entering ULPS".
+> >
+>=20
+> I dont think it would be wise enough to update code for one and keep
+> the older version for another when both DSSDBG and DSSDBGF are almost
+> one and the same. Its better to add something meaningful to the prints
+> as you have mentioned like "writing ovl %d regs" and "DSI entering
+> ULPS".
 
-May be a macro like this one can be used in _dsi_print_reset_status()
+I didn't mean to leave DSSDBGF unchanged. I meant that it should work as
+it works now, printing the func name, but using pr_debug.
 
-#define DSI_FLD_GET(fld, start, end)\
-      FLD_GET(dsi_read_reg(dsidev, DSI_##fld), start, end);
+> >>
+> >>       WARN_ON(!dsi_bus_is_locked(dsidev));
+> >>
+> >> @@ -4184,7 +4180,7 @@ int omapdss_dsi_set_clocks(struct omap_dss_devic=
+e *dssdev,
+> >>       unsigned long pck;
+> >>       int r;
+> >>
+> >> -     DSSDBGF("ddr_clk %lu, lp_clk %lu", ddr_clk, lp_clk);
+> >> +     DSSDBG("ddr_clk %lu, lp_clk %lu", ddr_clk, lp_clk);
+> >>
+> >>       mutex_lock(&dsi->lock);
+> >>
+> >> diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/d=
+ss.h
+> >> index 5e9fd769..3a2caab 100644
+> >> --- a/drivers/video/omap2/dss/dss.h
+> >> +++ b/drivers/video/omap2/dss/dss.h
+> >> @@ -29,38 +29,20 @@
+> >>
+> >>  #ifdef DEBUG
+> >>  extern bool dss_debug;
+> >
+> > You still left the dss_debug option here, even if it's not used by the
+> > DSSDBG anymore. What's your plan about this?
+> >
+> >  Tomi
+> >
+>=20
+> dss_debug and DEBUG need to remain here as it is being used by
+> functions omap_dispc_irq_handler() and _dsi_print_reset_status() in
 
-pr_debug("PLL (%d) CIO (%d) \n PHY (%x%x%x, %d, %d, %d) \n",
-                 DSI_FLD_GET(PLL_STATUS, 0, 0),
-                 DSI_FLD_GET(COMPLEXIO_CFG1, 29, 29),
-                 DSI_FLD_GET(DSIPHY_CFG5, bo, bo),
-                 DSI_FLD_GET(DSIPHY_CFG5, b1, b1),
-   ..................................................);
-This could be defined at the beginning of the function and later at its end.
+It would be good to clean all this in one patch series.
 
-As you had previously mentioned a print like
+> dispc.c and dsi.c. I am little bit unsure of how to deal with it.
+> There could be a single print in omap_dispc_irq_handler() but it is a
+> bit tricky in _dsi_print_reset_status().
+>=20
+> May be a macro like this one can be used in _dsi_print_reset_status()
+>=20
+> #define DSI_FLD_GET(fld, start, end)\
+>       FLD_GET(dsi_read_reg(dsidev, DSI_##fld), start, end);
+>=20
+> pr_debug("PLL (%d) CIO (%d) \n PHY (%x%x%x, %d, %d, %d) \n",
+>                  DSI_FLD_GET(PLL_STATUS, 0, 0),
+>                  DSI_FLD_GET(COMPLEXIO_CFG1, 29, 29),
+>                  DSI_FLD_GET(DSIPHY_CFG5, bo, bo),
+>                  DSI_FLD_GET(DSIPHY_CFG5, b1, b1),
+>    ..................................................);
+> This could be defined at the beginning of the function and later at its e=
+nd.
 
-#define PIS(x) (status & DSI_IRQ_##x) ? (#x " ") : ""
+Yes, I think something like that could work. I don't see any problem
+with having temporary helper macros to help creating the debug message.
 
-pr_debug("DSI IRQ: 0x%x: %s%s%s",
-        status,
-        PIS(WAKEUP),
-        PIS(RESYNC),
-        PIS(PLL_LOCK));
+> As you had previously mentioned a print like
+>=20
+> #define PIS(x) (status & DSI_IRQ_##x) ? (#x " ") : ""
+>=20
+> pr_debug("DSI IRQ: 0x%x: %s%s%s",
+>         status,
+>         PIS(WAKEUP),
+>         PIS(RESYNC),
+>         PIS(PLL_LOCK));
+>=20
+> could help in print_irq_status() but I am still unsure how to deal
+> with conditional statements in print_irq_status() like
+> if (dss_has_feature(FEAT_MGR_LCD3))
+>                 PIS(SYNC_LOST3);
+> Should we use approach like
+>=20
+> pr_debug("DSI IRQ: 0x%x: %s%s%s%s...",
+>         status,
+>         PIS(WAKEUP),
+>         PIS(RESYNC),
+>         PIS(PLL_LOCK)
+>         dss_has_feature(FEAT_MGR_LCD3) ? PIS(SYNC_LOST3) : ""
+>   ...................................... );
 
-could help in print_irq_status() but I am still unsure how to deal
-with conditional statements in print_irq_status() like
-if (dss_has_feature(FEAT_MGR_LCD3))
-                PIS(SYNC_LOST3);
-Should we use approach like
+Yes, that looks fine to me.
 
-pr_debug("DSI IRQ: 0x%x: %s%s%s%s...",
-        status,
-        PIS(WAKEUP),
-        PIS(RESYNC),
-        PIS(PLL_LOCK)
-        dss_has_feature(FEAT_MGR_LCD3) ? PIS(SYNC_LOST3) : ""
-  ...................................... );
+ Tomi
 
 
--- 
-Chandrabhanu Mahapatra
-Texas Instruments India Pvt. Ltd.
+--=-SbNWpPWqhfUoX2ZpWIu3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJQYYAQAAoJEPo9qoy8lh71kdwP/3jEFGD/0Z+jeXPTT+TcPyj2
+nnOm8kHoSZrZFNI02KqM3zimqNNIvdZkRbfvlq2KdUOqlqLmMrshndVUYZVqYsHm
+YZL8vwBpaYfvdDom2a7ur6La8dw6lX7JwMp1uMfdpRTVbo76ksZm9BQWB76af52C
+Vu1+JLRzH/N3/Kwa3WSIWSxPZebm3ttlwzhJwWi7ptAqFCUzq1qXa3j8LWU+sJbk
+1Ir1N4zCERWxmNuosFChLrSULe5I9QRLOhq4JNffYCQxPNbQztKOrOCNJZytGXpT
++TyCdHzRVSOsPmmu7+6KvRdwm+OO7IC3/3xgOFGbOWPBF42+Ujz59OUyA7LFUQsz
+m+tWEJPKbdrzAMAD27+fggc35m8N17qSbCuL342kgN1s5vArMBknANkd8sfZ5Z6E
+CSacLMVjO+kg5o0qgfjWGMmCI3wcPtIauPJGGfg66dGOcUMYfJJ4O2K+Cx9yq+j+
+aYimX6tfDqL/f/vlqE5dK/JrafRDw41k21Vv6qCcbIkz/TNg7YmMV4QSaKRawBKP
+R3t3/NJ31fb36AAYYBBj/hqKogGvz4ESZ0iQqpkPevXEiOqqnzsYvrFfAndBvPO+
+BQ9Oq53QNMoRWJ1DNkALQD2LaYVhSRXfPg2+VxTUusZGQhbSABZmbUrqfbcS7Sea
+k9lWN1Di8Qggucll5Kwi
+=LO1B
+-----END PGP SIGNATURE-----
+
+--=-SbNWpPWqhfUoX2ZpWIu3--
+

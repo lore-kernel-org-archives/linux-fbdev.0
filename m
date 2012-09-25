@@ -1,7 +1,7 @@
 From: Archit Taneja <archit@ti.com>
-Date: Tue, 25 Sep 2012 06:31:53 +0000
-Subject: [PATCH v2 18/18] OMAPDSS: DISPC: Configure color conversion coefficients for writeback
-Message-Id: <1348553993-8083-19-git-send-email-archit@ti.com>
+Date: Tue, 25 Sep 2012 06:31:36 +0000
+Subject: [PATCH v2 01/18] OMAPDSS: DISPC: Constify omap_overlay_info in dispc_ovl_setup()
+Message-Id: <1348553993-8083-2-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1347538505-25359-1-git-send-email-archit@ti.com>
  <1348553993-8083-1-git-send-email-archit@ti.com>
@@ -12,117 +12,75 @@ Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Writeback pipeline receives RGB data from one of the overlays or one of the
-overlay managers. If the target color mode is YUV422 or NV12, we need to convert
-the RGB pixels to YUV. The scaler in WB then converts it to the target color
-mode.
-
-Hence, the color conversion coefficients that need to be programmed are the ones
-which convert a RGB24 pixel to YUV444. Program these coefficients for writeback
-pipeline.
-
-Rearrange the code a bit to configure different coefficients for overlays and
-writeback.
+The struct omap_overlay_info passed to dispc_ovl_setup() is used to configure
+DISPC registers. It shouldn't modify the overlay_info structure. The pos_y field
+was being changed in dispc_ovl_setup in the case of interlaced displays. Fix
+this and const qualifier to the omap_overlay_info argument.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |   61 +++++++++++++++++++++------------------
- 1 file changed, 33 insertions(+), 28 deletions(-)
+ drivers/video/omap2/dss/dispc.c |    9 +++++----
+ drivers/video/omap2/dss/dss.h   |    2 +-
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 034ecb5..1f03690 100644
+index 33db882..cd3d532 100644
 --- a/drivers/video/omap2/dss/dispc.c
 +++ b/drivers/video/omap2/dss/dispc.c
-@@ -236,6 +236,11 @@ static const struct {
- 	},
- };
- 
-+struct color_conv_coef {
-+	int ry, rcr, rcb, gy, gcr, gcb, by, bcr, bcb;
-+	int full_range;
-+};
-+
- static void _omap_dispc_set_irqs(void);
- static unsigned long dispc_plane_pclk_rate(enum omap_plane plane);
- static unsigned long dispc_plane_lclk_rate(enum omap_plane plane);
-@@ -674,41 +679,41 @@ static void dispc_ovl_set_scale_coef(enum omap_plane plane, int fir_hinc,
- 	}
+@@ -2253,7 +2253,7 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
+ 	return 0;
  }
  
--static void _dispc_setup_color_conv_coef(void)
--{
--	int i;
--	const struct color_conv_coef {
--		int  ry,  rcr,  rcb,   gy,  gcr,  gcb,   by,  bcr,  bcb;
--		int  full_range;
--	}  ctbl_bt601_5 = {
--		298,  409,    0,  298, -208, -100,  298,    0,  517, 0,
--	};
--
--	const struct color_conv_coef *ct;
- 
-+static void dispc_ovl_write_color_conv_coef(enum omap_plane plane,
-+		const struct color_conv_coef *ct)
-+{
- #define CVAL(x, y) (FLD_VAL(x, 26, 16) | FLD_VAL(y, 10, 0))
- 
--	ct = &ctbl_bt601_5;
-+	dispc_write_reg(DISPC_OVL_CONV_COEF(plane, 0), CVAL(ct->rcr, ct->ry));
-+	dispc_write_reg(DISPC_OVL_CONV_COEF(plane, 1), CVAL(ct->gy,  ct->rcb));
-+	dispc_write_reg(DISPC_OVL_CONV_COEF(plane, 2), CVAL(ct->gcb, ct->gcr));
-+	dispc_write_reg(DISPC_OVL_CONV_COEF(plane, 3), CVAL(ct->bcr, ct->by));
-+	dispc_write_reg(DISPC_OVL_CONV_COEF(plane, 4), CVAL(0, ct->bcb));
- 
--	for (i = 1; i < dss_feat_get_num_ovls(); i++) {
--		dispc_write_reg(DISPC_OVL_CONV_COEF(i, 0),
--			CVAL(ct->rcr, ct->ry));
--		dispc_write_reg(DISPC_OVL_CONV_COEF(i, 1),
--			CVAL(ct->gy,  ct->rcb));
--		dispc_write_reg(DISPC_OVL_CONV_COEF(i, 2),
--			CVAL(ct->gcb, ct->gcr));
--		dispc_write_reg(DISPC_OVL_CONV_COEF(i, 3),
--			CVAL(ct->bcr, ct->by));
--		dispc_write_reg(DISPC_OVL_CONV_COEF(i, 4),
--			CVAL(0, ct->bcb));
--
--		REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(i), ct->full_range,
--			11, 11);
--	}
-+	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), ct->full_range, 11, 11);
- 
- #undef CVAL
- }
- 
-+static void dispc_setup_color_conv_coef(void)
-+{
-+	int i;
-+	int num_ovl = dss_feat_get_num_ovls();
-+	int num_wb = dss_feat_get_num_wbs();
-+	const struct color_conv_coef ctbl_bt601_5_ovl = {
-+		298, 409, 0, 298, -208, -100, 298, 0, 517, 0,
-+	};
-+	const struct color_conv_coef ctbl_bt601_5_wb = {
-+		66, 112, -38, 129, -94, -74, 25, -18, 112, 0,
-+	};
-+
-+	for (i = 1; i < num_ovl; i++)
-+		dispc_ovl_write_color_conv_coef(i, &ctbl_bt601_5_ovl);
-+
-+	for (; i < num_wb; i++)
-+		dispc_ovl_write_color_conv_coef(i, &ctbl_bt601_5_wb);
-+}
- 
- static void dispc_ovl_set_ba0(enum omap_plane plane, u32 paddr)
+-int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
++int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ 		bool replication, const struct omap_video_timings *mgr_timings)
  {
-@@ -3973,7 +3978,7 @@ static void _omap_dispc_initial_config(void)
- 	if (dss_has_feature(FEAT_FUNCGATED))
- 		REG_FLD_MOD(DISPC_CONFIG, 1, 9, 9);
+ 	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
+@@ -2271,6 +2271,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 	enum omap_channel channel;
+ 	int x_predecim = 1, y_predecim = 1;
+ 	bool ilace = mgr_timings->interlace;
++	u16 pos_y = oi->pos_y;
  
--	_dispc_setup_color_conv_coef();
-+	dispc_setup_color_conv_coef();
+ 	channel = dispc_ovl_get_channel_out(plane);
  
- 	dispc_set_loadmode(OMAP_DSS_LOAD_FRAME_ONLY);
+@@ -2293,12 +2294,12 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 	if (ilace) {
+ 		if (fieldmode)
+ 			in_height /= 2;
+-		oi->pos_y /= 2;
++		pos_y /= 2;
+ 		out_height /= 2;
  
+ 		DSSDBG("adjusting for ilace: height %d, pos_y %d, "
+ 				"out_height %d\n",
+-				in_height, oi->pos_y, out_height);
++				in_height, pos_y, out_height);
+ 	}
+ 
+ 	if (!dss_feat_color_mode_supported(plane, oi->color_mode))
+@@ -2381,7 +2382,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 	DSSDBG("%d,%d %dx%d -> %dx%d\n", oi->pos_x, oi->pos_y, in_width,
+ 			in_height, out_width, out_height);
+ 
+-	dispc_ovl_set_pos(plane, oi->pos_x, oi->pos_y);
++	dispc_ovl_set_pos(plane, oi->pos_x, pos_y);
+ 
+ 	dispc_ovl_set_pic_size(plane, in_width, in_height);
+ 
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index c2bc092..43210b8 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -440,7 +440,7 @@ void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high);
+ void dispc_ovl_compute_fifo_thresholds(enum omap_plane plane,
+ 		u32 *fifo_low, u32 *fifo_high, bool use_fifomerge,
+ 		bool manual_update);
+-int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
++int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ 		bool replication, const struct omap_video_timings *mgr_timings);
+ int dispc_ovl_enable(enum omap_plane plane, bool enable);
+ void dispc_ovl_set_channel_out(enum omap_plane plane,
 -- 
 1.7.9.5
 

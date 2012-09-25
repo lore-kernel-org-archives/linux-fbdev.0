@@ -1,74 +1,109 @@
-From: Peter Senna Tschudin <peter.senna@gmail.com>
-Date: Tue, 18 Sep 2012 12:07:54 +0000
-Subject: [PATCH 04/10] drivers/video/sunxvr500.c: fix error return code
-Message-Id: <1347970080-25175-4-git-send-email-peter.senna@gmail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 25 Sep 2012 06:31:49 +0000
+Subject: [PATCH v2 14/18] OMAPDSS: DISPC: Configure overlay-like parameters in dispc_wb_setup
+Message-Id: <1348553993-8083-15-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
-In-Reply-To: <1347970080-25175-1-git-send-email-peter.senna@gmail.com>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+ <1348553993-8083-1-git-send-email-archit@ti.com>
+In-Reply-To: <1348553993-8083-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: FlorianSchandinat@gmx.de
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Peter Senna Tschudin <peter.senna@gmail.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-From: Peter Senna Tschudin <peter.senna@gmail.com>
+Create struct omap_dss_writeback_info, this is similar to omap_overlay_info,
+the major difference is that there is no parameter which describes the input
+size to writeback, this is because this is always fixed, and decided by the
+connected overlay or overlay manager. One more difference is that screen_width
+is renamed to buf_width, to give the value of stride the writeback buffer has.
 
-Convert a nonnegative error return code to a negative one, as returned
-elsewhere in the function.
+Call dispc_ovl_setup_common() through dispc_wb_setup() to configure overlay-like
+parameters. The parameters in dispc_ovl_setup_common() which do not hold for
+writeback are filled passed as zeroes or false, the code takes care of not
+configuring them as they won't possess the needed overlay caps.
 
-A simplified version of the semantic match that finds this problem is as
-follows: (http://coccinelle.lip6.fr/)
-
-// <smpl>
-(
-if@p1 (\(ret < 0\|ret != 0\))
- { ... return ret; }
-|
-ret@p1 = 0
-)
-... when != ret = e1
-    when != &ret
-*if(...)
-{
-  ... when != ret = e2
-      when forall
- return ret;
-}
-// </smpl>
-
-Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/sunxvr500.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   27 +++++++++++++++++++++++++++
+ drivers/video/omap2/dss/dss.h   |    2 ++
+ include/video/omapdss.h         |   13 +++++++++++++
+ 3 files changed, 42 insertions(+)
 
-diff --git a/drivers/video/sunxvr500.c b/drivers/video/sunxvr500.c
-index eb931b8..6c71b1b 100644
---- a/drivers/video/sunxvr500.c
-+++ b/drivers/video/sunxvr500.c
-@@ -298,8 +298,10 @@ static int __devinit e3d_pci_register(struct pci_dev *pdev,
- 		goto err_release_fb;
- 	}
- 	ep->ramdac = ioremap(ep->regs_base_phys + 0x8000, 0x1000);
--	if (!ep->ramdac)
-+	if (!ep->ramdac) {
-+		err = -ENOMEM;
- 		goto err_release_pci1;
-+	}
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 6d482f5..2e5f033 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2479,6 +2479,33 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ 	return r;
+ }
  
- 	ep->fb8_0_off = readl(ep->ramdac + RAMDAC_VID_8FB_0);
- 	ep->fb8_0_off -= ep->fb_base_reg;
-@@ -343,8 +345,10 @@ static int __devinit e3d_pci_register(struct pci_dev *pdev,
- 	ep->fb_size = info->fix.line_length * ep->height;
++int dispc_wb_setup(const struct omap_dss_writeback_info *wi,
++		const struct omap_video_timings *mgr_timings)
++{
++	int r;
++	enum omap_plane plane = OMAP_DSS_WB;
++	const int pos_x = 0, pos_y = 0;
++	const u8 zorder = 0, global_alpha = 0;
++	const bool replication = false;
++	int in_width = mgr_timings->x_res;
++	int in_height = mgr_timings->y_res;
++	enum omap_overlay_caps caps +		OMAP_DSS_OVL_CAP_SCALE | OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA;
++
++	DSSDBG("dispc_wb_setup, pa %x, pa_uv %x, %d,%d -> %dx%d, cmode %x, "
++		"rot %d, mir %d\n", wi->paddr, wi->p_uv_addr, in_width,
++		in_height, wi->width, wi->height, wi->color_mode, wi->rotation,
++		wi->mirror);
++
++	r = dispc_ovl_setup_common(plane, caps, wi->paddr, wi->p_uv_addr,
++		wi->buf_width, pos_x, pos_y, in_width, in_height, wi->width,
++		wi->height, wi->color_mode, wi->rotation, wi->mirror, zorder,
++		wi->pre_mult_alpha, global_alpha, wi->rotation_type,
++		replication, mgr_timings, false);
++
++	return r;
++}
++
+ int dispc_ovl_enable(enum omap_plane plane, bool enable)
+ {
+ 	DSSDBG("dispc_enable_plane %d, %d\n", plane, enable);
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 872e420..1a09f00 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -483,6 +483,8 @@ void dispc_mgr_setup(enum omap_channel channel,
+ 		struct omap_overlay_manager_info *info);
  
- 	ep->fb_base = ioremap(ep->fb_base_phys, ep->fb_size);
--	if (!ep->fb_base)
-+	if (!ep->fb_base) {
-+		err = -ENOMEM;
- 		goto err_release_pci0;
-+	}
+ void dispc_wb_set_channel_in(enum dss_writeback_channel channel);
++int dispc_wb_setup(const struct omap_dss_writeback_info *wi,
++		const struct omap_video_timings *timings);
  
- 	err = e3d_set_fbinfo(ep);
- 	if (err)
+ /* VENC */
+ #ifdef CONFIG_OMAP2_DSS_VENC
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 46097bd..3729173 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -510,6 +510,19 @@ struct omap_dsi_pin_config {
+ 	int pins[OMAP_DSS_MAX_DSI_PINS];
+ };
+ 
++struct omap_dss_writeback_info {
++	u32 paddr;
++	u32 p_uv_addr;
++	u16 buf_width;
++	u16 width;
++	u16 height;
++	enum omap_color_mode color_mode;
++	u8 rotation;
++	enum omap_dss_rotation_type rotation_type;
++	bool mirror;
++	u8 pre_mult_alpha;
++};
++
+ struct omap_dss_output {
+ 	struct list_head list;
+ 
 -- 
-1.7.11.4
+1.7.9.5
 

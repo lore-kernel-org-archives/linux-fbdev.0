@@ -1,190 +1,128 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Fri, 28 Sep 2012 10:35:45 +0000
-Subject: [PATCH V3 3/3] OMAPDSS: Remove dss_debug variable
-Message-Id: <20a9fca7f15199793a740577df892e6ca590044d.1348826106.git.cmahapatra@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 25 Sep 2012 06:31:53 +0000
+Subject: [PATCH v2 18/18] OMAPDSS: DISPC: Configure color conversion coefficients for writeback
+Message-Id: <1348553993-8083-19-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1348636132.git.cmahapatra@ti.com> <cover.1348826106.git.cmahapatra@ti.com>
-In-Reply-To: <cover.1348826106.git.cmahapatra@ti.com>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+ <1348553993-8083-1-git-send-email-archit@ti.com>
+In-Reply-To: <1348553993-8083-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The debug prints in omap_dispc_unregister_isr() and _dsi_print_reset_status()
-are replaced with dynamic debug enabled pr_debug(). So, as the final dependency
-on dss_debug variable is replaced with dyndbg, the dss_debug variable is
-removed.
+Writeback pipeline receives RGB data from one of the overlays or one of the
+overlay managers. If the target color mode is YUV422 or NV12, we need to convert
+the RGB pixels to YUV. The scaler in WB then converts it to the target color
+mode.
 
-Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Hence, the color conversion coefficients that need to be programmed are the ones
+which convert a RGB24 pixel to YUV444. Program these coefficients for writeback
+pipeline.
+
+Rearrange the code a bit to configure different coefficients for overlays and
+writeback.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/core.c  |    5 -----
- drivers/video/omap2/dss/dispc.c |   39 ++++++++++++++-------------------------
- drivers/video/omap2/dss/dsi.c   |   37 ++++++++++++++-----------------------
- drivers/video/omap2/dss/dss.h   |    4 ----
- 4 files changed, 28 insertions(+), 57 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   61 +++++++++++++++++++++------------------
+ 1 file changed, 33 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index b2af72d..e51bd84 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -53,11 +53,6 @@ static char *def_disp_name;
- module_param_named(def_disp, def_disp_name, charp, 0);
- MODULE_PARM_DESC(def_disp, "default display name");
- 
--#ifdef DEBUG
--bool dss_debug;
--module_param_named(debug, dss_debug, bool, 0644);
--#endif
--
- const char *dss_get_default_display_name(void)
- {
- 	return core.default_display_name;
 diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index a173a94..85d2128 100644
+index 034ecb5..1f03690 100644
 --- a/drivers/video/omap2/dss/dispc.c
 +++ b/drivers/video/omap2/dss/dispc.c
-@@ -3669,34 +3669,26 @@ int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask)
- }
- EXPORT_SYMBOL(omap_dispc_unregister_isr);
+@@ -236,6 +236,11 @@ static const struct {
+ 	},
+ };
  
--#ifdef DEBUG
- static void print_irq_status(u32 status)
- {
- 	if ((status & dispc.irq_error_mask) = 0)
- 		return;
- 
--	printk(KERN_DEBUG "DISPC IRQ: 0x%x: ", status);
--
--#define PIS(x) \
--	if (status & DISPC_IRQ_##x) \
--		printk(#x " ");
--	PIS(GFX_FIFO_UNDERFLOW);
--	PIS(OCP_ERR);
--	PIS(VID1_FIFO_UNDERFLOW);
--	PIS(VID2_FIFO_UNDERFLOW);
--	if (dss_feat_get_num_ovls() > 3)
--		PIS(VID3_FIFO_UNDERFLOW);
--	PIS(SYNC_LOST);
--	PIS(SYNC_LOST_DIGIT);
--	if (dss_has_feature(FEAT_MGR_LCD2))
--		PIS(SYNC_LOST2);
--	if (dss_has_feature(FEAT_MGR_LCD3))
--		PIS(SYNC_LOST3);
-+#define PIS(x) (status & DISPC_IRQ_##x) ? (#x " ") : ""
++struct color_conv_coef {
++	int ry, rcr, rcb, gy, gcr, gcb, by, bcr, bcb;
++	int full_range;
++};
 +
-+	pr_debug("DISPC IRQ: 0x%x: %s%s%s%s%s%s%s%s%s\n",
-+		status,
-+		PIS(OCP_ERR),
-+		PIS(GFX_FIFO_UNDERFLOW),
-+		PIS(VID1_FIFO_UNDERFLOW),
-+		PIS(VID2_FIFO_UNDERFLOW),
-+		dss_feat_get_num_ovls() > 3 ? PIS(VID3_FIFO_UNDERFLOW) : "",
-+		PIS(SYNC_LOST),
-+		PIS(SYNC_LOST_DIGIT),
-+		dss_has_feature(FEAT_MGR_LCD2) ? PIS(SYNC_LOST2) : "",
-+		dss_has_feature(FEAT_MGR_LCD3) ? PIS(SYNC_LOST3) : "");
- #undef PIS
--
--	printk("\n");
- }
--#endif
- 
- /* Called from dss.c. Note that we don't touch clocks here,
-  * but we presume they are on because we got an IRQ. However,
-@@ -3729,10 +3721,7 @@ static irqreturn_t omap_dispc_irq_handler(int irq, void *arg)
- 	spin_unlock(&dispc.irq_stats_lock);
- #endif
- 
--#ifdef DEBUG
--	if (dss_debug)
--		print_irq_status(irqstatus);
--#endif
-+	print_irq_status(irqstatus);
- 	/* Ack the interrupt. Do it here before clocks are possibly turned
- 	 * off */
- 	dispc_write_reg(DISPC_IRQSTATUS, irqstatus);
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 3b524cd..70be86c 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -1107,28 +1107,16 @@ static inline void dsi_enable_pll_clock(struct platform_device *dsidev,
+ static void _omap_dispc_set_irqs(void);
+ static unsigned long dispc_plane_pclk_rate(enum omap_plane plane);
+ static unsigned long dispc_plane_lclk_rate(enum omap_plane plane);
+@@ -674,41 +679,41 @@ static void dispc_ovl_set_scale_coef(enum omap_plane plane, int fir_hinc,
  	}
  }
  
--#ifdef DEBUG
- static void _dsi_print_reset_status(struct platform_device *dsidev)
- {
- 	u32 l;
- 	int b0, b1, b2;
+-static void _dispc_setup_color_conv_coef(void)
+-{
+-	int i;
+-	const struct color_conv_coef {
+-		int  ry,  rcr,  rcb,   gy,  gcr,  gcb,   by,  bcr,  bcb;
+-		int  full_range;
+-	}  ctbl_bt601_5 = {
+-		298,  409,    0,  298, -208, -100,  298,    0,  517, 0,
+-	};
+-
+-	const struct color_conv_coef *ct;
  
--	if (!dss_debug)
--		return;
--
- 	/* A dummy read using the SCP interface to any DSIPHY register is
- 	 * required after DSIPHY reset to complete the reset of the DSI complex
- 	 * I/O. */
- 	l = dsi_read_reg(dsidev, DSI_DSIPHY_CFG5);
++static void dispc_ovl_write_color_conv_coef(enum omap_plane plane,
++		const struct color_conv_coef *ct)
++{
+ #define CVAL(x, y) (FLD_VAL(x, 26, 16) | FLD_VAL(y, 10, 0))
  
--	printk(KERN_DEBUG "DSI resets: ");
--
--	l = dsi_read_reg(dsidev, DSI_PLL_STATUS);
--	printk("PLL (%d) ", FLD_GET(l, 0, 0));
--
--	l = dsi_read_reg(dsidev, DSI_COMPLEXIO_CFG1);
--	printk("CIO (%d) ", FLD_GET(l, 29, 29));
--
- 	if (dss_has_feature(FEAT_DSI_REVERSE_TXCLKESC)) {
- 		b0 = 28;
- 		b1 = 27;
-@@ -1139,18 +1127,21 @@ static void _dsi_print_reset_status(struct platform_device *dsidev)
- 		b2 = 26;
- 	}
+-	ct = &ctbl_bt601_5;
++	dispc_write_reg(DISPC_OVL_CONV_COEF(plane, 0), CVAL(ct->rcr, ct->ry));
++	dispc_write_reg(DISPC_OVL_CONV_COEF(plane, 1), CVAL(ct->gy,  ct->rcb));
++	dispc_write_reg(DISPC_OVL_CONV_COEF(plane, 2), CVAL(ct->gcb, ct->gcr));
++	dispc_write_reg(DISPC_OVL_CONV_COEF(plane, 3), CVAL(ct->bcr, ct->by));
++	dispc_write_reg(DISPC_OVL_CONV_COEF(plane, 4), CVAL(0, ct->bcb));
  
--	l = dsi_read_reg(dsidev, DSI_DSIPHY_CFG5);
--	printk("PHY (%x%x%x, %d, %d, %d)\n",
--			FLD_GET(l, b0, b0),
--			FLD_GET(l, b1, b1),
--			FLD_GET(l, b2, b2),
--			FLD_GET(l, 29, 29),
--			FLD_GET(l, 30, 30),
--			FLD_GET(l, 31, 31));
-+#define DSI_FLD_GET(fld, start, end)\
-+	FLD_GET(dsi_read_reg(dsidev, DSI_##fld), start, end)
-+
-+	pr_debug("DSI resets: PLL (%d) CIO (%d) PHY (%x%x%x, %d, %d, %d)\n",
-+		DSI_FLD_GET(PLL_STATUS, 0, 0),
-+		DSI_FLD_GET(COMPLEXIO_CFG1, 29, 29),
-+		DSI_FLD_GET(DSIPHY_CFG5, b0, b0),
-+		DSI_FLD_GET(DSIPHY_CFG5, b1, b1),
-+		DSI_FLD_GET(DSIPHY_CFG5, b2, b2),
-+		DSI_FLD_GET(DSIPHY_CFG5, 29, 29),
-+		DSI_FLD_GET(DSIPHY_CFG5, 30, 30),
-+		DSI_FLD_GET(DSIPHY_CFG5, 31, 31));
-+
-+#undef DSI_FLD_GET
+-	for (i = 1; i < dss_feat_get_num_ovls(); i++) {
+-		dispc_write_reg(DISPC_OVL_CONV_COEF(i, 0),
+-			CVAL(ct->rcr, ct->ry));
+-		dispc_write_reg(DISPC_OVL_CONV_COEF(i, 1),
+-			CVAL(ct->gy,  ct->rcb));
+-		dispc_write_reg(DISPC_OVL_CONV_COEF(i, 2),
+-			CVAL(ct->gcb, ct->gcr));
+-		dispc_write_reg(DISPC_OVL_CONV_COEF(i, 3),
+-			CVAL(ct->bcr, ct->by));
+-		dispc_write_reg(DISPC_OVL_CONV_COEF(i, 4),
+-			CVAL(0, ct->bcb));
+-
+-		REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(i), ct->full_range,
+-			11, 11);
+-	}
++	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), ct->full_range, 11, 11);
+ 
+ #undef CVAL
  }
--#else
--#define _dsi_print_reset_status(x)
--#endif
  
- static inline int dsi_if_enable(struct platform_device *dsidev, bool enable)
++static void dispc_setup_color_conv_coef(void)
++{
++	int i;
++	int num_ovl = dss_feat_get_num_ovls();
++	int num_wb = dss_feat_get_num_wbs();
++	const struct color_conv_coef ctbl_bt601_5_ovl = {
++		298, 409, 0, 298, -208, -100, 298, 0, 517, 0,
++	};
++	const struct color_conv_coef ctbl_bt601_5_wb = {
++		66, 112, -38, 129, -94, -74, 25, -18, 112, 0,
++	};
++
++	for (i = 1; i < num_ovl; i++)
++		dispc_ovl_write_color_conv_coef(i, &ctbl_bt601_5_ovl);
++
++	for (; i < num_wb; i++)
++		dispc_ovl_write_color_conv_coef(i, &ctbl_bt601_5_wb);
++}
+ 
+ static void dispc_ovl_set_ba0(enum omap_plane plane, u32 paddr)
  {
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 5ef4e17..1d0205c 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -23,10 +23,6 @@
- #ifndef __OMAP2_DSS_H
- #define __OMAP2_DSS_H
+@@ -3973,7 +3978,7 @@ static void _omap_dispc_initial_config(void)
+ 	if (dss_has_feature(FEAT_FUNCGATED))
+ 		REG_FLD_MOD(DISPC_CONFIG, 1, 9, 9);
  
--#ifdef DEBUG
--extern bool dss_debug;
--#endif
--
- #ifdef pr_fmt
- #undef pr_fmt
- #endif
+-	_dispc_setup_color_conv_coef();
++	dispc_setup_color_conv_coef();
+ 
+ 	dispc_set_loadmode(OMAP_DSS_LOAD_FRAME_ONLY);
+ 
 -- 
-1.7.10
+1.7.9.5
 

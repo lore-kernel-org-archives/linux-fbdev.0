@@ -1,21 +1,182 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Wed, 12 Sep 2012 21:23:10 +0000
-Subject: Re: [PATCH v6 4/4] tegra: ventana: add pwm backlight DT nodes
-Message-Id: <5050FD3E.6000107@wwwdotorg.org>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Tue, 25 Sep 2012 06:15:18 +0000
+Subject: [PATCH] OMAPDSS: Cleanup DSSDBG with dynamic pr_debug function
+Message-Id: <1348552998-6596-1-git-send-email-cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347443867-18868-1-git-send-email-acourbot@nvidia.com> <1347443867-18868-5-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1347443867-18868-5-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Anton Vorontsov <cbou-JGs/UdohzUI@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Leela Krishna Amudala <l.krishna-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-On 09/12/2012 03:57 AM, Alexandre Courbot wrote:
-> Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+The printk in DSSDBG function definition is replaced with dynamic debug enabled
+pr_debug(). The use of dynamic debugging provides more flexiblity as each debug
+statement can be enabled or disabled dynamically on basis of source filename,
+line number, module name etc. by writing to a control file in debugfs
+filesystem. For better undertsanding please refer to
+Documentation/dynamic-debug-howto.txt.
 
-Both patches 3 and 4 in the series,
-Acked-by: Stephen Warren <swarren@wwwdotorg.org>
+The DSSDBGF() differs from DSSDBG() by providing function name. However,
+function name, line number, module name and thread ID can be printed through
+dynamic debug by setting appropiate flags 'f','l','m' and 't' in the debugfs
+control file. So, DSSDBGF instances are replaced with DSSDBG.
 
-I will take those patches into the Tegra tree when (hopefully rather
-than if) patches 1 and 2 are accepted.
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+---
+ drivers/video/omap2/dss/apply.c |    8 ++++----
+ drivers/video/omap2/dss/dsi.c   |   12 ++++--------
+ drivers/video/omap2/dss/dss.h   |   34 ++++++++--------------------------
+ 3 files changed, 16 insertions(+), 38 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 6354bb8..cb86d94 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -559,7 +559,7 @@ static void dss_ovl_write_regs(struct omap_overlay *ovl)
+ 	struct mgr_priv_data *mp;
+ 	int r;
+ 
+-	DSSDBGF("%d", ovl->id);
++	DSSDBG("%d", ovl->id);
+ 
+ 	if (!op->enabled || !op->info_dirty)
+ 		return;
+@@ -594,7 +594,7 @@ static void dss_ovl_write_regs_extra(struct omap_overlay *ovl)
+ 	struct ovl_priv_data *op = get_ovl_priv(ovl);
+ 	struct mgr_priv_data *mp;
+ 
+-	DSSDBGF("%d", ovl->id);
++	DSSDBG("%d", ovl->id);
+ 
+ 	if (!op->extra_info_dirty)
+ 		return;
+@@ -618,7 +618,7 @@ static void dss_mgr_write_regs(struct omap_overlay_manager *mgr)
+ 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
+ 	struct omap_overlay *ovl;
+ 
+-	DSSDBGF("%d", mgr->id);
++	DSSDBG("%d", mgr->id);
+ 
+ 	if (!mp->enabled)
+ 		return;
+@@ -644,7 +644,7 @@ static void dss_mgr_write_regs_extra(struct omap_overlay_manager *mgr)
+ {
+ 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
+ 
+-	DSSDBGF("%d", mgr->id);
++	DSSDBG("%d", mgr->id);
+ 
+ 	if (!mp->extra_info_dirty)
+ 		return;
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 8d815e3..8304cc6b 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -1525,8 +1525,6 @@ int dsi_pll_set_clock_div(struct platform_device *dsidev,
+ 	u8 regn_start, regn_end, regm_start, regm_end;
+ 	u8 regm_dispc_start, regm_dispc_end, regm_dsi_start, regm_dsi_end;
+ 
+-	DSSDBGF();
+-
+ 	dsi->current_cinfo.clkin = cinfo->clkin;
+ 	dsi->current_cinfo.fint = cinfo->fint;
+ 	dsi->current_cinfo.clkin4ddr = cinfo->clkin4ddr;
+@@ -2334,8 +2332,6 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
+ 	int r;
+ 	u32 l;
+ 
+-	DSSDBGF();
+-
+ 	r = dss_dsi_enable_pads(dsi->module_id, dsi_get_lane_mask(dssdev));
+ 	if (r)
+ 		return r;
+@@ -2686,7 +2682,7 @@ static void dsi_vc_initial_config(struct platform_device *dsidev, int channel)
+ {
+ 	u32 r;
+ 
+-	DSSDBGF("%d", channel);
++	DSSDBG("%d", channel);
+ 
+ 	r = dsi_read_reg(dsidev, DSI_VC_CTRL(channel));
+ 
+@@ -2718,7 +2714,7 @@ static int dsi_vc_config_source(struct platform_device *dsidev, int channel,
+ 	if (dsi->vc[channel].source = source)
+ 		return 0;
+ 
+-	DSSDBGF("%d", channel);
++	DSSDBG("%d", channel);
+ 
+ 	dsi_sync_vc(dsidev, channel);
+ 
+@@ -3475,7 +3471,7 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
+ 	int r, i;
+ 	unsigned mask;
+ 
+-	DSSDBGF();
++	DSSDBG("");
+ 
+ 	WARN_ON(!dsi_bus_is_locked(dsidev));
+ 
+@@ -4184,7 +4180,7 @@ int omapdss_dsi_set_clocks(struct omap_dss_device *dssdev,
+ 	unsigned long pck;
+ 	int r;
+ 
+-	DSSDBGF("ddr_clk %lu, lp_clk %lu", ddr_clk, lp_clk);
++	DSSDBG("ddr_clk %lu, lp_clk %lu", ddr_clk, lp_clk);
+ 
+ 	mutex_lock(&dsi->lock);
+ 
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 5e9fd769..3a2caab 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -29,38 +29,20 @@
+ 
+ #ifdef DEBUG
+ extern bool dss_debug;
+-#ifdef DSS_SUBSYS_NAME
+-#define DSSDBG(format, ...) \
+-	if (dss_debug) \
+-		printk(KERN_DEBUG "omapdss " DSS_SUBSYS_NAME ": " format, \
+-		## __VA_ARGS__)
+-#else
+-#define DSSDBG(format, ...) \
+-	if (dss_debug) \
+-		printk(KERN_DEBUG "omapdss: " format, ## __VA_ARGS__)
+ #endif
+ 
+-#ifdef DSS_SUBSYS_NAME
+-#define DSSDBGF(format, ...) \
+-	if (dss_debug) \
+-		printk(KERN_DEBUG "omapdss " DSS_SUBSYS_NAME \
+-				": %s(" format ")\n", \
+-				__func__, \
+-				## __VA_ARGS__)
+-#else
+-#define DSSDBGF(format, ...) \
+-	if (dss_debug) \
+-		printk(KERN_DEBUG "omapdss: " \
+-				": %s(" format ")\n", \
+-				__func__, \
+-				## __VA_ARGS__)
++#ifdef pr_fmt
++#undef pr_fmt
+ #endif
+ 
+-#else /* DEBUG */
+-#define DSSDBG(format, ...)
+-#define DSSDBGF(format, ...)
++#ifdef DSS_SUBSYS_NAME
++#define pr_fmt(fmt) DSS_SUBSYS_NAME ": " fmt
++#else
++#define pr_fmt(fmt) fmt
+ #endif
+ 
++#define DSSDBG(format, ...) \
++	pr_debug(format, ## __VA_ARGS__)
+ 
+ #ifdef DSS_SUBSYS_NAME
+ #define DSSERR(format, ...) \
+-- 
+1.7.10
+

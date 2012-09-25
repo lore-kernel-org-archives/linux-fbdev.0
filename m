@@ -1,105 +1,165 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Tue, 25 Sep 2012 08:03:43 +0000
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 25 Sep 2012 11:23:39 +0000
 Subject: Re: [PATCH v4] of: Add videomode helper
-Message-Id: <20120925080343.GB24753@pengutronix.de>
+Message-Id: <1378654.FmcPtcTNE1@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1348042843-24673-1-git-send-email-s.trumtrar@pengutronix.de>
- <50606334.7030902@gmail.com> <50608000.6050007@wwwdotorg.org>
- <5060A5D5.7040908@gmail.com> <5060E82A.3030404@wwwdotorg.org>
-In-Reply-To: <5060E82A.3030404-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+	<50606334.7030902@gmail.com>
+In-Reply-To: <50606334.7030902@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+To: Rob Herring <robherring2@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, dri-devel@lists.freedesktop.org, kernel@pengutronix.de, Steffen Trumtrar <s.trumtrar@pengutronix.de>
 
-On Mon, Sep 24, 2012 at 05:09:30PM -0600, Stephen Warren wrote:
-> On 09/24/2012 12:26 PM, Rob Herring wrote:
-> > On 09/24/2012 10:45 AM, Stephen Warren wrote:
-> >> On 09/24/2012 07:42 AM, Rob Herring wrote:
-> >>> On 09/19/2012 03:20 AM, Steffen Trumtrar wrote:
-> >>>> This patch adds a helper function for parsing videomodes from the devicetree.
-> >>>> The videomode can be either converted to a struct drm_display_mode or a
-> >>>> struct fb_videomode.
-> >>
-> >>>> +++ b/Documentation/devicetree/bindings/video/displaymode
-> >>>> @@ -0,0 +1,74 @@
-> >>>> +videomode bindings
-> >>>> +=========
-> >>>> +
-> >>>> +Required properties:
-> >>>> + - hactive, vactive: Display resolution
-> >>>> + - hfront-porch, hback-porch, hsync-len: Horizontal Display timing parameters
-> >>>> +   in pixels
-> >>>> +   vfront-porch, vback-porch, vsync-len: Vertical display timing parameters in
-> >>>> +   lines
-> >>>> + - clock: displayclock in Hz
-> >>>
-> >>> A major piece missing is the LCD controller to display interface width
-> >>> and component ordering.
-> >>
-> >> I thought this binding was solely defining the timing of the video
-> >> signal (hence "video mode"). Any definition of the physical interface to
-> >> the LCD/display-connector is something entirely orthogonal, so it seems
-> >> entirely reasonable to represent that separately.
+Hi Rob,
+
+On Monday 24 September 2012 08:42:12 Rob Herring wrote:
+> On 09/19/2012 03:20 AM, Steffen Trumtrar wrote:
+> > This patch adds a helper function for parsing videomodes from the
+> > devicetree. The videomode can be either converted to a struct
+> > drm_display_mode or a struct fb_videomode.
 > > 
-> > It is not orthogonal because in many cases the LCD panel defines the
+> > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> > Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+> > ---
+> > 
+> > Hi!
+> > 
+> > changes since v3:
+> > 	- print error messages
+> > 	- free alloced memory
+> > 	- general cleanup
+> > 
+> > Regards
+> > Steffen
+> > 
+> >  .../devicetree/bindings/video/displaymode          |   74 +++++
+> >  drivers/of/Kconfig                                 |    5 +
+> >  drivers/of/Makefile                                |    1 +
+> >  drivers/of/of_videomode.c                          |  283
+> >  ++++++++++++++++++++ include/linux/of_videomode.h                      
+> >  |   56 ++++
+> >  5 files changed, 419 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/video/displaymode
+> >  create mode 100644 drivers/of/of_videomode.c
+> >  create mode 100644 include/linux/of_videomode.h
+> > 
+> > diff --git a/Documentation/devicetree/bindings/video/displaymode
+> > b/Documentation/devicetree/bindings/video/displaymode new file mode
+> > 100644
+> > index 0000000..990ca52
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/video/displaymode
+> > @@ -0,0 +1,74 @@
+> > +videomode bindings
+> > +=========
+> > +
+> > +Required properties:
+> > + - hactive, vactive: Display resolution
+> > + - hfront-porch, hback-porch, hsync-len: Horizontal Display timing
+> > parameters +   in pixels
+> > +   vfront-porch, vback-porch, vsync-len: Vertical display timing
+> > parameters in +   lines
+> > + - clock: displayclock in Hz
+> 
+> A major piece missing is the LCD controller to display interface width
+> and component ordering.
+> 
+> > +
+> > +Optional properties:
+> > + - width-mm, height-mm: Display dimensions in mm
+> > + - hsync-active-high (bool): Hsync pulse is active high
+> > + - vsync-active-high (bool): Vsync pulse is active high
+> > + - interlaced (bool): This is an interlaced mode
+> > + - doublescan (bool): This is a doublescan mode
+> > +
+> > +There are different ways of describing a display mode. The devicetree
+> > representation
+> > +corresponds to the one commonly found in datasheets for displays.
+> > +The description of the display and its mode is split in two parts: first
+> > the display
+> > +properties like size in mm and (optionally) multiple subnodes with the
+> > supported modes.
+> > +
+> > +Example:
+> > +
+> > +	display@0 {
+> 
+> It would be useful to have a compatible string here. We may not always
+> know the panel type or have a fixed panel though. We could define
+> "generic-lcd" or something for cases where the panel type is unknown.
+
+I'm working on a generic panel framework (see 
+http://lwn.net/Articles/512363/). DT bindings are not there yet, but they're 
+certainly a hot topic. A compatible string here will definitely be needed 
+here.
+
+The exact properties required in the display node will likely be panel-
+dependent. width-mm, height-mm and modes sound like a good baseline to me.
+
+> > +		width-mm = <800>;
+> > +		height-mm = <480>;
+> > +		modes {
+> > +			mode0: mode@0 {
+> > +				/* 1920x1080p24 */
+> > +				clock = <52000000>;
+> > +				hactive = <1920>;
+> > +				vactive = <1080>;
+> > +				hfront-porch = <25>;
+> > +				hback-porch = <25>;
+> > +				hsync-len = <25>;
+> > +				vback-porch = <2>;
+> > +				vfront-porch = <2>;
+> > +				vsync-len = <2>;
+> > +				hsync-active-high;
+> > +			};
+> > +		};
+> > +	};
+> > +
+> > +Every property also supports the use of ranges, so the commonly used
+> > datasheet +description with <min typ max>-tuples can be used.
+> > +
+> > +Example:
+> > +
+> > +	mode1: mode@1 {
+> > +		/* 1920x1080p24 */
+> > +		clock = <148500000>;
+> > +		hactive = <1920>;
+> > +		vactive = <1080>;
+> > +		hsync-len = <0 44 60>;
+> > +		hfront-porch = <80 88 95>;
+> > +		hback-porch = <100 148 160>;
+> > +		vfront-porch = <0 4 6>;
+> > +		vback-porch = <0 36 50>;
+> > +		vsync-len = <0 5 6>;
+> > +	};
+> > +
+> > +The videomode can be linked to a connector via phandles. The connector
+> > has to
+> > +support the display- and default-mode-property to link to and select a
 > > mode.
+>
+> Could also be phandle in the lcd controller node? What are the '-' for?
+> Is "display-blah" a valid name or something?
 > 
-> The LCD panel itself defines both the mode and the physical interface
-> properties. The mode does not imply anything about the physical
-> interface, nor does the physical interface imply anything about the
-> mode. So, they are in fact orthogonal. In other words, just because you
-> need both sets of information, doesn't make the two pieces of
-> information correlated.
+> "default-mode" is pretty generic. How about display-mode or
+> display-default-mode?
 > 
-> >>>> +Example:
-> >>>> +
-> >>>> +	display@0 {
-> >>>
-> >>> It would be useful to have a compatible string here. We may not always
-> >>> know the panel type or have a fixed panel though. We could define
-> >>> "generic-lcd" or something for cases where the panel type is unknown.
-> >>>
-> >>>> +		width-mm = <800>;
-> >>>> +		height-mm = <480>;
-> >>
-> >> I would hope that everything in the example above this point is just
-> >> that - an example, and this binding only covers the display mode
-> >> definition - i.e. that part of the example below.
-> >>
-> > 
-> > It's fairly clear this binding is being defined based on what Linux
-> > supports vs. what the h/w looks like.
-> > 
-> >> If that's not the intent, as Rob says, there's a /ton/ of stuff missing.
-> > 
-> > Assuming not, what all is missing?
+> Rob
 > 
-> Everything related to the physical interface:
-> 
-> * For DSI, whatever it needs to be configured.
-> * For LVDS, e.g. number of lanes of R, G, B.
-> * Perhaps multi-pumping rates (# of clock signals to send each data
-> value for, to satisfy any minimum clock rates)
-> * Built-in displays typically need to be coupled with a backlight and
-> all the associated control of that.
-> * Pinctrl interaction.
-> 
-> and probably a bunch of other things I haven't thought about.
-
-I already added some of those things in my v5. For those who missed it
-<1348500924-8551-1-git-send-email-s.trumtrar@pengutronix.de>
-I renamed from "of videomode helper" to "of display helper", seemed to be more
-clear what it is supposed to accomplish.
-
-Regards,
-
-Steffen
-
+> > +
+> > +Example:
+> > +
+> > +	hdmi@00120000 {
+> > +		status = "okay";
+> > +		display = <&benq>;
+> > +		default-mode = <&mode1>;
+> > +	};
+> > +
 
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Regards,
+
+Laurent Pinchart
+

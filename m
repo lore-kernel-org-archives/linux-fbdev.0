@@ -1,108 +1,72 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Fri, 07 Sep 2012 16:36:02 +0000
-Subject: Re: [PATCH v5 1/4] Runtime Interpreted Power Sequences
-Message-Id: <504A2272.8040209@wwwdotorg.org>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 25 Sep 2012 06:31:37 +0000
+Subject: [PATCH v2 02/18] OMAPDSS: DISPC: Simplify function names for setting pipeline input and output sizes
+Message-Id: <1348553993-8083-3-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1346412846-17102-1-git-send-email-acourbot@nvidia.com>
- <201209061614.54022.heiko@sntech.de> <1887927.1deN8M9siP@percival>
- <201209071108.42083.heiko@sntech.de>
-In-Reply-To: <201209071108.42083.heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+ <1348553993-8083-1-git-send-email-archit@ti.com>
+In-Reply-To: <1348553993-8083-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: =?ISO-8859-1?Q?Heiko_St=FCbner?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Anton Vorontsov <cbou-JGs/UdohzUI@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-On 09/07/2012 03:08 AM, Heiko St=FCbner wrote:
-> Am Freitag, 7. September 2012, 10:04:24 schrieb Alex Courbot:
->>> For your power_seq_run function you write that it simply returns an err=
-or
->>> code on failure and looking through it I also just found the error retu=
-rn
->>> statement. This would leave a device half turned on.
->>>
->>> So I'm wondering, if it shouldn't turn off all the things it turned on
->>> until the step that produced the error. All your possible step types
->>> (execpt the delay) are booleans, so it should be possible to simply
->>> negate them when backtracking through the previous steps.
->>
->> Indeed, I think you raised an important point. Right now all step types =
-are
->> invertible, but we cannot rely on that statement to be true forever. For
->> instance, one short-term improvement will be to allow finer regulator
->> control, like voltage setting. In this case, how can we go back to the
->> initial state without recording it?
->>
->> If e.g. the power on sequence fails at step N (of M steps for that
->> sequence), one could try playing the corresponding power off sequence
->> (either completely of from step M - N), but then again we cannot rely on
->> sequences to be perfectly symetrical. Maybe this is more something for t=
-he
->> calling driver to check for and control?
->=20
-> Am Freitag, 7. September 2012, 10:15:03 schrieb Mark Brown:
->> On Fri, Sep 07, 2012 at 05:04:24PM +0900, Alex Courbot wrote:
->>> If e.g. the power on sequence fails at step N (of M steps for that
->>> sequence), one could try playing the corresponding power off sequence
->>> (either completely of from step M - N), but then again we cannot rely on
->>> sequences to be perfectly symetrical. Maybe this is more something for
->>> the calling driver to check for and control?
->>
->> That had been my thought too - depending on what the sequence is for it
->> may be that the corrective action is something very different to
->> reversing the sequence, for example a device reset may be required.
->=20
-> If I understood the description correctly, the power sequence should be=20
-> transparent to the driver, as it implements board specific actions and=20
-> shouldn't bother the driver with it to much.
+The DISPC pipeline register names in the TRM for setting the buffer size and
+the output size are a bit misleading, for example, there are different register
+names for setting the buffer size for VID and GFX pipes. Things get more
+confusing when considering writeback pipeline.
 
-Well, the contents/implementation of the sequence should be transparent
-to the driver. The fact that a sequence exists and needs to be executed
-obviously can't be transparent to the driver, since the driver needs to
-call an API to execute the sequence.
+Rename the functions so that they tell whether they are configuring the input
+to the scalar or the output. These will be extended later to support writeback
+registers.
 
-I'd assert that requiring the driver to get back to a sane state by
-executing sequence (b) if sequence (a) fails is fairly reasonable, and
-doesn't give the driver any more knowledge of what the sequences are
-than what it already has.
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/dispc.c |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-But then I start to wonder: What if the "help something went wrong"
-sequence gets an error...
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index cd3d532..2c01e13 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -705,7 +705,8 @@ static void dispc_ovl_set_pos(enum omap_plane plane, int x, int y)
+ 	dispc_write_reg(DISPC_OVL_POSITION(plane), val);
+ }
+ 
+-static void dispc_ovl_set_pic_size(enum omap_plane plane, int width, int height)
++static void dispc_ovl_set_input_size(enum omap_plane plane, int width,
++		int height)
+ {
+ 	u32 val = FLD_VAL(height - 1, 26, 16) | FLD_VAL(width - 1, 10, 0);
+ 
+@@ -715,7 +716,8 @@ static void dispc_ovl_set_pic_size(enum omap_plane plane, int width, int height)
+ 		dispc_write_reg(DISPC_OVL_PICTURE_SIZE(plane), val);
+ }
+ 
+-static void dispc_ovl_set_vid_size(enum omap_plane plane, int width, int height)
++static void dispc_ovl_set_output_size(enum omap_plane plane, int width,
++		int height)
+ {
+ 	u32 val;
+ 
+@@ -2384,13 +2386,14 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ 
+ 	dispc_ovl_set_pos(plane, oi->pos_x, pos_y);
+ 
+-	dispc_ovl_set_pic_size(plane, in_width, in_height);
++	dispc_ovl_set_input_size(plane, in_width, in_height);
+ 
+ 	if (ovl->caps & OMAP_DSS_OVL_CAP_SCALE) {
+ 		dispc_ovl_set_scaling(plane, in_width, in_height, out_width,
+ 				   out_height, ilace, five_taps, fieldmode,
+ 				   oi->color_mode, oi->rotation);
+-		dispc_ovl_set_vid_size(plane, out_width, out_height);
++
++		dispc_ovl_set_output_size(plane, out_width, out_height);
+ 		dispc_ovl_set_vid_color_conv(plane, cconv);
+ 	}
+ 
+-- 
+1.7.9.5
 
-> Therefore my thoughts went along
-> the lines how gpio_request_array handles this, always producing a sane st=
-ate=20
-> at the end.
->=20
-> Recording the previous state, could be done by making a copy of the curre=
-nt=20
-> sequence, and just noting the previous values (including voltages etc) in=
- the=20
-> respective entries. And in the error case running this new sequence from =
-the=20
-> error point instead to power down again.
->=20
->=20
-> As both Alex and Mark wrote, reversing the sequence might be the action o=
-f=20
-> choice only for some devices, but others might need to run a completely=20
-> different powerdown sequence and still others would need special handling.
->=20
-> Would it be possible to encode this in the sequence definition, something=
- like
-> 	on-error =3D "reverse"
->=20
-> 	on-error =3D "sequence"
-> 	error-seq =3D <&other_sequence>
->=20
-> 	on-error =3D "driver"
-> with better names and types of course.
->=20
-> This would keep the power sequence transparent to most drivers and only t=
-he=20
-> real esoteric ones would need to do their special handling on their own.
-
-Yes, something like that sounds reasonable on the surface. I'm not sure
-about the on-error=3D"driver" case though; if the driver knows nothing
-about the content of the sequences, I'm not sure how the driver could
-possibly do anything other than execute some sequence to recover.

@@ -1,93 +1,85 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 28 Sep 2012 10:35:24 +0000
-Subject: [PATCH 3/6] OMAPDSS: DISPC: use omapdss_version
-Message-Id: <1348828527-13309-4-git-send-email-tomi.valkeinen@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 25 Sep 2012 06:31:43 +0000
+Subject: [PATCH v2 08/18] OMAPDSS: DISPC: Allow both upscaling and downscaling of chroma
+Message-Id: <1348553993-8083-9-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>
+ <1348553993-8083-1-git-send-email-archit@ti.com>
+In-Reply-To: <1348553993-8083-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Archit Taneja <a0393947@ti.com>, Chandrabhanu Mahapatra <cmahapatra@ti.com>, =?UTF-8?q?Rapha=C3=ABl=20Ass=C3=A9nat?= <raph@8d.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Use omapdss_version in dispc.c to select the proper dispc features.
+In the function dispc_plane_set_scaling_uv(), create a parameter which tells if
+we want to upscale or downscale the chroma plane.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Downscaling of chroma is required by writeback pipeline for converting the input
+YUV444 color format to YUV422 or NV12.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |   41 ++++++++++++++++++++++++++-------------
- 1 file changed, 28 insertions(+), 13 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   32 ++++++++++++++++++++++----------
+ 1 file changed, 22 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index a173a94..a5ab354 100644
+index ba65ebd..e42e902 100644
 --- a/drivers/video/omap2/dss/dispc.c
 +++ b/drivers/video/omap2/dss/dispc.c
-@@ -4040,29 +4040,44 @@ static const struct dispc_features omap44xx_dispc_feats __initconst = {
- 	.gfx_fifo_workaround	=	true,
- };
- 
--static int __init dispc_init_features(struct device *dev)
-+static int __init dispc_init_features(struct platform_device *pdev)
+@@ -1457,6 +1457,7 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
  {
-+	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
- 	const struct dispc_features *src;
- 	struct dispc_features *dst;
+ 	int scale_x = out_width != orig_width;
+ 	int scale_y = out_height != orig_height;
++	bool chroma_upscale = true;
  
--	dst = devm_kzalloc(dev, sizeof(*dst), GFP_KERNEL);
-+	dst = devm_kzalloc(&pdev->dev, sizeof(*dst), GFP_KERNEL);
- 	if (!dst) {
--		dev_err(dev, "Failed to allocate DISPC Features\n");
-+		dev_err(&pdev->dev, "Failed to allocate DISPC Features\n");
- 		return -ENOMEM;
- 	}
+ 	if (!dss_has_feature(FEAT_HANDLE_UV_SEPARATE))
+ 		return;
+@@ -1473,23 +1474,34 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
  
--	if (cpu_is_omap24xx()) {
-+	switch (pdata->version) {
-+	case OMAPDSS_VER_OMAP24xx:
- 		src = &omap24xx_dispc_feats;
--	} else if (cpu_is_omap34xx()) {
--		if (omap_rev() < OMAP3430_REV_ES3_0)
--			src = &omap34xx_rev1_0_dispc_feats;
--		else
--			src = &omap34xx_rev3_0_dispc_feats;
--	} else if (cpu_is_omap44xx()) {
-+		break;
+ 	switch (color_mode) {
+ 	case OMAP_DSS_COLOR_NV12:
+-		/* UV is subsampled by 2 vertically*/
+-		orig_height >>= 1;
+-		/* UV is subsampled by 2 horz.*/
+-		orig_width >>= 1;
++		if (chroma_upscale) {
++			/* UV is subsampled by 2 horizontally and vertically */
++			orig_height >>= 1;
++			orig_width >>= 1;
++		} else {
++			/* UV is downsampled by 2 horizontally and vertically */
++			orig_height <<= 1;
++			orig_width <<= 1;
++		}
 +
-+	case OMAPDSS_VER_OMAP34xx_ES1:
-+		src = &omap34xx_rev1_0_dispc_feats;
-+		break;
+ 		break;
+ 	case OMAP_DSS_COLOR_YUV2:
+ 	case OMAP_DSS_COLOR_UYVY:
+-		/*For YUV422 with 90/270 rotation,
+-		 *we don't upsample chroma
+-		 */
++		/* For YUV422 with 90/270 rotation, we don't upsample chroma */
+ 		if (rotation = OMAP_DSS_ROT_0 ||
+-			rotation = OMAP_DSS_ROT_180)
+-			/* UV is subsampled by 2 hrz*/
+-			orig_width >>= 1;
++				rotation = OMAP_DSS_ROT_180) {
++			if (chroma_upscale)
++				/* UV is subsampled by 2 horizontally */
++				orig_width >>= 1;
++			else
++				/* UV is downsampled by 2 horizontally */
++				orig_width <<= 1;
++		}
 +
-+	case OMAPDSS_VER_OMAP34xx_ES3:
-+	case OMAPDSS_VER_OMAP3630:
-+	case OMAPDSS_VER_AM35xx:
-+		src = &omap34xx_rev3_0_dispc_feats;
-+		break;
+ 		/* must use FIR for YUV422 if rotated */
+ 		if (rotation != OMAP_DSS_ROT_0)
+ 			scale_x = scale_y = true;
 +
-+	case OMAPDSS_VER_OMAP4430_ES1:
-+	case OMAPDSS_VER_OMAP4430_ES2:
-+	case OMAPDSS_VER_OMAP4:
- 		src = &omap44xx_dispc_feats;
--	} else if (soc_is_omap54xx()) {
-+		break;
-+
-+	case OMAPDSS_VER_OMAP5:
- 		src = &omap44xx_dispc_feats;
--	} else {
-+		break;
-+
-+	default:
- 		return -ENODEV;
- 	}
- 
-@@ -4082,7 +4097,7 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
- 
- 	dispc.pdev = pdev;
- 
--	r = dispc_init_features(&dispc.pdev->dev);
-+	r = dispc_init_features(dispc.pdev);
- 	if (r)
- 		return r;
- 
+ 		break;
+ 	default:
+ 		BUG();
 -- 
 1.7.9.5
 

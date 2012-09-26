@@ -1,68 +1,49 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 25 Sep 2012 14:50:52 +0000
+From: Archit Taneja <a0393947@ti.com>
+Date: Wed, 26 Sep 2012 05:43:28 +0000
 Subject: Re: [PATCH v2 16/18] OMAPDSS: DISPC: Configure writeback FIFOs
-Message-Id: <1348584652.21717.7.camel@lappyti>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-/BG6wGrE22j7iPzsUcJQ"
+Message-Id: <50629330.5090902@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>
-	 <1348553993-8083-1-git-send-email-archit@ti.com>
-	 <1348553993-8083-17-git-send-email-archit@ti.com>
-In-Reply-To: <1348553993-8083-17-git-send-email-archit@ti.com>
-To: Archit Taneja <archit@ti.com>
+References: <1347538505-25359-1-git-send-email-archit@ti.com>  <1348553993-8083-1-git-send-email-archit@ti.com>  <1348553993-8083-17-git-send-email-archit@ti.com> <1348584652.21717.7.camel@lappyti>
+In-Reply-To: <1348584652.21717.7.camel@lappyti>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
+On Tuesday 25 September 2012 08:20 PM, Tomi Valkeinen wrote:
+> On Tue, 2012-09-25 at 11:49 +0530, Archit Taneja wrote:
+>> Extend the DISPC fifo functions to also configure the writeback FIFO thresholds.
+>>
+>> The most optimal configuration for writeback is to push out data to the
+>> interconnect the moment writeback pushes enough pixels in the FIFO to form a
+>> burst. This reduces the chance of writeback overflowing it's FIFO.
+>
+> Hmm, why is this optimal?
+>
+> The FIFO for WB is the output fifo, right? In mem-to-mem mode the whole
+> WB pipeline can stall, so the fifo can't overflow? If so, isn't it
+> better to collect more data and flush all that to the memory, instead of
+> sending each burst-size piece one by one?
 
---=-/BG6wGrE22j7iPzsUcJQ
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I guess this configuration is optimal for capture mode. Where the input 
+side will push out data at the rate of pixel clock, and writeback has to 
+collect this data and flush to memory. Writeback can't stall here.
 
-On Tue, 2012-09-25 at 11:49 +0530, Archit Taneja wrote:
-> Extend the DISPC fifo functions to also configure the writeback FIFO thre=
-sholds.
->=20
-> The most optimal configuration for writeback is to push out data to the
-> interconnect the moment writeback pushes enough pixels in the FIFO to for=
-m a
-> burst. This reduces the chance of writeback overflowing it's FIFO.
+About writeback FIFO overflowing in mem-to-mem mode, I'm not totally 
+sure about this. But what you are saying seems valid, writeback would 
+stall the input. So it should be safe to accumulate content in the FIFO, 
+and push out large number of bursts together.
 
-Hmm, why is this optimal?
+>
+> Then again, if the input side is reading pixels from the memory all the
+> time, even if the output fifo helps to keep the output side idle for
+> longer periods, it probably doesn't help as the input side keeps the
+> memory bus awake.
 
-The FIFO for WB is the output fifo, right? In mem-to-mem mode the whole
-WB pipeline can stall, so the fifo can't overflow? If so, isn't it
-better to collect more data and flush all that to the memory, instead of
-sending each burst-size piece one by one?
+Maybe if the FIFOs are adjusted such that reading of the pixels from 
+input side and writeback flushing out can be done at the same time, then 
+we might idle the memory bus more. I don't know if this is possible though.
 
-Then again, if the input side is reading pixels from the memory all the
-time, even if the output fifo helps to keep the output side idle for
-longer periods, it probably doesn't help as the input side keeps the
-memory bus awake.
-
- Tomi
-
-
---=-/BG6wGrE22j7iPzsUcJQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJQYcTMAAoJEPo9qoy8lh712kkP/3OovpBy+so/ua3DOFGofrsP
-sb+g+SHl/kjLx72yFmhD3ENptxjovmbPFK5Hk16kA0K/krlwgKvQWTf3vyThkHZu
-Hb2Dv8IPqtK9Wk5nh8DsRGlINt1qAREXqXbFFfiS4TcOrywKYFDchqpqk7IsSI+z
-jqSUt1o0nun/UQzc9fgC47RmfOBTw9McPQI86Q7CYJPWiGyLYN2in588Pl2hdq/T
-hYbLgkSwA4Ae4qPHMnjxwInOo1SH8TrSE9dTHOL3j2WsuAuQHDOnA/rxnmgv+ACs
-TtZwyVuplv8/6FS/XAvaTFmGPAcTZ7oQ7+QY2MZ8Q76U3jHVQHA3jHRigDmxqsBB
-AglitTLjMmtC6EmMYCgKoi9+F/b6zuUfLtp7PGWveTF49rfg0764dWyWfGHw/auI
-+15Jx9GDiaeaZphBCQRVAqfVuiCSKSn3HJfW1w3xtKhBoB1ObexjA4qazuGhQ6uI
-ubXiNLA4NuEz4nw6wKxynYRgGCEE0CdyjnjCslKnuHyePuikUXLOTxs4U8Ka40JR
-Vku9H8RmzMmdGd9ytYupoaJ8l6dLWljrKqng5TfIx3R4pYRZOPMOJjbIhcEQJV6U
-DxjvAYIfpXRjN/s5ygIfW7C+oSU7xTvx1Dfa/CyZNRZUWt9FAl5nZRLXEOyxzbhB
-NlC0ZCGsGYdOHNS+SMiC
-=lqOm
------END PGP SIGNATURE-----
-
---=-/BG6wGrE22j7iPzsUcJQ--
+Archit
 

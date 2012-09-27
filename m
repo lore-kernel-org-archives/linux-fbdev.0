@@ -1,79 +1,47 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 25 Sep 2012 06:31:48 +0000
-Subject: [PATCH v2 13/18] OMAPDSS: DISPC: Add function to set channel in for writeback
-Message-Id: <1348553993-8083-14-git-send-email-archit@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 27 Sep 2012 08:43:14 +0000
+Subject: [PATCH 3/7] video: s3c-fb: move the address definition for VIDOSD register
+Message-Id: <000b01cd9c8c$222fb9c0$668f2d40$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>
- <1348553993-8083-1-git-send-email-archit@ti.com>
-In-Reply-To: <1348553993-8083-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Writeback can take input from either one of the overlays, or one of the overlay
-managers. Add an enum which represents the channel_in for writeback, and maps
-to the register field programming.
+The address definition for VIDTCON VIDOSD is moved to right
+place.
 
-Add a function to configure channel in for writeback. This will be used later in
-APPLY.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/omap2/dss/dispc.c |    7 +++++++
- drivers/video/omap2/dss/dss.h   |   13 +++++++++++++
- 2 files changed, 20 insertions(+)
+ include/video/samsung_fimd.h |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index d9ca7bf..6d482f5 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -983,6 +983,13 @@ static enum omap_channel dispc_ovl_get_channel_out(enum omap_plane plane)
- 	return channel;
- }
+diff --git a/include/video/samsung_fimd.h b/include/video/samsung_fimd.h
+index bc22f3c..c398728 100644
+--- a/include/video/samsung_fimd.h
++++ b/include/video/samsung_fimd.h
+@@ -237,6 +237,9 @@
+ /* Local input channels (windows 0-2) */
+ #define SHADOWCON_CHx_LOCAL_ENABLE(_win)	(1 << (5 + (_win)))
  
-+void dispc_wb_set_channel_in(enum dss_writeback_channel channel)
-+{
-+	enum omap_plane plane = OMAP_DSS_WB;
++/* VIDOSDx */
 +
-+	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), channel, 18, 16);
-+}
-+
- static void dispc_ovl_set_burst_size(enum omap_plane plane,
- 		enum omap_burst_size burst_size)
- {
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 04a1eda..872e420 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -113,6 +113,17 @@ enum dss_dsi_content_type {
- 	DSS_DSI_CONTENT_GENERIC,
- };
++#define VIDOSD_BASE				(0x40)
+ #define VIDOSDxA_TOPLEFT_X_E(_x)		((((_x) & 0x800) >> 11) << 23)
+ #define VIDOSDxA_TOPLEFT_X_MASK			(0x7ff << 11)
+ #define VIDOSDxA_TOPLEFT_X_SHIFT		(11)
+@@ -408,10 +411,6 @@
+ #define S3C_FB_MAX_WIN (5)  /* number of hardware windows available. */
+ #define VIDCON1_FSTATUS_EVEN	(1 << 15)
  
-+enum dss_writeback_channel {
-+	DSS_WB_LCD1_MGR =	0,
-+	DSS_WB_LCD2_MGR =	1,
-+	DSS_WB_TV_MGR =		2,
-+	DSS_WB_OVL0 =		3,
-+	DSS_WB_OVL1 =		4,
-+	DSS_WB_OVL2 =		5,
-+	DSS_WB_OVL3 =		6,
-+	DSS_WB_LCD3_MGR =	7,
-+};
-+
- struct dss_clock_info {
- 	/* rates that we get with dividers below */
- 	unsigned long fck;
-@@ -471,6 +482,8 @@ int dispc_mgr_get_clock_div(enum omap_channel channel,
- void dispc_mgr_setup(enum omap_channel channel,
- 		struct omap_overlay_manager_info *info);
+-/* OSD1 and OSD4 do not have register D */
+-
+-#define VIDOSD_BASE				(0x40)
+-
+ #define VIDINTCON0				(0x130)
  
-+void dispc_wb_set_channel_in(enum dss_writeback_channel channel);
-+
- /* VENC */
- #ifdef CONFIG_OMAP2_DSS_VENC
- int venc_init_platform_driver(void) __init;
+ #define VIDINTCON0_FIFIOSEL_WINDOW2		(0x10 << 5)
 -- 
-1.7.9.5
+1.7.1
+
 

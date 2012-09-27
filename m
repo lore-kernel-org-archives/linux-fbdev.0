@@ -1,91 +1,71 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 26 Sep 2012 14:29:52 +0000
+From: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
+Date: Thu, 27 Sep 2012 10:50:26 +0000
 Subject: Re: [PATCH V2 0/2] OMAPDSS: Enable dynamic debug printing
-Message-Id: <1348669792.2376.51.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-+UQZObn+EuSANdPe7Gbl"
+Message-Id: <CAF0AtAvT-NnsREJWpRtYAGpYCS06O32tzQwWTDoFp+xepHyX8w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1348552998-6596-1-git-send-email-cmahapatra@ti.com>
-	 <cover.1348636132.git.cmahapatra@ti.com>
-In-Reply-To: <cover.1348636132.git.cmahapatra@ti.com>
-To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+	<cover.1348636132.git.cmahapatra@ti.com>
+	<1348669792.2376.51.camel@deskari>
+In-Reply-To: <1348669792.2376.51.camel@deskari>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
+On Wed, Sep 26, 2012 at 7:59 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
 
---=-+UQZObn+EuSANdPe7Gbl
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> This doesn't work quite correctly. The problem is in dss.h, where we
+> define DEBUG if CONFIG_OMAP2_DSS_DEBUG_SUPPORT is set. The thing is,
+> DEBUG should be defined before including the kernel headers where the
+> pr_debug etc are defined.
+>
+> So if you try the patches without dynamic debugging enabled, you won't
+> get any debug outputs at all, even if CONFIG_OMAP2_DSS_DEBUG_SUPPORT is
+> set.
+>
+> And for dynamic debug, the Kconfig help says:
+>
+> If a source file is compiled with DEBUG flag set, any
+> pr_debug() calls in it are enabled by default, but can be
+> disabled at runtime as below.  Note that DEBUG flag is
+> turned on by many CONFIG_*DEBUG* options.
+>
+> So if we have CONFIG_OMAP2_DSS_DEBUG_SUPPORT set, all the pr_debugs
+> should be enabled by default, which is not the case, again because DEBUG
+> is defined too late.
+>
+> I think setting DEBUG in dss.h should be removed, and instead DEBUG
+> should be set in the makefile if CONFIG_OMAP2_DSS_DEBUG_SUPPORT is set.
+>
+>  Tomi
+>
 
-Hi,
+Well the documentation lags in describing about the DEBUG flag. I
+should have checked DYNAMIC_DEBUG in Kconfig and pr_debug definition
+in printk.h file.
 
-On Wed, 2012-09-26 at 10:45 +0530, Chandrabhanu Mahapatra wrote:
-> Hi everyone,
-> this patch series aims at cleaning up of DSS of printk()'s enabled with
-> dss_debug and replace them with generic dynamic debug printing.
->=20
-> The 1st patch=20
->  * replaces printk() in DSSDBG definition with pr_debug()
->  * removes DSSDBGF definition and replaces its instances with DSSDBG()=
-=20
-> The 2nd patch
->  * cleans up printk()'s in omap_dispc_unregister_isr() and=20
->    _dsi_print_reset_status() with pr_debug()
->  * removes dss_debug variable
->=20
-> Changes with respect to V1:
->  * added debug messages to DSSDBG calls replacing DSSDBGF
->  * added patch "OMAPDSS: Remove dss_debug variable"
->=20
-> All your comments and suggestions are welcome.
+#if defined(CONFIG_DYNAMIC_DEBUG)
+/* dynamic_pr_debug() uses pr_fmt() internally so we don't need it here */
+#define pr_debug(fmt, ...) \
+        dynamic_pr_debug(fmt, ##__VA_ARGS__)
+#elif defined(DEBUG)
+#define pr_debug(fmt, ...) \
+        printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+#else
+#define pr_debug(fmt, ...) \
+        no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+#endif
 
-This doesn't work quite correctly. The problem is in dss.h, where we
-define DEBUG if CONFIG_OMAP2_DSS_DEBUG_SUPPORT is set. The thing is,
-DEBUG should be defined before including the kernel headers where the
-pr_debug etc are defined.
+As per the definition above pr_debug is dynamic with
+CONFIG_DYNAMIC_DEBUG set or else with DEBUG set it is just a normal
+kernel debug printk as you have mentioned.
+I still don't get how even if DEBUG is set before DSSDBG() is defined
+in dss.c pr_debug() fails to enable.
+Well anyways, how to do the same in the Makefile? I tried adding
+ccflags-$(CONFIG_OMAP2_DSS_DEBUG_SUPPORT) += -DEBUG
+to makefile in dss directory but of no use.
 
-So if you try the patches without dynamic debugging enabled, you won't
-get any debug outputs at all, even if CONFIG_OMAP2_DSS_DEBUG_SUPPORT is
-set.
-
-And for dynamic debug, the Kconfig help says:
-
-If a source file is compiled with DEBUG flag set, any      =20
-pr_debug() calls in it are enabled by default, but can be  =20
-disabled at runtime as below.  Note that DEBUG flag is     =20
-turned on by many CONFIG_*DEBUG* options.                  =20
-
-So if we have CONFIG_OMAP2_DSS_DEBUG_SUPPORT set, all the pr_debugs
-should be enabled by default, which is not the case, again because DEBUG
-is defined too late.
-
-I think setting DEBUG in dss.h should be removed, and instead DEBUG
-should be set in the makefile if CONFIG_OMAP2_DSS_DEBUG_SUPPORT is set.
-
- Tomi
-
-
---=-+UQZObn+EuSANdPe7Gbl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJQYxFgAAoJEPo9qoy8lh71XgwQAKuUo4P1OXLiegYgoMkZ5cbd
-VbCfGcKv9YCqiZD/ve+Q0qpedgTG49mCpDFubfVd505qI+cFgqd3f8Sr9EKu/lcD
-bVGfOdXxBIGS6mf8iW+d3I+m0s/Z/JfZCGvyRp8XQ5am/X+3Wnhangm5+GVSqogw
-qK9aMl1YljMBKVCIWeD509Oyi621tSfsWLFNEAEptuYU5X+tBW1/l4mLN1ZwasKU
-QJ1B13BohE76A/xdUdUcf/o61t8MrWREJELV1Nl7r5Bg6sY8Ih8CRKL130PFjZ8H
-f8eR+dMeLqVBSfTey7Klw/GY/uNTUcQfkFdKXRBpSNeb9DZlWgzKfHnZw5DE6Ln1
-UhSbO5a7/L69QsZDZyihQFr5RcG+Add6hmpptU5hfmkws9db+dWP/DLE6tRglnh9
-GHFJK4D5UmNo2z+iaYXtBnyCCHehiFy2aCHPcZzoOZpUMOSx0sWS4NdFQwlyExDX
-WjlmQoqkZIdciA7eygO7BBxCvNzbUgd3oKP3BaSHFj/jcw7AqwoVmYT7CpG4VgSV
-KGwsv1pqjBvIF+HtGRuz1j/H87reyIDsMwLGnapzItKs5L5deAyucAHG86A+P077
-jeqYaGqc48aAnVzQE7eipw+tpMpoezzof5rkSWZEk/d1PzDjgXP6Cvcwb93FBKgN
-pADi1KsefDGM3B29WVUB
-=I0gt
------END PGP SIGNATURE-----
-
---=-+UQZObn+EuSANdPe7Gbl--
-
+-- 
+Chandrabhanu Mahapatra
+Texas Instruments India Pvt. Ltd.

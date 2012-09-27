@@ -1,123 +1,62 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Date: Thu, 20 Sep 2012 06:45:26 +0000
-Subject: [PATCH v2 13/34] dma: ipu: rename mach/ipu.h to include/linux/dma/ipu-dma.h
-Message-Id: <1348123547-31082-14-git-send-email-shawn.guo@linaro.org>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 27 Sep 2012 08:07:30 +0000
+Subject: [PATCH 2/7] video: s3c-fb: move the address definitions for VIDTCON registers
+Message-Id: <000a01cd9c87$23fca3d0$6bf5eb70$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348123547-31082-1-git-send-email-shawn.guo@linaro.org>
-In-Reply-To: <1348123547-31082-1-git-send-email-shawn.guo@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-The header ipu.h really belongs to dma subsystem rather than imx
-platform.  Rename it to ipu-dma.h and put it into include/linux/dma/.
+The address definitions for VIDTCON registers are moved to right
+place.
 
-Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-Acked-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Acked-by: Sascha Hauer <s.hauer@pengutronix.de>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
-Cc: Vinod Koul <vinod.koul@intel.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-media@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/dma/ipu/ipu_idmac.c                        |    3 +--
- drivers/dma/ipu/ipu_irq.c                          |    3 +--
- drivers/media/video/mx3_camera.c                   |    2 +-
- drivers/video/mx3fb.c                              |    2 +-
- .../mach/ipu.h => include/linux/dma/ipu-dma.h      |    6 +++---
- 5 files changed, 7 insertions(+), 9 deletions(-)
- rename arch/arm/mach-imx/include/mach/ipu.h => include/linux/dma/ipu-dma.h (97%)
+ include/video/samsung_fimd.h |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/dma/ipu/ipu_idmac.c b/drivers/dma/ipu/ipu_idmac.c
-index c7573e5..6585537 100644
---- a/drivers/dma/ipu/ipu_idmac.c
-+++ b/drivers/dma/ipu/ipu_idmac.c
-@@ -22,8 +22,7 @@
- #include <linux/interrupt.h>
- #include <linux/io.h>
- #include <linux/module.h>
+diff --git a/include/video/samsung_fimd.h b/include/video/samsung_fimd.h
+index bd0a04e..bc22f3c 100644
+--- a/include/video/samsung_fimd.h
++++ b/include/video/samsung_fimd.h
+@@ -116,6 +116,7 @@
+ 
+ /* VIDTCON0 */
+ 
++#define VIDTCON0				(0x10)
+ #define VIDTCON0_VBPDE_MASK			(0xff << 24)
+ #define VIDTCON0_VBPDE_SHIFT			(24)
+ #define VIDTCON0_VBPDE_LIMIT			(0xff)
+@@ -138,6 +139,7 @@
+ 
+ /* VIDTCON1 */
+ 
++#define VIDTCON1				(0x14)
+ #define VIDTCON1_VFPDE_MASK			(0xff << 24)
+ #define VIDTCON1_VFPDE_SHIFT			(24)
+ #define VIDTCON1_VFPDE_LIMIT			(0xff)
+@@ -159,6 +161,7 @@
+ #define VIDTCON1_HSPW(_x)			((_x) << 0)
+ 
+ #define VIDTCON2				(0x18)
++#define VIDTCON2				(0x18)
+ #define VIDTCON2_LINEVAL_E(_x)			((((_x) & 0x800) >> 11) << 23)
+ #define VIDTCON2_LINEVAL_MASK			(0x7ff << 11)
+ #define VIDTCON2_LINEVAL_SHIFT			(11)
+@@ -405,11 +408,6 @@
+ #define S3C_FB_MAX_WIN (5)  /* number of hardware windows available. */
+ #define VIDCON1_FSTATUS_EVEN	(1 << 15)
+ 
+-/* Video timing controls */
+-#define VIDTCON0				(0x10)
+-#define VIDTCON1				(0x14)
+-#define VIDTCON2				(0x18)
 -
--#include <mach/ipu.h>
-+#include <linux/dma/ipu-dma.h>
+ /* OSD1 and OSD4 do not have register D */
  
- #include "../dmaengine.h"
- #include "ipu_intern.h"
-diff --git a/drivers/dma/ipu/ipu_irq.c b/drivers/dma/ipu/ipu_irq.c
-index fa95bcc..a5ee37d 100644
---- a/drivers/dma/ipu/ipu_irq.c
-+++ b/drivers/dma/ipu/ipu_irq.c
-@@ -15,8 +15,7 @@
- #include <linux/irq.h>
- #include <linux/io.h>
- #include <linux/module.h>
--
--#include <mach/ipu.h>
-+#include <linux/dma/ipu-dma.h>
- 
- #include "ipu_intern.h"
- 
-diff --git a/drivers/media/video/mx3_camera.c b/drivers/media/video/mx3_camera.c
-index 1481b0d..892cba5 100644
---- a/drivers/media/video/mx3_camera.c
-+++ b/drivers/media/video/mx3_camera.c
-@@ -17,6 +17,7 @@
- #include <linux/vmalloc.h>
- #include <linux/interrupt.h>
- #include <linux/sched.h>
-+#include <linux/dma/ipu-dma.h>
- 
- #include <media/v4l2-common.h>
- #include <media/v4l2-dev.h>
-@@ -24,7 +25,6 @@
- #include <media/soc_camera.h>
- #include <media/soc_mediabus.h>
- 
--#include <mach/ipu.h>
- #include <linux/platform_data/camera-mx3.h>
- #include <linux/platform_data/dma-imx.h>
- 
-diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-index d738108..3b63ad8 100644
---- a/drivers/video/mx3fb.c
-+++ b/drivers/video/mx3fb.c
-@@ -26,10 +26,10 @@
- #include <linux/console.h>
- #include <linux/clk.h>
- #include <linux/mutex.h>
-+#include <linux/dma/ipu-dma.h>
- 
- #include <linux/platform_data/dma-imx.h>
- #include <mach/hardware.h>
--#include <mach/ipu.h>
- #include <linux/platform_data/video-mx3fb.h>
- 
- #include <asm/io.h>
-diff --git a/arch/arm/mach-imx/include/mach/ipu.h b/include/linux/dma/ipu-dma.h
-similarity index 97%
-rename from arch/arm/mach-imx/include/mach/ipu.h
-rename to include/linux/dma/ipu-dma.h
-index 539e559..1803111 100644
---- a/arch/arm/mach-imx/include/mach/ipu.h
-+++ b/include/linux/dma/ipu-dma.h
-@@ -9,8 +9,8 @@
-  * published by the Free Software Foundation.
-  */
- 
--#ifndef _IPU_H_
--#define _IPU_H_
-+#ifndef __LINUX_DMA_IPU_DMA_H
-+#define __LINUX_DMA_IPU_DMA_H
- 
- #include <linux/types.h>
- #include <linux/dmaengine.h>
-@@ -174,4 +174,4 @@ struct idmac_channel {
- #define to_tx_desc(tx) container_of(tx, struct idmac_tx_desc, txd)
- #define to_idmac_chan(c) container_of(c, struct idmac_channel, dma_chan)
- 
--#endif
-+#endif /* __LINUX_DMA_IPU_DMA_H */
+ #define VIDOSD_BASE				(0x40)
 -- 
-1.7.9.5
+1.7.1
+
 

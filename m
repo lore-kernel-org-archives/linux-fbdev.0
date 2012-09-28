@@ -1,145 +1,125 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 25 Sep 2012 09:57:36 +0000
-Subject: Re: [PATCH] OMAPDSS: Cleanup DSSDBG with dynamic pr_debug function
-Message-Id: <1348567056.2342.28.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-SbNWpPWqhfUoX2ZpWIu3"
+Date: Fri, 28 Sep 2012 10:35:22 +0000
+Subject: [PATCH 1/6] OMAPDSS: add omapdss_version
+Message-Id: <1348828527-13309-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348552998-6596-1-git-send-email-cmahapatra@ti.com>
-	 <1348554291.2342.8.camel@deskari>
-	 <CAF0AtAukV_5FXXc79yuXr50+1XXWNiFKdN5MWLgRy2N6Ux-adg@mail.gmail.com>
-In-Reply-To: <CAF0AtAukV_5FXXc79yuXr50+1XXWNiFKdN5MWLgRy2N6Ux-adg@mail.gmail.com>
-To: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-
---=-SbNWpPWqhfUoX2ZpWIu3
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2012-09-25 at 15:00 +0530, Mahapatra, Chandrabhanu wrote:
-
-> > This debug message is even less meaningful than the overlay number =3D)=
-.
-> > Again, I think either keep the DSSDBGF, or print something sensible,
-> > like "entering ULPS".
-> >
->=20
-> I dont think it would be wise enough to update code for one and keep
-> the older version for another when both DSSDBG and DSSDBGF are almost
-> one and the same. Its better to add something meaningful to the prints
-> as you have mentioned like "writing ovl %d regs" and "DSI entering
-> ULPS".
-
-I didn't mean to leave DSSDBGF unchanged. I meant that it should work as
-it works now, printing the func name, but using pr_debug.
-
-> >>
-> >>       WARN_ON(!dsi_bus_is_locked(dsidev));
-> >>
-> >> @@ -4184,7 +4180,7 @@ int omapdss_dsi_set_clocks(struct omap_dss_devic=
-e *dssdev,
-> >>       unsigned long pck;
-> >>       int r;
-> >>
-> >> -     DSSDBGF("ddr_clk %lu, lp_clk %lu", ddr_clk, lp_clk);
-> >> +     DSSDBG("ddr_clk %lu, lp_clk %lu", ddr_clk, lp_clk);
-> >>
-> >>       mutex_lock(&dsi->lock);
-> >>
-> >> diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/d=
-ss.h
-> >> index 5e9fd769..3a2caab 100644
-> >> --- a/drivers/video/omap2/dss/dss.h
-> >> +++ b/drivers/video/omap2/dss/dss.h
-> >> @@ -29,38 +29,20 @@
-> >>
-> >>  #ifdef DEBUG
-> >>  extern bool dss_debug;
-> >
-> > You still left the dss_debug option here, even if it's not used by the
-> > DSSDBG anymore. What's your plan about this?
-> >
-> >  Tomi
-> >
->=20
-> dss_debug and DEBUG need to remain here as it is being used by
-> functions omap_dispc_irq_handler() and _dsi_print_reset_status() in
-
-It would be good to clean all this in one patch series.
-
-> dispc.c and dsi.c. I am little bit unsure of how to deal with it.
-> There could be a single print in omap_dispc_irq_handler() but it is a
-> bit tricky in _dsi_print_reset_status().
->=20
-> May be a macro like this one can be used in _dsi_print_reset_status()
->=20
-> #define DSI_FLD_GET(fld, start, end)\
->       FLD_GET(dsi_read_reg(dsidev, DSI_##fld), start, end);
->=20
-> pr_debug("PLL (%d) CIO (%d) \n PHY (%x%x%x, %d, %d, %d) \n",
->                  DSI_FLD_GET(PLL_STATUS, 0, 0),
->                  DSI_FLD_GET(COMPLEXIO_CFG1, 29, 29),
->                  DSI_FLD_GET(DSIPHY_CFG5, bo, bo),
->                  DSI_FLD_GET(DSIPHY_CFG5, b1, b1),
->    ..................................................);
-> This could be defined at the beginning of the function and later at its e=
-nd.
-
-Yes, I think something like that could work. I don't see any problem
-with having temporary helper macros to help creating the debug message.
-
-> As you had previously mentioned a print like
->=20
-> #define PIS(x) (status & DSI_IRQ_##x) ? (#x " ") : ""
->=20
-> pr_debug("DSI IRQ: 0x%x: %s%s%s",
->         status,
->         PIS(WAKEUP),
->         PIS(RESYNC),
->         PIS(PLL_LOCK));
->=20
-> could help in print_irq_status() but I am still unsure how to deal
-> with conditional statements in print_irq_status() like
-> if (dss_has_feature(FEAT_MGR_LCD3))
->                 PIS(SYNC_LOST3);
-> Should we use approach like
->=20
-> pr_debug("DSI IRQ: 0x%x: %s%s%s%s...",
->         status,
->         PIS(WAKEUP),
->         PIS(RESYNC),
->         PIS(PLL_LOCK)
->         dss_has_feature(FEAT_MGR_LCD3) ? PIS(SYNC_LOST3) : ""
->   ...................................... );
-
-Yes, that looks fine to me.
-
- Tomi
-
-
---=-SbNWpPWqhfUoX2ZpWIu3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+References: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Archit Taneja <a0393947@ti.com>, Chandrabhanu Mahapatra <cmahapatra@ti.com>, =?UTF-8?q?Rapha=C3=ABl=20Ass=C3=A9nat?= <raph@8d.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+Add new enum, omapdss_version, that is used to tell which DSS hardware
+version the SoC has. This enum is initialized during platform init, and
+passed in the platform data to omapdss driver.
 
-iQIcBAABAgAGBQJQYYAQAAoJEPo9qoy8lh71kdwP/3jEFGD/0Z+jeXPTT+TcPyj2
-nnOm8kHoSZrZFNI02KqM3zimqNNIvdZkRbfvlq2KdUOqlqLmMrshndVUYZVqYsHm
-YZL8vwBpaYfvdDom2a7ur6La8dw6lX7JwMp1uMfdpRTVbo76ksZm9BQWB76af52C
-Vu1+JLRzH/N3/Kwa3WSIWSxPZebm3ttlwzhJwWi7ptAqFCUzq1qXa3j8LWU+sJbk
-1Ir1N4zCERWxmNuosFChLrSULe5I9QRLOhq4JNffYCQxPNbQztKOrOCNJZytGXpT
-+TyCdHzRVSOsPmmu7+6KvRdwm+OO7IC3/3xgOFGbOWPBF42+Ujz59OUyA7LFUQsz
-m+tWEJPKbdrzAMAD27+fggc35m8N17qSbCuL342kgN1s5vArMBknANkd8sfZ5Z6E
-CSacLMVjO+kg5o0qgfjWGMmCI3wcPtIauPJGGfg66dGOcUMYfJJ4O2K+Cx9yq+j+
-aYimX6tfDqL/f/vlqE5dK/JrafRDw41k21Vv6qCcbIkz/TNg7YmMV4QSaKRawBKP
-R3t3/NJ31fb36AAYYBBj/hqKogGvz4ESZ0iQqpkPevXEiOqqnzsYvrFfAndBvPO+
-BQ9Oq53QNMoRWJ1DNkALQD2LaYVhSRXfPg2+VxTUusZGQhbSABZmbUrqfbcS7Sea
-k9lWN1Di8Qggucll5Kwi
-=LO1B
------END PGP SIGNATURE-----
+Note that the versions are not "continuous", that is, you cannot check
+if the version is less or greater than something, but you need to check
+for exact version match. In other words, this is invalid:
 
---=-SbNWpPWqhfUoX2ZpWIu3--
+/* test if DSS is 3630 or earlier */
+if (ver <= OMAPDSS_VER_OMAP3630)
+	...
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/mach-omap2/display.c |   38 ++++++++++++++++++++++++++++++++++++++
+ include/video/omapdss.h       |   14 ++++++++++++++
+ 2 files changed, 52 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index ee40739..33555da 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -284,6 +284,35 @@ err:
+ 	return ERR_PTR(r);
+ }
+ 
++static enum omapdss_version omap_display_get_version(void)
++{
++	if (cpu_is_omap24xx())
++		return OMAPDSS_VER_OMAP24xx;
++	else if (cpu_is_omap3630())
++		return OMAPDSS_VER_OMAP3630;
++	else if (cpu_is_omap34xx()) {
++		if (soc_is_am35xx()) {
++			return OMAPDSS_VER_AM35xx;
++		} else {
++			if (omap_rev() < OMAP3430_REV_ES3_0)
++				return OMAPDSS_VER_OMAP34xx_ES1;
++			else
++				return OMAPDSS_VER_OMAP34xx_ES3;
++		}
++	} else if (omap_rev() = OMAP4430_REV_ES1_0)
++		return OMAPDSS_VER_OMAP4430_ES1;
++	else if (omap_rev() = OMAP4430_REV_ES2_0 ||
++			omap_rev() = OMAP4430_REV_ES2_1 ||
++			omap_rev() = OMAP4430_REV_ES2_2)
++		return OMAPDSS_VER_OMAP4430_ES2;
++	else if (cpu_is_omap44xx())
++		return OMAPDSS_VER_OMAP4;
++	else if (soc_is_omap54xx())
++		return OMAPDSS_VER_OMAP5;
++	else
++		return OMAPDSS_VER_UNKNOWN
++}
++
+ int __init omap_display_init(struct omap_dss_board_info *board_data)
+ {
+ 	int r = 0;
+@@ -291,9 +320,18 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
+ 	int i, oh_count;
+ 	const struct omap_dss_hwmod_data *curr_dss_hwmod;
+ 	struct platform_device *dss_pdev;
++	enum omapdss_version ver;
+ 
+ 	/* create omapdss device */
+ 
++	ver = omap_display_get_version();
++
++	if (ver = OMAPDSS_VER_UNKNOWN) {
++		pr_err("DSS not supported on this SoC\n");
++		return -ENODEV;
++	}
++
++	board_data->version = ver;
+ 	board_data->dsi_enable_pads = omap_dsi_enable_pads;
+ 	board_data->dsi_disable_pads = omap_dsi_disable_pads;
+ 	board_data->get_context_loss_count = omap_pm_get_dev_context_loss_count;
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 3729173..88c8294 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -314,6 +314,19 @@ int dsi_vc_send_bta_sync(struct omap_dss_device *dssdev, int channel);
+ int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel);
+ void dsi_disable_video_output(struct omap_dss_device *dssdev, int channel);
+ 
++enum omapdss_version {
++	OMAPDSS_VER_UNKNOWN = 0,
++	OMAPDSS_VER_OMAP24xx,
++	OMAPDSS_VER_OMAP34xx_ES1,	/* OMAP3430 ES1.0, 2.0 */
++	OMAPDSS_VER_OMAP34xx_ES3,	/* OMAP3430 ES3.0+ */
++	OMAPDSS_VER_OMAP3630,
++	OMAPDSS_VER_AM35xx,
++	OMAPDSS_VER_OMAP4430_ES1,	/* OMAP4430 ES1.0 */
++	OMAPDSS_VER_OMAP4430_ES2,	/* OMAP4430 ES2.0, 2.1, 2.2 */
++	OMAPDSS_VER_OMAP4,		/* All other OMAP4s */
++	OMAPDSS_VER_OMAP5,
++};
++
+ /* Board specific data */
+ struct omap_dss_board_info {
+ 	int (*get_context_loss_count)(struct device *dev);
+@@ -323,6 +336,7 @@ struct omap_dss_board_info {
+ 	int (*dsi_enable_pads)(int dsi_id, unsigned lane_mask);
+ 	void (*dsi_disable_pads)(int dsi_id, unsigned lane_mask);
+ 	int (*set_min_bus_tput)(struct device *dev, unsigned long r);
++	enum omapdss_version version;
+ };
+ 
+ /* Init with the board info */
+-- 
+1.7.9.5
 

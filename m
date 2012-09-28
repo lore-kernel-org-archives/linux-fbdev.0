@@ -1,86 +1,45 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 25 Sep 2012 06:31:36 +0000
-Subject: [PATCH v2 01/18] OMAPDSS: DISPC: Constify omap_overlay_info in dispc_ovl_setup()
-Message-Id: <1348553993-8083-2-git-send-email-archit@ti.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 28 Sep 2012 19:18:41 +0000
+Subject: Re: [PATCH 1/4] ARM: clps711x: Remove board support for CEIVA
+Message-Id: <201209281918.41825.arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>
- <1348553993-8083-1-git-send-email-archit@ti.com>
-In-Reply-To: <1348553993-8083-1-git-send-email-archit@ti.com>
+References: <1345568375-28516-1-git-send-email-shc_work@mail.ru>
+In-Reply-To: <1345568375-28516-1-git-send-email-shc_work@mail.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-The struct omap_overlay_info passed to dispc_ovl_setup() is used to configure
-DISPC registers. It shouldn't modify the overlay_info structure. The pos_y field
-was being changed in dispc_ovl_setup in the case of interlaced displays. Fix
-this and const qualifier to the omap_overlay_info argument.
+On Tuesday 21 August 2012, Alexander Shiyan wrote:
+> The current kernel does not fit in the CEIVA ROM. Also, some functional
+> has already been removed due migrate from 2.6 to 3.0, and it seems that
+> no one uses this platform. So, remove support for this board and modules
+> specific only to this board.
+> 
+> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/dispc.c |    9 +++++----
- drivers/video/omap2/dss/dss.h   |    2 +-
- 2 files changed, 6 insertions(+), 5 deletions(-)
+Sorry, this fell through the cracks at first.
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 33db882..cd3d532 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -2253,7 +2253,7 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
- 	return 0;
- }
- 
--int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
-+int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
- 		bool replication, const struct omap_video_timings *mgr_timings)
- {
- 	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
-@@ -2271,6 +2271,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
- 	enum omap_channel channel;
- 	int x_predecim = 1, y_predecim = 1;
- 	bool ilace = mgr_timings->interlace;
-+	u16 pos_y = oi->pos_y;
- 
- 	channel = dispc_ovl_get_channel_out(plane);
- 
-@@ -2293,12 +2294,12 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
- 	if (ilace) {
- 		if (fieldmode)
- 			in_height /= 2;
--		oi->pos_y /= 2;
-+		pos_y /= 2;
- 		out_height /= 2;
- 
- 		DSSDBG("adjusting for ilace: height %d, pos_y %d, "
- 				"out_height %d\n",
--				in_height, oi->pos_y, out_height);
-+				in_height, pos_y, out_height);
- 	}
- 
- 	if (!dss_feat_color_mode_supported(plane, oi->color_mode))
-@@ -2381,7 +2382,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
- 	DSSDBG("%d,%d %dx%d -> %dx%d\n", oi->pos_x, oi->pos_y, in_width,
- 			in_height, out_width, out_height);
- 
--	dispc_ovl_set_pos(plane, oi->pos_x, oi->pos_y);
-+	dispc_ovl_set_pos(plane, oi->pos_x, pos_y);
- 
- 	dispc_ovl_set_pic_size(plane, in_width, in_height);
- 
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index c2bc092..43210b8 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -440,7 +440,7 @@ void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high);
- void dispc_ovl_compute_fifo_thresholds(enum omap_plane plane,
- 		u32 *fifo_low, u32 *fifo_high, bool use_fifomerge,
- 		bool manual_update);
--int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
-+int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
- 		bool replication, const struct omap_video_timings *mgr_timings);
- int dispc_ovl_enable(enum omap_plane plane, bool enable);
- void dispc_ovl_set_channel_out(enum omap_plane plane,
--- 
-1.7.9.5
+>  arch/arm/mach-clps711x/Kconfig                 |    6 -
+>  arch/arm/mach-clps711x/Makefile                |    1 -
+>  arch/arm/mach-clps711x/ceiva.c                 |   64 --
+>  arch/arm/mach-clps711x/include/mach/hardware.h |   48 --
+>  arch/arm/tools/mach-types                      |    1 -
+>  drivers/video/Kconfig                          |   12 -
+>  drivers/video/Makefile                         |    1 -
+>  drivers/video/epson1355fb.c                    |  749 ------------------------
+>  include/video/epson1355.h                      |   64 --
+>  9 files changed, 0 insertions(+), 946 deletions(-)
+>  delete mode 100644 arch/arm/mach-clps711x/ceiva.c
+>  delete mode 100644 drivers/video/epson1355fb.c
+>  delete mode 100644 include/video/epson1355.h
 
+I've added Florian to Cc as the drivers/video maintainer, since you are
+removing the epson1355fb driver along with its last user, and he
+might have objections. Florian, I hope it's ok to merge this through
+arm-soc, if not please let me know and I'll revert this.
+
+I've applied the series to the next/cleanup2 branch in arm-soc now
+for the next 3.7 merge window.
+
+	Arnd

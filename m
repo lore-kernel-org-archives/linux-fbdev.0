@@ -1,92 +1,43 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 28 Sep 2012 10:35:25 +0000
-Subject: [PATCH 4/6] OMAPDSS: DSS: use omapdss_version
-Message-Id: <1348828527-13309-5-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 28 Sep 2012 10:35:21 +0000
+Subject: [PATCH 0/6] OMAPDSS: remove cpu_is_* calls
+Message-Id: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Archit Taneja <a0393947@ti.com>, Chandrabhanu Mahapatra <cmahapatra@ti.com>, =?UTF-8?q?Rapha=C3=ABl=20Ass=C3=A9nat?= <raph@8d.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Use omapdss_version in dss.c to select the proper dss features.
+Hi,
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/dss.c |   37 +++++++++++++++++++++++++++----------
- 1 file changed, 27 insertions(+), 10 deletions(-)
+This series adds an omapdss_version enum that is passed via platform data to
+omapdss driver. This version identifier is then used instead of cpu_is_*()
+calls.
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 2ab1c3e..2e74eef 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -792,29 +792,46 @@ static const struct dss_features omap54xx_dss_feats __initconst = {
- 	.dpi_select_source	=	&dss_dpi_select_source_omap5,
- };
- 
--static int __init dss_init_features(struct device *dev)
-+static int __init dss_init_features(struct platform_device *pdev)
- {
-+	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
- 	const struct dss_features *src;
- 	struct dss_features *dst;
- 
--	dst = devm_kzalloc(dev, sizeof(*dst), GFP_KERNEL);
-+	dst = devm_kzalloc(&pdev->dev, sizeof(*dst), GFP_KERNEL);
- 	if (!dst) {
--		dev_err(dev, "Failed to allocate local DSS Features\n");
-+		dev_err(&pdev->dev, "Failed to allocate local DSS Features\n");
- 		return -ENOMEM;
- 	}
- 
--	if (cpu_is_omap24xx())
-+	switch (pdata->version) {
-+	case OMAPDSS_VER_OMAP24xx:
- 		src = &omap24xx_dss_feats;
--	else if (cpu_is_omap34xx())
-+		break;
-+
-+	case OMAPDSS_VER_OMAP34xx_ES1:
-+	case OMAPDSS_VER_OMAP34xx_ES3:
-+	case OMAPDSS_VER_AM35xx:
- 		src = &omap34xx_dss_feats;
--	else if (cpu_is_omap3630())
-+		break;
-+
-+	case OMAPDSS_VER_OMAP3630:
- 		src = &omap3630_dss_feats;
--	else if (cpu_is_omap44xx())
-+		break;
-+
-+	case OMAPDSS_VER_OMAP4430_ES1:
-+	case OMAPDSS_VER_OMAP4430_ES2:
-+	case OMAPDSS_VER_OMAP4:
- 		src = &omap44xx_dss_feats;
--	else if (soc_is_omap54xx())
-+		break;
-+
-+	case OMAPDSS_VER_OMAP5:
- 		src = &omap54xx_dss_feats;
--	else
-+		break;
-+
-+	default:
- 		return -ENODEV;
-+	}
- 
- 	memcpy(dst, src, sizeof(*dst));
- 	dss.feat = dst;
-@@ -831,7 +848,7 @@ static int __init omap_dsshw_probe(struct platform_device *pdev)
- 
- 	dss.pdev = pdev;
- 
--	r = dss_init_features(&dss.pdev->dev);
-+	r = dss_init_features(dss.pdev);
- 	if (r)
- 		return r;
- 
+After these, omapdss no longer contains any plat/ or mach/ includes. omapfb,
+vrfb and vram still do, though.
+
+ Tomi
+
+Tomi Valkeinen (6):
+  OMAPDSS: add omapdss_version
+  OMAPDSS: use omapdss_version in dss_features.c
+  OMAPDSS: DISPC: use omapdss_version
+  OMAPDSS: DSS: use omapdss_version
+  OMAPDSS: HDMI: use omapdss_version
+  OMAPDSS: remove <plat/cpu.h> includes
+
+ arch/arm/mach-omap2/display.c          |   38 +++++++++++++++++++
+ drivers/video/omap2/dss/core.c         |    2 +-
+ drivers/video/omap2/dss/dispc.c        |   41 +++++++++++++-------
+ drivers/video/omap2/dss/dss.c          |   39 +++++++++++++------
+ drivers/video/omap2/dss/dss_features.c |   64 ++++++++++++++++++++++----------
+ drivers/video/omap2/dss/dss_features.h |    5 ++-
+ drivers/video/omap2/dss/hdmi.c         |    3 +-
+ include/video/omapdss.h                |   14 +++++++
+ 8 files changed, 157 insertions(+), 49 deletions(-)
+
 -- 
 1.7.9.5
 

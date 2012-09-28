@@ -1,168 +1,184 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Mon, 17 Sep 2012 20:14:39 +0000
-Subject: Re: [PATCH v3] of: Add videomode helper
-Message-Id: <20120917201439.GA19153@pengutronix.de>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Fri, 28 Sep 2012 10:35:29 +0000
+Subject: [PATCH V3 2/3] OMAPDSS: Cleanup DSSDBG with dynamic pr_debug function
+Message-Id: <2fc91980de4af940ac59b26fd49da6498865db8b.1348826106.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347639842-13509-1-git-send-email-s.trumtrar@pengutronix.de>
- <6AE080B68D46FC4BA2D2769E68D765B70805C179@039-SN2MPN1-023.039d.mgd.msft.net>
-In-Reply-To: <6AE080B68D46FC4BA2D2769E68D765B70805C179-RL0Hj/+nBVDtkydW1Tv2Dq4g8xLGJsHaLnY5E4hWTkheoWH0uzbU5w@public.gmane.org>
+References: <cover.1348636132.git.cmahapatra@ti.com> <cover.1348826106.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1348826106.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tabi Timur-B04825 <B04825-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-On Mon, Sep 17, 2012 at 06:35:43PM +0000, Tabi Timur-B04825 wrote:
-> On Fri, Sep 14, 2012 at 11:24 AM, Steffen Trumtrar
-> <s.trumtrar@pengutronix.de> wrote:
-> 
-> > +/* FIXME */
-> > +static u32 of_video_get_value(struct mode_property *prop)
-> > +{
-> > +       return (prop->min >= prop->typ) ? prop->min : prop->typ;
-> > +}
-> > +
-> > +/* read property into new mode_property */
-> > +static int of_video_parse_property(struct device_node *np, char *name,
-> > +                               struct mode_property *result)
-> > +{
-> > +       struct property *prop;
-> > +       int length;
-> > +       int cells;
-> > +       int ret;
-> > +
-> > +       prop = of_find_property(np, name, &length);
-> > +       if (!prop)
-> > +               return -EINVAL;
-> > +
-> > +       cells = length / sizeof(u32);
-> > +
-> > +       memset(result, 0, sizeof(*result));
-> > +
-> > +       ret = of_property_read_u32_array(np, name, &result->min, cells);
-> > +       of_video_get_value(result);
-> 
-> What's the point of calling of_video_get_value() here?  It doesn't do anything.
-> 
+The printk in DSSDBG function definition is replaced with dynamic debug enabled
+pr_debug(). The use of dynamic debugging provides more flexibility as each debug
+statement can be enabled or disabled dynamically on basis of source filename,
+line number, module name etc. by writing to a control file in debugfs
+filesystem. For better understanding please refer to
+Documentation/dynamic-debug-howto.txt.
 
-You're right. That definitely does not belong there.
+The DSSDBGF() differs from DSSDBG() by providing function name. However,
+function name, line number, module name and thread ID can be printed through
+dynamic debug by setting appropriate flags 'f','l','m' and 't' in the debugfs
+control file. So, DSSDBGF instances are replaced with DSSDBG.
 
-> > +       return ret;
-> > +}
-> > +
-> > +int videomode_to_display_mode(struct display *disp, struct drm_display_mode *dmode, int index)
-> > +{
-> > +       struct videomode *vm;
-> > +
-> > +        memset(dmode, 0, sizeof(*dmode));
-> 
-> Indentation problem.
-> 
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+---
+ drivers/video/omap2/dss/apply.c |    8 ++++----
+ drivers/video/omap2/dss/dsi.c   |   12 ++++++------
+ drivers/video/omap2/dss/dss.h   |   34 ++++++++--------------------------
+ 3 files changed, 18 insertions(+), 36 deletions(-)
 
-Okay.
-> > +int of_get_video_mode(struct device_node *np, struct display *disp)
-> > +{
-> > +       struct device_node *display_np;
-> > +       struct device_node *mode_np;
-> > +       struct device_node *modes_np;
-> > +       char *default_mode;
-> > +
-> > +       int ret = 0;
-> > +
-> > +       memset(disp, 0, sizeof(*disp));
-> > +       disp->modes = kmalloc(sizeof(struct videomode*), GFP_KERNEL);
-> > +       if (!np)
-> > +               return -EINVAL;
-> > +
-> > +       display_np = of_parse_phandle(np, "display", 0);
-> > +
-> > +       if (!display_np)
-> > +               return -EINVAL;
-> > +
-> > +       of_property_read_u32(display_np, "width-mm", &disp->width_mm);
-> > +       of_property_read_u32(display_np, "height-mm", &disp->height_mm);
-> > +
-> > +       mode_np = of_parse_phandle(np, "default-mode", 0);
-> > +
-> > +       if (!mode_np)
-> > +               mode_np = of_find_node_by_name(np, "mode");
-> > +
-> > +       if (!mode_np)
-> > +               return -EINVAL;
-> > +
-> > +       default_mode = (char *)mode_np->full_name;
-> > +
-> > +       modes_np = of_find_node_by_name(np, "modes");
-> > +       for_each_child_of_node(modes_np, mode_np) {
-> > +               struct videomode *vm;
-> 
-> Blank line after variable declarations, please.
-> 
-> > +               vm = kmalloc(sizeof(struct videomode), GFP_KERNEL);
-> > +               disp->modes[disp->num_modes] = kmalloc(sizeof(struct videomode*), GFP_KERNEL);
-> 
-> Are you sure this is right?
-> 
-I implemented disp->modes as "struct videomode** modes". So I guess the first
-kmalloc is wrong. Right?!
-
-> > +               ret |= of_video_parse_property(mode_np, "hback-porch", &vm->hback_porch);
-> > +               ret |= of_video_parse_property(mode_np, "hfront-porch", &vm->hfront_porch);
-> > +               ret |= of_video_parse_property(mode_np, "hactive", &vm->hactive);
-> > +               ret |= of_video_parse_property(mode_np, "hsync-len", &vm->hsync_len);
-> > +               ret |= of_video_parse_property(mode_np, "vback-porch", &vm->vback_porch);
-> > +               ret |= of_video_parse_property(mode_np, "vfront-porch", &vm->vfront_porch);
-> > +               ret |= of_video_parse_property(mode_np, "vactive", &vm->vactive);
-> > +               ret |= of_video_parse_property(mode_np, "vsync-len", &vm->vsync_len);
-> > +               ret |= of_video_parse_property(mode_np, "clock", &vm->clock);
-> > +
-> > +               if (ret)
-> > +                       return -EINVAL;
-> > +
-> > +               vm->hah = of_property_read_bool(mode_np, "hsync-active-high");
-> > +               vm->vah = of_property_read_bool(mode_np, "vsync-active-high");
-> > +               vm->interlaced = of_property_read_bool(mode_np, "interlaced");
-> > +               vm->doublescan = of_property_read_bool(mode_np, "doublescan");
-> > +
-> > +               if (strcmp(default_mode,mode_np->full_name) = 0) {
-> > +                       printk("%s: default_node = %d\n", __func__, disp->num_modes);
-> 
-> Please use a KERN_ macro here, or a pr_xxx function.  Even better
-> would be to use a dev_xxx function.
-> 
-> In general, I'd like to see more error reporting of bad device tree
-> properties, to help debugging.
-> 
-
-Okay. Actually, the printk also was not supposed to be in the final patch.
-I can fix that and add some dev_xxx.
-
-> > +                       disp->default_mode = disp->num_modes;
-> > +               }
-> > +
-> > +               disp->modes[disp->num_modes] = vm;
-> 
-> Isn't this a memory leak?
-> 
-
-I think I get you. I will fix that.
-
-> > +               disp->num_modes++;
-> > +       }
-> > +       of_node_put(display_np);
-> > +
-> > +       return 0;
-> > +}
-> > +EXPORT_SYMBOL_GPL(of_get_video_mode);
-> 
-
-Thank you for your review.
-
-Regards,
-Steffen
-
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 19d66f4..e923d9f 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -573,7 +573,7 @@ static void dss_ovl_write_regs(struct omap_overlay *ovl)
+ 	struct mgr_priv_data *mp;
+ 	int r;
+ 
+-	DSSDBGF("%d", ovl->id);
++	DSSDBG("writing ovl %d regs", ovl->id);
+ 
+ 	if (!op->enabled || !op->info_dirty)
+ 		return;
+@@ -608,7 +608,7 @@ static void dss_ovl_write_regs_extra(struct omap_overlay *ovl)
+ 	struct ovl_priv_data *op = get_ovl_priv(ovl);
+ 	struct mgr_priv_data *mp;
+ 
+-	DSSDBGF("%d", ovl->id);
++	DSSDBG("writing ovl %d regs extra", ovl->id);
+ 
+ 	if (!op->extra_info_dirty)
+ 		return;
+@@ -632,7 +632,7 @@ static void dss_mgr_write_regs(struct omap_overlay_manager *mgr)
+ 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
+ 	struct omap_overlay *ovl;
+ 
+-	DSSDBGF("%d", mgr->id);
++	DSSDBG("writing mgr %d regs", mgr->id);
+ 
+ 	if (!mp->enabled)
+ 		return;
+@@ -658,7 +658,7 @@ static void dss_mgr_write_regs_extra(struct omap_overlay_manager *mgr)
+ {
+ 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
+ 
+-	DSSDBGF("%d", mgr->id);
++	DSSDBG("writing mgr %d regs extra", mgr->id);
+ 
+ 	if (!mp->extra_info_dirty)
+ 		return;
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index e37e6d8..3b524cd 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -1612,7 +1612,7 @@ int dsi_pll_set_clock_div(struct platform_device *dsidev,
+ 	u8 regn_start, regn_end, regm_start, regm_end;
+ 	u8 regm_dispc_start, regm_dispc_end, regm_dsi_start, regm_dsi_end;
+ 
+-	DSSDBGF();
++	DSSDBG("DSI PLL clock config starts");
+ 
+ 	dsi->current_cinfo.clkin = cinfo->clkin;
+ 	dsi->current_cinfo.fint = cinfo->fint;
+@@ -2431,7 +2431,7 @@ static int dsi_cio_init(struct platform_device *dsidev)
+ 	int r;
+ 	u32 l;
+ 
+-	DSSDBGF();
++	DSSDBG("DSI CIO init starts");
+ 
+ 	r = dss_dsi_enable_pads(dsi->module_id, dsi_get_lane_mask(dsidev));
+ 	if (r)
+@@ -2782,7 +2782,7 @@ static void dsi_vc_initial_config(struct platform_device *dsidev, int channel)
+ {
+ 	u32 r;
+ 
+-	DSSDBGF("%d", channel);
++	DSSDBG("Initial Config of Virtual Channel %d", channel);
+ 
+ 	r = dsi_read_reg(dsidev, DSI_VC_CTRL(channel));
+ 
+@@ -2814,7 +2814,7 @@ static int dsi_vc_config_source(struct platform_device *dsidev, int channel,
+ 	if (dsi->vc[channel].source = source)
+ 		return 0;
+ 
+-	DSSDBGF("%d", channel);
++	DSSDBG("Source Config of Virtual Channel %d", channel);
+ 
+ 	dsi_sync_vc(dsidev, channel);
+ 
+@@ -3572,7 +3572,7 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
+ 	int r, i;
+ 	unsigned mask;
+ 
+-	DSSDBGF();
++	DSSDBG("Entering ULPS");
+ 
+ 	WARN_ON(!dsi_bus_is_locked(dsidev));
+ 
+@@ -4276,7 +4276,7 @@ int omapdss_dsi_set_clocks(struct omap_dss_device *dssdev,
+ 	unsigned long pck;
+ 	int r;
+ 
+-	DSSDBGF("ddr_clk %lu, lp_clk %lu", ddr_clk, lp_clk);
++	DSSDBG("Setting DSI clocks: ddr_clk %lu, lp_clk %lu", ddr_clk, lp_clk);
+ 
+ 	mutex_lock(&dsi->lock);
+ 
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index ffbba7e..5ef4e17 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -25,38 +25,20 @@
+ 
+ #ifdef DEBUG
+ extern bool dss_debug;
+-#ifdef DSS_SUBSYS_NAME
+-#define DSSDBG(format, ...) \
+-	if (dss_debug) \
+-		printk(KERN_DEBUG "omapdss " DSS_SUBSYS_NAME ": " format, \
+-		## __VA_ARGS__)
+-#else
+-#define DSSDBG(format, ...) \
+-	if (dss_debug) \
+-		printk(KERN_DEBUG "omapdss: " format, ## __VA_ARGS__)
+ #endif
+ 
+-#ifdef DSS_SUBSYS_NAME
+-#define DSSDBGF(format, ...) \
+-	if (dss_debug) \
+-		printk(KERN_DEBUG "omapdss " DSS_SUBSYS_NAME \
+-				": %s(" format ")\n", \
+-				__func__, \
+-				## __VA_ARGS__)
+-#else
+-#define DSSDBGF(format, ...) \
+-	if (dss_debug) \
+-		printk(KERN_DEBUG "omapdss: " \
+-				": %s(" format ")\n", \
+-				__func__, \
+-				## __VA_ARGS__)
++#ifdef pr_fmt
++#undef pr_fmt
+ #endif
+ 
+-#else /* DEBUG */
+-#define DSSDBG(format, ...)
+-#define DSSDBGF(format, ...)
++#ifdef DSS_SUBSYS_NAME
++#define pr_fmt(fmt) DSS_SUBSYS_NAME ": " fmt
++#else
++#define pr_fmt(fmt) fmt
+ #endif
+ 
++#define DSSDBG(format, ...) \
++	pr_debug(format, ## __VA_ARGS__)
+ 
+ #ifdef DSS_SUBSYS_NAME
+ #define DSSERR(format, ...) \
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+1.7.10
+

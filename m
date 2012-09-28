@@ -1,55 +1,93 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 13 Sep 2012 12:26:56 +0000
-Subject: [PATCH 12/21] OMAPDSS: DISPC: Configure input and output sizes for writeback
-Message-Id: <1347538505-25359-13-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 28 Sep 2012 10:35:24 +0000
+Subject: [PATCH 3/6] OMAPDSS: DISPC: use omapdss_version
+Message-Id: <1348828527-13309-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347538505-25359-1-git-send-email-archit@ti.com>
-In-Reply-To: <1347538505-25359-1-git-send-email-archit@ti.com>
+References: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Archit Taneja <a0393947@ti.com>, Chandrabhanu Mahapatra <cmahapatra@ti.com>, =?UTF-8?q?Rapha=C3=ABl=20Ass=C3=A9nat?= <raph@8d.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Writeback uses the WB_PICTURE_SIZE register to define the size of the content
-written to memory, this is the output of the scalar. It uses the WB_SIZE
-register to define the size of the content coming from the overlay/manager to
-which it is connected, this is the input to the scalar. This naming is different
-as compared to overlays.
+Use omapdss_version in dispc.c to select the proper dispc features.
 
-Add checks for writeback in dispc_plane_set_input_size() and
-dispc_plane_set_output_size() to write to the correct registers.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   41 ++++++++++++++++++++++++++-------------
+ 1 file changed, 28 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 60a60fc..8673a33 100644
+index a173a94..a5ab354 100644
 --- a/drivers/video/omap2/dss/dispc.c
 +++ b/drivers/video/omap2/dss/dispc.c
-@@ -723,7 +723,7 @@ static void dispc_plane_set_input_size(enum omap_plane plane, int width,
+@@ -4040,29 +4040,44 @@ static const struct dispc_features omap44xx_dispc_feats __initconst = {
+ 	.gfx_fifo_workaround	=	true,
+ };
+ 
+-static int __init dispc_init_features(struct device *dev)
++static int __init dispc_init_features(struct platform_device *pdev)
  {
- 	u32 val = FLD_VAL(height - 1, 26, 16) | FLD_VAL(width - 1, 10, 0);
++	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
+ 	const struct dispc_features *src;
+ 	struct dispc_features *dst;
  
--	if (plane = OMAP_DSS_GFX)
-+	if (plane = OMAP_DSS_GFX || plane = OMAP_DSS_WB)
- 		dispc_write_reg(DISPC_OVL_SIZE(plane), val);
- 	else
- 		dispc_write_reg(DISPC_OVL_PICTURE_SIZE(plane), val);
-@@ -738,7 +738,10 @@ static void dispc_plane_set_output_size(enum omap_plane plane, int width,
+-	dst = devm_kzalloc(dev, sizeof(*dst), GFP_KERNEL);
++	dst = devm_kzalloc(&pdev->dev, sizeof(*dst), GFP_KERNEL);
+ 	if (!dst) {
+-		dev_err(dev, "Failed to allocate DISPC Features\n");
++		dev_err(&pdev->dev, "Failed to allocate DISPC Features\n");
+ 		return -ENOMEM;
+ 	}
  
- 	val = FLD_VAL(height - 1, 26, 16) | FLD_VAL(width - 1, 10, 0);
+-	if (cpu_is_omap24xx()) {
++	switch (pdata->version) {
++	case OMAPDSS_VER_OMAP24xx:
+ 		src = &omap24xx_dispc_feats;
+-	} else if (cpu_is_omap34xx()) {
+-		if (omap_rev() < OMAP3430_REV_ES3_0)
+-			src = &omap34xx_rev1_0_dispc_feats;
+-		else
+-			src = &omap34xx_rev3_0_dispc_feats;
+-	} else if (cpu_is_omap44xx()) {
++		break;
++
++	case OMAPDSS_VER_OMAP34xx_ES1:
++		src = &omap34xx_rev1_0_dispc_feats;
++		break;
++
++	case OMAPDSS_VER_OMAP34xx_ES3:
++	case OMAPDSS_VER_OMAP3630:
++	case OMAPDSS_VER_AM35xx:
++		src = &omap34xx_rev3_0_dispc_feats;
++		break;
++
++	case OMAPDSS_VER_OMAP4430_ES1:
++	case OMAPDSS_VER_OMAP4430_ES2:
++	case OMAPDSS_VER_OMAP4:
+ 		src = &omap44xx_dispc_feats;
+-	} else if (soc_is_omap54xx()) {
++		break;
++
++	case OMAPDSS_VER_OMAP5:
+ 		src = &omap44xx_dispc_feats;
+-	} else {
++		break;
++
++	default:
+ 		return -ENODEV;
+ 	}
  
--	dispc_write_reg(DISPC_OVL_SIZE(plane), val);
-+	if (plane = OMAP_DSS_WB)
-+		dispc_write_reg(DISPC_OVL_PICTURE_SIZE(plane), val);
-+	else
-+		dispc_write_reg(DISPC_OVL_SIZE(plane), val);
- }
+@@ -4082,7 +4097,7 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
  
- static void dispc_plane_set_zorder(enum omap_plane plane,
+ 	dispc.pdev = pdev;
+ 
+-	r = dispc_init_features(&dispc.pdev->dev);
++	r = dispc_init_features(dispc.pdev);
+ 	if (r)
+ 		return r;
+ 
 -- 
 1.7.9.5
 

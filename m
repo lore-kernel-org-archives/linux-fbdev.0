@@ -1,144 +1,52 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 05 Sep 2012 08:25:54 +0000
-Subject: [PATCH 16/17] OMAPDSS: Improve fifo management code
-Message-Id: <1346833555-31258-17-git-send-email-tomi.valkeinen@ti.com>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Fri, 28 Sep 2012 10:35:18 +0000
+Subject: [PATCH V3 1/3] OMAPDSS: Move definition of DEBUG flag to Makefile
+Message-Id: <fbaf2825628b01a7b660993a83a8f3de37cfcd04.1348826106.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1348636132.git.cmahapatra@ti.com> <cover.1348826106.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1348826106.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-OMAP4+ allows assigning the overlay FIFOs freely, but that is not
-supported by omapdss yet. This patch takes a step forward by improving
-the fifo management to be more flexible.
+In OMAPDSS the DEBUG flag is set only after the OMAPDSS module is called, for
+which the debugging capabilities are available only after its proper
+initialization. As a result of which tracking of bugs prior to or during initial
+process becomes difficult. So, the definition of DEBUG is being moved to the
+corresponding Makefile.
 
-dispc.c is changed to keep track of the sizes of each fifo, and also the
-overlay using each fifo.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |   39 +++++++++++++++++++++++++++++++--------
- 1 file changed, 31 insertions(+), 8 deletions(-)
+ drivers/video/omap2/dss/Makefile |    1 +
+ drivers/video/omap2/dss/dss.h    |    4 ----
+ 2 files changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index e934abb..dc0f372 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -94,8 +94,11 @@ struct dispc_features {
- 		u16 pos_x, unsigned long *core_clk);
- 	unsigned long (*calc_core_clk) (enum omap_channel channel,
- 		u16 width, u16 height, u16 out_width, u16 out_height);
-+	u8 num_fifos;
- };
+diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
+index 4549869..86493e3 100644
+--- a/drivers/video/omap2/dss/Makefile
++++ b/drivers/video/omap2/dss/Makefile
+@@ -8,3 +8,4 @@ omapdss-$(CONFIG_OMAP2_DSS_SDI) += sdi.o
+ omapdss-$(CONFIG_OMAP2_DSS_DSI) += dsi.o
+ omapdss-$(CONFIG_OMAP4_DSS_HDMI) += hdmi.o \
+ 				    hdmi_panel.o ti_hdmi_4xxx_ip.o
++ccflags-$(CONFIG_OMAP2_DSS_DEBUG_SUPPORT) += -DDEBUG
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 6728892..ffbba7e 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -23,10 +23,6 @@
+ #ifndef __OMAP2_DSS_H
+ #define __OMAP2_DSS_H
  
-+#define DISPC_MAX_NR_FIFOS 5
-+
- static struct {
- 	struct platform_device *pdev;
- 	void __iomem    *base;
-@@ -105,7 +108,9 @@ static struct {
- 	int irq;
- 	struct clk *dss_clk;
- 
--	u32	fifo_size[MAX_DSS_OVERLAYS];
-+	u32 fifo_size[DISPC_MAX_NR_FIFOS];
-+	/* maps which plane is using a fifo. fifo-id -> plane-id */
-+	int fifo_assignment[DISPC_MAX_NR_FIFOS];
- 
- 	spinlock_t irq_lock;
- 	u32 irq_error_mask;
-@@ -1061,10 +1066,10 @@ static void dispc_mgr_set_size(enum omap_channel channel, u16 width,
- 	dispc_write_reg(DISPC_SIZE_MGR(channel), val);
- }
- 
--static void dispc_read_plane_fifo_sizes(void)
-+static void dispc_init_fifos(void)
- {
- 	u32 size;
--	int plane;
-+	int fifo;
- 	u8 start, end;
- 	u32 unit;
- 
-@@ -1072,16 +1077,30 @@ static void dispc_read_plane_fifo_sizes(void)
- 
- 	dss_feat_get_reg_field(FEAT_REG_FIFOSIZE, &start, &end);
- 
--	for (plane = 0; plane < dss_feat_get_num_ovls(); ++plane) {
--		size = REG_GET(DISPC_OVL_FIFO_SIZE_STATUS(plane), start, end);
-+	for (fifo = 0; fifo < dispc.feat->num_fifos; ++fifo) {
-+		size = REG_GET(DISPC_OVL_FIFO_SIZE_STATUS(fifo), start, end);
- 		size *= unit;
--		dispc.fifo_size[plane] = size;
-+		dispc.fifo_size[fifo] = size;
-+
-+		/*
-+		 * By default fifos are mapped directly to overlays, fifo 0 to
-+		 * ovl 0, fifo 1 to ovl 1, etc.
-+		 */
-+		dispc.fifo_assignment[fifo] = fifo;
- 	}
- }
- 
- static u32 dispc_ovl_get_fifo_size(enum omap_plane plane)
- {
--	return dispc.fifo_size[plane];
-+	int fifo;
-+	u32 size = 0;
-+
-+	for (fifo = 0; fifo < dispc.feat->num_fifos; ++fifo) {
-+		if (dispc.fifo_assignment[fifo] = plane)
-+			size += dispc.fifo_size[fifo];
-+	}
-+
-+	return size;
- }
- 
- void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high)
-@@ -3708,7 +3727,7 @@ static void _omap_dispc_initial_config(void)
- 
- 	dispc_set_loadmode(OMAP_DSS_LOAD_FRAME_ONLY);
- 
--	dispc_read_plane_fifo_sizes();
-+	dispc_init_fifos();
- 
- 	dispc_configure_burst_sizes();
- 
-@@ -3724,6 +3743,7 @@ static const struct dispc_features omap24xx_dispc_feats __initconst = {
- 	.hp_max			=	256,
- 	.calc_scaling		=	dispc_ovl_calc_scaling_24xx,
- 	.calc_core_clk		=	calc_core_clk_24xx,
-+	.num_fifos		=	3,
- };
- 
- static const struct dispc_features omap34xx_rev1_0_dispc_feats __initconst = {
-@@ -3735,6 +3755,7 @@ static const struct dispc_features omap34xx_rev1_0_dispc_feats __initconst = {
- 	.hp_max			=	256,
- 	.calc_scaling		=	dispc_ovl_calc_scaling_34xx,
- 	.calc_core_clk		=	calc_core_clk_34xx,
-+	.num_fifos		=	3,
- };
- 
- static const struct dispc_features omap34xx_rev3_0_dispc_feats __initconst = {
-@@ -3746,6 +3767,7 @@ static const struct dispc_features omap34xx_rev3_0_dispc_feats __initconst = {
- 	.hp_max			=	4096,
- 	.calc_scaling		=	dispc_ovl_calc_scaling_34xx,
- 	.calc_core_clk		=	calc_core_clk_34xx,
-+	.num_fifos		=	3,
- };
- 
- static const struct dispc_features omap44xx_dispc_feats __initconst = {
-@@ -3757,6 +3779,7 @@ static const struct dispc_features omap44xx_dispc_feats __initconst = {
- 	.hp_max			=	4096,
- 	.calc_scaling		=	dispc_ovl_calc_scaling_44xx,
- 	.calc_core_clk		=	calc_core_clk_44xx,
-+	.num_fifos		=	5,
- };
- 
- static int __init dispc_init_features(struct device *dev)
+-#ifdef CONFIG_OMAP2_DSS_DEBUG_SUPPORT
+-#define DEBUG
+-#endif
+-
+ #ifdef DEBUG
+ extern bool dss_debug;
+ #ifdef DSS_SUBSYS_NAME
 -- 
-1.7.9.5
+1.7.10
 

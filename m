@@ -1,111 +1,184 @@
-From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Date: Fri, 21 Sep 2012 15:51:47 +0000
-Subject: [PATCH v2] da8xx-fb: add pm_runtime support
-Message-Id: <1348242657-2842-1-git-send-email-prakash.pm@ti.com>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Sat, 29 Sep 2012 10:52:09 +0000
+Subject: [PATCH V4 3/5] OMAPDSS: Cleanup DSSDBG with dynamic pr_debug function
+Message-Id: <d125b22d3ca6f2863b3a42426ab395941e8092d8.1348914940.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1348826106.git.cmahapatra@ti.com> <cover.1348914940.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1348914940.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-Add pm_runtime support to the da8xx-fb frame buffer driver.
+The printk in DSSDBG function definition is replaced with dynamic debug enabled
+pr_debug(). The use of dynamic debugging provides more flexibility as each debug
+statement can be enabled or disabled dynamically on basis of source filename,
+line number, module name etc., by writing to a control file in debugfs
+filesystem. For better understanding please refer to
+Documentation/dynamic-debug-howto.txt.
 
-Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+The DSSDBGF() differs from DSSDBG() by providing function name. However,
+function name, line number, module name and thread ID can be printed through
+dynamic debug by setting appropriate flags 'f','l','m' and 't' in the debugfs
+control file. So, DSSDBGF instances are replaced with DSSDBG.
+
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
 ---
-Applies on top of patch "da8xx-fb: enable LCDC if FB is unblanked" under review.
-Since v1:
-Use pm_runtime_put_sync in PM suspend callback.
+ drivers/video/omap2/dss/apply.c |    8 ++++----
+ drivers/video/omap2/dss/dsi.c   |   12 ++++++------
+ drivers/video/omap2/dss/dss.h   |   34 ++++++++--------------------------
+ 3 files changed, 18 insertions(+), 36 deletions(-)
 
- drivers/video/da8xx-fb.c |   27 +++++++++++++--------------
- 1 files changed, 13 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index af2aa38..4280d23 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -26,6 +26,7 @@
- #include <linux/device.h>
- #include <linux/platform_device.h>
- #include <linux/uaccess.h>
-+#include <linux/pm_runtime.h>
- #include <linux/interrupt.h>
- #include <linux/wait.h>
- #include <linux/clk.h>
-@@ -1037,8 +1038,8 @@ static int __devexit fb_remove(struct platform_device *dev)
- 		dma_free_coherent(NULL, par->vram_size, par->vram_virt,
- 				  par->vram_phys);
- 		free_irq(par->irq, par);
--		clk_disable(par->lcdc_clk);
--		clk_put(par->lcdc_clk);
-+		pm_runtime_put_sync(&dev->dev);
-+		pm_runtime_disable(&dev->dev);
- 		framebuffer_release(info);
- 		iounmap((void __iomem *)da8xx_fb_reg_base);
- 		release_mem_region(lcdc_regs->start, resource_size(lcdc_regs));
-@@ -1272,9 +1273,9 @@ static int __devinit fb_probe(struct platform_device *device)
- 		ret = -ENODEV;
- 		goto err_ioremap;
- 	}
--	ret = clk_enable(fb_clk);
--	if (ret)
--		goto err_clk_put;
-+
-+	pm_runtime_enable(&device->dev);
-+	pm_runtime_get_sync(&device->dev);
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 19d66f4..e923d9f 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -573,7 +573,7 @@ static void dss_ovl_write_regs(struct omap_overlay *ovl)
+ 	struct mgr_priv_data *mp;
+ 	int r;
  
- 	/* Determine LCD IP Version */
- 	switch (lcdc_read(LCD_PID_REG)) {
-@@ -1302,7 +1303,7 @@ static int __devinit fb_probe(struct platform_device *device)
- 	if (i = ARRAY_SIZE(known_lcd_panels)) {
- 		dev_err(&device->dev, "GLCD: No valid panel found\n");
- 		ret = -ENODEV;
--		goto err_clk_disable;
-+		goto err_pm_runtime_disable;
- 	} else
- 		dev_info(&device->dev, "GLCD: Found %s panel\n",
- 					fb_pdata->type);
-@@ -1314,7 +1315,7 @@ static int __devinit fb_probe(struct platform_device *device)
- 	if (!da8xx_fb_info) {
- 		dev_dbg(&device->dev, "Memory allocation failed for fb_info\n");
- 		ret = -ENOMEM;
--		goto err_clk_disable;
-+		goto err_pm_runtime_disable;
- 	}
+-	DSSDBGF("%d", ovl->id);
++	DSSDBG("writing ovl %d regs", ovl->id);
  
- 	par = da8xx_fb_info->par;
-@@ -1476,11 +1477,9 @@ err_release_fb_mem:
- err_release_fb:
- 	framebuffer_release(da8xx_fb_info);
+ 	if (!op->enabled || !op->info_dirty)
+ 		return;
+@@ -608,7 +608,7 @@ static void dss_ovl_write_regs_extra(struct omap_overlay *ovl)
+ 	struct ovl_priv_data *op = get_ovl_priv(ovl);
+ 	struct mgr_priv_data *mp;
  
--err_clk_disable:
--	clk_disable(fb_clk);
--
--err_clk_put:
--	clk_put(fb_clk);
-+err_pm_runtime_disable:
-+	pm_runtime_put_sync(&device->dev);
-+	pm_runtime_disable(&device->dev);
+-	DSSDBGF("%d", ovl->id);
++	DSSDBG("writing ovl %d regs extra", ovl->id);
  
- err_ioremap:
- 	iounmap((void __iomem *)da8xx_fb_reg_base);
-@@ -1503,7 +1502,7 @@ static int fb_suspend(struct platform_device *dev, pm_message_t state)
+ 	if (!op->extra_info_dirty)
+ 		return;
+@@ -632,7 +632,7 @@ static void dss_mgr_write_regs(struct omap_overlay_manager *mgr)
+ 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
+ 	struct omap_overlay *ovl;
  
- 	fb_set_suspend(info, 1);
- 	lcd_disable_raster(true);
--	clk_disable(par->lcdc_clk);
-+	pm_runtime_put_sync(&dev->dev);
- 	console_unlock();
+-	DSSDBGF("%d", mgr->id);
++	DSSDBG("writing mgr %d regs", mgr->id);
  
- 	return 0;
-@@ -1514,7 +1513,7 @@ static int fb_resume(struct platform_device *dev)
- 	struct da8xx_fb_par *par = info->par;
+ 	if (!mp->enabled)
+ 		return;
+@@ -658,7 +658,7 @@ static void dss_mgr_write_regs_extra(struct omap_overlay_manager *mgr)
+ {
+ 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
  
- 	console_lock();
--	clk_enable(par->lcdc_clk);
-+	pm_runtime_get_sync(&dev->dev);
- 	if (par->blank = FB_BLANK_UNBLANK) {
- 		lcd_enable_raster();
+-	DSSDBGF("%d", mgr->id);
++	DSSDBG("writing mgr %d regs extra", mgr->id);
  
+ 	if (!mp->extra_info_dirty)
+ 		return;
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index e37e6d8..b0345f3 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -1612,7 +1612,7 @@ int dsi_pll_set_clock_div(struct platform_device *dsidev,
+ 	u8 regn_start, regn_end, regm_start, regm_end;
+ 	u8 regm_dispc_start, regm_dispc_end, regm_dsi_start, regm_dsi_end;
+ 
+-	DSSDBGF();
++	DSSDBG("DSI PLL clock config starts");
+ 
+ 	dsi->current_cinfo.clkin = cinfo->clkin;
+ 	dsi->current_cinfo.fint = cinfo->fint;
+@@ -2431,7 +2431,7 @@ static int dsi_cio_init(struct platform_device *dsidev)
+ 	int r;
+ 	u32 l;
+ 
+-	DSSDBGF();
++	DSSDBG("DSI CIO init starts");
+ 
+ 	r = dss_dsi_enable_pads(dsi->module_id, dsi_get_lane_mask(dsidev));
+ 	if (r)
+@@ -2782,7 +2782,7 @@ static void dsi_vc_initial_config(struct platform_device *dsidev, int channel)
+ {
+ 	u32 r;
+ 
+-	DSSDBGF("%d", channel);
++	DSSDBG("Initial config of virtual channel %d", channel);
+ 
+ 	r = dsi_read_reg(dsidev, DSI_VC_CTRL(channel));
+ 
+@@ -2814,7 +2814,7 @@ static int dsi_vc_config_source(struct platform_device *dsidev, int channel,
+ 	if (dsi->vc[channel].source = source)
+ 		return 0;
+ 
+-	DSSDBGF("%d", channel);
++	DSSDBG("Source config of virtual channel %d", channel);
+ 
+ 	dsi_sync_vc(dsidev, channel);
+ 
+@@ -3572,7 +3572,7 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
+ 	int r, i;
+ 	unsigned mask;
+ 
+-	DSSDBGF();
++	DSSDBG("Entering ULPS");
+ 
+ 	WARN_ON(!dsi_bus_is_locked(dsidev));
+ 
+@@ -4276,7 +4276,7 @@ int omapdss_dsi_set_clocks(struct omap_dss_device *dssdev,
+ 	unsigned long pck;
+ 	int r;
+ 
+-	DSSDBGF("ddr_clk %lu, lp_clk %lu", ddr_clk, lp_clk);
++	DSSDBG("Setting DSI clocks: ddr_clk %lu, lp_clk %lu", ddr_clk, lp_clk);
+ 
+ 	mutex_lock(&dsi->lock);
+ 
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index a8a1ab4..8bef7ee 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -25,38 +25,20 @@
+ 
+ #ifdef DEBUG
+ extern bool dss_debug;
+-#ifdef DSS_SUBSYS_NAME
+-#define DSSDBG(format, ...) \
+-	if (dss_debug) \
+-		printk(KERN_DEBUG "omapdss " DSS_SUBSYS_NAME ": " format, \
+-		## __VA_ARGS__)
+-#else
+-#define DSSDBG(format, ...) \
+-	if (dss_debug) \
+-		printk(KERN_DEBUG "omapdss: " format, ## __VA_ARGS__)
+ #endif
+ 
+-#ifdef DSS_SUBSYS_NAME
+-#define DSSDBGF(format, ...) \
+-	if (dss_debug) \
+-		printk(KERN_DEBUG "omapdss " DSS_SUBSYS_NAME \
+-				": %s(" format ")\n", \
+-				__func__, \
+-				## __VA_ARGS__)
+-#else
+-#define DSSDBGF(format, ...) \
+-	if (dss_debug) \
+-		printk(KERN_DEBUG "omapdss: " \
+-				": %s(" format ")\n", \
+-				__func__, \
+-				## __VA_ARGS__)
++#ifdef pr_fmt
++#undef pr_fmt
+ #endif
+ 
+-#else /* DEBUG */
+-#define DSSDBG(format, ...)
+-#define DSSDBGF(format, ...)
++#ifdef DSS_SUBSYS_NAME
++#define pr_fmt(fmt) DSS_SUBSYS_NAME ": " fmt
++#else
++#define pr_fmt(fmt) fmt
+ #endif
+ 
++#define DSSDBG(format, ...) \
++	pr_debug(format, ## __VA_ARGS__)
+ 
+ #ifdef DSS_SUBSYS_NAME
+ #define DSSERR(format, ...) \
 -- 
-1.7.0.4
+1.7.10
 

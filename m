@@ -1,32 +1,71 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Thu, 20 Sep 2012 17:12:41 +0000
-Subject: Re: [PATCH 04/29] ARM: OMAP1: Move board-ams-delta.h from plat to mach
-Message-Id: <20120920171134.GB28835@atomide.com>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Sat, 29 Sep 2012 10:51:50 +0000
+Subject: [PATCH V4 0/5] OMAPDSS: Enable dynamic debug printing
+Message-Id: <cover.1348914940.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120919205732.28074.43697.stgit@muffinssi>
- <20120919210543.28074.10214.stgit@muffinssi>
- <20120920011630.GB17666@opensource.wolfsonmicro.com>
-In-Reply-To: <20120920011630.GB17666@opensource.wolfsonmicro.com>
+References: <cover.1348826106.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1348826106.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>, Artem Bityutskiy <Artem.Bityutskiy@linux.intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, alsa-devel@alsa-project.org, Peter Ujfalusi <peter.ujfalusi@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-mtd@lists.infradead.org, linux-input@vger.kernel.org, linux-omap@vger.kernel.org, Liam Girdwood <lrg@ti.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-* Mark Brown <broonie@opensource.wolfsonmicro.com> [120919 19:05]:
-> On Wed, Sep 19, 2012 at 02:05:43PM -0700, Tony Lindgren wrote:
-> > This is only used by omap1.
-> > 
-> > And to fix things properly, this should not be included
-> > from the drivers at all.
-> 
-> Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> 
-> or I can apply it if that's easier.
+Hi everyone,
+this patch series aims at cleaning up of DSS of printk()'s enabled with
+dss_debug and replace them with generic dynamic debug printing.
 
-Thanks I'll do a series for Arnd on top of the multiplatform
-changes to avoid more merge conflicts.
+The 1st patch
+ * moved DEBUG flag definition to Makefile
+The 2nd patch
+ * created two debug config options OMAP2_DSS_DEBUG and OMAP2_DSS_DEBUGFS
+The 3rd patch
+ * replaces printk() in DSSDBG definition with pr_debug()
+ * removes DSSDBGF definition and replaces its instances with DSSDBG() 
+The 4th patch
+ * cleans up printk()'s in omap_dispc_unregister_isr() and 
+   _dsi_print_reset_status() with pr_debug()
+The 5th patch
+ * removes dss_debug variable
+
+Changes from V1 to V2:
+ * added debug messages to DSSDBG calls
+ * added patch "OMAPDSS: Remove dss_debug variable"
+
+Changes from V2 to V3
+ * added patch "OMAPDSS: Move definition of DEBUG flag to Makefile"
+
+Changes from V3 to V4:
+ * added patch "OMAPDSS: Create new debug config options"
+ * broke earlier patch "OMAPDSS: Remove dss_debug variable" into two parts as
+   "OMAPDSS: Replace multi part debug prints with pr_debug" and
+   "OMAPDSS: Remove dss_debug variable"
+
+All your comments and suggestions are welcome.
+
+Refenence Tree:
+git://gitorious.org/linux-omap-dss2/chandrabhanus-linux.git dss_cleanup
 
 Regards,
+Chandrabhanu
 
-Tony
+Chandrabhanu Mahapatra (5):
+  OMAPDSS: Move definition of DEBUG flag to Makefile
+  OMAPDSS: Create new debug config options
+  OMAPDSS: Cleanup DSSDBG with dynamic pr_debug function
+  OMAPDSS: Replace multi part debug prints with pr_debug
+  OMAPDSS: Remove dss_debug variable
+
+ drivers/video/omap2/dss/Kconfig  |   21 +++++++++++-----
+ drivers/video/omap2/dss/Makefile |    1 +
+ drivers/video/omap2/dss/apply.c  |    8 +++----
+ drivers/video/omap2/dss/core.c   |   11 +++------
+ drivers/video/omap2/dss/dispc.c  |   40 ++++++++++++-------------------
+ drivers/video/omap2/dss/dsi.c    |   49 ++++++++++++++++----------------------
+ drivers/video/omap2/dss/dss.c    |    2 +-
+ drivers/video/omap2/dss/dss.h    |   40 ++++++-------------------------
+ 8 files changed, 66 insertions(+), 106 deletions(-)
+
+-- 
+1.7.10
+

@@ -1,69 +1,119 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Tue, 04 Sep 2012 10:30:51 +0000
-Subject: [GIT PULL] fbdev fixes for 3.6
-Message-Id: <5045D85B.6060501@gmx.de>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Sat, 29 Sep 2012 10:52:15 +0000
+Subject: [PATCH V4 4/5] OMAPDSS: Replace multi part debug prints with pr_debug
+Message-Id: <8fb0b3848f5d6148889f2b5160b8aa40e764f409.1348914940.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1348826106.git.cmahapatra@ti.com> <cover.1348914940.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1348914940.git.cmahapatra@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-Hi Linus,
+The omap_dispc_unregister_isr() and _dsi_print_reset_status() consist of a
+number of debug prints which need to be enabled all at once or none at all. So,
+these debug prints in corresponding functions are replaced with one dynamic
+debug enabled pr_debug() each.
 
-please pull the fixes below.
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+---
+ drivers/video/omap2/dss/dispc.c |   32 +++++++++++++-------------------
+ drivers/video/omap2/dss/dsi.c   |   30 ++++++++++++++----------------
+ 2 files changed, 27 insertions(+), 35 deletions(-)
 
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index a173a94..67d9f3b 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -3675,26 +3675,20 @@ static void print_irq_status(u32 status)
+ 	if ((status & dispc.irq_error_mask) = 0)
+ 		return;
+ 
+-	printk(KERN_DEBUG "DISPC IRQ: 0x%x: ", status);
+-
+-#define PIS(x) \
+-	if (status & DISPC_IRQ_##x) \
+-		printk(#x " ");
+-	PIS(GFX_FIFO_UNDERFLOW);
+-	PIS(OCP_ERR);
+-	PIS(VID1_FIFO_UNDERFLOW);
+-	PIS(VID2_FIFO_UNDERFLOW);
+-	if (dss_feat_get_num_ovls() > 3)
+-		PIS(VID3_FIFO_UNDERFLOW);
+-	PIS(SYNC_LOST);
+-	PIS(SYNC_LOST_DIGIT);
+-	if (dss_has_feature(FEAT_MGR_LCD2))
+-		PIS(SYNC_LOST2);
+-	if (dss_has_feature(FEAT_MGR_LCD3))
+-		PIS(SYNC_LOST3);
++#define PIS(x) (status & DISPC_IRQ_##x) ? (#x " ") : ""
++
++	pr_debug("DISPC IRQ: 0x%x: %s%s%s%s%s%s%s%s%s\n",
++		status,
++		PIS(OCP_ERR),
++		PIS(GFX_FIFO_UNDERFLOW),
++		PIS(VID1_FIFO_UNDERFLOW),
++		PIS(VID2_FIFO_UNDERFLOW),
++		dss_feat_get_num_ovls() > 3 ? PIS(VID3_FIFO_UNDERFLOW) : "",
++		PIS(SYNC_LOST),
++		PIS(SYNC_LOST_DIGIT),
++		dss_has_feature(FEAT_MGR_LCD2) ? PIS(SYNC_LOST2) : "",
++		dss_has_feature(FEAT_MGR_LCD3) ? PIS(SYNC_LOST3) : "");
+ #undef PIS
+-
+-	printk("\n");
+ }
+ #endif
+ 
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index b0345f3..6dd073a 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -1121,14 +1121,6 @@ static void _dsi_print_reset_status(struct platform_device *dsidev)
+ 	 * I/O. */
+ 	l = dsi_read_reg(dsidev, DSI_DSIPHY_CFG5);
+ 
+-	printk(KERN_DEBUG "DSI resets: ");
+-
+-	l = dsi_read_reg(dsidev, DSI_PLL_STATUS);
+-	printk("PLL (%d) ", FLD_GET(l, 0, 0));
+-
+-	l = dsi_read_reg(dsidev, DSI_COMPLEXIO_CFG1);
+-	printk("CIO (%d) ", FLD_GET(l, 29, 29));
+-
+ 	if (dss_has_feature(FEAT_DSI_REVERSE_TXCLKESC)) {
+ 		b0 = 28;
+ 		b1 = 27;
+@@ -1139,14 +1131,20 @@ static void _dsi_print_reset_status(struct platform_device *dsidev)
+ 		b2 = 26;
+ 	}
+ 
+-	l = dsi_read_reg(dsidev, DSI_DSIPHY_CFG5);
+-	printk("PHY (%x%x%x, %d, %d, %d)\n",
+-			FLD_GET(l, b0, b0),
+-			FLD_GET(l, b1, b1),
+-			FLD_GET(l, b2, b2),
+-			FLD_GET(l, 29, 29),
+-			FLD_GET(l, 30, 30),
+-			FLD_GET(l, 31, 31));
++#define DSI_FLD_GET(fld, start, end)\
++	FLD_GET(dsi_read_reg(dsidev, DSI_##fld), start, end)
++
++	pr_debug("DSI resets: PLL (%d) CIO (%d) PHY (%x%x%x, %d, %d, %d)\n",
++		DSI_FLD_GET(PLL_STATUS, 0, 0),
++		DSI_FLD_GET(COMPLEXIO_CFG1, 29, 29),
++		DSI_FLD_GET(DSIPHY_CFG5, b0, b0),
++		DSI_FLD_GET(DSIPHY_CFG5, b1, b1),
++		DSI_FLD_GET(DSIPHY_CFG5, b2, b2),
++		DSI_FLD_GET(DSIPHY_CFG5, 29, 29),
++		DSI_FLD_GET(DSIPHY_CFG5, 30, 30),
++		DSI_FLD_GET(DSIPHY_CFG5, 31, 31));
++
++#undef DSI_FLD_GET
+ }
+ #else
+ #define _dsi_print_reset_status(x)
+-- 
+1.7.10
 
-Thanks,
-
-Florian Tobias Schandinat
-
-
-The following changes since commit fea7a08acb13524b47711625eebea40a0ede69a0:
-
-  Linux 3.6-rc3 (2012-08-22 13:29:06 -0700)
-
-are available in the git repository at:
-
-  git://github.com/schandinat/linux-2.6.git fbdev-fixes-for-3.6-1
-
-for you to fetch changes up to c1c52848cef52e157468b8879fc3cae23b6f3a99:
-
-  OMAPFB: fix framebuffer console colors (2012-08-23 12:37:22 +0000)
-
-----------------------------------------------------------------
-fbdev fixes for 3.6
-
-- a fix by Paul Cercueil to prevent a possible buffer overflow
-- a fix by Bruno Pr=E9mont to prevent a rare sleep in invalid context
-- a fix by Julia Lawall for a double free in auo_k190x
-- a fix by Dan Carpenter to prevent a division by zero in mb862xxfb
-- a regression fix by Tomi Valkeinen for the SDI output in OMAP
-- a fix by Grazvydas Ignotas to fix the console colors in OMAP
-
-----------------------------------------------------------------
-Bruno Pr=E9mont (1):
-      fbcon: Fix bit_putcs() call to kmalloc(s, GFP_KERNEL)
-
-Dan Carpenter (1):
-      video: mb862xxfb: prevent divide by zero bug
-
-Grazvydas Ignotas (1):
-      OMAPFB: fix framebuffer console colors
-
-Julia Lawall (1):
-      drivers/video/auo_k190x.c: drop kfree of devm_kzalloc's data
-
-Paul Cercueil (1):
-      fbcon: prevent possible buffer overflow.
-
-Tomi Valkeinen (1):
-      OMAPDSS: Fix SDI PLL locking
-
- drivers/video/auo_k190x.c                |    2 --
- drivers/video/console/bitblit.c          |    2 +-
- drivers/video/console/fbcon.c            |    2 +-
- drivers/video/mb862xx/mb862xxfbdrv.c     |    2 ++
- drivers/video/omap2/dss/sdi.c            |   14 ++++++++++++++
- drivers/video/omap2/omapfb/omapfb-main.c |    2 +-
- 6 files changed, 19 insertions(+), 5 deletions(-)

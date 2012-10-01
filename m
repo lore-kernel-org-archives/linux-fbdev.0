@@ -1,267 +1,139 @@
-From: Zhou Zhu <zzhu3@marvell.com>
-Date: Wed, 24 Oct 2012 06:57:47 +0000
-Subject: [PATCHv4 5/9] video: mmpdisp: add spi port in display controller
-Message-Id: <1351061867-6140-1-git-send-email-zzhu3@marvell.com>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Mon, 01 Oct 2012 07:51:06 +0000
+Subject: [PATCH V5 2/5] OMAPDSS: Create new debug config options
+Message-Id: <1349077680-13559-1-git-send-email-cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <af097b99b4d2eab96850fd6d8a0c260917aa4f98.1348914940.git.cmahapatra@ti.com>
+In-Reply-To: <af097b99b4d2eab96850fd6d8a0c260917aa4f98.1348914940.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-Added spi port support in mmp display controller.
-This port is from display controller and for panel usage.
-This driver implemented and registered as a spi master.
+The config option CONFIG_OMAP2_DSS_DEBUG_SUPPORT has been removed and replaced
+with CONFIG_OMAP2_DSS_DEBUG and CONFIG_OMAP2_DSS_DEBUGFS. CONFIG_OMAP2_DSS_DEBUG
+enables DEBUG flag and CONFIG_OMAP2_DSS_DEBUGFS enables creation of debugfs for
+OMAPDSS. Both the config options are disabled by default and can be enabled
+independently of one another as per convenience.
 
-Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
 ---
- drivers/video/mmp/hw/Kconfig    |    8 ++
- drivers/video/mmp/hw/Makefile   |    1 +
- drivers/video/mmp/hw/mmp_ctrl.c |    6 ++
- drivers/video/mmp/hw/mmp_ctrl.h |    4 +
- drivers/video/mmp/hw/mmp_spi.c  |  180 +++++++++++++++++++++++++++++++++++++++
- 5 files changed, 199 insertions(+), 0 deletions(-)
- create mode 100644 drivers/video/mmp/hw/mmp_spi.c
+changes from V4 to V5
+ * added "depends on DEBUG_FS" to OMAP2_DSS_DEBUGFS defintion in Kconfig so that
+   CONFIG_OMAP2_DSS_DEBUGFS check become cleaner
 
-diff --git a/drivers/video/mmp/hw/Kconfig b/drivers/video/mmp/hw/Kconfig
-index 6c1dd34..02f109a 100644
---- a/drivers/video/mmp/hw/Kconfig
-+++ b/drivers/video/mmp/hw/Kconfig
-@@ -9,4 +9,12 @@ config MMP_DISP_CONTROLLER
- 		this controller is used on Marvell PXA910,
- 		MMP2, MMP3, PXA988 chips
+ drivers/video/omap2/dss/Kconfig  |   22 ++++++++++++++++------
+ drivers/video/omap2/dss/Makefile |    2 +-
+ drivers/video/omap2/dss/core.c   |    6 +++---
+ drivers/video/omap2/dss/dss.c    |    2 +-
+ drivers/video/omap2/dss/dss.h    |    2 +-
+ 5 files changed, 22 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/Kconfig b/drivers/video/omap2/dss/Kconfig
+index 80f5390..7052487 100644
+--- a/drivers/video/omap2/dss/Kconfig
++++ b/drivers/video/omap2/dss/Kconfig
+@@ -18,16 +18,26 @@ config OMAP2_VRAM_SIZE
+ 	  You can also set this with "vram=<bytes>" kernel argument, or
+ 	  in the board file.
  
-+config MMP_DISP_SPI
-+	bool "mmp display controller spi port"
-+	depends on MMP_DISP_CONTROLLER && SPI_MASTER
-+	default y
+-config OMAP2_DSS_DEBUG_SUPPORT
+-        bool "Debug support"
+-	default y
++config OMAP2_DSS_DEBUG
++	bool "Debug support"
++	default n
 +	help
-+		Marvell MMP display hw controller spi port support
-+		will register as a spi master for panel usage
++	  This enables printing of debug messages. Alternatively, debug messages
++	  can also be enabled by setting CONFIG_DYNAMIC_DEBUG and then setting
++	  appropriate flags in <debugfs>/dynamic_debug/control.
 +
- endif
-diff --git a/drivers/video/mmp/hw/Makefile b/drivers/video/mmp/hw/Makefile
-index f34ace8..0000a71 100644
---- a/drivers/video/mmp/hw/Makefile
-+++ b/drivers/video/mmp/hw/Makefile
-@@ -1 +1,2 @@
- obj-$(CONFIG_MMP_DISP_CONTROLLER)  += mmp_ctrl.o
-+obj-$(CONFIG_MMP_DISP_SPI)	   += mmp_spi.o
-diff --git a/drivers/video/mmp/hw/mmp_ctrl.c b/drivers/video/mmp/hw/mmp_ctrl.c
-index 4a824f4..68066aa 100644
---- a/drivers/video/mmp/hw/mmp_ctrl.c
-+++ b/drivers/video/mmp/hw/mmp_ctrl.c
-@@ -534,6 +534,12 @@ static int __devinit mmphw_probe(struct platform_device *pdev)
- 		}
- 	}
++config OMAP2_DSS_DEBUGFS
++	bool "Debugfs filesystem support"
++	depends on DEBUG_FS
++	default n
+ 	help
+-	  This enables debug messages. You need to enable printing
+-	  with 'debug' module parameter.
++	  This enables debugfs for OMAPDSS at <debugfs>/omapdss. This enables
++	  querying about clock configuration and register configuration of dss,
++	  dispc, dsi, hdmi and rfbi.
  
-+#ifdef CONFIG_MMP_DISP_SPI
-+	ret = lcd_spi_register(ctrl);
-+	if (ret < 0)
-+		goto failed_path_init;
-+#endif
-+
- 	dev_info(ctrl->dev, "device init done\n");
+ config OMAP2_DSS_COLLECT_IRQ_STATS
+ 	bool "Collect DSS IRQ statistics"
+-	depends on OMAP2_DSS_DEBUG_SUPPORT
++	depends on OMAP2_DSS_DEBUGFS
+ 	default n
+ 	help
+ 	  Collect DSS IRQ statistics, printable via debugfs.
+diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
+index 86493e3..4070191 100644
+--- a/drivers/video/omap2/dss/Makefile
++++ b/drivers/video/omap2/dss/Makefile
+@@ -8,4 +8,4 @@ omapdss-$(CONFIG_OMAP2_DSS_SDI) += sdi.o
+ omapdss-$(CONFIG_OMAP2_DSS_DSI) += dsi.o
+ omapdss-$(CONFIG_OMAP4_DSS_HDMI) += hdmi.o \
+ 				    hdmi_panel.o ti_hdmi_4xxx_ip.o
+-ccflags-$(CONFIG_OMAP2_DSS_DEBUG_SUPPORT) += -DDEBUG
++ccflags-$(CONFIG_OMAP2_DSS_DEBUG) += -DDEBUG
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index b2af72d..826d64f 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -138,7 +138,7 @@ int dss_set_min_bus_tput(struct device *dev, unsigned long tput)
+ 		return 0;
+ }
+ 
+-#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
++#if defined(CONFIG_OMAP2_DSS_DEBUGFS)
+ static int dss_debug_show(struct seq_file *s, void *unused)
+ {
+ 	void (*func)(struct seq_file *) = s->private;
+@@ -193,7 +193,7 @@ int dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *))
  
  	return 0;
-diff --git a/drivers/video/mmp/hw/mmp_ctrl.h b/drivers/video/mmp/hw/mmp_ctrl.h
-index a953ead..61b4de5 100644
---- a/drivers/video/mmp/hw/mmp_ctrl.h
-+++ b/drivers/video/mmp/hw/mmp_ctrl.h
-@@ -1951,4 +1951,8 @@ static inline struct lcd_regs *path_regs(struct mmp_path *path)
- 		return NULL;
- 	}
  }
-+
-+#ifdef CONFIG_MMP_DISP_SPI
-+extern int __devinit lcd_spi_register(struct mmphw_ctrl *ctrl);
-+#endif
- #endif	/* _MMP_CTRL_H_ */
-diff --git a/drivers/video/mmp/hw/mmp_spi.c b/drivers/video/mmp/hw/mmp_spi.c
-new file mode 100644
-index 0000000..6d1ef36
---- /dev/null
-+++ b/drivers/video/mmp/hw/mmp_spi.c
-@@ -0,0 +1,180 @@
-+/*
-+ * linux/drivers/video/mmp/hw/mmp_spi.c
-+ * using the spi in LCD controler for commands send
-+ *
-+ * Copyright (C) 2012 Marvell Technology Group Ltd.
-+ * Authors:  Guoqing Li <ligq@marvell.com>
-+ *          Lisa Du <cldu@marvell.com>
-+ *          Zhou Zhu <zzhu3@marvell.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the
-+ * Free Software Foundation; either version 2 of the License, or (at your
-+ * option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
-+ *
-+ */
-+#include <linux/errno.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/spi/spi.h>
-+#include "mmp_ctrl.h"
-+
-+/**
-+ * spi_write - write command to the SPI port
-+ * @data: can be 8/16/32-bit, MSB justified data to write.
-+ * @len:  data length.
-+ *
-+ * Wait bus transfer complete IRQ.
-+ * The caller is expected to perform the necessary locking.
-+ *
-+ * Returns:
-+ *   %-ETIMEDOUT	timeout occurred
-+ *   0			success
-+ */
-+static inline int lcd_spi_write(struct spi_device *spi, u32 data)
-+{
-+	int timeout = 100000, isr, ret = 0;
-+	u32 tmp;
-+	void *reg_base =\
-+		*(void **)spi_master_get_devdata(spi->master);
-+
-+	/* clear ISR */
-+	writel_relaxed(~SPI_IRQ_MASK, reg_base + SPU_IRQ_ISR);
-+
-+	switch (spi->bits_per_word) {
-+	case 8:
-+		writel_relaxed((u8)data, reg_base + LCD_SPU_SPI_TXDATA);
-+		break;
-+	case 16:
-+		writel_relaxed((u16)data, reg_base + LCD_SPU_SPI_TXDATA);
-+		break;
-+	case 32:
-+		writel_relaxed((u32)data, reg_base + LCD_SPU_SPI_TXDATA);
-+		break;
-+	default:
-+		dev_err(&spi->dev, "Wrong spi bit length\n");
-+	}
-+
-+	/* SPI start to send command */
-+	tmp = readl_relaxed(reg_base + LCD_SPU_SPI_CTRL);
-+	tmp &= ~CFG_SPI_START_MASK;
-+	tmp |= CFG_SPI_START(1);
-+	writel(tmp, reg_base + LCD_SPU_SPI_CTRL);
-+
-+	isr = readl_relaxed(reg_base + SPU_IRQ_ISR);
-+	while (!(isr & SPI_IRQ_ENA_MASK)) {
-+		udelay(100);
-+		isr = readl_relaxed(reg_base + SPU_IRQ_ISR);
-+		if (!--timeout) {
-+			ret = -ETIMEDOUT;
-+			dev_err(&spi->dev, "spi cmd send time out\n");
-+			break;
-+		}
-+	}
-+
-+	tmp = readl_relaxed(reg_base + LCD_SPU_SPI_CTRL);
-+	tmp &= ~CFG_SPI_START_MASK;
-+	tmp |= CFG_SPI_START(0);
-+	writel_relaxed(tmp, reg_base + LCD_SPU_SPI_CTRL);
-+
-+	writel_relaxed(~SPI_IRQ_MASK, reg_base + SPU_IRQ_ISR);
-+
-+	return ret;
-+}
-+
-+int lcd_spi_setup(struct spi_device *spi)
-+{
-+	void *reg_base =\
-+		*(void **)spi_master_get_devdata(spi->master);
-+	u32 tmp;
-+
-+	tmp = CFG_SCLKCNT(16) |\
-+		CFG_TXBITS(spi->bits_per_word) |\
-+		CFG_SPI_SEL(1) | CFG_SPI_ENA(1) |\
-+		CFG_SPI_3W4WB(1);
-+	writel(tmp, reg_base + LCD_SPU_SPI_CTRL);
-+
-+	/*
-+	 * After set mode it need a time to pull up the spi singals,
-+	 * or it would cause the wrong waveform when send spi command,
-+	 * especially on pxa910h
-+	 */
-+	tmp = readl_relaxed(reg_base + SPU_IOPAD_CONTROL);
-+	if ((tmp & CFG_IOPADMODE_MASK) != IOPAD_DUMB18SPI)
-+		writel_relaxed(IOPAD_DUMB18SPI |
-+			(tmp & ~CFG_IOPADMODE_MASK),
-+			reg_base + SPU_IOPAD_CONTROL);
-+	udelay(20);
-+	return 0;
-+}
-+
-+static int lcd_spi_one_transfer(struct spi_device *spi, struct spi_message *m)
-+{
-+	struct spi_transfer *t;
-+	int i;
-+
-+	list_for_each_entry(t, &m->transfers, transfer_list) {
-+		switch (spi->bits_per_word) {
-+		case 8:
-+			for (i = 0; i < t->len; i++)
-+				lcd_spi_write(spi, ((u8 *)t->tx_buf)[i]);
-+			break;
-+		case 16:
-+			for (i = 0; i < t->len/2; i++)
-+				lcd_spi_write(spi, ((u16 *)t->tx_buf)[i]);
-+			break;
-+		case 32:
-+			for (i = 0; i < t->len/4; i++)
-+				lcd_spi_write(spi, ((u32 *)t->tx_buf)[i]);
-+			break;
-+		default:
-+			dev_err(&spi->dev, "Wrong spi bit length\n");
-+		}
-+	}
-+
-+	m->status = 0;
-+	if (m->complete)
-+		m->complete(m->context);
-+	return 0;
-+}
-+
-+int __devinit lcd_spi_register(struct mmphw_ctrl *ctrl)
-+{
-+	struct spi_master *master;
-+	void **p_regbase;
-+	int err;
-+
-+	master = spi_alloc_master(ctrl->dev, sizeof(void *));
-+	if (!master) {
-+		dev_err(ctrl->dev, "unable to allocate SPI master\n");
-+		return -ENOMEM;
-+	}
-+	p_regbase = spi_master_get_devdata(master);
-+	*p_regbase = ctrl->reg_base;
-+
-+	/* set bus num to 5 to avoid conflict with other spi hosts */
-+	master->bus_num = 5;
-+	master->num_chipselect = 1;
-+	master->setup = lcd_spi_setup;
-+	master->transfer = lcd_spi_one_transfer;
-+
-+	err = spi_register_master(master);
-+	if (err < 0) {
-+		dev_err(ctrl->dev, "unable to register SPI master\n");
-+		spi_master_put(master);
-+		return err;
-+	}
-+
-+	dev_info(&master->dev, "registered\n");
-+
-+	return 0;
-+}
+-#else /* CONFIG_DEBUG_FS && CONFIG_OMAP2_DSS_DEBUG_SUPPORT */
++#else /* CONFIG_OMAP2_DSS_DEBUGFS */
+ static inline int dss_initialize_debugfs(void)
+ {
+ 	return 0;
+@@ -205,7 +205,7 @@ int dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *))
+ {
+ 	return 0;
+ }
+-#endif /* CONFIG_DEBUG_FS && CONFIG_OMAP2_DSS_DEBUG_SUPPORT */
++#endif /* CONFIG_OMAP2_DSS_DEBUGFS */
+ 
+ /* PLATFORM DEVICE */
+ static int omap_dss_pm_notif(struct notifier_block *b, unsigned long v, void *d)
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 2ab1c3e..3954742 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -746,7 +746,7 @@ static void dss_runtime_put(void)
+ }
+ 
+ /* DEBUGFS */
+-#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
++#if defined(CONFIG_OMAP2_DSS_DEBUGFS)
+ void dss_debug_dump_clocks(struct seq_file *s)
+ {
+ 	dss_dump_clocks(s);
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index ffbba7e..685275e 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -301,7 +301,7 @@ enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void);
+ const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
+ void dss_dump_clocks(struct seq_file *s);
+ 
+-#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
++#if defined(CONFIG_OMAP2_DSS_DEBUGFS)
+ void dss_debug_dump_clocks(struct seq_file *s);
+ #endif
+ 
 -- 
-1.7.0.4
+1.7.10
 

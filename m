@@ -1,184 +1,250 @@
-From: Sean Paul <seanpaul@chromium.org>
-Date: Wed, 31 Oct 2012 17:20:28 +0000
-Subject: Re: [PATCH 08/10] video: exynos_dp: Move hotplug into a workqueue
-Message-Id: <CAOw6vbKRDm7eV1LC7MmrcD_vH8zW185tV4Nbgccbq6vGTzNQMg@mail.gmail.com>
+From: Ajay kumar <ajaynumb@gmail.com>
+Date: Mon, 01 Oct 2012 05:52:13 +0000
+Subject: Re: [PATCH V3] video: exynos_dp: Add device tree support to DP driver
+Message-Id: <CAEC9eQNFos4Sw57eubX-USEjKBnKf9ETeWCU_sT1vdX3MgN4dA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344398064-13563-9-git-send-email-seanpaul@chromium.org>
-In-Reply-To: <1344398064-13563-9-git-send-email-seanpaul@chromium.org>
+References: <1348515385-22332-1-git-send-email-ajaykumar.rs@samsung.com>
+	<50645848.6080102@gmail.com>
+	<000601cd9d0d$c3296ca0$497c45e0$%han@samsung.com>
+In-Reply-To: <000601cd9d0d$c3296ca0$497c45e0$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Jingoo Han <jg1.han@samsung.com>, linux-fbdev@vger.kernel.org
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, linux-samsung-soc@vger.kernel.org, FlorianSchandinat@gmx.de, thomas.ab@samsung.com, devicetree-discuss <devicetree-discuss@lists.ozlabs.org>
 
-On Tue, Aug 7, 2012 at 11:54 PM, Sean Paul <seanpaul@chromium.org> wrote:
-> Move the hotplug related code from probe and resume into a workqueue.
-> This allows us to initialize the DP driver (and resume it) when there
-> is no monitor connected.
+On Fri, Sep 28, 2012 at 5:41 AM, Jingoo Han <jg1.han@samsung.com> wrote:
+> On Thursday, September 27, 2012 10:45 PM Sylwester Nawrocki wrote
+>>
+>> Hi,
+>>
+>> Cc: devicetree-discuss@lists.ozlabs.org
+>>
+>> On 09/24/2012 09:36 PM, Ajay Kumar wrote:
+>> > This patch enables device tree based discovery support for DP driver.
+>> > The driver is modified to handle platform data in both the cases:
+>> > with DT and non-DT.
+>> > Documentation is also added for the DT bindings.
+>> >
+>> > DP-PHY should be regarded as a seperate device node while
+>> > being passed from device tree list, and device node for
+>> > DP should contain DP-PHY as child node with property name "dp-phy"
+>> > associated with it.
+>> >
+>> > Signed-off-by: Ajay Kumar<ajaykumar.rs@samsung.com>
+>> > ---
+>> >   .../devicetree/bindings/video/exynos_dp.txt        |   83 ++++++++++
+>> >   drivers/video/exynos/exynos_dp_core.c              |  168 ++++++++++++++++++--
+>> >   drivers/video/exynos/exynos_dp_core.h              |    2 +
+>> >   3 files changed, 239 insertions(+), 14 deletions(-)
+>> >   create mode 100644 Documentation/devicetree/bindings/video/exynos_dp.txt
+>> >
+>> > diff --git a/Documentation/devicetree/bindings/video/exynos_dp.txt
+>> b/Documentation/devicetree/bindings/video/exynos_dp.txt
+>> > new file mode 100644
+>> > index 0000000..c27f892
+>> > --- /dev/null
+>> > +++ b/Documentation/devicetree/bindings/video/exynos_dp.txt
+>> > @@ -0,0 +1,83 @@
+>> > +Exynos Displayport driver should configure the displayport interface
+>>
+>> Don't we need a whitespace between 'display' and 'port' ?
 >
-
-Comments?
-
-
-> Signed-off-by: Sean Paul <seanpaul@chromium.org>
-> Reviewed-by: Olof Johansson <olofj@chromium.org>
-> ---
->  drivers/video/exynos/exynos_dp_core.c |   94 +++++++++++++++++----------------
->  drivers/video/exynos/exynos_dp_core.h |    1 +
->  2 files changed, 50 insertions(+), 45 deletions(-)
+> Either 'display port' or 'DisplayPort' is commonly used.
+> For clarity, display port would be better.
+Ok. I will change it.
+>>
+>> > +based on the type of panel connected to it.
+>> > +
+>> > +We use two nodes:
+>> > +   -dptx_phy node
+>> > +   -display-port-controller node
+>> > +
+>> > +For the dp-phy initialization, we use a dptx_phy node.
+>> > +Required properties for dptx_phy:
+>> > +   -compatible:
+>> > +           Should be "samsung,dp-phy".
+>> > +   -samsung,dptx_phy_reg:
+>> > +           Base address of DP PHY register.
+>>
+>> Couldn't just 'reg' be used for this one ?
+>>
+>> > +   -samsung,enable_bit:
+>> > +           The bit used to enable/disable DP PHY.
+>>
+>> Is this the bit mask or the bit index ? In the code it's used as
+>> a bitmask. But from description it is not clear whether it is
+>> an index or a mask. Is it different across various SoCs ?
+>>
+>> Perhaps it's better to name it samsung,enable_mask (in case some
+>> SoC need more than one bit) ?
 >
-> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-> index 2882362..68ad494 100644
-> --- a/drivers/video/exynos/exynos_dp_core.c
-> +++ b/drivers/video/exynos/exynos_dp_core.c
-> @@ -834,6 +834,45 @@ static irqreturn_t exynos_dp_irq_handler(int irq, void *arg)
->         return IRQ_HANDLED;
->  }
+> It's the bit mask.
+> It is different across various SoCs.
+> OK, enable_mask would be better.
+Ok. I will change it.
+>>
+>> > +
+>> > +For the Panel initialization, we read data from display-port-controller node.
+>> > +Required properties for display-port-controller:
+>> > +   -compatible:
+>> > +           Should be "samsung,exynos5-dp".
+>> > +   -reg:
+>> > +           physical base address of the controller and length
+>> > +           of memory mapped region.
+>> > +   -interrupts:
+>> > +           Internet combiner values.
+>>
+>> what? :)
 >
-> +static void exynos_dp_hotplug(struct work_struct *work)
-> +{
-> +       struct exynos_dp_device *dp;
-> +       int ret;
-> +
-> +       dp = container_of(work, struct exynos_dp_device, hotplug_work);
-> +
-> +       ret = exynos_dp_detect_hpd(dp);
-> +       if (ret) {
-> +               dev_err(dp->dev, "unable to detect hpd\n");
-> +               return;
-> +       }
-> +
-> +       ret = exynos_dp_handle_edid(dp);
-> +       if (ret) {
-> +               dev_err(dp->dev, "unable to handle edid\n");
-> +               return;
-> +       }
-> +
-> +       ret = exynos_dp_set_link_train(dp, dp->video_info->lane_count,
-> +                                       dp->video_info->link_rate);
-> +       if (ret) {
-> +               dev_err(dp->dev, "unable to do link train\n");
-> +               return;
-> +       }
-> +
-> +       exynos_dp_enable_scramble(dp, 1);
-> +       exynos_dp_enable_rx_to_enhanced_mode(dp, 1);
-> +       exynos_dp_enable_enhanced_mode(dp, 1);
-> +
-> +       exynos_dp_set_lane_count(dp, dp->video_info->lane_count);
-> +       exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
-> +
-> +       exynos_dp_init_video(dp);
-> +       ret = exynos_dp_config_video(dp, dp->video_info);
-> +       if (ret)
-> +               dev_err(&dp->dev, "unable to config video\n");
-> +}
-> +
->  static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  {
->         struct resource *res;
-> @@ -886,6 +925,8 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->                 goto err_clock;
->         }
+> Ajay: Please, fix it.
+My bad :(...I will fix it.
+>>
+>> > +   -interrupt-parent:
+>> > +           Address of Interrupt combiner node.
+>> > +   -dp_phy:
+>> > +           Address of dptx_phy node.
+>>
+>> "A phandle to dptx_phy node" ?
 >
-> +       INIT_WORK(&dp->hotplug_work, exynos_dp_hotplug);
-> +
->         ret = devm_request_irq(&pdev->dev, dp->irq, exynos_dp_irq_handler, 0,
->                                 "exynos-dp", dp);
->         if (ret) {
-> @@ -899,36 +940,8 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+> Yes, you're right.
 >
->         exynos_dp_init_dp(dp);
+> Ajay: Please, replace 'Address of dptx_phy node'
+>        with 'phandle of dptx_phy node'.
+Ok.
+>>
+>> > +   -samsung,color_space:
+>> > +           input video data format.
+>> > +                   COLOR_RGB = 0, COLOR_YCBCR422 = 1, COLOR_YCBCR444 = 2
+>>
+>> Can this be changed at run time ?
 >
-> -       ret = exynos_dp_detect_hpd(dp);
-> -       if (ret) {
-> -               dev_err(&pdev->dev, "unable to detect hpd\n");
-> -               goto err_clock;
-> -       }
-> -
-> -       exynos_dp_handle_edid(dp);
-> -
-> -       ret = exynos_dp_set_link_train(dp, dp->video_info->lane_count,
-> -                               dp->video_info->link_rate);
-> -       if (ret) {
-> -               dev_err(&pdev->dev, "unable to do link train\n");
-> -               goto err_clock;
-> -       }
-> -
-> -       exynos_dp_enable_scramble(dp, 1);
-> -       exynos_dp_enable_rx_to_enhanced_mode(dp, 1);
-> -       exynos_dp_enable_enhanced_mode(dp, 1);
-> -
-> -       exynos_dp_set_lane_count(dp, dp->video_info->lane_count);
-> -       exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
-> -
-> -       exynos_dp_init_video(dp);
-> -       ret = exynos_dp_config_video(dp, dp->video_info);
-> -       if (ret) {
-> -               dev_err(&pdev->dev, "unable to config video\n");
-> -               goto err_clock;
-> -       }
-> -
->         platform_set_drvdata(pdev, dp);
-> +       schedule_work(&dp->hotplug_work);
+> No, it is not changeable.
+> It's a default setting according to eDP panel.
 >
->         return 0;
+>>
+>> > +   -samsung,dynamic_range:
+>> > +           dynamic range for input video data.
+>> > +                   VESA = 0, CEA = 1
+>>
+>> Why is it in the device tree ? Shouldn't it be configurable at runtime ?
+>> My apologies if this an obvious question, I don't have much experience
+>> with DP.
 >
-> @@ -943,6 +956,9 @@ static int __devexit exynos_dp_remove(struct platform_device *pdev)
->         struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
->         struct exynos_dp_device *dp = platform_get_drvdata(pdev);
+> Same above.
 >
-> +       if (work_pending(&dp->hotplug_work))
-> +               flush_work_sync(&dp->hotplug_work);
-> +
->         if (pdata && pdata->phy_exit)
->                 pdata->phy_exit();
+>>
+>> > +   -samsung,ycbcr_coeff:
+>> > +           YCbCr co-efficients for input video.
+>> > +                   COLOR_YCBCR601 = 0, COLOR_YCBCR709 = 1
+>> > +   -samsung,color_depth:
+>> > +           Bit per color component.
+>>
+>> "Number of bits per colour component" ? Also same remark as above.
 >
-> @@ -959,6 +975,9 @@ static int exynos_dp_suspend(struct device *dev)
->         struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
->         struct exynos_dp_device *dp = platform_get_drvdata(pdev);
+> Same above.
 >
-> +       if (work_pending(&dp->hotplug_work))
-> +               flush_work_sync(&dp->hotplug_work);
-> +
->         if (pdata && pdata->phy_exit)
->                 pdata->phy_exit();
+>>
+>> > +                   COLOR_6 = 0, COLOR_8 = 1, COLOR_10 = 2, COLOR_12 = 3
+>> > +   -samsung,link_rate:
+>> > +           link rates supportd by the panel.
+>>
+>> typo: supportd -> supported
+> Ajay: Please fix it.
+Ok.
 >
-> @@ -979,22 +998,7 @@ static int exynos_dp_resume(struct device *dev)
->         clk_enable(dp->clock);
+>>
+>> > +                   LINK_RATE_1_62GBPS = 0x6, LINK_RATE_2_70GBPS = 0x0A
+>>
+>> Is this really a property of a panel ? Why it is in the PHY node ?
+>> Also I can see this is just a single property, so "link rates" is a bit
+>> misleading.
+>>
 >
->         exynos_dp_init_dp(dp);
-> -
-> -       exynos_dp_detect_hpd(dp);
-> -       exynos_dp_handle_edid(dp);
-> -
-> -       exynos_dp_set_link_train(dp, dp->video_info->lane_count,
-> -                               dp->video_info->link_rate);
-> -
-> -       exynos_dp_enable_scramble(dp, 1);
-> -       exynos_dp_enable_rx_to_enhanced_mode(dp, 1);
-> -       exynos_dp_enable_enhanced_mode(dp, 1);
-> -
-> -       exynos_dp_set_lane_count(dp, dp->video_info->lane_count);
-> -       exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
-> -
-> -       exynos_dp_init_video(dp);
-> -       exynos_dp_config_video(dp, dp->video_info);
-> +       schedule_work(&dp->hotplug_work);
+> Yes, It's a property of LCD panel.
+> It is not in the 'PHY' node, but 'display-port-controller' node.
 >
->         return 0;
->  }
-> diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
-> index 6431c65..cf1010b 100644
-> --- a/drivers/video/exynos/exynos_dp_core.h
-> +++ b/drivers/video/exynos/exynos_dp_core.h
-> @@ -32,6 +32,7 @@ struct exynos_dp_device {
+> Ajay: Please replace 'link rates' with 'link rate'.
+Ok.
+>> > +   -samsung,lane_count:
+>> > +           number of lanes supported by the panel.
+>> > +                   LANE_COUNT1 = 1, LANE_COUNT2 = 2, LANE_COUNT4 = 4
+>>
+>> What do these symbolic names are needed for ? Is lane_count a number or a
+>> mask, is this really a _maximum_ number of lanes ? What are the valid values,
+>> 1, 2 and 4 ? Or maybe 0x3 is also valid which  would indicate that we can
+>> use 1 or 2 data lanes ?
+>>
 >
->         struct video_info       *video_info;
->         struct link_train       link_train;
-> +       struct work_struct      hotplug_work;
->  };
+> These symbolic names are defined in './include/video/exynos_dp.h'.
+> It seems that Ajay used these definitions.
+Yes. I referred  include/video/exynos_dp.h.
+> 'lane_count' is a number of used lanes of main link which transfer data
+> streams as video. The number of lanes of Main Link is 1, 2, or 4 lanes.
+> It is dependent on eDP panel.
 >
->  /* exynos_dp_reg.c */
+>
+>> > +   -samsung,interlaced:
+>> > +           Interlace scan mode.
+>> > +                   Progressive if defined, Interlaced if not defined
+>>
+>> Why do we need this in the device tree ? Is this really a default scan mode ?
+>> Can it be the changed at runtime ?
+>
+> No, it is not changeable.
+> It's a default setting according to eDP panel.
+>
+>>
+>> > +   -samsung,v_sync_polarity:
+>> > +           VSYNC polarity configuration.
+>> > +                   High if defined, Low if not defined
+>> > +   -samsung,h_sync_polarity:
+>> > +           HSYNC polarity configuration.
+>> > +                   High if defined, Low if not defined
+>> > +
+>> > +Example:
+>> > +
+>> > +SOC specific portion:
+>> > +   dptx_phy: dptx_phy@0x10040720 {
+>> > +           compatible = "samsung,dp-phy";
+>> > +           samsung,dptx_phy_reg =<0x10040720>;
+>> > +           samsung,enable_bit =<1>;
+>> > +   };
+>> > +
+>> > +   display-port-controller {
+>> > +           compatible = "samsung,exynos5-dp";
+>> > +           reg =<0x145B0000 0x10000>;
+>> > +           interrupts =<10 3>;
+>> > +           interrupt-parent =<&combiner>;
+>> > +           dp_phy =<&dptx_phy>;
+>>
+>> Shouldn't it be "samsung,dp_phy" ?
+>
+> Do you mean this ? It is not working.
+> +               dp_phy = "samsung,dp_phy";
+I din't get this.
+What do I need to change here?
+>>
+>> > +        };
+>> > +
+>> > +Board Specific portion:
+>> > +   display-port-controller {
+>> > +           samsung,color_space =<0>;
+>> > +           samsung,dynamic_range =<0>;
+>> > +           samsung,ycbcr_coeff =<0>;
+>> > +           samsung,color_depth =<1>;
+>> > +           samsung,link_rate =<0x0a>;
+>> > +           samsung,lane_count =<2>;
+>> > +   };
+>>
+>> --
+>>
+>> Regards,
+>> Sylwester
+>
+Thanks and regards,
+Ajay Kumar
 > --
-> 1.7.7.3
->
+> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html

@@ -1,77 +1,111 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Tue, 23 Oct 2012 04:50:44 +0000
-Subject: Re: [PATCH 4/5] xen-fbfront: handle backend CLOSED without CLOSING
-Message-Id: <50862224.60908@gmx.de>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Date: Mon, 01 Oct 2012 16:53:08 +0000
+Subject: Re: [PATCH 1/2] of: add helper to parse display specs
+Message-Id: <5069CA74.7040409@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <507FD39F.4060601@citrix.com> <1350554618-14582-4-git-send-email-david.vrabel@citrix.com> <20121019130011.GD26830@phenom.dumpdata.com>
-In-Reply-To: <20121019130011.GD26830@phenom.dumpdata.com>
+References: <1348500924-8551-1-git-send-email-s.trumtrar@pengutronix.de> <1348500924-8551-2-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1348500924-8551-2-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Cc: David Vrabel <david.vrabel@citrix.com>, xen-devel@lists.xen.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Cc: devicetree-discuss@lists.ozlabs.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Hans Verkuil <hverkuil@xs4all.nl>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, kernel@pengutronix.de, linux-media@vger.kernel.org
 
-Hi Konrad,
+On 09/24/2012 09:35 AM, Steffen Trumtrar wrote:
+> Parse a display-node with timings and hardware-specs from devictree.
 
-On 10/19/2012 01:00 PM, Konrad Rzeszutek Wilk wrote:
-> On Thu, Oct 18, 2012 at 11:03:37AM +0100, David Vrabel wrote:
->> From: David Vrabel <david.vrabel@citrix.com>
->>
->> Backend drivers shouldn't transistion to CLOSED unless the frontend is
->> CLOSED.  If a backend does transition to CLOSED too soon then the
->> frontend may not see the CLOSING state and will not properly shutdown.
->>
->> So, treat an unexpected backend CLOSED state the same as CLOSING.
->>
->> Signed-off-by: David Vrabel <david.vrabel@citrix.com>
->> Acked-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
->> ---
->> Cc: linux-fbdev@vger.kernel.org
->> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-> 
-> Hey Florian,
-> 
-> Should I prep a git pull for you with this or would it be OK
-> if I just have your Ack to put this in my git pull for Linus?
+> diff --git a/Documentation/devicetree/bindings/video/display b/Documentation/devicetree/bindings/video/display
+> new file mode 100644
+> index 0000000..722766a
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/video/display
 
-Feel free to take it and add
-Acked-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+This should be display.txt.
 
+> @@ -0,0 +1,208 @@
+> +display bindings
+> +=========
+> +
+> +display-node
+> +------------
 
-Best regards,
+I'm not personally convinced about the direction this is going. While I
+think it's reasonable to define DT bindings for displays, and DT
+bindings for display modes, I'm not sure that it's reasonable to couple
+them together into a single binding.
 
-Florian Tobias Schandinat
+I think creating a well-defined timing binding first will be much
+simpler than doing so within the context of a display binding; the
+scope/content of a general display binding seems much less well-defined
+to me at least, for reasons I mentioned before.
 
-> 
-> Thanks!
->> ---
->>  drivers/video/xen-fbfront.c |    5 ++++-
->>  1 files changed, 4 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
->> index b7f5173..917bb56 100644
->> --- a/drivers/video/xen-fbfront.c
->> +++ b/drivers/video/xen-fbfront.c
->> @@ -641,7 +641,6 @@ static void xenfb_backend_changed(struct xenbus_device *dev,
->>  	case XenbusStateReconfiguring:
->>  	case XenbusStateReconfigured:
->>  	case XenbusStateUnknown:
->> -	case XenbusStateClosed:
->>  		break;
->>  
->>  	case XenbusStateInitWait:
->> @@ -670,6 +669,10 @@ InitWait:
->>  		info->feature_resize = val;
->>  		break;
->>  
->> +	case XenbusStateClosed:
->> +		if (dev->state = XenbusStateClosed)
->> +			break;
->> +		/* Missed the backend's CLOSING state -- fallthrough */
->>  	case XenbusStateClosing:
->>  		xenbus_frontend_closed(dev);
->>  		break;
->> -- 
->> 1.7.2.5
-> 
+> +required properties:
+> + - none
+> +
+> +optional properties:
+> + - default-timing: the default timing value
+> + - width-mm, height-mm: Display dimensions in mm
+
+> + - hsync-active-high (bool): Hsync pulse is active high
+> + - vsync-active-high (bool): Vsync pulse is active high
+
+At least those two properties should exist in the display timing instead
+(or perhaps as well). There are certainly cases where different similar
+display modes are differentiated by hsync/vsync polarity more than
+anything else. This is probably more likely with analog display
+connectors than digital, but I see no reason why a DT binding for
+display timing shouldn't cover both.
+
+> + - de-active-high (bool): Data-Enable pulse is active high
+> + - pixelclk-inverted (bool): pixelclock is inverted
+
+> + - pixel-per-clk
+
+pixel-per-clk is probably something that should either be part of the
+timing definition, or something computed internally to the display
+driver based on rules for the signal type, rather than something
+represented in DT.
+
+The above comment assumes this property is intended to represent DVI's
+requirement for pixel clock doubling for low-pixel-clock-rate modes. If
+it's something to do with e.g. a single-data-rate vs. double-data-rate
+property of the underlying physical connection, that's most likely
+something that should be defined in a binding specific to e.g. LVDS,
+rather than something generic.
+
+> + - link-width: number of channels (e.g. LVDS)
+> + - bpp: bits-per-pixel
+> +
+> +timings-subnode
+> +---------------
+> +
+> +required properties:
+> +subnodes that specify
+> + - hactive, vactive: Display resolution
+> + - hfront-porch, hback-porch, hsync-len: Horizontal Display timing parameters
+> +   in pixels
+> +   vfront-porch, vback-porch, vsync-len: Vertical display timing parameters in
+> +   lines
+> + - clock: displayclock in Hz
+> +
+> +There are different ways of describing a display and its capabilities. The devicetree
+> +representation corresponds to the one commonly found in datasheets for displays.
+> +The description of the display and its timing is split in two parts: first the display
+> +properties like size in mm and (optionally) multiple subnodes with the supported timings.
+> +If a display supports multiple signal timings, the default-timing can be specified.
+> +
+> +Example:
+> +
+> +	display@0 {
+> +		width-mm = <800>;
+> +		height-mm = <480>;
+> +		default-timing = <&timing0>;
+> +		timings {
+> +			timing0: timing@0 {
+
+If you're going to use a unit address ("@0") to ensure that node names
+are unique (which is not mandatory), then each node also needs a reg
+property with matching value, and #address-cells/#size-cells in the
+parent. Instead, you could name the nodes something unique based on the
+mode name to avoid this, e.g. 1080p24 { ... }.
 

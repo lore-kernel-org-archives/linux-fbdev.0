@@ -1,64 +1,60 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Sat, 20 Oct 2012 11:35:00 +0000
-Subject: Re: [PATCH 0/2 v6] of: add display helper
-Message-Id: <20121020113500.GA12978@avionic-0098.mockup.avionic-design.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="a8Wt8u1KmwUX3Y2C"
+From: Peter Senna Tschudin <peter.senna@gmail.com>
+Date: Wed, 03 Oct 2012 12:40:43 +0000
+Subject: [PATCH 1/2] drivers/video/savage/savagefb_driver.c: fix error return code
+Message-Id: <1349268044-32616-1-git-send-email-peter.senna@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1349373560-11128-1-git-send-email-s.trumtrar@pengutronix.de>
- <CAL1wa8fP8LBCUBVJS1=dy3cyFe+bY-Gu2+wtJyuCrgbP93m3Wg@mail.gmail.com>
- <20121015141751.GA11396@pengutronix.de>
-In-Reply-To: <20121015141751.GA11396@pengutronix.de>
-To: Leela Krishna Amudala <l.krishna@samsung.com>, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-media@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@gmail.com>
+Cc: kernel-janitors@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+
+From: Peter Senna Tschudin <peter.senna@gmail.com>
+
+Convert a nonnegative error return code to a negative one, as returned
+elsewhere in the function.
+
+A simplified version of the semantic match that finds this problem is as
+follows: (http://coccinelle.lip6.fr/)
+
+// <smpl>
+(
+if@p1 (\(ret < 0\|ret != 0\))
+ { ... return ret; }
+|
+ret@p1 = 0
+)
+... when != ret = e1
+    when != &ret
+*if(...)
+{
+  ... when != ret = e2
+      when forall
+ return ret;
+}
+// </smpl>
 
 
---a8Wt8u1KmwUX3Y2C
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
 
-On Mon, Oct 15, 2012 at 04:17:51PM +0200, Steffen Trumtrar wrote:
-> Hi Leela,
->=20
-> On Mon, Oct 15, 2012 at 04:24:43PM +0530, Leela Krishna Amudala wrote:
-> > Hello Steffen,
-> >=20
-> > To which version of the kernel we can expect this patch set to be merge=
-d into?
-> > Because I'm waiting for this from long time to add DT support for my
-> > display controller :)
-> >=20
->=20
-> I have no idea, sorry. It seems like we have almost settled with the bind=
-ing
-> (clock-name needs to be changed), but I'm not responsible for any merging=
-/inclusions
-> in the kernel.
+---
+ drivers/video/savage/savagefb_driver.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-I want to use this in the Tegra DRM driver which I hope to get into 3.8.
-If you need any help with this, please let me know.
+diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
+index 0d0f52c..f4f53b0 100644
+--- a/drivers/video/savage/savagefb_driver.c
++++ b/drivers/video/savage/savagefb_driver.c
+@@ -2266,8 +2266,10 @@ static int __devinit savagefb_probe(struct pci_dev* dev,
+ 	lpitch = info->var.xres_virtual*((info->var.bits_per_pixel + 7) >> 3);
+ 	info->var.yres_virtual = info->fix.smem_len/lpitch;
+ 
+-	if (info->var.yres_virtual < info->var.yres)
++	if (info->var.yres_virtual < info->var.yres) {
++		err = -ENOMEM;
+ 		goto failed;
++	}
+ 
+ #if defined(CONFIG_FB_SAVAGE_ACCEL)
+ 	/*
 
-Thierry
-
---a8Wt8u1KmwUX3Y2C
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQgoxkAAoJEN0jrNd/PrOhgOMQAJW6PHzJr2s96wUKJnSpPErY
-Ydw2VxX2ouNc7BIwLYibMzwzCDy6CWQCITWHWx6KIIg4Vi4gg5J65fuS9a/lQlMK
-7Iuo7T3j0EYUiOw44omjmJbPm2o1iUEvx3B0GJvV2Udkvo3O8DcDpVZ/f/KH4+JF
-GBwjOZFQIttTHdTOwmAKrUolVk9Iqax1ILUqmG6SBs8cfe2p5qR8nYEQSFcZmuGQ
-6JBix2QHifR9ke/c9xhu9kKODjcRXd7MxqK8bILB7eqYppnXrdjktarwLBUduYEk
-DN8ozclyolwY7q1VtcUHS5hNF2QoEzyuA1cE3Ofkd+Gu6PuCQBFXLqHGOHQPq1lx
-TGoU+yLHU0MeUjt/iRVoII468z1J66lCPbECaKBCSvP0CJcVEDSNSERkIsS+KCpG
-W4W2eqh/BASWR6Bfnto0NSUSlXLB/5+OhEfCto4mTLyfkM2dG6Jr0lbqiuhHhN3E
-ZUNHicAnZKJLAUaQm/Ac+QH437b604I/LHEJzn4t5MBIEFCgnZhdihGAk4Nj6zao
-Me1HLN1UK2Hr9KrEB/gFATvYS6maiTHeNy/xSp9cN+sz5sdS2HhRIKze1cn3m76r
-sDRUf/5u1UV4kcOy/KFuYxnxxyc9Bykl2cSF0zsGxV98KkZx26rUJNEfnFKlnWkt
-WpzhT8aTF9kittx0VjyV
-=wh+K
------END PGP SIGNATURE-----
-
---a8Wt8u1KmwUX3Y2C--

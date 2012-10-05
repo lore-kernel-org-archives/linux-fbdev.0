@@ -1,61 +1,123 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 05 Sep 2012 08:25:40 +0000
-Subject: [PATCH 02/17] OMAPFB1: remove unnecessary includes
-Message-Id: <1346833555-31258-3-git-send-email-tomi.valkeinen@ti.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 05 Oct 2012 09:43:27 +0000
+Subject: Re: [PATCH 04/14] media: add V4L2 DT binding documentation
+Message-Id: <Pine.LNX.4.64.1210051119420.13761@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1346833555-31258-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1348754853-28619-1-git-send-email-g.liakhovetski@gmx.de>
+ <1348754853-28619-5-git-send-email-g.liakhovetski@gmx.de> <506AF706.3090003@gmail.com>
+ <Pine.LNX.4.64.1210021626220.15778@axis700.grange> <506CA5F7.3060807@gmail.com>
+In-Reply-To: <506CA5F7.3060807@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Rob Herring <robherring2@gmail.com>
+Cc: Linux Media Mailing List <linux-media@vger.kernel.org>, linux-sh@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, Magnus Damm <magnus.damm@gmail.com>, Hans Verkuil <hverkuil@xs4all.nl>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Sylwester Nawrocki <sylvester.nawrocki@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Robert Schwebel <r.schwebel@pengutronix.de>, Philipp Zabel <pza@pengutronix.de>
 
-Remove unnecessary includes from the old omapfb driver.
+On Wed, 3 Oct 2012, Rob Herring wrote:
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> On 10/02/2012 09:33 AM, Guennadi Liakhovetski wrote:
+> > Hi Rob
+> > 
+> > On Tue, 2 Oct 2012, Rob Herring wrote:
+> > 
+> >> On 09/27/2012 09:07 AM, Guennadi Liakhovetski wrote:
+> >>> This patch adds a document, describing common V4L2 device tree bindings.
+> >>>
+> >>> Co-authored-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+> >>> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> >>> ---
+> >>>  Documentation/devicetree/bindings/media/v4l2.txt |  162 ++++++++++++++++++++++
+> >>>  1 files changed, 162 insertions(+), 0 deletions(-)
+> >>>  create mode 100644 Documentation/devicetree/bindings/media/v4l2.txt
+> >>>
+> >>> diff --git a/Documentation/devicetree/bindings/media/v4l2.txt b/Documentation/devicetree/bindings/media/v4l2.txt
+> >>> new file mode 100644
+> >>> index 0000000..b8b3f41
+> >>> --- /dev/null
+> >>> +++ b/Documentation/devicetree/bindings/media/v4l2.txt
+> >>> @@ -0,0 +1,162 @@
+> >>> +Video4Linux Version 2 (V4L2)
+> >>
+> >> DT describes the h/w, but V4L2 is Linux specific. I think the binding
+> >> looks pretty good in terms of it is describing the h/w and not V4L2
+> >> components or settings. So in this case it's really just the name of the
+> >> file and title I have issue with.
+> > 
+> > Hm, I see your point, then, I guess, you'd also like the file name 
+> > changed. What should we use then? Just "video?" But there's already a 
+> > whole directory Documentation/devicetree/bindings/video dedicated to 
+> > graphics output (drm, fbdev). "video-camera" or "video-capture?" But this 
+> > file shall also be describing video output. Use "video.txt" and describe 
+> > inside what exactly this file is for?
+> 
+> Video output will probably have a lot of overlap with the graphics side.
+> How about video-interfaces.txt?
+
+Hm, that's a bit too vague for me. Somewhere on the outskirts of my mind 
+I'm still considering making just one standard for both V4L2 and fbdev / 
+DRM? Just yesterday we were discussing some common properties with what is 
+being proposed in
+
+http://www.mail-archive.com/linux-media@vger.kernel.org/index.html#53322
+
+Still, I think, these two subsystems deserve two separate standards and 
+should just try to re-use properties wherever that makes sense. 
+video-stream seems a bit better, but this too is just a convention - 
+talking about video cameras and TV output as video streaming devices and 
+considering displays more static devices. In principle displays can be 
+considered taking streaming data just as well as TV encoders. What if we 
+just call this camera-tv.txt?
+
+> >> One other comment below:
+> >>
+> >>> +
+> >>> +General concept
+> >>> +---------------
+> >>> +
+> >>> +Video pipelines consist of external devices, e.g. camera sensors, controlled
+> >>> +over an I2C, SPI or UART bus, and SoC internal IP blocks, including video DMA
+> >>> +engines and video data processors.
+> >>> +
+> >>> +SoC internal blocks are described by DT nodes, placed similarly to other SoC
+> >>> +blocks. External devices are represented as child nodes of their respective bus
+> >>> +controller nodes, e.g. I2C.
+> >>> +
+> >>> +Data interfaces on all video devices are described by "port" child DT nodes.
+> >>> +Configuration of a port depends on other devices participating in the data
+> >>> +transfer and is described by "link" DT nodes, specified as children of the
+> >>> +"port" nodes:
+> >>> +
+> >>> +/foo {
+> >>> +	port@0 {
+> >>> +		link@0 { ... };
+> >>> +		link@1 { ... };
+> >>> +	};
+> >>> +	port@1 { ... };
+> >>> +};
+> >>> +
+> >>> +If a port can be configured to work with more than one other device on the same
+> >>> +bus, a "link" child DT node must be provided for each of them. If more than one
+> >>> +port is present on a device or more than one link is connected to a port, a
+> >>> +common scheme, using "#address-cells," "#size-cells" and "reg" properties is
+> >>> +used.
+> >>> +
+> >>> +Optional link properties:
+> >>> +- remote: phandle to the other endpoint link DT node.
+> >>
+> >> This name is a little vague. Perhaps "endpoint" would be better.
+> > 
+> > "endpoint" can also refer to something local like in USB case. Maybe 
+> > rather the description of the "remote" property should be improved?
+> 
+> remote-endpoint?
+
+Sorry, I really don't want to pull in yet another term here. We've got 
+ports and links already, now you're proposing to also use "endpoind." 
+Until now everyone was happy with "remote," any more opinions on this?
+
+Thanks
+Guennadi
 ---
- drivers/video/omap/hwa742.c        |    1 -
- drivers/video/omap/lcd_ams_delta.c |    1 -
- drivers/video/omap/lcd_palmte.c    |    1 -
- 3 files changed, 3 deletions(-)
-
-diff --git a/drivers/video/omap/hwa742.c b/drivers/video/omap/hwa742.c
-index 9f1d23c..f349ee6 100644
---- a/drivers/video/omap/hwa742.c
-+++ b/drivers/video/omap/hwa742.c
-@@ -27,7 +27,6 @@
- #include <linux/clk.h>
- #include <linux/interrupt.h>
- 
--#include <plat/dma.h>
- #include "omapfb.h"
- 
- #define HWA742_REV_CODE_REG       0x0
-diff --git a/drivers/video/omap/lcd_ams_delta.c b/drivers/video/omap/lcd_ams_delta.c
-index d3a3113..5cca6b3 100644
---- a/drivers/video/omap/lcd_ams_delta.c
-+++ b/drivers/video/omap/lcd_ams_delta.c
-@@ -28,7 +28,6 @@
- #include <linux/gpio.h>
- 
- #include <plat/board-ams-delta.h>
--#include <mach/hardware.h>
- 
- #include "omapfb.h"
- 
-diff --git a/drivers/video/omap/lcd_palmte.c b/drivers/video/omap/lcd_palmte.c
-index 88c31eb..ff4fb62 100644
---- a/drivers/video/omap/lcd_palmte.c
-+++ b/drivers/video/omap/lcd_palmte.c
-@@ -23,7 +23,6 @@
- #include <linux/platform_device.h>
- #include <linux/io.h>
- 
--#include <plat/fpga.h>
- #include "omapfb.h"
- 
- static int palmte_panel_init(struct lcd_panel *panel,
--- 
-1.7.9.5
-
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/

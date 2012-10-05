@@ -1,41 +1,267 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 24 Oct 2012 09:29:04 +0000
-Subject: [PATCH 13/20] OMAPDSS: HDMI: add 1920x1200 video mode
-Message-Id: <1351070951-18616-14-git-send-email-tomi.valkeinen@ti.com>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Fri, 05 Oct 2012 14:03:24 +0000
+Subject: [PATCH 2/2] da8xx-fb: cleanup LCDC configurations
+Message-Id: <1349445084-9857-3-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Ricardo Neri <ricardo.neri@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-Add 1920x1200 video mode to hdmi driver's static modelist.
+Configure below LCDC configurations to optimal values, also have an
+option configure these optional parameters for platform.
+1) AC bias configuration: Required only for passive panels
+2) Dma_burst_size:
+3) FIFO_DMA_DELAY:
+4) FIFO threshold: Does not apply for da830 LCDC.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Ricardo Neri <ricardo.neri@ti.com>
+Patch is verified for 16bpp and 24bpp configurations on da830, da850 and am=
+335x
+EVMs.
+
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
 ---
- drivers/video/omap2/dss/hdmi.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/arm/mach-davinci/devices-da8xx.c |   27 +++--------------------
+ drivers/video/da8xx-fb.c              |   37 +++++++++++------------------=
+---
+ include/video/da8xx-fb.h              |   22 +------------------
+ 3 files changed, 18 insertions(+), 68 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index b809490..dfbc1e7 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -295,6 +295,12 @@ static const struct hdmi_config vesa_timings[] = {
- 			false, },
- 		{ 0x55, HDMI_DVI },
- 	},
-+	{
-+		{ 1920, 1200, 154000, 32, 48, 80, 6, 3, 26,
-+			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_HIGH,
-+			false, },
-+		{ 0x44, HDMI_DVI },
-+	},
+diff --git a/arch/arm/mach-davinci/devices-da8xx.c b/arch/arm/mach-davinci/=
+devices-da8xx.c
+index 12a47cd..eb0a1ec 100644
+--- a/arch/arm/mach-davinci/devices-da8xx.c
++++ b/arch/arm/mach-davinci/devices-da8xx.c
+@@ -524,29 +524,9 @@ void __init da8xx_register_mcasp(int id, struct snd_pl=
+atform_data *pdata)
+ 	}
+ }
+=20
+-static const struct display_panel disp_panel =3D {
+-	QVGA,
+-	16,
+-	16,
+-	COLOR_ACTIVE,
+-};
+-
+ static struct lcd_ctrl_config lcd_cfg =3D {
+-	&disp_panel,
+-	.ac_bias		=3D 255,
+-	.ac_bias_intrpt		=3D 0,
+-	.dma_burst_sz		=3D 16,
++	.panel_shade		=3D COLOR_ACTIVE,
+ 	.bpp			=3D 16,
+-	.fdd			=3D 255,
+-	.tft_alt_mode		=3D 0,
+-	.stn_565_mode		=3D 0,
+-	.mono_8bit_mode		=3D 0,
+-	.invert_line_clock	=3D 1,
+-	.invert_frm_clock	=3D 1,
+-	.sync_edge		=3D 0,
+-	.sync_ctrl		=3D 1,
+-	.raster_order		=3D 0,
+-	.fifo_th		=3D 6,
  };
- 
- static int hdmi_runtime_get(void)
--- 
-1.7.9.5
+=20
+ struct da8xx_lcdc_platform_data sharp_lcd035q3dg01_pdata =3D {
+@@ -562,7 +542,8 @@ struct da8xx_lcdc_platform_data sharp_lcd035q3dg01_pdat=
+a =3D {
+ 		.lower_margin	=3D 2,
+ 		.hsync_len	=3D 0,
+ 		.vsync_len	=3D 0,
+-		.sync		=3D FB_SYNC_CLK_INVERT,
++		.sync		=3D FB_SYNC_CLK_INVERT |
++			FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+ 		.flag		=3D 0,
+ 	},
+ };
+@@ -580,7 +561,7 @@ struct da8xx_lcdc_platform_data sharp_lk043t1dg01_pdata=
+ =3D {
+ 		.lower_margin	=3D 2,
+ 		.hsync_len	=3D 41,
+ 		.vsync_len	=3D 10,
+-		.sync		=3D 0,
++		.sync		=3D FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+ 		.flag		=3D 0,
+ 	},
+ };
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index bacf82b..36af88b 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -339,10 +339,9 @@ static int lcd_cfg_dma(int burst_size, int fifo_th)
+ 		reg |=3D LCD_DMA_BURST_SIZE(LCD_DMA_BURST_8);
+ 		break;
+ 	case 16:
++	default: /* Configuring for highest burst */
+ 		reg |=3D LCD_DMA_BURST_SIZE(LCD_DMA_BURST_16);
+ 		break;
+-	default:
+-		return -EINVAL;
+ 	}
+=20
+ 	reg |=3D (fifo_th << 8);
+@@ -387,7 +386,8 @@ static void lcd_cfg_vertical_sync(int back_porch, int p=
+ulse_width,
+ 	lcdc_write(reg, LCD_RASTER_TIMING_1_REG);
+ }
+=20
+-static int lcd_cfg_display(const struct lcd_ctrl_config *cfg)
++static int lcd_cfg_display(const struct lcd_ctrl_config *cfg,
++		struct fb_videomode *panel)
+ {
+ 	u32 reg;
+ 	u32 reg_int;
+@@ -396,7 +396,7 @@ static int lcd_cfg_display(const struct lcd_ctrl_config=
+ *cfg)
+ 						LCD_MONO_8BIT_MODE |
+ 						LCD_MONOCHROME_MODE);
+=20
+-	switch (cfg->p_disp_panel->panel_shade) {
++	switch (cfg->panel_shade) {
+ 	case MONOCHROME:
+ 		reg |=3D LCD_MONOCHROME_MODE;
+ 		if (cfg->mono_8bit_mode)
+@@ -409,7 +409,9 @@ static int lcd_cfg_display(const struct lcd_ctrl_config=
+ *cfg)
+ 		break;
+=20
+ 	case COLOR_PASSIVE:
+-		if (cfg->stn_565_mode)
++		/* AC bias applicable only for Pasive panels */
++		lcd_cfg_ac_bias(cfg->ac_bias, cfg->ac_bias_intrpt);
++		if (cfg->bpp =3D 12 && cfg->stn_565_mode)
+ 			reg |=3D LCD_STN_565_ENABLE;
+ 		break;
+=20
+@@ -430,22 +432,19 @@ static int lcd_cfg_display(const struct lcd_ctrl_conf=
+ig *cfg)
+=20
+ 	reg =3D lcdc_read(LCD_RASTER_TIMING_2_REG);
+=20
+-	if (cfg->sync_ctrl)
+-		reg |=3D LCD_SYNC_CTRL;
+-	else
+-		reg &=3D ~LCD_SYNC_CTRL;
++	reg |=3D LCD_SYNC_CTRL;
+=20
+ 	if (cfg->sync_edge)
+ 		reg |=3D LCD_SYNC_EDGE;
+ 	else
+ 		reg &=3D ~LCD_SYNC_EDGE;
+=20
+-	if (cfg->invert_line_clock)
++	if (panel->sync & FB_SYNC_HOR_HIGH_ACT)
+ 		reg |=3D LCD_INVERT_LINE_CLOCK;
+ 	else
+ 		reg &=3D ~LCD_INVERT_LINE_CLOCK;
+=20
+-	if (cfg->invert_frm_clock)
++	if (panel->sync & FB_SYNC_VERT_HIGH_ACT)
+ 		reg |=3D LCD_INVERT_FRAME_CLOCK;
+ 	else
+ 		reg &=3D ~LCD_INVERT_FRAME_CLOCK;
+@@ -690,9 +689,6 @@ static int lcd_init(struct da8xx_fb_par *par, const str=
+uct lcd_ctrl_config *cfg,
+ 	if (ret < 0)
+ 		return ret;
+=20
+-	/* Configure the AC bias properties. */
+-	lcd_cfg_ac_bias(cfg->ac_bias, cfg->ac_bias_intrpt);
+-
+ 	/* Configure the vertical and horizontal sync properties. */
+ 	lcd_cfg_vertical_sync(panel->lower_margin, panel->vsync_len,
+ 			panel->upper_margin);
+@@ -700,18 +696,12 @@ static int lcd_init(struct da8xx_fb_par *par, const s=
+truct lcd_ctrl_config *cfg,
+ 			panel->left_margin);
+=20
+ 	/* Configure for disply */
+-	ret =3D lcd_cfg_display(cfg);
++	ret =3D lcd_cfg_display(cfg, panel);
+ 	if (ret < 0)
+ 		return ret;
+=20
+-	if (QVGA !=3D cfg->p_disp_panel->panel_type)
+-		return -EINVAL;
++	bpp =3D cfg->bpp;
+=20
+-	if (cfg->bpp <=3D cfg->p_disp_panel->max_bpp &&
+-	    cfg->bpp >=3D cfg->p_disp_panel->min_bpp)
+-		bpp =3D cfg->bpp;
+-	else
+-		bpp =3D cfg->p_disp_panel->max_bpp;
+ 	if (bpp =3D 12)
+ 		bpp =3D 16;
+ 	ret =3D lcd_cfg_frame_buffer(par, (unsigned int)panel->xres,
+@@ -1323,8 +1313,7 @@ static int __devinit fb_probe(struct platform_device =
+*device)
+ 	da8xx_fb_var.yres         =3D lcd_panel_info->yres;
+ 	da8xx_fb_var.yres_virtual =3D lcd_panel_info->yres * LCD_NUM_BUFFERS;
+=20
+-	da8xx_fb_var.grayscale -	    lcd_cfg->p_disp_panel->panel_shade =3D MONOC=
+HROME ? 1 : 0;
++	da8xx_fb_var.grayscale =3D lcd_cfg->panel_shade =3D MONOCHROME ? 1 : 0;
+ 	da8xx_fb_var.bits_per_pixel =3D lcd_cfg->bpp;
+=20
+ 	da8xx_fb_var.hsync_len =3D lcd_panel_info->hsync_len;
+diff --git a/include/video/da8xx-fb.h b/include/video/da8xx-fb.h
+index a6796ff..3eada34 100644
+--- a/include/video/da8xx-fb.h
++++ b/include/video/da8xx-fb.h
+@@ -14,10 +14,6 @@
+=20
+ #include <linux/fb.h>
+=20
+-enum panel_type {
+-	QVGA =3D 0
+-};
+-
+ enum panel_shade {
+ 	MONOCHROME =3D 0,
+ 	COLOR_ACTIVE,
+@@ -29,13 +25,6 @@ enum raster_load_mode {
+ 	LOAD_PALETTE,
+ };
+=20
+-struct display_panel {
+-	enum panel_type panel_type; /* QVGA */
+-	int max_bpp;
+-	int min_bpp;
+-	enum panel_shade panel_shade;
+-};
+-
+ struct da8xx_lcdc_platform_data {
+ 	void *controller_data;
+ 	void (*panel_power_ctrl)(int);
+@@ -43,7 +32,7 @@ struct da8xx_lcdc_platform_data {
+ };
+=20
+ struct lcd_ctrl_config {
+-	const struct display_panel *p_disp_panel;
++	enum panel_shade panel_shade;
+=20
+ 	/* AC Bias Pin Frequency */
+ 	int ac_bias;
+@@ -69,18 +58,9 @@ struct lcd_ctrl_config {
+ 	/* Mono 8-bit Mode: 1=D0-D7 or 0=D0-D3 */
+ 	unsigned char mono_8bit_mode;
+=20
+-	/* Invert line clock */
+-	unsigned char invert_line_clock;
+-
+-	/* Invert frame clock  */
+-	unsigned char invert_frm_clock;
+-
+ 	/* Horizontal and Vertical Sync Edge: 0=3Drising 1=FAlling */
+ 	unsigned char sync_edge;
+=20
+-	/* Horizontal and Vertical Sync: Control: 0=3Dignore */
+-	unsigned char sync_ctrl;
+-
+ 	/* Raster Data Order Select: 1=3DMost-to-least 0=3DLeast-to-most */
+ 	unsigned char raster_order;
+=20
+--=20
+1.7.0.4
 

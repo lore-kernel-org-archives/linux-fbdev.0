@@ -1,209 +1,113 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Fri, 05 Oct 2012 16:16:20 +0000
+From: Stephen Warren <swarren@wwwdotorg.org>
+Date: Fri, 05 Oct 2012 16:17:55 +0000
 Subject: Re: [PATCH 1/2 v6] of: add helper to parse display timings
-Message-Id: <20121005161620.GB2053@pengutronix.de>
+Message-Id: <506F0833.1090704@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1349373560-11128-1-git-send-email-s.trumtrar@pengutronix.de>
- <1349373560-11128-2-git-send-email-s.trumtrar@pengutronix.de>
- <506DD9B4.40409@wwwdotorg.org>
-In-Reply-To: <506DD9B4.40409-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+References: <1349373560-11128-1-git-send-email-s.trumtrar@pengutronix.de> <1349373560-11128-2-git-send-email-s.trumtrar@pengutronix.de> <Pine.LNX.4.64.1210042307300.3744@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1210042307300.3744@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-media@vger.kernel.org
 
-On Thu, Oct 04, 2012 at 12:47:16PM -0600, Stephen Warren wrote:
-> On 10/04/2012 11:59 AM, Steffen Trumtrar wrote:
+On 10/04/2012 03:35 PM, Guennadi Liakhovetski wrote:
+> Hi Steffen
 > 
-> A patch description would be useful for something like this.
+> Sorry for chiming in so late in the game, but I've long been wanting to 
+> have a look at this and compare with what we do for V4L2, so, this seems a 
+> great opportunity to me:-)
 > 
+> On Thu, 4 Oct 2012, Steffen Trumtrar wrote:
 
-Yes. Shame on me.
+>> diff --git a/Documentation/devicetree/bindings/video/display-timings.txt b/Documentation/devicetree/bindings/video/display-timings.txt
 
-> > diff --git a/Documentation/devicetree/bindings/video/display-timings.txt b/Documentation/devicetree/bindings/video/display-timings.txt
-> > new file mode 100644
-> ...
-> > +Usage in backend
-> > +========
+>> +timings-subnode
+>> +---------------
+>> +
+>> +required properties:
+>> + - hactive, vactive: Display resolution
+>> + - hfront-porch, hback-porch, hsync-len: Horizontal Display timing parameters
+>> +   in pixels
+>> +   vfront-porch, vback-porch, vsync-len: Vertical display timing parameters in
+>> +   lines
+>> + - clock: displayclock in Hz
 > 
-> Everything before that point in the file looks fine to me.
-> 
+> You're going to hate me for this, but eventually we want to actually 
+> reference clock objects in our DT bindings. For now, even if you don't 
+> want to actually add clock phandles and stuff here, I think, using the 
+> standard "clock-frequency" property would be much better!
 
-\o/
+In a definition of a display timing, we will never need to use the clock
+binding; the clock binding would be used by the HW module that is
+generating a timing, not by the timing definition itself.
 
-> Everything after this point in the file seems to be Linux-specific
-> implementation details. Does it really belong in the DT binding
-> documentation, rather than some Linux-specific documentation file?
-> 
+That said, your comment about renaming the property to avoid any kind of
+conceptual conflict is still quite valid. This is bike-shedding, but
+"pixel-clock" might be more in line with typical video mode terminology,
+although there's certainly preference in DT for using the generic term
+clock-frequency that you proposed. Either is fine by me.
 
-I guess you are right about that.
+>> +optional properties:
+>> + - hsync-active-high (bool): Hsync pulse is active high
+>> + - vsync-active-high (bool): Vsync pulse is active high
+> 
+> For the above two we also considered using bool properties but eventually 
+> settled down with integer ones:
+> 
+> - hsync-active = <1>
+> 
+> for active-high and 0 for active low. This has the added advantage of 
+> being able to omit this property in the .dts, which then doesn't mean, 
+> that the polarity is active low, but rather, that the hsync line is not 
+> used on this hardware. So, maybe it would be good to use the same binding 
+> here too?
 
-> > +struct drm_display_mode
-> > +===========> > +
-> > +  +----------+---------------------------------------------+----------+-------+
-> > +  |          |                                             |          |       |  ↑
-> > +  |          |                                             |          |       |  |
-> > +  |          |                                             |          |       |  |
-> > +  +----------###############################################----------+-------+  |
-> 
-> I suspect the entire horizontal box above (and the entire vertical box
-> all the way down the left-hand side) should be on the bottom/right
-> instead of top/left. The reason I think this is because all of
-> vsync_start, vsync_end, vdisplay have to be referenced to some known
-> point, which is usually zero or the start of the timing definition, /or/
-> there would be some value indicating the size of the top marging/porch
-> in order to say where those other values are referenced to.
-> 
-> > +  |          #   ↑         ↑          ↑                    #          |       |  |
-> > +  |          #   |         |          |                    #          |       |  |
-> > +  |          #   |         |          |                    #          |       |  |
-> > +  |          #   |         |          |                    #          |       |  |
-> > +  |          #   |         |          |                    #          |       |  |
-> > +  |          #   |         |          |       hdisplay     #          |       |  |
-> > +  |          #<--+--------------------+------------------->#          |       |  |
-> > +  |          #   |         |          |                    #          |       |  |
-> > +  |          #   |vsync_start         |                    #          |       |  |
-> > +  |          #   |         |          |                    #          |       |  |
-> > +  |          #   |         |vsync_end |                    #          |       |  |
-> > +  |          #   |         |          |vdisplay            #          |       |  |
-> > +  |          #   |         |          |                    #          |       |  |
-> > +  |          #   |         |          |                    #          |       |  |
-> > +  |          #   |         |          |                    #          |       |  | vtotal
-> > +  |          #   |         |          |                    #          |       |  |
-> > +  |          #   |         |          |     hsync_start    #          |       |  |
-> > +  |          #<--+---------+----------+------------------------------>|       |  |
-> > +  |          #   |         |          |                    #          |       |  |
-> > +  |          #   |         |          |     hsync_end      #          |       |  |
-> > +  |          #<--+---------+----------+-------------------------------------->|  |
-> > +  |          #   |         |          ↓                    #          |       |  |
-> > +  +----------####|#########|################################----------+-------+  |
-> > +  |          |   |         |                               |          |       |  |
-> > +  |          |   |         |                               |          |       |  |
-> > +  |          |   ↓         |                               |          |       |  |
-> > +  +----------+-------------+-------------------------------+----------+-------+  |
-> > +  |          |             |                               |          |       |  |
-> > +  |          |             |                               |          |       |  |
-> > +  |          |             ↓                               |          |       |  ↓
-> > +  +----------+---------------------------------------------+----------+-------+
-> > +                                   htotal
-> > +   <------------------------------------------------------------------------->
-> 
-> > diff --git a/drivers/of/of_display_timings.c b/drivers/of/of_display_timings.c
-> 
-> > +static int parse_property(struct device_node *np, char *name,
-> > +				struct timing_entry *result)
-> 
-> > +	if (cells = 1)
-> > +		ret = of_property_read_u32_array(np, name, &result->typ, cells);
-> 
-> Should that branch not just set result->min/max to typ as well?
-> Presumably it'd prevent any code that interprets struct timing_entry
-> from having to check if those values were 0 or not?
-> 
+I agree. This also covers the case where analog display connectors often
+use polarity to differentiate similar modes, yet digital connectors
+often always use a fixed polarity since the receiving device can
+"measure" the signal in more complete ways.
 
-Yes, okay.
+If the board HW inverts these lines, the same property names can exist
+in the display controller itself, and the two values XORd together to
+yield the final output polarity.
 
-> > +	else if (cells = 3)
-> > +		ret = of_property_read_u32_array(np, name, &result->min, cells);
+>> + - de-active-high (bool): Data-Enable pulse is active high
+>> + - pixelclk-inverted (bool): pixelclock is inverted
 > 
-> > +struct display_timings *of_get_display_timing_list(struct device_node *np)
-> 
-> > +	entry = of_parse_phandle(timings_np, "default-timing", 0);
-> > +
-> > +	if (!entry) {
-> > +		pr_info("%s: no default-timing specified\n", __func__);
-> > +		entry = of_find_node_by_name(np, "timing");
-> 
-> I don't think you want to require the node have an explicit name; I
-> don't recall the DT binding documentation making that a requirement.
-> Instead, can't you either just leave the default unset, or pick the
-> first DT child node, irrespective of name?
-> 
-Ah, yes. I will set the first child then.
+> We don't (yet) have a de-active property in V4L, don't know whether we'll 
+> ever have to distingsuish between what some datasheets call "HREF" and 
+> HSYNC in DT, but maybe similarly to the above an integer would be 
+> preferred. As for pixclk, we call the property "pclk-sample" and it's also 
+> an integer.
 
-> > +	if (!entry) {
-> > +		pr_info("%s: no timing specifications given\n", __func__);
-> > +		return disp;
-> > +	}
-> 
-> The DT bindings don't state that it's mandatory to have some timing
-> specified, although I agree that it makes sense in practice.
-> 
+Thinking about this more: de-active-high is likely to be a
+board-specific property and hence something in the display controller,
+not in the mode definition?
 
-The definition of timings in dt doesn't make much sense, when there
-are no timings defined, does it ? Maybe I should state the obvious
-in the binding, just in case.
-
-> > +	for_each_child_of_node(timings_np, entry) {
-> > +		struct signal_timing *st;
-> > +
-> > +		st = of_get_display_timing(entry);
-> > +
-> > +		if (!st)
-> > +			continue;
+>> + - interlaced (bool)
 > 
-> I wonder if that shouldn't be an error?
-> 
+> Is "interlaced" a property of the hardware, i.e. of the board? Can the 
+> same display controller on one board require interlaced data and on 
+> another board - progressive?
 
-In the sense of a pr_err not a -EINVAL I presume?! It is a little bit quiet in
-case of a faulty spec, that is right.
+Interlace is a property of a display mode. It's quite possible for a
+particular display controller to switch between interlace and
+progressive output at run-time. For example, reconfiguring the output
+between 480i, 720p, 1080i, 1080p modes. Admittedly, if you're talking to
+a built-in LCD display, you're probably always going to be driving the
+single mode required by the panel, and that mode will likely always be
+progressive. However, since this binding attempts to describe any
+display timing, I think we still need this property per mode.
 
-> > +		if (strcmp(default_timing, entry->full_name) = 0)
-> > +			disp->default_timing = disp->num_timings;
-> 
-> Hmm. Why not compare the node pointers rather than the name? Also, if
-> the parsing failed, then this can lead to default_timing being
-> uninitialized anyway...
-> 
-.. and we don't want that. Will fix.
+> BTW, I'm not very familiar with display 
+> interfaces, but for interlaced you probably sometimes use a field signal, 
+> whose polarity you also want to specify here? We use a "field-even-active" 
+> integer property for it.
 
-> > +		disp->timings[disp->num_timings] = st;
-> > +		disp->num_timings++;
-> > +	}
-> 
-> > +	if (disp->num_timings >= 0)
-> > +		pr_info("%s: got %d timings. Using timing #%d as default\n", __func__,
-> > +			disp->num_timings , disp->default_timing + 1);
-> > +	else
-> > +		pr_info("%s: no timings specified\n", __func__);
-> 
-> The message in the else clause is not necessarily true; there may have
-> been some specified, but they just couldn't be parsed.
-> 
-Right.
-
-> > +int of_display_timings_exists(struct device_node *np)
-> > +{
-> > +	struct device_node *timings_np;
-> > +	struct device_node *default_np;
-> > +
-> > +	if (!np)
-> > +		return -EINVAL;
-> > +
-> > +	timings_np = of_parse_phandle(np, "display-timings", 0);
-> > +
-> > +	if (!timings_np)
-> > +		return -EINVAL;
-> > +
-> > +	default_np = of_parse_phandle(np, "default-timing", 0);
-> > +
-> > +	if (default_np)
-> > +		return 0;
-> 
-> If this function checks that a default-timing property exists, shouldn't
-> the function be named of_display_default_timing_exists()?
-> 
-
-Maybe I should split this in two functions.
-
-Thanks for your feedback.
-
-Regards,
-Steffen
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+I think that's a property of the display controller itself, rather than
+an individual mode, although I'm not 100% certain. My assertion is that
+the physical interface that the display controller is driving will
+determine whether embedded or separate sync is used, and in the separate
+sync case, how the field signal is defined, and that all interlace modes
+driven over that interface will use the same field signal definition.

@@ -1,48 +1,50 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 24 Oct 2012 09:28:57 +0000
-Subject: [PATCH 06/20] OMAPDSS: DISPC: use dss_feat_get_num_ovls()
-Message-Id: <1351070951-18616-7-git-send-email-tomi.valkeinen@ti.com>
+From: Wei Yongjun <weiyj.lk@gmail.com>
+Date: Mon, 08 Oct 2012 14:07:13 +0000
+Subject: [PATCH] matrox maven: use module_i2c_driver to simplify the code
+Message-Id: <CAPgLHd8m_OyJyJrPV07kZ-9fYUpf0m8GB4DjCZycYUQrH=yTzg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Use dss_feat_get_num_ovls() in dispc.c instead of
-omap_dss_get_num_overlays() to remove the dependency to overlay.c. Note
-that we still have uses of omap_dss_get_num_overlays() in dispc.c, but
-these will be moved out in the future patches.
+From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Use the module_i2c_driver() macro to make the code smaller
+and a bit simpler.
+
+dpatch engine is used to auto generate this patch.
+(https://github.com/weiyj/dpatch)
+
+Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 ---
- drivers/video/omap2/dss/dispc.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/matrox/matroxfb_maven.c | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 198e321..392445a 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -1046,7 +1046,7 @@ static void dispc_configure_burst_sizes(void)
- 	const int burst_size = BURST_SIZE_X8;
+diff --git a/drivers/video/matrox/matroxfb_maven.c b/drivers/video/matrox/matroxfb_maven.c
+index 217678e..ed05c36 100644
+--- a/drivers/video/matrox/matroxfb_maven.c
++++ b/drivers/video/matrox/matroxfb_maven.c
+@@ -1283,19 +1283,9 @@ static struct i2c_driver maven_driver={
+ 	.id_table	= maven_id,
+ };
  
- 	/* Configure burst size always to maximum size */
--	for (i = 0; i < omap_dss_get_num_overlays(); ++i)
-+	for (i = 0; i < dss_feat_get_num_ovls(); ++i)
- 		dispc_ovl_set_burst_size(i, burst_size);
- }
+-static int __init matroxfb_maven_init(void)
+-{
+-	return i2c_add_driver(&maven_driver);
+-}
+-
+-static void __exit matroxfb_maven_exit(void)
+-{
+-	i2c_del_driver(&maven_driver);
+-}
++module_i2c_driver(maven_driver);
  
-@@ -1250,7 +1250,7 @@ void dispc_ovl_compute_fifo_thresholds(enum omap_plane plane,
- 
- 	if (use_fifomerge) {
- 		total_fifo_size = 0;
--		for (i = 0; i < omap_dss_get_num_overlays(); ++i)
-+		for (i = 0; i < dss_feat_get_num_ovls(); ++i)
- 			total_fifo_size += dispc_ovl_get_fifo_size(i);
- 	} else {
- 		total_fifo_size = ovl_fifo_size;
--- 
-1.7.9.5
+ MODULE_AUTHOR("(c) 1999-2002 Petr Vandrovec <vandrove@vc.cvut.cz>");
+ MODULE_DESCRIPTION("Matrox G200/G400 Matrox MGA-TVO driver");
+ MODULE_LICENSE("GPL");
+-module_init(matroxfb_maven_init);
+-module_exit(matroxfb_maven_exit);
+ /* we do not have __setup() yet */
+
 

@@ -1,109 +1,286 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Tue, 09 Oct 2012 21:54:16 +0000
-Subject: Re: omap DSS cmdline resolution not working for HDMI?
-Message-Id: <20121009215415.GI12552@atomide.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 08 Oct 2012 12:30:28 +0000
+Subject: [PATCH 1/2] OMAP: VRFB: convert vrfb to platform device
+Message-Id: <1349699429-12736-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20121004175604.GE3874@atomide.com>
- <1349435094.2401.17.camel@deskari>
- <20121005164308.GM3874@atomide.com>
- <1349788010.2409.38.camel@deskari>
-In-Reply-To: <1349788010.2409.38.camel@deskari>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [121009 06:08]:
-> On Fri, 2012-10-05 at 09:43 -0700, Tony Lindgren wrote:
-> 
-> > Looks like somehow also output_size won't change when changing
-> > display output from DVI to HDMI.
-> > 
-> > If I boot with DVI panel at 1600x1200, then try to switch to the
-> > HDMI monitor with the following script:
-> > 
-> > #!/bin/sh
-> > 
-> > export dvi=display0
-> > export hdmi=display1
-> > export overlay=overlay0
-> > 
-> > echo 0 > /sys/devices/platform/omapdss/$dvi/enabled
-> > echo 1 > /sys/devices/platform/omapdss/$hdmi/enabled
-> > echo "85500,1366/70/213/143,768/3/24/3" > /sys/devices/platform/omapdss/$hdmi/timings
-> > echo 0 > /sys/devices/platform/omapdss/$overlay/enabled
-> > echo tv > /sys/devices/platform/omapdss/$overlay/manager
-> > #echo "1366,768" > /sys/devices/platform/omapdss/$overlay/output_size
-> > echo 1 > /sys/devices/platform/omapdss/$overlay/enabled
-> > cat /sys/devices/platform/omapdss/$hdmi/timings
-> > cat /sys/devices/platform/omapdss/$overlay/output_size
-> > 
-> > I get the following which may provide more clues:
-> > 
-> > [64370.820312] omapdss DISPC error: SYNC_LOST on channel tv, restarting the output with video overlays dd
-> > [64370.831024] omapdss OVERLAY error: overlay 0 horizontally not inside the display area (0 + 1600 >= 13)
-> > [64370.840972] omapdss APPLY error: failed to enable manager 1: check_settings failed
-> > [64370.849670] omapdss HDMI error: failed to power on device
-> > [64370.855407] omapdss error: failed to power on
-> > [64370.862487] omapdss OVERLAY error: overlay 0 horizontally not inside the display area (0 + 1600 >= 13)
-> > [64370.872436] omapdss APPLY error: failed to enable manager 1: check_settings failed
-> > [64370.880798] omapdss HDMI error: failed to power on device
-> > [64370.886505] omapdss error: failed to power on
-> > 85500,1366/70/213/143,768/3/24/3
-> > 1600,1200
-> 
-> Well, it's not that simple =). There are three things to consider:
-> 
-> - Framebuffer in the sdram. It has xres and yres parameters.
-> - Overlay, and it's input size (from fb) and output sizes (must fit into
-> the display).
-> - Display, which has certain size depending on video mode.
-> 
-> Only VID overlays can have different input and output sizes, GFX overlay
-> does not support scaling.
-> 
-> In the script above you don't change the fb at all. You can do that with
-> when the overlay is disabled, for example:
-> 
-> fbset -xres 1366 -vxres 1366 -yres 768 -vyres 768
-> 
-> But that only works if there's enough memory allocated for the
-> framebuffer, but that is the case for you if the fb was bigger
-> initially. Otherwise you need to set the new size
-> with /sys/class/graphics/fb0/size before resizing the fb.
-> 
-> And, of course, the framebuffer cannot be in use at that time by, for
-> example, X.
+This patch converts vrfb library into a platform device, in an effort to
+remove omap dependencies.
 
-Thanks for the explanation, I'll give that a try at some point.
+The platform device is registered in arch/arm/plat-omap/fb.c and
+assigned resources depending on whether running on omap2 or omap3.
+
+The vrfb driver will parse those resources and use them to access vrfb
+configuration registers and the vrfb virtual rotation areas.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/plat-omap/fb.c    |   53 +++++++++++++++++++
+ drivers/video/omap2/vrfb.c |  124 +++++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 157 insertions(+), 20 deletions(-)
+
+diff --git a/arch/arm/plat-omap/fb.c b/arch/arm/plat-omap/fb.c
+index dd6f92c..d231912 100644
+--- a/arch/arm/plat-omap/fb.c
++++ b/arch/arm/plat-omap/fb.c
+@@ -35,6 +35,59 @@
  
-> Yes, it's complex! I hope omapdrm will make all things simple, and we
-> can forget omapfb. In hindsight, I should've designed omapfb to be much
-> simpler, and only use gfx overlay. Making it support all overlays is a
-> never ending source for problems and complexity.
-
-Heh oh well it works reasonably for most cases I guess.
+ #include <plat/board.h>
  
-> > FYI, I'm also seeing the DVI monitor blank out on it's own for
-> > about a second or so on regular basis every 10 minutes or so.
-> > No idea what's causing that, maybe it's a reminder to take
-> > a short break :)
-> 
-> Well that's something different. I've recently done some testing with
-> using DSI PLL for generating pixel clock, and I've seen unstabilities
-> with that. But perhaps there's something else wrong also, even when
-> using the PRCM for pix clock as in your case.
-> 
-> Does your monitor ever report something like bad signal or such?
++#if defined(CONFIG_OMAP2_VRFB)
++static const struct resource omap2_vrfb_resources[] = {
++	DEFINE_RES_MEM(0x68008000u, 0x40),
++	DEFINE_RES_MEM(0x70000000u, 0x4000000),
++	DEFINE_RES_MEM(0x74000000u, 0x4000000),
++	DEFINE_RES_MEM(0x78000000u, 0x4000000),
++	DEFINE_RES_MEM(0x7c000000u, 0x4000000),
++};
++
++static const struct resource omap3_vrfb_resources[] = {
++	DEFINE_RES_MEM(0x6C000180u, 0xc0),
++	DEFINE_RES_MEM(0x70000000u, 0x4000000),
++	DEFINE_RES_MEM(0x74000000u, 0x4000000),
++	DEFINE_RES_MEM(0x78000000u, 0x4000000),
++	DEFINE_RES_MEM(0x7c000000u, 0x4000000),
++	DEFINE_RES_MEM(0xe0000000u, 0x4000000),
++	DEFINE_RES_MEM(0xe4000000u, 0x4000000),
++	DEFINE_RES_MEM(0xe8000000u, 0x4000000),
++	DEFINE_RES_MEM(0xec000000u, 0x4000000),
++	DEFINE_RES_MEM(0xf0000000u, 0x4000000),
++	DEFINE_RES_MEM(0xf4000000u, 0x4000000),
++	DEFINE_RES_MEM(0xf8000000u, 0x4000000),
++	DEFINE_RES_MEM(0xfc000000u, 0x4000000),
++};
++
++static int __init omap_init_vrfb(void)
++{
++	struct platform_device *pdev;
++	const struct resource *res;
++	unsigned int num_res;
++
++	if (cpu_is_omap24xx()) {
++		res = omap2_vrfb_resources;
++		num_res = ARRAY_SIZE(omap2_vrfb_resources);
++	} else if (cpu_is_omap34xx()) {
++		res = omap3_vrfb_resources;
++		num_res = ARRAY_SIZE(omap3_vrfb_resources);
++	} else {
++		return 0;
++	}
++
++	pdev = platform_device_register_resndata(NULL, "omapvrfb", -1,
++			res, num_res, NULL, 0);
++
++	if (IS_ERR(pdev))
++		return PTR_ERR(pdev);
++	else
++		return 0;
++}
++
++arch_initcall(omap_init_vrfb);
++#endif
++
+ #if defined(CONFIG_FB_OMAP) || defined(CONFIG_FB_OMAP_MODULE)
+ 
+ static bool omapfb_lcd_configured;
+diff --git a/drivers/video/omap2/vrfb.c b/drivers/video/omap2/vrfb.c
+index 7e99022..c072e37 100644
+--- a/drivers/video/omap2/vrfb.c
++++ b/drivers/video/omap2/vrfb.c
+@@ -26,9 +26,9 @@
+ #include <linux/io.h>
+ #include <linux/bitops.h>
+ #include <linux/mutex.h>
++#include <linux/platform_device.h>
+ 
+ #include <plat/vrfb.h>
+-#include <plat/sdrc.h>
+ 
+ #ifdef DEBUG
+ #define DBG(format, ...) pr_debug("VRFB: " format, ## __VA_ARGS__)
+@@ -36,10 +36,10 @@
+ #define DBG(format, ...)
+ #endif
+ 
+-#define SMS_ROT_VIRT_BASE(context, rot) \
+-	(((context >= 4) ? 0xD0000000 : 0x70000000) \
+-	 + (0x4000000 * (context)) \
+-	 + (0x1000000 * (rot)))
++#define SMS_ROT_CONTROL(context)	(0x0 + 0x10 * context)
++#define SMS_ROT_SIZE(context)		(0x4 + 0x10 * context)
++#define SMS_ROT_PHYSICAL_BA(context)	(0x8 + 0x10 * context)
++#define SMS_ROT_VIRT_BASE(rot)		(0x1000000 * (rot))
+ 
+ #define OMAP_VRFB_SIZE			(2048 * 2048 * 4)
+ 
+@@ -53,10 +53,16 @@
+ #define SMS_PW_OFFSET		4
+ #define SMS_PS_OFFSET		0
+ 
+-#define VRFB_NUM_CTXS 12
+ /* bitmap of reserved contexts */
+ static unsigned long ctx_map;
+ 
++struct vrfb_ctx {
++	u32 base;
++	u32 physical_ba;
++	u32 control;
++	u32 size;
++};
++
+ static DEFINE_MUTEX(ctx_lock);
+ 
+ /*
+@@ -65,17 +71,32 @@ static DEFINE_MUTEX(ctx_lock);
+  * we don't need locking, since no drivers will run until after the wake-up
+  * has finished.
+  */
+-static struct {
+-	u32 physical_ba;
+-	u32 control;
+-	u32 size;
+-} vrfb_hw_context[VRFB_NUM_CTXS];
++
++static void __iomem *vrfb_base;
++
++static int num_ctxs;
++static struct vrfb_ctx *ctxs;
++
++static void omap2_sms_write_rot_control(u32 val, unsigned ctx)
++{
++	__raw_writel(val, vrfb_base + SMS_ROT_CONTROL(ctx));
++}
++
++static void omap2_sms_write_rot_size(u32 val, unsigned ctx)
++{
++	__raw_writel(val, vrfb_base + SMS_ROT_SIZE(ctx));
++}
++
++static void omap2_sms_write_rot_physical_ba(u32 val, unsigned ctx)
++{
++	__raw_writel(val, vrfb_base + SMS_ROT_PHYSICAL_BA(ctx));
++}
+ 
+ static inline void restore_hw_context(int ctx)
+ {
+-	omap2_sms_write_rot_control(vrfb_hw_context[ctx].control, ctx);
+-	omap2_sms_write_rot_size(vrfb_hw_context[ctx].size, ctx);
+-	omap2_sms_write_rot_physical_ba(vrfb_hw_context[ctx].physical_ba, ctx);
++	omap2_sms_write_rot_control(ctxs[ctx].control, ctx);
++	omap2_sms_write_rot_size(ctxs[ctx].size, ctx);
++	omap2_sms_write_rot_physical_ba(ctxs[ctx].physical_ba, ctx);
+ }
+ 
+ static u32 get_image_width_roundup(u16 width, u8 bytespp)
+@@ -196,9 +217,9 @@ void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
+ 	control |= VRFB_PAGE_WIDTH_EXP  << SMS_PW_OFFSET;
+ 	control |= VRFB_PAGE_HEIGHT_EXP << SMS_PH_OFFSET;
+ 
+-	vrfb_hw_context[ctx].physical_ba = paddr;
+-	vrfb_hw_context[ctx].size = size;
+-	vrfb_hw_context[ctx].control = control;
++	ctxs[ctx].physical_ba = paddr;
++	ctxs[ctx].size = size;
++	ctxs[ctx].control = control;
+ 
+ 	omap2_sms_write_rot_physical_ba(paddr, ctx);
+ 	omap2_sms_write_rot_size(size, ctx);
+@@ -274,11 +295,11 @@ int omap_vrfb_request_ctx(struct vrfb *vrfb)
+ 
+ 	mutex_lock(&ctx_lock);
+ 
+-	for (ctx = 0; ctx < VRFB_NUM_CTXS; ++ctx)
++	for (ctx = 0; ctx < num_ctxs; ++ctx)
+ 		if ((ctx_map & (1 << ctx)) = 0)
+ 			break;
+ 
+-	if (ctx = VRFB_NUM_CTXS) {
++	if (ctx = num_ctxs) {
+ 		pr_err("vrfb: no free contexts\n");
+ 		r = -EBUSY;
+ 		goto out;
+@@ -293,7 +314,7 @@ int omap_vrfb_request_ctx(struct vrfb *vrfb)
+ 	vrfb->context = ctx;
+ 
+ 	for (rot = 0; rot < 4; ++rot) {
+-		paddr = SMS_ROT_VIRT_BASE(ctx, rot);
++		paddr = ctxs[ctx].base + SMS_ROT_VIRT_BASE(rot);
+ 		if (!request_mem_region(paddr, OMAP_VRFB_SIZE, "vrfb")) {
+ 			pr_err("vrfb: failed to reserve VRFB "
+ 					"area for ctx %d, rotation %d\n",
+@@ -314,3 +335,66 @@ out:
+ 	return r;
+ }
+ EXPORT_SYMBOL(omap_vrfb_request_ctx);
++
++static int __init vrfb_probe(struct platform_device *pdev)
++{
++	struct resource *mem;
++	int i;
++
++	/* first resource is the register res, the rest are vrfb contexts */
++
++	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!mem) {
++		dev_err(&pdev->dev, "can't get vrfb base address\n");
++		return -EINVAL;
++	}
++
++	vrfb_base = devm_ioremap(&pdev->dev, mem->start, resource_size(mem));
++	if (!vrfb_base) {
++		dev_err(&pdev->dev, "can't ioremap vrfb memory\n");
++		return -ENOMEM;
++	}
++
++	num_ctxs = pdev->num_resources - 1;
++
++	ctxs = devm_kzalloc(&pdev->dev,
++			sizeof(struct vrfb_ctx) * num_ctxs,
++			GFP_KERNEL);
++
++	if (!ctxs)
++		return -ENOMEM;
++
++	for (i = 0; i < num_ctxs; ++i) {
++		mem = platform_get_resource(pdev, IORESOURCE_MEM, 1 + i);
++		if (!mem) {
++			dev_err(&pdev->dev, "can't get vrfb ctx %d address\n",
++					i);
++			return -EINVAL;
++		}
++
++		ctxs[i].base = mem->start;
++	}
++
++	return 0;
++}
++
++static struct platform_driver vrfb_driver = {
++	.driver.name	= "omapvrfb",
++};
++
++static int __init vrfb_init(void)
++{
++	return platform_driver_probe(&vrfb_driver, &vrfb_probe);
++}
++
++static void __exit vrfb_exit(void)
++{
++	platform_driver_unregister(&vrfb_driver);
++}
++
++module_init(vrfb_init);
++module_exit(vrfb_exit);
++
++MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@ti.com>");
++MODULE_DESCRIPTION("OMAP VRFB");
++MODULE_LICENSE("GPL v2");
+-- 
+1.7.9.5
 
-Yes I've seen that too, but that seems to be different issue and
-I may have passed wrong timings in that case.
-
-I guess the random blanking for a second or so could also be
-an occastional bad timing. No warnings in that case on the monitor
-though.
-
-Regards,
-
-Tony

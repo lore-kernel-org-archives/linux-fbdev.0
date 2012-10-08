@@ -1,143 +1,84 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Mon, 08 Oct 2012 08:25:04 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 08 Oct 2012 09:01:18 +0000
 Subject: Re: [PATCH 1/2 v6] of: add helper to parse display timings
-Message-Id: <Pine.LNX.4.64.1210081000530.11034@axis700.grange>
+Message-Id: <1349686878.3227.40.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-UJ1ZVwdXI0O4oyoyQOoC"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1349373560-11128-1-git-send-email-s.trumtrar@pengutronix.de>
- <1349373560-11128-2-git-send-email-s.trumtrar@pengutronix.de>
- <Pine.LNX.4.64.1210042307300.3744@axis700.grange> <506F0833.1090704@wwwdotorg.org>
-In-Reply-To: <506F0833.1090704@wwwdotorg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	 <1349373560-11128-2-git-send-email-s.trumtrar@pengutronix.de>
+	 <Pine.LNX.4.64.1210042307300.3744@axis700.grange>
+	 <506F0833.1090704@wwwdotorg.org>
+	 <Pine.LNX.4.64.1210081000530.11034@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1210081000530.11034@axis700.grange>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-media@vger.kernel.org
+
+
+--=-UJ1ZVwdXI0O4oyoyQOoC
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 2012-10-08 at 10:25 +0200, Guennadi Liakhovetski wrote:
+
+> In general, I might be misunderstanding something, but don't we have to=
+=20
+> distinguish between 2 types of information about display timings: (1) is=
+=20
+> defined by the display controller requirements, is known to the display=
+=20
+> driver and doesn't need to be present in timings DT. We did have some of=
+=20
+> these parameters in board data previously, because we didn't have proper=
+=20
+> display controller drivers... (2) is board specific configuration, and is=
+=20
+> such it has to be present in DT.
+>=20
+> In that way, doesn't "interlaced" belong to type (1) and thus doesn't nee=
+d=20
+> to be present in DT?
+
+As I see it, this DT data is about the display (most commonly LCD
+panel), i.e. what video mode(s) the panel supports. If things were done
+my way, the panel's supported timings would be defined in the driver for
+the panel, and DT would be left to describe board specific data, but
+this approach has its benefits.
+
+Thus, if you connect an interlaced panel to your board, you need to tell
+the display controller that this panel requires interlace signal. Also,
+pixel clock source doesn't make sense in this context, as this doesn't
+describe the actual used configuration, but only what the panel
+supports.
+
+Of course, if this is about describing the hardware, the default-mode
+property doesn't really fit in...
+
+ Tomi
+
+
+--=-UJ1ZVwdXI0O4oyoyQOoC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-media@vger.kernel.org
 
-On Fri, 5 Oct 2012, Stephen Warren wrote:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-> On 10/04/2012 03:35 PM, Guennadi Liakhovetski wrote:
-> > Hi Steffen
-> > 
-> > Sorry for chiming in so late in the game, but I've long been wanting to 
-> > have a look at this and compare with what we do for V4L2, so, this seems a 
-> > great opportunity to me:-)
-> > 
-> > On Thu, 4 Oct 2012, Steffen Trumtrar wrote:
-> 
-> >> diff --git a/Documentation/devicetree/bindings/video/display-timings.txt b/Documentation/devicetree/bindings/video/display-timings.txt
-> 
-> >> +timings-subnode
-> >> +---------------
-> >> +
-> >> +required properties:
-> >> + - hactive, vactive: Display resolution
-> >> + - hfront-porch, hback-porch, hsync-len: Horizontal Display timing parameters
-> >> +   in pixels
-> >> +   vfront-porch, vback-porch, vsync-len: Vertical display timing parameters in
-> >> +   lines
-> >> + - clock: displayclock in Hz
-> > 
-> > You're going to hate me for this, but eventually we want to actually 
-> > reference clock objects in our DT bindings. For now, even if you don't 
-> > want to actually add clock phandles and stuff here, I think, using the 
-> > standard "clock-frequency" property would be much better!
-> 
-> In a definition of a display timing, we will never need to use the clock
-> binding; the clock binding would be used by the HW module that is
-> generating a timing, not by the timing definition itself.
+iQIcBAABAgAGBQJQcpZeAAoJEPo9qoy8lh71jiIP/RpaYW8fyffAFqfy8QlVtOyF
+eUDBwng9QkEjAyOd6+JzVlXB3Ex/40nQCubII7g73e9+tKaPx+C0uR+ugbf5QObc
+pq2D08O9fWgxJAdmdN+2cW859hX6m5Fm9N74lXXSIZqqcbyUjxIwAuUn3rsiwQV2
+gKB9LZr8s0s7H6u+f9aUZtro9Es/lpZNjVYR1x0pRfFUCLIdypfuCpIv3244WkH2
+HcOvbDVThAHHtNI+vI/6vPRo3KDA/vYFRZ/4056dx+v/uPkGdAH2RRW4iQ+3nBA3
+alqjadOzKOHrqb65JyDU2GCPIGJh5b05HTRAh5T7xuT2C0wJ8CU7ZULrzL/thyFK
+DOgDFJAig8Uyj5vQ4bA6Hz0U+QiaRnm0EWUph+O9XbaHsoM15sG1Gk01F99R+1RM
+BK/X0dNs1fWXiRxSIfJtFd9gzI9YrTK9tqF2l29E6sDBCt7C8EbImo74Lk/OSrfy
+BhuZTwnm/LiHYE5A5c0PbJr1zQIsRRe49CZ9boqCOnLvgwDvfL4hYoug9H2qmlH9
+FbpxRADQAWmYcWfE6A/mHbzQqKlFDdrsylPMCwotzHiRApUBdqloNPBPSi+n1zPe
+p+JQeCcjXx53TulC5uM0+gXWwHQf6psImU+8X7JOXD7XCYOEk6OhW3vyWmtcinOj
+5Fw728bqQlFNIWs0l59s
+=ZIY1
+-----END PGP SIGNATURE-----
 
-You mean clock consumer bindings will be in the display device DT node? 
-And the display-timings node will be its child?
+--=-UJ1ZVwdXI0O4oyoyQOoC--
 
-> That said, your comment about renaming the property to avoid any kind of
-> conceptual conflict is still quite valid. This is bike-shedding, but
-> "pixel-clock" might be more in line with typical video mode terminology,
-> although there's certainly preference in DT for using the generic term
-> clock-frequency that you proposed. Either is fine by me.
-> 
-> >> +optional properties:
-> >> + - hsync-active-high (bool): Hsync pulse is active high
-> >> + - vsync-active-high (bool): Vsync pulse is active high
-> > 
-> > For the above two we also considered using bool properties but eventually 
-> > settled down with integer ones:
-> > 
-> > - hsync-active = <1>
-> > 
-> > for active-high and 0 for active low. This has the added advantage of 
-> > being able to omit this property in the .dts, which then doesn't mean, 
-> > that the polarity is active low, but rather, that the hsync line is not 
-> > used on this hardware. So, maybe it would be good to use the same binding 
-> > here too?
-> 
-> I agree. This also covers the case where analog display connectors often
-> use polarity to differentiate similar modes, yet digital connectors
-> often always use a fixed polarity since the receiving device can
-> "measure" the signal in more complete ways.
-> 
-> If the board HW inverts these lines, the same property names can exist
-> in the display controller itself, and the two values XORd together to
-> yield the final output polarity.
-> 
-> >> + - de-active-high (bool): Data-Enable pulse is active high
-> >> + - pixelclk-inverted (bool): pixelclock is inverted
-> > 
-> > We don't (yet) have a de-active property in V4L, don't know whether we'll 
-> > ever have to distingsuish between what some datasheets call "HREF" and 
-> > HSYNC in DT, but maybe similarly to the above an integer would be 
-> > preferred. As for pixclk, we call the property "pclk-sample" and it's also 
-> > an integer.
-> 
-> Thinking about this more: de-active-high is likely to be a
-> board-specific property and hence something in the display controller,
-> not in the mode definition?
-> 
-> >> + - interlaced (bool)
-> > 
-> > Is "interlaced" a property of the hardware, i.e. of the board? Can the 
-> > same display controller on one board require interlaced data and on 
-> > another board - progressive?
-> 
-> Interlace is a property of a display mode. It's quite possible for a
-> particular display controller to switch between interlace and
-> progressive output at run-time. For example, reconfiguring the output
-> between 480i, 720p, 1080i, 1080p modes. Admittedly, if you're talking to
-> a built-in LCD display, you're probably always going to be driving the
-> single mode required by the panel, and that mode will likely always be
-> progressive. However, since this binding attempts to describe any
-> display timing, I think we still need this property per mode.
-
-But why do you need this in the DT then at all? If it's fixed, as required 
-per display controller, then its driver will know it. If it's runtime 
-configurable, then it's a purely software parameter and doesn't depend on 
-the board?
-
-> > BTW, I'm not very familiar with display 
-> > interfaces, but for interlaced you probably sometimes use a field signal, 
-> > whose polarity you also want to specify here? We use a "field-even-active" 
-> > integer property for it.
-> 
-> I think that's a property of the display controller itself, rather than
-> an individual mode, although I'm not 100% certain. My assertion is that
-> the physical interface that the display controller is driving will
-> determine whether embedded or separate sync is used, and in the separate
-> sync case, how the field signal is defined, and that all interlace modes
-> driven over that interface will use the same field signal definition.
-
-In general, I might be misunderstanding something, but don't we have to 
-distinguish between 2 types of information about display timings: (1) is 
-defined by the display controller requirements, is known to the display 
-driver and doesn't need to be present in timings DT. We did have some of 
-these parameters in board data previously, because we didn't have proper 
-display controller drivers... (2) is board specific configuration, and is 
-such it has to be present in DT.
-
-In that way, doesn't "interlaced" belong to type (1) and thus doesn't need 
-to be present in DT?
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/

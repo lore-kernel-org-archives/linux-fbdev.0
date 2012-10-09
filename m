@@ -1,48 +1,75 @@
-From: Srinivas KANDAGATLA <srinivas.kandagatla@st.com>
-Date: Wed, 10 Oct 2012 18:38:36 +0000
-Subject: [PATCH 3.6.0- 06/13] video/broadsheetfb: use module_platform_driver macro
-Message-Id: <1349894316-9394-1-git-send-email-srinivas.kandagatla@st.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 09 Oct 2012 12:30:26 +0000
+Subject: [PATCHv2 3/3] OMAP: SDRC: remove VRFB code
+Message-Id: <1349785827-27055-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1349785827-27055-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1349785827-27055-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Srinivas Kandagatla <srinivas.kandagatla@st.com>
+Now that VRFB driver handles its registers independently, we can remove
+the VRFB related code from OMAP's sdrc.
 
-This patch removes some code duplication by using
-module_platform_driver.
-
-Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@st.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tony Lindgren <tony@atomide.com>
 ---
- drivers/video/broadsheetfb.c |   14 +-------------
- 1 files changed, 1 insertions(+), 13 deletions(-)
+ arch/arm/mach-omap2/sdrc.c             |   16 ----------------
+ arch/arm/plat-omap/include/plat/sdrc.h |    7 -------
+ 2 files changed, 23 deletions(-)
 
-diff --git a/drivers/video/broadsheetfb.c b/drivers/video/broadsheetfb.c
-index c95b417..d69c5de 100644
---- a/drivers/video/broadsheetfb.c
-+++ b/drivers/video/broadsheetfb.c
-@@ -1217,19 +1217,7 @@ static struct platform_driver broadsheetfb_driver = {
- 		.name	= "broadsheetfb",
- 	},
- };
+diff --git a/arch/arm/mach-omap2/sdrc.c b/arch/arm/mach-omap2/sdrc.c
+index e3d345f..4282e6e 100644
+--- a/arch/arm/mach-omap2/sdrc.c
++++ b/arch/arm/mach-omap2/sdrc.c
+@@ -160,19 +160,3 @@ void __init omap2_sdrc_init(struct omap_sdrc_params *sdrc_cs0,
+ 	sdrc_write_reg(l, SDRC_POWER);
+ 	omap2_sms_save_context();
+ }
 -
--static int __init broadsheetfb_init(void)
+-void omap2_sms_write_rot_control(u32 val, unsigned ctx)
 -{
--	return platform_driver_register(&broadsheetfb_driver);
+-	sms_write_reg(val, SMS_ROT_CONTROL(ctx));
 -}
 -
--static void __exit broadsheetfb_exit(void)
+-void omap2_sms_write_rot_size(u32 val, unsigned ctx)
 -{
--	platform_driver_unregister(&broadsheetfb_driver);
+-	sms_write_reg(val, SMS_ROT_SIZE(ctx));
 -}
 -
--module_init(broadsheetfb_init);
--module_exit(broadsheetfb_exit);
-+module_platform_driver(broadsheetfb_driver);
+-void omap2_sms_write_rot_physical_ba(u32 val, unsigned ctx)
+-{
+-	sms_write_reg(val, SMS_ROT_PHYSICAL_BA(ctx));
+-}
+-
+diff --git a/arch/arm/plat-omap/include/plat/sdrc.h b/arch/arm/plat-omap/include/plat/sdrc.h
+index 36d6a76..c68bab2 100644
+--- a/arch/arm/plat-omap/include/plat/sdrc.h
++++ b/arch/arm/plat-omap/include/plat/sdrc.h
+@@ -94,9 +94,6 @@
+ /* SMS register offsets - read/write with sms_{read,write}_reg() */
  
- MODULE_DESCRIPTION("fbdev driver for Broadsheet controller");
- MODULE_AUTHOR("Jaya Kumar");
+ #define SMS_SYSCONFIG			0x010
+-#define SMS_ROT_CONTROL(context)	(0x180 + 0x10 * context)
+-#define SMS_ROT_SIZE(context)		(0x184 + 0x10 * context)
+-#define SMS_ROT_PHYSICAL_BA(context)	(0x188 + 0x10 * context)
+ /* REVISIT: fill in other SMS registers here */
+ 
+ 
+@@ -137,10 +134,6 @@ int omap2_sdrc_get_params(unsigned long r,
+ void omap2_sms_save_context(void);
+ void omap2_sms_restore_context(void);
+ 
+-void omap2_sms_write_rot_control(u32 val, unsigned ctx);
+-void omap2_sms_write_rot_size(u32 val, unsigned ctx);
+-void omap2_sms_write_rot_physical_ba(u32 val, unsigned ctx);
+-
+ #ifdef CONFIG_ARCH_OMAP2
+ 
+ struct memory_timings {
 -- 
-1.7.0.4
+1.7.9.5
 

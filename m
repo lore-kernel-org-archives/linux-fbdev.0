@@ -1,138 +1,104 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Wed, 03 Oct 2012 11:06:16 +0000
-Subject: Re: [PATCH 1/2] of: add helper to parse display specs
-Message-Id: <20121003110616.GA2946@pengutronix.de>
+From: Jun Nie <niej0001@gmail.com>
+Date: Tue, 09 Oct 2012 10:13:57 +0000
+Subject: Re: [PATCH] fb: only enable console lock in fb for VGA console
+Message-Id: <CAGA24MK=JSfP6CdgwZ+iCrdy8a0xL8LuE8YGWLTW3FyaytRU8w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348500924-8551-1-git-send-email-s.trumtrar@pengutronix.de>
- <1348500924-8551-2-git-send-email-s.trumtrar@pengutronix.de>
- <5069CA74.7040409@wwwdotorg.org>
-In-Reply-To: <5069CA74.7040409@wwwdotorg.org>
+References: <CAGA24M+PmObK3ZJWvtNhBzxO4WkGk_xyveQiZNtZe7xGdHrbFw@mail.gmail.com>
+In-Reply-To: <CAGA24M+PmObK3ZJWvtNhBzxO4WkGk_xyveQiZNtZe7xGdHrbFw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: devicetree-discuss@lists.ozlabs.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, kernel@pengutronix.de, linux-media@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Mon, Oct 01, 2012 at 10:53:08AM -0600, Stephen Warren wrote:
-> On 09/24/2012 09:35 AM, Steffen Trumtrar wrote:
-> > Parse a display-node with timings and hardware-specs from devictree.
-> 
-> > diff --git a/Documentation/devicetree/bindings/video/display b/Documentation/devicetree/bindings/video/display
-> > new file mode 100644
-> > index 0000000..722766a
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/video/display
-> 
-> This should be display.txt.
-> 
-Okay
+2012/9/30 Paul Mundt <lethal@linux-sh.org>:
+> On Sat, Sep 29, 2012 at 01:29:17PM +0800, Jun Nie wrote:
+>> diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
+>> index 1d00736..7759c82 100644
+>> --- a/drivers/video/s3fb.c
+>> +++ b/drivers/video/s3fb.c
+>> @@ -1445,12 +1444,12 @@ static int s3_pci_suspend(struct pci_dev* dev,
+>> pm_message_t state)
+>>
+>>       dev_info(info->device, "suspend\n");
+>>
+>> -     console_lock();
+>> +     fb_fb_console_lock();
+>>       mutex_lock(&(par->open_lock));
+>>
+> Compiling is overrated anyways.
+>
+>> diff --git a/drivers/video/tmiofb.c b/drivers/video/tmiofb.c
+>> index 8e4a446..e266b6b 100644
+>> --- a/drivers/video/tmiofb.c
+>> +++ b/drivers/video/tmiofb.c
+>> @@ -959,7 +958,7 @@ static int tmiofb_suspend(struct platform_device
+>> *dev, pm_message_t state)
+>>       if (cell->suspend)
+>>               retval = cell->suspend(dev);
+>>
+>> -     console_unlock();
+>> +     fb_fb_console_unlock();
+>>
+>>       return retval;
+>>  }
+>> @@ -986,7 +985,7 @@ static int tmiofb_resume(struct platform_device *dev)
+>>
+>>       fb_set_suspend(info, 0);
+>>  out:
+>> -     console_unlock();
+>> +     fb_fb_console_unlock();
+>>       return retval;
+>>  }
+>>  #else
+>
+> Here too.
+>
+> Turning locks in to no-ops without auditing every single driver's use of
+> said lock and converting to something to protect the work being done
+> under lock suggests that this conversion is more mechanical than thought
+> out beyond your specific use case.
+>
+> While you've obviously identified a problem that's worth pursuing, it's
+> going to take a bit more work than mechanical conversion, and it's going
+> to have to be something that's moved towards incrementally. If you
+> haven't even compile tested the impacted drivers, it suggests you haven't
+> spent a great deal of time thinking about what they are doing under said
+> lock, either..
 
-> > @@ -0,0 +1,208 @@
-> > +display bindings
-> > +=========
-> > +
-> > +display-node
-> > +------------
-> 
-> I'm not personally convinced about the direction this is going. While I
-> think it's reasonable to define DT bindings for displays, and DT
-> bindings for display modes, I'm not sure that it's reasonable to couple
-> them together into a single binding.
-> 
-> I think creating a well-defined timing binding first will be much
-> simpler than doing so within the context of a display binding; the
-> scope/content of a general display binding seems much less well-defined
-> to me at least, for reasons I mentioned before.
-> 
+ Paul,
+Thanks for pointing out the defect in my pacth. I did not compile for
+every arch I changed.
 
-Yes, you are right. I'm in the middle of moving things around a little.
-It seems best, to have bindings only for the timings at the moment and
-get people to agree on those and use them, instead of all the adhoc solutions
-based on of_videomode v2.
+I check console_lock usage and find it is used for three category
+operations sync, a) console output. b) console configuration(font,
+resize, connection, etc). c) FB system internal sync as Benjamin
+mentioned. Usage A does not happen frequenty. Usage B is our target.
+Usage C happens frequently and it may hold the lock for a long time,
+while it is unrelated to console if framebuffer console is disabled.
+For any system whose log relay on non-FB console, it may encounter no
+log or partial log when panic. So it is common use case.
 
-Then, the of_get_display_timings and the conversion via videomode to fb_videomode
-etc can be combined with Laurent Pincharts panel proposal.
+How do you think below code for this purpose?
 
-> > +required properties:
-> > + - none
-> > +
-> > +optional properties:
-> > + - default-timing: the default timing value
-> > + - width-mm, height-mm: Display dimensions in mm
-> 
-> > + - hsync-active-high (bool): Hsync pulse is active high
-> > + - vsync-active-high (bool): Vsync pulse is active high
-> 
-> At least those two properties should exist in the display timing instead
-> (or perhaps as well). There are certainly cases where different similar
-> display modes are differentiated by hsync/vsync polarity more than
-> anything else. This is probably more likely with analog display
-> connectors than digital, but I see no reason why a DT binding for
-> display timing shouldn't cover both.
-> 
+#ifndef CONFIG_FRAMEBUFFER_CONSOLE
+static DEFINE_MUTEX(fb_lock);
+#endif
+void fb_console_lock(void)
+{
+#ifdef CONFIG_FRAMEBUFFER_CONSOLE
+        console_lock();
+#else
+        mutex_lock(&fb_lock);
+#endif
+}
+EXPORT_SYMBOL(fb_console_lock);
 
-Yes. Will do.
-
-> > + - de-active-high (bool): Data-Enable pulse is active high
-> > + - pixelclk-inverted (bool): pixelclock is inverted
-> 
-> > + - pixel-per-clk
-> 
-> pixel-per-clk is probably something that should either be part of the
-> timing definition, or something computed internally to the display
-> driver based on rules for the signal type, rather than something
-> represented in DT.
-> 
-> The above comment assumes this property is intended to represent DVI's
-> requirement for pixel clock doubling for low-pixel-clock-rate modes. If
-> it's something to do with e.g. a single-data-rate vs. double-data-rate
-> property of the underlying physical connection, that's most likely
-> something that should be defined in a binding specific to e.g. LVDS,
-> rather than something generic.
-> 
-> > + - link-width: number of channels (e.g. LVDS)
-> > + - bpp: bits-per-pixel
-> > +
-> > +timings-subnode
-> > +---------------
-> > +
-> > +required properties:
-> > +subnodes that specify
-> > + - hactive, vactive: Display resolution
-> > + - hfront-porch, hback-porch, hsync-len: Horizontal Display timing parameters
-> > +   in pixels
-> > +   vfront-porch, vback-porch, vsync-len: Vertical display timing parameters in
-> > +   lines
-> > + - clock: displayclock in Hz
-> > +
-> > +There are different ways of describing a display and its capabilities. The devicetree
-> > +representation corresponds to the one commonly found in datasheets for displays.
-> > +The description of the display and its timing is split in two parts: first the display
-> > +properties like size in mm and (optionally) multiple subnodes with the supported timings.
-> > +If a display supports multiple signal timings, the default-timing can be specified.
-> > +
-> > +Example:
-> > +
-> > +	display@0 {
-> > +		width-mm = <800>;
-> > +		height-mm = <480>;
-> > +		default-timing = <&timing0>;
-> > +		timings {
-> > +			timing0: timing@0 {
-> 
-> If you're going to use a unit address ("@0") to ensure that node names
-> are unique (which is not mandatory), then each node also needs a reg
-> property with matching value, and #address-cells/#size-cells in the
-> parent. Instead, you could name the nodes something unique based on the
-> mode name to avoid this, e.g. 1080p24 { ... }.
-> 
-
-Ah, okay. Wasn't sure that was valid. I prefer to not use unit addresses.
-
- 
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+void fb_console_unlock(void)
+{
+#ifdef CONFIG_FRAMEBUFFER_CONSOLE
+        console_unlock();
+#else
+        mutex_unlock(&fb_lock);
+#endif
+}
+EXPORT_SYMBOL(fb_console_unlock);

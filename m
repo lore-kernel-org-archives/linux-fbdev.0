@@ -1,56 +1,113 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Wed, 31 Oct 2012 09:12:54 +0000
-Subject: [PATCH 2/2] ARM: dts: mxs: add oled support for the cfa-10036
-Message-Id: <1351674774-2891-3-git-send-email-maxime.ripard@free-electrons.com>
+From: Ajay Kumar <ajaykumar.rs@samsung.com>
+Date: Tue, 09 Oct 2012 14:05:24 +0000
+Subject: [PATCH V4 2/2] video: exynos_dp: device tree documentation
+Message-Id: <1349824101-32574-3-git-send-email-ajaykumar.rs@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351674774-2891-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1351674774-2891-1-git-send-email-maxime.ripard@free-electrons.com>
+References: <1349824101-32574-1-git-send-email-ajaykumar.rs@samsung.com>
+In-Reply-To: <1349824101-32574-1-git-send-email-ajaykumar.rs@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org, jg1.han@samsung.com, devicetree-discuss@lists.ozlabs.org
+Cc: FlorianSchandinat@gmx.de, sylvester.nawrocki@gmail.com, tomasz.figa@gmail.com, thomas.ab@samsung.com
 
-Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: Brian Lilly <brian@crystalfontz.com>
+Add documentation for the DT bindings in exynos display port driver.
+
+Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
 ---
- arch/arm/boot/dts/imx28-cfa10036.dts |   19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ .../devicetree/bindings/video/exynos_dp.txt        |   83 ++++++++++++++++++++
+ 1 files changed, 83 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/exynos_dp.txt
 
-diff --git a/arch/arm/boot/dts/imx28-cfa10036.dts b/arch/arm/boot/dts/imx28-cfa10036.dts
-index c03a577..816cae9 100644
---- a/arch/arm/boot/dts/imx28-cfa10036.dts
-+++ b/arch/arm/boot/dts/imx28-cfa10036.dts
-@@ -33,11 +33,30 @@
- 		};
- 
- 		apbx@80040000 {
-+			pwm: pwm@80064000 {
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&pwm4_pins_a>;
-+				status = "okay";
-+			};
+diff --git a/Documentation/devicetree/bindings/video/exynos_dp.txt b/Documentation/devicetree/bindings/video/exynos_dp.txt
+new file mode 100644
+index 0000000..a021963
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/exynos_dp.txt
+@@ -0,0 +1,83 @@
++Exynos display port driver should configure the display port interface
++based on the type of panel connected to it.
 +
- 			duart: serial@80074000 {
- 				pinctrl-names = "default";
- 				pinctrl-0 = <&duart_pins_b>;
- 				status = "okay";
- 			};
++We use two nodes:
++	-dptx_phy node
++	-display-port-controller node
 +
-+			i2c0: i2c@80058000 {
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&i2c0_pins_b>;
-+				status = "okay";
++For the dp-phy initialization, we use a dptx_phy node.
++Required properties for dptx_phy:
++	-compatible:
++		Should be "samsung,dp-phy".
++	-samsung,dptx_phy_reg:
++		Base address of DP PHY register.
++	-samsung,enable_mask:
++		The bit-mask used to enable/disable DP PHY.
 +
-+				ssd1307: oled@3c {
-+					compatible = "solomon,ssd1307fb-i2c";
-+					reg = <0x3c>;
-+					pwms = <&pwm 4 3000>;
-+					reset-gpios = <&gpio2 7 0>;
-+				};
-+			};
- 		};
- 	};
- 
++For the Panel initialization, we read data from display-port-controller node.
++Required properties for display-port-controller:
++	-compatible:
++		Should be "samsung,exynos5-dp".
++	-reg:
++		physical base address of the controller and length
++		of memory mapped region.
++	-interrupts:
++		Interrupt combiner values.
++	-interrupt-parent:
++		phandle to Interrupt combiner node.
++	-samsung,dp_phy:
++		phandle to dptx_phy node.
++	-samsung,color_space:
++		input video data format.
++			COLOR_RGB = 0, COLOR_YCBCR422 = 1, COLOR_YCBCR444 = 2
++	-samsung,dynamic_range:
++		dynamic range for input video data.
++			VESA = 0, CEA = 1
++	-samsung,ycbcr_coeff:
++		YCbCr co-efficients for input video.
++			COLOR_YCBCR601 = 0, COLOR_YCBCR709 = 1
++	-samsung,color_depth:
++		Number of bits per colour component.
++			COLOR_6 = 0, COLOR_8 = 1, COLOR_10 = 2, COLOR_12 = 3
++	-samsung,link_rate:
++		link rate supported by the panel.
++			LINK_RATE_1_62GBPS = 0x6, LINK_RATE_2_70GBPS = 0x0A
++	-samsung,lane_count:
++		number of lanes supported by the panel.
++			LANE_COUNT1 = 1, LANE_COUNT2 = 2, LANE_COUNT4 = 4
++	-samsung,interlaced:
++		Interlace scan mode.
++			Progressive if defined, Interlaced if not defined
++	-samsung,v_sync_polarity:
++		VSYNC polarity configuration.
++			High if defined, Low if not defined
++	-samsung,h_sync_polarity:
++		HSYNC polarity configuration.
++			High if defined, Low if not defined
++
++Example:
++
++SOC specific portion:
++	dptx_phy: dptx_phy@0x10040720 {
++		compatible = "samsung,dp-phy";
++		samsung,dptx_phy_reg = <0x10040720>;
++		samsung,enable_mask = <1>;
++	};
++
++	display-port-controller {
++		compatible = "samsung,exynos5-dp";
++		reg = <0x145B0000 0x10000>;
++		interrupts = <10 3>;
++		interrupt-parent = <&combiner>;
++		samsung,dp_phy = <&dptx_phy>;
++        };
++
++Board Specific portion:
++	display-port-controller {
++		samsung,color_space = <0>;
++		samsung,dynamic_range = <0>;
++		samsung,ycbcr_coeff = <0>;
++		samsung,color_depth = <1>;
++		samsung,link_rate = <0x0a>;
++		samsung,lane_count = <2>;
++	};
 -- 
-1.7.9.5
+1.7.0.4
 

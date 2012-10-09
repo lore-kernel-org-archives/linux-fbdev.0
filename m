@@ -1,121 +1,51 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 15 Oct 2012 06:13:29 +0000
-Subject: Re: [PATCH V5 2/2] video: exynos_dp: device tree documentation
-Message-Id: <009b01cdaa9c$324d9de0$96e8d9a0$%han@samsung.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 09 Oct 2012 20:13:57 +0000
+Subject: [PATCH v2 7/8] video: mark nuc900fb_map_video_memory as __devinit
+Message-Id: <1349813638-4617-8-git-send-email-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1350074859-23226-1-git-send-email-ajaykumar.rs@samsung.com>
- <1350074859-23226-2-git-send-email-ajaykumar.rs@samsung.com>
-In-Reply-To: <1350074859-23226-2-git-send-email-ajaykumar.rs@samsung.com>
+References: <1349813638-4617-1-git-send-email-arnd@arndb.de>
+In-Reply-To: <1349813638-4617-1-git-send-email-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Ajay Kumar' <ajaykumar.rs@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, FlorianSchandinat@gmx.de, sylvester.nawrocki@gmail.com, tomasz.figa@gmail.com, thomas.ab@samsung.com, 'Jingoo Han' <jg1.han@samsung.com>
+To: linux-arm-kernel@lists.infradead.org
 
-On Saturday, October 13, 2012 5:48 AM Ajay kumar wrote
-> 
-> Add documentation for the DT bindings in exynos display port driver.
-> 
-> Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
-> ---
->  .../devicetree/bindings/video/exynos_dp.txt        |   80 ++++++++++++++++++++
->  1 files changed, 80 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/video/exynos_dp.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/video/exynos_dp.txt
-> b/Documentation/devicetree/bindings/video/exynos_dp.txt
-> new file mode 100644
-> index 0000000..e19594b
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/video/exynos_dp.txt
-> @@ -0,0 +1,80 @@
-> +The Exynos display port interface should be configured based on the
-> +based on the type of panel connected to it.
+nuc900fb_map_video_memory is called by an devinit function
+that may be called at run-time, but the function itself is
+marked __init and will be discarded after boot.
 
-'based on' is duplicated. So, please fix it as bellows:
+To avoid calling into a function that may have been overwritten,
+mark nuc900fb_map_video_memory itself as __devinit.
 
-+The Exynos display port interface should be configured based on
-+the type of panel connected to it.
+Without this patch, building nuc950_defconfig results in:
 
+WARNING: drivers/video/built-in.o(.devinit.text+0x26c): Section mismatch in reference from the function nuc900fb_probe() to the function .init.text:nuc900fb_map_video_memory()
+The function __devinit nuc900fb_probe() references
+a function __init nuc900fb_map_video_memory().
+If nuc900fb_map_video_memory is only used by nuc900fb_probe then
+annotate nuc900fb_map_video_memory with a matching annotation.
 
-> +
-> +We use two nodes:
-> +	-display-port-controller node
-> +	-dptx-phy node(defined inside display-port-controller node)
-> +
-> +For the DP-PHY initialization, we use the dptx-phy node.
-> +Required properties for dptx-phy:
-> +	-reg:
-> +		Base address of DP PHY register.
-> +	-samsung,enable-mask:
-> +		The bit-mask used to enable/disable DP PHY.
-> +
-> +For the Panel initialization, we read data from display-port-controller node.
-> +Required properties for display-port-controller:
-> +	-compatible:
-> +		should be "samsung,exynos5-dp".
-> +	-reg:
-> +		physical base address of the controller and length
-> +		of memory mapped region.
-> +	-interrupts:
-> +		interrupt combiner values.
-> +	-interrupt-parent:
-> +		phandle to Interrupt combiner node.
-> +	-samsung,color-space:
-> +		input video data format.
-> +			COLOR_RGB = 0, COLOR_YCBCR422 = 1, COLOR_YCBCR444 = 2
-> +	-samsung,dynamic-range:
-> +		dynamic range for input video data.
-> +			VESA = 0, CEA = 1
-> +	-samsung,ycbcr-coeff:
-> +		YCbCr co-efficients for input video.
-> +			COLOR_YCBCR601 = 0, COLOR_YCBCR709 = 1
-> +	-samsung,color-depth:
-> +		number of bits per colour component.
-> +			COLOR_6 = 0, COLOR_8 = 1, COLOR_10 = 2, COLOR_12 = 3
-> +	-samsung,link-rate:
-> +		link rate supported by the panel.
-> +			LINK_RATE_1_62GBPS = 0x6, LINK_RATE_2_70GBPS = 0x0A
-> +	-samsung,lane-count:
-> +		number of lanes supported by the panel.
-> +			LANE_COUNT1 = 1, LANE_COUNT2 = 2, LANE_COUNT4 = 4
-> +
-> +Optional properties for display-port-controller:
-> +	-interlaced:
-> +		interlace scan mode.
-> +			Progressive if defined, Interlaced if not defined
-> +	-vsync-active-high:
-> +		VSYNC polarity configuration.
-> +			High if defined, Low if not defined
-> +	-hsync-active-high:
-> +		HSYNC polarity configuration.
-> +			High if defined, Low if not defined
-> +
-> +Example:
-> +
-> +SOC specific portion:
-> +	display-port-controller {
-> +		compatible = "samsung,exynos5-dp";
-> +		reg = <0x145b0000 0x10000>;
-> +		interrupts = <10 3>;
-> +		interrupt-parent = <&combiner>;
-> +
-> +		dptx-phy {
-> +			reg = <0x10040720>;
-> +			samsung,enable-mask = <1>;
-> +		};
-> +
-> +        };
-> +
-> +Board Specific portion:
-> +	display-port-controller {
-> +		samsung,color-space = <0>;
-> +		samsung,dynamic-range = <0>;
-> +		samsung,ycbcr-coeff = <0>;
-> +		samsung,color-depth = <1>;
-> +		samsung,link-rate = <0x0a>;
-> +		samsung,lane-count = <2>;
-> +	};
-> --
-> 1.7.0.4
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Wan ZongShun <mcuos.com@gmail.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+---
+ drivers/video/nuc900fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/nuc900fb.c b/drivers/video/nuc900fb.c
+index e10f551..b31b12b 100644
+--- a/drivers/video/nuc900fb.c
++++ b/drivers/video/nuc900fb.c
+@@ -387,7 +387,7 @@ static int nuc900fb_init_registers(struct fb_info *info)
+  *    The buffer should be a non-cached, non-buffered, memory region
+  *    to allow palette and pixel writes without flushing the cache.
+  */
+-static int __init nuc900fb_map_video_memory(struct fb_info *info)
++static int __devinit nuc900fb_map_video_memory(struct fb_info *info)
+ {
+ 	struct nuc900fb_info *fbi = info->par;
+ 	dma_addr_t map_dma;
+-- 
+1.7.10
 

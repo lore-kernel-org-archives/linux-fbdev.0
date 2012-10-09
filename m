@@ -1,62 +1,67 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 04 Oct 2012 01:33:38 +0000
-Subject: Re: [PATCH 0/6] OMAPDSS: remove cpu_is_* calls
-Message-Id: <005d01cda1d0$47a249e0$d6e6dda0$%han@samsung.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 09 Oct 2012 20:13:50 +0000
+Subject: [PATCH v2 0/8]  ARM: mostly harmless gcc warnings
+Message-Id: <1349813638-4617-1-git-send-email-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1348828527-13309-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Tomi Valkeinen' <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, 'Archit Taneja' <a0393947@ti.com>, 'Chandrabhanu Mahapatra' <cmahapatra@ti.com>, =?UTF-8?Q?'Rapha=C3=ABl_Ass=C3=A9nat'?= <raph@8d.com>, 'Tony Lindgren' <tony@atomide.com>, 'Jingoo Han' <jg1.han@samsung.com>
+To: linux-arm-kernel@lists.infradead.org
 
-On Friday, September 28, 2012 7:35 PM Tomi Valkeinen wrote
-> 
-> Hi,
-> 
-> This series adds an omapdss_version enum that is passed via platform data to
-> omapdss driver. This version identifier is then used instead of cpu_is_*()
-> calls.
+Most patches from the first time this was posted have been
+adopted by a subsystem maintainer or were show to be obsolete.
+Here are the remaining ones again.
 
-Hi Tomi,
+I'm planning to submit those patches that are still necessary
+by the time we have an -rc1 through the arm-soc tree, but
+my preference is still to have them go through the subsystem
+maintainers.
 
-As you mentioned, cpu_is_*() is not preferable in driver.
-Actually, I thought so, when I saw the OMAPDSS driver a few months ago.
-Anyway, it looks good. :)
+Olof: should we add it to for-next?
 
-Best regards,
-Jingoo Han
+	Arnd
 
-> 
-> After these, omapdss no longer contains any plat/ or mach/ includes. omapfb,
-> vrfb and vram still do, though.
-> 
->  Tomi
-> 
-> Tomi Valkeinen (6):
->   OMAPDSS: add omapdss_version
->   OMAPDSS: use omapdss_version in dss_features.c
->   OMAPDSS: DISPC: use omapdss_version
->   OMAPDSS: DSS: use omapdss_version
->   OMAPDSS: HDMI: use omapdss_version
->   OMAPDSS: remove <plat/cpu.h> includes
-> 
->  arch/arm/mach-omap2/display.c          |   38 +++++++++++++++++++
->  drivers/video/omap2/dss/core.c         |    2 +-
->  drivers/video/omap2/dss/dispc.c        |   41 +++++++++++++-------
->  drivers/video/omap2/dss/dss.c          |   39 +++++++++++++------
->  drivers/video/omap2/dss/dss_features.c |   64 ++++++++++++++++++++++----------
->  drivers/video/omap2/dss/dss_features.h |    5 ++-
->  drivers/video/omap2/dss/hdmi.c         |    3 +-
->  include/video/omapdss.h                |   14 +++++++
->  8 files changed, 157 insertions(+), 49 deletions(-)
-> 
-> --
-> 1.7.9.5
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Arnd Bergmann (8):
+  SCSI: ARM: ncr5380/oak uses no interrupts
+  SCSI: ARM: make fas216_dumpinfo function conditional
+  mm/slob: use min_t() to compare ARCH_SLAB_MINALIGN
+  USB: EHCI: mark ehci_orion_conf_mbus_windows __devinit
+  clk: don't mark clkdev_add_table as init
+  pcmcia: sharpsl: don't discard sharpsl_pcmcia_ops
+  video: mark nuc900fb_map_video_memory as __devinit
+  spi/s3c64xx: use correct dma_transfer_direction type
 
+ drivers/clk/clkdev.c            |    2 +-
+ drivers/pcmcia/pxa2xx_sharpsl.c |    2 +-
+ drivers/scsi/arm/fas216.c       |    2 +-
+ drivers/scsi/arm/oak.c          |    1 +
+ drivers/spi/spi-s3c64xx.c       |    2 +-
+ drivers/usb/host/ehci-orion.c   |    2 +-
+ drivers/video/nuc900fb.c        |    2 +-
+ mm/slob.c                       |    6 +++---
+ 8 files changed, 10 insertions(+), 9 deletions(-)
+
+-- 
+1.7.10
+
+Cc: "James E.J. Bottomley" <JBottomley@parallels.com>
+Cc: Ben Dooks <ben-linux@fluff.org>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jochen Friedrich <jochen@scram.de>
+Cc: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Mike Turquette <mturquette@linaro.org>
+Cc: Pavel Machek <pavel@suse.cz>
+Cc: Pekka Enberg <penberg@kernel.org>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Wan ZongShun <mcuos.com@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-pcmcia@lists.infradead.org
+Cc: linux-samsung-soc@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org
+Cc: linux-usb@vger.kernel.org
+Cc: spi-devel-general@lists.sourceforge.net
+Cc: stable@vger.kernel.org

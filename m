@@ -1,72 +1,53 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 10 Oct 2012 12:35:12 +0000
-Subject: Re: [PATCH] video: exynos_dp: use clk_prepare_enable and clk_disable_unprepare
-Message-Id: <50756B80.7080306@gmx.de>
+From: Shubhrajyoti D <shubhrajyoti@ti.com>
+Date: Tue, 09 Oct 2012 11:49:48 +0000
+Subject: [PATCH] matroxfb: Convert struct i2c_msg initialization to C99 format
+Message-Id: <1349782668-9098-1-git-send-email-shubhrajyoti@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <006701cda1fb$cee12fe0$6ca38fa0$%han@samsung.com>
-In-Reply-To: <006701cda1fb$cee12fe0$6ca38fa0$%han@samsung.com>
+References: <1347897325-20684-1-git-send-email-shubhrajyoti@ti.com>
+In-Reply-To: <1347897325-20684-1-git-send-email-shubhrajyoti@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, 'Thomas Abraham' <thomas.abraham@linaro.org>
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Shubhrajyoti D <shubhrajyoti-l0cyMroinI0@public.gmane.org>
 
-On 10/04/2012 06:45 AM, Jingoo Han wrote:
-> Convert clk_enable/clk_disable to clk_prepare_enable/clk_disable_unprepare
-> calls as required by common clock framework.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Convert the struct i2c_msg initialization to C99 format. This makes
+maintaining and editing the code simpler. Also helps once other fields
+like transferred are added in future.
 
-Applied.
+Thanks to Julia Lawall <julia.lawall@lip6.fr>  for automating the conversion
 
+Signed-off-by: Shubhrajyoti D <shubhrajyoti@ti.com>
+---
+ drivers/video/matrox/matroxfb_maven.c |   15 +++++++++++++--
+ 1 files changed, 13 insertions(+), 2 deletions(-)
 
-Thanks,
-
-Florian Tobias Schandinat
-
-
-> ---
->  drivers/video/exynos/exynos_dp_core.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-> index cdc1398..d55470e 100644
-> --- a/drivers/video/exynos/exynos_dp_core.c
-> +++ b/drivers/video/exynos/exynos_dp_core.c
-> @@ -885,7 +885,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  		return PTR_ERR(dp->clock);
->  	}
->  
-> -	clk_enable(dp->clock);
-> +	clk_prepare_enable(dp->clock);
->  
->  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->  
-> @@ -956,7 +956,7 @@ static int __devexit exynos_dp_remove(struct platform_device *pdev)
->  	if (pdata && pdata->phy_exit)
->  		pdata->phy_exit();
->  
-> -	clk_disable(dp->clock);
-> +	clk_disable_unprepare(dp->clock);
->  
->  	return 0;
->  }
-> @@ -971,7 +971,7 @@ static int exynos_dp_suspend(struct device *dev)
->  	if (pdata && pdata->phy_exit)
->  		pdata->phy_exit();
->  
-> -	clk_disable(dp->clock);
-> +	clk_disable_unprepare(dp->clock);
->  
->  	return 0;
->  }
-> @@ -985,7 +985,7 @@ static int exynos_dp_resume(struct device *dev)
->  	if (pdata && pdata->phy_init)
->  		pdata->phy_init();
->  
-> -	clk_enable(dp->clock);
-> +	clk_prepare_enable(dp->clock);
->  
->  	exynos_dp_init_dp(dp);
->  
+diff --git a/drivers/video/matrox/matroxfb_maven.c b/drivers/video/matrox/matroxfb_maven.c
+index 217678e..fb5c123 100644
+--- a/drivers/video/matrox/matroxfb_maven.c
++++ b/drivers/video/matrox/matroxfb_maven.c
+@@ -137,8 +137,19 @@ static int* get_ctrl_ptr(struct maven_data* md, int idx) {
+ 
+ static int maven_get_reg(struct i2c_client* c, char reg) {
+ 	char dst;
+-	struct i2c_msg msgs[] = {{ c->addr, I2C_M_REV_DIR_ADDR, sizeof(reg), &reg },
+-				 { c->addr, I2C_M_RD | I2C_M_NOSTART, sizeof(dst), &dst }};
++	struct i2c_msg msgs[] = {{
++					.addr = c->addr,
++					.flags = I2C_M_REV_DIR_ADDR,
++					.len = sizeof(reg),
++					.buf = &reg
++				},
++				{
++					.addr = c->addr,
++					.flags = I2C_M_RD | I2C_M_NOSTART,
++					.len = sizeof(dst),
++					.buf = &dst
++				}
++	};
+ 	s32 err;
+ 
+ 	err = i2c_transfer(c->adapter, msgs, 2);
+-- 
+1.7.5.4
 

@@ -1,67 +1,47 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Sun, 28 Oct 2012 23:33:15 +0000
-Subject: [GIT PULL] SH Mobile LCDC patches
-Message-Id: <2212352.tFvayVAU4W@avalon>
+From: Srinivas KANDAGATLA <srinivas.kandagatla@st.com>
+Date: Wed, 10 Oct 2012 18:38:29 +0000
+Subject: [PATCH 3.6.0- 05/13] video/bfin-t350mcqb: use module_platform_driver macro
+Message-Id: <1349894309-9361-1-git-send-email-srinivas.kandagatla@st.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Florian,
+From: Srinivas Kandagatla <srinivas.kandagatla@st.com>
 
-The following changes since commit cd9d6f10d07f26dd8a70e519c22b6b4f8a9e3e7a:
+This patch removes some code duplication by using
+module_platform_driver.
 
-  gbefb: fix compile error (2012-10-11 00:23:15 +0000)
+Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@st.com>
+---
+ drivers/video/bfin-t350mcqb-fb.c |   14 +-------------
+ 1 files changed, 1 insertions(+), 13 deletions(-)
 
-are available in the git repository at:
-  git://linuxtv.org/pinchartl/fbdev.git lcdc-next
-
-Both Paul Mundt (arch/sh maintainer) and Simon Horman (arch/arm/mach-shmobile 
-maintainer) have agreed to get the arch patches in through your tree.
-
-Hideki EIRAKU (1):
-      fbdev: sh_mobile_lcdc: use dma_mmap_coherent
-
-Laurent Pinchart (19):
-      fbdev: sh_mobile_lcdc: Get display dimensions from the channel structure
-      fbdev: sh_mobile_lcdc: Rename mode argument to modes
-      fbdev: sh_mobile_lcdc: Remove priv argument from channel and overlay 
-init
-      ARM: mach-shmobile: ag5evm: Add LCDC tx_dev field to platform data
-      fbdev: sh_mipi_dsi: Add channel field to platform data
-      ARM: mach-shmobile: Initiliaze the new sh_mipi_dsi_info channel field
-      fbdev: sh_mipi_dsi: Use the sh_mipi_dsi_info channel field
-      fbdev: sh_mipi_dsi: Use the LCDC entity default mode
-      fbdev: sh_mipi_dsi: Remove last reference to LCDC platform data
-      ARM: mach-shmobile: Remove the unused sh_mipi_dsi_info lcd_chan field
-      fbdev: sh_mipi_dsi: Remove the unused sh_mipi_dsi_info lcd_chan field
-      fbdev: sh_mobile_lcdc: Store the backlight brightness internally
-      ARM: mach-shmobile: mackerel: Removed unused get_brightness callback
-      sh: ap325rxa: Remove unused get_brightness LCDC callback
-      sh: ecovec24: Remove unused get_brightness LCDC callback
-      fbdev: sh_mobile_lcdc: Remove unused get_brightness pdata callback
-      ARM: mach-shmobile: ag5evm: Use the backlight API for brightness control
-      sh: kfr2r09: Use the backlight API for brightness control
-      fbdev: sh_mobile_lcdc: Make sh_mobile_lcdc_sys_bus_ops static
-
- arch/arm/mach-shmobile/board-ag5evm.c       |  198 ++++++++++++++------------
- arch/arm/mach-shmobile/board-ap4evb.c       |    4 +-
- arch/arm/mach-shmobile/board-mackerel.c     |    6 -
- arch/sh/boards/mach-ap325rxa/setup.c        |    6 -
- arch/sh/boards/mach-ecovec24/setup.c        |    6 -
- arch/sh/boards/mach-kfr2r09/lcd_wqvga.c     |   16 +--
- arch/sh/boards/mach-kfr2r09/setup.c         |    7 +-
- arch/sh/include/mach-kfr2r09/mach/kfr2r09.h |    6 +-
- drivers/video/sh_mipi_dsi.c                 |   69 ++++------
- drivers/video/sh_mobile_lcdcfb.c            |   74 +++++++----
- drivers/video/sh_mobile_lcdcfb.h            |    1 +
- include/video/sh_mipi_dsi.h                 |    4 +-
- include/video/sh_mobile_lcdc.h              |    1 -
- 13 files changed, 192 insertions(+), 206 deletions(-)
-
+diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
+index 7a0c05f..b4518f8 100644
+--- a/drivers/video/bfin-t350mcqb-fb.c
++++ b/drivers/video/bfin-t350mcqb-fb.c
+@@ -666,18 +666,6 @@ static struct platform_driver bfin_t350mcqb_driver = {
+ 		   },
+ };
+ 
+-static int __init bfin_t350mcqb_driver_init(void)
+-{
+-	return platform_driver_register(&bfin_t350mcqb_driver);
+-}
+-
+-static void __exit bfin_t350mcqb_driver_cleanup(void)
+-{
+-	platform_driver_unregister(&bfin_t350mcqb_driver);
+-}
+-
+ MODULE_DESCRIPTION("Blackfin TFT LCD Driver");
+ MODULE_LICENSE("GPL");
+-
+-module_init(bfin_t350mcqb_driver_init);
+-module_exit(bfin_t350mcqb_driver_cleanup);
++module_platform_driver(bfin_t350mcqb_driver);
 -- 
-Regards,
-
-Laurent Pinchart
+1.7.0.4
 

@@ -1,7 +1,7 @@
-From: Donghwa Lee <dh09.lee@samsung.com>
-Date: Thu, 04 Oct 2012 07:42:28 +0000
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Wed, 10 Oct 2012 12:34:53 +0000
 Subject: Re: [PATCH 2/2] drivers/video/exynos/exynos_mipi_dsi.c: fix error return code
-Message-Id: <506D3DE4.8090207@samsung.com>
+Message-Id: <50756B6D.8070308@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1349268044-32616-2-git-send-email-peter.senna@gmail.com>
 In-Reply-To: <1349268044-32616-2-git-send-email-peter.senna@gmail.com>
@@ -9,11 +9,9 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Peter Senna Tschudin <peter.senna@gmail.com>
-Cc: Inki Dae <inki.dae@samsung.com>, kernel-janitors@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Inki Dae <inki.dae@samsung.com>, kernel-janitors@vger.kernel.org, Donghwa Lee <dh09.lee@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-
-On Wed, Oct 03, 2012 at 21:40, Peter Senna Tschudin wrote
-
+On 10/03/2012 12:40 PM, Peter Senna Tschudin wrote:
 > From: Peter Senna Tschudin <peter.senna@gmail.com>
 > 
 > Convert a nonnegative error return code to a negative one, as returned
@@ -39,12 +37,17 @@ On Wed, Oct 03, 2012 at 21:40, Peter Senna Tschudin wrote
 > }
 > // </smpl>
 > 
-
-
-I agree with you. Other codes is already used negative error return codes.
-
 > 
 > Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
+
+Applied.
+
+
+Thanks,
+
+Florian Tobias Schandinat
+
+
 > 
 > ---
 >  drivers/video/exynos/exynos_mipi_dsi.c |    3 +++
@@ -80,5 +83,4 @@ I agree with you. Other codes is already used negative error return codes.
 >  
 > 
 > 
-
 

@@ -1,82 +1,48 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 30 Oct 2012 16:09:59 +0000
-Subject: [PATCH 02/12] OMAPFB: improve mode selection from EDID
-Message-Id: <1351613409-21186-3-git-send-email-tomi.valkeinen@ti.com>
+From: Srinivas KANDAGATLA <srinivas.kandagatla@st.com>
+Date: Wed, 10 Oct 2012 18:37:50 +0000
+Subject: [PATCH 3.6.0- 01/13] video/au1100fb: use module_platform_driver macro
+Message-Id: <1349894270-9224-1-git-send-email-srinivas.kandagatla@st.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351613409-21186-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1351613409-21186-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: rob@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-The current omapfb code goes over all the modes found from the monitors
-EDID data, and searches for a mode that is compatible with the DSS
-hardware and has the highest x-res.
+From: Srinivas Kandagatla <srinivas.kandagatla@st.com>
 
-While this works ok as such, it proves problematic when using DSI PLL
-for pixel clock. Calculating DSI PLL dividers is not the fastest of the
-operations, and while doing it for one mode is usually ok, doing it for
-20 modes is noticable.
+This patch removes some code duplication by using
+module_platform_driver.
 
-Also, the first mode given in the EDID data should be the native mode of
-the monitor, and thus also the best mode, so if that can be used, no
-need to look further.
-
-This patch changes the code to use the first mode that is compatible
-with the DSS hardware.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@st.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c |   13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ drivers/video/au1100fb.c |   14 +-------------
+ 1 files changed, 1 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 0358b14..6e5334c 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -2258,7 +2258,7 @@ static int omapfb_find_best_mode(struct omap_dss_device *display,
- {
- 	struct fb_monspecs *specs;
- 	u8 *edid;
--	int r, i, best_xres, best_idx, len;
-+	int r, i, best_idx, len;
+diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
+index fe3b6ec..04e6529 100644
+--- a/drivers/video/au1100fb.c
++++ b/drivers/video/au1100fb.c
+@@ -677,19 +677,7 @@ static struct platform_driver au1100fb_driver = {
+ 	.suspend	= au1100fb_drv_suspend,
+         .resume		= au1100fb_drv_resume,
+ };
+-
+-static int __init au1100fb_load(void)
+-{
+-	return platform_driver_register(&au1100fb_driver);
+-}
+-
+-static void __exit au1100fb_unload(void)
+-{
+-	platform_driver_unregister(&au1100fb_driver);
+-}
+-
+-module_init(au1100fb_load);
+-module_exit(au1100fb_unload);
++module_platform_driver(au1100fb_driver);
  
- 	if (!display->driver->read_edid)
- 		return -ENODEV;
-@@ -2274,7 +2274,6 @@ static int omapfb_find_best_mode(struct omap_dss_device *display,
- 
- 	fb_edid_to_monspecs(edid, specs);
- 
--	best_xres = 0;
- 	best_idx = -1;
- 
- 	for (i = 0; i < specs->modedb_len; ++i) {
-@@ -2290,16 +2289,20 @@ static int omapfb_find_best_mode(struct omap_dss_device *display,
- 		if (m->xres = 2880 || m->xres = 1440)
- 			continue;
- 
-+		if (m->vmode & FB_VMODE_INTERLACED ||
-+				m->vmode & FB_VMODE_DOUBLE)
-+			continue;
-+
- 		fb_videomode_to_omap_timings(m, display, &t);
- 
- 		r = display->driver->check_timings(display, &t);
--		if (r = 0 && best_xres < m->xres) {
--			best_xres = m->xres;
-+		if (r = 0) {
- 			best_idx = i;
-+			break;
- 		}
- 	}
- 
--	if (best_xres = 0) {
-+	if (best_idx = -1) {
- 		r = -ENOENT;
- 		goto err2;
- 	}
+ MODULE_DESCRIPTION(DRIVER_DESC);
+ MODULE_LICENSE("GPL");
 -- 
-1.7.10.4
+1.7.0.4
 

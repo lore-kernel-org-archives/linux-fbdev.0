@@ -1,38 +1,48 @@
-From: Pantelis Antoniou <panto@antoniou-consulting.com>
-Date: Tue, 30 Oct 2012 18:15:40 +0000
-Subject: [PATCH] da8xx: De-constify members in the platform config.
-Message-Id: <1351698989-4049-1-git-send-email-panto@antoniou-consulting.com>
+From: Srinivas KANDAGATLA <srinivas.kandagatla@st.com>
+Date: Wed, 10 Oct 2012 18:38:51 +0000
+Subject: [PATCH 3.6.0- 08/13] video/da8xx_fb: use module_platform_driver macro
+Message-Id: <1349894331-9461-1-git-send-email-srinivas.kandagatla@st.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Pantelis Antoniou <panto@antoniou-consulting.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Koen Kooi <koen@dominion.thruhere.net>, Matt Porter <mporter@ti.com>, Russ Dill <Russ.Dill@ti.com>, linux-omap@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-There's no need for this to be const. It interferes with
-creating the platform data dynamically.
+From: Srinivas Kandagatla <srinivas.kandagatla@st.com>
 
-Signed-off-by: Pantelis Antoniou <panto@antoniou-consulting.com>
+This patch removes some code duplication by using
+module_platform_driver.
+
+Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@st.com>
 ---
- include/video/da8xx-fb.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/da8xx-fb.c |   14 +-------------
+ 1 files changed, 1 insertions(+), 13 deletions(-)
 
-diff --git a/include/video/da8xx-fb.h b/include/video/da8xx-fb.h
-index 5a0e4f9..a512d6b 100644
---- a/include/video/da8xx-fb.h
-+++ b/include/video/da8xx-fb.h
-@@ -35,9 +35,9 @@ struct display_panel {
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 113d43a..40b8d9a 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1449,19 +1449,7 @@ static struct platform_driver da8xx_fb_driver = {
+ 		   .owner = THIS_MODULE,
+ 		   },
  };
+-
+-static int __init da8xx_fb_init(void)
+-{
+-	return platform_driver_register(&da8xx_fb_driver);
+-}
+-
+-static void __exit da8xx_fb_cleanup(void)
+-{
+-	platform_driver_unregister(&da8xx_fb_driver);
+-}
+-
+-module_init(da8xx_fb_init);
+-module_exit(da8xx_fb_cleanup);
++module_platform_driver(da8xx_fb_driver);
  
- struct da8xx_lcdc_platform_data {
--	const char manu_name[10];
-+	char manu_name[10];
- 	void *controller_data;
--	const char type[25];
-+	char type[25];
- 	void (*panel_power_ctrl)(int);
- };
- 
+ MODULE_DESCRIPTION("Framebuffer driver for TI da8xx/omap-l1xx");
+ MODULE_AUTHOR("Texas Instruments");
 -- 
-1.7.12
+1.7.0.4
 

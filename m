@@ -1,41 +1,65 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 26 Oct 2012 07:02:25 +0000
-Subject: [PATCH 3/3] video: s3c-fb: fix red offset and lengh for ARGB232 format
-Message-Id: <002601cdb347$dad82260$90886720$%han@samsung.com>
+From: Srinivas KANDAGATLA <srinivas.kandagatla@st.com>
+Date: Wed, 10 Oct 2012 18:37:44 +0000
+Subject: [PATCH 3.6.0- 00/13] VIDEO: use module_platform_driver macro
+Message-Id: <1349894264-9183-1-git-send-email-srinivas.kandagatla@st.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Green pixel and blue pixel are 3 bits and 2 bits respectively
-at ARGB232 format. Thus, the value of red offset should be 5,
-not 4. Also, the value of red length should be 2, because
-red pixel is 2 bits at ARGB232 format.
+From: Srinivas Kandagatla <srinivas.kandagatla@st.com>
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
----
- drivers/video/s3c-fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Running below Coccinelle lookup pattern like below on the 
+latest kernel showed about 52 hits. This patch series is a subset 
+of those 52 patches, so that it will be easy for maintainers to review.
+Hopefully these patches will get rid of some code duplication in kernel.
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index f453b8b..d8bfb4a 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -268,10 +268,10 @@ static int s3c_fb_check_var(struct fb_var_screeninfo *var,
- 	case 8:
- 		if (sfb->variant.palette[win->index] != 0) {
- 			/* non palletised, A:1,R:2,G:3,B:2 mode */
--			var->red.offset		= 4;
-+			var->red.offset		= 5;
- 			var->green.offset	= 2;
- 			var->blue.offset	= 0;
--			var->red.length		= 5;
-+			var->red.length		= 2;
- 			var->green.length	= 3;
- 			var->blue.length	= 2;
- 			var->transp.offset	= 7;
--- 
-1.7.1
+@  @
+- initfunc(void)
+- { return platform_driver_register(&dr); }
 
+...
+
+- module_init(initfunc);
+...
+
+- exitfunc(void)
+- { platform_driver_unregister(&dr); }
+
+...
+
+- module_exit(exitfunc);
++ module_platform_driver(dr); 
+
+
+Srinivas Kandagatla (13):
+  video/au1100fb: use module_platform_driver macro
+  video/au1200fb: use module_platform_driver macro
+  video/bf54x-lq043fb: use module_platform_driver macro
+  video/bfin-lq035q1: use module_platform_driver macro
+  video/bfin-t350mcqb: use module_platform_driver macro
+  video/broadsheetfb: use module_platform_driver macro
+  video/cobalt_lcdfb: use module_platform_driver macro
+  video/da8xx_fb: use module_platform_driver macro
+  video/ep93xx_fb: use module_platform_driver macro
+  video/grvga: use module_platform_driver macro
+  video/hecubafb: use module_platform_driver macro
+  video/jz4740_fb: use module_platform_driver macro
+  video/metronomefb: use module_platform_driver macro
+
+ drivers/video/au1100fb.c         |   14 +-------------
+ drivers/video/au1200fb.c         |   16 +---------------
+ drivers/video/bf54x-lq043fb.c    |   14 +-------------
+ drivers/video/bfin-lq035q1-fb.c  |   13 +------------
+ drivers/video/bfin-t350mcqb-fb.c |   14 +-------------
+ drivers/video/broadsheetfb.c     |   14 +-------------
+ drivers/video/cobalt_lcdfb.c     |   14 +-------------
+ drivers/video/da8xx-fb.c         |   14 +-------------
+ drivers/video/ep93xx-fb.c        |   14 +-------------
+ drivers/video/grvga.c            |   15 +--------------
+ drivers/video/hecubafb.c         |   14 +-------------
+ drivers/video/jz4740_fb.c        |   13 +------------
+ drivers/video/metronomefb.c      |   14 +-------------
+ 13 files changed, 13 insertions(+), 170 deletions(-)
 

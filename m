@@ -1,38 +1,48 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Tue, 16 Oct 2012 22:33:42 +0000
-Subject: [PATCH 1/9] MAINTAINERS: Make Timur Tabi the maintainer for the Freescale DIU driver
-Message-Id: <1350426830-12140-1-git-send-email-timur@freescale.com>
+From: Srinivas KANDAGATLA <srinivas.kandagatla@st.com>
+Date: Wed, 10 Oct 2012 18:38:59 +0000
+Subject: [PATCH 3.6.0- 09/13] video/ep93xx_fb: use module_platform_driver macro
+Message-Id: <1349894339-9495-1-git-send-email-srinivas.kandagatla@st.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Timur has been cleaning up this driver, so just make it official.
+From: Srinivas Kandagatla <srinivas.kandagatla@st.com>
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
+This patch removes some code duplication by using
+module_platform_driver.
+
+Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@st.com>
 ---
- MAINTAINERS |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ drivers/video/ep93xx-fb.c |   14 +-------------
+ 1 files changed, 1 insertions(+), 13 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index fdc0119..1eeaaf5 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2895,6 +2895,12 @@ F:	drivers/video/
- F:	include/video/
- F:	include/linux/fb.h
+diff --git a/drivers/video/ep93xx-fb.c b/drivers/video/ep93xx-fb.c
+index f2c092d..cfebe9f 100644
+--- a/drivers/video/ep93xx-fb.c
++++ b/drivers/video/ep93xx-fb.c
+@@ -631,19 +631,7 @@ static struct platform_driver ep93xxfb_driver = {
+ 		.owner	= THIS_MODULE,
+ 	},
+ };
+-
+-static int __devinit ep93xxfb_init(void)
+-{
+-	return platform_driver_register(&ep93xxfb_driver);
+-}
+-
+-static void __exit ep93xxfb_exit(void)
+-{
+-	platform_driver_unregister(&ep93xxfb_driver);
+-}
+-
+-module_init(ep93xxfb_init);
+-module_exit(ep93xxfb_exit);
++module_platform_driver(ep93xxfb_driver);
  
-+FREESCALE DIU FRAMEBUFFER DRIVER
-+M:	Timur Tabi <timur@freescale.com>
-+L:	linux-fbdev@vger.kernel.org
-+S:	Supported
-+F:	drivers/video/fsl-diu-fb.*
-+
- FREESCALE DMA DRIVER
- M:	Li Yang <leoli@freescale.com>
- M:	Zhang Wei <zw@zh-kernel.org>
+ MODULE_DESCRIPTION("EP93XX Framebuffer Driver");
+ MODULE_ALIAS("platform:ep93xx-fb");
 -- 
-1.7.3.4
-
+1.7.0.4
 

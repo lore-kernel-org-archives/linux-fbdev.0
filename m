@@ -1,46 +1,48 @@
-From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Date: Fri, 12 Oct 2012 12:53:06 +0000
-Subject: RE: [PATCH 1/2] da8xx-fb: move panel information from driver to platform file
-Message-Id: <A73F36158E33644199EB82C5EC81C7BC3E9CAEBF@DBDE01.ent.ti.com>
+From: Srinivas KANDAGATLA <srinivas.kandagatla@st.com>
+Date: Wed, 10 Oct 2012 18:38:44 +0000
+Subject: [PATCH 3.6.0- 07/13] video/cobalt_lcdfb: use module_platform_driver macro
+Message-Id: <1349894324-9428-1-git-send-email-srinivas.kandagatla@st.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1349445084-9857-2-git-send-email-prakash.pm@ti.com>
-In-Reply-To: <1349445084-9857-2-git-send-email-prakash.pm@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-SGkgU2VraGFyLA0KDQpPbiBUdWUsIE9jdCAwOSwgMjAxMiBhdCAxMjowMjo1MiwgTm9yaSwgU2Vr
-aGFyIHdyb3RlOg0KPiBPbiAxMC84LzIwMTIgMTA6MDMgUE0sIE1hbmp1bmF0aGFwcGEsIFByYWth
-c2ggd3JvdGU6DQo+ID4gSGkgU2VraGFyLA0KPiA+IA0KPiA+IE9uIE1vbiwgT2N0IDA4LCAyMDEy
-IGF0IDE4OjEwOjEyLCBOb3JpLCBTZWtoYXIgd3JvdGU6DQo+ID4+IEhpIFByYWthc2gsDQo+ID4+
-DQo+ID4+IE9uIDEwLzUvMjAxMiA3OjIxIFBNLCBNYW5qdW5hdGhhcHBhLCBQcmFrYXNoIHdyb3Rl
-Og0KPiA+Pj4gTW92aW5nIHBhbmVsIGluZm9ybWF0aW9uIGZyb20gZHJpdmVyIHRvIHBsYXRmb3Jt
-IGZpbGUsIHBhdGNoIGFsc28gbWFkZQ0KPiA+Pj4gY29tcGxpYW50IHRvIGZiX3ZpZGVvbW9kZSBk
-YXRhLg0KPiA+Pj4NCj4gPj4+IFNpZ25lZC1vZmYtYnk6IE1hbmp1bmF0aGFwcGEsIFByYWthc2gg
-PHByYWthc2gucG1AdGkuY29tPg0KPiA+Pg0KPiA+PiBXaHkgZG8geW91IGhhdmUgdG8gZG8gdGhp
-cz8gSnVzdCBtb3ZpbmcgcGFuZWwgZGF0YSBmcm9tIGRyaXZlciB0bw0KPiA+PiBwbGF0Zm9ybSBj
-b2RlIGRvZXNuJ3Qgc2VlbSB0byBidXkgYW55dGhpbmcuDQo+ID4+DQo+ID4+IElmIHlvdSBhcmUg
-cGFzc2VkIERUIGRhdGEsIHRoZW4gdXNlIGl0IGVsc2UgY29udGludWUgdGhlIGV4aXN0aW5nDQo+
-ID4+IHBsYXRmb3JtIGRhdGEgbWV0aG9kPyBPbmNlIGFsbCB0aGUgYm9hcmRzIHVzaW5nIHRoaXMg
-ZHJpdmVyIGFyZQ0KPiA+PiBjb252ZXJ0ZWQgdG8gRFQsIHRoZW4gYWxsIHRoZSBwYW5lbCBpbmZv
-cm1hdGlvbiBjYW4gYmUgcmVtb3ZlZCBmcm9tDQo+ID4+IGRyaXZlci4gVGhhdCB3aWxsIHNhdmUg
-Y29kZS4NCj4gPj4NCj4gPiANCj4gPiBCZWNhdXNlIG9mIGZvbGxvd2luZyByZWFzb25zIEkgbW92
-ZWQgaXQgb3V0IG9mIGRyaXZlcg0KPiA+IDEpVGhpcyBwYXRjaCBhbHNvIGNvbnZlcnRzIHBhbmVs
-IGluZm9ybWF0aW9uIGNvbXBsaWFudCB0byBmYl92aWRlb21vZGUuDQo+ID4gUGF0Y2ggIm9mOiBh
-ZGQgZGlzcGxheSBoZWxwZXIiWzFdIHVuZGVyIHJldmlldyBleHBlY3RzIHBhbmVsIGRhdGEgaW4g
-ZmJfdmlkZW9tb2RlIGZvcm1hdC4NCj4gDQo+IFNvdW5kcyBsaWtlIHRoaXMgc2hvdWxkIGJlIGEg
-c2VwYXJhdGUgcGF0Y2ggYXMgdGhpcyBoYXMgZ290IG5vdGhpbmcgdG8NCj4gZG8gd2l0aCBtb3Zp
-bmcgcGFuZWwgaW5mb3JtYXRpb24gdG8gcGxhdGZvcm0gY29kZS4NCj4gDQoNCk9rIEkgd2lsbCBz
-cGxpdCBpdCBhcyBzZXBhcmF0ZSBwYXRjaC4NCg0KPiA+IDIpSSBmZWx0IGRpZmZpY3VsdCBhbmQg
-dW5jbGVhbiB0byBoYXZlIGRyaXZlciBzdXBwb3J0aW5nIGJvdGggcGFuZWwgZGF0YSBmcm9tIGRy
-aXZlciBhbmQgcGFuZWwgZGF0YSBmcm9tIERULg0KPiANCj4gRG8geW91IGhhdmUgYW55IGNvZGUg
-d2hlcmUgeW91IHRyaWVkIHRoaXM/IElmIGl0IGlzIGNsZWFuIGVub3VnaCwgY2FuDQo+IHlvdSBw
-b3N0IGl0IHNvIHdlIGNhbiBhbGwgc2VlIHdoYXQgdGhlIGFsdGVybmF0ZSBsb29rcyBsaWtlPw0K
-PiANCg0KT2sgSSB3aWxsIHBvc3QgaXQgd2l0aCBEVCBzdXBwb3J0Lg0KDQo+ID4gMylUaGlzIGVm
-Zm9ydCB3aWxsIGFsc28gZWFzZSBhZGRpbmcgRFQgc3VwcG9ydCBvZiB0aGlzIGRyaXZlci4NCj4g
-DQo+IEl0IGlzIHN0aWxsIG5vdCBjbGVhciB0byBtZSB3aHkgZXhhY3RseSBpdCB3aWxsIGVhc2Ug
-YWRkaW5nIERUIHN1cHBvcnQuDQo+IA0KDQpJIHNlZSB2NiBvZiAib2Y6IGFkZCBkaXNwbGF5IGhl
-bHBlciIgcGF0Y2ggc3VibWl0dGVkLiBIYXMgY2hhbmdlZCBjb21wYXJlZCB0byBpbml0aWFsIHZl
-cnNpb24uDQoNClsxXTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1mYmRldiZtPTEzNDkzNzM1
-ODIwODY3NiZ3PTINCg0KVGhhbmtzLA0KUHJha2FzaA0KDQo
+From: Srinivas Kandagatla <srinivas.kandagatla@st.com>
+
+This patch removes some code duplication by using
+module_platform_driver.
+
+Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@st.com>
+---
+ drivers/video/cobalt_lcdfb.c |   14 +-------------
+ 1 files changed, 1 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/video/cobalt_lcdfb.c b/drivers/video/cobalt_lcdfb.c
+index eae46f6..9d43f1c 100644
+--- a/drivers/video/cobalt_lcdfb.c
++++ b/drivers/video/cobalt_lcdfb.c
+@@ -396,19 +396,7 @@ static struct platform_driver cobalt_lcdfb_driver = {
+ 		.owner	= THIS_MODULE,
+ 	},
+ };
+-
+-static int __init cobalt_lcdfb_init(void)
+-{
+-	return platform_driver_register(&cobalt_lcdfb_driver);
+-}
+-
+-static void __exit cobalt_lcdfb_exit(void)
+-{
+-	platform_driver_unregister(&cobalt_lcdfb_driver);
+-}
+-
+-module_init(cobalt_lcdfb_init);
+-module_exit(cobalt_lcdfb_exit);
++module_platform_driver(cobalt_lcdfb_driver);
+ 
+ MODULE_LICENSE("GPL v2");
+ MODULE_AUTHOR("Yoichi Yuasa");
+-- 
+1.7.0.4
+

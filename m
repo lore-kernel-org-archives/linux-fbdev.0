@@ -1,129 +1,110 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 10 Oct 2012 12:33:58 +0000
-Subject: Re: [PATCH] video: s3c-fb: use clk_prepare_enable and clk_disable_unprepare
-Message-Id: <50756B36.9020509@gmx.de>
+From: Ajay Kumar <ajaykumar.rs@samsung.com>
+Date: Fri, 12 Oct 2012 11:19:20 +0000
+Subject: [PATCH V5 2/2] video: exynos_dp: device tree documentation
+Message-Id: <1350074859-23226-2-git-send-email-ajaykumar.rs@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1349222260-3248-1-git-send-email-thomas.abraham@linaro.org>
-In-Reply-To: <1349222260-3248-1-git-send-email-thomas.abraham@linaro.org>
+References: <1350074859-23226-1-git-send-email-ajaykumar.rs@samsung.com>
+In-Reply-To: <1350074859-23226-1-git-send-email-ajaykumar.rs@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Abraham <thomas.abraham@linaro.org>
-Cc: linux-fbdev@vger.kernel.org, jg1.han@samsung.com, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org
+To: linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org, jg1.han@samsung.com, devicetree-discuss@lists.ozlabs.org
+Cc: FlorianSchandinat@gmx.de, sylvester.nawrocki@gmail.com, tomasz.figa@gmail.com, thomas.ab@samsung.com
 
-On 10/02/2012 11:57 PM, Thomas Abraham wrote:
-> Convert clk_enable/clk_disable to clk_prepare_enable/clk_disable_unprepare
-> calls as required by common clock framework.
-> 
-> Signed-off-by: Thomas Abraham <thomas.abraham@linaro.org>
+Add documentation for the DT bindings in exynos display port driver.
 
-Applied.
+Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
+---
+ .../devicetree/bindings/video/exynos_dp.txt        |   80 ++++++++++++++++++++
+ 1 files changed, 80 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/exynos_dp.txt
 
-
-Thanks,
-
-Florian Tobias Schandinat
-
-
-> ---
->  drivers/video/s3c-fb.c |   28 ++++++++++++++--------------
->  1 files changed, 14 insertions(+), 14 deletions(-)
-> 
-> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-> index 52b744f..2ed7b63 100644
-> --- a/drivers/video/s3c-fb.c
-> +++ b/drivers/video/s3c-fb.c
-> @@ -1404,7 +1404,7 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
->  		return PTR_ERR(sfb->bus_clk);
->  	}
->  
-> -	clk_enable(sfb->bus_clk);
-> +	clk_prepare_enable(sfb->bus_clk);
->  
->  	if (!sfb->variant.has_clksel) {
->  		sfb->lcd_clk = devm_clk_get(dev, "sclk_fimd");
-> @@ -1414,7 +1414,7 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
->  			goto err_bus_clk;
->  		}
->  
-> -		clk_enable(sfb->lcd_clk);
-> +		clk_prepare_enable(sfb->lcd_clk);
->  	}
->  
->  	pm_runtime_enable(sfb->dev);
-> @@ -1504,10 +1504,10 @@ err_lcd_clk:
->  	pm_runtime_disable(sfb->dev);
->  
->  	if (!sfb->variant.has_clksel)
-> -		clk_disable(sfb->lcd_clk);
-> +		clk_disable_unprepare(sfb->lcd_clk);
->  
->  err_bus_clk:
-> -	clk_disable(sfb->bus_clk);
-> +	clk_disable_unprepare(sfb->bus_clk);
->  
->  	return ret;
->  }
-> @@ -1531,9 +1531,9 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
->  			s3c_fb_release_win(sfb, sfb->windows[win]);
->  
->  	if (!sfb->variant.has_clksel)
-> -		clk_disable(sfb->lcd_clk);
-> +		clk_disable_unprepare(sfb->lcd_clk);
->  
-> -	clk_disable(sfb->bus_clk);
-> +	clk_disable_unprepare(sfb->bus_clk);
->  
->  	pm_runtime_put_sync(sfb->dev);
->  	pm_runtime_disable(sfb->dev);
-> @@ -1561,9 +1561,9 @@ static int s3c_fb_suspend(struct device *dev)
->  	}
->  
->  	if (!sfb->variant.has_clksel)
-> -		clk_disable(sfb->lcd_clk);
-> +		clk_disable_unprepare(sfb->lcd_clk);
->  
-> -	clk_disable(sfb->bus_clk);
-> +	clk_disable_unprepare(sfb->bus_clk);
->  
->  	pm_runtime_put_sync(sfb->dev);
->  
-> @@ -1581,10 +1581,10 @@ static int s3c_fb_resume(struct device *dev)
->  
->  	pm_runtime_get_sync(sfb->dev);
->  
-> -	clk_enable(sfb->bus_clk);
-> +	clk_prepare_enable(sfb->bus_clk);
->  
->  	if (!sfb->variant.has_clksel)
-> -		clk_enable(sfb->lcd_clk);
-> +		clk_prepare_enable(sfb->lcd_clk);
->  
->  	/* setup gpio and output polarity controls */
->  	pd->setup_gpio();
-> @@ -1640,9 +1640,9 @@ static int s3c_fb_runtime_suspend(struct device *dev)
->  	struct s3c_fb *sfb = platform_get_drvdata(pdev);
->  
->  	if (!sfb->variant.has_clksel)
-> -		clk_disable(sfb->lcd_clk);
-> +		clk_disable_unprepare(sfb->lcd_clk);
->  
-> -	clk_disable(sfb->bus_clk);
-> +	clk_disable_unprepare(sfb->bus_clk);
->  
->  	return 0;
->  }
-> @@ -1653,10 +1653,10 @@ static int s3c_fb_runtime_resume(struct device *dev)
->  	struct s3c_fb *sfb = platform_get_drvdata(pdev);
->  	struct s3c_fb_platdata *pd = sfb->pdata;
->  
-> -	clk_enable(sfb->bus_clk);
-> +	clk_prepare_enable(sfb->bus_clk);
->  
->  	if (!sfb->variant.has_clksel)
-> -		clk_enable(sfb->lcd_clk);
-> +		clk_prepare_enable(sfb->lcd_clk);
->  
->  	/* setup gpio and output polarity controls */
->  	pd->setup_gpio();
+diff --git a/Documentation/devicetree/bindings/video/exynos_dp.txt b/Documentation/devicetree/bindings/video/exynos_dp.txt
+new file mode 100644
+index 0000000..e19594b
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/exynos_dp.txt
+@@ -0,0 +1,80 @@
++The Exynos display port interface should be configured based on the
++based on the type of panel connected to it.
++
++We use two nodes:
++	-display-port-controller node
++	-dptx-phy node(defined inside display-port-controller node)
++
++For the DP-PHY initialization, we use the dptx-phy node.
++Required properties for dptx-phy:
++	-reg:
++		Base address of DP PHY register.
++	-samsung,enable-mask:
++		The bit-mask used to enable/disable DP PHY.
++
++For the Panel initialization, we read data from display-port-controller node.
++Required properties for display-port-controller:
++	-compatible:
++		should be "samsung,exynos5-dp".
++	-reg:
++		physical base address of the controller and length
++		of memory mapped region.
++	-interrupts:
++		interrupt combiner values.
++	-interrupt-parent:
++		phandle to Interrupt combiner node.
++	-samsung,color-space:
++		input video data format.
++			COLOR_RGB = 0, COLOR_YCBCR422 = 1, COLOR_YCBCR444 = 2
++	-samsung,dynamic-range:
++		dynamic range for input video data.
++			VESA = 0, CEA = 1
++	-samsung,ycbcr-coeff:
++		YCbCr co-efficients for input video.
++			COLOR_YCBCR601 = 0, COLOR_YCBCR709 = 1
++	-samsung,color-depth:
++		number of bits per colour component.
++			COLOR_6 = 0, COLOR_8 = 1, COLOR_10 = 2, COLOR_12 = 3
++	-samsung,link-rate:
++		link rate supported by the panel.
++			LINK_RATE_1_62GBPS = 0x6, LINK_RATE_2_70GBPS = 0x0A
++	-samsung,lane-count:
++		number of lanes supported by the panel.
++			LANE_COUNT1 = 1, LANE_COUNT2 = 2, LANE_COUNT4 = 4
++
++Optional properties for display-port-controller:
++	-interlaced:
++		interlace scan mode.
++			Progressive if defined, Interlaced if not defined
++	-vsync-active-high:
++		VSYNC polarity configuration.
++			High if defined, Low if not defined
++	-hsync-active-high:
++		HSYNC polarity configuration.
++			High if defined, Low if not defined
++
++Example:
++
++SOC specific portion:
++	display-port-controller {
++		compatible = "samsung,exynos5-dp";
++		reg = <0x145b0000 0x10000>;
++		interrupts = <10 3>;
++		interrupt-parent = <&combiner>;
++
++		dptx-phy {
++			reg = <0x10040720>;
++			samsung,enable-mask = <1>;
++		};
++
++        };
++
++Board Specific portion:
++	display-port-controller {
++		samsung,color-space = <0>;
++		samsung,dynamic-range = <0>;
++		samsung,ycbcr-coeff = <0>;
++		samsung,color-depth = <1>;
++		samsung,link-rate = <0x0a>;
++		samsung,lane-count = <2>;
++	};
+-- 
+1.7.0.4
 

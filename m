@@ -1,99 +1,114 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Wed, 31 Oct 2012 09:28:07 +0000
-Subject: [PATCH v7 7/8] drm_modes: add videomode helpers
-Message-Id: <1351675689-26814-8-git-send-email-s.trumtrar@pengutronix.de>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 16 Oct 2012 02:17:32 +0000
+Subject: [PATCH V8 2/2] video: exynos_dp: device tree documentation
+Message-Id: <005c01cdab44$666eb6b0$334c2410$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+To: 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, 'Ajay Kumar' <ajaykumar.rs@samsung.com>, 'Sylwester Nawrocki' <sylvester.nawrocki@gmail.com>, 'Tomasz Figa' <t.figa@samsung.com>, 'Thomas Abraham' <thomas.abraham@linaro.org>, 'Jingoo Han' <jg1.han@samsung.com>
 
-Add conversion from videomode to drm_display_mode
+From: Ajay Kumar <ajaykumar.rs@samsung.com>
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Add documentation for the DT bindings in exynos display port driver.
+
+Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/gpu/drm/drm_modes.c |   36 ++++++++++++++++++++++++++++++++++++
- include/drm/drmP.h          |    3 +++
- 2 files changed, 39 insertions(+)
+No changes since v7:
 
-diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index 59450f3..049624d 100644
---- a/drivers/gpu/drm/drm_modes.c
-+++ b/drivers/gpu/drm/drm_modes.c
-@@ -35,6 +35,7 @@
- #include <linux/export.h>
- #include <drm/drmP.h>
- #include <drm/drm_crtc.h>
-+#include <linux/videomode.h>
- 
- /**
-  * drm_mode_debug_printmodeline - debug print a mode
-@@ -504,6 +505,41 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, int vdisplay, int vrefresh,
- }
- EXPORT_SYMBOL(drm_gtf_mode);
- 
-+#if IS_ENABLED(CONFIG_VIDEOMODE)
-+int videomode_to_display_mode(struct videomode *vm, struct drm_display_mode *dmode)
-+{
-+	dmode->hdisplay = vm->hactive;
-+	dmode->hsync_start = dmode->hdisplay + vm->hfront_porch;
-+	dmode->hsync_end = dmode->hsync_start + vm->hsync_len;
-+	dmode->htotal = dmode->hsync_end + vm->hback_porch;
+ .../devicetree/bindings/video/exynos_dp.txt        |   80 ++++++++++++++++++++
+ 1 files changed, 80 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/exynos_dp.txt
+
+diff --git a/Documentation/devicetree/bindings/video/exynos_dp.txt b/Documentation/devicetree/bindings/video/exynos_dp.txt
+new file mode 100644
+index 0000000..7cc7d9f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/exynos_dp.txt
+@@ -0,0 +1,80 @@
++The Exynos display port interface should be configured based on
++the type of panel connected to it.
 +
-+	dmode->vdisplay = vm->vactive;
-+	dmode->vsync_start = dmode->vdisplay + vm->vfront_porch;
-+	dmode->vsync_end = dmode->vsync_start + vm->vsync_len;
-+	dmode->vtotal = dmode->vsync_end + vm->vback_porch;
++We use two nodes:
++	-display-port-controller node
++	-dptx-phy node(defined inside display-port-controller node)
 +
-+	dmode->clock = vm->pixelclock / 1000;
++For the DP-PHY initialization, we use the dptx-phy node.
++Required properties for dptx-phy:
++	-reg:
++		Base address of DP PHY register.
++	-samsung,enable-mask:
++		The bit-mask used to enable/disable DP PHY.
 +
-+	dmode->flags = 0;
-+	if (vm->hah)
-+		dmode->flags |= DRM_MODE_FLAG_PHSYNC;
-+	else
-+		dmode->flags |= DRM_MODE_FLAG_NHSYNC;
-+	if (vm->vah)
-+		dmode->flags |= DRM_MODE_FLAG_PVSYNC;
-+	else
-+		dmode->flags |= DRM_MODE_FLAG_NVSYNC;
-+	if (vm->interlaced)
-+		dmode->flags |= DRM_MODE_FLAG_INTERLACE;
-+	if (vm->doublescan)
-+		dmode->flags |= DRM_MODE_FLAG_DBLSCAN;
-+	drm_mode_set_name(dmode);
++For the Panel initialization, we read data from display-port-controller node.
++Required properties for display-port-controller:
++	-compatible:
++		should be "samsung,exynos5-dp".
++	-reg:
++		physical base address of the controller and length
++		of memory mapped region.
++	-interrupts:
++		interrupt combiner values.
++	-interrupt-parent:
++		phandle to Interrupt combiner node.
++	-samsung,color-space:
++		input video data format.
++			COLOR_RGB = 0, COLOR_YCBCR422 = 1, COLOR_YCBCR444 = 2
++	-samsung,dynamic-range:
++		dynamic range for input video data.
++			VESA = 0, CEA = 1
++	-samsung,ycbcr-coeff:
++		YCbCr co-efficients for input video.
++			COLOR_YCBCR601 = 0, COLOR_YCBCR709 = 1
++	-samsung,color-depth:
++		number of bits per colour component.
++			COLOR_6 = 0, COLOR_8 = 1, COLOR_10 = 2, COLOR_12 = 3
++	-samsung,link-rate:
++		link rate supported by the panel.
++			LINK_RATE_1_62GBPS = 0x6, LINK_RATE_2_70GBPS = 0x0A
++	-samsung,lane-count:
++		number of lanes supported by the panel.
++			LANE_COUNT1 = 1, LANE_COUNT2 = 2, LANE_COUNT4 = 4
 +
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(videomode_to_display_mode);
-+#endif
++Optional properties for display-port-controller:
++	-interlaced:
++		interlace scan mode.
++			Progressive if defined, Interlaced if not defined
++	-vsync-active-high:
++		VSYNC polarity configuration.
++			High if defined, Low if not defined
++	-hsync-active-high:
++		HSYNC polarity configuration.
++			High if defined, Low if not defined
 +
- /**
-  * drm_mode_set_name - set the name on a mode
-  * @mode: name will be set in this mode
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index 3fd8280..e9fa1e3 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -56,6 +56,7 @@
- #include <linux/cdev.h>
- #include <linux/mutex.h>
- #include <linux/slab.h>
-+#include <linux/videomode.h>
- #if defined(__alpha__) || defined(__powerpc__)
- #include <asm/pgtable.h>	/* For pte_wrprotect */
- #endif
-@@ -1454,6 +1455,8 @@ extern struct drm_display_mode *
- drm_mode_create_from_cmdline_mode(struct drm_device *dev,
- 				  struct drm_cmdline_mode *cmd);
- 
-+extern int videomode_to_display_mode(struct videomode *vm,
-+				     struct drm_display_mode *dmode);
- /* Modesetting support */
- extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
- extern void drm_vblank_post_modeset(struct drm_device *dev, int crtc);
++Example:
++
++SOC specific portion:
++	display-port-controller {
++		compatible = "samsung,exynos5-dp";
++		reg = <0x145b0000 0x10000>;
++		interrupts = <10 3>;
++		interrupt-parent = <&combiner>;
++
++		dptx-phy {
++			reg = <0x10040720>;
++			samsung,enable-mask = <1>;
++		};
++
++        };
++
++Board Specific portion:
++	display-port-controller {
++		samsung,color-space = <0>;
++		samsung,dynamic-range = <0>;
++		samsung,ycbcr-coeff = <0>;
++		samsung,color-depth = <1>;
++		samsung,link-rate = <0x0a>;
++		samsung,lane-count = <4>;
++	};
 -- 
-1.7.10.4
+1.7.1
+
 

@@ -1,44 +1,62 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Tue, 16 Oct 2012 11:51:21 +0000
-Subject: [PATCH] OMAPDSS: Correct check for the callback pointer in dss_dsi_disable_pads()
-Message-Id: <1350388281-20397-1-git-send-email-peter.ujfalusi@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 16 Oct 2012 13:31:28 +0000
+Subject: Re: [PATCH] OMAPDSS: Correct check for the callback pointer in dss_dsi_disable_pads()
+Message-Id: <507D61B0.5010602@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enigDB8C1FADA9A170AE373454F3"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1350388281-20397-1-git-send-email-peter.ujfalusi@ti.com>
+In-Reply-To: <1350388281-20397-1-git-send-email-peter.ujfalusi@ti.com>
+To: Peter Ujfalusi <peter.ujfalusi@ti.com>
 Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Appear to be a copy-paste bug: the code was checking board_data->dsi_enable_pads
-while calling board_data->dsi_disable_pads.
+--------------enigDB8C1FADA9A170AE373454F3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 2012-10-16 14:51, Peter Ujfalusi wrote:
+> Appear to be a copy-paste bug: the code was checking board_data->dsi_en=
+able_pads
+> while calling board_data->dsi_disable_pads.
+>=20
+>=20
+> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+> ---
+>=20
+> Hi Tomi,
+>=20
+> not sure if this need to be included to 3.7
+
+Thanks. Probably not needed for 3.7, as we never hit that bug with the
+current kernel: if dsi_enable_pads is defined we also always define
+dsi_disable_pads.
+
+ Tomi
 
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
----
 
-Hi Tomi,
+--------------enigDB8C1FADA9A170AE373454F3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-not sure if this need to be included to 3.7
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
 
-Regards,
-Peter
+iQIcBAEBAgAGBQJQfWGwAAoJEPo9qoy8lh71/UAP/iNqJxlJYTWp7tSJl8HOVCSS
+SeePumroGi+alSai0Nivk3tZ6x/RBRkTKcIo2xqufUIcW/J5ZQd1sK8SYLt9q7Sd
+3G55mGfEuLlxCGNURf3rBn08JCXVakHyc0eWn15xVx9uZTehav4ckpr535S8j3mp
+wtWyzmRlJm+Bpb0pW/4Vyf9FXk/meNqibVDx3xWUVvsZ5qk0HCQVi7HGFmZOL8Xs
+2QL8bZS605whbvevSbLe2YYoCOErRVKHw6t48hsqSOf/D9Dgq11gCOFvO5FGQ+5z
+9nc27jd/f8s3NIeVMOOxuaJT5bl4md2FSYwskFGRFbxQbZa+7ACKoQ0o9GR1vjFD
+4VMuFOHlrjKcCcKlOXxoxNioWhB9SYkcoYAYdz+qRWUtgkv9xlGAwrIJqD3EoFVB
+f8OCmyB9QhQp6KrdNttnlsDTFCp16LYAqiaEgmXJV++kcbeo5ZYlY3myMO901kWw
+7v8tXhV8m6abmv5l6ucdQszuFGU5Jx0jSAq910deD0wNOYpq6KcwtDsh0TdfQoPk
+zudAEjyulxWTb/w3MR7pSW8rX12SXSJXwHkYs7UqsqiShGkHb0+hvBGnxoPsm4Y+
+Hl1wXlEfMTQzwNpA9fRkl3/KAwWHU82qWECReVqsGXTLEL6mn4fQ+sijiS6HxsQ5
+vyXs3Yq71E2eyQmfYlHm
+=PAmv
+-----END PGP SIGNATURE-----
 
- drivers/video/omap2/dss/core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index b2af72d..7afaf61 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -122,7 +122,7 @@ void dss_dsi_disable_pads(int dsi_id, unsigned lane_mask)
- {
- 	struct omap_dss_board_info *board_data = core.pdev->dev.platform_data;
- 
--	if (!board_data->dsi_enable_pads)
-+	if (!board_data->dsi_disable_pads)
- 		return;
- 
- 	return board_data->dsi_disable_pads(dsi_id, lane_mask);
--- 
-1.7.12.3
-
+--------------enigDB8C1FADA9A170AE373454F3--

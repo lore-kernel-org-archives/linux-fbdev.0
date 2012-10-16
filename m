@@ -1,88 +1,335 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 24 Oct 2012 09:28:59 +0000
-Subject: [PATCH 08/20] OMAPDSS: DISPC: make _enable_mgr_out public as "dispc_mgr_enable"
-Message-Id: <1351070951-18616-9-git-send-email-tomi.valkeinen@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 16 Oct 2012 02:16:38 +0000
+Subject: [PATCH V8 1/2] video: exynos_dp: Add device tree support to DP driver
+Message-Id: <005b01cdab44$45f4a840$d1ddf8c0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: 'Florian Tobias Schandinat' <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, 'Jingoo Han' <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, 'Ajay Kumar' <ajaykumar.rs-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, 'Sylwester Nawrocki' <sylvester.nawrocki-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
 
-We need a low level manager-enable function for omapdrm. We have that
-function as dispc internal func, _enable_mgr_out().
+From: Ajay Kumar <ajaykumar.rs@samsung.com>
 
-This patch exposes that function, and renames it to dispc_mgr_enable().
+This patch enables device tree based discovery support for DP driver.
+The driver is modified to handle platform data in both the cases:
+with DT and non-DT.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/omap2/dss/dispc.c |   10 +++++-----
- drivers/video/omap2/dss/dss.h   |    1 +
- 2 files changed, 6 insertions(+), 5 deletions(-)
+This patch is tested with Exynos5250.
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 600a412..b5cdbaf 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -2595,7 +2595,7 @@ static void dispc_mgr_disable_isr(void *data, u32 mask)
- 	complete(compl);
+Changes since v7:
+- Replace platform_get_drvdata() with dev_get_drvdata() in suspend/resume
+
+ drivers/video/exynos/exynos_dp_core.c |  216 ++++++++++++++++++++++++++++++---
+ drivers/video/exynos/exynos_dp_core.h |    2 +
+ 2 files changed, 198 insertions(+), 20 deletions(-)
+
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index d55470e..9a9ecc1 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -18,6 +18,7 @@
+ #include <linux/io.h>
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
++#include <linux/of.h>
+ 
+ #include <video/exynos_dp.h>
+ 
+@@ -856,6 +857,145 @@ static irqreturn_t exynos_dp_irq_handler(int irq, void *arg)
+ 	return IRQ_HANDLED;
  }
  
--static void _enable_mgr_out(enum omap_channel channel, bool enable)
-+void dispc_mgr_enable(enum omap_channel channel, bool enable)
++#ifdef CONFIG_OF
++static struct exynos_dp_platdata *exynos_dp_dt_parse_pdata(struct device *dev)
++{
++	struct device_node *dp_node = dev->of_node;
++	struct exynos_dp_platdata *pd;
++	struct video_info *dp_video_config;
++
++	pd = devm_kzalloc(dev, sizeof(*pd), GFP_KERNEL);
++	if (!pd) {
++		dev_err(dev, "memory allocation for pdata failed\n");
++		return ERR_PTR(-ENOMEM);
++	}
++	dp_video_config = devm_kzalloc(dev,
++				sizeof(*dp_video_config), GFP_KERNEL);
++
++	if (!dp_video_config) {
++		dev_err(dev, "memory allocation for video config failed\n");
++		return ERR_PTR(-ENOMEM);
++	}
++	pd->video_info = dp_video_config;
++
++	dp_video_config->h_sync_polarity +		of_property_read_bool(dp_node, "hsync-active-high");
++
++	dp_video_config->v_sync_polarity +		of_property_read_bool(dp_node, "vsync-active-high");
++
++	dp_video_config->interlaced +		of_property_read_bool(dp_node, "interlaced");
++
++	if (of_property_read_u32(dp_node, "samsung,color-space",
++				&dp_video_config->color_space)) {
++		dev_err(dev, "failed to get color-space\n");
++		return ERR_PTR(-EINVAL);
++	}
++
++	if (of_property_read_u32(dp_node, "samsung,dynamic-range",
++				&dp_video_config->dynamic_range)) {
++		dev_err(dev, "failed to get dynamic-range\n");
++		return ERR_PTR(-EINVAL);
++	}
++
++	if (of_property_read_u32(dp_node, "samsung,ycbcr-coeff",
++				&dp_video_config->ycbcr_coeff)) {
++		dev_err(dev, "failed to get ycbcr-coeff\n");
++		return ERR_PTR(-EINVAL);
++	}
++
++	if (of_property_read_u32(dp_node, "samsung,color-depth",
++				&dp_video_config->color_depth)) {
++		dev_err(dev, "failed to get color-depth\n");
++		return ERR_PTR(-EINVAL);
++	}
++
++	if (of_property_read_u32(dp_node, "samsung,link-rate",
++				&dp_video_config->link_rate)) {
++		dev_err(dev, "failed to get link-rate\n");
++		return ERR_PTR(-EINVAL);
++	}
++
++	if (of_property_read_u32(dp_node, "samsung,lane-count",
++				&dp_video_config->lane_count)) {
++		dev_err(dev, "failed to get lane-count\n");
++		return ERR_PTR(-EINVAL);
++	}
++
++	return pd;
++}
++
++static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
++{
++	struct device_node *dp_phy_node;
++	u32 phy_base;
++
++	dp_phy_node = of_find_node_by_name(dp->dev->of_node, "dptx-phy");
++	if (!dp_phy_node) {
++		dev_err(dp->dev, "could not find dptx-phy node\n");
++		return -ENODEV;
++	}
++
++	if (of_property_read_u32(dp_phy_node, "reg", &phy_base)) {
++		dev_err(dp->dev, "faild to get reg for dptx-phy\n");
++		return -EINVAL;
++	}
++
++	if (of_property_read_u32(dp_phy_node, "samsung,enable-mask",
++				&dp->enable_mask)) {
++		dev_err(dp->dev, "faild to get enable-mask for dptx-phy\n");
++		return -EINVAL;
++	}
++
++	dp->phy_addr = ioremap(phy_base, SZ_4);
++	if (!dp->phy_addr) {
++		dev_err(dp->dev, "failed to ioremap dp-phy\n");
++		return -ENOMEM;
++	}
++
++	return 0;
++}
++
++static void exynos_dp_phy_init(struct exynos_dp_device *dp)
++{
++	u32 reg;
++
++	reg = __raw_readl(dp->phy_addr);
++	reg |= dp->enable_mask;
++	__raw_writel(reg, dp->phy_addr);
++}
++
++static void exynos_dp_phy_exit(struct exynos_dp_device *dp)
++{
++	u32 reg;
++
++	reg = __raw_readl(dp->phy_addr);
++	reg &= ~(dp->enable_mask);
++	__raw_writel(reg, dp->phy_addr);
++}
++#else
++static struct exynos_dp_platdata *exynos_dp_dt_parse_pdata(struct device *dev)
++{
++	return NULL;
++}
++
++static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
++{
++	return -EINVAL;
++}
++
++static void exynos_dp_phy_init(struct exynos_dp_device *dp)
++{
++	return;
++}
++
++static void exynos_dp_phy_exit(struct exynos_dp_device *dp)
++{
++	return;
++}
++#endif /* CONFIG_OF */
++
+ static int __devinit exynos_dp_probe(struct platform_device *pdev)
  {
- 	mgr_fld_write(channel, DISPC_MGR_FLD_ENABLE, enable);
- 	/* flush posted write */
-@@ -2609,7 +2609,7 @@ bool dispc_mgr_is_enabled(enum omap_channel channel)
+ 	struct resource *res;
+@@ -864,12 +1004,6 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
  
- static void dispc_mgr_enable_lcd_out(enum omap_channel channel)
- {
--	_enable_mgr_out(channel, true);
-+	dispc_mgr_enable(channel, true);
- }
+ 	int ret = 0;
  
- static void dispc_mgr_disable_lcd_out(enum omap_channel channel)
-@@ -2633,7 +2633,7 @@ static void dispc_mgr_disable_lcd_out(enum omap_channel channel)
- 	if (r)
- 		DSSERR("failed to register FRAMEDONE isr\n");
+-	pdata = pdev->dev.platform_data;
+-	if (!pdata) {
+-		dev_err(&pdev->dev, "no platform data\n");
+-		return -EINVAL;
+-	}
+-
+ 	dp = devm_kzalloc(&pdev->dev, sizeof(struct exynos_dp_device),
+ 				GFP_KERNEL);
+ 	if (!dp) {
+@@ -879,6 +1013,22 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
  
--	_enable_mgr_out(channel, false);
-+	dispc_mgr_enable(channel, false);
+ 	dp->dev = &pdev->dev;
  
- 	/* if we couldn't register for framedone, just sleep and exit */
- 	if (r) {
-@@ -2685,7 +2685,7 @@ static void dispc_mgr_enable_digit_out(void)
- 		return;
++	if (pdev->dev.of_node) {
++		pdata = exynos_dp_dt_parse_pdata(&pdev->dev);
++		if (IS_ERR(pdata))
++			return PTR_ERR(pdata);
++
++		ret = exynos_dp_dt_parse_phydata(dp);
++		if (ret)
++			return ret;
++	} else {
++		pdata = pdev->dev.platform_data;
++		if (!pdata) {
++			dev_err(&pdev->dev, "no platform data\n");
++			return -EINVAL;
++		}
++	}
++
+ 	dp->clock = devm_clk_get(&pdev->dev, "dp");
+ 	if (IS_ERR(dp->clock)) {
+ 		dev_err(&pdev->dev, "failed to get clock\n");
+@@ -909,8 +1059,14 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
  	}
  
--	_enable_mgr_out(OMAP_DSS_CHANNEL_DIGIT, true);
-+	dispc_mgr_enable(OMAP_DSS_CHANNEL_DIGIT, true);
+ 	dp->video_info = pdata->video_info;
+-	if (pdata->phy_init)
+-		pdata->phy_init();
++
++	if (pdev->dev.of_node) {
++		if (dp->phy_addr)
++			exynos_dp_phy_init(dp);
++	} else {
++		if (pdata->phy_init)
++			pdata->phy_init();
++	}
  
- 	/* wait for the first evsync */
- 	if (!wait_for_completion_timeout(&vsync_compl, msecs_to_jiffies(100)))
-@@ -2735,7 +2735,7 @@ static void dispc_mgr_disable_digit_out(void)
- 	if (r)
- 		DSSERR("failed to register %x isr\n", irq_mask);
+ 	exynos_dp_init_dp(dp);
  
--	_enable_mgr_out(OMAP_DSS_CHANNEL_DIGIT, false);
-+	dispc_mgr_enable(OMAP_DSS_CHANNEL_DIGIT, false);
+@@ -953,8 +1109,13 @@ static int __devexit exynos_dp_remove(struct platform_device *pdev)
+ 	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
+ 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
  
- 	/* if we couldn't register the irq, just sleep and exit */
- 	if (r) {
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index efe8984..b007aee 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -436,6 +436,7 @@ u32 dispc_mgr_get_framedone_irq(enum omap_channel channel);
- u32 dispc_mgr_get_sync_lost_irq(enum omap_channel channel);
- bool dispc_mgr_go_busy(enum omap_channel channel);
- void dispc_mgr_go(enum omap_channel channel);
-+void dispc_mgr_enable(enum omap_channel channel, bool enable);
- bool dispc_mgr_is_enabled(enum omap_channel channel);
- void dispc_mgr_enable_sync(enum omap_channel channel);
- void dispc_mgr_disable_sync(enum omap_channel channel);
+-	if (pdata && pdata->phy_exit)
+-		pdata->phy_exit();
++	if (pdev->dev.of_node) {
++		if (dp->phy_addr)
++			exynos_dp_phy_exit(dp);
++	} else {
++		if (pdata->phy_exit)
++			pdata->phy_exit();
++	}
+ 
+ 	clk_disable_unprepare(dp->clock);
+ 
+@@ -964,12 +1125,16 @@ static int __devexit exynos_dp_remove(struct platform_device *pdev)
+ #ifdef CONFIG_PM_SLEEP
+ static int exynos_dp_suspend(struct device *dev)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
+-	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
++	struct exynos_dp_platdata *pdata = dev->platform_data;
++	struct exynos_dp_device *dp = dev_get_drvdata(dev);
+ 
+-	if (pdata && pdata->phy_exit)
+-		pdata->phy_exit();
++	if (dev->of_node) {
++		if (dp->phy_addr)
++			exynos_dp_phy_exit(dp);
++	} else {
++		if (pdata->phy_exit)
++			pdata->phy_exit();
++	}
+ 
+ 	clk_disable_unprepare(dp->clock);
+ 
+@@ -978,12 +1143,16 @@ static int exynos_dp_suspend(struct device *dev)
+ 
+ static int exynos_dp_resume(struct device *dev)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
+-	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
++	struct exynos_dp_platdata *pdata = dev->platform_data;
++	struct exynos_dp_device *dp = dev_get_drvdata(dev);
+ 
+-	if (pdata && pdata->phy_init)
+-		pdata->phy_init();
++	if (dev->of_node) {
++		if (dp->phy_addr)
++			exynos_dp_phy_init(dp);
++	} else {
++		if (pdata->phy_init)
++			pdata->phy_init();
++	}
+ 
+ 	clk_prepare_enable(dp->clock);
+ 
+@@ -1013,6 +1182,12 @@ static const struct dev_pm_ops exynos_dp_pm_ops = {
+ 	SET_SYSTEM_SLEEP_PM_OPS(exynos_dp_suspend, exynos_dp_resume)
+ };
+ 
++static const struct of_device_id exynos_dp_match[] = {
++	{ .compatible = "samsung,exynos5-dp" },
++	{},
++};
++MODULE_DEVICE_TABLE(of, exynos_dp_match);
++
+ static struct platform_driver exynos_dp_driver = {
+ 	.probe		= exynos_dp_probe,
+ 	.remove		= __devexit_p(exynos_dp_remove),
+@@ -1020,6 +1195,7 @@ static struct platform_driver exynos_dp_driver = {
+ 		.name	= "exynos-dp",
+ 		.owner	= THIS_MODULE,
+ 		.pm	= &exynos_dp_pm_ops,
++		.of_match_table = of_match_ptr(exynos_dp_match),
+ 	},
+ };
+ 
+diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
+index 57b8a65..6dbeeb2 100644
+--- a/drivers/video/exynos/exynos_dp_core.h
++++ b/drivers/video/exynos/exynos_dp_core.h
+@@ -29,6 +29,8 @@ struct exynos_dp_device {
+ 	struct clk		*clock;
+ 	unsigned int		irq;
+ 	void __iomem		*reg_base;
++	void __iomem		*phy_addr;
++	unsigned int		enable_mask;
+ 
+ 	struct video_info	*video_info;
+ 	struct link_train	link_train;
 -- 
-1.7.9.5
+1.7.1
+
 

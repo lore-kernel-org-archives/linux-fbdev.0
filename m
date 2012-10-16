@@ -1,75 +1,42 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 09 Oct 2012 12:30:26 +0000
-Subject: [PATCHv2 3/3] OMAP: SDRC: remove VRFB code
-Message-Id: <1349785827-27055-4-git-send-email-tomi.valkeinen@ti.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Tue, 16 Oct 2012 22:33:47 +0000
+Subject: [PATCH 6/9] drivers/video: fsl-diu-fb: remove unused 'cursor_reset' variable
+Message-Id: <1350426830-12140-6-git-send-email-timur@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1349785827-27055-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1349785827-27055-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tony Lindgren <tony@atomide.com>
-Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Now that VRFB driver handles its registers independently, we can remove
-the VRFB related code from OMAP's sdrc.
+Probably left over from initial development in hardware cursor support
+that never made it upstream.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
- arch/arm/mach-omap2/sdrc.c             |   16 ----------------
- arch/arm/plat-omap/include/plat/sdrc.h |    7 -------
- 2 files changed, 23 deletions(-)
+ drivers/video/fsl-diu-fb.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/sdrc.c b/arch/arm/mach-omap2/sdrc.c
-index e3d345f..4282e6e 100644
---- a/arch/arm/mach-omap2/sdrc.c
-+++ b/arch/arm/mach-omap2/sdrc.c
-@@ -160,19 +160,3 @@ void __init omap2_sdrc_init(struct omap_sdrc_params *sdrc_cs0,
- 	sdrc_write_reg(l, SDRC_POWER);
- 	omap2_sms_save_context();
- }
--
--void omap2_sms_write_rot_control(u32 val, unsigned ctx)
--{
--	sms_write_reg(val, SMS_ROT_CONTROL(ctx));
--}
--
--void omap2_sms_write_rot_size(u32 val, unsigned ctx)
--{
--	sms_write_reg(val, SMS_ROT_SIZE(ctx));
--}
--
--void omap2_sms_write_rot_physical_ba(u32 val, unsigned ctx)
--{
--	sms_write_reg(val, SMS_ROT_PHYSICAL_BA(ctx));
--}
--
-diff --git a/arch/arm/plat-omap/include/plat/sdrc.h b/arch/arm/plat-omap/include/plat/sdrc.h
-index 36d6a76..c68bab2 100644
---- a/arch/arm/plat-omap/include/plat/sdrc.h
-+++ b/arch/arm/plat-omap/include/plat/sdrc.h
-@@ -94,9 +94,6 @@
- /* SMS register offsets - read/write with sms_{read,write}_reg() */
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 6e32ba8..fa7f200 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -337,7 +337,6 @@ struct mfb_info {
+ 	int registered;
+ 	unsigned long pseudo_palette[16];
+ 	struct diu_ad *ad;
+-	int cursor_reset;
+ 	unsigned char g_alpha;
+ 	unsigned int count;
+ 	int x_aoi_d;		/* aoi display x offset to physical screen */
+@@ -982,7 +981,6 @@ static int fsl_diu_set_par(struct fb_info *info)
+ 	hw = data->diu_reg;
  
- #define SMS_SYSCONFIG			0x010
--#define SMS_ROT_CONTROL(context)	(0x180 + 0x10 * context)
--#define SMS_ROT_SIZE(context)		(0x184 + 0x10 * context)
--#define SMS_ROT_PHYSICAL_BA(context)	(0x188 + 0x10 * context)
- /* REVISIT: fill in other SMS registers here */
+ 	set_fix(info);
+-	mfbi->cursor_reset = 1;
  
- 
-@@ -137,10 +134,6 @@ int omap2_sdrc_get_params(unsigned long r,
- void omap2_sms_save_context(void);
- void omap2_sms_restore_context(void);
- 
--void omap2_sms_write_rot_control(u32 val, unsigned ctx);
--void omap2_sms_write_rot_size(u32 val, unsigned ctx);
--void omap2_sms_write_rot_physical_ba(u32 val, unsigned ctx);
--
- #ifdef CONFIG_ARCH_OMAP2
- 
- struct memory_timings {
+ 	len = info->var.yres_virtual * info->fix.line_length;
+ 	/* Alloc & dealloc each time resolution/bpp change */
 -- 
-1.7.9.5
+1.7.3.4
+
 

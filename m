@@ -1,145 +1,147 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 24 Oct 2012 09:29:01 +0000
-Subject: [PATCH 10/20] OMAPDSS: DISPC: Add IRQ enable/status helpers
-Message-Id: <1351070951-18616-11-git-send-email-tomi.valkeinen@ti.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Tue, 16 Oct 2012 22:33:45 +0000
+Subject: [PATCH 4/9] drivers/video: fsl-diu-fb: streamline enabling of interrupts
+Message-Id: <1350426830-12140-4-git-send-email-timur@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-DISPC irqs need to be handled from the compat layer and also in the
-future by the omapdrm. To make this possible, this patchs adds a set of
-helper functions, so that the irqs can be managed without direct
-register reads/writes.
+Remove functions request_irq_local() and free_irq_local(), and merge
+their code into the functions that handle opening and closing the
+framebuffer.  We also improve the way that interrupts are enabled.
 
-The following functions are added, and all the current direct reg
-reads/writes are changed to use these.
+Also implement a work-around for broken U-Boots that leave the DIU
+interrupts enabled.
 
-u32 dispc_read_irqstatus(void);
-void dispc_clear_irqstatus(u32 mask);
-u32 dispc_read_irqenable(void);
-void dispc_write_irqenable(u32 mask);
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
- drivers/video/omap2/dss/dispc.c |   44 ++++++++++++++++++++++++++++-----------
- drivers/video/omap2/dss/dss.h   |    4 ++++
- 2 files changed, 36 insertions(+), 12 deletions(-)
+ drivers/video/fsl-diu-fb.c |   73 ++++++++++++++++++++-----------------------
+ 1 files changed, 34 insertions(+), 39 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 3fd60ce..d294873 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -497,7 +497,7 @@ static void dispc_restore_context(void)
- 	if (dss_has_feature(FEAT_MGR_LCD3))
- 		RR(CONTROL3);
- 	/* clear spurious SYNC_LOST_DIGIT interrupts */
--	dispc_write_reg(DISPC_IRQSTATUS, DISPC_IRQ_SYNC_LOST_DIGIT);
-+	dispc_clear_irqstatus(DISPC_IRQ_SYNC_LOST_DIGIT);
- 
- 	/*
- 	 * enable last so IRQs won't trigger before
-@@ -3627,11 +3627,35 @@ int dispc_mgr_get_clock_div(enum omap_channel channel,
- 	return 0;
- }
- 
-+u32 dispc_read_irqstatus(void)
-+{
-+	return dispc_read_reg(DISPC_IRQSTATUS);
-+}
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 9c40547..f388c3a 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -1224,8 +1224,22 @@ static int fsl_diu_open(struct fb_info *info, int user)
+ 		res = fsl_diu_set_par(info);
+ 		if (res < 0)
+ 			mfbi->count--;
+-		else
++		else {
++			struct fsl_diu_data *data = mfbi->parent;
 +
-+void dispc_clear_irqstatus(u32 mask)
-+{
-+	dispc_write_reg(DISPC_IRQSTATUS, mask);
-+}
-+
-+u32 dispc_read_irqenable(void)
-+{
-+	return dispc_read_reg(DISPC_IRQENABLE);
-+}
-+
-+void dispc_write_irqenable(u32 mask)
-+{
-+	u32 old_mask = dispc_read_reg(DISPC_IRQENABLE);
-+
-+	/* clear the irqstatus for newly enabled irqs */
-+	dispc_clear_irqstatus((mask ^ old_mask) & mask);
-+
-+	dispc_write_reg(DISPC_IRQENABLE, mask);
-+}
-+
- /* dispc.irq_lock has to be locked by the caller */
- static void _omap_dispc_set_irqs(void)
- {
- 	u32 mask;
--	u32 old_mask;
- 	int i;
- 	struct omap_dispc_isr_data *isr_data;
- 
-@@ -3646,11 +3670,7 @@ static void _omap_dispc_set_irqs(void)
- 		mask |= isr_data->mask;
++#ifdef CONFIG_NOT_COHERENT_CACHE
++			/*
++			 * Enable underrun detection and vertical sync
++			 * interrupts.
++			 */
++			clrbits32(&data->diu_reg->int_mask,
++				  INT_UNDRUN | INT_VSYNC);
++#else
++			/* Enable underrun detection */
++			clrbits32(&data->diu_reg->int_mask, INT_UNDRUN);
++#endif
+ 			fsl_diu_enable_panel(info);
++		}
  	}
  
--	old_mask = dispc_read_reg(DISPC_IRQENABLE);
--	/* clear the irqstatus for newly enabled irqs */
--	dispc_write_reg(DISPC_IRQSTATUS, (mask ^ old_mask) & mask);
--
--	dispc_write_reg(DISPC_IRQENABLE, mask);
-+	dispc_write_irqenable(mask);
+ 	spin_unlock(&diu_lock);
+@@ -1241,8 +1255,13 @@ static int fsl_diu_release(struct fb_info *info, int user)
+ 
+ 	spin_lock(&diu_lock);
+ 	mfbi->count--;
+-	if (mfbi->count = 0)
++	if (mfbi->count = 0) {
++		struct fsl_diu_data *data = mfbi->parent;
++
++		/* Disable interrupts */
++		out_be32(&data->diu_reg->int_mask, 0xffffffff);
+ 		fsl_diu_disable_panel(info);
++	}
+ 
+ 	spin_unlock(&diu_lock);
+ 	return res;
+@@ -1380,7 +1399,7 @@ static void uninstall_fb(struct fb_info *info)
+ static irqreturn_t fsl_diu_isr(int irq, void *dev_id)
+ {
+ 	struct diu __iomem *hw = dev_id;
+-	unsigned int status = in_be32(&hw->int_status);
++	uint32_t status = in_be32(&hw->int_status);
+ 
+ 	if (status) {
+ 		/* This is the workaround for underrun */
+@@ -1405,40 +1424,6 @@ static irqreturn_t fsl_diu_isr(int irq, void *dev_id)
+ 	return IRQ_NONE;
  }
  
- int omap_dispc_register_isr(omap_dispc_isr_t isr, void *arg, u32 mask)
-@@ -3777,8 +3797,8 @@ static irqreturn_t omap_dispc_irq_handler(int irq, void *arg)
+-static int request_irq_local(struct fsl_diu_data *data)
+-{
+-	struct diu __iomem *hw = data->diu_reg;
+-	u32 ints;
+-	int ret;
+-
+-	/* Read to clear the status */
+-	in_be32(&hw->int_status);
+-
+-	ret = request_irq(data->irq, fsl_diu_isr, 0, "fsl-diu-fb", hw);
+-	if (!ret) {
+-		ints = INT_PARERR | INT_LS_BF_VS;
+-#if !defined(CONFIG_NOT_COHERENT_CACHE)
+-		ints |=	INT_VSYNC;
+-#endif
+-
+-		/* Read to clear the status */
+-		in_be32(&hw->int_status);
+-		out_be32(&hw->int_mask, ints);
+-	}
+-
+-	return ret;
+-}
+-
+-static void free_irq_local(struct fsl_diu_data *data)
+-{
+-	struct diu __iomem *hw = data->diu_reg;
+-
+-	/* Disable all LCDC interrupt */
+-	out_be32(&hw->int_mask, 0x1f);
+-
+-	free_irq(data->irq, NULL);
+-}
+-
+ #ifdef CONFIG_PM
+ /*
+  * Power management hooks. Note that we won't be called from IRQ context,
+@@ -1621,7 +1606,16 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 		}
+ 	}
  
- 	spin_lock(&dispc.irq_lock);
+-	if (request_irq_local(data)) {
++	/*
++	 * Older versions of U-Boot leave interrupts enabled, so disable
++	 * all of them and clear the status register.
++	 */
++	out_be32(&data->diu_reg->int_mask, 0xffffffff);
++	in_be32(&data->diu_reg->int_status);
++
++	ret = request_irq(data->irq, fsl_diu_isr, 0, "fsl-diu-fb",
++			  &data->diu_reg);
++	if (ret) {
+ 		dev_err(&pdev->dev, "could not claim irq\n");
+ 		goto error;
+ 	}
+@@ -1656,7 +1650,8 @@ static int fsl_diu_remove(struct platform_device *pdev)
  
--	irqstatus = dispc_read_reg(DISPC_IRQSTATUS);
--	irqenable = dispc_read_reg(DISPC_IRQENABLE);
-+	irqstatus = dispc_read_irqstatus();
-+	irqenable = dispc_read_irqenable();
+ 	data = dev_get_drvdata(&pdev->dev);
+ 	disable_lcdc(&data->fsl_diu_info[0]);
+-	free_irq_local(data);
++
++	free_irq(data->irq, &data->diu_reg);
  
- 	/* IRQ is not for us */
- 	if (!(irqstatus & irqenable)) {
-@@ -3797,9 +3817,9 @@ static irqreturn_t omap_dispc_irq_handler(int irq, void *arg)
- 
- 	/* Ack the interrupt. Do it here before clocks are possibly turned
- 	 * off */
--	dispc_write_reg(DISPC_IRQSTATUS, irqstatus);
-+	dispc_clear_irqstatus(irqstatus);
- 	/* flush posted write */
--	dispc_read_reg(DISPC_IRQSTATUS);
-+	dispc_read_irqstatus();
- 
- 	/* make a copy and unlock, so that isrs can unregister
- 	 * themselves */
-@@ -4008,7 +4028,7 @@ static void _omap_dispc_initialize_irq(void)
- 
- 	/* there's SYNC_LOST_DIGIT waiting after enabling the DSS,
- 	 * so clear it */
--	dispc_write_reg(DISPC_IRQSTATUS, dispc_read_reg(DISPC_IRQSTATUS));
-+	dispc_clear_irqstatus(dispc_read_irqstatus());
- 
- 	_omap_dispc_set_irqs();
- 
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index be7678c..8bf9047 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -398,6 +398,10 @@ void dpi_uninit_platform_driver(void) __exit;
- int dispc_init_platform_driver(void) __init;
- void dispc_uninit_platform_driver(void) __exit;
- void dispc_dump_clocks(struct seq_file *s);
-+u32 dispc_read_irqstatus(void);
-+void dispc_clear_irqstatus(u32 mask);
-+u32 dispc_read_irqenable(void);
-+void dispc_write_irqenable(u32 mask);
- 
- int dispc_runtime_get(void);
- void dispc_runtime_put(void);
+ 	for (i = 0; i < NUM_AOIS; i++)
+ 		uninstall_fb(&data->fsl_diu_info[i]);
 -- 
-1.7.9.5
+1.7.3.4
+
 

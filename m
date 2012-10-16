@@ -1,296 +1,83 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 17 Oct 2012 10:18:18 +0000
-Subject: [PATCHv3 1/5] OMAP: VRFB: convert vrfb to platform device
-Message-Id: <1350469102-24888-2-git-send-email-tomi.valkeinen@ti.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Tue, 16 Oct 2012 22:33:48 +0000
+Subject: [PATCH 7/9] drivers/video: fsl-diu-fb: clean up reset of primary display
+Message-Id: <1350426830-12140-7-git-send-email-timur@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1350469102-24888-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1350469102-24888-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, tony@atomide.com
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-This patch converts vrfb library into a platform device, in an effort to
-remove omap dependencies.
+Commit 4b5006ec ("shared DIU framebuffer support") added the ability to
+retain the splash screen until the framebuffer is opened by user space.
+Clean up this code to eliminate redundant writes to registers, and eliminate
+the use of dummy area descriptor.
 
-The platform device is registered in arch/arm/plat-omap/fb.c and
-assigned resources depending on whether running on omap2 or omap3.
-
-The vrfb driver will parse those resources and use them to access vrfb
-configuration registers and the vrfb virtual rotation areas.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
- arch/arm/plat-omap/fb.c    |   61 ++++++++++++++++++++++
- drivers/video/omap2/vrfb.c |  124 +++++++++++++++++++++++++++++++++++++-------
- 2 files changed, 165 insertions(+), 20 deletions(-)
+ drivers/video/fsl-diu-fb.c |   19 ++++++-------------
+ 1 files changed, 6 insertions(+), 13 deletions(-)
 
-diff --git a/arch/arm/plat-omap/fb.c b/arch/arm/plat-omap/fb.c
-index bcbb9d5..f868cae 100644
---- a/arch/arm/plat-omap/fb.c
-+++ b/arch/arm/plat-omap/fb.c
-@@ -33,6 +33,67 @@
- #include <mach/hardware.h>
- #include <asm/mach/map.h>
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index fa7f200..37175ac 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -496,8 +496,7 @@ static void fsl_diu_enable_panel(struct fb_info *info)
  
-+#include <plat/cpu.h>
-+
-+#ifdef CONFIG_OMAP2_VRFB
-+
-+/*
-+ * The first memory resource is the register region for VRFB,
-+ * the rest are VRFB virtual memory areas for each VRFB context.
-+ */
-+
-+static const struct resource omap2_vrfb_resources[] = {
-+	DEFINE_RES_MEM_NAMED(0x68008000u, 0x40, "vrfb-regs"),
-+	DEFINE_RES_MEM_NAMED(0x70000000u, 0x4000000, "vrfb-area-0"),
-+	DEFINE_RES_MEM_NAMED(0x74000000u, 0x4000000, "vrfb-area-1"),
-+	DEFINE_RES_MEM_NAMED(0x78000000u, 0x4000000, "vrfb-area-2"),
-+	DEFINE_RES_MEM_NAMED(0x7c000000u, 0x4000000, "vrfb-area-3"),
-+};
-+
-+static const struct resource omap3_vrfb_resources[] = {
-+	DEFINE_RES_MEM_NAMED(0x6C000180u, 0xc0, "vrfb-regs"),
-+	DEFINE_RES_MEM_NAMED(0x70000000u, 0x4000000, "vrfb-area-0"),
-+	DEFINE_RES_MEM_NAMED(0x74000000u, 0x4000000, "vrfb-area-1"),
-+	DEFINE_RES_MEM_NAMED(0x78000000u, 0x4000000, "vrfb-area-2"),
-+	DEFINE_RES_MEM_NAMED(0x7c000000u, 0x4000000, "vrfb-area-3"),
-+	DEFINE_RES_MEM_NAMED(0xe0000000u, 0x4000000, "vrfb-area-4"),
-+	DEFINE_RES_MEM_NAMED(0xe4000000u, 0x4000000, "vrfb-area-5"),
-+	DEFINE_RES_MEM_NAMED(0xe8000000u, 0x4000000, "vrfb-area-6"),
-+	DEFINE_RES_MEM_NAMED(0xec000000u, 0x4000000, "vrfb-area-7"),
-+	DEFINE_RES_MEM_NAMED(0xf0000000u, 0x4000000, "vrfb-area-8"),
-+	DEFINE_RES_MEM_NAMED(0xf4000000u, 0x4000000, "vrfb-area-9"),
-+	DEFINE_RES_MEM_NAMED(0xf8000000u, 0x4000000, "vrfb-area-10"),
-+	DEFINE_RES_MEM_NAMED(0xfc000000u, 0x4000000, "vrfb-area-11"),
-+};
-+
-+static int __init omap_init_vrfb(void)
-+{
-+	struct platform_device *pdev;
-+	const struct resource *res;
-+	unsigned int num_res;
-+
-+	if (cpu_is_omap24xx()) {
-+		res = omap2_vrfb_resources;
-+		num_res = ARRAY_SIZE(omap2_vrfb_resources);
-+	} else if (cpu_is_omap34xx()) {
-+		res = omap3_vrfb_resources;
-+		num_res = ARRAY_SIZE(omap3_vrfb_resources);
-+	} else {
-+		return 0;
-+	}
-+
-+	pdev = platform_device_register_resndata(NULL, "omapvrfb", -1,
-+			res, num_res, NULL, 0);
-+
-+	if (IS_ERR(pdev))
-+		return PTR_ERR(pdev);
-+	else
-+		return 0;
-+}
-+
-+arch_initcall(omap_init_vrfb);
-+#endif
-+
- #if defined(CONFIG_FB_OMAP) || defined(CONFIG_FB_OMAP_MODULE)
+ 	switch (mfbi->index) {
+ 	case PLANE0:
+-		if (hw->desc[0] != ad->paddr)
+-			wr_reg_wa(&hw->desc[0], ad->paddr);
++		wr_reg_wa(&hw->desc[0], ad->paddr);
+ 		break;
+ 	case PLANE1_AOI0:
+ 		cmfbi = &data->mfb[2];
+@@ -549,8 +548,7 @@ static void fsl_diu_disable_panel(struct fb_info *info)
  
- static bool omapfb_lcd_configured;
-diff --git a/drivers/video/omap2/vrfb.c b/drivers/video/omap2/vrfb.c
-index 7e99022..fda45cc 100644
---- a/drivers/video/omap2/vrfb.c
-+++ b/drivers/video/omap2/vrfb.c
-@@ -26,9 +26,9 @@
- #include <linux/io.h>
- #include <linux/bitops.h>
- #include <linux/mutex.h>
-+#include <linux/platform_device.h>
+ 	switch (mfbi->index) {
+ 	case PLANE0:
+-		if (hw->desc[0] != data->dummy_ad.paddr)
+-			wr_reg_wa(&hw->desc[0], data->dummy_ad.paddr);
++		wr_reg_wa(&hw->desc[0], 0);
+ 		break;
+ 	case PLANE1_AOI0:
+ 		cmfbi = &data->mfb[2];
+@@ -1519,7 +1517,6 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 	struct device_node *np = pdev->dev.of_node;
+ 	struct mfb_info *mfbi;
+ 	struct fsl_diu_data *data;
+-	int diu_mode;
+ 	dma_addr_t dma_addr; /* DMA addr of fsl_diu_data struct */
+ 	unsigned int i;
+ 	int ret;
+@@ -1584,10 +1581,6 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 		goto error;
+ 	}
  
- #include <plat/vrfb.h>
--#include <plat/sdrc.h>
+-	diu_mode = in_be32(&data->diu_reg->diu_mode);
+-	if (diu_mode = MFB_MODE0)
+-		out_be32(&data->diu_reg->diu_mode, 0); /* disable DIU */
+-
+ 	/* Get the IRQ of the DIU */
+ 	data->irq = irq_of_parse_and_map(np, 0);
  
- #ifdef DEBUG
- #define DBG(format, ...) pr_debug("VRFB: " format, ## __VA_ARGS__)
-@@ -36,10 +36,10 @@
- #define DBG(format, ...)
- #endif
+@@ -1609,11 +1602,11 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 	data->dummy_ad.paddr = DMA_ADDR(data, dummy_ad);
  
--#define SMS_ROT_VIRT_BASE(context, rot) \
--	(((context >= 4) ? 0xD0000000 : 0x70000000) \
--	 + (0x4000000 * (context)) \
--	 + (0x1000000 * (rot)))
-+#define SMS_ROT_CONTROL(context)	(0x0 + 0x10 * context)
-+#define SMS_ROT_SIZE(context)		(0x4 + 0x10 * context)
-+#define SMS_ROT_PHYSICAL_BA(context)	(0x8 + 0x10 * context)
-+#define SMS_ROT_VIRT_BASE(rot)		(0x1000000 * (rot))
+ 	/*
+-	 * Let DIU display splash screen if it was pre-initialized
+-	 * by the bootloader, set dummy area descriptor otherwise.
++	 * Let DIU continue to display splash screen if it was pre-initialized
++	 * by the bootloader; otherwise, clear the display.
+ 	 */
+-	if (diu_mode = MFB_MODE0)
+-		out_be32(&data->diu_reg->desc[0], data->dummy_ad.paddr);
++	if (in_be32(&data->diu_reg->diu_mode) = MFB_MODE0)
++		out_be32(&data->diu_reg->desc[0], 0);
  
- #define OMAP_VRFB_SIZE			(2048 * 2048 * 4)
- 
-@@ -53,10 +53,16 @@
- #define SMS_PW_OFFSET		4
- #define SMS_PS_OFFSET		0
- 
--#define VRFB_NUM_CTXS 12
- /* bitmap of reserved contexts */
- static unsigned long ctx_map;
- 
-+struct vrfb_ctx {
-+	u32 base;
-+	u32 physical_ba;
-+	u32 control;
-+	u32 size;
-+};
-+
- static DEFINE_MUTEX(ctx_lock);
- 
- /*
-@@ -65,17 +71,32 @@ static DEFINE_MUTEX(ctx_lock);
-  * we don't need locking, since no drivers will run until after the wake-up
-  * has finished.
-  */
--static struct {
--	u32 physical_ba;
--	u32 control;
--	u32 size;
--} vrfb_hw_context[VRFB_NUM_CTXS];
-+
-+static void __iomem *vrfb_base;
-+
-+static int num_ctxs;
-+static struct vrfb_ctx *ctxs;
-+
-+static void omap2_sms_write_rot_control(u32 val, unsigned ctx)
-+{
-+	__raw_writel(val, vrfb_base + SMS_ROT_CONTROL(ctx));
-+}
-+
-+static void omap2_sms_write_rot_size(u32 val, unsigned ctx)
-+{
-+	__raw_writel(val, vrfb_base + SMS_ROT_SIZE(ctx));
-+}
-+
-+static void omap2_sms_write_rot_physical_ba(u32 val, unsigned ctx)
-+{
-+	__raw_writel(val, vrfb_base + SMS_ROT_PHYSICAL_BA(ctx));
-+}
- 
- static inline void restore_hw_context(int ctx)
- {
--	omap2_sms_write_rot_control(vrfb_hw_context[ctx].control, ctx);
--	omap2_sms_write_rot_size(vrfb_hw_context[ctx].size, ctx);
--	omap2_sms_write_rot_physical_ba(vrfb_hw_context[ctx].physical_ba, ctx);
-+	omap2_sms_write_rot_control(ctxs[ctx].control, ctx);
-+	omap2_sms_write_rot_size(ctxs[ctx].size, ctx);
-+	omap2_sms_write_rot_physical_ba(ctxs[ctx].physical_ba, ctx);
- }
- 
- static u32 get_image_width_roundup(u16 width, u8 bytespp)
-@@ -196,9 +217,9 @@ void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
- 	control |= VRFB_PAGE_WIDTH_EXP  << SMS_PW_OFFSET;
- 	control |= VRFB_PAGE_HEIGHT_EXP << SMS_PH_OFFSET;
- 
--	vrfb_hw_context[ctx].physical_ba = paddr;
--	vrfb_hw_context[ctx].size = size;
--	vrfb_hw_context[ctx].control = control;
-+	ctxs[ctx].physical_ba = paddr;
-+	ctxs[ctx].size = size;
-+	ctxs[ctx].control = control;
- 
- 	omap2_sms_write_rot_physical_ba(paddr, ctx);
- 	omap2_sms_write_rot_size(size, ctx);
-@@ -274,11 +295,11 @@ int omap_vrfb_request_ctx(struct vrfb *vrfb)
- 
- 	mutex_lock(&ctx_lock);
- 
--	for (ctx = 0; ctx < VRFB_NUM_CTXS; ++ctx)
-+	for (ctx = 0; ctx < num_ctxs; ++ctx)
- 		if ((ctx_map & (1 << ctx)) = 0)
- 			break;
- 
--	if (ctx = VRFB_NUM_CTXS) {
-+	if (ctx = num_ctxs) {
- 		pr_err("vrfb: no free contexts\n");
- 		r = -EBUSY;
- 		goto out;
-@@ -293,7 +314,7 @@ int omap_vrfb_request_ctx(struct vrfb *vrfb)
- 	vrfb->context = ctx;
- 
- 	for (rot = 0; rot < 4; ++rot) {
--		paddr = SMS_ROT_VIRT_BASE(ctx, rot);
-+		paddr = ctxs[ctx].base + SMS_ROT_VIRT_BASE(rot);
- 		if (!request_mem_region(paddr, OMAP_VRFB_SIZE, "vrfb")) {
- 			pr_err("vrfb: failed to reserve VRFB "
- 					"area for ctx %d, rotation %d\n",
-@@ -314,3 +335,66 @@ out:
- 	return r;
- }
- EXPORT_SYMBOL(omap_vrfb_request_ctx);
-+
-+static int __init vrfb_probe(struct platform_device *pdev)
-+{
-+	struct resource *mem;
-+	int i;
-+
-+	/* first resource is the register res, the rest are vrfb contexts */
-+
-+	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!mem) {
-+		dev_err(&pdev->dev, "can't get vrfb base address\n");
-+		return -EINVAL;
-+	}
-+
-+	vrfb_base = devm_request_and_ioremap(&pdev->dev, mem);
-+	if (!vrfb_base) {
-+		dev_err(&pdev->dev, "can't ioremap vrfb memory\n");
-+		return -ENOMEM;
-+	}
-+
-+	num_ctxs = pdev->num_resources - 1;
-+
-+	ctxs = devm_kzalloc(&pdev->dev,
-+			sizeof(struct vrfb_ctx) * num_ctxs,
-+			GFP_KERNEL);
-+
-+	if (!ctxs)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < num_ctxs; ++i) {
-+		mem = platform_get_resource(pdev, IORESOURCE_MEM, 1 + i);
-+		if (!mem) {
-+			dev_err(&pdev->dev, "can't get vrfb ctx %d address\n",
-+					i);
-+			return -EINVAL;
-+		}
-+
-+		ctxs[i].base = mem->start;
-+	}
-+
-+	return 0;
-+}
-+
-+static struct platform_driver vrfb_driver = {
-+	.driver.name	= "omapvrfb",
-+};
-+
-+static int __init vrfb_init(void)
-+{
-+	return platform_driver_probe(&vrfb_driver, &vrfb_probe);
-+}
-+
-+static void __exit vrfb_exit(void)
-+{
-+	platform_driver_unregister(&vrfb_driver);
-+}
-+
-+module_init(vrfb_init);
-+module_exit(vrfb_exit);
-+
-+MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@ti.com>");
-+MODULE_DESCRIPTION("OMAP VRFB");
-+MODULE_LICENSE("GPL v2");
+ 	out_be32(&data->diu_reg->desc[1], data->dummy_ad.paddr);
+ 	out_be32(&data->diu_reg->desc[2], data->dummy_ad.paddr);
 -- 
-1.7.9.5
+1.7.3.4
+
 

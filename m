@@ -1,28 +1,38 @@
-From: Ajay Kumar <ajaykumar.rs@samsung.com>
-Date: Tue, 09 Oct 2012 14:04:23 +0000
-Subject: [PATCH V4 0/2] video: exynos_dp: Add device tree support to DP driver
-Message-Id: <1349824101-32574-1-git-send-email-ajaykumar.rs@samsung.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Tue, 16 Oct 2012 22:33:42 +0000
+Subject: [PATCH 1/9] MAINTAINERS: Make Timur Tabi the maintainer for the Freescale DIU driver
+Message-Id: <1350426830-12140-1-git-send-email-timur@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org, jg1.han@samsung.com, devicetree-discuss@lists.ozlabs.org
-Cc: FlorianSchandinat@gmx.de, sylvester.nawrocki@gmail.com, tomasz.figa@gmail.com, thomas.ab@samsung.com
+To: linux-fbdev@vger.kernel.org
 
-Changes from V3:
-	--Fix typos in the documentation file "exynos_dp.txt".
-	--Use variable name enable_mask instead of enable_bit.
-	--Use property name samsung,dp_phy instead of dp-phy.
+Timur has been cleaning up this driver, so just make it official.
 
-To linux-fbdev:
-  [PATCH V4 1/2] video: exynos_dp: Add device tree support to DP driver
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ MAINTAINERS |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-To devicetree discussion list:
-  [PATCH V4 2/2] video: exynos_dp: device tree documentation
+diff --git a/MAINTAINERS b/MAINTAINERS
+index fdc0119..1eeaaf5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2895,6 +2895,12 @@ F:	drivers/video/
+ F:	include/video/
+ F:	include/linux/fb.h
+ 
++FREESCALE DIU FRAMEBUFFER DRIVER
++M:	Timur Tabi <timur@freescale.com>
++L:	linux-fbdev@vger.kernel.org
++S:	Supported
++F:	drivers/video/fsl-diu-fb.*
++
+ FREESCALE DMA DRIVER
+ M:	Li Yang <leoli@freescale.com>
+ M:	Zhang Wei <zw@zh-kernel.org>
+-- 
+1.7.3.4
 
- .../devicetree/bindings/video/exynos_dp.txt        |   81 ++++++++++
- drivers/video/exynos/exynos_dp_core.c              |  168 ++++++++++++++++++--
- drivers/video/exynos/exynos_dp_core.h              |    2 +
- 3 files changed, 239 insertions(+), 14 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/video/exynos_dp.txt
 

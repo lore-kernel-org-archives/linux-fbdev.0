@@ -1,50 +1,72 @@
-From: Wei Yongjun <weiyj.lk@gmail.com>
-Date: Mon, 08 Oct 2012 14:07:13 +0000
-Subject: [PATCH] matrox maven: use module_i2c_driver to simplify the code
-Message-Id: <CAPgLHd8m_OyJyJrPV07kZ-9fYUpf0m8GB4DjCZycYUQrH=yTzg@mail.gmail.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Tue, 16 Oct 2012 22:33:44 +0000
+Subject: [PATCH 3/9] drivers/video: fsl-diu-fb: add support for set_gamma ioctls
+Message-Id: <1350426830-12140-3-git-send-email-timur@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+The MPC5121 BSP comes with a gamma_set utility that initializes the gamma
+table via an ioctl.  Unfortunately, the ioctl number that utility uses
+is defined improperly, but we can still support it.
 
-Use the module_i2c_driver() macro to make the code smaller
-and a bit simpler.
-
-dpatch engine is used to auto generate this patch.
-(https://github.com/weiyj/dpatch)
-
-Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
- drivers/video/matrox/matroxfb_maven.c | 12 +-----------
- 1 file changed, 1 insertion(+), 11 deletions(-)
+ drivers/video/fsl-diu-fb.c |   17 +++++++++++++++++
+ include/linux/fsl-diu-fb.h |    9 +++++++++
+ 2 files changed, 26 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/matrox/matroxfb_maven.c b/drivers/video/matrox/matroxfb_maven.c
-index 217678e..ed05c36 100644
---- a/drivers/video/matrox/matroxfb_maven.c
-+++ b/drivers/video/matrox/matroxfb_maven.c
-@@ -1283,19 +1283,9 @@ static struct i2c_driver maven_driver={
- 	.id_table	= maven_id,
- };
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 5b12e17..9c40547 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -1181,6 +1181,23 @@ static int fsl_diu_ioctl(struct fb_info *info, unsigned int cmd,
+ 			ad->ckmin_b = ck.blue_min;
+ 		}
+ 		break;
++#ifdef CONFIG_PPC_MPC512x
++	case MFB_SET_GAMMA: {
++		struct fsl_diu_data *data = mfbi->parent;
++
++		if (copy_from_user(data->gamma, buf, sizeof(data->gamma)))
++			return -EFAULT;
++		setbits32(&data->diu_reg->gamma, 0); /* Force table reload */
++		break;
++	}
++	case MFB_GET_GAMMA: {
++		struct fsl_diu_data *data = mfbi->parent;
++
++		if (copy_to_user(buf, data->gamma, sizeof(data->gamma)))
++			return -EFAULT;
++		break;
++	}
++#endif
+ 	default:
+ 		dev_err(info->dev, "unknown ioctl command (0x%08X)\n", cmd);
+ 		return -ENOIOCTLCMD;
+diff --git a/include/linux/fsl-diu-fb.h b/include/linux/fsl-diu-fb.h
+index 11c16a1..a1e8277 100644
+--- a/include/linux/fsl-diu-fb.h
++++ b/include/linux/fsl-diu-fb.h
+@@ -47,6 +47,15 @@ struct aoi_display_offset {
+ #define MFB_GET_PIXFMT		_IOR('M', 8, __u32)
  
--static int __init matroxfb_maven_init(void)
--{
--	return i2c_add_driver(&maven_driver);
--}
--
--static void __exit matroxfb_maven_exit(void)
--{
--	i2c_del_driver(&maven_driver);
--}
-+module_i2c_driver(maven_driver);
- 
- MODULE_AUTHOR("(c) 1999-2002 Petr Vandrovec <vandrove@vc.cvut.cz>");
- MODULE_DESCRIPTION("Matrox G200/G400 Matrox MGA-TVO driver");
- MODULE_LICENSE("GPL");
--module_init(matroxfb_maven_init);
--module_exit(matroxfb_maven_exit);
- /* we do not have __setup() yet */
+ /*
++ * The MPC5121 BSP comes with a gamma_set utility that initializes the
++ * gamma table.  Unfortunately, it uses bad values for the IOCTL commands,
++ * but there's nothing we can do about it now.  These ioctls are only
++ * supported on the MPC5121.
++ */
++#define MFB_SET_GAMMA		_IOW('M', 1, __u8)
++#define MFB_GET_GAMMA		_IOR('M', 1, __u8)
++
++/*
+  * The original definitions of MFB_SET_PIXFMT and MFB_GET_PIXFMT used the
+  * wrong value for 'size' field of the ioctl.  The current macros above use the
+  * right size, but we still need to provide backwards compatibility, at least
+-- 
+1.7.3.4
 
 

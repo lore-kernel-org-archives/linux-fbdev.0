@@ -1,47 +1,41 @@
-From: Pantelis Antoniou <panto@antoniou-consulting.com>
-Date: Tue, 30 Oct 2012 18:19:29 +0000
-Subject: [PATCH] da8xx: Add standard panel definition
-Message-Id: <1351698994-4091-1-git-send-email-panto@antoniou-consulting.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 17 Oct 2012 11:20:28 +0000
+Subject: [PATCH 2/9] OMAPDSS: fix registering the vsync isr in apply
+Message-Id: <1350472835-28727-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1350472835-28727-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1350472835-28727-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Pantelis Antoniou <panto@antoniou-consulting.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Koen Kooi <koen@dominion.thruhere.net>, Matt Porter <mporter@ti.com>, Russ Dill <Russ.Dill@ti.com>, linux-omap@vger.kernel.org
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add standard panel definition that can work for the beaglebone
-DVI cape.
+When we enable an output we don't check if we need to register the vsync
+isr. This causes us to miss vsync interrupts until somebody changes the
+configuration of an overlay or an overlay manager.
 
-Signed-off-by: Pantelis Antoniou <panto@antoniou-consulting.com>
+Add the registration to dss_mgr_enable to fix the problem.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/da8xx-fb.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ drivers/video/omap2/dss/apply.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 866d804..4462d9e 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -270,6 +270,20 @@ static struct da8xx_panel known_lcd_panels[] = {
- 		.pxl_clk = 7833600,
- 		.invert_pxl_clk = 0,
- 	},
-+	[3] = {
-+		 /* 1024 x 768 @ 60 Hz  Reduced blanking VESA CVT 0.79M3-R */
-+		.name = "1024x768@60",
-+		.width = 1024,
-+		.height = 768,
-+		.hfp = 48,
-+		.hbp = 80,
-+		.hsw = 32,
-+		.vfp = 3,
-+		.vbp = 15,
-+		.vsw = 4,
-+		.pxl_clk = 56000000,
-+		.invert_pxl_clk = 0,
-+	},
- };
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 19d66f4..29ce5a8 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -1035,6 +1035,9 @@ int dss_mgr_enable(struct omap_overlay_manager *mgr)
+ 	if (!mgr_manual_update(mgr))
+ 		mp->updating = true;
  
- /* Enable the Raster Engine of the LCD Controller */
++	if (!dss_data.irq_enabled && need_isr())
++		dss_register_vsync_isr();
++
+ 	spin_unlock_irqrestore(&data_lock, flags);
+ 
+ 	if (!mgr_manual_update(mgr))
 -- 
-1.7.12
+1.7.9.5
 

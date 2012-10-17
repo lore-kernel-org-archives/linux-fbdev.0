@@ -1,75 +1,52 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 17 Oct 2012 10:18:20 +0000
-Subject: [PATCHv3 3/5] OMAP: SDRC: remove VRFB code
-Message-Id: <1350469102-24888-4-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 17 Oct 2012 11:20:34 +0000
+Subject: [PATCH 8/9] OMAPDSS: DISPC: add dispc_mgr_get_sync_lost_irq()
+Message-Id: <1350472835-28727-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1350469102-24888-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1350469102-24888-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1350472835-28727-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1350472835-28727-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, tony@atomide.com
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Now that VRFB driver handles its registers independently, we can remove
-the VRFB related code from OMAP's sdrc.
+Add function that returns the sync lost irq mask for the given channel.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-omap2/sdrc.c             |   16 ----------------
- arch/arm/plat-omap/include/plat/sdrc.h |    7 -------
- 2 files changed, 23 deletions(-)
+ drivers/video/omap2/dss/dispc.c |    5 +++++
+ drivers/video/omap2/dss/dss.h   |    1 +
+ 2 files changed, 6 insertions(+)
 
-diff --git a/arch/arm/mach-omap2/sdrc.c b/arch/arm/mach-omap2/sdrc.c
-index e3d345f..4282e6e 100644
---- a/arch/arm/mach-omap2/sdrc.c
-+++ b/arch/arm/mach-omap2/sdrc.c
-@@ -160,19 +160,3 @@ void __init omap2_sdrc_init(struct omap_sdrc_params *sdrc_cs0,
- 	sdrc_write_reg(l, SDRC_POWER);
- 	omap2_sms_save_context();
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 492740e..82339ad 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -543,6 +543,11 @@ u32 dispc_mgr_get_framedone_irq(enum omap_channel channel)
+ 	return mgr_desc[channel].framedone_irq;
  }
--
--void omap2_sms_write_rot_control(u32 val, unsigned ctx)
--{
--	sms_write_reg(val, SMS_ROT_CONTROL(ctx));
--}
--
--void omap2_sms_write_rot_size(u32 val, unsigned ctx)
--{
--	sms_write_reg(val, SMS_ROT_SIZE(ctx));
--}
--
--void omap2_sms_write_rot_physical_ba(u32 val, unsigned ctx)
--{
--	sms_write_reg(val, SMS_ROT_PHYSICAL_BA(ctx));
--}
--
-diff --git a/arch/arm/plat-omap/include/plat/sdrc.h b/arch/arm/plat-omap/include/plat/sdrc.h
-index 36d6a76..c68bab2 100644
---- a/arch/arm/plat-omap/include/plat/sdrc.h
-+++ b/arch/arm/plat-omap/include/plat/sdrc.h
-@@ -94,9 +94,6 @@
- /* SMS register offsets - read/write with sms_{read,write}_reg() */
  
- #define SMS_SYSCONFIG			0x010
--#define SMS_ROT_CONTROL(context)	(0x180 + 0x10 * context)
--#define SMS_ROT_SIZE(context)		(0x184 + 0x10 * context)
--#define SMS_ROT_PHYSICAL_BA(context)	(0x188 + 0x10 * context)
- /* REVISIT: fill in other SMS registers here */
++u32 dispc_mgr_get_sync_lost_irq(enum omap_channel channel)
++{
++	return mgr_desc[channel].sync_lost_irq;
++}
++
+ u32 dispc_wb_get_framedone_irq(void)
+ {
+ 	return DISPC_IRQ_FRAMEDONEWB;
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 373847c..b6e3a06 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -460,6 +460,7 @@ void dispc_ovl_set_channel_out(enum omap_plane plane,
  
- 
-@@ -137,10 +134,6 @@ int omap2_sdrc_get_params(unsigned long r,
- void omap2_sms_save_context(void);
- void omap2_sms_restore_context(void);
- 
--void omap2_sms_write_rot_control(u32 val, unsigned ctx);
--void omap2_sms_write_rot_size(u32 val, unsigned ctx);
--void omap2_sms_write_rot_physical_ba(u32 val, unsigned ctx);
--
- #ifdef CONFIG_ARCH_OMAP2
- 
- struct memory_timings {
+ u32 dispc_mgr_get_vsync_irq(enum omap_channel channel);
+ u32 dispc_mgr_get_framedone_irq(enum omap_channel channel);
++u32 dispc_mgr_get_sync_lost_irq(enum omap_channel channel);
+ bool dispc_mgr_go_busy(enum omap_channel channel);
+ void dispc_mgr_go(enum omap_channel channel);
+ bool dispc_mgr_is_enabled(enum omap_channel channel);
 -- 
 1.7.9.5
 

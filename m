@@ -1,62 +1,47 @@
-From: David Howells <dhowells@redhat.com>
-Date: Tue, 09 Oct 2012 13:30:09 +0000
-Subject: [GIT PULL] Disintegrate UAPI for fbdev
-Message-Id: <30690.1349789409@warthog.procyon.org.uk>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 17 Oct 2012 10:18:22 +0000
+Subject: [PATCHv3 5/5] OMAPFB: use omap_vrfb_supported()
+Message-Id: <1350469102-24888-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1350469102-24888-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1350469102-24888-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: FlorianSchandinat@gmx.de
-Cc: dhowells@redhat.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, tony@atomide.com
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Can you merge the following branch into the fbdev tree please.
+Replace cpu_is_*() check with omap_vrfb_supported().
 
-This is to complete part of the Userspace API (UAPI) disintegration for which
-the preparatory patches were pulled recently.  After these patches, userspace
-headers will be segregated into:
-
-	include/uapi/linux/.../foo.h
-
-for the userspace interface stuff, and:
-
-	include/linux/.../foo.h
-
-for the strictly kernel internal stuff.
-
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
-The following changes since commit 9e2d8656f5e8aa214e66b462680cf86b210b74a8:
+ drivers/video/omap2/omapfb/omapfb-main.c |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-  Merge branch 'akpm' (Andrew's patch-bomb) (2012-10-09 16:23:15 +0900)
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 5943b3a..bc225e4 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -31,7 +31,6 @@
+ #include <linux/omapfb.h>
+ 
+ #include <video/omapdss.h>
+-#include <plat/cpu.h>
+ #include <plat/vram.h>
+ #include <video/omapvrfb.h>
+ 
+@@ -2396,10 +2395,7 @@ static int __init omapfb_probe(struct platform_device *pdev)
+ 		goto err0;
+ 	}
+ 
+-	/* TODO : Replace cpu check with omap_has_vrfb once HAS_FEATURE
+-	*	 available for OMAP2 and OMAP3
+-	*/
+-	if (def_vrfb && !cpu_is_omap24xx() && !cpu_is_omap34xx()) {
++	if (def_vrfb && !omap_vrfb_supported()) {
+ 		def_vrfb = 0;
+ 		dev_warn(&pdev->dev, "VRFB is not supported on this hardware, "
+ 				"ignoring the module parameter vrfb=y\n");
+-- 
+1.7.9.5
 
-are available in the git repository at:
-
-
-  git://git.infradead.org/users/dhowells/linux-headers.git tags/disintegrate-fbdev-20121009
-
-for you to fetch changes up to c86cba891a10fdc9c2218973435d0b7d0f9f5cf0:
-
-  UAPI: (Scripted) Disintegrate include/video (2012-10-09 11:15:01 +0100)
-
-----------------------------------------------------------------
-(from the branch description for disintegrate-fbdev local branch)
-
-clone of "disintegrate-media"
-UAPI Disintegration 2012-10-09
-
-----------------------------------------------------------------
-David Howells (1):
-      UAPI: (Scripted) Disintegrate include/video
-
- include/uapi/video/Kbuild    |   3 +
- include/uapi/video/edid.h    |   9 ++
- include/uapi/video/sisfb.h   | 209 +++++++++++++++++++++++++++++++++++++++++++
- include/uapi/video/uvesafb.h |  60 +++++++++++++
- include/video/Kbuild         |   3 -
- include/video/edid.h         |   7 +-
- include/video/sisfb.h        | 189 +-------------------------------------
- include/video/uvesafb.h      |  58 +-----------
- 8 files changed, 284 insertions(+), 254 deletions(-)
- create mode 100644 include/uapi/video/edid.h
- create mode 100644 include/uapi/video/sisfb.h
- create mode 100644 include/uapi/video/uvesafb.h
-.

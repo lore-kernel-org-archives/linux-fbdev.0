@@ -1,61 +1,340 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 29 Oct 2012 10:28:12 +0000
-Subject: Re: [PATCH 09/20] OMAPDSS: add dispc_ovl_enabled()
-Message-Id: <508E5A3C.2000200@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enigC0940C6F384AA4CD40F77C01"
+Date: Wed, 17 Oct 2012 11:20:35 +0000
+Subject: [PATCH 9/9] OMAPDSS: DISPC: cleanup lcd/digit enable/disable
+Message-Id: <1350472835-28727-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com> <1351070951-18616-10-git-send-email-tomi.valkeinen@ti.com> <508E55BC.5060607@ti.com>
-In-Reply-To: <508E55BC.5060607@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <1350472835-28727-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1350472835-28727-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
---------------enigC0940C6F384AA4CD40F77C01
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+We currently have a single function to enable and disable the manager
+output for LCD and DIGIT. The functions are a bit complex, as handling
+both enable and disable require some extra steps to ensure that the
+output is enabled or disabled properly without errors before exiting the
+function.
 
-On 2012-10-29 12:09, Archit Taneja wrote:
-> On Wednesday 24 October 2012 02:59 PM, Tomi Valkeinen wrote:
->> Add new dispc function, dispc_ovl_enabled(). This returns if the overl=
-ay
->> enable bit is set in the registers.
->=20
-> Is this function used by omapdrm? I can't see it being used in the late=
-r
-> patches.
+The code can be made simpler to understand by splitting the functions
+into separate enable and disable functions. We'll also clean up the
+comments and some parameter names at the same time.
 
-Yes, it will be used by omapdrm (or, at least, it can be used). I guess
-some of these patches don't quite make sense without the final
-compat-layer work, and modifications to omapdrm. But mostly the "doesn't
-make sense" parts are probably just exposing functions that aren't used y=
-et.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/apply.c |    6 +-
+ drivers/video/omap2/dss/dispc.c |  178 ++++++++++++++++++++++++---------------
+ drivers/video/omap2/dss/dss.h   |    3 +-
+ 3 files changed, 116 insertions(+), 71 deletions(-)
 
- Tomi
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index ae9f70d..4fff8ac 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -772,7 +772,7 @@ void dss_mgr_start_update(struct omap_overlay_manager *mgr)
+ 	if (!dss_data.irq_enabled && need_isr())
+ 		dss_register_vsync_isr();
+ 
+-	dispc_mgr_enable(mgr->id, true);
++	dispc_mgr_enable(mgr->id);
+ 
+ 	mgr_clear_shadow_dirty(mgr);
+ 
+@@ -1027,7 +1027,7 @@ int dss_mgr_enable(struct omap_overlay_manager *mgr)
+ 	spin_unlock_irqrestore(&data_lock, flags);
+ 
+ 	if (!mgr_manual_update(mgr))
+-		dispc_mgr_enable(mgr->id, true);
++		dispc_mgr_enable(mgr->id);
+ 
+ out:
+ 	mutex_unlock(&apply_lock);
+@@ -1052,7 +1052,7 @@ void dss_mgr_disable(struct omap_overlay_manager *mgr)
+ 		goto out;
+ 
+ 	if (!mgr_manual_update(mgr))
+-		dispc_mgr_enable(mgr->id, false);
++		dispc_mgr_disable(mgr->id);
+ 
+ 	spin_lock_irqsave(&data_lock, flags);
+ 
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 82339ad..94f393ec 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2590,7 +2590,7 @@ int dispc_ovl_enable(enum omap_plane plane, bool enable)
+ 	return 0;
+ }
+ 
+-static void dispc_disable_isr(void *data, u32 mask)
++static void dispc_mgr_disable_isr(void *data, u32 mask)
+ {
+ 	struct completion *compl = data;
+ 	complete(compl);
+@@ -2608,122 +2608,166 @@ bool dispc_mgr_is_enabled(enum omap_channel channel)
+ 	return !!mgr_fld_read(channel, DISPC_MGR_FLD_ENABLE);
+ }
+ 
+-static void dispc_mgr_enable_lcd_out(enum omap_channel channel, bool enable)
++static void dispc_mgr_enable_lcd_out(enum omap_channel channel)
+ {
+-	struct completion frame_done_completion;
+-	bool is_on;
++	_enable_mgr_out(channel, true);
++}
++
++static void dispc_mgr_disable_lcd_out(enum omap_channel channel)
++{
++	DECLARE_COMPLETION_ONSTACK(framedone_compl);
+ 	int r;
+ 	u32 irq;
+ 
+-	/* When we disable LCD output, we need to wait until frame is done.
+-	 * Otherwise the DSS is still working, and turning off the clocks
+-	 * prevents DSS from going to OFF mode */
+-	is_on = dispc_mgr_is_enabled(channel);
++	if (dispc_mgr_is_enabled(channel) = false)
++		return;
++
++	/*
++	 * When we disable LCD output, we need to wait for FRAMEDONE to know
++	 * that DISPC has finished with the LCD output.
++	 */
+ 
+-	irq = mgr_desc[channel].framedone_irq;
++	irq = dispc_mgr_get_framedone_irq(channel);
+ 
+-	if (!enable && is_on) {
+-		init_completion(&frame_done_completion);
++	r = omap_dispc_register_isr(dispc_mgr_disable_isr, &framedone_compl,
++			irq);
++	if (r)
++		DSSERR("failed to register FRAMEDONE isr\n");
+ 
+-		r = omap_dispc_register_isr(dispc_disable_isr,
+-				&frame_done_completion, irq);
++	_enable_mgr_out(channel, false);
+ 
+-		if (r)
+-			DSSERR("failed to register FRAMEDONE isr\n");
++	/* if we couldn't register for framedone, just sleep and exit */
++	if (r) {
++		msleep(200);
++		return;
+ 	}
+ 
+-	_enable_mgr_out(channel, enable);
++	if (!wait_for_completion_timeout(&framedone_compl,
++				msecs_to_jiffies(100)))
++		DSSERR("timeout waiting for FRAME DONE\n");
+ 
+-	if (!enable && is_on) {
+-		if (!wait_for_completion_timeout(&frame_done_completion,
+-					msecs_to_jiffies(100)))
+-			DSSERR("timeout waiting for FRAME DONE\n");
++	r = omap_dispc_unregister_isr(dispc_mgr_disable_isr, &framedone_compl,
++			irq);
++	if (r)
++		DSSERR("failed to unregister FRAMEDONE isr\n");
++}
+ 
+-		r = omap_dispc_unregister_isr(dispc_disable_isr,
+-				&frame_done_completion, irq);
++static void dispc_digit_out_enable_isr(void *data, u32 mask)
++{
++	struct completion *compl = data;
+ 
+-		if (r)
+-			DSSERR("failed to unregister FRAMEDONE isr\n");
++	/* ignore any sync lost interrupts */
++	if (mask & (DISPC_IRQ_EVSYNC_EVEN | DISPC_IRQ_EVSYNC_ODD))
++		complete(compl);
++}
++
++static void dispc_mgr_enable_digit_out(void)
++{
++	DECLARE_COMPLETION_ONSTACK(vsync_compl);
++	int r;
++	u32 irq_mask;
++
++	if (dispc_mgr_is_enabled(OMAP_DSS_CHANNEL_DIGIT) = true)
++		return;
++
++	/*
++	 * Digit output produces some sync lost interrupts during the first
++	 * frame when enabling. Those need to be ignored, so we register for the
++	 * sync lost irq to prevent the error handler from triggering.
++	 */
++
++	irq_mask = dispc_mgr_get_vsync_irq(OMAP_DSS_CHANNEL_DIGIT) |
++		dispc_mgr_get_sync_lost_irq(OMAP_DSS_CHANNEL_DIGIT);
++
++	r = omap_dispc_register_isr(dispc_digit_out_enable_isr, &vsync_compl,
++			irq_mask);
++	if (r) {
++		DSSERR("failed to register %x isr\n", irq_mask);
++		return;
+ 	}
++
++	_enable_mgr_out(OMAP_DSS_CHANNEL_DIGIT, true);
++
++	/* wait for the first evsync */
++	if (!wait_for_completion_timeout(&vsync_compl, msecs_to_jiffies(100)))
++		DSSERR("timeout waiting for digit out to start\n");
++
++	r = omap_dispc_unregister_isr(dispc_digit_out_enable_isr, &vsync_compl,
++			irq_mask);
++	if (r)
++		DSSERR("failed to unregister %x isr\n", irq_mask);
+ }
+ 
+-static void dispc_mgr_enable_digit_out(bool enable)
++static void dispc_mgr_disable_digit_out(void)
+ {
+-	struct completion frame_done_completion;
++	DECLARE_COMPLETION_ONSTACK(framedone_compl);
+ 	enum dss_hdmi_venc_clk_source_select src;
+ 	int r, i;
+ 	u32 irq_mask;
+ 	int num_irqs;
+ 
+-	if (dispc_mgr_is_enabled(OMAP_DSS_CHANNEL_DIGIT) = enable)
++	if (dispc_mgr_is_enabled(OMAP_DSS_CHANNEL_DIGIT) = false)
+ 		return;
+ 
+ 	src = dss_get_hdmi_venc_clk_source();
+ 
+-	if (enable) {
+-		unsigned long flags;
+-		/* When we enable digit output, we'll get an extra digit
+-		 * sync lost interrupt, that we need to ignore */
+-		spin_lock_irqsave(&dispc.irq_lock, flags);
+-		dispc.irq_error_mask &= ~DISPC_IRQ_SYNC_LOST_DIGIT;
+-		_omap_dispc_set_irqs();
+-		spin_unlock_irqrestore(&dispc.irq_lock, flags);
+-	}
+-
+-	/* When we disable digit output, we need to wait until fields are done.
+-	 * Otherwise the DSS is still working, and turning off the clocks
+-	 * prevents DSS from going to OFF mode. And when enabling, we need to
+-	 * wait for the extra sync losts */
+-	init_completion(&frame_done_completion);
++	/*
++	 * When we disable the digit output, we need to wait for FRAMEDONE to
++	 * know that DISPC has finished with the output. For analog tv out we'll
++	 * use vsync, as omap2/3 don't have framedone for TV.
++	 */
+ 
+-	if (src = DSS_HDMI_M_PCLK && enable = false) {
++	if (src = DSS_HDMI_M_PCLK) {
+ 		irq_mask = DISPC_IRQ_FRAMEDONETV;
+ 		num_irqs = 1;
+ 	} else {
+-		irq_mask = DISPC_IRQ_EVSYNC_EVEN | DISPC_IRQ_EVSYNC_ODD;
+-		/* XXX I understand from TRM that we should only wait for the
+-		 * current field to complete. But it seems we have to wait for
+-		 * both fields */
++		irq_mask = dispc_mgr_get_vsync_irq(OMAP_DSS_CHANNEL_DIGIT);
++		/*
++		 * We need to wait for both even and odd vsyncs. Note that this
++		 * is not totally reliable, as we could get a vsync interrupt
++		 * before we disable the output, which leads to timeout in the
++		 * wait_for_completion.
++		 */
+ 		num_irqs = 2;
+ 	}
+ 
+-	r = omap_dispc_register_isr(dispc_disable_isr, &frame_done_completion,
++	r = omap_dispc_register_isr(dispc_mgr_disable_isr, &framedone_compl,
+ 			irq_mask);
+ 	if (r)
+ 		DSSERR("failed to register %x isr\n", irq_mask);
+ 
+-	_enable_mgr_out(OMAP_DSS_CHANNEL_DIGIT, enable);
++	_enable_mgr_out(OMAP_DSS_CHANNEL_DIGIT, false);
+ 
+ 	for (i = 0; i < num_irqs; ++i) {
+-		if (!wait_for_completion_timeout(&frame_done_completion,
++		if (!wait_for_completion_timeout(&framedone_compl,
+ 					msecs_to_jiffies(100)))
+-			DSSERR("timeout waiting for digit out to %s\n",
+-					enable ? "start" : "stop");
++			DSSERR("timeout waiting for digit out to stop\n");
+ 	}
+ 
+-	r = omap_dispc_unregister_isr(dispc_disable_isr, &frame_done_completion,
++	r = omap_dispc_unregister_isr(dispc_mgr_disable_isr, &framedone_compl,
+ 			irq_mask);
+ 	if (r)
+ 		DSSERR("failed to unregister %x isr\n", irq_mask);
++}
+ 
+-	if (enable) {
+-		unsigned long flags;
+-		spin_lock_irqsave(&dispc.irq_lock, flags);
+-		dispc.irq_error_mask |= DISPC_IRQ_SYNC_LOST_DIGIT;
+-		dispc_write_reg(DISPC_IRQSTATUS, DISPC_IRQ_SYNC_LOST_DIGIT);
+-		_omap_dispc_set_irqs();
+-		spin_unlock_irqrestore(&dispc.irq_lock, flags);
+-	}
++void dispc_mgr_enable(enum omap_channel channel)
++{
++	if (dss_mgr_is_lcd(channel))
++		dispc_mgr_enable_lcd_out(channel);
++	else if (channel = OMAP_DSS_CHANNEL_DIGIT)
++		dispc_mgr_enable_digit_out();
++	else
++		WARN_ON(1);
+ }
+ 
+-void dispc_mgr_enable(enum omap_channel channel, bool enable)
++void dispc_mgr_disable(enum omap_channel channel)
+ {
+ 	if (dss_mgr_is_lcd(channel))
+-		dispc_mgr_enable_lcd_out(channel, enable);
++		dispc_mgr_disable_lcd_out(channel);
+ 	else if (channel = OMAP_DSS_CHANNEL_DIGIT)
+-		dispc_mgr_enable_digit_out(enable);
++		dispc_mgr_disable_digit_out();
+ 	else
+-		BUG();
++		WARN_ON(1);
+ }
+ 
+ void dispc_wb_enable(bool enable)
+@@ -2740,7 +2784,7 @@ void dispc_wb_enable(bool enable)
+ 	if (!enable && is_on) {
+ 		init_completion(&frame_done_completion);
+ 
+-		r = omap_dispc_register_isr(dispc_disable_isr,
++		r = omap_dispc_register_isr(dispc_mgr_disable_isr,
+ 				&frame_done_completion, irq);
+ 		if (r)
+ 			DSSERR("failed to register FRAMEDONEWB isr\n");
+@@ -2753,7 +2797,7 @@ void dispc_wb_enable(bool enable)
+ 					msecs_to_jiffies(100)))
+ 			DSSERR("timeout waiting for FRAMEDONEWB\n");
+ 
+-		r = omap_dispc_unregister_isr(dispc_disable_isr,
++		r = omap_dispc_unregister_isr(dispc_mgr_disable_isr,
+ 				&frame_done_completion, irq);
+ 		if (r)
+ 			DSSERR("failed to unregister FRAMEDONEWB isr\n");
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index b6e3a06..e501a77 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -464,7 +464,8 @@ u32 dispc_mgr_get_sync_lost_irq(enum omap_channel channel);
+ bool dispc_mgr_go_busy(enum omap_channel channel);
+ void dispc_mgr_go(enum omap_channel channel);
+ bool dispc_mgr_is_enabled(enum omap_channel channel);
+-void dispc_mgr_enable(enum omap_channel channel, bool enable);
++void dispc_mgr_enable(enum omap_channel channel);
++void dispc_mgr_disable(enum omap_channel channel);
+ bool dispc_mgr_is_channel_enabled(enum omap_channel channel);
+ void dispc_mgr_set_lcd_config(enum omap_channel channel,
+ 		const struct dss_lcd_mgr_config *config);
+-- 
+1.7.9.5
 
-
-
---------------enigC0940C6F384AA4CD40F77C01
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJQjlo8AAoJEPo9qoy8lh71xkoP/iRJ5phab32ZcU6dRovTo9qR
-L5kZJcXpiEQzG9/71O3PcO0rziXilxsFuyEpIIzEMFNctuo6zHLuKK0MbxpusxYg
-VWxHOkWy+s0MLY8rSBY8eH2yZWAiXj26Af6CmR7T+xn08xIfKNCp+NOr2PMfIFHe
-GHactQtTyIvPSgUoWEoMnFiKsd15ILTl1id1ECHKRLxqFyYtoREsQZqH7faa5mik
-nyPO2THtmf2Wg/yXPTyZ/wO0cW5P12oEVh76GZEpwemyueqS2RrThcNG+/pCI8+c
-dnf5H5KLhglKBL6xygjkNX0eb9UKt8UvqN4aJXxvy2qEYfsktoF8HxVC2NRbls5V
-jMVMVtGssavBrFbPTwzvsDv9ANyAsWOb8abAOQWwOlJhvaPDPpsy2NCyYRs5Kae5
-AlzcnMBZjNPVE6SKVpDe15NBpvVUF8Pjfm3/JDPIbx2rLuAiT/RvQzAco5bgNglm
-ikTjlFMzPq3C8LMiCqFYc7/CBjp1DB/xAoW62aDLeX7ArYOuqIaZqdxFUulY8aa7
-3dEhRG+jzwOuWu5qosRd+VjdDQ/3m8RSkYvE5p85F5LbM0BhR2wtXB0ZOLeEv9aV
-ElvtZNWZhsDV3+xalMR0CMbKUcIgmgLq5vi+9Cs2n9J+LRNG4lXYI5kPurJ6qJoy
-AQM9ZZWWgAlXKxpniqby
-=zDw7
------END PGP SIGNATURE-----
-
---------------enigC0940C6F384AA4CD40F77C01--

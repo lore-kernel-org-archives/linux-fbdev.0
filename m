@@ -1,116 +1,60 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Tue, 16 Oct 2012 22:33:50 +0000
-Subject: [PATCH 9/9] drivers/video: fsl-diu-fb: store EDID data in the global object
-Message-Id: <1350426830-12140-9-git-send-email-timur@freescale.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 17 Oct 2012 11:20:27 +0000
+Subject: [PATCH 1/9] OMAPDSS: DSI: fix dsi_get_dsidev_from_id()
+Message-Id: <1350472835-28727-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1350472835-28727-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1350472835-28727-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Although the DIU driver creates five framebuffer devices, only the first
-one controls the physical display.  The remaining four are virtual "AOIs".
-Therefore, the EDID data should be stored in the global fsl_diu_data
-object, instead of the per-framebuffer object.
+If dsi_get_dsidev_from_id() is called with a DSI module id that does not
+exist on the board, the function will crash as omap_dss_get_output()
+will return NULL.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
+This happens on omap3 boards when dumping DSI clocks, as the dumping
+code will try to get the dsidev for DSI modules 0 and 1, but omap3 only
+has DSI module 0.
+
+Also clean up the id -> output mapping, so that if the function is
+called with invalid module ID it will return NULL.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Archit Taneja <archit@ti.com>
 ---
- drivers/video/fsl-diu-fb.c |   30 +++++++++++++-----------------
- 1 files changed, 13 insertions(+), 17 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 0883bc4..d3fc92e 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -342,7 +342,6 @@ struct mfb_info {
- 	int x_aoi_d;		/* aoi display x offset to physical screen */
- 	int y_aoi_d;		/* aoi display y offset to physical screen */
- 	struct fsl_diu_data *parent;
--	u8 *edid_data;
- };
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index d64ac38..bee9284 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -365,11 +365,20 @@ struct platform_device *dsi_get_dsidev_from_id(int module)
+ 	struct omap_dss_output *out;
+ 	enum omap_dss_output_id	id;
  
- /**
-@@ -377,6 +376,8 @@ struct fsl_diu_data {
- 	struct diu_ad ad[NUM_AOIS] __aligned(8);
- 	u8 gamma[256 * 3] __aligned(32);
- 	u8 cursor[MAX_CURS * MAX_CURS * 2] __aligned(32);
-+	uint8_t edid_data[EDID_LENGTH];
-+	bool has_edid;
- } __aligned(32);
- 
- /* Determine the DMA address of a member of the fsl_diu_data structure */
-@@ -1310,6 +1311,7 @@ static int __devinit install_fb(struct fb_info *info)
- {
- 	int rc;
- 	struct mfb_info *mfbi = info->par;
-+	struct fsl_diu_data *data = mfbi->parent;
- 	const char *aoi_mode, *init_aoi_mode = "320x240";
- 	struct fb_videomode *db = fsl_diu_mode_db;
- 	unsigned int dbsize = ARRAY_SIZE(fsl_diu_mode_db);
-@@ -1326,9 +1328,9 @@ static int __devinit install_fb(struct fb_info *info)
- 		return rc;
- 
- 	if (mfbi->index = PLANE0) {
--		if (mfbi->edid_data) {
-+		if (data->has_edid) {
- 			/* Now build modedb from EDID */
--			fb_edid_to_monspecs(mfbi->edid_data, &info->monspecs);
-+			fb_edid_to_monspecs(data->edid_data, &info->monspecs);
- 			fb_videomode_to_modelist(info->monspecs.modedb,
- 						 info->monspecs.modedb_len,
- 						 &info->modelist);
-@@ -1346,7 +1348,7 @@ static int __devinit install_fb(struct fb_info *info)
- 		 * For plane 0 we continue and look into
- 		 * driver's internal modedb.
- 		 */
--		if ((mfbi->index = PLANE0) && mfbi->edid_data)
-+		if ((mfbi->index = PLANE0) && data->has_edid)
- 			has_default_mode = 0;
- 		else
- 			return -EINVAL;
-@@ -1410,9 +1412,6 @@ static void uninstall_fb(struct fb_info *info)
- 	if (!mfbi->registered)
- 		return;
- 
--	if (mfbi->index = PLANE0)
--		kfree(mfbi->edid_data);
--
- 	unregister_framebuffer(info);
- 	unmap_video_memory(info);
- 	if (&info->cmap)
-@@ -1525,6 +1524,7 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
- 	struct mfb_info *mfbi;
- 	struct fsl_diu_data *data;
- 	dma_addr_t dma_addr; /* DMA addr of fsl_diu_data struct */
-+	const void *prop;
- 	unsigned int i;
- 	int ret;
- 
-@@ -1568,17 +1568,13 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
- 		memcpy(mfbi, &mfb_template[i], sizeof(struct mfb_info));
- 		mfbi->parent = data;
- 		mfbi->ad = &data->ad[i];
+-	id = module = 0 ? OMAP_DSS_OUTPUT_DSI1 : OMAP_DSS_OUTPUT_DSI2;
++	switch (module) {
++	case 0:
++		id = OMAP_DSS_OUTPUT_DSI1;
++		break;
++	case 1:
++		id = OMAP_DSS_OUTPUT_DSI2;
++		break;
++	default:
++		return NULL;
 +	}
  
--		if (mfbi->index = PLANE0) {
--			const u8 *prop;
--			int len;
--
--			/* Get EDID */
--			prop = of_get_property(np, "edid", &len);
--			if (prop && len = EDID_LENGTH)
--				mfbi->edid_data = kmemdup(prop, EDID_LENGTH,
--							  GFP_KERNEL);
--		}
-+	/* Get the EDID data from the device tree, if present */
-+	prop = of_get_property(np, "edid", &ret);
-+	if (prop && ret = EDID_LENGTH) {
-+		memcpy(data->edid_data, prop, EDID_LENGTH);
-+		data->has_edid = true;
- 	}
+ 	out = omap_dss_get_output(id);
  
- 	data->diu_reg = of_iomap(np, 0);
+-	return out->pdev;
++	return out ? out->pdev : NULL;
+ }
+ 
+ static inline void dsi_write_reg(struct platform_device *dsidev,
 -- 
-1.7.3.4
-
+1.7.9.5
 

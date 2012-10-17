@@ -1,114 +1,47 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 16 Oct 2012 02:17:32 +0000
-Subject: [PATCH V8 2/2] video: exynos_dp: device tree documentation
-Message-Id: <005c01cdab44$666eb6b0$334c2410$%han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 17 Oct 2012 11:20:32 +0000
+Subject: [PATCH 6/9] OMAPDSS: DISPC: remove struct omap_overlay use
+Message-Id: <1350472835-28727-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1350472835-28727-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1350472835-28727-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, 'Ajay Kumar' <ajaykumar.rs@samsung.com>, 'Sylwester Nawrocki' <sylvester.nawrocki@gmail.com>, 'Tomasz Figa' <t.figa@samsung.com>, 'Thomas Abraham' <thomas.abraham@linaro.org>, 'Jingoo Han' <jg1.han@samsung.com>
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Ajay Kumar <ajaykumar.rs@samsung.com>
+dispc_ovl_setup() uses struct omap_overlay to get the caps for the
+overlay. We can change the code to get the caps directly from dss
+features, thus removing the dependency to struct omap_overlay.
 
-Add documentation for the DT bindings in exynos display port driver.
-
-Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
-No changes since v7:
+ drivers/video/omap2/dss/dispc.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
- .../devicetree/bindings/video/exynos_dp.txt        |   80 ++++++++++++++++++++
- 1 files changed, 80 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/video/exynos_dp.txt
-
-diff --git a/Documentation/devicetree/bindings/video/exynos_dp.txt b/Documentation/devicetree/bindings/video/exynos_dp.txt
-new file mode 100644
-index 0000000..7cc7d9f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/exynos_dp.txt
-@@ -0,0 +1,80 @@
-+The Exynos display port interface should be configured based on
-+the type of panel connected to it.
-+
-+We use two nodes:
-+	-display-port-controller node
-+	-dptx-phy node(defined inside display-port-controller node)
-+
-+For the DP-PHY initialization, we use the dptx-phy node.
-+Required properties for dptx-phy:
-+	-reg:
-+		Base address of DP PHY register.
-+	-samsung,enable-mask:
-+		The bit-mask used to enable/disable DP PHY.
-+
-+For the Panel initialization, we read data from display-port-controller node.
-+Required properties for display-port-controller:
-+	-compatible:
-+		should be "samsung,exynos5-dp".
-+	-reg:
-+		physical base address of the controller and length
-+		of memory mapped region.
-+	-interrupts:
-+		interrupt combiner values.
-+	-interrupt-parent:
-+		phandle to Interrupt combiner node.
-+	-samsung,color-space:
-+		input video data format.
-+			COLOR_RGB = 0, COLOR_YCBCR422 = 1, COLOR_YCBCR444 = 2
-+	-samsung,dynamic-range:
-+		dynamic range for input video data.
-+			VESA = 0, CEA = 1
-+	-samsung,ycbcr-coeff:
-+		YCbCr co-efficients for input video.
-+			COLOR_YCBCR601 = 0, COLOR_YCBCR709 = 1
-+	-samsung,color-depth:
-+		number of bits per colour component.
-+			COLOR_6 = 0, COLOR_8 = 1, COLOR_10 = 2, COLOR_12 = 3
-+	-samsung,link-rate:
-+		link rate supported by the panel.
-+			LINK_RATE_1_62GBPS = 0x6, LINK_RATE_2_70GBPS = 0x0A
-+	-samsung,lane-count:
-+		number of lanes supported by the panel.
-+			LANE_COUNT1 = 1, LANE_COUNT2 = 2, LANE_COUNT4 = 4
-+
-+Optional properties for display-port-controller:
-+	-interlaced:
-+		interlace scan mode.
-+			Progressive if defined, Interlaced if not defined
-+	-vsync-active-high:
-+		VSYNC polarity configuration.
-+			High if defined, Low if not defined
-+	-hsync-active-high:
-+		HSYNC polarity configuration.
-+			High if defined, Low if not defined
-+
-+Example:
-+
-+SOC specific portion:
-+	display-port-controller {
-+		compatible = "samsung,exynos5-dp";
-+		reg = <0x145b0000 0x10000>;
-+		interrupts = <10 3>;
-+		interrupt-parent = <&combiner>;
-+
-+		dptx-phy {
-+			reg = <0x10040720>;
-+			samsung,enable-mask = <1>;
-+		};
-+
-+        };
-+
-+Board Specific portion:
-+	display-port-controller {
-+		samsung,color-space = <0>;
-+		samsung,dynamic-range = <0>;
-+		samsung,ycbcr-coeff = <0>;
-+		samsung,color-depth = <1>;
-+		samsung,link-rate = <0x0a>;
-+		samsung,lane-count = <4>;
-+	};
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index d3c58eb..9f0ce18 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2505,7 +2505,7 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ 		bool mem_to_mem)
+ {
+ 	int r;
+-	const struct omap_overlay *ovl = omap_dss_get_overlay(plane);
++	enum omap_overlay_caps caps = dss_feat_get_overlay_caps(plane);
+ 	enum omap_channel channel;
+ 
+ 	channel = dispc_ovl_get_channel_out(plane);
+@@ -2516,7 +2516,7 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ 		oi->pos_y, oi->width, oi->height, oi->out_width, oi->out_height,
+ 		oi->color_mode, oi->rotation, oi->mirror, channel, replication);
+ 
+-	r = dispc_ovl_setup_common(plane, ovl->caps, oi->paddr, oi->p_uv_addr,
++	r = dispc_ovl_setup_common(plane, caps, oi->paddr, oi->p_uv_addr,
+ 		oi->screen_width, oi->pos_x, oi->pos_y, oi->width, oi->height,
+ 		oi->out_width, oi->out_height, oi->color_mode, oi->rotation,
+ 		oi->mirror, oi->zorder, oi->pre_mult_alpha, oi->global_alpha,
 -- 
-1.7.1
-
+1.7.9.5
 

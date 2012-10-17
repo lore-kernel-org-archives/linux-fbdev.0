@@ -1,139 +1,296 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Mon, 01 Oct 2012 07:51:06 +0000
-Subject: [PATCH V5 2/5] OMAPDSS: Create new debug config options
-Message-Id: <1349077680-13559-1-git-send-email-cmahapatra@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 17 Oct 2012 10:18:18 +0000
+Subject: [PATCHv3 1/5] OMAP: VRFB: convert vrfb to platform device
+Message-Id: <1350469102-24888-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <af097b99b4d2eab96850fd6d8a0c260917aa4f98.1348914940.git.cmahapatra@ti.com>
-In-Reply-To: <af097b99b4d2eab96850fd6d8a0c260917aa4f98.1348914940.git.cmahapatra@ti.com>
+References: <1350469102-24888-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1350469102-24888-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, tony@atomide.com
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The config option CONFIG_OMAP2_DSS_DEBUG_SUPPORT has been removed and replaced
-with CONFIG_OMAP2_DSS_DEBUG and CONFIG_OMAP2_DSS_DEBUGFS. CONFIG_OMAP2_DSS_DEBUG
-enables DEBUG flag and CONFIG_OMAP2_DSS_DEBUGFS enables creation of debugfs for
-OMAPDSS. Both the config options are disabled by default and can be enabled
-independently of one another as per convenience.
+This patch converts vrfb library into a platform device, in an effort to
+remove omap dependencies.
 
-Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+The platform device is registered in arch/arm/plat-omap/fb.c and
+assigned resources depending on whether running on omap2 or omap3.
+
+The vrfb driver will parse those resources and use them to access vrfb
+configuration registers and the vrfb virtual rotation areas.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tony Lindgren <tony@atomide.com>
 ---
-changes from V4 to V5
- * added "depends on DEBUG_FS" to OMAP2_DSS_DEBUGFS defintion in Kconfig so that
-   CONFIG_OMAP2_DSS_DEBUGFS check become cleaner
+ arch/arm/plat-omap/fb.c    |   61 ++++++++++++++++++++++
+ drivers/video/omap2/vrfb.c |  124 +++++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 165 insertions(+), 20 deletions(-)
 
- drivers/video/omap2/dss/Kconfig  |   22 ++++++++++++++++------
- drivers/video/omap2/dss/Makefile |    2 +-
- drivers/video/omap2/dss/core.c   |    6 +++---
- drivers/video/omap2/dss/dss.c    |    2 +-
- drivers/video/omap2/dss/dss.h    |    2 +-
- 5 files changed, 22 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/video/omap2/dss/Kconfig b/drivers/video/omap2/dss/Kconfig
-index 80f5390..7052487 100644
---- a/drivers/video/omap2/dss/Kconfig
-+++ b/drivers/video/omap2/dss/Kconfig
-@@ -18,16 +18,26 @@ config OMAP2_VRAM_SIZE
- 	  You can also set this with "vram=<bytes>" kernel argument, or
- 	  in the board file.
+diff --git a/arch/arm/plat-omap/fb.c b/arch/arm/plat-omap/fb.c
+index bcbb9d5..f868cae 100644
+--- a/arch/arm/plat-omap/fb.c
++++ b/arch/arm/plat-omap/fb.c
+@@ -33,6 +33,67 @@
+ #include <mach/hardware.h>
+ #include <asm/mach/map.h>
  
--config OMAP2_DSS_DEBUG_SUPPORT
--        bool "Debug support"
--	default y
-+config OMAP2_DSS_DEBUG
-+	bool "Debug support"
-+	default n
-+	help
-+	  This enables printing of debug messages. Alternatively, debug messages
-+	  can also be enabled by setting CONFIG_DYNAMIC_DEBUG and then setting
-+	  appropriate flags in <debugfs>/dynamic_debug/control.
++#include <plat/cpu.h>
 +
-+config OMAP2_DSS_DEBUGFS
-+	bool "Debugfs filesystem support"
-+	depends on DEBUG_FS
-+	default n
- 	help
--	  This enables debug messages. You need to enable printing
--	  with 'debug' module parameter.
-+	  This enables debugfs for OMAPDSS at <debugfs>/omapdss. This enables
-+	  querying about clock configuration and register configuration of dss,
-+	  dispc, dsi, hdmi and rfbi.
++#ifdef CONFIG_OMAP2_VRFB
++
++/*
++ * The first memory resource is the register region for VRFB,
++ * the rest are VRFB virtual memory areas for each VRFB context.
++ */
++
++static const struct resource omap2_vrfb_resources[] = {
++	DEFINE_RES_MEM_NAMED(0x68008000u, 0x40, "vrfb-regs"),
++	DEFINE_RES_MEM_NAMED(0x70000000u, 0x4000000, "vrfb-area-0"),
++	DEFINE_RES_MEM_NAMED(0x74000000u, 0x4000000, "vrfb-area-1"),
++	DEFINE_RES_MEM_NAMED(0x78000000u, 0x4000000, "vrfb-area-2"),
++	DEFINE_RES_MEM_NAMED(0x7c000000u, 0x4000000, "vrfb-area-3"),
++};
++
++static const struct resource omap3_vrfb_resources[] = {
++	DEFINE_RES_MEM_NAMED(0x6C000180u, 0xc0, "vrfb-regs"),
++	DEFINE_RES_MEM_NAMED(0x70000000u, 0x4000000, "vrfb-area-0"),
++	DEFINE_RES_MEM_NAMED(0x74000000u, 0x4000000, "vrfb-area-1"),
++	DEFINE_RES_MEM_NAMED(0x78000000u, 0x4000000, "vrfb-area-2"),
++	DEFINE_RES_MEM_NAMED(0x7c000000u, 0x4000000, "vrfb-area-3"),
++	DEFINE_RES_MEM_NAMED(0xe0000000u, 0x4000000, "vrfb-area-4"),
++	DEFINE_RES_MEM_NAMED(0xe4000000u, 0x4000000, "vrfb-area-5"),
++	DEFINE_RES_MEM_NAMED(0xe8000000u, 0x4000000, "vrfb-area-6"),
++	DEFINE_RES_MEM_NAMED(0xec000000u, 0x4000000, "vrfb-area-7"),
++	DEFINE_RES_MEM_NAMED(0xf0000000u, 0x4000000, "vrfb-area-8"),
++	DEFINE_RES_MEM_NAMED(0xf4000000u, 0x4000000, "vrfb-area-9"),
++	DEFINE_RES_MEM_NAMED(0xf8000000u, 0x4000000, "vrfb-area-10"),
++	DEFINE_RES_MEM_NAMED(0xfc000000u, 0x4000000, "vrfb-area-11"),
++};
++
++static int __init omap_init_vrfb(void)
++{
++	struct platform_device *pdev;
++	const struct resource *res;
++	unsigned int num_res;
++
++	if (cpu_is_omap24xx()) {
++		res = omap2_vrfb_resources;
++		num_res = ARRAY_SIZE(omap2_vrfb_resources);
++	} else if (cpu_is_omap34xx()) {
++		res = omap3_vrfb_resources;
++		num_res = ARRAY_SIZE(omap3_vrfb_resources);
++	} else {
++		return 0;
++	}
++
++	pdev = platform_device_register_resndata(NULL, "omapvrfb", -1,
++			res, num_res, NULL, 0);
++
++	if (IS_ERR(pdev))
++		return PTR_ERR(pdev);
++	else
++		return 0;
++}
++
++arch_initcall(omap_init_vrfb);
++#endif
++
+ #if defined(CONFIG_FB_OMAP) || defined(CONFIG_FB_OMAP_MODULE)
  
- config OMAP2_DSS_COLLECT_IRQ_STATS
- 	bool "Collect DSS IRQ statistics"
--	depends on OMAP2_DSS_DEBUG_SUPPORT
-+	depends on OMAP2_DSS_DEBUGFS
- 	default n
- 	help
- 	  Collect DSS IRQ statistics, printable via debugfs.
-diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
-index 86493e3..4070191 100644
---- a/drivers/video/omap2/dss/Makefile
-+++ b/drivers/video/omap2/dss/Makefile
-@@ -8,4 +8,4 @@ omapdss-$(CONFIG_OMAP2_DSS_SDI) += sdi.o
- omapdss-$(CONFIG_OMAP2_DSS_DSI) += dsi.o
- omapdss-$(CONFIG_OMAP4_DSS_HDMI) += hdmi.o \
- 				    hdmi_panel.o ti_hdmi_4xxx_ip.o
--ccflags-$(CONFIG_OMAP2_DSS_DEBUG_SUPPORT) += -DDEBUG
-+ccflags-$(CONFIG_OMAP2_DSS_DEBUG) += -DDEBUG
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index b2af72d..826d64f 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -138,7 +138,7 @@ int dss_set_min_bus_tput(struct device *dev, unsigned long tput)
- 		return 0;
- }
+ static bool omapfb_lcd_configured;
+diff --git a/drivers/video/omap2/vrfb.c b/drivers/video/omap2/vrfb.c
+index 7e99022..fda45cc 100644
+--- a/drivers/video/omap2/vrfb.c
++++ b/drivers/video/omap2/vrfb.c
+@@ -26,9 +26,9 @@
+ #include <linux/io.h>
+ #include <linux/bitops.h>
+ #include <linux/mutex.h>
++#include <linux/platform_device.h>
  
--#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
-+#if defined(CONFIG_OMAP2_DSS_DEBUGFS)
- static int dss_debug_show(struct seq_file *s, void *unused)
- {
- 	void (*func)(struct seq_file *) = s->private;
-@@ -193,7 +193,7 @@ int dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *))
+ #include <plat/vrfb.h>
+-#include <plat/sdrc.h>
  
- 	return 0;
- }
--#else /* CONFIG_DEBUG_FS && CONFIG_OMAP2_DSS_DEBUG_SUPPORT */
-+#else /* CONFIG_OMAP2_DSS_DEBUGFS */
- static inline int dss_initialize_debugfs(void)
- {
- 	return 0;
-@@ -205,7 +205,7 @@ int dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *))
- {
- 	return 0;
- }
--#endif /* CONFIG_DEBUG_FS && CONFIG_OMAP2_DSS_DEBUG_SUPPORT */
-+#endif /* CONFIG_OMAP2_DSS_DEBUGFS */
- 
- /* PLATFORM DEVICE */
- static int omap_dss_pm_notif(struct notifier_block *b, unsigned long v, void *d)
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 2ab1c3e..3954742 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -746,7 +746,7 @@ static void dss_runtime_put(void)
- }
- 
- /* DEBUGFS */
--#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
-+#if defined(CONFIG_OMAP2_DSS_DEBUGFS)
- void dss_debug_dump_clocks(struct seq_file *s)
- {
- 	dss_dump_clocks(s);
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index ffbba7e..685275e 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -301,7 +301,7 @@ enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void);
- const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
- void dss_dump_clocks(struct seq_file *s);
- 
--#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
-+#if defined(CONFIG_OMAP2_DSS_DEBUGFS)
- void dss_debug_dump_clocks(struct seq_file *s);
+ #ifdef DEBUG
+ #define DBG(format, ...) pr_debug("VRFB: " format, ## __VA_ARGS__)
+@@ -36,10 +36,10 @@
+ #define DBG(format, ...)
  #endif
  
+-#define SMS_ROT_VIRT_BASE(context, rot) \
+-	(((context >= 4) ? 0xD0000000 : 0x70000000) \
+-	 + (0x4000000 * (context)) \
+-	 + (0x1000000 * (rot)))
++#define SMS_ROT_CONTROL(context)	(0x0 + 0x10 * context)
++#define SMS_ROT_SIZE(context)		(0x4 + 0x10 * context)
++#define SMS_ROT_PHYSICAL_BA(context)	(0x8 + 0x10 * context)
++#define SMS_ROT_VIRT_BASE(rot)		(0x1000000 * (rot))
+ 
+ #define OMAP_VRFB_SIZE			(2048 * 2048 * 4)
+ 
+@@ -53,10 +53,16 @@
+ #define SMS_PW_OFFSET		4
+ #define SMS_PS_OFFSET		0
+ 
+-#define VRFB_NUM_CTXS 12
+ /* bitmap of reserved contexts */
+ static unsigned long ctx_map;
+ 
++struct vrfb_ctx {
++	u32 base;
++	u32 physical_ba;
++	u32 control;
++	u32 size;
++};
++
+ static DEFINE_MUTEX(ctx_lock);
+ 
+ /*
+@@ -65,17 +71,32 @@ static DEFINE_MUTEX(ctx_lock);
+  * we don't need locking, since no drivers will run until after the wake-up
+  * has finished.
+  */
+-static struct {
+-	u32 physical_ba;
+-	u32 control;
+-	u32 size;
+-} vrfb_hw_context[VRFB_NUM_CTXS];
++
++static void __iomem *vrfb_base;
++
++static int num_ctxs;
++static struct vrfb_ctx *ctxs;
++
++static void omap2_sms_write_rot_control(u32 val, unsigned ctx)
++{
++	__raw_writel(val, vrfb_base + SMS_ROT_CONTROL(ctx));
++}
++
++static void omap2_sms_write_rot_size(u32 val, unsigned ctx)
++{
++	__raw_writel(val, vrfb_base + SMS_ROT_SIZE(ctx));
++}
++
++static void omap2_sms_write_rot_physical_ba(u32 val, unsigned ctx)
++{
++	__raw_writel(val, vrfb_base + SMS_ROT_PHYSICAL_BA(ctx));
++}
+ 
+ static inline void restore_hw_context(int ctx)
+ {
+-	omap2_sms_write_rot_control(vrfb_hw_context[ctx].control, ctx);
+-	omap2_sms_write_rot_size(vrfb_hw_context[ctx].size, ctx);
+-	omap2_sms_write_rot_physical_ba(vrfb_hw_context[ctx].physical_ba, ctx);
++	omap2_sms_write_rot_control(ctxs[ctx].control, ctx);
++	omap2_sms_write_rot_size(ctxs[ctx].size, ctx);
++	omap2_sms_write_rot_physical_ba(ctxs[ctx].physical_ba, ctx);
+ }
+ 
+ static u32 get_image_width_roundup(u16 width, u8 bytespp)
+@@ -196,9 +217,9 @@ void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
+ 	control |= VRFB_PAGE_WIDTH_EXP  << SMS_PW_OFFSET;
+ 	control |= VRFB_PAGE_HEIGHT_EXP << SMS_PH_OFFSET;
+ 
+-	vrfb_hw_context[ctx].physical_ba = paddr;
+-	vrfb_hw_context[ctx].size = size;
+-	vrfb_hw_context[ctx].control = control;
++	ctxs[ctx].physical_ba = paddr;
++	ctxs[ctx].size = size;
++	ctxs[ctx].control = control;
+ 
+ 	omap2_sms_write_rot_physical_ba(paddr, ctx);
+ 	omap2_sms_write_rot_size(size, ctx);
+@@ -274,11 +295,11 @@ int omap_vrfb_request_ctx(struct vrfb *vrfb)
+ 
+ 	mutex_lock(&ctx_lock);
+ 
+-	for (ctx = 0; ctx < VRFB_NUM_CTXS; ++ctx)
++	for (ctx = 0; ctx < num_ctxs; ++ctx)
+ 		if ((ctx_map & (1 << ctx)) = 0)
+ 			break;
+ 
+-	if (ctx = VRFB_NUM_CTXS) {
++	if (ctx = num_ctxs) {
+ 		pr_err("vrfb: no free contexts\n");
+ 		r = -EBUSY;
+ 		goto out;
+@@ -293,7 +314,7 @@ int omap_vrfb_request_ctx(struct vrfb *vrfb)
+ 	vrfb->context = ctx;
+ 
+ 	for (rot = 0; rot < 4; ++rot) {
+-		paddr = SMS_ROT_VIRT_BASE(ctx, rot);
++		paddr = ctxs[ctx].base + SMS_ROT_VIRT_BASE(rot);
+ 		if (!request_mem_region(paddr, OMAP_VRFB_SIZE, "vrfb")) {
+ 			pr_err("vrfb: failed to reserve VRFB "
+ 					"area for ctx %d, rotation %d\n",
+@@ -314,3 +335,66 @@ out:
+ 	return r;
+ }
+ EXPORT_SYMBOL(omap_vrfb_request_ctx);
++
++static int __init vrfb_probe(struct platform_device *pdev)
++{
++	struct resource *mem;
++	int i;
++
++	/* first resource is the register res, the rest are vrfb contexts */
++
++	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!mem) {
++		dev_err(&pdev->dev, "can't get vrfb base address\n");
++		return -EINVAL;
++	}
++
++	vrfb_base = devm_request_and_ioremap(&pdev->dev, mem);
++	if (!vrfb_base) {
++		dev_err(&pdev->dev, "can't ioremap vrfb memory\n");
++		return -ENOMEM;
++	}
++
++	num_ctxs = pdev->num_resources - 1;
++
++	ctxs = devm_kzalloc(&pdev->dev,
++			sizeof(struct vrfb_ctx) * num_ctxs,
++			GFP_KERNEL);
++
++	if (!ctxs)
++		return -ENOMEM;
++
++	for (i = 0; i < num_ctxs; ++i) {
++		mem = platform_get_resource(pdev, IORESOURCE_MEM, 1 + i);
++		if (!mem) {
++			dev_err(&pdev->dev, "can't get vrfb ctx %d address\n",
++					i);
++			return -EINVAL;
++		}
++
++		ctxs[i].base = mem->start;
++	}
++
++	return 0;
++}
++
++static struct platform_driver vrfb_driver = {
++	.driver.name	= "omapvrfb",
++};
++
++static int __init vrfb_init(void)
++{
++	return platform_driver_probe(&vrfb_driver, &vrfb_probe);
++}
++
++static void __exit vrfb_exit(void)
++{
++	platform_driver_unregister(&vrfb_driver);
++}
++
++module_init(vrfb_init);
++module_exit(vrfb_exit);
++
++MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@ti.com>");
++MODULE_DESCRIPTION("OMAP VRFB");
++MODULE_LICENSE("GPL v2");
 -- 
-1.7.10
+1.7.9.5
 

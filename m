@@ -1,117 +1,72 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 15 Oct 2012 09:13:28 +0000
-Subject: [PATCH V6 2/2] video: exynos_dp: device tree documentation
-Message-Id: <009f01cdaab5$56a09760$03e1c620$%han@samsung.com>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Fri, 19 Oct 2012 09:06:26 +0000
+Subject: [PATCH v7 0/3] Runtime Interpreter Power Sequences
+Message-Id: <1350637589-7405-1-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <009e01cdaab5$25cff2c0$716fd840$%han@samsung.com>
-In-Reply-To: <009e01cdaab5$25cff2c0$716fd840$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, 'Ajay Kumar' <ajaykumar.rs@samsung.com>, 'Sylwester Nawrocki' <sylvester.nawrocki@gmail.com>, 'Tomasz Figa' <t.figa@samsung.com>, 'Thomas Abraham' <thomas.abraham@linaro.org>, 'Jingoo Han' <jg1.han@samsung.com>
+To: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: Leela Krishna Amudala <l.krishna@samsung.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, Alexandre Courbot <acourbot@nvidia.com>
 
-From: Ajay Kumar <ajaykumar.rs@samsung.com>
+Quite a big redesign of the feature - both structures and code have been
+simplified and should be easier to read and understand, data duplication is
+avoided, and much less memory allocations take place at runtime. Usage
+interface is also simpler and IMHO more logical.
 
-Add documentation for the DT bindings in exynos display port driver.
+What happened is that platform_power_seq and power_seq have been merged,
+and so power sequences declared as platform data are used "as-is". The
+"build" step is not needed anymore - resources are allocated when a
+power sequence is added into a set.
 
-Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
----
-Changes since v6:
-- Remove duplicated 'based on'
+There is still one design flaw that I would like to solve: sequences are
+still tied to a device, i.e. if you have two devices that use the same
+powering scheme, you have to declare two identical power sequences and assign
+each of these to one device. It would be much more flexible if sequences could
+be shared across devices. The problem is that the resources structure,
+references by steps, cannot be shared. Actually we could share it by having
+a linked list of devices and resolved resources in the resource structure and
+thus share power sequences over devices. That would work for regulator and
+PWM resources, which have a get_regulator/pwm(dev, id) function that could
+return a different resource depending on the device that is passed.
+But there is no similar get_gpio() function for GPIOs which number is directly
+specified in the resource, and I don't know if such a function would make
+sense otherwise. Opinions on the subject are welcome.
 
- .../devicetree/bindings/video/exynos_dp.txt        |   80 ++++++++++++++++++++
- 1 files changed, 80 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/video/exynos_dp.txt
+Alexandre Courbot (3):
+  Runtime Interpreted Power Sequences
+  pwm_backlight: use power sequences
+  tegra: ventana: add PWM backlight to device tree
 
-diff --git a/Documentation/devicetree/bindings/video/exynos_dp.txt b/Documentation/devicetree/bindings/video/exynos_dp.txt
-new file mode 100644
-index 0000000..7cc7d9f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/exynos_dp.txt
-@@ -0,0 +1,80 @@
-+The Exynos display port interface should be configured based on
-+the type of panel connected to it.
-+
-+We use two nodes:
-+	-display-port-controller node
-+	-dptx-phy node(defined inside display-port-controller node)
-+
-+For the DP-PHY initialization, we use the dptx-phy node.
-+Required properties for dptx-phy:
-+	-reg:
-+		Base address of DP PHY register.
-+	-samsung,enable-mask:
-+		The bit-mask used to enable/disable DP PHY.
-+
-+For the Panel initialization, we read data from display-port-controller node.
-+Required properties for display-port-controller:
-+	-compatible:
-+		should be "samsung,exynos5-dp".
-+	-reg:
-+		physical base address of the controller and length
-+		of memory mapped region.
-+	-interrupts:
-+		interrupt combiner values.
-+	-interrupt-parent:
-+		phandle to Interrupt combiner node.
-+	-samsung,color-space:
-+		input video data format.
-+			COLOR_RGB = 0, COLOR_YCBCR422 = 1, COLOR_YCBCR444 = 2
-+	-samsung,dynamic-range:
-+		dynamic range for input video data.
-+			VESA = 0, CEA = 1
-+	-samsung,ycbcr-coeff:
-+		YCbCr co-efficients for input video.
-+			COLOR_YCBCR601 = 0, COLOR_YCBCR709 = 1
-+	-samsung,color-depth:
-+		number of bits per colour component.
-+			COLOR_6 = 0, COLOR_8 = 1, COLOR_10 = 2, COLOR_12 = 3
-+	-samsung,link-rate:
-+		link rate supported by the panel.
-+			LINK_RATE_1_62GBPS = 0x6, LINK_RATE_2_70GBPS = 0x0A
-+	-samsung,lane-count:
-+		number of lanes supported by the panel.
-+			LANE_COUNT1 = 1, LANE_COUNT2 = 2, LANE_COUNT4 = 4
-+
-+Optional properties for display-port-controller:
-+	-interlaced:
-+		interlace scan mode.
-+			Progressive if defined, Interlaced if not defined
-+	-vsync-active-high:
-+		VSYNC polarity configuration.
-+			High if defined, Low if not defined
-+	-hsync-active-high:
-+		HSYNC polarity configuration.
-+			High if defined, Low if not defined
-+
-+Example:
-+
-+SOC specific portion:
-+	display-port-controller {
-+		compatible = "samsung,exynos5-dp";
-+		reg = <0x145b0000 0x10000>;
-+		interrupts = <10 3>;
-+		interrupt-parent = <&combiner>;
-+
-+		dptx-phy {
-+			reg = <0x10040720>;
-+			samsung,enable-mask = <1>;
-+		};
-+
-+        };
-+
-+Board Specific portion:
-+	display-port-controller {
-+		samsung,color-space = <0>;
-+		samsung,dynamic-range = <0>;
-+		samsung,ycbcr-coeff = <0>;
-+		samsung,color-depth = <1>;
-+		samsung,link-rate = <0x0a>;
-+		samsung,lane-count = <4>;
-+	};
+ .../devicetree/bindings/power/power_seq.txt        | 121 +++++++
+ .../bindings/video/backlight/pwm-backlight.txt     |  72 +++-
+ Documentation/power/power_seq.txt                  | 253 ++++++++++++++
+ arch/arm/boot/dts/tegra20-ventana.dts              |  59 +++-
+ drivers/power/Kconfig                              |   1 +
+ drivers/power/Makefile                             |   1 +
+ drivers/power/power_seq/Kconfig                    |   2 +
+ drivers/power/power_seq/Makefile                   |   1 +
+ drivers/power/power_seq/power_seq.c                | 376 +++++++++++++++++++++
+ drivers/power/power_seq/power_seq_delay.c          |  65 ++++
+ drivers/power/power_seq/power_seq_gpio.c           |  94 ++++++
+ drivers/power/power_seq/power_seq_pwm.c            |  82 +++++
+ drivers/power/power_seq/power_seq_regulator.c      |  83 +++++
+ drivers/video/backlight/Kconfig                    |   1 +
+ drivers/video/backlight/pwm_bl.c                   | 161 +++++++--
+ include/linux/power_seq.h                          | 203 +++++++++++
+ include/linux/pwm_backlight.h                      |  18 +-
+ 17 files changed, 1553 insertions(+), 40 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/power_seq.txt
+ create mode 100644 Documentation/power/power_seq.txt
+ create mode 100644 drivers/power/power_seq/Kconfig
+ create mode 100644 drivers/power/power_seq/Makefile
+ create mode 100644 drivers/power/power_seq/power_seq.c
+ create mode 100644 drivers/power/power_seq/power_seq_delay.c
+ create mode 100644 drivers/power/power_seq/power_seq_gpio.c
+ create mode 100644 drivers/power/power_seq/power_seq_pwm.c
+ create mode 100644 drivers/power/power_seq/power_seq_regulator.c
+ create mode 100644 include/linux/power_seq.h
+
 -- 
-1.7.1
-
+1.7.12.3
 

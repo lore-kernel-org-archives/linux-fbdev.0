@@ -1,183 +1,90 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Tue, 09 Oct 2012 07:26:08 +0000
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Sat, 20 Oct 2012 10:45:51 +0000
 Subject: Re: [PATCH 2/2 v6] of: add generic videomode description
-Message-Id: <20121009072608.GA2519@pengutronix.de>
+Message-Id: <20121020104551.GA12545@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="xHFwDpU9dbj6ez1V"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1349373560-11128-1-git-send-email-s.trumtrar@pengutronix.de>
- <12272414.930KpWciBg@avalon>
- <20121008124801.GD20800@pengutronix.de>
- <1737299.6PuzOm7XuT@avalon>
-In-Reply-To: <1737299.6PuzOm7XuT@avalon>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <506DDA94.1090702@wwwdotorg.org>
+ <20121005155121.GA2053@pengutronix.de>
+ <1865954.iaNNHHSnLW@avalon>
+In-Reply-To: <1865954.iaNNHHSnLW@avalon>
 To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, linux-fbdev@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, devicetree-discuss@lists.ozlabs.org, dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org
 
-Hi Laurent,
 
-On Mon, Oct 08, 2012 at 10:52:04PM +0200, Laurent Pinchart wrote:
+--xHFwDpU9dbj6ez1V
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Sun, Oct 07, 2012 at 03:38:33PM +0200, Laurent Pinchart wrote:
 > Hi Steffen,
-> 
-> On Monday 08 October 2012 14:48:01 Steffen Trumtrar wrote:
-> > On Mon, Oct 08, 2012 at 02:13:50PM +0200, Laurent Pinchart wrote:
-> > > On Thursday 04 October 2012 19:59:20 Steffen Trumtrar wrote:
+>=20
+> On Friday 05 October 2012 17:51:21 Steffen Trumtrar wrote:
+> > On Thu, Oct 04, 2012 at 12:51:00PM -0600, Stephen Warren wrote:
+> > > On 10/04/2012 11:59 AM, Steffen Trumtrar wrote:
 > > > > Get videomode from devicetree in a format appropriate for the
 > > > > backend. drm_display_mode and fb_videomode are supported atm.
 > > > > Uses the display signal timings from of_display_timings
-> > > > 
-> > > > Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-> > > > ---
-> > > > 
-> > > >  drivers/of/Kconfig           |    5 +
-> > > >  drivers/of/Makefile          |    1 +
-> > > >  drivers/of/of_videomode.c    |  212 +++++++++++++++++++++++++++++++++++
-> > > >  include/linux/of_videomode.h |   41 ++++++++
-> > > >  4 files changed, 259 insertions(+)
-> > > >  create mode 100644 drivers/of/of_videomode.c
-> > > >  create mode 100644 include/linux/of_videomode.h
-> 
-> [snip]
-> 
-> > > > diff --git a/drivers/of/of_videomode.c b/drivers/of/of_videomode.c
-> > > > new file mode 100644
-> > > > index 0000000..76ac16e
-> > > > --- /dev/null
+> > > >=20
 > > > > +++ b/drivers/of/of_videomode.c
-> 
-> [snip]
-> 
+> > > >=20
 > > > > +int videomode_from_timing(struct display_timings *disp, struct
 > > > > videomode *vm,
-> > > > +			int index)
-> > > > +{
-> > > > +	struct signal_timing *st = NULL;
+> > > >=20
+> > > > +	st =3D display_timings_get(disp, index);
 > > > > +
-> > > > +	if (!vm)
-> > > > +		return -EINVAL;
-> > > > +
-> > > 
-> > > What about making vm a mandatory argument ? It looks to me like a caller
-> > > bug if vm is NULL.
-> > 
-> > The caller must provide the struct videomode, yes. Wouldn't the kernel hang
-> > itself with a NULL pointer exception, if I just work with it ?
-> 
-> The kernel would oops, clearly showing the caller that a non-null vm is needed 
-> :-)
-> 
-
-Okay. No error checking it is then.
-
-> > > > +	st = display_timings_get(disp, index);
-> > > > +
-> > > 
-> > > You can remove the blank line.
-> > > 
 > > > > +	if (!st) {
-> > > > +		pr_err("%s: no signal timings found\n", __func__);
-> > > > +		return -EINVAL;
-> > > > +	}
-> > > > +
-> > > > +	vm->pixelclock = signal_timing_get_value(&st->pixelclock, 0);
-> > > > +	vm->hactive = signal_timing_get_value(&st->hactive, 0);
-> > > > +	vm->hfront_porch = signal_timing_get_value(&st->hfront_porch, 0);
-> > > > +	vm->hback_porch = signal_timing_get_value(&st->hback_porch, 0);
-> > > > +	vm->hsync_len = signal_timing_get_value(&st->hsync_len, 0);
-> > > > +
-> > > > +	vm->vactive = signal_timing_get_value(&st->vactive, 0);
-> > > > +	vm->vfront_porch = signal_timing_get_value(&st->vfront_porch, 0);
-> > > > +	vm->vback_porch = signal_timing_get_value(&st->vback_porch, 0);
-> > > > +	vm->vsync_len = signal_timing_get_value(&st->vsync_len, 0);
-> > > > +
-> > > > +	vm->vah = st->vsync_pol_active_high;
-> > > > +	vm->hah = st->hsync_pol_active_high;
-> > > > +	vm->interlaced = st->interlaced;
-> > > > +	vm->doublescan = st->doublescan;
-> > > > +
-> > > > +	return 0;
-> > > > +}
-> > > > +
-> > > > +int of_get_videomode(struct device_node *np, struct videomode *vm, int
-> > > > index)
-> > > 
-> > > I wonder how to avoid abuse of this functions. It's a useful helper for
-> > > drivers that need to get a video mode once only, but would result in lower
-> > > performances if a driver calls it for every mode. Drivers must call
-> > > of_get_display_timing_list instead in that case and case the display
-> > > timings. I'm wondering whether we should really expose of_get_videomode.
-> > 
-> > The intent was to let the driver decide. That way all the other overhead may
-> > be skipped.
-> 
-> My point is that driver writers might just call of_get_videomode() in a loop, 
-> not knowing that it's expensive. I want to avoid that. We need to at least add 
-> kerneldoc to the function stating that this shouldn't be done.
-> 
+> > >=20
+> > > It's a little odd to leave a blank line between those two lines.
+> >=20
+> > Hm, well okay. That can be remedied
+> >=20
+> > > Only half of the code in this file seems OF-related; the routines to
+> > > convert a timing to a videomode or drm display mode seem like they'd =
+be
+> > > useful outside device tree, so I wonder if putting them into
+> > > of_videomode.c is the correct thing to do. Still, it's probably not a
+> > > big deal.
+> >=20
+> > I am not sure, what the appropriate way to do this is. I can split it up
+> > (again).
+>=20
+> I think it would make sense to move them to their respective subsystems.
 
-You're right. That should be made clear in the code.
+I agree. While looking at integrating this for Tegra DRM, I came across
+the issue that if I build DRM as a module, linking with this code will
+fail. The reason for that was that it was that the code, itself builtin,
+uses drm_mode_set_name(), which would be exported by the drm module. So
+I had to modifiy the Kconfig entries to be "def_tristate DRM". That
+obviously isn't very nice since the code can also be used without DRM.
 
-> > > > +{
-> > > > +	struct display_timings *disp;
-> > > > +	int ret = 0;
-> > > 
-> > > No need to assign ret to 0 here.
-> > 
-> > Ah, yes. Unneeded in this case.
-> > 
-> > > > +
-> > > > +	disp = of_get_display_timing_list(np);
-> > > > +
-> > > 
-> > > You can remove the blank line.
-> > > 
-> > > > +	if (!disp) {
-> > > > +		pr_err("%s: no timings specified\n", __func__);
-> > > > +		return -EINVAL;
-> > > > +	}
-> > > > +
-> > > > +	if (index = OF_DEFAULT_TIMING)
-> > > > +		index = disp->default_timing;
-> > > > +
-> > > > +	ret = videomode_from_timing(disp, vm, index);
-> > > > +
-> > > 
-> > > No need for a blank line.
-> > > 
-> > > > +	if (ret)
-> > > > +		return ret;
-> > > > +
-> > > > +	display_timings_release(disp);
-> > > > +
-> > > > +	if (!vm) {
-> > > > +		pr_err("%s: could not get videomode %d\n", __func__, index);
-> > > > +		return -EINVAL;
-> > > > +	}
-> > > 
-> > > This can't happen. If vm is NULL the videomode_from_timing call above will
-> > > return -EINVAL, and this function will then return immediately without
-> > > reaching this code block.
-> > 
-> > Okay.
-> > 
-> > > > +
-> > > > +	return 0;
-> > > > +}
-> > > > +EXPORT_SYMBOL_GPL(of_get_videomode);
-> 
-> -- 
-> Regards,
-> 
-> Laurent Pinchart
-> 
-> 
+Moving the subsystem specific conversion routines to the respective
+subsystems should solve any of these issues.
 
-Regards,
+Thierry
 
-Steffen
+--xHFwDpU9dbj6ez1V
+Content-Type: application/pgp-signature
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQgoDfAAoJEN0jrNd/PrOhQF0P/1vtiiNgVpJUZGNyEiKprALw
+JgZwmZFDnplp3SENN6Nr90DOIGPbfJjR+8iDa5jJ7MACBAxaNWbGQLbieSdU8IBN
+Ewu90o2+CPasE9CqGYrUD/hokzIm9H6gSW+N6qCIWl41raGBF33KIrosQEDlPInv
+L0k+SIj7fXTt/TjDYZl0k6tucpyh3HaZ+4qh2uemEy2XpJKXQAZwMqFLMWLnipG1
+GFqVLptJlZHeC+VGFylqFl5O07RRrkMwsFGetVDbilPInHv+tkTgOHfet10b2opY
+yP8Y54OMoMI/R7Yh9SRgzwiJTgCs2QANwx7nx+lGgsuRos5YVXyKw31xZkN9ZW2R
+xRyDTZvZdW5NJsXGzPU/ottirVr0CbUJydVpoPEVzWvQ0xt5yoxN1q3xmqA0L8d2
+tTYb8de7m6iZdjFmamXdbqpb+Q7evZQvpH9C8VQ1SscMlA3uu0jTjVa6IsRMcyc2
+cA/vToEZklJ8Henae+yKBsRlNx8XBgYtqWn+6M5E47fHzN0t05ZER3YRFQSjT77B
+Z0dP0PpVDUcKkTwNUj2dKSsHt5QIniK2ae1owWRWckSIWnvNfnvtpXVDPkSZb8FJ
+mAERsNQUO6vDp9z8k2a8vK+E/tpY0sCozmK/JHySS1OSAFXfpv8/nkmu8gL22vV4
+pIchLUB6DowQNYob45ao
+=XnRW
+-----END PGP SIGNATURE-----
+
+--xHFwDpU9dbj6ez1V--

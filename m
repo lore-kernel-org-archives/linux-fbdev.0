@@ -1,49 +1,69 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Fri, 12 Oct 2012 07:21:02 +0000
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Sat, 20 Oct 2012 10:58:26 +0000
 Subject: Re: [PATCH 1/2 v6] of: add helper to parse display timings
-Message-Id: <20121012072102.GA32500@pengutronix.de>
+Message-Id: <20121020105826.GC12545@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="+nBD6E3TurpgldQp"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1349373560-11128-1-git-send-email-s.trumtrar@pengutronix.de>
  <1349373560-11128-2-git-send-email-s.trumtrar@pengutronix.de>
- <1349680065.3227.25.camel@deskari>
- <20121008074921.GB20800@pengutronix.de>
- <20121011193118.GA27599@avionic-0098.mockup.avionic-design.de>
-In-Reply-To: <20121011193118.GA27599@avionic-0098.mockup.avionic-design.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@avionic-design.de>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-media@vger.kernel.org
-
-On Thu, Oct 11, 2012 at 09:31:18PM +0200, Thierry Reding wrote:
-> On Mon, Oct 08, 2012 at 09:49:21AM +0200, Steffen Trumtrar wrote:
-> > On Mon, Oct 08, 2012 at 10:07:45AM +0300, Tomi Valkeinen wrote:
-> > > On Thu, 2012-10-04 at 19:59 +0200, Steffen Trumtrar wrote:
-> [...]
-> > > > +
-> > > > +	disp->num_timings = 0;
-> > > > +
-> > > > +	for_each_child_of_node(timings_np, entry) {
-> > > > +		disp->num_timings++;
-> > > > +	}
-> > > 
-> > > No need for { }
-> > > 
-> > 
-> > Okay.
-> 
-> Or you could just use of_get_child_count().
-> 
-> Thierry
-
-Ah, very nice. That's definitely better. Didn't know about that function.
-
-Thanks,
-Steffen
+In-Reply-To: <1349373560-11128-2-git-send-email-s.trumtrar@pengutronix.de>
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Cc: devicetree-discuss@lists.ozlabs.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Rob Herring <robherring2@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-media@vger.kernel.org
 
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+--+nBD6E3TurpgldQp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Thu, Oct 04, 2012 at 07:59:19PM +0200, Steffen Trumtrar wrote:
+[...]
+> diff --git a/include/linux/of_display_timings.h b/include/linux/of_display_timings.h
+> new file mode 100644
+> index 0000000..1ad719e
+> --- /dev/null
+> +++ b/include/linux/of_display_timings.h
+> @@ -0,0 +1,85 @@
+> +/*
+> + * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
+> + *
+> + * description of display timings
+> + *
+> + * This file is released under the GPLv2
+> + */
+> +
+> +#ifndef __LINUX_OF_DISPLAY_TIMINGS_H
+> +#define __LINUX_OF_DISPLAY_TIMINGS_H
+
+This file needs to include linux/slab.h because it uses kfree() in the
+inline functions. Alternatively I think I'd rather see the inline
+functions moved out of the header, with the exception of the
+signal_timing_get_value() function perhaps.
+
+Moreover there should be a forward declaration of struct display_node
+to avoid the need to include linux/of.h.
+
+Thierry
+
+--+nBD6E3TurpgldQp
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQgoPSAAoJEN0jrNd/PrOhqjEQAJLn09qkLTvFk7LDazjFziI3
+THkGF3Vh3mO0uEJ63BOnQOrbmozP9cTNtlHinMfk12DkmDP7FrPnhSdSatVbmxX+
+jMBgQYK31ugyn264qExW2SxbRLkG6bxxADvtOMLLzgV4HUThUeBKQMisBIQFmXjF
+DOLZ780BNXPEf/DWnLDgWrWX+MXNK0aB86ynGFyegoFvkPhXdpd4a9MEMelZ93Pc
+wkzQ6TNGb5gymN+KhIalJ8+KaEPb3KcXMrqjT56j67TSj75Txmfia6mDC7KvLgJI
+QnUx3SGhafTlV7Nh0DbcpZH9GD4BZ6LDQJcE5psH6OIoOIOrJpZLAf2eI5dTF70l
+raj4fSVMnCbmCZhn/cL4lNHXdbq9DKOvLBilvZxpKdgWU7FUQaLTwkfyZktHbdTb
+wWY8I099P0SHfpfuHKCe8NNmKqrFF2On+oQhwnH23gRaURZzeT/HWvVfuJ3c58Tt
+CzgXGtb51G7SeKYoKwU3aPr9Khhv5UezCZ132qrt4ulyR/zevWgPQkSy5DKsA33e
+CnnOWv/osbDbKjebWYZVlziGK1Wp7veNDlTMY80yi3WcLpXDuCoQCOL5JNVCussa
+GFtpB8HhyeXNMS5dREqeW+JHXXlIP4frjjL2DRbQmPShcxkLRJQ4DeDtw6WVATe+
+2CXlYRQx66//+ByryINx
+=yhUC
+-----END PGP SIGNATURE-----
+
+--+nBD6E3TurpgldQp--

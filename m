@@ -1,163 +1,181 @@
 From: Inki Dae <inki.dae@samsung.com>
-Date: Sat, 20 Oct 2012 14:18:42 +0000
+Date: Sat, 20 Oct 2012 14:22:11 +0000
 Subject: Re: [RFC 0/5] Generic panel framework
-Message-Id: <CAAQKjZONpZFJuywKUc7+gfVmDThM8pqSbkDJEeyKTB9yPDn=Sw@mail.gmail.com>
+Message-Id: <CAAQKjZOGEz+KjuAy+48ZeXmuCHaWR+6cHdqZRjSQyOxnYu8p_g@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1345164583-18924-1-git-send-email-laurent.pinchart@ideasonboard.com>
-	<1345192694.3158.49.camel@deskari>
-In-Reply-To: <1345192694.3158.49.camel@deskari>
+	<CAAQKjZOZ9+NSQbNkG3qyWh+oLAE1e44DQ_bQCEr4Wvg2WLiGtA@mail.gmail.com>
+In-Reply-To: <CAAQKjZOZ9+NSQbNkG3qyWh+oLAE1e44DQ_bQCEr4Wvg2WLiGtA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, Marcus Lorentzon <marcus.lorentzon@linaro.org>, dri-devel@lists.freedesktop.org, Kyungmin Park <kyungmin.park@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Sebastien Guiriec <s-guiriec@ti.com>, Bryan Wu <bryan.wu@canonical.com>, linux-leds@vger.kernel.org, linux-media@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, linux-media@vger.kernel.org, Bryan Wu <bryan.wu@canonical.com>, Richard Purdie <rpurdie@rpsys.net>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Marcus Lorentzon <marcus.lorentzon@linaro.org>, Sumit Semwal <sumit.semwal@ti.com>, Archit Taneja <archit@ti.com>, Sebastien Guiriec <s-guiriec@ti.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-Hi Tomi,
+correct some typo. Sorry for this.
 
-2012/8/17 Tomi Valkeinen <tomi.valkeinen@ti.com>:
-> Hi,
+2012/10/20 Inki Dae <inki.dae@samsung.com>:
+> Hi Laurent. sorry for being late.
 >
-> On Fri, 2012-08-17 at 02:49 +0200, Laurent Pinchart wrote:
->
+> 2012/8/17 Laurent Pinchart <laurent.pinchart@ideasonboard.com>:
+>> Hi everybody,
+>>
+>> While working on DT bindings for the Renesas Mobile SoC display controller
+>> (a.k.a. LCDC) I quickly realized that display panel implementation based on
+>> board code callbacks would need to be replaced by a driver-based panel
+>> framework.
+>>
+>> Several driver-based panel support solution already exist in the kernel.
+>>
+>> - The LCD device class is implemented in drivers/video/backlight/lcd.c and
+>>   exposes a kernel API in include/linux/lcd.h. That API is tied to the FBDEV
+>>   API for historical reason, uses board code callback for reset and power
+>>   management, and doesn't include support for standard features available in
+>>   today's "smart panels".
+>>
+>> - OMAP2+ based systems use custom panel drivers available in
+>>   drivers/video/omap2/displays. Those drivers are based on OMAP DSS (display
+>>   controller) specific APIs.
+>>
+>> - Similarly, Exynos based systems use custom panel drivers available in
+>>   drivers/video/exynos. Only a single driver (s6e8ax0) is currently available.
+>>   That driver is based on Exynos display controller specific APIs and on the
+>>   LCD device class API.
+>>
+>> I've brought up the issue with Tomi Valkeinen (OMAP DSS maintainer) and Marcus
+>> Lorentzon (working on panel support for ST/Linaro), and we agreed that a
+>> generic panel framework for display devices is needed. These patches implement
+>> a first proof of concept.
+>>
+>> One of the main reasons for creating a new panel framework instead of adding
+>> missing features to the LCD framework is to avoid being tied to the FBDEV
+>> framework. Panels will be used by DRM drivers as well, and their API should
+>> thus be subsystem-agnostic. Note that the panel framework used the
+>> fb_videomode structure in its API, this will be replaced by a common video
+>> mode structure shared across subsystems (there's only so many hours per day).
+>>
+>> Panels, as used in these patches, are defined as physical devices combining a
+>> matrix of pixels and a controller capable of driving that matrix.
+>>
+>> Panel physical devices are registered as children of the control bus the panel
+>> controller is connected to (depending on the panel type, we can find platform
+>> devices for dummy panels with no control bus, or I2C, SPI, DBI, DSI, ...
+>> devices). The generic panel framework matches registered panel devices with
+>> panel drivers and call the panel drivers probe method, as done by other device
+>> classes in the kernel. The driver probe() method is responsible for
+>> instantiating a struct panel instance and registering it with the generic
+>> panel framework.
+>>
+>> Display drivers are panel consumers. They register a panel notifier with the
+>> framework, which then calls the notifier when a matching panel is registered.
+>> The reason for this asynchronous mode of operation, compared to how drivers
+>> acquire regulator or clock resources, is that the panel can use resources
+>> provided by the display driver. For instance a panel can be a child of the DBI
+>> or DSI bus controlled by the display device, or use a clock provided by that
+>> device. We can't defer the display device probe until the panel is registered
+>> and also defer the panel device probe until the display is registered. As
+>> most display drivers need to handle output devices hotplug (HDMI monitors for
+>> instance), handling panel through a notification system seemed to be the
+>> easiest solution.
+>>
+>> Note that this brings a different issue after registration, as display and
+>> panel drivers would take a reference to each other. Those circular references
+>> would make driver unloading impossible. I haven't found a good solution for
+>> that problem yet (hence the RFC state of those patches), and I would
+>> appreciate your input here. This might also be a hint that the framework
+>> design is wrong to start with. I guess I can't get everything right on the
+>> first try ;-)
+>>
+>> Getting hold of the panel is the most complex part. Once done, display drivers
+>> can call abstract operations provided by panel drivers to control the panel
+>> operation. These patches implement three of those operations (enable, start
+>> transfer and get modes). More operations will be needed, and those three
+>> operations will likely get modified during review. Most of the panels on
+>> devices I own are dumb panels with no control bus, and are thus not the best
+>> candidates to design a framework that needs to take complex panels' needs into
+>> account.
+>>
+>> In addition to the generic panel core, I've implemented MIPI DBI (Display Bus
+>> Interface, a parallel bus for panels that supports read/write transfers of
+>> commands and data) bus support, as well as three panel drivers (dummy panels
+>> with no control bus, and Renesas R61505- and R61517-based panels, both using
+>> DBI as their control bus). Only the dummy panel driver has been tested as I
+>> lack hardware for the two other drivers.
+>>
 >> I will appreciate all reviews, comments, criticisms, ideas, remarks, ... If
+>> you can find a clever way to solve the cyclic references issue described above
+>> I'll buy you a beer at the next conference we will both attend. If you think
+>> the proposed solution is too complex, or too simple, I'm all ears. I
+>> personally already feel that we might need something even more generic to
+>> support other kinds of external devices connected to display controllers, such
+>> as external DSI to HDMI converters for instance. Some kind of video entity
+>> exposing abstract operations like the panels do would make sense, in which
+>> case panels would "inherit" from that video entity.
+>>
+>> Speaking of conferences, I will attend the KS/LPC in San Diego in a bit more
+>> than a week, and would be happy to discuss this topic face to face there.
+>>
+>> Laurent Pinchart (5):
+>>   video: Add generic display panel core
+>>   video: panel: Add dummy panel support
+>>   video: panel: Add MIPI DBI bus support
+>>   video: panel: Add R61505 panel support
+>>   video: panel: Add R61517 panel support
 >
-> Oookay, where to start... ;)
->
-> A few cosmetic/general comments first.
->
-> I find the file naming a bit strange. You have panel.c, which is the
-> core framework, panel-dbi.c, which is the DBI bus, panel-r61517.c, which
-> is driver for r61517 panel...
->
-> Perhaps something in this direction (in order): panel-core.c,
-> mipi-dbi-bus.c, panel-r61517.c? And we probably end up with quite a lot
-> of panel drivers, perhaps we should already divide these into separate
-> directories, and then we wouldn't need to prefix each panel with
-> "panel-" at all.
->
-> ---
->
-> Should we aim for DT only solution from the start? DT is the direction
-> we are going, and I feel the older platform data stuff would be
-> deprecated soon.
->
-> ---
->
-> Something missing from the intro is how this whole thing should be used.
-> It doesn't help if we know how to turn on the panel, we also need to
-> display something on it =). So I think some kind of diagram/example of
-> how, say, drm would use this thing, and also how the SoC specific DBI
-> bus driver would be done, would clarify things.
->
-> ---
->
-> We have discussed face to face about the different hardware setups and
-> scenarios that we should support, but I'll list some of them here for
-> others:
->
-> 1) We need to support chains of external display chips and panels. A
-> simple example is a chip that takes DSI in, and outputs DPI. In that
-> case we'd have a chain of SoC -> DSI2DPI -> DPI panel.
->
-> In final products I think two external devices is the maximum (at least
-> I've never seen three devices in a row), but in theory and in
-> development environments the chain can be arbitrarily long. Also the
-> connections are not necessarily 1-to-1, but a device can take one input
-> while it has two outputs, or a device can take two inputs.
->
-> Now, I think two external devices is a must requirement. I'm not sure if
-> supporting more is an important requirement. However, if we support two
-> devices, it could be that it's trivial to change the framework to
-> support n devices.
->
-> 2) Panels and display chips are all but standard. They very often have
-> their own sequences how to do things, have bugs, or implement some
-> feature in slightly different way than some other panel. This is why the
-> panel driver should be able to control or define the way things happen.
->
-> As an example, Sharp LQ043T1DG01 panel
-> (www.sharpsme.com/download/LQ043T1DG01-SP-072106pdf). It is enabled with
-> the following sequence:
->
-> - Enable VCC and AVDD regulators
-> - Wait min 50ms
-> - Enable full video stream (pck, syncs, pixels) from SoC
-> - Wait min 0.5ms
-> - Set DISP GPIO, which turns on the display panel
->
-> Here we could split the enabling of panel to two parts, prepare (in this
-> case starts regulators and waits 50ms) and finish (wait 0.5ms and set
-> DISP GPIO), and the upper layer would start the video stream in between.
->
-> I realize this could be done with the PANEL_ENABLE_* levels in your RFC,
-> but I don't think the concepts quite match:
->
-> - PANEL_ENABLE_BLANK level is needed for "smart panels", as we need to
-> configure them and send the initial frame at that operating level. With
+> how about using 'buses' directory instead of 'panel' and adding
 
-The smart panel means command mode way(same as cpu mode)? This panel
-includes framebuffer internally and needs triggering from Display
-controller to update a new frame on that internal framebuffer. I think
-we also need this trigger interface.
+s/buses/busses
 
-Thanks,
-Inki Dae
+> 'panel' under that like below?
+> video/buess: display bus frameworks such as MIPI-DBI/DSI and eDP are placed.
+> video/buess/panel: panel drivers based on display bus-based drivers are placed.
 
+video/busses: display bus frameworks such as MIPI-DBI/DSI and eDP are placed.
+video/busses/panel: panel drivers based on display bus-based drivers are placed.
 
-> dummy panels there's really no such level, there's just one enable
-> sequence that is always done right away.
 >
-> - I find waiting at the beginning of a function very ugly (what are we
-> waiting for?) and we'd need that when changing the panel to
-> PANEL_ENABLE_ON level.
+> I think MIPI-DBI(Display Bus Interface)/DSI(Display Serial Interface)
+> and eDP are the bus interfaces for display controllers such as
+> DISC(OMAP SoC) and FIMC(Exynos SoC).
 >
-> - It's still limited if the panel is a stranger one (see following
-> example).
+> Thanks,
+> Inki Dae
 >
-> Consider the following theoretical panel enable example, taken to absurd
-> level just to show the general problem:
->
-> - Enable regulators
-> - Enable video stream
-> - Wait 50ms
-> - Disable video stream
-> - Set enable GPIO
-> - Enable video stream
->
-> This one would be rather impossible with the upper layer handling the
-> enabling of the video stream. Thus I see that the panel driver needs to
-> control the sequences, and the Sharp panel driver's enable would look
-> something like:
->
-> regulator_enable(...);
-> sleep();
-> dpi_enable_video();
-> sleep();
-> gpip_set(..);
->
-> Note that even with this model we still need the PANEL_ENABLE levels you
-> have.
->
-> ---
->
-> I'm not sure I understand the panel unload problem you mentioned. Nobody
-> should have direct references to the panel functions, so there shouldn't
-> be any automatic references that would prevent module unloading. So when
-> the user does rmmod panel-mypanel, the panel driver's remove will be
-> called. It'll unregister itself from the panel framework, which causes
-> notifications and the display driver will stop using the panel. After
-> that nobody has pointers to the panel, and it can safely be unloaded.
->
-> It could cause some locking issues, though. First the panel's remove
-> could take a lock, but the remove sequence would cause the display
-> driver to call disable on the panel, which could again try to take the
-> same lock...
->
->  Tomi
->
->
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> http://lists.freedesktop.org/mailman/listinfo/dri-devel
->
+>>
+>>  drivers/video/Kconfig              |    1 +
+>>  drivers/video/Makefile             |    1 +
+>>  drivers/video/panel/Kconfig        |   37 +++
+>>  drivers/video/panel/Makefile       |    5 +
+>>  drivers/video/panel/panel-dbi.c    |  217 +++++++++++++++
+>>  drivers/video/panel/panel-dummy.c  |  103 +++++++
+>>  drivers/video/panel/panel-r61505.c |  520 ++++++++++++++++++++++++++++++++++++
+>>  drivers/video/panel/panel-r61517.c |  408 ++++++++++++++++++++++++++++
+>>  drivers/video/panel/panel.c        |  269 +++++++++++++++++++
+>>  include/video/panel-dbi.h          |   92 +++++++
+>>  include/video/panel-dummy.h        |   25 ++
+>>  include/video/panel-r61505.h       |   27 ++
+>>  include/video/panel-r61517.h       |   28 ++
+>>  include/video/panel.h              |  111 ++++++++
+>>  14 files changed, 1844 insertions(+), 0 deletions(-)
+>>  create mode 100644 drivers/video/panel/Kconfig
+>>  create mode 100644 drivers/video/panel/Makefile
+>>  create mode 100644 drivers/video/panel/panel-dbi.c
+>>  create mode 100644 drivers/video/panel/panel-dummy.c
+>>  create mode 100644 drivers/video/panel/panel-r61505.c
+>>  create mode 100644 drivers/video/panel/panel-r61517.c
+>>  create mode 100644 drivers/video/panel/panel.c
+>>  create mode 100644 include/video/panel-dbi.h
+>>  create mode 100644 include/video/panel-dummy.h
+>>  create mode 100644 include/video/panel-r61505.h
+>>  create mode 100644 include/video/panel-r61517.h
+>>  create mode 100644 include/video/panel.h
+>>
+>> --
+>> Regards,
+>>
+>> Laurent Pinchart
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html

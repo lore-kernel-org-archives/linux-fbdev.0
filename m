@@ -1,66 +1,41 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Wed, 31 Oct 2012 09:28:00 +0000
-Subject: [PATCH v7 0/8] of: add display helper
-Message-Id: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
+From: Wei Yongjun <weiyj.lk@gmail.com>
+Date: Sun, 21 Oct 2012 12:54:26 +0000
+Subject: [PATCH] OMAPDSS: HDMI: fix missing unlock on error in hdmi_dump_regs()
+Message-Id: <CAPgLHd--5Y4cq3ieoRSueg-i0boqRa4JqRPL7+cJ0UfesunjoQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+To: tomi.valkeinen@ti.com, FlorianSchandinat@gmx.de
+Cc: yongjun_wei@trendmicro.com.cn, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Hi!
+From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-Finally, v7 of the series.
+Add the missing unlock on the error handling path in function
+hdmi_dump_regs().
 
-Changes since v6:
-	- get rid of some empty lines etc.
-	- move functions to their subsystems
-	- split of_ from non-of_ functions
-	- add at least some kerneldoc to some functions
+Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+---
+no test
+---
+ drivers/video/omap2/dss/hdmi.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Regards,
-Steffen
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index a48a7dd..8c9b8b3 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -644,8 +644,10 @@ static void hdmi_dump_regs(struct seq_file *s)
+ {
+ 	mutex_lock(&hdmi.lock);
+ 
+-	if (hdmi_runtime_get())
++	if (hdmi_runtime_get()) {
++		mutex_unlock(&hdmi.lock);
+ 		return;
++	}
+ 
+ 	hdmi.ip_data.ops->dump_wrapper(&hdmi.ip_data, s);
+ 	hdmi.ip_data.ops->dump_pll(&hdmi.ip_data, s);
 
-
-Steffen Trumtrar (8):
-  video: add display_timing struct and helpers
-  of: add helper to parse display timings
-  of: add generic videomode description
-  video: add videomode helpers
-  fbmon: add videomode helpers
-  fbmon: add of_videomode helpers
-  drm_modes: add videomode helpers
-  drm_modes: add of_videomode helpers
-
- .../devicetree/bindings/video/display-timings.txt  |  139 +++++++++++++++
- drivers/gpu/drm/drm_modes.c                        |   78 +++++++++
- drivers/of/Kconfig                                 |   12 ++
- drivers/of/Makefile                                |    2 +
- drivers/of/of_display_timings.c                    |  185 ++++++++++++++++++++
- drivers/of/of_videomode.c                          |   47 +++++
- drivers/video/Kconfig                              |   11 ++
- drivers/video/Makefile                             |    2 +
- drivers/video/display_timing.c                     |   24 +++
- drivers/video/fbmon.c                              |   76 ++++++++
- drivers/video/videomode.c                          |   44 +++++
- include/drm/drmP.h                                 |    8 +
- include/linux/display_timing.h                     |   69 ++++++++
- include/linux/fb.h                                 |    5 +
- include/linux/of_display_timings.h                 |   20 +++
- include/linux/of_videomode.h                       |   15 ++
- include/linux/videomode.h                          |   36 ++++
- 17 files changed, 773 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/display-timings.txt
- create mode 100644 drivers/of/of_display_timings.c
- create mode 100644 drivers/of/of_videomode.c
- create mode 100644 drivers/video/display_timing.c
- create mode 100644 drivers/video/videomode.c
- create mode 100644 include/linux/display_timing.h
- create mode 100644 include/linux/of_display_timings.h
- create mode 100644 include/linux/of_videomode.h
- create mode 100644 include/linux/videomode.h
-
--- 
-1.7.10.4
 

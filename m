@@ -1,37 +1,54 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 17 Oct 2012 11:20:26 +0000
-Subject: [PATCH 0/9] OMAPDSS: minor fixes & cleanups
-Message-Id: <1350472835-28727-1-git-send-email-tomi.valkeinen@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Mon, 22 Oct 2012 05:48:58 +0000
+Subject: Re: [PATCH 0/9] OMAPDSS: minor fixes & cleanups
+Message-Id: <5084DE3D.1050502@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1350472835-28727-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1350472835-28727-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Hi,
+On Wednesday 17 October 2012 04:50 PM, Tomi Valkeinen wrote:
+> Hi,
+>
+> This series contains minor cleanups and fixes for omapdss.
 
-This series contains minor cleanups and fixes for omapdss.
+This series looks fine to me. I have a related cleanup patch which you 
+may consider adding to the series.
 
- Tomi
+Thanks,
+Archit
 
-Tomi Valkeinen (9):
-  OMAPDSS: DSI: fix dsi_get_dsidev_from_id()
-  OMAPDSS: fix registering the vsync isr in apply
-  OMAPDSS: DISPC: constify function parameters
-  OMAPDSS: combine LCD related config into one func
-  OMAPDSS: remove declarations for non-existing funcs
-  OMAPDSS: DISPC: remove struct omap_overlay use
-  OMAPDSS: DISPC: cleanup lcd and digit enable
-  OMAPDSS: DISPC: add dispc_mgr_get_sync_lost_irq()
-  OMAPDSS: DISPC: cleanup lcd/digit enable/disable
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 18 Oct 2012 16:51:57 +0530
+Subject: [PATCH] OMAPDSS: Remove acb and acbi fields from omap_dss_device
 
- drivers/video/omap2/dss/apply.c |   27 ++---
- drivers/video/omap2/dss/dispc.c |  235 ++++++++++++++++++++++++---------------
- drivers/video/omap2/dss/dsi.c   |   13 ++-
- drivers/video/omap2/dss/dss.h   |   21 ++--
- 4 files changed, 174 insertions(+), 122 deletions(-)
+acbi and acb fields were meant for passive matrix panels which omapdss 
+doesn't
+support any longer. Remove these fields from omap_dss_device struct.
 
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+  include/video/omapdss.h |    4 ----
+  1 file changed, 4 deletions(-)
+
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 88c8294..f39e6aa 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -621,10 +621,6 @@ struct omap_dss_device {
+  	struct {
+  		struct omap_video_timings timings;
+
+-		int acbi;	/* ac-bias pin transitions per interrupt */
+-		/* Unit: line clocks */
+-		int acb;	/* ac-bias pin frequency */
+-
+  		enum omap_dss_dsi_pixel_format dsi_pix_fmt;
+  		enum omap_dss_dsi_mode dsi_mode;
+  		struct omap_dss_dsi_videomode_timings dsi_vm_timings;
 -- 
 1.7.9.5
-

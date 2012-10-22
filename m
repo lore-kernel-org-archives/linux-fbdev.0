@@ -1,52 +1,80 @@
-From: Sumit Semwal <sumit.semwal@linaro.org>
-Date: Mon, 22 Oct 2012 06:14:36 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 22 Oct 2012 06:53:58 +0000
 Subject: Re: [PATCH] OMAPDSS: HDMI: fix missing unlock on error in hdmi_dump_regs()
-Message-Id: <5084E17C.1070403@linaro.org>
+Message-Id: <5084ED86.5060100@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig8B566BE12835B26E2E58A777"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CAPgLHd--5Y4cq3ieoRSueg-i0boqRa4JqRPL7+cJ0UfesunjoQ@mail.gmail.com>
 In-Reply-To: <CAPgLHd--5Y4cq3ieoRSueg-i0boqRa4JqRPL7+cJ0UfesunjoQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: Wei Yongjun <weiyj.lk@gmail.com>
-Cc: tomi.valkeinen@ti.com, FlorianSchandinat@gmx.de, yongjun_wei@trendmicro.com.cn, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: FlorianSchandinat@gmx.de, yongjun_wei@trendmicro.com.cn, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Sunday 21 October 2012 06:24 PM, Wei Yongjun wrote:
+--------------enig8B566BE12835B26E2E58A777
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 2012-10-21 15:54, Wei Yongjun wrote:
 > From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
->
+>=20
 > Add the missing unlock on the error handling path in function
 > hdmi_dump_regs().
->
+>=20
 > Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
-Looks good to me; feel free to add:
-Reviewed-by: Sumit Semwal <sumit.semwal@ti.com>
 > ---
 > no test
 > ---
->   drivers/video/omap2/dss/hdmi.c | 4 +++-
->   1 file changed, 3 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+>  drivers/video/omap2/dss/hdmi.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/h=
+dmi.c
 > index a48a7dd..8c9b8b3 100644
 > --- a/drivers/video/omap2/dss/hdmi.c
 > +++ b/drivers/video/omap2/dss/hdmi.c
 > @@ -644,8 +644,10 @@ static void hdmi_dump_regs(struct seq_file *s)
->   {
->   	mutex_lock(&hdmi.lock);
->
+>  {
+>  	mutex_lock(&hdmi.lock);
+> =20
 > -	if (hdmi_runtime_get())
 > +	if (hdmi_runtime_get()) {
 > +		mutex_unlock(&hdmi.lock);
->   		return;
+>  		return;
 > +	}
->
->   	hdmi.ip_data.ops->dump_wrapper(&hdmi.ip_data, s);
->   	hdmi.ip_data.ops->dump_pll(&hdmi.ip_data, s);
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+> =20
+>  	hdmi.ip_data.ops->dump_wrapper(&hdmi.ip_data, s);
+>  	hdmi.ip_data.ops->dump_pll(&hdmi.ip_data, s);
+>=20
 
+Thanks, applied to omapdss tree.
+
+ Tomi
+
+
+
+
+--------------enig8B566BE12835B26E2E58A777
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJQhO2KAAoJEPo9qoy8lh71mCIP/0AmolMUIuWbMyFRyPCALqeI
+ILVDdRCHF22oRLJMmdaHeVKEOyDprA+90b3+hzKQygNcqGI8SryHtD4YAkQaosi8
+bB246chDNnm3f3CpfR64aJHBzZ2A/kSJxTiW5wUEj+sUdxijbS5s9MRZtdA/aCkh
+tepuagDGejrcjLl2U978rOj5rY6I2mwMztuYlmRHe/Fpz1d3KOfjKRq2TS7bNBe5
+H4Mqx6796JP2uUtq98pH9y+NKmcIHIRMSIrygvbDKva0PYnuoms2HKNChHUq3lNL
+ijcNHkmUsAISPUiyL2J6r4/7b5685P2xJh9b+V/J7X91p3IgkugpDosfi7vA7xwT
+pyMwsUKFd9ge05VF+uLZuQT0iwMbYaamrEeM6rk3B4F/RyLPP7xZWtdvaM0F6Von
+2PmpJs2TqXwdOFFwEOZf1wMVS1vTBwVgV3iMz/2Tl2YfpgitY0Oht/WSUsgEkoac
+9oJe/A/rVwYrU5QJ0vLqyiCXr6vnFROosVa1NKB/23HBoZcodi9SNxV4oUBAa2fk
+TToE/o9KvISCkl5BREDB0TY1crPu9kcljlkMrHbz8DZwqOMDpjMZ9F4zpezbgXPB
+00zlLchdjUq0vJuJAKgU47wDQ5XxU/MoPDyNAf116d7B3vlrJK2L27NdOIlN4OJ5
+wBDY5beaFZApz/iTp9Hp
+=XKAn
+-----END PGP SIGNATURE-----
+
+--------------enig8B566BE12835B26E2E58A777--

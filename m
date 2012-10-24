@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 24 Oct 2012 09:29:06 +0000
-Subject: [PATCH 15/20] OMAPFB: remove use of extended edid block
-Message-Id: <1351070951-18616-16-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 24 Oct 2012 09:28:58 +0000
+Subject: [PATCH 07/20] OMAPDSS: DISPC: rename dispc_mgr_enable/disable to _sync
+Message-Id: <1351070951-18616-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,33 +11,89 @@ Content-Transfer-Encoding: 7bit
 To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-It seems that using the second EDID block causes more problems than is
-of any help. The first mode in the extended block will get
-FB_MODE_IS_FIRST set, which will override the first mode from the first
-EDID block, thus making the default videomode selection not to work
-properly.
+The current dispc_mgr_enable/disable function are blocking, and do a bit
+too much for omapdrm. We'll expose new enable & disable functions that
+will just set the bits in the registers in the following patches.
 
-This patch removes the use of the extended edid block for now.
+This patch renames the current functions to *_sync, to make it clear
+that they are blocking, and also to free up the dispc_mgr_enable/disable
+names for these new functions.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c |    3 ---
- 1 file changed, 3 deletions(-)
+ drivers/video/omap2/dss/apply.c |    6 +++---
+ drivers/video/omap2/dss/dispc.c |    4 ++--
+ drivers/video/omap2/dss/dss.h   |    4 ++--
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index c0ff8b5ad..fe37039 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -2272,9 +2272,6 @@ static int omapfb_find_best_mode(struct omap_dss_device *display,
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 7a61a2f..6a21443 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -772,7 +772,7 @@ void dss_mgr_start_update(struct omap_overlay_manager *mgr)
+ 	if (!dss_data.irq_enabled && need_isr())
+ 		dss_register_vsync_isr();
  
- 	fb_edid_to_monspecs(edid, specs);
+-	dispc_mgr_enable(mgr->id);
++	dispc_mgr_enable_sync(mgr->id);
  
--	if (edid[126] > 0)
--		fb_edid_add_monspecs(edid + 0x80, specs);
--
- 	best_xres = 0;
- 	best_idx = -1;
+ 	mgr_clear_shadow_dirty(mgr);
  
+@@ -1027,7 +1027,7 @@ int dss_mgr_enable(struct omap_overlay_manager *mgr)
+ 	spin_unlock_irqrestore(&data_lock, flags);
+ 
+ 	if (!mgr_manual_update(mgr))
+-		dispc_mgr_enable(mgr->id);
++		dispc_mgr_enable_sync(mgr->id);
+ 
+ out:
+ 	mutex_unlock(&apply_lock);
+@@ -1052,7 +1052,7 @@ void dss_mgr_disable(struct omap_overlay_manager *mgr)
+ 		goto out;
+ 
+ 	if (!mgr_manual_update(mgr))
+-		dispc_mgr_disable(mgr->id);
++		dispc_mgr_disable_sync(mgr->id);
+ 
+ 	spin_lock_irqsave(&data_lock, flags);
+ 
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 392445a..600a412 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2755,7 +2755,7 @@ static void dispc_mgr_disable_digit_out(void)
+ 		DSSERR("failed to unregister %x isr\n", irq_mask);
+ }
+ 
+-void dispc_mgr_enable(enum omap_channel channel)
++void dispc_mgr_enable_sync(enum omap_channel channel)
+ {
+ 	if (dss_mgr_is_lcd(channel))
+ 		dispc_mgr_enable_lcd_out(channel);
+@@ -2765,7 +2765,7 @@ void dispc_mgr_enable(enum omap_channel channel)
+ 		WARN_ON(1);
+ }
+ 
+-void dispc_mgr_disable(enum omap_channel channel)
++void dispc_mgr_disable_sync(enum omap_channel channel)
+ {
+ 	if (dss_mgr_is_lcd(channel))
+ 		dispc_mgr_disable_lcd_out(channel);
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 00e0a36..efe8984 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -437,8 +437,8 @@ u32 dispc_mgr_get_sync_lost_irq(enum omap_channel channel);
+ bool dispc_mgr_go_busy(enum omap_channel channel);
+ void dispc_mgr_go(enum omap_channel channel);
+ bool dispc_mgr_is_enabled(enum omap_channel channel);
+-void dispc_mgr_enable(enum omap_channel channel);
+-void dispc_mgr_disable(enum omap_channel channel);
++void dispc_mgr_enable_sync(enum omap_channel channel);
++void dispc_mgr_disable_sync(enum omap_channel channel);
+ bool dispc_mgr_is_channel_enabled(enum omap_channel channel);
+ void dispc_mgr_set_lcd_config(enum omap_channel channel,
+ 		const struct dss_lcd_mgr_config *config);
 -- 
 1.7.9.5
 

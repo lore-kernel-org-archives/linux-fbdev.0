@@ -1,77 +1,41 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 16 Oct 2012 07:21:25 +0000
-Subject: [PATCH] video: s3c-fb: use dev_get_drvdata() instead of platform_get_drvdata()
-Message-Id: <006f01cdab6e$d9fd70b0$8df85210$%han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 24 Oct 2012 09:29:04 +0000
+Subject: [PATCH 13/20] OMAPDSS: HDMI: add 1920x1200 video mode
+Message-Id: <1351070951-18616-14-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Ricardo Neri <ricardo.neri@ti.com>
 
-Because there is no need to access to the platform device in
-suspend/resume and runtime_suspend/resume, dev_get_drvdata()
-can be used instead of platform_get_drvdata() to make the code
-smaller.
+Add 1920x1200 video mode to hdmi driver's static modelist.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Ricardo Neri <ricardo.neri@ti.com>
 ---
- drivers/video/s3c-fb.c |   14 +++++---------
- 1 files changed, 5 insertions(+), 9 deletions(-)
+ drivers/video/omap2/dss/hdmi.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 2ed7b63..95c6e30 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -1544,8 +1544,7 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
- #ifdef CONFIG_PM_SLEEP
- static int s3c_fb_suspend(struct device *dev)
- {
--	struct platform_device *pdev = to_platform_device(dev);
--	struct s3c_fb *sfb = platform_get_drvdata(pdev);
-+	struct s3c_fb *sfb = dev_get_drvdata(dev);
- 	struct s3c_fb_win *win;
- 	int win_no;
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index b809490..dfbc1e7 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -295,6 +295,12 @@ static const struct hdmi_config vesa_timings[] = {
+ 			false, },
+ 		{ 0x55, HDMI_DVI },
+ 	},
++	{
++		{ 1920, 1200, 154000, 32, 48, 80, 6, 3, 26,
++			OMAPDSS_SIG_ACTIVE_LOW, OMAPDSS_SIG_ACTIVE_HIGH,
++			false, },
++		{ 0x44, HDMI_DVI },
++	},
+ };
  
-@@ -1572,8 +1571,7 @@ static int s3c_fb_suspend(struct device *dev)
- 
- static int s3c_fb_resume(struct device *dev)
- {
--	struct platform_device *pdev = to_platform_device(dev);
--	struct s3c_fb *sfb = platform_get_drvdata(pdev);
-+	struct s3c_fb *sfb = dev_get_drvdata(dev);
- 	struct s3c_fb_platdata *pd = sfb->pdata;
- 	struct s3c_fb_win *win;
- 	int win_no;
-@@ -1623,7 +1621,7 @@ static int s3c_fb_resume(struct device *dev)
- 		if (!win)
- 			continue;
- 
--		dev_dbg(&pdev->dev, "resuming window %d\n", win_no);
-+		dev_dbg(dev, "resuming window %d\n", win_no);
- 		s3c_fb_set_par(win->fbinfo);
- 	}
- 
-@@ -1636,8 +1634,7 @@ static int s3c_fb_resume(struct device *dev)
- #ifdef CONFIG_PM_RUNTIME
- static int s3c_fb_runtime_suspend(struct device *dev)
- {
--	struct platform_device *pdev = to_platform_device(dev);
--	struct s3c_fb *sfb = platform_get_drvdata(pdev);
-+	struct s3c_fb *sfb = dev_get_drvdata(dev);
- 
- 	if (!sfb->variant.has_clksel)
- 		clk_disable_unprepare(sfb->lcd_clk);
-@@ -1649,8 +1646,7 @@ static int s3c_fb_runtime_suspend(struct device *dev)
- 
- static int s3c_fb_runtime_resume(struct device *dev)
- {
--	struct platform_device *pdev = to_platform_device(dev);
--	struct s3c_fb *sfb = platform_get_drvdata(pdev);
-+	struct s3c_fb *sfb = dev_get_drvdata(dev);
- 	struct s3c_fb_platdata *pd = sfb->pdata;
- 
- 	clk_prepare_enable(sfb->bus_clk);
+ static int hdmi_runtime_get(void)
 -- 
-1.7.1
-
+1.7.9.5
 

@@ -1,58 +1,69 @@
-From: phil.edworthy@renesas.com
-Date: Fri, 05 Oct 2012 16:34:54 +0000
-Subject: Re: [PATCH v2] fbdev: Add Renesas vdc4 framebuffer driver
-Message-Id: <OFA74CF6F8.392AD698-ON80257A8E.005AF45A-80257A8E.005B163E@eu.necel.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 24 Oct 2012 09:29:11 +0000
+Subject: [PATCH 20/20] OMAPDSS: split hdmi muxing function
+Message-Id: <1351070951-18616-21-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347267372-22949-1-git-send-email-phil.edworthy@renesas.com>
-In-Reply-To: <1347267372-22949-1-git-send-email-phil.edworthy@renesas.com>
+References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Ricardo Neri <ricardo.neri@ti.com>
 
-Hi,
+Split the omap4_hdmi_mux_pads() function into two parts, one handles the
+tpd12s015 gpio muxing, the other handles the hdmi pins.
 
-Any news on this patch?
+This is clearer, as hdmi and tpd12s015 are separate devices, and it also
+allows us to mux those separately with DT.
 
-Thanks
-Phil
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Ricardo Neri <ricardo.neri@ti.com>
+---
+ arch/arm/mach-omap2/display.c |   15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
-> From: Jingoo Han <jg1.han@samsung.com>
-> To: "'Phil Edworthy'" <phil.edworthy@renesas.com>, 
-> Cc: "'Florian Tobias Schandinat'" <FlorianSchandinat@gmx.de>, linux-
-> fbdev@vger.kernel.org, linux-sh@vger.kernel.org, "'Jingoo Han'" 
-> <jg1.han@samsung.com>
-> Date: 11/09/2012 03:31
-> Subject: Re: [PATCH v2] fbdev: Add Renesas vdc4 framebuffer driver
-> 
-> On Monday, September 10, 2012 5:56 PM Phil Edworthy wrote
-> > 
-> > The vdc4 display hardware is found on the sh7269 device.
-> > 
-> > Signed-off-by: Phil Edworthy <phil.edworthy@renesas.com>
-> 
-> 
-> Reviewed-by: Jingoo Han <jg1.han@samsung.com>
-> 
-> Best regards,
-> Jingoo Han
-> 
-> 
-> > ---
-> > v2:
-> >  * Use devm_ variants of clk_get, ioremap_nocache, request_irq.
-> >  * Replace spaces with tabs.
-> >  * Check ren_vdc4_start return value.
-> >  * Fix headers used.
-> > 
-> >  drivers/video/Kconfig      |   10 +
-> >  drivers/video/Makefile     |    1 +
-> >  drivers/video/ren_vdc4fb.c |  641 +++++++++++++++++++++++++++++++
-> +++++++++++++
-> >  include/video/ren_vdc4fb.h |   19 ++
-> >  4 files changed, 671 insertions(+), 0 deletions(-)
-> >  create mode 100644 drivers/video/ren_vdc4fb.c
-> >  create mode 100644 include/video/ren_vdc4fb.h
-> 
-> 
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index 28f5087..282c814e 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -100,17 +100,20 @@ static const struct omap_dss_hwmod_data omap4_dss_hwmod_data[] __initconst = {
+ 	{ "dss_hdmi", "omapdss_hdmi", -1 },
+ };
+ 
+-static void __init omap4_hdmi_mux_pads(enum omap_hdmi_flags flags)
++static void __init omap4_tpd12s015_mux_pads(void)
+ {
+-	u32 reg;
+-	u16 control_i2c_1;
+-
+ 	omap_mux_init_signal("hdmi_cec",
+ 			OMAP_PIN_INPUT_PULLUP);
+ 	omap_mux_init_signal("hdmi_ddc_scl",
+ 			OMAP_PIN_INPUT_PULLUP);
+ 	omap_mux_init_signal("hdmi_ddc_sda",
+ 			OMAP_PIN_INPUT_PULLUP);
++}
++
++static void __init omap4_hdmi_mux_pads(enum omap_hdmi_flags flags)
++{
++	u32 reg;
++	u16 control_i2c_1;
+ 
+ 	/*
+ 	 * CONTROL_I2C_1: HDMI_DDC_SDA_PULLUPRESX (bit 28) and
+@@ -161,8 +164,10 @@ static int omap4_dsi_mux_pads(int dsi_id, unsigned lanes)
+ 
+ int __init omap_hdmi_init(enum omap_hdmi_flags flags)
+ {
+-	if (cpu_is_omap44xx())
++	if (cpu_is_omap44xx()) {
+ 		omap4_hdmi_mux_pads(flags);
++		omap4_tpd12s015_mux_pads();
++	}
+ 
+ 	return 0;
+ }
+-- 
+1.7.9.5
 

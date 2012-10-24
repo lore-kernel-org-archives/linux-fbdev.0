@@ -1,106 +1,53 @@
-From: Marek Vasut <marex@denx.de>
-Date: Sun, 28 Oct 2012 21:53:14 +0000
-Subject: Re: [PATCH] lms283gf05: add suspend/resume handlers
-Message-Id: <201210282253.14426.marex@denx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 24 Oct 2012 09:29:00 +0000
+Subject: [PATCH 09/20] OMAPDSS: add dispc_ovl_enabled()
+Message-Id: <1351070951-18616-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351439357-9843-1-git-send-email-anarsoul@gmail.com>
-In-Reply-To: <1351439357-9843-1-git-send-email-anarsoul@gmail.com>
+References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Dear Vasily Khoruzhick,
+Add new dispc function, dispc_ovl_enabled(). This returns if the overlay
+enable bit is set in the registers.
 
-> Signed-off-by: Vasily Khoruzhick <anarsoul@gmail.com>
-> ---
->  drivers/video/backlight/lms283gf05.c | 42
-> ++++++++++++++++++++++++++++++++++++ 1 file changed, 42 insertions(+)
-> 
-> diff --git a/drivers/video/backlight/lms283gf05.c
-> b/drivers/video/backlight/lms283gf05.c index ea43f22..ed15752 100644
-> --- a/drivers/video/backlight/lms283gf05.c
-> +++ b/drivers/video/backlight/lms283gf05.c
-> @@ -22,6 +22,7 @@
->  struct lms283gf05_state {
->  	struct spi_device	*spi;
->  	struct lcd_device	*ld;
-> +	unsigned int		power;
->  };
-> 
->  struct lms283gf05_seq {
-> @@ -130,6 +131,8 @@ static int lms283gf05_power_set(struct lcd_device *ld,
-> int power) struct spi_device *spi = st->spi;
->  	struct lms283gf05_pdata *pdata = spi->dev.platform_data;
-> 
-> +	st->power = power;
-> +
->  	if (power <= FB_BLANK_NORMAL) {
->  		if (pdata)
->  			lms283gf05_reset(pdata->reset_gpio,
-> @@ -193,6 +196,43 @@ static int __devinit lms283gf05_probe(struct
-> spi_device *spi) return 0;
->  }
-> 
-> +#if defined(CONFIG_PM)
-> +static unsigned int before_power;
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dispc.c |    5 +++++
+ drivers/video/omap2/dss/dss.h   |    1 +
+ 2 files changed, 6 insertions(+)
 
-NAK, this won't work if you have two different LCDs connected, use private data.
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index b5cdbaf..3fd60ce 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2589,6 +2589,11 @@ int dispc_ovl_enable(enum omap_plane plane, bool enable)
+ 	return 0;
+ }
+ 
++bool dispc_ovl_enabled(enum omap_plane plane)
++{
++	return REG_GET(DISPC_OVL_ATTRIBUTES(plane), 0, 0);
++}
++
+ static void dispc_mgr_disable_isr(void *data, u32 mask)
+ {
+ 	struct completion *compl = data;
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index b007aee..be7678c 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -428,6 +428,7 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ 		bool replication, const struct omap_video_timings *mgr_timings,
+ 		bool mem_to_mem);
+ int dispc_ovl_enable(enum omap_plane plane, bool enable);
++bool dispc_ovl_enabled(enum omap_plane plane);
+ void dispc_ovl_set_channel_out(enum omap_plane plane,
+ 		enum omap_channel channel);
+ 
+-- 
+1.7.9.5
 
-> +static int lms283gf05_suspend(struct spi_device *spi, pm_message_t mesg)
-> +{
-> +	int ret = 0;
-
-Redundant assignment.
-
-> +	struct lms283gf05_state *state = dev_get_drvdata(&spi->dev);
-> +
-> +	dev_dbg(&spi->dev, "lcd->power = %d\n", state->power);
-> +
-> +	before_power = state->power;
-> +
-> +	/*
-> +	 * when lcd panel is suspend, lcd panel becomes off
-> +	 * regardless of status.
-> +	 */
-> +	ret = lms283gf05_power_set(state->ld, FB_BLANK_POWERDOWN);
-
-Why not just return lms...(); ?
-
-> +	return ret;
-> +}
-> +
-> +static int lms283gf05_resume(struct spi_device *spi)
-> +{
-> +	int ret = 0;
-
-Redundant assignment.
-
-> +	struct lms283gf05_state *state = dev_get_drvdata(&spi->dev);
-> +
-> +	dev_dbg(&spi->dev, "before_power = %d\n", before_power);
-> +
-> +	ret = lms283gf05_power_set(state->ld, before_power);
-> +
-> +	return ret;
-> +}
-> +#else
-> +#define lms283gf05_suspend	NULL
-> +#define lms283gf05_resume	NULL
-> +#endif
-> +
->  static int __devexit lms283gf05_remove(struct spi_device *spi)
->  {
->  	struct lms283gf05_state *st = dev_get_drvdata(&spi->dev);
-> @@ -209,6 +249,8 @@ static struct spi_driver lms283gf05_driver = {
->  	},
->  	.probe		= lms283gf05_probe,
->  	.remove		= __devexit_p(lms283gf05_remove),
-> +	.suspend	= lms283gf05_suspend,
-> +	.resume		= lms283gf05_resume,
->  };
-> 
->  module_spi_driver(lms283gf05_driver);
-
-Best regards,
-Marek Vasut

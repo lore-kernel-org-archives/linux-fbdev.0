@@ -1,69 +1,27 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 24 Oct 2012 09:29:11 +0000
-Subject: [PATCH 20/20] OMAPDSS: split hdmi muxing function
-Message-Id: <1351070951-18616-21-git-send-email-tomi.valkeinen@ti.com>
+From: Tony Lindgren <tony@atomide.com>
+Date: Wed, 24 Oct 2012 16:23:15 +0000
+Subject: Re: [PATCH 20/20] OMAPDSS: split hdmi muxing function
+Message-Id: <20121024162314.GF5605@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
+ <1351070951-18616-21-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1351070951-18616-21-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Ricardo Neri <ricardo.neri@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Ricardo Neri <ricardo.neri@ti.com>
 
-Split the omap4_hdmi_mux_pads() function into two parts, one handles the
-tpd12s015 gpio muxing, the other handles the hdmi pins.
+* Tomi Valkeinen <tomi.valkeinen@ti.com> [121024 02:32]:
+> Split the omap4_hdmi_mux_pads() function into two parts, one handles the
+> tpd12s015 gpio muxing, the other handles the hdmi pins.
+> 
+> This is clearer, as hdmi and tpd12s015 are separate devices, and it also
+> allows us to mux those separately with DT.
+> 
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: Ricardo Neri <ricardo.neri@ti.com>
 
-This is clearer, as hdmi and tpd12s015 are separate devices, and it also
-allows us to mux those separately with DT.
+Looks OK to me to merge with the rest of the DSS patches:
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Ricardo Neri <ricardo.neri@ti.com>
----
- arch/arm/mach-omap2/display.c |   15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
-
-diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
-index 28f5087..282c814e 100644
---- a/arch/arm/mach-omap2/display.c
-+++ b/arch/arm/mach-omap2/display.c
-@@ -100,17 +100,20 @@ static const struct omap_dss_hwmod_data omap4_dss_hwmod_data[] __initconst = {
- 	{ "dss_hdmi", "omapdss_hdmi", -1 },
- };
- 
--static void __init omap4_hdmi_mux_pads(enum omap_hdmi_flags flags)
-+static void __init omap4_tpd12s015_mux_pads(void)
- {
--	u32 reg;
--	u16 control_i2c_1;
--
- 	omap_mux_init_signal("hdmi_cec",
- 			OMAP_PIN_INPUT_PULLUP);
- 	omap_mux_init_signal("hdmi_ddc_scl",
- 			OMAP_PIN_INPUT_PULLUP);
- 	omap_mux_init_signal("hdmi_ddc_sda",
- 			OMAP_PIN_INPUT_PULLUP);
-+}
-+
-+static void __init omap4_hdmi_mux_pads(enum omap_hdmi_flags flags)
-+{
-+	u32 reg;
-+	u16 control_i2c_1;
- 
- 	/*
- 	 * CONTROL_I2C_1: HDMI_DDC_SDA_PULLUPRESX (bit 28) and
-@@ -161,8 +164,10 @@ static int omap4_dsi_mux_pads(int dsi_id, unsigned lanes)
- 
- int __init omap_hdmi_init(enum omap_hdmi_flags flags)
- {
--	if (cpu_is_omap44xx())
-+	if (cpu_is_omap44xx()) {
- 		omap4_hdmi_mux_pads(flags);
-+		omap4_tpd12s015_mux_pads();
-+	}
- 
- 	return 0;
- }
--- 
-1.7.9.5
-
+Acked-by: Tony Lindgren <tony@atomide.com>

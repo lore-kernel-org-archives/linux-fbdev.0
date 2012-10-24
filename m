@@ -1,42 +1,96 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 10 Oct 2012 12:35:32 +0000
-Subject: Re: [PATCH] video/mx3fb: set .owner to prevent module unloading while being used
-Message-Id: <50756B94.4000901@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 24 Oct 2012 09:28:55 +0000
+Subject: [PATCH 04/20] OMAPDSS: DISPC: fix dispc_mgr_lclk_rate for DIGIT output
+Message-Id: <1351070951-18616-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1349428807-26373-1-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1349428807-26373-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 10/05/2012 09:20 AM, Uwe Kleine-König wrote:
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+dispc_mgr_lclk_rate() cannot currently be called with DIGIT channel
+parameter, even if dispc_ovl_lclk_rate() can. Fix this by making
+dispc_mgr_lclk_rate() handle DIGIT channel also.
 
-Applied.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dispc.c |   49 ++++++++++++++++++++-------------------
+ 1 file changed, 25 insertions(+), 24 deletions(-)
 
-
-Thanks,
-
-Florian Tobias Schandinat
-
-
-> ---
->  drivers/video/mx3fb.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-> index d738108..ce1d452 100644
-> --- a/drivers/video/mx3fb.c
-> +++ b/drivers/video/mx3fb.c
-> @@ -1568,7 +1568,8 @@ static int mx3fb_remove(struct platform_device *dev)
->  
->  static struct platform_driver mx3fb_driver = {
->  	.driver = {
-> -		   .name = MX3FB_NAME,
-> +		.name = MX3FB_NAME,
-> +		.owner = THIS_MODULE,
->  	},
->  	.probe = mx3fb_probe,
->  	.remove = mx3fb_remove,
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 817d671..198e321 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -3167,28 +3167,32 @@ unsigned long dispc_mgr_lclk_rate(enum omap_channel channel)
+ 	unsigned long r;
+ 	u32 l;
+ 
+-	l = dispc_read_reg(DISPC_DIVISORo(channel));
++	if (dss_mgr_is_lcd(channel)) {
++		l = dispc_read_reg(DISPC_DIVISORo(channel));
+ 
+-	lcd = FLD_GET(l, 23, 16);
++		lcd = FLD_GET(l, 23, 16);
+ 
+-	switch (dss_get_lcd_clk_source(channel)) {
+-	case OMAP_DSS_CLK_SRC_FCK:
+-		r = clk_get_rate(dispc.dss_clk);
+-		break;
+-	case OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC:
+-		dsidev = dsi_get_dsidev_from_id(0);
+-		r = dsi_get_pll_hsdiv_dispc_rate(dsidev);
+-		break;
+-	case OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC:
+-		dsidev = dsi_get_dsidev_from_id(1);
+-		r = dsi_get_pll_hsdiv_dispc_rate(dsidev);
+-		break;
+-	default:
+-		BUG();
+-		return 0;
+-	}
++		switch (dss_get_lcd_clk_source(channel)) {
++		case OMAP_DSS_CLK_SRC_FCK:
++			r = clk_get_rate(dispc.dss_clk);
++			break;
++		case OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC:
++			dsidev = dsi_get_dsidev_from_id(0);
++			r = dsi_get_pll_hsdiv_dispc_rate(dsidev);
++			break;
++		case OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC:
++			dsidev = dsi_get_dsidev_from_id(1);
++			r = dsi_get_pll_hsdiv_dispc_rate(dsidev);
++			break;
++		default:
++			BUG();
++			return 0;
++		}
+ 
+-	return r / lcd;
++		return r / lcd;
++	} else {
++		return dispc_fclk_rate();
++	}
+ }
+ 
+ unsigned long dispc_mgr_pclk_rate(enum omap_channel channel)
+@@ -3247,12 +3251,9 @@ static unsigned long dispc_plane_lclk_rate(enum omap_plane plane)
+ {
+ 	enum omap_channel channel = dispc_ovl_get_channel_out(plane);
+ 
+-	if (dss_mgr_is_lcd(channel))
+-		return dispc_mgr_lclk_rate(channel);
+-	else
+-		return dispc_fclk_rate();
+-
++	return dispc_mgr_lclk_rate(channel);
+ }
++
+ static void dispc_dump_clocks_channel(struct seq_file *s, enum omap_channel channel)
+ {
+ 	int lcd, pcd;
+-- 
+1.7.9.5
 

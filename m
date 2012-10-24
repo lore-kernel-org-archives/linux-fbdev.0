@@ -1,98 +1,72 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 17 Oct 2012 11:20:29 +0000
-Subject: [PATCH 3/9] OMAPDSS: DISPC: constify function parameters
-Message-Id: <1350472835-28727-4-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 24 Oct 2012 09:28:51 +0000
+Subject: [PATCH 00/20] OMAPDSS: Misc cleanups/fixes
+Message-Id: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1350472835-28727-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1350472835-28727-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add consts to dispc function parameters which do not modify the passed
-structs.
+Hi,
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/dispc.c |   10 +++++-----
- drivers/video/omap2/dss/dss.h   |    6 +++---
- 2 files changed, 8 insertions(+), 8 deletions(-)
+Here's another series with miscellaneous omapdss cleanups and fixes. I've made
+these during my work with various bigger projects, like using DSI PLL for DVI
+and omapdrm cooperation work.
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index b43477a..4dfc90a 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -1076,7 +1076,7 @@ static void dispc_mgr_enable_cpr(enum omap_channel channel, bool enable)
- }
- 
- static void dispc_mgr_set_cpr_coef(enum omap_channel channel,
--		struct omap_dss_cpr_coefs *coefs)
-+		const struct omap_dss_cpr_coefs *coefs)
- {
- 	u32 coef_r, coef_g, coef_b;
- 
-@@ -2505,7 +2505,7 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
- 		bool mem_to_mem)
- {
- 	int r;
--	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
-+	const struct omap_overlay *ovl = omap_dss_get_overlay(plane);
- 	enum omap_channel channel;
- 
- 	channel = dispc_ovl_get_channel_out(plane);
-@@ -2842,7 +2842,7 @@ static void dispc_mgr_enable_alpha_fixed_zorder(enum omap_channel ch,
- }
- 
- void dispc_mgr_setup(enum omap_channel channel,
--		struct omap_overlay_manager_info *info)
-+		const struct omap_overlay_manager_info *info)
- {
- 	dispc_mgr_set_default_color(channel, info->default_color);
- 	dispc_mgr_set_trans_key(channel, info->trans_key_type, info->trans_key);
-@@ -3012,7 +3012,7 @@ static void _dispc_mgr_set_lcd_timings(enum omap_channel channel, int hsw,
- 
- /* change name to mode? */
- void dispc_mgr_set_timings(enum omap_channel channel,
--		struct omap_video_timings *timings)
-+		const struct omap_video_timings *timings)
- {
- 	unsigned xtot, ytot;
- 	unsigned long ht, vt;
-@@ -3533,7 +3533,7 @@ int dispc_calc_clock_rates(unsigned long dispc_fclk_rate,
- }
- 
- void dispc_mgr_set_clock_div(enum omap_channel channel,
--		struct dispc_clock_info *cinfo)
-+		const struct dispc_clock_info *cinfo)
- {
- 	DSSDBG("lck = %lu (%u)\n", cinfo->lck, cinfo->lck_div);
- 	DSSDBG("pck = %lu (%u)\n", cinfo->pck, cinfo->pck_div);
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 6728892..eaf0856 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -475,16 +475,16 @@ void dispc_mgr_enable_stallmode(enum omap_channel channel, bool enable);
- void dispc_mgr_set_tft_data_lines(enum omap_channel channel, u8 data_lines);
- void dispc_mgr_set_lcd_type_tft(enum omap_channel channel);
- void dispc_mgr_set_timings(enum omap_channel channel,
--		struct omap_video_timings *timings);
-+		const struct omap_video_timings *timings);
- unsigned long dispc_mgr_lclk_rate(enum omap_channel channel);
- unsigned long dispc_mgr_pclk_rate(enum omap_channel channel);
- unsigned long dispc_core_clk_rate(void);
- void dispc_mgr_set_clock_div(enum omap_channel channel,
--		struct dispc_clock_info *cinfo);
-+		const struct dispc_clock_info *cinfo);
- int dispc_mgr_get_clock_div(enum omap_channel channel,
- 		struct dispc_clock_info *cinfo);
- void dispc_mgr_setup(enum omap_channel channel,
--		struct omap_overlay_manager_info *info);
-+		const struct omap_overlay_manager_info *info);
- 
- u32 dispc_wb_get_framedone_irq(void);
- bool dispc_wb_go_busy(void);
+The patches are based on current omapdss master, and can also be found from:
+
+git://gitorious.org/linux-omap-dss2/linux.git 3.8/misc-2
+
+ Tomi
+
+Tomi Valkeinen (20):
+  OMAPDSS: remove omap_dss_device's suspend/resume
+  OMAPDSS: get the dss version from core pdev
+  OMAPDSS: remove dispc_irq_handler declaration
+  OMAPDSS: DISPC: fix dispc_mgr_lclk_rate for DIGIT output
+  OMAPDSS: remove initial display code from omapdss
+  OMAPDSS: DISPC: use dss_feat_get_num_ovls()
+  OMAPDSS: DISPC: rename dispc_mgr_enable/disable to _sync
+  OMAPDSS: DISPC: make _enable_mgr_out public as "dispc_mgr_enable"
+  OMAPDSS: add dispc_ovl_enabled()
+  OMAPDSS: DISPC: Add IRQ enable/status helpers
+  OMAPDSS: HDMI: split power_on/off to two parts
+  OMAPDSS: HDMI: use core power on/off with edid & detect
+  OMAPDSS: HDMI: add 1920x1200 video mode
+  OMAPDSS: HDMI: make hdmi pclk check more permissive
+  OMAPFB: remove use of extended edid block
+  OMAPFB: improve mode selection from EDID
+  OMAPDSS: fix DSI2 PLL clk names
+  OMAPDSS: DISPC: fix loop in error handler
+  OMAPDSS: DISPC: remove dssdev depependency from error handler
+  OMAPDSS: split hdmi muxing function
+
+ arch/arm/mach-omap2/display.c                      |   15 +-
+ drivers/video/omap2/displays/panel-acx565akm.c     |   23 ----
+ drivers/video/omap2/displays/panel-generic-dpi.c   |   36 -----
+ .../omap2/displays/panel-lgphilips-lb035q02.c      |   34 -----
+ drivers/video/omap2/displays/panel-n8x0.c          |   50 -------
+ .../omap2/displays/panel-nec-nl8048hl11-01b.c      |   24 ----
+ drivers/video/omap2/displays/panel-picodlp.c       |   44 ------
+ .../video/omap2/displays/panel-sharp-ls037v7dw01.c |   17 ---
+ drivers/video/omap2/displays/panel-taal.c          |   72 ----------
+ drivers/video/omap2/displays/panel-tfp410.c        |   33 -----
+ .../video/omap2/displays/panel-tpo-td043mtea1.c    |   20 ---
+ drivers/video/omap2/dss/apply.c                    |    6 +-
+ drivers/video/omap2/dss/core.c                     |   10 +-
+ drivers/video/omap2/dss/dispc.c                    |  143 +++++++++++---------
+ drivers/video/omap2/dss/display.c                  |   93 ++-----------
+ drivers/video/omap2/dss/dss.c                      |    5 +-
+ drivers/video/omap2/dss/dss.h                      |   13 +-
+ drivers/video/omap2/dss/hdmi.c                     |  122 ++++++++++++-----
+ drivers/video/omap2/dss/hdmi_panel.c               |   78 ++---------
+ drivers/video/omap2/dss/venc_panel.c               |   19 ---
+ drivers/video/omap2/omapfb/omapfb-main.c           |  101 ++++++++++----
+ include/video/omapdss.h                            |    6 +-
+ 22 files changed, 308 insertions(+), 656 deletions(-)
+
 -- 
 1.7.9.5
 

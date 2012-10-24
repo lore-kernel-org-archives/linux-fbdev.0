@@ -1,90 +1,77 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Tue, 16 Oct 2012 22:33:46 +0000
-Subject: [PATCH 5/9] drivers/video: fsl-diu-fb: improve message displays
-Message-Id: <1350426830-12140-5-git-send-email-timur@freescale.com>
+From: Zhou Zhu <zzhu3@marvell.com>
+Date: Wed, 24 Oct 2012 06:58:38 +0000
+Subject: [PATCHv4 7/9] ARM: mmp: add lcd clock support
+Message-Id: <1351061918-6522-1-git-send-email-zzhu3@marvell.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Add some debug and error messages that are useful during debugging.
+added lcd clock support
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
+Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
 ---
- drivers/video/fsl-diu-fb.c |   34 +++++++++++++++++++++++++++++++++-
- 1 files changed, 33 insertions(+), 1 deletions(-)
+ arch/arm/mach-mmp/pxa910.c |   32 +++++++++++++++++++++++++++++++-
+ 1 files changed, 31 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index f388c3a..6e32ba8 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -430,6 +430,22 @@ static struct mfb_info mfb_template[] = {
- 	},
+diff --git a/arch/arm/mach-mmp/pxa910.c b/arch/arm/mach-mmp/pxa910.c
+index 7d7c43b..78c6eb8 100644
+--- a/arch/arm/mach-mmp/pxa910.c
++++ b/arch/arm/mach-mmp/pxa910.c
+@@ -82,6 +82,35 @@ void __init pxa910_init_irq(void)
+ 	icu_init_irq();
+ }
+ 
++static void lcd_clk_enable(struct clk *clk)
++{
++	writel_relaxed(clk->enable_val, clk->clk_rst);
++}
++static void lcd_clk_disable(struct clk *clk)
++{
++	u32 tmp = readl_relaxed(clk->clk_rst);
++	tmp &= ~0x38;   /* release from reset to keep register setting */
++	writel_relaxed(tmp, clk->clk_rst);
++}
++
++static int lcd_clk_setrate(struct clk *clk, unsigned long val)
++{
++	writel_relaxed(val, clk->clk_rst);
++	return 0;
++}
++static unsigned long lcd_clk_getrate(struct clk *clk)
++{
++	unsigned long rate = clk->rate;
++	return rate;
++}
++
++struct clkops lcd_pn1_clk_ops = {
++	.enable		= lcd_clk_enable,
++	.disable	= lcd_clk_disable,
++	.setrate	= lcd_clk_setrate,
++	.getrate	= lcd_clk_getrate,
++};
++
+ /* APB peripheral clocks */
+ static APBC_CLK(uart1, PXA910_UART0, 1, 14745600);
+ static APBC_CLK(uart2, PXA910_UART1, 1, 14745600);
+@@ -93,7 +122,7 @@ static APBC_CLK(pwm3, PXA910_PWM3, 1, 13000000);
+ static APBC_CLK(pwm4, PXA910_PWM4, 1, 13000000);
+ static APBC_CLK(gpio, PXA910_GPIO, 0, 13000000);
+ static APBC_CLK(rtc, PXA910_RTC, 8, 32768);
+-
++static APMU_CLK_OPS(lcd, LCD, 0x003f, 312000000, &lcd_pn1_clk_ops);
+ static APMU_CLK(nand, NAND, 0x19b, 156000000);
+ static APMU_CLK(u2o, USB, 0x1b, 480000000);
+ 
+@@ -111,6 +140,7 @@ static struct clk_lookup pxa910_clkregs[] = {
+ 	INIT_CLKREG(&clk_gpio, "pxa-gpio", NULL),
+ 	INIT_CLKREG(&clk_u2o, NULL, "U2OCLK"),
+ 	INIT_CLKREG(&clk_rtc, "sa1100-rtc", NULL),
++	INIT_CLKREG(&clk_lcd, NULL, "LCDCLK"),
  };
  
-+#ifdef DEBUG
-+static void __attribute__ ((unused)) fsl_diu_dump(struct diu __iomem *hw)
-+{
-+	mb();
-+	pr_debug("DIU: desc=%08x,%08x,%08x, gamma=%08x pallete=%08x "
-+		 "cursor=%08x curs_pos=%08x diu_mode=%08x bgnd=%08x "
-+		 "disp_size=%08x hsyn_para=%08x vsyn_para=%08x syn_pol=%08x "
-+		 "thresholds=%08x int_mask=%08x plut=%08x\n",
-+		 hw->desc[0], hw->desc[1], hw->desc[2], hw->gamma,
-+		 hw->pallete, hw->cursor, hw->curs_pos, hw->diu_mode,
-+		 hw->bgnd, hw->disp_size, hw->hsyn_para, hw->vsyn_para,
-+		 hw->syn_pol, hw->thresholds, hw->int_mask, hw->plut);
-+	rmb();
-+}
-+#endif
-+
- /**
-  * fsl_diu_name_to_port - convert a port name to a monitor port enum
-  *
-@@ -1108,6 +1124,12 @@ static int fsl_diu_ioctl(struct fb_info *info, unsigned int cmd,
- 
- 	if (!arg)
- 		return -EINVAL;
-+
-+	dev_dbg(info->dev, "ioctl %08x (dir=%s%s type=%u nr=%u size=%u)\n", cmd,
-+		_IOC_DIR(cmd) & _IOC_READ ? "R" : "",
-+		_IOC_DIR(cmd) & _IOC_WRITE ? "W" : "",
-+		_IOC_TYPE(cmd), _IOC_NR(cmd), _IOC_SIZE(cmd));
-+
- 	switch (cmd) {
- 	case MFB_SET_PIXFMT_OLD:
- 		dev_warn(info->dev,
-@@ -1754,6 +1776,9 @@ static int __init fsl_diu_init(void)
- 	coherence_data_size = be32_to_cpup(prop) * 13;
- 	coherence_data_size /= 8;
- 
-+	pr_debug("fsl-diu-fb: coherence data size is %zu bytes\n",
-+		 coherence_data_size);
-+
- 	prop = of_get_property(np, "d-cache-line-size", NULL);
- 	if (prop = NULL) {
- 		pr_err("fsl-diu-fb: missing 'd-cache-line-size' property' "
-@@ -1763,10 +1788,17 @@ static int __init fsl_diu_init(void)
- 	}
- 	d_cache_line_size = be32_to_cpup(prop);
- 
-+	pr_debug("fsl-diu-fb: cache lines size is %u bytes\n",
-+		 d_cache_line_size);
-+
- 	of_node_put(np);
- 	coherence_data = vmalloc(coherence_data_size);
--	if (!coherence_data)
-+	if (!coherence_data) {
-+		pr_err("fsl-diu-fb: could not allocate coherence data "
-+		       "(size=%zu)\n", coherence_data_size);
- 		return -ENOMEM;
-+	}
-+
- #endif
- 
- 	ret = platform_driver_register(&fsl_diu_driver);
+ static int __init pxa910_init(void)
 -- 
-1.7.3.4
-
+1.7.0.4
 

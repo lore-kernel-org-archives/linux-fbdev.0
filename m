@@ -1,107 +1,82 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Wed, 31 Oct 2012 09:28:08 +0000
-Subject: [PATCH v7 8/8] drm_modes: add of_videomode helpers
-Message-Id: <1351675689-26814-9-git-send-email-s.trumtrar@pengutronix.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 24 Oct 2012 09:29:07 +0000
+Subject: [PATCH 16/20] OMAPFB: improve mode selection from EDID
+Message-Id: <1351070951-18616-17-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
+References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add helper to get drm_display_mode from devicetree.
+The current omapfb code goes over all the modes found from the monitors
+EDID data, and searches for a mode that is compatible with the DSS
+hardware and has the highest x-res.
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+While this works ok as such, it proves problematic when using DSI PLL
+for pixel clock. Calculating DSI PLL dividers is not the fastest of the
+operations, and while doing it for one mode is usually ok, doing it for
+20 modes is noticable.
+
+Also, the first mode given in the EDID data should be the native mode of
+the monitor, and thus also the best mode, so if that can be used, no
+need to look further.
+
+This patch changes the code to use the first mode that is compatible
+with the DSS hardware.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/gpu/drm/drm_modes.c |   42 ++++++++++++++++++++++++++++++++++++++++++
- include/drm/drmP.h          |    5 +++++
- 2 files changed, 47 insertions(+)
+ drivers/video/omap2/omapfb/omapfb-main.c |   13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index 049624d..d51afe6 100644
---- a/drivers/gpu/drm/drm_modes.c
-+++ b/drivers/gpu/drm/drm_modes.c
-@@ -35,6 +35,7 @@
- #include <linux/export.h>
- #include <drm/drmP.h>
- #include <drm/drm_crtc.h>
-+#include <linux/of.h>
- #include <linux/videomode.h>
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index fe37039..1017832 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -2256,7 +2256,7 @@ static int omapfb_find_best_mode(struct omap_dss_device *display,
+ {
+ 	struct fb_monspecs *specs;
+ 	u8 *edid;
+-	int r, i, best_xres, best_idx, len;
++	int r, i, best_idx, len;
  
- /**
-@@ -540,6 +541,47 @@ int videomode_to_display_mode(struct videomode *vm, struct drm_display_mode *dmo
- EXPORT_SYMBOL_GPL(videomode_to_display_mode);
- #endif
+ 	if (!display->driver->read_edid)
+ 		return -ENODEV;
+@@ -2272,7 +2272,6 @@ static int omapfb_find_best_mode(struct omap_dss_device *display,
  
-+#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+static void dump_drm_displaymode(struct drm_display_mode *m)
-+{
-+	pr_debug("drm_displaymode = %d %d %d %d %d %d %d %d %d\n",
-+		 m->hdisplay, m->hsync_start, m->hsync_end, m->htotal,
-+		 m->vdisplay, m->vsync_start, m->vsync_end, m->vtotal,
-+		 m->clock);
-+}
-+
-+/**
-+ * of_get_drm_display_mode - get a drm_display_mode from devicetree
-+ * @np: device_node with the timing specification
-+ * @dmode: will be set to the return value
-+ * @index: index into the list of display timings in devicetree
-+ * 
-+ * DESCRIPTION:
-+ * This function is expensive and should only be used, if only one mode is to be
-+ * read from DT. To get multiple modes start with of_get_display_timing_list ond
-+ * work with that instead.
-+ */
-+int of_get_drm_display_mode(struct device_node *np, struct drm_display_mode *dmode,
-+			int index)
-+{
-+	struct videomode vm;
-+	int ret;
-+
-+	ret = of_get_videomode(np, &vm, index);
-+	if (ret)
-+		return ret;
-+
-+	videomode_to_display_mode(&vm, dmode);
-+
-+	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
-+		vm.vactive, np->name);
-+	dump_drm_displaymode(dmode);
-+
-+	return 0;
-+
-+}
-+EXPORT_SYMBOL_GPL(of_get_drm_display_mode);
-+#endif
- /**
-  * drm_mode_set_name - set the name on a mode
-  * @mode: name will be set in this mode
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index e9fa1e3..4f9c44e 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -56,6 +56,7 @@
- #include <linux/cdev.h>
- #include <linux/mutex.h>
- #include <linux/slab.h>
-+#include <linux/of.h>
- #include <linux/videomode.h>
- #if defined(__alpha__) || defined(__powerpc__)
- #include <asm/pgtable.h>	/* For pte_wrprotect */
-@@ -1457,6 +1458,10 @@ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
+ 	fb_edid_to_monspecs(edid, specs);
  
- extern int videomode_to_display_mode(struct videomode *vm,
- 				     struct drm_display_mode *dmode);
-+extern int of_get_drm_display_mode(struct device_node *np,
-+				   struct drm_display_mode *dmode,
-+				   int index);
+-	best_xres = 0;
+ 	best_idx = -1;
+ 
+ 	for (i = 0; i < specs->modedb_len; ++i) {
+@@ -2288,16 +2287,20 @@ static int omapfb_find_best_mode(struct omap_dss_device *display,
+ 		if (m->xres = 2880 || m->xres = 1440)
+ 			continue;
+ 
++		if (m->vmode & FB_VMODE_INTERLACED ||
++				m->vmode & FB_VMODE_DOUBLE)
++			continue;
 +
- /* Modesetting support */
- extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
- extern void drm_vblank_post_modeset(struct drm_device *dev, int crtc);
+ 		fb_videomode_to_omap_timings(m, display, &t);
+ 
+ 		r = display->driver->check_timings(display, &t);
+-		if (r = 0 && best_xres < m->xres) {
+-			best_xres = m->xres;
++		if (r = 0) {
+ 			best_idx = i;
++			break;
+ 		}
+ 	}
+ 
+-	if (best_xres = 0) {
++	if (best_idx = -1) {
+ 		r = -ENOENT;
+ 		goto err2;
+ 	}
 -- 
-1.7.10.4
+1.7.9.5
 

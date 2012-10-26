@@ -1,48 +1,35 @@
-From: Srinivas KANDAGATLA <srinivas.kandagatla@st.com>
-Date: Wed, 10 Oct 2012 18:38:51 +0000
-Subject: [PATCH 3.6.0- 08/13] video/da8xx_fb: use module_platform_driver macro
-Message-Id: <1349894331-9461-1-git-send-email-srinivas.kandagatla@st.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Fri, 26 Oct 2012 07:01:39 +0000
+Subject: [PATCH 2/3] video: s3c-fb: return an error when bpp is invalid
+Message-Id: <002201cdb347$bf4459b0$3dcd0d10$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-From: Srinivas Kandagatla <srinivas.kandagatla@st.com>
+This patch returns an error, when bpp is invalid in
+s3c_fb_check_var(). If invalid bpp is requested,
+an error should be returned.
 
-This patch removes some code duplication by using
-module_platform_driver.
-
-Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@st.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/da8xx-fb.c |   14 +-------------
- 1 files changed, 1 insertions(+), 13 deletions(-)
+ drivers/video/s3c-fb.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 113d43a..40b8d9a 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -1449,19 +1449,7 @@ static struct platform_driver da8xx_fb_driver = {
- 		   .owner = THIS_MODULE,
- 		   },
- };
--
--static int __init da8xx_fb_init(void)
--{
--	return platform_driver_register(&da8xx_fb_driver);
--}
--
--static void __exit da8xx_fb_cleanup(void)
--{
--	platform_driver_unregister(&da8xx_fb_driver);
--}
--
--module_init(da8xx_fb_init);
--module_exit(da8xx_fb_cleanup);
-+module_platform_driver(da8xx_fb_driver);
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 89cd278..f453b8b 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -330,6 +330,7 @@ static int s3c_fb_check_var(struct fb_var_screeninfo *var,
  
- MODULE_DESCRIPTION("Framebuffer driver for TI da8xx/omap-l1xx");
- MODULE_AUTHOR("Texas Instruments");
+ 	default:
+ 		dev_err(sfb->dev, "invalid bpp\n");
++		return -EINVAL;
+ 	}
+ 
+ 	dev_dbg(sfb->dev, "%s: verified parameters\n", __func__);
 -- 
-1.7.0.4
+1.7.1
+
 

@@ -1,46 +1,41 @@
-From: Pantelis Antoniou <panto@antoniou-consulting.com>
-Date: Tue, 30 Oct 2012 18:17:45 +0000
-Subject: [PATCH] da8xx-fb: add panel definition for beaglebone LCD7 cape
-Message-Id: <1351698999-4133-1-git-send-email-panto@antoniou-consulting.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Fri, 26 Oct 2012 07:02:25 +0000
+Subject: [PATCH 3/3] video: s3c-fb: fix red offset and lengh for ARGB232 format
+Message-Id: <002601cdb347$dad82260$90886720$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Koen Kooi <koen@dominion.thruhere.net>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Matt Porter <mporter@ti.com>, Russ Dill <Russ.Dill@ti.com>, linux-omap@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-From: Koen Kooi <koen@dominion.thruhere.net>
+Green pixel and blue pixel are 3 bits and 2 bits respectively
+at ARGB232 format. Thus, the value of red offset should be 5,
+not 4. Also, the value of red length should be 2, because
+red pixel is 2 bits at ARGB232 format.
 
-Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/da8xx-fb.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ drivers/video/s3c-fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 4462d9e..c661665 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -284,6 +284,20 @@ static struct da8xx_panel known_lcd_panels[] = {
- 		.pxl_clk = 56000000,
- 		.invert_pxl_clk = 0,
- 	},
-+	/* ThreeFive S9700RTWV35TR */
-+	[4] = {
-+		.name = "TFC_S9700RTWV35TR_01B",
-+		.width = 800,
-+		.height = 480,
-+		.hfp = 39,
-+		.hbp = 39,
-+		.hsw = 47,
-+		.vfp = 13,
-+		.vbp = 29,
-+		.vsw = 2,
-+		.pxl_clk = 30000000,
-+		.invert_pxl_clk = 0,
-+	},
- };
- 
- /* Enable the Raster Engine of the LCD Controller */
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index f453b8b..d8bfb4a 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -268,10 +268,10 @@ static int s3c_fb_check_var(struct fb_var_screeninfo *var,
+ 	case 8:
+ 		if (sfb->variant.palette[win->index] != 0) {
+ 			/* non palletised, A:1,R:2,G:3,B:2 mode */
+-			var->red.offset		= 4;
++			var->red.offset		= 5;
+ 			var->green.offset	= 2;
+ 			var->blue.offset	= 0;
+-			var->red.length		= 5;
++			var->red.length		= 2;
+ 			var->green.length	= 3;
+ 			var->blue.length	= 2;
+ 			var->transp.offset	= 7;
 -- 
-1.7.12
+1.7.1
+
 

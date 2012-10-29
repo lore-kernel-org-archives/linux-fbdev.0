@@ -1,96 +1,24 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 24 Oct 2012 09:28:55 +0000
-Subject: [PATCH 04/20] OMAPDSS: DISPC: fix dispc_mgr_lclk_rate for DIGIT output
-Message-Id: <1351070951-18616-5-git-send-email-tomi.valkeinen@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Mon, 29 Oct 2012 09:50:44 +0000
+Subject: Re: [PATCH 04/20] OMAPDSS: DISPC: fix dispc_mgr_lclk_rate for DIGIT output
+Message-Id: <508E5161.2060202@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com> <1351070951-18616-5-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1351070951-18616-5-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-dispc_mgr_lclk_rate() cannot currently be called with DIGIT channel
-parameter, even if dispc_ovl_lclk_rate() can. Fix this by making
-dispc_mgr_lclk_rate() handle DIGIT channel also.
+On Wednesday 24 October 2012 02:58 PM, Tomi Valkeinen wrote:
+> dispc_mgr_lclk_rate() cannot currently be called with DIGIT channel
+> parameter, even if dispc_ovl_lclk_rate() can. Fix this by making
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/dispc.c |   49 ++++++++++++++++++++-------------------
- 1 file changed, 25 insertions(+), 24 deletions(-)
+It's called dispc_plane_lclk_rate() right now.
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 817d671..198e321 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -3167,28 +3167,32 @@ unsigned long dispc_mgr_lclk_rate(enum omap_channel channel)
- 	unsigned long r;
- 	u32 l;
- 
--	l = dispc_read_reg(DISPC_DIVISORo(channel));
-+	if (dss_mgr_is_lcd(channel)) {
-+		l = dispc_read_reg(DISPC_DIVISORo(channel));
- 
--	lcd = FLD_GET(l, 23, 16);
-+		lcd = FLD_GET(l, 23, 16);
- 
--	switch (dss_get_lcd_clk_source(channel)) {
--	case OMAP_DSS_CLK_SRC_FCK:
--		r = clk_get_rate(dispc.dss_clk);
--		break;
--	case OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC:
--		dsidev = dsi_get_dsidev_from_id(0);
--		r = dsi_get_pll_hsdiv_dispc_rate(dsidev);
--		break;
--	case OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC:
--		dsidev = dsi_get_dsidev_from_id(1);
--		r = dsi_get_pll_hsdiv_dispc_rate(dsidev);
--		break;
--	default:
--		BUG();
--		return 0;
--	}
-+		switch (dss_get_lcd_clk_source(channel)) {
-+		case OMAP_DSS_CLK_SRC_FCK:
-+			r = clk_get_rate(dispc.dss_clk);
-+			break;
-+		case OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC:
-+			dsidev = dsi_get_dsidev_from_id(0);
-+			r = dsi_get_pll_hsdiv_dispc_rate(dsidev);
-+			break;
-+		case OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC:
-+			dsidev = dsi_get_dsidev_from_id(1);
-+			r = dsi_get_pll_hsdiv_dispc_rate(dsidev);
-+			break;
-+		default:
-+			BUG();
-+			return 0;
-+		}
- 
--	return r / lcd;
-+		return r / lcd;
-+	} else {
-+		return dispc_fclk_rate();
-+	}
- }
- 
- unsigned long dispc_mgr_pclk_rate(enum omap_channel channel)
-@@ -3247,12 +3251,9 @@ static unsigned long dispc_plane_lclk_rate(enum omap_plane plane)
- {
- 	enum omap_channel channel = dispc_ovl_get_channel_out(plane);
- 
--	if (dss_mgr_is_lcd(channel))
--		return dispc_mgr_lclk_rate(channel);
--	else
--		return dispc_fclk_rate();
--
-+	return dispc_mgr_lclk_rate(channel);
- }
-+
- static void dispc_dump_clocks_channel(struct seq_file *s, enum omap_channel channel)
- {
- 	int lcd, pcd;
--- 
-1.7.9.5
+> dispc_mgr_lclk_rate() handle DIGIT channel also.
 
+Did you see a bug with this? Or is this just a cleanup?
+
+Archit

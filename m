@@ -1,88 +1,31 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 24 Oct 2012 09:29:10 +0000
-Subject: [PATCH 19/20] OMAPDSS: DISPC: remove dssdev depependency from error handler
-Message-Id: <1351070951-18616-20-git-send-email-tomi.valkeinen@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Mon, 29 Oct 2012 07:24:08 +0000
+Subject: Re: [PATCH 19/20] OMAPDSS: DISPC: remove dssdev depependency from error handler
+Message-Id: <508E2C48.6020008@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com> <1351070951-18616-20-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1351070951-18616-20-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-The dispc error handler tries to "fix" issues by disabling and enabling
-panel. This is problematic, as we're trying to remove the dependency
-from omapdss to the omap_dss_devices. It's also racy, and doesn't really
-fix anything.
+Hi,
 
-This patch removes the use of omap_dss_device from the error handler,
-and just disables and enables the associated overlay manager. This
-should produce similar results as the previous solution, without using
-dssdev.
+On Wednesday 24 October 2012 02:59 PM, Tomi Valkeinen wrote:
+> The dispc error handler tries to "fix" issues by disabling and enabling
+> panel. This is problematic, as we're trying to remove the dependency
+> from omapdss to the omap_dss_devices. It's also racy, and doesn't really
+> fix anything.
+>
+> This patch removes the use of omap_dss_device from the error handler,
+> and just disables and enables the associated overlay manager. This
+> should produce similar results as the previous solution, without using
+> dssdev.
 
-However, the error handling is still horrible. But the problem boils
-down to one question, to which I don't have a clear answer: what to do
-when a HW error happens?
+Calling APPLY functions from the DISPC driver seems a bit incorrect. 
+Instead of disabling/enabling the panel, can't we disable/enable the 
+manger by just using DISPC funcs?
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/dispc.c |   19 ++++---------------
- 1 file changed, 4 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 070ce30..61b48ca 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -3902,15 +3902,12 @@ static void dispc_error_worker(struct work_struct *work)
- 
- 		if (bit & errors) {
- 			int j;
--			struct omap_dss_device *dssdev = mgr->get_device(mgr);
--			bool enable;
- 
- 			DSSERR("SYNC_LOST on channel %s, restarting the output "
- 					"with video overlays disabled\n",
- 					mgr->name);
- 
--			enable = dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
--			dssdev->driver->disable(dssdev);
-+			dss_mgr_disable(mgr);
- 
- 			for (j = 0; j < omap_dss_get_num_overlays(); ++j) {
- 				struct omap_overlay *ovl;
-@@ -3918,14 +3915,10 @@ static void dispc_error_worker(struct work_struct *work)
- 
- 				if (ovl->id != OMAP_DSS_GFX &&
- 						ovl->manager = mgr)
--					dispc_ovl_enable(ovl->id, false);
-+					dss_ovl_disable(ovl);
- 			}
- 
--			dispc_mgr_go(mgr->id);
--			msleep(50);
--
--			if (enable)
--				dssdev->driver->enable(dssdev);
-+			dss_mgr_enable(mgr);
- 		}
- 	}
- 
-@@ -3933,13 +3926,9 @@ static void dispc_error_worker(struct work_struct *work)
- 		DSSERR("OCP_ERR\n");
- 		for (i = 0; i < omap_dss_get_num_overlay_managers(); ++i) {
- 			struct omap_overlay_manager *mgr;
--			struct omap_dss_device *dssdev;
- 
- 			mgr = omap_dss_get_overlay_manager(i);
--			dssdev = mgr->get_device(mgr);
--
--			if (dssdev && dssdev->driver)
--				dssdev->driver->disable(dssdev);
-+			dss_mgr_disable(mgr);
- 		}
- 	}
- 
--- 
-1.7.9.5
-
+Archit

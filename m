@@ -1,42 +1,34 @@
-From: Archit Taneja <archit@ti.com>
-Date: Mon, 29 Oct 2012 10:30:30 +0000
-Subject: Re: [PATCH 19/20] OMAPDSS: DISPC: remove dssdev depependency from error handler
-Message-Id: <508E57F6.4070207@ti.com>
+From: Pantelis Antoniou <panto@antoniou-consulting.com>
+Date: Tue, 30 Oct 2012 18:18:07 +0000
+Subject: [PATCH] da8xx: Allow use by am33xx based devices
+Message-Id: <1351698968-3965-1-git-send-email-panto@antoniou-consulting.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com> <1351070951-18616-20-git-send-email-tomi.valkeinen@ti.com> <508E2C48.6020008@ti.com> <508E389C.8080503@ti.com>
-In-Reply-To: <508E389C.8080503@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Pantelis Antoniou <panto@antoniou-consulting.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Koen Kooi <koen@dominion.thruhere.net>, Matt Porter <mporter@ti.com>, Russ Dill <Russ.Dill@ti.com>, linux-omap@vger.kernel.org
 
-On Monday 29 October 2012 01:34 PM, Tomi Valkeinen wrote:
-> On 2012-10-29 09:12, Archit Taneja wrote:
->> Hi,
->>
->> On Wednesday 24 October 2012 02:59 PM, Tomi Valkeinen wrote:
->>> The dispc error handler tries to "fix" issues by disabling and enabling
->>> panel. This is problematic, as we're trying to remove the dependency
->>> from omapdss to the omap_dss_devices. It's also racy, and doesn't really
->>> fix anything.
->>>
->>> This patch removes the use of omap_dss_device from the error handler,
->>> and just disables and enables the associated overlay manager. This
->>> should produce similar results as the previous solution, without using
->>> dssdev.
->>
->> Calling APPLY functions from the DISPC driver seems a bit incorrect.
->> Instead of disabling/enabling the panel, can't we disable/enable the
->> manger by just using DISPC funcs?
->
-> I agree, but if we don't call apply functions, we're bypassing the
-> locks/etc from apply, and we could end up messing up what apply.c thinks
-> is going on.
->
-> With my omapdss+omapdrm compatibility patch series I'm moving the error
-> handler to the apply mechanism, so it becomes a bit saner.
+This driver can be used for AM33xx devices, like the popular beaglebone.
 
-Okay. Having the error handler in apply would make things better.
+Signed-off-by: Pantelis Antoniou <panto@antoniou-consulting.com>
+---
+ drivers/video/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Archit
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 9791d10..e7868d8 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2202,7 +2202,7 @@ config FB_SH7760
+ 
+ config FB_DA8XX
+ 	tristate "DA8xx/OMAP-L1xx Framebuffer support"
+-	depends on FB && ARCH_DAVINCI_DA8XX
++	depends on FB && (ARCH_DAVINCI_DA8XX || SOC_AM33XX)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-- 
+1.7.12
+

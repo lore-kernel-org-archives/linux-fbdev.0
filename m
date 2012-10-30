@@ -1,34 +1,44 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 26 Oct 2012 07:00:03 +0000
-Subject: [PATCH 1/3] video: s3c-fb: add "drop through" comment
-Message-Id: <002101cdb347$86236950$926a3bf0$%han@samsung.com>
+From: Pantelis Antoniou <panto@antoniou-consulting.com>
+Date: Tue, 30 Oct 2012 18:12:44 +0000
+Subject: [PATCH] da8xx: Add CDTech_S035Q01 panel (used by LCD3 bone cape)
+Message-Id: <1351699004-4175-1-git-send-email-panto@antoniou-consulting.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Pantelis Antoniou <panto@antoniou-consulting.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Koen Kooi <koen@dominion.thruhere.net>, Matt Porter <mporter@ti.com>, Russ Dill <Russ.Dill@ti.com>, linux-omap@vger.kernel.org
 
-This patch adds a "drop through" comment to improve
-the readability.
-
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Pantelis Antoniou <panto@antoniou-consulting.com>
 ---
- drivers/video/s3c-fb.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/video/da8xx-fb.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 2ed7b63..89cd278 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -288,6 +288,7 @@ static int s3c_fb_check_var(struct fb_var_screeninfo *var,
- 		/* 666 with one bit alpha/transparency */
- 		var->transp.offset	= 18;
- 		var->transp.length	= 1;
-+		/* drop through */
- 	case 18:
- 		var->bits_per_pixel	= 32;
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index c661665..c1f5d30 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -298,6 +298,20 @@ static struct da8xx_panel known_lcd_panels[] = {
+ 		.pxl_clk = 30000000,
+ 		.invert_pxl_clk = 0,
+ 	},
++	[5] = {
++		/* CDTech S035Q01 */
++		.name = "CDTech_S035Q01",
++		.width = 320,
++		.height = 240,
++		.hfp = 58,
++		.hbp = 21,
++		.hsw = 47,
++		.vfp = 23,
++		.vbp = 11,
++		.vsw = 2,
++		.pxl_clk = 8000000,
++		.invert_pxl_clk = 0,
++	},
+ };
  
+ /* Enable the Raster Engine of the LCD Controller */
 -- 
-1.7.1
-
+1.7.12
 

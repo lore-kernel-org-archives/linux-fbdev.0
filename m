@@ -1,27 +1,47 @@
-From: Jan Engelhardt <jengelh@inai.de>
-Date: Wed, 31 Oct 2012 13:47:30 +0000
-Subject: fbdev: on-screen character cell corruption
-Message-Id: <alpine.LNX.2.01.1210311423100.29232@nerf07.vanv.qr>
+From: Pantelis Antoniou <panto@antoniou-consulting.com>
+Date: Tue, 30 Oct 2012 18:19:29 +0000
+Subject: [PATCH] da8xx: Add standard panel definition
+Message-Id: <1351698994-4091-1-git-send-email-panto@antoniou-consulting.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Pantelis Antoniou <panto@antoniou-consulting.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Koen Kooi <koen@dominion.thruhere.net>, Matt Porter <mporter@ti.com>, Russ Dill <Russ.Dill@ti.com>, linux-omap@vger.kernel.org
 
-Hi,
+Add standard panel definition that can work for the beaglebone
+DVI cape.
 
+Signed-off-by: Pantelis Antoniou <panto@antoniou-consulting.com>
+---
+ drivers/video/da8xx-fb.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-I have here a 9x16 font (for use with e.g. videor0x400 on KMS to get 
-80x25 tty size) that fbcon seems to have a problem correctly rendering. 
-When backspacing, the pixels from the character under the cursor not 
-only gets moved to one character cell to the left (as it should), but 
-the leftmost pixel column of the char also leaks to the rightmost pixel 
-column previous glyph.
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 866d804..4462d9e 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -270,6 +270,20 @@ static struct da8xx_panel known_lcd_panels[] = {
+ 		.pxl_clk = 7833600,
+ 		.invert_pxl_clk = 0,
+ 	},
++	[3] = {
++		 /* 1024 x 768 @ 60 Hz  Reduced blanking VESA CVT 0.79M3-R */
++		.name = "1024x768@60",
++		.width = 1024,
++		.height = 768,
++		.hfp = 48,
++		.hbp = 80,
++		.hsw = 32,
++		.vfp = 3,
++		.vbp = 15,
++		.vsw = 4,
++		.pxl_clk = 56000000,
++		.invert_pxl_clk = 0,
++	},
+ };
+ 
+ /* Enable the Raster Engine of the LCD Controller */
+-- 
+1.7.12
 
-LKML being a text/plain medium, I have taken pictures of the screen for 
-better understanding on how to reproduce, and have placed them at 
-http://inai.de/keyb/ . The font file is also provided there.
-
-The kernel I run is 3.4.11 on x86_64. There is no known good version to 
-me (IOW, it is not a regression), as I just started using a 9x16 font 
-on fbcon.

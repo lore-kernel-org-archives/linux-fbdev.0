@@ -1,65 +1,39 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 30 Oct 2012 16:23:09 +0000
+Date: Tue, 30 Oct 2012 16:35:23 +0000
 Subject: Re: [RFC 0/5] Generic panel framework
-Message-Id: <1593234.uFiMq7ARmu@avalon>
+Message-Id: <3539590.nD15u1ceQC@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345164583-18924-1-git-send-email-laurent.pinchart@ideasonboard.com> <3648908.jA5PYymWxV@avalon> <CAGA24MLnW-i0koFuAsnFQ2mNnrLupkmbxW5T8WYiV3QuoA2vig@mail.gmail.com>
-In-Reply-To: <CAGA24MLnW-i0koFuAsnFQ2mNnrLupkmbxW5T8WYiV3QuoA2vig@mail.gmail.com>
+References: <1345164583-18924-1-git-send-email-laurent.pinchart@ideasonboard.com> <CAGA24MLnW-i0koFuAsnFQ2mNnrLupkmbxW5T8WYiV3QuoA2vig@mail.gmail.com> <CAJATT-5=kQzUaubL--oRJdm6u8Z10Hus+SMLt3zG1ZSi4QUVWw@mail.gmail.com>
+In-Reply-To: <CAJATT-5=kQzUaubL--oRJdm6u8Z10Hus+SMLt3zG1ZSi4QUVWw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jun Nie <niej0001@gmail.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, linux-media@vger.kernel.org, Bryan Wu <bryan.wu@canonical.com>, Richard Purdie <rpurdie@rpsys.net>, Marcus Lorentzon <marcus.lorentzon@linaro.org>, Sumit Semwal <sumit.semwal@ti.com>, Archit Taneja <archit@ti.com>, Sebastien Guiriec <s-guiriec@ti.com>, Inki Dae <inki.dae@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+To: Zhou Zhu <zzhu84@gmail.com>
+Cc: Jun Nie <niej0001@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, linux-media@vger.kernel.org, Bryan Wu <bryan.wu@canonical.com>, Richard Purdie <rpurdie@rpsys.net>, Marcus Lorentzon <marcus.lorentzon@linaro.org>, Sumit Semwal <sumit.semwal@ti.com>, Archit Taneja <archit@ti.com>, Sebastien Guiriec <s-guiriec@ti.com>, Inki Dae <inki.dae@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-Hi Jun,
+Hi Zhou,
 
-I've finally been able to resume my work on the panel framework (I hope to 
-post a v2 at the end of the week).
-
-On Thursday 23 August 2012 14:23:01 Jun Nie wrote:
+On Tuesday 04 September 2012 16:20:38 Zhou Zhu wrote:
 > Hi Laurent,
->     Do you plan to add an API to get and parse EDID to mode list?
-
-An API to get the raw EDID data is likely needed. Parsing EDID data in the 
-panel driver and providing the modes to the caller isn't enough, as EDID 
-contains more than just video modes. I'm not sure whether a driver for an 
-EDID-aware panel should parse the EDID data internally and provide both modes 
-and raw EDID data, or only raw EDID data.
-
-> video mode is tightly coupled with panel that is capable of hot-plug.
-> Or you are busy on modifying EDID parsing code for sharing it amoung
-> DRM/FB/etc? I see you mentioned this in Mar.
-
-That's needed as well, but -ENOTIME :-S
-
-> It is great if you are considering add more info into video mode, such as
-> pixel repeating, 3D timing related parameter.
-
-Please have a look at "[PATCH 2/2 v6] of: add generic videomode description" 
-on dri-devel. There's a proposal for a common video mode structure.
-
-> I have some code for CEA modes filtering and 3D parsing, but still tight
-> coupled with FB and with a little hack style.
 > 
->     My HDMI driver is implemented as lcd device as you mentioned here.
-> But more complex than other lcd devices for a kthread is handling
-> hot-plug/EDID/HDCP/ASoC etc.
-> 
->     I also feel a little weird to add code parsing HDMI audio related
-> info in fbmod.c in my current implementation, thought it is the only
-> place to handle EDID in kernel. Your panel framework provide a better
-> place to add panel related audio/HDCP code. panel notifier can also
-> trigger hot-plug related feature, such as HDCP start.
+> Basically I agree that we need a common panel framework. I just have
+> some questions:
+> 1.  I think we should add color format in videomode - if we use such
+> common video mode structure shared across subsystems.
+> In HDMI, colors are bind with timings tightly. We need a combined
+> videomode with timing and color format together.
 
-That's a good idea. I was wondering whether to put the common EDID parser in 
-drivers/gpu/drm, drivers/video or drivers/media. Putting it wherever the panel 
-framework will be might be a good option as well.
+What kind of color formats do you have in mind ?
 
->     Looking forward to your hot-plug panel patch. Or I can help add it
-> if you would like me to.
+> 2. I think we should add "set_videomode" interface. It helps HDMI
+> monitors to set EDIDs.
 
-I'll try to post a v2 at the end of the week, but likely without much hot-plug 
-support. Patches and enhancement proposals will be welcome.
+For panels that support several video modes, sure, we need a way to set the 
+video mode. I don't have access to any such panel though, that's why the 
+operation has been left out. It wouldn't be difficult to add it when a real 
+use case will come up.
+
+What do you mean exactly about HDMI monitors setting EDID ?
 
 -- 
 Regards,

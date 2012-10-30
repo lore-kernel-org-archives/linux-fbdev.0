@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 30 Oct 2012 16:10:01 +0000
-Subject: [PATCH 04/12] OMAPDSS: fix DSI2 PLL clk names
-Message-Id: <1351613409-21186-5-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 30 Oct 2012 16:10:04 +0000
+Subject: [PATCH 07/12] OMAPDSS: add dss_calc_clock_rates() back
+Message-Id: <1351613409-21186-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1351613409-21186-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1351613409-21186-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,27 +11,61 @@ Content-Transfer-Encoding: 7bit
 To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: rob@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-dss_generic_clk_source_names is missing the names for clocks from DSI2
-PLL. Add them.
+dss_calc_clock_rates() was removed earlier as it was not used, but it is
+needed for DSI PLL calculations, so this patch adds it back.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dss.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/omap2/dss/dss.c |   23 +++++++++++++++++++++++
+ drivers/video/omap2/dss/dss.h |    1 +
+ 2 files changed, 24 insertions(+)
 
 diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 37ee465..a85bd05 100644
+index a85bd05..5affa86 100644
 --- a/drivers/video/omap2/dss/dss.c
 +++ b/drivers/video/omap2/dss/dss.c
-@@ -97,6 +97,8 @@ static const char * const dss_generic_clk_source_names[] = {
- 	[OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC]	= "DSI_PLL_HSDIV_DISPC",
- 	[OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DSI]	= "DSI_PLL_HSDIV_DSI",
- 	[OMAP_DSS_CLK_SRC_FCK]			= "DSS_FCK",
-+	[OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC]	= "DSI_PLL2_HSDIV_DISPC",
-+	[OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DSI]	= "DSI_PLL2_HSDIV_DSI",
- };
+@@ -432,6 +432,29 @@ enum omap_dss_clk_source dss_get_lcd_clk_source(enum omap_channel channel)
+ 	}
+ }
  
- static inline void dss_write_reg(const struct dss_reg idx, u32 val)
++/* calculate clock rates using dividers in cinfo */
++int dss_calc_clock_rates(struct dss_clock_info *cinfo)
++{
++	if (dss.dpll4_m4_ck) {
++		unsigned long prate;
++
++		if (cinfo->fck_div > dss.feat->fck_div_max ||
++				cinfo->fck_div = 0)
++			return -EINVAL;
++
++		prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
++
++		cinfo->fck = prate / cinfo->fck_div *
++			dss.feat->dss_fck_multiplier;
++	} else {
++		if (cinfo->fck_div != 0)
++			return -EINVAL;
++		cinfo->fck = clk_get_rate(dss.dss_clk);
++	}
++
++	return 0;
++}
++
+ int dss_set_clock_div(struct dss_clock_info *cinfo)
+ {
+ 	if (dss.dpll4_m4_ck) {
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index fb89165..ae4e618 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -297,6 +297,7 @@ void dss_set_venc_output(enum omap_dss_venc_type type);
+ void dss_set_dac_pwrdn_bgz(bool enable);
+ 
+ unsigned long dss_get_dpll4_rate(void);
++int dss_calc_clock_rates(struct dss_clock_info *cinfo);
+ int dss_set_clock_div(struct dss_clock_info *cinfo);
+ int dss_calc_clock_div(unsigned long req_pck, struct dss_clock_info *dss_cinfo,
+ 		struct dispc_clock_info *dispc_cinfo);
 -- 
 1.7.10.4
 

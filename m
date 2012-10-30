@@ -1,96 +1,51 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Wed, 31 Oct 2012 09:28:06 +0000
-Subject: [PATCH v7 6/8] fbmon: add of_videomode helpers
-Message-Id: <1351675689-26814-7-git-send-email-s.trumtrar@pengutronix.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 30 Oct 2012 16:09:57 +0000
+Subject: [PATCH 00/12] OMAPDSS: use DSI PLL clk for DPI
+Message-Id: <1351613409-21186-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: rob@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add helper to get fb_videomode from devicetree.
+Hi,
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
----
- drivers/video/fbmon.c |   40 ++++++++++++++++++++++++++++++++++++++++
- include/linux/fb.h    |    3 +++
- 2 files changed, 43 insertions(+)
+The aim of this series is to enable using DSI PLL as the pixel clock source for
+DPI output. There are the following main parts:
 
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index b9e6ab3..871aa76 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -1408,6 +1408,46 @@ int videomode_to_fb_videomode(struct videomode *vm, struct fb_videomode *fbmode)
- EXPORT_SYMBOL_GPL(videomode_to_fb_videomode);
- #endif
- 
-+#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+static void dump_fb_videomode(struct fb_videomode *m)
-+{
-+	pr_debug("fb_videomode = %ux%u@%uHz (%ukHz) %u %u %u %u %u %u %u %u %u\n",
-+		 m->xres, m->yres, m->refresh, m->pixclock, m->left_margin,
-+		 m->right_margin, m->upper_margin, m->lower_margin,
-+		 m->hsync_len, m->vsync_len, m->sync, m->vmode, m->flag);
-+}
-+
-+/**
-+ * of_get_fb_videomode - get a fb_videomode from devicetree
-+ * @np: device_node with the timing specification
-+ * @fb: will be set to the return value
-+ * @index: index into the list of display timings in devicetree
-+ *
-+ * DESCRIPTION:
-+ * This function is expensive and should only be used, if only one mode is to be
-+ * read from DT. To get multiple modes start with of_get_display_timing_list ond
-+ * work with that instead.
-+ */
-+int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
-+			int index)
-+{
-+	struct videomode vm;
-+	int ret;
-+
-+	ret = of_get_videomode(np, &vm, index);
-+	if (ret)
-+		return ret;
-+
-+	videomode_to_fb_videomode(&vm, fb);
-+
-+	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
-+		vm.vactive, np->name);
-+	dump_fb_videomode(fb);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(of_get_fb_videomode);
-+#endif
- 
- #else
- int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 46c665b..9892fd6 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -14,6 +14,8 @@
- #include <linux/backlight.h>
- #include <linux/slab.h>
- #include <asm/io.h>
-+#include <linux/of.h>
-+#include <linux/of_videomode.h>
- 
- struct vm_area_struct;
- struct fb_info;
-@@ -714,6 +716,7 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
- extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
- extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
- 
-+extern int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb, int index);
- extern int videomode_to_fb_videomode(struct videomode *vm, struct fb_videomode *fbmode);
- 
- /* drivers/video/modedb.c */
+* first 4 patches are slightly related generic improvements/fixes
+* fix DSI PLL problem related to non-50% duty cycle
+* fix DSI PLL problem related to powering
+* changes to the clock handling to always use DSI PLL for DPI when possible
+
+I've tested the series on OMAP4 Panda, OMAP4 SDP and OMAP3 Beagle.
+
+ Tomi
+
+Tomi Valkeinen (12):
+  OMAPFB: remove use of extended edid block
+  OMAPFB: improve mode selection from EDID
+  OMAPDSS: fix DPI & DSI init order
+  OMAPDSS: fix DSI2 PLL clk names
+  OMAPDSS: DSI: skip odd dividers when pck >= 100MHz
+  OMAPDSS: DSI: workaround for HSDiv problem
+  OMAPDSS: add dss_calc_clock_rates() back
+  OMAPDSS: setup default dss fck
+  OMAPDSS: hide dss_select_dispc_clk_source()
+  OMAPDSS: DPI: use dpi.dsidev to see whether to use dsi pll
+  OMAPDSS: DPI: verify if DSI PLL is operational
+  OMAPDSS: DPI: always use DSI PLL if available
+
+ drivers/video/omap2/dss/core.c           |   12 ++--
+ drivers/video/omap2/dss/dpi.c            |   99 +++++++++++++++++++++---------
+ drivers/video/omap2/dss/dsi.c            |   14 ++++-
+ drivers/video/omap2/dss/dss.c            |   67 +++++++++++++++++++-
+ drivers/video/omap2/dss/dss.h            |    2 +-
+ drivers/video/omap2/dss/hdmi.c           |    8 ---
+ drivers/video/omap2/omapfb/omapfb-main.c |   16 ++---
+ 7 files changed, 160 insertions(+), 58 deletions(-)
+
 -- 
 1.7.10.4
 

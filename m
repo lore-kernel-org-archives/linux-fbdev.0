@@ -1,267 +1,412 @@
-From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Date: Fri, 05 Oct 2012 14:03:24 +0000
-Subject: [PATCH 2/2] da8xx-fb: cleanup LCDC configurations
-Message-Id: <1349445084-9857-3-git-send-email-prakash.pm@ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Wed, 31 Oct 2012 09:28:02 +0000
+Subject: =?UTF-8?q?=5BPATCH=20v7=202/8=5D=20of=3A=20add=20helper=20to=20parse=20display=20timings?=
+Message-Id: <1351675689-26814-3-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-Configure below LCDC configurations to optimal values, also have an
-option configure these optional parameters for platform.
-1) AC bias configuration: Required only for passive panels
-2) Dma_burst_size:
-3) FIFO_DMA_DELAY:
-4) FIFO threshold: Does not apply for da830 LCDC.
-
-Patch is verified for 16bpp and 24bpp configurations on da830, da850 and am=
-335x
-EVMs.
-
-Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 ---
- arch/arm/mach-davinci/devices-da8xx.c |   27 +++--------------------
- drivers/video/da8xx-fb.c              |   37 +++++++++++------------------=
----
- include/video/da8xx-fb.h              |   22 +------------------
- 3 files changed, 18 insertions(+), 68 deletions(-)
+ .../devicetree/bindings/video/display-timings.txt  |  139 +++++++++++++++
+ drivers/of/Kconfig                                 |    6 +
+ drivers/of/Makefile                                |    1 +
+ drivers/of/of_display_timings.c                    |  185 ++++++++++++++++++++
+ include/linux/of_display_timings.h                 |   20 +++
+ 5 files changed, 351 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/display-timings.txt
+ create mode 100644 drivers/of/of_display_timings.c
+ create mode 100644 include/linux/of_display_timings.h
 
-diff --git a/arch/arm/mach-davinci/devices-da8xx.c b/arch/arm/mach-davinci/=
-devices-da8xx.c
-index 12a47cd..eb0a1ec 100644
---- a/arch/arm/mach-davinci/devices-da8xx.c
-+++ b/arch/arm/mach-davinci/devices-da8xx.c
-@@ -524,29 +524,9 @@ void __init da8xx_register_mcasp(int id, struct snd_pl=
-atform_data *pdata)
- 	}
- }
-=20
--static const struct display_panel disp_panel =3D {
--	QVGA,
--	16,
--	16,
--	COLOR_ACTIVE,
--};
--
- static struct lcd_ctrl_config lcd_cfg =3D {
--	&disp_panel,
--	.ac_bias		=3D 255,
--	.ac_bias_intrpt		=3D 0,
--	.dma_burst_sz		=3D 16,
-+	.panel_shade		=3D COLOR_ACTIVE,
- 	.bpp			=3D 16,
--	.fdd			=3D 255,
--	.tft_alt_mode		=3D 0,
--	.stn_565_mode		=3D 0,
--	.mono_8bit_mode		=3D 0,
--	.invert_line_clock	=3D 1,
--	.invert_frm_clock	=3D 1,
--	.sync_edge		=3D 0,
--	.sync_ctrl		=3D 1,
--	.raster_order		=3D 0,
--	.fifo_th		=3D 6,
- };
-=20
- struct da8xx_lcdc_platform_data sharp_lcd035q3dg01_pdata =3D {
-@@ -562,7 +542,8 @@ struct da8xx_lcdc_platform_data sharp_lcd035q3dg01_pdat=
-a =3D {
- 		.lower_margin	=3D 2,
- 		.hsync_len	=3D 0,
- 		.vsync_len	=3D 0,
--		.sync		=3D FB_SYNC_CLK_INVERT,
-+		.sync		=3D FB_SYNC_CLK_INVERT |
-+			FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
- 		.flag		=3D 0,
- 	},
- };
-@@ -580,7 +561,7 @@ struct da8xx_lcdc_platform_data sharp_lk043t1dg01_pdata=
- =3D {
- 		.lower_margin	=3D 2,
- 		.hsync_len	=3D 41,
- 		.vsync_len	=3D 10,
--		.sync		=3D 0,
-+		.sync		=3D FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
- 		.flag		=3D 0,
- 	},
- };
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index bacf82b..36af88b 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -339,10 +339,9 @@ static int lcd_cfg_dma(int burst_size, int fifo_th)
- 		reg |=3D LCD_DMA_BURST_SIZE(LCD_DMA_BURST_8);
- 		break;
- 	case 16:
-+	default: /* Configuring for highest burst */
- 		reg |=3D LCD_DMA_BURST_SIZE(LCD_DMA_BURST_16);
- 		break;
--	default:
--		return -EINVAL;
- 	}
-=20
- 	reg |=3D (fifo_th << 8);
-@@ -387,7 +386,8 @@ static void lcd_cfg_vertical_sync(int back_porch, int p=
-ulse_width,
- 	lcdc_write(reg, LCD_RASTER_TIMING_1_REG);
- }
-=20
--static int lcd_cfg_display(const struct lcd_ctrl_config *cfg)
-+static int lcd_cfg_display(const struct lcd_ctrl_config *cfg,
-+		struct fb_videomode *panel)
- {
- 	u32 reg;
- 	u32 reg_int;
-@@ -396,7 +396,7 @@ static int lcd_cfg_display(const struct lcd_ctrl_config=
- *cfg)
- 						LCD_MONO_8BIT_MODE |
- 						LCD_MONOCHROME_MODE);
-=20
--	switch (cfg->p_disp_panel->panel_shade) {
-+	switch (cfg->panel_shade) {
- 	case MONOCHROME:
- 		reg |=3D LCD_MONOCHROME_MODE;
- 		if (cfg->mono_8bit_mode)
-@@ -409,7 +409,9 @@ static int lcd_cfg_display(const struct lcd_ctrl_config=
- *cfg)
- 		break;
-=20
- 	case COLOR_PASSIVE:
--		if (cfg->stn_565_mode)
-+		/* AC bias applicable only for Pasive panels */
-+		lcd_cfg_ac_bias(cfg->ac_bias, cfg->ac_bias_intrpt);
-+		if (cfg->bpp =3D 12 && cfg->stn_565_mode)
- 			reg |=3D LCD_STN_565_ENABLE;
- 		break;
-=20
-@@ -430,22 +432,19 @@ static int lcd_cfg_display(const struct lcd_ctrl_conf=
-ig *cfg)
-=20
- 	reg =3D lcdc_read(LCD_RASTER_TIMING_2_REG);
-=20
--	if (cfg->sync_ctrl)
--		reg |=3D LCD_SYNC_CTRL;
--	else
--		reg &=3D ~LCD_SYNC_CTRL;
-+	reg |=3D LCD_SYNC_CTRL;
-=20
- 	if (cfg->sync_edge)
- 		reg |=3D LCD_SYNC_EDGE;
- 	else
- 		reg &=3D ~LCD_SYNC_EDGE;
-=20
--	if (cfg->invert_line_clock)
-+	if (panel->sync & FB_SYNC_HOR_HIGH_ACT)
- 		reg |=3D LCD_INVERT_LINE_CLOCK;
- 	else
- 		reg &=3D ~LCD_INVERT_LINE_CLOCK;
-=20
--	if (cfg->invert_frm_clock)
-+	if (panel->sync & FB_SYNC_VERT_HIGH_ACT)
- 		reg |=3D LCD_INVERT_FRAME_CLOCK;
- 	else
- 		reg &=3D ~LCD_INVERT_FRAME_CLOCK;
-@@ -690,9 +689,6 @@ static int lcd_init(struct da8xx_fb_par *par, const str=
-uct lcd_ctrl_config *cfg,
- 	if (ret < 0)
- 		return ret;
-=20
--	/* Configure the AC bias properties. */
--	lcd_cfg_ac_bias(cfg->ac_bias, cfg->ac_bias_intrpt);
--
- 	/* Configure the vertical and horizontal sync properties. */
- 	lcd_cfg_vertical_sync(panel->lower_margin, panel->vsync_len,
- 			panel->upper_margin);
-@@ -700,18 +696,12 @@ static int lcd_init(struct da8xx_fb_par *par, const s=
-truct lcd_ctrl_config *cfg,
- 			panel->left_margin);
-=20
- 	/* Configure for disply */
--	ret =3D lcd_cfg_display(cfg);
-+	ret =3D lcd_cfg_display(cfg, panel);
- 	if (ret < 0)
- 		return ret;
-=20
--	if (QVGA !=3D cfg->p_disp_panel->panel_type)
--		return -EINVAL;
-+	bpp =3D cfg->bpp;
-=20
--	if (cfg->bpp <=3D cfg->p_disp_panel->max_bpp &&
--	    cfg->bpp >=3D cfg->p_disp_panel->min_bpp)
--		bpp =3D cfg->bpp;
--	else
--		bpp =3D cfg->p_disp_panel->max_bpp;
- 	if (bpp =3D 12)
- 		bpp =3D 16;
- 	ret =3D lcd_cfg_frame_buffer(par, (unsigned int)panel->xres,
-@@ -1323,8 +1313,7 @@ static int __devinit fb_probe(struct platform_device =
-*device)
- 	da8xx_fb_var.yres         =3D lcd_panel_info->yres;
- 	da8xx_fb_var.yres_virtual =3D lcd_panel_info->yres * LCD_NUM_BUFFERS;
-=20
--	da8xx_fb_var.grayscale -	    lcd_cfg->p_disp_panel->panel_shade =3D MONOC=
-HROME ? 1 : 0;
-+	da8xx_fb_var.grayscale =3D lcd_cfg->panel_shade =3D MONOCHROME ? 1 : 0;
- 	da8xx_fb_var.bits_per_pixel =3D lcd_cfg->bpp;
-=20
- 	da8xx_fb_var.hsync_len =3D lcd_panel_info->hsync_len;
-diff --git a/include/video/da8xx-fb.h b/include/video/da8xx-fb.h
-index a6796ff..3eada34 100644
---- a/include/video/da8xx-fb.h
-+++ b/include/video/da8xx-fb.h
-@@ -14,10 +14,6 @@
-=20
- #include <linux/fb.h>
-=20
--enum panel_type {
--	QVGA =3D 0
--};
--
- enum panel_shade {
- 	MONOCHROME =3D 0,
- 	COLOR_ACTIVE,
-@@ -29,13 +25,6 @@ enum raster_load_mode {
- 	LOAD_PALETTE,
- };
-=20
--struct display_panel {
--	enum panel_type panel_type; /* QVGA */
--	int max_bpp;
--	int min_bpp;
--	enum panel_shade panel_shade;
--};
--
- struct da8xx_lcdc_platform_data {
- 	void *controller_data;
- 	void (*panel_power_ctrl)(int);
-@@ -43,7 +32,7 @@ struct da8xx_lcdc_platform_data {
- };
-=20
- struct lcd_ctrl_config {
--	const struct display_panel *p_disp_panel;
-+	enum panel_shade panel_shade;
-=20
- 	/* AC Bias Pin Frequency */
- 	int ac_bias;
-@@ -69,18 +58,9 @@ struct lcd_ctrl_config {
- 	/* Mono 8-bit Mode: 1=D0-D7 or 0=D0-D3 */
- 	unsigned char mono_8bit_mode;
-=20
--	/* Invert line clock */
--	unsigned char invert_line_clock;
--
--	/* Invert frame clock  */
--	unsigned char invert_frm_clock;
--
- 	/* Horizontal and Vertical Sync Edge: 0=3Drising 1=FAlling */
- 	unsigned char sync_edge;
-=20
--	/* Horizontal and Vertical Sync: Control: 0=3Dignore */
--	unsigned char sync_ctrl;
--
- 	/* Raster Data Order Select: 1=3DMost-to-least 0=3DLeast-to-most */
- 	unsigned char raster_order;
-=20
---=20
-1.7.0.4
+diff --git a/Documentation/devicetree/bindings/video/display-timings.txt b/Documentation/devicetree/bindings/video/display-timings.txt
+new file mode 100644
+index 0000000..04c94a3
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/display-timings.txt
+@@ -0,0 +1,139 @@
++display-timings bindings
++=========
++
++display-timings-node
++------------
++
++required properties:
++ - none
++
++optional properties:
++ - native-mode: the native mode for the display, in case multiple modes are
++		provided. When omitted, assume the first node is the native.
++
++timings-subnode
++---------------
++
++required properties:
++ - hactive, vactive: Display resolution
++ - hfront-porch, hback-porch, hsync-len: Horizontal Display timing parameters
++   in pixels
++   vfront-porch, vback-porch, vsync-len: Vertical display timing parameters in
++   lines
++ - clock-frequency: displayclock in Hz
++
++optional properties:
++ - hsync-active : Hsync pulse is active low/high/ignored
++ - vsync-active : Vsync pulse is active low/high/ignored
++ - de-active : Data-Enable pulse is active low/high/ignored
++ - pixelclk-inverted : pixelclock is inverted/non-inverted/ignored
++ - interlaced (bool)
++ - doublescan (bool)
++
++All the optional properties that are not bool follow the following logic:
++    <1> : high active
++    <0> : low active
++    omitted : not used on hardware
++
++There are different ways of describing the capabilities of a display. The devicetree
++representation corresponds to the one commonly found in datasheets for displays.
++If a display supports multiple signal timings, the native-mode can be specified.
++
++The parameters are defined as
++
++struct display_timing
++=========+
++  +----------+---------------------------------------------+----------+-------+
++  |          |                ↑                            |          |       |
++  |          |                |vback_porch                 |          |       |
++  |          |                ↓                            |          |       |
++  +----------###############################################----------+-------+
++  |          #                ↑                            #          |       |
++  |          #                |                            #          |       |
++  |  hback   #                |                            #  hfront  | hsync |
++  |   porch  #                |       hactive              #  porch   |  len  |
++  |<-------->#<---------------+--------------------------->#<-------->|<----->|
++  |          #                |                            #          |       |
++  |          #                |vactive                     #          |       |
++  |          #                |                            #          |       |
++  |          #                ↓                            #          |       |
++  +----------###############################################----------+-------+
++  |          |                ↑                            |          |       |
++  |          |                |vfront_porch                |          |       |
++  |          |                ↓                            |          |       |
++  +----------+---------------------------------------------+----------+-------+
++  |          |                ↑                            |          |       |
++  |          |                |vsync_len                   |          |       |
++  |          |                ↓                            |          |       |
++  +----------+---------------------------------------------+----------+-------+
++
++
++Example:
++
++	display-timings {
++		native-mode = <&timing0>;
++		timing0: 1920p24 {
++			/* 1920x1080p24 */
++			clock = <52000000>;
++			hactive = <1920>;
++			vactive = <1080>;
++			hfront-porch = <25>;
++			hback-porch = <25>;
++			hsync-len = <25>;
++			vback-porch = <2>;
++			vfront-porch = <2>;
++			vsync-len = <2>;
++			hsync-active = <1>;
++		};
++	};
++
++Every required property also supports the use of ranges, so the commonly used
++datasheet description with <min typ max>-tuples can be used.
++
++Example:
++
++	timing1: timing {
++		/* 1920x1080p24 */
++		clock = <148500000>;
++		hactive = <1920>;
++		vactive = <1080>;
++		hsync-len = <0 44 60>;
++		hfront-porch = <80 88 95>;
++		hback-porch = <100 148 160>;
++		vfront-porch = <0 4 6>;
++		vback-porch = <0 36 50>;
++		vsync-len = <0 5 6>;
++	};
++
++
++Usage in backend
++========
++
++A backend driver may choose to use the display-timings directly and convert the timing
++ranges to a suitable mode. Or it may just use the conversion of the display timings
++to the required mode via the generic videomode struct.
++
++					dtb
++					 |
++					 |  of_get_display_timing_list
++					 ↓
++			      struct display_timings
++					 |
++					 |  videomode_from_timing
++					 ↓
++			    ---  struct videomode ---
++			    |			    |
++ videomode_to_displaymode   |			    |   videomode_to_fb_videomode
++		            ↓			    ↓
++		     drm_display_mode         fb_videomode
++
++The functions of_get_fb_videomode and of_get_display_mode are provided
++to conveniently get the respective mode representation from the devicetree.
++
++Conversion to videomode
++===========+
++As device drivers normally work with some kind of video mode, the timings can be
++converted (may be just a simple copying of the typical value) to a generic videomode
++structure which then can be converted to the according mode used by the backend.
+diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
+index dfba3e6..781e773 100644
+--- a/drivers/of/Kconfig
++++ b/drivers/of/Kconfig
+@@ -83,4 +83,10 @@ config OF_MTD
+ 	depends on MTD
+ 	def_bool y
+ 
++config OF_DISPLAY_TIMINGS
++	def_bool y
++	depends on DISPLAY_TIMING
++	help
++	  helper to parse display timings from the devicetree
++
+ endmenu # OF
+diff --git a/drivers/of/Makefile b/drivers/of/Makefile
+index e027f44..c8e9603 100644
+--- a/drivers/of/Makefile
++++ b/drivers/of/Makefile
+@@ -11,3 +11,4 @@ obj-$(CONFIG_OF_MDIO)	+= of_mdio.o
+ obj-$(CONFIG_OF_PCI)	+= of_pci.o
+ obj-$(CONFIG_OF_PCI_IRQ)  += of_pci_irq.o
+ obj-$(CONFIG_OF_MTD)	+= of_mtd.o
++obj-$(CONFIG_OF_DISPLAY_TIMINGS) += of_display_timings.o
+diff --git a/drivers/of/of_display_timings.c b/drivers/of/of_display_timings.c
+new file mode 100644
+index 0000000..388fe4c
+--- /dev/null
++++ b/drivers/of/of_display_timings.c
+@@ -0,0 +1,185 @@
++/*
++ * OF helpers for parsing display timings
++ *
++ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
++ *
++ * based on of_videomode.c by Sascha Hauer <s.hauer@pengutronix.de>
++ *
++ * This file is released under the GPLv2
++ */
++#include <linux/of.h>
++#include <linux/slab.h>
++#include <linux/export.h>
++#include <linux/of_display_timings.h>
++
++/**
++ * parse_property - parse timing_entry from device_node
++ * @np: device_node with the property
++ * @name: name of the property
++ * @result: will be set to the return value
++ *
++ * DESCRIPTION:
++ * Every display_timing can be specified with either just the typical value or
++ * a range consisting of min/typ/max. This function helps handling this
++ **/
++static int parse_property(struct device_node *np, char *name,
++				struct timing_entry *result)
++{
++	struct property *prop;
++	int length;
++	int cells;
++	int ret;
++
++	prop = of_find_property(np, name, &length);
++	if (!prop) {
++		pr_err("%s: could not find property %s\n", __func__, name);
++		return -EINVAL;
++	}
++
++	cells = length / sizeof(u32);
++	if (cells = 1) {
++		ret = of_property_read_u32_array(np, name, &result->typ, cells);
++		result->min = result->typ;
++		result->max = result->typ;
++	} else if (cells = 3) {
++		ret = of_property_read_u32_array(np, name, &result->min, cells);
++	} else {
++		pr_err("%s: illegal timing specification in %s\n", __func__, name);
++		return -EINVAL;
++	}
++
++	return ret;
++}
++
++/**
++ * of_get_display_timing - parse display_timing entry from device_node
++ * @np: device_node with the properties
++ **/
++struct display_timing *of_get_display_timing(struct device_node *np)
++{
++	struct display_timing *dt;
++	int ret = 0;
++
++	dt = kzalloc(sizeof(*dt), GFP_KERNEL);
++	if (!dt) {
++		pr_err("%s: could not allocate display_timing struct\n", __func__);
++		return NULL;
++	}
++
++	ret |= parse_property(np, "hback-porch", &dt->hback_porch);
++	ret |= parse_property(np, "hfront-porch", &dt->hfront_porch);
++	ret |= parse_property(np, "hactive", &dt->hactive);
++	ret |= parse_property(np, "hsync-len", &dt->hsync_len);
++	ret |= parse_property(np, "vback-porch", &dt->vback_porch);
++	ret |= parse_property(np, "vfront-porch", &dt->vfront_porch);
++	ret |= parse_property(np, "vactive", &dt->vactive);
++	ret |= parse_property(np, "vsync-len", &dt->vsync_len);
++	ret |= parse_property(np, "clock-frequency", &dt->pixelclock);
++
++	of_property_read_u32(np, "vsync-active", &dt->vsync_pol_active);
++	of_property_read_u32(np, "hsync-active", &dt->hsync_pol_active);
++	of_property_read_u32(np, "de-active", &dt->de_pol_active);
++	of_property_read_u32(np, "pixelclk-inverted", &dt->pixelclk_pol);
++	dt->interlaced = of_property_read_bool(np, "interlaced");
++	dt->doublescan = of_property_read_bool(np, "doublescan");
++
++	if (ret) {
++		pr_err("%s: error reading timing properties\n", __func__);
++		return NULL;
++	}
++
++	return dt;
++}
++EXPORT_SYMBOL_GPL(of_get_display_timing);
++
++/**
++ * of_get_display_timing_list - parse all display_timing entries from a device_node
++ * @np: device_node with the subnodes
++ **/
++struct display_timings *of_get_display_timing_list(struct device_node *np)
++{
++	struct device_node *timings_np;
++	struct device_node *entry;
++	struct device_node *native_mode;
++	struct display_timings *disp;
++
++	if (!np) {
++		pr_err("%s: no devicenode given\n", __func__);
++		return NULL;
++	}
++
++	timings_np = of_find_node_by_name(np, "display-timings");
++	if (!timings_np) {
++		pr_err("%s: could not find display-timings node\n", __func__);
++		return NULL;
++	}
++
++	disp = kzalloc(sizeof(*disp), GFP_KERNEL);
++
++	entry = of_parse_phandle(timings_np, "native-mode", 0);
++	/* assume first child as native mode if none provided */
++	if (!entry)
++		entry = of_get_next_child(np, NULL);
++	if (!entry) {
++		pr_err("%s: no timing specifications given\n", __func__);
++		return NULL;
++	}
++
++	pr_info("%s: using %s as default timing\n", __func__, entry->name);
++
++	native_mode = entry;
++
++	disp->num_timings = of_get_child_count(timings_np);
++	disp->timings = kzalloc(sizeof(struct display_timing *)*disp->num_timings,
++				GFP_KERNEL);
++	disp->num_timings = 0;
++	disp->native_mode = 0;
++
++	for_each_child_of_node(timings_np, entry) {
++		struct display_timing *dt;
++
++		dt = of_get_display_timing(entry);
++		if (!dt) {
++			/* to not encourage wrong devicetrees, fail in case of an error */
++			pr_err("%s: error in timing %d\n", __func__, disp->num_timings+1);
++			return NULL;
++		}
++
++		if (native_mode = entry)
++			disp->native_mode = disp->num_timings;
++
++		disp->timings[disp->num_timings] = dt;
++		disp->num_timings++;
++	}
++	of_node_put(timings_np);
++
++	if (disp->num_timings > 0)
++		pr_info("%s: got %d timings. Using timing #%d as default\n", __func__,
++			disp->num_timings , disp->native_mode + 1);
++	else {
++		pr_err("%s: no valid timings specified\n", __func__);
++		return NULL;
++	}
++	return disp;
++}
++EXPORT_SYMBOL_GPL(of_get_display_timing_list);
++
++/**
++ * of_display_timings_exists - check if a display-timings node is provided
++ * @np: device_node with the timing
++ **/
++int of_display_timings_exists(struct device_node *np)
++{
++	struct device_node *timings_np;
++	struct device_node *default_np;
++
++	if (!np)
++		return -EINVAL;
++
++	timings_np = of_parse_phandle(np, "display-timings", 0);
++	if (!timings_np)
++		return -EINVAL;
++
++	return -EINVAL;
++}
++EXPORT_SYMBOL_GPL(of_display_timings_exists);
+diff --git a/include/linux/of_display_timings.h b/include/linux/of_display_timings.h
+new file mode 100644
+index 0000000..e4e1f22
+--- /dev/null
++++ b/include/linux/of_display_timings.h
+@@ -0,0 +1,20 @@
++/*
++ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
++ *
++ * display timings of helpers
++ *
++ * This file is released under the GPLv2
++ */
++
++#ifndef __LINUX_OF_DISPLAY_TIMINGS_H
++#define __LINUX_OF_DISPLAY_TIMINGS_H
++
++#include <linux/display_timing.h>
++
++#define OF_USE_NATIVE_MODE -1
++
++struct display_timings *of_get_display_timing_list(struct device_node *np);
++struct display_timing *of_get_display_timing(struct device_node *np);
++int of_display_timings_exists(struct device_node *np);
++
++#endif
+-- 
+1.7.10.4
 

@@ -1,71 +1,250 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Tue, 16 Oct 2012 22:33:49 +0000
-Subject: [PATCH 8/9] drivers/video: fsl-diu-fb: don't touch registers for unused features
-Message-Id: <1350426830-12140-8-git-send-email-timur@freescale.com>
+From: Sean Paul <seanpaul@chromium.org>
+Date: Wed, 31 Oct 2012 14:21:16 +0000
+Subject: [PATCH] video: exynos_dp: Check DPCD return codes
+Message-Id: <1351693276-12740-1-git-send-email-seanpaul@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-We don't use the writeback buffer, so don't initialize the registers for
-that feature.
+Add return code checks to the DPCD transactions in the SW link training
 
-The default value for SYN_POL is already zero, so don't re-initialize it.
-
-Writing the INT_STATUS register does nothing.
-
-The value that we write to the PLUT register only makes sense on the
-MPC8610 and P1022, so don't touch that register on the MPC5121.
-
-Signed-off-by: Timur Tabi <timur@freescale.com>
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
 ---
- drivers/video/fsl-diu-fb.c |   23 +++++++++++++++--------
- 1 files changed, 15 insertions(+), 8 deletions(-)
+ drivers/video/exynos/exynos_dp_core.c |   86 +++++++++++++++++++++-----------
+ 1 files changed, 56 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 37175ac..0883bc4 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -825,12 +825,8 @@ static void update_lcdc(struct fb_info *info)
- 	out_be32(&hw->gamma, DMA_ADDR(data, gamma));
- 	out_be32(&hw->cursor, DMA_ADDR(data, cursor));
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index d55470e..44820f2 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -261,11 +261,10 @@ static void exynos_dp_set_lane_lane_pre_emphasis(struct exynos_dp_device *dp,
+ 	}
+ }
  
--	out_be32(&hw->bgnd, 0x007F7F7F); 	/* BGND */
--	out_be32(&hw->bgnd_wb, 0); 		/* BGND_WB */
--	out_be32(&hw->disp_size, (var->yres << 16 | var->xres));
--						/* DISP SIZE */
--	out_be32(&hw->wb_size, 0); /* WB SIZE */
--	out_be32(&hw->wb_mem_addr, 0); /* WB MEM ADDR */
-+	out_be32(&hw->bgnd, 0x007F7F7F); /* Set background to grey */
-+	out_be32(&hw->disp_size, (var->yres << 16) | var->xres);
+-static void exynos_dp_link_start(struct exynos_dp_device *dp)
++static int exynos_dp_link_start(struct exynos_dp_device *dp)
+ {
+ 	u8 buf[4];
+-	int lane;
+-	int lane_count;
++	int lane, lane_count, retval;
  
- 	/* Horizontal and vertical configuration register */
- 	temp = var->left_margin << 22 | /* BP_H */
-@@ -847,9 +843,20 @@ static void update_lcdc(struct fb_info *info)
+ 	lane_count = dp->link_train.lane_count;
  
- 	diu_ops.set_pixel_clock(var->pixclock);
+@@ -276,8 +275,10 @@ static void exynos_dp_link_start(struct exynos_dp_device *dp)
+ 		dp->link_train.cr_loop[lane] = 0;
  
--	out_be32(&hw->syn_pol, 0);	/* SYNC SIGNALS POLARITY */
--	out_be32(&hw->int_status, 0);	/* INTERRUPT STATUS */
-+#ifndef CONFIG_PPC_MPC512x
-+	/*
-+	 * The PLUT register is defined differently on the MPC5121 than it
-+	 * is on other SOCs.  Unfortunately, there's no documentation that
-+	 * explains how it's supposed to be programmed, so for now, we leave
-+	 * it at the default value on the MPC5121.
-+	 *
-+	 * For other SOCs, program it for the highest priority, which will
-+	 * reduce the chance of underrun. Technically, we should scale the
-+	 * priority to match the screen resolution, but doing that properly
-+	 * requires delicate fine-tuning for each use-case.
-+	 */
- 	out_be32(&hw->plut, 0x01F5F666);
-+#endif
+ 	/* Set sink to D0 (Sink Not Ready) mode. */
+-	exynos_dp_write_byte_to_dpcd(dp, DPCD_ADDR_SINK_POWER_STATE,
++	retval = exynos_dp_write_byte_to_dpcd(dp, DPCD_ADDR_SINK_POWER_STATE,
+ 				DPCD_SET_POWER_STATE_D0);
++	if (retval)
++		return retval;
  
- 	/* Enable the DIU */
- 	enable_lcdc(info);
+ 	/* Set link rate and count as you want to establish*/
+ 	exynos_dp_set_link_bandwidth(dp, dp->link_train.link_rate);
+@@ -286,8 +287,10 @@ static void exynos_dp_link_start(struct exynos_dp_device *dp)
+ 	/* Setup RX configuration */
+ 	buf[0] = dp->link_train.link_rate;
+ 	buf[1] = dp->link_train.lane_count;
+-	exynos_dp_write_bytes_to_dpcd(dp, DPCD_ADDR_LINK_BW_SET,
++	retval = exynos_dp_write_bytes_to_dpcd(dp, DPCD_ADDR_LINK_BW_SET,
+ 				2, buf);
++	if (retval)
++		return retval;
+ 
+ 	/* Set TX pre-emphasis to minimum */
+ 	for (lane = 0; lane < lane_count; lane++)
+@@ -306,9 +309,11 @@ static void exynos_dp_link_start(struct exynos_dp_device *dp)
+ 	for (lane = 0; lane < lane_count; lane++)
+ 		buf[lane] = DPCD_PRE_EMPHASIS_PATTERN2_LEVEL0 |
+ 			    DPCD_VOLTAGE_SWING_PATTERN1_LEVEL0;
+-	exynos_dp_write_bytes_to_dpcd(dp,
++	retval = exynos_dp_write_bytes_to_dpcd(dp,
+ 		DPCD_ADDR_TRAINING_LANE0_SET,
+ 		lane_count, buf);
++
++	return retval;
+ }
+ 
+ static unsigned char exynos_dp_get_lane_status(u8 link_status[2], int lane)
+@@ -430,8 +435,7 @@ static void exynos_dp_reduce_link_rate(struct exynos_dp_device *dp)
+ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ {
+ 	u8 link_status[2];
+-	int lane;
+-	int lane_count;
++	int lane, lane_count, retval;
+ 
+ 	u8 adjust_request[2];
+ 	u8 voltage_swing;
+@@ -442,17 +446,22 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 
+ 	lane_count = dp->link_train.lane_count;
+ 
+-	exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
++	retval =  exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
+ 				2, link_status);
++	if (retval)
++		return retval;
+ 
+ 	if (exynos_dp_clock_recovery_ok(link_status, lane_count) = 0) {
+ 		/* set training pattern 2 for EQ */
+ 		exynos_dp_set_training_pattern(dp, TRAINING_PTN2);
+ 
+ 		for (lane = 0; lane < lane_count; lane++) {
+-			exynos_dp_read_bytes_from_dpcd(dp,
++			retval = exynos_dp_read_bytes_from_dpcd(dp,
+ 					DPCD_ADDR_ADJUST_REQUEST_LANE0_1,
+ 					2, adjust_request);
++			if (retval)
++				return retval;
++
+ 			voltage_swing = exynos_dp_get_adjust_request_voltage(
+ 							adjust_request, lane);
+ 			pre_emphasis = exynos_dp_get_adjust_request_pre_emphasis(
+@@ -472,15 +481,19 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 				lane);
+ 		}
+ 
+-		exynos_dp_write_byte_to_dpcd(dp,
++		retval = exynos_dp_write_byte_to_dpcd(dp,
+ 			DPCD_ADDR_TRAINING_PATTERN_SET,
+ 			DPCD_SCRAMBLING_DISABLED |
+ 			DPCD_TRAINING_PATTERN_2);
++		if (retval)
++			return retval;
+ 
+-		exynos_dp_write_bytes_to_dpcd(dp,
++		retval = exynos_dp_write_bytes_to_dpcd(dp,
+ 			DPCD_ADDR_TRAINING_LANE0_SET,
+ 			lane_count,
+ 			dp->link_train.training_lane);
++		if (retval)
++			return retval;
+ 
+ 		dev_info(dp->dev, "Link Training Clock Recovery success\n");
+ 		dp->link_train.lt_state = EQUALIZER_TRAINING;
+@@ -488,9 +501,12 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 		for (lane = 0; lane < lane_count; lane++) {
+ 			training_lane = exynos_dp_get_lane_link_training(
+ 							dp, lane);
+-			exynos_dp_read_bytes_from_dpcd(dp,
++			retval = exynos_dp_read_bytes_from_dpcd(dp,
+ 					DPCD_ADDR_ADJUST_REQUEST_LANE0_1,
+ 					2, adjust_request);
++			if (retval)
++				return retval;
++
+ 			voltage_swing = exynos_dp_get_adjust_request_voltage(
+ 							adjust_request, lane);
+ 			pre_emphasis = exynos_dp_get_adjust_request_pre_emphasis(
+@@ -527,13 +543,14 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 				dp->link_train.training_lane[lane], lane);
+ 		}
+ 
+-		exynos_dp_write_bytes_to_dpcd(dp,
+-			DPCD_ADDR_TRAINING_LANE0_SET,
+-			lane_count,
+-			dp->link_train.training_lane);
++		retval = exynos_dp_write_bytes_to_dpcd(dp,
++				DPCD_ADDR_TRAINING_LANE0_SET, lane_count,
++				dp->link_train.training_lane);
++		if (retval)
++			return retval;
+ 	}
+ 
+-	return 0;
++	return retval;
+ 
+ reduce_link_rate:
+ 	exynos_dp_reduce_link_rate(dp);
+@@ -544,8 +561,7 @@ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
+ {
+ 	u8 link_status[2];
+ 	u8 link_align[3];
+-	int lane;
+-	int lane_count;
++	int lane, lane_count, retval;
+ 	u32 reg;
+ 
+ 	u8 adjust_request[2];
+@@ -557,8 +573,10 @@ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
+ 
+ 	lane_count = dp->link_train.lane_count;
+ 
+-	exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
++	retval = exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
+ 				2, link_status);
++	if (retval)
++		return retval;
+ 
+ 	if (exynos_dp_clock_recovery_ok(link_status, lane_count) = 0) {
+ 		link_align[0] = link_status[0];
+@@ -569,9 +587,12 @@ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
+ 			&link_align[2]);
+ 
+ 		for (lane = 0; lane < lane_count; lane++) {
+-			exynos_dp_read_bytes_from_dpcd(dp,
++			retval = exynos_dp_read_bytes_from_dpcd(dp,
+ 					DPCD_ADDR_ADJUST_REQUEST_LANE0_1,
+ 					2, adjust_request);
++			if (retval)
++				return retval;
++
+ 			voltage_swing = exynos_dp_get_adjust_request_voltage(
+ 							adjust_request, lane);
+ 			pre_emphasis = exynos_dp_get_adjust_request_pre_emphasis(
+@@ -620,10 +641,12 @@ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
+ 					dp->link_train.training_lane[lane],
+ 					lane);
+ 
+-			exynos_dp_write_bytes_to_dpcd(dp,
+-				DPCD_ADDR_TRAINING_LANE0_SET,
+-				lane_count,
+-				dp->link_train.training_lane);
++			retval = exynos_dp_write_bytes_to_dpcd(dp,
++					DPCD_ADDR_TRAINING_LANE0_SET,
++					lane_count,
++					dp->link_train.training_lane);
++			if (retval)
++				return retval;
+ 		}
+ 	} else {
+ 		goto reduce_link_rate;
+@@ -701,16 +724,17 @@ static void exynos_dp_init_training(struct exynos_dp_device *dp,
+ 
+ static int exynos_dp_sw_link_training(struct exynos_dp_device *dp)
+ {
+-	int retval = 0;
+-	int training_finished = 0;
++	int retval = 0, training_finished = 0;
+ 
+ 	dp->link_train.lt_state = START;
+ 
+ 	/* Process here */
+-	while (!training_finished) {
++	while (!retval && !training_finished) {
+ 		switch (dp->link_train.lt_state) {
+ 		case START:
+-			exynos_dp_link_start(dp);
++			retval = exynos_dp_link_start(dp);
++			if (retval)
++				dev_err(dp->dev, "LT link start failed!\n");
+ 			break;
+ 		case CLOCK_RECOVERY:
+ 			retval = exynos_dp_process_clock_recovery(dp);
+@@ -729,6 +753,8 @@ static int exynos_dp_sw_link_training(struct exynos_dp_device *dp)
+ 			return -EREMOTEIO;
+ 		}
+ 	}
++	if (retval)
++		dev_err(dp->dev, "eDP link training failed (%d)\n", retval);
+ 
+ 	return retval;
+ }
 -- 
-1.7.3.4
-
+1.7.7.3
 

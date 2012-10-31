@@ -1,62 +1,84 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 16 Oct 2012 13:31:28 +0000
-Subject: Re: [PATCH] OMAPDSS: Correct check for the callback pointer in dss_dsi_disable_pads()
-Message-Id: <507D61B0.5010602@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enigDB8C1FADA9A170AE373454F3"
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Wed, 31 Oct 2012 09:28:05 +0000
+Subject: [PATCH v7 5/8] fbmon: add videomode helpers
+Message-Id: <1351675689-26814-6-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1350388281-20397-1-git-send-email-peter.ujfalusi@ti.com>
-In-Reply-To: <1350388281-20397-1-git-send-email-peter.ujfalusi@ti.com>
-To: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
---------------enigDB8C1FADA9A170AE373454F3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Add a function to convert from the generic videomode to a fb_videomode.
 
-On 2012-10-16 14:51, Peter Ujfalusi wrote:
-> Appear to be a copy-paste bug: the code was checking board_data->dsi_en=
-able_pads
-> while calling board_data->dsi_disable_pads.
->=20
->=20
-> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
-> ---
->=20
-> Hi Tomi,
->=20
-> not sure if this need to be included to 3.7
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+---
+ drivers/video/fbmon.c |   36 ++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h    |    2 ++
+ 2 files changed, 38 insertions(+)
 
-Thanks. Probably not needed for 3.7, as we never hit that bug with the
-current kernel: if dsi_enable_pads is defined we also always define
-dsi_disable_pads.
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index cef6557..b9e6ab3 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -1373,6 +1373,42 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
+ 	kfree(timings);
+ 	return err;
+ }
++
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++int videomode_to_fb_videomode(struct videomode *vm, struct fb_videomode *fbmode)
++{
++	fbmode->xres = vm->hactive;
++	fbmode->left_margin = vm->hback_porch;
++	fbmode->right_margin = vm->hfront_porch;
++	fbmode->hsync_len = vm->hsync_len;
++
++	fbmode->yres = vm->vactive;
++	fbmode->upper_margin = vm->vback_porch;
++	fbmode->lower_margin = vm->vfront_porch;
++	fbmode->vsync_len = vm->vsync_len;
++
++	fbmode->pixclock = KHZ2PICOS(vm->pixelclock / 1000);
++
++	fbmode->sync = 0;
++	fbmode->vmode = 0;
++	if (vm->hah)
++		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
++	if (vm->vah)
++		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
++	if (vm->interlaced)
++		fbmode->vmode |= FB_VMODE_INTERLACED;
++	if (vm->doublescan)
++		fbmode->vmode |= FB_VMODE_DOUBLE;
++
++	fbmode->refresh = 60;
++	fbmode->flag = 0;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(videomode_to_fb_videomode);
++#endif
++
++
+ #else
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+ {
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index c7a9571..46c665b 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -714,6 +714,8 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+ extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+ extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
+ 
++extern int videomode_to_fb_videomode(struct videomode *vm, struct fb_videomode *fbmode);
++
+ /* drivers/video/modedb.c */
+ #define VESA_MODEDB_SIZE 34
+ extern void fb_var_to_videomode(struct fb_videomode *mode,
+-- 
+1.7.10.4
 
- Tomi
-
-
-
---------------enigDB8C1FADA9A170AE373454F3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJQfWGwAAoJEPo9qoy8lh71/UAP/iNqJxlJYTWp7tSJl8HOVCSS
-SeePumroGi+alSai0Nivk3tZ6x/RBRkTKcIo2xqufUIcW/J5ZQd1sK8SYLt9q7Sd
-3G55mGfEuLlxCGNURf3rBn08JCXVakHyc0eWn15xVx9uZTehav4ckpr535S8j3mp
-wtWyzmRlJm+Bpb0pW/4Vyf9FXk/meNqibVDx3xWUVvsZ5qk0HCQVi7HGFmZOL8Xs
-2QL8bZS605whbvevSbLe2YYoCOErRVKHw6t48hsqSOf/D9Dgq11gCOFvO5FGQ+5z
-9nc27jd/f8s3NIeVMOOxuaJT5bl4md2FSYwskFGRFbxQbZa+7ACKoQ0o9GR1vjFD
-4VMuFOHlrjKcCcKlOXxoxNioWhB9SYkcoYAYdz+qRWUtgkv9xlGAwrIJqD3EoFVB
-f8OCmyB9QhQp6KrdNttnlsDTFCp16LYAqiaEgmXJV++kcbeo5ZYlY3myMO901kWw
-7v8tXhV8m6abmv5l6ucdQszuFGU5Jx0jSAq910deD0wNOYpq6KcwtDsh0TdfQoPk
-zudAEjyulxWTb/w3MR7pSW8rX12SXSJXwHkYs7UqsqiShGkHb0+hvBGnxoPsm4Y+
-Hl1wXlEfMTQzwNpA9fRkl3/KAwWHU82qWECReVqsGXTLEL6mn4fQ+sijiS6HxsQ5
-vyXs3Yq71E2eyQmfYlHm
-=PAmv
------END PGP SIGNATURE-----
-
---------------enigDB8C1FADA9A170AE373454F3--

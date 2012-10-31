@@ -1,80 +1,162 @@
 From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Wed, 31 Oct 2012 16:49:13 +0000
-Subject: Re: [PATCH v7 5/8] fbmon: add videomode helpers
-Message-Id: <20121031164913.GA9054@pengutronix.de>
+Date: Wed, 31 Oct 2012 09:28:01 +0000
+Subject: [PATCH v7 1/8] video: add display_timing struct and helpers
+Message-Id: <1351675689-26814-2-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
- <1351675689-26814-6-git-send-email-s.trumtrar@pengutronix.de>
- <A73F36158E33644199EB82C5EC81C7BC3E9E1B39@DBDE01.ent.ti.com>
-In-Reply-To: <A73F36158E33644199EB82C5EC81C7BC3E9E1B39@DBDE01.ent.ti.com>
+In-Reply-To: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Cc: "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, Rob Herring <robherring2@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>, "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-Hi Prakash!
+Add display_timing structure and the according helper functions. This allows
+the description of a display via its supported timing parameters.
 
-On Wed, Oct 31, 2012 at 03:30:03PM +0000, Manjunathappa, Prakash wrote:
-> Hi Steffen,
-> 
-> On Wed, Oct 31, 2012 at 14:58:05, Steffen Trumtrar wrote:
-> > Add a function to convert from the generic videomode to a fb_videomode.
-> > 
-> > Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-> > ---
-> >  drivers/video/fbmon.c |   36 ++++++++++++++++++++++++++++++++++++
-> >  include/linux/fb.h    |    2 ++
-> >  2 files changed, 38 insertions(+)
-> > 
-> > diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-> > index cef6557..b9e6ab3 100644
-> > --- a/drivers/video/fbmon.c
-> > +++ b/drivers/video/fbmon.c
-> > @@ -1373,6 +1373,42 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
-> >  	kfree(timings);
-> >  	return err;
-> >  }
-> > +
-> > +#if IS_ENABLED(CONFIG_VIDEOMODE)
-> > +int videomode_to_fb_videomode(struct videomode *vm, struct fb_videomode *fbmode)
-> > +{
-> > +	fbmode->xres = vm->hactive;
-> > +	fbmode->left_margin = vm->hback_porch;
-> > +	fbmode->right_margin = vm->hfront_porch;
-> > +	fbmode->hsync_len = vm->hsync_len;
-> > +
-> > +	fbmode->yres = vm->vactive;
-> > +	fbmode->upper_margin = vm->vback_porch;
-> > +	fbmode->lower_margin = vm->vfront_porch;
-> > +	fbmode->vsync_len = vm->vsync_len;
-> > +
-> > +	fbmode->pixclock = KHZ2PICOS(vm->pixelclock / 1000);
-> > +
-> > +	fbmode->sync = 0;
-> > +	fbmode->vmode = 0;
-> > +	if (vm->hah)
-> > +		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
-> > +	if (vm->vah)
-> > +		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
-> > +	if (vm->interlaced)
-> > +		fbmode->vmode |= FB_VMODE_INTERLACED;
-> > +	if (vm->doublescan)
-> > +		fbmode->vmode |= FB_VMODE_DOUBLE;
-> > +
-> 
-> "pixelclk-inverted" property of the panel is not percolated fb_videomode.
-> Please let me know if I am missing something.
-> 
+Every timing parameter can be specified as a single value or a range
+<min typ max>.
 
-You are right. I forgot that :(
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+---
+ drivers/video/Kconfig          |    5 +++
+ drivers/video/Makefile         |    1 +
+ drivers/video/display_timing.c |   24 ++++++++++++++
+ include/linux/display_timing.h |   69 ++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 99 insertions(+)
+ create mode 100644 drivers/video/display_timing.c
+ create mode 100644 include/linux/display_timing.h
 
-Regards,
-Steffen
-
-
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index d08d799..1421fc8 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -33,6 +33,11 @@ config VIDEO_OUTPUT_CONTROL
+ 	  This framework adds support for low-level control of the video 
+ 	  output switch.
+ 
++config DISPLAY_TIMING
++       bool "Enable display timings helpers"
++       help
++         Say Y here, to use the display timing helpers.
++
+ menuconfig FB
+ 	tristate "Support for frame buffer devices"
+ 	---help---
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 23e948e..552c045 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -167,3 +167,4 @@ obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
+ 
+ #video output switch sysfs driver
+ obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) += output.o
++obj-$(CONFIG_DISPLAY_TIMING) += display_timing.o
+diff --git a/drivers/video/display_timing.c b/drivers/video/display_timing.c
+new file mode 100644
+index 0000000..9ccfdb3
+--- /dev/null
++++ b/drivers/video/display_timing.c
+@@ -0,0 +1,24 @@
++/*
++ * generic display timing functions
++ *
++ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
++ *
++ * This file is released under the GPLv2
++ */
++
++#include <linux/slab.h>
++#include <linux/display_timing.h>
++
++void timings_release(struct display_timings *disp)
++{
++	int i;
++
++	for (i = 0; i < disp->num_timings; i++)
++		kfree(disp->timings[i]);
++}
++
++void display_timings_release(struct display_timings *disp)
++{
++	timings_release(disp);
++	kfree(disp->timings);
++}
+diff --git a/include/linux/display_timing.h b/include/linux/display_timing.h
+new file mode 100644
+index 0000000..aa02a12
+--- /dev/null
++++ b/include/linux/display_timing.h
+@@ -0,0 +1,69 @@
++/*
++ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
++ *
++ * description of display timings
++ *
++ * This file is released under the GPLv2
++ */
++
++#ifndef __LINUX_DISPLAY_TIMINGS_H
++#define __LINUX_DISPLAY_TIMINGS_H
++
++#include <linux/types.h>
++
++struct timing_entry {
++	u32 min;
++	u32 typ;
++	u32 max;
++};
++
++struct display_timing {
++	struct timing_entry pixelclock;
++
++	struct timing_entry hactive;
++	struct timing_entry hfront_porch;
++	struct timing_entry hback_porch;
++	struct timing_entry hsync_len;
++
++	struct timing_entry vactive;
++	struct timing_entry vfront_porch;
++	struct timing_entry vback_porch;
++	struct timing_entry vsync_len;
++
++	unsigned int vsync_pol_active;
++	unsigned int hsync_pol_active;
++	unsigned int de_pol_active;
++	unsigned int pixelclk_pol;
++	bool interlaced;
++	bool doublescan;
++};
++
++struct display_timings {
++	unsigned int num_timings;
++	unsigned int native_mode;
++
++	struct display_timing **timings;
++};
++
++/* placeholder function until ranges are really needed */
++static inline u32 display_timing_get_value(struct timing_entry *te, int index)
++{
++	return te->typ;
++}
++
++static inline struct display_timing *display_timings_get(struct display_timings *disp,
++							 int index)
++{
++	struct display_timing *dt;
++
++	if (disp->num_timings > index) {
++		dt = disp->timings[index];
++		return dt;
++	} else
++		return NULL;
++}
++
++void timings_release(struct display_timings *disp);
++void display_timings_release(struct display_timings *disp);
++
++#endif
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+1.7.10.4
+

@@ -1,35 +1,27 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 26 Oct 2012 07:01:39 +0000
-Subject: [PATCH 2/3] video: s3c-fb: return an error when bpp is invalid
-Message-Id: <002201cdb347$bf4459b0$3dcd0d10$%han@samsung.com>
+From: Jan Engelhardt <jengelh@inai.de>
+Date: Wed, 31 Oct 2012 13:47:30 +0000
+Subject: fbdev: on-screen character cell corruption
+Message-Id: <alpine.LNX.2.01.1210311423100.29232@nerf07.vanv.qr>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-This patch returns an error, when bpp is invalid in
-s3c_fb_check_var(). If invalid bpp is requested,
-an error should be returned.
-
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
----
- drivers/video/s3c-fb.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 89cd278..f453b8b 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -330,6 +330,7 @@ static int s3c_fb_check_var(struct fb_var_screeninfo *var,
- 
- 	default:
- 		dev_err(sfb->dev, "invalid bpp\n");
-+		return -EINVAL;
- 	}
- 
- 	dev_dbg(sfb->dev, "%s: verified parameters\n", __func__);
--- 
-1.7.1
+Hi,
 
 
+I have here a 9x16 font (for use with e.g. videor0x400 on KMS to get 
+80x25 tty size) that fbcon seems to have a problem correctly rendering. 
+When backspacing, the pixels from the character under the cursor not 
+only gets moved to one character cell to the left (as it should), but 
+the leftmost pixel column of the char also leaks to the rightmost pixel 
+column previous glyph.
+
+LKML being a text/plain medium, I have taken pictures of the screen for 
+better understanding on how to reproduce, and have placed them at 
+http://inai.de/keyb/ . The font file is also provided there.
+
+The kernel I run is 3.4.11 on x86_64. There is no known good version to 
+me (IOW, it is not a regression), as I just started using a 9x16 font 
+on fbcon.

@@ -1,271 +1,96 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 17 Oct 2012 10:18:19 +0000
-Subject: [PATCHv3 2/5] OMAP: move arch/arm/plat-omap/include/plat/vrfb.h
-Message-Id: <1350469102-24888-3-git-send-email-tomi.valkeinen@ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Wed, 31 Oct 2012 09:28:06 +0000
+Subject: [PATCH v7 6/8] fbmon: add of_videomode helpers
+Message-Id: <1351675689-26814-7-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1350469102-24888-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1350469102-24888-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, tony@atomide.com
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Vaibhav Hiremath <hvaibhav@ti.com>
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-Now that vrfb driver is not omap dependent anymore, we can move vrfb.h
-from arch/arm/plat-omap/include/plat to include/video/omapvrfb.h.
+Add helper to get fb_videomode from devicetree.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Vaibhav Hiremath <hvaibhav@ti.com>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 ---
- arch/arm/plat-omap/include/plat/vrfb.h       |   66 --------------------------
- drivers/media/platform/omap/omap_vout.c      |    2 +-
- drivers/media/platform/omap/omap_vout_vrfb.c |    2 +-
- drivers/media/platform/omap/omap_voutdef.h   |    2 +-
- drivers/video/omap2/omapfb/omapfb-ioctl.c    |    2 +-
- drivers/video/omap2/omapfb/omapfb-main.c     |    2 +-
- drivers/video/omap2/omapfb/omapfb-sysfs.c    |    2 +-
- drivers/video/omap2/vrfb.c                   |    2 +-
- include/video/omapvrfb.h                     |   66 ++++++++++++++++++++++++++
- 9 files changed, 73 insertions(+), 73 deletions(-)
- delete mode 100644 arch/arm/plat-omap/include/plat/vrfb.h
- create mode 100644 include/video/omapvrfb.h
+ drivers/video/fbmon.c |   40 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h    |    3 +++
+ 2 files changed, 43 insertions(+)
 
-diff --git a/arch/arm/plat-omap/include/plat/vrfb.h b/arch/arm/plat-omap/include/plat/vrfb.h
-deleted file mode 100644
-index 3792bde..0000000
---- a/arch/arm/plat-omap/include/plat/vrfb.h
-+++ /dev/null
-@@ -1,66 +0,0 @@
--/*
-- * VRFB Rotation Engine
-- *
-- * Copyright (C) 2009 Nokia Corporation
-- * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-- * General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License along
-- * with this program; if not, write to the Free Software Foundation, Inc.,
-- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-- */
--
--#ifndef __OMAP_VRFB_H__
--#define __OMAP_VRFB_H__
--
--#define OMAP_VRFB_LINE_LEN 2048
--
--struct vrfb {
--	u8 context;
--	void __iomem *vaddr[4];
--	unsigned long paddr[4];
--	u16 xres;
--	u16 yres;
--	u16 xoffset;
--	u16 yoffset;
--	u8 bytespp;
--	bool yuv_mode;
--};
--
--#ifdef CONFIG_OMAP2_VRFB
--extern int omap_vrfb_request_ctx(struct vrfb *vrfb);
--extern void omap_vrfb_release_ctx(struct vrfb *vrfb);
--extern void omap_vrfb_adjust_size(u16 *width, u16 *height,
--		u8 bytespp);
--extern u32 omap_vrfb_min_phys_size(u16 width, u16 height, u8 bytespp);
--extern u16 omap_vrfb_max_height(u32 phys_size, u16 width, u8 bytespp);
--extern void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
--		u16 width, u16 height,
--		unsigned bytespp, bool yuv_mode);
--extern int omap_vrfb_map_angle(struct vrfb *vrfb, u16 height, u8 rot);
--extern void omap_vrfb_restore_context(void);
--
--#else
--static inline int omap_vrfb_request_ctx(struct vrfb *vrfb) { return 0; }
--static inline void omap_vrfb_release_ctx(struct vrfb *vrfb) {}
--static inline void omap_vrfb_adjust_size(u16 *width, u16 *height,
--		u8 bytespp) {}
--static inline u32 omap_vrfb_min_phys_size(u16 width, u16 height, u8 bytespp)
--		{ return 0; }
--static inline u16 omap_vrfb_max_height(u32 phys_size, u16 width, u8 bytespp)
--		{ return 0; }
--static inline void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
--		u16 width, u16 height, unsigned bytespp, bool yuv_mode) {}
--static inline int omap_vrfb_map_angle(struct vrfb *vrfb, u16 height, u8 rot)
--		{ return 0; }
--static inline void omap_vrfb_restore_context(void) {}
--#endif
--#endif /* __VRFB_H */
-diff --git a/drivers/media/platform/omap/omap_vout.c b/drivers/media/platform/omap/omap_vout.c
-index a3b1a34..3ff94a3 100644
---- a/drivers/media/platform/omap/omap_vout.c
-+++ b/drivers/media/platform/omap/omap_vout.c
-@@ -46,7 +46,7 @@
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index b9e6ab3..871aa76 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -1408,6 +1408,46 @@ int videomode_to_fb_videomode(struct videomode *vm, struct fb_videomode *fbmode)
+ EXPORT_SYMBOL_GPL(videomode_to_fb_videomode);
+ #endif
  
- #include <plat/cpu.h>
- #include <plat/dma.h>
--#include <plat/vrfb.h>
-+#include <video/omapvrfb.h>
- #include <video/omapdss.h>
- 
- #include "omap_voutlib.h"
-diff --git a/drivers/media/platform/omap/omap_vout_vrfb.c b/drivers/media/platform/omap/omap_vout_vrfb.c
-index 4be26abf6c..6c37f92 100644
---- a/drivers/media/platform/omap/omap_vout_vrfb.c
-+++ b/drivers/media/platform/omap/omap_vout_vrfb.c
-@@ -17,7 +17,7 @@
- #include <media/v4l2-device.h>
- 
- #include <plat/dma.h>
--#include <plat/vrfb.h>
-+#include <video/omapvrfb.h>
- 
- #include "omap_voutdef.h"
- #include "omap_voutlib.h"
-diff --git a/drivers/media/platform/omap/omap_voutdef.h b/drivers/media/platform/omap/omap_voutdef.h
-index 27a95d2..9ccfe1f 100644
---- a/drivers/media/platform/omap/omap_voutdef.h
-+++ b/drivers/media/platform/omap/omap_voutdef.h
-@@ -12,7 +12,7 @@
- #define OMAP_VOUTDEF_H
- 
- #include <video/omapdss.h>
--#include <plat/vrfb.h>
-+#include <video/omapvrfb.h>
- 
- #define YUYV_BPP        2
- #define RGB565_BPP      2
-diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
-index 606b89f..55a39be 100644
---- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
-+++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
-@@ -30,7 +30,7 @@
- #include <linux/export.h>
- 
- #include <video/omapdss.h>
--#include <plat/vrfb.h>
-+#include <video/omapvrfb.h>
- #include <plat/vram.h>
- 
- #include "omapfb.h"
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 16db158..5943b3a 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -33,7 +33,7 @@
- #include <video/omapdss.h>
- #include <plat/cpu.h>
- #include <plat/vram.h>
--#include <plat/vrfb.h>
-+#include <video/omapvrfb.h>
- 
- #include "omapfb.h"
- 
-diff --git a/drivers/video/omap2/omapfb/omapfb-sysfs.c b/drivers/video/omap2/omapfb/omapfb-sysfs.c
-index e8d8cc7..17aa174 100644
---- a/drivers/video/omap2/omapfb/omapfb-sysfs.c
-+++ b/drivers/video/omap2/omapfb/omapfb-sysfs.c
-@@ -30,7 +30,7 @@
- #include <linux/omapfb.h>
- 
- #include <video/omapdss.h>
--#include <plat/vrfb.h>
-+#include <video/omapvrfb.h>
- 
- #include "omapfb.h"
- 
-diff --git a/drivers/video/omap2/vrfb.c b/drivers/video/omap2/vrfb.c
-index fda45cc..e4a0450 100644
---- a/drivers/video/omap2/vrfb.c
-+++ b/drivers/video/omap2/vrfb.c
-@@ -28,7 +28,7 @@
- #include <linux/mutex.h>
- #include <linux/platform_device.h>
- 
--#include <plat/vrfb.h>
-+#include <video/omapvrfb.h>
- 
- #ifdef DEBUG
- #define DBG(format, ...) pr_debug("VRFB: " format, ## __VA_ARGS__)
-diff --git a/include/video/omapvrfb.h b/include/video/omapvrfb.h
-new file mode 100644
-index 0000000..3792bde
---- /dev/null
-+++ b/include/video/omapvrfb.h
-@@ -0,0 +1,66 @@
-+/*
-+ * VRFB Rotation Engine
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++static void dump_fb_videomode(struct fb_videomode *m)
++{
++	pr_debug("fb_videomode = %ux%u@%uHz (%ukHz) %u %u %u %u %u %u %u %u %u\n",
++		 m->xres, m->yres, m->refresh, m->pixclock, m->left_margin,
++		 m->right_margin, m->upper_margin, m->lower_margin,
++		 m->hsync_len, m->vsync_len, m->sync, m->vmode, m->flag);
++}
++
++/**
++ * of_get_fb_videomode - get a fb_videomode from devicetree
++ * @np: device_node with the timing specification
++ * @fb: will be set to the return value
++ * @index: index into the list of display timings in devicetree
 + *
-+ * Copyright (C) 2009 Nokia Corporation
-+ * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++ * DESCRIPTION:
++ * This function is expensive and should only be used, if only one mode is to be
++ * read from DT. To get multiple modes start with of_get_display_timing_list ond
++ * work with that instead.
 + */
++int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
++			int index)
++{
++	struct videomode vm;
++	int ret;
 +
-+#ifndef __OMAP_VRFB_H__
-+#define __OMAP_VRFB_H__
++	ret = of_get_videomode(np, &vm, index);
++	if (ret)
++		return ret;
 +
-+#define OMAP_VRFB_LINE_LEN 2048
++	videomode_to_fb_videomode(&vm, fb);
 +
-+struct vrfb {
-+	u8 context;
-+	void __iomem *vaddr[4];
-+	unsigned long paddr[4];
-+	u16 xres;
-+	u16 yres;
-+	u16 xoffset;
-+	u16 yoffset;
-+	u8 bytespp;
-+	bool yuv_mode;
-+};
++	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
++		vm.vactive, np->name);
++	dump_fb_videomode(fb);
 +
-+#ifdef CONFIG_OMAP2_VRFB
-+extern int omap_vrfb_request_ctx(struct vrfb *vrfb);
-+extern void omap_vrfb_release_ctx(struct vrfb *vrfb);
-+extern void omap_vrfb_adjust_size(u16 *width, u16 *height,
-+		u8 bytespp);
-+extern u32 omap_vrfb_min_phys_size(u16 width, u16 height, u8 bytespp);
-+extern u16 omap_vrfb_max_height(u32 phys_size, u16 width, u8 bytespp);
-+extern void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
-+		u16 width, u16 height,
-+		unsigned bytespp, bool yuv_mode);
-+extern int omap_vrfb_map_angle(struct vrfb *vrfb, u16 height, u8 rot);
-+extern void omap_vrfb_restore_context(void);
-+
-+#else
-+static inline int omap_vrfb_request_ctx(struct vrfb *vrfb) { return 0; }
-+static inline void omap_vrfb_release_ctx(struct vrfb *vrfb) {}
-+static inline void omap_vrfb_adjust_size(u16 *width, u16 *height,
-+		u8 bytespp) {}
-+static inline u32 omap_vrfb_min_phys_size(u16 width, u16 height, u8 bytespp)
-+		{ return 0; }
-+static inline u16 omap_vrfb_max_height(u32 phys_size, u16 width, u8 bytespp)
-+		{ return 0; }
-+static inline void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
-+		u16 width, u16 height, unsigned bytespp, bool yuv_mode) {}
-+static inline int omap_vrfb_map_angle(struct vrfb *vrfb, u16 height, u8 rot)
-+		{ return 0; }
-+static inline void omap_vrfb_restore_context(void) {}
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_get_fb_videomode);
 +#endif
-+#endif /* __VRFB_H */
+ 
+ #else
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 46c665b..9892fd6 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -14,6 +14,8 @@
+ #include <linux/backlight.h>
+ #include <linux/slab.h>
+ #include <asm/io.h>
++#include <linux/of.h>
++#include <linux/of_videomode.h>
+ 
+ struct vm_area_struct;
+ struct fb_info;
+@@ -714,6 +716,7 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+ extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+ extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
+ 
++extern int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb, int index);
+ extern int videomode_to_fb_videomode(struct videomode *vm, struct fb_videomode *fbmode);
+ 
+ /* drivers/video/modedb.c */
 -- 
-1.7.9.5
+1.7.10.4
 

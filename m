@@ -1,126 +1,61 @@
-From: Archit Taneja <archit@ti.com>
-Date: Mon, 29 Oct 2012 10:48:55 +0000
-Subject: Re: [PATCH 05/20] OMAPDSS: remove initial display code from omapdss
-Message-Id: <508E5C47.6000809@ti.com>
+From: "Hiremath, Vaibhav" <hvaibhav@ti.com>
+Date: Wed, 31 Oct 2012 05:09:31 +0000
+Subject: RE: [PATCH] omap2-clk: Add missing lcdc clock definition
+Message-Id: <79CD15C6BA57404B839C016229A409A83EB529E4@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351070951-18616-1-git-send-email-tomi.valkeinen@ti.com> <1351070951-18616-6-git-send-email-tomi.valkeinen@ti.com> <508E54C8.9070209@ti.com> <508E597F.60406@ti.com>
-In-Reply-To: <508E597F.60406@ti.com>
+References: <1351698962-3923-1-git-send-email-panto@antoniou-consulting.com>
+ <20121030181837.GM11908@atomide.com>
+ <alpine.DEB.2.00.1210302324530.6152@utopia.booyaka.com>
+In-Reply-To: <alpine.DEB.2.00.1210302324530.6152@utopia.booyaka.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Paul Walmsley <paul@pwsan.com>, Tony Lindgren <tony@atomide.com>
+Cc: Pantelis Antoniou <panto@antoniou-consulting.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Koen Kooi <koen@dominion.thruhere.net>, "Porter, Matt" <mporter@ti.com>, "Dill, Russ" <russ.dill@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-On Monday 29 October 2012 03:55 PM, Tomi Valkeinen wrote:
-> On 2012-10-29 12:04, Archit Taneja wrote:
->> On Wednesday 24 October 2012 02:58 PM, Tomi Valkeinen wrote:
->>> Currently omapdss driver sets up the initial connections between
->>> overlays, overlay manager and a panel, based on default display
->>> parameter coming from the board file or via module parameters.
->>>
->>> This is unnecessary, as it's the higher level component that should
->>> decide what display to use and how. This patch removes the code from
->>> omapdss, and implements similar code to omapfb.
->>>
->>> The def_disp module parameter and the default display platform_data
->>> parameter are kept in omapdss, but omapdss doesn't do anything with
->>> them. It will just return the default display name with
->>> dss_get_default_display_name() call, which omapfb uses. This is done to
->>> keep the backward compatibility.
->>
->> We might need to do something similar for omap_vout and omapdrm also to
->> set the initial connections.
->
-> I believe omapdrm already does this.
->
-> For omap_vout... I'm not sure if we can do that. Both omapfb and
-> omap_vout work at the same time, so they could be setting up the
-> settings at the same time, perhaps with conflicting values. The reason I
-> left omap_vout out is that I think omapfb is always used with omap_vout,
-> thus the config can be left for omapfb. I didn't test this, though.
+On Wed, Oct 31, 2012 at 04:56:40, Paul Walmsley wrote:
+> + Vaibhav Hiremath
+> 
+> On Tue, 30 Oct 2012, Tony Lindgren wrote:
+> 
+> > * Pantelis Antoniou <panto@antoniou-consulting.com> [121030 11:04]:
+> > > Looks like the lcdc clock definition got dropped.
+> > > It is required for the LCD controller to work. Reintroduce.
+> > 
+> > This looks like a regression, can you also add the commit
+> > causing it?
+> 
+> Looks like probably a new "feature," in that this clock didn't exist in 
+> the original check-in.  Would be good to get Vaibhav's opinion on this; 
+> also the common clock patches will need to be updated.
+> 
 
-I thought we could have omap_vout without omapfb, at least we can build 
-it separately. Anyway, setting initial connections in omap_vout doesn't 
-seem very important as we generally have both of them together.
+Thanks Paul for looping me in, something went wrong with my l-o subscription, 
+so I didn't receive these Patches. 
 
->
->>> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->>> ---
->>>    drivers/video/omap2/dss/core.c           |    1 +
->>>    drivers/video/omap2/dss/display.c        |   78
->>> +++---------------------------
->>>    drivers/video/omap2/omapfb/omapfb-main.c |   77
->>> ++++++++++++++++++++++++-----
->>>    include/video/omapdss.h                  |    1 +
->>>    4 files changed, 75 insertions(+), 82 deletions(-)
->>>
->>> diff --git a/drivers/video/omap2/dss/core.c
->>> b/drivers/video/omap2/dss/core.c
->>> index 685d9a9..4cb669e 100644
->>> --- a/drivers/video/omap2/dss/core.c
->>> +++ b/drivers/video/omap2/dss/core.c
->>> @@ -57,6 +57,7 @@ const char *dss_get_default_display_name(void)
->>>    {
->>>        return core.default_display_name;
->>>    }
->>> +EXPORT_SYMBOL(dss_get_default_display_name);
->>
->> Since we are exporting this, it might be better to name it
->> omapdss_get_default_display_name
->
-> True.
->
->>>    enum omapdss_version omapdss_get_version(void)
->>>    {
->>> diff --git a/drivers/video/omap2/dss/display.c
->>> b/drivers/video/omap2/dss/display.c
->>> index 1e58730..6d33112 100644
->>> --- a/drivers/video/omap2/dss/display.c
->>> +++ b/drivers/video/omap2/dss/display.c
->>> @@ -320,86 +320,21 @@ void omapdss_default_get_timings(struct
->>> omap_dss_device *dssdev,
->>>    }
->>>    EXPORT_SYMBOL(omapdss_default_get_timings);
->>>
->>> -/*
->>> - * Connect dssdev to a manager if the manager is free or if force is
->>> specified.
->>> - * Connect all overlays to that manager if they are free or if force is
->>> - * specified.
->>> - */
->>> -static int dss_init_connections(struct omap_dss_device *dssdev, bool
->>> force)
->>> +int dss_init_device(struct platform_device *pdev,
->>> +        struct omap_dss_device *dssdev)
->>>    {
->>> +    struct device_attribute *attr;
->>>        struct omap_dss_output *out;
->>> -    struct omap_overlay_manager *mgr;
->>>        int i, r;
->>>
->>>        out = omapdss_get_output_from_dssdev(dssdev);
->>>
->>> -    WARN_ON(dssdev->output);
->>> -    WARN_ON(out->device);
->>> -
->>>        r = omapdss_output_set_device(out, dssdev);
->>>        if (r) {
->>>            DSSERR("failed to connect output to new device\n");
->>>            return r;
->>>        }
->>
->> So, we still manage the output-device links in the omapdss driver, but
->> move the manager-output and overlay-manager links to omapfb. I guess
->> this is fine. But maybe this split might change based on how generic
->> panel framework looks like, and how much we want to expose outputs to
->> fb/drm.
->
-> We can set the output-device link in omapdss because it's a hardware
-> configuration. A panel is connected to an output, so there's nothing to
-> configure there. ovls and ovl-mgrs, on the other hand, may be configured
-> depending on the use cases.
+As far as lck clock node is concerned, we had deliberately dropped all leaf-
+node clocks from the clock tree, please refer to the description mentioned 
+in -
+http://lists.infradead.org/pipermail/linux-arm-kernel/2012-May/101987.html
 
-Yes, that makes sense.
 
-Archit
+From LCDC driver perspective, driver is using,
+
+fb_clk = clk_get(&device->dev, NULL);
+
+This I feel needs to be corrected for valid name as per Spec (mostly I would 
+vote for "fck") and then every platform should make sure that it returns 
+valid clock-node for it.
+
+Change in Driver would be,
+
+fb_clk = clk_get(&device->dev, "fck");
+
+
+Thanks,
+Vaibhav
+
+> 
+> - Paul
+> 
 

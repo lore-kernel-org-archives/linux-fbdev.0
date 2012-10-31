@@ -1,148 +1,148 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 31 Oct 2012 07:38:06 +0000
-Subject: Re: [PATCH 12/12] OMAPDSS: DPI: always use DSI PLL if available
-Message-Id: <5090D28E.6050703@ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Wed, 31 Oct 2012 09:28:04 +0000
+Subject: [PATCH v7 4/8] video: add videomode helpers
+Message-Id: <1351675689-26814-5-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351613409-21186-1-git-send-email-tomi.valkeinen@ti.com> <1351613409-21186-13-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1351613409-21186-13-git-send-email-tomi.valkeinen@ti.com>
+References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, rob@ti.com
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-On Tuesday 30 October 2012 09:40 PM, Tomi Valkeinen wrote:
-> We currently get the decision whether to use PRCM or DSI PLL clock for
-> DPI from the board file. This is not a good way to handle it, and it
-> won't work with device tree.
->
-> This patch changes DPI to always use DSI PLL if it's available.
->
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->   drivers/video/omap2/dss/dpi.c |   64 ++++++++++++++++++++++++-----------------
->   1 file changed, 37 insertions(+), 27 deletions(-)
->
-> diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-> index 267caf0..32e7dd5 100644
-> --- a/drivers/video/omap2/dss/dpi.c
-> +++ b/drivers/video/omap2/dss/dpi.c
-> @@ -49,28 +49,30 @@ static struct {
->   	struct omap_dss_output output;
->   } dpi;
->
-> -static struct platform_device *dpi_get_dsidev(enum omap_dss_clk_source clk)
-> +static struct platform_device *dpi_get_dsidev(enum omap_channel channel)
->   {
-> -	int dsi_module;
-> -
-> -	dsi_module = clk = OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC ? 0 : 1;
-> -
-> -	return dsi_get_dsidev_from_id(dsi_module);
-> +	switch (channel) {
-> +	case OMAP_DSS_CHANNEL_LCD:
-> +		return dsi_get_dsidev_from_id(0);
-> +	case OMAP_DSS_CHANNEL_LCD2:
-> +		return dsi_get_dsidev_from_id(1);
-> +	default:
-> +		return NULL;
-> +	}
->   }
->
-> -static bool dpi_use_dsi_pll(struct omap_dss_device *dssdev)
-> +static enum omap_dss_clk_source dpi_get_alt_clk_src(enum omap_channel channel)
->   {
-> -	if (dssdev->clocks.dispc.dispc_fclk_src =
-> -			OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC ||
-> -			dssdev->clocks.dispc.dispc_fclk_src =
-> -			OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC ||
-> -			dssdev->clocks.dispc.channel.lcd_clk_src =
-> -			OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC ||
-> -			dssdev->clocks.dispc.channel.lcd_clk_src =
-> -			OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC)
-> -		return true;
-> -	else
-> -		return false;
-> +	switch (channel) {
-> +	case OMAP_DSS_CHANNEL_LCD:
-> +		return OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC;
-> +	case OMAP_DSS_CHANNEL_LCD2:
-> +		return OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC;
-> +	default:
-> +		/* this shouldn't happen */
-> +		WARN_ON(1);
-> +		return OMAP_DSS_CLK_SRC_FCK;
-> +	}
->   }
->
->   static int dpi_set_dsi_clk(struct omap_dss_device *dssdev,
-> @@ -92,7 +94,7 @@ static int dpi_set_dsi_clk(struct omap_dss_device *dssdev,
->   		return r;
->
->   	dss_select_lcd_clk_source(mgr->id,
-> -			dssdev->clocks.dispc.channel.lcd_clk_src);
-> +			dpi_get_alt_clk_src(mgr->id));
->
->   	dpi.mgr_config.clock_info = dispc_cinfo;
->
-> @@ -385,6 +387,8 @@ static int __init dpi_verify_dsi_pll(struct platform_device *dsidev)
->
->   static int __init dpi_init_display(struct omap_dss_device *dssdev)
->   {
-> +	struct platform_device *dsidev;
-> +
->   	DSSDBG("init_display\n");
->
->   	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI) &&
-> @@ -401,17 +405,23 @@ static int __init dpi_init_display(struct omap_dss_device *dssdev)
->   		dpi.vdds_dsi_reg = vdds_dsi;
->   	}
->
-> -	if (dpi_use_dsi_pll(dssdev)) {
-> -		enum omap_dss_clk_source dispc_fclk_src > -			dssdev->clocks.dispc.dispc_fclk_src;
-> -		dpi.dsidev = dpi_get_dsidev(dispc_fclk_src);
-> +	/*
-> +	 * XXX We shouldn't need dssdev->channel for this. The dsi pll clock
-> +	 * source for DPI is SoC integration detail, not something that should
-> +	 * be configured in the dssdev
-> +	 */
+Add helper functions to convert from display timings to a generic videomode
+structure. This videomode can then be converted to the corresponding subsystem
+mode representation (e.g. fb_videomode).
 
-It is SoC integration detail, but it's flexible, it depends on which 
-manager is connected to DPI output. If it's connected to LCD1, the 
-source can be DSI1 PLL, if it's LCD2, it's source can be DSI2 PLL, if 
-it's connected to TV manager, it's source "has to be" HDMI PLL. And 
-these connections vary based on which OMAP revision we are on. We can 
-only be certain on OMAP3 that the source for DPI pixel clock can be 
-either PRCM or DSI PLL.
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+---
+ drivers/video/Kconfig     |    6 ++++++
+ drivers/video/Makefile    |    1 +
+ drivers/video/videomode.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/videomode.h |   36 ++++++++++++++++++++++++++++++++++++
+ 4 files changed, 87 insertions(+)
+ create mode 100644 drivers/video/videomode.c
+ create mode 100644 include/linux/videomode.h
 
-At the point of probe, we really don't know which manager is the DPI 
-output connected to. Hence, we sort of use dssdev->channel to make a 
-guess what manager we connect to in the future.
-
-The right approach would be to figure this out at the time of enable, 
-where we know which manager the DPI output is connected to. We could 
-probably move the verification there too.
-
-Archit
-
-> +	dsidev = dpi_get_dsidev(dssdev->channel);
->
-> -		if (dpi_verify_dsi_pll(dpi.dsidev)) {
-> -			dpi.dsidev = NULL;
-> -			DSSWARN("DSI PLL not operational\n");
-> -		}
-> +	if (dpi_verify_dsi_pll(dsidev)) {
-> +		dsidev = NULL;
-> +		DSSWARN("DSI PLL not operational\n");
->   	}
->
-> +	if (dsidev)
-> +		DSSDBG("using DSI PLL for DPI clock\n");
-> +
-> +	dpi.dsidev = dsidev;
-> +
->   	return 0;
->   }
->
->
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 1421fc8..45dd393 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -38,6 +38,12 @@ config DISPLAY_TIMING
+        help
+          Say Y here, to use the display timing helpers.
+ 
++config VIDEOMODE
++       bool "Enable videomode helpers"
++       help
++         Say Y here, to use the generic videomode helpers. This allows
++	 converting from display timings to fb_videomode and drm_display_mode
++
+ menuconfig FB
+ 	tristate "Support for frame buffer devices"
+ 	---help---
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 552c045..fc30439 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -168,3 +168,4 @@ obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
+ #video output switch sysfs driver
+ obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) += output.o
+ obj-$(CONFIG_DISPLAY_TIMING) += display_timing.o
++obj-$(CONFIG_VIDEOMODE) += videomode.o
+diff --git a/drivers/video/videomode.c b/drivers/video/videomode.c
+new file mode 100644
+index 0000000..a9fe010
+--- /dev/null
++++ b/drivers/video/videomode.c
+@@ -0,0 +1,44 @@
++/*
++ * generic display timing functions
++ *
++ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
++ *
++ * This file is released under the GPLv2
++ */
++
++#include <linux/kernel.h>
++#include <linux/export.h>
++#include <linux/errno.h>
++#include <linux/display_timing.h>
++#include <linux/videomode.h>
++
++int videomode_from_timing(struct display_timings *disp, struct videomode *vm,
++			  int index)
++{
++	struct display_timing *dt = NULL;
++
++	dt = display_timings_get(disp, index);
++	if (!dt) {
++		pr_err("%s: no signal timings found\n", __func__);
++		return -EINVAL;
++	}
++
++	vm->pixelclock = display_timing_get_value(&dt->pixelclock, 0);
++	vm->hactive = display_timing_get_value(&dt->hactive, 0);
++	vm->hfront_porch = display_timing_get_value(&dt->hfront_porch, 0);
++	vm->hback_porch = display_timing_get_value(&dt->hback_porch, 0);
++	vm->hsync_len = display_timing_get_value(&dt->hsync_len, 0);
++
++	vm->vactive = display_timing_get_value(&dt->vactive, 0);
++	vm->vfront_porch = display_timing_get_value(&dt->vfront_porch, 0);
++	vm->vback_porch = display_timing_get_value(&dt->vback_porch, 0);
++	vm->vsync_len = display_timing_get_value(&dt->vsync_len, 0);
++
++	vm->vah = dt->vsync_pol_active;
++	vm->hah = dt->hsync_pol_active;
++	vm->interlaced = dt->interlaced;
++	vm->doublescan = dt->doublescan;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(videomode_from_timing);
+diff --git a/include/linux/videomode.h b/include/linux/videomode.h
+new file mode 100644
+index 0000000..f932147
+--- /dev/null
++++ b/include/linux/videomode.h
+@@ -0,0 +1,36 @@
++/*
++ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
++ *
++ * generic videomode description
++ *
++ * This file is released under the GPLv2
++ */
++
++#ifndef __LINUX_VIDEOMODE_H
++#define __LINUX_VIDEOMODE_H
++
++#include <linux/display_timing.h>
++
++struct videomode {
++	u32 pixelclock;
++	u32 refreshrate;
++
++	u32 hactive;
++	u32 hfront_porch;
++	u32 hback_porch;
++	u32 hsync_len;
++
++	u32 vactive;
++	u32 vfront_porch;
++	u32 vback_porch;
++	u32 vsync_len;
++
++	u32 hah;
++	u32 vah;
++	bool interlaced;
++	bool doublescan;
++};
++
++int videomode_from_timing(struct display_timings *disp, struct videomode *vm,
++			  int index);
++#endif
+-- 
+1.7.10.4
 

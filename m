@@ -1,73 +1,66 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Date: Tue, 16 Oct 2012 11:07:01 +0000
-Subject: Re: [PATCH V5 1/2] video: exynos_dp: Add device tree support to DP driver
-Message-Id: <507D3FD5.6060309@samsung.com>
+From: Sean Paul <seanpaul@chromium.org>
+Date: Wed, 31 Oct 2012 17:05:10 +0000
+Subject: Re: [PATCH 05/10] video: exynos_dp: Remove sink control to D0
+Message-Id: <CAOw6vbLgnJ-NFs11rRRfibM57RW5Xd-uNbKXs6ANy7pnzpCtmg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1350074859-23226-1-git-send-email-ajaykumar.rs@samsung.com>
- <50788F25.2040003@gmail.com> <009d01cdaaad$0fa33230$2ee99690$%han@samsung.com>
- <507C7C9E.1030503@gmail.com> <005a01cdab42$5a8ca390$0fa5eab0$%han@samsung.com>
-In-Reply-To: <005a01cdab42$5a8ca390$0fa5eab0$%han@samsung.com>
+References: <1344398064-13563-6-git-send-email-seanpaul@chromium.org>
+In-Reply-To: <1344398064-13563-6-git-send-email-seanpaul@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>
-Cc: 'Sylwester Nawrocki' <sylvester.nawrocki@gmail.com>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, 'Ajay Kumar' <ajaykumar.rs@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, 'Tomasz Figa' <t.figa@samsung.com>, 'Thomas Abraham' <thomas.ab@samsung.com>
+To: linux-fbdev@vger.kernel.org
 
-On 10/16/2012 04:02 AM, Jingoo Han wrote:
-> On Tuesday, October 16, 2012 6:14 AM Sylwester Nawrocki wrote
->> On 10/15/2012 10:14 AM, Jingoo Han wrote:
->>> On Saturday, October 13, 2012 6:44 AM Sylwester Nawrocki wrote
->>>>
->>>> On 10/12/2012 10:47 PM, Ajay Kumar wrote:
->>>>> This patch enables device tree based discovery support for DP driver.
->>>>> The driver is modified to handle platform data in both the cases:
->>>>> with DT and non-DT.
->>>>>
->>>>> Signed-off-by: Ajay Kumar<ajaykumar.rs@samsung.com>
->>>>> Acked-by: Jingoo Han<jg1.han@samsung.com>
->>>>> ---
->>>>>    drivers/video/exynos/exynos_dp_core.c |  161 ++++++++++++++++++++++++++++++---
->>>>>    drivers/video/exynos/exynos_dp_core.h |    2 +
->>>>>    2 files changed, 149 insertions(+), 14 deletions(-)
->> ...
->>>>> @@ -953,8 +1062,13 @@ static int __devexit exynos_dp_remove(struct platform_device *pdev)
->>>>>    	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
->>>>>    	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
->>>>
->>>> This doesn't belong to your patch, but the above 2 lines could be written as:
->>>>
->>>>    	struct exynos_dp_device *dp = dev_get_drvdata(&pdev->dev);
->>>>
->>>> Same in functions exynos_dp_suspend() and exynos_dp_resume().
->>>
->>> No, above 2 lines cannot be reduced to 1 line, as you mentioned.
->>> This is because it makes build error.
+On Mon, Aug 20, 2012 at 5:19 AM, Jingoo Han <jg1.han@samsung.com> wrote:
+> On Wednesday, August 08, 2012 12:54 PM Sean Paul wrote:
 >>
->> Sorry, my bad. It looks fine in case of exynos_dp_remove().
+>> Don't reset the sink power to D0. Removing this for three reasons:
 >>
->> But at exynos_dp_suspend/resume() there is something like:
->>
->>
->> static int exynos_dp_suspend(struct device *dev)
->> {
->> 	struct platform_device *pdev = to_platform_device(dev);
->> 	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
->> 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
->>
->>
->> You need only pdata and dp there. I think that simpler form would
->> do as well:
->>
->> 	struct exynos_dp_device *dp = dev_get_drvdata(dev);
->> 	struct exynos_dp_platdata *pdata = dev->platform_data;
-> 
-> OK, I see.
-> I will accept your suggestion, because it is helpful to reduce
-> lines. Then, I will send v8 patch, soon.
+>> 1) It's not required in the SW link training documentation
+> OK.
+>> 2) The comment is incorrect, D0 is normal operation, not "power down"
+> OK. As you mentioned, D0 is not 'power down', 'normal operation'.
+> However, if comment is wrong, usually we fix comment, not remove it. :)
+>
 
-OK. I thought about it more as a candidate for a separate. But you seem
-to have already sent new version, it's probably fine this way too.
+The datasheet doesn't mention this step at all. Furthermore, the
+comment explains how it *should* work, so I think it's the code that
+is in error. Do you know why this code is needed?
 
---
-Regards,
-Sylwester
+>> 3) It seems to change things in the link training that causes glitches
+>
+> Um, it seems that this problem depends on LCD panel.
+> Other LCDs that I have tested do not have this kind of problem.
+> Please, modify this comment.
+>
+
+That was a red herring, it didn't cause the glitches, just made them
+less obvious.
+
+Sean
+
+>>
+>> Signed-off-by: Sean Paul <seanpaul@chromium.org>
+>> ---
+>>  drivers/video/exynos/exynos_dp_core.c |    6 ------
+>>  1 files changed, 0 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+>> index 207bd7e..1c998d9 100644
+>> --- a/drivers/video/exynos/exynos_dp_core.c
+>> +++ b/drivers/video/exynos/exynos_dp_core.c
+>> @@ -273,12 +273,6 @@ static int exynos_dp_link_start(struct exynos_dp_device *dp)
+>>       for (lane = 0; lane < lane_count; lane++)
+>>               dp->link_train.cr_loop[lane] = 0;
+>>
+>> -     /* Set sink to D0 (Sink Not Ready) mode. */
+>> -     ret = exynos_dp_write_byte_to_dpcd(dp, DPCD_ADDR_SINK_POWER_STATE,
+>> -                             DPCD_SET_POWER_STATE_D0);
+>> -     if (ret)
+>> -             return ret;
+>> -
+>>       /* Set link rate and count as you want to establish*/
+>>       exynos_dp_set_link_bandwidth(dp, dp->link_train.link_rate);
+>>       exynos_dp_set_lane_count(dp, dp->link_train.lane_count);
+>> --
+>> 1.7.7.3
+>

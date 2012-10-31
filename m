@@ -1,51 +1,44 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 30 Oct 2012 16:09:57 +0000
-Subject: [PATCH 00/12] OMAPDSS: use DSI PLL clk for DPI
-Message-Id: <1351613409-21186-1-git-send-email-tomi.valkeinen@ti.com>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Wed, 31 Oct 2012 09:12:52 +0000
+Subject: [PATCHv6 0/2] Add support for the OLED in the CFA10036
+Message-Id: <1351674774-2891-1-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: rob@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+Hi everyone,
 
-The aim of this series is to enable using DSI PLL as the pixel clock source for
-DPI output. There are the following main parts:
+This patchset adds support for the solomon SSD1307 OLED controller present
+in the CFA-10036 board.
 
-* first 4 patches are slightly related generic improvements/fixes
-* fix DSI PLL problem related to non-50% duty cycle
-* fix DSI PLL problem related to powering
-* changes to the clock handling to always use DSI PLL for DPI when possible
+It first adds the framebuffer driver for this controller, and then the
+needed bits to enable it in the cfa10036 dts.
 
-I've tested the series on OMAP4 Panda, OMAP4 SDP and OMAP3 Beagle.
+Considering that the driver has been around since almost three months now, and
+I have not received any comments on the framebuffer part, I'd very much like it
+to be included in 3.8 if possible.
 
- Tomi
+Thanks,
+Maxime
 
-Tomi Valkeinen (12):
-  OMAPFB: remove use of extended edid block
-  OMAPFB: improve mode selection from EDID
-  OMAPDSS: fix DPI & DSI init order
-  OMAPDSS: fix DSI2 PLL clk names
-  OMAPDSS: DSI: skip odd dividers when pck >= 100MHz
-  OMAPDSS: DSI: workaround for HSDiv problem
-  OMAPDSS: add dss_calc_clock_rates() back
-  OMAPDSS: setup default dss fck
-  OMAPDSS: hide dss_select_dispc_clk_source()
-  OMAPDSS: DPI: use dpi.dsidev to see whether to use dsi pll
-  OMAPDSS: DPI: verify if DSI PLL is operational
-  OMAPDSS: DPI: always use DSI PLL if available
+Changes from v5:
+  * Fixed bogus reset code
 
- drivers/video/omap2/dss/core.c           |   12 ++--
- drivers/video/omap2/dss/dpi.c            |   99 +++++++++++++++++++++---------
- drivers/video/omap2/dss/dsi.c            |   14 ++++-
- drivers/video/omap2/dss/dss.c            |   67 +++++++++++++++++++-
- drivers/video/omap2/dss/dss.h            |    2 +-
- drivers/video/omap2/dss/hdmi.c           |    8 ---
- drivers/video/omap2/omapfb/omapfb-main.c |   16 ++---
- 7 files changed, 160 insertions(+), 58 deletions(-)
+Maxime Ripard (2):
+  video: Add support for the Solomon SSD1307 OLED Controller
+  ARM: dts: mxs: add oled support for the cfa-10036
+
+ .../devicetree/bindings/video/ssd1307fb.txt        |   24 ++
+ arch/arm/boot/dts/imx28-cfa10036.dts               |   19 +
+ drivers/video/Kconfig                              |   13 +
+ drivers/video/Makefile                             |    1 +
+ drivers/video/ssd1307fb.c                          |  407 ++++++++++++++++++++
+ 5 files changed, 464 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/ssd1307fb.txt
+ create mode 100644 drivers/video/ssd1307fb.c
 
 -- 
-1.7.10.4
+1.7.9.5
 

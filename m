@@ -1,7 +1,7 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 31 Oct 2012 17:04:15 +0000
+Date: Wed, 31 Oct 2012 17:09:30 +0000
 Subject: Re: [PATCH v7 1/8] video: add display_timing struct and helpers
-Message-Id: <2778307.KsM7zC9Mqc@avalon>
+Message-Id: <1783334.5mdSA56Pjh@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de> <1351675689-26814-2-git-send-email-s.trumtrar@pengutronix.de>
 In-Reply-To: <1351675689-26814-2-git-send-email-s.trumtrar@pengutronix.de>
@@ -13,10 +13,7 @@ Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, li
 
 Hi Steffen,
 
-Thanks for the patch.
-
-As we'll need a v8 anyway due to the comment on patch 5/8, here are a couple 
-of other small comments.
+One more comment.
 
 On Wednesday 31 October 2012 10:28:01 Steffen Trumtrar wrote:
 > Add display_timing structure and the according helper functions. This allows
@@ -76,21 +73,17 @@ On Wednesday 31 October 2012 10:28:01 Steffen Trumtrar wrote:
 > +
 > +#include <linux/slab.h>
 > +#include <linux/display_timing.h>
-
-I try to keep #include's sorted alphabetically, but I won't push for that.
-
+> +
 > +void timings_release(struct display_timings *disp)
 > +{
 > +	int i;
 > +
 > +	for (i = 0; i < disp->num_timings; i++)
-
-disp->num_timings is an unsigned int, i should be an unsigned int as well to 
-avoid signed vs. unsigned comparisons.
-
 > +		kfree(disp->timings[i]);
 > +}
-> +
+
+This function doesn't seem to be called externally, you can make it static.
+
 > +void display_timings_release(struct display_timings *disp)
 > +{
 > +	timings_release(disp);
@@ -151,41 +144,26 @@ avoid signed vs. unsigned comparisons.
 > +
 > +/* placeholder function until ranges are really needed */
 > +static inline u32 display_timing_get_value(struct timing_entry *te, int
-> index)
-
-What is the index parameter for ?
-
-> +{
+> index) +{
 > +	return te->typ;
 > +}
 > +
 > +static inline struct display_timing *display_timings_get(struct
-> display_timings *disp,
-> +							 int index)
+> display_timings *disp, +							 int index)
 > +{
 > +	struct display_timing *dt;
 > +
 > +	if (disp->num_timings > index) {
-
-index should be an unsigned int for the same reason as above.
-
 > +		dt = disp->timings[index];
 > +		return dt;
-
-Maybe just
-
-	return disp->timings[index];
-
-?
-
 > +	} else
 > +		return NULL;
 > +}
-> +
 > +void timings_release(struct display_timings *disp);
 > +void display_timings_release(struct display_timings *disp);
 > +
 > +#endif
+
 -- 
 Regards,
 

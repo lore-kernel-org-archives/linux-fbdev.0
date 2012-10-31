@@ -1,117 +1,99 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 10 Oct 2012 12:33:24 +0000
-Subject: Re: [PATCH] da8xx-fb: save and restore LCDC context across suspend/resume cycle
-Message-Id: <50756B14.1060502@gmx.de>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Wed, 31 Oct 2012 09:28:07 +0000
+Subject: [PATCH v7 7/8] drm_modes: add videomode helpers
+Message-Id: <1351675689-26814-8-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-On 09/25/2012 02:11 PM, Manjunathappa, Prakash wrote:
-> Save and restore register context of LCDC respectively
-> before suspend and after resume.
-> 
-> Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+Add conversion from videomode to drm_display_mode
 
-Applied.
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+---
+ drivers/gpu/drm/drm_modes.c |   36 ++++++++++++++++++++++++++++++++++++
+ include/drm/drmP.h          |    3 +++
+ 2 files changed, 39 insertions(+)
 
-
-Thanks,
-
-Florian Tobias Schandinat
-
-
-> ---
-> Applies on top of below patch under review:
-> "da8xx-fb: add pm_runtime support"
->  drivers/video/da8xx-fb.c |   65 ++++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 65 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index 4280d23..65a11ef 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -1491,6 +1491,69 @@ err_request_mem:
->  }
->  
->  #ifdef CONFIG_PM
-> +struct lcdc_context {
-> +	u32 clk_enable;
-> +	u32 ctrl;
-> +	u32 dma_ctrl;
-> +	u32 raster_timing_0;
-> +	u32 raster_timing_1;
-> +	u32 raster_timing_2;
-> +	u32 int_enable_set;
-> +	u32 dma_frm_buf_base_addr_0;
-> +	u32 dma_frm_buf_ceiling_addr_0;
-> +	u32 dma_frm_buf_base_addr_1;
-> +	u32 dma_frm_buf_ceiling_addr_1;
-> +	u32 raster_ctrl;
-> +} reg_context;
-> +
-> +static void lcd_context_save(void)
-> +{
-> +	if (lcd_revision = LCD_VERSION_2) {
-> +		reg_context.clk_enable = lcdc_read(LCD_CLK_ENABLE_REG);
-> +		reg_context.int_enable_set = lcdc_read(LCD_INT_ENABLE_SET_REG);
-> +	}
-> +
-> +	reg_context.ctrl = lcdc_read(LCD_CTRL_REG);
-> +	reg_context.dma_ctrl = lcdc_read(LCD_DMA_CTRL_REG);
-> +	reg_context.raster_timing_0 = lcdc_read(LCD_RASTER_TIMING_0_REG);
-> +	reg_context.raster_timing_1 = lcdc_read(LCD_RASTER_TIMING_1_REG);
-> +	reg_context.raster_timing_2 = lcdc_read(LCD_RASTER_TIMING_2_REG);
-> +	reg_context.dma_frm_buf_base_addr_0 > +		lcdc_read(LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
-> +	reg_context.dma_frm_buf_ceiling_addr_0 > +		lcdc_read(LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
-> +	reg_context.dma_frm_buf_base_addr_1 > +		lcdc_read(LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
-> +	reg_context.dma_frm_buf_ceiling_addr_1 > +		lcdc_read(LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
-> +	reg_context.raster_ctrl = lcdc_read(LCD_RASTER_CTRL_REG);
-> +	return;
-> +}
-> +
-> +static void lcd_context_restore(void)
-> +{
-> +	if (lcd_revision = LCD_VERSION_2) {
-> +		lcdc_write(reg_context.clk_enable, LCD_CLK_ENABLE_REG);
-> +		lcdc_write(reg_context.int_enable_set, LCD_INT_ENABLE_SET_REG);
-> +	}
-> +
-> +	lcdc_write(reg_context.ctrl, LCD_CTRL_REG);
-> +	lcdc_write(reg_context.dma_ctrl, LCD_DMA_CTRL_REG);
-> +	lcdc_write(reg_context.raster_timing_0, LCD_RASTER_TIMING_0_REG);
-> +	lcdc_write(reg_context.raster_timing_1, LCD_RASTER_TIMING_1_REG);
-> +	lcdc_write(reg_context.raster_timing_2, LCD_RASTER_TIMING_2_REG);
-> +	lcdc_write(reg_context.dma_frm_buf_base_addr_0,
-> +			LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
-> +	lcdc_write(reg_context.dma_frm_buf_ceiling_addr_0,
-> +			LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
-> +	lcdc_write(reg_context.dma_frm_buf_base_addr_1,
-> +			LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
-> +	lcdc_write(reg_context.dma_frm_buf_ceiling_addr_1,
-> +			LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
-> +	lcdc_write(reg_context.raster_ctrl, LCD_RASTER_CTRL_REG);
-> +	return;
-> +}
-> +
->  static int fb_suspend(struct platform_device *dev, pm_message_t state)
->  {
->  	struct fb_info *info = platform_get_drvdata(dev);
-> @@ -1502,6 +1565,7 @@ static int fb_suspend(struct platform_device *dev, pm_message_t state)
->  
->  	fb_set_suspend(info, 1);
->  	lcd_disable_raster(true);
-> +	lcd_context_save();
->  	pm_runtime_put_sync(&dev->dev);
->  	console_unlock();
->  
-> @@ -1514,6 +1578,7 @@ static int fb_resume(struct platform_device *dev)
->  
->  	console_lock();
->  	pm_runtime_get_sync(&dev->dev);
-> +	lcd_context_restore();
->  	if (par->blank = FB_BLANK_UNBLANK) {
->  		lcd_enable_raster();
->  
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 59450f3..049624d 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -35,6 +35,7 @@
+ #include <linux/export.h>
+ #include <drm/drmP.h>
+ #include <drm/drm_crtc.h>
++#include <linux/videomode.h>
+ 
+ /**
+  * drm_mode_debug_printmodeline - debug print a mode
+@@ -504,6 +505,41 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, int vdisplay, int vrefresh,
+ }
+ EXPORT_SYMBOL(drm_gtf_mode);
+ 
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++int videomode_to_display_mode(struct videomode *vm, struct drm_display_mode *dmode)
++{
++	dmode->hdisplay = vm->hactive;
++	dmode->hsync_start = dmode->hdisplay + vm->hfront_porch;
++	dmode->hsync_end = dmode->hsync_start + vm->hsync_len;
++	dmode->htotal = dmode->hsync_end + vm->hback_porch;
++
++	dmode->vdisplay = vm->vactive;
++	dmode->vsync_start = dmode->vdisplay + vm->vfront_porch;
++	dmode->vsync_end = dmode->vsync_start + vm->vsync_len;
++	dmode->vtotal = dmode->vsync_end + vm->vback_porch;
++
++	dmode->clock = vm->pixelclock / 1000;
++
++	dmode->flags = 0;
++	if (vm->hah)
++		dmode->flags |= DRM_MODE_FLAG_PHSYNC;
++	else
++		dmode->flags |= DRM_MODE_FLAG_NHSYNC;
++	if (vm->vah)
++		dmode->flags |= DRM_MODE_FLAG_PVSYNC;
++	else
++		dmode->flags |= DRM_MODE_FLAG_NVSYNC;
++	if (vm->interlaced)
++		dmode->flags |= DRM_MODE_FLAG_INTERLACE;
++	if (vm->doublescan)
++		dmode->flags |= DRM_MODE_FLAG_DBLSCAN;
++	drm_mode_set_name(dmode);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(videomode_to_display_mode);
++#endif
++
+ /**
+  * drm_mode_set_name - set the name on a mode
+  * @mode: name will be set in this mode
+diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+index 3fd8280..e9fa1e3 100644
+--- a/include/drm/drmP.h
++++ b/include/drm/drmP.h
+@@ -56,6 +56,7 @@
+ #include <linux/cdev.h>
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
++#include <linux/videomode.h>
+ #if defined(__alpha__) || defined(__powerpc__)
+ #include <asm/pgtable.h>	/* For pte_wrprotect */
+ #endif
+@@ -1454,6 +1455,8 @@ extern struct drm_display_mode *
+ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
+ 				  struct drm_cmdline_mode *cmd);
+ 
++extern int videomode_to_display_mode(struct videomode *vm,
++				     struct drm_display_mode *dmode);
+ /* Modesetting support */
+ extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
+ extern void drm_vblank_post_modeset(struct drm_device *dev, int crtc);
+-- 
+1.7.10.4
 

@@ -1,71 +1,107 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 30 Oct 2012 16:10:04 +0000
-Subject: [PATCH 07/12] OMAPDSS: add dss_calc_clock_rates() back
-Message-Id: <1351613409-21186-8-git-send-email-tomi.valkeinen@ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Wed, 31 Oct 2012 09:28:08 +0000
+Subject: [PATCH v7 8/8] drm_modes: add of_videomode helpers
+Message-Id: <1351675689-26814-9-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351613409-21186-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1351613409-21186-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: rob@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-dss_calc_clock_rates() was removed earlier as it was not used, but it is
-needed for DSI PLL calculations, so this patch adds it back.
+Add helper to get drm_display_mode from devicetree.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 ---
- drivers/video/omap2/dss/dss.c |   23 +++++++++++++++++++++++
- drivers/video/omap2/dss/dss.h |    1 +
- 2 files changed, 24 insertions(+)
+ drivers/gpu/drm/drm_modes.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+ include/drm/drmP.h          |    5 +++++
+ 2 files changed, 47 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index a85bd05..5affa86 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -432,6 +432,29 @@ enum omap_dss_clk_source dss_get_lcd_clk_source(enum omap_channel channel)
- 	}
- }
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 049624d..d51afe6 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -35,6 +35,7 @@
+ #include <linux/export.h>
+ #include <drm/drmP.h>
+ #include <drm/drm_crtc.h>
++#include <linux/of.h>
+ #include <linux/videomode.h>
  
-+/* calculate clock rates using dividers in cinfo */
-+int dss_calc_clock_rates(struct dss_clock_info *cinfo)
+ /**
+@@ -540,6 +541,47 @@ int videomode_to_display_mode(struct videomode *vm, struct drm_display_mode *dmo
+ EXPORT_SYMBOL_GPL(videomode_to_display_mode);
+ #endif
+ 
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++static void dump_drm_displaymode(struct drm_display_mode *m)
 +{
-+	if (dss.dpll4_m4_ck) {
-+		unsigned long prate;
-+
-+		if (cinfo->fck_div > dss.feat->fck_div_max ||
-+				cinfo->fck_div = 0)
-+			return -EINVAL;
-+
-+		prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
-+
-+		cinfo->fck = prate / cinfo->fck_div *
-+			dss.feat->dss_fck_multiplier;
-+	} else {
-+		if (cinfo->fck_div != 0)
-+			return -EINVAL;
-+		cinfo->fck = clk_get_rate(dss.dss_clk);
-+	}
-+
-+	return 0;
++	pr_debug("drm_displaymode = %d %d %d %d %d %d %d %d %d\n",
++		 m->hdisplay, m->hsync_start, m->hsync_end, m->htotal,
++		 m->vdisplay, m->vsync_start, m->vsync_end, m->vtotal,
++		 m->clock);
 +}
 +
- int dss_set_clock_div(struct dss_clock_info *cinfo)
- {
- 	if (dss.dpll4_m4_ck) {
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index fb89165..ae4e618 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -297,6 +297,7 @@ void dss_set_venc_output(enum omap_dss_venc_type type);
- void dss_set_dac_pwrdn_bgz(bool enable);
++/**
++ * of_get_drm_display_mode - get a drm_display_mode from devicetree
++ * @np: device_node with the timing specification
++ * @dmode: will be set to the return value
++ * @index: index into the list of display timings in devicetree
++ * 
++ * DESCRIPTION:
++ * This function is expensive and should only be used, if only one mode is to be
++ * read from DT. To get multiple modes start with of_get_display_timing_list ond
++ * work with that instead.
++ */
++int of_get_drm_display_mode(struct device_node *np, struct drm_display_mode *dmode,
++			int index)
++{
++	struct videomode vm;
++	int ret;
++
++	ret = of_get_videomode(np, &vm, index);
++	if (ret)
++		return ret;
++
++	videomode_to_display_mode(&vm, dmode);
++
++	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
++		vm.vactive, np->name);
++	dump_drm_displaymode(dmode);
++
++	return 0;
++
++}
++EXPORT_SYMBOL_GPL(of_get_drm_display_mode);
++#endif
+ /**
+  * drm_mode_set_name - set the name on a mode
+  * @mode: name will be set in this mode
+diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+index e9fa1e3..4f9c44e 100644
+--- a/include/drm/drmP.h
++++ b/include/drm/drmP.h
+@@ -56,6 +56,7 @@
+ #include <linux/cdev.h>
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
++#include <linux/of.h>
+ #include <linux/videomode.h>
+ #if defined(__alpha__) || defined(__powerpc__)
+ #include <asm/pgtable.h>	/* For pte_wrprotect */
+@@ -1457,6 +1458,10 @@ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
  
- unsigned long dss_get_dpll4_rate(void);
-+int dss_calc_clock_rates(struct dss_clock_info *cinfo);
- int dss_set_clock_div(struct dss_clock_info *cinfo);
- int dss_calc_clock_div(unsigned long req_pck, struct dss_clock_info *dss_cinfo,
- 		struct dispc_clock_info *dispc_cinfo);
+ extern int videomode_to_display_mode(struct videomode *vm,
+ 				     struct drm_display_mode *dmode);
++extern int of_get_drm_display_mode(struct device_node *np,
++				   struct drm_display_mode *dmode,
++				   int index);
++
+ /* Modesetting support */
+ extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
+ extern void drm_vblank_post_modeset(struct drm_device *dev, int crtc);
 -- 
 1.7.10.4
 

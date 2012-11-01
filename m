@@ -1,76 +1,208 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 29 Nov 2012 08:42:18 +0000
-Subject: Re: [PATCH] video: da8xx-fb: clk_get on connection id fck
-Message-Id: <50B71FEA.1070503@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig0A1AA4ECCFD9C00AF2536F0E"
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 01 Nov 2012 10:29:07 +0000
+Subject: [PATCH v3 8/8] video: exynos_dp: Enable hotplug interrupts
+Message-Id: <012601cdb81b$b9906c10$2cb14430$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353415261-30080-1-git-send-email-prakash.pm@ti.com>
- <50AB7F7E.1070400@ti.com>
- <A73F36158E33644199EB82C5EC81C7BC3E9FB8D9@DBDE01.ent.ti.com>
-In-Reply-To: <A73F36158E33644199EB82C5EC81C7BC3E9FB8D9@DBDE01.ent.ti.com>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---------------enig0A1AA4ECCFD9C00AF2536F0E
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Enable hotplug interrupts and move the hotplug scheduling into the
+interrupt handler. This allows us to introduce a screen at any time
+while we're running.
 
-On 2012-11-23 06:33, Manjunathappa, Prakash wrote:
-> Hi Tomi,
->=20
-> On Tue, Nov 20, 2012 at 18:32:54, Nori, Sekhar wrote:
->> On 11/20/2012 6:11 PM, Manjunathappa wrote:
->>> do clk_get on connection id "fck" to support OMAP based
->>> platforms having multiple clocks for module. Without this
->>> driver change clk_get fails on am335x.
->>>
->>> This patch is based on the discussion in community
->>> http://marc.info/?l=3Dlinux-kernel&m=3D135166018907827&w=3D2
->>>
->>> Signed-off-by: Manjunathappa <prakash.pm@ti.com>
->>> Cc: Vaibhav Hiremath <hvaibhav@ti.com>
->>
->> For the mach-davinci changes:
->>
->> Acked-by: Sekhar Nori <nsekhar@ti.com>
->>
->> Florian,
->>
->> I assume you will want to take this through your tree?
->>
->=20
-> Could you please pull in this?
+[jg1.han@samsung.com: moved the bit masking of hotplug interrupts]
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
+Reviewed-by: Olof Johansson <olofj@chromium.org>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/exynos/exynos_dp_core.c |   38 ++++++++++++++++++++++++++-------
+ drivers/video/exynos/exynos_dp_core.h |    9 +++++++
+ drivers/video/exynos/exynos_dp_reg.c  |   38 +++++++++++++++++++++++++++-----
+ 3 files changed, 71 insertions(+), 14 deletions(-)
 
-Merged this and the "da8xx-fb: LCDC driver cleanup" to:
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index ffb6d6d..963e3c7 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -48,10 +48,6 @@ static int exynos_dp_detect_hpd(struct exynos_dp_device *dp)
+ {
+ 	int timeout_loop = 0;
+ 
+-	exynos_dp_init_hpd(dp);
+-
+-	usleep_range(200, 210);
+-
+ 	while (exynos_dp_get_plug_in_status(dp) != 0) {
+ 		timeout_loop++;
+ 		if (DP_TIMEOUT_LOOP_COUNT < timeout_loop) {
+@@ -870,7 +866,32 @@ static irqreturn_t exynos_dp_irq_handler(int irq, void *arg)
+ {
+ 	struct exynos_dp_device *dp = arg;
+ 
+-	dev_err(dp->dev, "exynos_dp_irq_handler\n");
++	enum dp_irq_type irq_type;
++
++	irq_type = exynos_dp_get_irq_type(dp);
++	switch (irq_type) {
++	case DP_IRQ_TYPE_HP_CABLE_IN:
++		dev_dbg(dp->dev, "Received irq - cable in\n");
++		schedule_work(&dp->hotplug_work);
++		exynos_dp_clear_hotplug_interrupts(dp);
++		break;
++	case DP_IRQ_TYPE_HP_CABLE_OUT:
++		dev_dbg(dp->dev, "Received irq - cable out\n");
++		exynos_dp_clear_hotplug_interrupts(dp);
++		break;
++	case DP_IRQ_TYPE_HP_CHANGE:
++		/*
++		 * We get these change notifications once in a while, but there
++		 * is nothing we can do with them. Just ignore it for now and
++		 * only handle cable changes.
++		 */
++		dev_dbg(dp->dev, "Received irq - hotplug change; ignoring.\n");
++		exynos_dp_clear_hotplug_interrupts(dp);
++		break;
++	default:
++		dev_err(dp->dev, "Received irq - unknown type!\n");
++		break;
++	}
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -883,7 +904,7 @@ static void exynos_dp_hotplug(struct work_struct *work)
+ 
+ 	ret = exynos_dp_detect_hpd(dp);
+ 	if (ret) {
+-		dev_err(dp->dev, "unable to detect hpd\n");
++		/* Cable has been disconnected, we're done */
+ 		return;
+ 	}
+ 
+@@ -974,7 +995,6 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 	exynos_dp_init_dp(dp);
+ 
+ 	platform_set_drvdata(pdev, dp);
+-	schedule_work(&dp->hotplug_work);
+ 
+ 	return 0;
+ }
+@@ -1002,6 +1022,8 @@ static int exynos_dp_suspend(struct device *dev)
+ 	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
+ 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
+ 
++	disable_irq(dp->irq);
++
+ 	if (work_pending(&dp->hotplug_work))
+ 		flush_work(&dp->hotplug_work);
+ 
+@@ -1026,7 +1048,7 @@ static int exynos_dp_resume(struct device *dev)
+ 
+ 	exynos_dp_init_dp(dp);
+ 
+-	schedule_work(&dp->hotplug_work);
++	enable_irq(dp->irq);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
+index 66f11f4..520486e 100644
+--- a/drivers/video/exynos/exynos_dp_core.h
++++ b/drivers/video/exynos/exynos_dp_core.h
+@@ -13,6 +13,13 @@
+ #ifndef _EXYNOS_DP_CORE_H
+ #define _EXYNOS_DP_CORE_H
+ 
++enum dp_irq_type {
++	DP_IRQ_TYPE_HP_CABLE_IN,
++	DP_IRQ_TYPE_HP_CABLE_OUT,
++	DP_IRQ_TYPE_HP_CHANGE,
++	DP_IRQ_TYPE_UNKNOWN,
++};
++
+ struct link_train {
+ 	int eq_loop;
+ 	int cr_loop[4];
+@@ -51,6 +58,8 @@ void exynos_dp_set_analog_power_down(struct exynos_dp_device *dp,
+ 				bool enable);
+ void exynos_dp_init_analog_func(struct exynos_dp_device *dp);
+ void exynos_dp_init_hpd(struct exynos_dp_device *dp);
++enum dp_irq_type exynos_dp_get_irq_type(struct exynos_dp_device *dp);
++void exynos_dp_clear_hotplug_interrupts(struct exynos_dp_device *dp);
+ void exynos_dp_reset_aux(struct exynos_dp_device *dp);
+ void exynos_dp_init_aux(struct exynos_dp_device *dp);
+ int exynos_dp_get_plug_in_status(struct exynos_dp_device *dp);
+diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
+index dc09278..af7dae1 100644
+--- a/drivers/video/exynos/exynos_dp_reg.c
++++ b/drivers/video/exynos/exynos_dp_reg.c
+@@ -19,11 +19,11 @@
+ #include "exynos_dp_core.h"
+ #include "exynos_dp_reg.h"
+ 
+-#define COMMON_INT_MASK_1 (0)
+-#define COMMON_INT_MASK_2 (0)
+-#define COMMON_INT_MASK_3 (0)
+-#define COMMON_INT_MASK_4 (0)
+-#define INT_STA_MASK (0)
++#define COMMON_INT_MASK_1	0
++#define COMMON_INT_MASK_2	0
++#define COMMON_INT_MASK_3	0
++#define COMMON_INT_MASK_4	(HOTPLUG_CHG | HPD_LOST | PLUG)
++#define INT_STA_MASK		INT_HPD
+ 
+ void exynos_dp_enable_video_mute(struct exynos_dp_device *dp, bool enable)
+ {
+@@ -324,7 +324,7 @@ void exynos_dp_init_analog_func(struct exynos_dp_device *dp)
+ 	writel(reg, dp->reg_base + EXYNOS_DP_FUNC_EN_2);
+ }
+ 
+-void exynos_dp_init_hpd(struct exynos_dp_device *dp)
++void exynos_dp_clear_hotplug_interrupts(struct exynos_dp_device *dp)
+ {
+ 	u32 reg;
+ 
+@@ -333,12 +333,38 @@ void exynos_dp_init_hpd(struct exynos_dp_device *dp)
+ 
+ 	reg = INT_HPD;
+ 	writel(reg, dp->reg_base + EXYNOS_DP_INT_STA);
++}
++
++void exynos_dp_init_hpd(struct exynos_dp_device *dp)
++{
++	u32 reg;
++
++	exynos_dp_clear_hotplug_interrupts(dp);
+ 
+ 	reg = readl(dp->reg_base + EXYNOS_DP_SYS_CTL_3);
+ 	reg &= ~(F_HPD | HPD_CTRL);
+ 	writel(reg, dp->reg_base + EXYNOS_DP_SYS_CTL_3);
+ }
+ 
++enum dp_irq_type exynos_dp_get_irq_type(struct exynos_dp_device *dp)
++{
++	u32 reg;
++
++	/* Parse hotplug interrupt status register */
++	reg = readl(dp->reg_base + EXYNOS_DP_COMMON_INT_STA_4);
++
++	if (reg & PLUG)
++		return DP_IRQ_TYPE_HP_CABLE_IN;
++
++	if (reg & HPD_LOST)
++		return DP_IRQ_TYPE_HP_CABLE_OUT;
++
++	if (reg & HOTPLUG_CHG)
++		return DP_IRQ_TYPE_HP_CHANGE;
++
++	return DP_IRQ_TYPE_UNKNOWN;
++}
++
+ void exynos_dp_reset_aux(struct exynos_dp_device *dp)
+ {
+ 	u32 reg;
+-- 
+1.7.1
 
-git://gitorious.org/linux-omap-dss2/linux.git for-next
 
- Tomi
-
-
-
---------------enig0A1AA4ECCFD9C00AF2536F0E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJQtx/qAAoJEPo9qoy8lh71vnoP/1iO2TY8S+/ERARVD5q+crq/
-Cxzp5FWZ2UCrKxPkBDQ+v/Oy4B7Cf1mS4NiYCShmKTx/CxtSTaECGMuYDdh87snz
-UT65R6qmN2pwhXRCrwZIunxoEjA6FRfFMaC5YpdYQ5Zti1XAaxsb5N3ddwibe0Ak
-nbiCMj9hyQORlcVEdkpEvVksXrqJW2CwiZ4Bl9mvpCAWVvKmVEflhmS5K4q5EVca
-n+lDjToygDYADBZGPWjQ52p6+Sw1ZlgAbFhrz3MAn2ovu11uf7ZG7+jvj9E7cmdP
-Dw186KFBducjnWPusMwvbMV5IsFryIF0mBtSeMb8K4pdCD61aErqBK6bMJNyW/46
-YGgnB04il1KE0LGO25rBNJfXpOQdGI8Ng9TJMmAnB5w+00hKLR25oLP+znUljLJ0
-VQ1OsgzB3kVAoxYRfZIjilgWfkXgiaOHs0205t/zkfxM3sntVzHAHcaBztSo4NmS
-voflfZR4EVeuHo5T1M3mLbt04UhA+b6l1p4D7KmCMWk4Gx1JRQ+yYLdkys/nyaaa
-1aTBR3WtLWz+6zXlJTO944DaMxdOVxaEVJ41Ql3IxwRLJlD+nEeS9ParyHJUA1VQ
-JXzzLYdohkTAWV5ceBpHvtYQ0rJ08kYQDe2huMyDZg/8ucvgPWYVYGVAUZ8SQ291
-NsCje3LwP4d8Tm5ildA2
-=0lDL
------END PGP SIGNATURE-----
-
---------------enig0A1AA4ECCFD9C00AF2536F0E--

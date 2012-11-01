@@ -1,114 +1,58 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Fri, 23 Nov 2012 09:04:25 +0000
-Subject: [PATCHv14 5/7] fbmon: add of_videomode helpers
-Message-Id: <1353661467-28545-6-git-send-email-s.trumtrar@pengutronix.de>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 01 Nov 2012 10:21:08 +0000
+Subject: [PATCH v3 3/8] video: exynos_dp: Get pll lock before pattern set
+Message-Id: <011f01cdb81a$9bf1fbc0$d3d5f340$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353661467-28545-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1353661467-28545-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
+To: linux-fbdev@vger.kernel.org
 
-Add helper to get fb_videomode from devicetree.
+From: Sean Paul <seanpaul@chromium.org>
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
-Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+According to the exynos datasheet (Figure 49-10), we should wait for PLL
+lock before programming the training pattern when doing software eDP
+link training.
+
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/fbmon.c |   42 +++++++++++++++++++++++++++++++++++++++++-
- include/linux/fb.h    |    6 ++++++
- 2 files changed, 47 insertions(+), 1 deletion(-)
+ drivers/video/exynos/exynos_dp_core.c |   14 +++++++++++++-
+ 1 files changed, 13 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index bcbfe8f..287e66b 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -31,7 +31,7 @@
- #include <linux/pci.h>
- #include <linux/slab.h>
- #include <video/edid.h>
--#include <linux/videomode.h>
-+#include <linux/of_videomode.h>
- #ifdef CONFIG_PPC_OF
- #include <asm/prom.h>
- #include <asm/pci-bridge.h>
-@@ -1421,6 +1421,46 @@ int fb_videomode_from_videomode(const struct videomode *vm,
- EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
- #endif
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index 13bb10d..878b4b6 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -264,7 +264,7 @@ static void exynos_dp_set_lane_lane_pre_emphasis(struct exynos_dp_device *dp,
+ static int exynos_dp_link_start(struct exynos_dp_device *dp)
+ {
+ 	u8 buf[4];
+-	int lane, lane_count, retval;
++	int lane, lane_count, pll_tries, retval;
  
-+#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+static inline void dump_fb_videomode(const struct fb_videomode *m)
-+{
-+	pr_debug("fb_videomode = %ux%u@%uHz (%ukHz) %u %u %u %u %u %u %u %u %u\n",
-+		 m->xres, m->yres, m->refresh, m->pixclock, m->left_margin,
-+		 m->right_margin, m->upper_margin, m->lower_margin,
-+		 m->hsync_len, m->vsync_len, m->sync, m->vmode, m->flag);
-+}
-+
-+/**
-+ * of_get_fb_videomode - get a fb_videomode from devicetree
-+ * @np: device_node with the timing specification
-+ * @fb: will be set to the return value
-+ * @index: index into the list of display timings in devicetree
-+ *
-+ * DESCRIPTION:
-+ * This function is expensive and should only be used, if only one mode is to be
-+ * read from DT. To get multiple modes start with of_get_display_timings ond
-+ * work with that instead.
-+ */
-+int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
-+			unsigned int index)
-+{
-+	struct videomode vm;
-+	int ret;
-+
-+	ret = of_get_videomode(np, &vm, index);
-+	if (ret)
-+		return ret;
-+
-+	fb_videomode_from_videomode(&vm, fb);
-+
-+	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
-+		vm.vactive, np->name);
-+	dump_fb_videomode(fb);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(of_get_fb_videomode);
-+#endif
+ 	lane_count = dp->link_train.lane_count;
  
- #else
- int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 4404ec2..7e1c8cf 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -20,6 +20,7 @@ struct fb_info;
- struct device;
- struct file;
- struct videomode;
-+struct device_node;
+@@ -297,6 +297,18 @@ static int exynos_dp_link_start(struct exynos_dp_device *dp)
+ 		exynos_dp_set_lane_lane_pre_emphasis(dp,
+ 			PRE_EMPHASIS_LEVEL_0, lane);
  
- /* Definitions below are used in the parsed monitor specs */
- #define FB_DPMS_ACTIVE_OFF	1
-@@ -715,6 +716,11 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
- extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
- extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
++	/* Wait for PLL lock */
++	pll_tries = 0;
++	while (exynos_dp_get_pll_lock_status(dp) = PLL_UNLOCKED) {
++		if (pll_tries = DP_TIMEOUT_LOOP_COUNT) {
++			dev_err(dp->dev, "Wait for PLL lock timed out\n");
++			return -ETIMEDOUT;
++		}
++
++		pll_tries++;
++		usleep_range(90, 120);
++	}
++
+ 	/* Set training pattern 1 */
+ 	exynos_dp_set_training_pattern(dp, TRAINING_PTN1);
  
-+#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+extern int of_get_fb_videomode(struct device_node *np,
-+			       struct fb_videomode *fb,
-+			       unsigned int index);
-+#endif
- #if IS_ENABLED(CONFIG_VIDEOMODE)
- extern int fb_videomode_from_videomode(const struct videomode *vm,
- 				       struct fb_videomode *fbmode);
 -- 
-1.7.10.4
+1.7.1
+
 

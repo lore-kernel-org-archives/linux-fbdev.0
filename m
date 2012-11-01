@@ -1,97 +1,87 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Tue, 20 Nov 2012 11:11:09 +0000
-Subject: Re: [PATCH v11 0/6] of: add display helper
-Message-Id: <20121120111109.GC11249@pengutronix.de>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 01 Nov 2012 00:45:48 +0000
+Subject: RE: [PATCH 05/10] video: exynos_dp: Remove sink control to D0
+Message-Id: <001f01cdb7ca$3bf8f2a0$b3ead7e0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352985312-18178-1-git-send-email-s.trumtrar@pengutronix.de>
- <20121120103918.GB11249@pengutronix.de>
- <5248190.b4XqndYeI2@avalon>
-In-Reply-To: <5248190.b4XqndYeI2@avalon>
+References: <1344398064-13563-6-git-send-email-seanpaul@chromium.org>
+In-Reply-To: <1344398064-13563-6-git-send-email-seanpaul@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
+To: linux-fbdev@vger.kernel.org
 
-On Tue, Nov 20, 2012 at 11:52:06AM +0100, Laurent Pinchart wrote:
-> Hi Steffen,
+On Thursday, November 01, 2012 2:05 AM Sean Paul wrote
 > 
-> On Tuesday 20 November 2012 11:39:18 Steffen Trumtrar wrote:
-> > On Thu, Nov 15, 2012 at 02:15:06PM +0100, Steffen Trumtrar wrote:
-> > > Hi!
-> > > 
-> > > Changes since v10:
-> > > 	- fix function name (drm_)display_mode_from_videomode
-> > > 	- add acked-by, reviewed-by, tested-by
-> > > 
-> > > Regards,
-> > > Steffen
-> > > 
-> > > Steffen Trumtrar (6):
-> > >   video: add display_timing and videomode
-> > >   video: add of helper for videomode
-> > >   fbmon: add videomode helpers
-> > >   fbmon: add of_videomode helpers
-> > >   drm_modes: add videomode helpers
-> > >   drm_modes: add of_videomode helpers
-> > >  
-> > >  .../devicetree/bindings/video/display-timings.txt  |  107 ++++++++++
-> > >  drivers/gpu/drm/drm_modes.c                        |   70 +++++++
-> > >  drivers/video/Kconfig                              |   19 ++
-> > >  drivers/video/Makefile                             |    4 +
-> > >  drivers/video/display_timing.c                     |   24 +++
-> > >  drivers/video/fbmon.c                              |   86 ++++++++
-> > >  drivers/video/of_display_timing.c                  |  212 +++++++++++++++
-> > >  drivers/video/of_videomode.c                       |   47 +++++
-> > >  drivers/video/videomode.c                          |   45 +++++
-> > >  include/drm/drmP.h                                 |   12 ++
-> > >  include/linux/display_timing.h                     |   69 +++++++
-> > >  include/linux/fb.h                                 |   12 ++
-> > >  include/linux/of_display_timings.h                 |   20 ++
-> > >  include/linux/of_videomode.h                       |   17 ++
-> > >  include/linux/videomode.h                          |   40 ++++
-> > >  15 files changed, 784 insertions(+)
-> > >  create mode 100644
-> > >  Documentation/devicetree/bindings/video/display-timings.txt create mode
-> > >  100644 drivers/video/display_timing.c
-> > >  create mode 100644 drivers/video/of_display_timing.c
-> > >  create mode 100644 drivers/video/of_videomode.c
-> > >  create mode 100644 drivers/video/videomode.c
-> > >  create mode 100644 include/linux/display_timing.h
-> > >  create mode 100644 include/linux/of_display_timings.h
-> > >  create mode 100644 include/linux/of_videomode.h
-> > >  create mode 100644 include/linux/videomode.h
-> > 
-> > Ping!
-> > 
-> > Any comments or taker for v11? Errors are fixed, driver is tested and
-> > working, DT binding got two ACKs. So, the series is finished as far as I
-> > can tell.
+> On Mon, Aug 20, 2012 at 5:19 AM, Jingoo Han <jg1.han@samsung.com> wrote:
+> > On Wednesday, August 08, 2012 12:54 PM Sean Paul wrote:
+> >>
+> >> Don't reset the sink power to D0. Removing this for three reasons:
+> >>
+> >> 1) It's not required in the SW link training documentation
+> > OK.
+> >> 2) The comment is incorrect, D0 is normal operation, not "power down"
+> > OK. As you mentioned, D0 is not 'power down', 'normal operation'.
+> > However, if comment is wrong, usually we fix comment, not remove it. :)
+> >
 > 
-> Just one last comment, sorry for not bringing this up earlier. Could you 
-> constify pointer arguments to functions where applicable ? For instance
-> 
-> int videomode_from_timing(struct display_timings *disp, struct videomode *vm,
->                           unsigned int index);
-> 
-> The function shouldn't modify disp, so you can make it const. Same for most of 
-> the API functions.
-> 
+> The datasheet doesn't mention this step at all. Furthermore, the
+> comment explains how it *should* work, so I think it's the code that
+> is in error. Do you know why this code is needed?
 
-Okay. Will do.
+This is not requirement of the datasheet.
+Also, D0 is not necessary for Link training.
 
-> You can then add my
+Um, this is work-around for initial development.
+Newly developed panel did not work, due to pane problem,
+so this work-around was added.
+However, the panel problem was fixed, so this code is
+not necessary.
+
+Please replace comment as below:
+
+According to DP spec, it is not required in the Link Training procedure.
+
+
+Best regards,
+Jingoo Han
+
 > 
-> Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> >> 3) It seems to change things in the link training that causes glitches
+> >
+> > Um, it seems that this problem depends on LCD panel.
+> > Other LCDs that I have tested do not have this kind of problem.
+> > Please, modify this comment.
+> >
 > 
+> That was a red herring, it didn't cause the glitches, just made them
+> less obvious.
+> 
+> Sean
+> 
+> >>
+> >> Signed-off-by: Sean Paul <seanpaul@chromium.org>
+> >> ---
+> >>  drivers/video/exynos/exynos_dp_core.c |    6 ------
+> >>  1 files changed, 0 insertions(+), 6 deletions(-)
+> >>
+> >> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+> >> index 207bd7e..1c998d9 100644
+> >> --- a/drivers/video/exynos/exynos_dp_core.c
+> >> +++ b/drivers/video/exynos/exynos_dp_core.c
+> >> @@ -273,12 +273,6 @@ static int exynos_dp_link_start(struct exynos_dp_device *dp)
+> >>       for (lane = 0; lane < lane_count; lane++)
+> >>               dp->link_train.cr_loop[lane] = 0;
+> >>
+> >> -     /* Set sink to D0 (Sink Not Ready) mode. */
+> >> -     ret = exynos_dp_write_byte_to_dpcd(dp, DPCD_ADDR_SINK_POWER_STATE,
+> >> -                             DPCD_SET_POWER_STATE_D0);
+> >> -     if (ret)
+> >> -             return ret;
+> >> -
+> >>       /* Set link rate and count as you want to establish*/
+> >>       exynos_dp_set_link_bandwidth(dp, dp->link_train.link_rate);
+> >>       exynos_dp_set_lane_count(dp, dp->link_train.lane_count);
+> >> --
+> >> 1.7.7.3
+> >
 
-Thanks.
-
-Regards,
-Steffen
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

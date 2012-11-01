@@ -1,130 +1,191 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Mon, 26 Nov 2012 09:07:21 +0000
-Subject: [PATCHv15 0/7] of: add display helper
-Message-Id: <1353920848-1705-1-git-send-email-s.trumtrar@pengutronix.de>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 01 Nov 2012 00:36:58 +0000
+Subject: Re: [PATCH 08/10] video: exynos_dp: Move hotplug into a workqueue
+Message-Id: <001e01cdb7c9$00a204e0$01e60ea0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1344398064-13563-9-git-send-email-seanpaul@chromium.org>
+In-Reply-To: <1344398064-13563-9-git-send-email-seanpaul@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
+To: linux-fbdev@vger.kernel.org
 
-Hi!
+On Thursday, November 01, 2012 2:20 AM Sean Paul wrote
+> 
+> On Tue, Aug 7, 2012 at 11:54 PM, Sean Paul <seanpaul@chromium.org> wrote:
+> > Move the hotplug related code from probe and resume into a workqueue.
+> > This allows us to initialize the DP driver (and resume it) when there
+> > is no monitor connected.
+> >
+> 
+> Comments?
 
-Changes since v14:
-	- fix "const struct *" warning
-		(reported by: Leela Krishna Amudala <l.krishna@samsung.com>)
-	- return -EINVAL when htotal or vtotal are zero
-	- remove unreachable code in of_get_display_timings
-	- include headers in .c files and not implicit in .h
-	- sort includes alphabetically
-	- fix lower/uppercase in binding documentation
-	- rebase onto v3.7-rc7
-
-Changes since v13:
-	- fix "const struct *" warning
-		(reported by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>)
-	- prevent division by zero in fb_videomode_from_videomode
-
-Changes since v12:
-	- rename struct display_timing to via_display_timing in via subsystem
-	- fix refreshrate calculation
-	- fix "const struct *" warnings
-		(reported by: Manjunathappa, Prakash <prakash.pm@ti.com>)
-	- some CodingStyle fixes
-	- rewrite parts of commit messages and display-timings.txt
-	- let display_timing_get_value get all values instead of just typical
-
-Changes since v11:
-	- make pointers const where applicable
-	- add reviewed-by Laurent Pinchart
-
-Changes since v10:
-	- fix function name (drm_)display_mode_from_videomode
-	- add acked-by, reviewed-by, tested-by
-
-Changes since v9:
-	- don't leak memory when previous timings were correct
-	- CodingStyle fixes
-	- move blank lines around
-
-Changes since v8:
-	- fix memory leaks
-	- change API to be more consistent (foo_from_bar(struct bar, struct foo))
-	- include headers were necessary
-	- misc minor bufixe
-
-Changes since v7:
-	- move of_xxx to drivers/video
-	- remove non-binding documentation from display-timings.txt
-	- squash display_timings and videomode in one patch
-	- misc minor fixes
-
-Changes since v6:
-	- get rid of some empty lines etc.
-	- move functions to their subsystems
-	- split of_ from non-of_ functions
-	- add at least some kerneldoc to some functions
-
-Changes since v5:
-	- removed all display stuff and just describe timings
-
-Changes since v4:
-	- refactored functions
-
-Changes since v3:
-	- print error messages
-	- free alloced memory
-	- general cleanup
-
-Changes since v2:
-	- use hardware-near property-names
-	- provide a videomode structure
-	- allow ranges for all properties (<min,typ,max>)
-	- functions to get display_mode or fb_videomode
+It looks good, but, I have to test this.
 
 
-Steffen Trumtrar (7):
-  viafb: rename display_timing to via_display_timing
-  video: add display_timing and videomode
-  video: add of helper for display timings/videomode
-  fbmon: add videomode helpers
-  fbmon: add of_videomode helpers
-  drm_modes: add videomode helpers
-  drm_modes: add of_videomode helpers
-
- .../devicetree/bindings/video/display-timing.txt   |  107 ++++++++++
- drivers/gpu/drm/drm_modes.c                        |   70 +++++++
- drivers/video/Kconfig                              |   21 ++
- drivers/video/Makefile                             |    4 +
- drivers/video/display_timing.c                     |   24 +++
- drivers/video/fbmon.c                              |   93 +++++++++
- drivers/video/of_display_timing.c                  |  219 ++++++++++++++++++++
- drivers/video/of_videomode.c                       |   54 +++++
- drivers/video/via/hw.c                             |    6 +-
- drivers/video/via/hw.h                             |    2 +-
- drivers/video/via/lcd.c                            |    2 +-
- drivers/video/via/share.h                          |    2 +-
- drivers/video/via/via_modesetting.c                |    8 +-
- drivers/video/via/via_modesetting.h                |    6 +-
- drivers/video/videomode.c                          |   44 ++++
- include/drm/drmP.h                                 |   13 ++
- include/linux/display_timing.h                     |  104 ++++++++++
- include/linux/fb.h                                 |   12 ++
- include/linux/of_display_timing.h                  |   20 ++
- include/linux/of_videomode.h                       |   18 ++
- include/linux/videomode.h                          |   54 +++++
- 21 files changed, 870 insertions(+), 13 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/video/display-timing.txt
- create mode 100644 drivers/video/display_timing.c
- create mode 100644 drivers/video/of_display_timing.c
- create mode 100644 drivers/video/of_videomode.c
- create mode 100644 drivers/video/videomode.c
- create mode 100644 include/linux/display_timing.h
- create mode 100644 include/linux/of_display_timing.h
- create mode 100644 include/linux/of_videomode.h
- create mode 100644 include/linux/videomode.h
-
--- 
-1.7.10.4
+> 
+> 
+> > Signed-off-by: Sean Paul <seanpaul@chromium.org>
+> > Reviewed-by: Olof Johansson <olofj@chromium.org>
+> > ---
+> >  drivers/video/exynos/exynos_dp_core.c |   94 +++++++++++++++++----------------
+> >  drivers/video/exynos/exynos_dp_core.h |    1 +
+> >  2 files changed, 50 insertions(+), 45 deletions(-)
+> >
+> > diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+> > index 2882362..68ad494 100644
+> > --- a/drivers/video/exynos/exynos_dp_core.c
+> > +++ b/drivers/video/exynos/exynos_dp_core.c
+> > @@ -834,6 +834,45 @@ static irqreturn_t exynos_dp_irq_handler(int irq, void *arg)
+> >         return IRQ_HANDLED;
+> >  }
+> >
+> > +static void exynos_dp_hotplug(struct work_struct *work)
+> > +{
+> > +       struct exynos_dp_device *dp;
+> > +       int ret;
+> > +
+> > +       dp = container_of(work, struct exynos_dp_device, hotplug_work);
+> > +
+> > +       ret = exynos_dp_detect_hpd(dp);
+> > +       if (ret) {
+> > +               dev_err(dp->dev, "unable to detect hpd\n");
+> > +               return;
+> > +       }
+> > +
+> > +       ret = exynos_dp_handle_edid(dp);
+> > +       if (ret) {
+> > +               dev_err(dp->dev, "unable to handle edid\n");
+> > +               return;
+> > +       }
+> > +
+> > +       ret = exynos_dp_set_link_train(dp, dp->video_info->lane_count,
+> > +                                       dp->video_info->link_rate);
+> > +       if (ret) {
+> > +               dev_err(dp->dev, "unable to do link train\n");
+> > +               return;
+> > +       }
+> > +
+> > +       exynos_dp_enable_scramble(dp, 1);
+> > +       exynos_dp_enable_rx_to_enhanced_mode(dp, 1);
+> > +       exynos_dp_enable_enhanced_mode(dp, 1);
+> > +
+> > +       exynos_dp_set_lane_count(dp, dp->video_info->lane_count);
+> > +       exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
+> > +
+> > +       exynos_dp_init_video(dp);
+> > +       ret = exynos_dp_config_video(dp, dp->video_info);
+> > +       if (ret)
+> > +               dev_err(&dp->dev, "unable to config video\n");
+> > +}
+> > +
+> >  static int __devinit exynos_dp_probe(struct platform_device *pdev)
+> >  {
+> >         struct resource *res;
+> > @@ -886,6 +925,8 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+> >                 goto err_clock;
+> >         }
+> >
+> > +       INIT_WORK(&dp->hotplug_work, exynos_dp_hotplug);
+> > +
+> >         ret = devm_request_irq(&pdev->dev, dp->irq, exynos_dp_irq_handler, 0,
+> >                                 "exynos-dp", dp);
+> >         if (ret) {
+> > @@ -899,36 +940,8 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+> >
+> >         exynos_dp_init_dp(dp);
+> >
+> > -       ret = exynos_dp_detect_hpd(dp);
+> > -       if (ret) {
+> > -               dev_err(&pdev->dev, "unable to detect hpd\n");
+> > -               goto err_clock;
+> > -       }
+> > -
+> > -       exynos_dp_handle_edid(dp);
+> > -
+> > -       ret = exynos_dp_set_link_train(dp, dp->video_info->lane_count,
+> > -                               dp->video_info->link_rate);
+> > -       if (ret) {
+> > -               dev_err(&pdev->dev, "unable to do link train\n");
+> > -               goto err_clock;
+> > -       }
+> > -
+> > -       exynos_dp_enable_scramble(dp, 1);
+> > -       exynos_dp_enable_rx_to_enhanced_mode(dp, 1);
+> > -       exynos_dp_enable_enhanced_mode(dp, 1);
+> > -
+> > -       exynos_dp_set_lane_count(dp, dp->video_info->lane_count);
+> > -       exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
+> > -
+> > -       exynos_dp_init_video(dp);
+> > -       ret = exynos_dp_config_video(dp, dp->video_info);
+> > -       if (ret) {
+> > -               dev_err(&pdev->dev, "unable to config video\n");
+> > -               goto err_clock;
+> > -       }
+> > -
+> >         platform_set_drvdata(pdev, dp);
+> > +       schedule_work(&dp->hotplug_work);
+> >
+> >         return 0;
+> >
+> > @@ -943,6 +956,9 @@ static int __devexit exynos_dp_remove(struct platform_device *pdev)
+> >         struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
+> >         struct exynos_dp_device *dp = platform_get_drvdata(pdev);
+> >
+> > +       if (work_pending(&dp->hotplug_work))
+> > +               flush_work_sync(&dp->hotplug_work);
+> > +
+> >         if (pdata && pdata->phy_exit)
+> >                 pdata->phy_exit();
+> >
+> > @@ -959,6 +975,9 @@ static int exynos_dp_suspend(struct device *dev)
+> >         struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
+> >         struct exynos_dp_device *dp = platform_get_drvdata(pdev);
+> >
+> > +       if (work_pending(&dp->hotplug_work))
+> > +               flush_work_sync(&dp->hotplug_work);
+> > +
+> >         if (pdata && pdata->phy_exit)
+> >                 pdata->phy_exit();
+> >
+> > @@ -979,22 +998,7 @@ static int exynos_dp_resume(struct device *dev)
+> >         clk_enable(dp->clock);
+> >
+> >         exynos_dp_init_dp(dp);
+> > -
+> > -       exynos_dp_detect_hpd(dp);
+> > -       exynos_dp_handle_edid(dp);
+> > -
+> > -       exynos_dp_set_link_train(dp, dp->video_info->lane_count,
+> > -                               dp->video_info->link_rate);
+> > -
+> > -       exynos_dp_enable_scramble(dp, 1);
+> > -       exynos_dp_enable_rx_to_enhanced_mode(dp, 1);
+> > -       exynos_dp_enable_enhanced_mode(dp, 1);
+> > -
+> > -       exynos_dp_set_lane_count(dp, dp->video_info->lane_count);
+> > -       exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
+> > -
+> > -       exynos_dp_init_video(dp);
+> > -       exynos_dp_config_video(dp, dp->video_info);
+> > +       schedule_work(&dp->hotplug_work);
+> >
+> >         return 0;
+> >  }
+> > diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
+> > index 6431c65..cf1010b 100644
+> > --- a/drivers/video/exynos/exynos_dp_core.h
+> > +++ b/drivers/video/exynos/exynos_dp_core.h
+> > @@ -32,6 +32,7 @@ struct exynos_dp_device {
+> >
+> >         struct video_info       *video_info;
+> >         struct link_train       link_train;
+> > +       struct work_struct      hotplug_work;
+> >  };
+> >
+> >  /* exynos_dp_reg.c */
+> > --
+> > 1.7.7.3
+> >
 

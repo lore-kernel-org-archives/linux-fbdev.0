@@ -1,288 +1,55 @@
-From: Pawel Moll <pawel.moll@arm.com>
-Date: Mon, 19 Nov 2012 16:39:07 +0000
-Subject: [PATCH v4] video: Versatile Express DVI output driver
-Message-Id: <1353343147-15654-1-git-send-email-pawel.moll@arm.com>
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Thu, 01 Nov 2012 20:17:39 +0000
+Subject: Re: [PATCH v7 3/8] of: add generic videomode description
+Message-Id: <20121101201739.GC13137@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="f+W+jCU1fRNres8c"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353342376.3303.32.camel@hornet>
-In-Reply-To: <1353342376.3303.32.camel@hornet>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
-
-Versatile Express' DVI video output can be connected to one the three
-sources - motherboard's CLCD controller or a video signal generated
-by one of the daughterboards.
-
-This driver configures the muxer FPGA so the output displays content
-of one of the framebuffers in the system (0 by default, can be changed
-by user writing to the "fb" sysfs attribute of the muxfpga device).
-
-It will also set up the display formatter mode and keep it up
-to date with mode changes requested by the user (eg. with fbset
-tool).
-
-Signed-off-by: Pawel Moll <pawel.moll@arm.com>
----
- .../ABI/testing/sysfs-driver-video-vexpress-dvi.c  |    5 +
- drivers/video/Makefile                             |    3 +
- drivers/video/vexpress-dvi.c                       |  223 ++++++++++++++++++++
- 3 files changed, 231 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-driver-video-vexpress-dvi.c
- create mode 100644 drivers/video/vexpress-dvi.c
-
-diff --git a/Documentation/ABI/testing/sysfs-driver-video-vexpress-dvi.c b/Documentation/ABI/testing/sysfs-driver-video-vexpress-dvi.c
-new file mode 100644
-index 0000000..4835e09
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-driver-video-vexpress-dvi.c
-@@ -0,0 +1,5 @@
-+What:		/sys/bus/platform/drivers/vexpress-dvi/<muxfpga device>/fb
-+Date:		November 2012
-+Contant:	Pawel Moll <pawel.moll@arm.com>
-+Description:	This file stores the number of the framebuffer which is
-+		supposed to be routed to the board's DVI output.
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index 23e948e..2f4440d 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -167,3 +167,6 @@ obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
- 
- #video output switch sysfs driver
- obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) += output.o
-+
-+# platform specific output drivers
-+obj-$(CONFIG_VEXPRESS_CONFIG)	  += vexpress-dvi.o
-diff --git a/drivers/video/vexpress-dvi.c b/drivers/video/vexpress-dvi.c
-new file mode 100644
-index 0000000..d5a4847
---- /dev/null
-+++ b/drivers/video/vexpress-dvi.c
-@@ -0,0 +1,223 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * Copyright (C) 2012 ARM Limited
-+ */
-+
-+#define pr_fmt(fmt) "vexpress-dvi: " fmt
-+
-+#include <linux/fb.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
-+#include <linux/vexpress.h>
-+
-+
-+static struct vexpress_config_func *vexpress_dvimode_func;
-+
-+static struct {
-+	u32 xres, yres, mode;
-+} vexpress_dvi_dvimodes[] = {
-+	{ 640, 480, 0 }, /* VGA */
-+	{ 800, 600, 1 }, /* SVGA */
-+	{ 1024, 768, 2 }, /* XGA */
-+	{ 1280, 1024, 3 }, /* SXGA */
-+	{ 1600, 1200, 4 }, /* UXGA */
-+	{ 1920, 1080, 5 }, /* HD1080 */
-+};
-+
-+static void vexpress_dvi_mode_set(struct fb_info *info, u32 xres, u32 yres)
-+{
-+	int err = -ENOENT;
-+	int i;
-+
-+	if (!vexpress_dvimode_func)
-+		return;
-+
-+	for (i = 0; i < ARRAY_SIZE(vexpress_dvi_dvimodes); i++) {
-+		if (vexpress_dvi_dvimodes[i].xres == xres &&
-+				vexpress_dvi_dvimodes[i].yres == yres) {
-+			pr_debug("mode: %ux%u = %d\n", xres, yres,
-+					vexpress_dvi_dvimodes[i].mode);
-+			err = vexpress_config_write(vexpress_dvimode_func, 0,
-+					vexpress_dvi_dvimodes[i].mode);
-+			break;
-+		}
-+	}
-+
-+	if (err)
-+		pr_warn("Failed to set %ux%u mode! (%d)\n", xres, yres, err);
-+}
-+
-+
-+static struct vexpress_config_func *vexpress_muxfpga_func;
-+static int vexpress_dvi_fb = -1;
-+
-+static int vexpress_dvi_mux_set(struct fb_info *info)
-+{
-+	int err;
-+	u32 site = vexpress_get_site_by_dev(info->device);
-+
-+	if (!vexpress_muxfpga_func)
-+		return -ENXIO;
-+
-+	err = vexpress_config_write(vexpress_muxfpga_func, 0, site);
-+	if (!err) {
-+		pr_debug("Selected MUXFPGA input %d (fb%d)\n", site,
-+				info->node);
-+		vexpress_dvi_fb = info->node;
-+		vexpress_dvi_mode_set(info, info->var.xres,
-+				info->var.yres);
-+	} else {
-+		pr_warn("Failed to select MUXFPGA input %d (fb%d)! (%d)\n",
-+				site, info->node, err);
-+	}
-+
-+	return err;
-+}
-+
-+static int vexpress_dvi_fb_select(int fb)
-+{
-+	int err;
-+	struct fb_info *info;
-+
-+	/* fb0 is the default */
-+	if (fb < 0)
-+		fb = 0;
-+
-+	if (fb >= FB_MAX)
-+		return -EINVAL;
-+
-+	info = registered_fb[fb];
-+	if (!info || !lock_fb_info(info))
-+		return -ENODEV;
-+
-+	err = vexpress_dvi_mux_set(info);
-+
-+	unlock_fb_info(info);
-+
-+	return err;
-+}
-+
-+static ssize_t vexpress_dvi_fb_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "%d\n", vexpress_dvi_fb);
-+}
-+
-+static ssize_t vexpress_dvi_fb_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t count)
-+{
-+	long value;
-+	int err = kstrtol(buf, 0, &value);
-+
-+	if (!err)
-+		err = vexpress_dvi_fb_select(value);
-+
-+	return err ? err : count;
-+}
-+
-+DEVICE_ATTR(fb, S_IRUGO | S_IWUSR, vexpress_dvi_fb_show,
-+		vexpress_dvi_fb_store);
-+
-+
-+static int vexpress_dvi_fb_event_notify(struct notifier_block *self,
-+			      unsigned long action, void *data)
-+{
-+	struct fb_event *event = data;
-+	struct fb_info *info = event->info;
-+	struct fb_videomode *mode = event->data;
-+
-+	switch (action) {
-+	case FB_EVENT_FB_REGISTERED:
-+		if (vexpress_dvi_fb < 0)
-+			vexpress_dvi_mux_set(info);
-+		break;
-+	case FB_EVENT_MODE_CHANGE:
-+	case FB_EVENT_MODE_CHANGE_ALL:
-+		if (info->node == vexpress_dvi_fb)
-+			vexpress_dvi_mode_set(info, mode->xres, mode->yres);
-+		break;
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block vexpress_dvi_fb_notifier = {
-+	.notifier_call = vexpress_dvi_fb_event_notify,
-+};
-+static bool vexpress_dvi_fb_notifier_registered;
-+
-+
-+enum vexpress_dvi_func { FUNC_MUXFPGA, FUNC_DVIMODE };
-+
-+static struct of_device_id vexpress_dvi_of_match[] = {
-+	{
-+		.compatible = "arm,vexpress-muxfpga",
-+		.data = (void *)FUNC_MUXFPGA,
-+	}, {
-+		.compatible = "arm,vexpress-dvimode",
-+		.data = (void *)FUNC_DVIMODE,
-+	},
-+	{}
-+};
-+
-+static int vexpress_dvi_probe(struct platform_device *pdev)
-+{
-+	enum vexpress_dvi_func func;
-+	const struct of_device_id *match =
-+			of_match_device(vexpress_dvi_of_match, &pdev->dev);
-+
-+	if (match)
-+		func = (enum vexpress_dvi_func)match->data;
-+	else
-+		func = pdev->id_entry->driver_data;
-+
-+	switch (func) {
-+	case FUNC_MUXFPGA:
-+		vexpress_muxfpga_func =
-+				vexpress_config_func_get_by_dev(&pdev->dev);
-+		device_create_file(&pdev->dev, &dev_attr_fb);
-+		break;
-+	case FUNC_DVIMODE:
-+		vexpress_dvimode_func =
-+				vexpress_config_func_get_by_dev(&pdev->dev);
-+		break;
-+	}
-+
-+	if (!vexpress_dvi_fb_notifier_registered) {
-+		fb_register_client(&vexpress_dvi_fb_notifier);
-+		vexpress_dvi_fb_notifier_registered = true;
-+	}
-+
-+	vexpress_dvi_fb_select(vexpress_dvi_fb);
-+
-+	return 0;
-+}
-+
-+static const struct platform_device_id vexpress_dvi_id_table[] = {
-+	{ .name = "vexpress-muxfpga", .driver_data = FUNC_MUXFPGA, },
-+	{ .name = "vexpress-dvimode", .driver_data = FUNC_DVIMODE, },
-+	{}
-+};
-+
-+static struct platform_driver vexpress_dvi_driver = {
-+	.probe = vexpress_dvi_probe,
-+	.driver = {
-+		.name = "vexpress-dvi",
-+		.of_match_table = vexpress_dvi_of_match,
-+	},
-+	.id_table = vexpress_dvi_id_table,
-+};
-+
-+static int __init vexpress_dvi_init(void)
-+{
-+	return platform_driver_register(&vexpress_dvi_driver);
-+}
-+device_initcall(vexpress_dvi_init);
--- 
-1.7.10.4
+References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
+ <1351675689-26814-4-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1351675689-26814-4-git-send-email-s.trumtrar@pengutronix.de>
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Cc: devicetree-discuss@lists.ozlabs.org, Philipp Zabel <p.zabel@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
 
+--f+W+jCU1fRNres8c
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Wed, Oct 31, 2012 at 10:28:03AM +0100, Steffen Trumtrar wrote:
+[...]
+> +config OF_VIDEOMODE
+> +	def_bool y
+> +	depends on VIDEOMODE
+> +	help
+> +	  helper to get videomodes from the devicetree
+> +
+
+I think patches 3 and 4 need to be swapped, since patch 4 introduces the
+VIDEOMODE Kconfig symbol (as well as the videomode.h helper) that patch
+3 uses.
+
+Thierry
+
+--f+W+jCU1fRNres8c
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQktjjAAoJEN0jrNd/PrOhYz4P/3cbr9Gtdcr2a5mLvk0QD4Mn
+1LZC6jqEn/BeC+tdgPUVO7eUZfah8TPgfvU+3+vU4H3o0PQcrjRFkpsni7xpjVsH
+Cu70kJt7el8RAsGoLzFlYAduq1EFzSwbdXnsmwK+MoVE1kvzQn7CT1Ad8foYsYG7
+NaKy6YXrEq7ZGn040Jtq6CHidjEyT39OHMimSS5YHCc8k4GfGJxAyYjgMdg+1b77
+wy/nZhRChJQF5E2h+A9Lz5SqGvRY5bZ9kR5Tn2u7JiMd05cmaDDhnLXgN79SmaBc
+2uXPfXd9Ssiy6XfSS0XSTCj/97weGJhkdD7P2j0dEKOJodhbSZJ/88He3OB0vqbL
+uZukjhVohy9xq1+9lHxRnmGqlzuIynOkAAbT9gy9WcHtLL+SdXDLyujtiKt+2rHm
+Xdll2NlzTvnn1Q879x0r66aj/LtB+r/pIlfLyqIm4fcs7atJGWuLgGIc50kkn1oW
+Eq7WOc3N3BagGJrvJQX33CpE1VruNelrevF26g1Zw1iEwPHh6jwgFuiQ7yUcGNvA
+7HkGCY5VUv7VstkR8sil76eC7ezgn8gTlrhoUXD05F3uiVEiGu44LID74s0YfV7K
+pMJoiz25fPpU6hQ1yo28SvEb6StBsWn1rfj4UkVhidVtYM1hzrWMKNzpJpWy+b+H
+TP1l67LSdtaVbFuFSTrx
+=HS2T
+-----END PGP SIGNATURE-----
+
+--f+W+jCU1fRNres8c--

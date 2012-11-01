@@ -1,79 +1,83 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 12 Nov 2012 11:46:46 +0000
-Subject: Re: [PATCH v7 5/8] fbmon: add videomode helpers
-Message-Id: <5107065.d4AsRkFIOU@avalon>
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Thu, 01 Nov 2012 20:08:42 +0000
+Subject: Re: [PATCH v7 1/8] video: add display_timing struct and helpers
+Message-Id: <20121101200842.GA13137@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="ReaqsoxgOBHFXBhH"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de> <A73F36158E33644199EB82C5EC81C7BC3E9E614A@DBDE01.ent.ti.com> <20121109193133.GD3660@pengutronix.de>
-In-Reply-To: <20121109193133.GD3660@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Cc: "Manjunathappa, Prakash" <prakash.pm@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
+References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
+ <1351675689-26814-2-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1351675689-26814-2-git-send-email-s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+To: Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-Hi Steffen,
 
-On Friday 09 November 2012 20:31:33 Steffen Trumtrar wrote:
-> On Fri, Nov 09, 2012 at 04:54:16PM +0000, Manjunathappa, Prakash wrote:
-> > On Fri, Nov 09, 2012 at 02:55:45, Steffen Trumtrar wrote:
-> > > On Wed, Oct 31, 2012 at 03:30:03PM +0000, Manjunathappa, Prakash wrote:
-> > > > On Wed, Oct 31, 2012 at 14:58:05, Steffen Trumtrar wrote:
-> > > > > +#if IS_ENABLED(CONFIG_VIDEOMODE)
-> > > > > +int videomode_to_fb_videomode(struct videomode *vm, struct
-> > > > > fb_videomode *fbmode) +{
-> > > > > +	fbmode->xres = vm->hactive;
-> > > > > +	fbmode->left_margin = vm->hback_porch;
-> > > > > +	fbmode->right_margin = vm->hfront_porch;
-> > > > > +	fbmode->hsync_len = vm->hsync_len;
-> > > > > +
-> > > > > +	fbmode->yres = vm->vactive;
-> > > > > +	fbmode->upper_margin = vm->vback_porch;
-> > > > > +	fbmode->lower_margin = vm->vfront_porch;
-> > > > > +	fbmode->vsync_len = vm->vsync_len;
-> > > > > +
-> > > > > +	fbmode->pixclock = KHZ2PICOS(vm->pixelclock / 1000);
-> > > > > +
-> > > > > +	fbmode->sync = 0;
-> > > > > +	fbmode->vmode = 0;
-> > > > > +	if (vm->hah)
-> > > > > +		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
-> > > > > +	if (vm->vah)
-> > > > > +		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
-> > > > > +	if (vm->interlaced)
-> > > > > +		fbmode->vmode |= FB_VMODE_INTERLACED;
-> > > > > +	if (vm->doublescan)
-> > > > > +		fbmode->vmode |= FB_VMODE_DOUBLE;
-> > > > > +
-> > > > 
-> > > > "pixelclk-inverted" property of the panel is not percolated
-> > > > fb_videomode.
-> > > > Please let me know if I am missing something.
-> > > 
-> > > The next version is almost finished. Only thing I'm missing is this.
-> > > And I actually do not know which flag would represent an inverted
-> > > pixelclock in fb_videomode. Does anybody have any idea what I have to
-> > > do here?> > 
-> > > 	if (vm->pixelclk_pol)
-> > > 	
-> > > 		fbmode->sync = ???
-> > > 
-> > > That's as far as I have come and I don't see a flag that seems right.
-> > > Is this even a valid property of fb_videomode?
-> > 
-> > Thanks for considering it, I see IMX addresses it as proprietary FB_SYNC_
-> > flag. FB_SYNC_CLK_INVERT: arch/arm/plat-mxc/include/mach/mx3fb.h
-> 
-> No problem. So, it seems this flag has to be set in some imx-specific
-> videomode_to_fb_videomode function. It is included in the
-> struct videomode, so that should be no problem. But it will not be
-> part of this series.
+--ReaqsoxgOBHFXBhH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-A possible solution would be to standardize the FB_SYNC_CLK_INVERT flag in 
-fbdev, but that's in my opinion out of scope of this patch series. iMX3 
-developers, feel free to send patches :-)
+On Wed, Oct 31, 2012 at 10:28:01AM +0100, Steffen Trumtrar wrote:
+[...]
+> +void timings_release(struct display_timings *disp)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < disp->num_timings; i++)
+> +		kfree(disp->timings[i]);
+> +}
+> +
+> +void display_timings_release(struct display_timings *disp)
+> +{
+> +	timings_release(disp);
+> +	kfree(disp->timings);
+> +}
 
--- 
-Regards,
+I'm not quite sure I understand how these are supposed to be used. The
+only use-case where a struct display_timings is dynamically allocated is
+for the OF helpers. In that case, wouldn't it be more useful to have a
+function that frees the complete structure, including the struct
+display_timings itself? Something like this, which has all of the above
+rolled into one:
 
-Laurent Pinchart
+	void display_timings_free(struct display_timings *disp)
+	{
+		if (disp->timings) {
+			unsigned int i;
 
+			for (i = 0; i < disp->num_timings; i++)
+				kfree(disp->timings[i]);
+		}
+
+		kfree(disp->timings);
+		kfree(disp);
+	}
+
+Is there a use-case where a struct display_timings is not dynamically
+allocated? The only one I can think of is where it is defined as
+platform data, but in that case you don't want to be calling
+display_timing_release() on it anyway.
+
+Thierry
+
+--ReaqsoxgOBHFXBhH
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQktbKAAoJEN0jrNd/PrOhRqIQAJto5l4A26U8q1YNvZK1MaEv
+EuDvLFbR9zeRbL8/R+N1H0UXI2H8jpmrE2s3GddV41Xe124lJ7ps4gvjolFUiDFq
+OAxu6mVnnM4epoSzk2CgfwzNW3M+5e9Gi9g9/vGtlSoFf4UjhnP1TagSO0JXCoSS
+/tQB186aI9LU6KJGt4N7IlxDwllQm3w/SfH0PTK6QF5aCf8yRexkxuFcZZKvgw/R
+DZzSMJlUdDyI806P+V32JIcvRFGD1HYa4M7JXlY7U+jZ4wZ0MaJJNUnc/vK75rtP
+X6+RW7Kwe3bhbDUiHmWCfdO6LvpYuT7/ZRFY5NwtWmJUCrxlvd40xjBzVq2LmGQB
+cpVvY9fi8vBOp+/6RsLcmRfKmr1PO+czM+DDlS4MyiEX/D7psQQcNAOYkZz66LMg
+8teolpkyWmv/aAmx1HK+nW8siBDTNQk8I0t0DGl3PBobSkA/fBYnj8A1cTueqNvu
+aqeceAMJ2zdtv58agTT12zXV9oZf8tocZvtKRrG4/V+wgqWOZg3qLRX8xChRlF3T
+jG1LZOwgQufzQxAqqN+CKL+dBklK3WZ2q19CZhRdBePuY0eGvQ6kIVtpKINkRFgj
+W3+8I3/AOr1EOa+wLoqMlzY8qWNEy85hr9hdgS7rLqvkGomTAurpKlWth0dGsLEU
+EewZs/bEukAfWXwzHOxQ
+=T5rS
+-----END PGP SIGNATURE-----
+
+--ReaqsoxgOBHFXBhH--

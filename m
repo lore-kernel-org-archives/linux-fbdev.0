@@ -1,12 +1,16 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 01 Nov 2012 10:29:07 +0000
+Date: Thu, 01 Nov 2012 10:32:29 +0000
 Subject: [PATCH v3 8/8] video: exynos_dp: Enable hotplug interrupts
-Message-Id: <012601cdb81b$b9906c10$2cb14430$%han@samsung.com>
+Message-Id: <012801cdb81c$3163c6b0$942b5410$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <012601cdb81b$b9906c10$2cb14430$%han@samsung.com>
+In-Reply-To: <012601cdb81b$b9906c10$2cb14430$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+
+From: Sean Paul <seanpaul@chromium.org>
 
 Enable hotplug interrupts and move the hotplug scheduling into the
 interrupt handler. This allows us to introduce a screen at any time
@@ -17,6 +21,8 @@ Signed-off-by: Sean Paul <seanpaul@chromium.org>
 Reviewed-by: Olof Johansson <olofj@chromium.org>
 Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
+Added 'From: Sean Paul <seanpaul@chromium.org>'
+
  drivers/video/exynos/exynos_dp_core.c |   38 ++++++++++++++++++++++++++-------
  drivers/video/exynos/exynos_dp_core.h |    9 +++++++
  drivers/video/exynos/exynos_dp_reg.c  |   38 +++++++++++++++++++++++++++-----

@@ -1,12 +1,16 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 01 Nov 2012 10:23:34 +0000
+Date: Thu, 01 Nov 2012 10:26:46 +0000
 Subject: [PATCH v3 6/8] video: exynos_dp: Remove sink control to D0
-Message-Id: <012201cdb81a$f3117340$d93459c0$%han@samsung.com>
+Message-Id: <012401cdb81b$65127a70$2f376f50$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <012201cdb81a$f3117340$d93459c0$%han@samsung.com>
+In-Reply-To: <012201cdb81a$f3117340$d93459c0$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+
+From: Sean Paul <seanpaul@chromium.org>
 
 According to DP spec, it is not required in the Link Training
 procedure.
@@ -15,6 +19,8 @@ procedure.
 Signed-off-by: Sean Paul <seanpaul@chromium.org>
 Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
+Add 'From: Sean Paul <seanpaul@chromium.org>'
+
  drivers/video/exynos/exynos_dp_core.c |    6 ------
  1 files changed, 0 insertions(+), 6 deletions(-)
 

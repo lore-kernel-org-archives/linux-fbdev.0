@@ -1,57 +1,39 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 07 Nov 2012 06:27:02 +0000
-Subject: [PATCH 1/3] OMAPDSS: DISPC: Fix calc_scaling_44xx() bugs for writeback pipeline
-Message-Id: <1352268905-31093-2-git-send-email-archit@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 01 Nov 2012 10:22:54 +0000
+Subject: [PATCH v3 5/8] video: exynos_dp: Fix bug when checking dp->irq
+Message-Id: <012101cdb81a$dac22730$90467590$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352268905-31093-1-git-send-email-archit@ti.com>
-In-Reply-To: <1352268905-31093-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-dispc_ovl_calc_scaling_44xx() doesn't work correctly for writeback. There are
-two issues with it:
+From: Sean Paul <seanpaul@chromium.org>
 
-- the function tries to calculate pixel clock for the input plane using
-  dispc_plane_pclk_rate(), calling this with writeback as input plane results in
-  a BUG(), this function shouldn't be called for writeback at all. Fix this by
-  calculating pixel clock only when we are not in mem to mem mode.
+Fix a bug where we check !dp->irq instead of the correct check for
+-ENXIO.
 
-- the maximum input_width is the product of the downscale ratio supported and
-  the and the given output_width. This was calculated incorrectly by dividing
-  output_width with maxdownscale. Fix this.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
+Reviewed-by: Olof Johansson <olofj@chromium.org>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/omap2/dss/dispc.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ drivers/video/exynos/exynos_dp_core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 05def42..f19cd37 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -2264,14 +2264,16 @@ static int dispc_ovl_calc_scaling_44xx(enum omap_plane plane,
- 	u16 in_height = DIV_ROUND_UP(height, *decim_y);
- 	const int maxsinglelinewidth  				dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
--	unsigned long pclk = dispc_plane_pclk_rate(plane);
- 	const int maxdownscale = dss_feat_get_param_max(FEAT_PARAM_DOWNSCALE);
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index ee957e0..8ab95c3 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -920,7 +920,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 	}
  
--	if (mem_to_mem)
--		in_width_max = DIV_ROUND_UP(out_width, maxdownscale);
--	else
-+	if (mem_to_mem) {
-+		in_width_max = out_width * maxdownscale;
-+	} else {
-+		unsigned long pclk = dispc_plane_pclk_rate(plane);
-+
- 		in_width_max = dispc_core_clk_rate() /
- 					DIV_ROUND_UP(pclk, out_width);
-+	}
- 
- 	*decim_x = DIV_ROUND_UP(width, in_width_max);
- 
+ 	dp->irq = platform_get_irq(pdev, 0);
+-	if (!dp->irq) {
++	if (dp->irq = -ENXIO) {
+ 		dev_err(&pdev->dev, "failed to get irq\n");
+ 		return -ENODEV;
+ 	}
 -- 
-1.7.9.5
+1.7.1
+
 

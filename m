@@ -1,98 +1,123 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 27 Nov 2012 11:54:21 +0000
-Subject: Re: [PATCH 1/5] backlight: Add GPIO-based backlight driver
-Message-Id: <2946045.hrxh3VjFfi@avalon>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 01 Nov 2012 10:21:56 +0000
+Subject: [PATCH v3 4/8] video: exynos_dp: Improve EDID error handling
+Message-Id: <012001cdb81a$b87fb4d0$297f1e70$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <33110366.44811353978636788.JavaMail.weblogic@epv6ml07>
-In-Reply-To: <33110366.44811353978636788.JavaMail.weblogic@epv6ml07>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: jg1.han@samsung.com
-Cc: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>, Magnus Damm <magnus.damm@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+To: linux-fbdev@vger.kernel.org
 
-Hi Jingoo,
+EDID error handling has 2 problems:
+ - It doesn't fail as early as it can
+ - The retry counts for i2c and aux transactions are huge
 
-On Tuesday 27 November 2012 01:10:36 Jingoo Han wrote:
-> On Saturday, November 24, 2012 1:35 AM, Laurent Pinchart wrote
-> 
-> > 
-> > Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> > ---
-> > 
-> >  drivers/video/backlight/Kconfig          |    7 ++
-> >  drivers/video/backlight/Makefile         |    1 +
-> >  drivers/video/backlight/gpio_backlight.c |  158 +++++++++++++++++++++++++
-> >  include/video/gpio_backlight.h           |   21 ++++
-> >  4 files changed, 187 insertions(+), 0 deletions(-)
-> >  create mode 100644 drivers/video/backlight/gpio_backlight.c
-> >  create mode 100644 include/video/gpio_backlight.h
-> 
-> 
-> [...]
-> 
-> 
-> > +static int __devinit gpio_backlight_probe(struct platform_device *pdev)
-> > +{
-> > +	struct gpio_backlight_platform_data *pdata = pdev->dev.platform_data;
-> > +	struct backlight_properties props;
-> > +	struct backlight_device *bl;
-> > +	struct gpio_backlight *gbl;
-> > +	int ret;
-> > +
-> > +	gbl = devm_kzalloc(&pdev->dev, sizeof(*gbl), GFP_KERNEL);
-> > +	if (gbl = NULL)
-> > +		return -ENOMEM;
-> > +
-> > +	gbl->dev = &pdev->dev;
-> > +
-> > +	if (!pdata) {
-> > +		dev_err(&pdev->dev, "failed to find platform data\n");
-> > +		return -ENODEV;
-> > +	}
-> > +
-> > +	gbl->fbdev = pdata->fbdev;
-> > +	gbl->gpio = pdata->gpio;
-> > +	gbl->active = pdata->active_low ? 0 : 1;
-> > +
-> > +	ret = devm_gpio_request_one(gbl->dev, gbl->gpio, GPIOF_DIR_OUT,
-> > +				    pdata->name);
-> 
-> 
-> Please use GPIOF_INIT flags if you want to turn off GPIO backlight.
-> If gbl->active is inverted, GPIOF_INIT_HIGH can be used as below:
-> 
-> 	ret = devm_gpio_request_one(gbl->dev, gbl->gpio,
-> 				    GPIOF_DIR_OUT | (gbl->active ?
-> 				    GPIOF_INIT_LOW : GPIOF_INIT_HIGH),
-> 				    pdata->name);
+This patch fails if the initial i2c transaction fails, and reduces the
+aux and i2c retry counts down to 3.
 
-Good point, thank you. I'll fix that.
+[jg1.han@samsung.com: reduced the retry count of exynos_dp_read_byte_from_dpcd()]
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/exynos/exynos_dp_core.c |   13 ++++++++-----
+ drivers/video/exynos/exynos_dp_reg.c  |   11 +++++------
+ 2 files changed, 13 insertions(+), 11 deletions(-)
 
-> > +	if (ret < 0) {
-> > +		dev_err(&pdev->dev, "unable to request GPIO\n");
-> > +		return ret;
-> > +	}
-> > +
-> > +	memset(&props, 0, sizeof(props));
-> > +	props.type = BACKLIGHT_RAW;
-> > +	props.max_brightness = 1;
-> > +	bl = backlight_device_register(dev_name(&pdev->dev), &pdev->dev, gbl,
-> > +				       &gpio_backlight_ops, &props);
-> > +	if (IS_ERR(bl)) {
-> > +		dev_err(&pdev->dev, "failed to register backlight\n");
-> > +		return PTR_ERR(bl);
-> > +	}
-> > +
-> > +	bl->props.brightness = pdata->def_value;
-> > +	backlight_update_status(bl);
-> > +
-> > +	platform_set_drvdata(pdev, bl);
-> > +	return 0;
-> > +}
-
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index 878b4b6..ee957e0 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -90,9 +90,11 @@ static int exynos_dp_read_edid(struct exynos_dp_device *dp)
+ 	 */
+ 
+ 	/* Read Extension Flag, Number of 128-byte EDID extension blocks */
+-	exynos_dp_read_byte_from_i2c(dp, I2C_EDID_DEVICE_ADDR,
++	retval = exynos_dp_read_byte_from_i2c(dp, I2C_EDID_DEVICE_ADDR,
+ 				EDID_EXTENSION_FLAG,
+ 				&extend_block);
++	if (retval)
++		return retval;
+ 
+ 	if (extend_block > 0) {
+ 		dev_dbg(dp->dev, "EDID data includes a single extension!\n");
+@@ -181,14 +183,15 @@ static int exynos_dp_handle_edid(struct exynos_dp_device *dp)
+ 	int retval;
+ 
+ 	/* Read DPCD DPCD_ADDR_DPCD_REV~RECEIVE_PORT1_CAP_1 */
+-	exynos_dp_read_bytes_from_dpcd(dp,
+-		DPCD_ADDR_DPCD_REV,
+-		12, buf);
++	retval = exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_DPCD_REV,
++				12, buf);
++	if (retval)
++		return retval;
+ 
+ 	/* Read EDID */
+ 	for (i = 0; i < 3; i++) {
+ 		retval = exynos_dp_read_edid(dp);
+-		if (retval = 0)
++		if (!retval)
+ 			break;
+ 	}
+ 
+diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
+index 3f5ca8a..dc09278 100644
+--- a/drivers/video/exynos/exynos_dp_reg.c
++++ b/drivers/video/exynos/exynos_dp_reg.c
+@@ -491,7 +491,7 @@ int exynos_dp_read_byte_from_dpcd(struct exynos_dp_device *dp,
+ 	int i;
+ 	int retval;
+ 
+-	for (i = 0; i < 10; i++) {
++	for (i = 0; i < 3; i++) {
+ 		/* Clear AUX CH data buffer */
+ 		reg = BUF_CLR;
+ 		writel(reg, dp->reg_base + EXYNOS_DP_BUFFER_DATA_CTL);
+@@ -552,7 +552,7 @@ int exynos_dp_write_bytes_to_dpcd(struct exynos_dp_device *dp,
+ 		else
+ 			cur_data_count = count - start_offset;
+ 
+-		for (i = 0; i < 10; i++) {
++		for (i = 0; i < 3; i++) {
+ 			/* Select DPCD device address */
+ 			reg = AUX_ADDR_7_0(reg_addr + start_offset);
+ 			writel(reg, dp->reg_base + EXYNOS_DP_AUX_ADDR_7_0);
+@@ -617,7 +617,7 @@ int exynos_dp_read_bytes_from_dpcd(struct exynos_dp_device *dp,
+ 			cur_data_count = count - start_offset;
+ 
+ 		/* AUX CH Request Transaction process */
+-		for (i = 0; i < 10; i++) {
++		for (i = 0; i < 3; i++) {
+ 			/* Select DPCD device address */
+ 			reg = AUX_ADDR_7_0(reg_addr + start_offset);
+ 			writel(reg, dp->reg_base + EXYNOS_DP_AUX_ADDR_7_0);
+@@ -700,7 +700,7 @@ int exynos_dp_read_byte_from_i2c(struct exynos_dp_device *dp,
+ 	int i;
+ 	int retval;
+ 
+-	for (i = 0; i < 10; i++) {
++	for (i = 0; i < 3; i++) {
+ 		/* Clear AUX CH data buffer */
+ 		reg = BUF_CLR;
+ 		writel(reg, dp->reg_base + EXYNOS_DP_BUFFER_DATA_CTL);
+@@ -708,7 +708,6 @@ int exynos_dp_read_byte_from_i2c(struct exynos_dp_device *dp,
+ 		/* Select EDID device */
+ 		retval = exynos_dp_select_i2c_device(dp, device_addr, reg_addr);
+ 		if (retval != 0) {
+-			dev_err(dp->dev, "Select EDID device fail!\n");
+ 			continue;
+ 		}
+ 
+@@ -750,7 +749,7 @@ int exynos_dp_read_bytes_from_i2c(struct exynos_dp_device *dp,
+ 	int retval = 0;
+ 
+ 	for (i = 0; i < count; i += 16) {
+-		for (j = 0; j < 100; j++) {
++		for (j = 0; j < 3; j++) {
+ 			/* Clear AUX CH data buffer */
+ 			reg = BUF_CLR;
+ 			writel(reg, dp->reg_base + EXYNOS_DP_BUFFER_DATA_CTL);
 -- 
-Regards,
+1.7.1
 
-Laurent Pinchart
 

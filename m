@@ -1,12 +1,16 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 01 Nov 2012 10:24:13 +0000
+Date: Thu, 01 Nov 2012 10:28:50 +0000
 Subject: [PATCH v3 7/8] video: exynos_dp: Move hotplug into a workqueue
-Message-Id: <012301cdb81b$09cf70f0$1d6e52d0$%han@samsung.com>
+Message-Id: <012501cdb81b$af336060$0d9a2120$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <012301cdb81b$09cf70f0$1d6e52d0$%han@samsung.com>
+In-Reply-To: <012301cdb81b$09cf70f0$1d6e52d0$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+
+From: Sean Paul <seanpaul@chromium.org>
 
 Move the hotplug related code from probe and resume into a workqueue.
 This allows us to initialize the DP driver (and resume it) when there
@@ -16,6 +20,8 @@ Signed-off-by: Sean Paul <seanpaul@chromium.org>
 Reviewed-by: Olof Johansson <olofj@chromium.org>
 Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
+Add 'From: Sean Paul <seanpaul@chromium.org>'
+
  drivers/video/exynos/exynos_dp_core.c |   93 +++++++++++++++++---------------
  drivers/video/exynos/exynos_dp_core.h |    1 +
  2 files changed, 50 insertions(+), 44 deletions(-)

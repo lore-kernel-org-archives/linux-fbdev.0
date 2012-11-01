@@ -1,12 +1,16 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 01 Nov 2012 10:21:56 +0000
+Date: Thu, 01 Nov 2012 10:30:54 +0000
 Subject: [PATCH v3 4/8] video: exynos_dp: Improve EDID error handling
-Message-Id: <012001cdb81a$b87fb4d0$297f1e70$%han@samsung.com>
+Message-Id: <012701cdb81b$f919fc70$eb4df550$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <012001cdb81a$b87fb4d0$297f1e70$%han@samsung.com>
+In-Reply-To: <012001cdb81a$b87fb4d0$297f1e70$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+
+From: Sean Paul <seanpaul@chromium.org>
 
 EDID error handling has 2 problems:
  - It doesn't fail as early as it can
@@ -19,6 +23,8 @@ aux and i2c retry counts down to 3.
 Signed-off-by: Sean Paul <seanpaul@chromium.org>
 Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
+Added 'From: Sean Paul <seanpaul@chromium.org>'
+
  drivers/video/exynos/exynos_dp_core.c |   13 ++++++++-----
  drivers/video/exynos/exynos_dp_reg.c  |   11 +++++------
  2 files changed, 13 insertions(+), 11 deletions(-)

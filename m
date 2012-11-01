@@ -1,261 +1,254 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 15 Nov 2012 15:58:29 +0000
-Subject: [PATCH 21/32] OMAPDSS: manage framedone irq with mgr ops
-Message-Id: <1352995120-3288-22-git-send-email-tomi.valkeinen@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 01 Nov 2012 10:18:49 +0000
+Subject: [PATCH v3 1/8] video: exynos_dp: Check DPCD return codes
+Message-Id: <011d01cdb81a$4914c1d0$db3e4570$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Some of the output drivers need to handle FRAMEDONE interrupt from
-DISPC. This creates a direct dependency to dispc code, and we need to
-avoid this to make the compat code to work.
+From: Sean Paul <seanpaul@chromium.org>
 
-Instead of the output drivers registering for dispc interrupts, we
-create new mgr-ops that are used to register a framedone handler. The
-code implementing the mgr-ops is responsible for calling the handler
-when DISPC FRAMEDONE interrupt happens. The compat layer is improved
-accordingly to do the call to the framedone handler.
+Add return code checks to the DPCD transactions in the SW link training
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/omap2/dss/apply.c  |   46 ++++++++++++++++++++++++++++++++++++++
- drivers/video/omap2/dss/dsi.c    |   26 ++++++++-------------
- drivers/video/omap2/dss/dss.h    |    8 +++++++
- drivers/video/omap2/dss/output.c |   12 ++++++++++
- drivers/video/omap2/dss/rfbi.c   |   12 +++++-----
- 5 files changed, 82 insertions(+), 22 deletions(-)
+ drivers/video/exynos/exynos_dp_core.c |   86 +++++++++++++++++++++-----------
+ 1 files changed, 56 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index ca85eaf..f10e0b4 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -105,6 +105,9 @@ struct mgr_priv_data {
- 
- 	struct omap_video_timings timings;
- 	struct dss_lcd_mgr_config lcd_config;
-+
-+	void (*framedone_handler)(void *);
-+	void *framedone_handler_data;
- };
- 
- static struct {
-@@ -888,6 +891,21 @@ static void dss_apply_irq_handler(void *data, u32 mask)
- 	if (!extra_updating)
- 		complete_all(&extra_updated_completion);
- 
-+	/* call framedone handlers for manual update displays */
-+	for (i = 0; i < num_mgrs; i++) {
-+		struct omap_overlay_manager *mgr;
-+		struct mgr_priv_data *mp;
-+
-+		mgr = omap_dss_get_overlay_manager(i);
-+		mp = get_mgr_priv(mgr);
-+
-+		if (!mgr_manual_update(mgr) || !mp->framedone_handler)
-+			continue;
-+
-+		if (mask & dispc_mgr_get_framedone_irq(i))
-+			mp->framedone_handler(mp->framedone_handler_data);
-+	}
-+
- 	if (!need_isr())
- 		dss_unregister_vsync_isr();
- 
-@@ -1501,12 +1519,40 @@ err:
- 	return r;
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index d55470e..44820f2 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -261,11 +261,10 @@ static void exynos_dp_set_lane_lane_pre_emphasis(struct exynos_dp_device *dp,
+ 	}
  }
  
-+static int dss_mgr_register_framedone_handler_compat(struct omap_overlay_manager *mgr,
-+		void (*handler)(void *), void *data)
-+{
-+	struct mgr_priv_data *mp = get_mgr_priv(mgr);
-+
-+	if (mp->framedone_handler)
-+		return -EBUSY;
-+
-+	mp->framedone_handler = handler;
-+	mp->framedone_handler_data = data;
-+
-+	return 0;
-+}
-+
-+static void dss_mgr_unregister_framedone_handler_compat(struct omap_overlay_manager *mgr,
-+		void (*handler)(void *), void *data)
-+{
-+	struct mgr_priv_data *mp = get_mgr_priv(mgr);
-+
-+	WARN_ON(mp->framedone_handler != handler ||
-+			mp->framedone_handler_data != data);
-+
-+	mp->framedone_handler = NULL;
-+	mp->framedone_handler_data = NULL;
-+}
-+
- static const struct dss_mgr_ops apply_mgr_ops = {
- 	.start_update = dss_mgr_start_update_compat,
- 	.enable = dss_mgr_enable_compat,
- 	.disable = dss_mgr_disable_compat,
- 	.set_timings = dss_mgr_set_timings_compat,
- 	.set_lcd_config = dss_mgr_set_lcd_config_compat,
-+	.register_framedone_handler = dss_mgr_register_framedone_handler_compat,
-+	.unregister_framedone_handler = dss_mgr_unregister_framedone_handler_compat,
- };
- 
- static int compat_refcnt;
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index cf32dc7..6f9b62e 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -4535,7 +4535,7 @@ static void dsi_framedone_timeout_work_callback(struct work_struct *work)
- 	dsi_handle_framedone(dsi->pdev, -ETIMEDOUT);
- }
- 
--static void dsi_framedone_irq_callback(void *data, u32 mask)
-+static void dsi_framedone_irq_callback(void *data)
+-static void exynos_dp_link_start(struct exynos_dp_device *dp)
++static int exynos_dp_link_start(struct exynos_dp_device *dp)
  {
- 	struct platform_device *dsidev = (struct platform_device *) data;
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
-@@ -4609,7 +4609,6 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 	struct omap_overlay_manager *mgr = dssdev->output->manager;
- 	int r;
--	u32 irq = 0;
+ 	u8 buf[4];
+-	int lane;
+-	int lane_count;
++	int lane, lane_count, retval;
  
- 	if (dsi->mode = OMAP_DSS_DSI_CMD_MODE) {
- 		dsi->timings.hsw = 1;
-@@ -4619,12 +4618,10 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
- 		dsi->timings.vfp = 0;
- 		dsi->timings.vbp = 0;
+ 	lane_count = dp->link_train.lane_count;
  
--		irq = dispc_mgr_get_framedone_irq(mgr->id);
--
--		r = omap_dispc_register_isr(dsi_framedone_irq_callback,
--			(void *) dsidev, irq);
-+		r = dss_mgr_register_framedone_handler(mgr,
-+				dsi_framedone_irq_callback, dsidev);
- 		if (r) {
--			DSSERR("can't get FRAMEDONE irq\n");
-+			DSSERR("can't register FRAMEDONE handler\n");
- 			goto err;
+@@ -276,8 +275,10 @@ static void exynos_dp_link_start(struct exynos_dp_device *dp)
+ 		dp->link_train.cr_loop[lane] = 0;
+ 
+ 	/* Set sink to D0 (Sink Not Ready) mode. */
+-	exynos_dp_write_byte_to_dpcd(dp, DPCD_ADDR_SINK_POWER_STATE,
++	retval = exynos_dp_write_byte_to_dpcd(dp, DPCD_ADDR_SINK_POWER_STATE,
+ 				DPCD_SET_POWER_STATE_D0);
++	if (retval)
++		return retval;
+ 
+ 	/* Set link rate and count as you want to establish*/
+ 	exynos_dp_set_link_bandwidth(dp, dp->link_train.link_rate);
+@@ -286,8 +287,10 @@ static void exynos_dp_link_start(struct exynos_dp_device *dp)
+ 	/* Setup RX configuration */
+ 	buf[0] = dp->link_train.link_rate;
+ 	buf[1] = dp->link_train.lane_count;
+-	exynos_dp_write_bytes_to_dpcd(dp, DPCD_ADDR_LINK_BW_SET,
++	retval = exynos_dp_write_bytes_to_dpcd(dp, DPCD_ADDR_LINK_BW_SET,
+ 				2, buf);
++	if (retval)
++		return retval;
+ 
+ 	/* Set TX pre-emphasis to minimum */
+ 	for (lane = 0; lane < lane_count; lane++)
+@@ -306,9 +309,11 @@ static void exynos_dp_link_start(struct exynos_dp_device *dp)
+ 	for (lane = 0; lane < lane_count; lane++)
+ 		buf[lane] = DPCD_PRE_EMPHASIS_PATTERN2_LEVEL0 |
+ 			    DPCD_VOLTAGE_SWING_PATTERN1_LEVEL0;
+-	exynos_dp_write_bytes_to_dpcd(dp,
++	retval = exynos_dp_write_bytes_to_dpcd(dp,
+ 		DPCD_ADDR_TRAINING_LANE0_SET,
+ 		lane_count, buf);
++
++	return retval;
+ }
+ 
+ static unsigned char exynos_dp_get_lane_status(u8 link_status[2], int lane)
+@@ -430,8 +435,7 @@ static void exynos_dp_reduce_link_rate(struct exynos_dp_device *dp)
+ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ {
+ 	u8 link_status[2];
+-	int lane;
+-	int lane_count;
++	int lane, lane_count, retval;
+ 
+ 	u8 adjust_request[2];
+ 	u8 voltage_swing;
+@@ -442,17 +446,22 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 
+ 	lane_count = dp->link_train.lane_count;
+ 
+-	exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
++	retval =  exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
+ 				2, link_status);
++	if (retval)
++		return retval;
+ 
+ 	if (exynos_dp_clock_recovery_ok(link_status, lane_count) = 0) {
+ 		/* set training pattern 2 for EQ */
+ 		exynos_dp_set_training_pattern(dp, TRAINING_PTN2);
+ 
+ 		for (lane = 0; lane < lane_count; lane++) {
+-			exynos_dp_read_bytes_from_dpcd(dp,
++			retval = exynos_dp_read_bytes_from_dpcd(dp,
+ 					DPCD_ADDR_ADJUST_REQUEST_LANE0_1,
+ 					2, adjust_request);
++			if (retval)
++				return retval;
++
+ 			voltage_swing = exynos_dp_get_adjust_request_voltage(
+ 							adjust_request, lane);
+ 			pre_emphasis = exynos_dp_get_adjust_request_pre_emphasis(
+@@ -472,15 +481,19 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 				lane);
  		}
  
-@@ -4662,8 +4659,8 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
- 	return 0;
- err1:
- 	if (dsi->mode = OMAP_DSS_DSI_CMD_MODE)
--		omap_dispc_unregister_isr(dsi_framedone_irq_callback,
--			(void *) dsidev, irq);
-+		dss_mgr_unregister_framedone_handler(mgr,
-+				dsi_framedone_irq_callback, dsidev);
- err:
- 	return r;
- }
-@@ -4674,14 +4671,9 @@ static void dsi_display_uninit_dispc(struct omap_dss_device *dssdev)
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 	struct omap_overlay_manager *mgr = dssdev->output->manager;
+-		exynos_dp_write_byte_to_dpcd(dp,
++		retval = exynos_dp_write_byte_to_dpcd(dp,
+ 			DPCD_ADDR_TRAINING_PATTERN_SET,
+ 			DPCD_SCRAMBLING_DISABLED |
+ 			DPCD_TRAINING_PATTERN_2);
++		if (retval)
++			return retval;
  
--	if (dsi->mode = OMAP_DSS_DSI_CMD_MODE) {
--		u32 irq;
--
--		irq = dispc_mgr_get_framedone_irq(mgr->id);
--
--		omap_dispc_unregister_isr(dsi_framedone_irq_callback,
--			(void *) dsidev, irq);
--	}
-+	if (dsi->mode = OMAP_DSS_DSI_CMD_MODE)
-+		dss_mgr_unregister_framedone_handler(mgr,
-+				dsi_framedone_irq_callback, dsidev);
- }
+-		exynos_dp_write_bytes_to_dpcd(dp,
++		retval = exynos_dp_write_bytes_to_dpcd(dp,
+ 			DPCD_ADDR_TRAINING_LANE0_SET,
+ 			lane_count,
+ 			dp->link_train.training_lane);
++		if (retval)
++			return retval;
  
- static int dsi_configure_dsi_clocks(struct omap_dss_device *dssdev)
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index dbe54c0..8ec411d 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -186,6 +186,10 @@ void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
- 		const struct omap_video_timings *timings);
- void dss_mgr_set_lcd_config(struct omap_overlay_manager *mgr,
- 		const struct dss_lcd_mgr_config *config);
-+int dss_mgr_register_framedone_handler(struct omap_overlay_manager *mgr,
-+		void (*handler)(void *), void *data);
-+void dss_mgr_unregister_framedone_handler(struct omap_overlay_manager *mgr,
-+		void (*handler)(void *), void *data);
- 
- /* output */
- void dss_register_output(struct omap_dss_output *out);
-@@ -531,6 +535,10 @@ struct dss_mgr_ops {
- 			const struct omap_video_timings *timings);
- 	void (*set_lcd_config)(struct omap_overlay_manager *mgr,
- 			const struct dss_lcd_mgr_config *config);
-+	int (*register_framedone_handler)(struct omap_overlay_manager *mgr,
-+			void (*handler)(void *), void *data);
-+	void (*unregister_framedone_handler)(struct omap_overlay_manager *mgr,
-+			void (*handler)(void *), void *data);
- };
- 
- int dss_install_mgr_ops(const struct dss_mgr_ops *mgr_ops);
-diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
-index c8972bf..accb865 100644
---- a/drivers/video/omap2/dss/output.c
-+++ b/drivers/video/omap2/dss/output.c
-@@ -190,3 +190,15 @@ void dss_mgr_start_update(struct omap_overlay_manager *mgr)
- {
- 	dss_mgr_ops->start_update(mgr);
- }
+ 		dev_info(dp->dev, "Link Training Clock Recovery success\n");
+ 		dp->link_train.lt_state = EQUALIZER_TRAINING;
+@@ -488,9 +501,12 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 		for (lane = 0; lane < lane_count; lane++) {
+ 			training_lane = exynos_dp_get_lane_link_training(
+ 							dp, lane);
+-			exynos_dp_read_bytes_from_dpcd(dp,
++			retval = exynos_dp_read_bytes_from_dpcd(dp,
+ 					DPCD_ADDR_ADJUST_REQUEST_LANE0_1,
+ 					2, adjust_request);
++			if (retval)
++				return retval;
 +
-+int dss_mgr_register_framedone_handler(struct omap_overlay_manager *mgr,
-+		void (*handler)(void *), void *data)
-+{
-+	return dss_mgr_ops->register_framedone_handler(mgr, handler, data);
-+}
-+
-+void dss_mgr_unregister_framedone_handler(struct omap_overlay_manager *mgr,
-+		void (*handler)(void *), void *data)
-+{
-+	dss_mgr_ops->unregister_framedone_handler(mgr, handler, data);
-+}
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index 7bfeb13..328170f 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -342,7 +342,7 @@ static int rfbi_transfer_area(struct omap_dss_device *dssdev,
- 	return 0;
- }
+ 			voltage_swing = exynos_dp_get_adjust_request_voltage(
+ 							adjust_request, lane);
+ 			pre_emphasis = exynos_dp_get_adjust_request_pre_emphasis(
+@@ -527,13 +543,14 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 				dp->link_train.training_lane[lane], lane);
+ 		}
  
--static void framedone_callback(void *data, u32 mask)
-+static void framedone_callback(void *data)
- {
- 	void (*callback)(void *data);
- 
-@@ -908,8 +908,8 @@ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
- 		goto err0;
+-		exynos_dp_write_bytes_to_dpcd(dp,
+-			DPCD_ADDR_TRAINING_LANE0_SET,
+-			lane_count,
+-			dp->link_train.training_lane);
++		retval = exynos_dp_write_bytes_to_dpcd(dp,
++				DPCD_ADDR_TRAINING_LANE0_SET, lane_count,
++				dp->link_train.training_lane);
++		if (retval)
++			return retval;
  	}
  
--	r = omap_dispc_register_isr(framedone_callback, NULL,
--			DISPC_IRQ_FRAMEDONE);
-+	r = dss_mgr_register_framedone_handler(out->manager,
-+			framedone_callback, NULL);
- 	if (r) {
- 		DSSERR("can't get FRAMEDONE irq\n");
- 		goto err1;
-@@ -933,8 +933,10 @@ EXPORT_SYMBOL(omapdss_rfbi_display_enable);
+-	return 0;
++	return retval;
  
- void omapdss_rfbi_display_disable(struct omap_dss_device *dssdev)
+ reduce_link_rate:
+ 	exynos_dp_reduce_link_rate(dp);
+@@ -544,8 +561,7 @@ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
  {
--	omap_dispc_unregister_isr(framedone_callback, NULL,
--			DISPC_IRQ_FRAMEDONE);
-+	struct omap_dss_output *out = dssdev->output;
-+
-+	dss_mgr_unregister_framedone_handler(out->manager,
-+			framedone_callback, NULL);
- 	omap_dss_stop_device(dssdev);
+ 	u8 link_status[2];
+ 	u8 link_align[3];
+-	int lane;
+-	int lane_count;
++	int lane, lane_count, retval;
+ 	u32 reg;
  
- 	rfbi_runtime_put();
+ 	u8 adjust_request[2];
+@@ -557,8 +573,10 @@ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
+ 
+ 	lane_count = dp->link_train.lane_count;
+ 
+-	exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
++	retval = exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
+ 				2, link_status);
++	if (retval)
++		return retval;
+ 
+ 	if (exynos_dp_clock_recovery_ok(link_status, lane_count) = 0) {
+ 		link_align[0] = link_status[0];
+@@ -569,9 +587,12 @@ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
+ 			&link_align[2]);
+ 
+ 		for (lane = 0; lane < lane_count; lane++) {
+-			exynos_dp_read_bytes_from_dpcd(dp,
++			retval = exynos_dp_read_bytes_from_dpcd(dp,
+ 					DPCD_ADDR_ADJUST_REQUEST_LANE0_1,
+ 					2, adjust_request);
++			if (retval)
++				return retval;
++
+ 			voltage_swing = exynos_dp_get_adjust_request_voltage(
+ 							adjust_request, lane);
+ 			pre_emphasis = exynos_dp_get_adjust_request_pre_emphasis(
+@@ -620,10 +641,12 @@ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
+ 					dp->link_train.training_lane[lane],
+ 					lane);
+ 
+-			exynos_dp_write_bytes_to_dpcd(dp,
+-				DPCD_ADDR_TRAINING_LANE0_SET,
+-				lane_count,
+-				dp->link_train.training_lane);
++			retval = exynos_dp_write_bytes_to_dpcd(dp,
++					DPCD_ADDR_TRAINING_LANE0_SET,
++					lane_count,
++					dp->link_train.training_lane);
++			if (retval)
++				return retval;
+ 		}
+ 	} else {
+ 		goto reduce_link_rate;
+@@ -701,16 +724,17 @@ static void exynos_dp_init_training(struct exynos_dp_device *dp,
+ 
+ static int exynos_dp_sw_link_training(struct exynos_dp_device *dp)
+ {
+-	int retval = 0;
+-	int training_finished = 0;
++	int retval = 0, training_finished = 0;
+ 
+ 	dp->link_train.lt_state = START;
+ 
+ 	/* Process here */
+-	while (!training_finished) {
++	while (!retval && !training_finished) {
+ 		switch (dp->link_train.lt_state) {
+ 		case START:
+-			exynos_dp_link_start(dp);
++			retval = exynos_dp_link_start(dp);
++			if (retval)
++				dev_err(dp->dev, "LT link start failed!\n");
+ 			break;
+ 		case CLOCK_RECOVERY:
+ 			retval = exynos_dp_process_clock_recovery(dp);
+@@ -729,6 +753,8 @@ static int exynos_dp_sw_link_training(struct exynos_dp_device *dp)
+ 			return -EREMOTEIO;
+ 		}
+ 	}
++	if (retval)
++		dev_err(dp->dev, "eDP link training failed (%d)\n", retval);
+ 
+ 	return retval;
+ }
 -- 
-1.7.10.4
+1.7.1
+
 

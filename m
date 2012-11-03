@@ -1,47 +1,49 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 01 Nov 2012 10:26:46 +0000
-Subject: [PATCH v3 6/8] video: exynos_dp: Remove sink control to D0
-Message-Id: <012401cdb81b$65127a70$2f376f50$%han@samsung.com>
+From: Ajay Kumar <ajaykumar.rs@samsung.com>
+Date: Sat, 03 Nov 2012 06:47:01 +0000
+Subject: video: exynos_dp: Fix incorrect setting for INT_CTL
+Message-Id: <1351926402-25484-2-git-send-email-ajaykumar.rs@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <012201cdb81a$f3117340$d93459c0$%han@samsung.com>
-In-Reply-To: <012201cdb81a$f3117340$d93459c0$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-From: Sean Paul <seanpaul@chromium.org>
+INT_CTL register contains bits INT_POL0 and INT_POL1, and not INT_POL.
+This patch fixes the wrong register setting for INT_CTL.
 
-According to DP spec, it is not required in the Link Training
-procedure.
-
-[jg1.han@samsung.com: modified the commit message]
-Signed-off-by: Sean Paul <seanpaul@chromium.org>
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
 ---
-Add 'From: Sean Paul <seanpaul@chromium.org>'
+ drivers/video/exynos/exynos_dp_reg.c |    2 +-
+ drivers/video/exynos/exynos_dp_reg.h |    3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
- drivers/video/exynos/exynos_dp_core.c |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-index 8ab95c3..c2b6bf2 100644
---- a/drivers/video/exynos/exynos_dp_core.c
-+++ b/drivers/video/exynos/exynos_dp_core.c
-@@ -277,12 +277,6 @@ static int exynos_dp_link_start(struct exynos_dp_device *dp)
- 	for (lane = 0; lane < lane_count; lane++)
- 		dp->link_train.cr_loop[lane] = 0;
+diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
+index 3f5ca8a..d67f49b 100644
+--- a/drivers/video/exynos/exynos_dp_reg.c
++++ b/drivers/video/exynos/exynos_dp_reg.c
+@@ -88,7 +88,7 @@ void exynos_dp_init_analog_param(struct exynos_dp_device *dp)
+ void exynos_dp_init_interrupt(struct exynos_dp_device *dp)
+ {
+ 	/* Set interrupt pin assertion polarity as high */
+-	writel(INT_POL, dp->reg_base + EXYNOS_DP_INT_CTL);
++	writel(INT_POL0 | INT_POL1, dp->reg_base + EXYNOS_DP_INT_CTL);
  
--	/* Set sink to D0 (Sink Not Ready) mode. */
--	retval = exynos_dp_write_byte_to_dpcd(dp, DPCD_ADDR_SINK_POWER_STATE,
--			DPCD_SET_POWER_STATE_D0);
--	if (retval)
--		return retval;
--
- 	/* Set link rate and count as you want to establish*/
- 	exynos_dp_set_link_bandwidth(dp, dp->link_train.link_rate);
- 	exynos_dp_set_lane_count(dp, dp->link_train.lane_count);
+ 	/* Clear pending regisers */
+ 	writel(0xff, dp->reg_base + EXYNOS_DP_COMMON_INT_STA_1);
+diff --git a/drivers/video/exynos/exynos_dp_reg.h b/drivers/video/exynos/exynos_dp_reg.h
+index 1f2f014..fcf386e 100644
+--- a/drivers/video/exynos/exynos_dp_reg.h
++++ b/drivers/video/exynos/exynos_dp_reg.h
+@@ -242,7 +242,8 @@
+ 
+ /* EXYNOS_DP_INT_CTL */
+ #define SOFT_INT_CTRL				(0x1 << 2)
+-#define INT_POL					(0x1 << 0)
++#define INT_POL0				(0x1 << 0)
++#define INT_POL1				(0x1 << 0)
+ 
+ /* EXYNOS_DP_SYS_CTL_1 */
+ #define DET_STA					(0x1 << 2)
 -- 
-1.7.1
-
+1.7.0.4
 

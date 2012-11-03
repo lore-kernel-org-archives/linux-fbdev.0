@@ -1,43 +1,54 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Wed, 07 Nov 2012 16:56:55 +0000
-Subject: Re: tty, vt: lockdep warnings
-Message-Id: <20121107170132.1df293d6@pyramind.ukuu.org.uk>
+From: Ajay Kumar <ajaykumar.rs@samsung.com>
+Date: Sat, 03 Nov 2012 06:47:00 +0000
+Subject: video: exynos_dp: Reset and initialize DP before requesting irq
+Message-Id: <1351926402-25484-1-git-send-email-ajaykumar.rs@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <50899507.1040900@oracle.com>
-	<20121026143754.50277bd8@pyramind.ukuu.org.uk>
-	<CA+1xoqdEesjh1EZvR_r7Hn0GUc7741EDWn59qagngcxg4=9bjQ@mail.gmail.com>
-	<20121105175937.26f31d2a@pyramind.ukuu.org.uk>
-	<5097FEA9.2090603@oracle.com>
-	<alpine.LNX.2.00.1211051106590.1709@eggly.anvils>
-	<20121105201507.79fe47d7@pyramind.ukuu.org.uk>
-	<alpine.LNX.2.00.1211051231070.21645@eggly.anvils>
-	<20121106161100.216c6d79@pyramind.ukuu.org.uk>
-	<20121106164214.GA18246@redhat.com>
-	<20121106173845.4a50d661@pyramind.ukuu.org.uk>
-	<509A665C.3030603@gmail.com>
-	<20121107160232.18e83ee9@pyramind.ukuu.org.uk>
-	<87625h9yoe.fsf@nemi.mork.no>
-In-Reply-To: <87625h9yoe.fsf@nemi.mork.no>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: =?ISO-8859-1?B?Qmr4cm4=?= Mork <bjorn@mork.no>
-Cc: Sasha Levin <levinsasha928@gmail.com>, Dave Jones <davej@redhat.com>, Hugh Dickins <hughd@google.com>, Sasha Levin <sasha.levin@oracle.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, florianSchandinat@gmx.de
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-On Wed, 07 Nov 2012 17:15:45 +0100
-Bj=F8rn Mork <bjorn@mork.no> wrote:
+If DP is not reset properly before kernel bootup(in bootloader code),
+there can be few pending interrupts, and sometimes they invoke
+DP irq handler as soon as the irq handler is registered in DP probe.
+So, we make the DP driver more robust by resetting and
+initializing DP at the earliest and then registering the irq handler.
 
-> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
->=20
-> > +
-> > +static int bind_con_driver(const struct consw *csw, int first, int las=
-t,
-> > +			   int deflt)
-> > +{
-> > +	int ret;
-> > +=09
-> > +	console_unlock();
->=20
-> console_lock() maybe...
+Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
+---
+ drivers/video/exynos/exynos_dp_core.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-Thanks I'll fix that path in v3
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index d55470e..d241fd3 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -901,6 +901,12 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
++	dp->video_info = pdata->video_info;
++	if (pdata->phy_init)
++		pdata->phy_init();
++
++	exynos_dp_init_dp(dp);
++
+ 	ret = devm_request_irq(&pdev->dev, dp->irq, exynos_dp_irq_handler, 0,
+ 				"exynos-dp", dp);
+ 	if (ret) {
+@@ -908,12 +914,6 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	dp->video_info = pdata->video_info;
+-	if (pdata->phy_init)
+-		pdata->phy_init();
+-
+-	exynos_dp_init_dp(dp);
+-
+ 	ret = exynos_dp_detect_hpd(dp);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "unable to detect hpd\n");
+-- 
+1.7.0.4
+

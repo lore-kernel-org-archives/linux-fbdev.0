@@ -1,83 +1,70 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Thu, 01 Nov 2012 20:08:42 +0000
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Sun, 04 Nov 2012 16:53:18 +0000
 Subject: Re: [PATCH v7 1/8] video: add display_timing struct and helpers
-Message-Id: <20121101200842.GA13137@avionic-0098.mockup.avionic-design.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ReaqsoxgOBHFXBhH"
+Message-Id: <20121104165318.GA5894@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
  <1351675689-26814-2-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1351675689-26814-2-git-send-email-s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-To: Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+ <20121101200842.GA13137@avionic-0098.mockup.avionic-design.de>
+In-Reply-To: <20121101200842.GA13137@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding@avionic-design.de>
+Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, kernel@pengutronix.de, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org
+
+On Thu, Nov 01, 2012 at 09:08:42PM +0100, Thierry Reding wrote:
+> On Wed, Oct 31, 2012 at 10:28:01AM +0100, Steffen Trumtrar wrote:
+> [...]
+> > +void timings_release(struct display_timings *disp)
+> > +{
+> > +	int i;
+> > +
+> > +	for (i = 0; i < disp->num_timings; i++)
+> > +		kfree(disp->timings[i]);
+> > +}
+> > +
+> > +void display_timings_release(struct display_timings *disp)
+> > +{
+> > +	timings_release(disp);
+> > +	kfree(disp->timings);
+> > +}
+> 
+> I'm not quite sure I understand how these are supposed to be used. The
+> only use-case where a struct display_timings is dynamically allocated is
+> for the OF helpers. In that case, wouldn't it be more useful to have a
+> function that frees the complete structure, including the struct
+> display_timings itself? Something like this, which has all of the above
+> rolled into one:
+> 
+> 	void display_timings_free(struct display_timings *disp)
+> 	{
+> 		if (disp->timings) {
+> 			unsigned int i;
+> 
+> 			for (i = 0; i < disp->num_timings; i++)
+> 				kfree(disp->timings[i]);
+> 		}
+> 
+> 		kfree(disp->timings);
+> 		kfree(disp);
+> 	}
+> 
+
+Well, you are right. They can be rolled into one function.
+The extra function call is useless and as it seems confusing.
+
+Regards,
+Steffen
+
+> _______________________________________________
+> devicetree-discuss mailing list
+> devicetree-discuss@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/devicetree-discuss
 
 
---ReaqsoxgOBHFXBhH
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Wed, Oct 31, 2012 at 10:28:01AM +0100, Steffen Trumtrar wrote:
-[...]
-> +void timings_release(struct display_timings *disp)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < disp->num_timings; i++)
-> +		kfree(disp->timings[i]);
-> +}
-> +
-> +void display_timings_release(struct display_timings *disp)
-> +{
-> +	timings_release(disp);
-> +	kfree(disp->timings);
-> +}
-
-I'm not quite sure I understand how these are supposed to be used. The
-only use-case where a struct display_timings is dynamically allocated is
-for the OF helpers. In that case, wouldn't it be more useful to have a
-function that frees the complete structure, including the struct
-display_timings itself? Something like this, which has all of the above
-rolled into one:
-
-	void display_timings_free(struct display_timings *disp)
-	{
-		if (disp->timings) {
-			unsigned int i;
-
-			for (i = 0; i < disp->num_timings; i++)
-				kfree(disp->timings[i]);
-		}
-
-		kfree(disp->timings);
-		kfree(disp);
-	}
-
-Is there a use-case where a struct display_timings is not dynamically
-allocated? The only one I can think of is where it is defined as
-platform data, but in that case you don't want to be calling
-display_timing_release() on it anyway.
-
-Thierry
-
---ReaqsoxgOBHFXBhH
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQktbKAAoJEN0jrNd/PrOhRqIQAJto5l4A26U8q1YNvZK1MaEv
-EuDvLFbR9zeRbL8/R+N1H0UXI2H8jpmrE2s3GddV41Xe124lJ7ps4gvjolFUiDFq
-OAxu6mVnnM4epoSzk2CgfwzNW3M+5e9Gi9g9/vGtlSoFf4UjhnP1TagSO0JXCoSS
-/tQB186aI9LU6KJGt4N7IlxDwllQm3w/SfH0PTK6QF5aCf8yRexkxuFcZZKvgw/R
-DZzSMJlUdDyI806P+V32JIcvRFGD1HYa4M7JXlY7U+jZ4wZ0MaJJNUnc/vK75rtP
-X6+RW7Kwe3bhbDUiHmWCfdO6LvpYuT7/ZRFY5NwtWmJUCrxlvd40xjBzVq2LmGQB
-cpVvY9fi8vBOp+/6RsLcmRfKmr1PO+czM+DDlS4MyiEX/D7psQQcNAOYkZz66LMg
-8teolpkyWmv/aAmx1HK+nW8siBDTNQk8I0t0DGl3PBobSkA/fBYnj8A1cTueqNvu
-aqeceAMJ2zdtv58agTT12zXV9oZf8tocZvtKRrG4/V+wgqWOZg3qLRX8xChRlF3T
-jG1LZOwgQufzQxAqqN+CKL+dBklK3WZ2q19CZhRdBePuY0eGvQ6kIVtpKINkRFgj
-W3+8I3/AOr1EOa+wLoqMlzY8qWNEy85hr9hdgS7rLqvkGomTAurpKlWth0dGsLEU
-EewZs/bEukAfWXwzHOxQ
-=T5rS
------END PGP SIGNATURE-----
-
---ReaqsoxgOBHFXBhH--
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

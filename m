@@ -1,21 +1,82 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Date: Thu, 22 Nov 2012 01:30:45 +0000
-Subject: Re: [PATCH 2/2] ARM: dts: mxs: add oled support for the cfa-10036
-Message-Id: <20121122013041.GA24693@S2100-06.ap.freescale.net>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 05 Nov 2012 09:52:33 +0000
+Subject: [GIT PULL] omapdss fixes for 3.7-rc
+Message-Id: <50978C61.8080907@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enigD6E4ADFC7B68138EFB2213C5"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351674774-2891-1-git-send-email-maxime.ripard@free-electrons.com>
- <1351674774-2891-3-git-send-email-maxime.ripard@free-electrons.com>
- <50AC97B3.5070709@free-electrons.com>
-In-Reply-To: <50AC97B3.5070709@free-electrons.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-fbdev@vger.kernel.org
 
-On Wed, Nov 21, 2012 at 09:58:27AM +0100, Maxime Ripard wrote:
-> Would you consider merging this patch?
-> Andrew Morton merged the driver into its tree
-> (http://marc.info/?l=linux-fbdev&m5336761530731&w=2)
-> 
-Just applied, thanks.
+--------------enigD6E4ADFC7B68138EFB2213C5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
+Hi Florian,
+
+Here are a few omapdss fixes, two fixing crasher bugs and the third
+fixes a missing unlock. These are based on 3.7-rc1. I can rebase on
+top of something else if you prefer that.
+
+ Tomi
+
+
+The following changes since commit ddffeb8c4d0331609ef2581d84de4d763607bd=
+37:
+
+  Linux 3.7-rc1 (2012-10-14 14:41:04 -0700)
+
+are available in the git repository at:
+
+  git://gitorious.org/linux-omap-dss2/linux.git tags/omapdss-for-3.7-rc5
+
+for you to fetch changes up to dffc70ade1d13edd186f542718c4d78a31d92fb8:
+
+  OMAPDSS: HDMI: fix missing unlock on error in hdmi_dump_regs() (2012-10=
+-26 08:45:43 +0300)
+
+----------------------------------------------------------------
+omapdss fixes for 3.7-rc5
+
+omapdss fixes for two crashes bugs and one missing mutex unlock.
+
+----------------------------------------------------------------
+Laurent Pinchart (1):
+      omapdss: dss: Fix clocks on OMAP363x
+
+Tomi Valkeinen (1):
+      OMAPDSS: DSI: fix dsi_get_dsidev_from_id()
+
+Wei Yongjun (1):
+      OMAPDSS: HDMI: fix missing unlock on error in hdmi_dump_regs()
+
+ drivers/video/omap2/dss/dsi.c  |   13 +++++++++++--
+ drivers/video/omap2/dss/dss.c  |    4 ++--
+ drivers/video/omap2/dss/hdmi.c |    4 +++-
+ 3 files changed, 16 insertions(+), 5 deletions(-)
+
+
+--------------enigD6E4ADFC7B68138EFB2213C5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJQl4xhAAoJEPo9qoy8lh71bRIP/RP+OBf9SkRLM4uVBeoKHmfj
+NqwXu9Sg7Fv3ZKp6F3E59y+U2xLZm0qF9kX1OHPew5VSdfrn5itEt89Xr1ZnbQdy
+QadcUGD1a/Wz+VnCojDYDHtZfdnvyLE3s7ANA5sTeZUHOS9Ug+lp2Zp72FLzwGHf
+sHY+yezGufMbOlKXy0H8fpUVbDIoqnmtm3TUUAvWtdRhVob2pkKmNZRHybXbYw3Q
+Fo4W+Ef+BhJUAh+JPk2e9yUCy5hYOhaIZtH3bcBZpgHJmElbLqDgwcpI+cFGfdpE
+Yf/a1Z57t9xFNs8i5rt6f+iof5nyZvGjHUT0IaUS8ntf3WI1ghibuycuZEvDzT7k
+taTHsDbkiAyi9c4v8vRp2qwdh9JXLeEJuRyZ3gkwqPWhs6+N8bAT01XHjrh71Cwc
+c2xUwt9E3OzwF0sfLdmMtu1rQ3Z8kCnQEpD3SIBVr68X+Jffylu+K2TItvBlVmQv
+CsyHqNzTCyfiRdknut5bvfbhx9uMsqhBIQ3tnBUdcKQI6J2t0QR6/ZLvR2D2pI5e
+tomhpK3ndw2V+gSgL3+m4V//PfB5gGvouVdbrw+2ayksV+7PvVAG6YRb4Ar08mp2
+3KQVpZfgBDZWBV/bTl0w4KRCRjyjsgH8gvJGdav08bfXnx1Alu+/RN0KqgjhZctp
+44lmOXGlmmNRQDKArdMK
+=tPyh
+-----END PGP SIGNATURE-----
+
+--------------enigD6E4ADFC7B68138EFB2213C5--

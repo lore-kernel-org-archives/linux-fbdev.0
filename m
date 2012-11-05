@@ -1,57 +1,53 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 21 Nov 2012 13:18:05 +0000
-Subject: Re: [PATCH v12 0/6] of: add display helper
-Message-Id: <2518217.KnCDQR760l@avalon>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 05 Nov 2012 07:44:25 +0000
+Subject: [PATCH v3 2/2] video: exynos_dp: Fix incorrect setting for INT_CTL
+Message-Id: <003401cdbb29$60b46220$221d2660$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353426896-6045-1-git-send-email-s.trumtrar@pengutronix.de> <20121120193531.GB27186@avionic-0098.adnet.avionic-design.de> <20121121082822.GB14013@pengutronix.de>
-In-Reply-To: <20121121082822.GB14013@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Cc: Thierry Reding <thierry.reding@avionic-design.de>, Robert Schwebel <r.schwebel@pengutronix.de>, devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
+To: linux-fbdev@vger.kernel.org
 
-On Wednesday 21 November 2012 09:28:22 Steffen Trumtrar wrote:
-> On Tue, Nov 20, 2012 at 08:35:31PM +0100, Thierry Reding wrote:
-> > On Tue, Nov 20, 2012 at 07:11:29PM +0100, Robert Schwebel wrote:
-> > > On Tue, Nov 20, 2012 at 05:13:19PM +0100, Laurent Pinchart wrote:
-> > > > On Tuesday 20 November 2012 16:54:50 Steffen Trumtrar wrote:
-> > > > > Hi!
-> > > > > 
-> > > > > Changes since v11:
-> > > > > 	- make pointers const where applicable
-> > > > > 	- add reviewed-by Laurent Pinchart
-> > > > 
-> > > > Looks good to me.
-> > > > 
-> > > > Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> > > > 
-> > > > Through which tree do you plan to push this ?
-> > > 
-> > > We have no idea yet, and none of the people on Cc: have volunteered
-> > > so far... what do you think?
-> > 
-> > The customary approach would be to take the patches through separate
-> > trees, but I think this particular series is sufficiently interwoven to
-> > warrant taking them all through one tree. However the least that we
-> > should do is collect Acked-by's from the other tree maintainers.
-> > 
-> > Given that most of the patches modify files in drivers/video, Florian's
-> > fbdev tree would be the most obvious candidate, right? If Florian agrees
-> > to take the patches, all we would need is David's Acked-by.
-> > 
-> > How does that sound?
-> > 
-> > Thierry
-> 
-> Hi!
-> 
-> That is exactly the way I thought this could happen.
+INT_CTL register contains bits INT_POL0 and INT_POL1, and not INT_POL.
+This patch fixes the wrong register setting for INT_CTL.
 
-Sounds good to me as well.
+Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+Tested with Exynos5250
 
+ drivers/video/exynos/exynos_dp_reg.c |    2 +-
+ drivers/video/exynos/exynos_dp_reg.h |    3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
+index 3f5ca8a..cc7765f 100644
+--- a/drivers/video/exynos/exynos_dp_reg.c
++++ b/drivers/video/exynos/exynos_dp_reg.c
+@@ -88,7 +88,7 @@ void exynos_dp_init_analog_param(struct exynos_dp_device *dp)
+ void exynos_dp_init_interrupt(struct exynos_dp_device *dp)
+ {
+ 	/* Set interrupt pin assertion polarity as high */
+-	writel(INT_POL, dp->reg_base + EXYNOS_DP_INT_CTL);
++	writel(INT_POL1 | INT_POL0, dp->reg_base + EXYNOS_DP_INT_CTL);
+ 
+ 	/* Clear pending regisers */
+ 	writel(0xff, dp->reg_base + EXYNOS_DP_COMMON_INT_STA_1);
+diff --git a/drivers/video/exynos/exynos_dp_reg.h b/drivers/video/exynos/exynos_dp_reg.h
+index 1f2f014..2e9bd0e 100644
+--- a/drivers/video/exynos/exynos_dp_reg.h
++++ b/drivers/video/exynos/exynos_dp_reg.h
+@@ -242,7 +242,8 @@
+ 
+ /* EXYNOS_DP_INT_CTL */
+ #define SOFT_INT_CTRL				(0x1 << 2)
+-#define INT_POL					(0x1 << 0)
++#define INT_POL1				(0x1 << 1)
++#define INT_POL0				(0x1 << 0)
+ 
+ /* EXYNOS_DP_SYS_CTL_1 */
+ #define DET_STA					(0x1 << 2)
 -- 
-Regards,
+1.7.1
 
-Laurent Pinchart
 

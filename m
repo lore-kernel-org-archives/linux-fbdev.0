@@ -1,28 +1,54 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 20 Nov 2012 19:43:59 +0000
-Subject: Re: [PATCHv7] video: Add support for the Solomon SSD1307 OLED Controller
-Message-Id: <20121120114359.e69a51bb.akpm@linux-foundation.org>
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Mon, 05 Nov 2012 07:33:40 +0000
+Subject: Re: [PATCH] pwm-backlight: Pinctrl-fy
+Message-Id: <20121105073340.GB31066@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="IrhDeMKUP4DT/M7F"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353421237-4100-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1353421237-4100-1-git-send-email-maxime.ripard@free-electrons.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+References: <1351699047-4487-1-git-send-email-panto@antoniou-consulting.com>
+In-Reply-To: <1351699047-4487-1-git-send-email-panto@antoniou-consulting.com>
+To: Pantelis Antoniou <panto@antoniou-consulting.com>
+Cc: Richard Purdie <rpurdie@rpsys.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Koen Kooi <koen@dominion.thruhere.net>, Matt Porter <mporter@ti.com>, Russ Dill <Russ.Dill@ti.com>, linux-omap@vger.kernel.org
 
-On Tue, 20 Nov 2012 15:20:37 +0100
-Maxime Ripard <maxime.ripard@free-electrons.com> wrote:
 
-> This patch adds support for the Solomon SSD1307 OLED
-> controller found on the Crystalfontz CFA10036 board.
-> 
-> This controller can drive a display with a resolution up
-> to 128x39 and can operate over I2C or SPI.
-> 
-> The current driver has only been tested on the CFA-10036,
-> that is using this controller over I2C to driver a 96x16
-> OLED screen.
+--IrhDeMKUP4DT/M7F
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Looks OK to my little eye.  I merged it into -mm.  If this
-patch (or a variant of it) turns up in linux-next (via Florian's
-tree) then I shall autodrop it again.
+On Wed, Oct 31, 2012 at 05:57:27PM +0200, Pantelis Antoniou wrote:
+[...]
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+[...]
+> @@ -20,6 +20,8 @@
+>  #include <linux/pwm.h>
+>  #include <linux/pwm_backlight.h>
+>  #include <linux/slab.h>
+> +#include <linux/pinctrl/consumer.h>
+> +#include <linux/err.h>
+
+linux/err.h is already included earlier.
+
+Thierry
+
+--IrhDeMKUP4DT/M7F
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQl2vUAAoJEN0jrNd/PrOhs9UQAKTLhWmRZv9G4qb1inwhHYVN
+naZBCm/2l0REuzcTsYWVWJcLJwzLsI8GU7I0nH2rlJwUEVwPHqPgL2DcT9+IRZ1d
+yZuIORTwgXai+litSt1aEnWXvRmB/sYL/Sp4YLP6GcxJ6hwtI89cXDu9nI9UajOP
+qX4TM54fNVfSjcMa6B1v6f0Imq6Ign8FMjkIKBfGmFKUK+Ngg3Wa2W0i61Kh6lZ5
+xsUUgbecL25QjuC4GPBVYLquzclAl24B6OG8U028OgrUn846J7xIrcHt/lLFqiR2
+KyYAPYedBGjwyZdGE/F5TS+OLjRBVVLOmW2tenbinL3si3AeUi0bm1v+MIJLmogI
+0YsVg6W6bz1G4mBYxQkeRvxTiPAeHKhsFJU0v5ocjaFFNGxoEQw60ae+c8J6+G4F
+kJVfyti8pu24EqFYM66YJhwUcmPWLBA713OwQxi5QslzrXxnIJmZiuRftCsgfvED
+rhtQ9dwJgBgqEbRojPO52r5Ty+0EFBQtYh1gk0w5t1rq0XpdG5MwfHrlPhTX1P/f
+Hbawe2DOOyPbPBWrJpeugr4qROMOLud1Bkxo3NzrwXr2ELG5m0BDxdrs4UTeQoUT
+fHkFg1avKkXtMPShox7a24/cKVIaHsDdtturFJMETmBEKhIzHPgLiNOr0Ymc+80D
+GkU8WKMcKaPIykRFZdJy
+=4cFD
+-----END PGP SIGNATURE-----
+
+--IrhDeMKUP4DT/M7F--

@@ -1,12 +1,16 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 05 Nov 2012 07:43:33 +0000
+Date: Mon, 05 Nov 2012 07:51:27 +0000
 Subject: [PATCH v3 1/2] video: exynos_dp: Reset and initialize DP before requesting irq
-Message-Id: <003301cdbb29$421e2ee0$c65a8ca0$%han@samsung.com>
+Message-Id: <003b01cdbb2a$5c2ce8c0$1486ba40$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <003301cdbb29$421e2ee0$c65a8ca0$%han@samsung.com>
+In-Reply-To: <003301cdbb29$421e2ee0$c65a8ca0$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+
+From: Ajay Kumar <ajaykumar.rs@samsung.com>
 
 If DP is not reset properly before kernel bootup(in bootloader code),
 there can be few pending interrupts, and sometimes they invoke
@@ -17,7 +21,7 @@ initializing DP at the earliest and then registering the irq handler.
 Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
 Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
-Tested with Exynos5250
+Added 'From: Ajay Kumar <ajaykumar.rs@samsung.com>'
 
  drivers/video/exynos/exynos_dp_core.c |   12 ++++++------
  1 files changed, 6 insertions(+), 6 deletions(-)
@@ -54,5 +58,6 @@ index d55470e..d241fd3 100644
  		dev_err(&pdev->dev, "unable to detect hpd\n");
 -- 
 1.7.1
+
 
 

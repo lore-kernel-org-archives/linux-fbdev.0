@@ -1,41 +1,58 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 20 Nov 2012 16:11:28 +0000
-Subject: Re: [PATCH] video console: add a driver for lcd2s character display
-Message-Id: <201211201611.28646.arnd@arndb.de>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 05 Nov 2012 07:43:33 +0000
+Subject: [PATCH v3 1/2] video: exynos_dp: Reset and initialize DP before requesting irq
+Message-Id: <003301cdbb29$421e2ee0$c65a8ca0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353416206-3243-1-git-send-email-larsi@wh2.tu-dresden.de> <201211201325.57883.arnd@arndb.de> <201211201521.33726.poeschel@lemonage.de>
-In-Reply-To: <201211201521.33726.poeschel@lemonage.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lars Poeschel <poeschel@lemonage.de>
-Cc: Lars Poeschel <larsi@wh2.tu-dresden.de>, FlorianSchandinat@gmx.de, mathieu.poirier@linaro.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Tuesday 20 November 2012, Lars Poeschel wrote:
-> > 
-> > It's better to define the struct consw as a preinitialized
-> > 'static const' object, rather than dynamically setting each
-> > member.
-> 
-> I could not find a place to store the drivers private data inside the struct 
-> vc_data. I wanted to have the struct consw inside the drivers private data 
-> (struct lcd2s_data) to be able to container_of to the drivers private data in 
-> the consw.con_* functions. This makes it possible to use more than one actual 
-> lcd2s display with the same driver. Otherwise I have to store the struct 
-> i2c_client somewhere statically and the driver can control only one display 
-> and has to forbid to be probed a second time. Or am I wrong somewhere ?
+If DP is not reset properly before kernel bootup(in bootloader code),
+there can be few pending interrupts, and sometimes they invoke
+DP irq handler as soon as the irq handler is registered in DP probe.
+So, we make the DP driver more robust by resetting and
+initializing DP at the earliest and then registering the irq handler.
 
-I believe you can only have one device anyway, because of the way you
-register using "take_over_console(&data->consw, LCD2S_FIRST, LCD2S_LAST, 1);"
+Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+Tested with Exynos5250
 
-Whichever lcd2s was last registered gets VC 8 and 9. This is not nice, but
-I think it's similar to how all the other VC work. They consequently don't
-store per-device data at all, but just have global variables for device
-specific data. We generally discourage this behaviour for device drivers,
-but I woulnd't expect you to change the way that VC works, so you can just
-do the same here.
+ drivers/video/exynos/exynos_dp_core.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-Things would be different if this was a "console" driver rather than a "vc"
-driver.
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index d55470e..d241fd3 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -901,6 +901,12 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
++	dp->video_info = pdata->video_info;
++	if (pdata->phy_init)
++		pdata->phy_init();
++
++	exynos_dp_init_dp(dp);
++
+ 	ret = devm_request_irq(&pdev->dev, dp->irq, exynos_dp_irq_handler, 0,
+ 				"exynos-dp", dp);
+ 	if (ret) {
+@@ -908,12 +914,6 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	dp->video_info = pdata->video_info;
+-	if (pdata->phy_init)
+-		pdata->phy_init();
+-
+-	exynos_dp_init_dp(dp);
+-
+ 	ret = exynos_dp_detect_hpd(dp);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "unable to detect hpd\n");
+-- 
+1.7.1
 
-	Arnd
+

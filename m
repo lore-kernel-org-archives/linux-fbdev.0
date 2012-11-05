@@ -1,12 +1,16 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 05 Nov 2012 07:44:25 +0000
+Date: Mon, 05 Nov 2012 07:52:42 +0000
 Subject: [PATCH v3 2/2] video: exynos_dp: Fix incorrect setting for INT_CTL
-Message-Id: <003401cdbb29$60b46220$221d2660$%han@samsung.com>
+Message-Id: <003c01cdbb2a$8924c000$9b6e4000$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <003401cdbb29$60b46220$221d2660$%han@samsung.com>
+In-Reply-To: <003401cdbb29$60b46220$221d2660$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+
+From: Ajay Kumar <ajaykumar.rs@samsung.com>
 
 INT_CTL register contains bits INT_POL0 and INT_POL1, and not INT_POL.
 This patch fixes the wrong register setting for INT_CTL.
@@ -14,7 +18,7 @@ This patch fixes the wrong register setting for INT_CTL.
 Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
 Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
-Tested with Exynos5250
+Added 'From: Ajay Kumar <ajaykumar.rs@samsung.com>'
 
  drivers/video/exynos/exynos_dp_reg.c |    2 +-
  drivers/video/exynos/exynos_dp_reg.h |    3 ++-

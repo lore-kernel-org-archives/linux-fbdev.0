@@ -1,149 +1,82 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Fri, 23 Nov 2012 09:04:21 +0000
-Subject: [PATCHv14 1/7] viafb: rename display_timing to via_display_timing
-Message-Id: <1353661467-28545-2-git-send-email-s.trumtrar@pengutronix.de>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 07 Nov 2012 06:27:04 +0000
+Subject: [PATCH 3/3] OMAPDSS: DISPC: Use output width and height to calculate row/pix inc for writeback
+Message-Id: <1352268905-31093-4-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353661467-28545-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1353661467-28545-1-git-send-email-s.trumtrar@pengutronix.de>
+References: <1352268905-31093-1-git-send-email-archit@ti.com>
+In-Reply-To: <1352268905-31093-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The struct display_timing is specific to the via subsystem. The naming leads to
-collisions with the new struct display_timing, that is supposed to be a shared
-struct between different subsystems.
-To clean this up, prepend the existing struct with the subsystem it is specific
-to.
+When calculating row and pixel increments for graphics and video pipes, we need
+to consider the dimensions of the input frame to know how to read from the
+buffer. Hence, we need to calculate these parameters from the input to the
+pipeline.
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+For writeback, the row and pixel increments need to be calculated based on the
+output of the writeback pipeline, i.e, the dimensions of the frame after
+scaling. Ensure that dispc driver uses values of out_width and out_height when
+calling calc_dma/calc_tiler_rotation_offset.
+
+For graphics and video pipes, the original code passed the original height as
+frame_height to calc_dma_rotation_offset, and not the predecimated height. This
+is left as it is for now. We need to figure out why pre decimated height isn't
+needed.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/via/hw.c              |    6 +++---
- drivers/video/via/hw.h              |    2 +-
- drivers/video/via/lcd.c             |    2 +-
- drivers/video/via/share.h           |    2 +-
- drivers/video/via/via_modesetting.c |    8 ++++----
- drivers/video/via/via_modesetting.h |    6 +++---
- 6 files changed, 13 insertions(+), 13 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 898590d..5563c67 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -1467,10 +1467,10 @@ void viafb_set_vclock(u32 clk, int set_iga)
- 	via_write_misc_reg_mask(0x0C, 0x0C); /* select external clock */
- }
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 664ac6f..db14f20 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2381,7 +2381,7 @@ static int dispc_ovl_setup_common(enum omap_plane plane,
+ 	unsigned offset0, offset1;
+ 	s32 row_inc;
+ 	s32 pix_inc;
+-	u16 frame_height = height;
++	u16 frame_width, frame_height;
+ 	unsigned int field_offset = 0;
+ 	u16 in_height = height;
+ 	u16 in_width = width;
+@@ -2449,20 +2449,28 @@ static int dispc_ovl_setup_common(enum omap_plane plane,
+ 	row_inc = 0;
+ 	pix_inc = 0;
  
--struct display_timing var_to_timing(const struct fb_var_screeninfo *var,
-+struct via_display_timing var_to_timing(const struct fb_var_screeninfo *var,
- 	u16 cxres, u16 cyres)
- {
--	struct display_timing timing;
-+	struct via_display_timing timing;
- 	u16 dx = (var->xres - cxres) / 2, dy = (var->yres - cyres) / 2;
- 
- 	timing.hor_addr = cxres;
-@@ -1491,7 +1491,7 @@ struct display_timing var_to_timing(const struct fb_var_screeninfo *var,
- void viafb_fill_crtc_timing(const struct fb_var_screeninfo *var,
- 	u16 cxres, u16 cyres, int iga)
- {
--	struct display_timing crt_reg = var_to_timing(var,
-+	struct via_display_timing crt_reg = var_to_timing(var,
- 		cxres ? cxres : var->xres, cyres ? cyres : var->yres);
- 
- 	if (iga = IGA1)
-diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
-index 6be243c..c3f2572 100644
---- a/drivers/video/via/hw.h
-+++ b/drivers/video/via/hw.h
-@@ -637,7 +637,7 @@ extern int viafb_LCD_ON;
- extern int viafb_DVI_ON;
- extern int viafb_hotplug;
- 
--struct display_timing var_to_timing(const struct fb_var_screeninfo *var,
-+struct via_display_timing var_to_timing(const struct fb_var_screeninfo *var,
- 	u16 cxres, u16 cyres);
- void viafb_fill_crtc_timing(const struct fb_var_screeninfo *var,
- 	u16 cxres, u16 cyres, int iga);
-diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
-index 1650379..022b0df 100644
---- a/drivers/video/via/lcd.c
-+++ b/drivers/video/via/lcd.c
-@@ -549,7 +549,7 @@ void viafb_lcd_set_mode(const struct fb_var_screeninfo *var, u16 cxres,
- 	int panel_hres = plvds_setting_info->lcd_panel_hres;
- 	int panel_vres = plvds_setting_info->lcd_panel_vres;
- 	u32 clock;
--	struct display_timing timing;
-+	struct via_display_timing timing;
- 	struct fb_var_screeninfo panel_var;
- 	const struct fb_videomode *mode_crt_table, *panel_crt_table;
- 
-diff --git a/drivers/video/via/share.h b/drivers/video/via/share.h
-index 3158dfc..65c65c6 100644
---- a/drivers/video/via/share.h
-+++ b/drivers/video/via/share.h
-@@ -319,7 +319,7 @@ struct crt_mode_table {
- 	int refresh_rate;
- 	int h_sync_polarity;
- 	int v_sync_polarity;
--	struct display_timing crtc;
-+	struct via_display_timing crtc;
- };
- 
- struct io_reg {
-diff --git a/drivers/video/via/via_modesetting.c b/drivers/video/via/via_modesetting.c
-index 0e431ae..0b414b0 100644
---- a/drivers/video/via/via_modesetting.c
-+++ b/drivers/video/via/via_modesetting.c
-@@ -30,9 +30,9 @@
- #include "debug.h"
- 
- 
--void via_set_primary_timing(const struct display_timing *timing)
-+void via_set_primary_timing(const struct via_display_timing *timing)
- {
--	struct display_timing raw;
-+	struct via_display_timing raw;
- 
- 	raw.hor_total = timing->hor_total / 8 - 5;
- 	raw.hor_addr = timing->hor_addr / 8 - 1;
-@@ -88,9 +88,9 @@ void via_set_primary_timing(const struct display_timing *timing)
- 	via_write_reg_mask(VIACR, 0x17, 0x80, 0x80);
- }
- 
--void via_set_secondary_timing(const struct display_timing *timing)
-+void via_set_secondary_timing(const struct via_display_timing *timing)
- {
--	struct display_timing raw;
-+	struct via_display_timing raw;
- 
- 	raw.hor_total = timing->hor_total - 1;
- 	raw.hor_addr = timing->hor_addr - 1;
-diff --git a/drivers/video/via/via_modesetting.h b/drivers/video/via/via_modesetting.h
-index 06e09fe..f6a6503 100644
---- a/drivers/video/via/via_modesetting.h
-+++ b/drivers/video/via/via_modesetting.h
-@@ -33,7 +33,7 @@
- #define VIA_PITCH_MAX	0x3FF8
- 
- 
--struct display_timing {
-+struct via_display_timing {
- 	u16 hor_total;
- 	u16 hor_addr;
- 	u16 hor_blank_start;
-@@ -49,8 +49,8 @@ struct display_timing {
- };
- 
- 
--void via_set_primary_timing(const struct display_timing *timing);
--void via_set_secondary_timing(const struct display_timing *timing);
-+void via_set_primary_timing(const struct via_display_timing *timing);
-+void via_set_secondary_timing(const struct via_display_timing *timing);
- void via_set_primary_address(u32 addr);
- void via_set_secondary_address(u32 addr);
- void via_set_primary_pitch(u32 pitch);
++	if (plane = OMAP_DSS_WB) {
++		frame_width = out_width;
++		frame_height = out_height;
++	} else {
++		frame_width = in_width;
++		frame_height = height;
++	}
++
+ 	if (rotation_type = OMAP_DSS_ROT_TILER)
+-		calc_tiler_rotation_offset(screen_width, in_width,
++		calc_tiler_rotation_offset(screen_width, frame_width,
+ 				color_mode, fieldmode, field_offset,
+ 				&offset0, &offset1, &row_inc, &pix_inc,
+ 				x_predecim, y_predecim);
+ 	else if (rotation_type = OMAP_DSS_ROT_DMA)
+-		calc_dma_rotation_offset(rotation, mirror,
+-				screen_width, in_width, frame_height,
++		calc_dma_rotation_offset(rotation, mirror, screen_width,
++				frame_width, frame_height,
+ 				color_mode, fieldmode, field_offset,
+ 				&offset0, &offset1, &row_inc, &pix_inc,
+ 				x_predecim, y_predecim);
+ 	else
+ 		calc_vrfb_rotation_offset(rotation, mirror,
+-				screen_width, in_width, frame_height,
++				screen_width, frame_width, frame_height,
+ 				color_mode, fieldmode, field_offset,
+ 				&offset0, &offset1, &row_inc, &pix_inc,
+ 				x_predecim, y_predecim);
 -- 
-1.7.10.4
+1.7.9.5
 

@@ -1,33 +1,31 @@
-From: Juergen Beisert <jbe@pengutronix.de>
-Date: Thu, 29 Nov 2012 13:42:17 +0000
-Subject: Re: [PATCH] video: mxsfb: fix typo: 'FAILING' instead of 'FALLING'
-Message-Id: <201211291442.17768.jbe@pengutronix.de>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 07 Nov 2012 09:29:21 +0000
+Subject: [PATCH 0/3] OMAPDSS: APPLY: Misc Fixes
+Message-Id: <1352279844-10494-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353588555-13168-1-git-send-email-LW@KARO-electronics.de>
- <1353588555-13168-2-git-send-email-LW@KARO-electronics.de>
- <20663.20003.18426.828567@ipc1.ka-ro>
-In-Reply-To: <20663.20003.18426.828567@ipc1.ka-ro>
+References: <n>
+In-Reply-To: <n>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Hi Lothar,
+This series resolves a few minor issues with APPLY. Tested on a 4430sdp, checked
+switching overlays between DSI command mode and HDMI displays for any unexpected
+behavior.
 
-Lothar Wa=C3=9Fmann wrote:
-> [...]
-> ping?
+Reference tree:
+git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git 3.8/apply_fixes
 
-What a nice typo :))
+Archit Taneja (3):
+  OMAPDSS: APPLY: Don't treat an overlay's channel out as shadow bits
+  OMAPDSS: APPLY: Remove unnecessary variable in dss_apply_irq_handler
+  OMAPDSS: APPLY: Remove unnecessary call to mg_clear_shadow_dirty
 
-You can add my:
-Acked-by: Juergen Beisert <jbe@pengutronix.de>
+ drivers/video/omap2/dss/apply.c |   48 +++++++++++++++++++++------------------
+ 1 file changed, 26 insertions(+), 22 deletions(-)
 
-Regards,
-Juergen
+-- 
+1.7.9.5
 
---=20
-Pengutronix e.K.                              | Juergen Beisert            =
- |
-Linux Solutions for Science and Industry      | http://www.pengutronix.de/ =
- |

@@ -1,158 +1,180 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 15 Nov 2012 15:58:40 +0000
-Subject: [PATCH 32/32] OMAPDSS: use omapdss_compat_init() in other drivers
-Message-Id: <1352995120-3288-33-git-send-email-tomi.valkeinen@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 07 Nov 2012 14:56:21 +0000
+Subject: [RFC 03/11] OMAPDSS: APPLY: Apply writeback configurations
+Message-Id: <1352299469-17609-4-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
+References: <n>
+ <1352299469-17609-1-git-send-email-archit@ti.com>
+In-Reply-To: <1352299469-17609-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-omapdss_compat_init() and omapdss_compat_uninit() is called internally
-by omapdss. This patch moves the calls to omapfb, omap_vout and omapdrm
-drivers. omapdrm driver can later remove the call after non-compat
-support has been implemented in omapdrm.
+Add changes in apply to let a user apply writeback configurations. This
+basically involves a writeback user to commit the writeback_info it has set
+previously.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Only memory to memory mode is supported for now in APPLY. Actual register
+writes would only happen when a mem to mem update is initiated. Therefore,
+there isn't a need to support the cases of shadow registers being dirty.
+
+Add the following:
+- info and info_dirty fields in private data to represent the lower cache of
+  writeback info in APPLY.
+- Function omap_dss_wb_apply which propagates user_info to info, and an
+  equivalent function in writeback output driver exposed to writeback users.
+- Function dss_wb_write_regs to be used by APPLY to configure writeback DISPC
+  registers.
+- Helper function which tells the mode of writeback.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/media/platform/omap/omap_vout.c  |   17 ++++++++++++++---
- drivers/staging/omapdrm/omap_drv.c       |   11 +++++++++++
- drivers/video/omap2/dss/core.c           |    4 ----
- drivers/video/omap2/omapfb/omapfb-main.c |    6 ++++++
- 4 files changed, 31 insertions(+), 7 deletions(-)
+ drivers/video/omap2/dss/apply.c     |   68 +++++++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/dss.h       |    1 +
+ drivers/video/omap2/dss/writeback.c |    6 ++++
+ include/video/omapdss.h             |    1 +
+ 4 files changed, 76 insertions(+)
 
-diff --git a/drivers/media/platform/omap/omap_vout.c b/drivers/media/platform/omap/omap_vout.c
-index 3ff94a3..32c596f 100644
---- a/drivers/media/platform/omap/omap_vout.c
-+++ b/drivers/media/platform/omap/omap_vout.c
-@@ -2186,14 +2186,23 @@ static int __init omap_vout_probe(struct platform_device *pdev)
- 	struct omap_dss_device *def_display;
- 	struct omap2video_device *vid_dev = NULL;
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index b2e4f6a..76886da 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -110,6 +110,15 @@ struct wb_priv_data {
  
-+	ret = omapdss_compat_init();
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to init dss\n");
-+		return ret;
-+	}
+ 	bool user_info_dirty;
+ 	struct omap_dss_writeback_info user_info;
 +
- 	if (pdev->num_resources = 0) {
- 		dev_err(&pdev->dev, "probed for an unknown device\n");
--		return -ENODEV;
-+		ret = -ENODEV;
-+		goto err_dss_init;
- 	}
++	bool info_dirty;
++	struct omap_dss_writeback_info info;
++
++	/*
++	 * If true in memory to memory mode, a manager is connected to it.
++	 * However, it may not be active.
++	 */
++	bool enabled;
+ };
  
- 	vid_dev = kzalloc(sizeof(struct omap2video_device), GFP_KERNEL);
--	if (vid_dev = NULL)
--		return -ENOMEM;
-+	if (vid_dev = NULL) {
-+		ret = -ENOMEM;
-+		goto err_dss_init;
-+	}
- 
- 	vid_dev->num_displays = 0;
- 	for_each_dss_dev(dssdev) {
-@@ -2288,6 +2297,8 @@ probe_err1:
- 	}
- probe_err0:
- 	kfree(vid_dev);
-+err_dss_init:
-+	omapdss_compat_uninit();
- 	return ret;
+ static struct {
+@@ -209,6 +218,11 @@ static bool mgr_manual_update(struct omap_overlay_manager *mgr)
+ 	return mp->lcd_config.stallmode;
  }
  
-diff --git a/drivers/staging/omapdrm/omap_drv.c b/drivers/staging/omapdrm/omap_drv.c
-index ebdb0b6..2bf7259 100644
---- a/drivers/staging/omapdrm/omap_drv.c
-+++ b/drivers/staging/omapdrm/omap_drv.c
-@@ -572,6 +572,14 @@ static int dev_load(struct drm_device *dev, unsigned long flags)
++static bool wb_manual_update(struct omap_dss_output *wb)
++{
++	return true;
++}
++
+ static int dss_check_settings_low(struct omap_overlay_manager *mgr,
+ 		bool applying)
+ {
+@@ -684,6 +698,36 @@ static void dss_mgr_write_regs_extra(struct omap_overlay_manager *mgr)
+ 		mp->shadow_extra_info_dirty = true;
+ }
  
- 	dev->dev_private = priv;
- 
-+	ret = omapdss_compat_init();
-+	if (ret) {
-+		dev_err(dev->dev, "coult not init omapdss\n");
-+		dev->dev_private = NULL;
-+		kfree(priv);
-+		return ret;
++static void dss_wb_write_regs(struct omap_dss_output *wb)
++{
++	struct wb_priv_data *wp = get_wb_priv(wb);
++	struct omap_dss_writeback_info *wi;
++	struct mgr_priv_data *mp;
++	u32 fifo_low, fifo_high;
++	bool use_fifo_merge = false;
++	int r;
++
++	if (!wp->enabled || !wp->info_dirty)
++		return;
++
++	wi = &wp->info;
++
++	mp = get_mgr_priv(wb->manager);
++
++	dispc_ovl_compute_fifo_thresholds(OMAP_DSS_WB, &fifo_low, &fifo_high,
++			use_fifo_merge, wb_manual_update(wb));
++
++	dispc_ovl_set_fifo_threshold(OMAP_DSS_WB, fifo_low, fifo_high);
++
++	r = dispc_wb_setup(wi, wb_manual_update(wb), &mp->timings);
++	if (r) {
++		DSSERR("dispc_wb_setup failed %d\n", r);
++		return;
 +	}
 +
- 	priv->wq = alloc_ordered_workqueue("omapdrm", 0);
- 
- 	INIT_LIST_HEAD(&priv->obj_list);
-@@ -583,6 +591,7 @@ static int dev_load(struct drm_device *dev, unsigned long flags)
- 		dev_err(dev->dev, "omap_modeset_init failed: ret=%d\n", ret);
- 		dev->dev_private = NULL;
- 		kfree(priv);
-+		omapdss_compat_uninit();
- 		return ret;
- 	}
- 
-@@ -618,6 +627,8 @@ static int dev_unload(struct drm_device *dev)
- 	flush_workqueue(priv->wq);
- 	destroy_workqueue(priv->wq);
- 
-+	omapdss_compat_uninit();
++	wp->info_dirty = false;
++}
 +
- 	kfree(dev->dev_private);
- 	dev->dev_private = NULL;
+ static void dss_write_regs(void)
+ {
+ 	const int num_mgrs = omap_dss_get_num_overlay_managers();
+@@ -1507,3 +1551,27 @@ void dss_wb_get_info(struct omap_dss_output *wb,
  
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index cf2c619..3d33426 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -247,8 +247,6 @@ static int __init omap_dss_probe(struct platform_device *pdev)
+ 	spin_unlock_irqrestore(&data_lock, flags);
+ }
++
++int omap_dss_wb_apply(struct omap_dss_output *wb)
++{
++	struct wb_priv_data *wp = get_wb_priv(wb);
++	unsigned long flags;
++
++	DSSDBG("omap_dss_wb_apply\n");
++
++	spin_lock_irqsave(&data_lock, flags);
++
++	/* check for settings here */
++
++	if (!wp->user_info_dirty)
++		goto end;
++
++	wp->user_info_dirty = false;
++	wp->info_dirty = true;
++	wp->info = wp->user_info;
++
++end:
++	spin_unlock_irqrestore(&data_lock, flags);
++
++	return 0;
++}
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index f738c1e..1b9c936 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -214,6 +214,7 @@ int dss_wb_set_info(struct omap_dss_output *wb,
+ 		struct omap_dss_writeback_info *info);
+ void dss_wb_get_info(struct omap_dss_output *wb,
+ 		struct omap_dss_writeback_info *info);
++int omap_dss_wb_apply(struct omap_dss_output *wb);
  
- 	dss_features_init(omapdss_get_version());
- 
--	omapdss_compat_init();
--
- 	r = dss_initialize_debugfs();
- 	if (r)
- 		goto err_debugfs;
-@@ -273,8 +271,6 @@ static int omap_dss_remove(struct platform_device *pdev)
- 
- 	dss_uninitialize_debugfs();
- 
--	omapdss_compat_uninit();
--
- 	return 0;
+ /* output */
+ void dss_register_output(struct omap_dss_output *out);
+diff --git a/drivers/video/omap2/dss/writeback.c b/drivers/video/omap2/dss/writeback.c
+index be7027b..c05dd54 100644
+--- a/drivers/video/omap2/dss/writeback.c
++++ b/drivers/video/omap2/dss/writeback.c
+@@ -42,6 +42,12 @@ static inline struct platform_device *writeback_get_wbdev_from_output(struct oma
+ 	return out->pdev;
  }
  
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index be9096c..898470a 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -2436,6 +2436,9 @@ static int __init omapfb_probe(struct platform_device *pdev)
- 				"ignoring the module parameter vrfb=y\n");
- 	}
- 
-+	r = omapdss_compat_init();
-+	if (r)
-+		goto err0;
- 
- 	mutex_init(&fbdev->mtx);
- 
-@@ -2559,6 +2562,7 @@ static int __init omapfb_probe(struct platform_device *pdev)
- 
- cleanup:
- 	omapfb_free_resources(fbdev);
-+	omapdss_compat_uninit();
- err0:
- 	dev_err(&pdev->dev, "failed to setup omapfb\n");
- 	return r;
-@@ -2574,6 +2578,8 @@ static int __exit omapfb_remove(struct platform_device *pdev)
- 
- 	omapfb_free_resources(fbdev);
- 
-+	omapdss_compat_uninit();
++int omapdss_writeback_apply(struct omap_dss_output *wb)
++{
++	return omap_dss_wb_apply(wb);
++}
++EXPORT_SYMBOL(omapdss_writeback_apply);
 +
- 	return 0;
- }
+ int omapdss_writeback_set_info(struct omap_dss_output *wb,
+ 		struct omap_dss_writeback_info *info)
+ {
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 2a3a878..2bc10cb 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -837,6 +837,7 @@ void omapdss_rfbi_set_data_lines(struct omap_dss_device *dssdev,
+ void omapdss_rfbi_set_interface_timings(struct omap_dss_device *dssdev,
+ 		struct rfbi_timings *timings);
  
++int omapdss_writeback_apply(struct omap_dss_output *wb);
+ int omapdss_writeback_set_info(struct omap_dss_output *wb,
+ 		struct omap_dss_writeback_info *info);
+ void omapdss_writeback_get_info(struct omap_dss_output *wb,
 -- 
-1.7.10.4
+1.7.9.5
 

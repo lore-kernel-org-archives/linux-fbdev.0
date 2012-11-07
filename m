@@ -1,129 +1,144 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 01 Nov 2012 10:30:54 +0000
-Subject: [PATCH v3 4/8] video: exynos_dp: Improve EDID error handling
-Message-Id: <012701cdb81b$f919fc70$eb4df550$%han@samsung.com>
+From: Ajay Kumar <ajaykumar.rs@samsung.com>
+Date: Wed, 07 Nov 2012 10:53:32 +0000
+Subject: [PATCH 2/2] video: exynos_dp: move exynos_dp_config_video to a workqueue
+Message-Id: <1352286744-22588-2-git-send-email-ajaykumar.rs@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <012001cdb81a$b87fb4d0$297f1e70$%han@samsung.com>
-In-Reply-To: <012001cdb81a$b87fb4d0$297f1e70$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-From: Sean Paul <seanpaul@chromium.org>
+This speeds up boot significantly, since it can take up to a second to
+get the display up and going, and we want to keep on booting (through
+some userspace) while that happens.
 
-EDID error handling has 2 problems:
- - It doesn't fail as early as it can
- - The retry counts for i2c and aux transactions are huge
-
-This patch fails if the initial i2c transaction fails, and reduces the
-aux and i2c retry counts down to 3.
-
-[jg1.han@samsung.com: reduced the retry count of exynos_dp_read_byte_from_dpcd()]
-Signed-off-by: Sean Paul <seanpaul@chromium.org>
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Olof Johansson <olof@lixom.net>
+Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
 ---
-Added 'From: Sean Paul <seanpaul@chromium.org>'
-
- drivers/video/exynos/exynos_dp_core.c |   13 ++++++++-----
- drivers/video/exynos/exynos_dp_reg.c  |   11 +++++------
- 2 files changed, 13 insertions(+), 11 deletions(-)
+ drivers/video/exynos/exynos_dp_core.c |   30 ++++++++++++++++++------------
+ drivers/video/exynos/exynos_dp_core.h |    1 +
+ 2 files changed, 19 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-index 878b4b6..ee957e0 100644
+index f62778c..ecae6f4 100644
 --- a/drivers/video/exynos/exynos_dp_core.c
 +++ b/drivers/video/exynos/exynos_dp_core.c
-@@ -90,9 +90,11 @@ static int exynos_dp_read_edid(struct exynos_dp_device *dp)
- 	 */
+@@ -18,6 +18,7 @@
+ #include <linux/io.h>
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
++#include <linux/workqueue.h>
  
- 	/* Read Extension Flag, Number of 128-byte EDID extension blocks */
--	exynos_dp_read_byte_from_i2c(dp, I2C_EDID_DEVICE_ADDR,
-+	retval = exynos_dp_read_byte_from_i2c(dp, I2C_EDID_DEVICE_ADDR,
- 				EDID_EXTENSION_FLAG,
- 				&extend_block);
-+	if (retval)
-+		return retval;
+ #include <video/exynos_dp.h>
  
- 	if (extend_block > 0) {
- 		dev_dbg(dp->dev, "EDID data includes a single extension!\n");
-@@ -181,14 +183,15 @@ static int exynos_dp_handle_edid(struct exynos_dp_device *dp)
- 	int retval;
+@@ -752,19 +753,22 @@ static int exynos_dp_set_link_train(struct exynos_dp_device *dp,
+ 	return retval;
+ }
  
- 	/* Read DPCD DPCD_ADDR_DPCD_REV~RECEIVE_PORT1_CAP_1 */
--	exynos_dp_read_bytes_from_dpcd(dp,
--		DPCD_ADDR_DPCD_REV,
--		12, buf);
-+	retval = exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_DPCD_REV,
-+				12, buf);
-+	if (retval)
-+		return retval;
+-static int exynos_dp_config_video(struct exynos_dp_device *dp)
++static void exynos_dp_config_video(struct work_struct *work)
+ {
++	struct exynos_dp_device *dp;
+ 	int retval = 0;
+ 	int timeout_loop = 0;
+ 	int done_count = 0;
  
- 	/* Read EDID */
- 	for (i = 0; i < 3; i++) {
- 		retval = exynos_dp_read_edid(dp);
--		if (retval = 0)
-+		if (!retval)
- 			break;
++	dp = container_of(work, struct exynos_dp_device, config_work);
++
+ 	exynos_dp_config_video_slave_mode(dp);
+ 
+ 	exynos_dp_set_video_color_format(dp);
+ 
+ 	if (exynos_dp_get_pll_lock_status(dp) = PLL_UNLOCKED) {
+ 		dev_err(dp->dev, "PLL is not locked yet.\n");
+-		return -EINVAL;
++		return;
  	}
  
-diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
-index 3f5ca8a..dc09278 100644
---- a/drivers/video/exynos/exynos_dp_reg.c
-+++ b/drivers/video/exynos/exynos_dp_reg.c
-@@ -491,7 +491,7 @@ int exynos_dp_read_byte_from_dpcd(struct exynos_dp_device *dp,
- 	int i;
- 	int retval;
- 
--	for (i = 0; i < 10; i++) {
-+	for (i = 0; i < 3; i++) {
- 		/* Clear AUX CH data buffer */
- 		reg = BUF_CLR;
- 		writel(reg, dp->reg_base + EXYNOS_DP_BUFFER_DATA_CTL);
-@@ -552,7 +552,7 @@ int exynos_dp_write_bytes_to_dpcd(struct exynos_dp_device *dp,
- 		else
- 			cur_data_count = count - start_offset;
- 
--		for (i = 0; i < 10; i++) {
-+		for (i = 0; i < 3; i++) {
- 			/* Select DPCD device address */
- 			reg = AUX_ADDR_7_0(reg_addr + start_offset);
- 			writel(reg, dp->reg_base + EXYNOS_DP_AUX_ADDR_7_0);
-@@ -617,7 +617,7 @@ int exynos_dp_read_bytes_from_dpcd(struct exynos_dp_device *dp,
- 			cur_data_count = count - start_offset;
- 
- 		/* AUX CH Request Transaction process */
--		for (i = 0; i < 10; i++) {
-+		for (i = 0; i < 3; i++) {
- 			/* Select DPCD device address */
- 			reg = AUX_ADDR_7_0(reg_addr + start_offset);
- 			writel(reg, dp->reg_base + EXYNOS_DP_AUX_ADDR_7_0);
-@@ -700,7 +700,7 @@ int exynos_dp_read_byte_from_i2c(struct exynos_dp_device *dp,
- 	int i;
- 	int retval;
- 
--	for (i = 0; i < 10; i++) {
-+	for (i = 0; i < 3; i++) {
- 		/* Clear AUX CH data buffer */
- 		reg = BUF_CLR;
- 		writel(reg, dp->reg_base + EXYNOS_DP_BUFFER_DATA_CTL);
-@@ -708,7 +708,6 @@ int exynos_dp_read_byte_from_i2c(struct exynos_dp_device *dp,
- 		/* Select EDID device */
- 		retval = exynos_dp_select_i2c_device(dp, device_addr, reg_addr);
- 		if (retval != 0) {
--			dev_err(dp->dev, "Select EDID device fail!\n");
- 			continue;
+ 	for (;;) {
+@@ -773,7 +777,7 @@ static int exynos_dp_config_video(struct exynos_dp_device *dp)
+ 			break;
+ 		if (DP_TIMEOUT_LOOP_COUNT < timeout_loop) {
+ 			dev_err(dp->dev, "Timeout of video streamclk ok\n");
+-			return -ETIMEDOUT;
++			return;
  		}
  
-@@ -750,7 +749,7 @@ int exynos_dp_read_bytes_from_i2c(struct exynos_dp_device *dp,
- 	int retval = 0;
+ 		usleep_range(1, 2);
+@@ -807,7 +811,7 @@ static int exynos_dp_config_video(struct exynos_dp_device *dp)
+ 		}
+ 		if (DP_TIMEOUT_LOOP_COUNT < timeout_loop) {
+ 			dev_err(dp->dev, "Timeout of video streamclk ok\n");
+-			return -ETIMEDOUT;
++			return;
+ 		}
  
- 	for (i = 0; i < count; i += 16) {
--		for (j = 0; j < 100; j++) {
-+		for (j = 0; j < 3; j++) {
- 			/* Clear AUX CH data buffer */
- 			reg = BUF_CLR;
- 			writel(reg, dp->reg_base + EXYNOS_DP_BUFFER_DATA_CTL);
+ 		usleep_range(1000, 1001);
+@@ -815,8 +819,6 @@ static int exynos_dp_config_video(struct exynos_dp_device *dp)
+ 
+ 	if (retval != 0)
+ 		dev_err(dp->dev, "Video stream is not detected!\n");
+-
+-	return retval;
+ }
+ 
+ static void exynos_dp_enable_scramble(struct exynos_dp_device *dp, bool enable)
+@@ -933,11 +935,9 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 	exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
+ 
+ 	exynos_dp_init_video(dp);
+-	ret = exynos_dp_config_video(dp);
+-	if (ret) {
+-		dev_err(&pdev->dev, "unable to config video\n");
+-		return ret;
+-	}
++
++	INIT_WORK(&dp->config_work, exynos_dp_config_video);
++	schedule_work(&dp->config_work);
+ 
+ 	platform_set_drvdata(pdev, dp);
+ 
+@@ -949,6 +949,9 @@ static int __devexit exynos_dp_remove(struct platform_device *pdev)
+ 	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
+ 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
+ 
++	if (work_pending(&dp->config_work))
++		flush_work_sync(&dp->config_work);
++
+ 	if (pdata && pdata->phy_exit)
+ 		pdata->phy_exit();
+ 
+@@ -964,6 +967,9 @@ static int exynos_dp_suspend(struct device *dev)
+ 	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
+ 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
+ 
++	if (work_pending(&dp->config_work))
++		flush_work_sync(&dp->config_work);
++
+ 	if (pdata && pdata->phy_exit)
+ 		pdata->phy_exit();
+ 
+@@ -999,7 +1005,7 @@ static int exynos_dp_resume(struct device *dev)
+ 	exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
+ 
+ 	exynos_dp_init_video(dp);
+-	exynos_dp_config_video(dp);
++	schedule_work(&dp->config_work);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
+index 1e646d7..303831d 100644
+--- a/drivers/video/exynos/exynos_dp_core.h
++++ b/drivers/video/exynos/exynos_dp_core.h
+@@ -32,6 +32,7 @@ struct exynos_dp_device {
+ 
+ 	struct video_info	*video_info;
+ 	struct link_train	link_train;
++	struct work_struct	config_work;
+ };
+ 
+ /* exynos_dp_reg.c */
 -- 
-1.7.1
-
+1.7.0.4
 

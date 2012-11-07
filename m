@@ -1,52 +1,48 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Nov 2012 10:25:02 +0000
-Subject: [PATCH 1/5] OMAP: FB: use DMA_BIT_MASK() for fb's coherent_dma_mask
-Message-Id: <1352715906-16946-2-git-send-email-tomi.valkeinen@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 07 Nov 2012 14:56:27 +0000
+Subject: [RFC 09/11] OMAPDSS: FEATURES: Add writeback as supported outputs for OMAP4 managers
+Message-Id: <1352299469-17609-10-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352715906-16946-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1352715906-16946-1-git-send-email-tomi.valkeinen@ti.com>
+References: <n>
+ <1352299469-17609-1-git-send-email-archit@ti.com>
+In-Reply-To: <1352299469-17609-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Use DMA_BIT_MASK() for fb's coherent_dma_mask for clarity.
+The writeback pipeline can connect to any of the OMAP4 overlay managers. Add it
+as a supported output in dss features.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- arch/arm/plat-omap/fb.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/dss_features.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/plat-omap/fb.c b/arch/arm/plat-omap/fb.c
-index bcbb9d5..218963b 100644
---- a/arch/arm/plat-omap/fb.c
-+++ b/arch/arm/plat-omap/fb.c
-@@ -29,6 +29,7 @@
- #include <linux/memblock.h>
- #include <linux/io.h>
- #include <linux/omapfb.h>
-+#include <linux/dma-mapping.h>
+diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
+index 3e8287c..e8d10cb 100644
+--- a/drivers/video/omap2/dss/dss_features.c
++++ b/drivers/video/omap2/dss/dss_features.c
+@@ -202,15 +202,15 @@ static const enum omap_dss_output_id omap3630_dss_supported_outputs[] = {
+ static const enum omap_dss_output_id omap4_dss_supported_outputs[] = {
+ 	/* OMAP_DSS_CHANNEL_LCD */
+ 	OMAP_DSS_OUTPUT_DPI | OMAP_DSS_OUTPUT_DBI |
+-	OMAP_DSS_OUTPUT_DSI1,
++	OMAP_DSS_OUTPUT_DSI1 | OMAP_DSS_OUTPUT_WB,
  
- #include <mach/hardware.h>
- #include <asm/mach/map.h>
-@@ -45,7 +46,7 @@ static struct platform_device omap_fb_device = {
- 	.id		= -1,
- 	.dev = {
- 		.dma_mask		= &omap_fb_dma_mask,
--		.coherent_dma_mask	= ~(u32)0,
-+		.coherent_dma_mask	= DMA_BIT_MASK(32),
- 		.platform_data		= &omapfb_config,
- 	},
- 	.num_resources = 0,
-@@ -81,7 +82,7 @@ static struct platform_device omap_fb_device = {
- 	.id		= -1,
- 	.dev = {
- 		.dma_mask		= &omap_fb_dma_mask,
--		.coherent_dma_mask	= ~(u32)0,
-+		.coherent_dma_mask	= DMA_BIT_MASK(32),
- 		.platform_data		= &omapfb_config,
- 	},
- 	.num_resources = 0,
+ 	/* OMAP_DSS_CHANNEL_DIGIT */
+ 	OMAP_DSS_OUTPUT_VENC | OMAP_DSS_OUTPUT_HDMI |
+-	OMAP_DSS_OUTPUT_DPI,
++	OMAP_DSS_OUTPUT_DPI | OMAP_DSS_OUTPUT_WB,
+ 
+ 	/* OMAP_DSS_CHANNEL_LCD2 */
+ 	OMAP_DSS_OUTPUT_DPI | OMAP_DSS_OUTPUT_DBI |
+-	OMAP_DSS_OUTPUT_DSI2,
++	OMAP_DSS_OUTPUT_DSI2 | OMAP_DSS_OUTPUT_WB,
+ };
+ 
+ static const enum omap_dss_output_id omap5_dss_supported_outputs[] = {
 -- 
-1.7.10.4
+1.7.9.5
 

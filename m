@@ -1,537 +1,63 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Thu, 22 Nov 2012 16:00:11 +0000
-Subject: =?UTF-8?q?=5BPATCHv13=203/7=5D=20video=3A=20add=20of=20helper=20for=20display=20timings/videomode?=
-Message-Id: <1353600015-6974-4-git-send-email-s.trumtrar@pengutronix.de>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 07 Nov 2012 14:56:26 +0000
+Subject: [RFC 08/11] OMAPDSS: APPLY: Check if overlay is connected in mem to mem mode
+Message-Id: <1352299469-17609-9-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353600015-6974-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1353600015-6974-1-git-send-email-s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+References: <n>
+ <1352299469-17609-1-git-send-email-archit@ti.com>
+In-Reply-To: <1352299469-17609-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-This adds support for reading display timings from DT into a struct
-display_timings. The of_display_timing implementation supports multiple
-subnodes. All children are read into an array, that can be queried.
+When a manager is connected to writeback in mem to mem mode, all the connected
+fetch and process data at rate suitable for the scalar to perform the required
+downscaling. This is because there isn't any display connected here, and hence
+no real time constraints. When calling dispc_ovl_setup, pass the correct value
+of mem_to_mem parameter so that it can discard pixel clock related scaling
+limitations.
 
-If no native mode is specified, the first subnode will be used.
-
-For cases, where the graphics drivers knows, there can be only one
-mode description or where the driver only supports one mode, a helper
-function of_get_videomode is added, that gets a struct videomode from DT.
-(As this function is implemented in an expensive fashion, it should only
-be used in the aforementioned case).
-
-This also demonstrates how of_display_timings may be utilized.
-
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
-Acked-by: Stephen Warren <swarren@nvidia.com>
-Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
-Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- .../devicetree/bindings/video/display-timings.txt  |  107 ++++++++++
- drivers/video/Kconfig                              |   15 ++
- drivers/video/Makefile                             |    2 +
- drivers/video/of_display_timing.c                  |  223 ++++++++++++++++++++
- drivers/video/of_videomode.c                       |   48 +++++
- include/linux/of_display_timings.h                 |   20 ++
- include/linux/of_videomode.h                       |   18 ++
- 7 files changed, 433 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/display-timings.txt
- create mode 100644 drivers/video/of_display_timing.c
- create mode 100644 drivers/video/of_videomode.c
- create mode 100644 include/linux/of_display_timings.h
- create mode 100644 include/linux/of_videomode.h
+ drivers/video/omap2/dss/apply.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/display-timings.txt b/Documentation/devicetree/bindings/video/display-timings.txt
-new file mode 100644
-index 0000000..2b25d58
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/display-timings.txt
-@@ -0,0 +1,107 @@
-+display-timings bindings
-+============
-+
-+display-timings node
-+--------------------
-+
-+required properties:
-+ - none
-+
-+optional properties:
-+ - native-mode: The native mode for the display, in case multiple modes are
-+		provided. When omitted, assume the first node is the native.
-+
-+timings subnode
-+---------------
-+
-+required properties:
-+ - hactive, vactive: Display resolution
-+ - hfront-porch, hback-porch, hsync-len: Horizontal Display timing parameters
-+   in pixels
-+   vfront-porch, vback-porch, vsync-len: Vertical display timing parameters in
-+   lines
-+ - clock-frequency: display clock in Hz
-+
-+optional properties:
-+ - hsync-active: Hsync pulse is active low/high/ignored
-+ - vsync-active: Vsync pulse is active low/high/ignored
-+ - de-active: Data-Enable pulse is active low/high/ignored
-+ - pixelclk-inverted: pixelclock is inverted (active on falling edge)/
-+				non-inverted (active on rising edge)/
-+				     ignored (ignore property)
-+ - interlaced (bool): boolean to enable interlaced mode
-+ - doublescan (bool): boolean to enable doublescan mode
-+ - doubleclk (bool)
-+
-+All the optional properties that are not bool follow the following logic:
-+    <1>: high active
-+    <0>: low active
-+    omitted: not used on hardware
-+
-+There are different ways of describing the capabilities of a display. The devicetree
-+representation corresponds to the one commonly found in datasheets for displays.
-+If a display supports multiple signal timings, the native-mode can be specified.
-+
-+The parameters are defined as
-+
-+  +----------+---------------------------------------------+----------+-------+
-+  |          |                ↑                            |          |       |
-+  |          |                |vback_porch                 |          |       |
-+  |          |                ↓                            |          |       |
-+  +----------###############################################----------+-------+
-+  |          #                ↑                            #          |       |
-+  |          #                |                            #          |       |
-+  |  hback   #                |                            #  hfront  | hsync |
-+  |   porch  #                |       hactive              #  porch   |  len  |
-+  |<-------->#<---------------+--------------------------->#<-------->|<----->|
-+  |          #                |                            #          |       |
-+  |          #                |vactive                     #          |       |
-+  |          #                |                            #          |       |
-+  |          #                ↓                            #          |       |
-+  +----------###############################################----------+-------+
-+  |          |                ↑                            |          |       |
-+  |          |                |vfront_porch                |          |       |
-+  |          |                ↓                            |          |       |
-+  +----------+---------------------------------------------+----------+-------+
-+  |          |                ↑                            |          |       |
-+  |          |                |vsync_len                   |          |       |
-+  |          |                ↓                            |          |       |
-+  +----------+---------------------------------------------+----------+-------+
-+
-+
-+Example:
-+
-+	display-timings {
-+		native-mode = <&timing0>;
-+		timing0: 1080p24 {
-+			/* 1920x1080p24 */
-+			clock-frequency = <52000000>;
-+			hactive = <1920>;
-+			vactive = <1080>;
-+			hfront-porch = <25>;
-+			hback-porch = <25>;
-+			hsync-len = <25>;
-+			vback-porch = <2>;
-+			vfront-porch = <2>;
-+			vsync-len = <2>;
-+			hsync-active = <1>;
-+		};
-+	};
-+
-+Every required property also supports the use of ranges, so the commonly used
-+datasheet description with <min typ max>-tuples can be used.
-+
-+Example:
-+
-+	timing1: timing {
-+		/* 1920x1080p24 */
-+		clock-frequency = <148500000>;
-+		hactive = <1920>;
-+		vactive = <1080>;
-+		hsync-len = <0 44 60>;
-+		hfront-porch = <80 88 95>;
-+		hback-porch = <100 148 160>;
-+		vfront-porch = <0 4 6>;
-+		vback-porch = <0 36 50>;
-+		vsync-len = <0 5 6>;
-+	};
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 2a23b18..c5b7bcf 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -39,6 +39,21 @@ config DISPLAY_TIMING
- config VIDEOMODE
-        bool
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 2fd08d8..e1c589c 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -615,10 +615,13 @@ int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl)
  
-+config OF_DISPLAY_TIMING
-+	bool "Enable OF display timing support"
-+	depends on OF
-+	select DISPLAY_TIMING
-+	help
-+	  helper to parse display timings from the devicetree
+ static void dss_ovl_write_regs(struct omap_overlay *ovl)
+ {
++	struct omap_overlay_manager *mgr = ovl->manager;
++	struct omap_dss_output *out = mgr->output;
+ 	struct ovl_priv_data *op = get_ovl_priv(ovl);
+ 	struct omap_overlay_info *oi;
+ 	bool replication;
+ 	struct mgr_priv_data *mp;
++	bool mem_to_mem;
+ 	int r;
+ 
+ 	DSSDBG("writing ovl %d regs", ovl->id);
+@@ -628,11 +631,13 @@ static void dss_ovl_write_regs(struct omap_overlay *ovl)
+ 
+ 	oi = &op->info;
+ 
+-	mp = get_mgr_priv(ovl->manager);
++	mp = get_mgr_priv(mgr);
+ 
+ 	replication = dss_ovl_use_replication(mp->lcd_config, oi->color_mode);
+ 
+-	r = dispc_ovl_setup(ovl->id, oi, replication, &mp->timings, false);
++	mem_to_mem = output_is_wb(out) ? wb_manual_update(out) : false;
 +
-+config OF_VIDEOMODE
-+	bool "Enable OF videomode support"
-+	depends on OF
-+	select VIDEOMODE
-+	select OF_DISPLAY_TIMING
-+	help
-+	  helper to get videomodes from the devicetree
-+
- menuconfig FB
- 	tristate "Support for frame buffer devices"
- 	---help---
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index fc30439..b936b00 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -168,4 +168,6 @@ obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
- #video output switch sysfs driver
- obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) += output.o
- obj-$(CONFIG_DISPLAY_TIMING) += display_timing.o
-+obj-$(CONFIG_OF_DISPLAY_TIMING) += of_display_timing.o
- obj-$(CONFIG_VIDEOMODE) += videomode.o
-+obj-$(CONFIG_OF_VIDEOMODE) += of_videomode.o
-diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
-new file mode 100644
-index 0000000..645f43d
---- /dev/null
-+++ b/drivers/video/of_display_timing.c
-@@ -0,0 +1,223 @@
-+/*
-+ * OF helpers for parsing display timings
-+ *
-+ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
-+ *
-+ * based on of_videomode.c by Sascha Hauer <s.hauer@pengutronix.de>
-+ *
-+ * This file is released under the GPLv2
-+ */
-+#include <linux/of.h>
-+#include <linux/slab.h>
-+#include <linux/export.h>
-+#include <linux/of_display_timings.h>
-+
-+/**
-+ * parse_property - parse timing_entry from device_node
-+ * @np: device_node with the property
-+ * @name: name of the property
-+ * @result: will be set to the return value
-+ *
-+ * DESCRIPTION:
-+ * Every display_timing can be specified with either just the typical value or
-+ * a range consisting of min/typ/max. This function helps handling this
-+ **/
-+static int parse_property(const struct device_node *np, const char *name,
-+			  struct timing_entry *result)
-+{
-+	struct property *prop;
-+	int length, cells, ret;
-+
-+	prop = of_find_property(np, name, &length);
-+	if (!prop) {
-+		pr_err("%s: could not find property %s\n", __func__, name);
-+		return -EINVAL;
-+	}
-+
-+	cells = length / sizeof(u32);
-+	if (cells = 1) {
-+		ret = of_property_read_u32(np, name, &result->typ);
-+		result->min = result->typ;
-+		result->max = result->typ;
-+	} else if (cells = 3) {
-+		ret = of_property_read_u32_array(np, name, &result->min, cells);
-+	} else {
-+		pr_err("%s: illegal timing specification in %s\n", __func__,
-+			name);
-+		return -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
-+/**
-+ * of_get_display_timing - parse display_timing entry from device_node
-+ * @np: device_node with the properties
-+ **/
-+static struct display_timing *of_get_display_timing(const struct device_node
-+						    *np)
-+{
-+	struct display_timing *dt;
-+	int ret = 0;
-+
-+	dt = kzalloc(sizeof(*dt), GFP_KERNEL);
-+	if (!dt) {
-+		pr_err("%s: could not allocate display_timing struct\n",
-+			__func__);
-+		return NULL;
-+	}
-+
-+	ret |= parse_property(np, "hback-porch", &dt->hback_porch);
-+	ret |= parse_property(np, "hfront-porch", &dt->hfront_porch);
-+	ret |= parse_property(np, "hactive", &dt->hactive);
-+	ret |= parse_property(np, "hsync-len", &dt->hsync_len);
-+	ret |= parse_property(np, "vback-porch", &dt->vback_porch);
-+	ret |= parse_property(np, "vfront-porch", &dt->vfront_porch);
-+	ret |= parse_property(np, "vactive", &dt->vactive);
-+	ret |= parse_property(np, "vsync-len", &dt->vsync_len);
-+	ret |= parse_property(np, "clock-frequency", &dt->pixelclock);
-+
-+	of_property_read_u32(np, "vsync-active", &dt->vsync_pol_active);
-+	of_property_read_u32(np, "hsync-active", &dt->hsync_pol_active);
-+	of_property_read_u32(np, "de-active", &dt->de_pol_active);
-+	of_property_read_u32(np, "pixelclk-inverted", &dt->pixelclk_pol);
-+	dt->interlaced = of_property_read_bool(np, "interlaced");
-+	dt->doublescan = of_property_read_bool(np, "doublescan");
-+
-+	if (ret) {
-+		pr_err("%s: error reading timing properties\n", __func__);
-+		kfree(dt);
-+		return NULL;
-+	}
-+
-+	return dt;
-+}
-+
-+/**
-+ * of_get_display_timings - parse all display_timing entries from a device_node
-+ * @np: device_node with the subnodes
-+ **/
-+struct display_timings *of_get_display_timings(struct device_node *np)
-+{
-+	struct device_node *timings_np;
-+	struct device_node *entry;
-+	struct device_node *native_mode;
-+	struct display_timings *disp;
-+
-+	if (!np) {
-+		pr_err("%s: no devicenode given\n", __func__);
-+		return NULL;
-+	}
-+
-+	timings_np = of_find_node_by_name(np, "display-timings");
-+	if (!timings_np) {
-+		pr_err("%s: could not find display-timings node\n", __func__);
-+		return NULL;
-+	}
-+
-+	disp = kzalloc(sizeof(*disp), GFP_KERNEL);
-+	if (!disp) {
-+		pr_err("%s: could not allocate struct disp'\n", __func__);
-+		goto dispfail;
-+	}
-+
-+	entry = of_parse_phandle(timings_np, "native-mode", 0);
-+	/* assume first child as native mode if none provided */
-+	if (!entry)
-+		entry = of_get_next_child(np, NULL);
-+	/* if there is no child, it is useless to go on */
-+	if (!entry) {
-+		pr_err("%s: no timing specifications given\n", __func__);
-+		goto entryfail;
-+	}
-+
-+	pr_info("%s: using %s as default timing\n", __func__, entry->name);
-+
-+	native_mode = entry;
-+
-+	disp->num_timings = of_get_child_count(timings_np);
-+	if (disp->num_timings = 0) {
-+		/* should never happen, as entry was already found above */
-+		pr_err("%s: no timings specified\n", __func__);
-+		goto entryfail;
-+	}
-+
-+	disp->timings = kzalloc(sizeof(struct display_timing *) * disp->num_timings,
-+				GFP_KERNEL);
-+	if (!disp->timings) {
-+		pr_err("%s: could not allocate timings array\n", __func__);
-+		goto entryfail;
-+	}
-+
-+	disp->num_timings = 0;
-+	disp->native_mode = 0;
-+
-+	for_each_child_of_node(timings_np, entry) {
-+		struct display_timing *dt;
-+
-+		dt = of_get_display_timing(entry);
-+		if (!dt) {
-+			/*
-+			 * to not encourage wrong devicetrees, fail in case of
-+			 * an error
-+			 */
-+			pr_err("%s: error in timing %d\n", __func__,
-+			       disp->num_timings + 1);
-+			goto timingfail;
-+		}
-+
-+		if (native_mode = entry)
-+			disp->native_mode = disp->num_timings;
-+
-+		disp->timings[disp->num_timings] = dt;
-+		disp->num_timings++;
-+	}
-+	of_node_put(timings_np);
-+	/*
-+	 * native_mode points to the device_node returned by of_parse_phandle
-+	 * therefore call of_node_put on it
-+	 */
-+	of_node_put(native_mode);
-+
-+	if (disp->num_timings > 0)
-+		pr_info("%s: got %d timings. Using timing #%d as default\n",
-+			__func__, disp->num_timings, disp->native_mode + 1);
-+	else {
-+		pr_err("%s: no valid timings specified\n", __func__);
-+		display_timings_release(disp);
-+		return NULL;
-+	}
-+	return disp;
-+
-+timingfail:
-+	if (native_mode)
-+		of_node_put(native_mode);
-+	display_timings_release(disp);
-+entryfail:
-+	if (disp)
-+		kfree(disp);
-+dispfail:
-+	of_node_put(timings_np);
-+	return NULL;
-+}
-+EXPORT_SYMBOL_GPL(of_get_display_timings);
-+
-+/**
-+ * of_display_timings_exists - check if a display-timings node is provided
-+ * @np: device_node with the timing
-+ **/
-+int of_display_timings_exists(const struct device_node *np)
-+{
-+	struct device_node *timings_np;
-+
-+	if (!np)
-+		return -EINVAL;
-+
-+	timings_np = of_parse_phandle(np, "display-timings", 0);
-+	if (!timings_np)
-+		return -EINVAL;
-+
-+	of_node_put(timings_np);
-+	return 1;
-+}
-+EXPORT_SYMBOL_GPL(of_display_timings_exists);
-diff --git a/drivers/video/of_videomode.c b/drivers/video/of_videomode.c
-new file mode 100644
-index 0000000..358aa56
---- /dev/null
-+++ b/drivers/video/of_videomode.c
-@@ -0,0 +1,48 @@
-+/*
-+ * generic videomode helper
-+ *
-+ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
-+ *
-+ * This file is released under the GPLv2
-+ */
-+#include <linux/of.h>
-+#include <linux/of_display_timings.h>
-+#include <linux/of_videomode.h>
-+#include <linux/export.h>
-+
-+/**
-+ * of_get_videomode - get the videomode #<index> from devicetree
-+ * @np - devicenode with the display_timings
-+ * @vm - set to return value
-+ * @index - index into list of display_timings
-+ * DESCRIPTION:
-+ * Get a list of all display timings and put the one
-+ * specified by index into *vm. This function should only be used, if
-+ * only one videomode is to be retrieved. A driver that needs to work
-+ * with multiple/all videomodes should work with
-+ * of_get_display_timings instead.
-+ **/
-+int of_get_videomode(struct device_node *np, struct videomode *vm,
-+		     int index)
-+{
-+	struct display_timings *disp;
-+	int ret;
-+
-+	disp = of_get_display_timings(np);
-+	if (!disp) {
-+		pr_err("%s: no timings specified\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	if (index = OF_USE_NATIVE_MODE)
-+		index = disp->native_mode;
-+
-+	ret = videomode_from_timing(disp, vm, index);
-+	if (ret)
-+		return ret;
-+
-+	display_timings_release(disp);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(of_get_videomode);
-diff --git a/include/linux/of_display_timings.h b/include/linux/of_display_timings.h
-new file mode 100644
-index 0000000..b3e3455
---- /dev/null
-+++ b/include/linux/of_display_timings.h
-@@ -0,0 +1,20 @@
-+/*
-+ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
-+ *
-+ * display timings of helpers
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#ifndef __LINUX_OF_DISPLAY_TIMINGS_H
-+#define __LINUX_OF_DISPLAY_TIMINGS_H
-+
-+#include <linux/display_timing.h>
-+#include <linux/of.h>
-+
-+#define OF_USE_NATIVE_MODE -1
-+
-+struct display_timings *of_get_display_timings(struct device_node *np);
-+int of_display_timings_exists(const struct device_node *np);
-+
-+#endif
-diff --git a/include/linux/of_videomode.h b/include/linux/of_videomode.h
-new file mode 100644
-index 0000000..a72ad78
---- /dev/null
-+++ b/include/linux/of_videomode.h
-@@ -0,0 +1,18 @@
-+/*
-+ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
-+ *
-+ * videomode of-helpers
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#ifndef __LINUX_OF_VIDEOMODE_H
-+#define __LINUX_OF_VIDEOMODE_H
-+
-+#include <linux/videomode.h>
-+#include <linux/of.h>
-+
-+int of_get_videomode(struct device_node *np, struct videomode *vm,
-+		     int index);
-+
-+#endif /* __LINUX_OF_VIDEOMODE_H */
++	r = dispc_ovl_setup(ovl->id, oi, replication, &mp->timings, mem_to_mem);
+ 	if (r) {
+ 		/*
+ 		 * We can't do much here, as this function can be called from
 -- 
-1.7.10.4
+1.7.9.5
 

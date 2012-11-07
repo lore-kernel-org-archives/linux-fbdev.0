@@ -1,63 +1,47 @@
 From: Archit Taneja <archit@ti.com>
-Date: Wed, 07 Nov 2012 14:56:26 +0000
-Subject: [RFC 08/11] OMAPDSS: APPLY: Check if overlay is connected in mem to mem mode
-Message-Id: <1352299469-17609-9-git-send-email-archit@ti.com>
+Date: Wed, 07 Nov 2012 09:29:24 +0000
+Subject: [PATCH 3/3] OMAPDSS: APPLY: Remove unnecessary call to mg_clear_shadow_dirty
+Message-Id: <1352279844-10494-4-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <n>
- <1352299469-17609-1-git-send-email-archit@ti.com>
-In-Reply-To: <1352299469-17609-1-git-send-email-archit@ti.com>
+ <1352279844-10494-1-git-send-email-archit@ti.com>
+In-Reply-To: <1352279844-10494-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-When a manager is connected to writeback in mem to mem mode, all the connected
-fetch and process data at rate suitable for the scalar to perform the required
-downscaling. This is because there isn't any display connected here, and hence
-no real time constraints. When calling dispc_ovl_setup, pass the correct value
-of mem_to_mem parameter so that it can discard pixel clock related scaling
-limitations.
+When doing a manual update in dss_mgr_start_update, we clear the shadow dirty
+flags. Although there isn't any harm in clearing them. The need to clear them
+out here should never arrive.
+
+When applying configurations for a manual update manager, we never do any
+register writes, i.e, calls to dss_mgr_write_regs and dss_mgr_write_regs_extra
+never happen while applying. We do all these writes only when we call
+dss_mgr_start_update. Hence, there is never a time when the shadow registers
+are dirty.
+
+Remove the call to mg_clear_shadow_dirty.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/apply.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/apply.c |    2 --
+ 1 file changed, 2 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 2fd08d8..e1c589c 100644
+index 37a5d22..7a7b820 100644
 --- a/drivers/video/omap2/dss/apply.c
 +++ b/drivers/video/omap2/dss/apply.c
-@@ -615,10 +615,13 @@ int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl)
+@@ -772,8 +772,6 @@ void dss_mgr_start_update(struct omap_overlay_manager *mgr)
  
- static void dss_ovl_write_regs(struct omap_overlay *ovl)
- {
-+	struct omap_overlay_manager *mgr = ovl->manager;
-+	struct omap_dss_output *out = mgr->output;
- 	struct ovl_priv_data *op = get_ovl_priv(ovl);
- 	struct omap_overlay_info *oi;
- 	bool replication;
- 	struct mgr_priv_data *mp;
-+	bool mem_to_mem;
- 	int r;
+ 	dispc_mgr_enable_sync(mgr->id);
  
- 	DSSDBG("writing ovl %d regs", ovl->id);
-@@ -628,11 +631,13 @@ static void dss_ovl_write_regs(struct omap_overlay *ovl)
+-	mgr_clear_shadow_dirty(mgr);
+-
+ 	spin_unlock_irqrestore(&data_lock, flags);
+ }
  
- 	oi = &op->info;
- 
--	mp = get_mgr_priv(ovl->manager);
-+	mp = get_mgr_priv(mgr);
- 
- 	replication = dss_ovl_use_replication(mp->lcd_config, oi->color_mode);
- 
--	r = dispc_ovl_setup(ovl->id, oi, replication, &mp->timings, false);
-+	mem_to_mem = output_is_wb(out) ? wb_manual_update(out) : false;
-+
-+	r = dispc_ovl_setup(ovl->id, oi, replication, &mp->timings, mem_to_mem);
- 	if (r) {
- 		/*
- 		 * We can't do much here, as this function can be called from
 -- 
 1.7.9.5
 

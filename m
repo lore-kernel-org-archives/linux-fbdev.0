@@ -1,93 +1,135 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 15 Nov 2012 15:58:33 +0000
-Subject: [PATCH 25/32] OMAPDSS: DISPC: add dispc_ovl_check()
-Message-Id: <1352995120-3288-26-git-send-email-tomi.valkeinen@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 07 Nov 2012 14:56:24 +0000
+Subject: [RFC 06/11] OMAPDSS: APPLY: configure channel_in for writeback
+Message-Id: <1352299469-17609-7-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
+References: <n>
+ <1352299469-17609-1-git-send-email-archit@ti.com>
+In-Reply-To: <1352299469-17609-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-This patch adds a new function, dispc_ovl_check(), which can be used to
-verify scaling configuration for an overlay. The function gets both the
-overlay and overlay manager as parameters, so that the caller does not
-need to configure the hardware before using this function.
+writeback's input is configured by the CHANNELIN field in DISPC_WB_ATTRIBUTES.
+It's an immediate write register field. We need to change writeback's channel
+in whenever the manager to which it is connected changes.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+When changing managers for overlays, we needed to be certain that the overlay
+was disabled. We added some extra waits for that. However, such a thing isn't
+required for writeback as it's disabled for sure after we call dss_wb_disable.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |   40 +++++++++++++++++++++++++++++++++++++++
- drivers/video/omap2/dss/dss.h   |    4 ++++
- 2 files changed, 44 insertions(+)
+ drivers/video/omap2/dss/apply.c     |   31 +++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/dss.h       |    9 +++++++++
+ drivers/video/omap2/dss/writeback.c |   23 +++++++++++++++++++++++
+ 3 files changed, 63 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index b3bb604..15ef1d1 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -2314,6 +2314,46 @@ static int dispc_ovl_calc_scaling(unsigned long pclk, unsigned long lclk,
- 	return 0;
- }
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 1ab1755..a205ed4 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -1175,6 +1175,22 @@ int dss_mgr_set_output(struct omap_overlay_manager *mgr,
+ 		goto err;
+ 	}
  
-+int dispc_ovl_check(enum omap_plane plane, enum omap_channel channel,
-+		const struct omap_overlay_info *oi,
-+		const struct omap_video_timings *timings,
-+		int *x_predecim, int *y_predecim)
-+{
-+	enum omap_overlay_caps caps = dss_feat_get_overlay_caps(plane);
-+	bool five_taps = true;
-+	bool fieldmode = 0;
-+	u16 in_height = oi->height;
-+	u16 in_width = oi->width;
-+	bool ilace = timings->interlace;
-+	u16 out_width, out_height;
-+	int pos_x = oi->pos_x;
-+	unsigned long pclk = dispc_mgr_pclk_rate(channel);
-+	unsigned long lclk = dispc_mgr_lclk_rate(channel);
++	if (output_is_wb(output)) {
++		enum dss_writeback_channel channel;
 +
-+	out_width = oi->out_width = 0 ? oi->width : oi->out_width;
-+	out_height = oi->out_height = 0 ? oi->height : oi->out_height;
++		r = dss_writeback_calc_channel_in(mgr, &channel);
++		if (r)
++			goto err;
 +
-+	if (ilace && oi->height = out_height)
-+		fieldmode = 1;
++		r = dispc_runtime_get();
++		if (r)
++			goto err;
 +
-+	if (ilace) {
-+		if (fieldmode)
-+			in_height /= 2;
-+		out_height /= 2;
++		dispc_wb_set_channel_in(channel);
 +
-+		DSSDBG("adjusting for ilace: height %d, out_height %d\n",
-+				in_height, out_height);
++		dispc_runtime_put();
 +	}
 +
-+	if (!dss_feat_color_mode_supported(plane, oi->color_mode))
-+		return -EINVAL;
+ 	output->manager = mgr;
+ 	mgr->output = output;
+ 
+@@ -1210,6 +1226,21 @@ int dss_mgr_unset_output(struct omap_overlay_manager *mgr)
+ 
+ 	spin_unlock_irqrestore(&data_lock, flags);
+ 
++	if (output_is_wb(mgr->output)) {
++		struct omap_dss_output *wb = mgr->output;
++		struct wb_priv_data *wp = get_wb_priv(wb);
 +
-+	return dispc_ovl_calc_scaling(pclk, lclk, caps, timings, in_width,
-+			in_height, out_width, out_height, oi->color_mode,
-+			&five_taps, x_predecim, y_predecim, pos_x,
-+			oi->rotation_type, false);
-+}
++		spin_lock_irqsave(&data_lock, flags);
 +
- static int dispc_ovl_setup_common(enum omap_plane plane,
- 		enum omap_overlay_caps caps, u32 paddr, u32 p_uv_addr,
- 		u16 screen_width, int pos_x, int pos_y, u16 width, u16 height,
++		if (wp->enabled) {
++			DSSERR("WB output can't be unset when enabled\n");
++			r = -EINVAL;
++			goto err1;
++		}
++
++		spin_unlock_irqrestore(&data_lock, flags);
++	}
++
+ 	mgr->output->manager = NULL;
+ 	mgr->output = NULL;
+ 
 diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 16fbaaa..8004bdf 100644
+index 6238895..f9e7074 100644
 --- a/drivers/video/omap2/dss/dss.h
 +++ b/drivers/video/omap2/dss/dss.h
-@@ -423,6 +423,10 @@ int dispc_ovl_enable(enum omap_plane plane, bool enable);
- bool dispc_ovl_enabled(enum omap_plane plane);
- void dispc_ovl_set_channel_out(enum omap_plane plane,
- 		enum omap_channel channel);
-+int dispc_ovl_check(enum omap_plane plane, enum omap_channel channel,
-+		const struct omap_overlay_info *oi,
-+		const struct omap_video_timings *timings,
-+		int *x_predecim, int *y_predecim);
+@@ -540,6 +540,15 @@ int hdmi_audio_config(struct omap_dss_audio *audio);
+ #ifdef CONFIG_OMAP4_DSS_WRITEBACK
+ int writeback_init_platform_driver(void) __init;
+ void writeback_uninit_platform_driver(void) __exit;
++int dss_writeback_calc_channel_in(struct omap_overlay_manager *mgr,
++		enum dss_writeback_channel *channel);
++#else
++static inline int dss_writeback_calc_channel_in(struct omap_overlay_manager *mgr,
++		enum dss_writeback_channel *channel)
++{
++	WARN("%s: WB not compiled in, returning 0\n", __func__);
++	return 0;
++}
+ #endif
  
- u32 dispc_mgr_get_vsync_irq(enum omap_channel channel);
- u32 dispc_mgr_get_framedone_irq(enum omap_channel channel);
+ /* RFBI */
+diff --git a/drivers/video/omap2/dss/writeback.c b/drivers/video/omap2/dss/writeback.c
+index 598defd..09394fb 100644
+--- a/drivers/video/omap2/dss/writeback.c
++++ b/drivers/video/omap2/dss/writeback.c
+@@ -48,6 +48,29 @@ static inline struct platform_device *writeback_get_wbdev_from_output(struct oma
+ 	return out->pdev;
+ }
+ 
++int dss_writeback_calc_channel_in(struct omap_overlay_manager *mgr,
++		enum dss_writeback_channel *channel)
++{
++	/*
++	 * Add a case for dummy writeback manager once we support connecting
++	 * writeback directly to an overlay.
++	 */
++	switch (mgr->id) {
++	case OMAP_DSS_CHANNEL_DIGIT:
++		*channel = DSS_WB_TV_MGR;
++		break;
++	case OMAP_DSS_CHANNEL_LCD2:
++		*channel = DSS_WB_LCD2_MGR;
++		break;
++	case OMAP_DSS_CHANNEL_LCD:
++	default:
++		*channel = DSS_WB_LCD1_MGR;
++		break;
++	}
++
++	return 0;
++}
++
+ void omapdss_writeback_set_input_size(struct omap_dss_output *wb, u16 w, u16 h)
+ {
+ 	struct platform_device *wbdev = writeback_get_wbdev_from_output(wb);
 -- 
-1.7.10.4
+1.7.9.5
 

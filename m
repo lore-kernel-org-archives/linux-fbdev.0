@@ -1,7 +1,7 @@
-From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
-Date: Wed, 07 Nov 2012 16:15:45 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Date: Wed, 07 Nov 2012 16:56:55 +0000
 Subject: Re: tty, vt: lockdep warnings
-Message-Id: <87625h9yoe.fsf@nemi.mork.no>
+Message-Id: <20121107170132.1df293d6@pyramind.ukuu.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <50899507.1040900@oracle.com>
 	<20121026143754.50277bd8@pyramind.ukuu.org.uk>
@@ -16,31 +16,28 @@ References: <50899507.1040900@oracle.com>
 	<20121106173845.4a50d661@pyramind.ukuu.org.uk>
 	<509A665C.3030603@gmail.com>
 	<20121107160232.18e83ee9@pyramind.ukuu.org.uk>
-In-Reply-To: <20121107160232.18e83ee9@pyramind.ukuu.org.uk> (Alan Cox's
-	message of "Wed, 7 Nov 2012 16:02:32 +0000")
+	<87625h9yoe.fsf@nemi.mork.no>
+In-Reply-To: <87625h9yoe.fsf@nemi.mork.no>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: =?ISO-8859-1?B?Qmr4cm4=?= Mork <bjorn@mork.no>
 Cc: Sasha Levin <levinsasha928@gmail.com>, Dave Jones <davej@redhat.com>, Hugh Dickins <hughd@google.com>, Sasha Levin <sasha.levin@oracle.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, florianSchandinat@gmx.de
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+On Wed, 07 Nov 2012 17:15:45 +0100
+Bj=F8rn Mork <bjorn@mork.no> wrote:
 
-> +
-> +static int bind_con_driver(const struct consw *csw, int first, int last,
-> +			   int deflt)
-> +{
-> +	int ret;
-> +=09
-> +	console_unlock();
+> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+>=20
+> > +
+> > +static int bind_con_driver(const struct consw *csw, int first, int las=
+t,
+> > +			   int deflt)
+> > +{
+> > +	int ret;
+> > +=09
+> > +	console_unlock();
+>=20
+> console_lock() maybe...
 
-console_lock() maybe...
-
-> +	ret =3D do_bind_con_driver(csw, first, last, deflt);
-> +	console_unlock();
-> +	return ret;
-> +}
-> +=09
-
-
-Bj=C3=B8rn
+Thanks I'll fix that path in v3

@@ -1,128 +1,144 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 09 Nov 2012 05:50:43 +0000
-Subject: [PATCH v4 4/8] video: exynos_dp: Improve EDID error handling
-Message-Id: <001c01cdbe3e$283d7ae0$78b870a0$%han@samsung.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 07 Nov 2012 14:56:22 +0000
+Subject: [RFC 04/11] OMAPDSS: writeback: Configure writeback input size
+Message-Id: <1352299469-17609-5-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <n>
+ <1352299469-17609-1-git-send-email-archit@ti.com>
+In-Reply-To: <1352299469-17609-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-From: Sean Paul <seanpaul@chromium.org>
+The input to the writeback piepline comes from an overlay manager or an overlay
+in mem to mem mode. In both cases the input size configured for writeback should
+be the size of the overlay or overlay manager output.
 
-EDID error handling has 2 problems:
- - It doesn't fail as early as it can
- - The retry counts for i2c and aux transactions are huge
+We ignore the case of direct connections between an overlay and writeback for
+now. Assuming that writeback output connected only to a manager, we need to
+ensure that the manger dimensions change when the user tries to change
+writeback's input size.
 
-This patch fails if the initial i2c transaction fails, and reduces the
-aux and i2c retry counts down to 3.
+This is achieved by the output driver calling dss_mgr_set_timings. When applying
+the manager timings, we also dirty the writeback_info cache so that the next
+writeback update will incorporate the new manager timings. In effect, we don't
+maintain private data/cache for the input size of writeback as it's always equal
+to the manager's input size. However, we take care of updating the writeback
+registers whenever we change the manager's input size.
 
-[jg1.han@samsung.com: reduced the retry count of exynos_dp_read_byte_from_dpcd()]
-Signed-off-by: Sean Paul <seanpaul@chromium.org>
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/exynos/exynos_dp_core.c |   13 ++++++++-----
- drivers/video/exynos/exynos_dp_reg.c  |   14 ++++++--------
- 2 files changed, 14 insertions(+), 13 deletions(-)
+ drivers/video/omap2/dss/apply.c     |   18 ++++++++++++++++++
+ drivers/video/omap2/dss/writeback.c |   31 +++++++++++++++++++++++++++++++
+ include/video/omapdss.h             |    1 +
+ 3 files changed, 50 insertions(+)
 
-diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-index 6e54a18..4a6ed2f 100644
---- a/drivers/video/exynos/exynos_dp_core.c
-+++ b/drivers/video/exynos/exynos_dp_core.c
-@@ -90,9 +90,11 @@ static int exynos_dp_read_edid(struct exynos_dp_device *dp)
- 	 */
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 76886da..8fe7fce 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -223,6 +223,11 @@ static bool wb_manual_update(struct omap_dss_output *wb)
+ 	return true;
+ }
  
- 	/* Read Extension Flag, Number of 128-byte EDID extension blocks */
--	exynos_dp_read_byte_from_i2c(dp, I2C_EDID_DEVICE_ADDR,
-+	retval = exynos_dp_read_byte_from_i2c(dp, I2C_EDID_DEVICE_ADDR,
- 				EDID_EXTENSION_FLAG,
- 				&extend_block);
-+	if (retval)
-+		return retval;
++static bool output_is_wb(struct omap_dss_output *out)
++{
++	return out ? out->id = OMAP_DSS_OUTPUT_WB : false;
++}
++
+ static int dss_check_settings_low(struct omap_overlay_manager *mgr,
+ 		bool applying)
+ {
+@@ -1226,6 +1231,19 @@ static void dss_apply_mgr_timings(struct omap_overlay_manager *mgr,
  
- 	if (extend_block > 0) {
- 		dev_dbg(dp->dev, "EDID data includes a single extension!\n");
-@@ -181,14 +183,15 @@ static int exynos_dp_handle_edid(struct exynos_dp_device *dp)
- 	int retval;
+ 	mp->timings = *timings;
+ 	mp->extra_info_dirty = true;
++
++	/*
++	 * If the connected output is writeback, and if the width or height of
++	 * the overlay manager change, writeback's input size needs to be
++	 * changed too. Dirty the writeback info so that it's reconfigured
++	 * along with the manager timings change.
++	 */
++	if (output_is_wb(mgr->output)) {
++		struct omap_dss_output *wb = mgr->output;
++		struct wb_priv_data *wp = get_wb_priv(wb);
++
++		wp->info_dirty = true;
++	}
+ }
  
- 	/* Read DPCD DPCD_ADDR_DPCD_REV~RECEIVE_PORT1_CAP_1 */
--	exynos_dp_read_bytes_from_dpcd(dp,
--		DPCD_ADDR_DPCD_REV,
--		12, buf);
-+	retval = exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_DPCD_REV,
-+				12, buf);
-+	if (retval)
-+		return retval;
+ void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
+diff --git a/drivers/video/omap2/dss/writeback.c b/drivers/video/omap2/dss/writeback.c
+index c05dd54..9a80f72 100644
+--- a/drivers/video/omap2/dss/writeback.c
++++ b/drivers/video/omap2/dss/writeback.c
+@@ -30,6 +30,12 @@ struct writeback_data {
+ 	struct mutex lock;
  
- 	/* Read EDID */
- 	for (i = 0; i < 3; i++) {
- 		retval = exynos_dp_read_edid(dp);
--		if (retval = 0)
-+		if (!retval)
- 			break;
- 	}
+ 	struct omap_dss_output output;
++	/*
++	 * timings of manager to which writeback is connected, only configured
++	 * by writeback driver in mem to mem mode. In capture mode, manager
++	 * timings will be configured by the display interface.
++	 */
++	struct omap_video_timings input_timings;
+ };
  
-diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
-index 3f5ca8a..fc19ef6 100644
---- a/drivers/video/exynos/exynos_dp_reg.c
-+++ b/drivers/video/exynos/exynos_dp_reg.c
-@@ -491,7 +491,7 @@ int exynos_dp_read_byte_from_dpcd(struct exynos_dp_device *dp,
- 	int i;
- 	int retval;
+ static inline struct writeback_data *writeback_get_drv_data(struct platform_device *wbdev)
+@@ -42,6 +48,23 @@ static inline struct platform_device *writeback_get_wbdev_from_output(struct oma
+ 	return out->pdev;
+ }
  
--	for (i = 0; i < 10; i++) {
-+	for (i = 0; i < 3; i++) {
- 		/* Clear AUX CH data buffer */
- 		reg = BUF_CLR;
- 		writel(reg, dp->reg_base + EXYNOS_DP_BUFFER_DATA_CTL);
-@@ -552,7 +552,7 @@ int exynos_dp_write_bytes_to_dpcd(struct exynos_dp_device *dp,
- 		else
- 			cur_data_count = count - start_offset;
++void omapdss_writeback_set_input_size(struct omap_dss_output *wb, u16 w, u16 h)
++{
++	struct platform_device *wbdev = writeback_get_wbdev_from_output(wb);
++	struct writeback_data *wb_data = writeback_get_drv_data(wbdev);
++
++	mutex_lock(&wb_data->lock);
++
++	wb_data->input_timings.x_res = w;
++	wb_data->input_timings.y_res = h;
++
++	if (wb->manager)
++		dss_mgr_set_timings(wb->manager, &wb_data->input_timings);
++
++	mutex_unlock(&wb_data->lock);
++}
++EXPORT_SYMBOL(omapdss_writeback_set_input_size);
++
+ int omapdss_writeback_apply(struct omap_dss_output *wb)
+ {
+ 	return omap_dss_wb_apply(wb);
+@@ -92,6 +115,14 @@ static int __init omap_writeback_probe(struct platform_device *pdev)
  
--		for (i = 0; i < 10; i++) {
-+		for (i = 0; i < 3; i++) {
- 			/* Select DPCD device address */
- 			reg = AUX_ADDR_7_0(reg_addr + start_offset);
- 			writel(reg, dp->reg_base + EXYNOS_DP_AUX_ADDR_7_0);
-@@ -617,7 +617,7 @@ int exynos_dp_read_bytes_from_dpcd(struct exynos_dp_device *dp,
- 			cur_data_count = count - start_offset;
+ 	mutex_init(&wb_data->lock);
  
- 		/* AUX CH Request Transaction process */
--		for (i = 0; i < 10; i++) {
-+		for (i = 0; i < 3; i++) {
- 			/* Select DPCD device address */
- 			reg = AUX_ADDR_7_0(reg_addr + start_offset);
- 			writel(reg, dp->reg_base + EXYNOS_DP_AUX_ADDR_7_0);
-@@ -700,17 +700,15 @@ int exynos_dp_read_byte_from_i2c(struct exynos_dp_device *dp,
- 	int i;
- 	int retval;
++	/* initialize with dummy timings */
++	wb_data->input_timings = (struct omap_video_timings)
++		{ 640, 480, 0, 1, 1, 1, 1, 0, 0, false,
++			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
++			OMAPDSS_DRIVE_SIG_RISING_EDGE, OMAPDSS_SIG_ACTIVE_HIGH,
++			OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES,
++		};
++
+ 	writeback_init_output(pdev, wb_data);
  
--	for (i = 0; i < 10; i++) {
-+	for (i = 0; i < 3; i++) {
- 		/* Clear AUX CH data buffer */
- 		reg = BUF_CLR;
- 		writel(reg, dp->reg_base + EXYNOS_DP_BUFFER_DATA_CTL);
+ 	return 0;
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 2bc10cb..d8064ed 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -837,6 +837,7 @@ void omapdss_rfbi_set_data_lines(struct omap_dss_device *dssdev,
+ void omapdss_rfbi_set_interface_timings(struct omap_dss_device *dssdev,
+ 		struct rfbi_timings *timings);
  
- 		/* Select EDID device */
- 		retval = exynos_dp_select_i2c_device(dp, device_addr, reg_addr);
--		if (retval != 0) {
--			dev_err(dp->dev, "Select EDID device fail!\n");
-+		if (retval != 0)
- 			continue;
--		}
- 
- 		/*
- 		 * Set I2C transaction and read data
-@@ -750,7 +748,7 @@ int exynos_dp_read_bytes_from_i2c(struct exynos_dp_device *dp,
- 	int retval = 0;
- 
- 	for (i = 0; i < count; i += 16) {
--		for (j = 0; j < 100; j++) {
-+		for (j = 0; j < 3; j++) {
- 			/* Clear AUX CH data buffer */
- 			reg = BUF_CLR;
- 			writel(reg, dp->reg_base + EXYNOS_DP_BUFFER_DATA_CTL);
++void omapdss_writeback_set_input_size(struct omap_dss_output *wb, u16 w, u16 h);
+ int omapdss_writeback_apply(struct omap_dss_output *wb);
+ int omapdss_writeback_set_info(struct omap_dss_output *wb,
+ 		struct omap_dss_writeback_info *info);
 -- 
-1.7.1
-
+1.7.9.5
 

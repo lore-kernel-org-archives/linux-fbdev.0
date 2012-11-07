@@ -1,51 +1,29 @@
-From: Ajay Kumar <ajaykumar.rs@samsung.com>
-Date: Mon, 05 Nov 2012 07:54:58 +0000
-Subject: [PATCH V2] video: exynos_dp: Fix incorrect setting for INT_CTL
-Message-Id: <1352101378-11560-2-git-send-email-ajaykumar.rs@samsung.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 07 Nov 2012 06:27:01 +0000
+Subject: [PATCH 0/3] OMAPDSS: DISPC: Writeback fixes
+Message-Id: <1352268905-31093-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <002901cdbb28$82ecb7d0$88c62770$%han@samsung.com>
-In-Reply-To: <002901cdbb28$82ecb7d0$88c62770$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-INT_CTL register contains bits INT_POL0 and INT_POL1, and not INT_POL.
-This patch fixes the wrong register setting for INT_CTL.
+Some issues were found in the DISPC driver when performing scaling with
+writeback pipeline. This series fixes those issues.
 
-Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
----
- drivers/video/exynos/exynos_dp_reg.c |    2 +-
- drivers/video/exynos/exynos_dp_reg.h |    3 ++-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+Reference tree:
+git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git 3.8/writeback_fixes_dispc
 
-diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
-index 3f5ca8a..d67f49b 100644
---- a/drivers/video/exynos/exynos_dp_reg.c
-+++ b/drivers/video/exynos/exynos_dp_reg.c
-@@ -88,7 +88,7 @@ void exynos_dp_init_analog_param(struct exynos_dp_device *dp)
- void exynos_dp_init_interrupt(struct exynos_dp_device *dp)
- {
- 	/* Set interrupt pin assertion polarity as high */
--	writel(INT_POL, dp->reg_base + EXYNOS_DP_INT_CTL);
-+	writel(INT_POL0 | INT_POL1, dp->reg_base + EXYNOS_DP_INT_CTL);
- 
- 	/* Clear pending regisers */
- 	writel(0xff, dp->reg_base + EXYNOS_DP_COMMON_INT_STA_1);
-diff --git a/drivers/video/exynos/exynos_dp_reg.h b/drivers/video/exynos/exynos_dp_reg.h
-index 1f2f014..8548b91 100644
---- a/drivers/video/exynos/exynos_dp_reg.h
-+++ b/drivers/video/exynos/exynos_dp_reg.h
-@@ -242,7 +242,8 @@
- 
- /* EXYNOS_DP_INT_CTL */
- #define SOFT_INT_CTRL				(0x1 << 2)
--#define INT_POL					(0x1 << 0)
-+#define INT_POL0				(0x1 << 0)
-+#define INT_POL1				(0x1 << 1)
- 
- /* EXYNOS_DP_SYS_CTL_1 */
- #define DET_STA					(0x1 << 2)
+Archit Taneja (3):
+  OMAPDSS: DISPC: Fix calc_scaling_44xx() bugs for writeback pipeline
+  OMAPDSS: DISPC: Don't allow predecimation for writeback
+  OMAPDSS: DISPC: Use output width and height to calculate row/pix inc
+    for writeback
+
+ drivers/video/omap2/dss/dispc.c |   39 +++++++++++++++++++++++++++------------
+ 1 file changed, 27 insertions(+), 12 deletions(-)
+
 -- 
-1.7.0.4
+1.7.9.5
 

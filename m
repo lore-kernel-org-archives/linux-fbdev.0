@@ -1,77 +1,161 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Thu, 15 Nov 2012 10:28:50 +0000
-Subject: Re: [PATCH v10 0/6] of: add display helper
-Message-Id: <20121115102850.GB1963@pengutronix.de>
+From: Ajay Kumar <ajaykumar.rs@samsung.com>
+Date: Wed, 07 Nov 2012 10:53:01 +0000
+Subject: [PATCH 1/2] video: exynos_dp: remove redundant parameters
+Message-Id: <1352286744-22588-1-git-send-email-ajaykumar.rs@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
- <20121115102411.GA17272@avionic-0098.mockup.avionic-design.de>
-In-Reply-To: <20121115102411.GA17272@avionic-0098.mockup.avionic-design.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@avionic-design.de>
-Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, kernel@pengutronix.de, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Thu, Nov 15, 2012 at 11:24:11AM +0100, Thierry Reding wrote:
-> On Thu, Nov 15, 2012 at 10:23:51AM +0100, Steffen Trumtrar wrote:
-> > Hi!
-> > 
-> > Changes since v9:
-> > 	- don't leak memory when previous timings were correct
-> > 	- CodingStyle fixes
-> > 	- move blank lines around
-> > 
-> > Regards,
-> > Steffen
-> > 
-> > 
-> > Steffen Trumtrar (6):
-> >   video: add display_timing and videomode
-> >   video: add of helper for videomode
-> >   fbmon: add videomode helpers
-> >   fbmon: add of_videomode helpers
-> >   drm_modes: add videomode helpers
-> >   drm_modes: add of_videomode helpers
-> > 
-> >  .../devicetree/bindings/video/display-timings.txt  |  107 ++++++++++
-> >  drivers/gpu/drm/drm_modes.c                        |   70 +++++++
-> >  drivers/video/Kconfig                              |   19 ++
-> >  drivers/video/Makefile                             |    4 +
-> >  drivers/video/display_timing.c                     |   24 +++
-> >  drivers/video/fbmon.c                              |   86 ++++++++
-> >  drivers/video/of_display_timing.c                  |  212 ++++++++++++++++++++
-> >  drivers/video/of_videomode.c                       |   47 +++++
-> >  drivers/video/videomode.c                          |   45 +++++
-> >  include/drm/drmP.h                                 |   12 ++
-> >  include/linux/display_timing.h                     |   69 +++++++
-> >  include/linux/fb.h                                 |   12 ++
-> >  include/linux/of_display_timings.h                 |   20 ++
-> >  include/linux/of_videomode.h                       |   17 ++
-> >  include/linux/videomode.h                          |   40 ++++
-> >  15 files changed, 784 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/video/display-timings.txt
-> >  create mode 100644 drivers/video/display_timing.c
-> >  create mode 100644 drivers/video/of_display_timing.c
-> >  create mode 100644 drivers/video/of_videomode.c
-> >  create mode 100644 drivers/video/videomode.c
-> >  create mode 100644 include/linux/display_timing.h
-> >  create mode 100644 include/linux/of_display_timings.h
-> >  create mode 100644 include/linux/of_videomode.h
-> >  create mode 100644 include/linux/videomode.h
-> 
-> With the one change that I pointed out, the whole series:
-> 
+This patch cleans up few redundant parameters keeping
+the same functionality intact.
 
-Already fixed.
+Signed-off-by: Olof Johansson <olof@lixom.net>
+Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
+---
+ drivers/video/exynos/exynos_dp_core.c |   14 +++++---------
+ drivers/video/exynos/exynos_dp_core.h |    9 ++-------
+ drivers/video/exynos/exynos_dp_reg.c  |   23 +++++++++--------------
+ 3 files changed, 16 insertions(+), 30 deletions(-)
 
-> Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
-> Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
-
-\o/ Thanks
-
-
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index d55470e..f62778c 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -752,19 +752,15 @@ static int exynos_dp_set_link_train(struct exynos_dp_device *dp,
+ 	return retval;
+ }
+ 
+-static int exynos_dp_config_video(struct exynos_dp_device *dp,
+-			struct video_info *video_info)
++static int exynos_dp_config_video(struct exynos_dp_device *dp)
+ {
+ 	int retval = 0;
+ 	int timeout_loop = 0;
+ 	int done_count = 0;
+ 
+-	exynos_dp_config_video_slave_mode(dp, video_info);
++	exynos_dp_config_video_slave_mode(dp);
+ 
+-	exynos_dp_set_video_color_format(dp, video_info->color_depth,
+-			video_info->color_space,
+-			video_info->dynamic_range,
+-			video_info->ycbcr_coeff);
++	exynos_dp_set_video_color_format(dp);
+ 
+ 	if (exynos_dp_get_pll_lock_status(dp) = PLL_UNLOCKED) {
+ 		dev_err(dp->dev, "PLL is not locked yet.\n");
+@@ -937,7 +933,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 	exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
+ 
+ 	exynos_dp_init_video(dp);
+-	ret = exynos_dp_config_video(dp, dp->video_info);
++	ret = exynos_dp_config_video(dp);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "unable to config video\n");
+ 		return ret;
+@@ -1003,7 +999,7 @@ static int exynos_dp_resume(struct device *dev)
+ 	exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
+ 
+ 	exynos_dp_init_video(dp);
+-	exynos_dp_config_video(dp, dp->video_info);
++	exynos_dp_config_video(dp);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
+index 57b8a65..1e646d7 100644
+--- a/drivers/video/exynos/exynos_dp_core.h
++++ b/drivers/video/exynos/exynos_dp_core.h
+@@ -107,11 +107,7 @@ u32 exynos_dp_get_lane3_link_training(struct exynos_dp_device *dp);
+ void exynos_dp_reset_macro(struct exynos_dp_device *dp);
+ void exynos_dp_init_video(struct exynos_dp_device *dp);
+ 
+-void exynos_dp_set_video_color_format(struct exynos_dp_device *dp,
+-				u32 color_depth,
+-				u32 color_space,
+-				u32 dynamic_range,
+-				u32 ycbcr_coeff);
++void exynos_dp_set_video_color_format(struct exynos_dp_device *dp);
+ int exynos_dp_is_slave_video_stream_clock_on(struct exynos_dp_device *dp);
+ void exynos_dp_set_video_cr_mn(struct exynos_dp_device *dp,
+ 			enum clock_recovery_m_value_type type,
+@@ -121,8 +117,7 @@ void exynos_dp_set_video_timing_mode(struct exynos_dp_device *dp, u32 type);
+ void exynos_dp_enable_video_master(struct exynos_dp_device *dp, bool enable);
+ void exynos_dp_start_video(struct exynos_dp_device *dp);
+ int exynos_dp_is_video_stream_on(struct exynos_dp_device *dp);
+-void exynos_dp_config_video_slave_mode(struct exynos_dp_device *dp,
+-			struct video_info *video_info);
++void exynos_dp_config_video_slave_mode(struct exynos_dp_device *dp);
+ void exynos_dp_enable_scrambling(struct exynos_dp_device *dp);
+ void exynos_dp_disable_scrambling(struct exynos_dp_device *dp);
+ 
+diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
+index 3f5ca8a..db4975d 100644
+--- a/drivers/video/exynos/exynos_dp_reg.c
++++ b/drivers/video/exynos/exynos_dp_reg.c
+@@ -1034,24 +1034,20 @@ void exynos_dp_init_video(struct exynos_dp_device *dp)
+ 	writel(reg, dp->reg_base + EXYNOS_DP_VIDEO_CTL_8);
+ }
+ 
+-void exynos_dp_set_video_color_format(struct exynos_dp_device *dp,
+-			u32 color_depth,
+-			u32 color_space,
+-			u32 dynamic_range,
+-			u32 ycbcr_coeff)
++void exynos_dp_set_video_color_format(struct exynos_dp_device *dp)
+ {
+ 	u32 reg;
+ 
+ 	/* Configure the input color depth, color space, dynamic range */
+-	reg = (dynamic_range << IN_D_RANGE_SHIFT) |
+-		(color_depth << IN_BPC_SHIFT) |
+-		(color_space << IN_COLOR_F_SHIFT);
++	reg = (dp->video_info->dynamic_range << IN_D_RANGE_SHIFT) |
++		(dp->video_info->color_depth << IN_BPC_SHIFT) |
++		(dp->video_info->color_space << IN_COLOR_F_SHIFT);
+ 	writel(reg, dp->reg_base + EXYNOS_DP_VIDEO_CTL_2);
+ 
+ 	/* Set Input Color YCbCr Coefficients to ITU601 or ITU709 */
+ 	reg = readl(dp->reg_base + EXYNOS_DP_VIDEO_CTL_3);
+ 	reg &= ~IN_YC_COEFFI_MASK;
+-	if (ycbcr_coeff)
++	if (dp->video_info->ycbcr_coeff)
+ 		reg |= IN_YC_COEFFI_ITU709;
+ 	else
+ 		reg |= IN_YC_COEFFI_ITU601;
+@@ -1178,8 +1174,7 @@ int exynos_dp_is_video_stream_on(struct exynos_dp_device *dp)
+ 	return 0;
+ }
+ 
+-void exynos_dp_config_video_slave_mode(struct exynos_dp_device *dp,
+-			struct video_info *video_info)
++void exynos_dp_config_video_slave_mode(struct exynos_dp_device *dp)
+ {
+ 	u32 reg;
+ 
+@@ -1190,17 +1185,17 @@ void exynos_dp_config_video_slave_mode(struct exynos_dp_device *dp,
+ 
+ 	reg = readl(dp->reg_base + EXYNOS_DP_VIDEO_CTL_10);
+ 	reg &= ~INTERACE_SCAN_CFG;
+-	reg |= (video_info->interlaced << 2);
++	reg |= (dp->video_info->interlaced << 2);
+ 	writel(reg, dp->reg_base + EXYNOS_DP_VIDEO_CTL_10);
+ 
+ 	reg = readl(dp->reg_base + EXYNOS_DP_VIDEO_CTL_10);
+ 	reg &= ~VSYNC_POLARITY_CFG;
+-	reg |= (video_info->v_sync_polarity << 1);
++	reg |= (dp->video_info->v_sync_polarity << 1);
+ 	writel(reg, dp->reg_base + EXYNOS_DP_VIDEO_CTL_10);
+ 
+ 	reg = readl(dp->reg_base + EXYNOS_DP_VIDEO_CTL_10);
+ 	reg &= ~HSYNC_POLARITY_CFG;
+-	reg |= (video_info->h_sync_polarity << 0);
++	reg |= (dp->video_info->h_sync_polarity << 0);
+ 	writel(reg, dp->reg_base + EXYNOS_DP_VIDEO_CTL_10);
+ 
+ 	reg = AUDIO_MODE_SPDIF_MODE | VIDEO_MODE_SLAVE_MODE;
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+1.7.0.4
+

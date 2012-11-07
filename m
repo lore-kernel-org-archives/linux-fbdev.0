@@ -1,136 +1,155 @@
-From: Rob Clark <rob.clark@linaro.org>
-Date: Tue, 06 Nov 2012 14:40:15 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 07 Nov 2012 10:01:21 +0000
 Subject: Re: [PATCH 12/12] OMAPDSS: DPI: always use DSI PLL if available
-Message-Id: <CAF6AEGuNyqO-teda1sv8c8m9x1j8Fm13HYuWB4N3gccJeKFTFg@mail.gmail.com>
+Message-Id: <509A3171.8010100@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig62730C598A176A43CDACCAD9"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351613409-21186-1-git-send-email-tomi.valkeinen@ti.com>
-	<1351613409-21186-13-git-send-email-tomi.valkeinen@ti.com>
-	<5090D28E.6050703@ti.com>
-	<50939B84.6090602@ti.com>
-	<5093A3FB.1060806@ti.com>
-	<5093A530.5050302@ti.com>
-	<5093A9E8.70106@ti.com>
-	<5093AE79.9010603@ti.com>
-	<5093B4F3.1000703@ti.com>
-	<50977EEF.3040403@ti.com>
-	<5097CB81.7050204@ti.com>
-	<509913A4.5080408@iki.fi>
-In-Reply-To: <509913A4.5080408@iki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomba@iki.fi>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <1351613409-21186-1-git-send-email-tomi.valkeinen@ti.com> <1351613409-21186-13-git-send-email-tomi.valkeinen@ti.com> <5090D28E.6050703@ti.com> <50939B84.6090602@ti.com> <5093A3FB.1060806@ti.com> <5093A530.5050302@ti.com> <5093A9E8.70106@ti.com> <5093AE79.9010603@ti.com> <5093B4F3.1000703@ti.com> <50977EEF.3040403@ti.com> <5097CB81.7050204@ti.com> <509913A4.5080408@iki.fi> <CAF6AEGuNyqO-teda1sv8c8m9x1j8Fm13HYuWB4N3gccJeKFTFg@mail.gmail.com>
+In-Reply-To: <CAF6AEGuNyqO-teda1sv8c8m9x1j8Fm13HYuWB4N3gccJeKFTFg@mail.gmail.com>
+To: Rob Clark <rob.clark@linaro.org>
+Cc: Tomi Valkeinen <tomba@iki.fi>, Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On Tue, Nov 6, 2012 at 7:41 AM, Tomi Valkeinen <tomba@iki.fi> wrote:
-> On 2012-11-05 16:21, Rob Clark wrote:
->> On 11/05/2012 02:55 AM, Tomi Valkeinen wrote:
->>>>> But even then, choosing the manager is not easy, as whoever chooses the
->>>>> >>manager needs to observe all the possible displays used at the same
->>>>> >>time...
->>>> >
->>>> >Right. I was wondering if omapfb/omapdrm could understand the 'all
->>>> >possible displays information' better compared to a panel's probe.
->>>> >
->>>> >Even omapdrm/omafb can't be perfect because we could insert a panel
->>>> >driver module at any time, and omapfb/omapdrm may miss that out.
->>> True, omapdrm/fb may have a better idea. It's still unclear though.
->>> Currently we have quite strict order in the sequence the modules need to
->>> be loaded, which is quite bad and causes issues. We should make things
->>> more dynamic, so that the initialization of the drivers could happen
->>> more freely.
->>>
->>> But that creates more problems: when booting up, omapfb starts. But
->>> omapfb can't know if all the panel drivers have already been loaded.
->>> omapfb may see that DVI is the default display, but what should it do if
->>> DVI doesn't have a driver yet? It could wait, but perhaps the driver for
->>> DVI will never even be loaded.
+--------------enig62730C598A176A43CDACCAD9
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 2012-11-06 16:40, Rob Clark wrote:
+
+> I mean, similar to how we handle the subdev for dmm..  the
+> omap_drm_init() does the platform_driver_register() for the dmm device
+> before the platform_driver_register() for omapdrm itself, so we know
+> if there is a dmm device, the driver gets probed first before omapdrm.
+
+Well, I consider that a bit hacky too. That's not how linux device
+framework is supposed to be used. I know it makes life easier to do the
+registering like that, though.
+
+> It could be a matter of iterating through a list, or something like
+> this.. that is basically an implementation detail.  But the end result
+> is that the order the drivers are registered is controlled so the
+> probe sequence works out properly (not to mention suspend/resume
+> sequence).
+
+I feel that this kind of solution just tries to solve the generic
+problem of init/suspend ordering in a single driver, instead of fixing
+the device framework itself.
+
+Or, of course it's possible that our drive architecture just sucks, and
+the device framework is fine. In that case the workaround is even worse,
+and we should fix our drivers.
+
+>> I think we should support proper hotplugging of the panels. This would=
+
+>> fix the problem about init order, but it would also give us device
+>> hotplug support. Obviously nobody is going to solder panel to a runnin=
+g
+>> board, but I don't see any reason why panels, or, more likely, panels =
+on
+>> an add-on boards (like the capes being discussed in omap ml) would not=
+
+>> be hotpluggable using whatever connector is used on the particular use=
+ case.
 >>
->> The encoder which is connected to the crtc (manager) is picked by
->> combination of encoder->possible_crtcs bitmask and
->> connector->best_encoder().  We could keep things limited so that the
->> association of crtc to encoder (manager to output, roughly) never
->> changes, but this isn't really the right thing to do.  It is better that
->> the dssdev not rely on knowing the manager it is attached to at probe
->> time, but instead grab resources more dynamically.
->>
->> Also, at the moment we don't really have any notification to userspace
->> about new encoders/connectors showing up (or conversely, being
->> removed).  Only about existing connectors being plugged/unplugged.  The
->> closest analogy is perhaps the USB display devices, but even there it is
->> only the entire drm device that is plugged/unplugged.  And TBH I don't
->> really see the point in supporting panel drivers being dynamically
->> loaded.  It isn't like someone is dynamically soldering on a new display
->> connector to some board that is running.  I think omapfb or omapdrm
->> probe should trigger registering the compiled-in panel drivers, so that
->> it can be sure that the dssdev's pop up before it goes and creates drm
->> connector objects.  Currently we have to hack around this in omapdrm
->> with late_initcall() to ensure the panel drivers are probed first, but
->> that is an ugly hack that I'd like to get rid of.
->
-> We have panel devices and panel drivers, each of which can appear at any
-> time. Both are needed for the panel probe to happen. If we don't support
-> device hotplugging (dynamic creation of devices), we need to use
-> late_initcall for omapfb/drm. At least I don't see any other option.
->
-> You say that omapdrm should trigger registering of the drivers. How
-> would that work? Do you mean that the panel drivers would register
-> themselves to some common list, and omapdrm would go through this list
-> when drm is loaded, calling probe for the items in the list? I guess
-> that's doable, but... It's not how kernel drivers are supposed to work,
-> and so doesn't sound very clean approach to me.
+>> And even if we don't support removing of the devices, things like the
+>> add-on capes could cause the panel on the cape to be identified at som=
+e
+>> late time (the panel is not described in the board file or DT data, bu=
+t
+>> found at runtime depending on the ID of the cape). This would add
+>> another step to the init sequence that should be just right, if we don=
+'t
+>> support hotplug.
+>=20
+> If capes are really hot-pluggable, then maybe it is worth thinking
+> about how to make this more dynamic.  Although it is a bigger problem,
+> which involves userspace being aware that connectors can dynamically
+> appear/disappear.  And the dynamic disappearing is something I worry
+> about more.. it adds the possibility of all sorts of interesting race
+> conditions, such as connectors disappearing in the middle of modeset.
+> I prefer not making things more complicated and error prone than they
+> need to be.  If there is not a legitimate use case for connector hw
+> dynamically appearing/disappearing then I don't think we should go
+> there.  It sounds nice and simple and clean, but in reality I think it
+> just introduces a whole lot of ways for things to go wrong.  A wise
 
-I mean, similar to how we handle the subdev for dmm..  the
-omap_drm_init() does the platform_driver_register() for the dmm device
-before the platform_driver_register() for omapdrm itself, so we know
-if there is a dmm device, the driver gets probed first before omapdrm.
+Yes, I agree that it complicates things.
 
-It could be a matter of iterating through a list, or something like
-this.. that is basically an implementation detail.  But the end result
-is that the order the drivers are registered is controlled so the
-probe sequence works out properly (not to mention suspend/resume
-sequence).
+> man once said:
+>=20
+> https://github.com/robclark/kernel-omap4/blob/master/Documentation/Subm=
+ittingPatches#L700
 
-> I think we should support proper hotplugging of the panels. This would
-> fix the problem about init order, but it would also give us device
-> hotplug support. Obviously nobody is going to solder panel to a running
-> board, but I don't see any reason why panels, or, more likely, panels on
-> an add-on boards (like the capes being discussed in omap ml) would not
-> be hotpluggable using whatever connector is used on the particular use case.
->
-> And even if we don't support removing of the devices, things like the
-> add-on capes could cause the panel on the cape to be identified at some
-> late time (the panel is not described in the board file or DT data, but
-> found at runtime depending on the ID of the cape). This would add
-> another step to the init sequence that should be just right, if we don't
-> support hotplug.
+I've done things simple lots of times in the omapdss driver, only to
+have to rewrite the thing in more complex way later to accommodate new
+scenarios. I think it's good to write the code in a bit more generic way
+than the use case at the moment of writing requires, because more often
+than not, it'll save time in the future.
 
-If capes are really hot-pluggable, then maybe it is worth thinking
-about how to make this more dynamic.  Although it is a bigger problem,
-which involves userspace being aware that connectors can dynamically
-appear/disappear.  And the dynamic disappearing is something I worry
-about more.. it adds the possibility of all sorts of interesting race
-conditions, such as connectors disappearing in the middle of modeset.
-I prefer not making things more complicated and error prone than they
-need to be.  If there is not a legitimate use case for connector hw
-dynamically appearing/disappearing then I don't think we should go
-there.  It sounds nice and simple and clean, but in reality I think it
-just introduces a whole lot of ways for things to go wrong.  A wise
-man once said:
+Hotplugging is not some abstract future scenario, we already have
+hardware that could use it. For example, omap3 SDP board has a
+switchable output to DVI or LCD panel. In this case we know what the two
+options are, but the disabled component is still effectually removed
+from the system, and plugged back in when it's enabled.
 
-https://github.com/robclark/kernel-omap4/blob/master/Documentation/SubmittingPatches#L700
+Hotplug is not a high priority item, but I do wish we get it supported
+in common panel framework. Then it's at least possible to extend drm in
+the future to support it.
 
-BR,
--R
 
-> Yes, I know it's not simple =). And I'm fine with simpler approach for
-> the time being, but I'd like full hotplug to be the future goal. At
-> least the common panel framework should not create restrictions about
-> this, even if drm wouldn't allow device hotplug.
->
->  Tomi
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+Anyway, this makes me wonder... omapdrm currently maps the elements of
+the whole video pipeline to drm elements (encoder, connector, etc).
+Would it make more sense to just map the DISPC to these drm elements?
+Connector would then be the output from DISPC.
+
+This would map the drm elements to the static hardware blocks, and the
+meaning of those blocks would be quite similar to what they are in the
+desktop world (I guess).
+
+The panel driver, the external chips, and the DSS internal output blocks
+(dsi, dpi, ...) would be handled separately from those drm elements. The
+DSS internal blocks are static, of course, but they can be effectively
+considered the same way as external chips.
+
+The omapdrm driver needs of course to access those separate elements
+also, but that shouldn't be a problem. If omapdrm needs to call a
+function in the panel driver, all it needs to do is go through the chain
+to find the panel. Well, except if one output connected two two panels
+via a bridge chip...
+
+And if drm is at some point extended to support panel drivers, or chains
+of external display entities, it would be easier to add that support.
+
+What would it require the manage the elements like that? Would it help?
+It sounds to me that this would simplify the model.
+
+ Tomi
+
+
+
+--------------enig62730C598A176A43CDACCAD9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJQmjFxAAoJEPo9qoy8lh717LQP/1YNhqG8muCrKUMN7rSueHWc
+mdq10UeDjVXlNgtIR3AMZZAY02bvW56qRjd6nTmYSpNYL6SJB6iOVVDk+vJFduKO
+rnTDMTG+yphYHc8cw+uNhOTDMyG7/J5wA0ScWFxqVcdGEmTIuqbSIcx3CAk6w3mj
+kV6V8JXrGCjS+2854sT8/VjVjrPDuU4HWd2zDfGP1RcPqQeZ5LUjLqI/vdShaJ70
+q2R6mkwdpy3FA2pHmhqzf+9tTykOtr4NE2ee02R0OSV22ekkjCRM9Lq5um/TNJ9z
+swnHwMZNuTkEjtCw7WGRDsSUVppIH5bTsXR1hx6Yyba2F36uQGFvPDQocS1/ApiJ
+sqNvkfb1GIrI7lCD4RP7uRljrBp96pRs5mOM5Wc6kOVr203Z+/8yhcliDY3dwqPv
+5yYbyaGy/RR1Gsp9rmH7EJPDZ82+/i6zbZrSDjJjalBBZH1wfkgnN7NzSe0xL24+
+DLDmx7xHnthDIv88ugqe7WfryR1KBug0SJZNp3fOqU5lo/e2Q52LBUXe2MdVgzQq
+ZqBIAjlW3InT/Ipo/EroD9CTT21Nhuupgvw9/5ppkuYv0yy6WKb+pk3YitKJq1hW
+hXDAHTHTdL62rAdJlMM5Qc0ClMLD8kyGDzvExvgAfkzVFizcH/HYQAZ6Mda2fZVB
+/MwUKEfg8xWZ4eYkRfWN
+=GKqO
+-----END PGP SIGNATURE-----
+
+--------------enig62730C598A176A43CDACCAD9--

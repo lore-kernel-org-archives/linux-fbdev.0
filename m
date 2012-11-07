@@ -1,58 +1,57 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 01 Nov 2012 10:21:08 +0000
-Subject: [PATCH v3 3/8] video: exynos_dp: Get pll lock before pattern set
-Message-Id: <011f01cdb81a$9bf1fbc0$d3d5f340$%han@samsung.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 07 Nov 2012 06:27:02 +0000
+Subject: [PATCH 1/3] OMAPDSS: DISPC: Fix calc_scaling_44xx() bugs for writeback pipeline
+Message-Id: <1352268905-31093-2-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1352268905-31093-1-git-send-email-archit@ti.com>
+In-Reply-To: <1352268905-31093-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-From: Sean Paul <seanpaul@chromium.org>
+dispc_ovl_calc_scaling_44xx() doesn't work correctly for writeback. There are
+two issues with it:
 
-According to the exynos datasheet (Figure 49-10), we should wait for PLL
-lock before programming the training pattern when doing software eDP
-link training.
+- the function tries to calculate pixel clock for the input plane using
+  dispc_plane_pclk_rate(), calling this with writeback as input plane results in
+  a BUG(), this function shouldn't be called for writeback at all. Fix this by
+  calculating pixel clock only when we are not in mem to mem mode.
 
-Signed-off-by: Sean Paul <seanpaul@chromium.org>
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+- the maximum input_width is the product of the downscale ratio supported and
+  the and the given output_width. This was calculated incorrectly by dividing
+  output_width with maxdownscale. Fix this.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/exynos/exynos_dp_core.c |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-index 13bb10d..878b4b6 100644
---- a/drivers/video/exynos/exynos_dp_core.c
-+++ b/drivers/video/exynos/exynos_dp_core.c
-@@ -264,7 +264,7 @@ static void exynos_dp_set_lane_lane_pre_emphasis(struct exynos_dp_device *dp,
- static int exynos_dp_link_start(struct exynos_dp_device *dp)
- {
- 	u8 buf[4];
--	int lane, lane_count, retval;
-+	int lane, lane_count, pll_tries, retval;
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 05def42..f19cd37 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2264,14 +2264,16 @@ static int dispc_ovl_calc_scaling_44xx(enum omap_plane plane,
+ 	u16 in_height = DIV_ROUND_UP(height, *decim_y);
+ 	const int maxsinglelinewidth  				dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
+-	unsigned long pclk = dispc_plane_pclk_rate(plane);
+ 	const int maxdownscale = dss_feat_get_param_max(FEAT_PARAM_DOWNSCALE);
  
- 	lane_count = dp->link_train.lane_count;
- 
-@@ -297,6 +297,18 @@ static int exynos_dp_link_start(struct exynos_dp_device *dp)
- 		exynos_dp_set_lane_lane_pre_emphasis(dp,
- 			PRE_EMPHASIS_LEVEL_0, lane);
- 
-+	/* Wait for PLL lock */
-+	pll_tries = 0;
-+	while (exynos_dp_get_pll_lock_status(dp) = PLL_UNLOCKED) {
-+		if (pll_tries = DP_TIMEOUT_LOOP_COUNT) {
-+			dev_err(dp->dev, "Wait for PLL lock timed out\n");
-+			return -ETIMEDOUT;
-+		}
+-	if (mem_to_mem)
+-		in_width_max = DIV_ROUND_UP(out_width, maxdownscale);
+-	else
++	if (mem_to_mem) {
++		in_width_max = out_width * maxdownscale;
++	} else {
++		unsigned long pclk = dispc_plane_pclk_rate(plane);
 +
-+		pll_tries++;
-+		usleep_range(90, 120);
+ 		in_width_max = dispc_core_clk_rate() /
+ 					DIV_ROUND_UP(pclk, out_width);
 +	}
-+
- 	/* Set training pattern 1 */
- 	exynos_dp_set_training_pattern(dp, TRAINING_PTN1);
+ 
+ 	*decim_x = DIV_ROUND_UP(width, in_width_max);
  
 -- 
-1.7.1
-
+1.7.9.5
 

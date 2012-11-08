@@ -1,80 +1,70 @@
-From: Alexandre Courbot <acourbot@nvidia.com>
-Date: Sat, 17 Nov 2012 10:12:45 +0000
-Subject: Re: [PATCH v8 1/3] Runtime Interpreted Power Sequences
-Message-Id: <CAAVeFuJ28=YFOx1Uvq+B33JQW2UxDYx2J8igUnVCbTEO0V-KKg@mail.gmail.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Thu, 08 Nov 2012 21:25:45 +0000
+Subject: Re: [PATCH v7 5/8] fbmon: add videomode helpers
+Message-Id: <20121108212545.GA32605@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353047903-14363-1-git-send-email-acourbot@nvidia.com>
- <1353047903-14363-2-git-send-email-acourbot@nvidia.com> <20121116072642.GA22291@lizard>
- <50A60AF6.9080509@nvidia.com> <20121116122540.GA2198@lizard>
-In-Reply-To: <20121116122540.GA2198@lizard>
+References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
+ <1351675689-26814-6-git-send-email-s.trumtrar@pengutronix.de>
+ <A73F36158E33644199EB82C5EC81C7BC3E9E1B39@DBDE01.ent.ti.com>
+In-Reply-To: <A73F36158E33644199EB82C5EC81C7BC3E9E1B39@DBDE01.ent.ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Leela Krishna Amudala <l.krishna@samsung.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Cc: "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, Rob Herring <robherring2@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>, "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>
 
-On Fri, Nov 16, 2012 at 9:25 PM, Anton Vorontsov <cbouatmailru@gmail.com> wrote:
->> The POWER_SEQ_*_TYPE macros are defined in the C files. It's the
->> simplest way to initialize this table, and the code inside these C
->> files is short and simple enough that I thought I would be forgiven.
->> :)
->
-> I think in the header file you could just write
->
-> extern ..... power_seq_delay_type;
-> #ifndef ...
-> #define power_seq_delay_type NULL
-> #endif
->
-> And then, in the .c file:
->
-> static const struct power_seq_res_ops power_seq_ops[POWER_SEQ_NUM_TYPES] = {
->         [POWER_SEQ_DELAY] = power_seq_delay_type,
->         ...
-> };
->
-> And then you can stop including the .c files directly, and link them
-> instead.
+Hi!
 
-I have done something similar, but that avoids exporting resource ops
-into the header file. I am still not satisfied with it though - I'd
-rather have one init function per resource file that changes the
-pointer of the ops table from NULL to its own set of functions. That
-way the core could live without knowing anything about the different
-resources, and that would be nicer. Unfortunately modules only support
-one init function, so this is not doable here.
+On Wed, Oct 31, 2012 at 03:30:03PM +0000, Manjunathappa, Prakash wrote:
+> Hi Steffen,
+> 
+> On Wed, Oct 31, 2012 at 14:58:05, Steffen Trumtrar wrote:
+> > +#if IS_ENABLED(CONFIG_VIDEOMODE)
+> > +int videomode_to_fb_videomode(struct videomode *vm, struct fb_videomode *fbmode)
+> > +{
+> > +	fbmode->xres = vm->hactive;
+> > +	fbmode->left_margin = vm->hback_porch;
+> > +	fbmode->right_margin = vm->hfront_porch;
+> > +	fbmode->hsync_len = vm->hsync_len;
+> > +
+> > +	fbmode->yres = vm->vactive;
+> > +	fbmode->upper_margin = vm->vback_porch;
+> > +	fbmode->lower_margin = vm->vfront_porch;
+> > +	fbmode->vsync_len = vm->vsync_len;
+> > +
+> > +	fbmode->pixclock = KHZ2PICOS(vm->pixelclock / 1000);
+> > +
+> > +	fbmode->sync = 0;
+> > +	fbmode->vmode = 0;
+> > +	if (vm->hah)
+> > +		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
+> > +	if (vm->vah)
+> > +		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
+> > +	if (vm->interlaced)
+> > +		fbmode->vmode |= FB_VMODE_INTERLACED;
+> > +	if (vm->doublescan)
+> > +		fbmode->vmode |= FB_VMODE_DOUBLE;
+> > +
+> 
+> "pixelclk-inverted" property of the panel is not percolated fb_videomode.
+> Please let me know if I am missing something.
+> 
 
->> >nit: one variable declaration per line.
->>
->> Fair enough - but is that a convention? checkpatch.pl was happy with these.
->
-> It's not a rule, although there is a small passage about it in CodingStyle
-> file when it describes commenting style. Though, some folks choose to
-> ignore this suggestion quite frequently, especially if variables have no
-> comments.
->
-> Often, the multiple declarations per line are used to hide ugly functions
-> w/ tons of variables, or just to confuse the reader for the fun of it.
->
-> There are exceptions, of course. E.g.
->
->         int i, j, k; /* Our iterators. */
->
-> Is perfectly fine.
->
-> But
->         int i, err;
->
-> At least to me seems weird, this stuff is logically disjunct.
->
-> Only human can truly differentiate when the stuff "looks better" together
-> or apart, so that's why checkpatch doesn't complain. Personally, I use
-> this rule of thumb: when in doubt, use just one declaration per line, it
-> is always OK. :)
+The next version is almost finished. Only thing I'm missing is this.
+And I actually do not know which flag would represent an inverted pixelclock
+in fb_videomode. Does anybody have any idea what I have to do here?
 
-That totally makes sense - thanks for the precision.
+	if (vm->pixelclk_pol)
+		fbmode->sync = ???
 
-Prepping another patchset with audience extended to linux-arm-kernel
-as Mark suggested.
+That's as far as I have come and I don't see a flag that seems right.
+Is this even a valid property of fb_videomode?
 
-Alex.
+Regards,
+Steffen
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

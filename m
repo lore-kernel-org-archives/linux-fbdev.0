@@ -1,135 +1,73 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Wed, 14 Nov 2012 13:31:54 +0000
-Subject: Re: [PATCH v9 2/6] video: add of helper for videomode
-Message-Id: <20121114133154.GC18579@pengutronix.de>
+From: Rob Herring <robherring2@gmail.com>
+Date: Thu, 08 Nov 2012 21:35:47 +0000
+Subject: Re: [PATCH v7 0/8] of: add display helper
+Message-Id: <509C25B3.5060509@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352893403-21168-1-git-send-email-s.trumtrar@pengutronix.de>
- <1352893403-21168-3-git-send-email-s.trumtrar@pengutronix.de>
- <20121114120045.GA2803@avionic-0098.mockup.avionic-design.de>
-In-Reply-To: <20121114120045.GA2803@avionic-0098.mockup.avionic-design.de>
+References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@avionic-design.de>
-Cc: linux-fbdev@vger.kernel.org, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Philipp Zabel <p.zabel@pengutronix.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Cc: devicetree-discuss@lists.ozlabs.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-On Wed, Nov 14, 2012 at 01:00:45PM +0100, Thierry Reding wrote:
-> On Wed, Nov 14, 2012 at 12:43:19PM +0100, Steffen Trumtrar wrote:
-> [...]
-> > +display-timings bindings
-> > +============
-> > +
-> > +display timings node
+On 10/31/2012 04:28 AM, Steffen Trumtrar wrote:
+> Hi!
 > 
-> I didn't express myself very clearly here =). The way I think this
-> should be written is "display-timings node".
+> Finally, v7 of the series.
 > 
-> > +required properties:
-> > + - hactive, vactive: Display resolution
-> > + - hfront-porch, hback-porch, hsync-len: Horizontal Display timing parameters
-> > +   in pixels
-> > +   vfront-porch, vback-porch, vsync-len: Vertical display timing parameters in
-> > +   lines
-> > + - clock-frequency: displayclock in Hz
+> Changes since v6:
+> 	- get rid of some empty lines etc.
+> 	- move functions to their subsystems
+> 	- split of_ from non-of_ functions
+> 	- add at least some kerneldoc to some functions
 > 
-> I still think "displayclock" should be two words: "display clock".
+> Regards,
+> Steffen
 > 
-> > +/**
-> > + * of_get_display_timings - parse all display_timing entries from a device_node
-> > + * @np: device_node with the subnodes
-> > + **/
-> > +struct display_timings *of_get_display_timings(struct device_node *np)
-> > +{
-> [...]
-> > +	disp->num_timings = 0;
-> > +	disp->native_mode = 0;
-> > +
-> > +	for_each_child_of_node(timings_np, entry) {
-> > +		struct display_timing *dt;
-> > +
-> > +		dt = of_get_display_timing(entry);
-> > +		if (!dt) {
-> > +			/* to not encourage wrong devicetrees, fail in case of an error */
-> > +			pr_err("%s: error in timing %d\n", __func__, disp->num_timings+1);
-> > +			goto timingfail;
 > 
-> I believe you're still potentially leaking memory here. In case you have
-> 5 entries for instance, and the last one fails to parse, then this will
-> cause the memory allocated for the 4 correct entries to be lost.
+> Steffen Trumtrar (8):
+>   video: add display_timing struct and helpers
+>   of: add helper to parse display timings
+>   of: add generic videomode description
+>   video: add videomode helpers
+>   fbmon: add videomode helpers
+>   fbmon: add of_videomode helpers
+>   drm_modes: add videomode helpers
+>   drm_modes: add of_videomode helpers
 > 
-> Can't you just call display_timings_release() in this case and then jump
-> to dispfail? That would still leak the native_mode device node. Maybe it
-> would be better to keep timingfail but modify it to free the display
-> timings with display_timings_release() instead? See below.
-> 
-> > +		}
-> > +
-> > +		if (native_mode = entry)
-> > +			disp->native_mode = disp->num_timings;
-> > +
-> > +		disp->timings[disp->num_timings] = dt;
-> > +		disp->num_timings++;
-> > +	}
-> > +	of_node_put(timings_np);
-> > +	of_node_put(native_mode);
-> > +
-> > +	if (disp->num_timings > 0)
-> > +		pr_info("%s: got %d timings. Using timing #%d as default\n", __func__,
-> > +			disp->num_timings , disp->native_mode + 1);
-> > +	else {
-> > +		pr_err("%s: no valid timings specified\n", __func__);
-> > +		display_timings_release(disp);
-> > +		return NULL;
-> > +	}
-> > +	return disp;
-> > +
-> > +timingfail:
-> > +	if (native_mode)
-> > +		of_node_put(native_mode);
-> > +	kfree(disp->timings);
-> 
-> Call display_timings_release(disp) instead of kfree(disp->timings)?
+>  .../devicetree/bindings/video/display-timings.txt  |  139 +++++++++++++++
+>  drivers/gpu/drm/drm_modes.c                        |   78 +++++++++
+>  drivers/of/Kconfig                                 |   12 ++
+>  drivers/of/Makefile                                |    2 +
+>  drivers/of/of_display_timings.c                    |  185 ++++++++++++++++++++
+>  drivers/of/of_videomode.c                          |   47 +++++
+
+Not sure why you moved this, but please move this back to drivers/video.
+We're trying to move subsystem specific pieces out of drivers/of.
+
+Rob
+
+>  drivers/video/Kconfig                              |   11 ++
+>  drivers/video/Makefile                             |    2 +
+>  drivers/video/display_timing.c                     |   24 +++
+>  drivers/video/fbmon.c                              |   76 ++++++++
+>  drivers/video/videomode.c                          |   44 +++++
+>  include/drm/drmP.h                                 |    8 +
+>  include/linux/display_timing.h                     |   69 ++++++++
+>  include/linux/fb.h                                 |    5 +
+>  include/linux/of_display_timings.h                 |   20 +++
+>  include/linux/of_videomode.h                       |   15 ++
+>  include/linux/videomode.h                          |   36 ++++
+>  17 files changed, 773 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/video/display-timings.txt
+>  create mode 100644 drivers/of/of_display_timings.c
+>  create mode 100644 drivers/of/of_videomode.c
+>  create mode 100644 drivers/video/display_timing.c
+>  create mode 100644 drivers/video/videomode.c
+>  create mode 100644 include/linux/display_timing.h
+>  create mode 100644 include/linux/of_display_timings.h
+>  create mode 100644 include/linux/of_videomode.h
+>  create mode 100644 include/linux/videomode.h
 > 
 
-Yes. That would be the appropriate way to fail here. Done.
-
-> > diff --git a/include/linux/of_videomode.h b/include/linux/of_videomode.h
-> > new file mode 100644
-> > index 0000000..4138758
-> > --- /dev/null
-> > +++ b/include/linux/of_videomode.h
-> > @@ -0,0 +1,16 @@
-> > +/*
-> > + * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
-> > + *
-> > + * videomode of-helpers
-> > + *
-> > + * This file is released under the GPLv2
-> > + */
-> > +
-> > +#ifndef __LINUX_OF_VIDEOMODE_H
-> > +#define __LINUX_OF_VIDEOMODE_H
-> > +
-> > +#include <linux/videomode.h>
-> > +#include <linux/of.h>
-> > +
-> > +int of_get_videomode(struct device_node *np, struct videomode *vm, int index);
-> > +#endif /* __LINUX_OF_VIDEOMODE_H */
-> 
-> Nit: should have a blank line before #endif.
-> 
-> Thierry
-
-
-
-> _______________________________________________
-> devicetree-discuss mailing list
-> devicetree-discuss@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/devicetree-discuss
-
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

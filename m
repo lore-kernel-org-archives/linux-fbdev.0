@@ -1,43 +1,312 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Wed, 14 Nov 2012 14:18:06 +0000
-Subject: Re: [PATCH v9 5/6] drm_modes: add videomode helpers
-Message-Id: <20121114141806.GE18579@pengutronix.de>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Date: Thu, 08 Nov 2012 14:34:08 +0000
+Subject: Re: tty, vt: lockdep warnings (Patch v3)
+Message-Id: <20121108143408.77033416@pyramind.ukuu.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352893403-21168-1-git-send-email-s.trumtrar@pengutronix.de>
- <1352893403-21168-6-git-send-email-s.trumtrar@pengutronix.de>
- <20121114124944.GF2803@avionic-0098.mockup.avionic-design.de>
-In-Reply-To: <20121114124944.GF2803@avionic-0098.mockup.avionic-design.de>
+References: <50899507.1040900@oracle.com>
+	<20121026143754.50277bd8@pyramind.ukuu.org.uk>
+	<CA+1xoqdEesjh1EZvR_r7Hn0GUc7741EDWn59qagngcxg4=9bjQ@mail.gmail.com>
+	<20121105175937.26f31d2a@pyramind.ukuu.org.uk>
+	<5097FEA9.2090603@oracle.com>
+	<alpine.LNX.2.00.1211051106590.1709@eggly.anvils>
+	<20121105201507.79fe47d7@pyramind.ukuu.org.uk>
+	<alpine.LNX.2.00.1211051231070.21645@eggly.anvils>
+	<20121106161100.216c6d79@pyramind.ukuu.org.uk>
+	<20121106164214.GA18246@redhat.com>
+	<20121106173845.4a50d661@pyramind.ukuu.org.uk>
+	<509A665C.3030603@gmail.com>
+	<20121107160232.18e83ee9@pyramind.ukuu.org.uk>
+	<87625h9yoe.fsf@nemi.mork.no>
+In-Reply-To: <87625h9yoe.fsf@nemi.mork.no>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@avionic-design.de>
-Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: =?ISO-8859-1?B?Qmr4cm4=?= Mork <bjorn@mork.no>
+Cc: Sasha Levin <levinsasha928@gmail.com>, Dave Jones <davej@redhat.com>, Hugh Dickins <hughd@google.com>, Sasha Levin <sasha.levin@oracle.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, florianSchandinat@gmx.de
 
-On Wed, Nov 14, 2012 at 01:49:44PM +0100, Thierry Reding wrote:
-> On Wed, Nov 14, 2012 at 12:43:22PM +0100, Steffen Trumtrar wrote:
-> [...]
-> > diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-> [...]
-> > @@ -504,6 +505,41 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, int vdisplay, int vrefresh,
-> >  }
-> >  EXPORT_SYMBOL(drm_gtf_mode);
-> >  
-> > +#if IS_ENABLED(CONFIG_VIDEOMODE)
-> > +int display_mode_from_videomode(struct videomode *vm, struct drm_display_mode *dmode)
-> 
-> Given that this is still a DRM core function, maybe it should get a drm_
-> prefix? Also the line is too long, so you may want to wrap the argument
-> list.
-> 
-> Thierry
+commit f35b3fbf24c4e4debb6a7a864b09854ccc2a22e7
+Author: Alan Cox <alan@linux.intel.com>
+Date:   Wed Nov 7 16:35:08 2012 +0000
 
-Yes, seems to fit better to the rest of the file.
+    fb: Rework locking to fix lock ordering on takeover
+   =20
+    Adjust the console layer to allow a take over call where the caller alr=
+eady
+    holds the locks. Make the fb layer lock in order.
+   =20
+    This s partly a band aid, the fb layer is terminally confused about the
+    locking rules it uses for its notifiers it seems.
+   =20
+    Signed-off-by: Alan Cox <alan@linux.intel.com>
 
-Regards,
-Steffen
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index f87d7e8..77bf205 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -2984,7 +2984,7 @@ int __init vty_init(const struct file_operations *con=
+sole_fops)
+=20
+ static struct class *vtconsole_class;
+=20
+-static int bind_con_driver(const struct consw *csw, int first, int last,
++static int do_bind_con_driver(const struct consw *csw, int first, int last,
+ 			   int deflt)
+ {
+ 	struct module *owner =3D csw->owner;
+@@ -2995,7 +2995,7 @@ static int bind_con_driver(const struct consw *csw, i=
+nt first, int last,
+ 	if (!try_module_get(owner))
+ 		return -ENODEV;
+=20
+-	console_lock();
++	WARN_CONSOLE_UNLOCKED();
+=20
+ 	/* check if driver is registered */
+ 	for (i =3D 0; i < MAX_NR_CON_DRIVER; i++) {
+@@ -3080,11 +3080,22 @@ static int bind_con_driver(const struct consw *csw,=
+ int first, int last,
+=20
+ 	retval =3D 0;
+ err:
+-	console_unlock();
+ 	module_put(owner);
+ 	return retval;
+ };
+=20
++
++static int bind_con_driver(const struct consw *csw, int first, int last,
++			   int deflt)
++{
++	int ret;
++=09
++	console_lock();
++	ret =3D do_bind_con_driver(csw, first, last, deflt);
++	console_unlock();
++	return ret;
++}
++=09
+ #ifdef CONFIG_VT_HW_CONSOLE_BINDING
+ static int con_is_graphics(const struct consw *csw, int first, int last)
+ {
+@@ -3196,9 +3207,9 @@ int unbind_con_driver(const struct consw *csw, int fi=
+rst, int last, int deflt)
+ 	if (!con_is_bound(csw))
+ 		con_driver->flag &=3D ~CON_DRIVER_FLAG_INIT;
+=20
+-	console_unlock();
+ 	/* ignore return value, binding should not fail */
+-	bind_con_driver(defcsw, first, last, deflt);
++	do_bind_con_driver(defcsw, first, last, deflt);
++	console_unlock();
+ err:
+ 	module_put(owner);
+ 	return retval;
+@@ -3489,28 +3500,18 @@ int con_debug_leave(void)
+ }
+ EXPORT_SYMBOL_GPL(con_debug_leave);
+=20
+-/**
+- * register_con_driver - register console driver to console layer
+- * @csw: console driver
+- * @first: the first console to take over, minimum value is 0
+- * @last: the last console to take over, maximum value is MAX_NR_CONSOLES =
+-1
+- *
+- * DESCRIPTION: This function registers a console driver which can later
+- * bind to a range of consoles specified by @first and @last. It will
+- * also initialize the console driver by calling con_startup().
+- */
+-int register_con_driver(const struct consw *csw, int first, int last)
++static int do_register_con_driver(const struct consw *csw, int first, int =
+last)
+ {
+ 	struct module *owner =3D csw->owner;
+ 	struct con_driver *con_driver;
+ 	const char *desc;
+ 	int i, retval =3D 0;
+=20
++	WARN_CONSOLE_UNLOCKED();
++
+ 	if (!try_module_get(owner))
+ 		return -ENODEV;
+=20
+-	console_lock();
+-
+ 	for (i =3D 0; i < MAX_NR_CON_DRIVER; i++) {
+ 		con_driver =3D &registered_con_driver[i];
+=20
+@@ -3563,10 +3564,29 @@ int register_con_driver(const struct consw *csw, in=
+t first, int last)
+ 	}
+=20
+ err:
+-	console_unlock();
+ 	module_put(owner);
+ 	return retval;
+ }
++
++/**
++ * register_con_driver - register console driver to console layer
++ * @csw: console driver
++ * @first: the first console to take over, minimum value is 0
++ * @last: the last console to take over, maximum value is MAX_NR_CONSOLES =
+-1
++ *
++ * DESCRIPTION: This function registers a console driver which can later
++ * bind to a range of consoles specified by @first and @last. It will
++ * also initialize the console driver by calling con_startup().
++ */
++int register_con_driver(const struct consw *csw, int first, int last)
++{
++	int retval;
++=09
++	console_lock();
++	retval =3D do_register_con_driver(csw, first, last);
++	console_unlock();
++	return retval;
++}
+ EXPORT_SYMBOL(register_con_driver);
+=20
+ /**
+@@ -3622,6 +3642,29 @@ EXPORT_SYMBOL(unregister_con_driver);
+  *
+  *      take_over_console is basically a register followed by unbind
+  */
++int do_take_over_console(const struct consw *csw, int first, int last, int=
+ deflt)
++{
++	int err;
++
++	err =3D do_register_con_driver(csw, first, last);
++	/* if we get an busy error we still want to bind the console driver
++	 * and return success, as we may have unbound the console driver
++	=A0* but not unregistered it.
++	*/
++	if (err =3D -EBUSY)
++		err =3D 0;
++	if (!err)
++		do_bind_con_driver(csw, first, last, deflt);
++
++	return err;
++}
++/*
++ *	If we support more console drivers, this function is used
++ *	when a driver wants to take over some existing consoles
++ *	and become default driver for newly opened ones.
++ *
++ *      take_over_console is basically a register followed by unbind
++ */
+ int take_over_console(const struct consw *csw, int first, int last, int de=
+flt)
+ {
+ 	int err;
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index fdefa8f..c75f8ce 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -529,6 +529,34 @@ static int search_for_mapped_con(void)
+ 	return retval;
+ }
+=20
++static int do_fbcon_takeover(int show_logo)
++{
++	int err, i;
++
++	if (!num_registered_fb)
++		return -ENODEV;
++
++	if (!show_logo)
++		logo_shown =3D FBCON_LOGO_DONTSHOW;
++
++	for (i =3D first_fb_vc; i <=3D last_fb_vc; i++)
++		con2fb_map[i] =3D info_idx;
++
++	err =3D do_take_over_console(&fb_con, first_fb_vc, last_fb_vc,
++				fbcon_is_default);
++
++	if (err) {
++		for (i =3D first_fb_vc; i <=3D last_fb_vc; i++) {
++			con2fb_map[i] =3D -1;
++		}
++		info_idx =3D -1;
++	} else {
++		fbcon_has_console_bind =3D 1;
++	}
++
++	return err;
++}
++
+ static int fbcon_takeover(int show_logo)
+ {
+ 	int err, i;
+@@ -3115,7 +3143,7 @@ static int fbcon_fb_registered(struct fb_info *info)
+ 		}
+=20
+ 		if (info_idx !=3D -1)
+-			ret =3D fbcon_takeover(1);
++			ret =3D do_fbcon_takeover(1);
+ 	} else {
+ 		for (i =3D first_fb_vc; i <=3D last_fb_vc; i++) {
+ 			if (con2fb_map_boot[i] =3D idx)
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 3ff0105..564ebe9 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1650,7 +1650,9 @@ static int do_register_framebuffer(struct fb_info *fb=
+_info)
+ 	event.info =3D fb_info;
+ 	if (!lock_fb_info(fb_info))
+ 		return -ENODEV;
++        console_lock();
+ 	fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
++        console_unlock();
+ 	unlock_fb_info(fb_info);
+ 	return 0;
+ }
+@@ -1853,11 +1855,8 @@ int fb_new_modelist(struct fb_info *info)
+ 	err =3D 1;
+=20
+ 	if (!list_empty(&info->modelist)) {
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
+ 		event.info =3D info;
+ 		err =3D fb_notifier_call_chain(FB_EVENT_NEW_MODELIST, &event);
+-		unlock_fb_info(info);
+ 	}
+=20
+ 	return err;
+diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
+index a55e366..ef476b0 100644
+--- a/drivers/video/fbsysfs.c
++++ b/drivers/video/fbsysfs.c
+@@ -177,6 +177,8 @@ static ssize_t store_modes(struct device *device,
+ 	if (i * sizeof(struct fb_videomode) !=3D count)
+ 		return -EINVAL;
+=20
++	if (!lock_fb_info(fb_info))
++		return -ENODEV;
+ 	console_lock();
+ 	list_splice(&fb_info->modelist, &old_list);
+ 	fb_videomode_to_modelist((const struct fb_videomode *)buf, i,
+@@ -188,6 +190,7 @@ static ssize_t store_modes(struct device *device,
+ 		fb_destroy_modelist(&old_list);
+=20
+ 	console_unlock();
++	unlock_fb_info(fb_info);
+=20
+ 	return 0;
+ }
+diff --git a/include/linux/console.h b/include/linux/console.h
+index dedb082..4ef4307 100644
+--- a/include/linux/console.h
++++ b/include/linux/console.h
+@@ -78,6 +78,7 @@ int con_is_bound(const struct consw *csw);
+ int register_con_driver(const struct consw *csw, int first, int last);
+ int unregister_con_driver(const struct consw *csw);
+ int take_over_console(const struct consw *sw, int first, int last, int def=
+lt);
++int do_take_over_console(const struct consw *sw, int first, int last, int =
+deflt);
+ void give_up_console(const struct consw *sw);
+ #ifdef CONFIG_HW_CONSOLE
+ int con_debug_enter(struct vc_data *vc);

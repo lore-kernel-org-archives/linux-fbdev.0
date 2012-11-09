@@ -1,12 +1,14 @@
 From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Wed, 07 Nov 2012 22:08:39 +0000
+Date: Fri, 09 Nov 2012 14:04:38 +0000
 Subject: [PATCH] backlight: Add of_find_backlight_by_node() function
-Message-Id: <1352326119-7301-1-git-send-email-thierry.reding@avionic-design.de>
+Message-Id: <1352469878-4532-1-git-send-email-thierry.reding@avionic-design.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1352326119-7301-1-git-send-email-thierry.reding@avionic-design.de>
+In-Reply-To: <1352326119-7301-1-git-send-email-thierry.reding@avionic-design.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>
+To: Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>
 Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
 This function finds the struct backlight_device for a given device tree

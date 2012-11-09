@@ -1,140 +1,180 @@
-From: Tushar Behera <tushar.behera@linaro.org>
-Date: Fri, 23 Nov 2012 12:09:13 +0000
-Subject: [PATCH] video: vt8505: Use devm_* APIs
-Message-Id: <1353671833-14516-1-git-send-email-tushar.behera@linaro.org>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Fri, 09 Nov 2012 05:53:00 +0000
+Subject: [PATCH v4 7/8] video: exynos_dp: Move hotplug into a workqueue
+Message-Id: <001f01cdbe3e$79aa8300$6cff8900$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: FlorianSchandinat@gmx.de, linux@prisktech.co.nz, patches@linaro.org
+To: linux-fbdev@vger.kernel.org
 
-Use devm_request_and_ioremap(), dmam_alloc_coherent() APIs to cleanup
-driver probe and remove functions. This also fixes a possible memory
-leak as the memory allocated by dma_alloc_coherent() was not getting
-freed up.
+From: Sean Paul <seanpaul@chromium.org>
 
-Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
+Move the hotplug related code from probe and resume into a workqueue.
+This allows us to initialize the DP driver (and resume it) when there
+is no monitor connected.
+
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
+Reviewed-by: Olof Johansson <olofj@chromium.org>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
+ drivers/video/exynos/exynos_dp_core.c |   93 +++++++++++++++++---------------
+ drivers/video/exynos/exynos_dp_core.h |    1 +
+ 2 files changed, 50 insertions(+), 44 deletions(-)
 
-This patch has only been build tested.
-
- drivers/video/wm8505fb.c |   46 +++++++++-------------------------------------
- 1 files changed, 9 insertions(+), 37 deletions(-)
-
-diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
-index 77539c1..95539af 100644
---- a/drivers/video/wm8505fb.c
-+++ b/drivers/video/wm8505fb.c
-@@ -281,8 +281,7 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
- 			sizeof(u32) * 16, GFP_KERNEL);
- 	if (!fbi) {
- 		dev_err(&pdev->dev, "Failed to initialize framebuffer device\n");
--		ret = -ENOMEM;
--		goto failed;
-+		return -ENOMEM;
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index edb3bfe..79ba1ea 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -837,6 +837,45 @@ static irqreturn_t exynos_dp_irq_handler(int irq, void *arg)
+ 	return IRQ_HANDLED;
+ }
+ 
++static void exynos_dp_hotplug(struct work_struct *work)
++{
++	struct exynos_dp_device *dp;
++	int ret;
++
++	dp = container_of(work, struct exynos_dp_device, hotplug_work);
++
++	ret = exynos_dp_detect_hpd(dp);
++	if (ret) {
++		dev_err(dp->dev, "unable to detect hpd\n");
++		return;
++	}
++
++	ret = exynos_dp_handle_edid(dp);
++	if (ret) {
++		dev_err(dp->dev, "unable to handle edid\n");
++		return;
++	}
++
++	ret = exynos_dp_set_link_train(dp, dp->video_info->lane_count,
++					dp->video_info->link_rate);
++	if (ret) {
++		dev_err(dp->dev, "unable to do link train\n");
++		return;
++	}
++
++	exynos_dp_enable_scramble(dp, 1);
++	exynos_dp_enable_rx_to_enhanced_mode(dp, 1);
++	exynos_dp_enable_enhanced_mode(dp, 1);
++
++	exynos_dp_set_lane_count(dp, dp->video_info->lane_count);
++	exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
++
++	exynos_dp_init_video(dp);
++	ret = exynos_dp_config_video(dp, dp->video_info);
++	if (ret)
++		dev_err(dp->dev, "unable to config video\n");
++}
++
+ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ {
+ 	struct resource *res;
+@@ -882,6 +921,8 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
+ 		return -ENODEV;
  	}
  
- 	strcpy(fbi->fb.fix.id, DRIVER_NAME);
-@@ -310,29 +309,19 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (res = NULL) {
- 		dev_err(&pdev->dev, "no I/O memory resource defined\n");
--		ret = -ENODEV;
--		goto failed_fbi;
-+		return -ENODEV;
- 	}
++	INIT_WORK(&dp->hotplug_work, exynos_dp_hotplug);
++
+ 	ret = devm_request_irq(&pdev->dev, dp->irq, exynos_dp_irq_handler, 0,
+ 				"exynos-dp", dp);
+ 	if (ret) {
+@@ -895,36 +936,8 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
  
--	res = request_mem_region(res->start, resource_size(res), DRIVER_NAME);
--	if (res = NULL) {
--		dev_err(&pdev->dev, "failed to request I/O memory\n");
--		ret = -EBUSY;
--		goto failed_fbi;
+ 	exynos_dp_init_dp(dp);
+ 
+-	ret = exynos_dp_detect_hpd(dp);
+-	if (ret) {
+-		dev_err(&pdev->dev, "unable to detect hpd\n");
+-		return ret;
 -	}
 -
--	fbi->regbase = ioremap(res->start, resource_size(res));
-+	fbi->regbase = devm_request_and_ioremap(&pdev->dev, res);
- 	if (fbi->regbase = NULL) {
--		dev_err(&pdev->dev, "failed to map I/O memory\n");
--		ret = -EBUSY;
--		goto failed_free_res;
-+		dev_err(&pdev->dev, "failed to request and map I/O memory\n");
-+		return -EBUSY;
- 	}
- 
- 	np = of_parse_phandle(pdev->dev.of_node, "default-mode", 0);
- 	if (!np) {
- 		pr_err("%s: No display description in Device Tree\n", __func__);
--		ret = -EINVAL;
--		goto failed_free_res;
-+		return -EINVAL;
- 	}
- 
- 	/*
-@@ -351,7 +340,7 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
- 	ret |= of_property_read_u32(np, "bpp", &bpp);
- 	if (ret) {
- 		pr_err("%s: Unable to read display properties\n", __func__);
--		goto failed_free_res;
-+		return ret;
- 	}
- 
- 	of_mode.vmode = FB_VMODE_NONINTERLACED;
-@@ -365,7 +354,7 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
- 
- 	/* try allocating the framebuffer */
- 	fb_mem_len = of_mode.xres * of_mode.yres * 2 * (bpp / 8);
--	fb_mem_virt = dma_alloc_coherent(&pdev->dev, fb_mem_len, &fb_mem_phys,
-+	fb_mem_virt = dmam_alloc_coherent(&pdev->dev, fb_mem_len, &fb_mem_phys,
- 				GFP_KERNEL);
- 	if (!fb_mem_virt) {
- 		pr_err("%s: Failed to allocate framebuffer\n", __func__);
-@@ -383,8 +372,7 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
- 
- 	if (fb_alloc_cmap(&fbi->fb.cmap, 256, 0) < 0) {
- 		dev_err(&pdev->dev, "Failed to allocate color map\n");
--		ret = -ENOMEM;
--		goto failed_free_io;
-+		return -ENOMEM;
- 	}
- 
- 	wm8505fb_init_hw(&fbi->fb);
-@@ -420,21 +408,12 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
- failed_free_cmap:
- 	if (fbi->fb.cmap.len)
- 		fb_dealloc_cmap(&fbi->fb.cmap);
--failed_free_io:
--	iounmap(fbi->regbase);
--failed_free_res:
--	release_mem_region(res->start, resource_size(res));
--failed_fbi:
--	platform_set_drvdata(pdev, NULL);
--	kfree(fbi);
--failed:
- 	return ret;
- }
- 
- static int __devexit wm8505fb_remove(struct platform_device *pdev)
- {
- 	struct wm8505fb_info *fbi = platform_get_drvdata(pdev);
--	struct resource *res;
- 
- 	device_remove_file(&pdev->dev, &dev_attr_contrast);
- 
-@@ -445,13 +424,6 @@ static int __devexit wm8505fb_remove(struct platform_device *pdev)
- 	if (fbi->fb.cmap.len)
- 		fb_dealloc_cmap(&fbi->fb.cmap);
- 
--	iounmap(fbi->regbase);
+-	exynos_dp_handle_edid(dp);
 -
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	release_mem_region(res->start, resource_size(res));
+-	ret = exynos_dp_set_link_train(dp, dp->video_info->lane_count,
+-				dp->video_info->link_rate);
+-	if (ret) {
+-		dev_err(&pdev->dev, "unable to do link train\n");
+-		return ret;
+-	}
 -
--	kfree(fbi);
+-	exynos_dp_enable_scramble(dp, 1);
+-	exynos_dp_enable_rx_to_enhanced_mode(dp, 1);
+-	exynos_dp_enable_enhanced_mode(dp, 1);
 -
+-	exynos_dp_set_lane_count(dp, dp->video_info->lane_count);
+-	exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
+-
+-	exynos_dp_init_video(dp);
+-	ret = exynos_dp_config_video(dp, dp->video_info);
+-	if (ret) {
+-		dev_err(&pdev->dev, "unable to config video\n");
+-		return ret;
+-	}
+-
+ 	platform_set_drvdata(pdev, dp);
++	schedule_work(&dp->hotplug_work);
+ 
  	return 0;
  }
+@@ -934,6 +947,9 @@ static int __devexit exynos_dp_remove(struct platform_device *pdev)
+ 	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
+ 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
  
++	if (work_pending(&dp->hotplug_work))
++		flush_work(&dp->hotplug_work);
++
+ 	if (pdata && pdata->phy_exit)
+ 		pdata->phy_exit();
+ 
+@@ -949,6 +965,9 @@ static int exynos_dp_suspend(struct device *dev)
+ 	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
+ 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
+ 
++	if (work_pending(&dp->hotplug_work))
++		flush_work(&dp->hotplug_work);
++
+ 	if (pdata && pdata->phy_exit)
+ 		pdata->phy_exit();
+ 
+@@ -970,21 +989,7 @@ static int exynos_dp_resume(struct device *dev)
+ 
+ 	exynos_dp_init_dp(dp);
+ 
+-	exynos_dp_detect_hpd(dp);
+-	exynos_dp_handle_edid(dp);
+-
+-	exynos_dp_set_link_train(dp, dp->video_info->lane_count,
+-				dp->video_info->link_rate);
+-
+-	exynos_dp_enable_scramble(dp, 1);
+-	exynos_dp_enable_rx_to_enhanced_mode(dp, 1);
+-	exynos_dp_enable_enhanced_mode(dp, 1);
+-
+-	exynos_dp_set_lane_count(dp, dp->video_info->lane_count);
+-	exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
+-
+-	exynos_dp_init_video(dp);
+-	exynos_dp_config_video(dp, dp->video_info);
++	schedule_work(&dp->hotplug_work);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
+index 57b8a65..66f11f4 100644
+--- a/drivers/video/exynos/exynos_dp_core.h
++++ b/drivers/video/exynos/exynos_dp_core.h
+@@ -32,6 +32,7 @@ struct exynos_dp_device {
+ 
+ 	struct video_info	*video_info;
+ 	struct link_train	link_train;
++	struct work_struct	hotplug_work;
+ };
+ 
+ /* exynos_dp_reg.c */
 -- 
-1.7.4.1
+1.7.1
+
 

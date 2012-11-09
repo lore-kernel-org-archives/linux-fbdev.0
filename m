@@ -1,177 +1,424 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 15 Nov 2012 15:58:37 +0000
-Subject: [PATCH 29/32] OMAPDSS: export dss_mgr_ops functions
-Message-Id: <1352995120-3288-30-git-send-email-tomi.valkeinen@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Fri, 09 Nov 2012 05:49:16 +0000
+Subject: [PATCH v4 2/8] video: exynos_dp: Clean up SW link training
+Message-Id: <001a01cdbe3d$f4686fe0$dd394fa0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Export dss_mgr_ops related functions.
+From: Sean Paul <seanpaul@chromium.org>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Clean up some of the SW training code to make it more clear and reduce
+duplicate code.
+
+[jg1.han@samsung.com: used exynos_dp_write_bytes_to_dpcd()]
+Signed-off-by: Sean Paul <seanpaul@chromium.org>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/omap2/dss/dss.h    |   30 ------------------------------
- drivers/video/omap2/dss/output.c |    9 +++++++++
- include/video/omapdss.h          |   29 +++++++++++++++++++++++++++++
- 3 files changed, 38 insertions(+), 30 deletions(-)
+ drivers/video/exynos/exynos_dp_core.c |  292 +++++++++++++-------------------
+ 1 files changed, 119 insertions(+), 173 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 8004bdf..aac53994 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -180,19 +180,6 @@ void dss_put_device(struct omap_dss_device *dssdev);
- void dss_copy_device_pdata(struct omap_dss_device *dst,
- 		const struct omap_dss_device *src);
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index 44820f2..8c9bcb9 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -276,7 +276,7 @@ static int exynos_dp_link_start(struct exynos_dp_device *dp)
  
--/* apply */
--void dss_mgr_start_update(struct omap_overlay_manager *mgr);
--int dss_mgr_enable(struct omap_overlay_manager *mgr);
--void dss_mgr_disable(struct omap_overlay_manager *mgr);
--void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
--		const struct omap_video_timings *timings);
--void dss_mgr_set_lcd_config(struct omap_overlay_manager *mgr,
--		const struct dss_lcd_mgr_config *config);
--int dss_mgr_register_framedone_handler(struct omap_overlay_manager *mgr,
--		void (*handler)(void *), void *data);
--void dss_mgr_unregister_framedone_handler(struct omap_overlay_manager *mgr,
--		void (*handler)(void *), void *data);
--
- /* output */
- void dss_register_output(struct omap_dss_output *out);
- void dss_unregister_output(struct omap_dss_output *out);
-@@ -534,21 +521,4 @@ static inline void dss_collect_irq_stats(u32 irqstatus, unsigned *irq_arr)
+ 	/* Set sink to D0 (Sink Not Ready) mode. */
+ 	retval = exynos_dp_write_byte_to_dpcd(dp, DPCD_ADDR_SINK_POWER_STATE,
+-				DPCD_SET_POWER_STATE_D0);
++			DPCD_SET_POWER_STATE_D0);
+ 	if (retval)
+ 		return retval;
+ 
+@@ -301,17 +301,18 @@ static int exynos_dp_link_start(struct exynos_dp_device *dp)
+ 	exynos_dp_set_training_pattern(dp, TRAINING_PTN1);
+ 
+ 	/* Set RX training pattern */
+-	exynos_dp_write_byte_to_dpcd(dp,
+-		DPCD_ADDR_TRAINING_PATTERN_SET,
+-		DPCD_SCRAMBLING_DISABLED |
+-		DPCD_TRAINING_PATTERN_1);
++	retval = exynos_dp_write_byte_to_dpcd(dp,
++			DPCD_ADDR_TRAINING_PATTERN_SET,
++			DPCD_SCRAMBLING_DISABLED | DPCD_TRAINING_PATTERN_1);
++	if (retval)
++		return retval;
+ 
+ 	for (lane = 0; lane < lane_count; lane++)
+ 		buf[lane] = DPCD_PRE_EMPHASIS_PATTERN2_LEVEL0 |
+ 			    DPCD_VOLTAGE_SWING_PATTERN1_LEVEL0;
+-	retval = exynos_dp_write_bytes_to_dpcd(dp,
+-		DPCD_ADDR_TRAINING_LANE0_SET,
+-		lane_count, buf);
++
++	retval = exynos_dp_write_bytes_to_dpcd(dp, DPCD_ADDR_TRAINING_LANE0_SET,
++			lane_count, buf);
+ 
+ 	return retval;
  }
- #endif
- 
--struct dss_mgr_ops {
--	void (*start_update)(struct omap_overlay_manager *mgr);
--	int (*enable)(struct omap_overlay_manager *mgr);
--	void (*disable)(struct omap_overlay_manager *mgr);
--	void (*set_timings)(struct omap_overlay_manager *mgr,
--			const struct omap_video_timings *timings);
--	void (*set_lcd_config)(struct omap_overlay_manager *mgr,
--			const struct dss_lcd_mgr_config *config);
--	int (*register_framedone_handler)(struct omap_overlay_manager *mgr,
--			void (*handler)(void *), void *data);
--	void (*unregister_framedone_handler)(struct omap_overlay_manager *mgr,
--			void (*handler)(void *), void *data);
--};
--
--int dss_install_mgr_ops(const struct dss_mgr_ops *mgr_ops);
--void dss_uninstall_mgr_ops(void);
--
- #endif
-diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
-index accb865..26d3f40 100644
---- a/drivers/video/omap2/dss/output.c
-+++ b/drivers/video/omap2/dss/output.c
-@@ -158,47 +158,56 @@ int dss_install_mgr_ops(const struct dss_mgr_ops *mgr_ops)
- 
+@@ -337,18 +338,17 @@ static int exynos_dp_clock_recovery_ok(u8 link_status[2], int lane_count)
  	return 0;
  }
-+EXPORT_SYMBOL(dss_install_mgr_ops);
  
- void dss_uninstall_mgr_ops(void)
+-static int exynos_dp_channel_eq_ok(u8 link_align[3], int lane_count)
++static int exynos_dp_channel_eq_ok(u8 link_status[2], u8 link_align,
++				int lane_count)
  {
- 	dss_mgr_ops = NULL;
+ 	int lane;
+-	u8 lane_align;
+ 	u8 lane_status;
+ 
+-	lane_align = link_align[2];
+-	if ((lane_align & DPCD_INTERLANE_ALIGN_DONE) = 0)
++	if ((link_align & DPCD_INTERLANE_ALIGN_DONE) = 0)
+ 		return -EINVAL;
+ 
+ 	for (lane = 0; lane < lane_count; lane++) {
+-		lane_status = exynos_dp_get_lane_status(link_align, lane);
++		lane_status = exynos_dp_get_lane_status(link_status, lane);
+ 		lane_status &= DPCD_CHANNEL_EQ_BITS;
+ 		if (lane_status != DPCD_CHANNEL_EQ_BITS)
+ 			return -EINVAL;
+@@ -432,22 +432,47 @@ static void exynos_dp_reduce_link_rate(struct exynos_dp_device *dp)
+ 	dp->link_train.lt_state = FAILED;
  }
-+EXPORT_SYMBOL(dss_uninstall_mgr_ops);
  
- void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
- 		const struct omap_video_timings *timings)
- {
- 	dss_mgr_ops->set_timings(mgr, timings);
- }
-+EXPORT_SYMBOL(dss_mgr_set_timings);
- 
- void dss_mgr_set_lcd_config(struct omap_overlay_manager *mgr,
- 		const struct dss_lcd_mgr_config *config)
- {
- 	dss_mgr_ops->set_lcd_config(mgr, config);
- }
-+EXPORT_SYMBOL(dss_mgr_set_lcd_config);
- 
- int dss_mgr_enable(struct omap_overlay_manager *mgr)
- {
- 	return dss_mgr_ops->enable(mgr);
- }
-+EXPORT_SYMBOL(dss_mgr_enable);
- 
- void dss_mgr_disable(struct omap_overlay_manager *mgr)
- {
- 	dss_mgr_ops->disable(mgr);
- }
-+EXPORT_SYMBOL(dss_mgr_disable);
- 
- void dss_mgr_start_update(struct omap_overlay_manager *mgr)
- {
- 	dss_mgr_ops->start_update(mgr);
- }
-+EXPORT_SYMBOL(dss_mgr_start_update);
- 
- int dss_mgr_register_framedone_handler(struct omap_overlay_manager *mgr,
- 		void (*handler)(void *), void *data)
- {
- 	return dss_mgr_ops->register_framedone_handler(mgr, handler, data);
- }
-+EXPORT_SYMBOL(dss_mgr_register_framedone_handler);
- 
- void dss_mgr_unregister_framedone_handler(struct omap_overlay_manager *mgr,
- 		void (*handler)(void *), void *data)
- {
- 	dss_mgr_ops->unregister_framedone_handler(mgr, handler, data);
- }
-+EXPORT_SYMBOL(dss_mgr_unregister_framedone_handler);
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 823a07b..d1bf3bc 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -55,6 +55,7 @@
- 
- struct omap_dss_device;
- struct omap_overlay_manager;
-+struct dss_lcd_mgr_config;
- struct snd_aes_iec958;
- struct snd_cea_861_aud_if;
- 
-@@ -835,4 +836,32 @@ void omapdss_rfbi_set_interface_timings(struct omap_dss_device *dssdev,
- int omapdss_compat_init(void);
- void omapdss_compat_uninit(void);
- 
-+struct dss_mgr_ops {
-+	void (*start_update)(struct omap_overlay_manager *mgr);
-+	int (*enable)(struct omap_overlay_manager *mgr);
-+	void (*disable)(struct omap_overlay_manager *mgr);
-+	void (*set_timings)(struct omap_overlay_manager *mgr,
-+			const struct omap_video_timings *timings);
-+	void (*set_lcd_config)(struct omap_overlay_manager *mgr,
-+			const struct dss_lcd_mgr_config *config);
-+	int (*register_framedone_handler)(struct omap_overlay_manager *mgr,
-+			void (*handler)(void *), void *data);
-+	void (*unregister_framedone_handler)(struct omap_overlay_manager *mgr,
-+			void (*handler)(void *), void *data);
-+};
++static void exynos_dp_get_adjust_training_lane(struct exynos_dp_device *dp,
++					u8 adjust_request[2])
++{
++	int lane, lane_count;
++	u8 voltage_swing, pre_emphasis, training_lane;
 +
-+int dss_install_mgr_ops(const struct dss_mgr_ops *mgr_ops);
-+void dss_uninstall_mgr_ops(void);
++	lane_count = dp->link_train.lane_count;
++	for (lane = 0; lane < lane_count; lane++) {
++		voltage_swing = exynos_dp_get_adjust_request_voltage(
++						adjust_request, lane);
++		pre_emphasis = exynos_dp_get_adjust_request_pre_emphasis(
++						adjust_request, lane);
++		training_lane = DPCD_VOLTAGE_SWING_SET(voltage_swing) |
++				DPCD_PRE_EMPHASIS_SET(pre_emphasis);
 +
-+void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
-+		const struct omap_video_timings *timings);
-+void dss_mgr_set_lcd_config(struct omap_overlay_manager *mgr,
-+		const struct dss_lcd_mgr_config *config);
-+int dss_mgr_enable(struct omap_overlay_manager *mgr);
-+void dss_mgr_disable(struct omap_overlay_manager *mgr);
-+void dss_mgr_start_update(struct omap_overlay_manager *mgr);
-+int dss_mgr_register_framedone_handler(struct omap_overlay_manager *mgr,
-+		void (*handler)(void *), void *data);
-+void dss_mgr_unregister_framedone_handler(struct omap_overlay_manager *mgr,
-+		void (*handler)(void *), void *data);
- #endif
++		if (voltage_swing = VOLTAGE_LEVEL_3)
++			training_lane |= DPCD_MAX_SWING_REACHED;
++		if (pre_emphasis = PRE_EMPHASIS_LEVEL_3)
++			training_lane |= DPCD_MAX_PRE_EMPHASIS_REACHED;
++
++		dp->link_train.training_lane[lane] = training_lane;
++	}
++}
++
+ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ {
+-	u8 link_status[2];
+ 	int lane, lane_count, retval;
+-
+-	u8 adjust_request[2];
+-	u8 voltage_swing;
+-	u8 pre_emphasis;
+-	u8 training_lane;
++	u8 voltage_swing, pre_emphasis, training_lane;
++	u8 link_status[2], adjust_request[2];
+ 
+ 	usleep_range(100, 101);
+ 
+ 	lane_count = dp->link_train.lane_count;
+ 
+-	retval =  exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
+-				2, link_status);
++	retval =  exynos_dp_read_bytes_from_dpcd(dp,
++			DPCD_ADDR_LANE0_1_STATUS, 2, link_status);
++	if (retval)
++		return retval;
++
++	retval =  exynos_dp_read_bytes_from_dpcd(dp,
++			DPCD_ADDR_ADJUST_REQUEST_LANE0_1, 2, adjust_request);
+ 	if (retval)
+ 		return retval;
+ 
+@@ -455,43 +480,10 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 		/* set training pattern 2 for EQ */
+ 		exynos_dp_set_training_pattern(dp, TRAINING_PTN2);
+ 
+-		for (lane = 0; lane < lane_count; lane++) {
+-			retval = exynos_dp_read_bytes_from_dpcd(dp,
+-					DPCD_ADDR_ADJUST_REQUEST_LANE0_1,
+-					2, adjust_request);
+-			if (retval)
+-				return retval;
+-
+-			voltage_swing = exynos_dp_get_adjust_request_voltage(
+-							adjust_request, lane);
+-			pre_emphasis = exynos_dp_get_adjust_request_pre_emphasis(
+-							adjust_request, lane);
+-			training_lane = DPCD_VOLTAGE_SWING_SET(voltage_swing) |
+-					DPCD_PRE_EMPHASIS_SET(pre_emphasis);
+-
+-			if (voltage_swing = VOLTAGE_LEVEL_3)
+-				training_lane |= DPCD_MAX_SWING_REACHED;
+-			if (pre_emphasis = PRE_EMPHASIS_LEVEL_3)
+-				training_lane |= DPCD_MAX_PRE_EMPHASIS_REACHED;
+-
+-			dp->link_train.training_lane[lane] = training_lane;
+-
+-			exynos_dp_set_lane_link_training(dp,
+-				dp->link_train.training_lane[lane],
+-				lane);
+-		}
+-
+ 		retval = exynos_dp_write_byte_to_dpcd(dp,
+-			DPCD_ADDR_TRAINING_PATTERN_SET,
+-			DPCD_SCRAMBLING_DISABLED |
+-			DPCD_TRAINING_PATTERN_2);
+-		if (retval)
+-			return retval;
+-
+-		retval = exynos_dp_write_bytes_to_dpcd(dp,
+-			DPCD_ADDR_TRAINING_LANE0_SET,
+-			lane_count,
+-			dp->link_train.training_lane);
++				DPCD_ADDR_TRAINING_PATTERN_SET,
++				DPCD_SCRAMBLING_DISABLED |
++				DPCD_TRAINING_PATTERN_2);
+ 		if (retval)
+ 			return retval;
+ 
+@@ -501,162 +493,116 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 		for (lane = 0; lane < lane_count; lane++) {
+ 			training_lane = exynos_dp_get_lane_link_training(
+ 							dp, lane);
+-			retval = exynos_dp_read_bytes_from_dpcd(dp,
+-					DPCD_ADDR_ADJUST_REQUEST_LANE0_1,
+-					2, adjust_request);
+-			if (retval)
+-				return retval;
+-
+ 			voltage_swing = exynos_dp_get_adjust_request_voltage(
+ 							adjust_request, lane);
+ 			pre_emphasis = exynos_dp_get_adjust_request_pre_emphasis(
+ 							adjust_request, lane);
+ 
+-			if (voltage_swing = VOLTAGE_LEVEL_3 ||
+-			    pre_emphasis = PRE_EMPHASIS_LEVEL_3) {
+-				dev_err(dp->dev, "voltage or pre emphasis reached max level\n");
+-				goto reduce_link_rate;
+-			}
+-
+-			if ((DPCD_VOLTAGE_SWING_GET(training_lane) =
+-					voltage_swing) &&
+-			   (DPCD_PRE_EMPHASIS_GET(training_lane) =
+-					pre_emphasis)) {
++			if (DPCD_VOLTAGE_SWING_GET(training_lane) =
++					voltage_swing &&
++			    DPCD_PRE_EMPHASIS_GET(training_lane) =
++					pre_emphasis)
+ 				dp->link_train.cr_loop[lane]++;
+-				if (dp->link_train.cr_loop[lane] = MAX_CR_LOOP) {
+-					dev_err(dp->dev, "CR Max loop\n");
+-					goto reduce_link_rate;
+-				}
+-			}
+-
+-			training_lane = DPCD_VOLTAGE_SWING_SET(voltage_swing) |
+-					DPCD_PRE_EMPHASIS_SET(pre_emphasis);
+ 
+-			if (voltage_swing = VOLTAGE_LEVEL_3)
+-				training_lane |= DPCD_MAX_SWING_REACHED;
+-			if (pre_emphasis = PRE_EMPHASIS_LEVEL_3)
+-				training_lane |= DPCD_MAX_PRE_EMPHASIS_REACHED;
++			if (dp->link_train.cr_loop[lane] = MAX_CR_LOOP ||
++			    voltage_swing = VOLTAGE_LEVEL_3 ||
++			    pre_emphasis = PRE_EMPHASIS_LEVEL_3) {
++				dev_err(dp->dev, "CR Max reached (%d,%d,%d)\n",
++					dp->link_train.cr_loop[lane],
++					voltage_swing, pre_emphasis);
++				exynos_dp_reduce_link_rate(dp);
++				return -EIO;
++			}
++		}
++	}
+ 
+-			dp->link_train.training_lane[lane] = training_lane;
++	exynos_dp_get_adjust_training_lane(dp, adjust_request);
+ 
+-			exynos_dp_set_lane_link_training(dp,
+-				dp->link_train.training_lane[lane], lane);
+-		}
++	for (lane = 0; lane < lane_count; lane++)
++		exynos_dp_set_lane_link_training(dp,
++			dp->link_train.training_lane[lane], lane);
+ 
+-		retval = exynos_dp_write_bytes_to_dpcd(dp,
+-				DPCD_ADDR_TRAINING_LANE0_SET, lane_count,
+-				dp->link_train.training_lane);
+-		if (retval)
+-			return retval;
+-	}
++	retval = exynos_dp_write_bytes_to_dpcd(dp,
++			DPCD_ADDR_TRAINING_LANE0_SET, lane_count,
++			dp->link_train.training_lane);
++	if (retval)
++		return retval;
+ 
+ 	return retval;
+-
+-reduce_link_rate:
+-	exynos_dp_reduce_link_rate(dp);
+-	return -EIO;
+ }
+ 
+ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
+ {
+-	u8 link_status[2];
+-	u8 link_align[3];
+ 	int lane, lane_count, retval;
+ 	u32 reg;
+-
+-	u8 adjust_request[2];
+-	u8 voltage_swing;
+-	u8 pre_emphasis;
+-	u8 training_lane;
++	u8 link_align, link_status[2], adjust_request[2];
+ 
+ 	usleep_range(400, 401);
+ 
+ 	lane_count = dp->link_train.lane_count;
+ 
+-	retval = exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
+-				2, link_status);
++	retval = exynos_dp_read_bytes_from_dpcd(dp,
++			DPCD_ADDR_LANE0_1_STATUS, 2, link_status);
+ 	if (retval)
+ 		return retval;
+ 
+-	if (exynos_dp_clock_recovery_ok(link_status, lane_count) = 0) {
+-		link_align[0] = link_status[0];
+-		link_align[1] = link_status[1];
+-
+-		exynos_dp_read_byte_from_dpcd(dp,
+-			DPCD_ADDR_LANE_ALIGN_STATUS_UPDATED,
+-			&link_align[2]);
+-
+-		for (lane = 0; lane < lane_count; lane++) {
+-			retval = exynos_dp_read_bytes_from_dpcd(dp,
+-					DPCD_ADDR_ADJUST_REQUEST_LANE0_1,
+-					2, adjust_request);
+-			if (retval)
+-				return retval;
++	if (exynos_dp_clock_recovery_ok(link_status, lane_count)) {
++		exynos_dp_reduce_link_rate(dp);
++		return -EIO;
++	}
+ 
+-			voltage_swing = exynos_dp_get_adjust_request_voltage(
+-							adjust_request, lane);
+-			pre_emphasis = exynos_dp_get_adjust_request_pre_emphasis(
+-							adjust_request, lane);
+-			training_lane = DPCD_VOLTAGE_SWING_SET(voltage_swing) |
+-					DPCD_PRE_EMPHASIS_SET(pre_emphasis);
++	retval = exynos_dp_read_bytes_from_dpcd(dp,
++			DPCD_ADDR_ADJUST_REQUEST_LANE0_1, 2, adjust_request);
++	if (retval)
++		return retval;
+ 
+-			if (voltage_swing = VOLTAGE_LEVEL_3)
+-				training_lane |= DPCD_MAX_SWING_REACHED;
+-			if (pre_emphasis = PRE_EMPHASIS_LEVEL_3)
+-				training_lane |= DPCD_MAX_PRE_EMPHASIS_REACHED;
++	retval = exynos_dp_read_byte_from_dpcd(dp,
++			DPCD_ADDR_LANE_ALIGN_STATUS_UPDATED, &link_align);
++	if (retval)
++		return retval;
+ 
+-			dp->link_train.training_lane[lane] = training_lane;
+-		}
++	exynos_dp_get_adjust_training_lane(dp, adjust_request);
+ 
+-		if (exynos_dp_channel_eq_ok(link_align, lane_count) = 0) {
+-			/* traing pattern Set to Normal */
+-			exynos_dp_training_pattern_dis(dp);
++	if (!exynos_dp_channel_eq_ok(link_status, link_align, lane_count)) {
++		/* traing pattern Set to Normal */
++		exynos_dp_training_pattern_dis(dp);
+ 
+-			dev_info(dp->dev, "Link Training success!\n");
++		dev_info(dp->dev, "Link Training success!\n");
+ 
+-			exynos_dp_get_link_bandwidth(dp, &reg);
+-			dp->link_train.link_rate = reg;
+-			dev_dbg(dp->dev, "final bandwidth = %.2x\n",
+-				dp->link_train.link_rate);
++		exynos_dp_get_link_bandwidth(dp, &reg);
++		dp->link_train.link_rate = reg;
++		dev_dbg(dp->dev, "final bandwidth = %.2x\n",
++			dp->link_train.link_rate);
+ 
+-			exynos_dp_get_lane_count(dp, &reg);
+-			dp->link_train.lane_count = reg;
+-			dev_dbg(dp->dev, "final lane count = %.2x\n",
+-				dp->link_train.lane_count);
++		exynos_dp_get_lane_count(dp, &reg);
++		dp->link_train.lane_count = reg;
++		dev_dbg(dp->dev, "final lane count = %.2x\n",
++			dp->link_train.lane_count);
+ 
+-			/* set enhanced mode if available */
+-			exynos_dp_set_enhanced_mode(dp);
+-			dp->link_train.lt_state = FINISHED;
+-		} else {
+-			/* not all locked */
+-			dp->link_train.eq_loop++;
++		/* set enhanced mode if available */
++		exynos_dp_set_enhanced_mode(dp);
++		dp->link_train.lt_state = FINISHED;
+ 
+-			if (dp->link_train.eq_loop > MAX_EQ_LOOP) {
+-				dev_err(dp->dev, "EQ Max loop\n");
+-				goto reduce_link_rate;
+-			}
++		return 0;
++	}
+ 
+-			for (lane = 0; lane < lane_count; lane++)
+-				exynos_dp_set_lane_link_training(dp,
+-					dp->link_train.training_lane[lane],
+-					lane);
++	/* not all locked */
++	dp->link_train.eq_loop++;
+ 
+-			retval = exynos_dp_write_bytes_to_dpcd(dp,
+-					DPCD_ADDR_TRAINING_LANE0_SET,
+-					lane_count,
+-					dp->link_train.training_lane);
+-			if (retval)
+-				return retval;
+-		}
+-	} else {
+-		goto reduce_link_rate;
++	if (dp->link_train.eq_loop > MAX_EQ_LOOP) {
++		dev_err(dp->dev, "EQ Max loop\n");
++		exynos_dp_reduce_link_rate(dp);
++		return -EIO;
+ 	}
+ 
+-	return 0;
++	for (lane = 0; lane < lane_count; lane++)
++		exynos_dp_set_lane_link_training(dp,
++			dp->link_train.training_lane[lane], lane);
+ 
+-reduce_link_rate:
+-	exynos_dp_reduce_link_rate(dp);
+-	return -EIO;
++	retval = exynos_dp_write_bytes_to_dpcd(dp, DPCD_ADDR_TRAINING_LANE0_SET,
++			lane_count, dp->link_train.training_lane);
++
++	return retval;
+ }
+ 
+ static void exynos_dp_get_max_rx_bandwidth(struct exynos_dp_device *dp,
 -- 
-1.7.10.4
+1.7.1
+
 

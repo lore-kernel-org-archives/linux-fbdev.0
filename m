@@ -1,231 +1,192 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Wed, 28 Nov 2012 10:53:27 +0000
-Subject: [PATCH 4/7] OMAPDSS: DSI: Move DSI specific reg_fields to dsi_feats
-Message-Id: <3fa82b3ce69b597fc85f0ce7f4611a923082dee1.1354086150.git.cmahapatra@ti.com>
+From: Shaik Ameer Basha <shaik.ameer@samsung.com>
+Date: Sat, 10 Nov 2012 11:46:44 +0000
+Subject: [PATCH 1/2] exynos-mipi-dsi: using devm_ functions for automatic cleanup
+Message-Id: <1352547285-12302-2-git-send-email-shaik.ameer@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1354086150.git.cmahapatra@ti.com>
-In-Reply-To: <cover.1354086150.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-The DSI specific dss_reg_fields are moved to corresponding dsi_reg_fields
-initialized in dsi_feats. The dsi_feats structure is initialized as per
-corresponding DSS version in dsi_init_features().
+Using devm_ functions will take care of cleaning the allocated
+resources when the device is removed.
 
-Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Change-Id: Ia904a65ebdfe15a69c7c16501b3d94dd41f69bf4
+Signed-off-by: Shaik Ameer Basha <shaik.ameer@samsung.com>
 ---
- drivers/video/omap2/dss/dsi.c          |  119 ++++++++++++++++++++++++++++++--
- drivers/video/omap2/dss/dss_features.c |   16 -----
- drivers/video/omap2/dss/dss_features.h |    4 --
- 3 files changed, 113 insertions(+), 26 deletions(-)
+ drivers/video/exynos/exynos_mipi_dsi.c |   76 ++++++++-----------------------
+ 1 files changed, 20 insertions(+), 56 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index cf32dc7..2d387cb 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -344,6 +344,19 @@ struct dsi_packet_sent_handler_data {
- 	struct completion *completion;
- };
+diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
+index 1f5de89..ae20bc3 100755
+--- a/drivers/video/exynos/exynos_mipi_dsi.c
++++ b/drivers/video/exynos/exynos_mipi_dsi.c
+@@ -338,7 +338,8 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 	struct mipi_dsim_ddi *dsim_ddi;
+ 	int ret = -EINVAL;
  
-+enum dsi_feat_reg_field {
-+	FEAT_REG_DSIPLL_REGN,
-+	FEAT_REG_DSIPLL_REGM,
-+	FEAT_REG_DSIPLL_REGM_DISPC,
-+	FEAT_REG_DSIPLL_REGM_DSI,
-+};
-+
-+struct feats {
-+	const struct register_field *reg_fields;
-+};
-+
-+static const struct feats *dsi_feat;
-+
- #ifdef DEBUG
- static bool dsi_perf;
- module_param(dsi_perf, bool, 0644);
-@@ -1645,12 +1658,15 @@ int dsi_pll_set_clock_div(struct platform_device *dsidev,
- 		dss_feat_get_clk_source_name(OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DSI),
- 		cinfo->dsi_pll_hsdiv_dsi_clk);
+-	dsim = kzalloc(sizeof(struct mipi_dsim_device), GFP_KERNEL);
++	dsim = devm_kzalloc(&pdev->dev,
++			sizeof(struct mipi_dsim_device), GFP_KERNEL);
+ 	if (!dsim) {
+ 		dev_err(&pdev->dev, "failed to allocate dsim object.\n");
+ 		return -ENOMEM;
+@@ -352,13 +353,13 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 	dsim_pd = (struct mipi_dsim_platform_data *)dsim->pd;
+ 	if (dsim_pd = NULL) {
+ 		dev_err(&pdev->dev, "failed to get platform data for dsim.\n");
+-		goto err_clock_get;
++		return -EFAULT;
+ 	}
+ 	/* get mipi_dsim_config. */
+ 	dsim_config = dsim_pd->dsim_config;
+ 	if (dsim_config = NULL) {
+ 		dev_err(&pdev->dev, "failed to get dsim config data.\n");
+-		goto err_clock_get;
++		return -EFAULT;
+ 	}
  
--	dss_feat_get_reg_field(FEAT_REG_DSIPLL_REGN, &regn_start, &regn_end);
--	dss_feat_get_reg_field(FEAT_REG_DSIPLL_REGM, &regm_start, &regm_end);
--	dss_feat_get_reg_field(FEAT_REG_DSIPLL_REGM_DISPC, &regm_dispc_start,
--			&regm_dispc_end);
--	dss_feat_get_reg_field(FEAT_REG_DSIPLL_REGM_DSI, &regm_dsi_start,
--			&regm_dsi_end);
-+	regn_start = dsi_feat->reg_fields[FEAT_REG_DSIPLL_REGN].start;
-+	regn_end = dsi_feat->reg_fields[FEAT_REG_DSIPLL_REGN].end;
-+	regm_start = dsi_feat->reg_fields[FEAT_REG_DSIPLL_REGM].start;
-+	regm_end = dsi_feat->reg_fields[FEAT_REG_DSIPLL_REGM].end;
-+	regm_dispc_start +			dsi_feat->reg_fields[FEAT_REG_DSIPLL_REGM_DISPC].start;
-+	regm_dispc_end = dsi_feat->reg_fields[FEAT_REG_DSIPLL_REGM_DISPC].end;
-+	regm_dsi_start = dsi_feat->reg_fields[FEAT_REG_DSIPLL_REGM_DSI].start;
-+	regm_dsi_end = dsi_feat->reg_fields[FEAT_REG_DSIPLL_REGM_DSI].end;
+ 	dsim->dsim_config = dsim_config;
+@@ -366,41 +367,28 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
  
- 	/* DSI_PLL_AUTOMODE = manual */
- 	REG_FLD_MOD(dsidev, DSI_PLL_CONTROL, 0, 0, 0);
-@@ -5198,6 +5214,93 @@ static void __exit dsi_uninit_output(struct platform_device *dsidev)
- 	dss_unregister_output(out);
+ 	mutex_init(&dsim->lock);
+ 
+-	ret = regulator_bulk_get(&pdev->dev, ARRAY_SIZE(supplies), supplies);
++	ret = devm_regulator_bulk_get(&pdev->dev,
++				ARRAY_SIZE(supplies), supplies);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to get regulators: %d\n", ret);
+-		goto err_clock_get;
++		return ret;
+ 	}
+ 
+-	dsim->clock = clk_get(&pdev->dev, "dsim0");
++	dsim->clock = devm_clk_get(&pdev->dev, "dsim0");
+ 	if (IS_ERR(dsim->clock)) {
+ 		dev_err(&pdev->dev, "failed to get dsim clock source\n");
+-		ret = -ENODEV;
+-		goto err_clock_get;
++		return PTR_ERR(dsim->clock);
+ 	}
+ 
+ 	clk_enable(dsim->clock);
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (!res) {
+-		dev_err(&pdev->dev, "failed to get io memory region\n");
+-		ret = -ENODEV;
+-		goto err_platform_get;
+-	}
+-
+-	dsim->res = request_mem_region(res->start, resource_size(res),
+-					dev_name(&pdev->dev));
+-	if (!dsim->res) {
+-		dev_err(&pdev->dev, "failed to request io memory region\n");
+-		ret = -ENOMEM;
+-		goto err_mem_region;
+-	}
+ 
+-	dsim->reg_base = ioremap(res->start, resource_size(res));
++	dsim->reg_base = devm_request_and_ioremap(&pdev->dev, res);
+ 	if (!dsim->reg_base) {
+-		dev_err(&pdev->dev, "failed to remap io region\n");
+-		ret = -ENOMEM;
+-		goto err_ioremap;
++		dev_err(&pdev->dev, "failed to map registers\n");
++		ret = -ENXIO;
++		goto cleanup_clk;
+ 	}
+ 
+ 	mutex_init(&dsim->lock);
+@@ -409,27 +397,28 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 	dsim_ddi = exynos_mipi_dsi_bind_lcd_ddi(dsim, dsim_pd->lcd_panel_name);
+ 	if (!dsim_ddi) {
+ 		dev_err(&pdev->dev, "mipi_dsim_ddi object not found.\n");
+-		ret = -EINVAL;
+-		goto err_bind;
++		ret = -ENXIO;
++		goto cleanup_clk;
+ 	}
+ 
+ 	dsim->irq = platform_get_irq(pdev, 0);
+ 	if (dsim->irq < 0) {
+ 		dev_err(&pdev->dev, "failed to request dsim irq resource\n");
+ 		ret = -EINVAL;
+-		goto err_platform_get_irq;
++		goto cleanup_clk;
+ 	}
+ 
+ 	init_completion(&dsim_wr_comp);
+ 	init_completion(&dsim_rd_comp);
+ 	platform_set_drvdata(pdev, dsim);
+ 
+-	ret = request_irq(dsim->irq, exynos_mipi_dsi_interrupt_handler,
++	ret = devm_request_irq(&pdev->dev, dsim->irq,
++			exynos_mipi_dsi_interrupt_handler,
+ 			IRQF_SHARED, dev_name(&pdev->dev), dsim);
+ 	if (ret != 0) {
+ 		dev_err(&pdev->dev, "failed to request dsim irq\n");
+ 		ret = -EINVAL;
+-		goto err_bind;
++		goto cleanup_clk;
+ 	}
+ 
+ 	/* enable interrupts */
+@@ -464,29 +453,13 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 	dsim->suspended = false;
+ 
+ done:
+-	platform_set_drvdata(pdev, dsim);
+-
+ 	dev_dbg(&pdev->dev, "%s() completed sucessfuly (%s mode)\n", __func__,
+ 		dsim_config->e_interface = DSIM_COMMAND ? "CPU" : "RGB");
+ 
+ 	return 0;
+ 
+-err_bind:
+-	iounmap(dsim->reg_base);
+-
+-err_ioremap:
+-	release_mem_region(dsim->res->start, resource_size(dsim->res));
+-
+-err_mem_region:
+-	release_resource(dsim->res);
+-
+-err_platform_get:
++cleanup_clk:
+ 	clk_disable(dsim->clock);
+-	clk_put(dsim->clock);
+-err_clock_get:
+-	kfree(dsim);
+-
+-err_platform_get_irq:
+ 	return ret;
  }
  
-+static struct register_field omap2_dsi_reg_fields[] = {
-+	[FEAT_REG_DSIPLL_REGN]			= { 0, 0 },
-+	[FEAT_REG_DSIPLL_REGM]			= { 0, 0 },
-+	[FEAT_REG_DSIPLL_REGM_DISPC]		= { 0, 0 },
-+	[FEAT_REG_DSIPLL_REGM_DSI]		= { 0, 0 },
-+};
-+
-+static struct register_field omap3_dsi_reg_fields[] = {
-+	[FEAT_REG_DSIPLL_REGN]			= {  7,  1 },
-+	[FEAT_REG_DSIPLL_REGM]			= { 18,  8 },
-+	[FEAT_REG_DSIPLL_REGM_DISPC]		= { 22, 19 },
-+	[FEAT_REG_DSIPLL_REGM_DSI]		= { 26, 23 },
-+};
-+
-+static struct register_field omap4_dsi_reg_fields[] = {
-+	[FEAT_REG_DSIPLL_REGN]			= {  8,  1 },
-+	[FEAT_REG_DSIPLL_REGM]			= { 20,  9 },
-+	[FEAT_REG_DSIPLL_REGM_DISPC]		= { 25, 21 },
-+	[FEAT_REG_DSIPLL_REGM_DSI]		= { 30, 26 },
-+};
-+
-+static struct register_field omap5_dsi_reg_fields[] = {
-+	[FEAT_REG_DSIPLL_REGN]			= {  8,  1 },
-+	[FEAT_REG_DSIPLL_REGM]			= { 20,  9 },
-+	[FEAT_REG_DSIPLL_REGM_DISPC]		= { 25, 21 },
-+	[FEAT_REG_DSIPLL_REGM_DSI]		= { 30, 26 },
-+};
-+
-+static const struct feats omap24xx_dsi_feats __initconst = {
-+	.reg_fields		=	omap2_dsi_reg_fields,
-+};
-+
-+static const struct feats omap34xx_dsi_feats __initconst = {
-+	.reg_fields		=	omap3_dsi_reg_fields,
-+};
-+
-+static const struct feats omap44xx_dsi_feats __initconst = {
-+	.reg_fields		=	omap4_dsi_reg_fields,
-+};
-+
-+static const struct feats omap54xx_dsi_feats __initconst = {
-+	.reg_fields		=	omap5_dsi_reg_fields,
-+};
-+
-+static int __init dsi_init_features(struct platform_device *dsidev)
-+{
-+	const struct feats *src;
-+	struct feats *dst;
-+
-+	dst = devm_kzalloc(&dsidev->dev, sizeof(*dst), GFP_KERNEL);
-+	if (!dst) {
-+		dev_err(&dsidev->dev, "Failed to allocate DISPC Features\n");
-+		return -ENOMEM;
-+	}
-+
-+	switch (omapdss_get_version()) {
-+	case OMAPDSS_VER_OMAP24xx:
-+		src = &omap24xx_dsi_feats;
-+		break;
-+
-+	case OMAPDSS_VER_OMAP34xx_ES1:
-+	case OMAPDSS_VER_OMAP34xx_ES3:
-+	case OMAPDSS_VER_OMAP3630:
-+	case OMAPDSS_VER_AM35xx:
-+		src = &omap34xx_dsi_feats;
-+		break;
-+
-+	case OMAPDSS_VER_OMAP4430_ES1:
-+	case OMAPDSS_VER_OMAP4430_ES2:
-+	case OMAPDSS_VER_OMAP4:
-+		src = &omap44xx_dsi_feats;
-+		break;
-+
-+	case OMAPDSS_VER_OMAP5:
-+		src = &omap54xx_dsi_feats;
-+		break;
-+
-+	default:
-+		return -ENODEV;
-+	}
-+
-+	memcpy(dst, src, sizeof(*dst));
-+	dsi_feat = dst;
-+
-+	return 0;
-+}
-+
- /* DSI1 HW IP initialisation */
- static int __init omap_dsihw_probe(struct platform_device *dsidev)
- {
-@@ -5206,6 +5309,10 @@ static int __init omap_dsihw_probe(struct platform_device *dsidev)
- 	struct resource *dsi_mem;
- 	struct dsi_data *dsi;
+@@ -496,13 +469,7 @@ static int __devexit exynos_mipi_dsi_remove(struct platform_device *pdev)
+ 	struct mipi_dsim_ddi *dsim_ddi, *next;
+ 	struct mipi_dsim_lcd_driver *dsim_lcd_drv;
  
-+	r = dsi_init_features(dsidev);
-+	if (r)
-+		return r;
-+
- 	dsi = devm_kzalloc(&dsidev->dev, sizeof(*dsi), GFP_KERNEL);
- 	if (!dsi)
- 		return -ENOMEM;
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index 3a9d1df..8e6defb 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -61,34 +61,18 @@ static const struct omap_dss_features *omap_current_dss_features;
+-	iounmap(dsim->reg_base);
+-
+ 	clk_disable(dsim->clock);
+-	clk_put(dsim->clock);
+-
+-	release_resource(dsim->res);
+-	release_mem_region(dsim->res->start, resource_size(dsim->res));
  
- static const struct dss_reg_field omap2_dss_reg_fields[] = {
- 	[FEAT_REG_DISPC_CLK_SWITCH]		= { 0, 0 },
--	[FEAT_REG_DSIPLL_REGN]			= { 0, 0 },
--	[FEAT_REG_DSIPLL_REGM]			= { 0, 0 },
--	[FEAT_REG_DSIPLL_REGM_DISPC]		= { 0, 0 },
--	[FEAT_REG_DSIPLL_REGM_DSI]		= { 0, 0 },
- };
+ 	list_for_each_entry_safe(dsim_ddi, next, &dsim_ddi_list, list) {
+ 		if (dsim_ddi) {
+@@ -518,9 +485,6 @@ static int __devexit exynos_mipi_dsi_remove(struct platform_device *pdev)
+ 		}
+ 	}
  
- static const struct dss_reg_field omap3_dss_reg_fields[] = {
- 	[FEAT_REG_DISPC_CLK_SWITCH]		= { 0, 0 },
--	[FEAT_REG_DSIPLL_REGN]			= { 7, 1 },
--	[FEAT_REG_DSIPLL_REGM]			= { 18, 8 },
--	[FEAT_REG_DSIPLL_REGM_DISPC]		= { 22, 19 },
--	[FEAT_REG_DSIPLL_REGM_DSI]		= { 26, 23 },
- };
+-	regulator_bulk_free(ARRAY_SIZE(supplies), supplies);
+-	kfree(dsim);
+-
+ 	return 0;
+ }
  
- static const struct dss_reg_field omap4_dss_reg_fields[] = {
- 	[FEAT_REG_DISPC_CLK_SWITCH]		= { 9, 8 },
--	[FEAT_REG_DSIPLL_REGN]			= { 8, 1 },
--	[FEAT_REG_DSIPLL_REGM]			= { 20, 9 },
--	[FEAT_REG_DSIPLL_REGM_DISPC]		= { 25, 21 },
--	[FEAT_REG_DSIPLL_REGM_DSI]		= { 30, 26 },
- };
- 
- static const struct dss_reg_field omap5_dss_reg_fields[] = {
- 	[FEAT_REG_DISPC_CLK_SWITCH]		= { 9, 7 },
--	[FEAT_REG_DSIPLL_REGN]			= { 8, 1 },
--	[FEAT_REG_DSIPLL_REGM]			= { 20, 9 },
--	[FEAT_REG_DSIPLL_REGM_DISPC]		= { 25, 21 },
--	[FEAT_REG_DSIPLL_REGM_DSI]		= { 30, 26 },
- };
- 
- static const enum omap_display_type omap2_dss_supported_displays[] = {
-diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
-index 40b98ff..3e82404 100644
---- a/drivers/video/omap2/dss/dss_features.h
-+++ b/drivers/video/omap2/dss/dss_features.h
-@@ -73,10 +73,6 @@ enum dss_feat_id {
- /* DSS register field id */
- enum dss_feat_reg_field {
- 	FEAT_REG_DISPC_CLK_SWITCH,
--	FEAT_REG_DSIPLL_REGN,
--	FEAT_REG_DSIPLL_REGM,
--	FEAT_REG_DSIPLL_REGM_DISPC,
--	FEAT_REG_DSIPLL_REGM_DSI,
- };
- 
- enum dss_range_param {
 -- 
-1.7.10
+1.7.0.4
 

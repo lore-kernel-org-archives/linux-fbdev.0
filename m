@@ -1,67 +1,35 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Nov 2012 12:00:08 +0000
-Subject: Re: [PATCH 0/3] OMAPDSS: DISPC: Writeback fixes
-Message-Id: <50A0E4C8.1070902@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig3988900EB0C543D261D29443"
+From: Shaik Ameer Basha <shaik.ameer@samsung.com>
+Date: Sat, 10 Nov 2012 11:46:43 +0000
+Subject: [PATCH 0/2] Adding devm_ functions and DT support to MIPI driver
+Message-Id: <1352547285-12302-1-git-send-email-shaik.ameer@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352268905-31093-1-git-send-email-archit@ti.com>
-In-Reply-To: <1352268905-31093-1-git-send-email-archit@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---------------enig3988900EB0C543D261D29443
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+In this patch series,
 
-On 2012-11-07 08:15, Archit Taneja wrote:
-> Some issues were found in the DISPC driver when performing scaling with=
+First patch adds the devm_ functions to the driver code for automatic
+code cleanup.
 
-> writeback pipeline. This series fixes those issues.
->=20
-> Reference tree:
-> git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git 3.8/w=
-riteback_fixes_dispc
->=20
-> Archit Taneja (3):
->   OMAPDSS: DISPC: Fix calc_scaling_44xx() bugs for writeback pipeline
->   OMAPDSS: DISPC: Don't allow predecimation for writeback
->   OMAPDSS: DISPC: Use output width and height to calculate row/pix inc
->     for writeback
->=20
->  drivers/video/omap2/dss/dispc.c |   39 +++++++++++++++++++++++++++----=
---------
->  1 file changed, 27 insertions(+), 12 deletions(-)
->=20
+Second patch adds the DT support for the exynos mipi-dsi driver.
+for DT support, mipi device node should supply the following
+information to the mipi-dsi driver.
+1] dsim_config information
+2] d-phy setting information
+3] lcd poweron, reset information
+4] fb_videomode information
 
-Thanks, looks ok. I'll apply to omapdss tree.
+refer the documentation files for further details.
 
- Tomi
+Shaik Ameer Basha (2):
+  exynos-mipi-dsi: using devm_ functions for automatic cleanup
+  video: exynos-mipi-dsi: Adding DT support to exynos mipi driver
 
+ .../devicetree/bindings/video/exynos/mipi-dsi.txt  |  185 ++++++
+ drivers/video/exynos/exynos_mipi_dsi.c             |  645 +++++++++++++++++---
+ include/video/exynos_mipi_dsim.h                   |   27 +
+ 3 files changed, 783 insertions(+), 74 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/exynos/mipi-dsi.txt
 
-
---------------enig3988900EB0C543D261D29443
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJQoOTIAAoJEPo9qoy8lh71aU0P/0QCbTt0uQxTDXYOAUpgNPYC
-2uoStaZEPvAlM9wJ86s3vMN5DdwKT/oc3IQInmX5xXf9XaNJePYw6vwhl0I6DKCl
-iO9s9PwA26NAHZEYAB9LLLWyYkfHHOO0YkBdyO19OTMb84fDqaamPhxrgvsvHTfp
-jL3Af/674gAwefUm8OSDqLRdpygF170jSJaVDpLEsgbSLszxOFBG8o1Dip9HDDEU
-1w/n7AQXM7xhOHwuu0je9fc4fno+S6/DrRsZtwSkuKniEH25fe2gPios3zGQk+Ei
-QOP2WNSKbclh6XsFQEer6lJDsOrJ3gLXw6K4IgiJQKAnZl8OJ3/IXzca4a4B0cZm
-ppG62b2++Pd+s5lgAXoUUxUqvQG+5mDo+9rh0RDYEqoBSfnhSHkhMDXhPDxhfnXj
-Un0b+NPPaoFyvMHFifp0dX1QphK7Du5oK0OomVIFUehw4lxZ/LFCQ5Z0qbDthf/r
-cxpISr+fNHBHUiuBkCl6mKIC62johepc2IUnRZ5hGQAgOmWhgvs3wW5hbH6SMEPR
-Vadi7cYpisvIwWVLbsDp9drwn8WpOvhk6rpldXOE6pGXmSTS/a7Ax+KISsP7+fdT
-yZbWTGz7hIwSWW3QraTbI1ao19yobA60YLG5ailDdzfE5JP4C29g5jhZZylcEKkr
-0zlASXdo6+qWuJsH/SUl
-=a7mf
------END PGP SIGNATURE-----
-
---------------enig3988900EB0C543D261D29443--

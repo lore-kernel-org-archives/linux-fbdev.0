@@ -1,101 +1,85 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Wed, 21 Nov 2012 14:54:34 +0000
-Subject: Re: efifb swapping Red/Blue color
-Message-Id: <20121121155434.2bdab6cf@neptune.home>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Mon, 12 Nov 2012 15:37:03 +0000
+Subject: [PATCH v8 3/6] fbmon: add videomode helpers
+Message-Id: <1352734626-27412-4-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20121121001457.2672d788@neptune.home>
-In-Reply-To: <20121121001457.2672d788@neptune.home>
+References: <1352734626-27412-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352734626-27412-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-SGkgUGV0ZXIsCgpPbiBXZWQsIDIxIE5vdmVtYmVyIDIwMTIgUGV0ZXIgSm9uZXMgPHBqb25lc0By
-ZWRoYXQuY29tPiB3cm90ZToKPiBPbiBXZWQsIE5vdiAyMSwgMjAxMiBhdCAxMjoxNDo1N0FNICsw
-MTAwLCBCcnVubyBQcsOpbW9udCB3cm90ZToKPiA+IE9uIGEgTWFjQm9va0FpcjIsMSB3aXRoIDk0
-MDBNIEM3OSBuVmlkaWEgR1BVIGZiY29uIG9uIGVmaWZiIGhhcwo+ID4gcmVkIGFuZCBibHVlIGNv
-bG9ycyBzd2FwcGVkLgo+ID4gCj4gPiBFeHRyYWN0IGZyb20ga2VybmVsIGxvZzoKPiA+IGVmaWZi
-OiBwcm9iaW5nIGZvciBlZmlmYgo+ID4gZWZpZmI6IGZyYW1lYnVmZmVyIGF0IDB4ODAwMTAwMDAs
-IG1hcHBlZCB0byAweGZmZmZjOTAwMDQ1ODAwMDAsIHVzaW5nIDY0MDBrLCB0b3RhbCA2NDAwawo+
-ID4gZWZpZmI6IG1vZGUgaXMgMTI4MHg4MDB4MzIsIGxpbmVsZW5ndGiBOTIsIHBhZ2VzPTEKPiA+
-IGVmaWZiOiBzY3JvbGxpbmc6IHJlZHJhdwo+ID4gZWZpZmI6IFRydWVjb2xvcjogc2l6ZT04Ojg6
-ODo4LCBzaGlmdCQ6MDo4OjE2Cj4gPiAKPiA+IE9uIGFub3RoZXIgc3lzdGVtIHdpdGggcmFkZW9u
-IEdQVSBhbmQgZXh0ZXJuYWxseSBjb25uZWN0ZWQgRFZJIG1vbml0b3IKPiA+IGNvbG9ycyBhcmUg
-c2V0IHByb3Blcmx5Lgo+ID4gCj4gPiBQcm9iYWJseSBlZmlmYiBzaG91bGQgYmUgbG9va2luZyBh
-dCBzb21ldGhpbmcgdG8gZGV0ZXJtaW5lIGlmIGRpc3BsYXkKPiA+IGlzIFJHQiBvciBCR1IuLi4K
-PiAKPiBSaWdodCAtIG5vcm1hbGx5IHdlIGdldCBpdCBmcm9tIHRoZSBmaXJtd2FyZSBncmFwaGlj
-cyBkcml2ZXIsIGJ1dCBvbiBhCj4gZmV3IGdlbmVyYXRpb25zIG9mIEludGVsIE1hY3MgdGhleSBn
-cmFjZWZ1bGx5IG9taXR0ZWQgYW4gaW1wbGVtZW50YXRpb24KPiBvZiB0aGF0IHBhcnQgb2YgdGhl
-IHNwZWMsIHdoaWNoIGlzIHdoeSB3ZSBoYXZlIGEgRE1JIHRhYmxlIHRoYXQganVzdCBoYXMKPiBi
-ZXN0LWVmZm9ydCBlbnRyaWVzLgo+IAo+IFNvIHRoYXQgb24gdGhhdCBoYXJkd2FyZSwgaXQgZG9l
-c24ndCByZWFsbHkgZ2l2ZSB1cyBhbnl0aGluZyB0byBsb29rCj4gYXQuICBUaG91Z2ggaWYgdGhl
-IHNhbWUgbWFjaGluZSBjb21lcyB3aXRoIHR3byBkaWZmZXJlbnQgdmlkZW8gY2FyZHMKPiB0aGF0
-IGFyZSwgYnkgZGVmYXVsdCwgY29uZmlndXJlZCBvcHBvc2l0ZSB3YXlzLCB0aGVyZSBtYXkgYmUg
-c29tZXRoaW5nCj4gd2UgY2FuIGRvLiAgQ291bGQgc2hvdyBtZSB0aGUgImxzcGNpIC12IiBmb3Ig
-ZWFjaCBvZiB0aG9zZSBkZXZpY2VzICh0aGUKPiBudmlkaWEgYW5kIHRoZSByYWRlb24pPwoKVGhl
-IHN5c3RlbSB3aXRoIFJhZGVvbiBpcyBub3QgdGhlIE1hYyAoaXQncyBzb21lIEdpZ2FieXRlIG1h
-aW5ib2FyZCB0aGF0CmhhcyBFRkkgc3VwcG9ydCkuCgpIZXJlIGlzIGxzcGNpIGZvciB0aGUgTWFj
-Qm9vazoKMDA6MDAuMCBIb3N0IGJyaWRnZSBbMDYwMF06IE5WSURJQSBDb3Jwb3JhdGlvbiBNQ1A3
-OSBIb3N0IEJyaWRnZSBbMTBkZTowYTgyXSAocmV2IGIxKQowMDowMC4xIFJBTSBtZW1vcnkgWzA1
-MDBdOiBOVklESUEgQ29ycG9yYXRpb24gTUNQNzkgTWVtb3J5IENvbnRyb2xsZXIgWzEwZGU6MGE4
-OF0gKHJldiBiMSkKMDA6MDMuMCBJU0EgYnJpZGdlIFswNjAxXTogTlZJRElBIENvcnBvcmF0aW9u
-IE1DUDc5IExQQyBCcmlkZ2UgWzEwZGU6MGFhZl0gKHJldiBiMikKMDA6MDMuMSBSQU0gbWVtb3J5
-IFswNTAwXTogTlZJRElBIENvcnBvcmF0aW9uIE1DUDc5IE1lbW9yeSBDb250cm9sbGVyIFsxMGRl
-OjBhYTRdIChyZXYgYjEpCjAwOjAzLjIgU01CdXMgWzBjMDVdOiBOVklESUEgQ29ycG9yYXRpb24g
-TUNQNzkgU01CdXMgWzEwZGU6MGFhMl0gKHJldiBiMSkKMDA6MDMuMyBSQU0gbWVtb3J5IFswNTAw
-XTogTlZJRElBIENvcnBvcmF0aW9uIE1DUDc5IE1lbW9yeSBDb250cm9sbGVyIFsxMGRlOjBhODld
-IChyZXYgYjEpCjAwOjAzLjQgUkFNIG1lbW9yeSBbMDUwMF06IE5WSURJQSBDb3Jwb3JhdGlvbiBE
-ZXZpY2UgWzEwZGU6MGE5OF0gKHJldiBiMSkKMDA6MDMuNSBDby1wcm9jZXNzb3IgWzBiNDBdOiBO
-VklESUEgQ29ycG9yYXRpb24gTUNQNzkgQ28tcHJvY2Vzc29yIFsxMGRlOjBhYTNdIChyZXYgYjEp
-CjAwOjA0LjAgVVNCIGNvbnRyb2xsZXIgWzBjMDNdOiBOVklESUEgQ29ycG9yYXRpb24gTUNQNzkg
-T0hDSSBVU0IgMS4xIENvbnRyb2xsZXIgWzEwZGU6MGFhNV0gKHJldiBiMSkKMDA6MDQuMSBVU0Ig
-Y29udHJvbGxlciBbMGMwM106IE5WSURJQSBDb3Jwb3JhdGlvbiBNQ1A3OSBFSENJIFVTQiAyLjAg
-Q29udHJvbGxlciBbMTBkZTowYWE2XSAocmV2IGIxKQowMDowNi4wIFVTQiBjb250cm9sbGVyIFsw
-YzAzXTogTlZJRElBIENvcnBvcmF0aW9uIE1DUDc5IE9IQ0kgVVNCIDEuMSBDb250cm9sbGVyIFsx
-MGRlOjBhYTddIChyZXYgYjEpCjAwOjA2LjEgVVNCIGNvbnRyb2xsZXIgWzBjMDNdOiBOVklESUEg
-Q29ycG9yYXRpb24gTUNQNzkgRUhDSSBVU0IgMi4wIENvbnRyb2xsZXIgWzEwZGU6MGFhOV0gKHJl
-diBiMSkKMDA6MDguMCBBdWRpbyBkZXZpY2UgWzA0MDNdOiBOVklESUEgQ29ycG9yYXRpb24gTUNQ
-NzkgSGlnaCBEZWZpbml0aW9uIEF1ZGlvIFsxMGRlOjBhYzBdIChyZXYgYjEpCjAwOjA5LjAgUENJ
-IGJyaWRnZSBbMDYwNF06IE5WSURJQSBDb3Jwb3JhdGlvbiBNQ1A3OSBQQ0kgQnJpZGdlIFsxMGRl
-OjBhYWJdIChyZXYgYjEpCjAwOjBiLjAgU0FUQSBjb250cm9sbGVyIFswMTA2XTogTlZJRElBIENv
-cnBvcmF0aW9uIE1DUDc5IEFIQ0kgQ29udHJvbGxlciBbMTBkZTowYWI5XSAocmV2IGIxKQowMDox
-MC4wIFBDSSBicmlkZ2UgWzA2MDRdOiBOVklESUEgQ29ycG9yYXRpb24gTUNQNzkgUENJIEV4cHJl
-c3MgQnJpZGdlIFsxMGRlOjBhYTBdIChyZXYgYjEpCjAwOjE1LjAgUENJIGJyaWRnZSBbMDYwNF06
-IE5WSURJQSBDb3Jwb3JhdGlvbiBNQ1A3OSBQQ0kgRXhwcmVzcyBCcmlkZ2UgWzEwZGU6MGFjNl0g
-KHJldiBiMSkKMDI6MDAuMCBWR0EgY29tcGF0aWJsZSBjb250cm9sbGVyIFswMzAwXTogTlZJRElB
-IENvcnBvcmF0aW9uIEM3OSBbR2VGb3JjZSA5NDAwTV0gWzEwZGU6MDg3MF0gKHJldiBiMSkKMDM6
-MDAuMCBOZXR3b3JrIGNvbnRyb2xsZXIgWzAyODBdOiBCcm9hZGNvbSBDb3Jwb3JhdGlvbiBCQ000
-MzIxIDgwMi4xMWEvYi9nL24gWzE0ZTQ6NDMyOF0gKHJldiAwNSkKCmFuZCBETUkgaW5mbzoKIyBk
-bWlkZWNvZGUgMi4xMAojIFNNQklPUyBlbnRyeSBwb2ludCBhdCAweDdmZWM3MDAwClNNQklPUyAy
-LjQgcHJlc2VudC4KMzcgc3RydWN0dXJlcyBvY2N1cHlpbmcgMTg4OCBieXRlcy4KVGFibGUgYXQg
-MHg3RkVDNjAwMC4KCi4uLgpIYW5kbGUgMHgwMDBFLCBETUkgdHlwZSAwLCAyNCBieXRlcwpCSU9T
-IEluZm9ybWF0aW9uCglWZW5kb3I6IEFwcGxlIEluYy4KCVZlcnNpb246ICAgIE1CQTIxLjg4Wi4w
-MDc1LkIwMy4wODExMTQxMzI1CglSZWxlYXNlIERhdGU6IDExLzE0LzA4CglST00gU2l6ZTogNDA5
-NiBrQgoJQ2hhcmFjdGVyaXN0aWNzOgoJCVBDSSBpcyBzdXBwb3J0ZWQKCQlCSU9TIGlzIHVwZ3Jh
-ZGVhYmxlCgkJQklPUyBzaGFkb3dpbmcgaXMgYWxsb3dlZAoJCUJvb3QgZnJvbSBDRCBpcyBzdXBw
-b3J0ZWQKCQlTZWxlY3RhYmxlIGJvb3QgaXMgc3VwcG9ydGVkCgkJQUNQSSBpcyBzdXBwb3J0ZWQK
-CQlJRUVFIDEzOTQgYm9vdCBpcyBzdXBwb3J0ZWQKCQlTbWFydCBiYXR0ZXJ5IGlzIHN1cHBvcnRl
-ZAoJCUZ1bmN0aW9uIGtleS1pbml0aWF0ZWQgbmV0d29yayBib290IGlzIHN1cHBvcnRlZAoJQklP
-UyBSZXZpc2lvbjogMC4xCgpIYW5kbGUgMHgwMDBGLCBETUkgdHlwZSAxLCAyNyBieXRlcwpTeXN0
-ZW0gSW5mb3JtYXRpb24KCU1hbnVmYWN0dXJlcjogQXBwbGUgSW5jLgoJUHJvZHVjdCBOYW1lOiBN
-YWNCb29rQWlyMiwxCglWZXJzaW9uOiAxLjAKCVNlcmlhbCBOdW1iZXI6IHh4eHh4eHh4eHh4CglV
-VUlEOiB4eHh4eHh4eC14eHh4LXh4eHgteHh4eC14eHh4eHh4eHh4eHgKCVdha2UtdXAgVHlwZTog
-UG93ZXIgU3dpdGNoCglTS1UgTnVtYmVyOiBTeXN0ZW0gU0tVIwoJRmFtaWx5OiBNYWNCb29rCgpI
-YW5kbGUgMHgwMDEwLCBETUkgdHlwZSAyLCAxNiBieXRlcwpCYXNlIEJvYXJkIEluZm9ybWF0aW9u
-CglNYW51ZmFjdHVyZXI6IEFwcGxlIEluYy4KCVByb2R1Y3QgTmFtZTogTWFjLUY0MkQ4OEM4CglW
-ZXJzaW9uOiBOb3QgU3BlY2lmaWVkCglTZXJpYWwgTnVtYmVyOiBCYXNlIEJvYXJkIFNlcmlhbCMK
-CUFzc2V0IFRhZzogQmFzZSBCb2FyZCBBc3NldCBUYWcjCglGZWF0dXJlczoKCQlCb2FyZCBpcyBh
-IGhvc3RpbmcgYm9hcmQKCQlCb2FyZCBpcyByZXBsYWNlYWJsZQoJTG9jYXRpb24gSW4gQ2hhc3Np
-czogUGFydCBDb21wb25lbnQKCUNoYXNzaXMgSGFuZGxlOiAweDAwMTEKCVR5cGU6IE1vdGhlcmJv
-YXJkCglDb250YWluZWQgT2JqZWN0IEhhbmRsZXM6IDAKCkhhbmRsZSAweDAwMTEsIERNSSB0eXBl
-IDMsIDIxIGJ5dGVzCkNoYXNzaXMgSW5mb3JtYXRpb24KCU1hbnVmYWN0dXJlcjogQXBwbGUgSW5j
-LgoJVHlwZTogTm90ZWJvb2sKCUxvY2s6IE5vdCBQcmVzZW50CglWZXJzaW9uOiBNYWMtRjQyRDg4
-QzgKCVNlcmlhbCBOdW1iZXI6IHh4eHh4eHh4eHh4CglBc3NldCBUYWc6IEFzc2V0IFRhZyMKCUJv
-b3QtdXAgU3RhdGU6IFNhZmUKCVBvd2VyIFN1cHBseSBTdGF0ZTogU2FmZQoJVGhlcm1hbCBTdGF0
-ZTogT3RoZXIKCVNlY3VyaXR5IFN0YXR1czogT3RoZXIKCU9FTSBJbmZvcm1hdGlvbjogMHgwMDAw
-MDAwMAoJSGVpZ2h0OiBVbnNwZWNpZmllZAoJTnVtYmVyIE9mIFBvd2VyIENvcmRzOiBVbnNwZWNp
-ZmllZAoJQ29udGFpbmVkIEVsZW1lbnRzOiAwCi4uLgoKQnJ1bm8KLS0KVG8gdW5zdWJzY3JpYmUg
-ZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LWZiZGV2IiBp
-bgp0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZwpNb3Jl
-IG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZv
-Lmh0bWw=
+Add a function to convert from the generic videomode to a fb_videomode.
+
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+---
+ drivers/video/fbmon.c |   37 +++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h    |    2 ++
+ 2 files changed, 39 insertions(+)
+
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index cef6557..d46ecef 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -1373,6 +1373,43 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
+ 	kfree(timings);
+ 	return err;
+ }
++
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++int videomode_to_fb_videomode(struct videomode *vm, struct fb_videomode *fbmode)
++{
++	fbmode->xres = vm->hactive;
++	fbmode->left_margin = vm->hback_porch;
++	fbmode->right_margin = vm->hfront_porch;
++	fbmode->hsync_len = vm->hsync_len;
++
++	fbmode->yres = vm->vactive;
++	fbmode->upper_margin = vm->vback_porch;
++	fbmode->lower_margin = vm->vfront_porch;
++	fbmode->vsync_len = vm->vsync_len;
++
++	fbmode->pixclock = KHZ2PICOS(vm->pixelclock / 1000);
++
++	fbmode->sync = 0;
++	fbmode->vmode = 0;
++	if (vm->hah)
++		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
++	if (vm->vah)
++		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
++	if (vm->interlaced)
++		fbmode->vmode |= FB_VMODE_INTERLACED;
++	if (vm->doublescan)
++		fbmode->vmode |= FB_VMODE_DOUBLE;
++	if (vm->de)
++		fbmode->sync |= FB_SYNC_DATA_ENABLE_HIGH_ACT;
++	fbmode->refresh = 60;
++	fbmode->flag = 0;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(videomode_to_fb_videomode);
++#endif
++
++
+ #else
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+ {
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index c7a9571..46c665b 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -714,6 +714,8 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+ extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+ extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
+ 
++extern int videomode_to_fb_videomode(struct videomode *vm, struct fb_videomode *fbmode);
++
+ /* drivers/video/modedb.c */
+ #define VESA_MODEDB_SIZE 34
+ extern void fb_var_to_videomode(struct fb_videomode *mode,
+-- 
+1.7.10.4
+

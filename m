@@ -1,90 +1,149 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 23 Nov 2012 11:30:27 +0000
-Subject: [GIT PULL] OMAPDSS fixes for 3.7-rc
-Message-Id: <50AF5E53.9060108@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enigA448A0F3739DAEE5C8E3BB6E"
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Date: Mon, 12 Nov 2012 18:58:40 +0000
+Subject: Re: [PATCH v8 2/6] video: add of helper for videomode
+Message-Id: <20121112185840.GX10369@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <50978C61.8080907@ti.com>
-In-Reply-To: <50978C61.8080907@ti.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+References: <1352734626-27412-1-git-send-email-s.trumtrar@pengutronix.de>
+ <1352734626-27412-3-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352734626-27412-3-git-send-email-s.trumtrar@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Cc: devicetree-discuss@lists.ozlabs.org, Philipp Zabel <p.zabel@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
---------------enigA448A0F3739DAEE5C8E3BB6E
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Steffen,
 
-Hi Linus,
+You lose memory in several places:
 
-Here are a few OMAPDSS fixes for the next -rc. I'm sending these directly=
+On Mon, Nov 12, 2012 at 04:37:02PM +0100, Steffen Trumtrar wrote:
+> +static struct display_timing *of_get_display_timing(struct device_node *np)
+> +{
+> +	struct display_timing *dt;
+> +	int ret = 0;
+> +
+> +	dt = kzalloc(sizeof(*dt), GFP_KERNEL);
+> +	if (!dt) {
+> +		pr_err("%s: could not allocate display_timing struct\n", __func__);
+> +		return NULL;
+> +	}
+> +
+> +	ret |= parse_property(np, "hback-porch", &dt->hback_porch);
+> +	ret |= parse_property(np, "hfront-porch", &dt->hfront_porch);
+> +	ret |= parse_property(np, "hactive", &dt->hactive);
+> +	ret |= parse_property(np, "hsync-len", &dt->hsync_len);
+> +	ret |= parse_property(np, "vback-porch", &dt->vback_porch);
+> +	ret |= parse_property(np, "vfront-porch", &dt->vfront_porch);
+> +	ret |= parse_property(np, "vactive", &dt->vactive);
+> +	ret |= parse_property(np, "vsync-len", &dt->vsync_len);
+> +	ret |= parse_property(np, "clock-frequency", &dt->pixelclock);
+> +
+> +	of_property_read_u32(np, "vsync-active", &dt->vsync_pol_active);
+> +	of_property_read_u32(np, "hsync-active", &dt->hsync_pol_active);
+> +	of_property_read_u32(np, "de-active", &dt->de_pol_active);
+> +	of_property_read_u32(np, "pixelclk-inverted", &dt->pixelclk_pol);
+> +	dt->interlaced = of_property_read_bool(np, "interlaced");
+> +	dt->doublescan = of_property_read_bool(np, "doublescan");
+> +
+> +	if (ret) {
+> +		pr_err("%s: error reading timing properties\n", __func__);
+> +		return NULL;
 
-to you, and quite late, as the fbdev tree maintainer (Florian) has been
-busy with his work and hasn't had time to manage the fb patches.
+Here
 
- Tomi
+> +	}
+> +
+> +	return dt;
+> +}
+> +
+> +/**
+> + * of_get_display_timings - parse all display_timing entries from a device_node
+> + * @np: device_node with the subnodes
+> + **/
+> +struct display_timings *of_get_display_timings(struct device_node *np)
+> +{
+> +	struct device_node *timings_np;
+> +	struct device_node *entry;
+> +	struct device_node *native_mode;
+> +	struct display_timings *disp;
+> +
+> +	if (!np) {
+> +		pr_err("%s: no devicenode given\n", __func__);
+> +		return NULL;
+> +	}
+> +
+> +	timings_np = of_find_node_by_name(np, "display-timings");
+> +	if (!timings_np) {
+> +		pr_err("%s: could not find display-timings node\n", __func__);
+> +		return NULL;
+> +	}
+> +
+> +	disp = kzalloc(sizeof(*disp), GFP_KERNEL);
+> +	if (!disp)
+> +		return -ENOMEM;
+> +
+> +	entry = of_parse_phandle(timings_np, "native-mode", 0);
+> +	/* assume first child as native mode if none provided */
+> +	if (!entry)
+> +		entry = of_get_next_child(np, NULL);
+> +	if (!entry) {
+> +		pr_err("%s: no timing specifications given\n", __func__);
+> +		return NULL;
 
-The following changes since commit ddffeb8c4d0331609ef2581d84de4d763607bd=
-37:
+Here
 
-  Linux 3.7-rc1 (2012-10-14 14:41:04 -0700)
+> +	}
+> +
+> +	pr_info("%s: using %s as default timing\n", __func__, entry->name);
+> +
+> +	native_mode = entry;
+> +
+> +	disp->num_timings = of_get_child_count(timings_np);
+> +	disp->timings = kzalloc(sizeof(struct display_timing *)*disp->num_timings,
+> +				GFP_KERNEL);
+> +	if (!disp->timings)
+> +		return -ENOMEM;
 
-are available in the git repository at:
+Here
 
-  git://gitorious.org/linux-omap-dss2/linux.git tags/omapdss-for-3.7-rc
+> +
+> +	disp->num_timings = 0;
+> +	disp->native_mode = 0;
+> +
+> +	for_each_child_of_node(timings_np, entry) {
+> +		struct display_timing *dt;
+> +
+> +		dt = of_get_display_timing(entry);
+> +		if (!dt) {
+> +			/* to not encourage wrong devicetrees, fail in case of an error */
+> +			pr_err("%s: error in timing %d\n", __func__, disp->num_timings+1);
+> +			return NULL;
 
-for you to fetch changes up to 8ad9375f8b7c709b89f7de4de413bb2644ba3c24:
+Here
 
-  OMAPDSS: do not fail if dpll4_m4_ck is missing (2012-11-22 17:23:12 +02=
-00)
+> +		}
+> +
+> +		if (native_mode = entry)
+> +			disp->native_mode = disp->num_timings;
+> +
+> +		disp->timings[disp->num_timings] = dt;
+> +		disp->num_timings++;
+> +	}
+> +	of_node_put(timings_np);
+> +
+> +	if (disp->num_timings > 0)
+> +		pr_info("%s: got %d timings. Using timing #%d as default\n", __func__,
+> +			disp->num_timings , disp->native_mode + 1);
+> +	else {
+> +		pr_err("%s: no valid timings specified\n", __func__);
+> +		return NULL;
 
-----------------------------------------------------------------
-omapdss fixes for 3.7-rc
+and here
 
-----------------------------------------------------------------
-Aaro Koskinen (1):
-      OMAPDSS: do not fail if dpll4_m4_ck is missing
+Sascha
 
-Laurent Pinchart (1):
-      omapdss: dss: Fix clocks on OMAP363x
-
-Tomi Valkeinen (1):
-      OMAPDSS: DSI: fix dsi_get_dsidev_from_id()
-
-Tushar Behera (1):
-      OMAPFB: Fix possible null pointer dereferencing
-
-Wei Yongjun (1):
-      OMAPDSS: HDMI: fix missing unlock on error in hdmi_dump_regs()
-
- drivers/video/omap2/dss/dsi.c             |   13 +++++++++++--
- drivers/video/omap2/dss/dss.c             |   18 +++++++++++-------
- drivers/video/omap2/dss/hdmi.c            |    4 +++-
- drivers/video/omap2/omapfb/omapfb-ioctl.c |    2 +-
- 4 files changed, 26 insertions(+), 11 deletions(-)
-
-
---------------enigA448A0F3739DAEE5C8E3BB6E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJQr15TAAoJEPo9qoy8lh71Hd8QAIpyBjUhkApqd4Iq7oqsLrnd
-w3+upaV03DVZLLMIkd8nkkinRaOZ+wMkHcV692nkZr+8lVu0v7CjyvTg41SU7M/B
-fJuxyh6FB/2OdbCF1piEmU/j2SOCB2F+1rtyiC6VeGG5QhCRMxxAjhgV040jcolP
-D+0SOiwcjB7Lm/6/9tEMnNqkJFGc79pNHu2UrXxfh3Tm4sTROuyUBv11AtO2AsVH
-XM2py5B8OK8YIdgAAGDw9w27Flf/e20wLKDKiJ5kuJwKZ+SDecJP3QzvsbWWbmFb
-P1Vzy9EVSntCqtippe3Mf2lgggeiMDIyH5U19E18XKUIsyFdvk7dWsRI3Xj/Y9ih
-4pyP7Cwr754AvQCnScfI7soZ0jn0lCRqLUL5+lEpSCFmy/Hel/fZZmYHdP71OHVy
-t+Z1TBi/8uYRkJ866vapEF5eWEzmy4mqfLPV3l/ucXyS/SMk5qdpckD4TJaZQPTK
-84SRdd7LLSiD1jx00fXgyxOyMDMKSRcS9iLNKHlQ6dVG6H2wHiuYKlGM/whkjivB
-5gRulzEokfUvGA2aSVuL+G/tZLVS7G+UztHyhJDSoPLOfZ3JF+zZguh8qOxOHbPw
-ugM/ipw4rgNhcLVeIa8+ekYsfYDc/s/3XoWsn4VJvyXuEuNEK78vYW8rXFU/LM2K
-sXKA1P7EN3COuUC9nSnA
-=vHfN
------END PGP SIGNATURE-----
-
---------------enigA448A0F3739DAEE5C8E3BB6E--
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

@@ -1,55 +1,43 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Thu, 01 Nov 2012 20:17:39 +0000
-Subject: Re: [PATCH v7 3/8] of: add generic videomode description
-Message-Id: <20121101201739.GC13137@avionic-0098.mockup.avionic-design.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="f+W+jCU1fRNres8c"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 12 Nov 2012 10:25:05 +0000
+Subject: [PATCH 4/5] OMAP: common.c: remove init call to vram
+Message-Id: <1352715906-16946-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
- <1351675689-26814-4-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1351675689-26814-4-git-send-email-s.trumtrar@pengutronix.de>
-To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Cc: devicetree-discuss@lists.ozlabs.org, Philipp Zabel <p.zabel@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+References: <1352715906-16946-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1352715906-16946-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
+OMAP specific vram allocator is no longer used, and we can remove init
+call to the vram allocator.
 
---f+W+jCU1fRNres8c
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/plat-omap/common.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-On Wed, Oct 31, 2012 at 10:28:03AM +0100, Steffen Trumtrar wrote:
-[...]
-> +config OF_VIDEOMODE
-> +	def_bool y
-> +	depends on VIDEOMODE
-> +	help
-> +	  helper to get videomodes from the devicetree
-> +
+diff --git a/arch/arm/plat-omap/common.c b/arch/arm/plat-omap/common.c
+index 111315a..d21ed18 100644
+--- a/arch/arm/plat-omap/common.c
++++ b/arch/arm/plat-omap/common.c
+@@ -17,7 +17,6 @@
+ #include <linux/dma-mapping.h>
+ 
+ #include <plat/common.h>
+-#include <plat/vram.h>
+ #include <linux/platform_data/dsp-omap.h>
+ #include <plat/dma.h>
+ 
+@@ -25,7 +24,6 @@
+ 
+ void __init omap_reserve(void)
+ {
+-	omap_vram_reserve_sdram_memblock();
+ 	omap_dsp_reserve_sdram_memblock();
+ 	omap_secure_ram_reserve_memblock();
+ 	omap_barrier_reserve_memblock();
+-- 
+1.7.10.4
 
-I think patches 3 and 4 need to be swapped, since patch 4 introduces the
-VIDEOMODE Kconfig symbol (as well as the videomode.h helper) that patch
-3 uses.
-
-Thierry
-
---f+W+jCU1fRNres8c
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQktjjAAoJEN0jrNd/PrOhYz4P/3cbr9Gtdcr2a5mLvk0QD4Mn
-1LZC6jqEn/BeC+tdgPUVO7eUZfah8TPgfvU+3+vU4H3o0PQcrjRFkpsni7xpjVsH
-Cu70kJt7el8RAsGoLzFlYAduq1EFzSwbdXnsmwK+MoVE1kvzQn7CT1Ad8foYsYG7
-NaKy6YXrEq7ZGn040Jtq6CHidjEyT39OHMimSS5YHCc8k4GfGJxAyYjgMdg+1b77
-wy/nZhRChJQF5E2h+A9Lz5SqGvRY5bZ9kR5Tn2u7JiMd05cmaDDhnLXgN79SmaBc
-2uXPfXd9Ssiy6XfSS0XSTCj/97weGJhkdD7P2j0dEKOJodhbSZJ/88He3OB0vqbL
-uZukjhVohy9xq1+9lHxRnmGqlzuIynOkAAbT9gy9WcHtLL+SdXDLyujtiKt+2rHm
-Xdll2NlzTvnn1Q879x0r66aj/LtB+r/pIlfLyqIm4fcs7atJGWuLgGIc50kkn1oW
-Eq7WOc3N3BagGJrvJQX33CpE1VruNelrevF26g1Zw1iEwPHh6jwgFuiQ7yUcGNvA
-7HkGCY5VUv7VstkR8sil76eC7ezgn8gTlrhoUXD05F3uiVEiGu44LID74s0YfV7K
-pMJoiz25fPpU6hQ1yo28SvEb6StBsWn1rfj4UkVhidVtYM1hzrWMKNzpJpWy+b+H
-TP1l67LSdtaVbFuFSTrx
-=HS2T
------END PGP SIGNATURE-----
-
---f+W+jCU1fRNres8c--

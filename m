@@ -1,105 +1,96 @@
 From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Fri, 16 Nov 2012 08:53:04 +0000
-Subject: Re: [PATCH v10 1/6] video: add display_timing and videomode
-Message-Id: <20121116085304.GA7493@pengutronix.de>
+Date: Mon, 12 Nov 2012 15:37:04 +0000
+Subject: [PATCH v8 4/6] fbmon: add of_videomode helpers
+Message-Id: <1352734626-27412-5-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
- <1352971437-29877-2-git-send-email-s.trumtrar@pengutronix.de>
- <20121115154753.C82223E194B@localhost>
- <2466982.zTBri0jEif@avalon>
- <20121115180359.1E6F33E197F@localhost>
-In-Reply-To: <20121115180359.1E6F33E197F@localhost>
+References: <1352734626-27412-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352734626-27412-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, devicetree-discuss@lists.ozlabs.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, kernel@pengutronix.de, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-Hi Grant,
+Add helper to get fb_videomode from devicetree.
 
-On Thu, Nov 15, 2012 at 06:03:59PM +0000, Grant Likely wrote:
-> On Thu, 15 Nov 2012 17:00:57 +0100, Laurent Pinchart <laurent.pinchart@ideasonboard.com> wrote:
-> > Hi Grant,
-> > 
-> > On Thursday 15 November 2012 15:47:53 Grant Likely wrote:
-> > > On Thu, 15 Nov 2012 10:23:52 +0100, Steffen Trumtrar wrote:
-> > > > Add display_timing structure and the according helper functions. This
-> > > > allows the description of a display via its supported timing parameters.
-> > > > 
-> > > > Every timing parameter can be specified as a single value or a range
-> > > > <min typ max>.
-> > > > 
-> > > > Also, add helper functions to convert from display timings to a generic
-> > > > videomode structure. This videomode can then be converted to the
-> > > > corresponding subsystem mode representation (e.g. fb_videomode).
-> > > > 
-> > > > Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-> > > 
-> > > Hmmm... here's my thoughts as an outside reviewer. Correct me if I'm
-> > > making an incorrect assumption.
-> > > 
-> > > It looks to me that the purpose of this entire series is to decode video
-> > > timings from the device tree and (eventually) provide the data in the
-> > > form 'struct videomode'. Correct?
-> > > 
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+---
+ drivers/video/fbmon.c |   40 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h    |    3 +++
+ 2 files changed, 43 insertions(+)
 
-For the time being it is straight from devicetree via struct videomode
-to struct drm_display_mode or fb_videomode. Correct.
-
-> > > If so, then it looks over engineered. Creating new infrastructure to
-> > > allocate, maintain, and free a new 'struct display_timings' doesn't make
-> > > any sense when it is an intermediary data format that will never be used
-> > > by drivers.
-> > > 
-> > > Can the DT parsing code instead return a table of struct videomode?
-> > > 
-
-See below.
-
-> > > But, wait... struct videomode is also a new structure. So it looks like
-> > > this series creates two new intermediary data structures;
-> > > display_timings and videomode. And at least as far as I can see in this
-> > > series struct fb_videomode is the only user.
-
-struct drm_display_mode is also a user in this series see 5/6 and 6/6.
-
-> > 
-> > struct videomode is supposed to slowly replace the various video mode 
-> > structures we currently have in the kernel (struct drm_mode_modeinfo, struct 
-> > fb_videomode and struct v4l2_bt_timings), at least where possible (userspace 
-> > APIs can't be broken). This will make it possible to reuse code across the 
-> > DRM, FB and V4L2 subsystems, such as the EDID parser or HDMI encoder drivers. 
-> > This rationale might not be clearly explained in the commit message, but 
-> > having a shared video mode structure is pretty important.
->
-
-That.
-
-> Okay that make sense. What about struct display_timings?
-> 
-
-The reason for defining an intermediary step is because of the different things
-that are described:
-- struct display_timing describes the signal ranges a display supports
-- struct display_timings describes all timing settings of a display
-- struct videomode describes one single mode generated from that settings
-
-It is possible to generate multiple struct videomodes from one
-struct display_timing based on the circumstances. And that is a task for the
-driver using the display_timing infos. This means drivers are supposed to use
-struct display_timings if they need to generate a struct videomode from the
-timing ranges of one entry.
-This is just the first step in that direction.
-I hope this makes the need for struct display_timings a little clearer.
-The other solution would be the one Laurent suggested and pass multiple values
-around. Which in my opinion doesn't make it better, more practical or cleaner.
-
-
-Regards,
-Steffen
-
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index d46ecef..c95be79 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -1409,6 +1409,46 @@ int videomode_to_fb_videomode(struct videomode *vm, struct fb_videomode *fbmode)
+ EXPORT_SYMBOL_GPL(videomode_to_fb_videomode);
+ #endif
+ 
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++static void dump_fb_videomode(struct fb_videomode *m)
++{
++	pr_debug("fb_videomode = %ux%u@%uHz (%ukHz) %u %u %u %u %u %u %u %u %u\n",
++		 m->xres, m->yres, m->refresh, m->pixclock, m->left_margin,
++		 m->right_margin, m->upper_margin, m->lower_margin,
++		 m->hsync_len, m->vsync_len, m->sync, m->vmode, m->flag);
++}
++
++/**
++ * of_get_fb_videomode - get a fb_videomode from devicetree
++ * @np: device_node with the timing specification
++ * @fb: will be set to the return value
++ * @index: index into the list of display timings in devicetree
++ *
++ * DESCRIPTION:
++ * This function is expensive and should only be used, if only one mode is to be
++ * read from DT. To get multiple modes start with of_get_display_timings ond
++ * work with that instead.
++ */
++int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
++			int index)
++{
++	struct videomode vm;
++	int ret;
++
++	ret = of_get_videomode(np, &vm, index);
++	if (ret)
++		return ret;
++
++	videomode_to_fb_videomode(&vm, fb);
++
++	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
++		vm.vactive, np->name);
++	dump_fb_videomode(fb);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_get_fb_videomode);
++#endif
+ 
+ #else
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 46c665b..9892fd6 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -14,6 +14,8 @@
+ #include <linux/backlight.h>
+ #include <linux/slab.h>
+ #include <asm/io.h>
++#include <linux/of.h>
++#include <linux/of_videomode.h>
+ 
+ struct vm_area_struct;
+ struct fb_info;
+@@ -714,6 +716,7 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+ extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+ extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
+ 
++extern int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb, int index);
+ extern int videomode_to_fb_videomode(struct videomode *vm, struct fb_videomode *fbmode);
+ 
+ /* drivers/video/modedb.c */
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+1.7.10.4
+

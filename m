@@ -1,31 +1,68 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 07 Nov 2012 09:29:21 +0000
-Subject: [PATCH 0/3] OMAPDSS: APPLY: Misc Fixes
-Message-Id: <1352279844-10494-1-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 12 Nov 2012 12:00:30 +0000
+Subject: Re: [PATCH 0/3] OMAPDSS: APPLY: Misc Fixes
+Message-Id: <50A0E4DE.60401@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enigF0A23A7A609AC770BCB93089"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <n>
-In-Reply-To: <n>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+References: <n> <1352279844-10494-1-git-send-email-archit@ti.com>
+In-Reply-To: <1352279844-10494-1-git-send-email-archit@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-This series resolves a few minor issues with APPLY. Tested on a 4430sdp, checked
-switching overlays between DSI command mode and HDMI displays for any unexpected
-behavior.
+--------------enigF0A23A7A609AC770BCB93089
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Reference tree:
-git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git 3.8/apply_fixes
+On 2012-11-07 11:17, Archit Taneja wrote:
+> This series resolves a few minor issues with APPLY. Tested on a 4430sdp=
+, checked
+> switching overlays between DSI command mode and HDMI displays for any u=
+nexpected
+> behavior.
+>=20
+> Reference tree:
+> git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git 3.8/a=
+pply_fixes
+>=20
+> Archit Taneja (3):
+>   OMAPDSS: APPLY: Don't treat an overlay's channel out as shadow bits
+>   OMAPDSS: APPLY: Remove unnecessary variable in dss_apply_irq_handler
+>   OMAPDSS: APPLY: Remove unnecessary call to mg_clear_shadow_dirty
+>=20
+>  drivers/video/omap2/dss/apply.c |   48 +++++++++++++++++++++----------=
+--------
+>  1 file changed, 26 insertions(+), 22 deletions(-)
+>=20
 
-Archit Taneja (3):
-  OMAPDSS: APPLY: Don't treat an overlay's channel out as shadow bits
-  OMAPDSS: APPLY: Remove unnecessary variable in dss_apply_irq_handler
-  OMAPDSS: APPLY: Remove unnecessary call to mg_clear_shadow_dirty
+Thanks, looks ok. I'll apply to omapdss tree.
 
- drivers/video/omap2/dss/apply.c |   48 +++++++++++++++++++++------------------
- 1 file changed, 26 insertions(+), 22 deletions(-)
+ Tomi
 
--- 
-1.7.9.5
 
+
+--------------enigF0A23A7A609AC770BCB93089
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJQoOTeAAoJEPo9qoy8lh71Aw0P/RAhPv7jeG4NDczD2K2CBcsH
+Ezgp59Px+53wFIY5seVo/Zomj8SNyecWE811K6fwb/A9df9wBxr4F341L5EjgOmP
+UzXLDeX1X53QvbTdbgmc2gLp3sMHlqeYOjxCfX/puB4j/EXjmKMinM2TevbeyWPA
+LZmFE46Ua5UMFANMn96vhTMlbgwHgNOJo74+TI/mesYR/4825fyKq2ZlzZTl8LnR
+iLsBaVMG3otlGalgIbNU10AGGKnGjvbPF7uEKzXpE1QdEyG3BvuX6sjNakbl/CaZ
+bt2k+BJbiK4i3CkDZe/i0SRF4uSA2OaamFmJM3juNwgkkCe7js9XhC9Qbgi/4Vb/
+39TovUNVKVc0Nd8dfpwHEEwvfFrL3rS6vJKRiiD0z/zRSlBNpK2Rbu0vtfUGRwA1
+bGR7RUcZhKv7QPIEVclXn6AlvrLwXZH24LLyl3Wvd1zBwDKhdril6miIppTJmFuw
+3EIVTISI1sho4O4P8SulrEGZ73FaZls9IK9Om/U3T8TnVCOJPwaUMBy5fL+eO8ii
+ZBGIxYVSrtrZCQ4UiFJ1jM4UUQh2rjbKMph8bIcxOSexRZKI6dyBt3MeK8p9gY5g
+lnHI92H+In90hq6fbiQscXMulOhN2BmXT7Wft+NbzuLPRS7o4d7wk4G/2tMY7vIR
+BRvgz8KGQ855CJkQdSf4
+=NsmV
+-----END PGP SIGNATURE-----
+
+--------------enigF0A23A7A609AC770BCB93089--

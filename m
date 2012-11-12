@@ -1,144 +1,62 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 07 Nov 2012 14:56:22 +0000
-Subject: [RFC 04/11] OMAPDSS: writeback: Configure writeback input size
-Message-Id: <1352299469-17609-5-git-send-email-archit@ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Mon, 12 Nov 2012 15:37:00 +0000
+Subject: [PATCH v8 0/6] of: add display helper
+Message-Id: <1352734626-27412-1-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <n>
- <1352299469-17609-1-git-send-email-archit@ti.com>
-In-Reply-To: <1352299469-17609-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-The input to the writeback piepline comes from an overlay manager or an overlay
-in mem to mem mode. In both cases the input size configured for writeback should
-be the size of the overlay or overlay manager output.
+Hi!
 
-We ignore the case of direct connections between an overlay and writeback for
-now. Assuming that writeback output connected only to a manager, we need to
-ensure that the manger dimensions change when the user tries to change
-writeback's input size.
+This is v8 of the display helper series
 
-This is achieved by the output driver calling dss_mgr_set_timings. When applying
-the manager timings, we also dirty the writeback_info cache so that the next
-writeback update will incorporate the new manager timings. In effect, we don't
-maintain private data/cache for the input size of writeback as it's always equal
-to the manager's input size. However, we take care of updating the writeback
-registers whenever we change the manager's input size.
+Changes since v7:
+	- move of_xxx to drivers/video
+	- remove non-binding documentation from display-timings.txt
+	- squash display_timings and videomode in one patch
+	- misc minor fixes
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/apply.c     |   18 ++++++++++++++++++
- drivers/video/omap2/dss/writeback.c |   31 +++++++++++++++++++++++++++++++
- include/video/omapdss.h             |    1 +
- 3 files changed, 50 insertions(+)
+Regards,
+Steffen
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 76886da..8fe7fce 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -223,6 +223,11 @@ static bool wb_manual_update(struct omap_dss_output *wb)
- 	return true;
- }
- 
-+static bool output_is_wb(struct omap_dss_output *out)
-+{
-+	return out ? out->id = OMAP_DSS_OUTPUT_WB : false;
-+}
-+
- static int dss_check_settings_low(struct omap_overlay_manager *mgr,
- 		bool applying)
- {
-@@ -1226,6 +1231,19 @@ static void dss_apply_mgr_timings(struct omap_overlay_manager *mgr,
- 
- 	mp->timings = *timings;
- 	mp->extra_info_dirty = true;
-+
-+	/*
-+	 * If the connected output is writeback, and if the width or height of
-+	 * the overlay manager change, writeback's input size needs to be
-+	 * changed too. Dirty the writeback info so that it's reconfigured
-+	 * along with the manager timings change.
-+	 */
-+	if (output_is_wb(mgr->output)) {
-+		struct omap_dss_output *wb = mgr->output;
-+		struct wb_priv_data *wp = get_wb_priv(wb);
-+
-+		wp->info_dirty = true;
-+	}
- }
- 
- void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
-diff --git a/drivers/video/omap2/dss/writeback.c b/drivers/video/omap2/dss/writeback.c
-index c05dd54..9a80f72 100644
---- a/drivers/video/omap2/dss/writeback.c
-+++ b/drivers/video/omap2/dss/writeback.c
-@@ -30,6 +30,12 @@ struct writeback_data {
- 	struct mutex lock;
- 
- 	struct omap_dss_output output;
-+	/*
-+	 * timings of manager to which writeback is connected, only configured
-+	 * by writeback driver in mem to mem mode. In capture mode, manager
-+	 * timings will be configured by the display interface.
-+	 */
-+	struct omap_video_timings input_timings;
- };
- 
- static inline struct writeback_data *writeback_get_drv_data(struct platform_device *wbdev)
-@@ -42,6 +48,23 @@ static inline struct platform_device *writeback_get_wbdev_from_output(struct oma
- 	return out->pdev;
- }
- 
-+void omapdss_writeback_set_input_size(struct omap_dss_output *wb, u16 w, u16 h)
-+{
-+	struct platform_device *wbdev = writeback_get_wbdev_from_output(wb);
-+	struct writeback_data *wb_data = writeback_get_drv_data(wbdev);
-+
-+	mutex_lock(&wb_data->lock);
-+
-+	wb_data->input_timings.x_res = w;
-+	wb_data->input_timings.y_res = h;
-+
-+	if (wb->manager)
-+		dss_mgr_set_timings(wb->manager, &wb_data->input_timings);
-+
-+	mutex_unlock(&wb_data->lock);
-+}
-+EXPORT_SYMBOL(omapdss_writeback_set_input_size);
-+
- int omapdss_writeback_apply(struct omap_dss_output *wb)
- {
- 	return omap_dss_wb_apply(wb);
-@@ -92,6 +115,14 @@ static int __init omap_writeback_probe(struct platform_device *pdev)
- 
- 	mutex_init(&wb_data->lock);
- 
-+	/* initialize with dummy timings */
-+	wb_data->input_timings = (struct omap_video_timings)
-+		{ 640, 480, 0, 1, 1, 1, 1, 0, 0, false,
-+			OMAPDSS_SIG_ACTIVE_HIGH, OMAPDSS_SIG_ACTIVE_HIGH,
-+			OMAPDSS_DRIVE_SIG_RISING_EDGE, OMAPDSS_SIG_ACTIVE_HIGH,
-+			OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES,
-+		};
-+
- 	writeback_init_output(pdev, wb_data);
- 
- 	return 0;
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 2bc10cb..d8064ed 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -837,6 +837,7 @@ void omapdss_rfbi_set_data_lines(struct omap_dss_device *dssdev,
- void omapdss_rfbi_set_interface_timings(struct omap_dss_device *dssdev,
- 		struct rfbi_timings *timings);
- 
-+void omapdss_writeback_set_input_size(struct omap_dss_output *wb, u16 w, u16 h);
- int omapdss_writeback_apply(struct omap_dss_output *wb);
- int omapdss_writeback_set_info(struct omap_dss_output *wb,
- 		struct omap_dss_writeback_info *info);
+
+Steffen Trumtrar (6):
+  video: add display_timing and videomode
+  video: add of helper for videomode
+  fbmon: add videomode helpers
+  fbmon: add of_videomode helpers
+  drm_modes: add videomode helpers
+  drm_modes: add of_videomode helpers
+
+ .../devicetree/bindings/video/display-timings.txt  |  107 +++++++++++
+ drivers/gpu/drm/drm_modes.c                        |   77 ++++++++
+ drivers/video/Kconfig                              |   19 ++
+ drivers/video/Makefile                             |    4 +
+ drivers/video/display_timing.c                     |   22 +++
+ drivers/video/fbmon.c                              |   77 ++++++++
+ drivers/video/of_display_timing.c                  |  186 ++++++++++++++++++++
+ drivers/video/of_videomode.c                       |   47 +++++
+ drivers/video/videomode.c                          |   45 +++++
+ include/drm/drmP.h                                 |    8 +
+ include/linux/display_timing.h                     |   69 ++++++++
+ include/linux/fb.h                                 |    5 +
+ include/linux/of_display_timings.h                 |   19 ++
+ include/linux/of_videomode.h                       |   15 ++
+ include/linux/videomode.h                          |   39 ++++
+ 15 files changed, 739 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/display-timings.txt
+ create mode 100644 drivers/video/display_timing.c
+ create mode 100644 drivers/video/of_display_timing.c
+ create mode 100644 drivers/video/of_videomode.c
+ create mode 100644 drivers/video/videomode.c
+ create mode 100644 include/linux/display_timing.h
+ create mode 100644 include/linux/of_display_timings.h
+ create mode 100644 include/linux/of_videomode.h
+ create mode 100644 include/linux/videomode.h
+
 -- 
-1.7.9.5
+1.7.10.4
 

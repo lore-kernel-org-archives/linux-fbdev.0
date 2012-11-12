@@ -1,402 +1,478 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 01 Nov 2012 10:19:53 +0000
-Subject: [PATCH v3 2/8] video: exynos_dp: Clean up SW link training
-Message-Id: <011e01cdb81a$6f1378e0$4d3a6aa0$%han@samsung.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Mon, 12 Nov 2012 15:37:02 +0000
+Subject: =?UTF-8?q?=5BPATCH=20v8=202/6=5D=20video=3A=20add=20of=20helper=20for=20videomode?=
+Message-Id: <1352734626-27412-3-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1352734626-27412-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352734626-27412-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Philipp Zabel <p.zabel@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-From: Sean Paul <seanpaul@chromium.org>
+This adds support for reading display timings from DT or/and convert one of those
+timings to a videomode.
+The of_display_timing implementation supports multiple children where each
+property can have up to 3 values. All children are read into an array, that
+can be queried.
+of_get_videomode converts exactly one of that timings to a struct videomode.
 
-Clean up some of the SW training code to make it more clear and reduce
-duplicate code.
-
-[jg1.han@samsung.com: modify the procedure of clock recovery]
-Signed-off-by: Sean Paul <seanpaul@chromium.org>
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
 ---
- drivers/video/exynos/exynos_dp_core.c |  251 +++++++++++++++------------------
- 1 files changed, 117 insertions(+), 134 deletions(-)
+ .../devicetree/bindings/video/display-timings.txt  |  107 +++++++++++
+ drivers/video/Kconfig                              |   13 ++
+ drivers/video/Makefile                             |    2 +
+ drivers/video/of_display_timing.c                  |  186 ++++++++++++++++++++
+ drivers/video/of_videomode.c                       |   47 +++++
+ include/linux/of_display_timings.h                 |   19 ++
+ include/linux/of_videomode.h                       |   15 ++
+ 7 files changed, 389 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/display-timings.txt
+ create mode 100644 drivers/video/of_display_timing.c
+ create mode 100644 drivers/video/of_videomode.c
+ create mode 100644 include/linux/of_display_timings.h
+ create mode 100644 include/linux/of_videomode.h
 
-diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-index 44820f2..13bb10d 100644
---- a/drivers/video/exynos/exynos_dp_core.c
-+++ b/drivers/video/exynos/exynos_dp_core.c
-@@ -276,7 +276,7 @@ static int exynos_dp_link_start(struct exynos_dp_device *dp)
- 
- 	/* Set sink to D0 (Sink Not Ready) mode. */
- 	retval = exynos_dp_write_byte_to_dpcd(dp, DPCD_ADDR_SINK_POWER_STATE,
--				DPCD_SET_POWER_STATE_D0);
-+			DPCD_SET_POWER_STATE_D0);
- 	if (retval)
- 		return retval;
- 
-@@ -301,17 +301,18 @@ static int exynos_dp_link_start(struct exynos_dp_device *dp)
- 	exynos_dp_set_training_pattern(dp, TRAINING_PTN1);
- 
- 	/* Set RX training pattern */
--	exynos_dp_write_byte_to_dpcd(dp,
--		DPCD_ADDR_TRAINING_PATTERN_SET,
--		DPCD_SCRAMBLING_DISABLED |
--		DPCD_TRAINING_PATTERN_1);
-+	retval = exynos_dp_write_byte_to_dpcd(dp,
-+			DPCD_ADDR_TRAINING_PATTERN_SET,
-+			DPCD_SCRAMBLING_DISABLED | DPCD_TRAINING_PATTERN_1);
-+	if (retval)
-+		return retval;
- 
- 	for (lane = 0; lane < lane_count; lane++)
- 		buf[lane] = DPCD_PRE_EMPHASIS_PATTERN2_LEVEL0 |
- 			    DPCD_VOLTAGE_SWING_PATTERN1_LEVEL0;
--	retval = exynos_dp_write_bytes_to_dpcd(dp,
--		DPCD_ADDR_TRAINING_LANE0_SET,
--		lane_count, buf);
+diff --git a/Documentation/devicetree/bindings/video/display-timings.txt b/Documentation/devicetree/bindings/video/display-timings.txt
+new file mode 100644
+index 0000000..e22e2fd
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/display-timings.txt
+@@ -0,0 +1,107 @@
++display-timings bindings
++============
 +
-+	retval = exynos_dp_write_bytes_to_dpcd(dp, DPCD_ADDR_TRAINING_LANE0_SET,
-+			lane_count, buf);
++display-timings-node
++--------------------
++
++required properties:
++ - none
++
++optional properties:
++ - native-mode: the native mode for the display, in case multiple modes are
++		provided. When omitted, assume the first node is the native.
++
++timings-subnode
++---------------
++
++required properties:
++ - hactive, vactive: Display resolution
++ - hfront-porch, hback-porch, hsync-len: Horizontal Display timing parameters
++   in pixels
++   vfront-porch, vback-porch, vsync-len: Vertical display timing parameters in
++   lines
++ - clock-frequency: displayclock in Hz
++
++optional properties:
++ - hsync-active : Hsync pulse is active low/high/ignored
++ - vsync-active : Vsync pulse is active low/high/ignored
++ - de-active : Data-Enable pulse is active low/high/ignored
++ - pixelclk-inverted : pixelclock is inverted/non-inverted/ignored
++ - interlaced (bool)
++ - doublescan (bool)
++
++All the optional properties that are not bool follow the following logic:
++    <1> : high active
++    <0> : low active
++    omitted : not used on hardware
++
++There are different ways of describing the capabilities of a display. The devicetree
++representation corresponds to the one commonly found in datasheets for displays.
++If a display supports multiple signal timings, the native-mode can be specified.
++
++The parameters are defined as
++
++struct display_timing
++==========+
++  +----------+---------------------------------------------+----------+-------+
++  |          |                ↑                            |          |       |
++  |          |                |vback_porch                 |          |       |
++  |          |                ↓                            |          |       |
++  +----------###############################################----------+-------+
++  |          #                ↑                            #          |       |
++  |          #                |                            #          |       |
++  |  hback   #                |                            #  hfront  | hsync |
++  |   porch  #                |       hactive              #  porch   |  len  |
++  |<-------->#<---------------+--------------------------->#<-------->|<----->|
++  |          #                |                            #          |       |
++  |          #                |vactive                     #          |       |
++  |          #                |                            #          |       |
++  |          #                ↓                            #          |       |
++  +----------###############################################----------+-------+
++  |          |                ↑                            |          |       |
++  |          |                |vfront_porch                |          |       |
++  |          |                ↓                            |          |       |
++  +----------+---------------------------------------------+----------+-------+
++  |          |                ↑                            |          |       |
++  |          |                |vsync_len                   |          |       |
++  |          |                ↓                            |          |       |
++  +----------+---------------------------------------------+----------+-------+
++
++
++Example:
++
++	display-timings {
++		native-mode = <&timing0>;
++		timing0: 1920p24 {
++			/* 1920x1080p24 */
++			clock-frequency = <52000000>;
++			hactive = <1920>;
++			vactive = <1080>;
++			hfront-porch = <25>;
++			hback-porch = <25>;
++			hsync-len = <25>;
++			vback-porch = <2>;
++			vfront-porch = <2>;
++			vsync-len = <2>;
++			hsync-active = <1>;
++		};
++	};
++
++Every required property also supports the use of ranges, so the commonly used
++datasheet description with <min typ max>-tuples can be used.
++
++Example:
++
++	timing1: timing {
++		/* 1920x1080p24 */
++		clock-frequency = <148500000>;
++		hactive = <1920>;
++		vactive = <1080>;
++		hsync-len = <0 44 60>;
++		hfront-porch = <80 88 95>;
++		hback-porch = <100 148 160>;
++		vfront-porch = <0 4 6>;
++		vback-porch = <0 36 50>;
++		vsync-len = <0 5 6>;
++	};
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 2a23b18..a324457 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -39,6 +39,19 @@ config DISPLAY_TIMING
+ config VIDEOMODE
+        bool
  
- 	return retval;
- }
-@@ -337,18 +338,17 @@ static int exynos_dp_clock_recovery_ok(u8 link_status[2], int lane_count)
- 	return 0;
- }
- 
--static int exynos_dp_channel_eq_ok(u8 link_align[3], int lane_count)
-+static int exynos_dp_channel_eq_ok(u8 link_status[2], u8 link_align,
-+		int lane_count)
- {
- 	int lane;
--	u8 lane_align;
- 	u8 lane_status;
- 
--	lane_align = link_align[2];
--	if ((lane_align & DPCD_INTERLANE_ALIGN_DONE) = 0)
-+	if ((link_align & DPCD_INTERLANE_ALIGN_DONE) = 0)
- 		return -EINVAL;
- 
- 	for (lane = 0; lane < lane_count; lane++) {
--		lane_status = exynos_dp_get_lane_status(link_align, lane);
-+		lane_status = exynos_dp_get_lane_status(link_status, lane);
- 		lane_status &= DPCD_CHANNEL_EQ_BITS;
- 		if (lane_status != DPCD_CHANNEL_EQ_BITS)
- 			return -EINVAL;
-@@ -432,22 +432,42 @@ static void exynos_dp_reduce_link_rate(struct exynos_dp_device *dp)
- 	dp->link_train.lt_state = FAILED;
- }
- 
-+static void exynos_dp_get_adjust_training_lane(struct exynos_dp_device *dp,
-+				u8 adjust_request[2])
++config OF_DISPLAY_TIMING
++	def_bool y
++	select DISPLAY_TIMING
++	help
++	  helper to parse display timings from the devicetree
++
++config OF_VIDEOMODE
++	def_bool y
++	select VIDEOMODE
++	select OF_DISPLAY_TIMING
++	help
++	  helper to get videomodes from the devicetree
++
+ menuconfig FB
+ 	tristate "Support for frame buffer devices"
+ 	---help---
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index fc30439..b936b00 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -168,4 +168,6 @@ obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
+ #video output switch sysfs driver
+ obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) += output.o
+ obj-$(CONFIG_DISPLAY_TIMING) += display_timing.o
++obj-$(CONFIG_OF_DISPLAY_TIMING) += of_display_timing.o
+ obj-$(CONFIG_VIDEOMODE) += videomode.o
++obj-$(CONFIG_OF_VIDEOMODE) += of_videomode.o
+diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
+new file mode 100644
+index 0000000..0bd30cc
+--- /dev/null
++++ b/drivers/video/of_display_timing.c
+@@ -0,0 +1,186 @@
++/*
++ * OF helpers for parsing display timings
++ *
++ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
++ *
++ * based on of_videomode.c by Sascha Hauer <s.hauer@pengutronix.de>
++ *
++ * This file is released under the GPLv2
++ */
++#include <linux/of.h>
++#include <linux/slab.h>
++#include <linux/export.h>
++#include <linux/of_display_timings.h>
++
++/**
++ * parse_property - parse timing_entry from device_node
++ * @np: device_node with the property
++ * @name: name of the property
++ * @result: will be set to the return value
++ *
++ * DESCRIPTION:
++ * Every display_timing can be specified with either just the typical value or
++ * a range consisting of min/typ/max. This function helps handling this
++ **/
++static int parse_property(struct device_node *np, char *name,
++				struct timing_entry *result)
 +{
-+	int lane, lane_count;
-+	u8 voltage_swing, pre_emphasis, training_lane;
++	struct property *prop;
++	int length, cells, ret;
 +
-+	lane_count = dp->link_train.lane_count;
-+	for (lane = 0; lane < lane_count; lane++) {
-+		voltage_swing = exynos_dp_get_adjust_request_voltage(
-+						adjust_request, lane);
-+		pre_emphasis = exynos_dp_get_adjust_request_pre_emphasis(
-+						adjust_request, lane);
-+		training_lane = DPCD_VOLTAGE_SWING_SET(voltage_swing) |
-+				DPCD_PRE_EMPHASIS_SET(pre_emphasis);
-+
-+		if (voltage_swing = VOLTAGE_LEVEL_3)
-+			training_lane |= DPCD_MAX_SWING_REACHED;
-+		if (pre_emphasis = PRE_EMPHASIS_LEVEL_3)
-+			training_lane |= DPCD_MAX_PRE_EMPHASIS_REACHED;
-+
-+		dp->link_train.training_lane[lane] = training_lane;
++	prop = of_find_property(np, name, &length);
++	if (!prop) {
++		pr_err("%s: could not find property %s\n", __func__, name);
++		return -EINVAL;
 +	}
++
++	cells = length / sizeof(u32);
++	if (cells = 1) {
++		ret = of_property_read_u32(np, name, &result->typ);
++		result->min = result->typ;
++		result->max = result->typ;
++	} else if (cells = 3) {
++		ret = of_property_read_u32_array(np, name, &result->min, cells);
++	} else {
++		pr_err("%s: illegal timing specification in %s\n", __func__, name);
++		return -EINVAL;
++	}
++
++	return ret;
 +}
 +
- static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
- {
--	u8 link_status[2];
- 	int lane, lane_count, retval;
--
--	u8 adjust_request[2];
--	u8 voltage_swing;
--	u8 pre_emphasis;
--	u8 training_lane;
-+	u8 voltage_swing, pre_emphasis, training_lane;
-+	u8 link_status[2], adjust_request[2];
- 
- 	usleep_range(100, 101);
- 
- 	lane_count = dp->link_train.lane_count;
- 
- 	retval =  exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
--				2, link_status);
-+			2, link_status);
- 	if (retval)
- 		return retval;
- 
-@@ -455,43 +475,30 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
- 		/* set training pattern 2 for EQ */
- 		exynos_dp_set_training_pattern(dp, TRAINING_PTN2);
- 
--		for (lane = 0; lane < lane_count; lane++) {
--			retval = exynos_dp_read_bytes_from_dpcd(dp,
--					DPCD_ADDR_ADJUST_REQUEST_LANE0_1,
--					2, adjust_request);
--			if (retval)
--				return retval;
--
--			voltage_swing = exynos_dp_get_adjust_request_voltage(
--							adjust_request, lane);
--			pre_emphasis = exynos_dp_get_adjust_request_pre_emphasis(
--							adjust_request, lane);
--			training_lane = DPCD_VOLTAGE_SWING_SET(voltage_swing) |
--					DPCD_PRE_EMPHASIS_SET(pre_emphasis);
--
--			if (voltage_swing = VOLTAGE_LEVEL_3)
--				training_lane |= DPCD_MAX_SWING_REACHED;
--			if (pre_emphasis = PRE_EMPHASIS_LEVEL_3)
--				training_lane |= DPCD_MAX_PRE_EMPHASIS_REACHED;
-+		retval = exynos_dp_read_bytes_from_dpcd(dp,
-+				DPCD_ADDR_ADJUST_REQUEST_LANE0_1,
-+				2, adjust_request);
-+		if (retval)
-+			return retval;
- 
--			dp->link_train.training_lane[lane] = training_lane;
-+		exynos_dp_get_adjust_training_lane(dp, adjust_request);
- 
-+		for (lane = 0; lane < lane_count; lane++) {
- 			exynos_dp_set_lane_link_training(dp,
--				dp->link_train.training_lane[lane],
--				lane);
-+				dp->link_train.training_lane[lane], lane);
- 		}
- 
- 		retval = exynos_dp_write_byte_to_dpcd(dp,
--			DPCD_ADDR_TRAINING_PATTERN_SET,
--			DPCD_SCRAMBLING_DISABLED |
--			DPCD_TRAINING_PATTERN_2);
-+				DPCD_ADDR_TRAINING_PATTERN_SET,
-+				DPCD_SCRAMBLING_DISABLED |
-+				DPCD_TRAINING_PATTERN_2);
- 		if (retval)
- 			return retval;
- 
- 		retval = exynos_dp_write_bytes_to_dpcd(dp,
--			DPCD_ADDR_TRAINING_LANE0_SET,
--			lane_count,
--			dp->link_train.training_lane);
-+				DPCD_ADDR_TRAINING_LANE0_SET,
-+				lane_count,
-+				dp->link_train.training_lane);
- 		if (retval)
- 			return retval;
- 
-@@ -501,6 +508,7 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
- 		for (lane = 0; lane < lane_count; lane++) {
- 			training_lane = exynos_dp_get_lane_link_training(
- 							dp, lane);
++/**
++ * of_get_display_timing - parse display_timing entry from device_node
++ * @np: device_node with the properties
++ **/
++static struct display_timing *of_get_display_timing(struct device_node *np)
++{
++	struct display_timing *dt;
++	int ret = 0;
 +
- 			retval = exynos_dp_read_bytes_from_dpcd(dp,
- 					DPCD_ADDR_ADJUST_REQUEST_LANE0_1,
- 					2, adjust_request);
-@@ -515,18 +523,24 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
- 			if (voltage_swing = VOLTAGE_LEVEL_3 ||
- 			    pre_emphasis = PRE_EMPHASIS_LEVEL_3) {
- 				dev_err(dp->dev, "voltage or pre emphasis reached max level\n");
--				goto reduce_link_rate;
-+				exynos_dp_reduce_link_rate(dp);
-+				return -EIO;
- 			}
- 
--			if ((DPCD_VOLTAGE_SWING_GET(training_lane) =
--					voltage_swing) &&
--			   (DPCD_PRE_EMPHASIS_GET(training_lane) =
--					pre_emphasis)) {
-+			if (DPCD_VOLTAGE_SWING_GET(training_lane) =
-+					voltage_swing &&
-+			    DPCD_PRE_EMPHASIS_GET(training_lane) =
-+					pre_emphasis)
- 				dp->link_train.cr_loop[lane]++;
--				if (dp->link_train.cr_loop[lane] = MAX_CR_LOOP) {
--					dev_err(dp->dev, "CR Max loop\n");
--					goto reduce_link_rate;
--				}
++	dt = kzalloc(sizeof(*dt), GFP_KERNEL);
++	if (!dt) {
++		pr_err("%s: could not allocate display_timing struct\n", __func__);
++		return NULL;
++	}
 +
-+			if (dp->link_train.cr_loop[lane] = MAX_CR_LOOP ||
-+			    voltage_swing = VOLTAGE_LEVEL_3 ||
-+			    pre_emphasis = PRE_EMPHASIS_LEVEL_3) {
-+				dev_err(dp->dev, "CR Max reached (%d,%d,%d)\n",
-+					dp->link_train.cr_loop[lane],
-+					voltage_swing, pre_emphasis);
-+				exynos_dp_reduce_link_rate(dp);
-+				return -EIO;
- 			}
- 
- 			training_lane = DPCD_VOLTAGE_SWING_SET(voltage_swing) |
-@@ -544,30 +558,21 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
- 		}
- 
- 		retval = exynos_dp_write_bytes_to_dpcd(dp,
--				DPCD_ADDR_TRAINING_LANE0_SET, lane_count,
-+				DPCD_ADDR_TRAINING_LANE0_SET,
-+				lane_count,
- 				dp->link_train.training_lane);
- 		if (retval)
- 			return retval;
- 	}
- 
--	return retval;
--
--reduce_link_rate:
--	exynos_dp_reduce_link_rate(dp);
--	return -EIO;
++	ret |= parse_property(np, "hback-porch", &dt->hback_porch);
++	ret |= parse_property(np, "hfront-porch", &dt->hfront_porch);
++	ret |= parse_property(np, "hactive", &dt->hactive);
++	ret |= parse_property(np, "hsync-len", &dt->hsync_len);
++	ret |= parse_property(np, "vback-porch", &dt->vback_porch);
++	ret |= parse_property(np, "vfront-porch", &dt->vfront_porch);
++	ret |= parse_property(np, "vactive", &dt->vactive);
++	ret |= parse_property(np, "vsync-len", &dt->vsync_len);
++	ret |= parse_property(np, "clock-frequency", &dt->pixelclock);
++
++	of_property_read_u32(np, "vsync-active", &dt->vsync_pol_active);
++	of_property_read_u32(np, "hsync-active", &dt->hsync_pol_active);
++	of_property_read_u32(np, "de-active", &dt->de_pol_active);
++	of_property_read_u32(np, "pixelclk-inverted", &dt->pixelclk_pol);
++	dt->interlaced = of_property_read_bool(np, "interlaced");
++	dt->doublescan = of_property_read_bool(np, "doublescan");
++
++	if (ret) {
++		pr_err("%s: error reading timing properties\n", __func__);
++		return NULL;
++	}
++
++	return dt;
++}
++
++/**
++ * of_get_display_timings - parse all display_timing entries from a device_node
++ * @np: device_node with the subnodes
++ **/
++struct display_timings *of_get_display_timings(struct device_node *np)
++{
++	struct device_node *timings_np;
++	struct device_node *entry;
++	struct device_node *native_mode;
++	struct display_timings *disp;
++
++	if (!np) {
++		pr_err("%s: no devicenode given\n", __func__);
++		return NULL;
++	}
++
++	timings_np = of_find_node_by_name(np, "display-timings");
++	if (!timings_np) {
++		pr_err("%s: could not find display-timings node\n", __func__);
++		return NULL;
++	}
++
++	disp = kzalloc(sizeof(*disp), GFP_KERNEL);
++	if (!disp)
++		return -ENOMEM;
++
++	entry = of_parse_phandle(timings_np, "native-mode", 0);
++	/* assume first child as native mode if none provided */
++	if (!entry)
++		entry = of_get_next_child(np, NULL);
++	if (!entry) {
++		pr_err("%s: no timing specifications given\n", __func__);
++		return NULL;
++	}
++
++	pr_info("%s: using %s as default timing\n", __func__, entry->name);
++
++	native_mode = entry;
++
++	disp->num_timings = of_get_child_count(timings_np);
++	disp->timings = kzalloc(sizeof(struct display_timing *)*disp->num_timings,
++				GFP_KERNEL);
++	if (!disp->timings)
++		return -ENOMEM;
++
++	disp->num_timings = 0;
++	disp->native_mode = 0;
++
++	for_each_child_of_node(timings_np, entry) {
++		struct display_timing *dt;
++
++		dt = of_get_display_timing(entry);
++		if (!dt) {
++			/* to not encourage wrong devicetrees, fail in case of an error */
++			pr_err("%s: error in timing %d\n", __func__, disp->num_timings+1);
++			return NULL;
++		}
++
++		if (native_mode = entry)
++			disp->native_mode = disp->num_timings;
++
++		disp->timings[disp->num_timings] = dt;
++		disp->num_timings++;
++	}
++	of_node_put(timings_np);
++
++	if (disp->num_timings > 0)
++		pr_info("%s: got %d timings. Using timing #%d as default\n", __func__,
++			disp->num_timings , disp->native_mode + 1);
++	else {
++		pr_err("%s: no valid timings specified\n", __func__);
++		return NULL;
++	}
++	return disp;
++}
++EXPORT_SYMBOL_GPL(of_get_display_timings);
++
++/**
++ * of_display_timings_exists - check if a display-timings node is provided
++ * @np: device_node with the timing
++ **/
++int of_display_timings_exists(struct device_node *np)
++{
++	struct device_node *timings_np;
++
++	if (!np)
++		return -EINVAL;
++
++	timings_np = of_parse_phandle(np, "display-timings", 0);
++	if (!timings_np)
++		return -EINVAL;
++
++	return 1;
++}
++EXPORT_SYMBOL_GPL(of_display_timings_exists);
+diff --git a/drivers/video/of_videomode.c b/drivers/video/of_videomode.c
+new file mode 100644
+index 0000000..7051701
+--- /dev/null
++++ b/drivers/video/of_videomode.c
+@@ -0,0 +1,47 @@
++/*
++ * generic videomode helper
++ *
++ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
++ *
++ * This file is released under the GPLv2
++ */
++#include <linux/of.h>
++#include <linux/of_display_timings.h>
++#include <linux/of_videomode.h>
++#include <linux/export.h>
++
++/**
++ * of_get_videomode - get the videomode #<index> from devicetree
++ * @np - devicenode with the display_timings
++ * @vm - set to return value
++ * @index - index into list of display_timings
++ * DESCRIPTION:
++ * Get a list of all display timings and put the one
++ * specified by index into *vm. This function should only be used, if
++ * only one videomode is to be retrieved. A driver that needs to work
++ * with multiple/all videomodes should work with
++ * of_get_display_timings instead.
++ **/
++int of_get_videomode(struct device_node *np, struct videomode *vm, int index)
++{
++	struct display_timings *disp;
++	int ret;
++
++	disp = of_get_display_timings(np);
++	if (!disp) {
++		pr_err("%s: no timings specified\n", __func__);
++		return -EINVAL;
++	}
++
++	if (index = OF_USE_NATIVE_MODE)
++		index = disp->native_mode;
++
++	ret = videomode_from_timing(disp, vm, index);
++	if (ret)
++		return ret;
++
++	display_timings_release(disp);
++
 +	return 0;
- }
- 
- static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
- {
--	u8 link_status[2];
--	u8 link_align[3];
- 	int lane, lane_count, retval;
- 	u32 reg;
--
--	u8 adjust_request[2];
--	u8 voltage_swing;
--	u8 pre_emphasis;
--	u8 training_lane;
-+	u8 link_align, link_status[2], adjust_request[2];
- 
- 	usleep_range(400, 401);
- 
-@@ -578,85 +583,63 @@ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
- 	if (retval)
- 		return retval;
- 
--	if (exynos_dp_clock_recovery_ok(link_status, lane_count) = 0) {
--		link_align[0] = link_status[0];
--		link_align[1] = link_status[1];
--
--		exynos_dp_read_byte_from_dpcd(dp,
--			DPCD_ADDR_LANE_ALIGN_STATUS_UPDATED,
--			&link_align[2]);
--
--		for (lane = 0; lane < lane_count; lane++) {
--			retval = exynos_dp_read_bytes_from_dpcd(dp,
--					DPCD_ADDR_ADJUST_REQUEST_LANE0_1,
--					2, adjust_request);
--			if (retval)
--				return retval;
-+	if (exynos_dp_clock_recovery_ok(link_status, lane_count)) {
-+		exynos_dp_reduce_link_rate(dp);
-+		return -EIO;
-+	}
- 
--			voltage_swing = exynos_dp_get_adjust_request_voltage(
--							adjust_request, lane);
--			pre_emphasis = exynos_dp_get_adjust_request_pre_emphasis(
--							adjust_request, lane);
--			training_lane = DPCD_VOLTAGE_SWING_SET(voltage_swing) |
--					DPCD_PRE_EMPHASIS_SET(pre_emphasis);
-+	retval = exynos_dp_read_byte_from_dpcd(dp,
-+			DPCD_ADDR_LANE_ALIGN_STATUS_UPDATED, &link_align);
-+	if (retval)
-+		return retval;
- 
--			if (voltage_swing = VOLTAGE_LEVEL_3)
--				training_lane |= DPCD_MAX_SWING_REACHED;
--			if (pre_emphasis = PRE_EMPHASIS_LEVEL_3)
--				training_lane |= DPCD_MAX_PRE_EMPHASIS_REACHED;
-+	retval = exynos_dp_read_bytes_from_dpcd(dp,
-+			DPCD_ADDR_ADJUST_REQUEST_LANE0_1, 2, adjust_request);
-+	if (retval)
-+		return retval;
- 
--			dp->link_train.training_lane[lane] = training_lane;
--		}
-+	exynos_dp_get_adjust_training_lane(dp, adjust_request);
- 
--		if (exynos_dp_channel_eq_ok(link_align, lane_count) = 0) {
--			/* traing pattern Set to Normal */
--			exynos_dp_training_pattern_dis(dp);
-+	if (!exynos_dp_channel_eq_ok(link_status, link_align, lane_count)) {
-+		/* traing pattern Set to Normal */
-+		exynos_dp_training_pattern_dis(dp);
- 
--			dev_info(dp->dev, "Link Training success!\n");
-+		dev_info(dp->dev, "Link Training success!\n");
- 
--			exynos_dp_get_link_bandwidth(dp, &reg);
--			dp->link_train.link_rate = reg;
--			dev_dbg(dp->dev, "final bandwidth = %.2x\n",
--				dp->link_train.link_rate);
-+		exynos_dp_get_link_bandwidth(dp, &reg);
-+		dp->link_train.link_rate = reg;
-+		dev_dbg(dp->dev, "final bandwidth = %.2x\n",
-+			dp->link_train.link_rate);
- 
--			exynos_dp_get_lane_count(dp, &reg);
--			dp->link_train.lane_count = reg;
--			dev_dbg(dp->dev, "final lane count = %.2x\n",
--				dp->link_train.lane_count);
-+		exynos_dp_get_lane_count(dp, &reg);
-+		dp->link_train.lane_count = reg;
-+		dev_dbg(dp->dev, "final lane count = %.2x\n",
-+			dp->link_train.lane_count);
- 
--			/* set enhanced mode if available */
--			exynos_dp_set_enhanced_mode(dp);
--			dp->link_train.lt_state = FINISHED;
--		} else {
--			/* not all locked */
--			dp->link_train.eq_loop++;
-+		/* set enhanced mode if available */
-+		exynos_dp_set_enhanced_mode(dp);
-+		dp->link_train.lt_state = FINISHED;
- 
--			if (dp->link_train.eq_loop > MAX_EQ_LOOP) {
--				dev_err(dp->dev, "EQ Max loop\n");
--				goto reduce_link_rate;
--			}
-+		return 0;
-+	}
- 
--			for (lane = 0; lane < lane_count; lane++)
--				exynos_dp_set_lane_link_training(dp,
--					dp->link_train.training_lane[lane],
--					lane);
-+	/* not all locked */
-+	dp->link_train.eq_loop++;
- 
--			retval = exynos_dp_write_bytes_to_dpcd(dp,
--					DPCD_ADDR_TRAINING_LANE0_SET,
--					lane_count,
--					dp->link_train.training_lane);
--			if (retval)
--				return retval;
--		}
--	} else {
--		goto reduce_link_rate;
-+	if (dp->link_train.eq_loop > MAX_EQ_LOOP) {
-+		dev_err(dp->dev, "EQ Max loop\n");
-+		exynos_dp_reduce_link_rate(dp);
-+		return -EIO;
- 	}
- 
--	return 0;
-+	for (lane = 0; lane < lane_count; lane++)
-+		exynos_dp_set_lane_link_training(dp,
-+			dp->link_train.training_lane[lane], lane);
- 
--reduce_link_rate:
--	exynos_dp_reduce_link_rate(dp);
--	return -EIO;
-+	retval = exynos_dp_write_bytes_to_dpcd(dp, DPCD_ADDR_TRAINING_LANE0_SET,
-+			lane_count, dp->link_train.training_lane);
++}
++EXPORT_SYMBOL_GPL(of_get_videomode);
+diff --git a/include/linux/of_display_timings.h b/include/linux/of_display_timings.h
+new file mode 100644
+index 0000000..ccf6814
+--- /dev/null
++++ b/include/linux/of_display_timings.h
+@@ -0,0 +1,19 @@
++/*
++ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
++ *
++ * display timings of helpers
++ *
++ * This file is released under the GPLv2
++ */
 +
-+	return retval;
- }
- 
- static void exynos_dp_get_max_rx_bandwidth(struct exynos_dp_device *dp,
++#ifndef __LINUX_OF_DISPLAY_TIMINGS_H
++#define __LINUX_OF_DISPLAY_TIMINGS_H
++
++#include <linux/display_timing.h>
++
++#define OF_USE_NATIVE_MODE -1
++
++struct display_timings *of_get_display_timings(struct device_node *np);
++int of_display_timings_exists(struct device_node *np);
++
++#endif
+diff --git a/include/linux/of_videomode.h b/include/linux/of_videomode.h
+new file mode 100644
+index 0000000..01518e6
+--- /dev/null
++++ b/include/linux/of_videomode.h
+@@ -0,0 +1,15 @@
++/*
++ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
++ *
++ * videomode of-helpers
++ *
++ * This file is released under the GPLv2
++ */
++
++#ifndef __LINUX_OF_VIDEOMODE_H
++#define __LINUX_OF_VIDEOMODE_H
++
++#include <linux/videomode.h>
++
++int of_get_videomode(struct device_node *np, struct videomode *vm, int index);
++#endif /* __LINUX_OF_VIDEOMODE_H */
 -- 
-1.7.1
-
+1.7.10.4
 

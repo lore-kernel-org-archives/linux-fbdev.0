@@ -1,346 +1,224 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Tue, 13 Nov 2012 10:53:27 +0000
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Tue, 13 Nov 2012 11:08:37 +0000
 Subject: Re: [PATCH v8 2/6] video: add of helper for videomode
-Message-Id: <20121113105327.GC27797@pengutronix.de>
+Message-Id: <20121113110837.GA30049@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="UlVJffcvxoiEqYs2"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1352734626-27412-1-git-send-email-s.trumtrar@pengutronix.de>
  <1352734626-27412-3-git-send-email-s.trumtrar@pengutronix.de>
- <CALW4P+JmyEnnxpC8AuJ1-mPG-Rw0XEyZFogeVaNuw5omdH5-CA@mail.gmail.com>
-In-Reply-To: <CALW4P+JmyEnnxpC8AuJ1-mPG-Rw0XEyZFogeVaNuw5omdH5-CA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Alexey Klimov <klimov.linux@gmail.com>
-Cc: devicetree-discuss@lists.ozlabs.org, Philipp Zabel <p.zabel@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+In-Reply-To: <1352734626-27412-3-git-send-email-s.trumtrar@pengutronix.de>
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Cc: devicetree-discuss@lists.ozlabs.org, Philipp Zabel <p.zabel@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-On Mon, Nov 12, 2012 at 11:00:37PM +0400, Alexey Klimov wrote:
-> Hello Steffen,
-> 
-> On Mon, Nov 12, 2012 at 7:37 PM, Steffen Trumtrar
-> <s.trumtrar@pengutronix.de> wrote:
-> > This adds support for reading display timings from DT or/and convert one of those
-> > timings to a videomode.
-> > The of_display_timing implementation supports multiple children where each
-> > property can have up to 3 values. All children are read into an array, that
-> > can be queried.
-> > of_get_videomode converts exactly one of that timings to a struct videomode.
-> >
-> > Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-> > Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
-> > ---
-> >  .../devicetree/bindings/video/display-timings.txt  |  107 +++++++++++
-> >  drivers/video/Kconfig                              |   13 ++
-> >  drivers/video/Makefile                             |    2 +
-> >  drivers/video/of_display_timing.c                  |  186 ++++++++++++++++++++
-> >  drivers/video/of_videomode.c                       |   47 +++++
-> >  include/linux/of_display_timings.h                 |   19 ++
-> >  include/linux/of_videomode.h                       |   15 ++
-> >  7 files changed, 389 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/video/display-timings.txt
-> >  create mode 100644 drivers/video/of_display_timing.c
-> >  create mode 100644 drivers/video/of_videomode.c
-> >  create mode 100644 include/linux/of_display_timings.h
-> >  create mode 100644 include/linux/of_videomode.h
-> >
-> > diff --git a/Documentation/devicetree/bindings/video/display-timings.txt b/Documentation/devicetree/bindings/video/display-timings.txt
-> > new file mode 100644
-> > index 0000000..e22e2fd
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/video/display-timings.txt
-> > @@ -0,0 +1,107 @@
-> > +display-timings bindings
-> > +============
-> > +
-> > +display-timings-node
-> > +--------------------
-> > +
-> > +required properties:
-> > + - none
-> > +
-> > +optional properties:
-> > + - native-mode: the native mode for the display, in case multiple modes are
-> > +               provided. When omitted, assume the first node is the native.
-> > +
-> > +timings-subnode
-> > +---------------
-> > +
-> > +required properties:
-> > + - hactive, vactive: Display resolution
-> > + - hfront-porch, hback-porch, hsync-len: Horizontal Display timing parameters
-> > +   in pixels
-> > +   vfront-porch, vback-porch, vsync-len: Vertical display timing parameters in
-> > +   lines
-> > + - clock-frequency: displayclock in Hz
-> > +
-> > +optional properties:
-> > + - hsync-active : Hsync pulse is active low/high/ignored
-> > + - vsync-active : Vsync pulse is active low/high/ignored
-> > + - de-active : Data-Enable pulse is active low/high/ignored
-> > + - pixelclk-inverted : pixelclock is inverted/non-inverted/ignored
-> > + - interlaced (bool)
-> > + - doublescan (bool)
-> > +
-> > +All the optional properties that are not bool follow the following logic:
-> > +    <1> : high active
-> > +    <0> : low active
-> > +    omitted : not used on hardware
-> > +
-> > +There are different ways of describing the capabilities of a display. The devicetree
-> > +representation corresponds to the one commonly found in datasheets for displays.
-> > +If a display supports multiple signal timings, the native-mode can be specified.
-> > +
-> > +The parameters are defined as
-> > +
-> > +struct display_timing
-> > +==========> > +
-> > +  +----------+---------------------------------------------+----------+-------+
-> > +  |          |                ↑                            |          |       |
-> > +  |          |                |vback_porch                 |          |       |
-> > +  |          |                ↓                            |          |       |
-> > +  +----------###############################################----------+-------+
-> > +  |          #                ↑                            #          |       |
-> > +  |          #                |                            #          |       |
-> > +  |  hback   #                |                            #  hfront  | hsync |
-> > +  |   porch  #                |       hactive              #  porch   |  len  |
-> > +  |<-------->#<---------------+--------------------------->#<-------->|<----->|
-> > +  |          #                |                            #          |       |
-> > +  |          #                |vactive                     #          |       |
-> > +  |          #                |                            #          |       |
-> > +  |          #                ↓                            #          |       |
-> > +  +----------###############################################----------+-------+
-> > +  |          |                ↑                            |          |       |
-> > +  |          |                |vfront_porch                |          |       |
-> > +  |          |                ↓                            |          |       |
-> > +  +----------+---------------------------------------------+----------+-------+
-> > +  |          |                ↑                            |          |       |
-> > +  |          |                |vsync_len                   |          |       |
-> > +  |          |                ↓                            |          |       |
-> > +  +----------+---------------------------------------------+----------+-------+
-> > +
-> > +
-> > +Example:
-> > +
-> > +       display-timings {
-> > +               native-mode = <&timing0>;
-> > +               timing0: 1920p24 {
-> > +                       /* 1920x1080p24 */
-> > +                       clock-frequency = <52000000>;
-> > +                       hactive = <1920>;
-> > +                       vactive = <1080>;
-> > +                       hfront-porch = <25>;
-> > +                       hback-porch = <25>;
-> > +                       hsync-len = <25>;
-> > +                       vback-porch = <2>;
-> > +                       vfront-porch = <2>;
-> > +                       vsync-len = <2>;
-> > +                       hsync-active = <1>;
-> > +               };
-> > +       };
-> > +
-> > +Every required property also supports the use of ranges, so the commonly used
-> > +datasheet description with <min typ max>-tuples can be used.
-> > +
-> > +Example:
-> > +
-> > +       timing1: timing {
-> > +               /* 1920x1080p24 */
-> > +               clock-frequency = <148500000>;
-> > +               hactive = <1920>;
-> > +               vactive = <1080>;
-> > +               hsync-len = <0 44 60>;
-> > +               hfront-porch = <80 88 95>;
-> > +               hback-porch = <100 148 160>;
-> > +               vfront-porch = <0 4 6>;
-> > +               vback-porch = <0 36 50>;
-> > +               vsync-len = <0 5 6>;
-> > +       };
-> > diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> > index 2a23b18..a324457 100644
-> > --- a/drivers/video/Kconfig
-> > +++ b/drivers/video/Kconfig
-> > @@ -39,6 +39,19 @@ config DISPLAY_TIMING
-> >  config VIDEOMODE
-> >         bool
-> >
-> > +config OF_DISPLAY_TIMING
-> > +       def_bool y
-> > +       select DISPLAY_TIMING
-> > +       help
-> > +         helper to parse display timings from the devicetree
-> > +
-> > +config OF_VIDEOMODE
-> > +       def_bool y
-> > +       select VIDEOMODE
-> > +       select OF_DISPLAY_TIMING
-> > +       help
-> > +         helper to get videomodes from the devicetree
-> > +
-> >  menuconfig FB
-> >         tristate "Support for frame buffer devices"
-> >         ---help---
-> > diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-> > index fc30439..b936b00 100644
-> > --- a/drivers/video/Makefile
-> > +++ b/drivers/video/Makefile
-> > @@ -168,4 +168,6 @@ obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
-> >  #video output switch sysfs driver
-> >  obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) += output.o
-> >  obj-$(CONFIG_DISPLAY_TIMING) += display_timing.o
-> > +obj-$(CONFIG_OF_DISPLAY_TIMING) += of_display_timing.o
-> >  obj-$(CONFIG_VIDEOMODE) += videomode.o
-> > +obj-$(CONFIG_OF_VIDEOMODE) += of_videomode.o
-> > diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
-> > new file mode 100644
-> > index 0000000..0bd30cc
-> > --- /dev/null
-> > +++ b/drivers/video/of_display_timing.c
-> > @@ -0,0 +1,186 @@
-> > +/*
-> > + * OF helpers for parsing display timings
-> > + *
-> > + * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
-> > + *
-> > + * based on of_videomode.c by Sascha Hauer <s.hauer@pengutronix.de>
-> > + *
-> > + * This file is released under the GPLv2
-> > + */
-> > +#include <linux/of.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/export.h>
-> > +#include <linux/of_display_timings.h>
-> > +
-> > +/**
-> > + * parse_property - parse timing_entry from device_node
-> > + * @np: device_node with the property
-> > + * @name: name of the property
-> > + * @result: will be set to the return value
-> > + *
-> > + * DESCRIPTION:
-> > + * Every display_timing can be specified with either just the typical value or
-> > + * a range consisting of min/typ/max. This function helps handling this
-> > + **/
-> > +static int parse_property(struct device_node *np, char *name,
-> > +                               struct timing_entry *result)
-> > +{
-> > +       struct property *prop;
-> > +       int length, cells, ret;
-> > +
-> > +       prop = of_find_property(np, name, &length);
-> > +       if (!prop) {
-> > +               pr_err("%s: could not find property %s\n", __func__, name);
-> > +               return -EINVAL;
-> > +       }
-> > +
-> > +       cells = length / sizeof(u32);
-> > +       if (cells = 1) {
-> > +               ret = of_property_read_u32(np, name, &result->typ);
-> > +               result->min = result->typ;
-> > +               result->max = result->typ;
-> > +       } else if (cells = 3) {
-> > +               ret = of_property_read_u32_array(np, name, &result->min, cells);
-> > +       } else {
-> > +               pr_err("%s: illegal timing specification in %s\n", __func__, name);
-> > +               return -EINVAL;
-> > +       }
-> > +
-> > +       return ret;
-> > +}
-> > +
-> > +/**
-> > + * of_get_display_timing - parse display_timing entry from device_node
-> > + * @np: device_node with the properties
-> > + **/
-> > +static struct display_timing *of_get_display_timing(struct device_node *np)
-> > +{
-> > +       struct display_timing *dt;
-> > +       int ret = 0;
-> > +
-> > +       dt = kzalloc(sizeof(*dt), GFP_KERNEL);
-> > +       if (!dt) {
-> > +               pr_err("%s: could not allocate display_timing struct\n", __func__);
-> > +               return NULL;
-> > +       }
-> > +
-> > +       ret |= parse_property(np, "hback-porch", &dt->hback_porch);
-> > +       ret |= parse_property(np, "hfront-porch", &dt->hfront_porch);
-> > +       ret |= parse_property(np, "hactive", &dt->hactive);
-> > +       ret |= parse_property(np, "hsync-len", &dt->hsync_len);
-> > +       ret |= parse_property(np, "vback-porch", &dt->vback_porch);
-> > +       ret |= parse_property(np, "vfront-porch", &dt->vfront_porch);
-> > +       ret |= parse_property(np, "vactive", &dt->vactive);
-> > +       ret |= parse_property(np, "vsync-len", &dt->vsync_len);
-> > +       ret |= parse_property(np, "clock-frequency", &dt->pixelclock);
-> > +
-> > +       of_property_read_u32(np, "vsync-active", &dt->vsync_pol_active);
-> > +       of_property_read_u32(np, "hsync-active", &dt->hsync_pol_active);
-> > +       of_property_read_u32(np, "de-active", &dt->de_pol_active);
-> > +       of_property_read_u32(np, "pixelclk-inverted", &dt->pixelclk_pol);
-> > +       dt->interlaced = of_property_read_bool(np, "interlaced");
-> > +       dt->doublescan = of_property_read_bool(np, "doublescan");
-> > +
-> > +       if (ret) {
-> > +               pr_err("%s: error reading timing properties\n", __func__);
-> > +               return NULL;
-> > +       }
-> > +
-> > +       return dt;
-> > +}
-> > +
-> > +/**
-> > + * of_get_display_timings - parse all display_timing entries from a device_node
-> > + * @np: device_node with the subnodes
-> > + **/
-> > +struct display_timings *of_get_display_timings(struct device_node *np)
-> > +{
-> > +       struct device_node *timings_np;
-> > +       struct device_node *entry;
-> > +       struct device_node *native_mode;
-> > +       struct display_timings *disp;
-> > +
-> > +       if (!np) {
-> > +               pr_err("%s: no devicenode given\n", __func__);
-> > +               return NULL;
-> > +       }
-> > +
-> > +       timings_np = of_find_node_by_name(np, "display-timings");
-> > +       if (!timings_np) {
-> > +               pr_err("%s: could not find display-timings node\n", __func__);
-> > +               return NULL;
-> > +       }
-> > +
-> > +       disp = kzalloc(sizeof(*disp), GFP_KERNEL);
-> > +       if (!disp)
-> > +               return -ENOMEM;
-> > +
-> > +       entry = of_parse_phandle(timings_np, "native-mode", 0);
-> > +       /* assume first child as native mode if none provided */
-> > +       if (!entry)
-> > +               entry = of_get_next_child(np, NULL);
-> > +       if (!entry) {
-> > +               pr_err("%s: no timing specifications given\n", __func__);
-> > +               return NULL;
-> > +       }
-> > +
-> > +       pr_info("%s: using %s as default timing\n", __func__, entry->name);
-> > +
-> > +       native_mode = entry;
-> > +
-> > +       disp->num_timings = of_get_child_count(timings_np);
-> > +       disp->timings = kzalloc(sizeof(struct display_timing *)*disp->num_timings,
-> > +                               GFP_KERNEL);
-> > +       if (!disp->timings)
-> > +               return -ENOMEM;
-> 
-> Could you please check return values here ^^^ and above "disp > kzalloc(sizeof(*disp), GFP_KERNEL);" ?
-> May be it's better to return NULL instead of -ENOMEM and put error message?
-> 
-I will do that along with the memory leak fixes.
 
-Regards,
-Steffen
+--UlVJffcvxoiEqYs2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+On Mon, Nov 12, 2012 at 04:37:02PM +0100, Steffen Trumtrar wrote:
+> This adds support for reading display timings from DT or/and convert one =
+of those
+> timings to a videomode.
+> The of_display_timing implementation supports multiple children where each
+> property can have up to 3 values. All children are read into an array, th=
+at
+> can be queried.
+> of_get_videomode converts exactly one of that timings to a struct videomo=
+de.
+>=20
+> Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+> ---
+>  .../devicetree/bindings/video/display-timings.txt  |  107 +++++++++++
+>  drivers/video/Kconfig                              |   13 ++
+>  drivers/video/Makefile                             |    2 +
+>  drivers/video/of_display_timing.c                  |  186 ++++++++++++++=
+++++++
+>  drivers/video/of_videomode.c                       |   47 +++++
+>  include/linux/of_display_timings.h                 |   19 ++
+>  include/linux/of_videomode.h                       |   15 ++
+>  7 files changed, 389 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/video/display-timin=
+gs.txt
+>  create mode 100644 drivers/video/of_display_timing.c
+>  create mode 100644 drivers/video/of_videomode.c
+>  create mode 100644 include/linux/of_display_timings.h
+>  create mode 100644 include/linux/of_videomode.h
+>=20
+> diff --git a/Documentation/devicetree/bindings/video/display-timings.txt =
+b/Documentation/devicetree/bindings/video/display-timings.txt
+> new file mode 100644
+> index 0000000..e22e2fd
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/video/display-timings.txt
+> @@ -0,0 +1,107 @@
+> +display-timings bindings
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +display-timings-node
+> +--------------------
+
+Maybe leave away the last -, so that it reads "display-timings node"? I
+think that makes it more obvious that the node is supposed to be called
+"display-timings".
+
+> +
+> +required properties:
+> + - none
+> +
+> +optional properties:
+> + - native-mode: the native mode for the display, in case multiple modes =
+are
+> +		provided. When omitted, assume the first node is the native.
+> +
+> +timings-subnode
+> +---------------
+
+Same here: "timing subnodes"?
+
+> +
+> +required properties:
+> + - hactive, vactive: Display resolution
+> + - hfront-porch, hback-porch, hsync-len: Horizontal Display timing param=
+eters
+
+"display"?
+
+> +   in pixels
+> +   vfront-porch, vback-porch, vsync-len: Vertical display timing paramet=
+ers in
+> +   lines
+> + - clock-frequency: displayclock in Hz
+
+"display clock"?
+
+> +
+> +optional properties:
+> + - hsync-active : Hsync pulse is active low/high/ignored
+> + - vsync-active : Vsync pulse is active low/high/ignored
+> + - de-active : Data-Enable pulse is active low/high/ignored
+> + - pixelclk-inverted : pixelclock is inverted/non-inverted/ignored
+> + - interlaced (bool)
+> + - doublescan (bool)
+> +
+> +All the optional properties that are not bool follow the following logic:
+> +    <1> : high active
+> +    <0> : low active
+> +    omitted : not used on hardware
+
+Nitpick: You use space before : in the optional properties, but not in
+the required properties above.
+
+> +
+> +There are different ways of describing the capabilities of a display. Th=
+e devicetree
+> +representation corresponds to the one commonly found in datasheets for d=
+isplays.
+> +If a display supports multiple signal timings, the native-mode can be sp=
+ecified.
+> +
+> +The parameters are defined as
+> +
+> +struct display_timing
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+struct display_timing has no meaning in device tree documentation. Maybe
+this line can just go away?
+
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index 2a23b18..a324457 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -39,6 +39,19 @@ config DISPLAY_TIMING
+>  config VIDEOMODE
+>         bool
+> =20
+> +config OF_DISPLAY_TIMING
+
+OF_DISPLAY_TIMINGS?
+
+> diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display=
+_timing.c
+
+of_display_timings.c?
+
+> +/**
+> + * of_get_display_timings - parse all display_timing entries from a devi=
+ce_node
+> + * @np: device_node with the subnodes
+> + **/
+> +struct display_timings *of_get_display_timings(struct device_node *np)
+[...]
+> +	for_each_child_of_node(timings_np, entry) {
+> +		struct display_timing *dt;
+> +
+> +		dt =3D of_get_display_timing(entry);
+> +		if (!dt) {
+> +			/* to not encourage wrong devicetrees, fail in case of an error */
+> +			pr_err("%s: error in timing %d\n", __func__, disp->num_timings+1);
+> +			return NULL;
+> +		}
+
+In case of a parsing error, of_get_display_timing() already shows an
+error message, so I don't think we need another one here.
+
+> +/**
+> + * of_display_timings_exists - check if a display-timings node is provid=
+ed
+> + * @np: device_node with the timing
+> + **/
+> +int of_display_timings_exists(struct device_node *np)
+> +{
+> +	struct device_node *timings_np;
+> +
+> +	if (!np)
+> +		return -EINVAL;
+> +
+> +	timings_np =3D of_parse_phandle(np, "display-timings", 0);
+> +	if (!timings_np)
+> +		return -EINVAL;
+> +
+> +	return 1;
+
+I think this is missing of_node_put(timings_np) in both failure and
+success cases. Also, maybe this should really return a bool instead?
+
+Also, why do you use of_parse_phandle() for this? Aren't the
+display-timings nodes expected to be children of some other node like an
+output/display device?
+
+> diff --git a/include/linux/of_videomode.h b/include/linux/of_videomode.h
+[...]
+> +
+> +int of_get_videomode(struct device_node *np, struct videomode *vm, int i=
+ndex);
+> +#endif /* __LINUX_OF_VIDEOMODE_H */
+
+There should be a blank line between the last two lines I think.
+
+Thierry
+
+--UlVJffcvxoiEqYs2
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQoio1AAoJEN0jrNd/PrOhBXIQAKv+R2gftKy4N5jh0pgRPrGm
+PqVn7rorCefHW4InCF1yvq44uVtjmeNbmjfBP2CEEOrJcbq5XUdiqs+ZuVPobTsM
+RYfto9LaM2VUj7qCkJsg9YTHwLQ1FTAkbwpf3FAOmklhAalIMBGGy86QeTuNQoSK
+CYdZr+ZXas2Svm5136hHXCr0Oel/IOD74GhLzy8DD8tT4oT7v/syhZ3v74P+pxcD
+uNWstALYlsD222R67SPGv52HXTCzYVBeDVk1kbHMpalVaOIMwnAkI802i/fF/Iip
+d3uyyAJ28HoAgP9+zoFsHbgyZ3GhiuS5NyPwIzzgXtPwt4Gg9ta2DsieY67Ol60q
+yn0SW5wmwI3MDn5rxhqunl//+RU+An5pDLcQUvzAekuOGwxRtFHTYh64lVw4uMD6
+Ht0rsi3ehhh2fjRsYGqq0iS4x1b3eGeiH6ZwxE0kMejBaGf7KceJCmDjfsElV5w5
+n5+pvcvMdr1g6/ApVSDk3ftaNTM9CPwbJ8AkCwtxOVayFqdXoa6jxy9KEts/Id+/
+KDICAcNdttmUA8YrJVQZ/EQXt2ol4kpSPToXBk5lN/Gdeh2e2Sv800v1veZto4S5
+1AT7kdTjZB12TiSEx00tFwu/vL1RgYKxSMY2TQ7YJN4ISWXK53bERU5oX2xylwPR
+F7wbtKydAageCg1jUBgk
+=RCqb
+-----END PGP SIGNATURE-----
+
+--UlVJffcvxoiEqYs2--

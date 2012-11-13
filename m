@@ -1,96 +1,52 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Mon, 12 Nov 2012 15:37:04 +0000
-Subject: [PATCH v8 4/6] fbmon: add of_videomode helpers
-Message-Id: <1352734626-27412-5-git-send-email-s.trumtrar@pengutronix.de>
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Tue, 13 Nov 2012 11:28:06 +0000
+Subject: Re: [PATCH v8 4/6] fbmon: add of_videomode helpers
+Message-Id: <20121113112806.GC30049@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="iFRdW5/EC4oqxDHL"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1352734626-27412-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1352734626-27412-1-git-send-email-s.trumtrar@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+ <1352734626-27412-5-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352734626-27412-5-git-send-email-s.trumtrar@pengutronix.de>
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-Add helper to get fb_videomode from devicetree.
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
----
- drivers/video/fbmon.c |   40 ++++++++++++++++++++++++++++++++++++++++
- include/linux/fb.h    |    3 +++
- 2 files changed, 43 insertions(+)
+--iFRdW5/EC4oqxDHL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index d46ecef..c95be79 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -1409,6 +1409,46 @@ int videomode_to_fb_videomode(struct videomode *vm, struct fb_videomode *fbmode)
- EXPORT_SYMBOL_GPL(videomode_to_fb_videomode);
- #endif
- 
-+#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+static void dump_fb_videomode(struct fb_videomode *m)
-+{
-+	pr_debug("fb_videomode = %ux%u@%uHz (%ukHz) %u %u %u %u %u %u %u %u %u\n",
-+		 m->xres, m->yres, m->refresh, m->pixclock, m->left_margin,
-+		 m->right_margin, m->upper_margin, m->lower_margin,
-+		 m->hsync_len, m->vsync_len, m->sync, m->vmode, m->flag);
-+}
-+
-+/**
-+ * of_get_fb_videomode - get a fb_videomode from devicetree
-+ * @np: device_node with the timing specification
-+ * @fb: will be set to the return value
-+ * @index: index into the list of display timings in devicetree
-+ *
-+ * DESCRIPTION:
-+ * This function is expensive and should only be used, if only one mode is to be
-+ * read from DT. To get multiple modes start with of_get_display_timings ond
-+ * work with that instead.
-+ */
-+int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
-+			int index)
-+{
-+	struct videomode vm;
-+	int ret;
-+
-+	ret = of_get_videomode(np, &vm, index);
-+	if (ret)
-+		return ret;
-+
-+	videomode_to_fb_videomode(&vm, fb);
-+
-+	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
-+		vm.vactive, np->name);
-+	dump_fb_videomode(fb);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(of_get_fb_videomode);
-+#endif
- 
- #else
- int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 46c665b..9892fd6 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -14,6 +14,8 @@
- #include <linux/backlight.h>
- #include <linux/slab.h>
- #include <asm/io.h>
-+#include <linux/of.h>
-+#include <linux/of_videomode.h>
- 
- struct vm_area_struct;
- struct fb_info;
-@@ -714,6 +716,7 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
- extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
- extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
- 
-+extern int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb, int index);
- extern int videomode_to_fb_videomode(struct videomode *vm, struct fb_videomode *fbmode);
- 
- /* drivers/video/modedb.c */
--- 
-1.7.10.4
+On Mon, Nov 12, 2012 at 04:37:04PM +0100, Steffen Trumtrar wrote:
+[...]
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+[...]
+> +extern int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb, int index);
 
+Similarily this should get a dummy for the !CONFIG_OF_VIDEOMODE case,
+right? Either that or the prototype should be protected by
+CONFIG_OF_VIDEOMODE as well.
+
+Thierry
+
+--iFRdW5/EC4oqxDHL
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQoi7GAAoJEN0jrNd/PrOhVjIP/36eOoKUDRNb6eN9INfsjTEx
+Jgjo1dTXSOJ3MS/oLaqyCyEHFsJ7/Ykd7AQECwGNhZGMpk5rqlP6qbEFq6EHBSOl
+lB4K5boKPsQskjEoycghzhS+cHmmGMNRyxRPoCOsw15+bRuuCZYokMZpTo2l6o5g
+DxcMwRkggweQ9jCxkjasrzTheC5n3ORJGooxruJJRa53FtCY5YsdudejKJWbY42m
+Rz09e4l44mAI1rTtSXSRpwtZs1all3Zl/whlDtdZLE78az48SobMVj4TQSwLrmay
+NEOfgBLvKVfiKIZCGEKGFJcMpeZ+xbSnP1VyJ6NH0LQrI2KuSeFL6Ueljqi6+6Xe
+BwVUk1cf7Qv38mkdlOtSOj0F0sLGW80VZ3sA3B87Z2ziY/TyDODs0KVat9T4LRPn
+MNUbEFdwVZCXeAC9r62Jg5lv0nhxbZ+4+QZGXThnvjS21vzWm+gh8FTVWHGiMxg2
+unjU1pEU/7k7alAZnXABOMNzzO0lALfZC277Rn87A9KROJ5Cc+51mo5ice2MJBaE
+sgAlULYPCbXZYBkBkpPaHQ+CB3AhYuC63QJUoeYHuLrki6fIYp16T0trgHZAGasK
+6ja7u6KndZIDhsrhyK/cxooBxZpaZNRxnpsmqoUhRP1/CafXYkamtkEMTc6mpT2N
+EbuqVNtAeNkrjcYSuUe3
+=pyCu
+-----END PGP SIGNATURE-----
+
+--iFRdW5/EC4oqxDHL--

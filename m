@@ -1,266 +1,129 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Mon, 12 Nov 2012 15:37:01 +0000
-Subject: [PATCH v8 1/6] video: add display_timing and videomode
-Message-Id: <1352734626-27412-2-git-send-email-s.trumtrar@pengutronix.de>
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Tue, 13 Nov 2012 10:41:59 +0000
+Subject: Re: [PATCH v8 1/6] video: add display_timing and videomode
+Message-Id: <20121113104159.GA18645@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="y0ulUmNC+osPPQO6"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1352734626-27412-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1352734626-27412-1-git-send-email-s.trumtrar@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+ <1352734626-27412-2-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352734626-27412-2-git-send-email-s.trumtrar@pengutronix.de>
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-Add display_timing structure and the according helper functions. This allows
-the description of a display via its supported timing parameters.
 
-Every timing parameter can be specified as a single value or a range
-<min typ max>.
+--y0ulUmNC+osPPQO6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Also, add helper functions to convert from display timings to a generic videomode
-structure. This videomode can then be converted to the corresponding subsystem
-mode representation (e.g. fb_videomode).
+On Mon, Nov 12, 2012 at 04:37:01PM +0100, Steffen Trumtrar wrote:
+[...]
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index d08d799..2a23b18 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -33,6 +33,12 @@ config VIDEO_OUTPUT_CONTROL
+>  	  This framework adds support for low-level control of the video=20
+>  	  output switch.
+> =20
+> +config DISPLAY_TIMING
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
----
- drivers/video/Kconfig          |    6 ++++
- drivers/video/Makefile         |    2 ++
- drivers/video/display_timing.c |   22 +++++++++++++
- drivers/video/videomode.c      |   45 ++++++++++++++++++++++++++
- include/linux/display_timing.h |   69 ++++++++++++++++++++++++++++++++++++++++
- include/linux/videomode.h      |   39 +++++++++++++++++++++++
- 6 files changed, 183 insertions(+)
- create mode 100644 drivers/video/display_timing.c
- create mode 100644 drivers/video/videomode.c
- create mode 100644 include/linux/display_timing.h
- create mode 100644 include/linux/videomode.h
+DISPLAY_TIMINGS?
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index d08d799..2a23b18 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -33,6 +33,12 @@ config VIDEO_OUTPUT_CONTROL
- 	  This framework adds support for low-level control of the video 
- 	  output switch.
- 
-+config DISPLAY_TIMING
-+       bool
-+
-+config VIDEOMODE
-+       bool
-+
- menuconfig FB
- 	tristate "Support for frame buffer devices"
- 	---help---
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index 23e948e..fc30439 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -167,3 +167,5 @@ obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
- 
- #video output switch sysfs driver
- obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) += output.o
-+obj-$(CONFIG_DISPLAY_TIMING) += display_timing.o
-+obj-$(CONFIG_VIDEOMODE) += videomode.o
-diff --git a/drivers/video/display_timing.c b/drivers/video/display_timing.c
-new file mode 100644
-index 0000000..04b7b69
---- /dev/null
-+++ b/drivers/video/display_timing.c
-@@ -0,0 +1,22 @@
-+/*
-+ * generic display timing functions
-+ *
-+ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#include <linux/display_timing.h>
-+#include <linux/slab.h>
-+
-+void display_timings_release(struct display_timings *disp)
-+{
-+	if (disp->timings) {
-+		unsigned int i;
-+
-+		for (i = 0; i < disp->num_timings; i++)
-+			kfree(disp->timings[i]);
-+		kfree(disp->timings);
-+	}
-+	kfree(disp);
-+}
-diff --git a/drivers/video/videomode.c b/drivers/video/videomode.c
-new file mode 100644
-index 0000000..087374a
---- /dev/null
-+++ b/drivers/video/videomode.c
-@@ -0,0 +1,45 @@
-+/*
-+ * generic display timing functions
-+ *
-+ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#include <linux/export.h>
-+#include <linux/errno.h>
-+#include <linux/display_timing.h>
-+#include <linux/kernel.h>
-+#include <linux/videomode.h>
-+
-+int videomode_from_timing(struct display_timings *disp, struct videomode *vm,
-+			  unsigned int index)
-+{
-+	struct display_timing *dt;
-+
-+	dt = display_timings_get(disp, index);
-+	if (!dt)
-+		return -EINVAL;
-+
-+	vm->pixelclock = display_timing_get_value(&dt->pixelclock, 0);
-+	vm->hactive = display_timing_get_value(&dt->hactive, 0);
-+	vm->hfront_porch = display_timing_get_value(&dt->hfront_porch, 0);
-+	vm->hback_porch = display_timing_get_value(&dt->hback_porch, 0);
-+	vm->hsync_len = display_timing_get_value(&dt->hsync_len, 0);
-+
-+	vm->vactive = display_timing_get_value(&dt->vactive, 0);
-+	vm->vfront_porch = display_timing_get_value(&dt->vfront_porch, 0);
-+	vm->vback_porch = display_timing_get_value(&dt->vback_porch, 0);
-+	vm->vsync_len = display_timing_get_value(&dt->vsync_len, 0);
-+
-+	vm->vah = dt->vsync_pol_active;
-+	vm->hah = dt->hsync_pol_active;
-+	vm->de = dt->de_pol_active;
-+	vm->pixelclk_pol = dt->pixelclk_pol;
-+
-+	vm->interlaced = dt->interlaced;
-+	vm->doublescan = dt->doublescan;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(videomode_from_timing);
-diff --git a/include/linux/display_timing.h b/include/linux/display_timing.h
-new file mode 100644
-index 0000000..0ed2a1e
---- /dev/null
-+++ b/include/linux/display_timing.h
-@@ -0,0 +1,69 @@
-+/*
-+ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
-+ *
-+ * description of display timings
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#ifndef __LINUX_DISPLAY_TIMINGS_H
-+#define __LINUX_DISPLAY_TIMINGS_H
-+
-+#include <linux/types.h>
-+
-+struct timing_entry {
-+	u32 min;
-+	u32 typ;
-+	u32 max;
-+};
-+
-+struct display_timing {
-+	struct timing_entry pixelclock;
-+
-+	struct timing_entry hactive;
-+	struct timing_entry hfront_porch;
-+	struct timing_entry hback_porch;
-+	struct timing_entry hsync_len;
-+
-+	struct timing_entry vactive;
-+	struct timing_entry vfront_porch;
-+	struct timing_entry vback_porch;
-+	struct timing_entry vsync_len;
-+
-+	unsigned int vsync_pol_active;
-+	unsigned int hsync_pol_active;
-+	unsigned int de_pol_active;
-+	unsigned int pixelclk_pol;
-+	bool interlaced;
-+	bool doublescan;
-+};
-+
-+struct display_timings {
-+	unsigned int num_timings;
-+	unsigned int native_mode;
-+
-+	struct display_timing **timings;
-+};
-+
-+/* placeholder function until ranges are really needed 
-+ * the index parameter should then be used to select one of [min typ max]
-+ */
-+static inline u32 display_timing_get_value(struct timing_entry *te,
-+					   unsigned int index)
-+{
-+	return te->typ;
-+}
-+
-+static inline struct display_timing *display_timings_get(struct display_timings *disp,
-+							 unsigned int index)
-+{
-+	if (disp->num_timings > index)
-+		return disp->timings[index];
-+	else
-+		return NULL;
-+}
-+
-+void timings_release(struct display_timings *disp);
-+void display_timings_release(struct display_timings *disp);
-+
-+#endif
-diff --git a/include/linux/videomode.h b/include/linux/videomode.h
-new file mode 100644
-index 0000000..0b87fbb
---- /dev/null
-+++ b/include/linux/videomode.h
-@@ -0,0 +1,39 @@
-+/*
-+ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
-+ *
-+ * generic videomode description
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#ifndef __LINUX_VIDEOMODE_H
-+#define __LINUX_VIDEOMODE_H
-+
-+#include <linux/display_timing.h>
-+
-+struct videomode {
-+	u32 pixelclock;
-+	u32 refreshrate;
-+
-+	u32 hactive;
-+	u32 hfront_porch;
-+	u32 hback_porch;
-+	u32 hsync_len;
-+
-+	u32 vactive;
-+	u32 vfront_porch;
-+	u32 vback_porch;
-+	u32 vsync_len;
-+
-+	u32 hah;
-+	u32 vah;
-+	u32 de;
-+	u32 pixelclk_pol;
-+
-+	bool interlaced;
-+	bool doublescan;
-+};
-+
-+int videomode_from_timing(struct display_timings *disp, struct videomode *vm,
-+			  unsigned int index);
-+#endif
--- 
-1.7.10.4
+>  #video output switch sysfs driver
+>  obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) +=3D output.o
+> +obj-$(CONFIG_DISPLAY_TIMING) +=3D display_timing.o
 
+display_timings.o?
+
+> +obj-$(CONFIG_VIDEOMODE) +=3D videomode.o
+> diff --git a/drivers/video/display_timing.c b/drivers/video/display_timin=
+g.c
+
+display_timings.c?
+
+> +int videomode_from_timing(struct display_timings *disp, struct videomode=
+ *vm,
+> +			  unsigned int index)
+
+I find the indexing API a bit confusing. But that's perhaps just a
+matter of personal preference.
+
+Also the ordering of arguments seems a little off. I find it more
+natural to have the destination pointer in the first argument, similar
+to the memcpy() function, so this would be:
+
+int videomode_from_timing(struct videomode *vm, struct display_timings *dis=
+p,
+			  unsigned int index);
+
+Actually, when reading videomode_from_timing() I'd expect the argument
+list to be:
+
+int videomode_from_timing(struct videomode *vm, struct display_timing *timi=
+ng);
+
+Am I the only one confused by this?
+
+> diff --git a/include/linux/display_timing.h b/include/linux/display_timin=
+g.h
+
+display_timings.h?
+
+> +/* placeholder function until ranges are really needed=20
+
+The above line has trailing whitespace. Also the block comment should
+have the opening /* on a separate line.
+
+> + * the index parameter should then be used to select one of [min typ max]
+
+If index is supposed to select min, typ or max, then maybe an enum would
+be a better candidate? Or alternatively provide separate accessors, like
+display_timing_get_{minimum,typical,maximum}().
+
+> + */
+> +static inline u32 display_timing_get_value(struct timing_entry *te,
+> +					   unsigned int index)
+> +{
+> +	return te->typ;
+> +}
+> +
+> +static inline struct display_timing *display_timings_get(struct display_=
+timings *disp,
+> +							 unsigned int index)
+> +{
+> +	if (disp->num_timings > index)
+> +		return disp->timings[index];
+> +	else
+> +		return NULL;
+> +}
+> +
+> +void timings_release(struct display_timings *disp);
+
+This function no longer exists.
+
+Thierry
+
+--y0ulUmNC+osPPQO6
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQoiP3AAoJEN0jrNd/PrOhtfgQALgmaNdfNzpfBJ/Jg/3kgWDh
+TF3gGypoynS2vU0brqo8AkNJLcyxj1SpWLXbD/vOg7yoIMIrTphUilb/7zG2+jWr
+9M8pPRLpjy8e67mSE6AE3bt/KIC8lo10sTambqLKlIUKLsJlyvsvx023xUVhgrOB
+LV8y0uXiYms51ePH2+mgEDfVPE0W+szrbaJ9s9xW4J8FpnrwcMZM9yKT9eesVhdc
+az8187GfyE/fqMB3sW6nShQbwF3rx/7CLIeQ8oiiUxeqLnW6vZ4jd6IVVj/3war7
+wtYGOWXdbblBo9xi5UhMq+grO6i4uetFnf8G0RK4gs18eNEOSjorF0iUPcS6TcUE
+Hd//uuyUboLhs/r5F8/g9hr8DCF7SuOVoWXmZOwqq3dgUGNNtenxsAZ171AiO3b0
+hh04wX0oyGG53rk83Mw8L3Ek0hH11YlUaI2fHOldY23B9CCK3wxpNtbvBZNRpZjC
+xOp4e9SQh9WouKjJpZWTBp7hQVxdUCtbrqcjF9Dmm2TddSEd0Q3EM08evr47YqMh
+hszlG2Clz2UofdOq1SUTClxrL89Ta/b0OKgFoxJAfFKw+jV/3ofYCK/+Yzatpxl9
+URyS/Uw9Wq1lRdDTPXhpuoci+1HPGd1Mnp9cxkyWtI8gLdVrr7uEwWLyDa3NlbKa
+X/RvG8pcurYyfeE0F2wQ
+=VsRp
+-----END PGP SIGNATURE-----
+
+--y0ulUmNC+osPPQO6--

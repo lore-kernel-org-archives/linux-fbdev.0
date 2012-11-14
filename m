@@ -1,51 +1,135 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Wed, 14 Nov 2012 12:06:22 +0000
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Wed, 14 Nov 2012 13:31:54 +0000
 Subject: Re: [PATCH v9 2/6] video: add of helper for videomode
-Message-Id: <20121114120622.GC2803@avionic-0098.mockup.avionic-design.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="2JFBq9zoW8cOFH7v"
+Message-Id: <20121114133154.GC18579@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1352893403-21168-1-git-send-email-s.trumtrar@pengutronix.de>
  <1352893403-21168-3-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1352893403-21168-3-git-send-email-s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-To: Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+ <20121114120045.GA2803@avionic-0098.mockup.avionic-design.de>
+In-Reply-To: <20121114120045.GA2803@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding@avionic-design.de>
+Cc: linux-fbdev@vger.kernel.org, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Philipp Zabel <p.zabel@pengutronix.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org
+
+On Wed, Nov 14, 2012 at 01:00:45PM +0100, Thierry Reding wrote:
+> On Wed, Nov 14, 2012 at 12:43:19PM +0100, Steffen Trumtrar wrote:
+> [...]
+> > +display-timings bindings
+> > +============
+> > +
+> > +display timings node
+> 
+> I didn't express myself very clearly here =). The way I think this
+> should be written is "display-timings node".
+> 
+> > +required properties:
+> > + - hactive, vactive: Display resolution
+> > + - hfront-porch, hback-porch, hsync-len: Horizontal Display timing parameters
+> > +   in pixels
+> > +   vfront-porch, vback-porch, vsync-len: Vertical display timing parameters in
+> > +   lines
+> > + - clock-frequency: displayclock in Hz
+> 
+> I still think "displayclock" should be two words: "display clock".
+> 
+> > +/**
+> > + * of_get_display_timings - parse all display_timing entries from a device_node
+> > + * @np: device_node with the subnodes
+> > + **/
+> > +struct display_timings *of_get_display_timings(struct device_node *np)
+> > +{
+> [...]
+> > +	disp->num_timings = 0;
+> > +	disp->native_mode = 0;
+> > +
+> > +	for_each_child_of_node(timings_np, entry) {
+> > +		struct display_timing *dt;
+> > +
+> > +		dt = of_get_display_timing(entry);
+> > +		if (!dt) {
+> > +			/* to not encourage wrong devicetrees, fail in case of an error */
+> > +			pr_err("%s: error in timing %d\n", __func__, disp->num_timings+1);
+> > +			goto timingfail;
+> 
+> I believe you're still potentially leaking memory here. In case you have
+> 5 entries for instance, and the last one fails to parse, then this will
+> cause the memory allocated for the 4 correct entries to be lost.
+> 
+> Can't you just call display_timings_release() in this case and then jump
+> to dispfail? That would still leak the native_mode device node. Maybe it
+> would be better to keep timingfail but modify it to free the display
+> timings with display_timings_release() instead? See below.
+> 
+> > +		}
+> > +
+> > +		if (native_mode = entry)
+> > +			disp->native_mode = disp->num_timings;
+> > +
+> > +		disp->timings[disp->num_timings] = dt;
+> > +		disp->num_timings++;
+> > +	}
+> > +	of_node_put(timings_np);
+> > +	of_node_put(native_mode);
+> > +
+> > +	if (disp->num_timings > 0)
+> > +		pr_info("%s: got %d timings. Using timing #%d as default\n", __func__,
+> > +			disp->num_timings , disp->native_mode + 1);
+> > +	else {
+> > +		pr_err("%s: no valid timings specified\n", __func__);
+> > +		display_timings_release(disp);
+> > +		return NULL;
+> > +	}
+> > +	return disp;
+> > +
+> > +timingfail:
+> > +	if (native_mode)
+> > +		of_node_put(native_mode);
+> > +	kfree(disp->timings);
+> 
+> Call display_timings_release(disp) instead of kfree(disp->timings)?
+> 
+
+Yes. That would be the appropriate way to fail here. Done.
+
+> > diff --git a/include/linux/of_videomode.h b/include/linux/of_videomode.h
+> > new file mode 100644
+> > index 0000000..4138758
+> > --- /dev/null
+> > +++ b/include/linux/of_videomode.h
+> > @@ -0,0 +1,16 @@
+> > +/*
+> > + * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
+> > + *
+> > + * videomode of-helpers
+> > + *
+> > + * This file is released under the GPLv2
+> > + */
+> > +
+> > +#ifndef __LINUX_OF_VIDEOMODE_H
+> > +#define __LINUX_OF_VIDEOMODE_H
+> > +
+> > +#include <linux/videomode.h>
+> > +#include <linux/of.h>
+> > +
+> > +int of_get_videomode(struct device_node *np, struct videomode *vm, int index);
+> > +#endif /* __LINUX_OF_VIDEOMODE_H */
+> 
+> Nit: should have a blank line before #endif.
+> 
+> Thierry
 
 
---2JFBq9zoW8cOFH7v
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-On Wed, Nov 14, 2012 at 12:43:19PM +0100, Steffen Trumtrar wrote:
-[...]
-> +optional properties:
-> + - native-mode: the native mode for the display, in case multiple modes are
-> +		provided. When omitted, assume the first node is the native.
+> _______________________________________________
+> devicetree-discuss mailing list
+> devicetree-discuss@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/devicetree-discuss
 
-I forgot: The first sentence in this description should also start with
-a capital letter as you terminate with a full stop.
 
-Thierry
-
---2JFBq9zoW8cOFH7v
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIbBAEBAgAGBQJQo4k+AAoJEN0jrNd/PrOh2BMP93MAR+pS4eGgB5cunoapIzMl
-7MOas914oB0++XF7Dte/7YaHwlkzdg2Nbm4At6rmqN8OE632iccgee8sNfG4XdGO
-JWKlQ1z1fpuuDnfBzVpISE1s4jT94KCv+vZB/TBCAal5ZmOXfy0lQ03ej0vHPhWY
-W1PRUTGxQINET6iM8nVnXMazWzufUxeRUBY+aiRW0Kv8WYO9m3Gxx4w9clNrEMKm
-VBENWctOdv/IgUnSolTXd2dqrz5sfFGjMiR2yYzd7sZBhSiFllG9rUyc43YU0nNc
-JdcIFQKi1UKIXreKmgqq29OUWNvO3RPLYrfGtnBV1tSEv1LrQANuziDjMFc6ZcbT
-5SxNZMGJw3a2RU4vEj5z15p7NQ6J87bx9cknc8M6r3ldOizhwoaS2paOYUm1YoSC
-8l6Ux8rjz1i2/+MUW473tiWpb1DASCoyWFax87N/U/fHnnME7TFnEvA7nCfuQ6bH
-KK/Uwig44xndBWdj4JwSgCoej+POPpvQd4g6kHkfvRaA14nVgXlAqfJvOxs1LIYS
-DUcjItrNFI+vPTXuOYq3AVFe1aTc2TNoNtbunKYHp+h3LDPy8ooUgIXnmN03tF/R
-u1ewFIQFwluDDxoEDfGxP0sddEyRA7TYbb4PPS/hMGJNNIs5YzSqoSWjZ7BiyTCk
-gh52oDykeaILepSy3f8=
-=SfNW
------END PGP SIGNATURE-----
-
---2JFBq9zoW8cOFH7v--
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

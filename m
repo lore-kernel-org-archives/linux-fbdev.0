@@ -1,102 +1,60 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Wed, 14 Nov 2012 11:43:22 +0000
-Subject: [PATCH v9 5/6] drm_modes: add videomode helpers
-Message-Id: <1352893403-21168-6-git-send-email-s.trumtrar@pengutronix.de>
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Wed, 14 Nov 2012 12:49:44 +0000
+Subject: Re: [PATCH v9 5/6] drm_modes: add videomode helpers
+Message-Id: <20121114124944.GF2803@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="oPmsXEqKQNHCSXW7"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1352893403-21168-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1352893403-21168-1-git-send-email-s.trumtrar@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+ <1352893403-21168-6-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352893403-21168-6-git-send-email-s.trumtrar@pengutronix.de>
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-Add conversion from videomode to drm_display_mode
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
----
- drivers/gpu/drm/drm_modes.c |   36 ++++++++++++++++++++++++++++++++++++
- include/drm/drmP.h          |    6 ++++++
- 2 files changed, 42 insertions(+)
+--oPmsXEqKQNHCSXW7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index 59450f3..42ea099 100644
---- a/drivers/gpu/drm/drm_modes.c
-+++ b/drivers/gpu/drm/drm_modes.c
-@@ -35,6 +35,7 @@
- #include <linux/export.h>
- #include <drm/drmP.h>
- #include <drm/drm_crtc.h>
-+#include <linux/videomode.h>
- 
- /**
-  * drm_mode_debug_printmodeline - debug print a mode
-@@ -504,6 +505,41 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, int vdisplay, int vrefresh,
- }
- EXPORT_SYMBOL(drm_gtf_mode);
- 
-+#if IS_ENABLED(CONFIG_VIDEOMODE)
-+int display_mode_from_videomode(struct videomode *vm, struct drm_display_mode *dmode)
-+{
-+	dmode->hdisplay = vm->hactive;
-+	dmode->hsync_start = dmode->hdisplay + vm->hfront_porch;
-+	dmode->hsync_end = dmode->hsync_start + vm->hsync_len;
-+	dmode->htotal = dmode->hsync_end + vm->hback_porch;
-+
-+	dmode->vdisplay = vm->vactive;
-+	dmode->vsync_start = dmode->vdisplay + vm->vfront_porch;
-+	dmode->vsync_end = dmode->vsync_start + vm->vsync_len;
-+	dmode->vtotal = dmode->vsync_end + vm->vback_porch;
-+
-+	dmode->clock = vm->pixelclock / 1000;
-+
-+	dmode->flags = 0;
-+	if (vm->hah)
-+		dmode->flags |= DRM_MODE_FLAG_PHSYNC;
-+	else
-+		dmode->flags |= DRM_MODE_FLAG_NHSYNC;
-+	if (vm->vah)
-+		dmode->flags |= DRM_MODE_FLAG_PVSYNC;
-+	else
-+		dmode->flags |= DRM_MODE_FLAG_NVSYNC;
-+	if (vm->interlaced)
-+		dmode->flags |= DRM_MODE_FLAG_INTERLACE;
-+	if (vm->doublescan)
-+		dmode->flags |= DRM_MODE_FLAG_DBLSCAN;
-+	drm_mode_set_name(dmode);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(display_mode_from_videomode);
-+#endif
-+
- /**
-  * drm_mode_set_name - set the name on a mode
-  * @mode: name will be set in this mode
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index 3fd8280..1e0d846 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -56,6 +56,7 @@
- #include <linux/cdev.h>
- #include <linux/mutex.h>
- #include <linux/slab.h>
-+#include <linux/videomode.h>
- #if defined(__alpha__) || defined(__powerpc__)
- #include <asm/pgtable.h>	/* For pte_wrprotect */
- #endif
-@@ -1454,6 +1455,11 @@ extern struct drm_display_mode *
- drm_mode_create_from_cmdline_mode(struct drm_device *dev,
- 				  struct drm_cmdline_mode *cmd);
- 
-+#if IS_ENABLED(CONFIG_VIDEOMODE)
-+extern int display_mode_from_videomode(struct videomode *vm,
-+				       struct drm_display_mode *dmode);
-+#endif
-+
- /* Modesetting support */
- extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
- extern void drm_vblank_post_modeset(struct drm_device *dev, int crtc);
--- 
-1.7.10.4
+On Wed, Nov 14, 2012 at 12:43:22PM +0100, Steffen Trumtrar wrote:
+[...]
+> diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+[...]
+> @@ -504,6 +505,41 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, i=
+nt vdisplay, int vrefresh,
+>  }
+>  EXPORT_SYMBOL(drm_gtf_mode);
+> =20
+> +#if IS_ENABLED(CONFIG_VIDEOMODE)
+> +int display_mode_from_videomode(struct videomode *vm, struct drm_display=
+_mode *dmode)
 
+Given that this is still a DRM core function, maybe it should get a drm_
+prefix? Also the line is too long, so you may want to wrap the argument
+list.
+
+Thierry
+
+--oPmsXEqKQNHCSXW7
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQo5NoAAoJEN0jrNd/PrOhFRoQAKF/j89+6e4C2SmBB94S4u2p
+d1UUxQK/eHjdYa295uNCDce3HKiq7jbY8WBTMpgo0Jubt4Y1R5swCxBTMHerVhzv
+RvNa6bz3iUUu6vMf3xPXpib2QdE61vdrNSKS9jBHX1f8V0XdClCH51dNMQCWWz2X
+AC34kr0y/4/iQKfMAq3q5E0MGAjglKCTF8VduudisKhiPMavC0ghykV0QYwsycYB
+q+h9BDFZaYGWEjYNy7CoinR0fKHJwvWuLlppNiBDFcAqg5hEbvK2UnDdPD7fftgm
+4Uumn09/i7HlSF+JsGk6JPx96QmXQVQXB0/2F6MdR72As3yzbsyBj30vDBo/DL+q
+L0RdBu0JoNptivgXCcnx3q0a6eevYMDzA//d8Yqmqd9kQZrArAU/0FD4q+B+nwyO
+xu/sAYl2xBvs8T5l8hP/8Jf+sgNAJ9d82CiH8n8e1GjHwMeG3uEMEu1mU4ENux/b
+4B4RRco/3S/Cn83sy3RPccULFcZlBj5rauyHwl77/o04aOHVgzdZNziuYX5Zkg9b
+LZOf0jzPI997/NIZdhJVVzIODkjOZyJ3xbj9NqFT2BQXv5+nOPXt4qcCjGschr2W
+3nQpc+cVDEB99hAIcmm7skxkyAYBnLlunGtzxVXPXLpthGXBE1g0rs+yXOI6ZKXD
+LawwaUis11jI1M6cutI+
+=LI1y
+-----END PGP SIGNATURE-----
+
+--oPmsXEqKQNHCSXW7--

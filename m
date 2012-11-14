@@ -1,121 +1,143 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 19 Nov 2012 23:26:51 +0000
-Subject: Re: [PATCH] video: Add support for the Solomon SSD1307 OLED Controller
-Message-Id: <20121119152651.ed30cb7a.akpm@linux-foundation.org>
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Wed, 14 Nov 2012 12:00:45 +0000
+Subject: Re: [PATCH v9 2/6] video: add of helper for videomode
+Message-Id: <20121114120045.GA2803@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="opJtzjQTFsWo+cga"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352993527-9113-2-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1352993527-9113-2-git-send-email-maxime.ripard@free-electrons.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+References: <1352893403-21168-1-git-send-email-s.trumtrar@pengutronix.de>
+ <1352893403-21168-3-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352893403-21168-3-git-send-email-s.trumtrar@pengutronix.de>
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Cc: devicetree-discuss@lists.ozlabs.org, Philipp Zabel <p.zabel@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-On Thu, 15 Nov 2012 16:32:07 +0100
-Maxime Ripard <maxime.ripard@free-electrons.com> wrote:
 
-> This patch adds support for the Solomon SSD1307 OLED
-> controller found on the Crystalfontz CFA10036 board.
-> 
-> This controller can drive a display with a resolution up
-> to 128x39 and can operate over I2C or SPI.
-> 
-> The current driver has only been tested on the CFA-10036,
-> that is using this controller over I2C to driver a 96x16
-> OLED screen.
->
-> ...
->
-> +static ssize_t ssd1307fb_write(struct fb_info *info, const char __user *buf,
-> +		size_t count, loff_t *ppos)
+--opJtzjQTFsWo+cga
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Wed, Nov 14, 2012 at 12:43:19PM +0100, Steffen Trumtrar wrote:
+[...]
+> +display-timings bindings
+> +========================
+> +
+> +display timings node
+
+I didn't express myself very clearly here =). The way I think this
+should be written is "display-timings node".
+
+> +required properties:
+> + - hactive, vactive: Display resolution
+> + - hfront-porch, hback-porch, hsync-len: Horizontal Display timing parameters
+> +   in pixels
+> +   vfront-porch, vback-porch, vsync-len: Vertical display timing parameters in
+> +   lines
+> + - clock-frequency: displayclock in Hz
+
+I still think "displayclock" should be two words: "display clock".
+
+> +/**
+> + * of_get_display_timings - parse all display_timing entries from a device_node
+> + * @np: device_node with the subnodes
+> + **/
+> +struct display_timings *of_get_display_timings(struct device_node *np)
 > +{
-> +	struct ssd1307fb_par *par = info->par;
-> +	unsigned long total_size;
-> +	unsigned long p = *ppos;
-> +	u8 __iomem *dst;
-> +	int err = 0;
+[...]
+> +	disp->num_timings = 0;
+> +	disp->native_mode = 0;
 > +
-> +	total_size = info->screen_size;
+> +	for_each_child_of_node(timings_np, entry) {
+> +		struct display_timing *dt;
 > +
-> +	if (total_size = 0)
-> +		total_size = info->fix.smem_len;
+> +		dt = of_get_display_timing(entry);
+> +		if (!dt) {
+> +			/* to not encourage wrong devicetrees, fail in case of an error */
+> +			pr_err("%s: error in timing %d\n", __func__, disp->num_timings+1);
+> +			goto timingfail;
+
+I believe you're still potentially leaking memory here. In case you have
+5 entries for instance, and the last one fails to parse, then this will
+cause the memory allocated for the 4 correct entries to be lost.
+
+Can't you just call display_timings_release() in this case and then jump
+to dispfail? That would still leak the native_mode device node. Maybe it
+would be better to keep timingfail but modify it to free the display
+timings with display_timings_release() instead? See below.
+
+> +		}
 > +
-> +	if (p > total_size)
-> +		return -EFBIG;
+> +		if (native_mode == entry)
+> +			disp->native_mode = disp->num_timings;
 > +
-> +	if (count > total_size) {
-> +		err = -EFBIG;
-> +		count = total_size;
+> +		disp->timings[disp->num_timings] = dt;
+> +		disp->num_timings++;
 > +	}
+> +	of_node_put(timings_np);
+> +	of_node_put(native_mode);
 > +
-> +	if (count + p > total_size) {
-> +		if (!err)
-> +			err = -ENOSPC;
-> +
-> +		count = total_size - p;
+> +	if (disp->num_timings > 0)
+> +		pr_info("%s: got %d timings. Using timing #%d as default\n", __func__,
+> +			disp->num_timings , disp->native_mode + 1);
+> +	else {
+> +		pr_err("%s: no valid timings specified\n", __func__);
+> +		display_timings_release(disp);
+> +		return NULL;
 > +	}
+> +	return disp;
 > +
-> +	dst = (void __force *) (info->screen_base + p);
+> +timingfail:
+> +	if (native_mode)
+> +		of_node_put(native_mode);
+> +	kfree(disp->timings);
+
+Call display_timings_release(disp) instead of kfree(disp->timings)?
+
+> diff --git a/include/linux/of_videomode.h b/include/linux/of_videomode.h
+> new file mode 100644
+> index 0000000..4138758
+> --- /dev/null
+> +++ b/include/linux/of_videomode.h
+> @@ -0,0 +1,16 @@
+> +/*
+> + * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
+> + *
+> + * videomode of-helpers
+> + *
+> + * This file is released under the GPLv2
+> + */
 > +
-> +	if (copy_from_user(dst, buf, count))
-> +		err = -EFAULT;
+> +#ifndef __LINUX_OF_VIDEOMODE_H
+> +#define __LINUX_OF_VIDEOMODE_H
 > +
-> +	if  (!err)
-> +		*ppos += count;
+> +#include <linux/videomode.h>
+> +#include <linux/of.h>
 > +
-> +	ssd1307fb_update_display(par);
-> +
-> +	return (err) ? err : count;
-> +}
+> +int of_get_videomode(struct device_node *np, struct videomode *vm, int index);
+> +#endif /* __LINUX_OF_VIDEOMODE_H */
 
-There are a lot of things not to like about this function ;)
+Nit: should have a blank line before #endif.
 
-EFBIG means "file too large" and ENOSPC means "No space left on
-device".  A video driver has no business returning these errors.  If
-these errors occur then our poor user might end up running around
-checking his disk free space and looking for huge files.  Because we
-misled him.  These errors are due to invalid syscall arguments, so
-how's about we tell the truth and use EINVAL?
+Thierry
 
-Also, the function will under some circumstances return an error, but
-it has done the write anyway!  What is userspace supposed to do?  If it
-was well written it may retry the write, or report the error and
-terminate.  A write() should return the number of bytes written on
-success.  It's quite OK for that return value to be less than the
-number of bytes the user requested, and I suggest that's what you
-should do here.  Or you could just abort the write altogther and return
--EINVAL if there are any invalid arguments.
+--opJtzjQTFsWo+cga
+Content-Type: application/pgp-signature
 
->
-> ...
->
-> +	par->reset = of_get_named_gpio(client->dev.of_node,
-> +					 "reset-gpios", 0);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
 
-It appears that this driver will be unusable if CONFIG_OF=n, yet we
-permit it to be configured on such systems.  I think it would be better
-to make CONFIG_FB_SSD1307 depend on CONFIG_OF so users don't end up
-compiling and bundling unusable drivers?
+iQIcBAEBAgAGBQJQo4ftAAoJEN0jrNd/PrOhNXgP/R1YEGtJlaF5M8tYBg8PMv5z
+Y1IbzrrOvGHFWAPS6VVJn+/YdbNbTvKx+cI897SRmqY4rk4pyWmai8cjgAWL5zi2
+aZ7nhWSyLDkKOixNl+SGA1VWuLy1vik4N45xy2UB3sEqZzoHjkFYqjzxh04LUsYR
+sgmBzNo7aNKakRjUeNup0u2kNe/FtvVe4Hkg4n0j9drK8OPKlm00XjHtdBntYRhE
+5n/wS2+J4dONLicTwVDcLCA1vko2W/NsWjggKLVlAb/HRyoV+qjqxp1Zoncdimak
+wUSnPHKfpPBPo/wrELfU4R7js2S6ouOHdrKODAAzvVRTSvQn+AQ73WvZoM7GeBN7
+WL0d2/nuU5flwocNGbIyEb2hcOz0kbTdOUedhcXFlRLbAsNco8/gg3lhJJT6VHRR
+m4oR25htlw3eHTO47dWB52ljVM5P+ETnQW4HSKAaaK4N5PNNPK1uuGZzuAFLhEnP
+5rc7ht5WP7+SfNESGJFknALp6HCtNv2JSMa+pzQTN73VabVQxZbcAghFTY9uiliN
+2qsk7gOTmKizodyZWFQqNzXIWPglrXVkiZS/yLFFErRmDWHn3VNI8hBG8nvBkkcR
+BNebxMbzrLkxIO/6+X7IiXEW9m+Za+o9TkvUobufnK1MHJXVh6p1nvkqC/fmYXOc
+0MUTXck3jaMD9fLIfRiI
+=XhZ/
+-----END PGP SIGNATURE-----
 
-(otoh, there is a maintainability argument in favor of permitting a
-driver to be compiled with x86 allmodconfig)
-
-> +	if (!gpio_is_valid(par->reset)) {
-> +		ret = -EINVAL;
-> +		goto reset_oled_error;
-> +	}
-> +
->
-> ...
->
-> +	gpio_set_value(par->reset, 0);
-
-A Kconfig dependency on CONFIG_GPIO might also be needed, for the same
-reasons.
-
-> +	udelay(4);
-> +	gpio_set_value(par->reset, 1);
-> +	udelay(4);
->
-> ...
->
-
+--opJtzjQTFsWo+cga--

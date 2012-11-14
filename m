@@ -1,56 +1,60 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Mon, 12 Nov 2012 14:14:02 +0000
-Subject: Re: [PATCHv6 0/2] Add support for the OLED in the CFA10036
-Message-Id: <50A1042A.2090405@free-electrons.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Wed, 14 Nov 2012 11:43:17 +0000
+Subject: [PATCH v9 0/6] of: add display helper
+Message-Id: <1352893403-21168-1-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351674774-2891-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1351674774-2891-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-Ping?
+Hi!
 
-Le 31/10/2012 10:12, Maxime Ripard a =E9crit :
-> Hi everyone,
->=20
-> This patchset adds support for the solomon SSD1307 OLED controller present
-> in the CFA-10036 board.
->=20
-> It first adds the framebuffer driver for this controller, and then the
-> needed bits to enable it in the cfa10036 dts.
->=20
-> Considering that the driver has been around since almost three months now=
-, and
-> I have not received any comments on the framebuffer part, I'd very much l=
-ike it
-> to be included in 3.8 if possible.
->=20
-> Thanks,
-> Maxime
->=20
-> Changes from v5:
->   * Fixed bogus reset code
->=20
-> Maxime Ripard (2):
->   video: Add support for the Solomon SSD1307 OLED Controller
->   ARM: dts: mxs: add oled support for the cfa-10036
->=20
->  .../devicetree/bindings/video/ssd1307fb.txt        |   24 ++
->  arch/arm/boot/dts/imx28-cfa10036.dts               |   19 +
->  drivers/video/Kconfig                              |   13 +
->  drivers/video/Makefile                             |    1 +
->  drivers/video/ssd1307fb.c                          |  407 ++++++++++++++=
-++++++
->  5 files changed, 464 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/video/ssd1307fb.txt
->  create mode 100644 drivers/video/ssd1307fb.c
->=20
+Changes since v8:
+	- fix memory leaks
+	- change API to be more consistent (foo_from_bar(struct bar, struct foo))
+	- include headers were necessary
+	- misc minor bufixes
+
+Regards,
+Steffen
 
 
---=20
-Maxime Ripard, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+Steffen Trumtrar (6):
+  video: add display_timing and videomode
+  video: add of helper for videomode
+  fbmon: add videomode helpers
+  fbmon: add of_videomode helpers
+  drm_modes: add videomode helpers
+  drm_modes: add of_videomode helpers
+
+ .../devicetree/bindings/video/display-timings.txt  |  107 ++++++++++
+ drivers/gpu/drm/drm_modes.c                        |   69 +++++++
+ drivers/video/Kconfig                              |   19 ++
+ drivers/video/Makefile                             |    4 +
+ drivers/video/display_timing.c                     |   24 +++
+ drivers/video/fbmon.c                              |   78 ++++++++
+ drivers/video/of_display_timing.c                  |  211 ++++++++++++++++++++
+ drivers/video/of_videomode.c                       |   47 +++++
+ drivers/video/videomode.c                          |   45 +++++
+ include/drm/drmP.h                                 |   12 ++
+ include/linux/display_timing.h                     |   69 +++++++
+ include/linux/fb.h                                 |   11 +
+ include/linux/of_display_timings.h                 |   20 ++
+ include/linux/of_videomode.h                       |   16 ++
+ include/linux/videomode.h                          |   39 ++++
+ 15 files changed, 771 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/display-timings.txt
+ create mode 100644 drivers/video/display_timing.c
+ create mode 100644 drivers/video/of_display_timing.c
+ create mode 100644 drivers/video/of_videomode.c
+ create mode 100644 drivers/video/videomode.c
+ create mode 100644 include/linux/display_timing.h
+ create mode 100644 include/linux/of_display_timings.h
+ create mode 100644 include/linux/of_videomode.h
+ create mode 100644 include/linux/videomode.h
+
+-- 
+1.7.10.4
+

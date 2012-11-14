@@ -1,100 +1,108 @@
 From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Thu, 22 Nov 2012 09:10:59 +0000
-Subject: Re: [PATCH v12 2/6] video: add of helper for videomode
-Message-Id: <20121122091059.GA4428@pengutronix.de>
+Date: Wed, 14 Nov 2012 11:43:21 +0000
+Subject: [PATCH v9 4/6] fbmon: add of_videomode helpers
+Message-Id: <1352893403-21168-5-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353426896-6045-1-git-send-email-s.trumtrar@pengutronix.de>
- <1353426896-6045-3-git-send-email-s.trumtrar@pengutronix.de>
- <A73F36158E33644199EB82C5EC81C7BC3E9FA7A0@DBDE01.ent.ti.com>
- <20121121114843.GC14013@pengutronix.de>
- <20121121115236.GA8886@avionic-0098.adnet.avionic-design.de>
- <50ACED4A.5040806@gmail.com>
-In-Reply-To: <50ACED4A.5040806-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+References: <1352893403-21168-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352893403-21168-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org" <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, "dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org" <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, "Manjunathappa, Prakash" <prakash.pm-l0cyMroinI0@public.gmane.org>, "Valkeinen,
- Tomi" <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, "linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-Hi!
+Add helper to get fb_videomode from devicetree.
 
-On Wed, Nov 21, 2012 at 09:03:38AM -0600, Rob Herring wrote:
-> On 11/21/2012 05:52 AM, Thierry Reding wrote:
-> > On Wed, Nov 21, 2012 at 12:48:43PM +0100, Steffen Trumtrar wrote:
-> >> Hi!
-> >>
-> >> On Wed, Nov 21, 2012 at 10:12:43AM +0000, Manjunathappa, Prakash wrote:
-> >>> Hi Steffen,
-> >>>
-> >>> On Tue, Nov 20, 2012 at 21:24:52, Steffen Trumtrar wrote:
-> >>>> +/**
-> >>>> + * of_get_display_timings - parse all display_timing entries from a device_node
-> >>>> + * @np: device_node with the subnodes
-> >>>> + **/
-> >>>> +struct display_timings *of_get_display_timings(const struct device_node *np)
-> >>>> +{
-> >>>> +	struct device_node *timings_np;
-> >>>> +	struct device_node *entry;
-> >>>> +	struct device_node *native_mode;
-> >>>> +	struct display_timings *disp;
-> >>>> +
-> >>>> +	if (!np) {
-> >>>> +		pr_err("%s: no devicenode given\n", __func__);
-> >>>> +		return NULL;
-> >>>> +	}
-> >>>> +
-> >>>> +	timings_np = of_find_node_by_name(np, "display-timings");
-> >>>
-> >>> I get below build warnings on this line
-> >>> drivers/video/of_display_timing.c: In function 'of_get_display_timings':
-> >>> drivers/video/of_display_timing.c:109:2: warning: passing argument 1 of 'of_find_node_by_name' discards qualifiers from pointer target type
-> >>> include/linux/of.h:167:28: note: expected 'struct device_node *' but argument is of type 'const struct device_node *'
-> >>>
-> >>>> + * of_display_timings_exists - check if a display-timings node is provided
-> >>>> + * @np: device_node with the timing
-> >>>> + **/
-> >>>> +int of_display_timings_exists(const struct device_node *np)
-> >>>> +{
-> >>>> +	struct device_node *timings_np;
-> >>>> +
-> >>>> +	if (!np)
-> >>>> +		return -EINVAL;
-> >>>> +
-> >>>> +	timings_np = of_parse_phandle(np, "display-timings", 0);
-> >>>
-> >>> Also here:
-> >>> drivers/video/of_display_timing.c: In function 'of_display_timings_exists':
-> >>> drivers/video/of_display_timing.c:209:2: warning: passing argument 1 of 'of_parse_phandle' discards qualifiers from pointer target type
-> >>> include/linux/of.h:258:28: note: expected 'struct device_node *' but argument is of type 'const struct device_node *'
-> >>>
-> >>
-> >> The warnings are because the of-functions do not use const pointers where they
-> >> should. I had two options: don't use const pointers even if they should be and
-> >> have no warnings or use const pointers and have a correct API. (Third option:
-> >> send patches for of-functions). I chose the second option.
-> > 
-> > Maybe a better approach would be a combination of 1 and 3: don't use
-> > const pointers for struct device_node for now and bring the issue up
-> > with the OF maintainers, possibly with patches attached that fix the
-> > problematic functions.
-> 
-> Why does this need to be const? Since some DT functions increment
-> refcount the node, I'm not sure that making struct device_node const in
-> general is right thing to do. I do think it should be okay for
-> of_parse_phandle.
-> 
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+---
+ drivers/video/fbmon.c |   42 +++++++++++++++++++++++++++++++++++++++++-
+ include/linux/fb.h    |    6 ++++++
+ 2 files changed, 47 insertions(+), 1 deletion(-)
 
-Okay, that seems right. I went a little to far with const'ing.
-I will send a patch for of_parse_phandle as this function does
-not seem to change the pointer it is given, but returns a new one
-on which the refcount gets incremented.
-
-Regards,
-Steffen
-
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index cccef17..3a48abd 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -31,7 +31,7 @@
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <video/edid.h>
+-#include <linux/videomode.h>
++#include <linux/of_videomode.h>
+ #ifdef CONFIG_PPC_OF
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+@@ -1410,6 +1410,46 @@ int fb_videomode_from_videomode(struct videomode *vm, struct fb_videomode *fbmod
+ EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
+ #endif
+ 
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++static void dump_fb_videomode(struct fb_videomode *m)
++{
++	pr_debug("fb_videomode = %ux%u@%uHz (%ukHz) %u %u %u %u %u %u %u %u %u\n",
++		 m->xres, m->yres, m->refresh, m->pixclock, m->left_margin,
++		 m->right_margin, m->upper_margin, m->lower_margin,
++		 m->hsync_len, m->vsync_len, m->sync, m->vmode, m->flag);
++}
++
++/**
++ * of_get_fb_videomode - get a fb_videomode from devicetree
++ * @np: device_node with the timing specification
++ * @fb: will be set to the return value
++ * @index: index into the list of display timings in devicetree
++ *
++ * DESCRIPTION:
++ * This function is expensive and should only be used, if only one mode is to be
++ * read from DT. To get multiple modes start with of_get_display_timings ond
++ * work with that instead.
++ */
++int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
++			unsigned int index)
++{
++	struct videomode vm;
++	int ret;
++
++	ret = of_get_videomode(np, &vm, index);
++	if (ret)
++		return ret;
++
++	fb_videomode_from_videomode(&vm, fb);
++
++	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
++		vm.vactive, np->name);
++	dump_fb_videomode(fb);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_get_fb_videomode);
++#endif
+ 
+ #else
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 6a3a675..8aeece8 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -15,6 +15,8 @@
+ #include <linux/slab.h>
+ #include <asm/io.h>
+ #include <linux/videomode.h>
++#include <linux/of.h>
++#include <linux/of_videomode.h>
+ 
+ struct vm_area_struct;
+ struct fb_info;
+@@ -715,6 +717,10 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+ extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+ extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
+ 
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++extern int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
++			       unsigned int index);
++#endif
+ #if IS_ENABLED(CONFIG_VIDEOMODE)
+ extern int fb_videomode_from_videomode(struct videomode *vm,
+ 				       struct fb_videomode *fbmode);
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+1.7.10.4
+

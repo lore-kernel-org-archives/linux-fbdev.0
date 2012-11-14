@@ -1,55 +1,58 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Fri, 23 Nov 2012 07:54:07 +0000
-Subject: Re: [PATCHv13 5/7] fbmon: add of_videomode helpers
-Message-Id: <20121123075407.GA20282@pengutronix.de>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Wed, 14 Nov 2012 11:16:01 +0000
+Subject: [PATCH] backlight: pandora_bl: Change TWL4030_MODULE_PWM0 to TWL_MODULE_PWM
+Message-Id: <1352891761-29561-1-git-send-email-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353600015-6974-1-git-send-email-s.trumtrar@pengutronix.de>
- <1353600015-6974-6-git-send-email-s.trumtrar@pengutronix.de>
- <2117247.Eyo66IqYf0@avalon>
-In-Reply-To: <2117247.Eyo66IqYf0@avalon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
+To: Richard Purdie <rpurdie@rpsys.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Grazvydas Ignotas <notasas@gmail.com>
 
-Hi Laurent,
+TWL_MODULE_PWM is defined as:
+#define TWL_MODULE_PWM		TWL4030_MODULE_PWM0
 
-On Thu, Nov 22, 2012 at 06:58:09PM +0100, Laurent Pinchart wrote:
-> Hi Steffen,
-> 
-> On Thursday 22 November 2012 17:00:13 Steffen Trumtrar wrote:
-> > Add helper to get fb_videomode from devicetree.
-> > 
-> > Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-> > Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
-> > Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
-> > Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
-> > Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
-> > Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> > Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> 
-> This patch results in the following build warning:
-> 
-> drivers/video/fbmon.c: In function 'of_get_fb_videomode':
-> drivers/video/fbmon.c:1445: warning: passing argument 1 of 'of_get_videomode' 
-> discards qualifiers from pointer target type
-> include/linux/of_videomode.h:15: note: expected 'struct device_node *' but 
-> argument is of type 'const struct device_node *'
-> 
+Use the common module ID define here which will facilitate the upcoming
+twl-core cleanup.
 
-This I don't get. Well, looking at the code, the warning is correct. I fixed
-that now. But, I do not get the warning. Just tried it again before fixing:
-cleaned, cleaned and touching file, just "make drivers/video/fbmon.o". Nothing.
-Weird.
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+---
+ drivers/video/backlight/pandora_bl.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-So, thanks for reporting it.
-
-Regards,
-Steffen
-
+diff --git a/drivers/video/backlight/pandora_bl.c b/drivers/video/backlight/pandora_bl.c
+index 4ec3074..633b0a2 100644
+--- a/drivers/video/backlight/pandora_bl.c
++++ b/drivers/video/backlight/pandora_bl.c
+@@ -71,8 +71,7 @@ static int pandora_backlight_update_status(struct backlight_device *bl)
+ 		 * set PWM duty cycle to max. TPS61161 seems to use this
+ 		 * to calibrate it's PWM sensitivity when it starts.
+ 		 */
+-		twl_i2c_write_u8(TWL4030_MODULE_PWM0, MAX_VALUE,
+-					TWL_PWM0_OFF);
++		twl_i2c_write_u8(TWL_MODULE_PWM, MAX_VALUE, TWL_PWM0_OFF);
+ 
+ 		/* first enable clock, then PWM0 out */
+ 		twl_i2c_read_u8(TWL4030_MODULE_INTBR, &r, TWL_INTBR_GPBR1);
+@@ -90,8 +89,7 @@ static int pandora_backlight_update_status(struct backlight_device *bl)
+ 		usleep_range(2000, 10000);
+ 	}
+ 
+-	twl_i2c_write_u8(TWL4030_MODULE_PWM0, MIN_VALUE + brightness,
+-				TWL_PWM0_OFF);
++	twl_i2c_write_u8(TWL_MODULE_PWM, MIN_VALUE + brightness, TWL_PWM0_OFF);
+ 
+ done:
+ 	if (brightness != 0)
+@@ -132,7 +130,7 @@ static int pandora_backlight_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, bl);
+ 
+ 	/* 64 cycle period, ON position 0 */
+-	twl_i2c_write_u8(TWL4030_MODULE_PWM0, 0x80, TWL_PWM0_ON);
++	twl_i2c_write_u8(TWL_MODULE_PWM, 0x80, TWL_PWM0_ON);
+ 
+ 	bl->props.state |= PANDORABL_WAS_OFF;
+ 	bl->props.brightness = MAX_USER_VALUE;
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+1.8.0
+

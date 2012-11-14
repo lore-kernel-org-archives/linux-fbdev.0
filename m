@@ -1,43 +1,36 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 09 Nov 2012 05:52:08 +0000
-Subject: [PATCH v4 6/8] video: exynos_dp: Remove sink control to D0
-Message-Id: <001e01cdbe3e$5b0c1260$11243720$%han@samsung.com>
+From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Date: Wed, 14 Nov 2012 04:57:50 +0000
+Subject: RE: [PATCH 6/7] mx3fb: Fix the usage of wait_for_completion_timeout
+Message-Id: <27240C0AC20F114CBF8149A2696CBE4A1C4964@SHSMSX101.ccr.corp.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-From: Sean Paul <seanpaul@chromium.org>
-
-According to DP spec, it is not required in the Link Training
-procedure.
-
-[jg1.han@samsung.com: modified the commit message]
-Signed-off-by: Sean Paul <seanpaul@chromium.org>
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
----
- drivers/video/exynos/exynos_dp_core.c |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-index be3df15..edb3bfe 100644
---- a/drivers/video/exynos/exynos_dp_core.c
-+++ b/drivers/video/exynos/exynos_dp_core.c
-@@ -277,12 +277,6 @@ static int exynos_dp_link_start(struct exynos_dp_device *dp)
- 	for (lane = 0; lane < lane_count; lane++)
- 		dp->link_train.cr_loop[lane] = 0;
- 
--	/* Set sink to D0 (Sink Not Ready) mode. */
--	retval = exynos_dp_write_byte_to_dpcd(dp, DPCD_ADDR_SINK_POWER_STATE,
--			DPCD_SET_POWER_STATE_D0);
--	if (retval)
--		return retval;
--
- 	/* Set link rate and count as you want to establish*/
- 	exynos_dp_set_link_bandwidth(dp, dp->link_train.link_rate);
- 	exynos_dp_set_lane_count(dp, dp->link_train.lane_count);
--- 
-1.7.1
-
-
+UGluZy4NClRoYW5rcy4NCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBM
+aXUsIENodWFuc2hlbmcNCj4gU2VudDogV2VkbmVzZGF5LCBOb3ZlbWJlciAwNywgMjAxMiAxOjMz
+IEFNDQo+IFRvOiBGbG9yaWFuU2NoYW5kaW5hdEBnbXguZGUNCj4gQ2M6IGxpbnV4LWtlcm5lbEB2
+Z2VyLmtlcm5lbC5vcmc7IExpdSwgQ2h1YW5zaGVuZw0KPiBTdWJqZWN0OiBbUEFUQ0ggNi83XSBt
+eDNmYjogRml4IHRoZSB1c2FnZSBvZiB3YWl0X2Zvcl9jb21wbGV0aW9uX3RpbWVvdXQNCj4gDQo+
+IA0KPiBUaGUgcmV0dXJuIHZhbHVlIG9mIHdhaXRfZm9yX2NvbXBsZXRpb25fdGltZW91dCgpIGlz
+IGFsd2F5cw0KPiA+PSAwIHdpdGggdW5zaWduZWQgaW50IHR5cGUuDQo+IA0KPiBTbyB0aGUgY29u
+ZGl0aW9uICJyZXQgPCAwIiBvciAicmV0ID49IDAiIGlzIHBvaW50bGVzcy4NCj4gDQo+IFNpZ25l
+ZC1vZmYtYnk6IGxpdSBjaHVhbnNoZW5nIDxjaHVhbnNoZW5nLmxpdUBpbnRlbC5jb20+DQo+IC0t
+LQ0KPiAgZHJpdmVycy92aWRlby9teDNmYi5jIHwgICAgNyArKystLS0tDQo+ICAxIGZpbGVzIGNo
+YW5nZWQsIDMgaW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYgLS1naXQg
+YS9kcml2ZXJzL3ZpZGVvL214M2ZiLmMgYi9kcml2ZXJzL3ZpZGVvL214M2ZiLmMNCj4gaW5kZXgg
+Y2UxZDQ1Mi4uODhiZjM2OCAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9teDNmYi5jDQo+
+ICsrKyBiL2RyaXZlcnMvdmlkZW8vbXgzZmIuYw0KPiBAQCAtMTExMCwxMiArMTExMCwxMSBAQCBz
+dGF0aWMgaW50IG14M2ZiX3Bhbl9kaXNwbGF5KHN0cnVjdA0KPiBmYl92YXJfc2NyZWVuaW5mbyAq
+dmFyLA0KPiAgCWVuYWJsZV9pcnEobXgzX2ZiaS0+aWRtYWNfY2hhbm5lbC0+ZW9mX2lycSk7DQo+
+IA0KPiAgCXJldCA9IHdhaXRfZm9yX2NvbXBsZXRpb25fdGltZW91dCgmbXgzX2ZiaS0+ZmxpcF9j
+bXBsLCBIWiAvIDEwKTsNCj4gLQlpZiAocmV0IDw9IDApIHsNCj4gKwlpZiAocmV0ID09IDApIHsN
+Cj4gIAkJbXV0ZXhfdW5sb2NrKCZteDNfZmJpLT5tdXRleCk7DQo+IC0JCWRldl9pbmZvKGZiaS0+
+ZGV2aWNlLCAiUGFubmluZyBmYWlsZWQgZHVlIHRvICVzXG4iLCByZXQgPCAwID8NCj4gLQkJCSAi
+dXNlciBpbnRlcnJ1cHQiIDogInRpbWVvdXQiKTsNCj4gKwkJZGV2X2luZm8oZmJpLT5kZXZpY2Us
+ICJQYW5uaW5nIGZhaWxlZCBkdWUgdG8gdGltZW91dFxuIik7DQo+ICAJCWRpc2FibGVfaXJxKG14
+M19mYmktPmlkbWFjX2NoYW5uZWwtPmVvZl9pcnEpOw0KPiAtCQlyZXR1cm4gcmV0ID8gOiAtRVRJ
+TUVET1VUOw0KPiArCQlyZXR1cm4gLUVUSU1FRE9VVDsNCj4gIAl9DQo+IA0KPiAgCW14M19mYmkt
+PmN1cl9pcHVfYnVmID0gIW14M19mYmktPmN1cl9pcHVfYnVmOw0KPiAtLQ0KPiAxLjcuMC40DQo+
+IA0KPiANCg0K

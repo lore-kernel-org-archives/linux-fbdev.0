@@ -1,108 +1,51 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Wed, 14 Nov 2012 11:43:21 +0000
-Subject: [PATCH v9 4/6] fbmon: add of_videomode helpers
-Message-Id: <1352893403-21168-5-git-send-email-s.trumtrar@pengutronix.de>
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Wed, 14 Nov 2012 12:47:02 +0000
+Subject: Re: [PATCH v9 4/6] fbmon: add of_videomode helpers
+Message-Id: <20121114124702.GE2803@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="EXKGNeO8l0xGFBjy"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1352893403-21168-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1352893403-21168-1-git-send-email-s.trumtrar@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+ <1352893403-21168-5-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352893403-21168-5-git-send-email-s.trumtrar@pengutronix.de>
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-Add helper to get fb_videomode from devicetree.
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
----
- drivers/video/fbmon.c |   42 +++++++++++++++++++++++++++++++++++++++++-
- include/linux/fb.h    |    6 ++++++
- 2 files changed, 47 insertions(+), 1 deletion(-)
+--EXKGNeO8l0xGFBjy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index cccef17..3a48abd 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -31,7 +31,7 @@
- #include <linux/pci.h>
- #include <linux/slab.h>
- #include <video/edid.h>
--#include <linux/videomode.h>
-+#include <linux/of_videomode.h>
- #ifdef CONFIG_PPC_OF
- #include <asm/prom.h>
- #include <asm/pci-bridge.h>
-@@ -1410,6 +1410,46 @@ int fb_videomode_from_videomode(struct videomode *vm, struct fb_videomode *fbmod
- EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
- #endif
- 
-+#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+static void dump_fb_videomode(struct fb_videomode *m)
-+{
-+	pr_debug("fb_videomode = %ux%u@%uHz (%ukHz) %u %u %u %u %u %u %u %u %u\n",
-+		 m->xres, m->yres, m->refresh, m->pixclock, m->left_margin,
-+		 m->right_margin, m->upper_margin, m->lower_margin,
-+		 m->hsync_len, m->vsync_len, m->sync, m->vmode, m->flag);
-+}
-+
-+/**
-+ * of_get_fb_videomode - get a fb_videomode from devicetree
-+ * @np: device_node with the timing specification
-+ * @fb: will be set to the return value
-+ * @index: index into the list of display timings in devicetree
-+ *
-+ * DESCRIPTION:
-+ * This function is expensive and should only be used, if only one mode is to be
-+ * read from DT. To get multiple modes start with of_get_display_timings ond
-+ * work with that instead.
-+ */
-+int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
-+			unsigned int index)
-+{
-+	struct videomode vm;
-+	int ret;
-+
-+	ret = of_get_videomode(np, &vm, index);
-+	if (ret)
-+		return ret;
-+
-+	fb_videomode_from_videomode(&vm, fb);
-+
-+	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
-+		vm.vactive, np->name);
-+	dump_fb_videomode(fb);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(of_get_fb_videomode);
-+#endif
- 
- #else
- int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 6a3a675..8aeece8 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -15,6 +15,8 @@
- #include <linux/slab.h>
- #include <asm/io.h>
- #include <linux/videomode.h>
-+#include <linux/of.h>
-+#include <linux/of_videomode.h>
- 
- struct vm_area_struct;
- struct fb_info;
-@@ -715,6 +717,10 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
- extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
- extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
- 
-+#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+extern int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
-+			       unsigned int index);
-+#endif
- #if IS_ENABLED(CONFIG_VIDEOMODE)
- extern int fb_videomode_from_videomode(struct videomode *vm,
- 				       struct fb_videomode *fbmode);
--- 
-1.7.10.4
+On Wed, Nov 14, 2012 at 12:43:21PM +0100, Steffen Trumtrar wrote:
+[...]
+> diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+[...]
+> +#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
+> +static void dump_fb_videomode(struct fb_videomode *m)
 
+static inline?
+
+Thierry
+
+--EXKGNeO8l0xGFBjy
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQo5LGAAoJEN0jrNd/PrOhMQYQALg1ricKCtsjM8cTxoWnYhgc
+deYFU0F1Pq06jd+miWAezoKygHzzx311ITB14zDI4OFLyGmyRxxvvWWz4UANYyGg
+Ly/SsYxn8gOVmxaMPatLLffsaAy/K2vkRxqTTltCtIpI0wtV9UryHZ6Yl+G4UcKX
+U+m/Ofu+1+mQTPItyYAftDOaWjDR1fGXicaDdVviSxZ64SBZcpKvu89YsTuSkGOS
+YkfD4B8CsOgyKrp4lMOBBr0ccPyIJ4kOKaCDf+w0+VRqxN7tvZok+yjSMu0ogdS3
+rsoAyxmTYrZY0xsKe7t9A/l2zwpHnYF77mDApubXRo4DrPUYAbe3DsivtSGNLtVe
+OnOIWTbL2iu5xs4gPxtokjN4NRCse87rgcAT5IuhngymRvbmF1OsbAlx1Mqazsoy
+6Uq9tvPS1rPTe3m+bOoUBKXyv2P0eLdG86+6Vc0ZcVO+vFk9N1eiU6Zg8KBe8iya
+bp/DH4LXOfVw8fbBBcPXbdCGPe2IURF95Sot7RlZkjOROddfccz3oQitFFWqyzvb
+2UMJY2drPpDwwXr/TOpDI881TONFcioA27M7zbuX12bx4NsJnQlERSqd4VUmpgJ4
+MVcjzGikWAqPXGKF/G+MgBV8XXootmRUDUNXstrHs4xX+6KK4Pu58jrNx8HcVv3M
+XP1sJE4M2z2pPkSHErSS
+=z14w
+-----END PGP SIGNATURE-----
+
+--EXKGNeO8l0xGFBjy--

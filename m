@@ -1,60 +1,43 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Wed, 14 Nov 2012 12:49:44 +0000
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Wed, 14 Nov 2012 14:18:06 +0000
 Subject: Re: [PATCH v9 5/6] drm_modes: add videomode helpers
-Message-Id: <20121114124944.GF2803@avionic-0098.mockup.avionic-design.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="oPmsXEqKQNHCSXW7"
+Message-Id: <20121114141806.GE18579@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1352893403-21168-1-git-send-email-s.trumtrar@pengutronix.de>
  <1352893403-21168-6-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1352893403-21168-6-git-send-email-s.trumtrar@pengutronix.de>
-To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+ <20121114124944.GF2803@avionic-0098.mockup.avionic-design.de>
+In-Reply-To: <20121114124944.GF2803@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding@avionic-design.de>
 Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
+On Wed, Nov 14, 2012 at 01:49:44PM +0100, Thierry Reding wrote:
+> On Wed, Nov 14, 2012 at 12:43:22PM +0100, Steffen Trumtrar wrote:
+> [...]
+> > diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+> [...]
+> > @@ -504,6 +505,41 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, int vdisplay, int vrefresh,
+> >  }
+> >  EXPORT_SYMBOL(drm_gtf_mode);
+> >  
+> > +#if IS_ENABLED(CONFIG_VIDEOMODE)
+> > +int display_mode_from_videomode(struct videomode *vm, struct drm_display_mode *dmode)
+> 
+> Given that this is still a DRM core function, maybe it should get a drm_
+> prefix? Also the line is too long, so you may want to wrap the argument
+> list.
+> 
+> Thierry
 
---oPmsXEqKQNHCSXW7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes, seems to fit better to the rest of the file.
 
-On Wed, Nov 14, 2012 at 12:43:22PM +0100, Steffen Trumtrar wrote:
-[...]
-> diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-[...]
-> @@ -504,6 +505,41 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, i=
-nt vdisplay, int vrefresh,
->  }
->  EXPORT_SYMBOL(drm_gtf_mode);
-> =20
-> +#if IS_ENABLED(CONFIG_VIDEOMODE)
-> +int display_mode_from_videomode(struct videomode *vm, struct drm_display=
-_mode *dmode)
+Regards,
+Steffen
 
-Given that this is still a DRM core function, maybe it should get a drm_
-prefix? Also the line is too long, so you may want to wrap the argument
-list.
-
-Thierry
-
---oPmsXEqKQNHCSXW7
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQo5NoAAoJEN0jrNd/PrOhFRoQAKF/j89+6e4C2SmBB94S4u2p
-d1UUxQK/eHjdYa295uNCDce3HKiq7jbY8WBTMpgo0Jubt4Y1R5swCxBTMHerVhzv
-RvNa6bz3iUUu6vMf3xPXpib2QdE61vdrNSKS9jBHX1f8V0XdClCH51dNMQCWWz2X
-AC34kr0y/4/iQKfMAq3q5E0MGAjglKCTF8VduudisKhiPMavC0ghykV0QYwsycYB
-q+h9BDFZaYGWEjYNy7CoinR0fKHJwvWuLlppNiBDFcAqg5hEbvK2UnDdPD7fftgm
-4Uumn09/i7HlSF+JsGk6JPx96QmXQVQXB0/2F6MdR72As3yzbsyBj30vDBo/DL+q
-L0RdBu0JoNptivgXCcnx3q0a6eevYMDzA//d8Yqmqd9kQZrArAU/0FD4q+B+nwyO
-xu/sAYl2xBvs8T5l8hP/8Jf+sgNAJ9d82CiH8n8e1GjHwMeG3uEMEu1mU4ENux/b
-4B4RRco/3S/Cn83sy3RPccULFcZlBj5rauyHwl77/o04aOHVgzdZNziuYX5Zkg9b
-LZOf0jzPI997/NIZdhJVVzIODkjOZyJ3xbj9NqFT2BQXv5+nOPXt4qcCjGschr2W
-3nQpc+cVDEB99hAIcmm7skxkyAYBnLlunGtzxVXPXLpthGXBE1g0rs+yXOI6ZKXD
-LawwaUis11jI1M6cutI+
-=LI1y
------END PGP SIGNATURE-----
-
---oPmsXEqKQNHCSXW7--
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

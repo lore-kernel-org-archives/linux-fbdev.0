@@ -1,47 +1,166 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 07 Nov 2012 06:27:03 +0000
-Subject: [PATCH 2/3] OMAPDSS: DISPC: Don't allow predecimation for writeback
-Message-Id: <1352268905-31093-3-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 15 Nov 2012 15:58:31 +0000
+Subject: [PATCH 23/32] OMAPDSS: move omap_dispc_wait_for_irq_interruptible_timeout to dispc-compat.c
+Message-Id: <1352995120-3288-24-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352268905-31093-1-git-send-email-archit@ti.com>
-In-Reply-To: <1352268905-31093-1-git-send-email-archit@ti.com>
+References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Since writeback writes to a buffer instead of reading from one, predecimation
-doesn't make sense for it. Configure the width and height predecimation limits
-to 1 if the plane is writeback.
+We have two functions to wait for a dispc interrupt:
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+int omap_dispc_wait_for_irq_timeout(u32 irqmask, unsigned long timeout);
+int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
+
+Of these, the former is not used at all, and can be removed. The latter
+is only used by the compat layer, and can be moved to the compat layer
+code.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |   11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ drivers/video/omap2/dss/dispc-compat.c |   30 +++++++++++++++++
+ drivers/video/omap2/dss/dispc-compat.h |    3 ++
+ drivers/video/omap2/dss/dispc.c        |   57 --------------------------------
+ include/video/omapdss.h                |    4 ---
+ 4 files changed, 33 insertions(+), 61 deletions(-)
 
+diff --git a/drivers/video/omap2/dss/dispc-compat.c b/drivers/video/omap2/dss/dispc-compat.c
+index cca3848..24e1d5e 100644
+--- a/drivers/video/omap2/dss/dispc-compat.c
++++ b/drivers/video/omap2/dss/dispc-compat.c
+@@ -205,3 +205,33 @@ void dispc_mgr_disable_sync(enum omap_channel channel)
+ 		WARN_ON(1);
+ }
+ 
++int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
++		unsigned long timeout)
++{
++	void dispc_irq_wait_handler(void *data, u32 mask)
++	{
++		complete((struct completion *)data);
++	}
++
++	int r;
++	DECLARE_COMPLETION_ONSTACK(completion);
++
++	r = omap_dispc_register_isr(dispc_irq_wait_handler, &completion,
++			irqmask);
++
++	if (r)
++		return r;
++
++	timeout = wait_for_completion_interruptible_timeout(&completion,
++			timeout);
++
++	omap_dispc_unregister_isr(dispc_irq_wait_handler, &completion, irqmask);
++
++	if (timeout = 0)
++		return -ETIMEDOUT;
++
++	if (timeout = -ERESTARTSYS)
++		return -ERESTARTSYS;
++
++	return 0;
++}
+diff --git a/drivers/video/omap2/dss/dispc-compat.h b/drivers/video/omap2/dss/dispc-compat.h
+index 2d4f5e7..8322d43 100644
+--- a/drivers/video/omap2/dss/dispc-compat.h
++++ b/drivers/video/omap2/dss/dispc-compat.h
+@@ -21,4 +21,7 @@
+ void dispc_mgr_enable_sync(enum omap_channel channel);
+ void dispc_mgr_disable_sync(enum omap_channel channel);
+ 
++int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
++		unsigned long timeout);
++
+ #endif
 diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index f19cd37..664ac6f 100644
+index 3a1224f..b976838 100644
 --- a/drivers/video/omap2/dss/dispc.c
 +++ b/drivers/video/omap2/dss/dispc.c
-@@ -2315,9 +2315,14 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
- 	if ((caps & OMAP_DSS_OVL_CAP_SCALE) = 0)
- 		return -EINVAL;
+@@ -3744,63 +3744,6 @@ static void dispc_error_worker(struct work_struct *work)
+ 	dispc_runtime_put();
+ }
  
--	*x_predecim = max_decim_limit;
--	*y_predecim = (rotation_type = OMAP_DSS_ROT_TILER &&
--			dss_has_feature(FEAT_BURST_2D)) ? 2 : max_decim_limit;
-+	if (plane = OMAP_DSS_WB) {
-+		*x_predecim = *y_predecim = 1;
-+	} else {
-+		*x_predecim = max_decim_limit;
-+		*y_predecim = (rotation_type = OMAP_DSS_ROT_TILER &&
-+				dss_has_feature(FEAT_BURST_2D)) ?
-+				2 : max_decim_limit;
-+	}
+-int omap_dispc_wait_for_irq_timeout(u32 irqmask, unsigned long timeout)
+-{
+-	void dispc_irq_wait_handler(void *data, u32 mask)
+-	{
+-		complete((struct completion *)data);
+-	}
+-
+-	int r;
+-	DECLARE_COMPLETION_ONSTACK(completion);
+-
+-	r = omap_dispc_register_isr(dispc_irq_wait_handler, &completion,
+-			irqmask);
+-
+-	if (r)
+-		return r;
+-
+-	timeout = wait_for_completion_timeout(&completion, timeout);
+-
+-	omap_dispc_unregister_isr(dispc_irq_wait_handler, &completion, irqmask);
+-
+-	if (timeout = 0)
+-		return -ETIMEDOUT;
+-
+-	return 0;
+-}
+-
+-int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
+-		unsigned long timeout)
+-{
+-	void dispc_irq_wait_handler(void *data, u32 mask)
+-	{
+-		complete((struct completion *)data);
+-	}
+-
+-	int r;
+-	DECLARE_COMPLETION_ONSTACK(completion);
+-
+-	r = omap_dispc_register_isr(dispc_irq_wait_handler, &completion,
+-			irqmask);
+-
+-	if (r)
+-		return r;
+-
+-	timeout = wait_for_completion_interruptible_timeout(&completion,
+-			timeout);
+-
+-	omap_dispc_unregister_isr(dispc_irq_wait_handler, &completion, irqmask);
+-
+-	if (timeout = 0)
+-		return -ETIMEDOUT;
+-
+-	if (timeout = -ERESTARTSYS)
+-		return -ERESTARTSYS;
+-
+-	return 0;
+-}
+-
+ static void _omap_dispc_initialize_irq(void)
+ {
+ 	unsigned long flags;
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index a940236..823a07b 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -775,10 +775,6 @@ typedef void (*omap_dispc_isr_t) (void *arg, u32 mask);
+ int omap_dispc_register_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
+ int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
  
- 	if (color_mode = OMAP_DSS_COLOR_CLUT1 ||
- 	    color_mode = OMAP_DSS_COLOR_CLUT2 ||
+-int omap_dispc_wait_for_irq_timeout(u32 irqmask, unsigned long timeout);
+-int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
+-		unsigned long timeout);
+-
+ #define to_dss_driver(x) container_of((x), struct omap_dss_driver, driver)
+ #define to_dss_device(x) container_of((x), struct omap_dss_device, dev)
+ 
 -- 
-1.7.9.5
+1.7.10.4
 

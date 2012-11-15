@@ -1,155 +1,101 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 08 Nov 2012 00:58:19 +0000
-Subject: Re: [PATCH 2/2] video: exynos_dp: move exynos_dp_config_video to a workqueue
-Message-Id: <001501cdbd4c$248320f0$6d8962d0$%han@samsung.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Thu, 15 Nov 2012 09:23:57 +0000
+Subject: [PATCH v10 6/6] drm_modes: add of_videomode helpers
+Message-Id: <1352971437-29877-7-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352286744-22588-2-git-send-email-ajaykumar.rs@samsung.com>
-In-Reply-To: <1352286744-22588-2-git-send-email-ajaykumar.rs@samsung.com>
+References: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-On Wednesday, November 07, 2012 8:12 PM Ajay Kumar wrote
-> 
-> This speeds up boot significantly, since it can take up to a second to
-> get the display up and going, and we want to keep on booting (through
-> some userspace) while that happens.
+Add helper to get drm_display_mode from devicetree.
 
-This patch is not necessary.
-The exynos_dp_config_video was already moved by Sean Paul's patch.
-(http://www.spinics.net/lists/linux-fbdev/msg08555.html)
-This patch including other Sean Paul's patches, will be merged to 3.8-rc1.
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+---
+ drivers/gpu/drm/drm_modes.c |   35 ++++++++++++++++++++++++++++++++++-
+ include/drm/drmP.h          |    6 ++++++
+ 2 files changed, 40 insertions(+), 1 deletion(-)
 
-
-> 
-> Signed-off-by: Olof Johansson <olof@lixom.net>
-> Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
-> ---
->  drivers/video/exynos/exynos_dp_core.c |   30 ++++++++++++++++++------------
->  drivers/video/exynos/exynos_dp_core.h |    1 +
->  2 files changed, 19 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-> index f62778c..ecae6f4 100644
-> --- a/drivers/video/exynos/exynos_dp_core.c
-> +++ b/drivers/video/exynos/exynos_dp_core.c
-> @@ -18,6 +18,7 @@
->  #include <linux/io.h>
->  #include <linux/interrupt.h>
->  #include <linux/delay.h>
-> +#include <linux/workqueue.h>
-> 
->  #include <video/exynos_dp.h>
-> 
-> @@ -752,19 +753,22 @@ static int exynos_dp_set_link_train(struct exynos_dp_device *dp,
->  	return retval;
->  }
-> 
-> -static int exynos_dp_config_video(struct exynos_dp_device *dp)
-> +static void exynos_dp_config_video(struct work_struct *work)
->  {
-> +	struct exynos_dp_device *dp;
->  	int retval = 0;
->  	int timeout_loop = 0;
->  	int done_count = 0;
-> 
-> +	dp = container_of(work, struct exynos_dp_device, config_work);
-> +
->  	exynos_dp_config_video_slave_mode(dp);
-> 
->  	exynos_dp_set_video_color_format(dp);
-> 
->  	if (exynos_dp_get_pll_lock_status(dp) = PLL_UNLOCKED) {
->  		dev_err(dp->dev, "PLL is not locked yet.\n");
-> -		return -EINVAL;
-> +		return;
->  	}
-> 
->  	for (;;) {
-> @@ -773,7 +777,7 @@ static int exynos_dp_config_video(struct exynos_dp_device *dp)
->  			break;
->  		if (DP_TIMEOUT_LOOP_COUNT < timeout_loop) {
->  			dev_err(dp->dev, "Timeout of video streamclk ok\n");
-> -			return -ETIMEDOUT;
-> +			return;
->  		}
-> 
->  		usleep_range(1, 2);
-> @@ -807,7 +811,7 @@ static int exynos_dp_config_video(struct exynos_dp_device *dp)
->  		}
->  		if (DP_TIMEOUT_LOOP_COUNT < timeout_loop) {
->  			dev_err(dp->dev, "Timeout of video streamclk ok\n");
-> -			return -ETIMEDOUT;
-> +			return;
->  		}
-> 
->  		usleep_range(1000, 1001);
-> @@ -815,8 +819,6 @@ static int exynos_dp_config_video(struct exynos_dp_device *dp)
-> 
->  	if (retval != 0)
->  		dev_err(dp->dev, "Video stream is not detected!\n");
-> -
-> -	return retval;
->  }
-> 
->  static void exynos_dp_enable_scramble(struct exynos_dp_device *dp, bool enable)
-> @@ -933,11 +935,9 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  	exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
-> 
->  	exynos_dp_init_video(dp);
-> -	ret = exynos_dp_config_video(dp);
-> -	if (ret) {
-> -		dev_err(&pdev->dev, "unable to config video\n");
-> -		return ret;
-> -	}
-> +
-> +	INIT_WORK(&dp->config_work, exynos_dp_config_video);
-> +	schedule_work(&dp->config_work);
-> 
->  	platform_set_drvdata(pdev, dp);
-> 
-> @@ -949,6 +949,9 @@ static int __devexit exynos_dp_remove(struct platform_device *pdev)
->  	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
->  	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
-> 
-> +	if (work_pending(&dp->config_work))
-> +		flush_work_sync(&dp->config_work);
-> +
->  	if (pdata && pdata->phy_exit)
->  		pdata->phy_exit();
-> 
-> @@ -964,6 +967,9 @@ static int exynos_dp_suspend(struct device *dev)
->  	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
->  	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
-> 
-> +	if (work_pending(&dp->config_work))
-> +		flush_work_sync(&dp->config_work);
-> +
->  	if (pdata && pdata->phy_exit)
->  		pdata->phy_exit();
-> 
-> @@ -999,7 +1005,7 @@ static int exynos_dp_resume(struct device *dev)
->  	exynos_dp_set_link_bandwidth(dp, dp->video_info->link_rate);
-> 
->  	exynos_dp_init_video(dp);
-> -	exynos_dp_config_video(dp);
-> +	schedule_work(&dp->config_work);
-> 
->  	return 0;
->  }
-> diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
-> index 1e646d7..303831d 100644
-> --- a/drivers/video/exynos/exynos_dp_core.h
-> +++ b/drivers/video/exynos/exynos_dp_core.h
-> @@ -32,6 +32,7 @@ struct exynos_dp_device {
-> 
->  	struct video_info	*video_info;
->  	struct link_train	link_train;
-> +	struct work_struct	config_work;
->  };
-> 
->  /* exynos_dp_reg.c */
-> --
-> 1.7.0.4
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 23d951a0..810b534 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -35,7 +35,8 @@
+ #include <linux/export.h>
+ #include <drm/drmP.h>
+ #include <drm/drm_crtc.h>
+-#include <linux/videomode.h>
++#include <linux/of.h>
++#include <linux/of_videomode.h>
+ 
+ /**
+  * drm_mode_debug_printmodeline - debug print a mode
+@@ -541,6 +542,38 @@ int drm_display_mode_from_videomode(struct videomode *vm,
+ EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
+ #endif
+ 
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++/**
++ * of_get_drm_display_mode - get a drm_display_mode from devicetree
++ * @np: device_node with the timing specification
++ * @dmode: will be set to the return value
++ * @index: index into the list of display timings in devicetree
++ *
++ * This function is expensive and should only be used, if only one mode is to be
++ * read from DT. To get multiple modes start with of_get_display_timings and
++ * work with that instead.
++ */
++int of_get_drm_display_mode(struct device_node *np,
++			    struct drm_display_mode *dmode, unsigned int index)
++{
++	struct videomode vm;
++	int ret;
++
++	ret = of_get_videomode(np, &vm, index);
++	if (ret)
++		return ret;
++
++	display_mode_from_videomode(&vm, dmode);
++
++	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
++		vm.vactive, np->name);
++	drm_mode_debug_printmodeline(dmode);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_get_drm_display_mode);
++#endif
++
+ /**
+  * drm_mode_set_name - set the name on a mode
+  * @mode: name will be set in this mode
+diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+index 341049c..ae132be 100644
+--- a/include/drm/drmP.h
++++ b/include/drm/drmP.h
+@@ -56,6 +56,7 @@
+ #include <linux/cdev.h>
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
++#include <linux/of.h>
+ #include <linux/videomode.h>
+ #if defined(__alpha__) || defined(__powerpc__)
+ #include <asm/pgtable.h>	/* For pte_wrprotect */
+@@ -1459,6 +1460,11 @@ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
+ extern int drm_display_mode_from_videomode(struct videomode *vm,
+ 					   struct drm_display_mode *dmode);
+ #endif
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++extern int of_get_drm_display_mode(struct device_node *np,
++				   struct drm_display_mode *dmode,
++				   unsigned int index);
++#endif
+ 
+ /* Modesetting support */
+ extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
+-- 
+1.7.10.4
 

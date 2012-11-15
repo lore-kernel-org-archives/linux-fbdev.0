@@ -1,202 +1,108 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 15 Nov 2012 15:58:27 +0000
-Subject: [PATCH 19/32] OMAPDSS: move ovl function setup to apply.c
-Message-Id: <1352995120-3288-20-git-send-email-tomi.valkeinen@ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Thu, 15 Nov 2012 09:23:55 +0000
+Subject: [PATCH v10 4/6] fbmon: add of_videomode helpers
+Message-Id: <1352971437-29877-5-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-Most of the functions that are assigned to the fields in ovl struct are
-in apply.c. By moving the function pointer setup into apply.c we can
-make these functions static.
+Add helper to get fb_videomode from devicetree.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 ---
- drivers/video/omap2/dss/apply.c   |   37 +++++++++++++++++++++++++++++--------
- drivers/video/omap2/dss/dss.h     |   12 ------------
- drivers/video/omap2/dss/overlay.c |   17 -----------------
- 3 files changed, 29 insertions(+), 37 deletions(-)
+ drivers/video/fbmon.c |   42 +++++++++++++++++++++++++++++++++++++++++-
+ include/linux/fb.h    |    6 ++++++
+ 2 files changed, 47 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index d103d11..91d02db 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -416,6 +416,13 @@ static void wait_pending_extra_info_updates(void)
- 		DSSWARN("timeout in wait_pending_extra_info_updates\n");
- }
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 247e079..9e8c5fa 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -31,7 +31,7 @@
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <video/edid.h>
+-#include <linux/videomode.h>
++#include <linux/of_videomode.h>
+ #ifdef CONFIG_PPC_OF
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+@@ -1418,6 +1418,46 @@ int fb_videomode_from_videomode(struct videomode *vm,
+ EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
+ #endif
  
-+static inline struct omap_dss_device *dss_ovl_get_device(struct omap_overlay *ovl)
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++static inline void dump_fb_videomode(struct fb_videomode *m)
 +{
-+	return ovl->manager ?
-+		(ovl->manager->output ? ovl->manager->output->device : NULL) :
-+		NULL;
++	pr_debug("fb_videomode = %ux%u@%uHz (%ukHz) %u %u %u %u %u %u %u %u %u\n",
++		 m->xres, m->yres, m->refresh, m->pixclock, m->left_margin,
++		 m->right_margin, m->upper_margin, m->lower_margin,
++		 m->hsync_len, m->vsync_len, m->sync, m->vmode, m->flag);
 +}
 +
- static inline struct omap_dss_device *dss_mgr_get_device(struct omap_overlay_manager *mgr)
- {
- 	return mgr->output ? mgr->output->device : NULL;
-@@ -516,7 +523,7 @@ static int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr)
- 	return r;
- }
- 
--int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl)
-+static int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl)
- {
- 	unsigned long timeout = msecs_to_jiffies(500);
- 	struct ovl_priv_data *op;
-@@ -1248,7 +1255,7 @@ out:
- 	spin_unlock_irqrestore(&data_lock, flags);
- }
- 
--int dss_ovl_set_info(struct omap_overlay *ovl,
-+static int dss_ovl_set_info(struct omap_overlay *ovl,
- 		struct omap_overlay_info *info)
- {
- 	struct ovl_priv_data *op = get_ovl_priv(ovl);
-@@ -1269,7 +1276,7 @@ int dss_ovl_set_info(struct omap_overlay *ovl,
- 	return 0;
- }
- 
--void dss_ovl_get_info(struct omap_overlay *ovl,
-+static void dss_ovl_get_info(struct omap_overlay *ovl,
- 		struct omap_overlay_info *info)
- {
- 	struct ovl_priv_data *op = get_ovl_priv(ovl);
-@@ -1282,7 +1289,7 @@ void dss_ovl_get_info(struct omap_overlay *ovl,
- 	spin_unlock_irqrestore(&data_lock, flags);
- }
- 
--int dss_ovl_set_manager(struct omap_overlay *ovl,
-+static int dss_ovl_set_manager(struct omap_overlay *ovl,
- 		struct omap_overlay_manager *mgr)
- {
- 	struct ovl_priv_data *op = get_ovl_priv(ovl);
-@@ -1334,7 +1341,7 @@ err:
- 	return r;
- }
- 
--int dss_ovl_unset_manager(struct omap_overlay *ovl)
-+static int dss_ovl_unset_manager(struct omap_overlay *ovl)
- {
- 	struct ovl_priv_data *op = get_ovl_priv(ovl);
- 	unsigned long flags;
-@@ -1394,7 +1401,7 @@ err:
- 	return r;
- }
- 
--bool dss_ovl_is_enabled(struct omap_overlay *ovl)
-+static bool dss_ovl_is_enabled(struct omap_overlay *ovl)
- {
- 	struct ovl_priv_data *op = get_ovl_priv(ovl);
- 	unsigned long flags;
-@@ -1409,7 +1416,7 @@ bool dss_ovl_is_enabled(struct omap_overlay *ovl)
- 	return e;
- }
- 
--int dss_ovl_enable(struct omap_overlay *ovl)
-+static int dss_ovl_enable(struct omap_overlay *ovl)
- {
- 	struct ovl_priv_data *op = get_ovl_priv(ovl);
- 	unsigned long flags;
-@@ -1459,7 +1466,7 @@ err1:
- 	return r;
- }
- 
--int dss_ovl_disable(struct omap_overlay *ovl)
-+static int dss_ovl_disable(struct omap_overlay *ovl)
- {
- 	struct ovl_priv_data *op = get_ovl_priv(ovl);
- 	unsigned long flags;
-@@ -1526,6 +1533,20 @@ int omapdss_compat_init(void)
- 		mgr->get_device = &dss_mgr_get_device;
- 	}
- 
-+	for (i = 0; i < omap_dss_get_num_overlays(); i++) {
-+		struct omap_overlay *ovl = omap_dss_get_overlay(i);
++/**
++ * of_get_fb_videomode - get a fb_videomode from devicetree
++ * @np: device_node with the timing specification
++ * @fb: will be set to the return value
++ * @index: index into the list of display timings in devicetree
++ *
++ * DESCRIPTION:
++ * This function is expensive and should only be used, if only one mode is to be
++ * read from DT. To get multiple modes start with of_get_display_timings ond
++ * work with that instead.
++ */
++int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
++			unsigned int index)
++{
++	struct videomode vm;
++	int ret;
 +
-+		ovl->is_enabled = &dss_ovl_is_enabled;
-+		ovl->enable = &dss_ovl_enable;
-+		ovl->disable = &dss_ovl_disable;
-+		ovl->set_manager = &dss_ovl_set_manager;
-+		ovl->unset_manager = &dss_ovl_unset_manager;
-+		ovl->set_overlay_info = &dss_ovl_set_info;
-+		ovl->get_overlay_info = &dss_ovl_get_info;
-+		ovl->wait_for_go = &dss_mgr_wait_for_go_ovl;
-+		ovl->get_device = &dss_ovl_get_device;
-+	}
++	ret = of_get_videomode(np, &vm, index);
++	if (ret)
++		return ret;
 +
- out:
- 	mutex_unlock(&apply_lock);
++	fb_videomode_from_videomode(&vm, fb);
++
++	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
++		vm.vactive, np->name);
++	dump_fb_videomode(fb);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_get_fb_videomode);
++#endif
  
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 4a8f2bb..2cd126c 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -179,7 +179,6 @@ void dss_copy_device_pdata(struct omap_dss_device *dst,
- 		const struct omap_dss_device *src);
+ #else
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 4024136..dc8f693 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -15,6 +15,8 @@
+ #include <linux/slab.h>
+ #include <asm/io.h>
+ #include <linux/videomode.h>
++#include <linux/of.h>
++#include <linux/of_videomode.h>
  
- /* apply */
--int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl);
- void dss_mgr_start_update(struct omap_overlay_manager *mgr);
- int dss_mgr_enable(struct omap_overlay_manager *mgr);
- void dss_mgr_disable(struct omap_overlay_manager *mgr);
-@@ -188,17 +187,6 @@ void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
- void dss_mgr_set_lcd_config(struct omap_overlay_manager *mgr,
- 		const struct dss_lcd_mgr_config *config);
+ struct vm_area_struct;
+ struct fb_info;
+@@ -715,6 +717,10 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+ extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+ extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
  
--bool dss_ovl_is_enabled(struct omap_overlay *ovl);
--int dss_ovl_enable(struct omap_overlay *ovl);
--int dss_ovl_disable(struct omap_overlay *ovl);
--int dss_ovl_set_info(struct omap_overlay *ovl,
--		struct omap_overlay_info *info);
--void dss_ovl_get_info(struct omap_overlay *ovl,
--		struct omap_overlay_info *info);
--int dss_ovl_set_manager(struct omap_overlay *ovl,
--		struct omap_overlay_manager *mgr);
--int dss_ovl_unset_manager(struct omap_overlay *ovl);
--
- /* output */
- void dss_register_output(struct omap_dss_output *out);
- void dss_unregister_output(struct omap_dss_output *out);
-diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
-index 45f4994..eccde32 100644
---- a/drivers/video/omap2/dss/overlay.c
-+++ b/drivers/video/omap2/dss/overlay.c
-@@ -38,13 +38,6 @@
- static int num_overlays;
- static struct omap_overlay *overlays;
- 
--static inline struct omap_dss_device *dss_ovl_get_device(struct omap_overlay *ovl)
--{
--	return ovl->manager ?
--		(ovl->manager->output ? ovl->manager->output->device : NULL) :
--		NULL;
--}
--
- int omap_dss_get_num_overlays(void)
- {
- 	return num_overlays;
-@@ -93,16 +86,6 @@ void dss_init_overlays(struct platform_device *pdev)
- 			break;
- 		}
- 
--		ovl->is_enabled = &dss_ovl_is_enabled;
--		ovl->enable = &dss_ovl_enable;
--		ovl->disable = &dss_ovl_disable;
--		ovl->set_manager = &dss_ovl_set_manager;
--		ovl->unset_manager = &dss_ovl_unset_manager;
--		ovl->set_overlay_info = &dss_ovl_set_info;
--		ovl->get_overlay_info = &dss_ovl_get_info;
--		ovl->wait_for_go = &dss_mgr_wait_for_go_ovl;
--		ovl->get_device = &dss_ovl_get_device;
--
- 		ovl->caps = dss_feat_get_overlay_caps(ovl->id);
- 		ovl->supported_modes  			dss_feat_get_supported_color_modes(ovl->id);
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++extern int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
++			       unsigned int index);
++#endif
+ #if IS_ENABLED(CONFIG_VIDEOMODE)
+ extern int fb_videomode_from_videomode(struct videomode *vm,
+ 				       struct fb_videomode *fbmode);
 -- 
 1.7.10.4
 

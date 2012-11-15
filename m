@@ -1,50 +1,40 @@
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-Date: Wed, 21 Nov 2012 19:48:51 +0000
-Subject: [PATCH 1/2] OMAP: DSS: do not fail if dpll4_m4_ck is missing
-Message-Id: <1353527332-5216-1-git-send-email-aaro.koskinen@iki.fi>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 15 Nov 2012 15:58:11 +0000
+Subject: [PATCH 03/32] OMAPDSS: don't WARN if there's no DSI device
+Message-Id: <1352995120-3288-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Do not fail if dpll4_m4_ck is missing. The clock is not there on omap24xx,
-so this should not be a hard error.
+dsi_get_dsidev_from_id() gives a WARN if DSI support is not compiled in.
+This warning is not right, as it's valid to call
+dsi_get_dsidev_from_id() to see if there is DSI support or not.
 
-The patch retains the functionality before the commit 185bae10 (OMAPDSS:
-DSS: Cleanup cpu_is_xxxx checks).
+Remove the WARN().
 
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dss.c |   14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ drivers/video/omap2/dss/dss.h |    2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 2ab1c3e..55f2ea9 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -697,11 +697,15 @@ static int dss_get_clocks(void)
- 
- 	dss.dss_clk = clk;
- 
--	clk = clk_get(NULL, dss.feat->clk_name);
--	if (IS_ERR(clk)) {
--		DSSERR("Failed to get %s\n", dss.feat->clk_name);
--		r = PTR_ERR(clk);
--		goto err;
-+	if (dss.feat->clk_name) {
-+		clk = clk_get(NULL, dss.feat->clk_name);
-+		if (IS_ERR(clk)) {
-+			DSSERR("Failed to get %s\n", dss.feat->clk_name);
-+			r = PTR_ERR(clk);
-+			goto err;
-+		}
-+	} else {
-+		clk = NULL;
- 	}
- 
- 	dss.dpll4_m4_ck = clk;
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 8adf8be..09d0651 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -382,8 +382,6 @@ static inline void dsi_wait_pll_hsdiv_dsi_active(struct platform_device *dsidev)
+ }
+ static inline struct platform_device *dsi_get_dsidev_from_id(int module)
+ {
+-	WARN("%s: DSI not compiled in, returning platform device as NULL\n",
+-			__func__);
+ 	return NULL;
+ }
+ #endif
 -- 
 1.7.10.4
 

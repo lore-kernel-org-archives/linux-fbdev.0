@@ -1,120 +1,41 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Fri, 23 Nov 2012 09:04:20 +0000
-Subject: [PATCHv14 0/7] of: add display helper
-Message-Id: <1353661467-28545-1-git-send-email-s.trumtrar@pengutronix.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 15 Nov 2012 15:58:36 +0000
+Subject: [PATCH 28/32] OMAPDSS: separate compat files in the Makefile
+Message-Id: <1352995120-3288-29-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
+To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi!
+Separate the core DSS files and compat layer files in the Makefile for
+clarity.
 
-Changes since v13:
-        - fix "const struct *" warning
-                (reported by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>)
-        - prevent division by zero in fb_videomode_from_videomode
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/Makefile |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-Changes since v12:
-        - rename struct display_timing to via_display_timing in via subsystem
-        - fix refreshrate calculation
-        - fix "const struct *" warnings
-                (reported by: Manjunathappa, Prakash <prakash.pm@ti.com>)
-        - some CodingStyle fixes
-        - rewrite parts of commit messages and display-timings.txt
-        - let display_timing_get_value get all values instead of just typical
-
-Changes since v11:
-        - make pointers const where applicable
-        - add reviewed-by Laurent Pinchart
-
-Changes since v10:
-        - fix function name (drm_)display_mode_from_videomode
-        - add acked-by, reviewed-by, tested-by
-
-Changes since v9:
-        - don't leak memory when previous timings were correct
-        - CodingStyle fixes
-        - move blank lines around
-
-Changes since v8:
-        - fix memory leaks
-        - change API to be more consistent (foo_from_bar(struct bar, struct foo))
-        - include headers were necessary
-        - misc minor bufixe
-
-Changes since v7:
-        - move of_xxx to drivers/video
-        - remove non-binding documentation from display-timings.txt
-        - squash display_timings and videomode in one patch
-        - misc minor fixes
-
-Changes since v6:
-        - get rid of some empty lines etc.
-        - move functions to their subsystems
-        - split of_ from non-of_ functions
-        - add at least some kerneldoc to some functions
-
-Changes since v5:
-        - removed all display stuff and just describe timings
-
-Changes since v4:
-        - refactored functions
-
-Changes since v3:
-        - print error messages
-        - free alloced memory
-        - general cleanup
-
-Changes since v2:
-        - use hardware-near property-names
-        - provide a videomode structure
-        - allow ranges for all properties (<min,typ,max>)
-        - functions to get display_mode or fb_videomode
-
-
-Steffen Trumtrar (7):
-  viafb: rename display_timing to via_display_timing
-  video: add display_timing and videomode
-  video: add of helper for display timings/videomode
-  fbmon: add videomode helpers
-  fbmon: add of_videomode helpers
-  drm_modes: add videomode helpers
-  drm_modes: add of_videomode helpers
-
- .../devicetree/bindings/video/display-timings.txt  |  107 ++++++++++
- drivers/gpu/drm/drm_modes.c                        |   69 ++++++
- drivers/video/Kconfig                              |   21 ++
- drivers/video/Makefile                             |    4 +
- drivers/video/display_timing.c                     |   24 +++
- drivers/video/fbmon.c                              |   89 ++++++++
- drivers/video/of_display_timing.c                  |  223 ++++++++++++++++++++
- drivers/video/of_videomode.c                       |   48 +++++
- drivers/video/via/hw.c                             |    6 +-
- drivers/video/via/hw.h                             |    2 +-
- drivers/video/via/lcd.c                            |    2 +-
- drivers/video/via/share.h                          |    2 +-
- drivers/video/via/via_modesetting.c                |    8 +-
- drivers/video/via/via_modesetting.h                |    6 +-
- drivers/video/videomode.c                          |   45 ++++
- include/drm/drmP.h                                 |   12 ++
- include/linux/display_timing.h                     |  104 +++++++++
- include/linux/fb.h                                 |   12 ++
- include/linux/of_display_timings.h                 |   20 ++
- include/linux/of_videomode.h                       |   18 ++
- include/linux/videomode.h                          |   52 +++++
- 21 files changed, 861 insertions(+), 13 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/video/display-timings.txt
- create mode 100644 drivers/video/display_timing.c
- create mode 100644 drivers/video/of_display_timing.c
- create mode 100644 drivers/video/of_videomode.c
- create mode 100644 drivers/video/videomode.c
- create mode 100644 include/linux/display_timing.h
- create mode 100644 include/linux/of_display_timings.h
- create mode 100644 include/linux/of_videomode.h
- create mode 100644 include/linux/videomode.h
-
+diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
+index c834f9c..61949ff 100644
+--- a/drivers/video/omap2/dss/Makefile
++++ b/drivers/video/omap2/dss/Makefile
+@@ -1,7 +1,10 @@
+ obj-$(CONFIG_OMAP2_DSS) += omapdss.o
++# Core DSS files
+ omapdss-y := core.o dss.o dss_features.o dispc.o dispc_coefs.o display.o \
+-	manager.o manager-sysfs.o overlay.o overlay-sysfs.o output.o apply.o \
+-	display-sysfs.o dispc-compat.o
++	output.o
++# DSS compat layer files
++omapdss-y += manager.o manager-sysfs.o overlay.o overlay-sysfs.o apply.o \
++	dispc-compat.o display-sysfs.o
+ omapdss-$(CONFIG_OMAP2_DSS_DPI) += dpi.o
+ omapdss-$(CONFIG_OMAP2_DSS_RFBI) += rfbi.o
+ omapdss-$(CONFIG_OMAP2_DSS_VENC) += venc.o venc_panel.o
 -- 
 1.7.10.4
 

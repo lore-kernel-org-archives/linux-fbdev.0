@@ -1,58 +1,112 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 09 Nov 2012 05:49:56 +0000
-Subject: [PATCH v4 3/8] video: exynos_dp: Get pll lock before pattern set
-Message-Id: <001b01cdbe3e$0c49def0$24dd9cd0$%han@samsung.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Thu, 15 Nov 2012 09:23:54 +0000
+Subject: [PATCH v10 3/6] fbmon: add videomode helpers
+Message-Id: <1352971437-29877-4-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-From: Sean Paul <seanpaul@chromium.org>
+Add a function to convert from the generic videomode to a fb_videomode.
 
-According to the exynos datasheet (Figure 49-10), we should wait for PLL
-lock before programming the training pattern when doing software eDP
-link training.
-
-Signed-off-by: Sean Paul <seanpaul@chromium.org>
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 ---
- drivers/video/exynos/exynos_dp_core.c |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+ drivers/video/fbmon.c |   46 ++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h    |    6 ++++++
+ 2 files changed, 52 insertions(+)
 
-diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-index 8c9bcb9..6e54a18 100644
---- a/drivers/video/exynos/exynos_dp_core.c
-+++ b/drivers/video/exynos/exynos_dp_core.c
-@@ -264,7 +264,7 @@ static void exynos_dp_set_lane_lane_pre_emphasis(struct exynos_dp_device *dp,
- static int exynos_dp_link_start(struct exynos_dp_device *dp)
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index cef6557..247e079 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -31,6 +31,7 @@
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <video/edid.h>
++#include <linux/videomode.h>
+ #ifdef CONFIG_PPC_OF
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+@@ -1373,6 +1374,51 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
+ 	kfree(timings);
+ 	return err;
+ }
++
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++int fb_videomode_from_videomode(struct videomode *vm,
++				struct fb_videomode *fbmode)
++{
++	unsigned int htotal, vtotal;
++
++	fbmode->xres = vm->hactive;
++	fbmode->left_margin = vm->hback_porch;
++	fbmode->right_margin = vm->hfront_porch;
++	fbmode->hsync_len = vm->hsync_len;
++
++	fbmode->yres = vm->vactive;
++	fbmode->upper_margin = vm->vback_porch;
++	fbmode->lower_margin = vm->vfront_porch;
++	fbmode->vsync_len = vm->vsync_len;
++
++	fbmode->pixclock = KHZ2PICOS(vm->pixelclock / 1000);
++
++	fbmode->sync = 0;
++	fbmode->vmode = 0;
++	if (vm->hah)
++		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
++	if (vm->vah)
++		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
++	if (vm->interlaced)
++		fbmode->vmode |= FB_VMODE_INTERLACED;
++	if (vm->doublescan)
++		fbmode->vmode |= FB_VMODE_DOUBLE;
++	if (vm->de)
++		fbmode->sync |= FB_SYNC_DATA_ENABLE_HIGH_ACT;
++	fbmode->flag = 0;
++
++	htotal = vm->hactive + vm->hfront_porch + vm->hback_porch +
++		 vm->hsync_len;
++	vtotal = vm->vactive + vm->vfront_porch + vm->vback_porch +
++		 vm->vsync_len;
++	fbmode->refresh = (vm->pixelclock * 1000) / (htotal * vtotal);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
++#endif
++
++
+ #else
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
  {
- 	u8 buf[4];
--	int lane, lane_count, retval;
-+	int lane, lane_count, pll_tries, retval;
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index c7a9571..4024136 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -14,6 +14,7 @@
+ #include <linux/backlight.h>
+ #include <linux/slab.h>
+ #include <asm/io.h>
++#include <linux/videomode.h>
  
- 	lane_count = dp->link_train.lane_count;
+ struct vm_area_struct;
+ struct fb_info;
+@@ -714,6 +715,11 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+ extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+ extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
  
-@@ -297,6 +297,18 @@ static int exynos_dp_link_start(struct exynos_dp_device *dp)
- 		exynos_dp_set_lane_lane_pre_emphasis(dp,
- 			PRE_EMPHASIS_LEVEL_0, lane);
- 
-+	/* Wait for PLL lock */
-+	pll_tries = 0;
-+	while (exynos_dp_get_pll_lock_status(dp) = PLL_UNLOCKED) {
-+		if (pll_tries = DP_TIMEOUT_LOOP_COUNT) {
-+			dev_err(dp->dev, "Wait for PLL lock timed out\n");
-+			return -ETIMEDOUT;
-+		}
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++extern int fb_videomode_from_videomode(struct videomode *vm,
++				       struct fb_videomode *fbmode);
++#endif
 +
-+		pll_tries++;
-+		usleep_range(90, 120);
-+	}
-+
- 	/* Set training pattern 1 */
- 	exynos_dp_set_training_pattern(dp, TRAINING_PTN1);
- 
+ /* drivers/video/modedb.c */
+ #define VESA_MODEDB_SIZE 34
+ extern void fb_var_to_videomode(struct fb_videomode *mode,
 -- 
-1.7.1
-
+1.7.10.4
 

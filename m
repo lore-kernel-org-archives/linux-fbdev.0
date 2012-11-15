@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 15 Nov 2012 15:58:35 +0000
-Subject: [PATCH 27/32] OMAPDSS: move display sysfs init to compat layer
-Message-Id: <1352995120-3288-28-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 15 Nov 2012 15:58:29 +0000
+Subject: [PATCH 21/32] OMAPDSS: manage framedone irq with mgr ops
+Message-Id: <1352995120-3288-22-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,92 +11,251 @@ Content-Transfer-Encoding: 7bit
 To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Move creation of the sysfs files for displays to the compat layer.
+Some of the output drivers need to handle FRAMEDONE interrupt from
+DISPC. This creates a direct dependency to dispc code, and we need to
+avoid this to make the compat code to work.
+
+Instead of the output drivers registering for dispc interrupts, we
+create new mgr-ops that are used to register a framedone handler. The
+code implementing the mgr-ops is responsible for calling the handler
+when DISPC FRAMEDONE interrupt happens. The compat layer is improved
+accordingly to do the call to the framedone handler.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/apply.c   |   14 ++++++++++++++
- drivers/video/omap2/dss/display.c |    8 --------
- 2 files changed, 14 insertions(+), 8 deletions(-)
+ drivers/video/omap2/dss/apply.c  |   46 ++++++++++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/dsi.c    |   26 ++++++++-------------
+ drivers/video/omap2/dss/dss.h    |    8 +++++++
+ drivers/video/omap2/dss/output.c |   12 ++++++++++
+ drivers/video/omap2/dss/rfbi.c   |   12 +++++-----
+ 5 files changed, 82 insertions(+), 22 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 51124ab..b24ed758 100644
+index ca85eaf..f10e0b4 100644
 --- a/drivers/video/omap2/dss/apply.c
 +++ b/drivers/video/omap2/dss/apply.c
-@@ -1561,6 +1561,7 @@ static int compat_refcnt;
- int omapdss_compat_init(void)
- {
- 	struct platform_device *pdev = dss_get_core_pdev();
-+	struct omap_dss_device *dssdev = NULL;
- 	int i, r;
+@@ -105,6 +105,9 @@ struct mgr_priv_data {
  
- 	mutex_lock(&apply_lock);
-@@ -1606,6 +1607,13 @@ int omapdss_compat_init(void)
- 	if (r)
- 		goto err_mgr_ops;
+ 	struct omap_video_timings timings;
+ 	struct dss_lcd_mgr_config lcd_config;
++
++	void (*framedone_handler)(void *);
++	void *framedone_handler_data;
+ };
  
-+	for_each_dss_dev(dssdev) {
-+		r = display_init_sysfs(pdev, dssdev);
-+		/* XXX uninit sysfs files on error */
-+		if (r)
-+			goto err_disp_sysfs;
+ static struct {
+@@ -888,6 +891,21 @@ static void dss_apply_irq_handler(void *data, u32 mask)
+ 	if (!extra_updating)
+ 		complete_all(&extra_updated_completion);
+ 
++	/* call framedone handlers for manual update displays */
++	for (i = 0; i < num_mgrs; i++) {
++		struct omap_overlay_manager *mgr;
++		struct mgr_priv_data *mp;
++
++		mgr = omap_dss_get_overlay_manager(i);
++		mp = get_mgr_priv(mgr);
++
++		if (!mgr_manual_update(mgr) || !mp->framedone_handler)
++			continue;
++
++		if (mask & dispc_mgr_get_framedone_irq(i))
++			mp->framedone_handler(mp->framedone_handler_data);
 +	}
 +
- 	dispc_runtime_get();
+ 	if (!need_isr())
+ 		dss_unregister_vsync_isr();
  
- 	r = dss_dispc_initialize_irq();
-@@ -1621,6 +1629,8 @@ out:
+@@ -1501,12 +1519,40 @@ err:
+ 	return r;
+ }
  
- err_init_irq:
- 	dispc_runtime_put();
++static int dss_mgr_register_framedone_handler_compat(struct omap_overlay_manager *mgr,
++		void (*handler)(void *), void *data)
++{
++	struct mgr_priv_data *mp = get_mgr_priv(mgr);
 +
-+err_disp_sysfs:
- 	dss_uninstall_mgr_ops();
++	if (mp->framedone_handler)
++		return -EBUSY;
++
++	mp->framedone_handler = handler;
++	mp->framedone_handler_data = data;
++
++	return 0;
++}
++
++static void dss_mgr_unregister_framedone_handler_compat(struct omap_overlay_manager *mgr,
++		void (*handler)(void *), void *data)
++{
++	struct mgr_priv_data *mp = get_mgr_priv(mgr);
++
++	WARN_ON(mp->framedone_handler != handler ||
++			mp->framedone_handler_data != data);
++
++	mp->framedone_handler = NULL;
++	mp->framedone_handler_data = NULL;
++}
++
+ static const struct dss_mgr_ops apply_mgr_ops = {
+ 	.start_update = dss_mgr_start_update_compat,
+ 	.enable = dss_mgr_enable_compat,
+ 	.disable = dss_mgr_disable_compat,
+ 	.set_timings = dss_mgr_set_timings_compat,
+ 	.set_lcd_config = dss_mgr_set_lcd_config_compat,
++	.register_framedone_handler = dss_mgr_register_framedone_handler_compat,
++	.unregister_framedone_handler = dss_mgr_unregister_framedone_handler_compat,
+ };
  
- err_mgr_ops:
-@@ -1638,6 +1648,7 @@ EXPORT_SYMBOL(omapdss_compat_init);
- void omapdss_compat_uninit(void)
+ static int compat_refcnt;
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index cf32dc7..6f9b62e 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -4535,7 +4535,7 @@ static void dsi_framedone_timeout_work_callback(struct work_struct *work)
+ 	dsi_handle_framedone(dsi->pdev, -ETIMEDOUT);
+ }
+ 
+-static void dsi_framedone_irq_callback(void *data, u32 mask)
++static void dsi_framedone_irq_callback(void *data)
  {
- 	struct platform_device *pdev = dss_get_core_pdev();
-+	struct omap_dss_device *dssdev = NULL;
+ 	struct platform_device *dsidev = (struct platform_device *) data;
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+@@ -4609,7 +4609,6 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	struct omap_overlay_manager *mgr = dssdev->output->manager;
+ 	int r;
+-	u32 irq = 0;
  
- 	mutex_lock(&apply_lock);
+ 	if (dsi->mode = OMAP_DSS_DSI_CMD_MODE) {
+ 		dsi->timings.hsw = 1;
+@@ -4619,12 +4618,10 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
+ 		dsi->timings.vfp = 0;
+ 		dsi->timings.vbp = 0;
  
-@@ -1646,6 +1657,9 @@ void omapdss_compat_uninit(void)
- 
- 	dss_dispc_uninitialize_irq();
- 
-+	for_each_dss_dev(dssdev)
-+		display_uninit_sysfs(pdev, dssdev);
-+
- 	dss_uninstall_mgr_ops();
- 
- 	dss_uninit_overlay_managers(pdev);
-diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
-index 008e9ee..b7383b4 100644
---- a/drivers/video/omap2/dss/display.c
-+++ b/drivers/video/omap2/dss/display.c
-@@ -90,20 +90,12 @@ int dss_init_device(struct platform_device *pdev,
- 		return r;
- 	}
- 
--	r = display_init_sysfs(pdev, dssdev);
--	if (r) {
--		omapdss_output_unset_device(dssdev->output);
--		return r;
--	}
+-		irq = dispc_mgr_get_framedone_irq(mgr->id);
 -
+-		r = omap_dispc_register_isr(dsi_framedone_irq_callback,
+-			(void *) dsidev, irq);
++		r = dss_mgr_register_framedone_handler(mgr,
++				dsi_framedone_irq_callback, dsidev);
+ 		if (r) {
+-			DSSERR("can't get FRAMEDONE irq\n");
++			DSSERR("can't register FRAMEDONE handler\n");
+ 			goto err;
+ 		}
+ 
+@@ -4662,8 +4659,8 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
+ 	return 0;
+ err1:
+ 	if (dsi->mode = OMAP_DSS_DSI_CMD_MODE)
+-		omap_dispc_unregister_isr(dsi_framedone_irq_callback,
+-			(void *) dsidev, irq);
++		dss_mgr_unregister_framedone_handler(mgr,
++				dsi_framedone_irq_callback, dsidev);
+ err:
+ 	return r;
+ }
+@@ -4674,14 +4671,9 @@ static void dsi_display_uninit_dispc(struct omap_dss_device *dssdev)
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	struct omap_overlay_manager *mgr = dssdev->output->manager;
+ 
+-	if (dsi->mode = OMAP_DSS_DSI_CMD_MODE) {
+-		u32 irq;
+-
+-		irq = dispc_mgr_get_framedone_irq(mgr->id);
+-
+-		omap_dispc_unregister_isr(dsi_framedone_irq_callback,
+-			(void *) dsidev, irq);
+-	}
++	if (dsi->mode = OMAP_DSS_DSI_CMD_MODE)
++		dss_mgr_unregister_framedone_handler(mgr,
++				dsi_framedone_irq_callback, dsidev);
+ }
+ 
+ static int dsi_configure_dsi_clocks(struct omap_dss_device *dssdev)
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index dbe54c0..8ec411d 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -186,6 +186,10 @@ void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
+ 		const struct omap_video_timings *timings);
+ void dss_mgr_set_lcd_config(struct omap_overlay_manager *mgr,
+ 		const struct dss_lcd_mgr_config *config);
++int dss_mgr_register_framedone_handler(struct omap_overlay_manager *mgr,
++		void (*handler)(void *), void *data);
++void dss_mgr_unregister_framedone_handler(struct omap_overlay_manager *mgr,
++		void (*handler)(void *), void *data);
+ 
+ /* output */
+ void dss_register_output(struct omap_dss_output *out);
+@@ -531,6 +535,10 @@ struct dss_mgr_ops {
+ 			const struct omap_video_timings *timings);
+ 	void (*set_lcd_config)(struct omap_overlay_manager *mgr,
+ 			const struct dss_lcd_mgr_config *config);
++	int (*register_framedone_handler)(struct omap_overlay_manager *mgr,
++			void (*handler)(void *), void *data);
++	void (*unregister_framedone_handler)(struct omap_overlay_manager *mgr,
++			void (*handler)(void *), void *data);
+ };
+ 
+ int dss_install_mgr_ops(const struct dss_mgr_ops *mgr_ops);
+diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
+index c8972bf..accb865 100644
+--- a/drivers/video/omap2/dss/output.c
++++ b/drivers/video/omap2/dss/output.c
+@@ -190,3 +190,15 @@ void dss_mgr_start_update(struct omap_overlay_manager *mgr)
+ {
+ 	dss_mgr_ops->start_update(mgr);
+ }
++
++int dss_mgr_register_framedone_handler(struct omap_overlay_manager *mgr,
++		void (*handler)(void *), void *data)
++{
++	return dss_mgr_ops->register_framedone_handler(mgr, handler, data);
++}
++
++void dss_mgr_unregister_framedone_handler(struct omap_overlay_manager *mgr,
++		void (*handler)(void *), void *data)
++{
++	dss_mgr_ops->unregister_framedone_handler(mgr, handler, data);
++}
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 7bfeb13..328170f 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -342,7 +342,7 @@ static int rfbi_transfer_area(struct omap_dss_device *dssdev,
  	return 0;
  }
  
- void dss_uninit_device(struct platform_device *pdev,
- 		struct omap_dss_device *dssdev)
+-static void framedone_callback(void *data, u32 mask)
++static void framedone_callback(void *data)
  {
--	display_uninit_sysfs(pdev, dssdev);
--
- 	if (dssdev->output)
- 		omapdss_output_unset_device(dssdev->output);
- }
+ 	void (*callback)(void *data);
+ 
+@@ -908,8 +908,8 @@ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
+ 		goto err0;
+ 	}
+ 
+-	r = omap_dispc_register_isr(framedone_callback, NULL,
+-			DISPC_IRQ_FRAMEDONE);
++	r = dss_mgr_register_framedone_handler(out->manager,
++			framedone_callback, NULL);
+ 	if (r) {
+ 		DSSERR("can't get FRAMEDONE irq\n");
+ 		goto err1;
+@@ -933,8 +933,10 @@ EXPORT_SYMBOL(omapdss_rfbi_display_enable);
+ 
+ void omapdss_rfbi_display_disable(struct omap_dss_device *dssdev)
+ {
+-	omap_dispc_unregister_isr(framedone_callback, NULL,
+-			DISPC_IRQ_FRAMEDONE);
++	struct omap_dss_output *out = dssdev->output;
++
++	dss_mgr_unregister_framedone_handler(out->manager,
++			framedone_callback, NULL);
+ 	omap_dss_stop_device(dssdev);
+ 
+ 	rfbi_runtime_put();
 -- 
 1.7.10.4
 

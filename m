@@ -1,166 +1,116 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 15 Nov 2012 15:58:31 +0000
-Subject: [PATCH 23/32] OMAPDSS: move omap_dispc_wait_for_irq_interruptible_timeout to dispc-compat.c
-Message-Id: <1352995120-3288-24-git-send-email-tomi.valkeinen@ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Thu, 15 Nov 2012 13:15:09 +0000
+Subject: [PATCH v11 3/6] fbmon: add videomode helpers
+Message-Id: <1352985312-18178-4-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1352985312-18178-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352985312-18178-1-git-send-email-s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-We have two functions to wait for a dispc interrupt:
+Add a function to convert from the generic videomode to a fb_videomode.
 
-int omap_dispc_wait_for_irq_timeout(u32 irqmask, unsigned long timeout);
-int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
-
-Of these, the former is not used at all, and can be removed. The latter
-is only used by the compat layer, and can be moved to the compat layer
-code.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
 ---
- drivers/video/omap2/dss/dispc-compat.c |   30 +++++++++++++++++
- drivers/video/omap2/dss/dispc-compat.h |    3 ++
- drivers/video/omap2/dss/dispc.c        |   57 --------------------------------
- include/video/omapdss.h                |    4 ---
- 4 files changed, 33 insertions(+), 61 deletions(-)
+ drivers/video/fbmon.c |   46 ++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h    |    6 ++++++
+ 2 files changed, 52 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/dispc-compat.c b/drivers/video/omap2/dss/dispc-compat.c
-index cca3848..24e1d5e 100644
---- a/drivers/video/omap2/dss/dispc-compat.c
-+++ b/drivers/video/omap2/dss/dispc-compat.c
-@@ -205,3 +205,33 @@ void dispc_mgr_disable_sync(enum omap_channel channel)
- 		WARN_ON(1);
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index cef6557..247e079 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -31,6 +31,7 @@
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <video/edid.h>
++#include <linux/videomode.h>
+ #ifdef CONFIG_PPC_OF
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+@@ -1373,6 +1374,51 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
+ 	kfree(timings);
+ 	return err;
  }
- 
-+int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
-+		unsigned long timeout)
++
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++int fb_videomode_from_videomode(struct videomode *vm,
++				struct fb_videomode *fbmode)
 +{
-+	void dispc_irq_wait_handler(void *data, u32 mask)
-+	{
-+		complete((struct completion *)data);
-+	}
++	unsigned int htotal, vtotal;
 +
-+	int r;
-+	DECLARE_COMPLETION_ONSTACK(completion);
++	fbmode->xres = vm->hactive;
++	fbmode->left_margin = vm->hback_porch;
++	fbmode->right_margin = vm->hfront_porch;
++	fbmode->hsync_len = vm->hsync_len;
 +
-+	r = omap_dispc_register_isr(dispc_irq_wait_handler, &completion,
-+			irqmask);
++	fbmode->yres = vm->vactive;
++	fbmode->upper_margin = vm->vback_porch;
++	fbmode->lower_margin = vm->vfront_porch;
++	fbmode->vsync_len = vm->vsync_len;
 +
-+	if (r)
-+		return r;
++	fbmode->pixclock = KHZ2PICOS(vm->pixelclock / 1000);
 +
-+	timeout = wait_for_completion_interruptible_timeout(&completion,
-+			timeout);
++	fbmode->sync = 0;
++	fbmode->vmode = 0;
++	if (vm->hah)
++		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
++	if (vm->vah)
++		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
++	if (vm->interlaced)
++		fbmode->vmode |= FB_VMODE_INTERLACED;
++	if (vm->doublescan)
++		fbmode->vmode |= FB_VMODE_DOUBLE;
++	if (vm->de)
++		fbmode->sync |= FB_SYNC_DATA_ENABLE_HIGH_ACT;
++	fbmode->flag = 0;
 +
-+	omap_dispc_unregister_isr(dispc_irq_wait_handler, &completion, irqmask);
-+
-+	if (timeout = 0)
-+		return -ETIMEDOUT;
-+
-+	if (timeout = -ERESTARTSYS)
-+		return -ERESTARTSYS;
++	htotal = vm->hactive + vm->hfront_porch + vm->hback_porch +
++		 vm->hsync_len;
++	vtotal = vm->vactive + vm->vfront_porch + vm->vback_porch +
++		 vm->vsync_len;
++	fbmode->refresh = (vm->pixelclock * 1000) / (htotal * vtotal);
 +
 +	return 0;
 +}
-diff --git a/drivers/video/omap2/dss/dispc-compat.h b/drivers/video/omap2/dss/dispc-compat.h
-index 2d4f5e7..8322d43 100644
---- a/drivers/video/omap2/dss/dispc-compat.h
-+++ b/drivers/video/omap2/dss/dispc-compat.h
-@@ -21,4 +21,7 @@
- void dispc_mgr_enable_sync(enum omap_channel channel);
- void dispc_mgr_disable_sync(enum omap_channel channel);
- 
-+int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
-+		unsigned long timeout);
++EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
++#endif
 +
- #endif
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 3a1224f..b976838 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -3744,63 +3744,6 @@ static void dispc_error_worker(struct work_struct *work)
- 	dispc_runtime_put();
- }
- 
--int omap_dispc_wait_for_irq_timeout(u32 irqmask, unsigned long timeout)
--{
--	void dispc_irq_wait_handler(void *data, u32 mask)
--	{
--		complete((struct completion *)data);
--	}
--
--	int r;
--	DECLARE_COMPLETION_ONSTACK(completion);
--
--	r = omap_dispc_register_isr(dispc_irq_wait_handler, &completion,
--			irqmask);
--
--	if (r)
--		return r;
--
--	timeout = wait_for_completion_timeout(&completion, timeout);
--
--	omap_dispc_unregister_isr(dispc_irq_wait_handler, &completion, irqmask);
--
--	if (timeout = 0)
--		return -ETIMEDOUT;
--
--	return 0;
--}
--
--int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
--		unsigned long timeout)
--{
--	void dispc_irq_wait_handler(void *data, u32 mask)
--	{
--		complete((struct completion *)data);
--	}
--
--	int r;
--	DECLARE_COMPLETION_ONSTACK(completion);
--
--	r = omap_dispc_register_isr(dispc_irq_wait_handler, &completion,
--			irqmask);
--
--	if (r)
--		return r;
--
--	timeout = wait_for_completion_interruptible_timeout(&completion,
--			timeout);
--
--	omap_dispc_unregister_isr(dispc_irq_wait_handler, &completion, irqmask);
--
--	if (timeout = 0)
--		return -ETIMEDOUT;
--
--	if (timeout = -ERESTARTSYS)
--		return -ERESTARTSYS;
--
--	return 0;
--}
--
- static void _omap_dispc_initialize_irq(void)
++
+ #else
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
  {
- 	unsigned long flags;
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index a940236..823a07b 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -775,10 +775,6 @@ typedef void (*omap_dispc_isr_t) (void *arg, u32 mask);
- int omap_dispc_register_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
- int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index c7a9571..4024136 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -14,6 +14,7 @@
+ #include <linux/backlight.h>
+ #include <linux/slab.h>
+ #include <asm/io.h>
++#include <linux/videomode.h>
  
--int omap_dispc_wait_for_irq_timeout(u32 irqmask, unsigned long timeout);
--int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
--		unsigned long timeout);
--
- #define to_dss_driver(x) container_of((x), struct omap_dss_driver, driver)
- #define to_dss_device(x) container_of((x), struct omap_dss_device, dev)
+ struct vm_area_struct;
+ struct fb_info;
+@@ -714,6 +715,11 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+ extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+ extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
  
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++extern int fb_videomode_from_videomode(struct videomode *vm,
++				       struct fb_videomode *fbmode);
++#endif
++
+ /* drivers/video/modedb.c */
+ #define VESA_MODEDB_SIZE 34
+ extern void fb_var_to_videomode(struct fb_videomode *mode,
 -- 
 1.7.10.4
 

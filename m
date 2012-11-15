@@ -1,89 +1,273 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Fri, 16 Nov 2012 22:29:05 +0000
-Subject: [PATCH v2] backlight: Add of_find_backlight_by_node() function
-Message-Id: <1353104945-24153-1-git-send-email-thierry.reding@avionic-design.de>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Thu, 15 Nov 2012 13:15:07 +0000
+Subject: [PATCH v11 1/6] video: add display_timing and videomode
+Message-Id: <1352985312-18178-2-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1352985312-18178-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352985312-18178-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jingoo Han <jg1.han@samsung.com>, Grant Likely <grant.likely@secretlab.ca>, Richard Purdie <rpurdie@rpsys.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-This function finds the struct backlight_device for a given device tree
-node. A dummy function is provided so that it safely compiles out if OF
-support is disabled.
+Add display_timing structure and the according helper functions. This allows
+the description of a display via its supported timing parameters.
 
-Signed-off-by: Thierry Reding <thierry.reding@avionic-design.de>
-Reviewed-by: Grant Likely <grant.likely@secretlab.ca>
-Acked-by: Jingoo Han <jg1.han@samsung.com>
+Every timing parameter can be specified as a single value or a range
+<min typ max>.
+
+Also, add helper functions to convert from display timings to a generic videomode
+structure. This videomode can then be converted to the corresponding subsystem
+mode representation (e.g. fb_videomode).
+
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
 ---
-Changes in v2:
-- use #ifdef CONFIG_OF instead of #if IS_ENABLED(CONFIG_OF)
-- add kerneldoc to of_find_backlight_by_node() function
+ drivers/video/Kconfig          |    6 ++++
+ drivers/video/Makefile         |    2 ++
+ drivers/video/display_timing.c |   24 ++++++++++++++
+ drivers/video/videomode.c      |   45 ++++++++++++++++++++++++++
+ include/linux/display_timing.h |   69 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/videomode.h      |   40 +++++++++++++++++++++++
+ 6 files changed, 186 insertions(+)
+ create mode 100644 drivers/video/display_timing.c
+ create mode 100644 drivers/video/videomode.c
+ create mode 100644 include/linux/display_timing.h
+ create mode 100644 include/linux/videomode.h
 
- drivers/video/backlight/backlight.c | 29 +++++++++++++++++++++++++++++
- include/linux/backlight.h           | 10 ++++++++++
- 2 files changed, 39 insertions(+)
-
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index 297db2f..345f666 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -370,6 +370,35 @@ void backlight_device_unregister(struct backlight_device *bd)
- }
- EXPORT_SYMBOL(backlight_device_unregister);
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index d08d799..2a23b18 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -33,6 +33,12 @@ config VIDEO_OUTPUT_CONTROL
+ 	  This framework adds support for low-level control of the video 
+ 	  output switch.
  
-+#ifdef CONFIG_OF
-+static int of_parent_match(struct device *dev, void *data)
-+{
-+	return dev->parent && dev->parent->of_node = data;
-+}
++config DISPLAY_TIMING
++       bool
 +
-+/**
-+ * of_find_backlight_by_node() - find backlight device by device-tree node
-+ * @node: device-tree node of the backlight device
++config VIDEOMODE
++       bool
++
+ menuconfig FB
+ 	tristate "Support for frame buffer devices"
+ 	---help---
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 23e948e..fc30439 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -167,3 +167,5 @@ obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
+ 
+ #video output switch sysfs driver
+ obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) += output.o
++obj-$(CONFIG_DISPLAY_TIMING) += display_timing.o
++obj-$(CONFIG_VIDEOMODE) += videomode.o
+diff --git a/drivers/video/display_timing.c b/drivers/video/display_timing.c
+new file mode 100644
+index 0000000..ac9bbbc
+--- /dev/null
++++ b/drivers/video/display_timing.c
+@@ -0,0 +1,24 @@
++/*
++ * generic display timing functions
 + *
-+ * Returns a pointer to the backlight device corresponding to the given DT
-+ * node or NULL if no such backlight device exists or if the device hasn't
-+ * been probed yet.
++ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
 + *
-+ * This function obtains a reference on the backlight device and it is the
-+ * caller's responsibility to drop the reference by calling put_device() on
-+ * the backlight device's .dev field.
++ * This file is released under the GPLv2
 + */
-+struct backlight_device *of_find_backlight_by_node(struct device_node *node)
++
++#include <linux/display_timing.h>
++#include <linux/export.h>
++#include <linux/slab.h>
++
++void display_timings_release(struct display_timings *disp)
 +{
-+	struct device *dev;
++	if (disp->timings) {
++		unsigned int i;
 +
-+	dev = class_find_device(backlight_class, NULL, node, of_parent_match);
-+
-+	return dev ? to_backlight_device(dev) : NULL;
++		for (i = 0; i < disp->num_timings; i++)
++			kfree(disp->timings[i]);
++		kfree(disp->timings);
++	}
++	kfree(disp);
 +}
-+EXPORT_SYMBOL(of_find_backlight_by_node);
-+#endif
++EXPORT_SYMBOL_GPL(display_timings_release);
+diff --git a/drivers/video/videomode.c b/drivers/video/videomode.c
+new file mode 100644
+index 0000000..087374a
+--- /dev/null
++++ b/drivers/video/videomode.c
+@@ -0,0 +1,45 @@
++/*
++ * generic display timing functions
++ *
++ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
++ *
++ * This file is released under the GPLv2
++ */
 +
- static void __exit backlight_class_exit(void)
- {
- 	class_destroy(backlight_class);
-diff --git a/include/linux/backlight.h b/include/linux/backlight.h
-index 5ffc6dd..da9a082 100644
---- a/include/linux/backlight.h
-+++ b/include/linux/backlight.h
-@@ -134,4 +134,14 @@ struct generic_bl_info {
- 	void (*kick_battery)(void);
- };
- 
-+#ifdef CONFIG_OF
-+struct backlight_device *of_find_backlight_by_node(struct device_node *node);
-+#else
-+static inline struct backlight_device *
-+of_find_backlight_by_node(struct device_node *node)
++#include <linux/export.h>
++#include <linux/errno.h>
++#include <linux/display_timing.h>
++#include <linux/kernel.h>
++#include <linux/videomode.h>
++
++int videomode_from_timing(struct display_timings *disp, struct videomode *vm,
++			  unsigned int index)
 +{
-+	return NULL;
-+}
-+#endif
++	struct display_timing *dt;
 +
- #endif
++	dt = display_timings_get(disp, index);
++	if (!dt)
++		return -EINVAL;
++
++	vm->pixelclock = display_timing_get_value(&dt->pixelclock, 0);
++	vm->hactive = display_timing_get_value(&dt->hactive, 0);
++	vm->hfront_porch = display_timing_get_value(&dt->hfront_porch, 0);
++	vm->hback_porch = display_timing_get_value(&dt->hback_porch, 0);
++	vm->hsync_len = display_timing_get_value(&dt->hsync_len, 0);
++
++	vm->vactive = display_timing_get_value(&dt->vactive, 0);
++	vm->vfront_porch = display_timing_get_value(&dt->vfront_porch, 0);
++	vm->vback_porch = display_timing_get_value(&dt->vback_porch, 0);
++	vm->vsync_len = display_timing_get_value(&dt->vsync_len, 0);
++
++	vm->vah = dt->vsync_pol_active;
++	vm->hah = dt->hsync_pol_active;
++	vm->de = dt->de_pol_active;
++	vm->pixelclk_pol = dt->pixelclk_pol;
++
++	vm->interlaced = dt->interlaced;
++	vm->doublescan = dt->doublescan;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(videomode_from_timing);
+diff --git a/include/linux/display_timing.h b/include/linux/display_timing.h
+new file mode 100644
+index 0000000..caee2a8
+--- /dev/null
++++ b/include/linux/display_timing.h
+@@ -0,0 +1,69 @@
++/*
++ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
++ *
++ * description of display timings
++ *
++ * This file is released under the GPLv2
++ */
++
++#ifndef __LINUX_DISPLAY_TIMINGS_H
++#define __LINUX_DISPLAY_TIMINGS_H
++
++#include <linux/types.h>
++
++struct timing_entry {
++	u32 min;
++	u32 typ;
++	u32 max;
++};
++
++struct display_timing {
++	struct timing_entry pixelclock;
++
++	struct timing_entry hactive;
++	struct timing_entry hfront_porch;
++	struct timing_entry hback_porch;
++	struct timing_entry hsync_len;
++
++	struct timing_entry vactive;
++	struct timing_entry vfront_porch;
++	struct timing_entry vback_porch;
++	struct timing_entry vsync_len;
++
++	unsigned int vsync_pol_active;
++	unsigned int hsync_pol_active;
++	unsigned int de_pol_active;
++	unsigned int pixelclk_pol;
++	bool interlaced;
++	bool doublescan;
++};
++
++struct display_timings {
++	unsigned int num_timings;
++	unsigned int native_mode;
++
++	struct display_timing **timings;
++};
++
++/*
++ * placeholder function until ranges are really needed
++ * the index parameter should then be used to select one of [min typ max]
++ */
++static inline u32 display_timing_get_value(struct timing_entry *te,
++					   unsigned int index)
++{
++	return te->typ;
++}
++
++static inline struct display_timing *display_timings_get(struct display_timings *disp,
++							 unsigned int index)
++{
++	if (disp->num_timings > index)
++		return disp->timings[index];
++	else
++		return NULL;
++}
++
++void display_timings_release(struct display_timings *disp);
++
++#endif
+diff --git a/include/linux/videomode.h b/include/linux/videomode.h
+new file mode 100644
+index 0000000..704db7b
+--- /dev/null
++++ b/include/linux/videomode.h
+@@ -0,0 +1,40 @@
++/*
++ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
++ *
++ * generic videomode description
++ *
++ * This file is released under the GPLv2
++ */
++
++#ifndef __LINUX_VIDEOMODE_H
++#define __LINUX_VIDEOMODE_H
++
++#include <linux/display_timing.h>
++
++struct videomode {
++	u32 pixelclock;
++	u32 refreshrate;
++
++	u32 hactive;
++	u32 hfront_porch;
++	u32 hback_porch;
++	u32 hsync_len;
++
++	u32 vactive;
++	u32 vfront_porch;
++	u32 vback_porch;
++	u32 vsync_len;
++
++	u32 hah;
++	u32 vah;
++	u32 de;
++	u32 pixelclk_pol;
++
++	bool interlaced;
++	bool doublescan;
++};
++
++int videomode_from_timing(struct display_timings *disp, struct videomode *vm,
++			  unsigned int index);
++
++#endif
 -- 
-1.8.0
+1.7.10.4
 

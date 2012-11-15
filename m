@@ -1,42 +1,110 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Thu, 15 Nov 2012 10:01:49 +0000
-Subject: Re: [PATCH v10 6/6] drm_modes: add of_videomode helpers
-Message-Id: <20121115100149.GA1963@pengutronix.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 15 Nov 2012 15:58:08 +0000
+Subject: [PATCH 00/32] OMAPDSS: create compat layer
+Message-Id: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
- <1352971437-29877-7-git-send-email-s.trumtrar@pengutronix.de>
- <20121115095848.GA31538@avionic-0098.mockup.avionic-design.de>
-In-Reply-To: <20121115095848.GA31538@avionic-0098.mockup.avionic-design.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@avionic-design.de>
-Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, kernel@pengutronix.de, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org
+To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Thu, Nov 15, 2012 at 10:58:49AM +0100, Thierry Reding wrote:
-> On Thu, Nov 15, 2012 at 10:23:57AM +0100, Steffen Trumtrar wrote:
-> [...]
-> > +int of_get_drm_display_mode(struct device_node *np,
-> > +			    struct drm_display_mode *dmode, unsigned int index)
-> > +{
-> > +	struct videomode vm;
-> > +	int ret;
-> > +
-> > +	ret = of_get_videomode(np, &vm, index);
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	display_mode_from_videomode(&vm, dmode);
-> 
-> This function is now called drm_display_mode_from_videomode().
-> 
-Well, can't argue with that. You are right.
+Hi,
 
-Regards,
-Steffen
+This series is about improving omapdss API for omapdrm.
+
+We have two separate, exclusive, users of omapdss: 1) omapfb + omap_vout and 2)
+omapdrm. Because omapfb and omap_vout are independent drivers, we've built
+layers in omapdss to manage the two simultaneous callers. These layers are not
+needed for omapdrm, as omapdrm is the sole user of omapdss, and these layers in
+fact only create trouble for omapdrm.
+
+The simple option to improve omapdrm situation would be to copy the omapdss
+code for omapdrm. We are trying to avoid this, as omapdss and the panel drivers
+are quite a lot of code together, and most of the code would be used without
+change.
+
+Thus this series helps the situation by moving the omapdss code required by
+omapfb + omap_vout to separate files, creating a distinct layer used only by
+omapfb + omap_vout. We call this layer "compat layer". This compat layer then
+uses the core omapdss driver to operate the hardware. omapdrm will use the core
+omapdss directly, without any layers in between.
+
+After this series, omapfb, omap_vout and omapdrm can all be compiled at the
+same time. Obviously omapdrm and omapfb+omap_vout cannot be run at the same
+time (the first one to start will "win"), so compiling them at the same time is
+only sensible as modules for testing purposes. Normal users should only compile
+one of those.
+
+This series does not make omapdrm use the core omapdss API, that will happen in
+a separate series for omapdrm.
+
+The series is based on current omapdss master, and can also be found from:
+git://gitorious.org/linux-omap-dss2/linux.git work/apply-test-9
+
+ Tomi
+
+Tomi Valkeinen (32):
+  OMAPDSS: remove declarations for non-existing functions
+  OMAPDSS: DPI: fix crash with dpi_verify_dsi_pll()
+  OMAPDSS: don't WARN if there's no DSI device
+  OMAPDSS: DISPC: add no_framedone_tv feat
+  OMAPDSS: DISPC: use get_framedone_irq in disable_digit_out
+  OMAPDSS: DISPC: Remove blocking code from dispc_wb_enable()
+  OMAPDSS: cleanup WB enable/is_enabled functions
+  OMAPDSS: DISPC: use WARN_ON() in dispc_mgr_go
+  OMAPDSS: DISPC: pclk & lclk rates for writeback
+  OMAPDSS: DISPC: pass pclk to calc_core_clk()
+  OMAPDSS: DISPC: pass pclk & lclk to check_horiz_timing_omap3
+  OMAPDSS: DISPC: pass pclk & lclk to calc_scaling
+  OMAPDSS: DISPC: pass pclk & lclk to dispc_ovl_calc_scaling
+  OMAPDSS: create display-sysfs.c
+  OMAPDSS: add dss_get_core_pdev()
+  OMAPDSS: add omapdss_compat_init()
+  OMAPDSS: move ovl & ovl-mgr init to apply.c
+  OMAPDSS: move ovl-mgr function setup to apply.c
+  OMAPDSS: move ovl function setup to apply.c
+  OMAPDSS: add manager ops
+  OMAPDSS: manage framedone irq with mgr ops
+  OMAPDSS: move blocking mgr enable/disable to compat layer
+  OMAPDSS: move omap_dispc_wait_for_irq_interruptible_timeout to
+    dispc-compat.c
+  OMAPDSS: move irq handling to dispc-compat
+  OMAPDSS: DISPC: add dispc_ovl_check()
+  OMAPDSS: DPI: use dispc's check_timings
+  OMAPDSS: move display sysfs init to compat layer
+  OMAPDSS: separate compat files in the Makefile
+  OMAPDSS: export dss_mgr_ops functions
+  OMAPDSS: export dss_feat functions
+  OMAPDSS: export dispc functions
+  OMAPDSS: use omapdss_compat_init() in other drivers
+
+ drivers/media/platform/omap/omap_vout.c  |   17 +-
+ drivers/staging/omapdrm/omap_drv.c       |   11 +
+ drivers/video/omap2/dss/Makefile         |    6 +-
+ drivers/video/omap2/dss/apply.c          |  245 ++++++++-
+ drivers/video/omap2/dss/core.c           |   13 +-
+ drivers/video/omap2/dss/dispc-compat.c   |  667 +++++++++++++++++++++++
+ drivers/video/omap2/dss/dispc-compat.h   |   30 ++
+ drivers/video/omap2/dss/dispc.c          |  863 +++++-------------------------
+ drivers/video/omap2/dss/display-sysfs.c  |  321 +++++++++++
+ drivers/video/omap2/dss/display.c        |  285 +---------
+ drivers/video/omap2/dss/dpi.c            |    4 +-
+ drivers/video/omap2/dss/dsi.c            |   26 +-
+ drivers/video/omap2/dss/dss.h            |   75 +--
+ drivers/video/omap2/dss/dss_features.c   |    5 +
+ drivers/video/omap2/dss/dss_features.h   |    4 -
+ drivers/video/omap2/dss/manager.c        |   39 --
+ drivers/video/omap2/dss/output.c         |   65 +++
+ drivers/video/omap2/dss/overlay.c        |   17 -
+ drivers/video/omap2/dss/rfbi.c           |   12 +-
+ drivers/video/omap2/omapfb/omapfb-main.c |    6 +
+ include/video/omapdss.h                  |   80 ++-
+ 21 files changed, 1582 insertions(+), 1209 deletions(-)
+ create mode 100644 drivers/video/omap2/dss/dispc-compat.c
+ create mode 100644 drivers/video/omap2/dss/dispc-compat.h
+ create mode 100644 drivers/video/omap2/dss/display-sysfs.c
 
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+1.7.10.4
+

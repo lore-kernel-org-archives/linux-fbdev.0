@@ -1,75 +1,112 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Nov 2012 10:25:04 +0000
-Subject: [PATCH 3/5] OMAP: RX51: remove use of vram
-Message-Id: <1352715906-16946-4-git-send-email-tomi.valkeinen@ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Thu, 15 Nov 2012 13:15:10 +0000
+Subject: [PATCH v11 4/6] fbmon: add of_videomode helpers
+Message-Id: <1352985312-18178-5-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352715906-16946-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1352715906-16946-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1352985312-18178-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352985312-18178-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-As omapfb no longer uses omap specific vram allocator we can remove the
-vram pre-allocation from rx51 board file.
+Add helper to get fb_videomode from devicetree.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
 ---
- arch/arm/mach-omap2/board-rx51-video.c |   14 --------------
- arch/arm/mach-omap2/board-rx51.c       |    3 ---
- 2 files changed, 17 deletions(-)
+ drivers/video/fbmon.c |   42 +++++++++++++++++++++++++++++++++++++++++-
+ include/linux/fb.h    |    6 ++++++
+ 2 files changed, 47 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-omap2/board-rx51-video.c b/arch/arm/mach-omap2/board-rx51-video.c
-index c22e111..46f4fc9 100644
---- a/arch/arm/mach-omap2/board-rx51-video.c
-+++ b/arch/arm/mach-omap2/board-rx51-video.c
-@@ -16,7 +16,6 @@
- #include <linux/mm.h>
- #include <asm/mach-types.h>
- #include <video/omapdss.h>
--#include <plat/vram.h>
- #include <linux/platform_data/spi-omap2-mcspi.h>
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 247e079..9e8c5fa 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -31,7 +31,7 @@
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <video/edid.h>
+-#include <linux/videomode.h>
++#include <linux/of_videomode.h>
+ #ifdef CONFIG_PPC_OF
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+@@ -1418,6 +1418,46 @@ int fb_videomode_from_videomode(struct videomode *vm,
+ EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
+ #endif
  
- #include "board-rx51.h"
-@@ -87,17 +86,4 @@ static int __init rx51_video_init(void)
- }
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++static inline void dump_fb_videomode(struct fb_videomode *m)
++{
++	pr_debug("fb_videomode = %ux%u@%uHz (%ukHz) %u %u %u %u %u %u %u %u %u\n",
++		 m->xres, m->yres, m->refresh, m->pixclock, m->left_margin,
++		 m->right_margin, m->upper_margin, m->lower_margin,
++		 m->hsync_len, m->vsync_len, m->sync, m->vmode, m->flag);
++}
++
++/**
++ * of_get_fb_videomode - get a fb_videomode from devicetree
++ * @np: device_node with the timing specification
++ * @fb: will be set to the return value
++ * @index: index into the list of display timings in devicetree
++ *
++ * DESCRIPTION:
++ * This function is expensive and should only be used, if only one mode is to be
++ * read from DT. To get multiple modes start with of_get_display_timings ond
++ * work with that instead.
++ */
++int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
++			unsigned int index)
++{
++	struct videomode vm;
++	int ret;
++
++	ret = of_get_videomode(np, &vm, index);
++	if (ret)
++		return ret;
++
++	fb_videomode_from_videomode(&vm, fb);
++
++	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
++		vm.vactive, np->name);
++	dump_fb_videomode(fb);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_get_fb_videomode);
++#endif
  
- subsys_initcall(rx51_video_init);
--
--void __init rx51_video_mem_init(void)
--{
--	/*
--	 * GFX 864x480x32bpp
--	 * VID1/2 1280x720x32bpp double buffered
--	 */
--	omap_vram_set_sdram_vram(PAGE_ALIGN(864 * 480 * 4) +
--			2 * PAGE_ALIGN(1280 * 720 * 4 * 2), 0);
--}
--
--#else
--void __init rx51_video_mem_init(void) { }
- #endif /* defined(CONFIG_FB_OMAP2) || defined(CONFIG_FB_OMAP2_MODULE) */
-diff --git a/arch/arm/mach-omap2/board-rx51.c b/arch/arm/mach-omap2/board-rx51.c
-index 7bbb05d..6e0de6f 100644
---- a/arch/arm/mach-omap2/board-rx51.c
-+++ b/arch/arm/mach-omap2/board-rx51.c
-@@ -34,8 +34,6 @@
+ #else
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 4024136..dc8f693 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -15,6 +15,8 @@
+ #include <linux/slab.h>
+ #include <asm/io.h>
+ #include <linux/videomode.h>
++#include <linux/of.h>
++#include <linux/of_videomode.h>
  
- #define RX51_GPIO_SLEEP_IND 162
+ struct vm_area_struct;
+ struct fb_info;
+@@ -715,6 +717,10 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+ extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+ extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
  
--extern void rx51_video_mem_init(void);
--
- static struct gpio_led gpio_leds[] = {
- 	{
- 		.name	= "sleep_ind",
-@@ -112,7 +110,6 @@ static void __init rx51_init(void)
- 
- static void __init rx51_reserve(void)
- {
--	rx51_video_mem_init();
- 	omap_reserve();
- }
- 
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++extern int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
++			       unsigned int index);
++#endif
+ #if IS_ENABLED(CONFIG_VIDEOMODE)
+ extern int fb_videomode_from_videomode(struct videomode *vm,
+ 				       struct fb_videomode *fbmode);
 -- 
 1.7.10.4
 

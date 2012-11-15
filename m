@@ -1,33 +1,58 @@
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-Date: Fri, 16 Nov 2012 09:39:36 +0000
-Subject: Re: [PATCH v8 2/3] pwm_backlight: use power sequences
-Message-Id: <20121116093936.GA22239@lizard>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Thu, 15 Nov 2012 13:15:06 +0000
+Subject: [PATCH v11 0/6] of: add display helper
+Message-Id: <1352985312-18178-1-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353047903-14363-1-git-send-email-acourbot@nvidia.com>
- <1353047903-14363-3-git-send-email-acourbot@nvidia.com>
- <20121116084958.GB20785@avionic-0098.mockup.avionic-design.de>
-In-Reply-To: <20121116084958.GB20785-RM9K5IK7kjIQXX3q8xo1gnVAuStQJXxyR5q1nwbD4aMs9pC9oP6+/A@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>
-Cc: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Leela Krishna Amudala <l.krishna-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On Fri, Nov 16, 2012 at 09:49:58AM +0100, Thierry Reding wrote:
-> On Fri, Nov 16, 2012 at 03:38:22PM +0900, Alexandre Courbot wrote:
-> > Make use of the power sequences specified in the device tree or platform
-> > data to control how the backlight is powered on and off.
-> > 
-> > Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
-> > Reviewed-by: Stephen Warren <swarren@wwwdotorg.org>
-> 
-> Anton,
-> 
-> I would normally take pwm-backlight patches through the PWM tree, but
-> since this patch depends on the first in this series, I think it would
-> be easier if you took it through your tree along with the rest of the
-> series. If that's okay with you:
-> 
-> Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Hi!
 
-Sure, I'll take it. Thank you!
+Changes since v10:
+	- fix function name (drm_)display_mode_from_videomode
+	- add acked-by, reviewed-by, tested-by
+
+Regards,
+Steffen
+
+
+Steffen Trumtrar (6):
+  video: add display_timing and videomode
+  video: add of helper for videomode
+  fbmon: add videomode helpers
+  fbmon: add of_videomode helpers
+  drm_modes: add videomode helpers
+  drm_modes: add of_videomode helpers
+
+ .../devicetree/bindings/video/display-timings.txt  |  107 ++++++++++
+ drivers/gpu/drm/drm_modes.c                        |   70 +++++++
+ drivers/video/Kconfig                              |   19 ++
+ drivers/video/Makefile                             |    4 +
+ drivers/video/display_timing.c                     |   24 +++
+ drivers/video/fbmon.c                              |   86 ++++++++
+ drivers/video/of_display_timing.c                  |  212 ++++++++++++++++++++
+ drivers/video/of_videomode.c                       |   47 +++++
+ drivers/video/videomode.c                          |   45 +++++
+ include/drm/drmP.h                                 |   12 ++
+ include/linux/display_timing.h                     |   69 +++++++
+ include/linux/fb.h                                 |   12 ++
+ include/linux/of_display_timings.h                 |   20 ++
+ include/linux/of_videomode.h                       |   17 ++
+ include/linux/videomode.h                          |   40 ++++
+ 15 files changed, 784 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/display-timings.txt
+ create mode 100644 drivers/video/display_timing.c
+ create mode 100644 drivers/video/of_display_timing.c
+ create mode 100644 drivers/video/of_videomode.c
+ create mode 100644 drivers/video/videomode.c
+ create mode 100644 include/linux/display_timing.h
+ create mode 100644 include/linux/of_display_timings.h
+ create mode 100644 include/linux/of_videomode.h
+ create mode 100644 include/linux/videomode.h
+
+-- 
+1.7.10.4
+

@@ -1,115 +1,38 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Mon, 26 Nov 2012 09:07:26 +0000
-Subject: [PATCHv15 5/7] fbmon: add of_videomode helpers
-Message-Id: <1353920848-1705-6-git-send-email-s.trumtrar@pengutronix.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 15 Nov 2012 15:58:34 +0000
+Subject: [PATCH 26/32] OMAPDSS: DPI: use dispc's check_timings
+Message-Id: <1352995120-3288-27-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353920848-1705-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1353920848-1705-1-git-send-email-s.trumtrar@pengutronix.de>
+References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
+To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add helper to get fb_videomode from devicetree.
+dpi.c uses dss_mgr_check_timings() to verify video timings, but that
+function is in the compat layer. Change dpi.c to use the dispc's check
+instead.
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
-Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbmon.c |   42 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/fb.h    |    6 ++++++
- 2 files changed, 48 insertions(+)
+ drivers/video/omap2/dss/dpi.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index 733553b..4a8484d 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -28,6 +28,7 @@
-  */
- #include <linux/fb.h>
- #include <linux/module.h>
-+#include <linux/of_videomode.h>
- #include <linux/pci.h>
- #include <linux/slab.h>
- #include <linux/videomode.h>
-@@ -1424,6 +1425,47 @@ int fb_videomode_from_videomode(const struct videomode *vm,
- EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
- #endif
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index c109fa6..b32202f 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -315,7 +315,7 @@ int dpi_check_timings(struct omap_dss_device *dssdev,
+ 	unsigned long pck;
+ 	struct dispc_clock_info dispc_cinfo;
  
-+#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+static inline void dump_fb_videomode(const struct fb_videomode *m)
-+{
-+	pr_debug("fb_videomode = %ux%u@%uHz (%ukHz) %u %u %u %u %u %u %u %u %u\n",
-+		 m->xres, m->yres, m->refresh, m->pixclock, m->left_margin,
-+		 m->right_margin, m->upper_margin, m->lower_margin,
-+		 m->hsync_len, m->vsync_len, m->sync, m->vmode, m->flag);
-+}
-+
-+/**
-+ * of_get_fb_videomode - get a fb_videomode from devicetree
-+ * @np: device_node with the timing specification
-+ * @fb: will be set to the return value
-+ * @index: index into the list of display timings in devicetree
-+ *
-+ * DESCRIPTION:
-+ * This function is expensive and should only be used, if only one mode is to be
-+ * read from DT. To get multiple modes start with of_get_display_timings ond
-+ * work with that instead.
-+ */
-+int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
-+			int index)
-+{
-+	struct videomode vm;
-+	int ret;
-+
-+	ret = of_get_videomode(np, &vm, index);
-+	if (ret)
-+		return ret;
-+
-+	fb_videomode_from_videomode(&vm, fb);
-+
-+	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
-+		vm.vactive, np->name);
-+	dump_fb_videomode(fb);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(of_get_fb_videomode);
-+#endif
-+
- #else
- int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
- {
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 4404ec2..c2d933d 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -20,6 +20,7 @@ struct fb_info;
- struct device;
- struct file;
- struct videomode;
-+struct device_node;
+-	if (dss_mgr_check_timings(mgr, timings))
++	if (mgr && !dispc_mgr_timings_ok(mgr->id, timings))
+ 		return -EINVAL;
  
- /* Definitions below are used in the parsed monitor specs */
- #define FB_DPMS_ACTIVE_OFF	1
-@@ -715,6 +716,11 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
- extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
- extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
- 
-+#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+extern int of_get_fb_videomode(struct device_node *np,
-+			       struct fb_videomode *fb,
-+			       int index);
-+#endif
- #if IS_ENABLED(CONFIG_VIDEOMODE)
- extern int fb_videomode_from_videomode(const struct videomode *vm,
- 				       struct fb_videomode *fbmode);
+ 	if (timings->pixel_clock = 0)
 -- 
 1.7.10.4
 

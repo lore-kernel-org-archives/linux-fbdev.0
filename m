@@ -1,87 +1,102 @@
-From: Tushar Behera <tushar.behera@linaro.org>
-Date: Thu, 22 Nov 2012 06:54:08 +0000
-Subject: [PATCH 1/4] video: vt8500: Fix memory leak in probe function
-Message-Id: <1353566531-31251-2-git-send-email-tushar.behera@linaro.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 15 Nov 2012 15:58:35 +0000
+Subject: [PATCH 27/32] OMAPDSS: move display sysfs init to compat layer
+Message-Id: <1352995120-3288-28-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353566531-31251-1-git-send-email-tushar.behera@linaro.org>
-In-Reply-To: <1353566531-31251-1-git-send-email-tushar.behera@linaro.org>
+References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: FlorianSchandinat@gmx.de, linux@prisktech.co.nz, patches@linaro.org
+To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-In case of error in probe function, there is a possibility of
-either iounmap not getting called or memory allocated for fb_mem_virt
-not getting freed.
+Move creation of the sysfs files for displays to the compat layer.
 
-Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/vt8500lcdfb.c |   16 ++++++++++++----
- 1 files changed, 12 insertions(+), 4 deletions(-)
+ drivers/video/omap2/dss/apply.c   |   14 ++++++++++++++
+ drivers/video/omap2/dss/display.c |    8 --------
+ 2 files changed, 14 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
-index 9af8da7..5777adc 100644
---- a/drivers/video/vt8500lcdfb.c
-+++ b/drivers/video/vt8500lcdfb.c
-@@ -350,7 +350,7 @@ static int __devinit vt8500lcd_probe(struct platform_device *pdev)
- 	if (!np) {
- 		pr_err("%s: No display description in Device Tree\n", __func__);
- 		ret = -EINVAL;
--		goto failed_free_res;
-+		goto failed_free_io;
- 	}
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 51124ab..b24ed758 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -1561,6 +1561,7 @@ static int compat_refcnt;
+ int omapdss_compat_init(void)
+ {
+ 	struct platform_device *pdev = dss_get_core_pdev();
++	struct omap_dss_device *dssdev = NULL;
+ 	int i, r;
  
- 	/*
-@@ -369,7 +369,7 @@ static int __devinit vt8500lcd_probe(struct platform_device *pdev)
- 	ret |= of_property_read_u32(np, "bpp", &bpp);
- 	if (ret) {
- 		pr_err("%s: Unable to read display properties\n", __func__);
--		goto failed_free_res;
-+		goto failed_free_io;
- 	}
- 	of_mode.vmode = FB_VMODE_NONINTERLACED;
+ 	mutex_lock(&apply_lock);
+@@ -1606,6 +1607,13 @@ int omapdss_compat_init(void)
+ 	if (r)
+ 		goto err_mgr_ops;
  
-@@ -379,7 +379,8 @@ static int __devinit vt8500lcd_probe(struct platform_device *pdev)
- 				GFP_KERNEL);
- 	if (!fb_mem_virt) {
- 		pr_err("%s: Failed to allocate framebuffer\n", __func__);
--		return -ENOMEM;
-+		ret = -ENOMEM;
-+		goto failed_free_io;
- 	};
- 
- 	fbi->fb.fix.smem_start	= fb_mem_phys;
-@@ -394,7 +395,7 @@ static int __devinit vt8500lcd_probe(struct platform_device *pdev)
- 	if (fbi->palette_cpu = NULL) {
- 		dev_err(&pdev->dev, "Failed to allocate palette buffer\n");
- 		ret = -ENOMEM;
--		goto failed_free_io;
-+		goto failed_free_fbmem;
- 	}
- 
- 	irq = platform_get_irq(pdev, 0);
-@@ -458,6 +459,9 @@ failed_free_irq:
- failed_free_palette:
- 	dma_free_coherent(&pdev->dev, fbi->palette_size,
- 			  fbi->palette_cpu, fbi->palette_phys);
-+failed_free_fbmem:
-+	dma_free_coherent(&pdev->dev, fbi->fb.fix.smem_len,
-+			  fbi->fb.screen_base, fbi->fb.fix.smem_start);
- failed_free_io:
- 	iounmap(fbi->regbase);
- failed_free_res:
-@@ -485,6 +489,10 @@ static int __devexit vt8500lcd_remove(struct platform_device *pdev)
- 	irq = platform_get_irq(pdev, 0);
- 	free_irq(irq, fbi);
- 
-+	if (fbi->fb.screen_base)
-+		dma_free_coherent(&pdev->dev, fbi->fb.fix.smem_len,
-+				  fbi->fb.screen_base, fbi->fb.fix.smem_start);
++	for_each_dss_dev(dssdev) {
++		r = display_init_sysfs(pdev, dssdev);
++		/* XXX uninit sysfs files on error */
++		if (r)
++			goto err_disp_sysfs;
++	}
 +
- 	dma_free_coherent(&pdev->dev, fbi->palette_size,
- 			  fbi->palette_cpu, fbi->palette_phys);
+ 	dispc_runtime_get();
  
+ 	r = dss_dispc_initialize_irq();
+@@ -1621,6 +1629,8 @@ out:
+ 
+ err_init_irq:
+ 	dispc_runtime_put();
++
++err_disp_sysfs:
+ 	dss_uninstall_mgr_ops();
+ 
+ err_mgr_ops:
+@@ -1638,6 +1648,7 @@ EXPORT_SYMBOL(omapdss_compat_init);
+ void omapdss_compat_uninit(void)
+ {
+ 	struct platform_device *pdev = dss_get_core_pdev();
++	struct omap_dss_device *dssdev = NULL;
+ 
+ 	mutex_lock(&apply_lock);
+ 
+@@ -1646,6 +1657,9 @@ void omapdss_compat_uninit(void)
+ 
+ 	dss_dispc_uninitialize_irq();
+ 
++	for_each_dss_dev(dssdev)
++		display_uninit_sysfs(pdev, dssdev);
++
+ 	dss_uninstall_mgr_ops();
+ 
+ 	dss_uninit_overlay_managers(pdev);
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index 008e9ee..b7383b4 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -90,20 +90,12 @@ int dss_init_device(struct platform_device *pdev,
+ 		return r;
+ 	}
+ 
+-	r = display_init_sysfs(pdev, dssdev);
+-	if (r) {
+-		omapdss_output_unset_device(dssdev->output);
+-		return r;
+-	}
+-
+ 	return 0;
+ }
+ 
+ void dss_uninit_device(struct platform_device *pdev,
+ 		struct omap_dss_device *dssdev)
+ {
+-	display_uninit_sysfs(pdev, dssdev);
+-
+ 	if (dssdev->output)
+ 		omapdss_output_unset_device(dssdev->output);
+ }
 -- 
-1.7.4.1
+1.7.10.4
 

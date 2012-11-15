@@ -1,69 +1,71 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Thu, 22 Nov 2012 16:00:08 +0000
-Subject: [PATCHv13 0/7] of: add display helper
-Message-Id: <1353600015-6974-1-git-send-email-s.trumtrar@pengutronix.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 15 Nov 2012 15:58:13 +0000
+Subject: [PATCH 05/32] OMAPDSS: DISPC: use get_framedone_irq in disable_digit_out
+Message-Id: <1352995120-3288-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi!
+dispc_mgr_disable_digit_out() needs to wait until the DIGIT output is
+turned off. This is done with either VSYNC irq on OMAP2/3 and
+FRAMEDONETV on OMAP4+. It currently uses a rather hacky way to decide
+what irq to use.
 
-Changes since v12:
-	- rename struct display_timing to via_display_timing in via subsystem
-	- fix refreshrate calculation
-	- fix "const struct *" warnings
-		(reported by: "Manjunathappa, Prakash" <prakash.pm@ti.com>)
-	- some CodingStyle fixes
-	- rewrite parts of commit messages and display-timings.txt
-	- let display_timing_get_value get all values instead of just typical
+This patch changes dispc_mgr_disable_digit_out to use
+dispc_mgr_get_framedone_irq to find out if there's framedone irq on this
+SoC, and if not, uses VSYNC.
 
-Regards,
-Steffen
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dispc.c |   19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
 
-Steffen Trumtrar (7):
-  viafb: rename display_timing to via_display_timing
-  video: add display_timing and videomode
-  video: add of helper for display timings/videomode
-  fbmon: add videomode helpers
-  fbmon: add of_videomode helpers
-  drm_modes: add videomode helpers
-  drm_modes: add of_videomode helpers
-
- .../devicetree/bindings/video/display-timings.txt  |  107 ++++++++++
- drivers/gpu/drm/drm_modes.c                        |   69 ++++++
- drivers/video/Kconfig                              |   21 ++
- drivers/video/Makefile                             |    4 +
- drivers/video/display_timing.c                     |   24 +++
- drivers/video/fbmon.c                              |   84 ++++++++
- drivers/video/of_display_timing.c                  |  223 ++++++++++++++++++++
- drivers/video/of_videomode.c                       |   48 +++++
- drivers/video/via/hw.c                             |    6 +-
- drivers/video/via/hw.h                             |    2 +-
- drivers/video/via/lcd.c                            |    2 +-
- drivers/video/via/share.h                          |    2 +-
- drivers/video/via/via_modesetting.c                |    8 +-
- drivers/video/via/via_modesetting.h                |    6 +-
- drivers/video/videomode.c                          |   45 ++++
- include/drm/drmP.h                                 |   12 ++
- include/linux/display_timing.h                     |  104 +++++++++
- include/linux/fb.h                                 |   12 ++
- include/linux/of_display_timings.h                 |   20 ++
- include/linux/of_videomode.h                       |   18 ++
- include/linux/videomode.h                          |   52 +++++
- 21 files changed, 856 insertions(+), 13 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/video/display-timings.txt
- create mode 100644 drivers/video/display_timing.c
- create mode 100644 drivers/video/of_display_timing.c
- create mode 100644 drivers/video/of_videomode.c
- create mode 100644 drivers/video/videomode.c
- create mode 100644 include/linux/display_timing.h
- create mode 100644 include/linux/of_display_timings.h
- create mode 100644 include/linux/of_videomode.h
- create mode 100644 include/linux/videomode.h
-
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 2ec6470..0972bd3 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2726,7 +2726,6 @@ static void dispc_mgr_enable_digit_out(void)
+ static void dispc_mgr_disable_digit_out(void)
+ {
+ 	DECLARE_COMPLETION_ONSTACK(framedone_compl);
+-	enum dss_hdmi_venc_clk_source_select src;
+ 	int r, i;
+ 	u32 irq_mask;
+ 	int num_irqs;
+@@ -2734,18 +2733,20 @@ static void dispc_mgr_disable_digit_out(void)
+ 	if (dispc_mgr_is_enabled(OMAP_DSS_CHANNEL_DIGIT) = false)
+ 		return;
+ 
+-	src = dss_get_hdmi_venc_clk_source();
+-
+ 	/*
+ 	 * When we disable the digit output, we need to wait for FRAMEDONE to
+-	 * know that DISPC has finished with the output. For analog tv out we'll
+-	 * use vsync, as omap2/3 don't have framedone for TV.
++	 * know that DISPC has finished with the output.
+ 	 */
+ 
+-	if (src = DSS_HDMI_M_PCLK) {
+-		irq_mask = DISPC_IRQ_FRAMEDONETV;
+-		num_irqs = 1;
+-	} else {
++	irq_mask = dispc_mgr_get_framedone_irq(OMAP_DSS_CHANNEL_DIGIT);
++	num_irqs = 1;
++
++	if (!irq_mask) {
++		/*
++		 * omap 2/3 don't have framedone irq for TV, so we need to use
++		 * vsyncs for this.
++		 */
++
+ 		irq_mask = dispc_mgr_get_vsync_irq(OMAP_DSS_CHANNEL_DIGIT);
+ 		/*
+ 		 * We need to wait for both even and odd vsyncs. Note that this
 -- 
 1.7.10.4
 

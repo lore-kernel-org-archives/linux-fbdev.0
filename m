@@ -1,180 +1,103 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 07 Nov 2012 14:56:21 +0000
-Subject: [RFC 03/11] OMAPDSS: APPLY: Apply writeback configurations
-Message-Id: <1352299469-17609-4-git-send-email-archit@ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Thu, 15 Nov 2012 09:23:56 +0000
+Subject: [PATCH v10 5/6] drm_modes: add videomode helpers
+Message-Id: <1352971437-29877-6-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <n>
- <1352299469-17609-1-git-send-email-archit@ti.com>
-In-Reply-To: <1352299469-17609-1-git-send-email-archit@ti.com>
+References: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-Add changes in apply to let a user apply writeback configurations. This
-basically involves a writeback user to commit the writeback_info it has set
-previously.
+Add conversion from videomode to drm_display_mode
 
-Only memory to memory mode is supported for now in APPLY. Actual register
-writes would only happen when a mem to mem update is initiated. Therefore,
-there isn't a need to support the cases of shadow registers being dirty.
-
-Add the following:
-- info and info_dirty fields in private data to represent the lower cache of
-  writeback info in APPLY.
-- Function omap_dss_wb_apply which propagates user_info to info, and an
-  equivalent function in writeback output driver exposed to writeback users.
-- Function dss_wb_write_regs to be used by APPLY to configure writeback DISPC
-  registers.
-- Helper function which tells the mode of writeback.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 ---
- drivers/video/omap2/dss/apply.c     |   68 +++++++++++++++++++++++++++++++++++
- drivers/video/omap2/dss/dss.h       |    1 +
- drivers/video/omap2/dss/writeback.c |    6 ++++
- include/video/omapdss.h             |    1 +
- 4 files changed, 76 insertions(+)
+ drivers/gpu/drm/drm_modes.c |   37 +++++++++++++++++++++++++++++++++++++
+ include/drm/drmP.h          |    6 ++++++
+ 2 files changed, 43 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index b2e4f6a..76886da 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -110,6 +110,15 @@ struct wb_priv_data {
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 59450f3..23d951a0 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -35,6 +35,7 @@
+ #include <linux/export.h>
+ #include <drm/drmP.h>
+ #include <drm/drm_crtc.h>
++#include <linux/videomode.h>
  
- 	bool user_info_dirty;
- 	struct omap_dss_writeback_info user_info;
-+
-+	bool info_dirty;
-+	struct omap_dss_writeback_info info;
-+
-+	/*
-+	 * If true in memory to memory mode, a manager is connected to it.
-+	 * However, it may not be active.
-+	 */
-+	bool enabled;
- };
- 
- static struct {
-@@ -209,6 +218,11 @@ static bool mgr_manual_update(struct omap_overlay_manager *mgr)
- 	return mp->lcd_config.stallmode;
+ /**
+  * drm_mode_debug_printmodeline - debug print a mode
+@@ -504,6 +505,42 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, int vdisplay, int vrefresh,
  }
+ EXPORT_SYMBOL(drm_gtf_mode);
  
-+static bool wb_manual_update(struct omap_dss_output *wb)
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++int drm_display_mode_from_videomode(struct videomode *vm,
++				    struct drm_display_mode *dmode)
 +{
-+	return true;
-+}
++	dmode->hdisplay = vm->hactive;
++	dmode->hsync_start = dmode->hdisplay + vm->hfront_porch;
++	dmode->hsync_end = dmode->hsync_start + vm->hsync_len;
++	dmode->htotal = dmode->hsync_end + vm->hback_porch;
 +
- static int dss_check_settings_low(struct omap_overlay_manager *mgr,
- 		bool applying)
- {
-@@ -684,6 +698,36 @@ static void dss_mgr_write_regs_extra(struct omap_overlay_manager *mgr)
- 		mp->shadow_extra_info_dirty = true;
- }
- 
-+static void dss_wb_write_regs(struct omap_dss_output *wb)
-+{
-+	struct wb_priv_data *wp = get_wb_priv(wb);
-+	struct omap_dss_writeback_info *wi;
-+	struct mgr_priv_data *mp;
-+	u32 fifo_low, fifo_high;
-+	bool use_fifo_merge = false;
-+	int r;
++	dmode->vdisplay = vm->vactive;
++	dmode->vsync_start = dmode->vdisplay + vm->vfront_porch;
++	dmode->vsync_end = dmode->vsync_start + vm->vsync_len;
++	dmode->vtotal = dmode->vsync_end + vm->vback_porch;
 +
-+	if (!wp->enabled || !wp->info_dirty)
-+		return;
++	dmode->clock = vm->pixelclock / 1000;
 +
-+	wi = &wp->info;
-+
-+	mp = get_mgr_priv(wb->manager);
-+
-+	dispc_ovl_compute_fifo_thresholds(OMAP_DSS_WB, &fifo_low, &fifo_high,
-+			use_fifo_merge, wb_manual_update(wb));
-+
-+	dispc_ovl_set_fifo_threshold(OMAP_DSS_WB, fifo_low, fifo_high);
-+
-+	r = dispc_wb_setup(wi, wb_manual_update(wb), &mp->timings);
-+	if (r) {
-+		DSSERR("dispc_wb_setup failed %d\n", r);
-+		return;
-+	}
-+
-+	wp->info_dirty = false;
-+}
-+
- static void dss_write_regs(void)
- {
- 	const int num_mgrs = omap_dss_get_num_overlay_managers();
-@@ -1507,3 +1551,27 @@ void dss_wb_get_info(struct omap_dss_output *wb,
- 
- 	spin_unlock_irqrestore(&data_lock, flags);
- }
-+
-+int omap_dss_wb_apply(struct omap_dss_output *wb)
-+{
-+	struct wb_priv_data *wp = get_wb_priv(wb);
-+	unsigned long flags;
-+
-+	DSSDBG("omap_dss_wb_apply\n");
-+
-+	spin_lock_irqsave(&data_lock, flags);
-+
-+	/* check for settings here */
-+
-+	if (!wp->user_info_dirty)
-+		goto end;
-+
-+	wp->user_info_dirty = false;
-+	wp->info_dirty = true;
-+	wp->info = wp->user_info;
-+
-+end:
-+	spin_unlock_irqrestore(&data_lock, flags);
++	dmode->flags = 0;
++	if (vm->hah)
++		dmode->flags |= DRM_MODE_FLAG_PHSYNC;
++	else
++		dmode->flags |= DRM_MODE_FLAG_NHSYNC;
++	if (vm->vah)
++		dmode->flags |= DRM_MODE_FLAG_PVSYNC;
++	else
++		dmode->flags |= DRM_MODE_FLAG_NVSYNC;
++	if (vm->interlaced)
++		dmode->flags |= DRM_MODE_FLAG_INTERLACE;
++	if (vm->doublescan)
++		dmode->flags |= DRM_MODE_FLAG_DBLSCAN;
++	drm_mode_set_name(dmode);
 +
 +	return 0;
 +}
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index f738c1e..1b9c936 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -214,6 +214,7 @@ int dss_wb_set_info(struct omap_dss_output *wb,
- 		struct omap_dss_writeback_info *info);
- void dss_wb_get_info(struct omap_dss_output *wb,
- 		struct omap_dss_writeback_info *info);
-+int omap_dss_wb_apply(struct omap_dss_output *wb);
- 
- /* output */
- void dss_register_output(struct omap_dss_output *out);
-diff --git a/drivers/video/omap2/dss/writeback.c b/drivers/video/omap2/dss/writeback.c
-index be7027b..c05dd54 100644
---- a/drivers/video/omap2/dss/writeback.c
-+++ b/drivers/video/omap2/dss/writeback.c
-@@ -42,6 +42,12 @@ static inline struct platform_device *writeback_get_wbdev_from_output(struct oma
- 	return out->pdev;
- }
- 
-+int omapdss_writeback_apply(struct omap_dss_output *wb)
-+{
-+	return omap_dss_wb_apply(wb);
-+}
-+EXPORT_SYMBOL(omapdss_writeback_apply);
++EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
++#endif
 +
- int omapdss_writeback_set_info(struct omap_dss_output *wb,
- 		struct omap_dss_writeback_info *info)
- {
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 2a3a878..2bc10cb 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -837,6 +837,7 @@ void omapdss_rfbi_set_data_lines(struct omap_dss_device *dssdev,
- void omapdss_rfbi_set_interface_timings(struct omap_dss_device *dssdev,
- 		struct rfbi_timings *timings);
+ /**
+  * drm_mode_set_name - set the name on a mode
+  * @mode: name will be set in this mode
+diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+index 3fd8280..341049c 100644
+--- a/include/drm/drmP.h
++++ b/include/drm/drmP.h
+@@ -56,6 +56,7 @@
+ #include <linux/cdev.h>
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
++#include <linux/videomode.h>
+ #if defined(__alpha__) || defined(__powerpc__)
+ #include <asm/pgtable.h>	/* For pte_wrprotect */
+ #endif
+@@ -1454,6 +1455,11 @@ extern struct drm_display_mode *
+ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
+ 				  struct drm_cmdline_mode *cmd);
  
-+int omapdss_writeback_apply(struct omap_dss_output *wb);
- int omapdss_writeback_set_info(struct omap_dss_output *wb,
- 		struct omap_dss_writeback_info *info);
- void omapdss_writeback_get_info(struct omap_dss_output *wb,
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++extern int drm_display_mode_from_videomode(struct videomode *vm,
++					   struct drm_display_mode *dmode);
++#endif
++
+ /* Modesetting support */
+ extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
+ extern void drm_vblank_post_modeset(struct drm_device *dev, int crtc);
 -- 
-1.7.9.5
+1.7.10.4
 

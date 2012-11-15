@@ -1,101 +1,58 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Thu, 15 Nov 2012 09:23:57 +0000
-Subject: [PATCH v10 6/6] drm_modes: add of_videomode helpers
-Message-Id: <1352971437-29877-7-git-send-email-s.trumtrar@pengutronix.de>
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Thu, 15 Nov 2012 09:58:49 +0000
+Subject: Re: [PATCH v10 6/6] drm_modes: add of_videomode helpers
+Message-Id: <20121115095848.GA31538@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="bg08WKrSYDhXBjb5"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+ <1352971437-29877-7-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352971437-29877-7-git-send-email-s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+To: Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-Add helper to get drm_display_mode from devicetree.
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
----
- drivers/gpu/drm/drm_modes.c |   35 ++++++++++++++++++++++++++++++++++-
- include/drm/drmP.h          |    6 ++++++
- 2 files changed, 40 insertions(+), 1 deletion(-)
+--bg08WKrSYDhXBjb5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index 23d951a0..810b534 100644
---- a/drivers/gpu/drm/drm_modes.c
-+++ b/drivers/gpu/drm/drm_modes.c
-@@ -35,7 +35,8 @@
- #include <linux/export.h>
- #include <drm/drmP.h>
- #include <drm/drm_crtc.h>
--#include <linux/videomode.h>
-+#include <linux/of.h>
-+#include <linux/of_videomode.h>
- 
- /**
-  * drm_mode_debug_printmodeline - debug print a mode
-@@ -541,6 +542,38 @@ int drm_display_mode_from_videomode(struct videomode *vm,
- EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
- #endif
- 
-+#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+/**
-+ * of_get_drm_display_mode - get a drm_display_mode from devicetree
-+ * @np: device_node with the timing specification
-+ * @dmode: will be set to the return value
-+ * @index: index into the list of display timings in devicetree
-+ *
-+ * This function is expensive and should only be used, if only one mode is to be
-+ * read from DT. To get multiple modes start with of_get_display_timings and
-+ * work with that instead.
-+ */
-+int of_get_drm_display_mode(struct device_node *np,
-+			    struct drm_display_mode *dmode, unsigned int index)
-+{
-+	struct videomode vm;
-+	int ret;
-+
-+	ret = of_get_videomode(np, &vm, index);
-+	if (ret)
-+		return ret;
-+
-+	display_mode_from_videomode(&vm, dmode);
-+
-+	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
-+		vm.vactive, np->name);
-+	drm_mode_debug_printmodeline(dmode);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(of_get_drm_display_mode);
-+#endif
-+
- /**
-  * drm_mode_set_name - set the name on a mode
-  * @mode: name will be set in this mode
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index 341049c..ae132be 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -56,6 +56,7 @@
- #include <linux/cdev.h>
- #include <linux/mutex.h>
- #include <linux/slab.h>
-+#include <linux/of.h>
- #include <linux/videomode.h>
- #if defined(__alpha__) || defined(__powerpc__)
- #include <asm/pgtable.h>	/* For pte_wrprotect */
-@@ -1459,6 +1460,11 @@ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
- extern int drm_display_mode_from_videomode(struct videomode *vm,
- 					   struct drm_display_mode *dmode);
- #endif
-+#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+extern int of_get_drm_display_mode(struct device_node *np,
-+				   struct drm_display_mode *dmode,
-+				   unsigned int index);
-+#endif
- 
- /* Modesetting support */
- extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
--- 
-1.7.10.4
+On Thu, Nov 15, 2012 at 10:23:57AM +0100, Steffen Trumtrar wrote:
+[...]
+> +int of_get_drm_display_mode(struct device_node *np,
+> +			    struct drm_display_mode *dmode, unsigned int index)
+> +{
+> +	struct videomode vm;
+> +	int ret;
+> +
+> +	ret = of_get_videomode(np, &vm, index);
+> +	if (ret)
+> +		return ret;
+> +
+> +	display_mode_from_videomode(&vm, dmode);
 
+This function is now called drm_display_mode_from_videomode().
+
+Thierry
+
+--bg08WKrSYDhXBjb5
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQpLzYAAoJEN0jrNd/PrOhmfYP/0DHD7I1jSNkjQaYPc0hW9Sa
+KlRgpp741fKnmaiFt9Jaqk3qPIoWp0HmqNBx4Gzsb2r3dIZgUkwocuHcuktYqMB3
+1RGIn2UYFON0rLjKZ97ZIAlCEMPt6NVWjFWSjscLVW5CLkzfmgq88l4qSRRgCnm+
+alE0QMFhCUs/ivJjQjRXRF+Jshg3rXtizj4Sa43AY/uadUQHZJQfVajKrzjYBfFS
+rN103jy0iu2JLYBKydbSB7tvJRHJst4OOaHmegD8194LCDKaoabDYVWQZXQnKGJ+
+mzj1CjYQdpzQVf4AJ+9DOu1BRqWLS1sNR7GoTREuhhoT/bs3Si1YnEAWu5kO2red
+IH/0R5soALEfQJ/NTM5nA67n4B7KcA25KofdSO7XJYu+Gexp1VoFLbqR2ILGarnH
+knDh1Z4wRTxOUpYkfNdNpA0eM8wdjbv3pUOb2wthA841nXtYLuKPd/t/v/4vLCeu
+00bgdBbsvBJdd6Uw08IgBmJ73srBWUHBCmAW05H+Mo3cPb4qP4rhhR9BbkIewHUx
+daiLb/L82bwwl+hE/mrIFQxvhHcCzRH0vJ1OijhRw6WPgPFoSjm1TTSbR8199YEE
+NCcluqDvs58jMQNFUPZGXGw7Rk0uoONGeyC/vj5Uvbbf/cNPQr8B4UIFpsaZ61/a
+Qi9gczL5lOYYM88xup7u
+=NTSA
+-----END PGP SIGNATURE-----
+
+--bg08WKrSYDhXBjb5--

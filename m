@@ -1,478 +1,1081 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Mon, 12 Nov 2012 15:37:02 +0000
-Subject: =?UTF-8?q?=5BPATCH=20v8=202/6=5D=20video=3A=20add=20of=20helper=20for=20videomode?=
-Message-Id: <1352734626-27412-3-git-send-email-s.trumtrar@pengutronix.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 15 Nov 2012 15:58:32 +0000
+Subject: [PATCH 24/32] OMAPDSS: move irq handling to dispc-compat
+Message-Id: <1352995120-3288-25-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352734626-27412-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1352734626-27412-1-git-send-email-s.trumtrar@pengutronix.de>
+References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Philipp Zabel <p.zabel@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This adds support for reading display timings from DT or/and convert one of those
-timings to a videomode.
-The of_display_timing implementation supports multiple children where each
-property can have up to 3 values. All children are read into an array, that
-can be queried.
-of_get_videomode converts exactly one of that timings to a struct videomode.
+The whole dispc irq handling system we currently have is only needed for
+compat layer, and thus can be moved from dispc.c to the compat layer.
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+This is quite straigtforward, but we need to add new dispc functions to
+request and free the actual hardware irq: dispc_request_irq() and
+dispc_free_irq().
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- .../devicetree/bindings/video/display-timings.txt  |  107 +++++++++++
- drivers/video/Kconfig                              |   13 ++
- drivers/video/Makefile                             |    2 +
- drivers/video/of_display_timing.c                  |  186 ++++++++++++++++++++
- drivers/video/of_videomode.c                       |   47 +++++
- include/linux/of_display_timings.h                 |   19 ++
- include/linux/of_videomode.h                       |   15 ++
- 7 files changed, 389 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/display-timings.txt
- create mode 100644 drivers/video/of_display_timing.c
- create mode 100644 drivers/video/of_videomode.c
- create mode 100644 include/linux/of_display_timings.h
- create mode 100644 include/linux/of_videomode.h
+ drivers/video/omap2/dss/apply.c        |   14 +
+ drivers/video/omap2/dss/dispc-compat.c |  430 +++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/dispc-compat.h |    3 +
+ drivers/video/omap2/dss/dispc.c        |  437 +-------------------------------
+ drivers/video/omap2/dss/dss.h          |    5 +
+ 5 files changed, 463 insertions(+), 426 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/display-timings.txt b/Documentation/devicetree/bindings/video/display-timings.txt
-new file mode 100644
-index 0000000..e22e2fd
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/display-timings.txt
-@@ -0,0 +1,107 @@
-+display-timings bindings
-+============
-+
-+display-timings-node
-+--------------------
-+
-+required properties:
-+ - none
-+
-+optional properties:
-+ - native-mode: the native mode for the display, in case multiple modes are
-+		provided. When omitted, assume the first node is the native.
-+
-+timings-subnode
-+---------------
-+
-+required properties:
-+ - hactive, vactive: Display resolution
-+ - hfront-porch, hback-porch, hsync-len: Horizontal Display timing parameters
-+   in pixels
-+   vfront-porch, vback-porch, vsync-len: Vertical display timing parameters in
-+   lines
-+ - clock-frequency: displayclock in Hz
-+
-+optional properties:
-+ - hsync-active : Hsync pulse is active low/high/ignored
-+ - vsync-active : Vsync pulse is active low/high/ignored
-+ - de-active : Data-Enable pulse is active low/high/ignored
-+ - pixelclk-inverted : pixelclock is inverted/non-inverted/ignored
-+ - interlaced (bool)
-+ - doublescan (bool)
-+
-+All the optional properties that are not bool follow the following logic:
-+    <1> : high active
-+    <0> : low active
-+    omitted : not used on hardware
-+
-+There are different ways of describing the capabilities of a display. The devicetree
-+representation corresponds to the one commonly found in datasheets for displays.
-+If a display supports multiple signal timings, the native-mode can be specified.
-+
-+The parameters are defined as
-+
-+struct display_timing
-+==========+
-+  +----------+---------------------------------------------+----------+-------+
-+  |          |                ↑                            |          |       |
-+  |          |                |vback_porch                 |          |       |
-+  |          |                ↓                            |          |       |
-+  +----------###############################################----------+-------+
-+  |          #                ↑                            #          |       |
-+  |          #                |                            #          |       |
-+  |  hback   #                |                            #  hfront  | hsync |
-+  |   porch  #                |       hactive              #  porch   |  len  |
-+  |<-------->#<---------------+--------------------------->#<-------->|<----->|
-+  |          #                |                            #          |       |
-+  |          #                |vactive                     #          |       |
-+  |          #                |                            #          |       |
-+  |          #                ↓                            #          |       |
-+  +----------###############################################----------+-------+
-+  |          |                ↑                            |          |       |
-+  |          |                |vfront_porch                |          |       |
-+  |          |                ↓                            |          |       |
-+  +----------+---------------------------------------------+----------+-------+
-+  |          |                ↑                            |          |       |
-+  |          |                |vsync_len                   |          |       |
-+  |          |                ↓                            |          |       |
-+  +----------+---------------------------------------------+----------+-------+
-+
-+
-+Example:
-+
-+	display-timings {
-+		native-mode = <&timing0>;
-+		timing0: 1920p24 {
-+			/* 1920x1080p24 */
-+			clock-frequency = <52000000>;
-+			hactive = <1920>;
-+			vactive = <1080>;
-+			hfront-porch = <25>;
-+			hback-porch = <25>;
-+			hsync-len = <25>;
-+			vback-porch = <2>;
-+			vfront-porch = <2>;
-+			vsync-len = <2>;
-+			hsync-active = <1>;
-+		};
-+	};
-+
-+Every required property also supports the use of ranges, so the commonly used
-+datasheet description with <min typ max>-tuples can be used.
-+
-+Example:
-+
-+	timing1: timing {
-+		/* 1920x1080p24 */
-+		clock-frequency = <148500000>;
-+		hactive = <1920>;
-+		vactive = <1080>;
-+		hsync-len = <0 44 60>;
-+		hfront-porch = <80 88 95>;
-+		hback-porch = <100 148 160>;
-+		vfront-porch = <0 4 6>;
-+		vback-porch = <0 36 50>;
-+		vsync-len = <0 5 6>;
-+	};
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 2a23b18..a324457 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -39,6 +39,19 @@ config DISPLAY_TIMING
- config VIDEOMODE
-        bool
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 45d837f..51124ab 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -1606,11 +1606,23 @@ int omapdss_compat_init(void)
+ 	if (r)
+ 		goto err_mgr_ops;
  
-+config OF_DISPLAY_TIMING
-+	def_bool y
-+	select DISPLAY_TIMING
-+	help
-+	  helper to parse display timings from the devicetree
++	dispc_runtime_get();
 +
-+config OF_VIDEOMODE
-+	def_bool y
-+	select VIDEOMODE
-+	select OF_DISPLAY_TIMING
-+	help
-+	  helper to get videomodes from the devicetree
++	r = dss_dispc_initialize_irq();
++	if (r)
++		goto err_init_irq;
 +
- menuconfig FB
- 	tristate "Support for frame buffer devices"
- 	---help---
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index fc30439..b936b00 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -168,4 +168,6 @@ obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
- #video output switch sysfs driver
- obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) += output.o
- obj-$(CONFIG_DISPLAY_TIMING) += display_timing.o
-+obj-$(CONFIG_OF_DISPLAY_TIMING) += of_display_timing.o
- obj-$(CONFIG_VIDEOMODE) += videomode.o
-+obj-$(CONFIG_OF_VIDEOMODE) += of_videomode.o
-diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
-new file mode 100644
-index 0000000..0bd30cc
---- /dev/null
-+++ b/drivers/video/of_display_timing.c
-@@ -0,0 +1,186 @@
-+/*
-+ * OF helpers for parsing display timings
-+ *
-+ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
-+ *
-+ * based on of_videomode.c by Sascha Hauer <s.hauer@pengutronix.de>
-+ *
-+ * This file is released under the GPLv2
-+ */
-+#include <linux/of.h>
-+#include <linux/slab.h>
-+#include <linux/export.h>
-+#include <linux/of_display_timings.h>
++	dispc_runtime_put();
 +
-+/**
-+ * parse_property - parse timing_entry from device_node
-+ * @np: device_node with the property
-+ * @name: name of the property
-+ * @result: will be set to the return value
-+ *
-+ * DESCRIPTION:
-+ * Every display_timing can be specified with either just the typical value or
-+ * a range consisting of min/typ/max. This function helps handling this
-+ **/
-+static int parse_property(struct device_node *np, char *name,
-+				struct timing_entry *result)
+ out:
+ 	mutex_unlock(&apply_lock);
+ 
+ 	return 0;
+ 
++err_init_irq:
++	dispc_runtime_put();
++	dss_uninstall_mgr_ops();
++
+ err_mgr_ops:
+ 	dss_uninit_overlay_managers(pdev);
+ 	dss_uninit_overlays(pdev);
+@@ -1632,6 +1644,8 @@ void omapdss_compat_uninit(void)
+ 	if (--compat_refcnt > 0)
+ 		goto out;
+ 
++	dss_dispc_uninitialize_irq();
++
+ 	dss_uninstall_mgr_ops();
+ 
+ 	dss_uninit_overlay_managers(pdev);
+diff --git a/drivers/video/omap2/dss/dispc-compat.c b/drivers/video/omap2/dss/dispc-compat.c
+index 24e1d5e..928884c 100644
+--- a/drivers/video/omap2/dss/dispc-compat.c
++++ b/drivers/video/omap2/dss/dispc-compat.c
+@@ -23,6 +23,8 @@
+ #include <linux/spinlock.h>
+ #include <linux/jiffies.h>
+ #include <linux/delay.h>
++#include <linux/interrupt.h>
++#include <linux/seq_file.h>
+ 
+ #include <video/omapdss.h>
+ 
+@@ -30,6 +32,434 @@
+ #include "dss_features.h"
+ #include "dispc-compat.h"
+ 
++#define DISPC_IRQ_MASK_ERROR            (DISPC_IRQ_GFX_FIFO_UNDERFLOW | \
++					 DISPC_IRQ_OCP_ERR | \
++					 DISPC_IRQ_VID1_FIFO_UNDERFLOW | \
++					 DISPC_IRQ_VID2_FIFO_UNDERFLOW | \
++					 DISPC_IRQ_SYNC_LOST | \
++					 DISPC_IRQ_SYNC_LOST_DIGIT)
++
++#define DISPC_MAX_NR_ISRS		8
++
++struct omap_dispc_isr_data {
++	omap_dispc_isr_t	isr;
++	void			*arg;
++	u32			mask;
++};
++
++struct dispc_irq_stats {
++	unsigned long last_reset;
++	unsigned irq_count;
++	unsigned irqs[32];
++};
++
++static struct {
++	spinlock_t irq_lock;
++	u32 irq_error_mask;
++	struct omap_dispc_isr_data registered_isr[DISPC_MAX_NR_ISRS];
++	u32 error_irqs;
++	struct work_struct error_work;
++
++#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
++	spinlock_t irq_stats_lock;
++	struct dispc_irq_stats irq_stats;
++#endif
++} dispc_compat;
++
++
++#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
++static void dispc_dump_irqs(struct seq_file *s)
 +{
-+	struct property *prop;
-+	int length, cells, ret;
++	unsigned long flags;
++	struct dispc_irq_stats stats;
 +
-+	prop = of_find_property(np, name, &length);
-+	if (!prop) {
-+		pr_err("%s: could not find property %s\n", __func__, name);
-+		return -EINVAL;
++	spin_lock_irqsave(&dispc_compat.irq_stats_lock, flags);
++
++	stats = dispc_compat.irq_stats;
++	memset(&dispc_compat.irq_stats, 0, sizeof(dispc_compat.irq_stats));
++	dispc_compat.irq_stats.last_reset = jiffies;
++
++	spin_unlock_irqrestore(&dispc_compat.irq_stats_lock, flags);
++
++	seq_printf(s, "period %u ms\n",
++			jiffies_to_msecs(jiffies - stats.last_reset));
++
++	seq_printf(s, "irqs %d\n", stats.irq_count);
++#define PIS(x) \
++	seq_printf(s, "%-20s %10d\n", #x, stats.irqs[ffs(DISPC_IRQ_##x)-1]);
++
++	PIS(FRAMEDONE);
++	PIS(VSYNC);
++	PIS(EVSYNC_EVEN);
++	PIS(EVSYNC_ODD);
++	PIS(ACBIAS_COUNT_STAT);
++	PIS(PROG_LINE_NUM);
++	PIS(GFX_FIFO_UNDERFLOW);
++	PIS(GFX_END_WIN);
++	PIS(PAL_GAMMA_MASK);
++	PIS(OCP_ERR);
++	PIS(VID1_FIFO_UNDERFLOW);
++	PIS(VID1_END_WIN);
++	PIS(VID2_FIFO_UNDERFLOW);
++	PIS(VID2_END_WIN);
++	if (dss_feat_get_num_ovls() > 3) {
++		PIS(VID3_FIFO_UNDERFLOW);
++		PIS(VID3_END_WIN);
++	}
++	PIS(SYNC_LOST);
++	PIS(SYNC_LOST_DIGIT);
++	PIS(WAKEUP);
++	if (dss_has_feature(FEAT_MGR_LCD2)) {
++		PIS(FRAMEDONE2);
++		PIS(VSYNC2);
++		PIS(ACBIAS_COUNT_STAT2);
++		PIS(SYNC_LOST2);
++	}
++	if (dss_has_feature(FEAT_MGR_LCD3)) {
++		PIS(FRAMEDONE3);
++		PIS(VSYNC3);
++		PIS(ACBIAS_COUNT_STAT3);
++		PIS(SYNC_LOST3);
++	}
++#undef PIS
++}
++#endif
++
++/* dispc.irq_lock has to be locked by the caller */
++static void _omap_dispc_set_irqs(void)
++{
++	u32 mask;
++	int i;
++	struct omap_dispc_isr_data *isr_data;
++
++	mask = dispc_compat.irq_error_mask;
++
++	for (i = 0; i < DISPC_MAX_NR_ISRS; i++) {
++		isr_data = &dispc_compat.registered_isr[i];
++
++		if (isr_data->isr = NULL)
++			continue;
++
++		mask |= isr_data->mask;
 +	}
 +
-+	cells = length / sizeof(u32);
-+	if (cells = 1) {
-+		ret = of_property_read_u32(np, name, &result->typ);
-+		result->min = result->typ;
-+		result->max = result->typ;
-+	} else if (cells = 3) {
-+		ret = of_property_read_u32_array(np, name, &result->min, cells);
-+	} else {
-+		pr_err("%s: illegal timing specification in %s\n", __func__, name);
++	dispc_write_irqenable(mask);
++}
++
++int omap_dispc_register_isr(omap_dispc_isr_t isr, void *arg, u32 mask)
++{
++	int i;
++	int ret;
++	unsigned long flags;
++	struct omap_dispc_isr_data *isr_data;
++
++	if (isr = NULL)
 +		return -EINVAL;
++
++	spin_lock_irqsave(&dispc_compat.irq_lock, flags);
++
++	/* check for duplicate entry */
++	for (i = 0; i < DISPC_MAX_NR_ISRS; i++) {
++		isr_data = &dispc_compat.registered_isr[i];
++		if (isr_data->isr = isr && isr_data->arg = arg &&
++				isr_data->mask = mask) {
++			ret = -EINVAL;
++			goto err;
++		}
 +	}
++
++	isr_data = NULL;
++	ret = -EBUSY;
++
++	for (i = 0; i < DISPC_MAX_NR_ISRS; i++) {
++		isr_data = &dispc_compat.registered_isr[i];
++
++		if (isr_data->isr != NULL)
++			continue;
++
++		isr_data->isr = isr;
++		isr_data->arg = arg;
++		isr_data->mask = mask;
++		ret = 0;
++
++		break;
++	}
++
++	if (ret)
++		goto err;
++
++	_omap_dispc_set_irqs();
++
++	spin_unlock_irqrestore(&dispc_compat.irq_lock, flags);
++
++	return 0;
++err:
++	spin_unlock_irqrestore(&dispc_compat.irq_lock, flags);
 +
 +	return ret;
 +}
++EXPORT_SYMBOL(omap_dispc_register_isr);
 +
-+/**
-+ * of_get_display_timing - parse display_timing entry from device_node
-+ * @np: device_node with the properties
-+ **/
-+static struct display_timing *of_get_display_timing(struct device_node *np)
++int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask)
 +{
-+	struct display_timing *dt;
-+	int ret = 0;
++	int i;
++	unsigned long flags;
++	int ret = -EINVAL;
++	struct omap_dispc_isr_data *isr_data;
 +
-+	dt = kzalloc(sizeof(*dt), GFP_KERNEL);
-+	if (!dt) {
-+		pr_err("%s: could not allocate display_timing struct\n", __func__);
-+		return NULL;
++	spin_lock_irqsave(&dispc_compat.irq_lock, flags);
++
++	for (i = 0; i < DISPC_MAX_NR_ISRS; i++) {
++		isr_data = &dispc_compat.registered_isr[i];
++		if (isr_data->isr != isr || isr_data->arg != arg ||
++				isr_data->mask != mask)
++			continue;
++
++		/* found the correct isr */
++
++		isr_data->isr = NULL;
++		isr_data->arg = NULL;
++		isr_data->mask = 0;
++
++		ret = 0;
++		break;
 +	}
 +
-+	ret |= parse_property(np, "hback-porch", &dt->hback_porch);
-+	ret |= parse_property(np, "hfront-porch", &dt->hfront_porch);
-+	ret |= parse_property(np, "hactive", &dt->hactive);
-+	ret |= parse_property(np, "hsync-len", &dt->hsync_len);
-+	ret |= parse_property(np, "vback-porch", &dt->vback_porch);
-+	ret |= parse_property(np, "vfront-porch", &dt->vfront_porch);
-+	ret |= parse_property(np, "vactive", &dt->vactive);
-+	ret |= parse_property(np, "vsync-len", &dt->vsync_len);
-+	ret |= parse_property(np, "clock-frequency", &dt->pixelclock);
++	if (ret = 0)
++		_omap_dispc_set_irqs();
 +
-+	of_property_read_u32(np, "vsync-active", &dt->vsync_pol_active);
-+	of_property_read_u32(np, "hsync-active", &dt->hsync_pol_active);
-+	of_property_read_u32(np, "de-active", &dt->de_pol_active);
-+	of_property_read_u32(np, "pixelclk-inverted", &dt->pixelclk_pol);
-+	dt->interlaced = of_property_read_bool(np, "interlaced");
-+	dt->doublescan = of_property_read_bool(np, "doublescan");
++	spin_unlock_irqrestore(&dispc_compat.irq_lock, flags);
 +
-+	if (ret) {
-+		pr_err("%s: error reading timing properties\n", __func__);
-+		return NULL;
-+	}
++	return ret;
++}
++EXPORT_SYMBOL(omap_dispc_unregister_isr);
 +
-+	return dt;
++static void print_irq_status(u32 status)
++{
++	if ((status & dispc_compat.irq_error_mask) = 0)
++		return;
++
++#define PIS(x) (status & DISPC_IRQ_##x) ? (#x " ") : ""
++
++	pr_debug("DISPC IRQ: 0x%x: %s%s%s%s%s%s%s%s%s\n",
++		status,
++		PIS(OCP_ERR),
++		PIS(GFX_FIFO_UNDERFLOW),
++		PIS(VID1_FIFO_UNDERFLOW),
++		PIS(VID2_FIFO_UNDERFLOW),
++		dss_feat_get_num_ovls() > 3 ? PIS(VID3_FIFO_UNDERFLOW) : "",
++		PIS(SYNC_LOST),
++		PIS(SYNC_LOST_DIGIT),
++		dss_has_feature(FEAT_MGR_LCD2) ? PIS(SYNC_LOST2) : "",
++		dss_has_feature(FEAT_MGR_LCD3) ? PIS(SYNC_LOST3) : "");
++#undef PIS
 +}
 +
-+/**
-+ * of_get_display_timings - parse all display_timing entries from a device_node
-+ * @np: device_node with the subnodes
-+ **/
-+struct display_timings *of_get_display_timings(struct device_node *np)
++/* Called from dss.c. Note that we don't touch clocks here,
++ * but we presume they are on because we got an IRQ. However,
++ * an irq handler may turn the clocks off, so we may not have
++ * clock later in the function. */
++static irqreturn_t omap_dispc_irq_handler(int irq, void *arg)
 +{
-+	struct device_node *timings_np;
-+	struct device_node *entry;
-+	struct device_node *native_mode;
-+	struct display_timings *disp;
++	int i;
++	u32 irqstatus, irqenable;
++	u32 handledirqs = 0;
++	u32 unhandled_errors;
++	struct omap_dispc_isr_data *isr_data;
++	struct omap_dispc_isr_data registered_isr[DISPC_MAX_NR_ISRS];
 +
-+	if (!np) {
-+		pr_err("%s: no devicenode given\n", __func__);
-+		return NULL;
++	spin_lock(&dispc_compat.irq_lock);
++
++	irqstatus = dispc_read_irqstatus();
++	irqenable = dispc_read_irqenable();
++
++	/* IRQ is not for us */
++	if (!(irqstatus & irqenable)) {
++		spin_unlock(&dispc_compat.irq_lock);
++		return IRQ_NONE;
 +	}
 +
-+	timings_np = of_find_node_by_name(np, "display-timings");
-+	if (!timings_np) {
-+		pr_err("%s: could not find display-timings node\n", __func__);
-+		return NULL;
-+	}
++#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
++	spin_lock(&dispc_compat.irq_stats_lock);
++	dispc_compat.irq_stats.irq_count++;
++	dss_collect_irq_stats(irqstatus, dispc_compat.irq_stats.irqs);
++	spin_unlock(&dispc_compat.irq_stats_lock);
++#endif
 +
-+	disp = kzalloc(sizeof(*disp), GFP_KERNEL);
-+	if (!disp)
-+		return -ENOMEM;
++	print_irq_status(irqstatus);
 +
-+	entry = of_parse_phandle(timings_np, "native-mode", 0);
-+	/* assume first child as native mode if none provided */
-+	if (!entry)
-+		entry = of_get_next_child(np, NULL);
-+	if (!entry) {
-+		pr_err("%s: no timing specifications given\n", __func__);
-+		return NULL;
-+	}
++	/* Ack the interrupt. Do it here before clocks are possibly turned
++	 * off */
++	dispc_clear_irqstatus(irqstatus);
++	/* flush posted write */
++	dispc_read_irqstatus();
 +
-+	pr_info("%s: using %s as default timing\n", __func__, entry->name);
++	/* make a copy and unlock, so that isrs can unregister
++	 * themselves */
++	memcpy(registered_isr, dispc_compat.registered_isr,
++			sizeof(registered_isr));
 +
-+	native_mode = entry;
++	spin_unlock(&dispc_compat.irq_lock);
 +
-+	disp->num_timings = of_get_child_count(timings_np);
-+	disp->timings = kzalloc(sizeof(struct display_timing *)*disp->num_timings,
-+				GFP_KERNEL);
-+	if (!disp->timings)
-+		return -ENOMEM;
++	for (i = 0; i < DISPC_MAX_NR_ISRS; i++) {
++		isr_data = &registered_isr[i];
 +
-+	disp->num_timings = 0;
-+	disp->native_mode = 0;
++		if (!isr_data->isr)
++			continue;
 +
-+	for_each_child_of_node(timings_np, entry) {
-+		struct display_timing *dt;
-+
-+		dt = of_get_display_timing(entry);
-+		if (!dt) {
-+			/* to not encourage wrong devicetrees, fail in case of an error */
-+			pr_err("%s: error in timing %d\n", __func__, disp->num_timings+1);
-+			return NULL;
++		if (isr_data->mask & irqstatus) {
++			isr_data->isr(isr_data->arg, irqstatus);
++			handledirqs |= isr_data->mask;
 +		}
-+
-+		if (native_mode = entry)
-+			disp->native_mode = disp->num_timings;
-+
-+		disp->timings[disp->num_timings] = dt;
-+		disp->num_timings++;
 +	}
-+	of_node_put(timings_np);
 +
-+	if (disp->num_timings > 0)
-+		pr_info("%s: got %d timings. Using timing #%d as default\n", __func__,
-+			disp->num_timings , disp->native_mode + 1);
-+	else {
-+		pr_err("%s: no valid timings specified\n", __func__);
-+		return NULL;
++	spin_lock(&dispc_compat.irq_lock);
++
++	unhandled_errors = irqstatus & ~handledirqs & dispc_compat.irq_error_mask;
++
++	if (unhandled_errors) {
++		dispc_compat.error_irqs |= unhandled_errors;
++
++		dispc_compat.irq_error_mask &= ~unhandled_errors;
++		_omap_dispc_set_irqs();
++
++		schedule_work(&dispc_compat.error_work);
 +	}
-+	return disp;
++
++	spin_unlock(&dispc_compat.irq_lock);
++
++	return IRQ_HANDLED;
 +}
-+EXPORT_SYMBOL_GPL(of_get_display_timings);
 +
-+/**
-+ * of_display_timings_exists - check if a display-timings node is provided
-+ * @np: device_node with the timing
-+ **/
-+int of_display_timings_exists(struct device_node *np)
++static void dispc_error_worker(struct work_struct *work)
 +{
-+	struct device_node *timings_np;
++	int i;
++	u32 errors;
++	unsigned long flags;
++	static const unsigned fifo_underflow_bits[] = {
++		DISPC_IRQ_GFX_FIFO_UNDERFLOW,
++		DISPC_IRQ_VID1_FIFO_UNDERFLOW,
++		DISPC_IRQ_VID2_FIFO_UNDERFLOW,
++		DISPC_IRQ_VID3_FIFO_UNDERFLOW,
++	};
 +
-+	if (!np)
-+		return -EINVAL;
++	spin_lock_irqsave(&dispc_compat.irq_lock, flags);
++	errors = dispc_compat.error_irqs;
++	dispc_compat.error_irqs = 0;
++	spin_unlock_irqrestore(&dispc_compat.irq_lock, flags);
 +
-+	timings_np = of_parse_phandle(np, "display-timings", 0);
-+	if (!timings_np)
-+		return -EINVAL;
++	dispc_runtime_get();
 +
-+	return 1;
-+}
-+EXPORT_SYMBOL_GPL(of_display_timings_exists);
-diff --git a/drivers/video/of_videomode.c b/drivers/video/of_videomode.c
-new file mode 100644
-index 0000000..7051701
---- /dev/null
-+++ b/drivers/video/of_videomode.c
-@@ -0,0 +1,47 @@
-+/*
-+ * generic videomode helper
-+ *
-+ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
-+ *
-+ * This file is released under the GPLv2
-+ */
-+#include <linux/of.h>
-+#include <linux/of_display_timings.h>
-+#include <linux/of_videomode.h>
-+#include <linux/export.h>
++	for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
++		struct omap_overlay *ovl;
++		unsigned bit;
 +
-+/**
-+ * of_get_videomode - get the videomode #<index> from devicetree
-+ * @np - devicenode with the display_timings
-+ * @vm - set to return value
-+ * @index - index into list of display_timings
-+ * DESCRIPTION:
-+ * Get a list of all display timings and put the one
-+ * specified by index into *vm. This function should only be used, if
-+ * only one videomode is to be retrieved. A driver that needs to work
-+ * with multiple/all videomodes should work with
-+ * of_get_display_timings instead.
-+ **/
-+int of_get_videomode(struct device_node *np, struct videomode *vm, int index)
-+{
-+	struct display_timings *disp;
-+	int ret;
++		ovl = omap_dss_get_overlay(i);
++		bit = fifo_underflow_bits[i];
 +
-+	disp = of_get_display_timings(np);
-+	if (!disp) {
-+		pr_err("%s: no timings specified\n", __func__);
-+		return -EINVAL;
++		if (bit & errors) {
++			DSSERR("FIFO UNDERFLOW on %s, disabling the overlay\n",
++					ovl->name);
++			dispc_ovl_enable(ovl->id, false);
++			dispc_mgr_go(ovl->manager->id);
++			msleep(50);
++		}
 +	}
 +
-+	if (index = OF_USE_NATIVE_MODE)
-+		index = disp->native_mode;
++	for (i = 0; i < omap_dss_get_num_overlay_managers(); ++i) {
++		struct omap_overlay_manager *mgr;
++		unsigned bit;
 +
-+	ret = videomode_from_timing(disp, vm, index);
-+	if (ret)
-+		return ret;
++		mgr = omap_dss_get_overlay_manager(i);
++		bit = dispc_mgr_get_sync_lost_irq(i);
 +
-+	display_timings_release(disp);
++		if (bit & errors) {
++			int j;
++
++			DSSERR("SYNC_LOST on channel %s, restarting the output "
++					"with video overlays disabled\n",
++					mgr->name);
++
++			dss_mgr_disable(mgr);
++
++			for (j = 0; j < omap_dss_get_num_overlays(); ++j) {
++				struct omap_overlay *ovl;
++				ovl = omap_dss_get_overlay(j);
++
++				if (ovl->id != OMAP_DSS_GFX &&
++						ovl->manager = mgr)
++					ovl->disable(ovl);
++			}
++
++			dss_mgr_enable(mgr);
++		}
++	}
++
++	if (errors & DISPC_IRQ_OCP_ERR) {
++		DSSERR("OCP_ERR\n");
++		for (i = 0; i < omap_dss_get_num_overlay_managers(); ++i) {
++			struct omap_overlay_manager *mgr;
++
++			mgr = omap_dss_get_overlay_manager(i);
++			dss_mgr_disable(mgr);
++		}
++	}
++
++	spin_lock_irqsave(&dispc_compat.irq_lock, flags);
++	dispc_compat.irq_error_mask |= errors;
++	_omap_dispc_set_irqs();
++	spin_unlock_irqrestore(&dispc_compat.irq_lock, flags);
++
++	dispc_runtime_put();
++}
++
++int dss_dispc_initialize_irq(void)
++{
++	int r;
++
++#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
++	spin_lock_init(&dispc_compat.irq_stats_lock);
++	dispc_compat.irq_stats.last_reset = jiffies;
++	dss_debugfs_create_file("dispc_irq", dispc_dump_irqs);
++#endif
++
++	spin_lock_init(&dispc_compat.irq_lock);
++
++	memset(dispc_compat.registered_isr, 0,
++			sizeof(dispc_compat.registered_isr));
++
++	dispc_compat.irq_error_mask = DISPC_IRQ_MASK_ERROR;
++	if (dss_has_feature(FEAT_MGR_LCD2))
++		dispc_compat.irq_error_mask |= DISPC_IRQ_SYNC_LOST2;
++	if (dss_has_feature(FEAT_MGR_LCD3))
++		dispc_compat.irq_error_mask |= DISPC_IRQ_SYNC_LOST3;
++	if (dss_feat_get_num_ovls() > 3)
++		dispc_compat.irq_error_mask |= DISPC_IRQ_VID3_FIFO_UNDERFLOW;
++
++	/*
++	 * there's SYNC_LOST_DIGIT waiting after enabling the DSS,
++	 * so clear it
++	 */
++	dispc_clear_irqstatus(dispc_read_irqstatus());
++
++	INIT_WORK(&dispc_compat.error_work, dispc_error_worker);
++
++	_omap_dispc_set_irqs();
++
++	r = dispc_request_irq(omap_dispc_irq_handler, &dispc_compat);
++	if (r) {
++		DSSERR("dispc_request_irq failed\n");
++		return r;
++	}
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL_GPL(of_get_videomode);
-diff --git a/include/linux/of_display_timings.h b/include/linux/of_display_timings.h
-new file mode 100644
-index 0000000..ccf6814
---- /dev/null
-+++ b/include/linux/of_display_timings.h
-@@ -0,0 +1,19 @@
-+/*
-+ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
-+ *
-+ * display timings of helpers
-+ *
-+ * This file is released under the GPLv2
-+ */
 +
-+#ifndef __LINUX_OF_DISPLAY_TIMINGS_H
-+#define __LINUX_OF_DISPLAY_TIMINGS_H
++void dss_dispc_uninitialize_irq(void)
++{
++	dispc_free_irq(&dispc_compat);
++}
 +
-+#include <linux/display_timing.h>
+ static void dispc_mgr_disable_isr(void *data, u32 mask)
+ {
+ 	struct completion *compl = data;
+diff --git a/drivers/video/omap2/dss/dispc-compat.h b/drivers/video/omap2/dss/dispc-compat.h
+index 8322d43..14a69b3 100644
+--- a/drivers/video/omap2/dss/dispc-compat.h
++++ b/drivers/video/omap2/dss/dispc-compat.h
+@@ -24,4 +24,7 @@ void dispc_mgr_disable_sync(enum omap_channel channel);
+ int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
+ 		unsigned long timeout);
+ 
++int dss_dispc_initialize_irq(void);
++void dss_dispc_uninitialize_irq(void);
 +
-+#define OF_USE_NATIVE_MODE -1
+ #endif
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index b976838..b3bb604 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -33,7 +33,6 @@
+ #include <linux/delay.h>
+ #include <linux/workqueue.h>
+ #include <linux/hardirq.h>
+-#include <linux/interrupt.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/sizes.h>
+@@ -47,21 +46,6 @@
+ /* DISPC */
+ #define DISPC_SZ_REGS			SZ_4K
+ 
+-#define DISPC_IRQ_MASK_ERROR            (DISPC_IRQ_GFX_FIFO_UNDERFLOW | \
+-					 DISPC_IRQ_OCP_ERR | \
+-					 DISPC_IRQ_VID1_FIFO_UNDERFLOW | \
+-					 DISPC_IRQ_VID2_FIFO_UNDERFLOW | \
+-					 DISPC_IRQ_SYNC_LOST | \
+-					 DISPC_IRQ_SYNC_LOST_DIGIT)
+-
+-#define DISPC_MAX_NR_ISRS		8
+-
+-struct omap_dispc_isr_data {
+-	omap_dispc_isr_t	isr;
+-	void			*arg;
+-	u32			mask;
+-};
+-
+ enum omap_burst_size {
+ 	BURST_SIZE_X2 = 0,
+ 	BURST_SIZE_X4 = 1,
+@@ -74,12 +58,6 @@ enum omap_burst_size {
+ #define REG_FLD_MOD(idx, val, start, end)				\
+ 	dispc_write_reg(idx, FLD_MOD(dispc_read_reg(idx), val, start, end))
+ 
+-struct dispc_irq_stats {
+-	unsigned long last_reset;
+-	unsigned irq_count;
+-	unsigned irqs[32];
+-};
+-
+ struct dispc_features {
+ 	u8 sw_start;
+ 	u8 fp_start;
+@@ -120,21 +98,10 @@ static struct {
+ 	/* maps which plane is using a fifo. fifo-id -> plane-id */
+ 	int fifo_assignment[DISPC_MAX_NR_FIFOS];
+ 
+-	spinlock_t irq_lock;
+-	u32 irq_error_mask;
+-	struct omap_dispc_isr_data registered_isr[DISPC_MAX_NR_ISRS];
+-	u32 error_irqs;
+-	struct work_struct error_work;
+-
+ 	bool		ctx_valid;
+ 	u32		ctx[DISPC_SZ_REGS / sizeof(u32)];
+ 
+ 	const struct dispc_features *feat;
+-
+-#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
+-	spinlock_t irq_stats_lock;
+-	struct dispc_irq_stats irq_stats;
+-#endif
+ } dispc;
+ 
+ enum omap_color_component {
+@@ -245,7 +212,6 @@ struct color_conv_coef {
+ 	int full_range;
+ };
+ 
+-static void _omap_dispc_set_irqs(void);
+ static unsigned long dispc_plane_pclk_rate(enum omap_plane plane);
+ static unsigned long dispc_plane_lclk_rate(enum omap_plane plane);
+ 
+@@ -3120,64 +3086,6 @@ void dispc_dump_clocks(struct seq_file *s)
+ 	dispc_runtime_put();
+ }
+ 
+-#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
+-static void dispc_dump_irqs(struct seq_file *s)
+-{
+-	unsigned long flags;
+-	struct dispc_irq_stats stats;
+-
+-	spin_lock_irqsave(&dispc.irq_stats_lock, flags);
+-
+-	stats = dispc.irq_stats;
+-	memset(&dispc.irq_stats, 0, sizeof(dispc.irq_stats));
+-	dispc.irq_stats.last_reset = jiffies;
+-
+-	spin_unlock_irqrestore(&dispc.irq_stats_lock, flags);
+-
+-	seq_printf(s, "period %u ms\n",
+-			jiffies_to_msecs(jiffies - stats.last_reset));
+-
+-	seq_printf(s, "irqs %d\n", stats.irq_count);
+-#define PIS(x) \
+-	seq_printf(s, "%-20s %10d\n", #x, stats.irqs[ffs(DISPC_IRQ_##x)-1]);
+-
+-	PIS(FRAMEDONE);
+-	PIS(VSYNC);
+-	PIS(EVSYNC_EVEN);
+-	PIS(EVSYNC_ODD);
+-	PIS(ACBIAS_COUNT_STAT);
+-	PIS(PROG_LINE_NUM);
+-	PIS(GFX_FIFO_UNDERFLOW);
+-	PIS(GFX_END_WIN);
+-	PIS(PAL_GAMMA_MASK);
+-	PIS(OCP_ERR);
+-	PIS(VID1_FIFO_UNDERFLOW);
+-	PIS(VID1_END_WIN);
+-	PIS(VID2_FIFO_UNDERFLOW);
+-	PIS(VID2_END_WIN);
+-	if (dss_feat_get_num_ovls() > 3) {
+-		PIS(VID3_FIFO_UNDERFLOW);
+-		PIS(VID3_END_WIN);
+-	}
+-	PIS(SYNC_LOST);
+-	PIS(SYNC_LOST_DIGIT);
+-	PIS(WAKEUP);
+-	if (dss_has_feature(FEAT_MGR_LCD2)) {
+-		PIS(FRAMEDONE2);
+-		PIS(VSYNC2);
+-		PIS(ACBIAS_COUNT_STAT2);
+-		PIS(SYNC_LOST2);
+-	}
+-	if (dss_has_feature(FEAT_MGR_LCD3)) {
+-		PIS(FRAMEDONE3);
+-		PIS(VSYNC3);
+-		PIS(ACBIAS_COUNT_STAT3);
+-		PIS(SYNC_LOST3);
+-	}
+-#undef PIS
+-}
+-#endif
+-
+ static void dispc_dump_regs(struct seq_file *s)
+ {
+ 	int i, j;
+@@ -3456,319 +3364,6 @@ void dispc_write_irqenable(u32 mask)
+ 	dispc_write_reg(DISPC_IRQENABLE, mask);
+ }
+ 
+-/* dispc.irq_lock has to be locked by the caller */
+-static void _omap_dispc_set_irqs(void)
+-{
+-	u32 mask;
+-	int i;
+-	struct omap_dispc_isr_data *isr_data;
+-
+-	mask = dispc.irq_error_mask;
+-
+-	for (i = 0; i < DISPC_MAX_NR_ISRS; i++) {
+-		isr_data = &dispc.registered_isr[i];
+-
+-		if (isr_data->isr = NULL)
+-			continue;
+-
+-		mask |= isr_data->mask;
+-	}
+-
+-	dispc_write_irqenable(mask);
+-}
+-
+-int omap_dispc_register_isr(omap_dispc_isr_t isr, void *arg, u32 mask)
+-{
+-	int i;
+-	int ret;
+-	unsigned long flags;
+-	struct omap_dispc_isr_data *isr_data;
+-
+-	if (isr = NULL)
+-		return -EINVAL;
+-
+-	spin_lock_irqsave(&dispc.irq_lock, flags);
+-
+-	/* check for duplicate entry */
+-	for (i = 0; i < DISPC_MAX_NR_ISRS; i++) {
+-		isr_data = &dispc.registered_isr[i];
+-		if (isr_data->isr = isr && isr_data->arg = arg &&
+-				isr_data->mask = mask) {
+-			ret = -EINVAL;
+-			goto err;
+-		}
+-	}
+-
+-	isr_data = NULL;
+-	ret = -EBUSY;
+-
+-	for (i = 0; i < DISPC_MAX_NR_ISRS; i++) {
+-		isr_data = &dispc.registered_isr[i];
+-
+-		if (isr_data->isr != NULL)
+-			continue;
+-
+-		isr_data->isr = isr;
+-		isr_data->arg = arg;
+-		isr_data->mask = mask;
+-		ret = 0;
+-
+-		break;
+-	}
+-
+-	if (ret)
+-		goto err;
+-
+-	_omap_dispc_set_irqs();
+-
+-	spin_unlock_irqrestore(&dispc.irq_lock, flags);
+-
+-	return 0;
+-err:
+-	spin_unlock_irqrestore(&dispc.irq_lock, flags);
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL(omap_dispc_register_isr);
+-
+-int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask)
+-{
+-	int i;
+-	unsigned long flags;
+-	int ret = -EINVAL;
+-	struct omap_dispc_isr_data *isr_data;
+-
+-	spin_lock_irqsave(&dispc.irq_lock, flags);
+-
+-	for (i = 0; i < DISPC_MAX_NR_ISRS; i++) {
+-		isr_data = &dispc.registered_isr[i];
+-		if (isr_data->isr != isr || isr_data->arg != arg ||
+-				isr_data->mask != mask)
+-			continue;
+-
+-		/* found the correct isr */
+-
+-		isr_data->isr = NULL;
+-		isr_data->arg = NULL;
+-		isr_data->mask = 0;
+-
+-		ret = 0;
+-		break;
+-	}
+-
+-	if (ret = 0)
+-		_omap_dispc_set_irqs();
+-
+-	spin_unlock_irqrestore(&dispc.irq_lock, flags);
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL(omap_dispc_unregister_isr);
+-
+-static void print_irq_status(u32 status)
+-{
+-	if ((status & dispc.irq_error_mask) = 0)
+-		return;
+-
+-#define PIS(x) (status & DISPC_IRQ_##x) ? (#x " ") : ""
+-
+-	pr_debug("DISPC IRQ: 0x%x: %s%s%s%s%s%s%s%s%s\n",
+-		status,
+-		PIS(OCP_ERR),
+-		PIS(GFX_FIFO_UNDERFLOW),
+-		PIS(VID1_FIFO_UNDERFLOW),
+-		PIS(VID2_FIFO_UNDERFLOW),
+-		dss_feat_get_num_ovls() > 3 ? PIS(VID3_FIFO_UNDERFLOW) : "",
+-		PIS(SYNC_LOST),
+-		PIS(SYNC_LOST_DIGIT),
+-		dss_has_feature(FEAT_MGR_LCD2) ? PIS(SYNC_LOST2) : "",
+-		dss_has_feature(FEAT_MGR_LCD3) ? PIS(SYNC_LOST3) : "");
+-#undef PIS
+-}
+-
+-/* Called from dss.c. Note that we don't touch clocks here,
+- * but we presume they are on because we got an IRQ. However,
+- * an irq handler may turn the clocks off, so we may not have
+- * clock later in the function. */
+-static irqreturn_t omap_dispc_irq_handler(int irq, void *arg)
+-{
+-	int i;
+-	u32 irqstatus, irqenable;
+-	u32 handledirqs = 0;
+-	u32 unhandled_errors;
+-	struct omap_dispc_isr_data *isr_data;
+-	struct omap_dispc_isr_data registered_isr[DISPC_MAX_NR_ISRS];
+-
+-	spin_lock(&dispc.irq_lock);
+-
+-	irqstatus = dispc_read_irqstatus();
+-	irqenable = dispc_read_irqenable();
+-
+-	/* IRQ is not for us */
+-	if (!(irqstatus & irqenable)) {
+-		spin_unlock(&dispc.irq_lock);
+-		return IRQ_NONE;
+-	}
+-
+-#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
+-	spin_lock(&dispc.irq_stats_lock);
+-	dispc.irq_stats.irq_count++;
+-	dss_collect_irq_stats(irqstatus, dispc.irq_stats.irqs);
+-	spin_unlock(&dispc.irq_stats_lock);
+-#endif
+-
+-	print_irq_status(irqstatus);
+-
+-	/* Ack the interrupt. Do it here before clocks are possibly turned
+-	 * off */
+-	dispc_clear_irqstatus(irqstatus);
+-	/* flush posted write */
+-	dispc_read_irqstatus();
+-
+-	/* make a copy and unlock, so that isrs can unregister
+-	 * themselves */
+-	memcpy(registered_isr, dispc.registered_isr,
+-			sizeof(registered_isr));
+-
+-	spin_unlock(&dispc.irq_lock);
+-
+-	for (i = 0; i < DISPC_MAX_NR_ISRS; i++) {
+-		isr_data = &registered_isr[i];
+-
+-		if (!isr_data->isr)
+-			continue;
+-
+-		if (isr_data->mask & irqstatus) {
+-			isr_data->isr(isr_data->arg, irqstatus);
+-			handledirqs |= isr_data->mask;
+-		}
+-	}
+-
+-	spin_lock(&dispc.irq_lock);
+-
+-	unhandled_errors = irqstatus & ~handledirqs & dispc.irq_error_mask;
+-
+-	if (unhandled_errors) {
+-		dispc.error_irqs |= unhandled_errors;
+-
+-		dispc.irq_error_mask &= ~unhandled_errors;
+-		_omap_dispc_set_irqs();
+-
+-		schedule_work(&dispc.error_work);
+-	}
+-
+-	spin_unlock(&dispc.irq_lock);
+-
+-	return IRQ_HANDLED;
+-}
+-
+-static void dispc_error_worker(struct work_struct *work)
+-{
+-	int i;
+-	u32 errors;
+-	unsigned long flags;
+-	static const unsigned fifo_underflow_bits[] = {
+-		DISPC_IRQ_GFX_FIFO_UNDERFLOW,
+-		DISPC_IRQ_VID1_FIFO_UNDERFLOW,
+-		DISPC_IRQ_VID2_FIFO_UNDERFLOW,
+-		DISPC_IRQ_VID3_FIFO_UNDERFLOW,
+-	};
+-
+-	spin_lock_irqsave(&dispc.irq_lock, flags);
+-	errors = dispc.error_irqs;
+-	dispc.error_irqs = 0;
+-	spin_unlock_irqrestore(&dispc.irq_lock, flags);
+-
+-	dispc_runtime_get();
+-
+-	for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
+-		struct omap_overlay *ovl;
+-		unsigned bit;
+-
+-		ovl = omap_dss_get_overlay(i);
+-		bit = fifo_underflow_bits[i];
+-
+-		if (bit & errors) {
+-			DSSERR("FIFO UNDERFLOW on %s, disabling the overlay\n",
+-					ovl->name);
+-			dispc_ovl_enable(ovl->id, false);
+-			dispc_mgr_go(ovl->manager->id);
+-			msleep(50);
+-		}
+-	}
+-
+-	for (i = 0; i < omap_dss_get_num_overlay_managers(); ++i) {
+-		struct omap_overlay_manager *mgr;
+-		unsigned bit;
+-
+-		mgr = omap_dss_get_overlay_manager(i);
+-		bit = mgr_desc[i].sync_lost_irq;
+-
+-		if (bit & errors) {
+-			int j;
+-
+-			DSSERR("SYNC_LOST on channel %s, restarting the output "
+-					"with video overlays disabled\n",
+-					mgr->name);
+-
+-			dss_mgr_disable(mgr);
+-
+-			for (j = 0; j < omap_dss_get_num_overlays(); ++j) {
+-				struct omap_overlay *ovl;
+-				ovl = omap_dss_get_overlay(j);
+-
+-				if (ovl->id != OMAP_DSS_GFX &&
+-						ovl->manager = mgr)
+-					ovl->disable(ovl);
+-			}
+-
+-			dss_mgr_enable(mgr);
+-		}
+-	}
+-
+-	if (errors & DISPC_IRQ_OCP_ERR) {
+-		DSSERR("OCP_ERR\n");
+-		for (i = 0; i < omap_dss_get_num_overlay_managers(); ++i) {
+-			struct omap_overlay_manager *mgr;
+-
+-			mgr = omap_dss_get_overlay_manager(i);
+-			dss_mgr_disable(mgr);
+-		}
+-	}
+-
+-	spin_lock_irqsave(&dispc.irq_lock, flags);
+-	dispc.irq_error_mask |= errors;
+-	_omap_dispc_set_irqs();
+-	spin_unlock_irqrestore(&dispc.irq_lock, flags);
+-
+-	dispc_runtime_put();
+-}
+-
+-static void _omap_dispc_initialize_irq(void)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&dispc.irq_lock, flags);
+-
+-	memset(dispc.registered_isr, 0, sizeof(dispc.registered_isr));
+-
+-	dispc.irq_error_mask = DISPC_IRQ_MASK_ERROR;
+-	if (dss_has_feature(FEAT_MGR_LCD2))
+-		dispc.irq_error_mask |= DISPC_IRQ_SYNC_LOST2;
+-	if (dss_has_feature(FEAT_MGR_LCD3))
+-		dispc.irq_error_mask |= DISPC_IRQ_SYNC_LOST3;
+-	if (dss_feat_get_num_ovls() > 3)
+-		dispc.irq_error_mask |= DISPC_IRQ_VID3_FIFO_UNDERFLOW;
+-
+-	/* there's SYNC_LOST_DIGIT waiting after enabling the DSS,
+-	 * so clear it */
+-	dispc_clear_irqstatus(dispc_read_irqstatus());
+-
+-	_omap_dispc_set_irqs();
+-
+-	spin_unlock_irqrestore(&dispc.irq_lock, flags);
+-}
+-
+ void dispc_enable_sidle(void)
+ {
+ 	REG_FLD_MOD(DISPC_SYSCONFIG, 2, 4, 3);	/* SIDLEMODE: smart idle */
+@@ -3905,6 +3500,17 @@ static int __init dispc_init_features(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++int dispc_request_irq(irq_handler_t handler, void *dev_id)
++{
++	return devm_request_irq(&dispc.pdev->dev, dispc.irq, handler,
++			     IRQF_SHARED, "OMAP DISPC", dev_id);
++}
 +
-+struct display_timings *of_get_display_timings(struct device_node *np);
-+int of_display_timings_exists(struct device_node *np);
++void dispc_free_irq(void *dev_id)
++{
++	devm_free_irq(&dispc.pdev->dev, dispc.irq, dev_id);
++}
 +
-+#endif
-diff --git a/include/linux/of_videomode.h b/include/linux/of_videomode.h
-new file mode 100644
-index 0000000..01518e6
---- /dev/null
-+++ b/include/linux/of_videomode.h
-@@ -0,0 +1,15 @@
-+/*
-+ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
-+ *
-+ * videomode of-helpers
-+ *
-+ * This file is released under the GPLv2
-+ */
+ /* DISPC HW IP initialisation */
+ static int __init omap_dispchw_probe(struct platform_device *pdev)
+ {
+@@ -3919,15 +3525,6 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
+ 	if (r)
+ 		return r;
+ 
+-	spin_lock_init(&dispc.irq_lock);
+-
+-#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
+-	spin_lock_init(&dispc.irq_stats_lock);
+-	dispc.irq_stats.last_reset = jiffies;
+-#endif
+-
+-	INIT_WORK(&dispc.error_work, dispc_error_worker);
+-
+ 	dispc_mem = platform_get_resource(dispc.pdev, IORESOURCE_MEM, 0);
+ 	if (!dispc_mem) {
+ 		DSSERR("can't get IORESOURCE_MEM DISPC\n");
+@@ -3947,13 +3544,6 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
+-	r = devm_request_irq(&pdev->dev, dispc.irq, omap_dispc_irq_handler,
+-			     IRQF_SHARED, "OMAP DISPC", dispc.pdev);
+-	if (r < 0) {
+-		DSSERR("request_irq failed\n");
+-		return r;
+-	}
+-
+ 	clk = clk_get(&pdev->dev, "fck");
+ 	if (IS_ERR(clk)) {
+ 		DSSERR("can't get fck\n");
+@@ -3971,8 +3561,6 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
+ 
+ 	_omap_dispc_initial_config();
+ 
+-	_omap_dispc_initialize_irq();
+-
+ 	rev = dispc_read_reg(DISPC_REVISION);
+ 	dev_dbg(&pdev->dev, "OMAP DISPC rev %d.%d\n",
+ 	       FLD_GET(rev, 7, 4), FLD_GET(rev, 3, 0));
+@@ -3981,9 +3569,6 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
+ 
+ 	dss_debugfs_create_file("dispc", dispc_dump_regs);
+ 
+-#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
+-	dss_debugfs_create_file("dispc_irq", dispc_dump_irqs);
+-#endif
+ 	return 0;
+ 
+ err_runtime_get:
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 10995d3..16fbaaa 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -23,6 +23,8 @@
+ #ifndef __OMAP2_DSS_H
+ #define __OMAP2_DSS_H
+ 
++#include <linux/interrupt.h>
 +
-+#ifndef __LINUX_OF_VIDEOMODE_H
-+#define __LINUX_OF_VIDEOMODE_H
+ #ifdef pr_fmt
+ #undef pr_fmt
+ #endif
+@@ -386,6 +388,9 @@ void dispc_clear_irqstatus(u32 mask);
+ u32 dispc_read_irqenable(void);
+ void dispc_write_irqenable(u32 mask);
+ 
++int dispc_request_irq(irq_handler_t handler, void *dev_id);
++void dispc_free_irq(void *dev_id);
 +
-+#include <linux/videomode.h>
-+
-+int of_get_videomode(struct device_node *np, struct videomode *vm, int index);
-+#endif /* __LINUX_OF_VIDEOMODE_H */
+ int dispc_runtime_get(void);
+ void dispc_runtime_put(void);
+ 
 -- 
 1.7.10.4
 

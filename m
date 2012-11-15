@@ -1,210 +1,132 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 09 Nov 2012 05:53:49 +0000
-Subject: [PATCH v4 8/8] video: exynos_dp: Enable hotplug interrupts
-Message-Id: <002001cdbe3e$975d3410$c6179c30$%han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 15 Nov 2012 15:58:24 +0000
+Subject: [PATCH 16/32] OMAPDSS: add omapdss_compat_init()
+Message-Id: <1352995120-3288-17-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Sean Paul <seanpaul@chromium.org>
+Add two new exported functions, omapdss_compat_init and
+omapdss_compat_uninit, which are to be used by omapfb, omap_vout to
+enable compatibility mode for omapdss. The functions are called by
+omapdss internally for now, and moved to other drivers later.
 
-Enable hotplug interrupts and move the hotplug scheduling into the
-interrupt handler. This allows us to introduce a screen at any time
-while we're running.
+The compatibility mode is implemented fully in the following patches.
+For now, enabling compat mode only sets up the private data in apply.c.
 
-[jg1.han@samsung.com: moved the bit masking of hotplug interrupts]
-Signed-off-by: Sean Paul <seanpaul@chromium.org>
-Reviewed-by: Olof Johansson <olofj@chromium.org>
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/exynos/exynos_dp_core.c |   38 ++++++++++++++++++++++++++-------
- drivers/video/exynos/exynos_dp_core.h |    9 +++++++
- drivers/video/exynos/exynos_dp_reg.c  |   38 +++++++++++++++++++++++++++-----
- 3 files changed, 71 insertions(+), 14 deletions(-)
+ drivers/video/omap2/dss/apply.c |   32 +++++++++++++++++++++++++++++++-
+ drivers/video/omap2/dss/core.c  |    4 +++-
+ drivers/video/omap2/dss/dss.h   |    1 -
+ include/video/omapdss.h         |    3 +++
+ 4 files changed, 37 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-index 79ba1ea..7cbba4a 100644
---- a/drivers/video/exynos/exynos_dp_core.c
-+++ b/drivers/video/exynos/exynos_dp_core.c
-@@ -48,10 +48,6 @@ static int exynos_dp_detect_hpd(struct exynos_dp_device *dp)
- {
- 	int timeout_loop = 0;
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 4a5cc5c..816de17 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -18,6 +18,7 @@
+ #define DSS_SUBSYS_NAME "APPLY"
  
--	exynos_dp_init_hpd(dp);
--
--	usleep_range(200, 210);
--
- 	while (exynos_dp_get_plug_in_status(dp) != 0) {
- 		timeout_loop++;
- 		if (DP_TIMEOUT_LOOP_COUNT < timeout_loop) {
-@@ -833,7 +829,32 @@ static irqreturn_t exynos_dp_irq_handler(int irq, void *arg)
- {
- 	struct exynos_dp_device *dp = arg;
- 
--	dev_err(dp->dev, "exynos_dp_irq_handler\n");
-+	enum dp_irq_type irq_type;
-+
-+	irq_type = exynos_dp_get_irq_type(dp);
-+	switch (irq_type) {
-+	case DP_IRQ_TYPE_HP_CABLE_IN:
-+		dev_dbg(dp->dev, "Received irq - cable in\n");
-+		schedule_work(&dp->hotplug_work);
-+		exynos_dp_clear_hotplug_interrupts(dp);
-+		break;
-+	case DP_IRQ_TYPE_HP_CABLE_OUT:
-+		dev_dbg(dp->dev, "Received irq - cable out\n");
-+		exynos_dp_clear_hotplug_interrupts(dp);
-+		break;
-+	case DP_IRQ_TYPE_HP_CHANGE:
-+		/*
-+		 * We get these change notifications once in a while, but there
-+		 * is nothing we can do with them. Just ignore it for now and
-+		 * only handle cable changes.
-+		 */
-+		dev_dbg(dp->dev, "Received irq - hotplug change; ignoring.\n");
-+		exynos_dp_clear_hotplug_interrupts(dp);
-+		break;
-+	default:
-+		dev_err(dp->dev, "Received irq - unknown type!\n");
-+		break;
-+	}
- 	return IRQ_HANDLED;
+ #include <linux/kernel.h>
++#include <linux/module.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/jiffies.h>
+@@ -131,7 +132,7 @@ static struct mgr_priv_data *get_mgr_priv(struct omap_overlay_manager *mgr)
+ 	return &dss_data.mgr_priv_data_array[mgr->id];
  }
  
-@@ -846,7 +867,7 @@ static void exynos_dp_hotplug(struct work_struct *work)
+-void dss_apply_init(void)
++static void apply_init_priv(void)
+ {
+ 	const int num_ovls = dss_feat_get_num_ovls();
+ 	struct mgr_priv_data *mp;
+@@ -1463,3 +1464,32 @@ err:
+ 	return r;
+ }
  
- 	ret = exynos_dp_detect_hpd(dp);
- 	if (ret) {
--		dev_err(dp->dev, "unable to detect hpd\n");
-+		/* Cable has been disconnected, we're done */
- 		return;
- 	}
++static int compat_refcnt;
++
++int omapdss_compat_init(void)
++{
++	mutex_lock(&apply_lock);
++
++	if (compat_refcnt++ > 0)
++		goto out;
++
++	apply_init_priv();
++
++out:
++	mutex_unlock(&apply_lock);
++
++	return 0;
++}
++EXPORT_SYMBOL(omapdss_compat_init);
++
++void omapdss_compat_uninit(void)
++{
++	mutex_lock(&apply_lock);
++
++	if (--compat_refcnt > 0)
++		goto out;
++
++out:
++	mutex_unlock(&apply_lock);
++}
++EXPORT_SYMBOL(omapdss_compat_uninit);
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 8c30831..346638e 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -247,7 +247,7 @@ static int __init omap_dss_probe(struct platform_device *pdev)
  
-@@ -937,7 +958,6 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
- 	exynos_dp_init_dp(dp);
+ 	dss_features_init(omapdss_get_version());
  
- 	platform_set_drvdata(pdev, dp);
--	schedule_work(&dp->hotplug_work);
+-	dss_apply_init();
++	omapdss_compat_init();
  
+ 	dss_init_overlay_managers(pdev);
+ 	dss_init_overlays(pdev);
+@@ -279,6 +279,8 @@ static int omap_dss_remove(struct platform_device *pdev)
+ 	dss_uninit_overlays(pdev);
+ 	dss_uninit_overlay_managers(pdev);
+ 
++	omapdss_compat_uninit();
++
  	return 0;
  }
-@@ -965,6 +985,8 @@ static int exynos_dp_suspend(struct device *dev)
- 	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
- 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
  
-+	disable_irq(dp->irq);
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 9ee3c88..9cbcd8e 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -179,7 +179,6 @@ void dss_copy_device_pdata(struct omap_dss_device *dst,
+ 		const struct omap_dss_device *src);
+ 
+ /* apply */
+-void dss_apply_init(void);
+ int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr);
+ int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl);
+ void dss_mgr_start_update(struct omap_overlay_manager *mgr);
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index b1248c2..a940236 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -836,4 +836,7 @@ void omapdss_rfbi_set_data_lines(struct omap_dss_device *dssdev,
+ void omapdss_rfbi_set_interface_timings(struct omap_dss_device *dssdev,
+ 		struct rfbi_timings *timings);
+ 
++int omapdss_compat_init(void);
++void omapdss_compat_uninit(void);
 +
- 	if (work_pending(&dp->hotplug_work))
- 		flush_work(&dp->hotplug_work);
- 
-@@ -989,7 +1011,7 @@ static int exynos_dp_resume(struct device *dev)
- 
- 	exynos_dp_init_dp(dp);
- 
--	schedule_work(&dp->hotplug_work);
-+	enable_irq(dp->irq);
- 
- 	return 0;
- }
-diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
-index 66f11f4..520486e 100644
---- a/drivers/video/exynos/exynos_dp_core.h
-+++ b/drivers/video/exynos/exynos_dp_core.h
-@@ -13,6 +13,13 @@
- #ifndef _EXYNOS_DP_CORE_H
- #define _EXYNOS_DP_CORE_H
- 
-+enum dp_irq_type {
-+	DP_IRQ_TYPE_HP_CABLE_IN,
-+	DP_IRQ_TYPE_HP_CABLE_OUT,
-+	DP_IRQ_TYPE_HP_CHANGE,
-+	DP_IRQ_TYPE_UNKNOWN,
-+};
-+
- struct link_train {
- 	int eq_loop;
- 	int cr_loop[4];
-@@ -51,6 +58,8 @@ void exynos_dp_set_analog_power_down(struct exynos_dp_device *dp,
- 				bool enable);
- void exynos_dp_init_analog_func(struct exynos_dp_device *dp);
- void exynos_dp_init_hpd(struct exynos_dp_device *dp);
-+enum dp_irq_type exynos_dp_get_irq_type(struct exynos_dp_device *dp);
-+void exynos_dp_clear_hotplug_interrupts(struct exynos_dp_device *dp);
- void exynos_dp_reset_aux(struct exynos_dp_device *dp);
- void exynos_dp_init_aux(struct exynos_dp_device *dp);
- int exynos_dp_get_plug_in_status(struct exynos_dp_device *dp);
-diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
-index fc19ef6..9fb901b 100644
---- a/drivers/video/exynos/exynos_dp_reg.c
-+++ b/drivers/video/exynos/exynos_dp_reg.c
-@@ -19,11 +19,11 @@
- #include "exynos_dp_core.h"
- #include "exynos_dp_reg.h"
- 
--#define COMMON_INT_MASK_1 (0)
--#define COMMON_INT_MASK_2 (0)
--#define COMMON_INT_MASK_3 (0)
--#define COMMON_INT_MASK_4 (0)
--#define INT_STA_MASK (0)
-+#define COMMON_INT_MASK_1	0
-+#define COMMON_INT_MASK_2	0
-+#define COMMON_INT_MASK_3	0
-+#define COMMON_INT_MASK_4	(HOTPLUG_CHG | HPD_LOST | PLUG)
-+#define INT_STA_MASK		INT_HPD
- 
- void exynos_dp_enable_video_mute(struct exynos_dp_device *dp, bool enable)
- {
-@@ -324,7 +324,7 @@ void exynos_dp_init_analog_func(struct exynos_dp_device *dp)
- 	writel(reg, dp->reg_base + EXYNOS_DP_FUNC_EN_2);
- }
- 
--void exynos_dp_init_hpd(struct exynos_dp_device *dp)
-+void exynos_dp_clear_hotplug_interrupts(struct exynos_dp_device *dp)
- {
- 	u32 reg;
- 
-@@ -333,12 +333,38 @@ void exynos_dp_init_hpd(struct exynos_dp_device *dp)
- 
- 	reg = INT_HPD;
- 	writel(reg, dp->reg_base + EXYNOS_DP_INT_STA);
-+}
-+
-+void exynos_dp_init_hpd(struct exynos_dp_device *dp)
-+{
-+	u32 reg;
-+
-+	exynos_dp_clear_hotplug_interrupts(dp);
- 
- 	reg = readl(dp->reg_base + EXYNOS_DP_SYS_CTL_3);
- 	reg &= ~(F_HPD | HPD_CTRL);
- 	writel(reg, dp->reg_base + EXYNOS_DP_SYS_CTL_3);
- }
- 
-+enum dp_irq_type exynos_dp_get_irq_type(struct exynos_dp_device *dp)
-+{
-+	u32 reg;
-+
-+	/* Parse hotplug interrupt status register */
-+	reg = readl(dp->reg_base + EXYNOS_DP_COMMON_INT_STA_4);
-+
-+	if (reg & PLUG)
-+		return DP_IRQ_TYPE_HP_CABLE_IN;
-+
-+	if (reg & HPD_LOST)
-+		return DP_IRQ_TYPE_HP_CABLE_OUT;
-+
-+	if (reg & HOTPLUG_CHG)
-+		return DP_IRQ_TYPE_HP_CHANGE;
-+
-+	return DP_IRQ_TYPE_UNKNOWN;
-+}
-+
- void exynos_dp_reset_aux(struct exynos_dp_device *dp)
- {
- 	u32 reg;
+ #endif
 -- 
-1.7.1
-
+1.7.10.4
 

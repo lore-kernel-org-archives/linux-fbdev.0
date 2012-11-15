@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 15 Nov 2012 15:58:10 +0000
-Subject: [PATCH 02/32] OMAPDSS: DPI: fix crash with dpi_verify_dsi_pll()
-Message-Id: <1352995120-3288-3-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 15 Nov 2012 15:58:17 +0000
+Subject: [PATCH 09/32] OMAPDSS: DISPC: pclk & lclk rates for writeback
+Message-Id: <1352995120-3288-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,33 +11,47 @@ Content-Transfer-Encoding: 7bit
 To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-If the DSI support has not been compiled in or the SoC doesn't have DSI
-hardware, dpi_get_dsidev() returns NULL. This NULL is passed to
-dpi_verify_dsi_pll() causing a crash. The bug was added with commit
-0e8276ef75f5c7811b038d1d23b2b42c16efc5ac (OMAPDSS: DPI: always use DSI
-PLL if available).
-
-Fix this by checking if dsidev is NULL before calling
-dpi_verify_dsi_pll().
+Change the dispc_plane_pclk_rate and dispc_plane_lclk_rate functions to
+return 0 if the given plane is the writeback plane. The clocks are not
+valid for WB, but returning 0 from these functions instead of running
+into BUG() will simplify the code that uses these functions.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dpi.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/omap2/dss/dispc.c |   14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index 1e103b3..c109fa6 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -412,7 +412,7 @@ static int __init dpi_init_display(struct omap_dss_device *dssdev)
- 	 */
- 	dsidev = dpi_get_dsidev(dssdev->channel);
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index e219eda..8f8d628 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -3226,14 +3226,24 @@ unsigned long dispc_core_clk_rate(void)
  
--	if (dpi_verify_dsi_pll(dsidev)) {
-+	if (dsidev && dpi_verify_dsi_pll(dsidev)) {
- 		dsidev = NULL;
- 		DSSWARN("DSI PLL not operational\n");
- 	}
+ static unsigned long dispc_plane_pclk_rate(enum omap_plane plane)
+ {
+-	enum omap_channel channel = dispc_ovl_get_channel_out(plane);
++	enum omap_channel channel;
++
++	if (plane = OMAP_DSS_WB)
++		return 0;
++
++	channel = dispc_ovl_get_channel_out(plane);
+ 
+ 	return dispc_mgr_pclk_rate(channel);
+ }
+ 
+ static unsigned long dispc_plane_lclk_rate(enum omap_plane plane)
+ {
+-	enum omap_channel channel = dispc_ovl_get_channel_out(plane);
++	enum omap_channel channel;
++
++	if (plane = OMAP_DSS_WB)
++		return 0;
++
++	channel	= dispc_ovl_get_channel_out(plane);
+ 
+ 	return dispc_mgr_lclk_rate(channel);
+ }
 -- 
 1.7.10.4
 

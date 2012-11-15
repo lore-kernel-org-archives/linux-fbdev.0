@@ -1,108 +1,107 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 15 Nov 2012 15:58:20 +0000
-Subject: [PATCH 12/32] OMAPDSS: DISPC: pass pclk & lclk to calc_scaling
-Message-Id: <1352995120-3288-13-git-send-email-tomi.valkeinen@ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Thu, 15 Nov 2012 13:15:11 +0000
+Subject: [PATCH v11 5/6] drm_modes: add videomode helpers
+Message-Id: <1352985312-18178-6-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1352985312-18178-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1352985312-18178-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
 
-In order to make the scaling calculations independent of the current
-hardware configuration (e.g. which manager is connected to this output),
-we need to change the calc funcs to get all the variables needed for the
-calculations via parameters.
+Add conversion from videomode to drm_display_mode
 
-This patch changes calc_scaling to get pclk and lclk as parameters.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
 ---
- drivers/video/omap2/dss/dispc.c |   16 +++++++---------
- 1 file changed, 7 insertions(+), 9 deletions(-)
+ drivers/gpu/drm/drm_modes.c |   37 +++++++++++++++++++++++++++++++++++++
+ include/drm/drmP.h          |    6 ++++++
+ 2 files changed, 43 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index cd3dec6..155085a 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -87,7 +87,7 @@ struct dispc_features {
- 	u16 sw_max;
- 	u16 vp_max;
- 	u16 hp_max;
--	int (*calc_scaling) (enum omap_plane plane,
-+	int (*calc_scaling) (unsigned long pclk, unsigned long lclk,
- 		const struct omap_video_timings *mgr_timings,
- 		u16 width, u16 height, u16 out_width, u16 out_height,
- 		enum omap_color_mode color_mode, bool *five_taps,
-@@ -2129,7 +2129,7 @@ static unsigned long calc_core_clk_44xx(unsigned long pclk, u16 width,
- 		return pclk;
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 59450f3..23d951a0 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -35,6 +35,7 @@
+ #include <linux/export.h>
+ #include <drm/drmP.h>
+ #include <drm/drm_crtc.h>
++#include <linux/videomode.h>
+ 
+ /**
+  * drm_mode_debug_printmodeline - debug print a mode
+@@ -504,6 +505,42 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, int vdisplay, int vrefresh,
  }
+ EXPORT_SYMBOL(drm_gtf_mode);
  
--static int dispc_ovl_calc_scaling_24xx(enum omap_plane plane,
-+static int dispc_ovl_calc_scaling_24xx(unsigned long pclk, unsigned long lclk,
- 		const struct omap_video_timings *mgr_timings,
- 		u16 width, u16 height, u16 out_width, u16 out_height,
- 		enum omap_color_mode color_mode, bool *five_taps,
-@@ -2141,7 +2141,6 @@ static int dispc_ovl_calc_scaling_24xx(enum omap_plane plane,
- 	int min_factor = min(*decim_x, *decim_y);
- 	const int maxsinglelinewidth  			dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
--	unsigned long pclk = dispc_plane_pclk_rate(plane);
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++int drm_display_mode_from_videomode(struct videomode *vm,
++				    struct drm_display_mode *dmode)
++{
++	dmode->hdisplay = vm->hactive;
++	dmode->hsync_start = dmode->hdisplay + vm->hfront_porch;
++	dmode->hsync_end = dmode->hsync_start + vm->hsync_len;
++	dmode->htotal = dmode->hsync_end + vm->hback_porch;
++
++	dmode->vdisplay = vm->vactive;
++	dmode->vsync_start = dmode->vdisplay + vm->vfront_porch;
++	dmode->vsync_end = dmode->vsync_start + vm->vsync_len;
++	dmode->vtotal = dmode->vsync_end + vm->vback_porch;
++
++	dmode->clock = vm->pixelclock / 1000;
++
++	dmode->flags = 0;
++	if (vm->hah)
++		dmode->flags |= DRM_MODE_FLAG_PHSYNC;
++	else
++		dmode->flags |= DRM_MODE_FLAG_NHSYNC;
++	if (vm->vah)
++		dmode->flags |= DRM_MODE_FLAG_PVSYNC;
++	else
++		dmode->flags |= DRM_MODE_FLAG_NVSYNC;
++	if (vm->interlaced)
++		dmode->flags |= DRM_MODE_FLAG_INTERLACE;
++	if (vm->doublescan)
++		dmode->flags |= DRM_MODE_FLAG_DBLSCAN;
++	drm_mode_set_name(dmode);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
++#endif
++
+ /**
+  * drm_mode_set_name - set the name on a mode
+  * @mode: name will be set in this mode
+diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+index 3fd8280..341049c 100644
+--- a/include/drm/drmP.h
++++ b/include/drm/drmP.h
+@@ -56,6 +56,7 @@
+ #include <linux/cdev.h>
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
++#include <linux/videomode.h>
+ #if defined(__alpha__) || defined(__powerpc__)
+ #include <asm/pgtable.h>	/* For pte_wrprotect */
+ #endif
+@@ -1454,6 +1455,11 @@ extern struct drm_display_mode *
+ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
+ 				  struct drm_cmdline_mode *cmd);
  
- 	*five_taps = false;
- 
-@@ -2171,7 +2170,7 @@ static int dispc_ovl_calc_scaling_24xx(enum omap_plane plane,
- 	return 0;
- }
- 
--static int dispc_ovl_calc_scaling_34xx(enum omap_plane plane,
-+static int dispc_ovl_calc_scaling_34xx(unsigned long pclk, unsigned long lclk,
- 		const struct omap_video_timings *mgr_timings,
- 		u16 width, u16 height, u16 out_width, u16 out_height,
- 		enum omap_color_mode color_mode, bool *five_taps,
-@@ -2183,8 +2182,6 @@ static int dispc_ovl_calc_scaling_34xx(enum omap_plane plane,
- 	int min_factor = min(*decim_x, *decim_y);
- 	const int maxsinglelinewidth  			dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
--	unsigned long pclk = dispc_plane_pclk_rate(plane);
--	unsigned long lclk = dispc_plane_lclk_rate(plane);
- 
- 	do {
- 		in_height = DIV_ROUND_UP(height, *decim_y);
-@@ -2239,7 +2236,7 @@ static int dispc_ovl_calc_scaling_34xx(enum omap_plane plane,
- 	return 0;
- }
- 
--static int dispc_ovl_calc_scaling_44xx(enum omap_plane plane,
-+static int dispc_ovl_calc_scaling_44xx(unsigned long pclk, unsigned long lclk,
- 		const struct omap_video_timings *mgr_timings,
- 		u16 width, u16 height, u16 out_width, u16 out_height,
- 		enum omap_color_mode color_mode, bool *five_taps,
-@@ -2252,7 +2249,6 @@ static int dispc_ovl_calc_scaling_44xx(enum omap_plane plane,
- 	const int maxsinglelinewidth  				dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
- 	const int maxdownscale = dss_feat_get_param_max(FEAT_PARAM_DOWNSCALE);
--	unsigned long pclk = dispc_plane_pclk_rate(plane);
- 
- 	if (mem_to_mem) {
- 		in_width_max = out_width * maxdownscale;
-@@ -2294,6 +2290,8 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
- 	const int max_decim_limit = 16;
- 	unsigned long core_clk = 0;
- 	int decim_x, decim_y, ret;
-+	unsigned long pclk = dispc_plane_pclk_rate(plane);
-+	unsigned long lclk = dispc_plane_lclk_rate(plane);
- 
- 	if (width = out_width && height = out_height)
- 		return 0;
-@@ -2329,7 +2327,7 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
- 	if (decim_y > *y_predecim || out_height > height * 8)
- 		return -EINVAL;
- 
--	ret = dispc.feat->calc_scaling(plane, mgr_timings, width, height,
-+	ret = dispc.feat->calc_scaling(pclk, lclk, mgr_timings, width, height,
- 		out_width, out_height, color_mode, five_taps,
- 		x_predecim, y_predecim, &decim_x, &decim_y, pos_x, &core_clk,
- 		mem_to_mem);
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++extern int drm_display_mode_from_videomode(struct videomode *vm,
++					   struct drm_display_mode *dmode);
++#endif
++
+ /* Modesetting support */
+ extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
+ extern void drm_vblank_post_modeset(struct drm_device *dev, int crtc);
 -- 
 1.7.10.4
 

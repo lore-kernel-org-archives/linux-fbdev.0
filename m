@@ -1,65 +1,60 @@
-From: Pantelis Antoniou <panto@antoniou-consulting.com>
-Date: Mon, 12 Nov 2012 10:21:39 +0000
-Subject: Re: [PATCH] pwm-backlight: Pinctrl-fy
-Message-Id: <29FD452C-C0A0-4D22-BB52-823ACCD0D479@antoniou-consulting.com>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Fri, 16 Nov 2012 06:38:20 +0000
+Subject: [PATCH v8 0/3] Runtime Interpreted Power Sequences
+Message-Id: <1353047903-14363-1-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351699047-4487-1-git-send-email-panto@antoniou-consulting.com> <20121109080604.GA25611@avionic-0098.mockup.avionic-design.de> <CACRpkdY_sXu12k455XcEBOj3_3syxromdCWObE4didKiU_F2cA@mail.gmail.com>
-In-Reply-To: <CACRpkdY_sXu12k455XcEBOj3_3syxromdCWObE4didKiU_F2cA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Thierry Reding <thierry.reding@avionic-design.de>, Richard Purdie <rpurdie@rpsys.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Koen Kooi <koen@dominion.thruhere.net>, Matt Porter <mporter@ti.com>, Russ Dill <Russ.Dill@ti.com>, linux-omap@vger.kernel.org
+To: Anton Vorontsov <cbouatmailru-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Cc: Leela Krishna Amudala <l.krishna-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
-Hi Linus,
+Hopefully the final series before the feature gets merged. Anton Vorontsov
+kindly accepted to take it into his tree, so this series is mostly a call for
+acks, tests and reviews notices before the merge window for 3.8 opens. If you
+are interested in seeing this feature, please add your name.
 
-On Nov 11, 2012, at 7:26 PM, Linus Walleij wrote:
+This series also adds an entry for the subsystem into MAINTAINERS, setting me as
+the person in charge.
 
-> On Fri, Nov 9, 2012 at 9:06 AM, Thierry Reding
-> <thierry.reding@avionic-design.de> wrote:
->> On Wed, Oct 31, 2012 at 05:57:27PM +0200, Pantelis Antoniou wrote:
-> 
->>> +     pinctrl = devm_pinctrl_get_select_default(&pdev->dev);
->>> +     if (IS_ERR(pinctrl))
->>> +             dev_warn(&pdev->dev, "unable to select pin group\n");
->>> +
->> 
->> I just saw this done in a similar way in some other driver and then
->> remembered your patch. When I reviewed this I wasn't sure if a warning
->> was good enough in this case. I've checked the kernel tree and it seems
->> like a majority handled this as failure instead of a warning. I took a
->> look at the pinctrl core and it seems like indeed if neither pinctrl is
->> enabled or if there isn't actually a pinmux configuration for a device,
->> then devm_pinctrl_get_select_default() will actually not return an
->> error, so in those cases where an error is returned it should actually
->> be handled as a fatal error.
-> 
-> So it depends.
-> 
-> One good reason to just error out and return the error code is
-> if the error returned is -EPROBE_DEFER, right?
-> 
-> Because then you're pinctrl driver is not up yet, and you
-> need to bail out and be revisited later.
-> 
-> On a related key we have this debate going on with some
-> subsystem maintainers as to whether we should try do
-> centralize boilerplate like this, the lates suggestion is:
-> http://marc.info/?l=linux-kernel&m5263661110528&w=2
-> 
+Changes from v7:
+- fix bug reported by Tony Prisk
+- add MAINTAINERS entry
 
-Interesting... This is certainly much nicer than peppering all the
-devices with pinctrl calls.
+Alexandre Courbot (3):
+  Runtime Interpreted Power Sequences
+  pwm_backlight: use power sequences
+  Take maintainership of power sequences
 
-> The fun never ends...
-> 
+ .../devicetree/bindings/power/power_seq.txt        | 121 +++++++
+ .../bindings/video/backlight/pwm-backlight.txt     |  63 +++-
+ Documentation/power/power_seq.txt                  | 253 ++++++++++++++
+ MAINTAINERS                                        |  10 +
+ drivers/power/Kconfig                              |   1 +
+ drivers/power/Makefile                             |   1 +
+ drivers/power/power_seq/Kconfig                    |   2 +
+ drivers/power/power_seq/Makefile                   |   1 +
+ drivers/power/power_seq/power_seq.c                | 376 +++++++++++++++++++++
+ drivers/power/power_seq/power_seq_delay.c          |  65 ++++
+ drivers/power/power_seq/power_seq_gpio.c           |  94 ++++++
+ drivers/power/power_seq/power_seq_pwm.c            |  82 +++++
+ drivers/power/power_seq/power_seq_regulator.c      |  83 +++++
+ drivers/video/backlight/Kconfig                    |   1 +
+ drivers/video/backlight/pwm_bl.c                   | 160 +++++++--
+ include/linux/power_seq.h                          | 203 +++++++++++
+ include/linux/pwm_backlight.h                      |  18 +-
+ 17 files changed, 1494 insertions(+), 40 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/power_seq.txt
+ create mode 100644 Documentation/power/power_seq.txt
+ create mode 100644 drivers/power/power_seq/Kconfig
+ create mode 100644 drivers/power/power_seq/Makefile
+ create mode 100644 drivers/power/power_seq/power_seq.c
+ create mode 100644 drivers/power/power_seq/power_seq_delay.c
+ create mode 100644 drivers/power/power_seq/power_seq_gpio.c
+ create mode 100644 drivers/power/power_seq/power_seq_pwm.c
+ create mode 100644 drivers/power/power_seq/power_seq_regulator.c
+ create mode 100644 include/linux/power_seq.h
 
-Indeed.
-
-> Yours,
-> Linus Walleij
-
-Regards
-
--- Pantelis
+-- 
+1.8.0
 

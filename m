@@ -1,18 +1,20 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 16 Nov 2012 07:15:13 +0000
+Date: Fri, 16 Nov 2012 09:06:02 +0000
 Subject: Re: [PATCH 0/5] OMAPFB: use dma_alloc instead of omap's vram
-Message-Id: <50A5E801.3000100@ti.com>
+Message-Id: <50A601FA.5060401@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig1A9442FB413F366B828C5EE3"
+Content-Type: multipart/mixed; boundary="------------enig6B6E37C65F20D7F39C696190"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1352715906-16946-1-git-send-email-tomi.valkeinen@ti.com>
  <20121112225037.GU6801@atomide.com>
 In-Reply-To: <20121112225037.GU6801@atomide.com>
 To: linux-arm-kernel@lists.infradead.org
 
---------------enig1A9442FB413F366B828C5EE3
+--------------enig6B6E37C65F20D7F39C696190
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
+
+Hi Tony,
 
 On 2012-11-13 00:50, Tony Lindgren wrote:
 > * Tomi Valkeinen <tomi.valkeinen@ti.com> [121112 02:27]:
@@ -56,21 +58,19 @@ ly
 > Great, thanks for fixing these. Could you please queue these into
 > a separate branch against v3.7-rc5 that I can also merge into
 > omap-for-v3.8/cleanup-headers-prepare-multiplatform-v3?
->=20
-> Feel free to add my Acked-by: Tony Lindgren <tony@atomide.com> to the
-> arch/arm/*omap*/* parts.
 
-I added your acks, and pushed:
+Should we enable CMA by default in omap2plus_defconfig? And perhaps on
+omap1 also?
 
-git://gitorious.org/linux-omap-dss2/linux.git 3.8/vram-conversion
-
-It's based on -rc4 as my other branches are based on that.
+I have to say I don't know the details of the dma allocation, but afaik
+there are no drawbacks with CMA. Although it is still marked
+EXPERIMENTAL in the kconfig...
 
  Tomi
 
 
 
---------------enig1A9442FB413F366B828C5EE3
+--------------enig6B6E37C65F20D7F39C696190
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -79,19 +79,19 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.11 (GNU/Linux)
 Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJQpegEAAoJEPo9qoy8lh71Dv0QAIBHXdsYNvcoppwcGUTNFpuc
-ScgwlQTzRajJWvTlYx1mJms/uboyPnBdwgfdDpPZFkg0r41FzO/BCwOiB9joFxag
-1Zm38UlB65Cif45+B5RoY9s7WYP/uCHQZu/guk3Dguzr0uCVuEMl9vHm1U7ZipB6
-WSeE843y9zrxirwM8erGnkBlCdGaJOWDUWmT7ZFXWSCJh+1i/TcepaXhWpYS9vn9
-fDkyNVKjwbChGdk9Ok+yoHeO5GyWIRjtvMYtjKeE0t5RUViVAcZ4NeIoehJCw4Nz
-n46wLBs2xRNrLO/pt8lwqT9wSOi+EBN6O8yQM4OwDA9kLSda29lY/zAAkj8Lj3WD
-KjHklL59azh5ia4zPDXTYMN5mAaaNslYuL6O8/UtUzRbh4iEqpBr88qgOrZ+3vgL
-A2238aQcrwJ1Nr0GBoy3HWlpAKvkfrG5wCT+dfrPXJhflbglIm0U7xC7tEraRWu7
-ClfGqa+v0Isqsd1vb86VhS96/RGGYcf9E3TSVjnB/71h4QSZW3S3r5EeMfkgNYDj
-1VTE0D45hmfiO2QUSdNdRtfcxm9MAXU6aPXxXq5cSLpxrKspi5Y6ma1lY97k2Nst
-HbPlyFGdBdYedgBwhaqbMSRyMiqT82QQcQ/YeIdKFNgbgbJ3pbDfsU3WiWfoe03U
-JV9kKwe0Oeqr9HwlVNKc
-=33Ev
+iQIcBAEBAgAGBQJQpgH6AAoJEPo9qoy8lh71mg0QAJMkXTxnH7b/iSGY0GJYQ9VR
+yczH8GbCaonPuzOxHqmuoOq2NBPKjuZHcKorX1JzMozf6BpXIg0xy49sJBUskWjR
+5BFWDnXuRsIXLJQLQEWrgWYP9mcxMz/aDooEp//xBb/TCHQ4CTaFjM1CcrvEBzIh
+qh8L+9/XltC+qgnljEt0uvf0BGBrrMiVCfDJ65fPDFosRISvke3mGGJ+Mtwv2KJJ
+D03sN7LALzEN5nD434uEKwKoZz0ZGv/5Gwzq+RmGemYnNy9D2kEpCMhyIWZ6Hrmg
+jVrsGKVo/gOewbzOJGNPO8tvvA1wAPtI5kpSegUyFXQNQTVvHFLfCXvnCkXmCFEK
+CcWseGFccBAlZOwtE8OA2FWZAv3vmVDRu4A5BSM/ZgqxARzLN2UZ+Y7Ja/RYeyJR
+m4jwxb1YjQRIPJjoFZkvK5uUsxAEuqCk129IlxbdYKub/3RaAnMx+IiswrzooBeB
+Edz5VUzw1xDrG5lxT8PFJJttvLIROyA21fuxUd3B+dp6bL/yrP/LQs/pjbTCUvSx
+ClBuCv5pJgEde/0ZEW6UaGQqJRFGKfNaB2ALrTIftCCA5j+Z8D1FI/tEOzeKk/B0
+Zzzr9k5aT8V2x8z2h9lWuvMPClT+r6SGn2myhsrnA/1ioqTe0nkXXvk6FCpFnkUH
+Cqzkq+h1Fv6eVT//BX6T
+=dyiQ
 -----END PGP SIGNATURE-----
 
---------------enig1A9442FB413F366B828C5EE3--
+--------------enig6B6E37C65F20D7F39C696190--

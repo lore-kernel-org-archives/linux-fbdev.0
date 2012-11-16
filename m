@@ -1,111 +1,89 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Mon, 26 Nov 2012 09:07:27 +0000
-Subject: [PATCHv15 6/7] drm_modes: add videomode helpers
-Message-Id: <1353920848-1705-7-git-send-email-s.trumtrar@pengutronix.de>
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Fri, 16 Nov 2012 22:29:05 +0000
+Subject: [PATCH v2] backlight: Add of_find_backlight_by_node() function
+Message-Id: <1353104945-24153-1-git-send-email-thierry.reding@avionic-design.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353920848-1705-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1353920848-1705-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jingoo Han <jg1.han@samsung.com>, Grant Likely <grant.likely@secretlab.ca>, Richard Purdie <rpurdie@rpsys.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org
 
-Add conversion from videomode to drm_display_mode
+This function finds the struct backlight_device for a given device tree
+node. A dummy function is provided so that it safely compiles out if OF
+support is disabled.
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
-Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Signed-off-by: Thierry Reding <thierry.reding@avionic-design.de>
+Reviewed-by: Grant Likely <grant.likely@secretlab.ca>
+Acked-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/gpu/drm/drm_modes.c |   37 +++++++++++++++++++++++++++++++++++++
- include/drm/drmP.h          |    7 +++++++
- 2 files changed, 44 insertions(+)
+Changes in v2:
+- use #ifdef CONFIG_OF instead of #if IS_ENABLED(CONFIG_OF)
+- add kerneldoc to of_find_backlight_by_node() function
 
-diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index 59450f3..8263ea1 100644
---- a/drivers/gpu/drm/drm_modes.c
-+++ b/drivers/gpu/drm/drm_modes.c
-@@ -33,6 +33,7 @@
- #include <linux/list.h>
- #include <linux/list_sort.h>
- #include <linux/export.h>
-+#include <linux/videomode.h>
- #include <drm/drmP.h>
- #include <drm/drm_crtc.h>
- 
-@@ -504,6 +505,42 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, int vdisplay, int vrefresh,
+ drivers/video/backlight/backlight.c | 29 +++++++++++++++++++++++++++++
+ include/linux/backlight.h           | 10 ++++++++++
+ 2 files changed, 39 insertions(+)
+
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index 297db2f..345f666 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -370,6 +370,35 @@ void backlight_device_unregister(struct backlight_device *bd)
  }
- EXPORT_SYMBOL(drm_gtf_mode);
+ EXPORT_SYMBOL(backlight_device_unregister);
  
-+#if IS_ENABLED(CONFIG_VIDEOMODE)
-+int drm_display_mode_from_videomode(const struct videomode *vm,
-+				    struct drm_display_mode *dmode)
++#ifdef CONFIG_OF
++static int of_parent_match(struct device *dev, void *data)
 +{
-+	dmode->hdisplay = vm->hactive;
-+	dmode->hsync_start = dmode->hdisplay + vm->hfront_porch;
-+	dmode->hsync_end = dmode->hsync_start + vm->hsync_len;
-+	dmode->htotal = dmode->hsync_end + vm->hback_porch;
-+
-+	dmode->vdisplay = vm->vactive;
-+	dmode->vsync_start = dmode->vdisplay + vm->vfront_porch;
-+	dmode->vsync_end = dmode->vsync_start + vm->vsync_len;
-+	dmode->vtotal = dmode->vsync_end + vm->vback_porch;
-+
-+	dmode->clock = vm->pixelclock / 1000;
-+
-+	dmode->flags = 0;
-+	if (vm->hah)
-+		dmode->flags |= DRM_MODE_FLAG_PHSYNC;
-+	else
-+		dmode->flags |= DRM_MODE_FLAG_NHSYNC;
-+	if (vm->vah)
-+		dmode->flags |= DRM_MODE_FLAG_PVSYNC;
-+	else
-+		dmode->flags |= DRM_MODE_FLAG_NVSYNC;
-+	if (vm->interlaced)
-+		dmode->flags |= DRM_MODE_FLAG_INTERLACE;
-+	if (vm->doublescan)
-+		dmode->flags |= DRM_MODE_FLAG_DBLSCAN;
-+	drm_mode_set_name(dmode);
-+
-+	return 0;
++	return dev->parent && dev->parent->of_node = data;
 +}
-+EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
++
++/**
++ * of_find_backlight_by_node() - find backlight device by device-tree node
++ * @node: device-tree node of the backlight device
++ *
++ * Returns a pointer to the backlight device corresponding to the given DT
++ * node or NULL if no such backlight device exists or if the device hasn't
++ * been probed yet.
++ *
++ * This function obtains a reference on the backlight device and it is the
++ * caller's responsibility to drop the reference by calling put_device() on
++ * the backlight device's .dev field.
++ */
++struct backlight_device *of_find_backlight_by_node(struct device_node *node)
++{
++	struct device *dev;
++
++	dev = class_find_device(backlight_class, NULL, node, of_parent_match);
++
++	return dev ? to_backlight_device(dev) : NULL;
++}
++EXPORT_SYMBOL(of_find_backlight_by_node);
 +#endif
 +
- /**
-  * drm_mode_set_name - set the name on a mode
-  * @mode: name will be set in this mode
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index 3fd8280..2194e97 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -85,6 +85,8 @@ struct module;
- struct drm_file;
- struct drm_device;
+ static void __exit backlight_class_exit(void)
+ {
+ 	class_destroy(backlight_class);
+diff --git a/include/linux/backlight.h b/include/linux/backlight.h
+index 5ffc6dd..da9a082 100644
+--- a/include/linux/backlight.h
++++ b/include/linux/backlight.h
+@@ -134,4 +134,14 @@ struct generic_bl_info {
+ 	void (*kick_battery)(void);
+ };
  
-+struct videomode;
-+
- #include <drm/drm_os_linux.h>
- #include <drm/drm_hashtab.h>
- #include <drm/drm_mm.h>
-@@ -1454,6 +1456,11 @@ extern struct drm_display_mode *
- drm_mode_create_from_cmdline_mode(struct drm_device *dev,
- 				  struct drm_cmdline_mode *cmd);
- 
-+#if IS_ENABLED(CONFIG_VIDEOMODE)
-+extern int drm_display_mode_from_videomode(const struct videomode *vm,
-+					   struct drm_display_mode *dmode);
++#ifdef CONFIG_OF
++struct backlight_device *of_find_backlight_by_node(struct device_node *node);
++#else
++static inline struct backlight_device *
++of_find_backlight_by_node(struct device_node *node)
++{
++	return NULL;
++}
 +#endif
 +
- /* Modesetting support */
- extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
- extern void drm_vblank_post_modeset(struct drm_device *dev, int crtc);
+ #endif
 -- 
-1.7.10.4
+1.8.0
 

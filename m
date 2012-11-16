@@ -1,30 +1,37 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 15 Nov 2012 18:59:21 +0000
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Fri, 16 Nov 2012 08:53:04 +0000
 Subject: Re: [PATCH v10 1/6] video: add display_timing and videomode
-Message-Id: <1668773.JuvWEH8bU2@avalon>
+Message-Id: <20121116085304.GA7493@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de> <2466982.zTBri0jEif@avalon> <20121115180359.1E6F33E197F@localhost>
+References: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
+ <1352971437-29877-2-git-send-email-s.trumtrar@pengutronix.de>
+ <20121115154753.C82223E194B@localhost>
+ <2466982.zTBri0jEif@avalon>
+ <20121115180359.1E6F33E197F@localhost>
 In-Reply-To: <20121115180359.1E6F33E197F@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, devicetree-discuss@lists.ozlabs.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, kernel@pengutronix.de, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, devicetree-discuss@lists.ozlabs.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, kernel@pengutronix.de, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org
 
-On Thursday 15 November 2012 18:03:59 Grant Likely wrote:
-> On Thu, 15 Nov 2012 17:00:57 +0100, Laurent Pinchart wrote:
+Hi Grant,
+
+On Thu, Nov 15, 2012 at 06:03:59PM +0000, Grant Likely wrote:
+> On Thu, 15 Nov 2012 17:00:57 +0100, Laurent Pinchart <laurent.pinchart@ideasonboard.com> wrote:
+> > Hi Grant,
+> > 
 > > On Thursday 15 November 2012 15:47:53 Grant Likely wrote:
 > > > On Thu, 15 Nov 2012 10:23:52 +0100, Steffen Trumtrar wrote:
 > > > > Add display_timing structure and the according helper functions. This
-> > > > allows the description of a display via its supported timing
-> > > > parameters.
+> > > > allows the description of a display via its supported timing parameters.
 > > > > 
 > > > > Every timing parameter can be specified as a single value or a range
 > > > > <min typ max>.
 > > > > 
-> > > > Also, add helper functions to convert from display timings to a
-> > > > generic videomode structure. This videomode can then be converted to
-> > > > the corresponding subsystem mode representation (e.g. fb_videomode).
+> > > > Also, add helper functions to convert from display timings to a generic
+> > > > videomode structure. This videomode can then be converted to the
+> > > > corresponding subsystem mode representation (e.g. fb_videomode).
 > > > > 
 > > > > Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 > > > 
@@ -35,6 +42,10 @@ On Thursday 15 November 2012 18:03:59 Grant Likely wrote:
 > > > timings from the device tree and (eventually) provide the data in the
 > > > form 'struct videomode'. Correct?
 > > > 
+
+For the time being it is straight from devicetree via struct videomode
+to struct drm_display_mode or fb_videomode. Correct.
+
 > > > If so, then it looks over engineered. Creating new infrastructure to
 > > > allocate, maintain, and free a new 'struct display_timings' doesn't make
 > > > any sense when it is an intermediary data format that will never be used
@@ -42,30 +53,53 @@ On Thursday 15 November 2012 18:03:59 Grant Likely wrote:
 > > > 
 > > > Can the DT parsing code instead return a table of struct videomode?
 > > > 
+
+See below.
+
 > > > But, wait... struct videomode is also a new structure. So it looks like
 > > > this series creates two new intermediary data structures;
 > > > display_timings and videomode. And at least as far as I can see in this
 > > > series struct fb_videomode is the only user.
-> > 
-> > struct videomode is supposed to slowly replace the various video mode
-> > structures we currently have in the kernel (struct drm_mode_modeinfo,
-> > struct fb_videomode and struct v4l2_bt_timings), at least where possible
-> > (userspace APIs can't be broken). This will make it possible to reuse
-> > code across the DRM, FB and V4L2 subsystems, such as the EDID parser or
-> > HDMI encoder drivers. This rationale might not be clearly explained in
-> > the commit message, but having a shared video mode structure is pretty
-> > important.
-> 
-> Okay that make sense. What about struct display_timings?
 
-I'll let Steffen answer on that one as I (currently) have no strong feeling 
-about it. If we were to remove it we would need to carry the number of 
-timings, native timing and timings array around. That wouldn't be very 
-practical for drivers, but it probably all depends on the usage drivers will 
-make of that information.
+struct drm_display_mode is also a user in this series see 5/6 and 6/6.
+
+> > 
+> > struct videomode is supposed to slowly replace the various video mode 
+> > structures we currently have in the kernel (struct drm_mode_modeinfo, struct 
+> > fb_videomode and struct v4l2_bt_timings), at least where possible (userspace 
+> > APIs can't be broken). This will make it possible to reuse code across the 
+> > DRM, FB and V4L2 subsystems, such as the EDID parser or HDMI encoder drivers. 
+> > This rationale might not be clearly explained in the commit message, but 
+> > having a shared video mode structure is pretty important.
+>
+
+That.
+
+> Okay that make sense. What about struct display_timings?
+> 
+
+The reason for defining an intermediary step is because of the different things
+that are described:
+- struct display_timing describes the signal ranges a display supports
+- struct display_timings describes all timing settings of a display
+- struct videomode describes one single mode generated from that settings
+
+It is possible to generate multiple struct videomodes from one
+struct display_timing based on the circumstances. And that is a task for the
+driver using the display_timing infos. This means drivers are supposed to use
+struct display_timings if they need to generate a struct videomode from the
+timing ranges of one entry.
+This is just the first step in that direction.
+I hope this makes the need for struct display_timings a little clearer.
+The other solution would be the one Laurent suggested and pass multiple values
+around. Which in my opinion doesn't make it better, more practical or cleaner.
+
+
+Regards,
+Steffen
 
 -- 
-Regards,
-
-Laurent Pinchart
-
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

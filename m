@@ -1,106 +1,38 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Thu, 22 Nov 2012 16:00:15 +0000
-Subject: [PATCHv13 7/7] drm_modes: add of_videomode helpers
-Message-Id: <1353600015-6974-8-git-send-email-s.trumtrar@pengutronix.de>
+From: willims gebrel <willims.gebrel@9y.com>
+Date: Fri, 16 Nov 2012 12:59:21 +0000
+Subject: Williams
+Message-Id: <1353070761.32104.YahooMailClassic@web171705.mail.ir2.yahoo.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353600015-6974-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1353600015-6974-1-git-send-email-s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-fbdev@vger.kernel.org
 
-Add helper to get drm_display_mode from devicetree.
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
-Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
----
- drivers/gpu/drm/drm_modes.c |   34 +++++++++++++++++++++++++++++++++-
- include/drm/drmP.h          |    6 ++++++
- 2 files changed, 39 insertions(+), 1 deletion(-)
+My Dear,
 
-diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index 0073b27..2d6edfa 100644
---- a/drivers/gpu/drm/drm_modes.c
-+++ b/drivers/gpu/drm/drm_modes.c
-@@ -35,7 +35,7 @@
- #include <linux/export.h>
- #include <drm/drmP.h>
- #include <drm/drm_crtc.h>
--#include <linux/videomode.h>
-+#include <linux/of_videomode.h>
  
- /**
-  * drm_mode_debug_printmodeline - debug print a mode
-@@ -541,6 +541,38 @@ int drm_display_mode_from_videomode(const struct videomode *vm,
- EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
- #endif
- 
-+#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+/**
-+ * of_get_drm_display_mode - get a drm_display_mode from devicetree
-+ * @np: device_node with the timing specification
-+ * @dmode: will be set to the return value
-+ * @index: index into the list of display timings in devicetree
-+ *
-+ * This function is expensive and should only be used, if only one mode is to be
-+ * read from DT. To get multiple modes start with of_get_display_timings and
-+ * work with that instead.
-+ */
-+int of_get_drm_display_mode(struct device_node *np,
-+			    struct drm_display_mode *dmode, unsigned int index)
-+{
-+	struct videomode vm;
-+	int ret;
-+
-+	ret = of_get_videomode(np, &vm, index);
-+	if (ret)
-+		return ret;
-+
-+	drm_display_mode_from_videomode(&vm, dmode);
-+
-+	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
-+		vm.vactive, np->name);
-+	drm_mode_debug_printmodeline(dmode);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(of_get_drm_display_mode);
-+#endif
-+
- /**
-  * drm_mode_set_name - set the name on a mode
-  * @mode: name will be set in this mode
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index 3d0ccaa..84ecabd 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -86,6 +86,7 @@ struct drm_file;
- struct drm_device;
- 
- struct videomode;
-+struct device_node;
- #include <drm/drm_os_linux.h>
- #include <drm/drm_hashtab.h>
- #include <drm/drm_mm.h>
-@@ -1459,6 +1460,11 @@ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
- extern int drm_display_mode_from_videomode(const struct videomode *vm,
- 					   struct drm_display_mode *dmode);
- #endif
-+#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+extern int of_get_drm_display_mode(struct device_node *np,
-+				   struct drm_display_mode *dmode,
-+				   unsigned int index);
-+#endif
- 
- /* Modesetting support */
- extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
--- 
-1.7.10.4
 
+I'm happy to inform you about my success in getting those funds transferred under the cooperation of my new partner from Canada based business man; presently I'm in Bahamas for investment projects with my own share of the total sum. Meanwhile, I didn't forget your past efforts and attempts to assist me in transferring those funds despite that it failed us somehow.
+
+ 
+
+Now contact my patina personal adviser in Togo, his name is HON REV.PETER SMITH of church embassy ministry Togo, E-mail: fortbendlawlegal@gmail.com
+
+ 
+
+Ask him to send you the official Draft check of $500.000.00 or by cash which I gave him as order to kept for your compensation for all the past efforts and attempts to assist me in this matter before. I appreciated your collective efforts at that time, so feel free and get in touch with my patina adviser HON.REV. PETER SMITH and instruct him where to send the amount to you. Please do let me know immediately you receive it so that we can share the joy after all the sufferings at that time.
+
+ 
+
+in the moment, I am very busy here In Bahamas because of the investment projects which myself and the new partner are having at hand without confrontations, finally, remember that I had forwarded instruction to the REV.PETER SMITH on your behalf to send you the check or by cash as my patina deposited to him on your name before he left to Canada where he based.
+
+ 
+
+So feel free to get in touch with HON REV.PETER SMITH he will send the amount to you without any delay.
+
+ 
+
+With best regards,
+
+Williams

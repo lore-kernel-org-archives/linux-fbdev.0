@@ -1,74 +1,80 @@
 From: Alexandre Courbot <acourbot@nvidia.com>
-Date: Sat, 17 Nov 2012 04:04:00 +0000
+Date: Sat, 17 Nov 2012 10:12:45 +0000
 Subject: Re: [PATCH v8 1/3] Runtime Interpreted Power Sequences
-Message-Id: <CAAVeFuL_r8PGM=0gDv=x2ff3GFCZQ4=DaZq4N9gfvXtnFC=aNg@mail.gmail.com>
+Message-Id: <CAAVeFuJ28=YFOx1Uvq+B33JQW2UxDYx2J8igUnVCbTEO0V-KKg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1353047903-14363-1-git-send-email-acourbot@nvidia.com>
- <1353047903-14363-2-git-send-email-acourbot@nvidia.com> <20121116103511.GB16084@e106331-lin.cambridge.arm.com>
-In-Reply-To: <20121116103511.GB16084-NuALmloUBlrZROr8t4l/smS4ubULX0JqMm0uRHvK7Nw@public.gmane.org>
+ <1353047903-14363-2-git-send-email-acourbot@nvidia.com> <20121116072642.GA22291@lizard>
+ <50A60AF6.9080509@nvidia.com> <20121116122540.GA2198@lizard>
+In-Reply-To: <20121116122540.GA2198@lizard>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Cc: Anton Vorontsov <cbouatmailru-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, "rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org" <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Leela Krishna Amudala <l.krishna-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Leela Krishna Amudala <l.krishna@samsung.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Mark,
-
-On Fri, Nov 16, 2012 at 7:35 PM, Mark Rutland <mark.rutland@arm.com> wrote:
-> Given there are several ARM platforms that may have an interest in this, please
-> consider posting this to the ARM mailing list:
-> linux-arm-kernel@lists.infradead.org.
-
-That's right. New revision on the way.
-
->> +Similarly, each power sequence declares its steps as sub-nodes of itself. Steps
->> +must be named sequentially, with the first step named step0, the second step1,
->> +etc. Failure to follow this rule will result in a parsing error.
+On Fri, Nov 16, 2012 at 9:25 PM, Anton Vorontsov <cbouatmailru@gmail.com> wrote:
+>> The POWER_SEQ_*_TYPE macros are defined in the C files. It's the
+>> simplest way to initialize this table, and the code inside these C
+>> files is short and simple enough that I thought I would be forgiven.
+>> :)
 >
-> Could we not encode the step number in the unit-address? i.e. step@N rather than
-> stepN.
-
-That was the way I did it initially, but it has been pointed out that
-doing so would require to have #address-cells and #size-cells in every
-power sequence, as well as a "reg" property in every step (see
-https://lkml.org/lkml/2012/7/31/454 ). Although I'd prefer to use the
-@ notation too (and neither dtc nor the kernel complained when I did
-it), I tend to think the current solution is less burdensome than
-having these redundant properties.
-
->> +"gpio" type required properties:
->> +  - gpio: phandle of the GPIO to use.
->> +  - value: value this GPIO should take. Must be 0 or 1.
+> I think in the header file you could just write
 >
-> Is there any reason for id to be a name rather than a phandle? It seems
-> inconsistent with the gpio case.
+> extern ..... power_seq_delay_type;
+> #ifndef ...
+> #define power_seq_delay_type NULL
+> #endif
+>
+> And then, in the .c file:
+>
+> static const struct power_seq_res_ops power_seq_ops[POWER_SEQ_NUM_TYPES] = {
+>         [POWER_SEQ_DELAY] = power_seq_delay_type,
+>         ...
+> };
+>
+> And then you can stop including the .c files directly, and link them
+> instead.
 
-That's another long story. But to make it short, I'd like to make it
-possible for power sequences to be referenced and shared between
-devices of the same type (as everybody knows, copy/pasting is bad). If
-we use phandles in steps, the power sequence becomes tied to the
-referred resources and thus cannot be shared with another instance of
-the same device. On the other hand, using an identifier that is
-resolved at runtime (through e.g. regulator_get(device *, char *)
-leverages the existing frameworks and makes things more flexible.
+I have done something similar, but that avoids exporting resource ops
+into the header file. I am still not satisfied with it though - I'd
+rather have one init function per resource file that changes the
+pointer of the ops table from NULL to its own set of functions. That
+way the core could live without knowing anything about the different
+resources, and that would be nicer. Unfortunately modules only support
+one init function, so this is not doable here.
 
-GPIO is currently the exception. It is the only framework for which
-you cannot currently resolve a resource from a device and an
-identifier. So at the moment we have to use a phandle - but we are
-also working with Linus Walleij to provide an alternative GPIO API
-that will be more like what we have for regulators/pinctrl/PWM/etc.
+>> >nit: one variable declaration per line.
+>>
+>> Fair enough - but is that a convention? checkpatch.pl was happy with these.
+>
+> It's not a rule, although there is a small passage about it in CodingStyle
+> file when it describes commenting style. Though, some folks choose to
+> ignore this suggestion quite frequently, especially if variables have no
+> comments.
+>
+> Often, the multiple declarations per line are used to hide ugly functions
+> w/ tons of variables, or just to confuse the reader for the fun of it.
+>
+> There are exceptions, of course. E.g.
+>
+>         int i, j, k; /* Our iterators. */
+>
+> Is perfectly fine.
+>
+> But
+>         int i, err;
+>
+> At least to me seems weird, this stuff is logically disjunct.
+>
+> Only human can truly differentiate when the stuff "looks better" together
+> or apart, so that's why checkpatch doesn't complain. Personally, I use
+> this rule of thumb: when in doubt, use just one declaration per line, it
+> is always OK. :)
 
-Another problem with phandles is that some of the functions that
-resolve them are not publicly exported (i.e. AFAIK there is no public
-function that returns a regulator from a phandle - the only to obtain
-one is through regulator_get)
+That totally makes sense - thanks for the precision.
 
-> I also see from the example below that the gpio property is not just a phandle,
-> as it has the gpio-specifier appended. Is there a better way of describing this
-> format in the documentation?
+Prepping another patchset with audience extended to linux-arm-kernel
+as Mark suggested.
 
-This is already clearly be defined in
-Documentation/devicetree/bindings/gpio/, isn't it?
-
-Thanks,
 Alex.

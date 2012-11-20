@@ -1,68 +1,58 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Nov 2012 12:00:30 +0000
-Subject: Re: [PATCH 0/3] OMAPDSS: APPLY: Misc Fixes
-Message-Id: <50A0E4DE.60401@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enigF0A23A7A609AC770BCB93089"
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Tue, 20 Nov 2012 15:54:50 +0000
+Subject: [PATCH v12 0/6] of: add display helper
+Message-Id: <1353426896-6045-1-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <n> <1352279844-10494-1-git-send-email-archit@ti.com>
-In-Reply-To: <1352279844-10494-1-git-send-email-archit@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
 
---------------enigF0A23A7A609AC770BCB93089
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi!
 
-On 2012-11-07 11:17, Archit Taneja wrote:
-> This series resolves a few minor issues with APPLY. Tested on a 4430sdp=
-, checked
-> switching overlays between DSI command mode and HDMI displays for any u=
-nexpected
-> behavior.
->=20
-> Reference tree:
-> git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git 3.8/a=
-pply_fixes
->=20
-> Archit Taneja (3):
->   OMAPDSS: APPLY: Don't treat an overlay's channel out as shadow bits
->   OMAPDSS: APPLY: Remove unnecessary variable in dss_apply_irq_handler
->   OMAPDSS: APPLY: Remove unnecessary call to mg_clear_shadow_dirty
->=20
->  drivers/video/omap2/dss/apply.c |   48 +++++++++++++++++++++----------=
---------
->  1 file changed, 26 insertions(+), 22 deletions(-)
->=20
+Changes since v11:
+	- make pointers const where applicable
+	- add reviewed-by Laurent Pinchart
 
-Thanks, looks ok. I'll apply to omapdss tree.
-
- Tomi
+Regards,
+Steffen
 
 
+Steffen Trumtrar (6):
+  video: add display_timing and videomode
+  video: add of helper for videomode
+  fbmon: add videomode helpers
+  fbmon: add of_videomode helpers
+  drm_modes: add videomode helpers
+  drm_modes: add of_videomode helpers
 
---------------enigF0A23A7A609AC770BCB93089
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+ .../devicetree/bindings/video/display-timings.txt  |  107 ++++++++++
+ drivers/gpu/drm/drm_modes.c                        |   70 +++++++
+ drivers/video/Kconfig                              |   19 ++
+ drivers/video/Makefile                             |    4 +
+ drivers/video/display_timing.c                     |   24 +++
+ drivers/video/fbmon.c                              |   86 ++++++++
+ drivers/video/of_display_timing.c                  |  216 ++++++++++++++++++++
+ drivers/video/of_videomode.c                       |   48 +++++
+ drivers/video/videomode.c                          |   46 +++++
+ include/drm/drmP.h                                 |   12 ++
+ include/linux/display_timing.h                     |   70 +++++++
+ include/linux/fb.h                                 |   13 ++
+ include/linux/of_display_timings.h                 |   20 ++
+ include/linux/of_videomode.h                       |   18 ++
+ include/linux/videomode.h                          |   40 ++++
+ 15 files changed, 793 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/display-timings.txt
+ create mode 100644 drivers/video/display_timing.c
+ create mode 100644 drivers/video/of_display_timing.c
+ create mode 100644 drivers/video/of_videomode.c
+ create mode 100644 drivers/video/videomode.c
+ create mode 100644 include/linux/display_timing.h
+ create mode 100644 include/linux/of_display_timings.h
+ create mode 100644 include/linux/of_videomode.h
+ create mode 100644 include/linux/videomode.h
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
+-- 
+1.7.10.4
 
-iQIcBAEBAgAGBQJQoOTeAAoJEPo9qoy8lh71Aw0P/RAhPv7jeG4NDczD2K2CBcsH
-Ezgp59Px+53wFIY5seVo/Zomj8SNyecWE811K6fwb/A9df9wBxr4F341L5EjgOmP
-UzXLDeX1X53QvbTdbgmc2gLp3sMHlqeYOjxCfX/puB4j/EXjmKMinM2TevbeyWPA
-LZmFE46Ua5UMFANMn96vhTMlbgwHgNOJo74+TI/mesYR/4825fyKq2ZlzZTl8LnR
-iLsBaVMG3otlGalgIbNU10AGGKnGjvbPF7uEKzXpE1QdEyG3BvuX6sjNakbl/CaZ
-bt2k+BJbiK4i3CkDZe/i0SRF4uSA2OaamFmJM3juNwgkkCe7js9XhC9Qbgi/4Vb/
-39TovUNVKVc0Nd8dfpwHEEwvfFrL3rS6vJKRiiD0z/zRSlBNpK2Rbu0vtfUGRwA1
-bGR7RUcZhKv7QPIEVclXn6AlvrLwXZH24LLyl3Wvd1zBwDKhdril6miIppTJmFuw
-3EIVTISI1sho4O4P8SulrEGZ73FaZls9IK9Om/U3T8TnVCOJPwaUMBy5fL+eO8ii
-ZBGIxYVSrtrZCQ4UiFJ1jM4UUQh2rjbKMph8bIcxOSexRZKI6dyBt3MeK8p9gY5g
-lnHI92H+In90hq6fbiQscXMulOhN2BmXT7Wft+NbzuLPRS7o4d7wk4G/2tMY7vIR
-BRvgz8KGQ855CJkQdSf4
-=NsmV
------END PGP SIGNATURE-----
-
---------------enigF0A23A7A609AC770BCB93089--

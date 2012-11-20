@@ -1,104 +1,192 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 20 Nov 2012 14:48:18 +0000
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 20 Nov 2012 21:54:29 +0000
 Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Message-Id: <50AB9832.90709@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enigF62DFAACA269378853BB95CC"
+Message-Id: <20121120215429.B621F3E1821@localhost>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
  <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
 In-Reply-To: <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---------------enigF62DFAACA269378853BB95CC
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Sat, 17 Nov 2012 19:55:45 +0900, Alexandre Courbot <acourbot@nvidia.com> wrote:
+> Some device drivers (e.g. panel or backlights) need to follow precise
+> sequences for powering on and off, involving GPIOs, regulators, PWMs
+> and other power-related resources, with a defined powering order and
+> delays to respect between steps. These sequences are device-specific,
+> and do not belong to a particular driver - therefore they have been
+> performed by board-specific hook functions so far.
 
-Hi,
+I must be honest, this series really makes me nervous...
 
-On 2012-11-17 12:55, Alexandre Courbot wrote:
+> With the advent of the device tree and of ARM kernels that are not
+> board-tied, we cannot rely on these board-specific hooks anymore but
 
-A few questions after looking at the documentation:
+This isn't strictly true. It is still perfectly fine to have board
+specific code when necessary. However, there is strong encouragement to
+enable that code in device drivers as much as possible and new board
+files need to have very strong justification.
 
+> need a way to implement these sequences in a portable manner. This patch
+> introduces a simple interpreter that can execute such power sequences
+> encoded either as platform data or within the device tree. It also
+> introduces first support for regulator, GPIO and PWM resources.
+
+This is where I start getting nervous. Up to now I've strongly resisted
+adding any kind of interpreted code to the device tree. The model is to
+identify hardware, but require the driver to know how to control it. (as
+compared to ACPI which is entirely designed around executable
+bytecode).
+
+While the power sequences described here certainly cannot be confused
+with a Turing complete bytecode, it is a step in that direction. Plus,
+there will always be that new use case that needs just a "little new
+feature" to make this work for that too. Without thinking about how to
+handle that ahead of time is just asking for something to turn into a
+maintenance nightmare. It's just as important to specify what the limits
+of this approach are and when to punt to real driver code to handle a
+device.
+
+> +Power Sequences Steps
+> +---------------------
+> +Steps of a sequence describe an action to be performed on a resource. They
+> +always include a "type" property which indicates what kind of resource this
+> +step works on. Depending on the resource type, additional properties are defined
+> +to control the action to be performed.
+> +
+> +"delay" type required properties:
+> +  - delay: delay to wait (in microseconds)
+> +
+> +"regulator" type required properties:
+> +  - id: name of the regulator to use.
+> +  - enable / disable: one of these two empty properties must be present to
+> +                      enable or disable the resource
+> +
+> +"pwm" type required properties:
+> +  - id: name of the PWM to use.
+> +  - enable / disable: one of these two empty properties must be present to
+> +                      enable or disable the resource
+> +
+> +"gpio" type required properties:
+> +  - gpio: phandle of the GPIO to use.
+> +  - value: value this GPIO should take. Must be 0 or 1.
+> +
 > +Example
 > +-------
-> +Here are example sequences declared within a backlight device that use=
- all the
+> +Here are example sequences declared within a backlight device that use all the
 > +supported resources types:
 > +
 > +	backlight {
-> +		compatible =3D "pwm-backlight";
+> +		compatible = "pwm-backlight";
 > +		...
 > +
 > +		/* resources used by the power sequences */
-> +		pwms =3D <&pwm 2 5000000>;
-> +		pwm-names =3D "backlight";
-> +		power-supply =3D <&backlight_reg>;
+> +		pwms = <&pwm 2 5000000>;
+> +		pwm-names = "backlight";
+> +		power-supply = <&backlight_reg>;
 > +
 > +		power-sequences {
 > +			power-on {
 > +				step0 {
-> +					type =3D "regulator";
-> +					id =3D "power";
+> +					type = "regulator";
+> +					id = "power";
 > +					enable;
 > +				};
 > +				step1 {
-> +					type =3D "delay";
-> +					delay =3D <10000>;
+> +					type = "delay";
+> +					delay = <10000>;
 > +				};
 > +				step2 {
-> +					type =3D "pwm";
-> +					id =3D "backlight";
+> +					type = "pwm";
+> +					id = "backlight";
 > +					enable;
 > +				};
 > +				step3 {
-> +					type =3D "gpio";
-> +					gpio =3D <&gpio 28 0>;
-> +					value =3D <1>;
+> +					type = "gpio";
+> +					gpio = <&gpio 28 0>;
+> +					value = <1>;
 > +				};
 > +			};
+> +
+> +			power-off {
+> +				step0 {
+> +					type = "gpio";
+> +					gpio = <&gpio 28 0>;
+> +					value = <0>;
+> +				};
+> +				step1 {
+> +					type = "pwm";
+> +					id = "backlight";
+> +					disable;
+> +				};
+> +				step2 {
+> +					type = "delay";
+> +					delay = <10000>;
+> +				};
+> +				step3 {
+> +					type = "regulator";
+> +					id = "power";
+> +					disable;
+> +				};
+> +			};
+> +		};
+> +	};
 
-I guess there's a reason, but the above looks a bit inconsistent. For
-gpio you define the gpio resource inside the step. For power and pwm the
-resource is defined before the steps. Why wouldn't "pwm =3D <&pwm 2
-5000000>;" work in step2?
+I think this will get very verbose in a hurry. Already this simple
+example is 45 lines long. Using the device tree structure to encode the
+language doesn't look like a very good fit. Not to mention that the
+order of operations is entirely based on the node name. Want to insert
+an operation between step0 and step1? Need to rename step1, step2, and
+step3 to do so.
 
-> +When a power sequence is run, its steps is executed one after the othe=
-r until
-> +one step fails or the end of the sequence is reached.
+This implementation also isn't very consistent. The gpio is referenced
+with a phandle in step3/step0, but the regulator and pwm are referenced
+by id.
 
-The document doesn't give any hint of what the driver should do if
-running the power sequence fails. Run the "opposite" power sequence?
-Will that work for all resources? I'm mainly thinking of a case where
-each enable of the resource should be matched by a disable, i.e. you
-can't call disable if no enable was called.
+As an alternative, what about something like the following?
 
- Tomi
+	backlight {
+		compatible = "pwm-backlight";
+		...
 
+		/* resources used by the power sequences */
+		pwms = <&pwm 2 5000000>;
+		pwm-names = "backlight";
+		regulators = <&backlight_reg>;
+		gpios = <&gpio 28 0>;
 
+		power-on-sequence = "r0e;d10000m;p0e;g0s";
+		power-off-sequence = "g0c;p0d;d10000m;r0d";
+	};
 
---------------enigF62DFAACA269378853BB95CC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+I'm thinking about the scripts as trivial-to-parse ascii strings that
+have a very simple set of commands. The commands use resources already
+defined in the node. ie. 'g0' refers to the first entry in the gpios
+property. 'r0' for the regulator, 'p0' for the pwms, 'd' means delay. By
+no means take this as the format to use, it is just an example off the
+top of my head, but it is already way easier to work with than putting
+each command into a node.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
+The trick is still to define a syntax that doesn't fall apart when it
+needs to be extended. I would also like to get opinions on whether or
+not conditionals or loops should be supported (ie. loop waiting for a
+status to change). If they should then we need to be a lot more careful
+about the design (and due to my aforementioned nervousness, somebody may
+need to get me therapy).
 
-iQIcBAEBAgAGBQJQq5gyAAoJEPo9qoy8lh71Q4wP/ishGG4j6CsP9aN9+MiI8HCA
-N1SS7vzaR8ozlor2yF2GuRmtQKHOavOV2k/GRoVB2ewdsJSpcuijyHELfXC+M4re
-vxdkhawlkWKn+xC8pNBMoWrhUZFKeo9/Xk7dTpxXaweKTvGzmIPHSiAZn62jvV7C
-ZEIafQqkOAtEVKI7GrDAXqSObNyUgA2ASP9VLAu6nRq3PpoYRqQtrRP1lGP9naCp
-xkYUYDoXzAAyjIw0nnyMDLtgex0KEpA10vTMknMbFOhB34cSATI13saZdhtEnLOl
-G9qo3m7eYAYfg5cngFINB80pJ5pv7frZwwsJZ2miUDOykw/PJpSk2RpQA1CxjqBC
-4yJkPPY7gbQQXh5G64BxoIuNEI4zVlJVfAzyTuurqJ0gRhmwdSz8AbRObAeT2Mbw
-YiDmk6xV8v+LP6nJzSAeOtV0+CJwz3BaCJMqfANkNsUoK/J5Ikr5I00KhPB4lCdM
-pPYVOHEh7fi9KcZnnJBH5vjEFZnP9x5ukLZbc/vdfukvQSg/yvL6NwZPoE5ZY56i
-Ojgy71IZ8K0HmJekmr0Ejlp7PLXl0XP2qZfDSX7FHey+ogCh7FKRcmEIgaun5ffw
-Ddm3t1QWZq1j/8Ht8Uy08BOOyrp48L7sHjrAUx38H9m7eTQKznJD0gPwqcfBwZju
-n4XHo9Z32v3RbP8Ht1EF
-=4xsL
------END PGP SIGNATURE-----
+(Mitch, I'll let you make the argument for using Forth here. To be
+honest, I'm not keen on defining any kind of new language, however
+simple, but neither am I keen to pull in Forth).
 
---------------enigF62DFAACA269378853BB95CC--
+> +Platform Data Format
+> +--------------------
+> +All relevant data structures for declaring power sequences are located in
+> +include/linux/power_seq.h.
+
+Hmm... If sequences are switched to a string instead, then platform_data
+should also use it. The power sequence data structures can be created at
+runtime by parsing the string.
+
+g.

@@ -1,62 +1,69 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Mon, 19 Nov 2012 22:04:44 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 20 Nov 2012 15:09:10 +0000
 Subject: Re: [PATCH 0/5] OMAPFB: use dma_alloc instead of omap's vram
-Message-Id: <20121119220443.GD18567@atomide.com>
+Message-Id: <50AB9D16.3010309@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig814EC106AC792CE8E67CBF4E"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1352715906-16946-1-git-send-email-tomi.valkeinen@ti.com>
  <20121112225037.GU6801@atomide.com> <50A601FA.5060401@ti.com>
-In-Reply-To: <50A601FA.5060401@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <20121119220443.GD18567@atomide.com>
+In-Reply-To: <20121119220443.GD18567@atomide.com>
 To: linux-arm-kernel@lists.infradead.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [121116 01:08]:
-> Hi Tony,
-> 
-> On 2012-11-13 00:50, Tony Lindgren wrote:
-> > * Tomi Valkeinen <tomi.valkeinen@ti.com> [121112 02:27]:
-> >> Hi,
-> >>
-> >> This series changes omapfb to use standard dma_alloc funcs instead of omap
-> >> specific vram allocator. This let's us remove the omap vram allocator, making
-> >> omapfb platform independent.
-> >>
-> >> However, note that using standard dma funcs causes the following downsides:
-> >>
-> >> 1) dma_alloc_attrs doesn't let us allocate at certain physical address.
-> >> However, this should not be a problem as this feature of vram allocator
-> >> is only used when reserving the framebuffer that was initialized by the
-> >> bootloader, and we don't currently support "passing" a framebuffer from
-> >> the bootloader to the kernel anyway.
-> >>
-> >> 2) dma_alloc_attrs, as of now, always ioremaps the allocated area, and
-> >> we don't need the ioremap when using VRFB. This patch uses
-> >> DMA_ATTR_NO_KERNEL_MAPPING for the allocation, but the flag is currently
-> >> not operational.
-> >>
-> >> 3) OMAPFB_GET_VRAM_INFO ioctl cannot return real values anymore. I
-> >> changed the ioctl to return 64M for all the values, which, I hope, the
-> >> applications will interpret as "there's enough vram".
-> >>
-> >> 4) "vram" kernel parameter to define how much ram to reserve for video use no
-> >> longer works. The user needs to enable CMA and use "cma" parameter.
-> > 
-> > Great, thanks for fixing these. Could you please queue these into
-> > a separate branch against v3.7-rc5 that I can also merge into
-> > omap-for-v3.8/cleanup-headers-prepare-multiplatform-v3?
-> 
-> Should we enable CMA by default in omap2plus_defconfig? And perhaps on
-> omap1 also?
+--------------enig814EC106AC792CE8E67CBF4E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Yes if that's now needed for DSS.
- 
-> I have to say I don't know the details of the dma allocation, but afaik
-> there are no drawbacks with CMA. Although it is still marked
-> EXPERIMENTAL in the kconfig...
+On 2012-11-20 00:04, Tony Lindgren wrote:
 
-I guess that's still fine as that's what we're supposed to use :)
+>> Should we enable CMA by default in omap2plus_defconfig? And perhaps on=
 
-Regards,
+>> omap1 also?
+>=20
+> Yes if that's now needed for DSS.
 
-Tony 
+DSS works fine without CMA, at least for small displays, and when fb
+allocation is done at boot time. So it's not a strict "need".
+
+I'm not sure how easily FB allocations start to fail without CMA, and
+how much CMA helps.
+
+I'm not even sure what's the default DMA pool size on OMAP... If it's
+the one set with "coherent_pool" kernel parameter, then the default
+seems to be 256K, which is quite small for video use. For CMA the
+default global area is 16M. Both can, of course, be changed with boot
+params or kernel config (at least for CMA).
+
+But I think it makes sense to have CMA by default even if non-CMA kernel
+would work.
+
+ Tomi
+
+
+
+--------------enig814EC106AC792CE8E67CBF4E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJQq50WAAoJEPo9qoy8lh71bvYP/iupOqgFPIe2IZ2mpn/9yhnC
+RIlEQQVBSNInSWWWZRcBf3Htz27uuc9IK88lYx5lEAEttQ1nfh7KU3Azwei+3nZa
+fcNkt41vHGIVHRKHkPJiQVRuLjYFtquTf2stYXcp/pNBUrXK/JCyvHYH/lm0fBRF
+Me0f7kCbtBb/HRSIhUwpmpECo0Ca79tDSBYdU1hAQZ+u/pmFbbWxDiChuwCrIepx
+kj4fXuWNI22hzkxW8ln5XehVebb0DRnMfPe1zXlRJesUQFiOdLduT1nMy9/nPBZX
+p3DBxmNOtRAnkXJZz+U3W5RBZzjqBQics380AG8MB7L7u7Y1YwWM6dGE0EjaKcrD
+3Z0aPT3JHVhZ3ZcoGt4dByPXAWneUL6rmRni2fXm2sgs1byfV7X7ptAv9oNtx6fd
+iaVYcLGrTOJ767eXltjAQYk/DyNZdjl0hLjgPe47P2EvLToLKuSDaR60D0jGz+iO
+O0lT8yZsx7m3ybKJAgKwTnAgswUlixz+k0cIWVWV23QnAIQH6xPd2o7zNzSs40G/
+ZjAAxc62HS23s9bABdmpXN9DMURZfYP047i51ZwOmRAEUReb1KnrjtRIjEeTdYJ6
+OMoMWIY1zaNNNfX86VsALyLKO9rAyGgZP0yXe5V9WzMXEwbOI0Jfm+xzkXZwzIIR
+6POofTSHonwCGmK54QY9
+=YnQi
+-----END PGP SIGNATURE-----
+
+--------------enig814EC106AC792CE8E67CBF4E--

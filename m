@@ -1,116 +1,117 @@
-From: Archit Taneja <archit@ti.com>
-Date: Fri, 16 Nov 2012 07:17:35 +0000
-Subject: Re: [PATCH 00/32] OMAPDSS: create compat layer
-Message-Id: <50A5E5BF.40405@ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Tue, 20 Nov 2012 15:54:53 +0000
+Subject: [PATCH v12 3/6] fbmon: add videomode helpers
+Message-Id: <1353426896-6045-4-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1352995120-3288-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1353426896-6045-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1353426896-6045-1-git-send-email-s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Rob Clark <rob@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On Thursday 15 November 2012 09:28 PM, Tomi Valkeinen wrote:
-> Hi,
->
-> This series is about improving omapdss API for omapdrm.
->
-> We have two separate, exclusive, users of omapdss: 1) omapfb + omap_vout and 2)
-> omapdrm. Because omapfb and omap_vout are independent drivers, we've built
-> layers in omapdss to manage the two simultaneous callers. These layers are not
-> needed for omapdrm, as omapdrm is the sole user of omapdss, and these layers in
-> fact only create trouble for omapdrm.
->
-> The simple option to improve omapdrm situation would be to copy the omapdss
-> code for omapdrm. We are trying to avoid this, as omapdss and the panel drivers
-> are quite a lot of code together, and most of the code would be used without
-> change.
->
-> Thus this series helps the situation by moving the omapdss code required by
-> omapfb + omap_vout to separate files, creating a distinct layer used only by
-> omapfb + omap_vout. We call this layer "compat layer". This compat layer then
-> uses the core omapdss driver to operate the hardware. omapdrm will use the core
-> omapdss directly, without any layers in between.
->
-> After this series, omapfb, omap_vout and omapdrm can all be compiled at the
-> same time. Obviously omapdrm and omapfb+omap_vout cannot be run at the same
-> time (the first one to start will "win"), so compiling them at the same time is
-> only sensible as modules for testing purposes. Normal users should only compile
-> one of those.
->
-> This series does not make omapdrm use the core omapdss API, that will happen in
-> a separate series for omapdrm.
->
-> The series is based on current omapdss master, and can also be found from:
-> git://gitorious.org/linux-omap-dss2/linux.git work/apply-test-9
+Add a function to convert from the generic videomode to a fb_videomode.
 
-Series looks fine to me. Will test it out.
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/fbmon.c |   46 ++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h    |    6 ++++++
+ 2 files changed, 52 insertions(+)
 
-Archit
-
->
->   Tomi
->
-> Tomi Valkeinen (32):
->    OMAPDSS: remove declarations for non-existing functions
->    OMAPDSS: DPI: fix crash with dpi_verify_dsi_pll()
->    OMAPDSS: don't WARN if there's no DSI device
->    OMAPDSS: DISPC: add no_framedone_tv feat
->    OMAPDSS: DISPC: use get_framedone_irq in disable_digit_out
->    OMAPDSS: DISPC: Remove blocking code from dispc_wb_enable()
->    OMAPDSS: cleanup WB enable/is_enabled functions
->    OMAPDSS: DISPC: use WARN_ON() in dispc_mgr_go
->    OMAPDSS: DISPC: pclk & lclk rates for writeback
->    OMAPDSS: DISPC: pass pclk to calc_core_clk()
->    OMAPDSS: DISPC: pass pclk & lclk to check_horiz_timing_omap3
->    OMAPDSS: DISPC: pass pclk & lclk to calc_scaling
->    OMAPDSS: DISPC: pass pclk & lclk to dispc_ovl_calc_scaling
->    OMAPDSS: create display-sysfs.c
->    OMAPDSS: add dss_get_core_pdev()
->    OMAPDSS: add omapdss_compat_init()
->    OMAPDSS: move ovl & ovl-mgr init to apply.c
->    OMAPDSS: move ovl-mgr function setup to apply.c
->    OMAPDSS: move ovl function setup to apply.c
->    OMAPDSS: add manager ops
->    OMAPDSS: manage framedone irq with mgr ops
->    OMAPDSS: move blocking mgr enable/disable to compat layer
->    OMAPDSS: move omap_dispc_wait_for_irq_interruptible_timeout to
->      dispc-compat.c
->    OMAPDSS: move irq handling to dispc-compat
->    OMAPDSS: DISPC: add dispc_ovl_check()
->    OMAPDSS: DPI: use dispc's check_timings
->    OMAPDSS: move display sysfs init to compat layer
->    OMAPDSS: separate compat files in the Makefile
->    OMAPDSS: export dss_mgr_ops functions
->    OMAPDSS: export dss_feat functions
->    OMAPDSS: export dispc functions
->    OMAPDSS: use omapdss_compat_init() in other drivers
->
->   drivers/media/platform/omap/omap_vout.c  |   17 +-
->   drivers/staging/omapdrm/omap_drv.c       |   11 +
->   drivers/video/omap2/dss/Makefile         |    6 +-
->   drivers/video/omap2/dss/apply.c          |  245 ++++++++-
->   drivers/video/omap2/dss/core.c           |   13 +-
->   drivers/video/omap2/dss/dispc-compat.c   |  667 +++++++++++++++++++++++
->   drivers/video/omap2/dss/dispc-compat.h   |   30 ++
->   drivers/video/omap2/dss/dispc.c          |  863 +++++-------------------------
->   drivers/video/omap2/dss/display-sysfs.c  |  321 +++++++++++
->   drivers/video/omap2/dss/display.c        |  285 +---------
->   drivers/video/omap2/dss/dpi.c            |    4 +-
->   drivers/video/omap2/dss/dsi.c            |   26 +-
->   drivers/video/omap2/dss/dss.h            |   75 +--
->   drivers/video/omap2/dss/dss_features.c   |    5 +
->   drivers/video/omap2/dss/dss_features.h   |    4 -
->   drivers/video/omap2/dss/manager.c        |   39 --
->   drivers/video/omap2/dss/output.c         |   65 +++
->   drivers/video/omap2/dss/overlay.c        |   17 -
->   drivers/video/omap2/dss/rfbi.c           |   12 +-
->   drivers/video/omap2/omapfb/omapfb-main.c |    6 +
->   include/video/omapdss.h                  |   80 ++-
->   21 files changed, 1582 insertions(+), 1209 deletions(-)
->   create mode 100644 drivers/video/omap2/dss/dispc-compat.c
->   create mode 100644 drivers/video/omap2/dss/dispc-compat.h
->   create mode 100644 drivers/video/omap2/dss/display-sysfs.c
->
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index cef6557..c1939a6 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -31,6 +31,7 @@
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <video/edid.h>
++#include <linux/videomode.h>
+ #ifdef CONFIG_PPC_OF
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+@@ -1373,6 +1374,51 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
+ 	kfree(timings);
+ 	return err;
+ }
++
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++int fb_videomode_from_videomode(const struct videomode *vm,
++				struct fb_videomode *fbmode)
++{
++	unsigned int htotal, vtotal;
++
++	fbmode->xres = vm->hactive;
++	fbmode->left_margin = vm->hback_porch;
++	fbmode->right_margin = vm->hfront_porch;
++	fbmode->hsync_len = vm->hsync_len;
++
++	fbmode->yres = vm->vactive;
++	fbmode->upper_margin = vm->vback_porch;
++	fbmode->lower_margin = vm->vfront_porch;
++	fbmode->vsync_len = vm->vsync_len;
++
++	fbmode->pixclock = KHZ2PICOS(vm->pixelclock / 1000);
++
++	fbmode->sync = 0;
++	fbmode->vmode = 0;
++	if (vm->hah)
++		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
++	if (vm->vah)
++		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
++	if (vm->interlaced)
++		fbmode->vmode |= FB_VMODE_INTERLACED;
++	if (vm->doublescan)
++		fbmode->vmode |= FB_VMODE_DOUBLE;
++	if (vm->de)
++		fbmode->sync |= FB_SYNC_DATA_ENABLE_HIGH_ACT;
++	fbmode->flag = 0;
++
++	htotal = vm->hactive + vm->hfront_porch + vm->hback_porch +
++		 vm->hsync_len;
++	vtotal = vm->vactive + vm->vfront_porch + vm->vback_porch +
++		 vm->vsync_len;
++	fbmode->refresh = (vm->pixelclock * 1000) / (htotal * vtotal);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
++#endif
++
++
+ #else
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+ {
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index c7a9571..920cbe3 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -14,6 +14,7 @@
+ #include <linux/backlight.h>
+ #include <linux/slab.h>
+ #include <asm/io.h>
++#include <linux/videomode.h>
+ 
+ struct vm_area_struct;
+ struct fb_info;
+@@ -714,6 +715,11 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+ extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+ extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
+ 
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++extern int fb_videomode_from_videomode(const struct videomode *vm,
++				       struct fb_videomode *fbmode);
++#endif
++
+ /* drivers/video/modedb.c */
+ #define VESA_MODEDB_SIZE 34
+ extern void fb_var_to_videomode(struct fb_videomode *mode,
+-- 
+1.7.10.4
 

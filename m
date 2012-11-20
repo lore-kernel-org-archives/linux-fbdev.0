@@ -1,66 +1,108 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 20 Nov 2012 14:54:47 +0000
-Subject: Re: [PATCH 0/2] OMAPDSS: DISPC: Update manager size limits for OMAP5
-Message-Id: <50AB99B7.9030102@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig337D83812C2F7D9AC34E2467"
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Tue, 20 Nov 2012 15:54:55 +0000
+Subject: [PATCH v12 5/6] drm_modes: add videomode helpers
+Message-Id: <1353426896-6045-6-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352881216-7490-1-git-send-email-archit@ti.com>
-In-Reply-To: <1352881216-7490-1-git-send-email-archit@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+References: <1353426896-6045-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1353426896-6045-1-git-send-email-s.trumtrar@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
 
---------------enig337D83812C2F7D9AC34E2467
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Add conversion from videomode to drm_display_mode
 
-On 2012-11-14 10:20, Archit Taneja wrote:
-> Manager width and height can go up to 4K on OMAP5. Make manager width a=
-nd height
-> register field offsets and maximum limits as dispc_features. Create a n=
-ew
-> dispc_feature struct for OMAP5 which highlights this difference.
->=20
-> Archit Taneja (2):
->   OMAPDSS: Add overlay manager width and height limits as a dispc
->     feature
->   OMAPDSS: Add a dispc_features struct for OMAP5
->=20
->  drivers/video/omap2/dss/dispc.c        |   47 ++++++++++++++++++++++++=
-+++++---
->  drivers/video/omap2/dss/dss_features.c |    8 ------
->  drivers/video/omap2/dss/dss_features.h |    2 --
->  3 files changed, 43 insertions(+), 14 deletions(-)
->=20
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/gpu/drm/drm_modes.c |   37 +++++++++++++++++++++++++++++++++++++
+ include/drm/drmP.h          |    6 ++++++
+ 2 files changed, 43 insertions(+)
 
-Thanks, looks fine. I'll apply to omapdss tree.
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 59450f3..0073b27 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -35,6 +35,7 @@
+ #include <linux/export.h>
+ #include <drm/drmP.h>
+ #include <drm/drm_crtc.h>
++#include <linux/videomode.h>
+ 
+ /**
+  * drm_mode_debug_printmodeline - debug print a mode
+@@ -504,6 +505,42 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, int vdisplay, int vrefresh,
+ }
+ EXPORT_SYMBOL(drm_gtf_mode);
+ 
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++int drm_display_mode_from_videomode(const struct videomode *vm,
++				    struct drm_display_mode *dmode)
++{
++	dmode->hdisplay = vm->hactive;
++	dmode->hsync_start = dmode->hdisplay + vm->hfront_porch;
++	dmode->hsync_end = dmode->hsync_start + vm->hsync_len;
++	dmode->htotal = dmode->hsync_end + vm->hback_porch;
++
++	dmode->vdisplay = vm->vactive;
++	dmode->vsync_start = dmode->vdisplay + vm->vfront_porch;
++	dmode->vsync_end = dmode->vsync_start + vm->vsync_len;
++	dmode->vtotal = dmode->vsync_end + vm->vback_porch;
++
++	dmode->clock = vm->pixelclock / 1000;
++
++	dmode->flags = 0;
++	if (vm->hah)
++		dmode->flags |= DRM_MODE_FLAG_PHSYNC;
++	else
++		dmode->flags |= DRM_MODE_FLAG_NHSYNC;
++	if (vm->vah)
++		dmode->flags |= DRM_MODE_FLAG_PVSYNC;
++	else
++		dmode->flags |= DRM_MODE_FLAG_NVSYNC;
++	if (vm->interlaced)
++		dmode->flags |= DRM_MODE_FLAG_INTERLACE;
++	if (vm->doublescan)
++		dmode->flags |= DRM_MODE_FLAG_DBLSCAN;
++	drm_mode_set_name(dmode);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
++#endif
++
+ /**
+  * drm_mode_set_name - set the name on a mode
+  * @mode: name will be set in this mode
+diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+index 3fd8280..de2f6cf 100644
+--- a/include/drm/drmP.h
++++ b/include/drm/drmP.h
+@@ -56,6 +56,7 @@
+ #include <linux/cdev.h>
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
++#include <linux/videomode.h>
+ #if defined(__alpha__) || defined(__powerpc__)
+ #include <asm/pgtable.h>	/* For pte_wrprotect */
+ #endif
+@@ -1454,6 +1455,11 @@ extern struct drm_display_mode *
+ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
+ 				  struct drm_cmdline_mode *cmd);
+ 
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++extern int drm_display_mode_from_videomode(const struct videomode *vm,
++					   struct drm_display_mode *dmode);
++#endif
++
+ /* Modesetting support */
+ extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
+ extern void drm_vblank_post_modeset(struct drm_device *dev, int crtc);
+-- 
+1.7.10.4
 
- Tomi
-
-
-
---------------enig337D83812C2F7D9AC34E2467
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJQq5m3AAoJEPo9qoy8lh71a5AP/0dNcTBYMmcn08keB/2c+qHq
-xuOZDgzVKOucxv7C3uMQ2HTJ9T6QzzmSqrtuPLh++6556OrrlCqgwEetCGNA8ui8
-KBnxxQs9/1PWh5ymh+w/758kdCuemnOdvlDk6s0r94rGA+nprO0x1Zu5gc0bsaCT
-zEV7bkGu9Vxcl13jtaguTA6Cye1ttVVRiGbrXg+znScB+cj9FZPLKf7MDaugNegm
-K7oueByapiZ4n5MqCt4Sf5WS4T/Fmuj5hdRu/PY7riop9cfrI+KgFHv6PLORvZrS
-3G3puFo/3RFuB8+/bbQal50bBkIwHjgkniwuKWLCXwK+SVwVEUid9wp0oFDO/sW4
-SR7bnZ0nfg8vzazpdaHjpIEqGTexc4XR2szDlBiuzcp1TgaZ6Luu5iGfaj6c4AIy
-3EFpzKQO5/8gwbRJHEgkT09MVTRng8Q4RjdqEy2AYCDu820NWnvGKmEvZFZAw3/A
-1LB0l5kXM6/uhpr8Ei+mgzEMzjmC+qvyxYIXrwWe7o3cPL0aERZAvG6jLU9l9qMt
-tzhTZX2Om/JmN1cQTOb1Dq6DetbTLpKwfrrqiaF0xHB9OEMXHo2uDQBO0YaNcOFx
-0G/RqTMWLNbeDlEUx6H/W+LfavaD3bxpglepN/53CsZwqD7CqM9JZBiBmOTo6zg9
-WFWaI2nv0flu6Nuz2Fo0
-=5mNO
------END PGP SIGNATURE-----
-
---------------enig337D83812C2F7D9AC34E2467--

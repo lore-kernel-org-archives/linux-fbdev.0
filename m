@@ -1,115 +1,94 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 21 Nov 2012 08:13:47 +0000
+From: Alex Courbot <acourbot@nvidia.com>
+Date: Wed, 21 Nov 2012 08:32:12 +0000
 Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Message-Id: <50AC8D3B.6040300@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig403A57F02E04A77E078F8D06"
+Message-Id: <1699753.ZQsWMHINxd@percival>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
- <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
- <50AB9832.90709@ti.com> <4316169.5QXVzv7peZ@percival>
-In-Reply-To: <4316169.5QXVzv7peZ@percival>
+ <4316169.5QXVzv7peZ@percival> <50AC8D3B.6040300@ti.com>
+In-Reply-To: <50AC8D3B.6040300@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---------------enig403A57F02E04A77E078F8D06
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wednesday 21 November 2012 16:13:47 Tomi Valkeinen wrote:
+> * PGP Signed by an unknown key
+> 
+> On 2012-11-21 03:56, Alex Courbot wrote:
+> > Hi Tomi,
+> > 
+> > On Tuesday 20 November 2012 22:48:18 Tomi Valkeinen wrote:
+> >> I guess there's a reason, but the above looks a bit inconsistent. For
+> >> gpio you define the gpio resource inside the step. For power and pwm the
+> >> resource is defined before the steps. Why wouldn't "pwm = <&pwm 2
+> >> 5000000>;" work in step2?
+> > 
+> > That's mostly a framework issue. Most frameworks do not export a function
+> > that allow to dereference a phandle - they expect resources to be
+> > declared right under the device node and accessed by name through
+> > foo_get(device, name). So using phandles in power sequences would require
+> > to export these additional
+> Right, I expected something like that.
+> 
+> > functions and also opens the door to some inconsistencies - for instance,
+> > your PWM phandle could be referenced a second time in the sequence with a
+> > different period - how do you know that these are actually referring the
+> > same PWM device?
+> 
+> This I didn't understand. Doesn't "<&pwm 2 xyz>" point to a single
+> device, no matter where and how many times it's used?
+> 
+> >>> +When a power sequence is run, its steps is executed one after the other
+> >>> until +one step fails or the end of the sequence is reached.
+> >> 
+> >> The document doesn't give any hint of what the driver should do if
+> >> running the power sequence fails. Run the "opposite" power sequence?
+> >> Will that work for all resources? I'm mainly thinking of a case where
+> >> each enable of the resource should be matched by a disable, i.e. you
+> >> can't call disable if no enable was called.
+> > 
+> > We discussed that issue already (around v5 I think) and the conclusion was
+> > that it should be up to the driver. When we simply enable/disable
+> > resources it is easy to revert, but in the future non-boolean properties
+> > will likely be introduced, and these cannot easily be reverted. Moreover
+> > some drivers might have more complex recovery needs. This deserves more
+> > discussion I think, as I'd like to have some "generic" recovery mechanism
+> > that covers most of the cases.
+> 
+> Ok. I'll need to dig up the conversation
 
-On 2012-11-21 03:56, Alex Courbot wrote:
-> Hi Tomi,
->=20
-> On Tuesday 20 November 2012 22:48:18 Tomi Valkeinen wrote:
->> I guess there's a reason, but the above looks a bit inconsistent. For
->> gpio you define the gpio resource inside the step. For power and pwm t=
-he
->> resource is defined before the steps. Why wouldn't "pwm =3D <&pwm 2
->> 5000000>;" work in step2?
->=20
-> That's mostly a framework issue. Most frameworks do not export a functi=
-on that=20
-> allow to dereference a phandle - they expect resources to be declared r=
-ight=20
-> under the device node and accessed by name through foo_get(device, name=
-). So=20
-> using phandles in power sequences would require to export these additio=
-nal=20
+IIRC it was somewhere around here:
 
-Right, I expected something like that.
+https://lkml.org/lkml/2012/9/7/662
 
-> functions and also opens the door to some inconsistencies - for instanc=
-e, your=20
-> PWM phandle could be referenced a second time in the sequence with a di=
-fferent=20
-> period - how do you know that these are actually referring the same PWM=
-=20
-> device?
+See the parent messages too.
 
-This I didn't understand. Doesn't "<&pwm 2 xyz>" point to a single
-device, no matter where and how many times it's used?
+> Did you consider any examples
+> of how some driver could handle the error cases?
 
->>> +When a power sequence is run, its steps is executed one after the ot=
-her
->>> until +one step fails or the end of the sequence is reached.
->>
->> The document doesn't give any hint of what the driver should do if
->> running the power sequence fails. Run the "opposite" power sequence?
->> Will that work for all resources? I'm mainly thinking of a case where
->> each enable of the resource should be matched by a disable, i.e. you
->> can't call disable if no enable was called.
->=20
-> We discussed that issue already (around v5 I think) and the conclusion =
-was=20
-> that it should be up to the driver. When we simply enable/disable resou=
-rces it=20
-> is easy to revert, but in the future non-boolean properties will likely=
- be=20
-> introduced, and these cannot easily be reverted. Moreover some drivers =
-might=20
-> have more complex recovery needs. This deserves more discussion I think=
-, as=20
-> I'd like to have some "generic" recovery mechanism that covers most of =
-the=20
-> cases.
+For all the (limited) use cases I considered, playing the power-off sequence 
+when power-on fails just works. If power-off also fails you are potentially in 
+more trouble though. Maybe we could have another "run" function that does not 
+stop on errors for handling such cases where you want to "stop everything you 
+can".
 
-Ok. I'll need to dig up the conversation. Did you consider any examples
-of how some driver could handle the error cases?
+> What I'm worried about is that, as far as I understand, the power
+> sequence is kinda like black box to the driver. The driver just does
+> "power-up", without knowing what really goes on in there.
 
-What I'm worried about is that, as far as I understand, the power
-sequence is kinda like black box to the driver. The driver just does
-"power-up", without knowing what really goes on in there.
+The driver could always inspect the sequence, but you are right in that this 
+is not how it is intended to be done.
 
-And if it doesn't know what goes on in there, nor what's in "power-down"
-sequence, how can it do anything when an error happens? The only option
-I see is that the driver doesn't do anything, which will leave some
-resources enabled, or it can run the power-down sequence, which may or
-may not work.
+> And if it doesn't know what goes on in there, nor what's in "power-down"
+> sequence, how can it do anything when an error happens? The only option
+> I see is that the driver doesn't do anything, which will leave some
+> resources enabled, or it can run the power-down sequence, which may or
+> may not work.
 
- Tomi
+Failures might be better handled if sequences have some "recovery policy" 
+about what to do when they fail, as mentioned in the link above. As you 
+pointed out, the driver might not always know enough about the resources 
+involved to do the right thing.
 
+Alex.
 
-
---------------enig403A57F02E04A77E078F8D06
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJQrI0/AAoJEPo9qoy8lh712M0P+gIChgVfl7Gu5kAIKRNg10G8
-rxxs1RmpSJFHATQJpteeLCpuQV+8HgyE0mAznCOxXymB+kM7qQ5E1VBY+COk2r2k
-IoBc3kPYjeGzQHNwOYiS8+CTu7zveQN+7cCs4UOtCWHPX2MmkPHcv5B0uWX2Cx9j
-BQdRDQb61xo3BhpG3M4krqW0wvemfYvlZYe3UL7DEFgHojvv3UBulOQlI7v7UeVd
-SJ3UjET7CL3yRVPoKE+LAGLbDWN153hIKSBdsMGplL7iWseFlFSOncDcEyvgeJ/y
-JljHXcjDDNEGrAXtrVZ+Mgmk68zm7uj/UzFdawShmsplL7jok9rvh/9zfKxjBW++
-Xb7Yso89fytQM03ys8yJpFZS3zSTsGOXM0YD8QFldYnC09V4cuSM6G2uCKBd26Qa
-EBPtKd4wgJOGHBkXAmI/4pj0cW/XJXvybLhlBKuBC7QElau86mT2ie7abfzFl6eY
-jvfiIKg312QvnG/44TNUMDUQBcSnhoyodQMk/54D2xkZiKrgDNYsMHkohVGWQP7D
-Y2W8WLrAqeSWdcG3dKp2nKua0c9O2UBn7QNqNtFivMafelAn74Q/PQDcLv5uMFz7
-t95g7zl7isRneYCB5bVwXrHpr24lJ5PAirPrrDNxwP9/U1KOth0nK2oeCuKIn8XS
-b99Gejfh3zdY0QTTEX5u
-=g1w0
------END PGP SIGNATURE-----
-
---------------enig403A57F02E04A77E078F8D06--

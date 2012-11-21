@@ -1,7 +1,9 @@
-From: Alexandre Courbot <gnurou@gmail.com>
-Date: Wed, 21 Nov 2012 15:02:47 +0000
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Wed, 21 Nov 2012 15:12:09 +0000
 Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Message-Id: <CAAVeFuJofYwj926=3v0ApBCq_vNhCdC1PnzDc-B3d=LL_L40Uw@mail.gmail.com>
+Message-Id: <20121121151209.GA4048@avionic-0098.adnet.avionic-design.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="IS0zKkzwUGydFO0o"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
  <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
@@ -11,127 +13,49 @@ References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
  <50ACC341.3090204@ti.com>
  <20121121130039.GA12191@avionic-0098.adnet.avionic-design.de>
  <50ACD7DC.5060405@ti.com>
-In-Reply-To: <50ACD7DC.5060405@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <CAAVeFuJofYwj926=3v0ApBCq_vNhCdC1PnzDc-B3d=LL_L40Uw@mail.gmail.com>
+In-Reply-To: <CAAVeFuJofYwj926=3v0ApBCq_vNhCdC1PnzDc-B3d=LL_L40Uw@mail.gmail.com>
 To: linux-arm-kernel@lists.infradead.org
 
-Mmmm so maybe I am misinterpreting things, but it looks like we
-have just buried the power sequences here, haven't we?
 
-Alex.
+--IS0zKkzwUGydFO0o
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Wed, Nov 21, 2012 at 10:32 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On 2012-11-21 15:00, Thierry Reding wrote:
->> On Wed, Nov 21, 2012 at 02:04:17PM +0200, Tomi Valkeinen wrote:
->>> On 2012-11-21 13:40, Thierry Reding wrote:
->>>> On Wed, Nov 21, 2012 at 01:06:03PM +0200, Tomi Valkeinen wrote:
->>>
->>> (sorry for bouncing back and forth with my private and my @ti addresses.
->>> I can't find an option in thunderbird to only use one sender address,
->>> and I always forget to change it when responding...)
->>>
->>>>> My suggestion would be to go forward with an in-driver solution, and
->>>>> look at the DT based solution later if we are seeing an increasing bloat
->>>>> in the drivers.
->>>>
->>>> Assuming we go with your approach, what's the plan? We're actually
->>>> facing this problem right now for Tegra. Basically we have a DRM driver
->>>> that can drive the panel, but we're still missing a way to hook up the
->>>> backlight and panel enabling code. So we effectively can't support any
->>>> of the LVDS devices out there without this series.
->>>
->>> Could you describe the hardware setup you have related to the LCD and
->>> backlight? Is it a public board with public schematics?
->>
->> I don't think any of the schematics are public. The Tamonten Evaluation
->> Carrier is available publicly from our website and the schematics are
->> available on demand as well. If required I can probably arrange to send
->> you a copy.
->
-> No need, I think your answer below is enough.
->
->>> I've understood that you don't have anything special in your board, just
->>> an LCD and a backlight, and the power sequences are related to powering
->>> up the LCD and the backlight, without anything board specific. If so,
->>> there's no need for board specific code, but just improving the panel
->>> and backlight drivers to support the models you use.
->>
->> Correct. Basically we have two GPIOs that each enable the panel or the
->> backlight respectively and one PWM to control the brightness. Are the
->
-> The panel GPIO goes to the panel hardware device, and enables the panel?
-> And similarly for the PWM GPIO, it goes to the PWM hardware device? Just
-> making sure there are no other components involved.
->
->> panel drivers that you refer to those in drivers/video? I'm not sure if
->> adding more ad-hoc drivers there just to move them to a generic
->> framework in the next cycle is a good idea. I'd rather spend some time
->> on helping to get the framework right and have drivers for that instead.
->
-> We have panel drivers for omap in drivers/video/omap2/displays/. I'm not
-> sure if other platforms have their own versions of panel drivers, but
-> probably adding a simple panel driver system for a platform would not be
-> too difficult. It could even be quite hardcoded, i.e. embedded directly
-> into the display subsystem driver, just to get something working until
-> the common panel framework is available.
->
-> Yes, I agree it's not good idea to add more platform specific panel
-> drivers. But it's unclear when CPF will be merged, so if you need to get
-> the panel working now, I don't see a simple ad-hoc driver as too
-> horrible. But, of course, I'm not the one making the decision whether to
-> merge or not =).
->
->> From what I understand by looking at the OMAP display drivers, they also
->> provide the timings for the displays. Steffen's videomode helpers can be
->> used to represent these easily in DT, but I suppose if all of those per-
->
-> Right. Note that I didn't present omap panel drivers as perfect
-> examples, just examples =).
->
->> panel specifics are represented in the drivers then that won't be needed
->> anymore either.
->
-> Yes, for most panels with just one native mode and nothing else, the
-> panel driver can contain the timings.
->
-> However, this subject has been discussed earlier a few times. If the
-> panel in question doesn't need any special power-on/off sequences, just,
-> perhaps, one gpio or such, we could still use DT video modes. This would
-> simplify the cases where you have lots of different very simple panels.
->
-> Obviously the same questions apply to DT video modes than to the power
-> sequences, and while I do think it's better to handle the timings inside
-> the driver, I'm not too much against video timings in DT. The reason
-> being that the video modes are quite clear, simple and stable data,
-> versus the much more complex and open-ended power sequences.
->
->>> I don't see any problem with adding small Tegra specific panel drivers
->>> for the time being, with the intention of converting to common panel
->>> framework when that's available.
->>
->> I can take a look at how such a driver could be implemented, but again,
->
-> Don't look at the mainline omap panel drivers, at least not too closely
-> =). They contain hackery that will be cleaned up with CPF.
->
-> I think there are two methods to implements simple panel drivers:
->
-> The hardcoded one, where the display subsystem driver manages a few
-> different panel models. This is obviously not very expandable or
-> "correct", but should probably work just fine for a few models, until
-> CPF is usable.
->
-> Something like CPF will have: have the panel device/driver as a platform
-> device/driver, which will register itself to the display subsystem. And
-> with "itself" I mean some kind of struct panel_entity, with a few ops
-> implemented by the panel driver.
->
-> Well, this goes a bit out of subject. If you want to discuss panel
-> drivers more, please start a new thread. Laurent's upcoming CPF v2
-> should give you good ideas what the model will be.
->
->  Tomi
->
->
+On Thu, Nov 22, 2012 at 12:02:47AM +0900, Alexandre Courbot wrote:
+> Mmmm so maybe I am misinterpreting things, but it looks like we
+> have just buried the power sequences here, haven't we?
+
+I don't think so. In fact I was just starting to think that maybe for
+Tegra we could have a generic panel driver which used power sequences
+to abstract away the pin differences for powering up the panel. Since
+most likely that will be where the differences are there is a lot of
+potential to factor things out into sequences.
+
+Perhaps what we may want to postpone for now is the DT representation
+since that's what Tomi and Grant seem to be mostly opposed to.
+
+Thierry
+
+--IS0zKkzwUGydFO0o
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQrO9JAAoJEN0jrNd/PrOhsvAQAKSVMEuMUIu44H6ENIW4tAKS
+XdGSSQxiv1wbXStKB+n52L652AZp+ht98aXWqhZQY7BGj/v+FOMD6tPnPaeUk8Pt
+7P/q/KR8jkiG5888WwBsZ3iKtZcM5uui+3Bsn39npWDkrLJ9lb/AKxRWjMfOrGGc
+SHh8/l+uigV0m217MsOqAlrEMFxRIdpRWsMUuEXvkmGoiq3Psr5qJvbDgU9ZjuCu
+M7n/iP8mllBxqFEa22a9Ka9s39jo6zzFvz1CislH9HEnRsykGBNXXmmA0G4yjDAA
+Gb/kegNpyRKy/dCTZuqXes3daH5ygosnluvV8wp22Wv9QjvGN6All3PzWHVEWvAA
+HWGxvNFsyRA+a1yHOIQHCAORsfmoE5U3/ynG5NCaJcNDQhdtgF80hlk2t6UoFBfa
+162u9k108xW+afC2OUTmWMAXJTvYBUPdfRHzQeMStudDs00KS2vSVTdHVF+Yweej
+TNQcyTm6LjRVwHajc6bXtWOpw4zTrMd/QJfuSgVF4yqMMFYA0nQxHx3iYU9fkuTh
+H8lBFgSxQFLAijTiTcQZg4ga7wdmWP/NDxo3ZMsORheAFG283Gmx21C7ZoxLjfkr
+USWZvosHvDjBSSvZPfSK05ave+BTWHzdzMnEhdKbQ4x7vlUbBS/LDTDzAlA1F6mL
+LizHf/P1c7XzZEF+iL5s
+=NaXm
+-----END PGP SIGNATURE-----
+
+--IS0zKkzwUGydFO0o--

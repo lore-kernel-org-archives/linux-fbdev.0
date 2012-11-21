@@ -1,57 +1,60 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 05 Nov 2012 07:52:42 +0000
-Subject: [PATCH v3 2/2] video: exynos_dp: Fix incorrect setting for INT_CTL
-Message-Id: <003c01cdbb2a$8924c000$9b6e4000$%han@samsung.com>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Wed, 21 Nov 2012 08:58:27 +0000
+Subject: Re: [PATCH 2/2] ARM: dts: mxs: add oled support for the cfa-10036
+Message-Id: <50AC97B3.5070709@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <003401cdbb29$60b46220$221d2660$%han@samsung.com>
-In-Reply-To: <003401cdbb29$60b46220$221d2660$%han@samsung.com>
+References: <1351674774-2891-1-git-send-email-maxime.ripard@free-electrons.com>
+ <1351674774-2891-3-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1351674774-2891-3-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-From: Ajay Kumar <ajaykumar.rs@samsung.com>
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-INT_CTL register contains bits INT_POL0 and INT_POL1, and not INT_POL.
-This patch fixes the wrong register setting for INT_CTL.
+Hi Shawn,
 
-Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
----
-Added 'From: Ajay Kumar <ajaykumar.rs@samsung.com>'
-
- drivers/video/exynos/exynos_dp_reg.c |    2 +-
- drivers/video/exynos/exynos_dp_reg.h |    3 ++-
- 2 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
-index 3f5ca8a..cc7765f 100644
---- a/drivers/video/exynos/exynos_dp_reg.c
-+++ b/drivers/video/exynos/exynos_dp_reg.c
-@@ -88,7 +88,7 @@ void exynos_dp_init_analog_param(struct exynos_dp_device *dp)
- void exynos_dp_init_interrupt(struct exynos_dp_device *dp)
- {
- 	/* Set interrupt pin assertion polarity as high */
--	writel(INT_POL, dp->reg_base + EXYNOS_DP_INT_CTL);
-+	writel(INT_POL1 | INT_POL0, dp->reg_base + EXYNOS_DP_INT_CTL);
- 
- 	/* Clear pending regisers */
- 	writel(0xff, dp->reg_base + EXYNOS_DP_COMMON_INT_STA_1);
-diff --git a/drivers/video/exynos/exynos_dp_reg.h b/drivers/video/exynos/exynos_dp_reg.h
-index 1f2f014..2e9bd0e 100644
---- a/drivers/video/exynos/exynos_dp_reg.h
-+++ b/drivers/video/exynos/exynos_dp_reg.h
-@@ -242,7 +242,8 @@
- 
- /* EXYNOS_DP_INT_CTL */
- #define SOFT_INT_CTRL				(0x1 << 2)
--#define INT_POL					(0x1 << 0)
-+#define INT_POL1				(0x1 << 1)
-+#define INT_POL0				(0x1 << 0)
- 
- /* EXYNOS_DP_SYS_CTL_1 */
- #define DET_STA					(0x1 << 2)
--- 
-1.7.1
+Le 31/10/2012 10:12, Maxime Ripard a =E9crit :
+> Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com> Cc:
+> Brian Lilly <brian@crystalfontz.com> ---=20
+> arch/arm/boot/dts/imx28-cfa10036.dts |   19 +++++++++++++++++++ 1
+> file changed, 19 insertions(+)
+>=20
+> diff --git a/arch/arm/boot/dts/imx28-cfa10036.dts
+> b/arch/arm/boot/dts/imx28-cfa10036.dts index c03a577..816cae9
+> 100644 --- a/arch/arm/boot/dts/imx28-cfa10036.dts +++
+> b/arch/arm/boot/dts/imx28-cfa10036.dts @@ -33,11 +33,30 @@ };
+>=20
+> apbx@80040000 { +			pwm: pwm@80064000 { +				pinctrl-names > "default"; +=
+				pinctrl-0 =3D <&pwm4_pins_a>; +				status =3D "okay"; +
+> }; + duart: serial@80074000 { pinctrl-names =3D "default"; pinctrl-0
+> =3D <&duart_pins_b>; status =3D "okay"; }; + +			i2c0: i2c@80058000 { +
+> pinctrl-names =3D "default"; +				pinctrl-0 =3D <&i2c0_pins_b>; +
+> status =3D "okay"; + +				ssd1307: oled@3c { +					compatible > "solomon,=
+ssd1307fb-i2c"; +					reg =3D <0x3c>; +					pwms =3D <&pwm 4
+> 3000>; +					reset-gpios =3D <&gpio2 7 0>; +				}; +			}; }; };
 
 
+Would you consider merging this patch?
+Andrew Morton merged the driver into its tree
+(http://marc.info/?l=3Dlinux-fbdev&m=135336761530731&w=3D2)
+
+Thanks,
+Maxime
+
+
+- --=20
+Maxime Ripard, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
+
+iEYEARECAAYFAlCsl7MACgkQGxsu9jQV9nZtJwCfR9c2SnwK1hzAU2F+xptFqg9x
+2+0An3YrhNMXSZaPwPcJwc3Bnwy+FSqe
+=3DmjpV
+-----END PGP SIGNATURE-----

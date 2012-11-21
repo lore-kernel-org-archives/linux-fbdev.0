@@ -1,87 +1,48 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 21 Nov 2012 08:48:45 +0000
+From: Alex Courbot <acourbot@nvidia.com>
+Date: Wed, 21 Nov 2012 10:00:32 +0000
 Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Message-Id: <50AC956D.7020303@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enigFEB2DE46DC00D8FE6C54AF30"
+Message-Id: <4275468.QAmZy3xUK6@percival>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
- <4316169.5QXVzv7peZ@percival> <50AC8D3B.6040300@ti.com>
- <1699753.ZQsWMHINxd@percival>
-In-Reply-To: <1699753.ZQsWMHINxd@percival>
+ <1699753.ZQsWMHINxd@percival> <50AC956D.7020303@ti.com>
+In-Reply-To: <50AC956D.7020303@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---------------enigFEB2DE46DC00D8FE6C54AF30
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wednesday 21 November 2012 16:48:45 Tomi Valkeinen wrote:
+> If the power-off sequence disables a regulator that was supposed to be
+> enabled by the power-on sequence (but wasn't enabled because of an
+> error), the regulator_disable is still called when the driver runs the
+> power-off sequence, isn't it? Regulator enables and disables are ref
+> counted, and the enables should match the disables.
 
-On 2012-11-21 10:32, Alex Courbot wrote:
+And there collapses my theory.
 
->> Ok. I'll need to dig up the conversation
->=20
-> IIRC it was somewhere around here:
->=20
-> https://lkml.org/lkml/2012/9/7/662
->=20
-> See the parent messages too.
+> > Failures might be better handled if sequences have some "recovery policy"
+> > about what to do when they fail, as mentioned in the link above. As you
+> > pointed out, the driver might not always know enough about the resources
+> > involved to do the right thing.
+> 
+> Yes, I think such recovery policy would be needed.
 
-Thanks.
+Indeed, from your last paragraph this makes even more sense now.
 
->> Did you consider any examples
->> of how some driver could handle the error cases?
->=20
-> For all the (limited) use cases I considered, playing the power-off seq=
-uence=20
-> when power-on fails just works. If power-off also fails you are potenti=
-ally in=20
-> more trouble though. Maybe we could have another "run" function that do=
-es not=20
-> stop on errors for handling such cases where you want to "stop everythi=
-ng you=20
-> can".
+Oh, and I noticed I forgot to reply to this:
 
-If the power-off sequence disables a regulator that was supposed to be
-enabled by the power-on sequence (but wasn't enabled because of an
-error), the regulator_disable is still called when the driver runs the
-power-off sequence, isn't it? Regulator enables and disables are ref
-counted, and the enables should match the disables.
+> This I didn't understand. Doesn't "<&pwm 2 xyz>" point to a single
+> device, no matter where and how many times it's used?
 
-> Failures might be better handled if sequences have some "recovery polic=
-y"=20
-> about what to do when they fail, as mentioned in the link above. As you=
-=20
-> pointed out, the driver might not always know enough about the resource=
-s=20
-> involved to do the right thing.
+That's true - however when dereferencing the phandle, the underlying framework 
+will try to acquire the PWM, which will result in failure if the same resource 
+is referenced several times.
 
-Yes, I think such recovery policy would be needed.
+One could compare the phandles to avoid this, but in your example you must 
+know that for PWMs the "xyz" part is not relevant for comparison.
 
- Tomi
+This makes referencing of resources by name much easier to implement and more 
+elegant with respect to frameworks leveraging.
 
+Alex.
 
-
---------------enigFEB2DE46DC00D8FE6C54AF30
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJQrJVtAAoJEPo9qoy8lh71Lu8QAKQYKO3s8JapnGwTRpDb95V/
-ZESzJ5RqPbWBAOzP9+8RBME/FMJ/jXdophNmbvt0IMGfrHpWdGLzBy1AoPD9O5H8
-AHsx4Zfu/NOkLlv7yCI8LePgV/VnJiE1KN6MJXRuR/Rlb76Wj5/AEgstj3KQP6Od
-CrwOmJPd2pQwPRk6QMBatIXiNrWl4FcH6iuAQU1cvCO5gcLlXVXRKG/hVcHS/Ddl
-lCkkfeKGveV4h9z1o/ubilirovPqUmW/o1YdOJOKv0NUFBow8CdhUv43lQ8apqZq
-UZFJ609hSRUU8vYyoG/uoJm72G9b6a+QQ5BVSvgppNVRxV/CgXpZBonon1FvunnH
-we2w8DG/JO5SSoaYA0ZN5iyXDMxIeIEyhX8hQePZzFEde83wd2akoPFrK5z5NGSK
-J5s3a0mopE4cj5Ps0VI00cJlr71mPA8DOCXR0KvssS2R17rgyJaNuisIu/46wvfq
-ANAqkJ61LP3rvf/nH8TJvFapAjIMFOESW3jmJJGaq7GItxpwbTRCJ+kokAZMp7tn
-j4ZFT7xQhN3nj0Hxzwv+gl7jxjC6OvU4xUaKwSZDfHQs1HaDkzXS2m2oaBIoSGRc
-ex6Dkdh8bvSyFh+6tTrXgGPTMUkGjmuHoRPnXjethQbpAlL7gklG9wsRpQVckgDn
-nss1T0JvMISh1HZEAL2W
-=gaYE
------END PGP SIGNATURE-----
-
---------------enigFEB2DE46DC00D8FE6C54AF30--

@@ -1,192 +1,89 @@
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 20 Nov 2012 21:54:29 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Wed, 21 Nov 2012 01:31:34 +0000
 Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Message-Id: <20121120215429.B621F3E1821@localhost>
+Message-Id: <20121121013133.GE4673@opensource.wolfsonmicro.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="a1QUDc0q7S3U7/Jg"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
  <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <20121120215429.B621F3E1821@localhost>
+In-Reply-To: <20121120215429.B621F3E1821@localhost>
 To: linux-arm-kernel@lists.infradead.org
 
-On Sat, 17 Nov 2012 19:55:45 +0900, Alexandre Courbot <acourbot@nvidia.com> wrote:
-> Some device drivers (e.g. panel or backlights) need to follow precise
-> sequences for powering on and off, involving GPIOs, regulators, PWMs
-> and other power-related resources, with a defined powering order and
-> delays to respect between steps. These sequences are device-specific,
-> and do not belong to a particular driver - therefore they have been
-> performed by board-specific hook functions so far.
 
-I must be honest, this series really makes me nervous...
+--a1QUDc0q7S3U7/Jg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> With the advent of the device tree and of ARM kernels that are not
-> board-tied, we cannot rely on these board-specific hooks anymore but
+On Tue, Nov 20, 2012 at 09:54:29PM +0000, Grant Likely wrote:
+> On Sat, 17 Nov 2012 19:55:45 +0900, Alexandre Courbot <acourbot@nvidia.com> wrote:
 
-This isn't strictly true. It is still perfectly fine to have board
-specific code when necessary. However, there is strong encouragement to
-enable that code in device drivers as much as possible and new board
-files need to have very strong justification.
+> > With the advent of the device tree and of ARM kernels that are not
+> > board-tied, we cannot rely on these board-specific hooks anymore but
 
-> need a way to implement these sequences in a portable manner. This patch
-> introduces a simple interpreter that can execute such power sequences
-> encoded either as platform data or within the device tree. It also
-> introduces first support for regulator, GPIO and PWM resources.
+> This isn't strictly true. It is still perfectly fine to have board
+> specific code when necessary. However, there is strong encouragement to
+> enable that code in device drivers as much as possible and new board
+> files need to have very strong justification.
 
-This is where I start getting nervous. Up to now I've strongly resisted
-adding any kind of interpreted code to the device tree. The model is to
-identify hardware, but require the driver to know how to control it. (as
-compared to ACPI which is entirely designed around executable
-bytecode).
+This isn't the message that's gone over, and even for device drivers
+everyone seems to be taking the whole device tree thing as a move to
+pull all data out of the kernel.  In some cases there are some real
+practical advantages to doing this but a lot of the people making these
+changes seem to view having things in DT as a goal in itself.
 
-While the power sequences described here certainly cannot be confused
-with a Turing complete bytecode, it is a step in that direction. Plus,
-there will always be that new use case that needs just a "little new
-feature" to make this work for that too. Without thinking about how to
-handle that ahead of time is just asking for something to turn into a
-maintenance nightmare. It's just as important to specify what the limits
-of this approach are and when to punt to real driver code to handle a
-device.
+> I'm thinking about the scripts as trivial-to-parse ascii strings that
+> have a very simple set of commands. The commands use resources already
+> defined in the node. ie. 'g0' refers to the first entry in the gpios
+> property. 'r0' for the regulator, 'p0' for the pwms, 'd' means delay. By
+> no means take this as the format to use, it is just an example off the
+> top of my head, but it is already way easier to work with than putting
+> each command into a node.
 
-> +Power Sequences Steps
-> +---------------------
-> +Steps of a sequence describe an action to be performed on a resource. They
-> +always include a "type" property which indicates what kind of resource this
-> +step works on. Depending on the resource type, additional properties are defined
-> +to control the action to be performed.
-> +
-> +"delay" type required properties:
-> +  - delay: delay to wait (in microseconds)
-> +
-> +"regulator" type required properties:
-> +  - id: name of the regulator to use.
-> +  - enable / disable: one of these two empty properties must be present to
-> +                      enable or disable the resource
-> +
-> +"pwm" type required properties:
-> +  - id: name of the PWM to use.
-> +  - enable / disable: one of these two empty properties must be present to
-> +                      enable or disable the resource
-> +
-> +"gpio" type required properties:
-> +  - gpio: phandle of the GPIO to use.
-> +  - value: value this GPIO should take. Must be 0 or 1.
-> +
-> +Example
-> +-------
-> +Here are example sequences declared within a backlight device that use all the
-> +supported resources types:
-> +
-> +	backlight {
-> +		compatible = "pwm-backlight";
-> +		...
-> +
-> +		/* resources used by the power sequences */
-> +		pwms = <&pwm 2 5000000>;
-> +		pwm-names = "backlight";
-> +		power-supply = <&backlight_reg>;
-> +
-> +		power-sequences {
-> +			power-on {
-> +				step0 {
-> +					type = "regulator";
-> +					id = "power";
-> +					enable;
-> +				};
-> +				step1 {
-> +					type = "delay";
-> +					delay = <10000>;
-> +				};
-> +				step2 {
-> +					type = "pwm";
-> +					id = "backlight";
-> +					enable;
-> +				};
-> +				step3 {
-> +					type = "gpio";
-> +					gpio = <&gpio 28 0>;
-> +					value = <1>;
-> +				};
-> +			};
-> +
-> +			power-off {
-> +				step0 {
-> +					type = "gpio";
-> +					gpio = <&gpio 28 0>;
-> +					value = <0>;
-> +				};
-> +				step1 {
-> +					type = "pwm";
-> +					id = "backlight";
-> +					disable;
-> +				};
-> +				step2 {
-> +					type = "delay";
-> +					delay = <10000>;
-> +				};
-> +				step3 {
-> +					type = "regulator";
-> +					id = "power";
-> +					disable;
-> +				};
-> +			};
-> +		};
-> +	};
+It does appear to have some legibility challenges, especially with using
+the indexes into the arrays of resources.  On the other hand the arrays
+should be fairly small.
 
-I think this will get very verbose in a hurry. Already this simple
-example is 45 lines long. Using the device tree structure to encode the
-language doesn't look like a very good fit. Not to mention that the
-order of operations is entirely based on the node name. Want to insert
-an operation between step0 and step1? Need to rename step1, step2, and
-step3 to do so.
+> > +Platform Data Format
+> > +--------------------
+> > +All relevant data structures for declaring power sequences are located in
+> > +include/linux/power_seq.h.
 
-This implementation also isn't very consistent. The gpio is referenced
-with a phandle in step3/step0, but the regulator and pwm are referenced
-by id.
+> Hmm... If sequences are switched to a string instead, then platform_data
+> should also use it. The power sequence data structures can be created at
+> runtime by parsing the string.
 
-As an alternative, what about something like the following?
+Seems like a step backwards to me - why not let people store the more
+parsed version of the data?  It's going to be less convenient for users
+on non-DT systems.
 
-	backlight {
-		compatible = "pwm-backlight";
-		...
+As I said in my earlier reviews I think this is a useful thing to have
+as a utility library for drivers independantly of the DT bindings, it
+would allow drivers to become more data driven.  Perhaps we can rework
+the series so that the DT bindings are added as a final patch?  All the
+rest of the code seems OK.
 
-		/* resources used by the power sequences */
-		pwms = <&pwm 2 5000000>;
-		pwm-names = "backlight";
-		regulators = <&backlight_reg>;
-		gpios = <&gpio 28 0>;
+--a1QUDc0q7S3U7/Jg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-		power-on-sequence = "r0e;d10000m;p0e;g0s";
-		power-off-sequence = "g0c;p0d;d10000m;r0d";
-	};
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-I'm thinking about the scripts as trivial-to-parse ascii strings that
-have a very simple set of commands. The commands use resources already
-defined in the node. ie. 'g0' refers to the first entry in the gpios
-property. 'r0' for the regulator, 'p0' for the pwms, 'd' means delay. By
-no means take this as the format to use, it is just an example off the
-top of my head, but it is already way easier to work with than putting
-each command into a node.
+iQIcBAEBAgAGBQJQrC7uAAoJELSic+t+oim9NTgP/3oUSoRnG5DR736OIwo3IEcq
+lR9QRSr43anEyTnX1ZzIAgJm9byAvH3TRcCG0RlCKb0JPlPvMcuiWnExeR5Xweoj
+d30s7bJ+btF2lk1LJPx6uFS6rhkPswW2eNCNG88z/ogDJnRg+mUlBaJFoMZBJ5MI
+DuP0WnVKrFXt7ixTm0/57z3tLBcXu9YyOttIoBR20Uk6sLOz4RWpbBjNEkit+2Kb
+Exrfxlbj4zEK0dVCjE2NFG/X77kXBoBHI1qplFdz5L+yEPIwAhyE+hjDVzR/H3G3
+x9MUP/LF8ttuKvl0kWfn3mN6/BObK/pGirFdk9+l/HhLS0jzVewZiZQr72K0pIql
+RVTEkc8kw4hiVMMZkzXsUy1LLDSH2C6SlrMMT2yZO2VekKfy9Fw6Kfbxl3ik2Px1
+Fg+lApYi1QrYfERBmUXPwr5ez1YZyL+TgLbZ87AC9gcDgCqHA/hGhv35A82m6ACQ
+Xp8wVxnPcUcDjvHCcvHDiL4UVa+qW1pxx5cZr5FUQENnl2n5byWcxLdH1rvwC9J3
+r2VRmVSyunIBaBi3bZc+BOE8UhiXAT0g59mIOkdVQGfSo5B1WeiAdSXawJWO835p
+I+dkhBA+uWIx5tPMan396vMqGaxydwtpA9iOsCjz9l2q+2sYflvJKUrdAzdU9xDh
+6PLj38T+S4Nw2nVEUU7N
+=EhhC
+-----END PGP SIGNATURE-----
 
-The trick is still to define a syntax that doesn't fall apart when it
-needs to be extended. I would also like to get opinions on whether or
-not conditionals or loops should be supported (ie. loop waiting for a
-status to change). If they should then we need to be a lot more careful
-about the design (and due to my aforementioned nervousness, somebody may
-need to get me therapy).
-
-(Mitch, I'll let you make the argument for using Forth here. To be
-honest, I'm not keen on defining any kind of new language, however
-simple, but neither am I keen to pull in Forth).
-
-> +Platform Data Format
-> +--------------------
-> +All relevant data structures for declaring power sequences are located in
-> +include/linux/power_seq.h.
-
-Hmm... If sequences are switched to a string instead, then platform_data
-should also use it. The power sequence data structures can be created at
-runtime by parsing the string.
-
-g.
+--a1QUDc0q7S3U7/Jg--

@@ -1,21 +1,103 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 21 Nov 2012 12:27:45 +0000
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 21 Nov 2012 22:02:44 +0000
 Subject: Re: [PATCH v12 3/6] fbmon: add videomode helpers
-Message-Id: <50ACC8C1.9020400@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enigC5A087637FE61696096833B9"
+Message-Id: <96696218.4l3uYOulV3@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353426896-6045-1-git-send-email-s.trumtrar@pengutronix.de> <1353426896-6045-4-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1353426896-6045-4-git-send-email-s.trumtrar@pengutronix.de>
-To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
+References: <1353426896-6045-1-git-send-email-s.trumtrar@pengutronix.de>
+ <1353426896-6045-4-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1353426896-6045-4-git-send-email-s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
---------------enigC5A087637FE61696096833B9
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Steffen,
 
-On 2012-11-20 17:54, Steffen Trumtrar wrote:
+Sorry, I've just found another small bug below.
 
+On Tuesday 20 November 2012 16:54:53 Steffen Trumtrar wrote:
+> Add a function to convert from the generic videomode to a fb_videomode.
+> 
+> Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+> Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+> Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+> Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+> Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+> Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> ---
+>  drivers/video/fbmon.c |   46 ++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/fb.h    |    6 ++++++
+>  2 files changed, 52 insertions(+)
+> 
+> diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+> index cef6557..c1939a6 100644
+> --- a/drivers/video/fbmon.c
+> +++ b/drivers/video/fbmon.c
+> @@ -31,6 +31,7 @@
+>  #include <linux/pci.h>
+>  #include <linux/slab.h>
+>  #include <video/edid.h>
+> +#include <linux/videomode.h>
+>  #ifdef CONFIG_PPC_OF
+>  #include <asm/prom.h>
+>  #include <asm/pci-bridge.h>
+> @@ -1373,6 +1374,51 @@ int fb_get_mode(int flags, u32 val, struct
+> fb_var_screeninfo *var, struct fb_inf kfree(timings);
+>  	return err;
+>  }
+> +
+> +#if IS_ENABLED(CONFIG_VIDEOMODE)
+> +int fb_videomode_from_videomode(const struct videomode *vm,
+> +				struct fb_videomode *fbmode)
+> +{
+> +	unsigned int htotal, vtotal;
+> +
+> +	fbmode->xres = vm->hactive;
+> +	fbmode->left_margin = vm->hback_porch;
+> +	fbmode->right_margin = vm->hfront_porch;
+> +	fbmode->hsync_len = vm->hsync_len;
+> +
+> +	fbmode->yres = vm->vactive;
+> +	fbmode->upper_margin = vm->vback_porch;
+> +	fbmode->lower_margin = vm->vfront_porch;
+> +	fbmode->vsync_len = vm->vsync_len;
+> +
+> +	fbmode->pixclock = KHZ2PICOS(vm->pixelclock / 1000);
+> +
+> +	fbmode->sync = 0;
+> +	fbmode->vmode = 0;
+> +	if (vm->hah)
+> +		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
+> +	if (vm->vah)
+> +		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
+> +	if (vm->interlaced)
+> +		fbmode->vmode |= FB_VMODE_INTERLACED;
+> +	if (vm->doublescan)
+> +		fbmode->vmode |= FB_VMODE_DOUBLE;
+> +	if (vm->de)
+> +		fbmode->sync |= FB_SYNC_DATA_ENABLE_HIGH_ACT;
+> +	fbmode->flag = 0;
+> +
+> +	htotal = vm->hactive + vm->hfront_porch + vm->hback_porch +
+> +		 vm->hsync_len;
+> +	vtotal = vm->vactive + vm->vfront_porch + vm->vback_porch +
+> +		 vm->vsync_len;
+> +	fbmode->refresh = (vm->pixelclock * 1000) / (htotal * vtotal);
+
+This will fail if vm->pixelclock >= ((1 << 32) / 1000). The easiest solution 
+is probably to use 64-bit computation.
+
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
+> +#endif
+> +
+> +
+>  #else
+>  int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+>  {
 > diff --git a/include/linux/fb.h b/include/linux/fb.h
 > index c7a9571..920cbe3 100644
 > --- a/include/linux/fb.h
@@ -25,17 +107,14 @@ On 2012-11-20 17:54, Steffen Trumtrar wrote:
 >  #include <linux/slab.h>
 >  #include <asm/io.h>
 > +#include <linux/videomode.h>
-
-No need for this, just add "struct xxx;".
-
+> 
 >  struct vm_area_struct;
 >  struct fb_info;
-> @@ -714,6 +715,11 @@ extern void fb_destroy_modedb(struct fb_videomode =
-*modedb);
->  extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, in=
-t rb);
->  extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
-> =20
+> @@ -714,6 +715,11 @@ extern void fb_destroy_modedb(struct fb_videomode
+> *modedb); extern int fb_find_mode_cvt(struct fb_videomode *mode, int
+> margins, int rb); extern unsigned char *fb_ddc_read(struct i2c_adapter
+> *adapter);
+> 
 > +#if IS_ENABLED(CONFIG_VIDEOMODE)
 > +extern int fb_videomode_from_videomode(const struct videomode *vm,
 > +				       struct fb_videomode *fbmode);
@@ -44,32 +123,8 @@ t rb);
 >  /* drivers/video/modedb.c */
 >  #define VESA_MODEDB_SIZE 34
 >  extern void fb_var_to_videomode(struct fb_videomode *mode,
->=20
+-- 
+Regards,
 
+Laurent Pinchart
 
-
---------------enigC5A087637FE61696096833B9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJQrMjBAAoJEPo9qoy8lh71Q4cP/1dcAq5jTdtLB0cu++W4vXeq
-Ponbk6jqAVyBp57B11VXREKXJQN3nc/OmKvhJAb8v+POUzxD11eXNLeU0Ww6l+gQ
-hwxTmnTAXRnYdlS5+UWdLmxjpIIfJPkUEi15dt0+jw+JsJQVTqlGSr5FusWty9DB
-XiD6coM7g1NjuZDNjHKb1r3ydSK85ZNnq/eKms1DkF/5CexT+TzPMApMWO7eZml3
-I1IHR2C/DwRty1dhe27kIcWOrr32DiCwg3F8CtaamjSnybHJPYfAwMhpDFmkkUjL
-hjhjV6gnZGpo9E777GRnoww/aLm65jAEt7eFwGrXhKMbw/1Jstxgyh/kCEemYfh4
-fR0DoU587a2uvmjLZWmrpqfLE5uOZ6T3Gv9mfx+iRcoTBPiRCpveZH+mNHZSRe0U
-9ml3dCPhX9lyvz+z5gWHAx4kzMn1/S5tEmYCKP53MiLog0eBaQ/XZ+1X8mcz8wG+
-YHCy+iH1SnV0+HSFN6gs00EuCz7l9ysXd5bL5MHHyYI8PVGPAJ+Es6ymy6H4hDJ1
-v6P9HfXnqPkGjZFiBXqbE31qBLe5YocqbfQzpiq5BGbliMZox3X+UfaFTFBOHfsq
-CMYn/P7DCqcB0zOaHaiY7e0n1T4mhxIFM4N5jZXZN7OGTfhzk/+H2JdrQ2E7CR9f
-mBEVd8ibV45KVjnnhkPm
-=h0BO
------END PGP SIGNATURE-----
-
---------------enigC5A087637FE61696096833B9--

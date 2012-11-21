@@ -1,86 +1,83 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Wed, 21 Nov 2012 16:24:36 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 21 Nov 2012 16:47:53 +0000
 Subject: Re: [PATCH v12 4/6] fbmon: add of_videomode helpers
-Message-Id: <20121121162436.GB12657@pengutronix.de>
+Message-Id: <50AD05B9.9040909@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enigC7763C51364F1D39676A556E"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353426896-6045-1-git-send-email-s.trumtrar@pengutronix.de>
- <1353426896-6045-5-git-send-email-s.trumtrar@pengutronix.de>
- <50ACCDDA.2070606@ti.com>
-In-Reply-To: <50ACCDDA.2070606@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1353426896-6045-1-git-send-email-s.trumtrar@pengutronix.de> <1353426896-6045-5-git-send-email-s.trumtrar@pengutronix.de> <50ACCDDA.2070606@ti.com> <20121121162436.GB12657@pengutronix.de>
+In-Reply-To: <20121121162436.GB12657@pengutronix.de>
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
 
-On Wed, Nov 21, 2012 at 02:49:30PM +0200, Tomi Valkeinen wrote:
-> On 2012-11-20 17:54, Steffen Trumtrar wrote:
-> > Add helper to get fb_videomode from devicetree.
-> > 
-> > Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-> > Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
-> > Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
-> > Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
-> > Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
-> > Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> > ---
-> >  drivers/video/fbmon.c |   42 +++++++++++++++++++++++++++++++++++++++++-
-> >  include/linux/fb.h    |    7 +++++++
-> >  2 files changed, 48 insertions(+), 1 deletion(-)
-> 
-> 
-> > diff --git a/include/linux/fb.h b/include/linux/fb.h
-> > index 920cbe3..41b5e49 100644
-> > --- a/include/linux/fb.h
-> > +++ b/include/linux/fb.h
-> > @@ -15,6 +15,8 @@
-> >  #include <linux/slab.h>
-> >  #include <asm/io.h>
-> >  #include <linux/videomode.h>
-> > +#include <linux/of.h>
-> > +#include <linux/of_videomode.h>
-> 
-> Guess what? =)
-> 
-> To be honest, I don't know what the general opinion is about including
-> header files from header files. But I always leave them out if they are
-> not strictly needed.
-> 
+--------------enigC7763C51364F1D39676A556E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Okay. Seems to fit with the rest of the file;
+On 2012-11-21 18:24, Steffen Trumtrar wrote:
+> On Wed, Nov 21, 2012 at 02:49:30PM +0200, Tomi Valkeinen wrote:
 
-> >  struct vm_area_struct;
-> >  struct fb_info;
-> > @@ -715,6 +717,11 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
-> >  extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
-> >  extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
-> >  
-> > +#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-> > +extern int of_get_fb_videomode(const struct device_node *np,
-> > +			       struct fb_videomode *fb,
-> > +			       unsigned int index);
-> > +#endif
-> >  #if IS_ENABLED(CONFIG_VIDEOMODE)
-> >  extern int fb_videomode_from_videomode(const struct videomode *vm,
-> >  				       struct fb_videomode *fbmode);
-> 
-> Do you really need these #ifs in the header files? They do make it look
-> a bit messy. If somebody uses the functions and CONFIG_VIDEOMODE is not
-> enabled, he'll get a linker error anyway.
-> 
+>>> @@ -715,6 +717,11 @@ extern void fb_destroy_modedb(struct fb_videomod=
+e *modedb);
+>>>  extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, =
+int rb);
+>>>  extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
+>>> =20
+>>> +#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
+>>> +extern int of_get_fb_videomode(const struct device_node *np,
+>>> +			       struct fb_videomode *fb,
+>>> +			       unsigned int index);
+>>> +#endif
+>>>  #if IS_ENABLED(CONFIG_VIDEOMODE)
+>>>  extern int fb_videomode_from_videomode(const struct videomode *vm,
+>>>  				       struct fb_videomode *fbmode);
+>>
+>> Do you really need these #ifs in the header files? They do make it loo=
+k
+>> a bit messy. If somebody uses the functions and CONFIG_VIDEOMODE is no=
+t
+>> enabled, he'll get a linker error anyway.
+>>
+>=20
+> Well, I don't remember at the moment who requested this, but it was not=
+ my
+> idea to put them there. So, this is a matter of style I guess.
+> But maybe I understood that wrong.
 
-Well, I don't remember at the moment who requested this, but it was not my
-idea to put them there. So, this is a matter of style I guess.
-But maybe I understood that wrong.
+Right, one reviewer says this way, and another says that way =3D).
 
+With the header files I've made I only use #ifs with #else, when I want
+to give a static inline empty/no-op implementation for the function in
+case the feature is not compiled into the kernel.
 
-Regards,
-Steffen
+As you said, matter of taste. Up to you.
+
+ Tomi
 
 
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+--------------enigC7763C51364F1D39676A556E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJQrQW5AAoJEPo9qoy8lh71K8YP/2FV39JzQG+Wr/vQhLzk5Uh/
+QaMhCx33KHJ0U/Z0iqxiR9X24IUXex2c4qj2xccmEOs1BKQC/vT5HXMFgIHhHAs/
+DO5yB3eVPsMe+ymXeSe0TM6QpfLZLbIgX6GkuZ32w9TtXsO32cZb+ohxRtdOsRpW
+NDG0oR5leJAQOhFjuQj+9M4AFjuML4o6/LMorX4zxRpUU0L8FUBDvL9c3MiwqLR5
+MZR1rpaELel5aP6TJNqSMshiHW5HZrp2XgoTU4/6GoBZ+nLDzxTmvztDVkoNqXK0
+V6Edbe9KraIqnyQfFBtu9rsAR7wPWkAQxYbLOi1l6SbNGGvPGKORfIwXq/IxPwsz
+rbfILzcGfTMzL9KUQ13PyZh9ruiGmpcZAPsJ02Zou6qaG+OAl14d1kpyooT0z7El
+mQk2a+9q0UsM52VjJd8PhOG1sL7AXNPv25Gq8NZMDWEzR/0O4En2MVYXTzYimYMR
+S5e+HONIMkdvqL7i/JMia6ml2hIi9tULUPL1qSAfvgPODFPJA4jCezRriKDXxX35
+Z5rdkukuWHPHt89CPmOK2G9if3PB6WjuC6c3YUxQVXnJJkKn8uNkxeVnie0iTYJN
+9VugOpfdqODgSD4d+HlCII3gnhrwQi/JeNZP5zft7jvdcC06rqmNFoWF33tUrO+c
+GmOu+dfYxA7yYA5CBMHM
+=PB4R
+-----END PGP SIGNATURE-----
+
+--------------enigC7763C51364F1D39676A556E--

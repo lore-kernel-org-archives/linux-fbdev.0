@@ -1,113 +1,75 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Wed, 21 Nov 2012 11:58:18 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 21 Nov 2012 12:27:45 +0000
 Subject: Re: [PATCH v12 3/6] fbmon: add videomode helpers
-Message-Id: <20121121115818.GD14013@pengutronix.de>
+Message-Id: <50ACC8C1.9020400@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enigC5A087637FE61696096833B9"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353426896-6045-1-git-send-email-s.trumtrar@pengutronix.de>
- <1353426896-6045-4-git-send-email-s.trumtrar@pengutronix.de>
- <A73F36158E33644199EB82C5EC81C7BC3E9FA769@DBDE01.ent.ti.com>
- <CAL1wa8dQ4QL0SzbXdo8nogBfBjQ8GpaJ134v6zu_iMkWQeXefA@mail.gmail.com>
-In-Reply-To: <CAL1wa8dQ4QL0SzbXdo8nogBfBjQ8GpaJ134v6zu_iMkWQeXefA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Leela Krishna Amudala <leelakrishna.a@gmail.com>
-Cc: "Manjunathappa, Prakash" <prakash.pm@ti.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, David Airlie <airlied@linux.ie>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
+References: <1353426896-6045-1-git-send-email-s.trumtrar@pengutronix.de> <1353426896-6045-4-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1353426896-6045-4-git-send-email-s.trumtrar@pengutronix.de>
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
 
-Hi!
+--------------enigC5A087637FE61696096833B9
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Nov 21, 2012 at 04:39:01PM +0530, Leela Krishna Amudala wrote:
-> Yes,
-> Even I got the same build error.
-> later I fixed it by including "#include <linux/mxsfb.h>"
-> 
-> Best Wishes,
-> Leela Krishna.
-> 
-> On Wed, Nov 21, 2012 at 3:39 PM, Manjunathappa, Prakash
-> <prakash.pm@ti.com> wrote:
-> > Hi Steffen,
-> >
-> > I am trying to add DT support for da8xx-fb driver on top of your patches.
-> > Encountered below build error. Sorry for reporting it late.
-> >
-> > On Tue, Nov 20, 2012 at 21:24:53, Steffen Trumtrar wrote:
-> >> Add a function to convert from the generic videomode to a fb_videomode.
-> >>
-> >> Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-> >> Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
-> >> Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
-> >> Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
-> >> Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
-> >> Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> >> ---
-> >>  drivers/video/fbmon.c |   46 ++++++++++++++++++++++++++++++++++++++++++++++
-> >>  include/linux/fb.h    |    6 ++++++
-> >>  2 files changed, 52 insertions(+)
-> >>
-> >> diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-> >> index cef6557..c1939a6 100644
-> >> --- a/drivers/video/fbmon.c
-> >> +++ b/drivers/video/fbmon.c
-> >> @@ -31,6 +31,7 @@
-> >>  #include <linux/pci.h>
-> >>  #include <linux/slab.h>
-> >>  #include <video/edid.h>
-> >> +#include <linux/videomode.h>
-> >>  #ifdef CONFIG_PPC_OF
-> >>  #include <asm/prom.h>
-> >>  #include <asm/pci-bridge.h>
-> >> @@ -1373,6 +1374,51 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
-> >>       kfree(timings);
-> >>       return err;
-> >>  }
-> >> +
-> >> +#if IS_ENABLED(CONFIG_VIDEOMODE)
-> >> +int fb_videomode_from_videomode(const struct videomode *vm,
-> >> +                             struct fb_videomode *fbmode)
-> >> +{
-> >> +     unsigned int htotal, vtotal;
-> >> +
-> >> +     fbmode->xres = vm->hactive;
-> >> +     fbmode->left_margin = vm->hback_porch;
-> >> +     fbmode->right_margin = vm->hfront_porch;
-> >> +     fbmode->hsync_len = vm->hsync_len;
-> >> +
-> >> +     fbmode->yres = vm->vactive;
-> >> +     fbmode->upper_margin = vm->vback_porch;
-> >> +     fbmode->lower_margin = vm->vfront_porch;
-> >> +     fbmode->vsync_len = vm->vsync_len;
-> >> +
-> >> +     fbmode->pixclock = KHZ2PICOS(vm->pixelclock / 1000);
-> >> +
-> >> +     fbmode->sync = 0;
-> >> +     fbmode->vmode = 0;
-> >> +     if (vm->hah)
-> >> +             fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
-> >> +     if (vm->vah)
-> >> +             fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
-> >> +     if (vm->interlaced)
-> >> +             fbmode->vmode |= FB_VMODE_INTERLACED;
-> >> +     if (vm->doublescan)
-> >> +             fbmode->vmode |= FB_VMODE_DOUBLE;
-> >> +     if (vm->de)
-> >> +             fbmode->sync |= FB_SYNC_DATA_ENABLE_HIGH_ACT;
-> >
-> > "FB_SYNC_DATA_ENABLE_HIGH_ACT" seems to be mxsfb specific flag, I am getting
-> > build error on this. Please let me know if I am missing something.
-> >
-> > Thanks,
-> > Prakash
-> >
+On 2012-11-20 17:54, Steffen Trumtrar wrote:
 
-I compile-tested the series and didn't have that error. But obviously I should
-have. As this is a mxsfs flag, I will throw it out.
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index c7a9571..920cbe3 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -14,6 +14,7 @@
+>  #include <linux/backlight.h>
+>  #include <linux/slab.h>
+>  #include <asm/io.h>
+> +#include <linux/videomode.h>
 
-Regards,
-Steffen
+No need for this, just add "struct xxx;".
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+>  struct vm_area_struct;
+>  struct fb_info;
+> @@ -714,6 +715,11 @@ extern void fb_destroy_modedb(struct fb_videomode =
+*modedb);
+>  extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, in=
+t rb);
+>  extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
+> =20
+> +#if IS_ENABLED(CONFIG_VIDEOMODE)
+> +extern int fb_videomode_from_videomode(const struct videomode *vm,
+> +				       struct fb_videomode *fbmode);
+> +#endif
+> +
+>  /* drivers/video/modedb.c */
+>  #define VESA_MODEDB_SIZE 34
+>  extern void fb_var_to_videomode(struct fb_videomode *mode,
+>=20
+
+
+
+--------------enigC5A087637FE61696096833B9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJQrMjBAAoJEPo9qoy8lh71Q4cP/1dcAq5jTdtLB0cu++W4vXeq
+Ponbk6jqAVyBp57B11VXREKXJQN3nc/OmKvhJAb8v+POUzxD11eXNLeU0Ww6l+gQ
+hwxTmnTAXRnYdlS5+UWdLmxjpIIfJPkUEi15dt0+jw+JsJQVTqlGSr5FusWty9DB
+XiD6coM7g1NjuZDNjHKb1r3ydSK85ZNnq/eKms1DkF/5CexT+TzPMApMWO7eZml3
+I1IHR2C/DwRty1dhe27kIcWOrr32DiCwg3F8CtaamjSnybHJPYfAwMhpDFmkkUjL
+hjhjV6gnZGpo9E777GRnoww/aLm65jAEt7eFwGrXhKMbw/1Jstxgyh/kCEemYfh4
+fR0DoU587a2uvmjLZWmrpqfLE5uOZ6T3Gv9mfx+iRcoTBPiRCpveZH+mNHZSRe0U
+9ml3dCPhX9lyvz+z5gWHAx4kzMn1/S5tEmYCKP53MiLog0eBaQ/XZ+1X8mcz8wG+
+YHCy+iH1SnV0+HSFN6gs00EuCz7l9ysXd5bL5MHHyYI8PVGPAJ+Es6ymy6H4hDJ1
+v6P9HfXnqPkGjZFiBXqbE31qBLe5YocqbfQzpiq5BGbliMZox3X+UfaFTFBOHfsq
+CMYn/P7DCqcB0zOaHaiY7e0n1T4mhxIFM4N5jZXZN7OGTfhzk/+H2JdrQ2E7CR9f
+mBEVd8ibV45KVjnnhkPm
+=h0BO
+-----END PGP SIGNATURE-----
+
+--------------enigC5A087637FE61696096833B9--

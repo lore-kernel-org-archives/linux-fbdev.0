@@ -1,133 +1,63 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Fri, 23 Nov 2012 12:02:08 +0000
-Subject: Re: [PATCHv14 4/7] fbmon: add videomode helpers
-Message-Id: <20121123120208.GB1106@pengutronix.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 22 Nov 2012 14:21:18 +0000
+Subject: Temporary fbdev maintainership for 3.8 merge window
+Message-Id: <50AE34DE.7030209@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig5B2053B480900289D9D9FE1A"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353661467-28545-1-git-send-email-s.trumtrar@pengutronix.de>
- <1353661467-28545-5-git-send-email-s.trumtrar@pengutronix.de>
- <2828625.Bdym394lFc@avalon>
-In-Reply-To: <2828625.Bdym394lFc@avalon>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
+To: linux-fbdev@vger.kernel.org
 
-Hi Laurent,
+--------------enig5B2053B480900289D9D9FE1A
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, Nov 23, 2012 at 11:53:10AM +0100, Laurent Pinchart wrote:
-> Hi Steffen,
-> 
-> On Friday 23 November 2012 10:04:24 Steffen Trumtrar wrote:
-> > Add a function to convert from the generic videomode to a fb_videomode.
-> > 
-> > Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-> > Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
-> > Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
-> > Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
-> > Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
-> > Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> > Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> > ---
-> >  drivers/video/fbmon.c |   49 ++++++++++++++++++++++++++++++++++++++++++++++
-> >  include/linux/fb.h    |    6 ++++++
-> >  2 files changed, 55 insertions(+)
-> > 
-> > diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-> > index cef6557..bcbfe8f 100644
-> > --- a/drivers/video/fbmon.c
-> > +++ b/drivers/video/fbmon.c
-> > @@ -31,6 +31,7 @@
-> >  #include <linux/pci.h>
-> >  #include <linux/slab.h>
-> >  #include <video/edid.h>
-> > +#include <linux/videomode.h>
-> 
-> You could move this one line up to keep headers sorted alphabetically 
-> (assuming they are in the first place).
-> 
+Hi Florian, all,
 
-Because of the careless mistake below, I will do that.
+Florian told me he's very busy for the time being, and this probably
+last at least until sometime early December. The merge window is coming
+near, and instead of everybody sending their fbdev related patches
+directly to Linus, I offer my services as a temporary fbdev maintainer
+for the next merge window.
 
-> >  #ifdef CONFIG_PPC_OF
-> >  #include <asm/prom.h>
-> >  #include <asm/pci-bridge.h>
-> > @@ -1373,6 +1374,54 @@ int fb_get_mode(int flags, u32 val, struct
-> > fb_var_screeninfo *var, struct fb_inf kfree(timings);
-> >  	return err;
-> >  }
-> > +
-> > +#if IS_ENABLED(CONFIG_VIDEOMODE)
-> > +int fb_videomode_from_videomode(const struct videomode *vm,
-> > +				struct fb_videomode *fbmode)
-> 
-> This is inside the #if CONFIG_FB_MODE_HELPERS block, is that intentional ?
-> 
+Florian, say if this is not what you intended (the details were left a
+bit open in our private emails).
 
-Yes. Intentional. It is a fb_mode helper, that is why ... oh, wait. I should
-add a "depends on" to the Kconfig then.
+I don't have the capacity to really review much of the patches, so I'd
+probably only pull things that are quite clear or specific to one
+particular driver.
 
-> > +{
-> > +	unsigned int htotal, vtotal;
-> > +
-> > +	fbmode->xres = vm->hactive;
-> > +	fbmode->left_margin = vm->hback_porch;
-> > +	fbmode->right_margin = vm->hfront_porch;
-> > +	fbmode->hsync_len = vm->hsync_len;
-> > +
-> > +	fbmode->yres = vm->vactive;
-> > +	fbmode->upper_margin = vm->vback_porch;
-> > +	fbmode->lower_margin = vm->vfront_porch;
-> > +	fbmode->vsync_len = vm->vsync_len;
-> > +
-> > +	/* prevent division by zero in KHZ2PICOS macro */
-> > +	fbmode->pixclock = vm->pixelclock ? KHZ2PICOS(vm->pixelclock / 1000) : 0;
-> > +
-> > +	fbmode->sync = 0;
-> > +	fbmode->vmode = 0;
-> > +	if (vm->hah)
-> > +		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
-> > +	if (vm->vah)
-> > +		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
-> > +	if (vm->interlaced)
-> > +		fbmode->vmode |= FB_VMODE_INTERLACED;
-> > +	if (vm->doublescan)
-> > +		fbmode->vmode |= FB_VMODE_DOUBLE;
-> > +	fbmode->flag = 0;
-> > +
-> > +	htotal = vm->hactive + vm->hfront_porch + vm->hback_porch +
-> > +		 vm->hsync_len;
-> > +	vtotal = vm->vactive + vm->vfront_porch + vm->vback_porch +
-> > +		 vm->vsync_len;
-> > +	/* prevent division by zero */
-> > +	if (htotal && vtotal)
-> > +		fbmode->refresh = vm->pixelclock / (htotal * vtotal);
-> > +	else
-> > +		fbmode->refresh = vm->pixelclock;
-> 
-> What about returning an error if htotal * vtotal = 0 ? The input is clearly 
-> invalid in that case. I would then set fbmode->refresh to 0, setting it to vm-
-> >pixelclock doesn't really make sense.
-> 
+If you have just a few patches, I can apply them directly. If you have
+more, please send a proper pull request to me.
 
-Yes, pixelclock makes no sense. It was supposed to be 0. I was careless here.
+If you still have some fbdev related fixes for 3.7, send them very soon,
+as the next -rc may be the last. I'm planning to send a pull request
+with omapdss fixes tomorrow.
 
-> > +
-> > +	return 0;
-> > +}
-> > +EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
-> > +#endif
-> > +
-> > +
-> 
-> A single blank line should be enough.
-> 
+ Tomi
 
-Regards,
-Steffen
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+--------------enig5B2053B480900289D9D9FE1A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJQrjTeAAoJEPo9qoy8lh71QskQAKfUmsRNMMZ+eLO86c37yD+l
+0qP295+bZPmJudd5bi/0Y+a/VuT54I/O/lKToAHcVrDDPn2WQ6ZoKzjwUf3ajK+O
+9pjodnx48tGuAhmFLG7YMRBLopiXjfjLSK4h86vtNUm8Lh3AOpmHWQudQtEoh3mV
+jLQJTdguEBzJIU5jplG+LJEWxVrvNeLVDMvXjcwusPBd6Fd6mQBUSmvAH5dFfuAg
+66tZL4BqIxi9ofp6mvpH0P+q27aAqUUYa+377PkyhOqn7mFF/dZa7DaQYLi+526d
+mBYfNYaNpU81TsiaJ9Aulv7be00YxcjHZVN2LQTyLyaUVFX8gd6Wqa9VL/0p6hox
+mW5BrszfTpcFPjzT+zwg40Jz0YFXsq8pmqrulrf/cxPgDT/3NrcU8RTJOUOYTu6P
+X3f5KqVmbKyhjzRGvYBYQ9XXIHJem+XTUDUe1aXLs62QwELEO4Us85KL4zxV/kWg
+zRj3G5S4jmYtYjJ9ksQpxnyytHdFKTRpc5hig37b1EyjgICfLpsx2uAPFqjWaid7
+K0LLb/QTDv0LlaY1uJ2r0NrxNJKIWQrys8zPREOYgEzUgqNig7ErR2Y3NxKdoksn
+2ADClWP6kiJwsfyq4LzXv0EetyZGf1Jyg2pV5WfhDbH61XQyFhZebilTN8bFep4x
+LOZCZyR8FCwvSkkI56pl
+=TDV8
+-----END PGP SIGNATURE-----
+
+--------------enig5B2053B480900289D9D9FE1A--

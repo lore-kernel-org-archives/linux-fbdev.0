@@ -1,27 +1,41 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Fri, 16 Nov 2012 17:08:16 +0000
-Subject: Re: [PATCH v8 0/3] Runtime Interpreted Power Sequences
-Message-Id: <50A67300.2000001@wwwdotorg.org>
+From: =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <LW@KARO-electronics.de>
+Date: Thu, 22 Nov 2012 12:49:14 +0000
+Subject: [BUGFIX PATCH] video: mxsfb: fix crash when unblanking the display
+Message-Id: <1353588555-13168-1-git-send-email-LW@KARO-electronics.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353047903-14363-1-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1353047903-14363-1-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Leela Krishna Amudala <l.krishna-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Anton Vorontsov <cbouatmailru-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-On 11/15/2012 11:38 PM, Alexandre Courbot wrote:
-> Hopefully the final series before the feature gets merged. Anton Vorontsov
-> kindly accepted to take it into his tree, so this series is mostly a call for
-> acks, tests and reviews notices before the merge window for 3.8 opens. If you
-> are interested in seeing this feature, please add your name.
-> 
-> This series also adds an entry for the subsystem into MAINTAINERS, setting me as
-> the person in charge.
+The VDCTRL4 register does not provide the MXS SET/CLR/TOGGLE feature.
+The write in mxsfb_disable_controller() sets the data_cnt for the LCD
+DMA to 0 which obviously means the max. count for the LCD DMA and
+leads to overwriting arbitrary memory when the display is unblanked.
 
-The series,
-Tested-by: Stephen Warren <swarren@nvidia.com>
+Note: I already sent this patch in December 2011 but noone picked it up obv=
+iously.
 
-On Ventana.
+Signed-off-by: Lothar Wa=C3=9Fmann <LW@KARO-electronics.de>
+---
+ drivers/video/mxsfb.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 49619b4..f2a49ef 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -369,7 +369,8 @@ static void mxsfb_disable_controller(struct fb_info *fb=
+_info)
+ 		loop--;
+ 	}
+=20
+-	writel(VDCTRL4_SYNC_SIGNALS_ON, host->base + LCDC_VDCTRL4 + REG_CLR);
++	reg =3D readl(host->base + LCDC_VDCTRL4);
++	writel(reg & ~VDCTRL4_SYNC_SIGNALS_ON, host->base + LCDC_VDCTRL4);
+=20
+ 	clk_disable_unprepare(host->clk);
+=20
+--=20
+1.7.2.5
 

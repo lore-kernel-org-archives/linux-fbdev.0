@@ -1,108 +1,73 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Thu, 15 Nov 2012 09:23:55 +0000
-Subject: [PATCH v10 4/6] fbmon: add of_videomode helpers
-Message-Id: <1352971437-29877-5-git-send-email-s.trumtrar@pengutronix.de>
+From: Tushar Behera <tushar.behera@linaro.org>
+Date: Thu, 22 Nov 2012 06:54:10 +0000
+Subject: [PATCH 3/4] video: vt8500: Convert to use devm_request_mem_region()
+Message-Id: <1353566531-31251-4-git-send-email-tushar.behera@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
+References: <1353566531-31251-1-git-send-email-tushar.behera@linaro.org>
+In-Reply-To: <1353566531-31251-1-git-send-email-tushar.behera@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: FlorianSchandinat@gmx.de, linux@prisktech.co.nz, patches@linaro.org
 
-Add helper to get fb_videomode from devicetree.
+While at it, fix the return statements.
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
 ---
- drivers/video/fbmon.c |   42 +++++++++++++++++++++++++++++++++++++++++-
- include/linux/fb.h    |    6 ++++++
- 2 files changed, 47 insertions(+), 1 deletion(-)
+ drivers/video/vt8500lcdfb.c |   12 +++---------
+ 1 files changed, 3 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index 247e079..9e8c5fa 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -31,7 +31,7 @@
- #include <linux/pci.h>
- #include <linux/slab.h>
- #include <video/edid.h>
--#include <linux/videomode.h>
-+#include <linux/of_videomode.h>
- #ifdef CONFIG_PPC_OF
- #include <asm/prom.h>
- #include <asm/pci-bridge.h>
-@@ -1418,6 +1418,46 @@ int fb_videomode_from_videomode(struct videomode *vm,
- EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
- #endif
+diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
+index 2438368..c42f15d 100644
+--- a/drivers/video/vt8500lcdfb.c
++++ b/drivers/video/vt8500lcdfb.c
+@@ -330,7 +330,8 @@ static int __devinit vt8500lcd_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
  
-+#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+static inline void dump_fb_videomode(struct fb_videomode *m)
-+{
-+	pr_debug("fb_videomode = %ux%u@%uHz (%ukHz) %u %u %u %u %u %u %u %u %u\n",
-+		 m->xres, m->yres, m->refresh, m->pixclock, m->left_margin,
-+		 m->right_margin, m->upper_margin, m->lower_margin,
-+		 m->hsync_len, m->vsync_len, m->sync, m->vmode, m->flag);
-+}
-+
-+/**
-+ * of_get_fb_videomode - get a fb_videomode from devicetree
-+ * @np: device_node with the timing specification
-+ * @fb: will be set to the return value
-+ * @index: index into the list of display timings in devicetree
-+ *
-+ * DESCRIPTION:
-+ * This function is expensive and should only be used, if only one mode is to be
-+ * read from DT. To get multiple modes start with of_get_display_timings ond
-+ * work with that instead.
-+ */
-+int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
-+			unsigned int index)
-+{
-+	struct videomode vm;
-+	int ret;
-+
-+	ret = of_get_videomode(np, &vm, index);
-+	if (ret)
-+		return ret;
-+
-+	fb_videomode_from_videomode(&vm, fb);
-+
-+	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
-+		vm.vactive, np->name);
-+	dump_fb_videomode(fb);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(of_get_fb_videomode);
-+#endif
+-	res = request_mem_region(res->start, resource_size(res), "vt8500lcd");
++	res = devm_request_mem_region(&pdev->dev, res->start,
++			resource_size(res), "vt8500lcd");
+ 	if (res = NULL) {
+ 		dev_err(&pdev->dev, "failed to request I/O memory\n");
+ 		return -EBUSY;
+@@ -339,8 +340,7 @@ static int __devinit vt8500lcd_probe(struct platform_device *pdev)
+ 	fbi->regbase = ioremap(res->start, resource_size(res));
+ 	if (fbi->regbase = NULL) {
+ 		dev_err(&pdev->dev, "failed to map I/O memory\n");
+-		ret = -EBUSY;
+-		goto failed_free_res;
++		return -EBUSY;
+ 	}
  
- #else
- int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 4024136..dc8f693 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -15,6 +15,8 @@
- #include <linux/slab.h>
- #include <asm/io.h>
- #include <linux/videomode.h>
-+#include <linux/of.h>
-+#include <linux/of_videomode.h>
+ 	np = of_parse_phandle(pdev->dev.of_node, "default-mode", 0);
+@@ -461,15 +461,12 @@ failed_free_fbmem:
+ 			  fbi->fb.screen_base, fbi->fb.fix.smem_start);
+ failed_free_io:
+ 	iounmap(fbi->regbase);
+-failed_free_res:
+-	release_mem_region(res->start, resource_size(res));
+ 	return ret;
+ }
  
- struct vm_area_struct;
- struct fb_info;
-@@ -715,6 +717,10 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
- extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
- extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
+ static int __devexit vt8500lcd_remove(struct platform_device *pdev)
+ {
+ 	struct vt8500lcd_info *fbi = platform_get_drvdata(pdev);
+-	struct resource *res;
+ 	int irq;
  
-+#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+extern int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
-+			       unsigned int index);
-+#endif
- #if IS_ENABLED(CONFIG_VIDEOMODE)
- extern int fb_videomode_from_videomode(struct videomode *vm,
- 				       struct fb_videomode *fbmode);
+ 	unregister_framebuffer(&fbi->fb);
+@@ -491,9 +488,6 @@ static int __devexit vt8500lcd_remove(struct platform_device *pdev)
+ 
+ 	iounmap(fbi->regbase);
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	release_mem_region(res->start, resource_size(res));
+-
+ 	return 0;
+ }
+ 
 -- 
-1.7.10.4
+1.7.4.1
 

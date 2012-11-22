@@ -1,59 +1,67 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Tue, 13 Nov 2012 11:31:14 +0000
-Subject: Re: [PATCH v8 5/6] drm_modes: add videomode helpers
-Message-Id: <20121113113114.GD30049@avionic-0098.mockup.avionic-design.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="hoZxPH4CaxYzWscb"
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 22 Nov 2012 14:39:51 +0000
+Subject: [GIT PULL FOR v3.8] SH Mobile LCDC patches
+Message-Id: <2641878.cGkiV3BMeH@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352734626-27412-1-git-send-email-s.trumtrar@pengutronix.de>
-	<1352734626-27412-6-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1352734626-27412-6-git-send-email-s.trumtrar@pengutronix.de>
-To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Cc: linux-fbdev@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, devicetree-discuss@lists.ozlabs.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Rob Herring <robherring2@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, kernel@pengutronix.de, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
+Hi Tomi,
 
---hoZxPH4CaxYzWscb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Thank you for taking care of pull requests for the v3.8 merge window. Here's 
+one already :-)
 
-On Mon, Nov 12, 2012 at 04:37:05PM +0100, Steffen Trumtrar wrote:
-[...]
-> diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-[...]
-> +#if IS_ENABLED(CONFIG_VIDEOMODE)
-> +int videomode_to_display_mode(struct videomode *vm, struct drm_display_mode *dmode)
+The following changes since commit f4a75d2eb7b1e2206094b901be09adb31ba63681:
 
-This one as well may be more consistently named
-drm_display_mode_from_videomode().
+  Linux 3.7-rc6 (2012-11-16 17:42:40 -0800)
 
-> diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-[...]
-> +extern int videomode_to_display_mode(struct videomode *vm,
-> +				     struct drm_display_mode *dmode);
+are available in the git repository at:
+  git://linuxtv.org/pinchartl/fbdev.git lcdc-next
 
-And this also needs protection or a dummy.
+Hideki EIRAKU (1):
+      fbdev: sh_mobile_lcdc: use dma_mmap_coherent
 
-Thierry
+Laurent Pinchart (19):
+      fbdev: sh_mobile_lcdc: Get display dimensions from the channel structure
+      fbdev: sh_mobile_lcdc: Rename mode argument to modes
+      fbdev: sh_mobile_lcdc: Remove priv argument from channel and overlay 
+init
+      ARM: mach-shmobile: ag5evm: Add LCDC tx_dev field to platform data
+      fbdev: sh_mipi_dsi: Add channel field to platform data
+      ARM: mach-shmobile: Initiliaze the new sh_mipi_dsi_info channel field
+      fbdev: sh_mipi_dsi: Use the sh_mipi_dsi_info channel field
+      fbdev: sh_mipi_dsi: Use the LCDC entity default mode
+      fbdev: sh_mipi_dsi: Remove last reference to LCDC platform data
+      ARM: mach-shmobile: Remove the unused sh_mipi_dsi_info lcd_chan field
+      fbdev: sh_mipi_dsi: Remove the unused sh_mipi_dsi_info lcd_chan field
+      fbdev: sh_mobile_lcdc: Store the backlight brightness internally
+      ARM: mach-shmobile: mackerel: Removed unused get_brightness callback
+      sh: ap325rxa: Remove unused get_brightness LCDC callback
+      sh: ecovec24: Remove unused get_brightness LCDC callback
+      fbdev: sh_mobile_lcdc: Remove unused get_brightness pdata callback
+      ARM: mach-shmobile: ag5evm: Use the backlight API for brightness control
+      sh: kfr2r09: Use the backlight API for brightness control
+      fbdev: sh_mobile_lcdc: Make sh_mobile_lcdc_sys_bus_ops static
 
---hoZxPH4CaxYzWscb
-Content-Type: application/pgp-signature
+ arch/arm/mach-shmobile/board-ag5evm.c       |  198 ++++++++++++++------------
+ arch/arm/mach-shmobile/board-ap4evb.c       |    4 +-
+ arch/arm/mach-shmobile/board-mackerel.c     |    6 -
+ arch/sh/boards/mach-ap325rxa/setup.c        |    6 -
+ arch/sh/boards/mach-ecovec24/setup.c        |    6 -
+ arch/sh/boards/mach-kfr2r09/lcd_wqvga.c     |   16 +--
+ arch/sh/boards/mach-kfr2r09/setup.c         |    7 +-
+ arch/sh/include/mach-kfr2r09/mach/kfr2r09.h |    6 +-
+ drivers/video/sh_mipi_dsi.c                 |   69 ++++------
+ drivers/video/sh_mobile_lcdcfb.c            |   74 +++++++----
+ drivers/video/sh_mobile_lcdcfb.h            |    1 +
+ include/video/sh_mipi_dsi.h                 |    4 +-
+ include/video/sh_mobile_lcdc.h              |    1 -
+ 13 files changed, 192 insertions(+), 206 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+-- 
+Regards,
 
-iQIcBAEBAgAGBQJQoi+CAAoJEN0jrNd/PrOh7eEP/1UMe4mFQ4hylZL84gOC+gFV
-urjbU7pSMMfg1z+pTabAq6g/fTlcCmzAW0tfdOjo78MCuyifOw/N9iTxOuWaCkUJ
-VfMCyk5WIhRQWWjd66/FTuLjFRzMbb3bkKwIXxk9xLPDalWKBeBX3Cn79xxnWgEh
-Zx9U4h+J6omaNhCgXyJEsZu8vdBSuXjTGzrnsVsCKYeHP7OUUDCH2YY7s8pWj7Sq
-BuF6EN/Mhrk5vw+tJjXVuLVD57EvXnZyuRikvL3gF43Nvj0xKcPilRL1z1fWniyM
-P3I7sQPB5W7gdxVQZM+KwLSiyX3D8y7apZJxlSaGD9/dXVC9YYiI+3qHbeDQnC/T
-YkqSsiDvwFbg+PA4xN6eYOGNFjtDHmQhJ6cJUUAo7braP+CxYYO3tkrb4in89Dl/
-CaPKtMUwFO3z8et0QkR7g7cAoSwN6EoeOLsFtVqaTWTNgz0VsvKm0pJSUdPRVQO1
-IvdkH4XWke8gRGK6cHYru7g6NQMfl3Jnpf+VEAB96zYQaBELAZvwUFq15n2y4AMe
-8CTsfEkbrpKHd547HhkWffijhX5ohPBgolMFUO7NKk9Sc1I+g1fdFYl25qiPba5w
-I5BrSKfc4qwbPW6WC8ZbeBNzNGtp+nuyFn0hD9b2eLbo3qEavSwL+nfOdGUGSqSC
-Qk5m+qY/BEv3W8VThjwO
-=ul4+
------END PGP SIGNATURE-----
+Laurent Pinchart
 
---hoZxPH4CaxYzWscb--

@@ -1,45 +1,37 @@
-From: Alexandre Courbot <gnurou@gmail.com>
-Date: Thu, 22 Nov 2012 03:09:54 +0000
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Thu, 22 Nov 2012 08:57:22 +0000
 Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Message-Id: <CAAVeFu+zxQQ=8fTu1Fp21QrWp6yndsWHjEJ2Gi=LifviNKbvaA@mail.gmail.com>
+Message-Id: <CACRpkdaNmBpfONDpt7zFqLaqfiGm+ELpO-v5gZmM0rEi_AzijQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20121120215429.B621F3E1821@localhost>
- <13540495.epaCf4JVn9@percival> <50ACB59B.4090404@iki.fi>
- <20121121114018.GA31576@avionic-0098.adnet.avionic-design.de>
- <50ACC341.3090204@ti.com>
- <20121121130039.GA12191@avionic-0098.adnet.avionic-design.de>
- <50ACD7DC.5060405@ti.com>
- <CAAVeFuJofYwj926=3v0ApBCq_vNhCdC1PnzDc-B3d=LL_L40Uw@mail.gmail.com>
- <20121121151209.GA4048@avionic-0098.adnet.avionic-design.de>
- <CAAVeFuK_V6nb874bygioi35mFNxaWuveKOedLT=YYsP4JfVqgA@mail.gmail.com>
- <20121122020649.GH4371@opensource.wolfsonmicro.com>
-In-Reply-To: <20121122020649.GH4371@opensource.wolfsonmicro.com>
+References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
+ <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
+ <20121120215429.B621F3E1821@localhost>
+ <20121121013133.GE4673@opensource.wolfsonmicro.com>
+In-Reply-To: <20121121013133.GE4673@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Thu, Nov 22, 2012 at 11:06 AM, Mark Brown
+On Wed, Nov 21, 2012 at 2:31 AM, Mark Brown
 <broonie@opensource.wolfsonmicro.com> wrote:
-> On Thu, Nov 22, 2012 at 11:01:34AM +0900, Alexandre Courbot wrote:
->
->> The thing I don't understand here is why would anyone want power
->> sequences without the DT representation. Guys, that's the whole point! :)
->
->> If we are to implement things into drivers, then callback functions
->> are going to serve us just as well - even better, for they are more
->> flexible. All we need to do is define a dedicated ops structure and
->> have the driver plug the right callback functions depending on the
->> "compatible" property of the DT device node. We don't need a framework
->> for that.
->
-> It allows drivers (both board drivers and actual drivers) to write these
-> things in a semi-scripted form instead of having to open code everything
-> each time, it'd save a bunch of tedious stuff with resource requesting
-> for example.
 
-Mmm, I overlooked that point - that's fair enough. Guess I should
-remove all DT support and stress that point in the documentation. Then
-maybe we'll have a deal.
+> As I said in my earlier reviews I think this is a useful thing to have
+> as a utility library for drivers independantly of the DT bindings, it
+> would allow drivers to become more data driven.  Perhaps we can rework
+> the series so that the DT bindings are added as a final patch?  All the
+> rest of the code seems OK.
 
-Alex.
+I have the same (limited by experience) opinion. Working sort of
+near som audio drivers I have understood that power sequencing
+is a big issue not only for things like this backlight example, but
+even more so in the area of audio to avoid clicks and pops.
+
+Is it correct to assume that this library will be useful also for ALSA
+SoC type of devices?
+
+Then whether to couple that to DT or ACPI or SFI or whatever
+is a different discussion altogether.
+
+Yours,
+Linus Walleij

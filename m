@@ -1,273 +1,83 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Thu, 15 Nov 2012 13:15:07 +0000
-Subject: [PATCH v11 1/6] video: add display_timing and videomode
-Message-Id: <1352985312-18178-2-git-send-email-s.trumtrar@pengutronix.de>
+From: Tushar Behera <tushar.behera@linaro.org>
+Date: Thu, 22 Nov 2012 06:54:11 +0000
+Subject: [PATCH 4/4] video: vt8500: Convert to use devm_ioremap()
+Message-Id: <1353566531-31251-5-git-send-email-tushar.behera@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352985312-18178-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1352985312-18178-1-git-send-email-s.trumtrar@pengutronix.de>
+References: <1353566531-31251-1-git-send-email-tushar.behera@linaro.org>
+In-Reply-To: <1353566531-31251-1-git-send-email-tushar.behera@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: FlorianSchandinat@gmx.de, linux@prisktech.co.nz, patches@linaro.org
 
-Add display_timing structure and the according helper functions. This allows
-the description of a display via its supported timing parameters.
+While at it, fix the return statements.
 
-Every timing parameter can be specified as a single value or a range
-<min typ max>.
-
-Also, add helper functions to convert from display timings to a generic videomode
-structure. This videomode can then be converted to the corresponding subsystem
-mode representation (e.g. fb_videomode).
-
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
-Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
 ---
- drivers/video/Kconfig          |    6 ++++
- drivers/video/Makefile         |    2 ++
- drivers/video/display_timing.c |   24 ++++++++++++++
- drivers/video/videomode.c      |   45 ++++++++++++++++++++++++++
- include/linux/display_timing.h |   69 ++++++++++++++++++++++++++++++++++++++++
- include/linux/videomode.h      |   40 +++++++++++++++++++++++
- 6 files changed, 186 insertions(+)
- create mode 100644 drivers/video/display_timing.c
- create mode 100644 drivers/video/videomode.c
- create mode 100644 include/linux/display_timing.h
- create mode 100644 include/linux/videomode.h
+ drivers/video/vt8500lcdfb.c |   14 ++++----------
+ 1 files changed, 4 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index d08d799..2a23b18 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -33,6 +33,12 @@ config VIDEO_OUTPUT_CONTROL
- 	  This framework adds support for low-level control of the video 
- 	  output switch.
+diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
+index c42f15d..96a955e 100644
+--- a/drivers/video/vt8500lcdfb.c
++++ b/drivers/video/vt8500lcdfb.c
+@@ -337,7 +337,7 @@ static int __devinit vt8500lcd_probe(struct platform_device *pdev)
+ 		return -EBUSY;
+ 	}
  
-+config DISPLAY_TIMING
-+       bool
-+
-+config VIDEOMODE
-+       bool
-+
- menuconfig FB
- 	tristate "Support for frame buffer devices"
- 	---help---
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index 23e948e..fc30439 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -167,3 +167,5 @@ obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
- 
- #video output switch sysfs driver
- obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) += output.o
-+obj-$(CONFIG_DISPLAY_TIMING) += display_timing.o
-+obj-$(CONFIG_VIDEOMODE) += videomode.o
-diff --git a/drivers/video/display_timing.c b/drivers/video/display_timing.c
-new file mode 100644
-index 0000000..ac9bbbc
---- /dev/null
-+++ b/drivers/video/display_timing.c
-@@ -0,0 +1,24 @@
-+/*
-+ * generic display timing functions
-+ *
-+ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#include <linux/display_timing.h>
-+#include <linux/export.h>
-+#include <linux/slab.h>
-+
-+void display_timings_release(struct display_timings *disp)
-+{
-+	if (disp->timings) {
-+		unsigned int i;
-+
-+		for (i = 0; i < disp->num_timings; i++)
-+			kfree(disp->timings[i]);
-+		kfree(disp->timings);
-+	}
-+	kfree(disp);
-+}
-+EXPORT_SYMBOL_GPL(display_timings_release);
-diff --git a/drivers/video/videomode.c b/drivers/video/videomode.c
-new file mode 100644
-index 0000000..087374a
---- /dev/null
-+++ b/drivers/video/videomode.c
-@@ -0,0 +1,45 @@
-+/*
-+ * generic display timing functions
-+ *
-+ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#include <linux/export.h>
-+#include <linux/errno.h>
-+#include <linux/display_timing.h>
-+#include <linux/kernel.h>
-+#include <linux/videomode.h>
-+
-+int videomode_from_timing(struct display_timings *disp, struct videomode *vm,
-+			  unsigned int index)
-+{
-+	struct display_timing *dt;
-+
-+	dt = display_timings_get(disp, index);
-+	if (!dt)
+-	fbi->regbase = ioremap(res->start, resource_size(res));
++	fbi->regbase = devm_ioremap(&pdev->dev, res->start, resource_size(res));
+ 	if (fbi->regbase = NULL) {
+ 		dev_err(&pdev->dev, "failed to map I/O memory\n");
+ 		return -EBUSY;
+@@ -346,8 +346,7 @@ static int __devinit vt8500lcd_probe(struct platform_device *pdev)
+ 	np = of_parse_phandle(pdev->dev.of_node, "default-mode", 0);
+ 	if (!np) {
+ 		pr_err("%s: No display description in Device Tree\n", __func__);
+-		ret = -EINVAL;
+-		goto failed_free_io;
 +		return -EINVAL;
-+
-+	vm->pixelclock = display_timing_get_value(&dt->pixelclock, 0);
-+	vm->hactive = display_timing_get_value(&dt->hactive, 0);
-+	vm->hfront_porch = display_timing_get_value(&dt->hfront_porch, 0);
-+	vm->hback_porch = display_timing_get_value(&dt->hback_porch, 0);
-+	vm->hsync_len = display_timing_get_value(&dt->hsync_len, 0);
-+
-+	vm->vactive = display_timing_get_value(&dt->vactive, 0);
-+	vm->vfront_porch = display_timing_get_value(&dt->vfront_porch, 0);
-+	vm->vback_porch = display_timing_get_value(&dt->vback_porch, 0);
-+	vm->vsync_len = display_timing_get_value(&dt->vsync_len, 0);
-+
-+	vm->vah = dt->vsync_pol_active;
-+	vm->hah = dt->hsync_pol_active;
-+	vm->de = dt->de_pol_active;
-+	vm->pixelclk_pol = dt->pixelclk_pol;
-+
-+	vm->interlaced = dt->interlaced;
-+	vm->doublescan = dt->doublescan;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(videomode_from_timing);
-diff --git a/include/linux/display_timing.h b/include/linux/display_timing.h
-new file mode 100644
-index 0000000..caee2a8
---- /dev/null
-+++ b/include/linux/display_timing.h
-@@ -0,0 +1,69 @@
-+/*
-+ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
-+ *
-+ * description of display timings
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#ifndef __LINUX_DISPLAY_TIMINGS_H
-+#define __LINUX_DISPLAY_TIMINGS_H
-+
-+#include <linux/types.h>
-+
-+struct timing_entry {
-+	u32 min;
-+	u32 typ;
-+	u32 max;
-+};
-+
-+struct display_timing {
-+	struct timing_entry pixelclock;
-+
-+	struct timing_entry hactive;
-+	struct timing_entry hfront_porch;
-+	struct timing_entry hback_porch;
-+	struct timing_entry hsync_len;
-+
-+	struct timing_entry vactive;
-+	struct timing_entry vfront_porch;
-+	struct timing_entry vback_porch;
-+	struct timing_entry vsync_len;
-+
-+	unsigned int vsync_pol_active;
-+	unsigned int hsync_pol_active;
-+	unsigned int de_pol_active;
-+	unsigned int pixelclk_pol;
-+	bool interlaced;
-+	bool doublescan;
-+};
-+
-+struct display_timings {
-+	unsigned int num_timings;
-+	unsigned int native_mode;
-+
-+	struct display_timing **timings;
-+};
-+
-+/*
-+ * placeholder function until ranges are really needed
-+ * the index parameter should then be used to select one of [min typ max]
-+ */
-+static inline u32 display_timing_get_value(struct timing_entry *te,
-+					   unsigned int index)
-+{
-+	return te->typ;
-+}
-+
-+static inline struct display_timing *display_timings_get(struct display_timings *disp,
-+							 unsigned int index)
-+{
-+	if (disp->num_timings > index)
-+		return disp->timings[index];
-+	else
-+		return NULL;
-+}
-+
-+void display_timings_release(struct display_timings *disp);
-+
-+#endif
-diff --git a/include/linux/videomode.h b/include/linux/videomode.h
-new file mode 100644
-index 0000000..704db7b
---- /dev/null
-+++ b/include/linux/videomode.h
-@@ -0,0 +1,40 @@
-+/*
-+ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
-+ *
-+ * generic videomode description
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#ifndef __LINUX_VIDEOMODE_H
-+#define __LINUX_VIDEOMODE_H
-+
-+#include <linux/display_timing.h>
-+
-+struct videomode {
-+	u32 pixelclock;
-+	u32 refreshrate;
-+
-+	u32 hactive;
-+	u32 hfront_porch;
-+	u32 hback_porch;
-+	u32 hsync_len;
-+
-+	u32 vactive;
-+	u32 vfront_porch;
-+	u32 vback_porch;
-+	u32 vsync_len;
-+
-+	u32 hah;
-+	u32 vah;
-+	u32 de;
-+	u32 pixelclk_pol;
-+
-+	bool interlaced;
-+	bool doublescan;
-+};
-+
-+int videomode_from_timing(struct display_timings *disp, struct videomode *vm,
-+			  unsigned int index);
-+
-+#endif
+ 	}
+ 
+ 	/*
+@@ -366,7 +365,7 @@ static int __devinit vt8500lcd_probe(struct platform_device *pdev)
+ 	ret |= of_property_read_u32(np, "bpp", &bpp);
+ 	if (ret) {
+ 		pr_err("%s: Unable to read display properties\n", __func__);
+-		goto failed_free_io;
++		return ret;
+ 	}
+ 	of_mode.vmode = FB_VMODE_NONINTERLACED;
+ 
+@@ -376,8 +375,7 @@ static int __devinit vt8500lcd_probe(struct platform_device *pdev)
+ 				GFP_KERNEL);
+ 	if (!fb_mem_virt) {
+ 		pr_err("%s: Failed to allocate framebuffer\n", __func__);
+-		ret = -ENOMEM;
+-		goto failed_free_io;
++		return -ENOMEM;
+ 	};
+ 
+ 	fbi->fb.fix.smem_start	= fb_mem_phys;
+@@ -459,8 +457,6 @@ failed_free_palette:
+ failed_free_fbmem:
+ 	dma_free_coherent(&pdev->dev, fbi->fb.fix.smem_len,
+ 			  fbi->fb.screen_base, fbi->fb.fix.smem_start);
+-failed_free_io:
+-	iounmap(fbi->regbase);
+ 	return ret;
+ }
+ 
+@@ -486,8 +482,6 @@ static int __devexit vt8500lcd_remove(struct platform_device *pdev)
+ 	dma_free_coherent(&pdev->dev, fbi->palette_size,
+ 			  fbi->palette_cpu, fbi->palette_phys);
+ 
+-	iounmap(fbi->regbase);
+-
+ 	return 0;
+ }
+ 
 -- 
-1.7.10.4
+1.7.4.1
 

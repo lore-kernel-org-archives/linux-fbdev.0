@@ -1,103 +1,106 @@
 From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Thu, 15 Nov 2012 09:23:56 +0000
-Subject: [PATCH v10 5/6] drm_modes: add videomode helpers
-Message-Id: <1352971437-29877-6-git-send-email-s.trumtrar@pengutronix.de>
+Date: Thu, 22 Nov 2012 16:00:15 +0000
+Subject: [PATCHv13 7/7] drm_modes: add of_videomode helpers
+Message-Id: <1353600015-6974-8-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
+References: <1353600015-6974-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1353600015-6974-1-git-send-email-s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+To: devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-Add conversion from videomode to drm_display_mode
+Add helper to get drm_display_mode from devicetree.
 
 Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/gpu/drm/drm_modes.c |   37 +++++++++++++++++++++++++++++++++++++
+ drivers/gpu/drm/drm_modes.c |   34 +++++++++++++++++++++++++++++++++-
  include/drm/drmP.h          |    6 ++++++
- 2 files changed, 43 insertions(+)
+ 2 files changed, 39 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index 59450f3..23d951a0 100644
+index 0073b27..2d6edfa 100644
 --- a/drivers/gpu/drm/drm_modes.c
 +++ b/drivers/gpu/drm/drm_modes.c
-@@ -35,6 +35,7 @@
+@@ -35,7 +35,7 @@
  #include <linux/export.h>
  #include <drm/drmP.h>
  #include <drm/drm_crtc.h>
-+#include <linux/videomode.h>
+-#include <linux/videomode.h>
++#include <linux/of_videomode.h>
  
  /**
   * drm_mode_debug_printmodeline - debug print a mode
-@@ -504,6 +505,42 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, int vdisplay, int vrefresh,
- }
- EXPORT_SYMBOL(drm_gtf_mode);
+@@ -541,6 +541,38 @@ int drm_display_mode_from_videomode(const struct videomode *vm,
+ EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
+ #endif
  
-+#if IS_ENABLED(CONFIG_VIDEOMODE)
-+int drm_display_mode_from_videomode(struct videomode *vm,
-+				    struct drm_display_mode *dmode)
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++/**
++ * of_get_drm_display_mode - get a drm_display_mode from devicetree
++ * @np: device_node with the timing specification
++ * @dmode: will be set to the return value
++ * @index: index into the list of display timings in devicetree
++ *
++ * This function is expensive and should only be used, if only one mode is to be
++ * read from DT. To get multiple modes start with of_get_display_timings and
++ * work with that instead.
++ */
++int of_get_drm_display_mode(struct device_node *np,
++			    struct drm_display_mode *dmode, unsigned int index)
 +{
-+	dmode->hdisplay = vm->hactive;
-+	dmode->hsync_start = dmode->hdisplay + vm->hfront_porch;
-+	dmode->hsync_end = dmode->hsync_start + vm->hsync_len;
-+	dmode->htotal = dmode->hsync_end + vm->hback_porch;
++	struct videomode vm;
++	int ret;
 +
-+	dmode->vdisplay = vm->vactive;
-+	dmode->vsync_start = dmode->vdisplay + vm->vfront_porch;
-+	dmode->vsync_end = dmode->vsync_start + vm->vsync_len;
-+	dmode->vtotal = dmode->vsync_end + vm->vback_porch;
++	ret = of_get_videomode(np, &vm, index);
++	if (ret)
++		return ret;
 +
-+	dmode->clock = vm->pixelclock / 1000;
++	drm_display_mode_from_videomode(&vm, dmode);
 +
-+	dmode->flags = 0;
-+	if (vm->hah)
-+		dmode->flags |= DRM_MODE_FLAG_PHSYNC;
-+	else
-+		dmode->flags |= DRM_MODE_FLAG_NHSYNC;
-+	if (vm->vah)
-+		dmode->flags |= DRM_MODE_FLAG_PVSYNC;
-+	else
-+		dmode->flags |= DRM_MODE_FLAG_NVSYNC;
-+	if (vm->interlaced)
-+		dmode->flags |= DRM_MODE_FLAG_INTERLACE;
-+	if (vm->doublescan)
-+		dmode->flags |= DRM_MODE_FLAG_DBLSCAN;
-+	drm_mode_set_name(dmode);
++	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
++		vm.vactive, np->name);
++	drm_mode_debug_printmodeline(dmode);
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
++EXPORT_SYMBOL_GPL(of_get_drm_display_mode);
 +#endif
 +
  /**
   * drm_mode_set_name - set the name on a mode
   * @mode: name will be set in this mode
 diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index 3fd8280..341049c 100644
+index 3d0ccaa..84ecabd 100644
 --- a/include/drm/drmP.h
 +++ b/include/drm/drmP.h
-@@ -56,6 +56,7 @@
- #include <linux/cdev.h>
- #include <linux/mutex.h>
- #include <linux/slab.h>
-+#include <linux/videomode.h>
- #if defined(__alpha__) || defined(__powerpc__)
- #include <asm/pgtable.h>	/* For pte_wrprotect */
- #endif
-@@ -1454,6 +1455,11 @@ extern struct drm_display_mode *
- drm_mode_create_from_cmdline_mode(struct drm_device *dev,
- 				  struct drm_cmdline_mode *cmd);
+@@ -86,6 +86,7 @@ struct drm_file;
+ struct drm_device;
  
-+#if IS_ENABLED(CONFIG_VIDEOMODE)
-+extern int drm_display_mode_from_videomode(struct videomode *vm,
-+					   struct drm_display_mode *dmode);
+ struct videomode;
++struct device_node;
+ #include <drm/drm_os_linux.h>
+ #include <drm/drm_hashtab.h>
+ #include <drm/drm_mm.h>
+@@ -1459,6 +1460,11 @@ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
+ extern int drm_display_mode_from_videomode(const struct videomode *vm,
+ 					   struct drm_display_mode *dmode);
+ #endif
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++extern int of_get_drm_display_mode(struct device_node *np,
++				   struct drm_display_mode *dmode,
++				   unsigned int index);
 +#endif
-+
+ 
  /* Modesetting support */
  extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
- extern void drm_vblank_post_modeset(struct drm_device *dev, int crtc);
 -- 
 1.7.10.4
 

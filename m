@@ -1,246 +1,544 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 07 Nov 2012 14:56:19 +0000
-Subject: [RFC 01/11] OMAPDSS: Add writeback output driver
-Message-Id: <1352299469-17609-2-git-send-email-archit@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 22 Nov 2012 21:45:36 +0000
+Subject: [RFC v2 5/5] video: panel: Add R61517 panel support
+Message-Id: <1353620736-6517-6-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <n>
- <1352299469-17609-1-git-send-email-archit@ti.com>
-In-Reply-To: <1352299469-17609-1-git-send-email-archit@ti.com>
+References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com>
+In-Reply-To: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: linux-media@vger.kernel.org, Archit Taneja <archit@ti.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Inki Dae <inki.dae@samsung.com>, Jesse Barker <jesse.barker@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marcus Lorentzon <marcus.xm.lorentzon@stericsson.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Philipp Zabel <p.zabel@pengutronix.de>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, Rob Clark <rob.clark@linaro.org>, Sascha Hauer <s.hauer@pengutronix.de>, Sebastien Guiriec <s-guiriec@ti.com>, Sumit Semwal <sumit.semwal@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Tom Gall <tom.gall@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Vikas Sajjan <vikas.sajjan@linaro.org>
 
-Writeback is implemented as an output driver. This lets writeback to connect
-to overlay managers, and configure writeback's manager like properties the same
-way other output drivers do.
+From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 
-This driver can be considered something similar to the DPI output driver. It
-provides functions which configure the writeback's manager-like registers via
-apply. One difference though is that these functions won't be used by a panel
-driver. They'd be used by a writeback user directly.
+The R61517 is a MIPI DBI panel controller from Renesas.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/omap2/dss/Kconfig     |   13 +++++
- drivers/video/omap2/dss/Makefile    |    1 +
- drivers/video/omap2/dss/core.c      |    6 +++
- drivers/video/omap2/dss/dss.h       |    6 +++
- drivers/video/omap2/dss/writeback.c |  102 +++++++++++++++++++++++++++++++++++
- include/video/omapdss.h             |   10 ++++
- 6 files changed, 138 insertions(+)
- create mode 100644 drivers/video/omap2/dss/writeback.c
+ drivers/video/display/Kconfig        |    9 +
+ drivers/video/display/Makefile       |    1 +
+ drivers/video/display/panel-r61517.c |  447 ++++++++++++++++++++++++++++++++++
+ include/video/panel-r61517.h         |   28 ++
+ 4 files changed, 485 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/display/panel-r61517.c
+ create mode 100644 include/video/panel-r61517.h
 
-diff --git a/drivers/video/omap2/dss/Kconfig b/drivers/video/omap2/dss/Kconfig
-index 50e8802..9e52d4b 100644
---- a/drivers/video/omap2/dss/Kconfig
-+++ b/drivers/video/omap2/dss/Kconfig
-@@ -99,6 +99,19 @@ config OMAP2_DSS_DSI
+diff --git a/drivers/video/display/Kconfig b/drivers/video/display/Kconfig
+index c88999c..13b6aaf 100644
+--- a/drivers/video/display/Kconfig
++++ b/drivers/video/display/Kconfig
+@@ -27,4 +27,13 @@ config DISPLAY_PANEL_R61505
  
- 	  See http://www.mipi.org/ for DSI specifications.
+ 	  If you are in doubt, say N.
  
-+config OMAP4_DSS_WRITEBACK
-+	bool "writeback support"
-+	default n
-+	help
-+	  writeback is a DISPC pipeline that takes pixel data from an overlay
-+	  output or a overlay manager output and writes it back into a specified
-+	  address in memory.
++config DISPLAY_PANEL_R61517
++	tristate "Renesas R61517-based Display Panel"
++	select DISPLAY_MIPI_DBI
++	---help---
++	  Support panels based on the Renesas R61517 panel controller.
++	  Those panels are controlled through a MIPI DBI interface.
 +
-+	  writeback pipeline allows us to take benefit of the hardware
-+	  processing available inside the DISPC like color space conversion,
-+	  rescaling, compositing etc and perform either a memory-to-memory
-+	  transfer with data processing, or capture a displayed frame.
++	  If you are in doubt, say N.
 +
- config OMAP2_DSS_MIN_FCK_PER_PCK
- 	int "Minimum FCK/PCK ratio (for scaling)"
- 	range 0 32
-diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
-index 4070191..211a290 100644
---- a/drivers/video/omap2/dss/Makefile
-+++ b/drivers/video/omap2/dss/Makefile
-@@ -8,4 +8,5 @@ omapdss-$(CONFIG_OMAP2_DSS_SDI) += sdi.o
- omapdss-$(CONFIG_OMAP2_DSS_DSI) += dsi.o
- omapdss-$(CONFIG_OMAP4_DSS_HDMI) += hdmi.o \
- 				    hdmi_panel.o ti_hdmi_4xxx_ip.o
-+omapdss-$(CONFIG_OMAP4_DSS_WRITEBACK) += writeback.o
- ccflags-$(CONFIG_OMAP2_DSS_DEBUG) += -DDEBUG
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index b1a9ce1..4040868 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -528,6 +528,9 @@ static int (*dss_output_drv_reg_funcs[])(void) __initdata = {
- #ifdef CONFIG_OMAP4_DSS_HDMI
- 	hdmi_init_platform_driver,
- #endif
-+#ifdef CONFIG_OMAP4_DSS_WRITEBACK
-+	writeback_init_platform_driver,
-+#endif
- };
- 
- static void (*dss_output_drv_unreg_funcs[])(void) __exitdata = {
-@@ -549,6 +552,9 @@ static void (*dss_output_drv_unreg_funcs[])(void) __exitdata = {
- #ifdef CONFIG_OMAP4_DSS_HDMI
- 	hdmi_uninit_platform_driver,
- #endif
-+#ifdef CONFIG_OMAP4_DSS_WRITEBACK
-+	writeback_uninit_platform_driver,
-+#endif
- };
- 
- static bool dss_output_drv_loaded[ARRAY_SIZE(dss_output_drv_reg_funcs)];
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 84a7f6a..f7eb7d6 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -528,6 +528,12 @@ bool hdmi_mode_has_audio(void);
- int hdmi_audio_config(struct omap_dss_audio *audio);
- #endif
- 
-+/* Writeback */
-+#ifdef CONFIG_OMAP4_DSS_WRITEBACK
-+int writeback_init_platform_driver(void) __init;
-+void writeback_uninit_platform_driver(void) __exit;
-+#endif
-+
- /* RFBI */
- int rfbi_init_platform_driver(void) __init;
- void rfbi_uninit_platform_driver(void) __exit;
-diff --git a/drivers/video/omap2/dss/writeback.c b/drivers/video/omap2/dss/writeback.c
+ endif # DISPLAY_CORE
+diff --git a/drivers/video/display/Makefile b/drivers/video/display/Makefile
+index 4c68465..482bec7 100644
+--- a/drivers/video/display/Makefile
++++ b/drivers/video/display/Makefile
+@@ -2,3 +2,4 @@ obj-$(CONFIG_DISPLAY_CORE) += display-core.o
+ obj-$(CONFIG_DISPLAY_MIPI_DBI) += mipi-dbi-bus.o
+ obj-$(CONFIG_DISPLAY_PANEL_DPI) += panel-dpi.o
+ obj-$(CONFIG_DISPLAY_PANEL_R61505) += panel-r61505.o
++obj-$(CONFIG_DISPLAY_PANEL_R61517) += panel-r61517.o
+diff --git a/drivers/video/display/panel-r61517.c b/drivers/video/display/panel-r61517.c
 new file mode 100644
-index 0000000..b5c6406
+index 0000000..b4dced4
 --- /dev/null
-+++ b/drivers/video/omap2/dss/writeback.c
-@@ -0,0 +1,102 @@
++++ b/drivers/video/display/panel-r61517.c
+@@ -0,0 +1,447 @@
 +/*
-+ * Copyright (C) 2012 Texas Instruments
-+ * Author: Archit Taneja <archit@ti.com>
++ * Renesas R61517-based Display Panels
 + *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
++ * Copyright (C) 2012 Renesas Solutions Corp.
++ * Based on KFR2R09 LCD panel support
++ * Copyright (C) 2009 Magnus Damm
++ * Register settings based on the out-of-tree t33fb.c driver
++ * Copyright (C) 2008 Lineo Solutions, Inc.
 + *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
++ * Contacts: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 + *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
 + */
 +
-+#define DSS_SUBSYS_NAME "WB"
-+
-+#include <linux/kernel.h>
++#include <linux/delay.h>
 +#include <linux/err.h>
++#include <linux/fb.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/platform_device.h>
++#include <linux/gpio.h>
 +
-+#include <video/omapdss.h>
++#include <video/display.h>
++#include <video/mipi-dbi-bus.h>
++#include <video/mipi_display.h>
++#include <video/panel-r61517.h>
 +
-+#include "dss.h"
-+
-+struct writeback_data {
-+	struct mutex lock;
-+
-+	struct omap_dss_output output;
++struct r61517 {
++	struct display_entity entity;
++	struct mipi_dbi_device *dbi;
++	const struct panel_r61517_platform_data *pdata;
 +};
 +
-+static inline struct writeback_data *writeback_get_drv_data(struct platform_device *wbdev)
++#define to_panel(p)	container_of(p, struct r61517, entity)
++
++/* -----------------------------------------------------------------------------
++ * Read, write and reset
++ */
++
++static void r61517_write_command(struct r61517 *panel, u16 cmd)
 +{
-+	return dev_get_drvdata(&wbdev->dev);
++	mipi_dbi_write_command(panel->dbi, cmd);
 +}
 +
-+static inline struct platform_device *writeback_get_wbdev_from_output(struct omap_dss_output *out)
++static void r61517_write_data(struct r61517 *panel, u8 data)
 +{
-+	return out->pdev;
++	mipi_dbi_write_data(panel->dbi, &data, 1);
 +}
 +
-+struct omap_dss_output *omap_dss_get_writeback(void)
++static int r61517_read_data(struct r61517 *panel)
 +{
-+	return omap_dss_get_output(OMAP_DSS_OUTPUT_WB);
-+}
-+EXPORT_SYMBOL(omap_dss_get_writeback);
++	u8 data;
++	int ret;
 +
-+static void __init writeback_init_output(struct platform_device *pdev,
-+		struct writeback_data *wb_data)
-+{
-+	struct omap_dss_output *out = &wb_data->output;
++	ret = mipi_dbi_read_data(panel->dbi, &data, 1);
++	if (ret < 0)
++		return ret;
 +
-+	dss_register_output(out);
-+
-+	out->pdev = pdev;
-+	out->id = OMAP_DSS_OUTPUT_WB;
-+	out->type = OMAP_DISPLAY_TYPE_NONE;
++	return data;
 +}
 +
-+static int __init omap_writeback_probe(struct platform_device *pdev)
++static void r61517_write(struct r61517 *panel, u8 reg, const u8 *data,
++			 size_t len)
 +{
-+	struct writeback_data *wb_data;
-+
-+	wb_data = devm_kzalloc(&pdev->dev, sizeof(*wb_data), GFP_KERNEL);
-+	if (!wb_data)
-+		return -ENOMEM;
-+
-+	dev_set_drvdata(&pdev->dev, wb_data);
-+
-+	mutex_init(&wb_data->lock);
-+
-+	writeback_init_output(pdev, wb_data);
-+
-+	return 0;
++	mipi_dbi_write_command(panel->dbi, reg);
++	mipi_dbi_write_data(panel->dbi, data, len);
 +}
 +
-+static int __exit omap_writeback_remove(struct platform_device *pdev)
++static void r61517_write8(struct r61517 *panel, u8 reg, u8 data)
 +{
-+	return 0;
++	r61517_write(panel, reg, &data, 1);
 +}
 +
-+static struct platform_driver omap_writeback_driver = {
-+	.remove         = __exit_p(omap_writeback_remove),
-+	.driver         = {
-+		.name   = "omapdss_writeback",
-+		.owner  = THIS_MODULE,
++static void r61517_write16(struct r61517 *panel, u8 reg, u16 data)
++{
++	u8 buffer[2] = { (data >> 8) & 0xff, (data >> 0) & 0xff };
++
++	r61517_write(panel, reg, buffer, 2);
++}
++
++static void r61517_write32(struct r61517 *panel, u8 reg, u32 data)
++{
++	u8 buffer[4] = { (data >> 24) & 0xff, (data >> 16) & 0xff,
++			 (data >>  8) & 0xff, (data >>  0) & 0xff };
++
++	r61517_write(panel, reg, buffer, 4);
++}
++
++#define r61517_write_array(p, c, a) \
++	r61517_write((p), (c), (a), ARRAY_SIZE(a))
++
++static void r61517_reset(struct r61517 *panel)
++{
++	gpio_set_value(panel->pdata->protect, 0);	/* PROTECT/ -> L */
++	gpio_set_value(panel->pdata->reset, 0);		/* LCD_RST/ -> L */
++	gpio_set_value(panel->pdata->protect, 1);	/* PROTECT/ -> H */
++	usleep_range(1100, 1200);
++	gpio_set_value(panel->pdata->reset, 1);		/* LCD_RST/ -> H */
++	usleep_range(10, 100);
++	gpio_set_value(panel->pdata->protect, 0);	/* PROTECT/ -> L */
++	msleep(20);
++}
++
++/* -----------------------------------------------------------------------------
++ * Configuration
++ */
++
++static const u8 data_frame_if[] = {
++	0x02, /* WEMODE: 1=cont, 0=one-shot */
++	0x00, 0x00,
++	0x00, /* EPF, DFM */
++	0x02, /* RIM[1] : 1 (18bpp) */
++};
++
++static const u8 data_panel[] = {
++	0x0b,
++	0x63, /* 400 lines */
++	0x04, 0x00, 0x00, 0x04, 0x11, 0x00, 0x00,
++};
++
++static const u8 data_timing[] = {
++	0x00, 0x00, 0x13, 0x08, 0x08,
++};
++
++static const u8 data_timing_src[] = {
++	0x11, 0x01, 0x00, 0x01,
++};
++
++static const u8 data_gamma[] = {
++	0x01, 0x02, 0x08, 0x23,	0x03, 0x0c, 0x00, 0x06,	0x00, 0x00,
++	0x01, 0x00, 0x0c, 0x23, 0x03, 0x08, 0x02, 0x06, 0x00, 0x00,
++};
++
++static const u8 data_power[] = {
++	0x07, 0xc5, 0xdc, 0x02,	0x33, 0x0a,
++};
++
++static const u8 data_vcom[] = {
++	0x00, 0x0f, 0x02,
++};
++
++static unsigned long r61517_read_device_code(struct r61517 *panel)
++{
++	/* access protect OFF */
++	r61517_write8(panel, 0xb0, 0);
++
++	/* deep standby OFF */
++	r61517_write8(panel, 0xb1, 0);
++
++	/* device code command */
++	r61517_write_command(panel, 0xbf);
++	mdelay(50);
++
++	/* dummy read */
++	r61517_read_data(panel);
++
++	/* read device code */
++	return (r61517_read_data(panel) << 24) |
++	       (r61517_read_data(panel) << 16) |
++	       (r61517_read_data(panel) << 8) |
++	       (r61517_read_data(panel) << 0);
++}
++
++static void r61517_write_memory_start(struct r61517 *panel)
++{
++	r61517_write_command(panel, MIPI_DCS_WRITE_MEMORY_START);
++}
++
++static void r61517_clear_memory(struct r61517 *panel)
++{
++	unsigned int size = panel->pdata->mode->hactive
++			  * panel->pdata->mode->vactive;
++	unsigned int i;
++
++	r61517_write_memory_start(panel);
++
++	for (i = 0; i < size; i++)
++		r61517_write_data(panel, 0);
++}
++
++static void r61517_enable_panel(struct r61517 *panel)
++{
++	/* access protect off */
++	r61517_write8(panel, 0xb0, 0);
++
++	/* exit deep standby mode */
++	r61517_write8(panel, 0xb1, 0);
++
++	/* frame memory I/F */
++	r61517_write_array(panel, 0xb3, data_frame_if);
++
++	/* display mode and frame memory write mode */
++	r61517_write8(panel, 0xb4, 0); /* DBI, internal clock */
++
++	/* panel */
++	r61517_write_array(panel, 0xc0, data_panel);
++
++	/* timing (normal) */
++	r61517_write_array(panel, 0xc1, data_timing);
++
++	/* timing (partial) */
++	r61517_write_array(panel, 0xc2, data_timing);
++
++	/* timing (idle) */
++	r61517_write_array(panel, 0xc3, data_timing);
++
++	/* timing (source/VCOM/gate driving) */
++	r61517_write_array(panel, 0xc4, data_timing_src);
++
++	/* gamma (red) */
++	r61517_write_array(panel, 0xc8, data_gamma);
++
++	/* gamma (green) */
++	r61517_write_array(panel, 0xc9, data_gamma);
++
++	/* gamma (blue) */
++	r61517_write_array(panel, 0xca, data_gamma);
++
++	/* power (common) */
++	r61517_write_array(panel, 0xd0, data_power);
++
++	/* VCOM */
++	r61517_write_array(panel, 0xd1, data_vcom);
++
++	/* power (normal) */
++	r61517_write16(panel, 0xd2, 0x6324);
++
++	/* power (partial) */
++	r61517_write16(panel, 0xd3, 0x6324);
++
++	/* power (idle) */
++	r61517_write16(panel, 0xd4, 0x6324);
++
++	r61517_write16(panel, 0xd8, 0x7777);
++
++	/* TE signal */
++	r61517_write8(panel, MIPI_DCS_SET_TEAR_ON, 0);
++
++	/* TE signal line */
++	r61517_write16(panel, MIPI_DCS_SET_TEAR_SCANLINE, 0);
++
++	/* column address */
++	r61517_write32(panel, MIPI_DCS_SET_COLUMN_ADDRESS,
++		       panel->pdata->mode->hactive - 1);
++
++	/* page address */
++	r61517_write32(panel, MIPI_DCS_SET_PAGE_ADDRESS,
++		       panel->pdata->mode->vactive - 1);
++
++	/* exit sleep mode */
++	r61517_write_command(panel, MIPI_DCS_EXIT_SLEEP_MODE);
++
++	mdelay(120);
++
++	/* clear vram */
++	r61517_clear_memory(panel);
++}
++
++static void r61517_disable_panel(struct r61517 *panel)
++{
++	r61517_reset(panel);
++}
++
++static void r61517_display_on(struct r61517 *panel)
++{
++	r61517_write_command(panel, MIPI_DCS_SET_DISPLAY_ON);
++	mdelay(1);
++}
++
++static void r61517_display_off(struct r61517 *panel)
++{
++	r61517_write_command(panel, MIPI_DCS_SET_DISPLAY_OFF);
++}
++
++/* -----------------------------------------------------------------------------
++ * Panel operations
++ */
++
++static const struct display_entity_interface_params r61517_dbi_params = {
++	.type = DISPLAY_ENTITY_INTERFACE_DBI,
++	.p.dbi = {
++		.type = MIPI_DBI_INTERFACE_TYPE_B,
++		.flags = MIPI_DBI_INTERFACE_TE,
++		.cs_setup = 1,
++		.wr_setup = 1,
++		.wr_cycle = 9,
++		.wr_hold = 4,
++		.rd_setup = 1,
++		.rd_latch = 20,
++		.rd_cycle = 41,
++		.rd_hold = 20,
 +	},
 +};
 +
-+int __init writeback_init_platform_driver(void)
++static int r61517_set_state(struct display_entity *entity,
++			    enum display_entity_state state)
 +{
-+	return platform_driver_probe(&omap_writeback_driver,
-+			omap_writeback_probe);
++	struct r61517 *panel = to_panel(entity);
++
++	switch (state) {
++	case DISPLAY_ENTITY_STATE_OFF:
++		r61517_disable_panel(panel);
++		break;
++
++	case DISPLAY_ENTITY_STATE_STANDBY:
++		if (entity->state = DISPLAY_ENTITY_STATE_OFF)
++			r61517_enable_panel(panel);
++		else
++			r61517_display_off(panel);
++		break;
++
++	case DISPLAY_ENTITY_STATE_ON:
++		if (entity->state = DISPLAY_ENTITY_STATE_OFF)
++			r61517_enable_panel(panel);
++
++		r61517_display_on(panel);
++		break;
++	}
++
++	return 0;
 +}
 +
-+void __exit writeback_uninit_platform_driver(void)
++static int r61517_update(struct display_entity *entity)
 +{
-+	platform_driver_unregister(&omap_writeback_driver);
-+}
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index b1248c2..e81fcb2 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -217,6 +217,7 @@ enum omap_dss_output_id {
- 	OMAP_DSS_OUTPUT_DSI2	= 1 << 4,
- 	OMAP_DSS_OUTPUT_VENC	= 1 << 5,
- 	OMAP_DSS_OUTPUT_HDMI	= 1 << 6,
-+	OMAP_DSS_OUTPUT_WB	= 1 << 7,
- };
- 
- /* RFBI */
-@@ -836,4 +837,13 @@ void omapdss_rfbi_set_data_lines(struct omap_dss_device *dssdev,
- void omapdss_rfbi_set_interface_timings(struct omap_dss_device *dssdev,
- 		struct rfbi_timings *timings);
- 
-+#ifdef CONFIG_OMAP4_DSS_WRITEBACK
-+struct omap_dss_output *omap_dss_get_writeback(void);
-+#else
-+static inline struct omap_dss_output *omap_dss_get_writeback(void)
-+{
-+	return NULL;
-+}
-+#endif
++	struct r61517 *panel = to_panel(entity);
 +
- #endif
++	r61517_write_memory_start(panel);
++
++	display_entity_set_stream(entity->source,
++				  DISPLAY_ENTITY_STREAM_SINGLE_SHOT);
++	return 0;
++}
++
++static int r61517_get_modes(struct display_entity *entity,
++			    const struct videomode **modes)
++{
++	struct r61517 *panel = to_panel(entity);
++
++	*modes = panel->pdata->mode;
++	return 1;
++}
++
++static int r61517_get_size(struct display_entity *entity,
++			   unsigned int *width, unsigned int *height)
++{
++	struct r61517 *panel = to_panel(entity);
++
++	*width = panel->pdata->width;
++	*height = panel->pdata->height;
++	return 0;
++}
++
++static int r61517_get_params(struct display_entity *entity,
++			     struct display_entity_interface_params *params)
++{
++	*params = r61517_dbi_params;
++	return 0;
++}
++
++static const struct display_entity_control_ops r61517_control_ops = {
++	.set_state = r61517_set_state,
++	.update = r61517_update,
++	.get_modes = r61517_get_modes,
++	.get_size = r61517_get_size,
++	.get_params = r61517_get_params,
++};
++
++static void r61517_release(struct display_entity *entity)
++{
++	struct r61517 *panel = to_panel(entity);
++
++	kfree(panel);
++}
++
++static int r61517_remove(struct mipi_dbi_device *dev)
++{
++	struct r61517 *panel = mipi_dbi_get_drvdata(dev);
++
++	mipi_dbi_set_drvdata(dev, NULL);
++	display_entity_unregister(&panel->entity);
++
++	return 0;
++}
++
++static int __devinit r61517_probe(struct mipi_dbi_device *dev)
++{
++	const struct panel_r61517_platform_data *pdata = dev->dev.platform_data;
++	struct r61517 *panel;
++	int ret;
++
++	if (pdata = NULL)
++		return -ENODEV;
++
++	panel = kzalloc(sizeof(*panel), GFP_KERNEL);
++	if (panel = NULL)
++		return -ENOMEM;
++
++	panel->pdata = pdata;
++	panel->dbi = dev;
++
++	dev->bus_width = pdata->bus_width;
++	mipi_dbi_set_data_width(dev, 8);
++
++	r61517_reset(panel);
++
++	if (r61517_read_device_code(panel) != 0x01221517) {
++		kfree(panel);
++		return -ENODEV;
++	}
++
++	pr_info("R61517 panel controller detected.\n");
++
++	panel->entity.dev = &dev->dev;
++	panel->entity.release = r61517_release;
++	panel->entity.ops.ctrl = &r61517_control_ops;
++
++	ret = display_entity_register(&panel->entity);
++	if (ret < 0) {
++		kfree(panel);
++		return ret;
++	}
++
++	mipi_dbi_set_drvdata(dev, panel);
++
++	return 0;
++}
++
++static const struct dev_pm_ops r61517_dev_pm_ops = {
++};
++
++static struct mipi_dbi_driver r61517_driver = {
++	.probe = r61517_probe,
++	.remove = r61517_remove,
++	.driver = {
++		.name = "panel_r61517",
++		.owner = THIS_MODULE,
++		.pm = &r61517_dev_pm_ops,
++	},
++};
++
++module_mipi_dbi_driver(r61517_driver);
++
++MODULE_AUTHOR("Laurent Pinchart <laurent.pinchart@ideasonboard.com>");
++MODULE_DESCRIPTION("Renesas R61517-based Display Panel");
++MODULE_LICENSE("GPL");
+diff --git a/include/video/panel-r61517.h b/include/video/panel-r61517.h
+new file mode 100644
+index 0000000..988f2bc
+--- /dev/null
++++ b/include/video/panel-r61517.h
+@@ -0,0 +1,28 @@
++/*
++ * Renesas R61517-based Display Panels
++ *
++ * Copyright (C) 2012 Renesas Solutions Corp.
++ *
++ * Contacts: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef __PANEL_R61517_H__
++#define __PANEL_R61517_H__
++
++#include <linux/videomode.h>
++
++struct panel_r61517_platform_data {
++	unsigned long width;		/* Panel width in mm */
++	unsigned long height;		/* Panel height in mm */
++	const struct videomode *mode;
++
++	unsigned int bus_width;
++	int protect;			/* Protect GPIO */
++	int reset;			/* Reset GPIO */
++};
++
++#endif /* __PANEL_R61517_H__ */
 -- 
-1.7.9.5
+1.7.8.6
 

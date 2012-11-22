@@ -1,63 +1,28 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Tue, 27 Nov 2012 16:46:07 +0000
-Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Message-Id: <20121127164607.GG4468@opensource.wolfsonmicro.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="8/pVXlBMPtxfSuJG"
+From: Tushar Behera <tushar.behera@linaro.org>
+Date: Thu, 22 Nov 2012 06:54:07 +0000
+Subject: [PATCH 0/4] video: vt8500: cleanup and use of devm_ apis
+Message-Id: <1353566531-31251-1-git-send-email-tushar.behera@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
- <6982060.HfOokt4dIn@avalon> <50B4D9E9.8070607@ti.com>
- <3136860.Z3VvKjeKpU@avalon>
-In-Reply-To: <3136860.Z3VvKjeKpU@avalon>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: FlorianSchandinat@gmx.de, linux@prisktech.co.nz, patches@linaro.org
 
+Patch 1 fixes a possible memory leak in the driver.
+Rest 3 patches add/update usage of devm_ apis.
 
---8/pVXlBMPtxfSuJG
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+These patches are only build-tested.
 
-On Tue, Nov 27, 2012 at 04:37:32PM +0100, Laurent Pinchart wrote:
+Tushar Behera (4):
+  video: vt8500: Fix memory leak in probe function
+  video: vt8500: Fix invalid free of devm_ allocated data
+  video: vt8500: Convert to use devm_request_mem_region()
+  video: vt8500: Convert to use devm_ioremap()
 
-> One possibly crazy idea I had was to replace backlight devices as we know=
- them=20
-> with LED devices (a LED driver IC shouldn't be supported by different API=
-s=20
-> depending on whether the LEDs it drives are used as a backlight or not), =
-and=20
-> have the panel hook up with the associated LED device to expose backlight=
-=20
-> operations through the CDF. Panels with a backlight controller tied to th=
-e=20
-> panel controller (control through DSI for instance) would implement the=
-=20
-> backlight operations directly without instantiating a LED device. This st=
-ill=20
-> leaves the question of the userspace backlight brightness API open.
+ drivers/video/vt8500lcdfb.c |   47 +++++++++++++++---------------------------
+ 1 files changed, 17 insertions(+), 30 deletions(-)
 
-I remember looking at that before but never actually got round to it, it
-seems like a sensible idea to me.
+-- 
+1.7.4.1
 
---8/pVXlBMPtxfSuJG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQtO5HAAoJELSic+t+oim9h/cP/i717a9Sz8TheSTibWIOtSwa
-A45+ZL/V55CNWf1jnydvAIilGimVeumAk95Xcqh7OkLC7VoeCFP8pHoicC83ilHj
-KNAhd54iK3IgMskORskeZ2XAb6Nk+DRq3I28mX4hzisI69HqmeDmqiCXLJeO0D/+
-YoYzyIj4ES3O7u2Asv+CS1b95biq22m3SwDqbKFTeS8hPpOnw/IzzCqp49R/sn/E
-LhJse7m1JoPi9o4W1+RfX0LTXSAYxsd4BMXb9qyqvUNE9FSL+l/mFOnsjEcFL/zQ
-U4mC/76QWBCFWdmLyHV71vV/JTXl0wr4S6ptpqeM9S6b/YO2reT919F5flqK74kf
-FTI5BS2ENSMXXaeVmpw7JMzvKIaKF3It0/Iy7FgIdBya0WYU/NXcFhlww6VNoFJr
-SC76XmGuAaOhdUYkL3LEISS5IXfoaD+OJq/x695ITfP+D5iBA6V4joPbC1kEKoNB
-COVPaBOTecjnKoqkPZDCw6TNLrTxCqVwo1BaO+didPejOSxxkahq8x5DrcrHb4PY
-YQDBRXr+ayV8uwHumaVogb+Zm4PCBFNw1XRlKs4EXkLDoAITmj1a+jqfx9TS203s
-lzXeCcm9i5B93sH4DzVQnEBWPeaF6uRQAkb18/tsDms9ImKr8mI69AgxBzNIAI6L
-pmhNMm9aDmAd3OpsIvhK
-=Ni3b
------END PGP SIGNATURE-----
-
---8/pVXlBMPtxfSuJG--

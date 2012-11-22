@@ -1,113 +1,239 @@
-From: Stefan Koch <stefan.koch10@gmail.com>
-Date: Wed, 07 Nov 2012 20:33:53 +0000
-Subject: Re: i.MX 257 ARM-CPU: framebuffer error "division by zero"
-Message-Id: <509AC5B1.5040301@gmail.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 22 Nov 2012 21:45:33 +0000
+Subject: [RFC v2 2/5] video: panel: Add DPI panel support
+Message-Id: <1353620736-6517-3-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <509A6964.5090305@gmail.com>
-In-Reply-To: <509A6964.5090305@gmail.com>
+References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com>
+In-Reply-To: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: linux-media@vger.kernel.org, Archit Taneja <archit@ti.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Inki Dae <inki.dae@samsung.com>, Jesse Barker <jesse.barker@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marcus Lorentzon <marcus.xm.lorentzon@stericsson.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Philipp Zabel <p.zabel@pengutronix.de>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, Rob Clark <rob.clark@linaro.org>, Sascha Hauer <s.hauer@pengutronix.de>, Sebastien Guiriec <s-guiriec@ti.com>, Sumit Semwal <sumit.semwal@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Tom Gall <tom.gall@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Vikas Sajjan <vikas.sajjan@linaro.org>
 
-The error snipped in first post is not from the beginning it's from the end.
-This is from the beginning.
-And there is named "imxfb", too.
+From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 
-For this error "video=imxfb:SVGA-16@60" is set in kernel command line:
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/display/Kconfig     |   13 +++
+ drivers/video/display/Makefile    |    1 +
+ drivers/video/display/panel-dpi.c |  147 +++++++++++++++++++++++++++++++++++++
+ include/video/panel-dpi.h         |   24 ++++++
+ 4 files changed, 185 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/display/panel-dpi.c
+ create mode 100644 include/video/panel-dpi.h
 
-The full messages are here: http://paste.debian.net/hidden/3d16ba27/
-
-[<80246f78>] (register_framebuffer+0x17c/0x230) from [<80586ab8>] 
-(imxfb_probe+0x3c8/0x5a8)
-[<80586ab8>] (imxfb_probe+0x3c8/0x5a8) from [<80286ba8>] 
-(platform_drv_probe+0x14/0x18)
-[<80286ba8>] (platform_drv_probe+0x14/0x18) from [<802858b0>] 
-(driver_probe_device+0x80/0x20c)
-[<802858b0>] (driver_probe_device+0x80/0x20c) from [<80285ac8>] 
-(__driver_attach+0x8c/0x90)
-[<80285ac8>] (__driver_attach+0x8c/0x90) from [<80284230>] 
-(bus_for_each_dev+0x64/0x8c)
-[<80284230>] (bus_for_each_dev+0x64/0x8c) from [<802849b0>] 
-(bus_add_driver+0xa4/0x230)
-[<802849b0>] (bus_add_driver+0xa4/0x230) from [<80286098>] 
-(driver_register+0x78/0x140)
-[<80286098>] (driver_register+0x78/0x140) from [<80286ef4>] 
-(platform_driver_probe+0x18/0x9c)
-[<80286ef4>] (platform_driver_probe+0x18/0x9c) from [<805866d8>] 
-(imxfb_init+0x88/0xa0)
-[<805866d8>] (imxfb_init+0x88/0xa0) from [<800087e4>] 
-(do_one_initcall+0x30/0x178)
-[<800087e4>] (do_one_initcall+0x30/0x178) from [<80576310>] 
-(kernel_init+0xe4/0x1b0)
-[<80576310>] (kernel_init+0xe4/0x1b0) from [<80015268>] 
-(kernel_thread_exit+0x0/0x8)
-Division by zero in kernel.
-[<80019ba4>] (unwind_backtrace+0x0/0xf4) from [<8022accc>] (Ldiv0+0x8/0x10)
-[<8022accc>] (Ldiv0+0x8/0x10) from [<8022ac9c>] (__aeabi_uidivmod+0x8/0x18)
-[<8022ac9c>] (__aeabi_uidivmod+0x8/0x18) from [<80254198>] 
-(cfb_imageblit+0x1fc/0x4b0)
-[<80254198>] (cfb_imageblit+0x1fc/0x4b0) from [<80251964>] 
-(bit_putcs+0x2e4/0x420)
-[<80251964>] (bit_putcs+0x2e4/0x420) from [<8024bde0>] 
-(fbcon_putcs+0xec/0x128)
-[<8024bde0>] (fbcon_putcs+0xec/0x128) from [<802741f8>] 
-(do_update_region+0x108/0x18c)
-[<802741f8>] (do_update_region+0x108/0x18c) from [<80275970>] 
-(update_region+0x70/0x88)
-[<80275970>] (update_region+0x70/0x88) from [<8024dd08>] 
-(fbcon_switch+0x468/0x4bc)
-[<8024dd08>] (fbcon_switch+0x468/0x4bc) from [<80276c84>] 
-(redraw_screen+0x15c/0x278)
-[<80276c84>] (redraw_screen+0x15c/0x278) from [<80279e90>] 
-(take_over_console+0x2cc/0x37c)
-[<80279e90>] (take_over_console+0x2cc/0x37c) from [<8024cacc>] 
-(fbcon_takeover+0x70/0xd4)
-[<8024cacc>] (fbcon_takeover+0x70/0xd4) from [<8042541c>] 
-(notifier_call_chain+0x44/0x84)
-[<8042541c>] (notifier_call_chain+0x44/0x84) from [<8004a2a0>] 
-(__blocking_notifier_call_chain+0x4c/0x64)
-[<8004a2a0>] (__blocking_notifier_call_chain+0x4c/0x64) from 
-[<8004a2d0>] (blocking_notifier_call_chain+0x18/0x20)
-[<8004a2d0>] (blocking_notifier_call_chain+0x18/0x20) from [<80246f78>] 
-(register_framebuffer+0x17c/0x230)
-[<80246f78>] (register_framebuffer+0x17c/0x230) from [<80586ab8>] 
-(imxfb_probe+0x3c8/0x5a8)
-[<80586ab8>] (imxfb_probe+0x3c8/0x5a8) from [<80286ba8>] 
-(platform_drv_probe+0x14/0x18)
-[<80286ba8>] (platform_drv_probe+0x14/0x18) from [<802858b0>] 
-(driver_probe_device+0x80/0x20c)
-[<802858b0>] (driver_probe_device+0x80/0x20c) from [<80285ac8>] 
-(__driver_attach+0x8c/0x90)
-[<80285ac8>] (__driver_attach+0x8c/0x90) from [<80284230>] 
-(bus_for_each_dev+0x64/0x8c)
-[<80284230>] (bus_for_each_dev+0x64/0x8c) from [<802849b0>] 
-(bus_add_driver+0xa4/0x230)
-[<802849b0>] (bus_add_driver+0xa4/0x230) from [<80286098>] 
-(driver_register+0x78/0x140)
-[<80286098>] (driver_register+0x78/0x140) from [<80286ef4>] 
-(platform_driver_probe+0x18/0x9c)
-[<80286ef4>] (platform_driver_probe+0x18/0x9c) from [<805866d8>] 
-(imxfb_init+0x88/0xa0)
-[<805866d8>] (imxfb_init+0x88/0xa0) from [<800087e4>] 
-(do_one_initcall+0x30/0x178)
-[<800087e4>] (do_one_initcall+0x30/0x178) from [<80576310>] 
-(kernel_init+0xe4/0x1b0)
-[<80576310>] (kernel_init+0xe4/0x1b0) from [<80015268>] 
-(kernel_thread_exit+0x0/0x8)
-
-
-Without this setting the CPU does stop working (for JTAG debugger it has 
-the same effect as board is in power off state):
-
-177772 bytes written at address 0x811ffc00
-downloaded 177772 bytes in 19.548666s (8.881 KiB/s)
-WARNING: unknown debug reason: 0xf
-ThumbEE -- incomplete support
-target state: halted
-target halted in ThumbEE state due to debug-request, current mode: System
-cpsr: 0xffffffff pc: 0xfffffff9
-MMU: enabled, D-Cache: enabled, I-Cache: enabled
-
-
+diff --git a/drivers/video/display/Kconfig b/drivers/video/display/Kconfig
+index 1d533e7..0f9b990 100644
+--- a/drivers/video/display/Kconfig
++++ b/drivers/video/display/Kconfig
+@@ -2,3 +2,16 @@ menuconfig DISPLAY_CORE
+ 	tristate "Display Core"
+ 	---help---
+ 	  Support common display framework for graphics devices.
++
++if DISPLAY_CORE
++
++config DISPLAY_PANEL_DPI
++	tristate "DPI (Parallel) Display Panels"
++	---help---
++	  Support for simple digital (parallel) pixel interface panels. Those
++	  panels receive pixel data through a parallel bus and have no control
++	  bus.
++
++	  If you are in doubt, say N.
++
++endif # DISPLAY_CORE
+diff --git a/drivers/video/display/Makefile b/drivers/video/display/Makefile
+index bd93496..47978d4 100644
+--- a/drivers/video/display/Makefile
++++ b/drivers/video/display/Makefile
+@@ -1 +1,2 @@
+ obj-$(CONFIG_DISPLAY_CORE) += display-core.o
++obj-$(CONFIG_DISPLAY_PANEL_DPI) += panel-dpi.o
+diff --git a/drivers/video/display/panel-dpi.c b/drivers/video/display/panel-dpi.c
+new file mode 100644
+index 0000000..c56197a
+--- /dev/null
++++ b/drivers/video/display/panel-dpi.c
+@@ -0,0 +1,147 @@
++/*
++ * DPI Display Panel
++ *
++ * Copyright (C) 2012 Renesas Solutions Corp.
++ *
++ * Contacts: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++
++#include <video/display.h>
++#include <video/panel-dpi.h>
++
++struct panel_dpi {
++	struct display_entity entity;
++	const struct panel_dpi_platform_data *pdata;
++};
++
++#define to_panel_dpi(p)		container_of(p, struct panel_dpi, entity)
++
++static const struct display_entity_interface_params panel_dpi_params = {
++	.type = DISPLAY_ENTITY_INTERFACE_DPI,
++};
++
++static int panel_dpi_set_state(struct display_entity *entity,
++			       enum display_entity_state state)
++{
++	switch (state) {
++	case DISPLAY_ENTITY_STATE_OFF:
++	case DISPLAY_ENTITY_STATE_STANDBY:
++		display_entity_set_stream(entity->source,
++					  DISPLAY_ENTITY_STREAM_STOPPED);
++		break;
++
++	case DISPLAY_ENTITY_STATE_ON:
++		display_entity_set_stream(entity->source,
++					  DISPLAY_ENTITY_STREAM_CONTINUOUS);
++		break;
++	}
++
++	return 0;
++}
++
++static int panel_dpi_get_modes(struct display_entity *entity,
++			       const struct videomode **modes)
++{
++	struct panel_dpi *panel = to_panel_dpi(entity);
++
++	*modes = panel->pdata->mode;
++	return 1;
++}
++
++static int panel_dpi_get_size(struct display_entity *entity,
++			      unsigned int *width, unsigned int *height)
++{
++	struct panel_dpi *panel = to_panel_dpi(entity);
++
++	*width = panel->pdata->width;
++	*height = panel->pdata->height;
++	return 0;
++}
++
++static int panel_dpi_get_params(struct display_entity *entity,
++				struct display_entity_interface_params *params)
++{
++	*params = panel_dpi_params;
++	return 0;
++}
++
++static const struct display_entity_control_ops panel_dpi_control_ops = {
++	.set_state = panel_dpi_set_state,
++	.get_modes = panel_dpi_get_modes,
++	.get_size = panel_dpi_get_size,
++	.get_params = panel_dpi_get_params,
++};
++
++static void panel_dpi_release(struct display_entity *entity)
++{
++	struct panel_dpi *panel = to_panel_dpi(entity);
++
++	kfree(panel);
++}
++
++static int panel_dpi_remove(struct platform_device *pdev)
++{
++	struct panel_dpi *panel = platform_get_drvdata(pdev);
++
++	platform_set_drvdata(pdev, NULL);
++	display_entity_unregister(&panel->entity);
++
++	return 0;
++}
++
++static int __devinit panel_dpi_probe(struct platform_device *pdev)
++{
++	const struct panel_dpi_platform_data *pdata = pdev->dev.platform_data;
++	struct panel_dpi *panel;
++	int ret;
++
++	if (pdata = NULL)
++		return -ENODEV;
++
++	panel = kzalloc(sizeof(*panel), GFP_KERNEL);
++	if (panel = NULL)
++		return -ENOMEM;
++
++	panel->pdata = pdata;
++	panel->entity.dev = &pdev->dev;
++	panel->entity.release = panel_dpi_release;
++	panel->entity.ops.ctrl = &panel_dpi_control_ops;
++
++	ret = display_entity_register(&panel->entity);
++	if (ret < 0) {
++		kfree(panel);
++		return ret;
++	}
++
++	platform_set_drvdata(pdev, panel);
++
++	return 0;
++}
++
++static const struct dev_pm_ops panel_dpi_dev_pm_ops = {
++};
++
++static struct platform_driver panel_dpi_driver = {
++	.probe = panel_dpi_probe,
++	.remove = panel_dpi_remove,
++	.driver = {
++		.name = "panel_dpi",
++		.owner = THIS_MODULE,
++		.pm = &panel_dpi_dev_pm_ops,
++	},
++};
++
++module_platform_driver(panel_dpi_driver);
++
++MODULE_AUTHOR("Laurent Pinchart <laurent.pinchart@ideasonboard.com>");
++MODULE_DESCRIPTION("DPI Display Panel");
++MODULE_LICENSE("GPL");
+diff --git a/include/video/panel-dpi.h b/include/video/panel-dpi.h
+new file mode 100644
+index 0000000..0547b4a
+--- /dev/null
++++ b/include/video/panel-dpi.h
+@@ -0,0 +1,24 @@
++/*
++ * DPI Display Panel
++ *
++ * Copyright (C) 2012 Renesas Solutions Corp.
++ *
++ * Contacts: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef __PANEL_DPI_H__
++#define __PANEL_DPI_H__
++
++#include <linux/videomode.h>
++
++struct panel_dpi_platform_data {
++	unsigned long width;		/* Panel width in mm */
++	unsigned long height;		/* Panel height in mm */
++	const struct videomode *mode;
++};
++
++#endif /* __PANEL_DPI_H__ */
+-- 
+1.7.8.6
 

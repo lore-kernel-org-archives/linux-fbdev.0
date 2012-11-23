@@ -1,38 +1,56 @@
-From: willims gebrel <willims.gebrel@9y.com>
-Date: Fri, 16 Nov 2012 12:59:21 +0000
-Subject: Williams
-Message-Id: <1353070761.32104.YahooMailClassic@web171705.mail.ir2.yahoo.com>
+From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Date: Fri, 23 Nov 2012 16:35:10 +0000
+Subject: [PATCH 0/5] Backlight drivers for SH and ARM SH-Mobile boards
+Message-Id: <1353688515-30458-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
+Hello,
 
-My Dear,
+Here are two backlight drivers used by SH and ARM SH-Mobile boards.
 
- 
+The first driver supports simple GPIO-controlled backlights that are turned on
+or off by a single GPIO (either active high or active low).
 
-I'm happy to inform you about my success in getting those funds transferred under the cooperation of my new partner from Canada based business man; presently I'm in Bahamas for investment projects with my own share of the total sum. Meanwhile, I didn't forget your past efforts and attempts to assist me in transferring those funds despite that it failed us somehow.
+The second driver supports the Sanyo LV5207LP LED driver
+(http://www.onsemi.com/pub_link/Collateral/ENA0943-D.PDF) and exposes the main
+LED only as a backlight device, as that's all the board I need to driver for
+uses.
 
- 
+The last three patches port the ARM SH-Mobile Mackerel, SH Ecovec24 and SH
+KFR2R09 boards to use the new backlight drivers. The code has been compile
+tested on all three platforms and runtime tested on Mackerel only as I don't
+have access to the SH boards.
 
-Now contact my patina personal adviser in Togo, his name is HON REV.PETER SMITH of church embassy ministry Togo, E-mail: fortbendlawlegal@gmail.com
+Laurent Pinchart (5):
+  backlight: Add GPIO-based backlight driver
+  backlight: Add Sanyo LV5207LP backlight driver
+  ARM: mach-shmobile: mackerel: Use gpio-backlight
+  sh: ecovec24: Use gpio-backlight
+  sh: kfr2r09: Use lv5207lp backlight
 
- 
+ arch/arm/mach-shmobile/board-mackerel.c     |   34 +++---
+ arch/sh/boards/mach-ecovec24/setup.c        |   37 +++---
+ arch/sh/boards/mach-kfr2r09/lcd_wqvga.c     |   48 --------
+ arch/sh/boards/mach-kfr2r09/setup.c         |   19 ++-
+ arch/sh/include/mach-kfr2r09/mach/kfr2r09.h |    2 -
+ drivers/video/backlight/Kconfig             |   13 ++
+ drivers/video/backlight/Makefile            |    2 +
+ drivers/video/backlight/gpio_backlight.c    |  158 +++++++++++++++++++++++++
+ drivers/video/backlight/lv5207lp.c          |  171 +++++++++++++++++++++++++++
+ include/linux/platform_data/lv5207lp.h      |   20 +++
+ include/video/gpio_backlight.h              |   21 ++++
+ 11 files changed, 436 insertions(+), 89 deletions(-)
+ create mode 100644 drivers/video/backlight/gpio_backlight.c
+ create mode 100644 drivers/video/backlight/lv5207lp.c
+ create mode 100644 include/linux/platform_data/lv5207lp.h
+ create mode 100644 include/video/gpio_backlight.h
 
-Ask him to send you the official Draft check of $500.000.00 or by cash which I gave him as order to kept for your compensation for all the past efforts and attempts to assist me in this matter before. I appreciated your collective efforts at that time, so feel free and get in touch with my patina adviser HON.REV. PETER SMITH and instruct him where to send the amount to you. Please do let me know immediately you receive it so that we can share the joy after all the sufferings at that time.
+-- 
+Regards,
 
- 
+Laurent Pinchart
 
-in the moment, I am very busy here In Bahamas because of the investment projects which myself and the new partner are having at hand without confrontations, finally, remember that I had forwarded instruction to the REV.PETER SMITH on your behalf to send you the check or by cash as my patina deposited to him on your name before he left to Canada where he based.
-
- 
-
-So feel free to get in touch with HON REV.PETER SMITH he will send the amount to you without any delay.
-
- 
-
-With best regards,
-
-Williams

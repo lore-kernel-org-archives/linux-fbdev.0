@@ -1,86 +1,46 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Mon, 26 Nov 2012 15:39:58 +0000
-Subject: Re: [PATCHv15 2/7] video: add display_timing and videomode
-Message-Id: <20121126153958.GA30791@pengutronix.de>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Fri, 23 Nov 2012 06:36:09 +0000
+Subject: [GIT PULL] Samsung Framebuffer for v3.8
+Message-Id: <16376487.77671353652569048.JavaMail.weblogic@epml06>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353920848-1705-1-git-send-email-s.trumtrar@pengutronix.de>
- <1353920848-1705-3-git-send-email-s.trumtrar@pengutronix.de>
- <50B36286.7010704@ti.com>
-In-Reply-To: <50B36286.7010704@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
+To: linux-fbdev@vger.kernel.org
 
-On Mon, Nov 26, 2012 at 02:37:26PM +0200, Tomi Valkeinen wrote:
-> On 2012-11-26 11:07, Steffen Trumtrar wrote:
-> 
-> > +/*
-> > + * Subsystem independent description of a videomode.
-> > + * Can be generated from struct display_timing.
-> > + */
-> > +struct videomode {
-> > +	u32 pixelclock;		/* pixelclock in Hz */
-> 
-> I don't know if this is of any importance, but the linux clock framework
-> manages clock rates with unsigned long. Would it be better to use the
-> same type here?
-> 
-
-Hm, I don't know. Anyone? u32 should be large enough for a pixelclock.
-
-> > +	u32 hactive;
-> > +	u32 hfront_porch;
-> > +	u32 hback_porch;
-> > +	u32 hsync_len;
-> > +
-> > +	u32 vactive;
-> > +	u32 vfront_porch;
-> > +	u32 vback_porch;
-> > +	u32 vsync_len;
-> > +
-> > +	u32 hah;		/* hsync active high */
-> > +	u32 vah;		/* vsync active high */
-> > +	u32 de;			/* data enable */
-> > +	u32 pixelclk_pol;
-> 
-> What values will these 4 have? Aren't these booleans?
-> 
-> The data enable comment should be "data enable active high".
-> 
-> The next patch says in the devtree binding documentation that the values
-> may be on/off/ignored. Is that represented here somehow, i.e. values are
-> 0/1/2 or so? If not, what does it mean if the value is left out from
-> devtree data, meaning "not used on hardware"?
->
-
-Hm, I think you might be right here. It is no problem in the DT part of the code.
-The properties are optional, left out means "not used on hardware".
-But this does not propagate correctly to the videomode. I should set the fields
-to -EINVAL in case they are omitted, than everything should work nicely.
-
-> There's also a "doubleclk" value mentioned in the devtree bindings doc,
-> but not shown here.
-> 
-
-Argh. That slipped through. I have patches that add this property to all
-structs and the devicetree binding. But it is not supposed to be in this
-series, because I want to at least have the binding stable for now.
-
-> I think this videomode struct is the one that display drivers are going
-> to use (?), in addition to the display_timing, so it would be good to
-> document it well.
-> 
-
-Yes. Maybe I have to put more of the devicetree documentation in the code.
-
-Regards,
-Steffen
+SGkgVG9taSwNCg0KVGhhbmsgeW91IGZvciB0YWtpbmcgY2FyZSBvZiBwdWxsIHJlcXVlc3RzIGZv
+ciB0aGUgdjMuOCBtZXJnZSB3aW5kb3cuDQpUaGVzZSBwYXRjaGVzIGhhdmUgYmVlbiBzdWJtaXR0
+ZWQgZm9yIGFib3V0IHR3byBtb250aHMsDQphbmQgdGVzdGVkIHdpdGggRXh5bm9zNDIxMCBhbmQg
+RXh5bm9zNTI1MC4NCg0KVGhlIGZvbGxvd2luZyBjaGFuZ2VzIHNpbmNlIGNvbW1pdCBmNGE3NWQy
+ZWI3YjFlMjIwNjA5NGI5MDFiZTA5YWRiMzFiYTYzNjgxOg0KDQogIExpbnV4IDMuNy1yYzYgKEZy
+aSBOb3YgMTYgMTc6NDI6NDAgMjAxMiAtMDgwMCkNCg0KYXJlIGF2YWlsYWJsZSBpbiB0aGUgZ2l0
+IHJlcG9zaXRvcnkgYXQ6DQogIGdpdDovL2dpdGh1Yi5jb20vamluZ29vL2xpbnV4LmdpdCBzYW1z
+dW5nLWZiLW5leHQNCg0KLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KU2Ftc3VuZyBGcmFtZWJ1ZmZlciBjaGFuZ2VzIGZvciB0
+aGUgMy44IG1lcmdlIHdpbmRvdy4NCg0KLSBUaGUgYml0IGRlZmluaXRpb25zIG9mIGhlYWRlciBm
+aWxlIGFyZSB1cGRhdGVkLg0KLSBTb21lIG1pbm9yIHR5cG9zIGFyZSBmaXhlZC4NCi0gU29tZSBt
+aW5vciBidWdzIG9mIHMzY19mYl9jaGVja192YXIoKSBhcmUgZml4ZWQuDQotLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQoNCkpp
+bmdvbyBIYW4gKDE0KToNCiAgICAgIHZpZGVvOiBzM2MtZmI6IGNsZWFuIHRoZSBiaXQgZGVmaW5p
+dGlvbiBmb3IgV0lOQ09OIHJlZ2lzdGVyDQogICAgICB2aWRlbzogczNjLWZiOiBtb3ZlIHRoZSBh
+ZGRyZXNzIGRlZmluaXRpb25zIGZvciBWSURUQ09OIHJlZ2lzdGVycw0KICAgICAgdmlkZW86IHMz
+Yy1mYjogbW92ZSB0aGUgYWRkcmVzcyBkZWZpbml0aW9uIGZvciBWSURPU0QgcmVnaXN0ZXINCiAg
+ICAgIHZpZGVvOiBzM2MtZmI6IG1vdmUgdGhlIGJpdCBkZWZpbml0aW9ucyBmb3IgVklESU5UQ09O
+MCByZWdpc3Rlcg0KICAgICAgdmlkZW86IHMzYy1mYjogbW92ZSB0aGUgYml0IGRlZmluaXRpb25z
+IGZvciBXSU54TUFQIGFuZCBXUEFMQ09OIHJlZ2lzdGVyDQogICAgICB2aWRlbzogczNjLWZiOiBt
+b3ZlIHRoZSBiaXQgZGVmaW5pdGlvbnMgZm9yIERJVEhNT0RFIHJlZ2lzdGVyDQogICAgICB2aWRl
+bzogczNjLWZiOiBhZGQgdGhlIGJpdCBkZWZpbml0aW9ucyBmb3IgVklEQ09OMF9WSURPVVRfV0IN
+CiAgICAgIHZpZGVvOiBzM2MtZmI6IGZpeCB0eXBvIGluIGNvbW1lbnQNCiAgICAgIHZpZGVvOiBz
+M2MtZmI6IGZpeCBoZWxwIG1lc3NhZ2UgZm9yIEZCX1MzQ19ERUJVR19SRUdXUklURQ0KICAgICAg
+dmlkZW86IHMzYy1mYjogdXNlIEZJTURfVjhfVklEVENPTjAgZm9yIEVYWU5PUzUgRklNRA0KICAg
+ICAgdmlkZW86IHMzYy1mYjogdXNlIGRldl9nZXRfZHJ2ZGF0YSgpIGluc3RlYWQgb2YgcGxhdGZv
+cm1fZ2V0X2RydmRhdGEoKQ0KICAgICAgdmlkZW86IHMzYy1mYjogYWRkICJkcm9wIHRocm91Z2gi
+IGNvbW1lbnQNCiAgICAgIHZpZGVvOiBzM2MtZmI6IHJldHVybiBhbiBlcnJvciB3aGVuIGJwcCBp
+cyBpbnZhbGlkDQogICAgICB2aWRlbzogczNjLWZiOiBmaXggcmVkIG9mZnNldCBhbmQgbGVuZ3Ro
+IGZvciBBUkdCMjMyIGZvcm1hdA0KDQogZHJpdmVycy92aWRlby9LY29uZmlnICAgICAgICB8ICAg
+IDIgKy0NCiBkcml2ZXJzL3ZpZGVvL3MzYy1mYi5jICAgICAgIHwgICAyNCArKystLS0NCiBpbmNs
+dWRlL3ZpZGVvL3NhbXN1bmdfZmltZC5oIHwgIDE2OCArKysrKysrKysrKysrLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0NCiAzIGZpbGVzIGNoYW5nZWQsIDY0IGluc2VydGlvbnMoKyksIDEz
+MCBkZWxldGlvbnMoLSkNCg0KLS0NCkJlc3QgcmVnYXJkcywNCkppbmdvbyBIYW4NCg=
 
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

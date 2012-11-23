@@ -1,73 +1,107 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 05 Nov 2012 02:28:41 +0000
-Subject: Re: video: exynos_dp: Fix incorrect setting for INT_CTL
-Message-Id: <001a01cdbafd$4585eef0$d091ccd0$%han@samsung.com>
+From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Date: Fri, 23 Nov 2012 16:35:13 +0000
+Subject: [PATCH 3/5] ARM: mach-shmobile: mackerel: Use gpio-backlight
+Message-Id: <1353688515-30458-4-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351926402-25484-2-git-send-email-ajaykumar.rs@samsung.com>
-In-Reply-To: <1351926402-25484-2-git-send-email-ajaykumar.rs@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Saturday, November 03, 2012 4:07 PM Ajay Kumar wrote
-> Subject: video: exynos_dp: Fix incorrect setting for INT_CTL
+Replace the backlight callback with a gpio-backlight platform device.
 
-Please don't forget to add "[PATCH] " as below.
+Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+---
+ arch/arm/mach-shmobile/board-mackerel.c |   34 +++++++++++++++---------------
+ 1 files changed, 17 insertions(+), 17 deletions(-)
 
-[PATCH] video: exynos_dp: Fix incorrect setting for INT_CTL
-
-> 
-> INT_CTL register contains bits INT_POL0 and INT_POL1, and not INT_POL.
-> This patch fixes the wrong register setting for INT_CTL.
-> 
-> Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
-> ---
->  drivers/video/exynos/exynos_dp_reg.c |    2 +-
->  drivers/video/exynos/exynos_dp_reg.h |    3 ++-
->  2 files changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
-> index 3f5ca8a..d67f49b 100644
-> --- a/drivers/video/exynos/exynos_dp_reg.c
-> +++ b/drivers/video/exynos/exynos_dp_reg.c
-> @@ -88,7 +88,7 @@ void exynos_dp_init_analog_param(struct exynos_dp_device *dp)
->  void exynos_dp_init_interrupt(struct exynos_dp_device *dp)
->  {
->  	/* Set interrupt pin assertion polarity as high */
-> -	writel(INT_POL, dp->reg_base + EXYNOS_DP_INT_CTL);
-> +	writel(INT_POL0 | INT_POL1, dp->reg_base + EXYNOS_DP_INT_CTL);
-> 
->  	/* Clear pending regisers */
->  	writel(0xff, dp->reg_base + EXYNOS_DP_COMMON_INT_STA_1);
-> diff --git a/drivers/video/exynos/exynos_dp_reg.h b/drivers/video/exynos/exynos_dp_reg.h
-> index 1f2f014..fcf386e 100644
-> --- a/drivers/video/exynos/exynos_dp_reg.h
-> +++ b/drivers/video/exynos/exynos_dp_reg.h
-> @@ -242,7 +242,8 @@
-> 
->  /* EXYNOS_DP_INT_CTL */
->  #define SOFT_INT_CTRL				(0x1 << 2)
-> -#define INT_POL					(0x1 << 0)
-> +#define INT_POL0				(0x1 << 0)
-> +#define INT_POL1				(0x1 << 0)
-
-Why are the bit definitions the same???
-INT_POL1 uses 1st bit of DP_INT_CTL register.
-
-Please fix this bug as below.
-
-#define INT_POL1				(0x1 << 1)
-#define INT_POL0				(0x1 << 0)
-
-Ajay,
-please don't make careless mistake.
-I don't want to waste my time.
-
-
-> 
->  /* EXYNOS_DP_SYS_CTL_1 */
->  #define DET_STA					(0x1 << 2)
-> --
-> 1.7.0.4
+diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
+index bfd2dc8..ea35727 100644
+--- a/arch/arm/mach-shmobile/board-mackerel.c
++++ b/arch/arm/mach-shmobile/board-mackerel.c
+@@ -48,7 +48,7 @@
+ #include <linux/tca6416_keypad.h>
+ #include <linux/usb/renesas_usbhs.h>
+ #include <linux/dma-mapping.h>
+-
++#include <video/gpio_backlight.h>
+ #include <video/sh_mobile_hdmi.h>
+ #include <video/sh_mobile_lcdc.h>
+ #include <media/sh_mobile_ceu.h>
+@@ -347,7 +347,7 @@ static struct platform_device meram_device = {
+ 	},
+ };
+ 
+-/* LCDC */
++/* LCDC and backlight */
+ static struct fb_videomode mackerel_lcdc_modes[] = {
+ 	{
+ 		.name		= "WVGA Panel",
+@@ -363,13 +363,6 @@ static struct fb_videomode mackerel_lcdc_modes[] = {
+ 	},
+ };
+ 
+-static int mackerel_set_brightness(int brightness)
+-{
+-	gpio_set_value(GPIO_PORT31, brightness);
+-
+-	return 0;
+-}
+-
+ static const struct sh_mobile_meram_cfg lcd_meram_cfg = {
+ 	.icb[0] = {
+ 		.meram_size     = 0x40,
+@@ -394,11 +387,6 @@ static struct sh_mobile_lcdc_info lcdc_info = {
+ 			.width		= 152,
+ 			.height		= 91,
+ 		},
+-		.bl_info = {
+-			.name = "sh_mobile_lcdc_bl",
+-			.max_brightness = 1,
+-			.set_brightness = mackerel_set_brightness,
+-		},
+ 		.meram_cfg = &lcd_meram_cfg,
+ 	}
+ };
+@@ -426,6 +414,20 @@ static struct platform_device lcdc_device = {
+ 	},
+ };
+ 
++static struct gpio_backlight_platform_data gpio_backlight_data = {
++	.fbdev = &lcdc_device.dev,
++	.gpio = GPIO_PORT31,
++	.def_value = 1,
++	.name = "backlight",
++};
++
++static struct platform_device gpio_backlight_device = {
++	.name = "gpio-backlight",
++	.dev = {
++		.platform_data = &gpio_backlight_data,
++	},
++};
++
+ /* HDMI */
+ static struct sh_mobile_hdmi_info hdmi_info = {
+ 	.flags		= HDMI_SND_SRC_SPDIF,
+@@ -1322,6 +1324,7 @@ static struct platform_device *mackerel_devices[] __initdata = {
+ 	&nor_flash_device,
+ 	&smc911x_device,
+ 	&lcdc_device,
++	&gpio_backlight_device,
+ 	&usbhs0_device,
+ 	&usbhs1_device,
+ 	&leds_device,
+@@ -1472,9 +1475,6 @@ static void __init mackerel_init(void)
+ 	gpio_request(GPIO_FN_LCDDISP,  NULL);
+ 	gpio_request(GPIO_FN_LCDDCK,   NULL);
+ 
+-	gpio_request(GPIO_PORT31, NULL); /* backlight */
+-	gpio_direction_output(GPIO_PORT31, 0); /* off by default */
+-
+ 	gpio_request(GPIO_PORT151, NULL); /* LCDDON */
+ 	gpio_direction_output(GPIO_PORT151, 1);
+ 
+-- 
+1.7.8.6
 

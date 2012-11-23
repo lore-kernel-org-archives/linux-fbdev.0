@@ -1,63 +1,46 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Fri, 09 Nov 2012 08:22:51 +0000
-Subject: Re: [PATCH v7 0/8] of: add display helper
-Message-Id: <20121109082251.GA8598@pengutronix.de>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Fri, 23 Nov 2012 06:37:53 +0000
+Subject: [GIT PULL] Exynos DP for v3.8
+Message-Id: <28517517.77811353652672706.JavaMail.weblogic@epml06>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
- <509C25B3.5060509@gmail.com>
-In-Reply-To: <509C25B3.5060509@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robherring2@gmail.com>
-Cc: devicetree-discuss@lists.ozlabs.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+To: linux-fbdev@vger.kernel.org
 
-On Thu, Nov 08, 2012 at 03:35:47PM -0600, Rob Herring wrote:
-> On 10/31/2012 04:28 AM, Steffen Trumtrar wrote:
-> > Hi!
-> > 
-> > Finally, v7 of the series.
-> > 
-> > Changes since v6:
-> > 	- get rid of some empty lines etc.
-> > 	- move functions to their subsystems
-> > 	- split of_ from non-of_ functions
-> > 	- add at least some kerneldoc to some functions
-> > 
-> > Regards,
-> > Steffen
-> > 
-> > 
-> > Steffen Trumtrar (8):
-> >   video: add display_timing struct and helpers
-> >   of: add helper to parse display timings
-> >   of: add generic videomode description
-> >   video: add videomode helpers
-> >   fbmon: add videomode helpers
-> >   fbmon: add of_videomode helpers
-> >   drm_modes: add videomode helpers
-> >   drm_modes: add of_videomode helpers
-> > 
-> >  .../devicetree/bindings/video/display-timings.txt  |  139 +++++++++++++++
-> >  drivers/gpu/drm/drm_modes.c                        |   78 +++++++++
-> >  drivers/of/Kconfig                                 |   12 ++
-> >  drivers/of/Makefile                                |    2 +
-> >  drivers/of/of_display_timings.c                    |  185 ++++++++++++++++++++
-> >  drivers/of/of_videomode.c                          |   47 +++++
-> 
-> Not sure why you moved this, but please move this back to drivers/video.
-> We're trying to move subsystem specific pieces out of drivers/of.
-> 
-> Rob
-> 
+SGkgVG9taSwNCg0KVGhhbmsgeW91IGZvciB0YWtpbmcgY2FyZSBvZiBwdWxsIHJlcXVlc3RzIGZv
+ciB0aGUgdjMuOCBtZXJnZSB3aW5kb3cuDQpUaGVzZSBwYXRjaGVzIGhhdmUgYmVlbiBzdWJtaXR0
+ZWQgZm9yIG1vcmUgdGhhbiBvbmUgbW9udGgsDQphbmQgdGVzdGVkIHdpdGggRXh5bm9zNTI1MC4N
+Cg0KVGhlIGZvbGxvd2luZyBjaGFuZ2VzIHNpbmNlIGNvbW1pdCBmNGE3NWQyZWI3YjFlMjIwNjA5
+NGI5MDFiZTA5YWRiMzFiYTYzNjgxOg0KDQogIExpbnV4IDMuNy1yYzYgKEZyaSBOb3YgMTYgMTc6
+NDI6NDAgMjAxMiAtMDgwMCkNCg0KYXJlIGF2YWlsYWJsZSBpbiB0aGUgZ2l0IHJlcG9zaXRvcnkg
+YXQ6DQogIGdpdDovL2dpdGh1Yi5jb20vamluZ29vL2xpbnV4LmdpdCBleHlub3MtZHAtbmV4dA0K
+DQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tDQpFeHlub3MgRFAgY2hhbmdlcyBmb3IgdGhlIDMuOCBtZXJnZSB3aW5kb3cuDQoN
+Ci0gRGV2aWNlIFRyZWUgc3VwcG9ydCBmb3IgU2Ftc3VuZyBFeHlub3MgRFANCi0gU1cgTGluayB0
+cmFpbmluZyBpcyBjbGVhbmVkIHVwLg0KLSBIUEQgaW50ZXJydXB0IGlzIHN1cHBvcnRlZC4NCi0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0NCg0KQWpheSBLdW1hciAoNSk6DQogICAgICB2aWRlbzogZXh5bm9zX2RwOiBBZGQgZGV2
+aWNlIHRyZWUgc3VwcG9ydCB0byBEUCBkcml2ZXINCiAgICAgIHZpZGVvOiBleHlub3NfZHA6IGRl
+dmljZSB0cmVlIGRvY3VtZW50YXRpb24NCiAgICAgIHZpZGVvOiBleHlub3NfZHA6IFJlc2V0IGFu
+ZCBpbml0aWFsaXplIERQIGJlZm9yZSByZXF1ZXN0aW5nIGlycQ0KICAgICAgdmlkZW86IGV4eW5v
+c19kcDogRml4IGluY29ycmVjdCBzZXR0aW5nIGZvciBJTlRfQ1RMDQogICAgICB2aWRlbzogZXh5
+bm9zX2RwOiByZW1vdmUgcmVkdW5kYW50IHBhcmFtZXRlcnMNCg0KU2VhbiBQYXVsICg4KToNCiAg
+ICAgIHZpZGVvOiBleHlub3NfZHA6IENoZWNrIERQQ0QgcmV0dXJuIGNvZGVzDQogICAgICB2aWRl
+bzogZXh5bm9zX2RwOiBDbGVhbiB1cCBTVyBsaW5rIHRyYWluaW5nDQogICAgICB2aWRlbzogZXh5
+bm9zX2RwOiBHZXQgcGxsIGxvY2sgYmVmb3JlIHBhdHRlcm4gc2V0DQogICAgICB2aWRlbzogZXh5
+bm9zX2RwOiBJbXByb3ZlIEVESUQgZXJyb3IgaGFuZGxpbmcNCiAgICAgIHZpZGVvOiBleHlub3Nf
+ZHA6IEZpeCBidWcgd2hlbiBjaGVja2luZyBkcC0+aXJxDQogICAgICB2aWRlbzogZXh5bm9zX2Rw
+OiBSZW1vdmUgc2luayBjb250cm9sIHRvIEQwDQogICAgICB2aWRlbzogZXh5bm9zX2RwOiBNb3Zl
+IGhvdHBsdWcgaW50byBhIHdvcmtxdWV1ZQ0KICAgICAgdmlkZW86IGV4eW5vc19kcDogRW5hYmxl
+IGhvdHBsdWcgaW50ZXJydXB0cw0KDQogLi4uL2RldmljZXRyZWUvYmluZGluZ3MvdmlkZW8vZXh5
+bm9zX2RwLnR4dCAgICAgICAgfCAgIDgwICsrKw0KIGRyaXZlcnMvdmlkZW8vZXh5bm9zL2V4eW5v
+c19kcF9jb3JlLmMgICAgICAgICAgICAgIHwgIDY5NyArKysrKysrKysrKystLS0tLS0tLQ0KIGRy
+aXZlcnMvdmlkZW8vZXh5bm9zL2V4eW5vc19kcF9jb3JlLmggICAgICAgICAgICAgIHwgICAyMSAr
+LQ0KIGRyaXZlcnMvdmlkZW8vZXh5bm9zL2V4eW5vc19kcF9yZWcuYyAgICAgICAgICAgICAgIHwg
+ICA3NyArKy0NCiBkcml2ZXJzL3ZpZGVvL2V4eW5vcy9leHlub3NfZHBfcmVnLmggICAgICAgICAg
+ICAgICB8ICAgIDMgKy0NCiA1IGZpbGVzIGNoYW5nZWQsIDU4MyBpbnNlcnRpb25zKCspLCAyOTUg
+ZGVsZXRpb25zKC0pDQogY3JlYXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJl
+ZS9iaW5kaW5ncy92aWRlby9leHlub3NfZHAudHh0DQoNCi0tDQpCZXN0IHJlZ2FyZHMsDQpKaW5n
+b28gSGFuDQo
 
-Hm, the of_xxx part always was in drivers/of, but I can move that. No problem.
-
-Regards,
-Steffen
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

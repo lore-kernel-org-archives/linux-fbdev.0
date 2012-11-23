@@ -1,135 +1,140 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 07 Nov 2012 14:56:24 +0000
-Subject: [RFC 06/11] OMAPDSS: APPLY: configure channel_in for writeback
-Message-Id: <1352299469-17609-7-git-send-email-archit@ti.com>
+From: Tushar Behera <tushar.behera@linaro.org>
+Date: Fri, 23 Nov 2012 12:09:13 +0000
+Subject: [PATCH] video: vt8505: Use devm_* APIs
+Message-Id: <1353671833-14516-1-git-send-email-tushar.behera@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <n>
- <1352299469-17609-1-git-send-email-archit@ti.com>
-In-Reply-To: <1352299469-17609-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: FlorianSchandinat@gmx.de, linux@prisktech.co.nz, patches@linaro.org
 
-writeback's input is configured by the CHANNELIN field in DISPC_WB_ATTRIBUTES.
-It's an immediate write register field. We need to change writeback's channel
-in whenever the manager to which it is connected changes.
+Use devm_request_and_ioremap(), dmam_alloc_coherent() APIs to cleanup
+driver probe and remove functions. This also fixes a possible memory
+leak as the memory allocated by dma_alloc_coherent() was not getting
+freed up.
 
-When changing managers for overlays, we needed to be certain that the overlay
-was disabled. We added some extra waits for that. However, such a thing isn't
-required for writeback as it's disabled for sure after we call dss_wb_disable.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
 ---
- drivers/video/omap2/dss/apply.c     |   31 +++++++++++++++++++++++++++++++
- drivers/video/omap2/dss/dss.h       |    9 +++++++++
- drivers/video/omap2/dss/writeback.c |   23 +++++++++++++++++++++++
- 3 files changed, 63 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 1ab1755..a205ed4 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -1175,6 +1175,22 @@ int dss_mgr_set_output(struct omap_overlay_manager *mgr,
- 		goto err;
+This patch has only been build tested.
+
+ drivers/video/wm8505fb.c |   46 +++++++++-------------------------------------
+ 1 files changed, 9 insertions(+), 37 deletions(-)
+
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index 77539c1..95539af 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -281,8 +281,7 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ 			sizeof(u32) * 16, GFP_KERNEL);
+ 	if (!fbi) {
+ 		dev_err(&pdev->dev, "Failed to initialize framebuffer device\n");
+-		ret = -ENOMEM;
+-		goto failed;
++		return -ENOMEM;
  	}
  
-+	if (output_is_wb(output)) {
-+		enum dss_writeback_channel channel;
-+
-+		r = dss_writeback_calc_channel_in(mgr, &channel);
-+		if (r)
-+			goto err;
-+
-+		r = dispc_runtime_get();
-+		if (r)
-+			goto err;
-+
-+		dispc_wb_set_channel_in(channel);
-+
-+		dispc_runtime_put();
-+	}
-+
- 	output->manager = mgr;
- 	mgr->output = output;
+ 	strcpy(fbi->fb.fix.id, DRIVER_NAME);
+@@ -310,29 +309,19 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (res = NULL) {
+ 		dev_err(&pdev->dev, "no I/O memory resource defined\n");
+-		ret = -ENODEV;
+-		goto failed_fbi;
++		return -ENODEV;
+ 	}
  
-@@ -1210,6 +1226,21 @@ int dss_mgr_unset_output(struct omap_overlay_manager *mgr)
+-	res = request_mem_region(res->start, resource_size(res), DRIVER_NAME);
+-	if (res = NULL) {
+-		dev_err(&pdev->dev, "failed to request I/O memory\n");
+-		ret = -EBUSY;
+-		goto failed_fbi;
+-	}
+-
+-	fbi->regbase = ioremap(res->start, resource_size(res));
++	fbi->regbase = devm_request_and_ioremap(&pdev->dev, res);
+ 	if (fbi->regbase = NULL) {
+-		dev_err(&pdev->dev, "failed to map I/O memory\n");
+-		ret = -EBUSY;
+-		goto failed_free_res;
++		dev_err(&pdev->dev, "failed to request and map I/O memory\n");
++		return -EBUSY;
+ 	}
  
- 	spin_unlock_irqrestore(&data_lock, flags);
+ 	np = of_parse_phandle(pdev->dev.of_node, "default-mode", 0);
+ 	if (!np) {
+ 		pr_err("%s: No display description in Device Tree\n", __func__);
+-		ret = -EINVAL;
+-		goto failed_free_res;
++		return -EINVAL;
+ 	}
  
-+	if (output_is_wb(mgr->output)) {
-+		struct omap_dss_output *wb = mgr->output;
-+		struct wb_priv_data *wp = get_wb_priv(wb);
-+
-+		spin_lock_irqsave(&data_lock, flags);
-+
-+		if (wp->enabled) {
-+			DSSERR("WB output can't be unset when enabled\n");
-+			r = -EINVAL;
-+			goto err1;
-+		}
-+
-+		spin_unlock_irqrestore(&data_lock, flags);
-+	}
-+
- 	mgr->output->manager = NULL;
- 	mgr->output = NULL;
+ 	/*
+@@ -351,7 +340,7 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ 	ret |= of_property_read_u32(np, "bpp", &bpp);
+ 	if (ret) {
+ 		pr_err("%s: Unable to read display properties\n", __func__);
+-		goto failed_free_res;
++		return ret;
+ 	}
  
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 6238895..f9e7074 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -540,6 +540,15 @@ int hdmi_audio_config(struct omap_dss_audio *audio);
- #ifdef CONFIG_OMAP4_DSS_WRITEBACK
- int writeback_init_platform_driver(void) __init;
- void writeback_uninit_platform_driver(void) __exit;
-+int dss_writeback_calc_channel_in(struct omap_overlay_manager *mgr,
-+		enum dss_writeback_channel *channel);
-+#else
-+static inline int dss_writeback_calc_channel_in(struct omap_overlay_manager *mgr,
-+		enum dss_writeback_channel *channel)
-+{
-+	WARN("%s: WB not compiled in, returning 0\n", __func__);
-+	return 0;
-+}
- #endif
+ 	of_mode.vmode = FB_VMODE_NONINTERLACED;
+@@ -365,7 +354,7 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
  
- /* RFBI */
-diff --git a/drivers/video/omap2/dss/writeback.c b/drivers/video/omap2/dss/writeback.c
-index 598defd..09394fb 100644
---- a/drivers/video/omap2/dss/writeback.c
-+++ b/drivers/video/omap2/dss/writeback.c
-@@ -48,6 +48,29 @@ static inline struct platform_device *writeback_get_wbdev_from_output(struct oma
- 	return out->pdev;
+ 	/* try allocating the framebuffer */
+ 	fb_mem_len = of_mode.xres * of_mode.yres * 2 * (bpp / 8);
+-	fb_mem_virt = dma_alloc_coherent(&pdev->dev, fb_mem_len, &fb_mem_phys,
++	fb_mem_virt = dmam_alloc_coherent(&pdev->dev, fb_mem_len, &fb_mem_phys,
+ 				GFP_KERNEL);
+ 	if (!fb_mem_virt) {
+ 		pr_err("%s: Failed to allocate framebuffer\n", __func__);
+@@ -383,8 +372,7 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ 
+ 	if (fb_alloc_cmap(&fbi->fb.cmap, 256, 0) < 0) {
+ 		dev_err(&pdev->dev, "Failed to allocate color map\n");
+-		ret = -ENOMEM;
+-		goto failed_free_io;
++		return -ENOMEM;
+ 	}
+ 
+ 	wm8505fb_init_hw(&fbi->fb);
+@@ -420,21 +408,12 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ failed_free_cmap:
+ 	if (fbi->fb.cmap.len)
+ 		fb_dealloc_cmap(&fbi->fb.cmap);
+-failed_free_io:
+-	iounmap(fbi->regbase);
+-failed_free_res:
+-	release_mem_region(res->start, resource_size(res));
+-failed_fbi:
+-	platform_set_drvdata(pdev, NULL);
+-	kfree(fbi);
+-failed:
+ 	return ret;
  }
  
-+int dss_writeback_calc_channel_in(struct omap_overlay_manager *mgr,
-+		enum dss_writeback_channel *channel)
-+{
-+	/*
-+	 * Add a case for dummy writeback manager once we support connecting
-+	 * writeback directly to an overlay.
-+	 */
-+	switch (mgr->id) {
-+	case OMAP_DSS_CHANNEL_DIGIT:
-+		*channel = DSS_WB_TV_MGR;
-+		break;
-+	case OMAP_DSS_CHANNEL_LCD2:
-+		*channel = DSS_WB_LCD2_MGR;
-+		break;
-+	case OMAP_DSS_CHANNEL_LCD:
-+	default:
-+		*channel = DSS_WB_LCD1_MGR;
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
- void omapdss_writeback_set_input_size(struct omap_dss_output *wb, u16 w, u16 h)
+ static int __devexit wm8505fb_remove(struct platform_device *pdev)
  {
- 	struct platform_device *wbdev = writeback_get_wbdev_from_output(wb);
+ 	struct wm8505fb_info *fbi = platform_get_drvdata(pdev);
+-	struct resource *res;
+ 
+ 	device_remove_file(&pdev->dev, &dev_attr_contrast);
+ 
+@@ -445,13 +424,6 @@ static int __devexit wm8505fb_remove(struct platform_device *pdev)
+ 	if (fbi->fb.cmap.len)
+ 		fb_dealloc_cmap(&fbi->fb.cmap);
+ 
+-	iounmap(fbi->regbase);
+-
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	release_mem_region(res->start, resource_size(res));
+-
+-	kfree(fbi);
+-
+ 	return 0;
+ }
+ 
 -- 
-1.7.9.5
+1.7.4.1
 

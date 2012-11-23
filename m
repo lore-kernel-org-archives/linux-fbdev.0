@@ -1,64 +1,121 @@
 From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Thu, 22 Nov 2012 11:23:31 +0000
-Subject: Re: [PATCH v12 3/6] fbmon: add videomode helpers
-Message-Id: <20121122112331.GA24990@pengutronix.de>
+Date: Fri, 23 Nov 2012 09:04:24 +0000
+Subject: [PATCHv14 4/7] fbmon: add videomode helpers
+Message-Id: <1353661467-28545-5-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353426896-6045-1-git-send-email-s.trumtrar@pengutronix.de>
- <1554720.pFHYnMF1G4@avalon> <20121122085342.GB10369@pengutronix.de>
- <2254661.PBsclu7Klj@avalon>
-In-Reply-To: <2254661.PBsclu7Klj@avalon>
+References: <1353661467-28545-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1353661467-28545-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
 
-On Thu, Nov 22, 2012 at 10:07:07AM +0100, Laurent Pinchart wrote:
-> On Thursday 22 November 2012 09:53:42 Sascha Hauer wrote:
-> > On Thu, Nov 22, 2012 at 09:50:10AM +0100, Laurent Pinchart wrote:
-> > > On Thursday 22 November 2012 07:20:00 Sascha Hauer wrote:
-> > > > On Wed, Nov 21, 2012 at 11:02:44PM +0100, Laurent Pinchart wrote:
-> > > > > Hi Steffen,
-> > > > > 
-> > > > > > +
-> > > > > > +	htotal = vm->hactive + vm->hfront_porch + vm->hback_porch +
-> > > > > > +		 vm->hsync_len;
-> > > > > > +	vtotal = vm->vactive + vm->vfront_porch + vm->vback_porch +
-> > > > > > +		 vm->vsync_len;
-> > > > > > +	fbmode->refresh = (vm->pixelclock * 1000) / (htotal * vtotal);
-> > > > > 
-> > > > > This will fail if vm->pixelclock >= ((1 << 32) / 1000). The easiest
-> > > > > solution is probably to use 64-bit computation.
-> > > > 
-> > > > You have displays with a pixelclock > 4GHz?
-> > > 
-> > > vm->pixelclock is expressed in Hz. vm->pixelclock * 1000 will thus
-> > > overflow if the clock frequency is >= ~4.3 MHz. I have displays with a
-> > > clock frequency higher than that :-)
-> > 
-> > If vm->pixelclock is in Hz, then the * 1000 above is wrong.
-> 
-> My bad, I though refresh was expressed in mHz. So yes, the above computation 
-> is wrong.
->
+Add a function to convert from the generic videomode to a fb_videomode.
 
-Okay. I will fix that with the next version...
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/fbmon.c |   49 +++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h    |    6 ++++++
+ 2 files changed, 55 insertions(+)
 
-> BTW it seems that the refreshrate field in struct videomode isn't used. It 
-> should then be removed.
-> 
-
-...and remove this field.
-
-> I've just realized that the struct videomode fields are not documented. 
-> kerneldoc in include/linux/videomode.h would be a good addition.
-> 
-
-Regards,
-Steffen
-
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index cef6557..bcbfe8f 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -31,6 +31,7 @@
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <video/edid.h>
++#include <linux/videomode.h>
+ #ifdef CONFIG_PPC_OF
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+@@ -1373,6 +1374,54 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
+ 	kfree(timings);
+ 	return err;
+ }
++
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++int fb_videomode_from_videomode(const struct videomode *vm,
++				struct fb_videomode *fbmode)
++{
++	unsigned int htotal, vtotal;
++
++	fbmode->xres = vm->hactive;
++	fbmode->left_margin = vm->hback_porch;
++	fbmode->right_margin = vm->hfront_porch;
++	fbmode->hsync_len = vm->hsync_len;
++
++	fbmode->yres = vm->vactive;
++	fbmode->upper_margin = vm->vback_porch;
++	fbmode->lower_margin = vm->vfront_porch;
++	fbmode->vsync_len = vm->vsync_len;
++
++	/* prevent division by zero in KHZ2PICOS macro */
++	fbmode->pixclock = vm->pixelclock ? KHZ2PICOS(vm->pixelclock / 1000) : 0;
++
++	fbmode->sync = 0;
++	fbmode->vmode = 0;
++	if (vm->hah)
++		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
++	if (vm->vah)
++		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
++	if (vm->interlaced)
++		fbmode->vmode |= FB_VMODE_INTERLACED;
++	if (vm->doublescan)
++		fbmode->vmode |= FB_VMODE_DOUBLE;
++	fbmode->flag = 0;
++
++	htotal = vm->hactive + vm->hfront_porch + vm->hback_porch +
++		 vm->hsync_len;
++	vtotal = vm->vactive + vm->vfront_porch + vm->vback_porch +
++		 vm->vsync_len;
++	/* prevent division by zero */
++	if (htotal && vtotal)
++		fbmode->refresh = vm->pixelclock / (htotal * vtotal);
++	else
++		fbmode->refresh = vm->pixelclock;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
++#endif
++
++
+ #else
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+ {
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index c7a9571..4404ec2 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -19,6 +19,7 @@ struct vm_area_struct;
+ struct fb_info;
+ struct device;
+ struct file;
++struct videomode;
+ 
+ /* Definitions below are used in the parsed monitor specs */
+ #define FB_DPMS_ACTIVE_OFF	1
+@@ -714,6 +715,11 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+ extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+ extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
+ 
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++extern int fb_videomode_from_videomode(const struct videomode *vm,
++				       struct fb_videomode *fbmode);
++#endif
++
+ /* drivers/video/modedb.c */
+ #define VESA_MODEDB_SIZE 34
+ extern void fb_var_to_videomode(struct fb_videomode *mode,
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+1.7.10.4
+

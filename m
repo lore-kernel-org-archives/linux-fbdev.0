@@ -1,95 +1,34 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Sun, 04 Nov 2012 17:23:13 +0000
-Subject: Re: [PATCH v7 2/8] of: add helper to parse display timings
-Message-Id: <20121104172312.GC5894@pengutronix.de>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Fri, 23 Nov 2012 04:30:59 +0000
+Subject: RE: [PATCH v2 0/2] da8xx-fb: LCDC driver cleanup
+Message-Id: <A73F36158E33644199EB82C5EC81C7BC3E9FB8BE@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351675689-26814-1-git-send-email-s.trumtrar@pengutronix.de>
- <1351675689-26814-3-git-send-email-s.trumtrar@pengutronix.de>
- <CAL1wa8dGiS-UDk7vjPKBaxQHB2FyNgLRYr5jsJZe4GjdzHELLQ@mail.gmail.com>
-In-Reply-To: <CAL1wa8dGiS-UDk7vjPKBaxQHB2FyNgLRYr5jsJZe4GjdzHELLQ@mail.gmail.com>
+References: <1350363196-9340-1-git-send-email-prakash.pm@ti.com>
+In-Reply-To: <1350363196-9340-1-git-send-email-prakash.pm@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Leela Krishna Amudala <l.krishna@samsung.com>
-Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+To: linux-fbdev@vger.kernel.org
 
-Hi!
+Hi Tomi,
 
-On Fri, Nov 02, 2012 at 10:49:47PM +0530, Leela Krishna Amudala wrote:
-> Hello Steffen,
+On Tue, Oct 16, 2012 at 10:23:14, Manjunathappa, Prakash wrote:
+> This patch series clean up driver as it is necessary for DT migration.
 > 
-> On Wed, Oct 31, 2012 at 2:58 PM, Steffen Trumtrar
-> > +static int parse_property(struct device_node *np, char *name,
-> > +                               struct timing_entry *result)
-> > +{
-> > +       struct property *prop;
-> > +       int length;
-> > +       int cells;
-> > +       int ret;
-> > +
-> > +       prop = of_find_property(np, name, &length);
-> > +       if (!prop) {
-> > +               pr_err("%s: could not find property %s\n", __func__, name);
-> > +               return -EINVAL;
-> > +       }
-> > +
-> > +       cells = length / sizeof(u32);
-> > +       if (cells = 1) {
-> > +               ret = of_property_read_u32_array(np, name, &result->typ, cells);
-> 
-> As you are reading only one vaue, you can use of_property_read_u32 instead.
+> Manjunathappa, Prakash (2):
+>   da8xx-fb: adopt fb_videomode data for panel information
+>   da8xx-fb: cleanup LCDC configurations
 > 
 
-Yes, thats copypasta, no need for _array here.
+There are no review comment on this, Could you please accept this series? 
 
-> > +               result->min = result->typ;
-> > +               result->max = result->typ;
-> > +       } else if (cells = 3) {
-> > +               ret = of_property_read_u32_array(np, name, &result->min, cells);
-> 
-> You are considering only min element, what about typ and max elements?
-> 
+Thanks,
+Prakash
 
-I start at the address of result->min and read three u32-values, therefore all
-three (min,typ,max) are filled with values.
-
-> > +
-> > +/**
-> > + * of_display_timings_exists - check if a display-timings node is provided
-> > + * @np: device_node with the timing
-> > + **/
-> > +int of_display_timings_exists(struct device_node *np)
-> > +{
-> > +       struct device_node *timings_np;
-> > +       struct device_node *default_np;
-> > +
-> > +       if (!np)
-> > +               return -EINVAL;
-> > +
-> > +       timings_np = of_parse_phandle(np, "display-timings", 0);
-> > +       if (!timings_np)
-> > +               return -EINVAL;
-> > +
-> > +       return -EINVAL;
+>  arch/arm/mach-davinci/devices-da8xx.c |   22 +----
+>  drivers/video/da8xx-fb.c              |  167 +++++++++++++++------------------
+>  include/video/da8xx-fb.h              |   25 +----
+>  3 files changed, 79 insertions(+), 135 deletions(-)
 > 
-> Here it should return success instead of -EINVAL.
 > 
 
-Yes.
-
-> And one query.. are the binding properties names and "display-timings"
-> node structure template  finalized..?
-> 
-
-I sure hope so. There actually is one error in the examples though.
-The property clock is called clock-frequency. I included it correctly
-at the top of display-timings.txt, but overlooked it in the examples.
-
-Regards,
-Steffen
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

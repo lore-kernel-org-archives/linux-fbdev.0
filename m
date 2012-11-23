@@ -1,213 +1,114 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Wed, 28 Nov 2012 10:53:28 +0000
-Subject: [PATCH 5/7] OMAPDSS: DSI: Move DSI specific dss_params to dsi_feats
-Message-Id: <f5c526c55942be7489adf6be7fe3d7d1a47b5b57.1354086150.git.cmahapatra@ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Fri, 23 Nov 2012 09:04:25 +0000
+Subject: [PATCHv14 5/7] fbmon: add of_videomode helpers
+Message-Id: <1353661467-28545-6-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1354086150.git.cmahapatra@ti.com>
-In-Reply-To: <cover.1354086150.git.cmahapatra@ti.com>
+References: <1353661467-28545-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1353661467-28545-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
 
-The DSI specific dss_param_range are moved from struct omap_dss_features to
-corresponding struct dsi_param_range, which is initialized in struct dsi_feats
-thereby enabling local access.
+Add helper to get fb_videomode from devicetree.
 
-Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/omap2/dss/dsi.c          |   70 ++++++++++++++++++++++++++++----
- drivers/video/omap2/dss/dss_features.c |   27 ------------
- drivers/video/omap2/dss/dss_features.h |    7 ----
- 3 files changed, 62 insertions(+), 42 deletions(-)
+ drivers/video/fbmon.c |   42 +++++++++++++++++++++++++++++++++++++++++-
+ include/linux/fb.h    |    6 ++++++
+ 2 files changed, 47 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 2d387cb..f1f617c 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -351,8 +351,19 @@ enum dsi_feat_reg_field {
- 	FEAT_REG_DSIPLL_REGM_DSI,
- };
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index bcbfe8f..287e66b 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -31,7 +31,7 @@
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <video/edid.h>
+-#include <linux/videomode.h>
++#include <linux/of_videomode.h>
+ #ifdef CONFIG_PPC_OF
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+@@ -1421,6 +1421,46 @@ int fb_videomode_from_videomode(const struct videomode *vm,
+ EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
+ #endif
  
-+enum dsi_range_param {
-+	FEAT_PARAM_DSIPLL_REGN,
-+	FEAT_PARAM_DSIPLL_REGM,
-+	FEAT_PARAM_DSIPLL_REGM_DISPC,
-+	FEAT_PARAM_DSIPLL_REGM_DSI,
-+	FEAT_PARAM_DSIPLL_FINT,
-+	FEAT_PARAM_DSIPLL_LPDIV,
-+	FEAT_PARAM_DSI_FCK,
-+};
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++static inline void dump_fb_videomode(const struct fb_videomode *m)
++{
++	pr_debug("fb_videomode = %ux%u@%uHz (%ukHz) %u %u %u %u %u %u %u %u %u\n",
++		 m->xres, m->yres, m->refresh, m->pixclock, m->left_margin,
++		 m->right_margin, m->upper_margin, m->lower_margin,
++		 m->hsync_len, m->vsync_len, m->sync, m->vmode, m->flag);
++}
 +
- struct feats {
- 	const struct register_field *reg_fields;
-+	const struct param_range *params;
- };
- 
- static const struct feats *dsi_feat;
-@@ -1518,7 +1529,7 @@ static void dsi_pll_calc_dsi_fck(struct platform_device *dsidev,
- {
- 	unsigned long max_dsi_fck;
- 
--	max_dsi_fck = dss_feat_get_param_max(FEAT_PARAM_DSI_FCK);
-+	max_dsi_fck = dsi_feat->params[FEAT_PARAM_DSI_FCK].max;
- 
- 	cinfo->regm_dsi = DIV_ROUND_UP(cinfo->clkin4ddr, max_dsi_fck);
- 	cinfo->dsi_pll_hsdiv_dsi_clk = cinfo->clkin4ddr / cinfo->regm_dsi;
-@@ -5082,14 +5093,14 @@ static void dsi_calc_clock_param_ranges(struct platform_device *dsidev)
- {
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 
--	dsi->regn_max = dss_feat_get_param_max(FEAT_PARAM_DSIPLL_REGN);
--	dsi->regm_max = dss_feat_get_param_max(FEAT_PARAM_DSIPLL_REGM);
-+	dsi->regn_max = dsi_feat->params[FEAT_PARAM_DSIPLL_REGN].max;
-+	dsi->regm_max = dsi_feat->params[FEAT_PARAM_DSIPLL_REGM].max;
- 	dsi->regm_dispc_max -		dss_feat_get_param_max(FEAT_PARAM_DSIPLL_REGM_DISPC);
--	dsi->regm_dsi_max = dss_feat_get_param_max(FEAT_PARAM_DSIPLL_REGM_DSI);
--	dsi->fint_min = dss_feat_get_param_min(FEAT_PARAM_DSIPLL_FINT);
--	dsi->fint_max = dss_feat_get_param_max(FEAT_PARAM_DSIPLL_FINT);
--	dsi->lpdiv_max = dss_feat_get_param_max(FEAT_PARAM_DSIPLL_LPDIV);
-+		dsi_feat->params[FEAT_PARAM_DSIPLL_REGM_DISPC].max;
-+	dsi->regm_dsi_max = dsi_feat->params[FEAT_PARAM_DSIPLL_REGM_DSI].max;
-+	dsi->fint_min = dsi_feat->params[FEAT_PARAM_DSIPLL_FINT].min;
-+	dsi->fint_max = dsi_feat->params[FEAT_PARAM_DSIPLL_FINT].max;
-+	dsi->lpdiv_max = dsi_feat->params[FEAT_PARAM_DSIPLL_LPDIV].max;
- }
- 
- static int dsi_get_clocks(struct platform_device *dsidev)
-@@ -5242,20 +5253,63 @@ static struct register_field omap5_dsi_reg_fields[] = {
- 	[FEAT_REG_DSIPLL_REGM_DSI]		= { 30, 26 },
- };
- 
-+static struct param_range omap2_dsi_param_range[] = {
-+	[FEAT_PARAM_DSIPLL_REGN]		= { 0, 0 },
-+	[FEAT_PARAM_DSIPLL_REGM]		= { 0, 0 },
-+	[FEAT_PARAM_DSIPLL_REGM_DISPC]		= { 0, 0 },
-+	[FEAT_PARAM_DSIPLL_REGM_DSI]		= { 0, 0 },
-+	[FEAT_PARAM_DSIPLL_FINT]		= { 0, 0 },
-+	[FEAT_PARAM_DSIPLL_LPDIV]		= { 0, 0 },
-+};
++/**
++ * of_get_fb_videomode - get a fb_videomode from devicetree
++ * @np: device_node with the timing specification
++ * @fb: will be set to the return value
++ * @index: index into the list of display timings in devicetree
++ *
++ * DESCRIPTION:
++ * This function is expensive and should only be used, if only one mode is to be
++ * read from DT. To get multiple modes start with of_get_display_timings ond
++ * work with that instead.
++ */
++int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
++			unsigned int index)
++{
++	struct videomode vm;
++	int ret;
 +
-+static struct param_range omap3_dsi_param_range[] = {
-+	[FEAT_PARAM_DSIPLL_REGN]		= { 0, (1 << 7) - 1 },
-+	[FEAT_PARAM_DSIPLL_REGM]		= { 0, (1 << 11) - 1 },
-+	[FEAT_PARAM_DSIPLL_REGM_DISPC]		= { 0, (1 << 4) - 1 },
-+	[FEAT_PARAM_DSIPLL_REGM_DSI]		= { 0, (1 << 4) - 1 },
-+	[FEAT_PARAM_DSIPLL_FINT]		= { 750000, 2100000 },
-+	[FEAT_PARAM_DSIPLL_LPDIV]		= { 1, (1 << 13) - 1},
-+	[FEAT_PARAM_DSI_FCK]			= { 0, 173000000 },
-+};
++	ret = of_get_videomode(np, &vm, index);
++	if (ret)
++		return ret;
 +
-+static struct param_range omap4_dsi_param_range[] = {
-+	[FEAT_PARAM_DSIPLL_REGN]		= { 0, (1 << 8) - 1 },
-+	[FEAT_PARAM_DSIPLL_REGM]		= { 0, (1 << 12) - 1 },
-+	[FEAT_PARAM_DSIPLL_REGM_DISPC]		= { 0, (1 << 5) - 1 },
-+	[FEAT_PARAM_DSIPLL_REGM_DSI]		= { 0, (1 << 5) - 1 },
-+	[FEAT_PARAM_DSIPLL_FINT]		= { 500000, 2500000 },
-+	[FEAT_PARAM_DSIPLL_LPDIV]		= { 0, (1 << 13) - 1 },
-+	[FEAT_PARAM_DSI_FCK]			= { 0, 170000000 },
-+};
++	fb_videomode_from_videomode(&vm, fb);
 +
-+static struct param_range omap5_dsi_param_range[] = {
-+	[FEAT_PARAM_DSIPLL_REGN]		= { 0, (1 << 8) - 1 },
-+	[FEAT_PARAM_DSIPLL_REGM]		= { 0, (1 << 12) - 1 },
-+	[FEAT_PARAM_DSIPLL_REGM_DISPC]		= { 0, (1 << 5) - 1 },
-+	[FEAT_PARAM_DSIPLL_REGM_DSI]		= { 0, (1 << 5) - 1 },
-+	[FEAT_PARAM_DSIPLL_FINT]		= { 500000, 2500000 },
-+	[FEAT_PARAM_DSIPLL_LPDIV]		= { 0, (1 << 13) - 1 },
-+	[FEAT_PARAM_DSI_FCK]			= { 0, 170000000 },
-+};
++	pr_info("%s: got %dx%d display mode from %s\n", __func__, vm.hactive,
++		vm.vactive, np->name);
++	dump_fb_videomode(fb);
 +
- static const struct feats omap24xx_dsi_feats __initconst = {
- 	.reg_fields		=	omap2_dsi_reg_fields,
-+	.params			=	omap2_dsi_param_range,
- };
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_get_fb_videomode);
++#endif
  
- static const struct feats omap34xx_dsi_feats __initconst = {
- 	.reg_fields		=	omap3_dsi_reg_fields,
-+	.params			=	omap3_dsi_param_range,
- };
+ #else
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 4404ec2..7e1c8cf 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -20,6 +20,7 @@ struct fb_info;
+ struct device;
+ struct file;
+ struct videomode;
++struct device_node;
  
- static const struct feats omap44xx_dsi_feats __initconst = {
- 	.reg_fields		=	omap4_dsi_reg_fields,
-+	.params			=	omap4_dsi_param_range,
- };
+ /* Definitions below are used in the parsed monitor specs */
+ #define FB_DPMS_ACTIVE_OFF	1
+@@ -715,6 +716,11 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+ extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+ extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
  
- static const struct feats omap54xx_dsi_feats __initconst = {
- 	.reg_fields		=	omap5_dsi_reg_fields,
-+	.params			=	omap5_dsi_param_range,
- };
- 
- static int __init dsi_init_features(struct platform_device *dsidev)
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index 8e6defb..75dddb2 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -369,45 +369,18 @@ static const char * const omap5_dss_clk_source_names[] = {
- 
- static const struct dss_param_range omap2_dss_param_range[] = {
- 	[FEAT_PARAM_DSS_FCK]			= { 0, 173000000 },
--	[FEAT_PARAM_DSIPLL_REGN]		= { 0, 0 },
--	[FEAT_PARAM_DSIPLL_REGM]		= { 0, 0 },
--	[FEAT_PARAM_DSIPLL_REGM_DISPC]		= { 0, 0 },
--	[FEAT_PARAM_DSIPLL_REGM_DSI]		= { 0, 0 },
--	[FEAT_PARAM_DSIPLL_FINT]		= { 0, 0 },
--	[FEAT_PARAM_DSIPLL_LPDIV]		= { 0, 0 },
- };
- 
- static const struct dss_param_range omap3_dss_param_range[] = {
- 	[FEAT_PARAM_DSS_FCK]			= { 0, 173000000 },
--	[FEAT_PARAM_DSIPLL_REGN]		= { 0, (1 << 7) - 1 },
--	[FEAT_PARAM_DSIPLL_REGM]		= { 0, (1 << 11) - 1 },
--	[FEAT_PARAM_DSIPLL_REGM_DISPC]		= { 0, (1 << 4) - 1 },
--	[FEAT_PARAM_DSIPLL_REGM_DSI]		= { 0, (1 << 4) - 1 },
--	[FEAT_PARAM_DSIPLL_FINT]		= { 750000, 2100000 },
--	[FEAT_PARAM_DSIPLL_LPDIV]		= { 1, (1 << 13) - 1},
--	[FEAT_PARAM_DSI_FCK]			= { 0, 173000000 },
- };
- 
- static const struct dss_param_range omap4_dss_param_range[] = {
- 	[FEAT_PARAM_DSS_FCK]			= { 0, 186000000 },
--	[FEAT_PARAM_DSIPLL_REGN]		= { 0, (1 << 8) - 1 },
--	[FEAT_PARAM_DSIPLL_REGM]		= { 0, (1 << 12) - 1 },
--	[FEAT_PARAM_DSIPLL_REGM_DISPC]		= { 0, (1 << 5) - 1 },
--	[FEAT_PARAM_DSIPLL_REGM_DSI]		= { 0, (1 << 5) - 1 },
--	[FEAT_PARAM_DSIPLL_FINT]		= { 500000, 2500000 },
--	[FEAT_PARAM_DSIPLL_LPDIV]		= { 0, (1 << 13) - 1 },
--	[FEAT_PARAM_DSI_FCK]			= { 0, 170000000 },
- };
- 
- static const struct dss_param_range omap5_dss_param_range[] = {
- 	[FEAT_PARAM_DSS_FCK]			= { 0, 200000000 },
--	[FEAT_PARAM_DSIPLL_REGN]		= { 0, (1 << 8) - 1 },
--	[FEAT_PARAM_DSIPLL_REGM]		= { 0, (1 << 12) - 1 },
--	[FEAT_PARAM_DSIPLL_REGM_DISPC]		= { 0, (1 << 5) - 1 },
--	[FEAT_PARAM_DSIPLL_REGM_DSI]		= { 0, (1 << 5) - 1 },
--	[FEAT_PARAM_DSIPLL_FINT]		= { 500000, 2500000 },
--	[FEAT_PARAM_DSIPLL_LPDIV]		= { 0, (1 << 13) - 1 },
--	[FEAT_PARAM_DSI_FCK]			= { 0, 170000000 },
- };
- 
- static const enum dss_feat_id omap2_dss_feat_list[] = {
-diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
-index 3e82404..d9f69c7 100644
---- a/drivers/video/omap2/dss/dss_features.h
-+++ b/drivers/video/omap2/dss/dss_features.h
-@@ -77,13 +77,6 @@ enum dss_feat_reg_field {
- 
- enum dss_range_param {
- 	FEAT_PARAM_DSS_FCK,
--	FEAT_PARAM_DSIPLL_REGN,
--	FEAT_PARAM_DSIPLL_REGM,
--	FEAT_PARAM_DSIPLL_REGM_DISPC,
--	FEAT_PARAM_DSIPLL_REGM_DSI,
--	FEAT_PARAM_DSIPLL_FINT,
--	FEAT_PARAM_DSIPLL_LPDIV,
--	FEAT_PARAM_DSI_FCK,
- };
- 
- /* DSS Feature Functions */
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++extern int of_get_fb_videomode(struct device_node *np,
++			       struct fb_videomode *fb,
++			       unsigned int index);
++#endif
+ #if IS_ENABLED(CONFIG_VIDEOMODE)
+ extern int fb_videomode_from_videomode(const struct videomode *vm,
+ 				       struct fb_videomode *fbmode);
 -- 
-1.7.10
+1.7.10.4
 

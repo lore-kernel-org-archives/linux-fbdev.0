@@ -1,112 +1,109 @@
 From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Thu, 15 Nov 2012 09:23:54 +0000
-Subject: [PATCH v10 3/6] fbmon: add videomode helpers
-Message-Id: <1352971437-29877-4-git-send-email-s.trumtrar@pengutronix.de>
+Date: Fri, 23 Nov 2012 09:04:26 +0000
+Subject: [PATCHv14 6/7] drm_modes: add videomode helpers
+Message-Id: <1353661467-28545-7-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1352971437-29877-1-git-send-email-s.trumtrar@pengutronix.de>
+References: <1353661467-28545-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1353661467-28545-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de
+Cc: Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
 
-Add a function to convert from the generic videomode to a fb_videomode.
+Add conversion from videomode to drm_display_mode
 
 Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/fbmon.c |   46 ++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fb.h    |    6 ++++++
- 2 files changed, 52 insertions(+)
+ drivers/gpu/drm/drm_modes.c |   37 +++++++++++++++++++++++++++++++++++++
+ include/drm/drmP.h          |    6 ++++++
+ 2 files changed, 43 insertions(+)
 
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index cef6557..247e079 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -31,6 +31,7 @@
- #include <linux/pci.h>
- #include <linux/slab.h>
- #include <video/edid.h>
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 59450f3..0073b27 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -35,6 +35,7 @@
+ #include <linux/export.h>
+ #include <drm/drmP.h>
+ #include <drm/drm_crtc.h>
 +#include <linux/videomode.h>
- #ifdef CONFIG_PPC_OF
- #include <asm/prom.h>
- #include <asm/pci-bridge.h>
-@@ -1373,6 +1374,51 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
- 	kfree(timings);
- 	return err;
+ 
+ /**
+  * drm_mode_debug_printmodeline - debug print a mode
+@@ -504,6 +505,42 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, int vdisplay, int vrefresh,
  }
-+
+ EXPORT_SYMBOL(drm_gtf_mode);
+ 
 +#if IS_ENABLED(CONFIG_VIDEOMODE)
-+int fb_videomode_from_videomode(struct videomode *vm,
-+				struct fb_videomode *fbmode)
++int drm_display_mode_from_videomode(const struct videomode *vm,
++				    struct drm_display_mode *dmode)
 +{
-+	unsigned int htotal, vtotal;
++	dmode->hdisplay = vm->hactive;
++	dmode->hsync_start = dmode->hdisplay + vm->hfront_porch;
++	dmode->hsync_end = dmode->hsync_start + vm->hsync_len;
++	dmode->htotal = dmode->hsync_end + vm->hback_porch;
 +
-+	fbmode->xres = vm->hactive;
-+	fbmode->left_margin = vm->hback_porch;
-+	fbmode->right_margin = vm->hfront_porch;
-+	fbmode->hsync_len = vm->hsync_len;
++	dmode->vdisplay = vm->vactive;
++	dmode->vsync_start = dmode->vdisplay + vm->vfront_porch;
++	dmode->vsync_end = dmode->vsync_start + vm->vsync_len;
++	dmode->vtotal = dmode->vsync_end + vm->vback_porch;
 +
-+	fbmode->yres = vm->vactive;
-+	fbmode->upper_margin = vm->vback_porch;
-+	fbmode->lower_margin = vm->vfront_porch;
-+	fbmode->vsync_len = vm->vsync_len;
++	dmode->clock = vm->pixelclock / 1000;
 +
-+	fbmode->pixclock = KHZ2PICOS(vm->pixelclock / 1000);
-+
-+	fbmode->sync = 0;
-+	fbmode->vmode = 0;
++	dmode->flags = 0;
 +	if (vm->hah)
-+		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
++		dmode->flags |= DRM_MODE_FLAG_PHSYNC;
++	else
++		dmode->flags |= DRM_MODE_FLAG_NHSYNC;
 +	if (vm->vah)
-+		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
++		dmode->flags |= DRM_MODE_FLAG_PVSYNC;
++	else
++		dmode->flags |= DRM_MODE_FLAG_NVSYNC;
 +	if (vm->interlaced)
-+		fbmode->vmode |= FB_VMODE_INTERLACED;
++		dmode->flags |= DRM_MODE_FLAG_INTERLACE;
 +	if (vm->doublescan)
-+		fbmode->vmode |= FB_VMODE_DOUBLE;
-+	if (vm->de)
-+		fbmode->sync |= FB_SYNC_DATA_ENABLE_HIGH_ACT;
-+	fbmode->flag = 0;
-+
-+	htotal = vm->hactive + vm->hfront_porch + vm->hback_porch +
-+		 vm->hsync_len;
-+	vtotal = vm->vactive + vm->vfront_porch + vm->vback_porch +
-+		 vm->vsync_len;
-+	fbmode->refresh = (vm->pixelclock * 1000) / (htotal * vtotal);
++		dmode->flags |= DRM_MODE_FLAG_DBLSCAN;
++	drm_mode_set_name(dmode);
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
++EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
 +#endif
 +
-+
- #else
- int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
- {
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index c7a9571..4024136 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -14,6 +14,7 @@
- #include <linux/backlight.h>
- #include <linux/slab.h>
- #include <asm/io.h>
-+#include <linux/videomode.h>
+ /**
+  * drm_mode_set_name - set the name on a mode
+  * @mode: name will be set in this mode
+diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+index 3fd8280..3d0ccaa 100644
+--- a/include/drm/drmP.h
++++ b/include/drm/drmP.h
+@@ -85,6 +85,7 @@ struct module;
+ struct drm_file;
+ struct drm_device;
  
- struct vm_area_struct;
- struct fb_info;
-@@ -714,6 +715,11 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
- extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
- extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
++struct videomode;
+ #include <drm/drm_os_linux.h>
+ #include <drm/drm_hashtab.h>
+ #include <drm/drm_mm.h>
+@@ -1454,6 +1455,11 @@ extern struct drm_display_mode *
+ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
+ 				  struct drm_cmdline_mode *cmd);
  
 +#if IS_ENABLED(CONFIG_VIDEOMODE)
-+extern int fb_videomode_from_videomode(struct videomode *vm,
-+				       struct fb_videomode *fbmode);
++extern int drm_display_mode_from_videomode(const struct videomode *vm,
++					   struct drm_display_mode *dmode);
 +#endif
 +
- /* drivers/video/modedb.c */
- #define VESA_MODEDB_SIZE 34
- extern void fb_var_to_videomode(struct fb_videomode *mode,
+ /* Modesetting support */
+ extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
+ extern void drm_vblank_post_modeset(struct drm_device *dev, int crtc);
 -- 
 1.7.10.4
 

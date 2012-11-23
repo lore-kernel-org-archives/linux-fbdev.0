@@ -1,33 +1,27 @@
-From: Sekhar Nori <nsekhar@ti.com>
-Date: Tue, 20 Nov 2012 13:14:54 +0000
-Subject: Re: [PATCH] video: da8xx-fb: clk_get on connection id fck
-Message-Id: <50AB7F7E.1070400@ti.com>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Fri, 23 Nov 2012 04:33:43 +0000
+Subject: RE: [PATCH] video: da8xx-fb: clk_get on connection id fck
+Message-Id: <A73F36158E33644199EB82C5EC81C7BC3E9FB8D9@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1353415261-30080-1-git-send-email-prakash.pm@ti.com>
-In-Reply-To: <1353415261-30080-1-git-send-email-prakash.pm@ti.com>
+ <50AB7F7E.1070400@ti.com>
+In-Reply-To: <50AB7F7E.1070400@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On 11/20/2012 6:11 PM, Manjunathappa wrote:
-> do clk_get on connection id "fck" to support OMAP based
-> platforms having multiple clocks for module. Without this
-> driver change clk_get fails on am335x.
-> 
-> This patch is based on the discussion in community
-> http://marc.info/?l=linux-kernel&m5166018907827&w=2
-> 
-> Signed-off-by: Manjunathappa <prakash.pm@ti.com>
-> Cc: Vaibhav Hiremath <hvaibhav@ti.com>
-
-For the mach-davinci changes:
-
-Acked-by: Sekhar Nori <nsekhar@ti.com>
-
-Florian,
-
-I assume you will want to take this through your tree?
-
-Thanks,
-Sekhar
+SGkgVG9taSwNCg0KT24gVHVlLCBOb3YgMjAsIDIwMTIgYXQgMTg6MzI6NTQsIE5vcmksIFNla2hh
+ciB3cm90ZToNCj4gT24gMTEvMjAvMjAxMiA2OjExIFBNLCBNYW5qdW5hdGhhcHBhIHdyb3RlOg0K
+PiA+IGRvIGNsa19nZXQgb24gY29ubmVjdGlvbiBpZCAiZmNrIiB0byBzdXBwb3J0IE9NQVAgYmFz
+ZWQNCj4gPiBwbGF0Zm9ybXMgaGF2aW5nIG11bHRpcGxlIGNsb2NrcyBmb3IgbW9kdWxlLiBXaXRo
+b3V0IHRoaXMNCj4gPiBkcml2ZXIgY2hhbmdlIGNsa19nZXQgZmFpbHMgb24gYW0zMzV4Lg0KPiA+
+IA0KPiA+IFRoaXMgcGF0Y2ggaXMgYmFzZWQgb24gdGhlIGRpc2N1c3Npb24gaW4gY29tbXVuaXR5
+DQo+ID4gaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMzUxNjYwMTg5MDc4Mjcm
+dz0yDQo+ID4gDQo+ID4gU2lnbmVkLW9mZi1ieTogTWFuanVuYXRoYXBwYSA8cHJha2FzaC5wbUB0
+aS5jb20+DQo+ID4gQ2M6IFZhaWJoYXYgSGlyZW1hdGggPGh2YWliaGF2QHRpLmNvbT4NCj4gDQo+
+IEZvciB0aGUgbWFjaC1kYXZpbmNpIGNoYW5nZXM6DQo+IA0KPiBBY2tlZC1ieTogU2VraGFyIE5v
+cmkgPG5zZWtoYXJAdGkuY29tPg0KPiANCj4gRmxvcmlhbiwNCj4gDQo+IEkgYXNzdW1lIHlvdSB3
+aWxsIHdhbnQgdG8gdGFrZSB0aGlzIHRocm91Z2ggeW91ciB0cmVlPw0KPiANCg0KQ291bGQgeW91
+IHBsZWFzZSBwdWxsIGluIHRoaXM/DQoNClRoYW5rcywNClByYWthc2gNCg0KPiBUaGFua3MsDQo+
+IFNla2hhcg0KPiANCg0K

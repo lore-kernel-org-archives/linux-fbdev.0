@@ -1,75 +1,111 @@
-From: Tushar Behera <tushar.behera@linaro.org>
-Date: Thu, 22 Nov 2012 06:54:09 +0000
-Subject: [PATCH 2/4] video: vt8500: Fix invalid free of devm_ allocated data
-Message-Id: <1353566531-31251-3-git-send-email-tushar.behera@linaro.org>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Mon, 26 Nov 2012 09:07:27 +0000
+Subject: [PATCHv15 6/7] drm_modes: add videomode helpers
+Message-Id: <1353920848-1705-7-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353566531-31251-1-git-send-email-tushar.behera@linaro.org>
-In-Reply-To: <1353566531-31251-1-git-send-email-tushar.behera@linaro.org>
+References: <1353920848-1705-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1353920848-1705-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: FlorianSchandinat@gmx.de, linux@prisktech.co.nz, patches@linaro.org
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
 
-While at it, also fix the related return statements.
+Add conversion from videomode to drm_display_mode
 
-Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 ---
- drivers/video/vt8500lcdfb.c |   15 +++------------
- 1 files changed, 3 insertions(+), 12 deletions(-)
+ drivers/gpu/drm/drm_modes.c |   37 +++++++++++++++++++++++++++++++++++++
+ include/drm/drmP.h          |    7 +++++++
+ 2 files changed, 44 insertions(+)
 
-diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
-index 5777adc..2438368 100644
---- a/drivers/video/vt8500lcdfb.c
-+++ b/drivers/video/vt8500lcdfb.c
-@@ -294,8 +294,7 @@ static int __devinit vt8500lcd_probe(struct platform_device *pdev)
- 			+ sizeof(u32) * 16, GFP_KERNEL);
- 	if (!fbi) {
- 		dev_err(&pdev->dev, "Failed to initialize framebuffer device\n");
--		ret = -ENOMEM;
--		goto failed;
-+		return -ENOMEM;
- 	}
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 59450f3..8263ea1 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -33,6 +33,7 @@
+ #include <linux/list.h>
+ #include <linux/list_sort.h>
+ #include <linux/export.h>
++#include <linux/videomode.h>
+ #include <drm/drmP.h>
+ #include <drm/drm_crtc.h>
  
- 	strcpy(fbi->fb.fix.id, "VT8500 LCD");
-@@ -328,15 +327,13 @@ static int __devinit vt8500lcd_probe(struct platform_device *pdev)
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (res = NULL) {
- 		dev_err(&pdev->dev, "no I/O memory resource defined\n");
--		ret = -ENODEV;
--		goto failed_fbi;
-+		return -ENODEV;
- 	}
- 
- 	res = request_mem_region(res->start, resource_size(res), "vt8500lcd");
- 	if (res = NULL) {
- 		dev_err(&pdev->dev, "failed to request I/O memory\n");
--		ret = -EBUSY;
--		goto failed_fbi;
-+		return -EBUSY;
- 	}
- 
- 	fbi->regbase = ioremap(res->start, resource_size(res));
-@@ -466,10 +463,6 @@ failed_free_io:
- 	iounmap(fbi->regbase);
- failed_free_res:
- 	release_mem_region(res->start, resource_size(res));
--failed_fbi:
--	platform_set_drvdata(pdev, NULL);
--	kfree(fbi);
--failed:
- 	return ret;
+@@ -504,6 +505,42 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, int vdisplay, int vrefresh,
  }
+ EXPORT_SYMBOL(drm_gtf_mode);
  
-@@ -501,8 +494,6 @@ static int __devexit vt8500lcd_remove(struct platform_device *pdev)
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	release_mem_region(res->start, resource_size(res));
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++int drm_display_mode_from_videomode(const struct videomode *vm,
++				    struct drm_display_mode *dmode)
++{
++	dmode->hdisplay = vm->hactive;
++	dmode->hsync_start = dmode->hdisplay + vm->hfront_porch;
++	dmode->hsync_end = dmode->hsync_start + vm->hsync_len;
++	dmode->htotal = dmode->hsync_end + vm->hback_porch;
++
++	dmode->vdisplay = vm->vactive;
++	dmode->vsync_start = dmode->vdisplay + vm->vfront_porch;
++	dmode->vsync_end = dmode->vsync_start + vm->vsync_len;
++	dmode->vtotal = dmode->vsync_end + vm->vback_porch;
++
++	dmode->clock = vm->pixelclock / 1000;
++
++	dmode->flags = 0;
++	if (vm->hah)
++		dmode->flags |= DRM_MODE_FLAG_PHSYNC;
++	else
++		dmode->flags |= DRM_MODE_FLAG_NHSYNC;
++	if (vm->vah)
++		dmode->flags |= DRM_MODE_FLAG_PVSYNC;
++	else
++		dmode->flags |= DRM_MODE_FLAG_NVSYNC;
++	if (vm->interlaced)
++		dmode->flags |= DRM_MODE_FLAG_INTERLACE;
++	if (vm->doublescan)
++		dmode->flags |= DRM_MODE_FLAG_DBLSCAN;
++	drm_mode_set_name(dmode);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
++#endif
++
+ /**
+  * drm_mode_set_name - set the name on a mode
+  * @mode: name will be set in this mode
+diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+index 3fd8280..2194e97 100644
+--- a/include/drm/drmP.h
++++ b/include/drm/drmP.h
+@@ -85,6 +85,8 @@ struct module;
+ struct drm_file;
+ struct drm_device;
  
--	kfree(fbi);
--
- 	return 0;
- }
++struct videomode;
++
+ #include <drm/drm_os_linux.h>
+ #include <drm/drm_hashtab.h>
+ #include <drm/drm_mm.h>
+@@ -1454,6 +1456,11 @@ extern struct drm_display_mode *
+ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
+ 				  struct drm_cmdline_mode *cmd);
  
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++extern int drm_display_mode_from_videomode(const struct videomode *vm,
++					   struct drm_display_mode *dmode);
++#endif
++
+ /* Modesetting support */
+ extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
+ extern void drm_vblank_post_modeset(struct drm_device *dev, int crtc);
 -- 
-1.7.4.1
+1.7.10.4
 

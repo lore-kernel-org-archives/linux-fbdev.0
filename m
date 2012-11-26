@@ -1,148 +1,149 @@
-From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Date: Fri, 23 Nov 2012 16:35:15 +0000
-Subject: [PATCH 5/5] sh: kfr2r09: Use lv5207lp backlight
-Message-Id: <1353688515-30458-6-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Mon, 26 Nov 2012 09:07:22 +0000
+Subject: [PATCHv15 1/7] viafb: rename display_timing to via_display_timing
+Message-Id: <1353920848-1705-2-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1353920848-1705-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1353920848-1705-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
 
-Replace the backlight callback with a lv5207lp backlight platform
-device.
+The struct display_timing is specific to the via subsystem. The naming leads to
+collisions with the new struct display_timing, that is supposed to be a shared
+struct between different subsystems.
+To clean this up, prepend the existing struct with the subsystem it is specific
+to.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 ---
- arch/sh/boards/mach-kfr2r09/lcd_wqvga.c     |   48 ---------------------------
- arch/sh/boards/mach-kfr2r09/setup.c         |   19 ++++++++---
- arch/sh/include/mach-kfr2r09/mach/kfr2r09.h |    2 -
- 3 files changed, 14 insertions(+), 55 deletions(-)
+ drivers/video/via/hw.c              |    6 +++---
+ drivers/video/via/hw.h              |    2 +-
+ drivers/video/via/lcd.c             |    2 +-
+ drivers/video/via/share.h           |    2 +-
+ drivers/video/via/via_modesetting.c |    8 ++++----
+ drivers/video/via/via_modesetting.h |    6 +++---
+ 6 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c b/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
-index c620503..355a78a 100644
---- a/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
-+++ b/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
-@@ -276,51 +276,3 @@ void kfr2r09_lcd_start(void *sohandle, struct sh_mobile_lcdc_sys_bus_ops *so)
- {
- 	write_memory_start(sohandle, so);
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 898590d..5563c67 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -1467,10 +1467,10 @@ void viafb_set_vclock(u32 clk, int set_iga)
+ 	via_write_misc_reg_mask(0x0C, 0x0C); /* select external clock */
  }
--
--#define CTRL_CKSW       0x10
--#define CTRL_C10        0x20
--#define CTRL_CPSW       0x80
--#define MAIN_MLED4      0x40
--#define MAIN_MSW        0x80
--
--int kfr2r09_lcd_set_brightness(int brightness)
--{
--	struct i2c_adapter *a;
--	struct i2c_msg msg;
--	unsigned char buf[2];
--	int ret;
--
--	a = i2c_get_adapter(0);
--	if (!a)
--		return -ENODEV;
--
--	buf[0] = 0x00;
--	if (brightness)
--		buf[1] = CTRL_CPSW | CTRL_C10 | CTRL_CKSW;
--	else
--		buf[1] = 0;
--
--	msg.addr = 0x75;
--	msg.buf = buf;
--	msg.len = 2;
--	msg.flags = 0;
--	ret = i2c_transfer(a, &msg, 1);
--	if (ret != 1)
--		return -ENODEV;
--
--	buf[0] = 0x01;
--	if (brightness)
--		buf[1] = MAIN_MSW | MAIN_MLED4 | 0x0c;
--	else
--		buf[1] = 0;
--
--	msg.addr = 0x75;
--	msg.buf = buf;
--	msg.len = 2;
--	msg.flags = 0;
--	ret = i2c_transfer(a, &msg, 1);
--	if (ret != 1)
--		return -ENODEV;
--
--	return 0;
--}
-diff --git a/arch/sh/boards/mach-kfr2r09/setup.c b/arch/sh/boards/mach-kfr2r09/setup.c
-index ab502f12..1df4398 100644
---- a/arch/sh/boards/mach-kfr2r09/setup.c
-+++ b/arch/sh/boards/mach-kfr2r09/setup.c
-@@ -21,6 +21,7 @@
- #include <linux/input.h>
- #include <linux/input/sh_keysc.h>
- #include <linux/i2c.h>
-+#include <linux/platform_data/lv5207lp.h>
- #include <linux/regulator/fixed.h>
- #include <linux/regulator/machine.h>
- #include <linux/usb/r8a66597.h>
-@@ -159,11 +160,6 @@ static struct sh_mobile_lcdc_info kfr2r09_sh_lcdc_info = {
- 			.setup_sys = kfr2r09_lcd_setup,
- 			.start_transfer = kfr2r09_lcd_start,
- 		},
--		.bl_info = {
--			.name = "sh_mobile_lcdc_bl",
--			.max_brightness = 1,
--			.set_brightness = kfr2r09_lcd_set_brightness,
--		},
- 		.sys_bus_cfg = {
- 			.ldmt2r = 0x07010904,
- 			.ldmt3r = 0x14012914,
-@@ -195,6 +191,17 @@ static struct platform_device kfr2r09_sh_lcdc_device = {
- 	},
+ 
+-struct display_timing var_to_timing(const struct fb_var_screeninfo *var,
++struct via_display_timing var_to_timing(const struct fb_var_screeninfo *var,
+ 	u16 cxres, u16 cyres)
+ {
+-	struct display_timing timing;
++	struct via_display_timing timing;
+ 	u16 dx = (var->xres - cxres) / 2, dy = (var->yres - cyres) / 2;
+ 
+ 	timing.hor_addr = cxres;
+@@ -1491,7 +1491,7 @@ struct display_timing var_to_timing(const struct fb_var_screeninfo *var,
+ void viafb_fill_crtc_timing(const struct fb_var_screeninfo *var,
+ 	u16 cxres, u16 cyres, int iga)
+ {
+-	struct display_timing crt_reg = var_to_timing(var,
++	struct via_display_timing crt_reg = var_to_timing(var,
+ 		cxres ? cxres : var->xres, cyres ? cyres : var->yres);
+ 
+ 	if (iga = IGA1)
+diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
+index 6be243c..c3f2572 100644
+--- a/drivers/video/via/hw.h
++++ b/drivers/video/via/hw.h
+@@ -637,7 +637,7 @@ extern int viafb_LCD_ON;
+ extern int viafb_DVI_ON;
+ extern int viafb_hotplug;
+ 
+-struct display_timing var_to_timing(const struct fb_var_screeninfo *var,
++struct via_display_timing var_to_timing(const struct fb_var_screeninfo *var,
+ 	u16 cxres, u16 cyres);
+ void viafb_fill_crtc_timing(const struct fb_var_screeninfo *var,
+ 	u16 cxres, u16 cyres, int iga);
+diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
+index 1650379..022b0df 100644
+--- a/drivers/video/via/lcd.c
++++ b/drivers/video/via/lcd.c
+@@ -549,7 +549,7 @@ void viafb_lcd_set_mode(const struct fb_var_screeninfo *var, u16 cxres,
+ 	int panel_hres = plvds_setting_info->lcd_panel_hres;
+ 	int panel_vres = plvds_setting_info->lcd_panel_vres;
+ 	u32 clock;
+-	struct display_timing timing;
++	struct via_display_timing timing;
+ 	struct fb_var_screeninfo panel_var;
+ 	const struct fb_videomode *mode_crt_table, *panel_crt_table;
+ 
+diff --git a/drivers/video/via/share.h b/drivers/video/via/share.h
+index 3158dfc..65c65c6 100644
+--- a/drivers/video/via/share.h
++++ b/drivers/video/via/share.h
+@@ -319,7 +319,7 @@ struct crt_mode_table {
+ 	int refresh_rate;
+ 	int h_sync_polarity;
+ 	int v_sync_polarity;
+-	struct display_timing crtc;
++	struct via_display_timing crtc;
  };
  
-+static struct lv5207lp_platform_data kfr2r09_backlight_data = {
-+	.fbdev = &kfr2r09_sh_lcdc_device.dev,
-+	.def_value = 13,
-+	.max_value = 13,
-+};
-+
-+static struct i2c_board_info kfr2r09_backlight_board_info = {
-+	I2C_BOARD_INFO("lv5207lp", 0x75),
-+	.platform_data = &kfr2r09_backlight_data,
-+};
-+
- static struct r8a66597_platdata kfr2r09_usb0_gadget_data = {
- 	.on_chip = 1,
- };
-@@ -627,6 +634,8 @@ static int __init kfr2r09_devices_setup(void)
- 	gpio_request(GPIO_FN_SDHI0CMD, NULL);
- 	gpio_request(GPIO_FN_SDHI0CLK, NULL);
+ struct io_reg {
+diff --git a/drivers/video/via/via_modesetting.c b/drivers/video/via/via_modesetting.c
+index 0e431ae..0b414b0 100644
+--- a/drivers/video/via/via_modesetting.c
++++ b/drivers/video/via/via_modesetting.c
+@@ -30,9 +30,9 @@
+ #include "debug.h"
  
-+	i2c_register_board_info(0, &kfr2r09_backlight_board_info, 1);
-+
- 	return platform_add_devices(kfr2r09_devices,
- 				    ARRAY_SIZE(kfr2r09_devices));
- }
-diff --git a/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h b/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
-index c20c9e5..79f154e 100644
---- a/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
-+++ b/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
-@@ -4,13 +4,11 @@
- #include <video/sh_mobile_lcdc.h>
  
- #if defined(CONFIG_FB_SH_MOBILE_LCDC) || defined(CONFIG_FB_SH_MOBILE_LCDC_MODULE)
--int kfr2r09_lcd_set_brightness(int brightness);
- int kfr2r09_lcd_setup(void *sys_ops_handle,
- 		      struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
- void kfr2r09_lcd_start(void *sys_ops_handle,
- 		       struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
- #else
--static int kfr2r09_lcd_set_brightness(int brightness) {}
- static int kfr2r09_lcd_setup(void *sys_ops_handle,
- 				struct sh_mobile_lcdc_sys_bus_ops *sys_ops)
+-void via_set_primary_timing(const struct display_timing *timing)
++void via_set_primary_timing(const struct via_display_timing *timing)
  {
+-	struct display_timing raw;
++	struct via_display_timing raw;
+ 
+ 	raw.hor_total = timing->hor_total / 8 - 5;
+ 	raw.hor_addr = timing->hor_addr / 8 - 1;
+@@ -88,9 +88,9 @@ void via_set_primary_timing(const struct display_timing *timing)
+ 	via_write_reg_mask(VIACR, 0x17, 0x80, 0x80);
+ }
+ 
+-void via_set_secondary_timing(const struct display_timing *timing)
++void via_set_secondary_timing(const struct via_display_timing *timing)
+ {
+-	struct display_timing raw;
++	struct via_display_timing raw;
+ 
+ 	raw.hor_total = timing->hor_total - 1;
+ 	raw.hor_addr = timing->hor_addr - 1;
+diff --git a/drivers/video/via/via_modesetting.h b/drivers/video/via/via_modesetting.h
+index 06e09fe..f6a6503 100644
+--- a/drivers/video/via/via_modesetting.h
++++ b/drivers/video/via/via_modesetting.h
+@@ -33,7 +33,7 @@
+ #define VIA_PITCH_MAX	0x3FF8
+ 
+ 
+-struct display_timing {
++struct via_display_timing {
+ 	u16 hor_total;
+ 	u16 hor_addr;
+ 	u16 hor_blank_start;
+@@ -49,8 +49,8 @@ struct display_timing {
+ };
+ 
+ 
+-void via_set_primary_timing(const struct display_timing *timing);
+-void via_set_secondary_timing(const struct display_timing *timing);
++void via_set_primary_timing(const struct via_display_timing *timing);
++void via_set_secondary_timing(const struct via_display_timing *timing);
+ void via_set_primary_address(u32 addr);
+ void via_set_secondary_address(u32 addr);
+ void via_set_primary_pitch(u32 pitch);
 -- 
-1.7.8.6
+1.7.10.4
 

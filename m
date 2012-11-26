@@ -1,274 +1,158 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 26 Nov 2012 09:38:47 +0000
+Date: Mon, 26 Nov 2012 09:48:07 +0000
 Subject: Re: [PATCH 2/5] backlight: Add Sanyo LV5207LP backlight driver
-Message-Id: <004d01cdcbb9$d5cfb500$816f1f00$%han@samsung.com>
+Message-Id: <12056392.33321353923285279.JavaMail.weblogic@epv6ml07>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353688515-30458-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
- <1353688515-30458-3-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+References: <1353688515-30458-3-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 In-Reply-To: <1353688515-30458-3-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Laurent Pinchart' <laurent.pinchart+renesas@ideasonboard.com>
-Cc: 'Andrew Morton' <akpm@linux-foundation.org>, 'LKML' <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org, linux-fbdev@vger.kernel.org, 'Paul Mundt' <lethal@linux-sh.org>, 'Magnus Damm' <magnus.damm@gmail.com>, 'Richard Purdie' <rpurdie@rpsys.net>, 'Kuninori Morimoto' <kuninori.morimoto.gx@renesas.com>, 'Jingoo Han' <jg1.han@samsung.com>
+To: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>, Magnus Damm <magnus.damm@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Jingoo Han <jg1.han@samsung.com>
 
-On Saturday, November 24, 2012 1:35 AM, Laurent Pinchart wrote
-> 
-> Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+T24gU2F0dXJkYXksIE5vdmVtYmVyIDI0LCAyMDEyIDE6MzUgQU0sIExhdXJlbnQgUGluY2hhcnQg
+d3JvdGUNCj4gDQo+IFNpZ25lZC1vZmYtYnk6IExhdXJlbnQgUGluY2hhcnQgPGxhdXJlbnQucGlu
+Y2hhcnRAaWRlYXNvbmJvYXJkLmNvbT4NCg0KQ0MnZWQgQW5kcmV3IE1vcnRvbg0KDQpBY2tlZC1i
+eTogSmluZ29vIEhhbiA8amcxLmhhbkBzYW1zdW5nLmNvbT4NCg0KQmVzdCByZWdhcmRzLA0KSmlu
+Z29vIEhhbg0KDQo+IC0tLQ0KPiAgZHJpdmVycy92aWRlby9iYWNrbGlnaHQvS2NvbmZpZyAgICAg
+ICAgfCAgICA2ICsNCj4gIGRyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L01ha2VmaWxlICAgICAgIHwg
+ICAgMSArDQo+ICBkcml2ZXJzL3ZpZGVvL2JhY2tsaWdodC9sdjUyMDdscC5jICAgICB8ICAxNzEg
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysNCj4gIGluY2x1ZGUvbGludXgvcGxhdGZv
+cm1fZGF0YS9sdjUyMDdscC5oIHwgICAyMCArKysrDQo+ICA0IGZpbGVzIGNoYW5nZWQsIDE5OCBp
+bnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygtKQ0KPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IGRyaXZl
+cnMvdmlkZW8vYmFja2xpZ2h0L2x2NTIwN2xwLmMNCj4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBpbmNs
+dWRlL2xpbnV4L3BsYXRmb3JtX2RhdGEvbHY1MjA3bHAuaA0KPiANCj4gZGlmZiAtLWdpdCBhL2Ry
+aXZlcnMvdmlkZW8vYmFja2xpZ2h0L0tjb25maWcgYi9kcml2ZXJzL3ZpZGVvL2JhY2tsaWdodC9L
+Y29uZmlnDQo+IGluZGV4IDI1OTQ0MmQuLjkyY2U1YWEgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMv
+dmlkZW8vYmFja2xpZ2h0L0tjb25maWcNCj4gKysrIGIvZHJpdmVycy92aWRlby9iYWNrbGlnaHQv
+S2NvbmZpZw0KPiBAQCAtMzk3LDYgKzM5NywxMiBAQCBjb25maWcgQkFDS0xJR0hUX0dQSU8NCj4g
+IAkgIElmIHlvdSBoYXZlIGEgTENEIGJhY2tsaWdodCBhZGp1c3RhYmxlIGJ5IEdQSU8sIHNheSBZ
+IHRvIGVuYWJsZQ0KPiAgCSAgdGhpcyBkcml2ZXIuDQo+IA0KPiArY29uZmlnIEJBQ0tMSUdIVF9M
+VjUyMDdMUA0KPiArCXRyaXN0YXRlICJTYW55byBMVjUyMDdMUCBCYWNrbGlnaHQiDQo+ICsJZGVw
+ZW5kcyBvbiBJMkMNCj4gKwloZWxwDQo+ICsJICBJZiB5b3UgaGF2ZSBhIFNhbnlvIExWNTIwN0xQ
+IHNheSBZIHRvIGVuYWJsZSB0aGUgYmFja2xpZ2h0IGRyaXZlci4NCj4gKw0KPiAgZW5kaWYgIyBC
+QUNLTElHSFRfQ0xBU1NfREVWSUNFDQo+IA0KPiAgZW5kaWYgIyBCQUNLTElHSFRfTENEX1NVUFBP
+UlQNCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L01ha2VmaWxlIGIvZHJp
+dmVycy92aWRlby9iYWNrbGlnaHQvTWFrZWZpbGUNCj4gaW5kZXggZWM5MWM0YS4uMTI1YjhhZCAx
+MDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9iYWNrbGlnaHQvTWFrZWZpbGUNCj4gKysrIGIv
+ZHJpdmVycy92aWRlby9iYWNrbGlnaHQvTWFrZWZpbGUNCj4gQEAgLTQ2LDMgKzQ2LDQgQEAgb2Jq
+LSQoQ09ORklHX0JBQ0tMSUdIVF9BQVQyODcwKSArPSBhYXQyODcwX2JsLm8NCj4gIG9iai0kKENP
+TkZJR19CQUNLTElHSFRfT1QyMDApICs9IG90MjAwX2JsLm8NCj4gIG9iai0kKENPTkZJR19CQUNL
+TElHSFRfVFBTNjUyMTcpICs9IHRwczY1MjE3X2JsLm8NCj4gIG9iai0kKENPTkZJR19CQUNLTElH
+SFRfR1BJTykJKz0gZ3Bpb19iYWNrbGlnaHQubw0KPiArb2JqLSQoQ09ORklHX0JBQ0tMSUdIVF9M
+VjUyMDdMUCkJKz0gbHY1MjA3bHAubw0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9iYWNr
+bGlnaHQvbHY1MjA3bHAuYyBiL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L2x2NTIwN2xwLmMNCj4g
+bmV3IGZpbGUgbW9kZSAxMDA2NDQNCj4gaW5kZXggMDAwMDAwMC4uYjA2ZjM1Yw0KPiAtLS0gL2Rl
+di9udWxsDQo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L2x2NTIwN2xwLmMNCj4gQEAg
+LTAsMCArMSwxNzEgQEANCj4gKy8qDQo+ICsgKiBTYW55byBMVjUyMDdMUCBMRUQgRHJpdmVyDQo+
+ICsgKg0KPiArICogQ29weXJpZ2h0IChDKSAyMDEyIElkZWFzIG9uIGJvYXJkIFNQUkwNCj4gKyAq
+DQo+ICsgKiBDb250YWN0OiBMYXVyZW50IFBpbmNoYXJ0IDxsYXVyZW50LnBpbmNoYXJ0QGlkZWFz
+b25ib2FyZC5jb20+DQo+ICsgKg0KPiArICogVGhpcyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7
+IHlvdSBjYW4gcmVkaXN0cmlidXRlIGl0IGFuZC9vciBtb2RpZnkNCj4gKyAqIGl0IHVuZGVyIHRo
+ZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgdmVyc2lvbiAyIGFzDQo+
+ICsgKiBwdWJsaXNoZWQgYnkgdGhlIEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbi4NCj4gKyAqLw0K
+PiArDQo+ICsjaW5jbHVkZSA8bGludXgvYmFja2xpZ2h0Lmg+DQo+ICsjaW5jbHVkZSA8bGludXgv
+ZXJyLmg+DQo+ICsjaW5jbHVkZSA8bGludXgvZmIuaD4NCj4gKyNpbmNsdWRlIDxsaW51eC9pMmMu
+aD4NCj4gKyNpbmNsdWRlIDxsaW51eC9tb2R1bGUuaD4NCj4gKyNpbmNsdWRlIDxsaW51eC9zbGFi
+Lmg+DQo+ICsjaW5jbHVkZSA8bGludXgvcGxhdGZvcm1fZGF0YS9sdjUyMDdscC5oPg0KPiArDQo+
+ICsjZGVmaW5lIExWNTIwN0xQX0NUUkwxCQkJMHgwMA0KPiArI2RlZmluZSBMVjUyMDdMUF9DUFNX
+CQkJKDEgPDwgNykNCj4gKyNkZWZpbmUgTFY1MjA3TFBfU0NURU4JCQkoMSA8PCA2KQ0KPiArI2Rl
+ZmluZSBMVjUyMDdMUF9DMTAJCQkoMSA8PCA1KQ0KPiArI2RlZmluZSBMVjUyMDdMUF9DS1NXCQkJ
+KDEgPDwgNCkNCj4gKyNkZWZpbmUgTFY1MjA3TFBfUlNXCQkJKDEgPDwgMykNCj4gKyNkZWZpbmUg
+TFY1MjA3TFBfR1NXCQkJKDEgPDwgMikNCj4gKyNkZWZpbmUgTFY1MjA3TFBfQlNXCQkJKDEgPDwg
+MSkNCj4gKyNkZWZpbmUgTFY1MjA3TFBfQ1RSTDIJCQkweDAxDQo+ICsjZGVmaW5lIExWNTIwN0xQ
+X01TVwkJCSgxIDw8IDcpDQo+ICsjZGVmaW5lIExWNTIwN0xQX01MRUQ0CQkJKDEgPDwgNikNCj4g
+KyNkZWZpbmUgTFY1MjA3TFBfUkVECQkJMHgwMg0KPiArI2RlZmluZSBMVjUyMDdMUF9HUkVFTgkJ
+CTB4MDMNCj4gKyNkZWZpbmUgTFY1MjA3TFBfQkxVRQkJCTB4MDQNCj4gKw0KPiArI2RlZmluZSBM
+VjUyMDdMUF9NQVhfQlJJR0hUTkVTUwkJMzINCj4gKw0KPiArc3RydWN0IGx2NTIwN2xwIHsNCj4g
+KwlzdHJ1Y3QgaTJjX2NsaWVudCAqY2xpZW50Ow0KPiArCXN0cnVjdCBiYWNrbGlnaHRfZGV2aWNl
+ICpiYWNrbGlnaHQ7DQo+ICsJc3RydWN0IGx2NTIwN2xwX3BsYXRmb3JtX2RhdGEgKnBkYXRhOw0K
+PiArfTsNCj4gKw0KPiArc3RhdGljIGludCBsdjUyMDdscF93cml0ZShzdHJ1Y3QgbHY1MjA3bHAg
+Kmx2LCB1OCByZWcsIHU4IGRhdGEpDQo+ICt7DQo+ICsJcmV0dXJuIGkyY19zbWJ1c193cml0ZV9i
+eXRlX2RhdGEobHYtPmNsaWVudCwgcmVnLCBkYXRhKTsNCj4gK30NCj4gKw0KPiArc3RhdGljIGlu
+dCBsdjUyMDdscF9iYWNrbGlnaHRfdXBkYXRlX3N0YXR1cyhzdHJ1Y3QgYmFja2xpZ2h0X2Rldmlj
+ZSAqYmFja2xpZ2h0KQ0KPiArew0KPiArCXN0cnVjdCBsdjUyMDdscCAqbHYgPSBibF9nZXRfZGF0
+YShiYWNrbGlnaHQpOw0KPiArCWludCBicmlnaHRuZXNzID0gYmFja2xpZ2h0LT5wcm9wcy5icmln
+aHRuZXNzOw0KPiArDQo+ICsJaWYgKGJhY2tsaWdodC0+cHJvcHMucG93ZXIgIT0gRkJfQkxBTktf
+VU5CTEFOSyB8fA0KPiArCSAgICBiYWNrbGlnaHQtPnByb3BzLmZiX2JsYW5rICE9IEZCX0JMQU5L
+X1VOQkxBTksgfHwNCj4gKwkgICAgYmFja2xpZ2h0LT5wcm9wcy5zdGF0ZSAmIChCTF9DT1JFX1NV
+U1BFTkRFRCB8IEJMX0NPUkVfRkJCTEFOSykpDQo+ICsJCWJyaWdodG5lc3MgPSAwOw0KPiArDQo+
+ICsJaWYgKGJyaWdodG5lc3MpIHsNCj4gKwkJbHY1MjA3bHBfd3JpdGUobHYsIExWNTIwN0xQX0NU
+UkwxLA0KPiArCQkJICAgICAgIExWNTIwN0xQX0NQU1cgfCBMVjUyMDdMUF9DMTAgfCBMVjUyMDdM
+UF9DS1NXKTsNCj4gKwkJbHY1MjA3bHBfd3JpdGUobHYsIExWNTIwN0xQX0NUUkwyLA0KPiArCQkJ
+ICAgICAgIExWNTIwN0xQX01TVyB8IExWNTIwN0xQX01MRUQ0IHwNCj4gKwkJCSAgICAgICAoYnJp
+Z2h0bmVzcyAtIDEpKTsNCj4gKwl9IGVsc2Ugew0KPiArCQlsdjUyMDdscF93cml0ZShsdiwgTFY1
+MjA3TFBfQ1RSTDEsIDApOw0KPiArCQlsdjUyMDdscF93cml0ZShsdiwgTFY1MjA3TFBfQ1RSTDIs
+IDApOw0KPiArCX0NCj4gKw0KPiArCXJldHVybiAwOw0KPiArfQ0KPiArDQo+ICtzdGF0aWMgaW50
+IGx2NTIwN2xwX2JhY2tsaWdodF9nZXRfYnJpZ2h0bmVzcyhzdHJ1Y3QgYmFja2xpZ2h0X2Rldmlj
+ZSAqYmFja2xpZ2h0KQ0KPiArew0KPiArCXJldHVybiBiYWNrbGlnaHQtPnByb3BzLmJyaWdodG5l
+c3M7DQo+ICt9DQo+ICsNCj4gK3N0YXRpYyBpbnQgbHY1MjA3bHBfYmFja2xpZ2h0X2NoZWNrX2Zi
+KHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpiYWNrbGlnaHQsDQo+ICsJCQkJICAgICAgIHN0cnVj
+dCBmYl9pbmZvICppbmZvKQ0KPiArew0KPiArCXN0cnVjdCBsdjUyMDdscCAqbHYgPSBibF9nZXRf
+ZGF0YShiYWNrbGlnaHQpOw0KPiArDQo+ICsJcmV0dXJuIGx2LT5wZGF0YS0+ZmJkZXYgPT0gaW5m
+by0+ZGV2Ow0KPiArfQ0KPiArDQo+ICtzdGF0aWMgY29uc3Qgc3RydWN0IGJhY2tsaWdodF9vcHMg
+bHY1MjA3bHBfYmFja2xpZ2h0X29wcyA9IHsNCj4gKwkub3B0aW9ucwk9IEJMX0NPUkVfU1VTUEVO
+RFJFU1VNRSwNCj4gKwkudXBkYXRlX3N0YXR1cwk9IGx2NTIwN2xwX2JhY2tsaWdodF91cGRhdGVf
+c3RhdHVzLA0KPiArCS5nZXRfYnJpZ2h0bmVzcwk9IGx2NTIwN2xwX2JhY2tsaWdodF9nZXRfYnJp
+Z2h0bmVzcywNCj4gKwkuY2hlY2tfZmIJPSBsdjUyMDdscF9iYWNrbGlnaHRfY2hlY2tfZmIsDQo+
+ICt9Ow0KPiArDQo+ICtzdGF0aWMgaW50IGx2NTIwN2xwX3Byb2JlKHN0cnVjdCBpMmNfY2xpZW50
+ICpjbGllbnQsDQo+ICsJCQkgIGNvbnN0IHN0cnVjdCBpMmNfZGV2aWNlX2lkICppZCkNCj4gK3sN
+Cj4gKwlzdHJ1Y3QgbHY1MjA3bHBfcGxhdGZvcm1fZGF0YSAqcGRhdGEgPSBjbGllbnQtPmRldi5w
+bGF0Zm9ybV9kYXRhOw0KPiArCXN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpiYWNrbGlnaHQ7DQo+
+ICsJc3RydWN0IGJhY2tsaWdodF9wcm9wZXJ0aWVzIHByb3BzOw0KPiArCXN0cnVjdCBsdjUyMDds
+cCAqbHY7DQo+ICsNCj4gKwlpZiAocGRhdGEgPT0gTlVMTCkgew0KPiArCQlkZXZfZXJyKCZjbGll
+bnQtPmRldiwgIk5vIHBsYXRmb3JtIGRhdGEgc3VwcGxpZWRcbiIpOw0KPiArCQlyZXR1cm4gLUVJ
+TlZBTDsNCj4gKwl9DQo+ICsNCj4gKwlpZiAoIWkyY19jaGVja19mdW5jdGlvbmFsaXR5KGNsaWVu
+dC0+YWRhcHRlciwNCj4gKwkJCQkgICAgIEkyQ19GVU5DX1NNQlVTX0JZVEVfREFUQSkpIHsNCj4g
+KwkJZGV2X3dhcm4oJmNsaWVudC0+ZGV2LA0KPiArCQkJICJJMkMgYWRhcHRlciBkb2Vzbid0IHN1
+cHBvcnQgSTJDX0ZVTkNfU01CVVNfQllURVxuIik7DQo+ICsJCXJldHVybiAtRUlPOw0KPiArCX0N
+Cj4gKw0KPiArCWx2ID0gZGV2bV9remFsbG9jKCZjbGllbnQtPmRldiwgc2l6ZW9mKCpsdiksIEdG
+UF9LRVJORUwpOw0KPiArCWlmICghbHYpDQo+ICsJCXJldHVybiAtRU5PTUVNOw0KPiArDQo+ICsJ
+bHYtPmNsaWVudCA9IGNsaWVudDsNCj4gKwlsdi0+cGRhdGEgPSBwZGF0YTsNCj4gKw0KPiArCW1l
+bXNldCgmcHJvcHMsIDAsIHNpemVvZihwcm9wcykpOw0KPiArCXByb3BzLnR5cGUgPSBCQUNLTElH
+SFRfUkFXOw0KPiArCXByb3BzLm1heF9icmlnaHRuZXNzID0gbWluX3QodW5zaWduZWQgaW50LCBw
+ZGF0YS0+bWF4X3ZhbHVlLA0KPiArCQkJCSAgICAgTFY1MjA3TFBfTUFYX0JSSUdIVE5FU1MpOw0K
+PiArCXByb3BzLmJyaWdodG5lc3MgPSBjbGFtcF90KHVuc2lnbmVkIGludCwgcGRhdGEtPmRlZl92
+YWx1ZSwgMCwNCj4gKwkJCQkgICBwcm9wcy5tYXhfYnJpZ2h0bmVzcyk7DQo+ICsNCj4gKwliYWNr
+bGlnaHQgPSBiYWNrbGlnaHRfZGV2aWNlX3JlZ2lzdGVyKGRldl9uYW1lKCZjbGllbnQtPmRldiks
+DQo+ICsJCQkJCSAgICAgICZsdi0+Y2xpZW50LT5kZXYsIGx2LA0KPiArCQkJCQkgICAgICAmbHY1
+MjA3bHBfYmFja2xpZ2h0X29wcywgJnByb3BzKTsNCj4gKwlpZiAoSVNfRVJSKGJhY2tsaWdodCkp
+IHsNCj4gKwkJZGV2X2VycigmY2xpZW50LT5kZXYsICJmYWlsZWQgdG8gcmVnaXN0ZXIgYmFja2xp
+Z2h0XG4iKTsNCj4gKwkJcmV0dXJuIFBUUl9FUlIoYmFja2xpZ2h0KTsNCj4gKwl9DQo+ICsNCj4g
+KwliYWNrbGlnaHRfdXBkYXRlX3N0YXR1cyhiYWNrbGlnaHQpOw0KPiArCWkyY19zZXRfY2xpZW50
+ZGF0YShjbGllbnQsIGJhY2tsaWdodCk7DQo+ICsNCj4gKwlyZXR1cm4gMDsNCj4gK30NCj4gKw0K
+PiArc3RhdGljIGludCBsdjUyMDdscF9yZW1vdmUoc3RydWN0IGkyY19jbGllbnQgKmNsaWVudCkN
+Cj4gK3sNCj4gKwlzdHJ1Y3QgYmFja2xpZ2h0X2RldmljZSAqYmFja2xpZ2h0ID0gaTJjX2dldF9j
+bGllbnRkYXRhKGNsaWVudCk7DQo+ICsNCj4gKwliYWNrbGlnaHQtPnByb3BzLmJyaWdodG5lc3Mg
+PSAwOw0KPiArCWJhY2tsaWdodF91cGRhdGVfc3RhdHVzKGJhY2tsaWdodCk7DQo+ICsJYmFja2xp
+Z2h0X2RldmljZV91bnJlZ2lzdGVyKGJhY2tsaWdodCk7DQo+ICsNCj4gKwlyZXR1cm4gMDsNCj4g
+K30NCj4gKw0KPiArc3RhdGljIGNvbnN0IHN0cnVjdCBpMmNfZGV2aWNlX2lkIGx2NTIwN2xwX2lk
+c1tdID0gew0KPiArCXsgImx2NTIwN2xwIiwgMCB9LA0KPiArCXsgfQ0KPiArfTsNCj4gK01PRFVM
+RV9ERVZJQ0VfVEFCTEUoaTJjLCBsdjUyMDdscF9pZHMpOw0KPiArDQo+ICtzdGF0aWMgc3RydWN0
+IGkyY19kcml2ZXIgbHY1MjA3bHBfZHJpdmVyID0gew0KPiArCS5kcml2ZXIgPSB7DQo+ICsJCS5u
+YW1lID0gImx2NTIwN2xwIiwNCj4gKwl9LA0KPiArCS5wcm9iZSA9IGx2NTIwN2xwX3Byb2JlLA0K
+PiArCS5yZW1vdmUgPSBsdjUyMDdscF9yZW1vdmUsDQo+ICsJLmlkX3RhYmxlID0gbHY1MjA3bHBf
+aWRzLA0KPiArfTsNCj4gKw0KPiArbW9kdWxlX2kyY19kcml2ZXIobHY1MjA3bHBfZHJpdmVyKTsN
+Cj4gKw0KPiArTU9EVUxFX0RFU0NSSVBUSU9OKCJTYW55byBMVjUyMDdMUCBCYWNrbGlnaHQgRHJp
+dmVyIik7DQo+ICtNT0RVTEVfQVVUSE9SKCJMYXVyZW50IFBpbmNoYXJ0IDxsYXVyZW50LnBpbmNo
+YXJ0QGlkZWFzb25ib2FyZC5jb20+Iik7DQo+ICtNT0RVTEVfTElDRU5TRSgiR1BMIik7DQo+IGRp
+ZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3BsYXRmb3JtX2RhdGEvbHY1MjA3bHAuaCBiL2luY2x1
+ZGUvbGludXgvcGxhdGZvcm1fZGF0YS9sdjUyMDdscC5oDQo+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0
+DQo+IGluZGV4IDAwMDAwMDAuLmFjOTVjYjENCj4gLS0tIC9kZXYvbnVsbA0KPiArKysgYi9pbmNs
+dWRlL2xpbnV4L3BsYXRmb3JtX2RhdGEvbHY1MjA3bHAuaA0KPiBAQCAtMCwwICsxLDIwIEBADQo+
+ICsvKg0KPiArICogbHY1MjA3bHAuaCAtIFNhbnlvIExWNTIwN0xQIExFRHMgRHJpdmVyDQo+ICsg
+Kg0KPiArICogVGhpcyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7IHlvdSBjYW4gcmVkaXN0cmli
+dXRlIGl0IGFuZC9vciBtb2RpZnkNCj4gKyAqIGl0IHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgR05V
+IEdlbmVyYWwgUHVibGljIExpY2Vuc2UgdmVyc2lvbiAyIGFzDQo+ICsgKiBwdWJsaXNoZWQgYnkg
+dGhlIEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbi4NCj4gKyAqLw0KPiArI2lmbmRlZiBfX0xWNTIw
+N0xQX0hfXw0KPiArI2RlZmluZSBfX0xWNTIwN0xQX0hfXw0KPiArDQo+ICtzdHJ1Y3QgZGV2aWNl
+Ow0KPiArDQo+ICtzdHJ1Y3QgbHY1MjA3bHBfcGxhdGZvcm1fZGF0YSB7DQo+ICsJc3RydWN0IGRl
+dmljZSAqZmJkZXY7DQo+ICsJdW5zaWduZWQgaW50IG1heF92YWx1ZTsNCj4gKwl1bnNpZ25lZCBp
+bnQgZGVmX3ZhbHVlOw0KPiArfTsNCj4gKw0KPiArI2VuZGlmDQo+ICsNCj4gLS0NCj4gMS43Ljgu
+Ng0KPiANCj4gLS0NCj4gVG8gdW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxp
+bmUgInVuc3Vic2NyaWJlIGxpbnV4LWZiZGV2IiBpbg0KPiB0aGUgYm9keSBvZiBhIG1lc3NhZ2Ug
+dG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZw0KPiBNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBo
+dHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWwNCg=
 
-
-CC'ed Andrew Morton
-
-
-Acked-by: Jingoo Han <jg1.han@samsung.com>
-
-
-Best regards,
-Jingoo Han
-
-> ---
->  drivers/video/backlight/Kconfig        |    6 +
->  drivers/video/backlight/Makefile       |    1 +
->  drivers/video/backlight/lv5207lp.c     |  171 ++++++++++++++++++++++++++++++++
->  include/linux/platform_data/lv5207lp.h |   20 ++++
->  4 files changed, 198 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/video/backlight/lv5207lp.c
->  create mode 100644 include/linux/platform_data/lv5207lp.h
-> 
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> index 259442d..92ce5aa 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -397,6 +397,12 @@ config BACKLIGHT_GPIO
->  	  If you have a LCD backlight adjustable by GPIO, say Y to enable
->  	  this driver.
-> 
-> +config BACKLIGHT_LV5207LP
-> +	tristate "Sanyo LV5207LP Backlight"
-> +	depends on I2C
-> +	help
-> +	  If you have a Sanyo LV5207LP say Y to enable the backlight driver.
-> +
->  endif # BACKLIGHT_CLASS_DEVICE
-> 
->  endif # BACKLIGHT_LCD_SUPPORT
-> diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-> index ec91c4a..125b8ad 100644
-> --- a/drivers/video/backlight/Makefile
-> +++ b/drivers/video/backlight/Makefile
-> @@ -46,3 +46,4 @@ obj-$(CONFIG_BACKLIGHT_AAT2870) += aat2870_bl.o
->  obj-$(CONFIG_BACKLIGHT_OT200) += ot200_bl.o
->  obj-$(CONFIG_BACKLIGHT_TPS65217) += tps65217_bl.o
->  obj-$(CONFIG_BACKLIGHT_GPIO)	+= gpio_backlight.o
-> +obj-$(CONFIG_BACKLIGHT_LV5207LP)	+= lv5207lp.o
-> diff --git a/drivers/video/backlight/lv5207lp.c b/drivers/video/backlight/lv5207lp.c
-> new file mode 100644
-> index 0000000..b06f35c
-> --- /dev/null
-> +++ b/drivers/video/backlight/lv5207lp.c
-> @@ -0,0 +1,171 @@
-> +/*
-> + * Sanyo LV5207LP LED Driver
-> + *
-> + * Copyright (C) 2012 Ideas on board SPRL
-> + *
-> + * Contact: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#include <linux/backlight.h>
-> +#include <linux/err.h>
-> +#include <linux/fb.h>
-> +#include <linux/i2c.h>
-> +#include <linux/module.h>
-> +#include <linux/slab.h>
-> +#include <linux/platform_data/lv5207lp.h>
-> +
-> +#define LV5207LP_CTRL1			0x00
-> +#define LV5207LP_CPSW			(1 << 7)
-> +#define LV5207LP_SCTEN			(1 << 6)
-> +#define LV5207LP_C10			(1 << 5)
-> +#define LV5207LP_CKSW			(1 << 4)
-> +#define LV5207LP_RSW			(1 << 3)
-> +#define LV5207LP_GSW			(1 << 2)
-> +#define LV5207LP_BSW			(1 << 1)
-> +#define LV5207LP_CTRL2			0x01
-> +#define LV5207LP_MSW			(1 << 7)
-> +#define LV5207LP_MLED4			(1 << 6)
-> +#define LV5207LP_RED			0x02
-> +#define LV5207LP_GREEN			0x03
-> +#define LV5207LP_BLUE			0x04
-> +
-> +#define LV5207LP_MAX_BRIGHTNESS		32
-> +
-> +struct lv5207lp {
-> +	struct i2c_client *client;
-> +	struct backlight_device *backlight;
-> +	struct lv5207lp_platform_data *pdata;
-> +};
-> +
-> +static int lv5207lp_write(struct lv5207lp *lv, u8 reg, u8 data)
-> +{
-> +	return i2c_smbus_write_byte_data(lv->client, reg, data);
-> +}
-> +
-> +static int lv5207lp_backlight_update_status(struct backlight_device *backlight)
-> +{
-> +	struct lv5207lp *lv = bl_get_data(backlight);
-> +	int brightness = backlight->props.brightness;
-> +
-> +	if (backlight->props.power != FB_BLANK_UNBLANK ||
-> +	    backlight->props.fb_blank != FB_BLANK_UNBLANK ||
-> +	    backlight->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
-> +		brightness = 0;
-> +
-> +	if (brightness) {
-> +		lv5207lp_write(lv, LV5207LP_CTRL1,
-> +			       LV5207LP_CPSW | LV5207LP_C10 | LV5207LP_CKSW);
-> +		lv5207lp_write(lv, LV5207LP_CTRL2,
-> +			       LV5207LP_MSW | LV5207LP_MLED4 |
-> +			       (brightness - 1));
-> +	} else {
-> +		lv5207lp_write(lv, LV5207LP_CTRL1, 0);
-> +		lv5207lp_write(lv, LV5207LP_CTRL2, 0);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int lv5207lp_backlight_get_brightness(struct backlight_device *backlight)
-> +{
-> +	return backlight->props.brightness;
-> +}
-> +
-> +static int lv5207lp_backlight_check_fb(struct backlight_device *backlight,
-> +				       struct fb_info *info)
-> +{
-> +	struct lv5207lp *lv = bl_get_data(backlight);
-> +
-> +	return lv->pdata->fbdev = info->dev;
-> +}
-> +
-> +static const struct backlight_ops lv5207lp_backlight_ops = {
-> +	.options	= BL_CORE_SUSPENDRESUME,
-> +	.update_status	= lv5207lp_backlight_update_status,
-> +	.get_brightness	= lv5207lp_backlight_get_brightness,
-> +	.check_fb	= lv5207lp_backlight_check_fb,
-> +};
-> +
-> +static int lv5207lp_probe(struct i2c_client *client,
-> +			  const struct i2c_device_id *id)
-> +{
-> +	struct lv5207lp_platform_data *pdata = client->dev.platform_data;
-> +	struct backlight_device *backlight;
-> +	struct backlight_properties props;
-> +	struct lv5207lp *lv;
-> +
-> +	if (pdata = NULL) {
-> +		dev_err(&client->dev, "No platform data supplied\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	if (!i2c_check_functionality(client->adapter,
-> +				     I2C_FUNC_SMBUS_BYTE_DATA)) {
-> +		dev_warn(&client->dev,
-> +			 "I2C adapter doesn't support I2C_FUNC_SMBUS_BYTE\n");
-> +		return -EIO;
-> +	}
-> +
-> +	lv = devm_kzalloc(&client->dev, sizeof(*lv), GFP_KERNEL);
-> +	if (!lv)
-> +		return -ENOMEM;
-> +
-> +	lv->client = client;
-> +	lv->pdata = pdata;
-> +
-> +	memset(&props, 0, sizeof(props));
-> +	props.type = BACKLIGHT_RAW;
-> +	props.max_brightness = min_t(unsigned int, pdata->max_value,
-> +				     LV5207LP_MAX_BRIGHTNESS);
-> +	props.brightness = clamp_t(unsigned int, pdata->def_value, 0,
-> +				   props.max_brightness);
-> +
-> +	backlight = backlight_device_register(dev_name(&client->dev),
-> +					      &lv->client->dev, lv,
-> +					      &lv5207lp_backlight_ops, &props);
-> +	if (IS_ERR(backlight)) {
-> +		dev_err(&client->dev, "failed to register backlight\n");
-> +		return PTR_ERR(backlight);
-> +	}
-> +
-> +	backlight_update_status(backlight);
-> +	i2c_set_clientdata(client, backlight);
-> +
-> +	return 0;
-> +}
-> +
-> +static int lv5207lp_remove(struct i2c_client *client)
-> +{
-> +	struct backlight_device *backlight = i2c_get_clientdata(client);
-> +
-> +	backlight->props.brightness = 0;
-> +	backlight_update_status(backlight);
-> +	backlight_device_unregister(backlight);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct i2c_device_id lv5207lp_ids[] = {
-> +	{ "lv5207lp", 0 },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(i2c, lv5207lp_ids);
-> +
-> +static struct i2c_driver lv5207lp_driver = {
-> +	.driver = {
-> +		.name = "lv5207lp",
-> +	},
-> +	.probe = lv5207lp_probe,
-> +	.remove = lv5207lp_remove,
-> +	.id_table = lv5207lp_ids,
-> +};
-> +
-> +module_i2c_driver(lv5207lp_driver);
-> +
-> +MODULE_DESCRIPTION("Sanyo LV5207LP Backlight Driver");
-> +MODULE_AUTHOR("Laurent Pinchart <laurent.pinchart@ideasonboard.com>");
-> +MODULE_LICENSE("GPL");
-> diff --git a/include/linux/platform_data/lv5207lp.h b/include/linux/platform_data/lv5207lp.h
-> new file mode 100644
-> index 0000000..ac95cb1
-> --- /dev/null
-> +++ b/include/linux/platform_data/lv5207lp.h
-> @@ -0,0 +1,20 @@
-> +/*
-> + * lv5207lp.h - Sanyo LV5207LP LEDs Driver
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +#ifndef __LV5207LP_H__
-> +#define __LV5207LP_H__
-> +
-> +struct device;
-> +
-> +struct lv5207lp_platform_data {
-> +	struct device *fbdev;
-> +	unsigned int max_value;
-> +	unsigned int def_value;
-> +};
-> +
-> +#endif
-> +
-> --
-> 1.7.8.6
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 

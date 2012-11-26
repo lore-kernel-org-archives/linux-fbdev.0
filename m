@@ -1,51 +1,57 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Fri, 23 Nov 2012 01:44:44 +0000
+From: Alex Courbot <acourbot@nvidia.com>
+Date: Mon, 26 Nov 2012 11:49:53 +0000
 Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Message-Id: <20121123014443.GD4385@opensource.wolfsonmicro.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="jL2BoiuKMElzg3CS"
+Message-Id: <3319894.UD2L7QhyVv@percival>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
- <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
- <20121120215429.B621F3E1821@localhost>
- <20121121013133.GE4673@opensource.wolfsonmicro.com>
- <CACRpkdaNmBpfONDpt7zFqLaqfiGm+ELpO-v5gZmM0rEi_AzijQ@mail.gmail.com>
-In-Reply-To: <CACRpkdaNmBpfONDpt7zFqLaqfiGm+ELpO-v5gZmM0rEi_AzijQ@mail.gmail.com>
+ <20121122133941.24B883E129E@localhost>
+ <20121122214021.GA14771@avionic-0098.adnet.avionic-design.de>
+In-Reply-To: <20121122214021.GA14771@avionic-0098.adnet.avionic-design.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
+On Friday 23 November 2012 05:40:21 Thierry Reding wrote:
+> On Thu, Nov 22, 2012 at 01:39:41PM +0000, Grant Likely wrote:
+> [...]
+> 
+> > I do think that each sequence should be contained within a single
+> > property, but I'm open to other suggestions.
+> 
+> IIRC a very early prototype did implement something like that. However
+> because of the resource issues this had to be string based, so that the
+> sequences looked somewhat like (Alex, correct me if I'm wrong):
+> 
+> 	power-on = <"REGULATOR", "power", 1, "GPIO", "enable", 1>;
 
---jL2BoiuKMElzg3CS
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+You're right. Back when the burning sun of July was beating down a little bit 
+too hard on my head.
 
-On Thu, Nov 22, 2012 at 09:57:22AM +0100, Linus Walleij wrote:
+https://lkml.org/lkml/2012/7/9/30
 
-> Is it correct to assume that this library will be useful also for ALSA
-> SoC type of devices?
+> Instead we could possibly have something like:
+> 
+> 	power-on = <0 &reg 1,
+> 		    1 &gpio 42 0 1>;
+> 
+> Where the first cell in each entry defines the type (0 = regulator, 1 > GPIO) and the rest would be a regular OF specifier for the given type of
+> resource along with some defined parameter such as enable/disable,
+> voltage, delay in ms, ... I don't know if that sounds any better. It
+> looks sort of cryptic but it is more "in the spirit of" DT, right Grant?
+> 
+> Writing this down, it seems to me like even that proposal was already
+> discussed at some point. Again, Alex may remember better.
 
-ASoC has facilities for autogenerating the bulk of the sequences which
-with modern devices is all that you really need.
+The idea that we had was to use preprocessor support in DTC to use macros 
+instead of strings for the step type. We also thought about using phandles 
+directly in there as well, but this would require some more API support.
 
---jL2BoiuKMElzg3CS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Anyway, at the current point we are not even sure whether we want or need 
+power seqs in the DT - so let's keep this topic on hold for a while. We can 
+still introduce the feature without DT support, and if it eventually turns out 
+during this winter that expressing power seqs in the DT makes sense, we will 
+have plenty of archives to read in front of the fire.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Alex.
 
-iQIcBAEBAgAGBQJQrtUFAAoJELSic+t+oim9or0P/jeRd4BYe3ocqxtkm+e8e60Y
-blALWfdQExTsYg1gmoEASiBFm5vhQg9TDcmM1MdojCRV0+IfPem+a/Zo8DuLinqO
-QqNNY5pw/j7KLM2FflzoiFPtwz5w4Tg85eMZD9nsmmAUw//t+hlB1uCI6qo1RAQ7
-GAR4L6jCTNqe9q7osV5ydEw3rrKKTqo99MMO0inZ788wp+xzSCHcP5wljRwHZwSI
-3Q8vL3dQw+IGa6/XJM9pMAOd/IFwW8+5QCl89Z6hRLza9V+K9Ax7/Xgj4uv/E2CG
-ASe9HZ4hInv6kwJX0yUN4dQJPt5CH+ABnuRnB9WBEhxZ5EIeYDy3JIHfCBxevGiN
-j8g8mLQ8ihXQ3GcLHgHk6cXtxI/5EZhaOWDCN13sZ3FTnxKfm1xDQ9iQoEx/CTgR
-oirZajqnKJyVBI2j431JLtzwzsI37dS9gS12MLtudXTCMuuib/RZ1CtpqvUfV0Hq
-mTUaKqiUXl67Pu+nbbIlwUuvicPugTjMBJepjhQlXlrDwvOXGj6p2rX0ZHEJYel4
-/mzD0ZIlwhcHgfh7RUQefuDldbr2DLJSDveAi6mWPnS1/GuNn4KIKwJuKgRqNGgW
-dQvoKBvH5qEQvZpwEehl7HAt7UQ5blr8zcWMz4iQxv9q3WY4G3SmmgUIYLH9E+Qw
-31wJ1bVSScBxeHLbdGqf
-=yrHA
------END PGP SIGNATURE-----
-
---jL2BoiuKMElzg3CS--

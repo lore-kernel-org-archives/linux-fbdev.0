@@ -1,87 +1,130 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 01 Nov 2012 00:45:48 +0000
-Subject: RE: [PATCH 05/10] video: exynos_dp: Remove sink control to D0
-Message-Id: <001f01cdb7ca$3bf8f2a0$b3ead7e0$%han@samsung.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Mon, 26 Nov 2012 09:07:21 +0000
+Subject: [PATCHv15 0/7] of: add display helper
+Message-Id: <1353920848-1705-1-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1344398064-13563-6-git-send-email-seanpaul@chromium.org>
-In-Reply-To: <1344398064-13563-6-git-send-email-seanpaul@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: devicetree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
 
-On Thursday, November 01, 2012 2:05 AM Sean Paul wrote
-> 
-> On Mon, Aug 20, 2012 at 5:19 AM, Jingoo Han <jg1.han@samsung.com> wrote:
-> > On Wednesday, August 08, 2012 12:54 PM Sean Paul wrote:
-> >>
-> >> Don't reset the sink power to D0. Removing this for three reasons:
-> >>
-> >> 1) It's not required in the SW link training documentation
-> > OK.
-> >> 2) The comment is incorrect, D0 is normal operation, not "power down"
-> > OK. As you mentioned, D0 is not 'power down', 'normal operation'.
-> > However, if comment is wrong, usually we fix comment, not remove it. :)
-> >
-> 
-> The datasheet doesn't mention this step at all. Furthermore, the
-> comment explains how it *should* work, so I think it's the code that
-> is in error. Do you know why this code is needed?
+Hi!
 
-This is not requirement of the datasheet.
-Also, D0 is not necessary for Link training.
+Changes since v14:
+	- fix "const struct *" warning
+		(reported by: Leela Krishna Amudala <l.krishna@samsung.com>)
+	- return -EINVAL when htotal or vtotal are zero
+	- remove unreachable code in of_get_display_timings
+	- include headers in .c files and not implicit in .h
+	- sort includes alphabetically
+	- fix lower/uppercase in binding documentation
+	- rebase onto v3.7-rc7
 
-Um, this is work-around for initial development.
-Newly developed panel did not work, due to pane problem,
-so this work-around was added.
-However, the panel problem was fixed, so this code is
-not necessary.
+Changes since v13:
+	- fix "const struct *" warning
+		(reported by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>)
+	- prevent division by zero in fb_videomode_from_videomode
 
-Please replace comment as below:
+Changes since v12:
+	- rename struct display_timing to via_display_timing in via subsystem
+	- fix refreshrate calculation
+	- fix "const struct *" warnings
+		(reported by: Manjunathappa, Prakash <prakash.pm@ti.com>)
+	- some CodingStyle fixes
+	- rewrite parts of commit messages and display-timings.txt
+	- let display_timing_get_value get all values instead of just typical
 
-According to DP spec, it is not required in the Link Training procedure.
+Changes since v11:
+	- make pointers const where applicable
+	- add reviewed-by Laurent Pinchart
+
+Changes since v10:
+	- fix function name (drm_)display_mode_from_videomode
+	- add acked-by, reviewed-by, tested-by
+
+Changes since v9:
+	- don't leak memory when previous timings were correct
+	- CodingStyle fixes
+	- move blank lines around
+
+Changes since v8:
+	- fix memory leaks
+	- change API to be more consistent (foo_from_bar(struct bar, struct foo))
+	- include headers were necessary
+	- misc minor bufixe
+
+Changes since v7:
+	- move of_xxx to drivers/video
+	- remove non-binding documentation from display-timings.txt
+	- squash display_timings and videomode in one patch
+	- misc minor fixes
+
+Changes since v6:
+	- get rid of some empty lines etc.
+	- move functions to their subsystems
+	- split of_ from non-of_ functions
+	- add at least some kerneldoc to some functions
+
+Changes since v5:
+	- removed all display stuff and just describe timings
+
+Changes since v4:
+	- refactored functions
+
+Changes since v3:
+	- print error messages
+	- free alloced memory
+	- general cleanup
+
+Changes since v2:
+	- use hardware-near property-names
+	- provide a videomode structure
+	- allow ranges for all properties (<min,typ,max>)
+	- functions to get display_mode or fb_videomode
 
 
-Best regards,
-Jingoo Han
+Steffen Trumtrar (7):
+  viafb: rename display_timing to via_display_timing
+  video: add display_timing and videomode
+  video: add of helper for display timings/videomode
+  fbmon: add videomode helpers
+  fbmon: add of_videomode helpers
+  drm_modes: add videomode helpers
+  drm_modes: add of_videomode helpers
 
-> 
-> >> 3) It seems to change things in the link training that causes glitches
-> >
-> > Um, it seems that this problem depends on LCD panel.
-> > Other LCDs that I have tested do not have this kind of problem.
-> > Please, modify this comment.
-> >
-> 
-> That was a red herring, it didn't cause the glitches, just made them
-> less obvious.
-> 
-> Sean
-> 
-> >>
-> >> Signed-off-by: Sean Paul <seanpaul@chromium.org>
-> >> ---
-> >>  drivers/video/exynos/exynos_dp_core.c |    6 ------
-> >>  1 files changed, 0 insertions(+), 6 deletions(-)
-> >>
-> >> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-> >> index 207bd7e..1c998d9 100644
-> >> --- a/drivers/video/exynos/exynos_dp_core.c
-> >> +++ b/drivers/video/exynos/exynos_dp_core.c
-> >> @@ -273,12 +273,6 @@ static int exynos_dp_link_start(struct exynos_dp_device *dp)
-> >>       for (lane = 0; lane < lane_count; lane++)
-> >>               dp->link_train.cr_loop[lane] = 0;
-> >>
-> >> -     /* Set sink to D0 (Sink Not Ready) mode. */
-> >> -     ret = exynos_dp_write_byte_to_dpcd(dp, DPCD_ADDR_SINK_POWER_STATE,
-> >> -                             DPCD_SET_POWER_STATE_D0);
-> >> -     if (ret)
-> >> -             return ret;
-> >> -
-> >>       /* Set link rate and count as you want to establish*/
-> >>       exynos_dp_set_link_bandwidth(dp, dp->link_train.link_rate);
-> >>       exynos_dp_set_lane_count(dp, dp->link_train.lane_count);
-> >> --
-> >> 1.7.7.3
-> >
+ .../devicetree/bindings/video/display-timing.txt   |  107 ++++++++++
+ drivers/gpu/drm/drm_modes.c                        |   70 +++++++
+ drivers/video/Kconfig                              |   21 ++
+ drivers/video/Makefile                             |    4 +
+ drivers/video/display_timing.c                     |   24 +++
+ drivers/video/fbmon.c                              |   93 +++++++++
+ drivers/video/of_display_timing.c                  |  219 ++++++++++++++++++++
+ drivers/video/of_videomode.c                       |   54 +++++
+ drivers/video/via/hw.c                             |    6 +-
+ drivers/video/via/hw.h                             |    2 +-
+ drivers/video/via/lcd.c                            |    2 +-
+ drivers/video/via/share.h                          |    2 +-
+ drivers/video/via/via_modesetting.c                |    8 +-
+ drivers/video/via/via_modesetting.h                |    6 +-
+ drivers/video/videomode.c                          |   44 ++++
+ include/drm/drmP.h                                 |   13 ++
+ include/linux/display_timing.h                     |  104 ++++++++++
+ include/linux/fb.h                                 |   12 ++
+ include/linux/of_display_timing.h                  |   20 ++
+ include/linux/of_videomode.h                       |   18 ++
+ include/linux/videomode.h                          |   54 +++++
+ 21 files changed, 870 insertions(+), 13 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/display-timing.txt
+ create mode 100644 drivers/video/display_timing.c
+ create mode 100644 drivers/video/of_display_timing.c
+ create mode 100644 drivers/video/of_videomode.c
+ create mode 100644 drivers/video/videomode.c
+ create mode 100644 include/linux/display_timing.h
+ create mode 100644 include/linux/of_display_timing.h
+ create mode 100644 include/linux/of_videomode.h
+ create mode 100644 include/linux/videomode.h
+
+-- 
+1.7.10.4
 

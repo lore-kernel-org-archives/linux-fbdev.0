@@ -1,241 +1,148 @@
-From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Date: Fri, 23 Nov 2012 16:35:11 +0000
-Subject: [PATCH 1/5] backlight: Add GPIO-based backlight driver
-Message-Id: <1353688515-30458-2-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 26 Nov 2012 09:49:38 +0000
+Subject: Re: [PATCH 1/5] backlight: Add GPIO-based backlight driver
+Message-Id: <32552643.33371353923376540.JavaMail.weblogic@epv6ml07>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1353688515-30458-2-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+In-Reply-To: <1353688515-30458-2-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>, Magnus Damm <magnus.damm@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Jingoo Han <jg1.han@samsung.com>
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
----
- drivers/video/backlight/Kconfig          |    7 ++
- drivers/video/backlight/Makefile         |    1 +
- drivers/video/backlight/gpio_backlight.c |  158 ++++++++++++++++++++++++++++++
- include/video/gpio_backlight.h           |   21 ++++
- 4 files changed, 187 insertions(+), 0 deletions(-)
- create mode 100644 drivers/video/backlight/gpio_backlight.c
- create mode 100644 include/video/gpio_backlight.h
+T24gU2F0dXJkYXksIE5vdmVtYmVyIDI0LCAyMDEyIDE6MzUgQU0sIExhdXJlbnQgUGluY2hhcnQg
+d3JvdGUNCj4gDQo+IFNpZ25lZC1vZmYtYnk6IExhdXJlbnQgUGluY2hhcnQgPGxhdXJlbnQucGlu
+Y2hhcnRAaWRlYXNvbmJvYXJkLmNvbT4NCg0KQ0MnZWQgQW5kcmV3IE1vcnRvbg0KDQpJdCBsb29r
+cyBnb29kLiBBbHNvLCBJIHRlc3RlZCB0aGlzIHBhdGNoIHdpdGggU01ESzQyMTAgYm9hcmQuDQpB
+Y2tlZC1ieTogSmluZ29vIEhhbiA8amcxLmhhbkBzYW1zdW5nLmNvbT4NCg0KQmVzdCByZWdhcmRz
+LA0KSmluZ29vIEhhbg0KDQo+IC0tLQ0KPiAgZHJpdmVycy92aWRlby9iYWNrbGlnaHQvS2NvbmZp
+ZyAgICAgICAgICB8ICAgIDcgKysNCj4gIGRyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L01ha2VmaWxl
+ICAgICAgICAgfCAgICAxICsNCj4gIGRyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L2dwaW9fYmFja2xp
+Z2h0LmMgfCAgMTU4ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPiAgaW5jbHVkZS92
+aWRlby9ncGlvX2JhY2tsaWdodC5oICAgICAgICAgICB8ICAgMjEgKysrKw0KPiAgNCBmaWxlcyBj
+aGFuZ2VkLCAxODcgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkNCj4gIGNyZWF0ZSBtb2Rl
+IDEwMDY0NCBkcml2ZXJzL3ZpZGVvL2JhY2tsaWdodC9ncGlvX2JhY2tsaWdodC5jDQo+ICBjcmVh
+dGUgbW9kZSAxMDA2NDQgaW5jbHVkZS92aWRlby9ncGlvX2JhY2tsaWdodC5oDQo+IA0KPiBkaWZm
+IC0tZ2l0IGEvZHJpdmVycy92aWRlby9iYWNrbGlnaHQvS2NvbmZpZyBiL2RyaXZlcnMvdmlkZW8v
+YmFja2xpZ2h0L0tjb25maWcNCj4gaW5kZXggNzY1YTk0NS4uMjU5NDQyZCAxMDA2NDQNCj4gLS0t
+IGEvZHJpdmVycy92aWRlby9iYWNrbGlnaHQvS2NvbmZpZw0KPiArKysgYi9kcml2ZXJzL3ZpZGVv
+L2JhY2tsaWdodC9LY29uZmlnDQo+IEBAIC0zOTAsNiArMzkwLDEzIEBAIGNvbmZpZyBCQUNLTElH
+SFRfVFBTNjUyMTcNCj4gIAkgIElmIHlvdSBoYXZlIGEgVGV4YXMgSW5zdHJ1bWVudHMgVFBTNjUy
+MTcgc2F5IFkgdG8gZW5hYmxlIHRoZQ0KPiAgCSAgYmFja2xpZ2h0IGRyaXZlci4NCj4gDQo+ICtj
+b25maWcgQkFDS0xJR0hUX0dQSU8NCj4gKwl0cmlzdGF0ZSAiR2VuZXJpYyBHUElPIGJhc2VkIEJh
+Y2tsaWdodCBEcml2ZXIiDQo+ICsJZGVwZW5kcyBvbiBHRU5FUklDX0dQSU8NCj4gKwloZWxwDQo+
+ICsJICBJZiB5b3UgaGF2ZSBhIExDRCBiYWNrbGlnaHQgYWRqdXN0YWJsZSBieSBHUElPLCBzYXkg
+WSB0byBlbmFibGUNCj4gKwkgIHRoaXMgZHJpdmVyLg0KPiArDQo+ICBlbmRpZiAjIEJBQ0tMSUdI
+VF9DTEFTU19ERVZJQ0UNCj4gDQo+ICBlbmRpZiAjIEJBQ0tMSUdIVF9MQ0RfU1VQUE9SVA0KPiBk
+aWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9iYWNrbGlnaHQvTWFrZWZpbGUgYi9kcml2ZXJzL3Zp
+ZGVvL2JhY2tsaWdodC9NYWtlZmlsZQ0KPiBpbmRleCBlN2NlNzI5Li5lYzkxYzRhIDEwMDY0NA0K
+PiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2JhY2tsaWdodC9NYWtlZmlsZQ0KPiArKysgYi9kcml2ZXJz
+L3ZpZGVvL2JhY2tsaWdodC9NYWtlZmlsZQ0KPiBAQCAtNDUsMyArNDUsNCBAQCBvYmotJChDT05G
+SUdfQkFDS0xJR0hUX1BDRjUwNjMzKQkrPSBwY2Y1MDYzMy1iYWNrbGlnaHQubw0KPiAgb2JqLSQo
+Q09ORklHX0JBQ0tMSUdIVF9BQVQyODcwKSArPSBhYXQyODcwX2JsLm8NCj4gIG9iai0kKENPTkZJ
+R19CQUNLTElHSFRfT1QyMDApICs9IG90MjAwX2JsLm8NCj4gIG9iai0kKENPTkZJR19CQUNLTElH
+SFRfVFBTNjUyMTcpICs9IHRwczY1MjE3X2JsLm8NCj4gK29iai0kKENPTkZJR19CQUNLTElHSFRf
+R1BJTykJKz0gZ3Bpb19iYWNrbGlnaHQubw0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9i
+YWNrbGlnaHQvZ3Bpb19iYWNrbGlnaHQuYyBiL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L2dwaW9f
+YmFja2xpZ2h0LmMNCj4gbmV3IGZpbGUgbW9kZSAxMDA2NDQNCj4gaW5kZXggMDAwMDAwMC4uNWE4
+Y2QzNA0KPiAtLS0gL2Rldi9udWxsDQo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L2dw
+aW9fYmFja2xpZ2h0LmMNCj4gQEAgLTAsMCArMSwxNTggQEANCj4gKy8qDQo+ICsgKiBncGlvX2Jh
+Y2tsaWdodC5jIC0gU2ltcGxlIEdQSU8tY29udHJvbGxlZCBiYWNrbGlnaHQNCj4gKyAqDQo+ICsg
+KiBUaGlzIHByb2dyYW0gaXMgZnJlZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3RyaWJ1dGUgaXQg
+YW5kL29yIG1vZGlmeQ0KPiArICogaXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJh
+bCBQdWJsaWMgTGljZW5zZSB2ZXJzaW9uIDIgYXMNCj4gKyAqIHB1Ymxpc2hlZCBieSB0aGUgRnJl
+ZSBTb2Z0d2FyZSBGb3VuZGF0aW9uLg0KPiArICovDQo+ICsNCj4gKyNpbmNsdWRlIDxsaW51eC9i
+YWNrbGlnaHQuaD4NCj4gKyNpbmNsdWRlIDxsaW51eC9lcnIuaD4NCj4gKyNpbmNsdWRlIDxsaW51
+eC9mYi5oPg0KPiArI2luY2x1ZGUgPGxpbnV4L2dwaW8uaD4NCj4gKyNpbmNsdWRlIDxsaW51eC9p
+bml0Lmg+DQo+ICsjaW5jbHVkZSA8bGludXgva2VybmVsLmg+DQo+ICsjaW5jbHVkZSA8bGludXgv
+bW9kdWxlLmg+DQo+ICsjaW5jbHVkZSA8bGludXgvcGxhdGZvcm1fZGV2aWNlLmg+DQo+ICsjaW5j
+bHVkZSA8bGludXgvc2xhYi5oPg0KPiArI2luY2x1ZGUgPHZpZGVvL2dwaW9fYmFja2xpZ2h0Lmg+
+DQo+ICsNCj4gK3N0cnVjdCBncGlvX2JhY2tsaWdodCB7DQo+ICsJc3RydWN0IGRldmljZSAqZGV2
+Ow0KPiArCXN0cnVjdCBkZXZpY2UgKmZiZGV2Ow0KPiArDQo+ICsJaW50IGdwaW87DQo+ICsJaW50
+IGFjdGl2ZTsNCj4gK307DQo+ICsNCj4gK3N0YXRpYyBpbnQgZ3Bpb19iYWNrbGlnaHRfdXBkYXRl
+X3N0YXR1cyhzdHJ1Y3QgYmFja2xpZ2h0X2RldmljZSAqYmwpDQo+ICt7DQo+ICsJc3RydWN0IGdw
+aW9fYmFja2xpZ2h0ICpnYmwgPSBibF9nZXRfZGF0YShibCk7DQo+ICsJaW50IGJyaWdodG5lc3Mg
+PSBibC0+cHJvcHMuYnJpZ2h0bmVzczsNCj4gKw0KPiArCWlmIChibC0+cHJvcHMucG93ZXIgIT0g
+RkJfQkxBTktfVU5CTEFOSyB8fA0KPiArCSAgICBibC0+cHJvcHMuZmJfYmxhbmsgIT0gRkJfQkxB
+TktfVU5CTEFOSyB8fA0KPiArCSAgICBibC0+cHJvcHMuc3RhdGUgJiAoQkxfQ09SRV9TVVNQRU5E
+RUQgfCBCTF9DT1JFX0ZCQkxBTkspKQ0KPiArCQlicmlnaHRuZXNzID0gMDsNCj4gKw0KPiArCWdw
+aW9fc2V0X3ZhbHVlKGdibC0+Z3BpbywgYnJpZ2h0bmVzcyA/IGdibC0+YWN0aXZlIDogIWdibC0+
+YWN0aXZlKTsNCj4gKw0KPiArCXJldHVybiAwOw0KPiArfQ0KPiArDQo+ICtzdGF0aWMgaW50IGdw
+aW9fYmFja2xpZ2h0X2dldF9icmlnaHRuZXNzKHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpibCkN
+Cj4gK3sNCj4gKwlyZXR1cm4gYmwtPnByb3BzLmJyaWdodG5lc3M7DQo+ICt9DQo+ICsNCj4gK3N0
+YXRpYyBpbnQgZ3Bpb19iYWNrbGlnaHRfY2hlY2tfZmIoc3RydWN0IGJhY2tsaWdodF9kZXZpY2Ug
+KmJsLA0KPiArCQkJCSAgIHN0cnVjdCBmYl9pbmZvICppbmZvKQ0KPiArew0KPiArCXN0cnVjdCBn
+cGlvX2JhY2tsaWdodCAqZ2JsID0gYmxfZ2V0X2RhdGEoYmwpOw0KPiArDQo+ICsJcmV0dXJuIGdi
+bC0+ZmJkZXYgPT0gaW5mby0+ZGV2Ow0KPiArfQ0KPiArDQo+ICtzdGF0aWMgY29uc3Qgc3RydWN0
+IGJhY2tsaWdodF9vcHMgZ3Bpb19iYWNrbGlnaHRfb3BzID0gew0KPiArCS51cGRhdGVfc3RhdHVz
+CT0gZ3Bpb19iYWNrbGlnaHRfdXBkYXRlX3N0YXR1cywNCj4gKwkuZ2V0X2JyaWdodG5lc3MJPSBn
+cGlvX2JhY2tsaWdodF9nZXRfYnJpZ2h0bmVzcywNCj4gKwkuY2hlY2tfZmIJPSBncGlvX2JhY2ts
+aWdodF9jaGVja19mYiwNCj4gK307DQo+ICsNCj4gKyNpZmRlZiBDT05GSUdfUE0NCj4gK3N0YXRp
+YyBpbnQgZ3Bpb19iYWNrbGlnaHRfc3VzcGVuZChzdHJ1Y3QgZGV2aWNlICpkZXYpDQo+ICt7DQo+
+ICsJc3RydWN0IGJhY2tsaWdodF9kZXZpY2UgKmJsID0gZGV2X2dldF9kcnZkYXRhKGRldik7DQo+
+ICsJc3RydWN0IGdwaW9fYmFja2xpZ2h0ICpnYmwgPSBibF9nZXRfZGF0YShibCk7DQo+ICsNCj4g
+KwlncGlvX3NldF92YWx1ZShnYmwtPmdwaW8sICFnYmwtPmFjdGl2ZSk7DQo+ICsNCj4gKwlyZXR1
+cm4gMDsNCj4gK30NCj4gKw0KPiArc3RhdGljIGludCBncGlvX2JhY2tsaWdodF9yZXN1bWUoc3Ry
+dWN0IGRldmljZSAqZGV2KQ0KPiArew0KPiArCXN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpibCA9
+IGRldl9nZXRfZHJ2ZGF0YShkZXYpOw0KPiArDQo+ICsJYmFja2xpZ2h0X3VwZGF0ZV9zdGF0dXMo
+YmwpOw0KPiArCXJldHVybiAwOw0KPiArfQ0KPiArDQo+ICtzdGF0aWMgU0lNUExFX0RFVl9QTV9P
+UFMoZ3Bpb19iYWNrbGlnaHRfcG1fb3BzLCBncGlvX2JhY2tsaWdodF9zdXNwZW5kLA0KPiArCQkJ
+IGdwaW9fYmFja2xpZ2h0X3Jlc3VtZSk7DQo+ICsNCj4gKyNlbmRpZg0KPiArDQo+ICtzdGF0aWMg
+aW50IF9fZGV2aW5pdCBncGlvX2JhY2tsaWdodF9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNl
+ICpwZGV2KQ0KPiArew0KPiArCXN0cnVjdCBncGlvX2JhY2tsaWdodF9wbGF0Zm9ybV9kYXRhICpw
+ZGF0YSA9IHBkZXYtPmRldi5wbGF0Zm9ybV9kYXRhOw0KPiArCXN0cnVjdCBiYWNrbGlnaHRfcHJv
+cGVydGllcyBwcm9wczsNCj4gKwlzdHJ1Y3QgYmFja2xpZ2h0X2RldmljZSAqYmw7DQo+ICsJc3Ry
+dWN0IGdwaW9fYmFja2xpZ2h0ICpnYmw7DQo+ICsJaW50IHJldDsNCj4gKw0KPiArCWdibCA9IGRl
+dm1fa3phbGxvYygmcGRldi0+ZGV2LCBzaXplb2YoKmdibCksIEdGUF9LRVJORUwpOw0KPiArCWlm
+IChnYmwgPT0gTlVMTCkNCj4gKwkJcmV0dXJuIC1FTk9NRU07DQo+ICsNCj4gKwlnYmwtPmRldiA9
+ICZwZGV2LT5kZXY7DQo+ICsNCj4gKwlpZiAoIXBkYXRhKSB7DQo+ICsJCWRldl9lcnIoJnBkZXYt
+PmRldiwgImZhaWxlZCB0byBmaW5kIHBsYXRmb3JtIGRhdGFcbiIpOw0KPiArCQlyZXR1cm4gLUVO
+T0RFVjsNCj4gKwl9DQo+ICsNCj4gKwlnYmwtPmZiZGV2ID0gcGRhdGEtPmZiZGV2Ow0KPiArCWdi
+bC0+Z3BpbyA9IHBkYXRhLT5ncGlvOw0KPiArCWdibC0+YWN0aXZlID0gcGRhdGEtPmFjdGl2ZV9s
+b3cgPyAwIDogMTsNCj4gKw0KPiArCXJldCA9IGRldm1fZ3Bpb19yZXF1ZXN0X29uZShnYmwtPmRl
+diwgZ2JsLT5ncGlvLCBHUElPRl9ESVJfT1VULA0KPiArCQkJCSAgICBwZGF0YS0+bmFtZSk7DQo+
+ICsJaWYgKHJldCA8IDApIHsNCj4gKwkJZGV2X2VycigmcGRldi0+ZGV2LCAidW5hYmxlIHRvIHJl
+cXVlc3QgR1BJT1xuIik7DQo+ICsJCXJldHVybiByZXQ7DQo+ICsJfQ0KPiArDQo+ICsJbWVtc2V0
+KCZwcm9wcywgMCwgc2l6ZW9mKHByb3BzKSk7DQo+ICsJcHJvcHMudHlwZSA9IEJBQ0tMSUdIVF9S
+QVc7DQo+ICsJcHJvcHMubWF4X2JyaWdodG5lc3MgPSAxOw0KPiArCWJsID0gYmFja2xpZ2h0X2Rl
+dmljZV9yZWdpc3RlcihkZXZfbmFtZSgmcGRldi0+ZGV2KSwgJnBkZXYtPmRldiwgZ2JsLA0KPiAr
+CQkJCSAgICAgICAmZ3Bpb19iYWNrbGlnaHRfb3BzLCAmcHJvcHMpOw0KPiArCWlmIChJU19FUlIo
+YmwpKSB7DQo+ICsJCWRldl9lcnIoJnBkZXYtPmRldiwgImZhaWxlZCB0byByZWdpc3RlciBiYWNr
+bGlnaHRcbiIpOw0KPiArCQlyZXR1cm4gUFRSX0VSUihibCk7DQo+ICsJfQ0KPiArDQo+ICsJYmwt
+PnByb3BzLmJyaWdodG5lc3MgPSBwZGF0YS0+ZGVmX3ZhbHVlOw0KPiArCWJhY2tsaWdodF91cGRh
+dGVfc3RhdHVzKGJsKTsNCj4gKw0KPiArCXBsYXRmb3JtX3NldF9kcnZkYXRhKHBkZXYsIGJsKTsN
+Cj4gKwlyZXR1cm4gMDsNCj4gK30NCj4gKw0KPiArc3RhdGljIGludCBfX2RldmV4aXQgZ3Bpb19i
+YWNrbGlnaHRfcmVtb3ZlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICt7DQo+ICsJ
+c3RydWN0IGJhY2tsaWdodF9kZXZpY2UgKmJsID0gcGxhdGZvcm1fZ2V0X2RydmRhdGEocGRldik7
+DQo+ICsNCj4gKwliYWNrbGlnaHRfZGV2aWNlX3VucmVnaXN0ZXIoYmwpOw0KPiArCXJldHVybiAw
+Ow0KPiArfQ0KPiArDQo+ICtzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2RyaXZlciBncGlvX2JhY2ts
+aWdodF9kcml2ZXIgPSB7DQo+ICsJLmRyaXZlcgkJPSB7DQo+ICsJCS5uYW1lCQk9ICJncGlvLWJh
+Y2tsaWdodCIsDQo+ICsJCS5vd25lcgkJPSBUSElTX01PRFVMRSwNCj4gKyNpZmRlZiBDT05GSUdf
+UE0NCj4gKwkJLnBtCQk9ICZncGlvX2JhY2tsaWdodF9wbV9vcHMsDQo+ICsjZW5kaWYNCj4gKwl9
+LA0KPiArCS5wcm9iZQkJPSBncGlvX2JhY2tsaWdodF9wcm9iZSwNCj4gKwkucmVtb3ZlCQk9IF9f
+ZGV2ZXhpdF9wKGdwaW9fYmFja2xpZ2h0X3JlbW92ZSksDQo+ICt9Ow0KPiArDQo+ICttb2R1bGVf
+cGxhdGZvcm1fZHJpdmVyKGdwaW9fYmFja2xpZ2h0X2RyaXZlcik7DQo+ICsNCj4gK01PRFVMRV9B
+VVRIT1IoIkxhdXJlbnQgUGluY2hhcnQgPGxhdXJlbnQucGluY2hhcnRAaWRlYXNvbmJvYXJkLmNv
+bT4iKTsNCj4gK01PRFVMRV9ERVNDUklQVElPTigiR1BJTy1iYXNlZCBCYWNrbGlnaHQgRHJpdmVy
+Iik7DQo+ICtNT0RVTEVfTElDRU5TRSgiR1BMIik7DQo+ICtNT0RVTEVfQUxJQVMoInBsYXRmb3Jt
+OmdwaW8tYmFja2xpZ2h0Iik7DQo+IGRpZmYgLS1naXQgYS9pbmNsdWRlL3ZpZGVvL2dwaW9fYmFj
+a2xpZ2h0LmggYi9pbmNsdWRlL3ZpZGVvL2dwaW9fYmFja2xpZ2h0LmgNCj4gbmV3IGZpbGUgbW9k
+ZSAxMDA2NDQNCj4gaW5kZXggMDAwMDAwMC4uNWFlMGQ5Yw0KPiAtLS0gL2Rldi9udWxsDQo+ICsr
+KyBiL2luY2x1ZGUvdmlkZW8vZ3Bpb19iYWNrbGlnaHQuaA0KPiBAQCAtMCwwICsxLDIxIEBADQo+
+ICsvKg0KPiArICogZ3Bpb19iYWNrbGlnaHQuaCAtIFNpbXBsZSBHUElPLWNvbnRyb2xsZWQgYmFj
+a2xpZ2h0DQo+ICsgKg0KPiArICogVGhpcyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7IHlvdSBj
+YW4gcmVkaXN0cmlidXRlIGl0IGFuZC9vciBtb2RpZnkNCj4gKyAqIGl0IHVuZGVyIHRoZSB0ZXJt
+cyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgdmVyc2lvbiAyIGFzDQo+ICsgKiBw
+dWJsaXNoZWQgYnkgdGhlIEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbi4NCj4gKyAqLw0KPiArI2lm
+bmRlZiBfX0dQSU9fQkFDS0xJR0hUX0hfXw0KPiArI2RlZmluZSBfX0dQSU9fQkFDS0xJR0hUX0hf
+Xw0KPiArDQo+ICtzdHJ1Y3QgZGV2aWNlOw0KPiArDQo+ICtzdHJ1Y3QgZ3Bpb19iYWNrbGlnaHRf
+cGxhdGZvcm1fZGF0YSB7DQo+ICsJc3RydWN0IGRldmljZSAqZmJkZXY7DQo+ICsJaW50IGdwaW87
+DQo+ICsJaW50IGRlZl92YWx1ZTsNCj4gKwlib29sIGFjdGl2ZV9sb3c7DQo+ICsJY29uc3QgY2hh
+ciAqbmFtZTsNCj4gK307DQo+ICsNCj4gKyNlbmRpZg0KPiAtLQ0KPiAxLjcuOC42DQo+IA0KPiAt
+LQ0KPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJz
+Y3JpYmUgbGludXgtZmJkZXYiIGluDQo+IHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRv
+bW9Admdlci5rZXJuZWwub3JnDQo+IE1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2Vy
+Lmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0K
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 765a945..259442d 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -390,6 +390,13 @@ config BACKLIGHT_TPS65217
- 	  If you have a Texas Instruments TPS65217 say Y to enable the
- 	  backlight driver.
- 
-+config BACKLIGHT_GPIO
-+	tristate "Generic GPIO based Backlight Driver"
-+	depends on GENERIC_GPIO
-+	help
-+	  If you have a LCD backlight adjustable by GPIO, say Y to enable
-+	  this driver.
-+
- endif # BACKLIGHT_CLASS_DEVICE
- 
- endif # BACKLIGHT_LCD_SUPPORT
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index e7ce729..ec91c4a 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -45,3 +45,4 @@ obj-$(CONFIG_BACKLIGHT_PCF50633)	+= pcf50633-backlight.o
- obj-$(CONFIG_BACKLIGHT_AAT2870) += aat2870_bl.o
- obj-$(CONFIG_BACKLIGHT_OT200) += ot200_bl.o
- obj-$(CONFIG_BACKLIGHT_TPS65217) += tps65217_bl.o
-+obj-$(CONFIG_BACKLIGHT_GPIO)	+= gpio_backlight.o
-diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
-new file mode 100644
-index 0000000..5a8cd34
---- /dev/null
-+++ b/drivers/video/backlight/gpio_backlight.c
-@@ -0,0 +1,158 @@
-+/*
-+ * gpio_backlight.c - Simple GPIO-controlled backlight
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/backlight.h>
-+#include <linux/err.h>
-+#include <linux/fb.h>
-+#include <linux/gpio.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+#include <video/gpio_backlight.h>
-+
-+struct gpio_backlight {
-+	struct device *dev;
-+	struct device *fbdev;
-+
-+	int gpio;
-+	int active;
-+};
-+
-+static int gpio_backlight_update_status(struct backlight_device *bl)
-+{
-+	struct gpio_backlight *gbl = bl_get_data(bl);
-+	int brightness = bl->props.brightness;
-+
-+	if (bl->props.power != FB_BLANK_UNBLANK ||
-+	    bl->props.fb_blank != FB_BLANK_UNBLANK ||
-+	    bl->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
-+		brightness = 0;
-+
-+	gpio_set_value(gbl->gpio, brightness ? gbl->active : !gbl->active);
-+
-+	return 0;
-+}
-+
-+static int gpio_backlight_get_brightness(struct backlight_device *bl)
-+{
-+	return bl->props.brightness;
-+}
-+
-+static int gpio_backlight_check_fb(struct backlight_device *bl,
-+				   struct fb_info *info)
-+{
-+	struct gpio_backlight *gbl = bl_get_data(bl);
-+
-+	return gbl->fbdev = info->dev;
-+}
-+
-+static const struct backlight_ops gpio_backlight_ops = {
-+	.update_status	= gpio_backlight_update_status,
-+	.get_brightness	= gpio_backlight_get_brightness,
-+	.check_fb	= gpio_backlight_check_fb,
-+};
-+
-+#ifdef CONFIG_PM
-+static int gpio_backlight_suspend(struct device *dev)
-+{
-+	struct backlight_device *bl = dev_get_drvdata(dev);
-+	struct gpio_backlight *gbl = bl_get_data(bl);
-+
-+	gpio_set_value(gbl->gpio, !gbl->active);
-+
-+	return 0;
-+}
-+
-+static int gpio_backlight_resume(struct device *dev)
-+{
-+	struct backlight_device *bl = dev_get_drvdata(dev);
-+
-+	backlight_update_status(bl);
-+	return 0;
-+}
-+
-+static SIMPLE_DEV_PM_OPS(gpio_backlight_pm_ops, gpio_backlight_suspend,
-+			 gpio_backlight_resume);
-+
-+#endif
-+
-+static int __devinit gpio_backlight_probe(struct platform_device *pdev)
-+{
-+	struct gpio_backlight_platform_data *pdata = pdev->dev.platform_data;
-+	struct backlight_properties props;
-+	struct backlight_device *bl;
-+	struct gpio_backlight *gbl;
-+	int ret;
-+
-+	gbl = devm_kzalloc(&pdev->dev, sizeof(*gbl), GFP_KERNEL);
-+	if (gbl = NULL)
-+		return -ENOMEM;
-+
-+	gbl->dev = &pdev->dev;
-+
-+	if (!pdata) {
-+		dev_err(&pdev->dev, "failed to find platform data\n");
-+		return -ENODEV;
-+	}
-+
-+	gbl->fbdev = pdata->fbdev;
-+	gbl->gpio = pdata->gpio;
-+	gbl->active = pdata->active_low ? 0 : 1;
-+
-+	ret = devm_gpio_request_one(gbl->dev, gbl->gpio, GPIOF_DIR_OUT,
-+				    pdata->name);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "unable to request GPIO\n");
-+		return ret;
-+	}
-+
-+	memset(&props, 0, sizeof(props));
-+	props.type = BACKLIGHT_RAW;
-+	props.max_brightness = 1;
-+	bl = backlight_device_register(dev_name(&pdev->dev), &pdev->dev, gbl,
-+				       &gpio_backlight_ops, &props);
-+	if (IS_ERR(bl)) {
-+		dev_err(&pdev->dev, "failed to register backlight\n");
-+		return PTR_ERR(bl);
-+	}
-+
-+	bl->props.brightness = pdata->def_value;
-+	backlight_update_status(bl);
-+
-+	platform_set_drvdata(pdev, bl);
-+	return 0;
-+}
-+
-+static int __devexit gpio_backlight_remove(struct platform_device *pdev)
-+{
-+	struct backlight_device *bl = platform_get_drvdata(pdev);
-+
-+	backlight_device_unregister(bl);
-+	return 0;
-+}
-+
-+static struct platform_driver gpio_backlight_driver = {
-+	.driver		= {
-+		.name		= "gpio-backlight",
-+		.owner		= THIS_MODULE,
-+#ifdef CONFIG_PM
-+		.pm		= &gpio_backlight_pm_ops,
-+#endif
-+	},
-+	.probe		= gpio_backlight_probe,
-+	.remove		= __devexit_p(gpio_backlight_remove),
-+};
-+
-+module_platform_driver(gpio_backlight_driver);
-+
-+MODULE_AUTHOR("Laurent Pinchart <laurent.pinchart@ideasonboard.com>");
-+MODULE_DESCRIPTION("GPIO-based Backlight Driver");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:gpio-backlight");
-diff --git a/include/video/gpio_backlight.h b/include/video/gpio_backlight.h
-new file mode 100644
-index 0000000..5ae0d9c
---- /dev/null
-+++ b/include/video/gpio_backlight.h
-@@ -0,0 +1,21 @@
-+/*
-+ * gpio_backlight.h - Simple GPIO-controlled backlight
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+#ifndef __GPIO_BACKLIGHT_H__
-+#define __GPIO_BACKLIGHT_H__
-+
-+struct device;
-+
-+struct gpio_backlight_platform_data {
-+	struct device *fbdev;
-+	int gpio;
-+	int def_value;
-+	bool active_low;
-+	const char *name;
-+};
-+
-+#endif
--- 
-1.7.8.6
 

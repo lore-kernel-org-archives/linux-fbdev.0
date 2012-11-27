@@ -1,97 +1,66 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 27 Nov 2012 09:58:24 +0000
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 27 Nov 2012 23:59:13 +0000
 Subject: Re: [GIT PULL] Exynos DP for v3.8
-Message-Id: <50B48EC0.9060406@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig842D0F56ACA98A365C74D2E2"
+Message-Id: <23089985.76751354060752557.JavaMail.weblogic@epml26>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <28517517.77811353652672706.JavaMail.weblogic@epml06>
 In-Reply-To: <28517517.77811353652672706.JavaMail.weblogic@epml06>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org" <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 
---------------enig842D0F56ACA98A365C74D2E2
-Content-Type: text/plain; charset=EUC-KR
-Content-Transfer-Encoding: quoted-printable
-
-On 2012-11-23 08:37, Jingoo Han wrote:
-> Hi Tomi,
->=20
-> Thank you for taking care of pull requests for the v3.8 merge window.
-> These patches have been submitted for more than one month,
-> and tested with Exynos5250.
->=20
-> The following changes since commit f4a75d2eb7b1e2206094b901be09adb31ba6=
-3681:
->=20
->   Linux 3.7-rc6 (Fri Nov 16 17:42:40 2012 -0800)
->=20
-> are available in the git repository at:
->   git://github.com/jingoo/linux.git exynos-dp-next
->=20
-> ----------------------------------------------------------------
-> Exynos DP changes for the 3.8 merge window.
->=20
-> - Device Tree support for Samsung Exynos DP
-> - SW Link training is cleaned up.
-> - HPD interrupt is supported.
-> ----------------------------------------------------------------
->=20
-> Ajay Kumar (5):
->       video: exynos_dp: Add device tree support to DP driver
->       video: exynos_dp: device tree documentation
->       video: exynos_dp: Reset and initialize DP before requesting irq
->       video: exynos_dp: Fix incorrect setting for INT_CTL
->       video: exynos_dp: remove redundant parameters
->=20
-> Sean Paul (8):
->       video: exynos_dp: Check DPCD return codes
->       video: exynos_dp: Clean up SW link training
->       video: exynos_dp: Get pll lock before pattern set
->       video: exynos_dp: Improve EDID error handling
->       video: exynos_dp: Fix bug when checking dp->irq
->       video: exynos_dp: Remove sink control to D0
->       video: exynos_dp: Move hotplug into a workqueue
->       video: exynos_dp: Enable hotplug interrupts
->=20
->  .../devicetree/bindings/video/exynos_dp.txt        |   80 +++
->  drivers/video/exynos/exynos_dp_core.c              |  697 ++++++++++++=
---------
->  drivers/video/exynos/exynos_dp_core.h              |   21 +-
->  drivers/video/exynos/exynos_dp_reg.c               |   77 ++-
->  drivers/video/exynos/exynos_dp_reg.h               |    3 +-
->  5 files changed, 583 insertions(+), 295 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/video/exynos_dp.t=
-xt
-
-Has the DT bindings been reviewed by the device tree people? It would
-good to have an ack from them.
-
- Tomi
+T24gVHVlc2RheSwgTm92ZW1iZXIgMjcsIDIwMTIgNjo1OCBQTSwgVG9taSBWYWxrZWluZW4gd3Jv
+dGUNCj4gDQo+IE9uIDIwMTItMTEtMjMgMDg6MzcsIEppbmdvbyBIYW4gd3JvdGU6DQo+ID4gSGkg
+VG9taSwNCj4gPg0KPiA+IFRoYW5rIHlvdSBmb3IgdGFraW5nIGNhcmUgb2YgcHVsbCByZXF1ZXN0
+cyBmb3IgdGhlIHYzLjggbWVyZ2Ugd2luZG93Lg0KPiA+IFRoZXNlIHBhdGNoZXMgaGF2ZSBiZWVu
+IHN1Ym1pdHRlZCBmb3IgbW9yZSB0aGFuIG9uZSBtb250aCwNCj4gPiBhbmQgdGVzdGVkIHdpdGgg
+RXh5bm9zNTI1MC4NCj4gPg0KPiA+IFRoZSBmb2xsb3dpbmcgY2hhbmdlcyBzaW5jZSBjb21taXQg
+ZjRhNzVkMmViN2IxZTIyMDYwOTRiOTAxYmUwOWFkYjMxYmE2MzY4MToNCj4gPg0KPiA+ICAgTGlu
+dXggMy43LXJjNiAoRnJpIE5vdiAxNiAxNzo0Mjo0MCAyMDEyIC0wODAwKQ0KPiA+DQo+ID4gYXJl
+IGF2YWlsYWJsZSBpbiB0aGUgZ2l0IHJlcG9zaXRvcnkgYXQ6DQo+ID4gICBnaXQ6Ly9naXRodWIu
+Y29tL2ppbmdvby9saW51eC5naXQgZXh5bm9zLWRwLW5leHQNCj4gPg0KPiA+IC0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4g
+PiBFeHlub3MgRFAgY2hhbmdlcyBmb3IgdGhlIDMuOCBtZXJnZSB3aW5kb3cuDQo+ID4NCj4gPiAt
+IERldmljZSBUcmVlIHN1cHBvcnQgZm9yIFNhbXN1bmcgRXh5bm9zIERQDQo+ID4gLSBTVyBMaW5r
+IHRyYWluaW5nIGlzIGNsZWFuZWQgdXAuDQo+ID4gLSBIUEQgaW50ZXJydXB0IGlzIHN1cHBvcnRl
+ZC4NCj4gPiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tDQo+ID4NCj4gPiBBamF5IEt1bWFyICg1KToNCj4gPiAgICAgICB2aWRl
+bzogZXh5bm9zX2RwOiBBZGQgZGV2aWNlIHRyZWUgc3VwcG9ydCB0byBEUCBkcml2ZXINCj4gPiAg
+ICAgICB2aWRlbzogZXh5bm9zX2RwOiBkZXZpY2UgdHJlZSBkb2N1bWVudGF0aW9uDQo+ID4gICAg
+ICAgdmlkZW86IGV4eW5vc19kcDogUmVzZXQgYW5kIGluaXRpYWxpemUgRFAgYmVmb3JlIHJlcXVl
+c3RpbmcgaXJxDQo+ID4gICAgICAgdmlkZW86IGV4eW5vc19kcDogRml4IGluY29ycmVjdCBzZXR0
+aW5nIGZvciBJTlRfQ1RMDQo+ID4gICAgICAgdmlkZW86IGV4eW5vc19kcDogcmVtb3ZlIHJlZHVu
+ZGFudCBwYXJhbWV0ZXJzDQo+ID4NCj4gPiBTZWFuIFBhdWwgKDgpOg0KPiA+ICAgICAgIHZpZGVv
+OiBleHlub3NfZHA6IENoZWNrIERQQ0QgcmV0dXJuIGNvZGVzDQo+ID4gICAgICAgdmlkZW86IGV4
+eW5vc19kcDogQ2xlYW4gdXAgU1cgbGluayB0cmFpbmluZw0KPiA+ICAgICAgIHZpZGVvOiBleHlu
+b3NfZHA6IEdldCBwbGwgbG9jayBiZWZvcmUgcGF0dGVybiBzZXQNCj4gPiAgICAgICB2aWRlbzog
+ZXh5bm9zX2RwOiBJbXByb3ZlIEVESUQgZXJyb3IgaGFuZGxpbmcNCj4gPiAgICAgICB2aWRlbzog
+ZXh5bm9zX2RwOiBGaXggYnVnIHdoZW4gY2hlY2tpbmcgZHAtPmlycQ0KPiA+ICAgICAgIHZpZGVv
+OiBleHlub3NfZHA6IFJlbW92ZSBzaW5rIGNvbnRyb2wgdG8gRDANCj4gPiAgICAgICB2aWRlbzog
+ZXh5bm9zX2RwOiBNb3ZlIGhvdHBsdWcgaW50byBhIHdvcmtxdWV1ZQ0KPiA+ICAgICAgIHZpZGVv
+OiBleHlub3NfZHA6IEVuYWJsZSBob3RwbHVnIGludGVycnVwdHMNCj4gPg0KPiA+ICAuLi4vZGV2
+aWNldHJlZS9iaW5kaW5ncy92aWRlby9leHlub3NfZHAudHh0ICAgICAgICB8ICAgODAgKysrDQo+
+ID4gIGRyaXZlcnMvdmlkZW8vZXh5bm9zL2V4eW5vc19kcF9jb3JlLmMgICAgICAgICAgICAgIHwg
+IDY5NyArKysrKysrKysrKystLS0tLS0tLQ0KPiA+ICBkcml2ZXJzL3ZpZGVvL2V4eW5vcy9leHlu
+b3NfZHBfY29yZS5oICAgICAgICAgICAgICB8ICAgMjEgKy0NCj4gPiAgZHJpdmVycy92aWRlby9l
+eHlub3MvZXh5bm9zX2RwX3JlZy5jICAgICAgICAgICAgICAgfCAgIDc3ICsrLQ0KPiA+ICBkcml2
+ZXJzL3ZpZGVvL2V4eW5vcy9leHlub3NfZHBfcmVnLmggICAgICAgICAgICAgICB8ICAgIDMgKy0N
+Cj4gPiAgNSBmaWxlcyBjaGFuZ2VkLCA1ODMgaW5zZXJ0aW9ucygrKSwgMjk1IGRlbGV0aW9ucygt
+KQ0KPiA+ICBjcmVhdGUgbW9kZSAxMDA2NDQgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRp
+bmdzL3ZpZGVvL2V4eW5vc19kcC50eHQNCj4gDQo+IEhhcyB0aGUgRFQgYmluZGluZ3MgYmVlbiBy
+ZXZpZXdlZCBieSB0aGUgZGV2aWNlIHRyZWUgcGVvcGxlPyBJdCB3b3VsZA0KPiBnb29kIHRvIGhh
+dmUgYW4gYWNrIGZyb20gdGhlbS4NCg0KQ0MnZWQgZGV2aWNlIHRyZWUgbWFpbGluZy1saXN0LCBH
+cmFudCBMaWtlbHksIFJvYiBIZXJyaW5nLCBLdWtqaW4gS2ltLCBTeWx3ZXN0ZXIgTmF3cm9ja2ku
+DQoNCkhpIFRvbWksDQoNClRoZSBEVCBiaW5kaW5nIGhhcyBiZWVuIHBvc3RlZCB3aXRoIGRldmlj
+ZSB0cmVlIG1haWxpbmctbGlzdA0KKGRldmljZXRyZWUtZGlzY3Vzc0BsaXN0cy5vemxhYnMub3Jn
+KSBmb3IgbW9yZSB0aGFuIDIgbW9udGhzLg0KTGFzdCBwYXRjaCBWOCB3YXMgcG9zdGVkIDEgbW9u
+dGggYWdvLiBIb3dldmVyLCB0aGVyZSBpcyBubyBvYmplY3Rpb24uDQooaHR0cDovL3d3dy5zcGlu
+aWNzLm5ldC9saXN0cy9saW51eC1mYmRldi9tc2cwODM1NC5odG1sKQ0KDQpBbHNvLCBTYW1zdW5n
+IHBlb3BsZSBhbHJlYWR5IHJldmlld2VkIGl0Lg0KSW4gbXkgb3BpbmlvbiwgdGhlcmUgaXMgbm8g
+bmVlZCB0byBnZXQgQWNrIGZyb20gdGhlIGRldmljZSB0cmVlIHBlb3BsZS4NCg0KR3JhbnQsIFJv
+YjogaWYgeW91IGhhdmUgYW5vdGhlciBvcGluaW9uLCBwbGVhc2UgbGV0IG1lIGtub3cga2luZGx5
+Lg0KDQpCZXN0IHJlZ2FyZHMsDQpKaW5nb28gSGFuDQoNCg=
 
 
-
---------------enig842D0F56ACA98A365C74D2E2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJQtI7DAAoJEPo9qoy8lh71GlwP/RPvlBiuoVa4QrBGITU7F1Dx
-TvOYBREvmuQVzE29yxEoxUES7VtG2hBNN8CR5rD8XP5uvxGFEMsOCow1BU9Kwhpg
-cs497i2hpFMgY6/k9F/SszUtl+E7bj+hUK9afno0pmiGmQgSUBdNnLGQYyw45qDs
-y66BZx6tUh9DoR2GbHpTvwIIM95ucCKNhn2NP9Bezb4n8CUyiCNUKq2TmLDlsrwE
-FMK5WYHPDPd2DvdM7bgJLbSL7bm0WfmaCb4MiB6a59kyTbrHx3eeknm2hC2SFxfn
-7y4QpcURc/3I2w+IIiv0r/5O7m5y5Kp45WciJ+4NbOQf/4NCOFfDle23D8G1MM8i
-YUcFKZ7AMcn/NYLKQhEWMy+ZP/lTQ3LUHsHOZmdM9Us1ANvSCV7bPSx45Py94DSE
-2tDwWByNEGjS3r+lI8enPsPn6t86JPpzhOIMnnkJzEr6YBX8tFDELqFLznx2jMwC
-KRah9EC8eFceTzv5UESWc+EMJJicKetGSjDd7JB0cN4jY82jbjpFgcuXtWu6iP8W
-NA+DD4lYX8SlYMZlwC7mYrCfFwd2Aqp78JTevc/0jnYR/aIXhuRMriaHIyC2w+Bo
-BmloOb9uF3alYkhvcdFWbhcygKkKISXofjafqcgyZ7pKouyySfj2BqLViVZ/tyta
-jovbKO7f2PFzk1LaOKAP
-=nFvl
------END PGP SIGNATURE-----
-
---------------enig842D0F56ACA98A365C74D2E2--

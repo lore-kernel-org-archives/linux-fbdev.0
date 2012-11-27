@@ -1,46 +1,97 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 23 Nov 2012 06:37:53 +0000
-Subject: [GIT PULL] Exynos DP for v3.8
-Message-Id: <28517517.77811353652672706.JavaMail.weblogic@epml06>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 27 Nov 2012 09:58:24 +0000
+Subject: Re: [GIT PULL] Exynos DP for v3.8
+Message-Id: <50B48EC0.9060406@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig842D0F56ACA98A365C74D2E2"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <28517517.77811353652672706.JavaMail.weblogic@epml06>
+In-Reply-To: <28517517.77811353652672706.JavaMail.weblogic@epml06>
 To: linux-fbdev@vger.kernel.org
 
-SGkgVG9taSwNCg0KVGhhbmsgeW91IGZvciB0YWtpbmcgY2FyZSBvZiBwdWxsIHJlcXVlc3RzIGZv
-ciB0aGUgdjMuOCBtZXJnZSB3aW5kb3cuDQpUaGVzZSBwYXRjaGVzIGhhdmUgYmVlbiBzdWJtaXR0
-ZWQgZm9yIG1vcmUgdGhhbiBvbmUgbW9udGgsDQphbmQgdGVzdGVkIHdpdGggRXh5bm9zNTI1MC4N
-Cg0KVGhlIGZvbGxvd2luZyBjaGFuZ2VzIHNpbmNlIGNvbW1pdCBmNGE3NWQyZWI3YjFlMjIwNjA5
-NGI5MDFiZTA5YWRiMzFiYTYzNjgxOg0KDQogIExpbnV4IDMuNy1yYzYgKEZyaSBOb3YgMTYgMTc6
-NDI6NDAgMjAxMiAtMDgwMCkNCg0KYXJlIGF2YWlsYWJsZSBpbiB0aGUgZ2l0IHJlcG9zaXRvcnkg
-YXQ6DQogIGdpdDovL2dpdGh1Yi5jb20vamluZ29vL2xpbnV4LmdpdCBleHlub3MtZHAtbmV4dA0K
-DQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tDQpFeHlub3MgRFAgY2hhbmdlcyBmb3IgdGhlIDMuOCBtZXJnZSB3aW5kb3cuDQoN
-Ci0gRGV2aWNlIFRyZWUgc3VwcG9ydCBmb3IgU2Ftc3VuZyBFeHlub3MgRFANCi0gU1cgTGluayB0
-cmFpbmluZyBpcyBjbGVhbmVkIHVwLg0KLSBIUEQgaW50ZXJydXB0IGlzIHN1cHBvcnRlZC4NCi0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0NCg0KQWpheSBLdW1hciAoNSk6DQogICAgICB2aWRlbzogZXh5bm9zX2RwOiBBZGQgZGV2
-aWNlIHRyZWUgc3VwcG9ydCB0byBEUCBkcml2ZXINCiAgICAgIHZpZGVvOiBleHlub3NfZHA6IGRl
-dmljZSB0cmVlIGRvY3VtZW50YXRpb24NCiAgICAgIHZpZGVvOiBleHlub3NfZHA6IFJlc2V0IGFu
-ZCBpbml0aWFsaXplIERQIGJlZm9yZSByZXF1ZXN0aW5nIGlycQ0KICAgICAgdmlkZW86IGV4eW5v
-c19kcDogRml4IGluY29ycmVjdCBzZXR0aW5nIGZvciBJTlRfQ1RMDQogICAgICB2aWRlbzogZXh5
-bm9zX2RwOiByZW1vdmUgcmVkdW5kYW50IHBhcmFtZXRlcnMNCg0KU2VhbiBQYXVsICg4KToNCiAg
-ICAgIHZpZGVvOiBleHlub3NfZHA6IENoZWNrIERQQ0QgcmV0dXJuIGNvZGVzDQogICAgICB2aWRl
-bzogZXh5bm9zX2RwOiBDbGVhbiB1cCBTVyBsaW5rIHRyYWluaW5nDQogICAgICB2aWRlbzogZXh5
-bm9zX2RwOiBHZXQgcGxsIGxvY2sgYmVmb3JlIHBhdHRlcm4gc2V0DQogICAgICB2aWRlbzogZXh5
-bm9zX2RwOiBJbXByb3ZlIEVESUQgZXJyb3IgaGFuZGxpbmcNCiAgICAgIHZpZGVvOiBleHlub3Nf
-ZHA6IEZpeCBidWcgd2hlbiBjaGVja2luZyBkcC0+aXJxDQogICAgICB2aWRlbzogZXh5bm9zX2Rw
-OiBSZW1vdmUgc2luayBjb250cm9sIHRvIEQwDQogICAgICB2aWRlbzogZXh5bm9zX2RwOiBNb3Zl
-IGhvdHBsdWcgaW50byBhIHdvcmtxdWV1ZQ0KICAgICAgdmlkZW86IGV4eW5vc19kcDogRW5hYmxl
-IGhvdHBsdWcgaW50ZXJydXB0cw0KDQogLi4uL2RldmljZXRyZWUvYmluZGluZ3MvdmlkZW8vZXh5
-bm9zX2RwLnR4dCAgICAgICAgfCAgIDgwICsrKw0KIGRyaXZlcnMvdmlkZW8vZXh5bm9zL2V4eW5v
-c19kcF9jb3JlLmMgICAgICAgICAgICAgIHwgIDY5NyArKysrKysrKysrKystLS0tLS0tLQ0KIGRy
-aXZlcnMvdmlkZW8vZXh5bm9zL2V4eW5vc19kcF9jb3JlLmggICAgICAgICAgICAgIHwgICAyMSAr
-LQ0KIGRyaXZlcnMvdmlkZW8vZXh5bm9zL2V4eW5vc19kcF9yZWcuYyAgICAgICAgICAgICAgIHwg
-ICA3NyArKy0NCiBkcml2ZXJzL3ZpZGVvL2V4eW5vcy9leHlub3NfZHBfcmVnLmggICAgICAgICAg
-ICAgICB8ICAgIDMgKy0NCiA1IGZpbGVzIGNoYW5nZWQsIDU4MyBpbnNlcnRpb25zKCspLCAyOTUg
-ZGVsZXRpb25zKC0pDQogY3JlYXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJl
-ZS9iaW5kaW5ncy92aWRlby9leHlub3NfZHAudHh0DQoNCi0tDQpCZXN0IHJlZ2FyZHMsDQpKaW5n
-b28gSGFuDQo
+--------------enig842D0F56ACA98A365C74D2E2
+Content-Type: text/plain; charset=EUC-KR
+Content-Transfer-Encoding: quoted-printable
 
+On 2012-11-23 08:37, Jingoo Han wrote:
+> Hi Tomi,
+>=20
+> Thank you for taking care of pull requests for the v3.8 merge window.
+> These patches have been submitted for more than one month,
+> and tested with Exynos5250.
+>=20
+> The following changes since commit f4a75d2eb7b1e2206094b901be09adb31ba6=
+3681:
+>=20
+>   Linux 3.7-rc6 (Fri Nov 16 17:42:40 2012 -0800)
+>=20
+> are available in the git repository at:
+>   git://github.com/jingoo/linux.git exynos-dp-next
+>=20
+> ----------------------------------------------------------------
+> Exynos DP changes for the 3.8 merge window.
+>=20
+> - Device Tree support for Samsung Exynos DP
+> - SW Link training is cleaned up.
+> - HPD interrupt is supported.
+> ----------------------------------------------------------------
+>=20
+> Ajay Kumar (5):
+>       video: exynos_dp: Add device tree support to DP driver
+>       video: exynos_dp: device tree documentation
+>       video: exynos_dp: Reset and initialize DP before requesting irq
+>       video: exynos_dp: Fix incorrect setting for INT_CTL
+>       video: exynos_dp: remove redundant parameters
+>=20
+> Sean Paul (8):
+>       video: exynos_dp: Check DPCD return codes
+>       video: exynos_dp: Clean up SW link training
+>       video: exynos_dp: Get pll lock before pattern set
+>       video: exynos_dp: Improve EDID error handling
+>       video: exynos_dp: Fix bug when checking dp->irq
+>       video: exynos_dp: Remove sink control to D0
+>       video: exynos_dp: Move hotplug into a workqueue
+>       video: exynos_dp: Enable hotplug interrupts
+>=20
+>  .../devicetree/bindings/video/exynos_dp.txt        |   80 +++
+>  drivers/video/exynos/exynos_dp_core.c              |  697 ++++++++++++=
+--------
+>  drivers/video/exynos/exynos_dp_core.h              |   21 +-
+>  drivers/video/exynos/exynos_dp_reg.c               |   77 ++-
+>  drivers/video/exynos/exynos_dp_reg.h               |    3 +-
+>  5 files changed, 583 insertions(+), 295 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/video/exynos_dp.t=
+xt
+
+Has the DT bindings been reviewed by the device tree people? It would
+good to have an ack from them.
+
+ Tomi
+
+
+
+--------------enig842D0F56ACA98A365C74D2E2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJQtI7DAAoJEPo9qoy8lh71GlwP/RPvlBiuoVa4QrBGITU7F1Dx
+TvOYBREvmuQVzE29yxEoxUES7VtG2hBNN8CR5rD8XP5uvxGFEMsOCow1BU9Kwhpg
+cs497i2hpFMgY6/k9F/SszUtl+E7bj+hUK9afno0pmiGmQgSUBdNnLGQYyw45qDs
+y66BZx6tUh9DoR2GbHpTvwIIM95ucCKNhn2NP9Bezb4n8CUyiCNUKq2TmLDlsrwE
+FMK5WYHPDPd2DvdM7bgJLbSL7bm0WfmaCb4MiB6a59kyTbrHx3eeknm2hC2SFxfn
+7y4QpcURc/3I2w+IIiv0r/5O7m5y5Kp45WciJ+4NbOQf/4NCOFfDle23D8G1MM8i
+YUcFKZ7AMcn/NYLKQhEWMy+ZP/lTQ3LUHsHOZmdM9Us1ANvSCV7bPSx45Py94DSE
+2tDwWByNEGjS3r+lI8enPsPn6t86JPpzhOIMnnkJzEr6YBX8tFDELqFLznx2jMwC
+KRah9EC8eFceTzv5UESWc+EMJJicKetGSjDd7JB0cN4jY82jbjpFgcuXtWu6iP8W
+NA+DD4lYX8SlYMZlwC7mYrCfFwd2Aqp78JTevc/0jnYR/aIXhuRMriaHIyC2w+Bo
+BmloOb9uF3alYkhvcdFWbhcygKkKISXofjafqcgyZ7pKouyySfj2BqLViVZ/tyta
+jovbKO7f2PFzk1LaOKAP
+=nFvl
+-----END PGP SIGNATURE-----
+
+--------------enig842D0F56ACA98A365C74D2E2--

@@ -1,29 +1,98 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 27 Nov 2012 01:24:03 +0000
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 27 Nov 2012 11:54:21 +0000
 Subject: Re: [PATCH 1/5] backlight: Add GPIO-based backlight driver
-Message-Id: <8716524.45681353979440603.JavaMail.weblogic@epv6ml07>
+Message-Id: <2946045.hrxh3VjFfi@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353688515-30458-2-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-In-Reply-To: <1353688515-30458-2-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+References: <33110366.44811353978636788.JavaMail.weblogic@epv6ml07>
+In-Reply-To: <33110366.44811353978636788.JavaMail.weblogic@epv6ml07>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Jingoo Han <jg1.han@samsung.com>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>, Magnus Damm <magnus.damm@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+To: jg1.han@samsung.com
+Cc: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>, Magnus Damm <magnus.damm@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 
-T24gTW9uZGF5LCBOb3ZlbWJlciAyNiwgMjAxMiA3OjI1IFBNLCBMYXVyZW50IFBpbmNoYXJ0IHdy
-b3RlDQo+IA0KPiBIaSBKaW5nb28sDQo+IA0KPiBPbiBNb25kYXkgMjYgTm92ZW1iZXIgMjAxMiAw
-OTo0OTozNiBKaW5nb28gSGFuIHdyb3RlOg0KPiA+IE9uIFNhdHVyZGF5LCBOb3ZlbWJlciAyNCwg
-MjAxMiAxOjM1IEFNLCBMYXVyZW50IFBpbmNoYXJ0IHdyb3RlDQo+ID4gPg0KPiA+ID4gU2lnbmVk
-LW9mZi1ieTogTGF1cmVudCBQaW5jaGFydCA8bGF1cmVudC5waW5jaGFydEBpZGVhc29uYm9hcmQu
-Y29tPg0KPiA+DQo+ID4gQ0MnZWQgQW5kcmV3IE1vcnRvbg0KPiA+DQo+ID4gSXQgbG9va3MgZ29v
-ZC4gQWxzbywgSSB0ZXN0ZWQgdGhpcyBwYXRjaCB3aXRoIFNNREs0MjEwIGJvYXJkLg0KPiA+IEFj
-a2VkLWJ5OiBKaW5nb28gSGFuIDxqZzEuaGFuQHNhbXN1bmcuY29tPg0KPiANCj4gVGhhbmsgeW91
-Lg0KPiANCj4gVW5sZXNzIFJpY2hhcmQgd2FudHMgdG8gdGFrZSAxLzUgYW5kIDIvNSwgSSBwbGFu
-IHRvIHB1c2ggdGhlbSB0aHJvdWdoIGVpdGhlcg0KPiB0aGUgUmVuZXNhcyBBUk0gb3IgUmVuZXNh
-cyBTSCB0cmVlIHdpdGggdGhlIGJvYXJkIGNvZGUgcGF0Y2hlcy4NCg0KSGkgTGF1cmVudCwNCg0K
-T0ssIEkgc2VlLg0KTWF5YmUgUmljaGFyZCB3b24ndCB0YWtlIDEvNSBhbmQgMi81LiBBcyB5b3Ug
-bWVudGlvbmVkLCBpdCB3b3VsZCBiZSBnb29kDQp0byBwdXNoIHRoZW0gdGhyb3VnaG91dCB0aGUg
-UmVuZXNhcyB0cmVlIHRvIGF2b2lkIGJpc2VjdGlvbiBicmVha2FnZXMuDQoNCkJlc3QgcmVnYXJk
-cywNCkppbmdvbyBIYW4NCg0KDQo
+Hi Jingoo,
+
+On Tuesday 27 November 2012 01:10:36 Jingoo Han wrote:
+> On Saturday, November 24, 2012 1:35 AM, Laurent Pinchart wrote
+> 
+> > 
+> > Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> > ---
+> > 
+> >  drivers/video/backlight/Kconfig          |    7 ++
+> >  drivers/video/backlight/Makefile         |    1 +
+> >  drivers/video/backlight/gpio_backlight.c |  158 +++++++++++++++++++++++++
+> >  include/video/gpio_backlight.h           |   21 ++++
+> >  4 files changed, 187 insertions(+), 0 deletions(-)
+> >  create mode 100644 drivers/video/backlight/gpio_backlight.c
+> >  create mode 100644 include/video/gpio_backlight.h
+> 
+> 
+> [...]
+> 
+> 
+> > +static int __devinit gpio_backlight_probe(struct platform_device *pdev)
+> > +{
+> > +	struct gpio_backlight_platform_data *pdata = pdev->dev.platform_data;
+> > +	struct backlight_properties props;
+> > +	struct backlight_device *bl;
+> > +	struct gpio_backlight *gbl;
+> > +	int ret;
+> > +
+> > +	gbl = devm_kzalloc(&pdev->dev, sizeof(*gbl), GFP_KERNEL);
+> > +	if (gbl = NULL)
+> > +		return -ENOMEM;
+> > +
+> > +	gbl->dev = &pdev->dev;
+> > +
+> > +	if (!pdata) {
+> > +		dev_err(&pdev->dev, "failed to find platform data\n");
+> > +		return -ENODEV;
+> > +	}
+> > +
+> > +	gbl->fbdev = pdata->fbdev;
+> > +	gbl->gpio = pdata->gpio;
+> > +	gbl->active = pdata->active_low ? 0 : 1;
+> > +
+> > +	ret = devm_gpio_request_one(gbl->dev, gbl->gpio, GPIOF_DIR_OUT,
+> > +				    pdata->name);
+> 
+> 
+> Please use GPIOF_INIT flags if you want to turn off GPIO backlight.
+> If gbl->active is inverted, GPIOF_INIT_HIGH can be used as below:
+> 
+> 	ret = devm_gpio_request_one(gbl->dev, gbl->gpio,
+> 				    GPIOF_DIR_OUT | (gbl->active ?
+> 				    GPIOF_INIT_LOW : GPIOF_INIT_HIGH),
+> 				    pdata->name);
+
+Good point, thank you. I'll fix that.
+
+> > +	if (ret < 0) {
+> > +		dev_err(&pdev->dev, "unable to request GPIO\n");
+> > +		return ret;
+> > +	}
+> > +
+> > +	memset(&props, 0, sizeof(props));
+> > +	props.type = BACKLIGHT_RAW;
+> > +	props.max_brightness = 1;
+> > +	bl = backlight_device_register(dev_name(&pdev->dev), &pdev->dev, gbl,
+> > +				       &gpio_backlight_ops, &props);
+> > +	if (IS_ERR(bl)) {
+> > +		dev_err(&pdev->dev, "failed to register backlight\n");
+> > +		return PTR_ERR(bl);
+> > +	}
+> > +
+> > +	bl->props.brightness = pdata->def_value;
+> > +	backlight_update_status(bl);
+> > +
+> > +	platform_set_drvdata(pdev, bl);
+> > +	return 0;
+> > +}
+
+-- 
+Regards,
+
+Laurent Pinchart
 

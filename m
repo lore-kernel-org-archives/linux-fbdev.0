@@ -1,135 +1,63 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 27 Nov 2012 15:37:32 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Tue, 27 Nov 2012 16:46:07 +0000
 Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Message-Id: <3136860.Z3VvKjeKpU@avalon>
+Message-Id: <20121127164607.GG4468@opensource.wolfsonmicro.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="nextPart1423338.6jACMuZm55"
+Content-Type: multipart/mixed; boundary="8/pVXlBMPtxfSuJG"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
  <6982060.HfOokt4dIn@avalon> <50B4D9E9.8070607@ti.com>
-In-Reply-To: <50B4D9E9.8070607@ti.com>
+ <3136860.Z3VvKjeKpU@avalon>
+In-Reply-To: <3136860.Z3VvKjeKpU@avalon>
 To: linux-arm-kernel@lists.infradead.org
 
 
---nextPart1423338.6jACMuZm55
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--8/pVXlBMPtxfSuJG
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Tomi,
+On Tue, Nov 27, 2012 at 04:37:32PM +0100, Laurent Pinchart wrote:
 
-On Tuesday 27 November 2012 17:19:05 Tomi Valkeinen wrote:
-> On 2012-11-27 17:08, Laurent Pinchart wrote:
-> > On Wednesday 21 November 2012 14:04:17 Tomi Valkeinen wrote:
-> >> On 2012-11-21 13:40, Thierry Reding wrote:
-> > [snip]
-> > 
-> >>> One thing that's not very clear is how the backlight subsystem should be
-> >>> wired up with the display framework. I have a patch on top of the Tegra
-> >>> DRM driver which adds some ad-hoc display support using this power
-> >>> sequences series and the pwm-backlight.
-> >> 
-> >> I think that's a separate issue: how to associate the lcd device and
-> >> backlight device together. I don't have a clear answer to this.
-> >> 
-> >> There are many ways the backlight may be handled. In some cases the
-> >> panel and the backlight are truly independent, and you can use the other
-> >> without using the other (not very practical, though =).
-> > 
-> > From a control point of view that's always the case for DPI panels (as
-> > those panels have no control bus, the backlight control bus is by
-> > definition separate) and is the case for the two DBI panels I've seen
-> > (but I won't claim that's a significative number of panels).
-> 
-> They may have a control bus, I2C, SPI, etc. In some cases that can be
-> used to control the backlight. But yes, it's separate from the video bus.
-> 
-> >> But then with some LCDs the backlight may be controlled by sending
-> >> commands to the panel, and in this case the two may be quite linked.
-> >> Changing the backlight requires the panel driver to be up and running,
-> >> and sometimes the sending the backlight commands may need to be (say, DSI
-> >> display, with backlight commands going over the DSI bus).
-> > 
-> > When you write "sending commands to the panel", do you mean on the same
-> > control bus that the panel use ? Or would that also include for instance
-> > an I2C backlight controller integrated inside a DSI panel module ? In the
-> > later
->
-> I mean the same control bus that is used to control the panel, be it shared
-> with video bus like DSI, or separate like I2C.
-> 
-> > case there might still be dependencies between the panel controller and
-> > the backlight controller (let's say for instance that the panel controller
-> > has a DSI-controller GPIO wired to the backlight controller reset signal),
-> > but in practice I don't know if that's ever the case.
-> > 
-> >> So my feeling is that the panel driver should know about the related
-> >> backlight device. In the first case the panel driver would just call
-> >> enable/disable in the backlight device when the panel is turned on.
-> > 
-> > That makes sense. Unless I'm mistaken a backlight is always associated
-> > with a panel (it would be called a light if there was no panel in front
-> > of it). We can thus expose backlight operations in the panel CDF
-> > (in-kernel) API. The panel driver would need a way to retrieve a pointer
-> > to the associated backlight device.
-> 
-> I agree.
-> 
-> >> In the second case of the DSI panel... I'm not sure. I've implemented it
-> >> so that the panel driver creates the backlight device, and implements
-> >> the backlight callbacks. It then sends the DSI commands from those
-> >> callbacks.
-> > 
-> > If we decide to make the panel expose backlight operations we could get
-> > rid of the backlight device in this case.
-> 
-> Do you mean there would be a real backlight device only when there's a
-> totally independent backlight for the panel?
+> One possibly crazy idea I had was to replace backlight devices as we know=
+ them=20
+> with LED devices (a LED driver IC shouldn't be supported by different API=
+s=20
+> depending on whether the LEDs it drives are used as a backlight or not), =
+and=20
+> have the panel hook up with the associated LED device to expose backlight=
+=20
+> operations through the CDF. Panels with a backlight controller tied to th=
+e=20
+> panel controller (control through DSI for instance) would implement the=
+=20
+> backlight operations directly without instantiating a LED device. This st=
+ill=20
+> leaves the question of the userspace backlight brightness API open.
 
-I'm toying with that idea.
+I remember looking at that before but never actually got round to it, it
+seems like a sensible idea to me.
 
-I see two reasons for having backlight devices in the kernel right now.
-
-- Integration with the fbdev API to control the backlight automatically on 
-fbdev blank/unblank/suspend/resume. That's something I want to get rid of, 
-backlight should not depend on fbdev. If the backlight in-kernel API is 
-exposed by the panel through CDF operations we won't need this anymore.
-
-- Exposing backlight control to userspace in sysfs. That's quite probably 
-something we want to keep, if only for compatibility reasons. Backlight on/off 
-should be controlled through the display APIs through DPMS control, but we 
-have no way that I'm aware of to control the backlight brightness in the FBDEV 
-and KMS APIs. It might make sense to add a backlight API to KMS for the 
-future.
-
-One possibly crazy idea I had was to replace backlight devices as we know them 
-with LED devices (a LED driver IC shouldn't be supported by different APIs 
-depending on whether the LEDs it drives are used as a backlight or not), and 
-have the panel hook up with the associated LED device to expose backlight 
-operations through the CDF. Panels with a backlight controller tied to the 
-panel controller (control through DSI for instance) would implement the 
-backlight operations directly without instantiating a LED device. This still 
-leaves the question of the userspace backlight brightness API open.
-
--- 
-Regards,
-
-Laurent Pinchart
-
---nextPart1423338.6jACMuZm55
+--8/pVXlBMPtxfSuJG
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQEcBAABAgAGBQJQtN48AAoJEIkPb2GL7hl1U6wH/RWMBxe8hYLFenNw7IyFJJ8k
-eENfy30S8fKlzWNLSDGHjdKgO0Tgp3xFHlA3fi8UDq8JA1+5ZaBJIVL1J5DJOSpZ
-c3OwlRylDYHgNuVV8k3gGA1y5Kstcbf4uzHZWOAqzSHtL6gVQtt5b2Qd4W3zUyfA
-8gleihjvnzGmlavi9fTmHHOfcFt/Z2YVx0uveMq3q9QA1NqEoJbQ8ckPI7nZzg3o
-Iwg5tPtBHxT7lHB/5L2WcnFxM0dB063eUC+NnHAKzxdti9CLXy1c0X2hhCEu8oPl
-3hfCa8a4xNxDor8r5iYcIsWHNUXYCsNvMQW3GYFs0zzAf3NOZOFspOGyl3Uh4ks=
-=fEkJ
+iQIcBAEBAgAGBQJQtO5HAAoJELSic+t+oim9h/cP/i717a9Sz8TheSTibWIOtSwa
+A45+ZL/V55CNWf1jnydvAIilGimVeumAk95Xcqh7OkLC7VoeCFP8pHoicC83ilHj
+KNAhd54iK3IgMskORskeZ2XAb6Nk+DRq3I28mX4hzisI69HqmeDmqiCXLJeO0D/+
+YoYzyIj4ES3O7u2Asv+CS1b95biq22m3SwDqbKFTeS8hPpOnw/IzzCqp49R/sn/E
+LhJse7m1JoPi9o4W1+RfX0LTXSAYxsd4BMXb9qyqvUNE9FSL+l/mFOnsjEcFL/zQ
+U4mC/76QWBCFWdmLyHV71vV/JTXl0wr4S6ptpqeM9S6b/YO2reT919F5flqK74kf
+FTI5BS2ENSMXXaeVmpw7JMzvKIaKF3It0/Iy7FgIdBya0WYU/NXcFhlww6VNoFJr
+SC76XmGuAaOhdUYkL3LEISS5IXfoaD+OJq/x695ITfP+D5iBA6V4joPbC1kEKoNB
+COVPaBOTecjnKoqkPZDCw6TNLrTxCqVwo1BaO+didPejOSxxkahq8x5DrcrHb4PY
+YQDBRXr+ayV8uwHumaVogb+Zm4PCBFNw1XRlKs4EXkLDoAITmj1a+jqfx9TS203s
+lzXeCcm9i5B93sH4DzVQnEBWPeaF6uRQAkb18/tsDms9ImKr8mI69AgxBzNIAI6L
+pmhNMm9aDmAd3OpsIvhK
+=Ni3b
 -----END PGP SIGNATURE-----
 
---nextPart1423338.6jACMuZm55--
-
+--8/pVXlBMPtxfSuJG--

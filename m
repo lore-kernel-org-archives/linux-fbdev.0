@@ -1,69 +1,240 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 05 Nov 2012 02:47:04 +0000
-Subject: Re: video: exynos_dp: Reset and initialize DP before requesting irq
-Message-Id: <001b01cdbaff$d6c05c50$844114f0$%han@samsung.com>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Wed, 28 Nov 2012 10:53:24 +0000
+Subject: [PATCH 1/7] OMAPDSS: DISPC: Move burst_size and buffer_size to dispc_features
+Message-Id: <c40e58eec3b2100368c696db05a68d49d49f1f0d.1354086150.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351926402-25484-1-git-send-email-ajaykumar.rs@samsung.com>
-In-Reply-To: <1351926402-25484-1-git-send-email-ajaykumar.rs@samsung.com>
+References: <cover.1354086150.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1354086150.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-On Saturday, November 03, 2012 4:07 PM Ajay Kumar wrote
-> Subject: video: exynos_dp: Reset and initialize DP before requesting irq
+The burst_size and buffer_size being local data to DISPC are moved to
+dispc_features and so removed from struct omap_dss_features. The functions
+referring to burst and buffer size are also removed from dss_features.c as they
+are now accessed locally in dispc.c.
 
-Please don't forget to add "[PATCH] " as below.
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+---
+ drivers/video/omap2/dss/dispc.c        |   21 +++++++++++++++++----
+ drivers/video/omap2/dss/dss_features.c |   29 -----------------------------
+ drivers/video/omap2/dss/dss_features.h |    3 ---
+ 3 files changed, 17 insertions(+), 36 deletions(-)
 
-[PATCH] video: exynos_dp: Reset and initialize DP before requesting irq
-
-> 
-> If DP is not reset properly before kernel bootup(in bootloader code),
-> there can be few pending interrupts, and sometimes they invoke
-> DP irq handler as soon as the irq handler is registered in DP probe.
-> So, we make the DP driver more robust by resetting and
-> initializing DP at the earliest and then registering the irq handler.
-> 
-> Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
-
-Acked-by: Jingoo Han <jg1.han@samsung.com>
-
-Tested with Exynos5250.
-
-> ---
->  drivers/video/exynos/exynos_dp_core.c |   12 ++++++------
->  1 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-> index d55470e..d241fd3 100644
-> --- a/drivers/video/exynos/exynos_dp_core.c
-> +++ b/drivers/video/exynos/exynos_dp_core.c
-> @@ -901,6 +901,12 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  		return -ENODEV;
->  	}
-> 
-> +	dp->video_info = pdata->video_info;
-> +	if (pdata->phy_init)
-> +		pdata->phy_init();
-> +
-> +	exynos_dp_init_dp(dp);
-> +
->  	ret = devm_request_irq(&pdev->dev, dp->irq, exynos_dp_irq_handler, 0,
->  				"exynos-dp", dp);
->  	if (ret) {
-> @@ -908,12 +914,6 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  		return ret;
->  	}
-> 
-> -	dp->video_info = pdata->video_info;
-> -	if (pdata->phy_init)
-> -		pdata->phy_init();
-> -
-> -	exynos_dp_init_dp(dp);
-> -
->  	ret = exynos_dp_detect_hpd(dp);
->  	if (ret) {
->  		dev_err(&pdev->dev, "unable to detect hpd\n");
-> --
-> 1.7.0.4
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 3d0ff5b..9f259ba 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -104,6 +104,9 @@ struct dispc_features {
+ 
+ 	/* swap GFX & WB fifos */
+ 	bool gfx_fifo_workaround:1;
++
++	u32 buffer_size_unit;
++	u32 burst_size_unit;
+ };
+ 
+ #define DISPC_MAX_NR_FIFOS 5
+@@ -1056,7 +1059,7 @@ static void dispc_configure_burst_sizes(void)
+ 
+ static u32 dispc_ovl_get_burst_size(enum omap_plane plane)
+ {
+-	unsigned unit = dss_feat_get_burst_size_unit();
++	unsigned unit = dispc.feat->burst_size_unit;
+ 	/* burst multiplier is always x8 (see dispc_configure_burst_sizes()) */
+ 	return unit * 8;
+ }
+@@ -1145,7 +1148,7 @@ static void dispc_init_fifos(void)
+ 	u8 start, end;
+ 	u32 unit;
+ 
+-	unit = dss_feat_get_buffer_size_unit();
++	unit = dispc.feat->buffer_size_unit;
+ 
+ 	dss_feat_get_reg_field(FEAT_REG_FIFOSIZE, &start, &end);
+ 
+@@ -1203,7 +1206,7 @@ void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high)
+ 	u8 hi_start, hi_end, lo_start, lo_end;
+ 	u32 unit;
+ 
+-	unit = dss_feat_get_buffer_size_unit();
++	unit = dispc.feat->buffer_size_unit;
+ 
+ 	WARN_ON(low % unit != 0);
+ 	WARN_ON(high % unit != 0);
+@@ -1247,7 +1250,7 @@ void dispc_ovl_compute_fifo_thresholds(enum omap_plane plane,
+ 	 * buffer_units, and the fifo thresholds must be buffer_unit aligned.
+ 	 */
+ 
+-	unsigned buf_unit = dss_feat_get_buffer_size_unit();
++	unsigned buf_unit = dispc.feat->buffer_size_unit;
+ 	unsigned ovl_fifo_size, total_fifo_size, burst_size;
+ 	int i;
+ 
+@@ -4095,6 +4098,8 @@ static const struct dispc_features omap24xx_dispc_feats __initconst = {
+ 	.calc_scaling		=	dispc_ovl_calc_scaling_24xx,
+ 	.calc_core_clk		=	calc_core_clk_24xx,
+ 	.num_fifos		=	3,
++	.buffer_size_unit	=	1,
++	.burst_size_unit	=	8,
+ };
+ 
+ static const struct dispc_features omap34xx_rev1_0_dispc_feats __initconst = {
+@@ -4111,6 +4116,8 @@ static const struct dispc_features omap34xx_rev1_0_dispc_feats __initconst = {
+ 	.calc_scaling		=	dispc_ovl_calc_scaling_34xx,
+ 	.calc_core_clk		=	calc_core_clk_34xx,
+ 	.num_fifos		=	3,
++	.buffer_size_unit	=	1,
++	.burst_size_unit	=	8,
+ };
+ 
+ static const struct dispc_features omap34xx_rev3_0_dispc_feats __initconst = {
+@@ -4127,6 +4134,8 @@ static const struct dispc_features omap34xx_rev3_0_dispc_feats __initconst = {
+ 	.calc_scaling		=	dispc_ovl_calc_scaling_34xx,
+ 	.calc_core_clk		=	calc_core_clk_34xx,
+ 	.num_fifos		=	3,
++	.buffer_size_unit	=	1,
++	.burst_size_unit	=	8,
+ };
+ 
+ static const struct dispc_features omap44xx_dispc_feats __initconst = {
+@@ -4144,6 +4153,8 @@ static const struct dispc_features omap44xx_dispc_feats __initconst = {
+ 	.calc_core_clk		=	calc_core_clk_44xx,
+ 	.num_fifos		=	5,
+ 	.gfx_fifo_workaround	=	true,
++	.buffer_size_unit	=	16,
++	.burst_size_unit	=	16,
+ };
+ 
+ static const struct dispc_features omap54xx_dispc_feats __initconst = {
+@@ -4161,6 +4172,8 @@ static const struct dispc_features omap54xx_dispc_feats __initconst = {
+ 	.calc_core_clk		=	calc_core_clk_44xx,
+ 	.num_fifos		=	5,
+ 	.gfx_fifo_workaround	=	true,
++	.buffer_size_unit	=	16,
++	.burst_size_unit	=	16,
+ };
+ 
+ static int __init dispc_init_features(struct platform_device *pdev)
+diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
+index 1d125c6..092e21b 100644
+--- a/drivers/video/omap2/dss/dss_features.c
++++ b/drivers/video/omap2/dss/dss_features.c
+@@ -54,9 +54,6 @@ struct omap_dss_features {
+ 	const struct dss_param_range *dss_params;
+ 
+ 	const enum omap_dss_rotation_type supported_rotation_types;
+-
+-	const u32 buffer_size_unit;
+-	const u32 burst_size_unit;
+ };
+ 
+ /* This struct is assigned to one of the below during initialization */
+@@ -632,8 +629,6 @@ static const struct omap_dss_features omap2_dss_features = {
+ 	.clksrc_names = omap2_dss_clk_source_names,
+ 	.dss_params = omap2_dss_param_range,
+ 	.supported_rotation_types = OMAP_DSS_ROT_DMA | OMAP_DSS_ROT_VRFB,
+-	.buffer_size_unit = 1,
+-	.burst_size_unit = 8,
+ };
+ 
+ /* OMAP3 DSS Features */
+@@ -653,8 +648,6 @@ static const struct omap_dss_features omap3430_dss_features = {
+ 	.clksrc_names = omap3_dss_clk_source_names,
+ 	.dss_params = omap3_dss_param_range,
+ 	.supported_rotation_types = OMAP_DSS_ROT_DMA | OMAP_DSS_ROT_VRFB,
+-	.buffer_size_unit = 1,
+-	.burst_size_unit = 8,
+ };
+ 
+ /*
+@@ -677,8 +670,6 @@ static const struct omap_dss_features am35xx_dss_features = {
+ 	.clksrc_names = omap3_dss_clk_source_names,
+ 	.dss_params = omap3_dss_param_range,
+ 	.supported_rotation_types = OMAP_DSS_ROT_DMA | OMAP_DSS_ROT_VRFB,
+-	.buffer_size_unit = 1,
+-	.burst_size_unit = 8,
+ };
+ 
+ static const struct omap_dss_features omap3630_dss_features = {
+@@ -697,8 +688,6 @@ static const struct omap_dss_features omap3630_dss_features = {
+ 	.clksrc_names = omap3_dss_clk_source_names,
+ 	.dss_params = omap3_dss_param_range,
+ 	.supported_rotation_types = OMAP_DSS_ROT_DMA | OMAP_DSS_ROT_VRFB,
+-	.buffer_size_unit = 1,
+-	.burst_size_unit = 8,
+ };
+ 
+ /* OMAP4 DSS Features */
+@@ -720,8 +709,6 @@ static const struct omap_dss_features omap4430_es1_0_dss_features  = {
+ 	.clksrc_names = omap4_dss_clk_source_names,
+ 	.dss_params = omap4_dss_param_range,
+ 	.supported_rotation_types = OMAP_DSS_ROT_DMA | OMAP_DSS_ROT_TILER,
+-	.buffer_size_unit = 16,
+-	.burst_size_unit = 16,
+ };
+ 
+ /* For OMAP4430 ES 2.0, 2.1 and 2.2 revisions */
+@@ -742,8 +729,6 @@ static const struct omap_dss_features omap4430_es2_0_1_2_dss_features = {
+ 	.clksrc_names = omap4_dss_clk_source_names,
+ 	.dss_params = omap4_dss_param_range,
+ 	.supported_rotation_types = OMAP_DSS_ROT_DMA | OMAP_DSS_ROT_TILER,
+-	.buffer_size_unit = 16,
+-	.burst_size_unit = 16,
+ };
+ 
+ /* For all the other OMAP4 versions */
+@@ -764,8 +749,6 @@ static const struct omap_dss_features omap4_dss_features = {
+ 	.clksrc_names = omap4_dss_clk_source_names,
+ 	.dss_params = omap4_dss_param_range,
+ 	.supported_rotation_types = OMAP_DSS_ROT_DMA | OMAP_DSS_ROT_TILER,
+-	.buffer_size_unit = 16,
+-	.burst_size_unit = 16,
+ };
+ 
+ /* OMAP5 DSS Features */
+@@ -785,8 +768,6 @@ static const struct omap_dss_features omap5_dss_features = {
+ 	.clksrc_names = omap5_dss_clk_source_names,
+ 	.dss_params = omap5_dss_param_range,
+ 	.supported_rotation_types = OMAP_DSS_ROT_DMA | OMAP_DSS_ROT_TILER,
+-	.buffer_size_unit = 16,
+-	.burst_size_unit = 16,
+ };
+ 
+ #if defined(CONFIG_OMAP4_DSS_HDMI)
+@@ -892,16 +873,6 @@ const char *dss_feat_get_clk_source_name(enum omap_dss_clk_source id)
+ 	return omap_current_dss_features->clksrc_names[id];
+ }
+ 
+-u32 dss_feat_get_buffer_size_unit(void)
+-{
+-	return omap_current_dss_features->buffer_size_unit;
+-}
+-
+-u32 dss_feat_get_burst_size_unit(void)
+-{
+-	return omap_current_dss_features->burst_size_unit;
+-}
+-
+ /* DSS has_feature check */
+ bool dss_has_feature(enum dss_feat_id id)
+ {
+diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
+index 385b0af..16658e1 100644
+--- a/drivers/video/omap2/dss/dss_features.h
++++ b/drivers/video/omap2/dss/dss_features.h
+@@ -114,9 +114,6 @@ bool dss_feat_color_mode_supported(enum omap_plane plane,
+ 		enum omap_color_mode color_mode);
+ const char *dss_feat_get_clk_source_name(enum omap_dss_clk_source id);
+ 
+-u32 dss_feat_get_buffer_size_unit(void);	/* in bytes */
+-u32 dss_feat_get_burst_size_unit(void);		/* in bytes */
+-
+ bool dss_feat_rotation_type_supported(enum omap_dss_rotation_type rot_type);
+ 
+ bool dss_has_feature(enum dss_feat_id id);
+-- 
+1.7.10
 

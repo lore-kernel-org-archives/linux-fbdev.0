@@ -1,240 +1,80 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Nov 2012 10:25:03 +0000
-Subject: [PATCH 2/5] OMAPFB: use dma_alloc_attrs to allocate memory
-Message-Id: <1352715906-16946-3-git-send-email-tomi.valkeinen@ti.com>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Wed, 28 Nov 2012 10:53:23 +0000
+Subject: [PATCH 0/7] OMAPDSS: Cleanup omap_dss_features
+Message-Id: <cover.1354086150.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1352715906-16946-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1352715906-16946-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-Use dma_alloc_attrs to allocate memory instead of omap specific vram
-allocator. After this we can remove the omap vram allocator.
+Hi everyone,
+this patch series aims at cleaning up of dss_features.c by moving features to
+respective submodule drivers.
 
-There are some downsides to this change:
+The 1st patch
+ * moved struct omap_dss_features members burst_size_unit and buffer_size_unit
+   to dispc_features
+The 2nd patch
+ * added definition of struct register_field
+ * created enum dispc_feat_reg_field
+ * moved data from dss_reg_fields to dispc_reg_fields
+The 3rd patch
+ * added definition of struct param_range
+ * created enum dispc_range_param
+ * moved data from dss_param_range to dispc_param_range
+The 4th patch
+ * created struct feats and initialized dsi_feats
+ * created enum dsi_feat_reg_field
+ * moved data from dss_reg_fields to dsi_reg_fields
+ * created dsi_init_features() to initialize dsi_feats
+The 5th patch
+ * created enum dsi_range_param
+ * moved data from dss_param_range to dsi_param_range
+The 6th patch
+ * added members fld_dispc_clk_switch and dss_fck_max to struct dss_features
+   and initialized corresponding dss_feats
+ * removed definition of dss_reg_field
+ * removed respective omap2_dss_reg_fields, omap3_dss_reg_fields,
+   omap4_dss_reg_fields and omap5_dss_reg_fields
+ * removed members reg_fields and num_reg_fields from struct omap_dss_features
+ * removed enum dss_feat_reg_field
+ * removed function dss_feat_get_reg_field()
+The 7th patch
+ * added FEAT_PARAM_DSS_FCK to enum dsi_param_range and initialized
+   corresponding elements in dsi_param_range
+ * removed struct dss_param_range
+ * removed enum dss_range_param
+ * removed functions dss_feat_get_param_min() and dss_feat_get_param_max()
 
-1) dma_alloc_attrs doesn't let us allocate at certain physical address.
-However, this should not be a problem as this feature of vram allocator
-is only used when reserving the framebuffer that was initialized by the
-bootloader, and we don't currently support "passing" a framebuffer from
-the bootloader to the kernel anyway.
+All your comments and suggestions are welcome.
 
-2) dma_alloc_attrs, as of now, always ioremaps the allocated area, and
-we don't need the ioremap when using VRFB. This patch uses
-DMA_ATTR_NO_KERNEL_MAPPING for the allocation, but the flag is currently
-not operational.
+I have based my patches on git://gitorious.org/linux-omap-dss2/linux.git master
 
-3) OMAPFB_GET_VRAM_INFO ioctl cannot return real values anymore. I
-changed the ioctl to return 64M for all the values, which, I hope, the
-applications will interpret as "there's enough vram".
+Reference Tree:
+git://gitorious.org/linux-omap-dss2/chandrabhanus-linux.git dss_cleanup
 
-4) "vram" kernel parameter to define how much ram to reserve for video
-use no longer works. The user needs to enable CMA and use "cma"
-parameter.
+Regards,
+Chandrabhanu
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/omapfb/Kconfig        |    1 -
- drivers/video/omap2/omapfb/omapfb-ioctl.c |   14 +++---
- drivers/video/omap2/omapfb/omapfb-main.c  |   69 +++++++++++++++--------------
- drivers/video/omap2/omapfb/omapfb.h       |    5 +++
- 4 files changed, 48 insertions(+), 41 deletions(-)
+Chandrabhanu Mahapatra (7):
+  OMAPDSS: DISPC: Move burst_size and buffer_size to dispc_features
+  OMAPDSS: DISPC: Move DISPC specific dss_reg_fields to dispc_features
+  OMAPDSS: DISPC: Move DISPC specific dss_params to dispc_features
+  OMAPDSS: DSI: Move DSI specific reg_fields to dsi_feats
+  OMAPDSS: DSI: Move DSI specific dss_params to dsi_feats
+  OMAPDSS: DSS: Add members fld_dispc_clk_switch and dss_fck_max
+  OMAPDSS: DSI: Add FEAT_PARAM_DSS_FCK
 
-diff --git a/drivers/video/omap2/omapfb/Kconfig b/drivers/video/omap2/omapfb/Kconfig
-index 4ea17dc..4cb12ce 100644
---- a/drivers/video/omap2/omapfb/Kconfig
-+++ b/drivers/video/omap2/omapfb/Kconfig
-@@ -2,7 +2,6 @@ menuconfig FB_OMAP2
-         tristate "OMAP2+ frame buffer support"
-         depends on FB && OMAP2_DSS && !DRM_OMAP
- 
--	select OMAP2_VRAM
- 	select OMAP2_VRFB if ARCH_OMAP2 || ARCH_OMAP3
-         select FB_CFB_FILLRECT
-         select FB_CFB_COPYAREA
-diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
-index 606b89f..574c170 100644
---- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
-+++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
-@@ -31,7 +31,6 @@
- 
- #include <video/omapdss.h>
- #include <plat/vrfb.h>
--#include <plat/vram.h>
- 
- #include "omapfb.h"
- 
-@@ -853,14 +852,15 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
- 		break;
- 
- 	case OMAPFB_GET_VRAM_INFO: {
--		unsigned long vram, free, largest;
--
- 		DBG("ioctl GET_VRAM_INFO\n");
- 
--		omap_vram_get_info(&vram, &free, &largest);
--		p.vram_info.total = vram;
--		p.vram_info.free = free;
--		p.vram_info.largest_free_block = largest;
-+		/*
-+		 * We don't have the ability to get this vram info anymore.
-+		 * Fill in something that should keep the applications working.
-+		 */
-+		p.vram_info.total = SZ_1M * 64;
-+		p.vram_info.free = SZ_1M * 64;
-+		p.vram_info.largest_free_block = SZ_1M * 64;
- 
- 		if (copy_to_user((void __user *)arg, &p.vram_info,
- 					sizeof(p.vram_info)))
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 16db158..84c1012 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -32,7 +32,6 @@
- 
- #include <video/omapdss.h>
- #include <plat/cpu.h>
--#include <plat/vram.h>
- #include <plat/vrfb.h>
- 
- #include "omapfb.h"
-@@ -1336,24 +1335,25 @@ static void omapfb_free_fbmem(struct fb_info *fbi)
- 
- 	rg = ofbi->region;
- 
--	WARN_ON(atomic_read(&rg->map_count));
--
--	if (rg->paddr)
--		if (omap_vram_free(rg->paddr, rg->size))
--			dev_err(fbdev->dev, "VRAM FREE failed\n");
-+	if (rg->token = NULL)
-+		return;
- 
--	if (rg->vaddr)
--		iounmap(rg->vaddr);
-+	WARN_ON(atomic_read(&rg->map_count));
- 
- 	if (ofbi->rotation_type = OMAP_DSS_ROT_VRFB) {
- 		/* unmap the 0 angle rotation */
- 		if (rg->vrfb.vaddr[0]) {
- 			iounmap(rg->vrfb.vaddr[0]);
--			omap_vrfb_release_ctx(&rg->vrfb);
- 			rg->vrfb.vaddr[0] = NULL;
- 		}
-+
-+		omap_vrfb_release_ctx(&rg->vrfb);
- 	}
- 
-+	dma_free_attrs(fbdev->dev, rg->size, rg->token, rg->dma_handle,
-+			&rg->attrs);
-+
-+	rg->token = NULL;
- 	rg->vaddr = NULL;
- 	rg->paddr = 0;
- 	rg->alloc = 0;
-@@ -1388,7 +1388,9 @@ static int omapfb_alloc_fbmem(struct fb_info *fbi, unsigned long size,
- 	struct omapfb_info *ofbi = FB2OFB(fbi);
- 	struct omapfb2_device *fbdev = ofbi->fbdev;
- 	struct omapfb2_mem_region *rg;
--	void __iomem *vaddr;
-+	void *token;
-+	DEFINE_DMA_ATTRS(attrs);
-+	dma_addr_t dma_handle;
- 	int r;
- 
- 	rg = ofbi->region;
-@@ -1403,42 +1405,43 @@ static int omapfb_alloc_fbmem(struct fb_info *fbi, unsigned long size,
- 
- 	size = PAGE_ALIGN(size);
- 
--	if (!paddr) {
--		DBG("allocating %lu bytes for fb %d\n", size, ofbi->id);
--		r = omap_vram_alloc(size, &paddr);
--	} else {
--		DBG("reserving %lu bytes at %lx for fb %d\n", size, paddr,
--				ofbi->id);
--		r = omap_vram_reserve(paddr, size);
--	}
-+	WARN_ONCE(paddr,
-+		"reserving memory at predefined address not supported\n");
- 
--	if (r) {
-+	dma_set_attr(DMA_ATTR_WRITE_COMBINE, &attrs);
-+
-+	if (ofbi->rotation_type = OMAP_DSS_ROT_VRFB)
-+		dma_set_attr(DMA_ATTR_NO_KERNEL_MAPPING, &attrs);
-+
-+	DBG("allocating %lu bytes for fb %d\n", size, ofbi->id);
-+
-+	token = dma_alloc_attrs(fbdev->dev, size, &dma_handle,
-+			GFP_KERNEL, &attrs);
-+
-+	if (token = NULL) {
- 		dev_err(fbdev->dev, "failed to allocate framebuffer\n");
- 		return -ENOMEM;
- 	}
- 
--	if (ofbi->rotation_type != OMAP_DSS_ROT_VRFB) {
--		vaddr = ioremap_wc(paddr, size);
--
--		if (!vaddr) {
--			dev_err(fbdev->dev, "failed to ioremap framebuffer\n");
--			omap_vram_free(paddr, size);
--			return -ENOMEM;
--		}
-+	DBG("allocated VRAM paddr %lx, vaddr %p\n",
-+			(unsigned long)dma_handle, token);
- 
--		DBG("allocated VRAM paddr %lx, vaddr %p\n", paddr, vaddr);
--	} else {
-+	if (ofbi->rotation_type = OMAP_DSS_ROT_VRFB) {
- 		r = omap_vrfb_request_ctx(&rg->vrfb);
- 		if (r) {
-+			dma_free_attrs(fbdev->dev, size, token, dma_handle,
-+					&attrs);
- 			dev_err(fbdev->dev, "vrfb create ctx failed\n");
- 			return r;
- 		}
--
--		vaddr = NULL;
- 	}
- 
--	rg->paddr = paddr;
--	rg->vaddr = vaddr;
-+	rg->attrs = attrs;
-+	rg->token = token;
-+	rg->dma_handle = dma_handle;
-+
-+	rg->paddr = (unsigned long)dma_handle;
-+	rg->vaddr = (void __iomem *)token;
- 	rg->size = size;
- 	rg->alloc = 1;
- 
-diff --git a/drivers/video/omap2/omapfb/omapfb.h b/drivers/video/omap2/omapfb/omapfb.h
-index 5ced9b3..5f72bf9 100644
---- a/drivers/video/omap2/omapfb/omapfb.h
-+++ b/drivers/video/omap2/omapfb/omapfb.h
-@@ -28,6 +28,8 @@
- #endif
- 
- #include <linux/rwsem.h>
-+#include <linux/dma-attrs.h>
-+#include <linux/dma-mapping.h>
- 
- #include <video/omapdss.h>
- 
-@@ -49,6 +51,9 @@ extern bool omapfb_debug;
- 
- struct omapfb2_mem_region {
- 	int             id;
-+	struct dma_attrs attrs;
-+	void		*token;
-+	dma_addr_t	dma_handle;
- 	u32		paddr;
- 	void __iomem	*vaddr;
- 	struct vrfb	vrfb;
+ drivers/video/omap2/dss/dispc.c        |  188 ++++++++++++++++++++++------
+ drivers/video/omap2/dss/dsi.c          |  198 ++++++++++++++++++++++++++---
+ drivers/video/omap2/dss/dss.c          |   22 +++-
+ drivers/video/omap2/dss/dss.h          |    8 ++
+ drivers/video/omap2/dss/dss_features.c |  212 --------------------------------
+ drivers/video/omap2/dss/dss_features.h |   36 ------
+ 6 files changed, 358 insertions(+), 306 deletions(-)
+
 -- 
-1.7.10.4
+1.7.10
 

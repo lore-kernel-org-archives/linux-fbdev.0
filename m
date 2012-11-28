@@ -1,160 +1,231 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 07 Nov 2012 14:56:20 +0000
-Subject: [RFC 02/11] OMAPDSS: APPLY: Add get/set info functions for writeback
-Message-Id: <1352299469-17609-3-git-send-email-archit@ti.com>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Wed, 28 Nov 2012 10:53:27 +0000
+Subject: [PATCH 4/7] OMAPDSS: DSI: Move DSI specific reg_fields to dsi_feats
+Message-Id: <3fa82b3ce69b597fc85f0ce7f4611a923082dee1.1354086150.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <n>
- <1352299469-17609-1-git-send-email-archit@ti.com>
-In-Reply-To: <1352299469-17609-1-git-send-email-archit@ti.com>
+References: <cover.1354086150.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1354086150.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-Writeback contains overlay-like parameters which need to be applied by a user
-of writeback.
+The DSI specific dss_reg_fields are moved to corresponding dsi_reg_fields
+initialized in dsi_feats. The dsi_feats structure is initialized as per
+corresponding DSS version in dsi_init_features().
 
-Create functions in APPLY which get and set user_info of type
-omap_dss_writeback_info, these are similar to overlay's dss_ovl_get_info and
-dss_ovl_set_info ops. The writeback output driver provides equivalent functions
-for a writeback user, these finally call the above APPLY functions.
-
-Add a private data struct for writeback which stores the user_info and it's
-state. This struct will be later added with more params to represent the other
-levels of the APPLY cache. Add a helper function to retrieve the private data.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
 ---
- drivers/video/omap2/dss/apply.c     |   42 +++++++++++++++++++++++++++++++++++
- drivers/video/omap2/dss/dss.h       |    5 +++++
- drivers/video/omap2/dss/writeback.c |   14 ++++++++++++
- include/video/omapdss.h             |    4 ++++
- 4 files changed, 65 insertions(+)
+ drivers/video/omap2/dss/dsi.c          |  119 ++++++++++++++++++++++++++++++--
+ drivers/video/omap2/dss/dss_features.c |   16 -----
+ drivers/video/omap2/dss/dss_features.h |    4 --
+ 3 files changed, 113 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 7a7b820..b2e4f6a 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -106,9 +106,16 @@ struct mgr_priv_data {
- 	struct dss_lcd_mgr_config lcd_config;
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index cf32dc7..2d387cb 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -344,6 +344,19 @@ struct dsi_packet_sent_handler_data {
+ 	struct completion *completion;
  };
  
-+struct wb_priv_data {
-+
-+	bool user_info_dirty;
-+	struct omap_dss_writeback_info user_info;
++enum dsi_feat_reg_field {
++	FEAT_REG_DSIPLL_REGN,
++	FEAT_REG_DSIPLL_REGM,
++	FEAT_REG_DSIPLL_REGM_DISPC,
++	FEAT_REG_DSIPLL_REGM_DSI,
 +};
 +
- static struct {
- 	struct ovl_priv_data ovl_priv_data_array[MAX_DSS_OVERLAYS];
- 	struct mgr_priv_data mgr_priv_data_array[MAX_DSS_MANAGERS];
-+	struct wb_priv_data wb_priv_data;
++struct feats {
++	const struct register_field *reg_fields;
++};
++
++static const struct feats *dsi_feat;
++
+ #ifdef DEBUG
+ static bool dsi_perf;
+ module_param(dsi_perf, bool, 0644);
+@@ -1645,12 +1658,15 @@ int dsi_pll_set_clock_div(struct platform_device *dsidev,
+ 		dss_feat_get_clk_source_name(OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DSI),
+ 		cinfo->dsi_pll_hsdiv_dsi_clk);
  
- 	bool irq_enabled;
- } dss_data;
-@@ -131,6 +138,11 @@ static struct mgr_priv_data *get_mgr_priv(struct omap_overlay_manager *mgr)
- 	return &dss_data.mgr_priv_data_array[mgr->id];
+-	dss_feat_get_reg_field(FEAT_REG_DSIPLL_REGN, &regn_start, &regn_end);
+-	dss_feat_get_reg_field(FEAT_REG_DSIPLL_REGM, &regm_start, &regm_end);
+-	dss_feat_get_reg_field(FEAT_REG_DSIPLL_REGM_DISPC, &regm_dispc_start,
+-			&regm_dispc_end);
+-	dss_feat_get_reg_field(FEAT_REG_DSIPLL_REGM_DSI, &regm_dsi_start,
+-			&regm_dsi_end);
++	regn_start = dsi_feat->reg_fields[FEAT_REG_DSIPLL_REGN].start;
++	regn_end = dsi_feat->reg_fields[FEAT_REG_DSIPLL_REGN].end;
++	regm_start = dsi_feat->reg_fields[FEAT_REG_DSIPLL_REGM].start;
++	regm_end = dsi_feat->reg_fields[FEAT_REG_DSIPLL_REGM].end;
++	regm_dispc_start +			dsi_feat->reg_fields[FEAT_REG_DSIPLL_REGM_DISPC].start;
++	regm_dispc_end = dsi_feat->reg_fields[FEAT_REG_DSIPLL_REGM_DISPC].end;
++	regm_dsi_start = dsi_feat->reg_fields[FEAT_REG_DSIPLL_REGM_DSI].start;
++	regm_dsi_end = dsi_feat->reg_fields[FEAT_REG_DSIPLL_REGM_DSI].end;
+ 
+ 	/* DSI_PLL_AUTOMODE = manual */
+ 	REG_FLD_MOD(dsidev, DSI_PLL_CONTROL, 0, 0, 0);
+@@ -5198,6 +5214,93 @@ static void __exit dsi_uninit_output(struct platform_device *dsidev)
+ 	dss_unregister_output(out);
  }
  
-+static struct wb_priv_data *get_wb_priv(struct omap_dss_output *wb)
++static struct register_field omap2_dsi_reg_fields[] = {
++	[FEAT_REG_DSIPLL_REGN]			= { 0, 0 },
++	[FEAT_REG_DSIPLL_REGM]			= { 0, 0 },
++	[FEAT_REG_DSIPLL_REGM_DISPC]		= { 0, 0 },
++	[FEAT_REG_DSIPLL_REGM_DSI]		= { 0, 0 },
++};
++
++static struct register_field omap3_dsi_reg_fields[] = {
++	[FEAT_REG_DSIPLL_REGN]			= {  7,  1 },
++	[FEAT_REG_DSIPLL_REGM]			= { 18,  8 },
++	[FEAT_REG_DSIPLL_REGM_DISPC]		= { 22, 19 },
++	[FEAT_REG_DSIPLL_REGM_DSI]		= { 26, 23 },
++};
++
++static struct register_field omap4_dsi_reg_fields[] = {
++	[FEAT_REG_DSIPLL_REGN]			= {  8,  1 },
++	[FEAT_REG_DSIPLL_REGM]			= { 20,  9 },
++	[FEAT_REG_DSIPLL_REGM_DISPC]		= { 25, 21 },
++	[FEAT_REG_DSIPLL_REGM_DSI]		= { 30, 26 },
++};
++
++static struct register_field omap5_dsi_reg_fields[] = {
++	[FEAT_REG_DSIPLL_REGN]			= {  8,  1 },
++	[FEAT_REG_DSIPLL_REGM]			= { 20,  9 },
++	[FEAT_REG_DSIPLL_REGM_DISPC]		= { 25, 21 },
++	[FEAT_REG_DSIPLL_REGM_DSI]		= { 30, 26 },
++};
++
++static const struct feats omap24xx_dsi_feats __initconst = {
++	.reg_fields		=	omap2_dsi_reg_fields,
++};
++
++static const struct feats omap34xx_dsi_feats __initconst = {
++	.reg_fields		=	omap3_dsi_reg_fields,
++};
++
++static const struct feats omap44xx_dsi_feats __initconst = {
++	.reg_fields		=	omap4_dsi_reg_fields,
++};
++
++static const struct feats omap54xx_dsi_feats __initconst = {
++	.reg_fields		=	omap5_dsi_reg_fields,
++};
++
++static int __init dsi_init_features(struct platform_device *dsidev)
 +{
-+	return &dss_data.wb_priv_data;
-+}
++	const struct feats *src;
++	struct feats *dst;
 +
- void dss_apply_init(void)
- {
- 	const int num_ovls = dss_feat_get_num_ovls();
-@@ -1465,3 +1477,33 @@ err:
- 	return r;
- }
- 
-+int dss_wb_set_info(struct omap_dss_output *wb,
-+		struct omap_dss_writeback_info *info)
-+{
-+	struct wb_priv_data *wp = get_wb_priv(wb);
-+	unsigned long flags;
++	dst = devm_kzalloc(&dsidev->dev, sizeof(*dst), GFP_KERNEL);
++	if (!dst) {
++		dev_err(&dsidev->dev, "Failed to allocate DISPC Features\n");
++		return -ENOMEM;
++	}
 +
-+	/* TODO: Check validity of info */
++	switch (omapdss_get_version()) {
++	case OMAPDSS_VER_OMAP24xx:
++		src = &omap24xx_dsi_feats;
++		break;
 +
-+	spin_lock_irqsave(&data_lock, flags);
++	case OMAPDSS_VER_OMAP34xx_ES1:
++	case OMAPDSS_VER_OMAP34xx_ES3:
++	case OMAPDSS_VER_OMAP3630:
++	case OMAPDSS_VER_AM35xx:
++		src = &omap34xx_dsi_feats;
++		break;
 +
-+	wp->user_info = *info;
-+	wp->user_info_dirty = true;
++	case OMAPDSS_VER_OMAP4430_ES1:
++	case OMAPDSS_VER_OMAP4430_ES2:
++	case OMAPDSS_VER_OMAP4:
++		src = &omap44xx_dsi_feats;
++		break;
 +
-+	spin_unlock_irqrestore(&data_lock, flags);
++	case OMAPDSS_VER_OMAP5:
++		src = &omap54xx_dsi_feats;
++		break;
++
++	default:
++		return -ENODEV;
++	}
++
++	memcpy(dst, src, sizeof(*dst));
++	dsi_feat = dst;
 +
 +	return 0;
 +}
 +
-+void dss_wb_get_info(struct omap_dss_output *wb,
-+		struct omap_dss_writeback_info *info)
-+{
-+	struct wb_priv_data *wp = get_wb_priv(wb);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&data_lock, flags);
-+
-+	*info = wp->user_info;
-+
-+	spin_unlock_irqrestore(&data_lock, flags);
-+}
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index f7eb7d6..f738c1e 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -210,6 +210,11 @@ int dss_ovl_set_manager(struct omap_overlay *ovl,
- 		struct omap_overlay_manager *mgr);
- int dss_ovl_unset_manager(struct omap_overlay *ovl);
- 
-+int dss_wb_set_info(struct omap_dss_output *wb,
-+		struct omap_dss_writeback_info *info);
-+void dss_wb_get_info(struct omap_dss_output *wb,
-+		struct omap_dss_writeback_info *info);
-+
- /* output */
- void dss_register_output(struct omap_dss_output *out);
- void dss_unregister_output(struct omap_dss_output *out);
-diff --git a/drivers/video/omap2/dss/writeback.c b/drivers/video/omap2/dss/writeback.c
-index b5c6406..be7027b 100644
---- a/drivers/video/omap2/dss/writeback.c
-+++ b/drivers/video/omap2/dss/writeback.c
-@@ -42,6 +42,20 @@ static inline struct platform_device *writeback_get_wbdev_from_output(struct oma
- 	return out->pdev;
- }
- 
-+int omapdss_writeback_set_info(struct omap_dss_output *wb,
-+		struct omap_dss_writeback_info *info)
-+{
-+	return dss_wb_set_info(wb, info);
-+}
-+EXPORT_SYMBOL(omapdss_writeback_set_info);
-+
-+void omapdss_writeback_get_info(struct omap_dss_output *wb,
-+		struct omap_dss_writeback_info *info)
-+{
-+	dss_wb_get_info(wb, info);
-+}
-+EXPORT_SYMBOL(omapdss_writeback_get_info);
-+
- struct omap_dss_output *omap_dss_get_writeback(void)
+ /* DSI1 HW IP initialisation */
+ static int __init omap_dsihw_probe(struct platform_device *dsidev)
  {
- 	return omap_dss_get_output(OMAP_DSS_OUTPUT_WB);
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index e81fcb2..2a3a878 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -837,6 +837,10 @@ void omapdss_rfbi_set_data_lines(struct omap_dss_device *dssdev,
- void omapdss_rfbi_set_interface_timings(struct omap_dss_device *dssdev,
- 		struct rfbi_timings *timings);
+@@ -5206,6 +5309,10 @@ static int __init omap_dsihw_probe(struct platform_device *dsidev)
+ 	struct resource *dsi_mem;
+ 	struct dsi_data *dsi;
  
-+int omapdss_writeback_set_info(struct omap_dss_output *wb,
-+		struct omap_dss_writeback_info *info);
-+void omapdss_writeback_get_info(struct omap_dss_output *wb,
-+		struct omap_dss_writeback_info *info);
- #ifdef CONFIG_OMAP4_DSS_WRITEBACK
- struct omap_dss_output *omap_dss_get_writeback(void);
- #else
++	r = dsi_init_features(dsidev);
++	if (r)
++		return r;
++
+ 	dsi = devm_kzalloc(&dsidev->dev, sizeof(*dsi), GFP_KERNEL);
+ 	if (!dsi)
+ 		return -ENOMEM;
+diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
+index 3a9d1df..8e6defb 100644
+--- a/drivers/video/omap2/dss/dss_features.c
++++ b/drivers/video/omap2/dss/dss_features.c
+@@ -61,34 +61,18 @@ static const struct omap_dss_features *omap_current_dss_features;
+ 
+ static const struct dss_reg_field omap2_dss_reg_fields[] = {
+ 	[FEAT_REG_DISPC_CLK_SWITCH]		= { 0, 0 },
+-	[FEAT_REG_DSIPLL_REGN]			= { 0, 0 },
+-	[FEAT_REG_DSIPLL_REGM]			= { 0, 0 },
+-	[FEAT_REG_DSIPLL_REGM_DISPC]		= { 0, 0 },
+-	[FEAT_REG_DSIPLL_REGM_DSI]		= { 0, 0 },
+ };
+ 
+ static const struct dss_reg_field omap3_dss_reg_fields[] = {
+ 	[FEAT_REG_DISPC_CLK_SWITCH]		= { 0, 0 },
+-	[FEAT_REG_DSIPLL_REGN]			= { 7, 1 },
+-	[FEAT_REG_DSIPLL_REGM]			= { 18, 8 },
+-	[FEAT_REG_DSIPLL_REGM_DISPC]		= { 22, 19 },
+-	[FEAT_REG_DSIPLL_REGM_DSI]		= { 26, 23 },
+ };
+ 
+ static const struct dss_reg_field omap4_dss_reg_fields[] = {
+ 	[FEAT_REG_DISPC_CLK_SWITCH]		= { 9, 8 },
+-	[FEAT_REG_DSIPLL_REGN]			= { 8, 1 },
+-	[FEAT_REG_DSIPLL_REGM]			= { 20, 9 },
+-	[FEAT_REG_DSIPLL_REGM_DISPC]		= { 25, 21 },
+-	[FEAT_REG_DSIPLL_REGM_DSI]		= { 30, 26 },
+ };
+ 
+ static const struct dss_reg_field omap5_dss_reg_fields[] = {
+ 	[FEAT_REG_DISPC_CLK_SWITCH]		= { 9, 7 },
+-	[FEAT_REG_DSIPLL_REGN]			= { 8, 1 },
+-	[FEAT_REG_DSIPLL_REGM]			= { 20, 9 },
+-	[FEAT_REG_DSIPLL_REGM_DISPC]		= { 25, 21 },
+-	[FEAT_REG_DSIPLL_REGM_DSI]		= { 30, 26 },
+ };
+ 
+ static const enum omap_display_type omap2_dss_supported_displays[] = {
+diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
+index 40b98ff..3e82404 100644
+--- a/drivers/video/omap2/dss/dss_features.h
++++ b/drivers/video/omap2/dss/dss_features.h
+@@ -73,10 +73,6 @@ enum dss_feat_id {
+ /* DSS register field id */
+ enum dss_feat_reg_field {
+ 	FEAT_REG_DISPC_CLK_SWITCH,
+-	FEAT_REG_DSIPLL_REGN,
+-	FEAT_REG_DSIPLL_REGM,
+-	FEAT_REG_DSIPLL_REGM_DISPC,
+-	FEAT_REG_DSIPLL_REGM_DSI,
+ };
+ 
+ enum dss_range_param {
 -- 
-1.7.9.5
+1.7.10
 

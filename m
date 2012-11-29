@@ -1,14 +1,15 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 29 Nov 2012 06:38:45 +0000
+Date: Thu, 29 Nov 2012 06:42:21 +0000
 Subject: Re: [GIT PULL] Exynos DP for v3.8
-Message-Id: <19932382.130241354171124029.JavaMail.weblogic@epml16>
+Message-Id: <631281.130371354171340233.JavaMail.weblogic@epml16>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <28517517.77811353652672706.JavaMail.weblogic@epml06>
 In-Reply-To: <28517517.77811353652672706.JavaMail.weblogic@epml06>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org" <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org" <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 
 T24gVGh1cnNkYXksIE5vdmVtYmVyIDI5LCAyMDEyIDQ6NTggQU0sIFJvYiBIZXJyaW5nIHdyb3Rl
 DQo+IE9uIDExLzI3LzIwMTIgMDU6NTkgUE0sIEppbmdvbyBIYW4gd3JvdGU6DQo+ID4gT24gVHVl
@@ -69,15 +70,15 @@ Cj4gV2hpbGUgSSB0aGluayB0aGVyZSBpcyBwb3NzaWJpbGl0eSB0byBtYWtlIHRoaXMgbW9yZSBj
 b21tb24gYWNyb3NzDQo+IHBsYXRmb3JtcywgSSBkb24ndCBoYXZlIGFueSBtYWpvciBpc3N1ZXMg
 d2l0aCB0aGUgYmluZGluZywgc286DQo+IA0KPiBBY2tlZC1ieTogUm9iIEhlcnJpbmcgPHJvYi5o
 ZXJyaW5nQGNhbHhlZGEuY29tPg0KDQpIaSBSb2IsDQpJIGFkZGVkIHlvdXIgQWNrZWQtYnkgdG8g
-RFQgYmluZGluZyBwYXRjaC4gVGhhbmsgeW91Lg0KKGh0dHBzOi8vZ2l0aHViLmNvbS9qaW5nb28v
-bGludXgvY29tbWl0LzgyNWU5MGQwYTEzODczODY1NzUwOWQ3NDYwZDc3ZWRiMjhmY2ZkYzApDQoN
-ClRvbWksDQpJIGhhdmUgYW4gQWNrIGZyb20gYSBEZXZpY2UgdHJlZSBNYWludGFpbmVyLCBSb2Ig
-SGVycmluZy4gDQpQbGVhc2UsIHB1bGwgdGhlIHBhdGNoZXMuDQoNCkJlc3QgcmVnYXJkcywNCkpp
-bmdvbyBIYW4NCg0KPiANCj4gUm9iDQo+IA0KPiA+IEdyYW50LCBSb2I6IGlmIHlvdSBoYXZlIGFu
-b3RoZXIgb3BpbmlvbiwgcGxlYXNlIGxldCBtZSBrbm93IGtpbmRseS4NCj4gPg0KPiA+IEJlc3Qg
-cmVnYXJkcywNCj4gPiBKaW5nb28gSGFuDQo+ID4NCj4gPiBfX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fXw0KPiA+IGRldmljZXRyZWUtZGlzY3VzcyBtYWlsaW5n
-IGxpc3QNCj4gPiBkZXZpY2V0cmVlLWRpc2N1c3NAbGlzdHMub3psYWJzLm9yZw0KPiA+IGh0dHBz
-Oi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9kZXZpY2V0cmVlLWRpc2N1c3MNCj4gPg0K
+RFQgYmluZGluZyBwYXRjaC4gVGhhbmsgeW91LiA6KQ0KKGh0dHBzOi8vZ2l0aHViLmNvbS9qaW5n
+b28vbGludXgvY29tbWl0LzgyNWU5MGQwYTEzODczODY1NzUwOWQ3NDYwZDc3ZWRiMjhmY2ZkYzAp
+DQoNClRvbWksDQpJIGhhdmUgYW4gQWNrIGZyb20gYSBEZXZpY2UgdHJlZSBNYWludGFpbmVyLCBS
+b2IgSGVycmluZy4gDQpQbGVhc2UsIHB1bGwgdGhlIHBhdGNoZXMuDQoNCkJlc3QgcmVnYXJkcywN
+CkppbmdvbyBIYW4NCg0KPiANCj4gUm9iDQo+IA0KPiA+IEdyYW50LCBSb2I6IGlmIHlvdSBoYXZl
+IGFub3RoZXIgb3BpbmlvbiwgcGxlYXNlIGxldCBtZSBrbm93IGtpbmRseS4NCj4gPg0KPiA+IEJl
+c3QgcmVnYXJkcywNCj4gPiBKaW5nb28gSGFuDQo+ID4NCj4gPiBfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXw0KPiA+IGRldmljZXRyZWUtZGlzY3VzcyBtYWls
+aW5nIGxpc3QNCj4gPiBkZXZpY2V0cmVlLWRpc2N1c3NAbGlzdHMub3psYWJzLm9yZw0KPiA+IGh0
+dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9kZXZpY2V0cmVlLWRpc2N1c3MNCj4gPg=
 
 

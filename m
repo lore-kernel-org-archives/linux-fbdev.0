@@ -1,99 +1,83 @@
-From: Rob Herring <robherring2@gmail.com>
-Date: Wed, 28 Nov 2012 19:57:46 +0000
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 29 Nov 2012 06:38:45 +0000
 Subject: Re: [GIT PULL] Exynos DP for v3.8
-Message-Id: <50B66CBA.3090106@gmail.com>
+Message-Id: <19932382.130241354171124029.JavaMail.weblogic@epml16>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <23089985.76751354060752557.JavaMail.weblogic@epml26>
-In-Reply-To: <23089985.76751354060752557.JavaMail.weblogic@epml26>
+References: <28517517.77811353652672706.JavaMail.weblogic@epml06>
+In-Reply-To: <28517517.77811353652672706.JavaMail.weblogic@epml06>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
-Cc: "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org" <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+To: linux-fbdev@vger.kernel.org
 
-On 11/27/2012 05:59 PM, Jingoo Han wrote:
-> On Tuesday, November 27, 2012 6:58 PM, Tomi Valkeinen wrote
->>
->> On 2012-11-23 08:37, Jingoo Han wrote:
->>> Hi Tomi,
->>>
->>> Thank you for taking care of pull requests for the v3.8 merge window.
->>> These patches have been submitted for more than one month,
->>> and tested with Exynos5250.
->>>
->>> The following changes since commit f4a75d2eb7b1e2206094b901be09adb31ba63681:
->>>
->>>   Linux 3.7-rc6 (Fri Nov 16 17:42:40 2012 -0800)
->>>
->>> are available in the git repository at:
->>>   git://github.com/jingoo/linux.git exynos-dp-next
->>>
->>> ----------------------------------------------------------------
->>> Exynos DP changes for the 3.8 merge window.
->>>
->>> - Device Tree support for Samsung Exynos DP
->>> - SW Link training is cleaned up.
->>> - HPD interrupt is supported.
->>> ----------------------------------------------------------------
->>>
->>> Ajay Kumar (5):
->>>       video: exynos_dp: Add device tree support to DP driver
->>>       video: exynos_dp: device tree documentation
->>>       video: exynos_dp: Reset and initialize DP before requesting irq
->>>       video: exynos_dp: Fix incorrect setting for INT_CTL
->>>       video: exynos_dp: remove redundant parameters
->>>
->>> Sean Paul (8):
->>>       video: exynos_dp: Check DPCD return codes
->>>       video: exynos_dp: Clean up SW link training
->>>       video: exynos_dp: Get pll lock before pattern set
->>>       video: exynos_dp: Improve EDID error handling
->>>       video: exynos_dp: Fix bug when checking dp->irq
->>>       video: exynos_dp: Remove sink control to D0
->>>       video: exynos_dp: Move hotplug into a workqueue
->>>       video: exynos_dp: Enable hotplug interrupts
->>>
->>>  .../devicetree/bindings/video/exynos_dp.txt        |   80 +++
->>>  drivers/video/exynos/exynos_dp_core.c              |  697 ++++++++++++--------
->>>  drivers/video/exynos/exynos_dp_core.h              |   21 +-
->>>  drivers/video/exynos/exynos_dp_reg.c               |   77 ++-
->>>  drivers/video/exynos/exynos_dp_reg.h               |    3 +-
->>>  5 files changed, 583 insertions(+), 295 deletions(-)
->>>  create mode 100644 Documentation/devicetree/bindings/video/exynos_dp.txt
->>
->> Has the DT bindings been reviewed by the device tree people? It would
->> good to have an ack from them.
-> 
-> CC'ed device tree mailing-list, Grant Likely, Rob Herring, Kukjin Kim, Sylwester Nawrocki.
-> 
-> Hi Tomi,
-> 
-> The DT binding has been posted with device tree mailing-list
-> (devicetree-discuss@lists.ozlabs.org) for more than 2 months.
-> Last patch V8 was posted 1 month ago. However, there is no objection.
-> (http://www.spinics.net/lists/linux-fbdev/msg08354.html)
-> 
-> Also, Samsung people already reviewed it.
-> In my opinion, there is no need to get Ack from the device tree people.
+T24gVGh1cnNkYXksIE5vdmVtYmVyIDI5LCAyMDEyIDQ6NTggQU0sIFJvYiBIZXJyaW5nIHdyb3Rl
+DQo+IE9uIDExLzI3LzIwMTIgMDU6NTkgUE0sIEppbmdvbyBIYW4gd3JvdGU6DQo+ID4gT24gVHVl
+c2RheSwgTm92ZW1iZXIgMjcsIDIwMTIgNjo1OCBQTSwgVG9taSBWYWxrZWluZW4gd3JvdGUNCj4g
+Pj4NCj4gPj4gT24gMjAxMi0xMS0yMyAwODozNywgSmluZ29vIEhhbiB3cm90ZToNCj4gPj4+IEhp
+IFRvbWksDQo+ID4+Pg0KPiA+Pj4gVGhhbmsgeW91IGZvciB0YWtpbmcgY2FyZSBvZiBwdWxsIHJl
+cXVlc3RzIGZvciB0aGUgdjMuOCBtZXJnZSB3aW5kb3cuDQo+ID4+PiBUaGVzZSBwYXRjaGVzIGhh
+dmUgYmVlbiBzdWJtaXR0ZWQgZm9yIG1vcmUgdGhhbiBvbmUgbW9udGgsDQo+ID4+PiBhbmQgdGVz
+dGVkIHdpdGggRXh5bm9zNTI1MC4NCj4gPj4+DQo+ID4+PiBUaGUgZm9sbG93aW5nIGNoYW5nZXMg
+c2luY2UgY29tbWl0IGY0YTc1ZDJlYjdiMWUyMjA2MDk0YjkwMWJlMDlhZGIzMWJhNjM2ODE6DQo+
+ID4+Pg0KPiA+Pj4gICBMaW51eCAzLjctcmM2IChGcmkgTm92IDE2IDE3OjQyOjQwIDIwMTIgLTA4
+MDApDQo+ID4+Pg0KPiA+Pj4gYXJlIGF2YWlsYWJsZSBpbiB0aGUgZ2l0IHJlcG9zaXRvcnkgYXQ6
+DQo+ID4+PiAgIGdpdDovL2dpdGh1Yi5jb20vamluZ29vL2xpbnV4LmdpdCBleHlub3MtZHAtbmV4
+dA0KPiA+Pj4NCj4gPj4+IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gPj4+IEV4eW5vcyBEUCBjaGFuZ2VzIGZvciB0aGUg
+My44IG1lcmdlIHdpbmRvdy4NCj4gPj4+DQo+ID4+PiAtIERldmljZSBUcmVlIHN1cHBvcnQgZm9y
+IFNhbXN1bmcgRXh5bm9zIERQDQo+ID4+PiAtIFNXIExpbmsgdHJhaW5pbmcgaXMgY2xlYW5lZCB1
+cC4NCj4gPj4+IC0gSFBEIGludGVycnVwdCBpcyBzdXBwb3J0ZWQuDQo+ID4+PiAtLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+
+ID4+Pg0KPiA+Pj4gQWpheSBLdW1hciAoNSk6DQo+ID4+PiAgICAgICB2aWRlbzogZXh5bm9zX2Rw
+OiBBZGQgZGV2aWNlIHRyZWUgc3VwcG9ydCB0byBEUCBkcml2ZXINCj4gPj4+ICAgICAgIHZpZGVv
+OiBleHlub3NfZHA6IGRldmljZSB0cmVlIGRvY3VtZW50YXRpb24NCj4gPj4+ICAgICAgIHZpZGVv
+OiBleHlub3NfZHA6IFJlc2V0IGFuZCBpbml0aWFsaXplIERQIGJlZm9yZSByZXF1ZXN0aW5nIGly
+cQ0KPiA+Pj4gICAgICAgdmlkZW86IGV4eW5vc19kcDogRml4IGluY29ycmVjdCBzZXR0aW5nIGZv
+ciBJTlRfQ1RMDQo+ID4+PiAgICAgICB2aWRlbzogZXh5bm9zX2RwOiByZW1vdmUgcmVkdW5kYW50
+IHBhcmFtZXRlcnMNCj4gPj4+DQo+ID4+PiBTZWFuIFBhdWwgKDgpOg0KPiA+Pj4gICAgICAgdmlk
+ZW86IGV4eW5vc19kcDogQ2hlY2sgRFBDRCByZXR1cm4gY29kZXMNCj4gPj4+ICAgICAgIHZpZGVv
+OiBleHlub3NfZHA6IENsZWFuIHVwIFNXIGxpbmsgdHJhaW5pbmcNCj4gPj4+ICAgICAgIHZpZGVv
+OiBleHlub3NfZHA6IEdldCBwbGwgbG9jayBiZWZvcmUgcGF0dGVybiBzZXQNCj4gPj4+ICAgICAg
+IHZpZGVvOiBleHlub3NfZHA6IEltcHJvdmUgRURJRCBlcnJvciBoYW5kbGluZw0KPiA+Pj4gICAg
+ICAgdmlkZW86IGV4eW5vc19kcDogRml4IGJ1ZyB3aGVuIGNoZWNraW5nIGRwLT5pcnENCj4gPj4+
+ICAgICAgIHZpZGVvOiBleHlub3NfZHA6IFJlbW92ZSBzaW5rIGNvbnRyb2wgdG8gRDANCj4gPj4+
+ICAgICAgIHZpZGVvOiBleHlub3NfZHA6IE1vdmUgaG90cGx1ZyBpbnRvIGEgd29ya3F1ZXVlDQo+
+ID4+PiAgICAgICB2aWRlbzogZXh5bm9zX2RwOiBFbmFibGUgaG90cGx1ZyBpbnRlcnJ1cHRzDQo+
+ID4+Pg0KPiA+Pj4gIC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL3ZpZGVvL2V4eW5vc19kcC50eHQg
+ICAgICAgIHwgICA4MCArKysNCj4gPj4+ICBkcml2ZXJzL3ZpZGVvL2V4eW5vcy9leHlub3NfZHBf
+Y29yZS5jICAgICAgICAgICAgICB8ICA2OTcgKysrKysrKysrKysrLS0tLS0tLS0NCj4gPj4+ICBk
+cml2ZXJzL3ZpZGVvL2V4eW5vcy9leHlub3NfZHBfY29yZS5oICAgICAgICAgICAgICB8ICAgMjEg
+Ky0NCj4gPj4+ICBkcml2ZXJzL3ZpZGVvL2V4eW5vcy9leHlub3NfZHBfcmVnLmMgICAgICAgICAg
+ICAgICB8ICAgNzcgKystDQo+ID4+PiAgZHJpdmVycy92aWRlby9leHlub3MvZXh5bm9zX2RwX3Jl
+Zy5oICAgICAgICAgICAgICAgfCAgICAzICstDQo+ID4+PiAgNSBmaWxlcyBjaGFuZ2VkLCA1ODMg
+aW5zZXJ0aW9ucygrKSwgMjk1IGRlbGV0aW9ucygtKQ0KPiA+Pj4gIGNyZWF0ZSBtb2RlIDEwMDY0
+NCBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdmlkZW8vZXh5bm9zX2RwLnR4dA0K
+PiA+Pg0KPiA+PiBIYXMgdGhlIERUIGJpbmRpbmdzIGJlZW4gcmV2aWV3ZWQgYnkgdGhlIGRldmlj
+ZSB0cmVlIHBlb3BsZT8gSXQgd291bGQNCj4gPj4gZ29vZCB0byBoYXZlIGFuIGFjayBmcm9tIHRo
+ZW0uDQo+ID4NCj4gPiBDQydlZCBkZXZpY2UgdHJlZSBtYWlsaW5nLWxpc3QsIEdyYW50IExpa2Vs
+eSwgUm9iIEhlcnJpbmcsIEt1a2ppbiBLaW0sIFN5bHdlc3RlciBOYXdyb2NraS4NCj4gPg0KPiA+
+IEhpIFRvbWksDQo+ID4NCj4gPiBUaGUgRFQgYmluZGluZyBoYXMgYmVlbiBwb3N0ZWQgd2l0aCBk
+ZXZpY2UgdHJlZSBtYWlsaW5nLWxpc3QNCj4gPiAoZGV2aWNldHJlZS1kaXNjdXNzQGxpc3RzLm96
+bGFicy5vcmcpIGZvciBtb3JlIHRoYW4gMiBtb250aHMuDQo+ID4gTGFzdCBwYXRjaCBWOCB3YXMg
+cG9zdGVkIDEgbW9udGggYWdvLiBIb3dldmVyLCB0aGVyZSBpcyBubyBvYmplY3Rpb24uDQo+ID4g
+KGh0dHA6Ly93d3cuc3Bpbmljcy5uZXQvbGlzdHMvbGludXgtZmJkZXYvbXNnMDgzNTQuaHRtbCkN
+Cj4gPg0KPiA+IEFsc28sIFNhbXN1bmcgcGVvcGxlIGFscmVhZHkgcmV2aWV3ZWQgaXQuDQo+ID4g
+SW4gbXkgb3BpbmlvbiwgdGhlcmUgaXMgbm8gbmVlZCB0byBnZXQgQWNrIGZyb20gdGhlIGRldmlj
+ZSB0cmVlIHBlb3BsZS4NCj4gDQo+IEdyYW50IGFuZCBJIGNhbid0IHBvc3NpYmx5IHJldmlldyBl
+dmVyeSBiaW5kaW5nIGZvciBldmVyeSBkZXZpY2Ugb2YNCj4gZXZlcnkgc3Vic3lzdGVtLg0KPiAN
+Cj4gV2hpbGUgSSB0aGluayB0aGVyZSBpcyBwb3NzaWJpbGl0eSB0byBtYWtlIHRoaXMgbW9yZSBj
+b21tb24gYWNyb3NzDQo+IHBsYXRmb3JtcywgSSBkb24ndCBoYXZlIGFueSBtYWpvciBpc3N1ZXMg
+d2l0aCB0aGUgYmluZGluZywgc286DQo+IA0KPiBBY2tlZC1ieTogUm9iIEhlcnJpbmcgPHJvYi5o
+ZXJyaW5nQGNhbHhlZGEuY29tPg0KDQpIaSBSb2IsDQpJIGFkZGVkIHlvdXIgQWNrZWQtYnkgdG8g
+RFQgYmluZGluZyBwYXRjaC4gVGhhbmsgeW91Lg0KKGh0dHBzOi8vZ2l0aHViLmNvbS9qaW5nb28v
+bGludXgvY29tbWl0LzgyNWU5MGQwYTEzODczODY1NzUwOWQ3NDYwZDc3ZWRiMjhmY2ZkYzApDQoN
+ClRvbWksDQpJIGhhdmUgYW4gQWNrIGZyb20gYSBEZXZpY2UgdHJlZSBNYWludGFpbmVyLCBSb2Ig
+SGVycmluZy4gDQpQbGVhc2UsIHB1bGwgdGhlIHBhdGNoZXMuDQoNCkJlc3QgcmVnYXJkcywNCkpp
+bmdvbyBIYW4NCg0KPiANCj4gUm9iDQo+IA0KPiA+IEdyYW50LCBSb2I6IGlmIHlvdSBoYXZlIGFu
+b3RoZXIgb3BpbmlvbiwgcGxlYXNlIGxldCBtZSBrbm93IGtpbmRseS4NCj4gPg0KPiA+IEJlc3Qg
+cmVnYXJkcywNCj4gPiBKaW5nb28gSGFuDQo+ID4NCj4gPiBfX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fXw0KPiA+IGRldmljZXRyZWUtZGlzY3VzcyBtYWlsaW5n
+IGxpc3QNCj4gPiBkZXZpY2V0cmVlLWRpc2N1c3NAbGlzdHMub3psYWJzLm9yZw0KPiA+IGh0dHBz
+Oi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9kZXZpY2V0cmVlLWRpc2N1c3MNCj4gPg0K
 
-Grant and I can't possibly review every binding for every device of
-every subsystem.
-
-While I think there is possibility to make this more common across
-platforms, I don't have any major issues with the binding, so:
-
-Acked-by: Rob Herring <rob.herring@calxeda.com>
-
-Rob
-
-> Grant, Rob: if you have another opinion, please let me know kindly.
-> 
-> Best regards,
-> Jingoo Han
-> 
-> _______________________________________________
-> devicetree-discuss mailing list
-> devicetree-discuss@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/devicetree-discuss
-> 
 

@@ -1,27 +1,76 @@
-From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Date: Fri, 23 Nov 2012 04:33:43 +0000
-Subject: RE: [PATCH] video: da8xx-fb: clk_get on connection id fck
-Message-Id: <A73F36158E33644199EB82C5EC81C7BC3E9FB8D9@DBDE01.ent.ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 29 Nov 2012 08:42:18 +0000
+Subject: Re: [PATCH] video: da8xx-fb: clk_get on connection id fck
+Message-Id: <50B71FEA.1070503@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig0A1AA4ECCFD9C00AF2536F0E"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1353415261-30080-1-git-send-email-prakash.pm@ti.com>
  <50AB7F7E.1070400@ti.com>
-In-Reply-To: <50AB7F7E.1070400@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <A73F36158E33644199EB82C5EC81C7BC3E9FB8D9@DBDE01.ent.ti.com>
+In-Reply-To: <A73F36158E33644199EB82C5EC81C7BC3E9FB8D9@DBDE01.ent.ti.com>
 To: linux-arm-kernel@lists.infradead.org
 
-SGkgVG9taSwNCg0KT24gVHVlLCBOb3YgMjAsIDIwMTIgYXQgMTg6MzI6NTQsIE5vcmksIFNla2hh
-ciB3cm90ZToNCj4gT24gMTEvMjAvMjAxMiA2OjExIFBNLCBNYW5qdW5hdGhhcHBhIHdyb3RlOg0K
-PiA+IGRvIGNsa19nZXQgb24gY29ubmVjdGlvbiBpZCAiZmNrIiB0byBzdXBwb3J0IE9NQVAgYmFz
-ZWQNCj4gPiBwbGF0Zm9ybXMgaGF2aW5nIG11bHRpcGxlIGNsb2NrcyBmb3IgbW9kdWxlLiBXaXRo
-b3V0IHRoaXMNCj4gPiBkcml2ZXIgY2hhbmdlIGNsa19nZXQgZmFpbHMgb24gYW0zMzV4Lg0KPiA+
-IA0KPiA+IFRoaXMgcGF0Y2ggaXMgYmFzZWQgb24gdGhlIGRpc2N1c3Npb24gaW4gY29tbXVuaXR5
-DQo+ID4gaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMzUxNjYwMTg5MDc4Mjcm
-dz0yDQo+ID4gDQo+ID4gU2lnbmVkLW9mZi1ieTogTWFuanVuYXRoYXBwYSA8cHJha2FzaC5wbUB0
-aS5jb20+DQo+ID4gQ2M6IFZhaWJoYXYgSGlyZW1hdGggPGh2YWliaGF2QHRpLmNvbT4NCj4gDQo+
-IEZvciB0aGUgbWFjaC1kYXZpbmNpIGNoYW5nZXM6DQo+IA0KPiBBY2tlZC1ieTogU2VraGFyIE5v
-cmkgPG5zZWtoYXJAdGkuY29tPg0KPiANCj4gRmxvcmlhbiwNCj4gDQo+IEkgYXNzdW1lIHlvdSB3
-aWxsIHdhbnQgdG8gdGFrZSB0aGlzIHRocm91Z2ggeW91ciB0cmVlPw0KPiANCg0KQ291bGQgeW91
-IHBsZWFzZSBwdWxsIGluIHRoaXM/DQoNClRoYW5rcywNClByYWthc2gNCg0KPiBUaGFua3MsDQo+
-IFNla2hhcg0KPiANCg0K
+--------------enig0A1AA4ECCFD9C00AF2536F0E
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+On 2012-11-23 06:33, Manjunathappa, Prakash wrote:
+> Hi Tomi,
+>=20
+> On Tue, Nov 20, 2012 at 18:32:54, Nori, Sekhar wrote:
+>> On 11/20/2012 6:11 PM, Manjunathappa wrote:
+>>> do clk_get on connection id "fck" to support OMAP based
+>>> platforms having multiple clocks for module. Without this
+>>> driver change clk_get fails on am335x.
+>>>
+>>> This patch is based on the discussion in community
+>>> http://marc.info/?l=3Dlinux-kernel&m=3D135166018907827&w=3D2
+>>>
+>>> Signed-off-by: Manjunathappa <prakash.pm@ti.com>
+>>> Cc: Vaibhav Hiremath <hvaibhav@ti.com>
+>>
+>> For the mach-davinci changes:
+>>
+>> Acked-by: Sekhar Nori <nsekhar@ti.com>
+>>
+>> Florian,
+>>
+>> I assume you will want to take this through your tree?
+>>
+>=20
+> Could you please pull in this?
+
+Merged this and the "da8xx-fb: LCDC driver cleanup" to:
+
+git://gitorious.org/linux-omap-dss2/linux.git for-next
+
+ Tomi
+
+
+
+--------------enig0A1AA4ECCFD9C00AF2536F0E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJQtx/qAAoJEPo9qoy8lh71vnoP/1iO2TY8S+/ERARVD5q+crq/
+Cxzp5FWZ2UCrKxPkBDQ+v/Oy4B7Cf1mS4NiYCShmKTx/CxtSTaECGMuYDdh87snz
+UT65R6qmN2pwhXRCrwZIunxoEjA6FRfFMaC5YpdYQ5Zti1XAaxsb5N3ddwibe0Ak
+nbiCMj9hyQORlcVEdkpEvVksXrqJW2CwiZ4Bl9mvpCAWVvKmVEflhmS5K4q5EVca
+n+lDjToygDYADBZGPWjQ52p6+Sw1ZlgAbFhrz3MAn2ovu11uf7ZG7+jvj9E7cmdP
+Dw186KFBducjnWPusMwvbMV5IsFryIF0mBtSeMb8K4pdCD61aErqBK6bMJNyW/46
+YGgnB04il1KE0LGO25rBNJfXpOQdGI8Ng9TJMmAnB5w+00hKLR25oLP+znUljLJ0
+VQ1OsgzB3kVAoxYRfZIjilgWfkXgiaOHs0205t/zkfxM3sntVzHAHcaBztSo4NmS
+voflfZR4EVeuHo5T1M3mLbt04UhA+b6l1p4D7KmCMWk4Gx1JRQ+yYLdkys/nyaaa
+1aTBR3WtLWz+6zXlJTO944DaMxdOVxaEVJ41Ql3IxwRLJlD+nEeS9ParyHJUA1VQ
+JXzzLYdohkTAWV5ceBpHvtYQ0rJ08kYQDe2huMyDZg/8ucvgPWYVYGVAUZ8SQ291
+NsCje3LwP4d8Tm5ildA2
+=0lDL
+-----END PGP SIGNATURE-----
+
+--------------enig0A1AA4ECCFD9C00AF2536F0E--

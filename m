@@ -1,84 +1,63 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 29 Nov 2012 06:42:21 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 29 Nov 2012 08:41:28 +0000
 Subject: Re: [GIT PULL] Exynos DP for v3.8
-Message-Id: <631281.130371354171340233.JavaMail.weblogic@epml16>
+Message-Id: <50B71FB8.1010601@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enigBF2A0319E8925C5497B38F2A"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <28517517.77811353652672706.JavaMail.weblogic@epml06>
 In-Reply-To: <28517517.77811353652672706.JavaMail.weblogic@epml06>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org" <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org" <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+To: linux-fbdev@vger.kernel.org
 
-T24gVGh1cnNkYXksIE5vdmVtYmVyIDI5LCAyMDEyIDQ6NTggQU0sIFJvYiBIZXJyaW5nIHdyb3Rl
-DQo+IE9uIDExLzI3LzIwMTIgMDU6NTkgUE0sIEppbmdvbyBIYW4gd3JvdGU6DQo+ID4gT24gVHVl
-c2RheSwgTm92ZW1iZXIgMjcsIDIwMTIgNjo1OCBQTSwgVG9taSBWYWxrZWluZW4gd3JvdGUNCj4g
-Pj4NCj4gPj4gT24gMjAxMi0xMS0yMyAwODozNywgSmluZ29vIEhhbiB3cm90ZToNCj4gPj4+IEhp
-IFRvbWksDQo+ID4+Pg0KPiA+Pj4gVGhhbmsgeW91IGZvciB0YWtpbmcgY2FyZSBvZiBwdWxsIHJl
-cXVlc3RzIGZvciB0aGUgdjMuOCBtZXJnZSB3aW5kb3cuDQo+ID4+PiBUaGVzZSBwYXRjaGVzIGhh
-dmUgYmVlbiBzdWJtaXR0ZWQgZm9yIG1vcmUgdGhhbiBvbmUgbW9udGgsDQo+ID4+PiBhbmQgdGVz
-dGVkIHdpdGggRXh5bm9zNTI1MC4NCj4gPj4+DQo+ID4+PiBUaGUgZm9sbG93aW5nIGNoYW5nZXMg
-c2luY2UgY29tbWl0IGY0YTc1ZDJlYjdiMWUyMjA2MDk0YjkwMWJlMDlhZGIzMWJhNjM2ODE6DQo+
-ID4+Pg0KPiA+Pj4gICBMaW51eCAzLjctcmM2IChGcmkgTm92IDE2IDE3OjQyOjQwIDIwMTIgLTA4
-MDApDQo+ID4+Pg0KPiA+Pj4gYXJlIGF2YWlsYWJsZSBpbiB0aGUgZ2l0IHJlcG9zaXRvcnkgYXQ6
-DQo+ID4+PiAgIGdpdDovL2dpdGh1Yi5jb20vamluZ29vL2xpbnV4LmdpdCBleHlub3MtZHAtbmV4
-dA0KPiA+Pj4NCj4gPj4+IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gPj4+IEV4eW5vcyBEUCBjaGFuZ2VzIGZvciB0aGUg
-My44IG1lcmdlIHdpbmRvdy4NCj4gPj4+DQo+ID4+PiAtIERldmljZSBUcmVlIHN1cHBvcnQgZm9y
-IFNhbXN1bmcgRXh5bm9zIERQDQo+ID4+PiAtIFNXIExpbmsgdHJhaW5pbmcgaXMgY2xlYW5lZCB1
-cC4NCj4gPj4+IC0gSFBEIGludGVycnVwdCBpcyBzdXBwb3J0ZWQuDQo+ID4+PiAtLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+
-ID4+Pg0KPiA+Pj4gQWpheSBLdW1hciAoNSk6DQo+ID4+PiAgICAgICB2aWRlbzogZXh5bm9zX2Rw
-OiBBZGQgZGV2aWNlIHRyZWUgc3VwcG9ydCB0byBEUCBkcml2ZXINCj4gPj4+ICAgICAgIHZpZGVv
-OiBleHlub3NfZHA6IGRldmljZSB0cmVlIGRvY3VtZW50YXRpb24NCj4gPj4+ICAgICAgIHZpZGVv
-OiBleHlub3NfZHA6IFJlc2V0IGFuZCBpbml0aWFsaXplIERQIGJlZm9yZSByZXF1ZXN0aW5nIGly
-cQ0KPiA+Pj4gICAgICAgdmlkZW86IGV4eW5vc19kcDogRml4IGluY29ycmVjdCBzZXR0aW5nIGZv
-ciBJTlRfQ1RMDQo+ID4+PiAgICAgICB2aWRlbzogZXh5bm9zX2RwOiByZW1vdmUgcmVkdW5kYW50
-IHBhcmFtZXRlcnMNCj4gPj4+DQo+ID4+PiBTZWFuIFBhdWwgKDgpOg0KPiA+Pj4gICAgICAgdmlk
-ZW86IGV4eW5vc19kcDogQ2hlY2sgRFBDRCByZXR1cm4gY29kZXMNCj4gPj4+ICAgICAgIHZpZGVv
-OiBleHlub3NfZHA6IENsZWFuIHVwIFNXIGxpbmsgdHJhaW5pbmcNCj4gPj4+ICAgICAgIHZpZGVv
-OiBleHlub3NfZHA6IEdldCBwbGwgbG9jayBiZWZvcmUgcGF0dGVybiBzZXQNCj4gPj4+ICAgICAg
-IHZpZGVvOiBleHlub3NfZHA6IEltcHJvdmUgRURJRCBlcnJvciBoYW5kbGluZw0KPiA+Pj4gICAg
-ICAgdmlkZW86IGV4eW5vc19kcDogRml4IGJ1ZyB3aGVuIGNoZWNraW5nIGRwLT5pcnENCj4gPj4+
-ICAgICAgIHZpZGVvOiBleHlub3NfZHA6IFJlbW92ZSBzaW5rIGNvbnRyb2wgdG8gRDANCj4gPj4+
-ICAgICAgIHZpZGVvOiBleHlub3NfZHA6IE1vdmUgaG90cGx1ZyBpbnRvIGEgd29ya3F1ZXVlDQo+
-ID4+PiAgICAgICB2aWRlbzogZXh5bm9zX2RwOiBFbmFibGUgaG90cGx1ZyBpbnRlcnJ1cHRzDQo+
-ID4+Pg0KPiA+Pj4gIC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL3ZpZGVvL2V4eW5vc19kcC50eHQg
-ICAgICAgIHwgICA4MCArKysNCj4gPj4+ICBkcml2ZXJzL3ZpZGVvL2V4eW5vcy9leHlub3NfZHBf
-Y29yZS5jICAgICAgICAgICAgICB8ICA2OTcgKysrKysrKysrKysrLS0tLS0tLS0NCj4gPj4+ICBk
-cml2ZXJzL3ZpZGVvL2V4eW5vcy9leHlub3NfZHBfY29yZS5oICAgICAgICAgICAgICB8ICAgMjEg
-Ky0NCj4gPj4+ICBkcml2ZXJzL3ZpZGVvL2V4eW5vcy9leHlub3NfZHBfcmVnLmMgICAgICAgICAg
-ICAgICB8ICAgNzcgKystDQo+ID4+PiAgZHJpdmVycy92aWRlby9leHlub3MvZXh5bm9zX2RwX3Jl
-Zy5oICAgICAgICAgICAgICAgfCAgICAzICstDQo+ID4+PiAgNSBmaWxlcyBjaGFuZ2VkLCA1ODMg
-aW5zZXJ0aW9ucygrKSwgMjk1IGRlbGV0aW9ucygtKQ0KPiA+Pj4gIGNyZWF0ZSBtb2RlIDEwMDY0
-NCBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdmlkZW8vZXh5bm9zX2RwLnR4dA0K
-PiA+Pg0KPiA+PiBIYXMgdGhlIERUIGJpbmRpbmdzIGJlZW4gcmV2aWV3ZWQgYnkgdGhlIGRldmlj
-ZSB0cmVlIHBlb3BsZT8gSXQgd291bGQNCj4gPj4gZ29vZCB0byBoYXZlIGFuIGFjayBmcm9tIHRo
-ZW0uDQo+ID4NCj4gPiBDQydlZCBkZXZpY2UgdHJlZSBtYWlsaW5nLWxpc3QsIEdyYW50IExpa2Vs
-eSwgUm9iIEhlcnJpbmcsIEt1a2ppbiBLaW0sIFN5bHdlc3RlciBOYXdyb2NraS4NCj4gPg0KPiA+
-IEhpIFRvbWksDQo+ID4NCj4gPiBUaGUgRFQgYmluZGluZyBoYXMgYmVlbiBwb3N0ZWQgd2l0aCBk
-ZXZpY2UgdHJlZSBtYWlsaW5nLWxpc3QNCj4gPiAoZGV2aWNldHJlZS1kaXNjdXNzQGxpc3RzLm96
-bGFicy5vcmcpIGZvciBtb3JlIHRoYW4gMiBtb250aHMuDQo+ID4gTGFzdCBwYXRjaCBWOCB3YXMg
-cG9zdGVkIDEgbW9udGggYWdvLiBIb3dldmVyLCB0aGVyZSBpcyBubyBvYmplY3Rpb24uDQo+ID4g
-KGh0dHA6Ly93d3cuc3Bpbmljcy5uZXQvbGlzdHMvbGludXgtZmJkZXYvbXNnMDgzNTQuaHRtbCkN
-Cj4gPg0KPiA+IEFsc28sIFNhbXN1bmcgcGVvcGxlIGFscmVhZHkgcmV2aWV3ZWQgaXQuDQo+ID4g
-SW4gbXkgb3BpbmlvbiwgdGhlcmUgaXMgbm8gbmVlZCB0byBnZXQgQWNrIGZyb20gdGhlIGRldmlj
-ZSB0cmVlIHBlb3BsZS4NCj4gDQo+IEdyYW50IGFuZCBJIGNhbid0IHBvc3NpYmx5IHJldmlldyBl
-dmVyeSBiaW5kaW5nIGZvciBldmVyeSBkZXZpY2Ugb2YNCj4gZXZlcnkgc3Vic3lzdGVtLg0KPiAN
-Cj4gV2hpbGUgSSB0aGluayB0aGVyZSBpcyBwb3NzaWJpbGl0eSB0byBtYWtlIHRoaXMgbW9yZSBj
-b21tb24gYWNyb3NzDQo+IHBsYXRmb3JtcywgSSBkb24ndCBoYXZlIGFueSBtYWpvciBpc3N1ZXMg
-d2l0aCB0aGUgYmluZGluZywgc286DQo+IA0KPiBBY2tlZC1ieTogUm9iIEhlcnJpbmcgPHJvYi5o
-ZXJyaW5nQGNhbHhlZGEuY29tPg0KDQpIaSBSb2IsDQpJIGFkZGVkIHlvdXIgQWNrZWQtYnkgdG8g
-RFQgYmluZGluZyBwYXRjaC4gVGhhbmsgeW91LiA6KQ0KKGh0dHBzOi8vZ2l0aHViLmNvbS9qaW5n
-b28vbGludXgvY29tbWl0LzgyNWU5MGQwYTEzODczODY1NzUwOWQ3NDYwZDc3ZWRiMjhmY2ZkYzAp
-DQoNClRvbWksDQpJIGhhdmUgYW4gQWNrIGZyb20gYSBEZXZpY2UgdHJlZSBNYWludGFpbmVyLCBS
-b2IgSGVycmluZy4gDQpQbGVhc2UsIHB1bGwgdGhlIHBhdGNoZXMuDQoNCkJlc3QgcmVnYXJkcywN
-CkppbmdvbyBIYW4NCg0KPiANCj4gUm9iDQo+IA0KPiA+IEdyYW50LCBSb2I6IGlmIHlvdSBoYXZl
-IGFub3RoZXIgb3BpbmlvbiwgcGxlYXNlIGxldCBtZSBrbm93IGtpbmRseS4NCj4gPg0KPiA+IEJl
-c3QgcmVnYXJkcywNCj4gPiBKaW5nb28gSGFuDQo+ID4NCj4gPiBfX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fXw0KPiA+IGRldmljZXRyZWUtZGlzY3VzcyBtYWls
-aW5nIGxpc3QNCj4gPiBkZXZpY2V0cmVlLWRpc2N1c3NAbGlzdHMub3psYWJzLm9yZw0KPiA+IGh0
-dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9kZXZpY2V0cmVlLWRpc2N1c3MNCj4gPg=
+--------------enigBF2A0319E8925C5497B38F2A
+Content-Type: text/plain; charset=EUC-KR
+Content-Transfer-Encoding: quoted-printable
+
+On 2012-11-23 08:37, Jingoo Han wrote:
+> Hi Tomi,
+>=20
+> Thank you for taking care of pull requests for the v3.8 merge window.
+> These patches have been submitted for more than one month,
+> and tested with Exynos5250.
+>=20
+> The following changes since commit f4a75d2eb7b1e2206094b901be09adb31ba6=
+3681:
+>=20
+>   Linux 3.7-rc6 (Fri Nov 16 17:42:40 2012 -0800)
+>=20
+> are available in the git repository at:
+>   git://github.com/jingoo/linux.git exynos-dp-next
+
+Pulled to:
+
+git://gitorious.org/linux-omap-dss2/linux.git for-next
+
+ Tomi
 
 
+
+--------------enigBF2A0319E8925C5497B38F2A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJQtx+4AAoJEPo9qoy8lh7122QQAJQUPbasgIzuukd1p1VKo8bQ
+jQT4EXCAm7MXsa8CgBdK4IoLU8zr6nwdBZxAtCL8QwF7tOpHUVjo3gNkKvx4/Ets
+KrPgbE/ccXHcmF9QmVivj9tbdv09NKYcp9MsDVGdxheW76MvjbvDHOKQX+4U3JfD
+uCeS4alJ0sZhqrWimNTrvfoOjcIFkVC8yUca33H++l58OT7/ZAOQIcQ5K/Vbn5t0
+Mg+MuZ8yZZa6Jk24CnSbt4w5HdDjJoLK39VGXPGGTWkq30K+d/W1IVoXVvtQQpTQ
+Y0jVxPVTNpjGyWtSgmd1kBTVmTpC6Vf68xgF6wfS3n+bD8FXPLN3oE5O5GpJg4AF
+dQDuH3MsCIIeiZ7VyW0wMc+wuUw8JNo5L7bT68vvJ5PlfTKjydL0CQ86s1KavV+X
+GkE0zZXuxJdqzCiSxFK18e8c4izBQNKTKWU98Kr10JoBOGYYzs4k2gKQRDpopI4J
+2d79hWFtCY5gqpW2M56HJvwRm8Dxt8gEqyou4MILx+f6p2cDXoduE8mDcjBawyR1
+3sW4ZqoHJ0ANDUxjy9QWCQXMpmMpi6X0/evJaYDRCtEvrxCd7M4nwkxlt+ZcHEQ/
+wsvTFT27ryGeOrMLCcwyxuoc/bl0pyi/8MmjuXjcUsfGkeC9tjusYuIzodG5CG8Y
+TZ2hxXFd64VD+xpsL56J
+=g/OW
+-----END PGP SIGNATURE-----
+
+--------------enigBF2A0319E8925C5497B38F2A--

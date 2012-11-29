@@ -1,16 +1,16 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 29 Nov 2012 12:05:44 +0000
+Date: Thu, 29 Nov 2012 12:18:20 +0000
 Subject: Re: [PATCH 2/7] OMAPDSS: DISPC: Move DISPC specific dss_reg_fields to dispc_features
-Message-Id: <50B74F98.2030108@ti.com>
+Message-Id: <50B7528C.1090507@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig47A97A57F3BFAD91E279D853"
+Content-Type: multipart/mixed; boundary="------------enigB4A499D2F9B334E4BB6422A2"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1354086150.git.cmahapatra@ti.com> <a5bbbc9af3ef5ca2636d3c4dea6cbbe9834e0f62.1354086150.git.cmahapatra@ti.com>
 In-Reply-To: <a5bbbc9af3ef5ca2636d3c4dea6cbbe9834e0f62.1354086150.git.cmahapatra@ti.com>
 To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
---------------enig47A97A57F3BFAD91E279D853
+--------------enigB4A499D2F9B334E4BB6422A2
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
@@ -59,67 +59,33 @@ dispc.c
 > +
 > +	struct register_field *reg_fields;
 >  };
-> =20
->  #define DISPC_MAX_NR_FIFOS 5
-> @@ -1150,7 +1162,8 @@ static void dispc_init_fifos(void)
-> =20
->  	unit =3D dispc.feat->buffer_size_unit;
-> =20
-> -	dss_feat_get_reg_field(FEAT_REG_FIFOSIZE, &start, &end);
-> +	start =3D dispc.feat->reg_fields[FEAT_REG_FIFOSIZE].start;
-> +	end =3D dispc.feat->reg_fields[FEAT_REG_FIFOSIZE].end;
-> =20
->  	for (fifo =3D 0; fifo < dispc.feat->num_fifos; ++fifo) {
->  		size =3D REG_GET(DISPC_OVL_FIFO_SIZE_STATUS(fifo), start, end);
-> @@ -1214,8 +1227,10 @@ void dispc_ovl_set_fifo_threshold(enum omap_plan=
-e plane, u32 low, u32 high)
->  	low /=3D unit;
->  	high /=3D unit;
-> =20
-> -	dss_feat_get_reg_field(FEAT_REG_FIFOHIGHTHRESHOLD, &hi_start, &hi_end=
-);
-> -	dss_feat_get_reg_field(FEAT_REG_FIFOLOWTHRESHOLD, &lo_start, &lo_end)=
-;
-> +	hi_start =3D dispc.feat->reg_fields[FEAT_REG_FIFOHIGHTHRESHOLD].start=
-;
-> +	hi_end =3D dispc.feat->reg_fields[FEAT_REG_FIFOHIGHTHRESHOLD].end;
-> +	lo_start =3D dispc.feat->reg_fields[FEAT_REG_FIFOLOWTHRESHOLD].start;=
 
-> +	lo_end =3D dispc.feat->reg_fields[FEAT_REG_FIFOLOWTHRESHOLD].end;
+Hmm, would it be simpler to have an explicit struct for the reg fields.
+I mean something like:
 
-I think these are quite verbose. Perhaps a helper function which does
-the same as dss_feat_get_reg_field() would be better. Or alternatively,
-maybe something like:
+struct dispc_reg_fields {
+	struct register_field firhinc;
+	struct register_field firvinc;
+	struct register_field fifo_low_threshold;
+	...
+};
 
-const struct dss_reg_field *hi_field =3D
-&dispc.feat->reg_fields[FEAT_REG_FIFOHIGHTHRESHOLD];
+Then accessing it would be
 
-and then use "hi_field.start" instead of hi_start.
+dispc.feat->reg_fields.firhinc.start;
 
-Or something else that makes the above easier to read.
+instead of
 
-> diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/ds=
-s.h
-> index 84a7f6a..aa273d8 100644
-> --- a/drivers/video/omap2/dss/dss.h
-> +++ b/drivers/video/omap2/dss/dss.h
-> @@ -143,6 +143,10 @@ struct reg_field {
->  	u8 low;
->  };
-> =20
-> +struct register_field {
-> +	u8 start, end;
-> +};
-> +
+dispc.feat->reg_fields[FEAT_REG_FIFOSIZE].start;
 
-We already have the dss_reg_field struct. I think it's better to move
-that to dss.h, and use it, instead of creating an exact duplicate.
+Not a big difference, but I don't see any benefit in having an array of
+reg fields here.
 
  Tomi
 
 
 
---------------enig47A97A57F3BFAD91E279D853
+--------------enigB4A499D2F9B334E4BB6422A2
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -128,19 +94,19 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.11 (GNU/Linux)
 Comment: Using GnuPG with undefined - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJQt0+YAAoJEPo9qoy8lh71eU8P/AgxUPgQ20PjyROPmrtmu7g5
-wsWyhVg+u5n/+Pym7pjZubuZ/hIWIZ6RtimYXHhgEOMDUMZ+iw53Z+S4QtusWwAq
-GfAGfGQk4qrJmz1ApOOMw1i9ZnQV+LIIDV6AdINsiHV0S0S+QrdE2aTSCne/7OZf
-+HHoz1UEhHz28sfZ2XoZ98zCp88Ka+cGtWxJpjoo18y3i/3qddH+XB4cInIC8BI/
-6OaE5/drO4iVEnyRQlJD4bUB5q0K9ZjyMmRr4gdBThXsN0A/UAW2L46UwRJ++uJE
-OpiRbHWhgWQ/McFwDolnGnNtIRK2xsFPVbZvgn6g4JnJQrT4US160RVu0a7SBYGR
-prd+A7xyc2Lrp+D6NyAA6GmuO6JX81iveyCC683LNODAHOz5ovGGq4m51kE1w7Yw
-qGhEf3FDKInK7UnmPP7yXcBivZ6KqO4Rhe0N8kE+5/m4vODkKkVfpFRChwCb33nV
-7oorkJqyX1Kdz8qe65wD9C0t+GHuhn7AmsXnI4ICc17vEgYKgTSnOY7zUDdO87Eq
-tfo5DDkfZkde2DW8Y0D/Io/J/wFLfHwG+ZBRrTJOQoe6T0BsdfozJoQDf6BODfkN
-k2dlTGn4oCH06e/oS4cmFvkZuXoSX5azAAqS36B20Ax3FoiljA9IhyF+wdBnjpQD
-awZ266sVwipBxGcVJ9KV
-=pC0a
+iQIcBAEBAgAGBQJQt1KMAAoJEPo9qoy8lh71fTMP/iYAgHtdt/ZIzWhEHl7rMXTB
+bS0SImiLzhwy1ZiX5aYZW0gR/AJ3yggw0V+ZDJGaYQ77cFg1UzvPFgSau8BWuhN6
+ppukIkOCaaQAZBb7JqTe6IgyQEYqFMBPHmsvMCR14r8lbdxU8d5MMJUHOV3t5dW2
+IMKxN5WMr613+qb6krfvtyHjbUD41ZlpbV0j2gpV7sDy9SiEmVfg+kQ+N16Ft8ep
+2IQKlH6jtvEXAs0mb5YPRtBitq8P9DISWbkf37NR8hPUA4/rI04oatle44gk74Bz
+zbu7U5eb/t7mnQfBzMRMET4kR9tLvJVd9m+1TtjeGhoZ5etTnj7TfyQSH4ny3EDO
+DDMbFRzleu9TUs3z4LEUXH74wtaDUGTifkpINXQtHU7nJ9gNB0pBmCxoTY1+KyLr
+gtb2Ob1nCBCWnx5vzdYEbK306uW1pbLUuVKtcu5FWeygnKP33x1Bda7ItWI1QFcK
+AhKIzLeuv+dc/ieOOIEqTz/1EK9oqrLFAohip+0/WMUCSEco0VvgqzOn8ZDgpMg3
+kFkdsZcQ5Ixd9pISv6AP0M44KcZwsSHCrq8iHh+cU2fyYJ3TKA/Yf4P19UdMMSQX
+l2yD1cYwWs/tIalXpWBBPEprlJ++Y/SJoFEJA7PKoXHnYdozEZtmzVhPPS9cmciW
+upz2E+zeU17oCU1FuTY6
+=z7eN
 -----END PGP SIGNATURE-----
 
---------------enig47A97A57F3BFAD91E279D853--
+--------------enigB4A499D2F9B334E4BB6422A2--

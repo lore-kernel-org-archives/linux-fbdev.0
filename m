@@ -1,46 +1,63 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 23 Nov 2012 06:36:09 +0000
-Subject: [GIT PULL] Samsung Framebuffer for v3.8
-Message-Id: <16376487.77671353652569048.JavaMail.weblogic@epml06>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 29 Nov 2012 08:41:15 +0000
+Subject: Re: [GIT PULL] Samsung Framebuffer for v3.8
+Message-Id: <50B71FAB.6030507@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig3B9351C25F7B5D84675BB77D"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <16376487.77671353652569048.JavaMail.weblogic@epml06>
+In-Reply-To: <16376487.77671353652569048.JavaMail.weblogic@epml06>
 To: linux-fbdev@vger.kernel.org
 
-SGkgVG9taSwNCg0KVGhhbmsgeW91IGZvciB0YWtpbmcgY2FyZSBvZiBwdWxsIHJlcXVlc3RzIGZv
-ciB0aGUgdjMuOCBtZXJnZSB3aW5kb3cuDQpUaGVzZSBwYXRjaGVzIGhhdmUgYmVlbiBzdWJtaXR0
-ZWQgZm9yIGFib3V0IHR3byBtb250aHMsDQphbmQgdGVzdGVkIHdpdGggRXh5bm9zNDIxMCBhbmQg
-RXh5bm9zNTI1MC4NCg0KVGhlIGZvbGxvd2luZyBjaGFuZ2VzIHNpbmNlIGNvbW1pdCBmNGE3NWQy
-ZWI3YjFlMjIwNjA5NGI5MDFiZTA5YWRiMzFiYTYzNjgxOg0KDQogIExpbnV4IDMuNy1yYzYgKEZy
-aSBOb3YgMTYgMTc6NDI6NDAgMjAxMiAtMDgwMCkNCg0KYXJlIGF2YWlsYWJsZSBpbiB0aGUgZ2l0
-IHJlcG9zaXRvcnkgYXQ6DQogIGdpdDovL2dpdGh1Yi5jb20vamluZ29vL2xpbnV4LmdpdCBzYW1z
-dW5nLWZiLW5leHQNCg0KLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KU2Ftc3VuZyBGcmFtZWJ1ZmZlciBjaGFuZ2VzIGZvciB0
-aGUgMy44IG1lcmdlIHdpbmRvdy4NCg0KLSBUaGUgYml0IGRlZmluaXRpb25zIG9mIGhlYWRlciBm
-aWxlIGFyZSB1cGRhdGVkLg0KLSBTb21lIG1pbm9yIHR5cG9zIGFyZSBmaXhlZC4NCi0gU29tZSBt
-aW5vciBidWdzIG9mIHMzY19mYl9jaGVja192YXIoKSBhcmUgZml4ZWQuDQotLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQoNCkpp
-bmdvbyBIYW4gKDE0KToNCiAgICAgIHZpZGVvOiBzM2MtZmI6IGNsZWFuIHRoZSBiaXQgZGVmaW5p
-dGlvbiBmb3IgV0lOQ09OIHJlZ2lzdGVyDQogICAgICB2aWRlbzogczNjLWZiOiBtb3ZlIHRoZSBh
-ZGRyZXNzIGRlZmluaXRpb25zIGZvciBWSURUQ09OIHJlZ2lzdGVycw0KICAgICAgdmlkZW86IHMz
-Yy1mYjogbW92ZSB0aGUgYWRkcmVzcyBkZWZpbml0aW9uIGZvciBWSURPU0QgcmVnaXN0ZXINCiAg
-ICAgIHZpZGVvOiBzM2MtZmI6IG1vdmUgdGhlIGJpdCBkZWZpbml0aW9ucyBmb3IgVklESU5UQ09O
-MCByZWdpc3Rlcg0KICAgICAgdmlkZW86IHMzYy1mYjogbW92ZSB0aGUgYml0IGRlZmluaXRpb25z
-IGZvciBXSU54TUFQIGFuZCBXUEFMQ09OIHJlZ2lzdGVyDQogICAgICB2aWRlbzogczNjLWZiOiBt
-b3ZlIHRoZSBiaXQgZGVmaW5pdGlvbnMgZm9yIERJVEhNT0RFIHJlZ2lzdGVyDQogICAgICB2aWRl
-bzogczNjLWZiOiBhZGQgdGhlIGJpdCBkZWZpbml0aW9ucyBmb3IgVklEQ09OMF9WSURPVVRfV0IN
-CiAgICAgIHZpZGVvOiBzM2MtZmI6IGZpeCB0eXBvIGluIGNvbW1lbnQNCiAgICAgIHZpZGVvOiBz
-M2MtZmI6IGZpeCBoZWxwIG1lc3NhZ2UgZm9yIEZCX1MzQ19ERUJVR19SRUdXUklURQ0KICAgICAg
-dmlkZW86IHMzYy1mYjogdXNlIEZJTURfVjhfVklEVENPTjAgZm9yIEVYWU5PUzUgRklNRA0KICAg
-ICAgdmlkZW86IHMzYy1mYjogdXNlIGRldl9nZXRfZHJ2ZGF0YSgpIGluc3RlYWQgb2YgcGxhdGZv
-cm1fZ2V0X2RydmRhdGEoKQ0KICAgICAgdmlkZW86IHMzYy1mYjogYWRkICJkcm9wIHRocm91Z2gi
-IGNvbW1lbnQNCiAgICAgIHZpZGVvOiBzM2MtZmI6IHJldHVybiBhbiBlcnJvciB3aGVuIGJwcCBp
-cyBpbnZhbGlkDQogICAgICB2aWRlbzogczNjLWZiOiBmaXggcmVkIG9mZnNldCBhbmQgbGVuZ3Ro
-IGZvciBBUkdCMjMyIGZvcm1hdA0KDQogZHJpdmVycy92aWRlby9LY29uZmlnICAgICAgICB8ICAg
-IDIgKy0NCiBkcml2ZXJzL3ZpZGVvL3MzYy1mYi5jICAgICAgIHwgICAyNCArKystLS0NCiBpbmNs
-dWRlL3ZpZGVvL3NhbXN1bmdfZmltZC5oIHwgIDE2OCArKysrKysrKysrKysrLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0NCiAzIGZpbGVzIGNoYW5nZWQsIDY0IGluc2VydGlvbnMoKyksIDEz
-MCBkZWxldGlvbnMoLSkNCg0KLS0NCkJlc3QgcmVnYXJkcywNCkppbmdvbyBIYW4NCg=
+--------------enig3B9351C25F7B5D84675BB77D
+Content-Type: text/plain; charset=EUC-KR
+Content-Transfer-Encoding: quoted-printable
+
+On 2012-11-23 08:36, Jingoo Han wrote:
+> Hi Tomi,
+>=20
+> Thank you for taking care of pull requests for the v3.8 merge window.
+> These patches have been submitted for about two months,
+> and tested with Exynos4210 and Exynos5250.
+>=20
+> The following changes since commit f4a75d2eb7b1e2206094b901be09adb31ba6=
+3681:
+>=20
+>   Linux 3.7-rc6 (Fri Nov 16 17:42:40 2012 -0800)
+>=20
+> are available in the git repository at:
+>   git://github.com/jingoo/linux.git samsung-fb-next
+
+Pulled to:
+
+git://gitorious.org/linux-omap-dss2/linux.git for-next
+
+ Tomi
 
 
+
+--------------enig3B9351C25F7B5D84675BB77D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJQtx+rAAoJEPo9qoy8lh714p4P/jREOkIQmlm+W+7npXTgaaO1
+sCP2OnKmnelTRWSBv3z1p2ft/RaMAxby76SzJ4ubuk9/Rr0a/Wa3aadHT+iLbl0N
+Hjjo/FpJv16e6hZhbTfszTnncyVey4GPYhUsfy12r3/fQfhJ4TIGE/LzniY2NkGv
+yzS8Y5q5x0G4I8lLQnykTCGtWmIs9a4srun3eDYr6Wbh8Rymfv745PjF1wcivIsF
+gMNQLYurujHdoZJyAQiCPKWaPnNV9VczIwMLynB3mZtEky9/J3GHFZPzraSbHMPS
+rKz8s1LAl39PcKPFaG/nPOmS5vD7SqWcakZgWurtrlIpFrdSHffr7x9p4pmH/qrS
+5OQ5MhRF9Kup8HSU1pQSv4PqEEssc8pn3A1tiFrQ1yI6HwPshLKOGi0dDSdlVVSi
+afonLEHGOLsWYbrFJcwvtSRR2P1olzfCH9YGgEFMVexM3uxZ7Ei7w5bkRMdjIPo6
+T9xSx8VKsiNjjxpT7yzhW+xPBKRWwe1AwvPpWAYSBlNc8CTUYzu1HUfgnzKb5oJN
+HQh0Ni0cVrzHGPumMH61CtP4G9MqPUmMIeFtJrPRS/xJU93h0bFHtw7+81AqvNNz
+u5JlWutjasl1KBp/0raoOu24AAGKdBXKax08qJo9byJk5QxgYq0fFqMSsv0hVoVF
+iuxYsQl4XBwfFyEzJ+ay
+=NZNN
+-----END PGP SIGNATURE-----
+
+--------------enig3B9351C25F7B5D84675BB77D--

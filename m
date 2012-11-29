@@ -1,54 +1,71 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Date: Mon, 19 Nov 2012 19:23:43 +0000
-Subject: Re: [PATCH v2] video: Kconfig: Specify the SoCs that make use of FB_IMX
-Message-Id: <20121119192343.GX10369@pengutronix.de>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 29 Nov 2012 05:30:54 +0000
+Subject: Re: [PATCH] backlight: corgi_lcd: Fix WARN_ON() when calling corgi_bl_set_intensity.
+Message-Id: <001501cdcdf2$b3f8f730$1beae590$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353335821-30283-1-git-send-email-fabio.estevam@freescale.com>
-In-Reply-To: <1353335821-30283-1-git-send-email-fabio.estevam@freescale.com>
+References: <1354139201-12834-1-git-send-email-dromede@gmail.com>
+In-Reply-To: <1354139201-12834-1-git-send-email-dromede@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Mon, Nov 19, 2012 at 12:37:01PM -0200, Fabio Estevam wrote:
-> FB_IMX is the framebuffer driver used by MX1, MX21, MX25 and MX27 processors.
+On Thursday, November 29, 2012 6:47 AM, Marko Katic wrote
+> Subject: [PATCH] backlight: corgi_lcd: Fix WARN_ON() when calling corgi_bl_set_intensity.
+
+CC'ed Andrew Morton.
+
+
+Hi Marko Katic,
+The commit subject and commit message are not clear.
+
+How about using subject as below?
+backlight: corgi_lcd: use gpio_set_value_cansleep()
+
+In addition, 'Fix WARN_ON() when calling corgi_bl_set_intensity'
+would be the reason why you submit this patch.
+Please make the commit message more detail.
+
+Also, I have a question on gpio driver.
+In order to trigger WARN_ON(chip->can_sleep), 'can_sleep' should be
+set as 1. However, I cannot find 'can_sleep = 1' in the PXA gpio driver.
+What gpio driver do you use to test corgi_lcd driver?
+
+
+Best regards,
+Jingoo Han
+
 > 
-> Pass this information to the Kconfig text to make it clear.
+> From: Marko Katic <dromede.gmail.com>
 > 
-> Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
-
-Acked-by: Sascha Hauer <s.hauer@pengutronix.de>
-
-Sascha
-
+> 
+> Signed-off-by: Marko Katic <dromede@gmail.com>
 > ---
-> Changes since v1:
-> - Add mx1/21 to the list.
+>  drivers/video/backlight/corgi_lcd.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
->  drivers/video/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> diff --git a/drivers/video/backlight/corgi_lcd.c b/drivers/video/backlight/corgi_lcd.c
+> index c781768..8b002d7 100644
+> --- a/drivers/video/backlight/corgi_lcd.c
+> +++ b/drivers/video/backlight/corgi_lcd.c
+> @@ -409,10 +409,10 @@ static int corgi_bl_set_intensity(struct corgi_lcd *lcd, int intensity)
+>  	cont = !!(intensity & 0x20) ^ lcd->gpio_backlight_cont_inverted;
 > 
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 0cff083..f0c53b2 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -364,7 +364,7 @@ config FB_SA1100
->  	  Y here.
->  
->  config FB_IMX
-> -	tristate "Freescale i.MX LCD support"
-> +	tristate "Freescale i.MX1/21/25/27 LCD support"
->  	depends on FB && IMX_HAVE_PLATFORM_IMX_FB
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
-> -- 
-> 1.7.9.5
+>  	if (gpio_is_valid(lcd->gpio_backlight_cont))
+> -		gpio_set_value(lcd->gpio_backlight_cont, cont);
+> +		gpio_set_value_cansleep(lcd->gpio_backlight_cont, cont);
 > 
+>  	if (gpio_is_valid(lcd->gpio_backlight_on))
+> -		gpio_set_value(lcd->gpio_backlight_on, intensity);
+> +		gpio_set_value_cansleep(lcd->gpio_backlight_on, intensity);
 > 
+>  	if (lcd->kick_battery)
+>  		lcd->kick_battery();
+> --
+> 1.7.4.1
 > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

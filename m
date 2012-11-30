@@ -1,125 +1,81 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Fri, 30 Nov 2012 10:14:54 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 30 Nov 2012 10:25:35 +0000
 Subject: Re: [PATCH 2/7] OMAPDSS: DISPC: Move DISPC specific dss_reg_fields to dispc_features
-Message-Id: <50B8844E.2010903@ti.com>
+Message-Id: <50B8899F.3080904@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig9505916DAAC0D005FCE9530D"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1354086150.git.cmahapatra@ti.com> <a5bbbc9af3ef5ca2636d3c4dea6cbbe9834e0f62.1354086150.git.cmahapatra@ti.com> <50B74F98.2030108@ti.com>
-In-Reply-To: <50B74F98.2030108@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <cover.1354086150.git.cmahapatra@ti.com> <a5bbbc9af3ef5ca2636d3c4dea6cbbe9834e0f62.1354086150.git.cmahapatra@ti.com> <50B74F98.2030108@ti.com> <50B8844E.2010903@ti.com>
+In-Reply-To: <50B8844E.2010903@ti.com>
+To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Thursday 29 November 2012 05:35 PM, Tomi Valkeinen wrote:
-> On 2012-11-28 12:41, Chandrabhanu Mahapatra wrote:
->> The register fields in dss_reg_fields specific to DISPC are moved from struct
->> omap_dss_features to corresponding dispc_reg_fields, initialized in struct
->> dispc_features, thereby enabling local access.
+--------------enig9505916DAAC0D005FCE9530D
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 2012-11-30 12:02, Chandrabhanu Mahapatra wrote:
+> On Thursday 29 November 2012 05:35 PM, Tomi Valkeinen wrote:
+
+>>> diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/=
+dss.h
+>>> index 84a7f6a..aa273d8 100644
+>>> --- a/drivers/video/omap2/dss/dss.h
+>>> +++ b/drivers/video/omap2/dss/dss.h
+>>> @@ -143,6 +143,10 @@ struct reg_field {
+>>>  	u8 low;
+>>>  };
+>>> =20
+>>> +struct register_field {
+>>> +	u8 start, end;
+>>> +};
+>>> +
 >>
->> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
->> ---
->>  drivers/video/omap2/dss/dispc.c        |   87 ++++++++++++++++++++++++++++----
->>  drivers/video/omap2/dss/dss.h          |    4 ++
->>  drivers/video/omap2/dss/dss_features.c |   28 ----------
->>  drivers/video/omap2/dss/dss_features.h |    7 ---
->>  4 files changed, 80 insertions(+), 46 deletions(-)
+>> We already have the dss_reg_field struct. I think it's better to move
+>> that to dss.h, and use it, instead of creating an exact duplicate.
 >>
->> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
->> index 9f259ba..21fc522 100644
->> --- a/drivers/video/omap2/dss/dispc.c
->> +++ b/drivers/video/omap2/dss/dispc.c
->> @@ -80,6 +80,16 @@ struct dispc_irq_stats {
->>  	unsigned irqs[32];
->>  };
->>  
->> +enum dispc_feat_reg_field {
->> +	FEAT_REG_FIRHINC,
->> +	FEAT_REG_FIRVINC,
->> +	FEAT_REG_FIFOLOWTHRESHOLD,
->> +	FEAT_REG_FIFOHIGHTHRESHOLD,
->> +	FEAT_REG_FIFOSIZE,
->> +	FEAT_REG_HORIZONTALACCU,
->> +	FEAT_REG_VERTICALACCU,
->> +};
->> +
->>  struct dispc_features {
->>  	u8 sw_start;
->>  	u8 fp_start;
->> @@ -107,6 +117,8 @@ struct dispc_features {
->>  
->>  	u32 buffer_size_unit;
->>  	u32 burst_size_unit;
->> +
->> +	struct register_field *reg_fields;
->>  };
->>  
->>  #define DISPC_MAX_NR_FIFOS 5
->> @@ -1150,7 +1162,8 @@ static void dispc_init_fifos(void)
->>  
->>  	unit = dispc.feat->buffer_size_unit;
->>  
->> -	dss_feat_get_reg_field(FEAT_REG_FIFOSIZE, &start, &end);
->> +	start = dispc.feat->reg_fields[FEAT_REG_FIFOSIZE].start;
->> +	end = dispc.feat->reg_fields[FEAT_REG_FIFOSIZE].end;
->>  
->>  	for (fifo = 0; fifo < dispc.feat->num_fifos; ++fifo) {
->>  		size = REG_GET(DISPC_OVL_FIFO_SIZE_STATUS(fifo), start, end);
->> @@ -1214,8 +1227,10 @@ void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high)
->>  	low /= unit;
->>  	high /= unit;
->>  
->> -	dss_feat_get_reg_field(FEAT_REG_FIFOHIGHTHRESHOLD, &hi_start, &hi_end);
->> -	dss_feat_get_reg_field(FEAT_REG_FIFOLOWTHRESHOLD, &lo_start, &lo_end);
->> +	hi_start = dispc.feat->reg_fields[FEAT_REG_FIFOHIGHTHRESHOLD].start;
->> +	hi_end = dispc.feat->reg_fields[FEAT_REG_FIFOHIGHTHRESHOLD].end;
->> +	lo_start = dispc.feat->reg_fields[FEAT_REG_FIFOLOWTHRESHOLD].start;
->> +	lo_end = dispc.feat->reg_fields[FEAT_REG_FIFOLOWTHRESHOLD].end;
-> 
-> I think these are quite verbose. Perhaps a helper function which does
-> the same as dss_feat_get_reg_field() would be better. Or alternatively,
-> maybe something like:
-> 
-> const struct dss_reg_field *hi_field > &dispc.feat->reg_fields[FEAT_REG_FIFOHIGHTHRESHOLD];
-> 
-> and then use "hi_field.start" instead of hi_start.
-> 
-> Or something else that makes the above easier to read.
+>>  Tomi
+>>
+>>
+>=20
+> register_field appears to be a more generic a name rather than
+> dss_reg_field. Also I was thinking to initialise
 
-OK.
+Yes, register_field is a more generic name, and that's one reason I
+don't suggest using it. There's a possibility of name clash if some
+common linux framework would use a similar name. So dss_reg_field refers
+to a register field, used by (omap)dss.
 
-> 
->> diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
->> index 84a7f6a..aa273d8 100644
->> --- a/drivers/video/omap2/dss/dss.h
->> +++ b/drivers/video/omap2/dss/dss.h
->> @@ -143,6 +143,10 @@ struct reg_field {
->>  	u8 low;
->>  };
->>  
->> +struct register_field {
->> +	u8 start, end;
->> +};
->> +
-> 
-> We already have the dss_reg_field struct. I think it's better to move
-> that to dss.h, and use it, instead of creating an exact duplicate.
-> 
->  Tomi
-> 
-> 
+It could also be renamed to omapdss_reg_field, but that's a bit longer.
+But perhaps naming it omapdss_reg_field would separate it better from
+dss_reg_fields.
 
-register_field appears to be a more generic a name rather than
-dss_reg_field. Also I was thinking to initialise
+ Tomi
 
-struct dispc_reg_fields {
-	struct register_field firhinc;
-	struct register_field firvinc;
-	struct register_field fifo_low_threshold;
-	...
-};
- similarly, dss_reg_fields and dsi_reg_fields from register_field.
 
--- 
-Chandrabhanu Mahapatra
-Texas Instruments India Pvt. Ltd.
+
+--------------enig9505916DAAC0D005FCE9530D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJQuImjAAoJEPo9qoy8lh71cFgQAKa5tprsW2ATmSNZIKL32v+q
+TxiqFNAyfHFuUN/9F9SLyuGFx7QYxawVasYNYNrVbHxwl82oC+4H3U6BmyhnnqlC
+qCkq6V76jz8qxfjm5TVVLO14ed5SvQgJMXebEjWk/sOHlH5p1q7KYO47Bwbra3Mw
+LRPeJzf29pOYKgd9OpPFpzUw25yXu9CtbJmAOoARYFQ1GV9Jy7XvVpvEq6SHoP7w
+3yRl+GcA0jzMS3I9vo5AaWVSvTz5vSOYG2n2sUFimQKgiUK9L3dNqqFd8ZiUmXdW
+RVAZnm2ppGsO/NN4qyWGvoG1RvUK1dY5wy5GXivnGVKvc4bKFEUMCe4Vbr7ncqKH
+GpX+acArjO72KxRQMuN28xGITJCmr4LvP1st2zBaoMQZChmMt1kyh1PUTMZcSZbb
+ZCN3Gtd27LyG30BuQOFjz6UGEi8yXAjVgZKGrhtHhcJDSUm7S+1rY25VQ2J/ghTs
+Jgcgvi30cZwe+J8yKpHsTuKgBuOTy+vLzV/cBoz+Ua65WHvTBrb9SuhfdLBxkJqE
+PgqQKJ0r5tbYQKN+TFOc0uIhBx1+x6LvJwj7Xpump/RtNwjfD3jtaWEErlaa0X6Z
+e2lSFyjPk7oFzBVOxHnX+IdEoVLHSYSmmchPxZkJbbxePTgO6LcxFuqJ5VUeeqCr
+ia7eLLnZZeEzd5EFJuPC
+=Zcfd
+-----END PGP SIGNATURE-----
+
+--------------enig9505916DAAC0D005FCE9530D--

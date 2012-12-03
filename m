@@ -1,108 +1,112 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Tue, 18 Dec 2012 17:04:15 +0000
-Subject: [PATCHv16 6/7] drm_modes: add videomode helpers
-Message-Id: <1355850256-16135-7-git-send-email-s.trumtrar@pengutronix.de>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Mon, 03 Dec 2012 06:41:26 +0000
+Subject: Re: [PATCH 2/7] OMAPDSS: DISPC: Move DISPC specific dss_reg_fields to dispc_features
+Message-Id: <50BC46C6.3050707@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1355850256-16135-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1355850256-16135-1-git-send-email-s.trumtrar@pengutronix.de>
+References: <cover.1354086150.git.cmahapatra@ti.com> <a5bbbc9af3ef5ca2636d3c4dea6cbbe9834e0f62.1354086150.git.cmahapatra@ti.com> <50B7528C.1090507@ti.com>
+In-Reply-To: <50B7528C.1090507@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>, Rob Clark <robdclark@gmail.com>, Leela Krishna Amudala <leelakrishna.a@gmail.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Add conversion from videomode to drm_display_mode
+On Thursday 29 November 2012 05:48 PM, Tomi Valkeinen wrote:
+> On 2012-11-28 12:41, Chandrabhanu Mahapatra wrote:
+>> The register fields in dss_reg_fields specific to DISPC are moved from struct
+>> omap_dss_features to corresponding dispc_reg_fields, initialized in struct
+>> dispc_features, thereby enabling local access.
+>>
+>> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+>> ---
+>>  drivers/video/omap2/dss/dispc.c        |   87 ++++++++++++++++++++++++++++----
+>>  drivers/video/omap2/dss/dss.h          |    4 ++
+>>  drivers/video/omap2/dss/dss_features.c |   28 ----------
+>>  drivers/video/omap2/dss/dss_features.h |    7 ---
+>>  4 files changed, 80 insertions(+), 46 deletions(-)
+>>
+>> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+>> index 9f259ba..21fc522 100644
+>> --- a/drivers/video/omap2/dss/dispc.c
+>> +++ b/drivers/video/omap2/dss/dispc.c
+>> @@ -80,6 +80,16 @@ struct dispc_irq_stats {
+>>  	unsigned irqs[32];
+>>  };
+>>  
+>> +enum dispc_feat_reg_field {
+>> +	FEAT_REG_FIRHINC,
+>> +	FEAT_REG_FIRVINC,
+>> +	FEAT_REG_FIFOLOWTHRESHOLD,
+>> +	FEAT_REG_FIFOHIGHTHRESHOLD,
+>> +	FEAT_REG_FIFOSIZE,
+>> +	FEAT_REG_HORIZONTALACCU,
+>> +	FEAT_REG_VERTICALACCU,
+>> +};
+>> +
+>>  struct dispc_features {
+>>  	u8 sw_start;
+>>  	u8 fp_start;
+>> @@ -107,6 +117,8 @@ struct dispc_features {
+>>  
+>>  	u32 buffer_size_unit;
+>>  	u32 burst_size_unit;
+>> +
+>> +	struct register_field *reg_fields;
+>>  };
+> 
+> Hmm, would it be simpler to have an explicit struct for the reg fields.
+> I mean something like:
+> 
+> struct dispc_reg_fields {
+> 	struct register_field firhinc;
+> 	struct register_field firvinc;
+> 	struct register_field fifo_low_threshold;
+> 	...
+> };
+> 
+> Then accessing it would be
+> 
+> dispc.feat->reg_fields.firhinc.start;
+> 
+> instead of
+> 
+> dispc.feat->reg_fields[FEAT_REG_FIFOSIZE].start;
+> 
+> Not a big difference, but I don't see any benefit in having an array of
+> reg fields here.
+> 
+>  Tomi
+> 
+> 
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
-Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
----
- drivers/gpu/drm/drm_modes.c |   37 +++++++++++++++++++++++++++++++++++++
- include/drm/drmP.h          |    5 +++++
- 2 files changed, 42 insertions(+)
+I was thinking to move reg_fields into the dispc_feats structure as
 
-diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index 59450f3..184a22d 100644
---- a/drivers/gpu/drm/drm_modes.c
-+++ b/drivers/gpu/drm/drm_modes.c
-@@ -35,6 +35,7 @@
- #include <linux/export.h>
- #include <drm/drmP.h>
- #include <drm/drm_crtc.h>
-+#include <video/videomode.h>
- 
- /**
-  * drm_mode_debug_printmodeline - debug print a mode
-@@ -504,6 +505,42 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, int vdisplay, int vrefresh,
- }
- EXPORT_SYMBOL(drm_gtf_mode);
- 
-+#if IS_ENABLED(CONFIG_VIDEOMODE)
-+int drm_display_mode_from_videomode(const struct videomode *vm,
-+				    struct drm_display_mode *dmode)
-+{
-+	dmode->hdisplay = vm->hactive;
-+	dmode->hsync_start = dmode->hdisplay + vm->hfront_porch;
-+	dmode->hsync_end = dmode->hsync_start + vm->hsync_len;
-+	dmode->htotal = dmode->hsync_end + vm->hback_porch;
-+
-+	dmode->vdisplay = vm->vactive;
-+	dmode->vsync_start = dmode->vdisplay + vm->vfront_porch;
-+	dmode->vsync_end = dmode->vsync_start + vm->vsync_len;
-+	dmode->vtotal = dmode->vsync_end + vm->vback_porch;
-+
-+	dmode->clock = vm->pixelclock / 1000;
-+
-+	dmode->flags = 0;
-+	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
-+		dmode->flags |= DRM_MODE_FLAG_PHSYNC;
-+	else if (vm->dmt_flags & VESA_DMT_HSYNC_LOW)
-+		dmode->flags |= DRM_MODE_FLAG_NHSYNC;
-+	if (vm->dmt_flags & VESA_DMT_VSYNC_HIGH)
-+		dmode->flags |= DRM_MODE_FLAG_PVSYNC;
-+	else if (vm->dmt_flags & VESA_DMT_VSYNC_LOW)
-+		dmode->flags |= DRM_MODE_FLAG_NVSYNC;
-+	if (vm->data_flags & DISPLAY_FLAGS_INTERLACED)
-+		dmode->flags |= DRM_MODE_FLAG_INTERLACE;
-+	if (vm->data_flags & DISPLAY_FLAGS_DOUBLESCAN)
-+		dmode->flags |= DRM_MODE_FLAG_DBLSCAN;
-+	drm_mode_set_name(dmode);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
-+#endif
-+
- /**
-  * drm_mode_set_name - set the name on a mode
-  * @mode: name will be set in this mode
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index 3fd8280..5fbb0fe 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -85,6 +85,8 @@ struct module;
- struct drm_file;
- struct drm_device;
- 
-+struct videomode;
-+
- #include <drm/drm_os_linux.h>
- #include <drm/drm_hashtab.h>
- #include <drm/drm_mm.h>
-@@ -1454,6 +1456,9 @@ extern struct drm_display_mode *
- drm_mode_create_from_cmdline_mode(struct drm_device *dev,
- 				  struct drm_cmdline_mode *cmd);
- 
-+extern int drm_display_mode_from_videomode(const struct videomode *vm,
-+					   struct drm_display_mode *dmode);
-+
- /* Modesetting support */
- extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
- extern void drm_vblank_post_modeset(struct drm_device *dev, int crtc);
+	.burst_size_unit	=	8,
+	.reg_fields		=	{
+		.firhinc			= { 12,  0 },
+		.firvinc			= { 28, 16 },
+		.fifo_low_thresh		= { 11,  0 },
+		.fifo_high_thresh		= { 27, 16 },
+		.fifosize			= { 10,  0 },
+		.hori_accu			= {  9,  0 },
+		.vert_accu			= { 25, 16 },
+	},
+
+This would give us dispc.feat->reg_fields.firhinc.start;
+but at the same time would create duplicate information for
+omap34xx_rev1_0_dispc_feats and omap34xx_rev3_0_dispc_feats. However,
+this duplication never occurs anywhere else in dss.c or dsi.c.
+
+If we still go with the older approach of having dispc_reg_fields
+outside dispc_feats the only way  it works is
+
+.reg_fields		=	&omap2_dispc_reg_fields
+
+which changes as dispc.feat->reg_fields->firhinc.start;
+
+but avoids duplicate information. Both approaches seem good enough to me.
+
+
 -- 
-1.7.10.4
-
+Chandrabhanu Mahapatra
+Texas Instruments India Pvt. Ltd.

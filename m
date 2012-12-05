@@ -1,85 +1,145 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Mon, 17 Dec 2012 18:29:39 +0000
-Subject: Re: [GIT PULL] fbdev changes for 3.8
-Message-Id: <20121217182939.GV4989@atomide.com>
+From: Leela Krishna Amudala <l.krishna@samsung.com>
+Date: Wed, 05 Dec 2012 07:55:53 +0000
+Subject: Re: [PATCHv15 0/7] of: add display helper
+Message-Id: <CAL1wa8fJ-mCsQFFo5wMLDRcUoOyWvTvFDLKsrrG9k-mxQTsTbg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <50CAFDFF.3070802@ti.com>
- <CA+55aFz9+3mOZcjJ9C-izKkidT9mxeO7xUubJER0OTjcZjE=2A@mail.gmail.com>
- <20121215222431.GA7153@redhat.com>
- <20121216174613.GA18490@atomide.com>
- <20121216203536.GR4989@atomide.com>
- <20121217060032.GB13300@core.coreip.homeip.net>
-In-Reply-To: <20121217060032.GB13300@core.coreip.homeip.net>
+References: <1353920848-1705-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1353920848-1705-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Dave Jones <davej@redhat.com>, Linus Torvalds <torvalds@linux-foundation.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap <linux-omap@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Felipe Balbi <balbi@ti.com>, Evgeniy Polyakov <zbr@ioremap.net>, Arnd Bergmann <arnd@arndb.de>
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
 
-* Dmitry Torokhov <dmitry.torokhov@gmail.com> [121216 22:03]:
-> On Sun, Dec 16, 2012 at 12:35:37PM -0800, Tony Lindgren wrote:
-> > * Tony Lindgren <tony@atomide.com> [121216 09:49]:
-> > > * Dave Jones <davej@redhat.com> [121215 14:27]:
-> > > > On Sat, Dec 15, 2012 at 01:11:04PM -0800, Linus Torvalds wrote:
-> > > >  > On Fri, Dec 14, 2012 at 2:22 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> > > >  > > Hi Linus,
-> > > >  > >
-> > > >  > > Florian, the fbdev maintainer, has been very busy lately, so I offered to send
-> > > >  > > the pull request for fbdev for this merge window.
-> > > >  > 
-> > > >  > Pulled. However, with this I get the Kconfig question
-> > > >  > 
-> > > >  >    OMAP2+ Display Subsystem support (OMAP2_DSS) [N/m/y/?] (NEW)
-> > > >  > 
-> > > >  > which doesn't make a whole lot of sense on x86-64, unless there's
-> > > >  > something about OMAP2 that I don't know.
-> > > >  > 
-> > > >  > So I'd suggest making that OMAP2_DSS be dependent on OMAP2. Or at
-> > > >  > least ARM. Because showing it to anybody else seems insane.
-> > > >  > 
-> > > >  > Same goes for FB_OMAP2 for that matter. I realize that it's likely
-> > > >  > nice to get compile testing for this on x86-64 too, but if that's the
-> > > >  > intent, we need to think about it some more. I don't think it's good
-> > > >  > to ask actual normal users questions like this just for compile
-> > > >  > coverage.
-> > > > 
-> > > > This OMAP stuff has been creeping into x86 builds for a while.
-> > > > Grep from my current build config ..
-> > > > 
-> > > > # CONFIG_OMAP_OCP2SCP is not set
-> > > > # CONFIG_KEYBOARD_OMAP4 is not set
-> > > > # CONFIG_OMAP2_DSS is not set
-> > > > # CONFIG_OMAP_USB2 is not set
-> > > > 
-> > > > There was some other arm-ism that does the same that I' currently forgetting,
-> > > > or maybe that got fixed..
-> > > 
-> > > Those are all omap internal devices and should be all marked with
-> > > depends on ARCH_OMAP2PLUS.
-> > > 
-> > > It's a different story for external devices that may be used on other
-> > > architectures.
-> > > 
-> > > I only came up with one reason to compile internal devices for other
-> > > architectures: In some cases the driver subsystem maintainer may want to
-> > > be able to compile test subsystem wide changes without having to compile
-> > > for each target separately. But for those cases it's trivial to carry a
-> > > compile test patch that just drops the depends Kconfig entries.
-> > 
-> > And here's a patch to limit the omap drivers above to omap only.
-> 
-> Do you think we could add a new symbol to debug options, something like
-> COMPILE_COVERAGE, and have drivers that can be compiled on platforms
-> other than ones having the hardware to do
-> 
-> 	depend on ARCH_XXX || COMPILE_CONVERAGE
-> 
-> This way people who want to do compile coverage do not have to carry
-> patches and allyesconfig will pick this right up.
+Hello Steffen,
 
-I like that idea. Looks like Linus already applied the earlier
-patch, I'll do a patch for COMPILE_COVERAGE separately.
+Any update on version 16 ?
 
-Regards,
+Best Wishes,
+Leela Krishna Amudala.
 
-Tony
+On Mon, Nov 26, 2012 at 2:37 PM, Steffen Trumtrar
+<s.trumtrar@pengutronix.de> wrote:
+> Hi!
+>
+> Changes since v14:
+>         - fix "const struct *" warning
+>                 (reported by: Leela Krishna Amudala <l.krishna@samsung.com>)
+>         - return -EINVAL when htotal or vtotal are zero
+>         - remove unreachable code in of_get_display_timings
+>         - include headers in .c files and not implicit in .h
+>         - sort includes alphabetically
+>         - fix lower/uppercase in binding documentation
+>         - rebase onto v3.7-rc7
+>
+> Changes since v13:
+>         - fix "const struct *" warning
+>                 (reported by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>)
+>         - prevent division by zero in fb_videomode_from_videomode
+>
+> Changes since v12:
+>         - rename struct display_timing to via_display_timing in via subsystem
+>         - fix refreshrate calculation
+>         - fix "const struct *" warnings
+>                 (reported by: Manjunathappa, Prakash <prakash.pm@ti.com>)
+>         - some CodingStyle fixes
+>         - rewrite parts of commit messages and display-timings.txt
+>         - let display_timing_get_value get all values instead of just typical
+>
+> Changes since v11:
+>         - make pointers const where applicable
+>         - add reviewed-by Laurent Pinchart
+>
+> Changes since v10:
+>         - fix function name (drm_)display_mode_from_videomode
+>         - add acked-by, reviewed-by, tested-by
+>
+> Changes since v9:
+>         - don't leak memory when previous timings were correct
+>         - CodingStyle fixes
+>         - move blank lines around
+>
+> Changes since v8:
+>         - fix memory leaks
+>         - change API to be more consistent (foo_from_bar(struct bar, struct foo))
+>         - include headers were necessary
+>         - misc minor bufixe
+>
+> Changes since v7:
+>         - move of_xxx to drivers/video
+>         - remove non-binding documentation from display-timings.txt
+>         - squash display_timings and videomode in one patch
+>         - misc minor fixes
+>
+> Changes since v6:
+>         - get rid of some empty lines etc.
+>         - move functions to their subsystems
+>         - split of_ from non-of_ functions
+>         - add at least some kerneldoc to some functions
+>
+> Changes since v5:
+>         - removed all display stuff and just describe timings
+>
+> Changes since v4:
+>         - refactored functions
+>
+> Changes since v3:
+>         - print error messages
+>         - free alloced memory
+>         - general cleanup
+>
+> Changes since v2:
+>         - use hardware-near property-names
+>         - provide a videomode structure
+>         - allow ranges for all properties (<min,typ,max>)
+>         - functions to get display_mode or fb_videomode
+>
+>
+> Steffen Trumtrar (7):
+>   viafb: rename display_timing to via_display_timing
+>   video: add display_timing and videomode
+>   video: add of helper for display timings/videomode
+>   fbmon: add videomode helpers
+>   fbmon: add of_videomode helpers
+>   drm_modes: add videomode helpers
+>   drm_modes: add of_videomode helpers
+>
+>  .../devicetree/bindings/video/display-timing.txt   |  107 ++++++++++
+>  drivers/gpu/drm/drm_modes.c                        |   70 +++++++
+>  drivers/video/Kconfig                              |   21 ++
+>  drivers/video/Makefile                             |    4 +
+>  drivers/video/display_timing.c                     |   24 +++
+>  drivers/video/fbmon.c                              |   93 +++++++++
+>  drivers/video/of_display_timing.c                  |  219 ++++++++++++++++++++
+>  drivers/video/of_videomode.c                       |   54 +++++
+>  drivers/video/via/hw.c                             |    6 +-
+>  drivers/video/via/hw.h                             |    2 +-
+>  drivers/video/via/lcd.c                            |    2 +-
+>  drivers/video/via/share.h                          |    2 +-
+>  drivers/video/via/via_modesetting.c                |    8 +-
+>  drivers/video/via/via_modesetting.h                |    6 +-
+>  drivers/video/videomode.c                          |   44 ++++
+>  include/drm/drmP.h                                 |   13 ++
+>  include/linux/display_timing.h                     |  104 ++++++++++
+>  include/linux/fb.h                                 |   12 ++
+>  include/linux/of_display_timing.h                  |   20 ++
+>  include/linux/of_videomode.h                       |   18 ++
+>  include/linux/videomode.h                          |   54 +++++
+>  21 files changed, 870 insertions(+), 13 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/video/display-timing.txt
+>  create mode 100644 drivers/video/display_timing.c
+>  create mode 100644 drivers/video/of_display_timing.c
+>  create mode 100644 drivers/video/of_videomode.c
+>  create mode 100644 drivers/video/videomode.c
+>  create mode 100644 include/linux/display_timing.h
+>  create mode 100644 include/linux/of_display_timing.h
+>  create mode 100644 include/linux/of_videomode.h
+>  create mode 100644 include/linux/videomode.h
+>
+> --
+> 1.7.10.4
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html

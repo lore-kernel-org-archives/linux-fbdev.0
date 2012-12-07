@@ -1,91 +1,269 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Wed, 05 Dec 2012 10:28:02 +0000
-Subject: [PATCH V2 0/6] OMAPDSS: Cleanup omap_dss_features
-Message-Id: <cover.1354702077.git.cmahapatra@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 07 Dec 2012 11:55:08 +0000
+Subject: [PATCH 4/5] OMAPDSS: manage output-dssdev connection in output drivers
+Message-Id: <1354881309-17625-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1354086150.git.cmahapatra@ti.com>
-In-Reply-To: <cover.1354086150.git.cmahapatra@ti.com>
+References: <1354881309-17625-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1354881309-17625-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi everyone,
-this patch series aims at cleaning up of dss_features.c by moving features to
-respective submodule drivers.
+We currently attach an output to a dssdev in the initialization code for
+dssdevices in display.c. This works, but doesn't quite make sense: an
+output entity represents (surprisingly) an output of DSS, which is
+managed by an output driver. The output driver also handles adding new
+dssdev's for that particular output.
 
-The 1st patch
- * moved struct omap_dss_features members burst_size_unit and buffer_size_unit
-   to dispc_features
-The 2nd patch
- * added definition of struct omapdss_reg_field
- * moved data from dss_reg_fields to dispc_reg_fields
-The 3rd patch
- * added definition of struct omapdss_param_range
- * moved data from dss_param_range to dispc_param_ranges
-The 4th patch
- * created struct feats and initialized dsi_feats
- * moved data from dss_reg_fields to dsi_reg_fields
- * created dsi_init_features() to initialize dsi_feats
-The 5th patch
- * moved data from dss_param_range to dsi_param_range
-The 6th patch
- * added members fld_dispc_clk_switch and dss_fck_max to struct dss_features
-   and initialized corresponding dss_feats
- * removed definition of dss_reg_field and dss_param_range and their respective
-   initializations as omap2_dss_reg_fields, omap3_dss_reg_fields, etc.
- * removed members reg_fields and num_reg_fields from struct omap_dss_features
- * removed enum dss_feat_reg_field and dss_range_param and corresponding
-   initializations omap2_dss_param_range, omap3_dss_param_range etc.
- * removed function dss_feat_get_reg_field(), dss_feat_get_param_min() and
-   dss_feat_get_param_max()
+It makes more sense to make the output-dssdev connection in the output
+driver. This is also in line with common display framework.
 
-Changes from V1
- * 1st patch: added comments "in bytes" for new members burst_size_unit and
-		buffer_size_unit
- * 2nd patch: renamed register_field to omapdss_reg_field
-	      removed definition of enum dispc_feat_reg_field
-	      created and initialized struct dispc_reg_fields
- * 3rd patch: renamed struct param_range to omapdss_param_range
-	      removed definition of enum dispc_range_param
-	      created and initialized struct dispc_param_ranges
- * 4th patch: removed enum dsi_feat_reg_field
-	      created and initialized struct dsi_reg_fields
- * 5th patch: removed enum dsi_range_param
-	      created and initialized struct dsi_param_ranges
-	      added member dss_fck corresponding to FEAT_PARAM_DSS_FCK
- * 6th patch: removed struct dss_param_range and enum dss_range_param
-	      removed functions dss_feat_get_param_min() and
-			dss_feat_get_param_max()
- * 7th patch has been removed
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/display.c |   12 ------------
+ drivers/video/omap2/dss/dpi.c     |    9 +++++++++
+ drivers/video/omap2/dss/dsi.c     |   10 ++++++++++
+ drivers/video/omap2/dss/dss.h     |    1 -
+ drivers/video/omap2/dss/hdmi.c    |    9 +++++++++
+ drivers/video/omap2/dss/output.c  |   33 ---------------------------------
+ drivers/video/omap2/dss/rfbi.c    |    9 +++++++++
+ drivers/video/omap2/dss/sdi.c     |    9 +++++++++
+ drivers/video/omap2/dss/venc.c    |    9 +++++++++
+ 9 files changed, 55 insertions(+), 46 deletions(-)
 
-All your comments and suggestions are welcome.
-
-I have based my patches on git://gitorious.org/linux-omap-dss2/linux.git master
-
-Reference Tree:
-git://gitorious.org/linux-omap-dss2/chandrabhanus-linux.git dss_cleanup
-
-Regards,
-Chandrabhanu
-
-Chandrabhanu Mahapatra (6):
-  OMAPDSS: DISPC: Move burst_size and buffer_size to dispc_features
-  OMAPDSS: DISPC: Move DISPC specific dss_reg_fields to dispc_features
-  OMAPDSS: DISPC: Move DISPC specific dss_params to dispc_features
-  OMAPDSS: DSI: Move DSI specific reg_fields to dsi_feats
-  OMAPDSS: DSI: Move DSI specific dss_params to dsi_feats
-  OMAPDSS: DSS: Add members fld_dispc_clk_switch and dss_fck_max
-
- drivers/video/omap2/dss/dispc.c        |  218 +++++++++++++++++++++++---------
- drivers/video/omap2/dss/dsi.c          |  206 ++++++++++++++++++++++++++----
- drivers/video/omap2/dss/dss.c          |   22 +++-
- drivers/video/omap2/dss/dss.h          |    8 ++
- drivers/video/omap2/dss/dss_features.c |  212 -------------------------------
- drivers/video/omap2/dss/dss_features.h |   36 ------
- 6 files changed, 368 insertions(+), 334 deletions(-)
-
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index 008e9ee..05f21b6 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -79,17 +79,8 @@ EXPORT_SYMBOL(omapdss_default_get_timings);
+ int dss_init_device(struct platform_device *pdev,
+ 		struct omap_dss_device *dssdev)
+ {
+-	struct omap_dss_output *out;
+ 	int r;
+ 
+-	out = omapdss_get_output_from_dssdev(dssdev);
+-
+-	r = omapdss_output_set_device(out, dssdev);
+-	if (r) {
+-		DSSERR("failed to connect output to new device\n");
+-		return r;
+-	}
+-
+ 	r = display_init_sysfs(pdev, dssdev);
+ 	if (r) {
+ 		omapdss_output_unset_device(dssdev->output);
+@@ -103,9 +94,6 @@ void dss_uninit_device(struct platform_device *pdev,
+ 		struct omap_dss_device *dssdev)
+ {
+ 	display_uninit_sysfs(pdev, dssdev);
+-
+-	if (dssdev->output)
+-		omapdss_output_unset_device(dssdev->output);
+ }
+ 
+ static int dss_suspend_device(struct device *dev, void *data)
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index c109fa6..d5bc47a 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -477,9 +477,18 @@ static void __init dpi_probe_pdata(struct platform_device *dpidev)
+ 		return;
+ 	}
+ 
++	r = omapdss_output_set_device(&dpi.output, dssdev);
++	if (r) {
++		DSSERR("failed to connect output to new device: %s\n",
++				dssdev->name);
++		dss_put_device(dssdev);
++		return;
++	}
++
+ 	r = dss_add_device(dssdev);
+ 	if (r) {
+ 		DSSERR("device %s register failed: %d\n", dssdev->name, r);
++		omapdss_output_unset_device(&dpi.output);
+ 		dss_put_device(dssdev);
+ 		return;
+ 	}
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index cf32dc7..db9663d 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -5146,6 +5146,7 @@ static struct omap_dss_device * __init dsi_find_dssdev(struct platform_device *p
+ 
+ static void __init dsi_probe_pdata(struct platform_device *dsidev)
+ {
++	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	struct omap_dss_device *plat_dssdev;
+ 	struct omap_dss_device *dssdev;
+ 	int r;
+@@ -5168,9 +5169,18 @@ static void __init dsi_probe_pdata(struct platform_device *dsidev)
+ 		return;
+ 	}
+ 
++	r = omapdss_output_set_device(&dsi->output, dssdev);
++	if (r) {
++		DSSERR("failed to connect output to new device: %s\n",
++				dssdev->name);
++		dss_put_device(dssdev);
++		return;
++	}
++
+ 	r = dss_add_device(dssdev);
+ 	if (r) {
+ 		DSSERR("device %s register failed: %d\n", dssdev->name, r);
++		omapdss_output_unset_device(&dsi->output);
+ 		dss_put_device(dssdev);
+ 		return;
+ 	}
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 4d6f325..bdf8431 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -212,7 +212,6 @@ int dss_ovl_unset_manager(struct omap_overlay *ovl);
+ /* output */
+ void dss_register_output(struct omap_dss_output *out);
+ void dss_unregister_output(struct omap_dss_output *out);
+-struct omap_dss_output *omapdss_get_output_from_dssdev(struct omap_dss_device *dssdev);
+ 
+ /* display */
+ int dss_suspend_all_devices(void);
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 24a2eef..769d082 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -1026,9 +1026,18 @@ static void __init hdmi_probe_pdata(struct platform_device *pdev)
+ 		return;
+ 	}
+ 
++	r = omapdss_output_set_device(&hdmi.output, dssdev);
++	if (r) {
++		DSSERR("failed to connect output to new device: %s\n",
++				dssdev->name);
++		dss_put_device(dssdev);
++		return;
++	}
++
+ 	r = dss_add_device(dssdev);
+ 	if (r) {
+ 		DSSERR("device %s register failed: %d\n", dssdev->name, r);
++		omapdss_output_unset_device(&hdmi.output);
+ 		hdmi_uninit_display(dssdev);
+ 		dss_put_device(dssdev);
+ 		return;
+diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
+index 813f266..1a84b79 100644
+--- a/drivers/video/omap2/dss/output.c
++++ b/drivers/video/omap2/dss/output.c
+@@ -113,36 +113,3 @@ struct omap_dss_output *omap_dss_get_output(enum omap_dss_output_id id)
+ 
+ 	return NULL;
+ }
+-
+-struct omap_dss_output *omapdss_get_output_from_dssdev(struct omap_dss_device *dssdev)
+-{
+-	struct omap_dss_output *out = NULL;
+-	enum omap_dss_output_id id;
+-
+-	switch (dssdev->type) {
+-	case OMAP_DISPLAY_TYPE_DPI:
+-		out = omap_dss_get_output(OMAP_DSS_OUTPUT_DPI);
+-		break;
+-	case OMAP_DISPLAY_TYPE_DBI:
+-		out = omap_dss_get_output(OMAP_DSS_OUTPUT_DBI);
+-		break;
+-	case OMAP_DISPLAY_TYPE_SDI:
+-		out = omap_dss_get_output(OMAP_DSS_OUTPUT_SDI);
+-		break;
+-	case OMAP_DISPLAY_TYPE_VENC:
+-		out = omap_dss_get_output(OMAP_DSS_OUTPUT_VENC);
+-		break;
+-	case OMAP_DISPLAY_TYPE_HDMI:
+-		out = omap_dss_get_output(OMAP_DSS_OUTPUT_HDMI);
+-		break;
+-	case OMAP_DISPLAY_TYPE_DSI:
+-		id = dssdev->phy.dsi.module = 0 ? OMAP_DSS_OUTPUT_DSI1 :
+-					OMAP_DSS_OUTPUT_DSI2;
+-		out = omap_dss_get_output(id);
+-		break;
+-	default:
+-		break;
+-	}
+-
+-	return out;
+-}
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 7bfeb13..ec9fde5 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -999,9 +999,18 @@ static void __init rfbi_probe_pdata(struct platform_device *rfbidev)
+ 		return;
+ 	}
+ 
++	r = omapdss_output_set_device(&rfbi.output, dssdev);
++	if (r) {
++		DSSERR("failed to connect output to new device: %s\n",
++				dssdev->name);
++		dss_put_device(dssdev);
++		return;
++	}
++
+ 	r = dss_add_device(dssdev);
+ 	if (r) {
+ 		DSSERR("device %s register failed: %d\n", dssdev->name, r);
++		omapdss_output_unset_device(&rfbi.output);
+ 		dss_put_device(dssdev);
+ 		return;
+ 	}
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 882ce89..62b5374 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -254,9 +254,18 @@ static void __init sdi_probe_pdata(struct platform_device *sdidev)
+ 		return;
+ 	}
+ 
++	r = omapdss_output_set_device(&sdi.output, dssdev);
++	if (r) {
++		DSSERR("failed to connect output to new device: %s\n",
++				dssdev->name);
++		dss_put_device(dssdev);
++		return;
++	}
++
+ 	r = dss_add_device(dssdev);
+ 	if (r) {
+ 		DSSERR("device %s register failed: %d\n", dssdev->name, r);
++		omapdss_output_unset_device(&sdi.output);
+ 		dss_put_device(dssdev);
+ 		return;
+ 	}
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index e8fddc9..006caf3 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -795,9 +795,18 @@ static void __init venc_probe_pdata(struct platform_device *vencdev)
+ 		return;
+ 	}
+ 
++	r = omapdss_output_set_device(&venc.output, dssdev);
++	if (r) {
++		DSSERR("failed to connect output to new device: %s\n",
++				dssdev->name);
++		dss_put_device(dssdev);
++		return;
++	}
++
+ 	r = dss_add_device(dssdev);
+ 	if (r) {
+ 		DSSERR("device %s register failed: %d\n", dssdev->name, r);
++		omapdss_output_unset_device(&venc.output);
+ 		dss_put_device(dssdev);
+ 		return;
+ 	}
 -- 
-1.7.10
+1.7.10.4
 

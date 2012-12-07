@@ -1,84 +1,79 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 07 Dec 2012 08:49:48 +0000
-Subject: Re: [PATCHv15 2/7] video: add display_timing and videomode
-Message-Id: <50C1ADAC.2080403@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig9CEB17DFA3B7CC555C12C4B7"
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Fri, 07 Dec 2012 14:12:48 +0000
+Subject: Re: [PATCHv15 3/7] video: add of helper for display timings/videomode
+Message-Id: <1354889568.2533.118.camel@pizza.hi.pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1353920848-1705-1-git-send-email-s.trumtrar@pengutronix.de>
- <1353920848-1705-3-git-send-email-s.trumtrar@pengutronix.de>
- <50B36286.7010704@ti.com> <20121126153958.GA30791@pengutronix.de>
- <20121206100718.C5C263E0EA4@localhost>
-In-Reply-To: <20121206100718.C5C263E0EA4@localhost>
-To: Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+	 <1353920848-1705-4-git-send-email-s.trumtrar@pengutronix.de>
+	 <50B37EEC.6090808@ti.com> <20121126161055.GB30791@pengutronix.de>
+	 <50B39F46.7050808@ti.com>
+In-Reply-To: <50B39F46.7050808@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, linux-fbdev@vger.kernel.org, kernel@pengutronix.de, David Airlie <airlied@linux.ie>, devicetree-discuss@lists.ozlabs.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org
 
---------------enig9CEB17DFA3B7CC555C12C4B7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On 2012-12-06 12:07, Grant Likely wrote:
-> On Mon, 26 Nov 2012 16:39:58 +0100, Steffen Trumtrar <s.trumtrar@pengut=
-ronix.de> wrote:
->> On Mon, Nov 26, 2012 at 02:37:26PM +0200, Tomi Valkeinen wrote:
->>> On 2012-11-26 11:07, Steffen Trumtrar wrote:
->>>
->>>> +/*
->>>> + * Subsystem independent description of a videomode.
->>>> + * Can be generated from struct display_timing.
->>>> + */
->>>> +struct videomode {
->>>> +	u32 pixelclock;		/* pixelclock in Hz */
->>>
->>> I don't know if this is of any importance, but the linux clock framew=
-ork
->>> manages clock rates with unsigned long. Would it be better to use the=
+Am Montag, den 26.11.2012, 18:56 +0200 schrieb Tomi Valkeinen:
+> On 2012-11-26 18:10, Steffen Trumtrar wrote:
+> > Hi,
+> > 
+> > On Mon, Nov 26, 2012 at 04:38:36PM +0200, Tomi Valkeinen wrote:
+> 
+> >>> +optional properties:
+> >>> + - hsync-active: hsync pulse is active low/high/ignored
+> >>> + - vsync-active: vsync pulse is active low/high/ignored
+> >>> + - de-active: data-enable pulse is active low/high/ignored
+> >>> + - pixelclk-inverted: pixelclock is inverted (active on falling edge)/
+> >>> +				non-inverted (active on rising edge)/
+> >>> +				     ignored (ignore property)
+> >>
+> >> I think hsync-active and vsync-active are clear, and commonly used, and
+> >> they are used for both drm and fb mode conversions in later patches.
+> >>
+> >> de-active is not used in drm and fb mode conversions, but I think it's
+> >> also clear.
+> >>
+> >> pixelclk-inverted is not used in the mode conversions. It's also a bit
+> >> unclear to me. What does it mean that pix clock is "active on rising
+> >> edge"? The pixel data is driven on rising edge? How about the sync
+> >> signals and DE, when are they driven? Does your HW have any settings
+> >> related to those?
+> >>
+> > 
+> > Those are properties commonly found in display specs. That is why they are here.
+> > If the GPU does not support the property it can be omitted.
+> 
+> So what does the pixelclk-inverted mean? Normally the SoC drives pixel
+> data on rising edge, and the panel samples it at falling edge? And
+> vice-versa for inverted? Or the other way around?
+>
+> When is hsync/vsync set? On rising or falling edge of pclk?
+>
+> My point here is that the pixelclk-inverted is not crystal clear thing,
+> like the hsync/vsync/de-active values are.
+>
+> And while thinking about this, I realized that the meaning of
+> pixelclk-inverted depends on what component is it applied to. Presuming
+> normal pixclk means "pixel data on rising edge", the meaning of that
+> depends on do we consider the SoC or the panel. The panel needs to
+> sample the data on the other edge from the one the SoC uses to drive the
+> data.
+> 
+> Does the videomode describe the panel, or does it describe the settings
+> programmed to the SoC?
 
->>> same type here?
->>>
->>
->> Hm, I don't know. Anyone? u32 should be large enough for a pixelclock.=
+How about calling this property pixelclk-active, active high meaning
+driving pixel data on rising edges and sampling on falling edges (the
+pixel clock is high between driving and sampling the data), and active
+low meaning driving on falling edges and sampling on rising edges?
+It is the same from the SoC perspective and from the panel perspective,
+and it mirrors the usage of the other *-active properties.
 
->=20
-> 4GHz is a pretty large pixel clock. I have no idea how conceivable it i=
-s
-> that hardware will get to that speed. However, if it will ever be
-> larger, then you'll need to account for that in the DT binding so that
-> the pixel clock can be specified using 2 cells.
+[...]
 
-I didn't mention the type because of the size of the field, but only
-because to me it makes sense to use the same type for clock rates all
-around the kernel. In many cases the value will be passed to clk_set_rate=
-().
+regards
+Philipp
 
-I can't see any real issues with u32, though.
-
- Tomi
-
-
-
---------------enig9CEB17DFA3B7CC555C12C4B7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJQwa2sAAoJEPo9qoy8lh71pC0P/jCcHcXSVdXCy26V/ZjkV4kj
-s11XdvLyA8ozI6WRGbkpIhaX2iPkS59DMJqwa4W23J16yUy+wVOa7kWSSmFFD5sf
-X7oU7Ac2DpqJ+X9Lg23GHDfZ3343lnNQRYWjM5sp68zZfUi0OkbAPviAvMv06tzi
-SQn/GCMXlFMKunfNRgxRjTzAdJfEaJrmZEMXftR/M5OXrUawnoAFIGFEjdNuGrbp
-iCcb4POx8pJgqY0k1kULoMTeper1hMDUpfIphKedUMtSMRvFaFo3LfSH9tFIPCgd
-EksXy38XpJygJMfyVQudvaTF+ryYaKkNT+ouRdhslvPkzaAeZxm2Mbl3idJy6GKa
-RrsCpwtIcdBx/rrUam4pv5NAHMpkLP432Q8IWlcYexQN/ZUbOOORCQi8yluURcFC
-rfAFFmKQNrQ+s1XYA8drJRW8LMgMJ5jlZvL97zRcpIZWLB/oYfKj0p432SOPufNm
-Lrze0PxtoucJ92KLpW+akS/nrPPkhfjuXRepjdX5J762JUpwnVdOfCg9aUKmpW9/
-bRUed5rOdGhPyKOcjCYiJGAaVt0EDLZ8M5GxMsWpQ8JQccQYuKYqldWKPtrr5Ac6
-2GRZDHrf5aG9mrsFbpN/XMp3dENTetGNhvXA5IfU1aR5Z1FDDZtFTgYc8RwO5wxe
-5ADwylE9JJgYzU9HR+58
-=pisc
------END PGP SIGNATURE-----
-
---------------enig9CEB17DFA3B7CC555C12C4B7--

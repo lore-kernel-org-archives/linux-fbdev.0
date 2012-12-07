@@ -1,57 +1,47 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 07 Dec 2012 11:55:07 +0000
-Subject: [PATCH 3/5] OMAPFB: remove warning when trying to alloc at certain paddress
-Message-Id: <1354881309-17625-3-git-send-email-tomi.valkeinen@ti.com>
+From: Afzal Mohammed <afzal@ti.com>
+Date: Fri, 07 Dec 2012 11:55:18 +0000
+Subject: [PATCH 00/10] video: da8xx-fb: runtime timing configuration and cleanup
+Message-Id: <cover.1354874432.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1354881309-17625-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1354881309-17625-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Vaibhav Hiremath <hvaibhav@ti.com>, Sekhar Nori <nsekhar@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-omapfb gives a WARN_ONCE if a predefined physical address is given for
-allocating the framebuffer memory, as this is not currently supported.
+Hi,
 
-However, the same warning happens if omapfb fails to allocate memory
-during runtime, as when the allocation has failed, omapfb tries to
-re-allocate the old memory with the physical address of the old memory
-area.
+This series makes da8xx-fb driver (device found on DaVinci and AM335x)
+capable of handling runtime timing configuration by adding fb_set_par.
 
-Remove the warning from omapfb_alloc_fbmem, as it serves no purpose on
-the failure case above, and move it to omapfb_parse_vram_param, so that
-we only warn if physical address is given via omapfb module parameters.
+The last change adds actual fb_set_par support. Other preceeding
+changes makes the way clear for it as well as does certain cleanup's
+on the way.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/omapfb/omapfb-main.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+This has been tested on DA850 EVM.
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 28b2a21..1df973e 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -1391,9 +1391,6 @@ static int omapfb_alloc_fbmem(struct fb_info *fbi, unsigned long size,
- 
- 	size = PAGE_ALIGN(size);
- 
--	WARN_ONCE(paddr,
--		"reserving memory at predefined address not supported\n");
--
- 	dma_set_attr(DMA_ATTR_WRITE_COMBINE, &attrs);
- 
- 	if (ofbi->rotation_type = OMAP_DSS_ROT_VRFB)
-@@ -1521,6 +1518,9 @@ static int omapfb_parse_vram_param(const char *param, int max_entries,
- 
- 		}
- 
-+		WARN_ONCE(paddr,
-+			"reserving memory at predefined address not supported\n");
-+
- 		paddrs[fbnum] = paddr;
- 		sizes[fbnum] = size;
- 
+Not sure whether Florian or Tomi would be handling fbdev patches after
+the coming merge window, as Tomi is queueing fbdev patches currently,
+these changes has been made over Tomi Valkeinen's for-next branch.
+
+Regards
+Afzal
+
+Afzal Mohammed (10):
+  video: da8xx-fb: fb_check_var enhancement
+  video: da8xx-fb: simplify lcd_reset
+  video: da8xx-fb: use modedb helper to update var
+  video: da8xx-fb: remove unneeded "var" initialization
+  video: da8xx-fb: store current display information
+  video: da8xx-fb: store clk rate even if !CPUFREQ
+  video: da8xx-fb: pix clk and clk div handling cleanup
+  video: da8xx-fb: store struct device *
+  video: da8xx-fb: report correct pixclock
+  video: da8xx-fb: fb_set_par support
+
+ drivers/video/da8xx-fb.c | 181 +++++++++++++++++++++++++++--------------------
+ 1 file changed, 105 insertions(+), 76 deletions(-)
+
 -- 
-1.7.10.4
+1.7.12
 

@@ -1,32 +1,52 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Mon, 10 Dec 2012 12:28:47 +0000
-Subject: [PATCH 0/3] atmel_lcdfb: fix 16-bpp regression
-Message-Id: <1355142530-10366-1-git-send-email-jhovold@gmail.com>
+From: Afzal Mohammed <afzal@ti.com>
+Date: Fri, 07 Dec 2012 11:56:01 +0000
+Subject: [PATCH 05/10] video: da8xx-fb: store current display information
+Message-Id: <5080c99f685171d40aa8c05464b80f837c694383.1354874432.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1354874432.git.afzal@ti.com>
+In-Reply-To: <cover.1354874432.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Vaibhav Hiremath <hvaibhav@ti.com>, Sekhar Nori <nsekhar@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Afzal Mohammed <afzal@ti.com>
 
-These patches fix a regression in 16-bpp support for older SOCs which use
-IBGR:555 rather than BGR:565 pixel layout. Use SOC-type to determine if the
-controller uses the intensity-bit and restore the old layout in that case.
+store current videomode and controller data so that reconfiguring can
+be done easily. Reconfiguring would be required in fb_set_par, which
+is going to be added soon.
 
-The third patch is simply a clean up.
+If these details are not stored, the work probe does to retrieve these
+information would have to repeated at the place of reconfiguring and
+modifying platform data would be necessary to handle controller data
+changes like bpp.
 
-Thanks,
-Johan
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+---
+ drivers/video/da8xx-fb.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Johan Hovold (3):
-  atmel_lcdfb: fix 16-bpp modes on older SOCs
-  ARM: at91/neocore926: fix LCD-wiring mode
-  atmel_lcdfb: remove unsupported 15-bpp mode
-
- arch/arm/mach-at91/board-neocore926.c |  2 +-
- drivers/video/atmel_lcdfb.c           | 23 +++++++++++++++--------
- include/video/atmel_lcdc.h            |  2 +-
- 3 files changed, 17 insertions(+), 10 deletions(-)
-
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 79862ff..072074d 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -182,6 +182,8 @@ struct da8xx_fb_par {
+ #endif
+ 	void (*panel_power_ctrl)(int);
+ 	u32 pseudo_palette[16];
++	struct fb_videomode	mode;
++	struct lcd_ctrl_config	cfg;
+ };
+ 
+ static struct fb_var_screeninfo da8xx_fb_var;
+@@ -1314,6 +1316,8 @@ static int __devinit fb_probe(struct platform_device *device)
+ 	}
+ 
+ 	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
++	fb_var_to_videomode(&par->mode, &da8xx_fb_var);
++	par->cfg = *lcd_cfg;
+ 
+ 	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
+ 		dev_err(&device->dev, "lcd_init failed\n");
 -- 
-1.8.0
+1.7.12
 

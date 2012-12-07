@@ -1,7 +1,7 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Fri, 07 Dec 2012 11:56:13 +0000
-Subject: [PATCH 07/10] video: da8xx-fb: pix clk and clk div handling cleanup
-Message-Id: <39bf6f63c2fade3b04f7d9850b45ad11c0008489.1354874432.git.afzal@ti.com>
+Date: Fri, 07 Dec 2012 11:56:31 +0000
+Subject: [PATCH 10/10] video: da8xx-fb: fb_set_par support
+Message-Id: <be3711f2c6005dc73704e6147372ea0be2466595.1354874432.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1354874432.git.afzal@ti.com>
 In-Reply-To: <cover.1354874432.git.afzal@ti.com>
@@ -11,150 +11,125 @@ Content-Transfer-Encoding: 7bit
 To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: Vaibhav Hiremath <hvaibhav@ti.com>, Sekhar Nori <nsekhar@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Afzal Mohammed <afzal@ti.com>
 
-Use the new modedb field to store pix clk. Reorganize existing clock
-divider functions with names now corresponding to what they do, add
-common function prefix.
+fb_set_par helps in runtime configuration of lcd controller like
+changing resolution, pixel clock etc. (eg. using fbset utility)
 
-Fix existing panel modedb pixclock to be in ps instead of Hz. This
-needed a change in the way clock divider is calculated. As modedb
-pixclock information is now in ps, override on "var" pixclock over
-modedb to var conversion is removed.
+Reconfigure lcd controller based on information passed by framework.
+Enable raster back if it was already enabled.
+
+As fb_set_par would get invoked indirectly from probe via fb_set_var,
+remove existing lcdc initialization in probe and do lcdc reset in
+probe so that reset happens only at the begining.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/da8xx-fb.c | 48 ++++++++++++++++++------------------------------
- 1 file changed, 18 insertions(+), 30 deletions(-)
+ drivers/video/da8xx-fb.c | 60 +++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 49 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index e858438..19ee560 100644
+index c7393f1..1293ab9 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -164,7 +164,6 @@ struct da8xx_fb_par {
- 	struct clk *lcdc_clk;
- 	int irq;
- 	unsigned int palette_sz;
--	unsigned int pxl_clk;
- 	int blank;
- 	wait_queue_head_t	vsync_wait;
- 	int			vsync_flag;
-@@ -205,7 +204,7 @@ static struct fb_videomode known_lcd_panels[] = {
- 		.name           = "Sharp_LCD035Q3DG01",
- 		.xres           = 320,
- 		.yres           = 240,
--		.pixclock       = 4608000,
-+		.pixclock       = 217014,
- 		.left_margin    = 6,
- 		.right_margin   = 8,
- 		.upper_margin   = 2,
-@@ -220,7 +219,7 @@ static struct fb_videomode known_lcd_panels[] = {
- 		.name           = "Sharp_LK043T1DG01",
- 		.xres           = 480,
- 		.yres           = 272,
--		.pixclock       = 7833600,
-+		.pixclock       = 127655,
- 		.left_margin    = 2,
- 		.right_margin   = 2,
- 		.upper_margin   = 2,
-@@ -235,7 +234,7 @@ static struct fb_videomode known_lcd_panels[] = {
- 		.name           = "SP10Q010",
- 		.xres           = 320,
- 		.yres           = 240,
--		.pixclock       = 7833600,
-+		.pixclock       = 127655,
- 		.left_margin    = 10,
- 		.right_margin   = 10,
- 		.upper_margin   = 10,
-@@ -684,13 +683,14 @@ static void da8xx_fb_lcd_reset(void)
- 	}
- }
- 
--static void lcd_calc_clk_divider(struct da8xx_fb_par *par)
-+static inline unsigned da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
-+						 unsigned pixclock)
- {
--	unsigned int lcd_clk, div;
--
--	lcd_clk = clk_get_rate(par->lcdc_clk);
--	div = lcd_clk / par->pxl_clk;
-+	return par->lcd_fck_rate / (PICOS2KHZ(pixclock) * 1000);
-+}
- 
-+static inline void da8xx_fb_config_clk_divider(unsigned div)
-+{
- 	/* Configure the LCD clock divisor. */
- 	lcdc_write(LCD_CLK_DIVISOR(div) |
- 			(LCD_RASTER_MODE & 0x1), LCD_CTRL_REG);
-@@ -698,7 +698,14 @@ static void lcd_calc_clk_divider(struct da8xx_fb_par *par)
- 	if (lcd_revision = LCD_VERSION_2)
- 		lcdc_write(LCD_V2_DMA_CLK_EN | LCD_V2_LIDD_CLK_EN |
- 				LCD_V2_CORE_CLK_EN, LCD_CLK_ENABLE_REG);
-+}
-+
-+static inline void da8xx_fb_calc_config_clk_divider(struct da8xx_fb_par *par,
-+						    struct fb_videomode *mode)
-+{
-+	unsigned div = da8xx_fb_calc_clk_divider(par, mode->pixclock);
- 
-+	da8xx_fb_config_clk_divider(div);
- }
- 
- static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
-@@ -709,8 +716,7 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
- 
- 	da8xx_fb_lcd_reset();
- 
--	/* Calculate the divider */
--	lcd_calc_clk_divider(par);
-+	da8xx_fb_calc_config_clk_divider(par, panel);
- 
- 	if (panel->sync & FB_SYNC_CLK_INVERT)
- 		lcdc_write((lcdc_read(LCD_RASTER_TIMING_2_REG) |
-@@ -973,7 +979,7 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
- 		if (par->lcd_fck_rate != clk_get_rate(par->lcdc_clk)) {
- 			par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
- 			lcd_disable_raster(true);
--			lcd_calc_clk_divider(par);
-+			da8xx_fb_calc_config_clk_divider(par, &par->mode);
- 			if (par->blank = FB_BLANK_UNBLANK)
- 				lcd_enable_raster();
- 		}
-@@ -1199,22 +1205,6 @@ static struct fb_ops da8xx_fb_ops = {
- 	.fb_blank = cfb_blank,
+@@ -247,6 +247,11 @@ static struct fb_videomode known_lcd_panels[] = {
+ 	},
  };
  
--/* Calculate and return pixel clock period in pico seconds */
--static unsigned int da8xxfb_pixel_clk_period(struct da8xx_fb_par *par)
--{
--	unsigned int lcd_clk, div;
--	unsigned int configured_pix_clk;
--	unsigned long long pix_clk_period_picosec = 1000000000000ULL;
--
--	lcd_clk = clk_get_rate(par->lcdc_clk);
--	div = lcd_clk / par->pxl_clk;
--	configured_pix_clk = (lcd_clk / div);
--
--	do_div(pix_clk_period_picosec, configured_pix_clk);
--
--	return pix_clk_period_picosec;
--}
--
- static int __devinit fb_probe(struct platform_device *device)
++static inline bool da8xx_fb_is_raster_enabled(void)
++{
++	return !!(lcdc_read(LCD_RASTER_CTRL_REG) & LCD_RASTER_ENABLE);
++}
++
+ /* Enable the Raster Engine of the LCD Controller */
+ static inline void lcd_enable_raster(void)
  {
- 	struct da8xx_lcdc_platform_data *fb_pdata @@ -1307,7 +1297,6 @@ static int __devinit fb_probe(struct platform_device *device)
- 	par = da8xx_fb_info->par;
- 	par->lcdc_clk = fb_clk;
- 	par->lcd_fck_rate = clk_get_rate(fb_clk);
--	par->pxl_clk = lcdc_info->pixclock;
- 	if (fb_pdata->panel_power_ctrl) {
- 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
- 		par->panel_power_ctrl(1);
-@@ -1372,7 +1361,6 @@ static int __devinit fb_probe(struct platform_device *device)
- 	da8xx_fb_var.grayscale  	    lcd_cfg->panel_shade = MONOCHROME ? 1 : 0;
- 	da8xx_fb_var.bits_per_pixel = lcd_cfg->bpp;
--	da8xx_fb_var.pixclock = da8xxfb_pixel_clk_period(par);
+@@ -669,9 +674,6 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
  
- 	/* Initialize fbinfo */
- 	da8xx_fb_info->flags = FBINFO_FLAG_DEFAULT;
+ static void da8xx_fb_lcd_reset(void)
+ {
+-	/* Disable the Raster if previously Enabled */
+-	lcd_disable_raster(false);
+-
+ 	/* DMA has to be disabled */
+ 	lcdc_write(0, LCD_DMA_CTRL_REG);
+ 	lcdc_write(0, LCD_RASTER_CTRL_REG);
+@@ -724,8 +726,6 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+ 	u32 bpp;
+ 	int ret = 0;
+ 
+-	da8xx_fb_lcd_reset();
+-
+ 	da8xx_fb_calc_config_clk_divider(par, panel);
+ 
+ 	if (panel->sync & FB_SYNC_CLK_INVERT)
+@@ -1205,9 +1205,52 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
+ 	return ret;
+ }
+ 
++static int da8xxfb_set_par(struct fb_info *info)
++{
++	struct da8xx_fb_par *par = info->par;
++	int ret;
++	bool raster = da8xx_fb_is_raster_enabled();
++
++	if (raster)
++		lcd_disable_raster(false);
++	else
++		lcd_disable_raster(true);
++
++	fb_var_to_videomode(&par->mode, &info->var);
++
++	par->cfg.bpp = info->var.bits_per_pixel;
++
++	info->fix.visual = (par->cfg.bpp <= 8) ?
++				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
++	info->fix.line_length = (par->mode.xres * par->cfg.bpp) / 8;
++
++	ret = lcd_init(par, &par->cfg, &par->mode);
++	if (ret < 0) {
++		dev_err(par->dev, "lcd init failed\n");
++		return ret;
++	}
++
++	par->dma_start = info->fix.smem_start +
++			 info->var.yoffset * info->fix.line_length +
++			 info->var.xoffset * info->var.bits_per_pixel / 8;
++	par->dma_end   = par->dma_start +
++			 info->var.yres * info->fix.line_length - 1;
++
++	lcdc_write(par->dma_start, LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
++	lcdc_write(par->dma_end, LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
++	lcdc_write(par->dma_start, LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
++	lcdc_write(par->dma_end, LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
++
++	if (raster)
++		lcd_enable_raster();
++
++	return 0;
++}
++
+ static struct fb_ops da8xx_fb_ops = {
+ 	.owner = THIS_MODULE,
+ 	.fb_check_var = fb_check_var,
++	.fb_set_par = da8xxfb_set_par,
+ 	.fb_setcolreg = fb_setcolreg,
+ 	.fb_pan_display = da8xx_pan_display,
+ 	.fb_ioctl = fb_ioctl,
+@@ -1316,14 +1359,9 @@ static int __devinit fb_probe(struct platform_device *device)
+ 	}
+ 
+ 	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
+-	fb_var_to_videomode(&par->mode, &da8xx_fb_var);
+ 	par->cfg = *lcd_cfg;
+ 
+-	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
+-		dev_err(&device->dev, "lcd_init failed\n");
+-		ret = -EFAULT;
+-		goto err_release_fb;
+-	}
++	da8xx_fb_lcd_reset();
+ 
+ 	/* allocate frame buffer */
+ 	par->vram_size = lcdc_info->xres * lcdc_info->yres * lcd_cfg->bpp;
 -- 
 1.7.12
 

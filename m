@@ -1,40 +1,44 @@
-From: Akinobu Mita <akinobu.mita@gmail.com>
-Date: Mon, 24 Dec 2012 02:13:58 +0000
-Subject: [PATCH 11/29] video/uvesafb: rename random32() to prandom_u32()
-Message-Id: <1356315256-6572-12-git-send-email-akinobu.mita@gmail.com>
+From: Afzal Mohammed <afzal@ti.com>
+Date: Fri, 07 Dec 2012 11:56:19 +0000
+Subject: [PATCH 08/10] video: da8xx-fb: store struct device *
+Message-Id: <3d63942fbac547cec9620bc30dcf60b1c48f9eb0.1354874432.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1356315256-6572-1-git-send-email-akinobu.mita@gmail.com>
-In-Reply-To: <1356315256-6572-1-git-send-email-akinobu.mita@gmail.com>
+References: <cover.1354874432.git.afzal@ti.com>
+In-Reply-To: <cover.1354874432.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: Akinobu Mita <akinobu.mita@gmail.com>, Michal Januszewski <spock@gentoo.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Vaibhav Hiremath <hvaibhav@ti.com>, Sekhar Nori <nsekhar@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Afzal Mohammed <afzal@ti.com>
 
-Use more preferable function name which implies using a pseudo-random
-number generator.
+store struct device pointer so that dev_dbg/err can be used outside
+of probe.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Michal Januszewski <spock@gentoo.org>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/uvesafb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/da8xx-fb.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-index 2f8f82d..d120b11 100644
---- a/drivers/video/uvesafb.c
-+++ b/drivers/video/uvesafb.c
-@@ -166,7 +166,7 @@ static int uvesafb_exec(struct uvesafb_ktask *task)
- 	memcpy(&m->id, &uvesafb_cn_id, sizeof(m->id));
- 	m->seq = seq;
- 	m->len = len;
--	m->ack = random32();
-+	m->ack = prandom_u32();
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 19ee560..663b3c5 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -154,6 +154,7 @@ static inline void lcdc_write(unsigned int val, unsigned int addr)
+ }
  
- 	/* uvesafb_task structure */
- 	memcpy(m + 1, &task->t, sizeof(task->t));
+ struct da8xx_fb_par {
++	struct device		*dev;
+ 	resource_size_t p_palette_base;
+ 	unsigned char *v_palette_base;
+ 	dma_addr_t		vram_phys;
+@@ -1295,6 +1296,7 @@ static int __devinit fb_probe(struct platform_device *device)
+ 	}
+ 
+ 	par = da8xx_fb_info->par;
++	par->dev = &device->dev;
+ 	par->lcdc_clk = fb_clk;
+ 	par->lcd_fck_rate = clk_get_rate(fb_clk);
+ 	if (fb_pdata->panel_power_ctrl) {
 -- 
-1.7.11.7
+1.7.12
 

@@ -1,152 +1,165 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 04 Dec 2012 08:16:28 +0000
-Subject: Re: [PATCH 2/7] OMAPDSS: DISPC: Move DISPC specific dss_reg_fields to dispc_features
-Message-Id: <50BDB15C.9040406@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig128A40B9E2E9FB3CC5D53A09"
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Sat, 08 Dec 2012 15:31:36 +0000
+Subject: [PATCH] drivers/video/wm8505fb.c: use devm_ functions
+Message-Id: <1354984288-773-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1354086150.git.cmahapatra@ti.com> <a5bbbc9af3ef5ca2636d3c4dea6cbbe9834e0f62.1354086150.git.cmahapatra@ti.com> <50B7528C.1090507@ti.com> <50BC46C6.3050707@ti.com>
-In-Reply-To: <50BC46C6.3050707@ti.com>
-To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---------------enig128A40B9E2E9FB3CC5D53A09
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-On 2012-12-03 08:29, Chandrabhanu Mahapatra wrote:
-> On Thursday 29 November 2012 05:48 PM, Tomi Valkeinen wrote:
->> On 2012-11-28 12:41, Chandrabhanu Mahapatra wrote:
->>> The register fields in dss_reg_fields specific to DISPC are moved fro=
-m struct
->>> omap_dss_features to corresponding dispc_reg_fields, initialized in s=
-truct
->>> dispc_features, thereby enabling local access.
->>>
->>> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
->>> ---
->>>  drivers/video/omap2/dss/dispc.c        |   87 ++++++++++++++++++++++=
-++++++----
->>>  drivers/video/omap2/dss/dss.h          |    4 ++
->>>  drivers/video/omap2/dss/dss_features.c |   28 ----------
->>>  drivers/video/omap2/dss/dss_features.h |    7 ---
->>>  4 files changed, 80 insertions(+), 46 deletions(-)
->>>
->>> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/ds=
-s/dispc.c
->>> index 9f259ba..21fc522 100644
->>> --- a/drivers/video/omap2/dss/dispc.c
->>> +++ b/drivers/video/omap2/dss/dispc.c
->>> @@ -80,6 +80,16 @@ struct dispc_irq_stats {
->>>  	unsigned irqs[32];
->>>  };
->>> =20
->>> +enum dispc_feat_reg_field {
->>> +	FEAT_REG_FIRHINC,
->>> +	FEAT_REG_FIRVINC,
->>> +	FEAT_REG_FIFOLOWTHRESHOLD,
->>> +	FEAT_REG_FIFOHIGHTHRESHOLD,
->>> +	FEAT_REG_FIFOSIZE,
->>> +	FEAT_REG_HORIZONTALACCU,
->>> +	FEAT_REG_VERTICALACCU,
->>> +};
->>> +
->>>  struct dispc_features {
->>>  	u8 sw_start;
->>>  	u8 fp_start;
->>> @@ -107,6 +117,8 @@ struct dispc_features {
->>> =20
->>>  	u32 buffer_size_unit;
->>>  	u32 burst_size_unit;
->>> +
->>> +	struct register_field *reg_fields;
->>>  };
->>
->> Hmm, would it be simpler to have an explicit struct for the reg fields=
-=2E
->> I mean something like:
->>
->> struct dispc_reg_fields {
->> 	struct register_field firhinc;
->> 	struct register_field firvinc;
->> 	struct register_field fifo_low_threshold;
->> 	...
->> };
->>
->> Then accessing it would be
->>
->> dispc.feat->reg_fields.firhinc.start;
->>
->> instead of
->>
->> dispc.feat->reg_fields[FEAT_REG_FIFOSIZE].start;
->>
->> Not a big difference, but I don't see any benefit in having an array o=
-f
->> reg fields here.
->>
->>  Tomi
->>
->>
->=20
-> I was thinking to move reg_fields into the dispc_feats structure as
->=20
-> 	.burst_size_unit	=3D	8,
-> 	.reg_fields		=3D	{
-> 		.firhinc			=3D { 12,  0 },
-> 		.firvinc			=3D { 28, 16 },
-> 		.fifo_low_thresh		=3D { 11,  0 },
-> 		.fifo_high_thresh		=3D { 27, 16 },
-> 		.fifosize			=3D { 10,  0 },
-> 		.hori_accu			=3D {  9,  0 },
-> 		.vert_accu			=3D { 25, 16 },
-> 	},
->=20
-> This would give us dispc.feat->reg_fields.firhinc.start;
-> but at the same time would create duplicate information for
-> omap34xx_rev1_0_dispc_feats and omap34xx_rev3_0_dispc_feats. However,
-> this duplication never occurs anywhere else in dss.c or dsi.c.
->=20
-> If we still go with the older approach of having dispc_reg_fields
-> outside dispc_feats the only way  it works is
->=20
-> .reg_fields		=3D	&omap2_dispc_reg_fields
->=20
-> which changes as dispc.feat->reg_fields->firhinc.start;
->=20
-> but avoids duplicate information. Both approaches seem good enough to m=
-e.
+The various devm_ functions allocate memory that is released when a driver
+detaches.  This patch uses these functions for data that is allocated in
+the probe function of a platform device and is only freed in the remove
+function.
 
-I would keep the pointer approach. We may add support for new DSS
-versions, for AM3xxx or AM4xxx SoCs, which possibly may have the same
-register fields as some other DSS versions.
+The patch makes some other cleanups.  First, the original code used
+devm_kzalloc, but kfree.  This would lead to a double free.  The problem
+was found using the following semantic match (http://coccinelle.lip6.fr/):
 
- Tomi
+// <smpl>
+@@
+expression x,e;
+@@
+x = devm_kzalloc(...)
+... when != x = e
+?-kfree(x,...);
+// </smpl>
 
+The error-handling code for the call to dma_alloc_coherent is copied to the
+end of the function, like the other error-handling code.  Given the
+introduction of the devm functions, this is just for uniformity, because
+the label at the end of the function now just returns the error code.
 
+A semicolon is removed at the end of this error handling code.
 
---------------enig128A40B9E2E9FB3CC5D53A09
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+The call platform_set_drvdata(pdev, NULL); is moved up under the label
+failed_free_cmap, because platform_set_drvdata(pdev, fbi); doesn't happen
+in the function until after gotos to this label are reached.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
+The initializations of fbi and ret are not necessary and are removed.
 
-iQIcBAEBAgAGBQJQvbFcAAoJEPo9qoy8lh71xTYP/ilYaTEqtaTh6nVczJyA1NDo
-ju1xyI6Nb+ufknh2scs67Fl+Uccpu0Dg8w94qRhUtAf4Gf/J7vBAn9kLGrhBuOxu
-1qdolV6sdiEKdl0W3pKNo2XX26FJ5wcQQhAy/ghSj0aSR1A1nRhIsb7DDfIczbjG
-oFtoOEH274BrHOWZnx65Q0HaNBBdW7H5EGJbPXMJnueNmh/vDMWhzc7LkEBhf7Pz
-Iy7GAp7nhtlOKKGiaHcw8HlD38/39ZfyAxbVSM6ZCMY9C4Rbdx3wtVIfMIPDCXPq
-DSw1K2oA5osXQzeo0D6r3ikI80X9uJ6+h+Y0s3jAtoyUltDbg5bnecRAvGP/3MCU
-lcD53/QRkiValS4eNFST8d1CqTiDz8AlzVsFL+eQ1ssUV3xyMBWTTH6pA3NAkool
-N7x+GY/qtgPlcQgcCvJ79FiaszmQ4tT9vSQ3rTQxL5V246IEXwRrhCS5hw3ZBSWy
-hR2BRtQM4lxi2/s+fjq8u742DlhdRQa8f6QMLlUtEgYdPFVuAPyezhkJnNnW6dxq
-G810PEFP0QhwcTd3dmZVy3xPBAixAJul/MPruw0RPUU2KvI2ohZB98iU2rLNR4Bv
-8in838RGE7kQ3+ZXQiJ47Mk4VnrLv9BF3DvrOgmLHDqcHTSfGp77vrepzJnTCVEd
-PcYtOlEtdiK0i84Hq+ki
-=ul8N
------END PGP SIGNATURE-----
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
---------------enig128A40B9E2E9FB3CC5D53A09--
+---
+ drivers/video/wm8505fb.c |   44 ++++++++------------------------------------
+ 1 file changed, 8 insertions(+), 36 deletions(-)
+
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index 77539c1..3bad805 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -274,9 +274,6 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ 	unsigned long fb_mem_len;
+ 	void *fb_mem_virt;
+ 
+-	ret = -ENOMEM;
+-	fbi = NULL;
+-
+ 	fbi = devm_kzalloc(&pdev->dev, sizeof(struct wm8505fb_info) +
+ 			sizeof(u32) * 16, GFP_KERNEL);
+ 	if (!fbi) {
+@@ -308,31 +305,19 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ 	fbi->fb.pseudo_palette	= addr;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (res = NULL) {
+-		dev_err(&pdev->dev, "no I/O memory resource defined\n");
+-		ret = -ENODEV;
+-		goto failed_fbi;
+-	}
+-
+-	res = request_mem_region(res->start, resource_size(res), DRIVER_NAME);
+-	if (res = NULL) {
+-		dev_err(&pdev->dev, "failed to request I/O memory\n");
+-		ret = -EBUSY;
+-		goto failed_fbi;
+-	}
+ 
+-	fbi->regbase = ioremap(res->start, resource_size(res));
++	fbi->regbase = devm_request_and_ioremap(&pdev->dev, res);
+ 	if (fbi->regbase = NULL) {
+ 		dev_err(&pdev->dev, "failed to map I/O memory\n");
+ 		ret = -EBUSY;
+-		goto failed_free_res;
++		goto failed;
+ 	}
+ 
+ 	np = of_parse_phandle(pdev->dev.of_node, "default-mode", 0);
+ 	if (!np) {
+ 		pr_err("%s: No display description in Device Tree\n", __func__);
+ 		ret = -EINVAL;
+-		goto failed_free_res;
++		goto failed;
+ 	}
+ 
+ 	/*
+@@ -351,7 +336,7 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ 	ret |= of_property_read_u32(np, "bpp", &bpp);
+ 	if (ret) {
+ 		pr_err("%s: Unable to read display properties\n", __func__);
+-		goto failed_free_res;
++		goto failed;
+ 	}
+ 
+ 	of_mode.vmode = FB_VMODE_NONINTERLACED;
+@@ -369,8 +354,9 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ 				GFP_KERNEL);
+ 	if (!fb_mem_virt) {
+ 		pr_err("%s: Failed to allocate framebuffer\n", __func__);
+-		return -ENOMEM;
+-	};
++		ret = -ENOMEM;
++		goto failed;
++	}
+ 
+ 	fbi->fb.var.xres_virtual	= of_mode.xres;
+ 	fbi->fb.var.yres_virtual	= of_mode.yres * 2;
+@@ -384,7 +370,7 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ 	if (fb_alloc_cmap(&fbi->fb.cmap, 256, 0) < 0) {
+ 		dev_err(&pdev->dev, "Failed to allocate color map\n");
+ 		ret = -ENOMEM;
+-		goto failed_free_io;
++		goto failed;
+ 	}
+ 
+ 	wm8505fb_init_hw(&fbi->fb);
+@@ -420,13 +406,7 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ failed_free_cmap:
+ 	if (fbi->fb.cmap.len)
+ 		fb_dealloc_cmap(&fbi->fb.cmap);
+-failed_free_io:
+-	iounmap(fbi->regbase);
+-failed_free_res:
+-	release_mem_region(res->start, resource_size(res));
+-failed_fbi:
+ 	platform_set_drvdata(pdev, NULL);
+-	kfree(fbi);
+ failed:
+ 	return ret;
+ }
+@@ -434,7 +414,6 @@ failed:
+ static int __devexit wm8505fb_remove(struct platform_device *pdev)
+ {
+ 	struct wm8505fb_info *fbi = platform_get_drvdata(pdev);
+-	struct resource *res;
+ 
+ 	device_remove_file(&pdev->dev, &dev_attr_contrast);
+ 
+@@ -445,13 +424,6 @@ static int __devexit wm8505fb_remove(struct platform_device *pdev)
+ 	if (fbi->fb.cmap.len)
+ 		fb_dealloc_cmap(&fbi->fb.cmap);
+ 
+-	iounmap(fbi->regbase);
+-
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	release_mem_region(res->start, resource_size(res));
+-
+-	kfree(fbi);
+-
+ 	return 0;
+ }
+ 
+

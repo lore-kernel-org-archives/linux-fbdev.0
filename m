@@ -1,43 +1,36 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 10 Dec 2012 22:54:45 +0000
-Subject: Re: [PATCH v4] fbdev: sh_mobile_lcdc: use dma_mmap_coherent
-Message-Id: <1441080.TGoVcIhooK@avalon>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Mon, 10 Dec 2012 12:28:50 +0000
+Subject: [PATCH 3/3] atmel_lcdfb: remove unsupported 15-bpp mode
+Message-Id: <1355142530-10366-4-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1345112000-22738-1-git-send-email-hdk@igel.co.jp> <14014166.3JMiBq7jRA@avalon> <20121210.193125.442743545.hdk@igel.co.jp>
-In-Reply-To: <20121210.193125.442743545.hdk@igel.co.jp>
+References: <1355142530-10366-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1355142530-10366-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hideki EIRAKU <hdk@igel.co.jp>
-Cc: FlorianSchandinat@gmx.de, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, m.szyprowski@samsung.com, matsu@igel.co.jp, dhobsong@igel.co.jp
+To: linux-arm-kernel@lists.infradead.org
 
-Hi Eiraku-san,
+Since commit 787f9fd23283 ("atmel_lcdfb: support 16bit BGR:565 mode,
+remove unsupported 15bit modes") atmel_lcdfb_check_var does not accept
+15-bpp mode so remove it from atmel_lcdfb_set_par as well.
 
-On Monday 10 December 2012 19:31:25 Hideki EIRAKU wrote:
-> On Thu, 16 Aug 2012 14:16:32 +0200 Laurent Pinchart wrote:
-> > On Thursday 16 August 2012 19:13:20 Hideki EIRAKU wrote:
-> >> fb_mmap() implemented in fbmem.c uses smem_start as the physical
-> >> address of the frame buffer.  In the sh_mobile_lcdc driver, the
-> >> smem_start is a dma_addr_t that is not a physical address when IOMMU is
-> >> enabled.  dma_mmap_coherent() maps the address correctly.
-> >> 
-> >> Signed-off-by: Hideki EIRAKU <hdk@igel.co.jp>
-> > 
-> > Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> > 
-> > I will push the patch to v3.7 through my tree.
-> 
-> I'd like to use this patch to test IOMMU implementation of Renesas
-> IPMMU.  But I could not find it in v3.7-rc8.  Could you please tell me if
-> this has already been merged somewhere or not?
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
+---
+ drivers/video/atmel_lcdfb.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-I'm afraid the patch got delayed to v3.8, sorry about that. I've sent a pull 
-request for v3.8, the patch is currently in linux-next 
-(bf10a53765b4435a5349a92a5a51753902ed86f1) and will be merged during the next 
-merge window (which should open in the very near future).
-
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 1f68fa6..3cdbd53 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -567,7 +567,6 @@ static int atmel_lcdfb_set_par(struct fb_info *info)
+ 		case 2: value |= ATMEL_LCDC_PIXELSIZE_2; break;
+ 		case 4: value |= ATMEL_LCDC_PIXELSIZE_4; break;
+ 		case 8: value |= ATMEL_LCDC_PIXELSIZE_8; break;
+-		case 15: /* fall through */
+ 		case 16: value |= ATMEL_LCDC_PIXELSIZE_16; break;
+ 		case 24: value |= ATMEL_LCDC_PIXELSIZE_24; break;
+ 		case 32: value |= ATMEL_LCDC_PIXELSIZE_32; break;
 -- 
-Regards,
-
-Laurent Pinchart
+1.8.0
 

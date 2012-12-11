@@ -1,66 +1,39 @@
-From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Date: Tue, 04 Dec 2012 06:36:15 +0000
-Subject: RE: [PATCH] da8xx: Fix revision check on the da8xx driver
-Message-Id: <A73F36158E33644199EB82C5EC81C7BC3EA13286@DBDE01.ent.ti.com>
+From: Cesar Eduardo Barros <cesarb@cesarb.net>
+Date: Tue, 11 Dec 2012 21:49:52 +0000
+Subject: [PATCH 10/19] MAINTAINERS: fix .../plat-mxc/include/mach/imxfb.h
+Message-Id: <1355262601-4263-11-git-send-email-cesarb@cesarb.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351698984-4007-1-git-send-email-panto@antoniou-consulting.com>
- <A73F36158E33644199EB82C5EC81C7BC3E9E10D6@DBDE01.ent.ti.com>
-In-Reply-To: <A73F36158E33644199EB82C5EC81C7BC3E9E10D6@DBDE01.ent.ti.com>
+References: <1355262601-4263-1-git-send-email-cesarb@cesarb.net>
+In-Reply-To: <1355262601-4263-1-git-send-email-cesarb@cesarb.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Pantelis Antoniou <panto@antoniou-consulting.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "Valkeinen, Tomi" <tomi.valkeinen@ti.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Koen Kooi <koen@dominion.thruhere.net>, "Porter, Matt" <mporter@ti.com>, "Dill, Russ" <russ.dill@ti.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Hi Tomi,
+This file was moved to include/linux/platform_data/video-imxfb.h by
+commit 82906b1 (ARM: imx: move platform_data definitions).
 
-On Wed, Oct 31, 2012 at 09:21:35, Manjunathappa, Prakash wrote:
-> On Wed, Oct 31, 2012 at 21:26:24, Pantelis Antoniou wrote:
-> > The revision check fails for the beaglebone; Add new revision ID.
-> > 
-> > Signed-off-by: Pantelis Antoniou <panto@antoniou-consulting.com>
-> > ---
-> >  drivers/video/da8xx-fb.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> > index 80665f6..866d804 100644
-> > --- a/drivers/video/da8xx-fb.c
-> > +++ b/drivers/video/da8xx-fb.c
-> > @@ -1283,6 +1283,7 @@ static int __devinit fb_probe(struct platform_device *device)
-> >  		lcd_revision = LCD_VERSION_1;
-> >  		break;
-> >  	case 0x4F200800:
-> > +	case 0x4F201000:
-> 
-> Thanks for Correcting. This is the LCDC revision on am335x silicon in comparison
-> with to one read(0x4F200800) on emulator platform.
-> 
-> Acked-by: Manjunathappa, Prakash <prakash.pm@ti.com>
-> 
+Acked-by: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Signed-off-by: Cesar Eduardo Barros <cesarb@cesarb.net>
+---
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-This patch is necessary for am335x FB, I could not see in your for-next branch,
-could you please consider this patch for 3.8 merge window. There are no pending
-review comments on this.
-
-Thanks,
-Prakash
-
-> >  		lcd_revision = LCD_VERSION_2;
-> >  		break;
-> >  	default:
-> > -- 
-> > 1.7.12
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 3bf84d4..9bc4861d 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3138,7 +3138,7 @@ M:	Sascha Hauer <kernel@pengutronix.de>
+ L:	linux-fbdev@vger.kernel.org
+ L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
+ S:	Maintained
+-F:	arch/arm/plat-mxc/include/mach/imxfb.h
++F:	include/linux/platform_data/video-imxfb.h
+ F:	drivers/video/imxfb.c
+ 
+ FREESCALE SOC FS_ENET DRIVER
+-- 
+1.7.11.7
 

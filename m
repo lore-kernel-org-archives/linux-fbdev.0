@@ -1,65 +1,78 @@
-From: Haojian Zhuang <haojian.zhuang@gmail.com>
-Date: Sun, 16 Dec 2012 23:47:53 +0000
-Subject: Re: [PATCHv4 1/9] video: mmp display subsystem
-Message-Id: <CAN1soZxfM2=w-BAkzZ8pN0hkfdgPCUmFmvSVzSYFSoDfD=7dfg@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 12 Dec 2012 12:27:09 +0000
+Subject: [PATCH 2/2] OMAPDSS: DISPC: remove dispc fck uses
+Message-Id: <1355315229-25238-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1355315229-25238-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1355315229-25238-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Wed, Oct 24, 2012 at 2:56 PM, Zhou Zhu <zzhu3@marvell.com> wrote:
-> Added mmp display subsystem to support Marvell MMP display controllers.
->
-> This subsystem contains 4 parts:
-> --fb folder
-> --core.c
-> --hw folder
-> --panel folder
->
-> 1. fb folder contains implementation of fb.
-> fb get path and ovly from common interface and operates on these structures.
->
-> 2. core.c provides common interface for a hardware abstraction.
-> Major parts of this interface are:
-> a) Path: path is a output device connected to a panel or HDMI TV.
-> Main operations of the path is set/get timing/output color.
-> fb operates output device through path structure.
-> b) Ovly: Ovly is a buffer shown on the path.
-> Ovly describes frame buffer and its source/destination size, offset, input
-> color, buffer address, z-order, and so on.
-> Each fb device maps to one ovly.
->
-> 3. hw folder contains implementation of hardware operations defined by core.c.
-> It registers paths for fb use.
->
-> 4. panel folder contains implementation of panels.
-> It's connected to path. Panel drivers would also regiester panels and linked
-> to path when probe.
->
-> Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
-> Signed-off-by: Lisa Du <cldu@marvell.com>
-> ---
->  drivers/video/Kconfig      |    1 +
->  drivers/video/Makefile     |    1 +
->  drivers/video/mmp/Kconfig  |    5 +
->  drivers/video/mmp/Makefile |    1 +
->  drivers/video/mmp/core.c   |  217 +++++++++++++++++++++++++++
->  include/video/mmp_disp.h   |  351 ++++++++++++++++++++++++++++++++++++++++++++
->  6 files changed, 576 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/video/mmp/Kconfig
->  create mode 100644 drivers/video/mmp/Makefile
->  create mode 100644 drivers/video/mmp/core.c
->  create mode 100644 include/video/mmp_disp.h
->
+The previous patch changes dispc to get the dispc fck rate from dss core
+driver. This was the only use of the dispc fck in dispc, and thus we can
+now remove the clock handling.
 
-Hi Florian,
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dispc.c |   14 --------------
+ 1 file changed, 14 deletions(-)
 
-This patch series have been sent for a long time. And there's no
-comments on this.
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 08137a8..05ff2b9 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -96,7 +96,6 @@ static struct {
+ 	int		ctx_loss_cnt;
+ 
+ 	int irq;
+-	struct clk *dss_clk;
+ 
+ 	u32 fifo_size[DISPC_MAX_NR_FIFOS];
+ 	/* maps which plane is using a fifo. fifo-id -> plane-id */
+@@ -3619,7 +3618,6 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
+ 	u32 rev;
+ 	int r = 0;
+ 	struct resource *dispc_mem;
+-	struct clk *clk;
+ 
+ 	dispc.pdev = pdev;
+ 
+@@ -3646,15 +3644,6 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
+-	clk = clk_get(&pdev->dev, "fck");
+-	if (IS_ERR(clk)) {
+-		DSSERR("can't get fck\n");
+-		r = PTR_ERR(clk);
+-		return r;
+-	}
+-
+-	dispc.dss_clk = clk;
+-
+ 	pm_runtime_enable(&pdev->dev);
+ 
+ 	r = dispc_runtime_get();
+@@ -3675,7 +3664,6 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
+ 
+ err_runtime_get:
+ 	pm_runtime_disable(&pdev->dev);
+-	clk_put(dispc.dss_clk);
+ 	return r;
+ }
+ 
+@@ -3683,8 +3671,6 @@ static int __exit omap_dispchw_remove(struct platform_device *pdev)
+ {
+ 	pm_runtime_disable(&pdev->dev);
+ 
+-	clk_put(dispc.dss_clk);
+-
+ 	return 0;
+ }
+ 
+-- 
+1.7.10.4
 
-I need this patch series on enabling LCD on pxa910 platform. Do you
-think it's OK to merge?
-
-Best Regards
-Haojian

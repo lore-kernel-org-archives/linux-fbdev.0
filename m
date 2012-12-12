@@ -1,240 +1,119 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Wed, 05 Dec 2012 10:28:03 +0000
-Subject: [PATCH V2 1/6] OMAPDSS: DISPC: Move burst_size and buffer_size to dispc_features
-Message-Id: <254a99f1be21e86018a247d37a6e96b70311fbc1.1354702077.git.cmahapatra@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 12 Dec 2012 12:27:08 +0000
+Subject: [PATCH 1/2] OMAPDSS: DISPC: get dss clock rate from dss driver
+Message-Id: <1355315229-25238-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1354086150.git.cmahapatra@ti.com> <cover.1354702077.git.cmahapatra@ti.com>
-In-Reply-To: <cover.1354702077.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The burst_size and buffer_size being local data to DISPC are moved to
-dispc_features and so removed from struct omap_dss_features. The functions
-referring to burst and buffer size are also removed from dss_features.c as they
-are now accessed locally in dispc.c.
+Dispc currently gets dispc's fck with clk_get() and uses clk_get_rate()
+to get the rate for scaling calculations. This causes a problem with
+common clock framework, as omapdss uses the dispc functions inside a
+spinlock, and common clock framework uses a mutex in clk_get_rate().
 
-Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Looking at the DSS clock tree, the above use of the dispc fck is not
+quite correct. The DSS_FCLK from PRCM goes to DSS core block, which has
+a mux to select the clock for DISPC from various options, so the current
+use of dispc fck bypasses that. Fortunately we never change the dispc
+clock mux for now.
+
+To fix the issue with clk_get_rate(), this patch caches the dss clock
+rate in dss.c when it is set. Dispc will then ask for the clock rate
+from dss. While this is not very elegant, it does fix the issue, and
+it's not totally wrong when considering that the dispc fck actually
+comes via dss.
+
+In the future we should probably look into common clock framework and
+see if that could be used to represent the DSS clock tree properly.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c        |   21 +++++++++++++++++----
- drivers/video/omap2/dss/dss_features.c |   29 -----------------------------
- drivers/video/omap2/dss/dss_features.h |    3 ---
- 3 files changed, 17 insertions(+), 36 deletions(-)
+ drivers/video/omap2/dss/dispc.c |    4 ++--
+ drivers/video/omap2/dss/dss.c   |   12 ++++++++++++
+ drivers/video/omap2/dss/dss.h   |    1 +
+ 3 files changed, 15 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index ce594a1..bbba83f 100644
+index fedbd2c..08137a8 100644
 --- a/drivers/video/omap2/dss/dispc.c
 +++ b/drivers/video/omap2/dss/dispc.c
-@@ -107,6 +107,9 @@ struct dispc_features {
+@@ -2970,7 +2970,7 @@ unsigned long dispc_fclk_rate(void)
  
- 	/* no DISPC_IRQ_FRAMEDONETV on this SoC */
- 	bool no_framedone_tv:1;
+ 	switch (dss_get_dispc_clk_source()) {
+ 	case OMAP_DSS_CLK_SRC_FCK:
+-		r = clk_get_rate(dispc.dss_clk);
++		r = dss_get_dispc_clk_rate();
+ 		break;
+ 	case OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC:
+ 		dsidev = dsi_get_dsidev_from_id(0);
+@@ -3002,7 +3002,7 @@ unsigned long dispc_mgr_lclk_rate(enum omap_channel channel)
+ 
+ 		switch (dss_get_lcd_clk_source(channel)) {
+ 		case OMAP_DSS_CLK_SRC_FCK:
+-			r = clk_get_rate(dispc.dss_clk);
++			r = dss_get_dispc_clk_rate();
+ 			break;
+ 		case OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC:
+ 			dsidev = dsi_get_dsidev_from_id(0);
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 833f162..054c2a2 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -77,6 +77,7 @@ static struct {
+ 
+ 	struct clk	*dpll4_m4_ck;
+ 	struct clk	*dss_clk;
++	unsigned long	dss_clk_rate;
+ 
+ 	unsigned long	cache_req_pck;
+ 	unsigned long	cache_prate;
+@@ -489,6 +490,10 @@ int dss_set_clock_div(struct dss_clock_info *cinfo)
+ 			return -EINVAL;
+ 	}
+ 
++	dss.dss_clk_rate = clk_get_rate(dss.dss_clk);
 +
-+	u32 buffer_size_unit; /* in bytes */
-+	u32 burst_size_unit; /* in bytes */
- };
++	WARN_ONCE(dss.dss_clk_rate != cinfo->fck, "clk rate mismatch");
++
+ 	DSSDBG("fck = %ld (%d)\n", cinfo->fck, cinfo->fck_div);
  
- #define DISPC_MAX_NR_FIFOS 5
-@@ -1050,7 +1053,7 @@ static void dispc_configure_burst_sizes(void)
- 
- static u32 dispc_ovl_get_burst_size(enum omap_plane plane)
- {
--	unsigned unit = dss_feat_get_burst_size_unit();
-+	unsigned unit = dispc.feat->burst_size_unit;
- 	/* burst multiplier is always x8 (see dispc_configure_burst_sizes()) */
- 	return unit * 8;
- }
-@@ -1139,7 +1142,7 @@ static void dispc_init_fifos(void)
- 	u8 start, end;
- 	u32 unit;
- 
--	unit = dss_feat_get_buffer_size_unit();
-+	unit = dispc.feat->buffer_size_unit;
- 
- 	dss_feat_get_reg_field(FEAT_REG_FIFOSIZE, &start, &end);
- 
-@@ -1197,7 +1200,7 @@ void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high)
- 	u8 hi_start, hi_end, lo_start, lo_end;
- 	u32 unit;
- 
--	unit = dss_feat_get_buffer_size_unit();
-+	unit = dispc.feat->buffer_size_unit;
- 
- 	WARN_ON(low % unit != 0);
- 	WARN_ON(high % unit != 0);
-@@ -1241,7 +1244,7 @@ void dispc_ovl_compute_fifo_thresholds(enum omap_plane plane,
- 	 * buffer_units, and the fifo thresholds must be buffer_unit aligned.
- 	 */
- 
--	unsigned buf_unit = dss_feat_get_buffer_size_unit();
-+	unsigned buf_unit = dispc.feat->buffer_size_unit;
- 	unsigned ovl_fifo_size, total_fifo_size, burst_size;
- 	int i;
- 
-@@ -4060,6 +4063,8 @@ static const struct dispc_features omap24xx_dispc_feats __initconst = {
- 	.calc_core_clk		=	calc_core_clk_24xx,
- 	.num_fifos		=	3,
- 	.no_framedone_tv	=	true,
-+	.buffer_size_unit	=	1,
-+	.burst_size_unit	=	8,
- };
- 
- static const struct dispc_features omap34xx_rev1_0_dispc_feats __initconst = {
-@@ -4077,6 +4082,8 @@ static const struct dispc_features omap34xx_rev1_0_dispc_feats __initconst = {
- 	.calc_core_clk		=	calc_core_clk_34xx,
- 	.num_fifos		=	3,
- 	.no_framedone_tv	=	true,
-+	.buffer_size_unit	=	1,
-+	.burst_size_unit	=	8,
- };
- 
- static const struct dispc_features omap34xx_rev3_0_dispc_feats __initconst = {
-@@ -4094,6 +4101,8 @@ static const struct dispc_features omap34xx_rev3_0_dispc_feats __initconst = {
- 	.calc_core_clk		=	calc_core_clk_34xx,
- 	.num_fifos		=	3,
- 	.no_framedone_tv	=	true,
-+	.buffer_size_unit	=	1,
-+	.burst_size_unit	=	8,
- };
- 
- static const struct dispc_features omap44xx_dispc_feats __initconst = {
-@@ -4111,6 +4120,8 @@ static const struct dispc_features omap44xx_dispc_feats __initconst = {
- 	.calc_core_clk		=	calc_core_clk_44xx,
- 	.num_fifos		=	5,
- 	.gfx_fifo_workaround	=	true,
-+	.buffer_size_unit	=	16,
-+	.burst_size_unit	=	16,
- };
- 
- static const struct dispc_features omap54xx_dispc_feats __initconst = {
-@@ -4128,6 +4139,8 @@ static const struct dispc_features omap54xx_dispc_feats __initconst = {
- 	.calc_core_clk		=	calc_core_clk_44xx,
- 	.num_fifos		=	5,
- 	.gfx_fifo_workaround	=	true,
-+	.buffer_size_unit	=	16,
-+	.burst_size_unit	=	16,
- };
- 
- static int __init dispc_init_features(struct platform_device *pdev)
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index 1d125c6..092e21b 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -54,9 +54,6 @@ struct omap_dss_features {
- 	const struct dss_param_range *dss_params;
- 
- 	const enum omap_dss_rotation_type supported_rotation_types;
--
--	const u32 buffer_size_unit;
--	const u32 burst_size_unit;
- };
- 
- /* This struct is assigned to one of the below during initialization */
-@@ -632,8 +629,6 @@ static const struct omap_dss_features omap2_dss_features = {
- 	.clksrc_names = omap2_dss_clk_source_names,
- 	.dss_params = omap2_dss_param_range,
- 	.supported_rotation_types = OMAP_DSS_ROT_DMA | OMAP_DSS_ROT_VRFB,
--	.buffer_size_unit = 1,
--	.burst_size_unit = 8,
- };
- 
- /* OMAP3 DSS Features */
-@@ -653,8 +648,6 @@ static const struct omap_dss_features omap3430_dss_features = {
- 	.clksrc_names = omap3_dss_clk_source_names,
- 	.dss_params = omap3_dss_param_range,
- 	.supported_rotation_types = OMAP_DSS_ROT_DMA | OMAP_DSS_ROT_VRFB,
--	.buffer_size_unit = 1,
--	.burst_size_unit = 8,
- };
- 
- /*
-@@ -677,8 +670,6 @@ static const struct omap_dss_features am35xx_dss_features = {
- 	.clksrc_names = omap3_dss_clk_source_names,
- 	.dss_params = omap3_dss_param_range,
- 	.supported_rotation_types = OMAP_DSS_ROT_DMA | OMAP_DSS_ROT_VRFB,
--	.buffer_size_unit = 1,
--	.burst_size_unit = 8,
- };
- 
- static const struct omap_dss_features omap3630_dss_features = {
-@@ -697,8 +688,6 @@ static const struct omap_dss_features omap3630_dss_features = {
- 	.clksrc_names = omap3_dss_clk_source_names,
- 	.dss_params = omap3_dss_param_range,
- 	.supported_rotation_types = OMAP_DSS_ROT_DMA | OMAP_DSS_ROT_VRFB,
--	.buffer_size_unit = 1,
--	.burst_size_unit = 8,
- };
- 
- /* OMAP4 DSS Features */
-@@ -720,8 +709,6 @@ static const struct omap_dss_features omap4430_es1_0_dss_features  = {
- 	.clksrc_names = omap4_dss_clk_source_names,
- 	.dss_params = omap4_dss_param_range,
- 	.supported_rotation_types = OMAP_DSS_ROT_DMA | OMAP_DSS_ROT_TILER,
--	.buffer_size_unit = 16,
--	.burst_size_unit = 16,
- };
- 
- /* For OMAP4430 ES 2.0, 2.1 and 2.2 revisions */
-@@ -742,8 +729,6 @@ static const struct omap_dss_features omap4430_es2_0_1_2_dss_features = {
- 	.clksrc_names = omap4_dss_clk_source_names,
- 	.dss_params = omap4_dss_param_range,
- 	.supported_rotation_types = OMAP_DSS_ROT_DMA | OMAP_DSS_ROT_TILER,
--	.buffer_size_unit = 16,
--	.burst_size_unit = 16,
- };
- 
- /* For all the other OMAP4 versions */
-@@ -764,8 +749,6 @@ static const struct omap_dss_features omap4_dss_features = {
- 	.clksrc_names = omap4_dss_clk_source_names,
- 	.dss_params = omap4_dss_param_range,
- 	.supported_rotation_types = OMAP_DSS_ROT_DMA | OMAP_DSS_ROT_TILER,
--	.buffer_size_unit = 16,
--	.burst_size_unit = 16,
- };
- 
- /* OMAP5 DSS Features */
-@@ -785,8 +768,6 @@ static const struct omap_dss_features omap5_dss_features = {
- 	.clksrc_names = omap5_dss_clk_source_names,
- 	.dss_params = omap5_dss_param_range,
- 	.supported_rotation_types = OMAP_DSS_ROT_DMA | OMAP_DSS_ROT_TILER,
--	.buffer_size_unit = 16,
--	.burst_size_unit = 16,
- };
- 
- #if defined(CONFIG_OMAP4_DSS_HDMI)
-@@ -892,16 +873,6 @@ const char *dss_feat_get_clk_source_name(enum omap_dss_clk_source id)
- 	return omap_current_dss_features->clksrc_names[id];
+ 	return 0;
+@@ -502,6 +507,11 @@ unsigned long dss_get_dpll4_rate(void)
+ 		return 0;
  }
  
--u32 dss_feat_get_buffer_size_unit(void)
--{
--	return omap_current_dss_features->buffer_size_unit;
--}
--
--u32 dss_feat_get_burst_size_unit(void)
--{
--	return omap_current_dss_features->burst_size_unit;
--}
--
- /* DSS has_feature check */
- bool dss_has_feature(enum dss_feat_id id)
++unsigned long dss_get_dispc_clk_rate(void)
++{
++	return dss.dss_clk_rate;
++}
++
+ static int dss_setup_default_clock(void)
  {
-diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
-index 385b0af..16658e1 100644
---- a/drivers/video/omap2/dss/dss_features.h
-+++ b/drivers/video/omap2/dss/dss_features.h
-@@ -114,9 +114,6 @@ bool dss_feat_color_mode_supported(enum omap_plane plane,
- 		enum omap_color_mode color_mode);
- const char *dss_feat_get_clk_source_name(enum omap_dss_clk_source id);
+ 	unsigned long max_dss_fck, prate;
+@@ -953,6 +963,8 @@ static int __init omap_dsshw_probe(struct platform_device *pdev)
+ 	if (r)
+ 		goto err_runtime_get;
  
--u32 dss_feat_get_buffer_size_unit(void);	/* in bytes */
--u32 dss_feat_get_burst_size_unit(void);		/* in bytes */
--
- bool dss_feat_rotation_type_supported(enum omap_dss_rotation_type rot_type);
++	dss.dss_clk_rate = clk_get_rate(dss.dss_clk);
++
+ 	/* Select DPLL */
+ 	REG_FLD_MOD(DSS_CONTROL, 0, 0, 0);
  
- bool dss_has_feature(enum dss_feat_id id);
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index ebe9e08..610c8e5 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -237,6 +237,7 @@ void dss_overlay_kobj_uninit(struct omap_overlay *ovl);
+ int dss_init_platform_driver(void) __init;
+ void dss_uninit_platform_driver(void);
+ 
++unsigned long dss_get_dispc_clk_rate(void);
+ int dss_dpi_select_source(enum omap_channel channel);
+ void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select);
+ enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void);
 -- 
-1.7.10
+1.7.10.4
 

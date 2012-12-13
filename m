@@ -1,52 +1,70 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
-Date: Fri, 07 Dec 2012 14:45:02 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 13 Dec 2012 11:17:17 +0000
 Subject: Re: [PATCH 2/5] OMAPFB: simplify locking
-Message-Id: <20121207144502.GG32230@intel.com>
+Message-Id: <50C9B93D.3020601@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enigDF4604781B1EA6A4BF396589"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1354881309-17625-1-git-send-email-tomi.valkeinen@ti.com>
- <1354881309-17625-2-git-send-email-tomi.valkeinen@ti.com>
- <20121207125350.GE32230@intel.com>
- <50C1F232.80508@ti.com>
-In-Reply-To: <50C1F232.80508@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+References: <1354881309-17625-1-git-send-email-tomi.valkeinen@ti.com> <1354881309-17625-2-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1354881309-17625-2-git-send-email-tomi.valkeinen@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
+
+--------------enigDF4604781B1EA6A4BF396589
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Fri, Dec 07, 2012 at 03:42:10PM +0200, Tomi Valkeinen wrote:
-> On 2012-12-07 14:53, Ville Syrj=E4l=E4 wrote:
-> > On Fri, Dec 07, 2012 at 01:55:06PM +0200, Tomi Valkeinen wrote:
-> >> Kernel lock verification code has lately detected possible circular
-> >> locking in omapfb. The exact problem is unclear, but omapfb's current
-> >> locking seems to be overly complex.
-> >>
-> >> This patch simplifies the locking in the following ways:
-> >>
-> >> - Remove explicit omapfb mem region locking. I couldn't figure out the
-> >>   need for this, as long as we take care to take omapfb lock.
-> >=20
-> > I suppose the idea with that was that you wouldn't need the global
-> > omapfb lock, and also it was an rwsem so it allowed parallel access to
-> > the mem regions, unless the region size was being changed, in which
-> > case it took the write lock. I can't really remember what the reason
-> > for using an rwsem was, but I suppose there was one at the time.
+On 2012-12-07 13:55, Tomi Valkeinen wrote:
+> Kernel lock verification code has lately detected possible circular
+> locking in omapfb. The exact problem is unclear, but omapfb's current
+> locking seems to be overly complex.
 >=20
-> Right. Yes, I have no recollection either of the possible reason for it
-> =3D). Did we have multiple concurrerent users for the fbs? It still sounds
-> like a useless optimization, as all the region locks were only held for
-> a short time, as far as I saw.
+> This patch simplifies the locking in the following ways:
 >=20
-> It could also be that we're missing something from the mainline kernel,
-> which we had in the Nokia kernel, and which would explain the need for
-> region locks.
+> - Remove explicit omapfb mem region locking. I couldn't figure out the
+>   need for this, as long as we take care to take omapfb lock.
+>=20
+> - Get omapfb lock always, even if the operation is possibly only relate=
+d
+>   to one fb_info. Better safe than sorry, and normally there's only one=
 
-Yeah, perhaps there was some use for it at the time. Possibly the
-zero copy video playback benefited from it in the beginning. But
-IIRC almost everything was handled via the X server in the end,
-so I don't think there's any compelling reason for keeping the
-rwsem.
+>   user for the fb so this shouldn't matter.
+>=20
+> - Make sure fb_info lock is taken first, then omapfb lock.
+>=20
+> With this patch the warnings about possible circular locking does not
+> happen anymore.
 
---=20
-Ville Syrj=E4l=E4
-Intel OTC
+I'm dropping this patch, for some reason it causes huge latencies with
+two processes using separate fbs. I guess there's need for the more
+precise locking, after all.
+
+ Tomi
+
+
+
+--------------enigDF4604781B1EA6A4BF396589
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJQybk9AAoJEPo9qoy8lh715cgP/1jNDA2HFPrBAadV1lOQjtbe
+wyvp/bCN5wH3OY4yrOI2A/bNL/3dV9wY6s81FQt9awqNCGX6xRjmHi+qvr8JQRia
+vXEz0fakPUPQz0ybXiUuT/37UkVgQjoakdmgRYfvs1nBXv5MT8XgFo2BlJrI9pfP
+KVzTY1QF1BDOm7P69DaCLhH3TZUJNZ9p6Zv6HnZ/rwMfOGYcL12fiHo9VcCeAxqP
+Fuzi4sAHTblJKAbS/yviW+8hRB7jRP1ardaT8YVd6ORsr38kOdtXQA0yzGS7c2Kf
+z6A/qsBIy0POTvL0kSm6UnAYmbowqzv4TgdXrA4CvoWLZ83gEp6cdKkZqqef+GUS
+9WXMj41CR/j3LPvDS5I3HoX4YNRZL32E4zljPOUr2gL37gkFOKu21pQ40mJVJKxD
+wFkN5vZum5+vhXzPyUNUI/HPfah38jO6EpisZA+YN0xdpCXJ/fdRxK9No5j1gKiG
+JWcGPY0o4CJlYg4zKgJK79A111iGoZyQZoG8JJajH4LEni3ws5vqGMR41hsQ3/E6
+rTS0AaQ0aUHv1cV0g6y1z/gvxXaBsp/paCZPadZXYzlwmjVL+clPOgk0UIJAjvCD
+MBbFM1pLVgmg6az1z12GMDmnDZZiYuC+XcKfkABILB7+4JCikeXIG4BCErRwM9cu
+yWJGzLTKrghKU7/p/9JW
+=30ny
+-----END PGP SIGNATURE-----
+
+--------------enigDF4604781B1EA6A4BF396589--

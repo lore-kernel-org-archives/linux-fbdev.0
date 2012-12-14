@@ -1,39 +1,43 @@
-From: Cesar Eduardo Barros <cesarb@cesarb.net>
-Date: Tue, 11 Dec 2012 21:49:52 +0000
-Subject: [PATCH 10/19] MAINTAINERS: fix .../plat-mxc/include/mach/imxfb.h
-Message-Id: <1355262601-4263-11-git-send-email-cesarb@cesarb.net>
+From: Kamal Mostafa <kamal@whence.com>
+Date: Fri, 14 Dec 2012 20:30:15 +0000
+Subject: [PATCH] fbcon: clear the logo bitmap from the margin area
+Message-Id: <1355517015-4926-1-git-send-email-kamal@whence.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1355262601-4263-1-git-send-email-cesarb@cesarb.net>
-In-Reply-To: <1355262601-4263-1-git-send-email-cesarb@cesarb.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This file was moved to include/linux/platform_data/video-imxfb.h by
-commit 82906b1 (ARM: imx: move platform_data definitions).
+Explicitly clear_margins when clearing the logo, in case the font dimensions
+are non-integral to the framebuffer dimensions.
 
-Acked-by: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Signed-off-by: Cesar Eduardo Barros <cesarb@cesarb.net>
+Signed-off-by: Kamal Mostafa <kamal@whence.com>
 ---
- MAINTAINERS | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/console/fbcon.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3bf84d4..9bc4861d 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3138,7 +3138,7 @@ M:	Sascha Hauer <kernel@pengutronix.de>
- L:	linux-fbdev@vger.kernel.org
- L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
- S:	Maintained
--F:	arch/arm/plat-mxc/include/mach/imxfb.h
-+F:	include/linux/platform_data/video-imxfb.h
- F:	drivers/video/imxfb.c
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 8745637..b51a4bd 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -1236,8 +1236,16 @@ static void fbcon_clear(struct vc_data *vc, int sy, int sx, int height,
+ 	if (!height || !width)
+ 		return;
  
- FREESCALE SOC FS_ENET DRIVER
+-	if (sy < vc->vc_top && vc->vc_top = logo_lines)
++	if (sy < vc->vc_top && vc->vc_top = logo_lines) {
+ 		vc->vc_top = 0;
++		/*
++		 * If the font dimensions are not an integral of the display
++		 * dimensions then the ops->clear below won't end up clearing
++		 * the margins.  Call clear_margins here in case the logo
++		 * bitmap stretched into the margin area.
++		 */
++		fbcon_clear_margins(vc, 0);
++	}
+ 
+ 	/* Split blits that cross physical y_wrap boundary */
+ 
 -- 
-1.7.11.7
+1.7.10.4
 

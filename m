@@ -1,135 +1,208 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Fri, 07 Dec 2012 11:56:31 +0000
-Subject: [PATCH 10/10] video: da8xx-fb: fb_set_par support
-Message-Id: <be3711f2c6005dc73704e6147372ea0be2466595.1354874432.git.afzal@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 14 Dec 2012 14:27:29 +0000
+Subject: [RFC 3/6] video: add tfp410
+Message-Id: <1355495252-26364-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1354874432.git.afzal@ti.com>
-In-Reply-To: <cover.1354874432.git.afzal@ti.com>
+References: <1355495252-26364-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1355495252-26364-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Vaibhav Hiremath <hvaibhav@ti.com>, Sekhar Nori <nsekhar@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Afzal Mohammed <afzal@ti.com>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-fb_set_par helps in runtime configuration of lcd controller like
-changing resolution, pixel clock etc. (eg. using fbset utility)
-
-Reconfigure lcd controller based on information passed by framework.
-Enable raster back if it was already enabled.
-
-As fb_set_par would get invoked indirectly from probe via fb_set_var,
-remove existing lcdc initialization in probe and do lcdc reset in
-probe so that reset happens only at the begining.
-
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/da8xx-fb.c | 60 +++++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 49 insertions(+), 11 deletions(-)
+ drivers/video/display/chip-tfp410.c |  164 +++++++++++++++++++++++++++++++++++
+ include/video/omap-panel-tfp410.h   |    4 +
+ 2 files changed, 168 insertions(+)
+ create mode 100644 drivers/video/display/chip-tfp410.c
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index c7393f1..1293ab9 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -247,6 +247,11 @@ static struct fb_videomode known_lcd_panels[] = {
- 	},
- };
- 
-+static inline bool da8xx_fb_is_raster_enabled(void)
+diff --git a/drivers/video/display/chip-tfp410.c b/drivers/video/display/chip-tfp410.c
+new file mode 100644
+index 0000000..2f8bdb6
+--- /dev/null
++++ b/drivers/video/display/chip-tfp410.c
+@@ -0,0 +1,164 @@
++/*
++ * TFP410 DPI-to-DVI bridge
++ *
++ * Copyright (C) 2012 Texas Instruments
++ *
++ * Contacts: Tomi Valkeinen <tomi.valkeinen@ti.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/gpio.h>
++#include <linux/platform_device.h>
++
++#include <video/display.h>
++#include <video/omap-panel-tfp410.h>
++
++struct tfp410_data {
++	struct video_source *in;
++
++	struct video_source out;
++
++	int power_down_gpio;
++};
++
++#define to_tfp410(p) container_of(p, struct tfp410_data, out)
++
++static int tfp410_set_stream(struct video_source *src,
++				     enum video_source_stream_state state)
 +{
-+	return !!(lcdc_read(LCD_RASTER_CTRL_REG) & LCD_RASTER_ENABLE);
-+}
++	struct tfp410_data *data = to_tfp410(src);
++	struct video_source *in = data->in;
++	int r;
 +
- /* Enable the Raster Engine of the LCD Controller */
- static inline void lcd_enable_raster(void)
- {
-@@ -669,9 +674,6 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
- 
- static void da8xx_fb_lcd_reset(void)
- {
--	/* Disable the Raster if previously Enabled */
--	lcd_disable_raster(false);
--
- 	/* DMA has to be disabled */
- 	lcdc_write(0, LCD_DMA_CTRL_REG);
- 	lcdc_write(0, LCD_RASTER_CTRL_REG);
-@@ -724,8 +726,6 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
- 	u32 bpp;
- 	int ret = 0;
- 
--	da8xx_fb_lcd_reset();
--
- 	da8xx_fb_calc_config_clk_divider(par, panel);
- 
- 	if (panel->sync & FB_SYNC_CLK_INVERT)
-@@ -1205,9 +1205,52 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
- 	return ret;
- }
- 
-+static int da8xxfb_set_par(struct fb_info *info)
-+{
-+	struct da8xx_fb_par *par = info->par;
-+	int ret;
-+	bool raster = da8xx_fb_is_raster_enabled();
++	r = in->common_ops->set_stream(in, state);
++	if (r)
++		return r;
 +
-+	if (raster)
-+		lcd_disable_raster(false);
-+	else
-+		lcd_disable_raster(true);
++	switch (state) {
++	case DISPLAY_ENTITY_STREAM_STOPPED:
++		printk("tfp410 set_stream: STOPPED\n");
 +
-+	fb_var_to_videomode(&par->mode, &info->var);
++		gpio_set_value_cansleep(data->power_down_gpio, 0);
 +
-+	par->cfg.bpp = info->var.bits_per_pixel;
++		break;
 +
-+	info->fix.visual = (par->cfg.bpp <= 8) ?
-+				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
-+	info->fix.line_length = (par->mode.xres * par->cfg.bpp) / 8;
++	case DISPLAY_ENTITY_STREAM_CONTINUOUS:
++		printk("tfp410 set_stream: CONTINUOUS\n");
 +
-+	ret = lcd_init(par, &par->cfg, &par->mode);
-+	if (ret < 0) {
-+		dev_err(par->dev, "lcd init failed\n");
-+		return ret;
++		gpio_set_value_cansleep(data->power_down_gpio, 1);
++
++		break;
++
++	default:
++		printk("tfp410 set_stream error\n");
++		break;
 +	}
-+
-+	par->dma_start = info->fix.smem_start +
-+			 info->var.yoffset * info->fix.line_length +
-+			 info->var.xoffset * info->var.bits_per_pixel / 8;
-+	par->dma_end   = par->dma_start +
-+			 info->var.yres * info->fix.line_length - 1;
-+
-+	lcdc_write(par->dma_start, LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
-+	lcdc_write(par->dma_end, LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
-+	lcdc_write(par->dma_start, LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
-+	lcdc_write(par->dma_end, LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
-+
-+	if (raster)
-+		lcd_enable_raster();
 +
 +	return 0;
 +}
 +
- static struct fb_ops da8xx_fb_ops = {
- 	.owner = THIS_MODULE,
- 	.fb_check_var = fb_check_var,
-+	.fb_set_par = da8xxfb_set_par,
- 	.fb_setcolreg = fb_setcolreg,
- 	.fb_pan_display = da8xx_pan_display,
- 	.fb_ioctl = fb_ioctl,
-@@ -1316,14 +1359,9 @@ static int __devinit fb_probe(struct platform_device *device)
- 	}
- 
- 	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
--	fb_var_to_videomode(&par->mode, &da8xx_fb_var);
- 	par->cfg = *lcd_cfg;
- 
--	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
--		dev_err(&device->dev, "lcd_init failed\n");
--		ret = -EFAULT;
--		goto err_release_fb;
--	}
-+	da8xx_fb_lcd_reset();
- 
- 	/* allocate frame buffer */
- 	par->vram_size = lcdc_info->xres * lcdc_info->yres * lcd_cfg->bpp;
++static int tfp410_set_vm(struct video_source *src, const struct videomode *vm)
++{
++	struct tfp410_data *data = to_tfp410(src);
++	struct video_source *in = data->in;
++
++	printk("tfp410 set vm\n");
++
++	return in->ops.dpi->set_videomode(in, vm);
++}
++
++static const struct common_video_source_ops tfp410_common_ops = {
++	.set_stream = tfp410_set_stream,
++};
++
++static const struct dvi_video_source_ops tfp410_dvi_ops = {
++	.set_videomode = tfp410_set_vm,
++};
++
++static void tfp410_release(struct video_source *src)
++{
++	printk("tfp410 entity release\n");
++}
++
++static int __devinit tfp410_probe(struct platform_device *pdev)
++{
++	const struct tfp410_platform_data *pdata = pdev->dev.platform_data;
++	struct tfp410_data *data;
++	int r;
++
++	if (pdata = NULL)
++		return -ENODEV;
++
++	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
++	if (data = NULL)
++		return -ENOMEM;
++
++	data->power_down_gpio = pdata->power_down_gpio;
++
++	r = devm_gpio_request_one(&pdev->dev, pdata->power_down_gpio,
++			GPIOF_OUT_INIT_LOW, "tfp410 pd");
++	if (r) {
++		printk("failed to request pd gpio\n");
++		return r;
++	}
++
++	/* setup input */
++
++	data->in = video_source_find(pdata->video_source);
++	if (data->in = NULL) {
++		printk("failed to get video source\n");
++		return -EINVAL;
++	}
++
++	data->in->ops.dpi->set_data_lines(data->in, 24);
++
++	/* setup output */
++
++	data->out.dev = &pdev->dev;
++	data->out.release = tfp410_release;
++	data->out.common_ops = &tfp410_common_ops;
++	data->out.ops.dvi = &tfp410_dvi_ops;
++	data->out.name = pdata->video_output;
++
++	r = video_source_register(&data->out);
++	if (r < 0) {
++		printk("tfp410 entity register failed\n");
++		video_source_put(data->in);
++		return r;
++	}
++
++	platform_set_drvdata(pdev, data);
++
++	return 0;
++}
++
++static int tfp410_remove(struct platform_device *pdev)
++{
++	struct tfp410_data *data = platform_get_drvdata(pdev);
++
++	video_source_unregister(&data->out);
++
++	video_source_put(data->in);
++
++	return 0;
++}
++
++static struct platform_driver tfp410_driver = {
++	.probe = tfp410_probe,
++	.remove = tfp410_remove,
++	.driver = {
++		.name = "tfp410",
++		.owner = THIS_MODULE,
++	},
++};
++
++module_platform_driver(tfp410_driver);
++
++MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@ti.com>");
++MODULE_DESCRIPTION("TFP410 DPI-to-DVI Bridge");
++MODULE_LICENSE("GPL");
+diff --git a/include/video/omap-panel-tfp410.h b/include/video/omap-panel-tfp410.h
+index b5b05f4..18f2b46 100644
+--- a/include/video/omap-panel-tfp410.h
++++ b/include/video/omap-panel-tfp410.h
+@@ -30,6 +30,10 @@ struct omap_dss_device;
+  */
+ struct tfp410_platform_data {
+ 	const char *name;
++
++	const char *video_source;
++	const char *video_output;
++
+ 	u16 i2c_bus_num;
+ 	int power_down_gpio;
+ };
 -- 
-1.7.12
+1.7.10.4
 

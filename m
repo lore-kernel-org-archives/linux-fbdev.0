@@ -1,162 +1,162 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Wed, 05 Dec 2012 09:00:16 +0000
-Subject: Re: [PATCHv15 0/7] of: add display helper
-Message-Id: <20121205090016.GA22014@pengutronix.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 14 Dec 2012 14:27:26 +0000
+Subject: [RFC 0/6] Common Display Framework-T
+Message-Id: <1355495252-26364-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353920848-1705-1-git-send-email-s.trumtrar@pengutronix.de>
- <CAL1wa8fJ-mCsQFFo5wMLDRcUoOyWvTvFDLKsrrG9k-mxQTsTbg@mail.gmail.com>
-In-Reply-To: <CAL1wa8fJ-mCsQFFo5wMLDRcUoOyWvTvFDLKsrrG9k-mxQTsTbg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Leela Krishna Amudala <l.krishna@samsung.com>
-Cc: devicetree-discuss@lists.ozlabs.org, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi Leela,
+Hi,
 
-unfortunately, nothing new as of yet. I have to work on other stuff at the moment.
+I have been testing Common Display Framework on OMAP, and making changes that
+I've discussed in the posts I've sent in reply to the CDF series from Laurent.
+While my CDF code is rather hacky and not at all ready, I wanted to post the
+code for comments and also as a reference code to my posts.
 
-Regards,
-Steffen
+So here is CDF-T (Tomi-edition =). 
+
+Changes compared to Laurent's CDF
+---------------------------------
+
+- DBI bus is removed. I don't have any DBI devices, and as I said in my posts,
+  I didn't see need for a real bus for DBI (or DSI). I thus also removed the
+  DBI panels.
+
+- Split the display_entity into two parts: video_source, which is used to
+  connect the display chips and panels, and display_entity, which represent
+  either the panel or the whole pipeline (I'm not sure which is better).
+
+- Added ops for DVI and DSI
+
+- Added driver for TFP410, a DPI to DVI converter chip
+- Added driver for generic DVI monitor
+- Added driver for Taal, a DSI command mode panel
+
+- Removed DISPLAY_ENTITY_STREAM_SINGLE_SHOT, and instead there's update() op.
+  It's perhaps possible to use the single-shot method, but I went for a
+  separate op to get a "update done"-callback implemented easily.
+
+Notes about the code
+--------------------
+
+As I said, the code is rather untidy, but I think it's more or less
+understandable. I've skipped adding any helper funcs, for example to call the
+ops, so it's easier for me to change the API.
+
+I also (ab)used some of the omapdss panel headers to ease my hacking for
+omapdss+cdf. These should be quite clear.
+
+The code, including hacks to omapdss to make it use CDF, can be found from:
+git://gitorious.org/linux-omap-dss2/linux.git work/dss-dev-model-cdf
+
+The DSI part is very unfinished. I am able to use it to start up the Taal
+panel, and send frames to the panel, but it's really missing lots of stuff.
+
+About display_entity & video_source
+-----------------------------------
+
+I've discussed this split in previous posts, but I'll describe it here again.
+
+As I see it, the connections between the display blocks, and the use of the
+panel (and thus the whole pipeline) are very different things, and I think they
+should be separated. So in my version I have struct video_source, used to
+connect the blocks, and display_entity, representing the panel or the whole
+pipeline. display_entity is probably not a good name for it anymore, but I
+didn't come up with a good one yet.
+
+As an example, let's look at chip-tfp410.c and panel-dvi.c.
+
+tfp410 uses two video_sources, one for input and one for output. The input
+comes from some other display block, in my case from OMAP display subsystem.
+OMAP DSS has registered a DPI video_source, and the tfp410 driver will get this
+source using video_source_find().
+
+tfp410 registers its output as a video source, using video_source_register.
+panel-dvi will in turn use video_source_find() to get it.
+
+Both drivers use video_source to configure the input bus, i.e. tfp410
+configures the DPI bus between OMAP DSS and TFP410 using, for example,
+set_data_lines op to configure the number of datalines on the DPI bus.
+
+With the video_sources in place, the whole video pipeline can be used. However,
+we still need to expose an API so that somebody can actually use the pipeline.
+This is done with display_entity. display_entity contains higher level ops,
+which are not bus specific. The display_entity is registered by the panel at
+the end of the chain.
+
+In my model the display_entity ops go to the panel driver, which then calls ops
+in the input video source to do the work. Laurent has objected to this model,
+and would rather have the display_entity ops go to the DSS side (if I
+understood right), which would then propagate forward towards the panel. I have
+still kept my model, as I don't see the downsides with my model, nor do I see
+any use for propagating the ops from DSS to the panel. But I'm happy to hear
+examples how it is beneficial and could be used.
 
 
-On Wed, Dec 05, 2012 at 01:25:30PM +0530, Leela Krishna Amudala wrote:
-> Hello Steffen,
-> 
-> Any update on version 16 ?
-> 
-> Best Wishes,
-> Leela Krishna Amudala.
-> 
-> On Mon, Nov 26, 2012 at 2:37 PM, Steffen Trumtrar
-> <s.trumtrar@pengutronix.de> wrote:
-> > Hi!
-> >
-> > Changes since v14:
-> >         - fix "const struct *" warning
-> >                 (reported by: Leela Krishna Amudala <l.krishna@samsung.com>)
-> >         - return -EINVAL when htotal or vtotal are zero
-> >         - remove unreachable code in of_get_display_timings
-> >         - include headers in .c files and not implicit in .h
-> >         - sort includes alphabetically
-> >         - fix lower/uppercase in binding documentation
-> >         - rebase onto v3.7-rc7
-> >
-> > Changes since v13:
-> >         - fix "const struct *" warning
-> >                 (reported by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>)
-> >         - prevent division by zero in fb_videomode_from_videomode
-> >
-> > Changes since v12:
-> >         - rename struct display_timing to via_display_timing in via subsystem
-> >         - fix refreshrate calculation
-> >         - fix "const struct *" warnings
-> >                 (reported by: Manjunathappa, Prakash <prakash.pm@ti.com>)
-> >         - some CodingStyle fixes
-> >         - rewrite parts of commit messages and display-timings.txt
-> >         - let display_timing_get_value get all values instead of just typical
-> >
-> > Changes since v11:
-> >         - make pointers const where applicable
-> >         - add reviewed-by Laurent Pinchart
-> >
-> > Changes since v10:
-> >         - fix function name (drm_)display_mode_from_videomode
-> >         - add acked-by, reviewed-by, tested-by
-> >
-> > Changes since v9:
-> >         - don't leak memory when previous timings were correct
-> >         - CodingStyle fixes
-> >         - move blank lines around
-> >
-> > Changes since v8:
-> >         - fix memory leaks
-> >         - change API to be more consistent (foo_from_bar(struct bar, struct foo))
-> >         - include headers were necessary
-> >         - misc minor bufixe
-> >
-> > Changes since v7:
-> >         - move of_xxx to drivers/video
-> >         - remove non-binding documentation from display-timings.txt
-> >         - squash display_timings and videomode in one patch
-> >         - misc minor fixes
-> >
-> > Changes since v6:
-> >         - get rid of some empty lines etc.
-> >         - move functions to their subsystems
-> >         - split of_ from non-of_ functions
-> >         - add at least some kerneldoc to some functions
-> >
-> > Changes since v5:
-> >         - removed all display stuff and just describe timings
-> >
-> > Changes since v4:
-> >         - refactored functions
-> >
-> > Changes since v3:
-> >         - print error messages
-> >         - free alloced memory
-> >         - general cleanup
-> >
-> > Changes since v2:
-> >         - use hardware-near property-names
-> >         - provide a videomode structure
-> >         - allow ranges for all properties (<min,typ,max>)
-> >         - functions to get display_mode or fb_videomode
-> >
-> >
-> > Steffen Trumtrar (7):
-> >   viafb: rename display_timing to via_display_timing
-> >   video: add display_timing and videomode
-> >   video: add of helper for display timings/videomode
-> >   fbmon: add videomode helpers
-> >   fbmon: add of_videomode helpers
-> >   drm_modes: add videomode helpers
-> >   drm_modes: add of_videomode helpers
-> >
-> >  .../devicetree/bindings/video/display-timing.txt   |  107 ++++++++++
-> >  drivers/gpu/drm/drm_modes.c                        |   70 +++++++
-> >  drivers/video/Kconfig                              |   21 ++
-> >  drivers/video/Makefile                             |    4 +
-> >  drivers/video/display_timing.c                     |   24 +++
-> >  drivers/video/fbmon.c                              |   93 +++++++++
-> >  drivers/video/of_display_timing.c                  |  219 ++++++++++++++++++++
-> >  drivers/video/of_videomode.c                       |   54 +++++
-> >  drivers/video/via/hw.c                             |    6 +-
-> >  drivers/video/via/hw.h                             |    2 +-
-> >  drivers/video/via/lcd.c                            |    2 +-
-> >  drivers/video/via/share.h                          |    2 +-
-> >  drivers/video/via/via_modesetting.c                |    8 +-
-> >  drivers/video/via/via_modesetting.h                |    6 +-
-> >  drivers/video/videomode.c                          |   44 ++++
-> >  include/drm/drmP.h                                 |   13 ++
-> >  include/linux/display_timing.h                     |  104 ++++++++++
-> >  include/linux/fb.h                                 |   12 ++
-> >  include/linux/of_display_timing.h                  |   20 ++
-> >  include/linux/of_videomode.h                       |   18 ++
-> >  include/linux/videomode.h                          |   54 +++++
-> >  21 files changed, 870 insertions(+), 13 deletions(-)
-> >  create mode 100644 Documentation/devicetree/bindings/video/display-timing.txt
-> >  create mode 100644 drivers/video/display_timing.c
-> >  create mode 100644 drivers/video/of_display_timing.c
-> >  create mode 100644 drivers/video/of_videomode.c
-> >  create mode 100644 drivers/video/videomode.c
-> >  create mode 100644 include/linux/display_timing.h
-> >  create mode 100644 include/linux/of_display_timing.h
-> >  create mode 100644 include/linux/of_videomode.h
-> >  create mode 100644 include/linux/videomode.h
-> >
-> > --
-> > 1.7.10.4
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+About the bus model
+-------------------
+
+Lauren't version uses a linux bus for DBI. The idea here is that DBI is the
+control bus fro the panel/chip, and should thus be represented by a real bus.
+While I agreed to this approach when we discussed about it, I now am slightly
+against it.
+
+My reason is that DBI (or DSI or any other similar bus) is not really control
+bus, it is a video bus. It _can_ be used for control, but video is the main
+purpose. This has the partical issues:
+
+- There's never use for DBI only for control. DBI is always used for either
+  video only, or control+video.
+
+- If DBI is used only for video, there's no DBI bus. How to configure DBI in
+  this case?
+
+- If DBI is used for control and video, we have two separate APIs for the bus.
+  In theory it's possible to handle this, but in practice it may be impossible,
+  especially for more complex busses like DSI.
+
+So in my version I added DSI as a plain video_source, without a real linux bus.
+I think this model is a lot simpler, and works better.
+
+ Tomi
+
+Tomi Valkeinen (6):
+  video: add display-core
+  video: add generic dpi panel
+  video: add tfp410
+  video: add generic dvi monitor
+  video: add taal panel
+  video: add makefile & kconfig
+
+ drivers/video/Kconfig                |    1 +
+ drivers/video/Makefile               |    1 +
+ drivers/video/display/Kconfig        |   26 +++
+ drivers/video/display/Makefile       |    5 +
+ drivers/video/display/chip-tfp410.c  |  164 +++++++++++++++
+ drivers/video/display/display-core.c |  207 ++++++++++++++++++
+ drivers/video/display/panel-dpi.c    |  155 ++++++++++++++
+ drivers/video/display/panel-dvi.c    |  164 +++++++++++++++
+ drivers/video/display/panel-taal.c   |  383 ++++++++++++++++++++++++++++++++++
+ include/video/display.h              |  166 +++++++++++++++
+ include/video/omap-panel-nokia-dsi.h |    4 +-
+ include/video/omap-panel-tfp410.h    |    4 +
+ include/video/panel-dpi.h            |   25 +++
+ include/video/panel-dvi.h            |   18 ++
+ 14 files changed, 1321 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/video/display/Kconfig
+ create mode 100644 drivers/video/display/Makefile
+ create mode 100644 drivers/video/display/chip-tfp410.c
+ create mode 100644 drivers/video/display/display-core.c
+ create mode 100644 drivers/video/display/panel-dpi.c
+ create mode 100644 drivers/video/display/panel-dvi.c
+ create mode 100644 drivers/video/display/panel-taal.c
+ create mode 100644 include/video/display.h
+ create mode 100644 include/video/panel-dpi.h
+ create mode 100644 include/video/panel-dvi.h
 
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+1.7.10.4
+

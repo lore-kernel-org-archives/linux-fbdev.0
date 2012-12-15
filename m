@@ -1,38 +1,50 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sat, 15 Dec 2012 21:11:04 +0000
+From: Dave Jones <davej@redhat.com>
+Date: Sat, 15 Dec 2012 22:24:32 +0000
 Subject: Re: [GIT PULL] fbdev changes for 3.8
-Message-Id: <CA+55aFz9+3mOZcjJ9C-izKkidT9mxeO7xUubJER0OTjcZjE=2A@mail.gmail.com>
+Message-Id: <20121215222431.GA7153@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <50CAFDFF.3070802@ti.com>
-In-Reply-To: <50CAFDFF.3070802@ti.com>
+ <CA+55aFz9+3mOZcjJ9C-izKkidT9mxeO7xUubJER0OTjcZjE=2A@mail.gmail.com>
+In-Reply-To: <CA+55aFz9+3mOZcjJ9C-izKkidT9mxeO7xUubJER0OTjcZjE=2A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap <linux-omap@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap <linux-omap@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-On Fri, Dec 14, 2012 at 2:22 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> Hi Linus,
->
-> Florian, the fbdev maintainer, has been very busy lately, so I offered to send
-> the pull request for fbdev for this merge window.
+On Sat, Dec 15, 2012 at 01:11:04PM -0800, Linus Torvalds wrote:
+ > On Fri, Dec 14, 2012 at 2:22 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+ > > Hi Linus,
+ > >
+ > > Florian, the fbdev maintainer, has been very busy lately, so I offered to send
+ > > the pull request for fbdev for this merge window.
+ > 
+ > Pulled. However, with this I get the Kconfig question
+ > 
+ >    OMAP2+ Display Subsystem support (OMAP2_DSS) [N/m/y/?] (NEW)
+ > 
+ > which doesn't make a whole lot of sense on x86-64, unless there's
+ > something about OMAP2 that I don't know.
+ > 
+ > So I'd suggest making that OMAP2_DSS be dependent on OMAP2. Or at
+ > least ARM. Because showing it to anybody else seems insane.
+ > 
+ > Same goes for FB_OMAP2 for that matter. I realize that it's likely
+ > nice to get compile testing for this on x86-64 too, but if that's the
+ > intent, we need to think about it some more. I don't think it's good
+ > to ask actual normal users questions like this just for compile
+ > coverage.
 
-Pulled. However, with this I get the Kconfig question
+This OMAP stuff has been creeping into x86 builds for a while.
+Grep from my current build config ..
 
-   OMAP2+ Display Subsystem support (OMAP2_DSS) [N/m/y/?] (NEW)
+# CONFIG_OMAP_OCP2SCP is not set
+# CONFIG_KEYBOARD_OMAP4 is not set
+# CONFIG_OMAP2_DSS is not set
+# CONFIG_OMAP_USB2 is not set
 
-which doesn't make a whole lot of sense on x86-64, unless there's
-something about OMAP2 that I don't know.
+There was some other arm-ism that does the same that I' currently forgetting,
+or maybe that got fixed..
 
-So I'd suggest making that OMAP2_DSS be dependent on OMAP2. Or at
-least ARM. Because showing it to anybody else seems insane.
+	Dave
 
-Same goes for FB_OMAP2 for that matter. I realize that it's likely
-nice to get compile testing for this on x86-64 too, but if that's the
-intent, we need to think about it some more. I don't think it's good
-to ask actual normal users questions like this just for compile
-coverage.
-
-Hmm?
-
-                    Linus

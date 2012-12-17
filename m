@@ -1,200 +1,111 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 17 Dec 2012 14:36:55 +0000
+Date: Mon, 17 Dec 2012 14:58:43 +0000
 Subject: Re: [RFC v2 0/5] Common Display Framework
-Message-Id: <1608840.IleINgrx5J@avalon>
+Message-Id: <2541365.P6Gsa5p3NZ@avalon>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="nextPart1912010.1cIvULS3J2"
+Content-Type: multipart/mixed; boundary="nextPart2988743.Jr5vB5y2I3"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <50AF8D79.1070309@ti.com>
-In-Reply-To: <50AF8D79.1070309@ti.com>
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org, Archit Taneja <archit@ti.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Inki Dae <inki.dae@samsung.com>, Jesse Barker <jesse.barker@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marcus Lorentzon <marcus.xm.lorentzon@stericsson.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Philipp Zabel <p.zabel@pengutronix.de>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, Rob Clark <rob.clark@linaro.org>, Sascha Hauer <s.hauer@pengutronix.de>, Sebastien Guiriec <s-guiriec@ti.com>, Sumit Semwal <sumit.semwal@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Tom Gall <tom.gall@linaro.org>, Vikas Sajjan <vikas.sajjan@linaro.org>
+References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <20121123195607.GA20990@avionic-0098.adnet.avionic-design.de>
+In-Reply-To: <20121123195607.GA20990@avionic-0098.adnet.avionic-design.de>
+To: Thierry Reding <thierry.reding@avionic-design.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Philipp Zabel <p.zabel@pengutronix.de>, Tom Gall <tom.gall@linaro.org>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, Rob Clark <rob.clark@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, linux-media@vger.kernel.org
 
 
---nextPart1912010.1cIvULS3J2
+--nextPart2988743.Jr5vB5y2I3
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-Hi Tomi,
+Hi Thierry,
 
-I finally have time to work on a v3 :-)
-
-On Friday 23 November 2012 16:51:37 Tomi Valkeinen wrote:
-> On 2012-11-22 23:45, Laurent Pinchart wrote:
-> > From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+On Friday 23 November 2012 20:56:07 Thierry Reding wrote:
+> On Thu, Nov 22, 2012 at 10:45:31PM +0100, Laurent Pinchart wrote:
+> [...]
+> 
+> > Display entities are accessed by driver using notifiers. Any driver can
+> > register a display entity notifier with the CDF, which then calls the
+> > notifier when a matching display entity is registered. The reason for
+> > this asynchronous mode of operation, compared to how drivers acquire
+> > regulator or clock resources, is that the display entities can use
+> > resources provided by the display driver. For instance a panel can be a
+> > child of the DBI or DSI bus controlled by the display device, or use a
+> > clock provided by that device. We can't defer the display device probe
+> > until the panel is registered and also defer the panel device probe until
+> > the display is registered. As most display drivers need to handle output
+> > devices hotplug (HDMI monitors for instance), handling other display
+> > entities through a notification system seemed to be the easiest solution.
 > > 
-> > Hi everybody,
-> > 
-> > Here's the second RFC of what was previously known as the Generic Panel
-> > Framework.
+> > Note that this brings a different issue after registration, as display
+> > controller and display entity drivers would take a reference to each
+> > other. Those circular references would make driver unloading impossible.
+> > One possible solution to this problem would be to simulate an unplug event
+> > for the display entity, to force the display driver to release the dislay
+> > entities it uses. We would need a userspace API for that though. Better
+> > solutions would of course be welcome.
 > 
-> Nice work! Thanks for working on this.
+> Maybe I don't understand all of the underlying issues correctly, but a
+> parent/child model would seem like a better solution to me. We discussed
+> this back when designing the DT bindings for Tegra DRM and came to the
+> conclusion that the output resource of the display controller (RGB,
+> HDMI, DSI or TVO) was the most suitable candidate to be the parent of
+> the panel or display attached to it. The reason for that decision was
+> that it keeps the flow of data or addressing of nodes consistent. So the
+> chain would look something like this (on Tegra):
 > 
-> I was doing some testing with the code, seeing how to use it in omapdss.
-> Here are some thoughts:
+> 	CPU
+> 	+-host1x
+> 	  +-dc
+> 	    +-rgb
+> 	    | +-panel
+> 	    +-hdmi
+> 	      +-monitor
 > 
-> In your model the DSS gets the panel devices connected to it from
-> platform data. After the DSS and the panel drivers are loaded, DSS gets
-> a notification and connects DSS and the panel.
-> 
-> I think it's a bit limited way. First of all, it'll make the DT data a
-> bit more complex (although this is not a major problem). With your
-> model, you'll need something like:
-> 
-> soc-base.dtsi:
-> 
-> dss {
-> 	dpi0: dpi {
-> 	};
-> };
-> 
-> board.dts:
-> 
-> &dpi0 {
-> 	panel = &dpi-panel;
-> };
-> 
-> / {
-> 	dpi-panel: dpi-panel {
-> 		...panel data...;
-> 	};
-> };
-> 
-> Second, it'll prevent hotplug, and even if real hotplug would not be
-> supported, it'll prevent cases where the connected panel must be found
-> dynamically (like reading ID from eeprom).
+> In a natural way this makes the output resource the master of the panel
+> or display. From a programming point of view this becomes quite easy to
+> implement and is very similar to how other busses like I2C or SPI are
+> modelled. In device tree these would be represented as subnodes, while
+> with platform data some kind of lookup could be done like for regulators
+> or alternatively a board setup registration mechanism like what's in
+> place for I2C or SPI.
 
-Hotplug definitely needs to be supported, as the common display framework also 
-targets HDMI and DP. The notification mechanism was actually designed to 
-support hotplug.
+That works well for panels that have a shared control and video bus (DBI, DSI) 
+or only a video bus (DPI), but breaks when you need to support panels with 
+separate control and video busses, such as panels with a parallel data bus and 
+an I2C or SPI control bus.
 
-How do you see the proposal preventing hotplug ?
+Both Linux and DT have a tree-based device model. Devices can have a single 
+parent, so you can't represent your panel as a child of both the video source 
+and the control bus master. We have the exact same problem in V4L2 with I2C 
+camera sensors that output video data on a separate parallel or serial bus, 
+and we decided to handle the device as a child of its control bus master. This 
+model makes usage of the Linux power management model easier (but not 
+straightforward when power management dependencies exist across video busses, 
+outside of the kernel device tree).
 
-> Third, it kinda creates a cyclical dependency: the DSS needs to know
-> about the panel and calls ops in the panel, and the panel calls ops in
-> the DSS. I'm not sure if this is an actual problem, but I usually find
-> it simpler if calls are done only in one direction.
-
-I don't see any way around that. The panel is not a standalone entity that can 
-only receive calls (as it needs to control video streams, per your request 
-:-)) or only emit calls (as something needs to control it, userspace doesn't 
-control the panel directly).
-
-> What I suggest is take a simpler approach, something alike to how regulators
-> or gpios are used, even if slightly more complex than those: the entity that
-> has a video output (SoC's DSS, external chips) offers that video output as
-> resource. It doesn't know or care who uses it. The user of the video output
-> (panel, external chips) will find the video output (to which it is connected
-> in the HW) by some means, and will use different operations on that output
-> to operate the device.
-> 
-> This would give us something like the following DT data:
-> 
-> soc-base.dtsi:
-> 
-> dss {
-> 	dpi0: dpi {
-> 	};
-> };
-> 
-> board.dts:
-> 
-> / {
-> 	dpi-panel: dpi-panel {
-> 		source = <&dpi0>;
-> 		...panel data...;
-> 	};
-> };
-> 
-> The panel driver would do something like this in its probe:
-> 
-> int dpi_panel_probe()
-> {
-> 	// Find the video source, increase ref
-> 	src = get_video_source_from_of("source");
-> 
-> 	// Reserve the video source for us. others can still get and
-> 	// observe it, but cannot use it as video data source.
-> 	// I think this should cascade upstream, so that after this call
-> 	// each video entity from the panel to the SoC's CRTC is
-> 	// reserved and locked for this video pipeline.
-> 	reserve_video_source(src);
-> 
-> 	// set DPI HW configuration, like DPI data lines. The
-> 	// configuration would come from panel's platform data
-> 	set_dpi_config(src, config);
-> 
-> 	// register this panel as a display.
-> 	register_display(this);
-> }
-> 
-> 
-> The DSS's dpi driver would do something like:
-> 
-> int dss_dpi_probe()
-> {
-> 	// register as a DPI video source
-> 	register_video_source(this);
-> }
-> 
-> A DSI-2-DPI chip would do something like:
-> 
-> int dsi2dpi_probe()
-> {
-> 	// get, reserve and config the DSI bus from SoC
-> 	src = get_video_source_from_of("source");
-> 	reserve_video_source(src);
-> 	set_dsi_config(src, config);
-> 
-> 	// register as a DPI video source
-> 	register_video_source(this);
-> }
-> 
-> 
-> Here we wouldn't have similar display_entity as you have, but video sources
-> and displays. Video sources are elements in the video pipeline, and a video
-> source is used only by the next downstream element. The last element in the
-> pipeline would not be a video source, but a display, which would be used by
-> the upper layer.
-
-I don't think we should handle pure sources, pure sinks (displays) and mixed 
-entities (transceivers) differently. I prefer having abstract entities that 
-can have a source and a sink, and expose the corresponding operations. That 
-would make pipeline handling much easier, as the code will only need to deal 
-with a single type of object. Implementing support for entities with multiple 
-sinks and/or sources would also be possible.
-
-> Video source's ops would deal with things related to the video bus in
-> question, like configuring data lanes, sending DSI packets, etc. The
-> display ops would be more high level things, like enable, update, etc.
-> Actually, I guess you could consider the display to represent and deal
-> with the whole pipeline, while video source deals with the bus between
-> two display entities.
-
-What is missing in your proposal is an explanation of how the panel is 
-controlled. What does your register_display() function register the display 
-with, and what then calls the display operations ?
+As the common display framework should handle both panels with common control 
+and video busses and panels with separate busses in a similar fashion, DT 
+bindings needs to reference the panel through a phandle, even though in some 
+cases they could technically just be children of the display controller.
 
 -- 
 Regards,
 
 Laurent Pinchart
 
---nextPart1912010.1cIvULS3J2
+--nextPart2988743.Jr5vB5y2I3
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQEcBAABAgAGBQJQzy4UAAoJEIkPb2GL7hl1FLQH/jV+/irRU4sWqwmPmjyDBY2S
-ebZy5miD4tmnWEnP3AWC+scfw7G8GDOMYGW6Zga0U3/O6nLfIJz7WbahBu6nFMSj
-Qw9h0efNQwdhaRsAbIaUs1ILfn+y7DzoDPpAqE3xIzMcTkpU5cJjRyOOGp9MoBgw
-1yEdxjnBG3GnosFXfXFRKByC1ddaGzWUOhF6FZ1NxDItd63RjGOMdeR/EG1zfTaG
-37QVNKfLOpZnQsPMNh1dG0HlHWQB5yefVPT2WNSd/ckC0m/nRa6gofc31WCzr8Cv
-gFqBD3+AhXdZHLVGYs9o6WSldBrsG0p9lkrsEIqfZH6zXRf+LEv3Tz5b9ofCiSY=
-=SNSh
+iQEcBAABAgAGBQJQzzMjAAoJEIkPb2GL7hl1JYQIAIQXvi0KWU7ltksU7wh3Su7H
+f0y8EydbKgXxgs9ZY83GMpTwDpBdWZR6rLN+FuJejKiKhxZuVJ6tn00K2U+dY3KL
+VZQW3qbmP0AXuYN67mRUiBnKdwsZi6ItyNwwJTYNwKW8i1QlLV+NMW0yfyebWyGK
+edN3FS1kgrmckUBRy32oe2+krfhHqDq5y7f1wp86QEg9M7WjBsZ40pFRlGhHKUfD
+JdUdQbQPg6UztfMaJ/WeNaVCCD2VH/9rhMRGLp5NDTpxA/dOXfMttSvl5C9WEx6e
+et1EfjfyYmw30VTIJnCQpOgSZgDG6u9qAvXdswQ/2EqlLWWSb3lpxdOMhuKkZGI=
+=y6qr
 -----END PGP SIGNATURE-----
 
---nextPart1912010.1cIvULS3J2--
+--nextPart2988743.Jr5vB5y2I3--
 

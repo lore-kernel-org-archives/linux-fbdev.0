@@ -1,38 +1,46 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 17 Dec 2012 15:02:19 +0000
+Date: Mon, 17 Dec 2012 15:15:35 +0000
 Subject: Re: [RFC v2 0/5] Common Display Framework
-Message-Id: <2640154.JP12k2CZJX@avalon>
+Message-Id: <2584890.nIjxiaN4DG@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <20121123214158.GO10369@pengutronix.de>
-In-Reply-To: <20121123214158.GO10369@pengutronix.de>
+References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <50B07427.1010605@ti.com> <20121126144708.3daec09e@pyramind.ukuu.org.uk>
+In-Reply-To: <20121126144708.3daec09e@pyramind.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sascha Hauer <s.hauer@pengutronix.de>, Inki Dae <inki.dae@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org, Archit Taneja <archit@ti.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Jesse Barker <jesse.barker@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marcus Lorentzon <marcus.xm.lorentzon@stericsson.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Philipp Zabel <p.zabel@pengutronix.de>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, Rob Clark <rob.clark@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, Sumit Semwal <sumit.semwal@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Tom Gall <tom.gall@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Vikas Sajjan <vikas.sajjan@linaro.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Thierry Reding <thierry.reding@avionic-design.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev@vger.kernel.org, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Tom Gall <tom.gall@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, dri-devel@lists.freedesktop.org, Rob Clark <rob.clark@linaro.org>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, Philipp Zabel <p.zabel@pengutronix.de>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, linux-media@vger.kernel.org
 
-Hi Sascha,
+Hi Alan,
 
-On Friday 23 November 2012 22:41:58 Sascha Hauer wrote:
-> On Thu, Nov 22, 2012 at 10:45:31PM +0100, Laurent Pinchart wrote:
-> > From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-> > 
-> > The CDF models this using a Russian doll's model. From the display
-> > controller point of view only the first external entity (LVDS to DSI
-> > converter) is visible. The display controller thus calls the control
-> > operations implemented by the LVDS to DSI transmitter driver (left-most
-> > green arrow). The driver is aware of the next entity in the chain,
+On Monday 26 November 2012 14:47:08 Alan Cox wrote:
+> On Sat, 24 Nov 2012 09:15:51 +0200 Tomi Valkeinen wrote:
+> > On 2012-11-23 21:56, Thierry Reding wrote:
+> > > On Thu, Nov 22, 2012 at 10:45:31PM +0100, Laurent Pinchart wrote:
+> > > [...]
+> > > 
+> > >> Display entities are accessed by driver using notifiers. Any driver can
+> > >> register a display entity notifier with the CDF, which then calls the
+> > >> notifier when a matching display entity is registered.
 > 
-> I can't find this in the code. I can see the video operations
-> propagating upstream using the source field of struct display_entity,
-> but how do the control operations propagate downstream? Am I missing
-> something?
+> The framebuffer layer has some similar 'anyone can' type notifier
+> behaviour and its not a good thing. That kind of "any one can" behaviour
+> leads to some really horrible messes unless the connections and the
+> locking are well defined IMHO.
 
-There's no downstream propagation yet, as there's no display entity driver 
-that requires it at the moment. Propagation would be implemented in 
-transceiver drivers for instance. I'll have to find one with public 
-documentation (and hopefully an existing mainline driver) on one of the boards 
-I own.
+I agree with you. I dislike the FBDEV notifier model, and I definitely don't 
+intend to duplicate it in the common display framework.
+
+In the CDF model, when the display device driver registers a notifier, it 
+tells the core which device it wants to receive events for. This currently 
+takes the form of a struct device pointer, and the API will also support 
+device nodes in a future version (this is still work in progress). The goal is 
+to implement panel discovery in a way that is compatible with (and very 
+similar to) hotpluggable display discovery.
+
+Thinking about it now, the API could be cleaner and less subject to abuse if 
+the notifier was registered for a given video port instead of a given 
+connected device. I'll add that to my TODO list.
 
 -- 
 Regards,

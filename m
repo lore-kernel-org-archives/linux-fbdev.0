@@ -1,77 +1,149 @@
-From: Donghwa Lee <dh09.lee@samsung.com>
-Date: Mon, 17 Dec 2012 00:36:58 +0000
-Subject: Re: [PATCH 1/1] video: exynos: Use devm_* APIs in s6e8ax0.c
-Message-Id: <50CE692A.1040008@samsung.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Tue, 18 Dec 2012 16:57:47 +0000
+Subject: [PATCHv16 1/7] viafb: rename display_timing to via_display_timing
+Message-Id: <1355849873-8051-2-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1355289083-28269-1-git-send-email-sachin.kamat@linaro.org>
-In-Reply-To: <1355289083-28269-1-git-send-email-sachin.kamat@linaro.org>
+References: <1355849873-8051-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1355849873-8051-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: devicestree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>, Rob Clark <robdclark@gmail.com>, Leela Krishna Amudala <leelakrishna.a@gmail.com>
 
-On Wed, Dec 12, 2012 at 14:11, Sachin Kamat wrote:
-> devm_* APIs are device managed and make error handling
-> and code cleanup simpler.
->
-> Cc: Donghwa Lee <dh09.lee@samsung.com>
-> Cc: Inki Dae <inki.dae@samsung.com>
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> ---
-> Compile tested against linux-next.
-> ---
->   drivers/video/exynos/s6e8ax0.c |   14 ++++----------
->   1 files changed, 4 insertions(+), 10 deletions(-)
->
-> diff --git a/drivers/video/exynos/s6e8ax0.c b/drivers/video/exynos/s6e8ax0.c
-> index 05d080b..ca26024 100644
-> --- a/drivers/video/exynos/s6e8ax0.c
-> +++ b/drivers/video/exynos/s6e8ax0.c
-> @@ -776,7 +776,7 @@ static int s6e8ax0_probe(struct mipi_dsim_lcd_device *dsim_dev)
->   	int ret;
->   	u8 mtp_id[3] = {0, };
->   
-> -	lcd = kzalloc(sizeof(struct s6e8ax0), GFP_KERNEL);
-> +	lcd = devm_kzalloc(&dsim_dev->dev, sizeof(struct s6e8ax0), GFP_KERNEL);
->   	if (!lcd) {
->   		dev_err(&dsim_dev->dev, "failed to allocate s6e8ax0 structure.\n");
->   		return -ENOMEM;
-> @@ -788,18 +788,17 @@ static int s6e8ax0_probe(struct mipi_dsim_lcd_device *dsim_dev)
->   
->   	mutex_init(&lcd->lock);
->   
-> -	ret = regulator_bulk_get(lcd->dev, ARRAY_SIZE(supplies), supplies);
-> +	ret = devm_regulator_bulk_get(lcd->dev, ARRAY_SIZE(supplies), supplies);
->   	if (ret) {
->   		dev_err(lcd->dev, "Failed to get regulators: %d\n", ret);
-> -		goto err_lcd_register;
-> +		return ret;
->   	}
->   
->   	lcd->ld = lcd_device_register("s6e8ax0", lcd->dev, lcd,
->   			&s6e8ax0_lcd_ops);
->   	if (IS_ERR(lcd->ld)) {
->   		dev_err(lcd->dev, "failed to register lcd ops.\n");
-> -		ret = PTR_ERR(lcd->ld);
-> -		goto err_lcd_register;
-> +		return PTR_ERR(lcd->ld);
->   	}
->   
->   	lcd->bd = backlight_device_register("s6e8ax0-bl", lcd->dev, lcd,
-> @@ -838,11 +837,6 @@ static int s6e8ax0_probe(struct mipi_dsim_lcd_device *dsim_dev)
->   
->   err_backlight_register:
->   	lcd_device_unregister(lcd->ld);
-> -
-> -err_lcd_register:
-> -	regulator_bulk_free(ARRAY_SIZE(supplies), supplies);
-> -	kfree(lcd);
-> -
->   	return ret;
->   }
->   
-It looks good to me.
-Acked-by: Donghwa Lee <dh09.lee@samsung.com>
+The struct display_timing is specific to the via subsystem. The naming leads to
+collisions with the new struct display_timing, which is supposed to be a shared
+struct between different subsystems.
+To clean this up, prepend the existing struct with the subsystem it is specific
+to.
 
-Thank you,
-Donghwa Lee
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+---
+ drivers/video/via/hw.c              |    6 +++---
+ drivers/video/via/hw.h              |    2 +-
+ drivers/video/via/lcd.c             |    2 +-
+ drivers/video/via/share.h           |    2 +-
+ drivers/video/via/via_modesetting.c |    8 ++++----
+ drivers/video/via/via_modesetting.h |    6 +++---
+ 6 files changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 898590d..5563c67 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -1467,10 +1467,10 @@ void viafb_set_vclock(u32 clk, int set_iga)
+ 	via_write_misc_reg_mask(0x0C, 0x0C); /* select external clock */
+ }
+ 
+-struct display_timing var_to_timing(const struct fb_var_screeninfo *var,
++struct via_display_timing var_to_timing(const struct fb_var_screeninfo *var,
+ 	u16 cxres, u16 cyres)
+ {
+-	struct display_timing timing;
++	struct via_display_timing timing;
+ 	u16 dx = (var->xres - cxres) / 2, dy = (var->yres - cyres) / 2;
+ 
+ 	timing.hor_addr = cxres;
+@@ -1491,7 +1491,7 @@ struct display_timing var_to_timing(const struct fb_var_screeninfo *var,
+ void viafb_fill_crtc_timing(const struct fb_var_screeninfo *var,
+ 	u16 cxres, u16 cyres, int iga)
+ {
+-	struct display_timing crt_reg = var_to_timing(var,
++	struct via_display_timing crt_reg = var_to_timing(var,
+ 		cxres ? cxres : var->xres, cyres ? cyres : var->yres);
+ 
+ 	if (iga = IGA1)
+diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
+index 6be243c..c3f2572 100644
+--- a/drivers/video/via/hw.h
++++ b/drivers/video/via/hw.h
+@@ -637,7 +637,7 @@ extern int viafb_LCD_ON;
+ extern int viafb_DVI_ON;
+ extern int viafb_hotplug;
+ 
+-struct display_timing var_to_timing(const struct fb_var_screeninfo *var,
++struct via_display_timing var_to_timing(const struct fb_var_screeninfo *var,
+ 	u16 cxres, u16 cyres);
+ void viafb_fill_crtc_timing(const struct fb_var_screeninfo *var,
+ 	u16 cxres, u16 cyres, int iga);
+diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
+index 1650379..022b0df 100644
+--- a/drivers/video/via/lcd.c
++++ b/drivers/video/via/lcd.c
+@@ -549,7 +549,7 @@ void viafb_lcd_set_mode(const struct fb_var_screeninfo *var, u16 cxres,
+ 	int panel_hres = plvds_setting_info->lcd_panel_hres;
+ 	int panel_vres = plvds_setting_info->lcd_panel_vres;
+ 	u32 clock;
+-	struct display_timing timing;
++	struct via_display_timing timing;
+ 	struct fb_var_screeninfo panel_var;
+ 	const struct fb_videomode *mode_crt_table, *panel_crt_table;
+ 
+diff --git a/drivers/video/via/share.h b/drivers/video/via/share.h
+index 3158dfc..65c65c6 100644
+--- a/drivers/video/via/share.h
++++ b/drivers/video/via/share.h
+@@ -319,7 +319,7 @@ struct crt_mode_table {
+ 	int refresh_rate;
+ 	int h_sync_polarity;
+ 	int v_sync_polarity;
+-	struct display_timing crtc;
++	struct via_display_timing crtc;
+ };
+ 
+ struct io_reg {
+diff --git a/drivers/video/via/via_modesetting.c b/drivers/video/via/via_modesetting.c
+index 0e431ae..0b414b0 100644
+--- a/drivers/video/via/via_modesetting.c
++++ b/drivers/video/via/via_modesetting.c
+@@ -30,9 +30,9 @@
+ #include "debug.h"
+ 
+ 
+-void via_set_primary_timing(const struct display_timing *timing)
++void via_set_primary_timing(const struct via_display_timing *timing)
+ {
+-	struct display_timing raw;
++	struct via_display_timing raw;
+ 
+ 	raw.hor_total = timing->hor_total / 8 - 5;
+ 	raw.hor_addr = timing->hor_addr / 8 - 1;
+@@ -88,9 +88,9 @@ void via_set_primary_timing(const struct display_timing *timing)
+ 	via_write_reg_mask(VIACR, 0x17, 0x80, 0x80);
+ }
+ 
+-void via_set_secondary_timing(const struct display_timing *timing)
++void via_set_secondary_timing(const struct via_display_timing *timing)
+ {
+-	struct display_timing raw;
++	struct via_display_timing raw;
+ 
+ 	raw.hor_total = timing->hor_total - 1;
+ 	raw.hor_addr = timing->hor_addr - 1;
+diff --git a/drivers/video/via/via_modesetting.h b/drivers/video/via/via_modesetting.h
+index 06e09fe..f6a6503 100644
+--- a/drivers/video/via/via_modesetting.h
++++ b/drivers/video/via/via_modesetting.h
+@@ -33,7 +33,7 @@
+ #define VIA_PITCH_MAX	0x3FF8
+ 
+ 
+-struct display_timing {
++struct via_display_timing {
+ 	u16 hor_total;
+ 	u16 hor_addr;
+ 	u16 hor_blank_start;
+@@ -49,8 +49,8 @@ struct display_timing {
+ };
+ 
+ 
+-void via_set_primary_timing(const struct display_timing *timing);
+-void via_set_secondary_timing(const struct display_timing *timing);
++void via_set_primary_timing(const struct via_display_timing *timing);
++void via_set_secondary_timing(const struct via_display_timing *timing);
+ void via_set_primary_address(u32 addr);
+ void via_set_secondary_address(u32 addr);
+ void via_set_primary_pitch(u32 pitch);
+-- 
+1.7.10.4
+

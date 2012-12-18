@@ -1,51 +1,46 @@
-From: David Howells <dhowells@redhat.com>
-Date: Thu, 20 Dec 2012 17:49:17 +0000
-Subject: [GIT PULL] UAPI disintegration for fbdev
-Message-Id: <1565.1356025757@warthog.procyon.org.uk>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Tue, 18 Dec 2012 13:49:29 +0000
+Subject: [PATCH] video: ssd1307fb: Fix bit order bug in the byte translation function
+Message-Id: <1355838569-30225-1-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: torvalds@linux-foundation.org
-Cc: dhowells@redhat.com, FlorianSchandinat@gmx.de, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
+This was leading to a strange behaviour when using the fbcon driver on
+top of this one: the letter were in the right order, but each letter was
+having a vertical symmetry.
 
-Hi Linus,
+This was because the addressing was right for the byte, but the
+addressing of each individual bit was inverted.
 
-Could you consider pulling my UAPI disintegration for fbdev branch please?
-The maintainer (Florian Tobias Schandinat) said he didn't mind if I wanted to
-push it forward.
-
-David
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: Brian Lilly <brian@crystalfontz.com>
+Cc: Greg Kroah-Hartman <gregkh@linux-foundation.org>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Thomas Petazzoni <thomas@free-electrons.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
-The following changes since commit 1800098549fc310cffffefdcb3722adaad0edda8:
+ drivers/video/ssd1307fb.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-  ARM: OMAP: Fix build breakage due to missing include in i2c.c (2012-12-20 08:43:25 -0800)
+diff --git a/drivers/video/ssd1307fb.c b/drivers/video/ssd1307fb.c
+index 9e46633..7f5f824 100644
+--- a/drivers/video/ssd1307fb.c
++++ b/drivers/video/ssd1307fb.c
+@@ -145,8 +145,8 @@ static void ssd1307fb_update_display(struct ssd1307fb_par *par)
+ 				u32 page_length = SSD1307FB_WIDTH * i;
+ 				u32 index = page_length + (SSD1307FB_WIDTH * k + j) / 8;
+ 				u8 byte = *(vmem + index);
+-				u8 bit = byte & (1 << (7 - (j % 8)));
+-				bit = bit >> (7 - (j % 8));
++				u8 bit = byte & (1 << (j % 8));
++				bit = bit >> (j % 8);
+ 				buf |= bit << k;
+ 			}
+ 			ssd1307fb_write_data(par->client, buf);
+-- 
+1.7.9.5
 
-are available in the git repository at:
-
-  git://git.infradead.org/users/dhowells/linux-headers.git tags/disintegrate-fbdev-20121220
-
-for you to fetch changes up to b889fcf63cb62e7fdb7816565e28f44dbe4a76a5:
-
-  UAPI: (Scripted) Disintegrate include/video (2012-12-20 17:14:26 +0000)
-
-----------------------------------------------------------------
-UAPI disintegration 2012-12-20
-
-----------------------------------------------------------------
-David Howells (1):
-      UAPI: (Scripted) Disintegrate include/video
-
- include/uapi/video/Kbuild    |   3 +
- include/uapi/video/edid.h    |   9 ++
- include/uapi/video/sisfb.h   | 209 +++++++++++++++++++++++++++++++++++++++++++
- include/uapi/video/uvesafb.h |  60 +++++++++++++
- include/video/Kbuild         |   3 -
- include/video/edid.h         |   7 +-
- include/video/sisfb.h        | 189 +-------------------------------------
- include/video/uvesafb.h      |  58 +-----------
- 8 files changed, 284 insertions(+), 254 deletions(-)
- create mode 100644 include/uapi/video/edid.h
- create mode 100644 include/uapi/video/sisfb.h
- create mode 100644 include/uapi/video/uvesafb.h

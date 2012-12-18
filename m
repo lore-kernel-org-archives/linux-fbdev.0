@@ -1,526 +1,556 @@
-From: Vikas Sajjan <vikas.sajjan@linaro.org>
-Date: Fri, 28 Dec 2012 03:38:49 +0000
-Subject: Re: [RFC v2 0/5] Common Display Framework
-Message-Id: <CAD025ySVk+0+9c=TxcwjSL8Nv_jZbbLmvsm_6sf8-oaDgNAL9g@mail.gmail.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Tue, 18 Dec 2012 16:57:49 +0000
+Subject: =?UTF-8?q?=5BPATCHv16=203/7=5D=20video=3A=20add=20of=20helper=20for=20display=20timings/videomode?=
+Message-Id: <1355849873-8051-4-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com>
-	<7255068.DBf2OgseHL@amdc1227>
-	<3445117.L94DmxEvrl@avalon>
-	<2529718.glQX8guWfJ@amdc1227>
-In-Reply-To: <2529718.glQX8guWfJ@amdc1227>
+References: <1355849873-8051-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1355849873-8051-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Tomasz Figa <t.figa@samsung.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, dri-devel@lists.freedesktop.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev@vger.kernel.org, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Tom Gall <tom.gall@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Clark <rob.clark@linaro.org>, Ragesh Radhakrishnan <Ragesh.R@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Philipp Zabel <p.zabel@pengutronix.de>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, sunil joshi <joshi@samsung.com>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, linux-media@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: devicestree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Philipp Zabel <p.zabel@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>, Rob Clark <robdclark@gmail.com>, Leela Krishna Amudala <leelakrishna.a@gmail.com>
 
-On 27 December 2012 20:13, Tomasz Figa <t.figa@samsung.com> wrote:
-> Hi Laurent,
->
-> On Monday 24 of December 2012 15:12:28 Laurent Pinchart wrote:
->> Hi Tomasz,
->>
->> On Friday 21 December 2012 11:00:52 Tomasz Figa wrote:
->> > On Tuesday 18 of December 2012 08:31:30 Vikas Sajjan wrote:
->> > > On 17 December 2012 20:55, Laurent Pinchart wrote:
->> > > > Hi Vikas,
->> > > >
->> > > > Sorry for the late reply. I now have more time to work on CDF, so
->> > > > delays should be much shorter.
->> > > >
->> > > > On Thursday 06 December 2012 10:51:15 Vikas Sajjan wrote:
->> > > > > Hi Laurent,
->> > > > >
->> > > > > I was thinking of porting CDF to samsung EXYNOS 5250 platform,
->> > > > > what
->> > > > > I found is that, the exynos display controller is MIPI DSI based
->> > > > > controller.
->> > > > >
->> > > > > But if I look at CDF patches, it has only support for MIPI DBI
->> > > > > based
->> > > > > Display controller.
->> > > > >
->> > > > > So my question is, do we have any generic framework for MIPI DSI
->> > > > > based display controller? basically I wanted to know, how to go
->> > > > > about
->> > > > > porting CDF for such kind of display controller.
->> > > >
->> > > > MIPI DSI support is not available yet. The only reason for that is
->> > > > that I don't have any MIPI DSI hardware to write and test the code
->> > > > with :-)
->> > > >
->> > > > The common display framework should definitely support MIPI DSI. I
->> > > > think the existing MIPI DBI code could be used as a base, so the
->> > > > implementation shouldn't be too high.
->> > > >
->> > > > Yeah, i was also thinking in similar lines, below is my though for
->> > > > MIPI DSI support in CDF.
->> > >
->> > > o   MIPI DSI support as part of CDF framework will expose
->> > > =A7  mipi_dsi_register_device(mpi_device) (will be called
->> > > mach-xxx-dt.c
->> > > file )
->> > > =A7  mipi_dsi_register_driver(mipi_driver, bus ops) (will be called
->> > > from
->> > > platform specific init driver call )
->> > > =B7    bus ops will be
->> > > o   read data
->> > > o   write data
->> > > o   write command
->> > > =A7  MIPI DSI will be registered as bus_register()
->> > >
->> > > When MIPI DSI probe is called, it (e.g., Exynos or OMAP MIPI DSI)
->> > > will
->> > > initialize the MIPI DSI HW IP.
->> > >
->> > > This probe will also parse the DT file for MIPI DSI based panel, add
->> > > the panel device (device_add() ) to kernel and register the display
->> > > entity with its control and  video ops with CDF.
->> > >
->> > > I can give this a try.
->> >
->> > I am currently in progress of reworking Exynos MIPI DSIM code and
->> > s6e8ax0 LCD driver to use the v2 RFC of Common Display Framework. I
->> > have most of the work done, I have just to solve several remaining
->> > problems.
->> Do you already have code that you can publish ? I'm particularly
->> interested (and I think Tomi Valkeinen would be as well) in looking at
->> the DSI operations you expose to DSI sinks (panels, transceivers, ...).
->
-> Well, I'm afraid this might be little below your expectations, but here's
-> an initial RFC of the part defining just the DSI bus. I need a bit more
-> time for patches for Exynos MIPI DSI master and s6e8ax0 LCD.
->
-> The implementation is very simple and heavily based on your MIPI DBI
-> support and existing Exynos MIPI DSIM framework. Provided operation set is
-> based on operation set used by Exynos s6e8ax0 LCD driver. Unfortunately
-> this is my only source of information about MIPI DSI.
->
-> Best regards,
-> --
-> Tomasz Figa
-> Samsung Poland R&D Center
-> SW Solution Development, Linux Platform
->
-> From bad07d8bdce0ff76cbc81a9da597c0d01e5244f7 Mon Sep 17 00:00:00 2001
-> From: Tomasz Figa <t.figa@samsung.com>
-> Date: Thu, 27 Dec 2012 12:36:15 +0100
-> Subject: [RFC] video: display: Add generic MIPI DSI bus
->
-> Signed-off-by: Tomasz Figa <t.figa@samsung.com>
-> ---
->  drivers/video/display/Kconfig        |   4 +
->  drivers/video/display/Makefile       |   1 +
->  drivers/video/display/mipi-dsi-bus.c | 214
-> +++++++++++++++++++++++++++++++++++
->  include/video/display.h              |   1 +
->  include/video/mipi-dsi-bus.h         |  98 ++++++++++++++++
->  5 files changed, 318 insertions(+)
->  create mode 100644 drivers/video/display/mipi-dsi-bus.c
->  create mode 100644 include/video/mipi-dsi-bus.h
->
-> diff --git a/drivers/video/display/Kconfig b/drivers/video/display/Kconfig
-> index 13b6aaf..dbaff9d 100644
-> --- a/drivers/video/display/Kconfig
-> +++ b/drivers/video/display/Kconfig
-> @@ -9,6 +9,10 @@ config DISPLAY_MIPI_DBI
->         tristate
->         default n
->
-> +config DISPLAY_MIPI_DSI
-> +       tristate
-> +       default n
-> +
->  config DISPLAY_PANEL_DPI
->         tristate "DPI (Parallel) Display Panels"
->         ---help---
-> diff --git a/drivers/video/display/Makefile
-> b/drivers/video/display/Makefile
-> index 482bec7..429b3ac8 100644
-> --- a/drivers/video/display/Makefile
-> +++ b/drivers/video/display/Makefile
-> @@ -1,5 +1,6 @@
->  obj-$(CONFIG_DISPLAY_CORE) +=3D display-core.o
->  obj-$(CONFIG_DISPLAY_MIPI_DBI) +=3D mipi-dbi-bus.o
-> +obj-$(CONFIG_DISPLAY_MIPI_DSI) +=3D mipi-dsi-bus.o
->  obj-$(CONFIG_DISPLAY_PANEL_DPI) +=3D panel-dpi.o
->  obj-$(CONFIG_DISPLAY_PANEL_R61505) +=3D panel-r61505.o
->  obj-$(CONFIG_DISPLAY_PANEL_R61517) +=3D panel-r61517.o
-> diff --git a/drivers/video/display/mipi-dsi-bus.c
-> b/drivers/video/display/mipi-dsi-bus.c
-> new file mode 100644
-> index 0000000..2998522
-> --- /dev/null
-> +++ b/drivers/video/display/mipi-dsi-bus.c
-> @@ -0,0 +1,214 @@
-> +/*
-> + * MIPI DSI Bus
-> + *
-> + * Copyright (C) 2012 Samsung Electronics Co., Ltd.
-> + * Contacts: Tomasz Figa <t.figa@samsung.com>
-> + *
-> + * Heavily based ond mipi-dbi-bus.c.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#include <linux/device.h>
-> +#include <linux/export.h>
-> +#include <linux/kernel.h>
-> +#include <linux/list.h>
-> +#include <linux/module.h>
-> +#include <linux/mutex.h>
-> +#include <linux/pm.h>
-> +#include <linux/pm_runtime.h>
-> +
-> +#include <video/mipi-dsi-bus.h>
-> +
-> +/*
-> -------------------------------------------------------------------------=
-----
-> + * Bus operations
-> + */
-> +
-> +int mipi_dsi_write_command(struct mipi_dsi_device *dev, unsigned int cmd,
-> +                               const unsigned char *buf, unsigned int le=
-n)
-> +{
-> +       return dev->bus->ops->write_command(dev->bus, dev, cmd, buf, len);
-> +}
-> +EXPORT_SYMBOL_GPL(mipi_dsi_write_command);
-> +
-> +int mipi_dsi_read_command(struct mipi_dsi_device *dev, unsigned int cmd,
-> +               unsigned int addr, unsigned char *buf, unsigned int len)
-> +{
-> +       return dev->bus->ops->read_command(dev->bus, dev, cmd, addr, buf,
-> len);
-> +}
-> +EXPORT_SYMBOL_GPL(mipi_dsi_read_command);
-> +
-> +/*
-> -------------------------------------------------------------------------=
-----
-> + * Bus type
-> + */
-> +
-> +static const struct mipi_dsi_device_id *
-> +mipi_dsi_match_id(const struct mipi_dsi_device_id *id,
-> +                 struct mipi_dsi_device *dev)
-> +{
-> +       while (id->name[0]) {
-> +               if (strcmp(dev->name, id->name) =3D 0) {
-> +                       dev->id_entry =3D id;
-> +                       return id;
-> +               }
-> +               id++;
-> +       }
-> +       return NULL;
-> +}
-> +
-> +static int mipi_dsi_match(struct device *_dev, struct device_driver
-> *_drv)
-> +{
-> +       struct mipi_dsi_device *dev =3D to_mipi_dsi_device(_dev);
-> +       struct mipi_dsi_driver *drv =3D to_mipi_dsi_driver(_drv);
-> +
-> +       if (drv->id_table)
-> +               return mipi_dsi_match_id(drv->id_table, dev) !=3D NULL;
-> +
-> +       return (strcmp(dev->name, _drv->name) =3D 0);
-> +}
-> +
-> +static ssize_t modalias_show(struct device *_dev, struct device_attribute
-> *a,
-> +                            char *buf)
-> +{
-> +       struct mipi_dsi_device *dev =3D to_mipi_dsi_device(_dev);
-> +       int len =3D snprintf(buf, PAGE_SIZE, MIPI_DSI_MODULE_PREFIX "%s\n=
-",
-> +                          dev->name);
-> +
-> +       return (len >=3D PAGE_SIZE) ? (PAGE_SIZE - 1) : len;
-> +}
-> +
-> +static struct device_attribute mipi_dsi_dev_attrs[] =3D {
-> +       __ATTR_RO(modalias),
-> +       __ATTR_NULL,
-> +};
-> +
-> +static int mipi_dsi_uevent(struct device *_dev, struct kobj_uevent_env
-> *env)
-> +{
-> +       struct mipi_dsi_device *dev =3D to_mipi_dsi_device(_dev);
-> +
-> +       add_uevent_var(env, "MODALIAS=3D%s%s", MIPI_DSI_MODULE_PREFIX,
-> +                      dev->name);
-> +       return 0;
-> +}
-> +
-> +static const struct dev_pm_ops mipi_dsi_dev_pm_ops =3D {
-> +       .runtime_suspend =3D pm_generic_runtime_suspend,
-> +       .runtime_resume =3D pm_generic_runtime_resume,
-> +       .runtime_idle =3D pm_generic_runtime_idle,
-> +       .suspend =3D pm_generic_suspend,
-> +       .resume =3D pm_generic_resume,
-> +       .freeze =3D pm_generic_freeze,
-> +       .thaw =3D pm_generic_thaw,
-> +       .poweroff =3D pm_generic_poweroff,
-> +       .restore =3D pm_generic_restore,
-> +};
-> +
-> +static struct bus_type mipi_dsi_bus_type =3D {
-> +       .name           =3D "mipi-dsi",
-> +       .dev_attrs      =3D mipi_dsi_dev_attrs,
-> +       .match          =3D mipi_dsi_match,
-> +       .uevent         =3D mipi_dsi_uevent,
-> +       .pm             =3D &mipi_dsi_dev_pm_ops,
-> +};
-> +
-> +/*
-> -------------------------------------------------------------------------=
-----
-> + * Device and driver (un)registration
-> + */
-> +
-> +/**
-> + * mipi_dsi_device_register - register a DSI device
-> + * @dev: DSI device we're registering
-> + */
-> +int mipi_dsi_device_register(struct mipi_dsi_device *dev,
-> +                             struct mipi_dsi_bus *bus)
-> +{
-> +       device_initialize(&dev->dev);
-> +
-> +       dev->bus =3D bus;
-> +       dev->dev.bus =3D &mipi_dsi_bus_type;
-> +       dev->dev.parent =3D bus->dev;
-> +
-> +       if (dev->id !=3D -1)
-> +               dev_set_name(&dev->dev, "%s.%d", dev->name,  dev->id);
-> +       else
-> +               dev_set_name(&dev->dev, "%s", dev->name);
-> +
-> +       return device_add(&dev->dev);
-> +}
-> +EXPORT_SYMBOL_GPL(mipi_dsi_device_register);
-> +
-> +/**
-> + * mipi_dsi_device_unregister - unregister a DSI device
-> + * @dev: DSI device we're unregistering
-> + */
-> +void mipi_dsi_device_unregister(struct mipi_dsi_device *dev)
-> +{
-> +       device_del(&dev->dev);
-> +       put_device(&dev->dev);
-> +}
-> +EXPORT_SYMBOL_GPL(mipi_dsi_device_unregister);
-> +
-> +static int mipi_dsi_drv_probe(struct device *_dev)
-> +{
-> +       struct mipi_dsi_driver *drv =3D to_mipi_dsi_driver(_dev->driver);
-> +       struct mipi_dsi_device *dev =3D to_mipi_dsi_device(_dev);
-> +
-> +       return drv->probe(dev);
-> +}
-> +
-> +static int mipi_dsi_drv_remove(struct device *_dev)
-> +{
-> +       struct mipi_dsi_driver *drv =3D to_mipi_dsi_driver(_dev->driver);
-> +       struct mipi_dsi_device *dev =3D to_mipi_dsi_device(_dev);
-> +
-> +       return drv->remove(dev);
-> +}
-> +
-> +/**
-> + * mipi_dsi_driver_register - register a driver for DSI devices
-> + * @drv: DSI driver structure
-> + */
-> +int mipi_dsi_driver_register(struct mipi_dsi_driver *drv)
-> +{
-> +       drv->driver.bus =3D &mipi_dsi_bus_type;
-> +       if (drv->probe)
-> +               drv->driver.probe =3D mipi_dsi_drv_probe;
-> +       if (drv->remove)
-> +               drv->driver.remove =3D mipi_dsi_drv_remove;
-> +
-> +       return driver_register(&drv->driver);
-> +}
-> +EXPORT_SYMBOL_GPL(mipi_dsi_driver_register);
-> +
-> +/**
-> + * mipi_dsi_driver_unregister - unregister a driver for DSI devices
-> + * @drv: DSI driver structure
-> + */
-> +void mipi_dsi_driver_unregister(struct mipi_dsi_driver *drv)
-> +{
-> +       driver_unregister(&drv->driver);
-> +}
-> +EXPORT_SYMBOL_GPL(mipi_dsi_driver_unregister);
-> +
-> +/*
-> -------------------------------------------------------------------------=
-----
-> + * Init/exit
-> + */
-> +
-> +static int __init mipi_dsi_init(void)
-> +{
-> +       return bus_register(&mipi_dsi_bus_type);
-> +}
-> +
+This adds support for reading display timings from DT into a struct
+display_timings. The of_display_timing implementation supports multiple
+subnodes. All children are read into an array, that can be queried.
 
-As per the discussion what Laurent and Tomi had (
-http://lists.freedesktop.org/archives/dri-devel/2012-December/032038.html),
-both  DSI and DBI doesn't need to be registered as real bus. Please
-refer to Tomi's pacthset for DSI support. (
-git://gitorious.org/linux-omap-dss2/linux.git work/dss-dev-model-cdf )
+If no native mode is specified, the first subnode will be used.
 
-anyways i am working on Exynos MIPI DSI as per the new CDF proposed by
-Tomi and Laurent.
+For cases where the graphics driver knows there can be only one
+mode description or where the driver only supports one mode, a helper
+function of_get_videomode is added, that gets a struct videomode from DT.
 
-> +static void __exit mipi_dsi_exit(void)
-> +{
-> +       bus_unregister(&mipi_dsi_bus_type);
-> +}
-> +
-> +module_init(mipi_dsi_init);
-> +module_exit(mipi_dsi_exit)
-> +
-> +MODULE_AUTHOR("Tomasz Figa <t.figa@samsung.com>");
-> +MODULE_DESCRIPTION("MIPI DSI Bus");
-> +MODULE_LICENSE("GPL");
-> diff --git a/include/video/display.h b/include/video/display.h
-> index 75ba270..f86ea6e 100644
-> --- a/include/video/display.h
-> +++ b/include/video/display.h
-> @@ -70,6 +70,7 @@ enum display_entity_stream_state {
->  enum display_entity_interface_type {
->         DISPLAY_ENTITY_INTERFACE_DPI,
->         DISPLAY_ENTITY_INTERFACE_DBI,
-> +       DISPLAY_ENTITY_INTERFACE_DSI,
->  };
->
->  struct display_entity_interface_params {
-> diff --git a/include/video/mipi-dsi-bus.h b/include/video/mipi-dsi-bus.h
-> new file mode 100644
-> index 0000000..3efcb39
-> --- /dev/null
-> +++ b/include/video/mipi-dsi-bus.h
-> @@ -0,0 +1,98 @@
-> +/*
-> + * MIPI DSI Bus
-> + *
-> + * Copyright (C) 2012 Samsung Electronics Co., Ltd.
-> + * Contacts: Tomasz Figa <t.figa@samsung.com>
-> + *
-> + * Heavily based ond mipi-dbi-bus.h.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#ifndef __MIPI_DSI_BUS_H__
-> +#define __MIPI_DSI_BUS_H__
-> +
-> +#include <linux/device.h>
-> +
-> +struct mipi_dsi_bus;
-> +struct mipi_dsi_device;
-> +
-> +struct mipi_dsi_bus_ops {
-> +       int (*write_command)(struct mipi_dsi_bus *bus,
-> +                               struct mipi_dsi_device *dev, unsigned int=
- cmd,
-> +                               const unsigned char *buf, unsigned int le=
-n);
-> +       int (*read_command)(struct mipi_dsi_bus *bus,
-> +                               struct mipi_dsi_device *dev, unsigned int=
- cmd,
-> +                               unsigned int addr, unsigned char *buf,
-> +                               unsigned int len);
-> +};
-> +
-> +struct mipi_dsi_bus {
-> +       struct device *dev;
-> +       const struct mipi_dsi_bus_ops *ops;
-> +};
-> +
-> +#define MIPI_DSI_MODULE_PREFIX         "mipi-dsi:"
-> +#define MIPI_DSI_NAME_SIZE             32
-> +
-> +struct mipi_dsi_device_id {
-> +       char name[MIPI_DSI_NAME_SIZE];
-> +       __kernel_ulong_t driver_data    /* Data private to the driver */
-> +                       __aligned(sizeof(__kernel_ulong_t));
-> +};
-> +
-> +struct mipi_dsi_device {
-> +       const char *name;
-> +       int id;
-> +       struct device dev;
-> +
-> +       const struct mipi_dsi_device_id *id_entry;
-> +       struct mipi_dsi_bus *bus;
-> +};
-> +
-> +#define to_mipi_dsi_device(d)  container_of(d, struct mipi_dsi_device,
-> dev)
-> +
-> +int mipi_dsi_device_register(struct mipi_dsi_device *dev,
-> +                            struct mipi_dsi_bus *bus);
-> +void mipi_dsi_device_unregister(struct mipi_dsi_device *dev);
-> +
-> +struct mipi_dsi_driver {
-> +       int(*probe)(struct mipi_dsi_device *);
-> +       int(*remove)(struct mipi_dsi_device *);
-> +       struct device_driver driver;
-> +       const struct mipi_dsi_device_id *id_table;
-> +};
-> +
-> +#define to_mipi_dsi_driver(d)  container_of(d, struct mipi_dsi_driver,
-> driver)
-> +
-> +int mipi_dsi_driver_register(struct mipi_dsi_driver *drv);
-> +void mipi_dsi_driver_unregister(struct mipi_dsi_driver *drv);
-> +
-> +static inline void *mipi_dsi_get_drvdata(const struct mipi_dsi_device
-> *dev)
-> +{
-> +       return dev_get_drvdata(&dev->dev);
-> +}
-> +
-> +static inline void mipi_dsi_set_drvdata(struct mipi_dsi_device *dev,
-> +                                       void *data)
-> +{
-> +       dev_set_drvdata(&dev->dev, data);
-> +}
-> +
-> +/* module_mipi_dsi_driver() - Helper macro for drivers that don't do
-> + * anything special in module init/exit.  This eliminates a lot of
-> + * boilerplate.  Each module may only use this macro once, and
-> + * calling it replaces module_init() and module_exit()
-> + */
-> +#define module_mipi_dsi_driver(__mipi_dsi_driver) \
-> +       module_driver(__mipi_dsi_driver, mipi_dsi_driver_register, \
-> +                       mipi_dsi_driver_unregister)
-> +
-> +int mipi_dsi_write_command(struct mipi_dsi_device *dev, unsigned int cmd,
-> +                               const unsigned char *buf, unsigned int le=
-n);
-> +int mipi_dsi_read_command(struct mipi_dsi_device *dev, unsigned int cmd,
-> +               unsigned int addr, unsigned char *buf, unsigned int len);
-> +
-> +#endif /* __MIPI_DSI_BUS__ */
-> --
-> 1.8.0.2
->
->
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+Acked-by: Stephen Warren <swarren@nvidia.com>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ .../devicetree/bindings/video/display-timing.txt   |  109 +++++++++
+ drivers/video/Kconfig                              |   15 ++
+ drivers/video/Makefile                             |    2 +
+ drivers/video/of_display_timing.c                  |  239 ++++++++++++++++++++
+ drivers/video/of_videomode.c                       |   54 +++++
+ include/video/of_display_timing.h                  |   20 ++
+ include/video/of_videomode.h                       |   18 ++
+ 7 files changed, 457 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/display-timing.txt
+ create mode 100644 drivers/video/of_display_timing.c
+ create mode 100644 drivers/video/of_videomode.c
+ create mode 100644 include/video/of_display_timing.h
+ create mode 100644 include/video/of_videomode.h
 
+diff --git a/Documentation/devicetree/bindings/video/display-timing.txt b/Documentation/devicetree/bindings/video/display-timing.txt
+new file mode 100644
+index 0000000..1500385
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/display-timing.txt
+@@ -0,0 +1,109 @@
++display-timing bindings
++===========+
++display-timings node
++--------------------
++
++required properties:
++ - none
++
++optional properties:
++ - native-mode: The native mode for the display, in case multiple modes are
++		provided. When omitted, assume the first node is the native.
++
++timing subnode
++--------------
++
++required properties:
++ - hactive, vactive: display resolution
++ - hfront-porch, hback-porch, hsync-len: horizontal display timing parameters
++   in pixels
++   vfront-porch, vback-porch, vsync-len: vertical display timing parameters in
++   lines
++ - clock-frequency: display clock in Hz
++
++optional properties:
++ - hsync-active: hsync pulse is active low/high/ignored
++ - vsync-active: vsync pulse is active low/high/ignored
++ - de-active: data-enable pulse is active low/high/ignored
++ - pixelclk-active: with
++			- active high = drive pixel data on rising edge/
++					sample data on falling edge
++			- active low  = drive pixel data on falling edge/
++					sample data on rising edge
++			- ignored     = ignored
++ - interlaced (bool): boolean to enable interlaced mode
++ - doublescan (bool): boolean to enable doublescan mode
++
++All the optional properties that are not bool follow the following logic:
++    <1>: high active
++    <0>: low active
++    omitted: not used on hardware
++
++There are different ways of describing the capabilities of a display. The
++devicetree representation corresponds to the one commonly found in datasheets
++for displays. If a display supports multiple signal timings, the native-mode
++can be specified.
++
++The parameters are defined as:
++
++  +----------+-------------------------------------+----------+-------+
++  |          |        ↑                            |          |       |
++  |          |        |vback_porch                 |          |       |
++  |          |        ↓                            |          |       |
++  +----------#######################################----------+-------+
++  |          #        ↑                            #          |       |
++  |          #        |                            #          |       |
++  |  hback   #        |                            #  hfront  | hsync |
++  |   porch  #        |       hactive              #  porch   |  len  |
++  |<-------->#<-------+--------------------------->#<-------->|<----->|
++  |          #        |                            #          |       |
++  |          #        |vactive                     #          |       |
++  |          #        |                            #          |       |
++  |          #        ↓                            #          |       |
++  +----------#######################################----------+-------+
++  |          |        ↑                            |          |       |
++  |          |        |vfront_porch                |          |       |
++  |          |        ↓                            |          |       |
++  +----------+-------------------------------------+----------+-------+
++  |          |        ↑                            |          |       |
++  |          |        |vsync_len                   |          |       |
++  |          |        ↓                            |          |       |
++  +----------+-------------------------------------+----------+-------+
++
++Example:
++
++	display-timings {
++		native-mode = <&timing0>;
++		timing0: 1080p24 {
++			/* 1920x1080p24 */
++			clock-frequency = <52000000>;
++			hactive = <1920>;
++			vactive = <1080>;
++			hfront-porch = <25>;
++			hback-porch = <25>;
++			hsync-len = <25>;
++			vback-porch = <2>;
++			vfront-porch = <2>;
++			vsync-len = <2>;
++			hsync-active = <1>;
++		};
++	};
++
++Every required property also supports the use of ranges, so the commonly used
++datasheet description with minimum, typical and maximum values can be used.
++
++Example:
++
++	timing1: timing {
++		/* 1920x1080p24 */
++		clock-frequency = <148500000>;
++		hactive = <1920>;
++		vactive = <1080>;
++		hsync-len = <0 44 60>;
++		hfront-porch = <80 88 95>;
++		hback-porch = <100 148 160>;
++		vfront-porch = <0 4 6>;
++		vback-porch = <0 36 50>;
++		vsync-len = <0 5 6>;
++	};
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 2a23b18..c000f5a 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -39,6 +39,21 @@ config DISPLAY_TIMING
+ config VIDEOMODE
+        bool
+ 
++config OF_DISPLAY_TIMING
++	bool "Enable device tree display timing support"
++	depends on OF
++	select DISPLAY_TIMING
++	help
++	  helper to parse display timings from the devicetree
++
++config OF_VIDEOMODE
++	bool "Enable device tree videomode support"
++	depends on OF
++	select VIDEOMODE
++	select OF_DISPLAY_TIMING
++	help
++	  helper to get videomodes from the devicetree
++
+ menuconfig FB
+ 	tristate "Support for frame buffer devices"
+ 	---help---
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index fc30439..b936b00 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -168,4 +168,6 @@ obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
+ #video output switch sysfs driver
+ obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) += output.o
+ obj-$(CONFIG_DISPLAY_TIMING) += display_timing.o
++obj-$(CONFIG_OF_DISPLAY_TIMING) += of_display_timing.o
+ obj-$(CONFIG_VIDEOMODE) += videomode.o
++obj-$(CONFIG_OF_VIDEOMODE) += of_videomode.o
+diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
+new file mode 100644
+index 0000000..13ecd98
+--- /dev/null
++++ b/drivers/video/of_display_timing.c
+@@ -0,0 +1,239 @@
++/*
++ * OF helpers for parsing display timings
++ *
++ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
++ *
++ * based on of_videomode.c by Sascha Hauer <s.hauer@pengutronix.de>
++ *
++ * This file is released under the GPLv2
++ */
++#include <linux/export.h>
++#include <linux/of.h>
++#include <linux/slab.h>
++#include <video/display_timing.h>
++#include <video/of_display_timing.h>
++
++/**
++ * parse_timing_property - parse timing_entry from device_node
++ * @np: device_node with the property
++ * @name: name of the property
++ * @result: will be set to the return value
++ *
++ * DESCRIPTION:
++ * Every display_timing can be specified with either just the typical value or
++ * a range consisting of min/typ/max. This function helps handling this
++ **/
++static int parse_timing_property(struct device_node *np, const char *name,
++			  struct timing_entry *result)
++{
++	struct property *prop;
++	int length, cells, ret;
++
++	prop = of_find_property(np, name, &length);
++	if (!prop) {
++		pr_err("%s: could not find property %s\n",
++			of_node_full_name(np), name);
++		return -EINVAL;
++	}
++
++	cells = length / sizeof(u32);
++	if (cells = 1) {
++		ret = of_property_read_u32(np, name, &result->typ);
++		result->min = result->typ;
++		result->max = result->typ;
++	} else if (cells = 3) {
++		ret = of_property_read_u32_array(np, name, &result->min, cells);
++	} else {
++		pr_err("%s: illegal timing specification in %s\n",
++			of_node_full_name(np), name);
++		return -EINVAL;
++	}
++
++	return ret;
++}
++
++/**
++ * of_get_display_timing - parse display_timing entry from device_node
++ * @np: device_node with the properties
++ **/
++static struct display_timing *of_get_display_timing(struct device_node *np)
++{
++	struct display_timing *dt;
++	u32 val = 0;
++	int ret = 0;
++
++	dt = kzalloc(sizeof(*dt), GFP_KERNEL);
++	if (!dt) {
++		pr_err("%s: could not allocate display_timing struct\n",
++			of_node_full_name(np));
++		return NULL;
++	}
++
++	ret |= parse_timing_property(np, "hback-porch", &dt->hback_porch);
++	ret |= parse_timing_property(np, "hfront-porch", &dt->hfront_porch);
++	ret |= parse_timing_property(np, "hactive", &dt->hactive);
++	ret |= parse_timing_property(np, "hsync-len", &dt->hsync_len);
++	ret |= parse_timing_property(np, "vback-porch", &dt->vback_porch);
++	ret |= parse_timing_property(np, "vfront-porch", &dt->vfront_porch);
++	ret |= parse_timing_property(np, "vactive", &dt->vactive);
++	ret |= parse_timing_property(np, "vsync-len", &dt->vsync_len);
++	ret |= parse_timing_property(np, "clock-frequency", &dt->pixelclock);
++
++	dt->dmt_flags = 0;
++	dt->data_flags = 0;
++	if (!of_property_read_u32(np, "vsync-active", &val))
++		dt->dmt_flags |= val ? VESA_DMT_VSYNC_HIGH :
++				VESA_DMT_VSYNC_LOW;
++	if (!of_property_read_u32(np, "hsync-active", &val))
++		dt->dmt_flags |= val ? VESA_DMT_HSYNC_HIGH :
++				VESA_DMT_HSYNC_LOW;
++	if (!of_property_read_u32(np, "de-active", &val))
++		dt->data_flags |= val ? DISPLAY_FLAGS_DE_HIGH :
++				DISPLAY_FLAGS_DE_LOW;
++	if (!of_property_read_u32(np, "pixelclk-active", &val))
++		dt->data_flags |= val ? DISPLAY_FLAGS_PIXDATA_POSEDGE :
++				DISPLAY_FLAGS_PIXDATA_NEGEDGE;
++
++	if (of_property_read_bool(np, "interlaced"))
++		dt->data_flags |= DISPLAY_FLAGS_INTERLACED;
++	if (of_property_read_bool(np, "doublescan"))
++		dt->data_flags |= DISPLAY_FLAGS_DOUBLESCAN;
++
++	if (ret) {
++		pr_err("%s: error reading timing properties\n",
++			of_node_full_name(np));
++		kfree(dt);
++		return NULL;
++	}
++
++	return dt;
++}
++
++/**
++ * of_get_display_timings - parse all display_timing entries from a device_node
++ * @np: device_node with the subnodes
++ **/
++struct display_timings *of_get_display_timings(struct device_node *np)
++{
++	struct device_node *timings_np;
++	struct device_node *entry;
++	struct device_node *native_mode;
++	struct display_timings *disp;
++
++	if (!np) {
++		pr_err("%s: no devicenode given\n", of_node_full_name(np));
++		return NULL;
++	}
++
++	timings_np = of_find_node_by_name(np, "display-timings");
++	if (!timings_np) {
++		pr_err("%s: could not find display-timings node\n",
++			of_node_full_name(np));
++		return NULL;
++	}
++
++	disp = kzalloc(sizeof(*disp), GFP_KERNEL);
++	if (!disp) {
++		pr_err("%s: could not allocate struct disp'\n",
++			of_node_full_name(np));
++		goto dispfail;
++	}
++
++	entry = of_parse_phandle(timings_np, "native-mode", 0);
++	/* assume first child as native mode if none provided */
++	if (!entry)
++		entry = of_get_next_child(np, NULL);
++	/* if there is no child, it is useless to go on */
++	if (!entry) {
++		pr_err("%s: no timing specifications given\n",
++			of_node_full_name(np));
++		goto entryfail;
++	}
++
++	pr_debug("%s: using %s as default timing\n",
++		of_node_full_name(np), entry->name);
++
++	native_mode = entry;
++
++	disp->num_timings = of_get_child_count(timings_np);
++	if (disp->num_timings = 0) {
++		/* should never happen, as entry was already found above */
++		pr_err("%s: no timings specified\n", of_node_full_name(np));
++		goto entryfail;
++	}
++
++	disp->timings = kzalloc(sizeof(struct display_timing *) *
++				disp->num_timings, GFP_KERNEL);
++	if (!disp->timings) {
++		pr_err("%s: could not allocate timings array\n",
++			of_node_full_name(np));
++		goto entryfail;
++	}
++
++	disp->num_timings = 0;
++	disp->native_mode = 0;
++
++	for_each_child_of_node(timings_np, entry) {
++		struct display_timing *dt;
++
++		dt = of_get_display_timing(entry);
++		if (!dt) {
++			/*
++			 * to not encourage wrong devicetrees, fail in case of
++			 * an error
++			 */
++			pr_err("%s: error in timing %d\n",
++				of_node_full_name(np), disp->num_timings + 1);
++			goto timingfail;
++		}
++
++		if (native_mode = entry)
++			disp->native_mode = disp->num_timings;
++
++		disp->timings[disp->num_timings] = dt;
++		disp->num_timings++;
++	}
++	of_node_put(timings_np);
++	/*
++	 * native_mode points to the device_node returned by of_parse_phandle
++	 * therefore call of_node_put on it
++	 */
++	of_node_put(native_mode);
++
++	pr_debug("%s: got %d timings. Using timing #%d as default\n",
++		of_node_full_name(np), disp->num_timings,
++		disp->native_mode + 1);
++
++	return disp;
++
++timingfail:
++	if (native_mode)
++		of_node_put(native_mode);
++	display_timings_release(disp);
++entryfail:
++	kfree(disp);
++dispfail:
++	of_node_put(timings_np);
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(of_get_display_timings);
++
++/**
++ * of_display_timings_exist - check if a display-timings node is provided
++ * @np: device_node with the timing
++ **/
++int of_display_timings_exist(struct device_node *np)
++{
++	struct device_node *timings_np;
++
++	if (!np)
++		return -EINVAL;
++
++	timings_np = of_parse_phandle(np, "display-timings", 0);
++	if (!timings_np)
++		return -EINVAL;
++
++	of_node_put(timings_np);
++	return 1;
++}
++EXPORT_SYMBOL_GPL(of_display_timings_exist);
+diff --git a/drivers/video/of_videomode.c b/drivers/video/of_videomode.c
+new file mode 100644
+index 0000000..5b8066c
+--- /dev/null
++++ b/drivers/video/of_videomode.c
+@@ -0,0 +1,54 @@
++/*
++ * generic videomode helper
++ *
++ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
++ *
++ * This file is released under the GPLv2
++ */
++#include <linux/errno.h>
++#include <linux/export.h>
++#include <linux/of.h>
++#include <video/display_timing.h>
++#include <video/of_display_timing.h>
++#include <video/of_videomode.h>
++#include <video/videomode.h>
++
++/**
++ * of_get_videomode - get the videomode #<index> from devicetree
++ * @np - devicenode with the display_timings
++ * @vm - set to return value
++ * @index - index into list of display_timings
++ *	    (Set this to OF_USE_NATIVE_MODE to use whatever mode is
++ *	     specified as native mode in the DT.)
++ *
++ * DESCRIPTION:
++ * Get a list of all display timings and put the one
++ * specified by index into *vm. This function should only be used, if
++ * only one videomode is to be retrieved. A driver that needs to work
++ * with multiple/all videomodes should work with
++ * of_get_display_timings instead.
++ **/
++int of_get_videomode(struct device_node *np, struct videomode *vm,
++		     int index)
++{
++	struct display_timings *disp;
++	int ret;
++
++	disp = of_get_display_timings(np);
++	if (!disp) {
++		pr_err("%s: no timings specified\n", of_node_full_name(np));
++		return -EINVAL;
++	}
++
++	if (index = OF_USE_NATIVE_MODE)
++		index = disp->native_mode;
++
++	ret = videomode_from_timing(disp, vm, index);
++	if (ret)
++		return ret;
++
++	display_timings_release(disp);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_get_videomode);
+diff --git a/include/video/of_display_timing.h b/include/video/of_display_timing.h
+new file mode 100644
+index 0000000..8016eb7
+--- /dev/null
++++ b/include/video/of_display_timing.h
+@@ -0,0 +1,20 @@
++/*
++ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
++ *
++ * display timings of helpers
++ *
++ * This file is released under the GPLv2
++ */
++
++#ifndef __LINUX_OF_DISPLAY_TIMING_H
++#define __LINUX_OF_DISPLAY_TIMING_H
++
++struct device_node;
++struct display_timings;
++
++#define OF_USE_NATIVE_MODE -1
++
++struct display_timings *of_get_display_timings(struct device_node *np);
++int of_display_timings_exist(struct device_node *np);
++
++#endif
+diff --git a/include/video/of_videomode.h b/include/video/of_videomode.h
+new file mode 100644
+index 0000000..a07efcc
+--- /dev/null
++++ b/include/video/of_videomode.h
+@@ -0,0 +1,18 @@
++/*
++ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
++ *
++ * videomode of-helpers
++ *
++ * This file is released under the GPLv2
++ */
++
++#ifndef __LINUX_OF_VIDEOMODE_H
++#define __LINUX_OF_VIDEOMODE_H
++
++struct device_node;
++struct videomode;
++
++int of_get_videomode(struct device_node *np, struct videomode *vm,
++		     int index);
++
++#endif /* __LINUX_OF_VIDEOMODE_H */
+-- 
+1.7.10.4
 
-
---
-Thanks and Regards
- Vikas Sajjan

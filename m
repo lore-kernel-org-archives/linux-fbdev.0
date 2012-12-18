@@ -1,41 +1,122 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Mon, 17 Dec 2012 12:39:19 +0000
-Subject: Re: [patch] OMAPDSS: reading past end of array in dispc_dump_regs()
-Message-Id: <20121217123919.GF5032@mwanda>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Tue, 18 Dec 2012 16:57:50 +0000
+Subject: [PATCHv16 4/7] fbmon: add videomode helpers
+Message-Id: <1355849873-8051-5-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20121214150133.GB15839@elgon.mountain>
- <50CF0B5C.9080707@ti.com>
-In-Reply-To: <50CF0B5C.9080707@ti.com>
+References: <1355849873-8051-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1355849873-8051-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Archit Taneja <archit@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Chandrabhanu Mahapatra <cmahapatra@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: devicestree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>, Rob Clark <robdclark@gmail.com>, Leela Krishna Amudala <leelakrishna.a@gmail.com>
 
-On Mon, Dec 17, 2012 at 02:09:00PM +0200, Tomi Valkeinen wrote:
-> Why does the static checker think OMAP_DSS_WB is needed in the array?
+Add a function to convert from the generic videomode to a fb_videomode.
 
-drivers/video/omap2/dss/dispc.c +3284
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/fbmon.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h    |    4 ++++
+ 2 files changed, 56 insertions(+)
 
-  3274  #define DISPC_REG(plane, name, i) name(plane, i)
-  3275  #define DUMPREG(plane, name, i) \
-  3276          seq_printf(s, "%s_%d(%s)%*s %08x\n", #name, i, p_names[plane], \
-  3277          (int)(46 - strlen(#name) - strlen(p_names[plane])), " ", \
-  3278          dispc_read_reg(DISPC_REG(plane, name, i)))
-  3279  
-  3280          /* Video pipeline coefficient registers */
-  3281  
-  3282          /* start from OMAP_DSS_VIDEO1 */
-  3283          for (i = 1; i < dss_feat_get_num_ovls(); i++) {
-  3284                  for (j = 0; j < 8; j++)
-  3285                          DUMPREG(i, DISPC_OVL_FIR_COEF_H, j);
-
-The logic here is that we pass i to DISPC_OVL_FIR_COEF_H() which
-passes i to DISPC_FIR_COEF_H_OFFSET().  Anything higher than
-OMAP_DSS_WB will trigger a BUG() in DISPC_FIR_COEF_H_OFFSET().
-
-So it's not rock hard logic at all.
-
-regards,
-dan carpenter
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index cef6557..17ce135 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -31,6 +31,7 @@
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <video/edid.h>
++#include <video/videomode.h>
+ #ifdef CONFIG_PPC_OF
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+@@ -1373,6 +1374,57 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
+ 	kfree(timings);
+ 	return err;
+ }
++
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++int fb_videomode_from_videomode(const struct videomode *vm,
++				struct fb_videomode *fbmode)
++{
++	unsigned int htotal, vtotal;
++
++	fbmode->xres = vm->hactive;
++	fbmode->left_margin = vm->hback_porch;
++	fbmode->right_margin = vm->hfront_porch;
++	fbmode->hsync_len = vm->hsync_len;
++
++	fbmode->yres = vm->vactive;
++	fbmode->upper_margin = vm->vback_porch;
++	fbmode->lower_margin = vm->vfront_porch;
++	fbmode->vsync_len = vm->vsync_len;
++
++	/* prevent division by zero in KHZ2PICOS macro */
++	fbmode->pixclock = vm->pixelclock ?
++			KHZ2PICOS(vm->pixelclock / 1000) : 0;
++
++	fbmode->sync = 0;
++	fbmode->vmode = 0;
++	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
++		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
++	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
++		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
++	if (vm->data_flags & DISPLAY_FLAGS_INTERLACED)
++		fbmode->vmode |= FB_VMODE_INTERLACED;
++	if (vm->data_flags & DISPLAY_FLAGS_DOUBLESCAN)
++		fbmode->vmode |= FB_VMODE_DOUBLE;
++	fbmode->flag = 0;
++
++	htotal = vm->hactive + vm->hfront_porch + vm->hback_porch +
++		 vm->hsync_len;
++	vtotal = vm->vactive + vm->vfront_porch + vm->vback_porch +
++		 vm->vsync_len;
++	/* prevent division by zero */
++	if (htotal && vtotal) {
++		fbmode->refresh = vm->pixelclock / (htotal * vtotal);
++	/* a mode must have htotal and vtotal != 0 or it is invalid */
++	} else {
++		fbmode->refresh = 0;
++		return -EINVAL;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
++#endif
++
+ #else
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+ {
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index c7a9571..100a176 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -19,6 +19,7 @@ struct vm_area_struct;
+ struct fb_info;
+ struct device;
+ struct file;
++struct videomode;
+ 
+ /* Definitions below are used in the parsed monitor specs */
+ #define FB_DPMS_ACTIVE_OFF	1
+@@ -714,6 +715,9 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+ extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+ extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
+ 
++extern int fb_videomode_from_videomode(const struct videomode *vm,
++				       struct fb_videomode *fbmode);
++
+ /* drivers/video/modedb.c */
+ #define VESA_MODEDB_SIZE 34
+ extern void fb_var_to_videomode(struct fb_videomode *mode,
+-- 
+1.7.10.4
 

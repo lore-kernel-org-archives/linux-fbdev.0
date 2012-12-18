@@ -1,14 +1,14 @@
 From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Tue, 18 Dec 2012 16:57:48 +0000
+Date: Tue, 18 Dec 2012 17:04:11 +0000
 Subject: =?UTF-8?q?=5BPATCHv16=202/7=5D=20video=3A=20add=20display=5Ftiming=20and=20videomode?=
-Message-Id: <1355849873-8051-3-git-send-email-s.trumtrar@pengutronix.de>
+Message-Id: <1355850256-16135-3-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1355849873-8051-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1355849873-8051-1-git-send-email-s.trumtrar@pengutronix.de>
+References: <1355850256-16135-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1355850256-16135-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: devicestree-discuss@lists.ozlabs.org
+To: devicetree-discuss@lists.ozlabs.org
 Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>, Rob Clark <robdclark@gmail.com>, Leela Krishna Amudala <leelakrishna.a@gmail.com>
 
 Add display_timing structure and the according helper functions. This allows

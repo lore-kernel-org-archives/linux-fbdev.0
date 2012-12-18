@@ -1,71 +1,103 @@
-From: "Hiremath, Vaibhav" <hvaibhav@ti.com>
-Date: Wed, 12 Dec 2012 08:00:56 +0000
-Subject: RE: [PATCH] da8xx: Allow use by am33xx based devices
-Message-Id: <79CD15C6BA57404B839C016229A409A83EBADC10@DBDE01.ent.ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Tue, 18 Dec 2012 16:57:53 +0000
+Subject: [PATCHv16 7/7] drm_modes: add of_videomode helpers
+Message-Id: <1355849873-8051-8-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351698968-3965-1-git-send-email-panto@antoniou-consulting.com>
- <A73F36158E33644199EB82C5EC81C7BC3EA1452B@DBDE01.ent.ti.com>
- <50C5A50E.4070602@ti.com>
- <A73F36158E33644199EB82C5EC81C7BC3EA17E45@DBDE01.ent.ti.com>
-In-Reply-To: <A73F36158E33644199EB82C5EC81C7BC3EA17E45@DBDE01.ent.ti.com>
+References: <1355849873-8051-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1355849873-8051-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Cc: "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, "davinci-linux-open-source@linux.davincidsp.com" <davinci-linux-open-source@linux.davincidsp.com>, "Porter, Matt" <mporter@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "FlorianSchandinat@gmx.de" <FlorianSchandinat@gmx.de>, Koen Kooi <koen@dominion.thruhere.net>, Pantelis Antoniou <panto@antoniou-consulting.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Dill, Russ" <russ.dill@ti.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: devicestree-discuss@lists.ozlabs.org
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>, Rob Clark <robdclark@gmail.com>, Leela Krishna Amudala <leelakrishna.a@gmail.com>
 
-On Wed, Dec 12, 2012 at 12:50:28, Manjunathappa, Prakash wrote:
-> Hi Vaibhav,
-> 
-> On Mon, Dec 10, 2012 at 14:32:06, Hiremath, Vaibhav wrote:
-> > 
-> > 
-> > On 12/6/2012 1:38 PM, Manjunathappa, Prakash wrote:
-> > > Hi Tomi,
-> > > 
-> > > On Wed, Oct 31, 2012 at 10:52:59, Manjunathappa, Prakash wrote:
-> > >> Hi,
-> > >>
-> > >> On Wed, Oct 31, 2012 at 21:26:08, Pantelis Antoniou wrote:
-> > >>> This driver can be used for AM33xx devices, like the popular beaglebone.
-> > >>>
-> > >>> Signed-off-by: Pantelis Antoniou <panto@antoniou-consulting.com>
-> > >>> ---
-> > >>>  drivers/video/Kconfig | 2 +-
-> > >>>  1 file changed, 1 insertion(+), 1 deletion(-)
-> > >>>
-> > >>> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> > >>> index 9791d10..e7868d8 100644
-> > >>> --- a/drivers/video/Kconfig
-> > >>> +++ b/drivers/video/Kconfig
-> > >>> @@ -2202,7 +2202,7 @@ config FB_SH7760
-> > >>>  
-> > >>>  config FB_DA8XX
-> > >>>  	tristate "DA8xx/OMAP-L1xx Framebuffer support"
-> > >>> -	depends on FB && ARCH_DAVINCI_DA8XX
-> > >>> +	depends on FB && (ARCH_DAVINCI_DA8XX || SOC_AM33XX)
-> > >>
-> > >> Agreed this is present on da8xx and am33xx, but moving forward for
-> > >> supporting DT, we should be avoiding these dependencies. So instead
-> > >> change this to remove machine dependencies.
-> > >>
-> > > 
-> > > I could be wrong here, having dependency on platform seems to be right.
-> > > Otherwise may lead to build errors for other platforms. 
-> > 
-> > No, it should not result in to build error unless driver uses some
-> > platform specific api's.
-> > 
-> 
-> Agreed, should not result in build error. But is it ok to show this option
-> on the platforms which do not have this IP?
-> 
+Add helper to get drm_display_mode from devicetree.
 
-You can choose to put machine dependency here, as this patch is already 
-doing it. The side-effect of this would be, list may grow and you may have 
-to edit this file everytime.
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/gpu/drm/drm_modes.c |   33 +++++++++++++++++++++++++++++++++
+ include/drm/drmP.h          |    4 ++++
+ 2 files changed, 37 insertions(+)
 
-
-Thanks,
-Vaibhav 
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 184a22d..fd53454 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -35,6 +35,7 @@
+ #include <linux/export.h>
+ #include <drm/drmP.h>
+ #include <drm/drm_crtc.h>
++#include <video/of_videomode.h>
+ #include <video/videomode.h>
+ 
+ /**
+@@ -541,6 +542,38 @@ int drm_display_mode_from_videomode(const struct videomode *vm,
+ EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
+ #endif
+ 
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++/**
++ * of_get_drm_display_mode - get a drm_display_mode from devicetree
++ * @np: device_node with the timing specification
++ * @dmode: will be set to the return value
++ * @index: index into the list of display timings in devicetree
++ *
++ * This function is expensive and should only be used, if only one mode is to be
++ * read from DT. To get multiple modes start with of_get_display_timings and
++ * work with that instead.
++ */
++int of_get_drm_display_mode(struct device_node *np,
++			    struct drm_display_mode *dmode, int index)
++{
++	struct videomode vm;
++	int ret;
++
++	ret = of_get_videomode(np, &vm, index);
++	if (ret)
++		return ret;
++
++	drm_display_mode_from_videomode(&vm, dmode);
++
++	pr_debug("%s: got %dx%d display mode from %s\n",
++		of_node_full_name(np), vm.hactive, vm.vactive, np->name);
++	drm_mode_debug_printmodeline(dmode);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_get_drm_display_mode);
++#endif
++
+ /**
+  * drm_mode_set_name - set the name on a mode
+  * @mode: name will be set in this mode
+diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+index 5fbb0fe..e26ca59 100644
+--- a/include/drm/drmP.h
++++ b/include/drm/drmP.h
+@@ -85,6 +85,7 @@ struct module;
+ struct drm_file;
+ struct drm_device;
+ 
++struct device_node;
+ struct videomode;
+ 
+ #include <drm/drm_os_linux.h>
+@@ -1458,6 +1459,9 @@ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
+ 
+ extern int drm_display_mode_from_videomode(const struct videomode *vm,
+ 					   struct drm_display_mode *dmode);
++extern int of_get_drm_display_mode(struct device_node *np,
++				   struct drm_display_mode *dmode,
++				   int index);
+ 
+ /* Modesetting support */
+ extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
+-- 
+1.7.10.4
 

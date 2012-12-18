@@ -1,93 +1,48 @@
-From: Vikas Sajjan <vikas.sajjan@linaro.org>
-Date: Tue, 18 Dec 2012 06:25:08 +0000
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Tue, 18 Dec 2012 08:30:00 +0000
 Subject: Re: [RFC v2 0/5] Common Display Framework
-Message-Id: <CAD025yTK6pBHR41hqPQAXHcDhB7s6OE-Z1nHPF0DU1WbBiEXaw@mail.gmail.com>
+Message-Id: <CAKMK7uF3Ahh8isvzZr4605X3wz-TQ2EHreTUnc5K_Z0DwrY6xw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com>
-	<CAD025yS5rGMbiRBdDxv=YLP6_fsQndAkr+3t29_mNhcvow_SwA@mail.gmail.com>
-	<3133576.BkqAl7V01U@avalon>
-	<CAD025yQoCiNaKvaCwvUWhk_jV70CPhV35UzV9MR6HtE+1baCxg@mail.gmail.com>
-In-Reply-To: <CAD025yQoCiNaKvaCwvUWhk_jV70CPhV35UzV9MR6HtE+1baCxg@mail.gmail.com>
+	<CAPM=9txFJzJ0haTyBnr8hEmmqNb+gSAyBno+Zs0Z-qvVMTwz9A@mail.gmail.com>
+	<CAF6AEGsLdLasS4=j1PsX_P8miG8NcTXMUP9VYj+4gdU8Qhm2YQ@mail.gmail.com>
+In-Reply-To: <CAF6AEGsLdLasS4=j1PsX_P8miG8NcTXMUP9VYj+4gdU8Qhm2YQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Rob Clark <rob.clark@linaro.org>
+Cc: Dave Airlie <airlied@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Tom Gall <tom.gall@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Philipp Zabel <p.zabel@pengutronix.de>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
 
-Hi All,
-
-On 17 December 2012 20:55, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
+On Tue, Dec 18, 2012 at 7:21 AM, Rob Clark <rob.clark@linaro.org> wrote:
+>> The other thing I'd like you guys to do is kill the idea of fbdev and
+>> v4l drivers that are "shared" with the drm codebase, really just
+>> implement fbdev and v4l on top of the drm layer, some people might
+>> think this is some sort of maintainer thing, but really nothing else
+>> makes sense, and having these shared display frameworks just to avoid
+>> having using drm/kms drivers seems totally pointless. Fix the drm
+>> fbdev emulation if an fbdev interface is needed. But creating a fourth
+>> framework because our previous 3 frameworks didn't work out doesn't
+>> seem like a situation I want to get behind too much.
 >
-> Hi Vikas,
->
-> Sorry for the late reply. I now have more time to work on CDF, so delays
-> should be much shorter.
->
-> On Thursday 06 December 2012 10:51:15 Vikas Sajjan wrote:
-> > Hi Laurent,
-> >
-> > I was thinking of porting CDF to samsung EXYNOS 5250 platform, what I f=
-ound
-> > is that, the exynos display controller is MIPI DSI based controller.
-> >
-> > But if I look at CDF patches, it has only support for MIPI DBI based Di=
-splay
-> > controller.
-> >
-> > So my question is, do we have any generic framework for MIPI DSI based
-> > display controller? basically I wanted to know, how to go about porting=
- CDF
-> > for such kind of display controller.
->
-> MIPI DSI support is not available yet. The only reason for that is that I
-> don't have any MIPI DSI hardware to write and test the code with :-)
->
-> The common display framework should definitely support MIPI DSI. I think =
-the
-> existing MIPI DBI code could be used as a base, so the implementation
-> shouldn't be too high.
->
-Yeah, i was also thinking in similar lines, below is my though for
-MIPI DSI support in CDF.
+> yeah, let's not have multiple frameworks to do the same thing.. For
+> fbdev, it is pretty clear that it is a dead end.  For v4l2
+> (subdev+mcf), it is perhaps bit more flexible when it comes to random
+> arbitrary hw pipelines than kms.  But to take advantage of that, your
+> userspace isn't going to be portable anyways, so you might as well use
+> driver specific properties/ioctls.  But I tend to think that is more
+> useful for cameras.  And from userspace perspective, kms planes are
+> less painful to use for output than v4l2, so lets stick to drm/kms for
+> output (and not try to add camera/capture support to kms).. k, thx
 
-o   MIPI DSI support as part of CDF framework will expose
-
-    > mipi_dsi_register_device(mpi_device) (will be called mach-xxx-dt.c fi=
-le )
-
-   > mipi_dsi_register_driver(mipi_driver, bus ops) (will be called
-from platform specific init driver call )
-
-=B7       bus ops will be
-     o   read data
-     o   write data
-     o   write command
-
->  MIPI DSI will be registered as bus_register()
-
-When MIPI DSI probe is called, it (e.g., Exynos or OMAP MIPI DSI) will
-initialize the MIPI DSI HW IP.
-
- This probe will also parse the DT file for MIPI DSI based panel, add
-the panel device (device_add() ) to kernel and register the display
-entity with its control and  video ops with CDF.
->
-> I can give this a try. Does the existing Exynos 5250 driver support MIPI =
-DSI ?
-> Is the device documentation publicly available ? Can you point me to a MI=
-PI
-> DSI panel with public documentation (preferably with an existing mainline
-> driver if possible) ?
->
- yeah, existing Exynos 5250 driver support MIPI DSI ass well as eDP.
- i think device documentation is NOT available publicly.
-
-> --
-> Regards,
->
-> Laurent Pinchart
->
-
---=20
-Thanks and Regards
- Vikas Sajjan
+Yeah, I guess having a v4l device also exported by the same driver
+that exports the drm interface might make sense in some cases. But in
+many cases I think the video part is just an independent IP block and
+shuffling data around with dma-buf is all we really need. So yeah, I
+guess sharing display resources between v4l and drm kms driver should
+be a last resort option, since coordination (especially if it's
+supposed to be somewhat dynamic) will be extremely hairy.
+-Daniel
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch

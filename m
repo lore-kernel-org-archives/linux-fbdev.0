@@ -1,78 +1,93 @@
-From: Rob Clark <rob.clark@linaro.org>
-Date: Tue, 18 Dec 2012 06:21:32 +0000
+From: Vikas Sajjan <vikas.sajjan@linaro.org>
+Date: Tue, 18 Dec 2012 06:25:08 +0000
 Subject: Re: [RFC v2 0/5] Common Display Framework
-Message-Id: <CAF6AEGsLdLasS4=j1PsX_P8miG8NcTXMUP9VYj+4gdU8Qhm2YQ@mail.gmail.com>
+Message-Id: <CAD025yTK6pBHR41hqPQAXHcDhB7s6OE-Z1nHPF0DU1WbBiEXaw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com>
-	<CAPM=9txFJzJ0haTyBnr8hEmmqNb+gSAyBno+Zs0Z-qvVMTwz9A@mail.gmail.com>
-In-Reply-To: <CAPM=9txFJzJ0haTyBnr8hEmmqNb+gSAyBno+Zs0Z-qvVMTwz9A@mail.gmail.com>
+	<CAD025yS5rGMbiRBdDxv=YLP6_fsQndAkr+3t29_mNhcvow_SwA@mail.gmail.com>
+	<3133576.BkqAl7V01U@avalon>
+	<CAD025yQoCiNaKvaCwvUWhk_jV70CPhV35UzV9MR6HtE+1baCxg@mail.gmail.com>
+In-Reply-To: <CAD025yQoCiNaKvaCwvUWhk_jV70CPhV35UzV9MR6HtE+1baCxg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dave Airlie <airlied@gmail.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, Tom Gall <tom.gall@linaro.org>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Kyungmin Park <kyungmin.park@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
 
-On Mon, Dec 17, 2012 at 11:04 PM, Dave Airlie <airlied@gmail.com> wrote:
->>
->> Many developers showed interest in the first RFC, and I've had the opportunity
->> to discuss it with most of them. I would like to thank (in no particular
->> order) Tomi Valkeinen for all the time he spend helping me to draft v2, Marcus
->> Lorentzon for his useful input during Linaro Connect Q4 2012, and Linaro for
->> inviting me to Connect and providing a venue to discuss this topic.
->>
+Hi All,
+
+On 17 December 2012 20:55, Laurent Pinchart
+<laurent.pinchart@ideasonboard.com> wrote:
 >
-> So this might be a bit off topic but this whole CDF triggered me
-> looking at stuff I generally avoid:
+> Hi Vikas,
 >
-> The biggest problem I'm having currently with the whole ARM graphics
-> and output world is the proliferation of platform drivers for every
-> little thing. The whole ordering of operations with respect to things
-> like suspend/resume or dynamic power management is going to be a real
-> nightmare if there are dependencies between the drivers. How do you
-> enforce ordering of s/r operations between all the various components?
+> Sorry for the late reply. I now have more time to work on CDF, so delays
+> should be much shorter.
+>
+> On Thursday 06 December 2012 10:51:15 Vikas Sajjan wrote:
+> > Hi Laurent,
+> >
+> > I was thinking of porting CDF to samsung EXYNOS 5250 platform, what I f=
+ound
+> > is that, the exynos display controller is MIPI DSI based controller.
+> >
+> > But if I look at CDF patches, it has only support for MIPI DBI based Di=
+splay
+> > controller.
+> >
+> > So my question is, do we have any generic framework for MIPI DSI based
+> > display controller? basically I wanted to know, how to go about porting=
+ CDF
+> > for such kind of display controller.
+>
+> MIPI DSI support is not available yet. The only reason for that is that I
+> don't have any MIPI DSI hardware to write and test the code with :-)
+>
+> The common display framework should definitely support MIPI DSI. I think =
+the
+> existing MIPI DBI code could be used as a base, so the implementation
+> shouldn't be too high.
+>
+Yeah, i was also thinking in similar lines, below is my though for
+MIPI DSI support in CDF.
 
-I tend to think that sub-devices are useful just to have a way to
-probe hw which may or may not be there, since on ARM we often don't
-have any alternative.. but beyond that, suspend/resume, and other
-life-cycle aspects, they should really be treated as all one device.
-Especially to avoid undefined suspend/resume ordering.
+o   MIPI DSI support as part of CDF framework will expose
 
-CDF or some sort of mechanism to share panel drivers between drivers
-is useful.  Keeping it within drm, is probably a good idea, if nothing
-else to simplify re-use of helper fxns (like avi-infoframe stuff, for
-example) and avoid dealing with merging changes across multiple trees.
-  Treating them more like shared libraries and less like sub-devices
-which can be dynamically loaded/unloaded (ie. they should be not built
-as separate modules or suspend/resumed or probed/removed independently
-of the master driver) is a really good idea to avoid uncovering nasty
-synchronization issues later (remove vs modeset or pageflip) or
-surprising userspace in bad ways.
+    > mipi_dsi_register_device(mpi_device) (will be called mach-xxx-dt.c fi=
+le )
 
-> The other thing I'd like you guys to do is kill the idea of fbdev and
-> v4l drivers that are "shared" with the drm codebase, really just
-> implement fbdev and v4l on top of the drm layer, some people might
-> think this is some sort of maintainer thing, but really nothing else
-> makes sense, and having these shared display frameworks just to avoid
-> having using drm/kms drivers seems totally pointless. Fix the drm
-> fbdev emulation if an fbdev interface is needed. But creating a fourth
-> framework because our previous 3 frameworks didn't work out doesn't
-> seem like a situation I want to get behind too much.
+   > mipi_dsi_register_driver(mipi_driver, bus ops) (will be called
+from platform specific init driver call )
 
-yeah, let's not have multiple frameworks to do the same thing.. For
-fbdev, it is pretty clear that it is a dead end.  For v4l2
-(subdev+mcf), it is perhaps bit more flexible when it comes to random
-arbitrary hw pipelines than kms.  But to take advantage of that, your
-userspace isn't going to be portable anyways, so you might as well use
-driver specific properties/ioctls.  But I tend to think that is more
-useful for cameras.  And from userspace perspective, kms planes are
-less painful to use for output than v4l2, so lets stick to drm/kms for
-output (and not try to add camera/capture support to kms).. k, thx
+=B7       bus ops will be
+     o   read data
+     o   write data
+     o   write command
 
-BR,
--R
+>  MIPI DSI will be registered as bus_register()
 
-> Dave.
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> http://lists.freedesktop.org/mailman/listinfo/dri-devel
+When MIPI DSI probe is called, it (e.g., Exynos or OMAP MIPI DSI) will
+initialize the MIPI DSI HW IP.
+
+ This probe will also parse the DT file for MIPI DSI based panel, add
+the panel device (device_add() ) to kernel and register the display
+entity with its control and  video ops with CDF.
+>
+> I can give this a try. Does the existing Exynos 5250 driver support MIPI =
+DSI ?
+> Is the device documentation publicly available ? Can you point me to a MI=
+PI
+> DSI panel with public documentation (preferably with an existing mainline
+> driver if possible) ?
+>
+ yeah, existing Exynos 5250 driver support MIPI DSI ass well as eDP.
+ i think device documentation is NOT available publicly.
+
+> --
+> Regards,
+>
+> Laurent Pinchart
+>
+
+--=20
+Thanks and Regards
+ Vikas Sajjan

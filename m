@@ -1,162 +1,228 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 14 Dec 2012 14:27:26 +0000
-Subject: [RFC 0/6] Common Display Framework-T
-Message-Id: <1355495252-26364-1-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 19 Dec 2012 13:21:46 +0000
+Subject: Re: [RFC 0/6] Common Display Framework-T
+Message-Id: <5024715.KeGkjOKZ3Q@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1355495252-26364-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1355495252-26364-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Hi,
+Hi Tomi,
 
-I have been testing Common Display Framework on OMAP, and making changes that
-I've discussed in the posts I've sent in reply to the CDF series from Laurent.
-While my CDF code is rather hacky and not at all ready, I wanted to post the
-code for comments and also as a reference code to my posts.
+On Friday 14 December 2012 16:27:26 Tomi Valkeinen wrote:
+> Hi,
+> 
+> I have been testing Common Display Framework on OMAP, and making changes
+> that I've discussed in the posts I've sent in reply to the CDF series from
+> Laurent. While my CDF code is rather hacky and not at all ready, I wanted
+> to post the code for comments and also as a reference code to my posts.
+> 
+> So here is CDF-T (Tomi-edition =).
 
-So here is CDF-T (Tomi-edition =). 
+We've discussed your approach extensively face-to-face today so I won't review 
+the patches in detail, but I will instead summarize our discussion to make 
+sure we understood each other (and let other developers jump in).
 
-Changes compared to Laurent's CDF
----------------------------------
+For the purpose of this discussion the term "display controller driver" (or 
+just "display controller") refer to both the low-level driver layer that 
+communicates directly with the display controller hardware, and to the higher-
+level driver layer that implements and exposes the userspace API (FBDEV, KMS 
+and/or V4L). Those layers can be implemented in multiple kernel modules (such 
+as in the OMAP DSS case, with omapdss for the low-level layer and omapdrm, 
+omapfb and omapvout for the API-level layer) or a single kernel module.
 
-- DBI bus is removed. I don't have any DBI devices, and as I said in my posts,
-  I didn't see need for a real bus for DBI (or DSI). I thus also removed the
-  DBI panels.
+Control model
+-------------
 
-- Split the display_entity into two parts: video_source, which is used to
-  connect the display chips and panels, and display_entity, which represent
-  either the panel or the whole pipeline (I'm not sure which is better).
+The figure at http://www.ideasonboard.org/media/cdf/cdf-panel-control-
+model.png shows the CDF control model.
 
-- Added ops for DVI and DSI
+The panel object depicted on the figure doesn't need to be a panel in the 
+stricter sense but could be any chain of off-SoC (both on-board or off-board) 
+display entities. It however helps thinking about it as a panel and doesn't 
+hurt the model.
 
-- Added driver for TFP410, a DPI to DVI converter chip
-- Added driver for generic DVI monitor
-- Added driver for Taal, a DSI command mode panel
+The panel is controlled through abstract control requests. Those requests are 
+used to retrieve panel information (such as the physical size, the supported 
+video modes, EDID information, ...), set the panel configuration (such as the 
+active video timings) or control the panel operation state (enabling/disabling 
+the panel, controlling panel blanking and power management, ...). They are 
+exposed by the panel using function pointers, and called by other kernel 
+components in response to userspace requests (through the FBDEV, KMS or V4L2 
+APIs) or in-kernel events (for instance hotplug notifications).
 
-- Removed DISPLAY_ENTITY_STREAM_SINGLE_SHOT, and instead there's update() op.
-  It's perhaps possible to use the single-shot method, but I went for a
-  separate op to get a "update done"-callback implemented easily.
+In response to the control requests the panel driver will communicate with the 
+panel through the panel control bus (I2C, SPI, DBI, DSI, GPIO, ..., not shown 
+on the figure) and will control the video stream it receives on its input.
 
-Notes about the code
---------------------
+The panel is connected at the hardware level to a video source (shown as a 
+green hashed rectangle) that provides it with a video stream. The video stream 
+flows from the video source to the panel and is directly controlled by its 
+source, as shown by the green arrow from the display controller to the video 
+stream. The video source exposes stream control operations as function 
+pointers that are used by the panel to control the video stream, as shown by 
+the green arrow from the panel to the video source.
 
-As I said, the code is rather untidy, but I think it's more or less
-understandable. I've skipped adding any helper funcs, for example to call the
-ops, so it's easier for me to change the API.
+The figure at http://www.ideasonboard.org/media/cdf/cdf-panel-control-
+model-2.png shows the call flow across entities when the panel is a pipeline 
+made of more than a single entity. In this case the SoC (on the left of the 
+dashed line) outputs a video stream on a DSI bus connected to a DSI to LVDS 
+transmitter. The output of the DSI to LVDS transmitter is connected to an LVDS 
+panel (or, more accurately, an LVDS panel module made of an LVDS panel 
+controller and a panel).
 
-I also (ab)used some of the omapdss panel headers to ease my hacking for
-omapdss+cdf. These should be quite clear.
+The transmitter and panel module are seen by the display controller and 
+userspace API implementations as a single entity that exposes control request 
+operations and controls its input video stream. When a control request is 
+performed (outermost green arrow) the DSI to LVDS transmitter will propagate 
+it to the panel, possibly mangling the input parameters or the response. For 
+panel operation state control requests the last entity in the pipeline will 
+likely want to control the video stream it receives on its input. The video 
+stream control calls will be propagated from right to left as shown by the red 
+arrows.
 
-The code, including hacks to omapdss to make it use CDF, can be found from:
-git://gitorious.org/linux-omap-dss2/linux.git work/dss-dev-model-cdf
+Every entity in the call stack can communicate with its hardware device 
+through the corresponding control bus, and/or control the video stream it 
+receives on its input.
 
-The DSI part is very unfinished. I am able to use it to start up the Taal
-panel, and send frames to the panel, but it's really missing lots of stuff.
+This model allows filtering out modes and timings supported by the panel but 
+unsupported by the transmitter and mangling the modes and timings according to 
+the transmitter limitations. It has no complexity drawback for simple devices, 
+as the corresponding drivers can just forward the calls directly. Similar use 
+cases could exist for other control operations than mode and information 
+retrieval.
 
-About display_entity & video_source
------------------------------------
+Discovery
+---------
 
-I've discussed this split in previous posts, but I'll describe it here again.
+Before being able to issue control requests, panel devices need to be 
+discovered and associated with the connected display controller(s).
 
-As I see it, the connections between the display blocks, and the use of the
-panel (and thus the whole pipeline) are very different things, and I think they
-should be separated. So in my version I have struct video_source, used to
-connect the blocks, and display_entity, representing the panel or the whole
-pipeline. display_entity is probably not a good name for it anymore, but I
-didn't come up with a good one yet.
+Panels and display controllers are cross-dependent. There is no way around 
+that, as the display controller needs a reference to the panel to call control 
+requests in response to userspace API, and the panel needs a reference to the 
+display controller to call video stream control functions (in addition to 
+requiring generic resources such as clocks, GPIOs or even regulators that 
+could be provided by the display controller).
 
-As an example, let's look at chip-tfp410.c and panel-dvi.c.
+As we can't probe the display controller and the panel together, a probe order 
+needs to be defined. The decision was to consider video sources as resources 
+and defer panel probing until all required resources (video stream source, 
+clocks, GPIOs, regulators and more) are available. Display controller probing 
+must succeed without the panel being available. This mimicks the hotpluggable 
+monitor model (VGA, HDMI, DP) that doesn't prevent display controllers from 
+being successfully probed without a connected monitor.
 
-tfp410 uses two video_sources, one for input and one for output. The input
-comes from some other display block, in my case from OMAP display subsystem.
-OMAP DSS has registered a DPI video_source, and the tfp410 driver will get this
-source using video_source_find().
+Our design goal is to handle panel discovery in a similar (if not identical) 
+way as HDMI/DP hotplug in order to implement a single display discovery method 
+in display controller drivers. This might not be achievable, in which case 
+we'll reconsider the design requirement.
 
-tfp410 registers its output as a video source, using video_source_register.
-panel-dvi will in turn use video_source_find() to get it.
+When the display controller driver probes the device it will register the 
+video source(s) at the output of the display controller with the CDF core. 
+Those sources will be identified by the display controller dev_name() and a 
+source integer index. A new structure, likely called display_entity_port, will 
+be used to represent a source or sink video port on a display entity.
 
-Both drivers use video_source to configure the input bus, i.e. tfp410
-configures the DPI bus between OMAP DSS and TFP410 using, for example,
-set_data_lines op to configure the number of datalines on the DPI bus.
+Panel drivers will handle video sources as resources. They will retrieve at 
+probe time the video source the panel is connected to using a phandle or a 
+source name (depending on whether the platform uses DT). If the source isn't 
+available the probe function will return -EPROBE_DEFER.
 
-With the video_sources in place, the whole video pipeline can be used. However,
-we still need to expose an API so that somebody can actually use the pipeline.
-This is done with display_entity. display_entity contains higher level ops,
-which are not bus specific. The display_entity is registered by the panel at
-the end of the chain.
+In addition to the video stream control operations mentioned above, ports will 
+also expose a connect/disconnect operation use to notify them of 
+connection/disconnection events. After retrieving the connected video source 
+panel drivers call the connect/disconnect operation on the video source to 
+notify it that the panel is available.
 
-In my model the display_entity ops go to the panel driver, which then calls ops
-in the input video source to do the work. Laurent has objected to this model,
-and would rather have the display_entity ops go to the DSS side (if I
-understood right), which would then propagate forward towards the panel. I have
-still kept my model, as I don't see the downsides with my model, nor do I see
-any use for propagating the ops from DSS to the panel. But I'm happy to hear
-examples how it is beneficial and could be used.
+When the panel is a pipeline made of more than a single entity, entities are 
+probed in video source to video sink order. Out-of-order probe will result in 
+probe deferral as explained above due to the video source not being available, 
+resulting in the source to sink probe order. Entities should not call the 
+connect operation of their video source at probe time in that case, but only 
+when their own connect operation for the video source(s) they provide to the 
+next entity is called by the next entity. Connect operations will thus be 
+called in sink to source order starting at the entity at the end of the 
+pipeline and going all the way back to the display controller.
 
+This notification system is a hotplug mechanism that replaces the display 
+entity notifier system from my previous RFC. Alan Cox rightly objected to the 
+notification system, arguing that such system-wide notifications were used by 
+FBDEV and very subject to abuse. I agree with his argument, this new mechanism 
+should result in a cleaner implementation as video sources will only be 
+notified of connect/disconnect events for the entity they're connected to.
 
-About the bus model
--------------------
+DBI/DSI busses
+--------------
 
-Lauren't version uses a linux bus for DBI. The idea here is that DBI is the
-control bus fro the panel/chip, and should thus be represented by a real bus.
-While I agreed to this approach when we discussed about it, I now am slightly
-against it.
+My RFC introduced a DBI bus using the Linux device and bus model. Its purpose 
+was multifold:
 
-My reason is that DBI (or DSI or any other similar bus) is not really control
-bus, it is a video bus. It _can_ be used for control, but video is the main
-purpose. This has the partical issues:
+- Support (un)registration, matching and binding of devices and drivers.
 
-- There's never use for DBI only for control. DBI is always used for either
-  video only, or control+video.
+- Provide power management (suspend/resume) services through the standard 
+Linux PM bus/device model, to make sure that DBI devices will be 
+suspended/resumed after/before their DBI bus controller.
 
-- If DBI is used only for video, there's no DBI bus. How to configure DBI in
-  this case?
+- Provide bus services to access the connected devices. For DBI that took the 
+form of command read and data read/write functions.
 
-- If DBI is used for control and video, we have two separate APIs for the bus.
-  In theory it's possible to handle this, but in practice it may be impossible,
-  especially for more complex busses like DSI.
+A DSI bus implementation using the same model was also planned.
 
-So in my version I added DSI as a plain video_source, without a real linux bus.
-I think this model is a lot simpler, and works better.
+Tomi's patches removed the DBI bus and replaced DBI devices with platform 
+devices, moving the bus services implementation to the video source. DBI and 
+DSI busses are always either pure video or video + control busses (although 
+controlling a DPI panel through DSI is conceivable, nobody in his right mind, 
+not even a hardware engineer, would likely implement that), so there will 
+always be a video source to provide the DBI/DSI control operations.
 
- Tomi
+(Un)registration, matching and binding of devices and drivers is provided by 
+the platform device bus. Bus services to access connected devices are provided 
+by the video source, wrapper functions will be used to handle serialization 
+and locking, and possibly to offer higher level services (such as DCS for 
+instance).
 
-Tomi Valkeinen (6):
-  video: add display-core
-  video: add generic dpi panel
-  video: add tfp410
-  video: add generic dvi monitor
-  video: add taal panel
-  video: add makefile & kconfig
+One drawback of using the platform bus is that PM relationships between the 
+bus master and slaves will not be taken into account during suspend/resume. 
+However, a similar issue exists for DPI panels, and PM relationships at the 
+video bus level for DBI and DSI are not handled by the DBI/DSI busses either. 
+As we need a generic solution to handle those (likely through early suspend 
+and late resume), the same solution can be used to handle DBI and DSI control 
+bus PM relationships without requiring a Linux DBI or DSI bus.
 
- drivers/video/Kconfig                |    1 +
- drivers/video/Makefile               |    1 +
- drivers/video/display/Kconfig        |   26 +++
- drivers/video/display/Makefile       |    5 +
- drivers/video/display/chip-tfp410.c  |  164 +++++++++++++++
- drivers/video/display/display-core.c |  207 ++++++++++++++++++
- drivers/video/display/panel-dpi.c    |  155 ++++++++++++++
- drivers/video/display/panel-dvi.c    |  164 +++++++++++++++
- drivers/video/display/panel-taal.c   |  383 ++++++++++++++++++++++++++++++++++
- include/video/display.h              |  166 +++++++++++++++
- include/video/omap-panel-nokia-dsi.h |    4 +-
- include/video/omap-panel-tfp410.h    |    4 +
- include/video/panel-dpi.h            |   25 +++
- include/video/panel-dvi.h            |   18 ++
- 14 files changed, 1321 insertions(+), 2 deletions(-)
- create mode 100644 drivers/video/display/Kconfig
- create mode 100644 drivers/video/display/Makefile
- create mode 100644 drivers/video/display/chip-tfp410.c
- create mode 100644 drivers/video/display/display-core.c
- create mode 100644 drivers/video/display/panel-dpi.c
- create mode 100644 drivers/video/display/panel-dvi.c
- create mode 100644 drivers/video/display/panel-taal.c
- create mode 100644 include/video/display.h
- create mode 100644 include/video/panel-dpi.h
- create mode 100644 include/video/panel-dvi.h
+Even though I still like the idea of DBI and DSI busses, I agree with Tomi 
+that they're not strictly needed and I will drop them.
+
+Entity model
+------------
+
+Tomi's proposal split the display entities into video sources (struct  
+video_source) and display entities (struct display_entity). To make generic 
+pipeline operations easier, we agreed to merge the video source and the 
+display entity back. struct display_entity thus models a display entity that 
+has any number of sink and/or source ports, modeled as struct 
+display_entity_port instances.
+
+Video stream operations will be exposed by the display entity as function 
+pointers and will take a port reference as argument (this could take the form 
+of struct display_entity * and port index, or struct display_entity_port *). 
+The DVI and DSI operations model proposed by Tomi in this patch series will be 
+kept.
+
+Points that we forgot to discuss
+--------------------------------
+
+- DISPLAY_ENTITY_STREAM_SINGLE_SHOT vs. update() operation
+
+I'll look into that.
+
+Please let me know if I've forgotten anything.
 
 -- 
-1.7.10.4
+Regards,
 
+Laurent Pinchart

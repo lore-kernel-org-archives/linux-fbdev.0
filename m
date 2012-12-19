@@ -1,68 +1,86 @@
-From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
-Date: Tue, 18 Dec 2012 10:59:35 +0000
+From: Jani Nikula <jani.nikula@linux.intel.com>
+Date: Wed, 19 Dec 2012 14:57:56 +0000
 Subject: Re: [RFC v2 0/5] Common Display Framework
-Message-Id: <50D04C97.4080104@gmail.com>
+Message-Id: <87pq26ay2z.fsf@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <CAPM=9txFJzJ0haTyBnr8hEmmqNb+gSAyBno+Zs0Z-qvVMTwz9A@mail.gmail.com> <CAF6AEGsLdLasS4=j1PsX_P8miG8NcTXMUP9VYj+4gdU8Qhm2YQ@mail.gmail.com>
-In-Reply-To: <CAF6AEGsLdLasS4=j1PsX_P8miG8NcTXMUP9VYj+4gdU8Qhm2YQ@mail.gmail.com>
+References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <1608840.IleINgrx5J@avalon> <87pq28hb72.fsf@intel.com> <1671267.x0lxGrFjjV@avalon>
+In-Reply-To: <1671267.x0lxGrFjjV@avalon>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Rob Clark <rob.clark@linaro.org>
-Cc: Dave Airlie <airlied@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, Tom Gall <tom.gall@linaro.org>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Kyungmin Park <kyungmin.park@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev@vger.kernel.org, Philipp Zabel <p.zabel@pengutronix.de>, Tom Gall <tom.gall@linaro.org>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, dri-devel@lists.freedesktop.org, Rob Clark <rob.clark@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, linux-media@vger.kernel.org
 
-On 12/18/2012 07:21 AM, Rob Clark wrote:
-> On Mon, Dec 17, 2012 at 11:04 PM, Dave Airlie<airlied@gmail.com>  wrote:
->> So this might be a bit off topic but this whole CDF triggered me
->> looking at stuff I generally avoid:
->>
->> The biggest problem I'm having currently with the whole ARM graphics
->> and output world is the proliferation of platform drivers for every
->> little thing. The whole ordering of operations with respect to things
->> like suspend/resume or dynamic power management is going to be a real
->> nightmare if there are dependencies between the drivers. How do you
->> enforce ordering of s/r operations between all the various components?
 
-There have been already some ideas proposed to resolve this at the PM
-subsystem level [1]. And this problem is of course not only specific
-to platform drivers. The idea of having monolithic drivers, just because
-we can't get the suspend/resume sequences right otherwise, doesn't really
-sound appealing. SoC IPs get reused on multiple different SoC series,
-no only by single manufacturer. Whole graphics/video subsystems are
-composed from smaller blocks in SoCs, with various number of distinct
-sub-blocks and same sub-blocks repeated different number of times in
-a specific SoC revision.
-Expressing an IP as a platform device seems justified to me, often these
-platform devices have enough differences to treat them as such. E.g.
-belong in different power domain/use different clocks. Except there is
-big issue with the power management... However probably more important
-is to be able to have driver for a specific IP in a separate module.
+Hi Laurent -
 
-And this suspend/resume ordering issue is not only about the platform
-devices. E.g. camera subsystem can be composed of an image sensor
-sub-device driver, which is most often an I2C client driver, and of
-multiple SoC processing blocks. The image sensor can have dependencies
-on the SoC sub-blocks. So even if we created monolithic driver for the
-SoC part, there are still two pieces to get s/r ordering right - I2C
-client and SoC drivers. And please don't propose to merge the sensor
-sub-device driver too. There has been a lot of effort in V4L2 to
-separate those various functional blocks into sub-devices, so they can
-be freely reused, without reimplementing same functionality in each
-driver. BTW, there has been a nice talk about these topics at ELCE [2],
-particularly slide 22 is interesting.
+On Tue, 18 Dec 2012, Laurent Pinchart <laurent.pinchart@ideasonboard.com> w=
+rote:
+> Hi Jani,
+>
+> On Monday 17 December 2012 18:53:37 Jani Nikula wrote:
+>> I can see the need for a framework for DSI panels and such (in fact Tomi
+>> and I have talked about it like 2-3 years ago already!) but what is the
+>> story for HDMI and DP? In particular, what's the relationship between
+>> DRM and CDF here? Is there a world domination plan to switch the DRM
+>> drivers to use this framework too? ;) Do you have some rough plans how
+>> DRM and CDF should work together in general?
+>
+> There's always a world domination plan, isn't there ? :-)
+>
+> I certainly want CDF to be used by DRM (or more accurately KMS). That's w=
+hat=20
+> the C stands for, common refers to sharing panel and other display entity=
+=20
+> drivers between FBDEV, KMS and V4L2.
+>
+> I currently have no plan to expose CDF internals to userspace through the=
+ KMS=20
+> API. We might have to do so later if the hardware complexity grows in suc=
+h a=20
+> way that finer control than what KMS provides needs to be exposed to=20
+> userspace, but I don't think we're there yet. The CDF API will thus only =
+be=20
+> used internally in the kernel by display controller drivers. The KMS core=
+=20
+> might get functions to handle common display entity operations, but the b=
+ulk=20
+> of the work will be in the display controller drivers to start with. We w=
+ill=20
+> then see what can be abstracted in KMS helper functions.
+>
+> Regarding HDMI and DP, I imagine HDMI and DP drivers that would use the C=
+DF=20
+> API. That's just a thought for now, I haven't tried to implement them, bu=
+t it=20
+> would be nice to handle HDMI screens and DPI/DBI/DSI panels in a generic =
+way.
+>
+> Do you have thoughts to share on this topic ?
 
-I believe the solution for these issues really needs to be sought in the
-PM subsystem itself.
+It just seems to me that, at least from a DRM/KMS perspective, adding
+another layer (=CDF) for HDMI or DP (or legacy outputs) would be
+overengineering it. They are pretty well standardized, and I don't see
+there would be a need to write multiple display drivers for them. Each
+display controller has one, and can easily handle any chip specific
+requirements right there. It's my gut feeling that an additional
+framework would just get in the way. Perhaps there could be more common
+HDMI/DP helper style code in DRM to reduce overlap across KMS drivers,
+but that's another thing.
 
-> I tend to think that sub-devices are useful just to have a way to
-> probe hw which may or may not be there, since on ARM we often don't
-> have any alternative.. but beyond that, suspend/resume, and other
-> life-cycle aspects, they should really be treated as all one device.
-> Especially to avoid undefined suspend/resume ordering.
+So is the HDMI/DP drivers using CDF a more interesting idea from a
+non-DRM perspective? Or, put another way, is it more of an alternative
+to using DRM? Please enlighten me if there's some real benefit here that
+I fail to see!
 
-[1] https://lkml.org/lkml/2009/9/9/373
-[2] 
-http://elinux.org/images/9/90/ELCE2012-Modular-Graphics-on-Embedded-ARM.pdf
+For DSI panels (or DSI-to-whatever bridges) it's of course another
+story. You typically need a panel specific driver. And here I see the
+main point of the whole CDF: decoupling display controllers and the
+panel drivers, and sharing panel (and converter chip) specific drivers
+across display controllers. Making it easy to write new drivers, as
+there would be a model to follow. I'm definitely in favour of coming up
+with some framework that would tackle that.
 
-Thanks,
-Sylwester
+
+BR,
+Jani.

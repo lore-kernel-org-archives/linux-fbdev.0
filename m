@@ -1,91 +1,109 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 19 Dec 2012 15:07:50 +0000
+From: Rob Clark <rob.clark@linaro.org>
+Date: Wed, 19 Dec 2012 15:26:40 +0000
 Subject: Re: [RFC v2 0/5] Common Display Framework
-Message-Id: <50D1D846.6010005@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enigAF592F4E085896D02B582D18"
+Message-Id: <CAF6AEGuSt0CL2sFGK-PZnw6+r9zhGHO4CEjJEWaR8eGhks2=UQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <1608840.IleINgrx5J@avalon> <87pq28hb72.fsf@intel.com> <1671267.x0lxGrFjjV@avalon> <87pq26ay2z.fsf@intel.com>
+References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com>
+	<1608840.IleINgrx5J@avalon>
+	<87pq28hb72.fsf@intel.com>
+	<1671267.x0lxGrFjjV@avalon>
+	<87pq26ay2z.fsf@intel.com>
 In-Reply-To: <87pq26ay2z.fsf@intel.com>
-To: Jani Nikula <jani.nikula@linux.intel.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev@vger.kernel.org, Philipp Zabel <p.zabel@pengutronix.de>, Tom Gall <tom.gall@linaro.org>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, dri-devel@lists.freedesktop.org, Rob Clark <rob.clark@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, linux-media@vger.kernel.org
-
---------------enigAF592F4E085896D02B582D18
-Content-Type: text/plain; charset=ISO-8859-1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: Jani Nikula <jani.nikula@linux.intel.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, Tom Gall <tom.gall@linaro.org>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Kyungmin Park <kyungmin.park@samsung.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
 
-On 2012-12-19 16:57, Jani Nikula wrote:
-
+On Wed, Dec 19, 2012 at 8:57 AM, Jani Nikula
+<jani.nikula@linux.intel.com> wrote:
+>
+> Hi Laurent -
+>
+> On Tue, 18 Dec 2012, Laurent Pinchart <laurent.pinchart@ideasonboard.com>=
+ wrote:
+>> Hi Jani,
+>>
+>> On Monday 17 December 2012 18:53:37 Jani Nikula wrote:
+>>> I can see the need for a framework for DSI panels and such (in fact Tomi
+>>> and I have talked about it like 2-3 years ago already!) but what is the
+>>> story for HDMI and DP? In particular, what's the relationship between
+>>> DRM and CDF here? Is there a world domination plan to switch the DRM
+>>> drivers to use this framework too? ;) Do you have some rough plans how
+>>> DRM and CDF should work together in general?
+>>
+>> There's always a world domination plan, isn't there ? :-)
+>>
+>> I certainly want CDF to be used by DRM (or more accurately KMS). That's =
+what
+>> the C stands for, common refers to sharing panel and other display entity
+>> drivers between FBDEV, KMS and V4L2.
+>>
+>> I currently have no plan to expose CDF internals to userspace through th=
+e KMS
+>> API. We might have to do so later if the hardware complexity grows in su=
+ch a
+>> way that finer control than what KMS provides needs to be exposed to
+>> userspace, but I don't think we're there yet. The CDF API will thus only=
+ be
+>> used internally in the kernel by display controller drivers. The KMS core
+>> might get functions to handle common display entity operations, but the =
+bulk
+>> of the work will be in the display controller drivers to start with. We =
+will
+>> then see what can be abstracted in KMS helper functions.
+>>
+>> Regarding HDMI and DP, I imagine HDMI and DP drivers that would use the =
+CDF
+>> API. That's just a thought for now, I haven't tried to implement them, b=
+ut it
+>> would be nice to handle HDMI screens and DPI/DBI/DSI panels in a generic=
+ way.
+>>
+>> Do you have thoughts to share on this topic ?
+>
 > It just seems to me that, at least from a DRM/KMS perspective, adding
-> another layer (=3DCDF) for HDMI or DP (or legacy outputs) would be
+> another layer (=CDF) for HDMI or DP (or legacy outputs) would be
 > overengineering it. They are pretty well standardized, and I don't see
 > there would be a need to write multiple display drivers for them. Each
 > display controller has one, and can easily handle any chip specific
 > requirements right there. It's my gut feeling that an additional
-> framework would just get in the way. Perhaps there could be more common=
-
+> framework would just get in the way. Perhaps there could be more common
 > HDMI/DP helper style code in DRM to reduce overlap across KMS drivers,
 > but that's another thing.
->=20
+>
 > So is the HDMI/DP drivers using CDF a more interesting idea from a
 > non-DRM perspective? Or, put another way, is it more of an alternative
-> to using DRM? Please enlighten me if there's some real benefit here tha=
-t
+> to using DRM? Please enlighten me if there's some real benefit here that
 > I fail to see!
 
-The use of CDF is an option, not something that has to be done. A DRM
-driver developer may use it if it gives benefit for him for that
-particular driver.
+fwiw, I think there are at least a couple cases where multiple SoC's
+have the same HDMI IP block.
 
-I don't know much about desktop display hardware, but I guess that using
-CDF would not really give much there. In some cases it could, if the IPs
-used on the graphics card are something that are used elsewhere also
-(sounds quite unlikely, though). In that case there could be separate
-drivers for the IPs.
+And, there are also external HDMI encoders (for example connected over
+i2c) that can also be shared between boards.  So I think there will be
+a number of cases where CDF is appropriate for HDMI drivers.  Although
+trying to keep this all independent of DRM (as opposed to just
+something similar to what drivers/gpu/i2c is today) seems a bit
+overkill for me.  Being able to use the helpers in drm and avoiding an
+extra layer of translation seems like the better option to me.  So my
+vote would be drivers/gpu/cdf.
 
-And note that CDF is not really about the dispc side, i.e. the part that
-creates the video stream from pixels in the memory. It's more about the
-components after that, and how to connect those components.
+BR,
+-R
 
 > For DSI panels (or DSI-to-whatever bridges) it's of course another
 > story. You typically need a panel specific driver. And here I see the
 > main point of the whole CDF: decoupling display controllers and the
 > panel drivers, and sharing panel (and converter chip) specific drivers
 > across display controllers. Making it easy to write new drivers, as
-> there would be a model to follow. I'm definitely in favour of coming up=
-
+> there would be a model to follow. I'm definitely in favour of coming up
 > with some framework that would tackle that.
-
-Right. But if you implement drivers for DSI panels with CDF for, say,
-OMAP, I think it's simpler to use CDF also for HDMI/DP on OMAP.
-Otherwise it'll be a mishmash with two different models.
-
- Tomi
-
-
-
---------------enigAF592F4E085896D02B582D18
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJQ0dhGAAoJEPo9qoy8lh711fIP/0tG7PP7vl6yQyl1cZsWGR/e
-+yijVtgqI/F0hcyDjE6QvUvW/W0Qum+Tlb6tNjmoSnr1UakIZc84SR+AUW652XTx
-qlb2QPAvvjUezqthYztqYR/zBgfVFJ/z1NiWpzKLxFVoU1L5n8XojNkEqUSLtG04
-rlC6pXzZxDR3ilugVLOlneCUzY0Gc7caG8baZJoxdhNInWTHRzReGKTvG34UMeSu
-bqwGKVbtPSN7vH09aKTqXkmOMRJv8T2EvK58rkwq5fxojkvCmHov++K9/yyOOw54
-OtrCDMLIwuPrbR0K7Z66bFjZpVc2+NBUhqx7amny0dp4XrJspKWwB8b5hN+czjIc
-fvq9v5KRWTL2LbKn/bXBcM4icSayiqWXrEp/5fRZNK5XmT5OAd/bk8r4WU7xG4Eu
-sLt/pqnGFS3u/pzIDibi0iLhQvBwn7F8Eh6kUmT0z9y5VvaezZW1ENHPHFLt6sje
-BELJQKzQaSUqMwnOG1FQMG8Erltat4/WkAfUAy5l9JrLCbBFCDQSyaKAn2vtYCZ7
-ohPhCZAh6XtJgbkQQKa2nrMt0OVDYqSH/aWts9SPIwP84GL9Ynu37ntl1szxEXj1
-m3H/hrd1fuwQrdsI5MULYN3VRzhzaAIu7AebA++0fRtHsFLFDwG/T9oeGSAui8c4
-NXGhyrKy8xqw2nxs6aEY
-=rYAb
------END PGP SIGNATURE-----
-
---------------enigAF592F4E085896D02B582D18--
+>
+>
+> BR,
+> Jani.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html

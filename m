@@ -1,95 +1,149 @@
 From: =?ISO-8859-1?Q?St=E9phane_Marchesin?=  <stephane.marchesin@gmail.com>
-Date: Wed, 19 Dec 2012 20:05:04 +0000
+Date: Wed, 19 Dec 2012 20:13:20 +0000
 Subject: Re: [RFC v2 0/5] Common Display Framework
-Message-Id: <CACP_E+JSjwsaUnbuB7wazKZkQKt-pOU_aNKhPNyfW6j610WyjA@mail.gmail.com>
+Message-Id: <CACP_E++NmOgnNjmEbLvNU27N6Z1SNP2vigtSXxSE5DzVtcHQnA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com>
- <CAPM=9txFJzJ0haTyBnr8hEmmqNb+gSAyBno+Zs0Z-qvVMTwz9A@mail.gmail.com> <CAF6AEGsLdLasS4=j1PsX_P8miG8NcTXMUP9VYj+4gdU8Qhm2YQ@mail.gmail.com>
-In-Reply-To: <CAF6AEGsLdLasS4=j1PsX_P8miG8NcTXMUP9VYj+4gdU8Qhm2YQ@mail.gmail.com>
+ <CAPM=9txFJzJ0haTyBnr8hEmmqNb+gSAyBno+Zs0Z-qvVMTwz9A@mail.gmail.com>
+ <CAF6AEGsLdLasS4=j1PsX_P8miG8NcTXMUP9VYj+4gdU8Qhm2YQ@mail.gmail.com>
+ <CAKMK7uF3Ahh8isvzZr4605X3wz-TQ2EHreTUnc5K_Z0DwrY6xw@mail.gmail.com> <CAAQKjZMt+13oooEw39mOM1rF2=ss4ih1s7iVS362di-50h4+Hg@mail.gmail.com>
+In-Reply-To: <CAAQKjZMt+13oooEw39mOM1rF2=ss4ih1s7iVS362di-50h4+Hg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Rob Clark <rob.clark@linaro.org>
-Cc: Dave Airlie <airlied@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Tom Gall <tom.gall@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Philipp Zabel <p.zabel@pengutronix.de>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
+To: Inki Dae <inki.dae@samsung.com>
+Cc: Daniel Vetter <daniel@ffwll.ch>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, Tom Gall <tom.gall@linaro.org>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Rob Clark <rob.clark@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
 
-On Mon, Dec 17, 2012 at 10:21 PM, Rob Clark <rob.clark@linaro.org> wrote:
-> On Mon, Dec 17, 2012 at 11:04 PM, Dave Airlie <airlied@gmail.com> wrote:
->>>
->>> Many developers showed interest in the first RFC, and I've had the oppo=
-rtunity
->>> to discuss it with most of them. I would like to thank (in no particular
->>> order) Tomi Valkeinen for all the time he spend helping me to draft v2,=
- Marcus
->>> Lorentzon for his useful input during Linaro Connect Q4 2012, and Linar=
-o for
->>> inviting me to Connect and providing a venue to discuss this topic.
->>>
->>
->> So this might be a bit off topic but this whole CDF triggered me
->> looking at stuff I generally avoid:
->>
->> The biggest problem I'm having currently with the whole ARM graphics
->> and output world is the proliferation of platform drivers for every
->> little thing. The whole ordering of operations with respect to things
->> like suspend/resume or dynamic power management is going to be a real
->> nightmare if there are dependencies between the drivers. How do you
->> enforce ordering of s/r operations between all the various components?
+On Tue, Dec 18, 2012 at 1:38 AM, Inki Dae <inki.dae@samsung.com> wrote:
 >
-> I tend to think that sub-devices are useful just to have a way to
-> probe hw which may or may not be there, since on ARM we often don't
-> have any alternative..
+>
+> 2012/12/18 Daniel Vetter <daniel@ffwll.ch>
+>>
+>> On Tue, Dec 18, 2012 at 7:21 AM, Rob Clark <rob.clark@linaro.org> wrote:
+>> >> The other thing I'd like you guys to do is kill the idea of fbdev and
+>> >> v4l drivers that are "shared" with the drm codebase, really just
+>> >> implement fbdev and v4l on top of the drm layer, some people might
+>> >> think this is some sort of maintainer thing, but really nothing else
+>> >> makes sense, and having these shared display frameworks just to avoid
+>> >> having using drm/kms drivers seems totally pointless. Fix the drm
+>> >> fbdev emulation if an fbdev interface is needed. But creating a fourth
+>> >> framework because our previous 3 frameworks didn't work out doesn't
+>> >> seem like a situation I want to get behind too much.
+>> >
+>> > yeah, let's not have multiple frameworks to do the same thing.. For
+>> > fbdev, it is pretty clear that it is a dead end.  For v4l2
+>> > (subdev+mcf), it is perhaps bit more flexible when it comes to random
+>> > arbitrary hw pipelines than kms.  But to take advantage of that, your
+>> > userspace isn't going to be portable anyways, so you might as well use
+>> > driver specific properties/ioctls.  But I tend to think that is more
+>> > useful for cameras.  And from userspace perspective, kms planes are
+>> > less painful to use for output than v4l2, so lets stick to drm/kms for
+>> > output (and not try to add camera/capture support to kms).. k, thx
+>>
+>> Yeah, I guess having a v4l device also exported by the same driver
+>> that exports the drm interface might make sense in some cases. But in
+>> many cases I think the video part is just an independent IP block and
+>> shuffling data around with dma-buf is all we really need. So yeah, I
+>> guess sharing display resources between v4l and drm kms driver should
+>> be a last resort option, since coordination (especially if it's
+>> supposed to be somewhat dynamic) will be extremely hairy.
+>
+>
+> I think the one reason that the CDF was appeared is to avoid duplicating
+> codes. For example, we should duplicate mipi-dsi or dbi drivers into drm =
+to
+> avoid ordering issue. And for this, those should be re-implemented in bas=
+ed
+> on drm framework so that those could be treated as all one device. Actual=
+ly,
+> in case of Exynos, some guys tried to duplicate eDP driver into exynos drm
+> framework in same issue.
 
-You can probe the device tree from a normal DRM driver. For example in
-nouveau for PPC we probe the OF device tree looking for connectors. I
-don't see how sub-devices or extra platform drivers help with that, as
-long as the device tree is populated upfront somehow...
+If you're talking about us, this is misleading, as we didn't try to
+duplicate the eDP driver. What we did is remove it from driver/video
+and put it in DRM.
+
+The reason for that is that it's not needed for fbdev, since KMS
+helpers let you implement fbdev. So we can just remove all the exynos
+graphics support from drivers/video since it becomes obsolete with the
+KMS fbdev helpers. And everything can be in DRM. And later, we can
+remove the multiple platform drivers from DRM as well, since they're
+not needed either.
 
 St=E9phane
 
-> but beyond that, suspend/resume, and other
-> life-cycle aspects, they should really be treated as all one device.
-> Especially to avoid undefined suspend/resume ordering.
+> So I think the best way is to avoid duplicating
+> codes and resolve ordering issue such as s/r operations between all the
+> various components.
 >
-> CDF or some sort of mechanism to share panel drivers between drivers
-> is useful.  Keeping it within drm, is probably a good idea, if nothing
-> else to simplify re-use of helper fxns (like avi-infoframe stuff, for
-> example) and avoid dealing with merging changes across multiple trees.
->   Treating them more like shared libraries and less like sub-devices
-> which can be dynamically loaded/unloaded (ie. they should be not built
-> as separate modules or suspend/resumed or probed/removed independently
-> of the master driver) is a really good idea to avoid uncovering nasty
-> synchronization issues later (remove vs modeset or pageflip) or
-> surprising userspace in bad ways.
+> And the below is my opinion,
 >
->> The other thing I'd like you guys to do is kill the idea of fbdev and
->> v4l drivers that are "shared" with the drm codebase, really just
->> implement fbdev and v4l on top of the drm layer, some people might
->> think this is some sort of maintainer thing, but really nothing else
->> makes sense, and having these shared display frameworks just to avoid
->> having using drm/kms drivers seems totally pointless. Fix the drm
->> fbdev emulation if an fbdev interface is needed. But creating a fourth
->> framework because our previous 3 frameworks didn't work out doesn't
->> seem like a situation I want to get behind too much.
 >
-> yeah, let's not have multiple frameworks to do the same thing.. For
-> fbdev, it is pretty clear that it is a dead end.  For v4l2
-> (subdev+mcf), it is perhaps bit more flexible when it comes to random
-> arbitrary hw pipelines than kms.  But to take advantage of that, your
-> userspace isn't going to be portable anyways, so you might as well use
-> driver specific properties/ioctls.  But I tend to think that is more
-> useful for cameras.  And from userspace perspective, kms planes are
-> less painful to use for output than v4l2, so lets stick to drm/kms for
-> output (and not try to add camera/capture support to kms).. k, thx
+> -----------------------------------------------------
+> Display
+> Controller-------------CDF---------------|MIPI-DSI/DBI---------------LCD
+> Panel|
 >
-> BR,
-> -R
+> -----------------------------------------------------
 >
->> Dave.
->> _______________________________________________
->> dri-devel mailing list
->> dri-devel@lists.freedesktop.org
->> http://lists.freedesktop.org/mailman/listinfo/dri-devel
+> 1. to access MIPI-DSI/DBI and LCD Panel drivers.
+>     - Display Controller is controlled by linux framebuffer or drm kms ba=
+sed
+> specific drivers like now. And each driver calls some interfaces of CDF.
+>
+> 2. to control the power of these devices.
+>     - drm kms based specific driver calls dpms operation and next the dpms
+> operation calls fb blank operation of linux framebuffer.
+>       But for this, we need some interfaces that it can connect between d=
+rm
+> and linux framebuffer framework and you can refer to the below link.
+>
+> http://lists.freedesktop.org/archives/dri-devel/2011-July/013242.html
+>     - linux framebuffer based driver calls fb blank operation.
+>
+>         fb blank(fb)------------------pm
+> runtime(fb)--------------------fb_blank----------mipi and lcd
+>         dpms(drm kms)------------pm runtime(drm
+> kms)----------fb_blank----------mipi and lcd
+>
+>
+> 3. suspend/resume
+>     - pm suspend/resume are implemented only in linux framebuffer or drm =
+kms
+> based specific drivers.
+>     - MIPI-DSI/DBI and LCD Panel drivers are controlled only by fb blank
+> interfaces.
+>
+>         s/r(fb)-----------------------------------------------pm
+> runtime(fb)----------------fb blank-------mipi and lcd
+>         s/r(drm kms)--------dpms(drm kms)-------pm runtime(drm
+> kms)------fb_blank------mipi and lcd
+>
+>
+> We could resolve ordering issue to suspend/resume simply duplicating
+> relevant drivers but couldn't avoid duplicating codes. So I think we could
+> avoid the ordering issue using fb blank interface of linux framebuffer and
+> also duplicating codes.
+>
+> Thanks,
+> Inki Dae
+>
+>
+>>
+>> -Daniel
+>> --
+>> Daniel Vetter
+>> Software Engineer, Intel Corporation
+>> +41 (0) 79 365 57 48 - http://blog.ffwll.ch
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>
+>
 > _______________________________________________
 > dri-devel mailing list
 > dri-devel@lists.freedesktop.org
 > http://lists.freedesktop.org/mailman/listinfo/dri-devel
+>

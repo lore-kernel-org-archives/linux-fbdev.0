@@ -1,83 +1,114 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 24 Dec 2012 14:12:28 +0000
+Date: Mon, 24 Dec 2012 17:09:29 +0000
 Subject: Re: [RFC v2 0/5] Common Display Framework
-Message-Id: <3445117.L94DmxEvrl@avalon>
+Message-Id: <5538783.cf2rXfYmRW@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <CAD025yQoCiNaKvaCwvUWhk_jV70CPhV35UzV9MR6HtE+1baCxg@mail.gmail.com> <7255068.DBf2OgseHL@amdc1227>
-In-Reply-To: <7255068.DBf2OgseHL@amdc1227>
+References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <CAPM=9txFJzJ0haTyBnr8hEmmqNb+gSAyBno+Zs0Z-qvVMTwz9A@mail.gmail.com> <50D047CF.2040904@stericsson.com>
+In-Reply-To: <50D047CF.2040904@stericsson.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Tomasz Figa <t.figa@samsung.com>
-Cc: dri-devel@lists.freedesktop.org, Vikas Sajjan <vikas.sajjan@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev@vger.kernel.org, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Tom Gall <tom.gall@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Clark <rob.clark@linaro.org>, Ragesh Radhakrishnan <Ragesh.R@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Philipp Zabel <p.zabel@pengutronix.de>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, sunil joshi <joshi@samsung.com>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, linux-media@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Marcus Lorentzon <marcus.xm.lorentzon@stericsson.com>
+Cc: Dave Airlie <airlied@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>, Archit Taneja <archit@ti.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Inki Dae <inki.dae@samsung.com>, Jesse Barker <jesse.barker@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Philipp Zabel <p.zabel@pengutronix.de>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, Rob Clark <rob.clark@linaro.org>, Sascha Hauer <s.hauer@pengutronix.de>, Sebastien Guiriec <s-guiriec@ti.com>, Sumit Semwal <sumit.semwal@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Tom Gall <tom.gall@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Vikas
 
-Hi Tomasz,
+Hi Marcus,
 
-On Friday 21 December 2012 11:00:52 Tomasz Figa wrote:
-> On Tuesday 18 of December 2012 08:31:30 Vikas Sajjan wrote:
-> > On 17 December 2012 20:55, Laurent Pinchart wrote:
-> > > Hi Vikas,
-> > >=20
-> > > Sorry for the late reply. I now have more time to work on CDF, so
-> > > delays should be much shorter.
-> > >=20
-> > > On Thursday 06 December 2012 10:51:15 Vikas Sajjan wrote:
-> > > > Hi Laurent,
-> > > >=20
-> > > > I was thinking of porting CDF to samsung EXYNOS 5250 platform, what
-> > > > I found is that, the exynos display controller is MIPI DSI based
-> > > > controller.
-> > > >=20
-> > > > But if I look at CDF patches, it has only support for MIPI DBI based
-> > > > Display controller.
-> > > >=20
-> > > > So my question is, do we have any generic framework for MIPI DSI
-> > > > based display controller? basically I wanted to know, how to go abo=
-ut
-> > > > porting CDF for such kind of display controller.
-> > >=20
-> > > MIPI DSI support is not available yet. The only reason for that is
-> > > that I don't have any MIPI DSI hardware to write and test the code
-> > > with :-)
-> > >=20
-> > > The common display framework should definitely support MIPI DSI. I
-> > > think the existing MIPI DBI code could be used as a base, so the
-> > > implementation shouldn't be too high.
-> > >=20
-> > > Yeah, i was also thinking in similar lines, below is my though for
-> > > MIPI DSI support in CDF.
-> >=20
-> > o   MIPI DSI support as part of CDF framework will expose
-> > =A7  mipi_dsi_register_device(mpi_device) (will be called mach-xxx-dt.c
-> > file )
-> > =A7  mipi_dsi_register_driver(mipi_driver, bus ops) (will be called from
-> > platform specific init driver call )
-> > =B7    bus ops will be
-> > o   read data
-> > o   write data
-> > o   write command
-> > =A7  MIPI DSI will be registered as bus_register()
-> >=20
-> > When MIPI DSI probe is called, it (e.g., Exynos or OMAP MIPI DSI) will
-> > initialize the MIPI DSI HW IP.
-> >=20
-> > This probe will also parse the DT file for MIPI DSI based panel, add
-> > the panel device (device_add() ) to kernel and register the display
-> > entity with its control and  video ops with CDF.
-> >=20
-> > I can give this a try.
->=20
-> I am currently in progress of reworking Exynos MIPI DSIM code and s6e8ax0
-> LCD driver to use the v2 RFC of Common Display Framework. I have most of
-> the work done, I have just to solve several remaining problems.
+On Tuesday 18 December 2012 11:39:11 Marcus Lorentzon wrote:
+> On 12/18/2012 06:04 AM, Dave Airlie wrote:
+> >> Many developers showed interest in the first RFC, and I've had the
+> >> opportunity to discuss it with most of them. I would like to thank (in
+> >> no particular order) Tomi Valkeinen for all the time he spend helping me
+> >> to draft v2, Marcus Lorentzon for his useful input during Linaro Connect
+> >> Q4 2012, and Linaro for inviting me to Connect and providing a venue to
+> >> discuss this topic.
+> > 
+> > So this might be a bit off topic but this whole CDF triggered me
+> > looking at stuff I generally avoid:
+>
+> I like the effort, right now it seems like x86 and arm display sub systems
+> are quite different in terms of DRM driver (and HW) design. I think this is
+> partly due to little information shared about these different architectures
+> and ideas behind the choices made. I hope some discussion will light up both
+> sides. And an early discussion will hopefully give you less pain when CDF
+> drivers starts to get pushed your way.
 
-Do you already have code that you can publish ? I'm particularly interested=
-=20
-(and I think Tomi Valkeinen would be as well) in looking at the DSI operati=
-ons=20
-you expose to DSI sinks (panels, transceivers, ...).
+On the topic of discussions, would anyone be interested in a 
+BoF/brainstorming/whatever session during the FOSDEM ?
 
---=20
+> > The biggest problem I'm having currently with the whole ARM graphics
+> > and output world is the proliferation of platform drivers for every
+> > little thing. The whole ordering of operations with respect to things
+> > like suspend/resume or dynamic power management is going to be a real
+> > nightmare if there are dependencies between the drivers. How do you
+> > enforce ordering of s/r operations between all the various components?
+> 
+> Could you give an example? Personally I don't think it is that many. I
+> might not have counted the plat devs in all arm drivers. But the STE one
+> have one per HW IP block in the HW (1 DSS + 3 DSI encoder/formatters).
+> Then of course there are all these panel devices. But I hope that when
+> CDF is "finished" we will have DSI devices on the DSI bus and DBI
+> devices on the DBI bus. I think most vendors have used platform devices
+> for these since they normally can't be probed in a generic way. But as
+> they are off SoC I feel this is not the best choice. And then many of
+> the panels are I2C devices (control bus) and that I guess is similar to
+> "x86" encoders/connectors?
+
+Tomi Valkeinen proposed dropping the DSI and DBI busses in favor of the 
+platform bus. Although I still believe that DSI and DBI busses would make 
+sense, I agree that they don't provide much in terms of probing and power 
+management. You can read the discussion at http://www.spinics.net/lists/linux-
+fbdev/msg09250.html.
+
+> Another part of the difference I feel is that in x86 a DRM device is
+> most likely a PCI device, and as such has one huge driver for all IPs on
+> that board. The closest thing we get to that in ARM is probably the DSS
+> (collection of IPs on SoC, like 3D, 2D, display output, encoders). But
+> it doesn't fell right to create a single driver for all these. And as
+> you know often 3D is even from a separate vendor. All these lead up to a
+> slight increase in the number of devices and drivers. Right way, I feel
+> so, but you are welcome to show a better way.
+> 
+> > The other thing I'd like you guys to do is kill the idea of fbdev and
+> > v4l drivers that are "shared" with the drm codebase, really just
+> > implement fbdev and v4l on top of the drm layer, some people might
+> > think this is some sort of maintainer thing, but really nothing else
+> > makes sense, and having these shared display frameworks just to avoid
+> > having using drm/kms drivers seems totally pointless. Fix the drm
+> > fbdev emulation if an fbdev interface is needed. But creating a fourth
+> > framework because our previous 3 frameworks didn't work out doesn't
+> > seem like a situation I want to get behind too much.
+> 
+> I have no intention to use CDF outside KMS connector/encoder and I have
+> not heard Laurent talk about this either.
+
+I don't either. CDF will mostly target KMS connectors, and can also be used 
+for KMS encoders. I have no plan to touch the CRTC.
+
+> Personally I see CDF as "helpers" to create and reuse connector/encoder
+> drivers between SoCs instead of each SoC do their own panel drivers (which
+> would be about a hundred, times the number of supported SoCs). We probably
+> need to discuss the connector/encoder mappings to CDF/panels.
+
+That's a topic I was planning to discuss at some point. One of the issues is 
+that the KMS model can only have 3 entities in the pipeline, while hardware 
+pipelines (especially in the embedded world) could be made of 4 or more 
+entities (such as CRTC -> DSI encoder -> DSI to HDMI converter -> HDMI 
+connector). We might not have to expose all details to userspace, but we need 
+mapping rules.
+
+> But I think we need to flush out the higher level details like control bus
+> vs. data bus vs. display entities. While I like the generic way of the
+> display entities, I also like the pure bus/device/driver model without too
+> many generalizations.
+> Do you have any support in x86 world that could be compared to mobile
+> phone DSI/DBI/DPI panels? That is, different encoder/lcd-driver chips
+> between the on chip/cpu/SoC CRTC and the external LCD depending on
+> product (mobile/netbook/...) or is it all HDMI/DP/LVDS etc on x86?
+> And if you do, how do you model/setup/share all those in DRM driver? Or
+> it is manageable (< 10) and not up in the hundreds of different
+> encoders/lcd-drivers?
+
+-- 
 Regards,
 
 Laurent Pinchart

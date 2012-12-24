@@ -1,98 +1,102 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 24 Dec 2012 13:24:45 +0000
+Date: Mon, 24 Dec 2012 13:37:24 +0000
 Subject: Re: [RFC v2 0/5] Common Display Framework
-Message-Id: <1454784.3gdgnzX4U2@avalon>
+Message-Id: <9690842.n93imGlCHA@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <CAPM=9txFJzJ0haTyBnr8hEmmqNb+gSAyBno+Zs0Z-qvVMTwz9A@mail.gmail.com>
-In-Reply-To: <CAPM=9txFJzJ0haTyBnr8hEmmqNb+gSAyBno+Zs0Z-qvVMTwz9A@mail.gmail.com>
+References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <CAPM=9txFJzJ0haTyBnr8hEmmqNb+gSAyBno+Zs0Z-qvVMTwz9A@mail.gmail.com> <CAF6AEGsLdLasS4=j1PsX_P8miG8NcTXMUP9VYj+4gdU8Qhm2YQ@mail.gmail.com>
+In-Reply-To: <CAF6AEGsLdLasS4=j1PsX_P8miG8NcTXMUP9VYj+4gdU8Qhm2YQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Airlie <airlied@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org, Archit Taneja <archit@ti.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Inki Dae <inki.dae@samsung.com>, Jesse Barker <jesse.barker@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marcus Lorentzon <marcus.xm.lorentzon@stericsson.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Philipp Zabel <p.zabel@pengutronix.de>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, Rob Clark <rob.clark@linaro.org>, Sascha Hauer <s.hauer@pengutronix.de>, Sebastien Guiriec <s-guiriec@ti.com>, Sumit Semwal <sumit.semwal@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Tom Gall <tom.gall@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Vikas Sajjan <vikas.sajjan@linaro.org>
+To: Rob Clark <rob.clark@linaro.org>
+Cc: Dave Airlie <airlied@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, Tom Gall <tom.gall@linaro.org>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Kyungmin Park <kyungmin.park@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
 
-Hi Dave,
+Hi Rob,
 
-On Tuesday 18 December 2012 15:04:02 Dave Airlie wrote:
-> > Many developers showed interest in the first RFC, and I've had the
-> > opportunity to discuss it with most of them. I would like to thank (in no
-> > particular order) Tomi Valkeinen for all the time he spend helping me to
-> > draft v2, Marcus Lorentzon for his useful input during Linaro Connect Q4
-> > 2012, and Linaro for inviting me to Connect and providing a venue to
-> > discuss this topic.
->
-> So this might be a bit off topic but this whole CDF triggered me looking at
-> stuff I generally avoid:
+On Tuesday 18 December 2012 00:21:32 Rob Clark wrote:
+> On Mon, Dec 17, 2012 at 11:04 PM, Dave Airlie <airlied@gmail.com> wrote:
+> >> Many developers showed interest in the first RFC, and I've had the
+> >> opportunity to discuss it with most of them. I would like to thank (in
+> >> no particular order) Tomi Valkeinen for all the time he spend helping me
+> >> to draft v2, Marcus Lorentzon for his useful input during Linaro Connect
+> >> Q4 2012, and Linaro for inviting me to Connect and providing a venue to
+> >> discuss this topic.
+> > 
+> > So this might be a bit off topic but this whole CDF triggered me
+> > looking at stuff I generally avoid:
+> > 
+> > The biggest problem I'm having currently with the whole ARM graphics
+> > and output world is the proliferation of platform drivers for every
+> > little thing. The whole ordering of operations with respect to things
+> > like suspend/resume or dynamic power management is going to be a real
+> > nightmare if there are dependencies between the drivers. How do you
+> > enforce ordering of s/r operations between all the various components?
 > 
-> The biggest problem I'm having currently with the whole ARM graphics and
-> output world is the proliferation of platform drivers for every little
-> thing. The whole ordering of operations with respect to things like
-> suspend/resume or dynamic power management is going to be a real nightmare
-> if there are dependencies between the drivers.
+> I tend to think that sub-devices are useful just to have a way to probe hw
+> which may or may not be there, since on ARM we often don't have any
+> alternative.. but beyond that, suspend/resume, and other life-cycle aspects,
+> they should really be treated as all one device. Especially to avoid
+> undefined suspend/resume ordering.
 
-We share the same concern, although my analysis of the problem is somewhat 
-different. The power management ordering issues isn't only caused by the 
-software architecture, but also comes from complex hardware requirements. The 
-root cause, in my opinion, is the split control and data busses: as soon as a 
-device sits on multiple busses and has power management ordering requirements 
-related to those busses the Linux power management model breaks. Note that the 
-problem isn't restricted to the display, we have run into the exact same 
-issues years ago on the video capture side.
+I tend to agree, except that I try to reuse the existing PM infrastructure 
+when possible to avoid reinventing the wheel. So far handling suspend/resume 
+ordering related to data busses in early suspend/late resume operations and 
+allowing the Linux PM core to handle control busses using the Linux device 
+tree worked pretty well.
 
-> How do you enforce ordering of s/r operations between all the various
-> components?
+> CDF or some sort of mechanism to share panel drivers between drivers is
+> useful.  Keeping it within drm, is probably a good idea, if nothing else to
+> simplify re-use of helper fxns (like avi-infoframe stuff, for example) and
+> avoid dealing with merging changes across multiple trees. Treating them more
+> like shared libraries and less like sub-devices which can be dynamically
+> loaded/unloaded (ie. they should be not built as separate modules or
+> suspend/resumed or probed/removed independently of the master driver) is a
+> really good idea to avoid uncovering nasty synchronization issues later
+> (remove vs modeset or pageflip) or surprising userspace in bad ways.
 
-The way we have handled this problem on the camera side is to use early 
-suspend and late resume operations to handle the data (video) busses suspend 
-and resume operations, and let the kernel handle the rest using the control 
-bus based device tree model. The camera controller stops the video pipeline in 
-its early suspend operation (and resumes it in the late resume operation) by 
-calling operations provided by the entities (through function pointers of 
-course, we don't want direct dependencies between the drivers). The control 
-suspend/resume (such as sending a standby command through I2C to put the chip 
-in low-power mode, or turning its power supply or clock off) is then handled 
-by the PM core.
+We've tried that in V4L2 years ago and realized that the approach led to a 
+dead-end, especially when OF/DT got involved. With DT-based device probing, 
+I2C camera sensors started getting probed asynchronously to the main camera 
+device, as they are children of the I2C bus master. We will have similar 
+issues with I2C HDMI transmitters or panels, so we should be prepared for it.
 
-> The other thing I'd like you guys to do is kill the idea of fbdev and v4l
-> drivers that are "shared" with the drm codebase, really just implement fbdev
-> and v4l on top of the drm layer, some people might think this is some sort
-> of maintainer thing, but really nothing else makes sense, and having these
-> shared display frameworks just to avoid having using drm/kms drivers seems
-> totally pointless. Fix the drm fbdev emulation if an fbdev interface is
-> needed. But creating a fourth framework because our previous 3 frameworks
-> didn't work out doesn't seem like a situation I want to get behind too much.
+On PC hardware the I2C devices are connected to an I2C master provided by the 
+GPU, but on embedded devices they are usually connected to an independent I2C 
+master. We thus can't have a single self-contained driver that controls 
+everything internally, and need to interface with the rest of the SoC drivers.
 
-I think there's a misunderstanding here. I'm definitely not trying to create a 
-framework to expose the FBDEV/KMS/V4L2 APIs through different drivers on top 
-of the same hardware device. That's an idea I really dislike, and I fully 
-agree that the FBDEV API should be provided on top of KMS using the DRM FBDEV 
-emulation layer. V4L2 on top of KMS doesn't make too much sense to me, as V4L2 
-isn't really a display and graphics API anyway.
+I agree that probing/removing devices independently of the master driver can 
+lead to bad surprises, which is why I want to establish clear rules in CDF 
+regarding what can and can't be done with display entities. Reference counting 
+will be one way to make sure that devices don't disappear all of a sudden.
 
-My goal here is to share code for chips that are used by different "devices" 
-(in the sense of an agregate device, such as a camera or a graphics card) 
-supported by different subsystems. For instance, the same I2C-controlled HDMI 
-transmitter can be used by a display device when connected to a display 
-controller on an SoC, but can also be used by a video output device when 
-connected to a video output (some complex TI SoCs have pass-through video 
-pipelines with no associated frame buffer, making the V4L2 API better suited 
-than DRM/KMS). As the first device would be supported by a DRM/KMS driver and 
-the second device by a pure V4L2 driver, we need a common framework to share 
-code between both.
+> > The other thing I'd like you guys to do is kill the idea of fbdev and
+> > v4l drivers that are "shared" with the drm codebase, really just
+> > implement fbdev and v4l on top of the drm layer, some people might
+> > think this is some sort of maintainer thing, but really nothing else
+> > makes sense, and having these shared display frameworks just to avoid
+> > having using drm/kms drivers seems totally pointless. Fix the drm
+> > fbdev emulation if an fbdev interface is needed. But creating a fourth
+> > framework because our previous 3 frameworks didn't work out doesn't
+> > seem like a situation I want to get behind too much.
+> 
+> yeah, let's not have multiple frameworks to do the same thing.. For fbdev,
+> it is pretty clear that it is a dead end.  For v4l2 (subdev+mcf), it is
+> perhaps bit more flexible when it comes to random arbitrary hw pipelines
+> than kms.  But to take advantage of that, your userspace isn't going to be
+> portable anyways, so you might as well use driver specific
+> properties/ioctls.  But I tend to think that is more useful for cameras. 
+> And from userspace perspective, kms planes are less painful to use for
+> output than v4l2, so lets stick to drm/kms for output (and not try to add
+> camera/capture support to kms)..
 
-If the same framework can be used to share panel drivers between DRM/KMS and 
-pure FBDEV drivers (we have a bunch of those, not all of them will be ported 
-to DRM/KMS, at least not in the very near future) that's also a bonus.
-
-To summarize my point, CDF aims at creating a self-contained framework that 
-can be used by FBDEV, DRM/KMS and V4L2 drivers to interface with various 
-display-related devices. It does not provide any userspace API, and does not 
-offer any way to share devices between the three subsystems at runtime. In a 
-way you can think of CDF as a DRM panel framework, but without the drm_ 
-prefix.
-
-I hope this clarifies my goals. If not, or if there's still concerns and/or 
-disagreements, let's discuss them.
+Agreed. I've started to advocate the deprecation of FBDEV during LPC. The 
+positive response has motivated me to continue doing so :-) For V4L2 the 
+situation is a little bit different, I think V4L2 shouldn't be used for 
+graphics and display hardware, but it still has use cases on the video output 
+side for pure video devices (such as pass-through video pipelines with 
+embedded processing for instance). As those can use subdevices found in 
+display and graphics hardware, I'd like to avoid code duplication.
 
 -- 
 Regards,

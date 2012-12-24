@@ -1,87 +1,100 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 24 Dec 2012 12:59:31 +0000
+Date: Mon, 24 Dec 2012 13:24:45 +0000
 Subject: Re: [RFC v2 0/5] Common Display Framework
-Message-Id: <21195616.A64r85Hc5F@avalon>
+Message-Id: <1454784.3gdgnzX4U2@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <3133576.BkqAl7V01U@avalon> <CAD025yQoCiNaKvaCwvUWhk_jV70CPhV35UzV9MR6HtE+1baCxg@mail.gmail.com>
-In-Reply-To: <CAD025yQoCiNaKvaCwvUWhk_jV70CPhV35UzV9MR6HtE+1baCxg@mail.gmail.com>
+References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <CAPM=9txFJzJ0haTyBnr8hEmmqNb+gSAyBno+Zs0Z-qvVMTwz9A@mail.gmail.com>
+In-Reply-To: <CAPM=9txFJzJ0haTyBnr8hEmmqNb+gSAyBno+Zs0Z-qvVMTwz9A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Vikas Sajjan <vikas.sajjan@linaro.org>
-Cc: Jesse Barker <jesse.barker@linaro.org>, Ragesh Radhakrishnan <Ragesh.R@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev@vger.kernel.org, Philipp Zabel <p.zabel@pengutronix.de>, Tom Gall <tom.gall@linaro.org>, dri-devel@lists.freedesktop.org, Rob Clark <rob.clark@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, linux-media@vger.kernel.org, sunil joshi <joshi@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Dave Airlie <airlied@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org, Archit Taneja <archit@ti.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Inki Dae <inki.dae@samsung.com>, Jesse Barker <jesse.barker@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marcus Lorentzon <marcus.xm.lorentzon@stericsson.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Philipp Zabel <p.zabel@pengutronix.de>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, Rob Clark <rob.clark@linaro.org>, Sascha Hauer <s.hauer@pengutronix.de>, Sebastien Guiriec <s-guiriec@ti.com>, Sumit Semwal <sumit.semwal@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Tom Gall <tom.gall@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Vikas Sajjan <vikas.sajjan@linaro.org>
 
-Hi Vikas,
+Hi Dave,
 
-On Tuesday 18 December 2012 08:31:30 Vikas Sajjan wrote:
-> On 17 December 2012 20:55, Laurent Pinchart wrote:
-> > Hi Vikas,
-> >=20
-> > Sorry for the late reply. I now have more time to work on CDF, so delays
-> > should be much shorter.
-> >=20
-> > On Thursday 06 December 2012 10:51:15 Vikas Sajjan wrote:
-> > > Hi Laurent,
-> > >=20
-> > > I was thinking of porting CDF to samsung EXYNOS 5250 platform, what I
-> > > found is that, the exynos display controller is MIPI DSI based
-> > > controller.
-> > >=20
-> > > But if I look at CDF patches, it has only support for MIPI DBI based
-> > > Display controller.
-> > >=20
-> > > So my question is, do we have any generic framework for MIPI DSI based
-> > > display controller? basically I wanted to know, how to go about porti=
-ng
-> > > CDF for such kind of display controller.
-> >=20
-> > MIPI DSI support is not available yet. The only reason for that is that=
- I
-> > don't have any MIPI DSI hardware to write and test the code with :-)
-> >=20
-> > The common display framework should definitely support MIPI DSI. I think
-> > the existing MIPI DBI code could be used as a base, so the implementati=
-on
-> > shouldn't be too high.
-> >=20
-> > Yeah, i was also thinking in similar lines, below is my though for MIPI
-> > DSI support in CDF.
->=20
-> o MIPI DSI support as part of CDF framework will expose
->   =A7 mipi_dsi_register_device(mpi_device) (will be called mach-xxx-dt.c
->     file)
->   =A7 mipi_dsi_register_driver(mipi_driver, bus ops) (will be called from
->     platform specific init driver call )
->     =B7 bus ops will be
->       o read data
->       o write data
->       o write command
->  =A7 MIPI DSI will be registered as bus_register()
->=20
-> When MIPI DSI probe is called, it (e.g., Exynos or OMAP MIPI DSI) will
-> initialize the MIPI DSI HW IP.
->=20
-> This probe will also parse the DT file for MIPI DSI based panel, add
-> the panel device (device_add() ) to kernel and register the display
-> entity with its control and  video ops with CDF.
-
-After discussing the DBI/DSI busses with Tomi Valkeinen we concluded that=20
-creating a real bus for DBI and DSI, although possible, wasn't required. DS=
-I=20
-operations should thus be provided through display entity video source=20
-operations. You can find a proposed implementation in Tomi's patch set.
-
-> > I can give this a try. Does the existing Exynos 5250 driver support MIPI
-> > DSI ? Is the device documentation publicly available ? Can you point me=
- to
-> > a MIPI DSI panel with public documentation (preferably with an existing
-> > mainline driver if possible) ?
+On Tuesday 18 December 2012 15:04:02 Dave Airlie wrote:
+> > Many developers showed interest in the first RFC, and I've had the
+> > opportunity to discuss it with most of them. I would like to thank (in no
+> > particular order) Tomi Valkeinen for all the time he spend helping me to
+> > draft v2, Marcus Lorentzon for his useful input during Linaro Connect Q4
+> > 2012, and Linaro for inviting me to Connect and providing a venue to
+> > discuss this topic.
 >
-> yeah, existing Exynos 5250 driver support MIPI DSI ass well as eDP.
->=20
->  i think device documentation is NOT available publicly.
+> So this might be a bit off topic but this whole CDF triggered me looking at
+> stuff I generally avoid:
+> 
+> The biggest problem I'm having currently with the whole ARM graphics and
+> output world is the proliferation of platform drivers for every little
+> thing. The whole ordering of operations with respect to things like
+> suspend/resume or dynamic power management is going to be a real nightmare
+> if there are dependencies between the drivers.
 
---=20
+We share the same concern, although my analysis of the problem is somewhat 
+different. The power management ordering issues isn't only caused by the 
+software architecture, but also comes from complex hardware requirements. The 
+root cause, in my opinion, is the split control and data busses: as soon as a 
+device sits on multiple busses and has power management ordering requirements 
+related to those busses the Linux power management model breaks. Note that the 
+problem isn't restricted to the display, we have run into the exact same 
+issues years ago on the video capture side.
+
+> How do you enforce ordering of s/r operations between all the various
+> components?
+
+The way we have handled this problem on the camera side is to use early 
+suspend and late resume operations to handle the data (video) busses suspend 
+and resume operations, and let the kernel handle the rest using the control 
+bus based device tree model. The camera controller stops the video pipeline in 
+its early suspend operation (and resumes it in the late resume operation) by 
+calling operations provided by the entities (through function pointers of 
+course, we don't want direct dependencies between the drivers). The control 
+suspend/resume (such as sending a standby command through I2C to put the chip 
+in low-power mode, or turning its power supply or clock off) is then handled 
+by the PM core.
+
+> The other thing I'd like you guys to do is kill the idea of fbdev and v4l
+> drivers that are "shared" with the drm codebase, really just implement fbdev
+> and v4l on top of the drm layer, some people might think this is some sort
+> of maintainer thing, but really nothing else makes sense, and having these
+> shared display frameworks just to avoid having using drm/kms drivers seems
+> totally pointless. Fix the drm fbdev emulation if an fbdev interface is
+> needed. But creating a fourth framework because our previous 3 frameworks
+> didn't work out doesn't seem like a situation I want to get behind too much.
+
+I think there's a misunderstanding here. I'm definitely not trying to create a 
+framework to expose the FBDEV/KMS/V4L2 APIs through different drivers on top 
+of the same hardware device. That's an idea I really dislike, and I fully 
+agree that the FBDEV API should be provided on top of KMS using the DRM FBDEV 
+emulation layer. V4L2 on top of KMS doesn't make too much sense to me, as V4L2 
+isn't really a display and graphics API anyway.
+
+My goal here is to share code for chips that are used by different "devices" 
+(in the sense of an agregate device, such as a camera or a graphics card) 
+supported by different subsystems. For instance, the same I2C-controlled HDMI 
+transmitter can be used by a display device when connected to a display 
+controller on an SoC, but can also be used by a video output device when 
+connected to a video output (some complex TI SoCs have pass-through video 
+pipelines with no associated frame buffer, making the V4L2 API better suited 
+than DRM/KMS). As the first device would be supported by a DRM/KMS driver and 
+the second device by a pure V4L2 driver, we need a common framework to share 
+code between both.
+
+If the same framework can be used to share panel drivers between DRM/KMS and 
+pure FBDEV drivers (we have a bunch of those, not all of them will be ported 
+to DRM/KMS, at least not in the very near future) that's also a bonus.
+
+To summarize my point, CDF aims at creating a self-contained framework that 
+can be used by FBDEV, DRM/KMS and V4L2 drivers to interface with various 
+display-related devices. It does not provide any userspace API, and does not 
+offer any way to share devices between the three subsystems at runtime. In a 
+way you can think of CDF as a DRM panel framework, but without the drm_ 
+prefix.
+
+I hope this clarifies my goals. If not, or if there's still concerns and/or 
+disagreements, let's discuss them.
+
+-- 
 Regards,
 
 Laurent Pinchart

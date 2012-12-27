@@ -1,50 +1,61 @@
 From: Rob Clark <rob.clark@linaro.org>
-Date: Thu, 27 Dec 2012 16:04:22 +0000
+Date: Thu, 27 Dec 2012 16:10:11 +0000
 Subject: Re: [RFC v2 0/5] Common Display Framework
-Message-Id: <CAF6AEGth+rriTf7X3AXytN+YXxjx4XqMB1ow6ZE2QUro-hqYgw@mail.gmail.com>
+Message-Id: <CAF6AEGv4uk-ymjcaHo5B_7vdPO0Fa=V6WMiPFeMiz6ftVP54_g@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com>
-	<1671267.x0lxGrFjjV@avalon>
 	<87pq26ay2z.fsf@intel.com>
-	<2286035.iP368aB6Vk@avalon>
-In-Reply-To: <2286035.iP368aB6Vk@avalon>
+	<CAF6AEGuSt0CL2sFGK-PZnw6+r9zhGHO4CEjJEWaR8eGhks2=UQ@mail.gmail.com>
+	<9229594.Uy6ivYUL5t@avalon>
+In-Reply-To: <9229594.Uy6ivYUL5t@avalon>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Jani Nikula <jani.nikula@linux.intel.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev@vger.kernel.org, Philipp Zabel <p.zabel@pengutronix.de>, Tom Gall <tom.gall@linaro.org>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, dri-devel@lists.freedesktop.org, Kyungmin Park <kyungmin.park@samsung.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, linux-media@vger.kernel.org
+Cc: Maxime Ripard <maxime.ripard@free-electrons.com>, Jani Nikula <jani.nikula@linux.intel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, Tom Gall <tom.gall@linaro.org>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Kyungmin Park <kyungmin.park@samsung.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
 
-On Mon, Dec 24, 2012 at 11:27 AM, Laurent Pinchart
+On Mon, Dec 24, 2012 at 11:35 AM, Laurent Pinchart
 <laurent.pinchart@ideasonboard.com> wrote:
-> On Wednesday 19 December 2012 16:57:56 Jani Nikula wrote:
->> It just seems to me that, at least from a DRM/KMS perspective, adding
->> another layer (=CDF) for HDMI or DP (or legacy outputs) would be
->> overengineering it. They are pretty well standardized, and I don't see t=
-here
->> would be a need to write multiple display drivers for them. Each display
->> controller has one, and can easily handle any chip specific requirements
->> right there. It's my gut feeling that an additional framework would just=
- get
->> in the way. Perhaps there could be more common HDMI/DP helper style code=
- in
->> DRM to reduce overlap across KMS drivers, but that's another thing.
->>
->> So is the HDMI/DP drivers using CDF a more interesting idea from a non-D=
-RM
->> perspective? Or, put another way, is it more of an alternative to using =
-DRM?
->> Please enlighten me if there's some real benefit here that I fail to see!
+> On Wednesday 19 December 2012 09:26:40 Rob Clark wrote:
+>> And, there are also external HDMI encoders (for example connected over
+>> i2c) that can also be shared between boards.  So I think there will be
+>> a number of cases where CDF is appropriate for HDMI drivers.  Although
+>> trying to keep this all independent of DRM (as opposed to just
+>> something similar to what drivers/gpu/i2c is today) seems a bit
+>> overkill for me.  Being able to use the helpers in drm and avoiding an
+>> extra layer of translation seems like the better option to me.  So my
+>> vote would be drivers/gpu/cdf.
 >
-> As Rob pointed out, you can have external HDMI/DP encoders, and even inte=
-rnal
-> HDMI/DP encoder IPs can be shared between SoCs and SoC vendors. CDF aims =
-at
-> sharing a single driver between SoCs and boards for a given HDMI/DP encod=
-er.
+> I don't think there will be any need for translation (except perhaps between
+> the DRM mode structures and the common video mode structure that is being
+> discussed). Add a drm_ prefix to the existing CDF functions and structures,
+> and there you go :-)
 
-just fwiw, drm already has something a bit like this.. the i2c
-encoder-slave.  With support for a couple external i2c encoders which
-could in theory be shared between devices.
+well, and translation for any properties that we'd want to expose to
+userspace, etc, etc.. I see there being a big potential for a lot of
+needless glue
 
 BR,
 -R
+
+> The reason why I'd like to keep CDF separate from DRM (or at least not
+> requiring a drm_device) is that HDMI/DP encoders can be used by pure V4L2
+> drivers.
+>
+>> > For DSI panels (or DSI-to-whatever bridges) it's of course another
+>> > story. You typically need a panel specific driver. And here I see the
+>> > main point of the whole CDF: decoupling display controllers and the
+>> > panel drivers, and sharing panel (and converter chip) specific drivers
+>> > across display controllers. Making it easy to write new drivers, as
+>> > there would be a model to follow. I'm definitely in favour of coming up
+>> > with some framework that would tackle that.
+>
+> --
+> Regards,
+>
+> Laurent Pinchart
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html

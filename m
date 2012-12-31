@@ -1,122 +1,59 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Tue, 18 Dec 2012 17:04:13 +0000
-Subject: [PATCHv16 4/7] fbmon: add videomode helpers
-Message-Id: <1355850256-16135-5-git-send-email-s.trumtrar@pengutronix.de>
+From: Devendra Naga <devendra.aaru@gmail.com>
+Date: Mon, 31 Dec 2012 18:18:31 +0000
+Subject: [PATCH] backlight: lm3649_backlight: remove ret = -EIO at error paths of probe
+Message-Id: <1356977911-13521-1-git-send-email-devendra.aaru@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1355850256-16135-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1355850256-16135-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Airlie <airlied@linux.ie>, Rob Clark <robdclark@gmail.com>, Leela Krishna Amudala <leelakrishna.a@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-Add a function to convert from the generic videomode to a fb_videomode.
+the APIs are returning correctly the err codes, no need of assigning -EIO to the
+ret again
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
-Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Daniel Jeong <daniel.jeong@ti.com>
+Cc: G.Shark Jeong <gshark.jeong@gmail.com>
+Signed-off-by: Devendra Naga <devendra.aaru@gmail.com>
 ---
- drivers/video/fbmon.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fb.h    |    4 ++++
- 2 files changed, 56 insertions(+)
+ drivers/video/backlight/lm3639_bl.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index cef6557..17ce135 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -31,6 +31,7 @@
- #include <linux/pci.h>
- #include <linux/slab.h>
- #include <video/edid.h>
-+#include <video/videomode.h>
- #ifdef CONFIG_PPC_OF
- #include <asm/prom.h>
- #include <asm/pci-bridge.h>
-@@ -1373,6 +1374,57 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
- 	kfree(timings);
- 	return err;
- }
-+
-+#if IS_ENABLED(CONFIG_VIDEOMODE)
-+int fb_videomode_from_videomode(const struct videomode *vm,
-+				struct fb_videomode *fbmode)
-+{
-+	unsigned int htotal, vtotal;
-+
-+	fbmode->xres = vm->hactive;
-+	fbmode->left_margin = vm->hback_porch;
-+	fbmode->right_margin = vm->hfront_porch;
-+	fbmode->hsync_len = vm->hsync_len;
-+
-+	fbmode->yres = vm->vactive;
-+	fbmode->upper_margin = vm->vback_porch;
-+	fbmode->lower_margin = vm->vfront_porch;
-+	fbmode->vsync_len = vm->vsync_len;
-+
-+	/* prevent division by zero in KHZ2PICOS macro */
-+	fbmode->pixclock = vm->pixelclock ?
-+			KHZ2PICOS(vm->pixelclock / 1000) : 0;
-+
-+	fbmode->sync = 0;
-+	fbmode->vmode = 0;
-+	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
-+		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
-+	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
-+		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
-+	if (vm->data_flags & DISPLAY_FLAGS_INTERLACED)
-+		fbmode->vmode |= FB_VMODE_INTERLACED;
-+	if (vm->data_flags & DISPLAY_FLAGS_DOUBLESCAN)
-+		fbmode->vmode |= FB_VMODE_DOUBLE;
-+	fbmode->flag = 0;
-+
-+	htotal = vm->hactive + vm->hfront_porch + vm->hback_porch +
-+		 vm->hsync_len;
-+	vtotal = vm->vactive + vm->vfront_porch + vm->vback_porch +
-+		 vm->vsync_len;
-+	/* prevent division by zero */
-+	if (htotal && vtotal) {
-+		fbmode->refresh = vm->pixelclock / (htotal * vtotal);
-+	/* a mode must have htotal and vtotal != 0 or it is invalid */
-+	} else {
-+		fbmode->refresh = 0;
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
-+#endif
-+
- #else
- int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
- {
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index c7a9571..100a176 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -19,6 +19,7 @@ struct vm_area_struct;
- struct fb_info;
- struct device;
- struct file;
-+struct videomode;
+diff --git a/drivers/video/backlight/lm3639_bl.c b/drivers/video/backlight/lm3639_bl.c
+index 7ab2d2a..053964d 100644
+--- a/drivers/video/backlight/lm3639_bl.c
++++ b/drivers/video/backlight/lm3639_bl.c
+@@ -350,14 +350,13 @@ static int lm3639_probe(struct i2c_client *client,
+ 				      &lm3639_bled_ops, &props);
+ 	if (IS_ERR(pchip->bled)) {
+ 		dev_err(&client->dev, "fail : backlight register\n");
+-		ret = -EIO;
++		ret = PTR_ERR(pchip->bled);
+ 		goto err_out;
+ 	}
  
- /* Definitions below are used in the parsed monitor specs */
- #define FB_DPMS_ACTIVE_OFF	1
-@@ -714,6 +715,9 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
- extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
- extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
+ 	ret = device_create_file(&(pchip->bled->dev), &dev_attr_bled_mode);
+ 	if (ret < 0) {
+ 		dev_err(&client->dev, "failed : add sysfs entries\n");
+-		ret = -EIO;
+ 		goto err_bled_mode;
+ 	}
  
-+extern int fb_videomode_from_videomode(const struct videomode *vm,
-+				       struct fb_videomode *fbmode);
-+
- /* drivers/video/modedb.c */
- #define VESA_MODEDB_SIZE 34
- extern void fb_var_to_videomode(struct fb_videomode *mode,
+@@ -369,7 +368,6 @@ static int lm3639_probe(struct i2c_client *client,
+ 				    &client->dev, &pchip->cdev_flash);
+ 	if (ret < 0) {
+ 		dev_err(&client->dev, "fail : flash register\n");
+-		ret = -EIO;
+ 		goto err_flash;
+ 	}
+ 
+@@ -381,7 +379,6 @@ static int lm3639_probe(struct i2c_client *client,
+ 				    &client->dev, &pchip->cdev_torch);
+ 	if (ret < 0) {
+ 		dev_err(&client->dev, "fail : torch register\n");
+-		ret = -EIO;
+ 		goto err_torch;
+ 	}
+ 
 -- 
 1.7.10.4
 

@@ -1,19 +1,158 @@
-From: Alan Cox <alan@linux.intel.com>
-Date: Sat, 26 Jan 2013 00:27:45 +0000
-Subject: Re: [PATCH] goldfish: framebuffer
-Message-Id: <20130126002745.3eeca45e@bob.linux.org.uk>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Wed, 02 Jan 2013 20:23:02 +0000
+Subject: [PATCH 2/4] video: vt8500: Make wmt_ge_rops optional
+Message-Id: <1357158184-18213-2-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130125153100.7317.23971.stgit@bob.linux.org.uk>
-In-Reply-To: <20130125153100.7317.23971.stgit@bob.linux.org.uk>
+References: <1357158184-18213-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1357158184-18213-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-> hm, it's unclear whether the [] comments apply to the line above or to
-> the line below.  I converted it to my usual form.  I hope I got it
-> right!
+At the moment, accelerated raster ops are always enabled on VT8500
+and WM8xxx series SoCs. This patch makes them optional.
 
-Below so you got them all one out 8)
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+---
+ drivers/video/Kconfig       |   23 +++++++++++++----------
+ drivers/video/vt8500lcdfb.c |   15 +++++++++++++++
+ drivers/video/wm8505fb.c    |   15 +++++++++++++++
+ 3 files changed, 43 insertions(+), 10 deletions(-)
 
-Alan
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index e7068c5..6678daf 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -190,14 +190,6 @@ config FB_SYS_FOPS
+        depends on FB
+        default n
+ 
+-config FB_WMT_GE_ROPS
+-	tristate
+-	depends on FB
+-	default n
+-	---help---
+-	  Include functions for accelerated rectangle filling and area
+-	  copying using WonderMedia Graphics Engine operations.
+-
+ config FB_DEFERRED_IO
+ 	bool
+ 	depends on FB
+@@ -1777,7 +1769,8 @@ config FB_AU1200
+ config FB_VT8500
+ 	bool "VT8500 LCD Driver"
+ 	depends on (FB = y) && ARM && ARCH_VT8500
+-	select FB_WMT_GE_ROPS
++	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
++	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_IMAGEBLIT
+ 	help
+ 	  This is the framebuffer driver for VIA VT8500 integrated LCD
+@@ -1786,12 +1779,22 @@ config FB_VT8500
+ config FB_WM8505
+ 	bool "WM8505 frame buffer support"
+ 	depends on (FB = y) && ARM && ARCH_VT8500
+-	select FB_WMT_GE_ROPS
++	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
++	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_IMAGEBLIT
+ 	help
+ 	  This is the framebuffer driver for WonderMedia WM8505/WM8650
+ 	  integrated LCD controller.
+ 
++config FB_WMT_GE_ROPS
++	bool "VT8500/WM8xxx accelerated raster ops support"
++	depends on (FB = y) && (FB_VT8500 || FB_WM8505)
++	default n
++	help
++	  This adds support for accelerated raster operations on the
++	  VIA VT8500 and Wondermedia 8xxx series SoCs.
++
++
+ source "drivers/video/geode/Kconfig"
+ 
+ config FB_HIT
+diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
+index 9af8da7..e8853ac 100644
+--- a/drivers/video/vt8500lcdfb.c
++++ b/drivers/video/vt8500lcdfb.c
+@@ -33,7 +33,10 @@
+ #include <linux/platform_data/video-vt8500lcdfb.h>
+ 
+ #include "vt8500lcdfb.h"
++
++#ifdef CONFIG_FB_WMT_GE_ROPS
+ #include "wmt_ge_rops.h"
++#endif
+ 
+ #ifdef CONFIG_OF
+ #include <linux/of.h>
+@@ -249,12 +252,24 @@ static int vt8500lcd_blank(int blank, struct fb_info *info)
+ 	return 0;
+ }
+ 
++#ifndef CONFIG_FB_WMT_GE_ROPS
++static int wmt_ge_sync(struct fb_info *p)
++{
++	return 0;
++}
++#endif
++
+ static struct fb_ops vt8500lcd_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_set_par	= vt8500lcd_set_par,
+ 	.fb_setcolreg	= vt8500lcd_setcolreg,
++#ifdef CONFIG_FB_WMT_GE_ROPS
+ 	.fb_fillrect	= wmt_ge_fillrect,
+ 	.fb_copyarea	= wmt_ge_copyarea,
++#else
++	.fb_fillrect	= sys_fillrect,
++	.fb_copyarea	= sys_copyarea,
++#endif
+ 	.fb_imageblit	= sys_imageblit,
+ 	.fb_sync	= wmt_ge_sync,
+ 	.fb_ioctl	= vt8500lcd_ioctl,
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index 77539c1..a990708 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -35,7 +35,10 @@
+ #include <linux/platform_data/video-vt8500lcdfb.h>
+ 
+ #include "wm8505fb_regs.h"
++
++#ifdef CONFIG_FB_WMT_GE_ROPS
+ #include "wmt_ge_rops.h"
++#endif
+ 
+ #define DRIVER_NAME "wm8505-fb"
+ 
+@@ -248,12 +251,24 @@ static int wm8505fb_blank(int blank, struct fb_info *info)
+ 	return 0;
+ }
+ 
++#ifndef CONFIG_FB_WMT_GE_ROPS
++static int wmt_ge_sync(struct fb_info *p)
++{
++	return 0;
++}
++#endif
++
+ static struct fb_ops wm8505fb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_set_par	= wm8505fb_set_par,
+ 	.fb_setcolreg	= wm8505fb_setcolreg,
++#ifdef CONFIG_FB_WMT_GE_ROPS
+ 	.fb_fillrect	= wmt_ge_fillrect,
+ 	.fb_copyarea	= wmt_ge_copyarea,
++#else
++	.fb_fillrect	= sys_fillrect,
++	.fb_copyarea	= sys_copyarea,
++#endif
+ 	.fb_imageblit	= sys_imageblit,
+ 	.fb_sync	= wmt_ge_sync,
+ 	.fb_pan_display	= wm8505fb_pan_display,
+-- 
+1.7.9.5
+

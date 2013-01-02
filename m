@@ -1,28 +1,221 @@
-From: Alexander Holler <holler@ahsoftware.de>
-Date: Sun, 13 Jan 2013 12:24:30 +0000
-Subject: Re: [PATCH] fb: udlfb: fix hang at disconnect
-Message-Id: <50F2A77E.1090900@ahsoftware.de>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Wed, 02 Jan 2013 20:23:01 +0000
+Subject: [PATCH 1/4] drivers/video/wm8505fb.c: use devm_ functions
+Message-Id: <1357158184-18213-1-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1357996822-13072-1-git-send-email-holler@ahsoftware.de> <CAF1V4O8UUgWB1XbS=3EsirBjhP9Lp7JQ8XK8MQxbe3ZkH8pd3Q@mail.gmail.com> <50F2A310.5010006@ahsoftware.de>
-In-Reply-To: <50F2A310.5010006@ahsoftware.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bernie Thompson <bernie@plugable.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Steve Glendinning <steve.glendinning@shawell.net>, Dave Airlie <airlied@redhat.com>, stable@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Am 13.01.2013 13:05, schrieb Alexander Holler:
-> Am 12.01.2013 23:22, schrieb Bernie Thompson:
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-> I didn't test it extensively, but without the patch the driver isn't
-> usable here. Maybe my previous patch which moves damages to a workqueue
+The various devm_ functions allocate memory that is released when a driver
+detaches.  This patch uses these functions for data that is allocated in
+the probe function of a platform device and is only freed in the remove
+function.
 
-To add some more explanations, I'm currently only testing it with a 
-statically linked udlfb (for fbcon) as that is what I'm mainly using the 
-device for (with otherwise headless boxes). When udlfb is a module, I 
-don't see those "schedule while atomic" messages (I don't know why), but 
-having a console only after the modules got loaded isn't always an option.
+The patch makes some other cleanups.  First, the original code used
+devm_kzalloc, but kfree.  This would lead to a double free.  The problem
+was found using the following semantic match (http://coccinelle.lip6.fr/):
 
-Regards,
+// <smpl>
+@@
+expression x,e;
+@@
+x = devm_kzalloc(...)
+... when != x = e
+?-kfree(x,...);
+// </smpl>
 
-Alexander
+The error-handing code of devm_request_and_ioremap does not print any
+warning message, because devm_request_and_ioremap does this.
+
+The call to dma_alloc_coherent is converted to its devm equivalent,
+dmam_alloc_coherent.  This implicitly introduces a call to
+dmam_free_coherent, which was completly missing in the original code.
+
+A semicolon is removed at the end of the error-handling code for the call
+to dma_alloc_coherent.
+
+The block of code calling fb_alloc_cmap is moved below the block of code
+calling wm8505fb_set_par, so that the error-handing code of the call to
+wm8505fb_set_par can just return ret.  This way there is only one block of
+error-handling code that needs to call fb_dealloc_cmap, and so this is
+moved up to the place where it is needed, eliminating the need for all
+gotos and labels in the function.  This was suggested by Tony Prisk.
+
+The initializations of fbi and ret at the beginning of the function are not
+necessary and are removed.  The call platform_set_drvdata(pdev, NULL); at
+the end of the function is also removed.
+
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+---
+ drivers/video/wm8505fb.c |   78 +++++++++++-----------------------------------
+ 1 file changed, 19 insertions(+), 59 deletions(-)
+
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index 77539c1..1c3ce2c 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -274,15 +274,11 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ 	unsigned long fb_mem_len;
+ 	void *fb_mem_virt;
+ 
+-	ret = -ENOMEM;
+-	fbi = NULL;
+-
+ 	fbi = devm_kzalloc(&pdev->dev, sizeof(struct wm8505fb_info) +
+ 			sizeof(u32) * 16, GFP_KERNEL);
+ 	if (!fbi) {
+ 		dev_err(&pdev->dev, "Failed to initialize framebuffer device\n");
+-		ret = -ENOMEM;
+-		goto failed;
++		return -ENOMEM;
+ 	}
+ 
+ 	strcpy(fbi->fb.fix.id, DRIVER_NAME);
+@@ -308,31 +304,15 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ 	fbi->fb.pseudo_palette	= addr;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (res = NULL) {
+-		dev_err(&pdev->dev, "no I/O memory resource defined\n");
+-		ret = -ENODEV;
+-		goto failed_fbi;
+-	}
+-
+-	res = request_mem_region(res->start, resource_size(res), DRIVER_NAME);
+-	if (res = NULL) {
+-		dev_err(&pdev->dev, "failed to request I/O memory\n");
+-		ret = -EBUSY;
+-		goto failed_fbi;
+-	}
+ 
+-	fbi->regbase = ioremap(res->start, resource_size(res));
+-	if (fbi->regbase = NULL) {
+-		dev_err(&pdev->dev, "failed to map I/O memory\n");
+-		ret = -EBUSY;
+-		goto failed_free_res;
+-	}
++	fbi->regbase = devm_request_and_ioremap(&pdev->dev, res);
++	if (fbi->regbase = NULL)
++		return -EBUSY;
+ 
+ 	np = of_parse_phandle(pdev->dev.of_node, "default-mode", 0);
+ 	if (!np) {
+ 		pr_err("%s: No display description in Device Tree\n", __func__);
+-		ret = -EINVAL;
+-		goto failed_free_res;
++		return -EINVAL;
+ 	}
+ 
+ 	/*
+@@ -351,7 +331,7 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ 	ret |= of_property_read_u32(np, "bpp", &bpp);
+ 	if (ret) {
+ 		pr_err("%s: Unable to read display properties\n", __func__);
+-		goto failed_free_res;
++		return ret;
+ 	}
+ 
+ 	of_mode.vmode = FB_VMODE_NONINTERLACED;
+@@ -365,12 +345,12 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ 
+ 	/* try allocating the framebuffer */
+ 	fb_mem_len = of_mode.xres * of_mode.yres * 2 * (bpp / 8);
+-	fb_mem_virt = dma_alloc_coherent(&pdev->dev, fb_mem_len, &fb_mem_phys,
++	fb_mem_virt = dmam_alloc_coherent(&pdev->dev, fb_mem_len, &fb_mem_phys,
+ 				GFP_KERNEL);
+ 	if (!fb_mem_virt) {
+ 		pr_err("%s: Failed to allocate framebuffer\n", __func__);
+ 		return -ENOMEM;
+-	};
++	}
+ 
+ 	fbi->fb.var.xres_virtual	= of_mode.xres;
+ 	fbi->fb.var.yres_virtual	= of_mode.yres * 2;
+@@ -381,28 +361,29 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ 	fbi->fb.screen_base		= fb_mem_virt;
+ 	fbi->fb.screen_size		= fb_mem_len;
+ 
+-	if (fb_alloc_cmap(&fbi->fb.cmap, 256, 0) < 0) {
+-		dev_err(&pdev->dev, "Failed to allocate color map\n");
+-		ret = -ENOMEM;
+-		goto failed_free_io;
+-	}
+-
+-	wm8505fb_init_hw(&fbi->fb);
+-
+ 	fbi->contrast = 0x80;
+ 	ret = wm8505fb_set_par(&fbi->fb);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to set parameters\n");
+-		goto failed_free_cmap;
++		return ret;
+ 	}
+ 
++	if (fb_alloc_cmap(&fbi->fb.cmap, 256, 0) < 0) {
++		dev_err(&pdev->dev, "Failed to allocate color map\n");
++		return -ENOMEM;
++	}
++
++	wm8505fb_init_hw(&fbi->fb);
++
+ 	platform_set_drvdata(pdev, fbi);
+ 
+ 	ret = register_framebuffer(&fbi->fb);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev,
+ 			"Failed to register framebuffer device: %d\n", ret);
+-		goto failed_free_cmap;
++		if (fbi->fb.cmap.len)
++			fb_dealloc_cmap(&fbi->fb.cmap);
++		return ret;
+ 	}
+ 
+ 	ret = device_create_file(&pdev->dev, &dev_attr_contrast);
+@@ -416,25 +397,11 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ 	       fbi->fb.fix.smem_start + fbi->fb.fix.smem_len - 1);
+ 
+ 	return 0;
+-
+-failed_free_cmap:
+-	if (fbi->fb.cmap.len)
+-		fb_dealloc_cmap(&fbi->fb.cmap);
+-failed_free_io:
+-	iounmap(fbi->regbase);
+-failed_free_res:
+-	release_mem_region(res->start, resource_size(res));
+-failed_fbi:
+-	platform_set_drvdata(pdev, NULL);
+-	kfree(fbi);
+-failed:
+-	return ret;
+ }
+ 
+ static int __devexit wm8505fb_remove(struct platform_device *pdev)
+ {
+ 	struct wm8505fb_info *fbi = platform_get_drvdata(pdev);
+-	struct resource *res;
+ 
+ 	device_remove_file(&pdev->dev, &dev_attr_contrast);
+ 
+@@ -445,13 +412,6 @@ static int __devexit wm8505fb_remove(struct platform_device *pdev)
+ 	if (fbi->fb.cmap.len)
+ 		fb_dealloc_cmap(&fbi->fb.cmap);
+ 
+-	iounmap(fbi->regbase);
+-
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	release_mem_region(res->start, resource_size(res));
+-
+-	kfree(fbi);
+-
+ 	return 0;
+ }
+ 
+-- 
+1.7.9.5
+

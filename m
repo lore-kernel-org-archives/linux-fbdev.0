@@ -1,51 +1,90 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Date: Fri, 04 Jan 2013 07:42:21 +0000
-Subject: Re: [BUGFIX PATCH] video: mxsfb: fix crash when unblanking the display
-Message-Id: <20130104074219.GD1887@S2101-09.ap.freescale.net>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Wed, 02 Jan 2013 20:23:03 +0000
+Subject: [PATCH 3/4] video: vt8500: Remove unused platform_data/video-vt8500lcdfb.h
+Message-Id: <1357158184-18213-3-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353588555-13168-1-git-send-email-LW@KARO-electronics.de>
- <20663.19785.221750.909491@ipc1.ka-ro>
- <50E67FDC.3000905@bluegiga.com>
-In-Reply-To: <50E67FDC.3000905@bluegiga.com>
+References: <1357158184-18213-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1357158184-18213-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Fri, Jan 04, 2013 at 09:08:12AM +0200, Lauri Hintsala wrote:
-> On 11/29/2012 01:55 PM, Lothar Wa=DFmann wrote:
-> >Hi,
-> >
-> >adding Juergen Beisert as the driver's author to the recipient list.
-> >
-> >Lothar Wa=DFmann writes:
-> >>The VDCTRL4 register does not provide the MXS SET/CLR/TOGGLE feature.
-> >>The write in mxsfb_disable_controller() sets the data_cnt for the LCD
-> >>DMA to 0 which obviously means the max. count for the LCD DMA and
-> >>leads to overwriting arbitrary memory when the display is unblanked.
-> >>
-> >>Note: I already sent this patch in December 2011 but noone picked it up=
- obviously.
-> >>
-> >>Signed-off-by: Lothar Wa=DFmann <LW@KARO-electronics.de>
->=20
-> Tested-by: Lauri Hintsala <lauri.hintsala@bluegiga.net>
->=20
-> This fixes the CPU freezing. I really recommend to apply this patch
-> into mainline soon because unblanking freezes the whole system!!!
->=20
-> Default value of consoleblank parameter is 600 seconds and the whole
-> system crashes every time when framebuffer console is activated
-> after that timeout. I wonder why this issue is still open in
-> mainline kernel.
+With the conversion to devicetree only for arch-vt8500, this
+header is no longer required. This patch removes the #include
+from the two framebuffer drivers that used it, and the header file.
 
-Part of the reason is the FB maintainer's absence.  Let me try to send
-it through arm-soc tree.
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+---
+ drivers/video/vt8500lcdfb.c                     |    2 --
+ drivers/video/wm8505fb.c                        |    2 --
+ include/linux/platform_data/video-vt8500lcdfb.h |   31 -----------------------
+ 3 files changed, 35 deletions(-)
+ delete mode 100644 include/linux/platform_data/video-vt8500lcdfb.h
 
->=20
-> Should this patch be added into stable versions too?
->=20
-Yes, will do.
-
-Shawn
+diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
+index e8853ac..b1fbe20 100644
+--- a/drivers/video/vt8500lcdfb.c
++++ b/drivers/video/vt8500lcdfb.c
+@@ -30,8 +30,6 @@
+ #include <linux/platform_device.h>
+ #include <linux/wait.h>
+ 
+-#include <linux/platform_data/video-vt8500lcdfb.h>
+-
+ #include "vt8500lcdfb.h"
+ 
+ #ifdef CONFIG_FB_WMT_GE_ROPS
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index a990708..f0185cd 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -32,8 +32,6 @@
+ #include <linux/of_fdt.h>
+ #include <linux/memblock.h>
+ 
+-#include <linux/platform_data/video-vt8500lcdfb.h>
+-
+ #include "wm8505fb_regs.h"
+ 
+ #ifdef CONFIG_FB_WMT_GE_ROPS
+diff --git a/include/linux/platform_data/video-vt8500lcdfb.h b/include/linux/platform_data/video-vt8500lcdfb.h
+deleted file mode 100644
+index 7f399c3..0000000
+--- a/include/linux/platform_data/video-vt8500lcdfb.h
++++ /dev/null
+@@ -1,31 +0,0 @@
+-/*
+- *  VT8500/WM8505 Frame Buffer platform data definitions
+- *
+- *  Copyright (C) 2010 Ed Spiridonov <edo.rus@gmail.com>
+- *
+- * This software is licensed under the terms of the GNU General Public
+- * License version 2, as published by the Free Software Foundation, and
+- * may be copied, distributed, and modified under those terms.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- */
+-
+-#ifndef _VT8500FB_H
+-#define _VT8500FB_H
+-
+-#include <linux/fb.h>
+-
+-struct vt8500fb_platform_data {
+-	struct fb_videomode	mode;
+-	u32			xres_virtual;
+-	u32			yres_virtual;
+-	u32			bpp;
+-	unsigned long		video_mem_phys;
+-	void			*video_mem_virt;
+-	unsigned long		video_mem_len;
+-};
+-
+-#endif /* _VT8500FB_H */
+-- 
+1.7.9.5
 

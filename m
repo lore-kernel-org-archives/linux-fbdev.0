@@ -1,25 +1,40 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Thu, 03 Jan 2013 14:28:21 +0000
+From: Daniel J Blueman <daniel@quora.org>
+Date: Thu, 03 Jan 2013 14:39:33 +0000
 Subject: Re: 3.8-rc2: EFI framebuffer lock inversion...
-Message-Id: <20130103142821.2571e2da@pyramind.ukuu.org.uk>
+Message-Id: <CAMVG2svQkEZtz_kod-ifp1y=pwOPa4ZyRnsayf=oyzHzyRsotw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAMVG2ssA-B6s+F-g4mL0dbBSVsNupzT1nm1Kc70dXHGsNQuNYA@mail.gmail.com>
-	<20130103131156.214bd7a5@pyramind.ukuu.org.uk>
-	<CAMVG2sv8p1wFXqOJObfKg9OvyQCsNqw1QmiwXsk7nwZS8ymcbw@mail.gmail.com>
-In-Reply-To: <CAMVG2sv8p1wFXqOJObfKg9OvyQCsNqw1QmiwXsk7nwZS8ymcbw@mail.gmail.com>
+References: <CA+icZUVEBEerN=YRSS8Rx-2Xvx4byFuBDbVcE45qq4QZ67+Q-A@mail.gmail.com>
+In-Reply-To: <CA+icZUVEBEerN=YRSS8Rx-2Xvx4byFuBDbVcE45qq4QZ67+Q-A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel J Blueman <daniel@quora.org>
-Cc: Peter Jones <pjones@redhat.com>, linux-fbdev@vger.kernel.org, nouveau@lists.freedesktop.org, Linux Kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+To: sedat.dilek@gmail.com
+Cc: alan@lxorguk.ukuu.org.uk, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>
 
-> The only patch I could find [1] (mid Nov) looks like it needs another
-> sites updating, since we now see an i915 vs efifb lock ordering issue
-> [2].
-> 
-> I can get some time next week to take a look if it helps.
+On 3 January 2013 22:11, Sedat Dilek <sedat.dilek@gmail.com> wrote:
+> Hi Daniel,
+>
+> just wanted to test the fb-fix [2] from Alan and followed the thread in [1].
+> Me is also working with i915 KMS.
+>
+> I looked at nouveau KMS driver and adapted the part for i915:
+>
+> drivers/gpu/drm/nouveau/nouveau_drm.c-200-      /* remove conflicting
+> drivers (vesafb, efifb etc) */
+> drivers/gpu/drm/nouveau/nouveau_drm.c:201:      aper = alloc_apertures(3);
+> drivers/gpu/drm/nouveau/nouveau_drm.c-202-      if (!aper)
+> drivers/gpu/drm/nouveau/nouveau_drm.c-203-              return -ENOMEM;
+>
+> Untested by me, feel free to test.
+>
+> Maybe some of the i915 and/or fb driver experts can comment on the problem.
 
-That would be great. I've not got any EFI afflicted hardware and I'm
-doing my best to avoid it.
+The structure array from alloc_apertures is just used for the PCI base
+address registers, so it's important here.
 
-Alan
+I'll take a look at the efifb locking later.
+
+Thanks,
+  Daniel
+-- 
+Daniel J Blueman

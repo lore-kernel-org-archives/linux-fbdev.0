@@ -1,65 +1,51 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Tue, 29 Jan 2013 10:00:48 +0000
-Subject: Re: [PATCH 4/4] pwm_backlight: Add support for the whole range of the PWM in DT mode
-Message-Id: <20130129100048.GB16746@avionic-0098.mockup.avionic-design.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="4bRzO86E/ozDv8r1"
+From: Shawn Guo <shawn.guo@linaro.org>
+Date: Fri, 04 Jan 2013 07:42:21 +0000
+Subject: Re: [BUGFIX PATCH] video: mxsfb: fix crash when unblanking the display
+Message-Id: <20130104074219.GD1887@S2101-09.ap.freescale.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1358861996-27194-1-git-send-email-peter.ujfalusi@ti.com>
- <1358861996-27194-5-git-send-email-peter.ujfalusi@ti.com>
-In-Reply-To: <1358861996-27194-5-git-send-email-peter.ujfalusi@ti.com>
-To: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>, Grant Likely <grant.likely@secretlab.ca>, Rob Landley <rob@landley.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Andrew Morton <akpm@linux-foundation.org>, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-
---4bRzO86E/ozDv8r1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+References: <1353588555-13168-1-git-send-email-LW@KARO-electronics.de>
+ <20663.19785.221750.909491@ipc1.ka-ro>
+ <50E67FDC.3000905@bluegiga.com>
+In-Reply-To: <50E67FDC.3000905@bluegiga.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-On Tue, Jan 22, 2013 at 02:39:56PM +0100, Peter Ujfalusi wrote:
-> When booting with DT make it possible to use the whole range of the PWM w=
-hen
-> controlling the backlight in a same way it is possible when the kernel is
-> booted in non DT mode.
-> A new property "max-brightness-level" can be used to specify the maximum
-> value the PWM can handle (time slots).
-> DTS files can use either the "brightness-levels" or the "max-brightness-l=
-evel"
-> to configure the PWM.
-> In case both of these properties exist the driver will prefer the
-> "brightness-levels" over the "max-brightness-level".
+On Fri, Jan 04, 2013 at 09:08:12AM +0200, Lauri Hintsala wrote:
+> On 11/29/2012 01:55 PM, Lothar Wa=DFmann wrote:
+> >Hi,
+> >
+> >adding Juergen Beisert as the driver's author to the recipient list.
+> >
+> >Lothar Wa=DFmann writes:
+> >>The VDCTRL4 register does not provide the MXS SET/CLR/TOGGLE feature.
+> >>The write in mxsfb_disable_controller() sets the data_cnt for the LCD
+> >>DMA to 0 which obviously means the max. count for the LCD DMA and
+> >>leads to overwriting arbitrary memory when the display is unblanked.
+> >>
+> >>Note: I already sent this patch in December 2011 but noone picked it up=
+ obviously.
+> >>
+> >>Signed-off-by: Lothar Wa=DFmann <LW@KARO-electronics.de>
 >=20
-> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+> Tested-by: Lauri Hintsala <lauri.hintsala@bluegiga.net>
+>=20
+> This fixes the CPU freezing. I really recommend to apply this patch
+> into mainline soon because unblanking freezes the whole system!!!
+>=20
+> Default value of consoleblank parameter is 600 seconds and the whole
+> system crashes every time when framebuffer console is activated
+> after that timeout. I wonder why this issue is still open in
+> mainline kernel.
 
-I don't think this is a good idea. The brightness-levels property was
-specifically introduced in order to have a more reasonable interface to
-specify brightness levels.
+Part of the reason is the FB maintainer's absence.  Let me try to send
+it through arm-soc tree.
 
-As such, all uses of the non-DT max_brightness to be deprecated. It is
-only kept for backwards compatibility with non-DT boards.
+>=20
+> Should this patch be added into stable versions too?
+>=20
+Yes, will do.
 
-Thierry
+Shawn
 
---4bRzO86E/ozDv8r1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBAgAGBQJRB53PAAoJEN0jrNd/PrOhK6QP/36pZHyxxK8EP60C61b4fQ2D
-DiIGJ4FY++Bveqc92sjV0bhTsKd/XO6u8aRZOBZZDIu+VjATupPfE+7SMEgSMXa3
-7ZoYwdm0t1enfMY776vTKLNAXK6EEuGZJ/CNAE0sJCYUKhP0kwLBtJUzmt/fSZ7Y
-yOH41X4mt3083vhbPphep/YBO4q4lesZl53KNLbGmPw2SB/I8uBbtupl4y59lzfd
-PLmJb6Kby8eRKFdeCxatbDTbbHILFFOjKlWCtfUgUh+VmkGS73e3klWfhsmrgstU
-5SlmUg5OxTWGc9+I6cBEsjx5E9TMcJk3rhuCdwJlYJ06S6bRNFftulhFLU6nMuWB
-qrUZOyfh/AdzEiUMWPPqgvJh7SYbYp6mJHdi7dwzJHLTITaR6UDKtS+oJVH0jhvu
-vvB9qOY1zsw6Vzovy9CQzqCw0iLCtpcRd1DFiz+krWl9VXw8pk0rXVdW/TbOJI5+
-xXz3wXuqhx77ipOXx5a/V3bKBAaei7pPrOQDANOBCzJE8gPY6EtTyhD5uUZt3ilp
-YqZfXsGeG5aUjpwFuuHk0YJitFTwHZZ19W2XY/tq0Pj+YQK3CcqzJFWoCFiLU1Kh
-nYLxO8KGj7L0OZf2XlTMlEnAyppDURg+SNTaNL61QKv16fIXmYb6vh/nK1YppP3R
-y/X1ohi/tnzCuSBkO+ng
-=EerR
------END PGP SIGNATURE-----
-
---4bRzO86E/ozDv8r1--

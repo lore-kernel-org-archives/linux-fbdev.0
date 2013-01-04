@@ -1,77 +1,41 @@
-From: Zhou Zhu <zzhu84@gmail.com>
-Date: Tue, 08 Jan 2013 09:22:17 +0000
-Subject: Re: [PATCHv4 1/9] video: mmp display subsystem
-Message-Id: <CAJATT-4csvcGtK7QY89p1hV+VbY5h9m1-SuuoxuNQEmGiodyEA@mail.gmail.com>
+From: Lauri Hintsala <lauri.hintsala@bluegiga.com>
+Date: Fri, 04 Jan 2013 07:08:12 +0000
+Subject: Re: [BUGFIX PATCH] video: mxsfb: fix crash when unblanking the display
+Message-Id: <50E67FDC.3000905@bluegiga.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1353588555-13168-1-git-send-email-LW@KARO-electronics.de>
+ <20663.19785.221750.909491@ipc1.ka-ro>
+In-Reply-To: <20663.19785.221750.909491@ipc1.ka-ro>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-arm-kernel@lists.infradead.org
 
-Hi, Greg,
+On 11/29/2012 01:55 PM, Lothar Waßmann wrote:
+> Hi,
+>
+> adding Juergen Beisert as the driver's author to the recipient list.
+>
+> Lothar Waßmann writes:
+>> The VDCTRL4 register does not provide the MXS SET/CLR/TOGGLE feature.
+>> The write in mxsfb_disable_controller() sets the data_cnt for the LCD
+>> DMA to 0 which obviously means the max. count for the LCD DMA and
+>> leads to overwriting arbitrary memory when the display is unblanked.
+>>
+>> Note: I already sent this patch in December 2011 but noone picked it up obviously.
+>>
+>> Signed-off-by: Lothar Waßmann <LW@KARO-electronics.de>
 
-My patches have been there for several months and still have no
-response. Would you please help me to check?
-Thank you very much for your help!
+Tested-by: Lauri Hintsala <lauri.hintsala@bluegiga.net>
 
-On Mon, Dec 17, 2012 at 7:47 AM, Haojian Zhuang
-<haojian.zhuang@gmail.com> wrote:
-> On Wed, Oct 24, 2012 at 2:56 PM, Zhou Zhu <zzhu3@marvell.com> wrote:
->> Added mmp display subsystem to support Marvell MMP display controllers.
->>
->> This subsystem contains 4 parts:
->> --fb folder
->> --core.c
->> --hw folder
->> --panel folder
->>
->> 1. fb folder contains implementation of fb.
->> fb get path and ovly from common interface and operates on these structures.
->>
->> 2. core.c provides common interface for a hardware abstraction.
->> Major parts of this interface are:
->> a) Path: path is a output device connected to a panel or HDMI TV.
->> Main operations of the path is set/get timing/output color.
->> fb operates output device through path structure.
->> b) Ovly: Ovly is a buffer shown on the path.
->> Ovly describes frame buffer and its source/destination size, offset, input
->> color, buffer address, z-order, and so on.
->> Each fb device maps to one ovly.
->>
->> 3. hw folder contains implementation of hardware operations defined by core.c.
->> It registers paths for fb use.
->>
->> 4. panel folder contains implementation of panels.
->> It's connected to path. Panel drivers would also regiester panels and linked
->> to path when probe.
->>
->> Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
->> Signed-off-by: Lisa Du <cldu@marvell.com>
->> ---
->>  drivers/video/Kconfig      |    1 +
->>  drivers/video/Makefile     |    1 +
->>  drivers/video/mmp/Kconfig  |    5 +
->>  drivers/video/mmp/Makefile |    1 +
->>  drivers/video/mmp/core.c   |  217 +++++++++++++++++++++++++++
->>  include/video/mmp_disp.h   |  351 ++++++++++++++++++++++++++++++++++++++++++++
->>  6 files changed, 576 insertions(+), 0 deletions(-)
->>  create mode 100644 drivers/video/mmp/Kconfig
->>  create mode 100644 drivers/video/mmp/Makefile
->>  create mode 100644 drivers/video/mmp/core.c
->>  create mode 100644 include/video/mmp_disp.h
->>
->
-> Hi Florian,
->
-> This patch series have been sent for a long time. And there's no
-> comments on this.
->
-> I need this patch series on enabling LCD on pxa910 platform. Do you
-> think it's OK to merge?
->
-> Best Regards
-> Haojian
+This fixes the CPU freezing. I really recommend to apply this patch into 
+mainline soon because unblanking freezes the whole system!!!
 
--- 
-Thanks,
--Zhou
+Default value of consoleblank parameter is 600 seconds and the whole 
+system crashes every time when framebuffer console is activated after 
+that timeout. I wonder why this issue is still open in mainline kernel.
+
+Should this patch be added into stable versions too?
+
+Best Regards,
+Lauri Hintsala

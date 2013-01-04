@@ -1,41 +1,61 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Wed, 30 Jan 2013 01:01:07 +0000
-Subject: Re: [patch] backlight: s6e63m0: report ->gamma_table_count correctly
-Message-Id: <20130129170107.f27c1ed3.akpm@linux-foundation.org>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Date: Fri, 04 Jan 2013 13:25:57 +0000
+Subject: Re: [PATCH] fb: Rework locking to fix lock ordering on takeover
+Message-Id: <20130104132557.70e0c527@pyramind.ukuu.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130124070524.GD5611@elgon.mountain>
-	<00c601cdfaa2$c52d03c0$4f870b40$%han@samsung.com>
-In-Reply-To: <00c601cdfaa2$c52d03c0$4f870b40$%han@samsung.com>
+References: <20121116192606.11799.35711.stgit@localhost.localdomain>
+	<CA+5PVA6nKNZY70UoeDUhQo9Rj4Ck+k+XTHL++gwErgzqAdy6Aw@mail.gmail.com>
+	<20121121125310.00625f55@pyramind.ukuu.org.uk>
+	<CA+5PVA5iQwYOcoSYtLOoRBHaTNJANdv+X-C78474n3SzZg_m9w@mail.gmail.com>
+	<CA+1xoqe0G4rha5bDcoQQUcACYbQ8BCO7AE_JE8z5VjJLeNUdyA@mail.gmail.com>
+	<CAM_iQpWLgnxQR+oYD+Dnh9NprR1-QLjXa6T+dtHUs3A-_N2wmQ@mail.gmail.com>
+	<CA+1xoqf0d5ckDZ3o1-Y+qd61nvVA7EECeH20U+WjDpNVb4E=pw@mail.gmail.com>
+	<20121227045301.GB17472@x1.alien8.de>
+	<20121228115022.GA28009@S2101-09.ap.freescale.net>
+	<20121228124026.GB12918@x1.alien8.de>
+	<50E6D01D.6040304@ahsoftware.de>
+In-Reply-To: <50E6D01D.6040304@ahsoftware.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>
-Cc: 'Dan Carpenter' <dan.carpenter@oracle.com>, 'Inki Dae' <inki.dae@samsung.com>, 'Richard Purdie' <rpurdie@rpsys.net>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Alexander Holler <holler@ahsoftware.de>
+Cc: Borislav Petkov <bp@alien8.de>, Shawn Guo <shawn.guo@linaro.org>, Sasha Levin <levinsasha928@gmail.com>, Cong Wang <xiyou.wangcong@gmail.com>, Josh Boyer <jwboyer@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Florian Tobias Schandinat <florianSchandinat@gmx.de>, Linus Torvalds <torvalds@linux-foundation.org>, linux-fbdev@vger.kernel.org, Bernie Thompson <bernie@plugable.com>, Steve Glendinning <steve.glendinning@shawell.net>, Dave Airlie <airlied@redhat.com>
 
-On Fri, 25 Jan 2013 11:22:06 +0900
-Jingoo Han <jg1.han@samsung.com> wrote:
+On Fri, 04 Jan 2013 13:50:37 +0100
+Alexander Holler <holler@ahsoftware.de> wrote:
 
-> On Thursday, January 24, 2013 10:45 PM, Dan Carpenter wrote
+> Am 28.12.2012 13:40, schrieb Borislav Petkov:
+> > On Fri, Dec 28, 2012 at 07:50:27PM +0800, Shawn Guo wrote:
+> >> +1
+> >>
+> >> http://thread.gmane.org/gmane.linux.kernel/1413953/focus15070
+> >
+> > Cool, works fine here too. Is Linus on CC? (/me checks.. ) Yes he is,
+> > good.
+> >
+> > Linus, Alan's patch works at least in 2 cases, you might consider
+> > picking it up directly since the fb maintainer is absent, reportedly.
 > 
-> CC'ed Andrew Morton, Inki Dae.
 > 
-> > 
-> > gamma_table has 3 arrays which each hold MAX_GAMMA_LEVEL pointers to
-> > int.
-> > 
-> > The current code sets ->gamma_table_count to 6 on 64bit arches and to 3
-> > on 32 bit arches.  It should be 3 on everything.
-> 
-> Actually, I don't know it is right.
-> However, it is certain that this panel is currently used on 32 bit arches
-> such as ARM SoCs.
+> Btw. I think all the usb-fb's (udlfb, smscufx and udl) are broken, at 
+> least on ARM(v5). When I have linked in udlfb the following happens on 
+> boot (with an attached USB-LCD and with or without the "Rework locking 
+> patch):
 
-I don't know what gamma_table_count is supposed to do.  The only place
-it is used is in s6e63m0_sysfs_show_gamma_table().  That function
-doesn't actually show the table - it just prints out gamme_table_count.
-Why is that useful?
+They are broken if used as the system console (has been known for years).
+Perhaps your x86 test has the system console still on another device ?
 
-Ho hum, the patch is clearly correct - the array stores int*'s and the
-sysfs file should display "3" for all architectures.  However I suspect
-we could just remove the whole sysfs file and nobody would care...
+For the udl layer it shouldn't matter as Dave Airlie wrote a DRM driver
+for udl which obsoletes the old fb layer one and works much better
+(although the error handling is still totally broken and leaks like a
+sieve if it fails)
+
+Fixing the console isn't that difficult - you just need to make your
+device queue the console I/O to a worker thread of some kind. We don't
+want to do that by default because we want to get the messages out
+reliably and immediately on saner hardware. Given there are several
+such cases a general helper and a console "I am crap" flag might be better
+than hacking each driver.
+
+Alan
 

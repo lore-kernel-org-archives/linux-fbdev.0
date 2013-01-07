@@ -1,102 +1,36 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Mon, 07 Jan 2013 09:11:31 +0000
-Subject: Re: [PATCH 08/10] video: da8xx-fb: obtain fb_videomode info from dt
-Message-Id: <20130107091131.GC23478@pengutronix.de>
+From: "Mohammed, Afzal" <afzal@ti.com>
+Date: Mon, 07 Jan 2013 09:21:15 +0000
+Subject: RE: [PATCH 08/10] video: da8xx-fb: obtain fb_videomode info from dt
+Message-Id: <C8443D0743D26F4388EA172BF4E2A7A93EA7FC7A@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1357304090.git.afzal@ti.com>
  <78e026555731e0bbe8475610279d3e5265d124b9.1357304090.git.afzal@ti.com>
-In-Reply-To: <78e026555731e0bbe8475610279d3e5265d124b9.1357304090.git.afzal@ti.com>
+ <20130107091131.GC23478@pengutronix.de>
+In-Reply-To: <20130107091131.GC23478-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Afzal Mohammed <afzal@ti.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Sekhar Nori <nsekhar@ti.com>, Vaibhav Hiremath <hvaibhav@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org
+To: Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Cc: "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Nori,
+ Sekhar" <nsekhar-l0cyMroinI0@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, "Valkeinen,
+ Tomi" <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, "linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 
-Hi!
-
-On Mon, Jan 07, 2013 at 10:41:30AM +0530, Afzal Mohammed wrote:
-> Obtain fb_videomode details for the connected lcd panel using the
-> display timing details present in DT.
-> 
-> Signed-off-by: Afzal Mohammed <afzal@ti.com>
-> ---
->  .../devicetree/bindings/video/fb-da8xx.txt         |   20 ++++++++++++++++++++
->  drivers/video/da8xx-fb.c                           |   16 ++++++++++++++++
->  2 files changed, 36 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/video/fb-da8xx.txt b/Documentation/devicetree/bindings/video/fb-da8xx.txt
-> index 581e014..eeb935b 100644
-> --- a/Documentation/devicetree/bindings/video/fb-da8xx.txt
-> +++ b/Documentation/devicetree/bindings/video/fb-da8xx.txt
-> @@ -6,6 +6,11 @@ Required properties:
->  	AM335x SoC's - "ti,am3352-lcdc", "ti,da830-lcdc"
->  - reg: Address range of lcdc register set
->  - interrupts: lcdc interrupt
-> +- display-timings: list of different videomodes supported by the lcd
-> +  panel, represented as childs, can have multiple modes supported, if
-> +  only one, then it is considered native mode, if multiple modes are
-> +  provided, native mode can be set explicitly, more details available
-> +  @Documentation/devicetree/bindings/video/display-timing.txt
->  
-
-Keep in mind that the text combined with...
-
->  Example:
->  
-> @@ -13,4 +18,19 @@ lcdc@4830e000 {
->  	compatible = "ti,am3352-lcdc", "ti,da830-lcdc";
->  	reg =  <0x4830e000 0x1000>;
->  	interrupts = <36>;
-> +	display-timings {
-> +		800x480p62 {
-> +			clock-frequency = <30000000>;
-> +			hactive = <800>;
-> +			vactive = <480>;
-> +			hfront-porch = <39>;
-> +			hback-porch = <39>;
-> +			hsync-len = <47>;
-> +			vback-porch = <29>;
-> +			vfront-porch = <13>;
-> +			vsync-len = <2>;
-> +			hsync-active = <1>;
-> +			vsync-active = <1>;
-> +		};
-> +	};
->  };
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index 68ae925..94add01 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -1261,8 +1261,24 @@ static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
->  {
->  	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
->  	struct fb_videomode *lcdc_info;
-> +	struct device_node *np = dev->dev.of_node;
->  	int i;
->  
-> +	if (np) {
-> +		lcdc_info = devm_kzalloc(&dev->dev,
-> +					 sizeof(struct fb_videomode),
-> +					 GFP_KERNEL);
-> +		if (!lcdc_info) {
-> +			dev_err(&dev->dev, "memory allocation failed\n");
-> +			return NULL;
-> +		}
-> +		if (of_get_fb_videomode(np, lcdc_info, 0)) {
-> +			dev_err(&dev->dev, "timings not available in DT\n");
-> +			return NULL;
-> +		}
-> +		return lcdc_info;
-> +	}
-
-... this is not correct. You are just supporting the first display-timings
-subnode (of_get_fb_videomode(..., 0)).
-
-Regards,
-Steffen
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+SGkgU3RlZmZlbiwNCg0KT24gTW9uLCBKYW4gMDcsIDIwMTMgYXQgMTQ6NDE6MzEsIFN0ZWZmZW4g
+VHJ1bXRyYXIgd3JvdGU6DQo+IE9uIE1vbiwgSmFuIDA3LCAyMDEzIGF0IDEwOjQxOjMwQU0gKzA1
+MzAsIEFmemFsIE1vaGFtbWVkIHdyb3RlOg0KDQo+ID4gT2J0YWluIGZiX3ZpZGVvbW9kZSBkZXRh
+aWxzIGZvciB0aGUgY29ubmVjdGVkIGxjZCBwYW5lbCB1c2luZyB0aGUNCj4gPiBkaXNwbGF5IHRp
+bWluZyBkZXRhaWxzIHByZXNlbnQgaW4gRFQuDQoNCj4gPiArLSBkaXNwbGF5LXRpbWluZ3M6IGxp
+c3Qgb2YgZGlmZmVyZW50IHZpZGVvbW9kZXMgc3VwcG9ydGVkIGJ5IHRoZSBsY2QNCj4gPiArICBw
+YW5lbCwgcmVwcmVzZW50ZWQgYXMgY2hpbGRzLCBjYW4gaGF2ZSBtdWx0aXBsZSBtb2RlcyBzdXBw
+b3J0ZWQsIGlmDQo+ID4gKyAgb25seSBvbmUsIHRoZW4gaXQgaXMgY29uc2lkZXJlZCBuYXRpdmUg
+bW9kZSwgaWYgbXVsdGlwbGUgbW9kZXMgYXJlDQo+ID4gKyAgcHJvdmlkZWQsIG5hdGl2ZSBtb2Rl
+IGNhbiBiZSBzZXQgZXhwbGljaXRseSwgbW9yZSBkZXRhaWxzIGF2YWlsYWJsZQ0KPiA+ICsgIEBE
+b2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdmlkZW8vZGlzcGxheS10aW1pbmcudHh0
+DQoNCj4gS2VlcCBpbiBtaW5kIHRoYXQgdGhlIHRleHQgY29tYmluZWQgd2l0aC4uLg0KDQo+ID4g
+KwkJaWYgKG9mX2dldF9mYl92aWRlb21vZGUobnAsIGxjZGNfaW5mbywgMCkpIHsNCj4gPiArCQkJ
+ZGV2X2VycigmZGV2LT5kZXYsICJ0aW1pbmdzIG5vdCBhdmFpbGFibGUgaW4gRFRcbiIpOw0KPiA+
+ICsJCQlyZXR1cm4gTlVMTDsNCj4gPiArCQl9DQo+ID4gKwkJcmV0dXJuIGxjZGNfaW5mbzsNCj4g
+PiArCX0NCj4gDQo+IC4uLiB0aGlzIGlzIG5vdCBjb3JyZWN0LiBZb3UgYXJlIGp1c3Qgc3VwcG9y
+dGluZyB0aGUgZmlyc3QgZGlzcGxheS10aW1pbmdzDQo+IHN1Ym5vZGUgKG9mX2dldF9mYl92aWRl
+b21vZGUoLi4uLCAwKSkuDQoNCg0KWWVzIHJpZ2h0LCBJIHdpbGwgbW9kaWZ5IHRoZSB0ZXh0IHRv
+IHJlZmxlY3Qgd2hhdCB0aGUgZHJpdmVyIGRvZXMuDQoNClJlZ2FyZHMNCkFmemFsDQo

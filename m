@@ -1,50 +1,52 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Tue, 15 Jan 2013 13:50:16 +0000
-Subject: [PATCH v2 4/5] ARM: dts: AM33XX: Add am335x-evmsk lcdc panel timings
-Message-Id: <39ee4570dd03b4b6139048f51fb18ea9653009c7.1358252955.git.afzal@ti.com>
+Date: Mon, 07 Jan 2013 05:18:03 +0000
+Subject: [PATCH v2 09/10] video: da8xx-fb: report correct pixclock
+Message-Id: <87e8130658ff6fb27afce873b32c44543583cc73.1357303978.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358252955.git.afzal@ti.com>
-In-Reply-To: <cover.1358252955.git.afzal@ti.com>
+References: <cover.1357303978.git.afzal@ti.com>
+In-Reply-To: <cover.1357303978.git.afzal-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, nsekhar-l0cyMroinI0@public.gmane.org, hvaibhav-l0cyMroinI0@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
 
-Update lcdc node with panel timings (typical) for AM335X-EVMSK.
+Update "var" pixclock with the value that is configurable in hardware.
+This lets user know the actual pixclock.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- arch/arm/boot/dts/am335x-evmsk.dts |   20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ drivers/video/da8xx-fb.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/arch/arm/boot/dts/am335x-evmsk.dts b/arch/arm/boot/dts/am335x-evmsk.dts
-index f5a6162..a7e017b 100644
---- a/arch/arm/boot/dts/am335x-evmsk.dts
-+++ b/arch/arm/boot/dts/am335x-evmsk.dts
-@@ -248,3 +248,23 @@
- 		};
- 	};
- };
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 663b3c5..c7393f1 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -690,6 +690,15 @@ static inline unsigned da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
+ 	return par->lcd_fck_rate / (PICOS2KHZ(pixclock) * 1000);
+ }
+ 
++static inline unsigned da8xx_fb_round_clk(struct da8xx_fb_par *par,
++					  unsigned pixclock)
++{
++	unsigned div;
 +
-+&lcdc {
-+	status = "okay";
++	div = da8xx_fb_calc_clk_divider(par, pixclock);
++	return KHZ2PICOS(par->lcd_fck_rate / (1000 * div));
++}
 +
-+	display-timings {
-+		480x272p57 {
-+			clock-frequency = <9000000>;
-+			hactive = <480>;
-+			vactive = <272>;
-+			hfront-porch = <8>;
-+			hback-porch = <43>;
-+			hsync-len = <4>;
-+			vback-porch = <12>;
-+			vfront-porch = <4>;
-+			vsync-len = <10>;
-+			hsync-active = <1>;
-+			vsync-active = <1>;
-+		};
-+	};
-+};
+ static inline void da8xx_fb_config_clk_divider(unsigned div)
+ {
+ 	/* Configure the LCD clock divisor. */
+@@ -966,6 +975,8 @@ static int fb_check_var(struct fb_var_screeninfo *var,
+ 	if (var->yres + var->yoffset > var->yres_virtual)
+ 		var->yoffset = var->yres_virtual - var->yres;
+ 
++	var->pixclock = da8xx_fb_round_clk(par, var->pixclock);
++
+ 	return err;
+ }
+ 
 -- 
 1.7.9.5
 

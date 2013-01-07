@@ -1,28 +1,75 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Fri, 11 Jan 2013 06:52:02 +0000
-Subject: [patch] sisfb: fix 1280x720 resolution support
-Message-Id: <20130111065201.GC13207@elgon.mountain>
+From: Afzal Mohammed <afzal@ti.com>
+Date: Mon, 07 Jan 2013 05:30:41 +0000
+Subject: [PATCH 5/5] ARM: dts: AM33XX: Add am335x-evmsk lcdc pincontrol info
+Message-Id: <eba71d3baa6a851ba3618ee0be80c0c2fabb1934.1357304151.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1357304150.git.afzal@ti.com>
+In-Reply-To: <cover.1357304150.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-It uses the wrong mode index because there is no break statement.
+Update pin mux information for lcd panel on AM335X-EVMSK.
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
-Static checker fix.  Untested.
+ arch/arm/boot/dts/am335x-evmsk.dts |   35 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 34 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/sis/init.c b/drivers/video/sis/init.c
-index f082ae5..0b71c53 100644
---- a/drivers/video/sis/init.c
-+++ b/drivers/video/sis/init.c
-@@ -651,6 +651,7 @@ SiS_GetModeID_LCD(int VGAEngine, unsigned int VBFlags, int HDisplay, int VDispla
- 	     switch(VDisplay) {
- 	     case 720:
- 		ModeIndex = ModeIndex_1280x720[Depth];
-+		break;
- 	     case 768:
- 		if(VGAEngine = SIS_300_VGA) {
- 		   ModeIndex = ModeIndex_300_1280x768[Depth];
+diff --git a/arch/arm/boot/dts/am335x-evmsk.dts b/arch/arm/boot/dts/am335x-evmsk.dts
+index a7e017b..6275a50 100644
+--- a/arch/arm/boot/dts/am335x-evmsk.dts
++++ b/arch/arm/boot/dts/am335x-evmsk.dts
+@@ -32,7 +32,7 @@
+ 
+ 	am33xx_pinmux: pinmux@44e10800 {
+ 		pinctrl-names = "default";
+-		pinctrl-0 = <&user_leds_s0 &gpio_keys_s0>;
++		pinctrl-0 = <&user_leds_s0 &gpio_keys_s0 &lcd_pins_s0>;
+ 
+ 		user_leds_s0: user_leds_s0 {
+ 			pinctrl-single,pins = <
+@@ -51,6 +51,39 @@
+ 				0x9c 0x27	/* gpmc_ben0_cle.gpio2_5, INPUT | MODE7 */
+ 			>;
+ 		};
++
++		lcd_pins_s0: lcd_pins_s0 {
++			pinctrl-single,pins = <
++				0x20 0x01
++				0x24 0x01
++				0x28 0x01
++				0x2c 0x01
++				0x30 0x01
++				0x34 0x01
++				0x38 0x01
++				0x3c 0x01
++				0xa0 0x08
++				0xa4 0x08
++				0xa8 0x08
++				0xac 0x08
++				0xb0 0x08
++				0xb4 0x08
++				0xb8 0x08
++				0xbc 0x08
++				0xc0 0x08
++				0xc4 0x08
++				0xc8 0x08
++				0xcc 0x08
++				0xd0 0x08
++				0xd4 0x08
++				0xd8 0x08
++				0xdc 0x08
++				0xe0 0x00
++				0xe4 0x00
++				0xe8 0x00
++				0xec 0x00
++			>;
++		};
+ 	};
+ 
+ 	ocp {
+-- 
+1.7.9.5
+

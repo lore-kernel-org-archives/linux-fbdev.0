@@ -1,106 +1,31 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Fri, 25 Jan 2013 09:01:55 +0000
-Subject: [PATCH v17 7/7] drm_modes: add of_videomode helpers
-Message-Id: <1359104515-8907-8-git-send-email-s.trumtrar@pengutronix.de>
+From: "Mohammed, Afzal" <afzal@ti.com>
+Date: Mon, 07 Jan 2013 12:03:16 +0000
+Subject: RE: [PATCH] da8xx: Allow use by am33xx based devices
+Message-Id: <C8443D0743D26F4388EA172BF4E2A7A93EA7FDD8@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359104515-8907-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1359104515-8907-1-git-send-email-s.trumtrar@pengutronix.de>
+References: <1351698968-3965-1-git-send-email-panto@antoniou-consulting.com>
+ <A73F36158E33644199EB82C5EC81C7BC3EA1452B@DBDE01.ent.ti.com>
+ <50C5A50E.4070602@ti.com>
+ <A73F36158E33644199EB82C5EC81C7BC3EA17E45@DBDE01.ent.ti.com>
+ <79CD15C6BA57404B839C016229A409A83EBADC10@DBDE01.ent.ti.com>
+In-Reply-To: <79CD15C6BA57404B839C016229A409A83EBADC10@DBDE01.ent.ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org, Dave Airlie <airlied@linux.ie>
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Rob Clark <robdclark@gmail.com>, Leela Krishna Amudala <leelakrishna.a@gmail.com>, "Mohammed, Afzal" <afzal@ti.com>, kernel@pengutronix.de
+To: "Hiremath, Vaibhav" <hvaibhav@ti.com>, "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Cc: "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, "davinci-linux-open-source@linux.davincidsp.com" <davinci-linux-open-source@linux.davincidsp.com>, "Porter, Matt" <mporter@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "FlorianSchandinat@gmx.de" <FlorianSchandinat@gmx.de>, Koen Kooi <koen@dominion.thruhere.net>, Pantelis Antoniou <panto@antoniou-consulting.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Dill, Russ" <russ.dill@ti.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 
-Add helper to get drm_display_mode from devicetree.
-
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
-Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Tested-by: Afzal Mohammed <Afzal@ti.com>
-Tested-by: Rob Clark <robclark@gmail.com>
-Tested-by: Leela Krishna Amudala <leelakrishna.a@gmail.com>
----
- drivers/gpu/drm/drm_modes.c |   33 +++++++++++++++++++++++++++++++++
- include/drm/drmP.h          |    4 ++++
- 2 files changed, 37 insertions(+)
-
-diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index 9f3f20b..04fa6f1 100644
---- a/drivers/gpu/drm/drm_modes.c
-+++ b/drivers/gpu/drm/drm_modes.c
-@@ -35,6 +35,7 @@
- #include <linux/export.h>
- #include <drm/drmP.h>
- #include <drm/drm_crtc.h>
-+#include <video/of_videomode.h>
- #include <video/videomode.h>
- 
- /**
-@@ -541,6 +542,38 @@ int drm_display_mode_from_videomode(const struct videomode *vm,
- EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
- #endif
- 
-+#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+/**
-+ * of_get_drm_display_mode - get a drm_display_mode from devicetree
-+ * @np: device_node with the timing specification
-+ * @dmode: will be set to the return value
-+ * @index: index into the list of display timings in devicetree
-+ *
-+ * This function is expensive and should only be used, if only one mode is to be
-+ * read from DT. To get multiple modes start with of_get_display_timings and
-+ * work with that instead.
-+ */
-+int of_get_drm_display_mode(struct device_node *np,
-+			    struct drm_display_mode *dmode, int index)
-+{
-+	struct videomode vm;
-+	int ret;
-+
-+	ret = of_get_videomode(np, &vm, index);
-+	if (ret)
-+		return ret;
-+
-+	drm_display_mode_from_videomode(&vm, dmode);
-+
-+	pr_debug("%s: got %dx%d display mode from %s\n",
-+		of_node_full_name(np), vm.hactive, vm.vactive, np->name);
-+	drm_mode_debug_printmodeline(dmode);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(of_get_drm_display_mode);
-+#endif
-+
- /**
-  * drm_mode_set_name - set the name on a mode
-  * @mode: name will be set in this mode
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index d5c06ff..fcc9d23 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -85,6 +85,7 @@ struct module;
- struct drm_file;
- struct drm_device;
- 
-+struct device_node;
- struct videomode;
- 
- #include <drm/drm_os_linux.h>
-@@ -1460,6 +1461,9 @@ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
- 
- extern int drm_display_mode_from_videomode(const struct videomode *vm,
- 					   struct drm_display_mode *dmode);
-+extern int of_get_drm_display_mode(struct device_node *np,
-+				   struct drm_display_mode *dmode,
-+				   int index);
- 
- /* Modesetting support */
- extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
--- 
-1.7.10.4
-
+SGksDQoNCk9uIFdlZCwgRGVjIDEyLCAyMDEyIGF0IDEzOjMwOjU2LCBIaXJlbWF0aCwgVmFpYmhh
+diB3cm90ZToNCj4gT24gV2VkLCBEZWMgMTIsIDIwMTIgYXQgMTI6NTA6MjgsIE1hbmp1bmF0aGFw
+cGEsIFByYWthc2ggd3JvdGU6DQoNCj4gPiBBZ3JlZWQsIHNob3VsZCBub3QgcmVzdWx0IGluIGJ1
+aWxkIGVycm9yLiBCdXQgaXMgaXQgb2sgdG8gc2hvdyB0aGlzIG9wdGlvbg0KPiA+IG9uIHRoZSBw
+bGF0Zm9ybXMgd2hpY2ggZG8gbm90IGhhdmUgdGhpcyBJUD8NCj4gPiANCj4gDQo+IFlvdSBjYW4g
+Y2hvb3NlIHRvIHB1dCBtYWNoaW5lIGRlcGVuZGVuY3kgaGVyZSwgYXMgdGhpcyBwYXRjaCBpcyBh
+bHJlYWR5IA0KPiBkb2luZyBpdC4gVGhlIHNpZGUtZWZmZWN0IG9mIHRoaXMgd291bGQgYmUsIGxp
+c3QgbWF5IGdyb3cgYW5kIHlvdSBtYXkgaGF2ZSANCj4gdG8gZWRpdCB0aGlzIGZpbGUgZXZlcnl0
+aW1lLg0KDQpJdCBzZWVtcyBhZGRpbmcgbWFjaGluZSBkZXBlbmRlbmN5IGlzIG1vcmUgaW4gbGlu
+ZSB3aXRoIHRoZQ0KYXBwcm9hY2ggYWRvcHRlZCBpbiBzaW1pbGFyIGNhc2VzLiBBcyB0aGlzIElQ
+IGlzIHVzZWQgb25seQ0KaW4gMiBhcmNoJ3MgYW5kIHdvdWxkIG5vdCBpbiBhbnkgaW1tZWRpYXRl
+IGZ1dHVyZSBnbyB3aXRoDQpvdGhlciBhcmNoJ3MsIGl0IHdvdWxkIGJlIGJldHRlciBub3QgdG8g
+YXNrIG90aGVyIGFyY2gncyBhDQpxdWVzdGlvbiBvbiB3aGV0aGVyIHRoaXMgZHJpdmVyIG5lZWRz
+IHRvIGJlIHNlbGVjdGVkIG9yIG5vdC4NCg0KUmVnYXJkcw0KQWZ6YWwNCg=

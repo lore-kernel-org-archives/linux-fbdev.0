@@ -1,68 +1,38 @@
-From: Fabio Estevam <festevam@gmail.com>
-Date: Tue, 08 Jan 2013 01:19:31 +0000
-Subject: [PATCH] video: mxsfb: Fix build warnings with W=1
-Message-Id: <1357607971-16988-1-git-send-email-festevam@gmail.com>
+From: Afzal Mohammed <afzal@ti.com>
+Date: Mon, 07 Jan 2013 05:23:18 +0000
+Subject: [PATCH 07/10] video: da8xx-fb: invoke platform callback safely
+Message-Id: <2f2074847380912085b73c1a53abf36a260cebf6.1357304090.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1357304090.git.afzal@ti.com>
+In-Reply-To: <cover.1357304090.git.afzal-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Rob Landley <rob-VoJi6FS/r0vR7s880joybQ@public.gmane.org>, Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Sekhar Nori <nsekhar-l0cyMroinI0@public.gmane.org>, Vaibhav Hiremath <hvaibhav-l0cyMroinI0@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-From: Fabio Estevam <fabio.estevam@freescale.com>
+Ensure that platform data is present before checking whether platform
+callback is present (the one used to control backlight). So far this
+was not an issue as driver was purely non-DT triggered, but now DT
+support has been added.
 
-Fix the following warnings when building with W=1 option:
-
-drivers/video/mxsfb.c: In function 'mxsfb_set_par':
-drivers/video/mxsfb.c:389:14: warning: comparison between signed and unsigned integer expressions [-Wsign-compare]
-drivers/video/mxsfb.c: In function 'mxsfb_restore_mode':
-drivers/video/mxsfb.c:592:11: warning: variable 'line_count' set but not used [-Wunused-but-set-variable]
-drivers/video/mxsfb.c: In function 'mxsfb_probe':
-drivers/video/mxsfb.c:867:16: warning: comparison between signed and unsigned integer expressions [-Wsign-compare]
-
-Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/mxsfb.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ drivers/video/da8xx-fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
-index a45b37c..47c92a2 100644
---- a/drivers/video/mxsfb.c
-+++ b/drivers/video/mxsfb.c
-@@ -380,7 +380,7 @@ static int mxsfb_set_par(struct fb_info *fb_info)
- {
- 	struct mxsfb_info *host = to_imxfb_host(fb_info);
- 	u32 ctrl, vdctrl0, vdctrl4;
--	int line_size, fb_size;
-+	u32 line_size, fb_size;
- 	int reenable = 0;
- 
- 	line_size =  fb_info->var.xres * (fb_info->var.bits_per_pixel >> 3);
-@@ -589,7 +589,6 @@ static struct fb_ops mxsfb_ops = {
- static int mxsfb_restore_mode(struct mxsfb_info *host)
- {
- 	struct fb_info *fb_info = &host->fb_info;
--	unsigned line_count;
- 	unsigned period;
- 	unsigned long pa, fbsize;
- 	int bits_per_pixel, ofs;
-@@ -668,7 +667,6 @@ static int mxsfb_restore_mode(struct mxsfb_info *host)
- 		writel(fb_info->fix.smem_start, host->base + host->devdata->next_buf);
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index d10479f..68ae925 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1351,7 +1351,7 @@ static int __devinit fb_probe(struct platform_device *device)
+ 	par->dev = &device->dev;
+ 	par->lcdc_clk = fb_clk;
+ 	par->lcd_fck_rate = clk_get_rate(fb_clk);
+-	if (fb_pdata->panel_power_ctrl) {
++	if (fb_pdata && fb_pdata->panel_power_ctrl) {
+ 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
+ 		par->panel_power_ctrl(1);
  	}
- 
--	line_count = fb_info->fix.smem_len / fb_info->fix.line_length;
- 	fb_info->fix.ypanstep = 1;
- 
- 	clk_prepare_enable(host->clk);
-@@ -784,7 +782,8 @@ static int mxsfb_probe(struct platform_device *pdev)
- 	struct pinctrl *pinctrl;
- 	int panel_enable;
- 	enum of_gpio_flags flags;
--	int i, ret;
-+	int ret;
-+	u32 i;
- 
- 	if (of_id)
- 		pdev->id_entry = of_id->data;
 -- 
 1.7.9.5
 

@@ -1,62 +1,71 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 07 Jan 2013 05:29:54 +0000
-Subject: [PATCH 0/5] ARM: dts: AM33XX: lcdc support
-Message-Id: <cover.1357304150.git.afzal@ti.com>
+Date: Mon, 07 Jan 2013 05:23:11 +0000
+Subject: [PATCH 06/10] video: da8xx-fb: minimal dt support
+Message-Id: <af85c00fcd63618d67ef6d9026f1af7ae35299d2.1357304090.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1357304090.git.afzal@ti.com>
+In-Reply-To: <cover.1357304090.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Sekhar Nori <nsekhar@ti.com>, Vaibhav Hiremath <hvaibhav@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org
 
-Hi,
+Driver is provided a means to have the probe triggered by DT.
 
-This series add DT sources for AM335x SoC as well as AM335x based
-boards.
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+---
+ .../devicetree/bindings/video/fb-da8xx.txt         |   16 ++++++++++++++++
+ drivers/video/da8xx-fb.c                           |    7 +++++++
+ 2 files changed, 23 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/fb-da8xx.txt
 
-As pinmux is an SoC specific detail rather than IP specific one,
-addition of pin control has been done in a separate patch from
-the one in which display timings are added. Also it may aid in
-debugging in case of any issues.
-
-This has been tested on AM335x based boards like AM335x EVM and
-AM335x EVM-SK.
-
-This series is based on v3.8-rc2.
-
-This series has a dependency on,
-1. Series v16 "of: add display helper" by,
-	Steffen Trumtrar <s.trumtrar@pengutronix.de>
-2. Series v2 "video: da8xx-fb: runtime timing configuration" by,
-	me (Afzal Mohammed <afzal@ti.com>)
-3. Series "video: da8xx-fb: DT support" by,
-	me (Afzal Mohammed <afzal@ti.com>)
-
-To test on AM335x, in addition to the above, following changes,
-1. Patch "da8xx: Allow use by am33xx based devices" by,
-	Pantelis Antoniou <panto@antoniou-consulting.com>
-3. Series "HWMOD fixes for AM33xx PWM submodules and device tree nodes" by,
-	Philip, Avinash <avinashphilip@ti.com>
-would be required
-
-A tree with all above for testing is available
- @git://gitorious.org/x0148406-public/linux-kernel.git da8xx-fb-dt
-
-
-Regards
-Afzal
-
-Afzal Mohammed (5):
-  ARM: dts: AM33XX: Add lcdc node
-  ARM: dts: AM33XX: Add am335x-evm lcdc panel timings
-  ARM: dts: AM33XX: Add am335x-evm lcdc pincontrol info
-  ARM: dts: AM33XX: Add am335x-evmsk lcdc panel timings
-  ARM: dts: AM33XX: Add am335x-evmsk lcdc pincontrol info
-
- arch/arm/boot/dts/am335x-evm.dts   |   55 +++++++++++++++++++++++++++++++++++-
- arch/arm/boot/dts/am335x-evmsk.dts |   55 +++++++++++++++++++++++++++++++++++-
- arch/arm/boot/dts/am33xx.dtsi      |    8 ++++++
- 3 files changed, 116 insertions(+), 2 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/video/fb-da8xx.txt b/Documentation/devicetree/bindings/video/fb-da8xx.txt
+new file mode 100644
+index 0000000..581e014
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/fb-da8xx.txt
+@@ -0,0 +1,16 @@
++TI LCD Controller on DA830/DA850/AM335x SoC's
++
++Required properties:
++- compatible:
++	DA830 - "ti,da830-lcdc"
++	AM335x SoC's - "ti,am3352-lcdc", "ti,da830-lcdc"
++- reg: Address range of lcdc register set
++- interrupts: lcdc interrupt
++
++Example:
++
++lcdc@4830e000 {
++	compatible = "ti,am3352-lcdc", "ti,da830-lcdc";
++	reg =  <0x4830e000 0x1000>;
++	interrupts = <36>;
++};
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 991d9e3..d10479f 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1599,6 +1599,12 @@ static int fb_resume(struct platform_device *dev)
+ #define fb_resume NULL
+ #endif
+ 
++static const struct of_device_id da8xx_fb_of_match[] = {
++	{.compatible = "ti,da830-lcdc", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, da8xx_fb_of_match);
++
+ static struct platform_driver da8xx_fb_driver = {
+ 	.probe = fb_probe,
+ 	.remove = __devexit_p(fb_remove),
+@@ -1607,6 +1613,7 @@ static struct platform_driver da8xx_fb_driver = {
+ 	.driver = {
+ 		   .name = DRIVER_NAME,
+ 		   .owner = THIS_MODULE,
++		   .of_match_table = of_match_ptr(da8xx_fb_of_match),
+ 		   },
+ };
+ 
 -- 
 1.7.9.5
 

@@ -1,55 +1,62 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 29 Jan 2013 07:38:32 +0000
-Subject: [PATCH 2/2] video: exynos_dp: move disable_irq() to exynos_dp_suspend()
-Message-Id: <00cc01cdfdf3$a39dcb00$ead96100$%han@samsung.com>
+From: Afzal Mohammed <afzal@ti.com>
+Date: Mon, 07 Jan 2013 05:29:54 +0000
+Subject: [PATCH 0/5] ARM: dts: AM33XX: lcdc support
+Message-Id: <cover.1357304150.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-From: Ajay Kumar <ajaykumar.rs@samsung.com>
+Hi,
 
-disable_irq() should be moved to exynos_dp_suspend(), because
-enable_irq() is called at exynos_dp_resume().
+This series add DT sources for AM335x SoC as well as AM335x based
+boards.
 
-Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
----
- drivers/video/exynos/exynos_dp_core.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+As pinmux is an SoC specific detail rather than IP specific one,
+addition of pin control has been done in a separate patch from
+the one in which display timings are added. Also it may aid in
+debugging in case of any issues.
 
-diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-index c7374c0..9ba973a 100644
---- a/drivers/video/exynos/exynos_dp_core.c
-+++ b/drivers/video/exynos/exynos_dp_core.c
-@@ -1124,8 +1124,6 @@ static int exynos_dp_remove(struct platform_device *pdev)
- 	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
- 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
- 
--	disable_irq(dp->irq);
--
- 	flush_work(&dp->hotplug_work);
- 
- 	if (pdev->dev.of_node) {
-@@ -1138,7 +1136,6 @@ static int exynos_dp_remove(struct platform_device *pdev)
- 
- 	clk_disable_unprepare(dp->clock);
- 
--
- 	return 0;
- }
- 
-@@ -1148,6 +1145,8 @@ static int exynos_dp_suspend(struct device *dev)
- 	struct exynos_dp_platdata *pdata = dev->platform_data;
- 	struct exynos_dp_device *dp = dev_get_drvdata(dev);
- 
-+	disable_irq(dp->irq);
-+
- 	flush_work(&dp->hotplug_work);
- 
- 	if (dev->of_node) {
+This has been tested on AM335x based boards like AM335x EVM and
+AM335x EVM-SK.
+
+This series is based on v3.8-rc2.
+
+This series has a dependency on,
+1. Series v16 "of: add display helper" by,
+	Steffen Trumtrar <s.trumtrar@pengutronix.de>
+2. Series v2 "video: da8xx-fb: runtime timing configuration" by,
+	me (Afzal Mohammed <afzal@ti.com>)
+3. Series "video: da8xx-fb: DT support" by,
+	me (Afzal Mohammed <afzal@ti.com>)
+
+To test on AM335x, in addition to the above, following changes,
+1. Patch "da8xx: Allow use by am33xx based devices" by,
+	Pantelis Antoniou <panto@antoniou-consulting.com>
+3. Series "HWMOD fixes for AM33xx PWM submodules and device tree nodes" by,
+	Philip, Avinash <avinashphilip@ti.com>
+would be required
+
+A tree with all above for testing is available
+ @git://gitorious.org/x0148406-public/linux-kernel.git da8xx-fb-dt
+
+
+Regards
+Afzal
+
+Afzal Mohammed (5):
+  ARM: dts: AM33XX: Add lcdc node
+  ARM: dts: AM33XX: Add am335x-evm lcdc panel timings
+  ARM: dts: AM33XX: Add am335x-evm lcdc pincontrol info
+  ARM: dts: AM33XX: Add am335x-evmsk lcdc panel timings
+  ARM: dts: AM33XX: Add am335x-evmsk lcdc pincontrol info
+
+ arch/arm/boot/dts/am335x-evm.dts   |   55 +++++++++++++++++++++++++++++++++++-
+ arch/arm/boot/dts/am335x-evmsk.dts |   55 +++++++++++++++++++++++++++++++++++-
+ arch/arm/boot/dts/am33xx.dtsi      |    8 ++++++
+ 3 files changed, 116 insertions(+), 2 deletions(-)
+
 -- 
-1.7.2.5
-
+1.7.9.5
 

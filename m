@@ -1,48 +1,51 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 07 Jan 2013 05:13:30 +0000
-Subject: [PATCH v2 00/10] video: da8xx-fb: runtime timing configuration
-Message-Id: <cover.1357303978.git.afzal@ti.com>
+Date: Mon, 07 Jan 2013 05:17:24 +0000
+Subject: [PATCH v2 05/10] video: da8xx-fb: store current display information
+Message-Id: <9ebbc3ce648ee1afa72d52e0dacfcbae28272eb9.1357303978.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1357303978.git.afzal@ti.com>
+In-Reply-To: <cover.1357303978.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, nsekhar@ti.com, hvaibhav@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
 
-Hi,
+store current videomode and controller data so that reconfiguring can
+be done easily. Reconfiguring would be required in fb_set_par, which
+is going to be added soon.
 
-This series makes da8xx-fb driver (device found on DaVinci and AM335x)
-capable of handling runtime timing configuration by adding fb_set_par.
+If these details are not stored, the work probe does to retrieve these
+information would have to repeated at the place of reconfiguring and
+modifying platform data would be necessary to handle controller data
+changes like bpp.
 
-The last change adds actual fb_set_par support. Other preceeding
-changes makes the way clear for it as well as does certain cleanup's
-on the way.
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+---
+ drivers/video/da8xx-fb.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-This has been tested on da850 evm as is. This was also tested on
-am335x-evm & am335x-evmsk with a series that adds DT support which
-follows shortly.
-
-This is based on v3.8-rc2
-
-Regards
-Afzal
-
-v2: disable raster in fb_set_par properly
-
-Afzal Mohammed (10):
-  video: da8xx-fb: fb_check_var enhancement
-  video: da8xx-fb: simplify lcd_reset
-  video: da8xx-fb: use modedb helper to update var
-  video: da8xx-fb: remove unneeded "var" initialization
-  video: da8xx-fb: store current display information
-  video: da8xx-fb: store clk rate even if !CPUFREQ
-  video: da8xx-fb: pix clk and clk div handling cleanup
-  video: da8xx-fb: store struct device *
-  video: da8xx-fb: report correct pixclock
-  video: da8xx-fb: fb_set_par support
-
- drivers/video/da8xx-fb.c |  181 +++++++++++++++++++++++++++-------------------
- 1 file changed, 105 insertions(+), 76 deletions(-)
-
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 79862ff..072074d 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -182,6 +182,8 @@ struct da8xx_fb_par {
+ #endif
+ 	void (*panel_power_ctrl)(int);
+ 	u32 pseudo_palette[16];
++	struct fb_videomode	mode;
++	struct lcd_ctrl_config	cfg;
+ };
+ 
+ static struct fb_var_screeninfo da8xx_fb_var;
+@@ -1314,6 +1316,8 @@ static int __devinit fb_probe(struct platform_device *device)
+ 	}
+ 
+ 	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
++	fb_var_to_videomode(&par->mode, &da8xx_fb_var);
++	par->cfg = *lcd_cfg;
+ 
+ 	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
+ 		dev_err(&device->dev, "lcd_init failed\n");
 -- 
 1.7.9.5
 

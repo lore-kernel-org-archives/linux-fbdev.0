@@ -1,68 +1,76 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Tue, 15 Jan 2013 13:43:48 +0000
-Subject: [PATCH v3 03/10] video: da8xx-fb: use modedb helper to update var
-Message-Id: <2ff9421c1e608ee40f456d791c9746bed90efc0f.1358250489.git.afzal@ti.com>
+Date: Mon, 07 Jan 2013 05:22:02 +0000
+Subject: [PATCH 00/10] video: da8xx-fb: DT support
+Message-Id: <cover.1357304090.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358250489.git.afzal@ti.com>
-In-Reply-To: <cover.1358250489.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Sekhar Nori <nsekhar@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Rob Landley <rob-VoJi6FS/r0vR7s880joybQ@public.gmane.org>, Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Sekhar Nori <nsekhar-l0cyMroinI0@public.gmane.org>, Vaibhav Hiremath <hvaibhav-l0cyMroinI0@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-modedb structure is now used to store panel information, run modedb
-helper over it for initial update of "var" information instead of
-equating each fields.
+Hi,
 
-While at it, remove redundant update of bits_per_pixel.
+This series adds DT support to da8xx-fb driver (device found on
+DaVinci and AM335x SoC's). It does certain cleanup's in the process.
 
-Note: pixclock is overridden with proper value using an existing code
-as currently modedb is having it in Hz instead of ps, this would be
-fixed in a later change and this overide would be removed.
+This makes use of Steffen Trumtrar's v16 of display timing DT support.
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
----
- drivers/video/da8xx-fb.c |   18 ++----------------
- 1 file changed, 2 insertions(+), 16 deletions(-)
+Testing has been done on AM335x SoC based boards like AM335x EVM and
+AM335x EVM-SK. It has also been verified that display on DA850 EVM
+(non-DT boot) works as earlier.
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 52977b1..a1f6544 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -1329,6 +1329,8 @@ static int fb_probe(struct platform_device *device)
- 		par->panel_power_ctrl(1);
- 	}
- 
-+	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
-+
- 	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
- 		dev_err(&device->dev, "lcd_init failed\n");
- 		ret = -EFAULT;
-@@ -1381,25 +1383,9 @@ static int fb_probe(struct platform_device *device)
- 		goto err_release_pl_mem;
- 	}
- 
--	/* Initialize par */
--	da8xx_fb_info->var.bits_per_pixel = lcd_cfg->bpp;
--
--	da8xx_fb_var.xres = lcdc_info->xres;
--	da8xx_fb_var.xres_virtual = lcdc_info->xres;
--
--	da8xx_fb_var.yres         = lcdc_info->yres;
--	da8xx_fb_var.yres_virtual = lcdc_info->yres * LCD_NUM_BUFFERS;
--
- 	da8xx_fb_var.grayscale  	    lcd_cfg->panel_shade = MONOCHROME ? 1 : 0;
- 	da8xx_fb_var.bits_per_pixel = lcd_cfg->bpp;
--
--	da8xx_fb_var.hsync_len = lcdc_info->hsync_len;
--	da8xx_fb_var.vsync_len = lcdc_info->vsync_len;
--	da8xx_fb_var.right_margin = lcdc_info->right_margin;
--	da8xx_fb_var.left_margin  = lcdc_info->left_margin;
--	da8xx_fb_var.lower_margin = lcdc_info->lower_margin;
--	da8xx_fb_var.upper_margin = lcdc_info->upper_margin;
- 	da8xx_fb_var.pixclock = da8xxfb_pixel_clk_period(par);
- 
- 	/* Initialize fbinfo */
+Another series that adds DT nodes for AM335x SoC/board would follow
+this.
+
+This series is based on v3.8-rc2,
+ and is dependent on,
+1. Series v16 "of: add display helper" by,
+	Steffen Trumtrar <s.trumtrar@pengutronix.de>
+2. Patch "da8xx: Allow use by am33xx based devices" by,
+	Pantelis Antoniou <panto@antoniou-consulting.com>
+3. Series v2 "video: da8xx-fb: runtime timing configuration" by,
+	me (Afzal Mohammed <afzal@ti.com>)
+
+To test this series on AM335x based boards,
+1. Series "ARM: dts: AM33XX: lcdc support" by,
+	me (Afzal Mohammed <afzal@ti.com>),
+as well as,
+2. Series "HWMOD fixes for AM33xx PWM submodules and device tree nodes" by,
+	Philip, Avinash <avinashphilip@ti.com>
+would be needed.
+
+A tree with all above dependencies (and below mentioned hack) is available
+ @git://gitorious.org/x0148406-public/linux-kernel.git da8xx-fb-dt
+
+In the case of AM335x, in addition to this series, display PLL has to
+be locked to required frequency. Unless bootloader configures it
+properly, a hack would required in the Kernel. This is also present in
+the above mentioned branch of the tree. A solution in the Kernel
+is being worked upon and would be posted at the earliest.
+
+
+Regards
+Afzal
+
+Afzal Mohammed (9):
+  video: da8xx-fb: enable sync lost intr for v2 ip
+  video: da8xx-fb: use devres
+  video: da8xx-fb: ensure non-null cfg in pdata
+  video: da8xx-fb: reorganize panel detection
+  video: da8xx-fb: minimal dt support
+  video: da8xx-fb: invoke platform callback safely
+  video: da8xx-fb: obtain fb_videomode info from dt
+  video: da8xx-fb: ensure pdata only for non-dt
+  video: da8xx-fb: setup struct lcd_ctrl_config for dt
+
+Manjunathappa, Prakash (1):
+  video: da8xx-fb: fix 24bpp raster configuration
+
+ .../devicetree/bindings/video/fb-da8xx.txt         |   36 +++++
+ drivers/video/da8xx-fb.c                           |  145 +++++++++++++-------
+ 2 files changed, 132 insertions(+), 49 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/fb-da8xx.txt
+
 -- 
 1.7.9.5
 

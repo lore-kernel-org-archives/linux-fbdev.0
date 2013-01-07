@@ -1,43 +1,74 @@
-From: "Mohammed, Afzal" <afzal@ti.com>
-Date: Mon, 07 Jan 2013 08:46:41 +0000
-Subject: RE: [PATCHv16 5/7] fbmon: add of_videomode helpers
-Message-Id: <C8443D0743D26F4388EA172BF4E2A7A93EA7FBF7@DBDE01.ent.ti.com>
+From: Rob Clark <robdclark@gmail.com>
+Date: Mon, 07 Jan 2013 20:06:50 +0000
+Subject: Re: [PATCHv16 5/7] fbmon: add of_videomode helpers
+Message-Id: <CAF6AEGuuM9_n+A4q4tq+24i4YcW97orMN_RKbJ95gFie_qoktA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1355850256-16135-1-git-send-email-s.trumtrar@pengutronix.de>
- <1355850256-16135-6-git-send-email-s.trumtrar@pengutronix.de>
- <C8443D0743D26F4388EA172BF4E2A7A93EA7FB02@DBDE01.ent.ti.com>
- <20130107080648.GB23478@pengutronix.de>
-In-Reply-To: <20130107080648.GB23478-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+	<1355850256-16135-6-git-send-email-s.trumtrar@pengutronix.de>
+	<C8443D0743D26F4388EA172BF4E2A7A93EA7FB02@DBDE01.ent.ti.com>
+	<20130107080648.GB23478@pengutronix.de>
+	<C8443D0743D26F4388EA172BF4E2A7A93EA7FBF7@DBDE01.ent.ti.com>
+In-Reply-To: <C8443D0743D26F4388EA172BF4E2A7A93EA7FBF7@DBDE01.ent.ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org" <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Valkeinen, Tomi" <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, "kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org" <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, "linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: "Mohammed, Afzal" <afzal@ti.com>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, David Airlie <airlied@linux.ie>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
 
-SGkgU3RlZmZlbiwNCg0KT24gTW9uLCBKYW4gMDcsIDIwMTMgYXQgMTM6MzY6NDgsIFN0ZWZmZW4g
-VHJ1bXRyYXIgd3JvdGU6DQo+IE9uIE1vbiwgSmFuIDA3LCAyMDEzIGF0IDA2OjEwOjEzQU0gKzAw
-MDAsIE1vaGFtbWVkLCBBZnphbCB3cm90ZToNCg0KPiA+IFRoaXMgYnJlYWtzIERhVmluY2kgKGRh
-OHh4X29tYXBsX2RlZmNvbmZpZyksIGZvbGxvd2luZyBjaGFuZ2Ugd2FzDQo+ID4gcmVxdWlyZWQg
-dG8gZ2V0IGl0IGJ1aWxkIGlmIE9GX1ZJREVPTU9ERSBvci9hbmQgRkJfTU9ERV9IRUxQRVJTDQo+
-ID4gaXMgbm90IGRlZmluZWQuIFRoZXJlIG1heSBiZSBiZXR0ZXIgc29sdXRpb25zLCBmb2xsb3dp
-bmcgd2FzIHRoZQ0KPiA+IG9uZSB0aGF0IHdhcyB1c2VkIGJ5IG1lIHRvIHRlc3QgdGhpcyBzZXJp
-ZXMuDQoNCj4gSSBqdXN0IGRpZCBhIHF1aWNrICJtYWtlIGRhOHh4X29tYXBsX2RlZmNvbmZpZyAm
-JiBtYWtlIiBhbmQgaXQgYnVpbGRzIGp1c3QgZmluZS4NCj4gT24gd2hhdCB2ZXJzaW9uIGRpZCB5
-b3UgYXBwbHkgdGhlIHNlcmllcz8NCj4gQXQgdGhlIG1vbWVudCBJIGhhdmUgdGhlIHNlcmllcyBz
-aXR0aW5nIG9uIDMuNy4gRGlkbid0IHRyeSBhbnkgMy44LXJjeCB5ZXQuDQo+IEJ1dCBmaXhpbmcg
-dGhpcyBzaG91bGRuJ3QgYmUgYSBwcm9ibGVtLg0KDQpZb3UgYXJlIHJpZ2h0LCBtZSBpZGlvdCwg
-ZXJyb3Igd2lsbCBoYXBwZW4gb25seSB1cG9uIHRyeSB0byBtYWtlIHVzZSBvZg0Kb2ZfZ2V0X2Zi
-X3ZpZGVvbW9kZSgpIChkZWZpbmVkIGluIHRoaXMgcGF0Y2gpIGluIHRoZSBkYTh4eC1mYiBkcml2
-ZXINCih3aXRoIGRhOHh4X29tYXBsX2RlZmNvbmZpZyksIHRvIGJlIGV4YWN0IHVwb24gYWRkaW5n
-LA0KDQoidmlkZW86IGRhOHh4LWZiOiBvYnRhaW4gZmJfdmlkZW9tb2RlIGluZm8gZnJvbSBkdCIg
-b2YgbXkgcGF0Y2ggc2VyaWVzLg0KDQpUaGUgY2hhbmdlIGFzIEkgbWVudGlvbmVkIG9yIHNvbWV0
-aGluZyBzaW1pbGFyIHdvdWxkIGJlIHJlcXVpcmVkIGFzDQphbnkgZHJpdmVyIHRoYXQgaXMgZ29p
-bmcgdG8gbWFrZSB1c2Ugb2Ygb2ZfZ2V0X2ZiX3ZpZGVvbW9kZSgpIHdvdWxkDQpicmVhayBpZiBD
-T05GSUdfT0ZfVklERU9NT0RFIG9yIENPTkZJR19GQl9NT0RFX0hFTFBFUlMgaXMgbm90IGRlZmlu
-ZWQuDQoNCkFuZCB0ZXN0aW5nIHdhcyBkb25lIG92ZXIgdjMuOC1yYzIuDQoNCj4gPiA+ICsjaWYg
-SVNfRU5BQkxFRChDT05GSUdfT0ZfVklERU9NT0RFKQ0KPiA+IA0KPiA+IEFzIF9PRl9WSURFT01P
-REUgaXMgYSBib29sIHR5cGUgQ09ORklHLCBpc24ndCwNCj4gPiANCj4gPiAjaWZkZWYgQ09ORklH
-X09GX1ZJREVPTU9ERQ0KPiA+IA0KPiA+IHN1ZmZpY2llbnQgPw0KPiA+IA0KPiANCj4gWWVzLCB0
-aGF0IGlzIHJpZ2h0LiBCdXQgSSB0aGluayBJU19FTkFCTEVEIGlzIHRoZSBwcmVmZXJyZWQgd2F5
-IHRvIGRvIGl0LCBpc24ndCBpdD8NCg0KTm93IEkgcmVhbGl6ZSBpdCBpcy4NCg0KUmVnYXJkcw0K
-QWZ6YWwNCg=
+On Mon, Jan 7, 2013 at 2:46 AM, Mohammed, Afzal <afzal@ti.com> wrote:
+> Hi Steffen,
+>
+> On Mon, Jan 07, 2013 at 13:36:48, Steffen Trumtrar wrote:
+>> On Mon, Jan 07, 2013 at 06:10:13AM +0000, Mohammed, Afzal wrote:
+>
+>> > This breaks DaVinci (da8xx_omapl_defconfig), following change was
+>> > required to get it build if OF_VIDEOMODE or/and FB_MODE_HELPERS
+>> > is not defined. There may be better solutions, following was the
+>> > one that was used by me to test this series.
+>
+>> I just did a quick "make da8xx_omapl_defconfig && make" and it builds just fine.
+>> On what version did you apply the series?
+>> At the moment I have the series sitting on 3.7. Didn't try any 3.8-rcx yet.
+>> But fixing this shouldn't be a problem.
+>
+> You are right, me idiot, error will happen only upon try to make use of
+> of_get_fb_videomode() (defined in this patch) in the da8xx-fb driver
+> (with da8xx_omapl_defconfig), to be exact upon adding,
+>
+> "video: da8xx-fb: obtain fb_videomode info from dt" of my patch series.
+>
+> The change as I mentioned or something similar would be required as
+> any driver that is going to make use of of_get_fb_videomode() would
+> break if CONFIG_OF_VIDEOMODE or CONFIG_FB_MODE_HELPERS is not defined.
+
+Shouldn't the driver that depends on CONFIG_OF_VIDEOMODE and
+CONFIG_FB_MODE_HELPERS, explicitly select them?  I don't really see
+the point of having the static-inline fallbacks.
+
+fwiw, using 'select' is what I was doing for lcd panel support for
+lcdc/da8xx drm driver (which was using the of videomode helpers,
+albeit a slightly earlier version of the patches):
+
+https://github.com/robclark/kernel-omap4/commit/e2aef5f281348afaaaeaa132699efc2831aa8384
+
+BR,
+-R
+
+>
+> And testing was done over v3.8-rc2.
+>
+>> > > +#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
+>> >
+>> > As _OF_VIDEOMODE is a bool type CONFIG, isn't,
+>> >
+>> > #ifdef CONFIG_OF_VIDEOMODE
+>> >
+>> > sufficient ?
+>> >
+>>
+>> Yes, that is right. But I think IS_ENABLED is the preferred way to do it, isn't it?
+>
+> Now I realize it is.
+>
+> Regards
+> Afzal

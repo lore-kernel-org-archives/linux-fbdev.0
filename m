@@ -1,43 +1,85 @@
-From: "Mohammed, Afzal" <afzal@ti.com>
-Date: Mon, 07 Jan 2013 06:10:13 +0000
-Subject: RE: [PATCHv16 5/7] fbmon: add of_videomode helpers
-Message-Id: <C8443D0743D26F4388EA172BF4E2A7A93EA7FB02@DBDE01.ent.ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Mon, 07 Jan 2013 08:06:48 +0000
+Subject: Re: [PATCHv16 5/7] fbmon: add of_videomode helpers
+Message-Id: <20130107080648.GB23478@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1355850256-16135-1-git-send-email-s.trumtrar@pengutronix.de>
  <1355850256-16135-6-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1355850256-16135-6-git-send-email-s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+ <C8443D0743D26F4388EA172BF4E2A7A93EA7FB02@DBDE01.ent.ti.com>
+In-Reply-To: <C8443D0743D26F4388EA172BF4E2A7A93EA7FB02@DBDE01.ent.ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-Cc: "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, "dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org" <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Valkeinen, Tomi" <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, "kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org" <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, "linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: "Mohammed, Afzal" <afzal@ti.com>
+Cc: "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, David Airlie <airlied@linux.ie>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Rob Clark <robdclark@gmail.com>, "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
 
-SGkgU3RlZmZlbiwNCg0KT24gVHVlLCBEZWMgMTgsIDIwMTIgYXQgMjI6MzQ6MTQsIFN0ZWZmZW4g
-VHJ1bXRyYXIgd3JvdGU6DQo+IEFkZCBoZWxwZXIgdG8gZ2V0IGZiX3ZpZGVvbW9kZSBmcm9tIGRl
-dmljZXRyZWUuDQoNCj4gIGRyaXZlcnMvdmlkZW8vZmJtb24uYyB8ICAgNDIgKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+ICBpbmNsdWRlL2xpbnV4L2ZiLmggICAg
-fCAgICA0ICsrKysNCg0KVGhpcyBicmVha3MgRGFWaW5jaSAoZGE4eHhfb21hcGxfZGVmY29uZmln
-KSwgZm9sbG93aW5nIGNoYW5nZSB3YXMNCnJlcXVpcmVkIHRvIGdldCBpdCBidWlsZCBpZiBPRl9W
-SURFT01PREUgb3IvYW5kIEZCX01PREVfSEVMUEVSUw0KaXMgbm90IGRlZmluZWQuIFRoZXJlIG1h
-eSBiZSBiZXR0ZXIgc29sdXRpb25zLCBmb2xsb3dpbmcgd2FzIHRoZQ0Kb25lIHRoYXQgd2FzIHVz
-ZWQgYnkgbWUgdG8gdGVzdCB0aGlzIHNlcmllcy4NCg0KLS0tODwtLS0tLS0tLS0tDQoNCmRpZmYg
-LS1naXQgYS9pbmNsdWRlL2xpbnV4L2ZiLmggYi9pbmNsdWRlL2xpbnV4L2ZiLmgNCmluZGV4IDU4
-Yjk4NjAuLjBjZTMwZDEgMTAwNjQ0DQotLS0gYS9pbmNsdWRlL2xpbnV4L2ZiLmgNCisrKyBiL2lu
-Y2x1ZGUvbGludXgvZmIuaA0KQEAgLTcxNiw5ICs3MTYsMTkgQEAgZXh0ZXJuIHZvaWQgZmJfZGVz
-dHJveV9tb2RlZGIoc3RydWN0IGZiX3ZpZGVvbW9kZSAqbW9kZWRiKTsNCiBleHRlcm4gaW50IGZi
-X2ZpbmRfbW9kZV9jdnQoc3RydWN0IGZiX3ZpZGVvbW9kZSAqbW9kZSwgaW50IG1hcmdpbnMsIGlu
-dCByYik7DQogZXh0ZXJuIHVuc2lnbmVkIGNoYXIgKmZiX2RkY19yZWFkKHN0cnVjdCBpMmNfYWRh
-cHRlciAqYWRhcHRlcik7DQoNCisjaWYgZGVmaW5lZChDT05GSUdfT0ZfVklERU9NT0RFKSAmJiBk
-ZWZpbmVkKENPTkZJR19GQl9NT0RFX0hFTFBFUlMpDQogZXh0ZXJuIGludCBvZl9nZXRfZmJfdmlk
-ZW9tb2RlKHN0cnVjdCBkZXZpY2Vfbm9kZSAqbnAsDQogICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgc3RydWN0IGZiX3ZpZGVvbW9kZSAqZmIsDQogICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgaW50IGluZGV4KTsNCisjZWxzZQ0KK3N0YXRpYyBpbmxpbmUgaW50IG9mX2dldF9mYl92
-aWRlb21vZGUoc3RydWN0IGRldmljZV9ub2RlICpucCwNCisgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgc3RydWN0IGZiX3ZpZGVvbW9kZSAqZmIsDQorICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgIGludCBpbmRleCkNCit7DQorICAgICAgIHJldHVybiAtRUlO
-VkFMOw0KK30NCisjZW5kaWYNCisNCiBleHRlcm4gaW50IGZiX3ZpZGVvbW9kZV9mcm9tX3ZpZGVv
-bW9kZShjb25zdCBzdHJ1Y3QgdmlkZW9tb2RlICp2bSwNCiAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIHN0cnVjdCBmYl92aWRlb21vZGUgKmZibW9kZSk7DQoNCi0tLTg8LS0t
-LS0tLS0tLQ0KDQoNCj4gKyNpZiBJU19FTkFCTEVEKENPTkZJR19PRl9WSURFT01PREUpDQoNCkFz
-IF9PRl9WSURFT01PREUgaXMgYSBib29sIHR5cGUgQ09ORklHLCBpc24ndCwNCg0KI2lmZGVmIENP
-TkZJR19PRl9WSURFT01PREUNCg0Kc3VmZmljaWVudCA/DQoNClJlZ2FyZHMNCkFmemFsDQo
+Hi Afzal,
+
+On Mon, Jan 07, 2013 at 06:10:13AM +0000, Mohammed, Afzal wrote:
+> Hi Steffen,
+> 
+> On Tue, Dec 18, 2012 at 22:34:14, Steffen Trumtrar wrote:
+> > Add helper to get fb_videomode from devicetree.
+> 
+> >  drivers/video/fbmon.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+> >  include/linux/fb.h    |    4 ++++
+> 
+> This breaks DaVinci (da8xx_omapl_defconfig), following change was
+> required to get it build if OF_VIDEOMODE or/and FB_MODE_HELPERS
+> is not defined. There may be better solutions, following was the
+> one that was used by me to test this series.
+> 
+> ---8<----------
+> 
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index 58b9860..0ce30d1 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -716,9 +716,19 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+>  extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+>  extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
+> 
+> +#if defined(CONFIG_OF_VIDEOMODE) && defined(CONFIG_FB_MODE_HELPERS)
+>  extern int of_get_fb_videomode(struct device_node *np,
+>                                struct fb_videomode *fb,
+>                                int index);
+> +#else
+> +static inline int of_get_fb_videomode(struct device_node *np,
+> +                                     struct fb_videomode *fb,
+> +                                     int index)
+> +{
+> +       return -EINVAL;
+> +}
+> +#endif
+> +
+>  extern int fb_videomode_from_videomode(const struct videomode *vm,
+>                                        struct fb_videomode *fbmode);
+> 
+> ---8<----------
+> 
+
+I just did a quick "make da8xx_omapl_defconfig && make" and it builds just fine.
+On what version did you apply the series?
+At the moment I have the series sitting on 3.7. Didn't try any 3.8-rcx yet.
+But fixing this shouldn't be a problem.
+
+> 
+> > +#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
+> 
+> As _OF_VIDEOMODE is a bool type CONFIG, isn't,
+> 
+> #ifdef CONFIG_OF_VIDEOMODE
+> 
+> sufficient ?
+> 
+
+Yes, that is right. But I think IS_ENABLED is the preferred way to do it, isn't it?
+
+Regards,
+Steffen
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

@@ -1,37 +1,77 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Tue, 22 Jan 2013 16:54:43 +0000
-Subject: [PATCH v3 10/12] video: da8xx-fb: ensure pdata only for non-dt
-Message-Id: <4bd302e9c88c586323327eef990f354f994ea9c5.1358871750.git.afzal@ti.com>
+From: Zhou Zhu <zzhu84@gmail.com>
+Date: Tue, 08 Jan 2013 09:22:17 +0000
+Subject: Re: [PATCHv4 1/9] video: mmp display subsystem
+Message-Id: <CAJATT-4csvcGtK7QY89p1hV+VbY5h9m1-SuuoxuNQEmGiodyEA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358871750.git.afzal@ti.com>
-In-Reply-To: <cover.1358871750.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Mike Turquette <mturquette@linaro.org>
+To: linux-fbdev@vger.kernel.org
 
-This driver is DT probe-able, hence ensure presence of platform data
-only for non-DT boot.
+Hi, Greg,
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
----
- drivers/video/da8xx-fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+My patches have been there for several months and still have no
+response. Would you please help me to check?
+Thank you very much for your help!
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 0c68712..1c1a616 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -1303,7 +1303,7 @@ static int fb_probe(struct platform_device *device)
- 	int ret;
- 	unsigned long ulcm;
- 
--	if (fb_pdata = NULL) {
-+	if (fb_pdata = NULL && !device->dev.of_node) {
- 		dev_err(&device->dev, "Can not get platform data\n");
- 		return -ENOENT;
- 	}
+On Mon, Dec 17, 2012 at 7:47 AM, Haojian Zhuang
+<haojian.zhuang@gmail.com> wrote:
+> On Wed, Oct 24, 2012 at 2:56 PM, Zhou Zhu <zzhu3@marvell.com> wrote:
+>> Added mmp display subsystem to support Marvell MMP display controllers.
+>>
+>> This subsystem contains 4 parts:
+>> --fb folder
+>> --core.c
+>> --hw folder
+>> --panel folder
+>>
+>> 1. fb folder contains implementation of fb.
+>> fb get path and ovly from common interface and operates on these structures.
+>>
+>> 2. core.c provides common interface for a hardware abstraction.
+>> Major parts of this interface are:
+>> a) Path: path is a output device connected to a panel or HDMI TV.
+>> Main operations of the path is set/get timing/output color.
+>> fb operates output device through path structure.
+>> b) Ovly: Ovly is a buffer shown on the path.
+>> Ovly describes frame buffer and its source/destination size, offset, input
+>> color, buffer address, z-order, and so on.
+>> Each fb device maps to one ovly.
+>>
+>> 3. hw folder contains implementation of hardware operations defined by core.c.
+>> It registers paths for fb use.
+>>
+>> 4. panel folder contains implementation of panels.
+>> It's connected to path. Panel drivers would also regiester panels and linked
+>> to path when probe.
+>>
+>> Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
+>> Signed-off-by: Lisa Du <cldu@marvell.com>
+>> ---
+>>  drivers/video/Kconfig      |    1 +
+>>  drivers/video/Makefile     |    1 +
+>>  drivers/video/mmp/Kconfig  |    5 +
+>>  drivers/video/mmp/Makefile |    1 +
+>>  drivers/video/mmp/core.c   |  217 +++++++++++++++++++++++++++
+>>  include/video/mmp_disp.h   |  351 ++++++++++++++++++++++++++++++++++++++++++++
+>>  6 files changed, 576 insertions(+), 0 deletions(-)
+>>  create mode 100644 drivers/video/mmp/Kconfig
+>>  create mode 100644 drivers/video/mmp/Makefile
+>>  create mode 100644 drivers/video/mmp/core.c
+>>  create mode 100644 include/video/mmp_disp.h
+>>
+>
+> Hi Florian,
+>
+> This patch series have been sent for a long time. And there's no
+> comments on this.
+>
+> I need this patch series on enabling LCD on pxa910 platform. Do you
+> think it's OK to merge?
+>
+> Best Regards
+> Haojian
+
 -- 
-1.7.12
-
+Thanks,
+-Zhou

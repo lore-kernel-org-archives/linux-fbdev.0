@@ -1,74 +1,55 @@
-From: Rob Clark <robdclark@gmail.com>
-Date: Mon, 07 Jan 2013 20:06:50 +0000
-Subject: Re: [PATCHv16 5/7] fbmon: add of_videomode helpers
-Message-Id: <CAF6AEGuuM9_n+A4q4tq+24i4YcW97orMN_RKbJ95gFie_qoktA@mail.gmail.com>
+From: "Mohammed, Afzal" <afzal@ti.com>
+Date: Tue, 08 Jan 2013 05:31:16 +0000
+Subject: RE: [PATCHv16 5/7] fbmon: add of_videomode helpers
+Message-Id: <C8443D0743D26F4388EA172BF4E2A7A93EA80224@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1355850256-16135-1-git-send-email-s.trumtrar@pengutronix.de>
 	<1355850256-16135-6-git-send-email-s.trumtrar@pengutronix.de>
 	<C8443D0743D26F4388EA172BF4E2A7A93EA7FB02@DBDE01.ent.ti.com>
 	<20130107080648.GB23478@pengutronix.de>
 	<C8443D0743D26F4388EA172BF4E2A7A93EA7FBF7@DBDE01.ent.ti.com>
-In-Reply-To: <C8443D0743D26F4388EA172BF4E2A7A93EA7FBF7@DBDE01.ent.ti.com>
+ <CAF6AEGuuM9_n+A4q4tq+24i4YcW97orMN_RKbJ95gFie_qoktA@mail.gmail.com>
+In-Reply-To: <CAF6AEGuuM9_n+A4q4tq+24i4YcW97orMN_RKbJ95gFie_qoktA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Mohammed, Afzal" <afzal@ti.com>
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, David Airlie <airlied@linux.ie>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
+To: Rob Clark <robdclark@gmail.com>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, David Airlie <airlied@linux.ie>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>, "Nori, Sekhar" <nsekhar@ti.com>
 
-On Mon, Jan 7, 2013 at 2:46 AM, Mohammed, Afzal <afzal@ti.com> wrote:
-> Hi Steffen,
->
-> On Mon, Jan 07, 2013 at 13:36:48, Steffen Trumtrar wrote:
->> On Mon, Jan 07, 2013 at 06:10:13AM +0000, Mohammed, Afzal wrote:
->
->> > This breaks DaVinci (da8xx_omapl_defconfig), following change was
->> > required to get it build if OF_VIDEOMODE or/and FB_MODE_HELPERS
->> > is not defined. There may be better solutions, following was the
->> > one that was used by me to test this series.
->
->> I just did a quick "make da8xx_omapl_defconfig && make" and it builds just fine.
->> On what version did you apply the series?
->> At the moment I have the series sitting on 3.7. Didn't try any 3.8-rcx yet.
->> But fixing this shouldn't be a problem.
->
-> You are right, me idiot, error will happen only upon try to make use of
-> of_get_fb_videomode() (defined in this patch) in the da8xx-fb driver
-> (with da8xx_omapl_defconfig), to be exact upon adding,
->
-> "video: da8xx-fb: obtain fb_videomode info from dt" of my patch series.
->
-> The change as I mentioned or something similar would be required as
-> any driver that is going to make use of of_get_fb_videomode() would
-> break if CONFIG_OF_VIDEOMODE or CONFIG_FB_MODE_HELPERS is not defined.
-
-Shouldn't the driver that depends on CONFIG_OF_VIDEOMODE and
-CONFIG_FB_MODE_HELPERS, explicitly select them?  I don't really see
-the point of having the static-inline fallbacks.
-
-fwiw, using 'select' is what I was doing for lcd panel support for
-lcdc/da8xx drm driver (which was using the of videomode helpers,
-albeit a slightly earlier version of the patches):
-
-https://github.com/robclark/kernel-omap4/commit/e2aef5f281348afaaaeaa132699efc2831aa8384
-
-BR,
--R
-
->
-> And testing was done over v3.8-rc2.
->
->> > > +#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
->> >
->> > As _OF_VIDEOMODE is a bool type CONFIG, isn't,
->> >
->> > #ifdef CONFIG_OF_VIDEOMODE
->> >
->> > sufficient ?
->> >
->>
->> Yes, that is right. But I think IS_ENABLED is the preferred way to do it, isn't it?
->
-> Now I realize it is.
->
-> Regards
-> Afzal
+SGkgUm9iLA0KDQpPbiBUdWUsIEphbiAwOCwgMjAxMyBhdCAwMTozNjo1MCwgUm9iIENsYXJrIHdy
+b3RlOg0KPiBPbiBNb24sIEphbiA3LCAyMDEzIGF0IDI6NDYgQU0sIE1vaGFtbWVkLCBBZnphbCA8
+YWZ6YWxAdGkuY29tPiB3cm90ZToNCj4gPiBPbiBNb24sIEphbiAwNywgMjAxMyBhdCAxMzozNjo0
+OCwgU3RlZmZlbiBUcnVtdHJhciB3cm90ZToNCg0KPiA+PiBJIGp1c3QgZGlkIGEgcXVpY2sgIm1h
+a2UgZGE4eHhfb21hcGxfZGVmY29uZmlnICYmIG1ha2UiIGFuZCBpdCBidWlsZHMganVzdCBmaW5l
+Lg0KPiA+PiBPbiB3aGF0IHZlcnNpb24gZGlkIHlvdSBhcHBseSB0aGUgc2VyaWVzPw0KPiA+PiBB
+dCB0aGUgbW9tZW50IEkgaGF2ZSB0aGUgc2VyaWVzIHNpdHRpbmcgb24gMy43LiBEaWRuJ3QgdHJ5
+IGFueSAzLjgtcmN4IHlldC4NCj4gPj4gQnV0IGZpeGluZyB0aGlzIHNob3VsZG4ndCBiZSBhIHBy
+b2JsZW0uDQoNCj4gPiBUaGUgY2hhbmdlIGFzIEkgbWVudGlvbmVkIG9yIHNvbWV0aGluZyBzaW1p
+bGFyIHdvdWxkIGJlIHJlcXVpcmVkIGFzDQo+ID4gYW55IGRyaXZlciB0aGF0IGlzIGdvaW5nIHRv
+IG1ha2UgdXNlIG9mIG9mX2dldF9mYl92aWRlb21vZGUoKSB3b3VsZA0KPiA+IGJyZWFrIGlmIENP
+TkZJR19PRl9WSURFT01PREUgb3IgQ09ORklHX0ZCX01PREVfSEVMUEVSUyBpcyBub3QgZGVmaW5l
+ZC4NCg0KPiBTaG91bGRuJ3QgdGhlIGRyaXZlciB0aGF0IGRlcGVuZHMgb24gQ09ORklHX09GX1ZJ
+REVPTU9ERSBhbmQNCj4gQ09ORklHX0ZCX01PREVfSEVMUEVSUywgZXhwbGljaXRseSBzZWxlY3Qg
+dGhlbT8gIEkgZG9uJ3QgcmVhbGx5IHNlZQ0KPiB0aGUgcG9pbnQgb2YgaGF2aW5nIHRoZSBzdGF0
+aWMtaW5saW5lIGZhbGxiYWNrcy4NCg0KQnV0IGhlcmUgZGE4eHgtZmIgZHJpdmVyIGRvZXMgbm90
+IGRlcGVuZCBvbiBfT0ZfVklERU9NT0RFIGFuZA0KX0ZCX01PREVfSEVMUEVSUywgY3VycmVudGx5
+IGl0IHdvcmtzIGFzIGEgcHVyZSBwbGF0Zm9ybSBkcml2ZXINCmZvciBEYVZpbmNpIFNvQydzIHdp
+dGhvdXQgdGhvc2UgQ09ORklHJ3MuIEl0IGlzIG9ubHkgdXBvbg0KZW5oYW5jaW5nIHRoZSBkcml2
+ZXIgdG8gbWFrZSB1c2Ugb2Ygb2ZfZ2V0X2ZiX3ZpZGVvbW9kZSgpIGZvcg0KRFQgc3VwcG9ydCB0
+aG9zZSBDT05GSUcncyBhcmUgYmVpbmcgbWFkZSB1c2Ugb2YuDQoNCkFzIHRoZSBkcml2ZXIgY2Fu
+IHdvcmsgdy9vIHRoZXNlIENPTkZJRydzIGFuZCBzbyBhcyBpdCBpcyBub3QgYQ0KZGVwZW5kZW5j
+eSBmb3IgZHJpdmVyIG9uIG5vbi1EVCBib290IChhcyBpbiB0aGUgY2FzZSBvZiBEYVZpbmNpKSwN
+CkkgZGlzYWdyZWUgaW4gc2VsZWN0aW5nIHRob3NlIG9wdGlvbnMgYWx3YXlzLCBidXQgcmF0aGVy
+IGdpdmluZw0KdXNlciBhbiBvcHRpb24gdG8gc2VsZWN0Lg0KDQpBbmQgc2VsZWN0aW5nIHRoZXNl
+IG9wdGlvbnMgYWx3YXlzIHdpbGwgYnJpbmcgaW4gc29tZSBhbW91bnQgb2YgY29kZQ0Kb250byBL
+ZXJuZWwgaW1hZ2Ugdy9vIGFueSBwdXJwb3NlIGluIHRoZSBjYXNlIG9mIERhVmluY2kgYnVpbGRz
+Lg0KDQpBbm90aGVyIG9wdGlvbiB3b3VsZCBiZSB0byBzcHJpbmtsZSBkcml2ZXIgd2l0aCBpZmRl
+ZidzIHRvIGF2b2lkDQppbmxpbmUgZmFsbGJhY2tzLCB3aGljaCBpcyBub3QgYSBnb29kIHRoaW5n
+IHRvIGRvLg0KDQpNb3Jlb3ZlciBoYXZpbmcgYSBzdGF0aWMgaW5saW5lIGZhbGxiYWNrIGlzIG1v
+cmUgaW4gbGluZSB3aXRoIG90aGVyDQpvZl8qJ3MuDQoNCj4gZndpdywgdXNpbmcgJ3NlbGVjdCcg
+aXMgd2hhdCBJIHdhcyBkb2luZyBmb3IgbGNkIHBhbmVsIHN1cHBvcnQgZm9yDQo+IGxjZGMvZGE4
+eHggZHJtIGRyaXZlciAod2hpY2ggd2FzIHVzaW5nIHRoZSBvZiB2aWRlb21vZGUgaGVscGVycywN
+Cj4gYWxiZWl0IGEgc2xpZ2h0bHkgZWFybGllciB2ZXJzaW9uIG9mIHRoZSBwYXRjaGVzKToNCg0K
+SW4geW91ciBjYXNlIGFzIGl0IGlzIGEgbmV3IGRyaXZlciAmIGlzIG1lYW50IG9ubHkgZm9yIERU
+LCB0aGF0DQppcyBmaW5lLCBidXQgaGVyZSBpdCBpcyBhbiBleGlzdGluZyBkcml2ZXIgdGhhdCB3
+b3JrcyB3L28gdGhlc2UuDQoNClJlZ2FyZHMNCkFmemFsDQoNCg=

@@ -1,53 +1,64 @@
-From: Alexandre Courbot <acourbot@nvidia.com>
-Date: Sat, 19 Jan 2013 10:30:20 +0000
-Subject: [PATCH 3/3] tegra: ventana: of: add host1x device to DT
-Message-Id: <1358591420-7790-4-git-send-email-acourbot@nvidia.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Tue, 08 Jan 2013 09:31:39 +0000
+Subject: [PATCH 1/2] backlight: ld9040: Use devm_regulator_bulk_get API
+Message-Id: <1357636780-14783-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1358591420-7790-1-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1358591420-7790-1-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+To: linux-fbdev@vger.kernel.org
 
-Add the host1x device and DDC i2c bus to enable internal panel on
-Ventana.
+devm_regulator_bulk_get is device managed and saves some cleanup
+and exit code.
 
-Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Donghwa Lee <dh09.lee@samsung.com>
 ---
- arch/arm/boot/dts/tegra20-ventana.dts | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ drivers/video/backlight/ld9040.c |   11 +++--------
+ 1 files changed, 3 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm/boot/dts/tegra20-ventana.dts b/arch/arm/boot/dts/tegra20-ventana.dts
-index a77b529..4477e9c 100644
---- a/arch/arm/boot/dts/tegra20-ventana.dts
-+++ b/arch/arm/boot/dts/tegra20-ventana.dts
-@@ -10,6 +10,15 @@
- 		reg = <0x00000000 0x40000000>;
- 	};
+diff --git a/drivers/video/backlight/ld9040.c b/drivers/video/backlight/ld9040.c
+index 24f2c9a..1b642f5 100644
+--- a/drivers/video/backlight/ld9040.c
++++ b/drivers/video/backlight/ld9040.c
+@@ -710,17 +710,15 @@ static int ld9040_probe(struct spi_device *spi)
  
-+	host1x {
-+		dc@54200000 {
-+			rgb {
-+				status = "okay";
-+				nvidia,ddc-i2c-bus = <&lcd_ddc>;
-+			};
-+		};
-+	};
-+
- 	pinmux {
- 		pinctrl-names = "default";
- 		pinctrl-0 = <&state_default>;
-@@ -341,7 +350,7 @@
- 			#size-cells = <0>;
- 		};
+ 	mutex_init(&lcd->lock);
  
--		i2c@1 {
-+		lcd_ddc: i2c@1 {
- 			reg = <1>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
+-	ret = regulator_bulk_get(lcd->dev, ARRAY_SIZE(supplies), supplies);
++	ret = devm_regulator_bulk_get(lcd->dev, ARRAY_SIZE(supplies), supplies);
+ 	if (ret) {
+ 		dev_err(lcd->dev, "Failed to get regulators: %d\n", ret);
+ 		return ret;
+ 	}
+ 
+ 	ld = lcd_device_register("ld9040", &spi->dev, lcd, &ld9040_lcd_ops);
+-	if (IS_ERR(ld)) {
+-		ret = PTR_ERR(ld);
+-		goto out_free_regulator;
+-	}
++	if (IS_ERR(ld))
++		return PTR_ERR(ld);
+ 
+ 	lcd->ld = ld;
+ 
+@@ -762,8 +760,6 @@ static int ld9040_probe(struct spi_device *spi)
+ 
+ out_unregister_lcd:
+ 	lcd_device_unregister(lcd->ld);
+-out_free_regulator:
+-	regulator_bulk_free(ARRAY_SIZE(supplies), supplies);
+ 
+ 	return ret;
+ }
+@@ -775,7 +771,6 @@ static int ld9040_remove(struct spi_device *spi)
+ 	ld9040_power(lcd, FB_BLANK_POWERDOWN);
+ 	backlight_device_unregister(lcd->bd);
+ 	lcd_device_unregister(lcd->ld);
+-	regulator_bulk_free(ARRAY_SIZE(supplies), supplies);
+ 
+ 	return 0;
+ }
 -- 
-1.8.1.1
+1.7.4.1
 

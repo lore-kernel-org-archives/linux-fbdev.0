@@ -1,38 +1,41 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Thu, 17 Jan 2013 04:16:33 +0000
-Subject: Re: 3.8-rc2 lockdep complains about console_lock vs. fb_notifier_list.rwsem
-Message-Id: <20130117041633.GA21551@kroah.com>
+From: Alexander Holler <holler@ahsoftware.de>
+Date: Sat, 12 Jan 2013 13:20:22 +0000
+Subject: [PATCH] fb: udlfb: fix hang at disconnect
+Message-Id: <1357996822-13072-1-git-send-email-holler@ahsoftware.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CA+icZUUxgRsGkYAmZ=JxTwPvdhTzpGLcxm6+VSq9jnfYPVXj4Q@mail.gmail.com>
- <s5hpq16zfox.wl%tiwai@suse.de>
- <CA+icZUWFKzccbHrU0pxK-T2TdwyDsTTNxP_22zmGTPbcAmhMaQ@mail.gmail.com>
- <s5hpq1531yn.wl%tiwai@suse.de>
- <20130117024246.GF20928@kroah.com>
- <20130116195416.c2d9a107.akpm@linux-foundation.org>
-In-Reply-To: <20130116195416.c2d9a107.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Takashi Iwai <tiwai@suse.de>, sedat.dilek@gmail.com, Jiri Kosina <jkosina@suse.cz>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>, Jiri Slaby <jslaby@suse.cz>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Bernie Thompson <bernie@plugable.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Steve Glendinning <steve.glendinning@shawell.net>, Dave Airlie <airlied@redhat.com>, Alexander Holler <holler@ahsoftware.de>, stable@vger.kernel.org
 
-On Wed, Jan 16, 2013 at 07:54:16PM -0800, Andrew Morton wrote:
-> On Wed, 16 Jan 2013 18:42:46 -0800 Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
-> 
-> > > FWIW, Andrew took my patch in mm:
-> > >   http://ozlabs.org/~akpm/mmots/broken-out/fb-rework-locking-to-fix-lock-ordering-on-takeover.patch
-> > >   http://ozlabs.org/~akpm/mmots/broken-out/fb-yet-another-band-aid-for-fixing-lockdep-mess.patch
-> > 
-> > 
-> > Ok, so, which one should I take for 3.8?  And ideally the fb maintainer
-> > should do this, not I, right?
-> 
-> Please see http://www.spinics.net/lists/linux-fbdev/msg08954.html
-> 
-> Tomi might be able to review the above for us.  I think we need both. 
-> If nothing else happens I intend to send both Linuswards for 3.8 in a
-> week or two.
+When a device was disconnected the driver may hang at waiting for urbs it never
+will get. Fix this by using a timeout while waiting for the used semaphore.
 
-Ok, that sounds fine with me, thanks for doing that.
+There is still a memory leak if a timeout happens, but at least the driver
+now continues his disconnect routine.
 
-greg k-h
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Alexander Holler <holler@ahsoftware.de>
+---
+ drivers/video/udlfb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
+index 86d449e..cc4a8d1 100644
+--- a/drivers/video/udlfb.c
++++ b/drivers/video/udlfb.c
+@@ -1832,8 +1832,8 @@ static void dlfb_free_urb_list(struct dlfb_data *dev)
+ 	/* keep waiting and freeing, until we've got 'em all */
+ 	while (count--) {
+ 
+-		/* Getting interrupted means a leak, but ok at disconnect */
+-		ret = down_interruptible(&dev->urbs.limit_sem);
++		/* Timeout likely occurs at disconnect (resulting in a leak) */
++		ret = down_timeout(&dev->urbs.limit_sem, GET_URB_TIMEOUT);
+ 		if (ret)
+ 			break;
+ 
+-- 
+1.7.11.7
+

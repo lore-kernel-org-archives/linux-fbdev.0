@@ -1,55 +1,75 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Wed, 30 Jan 2013 07:58:36 +0000
-Subject: Re: [PATCH] pwm-backlight: handle BL_CORE_FBBLANK state
-Message-Id: <20130130075835.GA13543@avionic-0098.mockup.avionic-design.de>
+From: Sedat Dilek <sedat.dilek@gmail.com>
+Date: Sun, 13 Jan 2013 15:14:38 +0000
+Subject: fb: Rework locking to fix lock ordering on takeover
+Message-Id: <CA+icZUVJ5hbPJvV4LMFGgD3Sto5=EV=MO9nutYdJwkiRrmpNJQ@mail.gmail.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="T4sUOijqQbZv57TR"
+Content-Type: multipart/mixed; boundary="bcaec51b16d5b9da9504d32cfccb"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359526755-21145-1-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1359526755-21145-1-git-send-email-acourbot@nvidia.com>
-To: Alexandre Courbot <acourbot@nvidia.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, gnurou@gmail.com
+To: Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
+--bcaec51b16d5b9da9504d32cfccb
+Content-Type: text/plain; charset=UTF-8
 
---T4sUOijqQbZv57TR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Andrew,
 
-On Wed, Jan 30, 2013 at 03:19:15PM +0900, Alexandre Courbot wrote:
-> According to include/linux/backlight.h, the fb_blank field is to be
-> removed and blank status should preferably be set by setting the
-> BL_CORE_FBBLANK bit of the state field. This patch ensures this
-> condition is also taken into account when updating the backlight state.
->=20
-> Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
-> ---
->  drivers/video/backlight/pwm_bl.c | 7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
+your patch from [1] - as far as I followed - misses a lot of
+Reported-by#s and Tested-by#s (Boris, Jiri, etc.).
+Just one new R-b I have seen yesterday.
 
-Applied, thanks.
+I have the original patch from Alan plus the two follow-ups from you
+in my patch-series against v3.8-{rc2,rc3} for quite a while.
+So, please feel free to add a Tested-by.
 
-Thierry
+Unfortunately, your patch has introduced some (unwanted) extra chars
+like "_*" (comments only).
+I appreciate one single (new) patch like this, but please in a proper way.
 
---T4sUOijqQbZv57TR
-Content-Type: application/pgp-signature
+A disappeared/busy/not-answering maintainer is not an excuse for
+handling serious regressions (even here in this case there are fixes
+around),
+Personally, I am still missing a mei-driver fix [2] and a libata-dev fix [3].
+Both issues are not new to the maintainers.
+Not sure if shouting louder is the best strategy here.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+It would be great to have a place like a "board of arbitration" where
+someone can send blames.
+And I remember vaguely Rafael had a nice list of issues (w/ reference
+to patches!).
+This was a real cool helpful innoivation!
+I can't remember why Rafael stopped his nice service to the
+Linux-kernel community.
 
-iQIcBAEBAgAGBQJRCNKrAAoJEN0jrNd/PrOhSOkQAKDVZHTAUGff58w9kY4q4fm7
-VXs1MT1VQ/nNYYmlPwtjM7fGVph/hbfqSdskvUw49mNlHEwP9XCP94A52Bjm1tSF
-0+YAJQspME5AGlx7RROqFu967P9T34UBqGk0YlcXw0B+AH1hc6cpfo18xTZbMpCv
-r97O6QkO968ps9agcrUk0Ohm7nH5OMt8a/IXLjUmq7MU/cN6UDGengQlmYT4znvz
-+GfbXnHC3OL+N6n9i8PXZtjTfd11+dQmWzhTbw9g0E+uVHjVBpBJypDKs9vG1YaR
-WB0xTlLU1w2sBOADghF8WMh8SZE6TIQPAygXdOxtAjo3MrTf5fj8VkwXOaIILFAt
-+pneJiGavmJSRVRf1xedHBxgkfeHB/nFeIYkpuWGQhxlc0Gv09kZw2oTSy1FKXht
-DYFtGP/MZCPg6aUfap5loLNTigK72RVzFXoEN0ImdOg/27VYTUbvCbKfPp53ZRWr
-7rhcP4XIhB2AkhY9iwFxx8vY3pJKVSHPEYkYpNeo0/Km5S3zvn8Vb++4fx8Ey/Km
-5jJOTuidQYNUT8tD8AYoEfyx+RIvy6Ox4fDkhw2qUbFInceE32noum+V7VcUMR/8
-PWQFh3WY+iZwyuktCmM9pwAd4vH7C70oykir0SLhNH2IzAT2A3fOZCyzyAsCj66x
-gpmt+IMHwq3qYm17cr3W
-=kVbD
------END PGP SIGNATURE-----
+Have fun!
 
---T4sUOijqQbZv57TR--
+Regards,
+- Sedat -
+
+[1] https://patchwork.kernel.org/patch/1969391/
+[2] http://git.kernel.org/?p=linux/kernel/git/gregkh/char-misc.git;a=commitdiff;h=e6028db0146cf5a68dbd1508225ea49840997880
+[3] http://patchwork.ozlabs.org/patch/206897/
+
+--bcaec51b16d5b9da9504d32cfccb
+Content-Type: application/octet-stream; 
+	name="fb-Rework-locking-to-fix-lock-ordering-on-takeover-fix-comments.patch"
+Content-Disposition: attachment; 
+	filename="fb-Rework-locking-to-fix-lock-ordering-on-takeover-fix-comments.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hbwbm6np0
+
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdHR5L3Z0L3Z0LmMgYi9kcml2ZXJzL3R0eS92dC92dC5jCmlu
+ZGV4IDM0N2JlZDAuLjFkYjFjOGQgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvdHR5L3Z0L3Z0LmMKKysr
+IGIvZHJpdmVycy90dHkvdnQvdnQuYwpAQCAtMzY1Myw3ICszNjUzLDcgQEAgaW50IGRvX3Rha2Vf
+b3Zlcl9jb25zb2xlKGNvbnN0IHN0cnVjdCBjb25zdyAqY3N3LCBpbnQgZmlyc3QsIGludCBsYXN0
+LCBpbnQgZGVmbHQKIAkvKgogCSAqIElmIHdlIGdldCBhbiBidXN5IGVycm9yIHdlIHN0aWxsIHdh
+bnQgdG8gYmluZCB0aGUgY29uc29sZSBkcml2ZXIKIAkgKiBhbmQgcmV0dXJuIHN1Y2Nlc3MsIGFz
+IHdlIG1heSBoYXZlIHVuYm91bmQgdGhlIGNvbnNvbGUgZHJpdmVyCi0JXyogYnV0IG5vdCB1bnJl
+Z2lzdGVyZWQgaXQuCisJICogYnV0IG5vdCB1bnJlZ2lzdGVyZWQgaXQuCiAJICovCiAJaWYgKGVy
+ciA9PSAtRUJVU1kpCiAJCWVyciA9IDA7CkBAIC0zNjc5LDcgKzM2NzksNyBAQCBpbnQgdGFrZV9v
+dmVyX2NvbnNvbGUoY29uc3Qgc3RydWN0IGNvbnN3ICpjc3csIGludCBmaXJzdCwgaW50IGxhc3Qs
+IGludCBkZWZsdCkKIAkvKgogCSAqIElmIHdlIGdldCBhbiBidXN5IGVycm9yIHdlIHN0aWxsIHdh
+bnQgdG8gYmluZCB0aGUgY29uc29sZSBkcml2ZXIKIAkgKiBhbmQgcmV0dXJuIHN1Y2Nlc3MsIGFz
+IHdlIG1heSBoYXZlIHVuYm91bmQgdGhlIGNvbnNvbGUgZHJpdmVyCi0JXyogYnV0IG5vdCB1bnJl
+Z2lzdGVyZWQgaXQuCisJICogYnV0IG5vdCB1bnJlZ2lzdGVyZWQgaXQuCiAJICovCiAJaWYgKGVy
+ciA9PSAtRUJVU1kpCiAJCWVyciA9IDA7Cg==
+--bcaec51b16d5b9da9504d32cfccb--

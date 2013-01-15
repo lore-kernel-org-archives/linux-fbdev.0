@@ -1,71 +1,78 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Tue, 22 Jan 2013 13:39:55 +0000
-Subject: [PATCH 3/4] pwm_backlight: Refactor the DT parsing code
-Message-Id: <1358861996-27194-4-git-send-email-peter.ujfalusi@ti.com>
+From: Afzal Mohammed <afzal@ti.com>
+Date: Tue, 15 Jan 2013 13:50:47 +0000
+Subject: [PATCH v2 5/5] ARM: dts: AM33XX: Add am335x-evmsk lcdc pincontrol info
+Message-Id: <b107ecb6ed8a1cb8650cf771499bf011b0d3074e.1358252955.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1358861996-27194-1-git-send-email-peter.ujfalusi@ti.com>
-In-Reply-To: <1358861996-27194-1-git-send-email-peter.ujfalusi-l0cyMroinI0@public.gmane.org>
+References: <cover.1358252955.git.afzal@ti.com>
+In-Reply-To: <cover.1358252955.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
+To: linux-arm-kernel@lists.infradead.org
 
-In preparation to support the whole range of the PWM device in a similar way
-it is possible when we boot in legacy mode (non DT mode).
+Update pin mux information for lcd panel on AM335X-EVMSK.
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/backlight/pwm_bl.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 2a81c24..df2d115 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -100,7 +100,7 @@ static int pwm_backlight_parse_dt(struct device *dev,
- {
- 	struct device_node *node = dev->of_node;
- 	struct property *prop;
--	int length;
-+	int num_levels = 0;
- 	u32 value;
- 	int ret;
+v2: add comment on pinmux entries
+
+ arch/arm/boot/dts/am335x-evmsk.dts |   35 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 34 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/am335x-evmsk.dts b/arch/arm/boot/dts/am335x-evmsk.dts
+index a7e017b..24dde1d 100644
+--- a/arch/arm/boot/dts/am335x-evmsk.dts
++++ b/arch/arm/boot/dts/am335x-evmsk.dts
+@@ -32,7 +32,7 @@
  
-@@ -110,26 +110,27 @@ static int pwm_backlight_parse_dt(struct device *dev,
- 	memset(data, 0, sizeof(*data));
+ 	am33xx_pinmux: pinmux@44e10800 {
+ 		pinctrl-names = "default";
+-		pinctrl-0 = <&user_leds_s0 &gpio_keys_s0>;
++		pinctrl-0 = <&user_leds_s0 &gpio_keys_s0 &lcd_pins_s0>;
  
- 	/* determine the number of brightness levels */
--	prop = of_find_property(node, "brightness-levels", &length);
-+	prop = of_find_property(node, "brightness-levels", &num_levels);
- 	if (!prop)
- 		return -EINVAL;
- 
--	data->max_brightness = length / sizeof(u32);
-+	num_levels /= sizeof(u32);
- 
- 	/* read brightness levels from DT property */
--	if (data->max_brightness > 0) {
--		size_t size = sizeof(*data->levels) * data->max_brightness;
-+	if (num_levels > 0) {
-+		size_t size = sizeof(*data->levels) * num_levels;
- 
- 		data->levels = devm_kzalloc(dev, size, GFP_KERNEL);
- 		if (!data->levels)
- 			return -ENOMEM;
- 
- 		ret = of_property_read_u32_array(node, "brightness-levels",
--						 data->levels,
--						 data->max_brightness);
-+						 data->levels, num_levels);
- 		if (ret < 0)
- 			return ret;
- 
-+		data->max_brightness = num_levels;
+ 		user_leds_s0: user_leds_s0 {
+ 			pinctrl-single,pins = <
+@@ -51,6 +51,39 @@
+ 				0x9c 0x27	/* gpmc_ben0_cle.gpio2_5, INPUT | MODE7 */
+ 			>;
+ 		};
 +
- 		ret = of_property_read_u32(node, "default-brightness-level",
- 					   &value);
- 		if (ret < 0)
++		lcd_pins_s0: lcd_pins_s0 {
++			pinctrl-single,pins = <
++				0x20 0x01	/* gpmc_ad8.lcd_data16, OUTPUT | MODE1 */
++				0x24 0x01	/* gpmc_ad9.lcd_data17, OUTPUT | MODE1 */
++				0x28 0x01	/* gpmc_ad10.lcd_data18, OUTPUT | MODE1 */
++				0x2c 0x01	/* gpmc_ad11.lcd_data19, OUTPUT | MODE1 */
++				0x30 0x01	/* gpmc_ad12.lcd_data20, OUTPUT | MODE1 */
++				0x34 0x01	/* gpmc_ad13.lcd_data21, OUTPUT | MODE1 */
++				0x38 0x01	/* gpmc_ad14.lcd_data22, OUTPUT | MODE1 */
++				0x3c 0x01	/* gpmc_ad15.lcd_data23, OUTPUT | MODE1 */
++				0xa0 0x00	/* lcd_data0.lcd_data0, OUTPUT | MODE0 */
++				0xa4 0x00	/* lcd_data1.lcd_data1, OUTPUT | MODE0 */
++				0xa8 0x00	/* lcd_data2.lcd_data2, OUTPUT | MODE0 */
++				0xac 0x00	/* lcd_data3.lcd_data3, OUTPUT | MODE0 */
++				0xb0 0x00	/* lcd_data4.lcd_data4, OUTPUT | MODE0 */
++				0xb4 0x00	/* lcd_data5.lcd_data5, OUTPUT | MODE0 */
++				0xb8 0x00	/* lcd_data6.lcd_data6, OUTPUT | MODE0 */
++				0xbc 0x00	/* lcd_data7.lcd_data7, OUTPUT | MODE0 */
++				0xc0 0x00	/* lcd_data8.lcd_data8, OUTPUT | MODE0 */
++				0xc4 0x00	/* lcd_data9.lcd_data9, OUTPUT | MODE0 */
++				0xc8 0x00	/* lcd_data10.lcd_data10, OUTPUT | MODE0 */
++				0xcc 0x00	/* lcd_data11.lcd_data11, OUTPUT | MODE0 */
++				0xd0 0x00	/* lcd_data12.lcd_data12, OUTPUT | MODE0 */
++				0xd4 0x00	/* lcd_data13.lcd_data13, OUTPUT | MODE0 */
++				0xd8 0x00	/* lcd_data14.lcd_data14, OUTPUT | MODE0 */
++				0xdc 0x00	/* lcd_data15.lcd_data15, OUTPUT | MODE0 */
++				0xe0 0x00	/* lcd_vsync.lcd_vsync, OUTPUT | MODE0 */
++				0xe4 0x00	/* lcd_hsync.lcd_hsync, OUTPUT | MODE0 */
++				0xe8 0x00	/* lcd_pclk.lcd_pclk, OUTPUT | MODE0 */
++				0xec 0x00	/* lcd_ac_bias_en.lcd_ac_bias_en, OUTPUT | MODE0 */
++			>;
++		};
+ 	};
+ 
+ 	ocp {
 -- 
-1.8.1.1
+1.7.9.5
 

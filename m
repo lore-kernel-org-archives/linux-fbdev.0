@@ -1,45 +1,38 @@
-From: Alexander Holler <holler@ahsoftware.de>
-Date: Fri, 25 Jan 2013 18:49:28 +0000
-Subject: [PATCH 3/3] fb: smscufx: fix hang at disconnect
-Message-Id: <1359139768-32294-3-git-send-email-holler@ahsoftware.de>
+From: Afzal Mohammed <afzal@ti.com>
+Date: Tue, 15 Jan 2013 13:54:28 +0000
+Subject: [PATCH v2 05/12] video: da8xx-fb: ensure non-null cfg in pdata
+Message-Id: <ab0823c900a07d8d7644655aaf00185ed37856ba.1358251447.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <50F2A310.5010006@ahsoftware.de>
- <1359139768-32294-1-git-send-email-holler@ahsoftware.de>
-In-Reply-To: <1359139768-32294-1-git-send-email-holler@ahsoftware.de>
+References: <cover.1358251447.git.afzal@ti.com>
+In-Reply-To: <cover.1358251447.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Bernie Thompson <bernie@plugable.com>, Steve Glendinning <steve.glendinning@shawell.net>, Alexander Holler <holler@ahsoftware.de>, stable@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Sekhar Nori <nsekhar@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-When a device was disconnected the driver may hang at waiting for urbs it never
-will get. Fix this by using a timeout while waiting for the used semaphore.
+Ensure that platform data contains pointer for lcd_ctrl_config.
 
-There is still a memory leak if a timeout happens, but at least the driver
-now continues his disconnect routine.
-
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Alexander Holler <holler@ahsoftware.de>
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/smscufx.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/video/da8xx-fb.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/video/smscufx.c b/drivers/video/smscufx.c
-index 97bd662..f26fa4f 100644
---- a/drivers/video/smscufx.c
-+++ b/drivers/video/smscufx.c
-@@ -1838,8 +1838,9 @@ static void ufx_free_urb_list(struct ufx_data *dev)
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 7a32e83..3b146bc 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1320,6 +1320,11 @@ static int fb_probe(struct platform_device *device)
  
- 	/* keep waiting and freeing, until we've got 'em all */
- 	while (count--) {
--		/* Getting interrupted means a leak, but ok at shutdown*/
--		ret = down_interruptible(&dev->urbs.limit_sem);
-+		/* Timeout likely occurs at disconnect (resulting in a leak) */
-+		ret = down_timeout_killable(&dev->urbs.limit_sem,
-+						FREE_URB_TIMEOUT);
- 		if (ret)
- 			break;
+ 	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
  
++	if (!lcd_cfg) {
++		ret = -EINVAL;
++		goto err_pm_runtime_disable;
++	}
++
+ 	da8xx_fb_info = framebuffer_alloc(sizeof(struct da8xx_fb_par),
+ 					&device->dev);
+ 	if (!da8xx_fb_info) {
 -- 
-1.7.11.7
+1.7.9.5
 

@@ -1,51 +1,68 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 07 Jan 2013 05:17:24 +0000
-Subject: [PATCH v2 05/10] video: da8xx-fb: store current display information
-Message-Id: <9ebbc3ce648ee1afa72d52e0dacfcbae28272eb9.1357303978.git.afzal@ti.com>
+Date: Tue, 15 Jan 2013 13:43:48 +0000
+Subject: [PATCH v3 03/10] video: da8xx-fb: use modedb helper to update var
+Message-Id: <2ff9421c1e608ee40f456d791c9746bed90efc0f.1358250489.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1357303978.git.afzal@ti.com>
-In-Reply-To: <cover.1357303978.git.afzal@ti.com>
+References: <cover.1358250489.git.afzal@ti.com>
+In-Reply-To: <cover.1358250489.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, nsekhar@ti.com, hvaibhav@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Sekhar Nori <nsekhar@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-store current videomode and controller data so that reconfiguring can
-be done easily. Reconfiguring would be required in fb_set_par, which
-is going to be added soon.
+modedb structure is now used to store panel information, run modedb
+helper over it for initial update of "var" information instead of
+equating each fields.
 
-If these details are not stored, the work probe does to retrieve these
-information would have to repeated at the place of reconfiguring and
-modifying platform data would be necessary to handle controller data
-changes like bpp.
+While at it, remove redundant update of bits_per_pixel.
+
+Note: pixclock is overridden with proper value using an existing code
+as currently modedb is having it in Hz instead of ps, this would be
+fixed in a later change and this overide would be removed.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/da8xx-fb.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/video/da8xx-fb.c |   18 ++----------------
+ 1 file changed, 2 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 79862ff..072074d 100644
+index 52977b1..a1f6544 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -182,6 +182,8 @@ struct da8xx_fb_par {
- #endif
- 	void (*panel_power_ctrl)(int);
- 	u32 pseudo_palette[16];
-+	struct fb_videomode	mode;
-+	struct lcd_ctrl_config	cfg;
- };
- 
- static struct fb_var_screeninfo da8xx_fb_var;
-@@ -1314,6 +1316,8 @@ static int __devinit fb_probe(struct platform_device *device)
+@@ -1329,6 +1329,8 @@ static int fb_probe(struct platform_device *device)
+ 		par->panel_power_ctrl(1);
  	}
  
- 	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
-+	fb_var_to_videomode(&par->mode, &da8xx_fb_var);
-+	par->cfg = *lcd_cfg;
- 
++	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
++
  	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
  		dev_err(&device->dev, "lcd_init failed\n");
+ 		ret = -EFAULT;
+@@ -1381,25 +1383,9 @@ static int fb_probe(struct platform_device *device)
+ 		goto err_release_pl_mem;
+ 	}
+ 
+-	/* Initialize par */
+-	da8xx_fb_info->var.bits_per_pixel = lcd_cfg->bpp;
+-
+-	da8xx_fb_var.xres = lcdc_info->xres;
+-	da8xx_fb_var.xres_virtual = lcdc_info->xres;
+-
+-	da8xx_fb_var.yres         = lcdc_info->yres;
+-	da8xx_fb_var.yres_virtual = lcdc_info->yres * LCD_NUM_BUFFERS;
+-
+ 	da8xx_fb_var.grayscale  	    lcd_cfg->panel_shade = MONOCHROME ? 1 : 0;
+ 	da8xx_fb_var.bits_per_pixel = lcd_cfg->bpp;
+-
+-	da8xx_fb_var.hsync_len = lcdc_info->hsync_len;
+-	da8xx_fb_var.vsync_len = lcdc_info->vsync_len;
+-	da8xx_fb_var.right_margin = lcdc_info->right_margin;
+-	da8xx_fb_var.left_margin  = lcdc_info->left_margin;
+-	da8xx_fb_var.lower_margin = lcdc_info->lower_margin;
+-	da8xx_fb_var.upper_margin = lcdc_info->upper_margin;
+ 	da8xx_fb_var.pixclock = da8xxfb_pixel_clk_period(par);
+ 
+ 	/* Initialize fbinfo */
 -- 
 1.7.9.5
 

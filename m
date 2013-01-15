@@ -1,39 +1,159 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 28 Jan 2013 09:33:08 +0000
-Subject: [PATCH v5 05/12] video: da8xx-fb: ensure non-null cfg in pdata
-Message-Id: <dbcaf73c109a654301d0299caaec3b6fb57517dc.1359356015.git.afzal@ti.com>
+Date: Tue, 15 Jan 2013 13:44:15 +0000
+Subject: [PATCH v3 07/10] video: da8xx-fb: pix clk and clk div handling cleanup
+Message-Id: <7fdf3e7770f0a7fec3efc71c87db88ebe12467ac.1358250489.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1359356015.git.afzal@ti.com>
-In-Reply-To: <cover.1359356015.git.afzal-l0cyMroinI0@public.gmane.org>
+References: <cover.1358250489.git.afzal@ti.com>
+In-Reply-To: <cover.1358250489.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Sekhar Nori <nsekhar@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Ensure that platform data contains pointer for lcd_ctrl_config.
+Use the new modedb field to store pix clk. Reorganize existing clock
+divider functions with names now corresponding to what they do, add
+common function prefix.
+
+Fix existing panel modedb pixclock to be in ps instead of Hz. This
+needed a change in the way clock divider is calculated. As modedb
+pixclock information is now in ps, override on "var" pixclock over
+modedb to var conversion is removed.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/da8xx-fb.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/video/da8xx-fb.c |   48 +++++++++++++++++-----------------------------
+ 1 file changed, 18 insertions(+), 30 deletions(-)
 
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 7a32e83..3b146bc 100644
+index f1d88ac..7f08644 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -1320,6 +1320,11 @@ static int fb_probe(struct platform_device *device)
+@@ -160,7 +160,6 @@ struct da8xx_fb_par {
+ 	struct clk *lcdc_clk;
+ 	int irq;
+ 	unsigned int palette_sz;
+-	unsigned int pxl_clk;
+ 	int blank;
+ 	wait_queue_head_t	vsync_wait;
+ 	int			vsync_flag;
+@@ -201,7 +200,7 @@ static struct fb_videomode known_lcd_panels[] = {
+ 		.name           = "Sharp_LCD035Q3DG01",
+ 		.xres           = 320,
+ 		.yres           = 240,
+-		.pixclock       = 4608000,
++		.pixclock       = 217014,
+ 		.left_margin    = 6,
+ 		.right_margin   = 8,
+ 		.upper_margin   = 2,
+@@ -216,7 +215,7 @@ static struct fb_videomode known_lcd_panels[] = {
+ 		.name           = "Sharp_LK043T1DG01",
+ 		.xres           = 480,
+ 		.yres           = 272,
+-		.pixclock       = 7833600,
++		.pixclock       = 127655,
+ 		.left_margin    = 2,
+ 		.right_margin   = 2,
+ 		.upper_margin   = 2,
+@@ -231,7 +230,7 @@ static struct fb_videomode known_lcd_panels[] = {
+ 		.name           = "SP10Q010",
+ 		.xres           = 320,
+ 		.yres           = 240,
+-		.pixclock       = 7833600,
++		.pixclock       = 127655,
+ 		.left_margin    = 10,
+ 		.right_margin   = 10,
+ 		.upper_margin   = 10,
+@@ -680,13 +679,14 @@ static void da8xx_fb_lcd_reset(void)
+ 	}
+ }
  
- 	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
+-static void lcd_calc_clk_divider(struct da8xx_fb_par *par)
++static inline unsigned da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
++						 unsigned pixclock)
+ {
+-	unsigned int lcd_clk, div;
+-
+-	lcd_clk = clk_get_rate(par->lcdc_clk);
+-	div = lcd_clk / par->pxl_clk;
++	return par->lcd_fck_rate / (PICOS2KHZ(pixclock) * 1000);
++}
  
-+	if (!lcd_cfg) {
-+		ret = -EINVAL;
-+		goto err_pm_runtime_disable;
-+	}
++static inline void da8xx_fb_config_clk_divider(unsigned div)
++{
+ 	/* Configure the LCD clock divisor. */
+ 	lcdc_write(LCD_CLK_DIVISOR(div) |
+ 			(LCD_RASTER_MODE & 0x1), LCD_CTRL_REG);
+@@ -694,7 +694,14 @@ static void lcd_calc_clk_divider(struct da8xx_fb_par *par)
+ 	if (lcd_revision = LCD_VERSION_2)
+ 		lcdc_write(LCD_V2_DMA_CLK_EN | LCD_V2_LIDD_CLK_EN |
+ 				LCD_V2_CORE_CLK_EN, LCD_CLK_ENABLE_REG);
++}
 +
- 	da8xx_fb_info = framebuffer_alloc(sizeof(struct da8xx_fb_par),
- 					&device->dev);
- 	if (!da8xx_fb_info) {
++static inline void da8xx_fb_calc_config_clk_divider(struct da8xx_fb_par *par,
++						    struct fb_videomode *mode)
++{
++	unsigned div = da8xx_fb_calc_clk_divider(par, mode->pixclock);
+ 
++	da8xx_fb_config_clk_divider(div);
+ }
+ 
+ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+@@ -705,8 +712,7 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+ 
+ 	da8xx_fb_lcd_reset();
+ 
+-	/* Calculate the divider */
+-	lcd_calc_clk_divider(par);
++	da8xx_fb_calc_config_clk_divider(par, panel);
+ 
+ 	if (panel->sync & FB_SYNC_CLK_INVERT)
+ 		lcdc_write((lcdc_read(LCD_RASTER_TIMING_2_REG) |
+@@ -969,7 +975,7 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
+ 		if (par->lcd_fck_rate != clk_get_rate(par->lcdc_clk)) {
+ 			par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
+ 			lcd_disable_raster(true);
+-			lcd_calc_clk_divider(par);
++			da8xx_fb_calc_config_clk_divider(par, &par->mode);
+ 			if (par->blank = FB_BLANK_UNBLANK)
+ 				lcd_enable_raster();
+ 		}
+@@ -1195,22 +1201,6 @@ static struct fb_ops da8xx_fb_ops = {
+ 	.fb_blank = cfb_blank,
+ };
+ 
+-/* Calculate and return pixel clock period in pico seconds */
+-static unsigned int da8xxfb_pixel_clk_period(struct da8xx_fb_par *par)
+-{
+-	unsigned int lcd_clk, div;
+-	unsigned int configured_pix_clk;
+-	unsigned long long pix_clk_period_picosec = 1000000000000ULL;
+-
+-	lcd_clk = clk_get_rate(par->lcdc_clk);
+-	div = lcd_clk / par->pxl_clk;
+-	configured_pix_clk = (lcd_clk / div);
+-
+-	do_div(pix_clk_period_picosec, configured_pix_clk);
+-
+-	return pix_clk_period_picosec;
+-}
+-
+ static int fb_probe(struct platform_device *device)
+ {
+ 	struct da8xx_lcdc_platform_data *fb_pdata @@ -1303,7 +1293,6 @@ static int fb_probe(struct platform_device *device)
+ 	par = da8xx_fb_info->par;
+ 	par->lcdc_clk = fb_clk;
+ 	par->lcd_fck_rate = clk_get_rate(fb_clk);
+-	par->pxl_clk = lcdc_info->pixclock;
+ 	if (fb_pdata->panel_power_ctrl) {
+ 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
+ 		par->panel_power_ctrl(1);
+@@ -1368,7 +1357,6 @@ static int fb_probe(struct platform_device *device)
+ 	da8xx_fb_var.grayscale  	    lcd_cfg->panel_shade = MONOCHROME ? 1 : 0;
+ 	da8xx_fb_var.bits_per_pixel = lcd_cfg->bpp;
+-	da8xx_fb_var.pixclock = da8xxfb_pixel_clk_period(par);
+ 
+ 	/* Initialize fbinfo */
+ 	da8xx_fb_info->flags = FBINFO_FLAG_DEFAULT;
 -- 
-1.7.12
+1.7.9.5
 

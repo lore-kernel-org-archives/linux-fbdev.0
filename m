@@ -1,78 +1,43 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Tue, 22 Jan 2013 16:54:28 +0000
-Subject: [PATCH v3 11/12] video: da8xx-fb: setup struct lcd_ctrl_config for dt
-Message-Id: <dc47adb437c3668c1378a20dd724a5b8ff4c73c4.1358871750.git.afzal@ti.com>
+Date: Tue, 15 Jan 2013 13:44:22 +0000
+Subject: [PATCH v3 08/10] video: da8xx-fb: store struct device *
+Message-Id: <772688fb6e53edec2d27bfeca4286b84721be68d.1358250489.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358871750.git.afzal@ti.com>
-In-Reply-To: <cover.1358871750.git.afzal@ti.com>
+References: <cover.1358250489.git.afzal@ti.com>
+In-Reply-To: <cover.1358250489.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Mike Turquette <mturquette@linaro.org>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Sekhar Nori <nsekhar@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-strcut lcd_ctrl_config information required for driver is currently
-obtained via platform data. To handle DT probing, create
-lcd_ctrl_config and populate it with default values, these values are
-sufficient for the panels so far used with this controller to work.
+store struct device pointer so that dev_dbg/err can be used outside
+of probe.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/da8xx-fb.c | 34 +++++++++++++++++++++++++++++++++-
- 1 file changed, 33 insertions(+), 1 deletion(-)
+ drivers/video/da8xx-fb.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 1c1a616..5455682 100644
+index 7f08644..a5341d0 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -1254,6 +1254,35 @@ static struct fb_ops da8xx_fb_ops = {
- 	.fb_blank = cfb_blank,
- };
+@@ -150,6 +150,7 @@ static inline void lcdc_write(unsigned int val, unsigned int addr)
+ }
  
-+static struct lcd_ctrl_config *da8xx_fb_create_cfg(struct platform_device *dev)
-+{
-+	struct lcd_ctrl_config *cfg;
-+
-+	cfg = devm_kzalloc(&dev->dev, sizeof(struct fb_videomode), GFP_KERNEL);
-+	if (!cfg) {
-+		dev_err(&dev->dev, "memory allocation failed\n");
-+		return NULL;
-+	}
-+
-+	/* default values */
-+
-+	if (lcd_revision = LCD_VERSION_1)
-+		cfg->bpp = 16;
-+	else
-+		cfg->bpp = 32;
-+
-+	/*
-+	 * For panels so far used with this LCDC, below statement is sufficient.
-+	 * For new panels, if required, struct lcd_ctrl_cfg fields to be updated
-+	 * with additional/modified values. Those values would have to be then
-+	 * obtained from dt(requiring new dt bindings).
-+	 */
-+
-+	cfg->panel_shade = COLOR_ACTIVE;
-+
-+	return cfg;
-+}
-+
- static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
- {
- 	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
-@@ -1345,7 +1374,10 @@ static int fb_probe(struct platform_device *device)
- 		break;
+ struct da8xx_fb_par {
++	struct device		*dev;
+ 	resource_size_t p_palette_base;
+ 	unsigned char *v_palette_base;
+ 	dma_addr_t		vram_phys;
+@@ -1291,6 +1292,7 @@ static int fb_probe(struct platform_device *device)
  	}
  
--	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
-+	if (device->dev.of_node)
-+		lcd_cfg = da8xx_fb_create_cfg(device);
-+	else
-+		lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
- 
- 	if (!lcd_cfg) {
- 		ret = -EINVAL;
+ 	par = da8xx_fb_info->par;
++	par->dev = &device->dev;
+ 	par->lcdc_clk = fb_clk;
+ 	par->lcd_fck_rate = clk_get_rate(fb_clk);
+ 	if (fb_pdata->panel_power_ctrl) {
 -- 
-1.7.12
+1.7.9.5
 

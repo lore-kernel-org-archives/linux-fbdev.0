@@ -1,43 +1,65 @@
-From: Anatolij Gustschin <agust@denx.de>
-Date: Sat, 19 Jan 2013 14:19:15 +0000
-Subject: Re: [PATCH v2 2/2] drivers/video: fsl-diu-fb: fix bugs in interrupt handling
-Message-Id: <20130119151915.6f766be0@crub>
+From: Afzal Mohammed <afzal@ti.com>
+Date: Tue, 15 Jan 2013 13:46:57 +0000
+Subject: [PATCH] ARM: AM33XX: clock: SET_RATE_PARENT in lcd path
+Message-Id: <1358256897-26275-1-git-send-email-afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1358589550-3246-1-git-send-email-agust@denx.de>
-In-Reply-To: <1358589550-3246-1-git-send-email-agust@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Sat, 19 Jan 2013 07:51:35 -0600
-Timur Tabi <timur@tabi.org> wrote:
+LCDC clock node is a one that does not have set rate capability. It
+just passes on the rate that is sent downstream by it's parent. While
+lcdc clock parent and it's grand parent - dpll_disp_m2_ck and
+dpll_disp_ck has the capability to configure rate.
 
-> Anatolij Gustschin wrote:
-> > Disabling the interrupts in fsl_diu_release() must happen only if all
-> > other AOIs are closed. Otherwise closing an overlay plane will disable
-> > the interrupts even if the primary frame buffer plane is opened. Add
-> > an appropriate check in the release function.
-> 
-> I thought the release function is only called when the driver is unloaded. 
->   Wouldn't the framebuffers all already be closed by then?
+And the default rates provided by LCDC clock's ancestors are not
+sufficient to obtain pixel clock for current LCDC use cases, hence
+currently display would not work on AM335x SoC's (with driver
+modifications in platfrom independent way).
 
-when driver is unloaded the .remove() function is called, which is
-fsl_diu_remove().
+Hence inform clock framework to propogate set rate for LCDC clock as
+well as it's parent - dpll_disp_m2_ck. With this change, set rate on
+LCDC clock would get propogated till dpll_disp_ck via dpll_disp_m2_ck,
+hence allowing the driver (same driver is used in DaVinci too) to set
+rates using LCDC clock without worrying about platform dependent clock
+details.
 
-> > +static inline void fsl_diu_enable_interrupts(struct fsl_diu_data *data)
-> > +{
-> > +	u32 int_mask = INT_UNDRUN; /* enable underrun detection */
-> > +
-> > +	if (IS_ENABLED(CONFIG_NOT_COHERENT_CACHE))
-> > +		int_mask |= INT_VSYNC; /* enable vertical sync */
-> 
-> Why did you turn this into a run-time check?
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+---
 
-actually it is not a run-time check since this code will be optimized
-away at compile in cases where CONFIG_NOT_COHERENT_CACHE is not selected
-in the kernel config.
+Based on v3.8-rc3
 
-Thanks,
+ arch/arm/mach-omap2/cclock33xx_data.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-Anatolij
+diff --git a/arch/arm/mach-omap2/cclock33xx_data.c b/arch/arm/mach-omap2/cclock33xx_data.c
+index ea64ad6..b731216 100644
+--- a/arch/arm/mach-omap2/cclock33xx_data.c
++++ b/arch/arm/mach-omap2/cclock33xx_data.c
+@@ -284,9 +284,10 @@ DEFINE_STRUCT_CLK(dpll_disp_ck, dpll_core_ck_parents, dpll_ddr_ck_ops);
+  * TODO: Add clksel here (sys_clkin, CORE_CLKOUTM6, PER_CLKOUTM2
+  * and ALT_CLK1/2)
+  */
+-DEFINE_CLK_DIVIDER(dpll_disp_m2_ck, "dpll_disp_ck", &dpll_disp_ck, 0x0,
+-		   AM33XX_CM_DIV_M2_DPLL_DISP, AM33XX_DPLL_CLKOUT_DIV_SHIFT,
+-		   AM33XX_DPLL_CLKOUT_DIV_WIDTH, CLK_DIVIDER_ONE_BASED, NULL);
++DEFINE_CLK_DIVIDER(dpll_disp_m2_ck, "dpll_disp_ck", &dpll_disp_ck,
++		   CLK_SET_RATE_PARENT, AM33XX_CM_DIV_M2_DPLL_DISP,
++		   AM33XX_DPLL_CLKOUT_DIV_SHIFT, AM33XX_DPLL_CLKOUT_DIV_WIDTH,
++		   CLK_DIVIDER_ONE_BASED, NULL);
+ 
+ /* DPLL_PER */
+ static struct dpll_data dpll_per_dd = {
+@@ -932,6 +933,8 @@ int __init am33xx_clk_init(void)
+ 		cpu_clkflg = CK_AM33XX;
+ 	}
+ 
++	lcd_gclk.flags |= CLK_SET_RATE_PARENT;
++
+ 	for (c = am33xx_clks; c < am33xx_clks + ARRAY_SIZE(am33xx_clks); c++) {
+ 		if (c->cpu & cpu_clkflg) {
+ 			clkdev_add(&c->lk);
+-- 
+1.7.9.5
+

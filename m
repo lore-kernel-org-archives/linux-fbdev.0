@@ -1,41 +1,36 @@
-From: Lauri Hintsala <lauri.hintsala@bluegiga.com>
-Date: Fri, 04 Jan 2013 07:08:12 +0000
-Subject: Re: [BUGFIX PATCH] video: mxsfb: fix crash when unblanking the display
-Message-Id: <50E67FDC.3000905@bluegiga.com>
+From: Afzal Mohammed <afzal@ti.com>
+Date: Tue, 15 Jan 2013 13:55:07 +0000
+Subject: [PATCH v2 10/12] video: da8xx-fb: ensure pdata only for non-dt
+Message-Id: <5ffb4ab8d7f0698e4235cf6b85f2f096c5256f04.1358251448.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353588555-13168-1-git-send-email-LW@KARO-electronics.de>
- <20663.19785.221750.909491@ipc1.ka-ro>
-In-Reply-To: <20663.19785.221750.909491@ipc1.ka-ro>
+References: <cover.1358251447.git.afzal@ti.com>
+In-Reply-To: <cover.1358251447.git.afzal@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Sekhar Nori <nsekhar@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 11/29/2012 01:55 PM, Lothar Waßmann wrote:
-> Hi,
->
-> adding Juergen Beisert as the driver's author to the recipient list.
->
-> Lothar Waßmann writes:
->> The VDCTRL4 register does not provide the MXS SET/CLR/TOGGLE feature.
->> The write in mxsfb_disable_controller() sets the data_cnt for the LCD
->> DMA to 0 which obviously means the max. count for the LCD DMA and
->> leads to overwriting arbitrary memory when the display is unblanked.
->>
->> Note: I already sent this patch in December 2011 but noone picked it up obviously.
->>
->> Signed-off-by: Lothar Waßmann <LW@KARO-electronics.de>
+This driver is DT probe-able, hence ensure presence of platform data
+only for non-DT boot.
 
-Tested-by: Lauri Hintsala <lauri.hintsala@bluegiga.net>
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+---
+ drivers/video/da8xx-fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-This fixes the CPU freezing. I really recommend to apply this patch into 
-mainline soon because unblanking freezes the whole system!!!
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 0c68712..1c1a616 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1303,7 +1303,7 @@ static int fb_probe(struct platform_device *device)
+ 	int ret;
+ 	unsigned long ulcm;
+ 
+-	if (fb_pdata = NULL) {
++	if (fb_pdata = NULL && !device->dev.of_node) {
+ 		dev_err(&device->dev, "Can not get platform data\n");
+ 		return -ENOENT;
+ 	}
+-- 
+1.7.9.5
 
-Default value of consoleblank parameter is 600 seconds and the whole 
-system crashes every time when framebuffer console is activated after 
-that timeout. I wonder why this issue is still open in mainline kernel.
-
-Should this patch be added into stable versions too?
-
-Best Regards,
-Lauri Hintsala

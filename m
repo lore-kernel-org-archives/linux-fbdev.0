@@ -1,82 +1,38 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Tue, 08 Jan 2013 09:31:40 +0000
-Subject: [PATCH 2/2] backlight: l4f00242t03: Use devm_regulator_get API
-Message-Id: <1357636780-14783-2-git-send-email-sachin.kamat@linaro.org>
+From: Afzal Mohammed <afzal@ti.com>
+Date: Tue, 15 Jan 2013 13:54:46 +0000
+Subject: [PATCH v2 08/12] video: da8xx-fb: invoke platform callback safely
+Message-Id: <91fc9d3e10946a3dd1be7ee0e4af62ef8c0df684.1358251448.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1358251447.git.afzal@ti.com>
+In-Reply-To: <cover.1358251447.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Sekhar Nori <nsekhar@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-devm_regulator_get is device managed and saves some cleanup
-and exit code.
+Ensure that platform data is present before checking whether platform
+callback is present (the one used to control backlight). So far this
+was not an issue as driver was purely non-DT triggered, but now DT
+support has been added.
 
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/backlight/l4f00242t03.c |   23 +++++------------------
- 1 files changed, 5 insertions(+), 18 deletions(-)
+ drivers/video/da8xx-fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/backlight/l4f00242t03.c b/drivers/video/backlight/l4f00242t03.c
-index 9bef9cf..9d18073 100644
---- a/drivers/video/backlight/l4f00242t03.c
-+++ b/drivers/video/backlight/l4f00242t03.c
-@@ -190,27 +190,24 @@ static int l4f00242t03_probe(struct spi_device *spi)
- 		return ret;
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 08ee8eb..0beed20 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1347,7 +1347,7 @@ static int fb_probe(struct platform_device *device)
+ 	par->dev = &device->dev;
+ 	par->lcdc_clk = fb_clk;
+ 	par->lcd_fck_rate = clk_get_rate(fb_clk);
+-	if (fb_pdata->panel_power_ctrl) {
++	if (fb_pdata && fb_pdata->panel_power_ctrl) {
+ 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
+ 		par->panel_power_ctrl(1);
  	}
- 
--	priv->io_reg = regulator_get(&spi->dev, "vdd");
-+	priv->io_reg = devm_regulator_get(&spi->dev, "vdd");
- 	if (IS_ERR(priv->io_reg)) {
- 		dev_err(&spi->dev, "%s: Unable to get the IO regulator\n",
- 		       __func__);
- 		return PTR_ERR(priv->io_reg);
- 	}
- 
--	priv->core_reg = regulator_get(&spi->dev, "vcore");
-+	priv->core_reg = devm_regulator_get(&spi->dev, "vcore");
- 	if (IS_ERR(priv->core_reg)) {
--		ret = PTR_ERR(priv->core_reg);
- 		dev_err(&spi->dev, "%s: Unable to get the core regulator\n",
- 		       __func__);
--		goto err1;
-+		return PTR_ERR(priv->core_reg);
- 	}
- 
- 	priv->ld = lcd_device_register("l4f00242t03",
- 					&spi->dev, priv, &l4f_ops);
--	if (IS_ERR(priv->ld)) {
--		ret = PTR_ERR(priv->ld);
--		goto err2;
--	}
-+	if (IS_ERR(priv->ld))
-+		return PTR_ERR(priv->ld);
- 
- 	/* Init the LCD */
- 	l4f00242t03_lcd_init(spi);
-@@ -220,13 +217,6 @@ static int l4f00242t03_probe(struct spi_device *spi)
- 	dev_info(&spi->dev, "Epson l4f00242t03 lcd probed.\n");
- 
- 	return 0;
--
--err2:
--	regulator_put(priv->core_reg);
--err1:
--	regulator_put(priv->io_reg);
--
--	return ret;
- }
- 
- static int l4f00242t03_remove(struct spi_device *spi)
-@@ -238,9 +228,6 @@ static int l4f00242t03_remove(struct spi_device *spi)
- 
- 	spi_set_drvdata(spi, NULL);
- 
--	regulator_put(priv->io_reg);
--	regulator_put(priv->core_reg);
--
- 	return 0;
- }
- 
 -- 
-1.7.4.1
+1.7.9.5
 

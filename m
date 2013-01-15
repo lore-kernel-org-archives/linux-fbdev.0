@@ -1,22 +1,21 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Wed, 23 Jan 2013 11:51:11 +0000
-Subject: [PATCH v4 06/12] video: da8xx-fb: reorganize panel detection
-Message-Id: <47095b1c5196d6ca1de19899274bcd0f79bcc269.1358937685.git.afzal@ti.com>
+Date: Tue, 15 Jan 2013 13:54:34 +0000
+Subject: [PATCH v2 06/12] video: da8xx-fb: reorganize panel detection
+Message-Id: <08858a7cd96fd3a603316f7c09f3cb9232a4f0f8.1358251447.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358937685.git.afzal@ti.com>
-In-Reply-To: <cover.1358937685.git.afzal-l0cyMroinI0@public.gmane.org>
+References: <cover.1358251447.git.afzal@ti.com>
+In-Reply-To: <cover.1358251447.git.afzal-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+To: Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Rob Landley <rob-VoJi6FS/r0vR7s880joybQ@public.gmane.org>, Sekhar Nori <nsekhar-l0cyMroinI0@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
 Move panel detection to a separate function, this helps in readability
 as well as makes DT support cleaner.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/da8xx-fb.c | 42 ++++++++++++++++++++++++++----------------
+ drivers/video/da8xx-fb.c |   42 ++++++++++++++++++++++++++----------------
  1 file changed, 26 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
@@ -93,5 +92,5 @@ index 3b146bc..b6ea5e9 100644
  
  	if (!lcd_cfg) {
 -- 
-1.7.12
+1.7.9.5
 

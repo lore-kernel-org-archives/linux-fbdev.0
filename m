@@ -1,59 +1,70 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Tue, 15 Jan 2013 18:41:40 +0000
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Date: Tue, 15 Jan 2013 22:15:57 +0000
 Subject: Re: fb: Rework locking to fix lock ordering on takeover
-Message-Id: <20130115184140.3c8fcdd2@pyramind.ukuu.org.uk>
+Message-Id: <2134971.95J30N79hk@vostro.rjw.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CA+icZUVJ5hbPJvV4LMFGgD3Sto5=EV=MO9nutYdJwkiRrmpNJQ@mail.gmail.com>
 In-Reply-To: <CA+icZUVJ5hbPJvV4LMFGgD3Sto5=EV=MO9nutYdJwkiRrmpNJQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: sedat.dilek@gmail.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
+On Sunday, January 13, 2013 04:14:38 PM Sedat Dilek wrote:
+> Hi Andrew,
+>=20
+> your patch from [1] - as far as I followed - misses a lot of
+> Reported-by#s and Tested-by#s (Boris, Jiri, etc.).
+> Just one new R-b I have seen yesterday.
+>=20
+> I have the original patch from Alan plus the two follow-ups from you
+> in my patch-series against v3.8-{rc2,rc3} for quite a while.
+> So, please feel free to add a Tested-by.
+>=20
+> Unfortunately, your patch has introduced some (unwanted) extra chars
+> like "_*" (comments only).
+> I appreciate one single (new) patch like this, but please in a proper way.
+
+Why don't you prepare such a patch?  I suppose you know everything you need?
 
 > A disappeared/busy/not-answering maintainer is not an excuse for
 > handling serious regressions (even here in this case there are fixes
 > around),
-
-It's *not* a regression - that's the horrible bit. If it was a regression
-we'd just back the changes out, wait for (or switch) maintainer and be
-happy a release later.
-
-Its a piece of terrible design that is years old and a bug that is at
-least two years old which caused random hangs on Fedora boxes during boot
-up and so on for several releases. What has happened is Daniel's changes
-made the bug *visible* as it's now lockdep splatted and can thus be
-analyzed and worked upon.
-
-We are pretty good at regression squashing because you can just rewind a
-bit, and try again later. In this case rewinding the lockdep splat
-simply turns it back into random silent hangs.
-
-> Personally, I am still missing a mei-driver fix [2] and a libata-dev fix [3].
+> Personally, I am still missing a mei-driver fix [2] and a libata-dev fix =
+[3].
 > Both issues are not new to the maintainers.
 > Not sure if shouting louder is the best strategy here.
 
-Really its a kernel summit question. IMHO we ought to have a policy
-that anything of any relevance has *two* maintainers or more. That way
-there is always someone to help pick a new maintainer if one drops out
-and we are mostly not at the mercy of real world happenings. We also need
-to be much more active in giving maintainers the boot if they vanish (and
-having two maintainers will balance the effect nicely).
+[2] seems to be in the Greg's tree, so I suppose it's on its way to Linus a=
+nd
+please note that we're after a several days vacation period and people need=
+ to
+process their backlogs.
 
-In practice I think most maintainers can offhand name the person they'd
-pick to replace them, so they can pretty easily switch to two maintainers.
+Perhaps just ping the relevant maintainers when 3.8-rc4 is out (and do the =
+same
+after -rc5 and so on).
 
 > It would be great to have a place like a "board of arbitration" where
 > someone can send blames.
+> And I remember vaguely Rafael had a nice list of issues (w/ reference
+> to patches!).
+> This was a real cool helpful innoivation!
+> I can't remember why Rafael stopped his nice service to the
+> Linux-kernel community.
 
-There is a ton of stuff in bugzilla including fixes for some years old
-stuff (eg bluetooth on some dongle types that broke in 2.6.3x). It's not
-a case of inventing bodies to handle stuff, it's a case of two things
+Because I don't have the time to do that any more.  Yes, it was useful, but=
+ it
+also was quite a bit of work.  Would you volunteer to do that?
 
-- people getting off their backsides to fix it
-- enabling those people to get the job done
+Rafael
 
-Finger pointing statistics and shame lists such as Rafael did are just
-tools to help. At the end of the day its about people doing stuff.
 
-Alan
+> [1] https://patchwork.kernel.org/patch/1969391/
+> [2] http://git.kernel.org/?p=3Dlinux/kernel/git/gregkh/char-misc.git;a=3D=
+commitdiff;h=E6028db0146cf5a68dbd1508225ea49840997880
+> [3] http://patchwork.ozlabs.org/patch/206897/
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.

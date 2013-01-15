@@ -1,75 +1,36 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 07 Jan 2013 05:30:22 +0000
-Subject: [PATCH 3/5] ARM: dts: AM33XX: Add am335x-evm lcdc pincontrol info
-Message-Id: <b9ba366a7705f7ed58f271a49a7d54726796e8f2.1357304150.git.afzal@ti.com>
+Date: Tue, 15 Jan 2013 13:54:05 +0000
+Subject: [PATCH v2 03/12] video: da8xx-fb: enable sync lost intr for v2 ip
+Message-Id: <402581e429e1f47b6d680e7bae338883463fb0e7.1358251447.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1357304150.git.afzal@ti.com>
-In-Reply-To: <cover.1357304150.git.afzal@ti.com>
+References: <cover.1358251447.git.afzal@ti.com>
+In-Reply-To: <cover.1358251447.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Sekhar Nori <nsekhar@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Update pin mux information for lcd panel on AM335X-EVM
+interrupt handler is checking for sync lost interrupt, but it was not
+enabled, enable it.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- arch/arm/boot/dts/am335x-evm.dts |   35 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 34 insertions(+), 1 deletion(-)
+ drivers/video/da8xx-fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/am335x-evm.dts b/arch/arm/boot/dts/am335x-evm.dts
-index a4229aa..25ebfc2 100644
---- a/arch/arm/boot/dts/am335x-evm.dts
-+++ b/arch/arm/boot/dts/am335x-evm.dts
-@@ -26,7 +26,7 @@
- 
- 	am33xx_pinmux: pinmux@44e10800 {
- 		pinctrl-names = "default";
--		pinctrl-0 = <&matrix_keypad_s0 &volume_keys_s0>;
-+		pinctrl-0 = <&matrix_keypad_s0 &volume_keys_s0 &lcd_pins_s0>;
- 
- 		matrix_keypad_s0: matrix_keypad_s0 {
- 			pinctrl-single,pins = <
-@@ -44,6 +44,39 @@
- 				0x154 0x27	/* spi0_d0.gpio0_3, INPUT | MODE7 */
- 			>;
- 		};
-+
-+		lcd_pins_s0: lcd_pins_s0 {
-+			pinctrl-single,pins = <
-+				0x20 0x01
-+				0x24 0x01
-+				0x28 0x01
-+				0x2c 0x01
-+				0x30 0x01
-+				0x34 0x01
-+				0x38 0x01
-+				0x3c 0x01
-+				0xa0 0x08
-+				0xa4 0x08
-+				0xa8 0x08
-+				0xac 0x08
-+				0xb0 0x08
-+				0xb4 0x08
-+				0xb8 0x08
-+				0xbc 0x08
-+				0xc0 0x08
-+				0xc4 0x08
-+				0xc8 0x08
-+				0xcc 0x08
-+				0xd0 0x08
-+				0xd4 0x08
-+				0xd8 0x08
-+				0xdc 0x08
-+				0xe0 0x00
-+				0xe4 0x00
-+				0xe8 0x00
-+				0xec 0x00
-+			>;
-+		};
- 	};
- 
- 	ocp {
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 7f92f37..ca69e01 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -318,7 +318,7 @@ static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
+ 			reg_int = lcdc_read(LCD_INT_ENABLE_SET_REG) |
+ 				LCD_V2_END_OF_FRAME0_INT_ENA |
+ 				LCD_V2_END_OF_FRAME1_INT_ENA |
+-				LCD_FRAME_DONE;
++				LCD_FRAME_DONE | LCD_SYNC_LOST;
+ 			lcdc_write(reg_int, LCD_INT_ENABLE_SET_REG);
+ 		}
+ 		reg_dma |= LCD_DUAL_FRAME_BUFFER_ENABLE;
 -- 
 1.7.9.5
 

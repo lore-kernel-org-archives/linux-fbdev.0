@@ -1,63 +1,50 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 07 Jan 2013 05:16:47 +0000
-Subject: [PATCH v2 01/10] video: da8xx-fb: fb_check_var enhancement
-Message-Id: <55042f1892250bb83d66bc17f4ccfdee25a51ba0.1357303978.git.afzal@ti.com>
+Date: Tue, 15 Jan 2013 13:52:10 +0000
+Subject: [PATCH v2 2/5] ARM: dts: AM33XX: Add am335x-evm lcdc panel timings
+Message-Id: <539390a5b79a0a87bec4d53777fa6dde6af7c51d.1358252955.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1357303978.git.afzal@ti.com>
-In-Reply-To: <cover.1357303978.git.afzal-l0cyMroinI0@public.gmane.org>
+References: <cover.1358252955.git.afzal@ti.com>
+In-Reply-To: <cover.1358252955.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, nsekhar-l0cyMroinI0@public.gmane.org, hvaibhav-l0cyMroinI0@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+To: linux-arm-kernel@lists.infradead.org
 
-Check whether "struct fb_var_screeninfo" fields are sane, if not
-update it to be within allowed limits.
-
-If user sends down buggy "var" values, this will bring those within
-allowable limits. And fb_set_par is not supposed to change "var"
-values, fb_check_var has to ensure that values are proper.
+Update lcdc node with panel timings (typical) for AM335X-EVM.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/da8xx-fb.c |   18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ arch/arm/boot/dts/am335x-evm.dts |   20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 46534e0..89446aa 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -888,6 +888,9 @@ static int fb_check_var(struct fb_var_screeninfo *var,
- 			struct fb_info *info)
- {
- 	int err = 0;
-+	struct da8xx_fb_par *par = info->par;
-+	int bpp = var->bits_per_pixel >> 3;
-+	unsigned long line_size = var->xres_virtual * bpp;
- 
- 	if (var->bits_per_pixel > 16 && lcd_revision = LCD_VERSION_1)
- 		return -EINVAL;
-@@ -955,6 +958,21 @@ static int fb_check_var(struct fb_var_screeninfo *var,
- 	var->green.msb_right = 0;
- 	var->blue.msb_right = 0;
- 	var->transp.msb_right = 0;
+diff --git a/arch/arm/boot/dts/am335x-evm.dts b/arch/arm/boot/dts/am335x-evm.dts
+index d649644..a4229aa 100644
+--- a/arch/arm/boot/dts/am335x-evm.dts
++++ b/arch/arm/boot/dts/am335x-evm.dts
+@@ -244,3 +244,23 @@
+ &cpsw_emac1 {
+ 	phy_id = <&davinci_mdio>, <1>;
+ };
 +
-+	if (line_size * var->yres_virtual > par->vram_size)
-+		var->yres_virtual = par->vram_size / line_size;
++&lcdc {
++	status = "okay";
 +
-+	if (var->yres > var->yres_virtual)
-+		var->yres = var->yres_virtual;
-+
-+	if (var->xres > var->xres_virtual)
-+		var->xres = var->xres_virtual;
-+
-+	if (var->xres + var->xoffset > var->xres_virtual)
-+		var->xoffset = var->xres_virtual - var->xres;
-+	if (var->yres + var->yoffset > var->yres_virtual)
-+		var->yoffset = var->yres_virtual - var->yres;
-+
- 	return err;
- }
- 
++	display-timings {
++		800x480p62 {
++			clock-frequency = <30000000>;
++			hactive = <800>;
++			vactive = <480>;
++			hfront-porch = <39>;
++			hback-porch = <39>;
++			hsync-len = <47>;
++			vback-porch = <29>;
++			vfront-porch = <13>;
++			vsync-len = <2>;
++			hsync-active = <1>;
++			vsync-active = <1>;
++		};
++	};
++};
 -- 
 1.7.9.5
 

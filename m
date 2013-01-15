@@ -1,63 +1,98 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Tue, 15 Jan 2013 13:43:36 +0000
-Subject: [PATCH v3 01/10] video: da8xx-fb: fb_check_var enhancement
-Message-Id: <4cc2a1179d24e067623b9516946e222b22d79f7e.1358250489.git.afzal@ti.com>
+Date: Tue, 15 Jan 2013 13:54:52 +0000
+Subject: [PATCH v2 09/12] video: da8xx-fb: obtain fb_videomode info from dt
+Message-Id: <d7067a4a8d3107fd558e828fba992d4201ba5970.1358251448.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358250489.git.afzal@ti.com>
-In-Reply-To: <cover.1358250489.git.afzal@ti.com>
+References: <cover.1358251447.git.afzal@ti.com>
+In-Reply-To: <cover.1358251447.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Sekhar Nori <nsekhar@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Sekhar Nori <nsekhar@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Check whether "struct fb_var_screeninfo" fields are sane, if not
-update it to be within allowed limits.
-
-If user sends down buggy "var" values, this will bring those within
-allowable limits. And fb_set_par is not supposed to change "var"
-values, fb_check_var has to ensure that values are proper.
+Obtain fb_videomode details for the connected lcd panel using the
+display timing details present in DT.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/da8xx-fb.c |   18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ .../devicetree/bindings/video/fb-da8xx.txt         |   21 ++++++++++++++++++++
+ drivers/video/da8xx-fb.c                           |   17 ++++++++++++++++
+ 2 files changed, 38 insertions(+)
 
+diff --git a/Documentation/devicetree/bindings/video/fb-da8xx.txt b/Documentation/devicetree/bindings/video/fb-da8xx.txt
+index 581e014..0741f78 100644
+--- a/Documentation/devicetree/bindings/video/fb-da8xx.txt
++++ b/Documentation/devicetree/bindings/video/fb-da8xx.txt
+@@ -6,6 +6,12 @@ Required properties:
+ 	AM335x SoC's - "ti,am3352-lcdc", "ti,da830-lcdc"
+ - reg: Address range of lcdc register set
+ - interrupts: lcdc interrupt
++- display-timings: typical videomode of lcd panel, represented as child.
++  Refer Documentation/devicetree/bindings/video/display-timing.txt for
++  display timing binding details. If multiple videomodes are mentioned
++  in display timings node, typical videomode has to be mentioned as the
++  native mode or it has to be first child (driver cares only for native
++  videomode).
+ 
+ Example:
+ 
+@@ -13,4 +19,19 @@ lcdc@4830e000 {
+ 	compatible = "ti,am3352-lcdc", "ti,da830-lcdc";
+ 	reg =  <0x4830e000 0x1000>;
+ 	interrupts = <36>;
++	display-timings {
++		800x480p62 {
++			clock-frequency = <30000000>;
++			hactive = <800>;
++			vactive = <480>;
++			hfront-porch = <39>;
++			hback-porch = <39>;
++			hsync-len = <47>;
++			vback-porch = <29>;
++			vfront-porch = <13>;
++			vsync-len = <2>;
++			hsync-active = <1>;
++			vsync-active = <1>;
++		};
++	};
+ };
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 0810939..d00dd17 100644
+index 0beed20..0c68712 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -888,6 +888,9 @@ static int fb_check_var(struct fb_var_screeninfo *var,
- 			struct fb_info *info)
+@@ -36,6 +36,7 @@
+ #include <linux/slab.h>
+ #include <linux/delay.h>
+ #include <linux/lcm.h>
++#include <video/of_display_timing.h>
+ #include <video/da8xx-fb.h>
+ #include <asm/div64.h>
+ 
+@@ -1257,8 +1258,24 @@ static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
  {
- 	int err = 0;
-+	struct da8xx_fb_par *par = info->par;
-+	int bpp = var->bits_per_pixel >> 3;
-+	unsigned long line_size = var->xres_virtual * bpp;
+ 	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
+ 	struct fb_videomode *lcdc_info;
++	struct device_node *np = dev->dev.of_node;
+ 	int i;
  
- 	if (var->bits_per_pixel > 16 && lcd_revision = LCD_VERSION_1)
- 		return -EINVAL;
-@@ -955,6 +958,21 @@ static int fb_check_var(struct fb_var_screeninfo *var,
- 	var->green.msb_right = 0;
- 	var->blue.msb_right = 0;
- 	var->transp.msb_right = 0;
++	if (np) {
++		lcdc_info = devm_kzalloc(&dev->dev,
++					 sizeof(struct fb_videomode),
++					 GFP_KERNEL);
++		if (!lcdc_info) {
++			dev_err(&dev->dev, "memory allocation failed\n");
++			return NULL;
++		}
++		if (of_get_fb_videomode(np, lcdc_info, OF_USE_NATIVE_MODE)) {
++			dev_err(&dev->dev, "timings not available in DT\n");
++			return NULL;
++		}
++		return lcdc_info;
++	}
 +
-+	if (line_size * var->yres_virtual > par->vram_size)
-+		var->yres_virtual = par->vram_size / line_size;
-+
-+	if (var->yres > var->yres_virtual)
-+		var->yres = var->yres_virtual;
-+
-+	if (var->xres > var->xres_virtual)
-+		var->xres = var->xres_virtual;
-+
-+	if (var->xres + var->xoffset > var->xres_virtual)
-+		var->xoffset = var->xres_virtual - var->xres;
-+	if (var->yres + var->yoffset > var->yres_virtual)
-+		var->yoffset = var->yres_virtual - var->yres;
-+
- 	return err;
- }
- 
+ 	for (i = 0, lcdc_info = known_lcd_panels;
+ 		i < ARRAY_SIZE(known_lcd_panels); i++, lcdc_info++) {
+ 		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
 -- 
 1.7.9.5
 

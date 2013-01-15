@@ -1,115 +1,257 @@
 From: Takashi Iwai <tiwai@suse.de>
-Date: Tue, 15 Jan 2013 14:47:18 +0000
+Date: Tue, 15 Jan 2013 16:46:51 +0000
 Subject: Re: 3.8-rc2 lockdep complains about console_lock vs. fb_notifier_list.rwsem
-Message-Id: <s5hip6yzeo9.wl%tiwai@suse.de>
+Message-Id: <s5h4niiqtqc.wl%tiwai@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CA+icZUUxgRsGkYAmZ=JxTwPvdhTzpGLcxm6+VSq9jnfYPVXj4Q@mail.gmail.com>
 	<s5hpq16zfox.wl%tiwai@suse.de>
-In-Reply-To: <s5hpq16zfox.wl%tiwai@suse.de>
+	<s5hip6yzeo9.wl%tiwai@suse.de>
+In-Reply-To: <s5hip6yzeo9.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: sedat.dilek@gmail.com, Jiri Kosina <jkosina@suse.cz>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, alan@lxorguk.ukuu.org.uk
 
-At Tue, 15 Jan 2013 15:25:18 +0100,
+At Tue, 15 Jan 2013 15:47:18 +0100,
 Takashi Iwai wrote:
 > 
-> At Sat, 5 Jan 2013 13:13:27 +0100,
-> Sedat Dilek wrote:
+> At Tue, 15 Jan 2013 15:25:18 +0100,
+> Takashi Iwai wrote:
 > > 
-> > Hi Jiri,
+> > At Sat, 5 Jan 2013 13:13:27 +0100,
+> > Sedat Dilek wrote:
+> > > 
+> > > Hi Jiri,
+> > > 
+> > > ...known issue (see thread in [1]), please feel free to test patches
+> > > from Alan and Andrew (see [1], [2] and [3]) and report.
+> > > 
+> > > Regards,
+> > > - Sedat -
+> > > 
+> > > [1] http://marc.info/?t5309396400003&r=1&w=2
+> > > [2] http://ozlabs.org/~akpm/mmots/broken-out/fb-rework-locking-to-fix-lock-ordering-on-takeover.patch
+> > > [3] http://ozlabs.org/~akpm/mmots/broken-out/fb-rework-locking-to-fix-lock-ordering-on-takeover-fix.patch
+> > > [4] http://ozlabs.org/~akpm/mmots/broken-out/fb-rework-locking-to-fix-lock-ordering-on-takeover-fix-2.patch
 > > 
-> > ...known issue (see thread in [1]), please feel free to test patches
-> > from Alan and Andrew (see [1], [2] and [3]) and report.
+> > I've hit this bug and tried the patch [2] ([3] and [4] are gone).
+> > Unfortunately the deadlock is still reported, as seen below.
 > > 
-> > Regards,
-> > - Sedat -
+> > A similar fix for fbcon_unbind(), splitting an unlocked version of
+> > unbind_con_driver() and call it?
 > > 
-> > [1] http://marc.info/?t5309396400003&r=1&w=2
-> > [2] http://ozlabs.org/~akpm/mmots/broken-out/fb-rework-locking-to-fix-lock-ordering-on-takeover.patch
-> > [3] http://ozlabs.org/~akpm/mmots/broken-out/fb-rework-locking-to-fix-lock-ordering-on-takeover-fix.patch
-> > [4] http://ozlabs.org/~akpm/mmots/broken-out/fb-rework-locking-to-fix-lock-ordering-on-takeover-fix-2.patch
+> > (BTW, the patch [2] contains strange characters in the comments, and
+> >  has a few coding issues easily detected by checkpatch.pl.)
 > 
-> I've hit this bug and tried the patch [2] ([3] and [4] are gone).
-> Unfortunately the deadlock is still reported, as seen below.
-> 
-> A similar fix for fbcon_unbind(), splitting an unlocked version of
-> unbind_con_driver() and call it?
-> 
-> (BTW, the patch [2] contains strange characters in the comments, and
->  has a few coding issues easily detected by checkpatch.pl.)
+> The fix patch for coding issue is below.
+> Feel free to fold into the original patch.
 
-The fix patch for coding issue is below.
-Feel free to fold into the original patch.
+... and the additional patch below fixed the lockdep warning on my
+machine.
 
 
 Takashi
 
 =
 From: Takashi Iwai <tiwai@suse.de>
-Subject: [PATCH] fb: Fix coding style and remove stray non-ascii chars
+Subject: [PATCH] fb: Yet another band-aid for fixing lockdep mess
+
+I've still got lockdep warnings even after Alan's patch, and it seems
+that yet more band aids are required to paper over similar paths for
+unbind_con_driver() and unregister_con_driver().  After this hack,
+lockdep warnings are finally gone.
 
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 ---
- drivers/tty/vt/vt.c           | 4 ++--
- drivers/video/console/fbcon.c | 3 +--
- drivers/video/fbmem.c         | 4 ++--
- 3 files changed, 5 insertions(+), 6 deletions(-)
+ drivers/tty/vt/vt.c           | 43 ++++++++++++++++++++++++++++---------------
+ drivers/video/console/fbcon.c |  4 ++--
+ drivers/video/fbmem.c         |  4 ++++
+ include/linux/console.h       |  1 +
+ include/linux/vt_kern.h       |  2 ++
+ 5 files changed, 37 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index f307196..1db1c8d 100644
+index 1db1c8d..3947e8d 100644
 --- a/drivers/tty/vt/vt.c
 +++ b/drivers/tty/vt/vt.c
-@@ -3653,7 +3653,7 @@ int do_take_over_console(const struct consw *csw, int first, int last, int deflt
- 	/*
- 	 * If we get an busy error we still want to bind the console driver
- 	 * and return success, as we may have unbound the console driver
--	 * but not unregistered it.
-+	 * but not unregistered it.
- 	 */
- 	if (err = -EBUSY)
- 		err = 0;
-@@ -3679,7 +3679,7 @@ int take_over_console(const struct consw *csw, int first, int last, int deflt)
- 	/*
- 	 * If we get an busy error we still want to bind the console driver
- 	 * and return success, as we may have unbound the console driver
--	 * but not unregistered it.
-+	 * but not unregistered it.
- 	 */
- 	if (err = -EBUSY)
- 		err = 0;
+@@ -3135,6 +3135,18 @@ static int con_is_graphics(const struct consw *csw, int first, int last)
+  */
+ int unbind_con_driver(const struct consw *csw, int first, int last, int deflt)
+ {
++	int retval;
++
++	console_lock();
++	retval = do_unbind_con_driver(csw, first, last, deflt);
++	console_unlock();
++	return retval;
++}
++EXPORT_SYMBOL(unbind_con_driver);
++
++/* unlocked version of unbind_con_driver() */
++int do_unbind_con_driver(const struct consw *csw, int first, int last, int deflt)
++{
+ 	struct module *owner = csw->owner;
+ 	const struct consw *defcsw = NULL;
+ 	struct con_driver *con_driver = NULL, *con_back = NULL;
+@@ -3143,7 +3155,7 @@ int unbind_con_driver(const struct consw *csw, int first, int last, int deflt)
+ 	if (!try_module_get(owner))
+ 		return -ENODEV;
+ 
+-	console_lock();
++	WARN_CONSOLE_UNLOCKED();
+ 
+ 	/* check if driver is registered and if it is unbindable */
+ 	for (i = 0; i < MAX_NR_CON_DRIVER; i++) {
+@@ -3156,10 +3168,8 @@ int unbind_con_driver(const struct consw *csw, int first, int last, int deflt)
+ 		}
+ 	}
+ 
+-	if (retval) {
+-		console_unlock();
++	if (retval)
+ 		goto err;
+-	}
+ 
+ 	retval = -ENODEV;
+ 
+@@ -3175,15 +3185,11 @@ int unbind_con_driver(const struct consw *csw, int first, int last, int deflt)
+ 		}
+ 	}
+ 
+-	if (retval) {
+-		console_unlock();
++	if (retval)
+ 		goto err;
+-	}
+ 
+-	if (!con_is_bound(csw)) {
+-		console_unlock();
++	if (!con_is_bound(csw))
+ 		goto err;
+-	}
+ 
+ 	first = max(first, con_driver->first);
+ 	last = min(last, con_driver->last);
+@@ -3212,13 +3218,12 @@ int unbind_con_driver(const struct consw *csw, int first, int last, int deflt)
+ 
+ 	/* ignore return value, binding should not fail */
+ 	do_bind_con_driver(defcsw, first, last, deflt);
+-	console_unlock();
+ err:
+ 	module_put(owner);
+ 	return retval;
+ 
+ }
+-EXPORT_SYMBOL(unbind_con_driver);
++EXPORT_SYMBOL_GPL(do_unbind_con_driver);
+ 
+ static int vt_bind(struct con_driver *con)
+ {
+@@ -3605,9 +3610,18 @@ EXPORT_SYMBOL(register_con_driver);
+  */
+ int unregister_con_driver(const struct consw *csw)
+ {
+-	int i, retval = -ENODEV;
++	int retval;
+ 
+ 	console_lock();
++	retval = do_unregister_con_driver(csw);
++	console_unlock();
++	return retval;
++}
++EXPORT_SYMBOL(unregister_con_driver);
++
++int do_unregister_con_driver(const struct consw *csw)
++{
++	int i, retval = -ENODEV;
+ 
+ 	/* cannot unregister a bound driver */
+ 	if (con_is_bound(csw))
+@@ -3633,10 +3647,9 @@ int unregister_con_driver(const struct consw *csw)
+ 		}
+ 	}
+ err:
+-	console_unlock();
+ 	return retval;
+ }
+-EXPORT_SYMBOL(unregister_con_driver);
++EXPORT_SYMBOL_GPL(do_unregister_con_driver);
+ 
+ /*
+  *	If we support more console drivers, this function is used
 diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index c75f8ce..4bd7820 100644
+index 4bd7820..2aef9ca 100644
 --- a/drivers/video/console/fbcon.c
 +++ b/drivers/video/console/fbcon.c
-@@ -546,9 +546,8 @@ static int do_fbcon_takeover(int show_logo)
+@@ -3004,7 +3004,7 @@ static int fbcon_unbind(void)
+ {
+ 	int ret;
+ 
+-	ret = unbind_con_driver(&fb_con, first_fb_vc, last_fb_vc,
++	ret = do_unbind_con_driver(&fb_con, first_fb_vc, last_fb_vc,
  				fbcon_is_default);
  
- 	if (err) {
--		for (i = first_fb_vc; i <= last_fb_vc; i++) {
-+		for (i = first_fb_vc; i <= last_fb_vc; i++)
- 			con2fb_map[i] = -1;
--		}
- 		info_idx = -1;
- 	} else {
- 		fbcon_has_console_bind = 1;
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 564ebe9..d8d9831 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1650,9 +1650,9 @@ static int do_register_framebuffer(struct fb_info *fb_info)
- 	event.info = fb_info;
- 	if (!lock_fb_info(fb_info))
- 		return -ENODEV;
--        console_lock();
-+	console_lock();
- 	fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
--        console_unlock();
-+	console_unlock();
- 	unlock_fb_info(fb_info);
+ 	if (!ret)
+@@ -3077,7 +3077,7 @@ static int fbcon_fb_unregistered(struct fb_info *info)
+ 		primary_device = -1;
+ 
+ 	if (!num_registered_fb)
+-		unregister_con_driver(&fb_con);
++		do_unregister_con_driver(&fb_con);
+ 
  	return 0;
  }
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index d8d9831..070b9a1 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1668,8 +1668,10 @@ static int do_unregister_framebuffer(struct fb_info *fb_info)
+ 
+ 	if (!lock_fb_info(fb_info))
+ 		return -ENODEV;
++	console_lock();
+ 	event.info = fb_info;
+ 	ret = fb_notifier_call_chain(FB_EVENT_FB_UNBIND, &event);
++	console_unlock();
+ 	unlock_fb_info(fb_info);
+ 
+ 	if (ret)
+@@ -1684,7 +1686,9 @@ static int do_unregister_framebuffer(struct fb_info *fb_info)
+ 	num_registered_fb--;
+ 	fb_cleanup_device(fb_info);
+ 	event.info = fb_info;
++	console_lock();
+ 	fb_notifier_call_chain(FB_EVENT_FB_UNREGISTERED, &event);
++	console_unlock();
+ 
+ 	/* this may free fb info */
+ 	put_fb_info(fb_info);
+diff --git a/include/linux/console.h b/include/linux/console.h
+index 4ef4307..47b858c 100644
+--- a/include/linux/console.h
++++ b/include/linux/console.h
+@@ -77,6 +77,7 @@ extern const struct consw prom_con;	/* SPARC PROM console */
+ int con_is_bound(const struct consw *csw);
+ int register_con_driver(const struct consw *csw, int first, int last);
+ int unregister_con_driver(const struct consw *csw);
++int do_unregister_con_driver(const struct consw *csw);
+ int take_over_console(const struct consw *sw, int first, int last, int deflt);
+ int do_take_over_console(const struct consw *sw, int first, int last, int deflt);
+ void give_up_console(const struct consw *sw);
+diff --git a/include/linux/vt_kern.h b/include/linux/vt_kern.h
+index 50ae7d0..dbbc6bf 100644
+--- a/include/linux/vt_kern.h
++++ b/include/linux/vt_kern.h
+@@ -130,6 +130,8 @@ void vt_event_post(unsigned int event, unsigned int old, unsigned int new);
+ int vt_waitactive(int n);
+ void change_console(struct vc_data *new_vc);
+ void reset_vc(struct vc_data *vc);
++extern int do_unbind_con_driver(const struct consw *csw, int first, int last,
++			     int deflt);
+ extern int unbind_con_driver(const struct consw *csw, int first, int last,
+ 			     int deflt);
+ int vty_init(const struct file_operations *console_fops);
 -- 
 1.8.1
 

@@ -1,267 +1,47 @@
-From: Zhou Zhu <zzhu3@marvell.com>
-Date: Thu, 17 Jan 2013 08:24:04 +0000
-Subject: [PATCH v5 4/8] video: mmp: add tpo hvga panel supported
-Message-Id: <1358411044-2703-1-git-send-email-zzhu3@marvell.com>
+From: Afzal Mohammed <afzal@ti.com>
+Date: Tue, 15 Jan 2013 13:53:59 +0000
+Subject: [PATCH v2 02/12] video: da8xx-fb: fix 24bpp raster configuration
+Message-Id: <dcc13ae0bf67edc805f74e63226b50af98818189.1358251447.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1358251447.git.afzal@ti.com>
+In-Reply-To: <cover.1358251447.git.afzal-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Rob Landley <rob-VoJi6FS/r0vR7s880joybQ@public.gmane.org>, Sekhar Nori <nsekhar-l0cyMroinI0@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: "Manjunathappa, Prakash" <prakash.pm-l0cyMroinI0@public.gmane.org>
 
-From: Lisa Du <cldu@marvell.com>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
 
-Add tpo hvga panel support in marvell display framework.
-This panel driver implements modes query and power on/off.
+Set only LCD_V2_TFT_24BPP_MODE bit for 24bpp and LCD_V2_TFT_24BPP_UNPACK
+bit along with LCD_V2_TFT_24BPP_MODE for 32bpp configuration.
 
-This panel driver gets panel config/ plat power on/off/ connected
-path name from machine-info and registered as a spi device.
-This panel driver uses mmp_disp supplied register_panel function to
-register panel to path as machine-info defined.
+Patch is tested on am335x-evm for 24bpp and da850-evm for 16bpp
+configurations.
 
-Signed-off-by: Lisa Du <cldu@marvell.com>
-Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/mmp/Kconfig                 |    1 +
- drivers/video/mmp/Makefile                |    2 +-
- drivers/video/mmp/panel/Kconfig           |    6 +
- drivers/video/mmp/panel/Makefile          |    1 +
- drivers/video/mmp/panel/tpo_tj032md01bw.c |  188 +++++++++++++++++++++++++++++
- 5 files changed, 197 insertions(+), 1 deletion(-)
- create mode 100644 drivers/video/mmp/panel/Kconfig
- create mode 100644 drivers/video/mmp/panel/Makefile
- create mode 100644 drivers/video/mmp/panel/tpo_tj032md01bw.c
+ drivers/video/da8xx-fb.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/mmp/Kconfig b/drivers/video/mmp/Kconfig
-index ed51d15..e9ea39e 100644
---- a/drivers/video/mmp/Kconfig
-+++ b/drivers/video/mmp/Kconfig
-@@ -6,5 +6,6 @@ menuconfig MMP_DISP
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 35a33ca..7f92f37 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -550,10 +550,10 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+ 	case 4:
+ 	case 16:
+ 		break;
+-	case 24:
+-		reg |= LCD_V2_TFT_24BPP_MODE;
+ 	case 32:
+ 		reg |= LCD_V2_TFT_24BPP_UNPACK;
++	case 24:
++		reg |= LCD_V2_TFT_24BPP_MODE;
+ 		break;
  
- if MMP_DISP
- source "drivers/video/mmp/hw/Kconfig"
-+source "drivers/video/mmp/panel/Kconfig"
- source "drivers/video/mmp/fb/Kconfig"
- endif
-diff --git a/drivers/video/mmp/Makefile b/drivers/video/mmp/Makefile
-index 6999a09..a014cb3 100644
---- a/drivers/video/mmp/Makefile
-+++ b/drivers/video/mmp/Makefile
-@@ -1 +1 @@
--obj-y += core.o hw/ fb/
-+obj-y += core.o hw/ panel/ fb/
-diff --git a/drivers/video/mmp/panel/Kconfig b/drivers/video/mmp/panel/Kconfig
-new file mode 100644
-index 0000000..4b2c4f4
---- /dev/null
-+++ b/drivers/video/mmp/panel/Kconfig
-@@ -0,0 +1,6 @@
-+config MMP_PANEL_TPOHVGA
-+	bool "tpohvga panel TJ032MD01BW support"
-+	depends on SPI_MASTER
-+	default n
-+	help
-+		tpohvga panel support
-diff --git a/drivers/video/mmp/panel/Makefile b/drivers/video/mmp/panel/Makefile
-new file mode 100644
-index 0000000..2f91611
---- /dev/null
-+++ b/drivers/video/mmp/panel/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_MMP_PANEL_TPOHVGA)    += tpo_tj032md01bw.o
-diff --git a/drivers/video/mmp/panel/tpo_tj032md01bw.c b/drivers/video/mmp/panel/tpo_tj032md01bw.c
-new file mode 100644
-index 0000000..42c4d1d
---- /dev/null
-+++ b/drivers/video/mmp/panel/tpo_tj032md01bw.c
-@@ -0,0 +1,188 @@
-+/*
-+ * linux/drivers/video/mmp/panel/tpo_tj032md01bw.c
-+ * active panel using spi interface to do init
-+ *
-+ * Copyright (C) 2012 Marvell Technology Group Ltd.
-+ * Authors:  Guoqing Li <ligq@marvell.com>
-+ *          Lisa Du <cldu@marvell.com>
-+ *          Zhou Zhu <zzhu3@marvell.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the
-+ * Free Software Foundation; either version 2 of the License, or (at your
-+ * option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/string.h>
-+#include <linux/delay.h>
-+#include <linux/platform_device.h>
-+#include <linux/err.h>
-+#include <linux/spi/spi.h>
-+#include <video/mmp_disp.h>
-+
-+static u16 init[] = {
-+	0x0801,
-+	0x0800,
-+	0x0200,
-+	0x0304,
-+	0x040e,
-+	0x0903,
-+	0x0b18,
-+	0x0c53,
-+	0x0d01,
-+	0x0ee0,
-+	0x0f01,
-+	0x1058,
-+	0x201e,
-+	0x210a,
-+	0x220a,
-+	0x231e,
-+	0x2400,
-+	0x2532,
-+	0x2600,
-+	0x27ac,
-+	0x2904,
-+	0x2aa2,
-+	0x2b45,
-+	0x2c45,
-+	0x2d15,
-+	0x2e5a,
-+	0x2fff,
-+	0x306b,
-+	0x310d,
-+	0x3248,
-+	0x3382,
-+	0x34bd,
-+	0x35e7,
-+	0x3618,
-+	0x3794,
-+	0x3801,
-+	0x395d,
-+	0x3aae,
-+	0x3bff,
-+	0x07c9,
-+};
-+
-+static u16 poweroff[] = {
-+	0x07d9,
-+};
-+
-+struct tpohvga_plat_data {
-+	void (*plat_onoff)(int status);
-+	struct spi_device *spi;
-+};
-+
-+static void tpohvga_onoff(struct mmp_panel *panel, int status)
-+{
-+	struct tpohvga_plat_data *plat = panel->plat_data;
-+	int ret;
-+
-+	if (status) {
-+		plat->plat_onoff(1);
-+
-+		ret = spi_write(plat->spi, init, sizeof(init));
-+		if (ret < 0)
-+			dev_warn(panel->dev, "init cmd failed(%d)\n", ret);
-+	} else {
-+		ret = spi_write(plat->spi, poweroff, sizeof(poweroff));
-+		if (ret < 0)
-+			dev_warn(panel->dev, "poweroff cmd failed(%d)\n", ret);
-+
-+		plat->plat_onoff(0);
-+	}
-+}
-+
-+static struct mmp_mode mmp_modes_tpohvga[] = {
-+	[0] = {
-+		.pixclock_freq = 10394400,
-+		.refresh = 60,
-+		.xres = 320,
-+		.yres = 480,
-+		.hsync_len = 10,
-+		.left_margin = 15,
-+		.right_margin = 10,
-+		.vsync_len = 2,
-+		.upper_margin = 4,
-+		.lower_margin = 2,
-+		.invert_pixclock = 1,
-+		.pix_fmt_out = PIXFMT_RGB565,
-+	},
-+};
-+
-+static int tpohvga_get_modelist(struct mmp_panel *panel,
-+		struct mmp_mode **modelist)
-+{
-+	*modelist = mmp_modes_tpohvga;
-+	return 1;
-+}
-+
-+static struct mmp_panel panel_tpohvga = {
-+	.name = "tpohvga",
-+	.panel_type = PANELTYPE_ACTIVE,
-+	.get_modelist = tpohvga_get_modelist,
-+	.set_onoff = tpohvga_onoff,
-+};
-+
-+static int tpohvga_probe(struct spi_device *spi)
-+{
-+	struct mmp_mach_panel_info *mi;
-+	int ret;
-+	struct tpohvga_plat_data *plat_data;
-+
-+	/* get configs from platform data */
-+	mi = spi->dev.platform_data;
-+	if (mi = NULL) {
-+		dev_err(&spi->dev, "%s: no platform data defined\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	/* setup spi related info */
-+	spi->bits_per_word = 16;
-+	ret = spi_setup(spi);
-+	if (ret < 0) {
-+		dev_err(&spi->dev, "spi setup failed %d", ret);
-+		return ret;
-+	}
-+
-+	plat_data = kzalloc(sizeof(*plat_data), GFP_KERNEL);
-+	if (plat_data = NULL)
-+		return -ENOMEM;
-+
-+	plat_data->spi = spi;
-+	plat_data->plat_onoff = mi->plat_set_onoff;
-+	panel_tpohvga.plat_data = plat_data;
-+	panel_tpohvga.plat_path_name = mi->plat_path_name;
-+	panel_tpohvga.dev = &spi->dev;
-+
-+	if (!mmp_register_panel(&panel_tpohvga)) {
-+		dev_err(&spi->dev, "%s: register failed\n", __func__);
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+static struct spi_driver panel_tpohvga_driver = {
-+	.driver		= {
-+		.name	= "tpo-hvga",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= tpohvga_probe,
-+};
-+module_spi_driver(panel_tpohvga_driver);
-+
-+MODULE_AUTHOR("Lisa Du<cldu@marvell.com>");
-+MODULE_DESCRIPTION("Panel driver for tpohvga");
-+MODULE_LICENSE("GPL");
+ 	case 8:
 -- 
 1.7.9.5
 

@@ -1,72 +1,45 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Wed, 23 Jan 2013 11:50:47 +0000
-Subject: [PATCH v4 07/12] video: da8xx-fb: minimal dt support
-Message-Id: <16c9779fb53323bb68bc9b6c9d86f61da8297088.1358937685.git.afzal@ti.com>
+Date: Tue, 15 Jan 2013 13:53:53 +0000
+Subject: [PATCH v2 01/12] video: da8xx-fb: make io operations safe
+Message-Id: <08c4247f9a883b35982af40ede8a720b617334c2.1358251447.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358937685.git.afzal@ti.com>
-In-Reply-To: <cover.1358937685.git.afzal@ti.com>
+References: <cover.1358251447.git.afzal@ti.com>
+In-Reply-To: <cover.1358251447.git.afzal-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Mike Turquette <mturquette@linaro.org>
+To: Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Rob Landley <rob-VoJi6FS/r0vR7s880joybQ@public.gmane.org>, Sekhar Nori <nsekhar-l0cyMroinI0@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-Driver is provided a means to have the probe triggered by DT.
+Replace __raw_readl/__raw_writel with readl/writel; this driver is
+reused on ARMv7 (AM335x SoC).
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- Documentation/devicetree/bindings/video/fb-da8xx.txt | 16 ++++++++++++++++
- drivers/video/da8xx-fb.c                             |  7 +++++++
- 2 files changed, 23 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/fb-da8xx.txt
 
-diff --git a/Documentation/devicetree/bindings/video/fb-da8xx.txt b/Documentation/devicetree/bindings/video/fb-da8xx.txt
-new file mode 100644
-index 0000000..581e014
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/fb-da8xx.txt
-@@ -0,0 +1,16 @@
-+TI LCD Controller on DA830/DA850/AM335x SoC's
-+
-+Required properties:
-+- compatible:
-+	DA830 - "ti,da830-lcdc"
-+	AM335x SoC's - "ti,am3352-lcdc", "ti,da830-lcdc"
-+- reg: Address range of lcdc register set
-+- interrupts: lcdc interrupt
-+
-+Example:
-+
-+lcdc@4830e000 {
-+	compatible = "ti,am3352-lcdc", "ti,da830-lcdc";
-+	reg =  <0x4830e000 0x1000>;
-+	interrupts = <36>;
-+};
+v2: new patch
+
+ drivers/video/da8xx-fb.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index b6ea5e9..08ee8eb 100644
+index 720604c..35a33ca 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -1595,6 +1595,12 @@ static int fb_resume(struct platform_device *dev)
- #define fb_resume NULL
- #endif
+@@ -141,12 +141,12 @@ static int frame_done_flag;
  
-+static const struct of_device_id da8xx_fb_of_match[] = {
-+	{.compatible = "ti,da830-lcdc", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, da8xx_fb_of_match);
-+
- static struct platform_driver da8xx_fb_driver = {
- 	.probe = fb_probe,
- 	.remove = fb_remove,
-@@ -1603,6 +1609,7 @@ static struct platform_driver da8xx_fb_driver = {
- 	.driver = {
- 		   .name = DRIVER_NAME,
- 		   .owner = THIS_MODULE,
-+		   .of_match_table = of_match_ptr(da8xx_fb_of_match),
- 		   },
- };
+ static inline unsigned int lcdc_read(unsigned int addr)
+ {
+-	return (unsigned int)__raw_readl(da8xx_fb_reg_base + (addr));
++	return (unsigned int)readl(da8xx_fb_reg_base + (addr));
+ }
  
+ static inline void lcdc_write(unsigned int val, unsigned int addr)
+ {
+-	__raw_writel(val, da8xx_fb_reg_base + (addr));
++	writel(val, da8xx_fb_reg_base + (addr));
+ }
+ 
+ struct da8xx_fb_par {
 -- 
-1.7.12
+1.7.9.5
 

@@ -1,7 +1,7 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Tue, 15 Jan 2013 13:43:55 +0000
-Subject: [PATCH v3 04/10] video: da8xx-fb: remove unneeded "var" initialization
-Message-Id: <03ef2f9478704988f0240b55da8243879ac579f3.1358250489.git.afzal@ti.com>
+Date: Tue, 15 Jan 2013 13:43:36 +0000
+Subject: [PATCH v3 01/10] video: da8xx-fb: fb_check_var enhancement
+Message-Id: <4cc2a1179d24e067623b9516946e222b22d79f7e.1358250489.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1358250489.git.afzal@ti.com>
 In-Reply-To: <cover.1358250489.git.afzal@ti.com>
@@ -10,54 +10,54 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Sekhar Nori <nsekhar@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-modedb helper now updates "var" information based on the detected
-panel, remove the unnecessary initialization.
+Check whether "struct fb_var_screeninfo" fields are sane, if not
+update it to be within allowed limits.
+
+If user sends down buggy "var" values, this will bring those within
+allowable limits. And fb_set_par is not supposed to change "var"
+values, fb_check_var has to ensure that values are proper.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/da8xx-fb.c |   22 +---------------------
- 1 file changed, 1 insertion(+), 21 deletions(-)
+ drivers/video/da8xx-fb.c |   18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index a1f6544..18834fa 100644
+index 0810939..d00dd17 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -131,10 +131,6 @@
+@@ -888,6 +888,9 @@ static int fb_check_var(struct fb_var_screeninfo *var,
+ 			struct fb_info *info)
+ {
+ 	int err = 0;
++	struct da8xx_fb_par *par = info->par;
++	int bpp = var->bits_per_pixel >> 3;
++	unsigned long line_size = var->xres_virtual * bpp;
  
- #define WSI_TIMEOUT	50
- #define PALETTE_SIZE	256
--#define LEFT_MARGIN	64
--#define RIGHT_MARGIN	64
--#define UPPER_MARGIN	32
--#define LOWER_MARGIN	32
+ 	if (var->bits_per_pixel > 16 && lcd_revision = LCD_VERSION_1)
+ 		return -EINVAL;
+@@ -955,6 +958,21 @@ static int fb_check_var(struct fb_var_screeninfo *var,
+ 	var->green.msb_right = 0;
+ 	var->blue.msb_right = 0;
+ 	var->transp.msb_right = 0;
++
++	if (line_size * var->yres_virtual > par->vram_size)
++		var->yres_virtual = par->vram_size / line_size;
++
++	if (var->yres > var->yres_virtual)
++		var->yres = var->yres_virtual;
++
++	if (var->xres > var->xres_virtual)
++		var->xres = var->xres_virtual;
++
++	if (var->xres + var->xoffset > var->xres_virtual)
++		var->xoffset = var->xres_virtual - var->xres;
++	if (var->yres + var->yoffset > var->yres_virtual)
++		var->yoffset = var->yres_virtual - var->yres;
++
+ 	return err;
+ }
  
- static void __iomem *da8xx_fb_reg_base;
- static struct resource *lcdc_regs;
-@@ -184,23 +180,7 @@ struct da8xx_fb_par {
- 	u32 pseudo_palette[16];
- };
- 
--/* Variable Screen Information */
--static struct fb_var_screeninfo da8xx_fb_var = {
--	.xoffset = 0,
--	.yoffset = 0,
--	.transp = {0, 0, 0},
--	.nonstd = 0,
--	.activate = 0,
--	.height = -1,
--	.width = -1,
--	.accel_flags = 0,
--	.left_margin = LEFT_MARGIN,
--	.right_margin = RIGHT_MARGIN,
--	.upper_margin = UPPER_MARGIN,
--	.lower_margin = LOWER_MARGIN,
--	.sync = 0,
--	.vmode = FB_VMODE_NONINTERLACED
--};
-+static struct fb_var_screeninfo da8xx_fb_var;
- 
- static struct fb_fix_screeninfo da8xx_fb_fix = {
- 	.id = "DA8xx FB Drv",
 -- 
 1.7.9.5
 

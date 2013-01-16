@@ -1,110 +1,124 @@
 From: Sedat Dilek <sedat.dilek@gmail.com>
-Date: Wed, 16 Jan 2013 09:52:11 +0000
+Date: Wed, 16 Jan 2013 09:59:48 +0000
 Subject: Re: 3.8-rc2 lockdep complains about console_lock vs. fb_notifier_list.rwsem
-Message-Id: <CA+icZUXjmjgFii4bpr6fvfUY9jfu932bCxa088g-wZjOfpYbng@mail.gmail.com>
+Message-Id: <CA+icZUUkbKBzNuCSZUWdTf3_8ZNUAgxNDoubnvAxNyx4j2PKqw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CA+icZUUxgRsGkYAmZ=JxTwPvdhTzpGLcxm6+VSq9jnfYPVXj4Q@mail.gmail.com>
 	<s5hpq16zfox.wl%tiwai@suse.de>
 	<CA+icZUWFKzccbHrU0pxK-T2TdwyDsTTNxP_22zmGTPbcAmhMaQ@mail.gmail.com>
 	<s5hpq1531yn.wl%tiwai@suse.de>
-In-Reply-To: <s5hpq1531yn.wl%tiwai@suse.de>
+	<CA+icZUXjmjgFii4bpr6fvfUY9jfu932bCxa088g-wZjOfpYbng@mail.gmail.com>
+In-Reply-To: <CA+icZUXjmjgFii4bpr6fvfUY9jfu932bCxa088g-wZjOfpYbng@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Takashi Iwai <tiwai@suse.de>
 Cc: Jiri Kosina <jkosina@suse.cz>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, alan@lxorguk.ukuu.org.uk, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-next <linux-next@vger.kernel.org>
 
-On Wed, Jan 16, 2013 at 10:35 AM, Takashi Iwai <tiwai@suse.de> wrote:
-> At Wed, 16 Jan 2013 10:21:46 +0100,
-> Sedat Dilek wrote:
+On Wed, Jan 16, 2013 at 10:52 AM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
+> On Wed, Jan 16, 2013 at 10:35 AM, Takashi Iwai <tiwai@suse.de> wrote:
+>> At Wed, 16 Jan 2013 10:21:46 +0100,
+>> Sedat Dilek wrote:
+>>>
+>>> On Tue, Jan 15, 2013 at 3:25 PM, Takashi Iwai <tiwai@suse.de> wrote:
+>>> > At Sat, 5 Jan 2013 13:13:27 +0100,
+>>> > Sedat Dilek wrote:
+>>> >>
+>>> >> Hi Jiri,
+>>> >>
+>>> >> ...known issue (see thread in [1]), please feel free to test patches
+>>> >> from Alan and Andrew (see [1], [2] and [3]) and report.
+>>> >>
+>>> >> Regards,
+>>> >> - Sedat -
+>>> >>
+>>> >> [1] http://marc.info/?t5309396400003&r=1&w=2
+>>> >> [2] http://ozlabs.org/~akpm/mmots/broken-out/fb-rework-locking-to-fix-lock-ordering-on-takeover.patch
+>>> >> [3] http://ozlabs.org/~akpm/mmots/broken-out/fb-rework-locking-to-fix-lock-ordering-on-takeover-fix.patch
+>>> >> [4] http://ozlabs.org/~akpm/mmots/broken-out/fb-rework-locking-to-fix-lock-ordering-on-takeover-fix-2.patch
+>>> >
+>>> > I've hit this bug and tried the patch [2] ([3] and [4] are gone).
+>>> > Unfortunately the deadlock is still reported, as seen below.
+>>> >
+>>> > A similar fix for fbcon_unbind(), splitting an unlocked version of
+>>> > unbind_con_driver() and call it?
+>>> >
+>>> > (BTW, the patch [2] contains strange characters in the comments, and
+>>> >  has a few coding issues easily detected by checkpatch.pl.)
+>>> >
+>>>
+>>> [ CCing Rafael as he asked in another thread if I had sent a patch ]
+>>>
+>>> I noticed also some these "strange" chars in the patch from Andrew and
+>>> a patch of mine was sent as
+>>> "fb-Rework-locking-to-fix-lock-ordering-on-takeover-fix-comments.patch"
+>>> to the lists.
+>>>
+>>> It is strange to me that Andrew or other maintainers himself did not
+>>> check with "checkpatch.pl".
+>>> This should be a common testcase!
+>>> Hey, noone is perfect :-).
+>>> ( /me has also not checked with that script - I just saw it. )
+>>>
+>>> Just as a note to the issue in general:
+>>> Andrew took over the patch from Alan which is very honest - he is not
+>>> the active TTY maintainer!
+>>> Didn't Greg takeover maintenance from Alan (after a dispute and blaming Alan)?
+>>> If this is true, why the hell is Greg not CCed?
 >>
->> On Tue, Jan 15, 2013 at 3:25 PM, Takashi Iwai <tiwai@suse.de> wrote:
->> > At Sat, 5 Jan 2013 13:13:27 +0100,
->> > Sedat Dilek wrote:
->> >>
->> >> Hi Jiri,
->> >>
->> >> ...known issue (see thread in [1]), please feel free to test patches
->> >> from Alan and Andrew (see [1], [2] and [3]) and report.
->> >>
->> >> Regards,
->> >> - Sedat -
->> >>
->> >> [1] http://marc.info/?t5309396400003&r=1&w=2
->> >> [2] http://ozlabs.org/~akpm/mmots/broken-out/fb-rework-locking-to-fix-lock-ordering-on-takeover.patch
->> >> [3] http://ozlabs.org/~akpm/mmots/broken-out/fb-rework-locking-to-fix-lock-ordering-on-takeover-fix.patch
->> >> [4] http://ozlabs.org/~akpm/mmots/broken-out/fb-rework-locking-to-fix-lock-ordering-on-takeover-fix-2.patch
->> >
->> > I've hit this bug and tried the patch [2] ([3] and [4] are gone).
->> > Unfortunately the deadlock is still reported, as seen below.
->> >
->> > A similar fix for fbcon_unbind(), splitting an unlocked version of
->> > unbind_con_driver() and call it?
->> >
->> > (BTW, the patch [2] contains strange characters in the comments, and
->> >  has a few coding issues easily detected by checkpatch.pl.)
->> >
+>> Let's do it :)
 >>
->> [ CCing Rafael as he asked in another thread if I had sent a patch ]
+>> Greg, Jiri, this bug hits already quite a few people.
 >>
->> I noticed also some these "strange" chars in the patch from Andrew and
->> a patch of mine was sent as
->> "fb-Rework-locking-to-fix-lock-ordering-on-takeover-fix-comments.patch"
->> to the lists.
+>> I can reproduce the bug easily on a machine with a radeon graphics.
+>> It appears always at boot when lockdep is enabled.
 >>
->> It is strange to me that Andrew or other maintainers himself did not
->> check with "checkpatch.pl".
->> This should be a common testcase!
->> Hey, noone is perfect :-).
->> ( /me has also not checked with that script - I just saw it. )
 >>
->> Just as a note to the issue in general:
->> Andrew took over the patch from Alan which is very honest - he is not
->> the active TTY maintainer!
->> Didn't Greg takeover maintenance from Alan (after a dispute and blaming Alan)?
->> If this is true, why the hell is Greg not CCed?
+>>> Thanks for the real patch in the followup of this thread!
+>>> Who will take care of it :-)?
+>>
+>> Either tty maintainer, or fb maintainer, or Andrew?
+>>
+>> FWIW, Andrew took my patch in mm:
+>>   http://ozlabs.org/~akpm/mmots/broken-out/fb-rework-locking-to-fix-lock-ordering-on-takeover.patch
+>>   http://ozlabs.org/~akpm/mmots/broken-out/fb-yet-another-band-aid-for-fixing-lockdep-mess.patch
+>>
 >
-> Let's do it :)
+> [ CCing linux-next ML ]
 >
-> Greg, Jiri, this bug hits already quite a few people.
+> Thanks for all your efforts to get this fb-issue nailed down for mainline!
 >
-> I can reproduce the bug easily on a machine with a radeon graphics.
-> It appears always at boot when lockdep is enabled.
+> Just as a note being a Linux-Next customer:
 >
+> "fb-yet-another-band-aid-for-fixing-lockdep-mess.patch" did not hit
+> next-20130116!
+> Thanks for the link!
 >
->> Thanks for the real patch in the followup of this thread!
->> Who will take care of it :-)?
+> Normally Andrew sents out a mmotm release marking patches from his
+> tree destinated for Linux-Next with a "*".
 >
-> Either tty maintainer, or fb maintainer, or Andrew?
+> To quote from the latest mmotm release-notes:
 >
-> FWIW, Andrew took my patch in mm:
->   http://ozlabs.org/~akpm/mmots/broken-out/fb-rework-locking-to-fix-lock-ordering-on-takeover.patch
->   http://ozlabs.org/~akpm/mmots/broken-out/fb-yet-another-band-aid-for-fixing-lockdep-mess.patch
+> "This mmotm tree contains the following patches against 3.8-rc3:
+> (patches marked "*" will be included in linux-next)"
+>
+> But anyway this stuff is Linux-3.8 material as well.
 >
 
-[ CCing linux-next ML ]
+JYI: [1] now does NOT have anymore those "strange" chars, Thanks Takashi san.
 
-Thanks for all your efforts to get this fb-issue nailed down for mainline!
+I will test next-20130116 with both fb-fixes as -2 kernel.
+( Running LTP-lite on my "naked" -1 kernel only with my kbuild/deb-pkg-fixes. )
 
-Just as a note being a Linux-Next customer:
-
-"fb-yet-another-band-aid-for-fixing-lockdep-mess.patch" did not hit
-next-20130116!
-Thanks for the link!
-
-Normally Andrew sents out a mmotm release marking patches from his
-tree destinated for Linux-Next with a "*".
-
-To quote from the latest mmotm release-notes:
-
-"This mmotm tree contains the following patches against 3.8-rc3:
-(patches marked "*" will be included in linux-next)"
-
-But anyway this stuff is Linux-3.8 material as well.
+Thanks to everyone involved.
 
 - Sedat -
 
+[1] http://ozlabs.org/~akpm/mmots/broken-out/fb-rework-locking-to-fix-lock-ordering-on-takeover.patch
+[2] http://ozlabs.org/~akpm/mmots/broken-out/fb-yet-another-band-aid-for-fixing-lockdep-mess.patch
+> - Sedat -
 >
-> thanks,
->
-> Takashi
+>>
+>> thanks,
+>>
+>> Takashi

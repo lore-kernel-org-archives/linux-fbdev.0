@@ -1,74 +1,35 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Tue, 15 Jan 2013 13:49:57 +0000
-Subject: [PATCH v2 0/5] ARM: dts: AM33XX: lcdc support
-Message-Id: <cover.1358252955.git.afzal@ti.com>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Wed, 16 Jan 2013 12:45:06 +0000
+Subject: [PATCH 0/3] OMAPDSS: Panel NEC: backlight handling changes
+Message-Id: <1358340309-8774-1-git-send-email-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 
-Hi,
+Hi Tomi,
 
-This series add DT sources for AM335x SoC as well as AM335x based
-boards.
+While working with Zoom2 which is using the NEC panel I noticed few issues with
+the panel driver.
+The first patch fixes one irritating warning print every time I boot the board.
+With the third patch we can cleanly move to bl-pwm driver to handle the
+backlight on Zoom2. In this case we should not register another backlight device
+in the NEC panel driver.
 
-As compared to previous version, in this version, comment has been
-added in dt source file about pinmux details so that user can easily
-correlate to that mentioned in TRM. Also author of one of the patch
-was actually "Manjunathappa, Prakash", here in this series, authorship
-has been made proper.
+Regards,
+Peter
+---
+Peter Ujfalusi (3):
+  OMAPDSS: Panel NEC: Set backlight type to remove boot time warning
+  OMAPDSS: Panel NEC: Get rid of nec_80848_data structure
+  OMAPDSS: Panel NEC: Only register backlight when we have valid
+    callback
 
-As pinmux is an SoC specific detail rather than IP specific one,
-addition of pin control has been done in a separate patch from
-the one in which display timings are added. Also it may aid in
-debugging in case of any issues.
-
-This has been tested on AM335x based boards like AM335x EVM and
-AM335x EVM-SK.
-
-This series is based on v3.8-rc3.
-
-This series has a dependency on,
-1. Series v16 "of: add display helper" by,
-	Steffen Trumtrar <s.trumtrar@pengutronix.de>
-2. Series v3 "video: da8xx-fb: runtime timing configuration" by,
-	me (Afzal Mohammed <afzal@ti.com>)
-3. Series v2 "video: da8xx-fb: DT support" by,
-	me (Afzal Mohammed <afzal@ti.com>)
-
-To test on AM335x, in addition to the above, following changes,
-1. Patch "ARM: AM33XX: clock: SET_RATE_PARENT in lcd path" by,
-	me (Afzal Mohammed <afzal@ti.com>)
-2. Patch "da8xx: Allow use by am33xx based devices" by,
-	Pantelis Antoniou <panto@antoniou-consulting.com>
-3. Series "HWMOD fixes for AM33xx PWM submodules and device tree nodes" by,
-	Philip, Avinash <avinashphilip@ti.com>
-would be required
-
-All above dependencies along with those required for testing is available
- @git://gitorious.org/x0148406-public/linux-kernel.git tags/da8xx-fb-dt-v3.8-rc3
-
-Regards
-Afzal
-
-v2: add pinmux comment in dtsi files, correct authorship of one of the
-    patch.
-
-Afzal Mohammed (4):
-  ARM: dts: AM33XX: Add lcdc node
-  ARM: dts: AM33XX: Add am335x-evm lcdc panel timings
-  ARM: dts: AM33XX: Add am335x-evmsk lcdc panel timings
-  ARM: dts: AM33XX: Add am335x-evmsk lcdc pincontrol info
-
-Manjunathappa, Prakash (1):
-  ARM: dts: AM33XX: Add am335x-evm lcdc pincontrol info
-
- arch/arm/boot/dts/am335x-evm.dts   |   55 +++++++++++++++++++++++++++++++++++-
- arch/arm/boot/dts/am335x-evmsk.dts |   55 +++++++++++++++++++++++++++++++++++-
- arch/arm/boot/dts/am33xx.dtsi      |    8 ++++++
- 3 files changed, 116 insertions(+), 2 deletions(-)
+ .../omap2/displays/panel-nec-nl8048hl11-01b.c      | 81 ++++++++++------------
+ 1 file changed, 35 insertions(+), 46 deletions(-)
 
 -- 
-1.7.9.5
+1.8.1
 

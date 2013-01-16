@@ -1,45 +1,39 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Tue, 15 Jan 2013 13:53:53 +0000
-Subject: [PATCH v2 01/12] video: da8xx-fb: make io operations safe
-Message-Id: <08c4247f9a883b35982af40ede8a720b617334c2.1358251447.git.afzal@ti.com>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Wed, 16 Jan 2013 12:45:07 +0000
+Subject: [PATCH 1/3] OMAPDSS: Panel NEC: Set backlight type to remove boot time warning
+Message-Id: <1358340309-8774-2-git-send-email-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358251447.git.afzal@ti.com>
-In-Reply-To: <cover.1358251447.git.afzal-l0cyMroinI0@public.gmane.org>
+References: <1358340309-8774-1-git-send-email-peter.ujfalusi@ti.com>
+In-Reply-To: <1358340309-8774-1-git-send-email-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Rob Landley <rob-VoJi6FS/r0vR7s880joybQ@public.gmane.org>, Sekhar Nori <nsekhar-l0cyMroinI0@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 
-Replace __raw_readl/__raw_writel with readl/writel; this driver is
-reused on ARMv7 (AM335x SoC).
+Fixes the following boot time warning:
+[    2.230865] WARNING: at drivers/video/backlight/backlight.c:315 backlight_device_register+0x184/0x1f4()
+[    2.240386] nec-8048: invalid backlight type
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
+We need to pass valid backlight type when the device is registered.
+
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
+ drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-v2: new patch
-
- drivers/video/da8xx-fb.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 720604c..35a33ca 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -141,12 +141,12 @@ static int frame_done_flag;
+diff --git a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+index c4e9c2b..f43a343 100644
+--- a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
++++ b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+@@ -132,6 +132,7 @@ static int nec_8048_panel_probe(struct omap_dss_device *dssdev)
  
- static inline unsigned int lcdc_read(unsigned int addr)
- {
--	return (unsigned int)__raw_readl(da8xx_fb_reg_base + (addr));
-+	return (unsigned int)readl(da8xx_fb_reg_base + (addr));
- }
+ 	memset(&props, 0, sizeof(struct backlight_properties));
+ 	props.max_brightness = 255;
++	props.type = BACKLIGHT_RAW;
  
- static inline void lcdc_write(unsigned int val, unsigned int addr)
- {
--	__raw_writel(val, da8xx_fb_reg_base + (addr));
-+	writel(val, da8xx_fb_reg_base + (addr));
- }
- 
- struct da8xx_fb_par {
+ 	bl = backlight_device_register("nec-8048", &dssdev->dev, dssdev,
+ 			&nec_8048_bl_ops, &props);
 -- 
-1.7.9.5
+1.8.1
 

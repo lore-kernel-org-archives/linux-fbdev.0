@@ -1,74 +1,108 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Date: Wed, 30 Jan 2013 15:39:01 +0000
-Subject: [RFC PATCH 2/4] video: add makefile & kconfig
-Message-Id: <1359560343-31636-3-git-send-email-t.figa@samsung.com>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Wed, 16 Jan 2013 12:45:08 +0000
+Subject: [PATCH 2/3] OMAPDSS: Panel NEC: Get rid of nec_80848_data structure
+Message-Id: <1358340309-8774-3-git-send-email-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359560343-31636-1-git-send-email-t.figa@samsung.com>
-In-Reply-To: <1359560343-31636-1-git-send-email-t.figa@samsung.com>
+References: <1358340309-8774-1-git-send-email-peter.ujfalusi@ti.com>
+In-Reply-To: <1358340309-8774-1-git-send-email-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, kyungmin.park@samsung.com, m.szyprowski@samsung.com, t.figa@samsung.com, tomasz.figa@gmail.com, Daniel Vetter <daniel@ffwll.ch>, Marcus Lorentzon <marcus.xm.lorentzon@stericsson.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, rob@ti.com, tomi.valkeinen@ti.com, Vikas Sajjan <vikas.sajjan@linaro.org>, inki.dae@samsung.com, dh09.lee@samsung.com, ville.syrjala@intel.com, s.nawrocki@samsung.com
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 
-Signed-off-by: Tomasz Figa <t.figa@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+It has only a pointer to the backlight_device in it. We can just add the
+pointer to the backlight_device as driver data.
+
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
- drivers/video/Kconfig          |  1 +
- drivers/video/Makefile         |  1 +
- drivers/video/display/Kconfig  | 10 ++++++++++
- drivers/video/display/Makefile |  1 +
- 4 files changed, 13 insertions(+)
- create mode 100644 drivers/video/display/Kconfig
- create mode 100644 drivers/video/display/Makefile
+ .../omap2/displays/panel-nec-nl8048hl11-01b.c      | 32 +++++-----------------
+ 1 file changed, 7 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 68f17ee..800e98c 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2444,6 +2444,7 @@ source "drivers/video/omap/Kconfig"
- source "drivers/video/omap2/Kconfig"
- source "drivers/video/exynos/Kconfig"
- source "drivers/video/backlight/Kconfig"
-+source "drivers/video/display/Kconfig"
+diff --git a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+index f43a343..e6589fe 100644
+--- a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
++++ b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+@@ -32,10 +32,6 @@
+  */
+ #define LCD_PIXEL_CLOCK		23800
  
- if VT
- 	source "drivers/video/console/Kconfig"
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index f592f3b..4a091d4 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -14,6 +14,7 @@ fb-objs                           := $(fb-y)
- obj-$(CONFIG_VT)		  += console/
- obj-$(CONFIG_LOGO)		  += logo/
- obj-y				  += backlight/
-+obj-y				  += display/
+-struct nec_8048_data {
+-	struct backlight_device *bl;
+-};
+-
+ static const struct {
+ 	unsigned char addr;
+ 	unsigned char dat;
+@@ -118,30 +114,21 @@ static const struct backlight_ops nec_8048_bl_ops = {
+ static int nec_8048_panel_probe(struct omap_dss_device *dssdev)
+ {
+ 	struct backlight_device *bl;
+-	struct nec_8048_data *necd;
+ 	struct backlight_properties props;
+ 	int r;
  
- obj-$(CONFIG_EXYNOS_VIDEO)     += exynos/
+ 	dssdev->panel.timings = nec_8048_panel_timings;
  
-diff --git a/drivers/video/display/Kconfig b/drivers/video/display/Kconfig
-new file mode 100644
-index 0000000..477192d
---- /dev/null
-+++ b/drivers/video/display/Kconfig
-@@ -0,0 +1,10 @@
-+menuconfig DISPLAY_CORE
-+	tristate "Display Core"
-+	---help---
-+	  Support common display framework for graphics devices.
+-	necd = kzalloc(sizeof(*necd), GFP_KERNEL);
+-	if (!necd)
+-		return -ENOMEM;
+-
+-	dev_set_drvdata(&dssdev->dev, necd);
+-
+ 	memset(&props, 0, sizeof(struct backlight_properties));
+ 	props.max_brightness = 255;
+ 	props.type = BACKLIGHT_RAW;
+ 
+ 	bl = backlight_device_register("nec-8048", &dssdev->dev, dssdev,
+ 			&nec_8048_bl_ops, &props);
+-	if (IS_ERR(bl)) {
+-		r = PTR_ERR(bl);
+-		kfree(necd);
+-		return r;
+-	}
+-	necd->bl = bl;
++	if (IS_ERR(bl))
++		return PTR_ERR(bl);
 +
-+if DISPLAY_CORE
-+
-+
-+
-+endif # DISPLAY_CORE
-diff --git a/drivers/video/display/Makefile b/drivers/video/display/Makefile
-new file mode 100644
-index 0000000..bd93496
---- /dev/null
-+++ b/drivers/video/display/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_DISPLAY_CORE) += display-core.o
++	dev_set_drvdata(&dssdev->dev, bl);
+ 
+ 	bl->props.fb_blank = FB_BLANK_UNBLANK;
+ 	bl->props.power = FB_BLANK_UNBLANK;
+@@ -157,21 +144,17 @@ static int nec_8048_panel_probe(struct omap_dss_device *dssdev)
+ 
+ static void nec_8048_panel_remove(struct omap_dss_device *dssdev)
+ {
+-	struct nec_8048_data *necd = dev_get_drvdata(&dssdev->dev);
+-	struct backlight_device *bl = necd->bl;
++	struct backlight_device *bl = dev_get_drvdata(&dssdev->dev);
+ 
+ 	bl->props.power = FB_BLANK_POWERDOWN;
+ 	nec_8048_bl_update_status(bl);
+ 	backlight_device_unregister(bl);
+-
+-	kfree(necd);
+ }
+ 
+ static int nec_8048_panel_power_on(struct omap_dss_device *dssdev)
+ {
++	struct backlight_device *bl = dev_get_drvdata(&dssdev->dev);
+ 	int r;
+-	struct nec_8048_data *necd = dev_get_drvdata(&dssdev->dev);
+-	struct backlight_device *bl = necd->bl;
+ 
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
+ 		return 0;
+@@ -202,8 +185,7 @@ err0:
+ 
+ static void nec_8048_panel_power_off(struct omap_dss_device *dssdev)
+ {
+-	struct nec_8048_data *necd = dev_get_drvdata(&dssdev->dev);
+-	struct backlight_device *bl = necd->bl;
++	struct backlight_device *bl = dev_get_drvdata(&dssdev->dev);
+ 
+ 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
+ 		return;
 -- 
 1.8.1
 

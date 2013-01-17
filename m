@@ -1,69 +1,267 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Fri, 25 Jan 2013 06:42:59 +0000
-Subject: [patch 2/2] video/kyro: some potential divide by zero bugs
-Message-Id: <20130125064259.GD4882@elgon.mountain>
+From: Zhou Zhu <zzhu3@marvell.com>
+Date: Thu, 17 Jan 2013 08:24:04 +0000
+Subject: [PATCH v5 4/8] video: mmp: add tpo hvga panel supported
+Message-Id: <1358411044-2703-1-git-send-email-zzhu3@marvell.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-These values come from the user in kyrofb_ioctl().  There are a couple
-potential divide by zero problems and I have added tests for them.
-There were a couple tests to prevent divide by zero bugs already in the
-code that I moved next to the assignments.
+From: Lisa Du <cldu@marvell.com>
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Add tpo hvga panel support in marvell display framework.
+This panel driver implements modes query and power on/off.
 
-diff --git a/drivers/video/kyro/STG4000OverlayDevice.c b/drivers/video/kyro/STG4000OverlayDevice.c
-index 84b6ea8..d03a1e4 100644
---- a/drivers/video/kyro/STG4000OverlayDevice.c
-+++ b/drivers/video/kyro/STG4000OverlayDevice.c
-@@ -365,15 +365,18 @@ int SetOverlayViewPort(volatile STG4000REG __iomem *pSTGReg,
- 	ulSrcBottom = srcDest.ulSrcY2;
+This panel driver gets panel config/ plat power on/off/ connected
+path name from machine-info and registered as a spi device.
+This panel driver uses mmp_disp supplied register_panel function to
+register panel to path as machine-info defined.
+
+Signed-off-by: Lisa Du <cldu@marvell.com>
+Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
+---
+ drivers/video/mmp/Kconfig                 |    1 +
+ drivers/video/mmp/Makefile                |    2 +-
+ drivers/video/mmp/panel/Kconfig           |    6 +
+ drivers/video/mmp/panel/Makefile          |    1 +
+ drivers/video/mmp/panel/tpo_tj032md01bw.c |  188 +++++++++++++++++++++++++++++
+ 5 files changed, 197 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/video/mmp/panel/Kconfig
+ create mode 100644 drivers/video/mmp/panel/Makefile
+ create mode 100644 drivers/video/mmp/panel/tpo_tj032md01bw.c
+
+diff --git a/drivers/video/mmp/Kconfig b/drivers/video/mmp/Kconfig
+index ed51d15..e9ea39e 100644
+--- a/drivers/video/mmp/Kconfig
++++ b/drivers/video/mmp/Kconfig
+@@ -6,5 +6,6 @@ menuconfig MMP_DISP
  
- 	ulSrc = ulSrcBottom - ulSrcTop;
--	ulDest = srcDest.lDstY2 - srcDest.lDstY1;	/* on-screen overlay */
--
- 	if (ulSrc <= 1)
- 		return -EINVAL;
-+	ulDest = srcDest.lDstY2 - srcDest.lDstY1;	/* on-screen overlay */
-+	if (ulDest = -1)
-+		return -EINVAL;
- 
- 	/* First work out the position we are to display as offset from the
- 	 * source of the buffer
- 	 */
- 	ulFxScale = (ulDest << 11) / ulSrc;	/* fixed point scale factor */
-+	if (ulFxScale = 0)
-+		return -EINVAL;
- 	ulFxOffset = (srcDest.lDstY2 - srcDest.ulDstY2) << 11;
- 
- 	ulSrcBottom = ulSrcBottom - (ulFxOffset / ulFxScale);
-@@ -430,6 +433,8 @@ int SetOverlayViewPort(volatile STG4000REG __iomem *pSTGReg,
- 	 */
- 	ulSrc = srcDest.ulSrcX2 - srcDest.ulSrcX1;
- 	ulDest = srcDest.lDstX2 - srcDest.lDstX1;
-+	if (ulDest = 0)
-+		return -EINVAL;
- 
- 	if (srcDest.ulDstX1 > 2) {
- 		ulLeft = srcDest.ulDstX1 + 2;
-@@ -438,14 +443,14 @@ int SetOverlayViewPort(volatile STG4000REG __iomem *pSTGReg,
- 		ulLeft = srcDest.ulDstX1;
- 		ulRight = srcDest.ulDstX2 + 1;
- 	}
-+	if (ulRight - ulLeft + 2 = 0)
-+		return -EINVAL;
+ if MMP_DISP
+ source "drivers/video/mmp/hw/Kconfig"
++source "drivers/video/mmp/panel/Kconfig"
+ source "drivers/video/mmp/fb/Kconfig"
+ endif
+diff --git a/drivers/video/mmp/Makefile b/drivers/video/mmp/Makefile
+index 6999a09..a014cb3 100644
+--- a/drivers/video/mmp/Makefile
++++ b/drivers/video/mmp/Makefile
+@@ -1 +1 @@
+-obj-y += core.o hw/ fb/
++obj-y += core.o hw/ panel/ fb/
+diff --git a/drivers/video/mmp/panel/Kconfig b/drivers/video/mmp/panel/Kconfig
+new file mode 100644
+index 0000000..4b2c4f4
+--- /dev/null
++++ b/drivers/video/mmp/panel/Kconfig
+@@ -0,0 +1,6 @@
++config MMP_PANEL_TPOHVGA
++	bool "tpohvga panel TJ032MD01BW support"
++	depends on SPI_MASTER
++	default n
++	help
++		tpohvga panel support
+diff --git a/drivers/video/mmp/panel/Makefile b/drivers/video/mmp/panel/Makefile
+new file mode 100644
+index 0000000..2f91611
+--- /dev/null
++++ b/drivers/video/mmp/panel/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_MMP_PANEL_TPOHVGA)    += tpo_tj032md01bw.o
+diff --git a/drivers/video/mmp/panel/tpo_tj032md01bw.c b/drivers/video/mmp/panel/tpo_tj032md01bw.c
+new file mode 100644
+index 0000000..42c4d1d
+--- /dev/null
++++ b/drivers/video/mmp/panel/tpo_tj032md01bw.c
+@@ -0,0 +1,188 @@
++/*
++ * linux/drivers/video/mmp/panel/tpo_tj032md01bw.c
++ * active panel using spi interface to do init
++ *
++ * Copyright (C) 2012 Marvell Technology Group Ltd.
++ * Authors:  Guoqing Li <ligq@marvell.com>
++ *          Lisa Du <cldu@marvell.com>
++ *          Zhou Zhu <zzhu3@marvell.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2 of the License, or (at your
++ * option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ *
++ */
 +
- 
- 	/* first work out the position we are to display as offset from the source of the buffer */
- 	bResult = 1;
- 
- 	do {
--		if (ulDest = 0)
--			return -EINVAL;
--
- 		/* source pixels per dest pixel <<11 */
- 		ulFxScale = ((ulSrc - 1) << 11) / (ulDest);
- 
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/string.h>
++#include <linux/delay.h>
++#include <linux/platform_device.h>
++#include <linux/err.h>
++#include <linux/spi/spi.h>
++#include <video/mmp_disp.h>
++
++static u16 init[] = {
++	0x0801,
++	0x0800,
++	0x0200,
++	0x0304,
++	0x040e,
++	0x0903,
++	0x0b18,
++	0x0c53,
++	0x0d01,
++	0x0ee0,
++	0x0f01,
++	0x1058,
++	0x201e,
++	0x210a,
++	0x220a,
++	0x231e,
++	0x2400,
++	0x2532,
++	0x2600,
++	0x27ac,
++	0x2904,
++	0x2aa2,
++	0x2b45,
++	0x2c45,
++	0x2d15,
++	0x2e5a,
++	0x2fff,
++	0x306b,
++	0x310d,
++	0x3248,
++	0x3382,
++	0x34bd,
++	0x35e7,
++	0x3618,
++	0x3794,
++	0x3801,
++	0x395d,
++	0x3aae,
++	0x3bff,
++	0x07c9,
++};
++
++static u16 poweroff[] = {
++	0x07d9,
++};
++
++struct tpohvga_plat_data {
++	void (*plat_onoff)(int status);
++	struct spi_device *spi;
++};
++
++static void tpohvga_onoff(struct mmp_panel *panel, int status)
++{
++	struct tpohvga_plat_data *plat = panel->plat_data;
++	int ret;
++
++	if (status) {
++		plat->plat_onoff(1);
++
++		ret = spi_write(plat->spi, init, sizeof(init));
++		if (ret < 0)
++			dev_warn(panel->dev, "init cmd failed(%d)\n", ret);
++	} else {
++		ret = spi_write(plat->spi, poweroff, sizeof(poweroff));
++		if (ret < 0)
++			dev_warn(panel->dev, "poweroff cmd failed(%d)\n", ret);
++
++		plat->plat_onoff(0);
++	}
++}
++
++static struct mmp_mode mmp_modes_tpohvga[] = {
++	[0] = {
++		.pixclock_freq = 10394400,
++		.refresh = 60,
++		.xres = 320,
++		.yres = 480,
++		.hsync_len = 10,
++		.left_margin = 15,
++		.right_margin = 10,
++		.vsync_len = 2,
++		.upper_margin = 4,
++		.lower_margin = 2,
++		.invert_pixclock = 1,
++		.pix_fmt_out = PIXFMT_RGB565,
++	},
++};
++
++static int tpohvga_get_modelist(struct mmp_panel *panel,
++		struct mmp_mode **modelist)
++{
++	*modelist = mmp_modes_tpohvga;
++	return 1;
++}
++
++static struct mmp_panel panel_tpohvga = {
++	.name = "tpohvga",
++	.panel_type = PANELTYPE_ACTIVE,
++	.get_modelist = tpohvga_get_modelist,
++	.set_onoff = tpohvga_onoff,
++};
++
++static int tpohvga_probe(struct spi_device *spi)
++{
++	struct mmp_mach_panel_info *mi;
++	int ret;
++	struct tpohvga_plat_data *plat_data;
++
++	/* get configs from platform data */
++	mi = spi->dev.platform_data;
++	if (mi = NULL) {
++		dev_err(&spi->dev, "%s: no platform data defined\n", __func__);
++		return -EINVAL;
++	}
++
++	/* setup spi related info */
++	spi->bits_per_word = 16;
++	ret = spi_setup(spi);
++	if (ret < 0) {
++		dev_err(&spi->dev, "spi setup failed %d", ret);
++		return ret;
++	}
++
++	plat_data = kzalloc(sizeof(*plat_data), GFP_KERNEL);
++	if (plat_data = NULL)
++		return -ENOMEM;
++
++	plat_data->spi = spi;
++	plat_data->plat_onoff = mi->plat_set_onoff;
++	panel_tpohvga.plat_data = plat_data;
++	panel_tpohvga.plat_path_name = mi->plat_path_name;
++	panel_tpohvga.dev = &spi->dev;
++
++	if (!mmp_register_panel(&panel_tpohvga)) {
++		dev_err(&spi->dev, "%s: register failed\n", __func__);
++		return -EINVAL;
++	}
++	return 0;
++}
++
++static struct spi_driver panel_tpohvga_driver = {
++	.driver		= {
++		.name	= "tpo-hvga",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= tpohvga_probe,
++};
++module_spi_driver(panel_tpohvga_driver);
++
++MODULE_AUTHOR("Lisa Du<cldu@marvell.com>");
++MODULE_DESCRIPTION("Panel driver for tpohvga");
++MODULE_LICENSE("GPL");
+-- 
+1.7.9.5
+

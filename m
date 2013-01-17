@@ -1,158 +1,148 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Sat, 19 Jan 2013 06:02:55 +0000
-Subject: [PATCH 2/4] video: vt8500: Make wmt_ge_rops optional
-Message-Id: <1358575377-26364-3-git-send-email-linux@prisktech.co.nz>
+From: Anatolij Gustschin <agust@denx.de>
+Date: Thu, 17 Jan 2013 20:28:38 +0000
+Subject: [PATCH 2/2] drivers/video: fsl-diu-fb: fix bugs in interrupt handling
+Message-Id: <1358454518-14032-2-git-send-email-agust@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1358575377-26364-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1358575377-26364-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-At the moment, accelerated raster ops are always enabled on VT8500
-and WM8xxx series SoCs. This patch makes them optional.
+Since commit f74de500 "drivers/video: fsl-diu-fb: streamline
+enabling of interrupts" the interrupt handling in the driver
+is broken. Enabling diu interrupt causes an interrupt storm and
+results in system lockup.
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+The cookie for the interrupt handler function passed to request_irq()
+is wrong (it must be a pointer to the diu struct, and not the address
+of the pointer to the diu struct). As a result the interrupt handler
+can not read diu registers and acknowledge the interrupt. Fix cookie
+arguments for request_irq() and free_irq().
+
+Masking the diu interrupts in probe() must happen before install_fb()
+calls since this function registers framebuffer devices and if fbcon
+tries to take over framebuffer after registering a framebuffer device,
+it will call fb_open of the diu driver and enable the interrupts. But
+at this time the diu interrupt handler is not registered yet. Therefore
+we must mask the diu interrupts before registering the framebuffers
+and enable the interrupts after registering the handler.
+
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Cc: Timur Tabi <timur@tabi.org>
 ---
- drivers/video/Kconfig       |   23 +++++++++++++----------
- drivers/video/vt8500lcdfb.c |   15 +++++++++++++++
- drivers/video/wm8505fb.c    |   15 +++++++++++++++
- 3 files changed, 43 insertions(+), 10 deletions(-)
+ drivers/video/fsl-diu-fb.c |   58 +++++++++++++++++++++++++++----------------
+ 1 files changed, 36 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index e7068c5..6678daf 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -190,14 +190,6 @@ config FB_SYS_FOPS
-        depends on FB
-        default n
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 4f8a2e4..b88cf78 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -378,6 +378,7 @@ struct fsl_diu_data {
+ 	u8 cursor[MAX_CURS * MAX_CURS * 2] __aligned(32);
+ 	uint8_t edid_data[EDID_LENGTH];
+ 	bool has_edid;
++	bool can_handle_irq;
+ } __aligned(32);
  
--config FB_WMT_GE_ROPS
--	tristate
--	depends on FB
--	default n
--	---help---
--	  Include functions for accelerated rectangle filling and area
--	  copying using WonderMedia Graphics Engine operations.
+ /* Determine the DMA address of a member of the fsl_diu_data structure */
+@@ -1232,6 +1233,19 @@ static int fsl_diu_ioctl(struct fb_info *info, unsigned int cmd,
+ 	return 0;
+ }
+ 
++static inline void fsl_diu_enable_interrupts(struct fsl_diu_data *data)
++{
++	u32 int_mask = INT_UNDRUN; /* enable underrun detection */
++
++	if (!data->can_handle_irq)
++		return;
++
++	if (IS_ENABLED(CONFIG_NOT_COHERENT_CACHE))
++		int_mask |= INT_VSYNC; /* enable vertical sync */
++
++	clrbits32(&data->diu_reg->int_mask, int_mask);
++}
++
+ /* turn on fb if count = 1
+  */
+ static int fsl_diu_open(struct fb_info *info, int user)
+@@ -1251,19 +1265,7 @@ static int fsl_diu_open(struct fb_info *info, int user)
+ 		if (res < 0)
+ 			mfbi->count--;
+ 		else {
+-			struct fsl_diu_data *data = mfbi->parent;
 -
- config FB_DEFERRED_IO
- 	bool
- 	depends on FB
-@@ -1777,7 +1769,8 @@ config FB_AU1200
- config FB_VT8500
- 	bool "VT8500 LCD Driver"
- 	depends on (FB = y) && ARM && ARCH_VT8500
--	select FB_WMT_GE_ROPS
-+	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
-+	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_IMAGEBLIT
- 	help
- 	  This is the framebuffer driver for VIA VT8500 integrated LCD
-@@ -1786,12 +1779,22 @@ config FB_VT8500
- config FB_WM8505
- 	bool "WM8505 frame buffer support"
- 	depends on (FB = y) && ARM && ARCH_VT8500
--	select FB_WMT_GE_ROPS
-+	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
-+	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_IMAGEBLIT
- 	help
- 	  This is the framebuffer driver for WonderMedia WM8505/WM8650
- 	  integrated LCD controller.
+-#ifdef CONFIG_NOT_COHERENT_CACHE
+-			/*
+-			 * Enable underrun detection and vertical sync
+-			 * interrupts.
+-			 */
+-			clrbits32(&data->diu_reg->int_mask,
+-				  INT_UNDRUN | INT_VSYNC);
+-#else
+-			/* Enable underrun detection */
+-			clrbits32(&data->diu_reg->int_mask, INT_UNDRUN);
+-#endif
++			fsl_diu_enable_interrupts(mfbi->parent);
+ 			fsl_diu_enable_panel(info);
+ 		}
+ 	}
+@@ -1614,6 +1616,14 @@ static int fsl_diu_probe(struct platform_device *pdev)
+ 	out_be32(&data->diu_reg->desc[1], data->dummy_ad.paddr);
+ 	out_be32(&data->diu_reg->desc[2], data->dummy_ad.paddr);
  
-+config FB_WMT_GE_ROPS
-+	bool "VT8500/WM8xxx accelerated raster ops support"
-+	depends on (FB = y) && (FB_VT8500 || FB_WM8505)
-+	default n
-+	help
-+	  This adds support for accelerated raster operations on the
-+	  VIA VT8500 and Wondermedia 8xxx series SoCs.
++	/*
++	 * Older versions of U-Boot leave interrupts enabled, so disable
++	 * all of them and clear the status register.
++	 */
++	out_be32(&data->diu_reg->int_mask, 0xffffffff);
++	in_be32(&data->diu_reg->int_status);
++	data->can_handle_irq = false;
 +
+ 	for (i = 0; i < NUM_AOIS; i++) {
+ 		ret = install_fb(&data->fsl_diu_info[i]);
+ 		if (ret) {
+@@ -1622,20 +1632,24 @@ static int fsl_diu_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
+-	/*
+-	 * Older versions of U-Boot leave interrupts enabled, so disable
+-	 * all of them and clear the status register.
+-	 */
+-	out_be32(&data->diu_reg->int_mask, 0xffffffff);
+-	in_be32(&data->diu_reg->int_status);
+-
+ 	ret = request_irq(data->irq, fsl_diu_isr, 0, "fsl-diu-fb",
+-			  &data->diu_reg);
++			  data->diu_reg);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "could not claim irq\n");
+ 		goto error;
+ 	}
+ 
++	data->can_handle_irq = true;
 +
- source "drivers/video/geode/Kconfig"
- 
- config FB_HIT
-diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
-index aa2579c..d8cc1f6 100644
---- a/drivers/video/vt8500lcdfb.c
-+++ b/drivers/video/vt8500lcdfb.c
-@@ -33,7 +33,10 @@
- #include <linux/platform_data/video-vt8500lcdfb.h>
- 
- #include "vt8500lcdfb.h"
++	/* if an AOI is opened (i.e. by fbcon), enable the interrupts */
++	for (i = 0; i < NUM_AOIS; i++) {
++		struct fb_info *info = &data->fsl_diu_info[i];
 +
-+#ifdef CONFIG_FB_WMT_GE_ROPS
- #include "wmt_ge_rops.h"
-+#endif
- 
- #ifdef CONFIG_OF
- #include <linux/of.h>
-@@ -249,12 +252,24 @@ static int vt8500lcd_blank(int blank, struct fb_info *info)
- 	return 0;
- }
- 
-+#ifndef CONFIG_FB_WMT_GE_ROPS
-+static int wmt_ge_sync(struct fb_info *p)
-+{
-+	return 0;
-+}
-+#endif
++		mfbi = info->par;
++		if (mfbi->count)
++			fsl_diu_enable_interrupts(data);
++	}
 +
- static struct fb_ops vt8500lcd_ops = {
- 	.owner		= THIS_MODULE,
- 	.fb_set_par	= vt8500lcd_set_par,
- 	.fb_setcolreg	= vt8500lcd_setcolreg,
-+#ifdef CONFIG_FB_WMT_GE_ROPS
- 	.fb_fillrect	= wmt_ge_fillrect,
- 	.fb_copyarea	= wmt_ge_copyarea,
-+#else
-+	.fb_fillrect	= sys_fillrect,
-+	.fb_copyarea	= sys_copyarea,
-+#endif
- 	.fb_imageblit	= sys_imageblit,
- 	.fb_sync	= wmt_ge_sync,
- 	.fb_ioctl	= vt8500lcd_ioctl,
-diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
-index ddf78fc..dd28c26 100644
---- a/drivers/video/wm8505fb.c
-+++ b/drivers/video/wm8505fb.c
-@@ -35,7 +35,10 @@
- #include <linux/platform_data/video-vt8500lcdfb.h>
+ 	sysfs_attr_init(&data->dev_attr.attr);
+ 	data->dev_attr.attr.name = "monitor";
+ 	data->dev_attr.attr.mode = S_IRUGO|S_IWUSR;
+@@ -1667,7 +1681,7 @@ static int fsl_diu_remove(struct platform_device *pdev)
+ 	data = dev_get_drvdata(&pdev->dev);
+ 	disable_lcdc(&data->fsl_diu_info[0]);
  
- #include "wm8505fb_regs.h"
-+
-+#ifdef CONFIG_FB_WMT_GE_ROPS
- #include "wmt_ge_rops.h"
-+#endif
+-	free_irq(data->irq, &data->diu_reg);
++	free_irq(data->irq, data->diu_reg);
  
- #define DRIVER_NAME "wm8505-fb"
- 
-@@ -248,12 +251,24 @@ static int wm8505fb_blank(int blank, struct fb_info *info)
- 	return 0;
- }
- 
-+#ifndef CONFIG_FB_WMT_GE_ROPS
-+static int wmt_ge_sync(struct fb_info *p)
-+{
-+	return 0;
-+}
-+#endif
-+
- static struct fb_ops wm8505fb_ops = {
- 	.owner		= THIS_MODULE,
- 	.fb_set_par	= wm8505fb_set_par,
- 	.fb_setcolreg	= wm8505fb_setcolreg,
-+#ifdef CONFIG_FB_WMT_GE_ROPS
- 	.fb_fillrect	= wmt_ge_fillrect,
- 	.fb_copyarea	= wmt_ge_copyarea,
-+#else
-+	.fb_fillrect	= sys_fillrect,
-+	.fb_copyarea	= sys_copyarea,
-+#endif
- 	.fb_imageblit	= sys_imageblit,
- 	.fb_sync	= wmt_ge_sync,
- 	.fb_pan_display	= wm8505fb_pan_display,
+ 	for (i = 0; i < NUM_AOIS; i++)
+ 		uninstall_fb(&data->fsl_diu_info[i]);
 -- 
-1.7.9.5
+1.7.5.4
 

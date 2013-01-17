@@ -1,23 +1,27 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Fri, 11 Jan 2013 23:22:19 +0000
-Subject: fb_image.data format for cursors?
-Message-Id: <50F09EAB.5060506@freescale.com>
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Date: Thu, 17 Jan 2013 13:37:44 +0000
+Subject: Re: DirectFB on RV710
+Message-Id: <1358429864.6572.22.camel@thor.local>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: linux-fbdev@vger.kernel.org
 
-Is there any documentation for cursor support?  I'm trying to add cursor
-support to my framebuffer driver, and I'm having a really hard time find a
-description of anything.
+On Don, 2013-01-17 at 19:34 +0800, "李真能" wrote: 
+> Kernel supports RV710 in drivers/gpu/drm/radeon(r600),but I want gpu
+> acceleration in framebuffer for RV710 to use in directfb, I try to migrate
+> code from drivers/gpu/drm/radeon to drivers/video/aty/ to support
+> directfb, but it's very difficulty, because I have not the datasheet for
+> RV710, I don't konw how to set registers to draw a line, or a rectangle,
+> if someone has the datasheet for rv710, please sent me, thanks very
+> much!!!
 
-In particular, what is the format of the image data in the fb_image.data
-buffer?  For example, if fb_image.width = 12, and fb_image.height = 8,
-how is the cursor data packed into the 'data' buffer?  That is, what is in
-data[0], data[1], etc?
+RV710 doesn't have a 2D engine, so you'd have to use the 3D engine.
+There are some links to documentation for this on
+http://wiki.x.org/wiki/RadeonFeature .
+
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
-
+Earthling Michel Dänzer           |                   http://www.amd.com
+Libre software enthusiast         |          Debian, X and DRI developer

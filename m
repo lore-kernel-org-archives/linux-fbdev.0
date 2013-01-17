@@ -1,54 +1,61 @@
-From: Anatolij Gustschin <agust@denx.de>
-Date: Thu, 17 Jan 2013 20:28:37 +0000
-Subject: [PATCH 1/2] drivers/video: fsl-diu-fb: fix pixel formats for 24 and 16 bpp
-Message-Id: <1358454518-14032-1-git-send-email-agust@denx.de>
+From: Timur Tabi <timur@tabi.org>
+Date: Thu, 17 Jan 2013 22:12:05 +0000
+Subject: Re: [PATCH 1/2] drivers/video: fsl-diu-fb: fix pixel formats for 24 and 16 bpp
+Message-Id: <50F87735.9070605@tabi.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1358454518-14032-1-git-send-email-agust@denx.de>
+In-Reply-To: <1358454518-14032-1-git-send-email-agust@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Framebuffer colors for 24 and 16 bpp are currently wrong. The order
-of the color component arguments in the MAKE_PF() is not natural
-and causes some confusion. The generated pixel format values for 24
-and 16 bpp depths do not much the values in the comments.
+Anatolij Gustschin wrote:
+>  		/* 0x88883316 */
+> -		return MAKE_PF(3, 2, 0, 1, 3, 8, 8, 8, 8);
+> +		return MAKE_PF(3, 2, 1, 0, 3, 8, 8, 8, 8);
+>  	case 24:
+>  		/* 0x88082219 */
+> -		return MAKE_PF(4, 0, 1, 2, 2, 0, 8, 8, 8);
+> +		return MAKE_PF(4, 0, 1, 2, 2, 8, 8, 8, 0);
+>  	case 16:
+>  		/* 0x65053118 */
+>  		return MAKE_PF(4, 2, 1, 0, 1, 5, 6, 5, 0);
 
-Fix the macro arguments to be in the natural RGB order and adjust
-the arguments for all depths to generate correct pixel format values
-(equal to the values mentioned in the comments).
+You're right that the original values are incorrect, but I think your
+patch is changing the wrong lines.
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Cc: Timur Tabi <timur@tabi.org>
----
- drivers/video/fsl-diu-fb.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+I put this code in the driver:
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 19cfd7a..4f8a2e4 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -944,7 +944,7 @@ static u32 fsl_diu_get_pixel_format(unsigned int bits_per_pixel)
- #define PF_COMP_0_MASK		0x0000000F
- #define PF_COMP_0_SHIFT		0
- 
--#define MAKE_PF(alpha, red, blue, green, size, c0, c1, c2, c3) \
-+#define MAKE_PF(alpha, red, green, blue, size, c0, c1, c2, c3) \
- 	cpu_to_le32(PF_BYTE_F | (alpha << PF_ALPHA_C_SHIFT) | \
- 	(blue << PF_BLUE_C_SHIFT) | (green << PF_GREEN_C_SHIFT) | \
- 	(red << PF_RED_C_SHIFT) | (c3 << PF_COMP_3_SHIFT) | \
-@@ -954,10 +954,10 @@ static u32 fsl_diu_get_pixel_format(unsigned int bits_per_pixel)
- 	switch (bits_per_pixel) {
- 	case 32:
- 		/* 0x88883316 */
--		return MAKE_PF(3, 2, 0, 1, 3, 8, 8, 8, 8);
-+		return MAKE_PF(3, 2, 1, 0, 3, 8, 8, 8, 8);
- 	case 24:
- 		/* 0x88082219 */
--		return MAKE_PF(4, 0, 1, 2, 2, 0, 8, 8, 8);
-+		return MAKE_PF(4, 0, 1, 2, 2, 8, 8, 8, 0);
- 	case 16:
- 		/* 0x65053118 */
- 		return MAKE_PF(4, 2, 1, 0, 1, 5, 6, 5, 0);
+	printk(KERN_INFO "%s:%u 0x88883316 old %08x new %08x\n", __func__,
+__LINE__, MAKE_PF(3, 2, 0, 1, 3, 8, 8, 8, 8), MAKE_PF(3, 2, 1, 0, 3, 8, 8,
+8, 8));
+	printk(KERN_INFO "%s:%u 0x88082219 old %08x new %08x\n", __func__,
+__LINE__, MAKE_PF(4, 0, 1, 2, 2, 0, 8, 8, 8), MAKE_PF(4, 0, 1, 2, 2, 8, 8,
+8, 0));
+	printk(KERN_INFO "%s:%u 0x65053118 %08x\n", __func__, __LINE__,
+MAKE_PF(4, 2, 1, 0, 1, 5, 6, 5, 0));
+
+
+and it gave me this output:
+
+fsl_diu_get_pixel_format:956 0x88883316 old 88883316 new 88889316
+
+fsl_diu_get_pixel_format:957 0x88082219 old 8088c218 new 8808c218
+
+fsl_diu_get_pixel_format:958 0x65053118 65059118
+
+fsl_diu_get_pixel_format:956 0x88883316 old 88883316 new 88889316
+
+fsl_diu_get_pixel_format:957 0x88082219 old 8088c218 new 8808c218
+
+fsl_diu_get_pixel_format:958 0x65053118 65059118
+
+Console: switching to colour frame buffer device 182x73
+
+So the value for 32-bit is already correct, but your patch breaks it.  The
+value for 24-bit is wrong, but your patch just gives me another wrong
+value.  The value for 16-bit is wrong, but you don't change that.
+
 -- 
-1.7.5.4
-
+Timur Tabi

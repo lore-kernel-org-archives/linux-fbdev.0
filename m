@@ -1,56 +1,41 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Sat, 19 Jan 2013 06:02:57 +0000
-Subject: [PATCH 4/4] video: vt8500: Update descriptions in video/Kconfig
-Message-Id: <1358575377-26364-5-git-send-email-linux@prisktech.co.nz>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Thu, 17 Jan 2013 03:15:12 +0000
+Subject: Re: [PATCH 1/1] video: exynos: Use devm_* APIs in s6e8ax0.c
+Message-Id: <CAK9yfHwzC5nA+cjjj9HJOL_T50O2X_Vh2YJWQ5DDNbGj8zSgOg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1358575377-26364-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1358575377-26364-1-git-send-email-linux@prisktech.co.nz>
+References: <1355289083-28269-1-git-send-email-sachin.kamat@linaro.org>
+In-Reply-To: <1355289083-28269-1-git-send-email-sachin.kamat@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-This patch updates the descriptions for the VIA VT8500 and
-Wondermedia WM8xxx-series framebuffer drivers to correctly reflect
-which hardware they support.
+Hi Florian,
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
----
- drivers/video/Kconfig |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+On 17 December 2012 06:06, Donghwa Lee <dh09.lee@samsung.com> wrote:
+> On Wed, Dec 12, 2012 at 14:11, Sachin Kamat wrote:
+>>
+>> devm_* APIs are device managed and make error handling
+>> and code cleanup simpler.
+>>
+>> Cc: Donghwa Lee <dh09.lee@samsung.com>
+>> Cc: Inki Dae <inki.dae@samsung.com>
+>> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+>> ---
+>> Compile tested against linux-next.
+>> ---
+>>   drivers/video/exynos/s6e8ax0.c |   14 ++++----------
+>>   1 files changed, 4 insertions(+), 10 deletions(-)
+>>
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 6678daf..3bbb3c1 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -1767,7 +1767,7 @@ config FB_AU1200
- 	  option au1200fb:panel=<name>.
- 
- config FB_VT8500
--	bool "VT8500 LCD Driver"
-+	bool "VIA VT8500 Framebuffer Driver"
- 	depends on (FB = y) && ARM && ARCH_VT8500
- 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
-@@ -1777,14 +1777,15 @@ config FB_VT8500
- 	  controller.
- 
- config FB_WM8505
--	bool "WM8505 frame buffer support"
-+	bool "Wondermedia WM8xxx-series framebuffer support"
- 	depends on (FB = y) && ARM && ARCH_VT8500
- 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_IMAGEBLIT
- 	help
--	  This is the framebuffer driver for WonderMedia WM8505/WM8650
--	  integrated LCD controller.
-+	  This is the framebuffer driver for WonderMedia WM8xxx-series
-+	  integrated LCD controller. This driver covers the WM8505, WM8650
-+	  and WM8850 SoCs.
- 
- config FB_WMT_GE_ROPS
- 	bool "VT8500/WM8xxx accelerated raster ops support"
+>
+> It looks good to me.
+> Acked-by: Donghwa Lee <dh09.lee@samsung.com>
+
+Can you please add this patch to to your tree if it looks OK?
+
+
+
 -- 
-1.7.9.5
-
+With warm regards,
+Sachin

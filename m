@@ -1,56 +1,54 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Fri, 25 Jan 2013 15:55:37 +0000
-Subject: Re: [PATCH] fbcon: fix locking harder
-Message-Id: <CAKMK7uEe7J=yKWO4ARSy_jMbAkGFX7LSs3Z5aEuMuNE=hx2Gzg@mail.gmail.com>
+From: Anatolij Gustschin <agust@denx.de>
+Date: Thu, 17 Jan 2013 20:28:37 +0000
+Subject: [PATCH 1/2] drivers/video: fsl-diu-fb: fix pixel formats for 24 and 16 bpp
+Message-Id: <1358454518-14032-1-git-send-email-agust@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359078224-3327-1-git-send-email-airlied@gmail.com>
-In-Reply-To: <1359078224-3327-1-git-send-email-airlied@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Airlie <airlied@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+To: linux-fbdev@vger.kernel.org
 
-On Fri, Jan 25, 2013 at 2:43 AM, Dave Airlie <airlied@gmail.com> wrote:
-> Okay so Alan's patch handled the case where there was no registered fbcon,
-> however the other path entered in set_con2fb_map pit.
->
-> In there we called fbcon_takeover, but we also took the console lock in a couple
-> of places. So push the console lock out to the callers of set_con2fb_map,
->
-> this means fbmem and switcheroo needed to take the lock around the fb notifier
-> entry points that lead to this.
->
-> This should fix the efifb regression seen by Maarten.
->
-> Signed-off-by: Dave Airlie <airlied@redhat.com>
-> ---
->  drivers/gpu/vga/vga_switcheroo.c |  3 +++
->  drivers/video/console/fbcon.c    | 11 ++++++++---
->  drivers/video/fbmem.c            |  2 ++
->  3 files changed, 13 insertions(+), 3 deletions(-)
->
-[cut]
+Framebuffer colors for 24 and 16 bpp are currently wrong. The order
+of the color component arguments in the MAKE_PF() is not natural
+and causes some confusion. The generated pixel format values for 24
+and 16 bpp depths do not much the values in the comments.
 
->         ret = vgasr_priv.handler->switchto(new_client->id);
-> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-> index 2aef9ca..2e2d959 100644
-> --- a/drivers/video/console/fbcon.c
-> +++ b/drivers/video/console/fbcon.c
-> @@ -842,6 +842,8 @@ static void con2fb_init_display(struct vc_data *vc, struct fb_info *info,
->   *
->   *     Maps a virtual console @unit to a frame buffer device
->   *     @newidx.
-> + *
-> + *     This should be called with the console lock held.
->   */
->  static int set_con2fb_map(int unit, int newidx, int user)
->  {
+Fix the macro arguments to be in the natural RGB order and adjust
+the arguments for all depths to generate correct pixel format values
+(equal to the values mentioned in the comments).
 
-What about throwing a WARN_CONSOLE_UNLOCKED(); in here to make sure
-this new rule is obeyed?
--Daniel
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Cc: Timur Tabi <timur@tabi.org>
+---
+ drivers/video/fsl-diu-fb.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 19cfd7a..4f8a2e4 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -944,7 +944,7 @@ static u32 fsl_diu_get_pixel_format(unsigned int bits_per_pixel)
+ #define PF_COMP_0_MASK		0x0000000F
+ #define PF_COMP_0_SHIFT		0
+ 
+-#define MAKE_PF(alpha, red, blue, green, size, c0, c1, c2, c3) \
++#define MAKE_PF(alpha, red, green, blue, size, c0, c1, c2, c3) \
+ 	cpu_to_le32(PF_BYTE_F | (alpha << PF_ALPHA_C_SHIFT) | \
+ 	(blue << PF_BLUE_C_SHIFT) | (green << PF_GREEN_C_SHIFT) | \
+ 	(red << PF_RED_C_SHIFT) | (c3 << PF_COMP_3_SHIFT) | \
+@@ -954,10 +954,10 @@ static u32 fsl_diu_get_pixel_format(unsigned int bits_per_pixel)
+ 	switch (bits_per_pixel) {
+ 	case 32:
+ 		/* 0x88883316 */
+-		return MAKE_PF(3, 2, 0, 1, 3, 8, 8, 8, 8);
++		return MAKE_PF(3, 2, 1, 0, 3, 8, 8, 8, 8);
+ 	case 24:
+ 		/* 0x88082219 */
+-		return MAKE_PF(4, 0, 1, 2, 2, 0, 8, 8, 8);
++		return MAKE_PF(4, 0, 1, 2, 2, 8, 8, 8, 0);
+ 	case 16:
+ 		/* 0x65053118 */
+ 		return MAKE_PF(4, 2, 1, 0, 1, 5, 6, 5, 0);
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+1.7.5.4
+

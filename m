@@ -1,78 +1,58 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 28 Jan 2013 09:33:42 +0000
-Subject: [PATCH v5 11/12] video: da8xx-fb: setup struct lcd_ctrl_config for dt
-Message-Id: <4f79aabac23ce9f105e1e0dc1c35458ebe28c169.1359356015.git.afzal@ti.com>
+From: Zhou Zhu <zzhu3@marvell.com>
+Date: Thu, 17 Jan 2013 08:24:27 +0000
+Subject: [PATCH v5 6/8] ARM: mmp: added device for display controller
+Message-Id: <1358411067-2775-1-git-send-email-zzhu3@marvell.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1359356015.git.afzal@ti.com>
-In-Reply-To: <cover.1359356015.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Mike Turquette <mturquette@linaro.org>
+To: linux-fbdev@vger.kernel.org
 
-strcut lcd_ctrl_config information required for driver is currently
-obtained via platform data. To handle DT probing, create
-lcd_ctrl_config and populate it with default values, these values are
-sufficient for the panels so far used with this controller to work.
+added device for display controller and fb support
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
 ---
- drivers/video/da8xx-fb.c | 34 +++++++++++++++++++++++++++++++++-
- 1 file changed, 33 insertions(+), 1 deletion(-)
+ arch/arm/mach-mmp/include/mach/pxa910.h |    5 ++++-
+ arch/arm/mach-mmp/pxa910.c              |    3 +++
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 1c1a616..5455682 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -1254,6 +1254,35 @@ static struct fb_ops da8xx_fb_ops = {
- 	.fb_blank = cfb_blank,
- };
+diff --git a/arch/arm/mach-mmp/include/mach/pxa910.h b/arch/arm/mach-mmp/include/mach/pxa910.h
+index 3b58a3b..b4c94d8 100644
+--- a/arch/arm/mach-mmp/include/mach/pxa910.h
++++ b/arch/arm/mach-mmp/include/mach/pxa910.h
+@@ -10,6 +10,7 @@ extern void __init pxa910_init_irq(void);
+ #include <linux/i2c/pxa-i2c.h>
+ #include <mach/devices.h>
+ #include <linux/platform_data/mtd-nand-pxa3xx.h>
++#include <video/mmp_disp.h>
  
-+static struct lcd_ctrl_config *da8xx_fb_create_cfg(struct platform_device *dev)
-+{
-+	struct lcd_ctrl_config *cfg;
-+
-+	cfg = devm_kzalloc(&dev->dev, sizeof(struct fb_videomode), GFP_KERNEL);
-+	if (!cfg) {
-+		dev_err(&dev->dev, "memory allocation failed\n");
-+		return NULL;
-+	}
-+
-+	/* default values */
-+
-+	if (lcd_revision = LCD_VERSION_1)
-+		cfg->bpp = 16;
-+	else
-+		cfg->bpp = 32;
-+
-+	/*
-+	 * For panels so far used with this LCDC, below statement is sufficient.
-+	 * For new panels, if required, struct lcd_ctrl_cfg fields to be updated
-+	 * with additional/modified values. Those values would have to be then
-+	 * obtained from dt(requiring new dt bindings).
-+	 */
-+
-+	cfg->panel_shade = COLOR_ACTIVE;
-+
-+	return cfg;
-+}
-+
- static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
- {
- 	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
-@@ -1345,7 +1374,10 @@ static int fb_probe(struct platform_device *device)
- 		break;
- 	}
+ extern struct pxa_device_desc pxa910_device_uart1;
+ extern struct pxa_device_desc pxa910_device_uart2;
+@@ -23,7 +24,9 @@ extern struct pxa_device_desc pxa910_device_nand;
+ extern struct platform_device pxa168_device_u2o;
+ extern struct platform_device pxa168_device_u2ootg;
+ extern struct platform_device pxa168_device_u2oehci;
+-
++extern struct pxa_device_desc pxa910_device_disp;
++extern struct pxa_device_desc pxa910_device_fb;
++extern struct pxa_device_desc pxa910_device_panel;
+ extern struct platform_device pxa910_device_gpio;
+ extern struct platform_device pxa910_device_rtc;
  
--	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
-+	if (device->dev.of_node)
-+		lcd_cfg = da8xx_fb_create_cfg(device);
-+	else
-+		lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
+diff --git a/arch/arm/mach-mmp/pxa910.c b/arch/arm/mach-mmp/pxa910.c
+index 8b1e16f..e49cdd9 100644
+--- a/arch/arm/mach-mmp/pxa910.c
++++ b/arch/arm/mach-mmp/pxa910.c
+@@ -138,6 +138,9 @@ PXA910_DEVICE(pwm2, "pxa910-pwm", 1, NONE, 0xd401a400, 0x10);
+ PXA910_DEVICE(pwm3, "pxa910-pwm", 2, NONE, 0xd401a800, 0x10);
+ PXA910_DEVICE(pwm4, "pxa910-pwm", 3, NONE, 0xd401ac00, 0x10);
+ PXA910_DEVICE(nand, "pxa3xx-nand", -1, NAND, 0xd4283000, 0x80, 97, 99);
++PXA910_DEVICE(disp, "mmp-disp", 0, LCD, 0xd420b000, 0x1ec);
++PXA910_DEVICE(fb, "mmp-fb", -1, NONE, 0, 0);
++PXA910_DEVICE(panel, "tpo-hvga", -1, NONE, 0, 0);
  
- 	if (!lcd_cfg) {
- 		ret = -EINVAL;
+ struct resource pxa910_resource_gpio[] = {
+ 	{
 -- 
-1.7.12
+1.7.9.5
 

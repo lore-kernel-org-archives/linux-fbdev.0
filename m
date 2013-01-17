@@ -1,43 +1,85 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 22 Jan 2013 04:17:47 +0000
-Subject: Re: [PATCH 30/33] video: Convert to devm_ioremap_resource()
-Message-Id: <000501cdf857$6f33c780$4d9b5680$%han@samsung.com>
+From: Zhou Zhu <zzhu3@marvell.com>
+Date: Thu, 17 Jan 2013 08:20:26 +0000
+Subject: [PATCH v5 0/8] video: mmp display subsystem
+Message-Id: <1358410826-2557-1-git-send-email-zzhu3@marvell.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1358762966-20791-1-git-send-email-thierry.reding@avionic-design.de>
- <1358762966-20791-31-git-send-email-thierry.reding@avionic-design.de>
-In-Reply-To: <1358762966-20791-31-git-send-email-thierry.reding@avionic-design.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Thierry Reding' <thierry.reding@avionic-design.de>, linux-kernel@vger.kernel.org
-Cc: 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>, 'Dmitry Torokhov' <dmitry.torokhov@gmail.com>, 'Arnd Bergmann' <arnd@arndb.de>, 'Wolfram Sang' <w.sang@pengutronix.de>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>
+To: linux-fbdev@vger.kernel.org
 
-On Monday, January 21, 2013 7:09 PM, Thierry wrote
-> 
-> Convert all uses of devm_request_and_ioremap() to the newly introduced
-> devm_ioremap_resource() which provides more consistent error handling.
-> 
-> devm_ioremap_resource() provides its own error messages so all explicit
-> error messages can be removed from the failure code paths.
-> 
-> Signed-off-by: Thierry Reding <thierry.reding@avionic-design.de>
-> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-> Cc: linux-fbdev@vger.kernel.org
-> ---
->  drivers/video/exynos/exynos_dp_core.c | 8 +++-----
->  drivers/video/jz4740_fb.c             | 6 +++---
->  drivers/video/omap2/dss/hdmi.c        | 8 +++-----
->  drivers/video/omap2/vrfb.c            | 9 ++++-----
->  drivers/video/s3c-fb.c                | 7 +++----
->  5 files changed, 16 insertions(+), 22 deletions(-)
-> 
+Hi,
 
-For drivers/video/s3c-fb.c, drivers/video/exynos/exynos_dp_core.c
+This series added support for display controller in
+Marvell "mmp" series processors.
+It also contains patches to enable display panel on
+TTC_DKB board.
 
-Acked-by: Jingoo Han <jg1.han@samsung.com>
+v5: rebased to 3.8RC3 and support common clock tree.
+v4: added patches to enable display panel on TTC_DKB
+board.
+v3: registered lcd spi control as a spi master and
+panel driver operations moved to standard spi bus
+interface. 
+v2: removed change-id and blank lines.
 
+Thanks,
+-Zhou
 
-Best regards,
-Jingoo Han
+Guoqing Li (1):
+  video: mmp display controller support
 
+Lisa Du (1):
+  video: mmp: add tpo hvga panel supported
+
+Zhou Zhu (6):
+  video: mmp display subsystem
+  video: mmp fb support
+  video: mmpdisp: add spi port in display controller
+  ARM: mmp: added device for display controller
+  ARM: mmp: enable display in ttc_dkb
+  ARM: mmp: add display and fb support in pxa910 defconfig
+
+ arch/arm/configs/pxa910_defconfig         |    8 +
+ arch/arm/mach-mmp/include/mach/pxa910.h   |    5 +-
+ arch/arm/mach-mmp/pxa910.c                |    3 +
+ arch/arm/mach-mmp/ttc_dkb.c               |   92 ++
+ drivers/video/Kconfig                     |    1 +
+ drivers/video/Makefile                    |    1 +
+ drivers/video/mmp/Kconfig                 |   11 +
+ drivers/video/mmp/Makefile                |    1 +
+ drivers/video/mmp/core.c                  |  217 ++++
+ drivers/video/mmp/fb/Kconfig              |   13 +
+ drivers/video/mmp/fb/Makefile             |    1 +
+ drivers/video/mmp/fb/mmpfb.c              |  710 +++++++++++
+ drivers/video/mmp/fb/mmpfb.h              |   54 +
+ drivers/video/mmp/hw/Kconfig              |   20 +
+ drivers/video/mmp/hw/Makefile             |    2 +
+ drivers/video/mmp/hw/mmp_ctrl.c           |  591 +++++++++
+ drivers/video/mmp/hw/mmp_ctrl.h           | 1958 +++++++++++++++++++++++++++++
+ drivers/video/mmp/hw/mmp_spi.c            |  180 +++
+ drivers/video/mmp/panel/Kconfig           |    6 +
+ drivers/video/mmp/panel/Makefile          |    1 +
+ drivers/video/mmp/panel/tpo_tj032md01bw.c |  188 +++
+ include/video/mmp_disp.h                  |  351 ++++++
+ 22 files changed, 4413 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/video/mmp/Kconfig
+ create mode 100644 drivers/video/mmp/Makefile
+ create mode 100644 drivers/video/mmp/core.c
+ create mode 100644 drivers/video/mmp/fb/Kconfig
+ create mode 100644 drivers/video/mmp/fb/Makefile
+ create mode 100644 drivers/video/mmp/fb/mmpfb.c
+ create mode 100644 drivers/video/mmp/fb/mmpfb.h
+ create mode 100644 drivers/video/mmp/hw/Kconfig
+ create mode 100644 drivers/video/mmp/hw/Makefile
+ create mode 100644 drivers/video/mmp/hw/mmp_ctrl.c
+ create mode 100644 drivers/video/mmp/hw/mmp_ctrl.h
+ create mode 100644 drivers/video/mmp/hw/mmp_spi.c
+ create mode 100644 drivers/video/mmp/panel/Kconfig
+ create mode 100644 drivers/video/mmp/panel/Makefile
+ create mode 100644 drivers/video/mmp/panel/tpo_tj032md01bw.c
+ create mode 100644 include/video/mmp_disp.h
+
+-- 
+1.7.9.5
 

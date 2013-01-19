@@ -1,10 +1,10 @@
 From: Tony Prisk <linux@prisktech.co.nz>
-Date: Wed, 02 Jan 2013 20:23:02 +0000
+Date: Sat, 19 Jan 2013 06:02:55 +0000
 Subject: [PATCH 2/4] video: vt8500: Make wmt_ge_rops optional
-Message-Id: <1357158184-18213-2-git-send-email-linux@prisktech.co.nz>
+Message-Id: <1358575377-26364-3-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1357158184-18213-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1357158184-18213-1-git-send-email-linux@prisktech.co.nz>
+References: <1358575377-26364-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1358575377-26364-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -74,7 +74,7 @@ index e7068c5..6678daf 100644
  
  config FB_HIT
 diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
-index 9af8da7..e8853ac 100644
+index aa2579c..d8cc1f6 100644
 --- a/drivers/video/vt8500lcdfb.c
 +++ b/drivers/video/vt8500lcdfb.c
 @@ -33,7 +33,10 @@
@@ -114,7 +114,7 @@ index 9af8da7..e8853ac 100644
  	.fb_sync	= wmt_ge_sync,
  	.fb_ioctl	= vt8500lcd_ioctl,
 diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
-index 77539c1..a990708 100644
+index ddf78fc..dd28c26 100644
 --- a/drivers/video/wm8505fb.c
 +++ b/drivers/video/wm8505fb.c
 @@ -35,7 +35,10 @@

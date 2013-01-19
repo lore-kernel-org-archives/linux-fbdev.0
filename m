@@ -1,10 +1,10 @@
 From: Tony Prisk <linux@prisktech.co.nz>
-Date: Wed, 02 Jan 2013 20:23:04 +0000
+Date: Sat, 19 Jan 2013 06:02:57 +0000
 Subject: [PATCH 4/4] video: vt8500: Update descriptions in video/Kconfig
-Message-Id: <1357158184-18213-4-git-send-email-linux@prisktech.co.nz>
+Message-Id: <1358575377-26364-5-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1357158184-18213-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1357158184-18213-1-git-send-email-linux@prisktech.co.nz>
+References: <1358575377-26364-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1358575377-26364-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

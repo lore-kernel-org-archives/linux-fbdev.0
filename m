@@ -1,10 +1,10 @@
 From: Tony Prisk <linux@prisktech.co.nz>
-Date: Wed, 02 Jan 2013 20:23:03 +0000
+Date: Sat, 19 Jan 2013 06:02:56 +0000
 Subject: [PATCH 3/4] video: vt8500: Remove unused platform_data/video-vt8500lcdfb.h
-Message-Id: <1357158184-18213-3-git-send-email-linux@prisktech.co.nz>
+Message-Id: <1358575377-26364-4-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1357158184-18213-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1357158184-18213-1-git-send-email-linux@prisktech.co.nz>
+References: <1358575377-26364-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1358575377-26364-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -23,7 +23,7 @@ Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
  delete mode 100644 include/linux/platform_data/video-vt8500lcdfb.h
 
 diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
-index e8853ac..b1fbe20 100644
+index d8cc1f6..1c34821 100644
 --- a/drivers/video/vt8500lcdfb.c
 +++ b/drivers/video/vt8500lcdfb.c
 @@ -30,8 +30,6 @@
@@ -36,7 +36,7 @@ index e8853ac..b1fbe20 100644
  
  #ifdef CONFIG_FB_WMT_GE_ROPS
 diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
-index a990708..f0185cd 100644
+index dd28c26..8c8c129 100644
 --- a/drivers/video/wm8505fb.c
 +++ b/drivers/video/wm8505fb.c
 @@ -32,8 +32,6 @@

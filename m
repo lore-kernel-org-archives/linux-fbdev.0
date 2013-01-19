@@ -1,46 +1,281 @@
-From: Alexander Holler <holler@ahsoftware.de>
-Date: Tue, 29 Jan 2013 20:56:47 +0000
-Subject: Re: [PATCH 2/3 v2] fb: udlfb: fix hang at disconnect
-Message-Id: <5108378F.80003@ahsoftware.de>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Sat, 19 Jan 2013 10:30:19 +0000
+Subject: [PATCH 2/3] tegra: pwm-backlight: add tegra pwm-bl driver
+Message-Id: <1358591420-7790-3-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <50F2A310.5010006@ahsoftware.de> <1359139768-32294-1-git-send-email-holler@ahsoftware.de> <1359139768-32294-2-git-send-email-holler@ahsoftware.de> <20130128162238.7fba92fe.akpm@linux-foundation.org> <51071E21.9030008@ahsoftware.de> <5107A5ED.7020009@ahsoftware.de> <5107AE4F.9000809@ahsoftware.de> <5107F014.4030704@ahsoftware.de> <5108329E.2050802@ahsoftware.de>
-In-Reply-To: <5108329E.2050802@ahsoftware.de>
+References: <1358591420-7790-1-git-send-email-acourbot@nvidia.com>
+In-Reply-To: <1358591420-7790-1-git-send-email-acourbot@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Bernie Thompson <bernie@plugable.com>, Steve Glendinning <steve.glendinning@shawell.net>, stable@vger.kernel.org
+To: Thierry Reding <thierry.reding@avionic-design.de>, Stephen Warren <swarren@wwwdotorg.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, Mark Zhang <markz@nvidia.com>, gnurou@gmail.com, Alexandre Courbot <acourbot@nvidia.com>
 
-Am 29.01.2013 21:35, schrieb Alexander Holler:
->
-> So, if the above down_timeout_killable() is only down_interruptible(),
-> as in kernel 3.7.5, the  box would not shutdown afterwards, because on
-> shutdown no signal would be send to that kernel-thread which called
-> dlfb_free_urb_list().
->
-> A last note: dlfb_usb_disconnect() (thus dlfb_free_urb_list()) isn't
-> called on shutdown if the device would still be connected. So the
-> problem only might happen, if the screen will be disconnected before
-> shutdown (and an urb gets missed). So the subject of my patch is
-> correct. ;)
->
-> </monologue>
+Add a PWM-backlight subdriver for Tegra boards, with support for
+Ventana.
 
-Hmm, wrong, sorry, I still have something to add: As no signal arrives 
-at all, v1 of that patch is enough and the implementation of 
-down_timeout_killable() isn't necessary at all.
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+---
+ arch/arm/boot/dts/tegra20-ventana.dts  |  18 +++-
+ arch/arm/configs/tegra_defconfig       |   1 +
+ drivers/video/backlight/Kconfig        |   7 ++
+ drivers/video/backlight/pwm_bl.c       |   3 +
+ drivers/video/backlight/pwm_bl_tegra.c | 159 +++++++++++++++++++++++++++++++++
+ 5 files changed, 186 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/video/backlight/pwm_bl_tegra.c
 
-If there is a chance that the patch would be Acked-by by someone, I 
-would made a v3, replacing
+diff --git a/arch/arm/boot/dts/tegra20-ventana.dts b/arch/arm/boot/dts/tegra20-ventana.dts
+index adc4754..a77b529 100644
+--- a/arch/arm/boot/dts/tegra20-ventana.dts
++++ b/arch/arm/boot/dts/tegra20-ventana.dts
+@@ -516,6 +516,20 @@
+ 		bus-width = <8>;
+ 	};
+ 
++	backlight {
++		compatible = "pwm-backlight-ventana";
++		brightness-levels = <0 16 32 48 64 80 96 112 128 144 160 176 192 208 224 240 255>;
++		default-brightness-level = <12>;
++
++		pwms = <&pwm 2 5000000>;
++		pwm-names = "backlight";
++
++		power-supply = <&vdd_bl_reg>;
++		panel-supply = <&vdd_pnl_reg>;
++		bl-gpio = <&gpio 28 0>;
++		bl-panel = <&gpio 10 0>;
++	};
++
+ 	regulators {
+ 		compatible = "simple-bus";
+ 		#address-cells = <1>;
+@@ -549,7 +563,7 @@
+ 			enable-active-high;
+ 		};
+ 
+-		regulator@3 {
++		vdd_pnl_reg: regulator@3 {
+ 			compatible = "regulator-fixed";
+ 			reg = <3>;
+ 			regulator-name = "vdd_pnl";
+@@ -559,7 +573,7 @@
+ 			enable-active-high;
+ 		};
+ 
+-		regulator@4 {
++		vdd_bl_reg: regulator@4 {
+ 			compatible = "regulator-fixed";
+ 			reg = <4>;
+ 			regulator-name = "vdd_bl";
+diff --git a/arch/arm/configs/tegra_defconfig b/arch/arm/configs/tegra_defconfig
+index a7827fd..1c46602 100644
+--- a/arch/arm/configs/tegra_defconfig
++++ b/arch/arm/configs/tegra_defconfig
+@@ -150,6 +150,7 @@ CONFIG_BACKLIGHT_LCD_SUPPORT=y
+ CONFIG_BACKLIGHT_CLASS_DEVICE=y
+ # CONFIG_BACKLIGHT_GENERIC is not set
+ CONFIG_BACKLIGHT_PWM=y
++CONFIG_BACKLIGHT_PWM_TEGRA=y
+ CONFIG_FRAMEBUFFER_CONSOLE=y
+ CONFIG_LOGO=y
+ CONFIG_SOUND=y
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 765a945..377a409 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -244,6 +244,13 @@ config BACKLIGHT_PWM
+ 	  If you have a LCD backlight adjustable by PWM, say Y to enable
+ 	  this driver.
+ 
++config BACKLIGHT_PWM_TEGRA
++	bool "PWM Backlight Driver for Tegra boards"
++	depends on BACKLIGHT_PWM && ARCH_TEGRA
++	help
++	  Support backlight power sequencing for Tegra boards.
++	  Supported boards: Ventana.
++
+ config BACKLIGHT_DA903X
+ 	tristate "Backlight Driver for DA9030/DA9034 using WLED"
+ 	depends on PMIC_DA903X
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index b65a797..1a4a9a3 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -217,6 +217,9 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 
+ static struct of_device_id pwm_backlight_of_match[] = {
+ 	{ .compatible = "pwm-backlight" },
++#ifdef CONFIG_BACKLIGHT_PWM_TEGRA
++	{ .compatible = "pwm-backlight-ventana" },
++#endif
+ 	{ }
+ };
+ 
+diff --git a/drivers/video/backlight/pwm_bl_tegra.c b/drivers/video/backlight/pwm_bl_tegra.c
+new file mode 100644
+index 0000000..8f2195b
+--- /dev/null
++++ b/drivers/video/backlight/pwm_bl_tegra.c
+@@ -0,0 +1,159 @@
++/*
++ * pwm-backlight subdriver for Tegra.
++ *
++ * Copyright (c) 2013 NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
++#include <linux/err.h>
++#include <linux/module.h>
++#include <linux/pwm_backlight.h>
++#include <linux/regulator/consumer.h>
++#include <linux/gpio.h>
++#include <linux/of_gpio.h>
++#include <linux/list.h>
++#include <linux/delay.h>
++#include <linux/slab.h>
++
++struct ventana_bl_data {
++	struct regulator *vdd_power;
++	struct regulator *vdd_panel;
++	int bl_gpio;
++	int panel_gpio;
++	bool is_on;
++};
++
++static int init_ventana(struct device *dev)
++{
++	struct ventana_bl_data *data;
++	int ret;
++
++	data = devm_kzalloc(dev, sizeof(struct ventana_bl_data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->vdd_power = devm_regulator_get(dev, "power");
++	if (IS_ERR(data->vdd_power)) {
++		dev_err(dev, "cannot get power regulator!\n");
++		return PTR_ERR(data->vdd_power);
++	}
++
++	data->vdd_panel = devm_regulator_get(dev, "panel");
++	if (IS_ERR(data->vdd_panel)) {
++		dev_err(dev, "cannot get panel regulator!\n");
++		return PTR_ERR(data->vdd_panel);
++	}
++
++	ret = of_get_named_gpio(dev->of_node, "bl-gpio", 0);
++	if (ret < 0) {
++		dev_err(dev, "cannot find backlight GPIO!\n");
++		return ret;
++	}
++	data->bl_gpio = ret;
++
++	ret = of_get_named_gpio(dev->of_node, "bl-panel", 0);
++	if (ret < 0) {
++		dev_err(dev, "cannot find panel GPIO!\n");
++		return ret;
++	}
++	data->panel_gpio = ret;
++
++	ret = devm_gpio_request_one(dev, data->bl_gpio,
++				    GPIOF_DIR_OUT | GPIOF_OUT_INIT_LOW,
++				    "backlight");
++	if (ret < 0) {
++		dev_err(dev, "cannot request backlight GPIO!\n");
++		return ret;
++	}
++
++	ret = devm_gpio_request_one(dev, data->panel_gpio,
++				    GPIOF_DIR_OUT | GPIOF_OUT_INIT_LOW,
++				    "panel");
++	if (ret < 0) {
++		dev_err(dev, "cannot request panel GPIO!\n");
++		return ret;
++	}
++
++	pwm_backlight_set_subdriver_data(dev, data);
++
++	return 0;
++}
++
++static void exit_ventana(struct device *dev)
++{
++	struct ventana_bl_data *data = pwm_backlight_get_subdriver_data(dev);
++
++	devm_gpio_free(dev, data->panel_gpio);
++	devm_gpio_free(dev, data->bl_gpio);
++	devm_regulator_put(data->vdd_panel);
++	devm_regulator_put(data->vdd_power);
++	devm_kfree(dev, data);
++}
++
++static int notify_ventana(struct device *dev, int brightness)
++{
++	struct ventana_bl_data *data = pwm_backlight_get_subdriver_data(dev);
++	if (brightness && !data->is_on) {
++		regulator_enable(data->vdd_panel);
++		gpio_set_value(data->panel_gpio, 1);
++		usleep_range(200000, 200000);
++		regulator_enable(data->vdd_power);
++		usleep_range(10000, 10000);
++	} else if (!brightness && data->is_on) {
++		gpio_set_value(data->bl_gpio, 0);
++	}
++
++	return brightness;
++}
++
++static void notify_after_ventana(struct device *dev, int brightness)
++{
++	struct ventana_bl_data *data = pwm_backlight_get_subdriver_data(dev);
++	if (brightness && !data->is_on) {
++		gpio_set_value(data->bl_gpio, 1);
++		data->is_on = true;
++	} else if (!brightness && data->is_on) {
++		usleep_range(10000, 10000);
++		regulator_disable(data->vdd_power);
++		usleep_range(200000, 200000);
++		gpio_set_value(data->panel_gpio, 0);
++		regulator_disable(data->vdd_panel);
++		data->is_on = false;
++	}
++}
++
++static struct pwm_backlight_subdriver pwm_backlight_ventana_subdriver = {
++	.name = "pwm-backlight-ventana",
++	.init = init_ventana,
++	.exit = exit_ventana,
++	.notify = notify_ventana,
++	.notify_after = notify_after_ventana,
++};
++
++static int __init pwm_backlight_tegra_init(void)
++{
++	pwm_backlight_add_subdriver(&pwm_backlight_ventana_subdriver);
++	return 0;
++}
++
++static void __exit pwm_backlight_tegra_exit(void)
++{
++	pwm_backlight_remove_subdriver(&pwm_backlight_ventana_subdriver);
++}
++
++module_init(pwm_backlight_tegra_init);
++module_exit(pwm_backlight_tegra_exit);
++
++MODULE_DESCRIPTION("Backlight Driver for Tegra boards");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:pwm-tegra-backlight");
++
++
+-- 
+1.8.1.1
 
-+		ret = down_timeout(&dev->urbs.limit_sem, GET_URB_TIMEOUT);
-
-in v1 with
-
-+		ret = down_timeout(&dev->urbs.limit_sem, FREE_URB_TIMEOUT);
-
-as this seems to be what it should be.
-
-Regards,
-
-Alexander

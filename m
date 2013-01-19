@@ -1,8 +1,10 @@
 From: Tony Prisk <linux@prisktech.co.nz>
-Date: Wed, 02 Jan 2013 20:23:01 +0000
+Date: Sat, 19 Jan 2013 06:02:54 +0000
 Subject: [PATCH 1/4] drivers/video/wm8505fb.c: use devm_ functions
-Message-Id: <1357158184-18213-1-git-send-email-linux@prisktech.co.nz>
+Message-Id: <1358575377-26364-2-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1358575377-26364-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1358575377-26364-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -56,10 +58,10 @@ Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
  1 file changed, 19 insertions(+), 59 deletions(-)
 
 diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
-index 77539c1..1c3ce2c 100644
+index 4dd0580..ddf78fc 100644
 --- a/drivers/video/wm8505fb.c
 +++ b/drivers/video/wm8505fb.c
-@@ -274,15 +274,11 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+@@ -274,15 +274,11 @@ static int wm8505fb_probe(struct platform_device *pdev)
  	unsigned long fb_mem_len;
  	void *fb_mem_virt;
  
@@ -76,7 +78,7 @@ index 77539c1..1c3ce2c 100644
  	}
  
  	strcpy(fbi->fb.fix.id, DRIVER_NAME);
-@@ -308,31 +304,15 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+@@ -308,31 +304,15 @@ static int wm8505fb_probe(struct platform_device *pdev)
  	fbi->fb.pseudo_palette	= addr;
  
  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
@@ -112,7 +114,7 @@ index 77539c1..1c3ce2c 100644
  	}
  
  	/*
-@@ -351,7 +331,7 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+@@ -351,7 +331,7 @@ static int wm8505fb_probe(struct platform_device *pdev)
  	ret |= of_property_read_u32(np, "bpp", &bpp);
  	if (ret) {
  		pr_err("%s: Unable to read display properties\n", __func__);
@@ -121,7 +123,7 @@ index 77539c1..1c3ce2c 100644
  	}
  
  	of_mode.vmode = FB_VMODE_NONINTERLACED;
-@@ -365,12 +345,12 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+@@ -365,12 +345,12 @@ static int wm8505fb_probe(struct platform_device *pdev)
  
  	/* try allocating the framebuffer */
  	fb_mem_len = of_mode.xres * of_mode.yres * 2 * (bpp / 8);
@@ -136,7 +138,7 @@ index 77539c1..1c3ce2c 100644
  
  	fbi->fb.var.xres_virtual	= of_mode.xres;
  	fbi->fb.var.yres_virtual	= of_mode.yres * 2;
-@@ -381,28 +361,29 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+@@ -381,28 +361,29 @@ static int wm8505fb_probe(struct platform_device *pdev)
  	fbi->fb.screen_base		= fb_mem_virt;
  	fbi->fb.screen_size		= fb_mem_len;
  
@@ -176,7 +178,7 @@ index 77539c1..1c3ce2c 100644
  	}
  
  	ret = device_create_file(&pdev->dev, &dev_attr_contrast);
-@@ -416,25 +397,11 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+@@ -416,25 +397,11 @@ static int wm8505fb_probe(struct platform_device *pdev)
  	       fbi->fb.fix.smem_start + fbi->fb.fix.smem_len - 1);
  
  	return 0;
@@ -195,14 +197,14 @@ index 77539c1..1c3ce2c 100644
 -	return ret;
  }
  
- static int __devexit wm8505fb_remove(struct platform_device *pdev)
+ static int wm8505fb_remove(struct platform_device *pdev)
  {
  	struct wm8505fb_info *fbi = platform_get_drvdata(pdev);
 -	struct resource *res;
  
  	device_remove_file(&pdev->dev, &dev_attr_contrast);
  
-@@ -445,13 +412,6 @@ static int __devexit wm8505fb_remove(struct platform_device *pdev)
+@@ -445,13 +412,6 @@ static int wm8505fb_remove(struct platform_device *pdev)
  	if (fbi->fb.cmap.len)
  		fb_dealloc_cmap(&fbi->fb.cmap);
  

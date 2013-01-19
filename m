@@ -1,90 +1,53 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 28 Jan 2013 09:32:22 +0000
-Subject: [PATCH v5 00/12] video: da8xx-fb: am335x DT support
-Message-Id: <cover.1359356015.git.afzal@ti.com>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Sat, 19 Jan 2013 10:30:20 +0000
+Subject: [PATCH 3/3] tegra: ventana: of: add host1x device to DT
+Message-Id: <1358591420-7790-4-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1358591420-7790-1-git-send-email-acourbot@nvidia.com>
+In-Reply-To: <1358591420-7790-1-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Mike Turquette <mturquette@linaro.org>
+To: Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
-Hi,
+Add the host1x device and DDC i2c bus to enable internal panel on
+Ventana.
 
-This series adds DT support to da8xx-fb driver (device found on
-DaVinci and AM335x SoC's). It does certain cleanup's in the process.
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+---
+ arch/arm/boot/dts/tegra20-ventana.dts | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-This series as compared to previous version goes back to v2 way of
-configuring pixel clock rate. i.e. set divider if rate is within
-the range that is configurable with existing input clock rate, else
-change input clock rate as required instead of modeling CCF clock
-nodes in the driver (more details in 12/12)
-
-This makes use of Steffen Trumtrar's v17 of display timing DT support.
-
-Testing has been done on AM335x SoC based boards like AM335x EVM. It
-has also been verified that display on DA850 EVM (non-DT boot) works
-as earlier.
-
-This series is based on v3.8-rc3,
- and is dependent on,
-1. Series v17 "of: add display helper" by,
-        Steffen Trumtrar <s.trumtrar@pengutronix.de>
-2. Patch "da8xx: Allow use by am33xx based devices" by,
-        Pantelis Antoniou <panto@antoniou-consulting.com>
-3. Series v3 "video: da8xx-fb: runtime timing configuration" by,
-        me (Afzal Mohammed <afzal@ti.com>)
-
-To test this series on AM335x based boards,
-1. Series "HWMOD fixes for AM33xx PWM submodules and device tree nodes" by,
-        Philip, Avinash <avinashphilip@ti.com>
-as well as following,
-2. Series v2 "ARM: dts: AM33XX: lcdc support",
-3. Patch v2 "ARM: OMAP2+: dpll: am335x - avoid freqsel",
-4. Patch v2 "ARM: OMAP2+: clock: DEFINE_STRUCT_CLK_FLAGS helper",
-5. Patch v2 "ARM: AM33XX: clock: SET_RATE_PARENT in lcd path" by,
-	me (Afzal Mohammed <afzal@ti.com>)
-would be needed.
-
-All above dependencies along with those required for testing is available
-@ git://gitorious.org/x0148406-public/linux-kernel.git tags/da8xx-fb-dt-v5
-
-Regards
-Afzal
-
-v5: use v2 method of configuring pixel clock rate instead of modeling
-    CCF clock nodes in driver, i.e. set divider if rate is within
-    the range that is configurable with existing input clock rate,
-    else change input clock rate as required.
-v4: use new registration for clock divider having minimum divider
-    requirement and have ifdef'ery in a better way
-v3: model CCF clock divider with parent propogation if CCF selected
-v2: 2 new patches - one to configure clock rate properly (12/12)and
-    other to make io operations safe (1/12)
-
-
-
-Afzal Mohammed (11):
-  video: da8xx-fb: make io operations safe
-  video: da8xx-fb: enable sync lost intr for v2 ip
-  video: da8xx-fb: use devres
-  video: da8xx-fb: ensure non-null cfg in pdata
-  video: da8xx-fb: reorganize panel detection
-  video: da8xx-fb: minimal dt support
-  video: da8xx-fb: invoke platform callback safely
-  video: da8xx-fb: obtain fb_videomode info from dt
-  video: da8xx-fb: ensure pdata only for non-dt
-  video: da8xx-fb: setup struct lcd_ctrl_config for dt
-  video: da8xx-fb: set upstream clock rate (if reqd)
-
-Manjunathappa, Prakash (1):
-  video: da8xx-fb: fix 24bpp raster configuration
-
- .../devicetree/bindings/video/fb-da8xx.txt         |  37 ++++
- drivers/video/da8xx-fb.c                           | 226 ++++++++++++++-------
- 2 files changed, 194 insertions(+), 69 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/video/fb-da8xx.txt
-
+diff --git a/arch/arm/boot/dts/tegra20-ventana.dts b/arch/arm/boot/dts/tegra20-ventana.dts
+index a77b529..4477e9c 100644
+--- a/arch/arm/boot/dts/tegra20-ventana.dts
++++ b/arch/arm/boot/dts/tegra20-ventana.dts
+@@ -10,6 +10,15 @@
+ 		reg = <0x00000000 0x40000000>;
+ 	};
+ 
++	host1x {
++		dc@54200000 {
++			rgb {
++				status = "okay";
++				nvidia,ddc-i2c-bus = <&lcd_ddc>;
++			};
++		};
++	};
++
+ 	pinmux {
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&state_default>;
+@@ -341,7 +350,7 @@
+ 			#size-cells = <0>;
+ 		};
+ 
+-		i2c@1 {
++		lcd_ddc: i2c@1 {
+ 			reg = <1>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
 -- 
-1.7.12
+1.8.1.1
 

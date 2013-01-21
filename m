@@ -1,138 +1,109 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 07 Jan 2013 05:18:11 +0000
-Subject: [PATCH v2 10/10] video: da8xx-fb: fb_set_par support
-Message-Id: <bdb8c433ca1d1aa94a3977156bb5715216b3b24b.1357303978.git.afzal@ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Mon, 21 Jan 2013 11:08:01 +0000
+Subject: [PATCH v16 RESEND 6/7] drm_modes: add videomode helpers
+Message-Id: <1358766482-6275-7-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1357303978.git.afzal@ti.com>
-In-Reply-To: <cover.1357303978.git.afzal@ti.com>
+References: <1358766482-6275-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1358766482-6275-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, nsekhar@ti.com, hvaibhav@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
+To: devicetree-discuss@lists.ozlabs.org, David Airlie <airlied@linux.ie>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Rob Clark <robdclark@gmail.com>, Leela Krishna Amudala <leelakrishna.a@gmail.com>, "Mohammed, Afzal" <afzal@ti.com>, kernel@pengutronix.de
 
-fb_set_par helps in runtime configuration of lcd controller like
-changing resolution, pixel clock etc. (eg. using fbset utility)
+Add conversion from videomode to drm_display_mode
 
-Reconfigure lcd controller based on information passed by framework.
-Enable raster back if it was already enabled.
-
-As fb_set_par would get invoked indirectly from probe via fb_set_var,
-remove existing lcdc initialization in probe and do lcdc reset in
-probe so that reset happens only at the begining.
-
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Tested-by: Afzal Mohammed <Afzal@ti.com>
 ---
+ drivers/gpu/drm/drm_modes.c |   37 +++++++++++++++++++++++++++++++++++++
+ include/drm/drmP.h          |    5 +++++
+ 2 files changed, 42 insertions(+)
 
-v2: disable raster in fb_set_par properly as required, without this
-    there would be no issue on DA850, but it will cause problem on AM335X
-
- drivers/video/da8xx-fb.c |   60 +++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 49 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index c7393f1..240eac7 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -247,6 +247,11 @@ static struct fb_videomode known_lcd_panels[] = {
- 	},
- };
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 59450f3..184a22d 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -35,6 +35,7 @@
+ #include <linux/export.h>
+ #include <drm/drmP.h>
+ #include <drm/drm_crtc.h>
++#include <video/videomode.h>
  
-+static inline bool da8xx_fb_is_raster_enabled(void)
-+{
-+	return !!(lcdc_read(LCD_RASTER_CTRL_REG) & LCD_RASTER_ENABLE);
-+}
-+
- /* Enable the Raster Engine of the LCD Controller */
- static inline void lcd_enable_raster(void)
- {
-@@ -669,9 +674,6 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
- 
- static void da8xx_fb_lcd_reset(void)
- {
--	/* Disable the Raster if previously Enabled */
--	lcd_disable_raster(false);
--
- 	/* DMA has to be disabled */
- 	lcdc_write(0, LCD_DMA_CTRL_REG);
- 	lcdc_write(0, LCD_RASTER_CTRL_REG);
-@@ -724,8 +726,6 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
- 	u32 bpp;
- 	int ret = 0;
- 
--	da8xx_fb_lcd_reset();
--
- 	da8xx_fb_calc_config_clk_divider(par, panel);
- 
- 	if (panel->sync & FB_SYNC_CLK_INVERT)
-@@ -1205,9 +1205,52 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
- 	return ret;
+ /**
+  * drm_mode_debug_printmodeline - debug print a mode
+@@ -504,6 +505,42 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, int vdisplay, int vrefresh,
  }
+ EXPORT_SYMBOL(drm_gtf_mode);
  
-+static int da8xxfb_set_par(struct fb_info *info)
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++int drm_display_mode_from_videomode(const struct videomode *vm,
++				    struct drm_display_mode *dmode)
 +{
-+	struct da8xx_fb_par *par = info->par;
-+	int ret;
-+	bool raster = da8xx_fb_is_raster_enabled();
++	dmode->hdisplay = vm->hactive;
++	dmode->hsync_start = dmode->hdisplay + vm->hfront_porch;
++	dmode->hsync_end = dmode->hsync_start + vm->hsync_len;
++	dmode->htotal = dmode->hsync_end + vm->hback_porch;
 +
-+	if (raster)
-+		lcd_disable_raster(true);
-+	else
-+		lcd_disable_raster(false);
++	dmode->vdisplay = vm->vactive;
++	dmode->vsync_start = dmode->vdisplay + vm->vfront_porch;
++	dmode->vsync_end = dmode->vsync_start + vm->vsync_len;
++	dmode->vtotal = dmode->vsync_end + vm->vback_porch;
 +
-+	fb_var_to_videomode(&par->mode, &info->var);
++	dmode->clock = vm->pixelclock / 1000;
 +
-+	par->cfg.bpp = info->var.bits_per_pixel;
-+
-+	info->fix.visual = (par->cfg.bpp <= 8) ?
-+				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
-+	info->fix.line_length = (par->mode.xres * par->cfg.bpp) / 8;
-+
-+	ret = lcd_init(par, &par->cfg, &par->mode);
-+	if (ret < 0) {
-+		dev_err(par->dev, "lcd init failed\n");
-+		return ret;
-+	}
-+
-+	par->dma_start = info->fix.smem_start +
-+			 info->var.yoffset * info->fix.line_length +
-+			 info->var.xoffset * info->var.bits_per_pixel / 8;
-+	par->dma_end   = par->dma_start +
-+			 info->var.yres * info->fix.line_length - 1;
-+
-+	lcdc_write(par->dma_start, LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
-+	lcdc_write(par->dma_end, LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
-+	lcdc_write(par->dma_start, LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
-+	lcdc_write(par->dma_end, LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
-+
-+	if (raster)
-+		lcd_enable_raster();
++	dmode->flags = 0;
++	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
++		dmode->flags |= DRM_MODE_FLAG_PHSYNC;
++	else if (vm->dmt_flags & VESA_DMT_HSYNC_LOW)
++		dmode->flags |= DRM_MODE_FLAG_NHSYNC;
++	if (vm->dmt_flags & VESA_DMT_VSYNC_HIGH)
++		dmode->flags |= DRM_MODE_FLAG_PVSYNC;
++	else if (vm->dmt_flags & VESA_DMT_VSYNC_LOW)
++		dmode->flags |= DRM_MODE_FLAG_NVSYNC;
++	if (vm->data_flags & DISPLAY_FLAGS_INTERLACED)
++		dmode->flags |= DRM_MODE_FLAG_INTERLACE;
++	if (vm->data_flags & DISPLAY_FLAGS_DOUBLESCAN)
++		dmode->flags |= DRM_MODE_FLAG_DBLSCAN;
++	drm_mode_set_name(dmode);
 +
 +	return 0;
 +}
++EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
++#endif
 +
- static struct fb_ops da8xx_fb_ops = {
- 	.owner = THIS_MODULE,
- 	.fb_check_var = fb_check_var,
-+	.fb_set_par = da8xxfb_set_par,
- 	.fb_setcolreg = fb_setcolreg,
- 	.fb_pan_display = da8xx_pan_display,
- 	.fb_ioctl = fb_ioctl,
-@@ -1316,14 +1359,9 @@ static int __devinit fb_probe(struct platform_device *device)
- 	}
+ /**
+  * drm_mode_set_name - set the name on a mode
+  * @mode: name will be set in this mode
+diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+index 3fd8280..5fbb0fe 100644
+--- a/include/drm/drmP.h
++++ b/include/drm/drmP.h
+@@ -85,6 +85,8 @@ struct module;
+ struct drm_file;
+ struct drm_device;
  
- 	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
--	fb_var_to_videomode(&par->mode, &da8xx_fb_var);
- 	par->cfg = *lcd_cfg;
++struct videomode;
++
+ #include <drm/drm_os_linux.h>
+ #include <drm/drm_hashtab.h>
+ #include <drm/drm_mm.h>
+@@ -1454,6 +1456,9 @@ extern struct drm_display_mode *
+ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
+ 				  struct drm_cmdline_mode *cmd);
  
--	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
--		dev_err(&device->dev, "lcd_init failed\n");
--		ret = -EFAULT;
--		goto err_release_fb;
--	}
-+	da8xx_fb_lcd_reset();
- 
- 	/* allocate frame buffer */
- 	par->vram_size = lcdc_info->xres * lcdc_info->yres * lcd_cfg->bpp;
++extern int drm_display_mode_from_videomode(const struct videomode *vm,
++					   struct drm_display_mode *dmode);
++
+ /* Modesetting support */
+ extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
+ extern void drm_vblank_post_modeset(struct drm_device *dev, int crtc);
 -- 
-1.7.9.5
+1.7.10.4
 

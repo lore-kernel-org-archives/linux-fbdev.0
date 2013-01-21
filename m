@@ -1,99 +1,53 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Mon, 21 Jan 2013 07:49:28 +0000
+From: Alex Courbot <acourbot@nvidia.com>
+Date: Mon, 21 Jan 2013 08:18:11 +0000
 Subject: Re: [PATCH 0/3] pwm-backlight: add subdrivers & Tegra support
-Message-Id: <20130121074928.GE15508@avionic-0098.adnet.avionic-design.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="X3gaHHMYHkYqP6yf"
+Message-Id: <6871054.sK10m5bePf@percival>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1358591420-7790-1-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1358591420-7790-1-git-send-email-acourbot@nvidia.com>
-To: Alexandre Courbot <acourbot@nvidia.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, Mark Zhang <markz@nvidia.com>, gnurou@gmail.com
+References: <1358591420-7790-1-git-send-email-acourbot@nvidia.com> <20130121074928.GE15508@avionic-0098.adnet.avionic-design.de>
+In-Reply-To: <20130121074928.GE15508-RM9K5IK7kjIyiCvfTdI0JKcOhU4Rzj621B7CTYaBSLdn68oJJulU0Q@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
+Hi Thierry,
 
---X3gaHHMYHkYqP6yf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Monday 21 January 2013 15:49:28 Thierry Reding wrote:
+> Eventually this should all be covered by the CDF, but since that's not
+> ready yet we want something ad-hoc to get the hardware supported. As
+> such I would like to see this go into some sort of minimalistic, Tegra-
+> specific display/panel framework. I'd prefer to keep the pwm-backlight
+> driver as simple and generic as possible, that is, a driver for a PWM-
+> controlled backlight.
+> 
+> Another advantage of moving this into a sort of display framework is
+> that it may help in defining the requirements for a CDF and that moving
+> the code to the CDF should be easier once it is done.
+> 
+> Last but not least, abstracting away the panel allows other things such
+> as physical dimensions and display modes to be properly encapsulated. I
+> think that power-on/off timing requirements for panels also belong to
+> this set since they are usually specific to a given panel.
+> 
+> Maybe adding these drivers to tegra-drm for now would be a good option.
+> That way the corresponding glue can be added without a need for inter-
+> tree dependencies.
 
-On Sat, Jan 19, 2013 at 07:30:17PM +0900, Alexandre Courbot wrote:
-> This series introduces a way to use pwm-backlight hooks with platforms
-> that use the device tree through a subdriver system. It also adds support
-> for the Tegra-based Ventana board, adding the last missing block to enable
-> its panel. Support for other Tegra board can thus be easily added.
->=20
-> I have something else in mind to properly support this (power
-> sequences), but this work relies on the GPIO subsystem redesign which will
-> take some time. The pwm-backlight subdrivers can do the job by the meanti=
-me.
->=20
-> There are a few design points that might need to be discussed:
-> 1) Link order is important: subdrivers register themselves in their
-> module_init function, which must be called before pwm-backlight's probe.
-> This forbids linking subdrivers as separate modules from pwm-backlight.
-> 2) The subdriver's data is temporarily passed through the backlight
-> device's driver data. This should not hurt, but maybe there is a better w=
-ay
-> to do this.
-> 3) Subdrivers must add themselves into pwm-backlight's own of_device_id
-> table. It would be cleaner to not have to list subdrivers into
-> pwm-backlight's main file, but I cannot think of a way to do otherwise.
->=20
-> Suggestions for the 3 points listed above are very welcome - in any case,
-> I hope to make this converge into something mergeable quickly.
->=20
-> Note that these patches are the last missing block to get a functional
-> panel on Tegra boards. Using 3.8rc4 and these patches, the internal panel
-> on Ventana is usable out-of-the-box. Yay.
+IIRC (because that was a while ago already) having a Tegra-only display 
+framework is exactly what we wanted to avoid in the first place. This series 
+does nothing but leverage the callbacks mechanism that already exists in pwm-
+backlight and make it available to DT systems. If we start making a Tegra-
+specific solution, then other architectures will have to reinvent the wheel 
+again. I really don't think we want to go that way.
 
-Hi Alexandre,
+These patches only makes slight changes to pwm_bl.c and do not extend its 
+capabilities. I agree that a suitable solution will require the CDF, but by 
+the meantime, let's go for the practical route instead of repeating the same 
+mistakes (i.e. architecture-specific frameworks) again.
 
-It's great to see you pick this up. I've been meaning to do this myself
-but I just can't find the time right now. Generally I think the approach
-you've chosen looks good, but I don't think doing it in pwm-backlight is
-the right way.
+There are certainly better ways to do this, but I'm not convinced at all that 
+a Tegra-only solution is one of them.
 
-Eventually this should all be covered by the CDF, but since that's not
-ready yet we want something ad-hoc to get the hardware supported. As
-such I would like to see this go into some sort of minimalistic, Tegra-
-specific display/panel framework. I'd prefer to keep the pwm-backlight
-driver as simple and generic as possible, that is, a driver for a PWM-
-controlled backlight.
+Alex.
 
-Another advantage of moving this into a sort of display framework is
-that it may help in defining the requirements for a CDF and that moving
-the code to the CDF should be easier once it is done.
-
-Last but not least, abstracting away the panel allows other things such
-as physical dimensions and display modes to be properly encapsulated. I
-think that power-on/off timing requirements for panels also belong to
-this set since they are usually specific to a given panel.
-
-Maybe adding these drivers to tegra-drm for now would be a good option.
-That way the corresponding glue can be added without a need for inter-
-tree dependencies.
-
-Thierry
-
---X3gaHHMYHkYqP6yf
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQ/PMIAAoJEN0jrNd/PrOhSUsP/2Ln9bxzgHXpCRq3ULOIj2H2
-c3rliK7PvQDW2fHWkrUlwlsTc5jA2LNE+Y7XCBNi45cv6r11DKpDgSz6OPSq+GML
-5bFT0ZO4+et0fc0+exOfPjN/crHMovpnGk5FhM8gAKGLdyDWpDSFFuM+DEN5eYuf
-8n5jypiuYDu/InMzF4PlGqt7Y8XweBoo64vpO9W1RQ9oFRoAv8gq2/zNFydett43
-If6nWjOCNbSv3i6L7M7SeTU6Sqw7ZsMcahPYTYjvl3qgevAqNeuoOffkCFaq7HG7
-Q30t5efs3g0O/c2OwwdoszNEcLaKijDSQr6PgZaw2YIZwhkvMbDlzO8iCD75pZBA
-CxYuSg+JAP+NjlVm5Lzz5QGXTneh/ZAIvTJokMBkcOvZkQyXwLofDVAewmyAR+Rf
-zlq2hWDQmtLXo3ByFzkF9hLdKvTGiYYGDRxGkG030bi+S06iONft9C7KUibpBFVb
-yaosKGwgEWN7arXV/KC/r9DnW8BvRw9mCeiN2hPX2QHAggkmjYSm8gdkxTF9W2P6
-rLdtqc/5iC2CjhWE5o2MQ17KEi9pWDjBlyWPdXHdVj1sPf/hJi1oOikej/Horbhg
-3HaJiSRXT2WgVnvnVC1ROBUxdMxg/KRkvD79/qgysVGAyjN0/fAHpZ00koUIAboD
-MscwCxL1IIDZnc/ORv61
-=hOoR
------END PGP SIGNATURE-----
-
---X3gaHHMYHkYqP6yf--

@@ -1,47 +1,113 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 28 Jan 2013 09:32:50 +0000
-Subject: [PATCH v5 02/12] video: da8xx-fb: fix 24bpp raster configuration
-Message-Id: <70856bfec42adfd57125d6924b3677520eb0b0fc.1359356015.git.afzal@ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Mon, 21 Jan 2013 11:08:00 +0000
+Subject: [PATCH v16 RESEND 5/7] fbmon: add of_videomode helpers
+Message-Id: <1358766482-6275-6-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1359356015.git.afzal@ti.com>
-In-Reply-To: <cover.1359356015.git.afzal@ti.com>
+References: <1358766482-6275-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1358766482-6275-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Mike Turquette <mturquette@linaro.org>, "Manjunathappa, Prakash" <prakash.pm@ti.com>
+To: devicetree-discuss@lists.ozlabs.org, David Airlie <airlied@linux.ie>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Rob Clark <robdclark@gmail.com>, Leela Krishna Amudala <leelakrishna.a@gmail.com>, "Mohammed, Afzal" <afzal@ti.com>, kernel@pengutronix.de
 
-From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Add helper to get fb_videomode from devicetree.
 
-Set only LCD_V2_TFT_24BPP_MODE bit for 24bpp and LCD_V2_TFT_24BPP_UNPACK
-bit along with LCD_V2_TFT_24BPP_MODE for 32bpp configuration.
-
-Patch is tested on am335x-evm for 24bpp and da850-evm for 16bpp
-configurations.
-
-Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Tested-by: Afzal Mohammed <Afzal@ti.com>
 ---
- drivers/video/da8xx-fb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbmon.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h    |    4 ++++
+ 2 files changed, 46 insertions(+)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 35a33ca..7f92f37 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -550,10 +550,10 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
- 	case 4:
- 	case 16:
- 		break;
--	case 24:
--		reg |= LCD_V2_TFT_24BPP_MODE;
- 	case 32:
- 		reg |= LCD_V2_TFT_24BPP_UNPACK;
-+	case 24:
-+		reg |= LCD_V2_TFT_24BPP_MODE;
- 		break;
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 17ce135..94ad0f7 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -31,6 +31,7 @@
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <video/edid.h>
++#include <video/of_videomode.h>
+ #include <video/videomode.h>
+ #ifdef CONFIG_PPC_OF
+ #include <asm/prom.h>
+@@ -1425,6 +1426,47 @@ int fb_videomode_from_videomode(const struct videomode *vm,
+ EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
+ #endif
  
- 	case 8:
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++static inline void dump_fb_videomode(const struct fb_videomode *m)
++{
++	pr_debug("fb_videomode = %ux%u@%uHz (%ukHz) %u %u %u %u %u %u %u %u %u\n",
++		 m->xres, m->yres, m->refresh, m->pixclock, m->left_margin,
++		 m->right_margin, m->upper_margin, m->lower_margin,
++		 m->hsync_len, m->vsync_len, m->sync, m->vmode, m->flag);
++}
++
++/**
++ * of_get_fb_videomode - get a fb_videomode from devicetree
++ * @np: device_node with the timing specification
++ * @fb: will be set to the return value
++ * @index: index into the list of display timings in devicetree
++ *
++ * DESCRIPTION:
++ * This function is expensive and should only be used, if only one mode is to be
++ * read from DT. To get multiple modes start with of_get_display_timings ond
++ * work with that instead.
++ */
++int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
++			int index)
++{
++	struct videomode vm;
++	int ret;
++
++	ret = of_get_videomode(np, &vm, index);
++	if (ret)
++		return ret;
++
++	fb_videomode_from_videomode(&vm, fb);
++
++	pr_debug("%s: got %dx%d display mode from %s\n",
++		of_node_full_name(np), vm.hactive, vm.vactive, np->name);
++	dump_fb_videomode(fb);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_get_fb_videomode);
++#endif
++
+ #else
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+ {
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 100a176..58b9860 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -20,6 +20,7 @@ struct fb_info;
+ struct device;
+ struct file;
+ struct videomode;
++struct device_node;
+ 
+ /* Definitions below are used in the parsed monitor specs */
+ #define FB_DPMS_ACTIVE_OFF	1
+@@ -715,6 +716,9 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+ extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+ extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
+ 
++extern int of_get_fb_videomode(struct device_node *np,
++			       struct fb_videomode *fb,
++			       int index);
+ extern int fb_videomode_from_videomode(const struct videomode *vm,
+ 				       struct fb_videomode *fbmode);
+ 
 -- 
-1.7.12
+1.7.10.4
 

@@ -1,138 +1,353 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Tue, 15 Jan 2013 13:44:35 +0000
-Subject: [PATCH v3 10/10] video: da8xx-fb: fb_set_par support
-Message-Id: <f1710d0ae8c581207dcb00521e4b09228a1ae762.1358250489.git.afzal@ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Mon, 21 Jan 2013 11:07:57 +0000
+Subject: =?UTF-8?q?=5BPATCH=20v16=20RESEND=202/7=5D=20video=3A=20add=20display=5Ftiming=20and=20videomode?=
+Message-Id: <1358766482-6275-3-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358250489.git.afzal@ti.com>
-In-Reply-To: <cover.1358250489.git.afzal@ti.com>
+References: <1358766482-6275-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1358766482-6275-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Sekhar Nori <nsekhar@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: devicetree-discuss@lists.ozlabs.org, David Airlie <airlied@linux.ie>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Rob Clark <robdclark@gmail.com>, Leela Krishna Amudala <leelakrishna.a@gmail.com>, "Mohammed, Afzal" <afzal@ti.com>, kernel@pengutronix.de
 
-fb_set_par helps in runtime configuration of lcd controller like
-changing resolution, pixel clock etc. (eg. using fbset utility)
+Add display_timing structure and the according helper functions. This allows
+the description of a display via its supported timing parameters.
 
-Reconfigure lcd controller based on information passed by framework.
-Enable raster back if it was already enabled.
+Also, add helper functions to convert from display timings to a generic videomode
+structure.
 
-As fb_set_par would get invoked indirectly from probe via fb_set_var,
-remove existing lcdc initialization in probe and do lcdc reset in
-probe so that reset happens only at the begining.
+The struct display_timing specifies all needed parameters to describe the signal
+properties of a display in one mode. This includes
+    - ranges for signals that may have min-, max- and typical values
+    - single integers for signals that can be on, off or are ignored
+    - booleans for signals that are either on or off
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
+As a display may support multiple modes like this, a struct display_timings is
+added, that holds all given struct display_timing pointers and declares the
+native mode of the display.
+
+Although a display may state that a signal can be in a range, it is driven with
+fixed values that indicate a videomode. Therefore graphic drivers don't need all
+the information of struct display_timing, but would generate a videomode from
+the given set of supported signal timings and work with that.
+
+The video subsystems all define their own structs that describe a mode and work
+with that (e.g. fb_videomode or drm_display_mode). To slowly replace all those
+various structures and allow code reuse across those subsystems, add struct
+videomode as a generic description.
+
+This patch only includes the most basic fields in struct videomode. All missing
+fields that are needed to have a really generic video mode description can be
+added at a later stage.
+
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Tested-by: Afzal Mohammed <Afzal@ti.com>
 ---
+ drivers/video/Kconfig          |    6 ++
+ drivers/video/Makefile         |    2 +
+ drivers/video/display_timing.c |   24 ++++++++
+ drivers/video/videomode.c      |   39 +++++++++++++
+ include/video/display_timing.h |  124 ++++++++++++++++++++++++++++++++++++++++
+ include/video/videomode.h      |   48 ++++++++++++++++
+ 6 files changed, 243 insertions(+)
+ create mode 100644 drivers/video/display_timing.c
+ create mode 100644 drivers/video/videomode.c
+ create mode 100644 include/video/display_timing.h
+ create mode 100644 include/video/videomode.h
 
-v2: disable raster in fb_set_par properly as required, without this
-    there would be no issue on DA850, but it will cause problem on AM335X
-
- drivers/video/da8xx-fb.c |   60 +++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 49 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 0f73c76..720604c 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -243,6 +243,11 @@ static struct fb_videomode known_lcd_panels[] = {
- 	},
- };
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index d08d799..2a23b18 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -33,6 +33,12 @@ config VIDEO_OUTPUT_CONTROL
+ 	  This framework adds support for low-level control of the video 
+ 	  output switch.
  
-+static inline bool da8xx_fb_is_raster_enabled(void)
++config DISPLAY_TIMING
++       bool
++
++config VIDEOMODE
++       bool
++
+ menuconfig FB
+ 	tristate "Support for frame buffer devices"
+ 	---help---
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 23e948e..fc30439 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -167,3 +167,5 @@ obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
+ 
+ #video output switch sysfs driver
+ obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) += output.o
++obj-$(CONFIG_DISPLAY_TIMING) += display_timing.o
++obj-$(CONFIG_VIDEOMODE) += videomode.o
+diff --git a/drivers/video/display_timing.c b/drivers/video/display_timing.c
+new file mode 100644
+index 0000000..5e1822c
+--- /dev/null
++++ b/drivers/video/display_timing.c
+@@ -0,0 +1,24 @@
++/*
++ * generic display timing functions
++ *
++ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
++ *
++ * This file is released under the GPLv2
++ */
++
++#include <linux/export.h>
++#include <linux/slab.h>
++#include <video/display_timing.h>
++
++void display_timings_release(struct display_timings *disp)
 +{
-+	return !!(lcdc_read(LCD_RASTER_CTRL_REG) & LCD_RASTER_ENABLE);
-+}
++	if (disp->timings) {
++		unsigned int i;
 +
- /* Enable the Raster Engine of the LCD Controller */
- static inline void lcd_enable_raster(void)
- {
-@@ -665,9 +670,6 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
- 
- static void da8xx_fb_lcd_reset(void)
- {
--	/* Disable the Raster if previously Enabled */
--	lcd_disable_raster(false);
--
- 	/* DMA has to be disabled */
- 	lcdc_write(0, LCD_DMA_CTRL_REG);
- 	lcdc_write(0, LCD_RASTER_CTRL_REG);
-@@ -720,8 +722,6 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
- 	u32 bpp;
- 	int ret = 0;
- 
--	da8xx_fb_lcd_reset();
--
- 	da8xx_fb_calc_config_clk_divider(par, panel);
- 
- 	if (panel->sync & FB_SYNC_CLK_INVERT)
-@@ -1201,9 +1201,52 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
- 	return ret;
- }
- 
-+static int da8xxfb_set_par(struct fb_info *info)
-+{
-+	struct da8xx_fb_par *par = info->par;
-+	int ret;
-+	bool raster = da8xx_fb_is_raster_enabled();
-+
-+	if (raster)
-+		lcd_disable_raster(true);
-+	else
-+		lcd_disable_raster(false);
-+
-+	fb_var_to_videomode(&par->mode, &info->var);
-+
-+	par->cfg.bpp = info->var.bits_per_pixel;
-+
-+	info->fix.visual = (par->cfg.bpp <= 8) ?
-+				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
-+	info->fix.line_length = (par->mode.xres * par->cfg.bpp) / 8;
-+
-+	ret = lcd_init(par, &par->cfg, &par->mode);
-+	if (ret < 0) {
-+		dev_err(par->dev, "lcd init failed\n");
-+		return ret;
++		for (i = 0; i < disp->num_timings; i++)
++			kfree(disp->timings[i]);
++		kfree(disp->timings);
 +	}
++	kfree(disp);
++}
++EXPORT_SYMBOL_GPL(display_timings_release);
+diff --git a/drivers/video/videomode.c b/drivers/video/videomode.c
+new file mode 100644
+index 0000000..21c47a2
+--- /dev/null
++++ b/drivers/video/videomode.c
+@@ -0,0 +1,39 @@
++/*
++ * generic display timing functions
++ *
++ * Copyright (c) 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>, Pengutronix
++ *
++ * This file is released under the GPLv2
++ */
 +
-+	par->dma_start = info->fix.smem_start +
-+			 info->var.yoffset * info->fix.line_length +
-+			 info->var.xoffset * info->var.bits_per_pixel / 8;
-+	par->dma_end   = par->dma_start +
-+			 info->var.yres * info->fix.line_length - 1;
++#include <linux/errno.h>
++#include <linux/export.h>
++#include <video/display_timing.h>
++#include <video/videomode.h>
 +
-+	lcdc_write(par->dma_start, LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
-+	lcdc_write(par->dma_end, LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
-+	lcdc_write(par->dma_start, LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
-+	lcdc_write(par->dma_end, LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
++int videomode_from_timing(const struct display_timings *disp,
++			  struct videomode *vm, unsigned int index)
++{
++	struct display_timing *dt;
 +
-+	if (raster)
-+		lcd_enable_raster();
++	dt = display_timings_get(disp, index);
++	if (!dt)
++		return -EINVAL;
++
++	vm->pixelclock = display_timing_get_value(&dt->pixelclock, TE_TYP);
++	vm->hactive = display_timing_get_value(&dt->hactive, TE_TYP);
++	vm->hfront_porch = display_timing_get_value(&dt->hfront_porch, TE_TYP);
++	vm->hback_porch = display_timing_get_value(&dt->hback_porch, TE_TYP);
++	vm->hsync_len = display_timing_get_value(&dt->hsync_len, TE_TYP);
++
++	vm->vactive = display_timing_get_value(&dt->vactive, TE_TYP);
++	vm->vfront_porch = display_timing_get_value(&dt->vfront_porch, TE_TYP);
++	vm->vback_porch = display_timing_get_value(&dt->vback_porch, TE_TYP);
++	vm->vsync_len = display_timing_get_value(&dt->vsync_len, TE_TYP);
++
++	vm->dmt_flags = dt->dmt_flags;
++	vm->data_flags = dt->data_flags;
 +
 +	return 0;
 +}
++EXPORT_SYMBOL_GPL(videomode_from_timing);
+diff --git a/include/video/display_timing.h b/include/video/display_timing.h
+new file mode 100644
+index 0000000..71e9a38
+--- /dev/null
++++ b/include/video/display_timing.h
+@@ -0,0 +1,124 @@
++/*
++ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
++ *
++ * description of display timings
++ *
++ * This file is released under the GPLv2
++ */
 +
- static struct fb_ops da8xx_fb_ops = {
- 	.owner = THIS_MODULE,
- 	.fb_check_var = fb_check_var,
-+	.fb_set_par = da8xxfb_set_par,
- 	.fb_setcolreg = fb_setcolreg,
- 	.fb_pan_display = da8xx_pan_display,
- 	.fb_ioctl = fb_ioctl,
-@@ -1312,14 +1355,9 @@ static int fb_probe(struct platform_device *device)
- 	}
- 
- 	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
--	fb_var_to_videomode(&par->mode, &da8xx_fb_var);
- 	par->cfg = *lcd_cfg;
- 
--	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
--		dev_err(&device->dev, "lcd_init failed\n");
--		ret = -EFAULT;
--		goto err_release_fb;
--	}
-+	da8xx_fb_lcd_reset();
- 
- 	/* allocate frame buffer */
- 	par->vram_size = lcdc_info->xres * lcdc_info->yres * lcd_cfg->bpp;
++#ifndef __LINUX_DISPLAY_TIMING_H
++#define __LINUX_DISPLAY_TIMING_H
++
++#include <linux/bitops.h>
++#include <linux/types.h>
++
++/* VESA display monitor timing parameters */
++#define VESA_DMT_HSYNC_LOW		BIT(0)
++#define VESA_DMT_HSYNC_HIGH		BIT(1)
++#define VESA_DMT_VSYNC_LOW		BIT(2)
++#define VESA_DMT_VSYNC_HIGH		BIT(3)
++
++/* display specific flags */
++#define DISPLAY_FLAGS_DE_LOW		BIT(0)	/* data enable flag */
++#define DISPLAY_FLAGS_DE_HIGH		BIT(1)
++#define DISPLAY_FLAGS_PIXDATA_POSEDGE	BIT(2)	/* drive data on pos. edge */
++#define DISPLAY_FLAGS_PIXDATA_NEGEDGE	BIT(3)	/* drive data on neg. edge */
++#define DISPLAY_FLAGS_INTERLACED	BIT(4)
++#define DISPLAY_FLAGS_DOUBLESCAN	BIT(5)
++
++/*
++ * A single signal can be specified via a range of minimal and maximal values
++ * with a typical value, that lies somewhere inbetween.
++ */
++struct timing_entry {
++	u32 min;
++	u32 typ;
++	u32 max;
++};
++
++enum timing_entry_index {
++	TE_MIN = 0,
++	TE_TYP = 1,
++	TE_MAX = 2,
++};
++
++/*
++ * Single "mode" entry. This describes one set of signal timings a display can
++ * have in one setting. This struct can later be converted to struct videomode
++ * (see include/video/videomode.h). As each timing_entry can be defined as a
++ * range, one struct display_timing may become multiple struct videomodes.
++ *
++ * Example: hsync active high, vsync active low
++ *
++ *				    Active Video
++ * Video  ______________________XXXXXXXXXXXXXXXXXXXXXX_____________________
++ *	  |<- sync ->|<- back ->|<----- active ----->|<- front ->|<- sync..
++ *	  |	     |	 porch  |		     |	 porch	 |
++ *
++ * HSync _|¯¯¯¯¯¯¯¯¯¯|___________________________________________|¯¯¯¯¯¯¯¯¯
++ *
++ * VSync ¯|__________|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|_________
++ */
++struct display_timing {
++	struct timing_entry pixelclock;
++
++	struct timing_entry hactive;		/* hor. active video */
++	struct timing_entry hfront_porch;	/* hor. front porch */
++	struct timing_entry hback_porch;	/* hor. back porch */
++	struct timing_entry hsync_len;		/* hor. sync len */
++
++	struct timing_entry vactive;		/* ver. active video */
++	struct timing_entry vfront_porch;	/* ver. front porch */
++	struct timing_entry vback_porch;	/* ver. back porch */
++	struct timing_entry vsync_len;		/* ver. sync len */
++
++	unsigned int dmt_flags;			/* VESA DMT flags */
++	unsigned int data_flags;		/* video data flags */
++};
++
++/*
++ * This describes all timing settings a display provides.
++ * The native_mode is the default setting for this display.
++ * Drivers that can handle multiple videomodes should work with this struct and
++ * convert each entry to the desired end result.
++ */
++struct display_timings {
++	unsigned int num_timings;
++	unsigned int native_mode;
++
++	struct display_timing **timings;
++};
++
++/* get value specified by index from struct timing_entry */
++static inline u32 display_timing_get_value(const struct timing_entry *te,
++					   enum timing_entry_index index)
++{
++	switch (index) {
++	case TE_MIN:
++		return te->min;
++		break;
++	case TE_TYP:
++		return te->typ;
++		break;
++	case TE_MAX:
++		return te->max;
++		break;
++	default:
++		return te->typ;
++	}
++}
++
++/* get one entry from struct display_timings */
++static inline struct display_timing *display_timings_get(const struct
++							 display_timings *disp,
++							 unsigned int index)
++{
++	if (disp->num_timings > index)
++		return disp->timings[index];
++	else
++		return NULL;
++}
++
++void display_timings_release(struct display_timings *disp);
++
++#endif
+diff --git a/include/video/videomode.h b/include/video/videomode.h
+new file mode 100644
+index 0000000..a421562
+--- /dev/null
++++ b/include/video/videomode.h
+@@ -0,0 +1,48 @@
++/*
++ * Copyright 2012 Steffen Trumtrar <s.trumtrar@pengutronix.de>
++ *
++ * generic videomode description
++ *
++ * This file is released under the GPLv2
++ */
++
++#ifndef __LINUX_VIDEOMODE_H
++#define __LINUX_VIDEOMODE_H
++
++#include <linux/types.h>
++#include <video/display_timing.h>
++
++/*
++ * Subsystem independent description of a videomode.
++ * Can be generated from struct display_timing.
++ */
++struct videomode {
++	unsigned long pixelclock;	/* pixelclock in Hz */
++
++	u32 hactive;
++	u32 hfront_porch;
++	u32 hback_porch;
++	u32 hsync_len;
++
++	u32 vactive;
++	u32 vfront_porch;
++	u32 vback_porch;
++	u32 vsync_len;
++
++	unsigned int dmt_flags;	/* VESA DMT flags */
++	unsigned int data_flags; /* video data flags */
++};
++
++/**
++ * videomode_from_timing - convert display timing to videomode
++ * @disp: structure with all possible timing entries
++ * @vm: return value
++ * @index: index into the list of display timings in devicetree
++ *
++ * DESCRIPTION:
++ * This function converts a struct display_timing to a struct videomode.
++ */
++int videomode_from_timing(const struct display_timings *disp,
++			  struct videomode *vm, unsigned int index);
++
++#endif
 -- 
-1.7.9.5
+1.7.10.4
 

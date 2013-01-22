@@ -1,265 +1,47 @@
-From: Zhou Zhu <zzhu3@marvell.com>
-Date: Thu, 17 Jan 2013 08:24:15 +0000
-Subject: [PATCH v5 5/8] video: mmpdisp: add spi port in display controller
-Message-Id: <1358411055-2739-1-git-send-email-zzhu3@marvell.com>
+From: Afzal Mohammed <afzal@ti.com>
+Date: Tue, 22 Jan 2013 16:52:32 +0000
+Subject: [PATCH v3 02/12] video: da8xx-fb: fix 24bpp raster configuration
+Message-Id: <c831d47d82bc2910fb77e460b6334e331e9704d6.1358871750.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1358871750.git.afzal@ti.com>
+In-Reply-To: <cover.1358871750.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Mike Turquette <mturquette@linaro.org>, "Manjunathappa, Prakash" <prakash.pm@ti.com>
 
-Added spi port support in mmp display controller.
-This port is from display controller and for panel usage.
-This driver implemented and registered as a spi master.
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
 
-Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
+Set only LCD_V2_TFT_24BPP_MODE bit for 24bpp and LCD_V2_TFT_24BPP_UNPACK
+bit along with LCD_V2_TFT_24BPP_MODE for 32bpp configuration.
+
+Patch is tested on am335x-evm for 24bpp and da850-evm for 16bpp
+configurations.
+
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/mmp/hw/Kconfig    |    8 ++
- drivers/video/mmp/hw/Makefile   |    1 +
- drivers/video/mmp/hw/mmp_ctrl.c |    6 ++
- drivers/video/mmp/hw/mmp_ctrl.h |    4 +
- drivers/video/mmp/hw/mmp_spi.c  |  180 +++++++++++++++++++++++++++++++++++++++
- 5 files changed, 199 insertions(+)
- create mode 100644 drivers/video/mmp/hw/mmp_spi.c
+ drivers/video/da8xx-fb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/mmp/hw/Kconfig b/drivers/video/mmp/hw/Kconfig
-index 6c1dd34..02f109a 100644
---- a/drivers/video/mmp/hw/Kconfig
-+++ b/drivers/video/mmp/hw/Kconfig
-@@ -9,4 +9,12 @@ config MMP_DISP_CONTROLLER
- 		this controller is used on Marvell PXA910,
- 		MMP2, MMP3, PXA988 chips
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 35a33ca..7f92f37 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -550,10 +550,10 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+ 	case 4:
+ 	case 16:
+ 		break;
+-	case 24:
+-		reg |= LCD_V2_TFT_24BPP_MODE;
+ 	case 32:
+ 		reg |= LCD_V2_TFT_24BPP_UNPACK;
++	case 24:
++		reg |= LCD_V2_TFT_24BPP_MODE;
+ 		break;
  
-+config MMP_DISP_SPI
-+	bool "mmp display controller spi port"
-+	depends on MMP_DISP_CONTROLLER && SPI_MASTER
-+	default y
-+	help
-+		Marvell MMP display hw controller spi port support
-+		will register as a spi master for panel usage
-+
- endif
-diff --git a/drivers/video/mmp/hw/Makefile b/drivers/video/mmp/hw/Makefile
-index f34ace8..0000a71 100644
---- a/drivers/video/mmp/hw/Makefile
-+++ b/drivers/video/mmp/hw/Makefile
-@@ -1 +1,2 @@
- obj-$(CONFIG_MMP_DISP_CONTROLLER)  += mmp_ctrl.o
-+obj-$(CONFIG_MMP_DISP_SPI)	   += mmp_spi.o
-diff --git a/drivers/video/mmp/hw/mmp_ctrl.c b/drivers/video/mmp/hw/mmp_ctrl.c
-index 73670cf..51c5eb8 100644
---- a/drivers/video/mmp/hw/mmp_ctrl.c
-+++ b/drivers/video/mmp/hw/mmp_ctrl.c
-@@ -535,6 +535,12 @@ static int mmphw_probe(struct platform_device *pdev)
- 		}
- 	}
- 
-+#ifdef CONFIG_MMP_DISP_SPI
-+	ret = lcd_spi_register(ctrl);
-+	if (ret < 0)
-+		goto failed_path_init;
-+#endif
-+
- 	dev_info(ctrl->dev, "device init done\n");
- 
- 	return 0;
-diff --git a/drivers/video/mmp/hw/mmp_ctrl.h b/drivers/video/mmp/hw/mmp_ctrl.h
-index dd42df5..1a2a91b 100644
---- a/drivers/video/mmp/hw/mmp_ctrl.h
-+++ b/drivers/video/mmp/hw/mmp_ctrl.h
-@@ -1951,4 +1951,8 @@ static inline struct lcd_regs *path_regs(struct mmp_path *path)
- 		return NULL;
- 	}
- }
-+
-+#ifdef CONFIG_MMP_DISP_SPI
-+extern int lcd_spi_register(struct mmphw_ctrl *ctrl);
-+#endif
- #endif	/* _MMP_CTRL_H_ */
-diff --git a/drivers/video/mmp/hw/mmp_spi.c b/drivers/video/mmp/hw/mmp_spi.c
-new file mode 100644
-index 0000000..e62ca7b
---- /dev/null
-+++ b/drivers/video/mmp/hw/mmp_spi.c
-@@ -0,0 +1,180 @@
-+/*
-+ * linux/drivers/video/mmp/hw/mmp_spi.c
-+ * using the spi in LCD controler for commands send
-+ *
-+ * Copyright (C) 2012 Marvell Technology Group Ltd.
-+ * Authors:  Guoqing Li <ligq@marvell.com>
-+ *          Lisa Du <cldu@marvell.com>
-+ *          Zhou Zhu <zzhu3@marvell.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the
-+ * Free Software Foundation; either version 2 of the License, or (at your
-+ * option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
-+ *
-+ */
-+#include <linux/errno.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/spi/spi.h>
-+#include "mmp_ctrl.h"
-+
-+/**
-+ * spi_write - write command to the SPI port
-+ * @data: can be 8/16/32-bit, MSB justified data to write.
-+ * @len:  data length.
-+ *
-+ * Wait bus transfer complete IRQ.
-+ * The caller is expected to perform the necessary locking.
-+ *
-+ * Returns:
-+ *   %-ETIMEDOUT	timeout occurred
-+ *   0			success
-+ */
-+static inline int lcd_spi_write(struct spi_device *spi, u32 data)
-+{
-+	int timeout = 100000, isr, ret = 0;
-+	u32 tmp;
-+	void *reg_base +		*(void **)spi_master_get_devdata(spi->master);
-+
-+	/* clear ISR */
-+	writel_relaxed(~SPI_IRQ_MASK, reg_base + SPU_IRQ_ISR);
-+
-+	switch (spi->bits_per_word) {
-+	case 8:
-+		writel_relaxed((u8)data, reg_base + LCD_SPU_SPI_TXDATA);
-+		break;
-+	case 16:
-+		writel_relaxed((u16)data, reg_base + LCD_SPU_SPI_TXDATA);
-+		break;
-+	case 32:
-+		writel_relaxed((u32)data, reg_base + LCD_SPU_SPI_TXDATA);
-+		break;
-+	default:
-+		dev_err(&spi->dev, "Wrong spi bit length\n");
-+	}
-+
-+	/* SPI start to send command */
-+	tmp = readl_relaxed(reg_base + LCD_SPU_SPI_CTRL);
-+	tmp &= ~CFG_SPI_START_MASK;
-+	tmp |= CFG_SPI_START(1);
-+	writel(tmp, reg_base + LCD_SPU_SPI_CTRL);
-+
-+	isr = readl_relaxed(reg_base + SPU_IRQ_ISR);
-+	while (!(isr & SPI_IRQ_ENA_MASK)) {
-+		udelay(100);
-+		isr = readl_relaxed(reg_base + SPU_IRQ_ISR);
-+		if (!--timeout) {
-+			ret = -ETIMEDOUT;
-+			dev_err(&spi->dev, "spi cmd send time out\n");
-+			break;
-+		}
-+	}
-+
-+	tmp = readl_relaxed(reg_base + LCD_SPU_SPI_CTRL);
-+	tmp &= ~CFG_SPI_START_MASK;
-+	tmp |= CFG_SPI_START(0);
-+	writel_relaxed(tmp, reg_base + LCD_SPU_SPI_CTRL);
-+
-+	writel_relaxed(~SPI_IRQ_MASK, reg_base + SPU_IRQ_ISR);
-+
-+	return ret;
-+}
-+
-+static int lcd_spi_setup(struct spi_device *spi)
-+{
-+	void *reg_base +		*(void **)spi_master_get_devdata(spi->master);
-+	u32 tmp;
-+
-+	tmp = CFG_SCLKCNT(16) |
-+		CFG_TXBITS(spi->bits_per_word) |
-+		CFG_SPI_SEL(1) | CFG_SPI_ENA(1) |
-+		CFG_SPI_3W4WB(1);
-+	writel(tmp, reg_base + LCD_SPU_SPI_CTRL);
-+
-+	/*
-+	 * After set mode it need a time to pull up the spi singals,
-+	 * or it would cause the wrong waveform when send spi command,
-+	 * especially on pxa910h
-+	 */
-+	tmp = readl_relaxed(reg_base + SPU_IOPAD_CONTROL);
-+	if ((tmp & CFG_IOPADMODE_MASK) != IOPAD_DUMB18SPI)
-+		writel_relaxed(IOPAD_DUMB18SPI |
-+			(tmp & ~CFG_IOPADMODE_MASK),
-+			reg_base + SPU_IOPAD_CONTROL);
-+	udelay(20);
-+	return 0;
-+}
-+
-+static int lcd_spi_one_transfer(struct spi_device *spi, struct spi_message *m)
-+{
-+	struct spi_transfer *t;
-+	int i;
-+
-+	list_for_each_entry(t, &m->transfers, transfer_list) {
-+		switch (spi->bits_per_word) {
-+		case 8:
-+			for (i = 0; i < t->len; i++)
-+				lcd_spi_write(spi, ((u8 *)t->tx_buf)[i]);
-+			break;
-+		case 16:
-+			for (i = 0; i < t->len/2; i++)
-+				lcd_spi_write(spi, ((u16 *)t->tx_buf)[i]);
-+			break;
-+		case 32:
-+			for (i = 0; i < t->len/4; i++)
-+				lcd_spi_write(spi, ((u32 *)t->tx_buf)[i]);
-+			break;
-+		default:
-+			dev_err(&spi->dev, "Wrong spi bit length\n");
-+		}
-+	}
-+
-+	m->status = 0;
-+	if (m->complete)
-+		m->complete(m->context);
-+	return 0;
-+}
-+
-+int lcd_spi_register(struct mmphw_ctrl *ctrl)
-+{
-+	struct spi_master *master;
-+	void **p_regbase;
-+	int err;
-+
-+	master = spi_alloc_master(ctrl->dev, sizeof(void *));
-+	if (!master) {
-+		dev_err(ctrl->dev, "unable to allocate SPI master\n");
-+		return -ENOMEM;
-+	}
-+	p_regbase = spi_master_get_devdata(master);
-+	*p_regbase = ctrl->reg_base;
-+
-+	/* set bus num to 5 to avoid conflict with other spi hosts */
-+	master->bus_num = 5;
-+	master->num_chipselect = 1;
-+	master->setup = lcd_spi_setup;
-+	master->transfer = lcd_spi_one_transfer;
-+
-+	err = spi_register_master(master);
-+	if (err < 0) {
-+		dev_err(ctrl->dev, "unable to register SPI master\n");
-+		spi_master_put(master);
-+		return err;
-+	}
-+
-+	dev_info(&master->dev, "registered\n");
-+
-+	return 0;
-+}
+ 	case 8:
 -- 
-1.7.9.5
+1.7.12
 

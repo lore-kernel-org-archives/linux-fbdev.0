@@ -1,31 +1,72 @@
-From: "Mohammed, Afzal" <afzal@ti.com>
-Date: Mon, 07 Jan 2013 12:03:16 +0000
-Subject: RE: [PATCH] da8xx: Allow use by am33xx based devices
-Message-Id: <C8443D0743D26F4388EA172BF4E2A7A93EA7FDD8@DBDE01.ent.ti.com>
+From: Afzal Mohammed <afzal@ti.com>
+Date: Tue, 22 Jan 2013 16:53:22 +0000
+Subject: [PATCH v3 07/12] video: da8xx-fb: minimal dt support
+Message-Id: <f409fe632d0697370825f6f8c117186f222e3300.1358871750.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1351698968-3965-1-git-send-email-panto@antoniou-consulting.com>
- <A73F36158E33644199EB82C5EC81C7BC3EA1452B@DBDE01.ent.ti.com>
- <50C5A50E.4070602@ti.com>
- <A73F36158E33644199EB82C5EC81C7BC3EA17E45@DBDE01.ent.ti.com>
- <79CD15C6BA57404B839C016229A409A83EBADC10@DBDE01.ent.ti.com>
-In-Reply-To: <79CD15C6BA57404B839C016229A409A83EBADC10@DBDE01.ent.ti.com>
+References: <cover.1358871750.git.afzal@ti.com>
+In-Reply-To: <cover.1358871750.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Hiremath, Vaibhav" <hvaibhav@ti.com>, "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Cc: "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, "davinci-linux-open-source@linux.davincidsp.com" <davinci-linux-open-source@linux.davincidsp.com>, "Porter, Matt" <mporter@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "FlorianSchandinat@gmx.de" <FlorianSchandinat@gmx.de>, Koen Kooi <koen@dominion.thruhere.net>, Pantelis Antoniou <panto@antoniou-consulting.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Dill, Russ" <russ.dill@ti.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Mike Turquette <mturquette@linaro.org>
 
-SGksDQoNCk9uIFdlZCwgRGVjIDEyLCAyMDEyIGF0IDEzOjMwOjU2LCBIaXJlbWF0aCwgVmFpYmhh
-diB3cm90ZToNCj4gT24gV2VkLCBEZWMgMTIsIDIwMTIgYXQgMTI6NTA6MjgsIE1hbmp1bmF0aGFw
-cGEsIFByYWthc2ggd3JvdGU6DQoNCj4gPiBBZ3JlZWQsIHNob3VsZCBub3QgcmVzdWx0IGluIGJ1
-aWxkIGVycm9yLiBCdXQgaXMgaXQgb2sgdG8gc2hvdyB0aGlzIG9wdGlvbg0KPiA+IG9uIHRoZSBw
-bGF0Zm9ybXMgd2hpY2ggZG8gbm90IGhhdmUgdGhpcyBJUD8NCj4gPiANCj4gDQo+IFlvdSBjYW4g
-Y2hvb3NlIHRvIHB1dCBtYWNoaW5lIGRlcGVuZGVuY3kgaGVyZSwgYXMgdGhpcyBwYXRjaCBpcyBh
-bHJlYWR5IA0KPiBkb2luZyBpdC4gVGhlIHNpZGUtZWZmZWN0IG9mIHRoaXMgd291bGQgYmUsIGxp
-c3QgbWF5IGdyb3cgYW5kIHlvdSBtYXkgaGF2ZSANCj4gdG8gZWRpdCB0aGlzIGZpbGUgZXZlcnl0
-aW1lLg0KDQpJdCBzZWVtcyBhZGRpbmcgbWFjaGluZSBkZXBlbmRlbmN5IGlzIG1vcmUgaW4gbGlu
-ZSB3aXRoIHRoZQ0KYXBwcm9hY2ggYWRvcHRlZCBpbiBzaW1pbGFyIGNhc2VzLiBBcyB0aGlzIElQ
-IGlzIHVzZWQgb25seQ0KaW4gMiBhcmNoJ3MgYW5kIHdvdWxkIG5vdCBpbiBhbnkgaW1tZWRpYXRl
-IGZ1dHVyZSBnbyB3aXRoDQpvdGhlciBhcmNoJ3MsIGl0IHdvdWxkIGJlIGJldHRlciBub3QgdG8g
-YXNrIG90aGVyIGFyY2gncyBhDQpxdWVzdGlvbiBvbiB3aGV0aGVyIHRoaXMgZHJpdmVyIG5lZWRz
-IHRvIGJlIHNlbGVjdGVkIG9yIG5vdC4NCg0KUmVnYXJkcw0KQWZ6YWwNCg=
+Driver is provided a means to have the probe triggered by DT.
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+---
+ Documentation/devicetree/bindings/video/fb-da8xx.txt | 16 ++++++++++++++++
+ drivers/video/da8xx-fb.c                             |  7 +++++++
+ 2 files changed, 23 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/video/fb-da8xx.txt
+
+diff --git a/Documentation/devicetree/bindings/video/fb-da8xx.txt b/Documentation/devicetree/bindings/video/fb-da8xx.txt
+new file mode 100644
+index 0000000..581e014
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/fb-da8xx.txt
+@@ -0,0 +1,16 @@
++TI LCD Controller on DA830/DA850/AM335x SoC's
++
++Required properties:
++- compatible:
++	DA830 - "ti,da830-lcdc"
++	AM335x SoC's - "ti,am3352-lcdc", "ti,da830-lcdc"
++- reg: Address range of lcdc register set
++- interrupts: lcdc interrupt
++
++Example:
++
++lcdc@4830e000 {
++	compatible = "ti,am3352-lcdc", "ti,da830-lcdc";
++	reg =  <0x4830e000 0x1000>;
++	interrupts = <36>;
++};
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index b6ea5e9..08ee8eb 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1595,6 +1595,12 @@ static int fb_resume(struct platform_device *dev)
+ #define fb_resume NULL
+ #endif
+ 
++static const struct of_device_id da8xx_fb_of_match[] = {
++	{.compatible = "ti,da830-lcdc", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, da8xx_fb_of_match);
++
+ static struct platform_driver da8xx_fb_driver = {
+ 	.probe = fb_probe,
+ 	.remove = fb_remove,
+@@ -1603,6 +1609,7 @@ static struct platform_driver da8xx_fb_driver = {
+ 	.driver = {
+ 		   .name = DRIVER_NAME,
+ 		   .owner = THIS_MODULE,
++		   .of_match_table = of_match_ptr(da8xx_fb_of_match),
+ 		   },
+ };
+ 
+-- 
+1.7.12
+

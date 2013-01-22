@@ -1,25 +1,81 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Date: Tue, 29 Jan 2013 02:47:17 +0000
-Subject: Re: [PATCH RESEND v4] video: imxfb: Do not crash on reboot
-Message-Id: <20130129024715.GA11546@S2101-09.ap.freescale.net>
+From: Afzal Mohammed <afzal@ti.com>
+Date: Tue, 22 Jan 2013 16:52:30 +0000
+Subject: [PATCH v3 00/12] video: da8xx-fb: am335x DT support
+Message-Id: <cover.1358871750.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359427171-18109-1-git-send-email-festevam@gmail.com>
-In-Reply-To: <1359427171-18109-1-git-send-email-festevam@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Mike Turquette <mturquette@linaro.org>
 
-Andrew,
+Hi,
 
-On Tue, Jan 29, 2013 at 12:39:31AM -0200, Fabio Estevam wrote:
-> From: Fabio Estevam <fabio.estevam@freescale.com>
-> 
-> Issuing a "reboot" command after the LCD times out causes the following
-> warnings:
+This series adds DT support to da8xx-fb driver (device found on
+DaVinci and AM335x SoC's). It does certain cleanup's in the process.
 
-Please ignore this one.  It has hit mainline through arm-soc tree
-with 3.8-rc series, as we categorized it as a critical bug fixing.
+This series as compared to previous version handles configuration of
+the LCDC clock rate by modelling as a clock divider of CCF. This would
+take effect only if CCF is selected, if not, no change to  existing
+method.
 
-Shawn
+This makes use of Steffen Trumtrar's v16 of display timing DT support.
+
+Testing has been done on AM335x SoC based boards like AM335x EVM. It
+has also been verified that display on DA850 EVM (non-DT boot) works
+as earlier.
+
+This series is based on v3.8-rc3,
+ and is dependent on,
+1. Series v16 "of: add display helper" by,
+        Steffen Trumtrar <s.trumtrar@pengutronix.de>
+2. Patch "da8xx: Allow use by am33xx based devices" by,
+        Pantelis Antoniou <panto@antoniou-consulting.com>
+3. Series v3 "video: da8xx-fb: runtime timing configuration" by,
+        me (Afzal Mohammed <afzal@ti.com>)
+
+To test this series on AM335x based boards,
+1. Series v2 "ARM: dts: AM33XX: lcdc support" by,
+        me (Afzal Mohammed <afzal@ti.com>),
+2. Series "HWMOD fixes for AM33xx PWM submodules and device tree nodes" by,
+        Philip, Avinash <avinashphilip@ti.com>
+3. Series "clk: divider: prepare for minimum divider" by,
+        me (Afzal Mohammed <afzal@ti.com>),
+4. Series "ARM: AM335x: LCDC platform support" by,
+        me (Afzal Mohammed <afzal@ti.com>),
+would be needed.
+
+All above dependencies along with those required for testing is available
+@ git://gitorious.org/x0148406-public/linux-kernel.git tags/da8xx-fb-dt-v3
+
+Regards
+Afzal
+
+v3: model CCF clock divider with parent propogation if CCF selected
+v2: 2 new patches - one to configure clock rate properly (12/12)and
+    other to make io operations safe (1/12)
+
+Afzal Mohammed (11):
+  video: da8xx-fb: make io operations safe
+  video: da8xx-fb: enable sync lost intr for v2 ip
+  video: da8xx-fb: use devres
+  video: da8xx-fb: ensure non-null cfg in pdata
+  video: da8xx-fb: reorganize panel detection
+  video: da8xx-fb: minimal dt support
+  video: da8xx-fb: invoke platform callback safely
+  video: da8xx-fb: obtain fb_videomode info from dt
+  video: da8xx-fb: ensure pdata only for non-dt
+  video: da8xx-fb: setup struct lcd_ctrl_config for dt
+  video: da8xx-fb: CCF clock divider handling
+
+Manjunathappa, Prakash (1):
+  video: da8xx-fb: fix 24bpp raster configuration
+
+ .../devicetree/bindings/video/fb-da8xx.txt         |  37 ++++
+ drivers/video/da8xx-fb.c                           | 217 ++++++++++++++++-----
+ 2 files changed, 201 insertions(+), 53 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/fb-da8xx.txt
+
+-- 
+1.7.12
 

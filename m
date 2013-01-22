@@ -1,33 +1,44 @@
-From: Koen Kooi <koen@dominion.thruhere.net>
-Date: Tue, 22 Jan 2013 17:03:58 +0000
+From: Rob Clark <robdclark@gmail.com>
+Date: Tue, 22 Jan 2013 18:45:09 +0000
 Subject: Re: [PATCH v3 00/12] video: da8xx-fb: am335x DT support
-Message-Id: <02F0A27B-B16B-42F8-A0BC-29726732226D@dominion.thruhere.net>
+Message-Id: <CAF6AEGuyb26EZ_9=GP9gs0TZqUtiFv3D_7+wcDOHuKn2qUcytQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1358871750.git.afzal@ti.com>
-In-Reply-To: <cover.1358871750.git.afzal@ti.com>
+	<02F0A27B-B16B-42F8-A0BC-29726732226D@dominion.thruhere.net>
+In-Reply-To: <02F0A27B-B16B-42F8-A0BC-29726732226D@dominion.thruhere.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Afzal Mohammed <afzal@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Mike Turquette <mturquette@linaro.org>
+To: Koen Kooi <koen@dominion.thruhere.net>
+Cc: Afzal Mohammed <afzal@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Mike Turquette <mturquette@linaro.org>
 
+On Tue, Jan 22, 2013 at 11:03 AM, Koen Kooi <koen@dominion.thruhere.net> wrote:
+>
+> Op 22 jan. 2013, om 17:51 heeft Afzal Mohammed <afzal@ti.com> het volgende geschreven:
+>
+>> Hi,
+>>
+>> This series adds DT support to da8xx-fb driver (device found on
+>> DaVinci and AM335x SoC's). It does certain cleanup's in the process.
+>>
+>> This series as compared to previous version handles configuration of
+>> the LCDC clock rate by modelling as a clock divider of CCF. This would
+>> take effect only if CCF is selected, if not, no change to  existing
+>> method.
+>>
+>> This makes use of Steffen Trumtrar's v16 of display timing DT support.
+>
+> Wouldn't it be better to delete da8xx-fb.* and switch to Rob Clarks DRM based driver for this IP block?
 
-Op 22 jan. 2013, om 17:51 heeft Afzal Mohammed <afzal@ti.com> het volgende geschreven:
+we probably can't delete da8xx-fb, but I think it would be ok to only
+use it for legacy platforms not yet ported to DT.
 
-> Hi,
-> 
-> This series adds DT support to da8xx-fb driver (device found on
-> DaVinci and AM335x SoC's). It does certain cleanup's in the process.
-> 
-> This series as compared to previous version handles configuration of
-> the LCDC clock rate by modelling as a clock divider of CCF. This would
-> take effect only if CCF is selected, if not, no change to  existing
-> method.
-> 
-> This makes use of Steffen Trumtrar's v16 of display timing DT support.
+BR,
+-R
 
-Wouldn't it be better to delete da8xx-fb.* and switch to Rob Clarks DRM based driver for this IP block?
-
-regards,
-
-Koen
+> regards,
+>
+> Koen--
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html

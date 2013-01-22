@@ -1,27 +1,42 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Date: Thu, 17 Jan 2013 13:37:44 +0000
-Subject: Re: DirectFB on RV710
-Message-Id: <1358429864.6572.22.camel@thor.local>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Tue, 22 Jan 2013 13:39:52 +0000
+Subject: [PATCH 0/4] pwm_backlight: Error fixes and update for DT support
+Message-Id: <1358861996-27194-1-git-send-email-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: Grant Likely <grant.likely@secretlab.ca>, Rob Landley <rob@landley.net>, Thierry Reding <thierry.reding@avionic-design.de>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Andrew Morton <akpm@linux-foundation.org>, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Don, 2013-01-17 at 19:34 +0800, "李真能" wrote: 
-> Kernel supports RV710 in drivers/gpu/drm/radeon(r600),but I want gpu
-> acceleration in framebuffer for RV710 to use in directfb, I try to migrate
-> code from drivers/gpu/drm/radeon to drivers/video/aty/ to support
-> directfb, but it's very difficulty, because I have not the datasheet for
-> RV710, I don't konw how to set registers to draw a line, or a rectangle,
-> if someone has the datasheet for rv710, please sent me, thanks very
-> much!!!
+Hi,
 
-RV710 doesn't have a 2D engine, so you'd have to use the 3D engine.
-There are some links to documentation for this on
-http://wiki.x.org/wiki/RadeonFeature .
+This small series will:
+- Fix the case when the kernel is booted in non DT mode and the board file try
+to use levels array to specify the brightness levels.
+- Validate the dft_brightness in all cases not only in DT mode.
+- Add support in case of DT boot to be able to use the whole range of PWM.
 
+Currently boards in legacy mode uses the 'max_brightness' value to specify the
+maximum steps the PWM can be configured. When these boards move to DT support
+they can no longer do this, they have to use the levels array. If we want to
+have the same range in both DT and non DT case we would need to add all the
+numbers from 0 to max (which can be 256) to the 'brightness-levels' array.
+With the new property we can simply allow the whole range to be configured.
+
+Regards,
+Peter
+---
+Peter Ujfalusi (4):
+  pwm_backlight: Fix PWM levels support in non DT case
+  pwm_backlight: Validate dft_brightness in main probe function
+  pwm_backlight: Refactor the DT parsing code
+  pwm_backlight: Add support for the whole range of the PWM in DT mode
+
+ .../bindings/video/backlight/pwm-backlight.txt     | 12 +++++-
+ drivers/video/backlight/pwm_bl.c                   | 49 ++++++++++++----------
+ 2 files changed, 38 insertions(+), 23 deletions(-)
 
 -- 
-Earthling Michel Dänzer           |                   http://www.amd.com
-Libre software enthusiast         |          Debian, X and DRI developer
+1.8.1.1
+

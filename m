@@ -1,53 +1,55 @@
-From: Rahul Sharma <r.sh.open@gmail.com>
-Date: Wed, 09 Jan 2013 08:35:30 +0000
-Subject: Re: [RFC v2 0/5] Common Display Framework
-Message-Id: <CAPdUM4P6riQVJ4m4Sdkh1O8xmpKF4YnhGq69p7DkxAdr165KYA@mail.gmail.com>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Tue, 22 Jan 2013 13:39:53 +0000
+Subject: [PATCH 1/4] pwm_backlight: Fix PWM levels support in non DT case
+Message-Id: <1358861996-27194-2-git-send-email-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com>
-	<9690842.n93imGlCHA@avalon>
-	<CAF6AEGt+gwUq-xGze5bTgrKUMRijSBo_ORreq=Ot1RMD-WrbYQ@mail.gmail.com>
-	<1563062.kh1jqNm1kH@avalon>
-	<CAN_cFWPyrvO5RAvMHhZgQySf_Y5N2pz64uMurvdG0d-4zDjPFQ@mail.gmail.com>
-In-Reply-To: <CAN_cFWPyrvO5RAvMHhZgQySf_Y5N2pz64uMurvdG0d-4zDjPFQ@mail.gmail.com>
+References: <1358861996-27194-1-git-send-email-peter.ujfalusi@ti.com>
+In-Reply-To: <1358861996-27194-1-git-send-email-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Clark <rob.clark@linaro.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, Tom Gall <tom.gall@linaro.org>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Kyungmin Park <kyungmin.park@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: Grant Likely <grant.likely@secretlab.ca>, Rob Landley <rob@landley.net>, Thierry Reding <thierry.reding@avionic-design.de>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Andrew Morton <akpm@linux-foundation.org>, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Hi Laurent,
+It is expected that board files would have:
+static unsigned int bl_levels[] = { 0, 50, 100, 150, 200, 250, };
 
-CDF will also be helpful in supporting Panels with integrated
-audio (HDMI/DP) if we can add audio related control operations to
-display_entity_control_ops. Video controls will be called by crtc
-in DRM/V4L and audio controls from Alsa.
+static struct platform_pwm_backlight_data bl_data = {
+	.levels = bl_levels,
+	.max_brightness = ARRAY_SIZE(bl_levels),
+	.dft_brightness = 4,
+	.pwm_period_ns = 7812500,
+};
 
-Secondly, if I need to support get_modes operation in hdmi/dp
-panel, I need to implement edid parser inside the panel driver. It
-will be meaningful to add get_edid control operation for hdmi/dp.
+In this case the max_brightness would be out of range in the levels array.
+Decrement the received max_brightness in every case (DT or non DT) when the
+levels has been provided.
 
-regards,
-Rahul Sharma.
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+---
+ drivers/video/backlight/pwm_bl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Tue, Jan 8, 2013 at 9:43 PM, Rob Clark <rob.clark@linaro.org> wrote:
-> On Tue, Jan 8, 2013 at 2:25 AM, Laurent Pinchart
-> <laurent.pinchart@ideasonboard.com> wrote:
->> Hi Rob,
->>
->> On Thursday 27 December 2012 09:54:55 Rob Clark wrote:
->>> What I've done to avoid that so far is that the master device registers the
->>> drivers for it's output sub-devices before registering it's own device.
->>
->> I'm not sure to follow you here. The master device doesn't register anything,
->> do you mean the master device driver ? If so, how does the master device
->> driver register its own device ? Devices are not registered by their driver.
->
-> sorry, that should have read "master driver registers drivers for it's
-> sub-devices.."
->
-> BR,
-> -R
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> http://lists.freedesktop.org/mailman/listinfo/dri-devel
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 069983c..f0d6854 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -142,7 +142,6 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 		}
+ 
+ 		data->dft_brightness = value;
+-		data->max_brightness--;
+ 	}
+ 
+ 	/*
+@@ -202,6 +201,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	if (data->levels) {
++		data->max_brightness--;
+ 		max = data->levels[data->max_brightness];
+ 		pb->levels = data->levels;
+ 	} else
+-- 
+1.8.1.1
+

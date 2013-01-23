@@ -1,58 +1,46 @@
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Subject: [PATCH 0/2] fbcon+i915 locking fixes
-Date: Wed, 23 Jan 2013 17:25:07 +0100
-Message-ID: <1358958309-5342-1-git-send-email-daniel.vetter@ffwll.ch>
-Mime-Version: 1.0
+Subject: [PATCH 2/2] drm/i915: fixup per-crtc locking in intel_release_load_detect_pipe
+Date: Wed, 23 Jan 2013 17:25:09 +0100
+Message-ID: <1358958309-5342-3-git-send-email-daniel.vetter@ffwll.ch>
+References: <1358958309-5342-1-git-send-email-daniel.vetter@ffwll.ch>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1358958309-5342-1-git-send-email-daniel.vetter@ffwll.ch>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <intel-gfx-bounces+gcfxdi-intel-gfx=m.gmane.org@lists.freedesktop.org>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/intel-gfx>,
-	<mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
-	<mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Sender: intel-gfx-bounces+gcfxdi-intel-gfx=m.gmane.org@lists.freedesktop.org
-Errors-To: intel-gfx-bounces+gcfxdi-intel-gfx=m.gmane.org@lists.freedesktop.org
 To: Dave Airlie <airlied@gmail.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>
+Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>, DRI Development <dri-devel@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, Daniel Vetter <daniel.vetter@ffwll.ch>
 
-Hi Dave,
+One of the early return cases missed the mutex unlocking. Hilarity
+ensued.
 
-First patch is a resend of Alan's fbcon vs. fb notifier deadlock fix.
-Without this lockdep is pretty much useless for debugging drm locking
-issues, and it looks like quite a few bootup hangs could be blamed on this
-one, too.
+This regression has been introduced in
 
-Since the fbdev maintainer seems to be awol, please merge this through
-your drm tree. I've looked through the patch and the new locking seems to
-be sane so feel free to smash a
+commit 7b24056be6db7ce907baffdd4cf142ab774ea60c
+Author: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date:   Wed Dec 12 00:35:33 2012 +0100
 
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+    drm: don't hold crtc mutexes for connector ->detect callbacks
 
-onto it.
-
-2nd patch is a locking bug in the i915 driver with the new kms locking.
-Since the bug only happens in your drm-next tree, please apply the patch
-there directly.
-
-Thanks, Daniel
-
-Alan Cox (1):
-  fb: Rework locking to fix lock ordering on takeover
-
-Daniel Vetter (1):
-  drm/i915: fixup crtc locking in intel_release_load_detect_pipe
-
+Bugzilla: https://bugs.freedesktop.org/show_bug.cgi?id=59750
+Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+---
  drivers/gpu/drm/i915/intel_display.c |    1 +
- drivers/tty/vt/vt.c                  |   81 ++++++++++++++++++++++++++--------
- drivers/video/console/fbcon.c        |   30 ++++++++++++-
- drivers/video/fbmem.c                |    5 +--
- drivers/video/fbsysfs.c              |    3 ++
- include/linux/console.h              |    1 +
- 6 files changed, 98 insertions(+), 23 deletions(-)
+ 1 file changed, 1 insertion(+)
 
+diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
+index 26df9e3..ece4afd 100644
+--- a/drivers/gpu/drm/i915/intel_display.c
++++ b/drivers/gpu/drm/i915/intel_display.c
+@@ -6522,6 +6522,7 @@ void intel_release_load_detect_pipe(struct drm_connector *connector,
+ 			drm_framebuffer_unreference(old->release_fb);
+ 		}
+ 
++		mutex_unlock(&crtc->mutex);
+ 		return;
+ 	}
+ 
 -- 
 1.7.10.4

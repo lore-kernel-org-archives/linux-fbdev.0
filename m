@@ -1,72 +1,61 @@
-From: Sekhar Nori <nsekhar@ti.com>
-Date: Wed, 16 Jan 2013 05:14:10 +0000
-Subject: Re: [PATCH v2 12/12] video: da8xx-fb: set upstream clock rate (if reqd)
-Message-Id: <50F63452.1060004@ti.com>
+From: "Mohammed, Afzal" <afzal@ti.com>
+Date: Wed, 23 Jan 2013 13:00:20 +0000
+Subject: RE: [PATCH v2 12/12] video: da8xx-fb: set upstream clock rate (if reqd)
+Message-Id: <C8443D0743D26F4388EA172BF4E2A7A93EA9123E@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358251447.git.afzal@ti.com> <26e787b021cda89a080f80657c2094b9ff2decaf.1358251448.git.afzal@ti.com> <20130115153222.23734.7924@quantum>
-In-Reply-To: <20130115153222.23734.7924@quantum>
+References: <cover.1358251447.git.afzal@ti.com>
+ <26e787b021cda89a080f80657c2094b9ff2decaf.1358251448.git.afzal@ti.com>
+ <20130115153222.23734.7924@quantum> <50F63452.1060004@ti.com>
+In-Reply-To: <50F63452.1060004@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Turquette <mturquette@linaro.org>
-Cc: Afzal Mohammed <afzal@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Nori, Sekhar" <nsekhar@ti.com>, Mike Turquette <mturquette@linaro.org>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 1/15/2013 9:02 PM, Mike Turquette wrote:
-> Quoting Afzal Mohammed (2013-01-15 05:44:36)
->> LCDC IP has a clock divider to adjust pixel clock, this limits pixel
->> clock range to fck/255 - fck/2(fck - rate of input clock to LCDC IP).
->> In the case of AM335x, where this IP is present, default fck is not
->> sufficient to provide normal pixel clock rates, hence rendering this
->> driver unusable on AM335x.
->>
->> If input clock too is configurable, allowable range of pixel clock
->> would increase. Here initially it is checked whether with present fck,
->> divider in IP could be configured to obtain required rate, if not,
->> fck is adjusted. This makes it usable on AM335x.
->>
->> Note:
->> A better (if allowable) solution may be to represent clock divider in
->> LCDC IP as a basic divider clock - the one defined in common clock
->> framework. But for this to happen, all the platform's using this driver
->> should be using common clock framework (DaVinci is yet to be converted
->> to use common clock framework). And it has to be determined whether
->> common clock framework allows this kind of a clock modelling inside a
->> driver and for this to be part of clock tree. Advantage of doing so
->> would be better resolution for pixel clock, even though without this
->> existing use cases are working properly. Or another extreme alternative
->> would be to replicate clk-divider of common clock framework inside the
->> driver, but that probably is not preferred and not worth as it would be
->> duplication and without much advantage to existing users.
->>
-> 
-> Afzal,
-> 
-> Modeling the divider inside your IP block as a clock is supported in the
-> common clock framework.  Linking up these sorts of clocks to the clock
-> tree was one of the original design goals of CCF.
-> 
-> Regarding DaVinci: converting that platform over to use CCF would be the
-> best approach.
-
-This is work in progress. There are patches that have been posted. Work
-has been slow on this though due to lack of bandwidth.
-
-> An alternative would be that you could break
-> single-image boot for AM335x and DaVinci, by having AM335x use CCF and
-> DaVinci use the legacy clock framework.  From the LCDC driver's
-
-Single image for DaVinci and AM335x is not possible anyway since ARMv5
-and ARMv6+ cannot be supported in a single image.
-
-> perspective this should not matter and is indeed the purpose of the
-> clk.h api and clkdev interfaces, however looking at this driver I can
-> see there would still be a lot ifdef-ery going on... better to just
-> convert everything over to CCF.
-
-Waiting for DaVinci CCF to complete will be too long a wait. Probably
-convert to CCF just for AM335x ATM. There would be some ifdef'ry but
-hopefully that need not be inside function bodies. Would have to see the
-implementation, I guess.
-
-Thanks,
-Sekhar
+SGkgTWlrZSwNCg0KT24gV2VkLCBKYW4gMTYsIDIwMTMgYXQgMTA6MzI6MTAsIE5vcmksIFNla2hh
+ciB3cm90ZToNCj4gT24gMS8xNS8yMDEzIDk6MDIgUE0sIE1pa2UgVHVycXVldHRlIHdyb3RlOg0K
+PiA+IFF1b3RpbmcgQWZ6YWwgTW9oYW1tZWQgKDIwMTMtMDEtMTUgMDU6NDQ6MzYpDQoNCj4gPj4g
+Tm90ZToNCj4gPj4gQSBiZXR0ZXIgKGlmIGFsbG93YWJsZSkgc29sdXRpb24gbWF5IGJlIHRvIHJl
+cHJlc2VudCBjbG9jayBkaXZpZGVyIGluDQo+ID4+IExDREMgSVAgYXMgYSBiYXNpYyBkaXZpZGVy
+IGNsb2NrIC0gdGhlIG9uZSBkZWZpbmVkIGluIGNvbW1vbiBjbG9jaw0KPiA+PiBmcmFtZXdvcmsu
+IEJ1dCBmb3IgdGhpcyB0byBoYXBwZW4sIGFsbCB0aGUgcGxhdGZvcm0ncyB1c2luZyB0aGlzIGRy
+aXZlcg0KPiA+PiBzaG91bGQgYmUgdXNpbmcgY29tbW9uIGNsb2NrIGZyYW1ld29yayAoRGFWaW5j
+aSBpcyB5ZXQgdG8gYmUgY29udmVydGVkDQo+ID4+IHRvIHVzZSBjb21tb24gY2xvY2sgZnJhbWV3
+b3JrKS4gQW5kIGl0IGhhcyB0byBiZSBkZXRlcm1pbmVkIHdoZXRoZXINCj4gPj4gY29tbW9uIGNs
+b2NrIGZyYW1ld29yayBhbGxvd3MgdGhpcyBraW5kIG9mIGEgY2xvY2sgbW9kZWxsaW5nIGluc2lk
+ZSBhDQo+ID4+IGRyaXZlciBhbmQgZm9yIHRoaXMgdG8gYmUgcGFydCBvZiBjbG9jayB0cmVlLiBB
+ZHZhbnRhZ2Ugb2YgZG9pbmcgc28NCj4gPj4gd291bGQgYmUgYmV0dGVyIHJlc29sdXRpb24gZm9y
+IHBpeGVsIGNsb2NrLCBldmVuIHRob3VnaCB3aXRob3V0IHRoaXMNCj4gPj4gZXhpc3RpbmcgdXNl
+IGNhc2VzIGFyZSB3b3JraW5nIHByb3Blcmx5LiBPciBhbm90aGVyIGV4dHJlbWUgYWx0ZXJuYXRp
+dmUNCj4gPj4gd291bGQgYmUgdG8gcmVwbGljYXRlIGNsay1kaXZpZGVyIG9mIGNvbW1vbiBjbG9j
+ayBmcmFtZXdvcmsgaW5zaWRlIHRoZQ0KPiA+PiBkcml2ZXIsIGJ1dCB0aGF0IHByb2JhYmx5IGlz
+IG5vdCBwcmVmZXJyZWQgYW5kIG5vdCB3b3J0aCBhcyBpdCB3b3VsZCBiZQ0KPiA+PiBkdXBsaWNh
+dGlvbiBhbmQgd2l0aG91dCBtdWNoIGFkdmFudGFnZSB0byBleGlzdGluZyB1c2Vycy4NCg0KPiA+
+IE1vZGVsaW5nIHRoZSBkaXZpZGVyIGluc2lkZSB5b3VyIElQIGJsb2NrIGFzIGEgY2xvY2sgaXMg
+c3VwcG9ydGVkIGluIHRoZQ0KPiA+IGNvbW1vbiBjbG9jayBmcmFtZXdvcmsuICBMaW5raW5nIHVw
+IHRoZXNlIHNvcnRzIG9mIGNsb2NrcyB0byB0aGUgY2xvY2sNCj4gPiB0cmVlIHdhcyBvbmUgb2Yg
+dGhlIG9yaWdpbmFsIGRlc2lnbiBnb2FscyBvZiBDQ0YuDQoNCj4gPiBSZWdhcmRpbmcgRGFWaW5j
+aTogY29udmVydGluZyB0aGF0IHBsYXRmb3JtIG92ZXIgdG8gdXNlIENDRiB3b3VsZCBiZSB0aGUN
+Cj4gPiBiZXN0IGFwcHJvYWNoLg0KDQo+IFRoaXMgaXMgd29yayBpbiBwcm9ncmVzcy4gVGhlcmUg
+YXJlIHBhdGNoZXMgdGhhdCBoYXZlIGJlZW4gcG9zdGVkLiBXb3JrDQo+IGhhcyBiZWVuIHNsb3cg
+b24gdGhpcyB0aG91Z2ggZHVlIHRvIGxhY2sgb2YgYmFuZHdpZHRoLg0KDQo+ID4gQW4gYWx0ZXJu
+YXRpdmUgd291bGQgYmUgdGhhdCB5b3UgY291bGQgYnJlYWsNCj4gPiBzaW5nbGUtaW1hZ2UgYm9v
+dCBmb3IgQU0zMzV4IGFuZCBEYVZpbmNpLCBieSBoYXZpbmcgQU0zMzV4IHVzZSBDQ0YgYW5kDQo+
+ID4gRGFWaW5jaSB1c2UgdGhlIGxlZ2FjeSBjbG9jayBmcmFtZXdvcmsuICBGcm9tIHRoZSBMQ0RD
+IGRyaXZlcidzDQoNCj4gU2luZ2xlIGltYWdlIGZvciBEYVZpbmNpIGFuZCBBTTMzNXggaXMgbm90
+IHBvc3NpYmxlIGFueXdheSBzaW5jZSBBUk12NQ0KPiBhbmQgQVJNdjYrIGNhbm5vdCBiZSBzdXBw
+b3J0ZWQgaW4gYSBzaW5nbGUgaW1hZ2UuDQoNCj4gPiBwZXJzcGVjdGl2ZSB0aGlzIHNob3VsZCBu
+b3QgbWF0dGVyIGFuZCBpcyBpbmRlZWQgdGhlIHB1cnBvc2Ugb2YgdGhlDQo+ID4gY2xrLmggYXBp
+IGFuZCBjbGtkZXYgaW50ZXJmYWNlcywgaG93ZXZlciBsb29raW5nIGF0IHRoaXMgZHJpdmVyIEkg
+Y2FuDQo+ID4gc2VlIHRoZXJlIHdvdWxkIHN0aWxsIGJlIGEgbG90IGlmZGVmLWVyeSBnb2luZyBv
+bi4uLiBiZXR0ZXIgdG8ganVzdA0KPiA+IGNvbnZlcnQgZXZlcnl0aGluZyBvdmVyIHRvIENDRi4N
+Cg0KPiBXYWl0aW5nIGZvciBEYVZpbmNpIENDRiB0byBjb21wbGV0ZSB3aWxsIGJlIHRvbyBsb25n
+IGEgd2FpdC4gUHJvYmFibHkNCj4gY29udmVydCB0byBDQ0YganVzdCBmb3IgQU0zMzV4IEFUTS4g
+VGhlcmUgd291bGQgYmUgc29tZSBpZmRlZidyeSBidXQNCj4gaG9wZWZ1bGx5IHRoYXQgbmVlZCBu
+b3QgYmUgaW5zaWRlIGZ1bmN0aW9uIGJvZGllcy4gV291bGQgaGF2ZSB0byBzZWUgdGhlDQo+IGlt
+cGxlbWVudGF0aW9uLCBJIGd1ZXNzLg0KDQp2NCBwb3N0ZWQgaGFzIHRoZSBkaXZpZGVyIGluIExD
+REMgSVAgbW9kZWxlZCBieSBjbG9jayBub2RlIGZvciBDQ0YsIGZvcg0Kbm9uLUNDRiAoRGFWaW5j
+aSksIGV4aXN0aW5nIGxvZ2ljIGlzIGtlcHQgYXMgaXMgd2l0aCB0aGUgaGVscCBvZiBpZmRlZidz
+DQooYXMgRGFWaW5jaSBtYWludGFpbmVyIG1lbnRpb25lZCB0aGF0IERhVmluY2kgQ0NGIG1heSB0
+YWtlIHNvbWUgdGltZSkNCg0KUmVnYXJkcw0KQWZ6YWwNCg0KDQo

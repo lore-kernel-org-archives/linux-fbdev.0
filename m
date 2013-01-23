@@ -1,37 +1,97 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Tue, 22 Jan 2013 16:56:41 +0000
-Subject: [PATCH v3 03/12] video: da8xx-fb: enable sync lost intr for v2 ip
-Message-Id: <25c3f28d978cca6396f8eab953a07a70383bb4d7.1358871750.git.afzal@ti.com>
+Date: Wed, 23 Jan 2013 11:51:11 +0000
+Subject: [PATCH v4 06/12] video: da8xx-fb: reorganize panel detection
+Message-Id: <47095b1c5196d6ca1de19899274bcd0f79bcc269.1358937685.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358871750.git.afzal@ti.com>
-In-Reply-To: <cover.1358871750.git.afzal@ti.com>
+References: <cover.1358937685.git.afzal@ti.com>
+In-Reply-To: <cover.1358937685.git.afzal-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Mike Turquette <mturquette@linaro.org>
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 
-interrupt handler is checking for sync lost interrupt, but it was not
-enabled, enable it.
+Move panel detection to a separate function, this helps in readability
+as well as makes DT support cleaner.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/da8xx-fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/da8xx-fb.c | 42 ++++++++++++++++++++++++++----------------
+ 1 file changed, 26 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 7f92f37..ca69e01 100644
+index 3b146bc..b6ea5e9 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -318,7 +318,7 @@ static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
- 			reg_int = lcdc_read(LCD_INT_ENABLE_SET_REG) |
- 				LCD_V2_END_OF_FRAME0_INT_ENA |
- 				LCD_V2_END_OF_FRAME1_INT_ENA |
--				LCD_FRAME_DONE;
-+				LCD_FRAME_DONE | LCD_SYNC_LOST;
- 			lcdc_write(reg_int, LCD_INT_ENABLE_SET_REG);
- 		}
- 		reg_dma |= LCD_DUAL_FRAME_BUFFER_ENABLE;
+@@ -1253,6 +1253,27 @@ static struct fb_ops da8xx_fb_ops = {
+ 	.fb_blank = cfb_blank,
+ };
+ 
++static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
++{
++	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
++	struct fb_videomode *lcdc_info;
++	int i;
++
++	for (i = 0, lcdc_info = known_lcd_panels;
++		i < ARRAY_SIZE(known_lcd_panels); i++, lcdc_info++) {
++		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
++			break;
++	}
++
++	if (i = ARRAY_SIZE(known_lcd_panels)) {
++		dev_err(&dev->dev, "no panel found\n");
++		return NULL;
++	}
++	dev_info(&dev->dev, "found %s panel\n", lcdc_info->name);
++
++	return lcdc_info;
++}
++
+ static int fb_probe(struct platform_device *device)
+ {
+ 	struct da8xx_lcdc_platform_data *fb_pdata @@ -1262,7 +1283,7 @@ static int fb_probe(struct platform_device *device)
+ 	struct fb_info *da8xx_fb_info;
+ 	struct clk *fb_clk = NULL;
+ 	struct da8xx_fb_par *par;
+-	int ret, i;
++	int ret;
+ 	unsigned long ulcm;
+ 
+ 	if (fb_pdata = NULL) {
+@@ -1270,6 +1291,10 @@ static int fb_probe(struct platform_device *device)
+ 		return -ENOENT;
+ 	}
+ 
++	lcdc_info = da8xx_fb_get_videomode(device);
++	if (lcdc_info = NULL)
++		return -ENODEV;
++
+ 	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
+ 	da8xx_fb_reg_base = devm_request_and_ioremap(&device->dev, lcdc_regs);
+ 	if (!da8xx_fb_reg_base) {
+@@ -1303,21 +1328,6 @@ static int fb_probe(struct platform_device *device)
+ 		break;
+ 	}
+ 
+-	for (i = 0, lcdc_info = known_lcd_panels;
+-		i < ARRAY_SIZE(known_lcd_panels);
+-		i++, lcdc_info++) {
+-		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
+-			break;
+-	}
+-
+-	if (i = ARRAY_SIZE(known_lcd_panels)) {
+-		dev_err(&device->dev, "GLCD: No valid panel found\n");
+-		ret = -ENODEV;
+-		goto err_pm_runtime_disable;
+-	} else
+-		dev_info(&device->dev, "GLCD: Found %s panel\n",
+-					fb_pdata->type);
+-
+ 	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
+ 
+ 	if (!lcd_cfg) {
 -- 
 1.7.12
 

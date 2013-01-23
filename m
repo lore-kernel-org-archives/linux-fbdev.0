@@ -1,50 +1,37 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Tue, 15 Jan 2013 13:52:10 +0000
-Subject: [PATCH v2 2/5] ARM: dts: AM33XX: Add am335x-evm lcdc panel timings
-Message-Id: <539390a5b79a0a87bec4d53777fa6dde6af7c51d.1358252955.git.afzal@ti.com>
+Date: Wed, 23 Jan 2013 11:51:52 +0000
+Subject: [PATCH v4 03/12] video: da8xx-fb: enable sync lost intr for v2 ip
+Message-Id: <60a9f31924a43d48e14ce69c9ca5cbc5b3c89ffa.1358937685.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358252955.git.afzal@ti.com>
-In-Reply-To: <cover.1358252955.git.afzal@ti.com>
+References: <cover.1358937685.git.afzal@ti.com>
+In-Reply-To: <cover.1358937685.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Mike Turquette <mturquette@linaro.org>
 
-Update lcdc node with panel timings (typical) for AM335X-EVM.
+interrupt handler is checking for sync lost interrupt, but it was not
+enabled, enable it.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- arch/arm/boot/dts/am335x-evm.dts |   20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ drivers/video/da8xx-fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/am335x-evm.dts b/arch/arm/boot/dts/am335x-evm.dts
-index d649644..a4229aa 100644
---- a/arch/arm/boot/dts/am335x-evm.dts
-+++ b/arch/arm/boot/dts/am335x-evm.dts
-@@ -244,3 +244,23 @@
- &cpsw_emac1 {
- 	phy_id = <&davinci_mdio>, <1>;
- };
-+
-+&lcdc {
-+	status = "okay";
-+
-+	display-timings {
-+		800x480p62 {
-+			clock-frequency = <30000000>;
-+			hactive = <800>;
-+			vactive = <480>;
-+			hfront-porch = <39>;
-+			hback-porch = <39>;
-+			hsync-len = <47>;
-+			vback-porch = <29>;
-+			vfront-porch = <13>;
-+			vsync-len = <2>;
-+			hsync-active = <1>;
-+			vsync-active = <1>;
-+		};
-+	};
-+};
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 7f92f37..ca69e01 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -318,7 +318,7 @@ static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
+ 			reg_int = lcdc_read(LCD_INT_ENABLE_SET_REG) |
+ 				LCD_V2_END_OF_FRAME0_INT_ENA |
+ 				LCD_V2_END_OF_FRAME1_INT_ENA |
+-				LCD_FRAME_DONE;
++				LCD_FRAME_DONE | LCD_SYNC_LOST;
+ 			lcdc_write(reg_int, LCD_INT_ENABLE_SET_REG);
+ 		}
+ 		reg_dma |= LCD_DUAL_FRAME_BUFFER_ENABLE;
 -- 
-1.7.9.5
+1.7.12
 

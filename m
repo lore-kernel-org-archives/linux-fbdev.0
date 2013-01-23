@@ -1,97 +1,48 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 28 Jan 2013 09:33:14 +0000
-Subject: [PATCH v5 06/12] video: da8xx-fb: reorganize panel detection
-Message-Id: <3a8281d47514a6b5a50b292bd0eff38c16efbc4f.1359356015.git.afzal@ti.com>
+Date: Wed, 23 Jan 2013 11:52:09 +0000
+Subject: [PATCH v4 02/12] video: da8xx-fb: fix 24bpp raster configuration
+Message-Id: <067d65675947ebb06d58b293a6023f31c1db1e9e.1358937685.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1359356015.git.afzal@ti.com>
-In-Reply-To: <cover.1359356015.git.afzal-l0cyMroinI0@public.gmane.org>
+References: <cover.1358937685.git.afzal@ti.com>
+In-Reply-To: <cover.1358937685.git.afzal-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, "Manjunathappa,
+ Prakash" <prakash.pm-l0cyMroinI0@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 
-Move panel detection to a separate function, this helps in readability
-as well as makes DT support cleaner.
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
 
+Set only LCD_V2_TFT_24BPP_MODE bit for 24bpp and LCD_V2_TFT_24BPP_UNPACK
+bit along with LCD_V2_TFT_24BPP_MODE for 32bpp configuration.
+
+Patch is tested on am335x-evm for 24bpp and da850-evm for 16bpp
+configurations.
+
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/da8xx-fb.c | 42 ++++++++++++++++++++++++++----------------
- 1 file changed, 26 insertions(+), 16 deletions(-)
+ drivers/video/da8xx-fb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 3b146bc..b6ea5e9 100644
+index 35a33ca..7f92f37 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -1253,6 +1253,27 @@ static struct fb_ops da8xx_fb_ops = {
- 	.fb_blank = cfb_blank,
- };
- 
-+static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
-+{
-+	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
-+	struct fb_videomode *lcdc_info;
-+	int i;
-+
-+	for (i = 0, lcdc_info = known_lcd_panels;
-+		i < ARRAY_SIZE(known_lcd_panels); i++, lcdc_info++) {
-+		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
-+			break;
-+	}
-+
-+	if (i = ARRAY_SIZE(known_lcd_panels)) {
-+		dev_err(&dev->dev, "no panel found\n");
-+		return NULL;
-+	}
-+	dev_info(&dev->dev, "found %s panel\n", lcdc_info->name);
-+
-+	return lcdc_info;
-+}
-+
- static int fb_probe(struct platform_device *device)
- {
- 	struct da8xx_lcdc_platform_data *fb_pdata @@ -1262,7 +1283,7 @@ static int fb_probe(struct platform_device *device)
- 	struct fb_info *da8xx_fb_info;
- 	struct clk *fb_clk = NULL;
- 	struct da8xx_fb_par *par;
--	int ret, i;
-+	int ret;
- 	unsigned long ulcm;
- 
- 	if (fb_pdata = NULL) {
-@@ -1270,6 +1291,10 @@ static int fb_probe(struct platform_device *device)
- 		return -ENOENT;
- 	}
- 
-+	lcdc_info = da8xx_fb_get_videomode(device);
-+	if (lcdc_info = NULL)
-+		return -ENODEV;
-+
- 	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
- 	da8xx_fb_reg_base = devm_request_and_ioremap(&device->dev, lcdc_regs);
- 	if (!da8xx_fb_reg_base) {
-@@ -1303,21 +1328,6 @@ static int fb_probe(struct platform_device *device)
+@@ -550,10 +550,10 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+ 	case 4:
+ 	case 16:
  		break;
- 	}
+-	case 24:
+-		reg |= LCD_V2_TFT_24BPP_MODE;
+ 	case 32:
+ 		reg |= LCD_V2_TFT_24BPP_UNPACK;
++	case 24:
++		reg |= LCD_V2_TFT_24BPP_MODE;
+ 		break;
  
--	for (i = 0, lcdc_info = known_lcd_panels;
--		i < ARRAY_SIZE(known_lcd_panels);
--		i++, lcdc_info++) {
--		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
--			break;
--	}
--
--	if (i = ARRAY_SIZE(known_lcd_panels)) {
--		dev_err(&device->dev, "GLCD: No valid panel found\n");
--		ret = -ENODEV;
--		goto err_pm_runtime_disable;
--	} else
--		dev_info(&device->dev, "GLCD: Found %s panel\n",
--					fb_pdata->type);
--
- 	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
- 
- 	if (!lcd_cfg) {
+ 	case 8:
 -- 
 1.7.12
 

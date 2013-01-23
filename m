@@ -1,106 +1,58 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 28 Jan 2013 09:33:02 +0000
-Subject: [PATCH v5 04/12] video: da8xx-fb: use devres
-Message-Id: <5cde16f8a4718dcd70833eff5328cebe29f46c56.1359356015.git.afzal@ti.com>
-List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1359356015.git.afzal@ti.com>
-In-Reply-To: <cover.1359356015.git.afzal@ti.com>
-MIME-Version: 1.0
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Subject: [PATCH 0/2] fbcon+i915 locking fixes
+Date: Wed, 23 Jan 2013 17:25:07 +0100
+Message-ID: <1358958309-5342-1-git-send-email-daniel.vetter@ffwll.ch>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Mike Turquette <mturquette@linaro.org>
+Return-path: <intel-gfx-bounces+gcfxdi-intel-gfx=m.gmane.org@lists.freedesktop.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/intel-gfx>,
+	<mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+	<mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Sender: intel-gfx-bounces+gcfxdi-intel-gfx=m.gmane.org@lists.freedesktop.org
+Errors-To: intel-gfx-bounces+gcfxdi-intel-gfx=m.gmane.org@lists.freedesktop.org
+To: Dave Airlie <airlied@gmail.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>
 
-Replace existing resource handling in the driver with managed device
-resource.
+Hi Dave,
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
----
- drivers/video/da8xx-fb.c | 35 ++++++-----------------------------
- 1 file changed, 6 insertions(+), 29 deletions(-)
+First patch is a resend of Alan's fbcon vs. fb notifier deadlock fix.
+Without this lockdep is pretty much useless for debugging drm locking
+issues, and it looks like quite a few bootup hangs could be blamed on this
+one, too.
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index ca69e01..7a32e83 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -1036,12 +1036,9 @@ static int fb_remove(struct platform_device *dev)
- 				  par->p_palette_base);
- 		dma_free_coherent(NULL, par->vram_size, par->vram_virt,
- 				  par->vram_phys);
--		free_irq(par->irq, par);
- 		pm_runtime_put_sync(&dev->dev);
- 		pm_runtime_disable(&dev->dev);
- 		framebuffer_release(info);
--		iounmap(da8xx_fb_reg_base);
--		release_mem_region(lcdc_regs->start, resource_size(lcdc_regs));
- 
- 	}
- 	return 0;
-@@ -1265,7 +1262,6 @@ static int fb_probe(struct platform_device *device)
- 	struct fb_info *da8xx_fb_info;
- 	struct clk *fb_clk = NULL;
- 	struct da8xx_fb_par *par;
--	resource_size_t len;
- 	int ret, i;
- 	unsigned long ulcm;
- 
-@@ -1275,29 +1271,16 @@ static int fb_probe(struct platform_device *device)
- 	}
- 
- 	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
--	if (!lcdc_regs) {
--		dev_err(&device->dev,
--			"Can not get memory resource for LCD controller\n");
--		return -ENOENT;
--	}
--
--	len = resource_size(lcdc_regs);
--
--	lcdc_regs = request_mem_region(lcdc_regs->start, len, lcdc_regs->name);
--	if (!lcdc_regs)
--		return -EBUSY;
--
--	da8xx_fb_reg_base = ioremap(lcdc_regs->start, len);
-+	da8xx_fb_reg_base = devm_request_and_ioremap(&device->dev, lcdc_regs);
- 	if (!da8xx_fb_reg_base) {
--		ret = -EBUSY;
--		goto err_request_mem;
-+		dev_err(&device->dev, "memory resource setup failed\n");
-+		return -EADDRNOTAVAIL;
- 	}
- 
--	fb_clk = clk_get(&device->dev, "fck");
-+	fb_clk = devm_clk_get(&device->dev, "fck");
- 	if (IS_ERR(fb_clk)) {
- 		dev_err(&device->dev, "Can not get device clock\n");
--		ret = -ENODEV;
--		goto err_ioremap;
-+		return -ENODEV;
- 	}
- 
- 	pm_runtime_enable(&device->dev);
-@@ -1458,7 +1441,7 @@ static int fb_probe(struct platform_device *device)
- 		lcdc_irq_handler = lcdc_irq_handler_rev02;
- 	}
- 
--	ret = request_irq(par->irq, lcdc_irq_handler, 0,
-+	ret = devm_request_irq(&device->dev, par->irq, lcdc_irq_handler, 0,
- 			DRIVER_NAME, par);
- 	if (ret)
- 		goto irq_freq;
-@@ -1488,12 +1471,6 @@ err_pm_runtime_disable:
- 	pm_runtime_put_sync(&device->dev);
- 	pm_runtime_disable(&device->dev);
- 
--err_ioremap:
--	iounmap(da8xx_fb_reg_base);
--
--err_request_mem:
--	release_mem_region(lcdc_regs->start, len);
--
- 	return ret;
- }
- 
+Since the fbdev maintainer seems to be awol, please merge this through
+your drm tree. I've looked through the patch and the new locking seems to
+be sane so feel free to smash a
+
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+
+onto it.
+
+2nd patch is a locking bug in the i915 driver with the new kms locking.
+Since the bug only happens in your drm-next tree, please apply the patch
+there directly.
+
+Thanks, Daniel
+
+Alan Cox (1):
+  fb: Rework locking to fix lock ordering on takeover
+
+Daniel Vetter (1):
+  drm/i915: fixup crtc locking in intel_release_load_detect_pipe
+
+ drivers/gpu/drm/i915/intel_display.c |    1 +
+ drivers/tty/vt/vt.c                  |   81 ++++++++++++++++++++++++++--------
+ drivers/video/console/fbcon.c        |   30 ++++++++++++-
+ drivers/video/fbmem.c                |    5 +--
+ drivers/video/fbsysfs.c              |    3 ++
+ include/linux/console.h              |    1 +
+ 6 files changed, 98 insertions(+), 23 deletions(-)
+
 -- 
-1.7.12
-
+1.7.10.4

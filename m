@@ -1,149 +1,78 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Fri, 25 Jan 2013 09:01:49 +0000
-Subject: [PATCH v17 1/7] viafb: rename display_timing to via_display_timing
-Message-Id: <1359104515-8907-2-git-send-email-s.trumtrar@pengutronix.de>
+From: Afzal Mohammed <afzal@ti.com>
+Date: Wed, 23 Jan 2013 11:49:51 +0000
+Subject: [PATCH v4 11/12] video: da8xx-fb: setup struct lcd_ctrl_config for dt
+Message-Id: <6e567570ca0a3a9108ac7cee355fbbd8b9559273.1358937685.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359104515-8907-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1359104515-8907-1-git-send-email-s.trumtrar@pengutronix.de>
+References: <cover.1358937685.git.afzal@ti.com>
+In-Reply-To: <cover.1358937685.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org, Dave Airlie <airlied@linux.ie>
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Rob Clark <robdclark@gmail.com>, Leela Krishna Amudala <leelakrishna.a@gmail.com>, "Mohammed, Afzal" <afzal@ti.com>, kernel@pengutronix.de
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Mike Turquette <mturquette@linaro.org>
 
-The struct display_timing is specific to the via subsystem. The naming leads to
-collisions with the new struct display_timing, which is supposed to be a shared
-struct between different subsystems.
-To clean this up, prepend the existing struct with the subsystem it is specific
-to.
+strcut lcd_ctrl_config information required for driver is currently
+obtained via platform data. To handle DT probing, create
+lcd_ctrl_config and populate it with default values, these values are
+sufficient for the panels so far used with this controller to work.
 
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/via/hw.c              |    6 +++---
- drivers/video/via/hw.h              |    2 +-
- drivers/video/via/lcd.c             |    2 +-
- drivers/video/via/share.h           |    2 +-
- drivers/video/via/via_modesetting.c |    8 ++++----
- drivers/video/via/via_modesetting.h |    6 +++---
- 6 files changed, 13 insertions(+), 13 deletions(-)
+ drivers/video/da8xx-fb.c | 34 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 33 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 80233da..22450908 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -1467,10 +1467,10 @@ void viafb_set_vclock(u32 clk, int set_iga)
- 	via_write_misc_reg_mask(0x0C, 0x0C); /* select external clock */
- }
- 
--struct display_timing var_to_timing(const struct fb_var_screeninfo *var,
-+struct via_display_timing var_to_timing(const struct fb_var_screeninfo *var,
- 	u16 cxres, u16 cyres)
- {
--	struct display_timing timing;
-+	struct via_display_timing timing;
- 	u16 dx = (var->xres - cxres) / 2, dy = (var->yres - cyres) / 2;
- 
- 	timing.hor_addr = cxres;
-@@ -1491,7 +1491,7 @@ struct display_timing var_to_timing(const struct fb_var_screeninfo *var,
- void viafb_fill_crtc_timing(const struct fb_var_screeninfo *var,
- 	u16 cxres, u16 cyres, int iga)
- {
--	struct display_timing crt_reg = var_to_timing(var,
-+	struct via_display_timing crt_reg = var_to_timing(var,
- 		cxres ? cxres : var->xres, cyres ? cyres : var->yres);
- 
- 	if (iga = IGA1)
-diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
-index a820575..3be073c 100644
---- a/drivers/video/via/hw.h
-+++ b/drivers/video/via/hw.h
-@@ -637,7 +637,7 @@ extern int viafb_LCD_ON;
- extern int viafb_DVI_ON;
- extern int viafb_hotplug;
- 
--struct display_timing var_to_timing(const struct fb_var_screeninfo *var,
-+struct via_display_timing var_to_timing(const struct fb_var_screeninfo *var,
- 	u16 cxres, u16 cyres);
- void viafb_fill_crtc_timing(const struct fb_var_screeninfo *var,
- 	u16 cxres, u16 cyres, int iga);
-diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
-index 980ee1b..5d21ff4 100644
---- a/drivers/video/via/lcd.c
-+++ b/drivers/video/via/lcd.c
-@@ -549,7 +549,7 @@ void viafb_lcd_set_mode(const struct fb_var_screeninfo *var, u16 cxres,
- 	int panel_hres = plvds_setting_info->lcd_panel_hres;
- 	int panel_vres = plvds_setting_info->lcd_panel_vres;
- 	u32 clock;
--	struct display_timing timing;
-+	struct via_display_timing timing;
- 	struct fb_var_screeninfo panel_var;
- 	const struct fb_videomode *mode_crt_table, *panel_crt_table;
- 
-diff --git a/drivers/video/via/share.h b/drivers/video/via/share.h
-index 3158dfc..65c65c6 100644
---- a/drivers/video/via/share.h
-+++ b/drivers/video/via/share.h
-@@ -319,7 +319,7 @@ struct crt_mode_table {
- 	int refresh_rate;
- 	int h_sync_polarity;
- 	int v_sync_polarity;
--	struct display_timing crtc;
-+	struct via_display_timing crtc;
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 1c1a616..5455682 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1254,6 +1254,35 @@ static struct fb_ops da8xx_fb_ops = {
+ 	.fb_blank = cfb_blank,
  };
  
- struct io_reg {
-diff --git a/drivers/video/via/via_modesetting.c b/drivers/video/via/via_modesetting.c
-index 0e431ae..0b414b0 100644
---- a/drivers/video/via/via_modesetting.c
-+++ b/drivers/video/via/via_modesetting.c
-@@ -30,9 +30,9 @@
- #include "debug.h"
- 
- 
--void via_set_primary_timing(const struct display_timing *timing)
-+void via_set_primary_timing(const struct via_display_timing *timing)
++static struct lcd_ctrl_config *da8xx_fb_create_cfg(struct platform_device *dev)
++{
++	struct lcd_ctrl_config *cfg;
++
++	cfg = devm_kzalloc(&dev->dev, sizeof(struct fb_videomode), GFP_KERNEL);
++	if (!cfg) {
++		dev_err(&dev->dev, "memory allocation failed\n");
++		return NULL;
++	}
++
++	/* default values */
++
++	if (lcd_revision = LCD_VERSION_1)
++		cfg->bpp = 16;
++	else
++		cfg->bpp = 32;
++
++	/*
++	 * For panels so far used with this LCDC, below statement is sufficient.
++	 * For new panels, if required, struct lcd_ctrl_cfg fields to be updated
++	 * with additional/modified values. Those values would have to be then
++	 * obtained from dt(requiring new dt bindings).
++	 */
++
++	cfg->panel_shade = COLOR_ACTIVE;
++
++	return cfg;
++}
++
+ static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
  {
--	struct display_timing raw;
-+	struct via_display_timing raw;
+ 	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
+@@ -1345,7 +1374,10 @@ static int fb_probe(struct platform_device *device)
+ 		break;
+ 	}
  
- 	raw.hor_total = timing->hor_total / 8 - 5;
- 	raw.hor_addr = timing->hor_addr / 8 - 1;
-@@ -88,9 +88,9 @@ void via_set_primary_timing(const struct display_timing *timing)
- 	via_write_reg_mask(VIACR, 0x17, 0x80, 0x80);
- }
+-	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
++	if (device->dev.of_node)
++		lcd_cfg = da8xx_fb_create_cfg(device);
++	else
++		lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
  
--void via_set_secondary_timing(const struct display_timing *timing)
-+void via_set_secondary_timing(const struct via_display_timing *timing)
- {
--	struct display_timing raw;
-+	struct via_display_timing raw;
- 
- 	raw.hor_total = timing->hor_total - 1;
- 	raw.hor_addr = timing->hor_addr - 1;
-diff --git a/drivers/video/via/via_modesetting.h b/drivers/video/via/via_modesetting.h
-index 06e09fe..f6a6503 100644
---- a/drivers/video/via/via_modesetting.h
-+++ b/drivers/video/via/via_modesetting.h
-@@ -33,7 +33,7 @@
- #define VIA_PITCH_MAX	0x3FF8
- 
- 
--struct display_timing {
-+struct via_display_timing {
- 	u16 hor_total;
- 	u16 hor_addr;
- 	u16 hor_blank_start;
-@@ -49,8 +49,8 @@ struct display_timing {
- };
- 
- 
--void via_set_primary_timing(const struct display_timing *timing);
--void via_set_secondary_timing(const struct display_timing *timing);
-+void via_set_primary_timing(const struct via_display_timing *timing);
-+void via_set_secondary_timing(const struct via_display_timing *timing);
- void via_set_primary_address(u32 addr);
- void via_set_secondary_address(u32 addr);
- void via_set_primary_pitch(u32 pitch);
+ 	if (!lcd_cfg) {
+ 		ret = -EINVAL;
 -- 
-1.7.10.4
+1.7.12
 

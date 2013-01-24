@@ -1,49 +1,63 @@
-From: Mike Turquette <mturquette@linaro.org>
-Date: Wed, 23 Jan 2013 20:22:04 +0000
-Subject: Re: [PATCH v4 12/12] video: da8xx-fb: CCF clock divider handling
-Message-Id: <20130123202204.9205.66575@quantum>
+From: "Mohammed, Afzal" <afzal@ti.com>
+Date: Thu, 24 Jan 2013 11:36:02 +0000
+Subject: RE: [PATCH v4 12/12] video: da8xx-fb: CCF clock divider handling
+Message-Id: <C8443D0743D26F4388EA172BF4E2A7A93EA92ADF@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1358937685.git.afzal@ti.com>
  <fa8dab522507e087d5a94bac13dda71544911707.1358937685.git.afzal@ti.com>
-In-Reply-To: <fa8dab522507e087d5a94bac13dda71544911707.1358937685.git.afzal@ti.com>
+ <20130123202204.9205.66575@quantum>
+In-Reply-To: <20130123202204.9205.66575@quantum>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Afzal Mohammed <afzal@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>
+To: Mike Turquette <mturquette@linaro.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>
 
-Quoting Afzal Mohammed (2013-01-23 03:48:56)
-<snip>
-> +static inline void da8xx_fb_clkc_enable(void)
-> +{
->         if (lcd_revision = LCD_VERSION_2)
->                 lcdc_write(LCD_V2_DMA_CLK_EN | LCD_V2_LIDD_CLK_EN |
->                                 LCD_V2_CORE_CLK_EN, LCD_CLK_ENABLE_REG);
->  }
->  
-> -static inline void da8xx_fb_calc_config_clk_divider(struct da8xx_fb_par *par,
-> +#ifdef CONFIG_COMMON_CLK
-> +static inline int da8xx_fb_calc_config_clk_divider(struct da8xx_fb_par *par,
-> +                                                   struct fb_videomode *mode)
-> +{
-> +       int ret;
-> +
-> +       ret = clk_set_rate(par->child_clk, PICOS2KHZ(mode->pixclock) * 1000);
-> +       if (IS_ERR_VALUE(ret)) {
-> +               dev_err(par->dev, "unable to setup pixel clock of %u ps",
-> +                       mode->pixclock);
-> +               return ret;
-> +       }
-> +       da8xx_fb_clkc_enable();
-
-It looks like you are using the legacy method to enable/disable the
-clock and using the CCF basic divider to set the rate.  This feels a bit
-hacky to me.  If you want to model your clock in CCF then you should
-probably model the whole clock, not just the rate-change aspects of it.
-
-Have you looked at the composite clock patches from Prashant?  Those
-might give you the divider+gate properties that you are looking for:
-http://article.gmane.org/gmane.linux.kernel/1416697
-
-Regards,
-Mike
+SGkgTWlrZSwNCg0KT24gVGh1LCBKYW4gMjQsIDIwMTMgYXQgMDE6NTI6MDQsIE1pa2UgVHVycXVl
+dHRlIHdyb3RlOg0KPiBRdW90aW5nIEFmemFsIE1vaGFtbWVkICgyMDEzLTAxLTIzIDAzOjQ4OjU2
+KQ0KDQo+ID4gK3N0YXRpYyBpbmxpbmUgdm9pZCBkYTh4eF9mYl9jbGtjX2VuYWJsZSh2b2lkKQ0K
+PiA+ICt7DQo+ID4gICAgICAgICBpZiAobGNkX3JldmlzaW9uID09IExDRF9WRVJTSU9OXzIpDQo+
+ID4gICAgICAgICAgICAgICAgIGxjZGNfd3JpdGUoTENEX1YyX0RNQV9DTEtfRU4gfCBMQ0RfVjJf
+TElERF9DTEtfRU4gfA0KPiA+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTENEX1Yy
+X0NPUkVfQ0xLX0VOLCBMQ0RfQ0xLX0VOQUJMRV9SRUcpOw0KDQo+ID4gK3N0YXRpYyBpbmxpbmUg
+aW50IGRhOHh4X2ZiX2NhbGNfY29uZmlnX2Nsa19kaXZpZGVyKHN0cnVjdCBkYTh4eF9mYl9wYXIg
+KnBhciwNCj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgc3RydWN0IGZiX3ZpZGVvbW9kZSAqbW9kZSkNCj4gPiArew0KDQo+ID4gKyAgICAgICBy
+ZXQgPSBjbGtfc2V0X3JhdGUocGFyLT5jaGlsZF9jbGssIFBJQ09TMktIWihtb2RlLT5waXhjbG9j
+aykgKiAxMDAwKTsNCj4gPiArICAgICAgIGlmIChJU19FUlJfVkFMVUUocmV0KSkgew0KPiA+ICsg
+ICAgICAgICAgICAgICBkZXZfZXJyKHBhci0+ZGV2LCAidW5hYmxlIHRvIHNldHVwIHBpeGVsIGNs
+b2NrIG9mICV1IHBzIiwNCj4gPiArICAgICAgICAgICAgICAgICAgICAgICBtb2RlLT5waXhjbG9j
+ayk7DQo+ID4gKyAgICAgICAgICAgICAgIHJldHVybiByZXQ7DQo+ID4gKyAgICAgICB9DQo+ID4g
+KyAgICAgICBkYTh4eF9mYl9jbGtjX2VuYWJsZSgpOw0KDQo+IEl0IGxvb2tzIGxpa2UgeW91IGFy
+ZSB1c2luZyB0aGUgbGVnYWN5IG1ldGhvZCB0byBlbmFibGUvZGlzYWJsZSB0aGUNCj4gY2xvY2sg
+YW5kIHVzaW5nIHRoZSBDQ0YgYmFzaWMgZGl2aWRlciB0byBzZXQgdGhlIHJhdGUuICBUaGlzIGZl
+ZWxzIGEgYml0DQo+IGhhY2t5IHRvIG1lLiAgSWYgeW91IHdhbnQgdG8gbW9kZWwgeW91ciBjbG9j
+ayBpbiBDQ0YgdGhlbiB5b3Ugc2hvdWxkDQo+IHByb2JhYmx5IG1vZGVsIHRoZSB3aG9sZSBjbG9j
+aywgbm90IGp1c3QgdGhlIHJhdGUtY2hhbmdlIGFzcGVjdHMgb2YgaXQuDQoNCkluaXRpYWxseSBJ
+IHRob3VnaHQgYWJvdXQgaXQsIGJ1dCBzZWVpbmcgcmVxdWlyZW1lbnQgb2YgMyBnYXRlIGNsb2Nr
+cw0KKGR1ZSB0byAzIGJpdHMgbWVhbnQgZm9yIGRpZmZlcmVudCBwdXJwb3NlcyAtIERNQSwgTElE
+RCBhbmQgQ09SRQ0KZnVuY3Rpb25hbGl0aWVzKSwgZmVsdCB0aGF0IGhhdmluZyA0IGNsb2NrcyAo
+MyBnYXRlICsgMSBkaXZpZGVyKSBpbg0KZHJpdmVyIHdvdWxkIGJlIGFuIG92ZXJkZXNpZ24gW2xl
+YXZpbmcgYSBicmFuY2ggaW5zdGVhZCBvZiBhIGxlYWYgb2YNCnRoZSB0cmVlIGluIGRyaXZlciA7
+KV0uDQoNCj4gSGF2ZSB5b3UgbG9va2VkIGF0IHRoZSBjb21wb3NpdGUgY2xvY2sgcGF0Y2hlcyBm
+cm9tIFByYXNoYW50PyAgVGhvc2UNCj4gbWlnaHQgZ2l2ZSB5b3UgdGhlIGRpdmlkZXIrZ2F0ZSBw
+cm9wZXJ0aWVzIHRoYXQgeW91IGFyZSBsb29raW5nIGZvcjoNCj4gaHR0cDovL2FydGljbGUuZ21h
+bmUub3JnL2dtYW5lLmxpbnV4Lmtlcm5lbC8xNDE2Njk3DQoNClRoYW5rcyBmb3IgdGhlIHBvaW50
+ZXIsDQoNCk5vdyB3aXRoIHRoZSBjb21wb3NpdGUgY2xvY2sgaW4gbWluZCwgaXQgd2FzIHRyaWVk
+IHRvIHJlbGF0ZSB0byB3aGF0DQp3YXMgcmVxdWlyZWQgZm9yIHRoZSBwcmVzZW50IHNjZW5hcmlv
+Lg0KDQpTbyB0aGVyZSBhcmUgMyAtIExJREQgaXMgYWN0dWFsbHkgbm90IGZvciBwcmVzZW50IHVz
+ZSBjYXNlLCBDT1JFIGNvdWxkDQpiZSBjbHViYmVkIHdpdGggdGhlIGRpdmlkZXIgdG8gaGF2ZSBh
+IGNvbXBvc2l0ZSBjbG9jay4gQW5kIENPUkUgaXMNCmluIGZ1bmN0aW9uYWwgY2xvY2sgcGF0aCBh
+bmQgbG9naWNhbGx5IGl0J3MgcGVyZmVjdGx5IGFscmlnaHQgdG8gaGF2ZQ0KdGhlIGNvbXBvc2l0
+ZSBjbG9jay4NCg0KQW5kIG5vdyB3ZSBhcmUgbGVmdCB3aXRoIERNQSwgdGhpcyBpcyBhY3R1YWxs
+eSBpbiB0aGUgaW50ZXJmYWNlIGNsb2NrDQpwYXRoIHdoaWNoIGRyaXZlciBpbiB1bmF3YXJlLiBB
+biBvcHRpb24gd291bGQgYmUgdG8gaGF2ZSBETUEgY2xvY2sNCmFzIGNoaWxkIG9mIENPUkUgcGx1
+cyBkaXZpZGVyIGNvbXBvc2l0ZSBjbG9jaywgZXZlbiB0aG91Z2ggbG9naWNhbGx5DQpETUEgY2Fu
+J3QgYmUgY29uc2lkZXJlZCBpbiB0aGUgc2FtZSBwYXRoLg0KDQpBbHNvIHRyaWVkIG5vdCBlbmFi
+bGluZyBETUEgY2xvY2ssIGJ1dCBkcml2ZXIgaXMgYWJsZSB0byBwcm92aWRlDQpkaXNwbGF5IHdp
+dGhvdXQgYW55IGlzc3Vlcywgc28gd2FzIHRoaW5raW5nIHdoZXRoZXIgdG8gYXZvaWQNCmluc3Rh
+bnRpYXRpbmcgRE1BIGNsb2NrIGF0IGFsbCBhbmQgaGVuY2UgdG8gaGF2ZSBhIHNpbXBsZSBzaW5n
+bGUNCmNvbXBvc2l0ZSBjbG9jay4gVHJ5aW5nIHRvIGdldCBpbmZvcm1hdGlvbiBpbnRlcm5hbGx5
+IG9uIHdoZXRoZXINCm5vdCBzZXR0aW5nIERNQSBjbG9jayBiaXRzIHdvdWxkIGFjdHVhbGx5IG1h
+a2UgYSBkaWZmZXJlbmNlLg0KDQpJZiB5b3UgaGF2ZSBhbnkgb3BpbmlvbiBvbiBob3cgdG8gZGVh
+bCBoZXJlLCBsZXQgbWUga25vdy4NCg0KUmVnYXJkcw0KQWZ6YWwNCg0KDQo

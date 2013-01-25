@@ -1,69 +1,108 @@
-From: "Mohammed, Afzal" <afzal@ti.com>
-Date: Fri, 25 Jan 2013 14:15:29 +0000
-Subject: RE: [PATCH 1/4] drm/tilcdc: add TI LCD Controller DRM driver (v3)
-Message-Id: <C8443D0743D26F4388EA172BF4E2A7A93EA93A7D@DBDE01.ent.ti.com>
+From: Rob Clark <robdclark@gmail.com>
+Date: Fri, 25 Jan 2013 14:52:55 +0000
+Subject: Re: [PATCH 1/4] drm/tilcdc: add TI LCD Controller DRM driver (v3)
+Message-Id: <CAF6AEGtrHBxvnp052K6z3aj3dAxJf1hy7H72EoAWr6PhTtwr8Q@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1358894185-21617-1-git-send-email-robdclark@gmail.com>
 	<1358894185-21617-2-git-send-email-robdclark@gmail.com>
 	<C8443D0743D26F4388EA172BF4E2A7A93EA939BB@DBDE01.ent.ti.com>
- <CAF6AEGsqkUr0R3eYa4P371tUPq_NLSJLhH=N_MkyJF31s068+g@mail.gmail.com>
-In-Reply-To: <CAF6AEGsqkUr0R3eYa4P371tUPq_NLSJLhH=N_MkyJF31s068+g@mail.gmail.com>
+	<CAF6AEGsqkUr0R3eYa4P371tUPq_NLSJLhH=N_MkyJF31s068+g@mail.gmail.com>
+	<C8443D0743D26F4388EA172BF4E2A7A93EA93A7D@DBDE01.ent.ti.com>
+In-Reply-To: <C8443D0743D26F4388EA172BF4E2A7A93EA93A7D@DBDE01.ent.ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Clark <robdclark@gmail.com>
+To: "Mohammed, Afzal" <afzal@ti.com>
 Cc: "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "patches@linaro.org" <patches@linaro.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>, "Nori, Sekhar" <nsekhar@ti.com>
 
-SGkgUm9iLA0KDQpPbiBGcmksIEphbiAyNSwgMjAxMyBhdCAxOToyOTo0MCwgUm9iIENsYXJrIHdy
-b3RlOg0KPiBPbiBGcmksIEphbiAyNSwgMjAxMyBhdCA3OjE5IEFNLCBNb2hhbW1lZCwgQWZ6YWwg
-PGFmemFsQHRpLmNvbT4gd3JvdGU6DQo+ID4gT24gV2VkLCBKYW4gMjMsIDIwMTMgYXQgMDQ6MDY6
-MjIsIFJvYiBDbGFyayB3cm90ZToNCg0KPiA+PiBBIHNpbXBsZSBEUk0vS01TIGRyaXZlciBmb3Ig
-dGhlIFRJIExDRCBDb250cm9sbGVyIGZvdW5kIGluIHZhcmlvdXMNCj4gPj4gc21hbGxlciBUSSBw
-YXJ0cyAoQU0zM3h4LCBPTUFQTDEzOCwgZXRjKS4gIFRoaXMgZHJpdmVyIHVzZXMgdGhlDQoNCj4g
-Pj4gK3ZvaWQgdGlsY2RjX2NydGNfdXBkYXRlX2NsayhzdHJ1Y3QgZHJtX2NydGMgKmNydGMpDQo+
-ID4NCj4gPj4gKyAgICAgLyogaW4gcmFzdGVyIG1vZGUsIG1pbmltdW0gZGl2aXNvciBpcyAyOiAq
-Lw0KPiA+PiArICAgICByZXQgPSBjbGtfc2V0X3JhdGUocHJpdi0+ZGlzcF9jbGssIGNydGMtPm1v
-ZGUuY2xvY2sgKiAxMDAwICogMik7DQoNCj4gPiBUaGVzZSB0aGluZ3MgY2FuIGJldHRlciBiZSBo
-YW5kbGVkIHdpdGggZGl2aWRlciBjbG9jayBoYXZpbmcgYQ0KPiA+IG1pbmltdW0gdmFsdWUgKGJl
-aW5nIGRpc2N1c3NlZCB3aXRoIE1pa2Ugb24gaG93IGV4YWN0bHkgaXQgc2hvdWxkDQo+ID4gYmUp
-IGFuZCBpbnN0ZWFkIG9mIHNldHRpbmcgcmF0ZSBvdmVyIGEgcGxhdGZvcm0gc3BlY2lmaWMgY2xv
-Y2ssDQo+ID4geW91IGNhbiBzZXQgcmF0ZSBvdmVyIGxjZCBjbG9jayB1c2luZyBTRVRfUkFURV9Q
-QVJFTlQgYXQgcGxhdGZvcm0NCj4gPiBsZXZlbCwgbW9yZSBiZWxvdywNCg0KPiBJIGxvb2tlZCBh
-dCB0aGF0IHBhdGNoIHlvdSB3ZXJlIHByb3Bvc2luZyBmb3IgZGE4eHgtZmIuLiAgdG8gYmUNCj4g
-aG9uZXN0LCBpdCBkaWQgbm90IHNlZW0gc2ltcGxlciB0byBtZSwgc28gSSB3YXMgc29ydCBvZiBm
-YWlsaW5nIHRvIHNlZQ0KPiB0aGUgYmVuZWZpdC4uDQoNCkl0J3Mgbm90IGFib3V0IGJlaW5nIHNp
-bXBsZSwgYnV0IG5vdCBkb2luZyB0aGUgd3Jvbmcgd2F5LCBoZXJlIHlvdSBhcmUNCnJlbHlpbmcg
-b24gYSBwbGF0Zm9ybSBzcGVjaWZpYyBjbG9jayBpbiBhIGRyaXZlciwgdGhpbmsgYWJvdXQgdGhl
-IGNhc2UNCndoZXJlIHNhbWUgSVAgaXMgdXNlZCBvbiBhbm90aGVyIHBsYXRmb3JtLiBFaXRoZXIg
-d2F5IGl0IGlzIG5vdCBhIGdvb2QNCnRoaW5nIHRvIGhhbmRsZSBwbGF0Zm9ybSBzcGVjaWZpYyBk
-ZXRhaWxzIChhYm91dCBkaXNwX2NsaykgaW4gZHJpdmVyLg0KDQpBbmQgTWlrZSBtZW50aW9uZWQg
-dGhhdCBvbmUgb2YgZGVzaWduIGdvYWxzIG9mIENDRiBpcyB0byBtb2RlbCB0aGVzZQ0Ka2luZHMg
-b2YgY2xvY2tzIGluIElQJ3MuDQoNCj4gPj4gKyAgICAgLyogQ29uZmlndXJlIHRoZSBMQ0QgY2xv
-Y2sgZGl2aXNvci4gKi8NCj4gPj4gKyAgICAgdGlsY2RjX3dyaXRlKGRldiwgTENEQ19DVFJMX1JF
-RywgTENEQ19DTEtfRElWSVNPUihkaXYpIHwNCj4gPj4gKyAgICAgICAgICAgICAgICAgICAgIExD
-RENfUkFTVEVSX01PREUpOw0KPiA+PiArDQo+ID4+ICsgICAgIGlmIChwcml2LT5yZXYgPT0gMikN
-Cj4gPj4gKyAgICAgICAgICAgICB0aWxjZGNfc2V0KGRldiwgTENEQ19DTEtfRU5BQkxFX1JFRywN
-Cj4gPj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTENEQ19WMl9ETUFfQ0xLX0VOIHwg
-TENEQ19WMl9MSUREX0NMS19FTiB8DQo+ID4+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IExDRENfVjJfQ09SRV9DTEtfRU4pOw0KPiA+DQo+ID4gTWlrZSB3YXMgc3VnZ2VzdGluZyB0byBt
-b2RlbCB0aGUgYWJvdmUgdXNpbmcgZ2F0ZS9kaXZpZGVyL2NvbXBvc2l0ZQ0KPiA+IGNsb2NrcyBv
-ZiBDQ0YgaW4gdGhlIEZCIGRyaXZlci4NCg0KPiA+PiArICAgICBwcml2LT5jbGsgPSBjbGtfZ2V0
-KGRldi0+ZGV2LCAiZmNrIik7DQo+ID4+ICsgICAgIGlmIChJU19FUlIocHJpdi0+Y2xrKSkgew0K
-PiA+PiArICAgICAgICAgICAgIGRldl9lcnIoZGV2LT5kZXYsICJmYWlsZWQgdG8gZ2V0IGZ1bmN0
-aW9uYWwgY2xvY2tcbiIpOw0KPiA+PiArICAgICAgICAgICAgIHJldCA9IC1FTk9ERVY7DQo+ID4+
-ICsgICAgICAgICAgICAgZ290byBmYWlsOw0KPiA+PiArICAgICB9DQo+ID4+ICsNCj4gPj4gKyAg
-ICAgcHJpdi0+ZGlzcF9jbGsgPSBjbGtfZ2V0KGRldi0+ZGV2LCAiZHBsbF9kaXNwX2NrIik7DQo+
-ID4+ICsgICAgIGlmIChJU19FUlIocHJpdi0+Y2xrKSkgew0KPiA+PiArICAgICAgICAgICAgIGRl
-dl9lcnIoZGV2LT5kZXYsICJmYWlsZWQgdG8gZ2V0IGRpc3BsYXkgY2xvY2tcbiIpOw0KPiA+PiAr
-ICAgICAgICAgICAgIHJldCA9IC1FTk9ERVY7DQo+ID4+ICsgICAgICAgICAgICAgZ290byBmYWls
-Ow0KPiA+PiArICAgICB9DQo+ID4NCj4gPiAiZHBsbF9kaXNwX2NrIiBpcyBhIHBsYXRmb3JtIHNw
-ZWNpZmljIG1hdHRlciwgZHJpdmVyIHNob3VsZCBub3QNCj4gPiBiZSBoYW5kbGluZyBwbGF0Zm9y
-bSBzcGVjaWZpY3MuIEFuZCB0aGlzIHdvbid0IHdvcmsgb24gRGFWaW5jaSwNCj4gPiB5b3UgY2Fu
-IHByb2JhYmx5IG1ha2UgdXNlIG9mDQo+IA0KPiBtZWFuaW5nIHRoZSBjbG9jayBoYXMgYSBkaWZm
-ZXJlbnQgbmFtZSBvbiBkYXZpbmNpLCBvcj8gIFByZXN1bWFibHkNCj4gdGhlcmUgbXVzdCBiZSBz
-b21lIGNsb2NrIGdlbmVyYXRpbmcgdGhlIHBpeGVsIGNsb2NrIGZvciB0aGUgZGlzcGxheSwNCj4g
-YnV0IEkgY29uZmVzcyB0byBub3QgYmVpbmcgdG9vIGZhbWlsaWFyIHdpdGggdGhlIGRldGFpbHMg
-b24gZGF2aW5jaS4uDQoNClRoZSBvbmx5IG9wdGlvbiBmb3IgdGhlIGRyaXZlciBpbiBEYVZpbmNp
-IGlzIHRvIGNvbmZpZ3VyZSBjbG9jayByYXRlDQp1c2luZyB0aGUgZGl2aWRlciBvZiBMQ0RDIElQ
-LCBpdCBoYXMgImZjayIsIHdoaWNoIGdpdmVzIGEgcmF0ZQ0KZGVjaWRlZCBieSBpdHMgYW5jZXN0
-b3JzLg0KDQpSZWdhcmRzDQpBZnphbA0K
+On Fri, Jan 25, 2013 at 8:15 AM, Mohammed, Afzal <afzal@ti.com> wrote:
+> Hi Rob,
+>
+> On Fri, Jan 25, 2013 at 19:29:40, Rob Clark wrote:
+>> On Fri, Jan 25, 2013 at 7:19 AM, Mohammed, Afzal <afzal@ti.com> wrote:
+>> > On Wed, Jan 23, 2013 at 04:06:22, Rob Clark wrote:
+>
+>> >> A simple DRM/KMS driver for the TI LCD Controller found in various
+>> >> smaller TI parts (AM33xx, OMAPL138, etc).  This driver uses the
+>
+>> >> +void tilcdc_crtc_update_clk(struct drm_crtc *crtc)
+>> >
+>> >> +     /* in raster mode, minimum divisor is 2: */
+>> >> +     ret = clk_set_rate(priv->disp_clk, crtc->mode.clock * 1000 * 2);
+>
+>> > These things can better be handled with divider clock having a
+>> > minimum value (being discussed with Mike on how exactly it should
+>> > be) and instead of setting rate over a platform specific clock,
+>> > you can set rate over lcd clock using SET_RATE_PARENT at platform
+>> > level, more below,
+>
+>> I looked at that patch you were proposing for da8xx-fb..  to be
+>> honest, it did not seem simpler to me, so I was sort of failing to see
+>> the benefit..
+>
+> It's not about being simple, but not doing the wrong way, here you are
+> relying on a platform specific clock in a driver, think about the case
+> where same IP is used on another platform. Either way it is not a good
+> thing to handle platform specific details (about disp_clk) in driver.
+
+Right, but I was trying to understand what was the benefit that the
+added complexity is.  I didn't realize on davinci that you are limited
+to just setting divider values (which is going to drastically limit
+the timings you can generate, although maybe not an issue if all you
+support is a fixed lcd panel).
+
+> And Mike mentioned that one of design goals of CCF is to model these
+> kinds of clocks in IP's.
+>
+>> >> +     /* Configure the LCD clock divisor. */
+>> >> +     tilcdc_write(dev, LCDC_CTRL_REG, LCDC_CLK_DIVISOR(div) |
+>> >> +                     LCDC_RASTER_MODE);
+>> >> +
+>> >> +     if (priv->rev = 2)
+>> >> +             tilcdc_set(dev, LCDC_CLK_ENABLE_REG,
+>> >> +                             LCDC_V2_DMA_CLK_EN | LCDC_V2_LIDD_CLK_EN |
+>> >> +                             LCDC_V2_CORE_CLK_EN);
+>> >
+>> > Mike was suggesting to model the above using gate/divider/composite
+>> > clocks of CCF in the FB driver.
+>
+>> >> +     priv->clk = clk_get(dev->dev, "fck");
+>> >> +     if (IS_ERR(priv->clk)) {
+>> >> +             dev_err(dev->dev, "failed to get functional clock\n");
+>> >> +             ret = -ENODEV;
+>> >> +             goto fail;
+>> >> +     }
+>> >> +
+>> >> +     priv->disp_clk = clk_get(dev->dev, "dpll_disp_ck");
+>> >> +     if (IS_ERR(priv->clk)) {
+>> >> +             dev_err(dev->dev, "failed to get display clock\n");
+>> >> +             ret = -ENODEV;
+>> >> +             goto fail;
+>> >> +     }
+>> >
+>> > "dpll_disp_ck" is a platform specific matter, driver should not
+>> > be handling platform specifics. And this won't work on DaVinci,
+>> > you can probably make use of
+>>
+>> meaning the clock has a different name on davinci, or?  Presumably
+>> there must be some clock generating the pixel clock for the display,
+>> but I confess to not being too familiar with the details on davinci..
+>
+> The only option for the driver in DaVinci is to configure clock rate
+> using the divider of LCDC IP, it has "fck", which gives a rate
+> decided by its ancestors.
+
+Well, from looking at the other patch series it seems CCF doesn't
+support minimum divider yet.  And davinci doesn't support CCF yet.  So
+at the moment all this discussion is a bit moot.  I'd propose leaving
+the driver as it is for now, because that at least makes it useful on
+am33xx.  And when CCF and davinci have the needed support in place,
+then send a patch to change the clock handling in tilcdc.  I don't
+actually have any davinci hw to test on, but I can easily test on
+am33xx.
+
+BR,
+-R
+
+> Regards
+> Afzal

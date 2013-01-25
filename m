@@ -1,39 +1,45 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Wed, 30 Jan 2013 11:59:22 +0000
-Subject: Re: [git pull] fbcon locking fixes.
-Message-Id: <CAKMK7uGR+wd6DR561WC_q20WZvf4ytO-wKUk0zKKtxrcc6M43A@mail.gmail.com>
+From: "Mohammed, Afzal" <afzal@ti.com>
+Date: Fri, 25 Jan 2013 13:19:08 +0000
+Subject: RE: [PATCH 1/4] drm/tilcdc: add TI LCD Controller DRM driver (v3)
+Message-Id: <C8443D0743D26F4388EA172BF4E2A7A93EA939BB@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.00.1301250041001.25545@skynet.skynet.ie>
-	<CA+55aFxzDv0emWgyde7iEWpgZarAGaExrKbEHFr-UcbhoeH_Cw@mail.gmail.com>
-	<CAPM=9tz6_=k1Ze5h2935-W59BCVy9KXA_z6t8inW6_-Cxw244Q@mail.gmail.com>
-	<CAPM=9txUNG_CeK+YBhcA_47BVv4Z2GAmEC_J59cY+D9nRgv54A@mail.gmail.com>
-	<51067300.2050808@canonical.com>
-In-Reply-To: <51067300.2050808@canonical.com>
+References: <1358894185-21617-1-git-send-email-robdclark@gmail.com>
+ <1358894185-21617-2-git-send-email-robdclark@gmail.com>
+In-Reply-To: <1358894185-21617-2-git-send-email-robdclark@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Maarten Lankhorst <maarten.lankhorst@canonical.com>
-Cc: Dave Airlie <airlied@gmail.com>, m.b.lankhorst@gmail.com, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI mailing list <dri-devel@lists.freedesktop.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+To: Rob Clark <robdclark@gmail.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "patches@linaro.org" <patches@linaro.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Mike Turquette <mturquette@linaro.org>
 
-On Mon, Jan 28, 2013 at 1:45 PM, Maarten Lankhorst
-<maarten.lankhorst@canonical.com> wrote:
->> There was a path going into set_con2fb_path if an fb driver was
->> already registered, I just pushed the locking out further on anyone
->> going in there.
->>
->> it boots on my EFI macbook here.
->>
-> I cherry picked those patches to my tree, and the full series no longer triggers a lockdep warning.
-> It also no longer locks up during modprobing or vga-switcheroo either.
->
-> Tested-by: Maarten Lankhorst <maarten.lankhorst@canonical.com>
-
-QA reported spurious failures in some kms_flip tests and lockdep
-splats, somehow both are fixed with the locking. I'm a bit confused
-how these issues could cause failures in the flip tests, but alas:
-
-Tested-by: Lu Hua <huax.lu@intel.com> (for all three patches).
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+SGkgUm9iLA0KDQpPbiBXZWQsIEphbiAyMywgMjAxMyBhdCAwNDowNjoyMiwgUm9iIENsYXJrIHdy
+b3RlOg0KDQo+IEEgc2ltcGxlIERSTS9LTVMgZHJpdmVyIGZvciB0aGUgVEkgTENEIENvbnRyb2xs
+ZXIgZm91bmQgaW4gdmFyaW91cw0KPiBzbWFsbGVyIFRJIHBhcnRzIChBTTMzeHgsIE9NQVBMMTM4
+LCBldGMpLiAgVGhpcyBkcml2ZXIgdXNlcyB0aGUNCg0KPiArdm9pZCB0aWxjZGNfY3J0Y191cGRh
+dGVfY2xrKHN0cnVjdCBkcm1fY3J0YyAqY3J0YykNCg0KPiArCS8qIGluIHJhc3RlciBtb2RlLCBt
+aW5pbXVtIGRpdmlzb3IgaXMgMjogKi8NCj4gKwlyZXQgPSBjbGtfc2V0X3JhdGUocHJpdi0+ZGlz
+cF9jbGssIGNydGMtPm1vZGUuY2xvY2sgKiAxMDAwICogMik7DQoNClRoZXNlIHRoaW5ncyBjYW4g
+YmV0dGVyIGJlIGhhbmRsZWQgd2l0aCBkaXZpZGVyIGNsb2NrIGhhdmluZyBhDQptaW5pbXVtIHZh
+bHVlIChiZWluZyBkaXNjdXNzZWQgd2l0aCBNaWtlIG9uIGhvdyBleGFjdGx5IGl0IHNob3VsZA0K
+YmUpIGFuZCBpbnN0ZWFkIG9mIHNldHRpbmcgcmF0ZSBvdmVyIGEgcGxhdGZvcm0gc3BlY2lmaWMg
+Y2xvY2ssDQp5b3UgY2FuIHNldCByYXRlIG92ZXIgbGNkIGNsb2NrIHVzaW5nIFNFVF9SQVRFX1BB
+UkVOVCBhdCBwbGF0Zm9ybQ0KbGV2ZWwsIG1vcmUgYmVsb3csDQoNCj4gKwkvKiBDb25maWd1cmUg
+dGhlIExDRCBjbG9jayBkaXZpc29yLiAqLw0KPiArCXRpbGNkY193cml0ZShkZXYsIExDRENfQ1RS
+TF9SRUcsIExDRENfQ0xLX0RJVklTT1IoZGl2KSB8DQo+ICsJCQlMQ0RDX1JBU1RFUl9NT0RFKTsN
+Cj4gKw0KPiArCWlmIChwcml2LT5yZXYgPT0gMikNCj4gKwkJdGlsY2RjX3NldChkZXYsIExDRENf
+Q0xLX0VOQUJMRV9SRUcsDQo+ICsJCQkJTENEQ19WMl9ETUFfQ0xLX0VOIHwgTENEQ19WMl9MSURE
+X0NMS19FTiB8DQo+ICsJCQkJTENEQ19WMl9DT1JFX0NMS19FTik7DQoNCk1pa2Ugd2FzIHN1Z2dl
+c3RpbmcgdG8gbW9kZWwgdGhlIGFib3ZlIHVzaW5nIGdhdGUvZGl2aWRlci9jb21wb3NpdGUNCmNs
+b2NrcyBvZiBDQ0YgaW4gdGhlIEZCIGRyaXZlci4NCg0KPiArCXByaXYtPmNsayA9IGNsa19nZXQo
+ZGV2LT5kZXYsICJmY2siKTsNCj4gKwlpZiAoSVNfRVJSKHByaXYtPmNsaykpIHsNCj4gKwkJZGV2
+X2VycihkZXYtPmRldiwgImZhaWxlZCB0byBnZXQgZnVuY3Rpb25hbCBjbG9ja1xuIik7DQo+ICsJ
+CXJldCA9IC1FTk9ERVY7DQo+ICsJCWdvdG8gZmFpbDsNCj4gKwl9DQo+ICsNCj4gKwlwcml2LT5k
+aXNwX2NsayA9IGNsa19nZXQoZGV2LT5kZXYsICJkcGxsX2Rpc3BfY2siKTsNCj4gKwlpZiAoSVNf
+RVJSKHByaXYtPmNsaykpIHsNCj4gKwkJZGV2X2VycihkZXYtPmRldiwgImZhaWxlZCB0byBnZXQg
+ZGlzcGxheSBjbG9ja1xuIik7DQo+ICsJCXJldCA9IC1FTk9ERVY7DQo+ICsJCWdvdG8gZmFpbDsN
+Cj4gKwl9DQoNCiJkcGxsX2Rpc3BfY2siIGlzIGEgcGxhdGZvcm0gc3BlY2lmaWMgbWF0dGVyLCBk
+cml2ZXIgc2hvdWxkIG5vdA0KYmUgaGFuZGxpbmcgcGxhdGZvcm0gc3BlY2lmaWNzLiBBbmQgdGhp
+cyB3b24ndCB3b3JrIG9uIERhVmluY2ksDQp5b3UgY2FuIHByb2JhYmx5IG1ha2UgdXNlIG9mDQoN
+Cm15IHNlcmllcyAiW1BBVENIIHYyIDAvNF0gQVJNOiBBTTMzNXg6IExDREMgcGxhdGZvcm0gc3Vw
+cG9ydCINCg0Kb3Igc29tZXRoaW5nIHNpbWlsYXIgdG8gb3ZlcmNvbWUgdGhpcy4NCg0KUmVnYXJk
+cw0KQWZ6YWwNCg0KDQo

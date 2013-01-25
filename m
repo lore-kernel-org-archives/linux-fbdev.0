@@ -1,53 +1,106 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Sat, 19 Jan 2013 06:02:53 +0000
-Subject: [GIT PULL] video: vt8500: Cleanup for 3.9
-Message-Id: <1358575377-26364-1-git-send-email-linux@prisktech.co.nz>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Fri, 25 Jan 2013 09:01:55 +0000
+Subject: [PATCH v17 7/7] drm_modes: add of_videomode helpers
+Message-Id: <1359104515-8907-8-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1359104515-8907-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1359104515-8907-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: devicetree-discuss@lists.ozlabs.org, Dave Airlie <airlied@linux.ie>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Rob Clark <robdclark@gmail.com>, Leela Krishna Amudala <leelakrishna.a@gmail.com>, "Mohammed, Afzal" <afzal@ti.com>, kernel@pengutronix.de
 
-Hi Florian,
+Add helper to get drm_display_mode from devicetree.
 
-This is a series of patches for the vt8500 framebuffer driver. Mostly
-cleanup stuff.
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Tested-by: Afzal Mohammed <Afzal@ti.com>
+Tested-by: Rob Clark <robclark@gmail.com>
+Tested-by: Leela Krishna Amudala <leelakrishna.a@gmail.com>
+---
+ drivers/gpu/drm/drm_modes.c |   33 +++++++++++++++++++++++++++++++++
+ include/drm/drmP.h          |    4 ++++
+ 2 files changed, 37 insertions(+)
 
-Non-cleanup:
-video: vt8500: Make wmt_ge_rops optional - This patch makes hardware accelerated
-raster ops optional as it doesn't work on the newly added WM8850 (yet).
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 9f3f20b..04fa6f1 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -35,6 +35,7 @@
+ #include <linux/export.h>
+ #include <drm/drmP.h>
+ #include <drm/drm_crtc.h>
++#include <video/of_videomode.h>
+ #include <video/videomode.h>
+ 
+ /**
+@@ -541,6 +542,38 @@ int drm_display_mode_from_videomode(const struct videomode *vm,
+ EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
+ #endif
+ 
++#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
++/**
++ * of_get_drm_display_mode - get a drm_display_mode from devicetree
++ * @np: device_node with the timing specification
++ * @dmode: will be set to the return value
++ * @index: index into the list of display timings in devicetree
++ *
++ * This function is expensive and should only be used, if only one mode is to be
++ * read from DT. To get multiple modes start with of_get_display_timings and
++ * work with that instead.
++ */
++int of_get_drm_display_mode(struct device_node *np,
++			    struct drm_display_mode *dmode, int index)
++{
++	struct videomode vm;
++	int ret;
++
++	ret = of_get_videomode(np, &vm, index);
++	if (ret)
++		return ret;
++
++	drm_display_mode_from_videomode(&vm, dmode);
++
++	pr_debug("%s: got %dx%d display mode from %s\n",
++		of_node_full_name(np), vm.hactive, vm.vactive, np->name);
++	drm_mode_debug_printmodeline(dmode);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_get_drm_display_mode);
++#endif
++
+ /**
+  * drm_mode_set_name - set the name on a mode
+  * @mode: name will be set in this mode
+diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+index d5c06ff..fcc9d23 100644
+--- a/include/drm/drmP.h
++++ b/include/drm/drmP.h
+@@ -85,6 +85,7 @@ struct module;
+ struct drm_file;
+ struct drm_device;
+ 
++struct device_node;
+ struct videomode;
+ 
+ #include <drm/drm_os_linux.h>
+@@ -1460,6 +1461,9 @@ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
+ 
+ extern int drm_display_mode_from_videomode(const struct videomode *vm,
+ 					   struct drm_display_mode *dmode);
++extern int of_get_drm_display_mode(struct device_node *np,
++				   struct drm_display_mode *dmode,
++				   int index);
+ 
+ /* Modesetting support */
+ extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
+-- 
+1.7.10.4
 
-Regards
-Tony Prisk
-
-
-The following changes since commit 7d1f9aeff1ee4a20b1aeb377dd0f579fe9647619:
-
-  Linux 3.8-rc4 (2013-01-17 19:25:45 -0800)
-
-are available in the git repository at:
-
-  git://server.prisktech.co.nz/git/linuxwmt.git tags/vt8500/video-3.9
-
-for you to fetch changes up to 9167fe967de331a9457e1b4d4fc211857ba3b6ab:
-
-  video: vt8500: Update descriptions in video/Kconfig (2013-01-19 18:52:28 +1300)
-
-----------------------------------------------------------------
-video: vt8500: Cleanup for 3.9
-
-----------------------------------------------------------------
-Julia Lawall (1):
-      drivers/video/wm8505fb.c: use devm_ functions
-
-Tony Prisk (3):
-      video: vt8500: Make wmt_ge_rops optional
-      video: vt8500: Remove unused platform_data/video-vt8500lcdfb.h
-      video: vt8500: Update descriptions in video/Kconfig
-
- drivers/video/Kconfig                           |   32 ++++----
- drivers/video/vt8500lcdfb.c                     |   17 +++-
- drivers/video/wm8505fb.c                        |   95 ++++++++---------------
- include/linux/platform_data/video-vt8500lcdfb.h |   31 --------
- 4 files changed, 67 insertions(+), 108 deletions(-)
- delete mode 100644 include/linux/platform_data/video-vt8500lcdfb.h

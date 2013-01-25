@@ -1,99 +1,69 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Tue, 22 Jan 2013 16:54:44 +0000
-Subject: [PATCH v3 09/12] video: da8xx-fb: obtain fb_videomode info from dt
-Message-Id: <e96df7059488fe353d2da9853a98b479b568a8f2.1358871750.git.afzal@ti.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 25 Jan 2013 06:42:59 +0000
+Subject: [patch 2/2] video/kyro: some potential divide by zero bugs
+Message-Id: <20130125064259.GD4882@elgon.mountain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358871750.git.afzal@ti.com>
-In-Reply-To: <cover.1358871750.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Mike Turquette <mturquette@linaro.org>
+To: linux-fbdev@vger.kernel.org
 
-Obtain fb_videomode details for the connected lcd panel using the
-display timing details present in DT.
+These values come from the user in kyrofb_ioctl().  There are a couple
+potential divide by zero problems and I have added tests for them.
+There were a couple tests to prevent divide by zero bugs already in the
+code that I moved next to the assignments.
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
----
- .../devicetree/bindings/video/fb-da8xx.txt          | 21 +++++++++++++++++++++
- drivers/video/da8xx-fb.c                            | 17 +++++++++++++++++
- 2 files changed, 38 insertions(+)
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-diff --git a/Documentation/devicetree/bindings/video/fb-da8xx.txt b/Documentation/devicetree/bindings/video/fb-da8xx.txt
-index 581e014..0741f78 100644
---- a/Documentation/devicetree/bindings/video/fb-da8xx.txt
-+++ b/Documentation/devicetree/bindings/video/fb-da8xx.txt
-@@ -6,6 +6,12 @@ Required properties:
- 	AM335x SoC's - "ti,am3352-lcdc", "ti,da830-lcdc"
- - reg: Address range of lcdc register set
- - interrupts: lcdc interrupt
-+- display-timings: typical videomode of lcd panel, represented as child.
-+  Refer Documentation/devicetree/bindings/video/display-timing.txt for
-+  display timing binding details. If multiple videomodes are mentioned
-+  in display timings node, typical videomode has to be mentioned as the
-+  native mode or it has to be first child (driver cares only for native
-+  videomode).
+diff --git a/drivers/video/kyro/STG4000OverlayDevice.c b/drivers/video/kyro/STG4000OverlayDevice.c
+index 84b6ea8..d03a1e4 100644
+--- a/drivers/video/kyro/STG4000OverlayDevice.c
++++ b/drivers/video/kyro/STG4000OverlayDevice.c
+@@ -365,15 +365,18 @@ int SetOverlayViewPort(volatile STG4000REG __iomem *pSTGReg,
+ 	ulSrcBottom = srcDest.ulSrcY2;
  
- Example:
+ 	ulSrc = ulSrcBottom - ulSrcTop;
+-	ulDest = srcDest.lDstY2 - srcDest.lDstY1;	/* on-screen overlay */
+-
+ 	if (ulSrc <= 1)
+ 		return -EINVAL;
++	ulDest = srcDest.lDstY2 - srcDest.lDstY1;	/* on-screen overlay */
++	if (ulDest = -1)
++		return -EINVAL;
  
-@@ -13,4 +19,19 @@ lcdc@4830e000 {
- 	compatible = "ti,am3352-lcdc", "ti,da830-lcdc";
- 	reg =  <0x4830e000 0x1000>;
- 	interrupts = <36>;
-+	display-timings {
-+		800x480p62 {
-+			clock-frequency = <30000000>;
-+			hactive = <800>;
-+			vactive = <480>;
-+			hfront-porch = <39>;
-+			hback-porch = <39>;
-+			hsync-len = <47>;
-+			vback-porch = <29>;
-+			vfront-porch = <13>;
-+			vsync-len = <2>;
-+			hsync-active = <1>;
-+			vsync-active = <1>;
-+		};
-+	};
- };
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 0beed20..0c68712 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -36,6 +36,7 @@
- #include <linux/slab.h>
- #include <linux/delay.h>
- #include <linux/lcm.h>
-+#include <video/of_display_timing.h>
- #include <video/da8xx-fb.h>
- #include <asm/div64.h>
+ 	/* First work out the position we are to display as offset from the
+ 	 * source of the buffer
+ 	 */
+ 	ulFxScale = (ulDest << 11) / ulSrc;	/* fixed point scale factor */
++	if (ulFxScale = 0)
++		return -EINVAL;
+ 	ulFxOffset = (srcDest.lDstY2 - srcDest.ulDstY2) << 11;
  
-@@ -1257,8 +1258,24 @@ static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
- {
- 	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
- 	struct fb_videomode *lcdc_info;
-+	struct device_node *np = dev->dev.of_node;
- 	int i;
+ 	ulSrcBottom = ulSrcBottom - (ulFxOffset / ulFxScale);
+@@ -430,6 +433,8 @@ int SetOverlayViewPort(volatile STG4000REG __iomem *pSTGReg,
+ 	 */
+ 	ulSrc = srcDest.ulSrcX2 - srcDest.ulSrcX1;
+ 	ulDest = srcDest.lDstX2 - srcDest.lDstX1;
++	if (ulDest = 0)
++		return -EINVAL;
  
-+	if (np) {
-+		lcdc_info = devm_kzalloc(&dev->dev,
-+					 sizeof(struct fb_videomode),
-+					 GFP_KERNEL);
-+		if (!lcdc_info) {
-+			dev_err(&dev->dev, "memory allocation failed\n");
-+			return NULL;
-+		}
-+		if (of_get_fb_videomode(np, lcdc_info, OF_USE_NATIVE_MODE)) {
-+			dev_err(&dev->dev, "timings not available in DT\n");
-+			return NULL;
-+		}
-+		return lcdc_info;
-+	}
+ 	if (srcDest.ulDstX1 > 2) {
+ 		ulLeft = srcDest.ulDstX1 + 2;
+@@ -438,14 +443,14 @@ int SetOverlayViewPort(volatile STG4000REG __iomem *pSTGReg,
+ 		ulLeft = srcDest.ulDstX1;
+ 		ulRight = srcDest.ulDstX2 + 1;
+ 	}
++	if (ulRight - ulLeft + 2 = 0)
++		return -EINVAL;
 +
- 	for (i = 0, lcdc_info = known_lcd_panels;
- 		i < ARRAY_SIZE(known_lcd_panels); i++, lcdc_info++) {
- 		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
--- 
-1.7.12
-
+ 
+ 	/* first work out the position we are to display as offset from the source of the buffer */
+ 	bResult = 1;
+ 
+ 	do {
+-		if (ulDest = 0)
+-			return -EINVAL;
+-
+ 		/* source pixels per dest pixel <<11 */
+ 		ulFxScale = ((ulSrc - 1) << 11) / (ulDest);
+ 

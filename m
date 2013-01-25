@@ -1,41 +1,77 @@
-From: "Mohammed, Afzal" <afzal@ti.com>
-Date: Thu, 24 Jan 2013 08:47:02 +0000
-Subject: RE: [PATCH v16 RESEND 0/7] of: add display helper
-Message-Id: <C8443D0743D26F4388EA172BF4E2A7A93EA928F9@DBDE01.ent.ti.com>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Fri, 25 Jan 2013 08:04:26 +0000
+Subject: Re: [PATCH v16 RESEND 0/7] of: add display helper
+Message-Id: <20130125080426.GA6937@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1358766482-6275-1-git-send-email-s.trumtrar@pengutronix.de>
  <CAF6AEGvFNA1gc_5XWqL_baEnn8DTn0R-xqui034rg3Eo-V_6Qw@mail.gmail.com>
  <20130123091202.GA11828@pengutronix.de>
  <CAL1wa8d6wXdxgVJ=c2ma2Adm-RkF3S5ga219dSrh1fFo0L9X8w@mail.gmail.com>
  <20130124081958.GA28406@pengutronix.de>
-In-Reply-To: <20130124081958.GA28406@pengutronix.de>
+ <C8443D0743D26F4388EA172BF4E2A7A93EA928F9@DBDE01.ent.ti.com>
+In-Reply-To: <C8443D0743D26F4388EA172BF4E2A7A93EA928F9@DBDE01.ent.ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Leela Krishna Amudala <leelakrishna.a@gmail.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, David Airlie <airlied@linux.ie>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Rob Clark <robdclark@gmail.com>, "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
+To: "Mohammed, Afzal" <afzal@ti.com>
+Cc: Leela Krishna Amudala <leelakrishna.a@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, David Airlie <airlied@linux.ie>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Rob Clark <robdclark@gmail.com>, "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
 
-SGkgU3RlZmZlbiwNCg0KT24gVGh1LCBKYW4gMjQsIDIwMTMgYXQgMTM6NDk6NTgsIFN0ZWZmZW4g
-VHJ1bXRyYXIgd3JvdGU6DQoNCj4gVGhhbmtzLiBJJ2xsIHVzZSB0aGF0IG9wcG9ydHVuaXR5IGZv
-ciBhIHYxNyB0aGF0IGlzIHJlYmFzZWQgb250byAzLjgtcmM0Lg0KDQpBcyB5b3UgYXJlIGdvaW5n
-IHRvIGhhdmUgYSB2MTcsIGlmIHlvdSBjYW4gZm9sZCB0aGUgZGlmZlsxXQ0KKHRoYXQgSSBtZW50
-aW9uZWQgZWFybGllcikgaW50byB0aGUgcGF0Y2gsDQoiZmJtb246IGFkZCBvZl92aWRlb21vZGUg
-aGVscGVycyIsIGl0IHdvdWxkIGJlIGhlbHBmdWwuIA0KDQpSZWdhcmRzDQpBZnphbA0KDQpbMV0N
-Cg0KZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvZmIuaCBiL2luY2x1ZGUvbGludXgvZmIuaA0K
-aW5kZXggNThiOTg2MC4uMGNlMzBkMSAxMDA2NDQNCi0tLSBhL2luY2x1ZGUvbGludXgvZmIuaA0K
-KysrIGIvaW5jbHVkZS9saW51eC9mYi5oDQpAQCAtNzE2LDkgKzcxNiwxOSBAQCBleHRlcm4gdm9p
-ZCBmYl9kZXN0cm95X21vZGVkYihzdHJ1Y3QgZmJfdmlkZW9tb2RlICptb2RlZGIpOw0KIGV4dGVy
-biBpbnQgZmJfZmluZF9tb2RlX2N2dChzdHJ1Y3QgZmJfdmlkZW9tb2RlICptb2RlLCBpbnQgbWFy
-Z2lucywgaW50IHJiKTsNCiBleHRlcm4gdW5zaWduZWQgY2hhciAqZmJfZGRjX3JlYWQoc3RydWN0
-IGkyY19hZGFwdGVyICphZGFwdGVyKTsNCiANCisjaWYgZGVmaW5lZChDT05GSUdfT0ZfVklERU9N
-T0RFKSAmJiBkZWZpbmVkKENPTkZJR19GQl9NT0RFX0hFTFBFUlMpDQogZXh0ZXJuIGludCBvZl9n
-ZXRfZmJfdmlkZW9tb2RlKHN0cnVjdCBkZXZpY2Vfbm9kZSAqbnAsDQogICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgc3RydWN0IGZiX3ZpZGVvbW9kZSAqZmIsDQogICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgaW50IGluZGV4KTsNCisjZWxzZQ0KK3N0YXRpYyBpbmxpbmUgaW50IG9m
-X2dldF9mYl92aWRlb21vZGUoc3RydWN0IGRldmljZV9ub2RlICpucCwNCisgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgc3RydWN0IGZiX3ZpZGVvbW9kZSAqZmIsDQorICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGludCBpbmRleCkNCit7DQorICAgICAgIHJl
-dHVybiAtRUlOVkFMOw0KK30NCisjZW5kaWYNCisNCiBleHRlcm4gaW50IGZiX3ZpZGVvbW9kZV9m
-cm9tX3ZpZGVvbW9kZShjb25zdCBzdHJ1Y3QgdmlkZW9tb2RlICp2bSwNCiAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgIHN0cnVjdCBmYl92aWRlb21vZGUgKmZibW9kZSk7DQoN
-Cg=
+Hi Afzal,
+
+On Thu, Jan 24, 2013 at 08:47:02AM +0000, Mohammed, Afzal wrote:
+> Hi Steffen,
+> 
+> On Thu, Jan 24, 2013 at 13:49:58, Steffen Trumtrar wrote:
+> 
+> > Thanks. I'll use that opportunity for a v17 that is rebased onto 3.8-rc4.
+> 
+> As you are going to have a v17, if you can fold the diff[1]
+> (that I mentioned earlier) into the patch,
+> "fbmon: add of_videomode helpers", it would be helpful. 
+> 
+
+I thought about it and I will not include that patch. Sorry.
+In one of the previous versions of the series I had something like that and
+it was suggested to remove it. If I leave it like it is, one gets a compile
+time error like you do. And that is correct, because you shouldn't use the
+function if you do not have of_videomode enabled. You should use one of the
+underlying functions that are non-DT and called by of_get_fb_videomode.
+
+Regards,
+Steffen
+
+> Regards
+> Afzal
+> 
+> [1]
+> 
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index 58b9860..0ce30d1 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -716,9 +716,19 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+>  extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+>  extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
+>  
+> +#if defined(CONFIG_OF_VIDEOMODE) && defined(CONFIG_FB_MODE_HELPERS)
+>  extern int of_get_fb_videomode(struct device_node *np,
+>                                struct fb_videomode *fb,
+>                                int index);
+> +#else
+> +static inline int of_get_fb_videomode(struct device_node *np,
+> +                                     struct fb_videomode *fb,
+> +                                     int index)
+> +{
+> +       return -EINVAL;
+> +}
+> +#endif
+> +
+>  extern int fb_videomode_from_videomode(const struct videomode *vm,
+>                                        struct fb_videomode *fbmode);
+> 
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

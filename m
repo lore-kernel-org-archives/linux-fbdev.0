@@ -1,37 +1,40 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 28 Jan 2013 09:33:36 +0000
-Subject: [PATCH v5 10/12] video: da8xx-fb: ensure pdata only for non-dt
-Message-Id: <7b6a238cea5097bb1b92b03bb78a0b53b423cec5.1359356015.git.afzal@ti.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 25 Jan 2013 06:42:05 +0000
+Subject: [patch 1/2] video/kyro: delete some dead code
+Message-Id: <20130125064205.GC4882@elgon.mountain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1359356015.git.afzal@ti.com>
-In-Reply-To: <cover.1359356015.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Mike Turquette <mturquette@linaro.org>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-This driver is DT probe-able, hence ensure presence of platform data
-only for non-DT boot.
+_OLDCODE is never defined.  Delete it.
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
----
- drivers/video/da8xx-fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 0c68712..1c1a616 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -1303,7 +1303,7 @@ static int fb_probe(struct platform_device *device)
- 	int ret;
- 	unsigned long ulcm;
- 
--	if (fb_pdata = NULL) {
-+	if (fb_pdata = NULL && !device->dev.of_node) {
- 		dev_err(&device->dev, "Can not get platform data\n");
- 		return -ENOENT;
+diff --git a/drivers/video/kyro/STG4000OverlayDevice.c b/drivers/video/kyro/STG4000OverlayDevice.c
+index 0aeeaa1..84b6ea8 100644
+--- a/drivers/video/kyro/STG4000OverlayDevice.c
++++ b/drivers/video/kyro/STG4000OverlayDevice.c
+@@ -430,10 +430,7 @@ int SetOverlayViewPort(volatile STG4000REG __iomem *pSTGReg,
+ 	 */
+ 	ulSrc = srcDest.ulSrcX2 - srcDest.ulSrcX1;
+ 	ulDest = srcDest.lDstX2 - srcDest.lDstX1;
+-#ifdef _OLDCODE
+-	ulLeft = srcDest.ulDstX1;
+-	ulRight = srcDest.ulDstX2;
+-#else
++
+ 	if (srcDest.ulDstX1 > 2) {
+ 		ulLeft = srcDest.ulDstX1 + 2;
+ 		ulRight = srcDest.ulDstX2 + 1;
+@@ -441,7 +438,7 @@ int SetOverlayViewPort(volatile STG4000REG __iomem *pSTGReg,
+ 		ulLeft = srcDest.ulDstX1;
+ 		ulRight = srcDest.ulDstX2 + 1;
  	}
--- 
-1.7.12
-
+-#endif
++
+ 	/* first work out the position we are to display as offset from the source of the buffer */
+ 	bResult = 1;
+ 

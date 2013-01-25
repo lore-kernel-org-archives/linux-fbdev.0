@@ -1,90 +1,125 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Sat, 19 Jan 2013 06:02:56 +0000
-Subject: [PATCH 3/4] video: vt8500: Remove unused platform_data/video-vt8500lcdfb.h
-Message-Id: <1358575377-26364-4-git-send-email-linux@prisktech.co.nz>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Fri, 25 Jan 2013 09:01:52 +0000
+Subject: [PATCH v17 4/7] fbmon: add videomode helpers
+Message-Id: <1359104515-8907-5-git-send-email-s.trumtrar@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1358575377-26364-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1358575377-26364-1-git-send-email-linux@prisktech.co.nz>
+References: <1359104515-8907-1-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1359104515-8907-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: devicetree-discuss@lists.ozlabs.org, Dave Airlie <airlied@linux.ie>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Rob Clark <robdclark@gmail.com>, Leela Krishna Amudala <leelakrishna.a@gmail.com>, "Mohammed, Afzal" <afzal@ti.com>, kernel@pengutronix.de
 
-With the conversion to devicetree only for arch-vt8500, this
-header is no longer required. This patch removes the #include
-from the two framebuffer drivers that used it, and the header file.
+Add a function to convert from the generic videomode to a fb_videomode.
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Tested-by: Afzal Mohammed <Afzal@ti.com>
+Tested-by: Rob Clark <robclark@gmail.com>
+Tested-by: Leela Krishna Amudala <leelakrishna.a@gmail.com>
 ---
- drivers/video/vt8500lcdfb.c                     |    2 --
- drivers/video/wm8505fb.c                        |    2 --
- include/linux/platform_data/video-vt8500lcdfb.h |   31 -----------------------
- 3 files changed, 35 deletions(-)
- delete mode 100644 include/linux/platform_data/video-vt8500lcdfb.h
+ drivers/video/fbmon.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h    |    4 ++++
+ 2 files changed, 56 insertions(+)
 
-diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
-index d8cc1f6..1c34821 100644
---- a/drivers/video/vt8500lcdfb.c
-+++ b/drivers/video/vt8500lcdfb.c
-@@ -30,8 +30,6 @@
- #include <linux/platform_device.h>
- #include <linux/wait.h>
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index cef6557..17ce135 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -31,6 +31,7 @@
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <video/edid.h>
++#include <video/videomode.h>
+ #ifdef CONFIG_PPC_OF
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+@@ -1373,6 +1374,57 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
+ 	kfree(timings);
+ 	return err;
+ }
++
++#if IS_ENABLED(CONFIG_VIDEOMODE)
++int fb_videomode_from_videomode(const struct videomode *vm,
++				struct fb_videomode *fbmode)
++{
++	unsigned int htotal, vtotal;
++
++	fbmode->xres = vm->hactive;
++	fbmode->left_margin = vm->hback_porch;
++	fbmode->right_margin = vm->hfront_porch;
++	fbmode->hsync_len = vm->hsync_len;
++
++	fbmode->yres = vm->vactive;
++	fbmode->upper_margin = vm->vback_porch;
++	fbmode->lower_margin = vm->vfront_porch;
++	fbmode->vsync_len = vm->vsync_len;
++
++	/* prevent division by zero in KHZ2PICOS macro */
++	fbmode->pixclock = vm->pixelclock ?
++			KHZ2PICOS(vm->pixelclock / 1000) : 0;
++
++	fbmode->sync = 0;
++	fbmode->vmode = 0;
++	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
++		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
++	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
++		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
++	if (vm->data_flags & DISPLAY_FLAGS_INTERLACED)
++		fbmode->vmode |= FB_VMODE_INTERLACED;
++	if (vm->data_flags & DISPLAY_FLAGS_DOUBLESCAN)
++		fbmode->vmode |= FB_VMODE_DOUBLE;
++	fbmode->flag = 0;
++
++	htotal = vm->hactive + vm->hfront_porch + vm->hback_porch +
++		 vm->hsync_len;
++	vtotal = vm->vactive + vm->vfront_porch + vm->vback_porch +
++		 vm->vsync_len;
++	/* prevent division by zero */
++	if (htotal && vtotal) {
++		fbmode->refresh = vm->pixelclock / (htotal * vtotal);
++	/* a mode must have htotal and vtotal != 0 or it is invalid */
++	} else {
++		fbmode->refresh = 0;
++		return -EINVAL;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
++#endif
++
+ #else
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+ {
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index c7a9571..100a176 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -19,6 +19,7 @@ struct vm_area_struct;
+ struct fb_info;
+ struct device;
+ struct file;
++struct videomode;
  
--#include <linux/platform_data/video-vt8500lcdfb.h>
--
- #include "vt8500lcdfb.h"
+ /* Definitions below are used in the parsed monitor specs */
+ #define FB_DPMS_ACTIVE_OFF	1
+@@ -714,6 +715,9 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+ extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+ extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
  
- #ifdef CONFIG_FB_WMT_GE_ROPS
-diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
-index dd28c26..8c8c129 100644
---- a/drivers/video/wm8505fb.c
-+++ b/drivers/video/wm8505fb.c
-@@ -32,8 +32,6 @@
- #include <linux/of_fdt.h>
- #include <linux/memblock.h>
- 
--#include <linux/platform_data/video-vt8500lcdfb.h>
--
- #include "wm8505fb_regs.h"
- 
- #ifdef CONFIG_FB_WMT_GE_ROPS
-diff --git a/include/linux/platform_data/video-vt8500lcdfb.h b/include/linux/platform_data/video-vt8500lcdfb.h
-deleted file mode 100644
-index 7f399c3..0000000
---- a/include/linux/platform_data/video-vt8500lcdfb.h
-+++ /dev/null
-@@ -1,31 +0,0 @@
--/*
-- *  VT8500/WM8505 Frame Buffer platform data definitions
-- *
-- *  Copyright (C) 2010 Ed Spiridonov <edo.rus@gmail.com>
-- *
-- * This software is licensed under the terms of the GNU General Public
-- * License version 2, as published by the Free Software Foundation, and
-- * may be copied, distributed, and modified under those terms.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- */
--
--#ifndef _VT8500FB_H
--#define _VT8500FB_H
--
--#include <linux/fb.h>
--
--struct vt8500fb_platform_data {
--	struct fb_videomode	mode;
--	u32			xres_virtual;
--	u32			yres_virtual;
--	u32			bpp;
--	unsigned long		video_mem_phys;
--	void			*video_mem_virt;
--	unsigned long		video_mem_len;
--};
--
--#endif /* _VT8500FB_H */
++extern int fb_videomode_from_videomode(const struct videomode *vm,
++				       struct fb_videomode *fbmode);
++
+ /* drivers/video/modedb.c */
+ #define VESA_MODEDB_SIZE 34
+ extern void fb_var_to_videomode(struct fb_videomode *mode,
 -- 
-1.7.9.5
+1.7.10.4
 

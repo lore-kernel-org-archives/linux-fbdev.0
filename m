@@ -1,71 +1,45 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Tue, 15 Jan 2013 13:54:40 +0000
-Subject: [PATCH v2 07/12] video: da8xx-fb: minimal dt support
-Message-Id: <a92e91dc6260c1ad3d5fa8c8ec04234b2b16aa81.1358251448.git.afzal@ti.com>
+From: Alexander Holler <holler@ahsoftware.de>
+Date: Fri, 25 Jan 2013 18:49:28 +0000
+Subject: [PATCH 3/3] fb: smscufx: fix hang at disconnect
+Message-Id: <1359139768-32294-3-git-send-email-holler@ahsoftware.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358251447.git.afzal@ti.com>
-In-Reply-To: <cover.1358251447.git.afzal@ti.com>
+References: <50F2A310.5010006@ahsoftware.de>
+ <1359139768-32294-1-git-send-email-holler@ahsoftware.de>
+In-Reply-To: <1359139768-32294-1-git-send-email-holler@ahsoftware.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Sekhar Nori <nsekhar@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Bernie Thompson <bernie@plugable.com>, Steve Glendinning <steve.glendinning@shawell.net>, Alexander Holler <holler@ahsoftware.de>, stable@vger.kernel.org
 
-Driver is provided a means to have the probe triggered by DT.
+When a device was disconnected the driver may hang at waiting for urbs it never
+will get. Fix this by using a timeout while waiting for the used semaphore.
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
+There is still a memory leak if a timeout happens, but at least the driver
+now continues his disconnect routine.
+
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Alexander Holler <holler@ahsoftware.de>
 ---
- .../devicetree/bindings/video/fb-da8xx.txt         |   16 ++++++++++++++++
- drivers/video/da8xx-fb.c                           |    7 +++++++
- 2 files changed, 23 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/fb-da8xx.txt
+ drivers/video/smscufx.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/fb-da8xx.txt b/Documentation/devicetree/bindings/video/fb-da8xx.txt
-new file mode 100644
-index 0000000..581e014
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/fb-da8xx.txt
-@@ -0,0 +1,16 @@
-+TI LCD Controller on DA830/DA850/AM335x SoC's
-+
-+Required properties:
-+- compatible:
-+	DA830 - "ti,da830-lcdc"
-+	AM335x SoC's - "ti,am3352-lcdc", "ti,da830-lcdc"
-+- reg: Address range of lcdc register set
-+- interrupts: lcdc interrupt
-+
-+Example:
-+
-+lcdc@4830e000 {
-+	compatible = "ti,am3352-lcdc", "ti,da830-lcdc";
-+	reg =  <0x4830e000 0x1000>;
-+	interrupts = <36>;
-+};
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index b6ea5e9..08ee8eb 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -1595,6 +1595,12 @@ static int fb_resume(struct platform_device *dev)
- #define fb_resume NULL
- #endif
+diff --git a/drivers/video/smscufx.c b/drivers/video/smscufx.c
+index 97bd662..f26fa4f 100644
+--- a/drivers/video/smscufx.c
++++ b/drivers/video/smscufx.c
+@@ -1838,8 +1838,9 @@ static void ufx_free_urb_list(struct ufx_data *dev)
  
-+static const struct of_device_id da8xx_fb_of_match[] = {
-+	{.compatible = "ti,da830-lcdc", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, da8xx_fb_of_match);
-+
- static struct platform_driver da8xx_fb_driver = {
- 	.probe = fb_probe,
- 	.remove = fb_remove,
-@@ -1603,6 +1609,7 @@ static struct platform_driver da8xx_fb_driver = {
- 	.driver = {
- 		   .name = DRIVER_NAME,
- 		   .owner = THIS_MODULE,
-+		   .of_match_table = of_match_ptr(da8xx_fb_of_match),
- 		   },
- };
+ 	/* keep waiting and freeing, until we've got 'em all */
+ 	while (count--) {
+-		/* Getting interrupted means a leak, but ok at shutdown*/
+-		ret = down_interruptible(&dev->urbs.limit_sem);
++		/* Timeout likely occurs at disconnect (resulting in a leak) */
++		ret = down_timeout_killable(&dev->urbs.limit_sem,
++						FREE_URB_TIMEOUT);
+ 		if (ret)
+ 			break;
  
 -- 
-1.7.9.5
+1.7.11.7
 

@@ -1,52 +1,23 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 07 Jan 2013 05:18:03 +0000
-Subject: [PATCH v2 09/10] video: da8xx-fb: report correct pixclock
-Message-Id: <87e8130658ff6fb27afce873b32c44543583cc73.1357303978.git.afzal@ti.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Sat, 26 Jan 2013 15:44:15 +0000
+Subject: Re: [PATCH 0/3] atmel_lcdfb: fix 16-bpp regression
+Message-Id: <20130126154415.GA25750@localhost>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1357303978.git.afzal@ti.com>
-In-Reply-To: <cover.1357303978.git.afzal-l0cyMroinI0@public.gmane.org>
+References: <1355142530-10366-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1355142530-10366-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, nsekhar-l0cyMroinI0@public.gmane.org, hvaibhav-l0cyMroinI0@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+To: linux-arm-kernel@lists.infradead.org
 
-Update "var" pixclock with the value that is configurable in hardware.
-This lets user know the actual pixclock.
+On Mon, Dec 10, 2012 at 01:28:47PM +0100, Johan Hovold wrote:
+> These patches fix a regression in 16-bpp support for older SOCs which use
+> IBGR:555 rather than BGR:565 pixel layout. Use SOC-type to determine if the
+> controller uses the intensity-bit and restore the old layout in that case.
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
----
- drivers/video/da8xx-fb.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+I understand the maintainer's been busy lately, but could someone pick
+these regression fixes up so we can get them into v3.8-rc and the stable
+trees?
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 663b3c5..c7393f1 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -690,6 +690,15 @@ static inline unsigned da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
- 	return par->lcd_fck_rate / (PICOS2KHZ(pixclock) * 1000);
- }
- 
-+static inline unsigned da8xx_fb_round_clk(struct da8xx_fb_par *par,
-+					  unsigned pixclock)
-+{
-+	unsigned div;
-+
-+	div = da8xx_fb_calc_clk_divider(par, pixclock);
-+	return KHZ2PICOS(par->lcd_fck_rate / (1000 * div));
-+}
-+
- static inline void da8xx_fb_config_clk_divider(unsigned div)
- {
- 	/* Configure the LCD clock divisor. */
-@@ -966,6 +975,8 @@ static int fb_check_var(struct fb_var_screeninfo *var,
- 	if (var->yres + var->yoffset > var->yres_virtual)
- 		var->yoffset = var->yres_virtual - var->yres;
- 
-+	var->pixclock = da8xx_fb_round_clk(par, var->pixclock);
-+
- 	return err;
- }
- 
--- 
-1.7.9.5
-
+Thanks,
+Johan

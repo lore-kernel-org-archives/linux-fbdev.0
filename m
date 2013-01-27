@@ -1,68 +1,35 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 07 Jan 2013 05:16:59 +0000
-Subject: [PATCH v2 03/10] video: da8xx-fb: use modedb helper to update var
-Message-Id: <bd3d3c09b84348259e870ad9e017bd09c37c4dfe.1357303978.git.afzal@ti.com>
+From: Wang YanQing <udknight@gmail.com>
+Date: Sun, 27 Jan 2013 06:13:32 +0000
+Subject: [PATCH]video:uvesafb: Fix dereference NULL pointer code path
+Message-Id: <20130127061331.GA4314@udknight>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1357303978.git.afzal@ti.com>
-In-Reply-To: <cover.1357303978.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, nsekhar@ti.com, hvaibhav@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
+To: FlorianSchandinat@gmx.de
+Cc: spock@gentoo.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-modedb structure is now used to store panel information, run modedb
-helper over it for initial update of "var" information instead of
-equating each fields.
+platform_device_alloc could failed and return NULL,
+we should check this before call platform_device_put.
 
-While at it, remove redundant update of bits_per_pixel.
-
-Note: pixclock is overridden with proper value using an existing code
-as currently modedb is having it in Hz instead of ps, this would be
-fixed in a later change and this overide would be removed.
-
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Wang YanQing <udknight@gmail.com>
 ---
- drivers/video/da8xx-fb.c |   18 ++----------------
- 1 file changed, 2 insertions(+), 16 deletions(-)
+ drivers/video/uvesafb.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index c8e97de..0c404ed 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -1329,6 +1329,8 @@ static int __devinit fb_probe(struct platform_device *device)
- 		par->panel_power_ctrl(1);
- 	}
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index 2f8f82d..230bd45 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -1975,7 +1975,8 @@ static int __devinit uvesafb_init(void)
+ 			err = -ENOMEM;
  
-+	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
-+
- 	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
- 		dev_err(&device->dev, "lcd_init failed\n");
- 		ret = -EFAULT;
-@@ -1381,25 +1383,9 @@ static int __devinit fb_probe(struct platform_device *device)
- 		goto err_release_pl_mem;
- 	}
- 
--	/* Initialize par */
--	da8xx_fb_info->var.bits_per_pixel = lcd_cfg->bpp;
--
--	da8xx_fb_var.xres = lcdc_info->xres;
--	da8xx_fb_var.xres_virtual = lcdc_info->xres;
--
--	da8xx_fb_var.yres         = lcdc_info->yres;
--	da8xx_fb_var.yres_virtual = lcdc_info->yres * LCD_NUM_BUFFERS;
--
- 	da8xx_fb_var.grayscale  	    lcd_cfg->panel_shade = MONOCHROME ? 1 : 0;
- 	da8xx_fb_var.bits_per_pixel = lcd_cfg->bpp;
--
--	da8xx_fb_var.hsync_len = lcdc_info->hsync_len;
--	da8xx_fb_var.vsync_len = lcdc_info->vsync_len;
--	da8xx_fb_var.right_margin = lcdc_info->right_margin;
--	da8xx_fb_var.left_margin  = lcdc_info->left_margin;
--	da8xx_fb_var.lower_margin = lcdc_info->lower_margin;
--	da8xx_fb_var.upper_margin = lcdc_info->upper_margin;
- 	da8xx_fb_var.pixclock = da8xxfb_pixel_clk_period(par);
- 
- 	/* Initialize fbinfo */
+ 		if (err) {
+-			platform_device_put(uvesafb_device);
++			if (uvesafb_device)
++				platform_device_put(uvesafb_device);
+ 			platform_driver_unregister(&uvesafb_driver);
+ 			cn_del_callback(&uvesafb_cn_id);
+ 			return err;
 -- 
-1.7.9.5
-
+1.7.11.1.116.g8228a23

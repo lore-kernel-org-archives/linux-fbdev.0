@@ -1,7 +1,7 @@
-From: Mike Turquette <mturquette@linaro.org>
-Date: Fri, 25 Jan 2013 22:44:53 +0000
-Subject: Re: RE: RE: [PATCH v4 12/12] video: da8xx-fb: CCF clock divider handling
-Message-Id: <20130125224453.10623.74434@quantum>
+From: "Mohammed, Afzal" <afzal@ti.com>
+Date: Mon, 28 Jan 2013 09:17:19 +0000
+Subject: RE: RE: RE: [PATCH v4 12/12] video: da8xx-fb: CCF clock divider handling
+Message-Id: <C8443D0743D26F4388EA172BF4E2A7A93EA943E9@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1358937685.git.afzal@ti.com>
  <fa8dab522507e087d5a94bac13dda71544911707.1358937685.git.afzal@ti.com>
@@ -9,89 +9,31 @@ References: <cover.1358937685.git.afzal@ti.com>
  <C8443D0743D26F4388EA172BF4E2A7A93EA92ADF@DBDE01.ent.ti.com>
  <20130124170044.10623.45314@quantum>
  <C8443D0743D26F4388EA172BF4E2A7A93EA9383E@DBDE01.ent.ti.com>
-In-Reply-To: <C8443D0743D26F4388EA172BF4E2A7A93EA9383E@DBDE01.ent.ti.com>
+ <20130125224453.10623.74434@quantum>
+In-Reply-To: <20130125224453.10623.74434@quantum>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Mohammed, Afzal" <afzal@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, paul@pwsan.com, rnayak@ti.com, b-cousson@ti.com
+To: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, "Valkeinen,
+ Tomi" <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 
-Quoting Mohammed, Afzal (2013-01-25 04:05:44)
-> Hi Mike,
-> 
-> On Thu, Jan 24, 2013 at 22:30:44, Mike Turquette wrote:
-> > Quoting Mohammed, Afzal (2013-01-24 03:36:02)
-> 
-> > > So there are 3 - LIDD is actually not for present use case, CORE could
-> > > be clubbed with the divider to have a composite clock. And CORE is
-> > > in functional clock path and logically it's perfectly alright to have
-> > > the composite clock.
-> 
-> > Some of the clock names are a bit generic, so a question that I'm going
-> > to repeat throughout my response: "is this clock only inside of your
-> > video IP ?"
-> 
-> Yes these three clocks are inside LCDC IP.
-> 
-> > Regarding the CORE clock, is this only inside of your IP or are you
-> > referring to the SoC CORE clock which is driven by a DPLL and clocks
-> > DDR and many other peripherals (often MMC, UART, etc)?
-> 
-> Sorry for the confusion, here CORE refers to clock inside LCDC IP. This
-> CORE should not be confused with CORE PLL. Actually I used CORE so that
-> it corresponds to the nomenclature in LCDC section of TRM.
-> 
-> > Note that this is from my past experience with OMAP, and I'm making an
-> > assumption that the clock scheme between OMAP and Da Vinci/AM335x parts
-> > isn't very different.
-> 
-> Additional detail: DaVinci doesn't have these 3 clocks controls available,
-> so these three are required only on AM335x (which has IP version 2 )
-> 
-> > Is there a public TRM I can look at?  It would help me understand this
-> > without having to ask you so many annoying questions ;)
-> 
-> No problem, http://www.ti.com/product/am3359
-> 
-> 
-> > > And now we are left with DMA, this is actually in the interface clock
-> > > path which driver in unaware. An option would be to have DMA clock
-> > > as child of CORE plus divider composite clock, even though logically
-> > > DMA can't be considered in the same path.
-> 
-> > Why is the driver unaware of the interface clk?  For instance OMAP3 had
-> > separate fclk and iclk for IPs and drivers would call clk_enable on
-> > both.  Or am I misunderstanding something?
-> 
-> HWMOD handles enabling those upon pm_runtime calls, HWMOD makes an alias
-> for main clock with "fck", but not for "ick", so currently "ick" is
-> unavailable for the driver, continued below ..
-> 
-> > In general I don't think the clock subtree should be modeled in a way
-> > that is convenient for software, but instead model the actual hardware.
-> > Trust me, if you don't model the actual hardware then you will be very
-> > confused when you come back and revisit this code in 6 months and can't
-> > remember why things are so weird looking.
-> 
-> Ok, then it seems an omap clock entry for con-id "ick" should be created
-> as follows (dpll_core_m4_ck supplies interface clock),
-> 
-> CLK("4830e000.lcdc",    "ick",          &dpll_core_m4_ck,       CK_AM33XX)
-> 
-> And then in the driver, DMA gate clock should be made a child of this clock
-> (obtained with con-id "ick").
-> 
-> Let me know your opinion on this.
-> 
-
-I think Paul W. or someone on the TI side should weigh in on your clkdev
-entries.  My main point is that the actual tree should be modeled and
-clocks shouldn't be globbed together unnecessarily.  As mentioned in the
-other mail thread you might be better off making a divider for your LCDC
-IP block and modeling each node individually.
-
-Regards,
-Mike
-
-> Regards
-> Afzal
+SGkgTWlrZSwNCg0KT24gU2F0LCBKYW4gMjYsIDIwMTMgYXQgMDQ6MTQ6NTMsIE1pa2UgVHVycXVl
+dHRlIHdyb3RlOg0KDQo+IEkgdGhpbmsgUGF1bCBXLiBvciBzb21lb25lIG9uIHRoZSBUSSBzaWRl
+IHNob3VsZCB3ZWlnaCBpbiBvbiB5b3VyIGNsa2Rldg0KPiBlbnRyaWVzLiAgTXkgbWFpbiBwb2lu
+dCBpcyB0aGF0IHRoZSBhY3R1YWwgdHJlZSBzaG91bGQgYmUgbW9kZWxlZCBhbmQNCj4gY2xvY2tz
+IHNob3VsZG4ndCBiZSBnbG9iYmVkIHRvZ2V0aGVyIHVubmVjZXNzYXJpbHkuICBBcyBtZW50aW9u
+ZWQgaW4gdGhlDQo+IG90aGVyIG1haWwgdGhyZWFkIHlvdSBtaWdodCBiZSBiZXR0ZXIgb2ZmIG1h
+a2luZyBhIGRpdmlkZXIgZm9yIHlvdXIgTENEQw0KPiBJUCBibG9jayBhbmQgbW9kZWxpbmcgZWFj
+aCBub2RlIGluZGl2aWR1YWxseS4NCg0KSXQgc2VlbXMgY29tcGxleGl0eSBvZiBkcml2ZXIgd291
+bGQgaW5jcmVhc2UgYnkgY3JlYXRpbmcgYSBuZXcgaW5oZXJpdGVkDQpkaXZpZGVyIGNsb2NrIGFu
+ZCBoYXZpbmcgYSB0b3RhbCAzLTQgY2xvY2sgbm9kZXMuIFRoZSBhZHZhbnRhZ2UgZ29pbmcNCndp
+dGggaXQgd291bGQgYmUgaGlnaGVyIGNvbmZpZ3VyYWJsZSByZXNvbHV0aW9uIGZvciBwaXhlbCBj
+bG9jay4NCkN1cnJlbnQgdXNlIGNhc2VzIHdvcmsgd2l0aG91dCBoaWdoZXIgcGl4ZWwgY2xvY2sg
+cmVzb2x1dGlvbi4NCg0KQW5kIGRybSBkcml2ZXIgcG9zdGVkIGZvciB0aGUgc2FtZSBJUCBpcyB3
+aXRob3V0IENDRiBtb2RlbGluZy4NCg0KU28gSSB3aWxsIHByZXNlbnRseSBub3QgbW9kZWwgY2xv
+Y2sgbm9kZXMgaW4gTENEQyBJUCwgbGF0ZXIgaWYgdXNlIGNhc2VzDQpiYWRseSByZXF1aXJlLCB0
+aGlzIGNhbiBiZSBkb25lIChhbmQgaWYgaXQgaGFwcGVucywgaG9wZWZ1bGx5IGJ5IHRoYXQNCkRh
+VmluY2kgd291bGQgYmUgQ0NGJ2VkIGFuZCBpdCB3b3VsZCBiZSBtb3JlIGNsZWFuIHRvIGltcGxl
+bWVudCBpdCkuDQoNClRoYW5rcyBmb3Igc2hhcmluZyB5b3VyIGlkZWFzLg0KDQpSZWdhcmRzDQpB
+ZnphbA0K

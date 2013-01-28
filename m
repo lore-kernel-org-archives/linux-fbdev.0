@@ -1,7 +1,7 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 28 Jan 2013 09:33:25 +0000
-Subject: [PATCH v5 08/12] video: da8xx-fb: invoke platform callback safely
-Message-Id: <0982f52598fdfc5140af251f998a43146fdf42dc.1359356015.git.afzal@ti.com>
+Date: Mon, 28 Jan 2013 09:32:43 +0000
+Subject: [PATCH v5 01/12] video: da8xx-fb: make io operations safe
+Message-Id: <afbc9e3c14b1b7b8eed4b084f57365eaf1c8b718.1359356015.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1359356015.git.afzal@ti.com>
 In-Reply-To: <cover.1359356015.git.afzal@ti.com>
@@ -11,29 +11,36 @@ Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Mike Turquette <mturquette@linaro.org>
 
-Ensure that platform data is present before checking whether platform
-callback is present (the one used to control backlight). So far this
-was not an issue as driver was purely non-DT triggered, but now DT
-support has been added.
+Replace __raw_readl/__raw_writel with readl/writel; this driver is
+reused on ARMv7 (AM335x SoC).
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- drivers/video/da8xx-fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+
+v2: new patch
+
+ drivers/video/da8xx-fb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 08ee8eb..0beed20 100644
+index 720604c..35a33ca 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -1347,7 +1347,7 @@ static int fb_probe(struct platform_device *device)
- 	par->dev = &device->dev;
- 	par->lcdc_clk = fb_clk;
- 	par->lcd_fck_rate = clk_get_rate(fb_clk);
--	if (fb_pdata->panel_power_ctrl) {
-+	if (fb_pdata && fb_pdata->panel_power_ctrl) {
- 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
- 		par->panel_power_ctrl(1);
- 	}
+@@ -141,12 +141,12 @@ static int frame_done_flag;
+ 
+ static inline unsigned int lcdc_read(unsigned int addr)
+ {
+-	return (unsigned int)__raw_readl(da8xx_fb_reg_base + (addr));
++	return (unsigned int)readl(da8xx_fb_reg_base + (addr));
+ }
+ 
+ static inline void lcdc_write(unsigned int val, unsigned int addr)
+ {
+-	__raw_writel(val, da8xx_fb_reg_base + (addr));
++	writel(val, da8xx_fb_reg_base + (addr));
+ }
+ 
+ struct da8xx_fb_par {
 -- 
 1.7.12
 

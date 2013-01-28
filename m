@@ -1,72 +1,47 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Tue, 22 Jan 2013 16:53:22 +0000
-Subject: [PATCH v3 07/12] video: da8xx-fb: minimal dt support
-Message-Id: <f409fe632d0697370825f6f8c117186f222e3300.1358871750.git.afzal@ti.com>
+Date: Mon, 28 Jan 2013 09:32:50 +0000
+Subject: [PATCH v5 02/12] video: da8xx-fb: fix 24bpp raster configuration
+Message-Id: <70856bfec42adfd57125d6924b3677520eb0b0fc.1359356015.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358871750.git.afzal@ti.com>
-In-Reply-To: <cover.1358871750.git.afzal@ti.com>
+References: <cover.1359356015.git.afzal@ti.com>
+In-Reply-To: <cover.1359356015.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Mike Turquette <mturquette@linaro.org>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Mike Turquette <mturquette@linaro.org>, "Manjunathappa, Prakash" <prakash.pm@ti.com>
 
-Driver is provided a means to have the probe triggered by DT.
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
 
+Set only LCD_V2_TFT_24BPP_MODE bit for 24bpp and LCD_V2_TFT_24BPP_UNPACK
+bit along with LCD_V2_TFT_24BPP_MODE for 32bpp configuration.
+
+Patch is tested on am335x-evm for 24bpp and da850-evm for 16bpp
+configurations.
+
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
- Documentation/devicetree/bindings/video/fb-da8xx.txt | 16 ++++++++++++++++
- drivers/video/da8xx-fb.c                             |  7 +++++++
- 2 files changed, 23 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/fb-da8xx.txt
+ drivers/video/da8xx-fb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/fb-da8xx.txt b/Documentation/devicetree/bindings/video/fb-da8xx.txt
-new file mode 100644
-index 0000000..581e014
---- /dev/null
-+++ b/Documentation/devicetree/bindings/video/fb-da8xx.txt
-@@ -0,0 +1,16 @@
-+TI LCD Controller on DA830/DA850/AM335x SoC's
-+
-+Required properties:
-+- compatible:
-+	DA830 - "ti,da830-lcdc"
-+	AM335x SoC's - "ti,am3352-lcdc", "ti,da830-lcdc"
-+- reg: Address range of lcdc register set
-+- interrupts: lcdc interrupt
-+
-+Example:
-+
-+lcdc@4830e000 {
-+	compatible = "ti,am3352-lcdc", "ti,da830-lcdc";
-+	reg =  <0x4830e000 0x1000>;
-+	interrupts = <36>;
-+};
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index b6ea5e9..08ee8eb 100644
+index 35a33ca..7f92f37 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -1595,6 +1595,12 @@ static int fb_resume(struct platform_device *dev)
- #define fb_resume NULL
- #endif
+@@ -550,10 +550,10 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+ 	case 4:
+ 	case 16:
+ 		break;
+-	case 24:
+-		reg |= LCD_V2_TFT_24BPP_MODE;
+ 	case 32:
+ 		reg |= LCD_V2_TFT_24BPP_UNPACK;
++	case 24:
++		reg |= LCD_V2_TFT_24BPP_MODE;
+ 		break;
  
-+static const struct of_device_id da8xx_fb_of_match[] = {
-+	{.compatible = "ti,da830-lcdc", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, da8xx_fb_of_match);
-+
- static struct platform_driver da8xx_fb_driver = {
- 	.probe = fb_probe,
- 	.remove = fb_remove,
-@@ -1603,6 +1609,7 @@ static struct platform_driver da8xx_fb_driver = {
- 	.driver = {
- 		   .name = DRIVER_NAME,
- 		   .owner = THIS_MODULE,
-+		   .of_match_table = of_match_ptr(da8xx_fb_of_match),
- 		   },
- };
- 
+ 	case 8:
 -- 
 1.7.12
 

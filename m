@@ -1,18 +1,18 @@
 From: Afzal Mohammed <afzal@ti.com>
-Date: Wed, 23 Jan 2013 11:49:52 +0000
-Subject: [PATCH v4 10/12] video: da8xx-fb: ensure pdata only for non-dt
-Message-Id: <c27b0aa57ea686d1a77195ca2ba0e2d2987310cf.1358937685.git.afzal@ti.com>
+Date: Mon, 28 Jan 2013 09:32:56 +0000
+Subject: [PATCH v5 03/12] video: da8xx-fb: enable sync lost intr for v2 ip
+Message-Id: <fb4732c185521fae61b39e3688694dc542bcd4b7.1359356015.git.afzal@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358937685.git.afzal@ti.com>
-In-Reply-To: <cover.1358937685.git.afzal@ti.com>
+References: <cover.1359356015.git.afzal@ti.com>
+In-Reply-To: <cover.1359356015.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Mike Turquette <mturquette@linaro.org>
 
-This driver is DT probe-able, hence ensure presence of platform data
-only for non-DT boot.
+interrupt handler is checking for sync lost interrupt, but it was not
+enabled, enable it.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 ---
@@ -20,18 +20,18 @@ Signed-off-by: Afzal Mohammed <afzal@ti.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 0c68712..1c1a616 100644
+index 7f92f37..ca69e01 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -1303,7 +1303,7 @@ static int fb_probe(struct platform_device *device)
- 	int ret;
- 	unsigned long ulcm;
- 
--	if (fb_pdata = NULL) {
-+	if (fb_pdata = NULL && !device->dev.of_node) {
- 		dev_err(&device->dev, "Can not get platform data\n");
- 		return -ENOENT;
- 	}
+@@ -318,7 +318,7 @@ static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
+ 			reg_int = lcdc_read(LCD_INT_ENABLE_SET_REG) |
+ 				LCD_V2_END_OF_FRAME0_INT_ENA |
+ 				LCD_V2_END_OF_FRAME1_INT_ENA |
+-				LCD_FRAME_DONE;
++				LCD_FRAME_DONE | LCD_SYNC_LOST;
+ 			lcdc_write(reg_int, LCD_INT_ENABLE_SET_REG);
+ 		}
+ 		reg_dma |= LCD_DUAL_FRAME_BUFFER_ENABLE;
 -- 
 1.7.12
 

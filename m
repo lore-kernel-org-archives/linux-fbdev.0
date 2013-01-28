@@ -1,78 +1,48 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Sun, 27 Jan 2013 22:53:38 +0000
+From: Maarten Lankhorst <maarten.lankhorst@canonical.com>
+Date: Mon, 28 Jan 2013 12:45:52 +0000
 Subject: Re: [git pull] fbcon locking fixes.
-Message-Id: <CAKMK7uF+s+bMBp0p36m29Ks9Pt0V5Ehh8k2RNr4UpTRTg4DW1w@mail.gmail.com>
+Message-Id: <51067300.2050808@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.00.1301250041001.25545@skynet.skynet.ie>
-	<20130124165055.0bceb033.akpm@linux-foundation.org>
-In-Reply-To: <20130124165055.0bceb033.akpm@linux-foundation.org>
+References: <alpine.DEB.2.00.1301250041001.25545@skynet.skynet.ie> <CA+55aFxzDv0emWgyde7iEWpgZarAGaExrKbEHFr-UcbhoeH_Cw@mail.gmail.com> <CAPM=9tz6_=k1Ze5h2935-W59BCVy9KXA_z6t8inW6_-Cxw244Q@mail.gmail.com> <CAPM=9txUNG_CeK+YBhcA_47BVv4Z2GAmEC_J59cY+D9nRgv54A@mail.gmail.com>
+In-Reply-To: <CAPM=9txUNG_CeK+YBhcA_47BVv4Z2GAmEC_J59cY+D9nRgv54A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Maarten Lankhorst <m.b.lankhorst@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, DRI mailing list <dri-devel@lists.freedesktop.org>, torvalds@linux-foundation.org
+To: Dave Airlie <airlied@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, m.b.lankhorst@gmail.com, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI mailing list <dri-devel@lists.freedesktop.org>, Andrew Morton <akpm@linux-foundation.org>
 
-On Fri, Jan 25, 2013 at 1:50 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Fri, 25 Jan 2013 00:42:37 +0000 (GMT)
-> Dave Airlie <airlied@linux.ie> wrote:
+Hey,
+
+Op 25-01-13 02:45, Dave Airlie schreef:
+> On Fri, Jan 25, 2013 at 11:06 AM, Dave Airlie <airlied@gmail.com> wrote:
+>> On Fri, Jan 25, 2013 at 10:53 AM, Linus Torvalds
+>> <torvalds@linux-foundation.org> wrote:
+>>> On Thu, Jan 24, 2013 at 4:42 PM, Dave Airlie <airlied@linux.ie> wrote:
+>>>> These patches have been sailing around long enough, waiting for a maintainer
+>>>> to reappear, so I've decided enough is enough, lockdep is kinda useful to have.
+>>> Last this was tried, these patches failed miserably.
+>>>
+>>> They caused instant lockdep splat and then a total lockup with efifb.
+>>> It may be that Takashi's patch helps fix that problem, but it's in no
+>>> way clear that it does, so the patch series isn't at all obviously
+>>> stable.
+>>>
+>>> Yes, lockdep is indeed "kinda useful", and there clearly are locking
+>>> problems in fbdev. But I'm not seeing myself pulling these for 3.8.
+>>> They've been too problematic to pull in at this late stage.
+>>>
+>> Okay I'll fix the efifb problem and then maybe queue them for -next.
+> Okay I've just sent out another fbcon patch to fix the locking harder.
 >
->> These patches have been sailing around long enough, waiting for a maintainer
->> to reappear, so I've decided enough is enough, lockdep is kinda useful to have.
->>
->> Thanks to Daniel for annoying me enough :-)
+> There was a path going into set_con2fb_path if an fb driver was
+> already registered, I just pushed the locking out further on anyone
+> going in there.
 >
-> Me too, but the patches broke Maarten's EFI driver setup:
-> https://lkml.org/lkml/2013/1/15/203.
+> it boots on my EFI macbook here.
+>
+I cherry picked those patches to my tree, and the full series no longer triggers a lockdep warning.
+It also no longer locks up during modprobing or vga-switcheroo either.
 
-Oops, didn't know that there are open issues, otherwise I'd have
-worked on fixes instead of annoying you guys. To make due I've crawled
-through fbcon code a bit to hunt for ways we could solve this mess
-better than just flinging duct-tape. All the patches extend the
-console_lock'ed area quite a bit, and I don't really like big kernel
-looks with creeping coverage. More so if they come with funny
-semantics like console_lock attached.
+Tested-by: Maarten Lankhorst <maarten.lankhorst@canonical.com>
 
-Looking at the fb notifier there are three use-cases for it:
-- Special blank/unblank handling, used by the backlight and lcd
-drivers in the fbdev subsystem. Could easily be extracted to another
-notifier chain, and seems to have no need for the console lock. Also,
-for kms drivers I don't care about this one bit.
-- suspend/resume handling for the same fbdev lcd drivers. Same applies
-(besides that it probably should get converted to proper device model
-suspend/resume stuff).
-- Runtime dependency injection between fbdev (and vga_switcheroor) for
-fbcon. This allows you to load fbcon.ko and fbdev drives in any order,
-and end up with an fbcon on each fbdev. Or not load fbcon.ko at all,
-and only use the underlying fbdev. On a quick look it also racy as
-hell.
-
-The last one is the tricky one. If we could just add a hard
-(compile-time) dependency between fbdevs and fbcon, we could rip out
-all the fb notifier madness which also involves the console_lock in
-some way and should be able to straighten out the locking. Users could
-still opt out of using the fbcon at runtime, but ofc this might break
-a really obscure setup somewhere. Quick survey of distros shows though
-that all use the sane option of built-in fbcon support.
-
-My proposal is to change the fbcon tristate to a bool and see what
-happens. If it works out for a few kernel releases, garbage-collect
-the fb_notifier for fbcon and use direct function calls instead
-(stubbed it out properly if fbcon is disabeld ofc). Or is that too
-much bending of the "thou shalt not break stuff" rule?
-
-Plan B would be to simply mash-up a console on top of kms drivers
-directly (since that's what I care about). Which has the downside that
-we'd still need to keep the drm fbdev emulation helper code around,
-since quite a few people use that to run older userspace (and even
-report some bugs, e.g. mplayer on the linux console played some tricks
-we needed to catch). And so end up with two pieces of code who's main
-job is to paint console output onto the screen.
-
-Ideas?
-
-Cheers, Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+~Maarten

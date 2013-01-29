@@ -1,37 +1,77 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Mon, 28 Jan 2013 09:32:56 +0000
-Subject: [PATCH v5 03/12] video: da8xx-fb: enable sync lost intr for v2 ip
-Message-Id: <fb4732c185521fae61b39e3688694dc542bcd4b7.1359356015.git.afzal@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 29 Jan 2013 07:36:07 +0000
+Subject: [PATCH 1/2] video: exynos_dp: add missing of_node_put()
+Message-Id: <00cb01cdfdf3$4ccdac00$e6690400$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1359356015.git.afzal@ti.com>
-In-Reply-To: <cover.1359356015.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Mike Turquette <mturquette@linaro.org>
+To: linux-fbdev@vger.kernel.org
 
-interrupt handler is checking for sync lost interrupt, but it was not
-enabled, enable it.
+of_find_node_by_name() returns a node pointer with refcount
+incremented, use of_node_put() on it when done.
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
+of_find_node_by_name() will call of_node_put() against
+the node pass to from parameter, thus we also need to call
+of_node_get(from) before calling of_find_node_by_name().
+
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/da8xx-fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/exynos/exynos_dp_core.c |   19 +++++++++++++------
+ 1 files changed, 13 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 7f92f37..ca69e01 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -318,7 +318,7 @@ static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
- 			reg_int = lcdc_read(LCD_INT_ENABLE_SET_REG) |
- 				LCD_V2_END_OF_FRAME0_INT_ENA |
- 				LCD_V2_END_OF_FRAME1_INT_ENA |
--				LCD_FRAME_DONE;
-+				LCD_FRAME_DONE | LCD_SYNC_LOST;
- 			lcdc_write(reg_int, LCD_INT_ENABLE_SET_REG);
- 		}
- 		reg_dma |= LCD_DUAL_FRAME_BUFFER_ENABLE;
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index 2ed9776..c7374c0 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -965,10 +965,11 @@ static struct exynos_dp_platdata *exynos_dp_dt_parse_pdata(struct device *dev)
+ 
+ static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
+ {
+-	struct device_node *dp_phy_node;
++	struct device_node *dp_phy_node = of_node_get(dp->dev->of_node);
+ 	u32 phy_base;
++	int ret = 0;
+ 
+-	dp_phy_node = of_find_node_by_name(dp->dev->of_node, "dptx-phy");
++	dp_phy_node = of_find_node_by_name(dp_phy_node, "dptx-phy");
+ 	if (!dp_phy_node) {
+ 		dev_err(dp->dev, "could not find dptx-phy node\n");
+ 		return -ENODEV;
+@@ -976,22 +977,28 @@ static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
+ 
+ 	if (of_property_read_u32(dp_phy_node, "reg", &phy_base)) {
+ 		dev_err(dp->dev, "faild to get reg for dptx-phy\n");
+-		return -EINVAL;
++		ret = -EINVAL;
++		goto err;
+ 	}
+ 
+ 	if (of_property_read_u32(dp_phy_node, "samsung,enable-mask",
+ 				&dp->enable_mask)) {
+ 		dev_err(dp->dev, "faild to get enable-mask for dptx-phy\n");
+-		return -EINVAL;
++		ret = -EINVAL;
++		goto err;
+ 	}
+ 
+ 	dp->phy_addr = ioremap(phy_base, SZ_4);
+ 	if (!dp->phy_addr) {
+ 		dev_err(dp->dev, "failed to ioremap dp-phy\n");
+-		return -ENOMEM;
++		ret = -ENOMEM;
++		goto err;
+ 	}
+ 
+-	return 0;
++err:
++	of_node_put(dp_phy_node);
++
++	return ret;
+ }
+ 
+ static void exynos_dp_phy_init(struct exynos_dp_device *dp)
 -- 
-1.7.12
+1.7.2.5
+
 

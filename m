@@ -1,64 +1,55 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Tue, 08 Jan 2013 09:31:39 +0000
-Subject: [PATCH 1/2] backlight: ld9040: Use devm_regulator_bulk_get API
-Message-Id: <1357636780-14783-1-git-send-email-sachin.kamat@linaro.org>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 29 Jan 2013 07:38:32 +0000
+Subject: [PATCH 2/2] video: exynos_dp: move disable_irq() to exynos_dp_suspend()
+Message-Id: <00cc01cdfdf3$a39dcb00$ead96100$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-devm_regulator_bulk_get is device managed and saves some cleanup
-and exit code.
+From: Ajay Kumar <ajaykumar.rs@samsung.com>
 
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: Donghwa Lee <dh09.lee@samsung.com>
+disable_irq() should be moved to exynos_dp_suspend(), because
+enable_irq() is called at exynos_dp_resume().
+
+Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/backlight/ld9040.c |   11 +++--------
- 1 files changed, 3 insertions(+), 8 deletions(-)
+ drivers/video/exynos/exynos_dp_core.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/backlight/ld9040.c b/drivers/video/backlight/ld9040.c
-index 24f2c9a..1b642f5 100644
---- a/drivers/video/backlight/ld9040.c
-+++ b/drivers/video/backlight/ld9040.c
-@@ -710,17 +710,15 @@ static int ld9040_probe(struct spi_device *spi)
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index c7374c0..9ba973a 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -1124,8 +1124,6 @@ static int exynos_dp_remove(struct platform_device *pdev)
+ 	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
+ 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
  
- 	mutex_init(&lcd->lock);
+-	disable_irq(dp->irq);
+-
+ 	flush_work(&dp->hotplug_work);
  
--	ret = regulator_bulk_get(lcd->dev, ARRAY_SIZE(supplies), supplies);
-+	ret = devm_regulator_bulk_get(lcd->dev, ARRAY_SIZE(supplies), supplies);
- 	if (ret) {
- 		dev_err(lcd->dev, "Failed to get regulators: %d\n", ret);
- 		return ret;
- 	}
+ 	if (pdev->dev.of_node) {
+@@ -1138,7 +1136,6 @@ static int exynos_dp_remove(struct platform_device *pdev)
  
- 	ld = lcd_device_register("ld9040", &spi->dev, lcd, &ld9040_lcd_ops);
--	if (IS_ERR(ld)) {
--		ret = PTR_ERR(ld);
--		goto out_free_regulator;
--	}
-+	if (IS_ERR(ld))
-+		return PTR_ERR(ld);
+ 	clk_disable_unprepare(dp->clock);
  
- 	lcd->ld = ld;
- 
-@@ -762,8 +760,6 @@ static int ld9040_probe(struct spi_device *spi)
- 
- out_unregister_lcd:
- 	lcd_device_unregister(lcd->ld);
--out_free_regulator:
--	regulator_bulk_free(ARRAY_SIZE(supplies), supplies);
- 
- 	return ret;
- }
-@@ -775,7 +771,6 @@ static int ld9040_remove(struct spi_device *spi)
- 	ld9040_power(lcd, FB_BLANK_POWERDOWN);
- 	backlight_device_unregister(lcd->bd);
- 	lcd_device_unregister(lcd->ld);
--	regulator_bulk_free(ARRAY_SIZE(supplies), supplies);
- 
+-
  	return 0;
  }
+ 
+@@ -1148,6 +1145,8 @@ static int exynos_dp_suspend(struct device *dev)
+ 	struct exynos_dp_platdata *pdata = dev->platform_data;
+ 	struct exynos_dp_device *dp = dev_get_drvdata(dev);
+ 
++	disable_irq(dp->irq);
++
+ 	flush_work(&dp->hotplug_work);
+ 
+ 	if (dev->of_node) {
 -- 
-1.7.4.1
+1.7.2.5
+
 

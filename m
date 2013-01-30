@@ -1,52 +1,42 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Tue, 15 Jan 2013 13:42:50 +0000
-Subject: [PATCH v3 00/10] video: da8xx-fb: runtime timing configuration
-Message-Id: <cover.1358250489.git.afzal@ti.com>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Wed, 30 Jan 2013 06:19:15 +0000
+Subject: [PATCH] pwm-backlight: handle BL_CORE_FBBLANK state
+Message-Id: <1359526755-21145-1-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Sekhar Nori <nsekhar@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Thierry Reding <thierry.reding@avionic-design.de>, Richard Purdie <rpurdie@rpsys.net>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, gnurou@gmail.com, Alexandre Courbot <acourbot@nvidia.com>
 
-Hi,
+According to include/linux/backlight.h, the fb_blank field is to be
+removed and blank status should preferably be set by setting the
+BL_CORE_FBBLANK bit of the state field. This patch ensures this
+condition is also taken into account when updating the backlight state.
 
-This series makes da8xx-fb driver (device found on DaVinci and AM335x)
-capable of handling runtime timing configuration by adding fb_set_par.
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+---
+ drivers/video/backlight/pwm_bl.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-The last change adds actual fb_set_par support. Other preceeding
-changes makes the way clear for it as well as does certain cleanup's
-on the way.
-
-This has been tested on da850 evm as is. This was also tested on
-am335x-evm & am335x-evmsk with a series that adds DT support.
-
-This is based on v3.8-rc3, this is the only change in this revision.
-The new version of this series is being posted so that this series can
-be applied easily (as __dev* are removed, there would be merge
-conflicts with v2, which was based on -rc2).
-series
-
-Regards
-Afzal
-
-v3: rebased over -rc3, no functional changes
-v2: disable raster in fb_set_par properly
-
-Afzal Mohammed (10):
-  video: da8xx-fb: fb_check_var enhancement
-  video: da8xx-fb: simplify lcd_reset
-  video: da8xx-fb: use modedb helper to update var
-  video: da8xx-fb: remove unneeded "var" initialization
-  video: da8xx-fb: store current display information
-  video: da8xx-fb: store clk rate even if !CPUFREQ
-  video: da8xx-fb: pix clk and clk div handling cleanup
-  video: da8xx-fb: store struct device *
-  video: da8xx-fb: report correct pixclock
-  video: da8xx-fb: fb_set_par support
-
- drivers/video/da8xx-fb.c |  185 ++++++++++++++++++++++++++--------------------
- 1 file changed, 105 insertions(+), 80 deletions(-)
-
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 069983c..4af6d13 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -41,10 +41,9 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+ 	int brightness = bl->props.brightness;
+ 	int max = bl->props.max_brightness;
+ 
+-	if (bl->props.power != FB_BLANK_UNBLANK)
+-		brightness = 0;
+-
+-	if (bl->props.fb_blank != FB_BLANK_UNBLANK)
++	if (bl->props.power != FB_BLANK_UNBLANK ||
++	    bl->props.fb_blank != FB_BLANK_UNBLANK ||
++	    bl->props.state & BL_CORE_FBBLANK)
+ 		brightness = 0;
+ 
+ 	if (pb->notify)
 -- 
-1.7.9.5
+1.8.1.2
 

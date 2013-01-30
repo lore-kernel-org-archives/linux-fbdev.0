@@ -1,12 +1,14 @@
-From: Russell King <tsylatun@learnnavi.org>
-Date: Wed, 30 Jan 2013 20:04:00 +0000
+From: Russell King <rmk@arm.linux.org.uk>
+Date: Wed, 30 Jan 2013 20:06:49 +0000
 Subject: BUG: circular locking dependency detected
-Message-Id: <20130130200400.GB31748@flint.arm.linux.org.uk>
+Message-Id: <20130130200648.GA13298@flint.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20130130200400.GB31748@flint.arm.linux.org.uk>
+In-Reply-To: <20130130200400.GB31748@flint.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 
 This looks like a bug in the framebuffer/console layers.  Looks like
 we have one path where we call the notifier list, and a called
@@ -118,5 +120,7 @@ Backtrace:
 [<c004886c>] (kthread+0x0/0xbc) from [<c0014510>] (ret_from_fork+0x14/0x24)
  r8:00000000 r7:00000000 r6:00000000 r5:c004886c r4:cf84dde8
 
---
+-- 
 Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:

@@ -1,78 +1,74 @@
-From: Afzal Mohammed <afzal@ti.com>
-Date: Tue, 15 Jan 2013 13:50:47 +0000
-Subject: [PATCH v2 5/5] ARM: dts: AM33XX: Add am335x-evmsk lcdc pincontrol info
-Message-Id: <b107ecb6ed8a1cb8650cf771499bf011b0d3074e.1358252955.git.afzal@ti.com>
+From: Tomasz Figa <t.figa@samsung.com>
+Date: Wed, 30 Jan 2013 15:39:01 +0000
+Subject: [RFC PATCH 2/4] video: add makefile & kconfig
+Message-Id: <1359560343-31636-3-git-send-email-t.figa@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358252955.git.afzal@ti.com>
-In-Reply-To: <cover.1358252955.git.afzal@ti.com>
+References: <1359560343-31636-1-git-send-email-t.figa@samsung.com>
+In-Reply-To: <1359560343-31636-1-git-send-email-t.figa@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, kyungmin.park@samsung.com, m.szyprowski@samsung.com, t.figa@samsung.com, tomasz.figa@gmail.com, Daniel Vetter <daniel@ffwll.ch>, Marcus Lorentzon <marcus.xm.lorentzon@stericsson.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, rob@ti.com, tomi.valkeinen@ti.com, Vikas Sajjan <vikas.sajjan@linaro.org>, inki.dae@samsung.com, dh09.lee@samsung.com, ville.syrjala@intel.com, s.nawrocki@samsung.com
 
-Update pin mux information for lcd panel on AM335X-EVMSK.
-
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Tomasz Figa <t.figa@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
+ drivers/video/Kconfig          |  1 +
+ drivers/video/Makefile         |  1 +
+ drivers/video/display/Kconfig  | 10 ++++++++++
+ drivers/video/display/Makefile |  1 +
+ 4 files changed, 13 insertions(+)
+ create mode 100644 drivers/video/display/Kconfig
+ create mode 100644 drivers/video/display/Makefile
 
-v2: add comment on pinmux entries
-
- arch/arm/boot/dts/am335x-evmsk.dts |   35 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 34 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/boot/dts/am335x-evmsk.dts b/arch/arm/boot/dts/am335x-evmsk.dts
-index a7e017b..24dde1d 100644
---- a/arch/arm/boot/dts/am335x-evmsk.dts
-+++ b/arch/arm/boot/dts/am335x-evmsk.dts
-@@ -32,7 +32,7 @@
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 68f17ee..800e98c 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2444,6 +2444,7 @@ source "drivers/video/omap/Kconfig"
+ source "drivers/video/omap2/Kconfig"
+ source "drivers/video/exynos/Kconfig"
+ source "drivers/video/backlight/Kconfig"
++source "drivers/video/display/Kconfig"
  
- 	am33xx_pinmux: pinmux@44e10800 {
- 		pinctrl-names = "default";
--		pinctrl-0 = <&user_leds_s0 &gpio_keys_s0>;
-+		pinctrl-0 = <&user_leds_s0 &gpio_keys_s0 &lcd_pins_s0>;
+ if VT
+ 	source "drivers/video/console/Kconfig"
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index f592f3b..4a091d4 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -14,6 +14,7 @@ fb-objs                           := $(fb-y)
+ obj-$(CONFIG_VT)		  += console/
+ obj-$(CONFIG_LOGO)		  += logo/
+ obj-y				  += backlight/
++obj-y				  += display/
  
- 		user_leds_s0: user_leds_s0 {
- 			pinctrl-single,pins = <
-@@ -51,6 +51,39 @@
- 				0x9c 0x27	/* gpmc_ben0_cle.gpio2_5, INPUT | MODE7 */
- 			>;
- 		};
+ obj-$(CONFIG_EXYNOS_VIDEO)     += exynos/
+ 
+diff --git a/drivers/video/display/Kconfig b/drivers/video/display/Kconfig
+new file mode 100644
+index 0000000..477192d
+--- /dev/null
++++ b/drivers/video/display/Kconfig
+@@ -0,0 +1,10 @@
++menuconfig DISPLAY_CORE
++	tristate "Display Core"
++	---help---
++	  Support common display framework for graphics devices.
 +
-+		lcd_pins_s0: lcd_pins_s0 {
-+			pinctrl-single,pins = <
-+				0x20 0x01	/* gpmc_ad8.lcd_data16, OUTPUT | MODE1 */
-+				0x24 0x01	/* gpmc_ad9.lcd_data17, OUTPUT | MODE1 */
-+				0x28 0x01	/* gpmc_ad10.lcd_data18, OUTPUT | MODE1 */
-+				0x2c 0x01	/* gpmc_ad11.lcd_data19, OUTPUT | MODE1 */
-+				0x30 0x01	/* gpmc_ad12.lcd_data20, OUTPUT | MODE1 */
-+				0x34 0x01	/* gpmc_ad13.lcd_data21, OUTPUT | MODE1 */
-+				0x38 0x01	/* gpmc_ad14.lcd_data22, OUTPUT | MODE1 */
-+				0x3c 0x01	/* gpmc_ad15.lcd_data23, OUTPUT | MODE1 */
-+				0xa0 0x00	/* lcd_data0.lcd_data0, OUTPUT | MODE0 */
-+				0xa4 0x00	/* lcd_data1.lcd_data1, OUTPUT | MODE0 */
-+				0xa8 0x00	/* lcd_data2.lcd_data2, OUTPUT | MODE0 */
-+				0xac 0x00	/* lcd_data3.lcd_data3, OUTPUT | MODE0 */
-+				0xb0 0x00	/* lcd_data4.lcd_data4, OUTPUT | MODE0 */
-+				0xb4 0x00	/* lcd_data5.lcd_data5, OUTPUT | MODE0 */
-+				0xb8 0x00	/* lcd_data6.lcd_data6, OUTPUT | MODE0 */
-+				0xbc 0x00	/* lcd_data7.lcd_data7, OUTPUT | MODE0 */
-+				0xc0 0x00	/* lcd_data8.lcd_data8, OUTPUT | MODE0 */
-+				0xc4 0x00	/* lcd_data9.lcd_data9, OUTPUT | MODE0 */
-+				0xc8 0x00	/* lcd_data10.lcd_data10, OUTPUT | MODE0 */
-+				0xcc 0x00	/* lcd_data11.lcd_data11, OUTPUT | MODE0 */
-+				0xd0 0x00	/* lcd_data12.lcd_data12, OUTPUT | MODE0 */
-+				0xd4 0x00	/* lcd_data13.lcd_data13, OUTPUT | MODE0 */
-+				0xd8 0x00	/* lcd_data14.lcd_data14, OUTPUT | MODE0 */
-+				0xdc 0x00	/* lcd_data15.lcd_data15, OUTPUT | MODE0 */
-+				0xe0 0x00	/* lcd_vsync.lcd_vsync, OUTPUT | MODE0 */
-+				0xe4 0x00	/* lcd_hsync.lcd_hsync, OUTPUT | MODE0 */
-+				0xe8 0x00	/* lcd_pclk.lcd_pclk, OUTPUT | MODE0 */
-+				0xec 0x00	/* lcd_ac_bias_en.lcd_ac_bias_en, OUTPUT | MODE0 */
-+			>;
-+		};
- 	};
- 
- 	ocp {
++if DISPLAY_CORE
++
++
++
++endif # DISPLAY_CORE
+diff --git a/drivers/video/display/Makefile b/drivers/video/display/Makefile
+new file mode 100644
+index 0000000..bd93496
+--- /dev/null
++++ b/drivers/video/display/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_DISPLAY_CORE) += display-core.o
 -- 
-1.7.9.5
+1.8.1
 

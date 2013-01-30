@@ -1,35 +1,39 @@
-From: Alex Courbot <acourbot@nvidia.com>
-Date: Wed, 30 Jan 2013 07:30:45 +0000
+From: Mark Zhang <nvmarkzhang@gmail.com>
+Date: Wed, 30 Jan 2013 07:46:09 +0000
 Subject: Re: [RFC 3/4] drm: tegra: use the Common Display Framework
-Message-Id: <5108CC25.7080709@nvidia.com>
+Message-Id: <5108CFC1.8010905@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359514939-15653-1-git-send-email-acourbot@nvidia.com> <1359514939-15653-4-git-send-email-acourbot@nvidia.com> <5108C298.1000500@gmail.com> <5108C55C.30104@nvidia.com> <20130130072406.GA17128@avionic-0098.mockup.avionic-design.de>
-In-Reply-To: <20130130072406.GA17128-RM9K5IK7kjIQXX3q8xo1gnVAuStQJXxyR5q1nwbD4aMs9pC9oP6+/A@public.gmane.org>
+References: <1359514939-15653-1-git-send-email-acourbot@nvidia.com> <1359514939-15653-4-git-send-email-acourbot@nvidia.com> <5108C298.1000500@gmail.com> <5108C55C.30104@nvidia.com>
+In-Reply-To: <5108C55C.30104-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>
-Cc: Mark Zhang <nvmarkzhang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-On 01/30/2013 04:24 PM, Thierry Reding wrote:
->>> Could you pick up a somewhat meaningful name? You know, there are too
->>> many variables with name "drm/connector/output/encoder"... :)
+On 01/30/2013 03:01 PM, Alex Courbot wrote:
+> On 01/30/2013 03:50 PM, Mark Zhang wrote:
+[...]
+> 
+>>> +    /* register display notifier */
+>>> +    output->display_notifier.dev = NULL;
 >>
->> Well, it's supposed to be abstract. From the CDF point of view it
->> could be anything besides a panel. I know this makes it an output of
->> an output, but I can't think of anything better right now.
->
-> How about renaming "this" to stream to match with what the output is in
-> CDF speak.
+>> Set "display_notifier.dev" to NULL makes we have to compare with every
+>> display entity, just like what you do in "display_notify_callback":
+>>
+>> entity->dev && entity->dev->of_node = pnode
+>>
+>> So can we get the "struct device *" of panel here? Seems currently the
+>> "of" framework doesn't allow "device_node -> device".
+> 
+> Nope. AFAICT the device might not be instanciated at this point. We
+> become aware of it for the first time in the callback function. We also
+> don't want to defer probing until the panel is parsed first, since the
+> panel might also depend on resources of the display device.
+> 
 
-Good idea.
+Agree.
 
-> And the output's output is the panel, right? Why not just
-> call it that? Even if it isn't directly connected to a panel entity but
-> has indeed a whole pipeline in between, for tegra-drm it is still a
-> panel.
-
-Makes sense indeed. Besides the DT refer it as "panel" already.
-
-Thanks,
-Alex.
+> Thanks,
+> Alex.
+> 

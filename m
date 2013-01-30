@@ -1,150 +1,51 @@
-From: Mark Zhang <nvmarkzhang@gmail.com>
-Date: Wed, 30 Jan 2013 07:20:33 +0000
+From: Alex Courbot <acourbot@nvidia.com>
+Date: Wed, 30 Jan 2013 07:27:11 +0000
 Subject: Re: [RFC 1/4] video: panel: add CLAA101WA01A panel support
-Message-Id: <5108C9C1.1090707@gmail.com>
+Message-Id: <5108CB4F.7000103@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359514939-15653-1-git-send-email-acourbot@nvidia.com> <1359514939-15653-2-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1359514939-15653-2-git-send-email-acourbot@nvidia.com>
+References: <1359514939-15653-1-git-send-email-acourbot@nvidia.com> <1359514939-15653-2-git-send-email-acourbot@nvidia.com> <5108C9C1.1090707@gmail.com>
+In-Reply-To: <5108C9C1.1090707-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexandre Courbot <acourbot@nvidia.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Stephen Warren <swarren@wwwdotorg.org>, Mark Zhang <markz@nvidia.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, gnurou@gmail.com
+To: Mark Zhang <nvmarkzhang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-On 01/30/2013 11:02 AM, Alexandre Courbot wrote:
-> Add support for the Chunghwa CLAA101WA01A display panel.
-> 
-> Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
-> ---
-[...]
-> +
-> +#include <video/display.h>
-> +
-> +#define CLAA101WA01A_WIDTH	223
-> +#define CLAA101WA01A_HEIGHT	125
+On 01/30/2013 04:20 PM, Mark Zhang wrote:
+>> +	/* OFF and STANDBY are equivalent to us */
+>> +	if (state = DISPLAY_ENTITY_STATE_STANDBY)
+>> +		state = DISPLAY_ENTITY_STATE_OFF;
+>
+> Do we need this? The "switch" below handles the same thing already.
 
-If I remember correct, the physical size of the panel can be fetched in
-EDID. If this is correct, we don't have to hard-code here.
+Indeed, I have rewritten this part actually.
 
-> +
-> +struct panel_claa101 {
-> +	struct display_entity entity;
-> +	struct regulator *vdd_pnl;
-> +	struct regulator *vdd_bl;
-> +	/* Enable GPIOs */
-> +	int pnl_enable;
-> +	int bl_enable;
-> +};
-> +
-> +#define to_panel_claa101(p)	container_of(p, struct panel_claa101, entity)
-> +
-> +static int panel_claa101_set_state(struct display_entity *entity,
-> +				   enum display_entity_state state)
-> +{
-> +	struct panel_claa101 *panel = to_panel_claa101(entity);
-> +
-> +	/* OFF and STANDBY are equivalent to us */
-> +	if (state = DISPLAY_ENTITY_STATE_STANDBY)
-> +		state = DISPLAY_ENTITY_STATE_OFF;
+>> +static int panel_claa101_get_modes(struct display_entity *entity,
+>> +				   const struct videomode **modes)
+>> +{
+>> +	/* TODO get modes from EDID? */
+>
+> Why not move the "nvidia,ddc" from encoder's DT to panel's DT? In that
+> case, you can get EDID here. I know drm has some helpers to fetch EDID
+> but I recall there are some other functions which has no drm
+> dependencies which may be suitable for you.
 
-Do we need this? The "switch" below handles the same thing already.
+I explained this in the cover letter - I'm not sure we want to have a 
+dependency on DRM here, as CDF entities could also be connected to other 
+subsystems. That's something we need to figure out. But yes, ultimately 
+this should be the place where EDID is retrieved.
 
-> +
-> +	switch (state) {
-> +	case DISPLAY_ENTITY_STATE_OFF:
-> +	case DISPLAY_ENTITY_STATE_STANDBY:
-> +		if (entity->source)
-> +			display_entity_set_stream(entity->source,
-> +						 DISPLAY_ENTITY_STREAM_STOPPED);
-> +
-> +		/* TODO error checking? */
-> +		gpio_set_value_cansleep(panel->bl_enable, 0);
-> +		usleep_range(10000, 10000);
-> +		regulator_disable(panel->vdd_bl);
-> +		usleep_range(200000, 200000);
-> +		gpio_set_value_cansleep(panel->pnl_enable, 0);
-> +		regulator_disable(panel->vdd_pnl);
-> +		break;
-> +
-> +	case DISPLAY_ENTITY_STATE_ON:
-> +		regulator_enable(panel->vdd_pnl);
-> +		gpio_set_value_cansleep(panel->pnl_enable, 1);
-> +		usleep_range(200000, 200000);
-> +		regulator_enable(panel->vdd_bl);
-> +		usleep_range(10000, 10000);
-> +		gpio_set_value_cansleep(panel->bl_enable, 1);
-> +
-> +		if (entity->source)
-> +			display_entity_set_stream(entity->source,
-> +					      DISPLAY_ENTITY_STREAM_CONTINUOUS);
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int panel_claa101_get_modes(struct display_entity *entity,
-> +				   const struct videomode **modes)
-> +{
-> +	/* TODO get modes from EDID? */
+>> +static struct of_device_id panel_claa101_of_match[] = {
+>> +	{ .compatible = "chunghwa,claa101wa01a", },
+>> +	{ },
+>> +};
+>> +MODULE_DEVICE_TABLE(of, pwm_backlight_of_match);
+>
+> What does this mean? Why we need this?
 
-Why not move the "nvidia,ddc" from encoder's DT to panel's DT? In that
-case, you can get EDID here. I know drm has some helpers to fetch EDID
-but I recall there are some other functions which has no drm
-dependencies which may be suitable for you.
+Well, now you know where I copy my code from. :)
 
-> +	return 0;
-> +}
-[...]
-> +
-> +static int __exit panel_claa101_remove(struct platform_device *pdev)
-> +{
-> +	struct panel_claa101 *panel = platform_get_drvdata(pdev);
-> +
-> +	display_entity_unregister(&panel->entity);
-> +
-> +	return 0;
-> +}
-> +
-> +#ifdef CONFIG_OF
 
-We don't need this kind of "ifdef" in upstream kernel.
+Thanks,
+Alex.
 
-> +static struct of_device_id panel_claa101_of_match[] = {
-> +	{ .compatible = "chunghwa,claa101wa01a", },
-> +	{ },
-> +};
-> +MODULE_DEVICE_TABLE(of, pwm_backlight_of_match);
-
-What does this mean? Why we need this?
-
-> +#else
-> +#endif
-> +
-> +static const struct dev_pm_ops panel_claa101_dev_pm_ops = {
-> +};
-> +
-> +static struct platform_driver panel_claa101_driver = {
-> +	.probe = panel_claa101_probe,
-> +	.remove = panel_claa101_remove,
-> +	.driver = {
-> +		.name = "panel_claa101wa01a",
-> +		.owner = THIS_MODULE,
-> +#ifdef CONFIG_PM
-> +		.pm = &panel_claa101_dev_pm_ops,
-
-If you haven't implemented this in this patch set, I suggest removing this.
-
-> +#endif
-> +#ifdef CONFIG_OF
-> +		.of_match_table	= of_match_ptr(panel_claa101_of_match),
-> +#endif
-> +	},
-> +};
-> +
-> +module_platform_driver(panel_claa101_driver);
-> +
-> +MODULE_AUTHOR("Alexandre Courbot <acourbot@nvidia.com>");
-> +MODULE_DESCRIPTION("Chunghwa CLAA101WA01A Display Panel");
-> +MODULE_LICENSE("GPL");
-> 

@@ -1,109 +1,94 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Mon, 21 Jan 2013 11:08:01 +0000
-Subject: [PATCH v16 RESEND 6/7] drm_modes: add videomode helpers
-Message-Id: <1358766482-6275-7-git-send-email-s.trumtrar@pengutronix.de>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Wed, 30 Jan 2013 03:02:17 +0000
+Subject: [RFC 2/4] tegra: ventana: add display and backlight DT nodes
+Message-Id: <1359514939-15653-3-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1358766482-6275-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1358766482-6275-1-git-send-email-s.trumtrar@pengutronix.de>
+References: <1359514939-15653-1-git-send-email-acourbot@nvidia.com>
+In-Reply-To: <1359514939-15653-1-git-send-email-acourbot@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org, David Airlie <airlied@linux.ie>
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Rob Clark <robdclark@gmail.com>, Leela Krishna Amudala <leelakrishna.a@gmail.com>, "Mohammed, Afzal" <afzal@ti.com>, kernel@pengutronix.de
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Stephen Warren <swarren@wwwdotorg.org>, Mark Zhang <markz@nvidia.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, gnurou@gmail.com, Alexandre Courbot <acourbot@nvidia.com>
 
-Add conversion from videomode to drm_display_mode
-
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
-Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
-Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Tested-by: Afzal Mohammed <Afzal@ti.com>
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
 ---
- drivers/gpu/drm/drm_modes.c |   37 +++++++++++++++++++++++++++++++++++++
- include/drm/drmP.h          |    5 +++++
- 2 files changed, 42 insertions(+)
+ arch/arm/boot/dts/tegra20-ventana.dts | 34 +++++++++++++++++++++++++++++++---
+ 1 file changed, 31 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index 59450f3..184a22d 100644
---- a/drivers/gpu/drm/drm_modes.c
-+++ b/drivers/gpu/drm/drm_modes.c
-@@ -35,6 +35,7 @@
- #include <linux/export.h>
- #include <drm/drmP.h>
- #include <drm/drm_crtc.h>
-+#include <video/videomode.h>
+diff --git a/arch/arm/boot/dts/tegra20-ventana.dts b/arch/arm/boot/dts/tegra20-ventana.dts
+index adc4754..48f4e6d 100644
+--- a/arch/arm/boot/dts/tegra20-ventana.dts
++++ b/arch/arm/boot/dts/tegra20-ventana.dts
+@@ -10,6 +10,16 @@
+ 		reg = <0x00000000 0x40000000>;
+ 	};
  
- /**
-  * drm_mode_debug_printmodeline - debug print a mode
-@@ -504,6 +505,42 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, int vdisplay, int vrefresh,
- }
- EXPORT_SYMBOL(drm_gtf_mode);
++	host1x {
++		dc@54200000 {
++			rgb {
++				status = "okay";
++				nvidia,ddc-i2c-bus = <&lcd_ddc>;
++				nvidia,panel = <&panel>;
++			};
++		};
++	};
++
+ 	pinmux {
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&state_default>;
+@@ -341,7 +351,7 @@
+ 			#size-cells = <0>;
+ 		};
  
-+#if IS_ENABLED(CONFIG_VIDEOMODE)
-+int drm_display_mode_from_videomode(const struct videomode *vm,
-+				    struct drm_display_mode *dmode)
-+{
-+	dmode->hdisplay = vm->hactive;
-+	dmode->hsync_start = dmode->hdisplay + vm->hfront_porch;
-+	dmode->hsync_end = dmode->hsync_start + vm->hsync_len;
-+	dmode->htotal = dmode->hsync_end + vm->hback_porch;
-+
-+	dmode->vdisplay = vm->vactive;
-+	dmode->vsync_start = dmode->vdisplay + vm->vfront_porch;
-+	dmode->vsync_end = dmode->vsync_start + vm->vsync_len;
-+	dmode->vtotal = dmode->vsync_end + vm->vback_porch;
-+
-+	dmode->clock = vm->pixelclock / 1000;
-+
-+	dmode->flags = 0;
-+	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
-+		dmode->flags |= DRM_MODE_FLAG_PHSYNC;
-+	else if (vm->dmt_flags & VESA_DMT_HSYNC_LOW)
-+		dmode->flags |= DRM_MODE_FLAG_NHSYNC;
-+	if (vm->dmt_flags & VESA_DMT_VSYNC_HIGH)
-+		dmode->flags |= DRM_MODE_FLAG_PVSYNC;
-+	else if (vm->dmt_flags & VESA_DMT_VSYNC_LOW)
-+		dmode->flags |= DRM_MODE_FLAG_NVSYNC;
-+	if (vm->data_flags & DISPLAY_FLAGS_INTERLACED)
-+		dmode->flags |= DRM_MODE_FLAG_INTERLACE;
-+	if (vm->data_flags & DISPLAY_FLAGS_DOUBLESCAN)
-+		dmode->flags |= DRM_MODE_FLAG_DBLSCAN;
-+	drm_mode_set_name(dmode);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
-+#endif
-+
- /**
-  * drm_mode_set_name - set the name on a mode
-  * @mode: name will be set in this mode
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index 3fd8280..5fbb0fe 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -85,6 +85,8 @@ struct module;
- struct drm_file;
- struct drm_device;
+-		i2c@1 {
++		lcd_ddc: i2c@1 {
+ 			reg = <1>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+@@ -516,6 +526,24 @@
+ 		bus-width = <8>;
+ 	};
  
-+struct videomode;
++	backlight: backlight {
++		compatible = "pwm-backlight";
++		pwms = <&pwm 2 5000000>;
 +
- #include <drm/drm_os_linux.h>
- #include <drm/drm_hashtab.h>
- #include <drm/drm_mm.h>
-@@ -1454,6 +1456,9 @@ extern struct drm_display_mode *
- drm_mode_create_from_cmdline_mode(struct drm_device *dev,
- 				  struct drm_cmdline_mode *cmd);
++		brightness-levels = <0 16 32 48 64 80 96 112 128 144 160 176 192 208 224 240 255>;
++		default-brightness-level = <10>;
++	};
++
++	panel: panel {
++		compatible = "chunghwa,claa101wa01a";
++
++		pnl-supply = <&vdd_pnl_reg>;
++		pnl-enable-gpios = <&gpio 10 0>;
++
++		bl-supply = <&vdd_bl_reg>;
++		bl-enable-gpios = <&gpio 28 0>;
++	};
++
+ 	regulators {
+ 		compatible = "simple-bus";
+ 		#address-cells = <1>;
+@@ -549,7 +577,7 @@
+ 			enable-active-high;
+ 		};
  
-+extern int drm_display_mode_from_videomode(const struct videomode *vm,
-+					   struct drm_display_mode *dmode);
-+
- /* Modesetting support */
- extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
- extern void drm_vblank_post_modeset(struct drm_device *dev, int crtc);
+-		regulator@3 {
++		vdd_pnl_reg: regulator@3 {
+ 			compatible = "regulator-fixed";
+ 			reg = <3>;
+ 			regulator-name = "vdd_pnl";
+@@ -559,7 +587,7 @@
+ 			enable-active-high;
+ 		};
+ 
+-		regulator@4 {
++		vdd_bl_reg: regulator@4 {
+ 			compatible = "regulator-fixed";
+ 			reg = <4>;
+ 			regulator-name = "vdd_bl";
 -- 
-1.7.10.4
+1.8.1.1
 

@@ -1,41 +1,60 @@
 From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Wed, 30 Jan 2013 20:19:48 +0000
+Date: Wed, 30 Jan 2013 20:27:21 +0000
 Subject: Re: [RFC 1/4] video: panel: add CLAA101WA01A panel support
-Message-Id: <51098064.7030902@wwwdotorg.org>
+Message-Id: <51098229.7080508@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359514939-15653-1-git-send-email-acourbot@nvidia.com> <1359514939-15653-2-git-send-email-acourbot@nvidia.com> <5108C9C1.1090707@gmail.com>
-In-Reply-To: <5108C9C1.1090707-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+References: <1359514939-15653-1-git-send-email-acourbot@nvidia.com> <1359514939-15653-2-git-send-email-acourbot@nvidia.com>
+In-Reply-To: <1359514939-15653-2-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mark Zhang <nvmarkzhang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+To: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
 
-On 01/30/2013 12:20 AM, Mark Zhang wrote:
-> On 01/30/2013 11:02 AM, Alexandre Courbot wrote:
->> Add support for the Chunghwa CLAA101WA01A display panel.
+On 01/29/2013 08:02 PM, Alexandre Courbot wrote:
+> Add support for the Chunghwa CLAA101WA01A display panel.
 
->> +static int panel_claa101_get_modes(struct display_entity *entity,
->> +				   const struct videomode **modes)
->> +{
->> +	/* TODO get modes from EDID? */
-> 
-> Why not move the "nvidia,ddc" from encoder's DT to panel's DT? In that
-> case, you can get EDID here. I know drm has some helpers to fetch EDID
-> but I recall there are some other functions which has no drm
-> dependencies which may be suitable for you.
+> diff --git a/Documentation/devicetree/bindings/video/display/chunghwa,claa101wa01a.txt b/Documentation/devicetree/bindings/video/display/chunghwa,claa101wa01a.txt
 
-DDC access is a property of the display controller, not the panel
-itself. The panel might be hooked up to a display controller's DDC/I2C
-channel as the target, but it isn't the host/controller of the DDC/I2C
-channel. As such, placing the nvidia,ddc property into the display
-controller node makes sense.
+> +Chunghwa CLAA101WA01A Display Panel
+> +
+> +Required properties:
+> +- compatible: "chunghwa,claa101wa01a"
+> +- pnl-supply: regulator controlling power supply to the panel
+> +- bl-supply: regulator controlling power supply to the backlight
+> +- pnl-enable-gpios: GPIO that enables the panel
+> +- bl-enable-gpios: GPIO that enables the backlight
 
-Re: the other discussion in this thread: Probably the simplest is if
-tegradrm/other-CDF-users do something like:
+So this looks like a reasonable binding to me. The one issue is that
+it's very generic, and if we go this route, we'll probably end up with
+tens or hundreds of identical or extremely similar simple bindings, and
+associated drivers.
 
-1) If DDC I2C channel available for this display channel, query DDC.
-2) If not, or perhaps also if that fails, query the panel driver for the
-mode list.
+We can avoid this instead by defining something like a "simple-lcd"
+binding, and associated driver, that will work for perhaps 90%, 95%,
+99%, even 100%(?) of panels. Just like the above, but with:
 
-That would cover all bases very simply.
+compatible="simple-panel", "chunghwa,claa101wa01a"
+
+instead, and the driver binding to "simple-panel" rather than
+"chunghwa,claa101wa01a".
+
+The driver can assume that a specific set of supplies (and perhaps
+GPIOs) is always present, and that the /sequence/ of manipulating those
+is fixed. This will avoid the need for anything like the power sequences
+code. If a particular panel doesn't fit those assumptions, including the
+exact sequence of manipulations for each state transition (which should
+be documented in the binding) then it can get a custom driver, this also
+avoiding having to define custom sequences in DT.
+
+Things that might be parameterized/optional:
+
+* Perhaps some GPIOs aren't always present.
+* If some regulators aren't SW-controllable, DT should still provide a
+fixed/dummy regulator so the driver doesn't care.
+* Wait times between regulator/GPIO/... manipulation could be specified
+in DT.
+* For panels without EDID, CDF DT bindings can provide the list of
+supported modes, otherwise we assume that the display controller that
+drives the panel has been told how to access the EDID, just like it
+would for an "external" display.

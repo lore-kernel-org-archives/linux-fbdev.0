@@ -1,85 +1,67 @@
-From: Alex Courbot <acourbot@nvidia.com>
-Date: Wed, 30 Jan 2013 07:01:48 +0000
+From: Thierry Reding <thierry.reding@avionic-design.de>
+Date: Wed, 30 Jan 2013 07:24:06 +0000
 Subject: Re: [RFC 3/4] drm: tegra: use the Common Display Framework
-Message-Id: <5108C55C.30104@nvidia.com>
+Message-Id: <20130130072406.GA17128@avionic-0098.mockup.avionic-design.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="xHFwDpU9dbj6ez1V"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359514939-15653-1-git-send-email-acourbot@nvidia.com> <1359514939-15653-4-git-send-email-acourbot@nvidia.com> <5108C298.1000500@gmail.com>
-In-Reply-To: <5108C298.1000500@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Mark Zhang <nvmarkzhang@gmail.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Stephen Warren <swarren@wwwdotorg.org>, Mark Zhang <markz@nvidia.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "gnurou@gmail.com" <gnurou@gmail.com>
+References: <1359514939-15653-1-git-send-email-acourbot@nvidia.com>
+ <1359514939-15653-4-git-send-email-acourbot@nvidia.com>
+ <5108C298.1000500@gmail.com>
+ <5108C55C.30104@nvidia.com>
+In-Reply-To: <5108C55C.30104-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+To: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Mark Zhang <nvmarkzhang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-On 01/30/2013 03:50 PM, Mark Zhang wrote:
->> @@ -147,6 +148,9 @@ struct tegra_output {
->>
->>   	struct drm_encoder encoder;
->>   	struct drm_connector connector;
->> +	struct display_entity this;
->> +	struct display_entity *output;
->
-> Could you pick up a somewhat meaningful name? You know, there are too
-> many variables with name "drm/connector/output/encoder"... :)
 
-Well, it's supposed to be abstract. From the CDF point of view it could 
-be anything besides a panel. I know this makes it an output of an 
-output, but I can't think of anything better right now.
+--xHFwDpU9dbj6ez1V
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->> +		if (entity->dev && entity->dev->of_node = pnode) {
->> +			dev_dbg(output->dev, "connecting panel\n");
->> +			output->output = display_entity_get(entity);
->> +			display_entity_connect(&output->this, output->output);
->> +		}
->> +		of_node_put(pnode);
->> +
->> +		break;
->> +
->> +	case DISPLAY_ENTITY_NOTIFIER_DISCONNECT:
->> +		if (!output->output || output->output != entity)
->> +			break;
->> +
->> +		dev_dbg(output->dev, "disconnecting panel\n");
->> +		display_entity_disconnect(&output->this, output->output);
->> +		output->output = NULL;
->> +		display_entity_put(&output->this);
->
-> No "display_entity_get" for "output->this", so I don't think we need
-> "display_entity_put" here. If you register this entity with "release"
-> callback and you wanna release "output->this", call the "release"
-> function manually.
+On Wed, Jan 30, 2013 at 04:01:48PM +0900, Alex Courbot wrote:
+> On 01/30/2013 03:50 PM, Mark Zhang wrote:
+> >>@@ -147,6 +148,9 @@ struct tegra_output {
+> >>
+> >>  	struct drm_encoder encoder;
+> >>  	struct drm_connector connector;
+> >>+	struct display_entity this;
+> >>+	struct display_entity *output;
+> >
+> >Could you pick up a somewhat meaningful name? You know, there are too
+> >many variables with name "drm/connector/output/encoder"... :)
+>=20
+> Well, it's supposed to be abstract. From the CDF point of view it
+> could be anything besides a panel. I know this makes it an output of
+> an output, but I can't think of anything better right now.
 
-Oh, this was supposed to be called on output->output actually, to 
-balance the display_entity_get() of the connect event. Thanks for 
-catching this.
+How about renaming "this" to stream to match with what the output is in
+CDF speak. And the output's output is the panel, right? Why not just
+call it that? Even if it isn't directly connected to a panel entity but
+has indeed a whole pipeline in between, for tegra-drm it is still a
+panel.
 
->> +	/* register display entity */
->> +	memset(&output->this, 0, sizeof(output->this));
->> +	output->this.dev = drm->dev;
->
-> Use "output->dev" here. Actually the device you wanna register it to
-> display entity is the "encoder"(in drm terms), not "drm->dev". If we use
-> "drm->dev" here, we will have all same device for all encoders(HDMI,
-> DSI...).
+Thierry
 
-Yes, that's absolutely right.
+--xHFwDpU9dbj6ez1V
+Content-Type: application/pgp-signature
 
->> +	/* register display notifier */
->> +	output->display_notifier.dev = NULL;
->
-> Set "display_notifier.dev" to NULL makes we have to compare with every
-> display entity, just like what you do in "display_notify_callback":
->
-> entity->dev && entity->dev->of_node = pnode
->
-> So can we get the "struct device *" of panel here? Seems currently the
-> "of" framework doesn't allow "device_node -> device".
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
 
-Nope. AFAICT the device might not be instanciated at this point. We 
-become aware of it for the first time in the callback function. We also 
-don't want to defer probing until the panel is parsed first, since the 
-panel might also depend on resources of the display device.
+iQIcBAEBAgAGBQJRCMqWAAoJEN0jrNd/PrOhezMQAJkU6eHl9u7E/Ok5OjHxq7aZ
+8K+Gmt/DTlSHw0JuVGkd4FzoFGkfx2XFYGyny9uy9cz1zIjpNkJDTMDbLHqc1RM7
+BS11WFvvZlQXXGB+b8l0MzGfeksQObbEIyPVxAT9Z70E6t/aW/89g9kikJ5FuOo1
+8IILt2c2N2HbFITmqHDEiGTb4D5MSsLrc/0wG9kqz5hGZPEwerWV7ggNiSH9D03+
+ZFiRKOdDaS2tOY0Cg1m3i72b8qrj6dsAFKx7GdXOPHjuwWBfjsKOD9iRhffgPzrJ
+/AiYEPWNYnfirF85XDQ0nsB3HTEzmViTHHZBLseTfOnJRb6YLClG7B73hILb+7f3
+AfbeHpM+Ck8c8aGvUnD4GpM5J+N4HnRMI5bn0pWcewrASGOYItLorLSBDwb1vUxv
+Thbp3pE0xbgAsdbv/lFQZHY1v+JlAfiMKzXISF1pg0OWShCjnsVv7j6eenrN7Bm1
+RlJH79q89Ana+d3hPfsdA1B20chuRXxT+i+zMR3z8f9DSsGgQwW/t6Pp59cO0XRM
+bmIh9WVP5aZ7sYRMetPbDPQa+gwThJRa2Ex8meEK5a8N9BQkK/HImDbvPmeOiffn
+vky5bQZCjByMpzh7LYBKJQ7epE63mLPq8oHhF4DJ4j0jBKlr9NrBLdGbuqPL9AwT
+4po7D0NFMR7YuaCrJeCu
+=wg57
+-----END PGP SIGNATURE-----
 
-Thanks,
-Alex.
-
+--xHFwDpU9dbj6ez1V--

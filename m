@@ -1,69 +1,55 @@
-From: Alexandre Courbot <acourbot@nvidia.com>
-Date: Thu, 31 Jan 2013 04:14:21 +0000
+From: Alexandre Courbot <gnurou@gmail.com>
+Date: Thu, 31 Jan 2013 04:24:19 +0000
 Subject: Re: [RFC 1/4] video: panel: add CLAA101WA01A panel support
-Message-Id: <CAAVeFuJkJ4cftWvSvt1YJa6c48JyJPVTu=i18yMHptZMi3DAzg@mail.gmail.com>
+Message-Id: <CAAVeFuJf9Ww7g8Q9RAG9Na1SZq2-n2MMxcAEBek52ZVG7RpL7g@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1359514939-15653-1-git-send-email-acourbot@nvidia.com>
- <1359514939-15653-2-git-send-email-acourbot@nvidia.com> <51098229.7080508@wwwdotorg.org>
-In-Reply-To: <51098229.7080508-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+ <1359514939-15653-2-git-send-email-acourbot@nvidia.com> <5108C9C1.1090707@gmail.com>
+ <51098064.7030902@wwwdotorg.org> <5109EA2A.8020204@gmail.com>
+In-Reply-To: <5109EA2A.8020204-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Cc: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: Mark Zhang <nvmarkzhang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-On Thu, Jan 31, 2013 at 5:27 AM, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> So this looks like a reasonable binding to me. The one issue is that
-> it's very generic, and if we go this route, we'll probably end up with
-> tens or hundreds of identical or extremely similar simple bindings, and
-> associated drivers.
+On Thu, Jan 31, 2013 at 12:51 PM, Mark Zhang <nvmarkzhang@gmail.com> wrote:
+>> DDC access is a property of the display controller, not the panel
+>> itself. The panel might be hooked up to a display controller's DDC/I2C
+>> channel as the target, but it isn't the host/controller of the DDC/I2C
+>> channel. As such, placing the nvidia,ddc property into the display
+>> controller node makes sense.
+>>
 >
-> We can avoid this instead by defining something like a "simple-lcd"
-> binding, and associated driver, that will work for perhaps 90%, 95%,
-> 99%, even 100%(?) of panels.
-
-That seems totally doable indeed. Actually the right way to do this
-might be by extending the simple DPI panel driver Laurent included in
-his patchset.
-
-> Just like the above, but with:
+> Yes, DC triggers the DDC access and is the host of the DDC/I2C channel.
+> So I think it's reasonable to put nvidia,ddc property into the display
+> controller node. But the video mode info in EDID which be fetched via
+> DDC is the property of the panel, so this info should be provided by
+> panel driver. Actually display controller cares about the video modes,
+> not the way to get these info. So I think it's better to do the whole
+> work like this:
 >
-> compatible="simple-panel", "chunghwa,claa101wa01a"
->
-> instead, and the driver binding to "simple-panel" rather than
-> "chunghwa,claa101wa01a".
+> 1) display controller relied on CDF to call "display_entity_get_modes"
+> 2) panel driver calls the function which is hooked to display controller
+> to get the video modes via DDC.
+> 3) if the video modes can't be fetched via DDC, panel driver provides
+> the info(either by hard-coded or defined in DT) anyway
 
-Just out of curiosity, why don't we rather define
+This would require a callback dedicated to this in display_entity and
+would break its simple design.
 
-compatible="chunghwa,claa101wa01a", "simple-panel"
+> Just like I said above, display controller should not query DDC
+> directly. Since CDF already defines these for us, display controller
+> should call CDF's functions, like: display_entity_get_modes,
+> display_entity_get_size... I think this is the key difference I wanna
+> talk about. And also in this way, display controller doesn't need to
+> care about this 2 steps logics, just call "display_entity_get_modes" is OK.
 
-in that order? I thought DT compatible strings should go from more to
-less specific. The device would still bind to "simple-panel" if no
-more specific driver exists.
-
-> The driver can assume that a specific set of supplies (and perhaps
-> GPIOs) is always present, and that the /sequence/ of manipulating those
-> is fixed. This will avoid the need for anything like the power sequences
-> code. If a particular panel doesn't fit those assumptions, including the
-> exact sequence of manipulations for each state transition (which should
-> be documented in the binding) then it can get a custom driver, this also
-> avoiding having to define custom sequences in DT.
->
-> Things that might be parameterized/optional:
->
-> * Perhaps some GPIOs aren't always present.
-> * If some regulators aren't SW-controllable, DT should still provide a
-> fixed/dummy regulator so the driver doesn't care.
-
-How about making all regulators and GPIO optional in the driver?
-
-> * Wait times between regulator/GPIO/... manipulation could be specified
-> in DT.
-> * For panels without EDID, CDF DT bindings can provide the list of
-> supported modes, otherwise we assume that the display controller that
-> drives the panel has been told how to access the EDID, just like it
-> would for an "external" display.
-
-Excellent. Thanks for the feedback.
+Well the fact is that it *is* the display controller that queries DDC
+directly. The panel is just a bus here, and the EDID EEPROM could
+perfectly work without it. If you model what you described with DT
+nodes, I'm afraid you will end up with something both complex (with DC
+node referencing panel node and back again for the EDID bus) and that
+does not picture reality accurately.
 
 Alex.

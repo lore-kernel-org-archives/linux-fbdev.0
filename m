@@ -1,54 +1,68 @@
 From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Thu, 31 Jan 2013 17:20:56 +0000
+Date: Thu, 31 Jan 2013 17:23:17 +0000
 Subject: Re: [RFC 1/4] video: panel: add CLAA101WA01A panel support
-Message-Id: <510AA7F8.7070000@wwwdotorg.org>
+Message-Id: <510AA885.5000603@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359514939-15653-1-git-send-email-acourbot@nvidia.com> <1359514939-15653-2-git-send-email-acourbot@nvidia.com> <5108C9C1.1090707@gmail.com> <51098064.7030902@wwwdotorg.org> <5109EA2A.8020204@gmail.com>
-In-Reply-To: <5109EA2A.8020204@gmail.com>
+References: <1359514939-15653-1-git-send-email-acourbot@nvidia.com> <1359514939-15653-2-git-send-email-acourbot@nvidia.com> <51098229.7080508@wwwdotorg.org> <CAAVeFuJkJ4cftWvSvt1YJa6c48JyJPVTu=i18yMHptZMi3DAzg@mail.gmail.com>
+In-Reply-To: <CAAVeFuJkJ4cftWvSvt1YJa6c48JyJPVTu=i18yMHptZMi3DAzg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mark Zhang <nvmarkzhang@gmail.com>
-Cc: Alexandre Courbot <acourbot@nvidia.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, gnurou@gmail.com
+To: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-On 01/30/2013 08:51 PM, Mark Zhang wrote:
-> On 01/31/2013 04:19 AM, Stephen Warren wrote:
->> On 01/30/2013 12:20 AM, Mark Zhang wrote:
->>> On 01/30/2013 11:02 AM, Alexandre Courbot wrote:
->>>> Add support for the Chunghwa CLAA101WA01A display panel.
+On 01/30/2013 09:14 PM, Alexandre Courbot wrote:
+> On Thu, Jan 31, 2013 at 5:27 AM, Stephen Warren <swarren@wwwdotorg.org> wrote:
+>> So this looks like a reasonable binding to me. The one issue is that
+>> it's very generic, and if we go this route, we'll probably end up with
+>> tens or hundreds of identical or extremely similar simple bindings, and
+>> associated drivers.
 >>
->>>> +static int panel_claa101_get_modes(struct display_entity *entity,
->>>> +				   const struct videomode **modes)
->>>> +{
->>>> +	/* TODO get modes from EDID? */
->>>
->>> Why not move the "nvidia,ddc" from encoder's DT to panel's DT? In that
->>> case, you can get EDID here. I know drm has some helpers to fetch EDID
->>> but I recall there are some other functions which has no drm
->>> dependencies which may be suitable for you.
->>
->> DDC access is a property of the display controller, not the panel
->> itself. The panel might be hooked up to a display controller's DDC/I2C
->> channel as the target, but it isn't the host/controller of the DDC/I2C
->> channel. As such, placing the nvidia,ddc property into the display
->> controller node makes sense.
+>> We can avoid this instead by defining something like a "simple-lcd"
+>> binding, and associated driver, that will work for perhaps 90%, 95%,
+>> 99%, even 100%(?) of panels.
 > 
-> Yes, DC triggers the DDC access and is the host of the DDC/I2C channel.
-> So I think it's reasonable to put nvidia,ddc property into the display
-> controller node. But the video mode info in EDID which be fetched via
-> DDC is the property of the panel, so this info should be provided by
-> panel driver.
+> That seems totally doable indeed. Actually the right way to do this
+> might be by extending the simple DPI panel driver Laurent included in
+> his patchset.
+> 
+>> Just like the above, but with:
+>>
+>> compatible="simple-panel", "chunghwa,claa101wa01a"
+>>
+>> instead, and the driver binding to "simple-panel" rather than
+>> "chunghwa,claa101wa01a".
+> 
+> Just out of curiosity, why don't we rather define
+> 
+> compatible="chunghwa,claa101wa01a", "simple-panel"
+> 
+> in that order? I thought DT compatible strings should go from more to
+> less specific. The device would still bind to "simple-panel" if no
+> more specific driver exists.
 
-No, that makes absolutely no sense at all in the EDID case.
+Yes, that's correct; I "typo"d the example I gave.
 
-By the same argument, we'd need a panel driver for every external
-monitor which implemented EDID, just to transfer the EDID results from
-the display controller's DDC channel into the panel driver and back into
-the display controller code, which wants the mode list.
+>> The driver can assume that a specific set of supplies (and perhaps
+>> GPIOs) is always present, and that the /sequence/ of manipulating those
+>> is fixed. This will avoid the need for anything like the power sequences
+>> code. If a particular panel doesn't fit those assumptions, including the
+>> exact sequence of manipulations for each state transition (which should
+>> be documented in the binding) then it can get a custom driver, this also
+>> avoiding having to define custom sequences in DT.
+>>
+>> Things that might be parameterized/optional:
+>>
+>> * Perhaps some GPIOs aren't always present.
+>> * If some regulators aren't SW-controllable, DT should still provide a
+>> fixed/dummy regulator so the driver doesn't care.
+> 
+> How about making all regulators and GPIO optional in the driver?
 
-Again, if the mode list is coming from DDC, the display controller
-should retrieve it in exactly the same way it retrieves it for any
-external monitor - by direct control of the DDC channel to read the
-EDID. The only time it makes sense for the panel driver to get involved
-in supplying the mode list is when there's no EDID, so the list must be
-hard-coded into the driver.
+The general feedback I've received is that regulators should always be
+present, and simply implemented by fixed/dummy regulators if missing in
+a particular board design, rather than having the driver code handle
+them being optional. This certainly does simplify the driver, since it
+can always unconditionally program the regulator irrespective of whether
+it's fixed/dummy or not.
+

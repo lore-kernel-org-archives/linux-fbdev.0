@@ -1,55 +1,65 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Thu, 31 Jan 2013 09:38:23 +0000
+From: Sedat Dilek <sedat.dilek@gmail.com>
+Date: Thu, 31 Jan 2013 10:12:05 +0000
 Subject: Re: BUG: circular locking dependency detected
-Message-Id: <CAKMK7uGF8jfOX8gbLO1=419eKUAbMtRjAnoDKSTR567D3HKwTg@mail.gmail.com>
+Message-Id: <CA+icZUVHrGcGnRcBQF1HLsR4HKOjLsOi6MppPnZCuh8K=wMHmA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130130200648.GA13298@flint.arm.linux.org.uk>
-	<20130130215211.GA28418@flint.arm.linux.org.uk>
-	<CAKMK7uHEggaGfLTq4c3MfY7csQSFpb=kRwdbJUQMN9Cz9K=V4A@mail.gmail.com>
-	<20130130221946.GA14801@flint.arm.linux.org.uk>
-	<CA+55aFyRHK3dmwQf_mdfB18dmoaRZqBG9FvHRqTs7cqBjgUs+g@mail.gmail.com>
-	<CAPM=9tz6YBh2o3T8Ogt4K=wxSrC3Jc4PCJMzfpbyY=B132fA5g@mail.gmail.com>
-	<20130131001339.GC14801@flint.arm.linux.org.uk>
-	<CA+55aFxfeXWAiXV18qGgOk9+2HHiD7LUuyk55brHFXd+_c6eZQ@mail.gmail.com>
-	<20130131054002.GA3697@kroah.com>
-	<CAKMK7uGUrvh2dXza_b288kVdztiLjSCNpH304oBQgg_ZonEnzw@mail.gmail.com>
-	<20130131092146.GB3361@kroah.com>
-In-Reply-To: <20130131092146.GB3361@kroah.com>
+References: <20130130200400.GB31748@flint.arm.linux.org.uk>
+In-Reply-To: <20130130200400.GB31748@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Russell King <rmk@arm.linux.org.uk>, Dave Airlie <airlied@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>
+To: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Dave Airlie <airlied@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <gregkh@suse.de>, DRI <dri-devel@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, linux-next <linux-next@vger.kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>, Andrew Morton <akpm@linux-foundation.org>, linux-mm <linux-mm@kvack.org>, Takashi Iwai <tiwai@suse.de>
 
-On Thu, Jan 31, 2013 at 10:21 AM, Greg Kroah-Hartman
+[ CCing Linux-Next and MMOTM folks ]
+
+Original posting from Daniel see [0]
+
+[ QUOTE ]
+On Thu, Jan 31, 2013 at 6:40 AM, Greg Kroah-Hartman
 <gregkh@linuxfoundation.org> wrote:
->> Can you please also pick up the (currently) three locking fixups
->> around fbcon? Just so that we don't repeat the same fun where people
->> complain about lockdep splats, but the fixes are stuck somewhere. And
->> I guess Dave would be happy to not end up as fbcon maintainer ;-) He
->> has a git branch with them at
->> http://cgit.freedesktop.org/~airlied/linux/log/?h=FBcon-locking-fixes
->> though I have a small bikeshed on his last patch pending.
->
-> Care to just send me the patches through email when you all get done
-> bikesheding?  And for some reason I thought Andrew was going to handle
-> these fbcon patches, but if not, I'll be glad to take them.
+> On Thu, Jan 31, 2013 at 11:26:53AM +1100, Linus Torvalds wrote:
+>> On Thu, Jan 31, 2013 at 11:13 AM, Russell King <rmk@arm.linux.org.uk> wr=
+ote:
+>> >
+>> > Which may or may not be a good thing depending how you look at it; it
+>> > means that once your kernel blanks, you get a lockdep dump.  At that
+>> > point you lose lockdep checking for everything else because lockdep
+>> > disables itself after the first dump.
+>>
+>> Fair enough, we may want to revert the lockdep checking for
+>> console_lock, and make re-enabling it part of the patch-series that
+>> fixes the locking.
+>>
+>> Daniel/Dave? Does that sound reasonable?
 
-Yeah, I'll annoy people again with patches until they're merged ;-)
-Iirc Andrew picked them due to lack of an fbcon maintainer, and
-everyone else likes to pass the bucket. Having looked through the code
-a bit, imo understandable ...
+Yeah, sounds good.
 
-btw, I've started to look into how we could fix the locking madness
-around fbcon for good instead of with duct-tape [1]. I'll try to
-discuss this with a few fbdev guys at fosdem (some at least should be
-there). Certainly a long-term thing, but comments from whomever gets
-volunteered to shepherd fbcon would be great.
+> Reverting the patch is fine with me.  Just let me know so I can queue it
+> up again for 3.9.
 
-Cheers, Daniel
+Can you please also pick up the (currently) three locking fixups
+around fbcon? Just so that we don't repeat the same fun where people
+complain about lockdep splats, but the fixes are stuck somewhere. And
+I guess Dave would be happy to not end up as fbcon maintainer ;-) He
+has a git branch with them at
+http://cgit.freedesktop.org/~airlied/linux/log/?h=FBcon-locking-fixes
+though I have a small bikeshed on his last patch pending.
+-Daniel
+[ /QUOTE ]
 
-1: http://www.mail-archive.com/dri-devel@lists.freedesktop.org/msg33535.html
---=20
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+Did the 3rd patch go also to mmotm tree and got marked for Linux-Next inclu=
+sion?
+Best would be to have it in mainline, finally.
+Please, fix that for-3.8!
+
+Thanks to all volunteers (Alan, Andrew, Takashi Iwai (Sorry, dunno
+which is 1st and last name), Daniel and finally Dave) trying to get
+this incredible pain-in-the-a** upstream :-).
+
+- Sedat -
+
+[0] http://marc.info/?l=3Ddri-devel&m=135962051326601&w=3D2
+[1] http://cgit.freedesktop.org/~airlied/linux/log/?h=FBcon-locking-fixes
+[2] http://cgit.freedesktop.org/~airlied/linux/commit/?h=FBcon-locking-fixe=
+s&id=98dfe36b5532576dedf41408d5bbd45fa31ec62d

@@ -1,47 +1,54 @@
-From: Mark Zhang <nvmarkzhang@gmail.com>
-Date: Thu, 31 Jan 2013 07:30:52 +0000
+From: Stephen Warren <swarren@wwwdotorg.org>
+Date: Thu, 31 Jan 2013 17:20:56 +0000
 Subject: Re: [RFC 1/4] video: panel: add CLAA101WA01A panel support
-Message-Id: <510A1DAC.1070106@gmail.com>
+Message-Id: <510AA7F8.7070000@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359514939-15653-1-git-send-email-acourbot@nvidia.com> <1359514939-15653-2-git-send-email-acourbot@nvidia.com> <5108C9C1.1090707@gmail.com> <51098064.7030902@wwwdotorg.org> <5109EA2A.8020204@gmail.com> <CAAVeFuJf9Ww7g8Q9RAG9Na1SZq2-n2MMxcAEBek52ZVG7RpL7g@mail.gmail.com> <5109F916.8080404@gmail.com> <CAAVeFuL_a1aAEDCFdhjMzZG40QuK3dcZqsWqfVpwmQbZsfiHRg@mail.gmail.com>
-In-Reply-To: <CAAVeFuL_a1aAEDCFdhjMzZG40QuK3dcZqsWqfVpwmQbZsfiHRg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+References: <1359514939-15653-1-git-send-email-acourbot@nvidia.com> <1359514939-15653-2-git-send-email-acourbot@nvidia.com> <5108C9C1.1090707@gmail.com> <51098064.7030902@wwwdotorg.org> <5109EA2A.8020204@gmail.com>
+In-Reply-To: <5109EA2A.8020204@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org" <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+To: Mark Zhang <nvmarkzhang@gmail.com>
+Cc: Alexandre Courbot <acourbot@nvidia.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, gnurou@gmail.com
 
-On 01/31/2013 02:36 PM, Alexandre Courbot wrote:
-> On Thu, Jan 31, 2013 at 1:54 PM, Mark Zhang <nvmarkzhang@gmail.com> wrote:
->> Display controller don't know whether the panel has EDID EEPROM but the
->> panel driver knows. So why we need to make display controller queries
->> EDID blindly? Since panel driver knows about all "video modes/panel
->> size" stuffs, why not we let it handle all these things?
+On 01/30/2013 08:51 PM, Mark Zhang wrote:
+> On 01/31/2013 04:19 AM, Stephen Warren wrote:
+>> On 01/30/2013 12:20 AM, Mark Zhang wrote:
+>>> On 01/30/2013 11:02 AM, Alexandre Courbot wrote:
+>>>> Add support for the Chunghwa CLAA101WA01A display panel.
+>>
+>>>> +static int panel_claa101_get_modes(struct display_entity *entity,
+>>>> +				   const struct videomode **modes)
+>>>> +{
+>>>> +	/* TODO get modes from EDID? */
+>>>
+>>> Why not move the "nvidia,ddc" from encoder's DT to panel's DT? In that
+>>> case, you can get EDID here. I know drm has some helpers to fetch EDID
+>>> but I recall there are some other functions which has no drm
+>>> dependencies which may be suitable for you.
+>>
+>> DDC access is a property of the display controller, not the panel
+>> itself. The panel might be hooked up to a display controller's DDC/I2C
+>> channel as the target, but it isn't the host/controller of the DDC/I2C
+>> channel. As such, placing the nvidia,ddc property into the display
+>> controller node makes sense.
 > 
-> The DC actually does know whether the connected panel supports EDID -
-> in this case, the output node will have a property for the DDC bus,
-> e.g.
-> 
->         nvidia,ddc-i2c-bus = <&lcd_ddc>;
-> 
-> If no DDC bus is specified or if transfer fails, the DC driver can
-> still query the panel driver for hardcoded modes.
-> 
+> Yes, DC triggers the DDC access and is the host of the DDC/I2C channel.
+> So I think it's reasonable to put nvidia,ddc property into the display
+> controller node. But the video mode info in EDID which be fetched via
+> DDC is the property of the panel, so this info should be provided by
+> panel driver.
 
-Strictly speaking, according to my understanding, "nvidia,ddc-i2c-bus"
-means tegra has a hardware ddc channel, this doesn't mean we can get the
-EDID from this DDC surely.
+No, that makes absolutely no sense at all in the EDID case.
 
-> Also passing a function pointer to get_modes() does not relief the DC
-> driver from probing for the DDC bus. You will still have to handle
-> both conditions (DDC bus present or not), the check will just be moved
-> into your callback function.
-> 
+By the same argument, we'd need a panel driver for every external
+monitor which implemented EDID, just to transfer the EDID results from
+the display controller's DDC channel into the panel driver and back into
+the display controller code, which wants the mode list.
 
-Yes. But panel driver decides whether the DDC probing is needed. If the
-panel has an EEPROM, it can call the function which display controller
-provides to do a DDC probing, it not, panel driver just ignores this
-function pointer and return the hardcoded modes directly.
-
-> Alex.
-> 
+Again, if the mode list is coming from DDC, the display controller
+should retrieve it in exactly the same way it retrieves it for any
+external monitor - by direct control of the DDC channel to read the
+EDID. The only time it makes sense for the panel driver to get involved
+in supplying the mode list is when there's no EDID, so the list must be
+hard-coded into the driver.

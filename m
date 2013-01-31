@@ -1,39 +1,51 @@
-From: Mark Zhang <nvmarkzhang@gmail.com>
-Date: Wed, 30 Jan 2013 07:46:09 +0000
-Subject: Re: [RFC 3/4] drm: tegra: use the Common Display Framework
-Message-Id: <5108CFC1.8010905@gmail.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Thu, 31 Jan 2013 10:37:37 +0000
+Subject: [PATCH 1/3] video: exynos_mipi_dsi: Convert to devm_ioremap_resource()
+Message-Id: <1359627939-2685-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359514939-15653-1-git-send-email-acourbot@nvidia.com> <1359514939-15653-4-git-send-email-acourbot@nvidia.com> <5108C298.1000500@gmail.com> <5108C55C.30104@nvidia.com>
-In-Reply-To: <5108C55C.30104-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: linux-kernel@vger.kernel.org
+Cc: thierry.reding@avionic-design.de, gregkh@linuxfoundation.org, sachin.kamat@linaro.org, Donghwa Lee <dh09.lee@samsung.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
 
-On 01/30/2013 03:01 PM, Alex Courbot wrote:
-> On 01/30/2013 03:50 PM, Mark Zhang wrote:
-[...]
-> 
->>> +    /* register display notifier */
->>> +    output->display_notifier.dev = NULL;
->>
->> Set "display_notifier.dev" to NULL makes we have to compare with every
->> display entity, just like what you do in "display_notify_callback":
->>
->> entity->dev && entity->dev->of_node = pnode
->>
->> So can we get the "struct device *" of panel here? Seems currently the
->> "of" framework doesn't allow "device_node -> device".
-> 
-> Nope. AFAICT the device might not be instanciated at this point. We
-> become aware of it for the first time in the callback function. We also
-> don't want to defer probing until the panel is parsed first, since the
-> panel might also depend on resources of the display device.
-> 
+Use the newly introduced devm_ioremap_resource() instead of
+devm_request_and_ioremap() which provides more consistent error handling.
 
-Agree.
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Donghwa Lee <dh09.lee@samsung.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+---
+ drivers/video/exynos/exynos_mipi_dsi.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-> Thanks,
-> Alex.
-> 
+diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
+index fac7df6..a29715f 100644
+--- a/drivers/video/exynos/exynos_mipi_dsi.c
++++ b/drivers/video/exynos/exynos_mipi_dsi.c
+@@ -32,6 +32,7 @@
+ #include <linux/notifier.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/pm_runtime.h>
++#include <linux/err.h>
+ 
+ #include <video/exynos_mipi_dsim.h>
+ 
+@@ -384,10 +385,10 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 
+-	dsim->reg_base = devm_request_and_ioremap(&pdev->dev, res);
+-	if (!dsim->reg_base) {
++	dsim->reg_base = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(dsim->reg_base)) {
+ 		dev_err(&pdev->dev, "failed to remap io region\n");
+-		ret = -ENOMEM;
++		ret = PTR_ERR(dsim->reg_base);
+ 		goto error;
+ 	}
+ 
+-- 
+1.7.4.1
+

@@ -1,122 +1,59 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:34:00 +0000
-Subject: [PATCH 08/33] arm: omap: board-ldp: use generic dpi panel's gpio handling
-Message-Id: <1360765345-19312-9-git-send-email-archit@ti.com>
+From: Zhou Zhu <zzhu3@marvell.com>
+Date: Fri, 01 Feb 2013 09:20:48 +0000
+Subject: [PATCH v6 6/8] ARM: mmp: added device for display controller
+Message-Id: <1359710448-9996-1-git-send-email-zzhu3@marvell.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360765345-19312-1-git-send-email-archit@ti.com>
-In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>, Tony Lindgren <tony@atomide.com>
+To: linux-fbdev@vger.kernel.org
 
-The ldp board file currently requests gpios required to configure the NEC DPI
-panel, and provides platform_enable/disable callbacks to configure them.
+added device for display controller and fb support
 
-These tasks have been moved to the generic dpi panel driver itself and shouldn't
-be done in the board files.
-
-Remove the gpio requests and the platform callbacks from the board file.
-Configure the gpio information in generic dpi panel's platform data so that it's
-passed to the panel driver.
-
-Cc: Tony Lindgren <tony@atomide.com>
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
+Acked-by: Haojian Zhuang <haojian.zhuang@gmail.com>
 ---
- arch/arm/mach-omap2/board-ldp.c |   61 ++++++---------------------------------
- 1 file changed, 9 insertions(+), 52 deletions(-)
+ arch/arm/mach-mmp/include/mach/pxa910.h |    5 ++++-
+ arch/arm/mach-mmp/pxa910.c              |    3 +++
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-omap2/board-ldp.c b/arch/arm/mach-omap2/board-ldp.c
-index 68e56f1..c88d01a 100644
---- a/arch/arm/mach-omap2/board-ldp.c
-+++ b/arch/arm/mach-omap2/board-ldp.c
-@@ -180,34 +180,13 @@ static inline void __init ldp_init_smsc911x(void)
+diff --git a/arch/arm/mach-mmp/include/mach/pxa910.h b/arch/arm/mach-mmp/include/mach/pxa910.h
+index 3b58a3b..b4c94d8 100644
+--- a/arch/arm/mach-mmp/include/mach/pxa910.h
++++ b/arch/arm/mach-mmp/include/mach/pxa910.h
+@@ -10,6 +10,7 @@ extern void __init pxa910_init_irq(void);
+ #include <linux/i2c/pxa-i2c.h>
+ #include <mach/devices.h>
+ #include <linux/platform_data/mtd-nand-pxa3xx.h>
++#include <video/mmp_disp.h>
  
- /* LCD */
+ extern struct pxa_device_desc pxa910_device_uart1;
+ extern struct pxa_device_desc pxa910_device_uart2;
+@@ -23,7 +24,9 @@ extern struct pxa_device_desc pxa910_device_nand;
+ extern struct platform_device pxa168_device_u2o;
+ extern struct platform_device pxa168_device_u2ootg;
+ extern struct platform_device pxa168_device_u2oehci;
+-
++extern struct pxa_device_desc pxa910_device_disp;
++extern struct pxa_device_desc pxa910_device_fb;
++extern struct pxa_device_desc pxa910_device_panel;
+ extern struct platform_device pxa910_device_gpio;
+ extern struct platform_device pxa910_device_rtc;
  
--static int ldp_backlight_gpio;
--static int ldp_lcd_enable_gpio;
--
- #define LCD_PANEL_RESET_GPIO		55
- #define LCD_PANEL_QVGA_GPIO		56
+diff --git a/arch/arm/mach-mmp/pxa910.c b/arch/arm/mach-mmp/pxa910.c
+index 8b1e16f..e49cdd9 100644
+--- a/arch/arm/mach-mmp/pxa910.c
++++ b/arch/arm/mach-mmp/pxa910.c
+@@ -138,6 +138,9 @@ PXA910_DEVICE(pwm2, "pxa910-pwm", 1, NONE, 0xd401a400, 0x10);
+ PXA910_DEVICE(pwm3, "pxa910-pwm", 2, NONE, 0xd401a800, 0x10);
+ PXA910_DEVICE(pwm4, "pxa910-pwm", 3, NONE, 0xd401ac00, 0x10);
+ PXA910_DEVICE(nand, "pxa3xx-nand", -1, NAND, 0xd4283000, 0x80, 97, 99);
++PXA910_DEVICE(disp, "mmp-disp", 0, LCD, 0xd420b000, 0x1ec);
++PXA910_DEVICE(fb, "mmp-fb", -1, NONE, 0, 0);
++PXA910_DEVICE(panel, "tpo-hvga", -1, NONE, 0, 0);
  
--static int ldp_panel_enable_lcd(struct omap_dss_device *dssdev)
--{
--	if (gpio_is_valid(ldp_lcd_enable_gpio))
--		gpio_direction_output(ldp_lcd_enable_gpio, 1);
--	if (gpio_is_valid(ldp_backlight_gpio))
--		gpio_direction_output(ldp_backlight_gpio, 1);
--
--	return 0;
--}
--
--static void ldp_panel_disable_lcd(struct omap_dss_device *dssdev)
--{
--	if (gpio_is_valid(ldp_lcd_enable_gpio))
--		gpio_direction_output(ldp_lcd_enable_gpio, 0);
--	if (gpio_is_valid(ldp_backlight_gpio))
--		gpio_direction_output(ldp_backlight_gpio, 0);
--}
--
- static struct panel_generic_dpi_data ldp_panel_data = {
- 	.name			= "nec_nl2432dr22-11b",
--	.platform_enable	= ldp_panel_enable_lcd,
--	.platform_disable	= ldp_panel_disable_lcd,
-+	.num_gpios		= 4,
-+	/* gpios filled in code */
- };
- 
- static struct omap_dss_device ldp_lcd_device = {
-@@ -230,41 +209,19 @@ static struct omap_dss_board_info ldp_dss_data = {
- 
- static void __init ldp_display_init(void)
- {
--	int r;
--
--	static struct gpio gpios[] __initdata = {
--		{LCD_PANEL_RESET_GPIO, GPIOF_OUT_INIT_HIGH, "LCD RESET"},
--		{LCD_PANEL_QVGA_GPIO, GPIOF_OUT_INIT_HIGH, "LCD QVGA"},
--	};
--
--	r = gpio_request_array(gpios, ARRAY_SIZE(gpios));
--	if (r) {
--		pr_err("Cannot request LCD GPIOs, error %d\n", r);
--		return;
--	}
-+	ldp_panel_data.gpios[2] = LCD_PANEL_RESET_GPIO;
-+	ldp_panel_data.gpios[3] = LCD_PANEL_QVGA_GPIO;
- 
- 	omap_display_init(&ldp_dss_data);
- }
- 
- static int ldp_twl_gpio_setup(struct device *dev, unsigned gpio, unsigned ngpio)
- {
--	int r;
--
--	struct gpio gpios[] = {
--		{gpio + 7 , GPIOF_OUT_INIT_LOW, "LCD ENABLE"},
--		{gpio + 15, GPIOF_OUT_INIT_LOW, "LCD BACKLIGHT"},
--	};
--
--	r = gpio_request_array(gpios, ARRAY_SIZE(gpios));
--	if (r) {
--		pr_err("Cannot request LCD GPIOs, error %d\n", r);
--		ldp_backlight_gpio = -EINVAL;
--		ldp_lcd_enable_gpio = -EINVAL;
--		return r;
--	}
--
--	ldp_backlight_gpio = gpio + 15;
--	ldp_lcd_enable_gpio = gpio + 7;
-+	ldp_panel_data.gpios[0] = gpio + 7;
-+	ldp_panel_data.gpio_invert[0] = true;
-+
-+	ldp_panel_data.gpios[1] = gpio + 15;
-+	ldp_panel_data.gpio_invert[1] = true;
- 
- 	return 0;
- }
+ struct resource pxa910_resource_gpio[] = {
+ 	{
 -- 
 1.7.9.5
 

@@ -1,33 +1,42 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 01 Feb 2013 23:37:34 +0000
+Date: Fri, 01 Feb 2013 23:42:04 +0000
 Subject: Re: [RFC v2 0/5] Common Display Framework
-Message-Id: <3769008.t1iWZpc9bc@avalon>
+Message-Id: <1699935.hiBjgCN6cp@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <3584709.mPLC5exzRY@avalon> <50EBF10A.7080906@stericsson.com>
-In-Reply-To: <50EBF10A.7080906@stericsson.com>
+References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <CAN_cFWPyrvO5RAvMHhZgQySf_Y5N2pz64uMurvdG0d-4zDjPFQ@mail.gmail.com> <CAPdUM4P6riQVJ4m4Sdkh1O8xmpKF4YnhGq69p7DkxAdr165KYA@mail.gmail.com>
+In-Reply-To: <CAPdUM4P6riQVJ4m4Sdkh1O8xmpKF4YnhGq69p7DkxAdr165KYA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Marcus Lorentzon <marcus.xm.lorentzon@stericsson.com>
-Cc: Tomasz Figa <t.figa@samsung.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, Tom Gall <tom.gall@linaro.org>, Ragesh Radhakrishnan <Ragesh.R@linaro.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Rob Clark <rob.clark@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, sunil joshi <joshi@samsung.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
+To: Rahul Sharma <r.sh.open@gmail.com>
+Cc: Rob Clark <rob.clark@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Tom Gall <tom.gall@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Ragesh Radhakrishnan <ragesh.r@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Philipp Zabel <p.zabel@pengutronix.de>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
 
-Hi Marcus,
+Hi Rahul,
 
-On Tuesday 08 January 2013 11:12:26 Marcus Lorentzon wrote:
+On Wednesday 09 January 2013 13:53:30 Rahul Sharma wrote:
+> Hi Laurent,
+> 
+> CDF will also be helpful in supporting Panels with integrated audio
+> (HDMI/DP) if we can add audio related control operations to
+> display_entity_control_ops. Video controls will be called by crtc in DRM/V4L
+> and audio controls from Alsa.
 
-[snip]
+I knew that would come up at some point :-) I agree with you that adding audio 
+support would be a very nice improvement, and I'm totally open to that, but I 
+will concentrate on video, at least to start with. The first reason is that 
+I'm not familiar enough with ALSA, and the second that there's only 24h per 
+day :-)
 
-> I also looked at the video source in Tomi's git tree
-> (http://gitorious.org/linux-omap-dss2/linux/blobs/work/dss-dev-model-cdf/inc
-> lude/video/display.h). I think I would prefer a single "setup" op taking a
-> "struct dsi_config" as argument. Then each DSI formatter/encoder driver
-> could decide best way to set that up. We have something similar at
-> http://www.igloocommunity.org/gitweb/?p=kernel/igloo-kernel.git;a=blob;f=inc
-> lude/video/mcde.h;hI9ce5cfecc9ad77593e761cdcc1624502f28432;hb=HEAD#l118
+Please feel free, of course, to submit a proposal for audio support.
 
-A single setup function indeed seems easier, but I don't have enough 
-experience with DSI to have a strong opinion on that. We'll have to compare 
-implementations if there's a disagreement on this.
+> Secondly, if I need to support get_modes operation in hdmi/dp panel, I need
+> to implement edid parser inside the panel driver. It will be meaningful to
+> add get_edid control operation for hdmi/dp.
+
+Even if EDID data is parsed in the panel driver, raw EDID will still need to 
+be exported, so a get_edid control operation (or something similar) is 
+definitely needed. There's no disagreement on this, I just haven't included 
+that operation yet because my test hardware is purely panel-based.
 
 -- 
 Regards,

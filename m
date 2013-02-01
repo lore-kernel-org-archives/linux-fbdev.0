@@ -1,63 +1,145 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Tue, 05 Feb 2013 21:19:18 +0000
-Subject: Re: =?utf-8?B?562U5aSN?= =?utf-8?Q?=3A?= [PATCH]Siliconmotion initial patch
-Message-Id: <20130205211918.GA1768@kroah.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Fri, 01 Feb 2013 09:29:50 +0000
+Subject: RE: [PATCH v17 4/7] fbmon: add videomode helpers
+Message-Id: <003401ce005e$af665c50$0e3314f0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4CE6A5494DEECD498EBCD4C5488B1AFCEAC6F7@CNDC08.cn.smi.ad>
-	<20130205210427.GF5813@phenom.ffwll.local>
-In-Reply-To: <20130205210427.GF5813@phenom.ffwll.local>
+References: <1359104515-8907-1-git-send-email-s.trumtrar@pengutronix.de>
+	<1359104515-8907-5-git-send-email-s.trumtrar@pengutronix.de>
+In-Reply-To: <1359104515-8907-5-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Daniel Vetter <daniel@ffwll.ch>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, =?utf-8?B?Y2Flc2FyLnFpdSDoo5jotZvmtbc=?= <caesar.qiu@siliconmotion.com>, dri-devel@lists.freedesktop.org, =?utf-8?B?QWFyb24uQ2hlbiDpmYjkv4rmnbA=?= <aaron.chen@siliconmotion.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: 'Steffen Trumtrar' <s.trumtrar@pengutronix.de>
+Cc: "'Mohammed, Afzal'" <afzal@ti.com>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, devicetree-discuss@lists.ozlabs.org, 'Stephen Warren' <swarren@wwwdotorg.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, 'Rob Herring' <robherring2@gmail.com>, 'Laurent Pinchart' <laurent.pinchart@ideasonboard.com>, kernel@pengutronix.de, 'Guennady Liakhovetski' <g.liakhovetski@gmx.de>, linux-media@vger.kernel.org
 
-On Tue, Feb 05, 2013 at 10:04:27PM +0100, Daniel Vetter wrote:
-> On Tue, Feb 05, 2013 at 03:51:55PM +0800, Aaron.Chen  陈俊杰 wrote:
-> > This is an initial patch for Siliconmotion Graphics chips. It add SM750
-> > chip support with 2d accelerate and hw curser support. It is a complete
-> > new driver. So the patch is a little bit big. Is it OK for review?
+On Friday, January 25, 2013 6:02 PM, Steffen Trumtrar wrote
 > 
-> Adding a new fbdev driver while established consensus pretty much boils
-> down to fbdev being a dead subsystem which should only be used for legacy
-> applications and drivers: Not good. You should implement this as a drm
-> modesetting driver, and if required base your 2d acceleration on top of
-> the drm fb helpers. Or just implement a drm/gem driver to expose this.
+> Add a function to convert from the generic videomode to a fb_videomode.
 > 
-> Additionally you should include the appropriate mailing lists, which is
-> linux-fbdev for fbdev drivers.
+> Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+> Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+> Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+> Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
+> Tested-by: Philipp Zabel <p.zabel@pengutronix.de>
+> Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> Tested-by: Afzal Mohammed <Afzal@ti.com>
+> Tested-by: Rob Clark <robclark@gmail.com>
+> Tested-by: Leela Krishna Amudala <leelakrishna.a@gmail.com>
+> ---
+>  drivers/video/fbmon.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/fb.h    |    4 ++++
+>  2 files changed, 56 insertions(+)
 > 
-> On a very quick read the patch has serious issues:
-> 
-> - checkpatch.pl:
-> 
-> total: 2 errors, 779 warnings, 7961 lines checked
-> 
-> NOTE: whitespace errors detected, you may wish to use scripts/cleanpatch or
->       scripts/cleanfile
-> 
-> - Remants of hungarian notation (dunno whether checkpatch checks for
->   those, too much other stuff flying by, but it really stuck out).
-> 
-> - Not using the linux i2c layer in the ddk750_hwi2c.c file.
-> 
-> - Reimplementing i2c bit-banging code in the ddk750_swi2c.c
-> 
-> - Adding a new implementation of a sil 164 dvi driver, we already have at
->   least two in drivers/gpu/drm/i2c/sil164_drv.c and
->   drivers/gpu/drm/i915/dvo_sil164.c.  This should be unified and probably
->   use the drm encoder slave framework.
-> 
-> At that point I've given up on further review, since there's clearly a lot
-> of work left to do. Please review SubmittingPatches from the kernel
-> documentation carefully. Also cc'ing our dear staging maintainer, he
-> should be able to point you at further useful resources for getting this
-> going.
+> diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+> index cef6557..17ce135 100644
+> --- a/drivers/video/fbmon.c
+> +++ b/drivers/video/fbmon.c
+> @@ -31,6 +31,7 @@
+>  #include <linux/pci.h>
+>  #include <linux/slab.h>
+>  #include <video/edid.h>
+> +#include <video/videomode.h>
+>  #ifdef CONFIG_PPC_OF
+>  #include <asm/prom.h>
+>  #include <asm/pci-bridge.h>
+> @@ -1373,6 +1374,57 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
+>  	kfree(timings);
+>  	return err;
+>  }
+> +
+> +#if IS_ENABLED(CONFIG_VIDEOMODE)
+> +int fb_videomode_from_videomode(const struct videomode *vm,
+> +				struct fb_videomode *fbmode)
+> +{
+> +	unsigned int htotal, vtotal;
+> +
+> +	fbmode->xres = vm->hactive;
+> +	fbmode->left_margin = vm->hback_porch;
+> +	fbmode->right_margin = vm->hfront_porch;
+> +	fbmode->hsync_len = vm->hsync_len;
+> +
+> +	fbmode->yres = vm->vactive;
+> +	fbmode->upper_margin = vm->vback_porch;
+> +	fbmode->lower_margin = vm->vfront_porch;
+> +	fbmode->vsync_len = vm->vsync_len;
+> +
+> +	/* prevent division by zero in KHZ2PICOS macro */
+> +	fbmode->pixclock = vm->pixelclock ?
+> +			KHZ2PICOS(vm->pixelclock / 1000) : 0;
+> +
+> +	fbmode->sync = 0;
+> +	fbmode->vmode = 0;
+> +	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
+> +		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
+> +	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
 
-If you wish to put this in the drivers/staging/ directory and do the
-cleanup there before it moves to the "real" part of the kernel, I have
-no objection to that.
+Hi Steffen Trumtrar,
 
-thanks,
+Um, it seems to be a type. 'H'SYNC -> 'V'SYNC
+Thus, it would be changed as below:
 
-greg k-h
+    VESA_DMT_HSYNC_HIGH -> VESA_DMT_VSYNC_HIGH
+
+
+Best regards,
+Jingoo Han
+
+> +		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
+> +	if (vm->data_flags & DISPLAY_FLAGS_INTERLACED)
+> +		fbmode->vmode |= FB_VMODE_INTERLACED;
+> +	if (vm->data_flags & DISPLAY_FLAGS_DOUBLESCAN)
+> +		fbmode->vmode |= FB_VMODE_DOUBLE;
+> +	fbmode->flag = 0;
+> +
+> +	htotal = vm->hactive + vm->hfront_porch + vm->hback_porch +
+> +		 vm->hsync_len;
+> +	vtotal = vm->vactive + vm->vfront_porch + vm->vback_porch +
+> +		 vm->vsync_len;
+> +	/* prevent division by zero */
+> +	if (htotal && vtotal) {
+> +		fbmode->refresh = vm->pixelclock / (htotal * vtotal);
+> +	/* a mode must have htotal and vtotal != 0 or it is invalid */
+> +	} else {
+> +		fbmode->refresh = 0;
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
+> +#endif
+> +
+>  #else
+>  int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+>  {
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index c7a9571..100a176 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -19,6 +19,7 @@ struct vm_area_struct;
+>  struct fb_info;
+>  struct device;
+>  struct file;
+> +struct videomode;
+> 
+>  /* Definitions below are used in the parsed monitor specs */
+>  #define FB_DPMS_ACTIVE_OFF	1
+> @@ -714,6 +715,9 @@ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+>  extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+>  extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
+> 
+> +extern int fb_videomode_from_videomode(const struct videomode *vm,
+> +				       struct fb_videomode *fbmode);
+> +
+>  /* drivers/video/modedb.c */
+>  #define VESA_MODEDB_SIZE 34
+>  extern void fb_var_to_videomode(struct fb_videomode *mode,
+> --
+> 1.7.10.4
+> 
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> http://lists.freedesktop.org/mailman/listinfo/dri-devel
+

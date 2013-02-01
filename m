@@ -1,68 +1,144 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 19 Feb 2013 11:34:17 +0000
-Subject: Re: [PATCH v2 0/1] OMAP4: DSS: Add panel for Blaze Tablet boards
-Message-Id: <51236339.90407@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig492D6F5DAB0BCF265F5BC086"
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Fri, 01 Feb 2013 23:35:58 +0000
+Subject: Re: [RFC v2 0/5] Common Display Framework
+Message-Id: <3057999.UZLp2j2DkQ@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360338220-12753-1-git-send-email-ruslan.bilovol@ti.com> <511B4C60.50404@ti.com> <CAB=otbSX_O-zbHZuPWPSEU0D1s3uKfZfeatoguoRiwogS5tVHQ@mail.gmail.com> <511CAD5D.2050502@ti.com> <CAB=otbRAj41dFMe_i+LDGbi29kMV0C-tw-HXyz7iF4m4R+5R+Q@mail.gmail.com>
-In-Reply-To: <CAB=otbRAj41dFMe_i+LDGbi29kMV0C-tw-HXyz7iF4m4R+5R+Q@mail.gmail.com>
-To: Ruslan Bilovol <ruslan.bilovol@ti.com>
-Cc: andi@etezian.org, FlorianSchandinat@gmx.de, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
+References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <1987992.4TmVjQaiLj@amdc1227> <50EC5283.80006@stericsson.com>
+In-Reply-To: <50EC5283.80006@stericsson.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Marcus Lorentzon <marcus.xm.lorentzon@stericsson.com>
+Cc: Tomasz Figa <t.figa@samsung.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, Tom Gall <tom.gall@linaro.org>, Ragesh Radhakrishnan <Ragesh.R@linaro.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Rob Clark <rob.clark@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, sunil joshi <joshi@samsung.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
 
---------------enig492D6F5DAB0BCF265F5BC086
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Marcus,
 
-On 2013-02-18 16:30, Ruslan Bilovol wrote:
+On Tuesday 08 January 2013 18:08:19 Marcus Lorentzon wrote:
+> On 01/08/2013 05:36 PM, Tomasz Figa wrote:
+> > On Tuesday 08 of January 2013 11:12:26 Marcus Lorentzon wrote:
 
->> So, I'm still inclined to say that we shouldn't merge this.
->=20
-> Thanks for explanation.
->=20
-> Do you have some plan when DSS will be ready to port this driver?
-> (3.10, 3.11 or later)?
+[snip]
 
-When it's ready =3D). The work depends also on common display framework,
-so it's not only up to me.
+> >> FYI,
+> >> here is STE "DSI API":
+> >> http://www.igloocommunity.org/gitweb/?p=kernel/igloo-kernel.git;a=blob;f
+> >> =include/video/mcde.h;hI9ce5cfecc9ad77593e761cdcc1624502f28432;hb=HEAD
+> >> #l361
 
-That said, I have a prototype branch, with my version of CDF, that
-somewhat works for the couple of boards and panels that I have ported.
-It doesn't have DT code there, though (DSS DT is in a separate branch
-for now). If all goes extremely well, I could imagine 3.10 having the
-support allowing to port this driver.
+Thank you.
 
-And if you're interested in some prototype code, kernel crashes, DSS
-debugging, etc, I can point you to my branch and give you some notes, so
-you could try porting this panel driver to (my version of) CDF. Give me
-a private email if you want to try that.
+> >> But it is not perfect. After a couple of products we realized that most
+> >> panel drivers want an easy way to send a bunch of init commands in one
+> >> go. So I think it should be an op for sending an array of commands at
+> >> once. Something like
+> >> 
+> >> struct dsi_cmd {
+> >>       enum mipi_pkt_type type; /* MIPI DSI, DCS, SetPacketLen, ... */
+> >>       u8 cmd;
+> >>       int dataLen;
+> >>       u8 *data;
+> >> }
+> >>
+> >> struct dsi_ops {
+> >>       int dsi_write(source, int num_cmds, struct dsi_cmd *cmds);
+> >>       ...
+> >> }
 
- Tomi
+Do you have DSI IP(s) that can handle a list of commands ? Or would all DSI 
+transmitter drivers need to iterate over the commands manually ? In the later 
+case a lower-level API might be easier to implement in DSI transmitter 
+drivers. Helper functions could provide the higher-level API you proposed.
 
+> > Yes, this should be flexible enough to cover most of (or even whole) DSI
+> > specification.
+> > 
+> > However I'm not sure whether the dsi_write name would be appropriate,
+> > since DSI packet types include also read and special transactions. So,
+> > according to DSI terminology, maybe dsi_transaction would be better?
 
+Or dsi_transfer or dsi_xfer ? Does the DSI bus have a concept of transactions 
+?
 
---------------enig492D6F5DAB0BCF265F5BC086
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> I think read should still be separate. At least on my HW read and write
+> are quite different. But all "transactions" are very much the same in HW
+> setup. The ... was dsi_write etc ;) Like set_max_packet_size should
+> maybe be an ops. Since only the implementer of the "video source" will
+> know what the max read return packet size for that DSI IP is. The panels
+> don't know that. Maybe another ops to retrieve some info about the caps
+> of the video source would help that. Then a helper could call that and
+> then the dsi_write one.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
+If panels (or helper functions) need information about the DSI transmitter 
+capabilities, sure, we can add an op.
 
-iQIcBAEBAgAGBQJRI2M5AAoJEPo9qoy8lh71YtkP/jmbXmSx8oETXWGFZLJCtyfF
-l5qF5hMbqMVXxPOY5p5Tg0e0ldJWVjdwJ5Na+DWbzwuTYPKT9FgQJfR7NEy0jzp1
-BFdXSvtlP1as7ZtT4GDHyGGFfAa4MzVictoNndws1kCze9IrQduUl0YXejnaJlLV
-rviVyVqvyTz8y1dTjV9qC3g/U/F1k6LBOxXudblWHaBmlPQ66mcmemdEr6ZtEh7Q
-tzZkTmmePtYisIiPmgOjIShAJ5q3BN0B19BWTE4jUYGUyUgH2+jRKNYyU4QteA8O
-6CFP59g33Jc1i3VUtofYbVCHl01o/y8uEZTuDewryoIipapFrkwk31wVwOoe8+dE
-+NA7nhh5HYjMvWCKOxb2H6X5Fcmb741QBatiVU27yCBq9Yl+uYQXDpyTOOiwCNGC
-aih7WI00k3pdRsMJZzMVGcKy4UNKbSV8Z5geQTmtTVhL3rw+Q5uN6L15G42xteyu
-Ix0cKS4GJo5dSY+2Nuk/IDwx/mNdgeQw72gewMfsSbtozUX6bCbNRRAzS7Gu7gWE
-glCr52cNTxbbljOdbmqJbW+N9clxExsxMK+EQnhuHnp8hzRm9ABODiQG3QootSpD
-A45LLfkOybUl+OWtpWKzJL7rer/o3Q+ilRUIBB8Oag1mXknSUElqfxIqmefSc1li
-Hy6pchrSf65HXQmEAeR+
-=16Rq
------END PGP SIGNATURE-----
+> >> And I think I still prefer the dsi_bus in favor of the abstract video
+> >> source. It just looks like a home made bus with bus-ops ... can't you do
+> >> something similar using the normal driver framework? enable/disable
+> >> looks like suspend/resume, register/unregister_vid_src is like
+> >> bus_(un)register_device, ... the video source anyway seems unattached
+> >> to the panel stuff with the find_video_source call.
 
---------------enig492D6F5DAB0BCF265F5BC086--
+The Linux driver framework is based on control busses. DSI usually handles 
+both control and video transfer, but the control and data busses can also be 
+separate (think DPI + SPI/I2C for instance). In that case the panel will be a 
+child of its control bus master, and will need a separate interface to access 
+video data operations. As a separate video interface is thus needed, I think 
+we should use it for DSI as well.
+
+My initial proposal included a DBI bus (as I don't have any DSI hardware - DBI 
+and DSI can be used interchangeably in this discussions, they both share the 
+caracteristic of having a common control + data bus), and panels were children 
+of the DBI bus master. The DBI bus API was only used for control, not for data 
+transfers. Tomi then removed the DBI bus and moved the control operations to 
+the video source, turning the DBI panels into platform devices. I still favor 
+my initial approach, but I can agree to drop the DBI bus if there's a 
+consensus on that. Video bus operations will be separate in any case.
+
+> > DSI needs specific power management. It's necessary to power up the panel
+> > first to make it wait for Tinit event and then enable DSI master to
+> > trigger such event. Only then rest of panel initialization can be
+> > completed.
+> 
+> I know, we have a very complex sequence for our HDMI encoder which uses
+> sort of continuous DSI cmmand mode. And power/clock on sequences are
+> tricky to get right in our current "CDF" API (mcde_display). But I fail
+> to see how the current video source API is different from just using the
+> bus/device APIs.
+
+As mentioned above, the video source API handles video transfers, while the 
+bus/device API handles control transfers. Operations such as "start the video 
+stream" will thus be video source APIs. Operations such as "enable the DSI 
+master", used to trigger the Tinit event (whatever that is :-)) at power up 
+time would probably be DSI bus operations.
+
+> > Also, as discussed in previous posts, some panels might use DSI only for
+> > video data and another interface (I2C, SPI) for control data. In such case
+> > it would be impossible to represent such device in a reasonable way using
+> > current driver model.
+> 
+> I understand that you need to get hold of both the control and data bus
+> device in the driver. (Toshiba DSI-LVDS bridge is a good example and
+> commonly used "encoder" that can use both DSI and I2C control interface.)
+> But the control bus you get from device probe, and I guess you could call
+> bus_find_device_by_name(dsi_bus, "mydev") and return the "datadev" which
+> will have access to dsi bus ops just as you call
+> find_video_source("mysource") to access the "databus" ops directly with
+> a logical device (display entity).
+> I'm not saying I would refuse to use video sources. I just think the two
+> models are so similar so it would be worth exploring how a device model
+> style API would look like and to compare against.
+
+I don't think we should use the Linux device model for data busses. It hasn't 
+been designed for that use case, and definitely doesn't support devices that 
+would be children of two separate masters (control and data). For shared bus 
+devices such as DSI, having a DSI bus was my preference to start with, as 
+mentioned above :-) However, even in that case, I think it would still make 
+sense to use video sources to control the video operations. As usual the devil 
+is in the details, so there will probably be some tricky problems we'll need 
+to solve, but that will require coding the proposed solution.
+
+-- 
+Regards,
+
+Laurent Pinchart
+

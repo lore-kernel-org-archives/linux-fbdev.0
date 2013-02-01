@@ -1,81 +1,138 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:34:20 +0000
-Subject: [PATCH 28/33] OMAPDSS: n8x0 panel: remove platform_enable/disable callbacks
-Message-Id: <1360765345-19312-29-git-send-email-archit@ti.com>
+From: Zhou Zhu <zzhu3@marvell.com>
+Date: Fri, 01 Feb 2013 09:20:59 +0000
+Subject: [PATCH v6 7/8] ARM: mmp: enable display in ttc_dkb
+Message-Id: <1359710459-10142-1-git-send-email-zzhu3@marvell.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360765345-19312-1-git-send-email-archit@ti.com>
-In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-The n8x0 panel driver now manages the gpios required to configure the panel.
-This was previously done in panel_n8x0_data's platform_enable/disable callbacks
-defined in board files using this panel.
+enable display in ttc_dkb
 
-All the board files using this panel now pass the gpio information as platform
-data via the panel_n8x0_data struct, which is needed by the panel driver to
-configure the gpios connected to the panel. Hence, the platform_enable/disable
-ops can be safely removed now.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
+Acked-by: Haojian Zhuang <haojian.zhuang@gmail.com>
 ---
- drivers/video/omap2/displays/panel-n8x0.c |   12 ------------
- include/video/omap-panel-data.h           |    2 --
- 2 files changed, 14 deletions(-)
+ arch/arm/mach-mmp/ttc_dkb.c |   92 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 92 insertions(+)
 
-diff --git a/drivers/video/omap2/displays/panel-n8x0.c b/drivers/video/omap2/displays/panel-n8x0.c
-index c146a3d..f94ead6 100644
---- a/drivers/video/omap2/displays/panel-n8x0.c
-+++ b/drivers/video/omap2/displays/panel-n8x0.c
-@@ -295,12 +295,6 @@ static int n8x0_panel_power_on(struct omap_dss_device *dssdev)
+diff --git a/arch/arm/mach-mmp/ttc_dkb.c b/arch/arm/mach-mmp/ttc_dkb.c
+index ce55fd8..49b3cf9 100644
+--- a/arch/arm/mach-mmp/ttc_dkb.c
++++ b/arch/arm/mach-mmp/ttc_dkb.c
+@@ -19,6 +19,8 @@
+ #include <linux/gpio.h>
+ #include <linux/mfd/88pm860x.h>
+ #include <linux/platform_data/mv_usb.h>
++#include <linux/spi/spi.h>
++#include <linux/delay.h>
  
- 	gpio_direction_output(bdata->ctrl_pwrdown, 1);
- 
--	if (bdata->platform_enable) {
--		r = bdata->platform_enable(dssdev);
--		if (r)
--			goto err_plat_en;
--	}
--
- 	omapdss_rfbi_set_size(dssdev, dssdev->panel.timings.x_res,
- 		dssdev->panel.timings.y_res);
- 	omapdss_rfbi_set_pixel_size(dssdev, dssdev->ctrl.pixel_size);
-@@ -373,9 +367,6 @@ err_inv_panel:
- err_inv_chip:
- 	omapdss_rfbi_display_disable(dssdev);
- err_rfbi_en:
--	if (bdata->platform_disable)
--		bdata->platform_disable(dssdev);
--err_plat_en:
- 	gpio_direction_output(bdata->ctrl_pwrdown, 0);
- 	return r;
- }
-@@ -392,9 +383,6 @@ static void n8x0_panel_power_off(struct omap_dss_device *dssdev)
- 	send_display_off(spi);
- 	send_sleep_in(spi);
- 
--	if (bdata->platform_disable)
--		bdata->platform_disable(dssdev);
--
- 	/*
- 	 * HACK: we should turn off the panel here, but there is some problem
- 	 * with the initialization sequence, and we fail to init the panel if we
-diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
-index 7cac89e..84f332e 100644
---- a/include/video/omap-panel-data.h
-+++ b/include/video/omap-panel-data.h
-@@ -48,8 +48,6 @@ struct panel_generic_dpi_data {
-  * struct panel_n8x0_data - N800 panel driver configuration data
-  */
- struct panel_n8x0_data {
--	int (*platform_enable)(struct omap_dss_device *dssdev);
--	void (*platform_disable)(struct omap_dss_device *dssdev);
- 	int panel_reset;
- 	int ctrl_pwrdown;
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+@@ -184,6 +186,92 @@ static struct pxa3xx_nand_platform_data dkb_nand_info = {
  };
+ #endif
+ 
++#ifdef CONFIG_MMP_DISP
++/* path config */
++#define CFG_IOPADMODE(iopad)   (iopad)  /* 0x0 ~ 0xd */
++#define SCLK_SOURCE_SELECT(x)  (x << 30) /* 0x0 ~ 0x3 */
++/* link config */
++#define CFG_DUMBMODE(mode)     (mode << 28) /* 0x0 ~ 0x6*/
++#define CFG_GRA_SWAPRB(x)      (x << 0) /* 1: rbswap enabled */
++static struct mmp_mach_path_config dkb_disp_config[] = {
++	[0] = {
++		.name = "mmp-parallel",
++		.overlay_num = 2,
++		.output_type = PATH_OUT_PARALLEL,
++		.path_config = CFG_IOPADMODE(0x1)
++			| SCLK_SOURCE_SELECT(0x1),
++		.link_config = CFG_DUMBMODE(0x2)
++			| CFG_GRA_SWAPRB(0x1),
++	},
++};
++
++static struct mmp_mach_plat_info dkb_disp_info = {
++	.name = "mmp-disp",
++	.clk_name = "disp0",
++	.path_num = 1,
++	.paths = dkb_disp_config,
++};
++
++static struct mmp_buffer_driver_mach_info dkb_fb_info = {
++	.name = "mmp-fb",
++	.path_name = "mmp-parallel",
++	.overlay_id = 0,
++	.dmafetch_id = 1,
++	.default_pixfmt = PIXFMT_RGB565,
++};
++
++static void dkb_tpo_panel_power(int on)
++{
++	int err;
++	u32 spi_reset = mfp_to_gpio(MFP_PIN_GPIO106);
++
++	if (on) {
++		err = gpio_request(spi_reset, "TPO_LCD_SPI_RESET");
++		if (err) {
++			pr_err("failed to request GPIO for TPO LCD RESET\n");
++			return;
++		}
++		gpio_direction_output(spi_reset, 0);
++		udelay(100);
++		gpio_set_value(spi_reset, 1);
++		gpio_free(spi_reset);
++	} else {
++		err = gpio_request(spi_reset, "TPO_LCD_SPI_RESET");
++		if (err) {
++			pr_err("failed to request LCD RESET gpio\n");
++			return;
++		}
++		gpio_set_value(spi_reset, 0);
++		gpio_free(spi_reset);
++	}
++}
++
++static struct mmp_mach_panel_info dkb_tpo_panel_info = {
++	.name = "tpo-hvga",
++	.plat_path_name = "mmp-parallel",
++	.plat_set_onoff = dkb_tpo_panel_power,
++};
++
++static struct spi_board_info spi_board_info[] __initdata = {
++	{
++		.modalias       = "tpo-hvga",
++		.platform_data  = &dkb_tpo_panel_info,
++		.bus_num        = 5,
++	}
++};
++
++static void __init add_disp(void)
++{
++	pxa_register_device(&pxa910_device_disp,
++		&dkb_disp_info, sizeof(dkb_disp_info));
++	spi_register_board_info(spi_board_info, ARRAY_SIZE(spi_board_info));
++	pxa_register_device(&pxa910_device_fb,
++		&dkb_fb_info, sizeof(dkb_fb_info));
++	pxa_register_device(&pxa910_device_panel,
++		&dkb_tpo_panel_info, sizeof(dkb_tpo_panel_info));
++}
++#endif
++
+ static void __init ttc_dkb_init(void)
+ {
+ 	mfp_config(ARRAY_AND_SIZE(ttc_dkb_pin_config));
+@@ -212,6 +300,10 @@ static void __init ttc_dkb_init(void)
+ 	pxa168_device_u2ootg.dev.platform_data = &ttc_usb_pdata;
+ 	platform_device_register(&pxa168_device_u2ootg);
+ #endif
++
++#ifdef CONFIG_MMP_DISP
++	add_disp();
++#endif
+ }
+ 
+ MACHINE_START(TTC_DKB, "PXA910-based TTC_DKB Development Platform")
 -- 
 1.7.9.5
 

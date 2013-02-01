@@ -1,38 +1,42 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Tue, 05 Feb 2013 13:35:13 +0000
-Subject: [PATCH 3/5] atmel_lcdfb: remove unsupported 15-bpp mode
-Message-Id: <1360071315-4032-4-git-send-email-jhovold@gmail.com>
+From: Zhou Zhu <zzhu3@marvell.com>
+Date: Fri, 01 Feb 2013 09:21:09 +0000
+Subject: [PATCH v6 8/8] ARM: mmp: add display and fb support in pxa910 defconfig
+Message-Id: <1359710469-10299-1-git-send-email-zzhu3@marvell.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130129135435.GN7360@game.jcrosoft.org>
- <1360071315-4032-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1360071315-4032-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Since commit 787f9fd23283 ("atmel_lcdfb: support 16bit BGR:565 mode,
-remove unsupported 15bit modes") atmel_lcdfb_check_var does not accept
-15-bpp mode so remove it from atmel_lcdfb_set_par as well.
+added display and fb support in pxa910 defconfig.
+added tpohvga panel, spi support.
+added logo support.
 
-Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
+Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
+Acked-by: Haojian Zhuang <haojian.zhuang@gmail.com>
 ---
- drivers/video/atmel_lcdfb.c | 1 -
- 1 file changed, 1 deletion(-)
+ arch/arm/configs/pxa910_defconfig |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 025428e..93910e3 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -567,7 +567,6 @@ static int atmel_lcdfb_set_par(struct fb_info *info)
- 		case 2: value |= ATMEL_LCDC_PIXELSIZE_2; break;
- 		case 4: value |= ATMEL_LCDC_PIXELSIZE_4; break;
- 		case 8: value |= ATMEL_LCDC_PIXELSIZE_8; break;
--		case 15: /* fall through */
- 		case 16: value |= ATMEL_LCDC_PIXELSIZE_16; break;
- 		case 24: value |= ATMEL_LCDC_PIXELSIZE_24; break;
- 		case 32: value |= ATMEL_LCDC_PIXELSIZE_32; break;
+diff --git a/arch/arm/configs/pxa910_defconfig b/arch/arm/configs/pxa910_defconfig
+index 191118c..3bb7771 100644
+--- a/arch/arm/configs/pxa910_defconfig
++++ b/arch/arm/configs/pxa910_defconfig
+@@ -42,6 +42,14 @@ CONFIG_SMC91X=y
+ # CONFIG_SERIO is not set
+ CONFIG_SERIAL_PXA=y
+ CONFIG_SERIAL_PXA_CONSOLE=y
++CONFIG_SPI=y
++CONFIG_FB=y
++CONFIG_MMP_DISP=y
++CONFIG_MMP_DISP_CONTROLLER=y
++CONFIG_MMP_SPI=y
++CONFIG_MMP_PANEL_TPOHVGA=y
++CONFIG_MMP_FB=y
++CONFIG_LOGO=y
+ # CONFIG_LEGACY_PTYS is not set
+ # CONFIG_HW_RANDOM is not set
+ # CONFIG_HWMON is not set
 -- 
-1.8.1.1
+1.7.9.5
 

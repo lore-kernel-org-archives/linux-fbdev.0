@@ -1,49 +1,38 @@
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Date: Tue, 26 Feb 2013 09:06:32 +0000
-Subject: Re: [PATCH] fbmon: use VESA_DMT_VSYNC_HIGH to fix typo
-Message-Id: <20130226090632.GA27173@pengutronix.de>
+From: Sedat Dilek <sedat.dilek@gmail.com>
+Date: Fri, 01 Feb 2013 08:21:43 +0000
+Subject: Re: Revert "console: implement lockdep support for console_lock"
+Message-Id: <CA+icZUW5tBotrZT9QtNPao-3rEccohBW8a4diS2nJ+ONgTWLaQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <009501ce13ce$2e912d20$8bb38760$%han@samsung.com>
-In-Reply-To: <009501ce13ce$2e912d20$8bb38760$%han@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Dave Airlie <airlied@gmail.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Linus Torvalds <torvalds@linux-foundation.org>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-next <linux-next@vger.kernel.org>
 
-On Tue, Feb 26, 2013 at 12:05:50PM +0900, Jingoo Han wrote:
-> VESA_DMT_VSYNC_HIGH should be used instead of VESA_DMT_HSYNC_HIGH,
-> because FB_SYNC_VERT_HIGH_ACT is related to vsync, not to hsync.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-> ---
->  drivers/video/fbmon.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-> index 94ad0f7..7f67099 100644
-> --- a/drivers/video/fbmon.c
-> +++ b/drivers/video/fbmon.c
-> @@ -1400,7 +1400,7 @@ int fb_videomode_from_videomode(const struct videomode *vm,
->  	fbmode->vmode = 0;
->  	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
->  		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
-> -	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
-> +	if (vm->dmt_flags & VESA_DMT_VSYNC_HIGH)
->  		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
->  	if (vm->data_flags & DISPLAY_FLAGS_INTERLACED)
->  		fbmode->vmode |= FB_VMODE_INTERLACED;
+Hi Dave,
 
-Hi,
+people having the fbcon-locking-fixes [1] in their local GIT tree can
+revert this change?
 
-looks good to me.
+commit ff0d05bf73620eb7dc8aee7423e992ef87870bdf
+Refs: v3.8-rc5-194-gff0d05b
+Author:     Dave Airlie <airlied@gmail.com>
+AuthorDate: Thu Jan 31 14:27:03 2013 +1100
+Commit:     Dave Airlie <airlied@gmail.com>
+CommitDate: Thu Jan 31 15:46:56 2013 +1100
+
+    Revert "console: implement lockdep support for console_lock"
+
+    This reverts commit daee779718a319ff9f83e1ba3339334ac650bb22.
+
+    I'll requeue this after the console locking fixes, so lockdep
+    is useful again for people until fbcon is fixed.
+
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+Thanks!
 
 Regards,
-Steffen
+- Sedat
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+[1] http://cgit.freedesktop.org/~airlied/linux/log/?h=FBcon-locking-fixes

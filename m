@@ -1,71 +1,266 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Wed, 06 Feb 2013 16:14:42 +0000
-Subject: Re: [Linaro-mm-sig] CDF meeting @FOSDEM report
-Message-Id: <CAKMK7uFABFoNLbY0wqN2YxOMCCtMpeHZ=vPoS738F7eNOW7Pqg@mail.gmail.com>
+From: Zhou Zhu <zzhu3@marvell.com>
+Date: Fri, 01 Feb 2013 09:20:38 +0000
+Subject: [PATCH v6 5/8] video: mmpdisp: add spi port in display controller
+Message-Id: <1359710438-9850-1-git-send-email-zzhu3@marvell.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1990856.qS9uisuiVF@avalon>
-	<51123A5F.9050604@ti.com>
-	<CADnq5_P1GFbAwoe9kTeARq8ZLP1tOBc9Rn1h2KrRYxkoLxLXfw@mail.gmail.com>
-	<51127008.7050808@ti.com>
-In-Reply-To: <51127008.7050808@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Alex Deucher <alexdeucher@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@avionic-desi.gn.de>, Mark Zhang <markz@nvidia.com>, dri-devel@lists.freedesktop.org, Sunil Joshi <joshi@samsung.com>, linaro-mm-sig@lists.linaro.org, =?ISO-8859-1?Q?St=E9phane_Marchesin?= <stephane.marchesin@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, Jesse Barnes <jesse.barnes@intel.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Sebastien Guiriec <s-guiriec@ti.com>, Alexandre Courbot <acourbot@nvidia.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Ragesh Radhakrishnan <Ragesh.R@linaro.org>, linux-media@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Wed, Feb 6, 2013 at 4:00 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
->> not always a perfect match to the hardware.  For example a lot of GPUs
->> have a DVO encoder which feeds a secondary encoder like an sil164 DVO
->> to TMDS encoder.
->
-> Right. I think mapping the DRM entities to CDF ones is one of the bigger
-> question marks we have with CDF. While I'm no expert on DRM, I think we
-> have the following options:
->
-> 1. Force DRM's model to CDF, meaning one encoder.
->
-> 2. Extend DRM to support multiple encoders in a chain.
->
-> 3. Support multiple encoders in a chain in CDF, but somehow map them to
-> a single encoder in DRM side.
+Added spi port support in mmp display controller.
+This port is from display controller and for panel usage.
+This driver implemented and registered as a spi master.
 
-4. Ignore drm kms encoders.
+Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
+Acked-by: Haojian Zhuang <haojian.zhuang@gmail.com>
+---
+ drivers/video/mmp/hw/Kconfig    |    8 ++
+ drivers/video/mmp/hw/Makefile   |    1 +
+ drivers/video/mmp/hw/mmp_ctrl.c |    6 ++
+ drivers/video/mmp/hw/mmp_ctrl.h |    4 +
+ drivers/video/mmp/hw/mmp_spi.c  |  180 +++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 199 insertions(+)
+ create mode 100644 drivers/video/mmp/hw/mmp_spi.c
 
-They are only exposed to userspace as a means for userspace to
-discover very simple constraints, e.g. 1 encoder connected to 2
-outputs means you can only use one of the outputs at the same time.
-They are completely irrelevant for the actual modeset interface
-exposed to drivers, so you could create a fake kms encoder for each
-connector you expose through kms.
-
-The crtc helpers use the encoders as a real entity, and if you opt to
-use the crtc helpers to implement the modeset sequence in your driver
-it makes sense to map them to some real piece of hw. But you can
-essentially pick any transcoder in your crtc -> final output chain for
-this. Generic userspace needs to be able to cope with a failed modeset
-due to arbitrary reasons anyway, so can't presume that simply because
-the currently exposed constraints are fulfilled it'll work.
-
-> I really dislike the first option, as it would severely limit where CDF
-> can be used, or would force you to write some kind of combined drivers,
-> so that you can have one encoder driver running multiple encoder devices.
-
-Imo CDF and drm encoders don't really have that much to do with each
-another, it should just be a driver implementation detail. Of course,
-if common patterns emerge we could extract them somehow. E.g. if many
-drivers end up exposing the CDF transcoder chain as a drm encoder
-using the crtc helpers, we could add some library functions to make
-that simpler.
-
-Another conclusion (at least from my pov) from the fosdem discussion
-is that we should separate the panel interface from the actual
-control/pixel data buses. That should give us more flexibility for
-insane hw and also directly exposing properties and knobs to the
-userspace interface from e.g. dsi transcoders. So I don't think we'll
-end up with _the_ canonical CDF sink interface anyway.
--Daniel
+diff --git a/drivers/video/mmp/hw/Kconfig b/drivers/video/mmp/hw/Kconfig
+index 6c1dd34..02f109a 100644
+--- a/drivers/video/mmp/hw/Kconfig
++++ b/drivers/video/mmp/hw/Kconfig
+@@ -9,4 +9,12 @@ config MMP_DISP_CONTROLLER
+ 		this controller is used on Marvell PXA910,
+ 		MMP2, MMP3, PXA988 chips
+ 
++config MMP_DISP_SPI
++	bool "mmp display controller spi port"
++	depends on MMP_DISP_CONTROLLER && SPI_MASTER
++	default y
++	help
++		Marvell MMP display hw controller spi port support
++		will register as a spi master for panel usage
++
+ endif
+diff --git a/drivers/video/mmp/hw/Makefile b/drivers/video/mmp/hw/Makefile
+index f34ace8..0000a71 100644
+--- a/drivers/video/mmp/hw/Makefile
++++ b/drivers/video/mmp/hw/Makefile
+@@ -1 +1,2 @@
+ obj-$(CONFIG_MMP_DISP_CONTROLLER)  += mmp_ctrl.o
++obj-$(CONFIG_MMP_DISP_SPI)	   += mmp_spi.o
+diff --git a/drivers/video/mmp/hw/mmp_ctrl.c b/drivers/video/mmp/hw/mmp_ctrl.c
+index 1b5d299..4bd31b2 100644
+--- a/drivers/video/mmp/hw/mmp_ctrl.c
++++ b/drivers/video/mmp/hw/mmp_ctrl.c
+@@ -535,6 +535,12 @@ static int mmphw_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
++#ifdef CONFIG_MMP_DISP_SPI
++	ret = lcd_spi_register(ctrl);
++	if (ret < 0)
++		goto failed_path_init;
++#endif
++
+ 	dev_info(ctrl->dev, "device init done\n");
+ 
+ 	return 0;
+diff --git a/drivers/video/mmp/hw/mmp_ctrl.h b/drivers/video/mmp/hw/mmp_ctrl.h
+index b125f53..6408d8e 100644
+--- a/drivers/video/mmp/hw/mmp_ctrl.h
++++ b/drivers/video/mmp/hw/mmp_ctrl.h
+@@ -1967,4 +1967,8 @@ static inline struct lcd_regs *path_regs(struct mmp_path *path)
+ 		return NULL;
+ 	}
+ }
++
++#ifdef CONFIG_MMP_DISP_SPI
++extern int lcd_spi_register(struct mmphw_ctrl *ctrl);
++#endif
+ #endif	/* _MMP_CTRL_H_ */
+diff --git a/drivers/video/mmp/hw/mmp_spi.c b/drivers/video/mmp/hw/mmp_spi.c
+new file mode 100644
+index 0000000..e62ca7b
+--- /dev/null
++++ b/drivers/video/mmp/hw/mmp_spi.c
+@@ -0,0 +1,180 @@
++/*
++ * linux/drivers/video/mmp/hw/mmp_spi.c
++ * using the spi in LCD controler for commands send
++ *
++ * Copyright (C) 2012 Marvell Technology Group Ltd.
++ * Authors:  Guoqing Li <ligq@marvell.com>
++ *          Lisa Du <cldu@marvell.com>
++ *          Zhou Zhu <zzhu3@marvell.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2 of the License, or (at your
++ * option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ *
++ */
++#include <linux/errno.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/io.h>
++#include <linux/spi/spi.h>
++#include "mmp_ctrl.h"
++
++/**
++ * spi_write - write command to the SPI port
++ * @data: can be 8/16/32-bit, MSB justified data to write.
++ * @len:  data length.
++ *
++ * Wait bus transfer complete IRQ.
++ * The caller is expected to perform the necessary locking.
++ *
++ * Returns:
++ *   %-ETIMEDOUT	timeout occurred
++ *   0			success
++ */
++static inline int lcd_spi_write(struct spi_device *spi, u32 data)
++{
++	int timeout = 100000, isr, ret = 0;
++	u32 tmp;
++	void *reg_base +		*(void **)spi_master_get_devdata(spi->master);
++
++	/* clear ISR */
++	writel_relaxed(~SPI_IRQ_MASK, reg_base + SPU_IRQ_ISR);
++
++	switch (spi->bits_per_word) {
++	case 8:
++		writel_relaxed((u8)data, reg_base + LCD_SPU_SPI_TXDATA);
++		break;
++	case 16:
++		writel_relaxed((u16)data, reg_base + LCD_SPU_SPI_TXDATA);
++		break;
++	case 32:
++		writel_relaxed((u32)data, reg_base + LCD_SPU_SPI_TXDATA);
++		break;
++	default:
++		dev_err(&spi->dev, "Wrong spi bit length\n");
++	}
++
++	/* SPI start to send command */
++	tmp = readl_relaxed(reg_base + LCD_SPU_SPI_CTRL);
++	tmp &= ~CFG_SPI_START_MASK;
++	tmp |= CFG_SPI_START(1);
++	writel(tmp, reg_base + LCD_SPU_SPI_CTRL);
++
++	isr = readl_relaxed(reg_base + SPU_IRQ_ISR);
++	while (!(isr & SPI_IRQ_ENA_MASK)) {
++		udelay(100);
++		isr = readl_relaxed(reg_base + SPU_IRQ_ISR);
++		if (!--timeout) {
++			ret = -ETIMEDOUT;
++			dev_err(&spi->dev, "spi cmd send time out\n");
++			break;
++		}
++	}
++
++	tmp = readl_relaxed(reg_base + LCD_SPU_SPI_CTRL);
++	tmp &= ~CFG_SPI_START_MASK;
++	tmp |= CFG_SPI_START(0);
++	writel_relaxed(tmp, reg_base + LCD_SPU_SPI_CTRL);
++
++	writel_relaxed(~SPI_IRQ_MASK, reg_base + SPU_IRQ_ISR);
++
++	return ret;
++}
++
++static int lcd_spi_setup(struct spi_device *spi)
++{
++	void *reg_base +		*(void **)spi_master_get_devdata(spi->master);
++	u32 tmp;
++
++	tmp = CFG_SCLKCNT(16) |
++		CFG_TXBITS(spi->bits_per_word) |
++		CFG_SPI_SEL(1) | CFG_SPI_ENA(1) |
++		CFG_SPI_3W4WB(1);
++	writel(tmp, reg_base + LCD_SPU_SPI_CTRL);
++
++	/*
++	 * After set mode it need a time to pull up the spi singals,
++	 * or it would cause the wrong waveform when send spi command,
++	 * especially on pxa910h
++	 */
++	tmp = readl_relaxed(reg_base + SPU_IOPAD_CONTROL);
++	if ((tmp & CFG_IOPADMODE_MASK) != IOPAD_DUMB18SPI)
++		writel_relaxed(IOPAD_DUMB18SPI |
++			(tmp & ~CFG_IOPADMODE_MASK),
++			reg_base + SPU_IOPAD_CONTROL);
++	udelay(20);
++	return 0;
++}
++
++static int lcd_spi_one_transfer(struct spi_device *spi, struct spi_message *m)
++{
++	struct spi_transfer *t;
++	int i;
++
++	list_for_each_entry(t, &m->transfers, transfer_list) {
++		switch (spi->bits_per_word) {
++		case 8:
++			for (i = 0; i < t->len; i++)
++				lcd_spi_write(spi, ((u8 *)t->tx_buf)[i]);
++			break;
++		case 16:
++			for (i = 0; i < t->len/2; i++)
++				lcd_spi_write(spi, ((u16 *)t->tx_buf)[i]);
++			break;
++		case 32:
++			for (i = 0; i < t->len/4; i++)
++				lcd_spi_write(spi, ((u32 *)t->tx_buf)[i]);
++			break;
++		default:
++			dev_err(&spi->dev, "Wrong spi bit length\n");
++		}
++	}
++
++	m->status = 0;
++	if (m->complete)
++		m->complete(m->context);
++	return 0;
++}
++
++int lcd_spi_register(struct mmphw_ctrl *ctrl)
++{
++	struct spi_master *master;
++	void **p_regbase;
++	int err;
++
++	master = spi_alloc_master(ctrl->dev, sizeof(void *));
++	if (!master) {
++		dev_err(ctrl->dev, "unable to allocate SPI master\n");
++		return -ENOMEM;
++	}
++	p_regbase = spi_master_get_devdata(master);
++	*p_regbase = ctrl->reg_base;
++
++	/* set bus num to 5 to avoid conflict with other spi hosts */
++	master->bus_num = 5;
++	master->num_chipselect = 1;
++	master->setup = lcd_spi_setup;
++	master->transfer = lcd_spi_one_transfer;
++
++	err = spi_register_master(master);
++	if (err < 0) {
++		dev_err(ctrl->dev, "unable to register SPI master\n");
++		spi_master_put(master);
++		return err;
++	}
++
++	dev_info(&master->dev, "registered\n");
++
++	return 0;
++}
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+1.7.9.5
+

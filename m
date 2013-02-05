@@ -1,27 +1,59 @@
-From: Haiyang Zhang <haiyangz@microsoft.com>
-Date: Thu, 28 Feb 2013 17:56:21 +0000
-Subject: RE: [PATCH RFC] video: Add Hyper-V Synthetic Video Frame Buffer Driver
-Message-Id: <d7b9ef10e04c4fe3893d5cdcf2f23703@DFM-DB3MBX15-06.exchange.corp.microsoft.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Tue, 05 Feb 2013 13:35:14 +0000
+Subject: [PATCH 4/5] atmel_lcdfb: move lcdcon2 register access to compute_hozval
+Message-Id: <1360071315-4032-5-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360955396-14183-1-git-send-email-haiyangz@microsoft.com>
- <20130228151641.GA13552@aepfle.de>
-In-Reply-To: <20130228151641.GA13552@aepfle.de>
+References: <20130129135435.GN7360@game.jcrosoft.org>
+ <1360071315-4032-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1360071315-4032-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Olaf Hering <olaf@aepfle.de>
-Cc: "FlorianSchandinat@gmx.de" <FlorianSchandinat@gmx.de>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, KY Srinivasan <kys@microsoft.com>, "jasowang@redhat.com" <jasowang@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>
+To: linux-arm-kernel@lists.infradead.org
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBPbGFmIEhlcmluZyBbbWFpbHRv
-Om9sYWZAYWVwZmxlLmRlXQ0KPiBTZW50OiBUaHVyc2RheSwgRmVicnVhcnkgMjgsIDIwMTMgMTA6
-MTcgQU0NCj4gVG86IEhhaXlhbmcgWmhhbmcNCj4gQ2M6IEZsb3JpYW5TY2hhbmRpbmF0QGdteC5k
-ZTsgbGludXgtZmJkZXZAdmdlci5rZXJuZWwub3JnOyBLWSBTcmluaXZhc2FuOw0KPiBqYXNvd2Fu
-Z0ByZWRoYXQuY29tOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOw0KPiBkZXZlbEBsaW51
-eGRyaXZlcnByb2plY3Qub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggUkZDXSB2aWRlbzogQWRk
-IEh5cGVyLVYgU3ludGhldGljIFZpZGVvIEZyYW1lIEJ1ZmZlcg0KPiBEcml2ZXINCj4gDQo+IE9u
-IEZyaSwgRmViIDE1LCBIYWl5YW5nIFpoYW5nIHdyb3RlOg0KPiANCj4gPiArCWlmIChmYl9nZXRf
-b3B0aW9ucygiaHlwZXJ2X2ZiIiwgJm9wdCkgfHwgIW9wdCB8fCAhKm9wdCkNCj4gDQo+ID4gKwlz
-dHJjcHkoaW5mby0+Zml4LmlkLCAiaHlwZXJ2Iik7DQo+IA0KPiANCj4gSGVyZSBpcyBhIG1pc21h
-dGNoIGJldHdlZW4gdmlkZW89PG9wdG5hbWU+IGFuZCAvcHJvYy9mYiBvdXRwdXQuDQo+IEJvdGgg
-c2hvdWxkIGhhdmUgdGhlIHNhbWUgc3RyaW5nIElNTy4NCg0KSSB3aWxsIG1ha2UgYm90aCBvZiB0
-aGVtIHRvIGJlIEtCVUlMRF9NT0ROQU1FLg0KDQpUaGFua3MsDQotIEhhaXlhbmcNCg=
+Pass atmel_lcd_info structure to compute_hozval and only do the register
+access on SOCs that actually use it.
+
+This will also simplify the removal of the cpu_is macros.
+
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
+---
+ drivers/video/atmel_lcdfb.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 93910e3..347bab2 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -193,14 +193,17 @@ static struct fb_fix_screeninfo atmel_lcdfb_fix __initdata = {
+ 	.accel		= FB_ACCEL_NONE,
+ };
+ 
+-static unsigned long compute_hozval(unsigned long xres, unsigned long lcdcon2)
++static unsigned long compute_hozval(struct atmel_lcdfb_info *sinfo,
++							unsigned long xres)
+ {
++	unsigned long lcdcon2;
+ 	unsigned long value;
+ 
+ 	if (!(cpu_is_at91sam9261() || cpu_is_at91sam9g10()
+ 		|| cpu_is_at32ap7000()))
+ 		return xres;
+ 
++	lcdcon2 = lcdc_readl(sinfo, ATMEL_LCDC_LCDCON2);
+ 	value = xres;
+ 	if ((lcdcon2 & ATMEL_LCDC_DISTYPE) != ATMEL_LCDC_DISTYPE_TFT) {
+ 		/* STN display */
+@@ -590,8 +593,7 @@ static int atmel_lcdfb_set_par(struct fb_info *info)
+ 	lcdc_writel(sinfo, ATMEL_LCDC_TIM2, value);
+ 
+ 	/* Horizontal value (aka line size) */
+-	hozval_linesz = compute_hozval(info->var.xres,
+-					lcdc_readl(sinfo, ATMEL_LCDC_LCDCON2));
++	hozval_linesz = compute_hozval(sinfo, info->var.xres);
+ 
+ 	/* Display size */
+ 	value = (hozval_linesz - 1) << ATMEL_LCDC_HOZVAL_OFFSET;
+-- 
+1.8.1.1
+

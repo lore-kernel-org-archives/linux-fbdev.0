@@ -1,7 +1,7 @@
 From: Sedat Dilek <sedat.dilek@gmail.com>
-Date: Fri, 01 Feb 2013 09:09:05 +0000
+Date: Tue, 05 Feb 2013 10:47:25 +0000
 Subject: Re: Revert "console: implement lockdep support for console_lock"
-Message-Id: <CA+icZUVDGmbozG4mrvJm2gKKQvddhsZ_hym=DpzhX1t-dKxExg@mail.gmail.com>
+Message-Id: <CA+icZUU4JMfws_jFpoCaXnSNJeigONSEik_oGSa_ZQ=uJ_GJOA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CA+icZUW5tBotrZT9QtNPao-3rEccohBW8a4diS2nJ+ONgTWLaQ@mail.gmail.com>
 	<CAKMK7uEFCm5JPD9bg4uO9K_q-w0=9GWzRLoB9H-_=ZR7NxA9=A@mail.gmail.com>
@@ -10,7 +10,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 To: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Dave Airlie <airlied@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-next <linux-next@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, Ingo Molnar <mingo@redhat.com>
+Cc: Dave Airlie <airlied@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-next <linux-next@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Stephen Rothwell <sfr@canb.auug.org.au>
 
 On Fri, Feb 1, 2013 at 9:42 AM, Daniel Vetter <daniel.vetter@ffwll.ch> wrot=
 e:
@@ -22,56 +22,20 @@ e:
 > to increase testing. Dave will probably push the revert himself to
 > drm-next soon.
 
-[ CCing Ingo ]
+When will that happen: drm-next inclusion?
 
-The revert is now in -rc6.
+Just FYI:
+Pulling fbcon-locking-fixes into Linux-Next (next-20130205) shows some
+ugly UTF-8 mismatch, means "fb: rework locking to fix lock ordering on
+takeover" is not the same patch as in -next.
+Just wanna let you know.
 
-Hmmm, I have here...
+It would be good to inform Andrew and Stephen when this happened, so
+Andrew can drop the two fb-fixes from his mmotm-tree.
 
-     CONFIG_LOCKDEP_SUPPORT=3Dy
-
-Excerpts from the revert [1]:
-[...]
--#ifdef CONFIG_LOCKDEP
--static struct lockdep_map console_lock_dep_map =3D {
--       .name =3D "console_lock"
--};
--#endif
-[...]
-
-Checking for CONFIG_LOCKDEP ...
-
-[ lib/Kconfig.debug ]
-...
-config LOCKDEP
-        bool
-        depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT &&
-STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
-        select STACKTRACE
-        select FRAME_POINTER if !MIPS && !PPC && !ARM_UNWIND && !S390
-&& !MICROBLAZE
-        select KALLSYMS
-        select KALLSYMS_ALL
-...
-
----> No help text.
----> Missing pointer to <file:Documentation/lockdep-design.txt>.
-
-[ arch/x86/Kconfig ]
-...
-config LOCKDEP_SUPPORT
-        def_bool y
-...
-
-I would have expected a check for CONFIG_LOCKDEP_SUPPORT.
-This is BTW with Linux v3.8-rc5!
+Thanks!
 
 - Sedat -
-
-[1] http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux.git;a=3Dcomm=
-itdiff;h=FF0d05bf73620eb7dc8aee7423e992ef87870bdf
-[2] http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux.git;a=3Dblob=
-;f=3DDocumentation/lockdep-design.txt
 
 > -Daniel
 >

@@ -1,93 +1,51 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 01 Feb 2013 09:33:09 +0000
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Tue, 05 Feb 2013 18:29:53 +0000
 Subject: Re: [PATCH v17 4/7] fbmon: add videomode helpers
-Message-Id: <7561610.793881359711187327.JavaMail.weblogic@epml02>
+Message-Id: <20130205182953.GC27438@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359104515-8907-5-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1359104515-8907-5-git-send-email-s.trumtrar@pengutronix.de>
+References: <1359104515-8907-1-git-send-email-s.trumtrar@pengutronix.de>
+ <1359104515-8907-5-git-send-email-s.trumtrar@pengutronix.de>
+ <003401ce005e$af665c50$0e3314f0$%han@samsung.com>
+In-Reply-To: <003401ce005e$af665c50$0e3314f0$%han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: "Mohammed, Afzal" <afzal-l0cyMroinI0@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Dave Airlie <airlied-cv59FeDIM0c@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org" <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, "kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org" <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, "linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: "'Mohammed, Afzal'" <afzal-l0cyMroinI0@public.gmane.org>, 'Florian Tobias Schandinat' <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, 'Dave Airlie' <airlied-cv59FeDIM0c@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, 'Tomi Valkeinen' <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, 'Laurent Pinchart' <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, 'Guennady Liakhovetski' <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-T24gRnJpZGF5LCBKYW51YXJ5IDI1LCAyMDEzIDY6MDIgUE0sIFN0ZWZmZW4gVHJ1bXRyYXIgd3Jv
-dGUNCj4gDQo+IEFkZCBhIGZ1bmN0aW9uIHRvIGNvbnZlcnQgZnJvbSB0aGUgZ2VuZXJpYyB2aWRl
-b21vZGUgdG8gYSBmYl92aWRlb21vZGUuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBTdGVmZmVuIFRy
-dW10cmFyIDxzLnRydW10cmFyQHBlbmd1dHJvbml4LmRlPg0KPiBSZXZpZXdlZC1ieTogVGhpZXJy
-eSBSZWRpbmcgPHRoaWVycnkucmVkaW5nQGF2aW9uaWMtZGVzaWduLmRlPg0KPiBBY2tlZC1ieTog
-VGhpZXJyeSBSZWRpbmcgPHRoaWVycnkucmVkaW5nQGF2aW9uaWMtZGVzaWduLmRlPg0KPiBUZXN0
-ZWQtYnk6IFRoaWVycnkgUmVkaW5nIDx0aGllcnJ5LnJlZGluZ0BhdmlvbmljLWRlc2lnbi5kZT4N
-Cj4gVGVzdGVkLWJ5OiBQaGlsaXBwIFphYmVsIDxwLnphYmVsQHBlbmd1dHJvbml4LmRlPg0KPiBS
-ZXZpZXdlZC1ieTogTGF1cmVudCBQaW5jaGFydCA8bGF1cmVudC5waW5jaGFydEBpZGVhc29uYm9h
-cmQuY29tPg0KPiBBY2tlZC1ieTogTGF1cmVudCBQaW5jaGFydCA8bGF1cmVudC5waW5jaGFydEBp
-ZGVhc29uYm9hcmQuY29tPg0KPiBUZXN0ZWQtYnk6IEFmemFsIE1vaGFtbWVkIDxBZnphbEB0aS5j
-b20+DQo+IFRlc3RlZC1ieTogUm9iIENsYXJrIDxyb2JjbGFya0BnbWFpbC5jb20+DQo+IFRlc3Rl
-ZC1ieTogTGVlbGEgS3Jpc2huYSBBbXVkYWxhIDxsZWVsYWtyaXNobmEuYUBnbWFpbC5jb20+DQo+
-IC0tLQ0KPiAgZHJpdmVycy92aWRlby9mYm1vbi5jIHwgICA1MiArKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+ICBpbmNsdWRlL2xpbnV4L2ZiLmggICAg
-fCAgICA0ICsrKysNCj4gIDIgZmlsZXMgY2hhbmdlZCwgNTYgaW5zZXJ0aW9ucygrKQ0KPiANCj4g
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJtb24uYyBiL2RyaXZlcnMvdmlkZW8vZmJtb24u
-Yw0KPiBpbmRleCBjZWY2NTU3Li4xN2NlMTM1IDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3ZpZGVv
-L2ZibW9uLmMNCj4gKysrIGIvZHJpdmVycy92aWRlby9mYm1vbi5jDQo+IEBAIC0zMSw2ICszMSw3
-IEBADQo+ICAjaW5jbHVkZSA8bGludXgvcGNpLmg+DQo+ICAjaW5jbHVkZSA8bGludXgvc2xhYi5o
-Pg0KPiAgI2luY2x1ZGUgPHZpZGVvL2VkaWQuaD4NCj4gKyNpbmNsdWRlIDx2aWRlby92aWRlb21v
-ZGUuaD4NCj4gICNpZmRlZiBDT05GSUdfUFBDX09GDQo+ICAjaW5jbHVkZSA8YXNtL3Byb20uaD4N
-Cj4gICNpbmNsdWRlIDxhc20vcGNpLWJyaWRnZS5oPg0KPiBAQCAtMTM3Myw2ICsxMzc0LDU3IEBA
-IGludCBmYl9nZXRfbW9kZShpbnQgZmxhZ3MsIHUzMiB2YWwsIHN0cnVjdCBmYl92YXJfc2NyZWVu
-aW5mbyAqdmFyLCBzdHJ1Y3QgZmJfaW5mDQo+ICAJa2ZyZWUodGltaW5ncyk7DQo+ICAJcmV0dXJu
-IGVycjsNCj4gIH0NCj4gKw0KPiArI2lmIElTX0VOQUJMRUQoQ09ORklHX1ZJREVPTU9ERSkNCj4g
-K2ludCBmYl92aWRlb21vZGVfZnJvbV92aWRlb21vZGUoY29uc3Qgc3RydWN0IHZpZGVvbW9kZSAq
-dm0sDQo+ICsJCQkJc3RydWN0IGZiX3ZpZGVvbW9kZSAqZmJtb2RlKQ0KPiArew0KPiArCXVuc2ln
-bmVkIGludCBodG90YWwsIHZ0b3RhbDsNCj4gKw0KPiArCWZibW9kZS0+eHJlcyA9IHZtLT5oYWN0
-aXZlOw0KPiArCWZibW9kZS0+bGVmdF9tYXJnaW4gPSB2bS0+aGJhY2tfcG9yY2g7DQo+ICsJZmJt
-b2RlLT5yaWdodF9tYXJnaW4gPSB2bS0+aGZyb250X3BvcmNoOw0KPiArCWZibW9kZS0+aHN5bmNf
-bGVuID0gdm0tPmhzeW5jX2xlbjsNCj4gKw0KPiArCWZibW9kZS0+eXJlcyA9IHZtLT52YWN0aXZl
-Ow0KPiArCWZibW9kZS0+dXBwZXJfbWFyZ2luID0gdm0tPnZiYWNrX3BvcmNoOw0KPiArCWZibW9k
-ZS0+bG93ZXJfbWFyZ2luID0gdm0tPnZmcm9udF9wb3JjaDsNCj4gKwlmYm1vZGUtPnZzeW5jX2xl
-biA9IHZtLT52c3luY19sZW47DQo+ICsNCj4gKwkvKiBwcmV2ZW50IGRpdmlzaW9uIGJ5IHplcm8g
-aW4gS0haMlBJQ09TIG1hY3JvICovDQo+ICsJZmJtb2RlLT5waXhjbG9jayA9IHZtLT5waXhlbGNs
-b2NrID8NCj4gKwkJCUtIWjJQSUNPUyh2bS0+cGl4ZWxjbG9jayAvIDEwMDApIDogMDsNCj4gKw0K
-PiArCWZibW9kZS0+c3luYyA9IDA7DQo+ICsJZmJtb2RlLT52bW9kZSA9IDA7DQo+ICsJaWYgKHZt
-LT5kbXRfZmxhZ3MgJiBWRVNBX0RNVF9IU1lOQ19ISUdIKQ0KPiArCQlmYm1vZGUtPnN5bmMgfD0g
-RkJfU1lOQ19IT1JfSElHSF9BQ1Q7DQo+ICsJaWYgKHZtLT5kbXRfZmxhZ3MgJiBWRVNBX0RNVF9I
-U1lOQ19ISUdIKQ0KDQpIaSBTdGVmZmVuIFRydW10cmFyLA0KDQpVbSwgaXQgc2VlbXMgdG8gYmUg
-YSB0eXBlLiAnSCdTWU5DIC0+ICdWJ1NZTkMNClRodXMsIGl0IHdvdWxkIGJlIGNoYW5nZWQgYXMg
-YmVsb3c6DQoNCiAgICBWRVNBX0RNVF9IU1lOQ19ISUdIIC0+IFZFU0FfRE1UX1ZTWU5DX0hJR0gN
-Cg0KDQpCZXN0IHJlZ2FyZHMsDQpKaW5nb28gSGFuDQoNCj4gKwkJZmJtb2RlLT5zeW5jIHw9IEZC
-X1NZTkNfVkVSVF9ISUdIX0FDVDsNCj4gKwlpZiAodm0tPmRhdGFfZmxhZ3MgJiBESVNQTEFZX0ZM
-QUdTX0lOVEVSTEFDRUQpDQo+ICsJCWZibW9kZS0+dm1vZGUgfD0gRkJfVk1PREVfSU5URVJMQUNF
-RDsNCj4gKwlpZiAodm0tPmRhdGFfZmxhZ3MgJiBESVNQTEFZX0ZMQUdTX0RPVUJMRVNDQU4pDQo+
-ICsJCWZibW9kZS0+dm1vZGUgfD0gRkJfVk1PREVfRE9VQkxFOw0KPiArCWZibW9kZS0+ZmxhZyA9
-IDA7DQo+ICsNCj4gKwlodG90YWwgPSB2bS0+aGFjdGl2ZSArIHZtLT5oZnJvbnRfcG9yY2ggKyB2
-bS0+aGJhY2tfcG9yY2ggKw0KPiArCQkgdm0tPmhzeW5jX2xlbjsNCj4gKwl2dG90YWwgPSB2bS0+
-dmFjdGl2ZSArIHZtLT52ZnJvbnRfcG9yY2ggKyB2bS0+dmJhY2tfcG9yY2ggKw0KPiArCQkgdm0t
-PnZzeW5jX2xlbjsNCj4gKwkvKiBwcmV2ZW50IGRpdmlzaW9uIGJ5IHplcm8gKi8NCj4gKwlpZiAo
-aHRvdGFsICYmIHZ0b3RhbCkgew0KPiArCQlmYm1vZGUtPnJlZnJlc2ggPSB2bS0+cGl4ZWxjbG9j
-ayAvIChodG90YWwgKiB2dG90YWwpOw0KPiArCS8qIGEgbW9kZSBtdXN0IGhhdmUgaHRvdGFsIGFu
-ZCB2dG90YWwgIT0gMCBvciBpdCBpcyBpbnZhbGlkICovDQo+ICsJfSBlbHNlIHsNCj4gKwkJZmJt
-b2RlLT5yZWZyZXNoID0gMDsNCj4gKwkJcmV0dXJuIC1FSU5WQUw7DQo+ICsJfQ0KPiArDQo+ICsJ
-cmV0dXJuIDA7DQo+ICt9DQo+ICtFWFBPUlRfU1lNQk9MX0dQTChmYl92aWRlb21vZGVfZnJvbV92
-aWRlb21vZGUpOw0KPiArI2VuZGlmDQo+ICsNCj4gICNlbHNlDQo+ICBpbnQgZmJfcGFyc2VfZWRp
-ZCh1bnNpZ25lZCBjaGFyICplZGlkLCBzdHJ1Y3QgZmJfdmFyX3NjcmVlbmluZm8gKnZhcikNCj4g
-IHsNCj4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvZmIuaCBiL2luY2x1ZGUvbGludXgvZmIu
-aA0KPiBpbmRleCBjN2E5NTcxLi4xMDBhMTc2IDEwMDY0NA0KPiAtLS0gYS9pbmNsdWRlL2xpbnV4
-L2ZiLmgNCj4gKysrIGIvaW5jbHVkZS9saW51eC9mYi5oDQo+IEBAIC0xOSw2ICsxOSw3IEBAIHN0
-cnVjdCB2bV9hcmVhX3N0cnVjdDsNCj4gIHN0cnVjdCBmYl9pbmZvOw0KPiAgc3RydWN0IGRldmlj
-ZTsNCj4gIHN0cnVjdCBmaWxlOw0KPiArc3RydWN0IHZpZGVvbW9kZTsNCj4gDQo+ICAvKiBEZWZp
-bml0aW9ucyBiZWxvdyBhcmUgdXNlZCBpbiB0aGUgcGFyc2VkIG1vbml0b3Igc3BlY3MgKi8NCj4g
-ICNkZWZpbmUgRkJfRFBNU19BQ1RJVkVfT0ZGCTENCj4gQEAgLTcxNCw2ICs3MTUsOSBAQCBleHRl
-cm4gdm9pZCBmYl9kZXN0cm95X21vZGVkYihzdHJ1Y3QgZmJfdmlkZW9tb2RlICptb2RlZGIpOw0K
-PiAgZXh0ZXJuIGludCBmYl9maW5kX21vZGVfY3Z0KHN0cnVjdCBmYl92aWRlb21vZGUgKm1vZGUs
-IGludCBtYXJnaW5zLCBpbnQgcmIpOw0KPiAgZXh0ZXJuIHVuc2lnbmVkIGNoYXIgKmZiX2RkY19y
-ZWFkKHN0cnVjdCBpMmNfYWRhcHRlciAqYWRhcHRlcik7DQo+IA0KPiArZXh0ZXJuIGludCBmYl92
-aWRlb21vZGVfZnJvbV92aWRlb21vZGUoY29uc3Qgc3RydWN0IHZpZGVvbW9kZSAqdm0sDQo+ICsJ
-CQkJICAgICAgIHN0cnVjdCBmYl92aWRlb21vZGUgKmZibW9kZSk7DQo+ICsNCj4gIC8qIGRyaXZl
-cnMvdmlkZW8vbW9kZWRiLmMgKi8NCj4gICNkZWZpbmUgVkVTQV9NT0RFREJfU0laRSAzNA0KPiAg
-ZXh0ZXJuIHZvaWQgZmJfdmFyX3RvX3ZpZGVvbW9kZShzdHJ1Y3QgZmJfdmlkZW9tb2RlICptb2Rl
-LA0KPiAtLQ0KPiAxLjcuMTAuNA0KPiANCj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18NCj4gZHJpLWRldmVsIG1haWxpbmcgbGlzdA0KPiBkcmktZGV2ZWxA
-bGlzdHMuZnJlZWRlc2t0b3Aub3JnDQo+IGh0dHA6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFp
-bG1hbi9saXN0aW5mby9kcmktZGV2ZWwNCg=
+Hi!
 
+On Fri, Feb 01, 2013 at 06:29:50PM +0900, Jingoo Han wrote:
+> On Friday, January 25, 2013 6:02 PM, Steffen Trumtrar wrote
+> > 
+> > +	fbmode->sync = 0;
+> > +	fbmode->vmode = 0;
+> > +	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
+> > +		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
+> > +	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
+> 
+> Um, it seems to be a type. 'H'SYNC -> 'V'SYNC
+> Thus, it would be changed as below:
+> 
+>     VESA_DMT_HSYNC_HIGH -> VESA_DMT_VSYNC_HIGH
 
+Damn. You are right, that is a typo. But I guess some maintainer (Dave) really,
+really wants to take the series now and this can wait for an -rc. No?!  ;-)
+
+Thanks,
+Steffen
+
+> 
+> > +		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
+> > +	if (vm->data_flags & DISPLAY_FLAGS_INTERLACED)
+> > +		fbmode->vmode |= FB_VMODE_INTERLACED;
+> > +	if (vm->data_flags & DISPLAY_FLAGS_DOUBLESCAN)
+> > +		fbmode->vmode |= FB_VMODE_DOUBLE;
+> > +	fbmode->flag = 0;
+> > +
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

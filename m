@@ -1,72 +1,129 @@
-From: phil.edworthy@renesas.com
-Date: Mon, 18 Feb 2013 08:14:38 +0000
-Subject: Re: [PATCH v2] fbdev: Add Renesas vdc4 framebuffer driver
-Message-Id: <OF9E7DE87B.2215F567-ON80257B16.002CE7D6-80257B16.002D4977@eu.necel.com>
+From: Rahul Sharma <rahul.sharma@samsung.com>
+Date: Thu, 07 Feb 2013 11:49:26 +0000
+Subject: [RFC PATCH v2 2/5] drm/edid: temporarily exposing generic edid-read interface from drm
+Message-Id: <1360238951-7022-1-git-send-email-rahul.sharma@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1347267372-22949-1-git-send-email-phil.edworthy@renesas.com>
-In-Reply-To: <1347267372-22949-1-git-send-email-phil.edworthy@renesas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com, broonie@opensource.wolfsonmicro.com, inki.dae@samsung.com, kyungmin.park@samsung.com, r.sh.open@gmail.com, joshi@samsung.com
 
-Hi Simon,
+It exposes generic interface from drm_edid.c to get the edid data and length
+by any display entity. Once I get clear idea about edid handling in CDF, I need
+to revert these temporary changes.
 
-> On Fri, Oct 05, 2012 at 05:34:54PM +0100, phil.edworthy@renesas.com 
-wrote:
-> > Hi,
-> > 
-> > Any news on this patch?
-> 
-> Phil, did this patch get merged in the end?
-No, I sent a couple of emails to try to get some response but nothing. I 
-suspect that it was my fault in that I only realised somewhat later that I 
-wasn't signed up to the fbdev ml.
+Signed-off-by: Rahul Sharma <rahul.sharma@samsung.com>
+---
+ drivers/gpu/drm/drm_edid.c | 88 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 88 insertions(+)
 
-Phil
-
-> > > From: Jingoo Han <jg1.han@samsung.com>
-> > > To: "'Phil Edworthy'" <phil.edworthy@renesas.com>, 
-> > > Cc: "'Florian Tobias Schandinat'" <FlorianSchandinat@gmx.de>, linux-
-> > > fbdev@vger.kernel.org, linux-sh@vger.kernel.org, "'Jingoo Han'" 
-> > > <jg1.han@samsung.com>
-> > > Date: 11/09/2012 03:31
-> > > Subject: Re: [PATCH v2] fbdev: Add Renesas vdc4 framebuffer driver
-> > > 
-> > > On Monday, September 10, 2012 5:56 PM Phil Edworthy wrote
-> > > > 
-> > > > The vdc4 display hardware is found on the sh7269 device.
-> > > > 
-> > > > Signed-off-by: Phil Edworthy <phil.edworthy@renesas.com>
-> > > 
-> > > 
-> > > Reviewed-by: Jingoo Han <jg1.han@samsung.com>
-> > > 
-> > > Best regards,
-> > > Jingoo Han
-> > > 
-> > > 
-> > > > ---
-> > > > v2:
-> > > >  * Use devm_ variants of clk_get, ioremap_nocache, request_irq.
-> > > >  * Replace spaces with tabs.
-> > > >  * Check ren_vdc4_start return value.
-> > > >  * Fix headers used.
-> > > > 
-> > > >  drivers/video/Kconfig      |   10 +
-> > > >  drivers/video/Makefile     |    1 +
-> > > >  drivers/video/ren_vdc4fb.c |  641 +++++++++++++++++++++++++++++++
-> > > +++++++++++++
-> > > >  include/video/ren_vdc4fb.h |   19 ++
-> > > >  4 files changed, 671 insertions(+), 0 deletions(-)
-> > > >  create mode 100644 drivers/video/ren_vdc4fb.c
-> > > >  create mode 100644 include/video/ren_vdc4fb.h
-> > > 
-> > > 
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-sh" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > 
+diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c
+index 5a3770f..567a565 100644
+--- a/drivers/gpu/drm/drm_edid.c
++++ b/drivers/gpu/drm/drm_edid.c
+@@ -31,6 +31,7 @@
+ #include <linux/slab.h>
+ #include <linux/i2c.h>
+ #include <linux/module.h>
++#include <video/display.h>
+ #include <drm/drmP.h>
+ #include <drm/drm_edid.h>
+ #include "drm_edid_modes.h"
+@@ -386,6 +387,93 @@ out:
+ 	return NULL;
+ }
+ 
++int generic_drm_do_get_edid(struct i2c_adapter *adapter,
++	struct display_entity_edid *edid)
++{
++	int i, j = 0, valid_extensions = 0;
++	u8 *block, *new;
++	bool print_bad_edid = 0;
++
++	block = kmalloc(EDID_LENGTH, GFP_KERNEL);
++	if (!block)
++		return -ENOMEM;
++
++	/* base block fetch */
++	for (i = 0; i < 4; i++) {
++		if (drm_do_probe_ddc_edid(adapter, block, 0, EDID_LENGTH))
++			goto out;
++		if (drm_edid_block_valid(block, 0, print_bad_edid))
++			break;
++		if (i = 0 && drm_edid_is_zero(block, EDID_LENGTH))
++			goto carp;
++	}
++	if (i = 4)
++		goto carp;
++
++	/* if there's no extensions, we're done */
++	if (block[0x7e] = 0) {
++		edid->edid = block;
++		edid->len = EDID_LENGTH;
++		return 0;
++	}
++
++	new = krealloc(block, (block[0x7e] + 1) * EDID_LENGTH, GFP_KERNEL);
++	if (!new)
++		goto out;
++	block = new;
++	edid->len = (block[0x7e] + 1) * EDID_LENGTH;
++
++	for (j = 1; j <= block[0x7e]; j++) {
++		for (i = 0; i < 4; i++) {
++			if (drm_do_probe_ddc_edid(adapter,
++				  block + (valid_extensions + 1) * EDID_LENGTH,
++				  j, EDID_LENGTH))
++				goto out;
++			if (drm_edid_block_valid(block + (valid_extensions + 1)*
++				EDID_LENGTH, j, print_bad_edid)) {
++				valid_extensions++;
++				break;
++			}
++		}
++		if (i = 4)
++			DRM_DEBUG_KMS("Ignoring inv lock %d.\n", j);
++	}
++
++	if (valid_extensions != block[0x7e]) {
++		block[EDID_LENGTH-1] += block[0x7e] - valid_extensions;
++		block[0x7e] = valid_extensions;
++		new = krealloc(block, (valid_extensions + 1)*
++			EDID_LENGTH, GFP_KERNEL);
++		if (!new)
++			goto out;
++		block = new;
++		edid->len = (valid_extensions + 1) * EDID_LENGTH;
++	}
++
++	edid->edid = block;
++	return 0;
++
++carp:
++	if (print_bad_edid)
++		DRM_DEBUG_KMS("[ERROR]: EDID block %d invalid.\n", j);
++
++out:
++	kfree(block);
++	return -ENOMEM;
++}
++
++
++int generic_drm_get_edid(struct i2c_adapter *adapter,
++	struct display_entity_edid *edid)
++{
++	int ret = -EINVAL;
++	if (drm_probe_ddc(adapter))
++		ret = generic_drm_do_get_edid(adapter, edid);
++
++	return ret;
++}
++EXPORT_SYMBOL(generic_drm_get_edid);
++
+ /**
+  * Probe DDC presence.
+  *
+-- 
+1.8.0
 

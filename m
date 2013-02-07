@@ -1,40 +1,44 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Wed, 13 Feb 2013 10:40:26 +0000
-Subject: [PATCH 3/5] fb: hx8357: Remove useless error message
-Message-Id: <1360752028-7301-4-git-send-email-maxime.ripard@free-electrons.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Thu, 07 Feb 2013 15:31:55 +0000
+Subject: [PATCH v2 0/3] ARM: at91/avr32/atmel_lcdfb: remove cpu_is macros
+Message-Id: <1360251118-12715-1-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360752028-7301-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1360752028-7301-1-git-send-email-maxime.ripard@free-electrons.com>
+References: <20130205201145.GE30595@game.jcrosoft.org>
+In-Reply-To: <20130205201145.GE30595@game.jcrosoft.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: joe@perches.com, Andrew Morton <akpm@linux-foundation.org>, Richard Purdie <rpurdie@rpsys.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-In case of a failing allocation, a dump stack will be printed anyway, so
-the dev_err is redundant.
+Here's a v2 replacing the last two patches in the series (the first three are
+unchanged since the first post). If preferred, I can repost the whole series
+when these patches have been acked.
 
-Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
----
- drivers/video/backlight/hx8357.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+v2:
+ - use clkdev to handle the lcdc bus clock
+ - use -lcdfb suffix for device ids (e.g. "at91sam9g45-lcdfb")
 
-diff --git a/drivers/video/backlight/hx8357.c b/drivers/video/backlight/hx8357.c
-index 2691fd6..7c82561 100644
---- a/drivers/video/backlight/hx8357.c
-+++ b/drivers/video/backlight/hx8357.c
-@@ -96,10 +96,8 @@ static int hx8357_spi_write_then_read(struct lcd_device *lcdev,
- 
- 		local_txbuf = kcalloc(txlen, sizeof(*local_txbuf), GFP_KERNEL);
- 
--		if (!local_txbuf) {
--			dev_err(&lcdev->dev, "Couldn't allocate data buffer.\n");
-+		if (!local_txbuf)
- 			return -ENOMEM;
--		}
- 
- 		for (i = 0; i < txlen; i++) {
- 			local_txbuf[i] = txbuf[i];
+Thanks,
+Johan
+
+Johan Hovold (3):
+  ARM: at91/avr32/atmel_lcdfb: add bus-clock entry
+  atmel_lcdfb: move lcdcon2 register access to compute_hozval
+  ARM: at91/avr32/atmel_lcdfb: add platform device-id table
+
+ arch/arm/mach-at91/at91sam9261.c         |   2 +
+ arch/arm/mach-at91/at91sam9261_devices.c |   6 +-
+ arch/arm/mach-at91/at91sam9263.c         |   1 +
+ arch/arm/mach-at91/at91sam9263_devices.c |   2 +-
+ arch/arm/mach-at91/at91sam9g45.c         |   2 +
+ arch/arm/mach-at91/at91sam9g45_devices.c |   6 +-
+ arch/arm/mach-at91/at91sam9rl.c          |   1 +
+ arch/arm/mach-at91/at91sam9rl_devices.c  |   2 +-
+ arch/avr32/mach-at32ap/at32ap700x.c      |   6 +-
+ drivers/video/atmel_lcdfb.c              | 120 +++++++++++++++++++++++--------
+ include/video/atmel_lcdc.h               |   4 +-
+ 11 files changed, 117 insertions(+), 35 deletions(-)
+
 -- 
-1.7.10.4
+1.8.1.1
 

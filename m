@@ -1,73 +1,59 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:34:16 +0000
-Subject: [PATCH 24/33] OMAPDSS: picodlp panel: handle gpio data in panel driver
-Message-Id: <1360765345-19312-25-git-send-email-archit@ti.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Thu, 07 Feb 2013 15:31:57 +0000
+Subject: [PATCH v2 2/3] atmel_lcdfb: move lcdcon2 register access to compute_hozval
+Message-Id: <1360251118-12715-3-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360765345-19312-1-git-send-email-archit@ti.com>
-In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
+References: <20130205201145.GE30595@game.jcrosoft.org>
+ <1360251118-12715-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1360251118-12715-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-The picodlp panel driver leaves gpio requests to the platform's board file.
-These should happen in the panel driver itself.
+Pass atmel_lcd_info structure to compute_hozval and only do the register
+access on SOCs that actually use it.
 
-A platform data struct called picodlp_panel_data already exists to hold gpio
-numbers and other platform data. Request all the gpios in the panel driver so
-that the board files which use the the panel don't need to do it.
+This will also simplify the removal of the cpu_is macros.
 
-This will help in removing the need for the panel drivers to have platform
-related callbacks.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
 ---
- drivers/video/omap2/displays/panel-picodlp.c |   21 ++++++++++++++++++++-
- 1 file changed, 20 insertions(+), 1 deletion(-)
+ drivers/video/atmel_lcdfb.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-picodlp.c b/drivers/video/omap2/displays/panel-picodlp.c
-index 56d536c..bc8ac77 100644
---- a/drivers/video/omap2/displays/panel-picodlp.c
-+++ b/drivers/video/omap2/displays/panel-picodlp.c
-@@ -423,10 +423,13 @@ static int picodlp_panel_probe(struct omap_dss_device *dssdev)
- 	struct picodlp_panel_data *picodlp_pdata = get_panel_data(dssdev);
- 	struct i2c_adapter *adapter;
- 	struct i2c_client *picodlp_i2c_client;
--	int picodlp_adapter_id;
-+	int r, picodlp_adapter_id;
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 86cafae..c707130 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -193,14 +193,17 @@ static struct fb_fix_screeninfo atmel_lcdfb_fix __initdata = {
+ 	.accel		= FB_ACCEL_NONE,
+ };
  
- 	dssdev->panel.timings = pico_ls_timings;
+-static unsigned long compute_hozval(unsigned long xres, unsigned long lcdcon2)
++static unsigned long compute_hozval(struct atmel_lcdfb_info *sinfo,
++							unsigned long xres)
+ {
++	unsigned long lcdcon2;
+ 	unsigned long value;
  
-+	if (!picodlp_pdata)
-+		return -EINVAL;
-+
- 	picod = devm_kzalloc(&dssdev->dev, sizeof(*picod), GFP_KERNEL);
- 	if (!picod)
- 		return -ENOMEM;
-@@ -452,6 +455,22 @@ static int picodlp_panel_probe(struct omap_dss_device *dssdev)
+ 	if (!(cpu_is_at91sam9261() || cpu_is_at91sam9g10()
+ 		|| cpu_is_at32ap7000()))
+ 		return xres;
  
- 	dev_set_drvdata(&dssdev->dev, picod);
++	lcdcon2 = lcdc_readl(sinfo, ATMEL_LCDC_LCDCON2);
+ 	value = xres;
+ 	if ((lcdcon2 & ATMEL_LCDC_DISTYPE) != ATMEL_LCDC_DISTYPE_TFT) {
+ 		/* STN display */
+@@ -590,8 +593,7 @@ static int atmel_lcdfb_set_par(struct fb_info *info)
+ 	lcdc_writel(sinfo, ATMEL_LCDC_TIM2, value);
  
-+	if (gpio_is_valid(picodlp_pdata->emu_done_gpio)) {
-+		r = devm_gpio_request_one(&dssdev->dev,
-+				picodlp_pdata->emu_done_gpio,
-+				GPIOF_IN, "DLP EMU DONE");
-+		if (r)
-+			return r;
-+	}
-+
-+	if (gpio_is_valid(picodlp_pdata->pwrgood_gpio)) {
-+		r = devm_gpio_request_one(&dssdev->dev,
-+				picodlp_pdata->pwrgood_gpio,
-+				GPIOF_OUT_INIT_LOW, "DLP PWRGOOD");
-+		if (r)
-+			return r;
-+	}
-+
- 	return 0;
- }
+ 	/* Horizontal value (aka line size) */
+-	hozval_linesz = compute_hozval(info->var.xres,
+-					lcdc_readl(sinfo, ATMEL_LCDC_LCDCON2));
++	hozval_linesz = compute_hozval(sinfo, info->var.xres);
  
+ 	/* Display size */
+ 	value = (hozval_linesz - 1) << ATMEL_LCDC_HOZVAL_OFFSET;
 -- 
-1.7.9.5
+1.8.1.1
 

@@ -1,61 +1,30 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Date: Fri, 08 Feb 2013 16:35:17 +0000
-Subject: [PATCH 4/5] atmel_lcdfb: move lcdcon2 register access to compute_hozval
-Message-Id: <1b3f5134935c2476890db0a23d5b26cac7ed2d65.1360340791.git.nicolas.ferre@atmel.com>
+From: "Mohammed, Afzal" <afzal@ti.com>
+Date: Thu, 07 Feb 2013 09:05:59 +0000
+Subject: RE: [PATCH v3 00/10] video: da8xx-fb: runtime timing configuration
+Message-Id: <C8443D0743D26F4388EA172BF4E2A7A93EAA2846@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1360340791.git.nicolas.ferre@atmel.com>
-In-Reply-To: <cover.1360340791.git.nicolas.ferre@atmel.com>
+References: <cover.1358250489.git.afzal@ti.com>
+In-Reply-To: <cover.1358250489.git.afzal@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, "Nori, Sekhar" <nsekhar@ti.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-From: Johan Hovold <jhovold@gmail.com>
-
-Pass atmel_lcd_info structure to compute_hozval and only do the register
-access on SOCs that actually use it.
-
-This will also simplify the removal of the cpu_is macros.
-
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
- drivers/video/atmel_lcdfb.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index c5883ca..2effd35 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -193,14 +193,17 @@ static struct fb_fix_screeninfo atmel_lcdfb_fix __initdata = {
- 	.accel		= FB_ACCEL_NONE,
- };
- 
--static unsigned long compute_hozval(unsigned long xres, unsigned long lcdcon2)
-+static unsigned long compute_hozval(struct atmel_lcdfb_info *sinfo,
-+							unsigned long xres)
- {
-+	unsigned long lcdcon2;
- 	unsigned long value;
- 
- 	if (!(cpu_is_at91sam9261() || cpu_is_at91sam9g10()
- 		|| cpu_is_at32ap7000()))
- 		return xres;
- 
-+	lcdcon2 = lcdc_readl(sinfo, ATMEL_LCDC_LCDCON2);
- 	value = xres;
- 	if ((lcdcon2 & ATMEL_LCDC_DISTYPE) != ATMEL_LCDC_DISTYPE_TFT) {
- 		/* STN display */
-@@ -591,8 +594,7 @@ static int atmel_lcdfb_set_par(struct fb_info *info)
- 	lcdc_writel(sinfo, ATMEL_LCDC_TIM2, value);
- 
- 	/* Horizontal value (aka line size) */
--	hozval_linesz = compute_hozval(info->var.xres,
--					lcdc_readl(sinfo, ATMEL_LCDC_LCDCON2));
-+	hozval_linesz = compute_hozval(sinfo, info->var.xres);
- 
- 	/* Display size */
- 	value = (hozval_linesz - 1) << ATMEL_LCDC_HOZVAL_OFFSET;
--- 
-1.8.0
-
+SGkgVG9taSwgRmxvcmlhbiwNCg0KT24gVHVlLCBKYW4gMTUsIDIwMTMgYXQgMTk6MDA6NTAsIE1v
+aGFtbWVkLCBBZnphbCB3cm90ZToNCg0KPiBUaGlzIHNlcmllcyBtYWtlcyBkYTh4eC1mYiBkcml2
+ZXIgKGRldmljZSBmb3VuZCBvbiBEYVZpbmNpIGFuZCBBTTMzNXgpDQo+IGNhcGFibGUgb2YgaGFu
+ZGxpbmcgcnVudGltZSB0aW1pbmcgY29uZmlndXJhdGlvbiBieSBhZGRpbmcgZmJfc2V0X3Bhci4N
+Cj4gDQo+IFRoZSBsYXN0IGNoYW5nZSBhZGRzIGFjdHVhbCBmYl9zZXRfcGFyIHN1cHBvcnQuIE90
+aGVyIHByZWNlZWRpbmcNCj4gY2hhbmdlcyBtYWtlcyB0aGUgd2F5IGNsZWFyIGZvciBpdCBhcyB3
+ZWxsIGFzIGRvZXMgY2VydGFpbiBjbGVhbnVwJ3MNCj4gb24gdGhlIHdheS4NCj4gDQo+IFRoaXMg
+aGFzIGJlZW4gdGVzdGVkIG9uIGRhODUwIGV2bSBhcyBpcy4gVGhpcyB3YXMgYWxzbyB0ZXN0ZWQg
+b24NCj4gYW0zMzV4LWV2bSAmIGFtMzM1eC1ldm1zayB3aXRoIGEgc2VyaWVzIHRoYXQgYWRkcyBE
+VCBzdXBwb3J0Lg0KPiANCj4gVGhpcyBpcyBiYXNlZCBvbiB2My44LXJjMywgdGhpcyBpcyB0aGUg
+b25seSBjaGFuZ2UgaW4gdGhpcyByZXZpc2lvbi4NCj4gVGhlIG5ldyB2ZXJzaW9uIG9mIHRoaXMg
+c2VyaWVzIGlzIGJlaW5nIHBvc3RlZCBzbyB0aGF0IHRoaXMgc2VyaWVzIGNhbg0KPiBiZSBhcHBs
+aWVkIGVhc2lseSAoYXMgX19kZXYqIGFyZSByZW1vdmVkLCB0aGVyZSB3b3VsZCBiZSBtZXJnZQ0K
+PiBjb25mbGljdHMgd2l0aCB2Miwgd2hpY2ggd2FzIGJhc2VkIG9uIC1yYzIpLg0KPiBzZXJpZXMN
+Cg0KQ2FuIHlvdSBwbGVhc2UgY29uc2lkZXIgdGhpcyBzZXJpZXMgZm9yIGluY2x1c2lvbi4gVGhl
+cmUgYXJlIG5vDQpwZW5kaW5nIGNvbW1lbnRzIG9yIGRlcGVuZGVuY3kgZm9yIHRoaXMgc2VyaWVz
+LiBJZiB5b3UgbmVlZCBhDQpwdWxsIHJlcXVlc3QsIGxldCBtZSBrbm93LCBJIHdpbGwgc2VudCBp
+dC4NCg0KUmVnYXJkcw0KQWZ6YWwNCg0K

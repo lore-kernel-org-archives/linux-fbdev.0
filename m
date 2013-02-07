@@ -1,434 +1,132 @@
-From: Lars Poeschel <poeschel@lemonage.de>
-Date: Thu, 07 Feb 2013 09:26:18 +0000
-Subject: Re: [PATCH v2,RESEND] video console: add a driver for lcd2s character display
-Message-Id: <201302071026.18145.poeschel@lemonage.de>
+From: Rahul Sharma <rahul.sharma@samsung.com>
+Date: Thu, 07 Feb 2013 11:59:32 +0000
+Subject: [RFC PATCH v2 0/5] exynos-hdmi to CDF compliant display driver
+Message-Id: <1360238377-14806-1-git-send-email-rahul.sharma@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201212170934.15312.poeschel@lemonage.de>
-In-Reply-To: <201212170934.15312.poeschel@lemonage.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: FlorianSchandinat@gmx.de, mathieu.poirier@linaro.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com, broonie@opensource.wolfsonmicro.com, inki.dae@samsung.com, kyungmin.park@samsung.com, r.sh.open@gmail.com, joshi@samsung.com
 
-As it seems there are no further comments, could this please be included ?
+V2:
+1) Adding hdmi sound card using cdf based hdmi audio codec.
+2) DAPM and JACK control to hdmi codec.
+3) Offload event handler by adding work queue.
+4) Rework based on v1 comments.
 
-Thanks,
-Lars
+Tested for:
+1) Mode setting and switching using modetest.
+2) Video with HPD and Power related scenarios.
+3) Audio playback with Hotplug-Scenarios.
+4) DAPM control for hdmi playback.
 
-On Monday 17 December 2012 at 09:34:15, Lars Poeschel wrote:
-> From: Lars Poeschel <poeschel@lemonage.de>
-> 
-> This driver allows to use a lcd2s 20x4 character display as
-> a linux console output device.
-> 
-> Signed-off-by: Lars Poeschel <poeschel@lemonage.de>
-> 
-> ---
-> drivers/video/console/Kconfig    |   10 ++
->  drivers/video/console/Makefile   |    1 +
->  drivers/video/console/lcd2scon.c |  360
-> ++++++++++++++++++++++++++++++++++++++ 3 files changed, 371 insertions(+)
->  create mode 100644 drivers/video/console/lcd2scon.c
-> 
-> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-> index e2c96d0..44fc3bf 100644
-> --- a/drivers/video/console/Kconfig
-> +++ b/drivers/video/console/Kconfig
-> @@ -129,6 +129,16 @@ config STI_CONSOLE
->            machines.  Say Y here to build support for it into your kernel.
->            The alternative is to use your primary serial port as a
-> console.
-> 
-> +config LCD2S_CONSOLE
-> +        tristate "lcd2s 20x4 character display over I2C console"
-> +        depends on I2C
-> +        default n
-> +        help
-> +          This is a driver that lets you use the lcd2s 20x4 character
-> display +          from modtronix engineering as a console output device.
-> The display +          is a simple single color character display. You
-> have to connect it +          to an I2C bus.
-> +
->  config FONTS
->  	bool "Select compiled-in fonts"
->  	depends on FRAMEBUFFER_CONSOLE || STI_CONSOLE
-> diff --git a/drivers/video/console/Makefile
-> b/drivers/video/console/Makefile index a862e91..74d5993 100644
-> --- a/drivers/video/console/Makefile
-> +++ b/drivers/video/console/Makefile
-> @@ -23,6 +23,7 @@ font-objs += $(font-objs-y)
->  obj-$(CONFIG_DUMMY_CONSOLE)       += dummycon.o
->  obj-$(CONFIG_SGI_NEWPORT_CONSOLE) += newport_con.o font.o
->  obj-$(CONFIG_STI_CONSOLE)         += sticon.o sticore.o font.o
-> +obj-$(CONFIG_LCD2S_CONSOLE)       += lcd2scon.o
->  obj-$(CONFIG_VGA_CONSOLE)         += vgacon.o
->  obj-$(CONFIG_MDA_CONSOLE)         += mdacon.o
->  obj-$(CONFIG_FRAMEBUFFER_CONSOLE) += fbcon.o bitblit.o font.o
-> softcursor.o diff --git a/drivers/video/console/lcd2scon.c
-> b/drivers/video/console/lcd2scon.c new file mode 100644
-> index 0000000..c139811
-> --- /dev/null
-> +++ b/drivers/video/console/lcd2scon.c
-> @@ -0,0 +1,360 @@
-> +/*
-> + *  console driver for LCD2S 4x20 character displays connected through
-> i2c. + *
-> + *  This is a driver allowing you to use a LCD2S 4x20 from modtronix
-> + *  engineering as console output device.
-> + *
-> + *  (C) 2012 by Lemonage Software GmbH
-> + *  Author: Lars Poeschel <poeschel@lemonage.de>
-> + *  All rights reserved.
-> + *
-> + *  This program is free software; you can redistribute  it and/or modify
-> it + *  under  the terms of  the GNU General  Public License as published
-> by the + *  Free Software Foundation;  either version 2 of the  License,
-> or (at your + *  option) any later version.
-> + *
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/slab.h>
-> +#include <linux/kd.h>
-> +#include <linux/tty.h>
-> +#include <linux/console_struct.h>
-> +#include <linux/console.h>
-> +#include <linux/vt_kern.h>
-> +#include <linux/i2c.h>
-> +
-> +#define LCD2S_CMD_CUR_BLINK_OFF		0x10
-> +#define LCD2S_CMD_CUR_UL_OFF		0x11
-> +#define LCD2S_CMD_DISPLAY_OFF		0x12
-> +#define LCD2S_CMD_CUR_BLINK_ON		0x18
-> +#define LCD2S_CMD_CUR_UL_ON		0x19
-> +#define LCD2S_CMD_DISPLAY_ON		0x1a
-> +#define LCD2S_CMD_BACKLIGHT_OFF		0x20
-> +#define LCD2S_CMD_BACKLIGHT_ON		0x28
-> +#define LCD2S_CMD_WRITE			0x80
-> +#define LCD2S_CMD_SHIFT_UP		0x87
-> +#define LCD2S_CMD_SHIFT_DOWN		0x88
-> +#define LCD2S_CMD_CUR_ADDR		0x89
-> +#define LCD2S_CMD_CUR_POS		0x8a
-> +#define LCD2S_CMD_CUR_RESET		0x8b
-> +#define LCD2S_CMD_CLEAR			0x8c
-> +
-> +#define LCD2S_FIRST			8
-> +#define LCD2S_LAST			9
-> +
-> +#define LCD2S_ROWS			4
-> +#define LCD2S_COLS			20
-> +
-> +struct lcd2s_data {
-> +	struct i2c_client *i2c;
-> +	int row;
-> +	int col;
-> +	unsigned int cur_blink:1;
-> +	unsigned int cur_ul:1;
-> +};
-> +
-> +static struct lcd2s_data lcd2s;
-> +
-> +static void lcd2s_set_cursor(int row, int col)
-> +{
-> +	u8 buf[] = { LCD2S_CMD_CUR_POS, row + 1, col + 1};
-> +
-> +	if (row = lcd2s.row && col = lcd2s.col)
-> +		return;
-> +
-> +	i2c_master_send(lcd2s.i2c, buf, sizeof(buf));
-> +	lcd2s.row = row;
-> +	lcd2s.col = col;
-> +}
-> +
-> +static void lcd2s_reset_cursor(void)
-> +{
-> +	i2c_smbus_write_byte(lcd2s.i2c, LCD2S_CMD_CUR_RESET);
-> +	lcd2s.row = 0;
-> +	lcd2s.col = 0;
-> +}
-> +
-> +static void lcd2s_increase_cursor(struct vc_data *con, int inc)
-> +{
-> +	lcd2s.col += inc;
-> +	if ((lcd2s.col / con->vc_cols) >= 1) {
-> +		lcd2s.row += (lcd2s.col / con->vc_cols);
-> +		lcd2s.col %= con->vc_cols;
-> +	}
-> +}
-> +
-> +static void lcd2s_cursor_ul_on(void)
-> +{
-> +	if (!lcd2s.cur_ul) {
-> +		i2c_smbus_write_byte(lcd2s.i2c, LCD2S_CMD_CUR_UL_ON);
-> +		lcd2s.cur_ul = 1;
-> +	}
-> +}
-> +
-> +static void lcd2s_cursor_ul_off(void)
-> +{
-> +	if (lcd2s.cur_ul) {
-> +		i2c_smbus_write_byte(lcd2s.i2c, LCD2S_CMD_CUR_UL_OFF);
-> +		lcd2s.cur_ul = 0;
-> +	}
-> +}
-> +
-> +static void lcd2s_cursor_blink_on(void)
-> +{
-> +	if (!lcd2s.cur_blink) {
-> +		i2c_smbus_write_byte(lcd2s.i2c, LCD2S_CMD_CUR_BLINK_ON);
-> +		lcd2s.cur_blink = 1;
-> +	}
-> +}
-> +
-> +static void lcd2s_cursor_blink_off(void)
-> +{
-> +	if (lcd2s.cur_blink) {
-> +		i2c_smbus_write_byte(lcd2s.i2c, LCD2S_CMD_CUR_BLINK_OFF);
-> +		lcd2s.cur_blink = 0;
-> +	}
-> +}
-> +
-> +static const char *lcd2s_startup(void)
-> +{
-> +	return "lcd2s console";
-> +}
-> +
-> +
-> +/*
-> + * init is set if console is currently allocated during init
-> + */
-> +static void lcd2s_init(struct vc_data *con, int init)
-> +{
-> +	lcd2s.cur_blink = 0;
-> +	lcd2s.cur_ul = 0;
-> +
-> +	/* turn display on */
-> +	i2c_smbus_write_byte(lcd2s.i2c, LCD2S_CMD_DISPLAY_ON);
-> +	i2c_smbus_write_byte(lcd2s.i2c, LCD2S_CMD_BACKLIGHT_ON);
-> +	i2c_smbus_write_byte(lcd2s.i2c, LCD2S_CMD_CLEAR);
-> +	lcd2s_cursor_ul_on();
-> +	lcd2s_reset_cursor();
-> +
-> +	con->vc_can_do_color = 0;
-> +	con->vc_hi_font_mask = 0;
-> +
-> +	if (init) {
-> +		con->vc_rows = LCD2S_ROWS;
-> +		con->vc_cols = LCD2S_COLS;
-> +	} else
-> +		vc_resize(con, LCD2S_COLS, LCD2S_ROWS);
-> +}
-> +
-> +static void lcd2s_deinit(struct vc_data *con)
-> +{
-> +	i2c_smbus_write_byte(lcd2s.i2c, LCD2S_CMD_DISPLAY_OFF);
-> +	i2c_smbus_write_byte(lcd2s.i2c, LCD2S_CMD_BACKLIGHT_OFF);
-> +	lcd2s_cursor_blink_off();
-> +	lcd2s_cursor_ul_off();
-> +}
-> +
-> +static void lcd2s_clear(struct vc_data *con, int s_row, int s_col,
-> +			int height, int width)
-> +{
-> +	u8 buf[width];
-> +	int i;
-> +
-> +	if (width <= 0 || height <= 0)
-> +		return;
-> +
-> +	/* if the whole display is to clear, we have a single command */
-> +	if (s_col = 0 && s_row = 0 &&
-> +		height >= con->vc_rows - 1 && width >= con->vc_cols - 1) {
-> +		i2c_smbus_write_byte(lcd2s.i2c, LCD2S_CMD_CLEAR);
-> +		return;
-> +	}
-> +
-> +	for (i = 0; i <= width; i++)
-> +		buf[i] = ' ';
-> +
-> +	for (i = s_col; i <= height; i++) {
-> +		lcd2s_set_cursor(s_row, i);
-> +		i2c_master_send(lcd2s.i2c, buf, width);
-> +	}
-> +}
-> +
-> +static void lcd2s_putc(struct vc_data *con, int data, int row, int col)
-> +{
-> +	u8 buf[] = {LCD2S_CMD_WRITE, data};
-> +
-> +	lcd2s_set_cursor(row, col);
-> +
-> +	i2c_master_send(lcd2s.i2c, buf, sizeof(buf));
-> +	lcd2s_increase_cursor(con, 1);
-> +}
-> +
-> +static void lcd2s_putcs(struct vc_data *con, const unsigned short *buf,
-> +			int len, int row, int col)
-> +{
-> +	u8 *i2c_buf;
-> +	int i;
-> +
-> +	i2c_buf = kzalloc(len + 1, GFP_KERNEL);
-> +	if (!i2c_buf)
-> +		return;
-> +
-> +	lcd2s_set_cursor(row, col);
-> +
-> +	i2c_buf[0] = LCD2S_CMD_WRITE;
-> +	for (i = 0; i < len ; i++)
-> +		i2c_buf[i + 1] = buf[i];
-> +
-> +	i2c_master_send(lcd2s.i2c, i2c_buf, len + 1);
-> +	kfree(i2c_buf);
-> +	lcd2s_increase_cursor(con, len);
-> +}
-> +
-> +static void lcd2s_cursor(struct vc_data *con, int mode)
-> +{
-> +	switch (mode) {
-> +	case CM_ERASE:
-> +		lcd2s_cursor_blink_off();
-> +		lcd2s_cursor_ul_off();
-> +		break;
-> +	case CM_MOVE:
-> +	case CM_DRAW:
-> +		lcd2s_set_cursor(con->vc_y, con->vc_x);
-> +
-> +		switch (con->vc_cursor_type & CUR_HWMASK) {
-> +		case CUR_UNDERLINE:
-> +			lcd2s_cursor_ul_on();
-> +			lcd2s_cursor_blink_off();
-> +			break;
-> +		case CUR_NONE:
-> +			lcd2s_cursor_blink_off();
-> +			lcd2s_cursor_ul_off();
-> +			break;
-> +		default:
-> +			lcd2s_cursor_blink_on();
-> +			lcd2s_cursor_ul_off();
-> +			break;
-> +		}
-> +		break;
-> +	}
-> +}
-> +
-> +static int lcd2s_scroll(struct vc_data *con, int top, int bot,
-> +			int dir, int lines)
-> +{
-> +	/* we can only scroll the whole display */
-> +	if (top = 0 && bot = con->vc_rows) {
-> +		while (lines--) {
-> +			switch (dir) {
-> +			case SM_UP:
-> +				i2c_smbus_write_byte(lcd2s.i2c,
-> +					LCD2S_CMD_SHIFT_UP);
-> +				break;
-> +			case SM_DOWN:
-> +				i2c_smbus_write_byte(lcd2s.i2c,
-> +					LCD2S_CMD_SHIFT_DOWN);
-> +				break;
-> +			}
-> +		}
-> +		return 0;
-> +	}
-> +	return 1;
-> +}
-> +
-> +static void lcd2s_bmove(struct vc_data *conp, int s_row, int s_col,
-> +			int d_row, int d_col, int height, int width)
-> +{
-> +}
-> +
-> +static int lcd2s_switch(struct vc_data *con)
-> +{
-> +	return 1;
-> +}
-> +
-> +static int lcd2s_blank(struct vc_data *con, int blank, int mode_switch)
-> +{
-> +	switch (blank) {
-> +	case 0:		/* unblank */
-> +		i2c_smbus_write_byte(lcd2s.i2c, LCD2S_CMD_DISPLAY_ON);
-> +		i2c_smbus_write_byte(lcd2s.i2c, LCD2S_CMD_BACKLIGHT_ON);
-> +		break;
-> +	case 1:		/* normal blanking */
-> +		i2c_smbus_write_byte(lcd2s.i2c, LCD2S_CMD_DISPLAY_OFF);
-> +		i2c_smbus_write_byte(lcd2s.i2c, LCD2S_CMD_BACKLIGHT_OFF);
-> +		break;
-> +	}
-> +	return 0;
-> +}
-> +
-> +static int lcd2s_set_palette(struct vc_data *con, unsigned char *table)
-> +{
-> +	return -EINVAL;
-> +}
-> +
-> +static int lcd2s_scrolldelta(struct vc_data *con, int lines)
-> +{
-> +	return 0;
-> +}
-> +
-> +static struct consw lcd2s_con = {
-> +	.owner			= THIS_MODULE,
-> +	.con_startup		= lcd2s_startup,
-> +	.con_init		= lcd2s_init,
-> +	.con_deinit		= lcd2s_deinit,
-> +	.con_clear		= lcd2s_clear,
-> +	.con_putc		= lcd2s_putc,
-> +	.con_putcs		= lcd2s_putcs,
-> +	.con_cursor		= lcd2s_cursor,
-> +	.con_scroll		= lcd2s_scroll,
-> +	.con_bmove		= lcd2s_bmove,
-> +	.con_switch		= lcd2s_switch,
-> +	.con_blank		= lcd2s_blank,
-> +	.con_set_palette	= lcd2s_set_palette,
-> +	.con_scrolldelta	= lcd2s_scrolldelta,
-> +};
-> +
-> +static int __devinit lcd2s_i2c_probe(struct i2c_client *i2c,
-> +				const struct i2c_device_id *id)
-> +{
-> +	if (!i2c_check_functionality(i2c->adapter,
-> +			I2C_FUNC_SMBUS_WRITE_BYTE_DATA |
-> +			I2C_FUNC_SMBUS_WRITE_BLOCK_DATA))
-> +		return -EIO;
-> +
-> +	lcd2s.i2c = i2c;
-> +
-> +	take_over_console(&lcd2s_con, LCD2S_FIRST, LCD2S_LAST, 1);
-> +
-> +	return 0;
-> +}
-> +
-> +static __devexit int lcd2s_i2c_remove(struct i2c_client *i2c)
-> +{
-> +	/* unregister from console subsystem */
-> +	unregister_con_driver(&lcd2s_con);
-> +	return 0;
-> +}
-> +
-> +static const struct i2c_device_id lcd2s_i2c_id[] = {
-> +	{ "lcd2s", 0 },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(i2c, lcd2s_i2c_id);
-> +
-> +static struct i2c_driver lcd2s_i2c_driver = {
-> +	.driver = {
-> +		.name = "lcd2s",
-> +		.owner = THIS_MODULE,
-> +	},
-> +	.probe = lcd2s_i2c_probe,
-> +	.remove = __devexit_p(lcd2s_i2c_remove),
-> +	.id_table = lcd2s_i2c_id,
-> +};
-> +
-> +module_i2c_driver(lcd2s_i2c_driver)
-> +
-> +MODULE_DESCRIPTION("LCD2S character display console driver");
-> +MODULE_AUTHOR("Lars Poeschel");
-> +MODULE_LICENSE("GPL");
+Pending:
+1) Not moved exynos_hdmi to driver/video/display since it will make it
+difficult to analyze the code changes.
+
+V1:
+This patch set is a proposal to change Exynos Drm Hdmi driver to a CDF
+complaint panel driver. This migration serves 2 purposes. One is to eliminate
+duplication due to v4l and drm hdmi drivers. Second is to add support for Hdmi
+audio ALSA codec which is not possible with drm/v4l hdmi driver (specially for
+exynos as hdmi audio and hdmi core registers are intermixed.).
+
+This patch series is based on the Second RFC of CDF from Laurent Pinchart,
+(http://lists.freedesktop.org/archives/dri-devel/2012-November/030888.html)
+applied to 'for-next' branch at
+git.kernel.org/pub/scm/linux/kernel/git/kgene/linux-samsung.git.
+
+[PATCH 1/4] video: display: add event handling, set mode and hdmi ops to cdf
+core
+
+This patch adds:
+1) Event Notification to CDF Core:
+	Adds simple event notification mechanism supports multiple
+	subscribers. This is used for hot-plug notification to the clients
+	of hdmi display i.e. exynos-drm and alsa-codec. CDF Core maintains
+	multiple subscriber list. When entity reports a event Core will
+	route it to all of them. Un-subscription is not implemented which
+	can be done if notification callback is Null.
+
+2) set_mode to generic ops:
+	It is meaningful for a panel like hdmi which supports multiple
+	resolutions.
+
+	HDMI needs conversion of Display Modes to Standard Display Timings.
+	Though, it can be done within the driver but seems more meaningful
+	if set_mode is called with Timing Details provided by CDF Core.
+
+3) Provision for platform specific interfaces through void *private in display
+entity:
+
+	It has added void *private to display entity which can be used to
+	expose interfaces which are very much specific to a particular platform.
+
+	In exynos, hpd is connected to the soc via gpio bus. During initial
+	hdmi poweron, hpd interrupt is not raised as there is no change in the
+	gpio status. This is solved by providing a platform specific interface
+	which is queried by the drm to get the hpd state. This interface may
+	not be required by all platforms.
+
+4) hdmi ops:
+	get_edid: to query raw EDID data and length from the panel.
+	check_mode: To check if a given mode is supported by exynos HDMI IP
+			"AND" Connected HDMI Sink (tv/monitor).
+	init_audio: Configure hdmi audio registers for Audio interface type
+	(i2s/ spdif), SF, Audio Channels, BPS.
+	set_audiostate: enable disable audio.
+
+[PATCH 2/4] drm/edid: temporarily exposing generic edid-read interface from drm
+
+It exposes generic interface from drm_edid.c to get the edid data and length
+by any display entity. Once I get clear idea about edid handling in CDF, I need
+to revert these temporary changes.
+
+[PATCH 3/4] drm/exynos: moved drm hdmi driver to cdf framework
+
+This patch implements exynos_hdmi_cdf.c which is a glue component between
+exynos DRM and hdmi cdf panel. It is a platform driver register through
+exynos_drm_drv.c. Exynos_hdmi.c is modified to register hdmi as display panel.
+exynos_hdmi_cdf.c registers for exynos hdmi display entity and if successful,
+proceeds for mode setting.
+
+[PATCH 4/4] alsa/soc: add hdmi audio codec based on cdf
+
+It registers hdmi-audio codec to the ALSA framework. This is the second client
+to the hdmi panel. Once notified by the CDF Core it proceeds towards audio
+setting and audio control. It also subscribes for hpd notification to implement
+hpd related audio requirements.
+
+Rahul Sharma (5):
+  video: display: add event handling, set mode and hdmi ops to cdf core
+  drm/edid: temporarily exposing generic edid-read interface from drm
+  drm/exynos: moved drm hdmi driver to cdf framework
+  alsa/soc: add hdmi audio codec based on cdf
+  alsa/soc: add hdmi audio card using cdf based hdmi codec
+
+ drivers/gpu/drm/drm_edid.c               |  88 ++++++
+ drivers/gpu/drm/exynos/Kconfig           |   6 +
+ drivers/gpu/drm/exynos/Makefile          |   1 +
+ drivers/gpu/drm/exynos/exynos_drm_drv.c  |  24 ++
+ drivers/gpu/drm/exynos/exynos_drm_drv.h  |   1 +
+ drivers/gpu/drm/exynos/exynos_hdmi.c     | 445 ++++++++++++++++---------------
+ drivers/gpu/drm/exynos/exynos_hdmi_cdf.c | 370 +++++++++++++++++++++++++
+ drivers/video/display/display-core.c     |  85 ++++++
+ include/video/display.h                  | 111 +++++++-
+ include/video/exynos_hdmi.h              |  25 ++
+ sound/soc/codecs/Kconfig                 |   3 +
+ sound/soc/codecs/Makefile                |   2 +
+ sound/soc/codecs/exynos_hdmi_audio.c     | 424 +++++++++++++++++++++++++++++
+ sound/soc/samsung/Kconfig                |   8 +
+ sound/soc/samsung/Makefile               |   2 +
+ sound/soc/samsung/hdmi.c                 | 260 ++++++++++++++++++
+ 16 files changed, 1638 insertions(+), 217 deletions(-)
+ create mode 100644 drivers/gpu/drm/exynos/exynos_hdmi_cdf.c
+ create mode 100644 include/video/exynos_hdmi.h
+ create mode 100644 sound/soc/codecs/exynos_hdmi_audio.c
+ create mode 100644 sound/soc/samsung/hdmi.c
+
+-- 
+1.8.0
 

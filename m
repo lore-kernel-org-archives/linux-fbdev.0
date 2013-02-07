@@ -1,129 +1,36 @@
-From: Rahul Sharma <rahul.sharma@samsung.com>
-Date: Thu, 07 Feb 2013 11:49:26 +0000
-Subject: [RFC PATCH v2 2/5] drm/edid: temporarily exposing generic edid-read interface from drm
-Message-Id: <1360238951-7022-1-git-send-email-rahul.sharma@samsung.com>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Thu, 07 Feb 2013 13:28:48 +0000
+Subject: Re: [RFC PATCH v2 2/5] drm/edid: temporarily exposing generic edid-read interface from drm
+Message-Id: <CAKMK7uFQg8Wsibz8T0VBB8yJf3P=yTbRhhH3pTTGGxiYZo8dfA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1360238951-7022-1-git-send-email-rahul.sharma@samsung.com>
+In-Reply-To: <1360238951-7022-1-git-send-email-rahul.sharma@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org
-Cc: tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com, broonie@opensource.wolfsonmicro.com, inki.dae@samsung.com, kyungmin.park@samsung.com, r.sh.open@gmail.com, joshi@samsung.com
+To: Rahul Sharma <rahul.sharma@samsung.com>
+Cc: linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, broonie@opensource.wolfsonmicro.com, joshi@samsung.com, kyungmin.park@samsung.com, tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com
 
-It exposes generic interface from drm_edid.c to get the edid data and length
-by any display entity. Once I get clear idea about edid handling in CDF, I need
-to revert these temporary changes.
+On Thu, Feb 7, 2013 at 1:09 PM, Rahul Sharma <rahul.sharma@samsung.com> wrote:
+> It exposes generic interface from drm_edid.c to get the edid data and length
+> by any display entity. Once I get clear idea about edid handling in CDF, I need
+> to revert these temporary changes.
 
-Signed-off-by: Rahul Sharma <rahul.sharma@samsung.com>
----
- drivers/gpu/drm/drm_edid.c | 88 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 88 insertions(+)
-
-diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c
-index 5a3770f..567a565 100644
---- a/drivers/gpu/drm/drm_edid.c
-+++ b/drivers/gpu/drm/drm_edid.c
-@@ -31,6 +31,7 @@
- #include <linux/slab.h>
- #include <linux/i2c.h>
- #include <linux/module.h>
-+#include <video/display.h>
- #include <drm/drmP.h>
- #include <drm/drm_edid.h>
- #include "drm_edid_modes.h"
-@@ -386,6 +387,93 @@ out:
- 	return NULL;
- }
- 
-+int generic_drm_do_get_edid(struct i2c_adapter *adapter,
-+	struct display_entity_edid *edid)
-+{
-+	int i, j = 0, valid_extensions = 0;
-+	u8 *block, *new;
-+	bool print_bad_edid = 0;
-+
-+	block = kmalloc(EDID_LENGTH, GFP_KERNEL);
-+	if (!block)
-+		return -ENOMEM;
-+
-+	/* base block fetch */
-+	for (i = 0; i < 4; i++) {
-+		if (drm_do_probe_ddc_edid(adapter, block, 0, EDID_LENGTH))
-+			goto out;
-+		if (drm_edid_block_valid(block, 0, print_bad_edid))
-+			break;
-+		if (i = 0 && drm_edid_is_zero(block, EDID_LENGTH))
-+			goto carp;
-+	}
-+	if (i = 4)
-+		goto carp;
-+
-+	/* if there's no extensions, we're done */
-+	if (block[0x7e] = 0) {
-+		edid->edid = block;
-+		edid->len = EDID_LENGTH;
-+		return 0;
-+	}
-+
-+	new = krealloc(block, (block[0x7e] + 1) * EDID_LENGTH, GFP_KERNEL);
-+	if (!new)
-+		goto out;
-+	block = new;
-+	edid->len = (block[0x7e] + 1) * EDID_LENGTH;
-+
-+	for (j = 1; j <= block[0x7e]; j++) {
-+		for (i = 0; i < 4; i++) {
-+			if (drm_do_probe_ddc_edid(adapter,
-+				  block + (valid_extensions + 1) * EDID_LENGTH,
-+				  j, EDID_LENGTH))
-+				goto out;
-+			if (drm_edid_block_valid(block + (valid_extensions + 1)*
-+				EDID_LENGTH, j, print_bad_edid)) {
-+				valid_extensions++;
-+				break;
-+			}
-+		}
-+		if (i = 4)
-+			DRM_DEBUG_KMS("Ignoring inv lock %d.\n", j);
-+	}
-+
-+	if (valid_extensions != block[0x7e]) {
-+		block[EDID_LENGTH-1] += block[0x7e] - valid_extensions;
-+		block[0x7e] = valid_extensions;
-+		new = krealloc(block, (valid_extensions + 1)*
-+			EDID_LENGTH, GFP_KERNEL);
-+		if (!new)
-+			goto out;
-+		block = new;
-+		edid->len = (valid_extensions + 1) * EDID_LENGTH;
-+	}
-+
-+	edid->edid = block;
-+	return 0;
-+
-+carp:
-+	if (print_bad_edid)
-+		DRM_DEBUG_KMS("[ERROR]: EDID block %d invalid.\n", j);
-+
-+out:
-+	kfree(block);
-+	return -ENOMEM;
-+}
-+
-+
-+int generic_drm_get_edid(struct i2c_adapter *adapter,
-+	struct display_entity_edid *edid)
-+{
-+	int ret = -EINVAL;
-+	if (drm_probe_ddc(adapter))
-+		ret = generic_drm_do_get_edid(adapter, edid);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(generic_drm_get_edid);
-+
- /**
-  * Probe DDC presence.
-  *
+Just a quick reply about edid reading: One of the key results (at
+least imo) of the fosdem cdf discussion was that we need to split up
+the different parts of it clearly (i.e. abstract panel interface, dsi
+support, discovery/dev matching, ...) to have more flexibility. One
+idea is also to not use the panel interface for e.g. hdmi transcoders,
+but only use the bus support (like dsi), since transcoders which
+connect to external devices like hdmi need to expose _much_ more
+features to the master driver and so it's better to have tighter
+integration. Some of the things which need close cooperation between
+drivers are e.g. edid reading, hotplug handling,
+bpp/colorspace/restricted range stuff, ... I didn't read through the
+patch which requires the exported drm edid stuff, but maybe this helps
+a bit.
+-Daniel
 -- 
-1.8.0
-
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch

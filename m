@@ -1,136 +1,61 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:33:54 +0000
-Subject: [PATCH 02/33] OMAPDSS: generic dpi panel: handle gpios in panel driver
-Message-Id: <1360765345-19312-3-git-send-email-archit@ti.com>
+From: Anatolij Gustschin <agust@denx.de>
+Date: Fri, 08 Feb 2013 07:35:58 +0000
+Subject: [PATCH RESEND v2 1/2] drivers/video: fsl-diu-fb: fix pixel formats for 24 and 16 bpp
+Message-Id: <1360308959-3096-1-git-send-email-agust@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360765345-19312-1-git-send-email-archit@ti.com>
-In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Framebuffer colors for 24 and 16 bpp are currently wrong. The order
+of the color component arguments in the MAKE_PF() is not natural
+and causes some confusion. The generated pixel format values for 24
+and 16 bpp depths do not much the values in the comments.
 
-The generic dpi panel driver leaves gpio configurations to the platform_enable
-and disable calls in the platform's board file. These should happen in the
-panel driver itself.
+Fix the macro arguments to be in the natural RGB order and adjust
+the arguments for all depths to generate correct pixel format values
+(equal to the values mentioned in the comments).
 
-Add a generic way of passing gpio information to the generic dpi panel driver
-via it's platform_data. This information includes the number of gpios used by
-the panel, the gpio number and logic level (active high/low) for each gpio. This
-gpio data will be used by the driver to request and configure the gpios required
-by the panel.
-
-This will help in removing the need for the panel drivers to have platform
-related callbacks.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Cc: Timur Tabi <timur@tabi.org>
+Acked-by: Timur Tabi <timur@freescale.com>
 ---
- drivers/video/omap2/displays/panel-generic-dpi.c |   25 ++++++++++++++++++++--
- include/video/omap-panel-data.h                  |    7 ++++++
- 2 files changed, 30 insertions(+), 2 deletions(-)
+ Changes in v2:
+  - none, only added Timur's Acked-by
 
-diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
-index d8d0cd5..4a12db6 100644
---- a/drivers/video/omap2/displays/panel-generic-dpi.c
-+++ b/drivers/video/omap2/displays/panel-generic-dpi.c
-@@ -33,6 +33,7 @@
- #include <linux/module.h>
- #include <linux/delay.h>
- #include <linux/slab.h>
-+#include <linux/gpio.h>
- #include <video/omapdss.h>
+ This patch is not a very important fix but it would be good to
+ have it in v3.8
+
+ drivers/video/fsl-diu-fb.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index d3fc92e..1ca32c5 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -944,7 +944,7 @@ static u32 fsl_diu_get_pixel_format(unsigned int bits_per_pixel)
+ #define PF_COMP_0_MASK		0x0000000F
+ #define PF_COMP_0_SHIFT		0
  
- #include <video/omap-panel-data.h>
-@@ -557,7 +558,7 @@ static inline struct panel_generic_dpi_data
- 
- static int generic_dpi_panel_power_on(struct omap_dss_device *dssdev)
- {
--	int r;
-+	int r, i;
- 	struct panel_generic_dpi_data *panel_data = get_panel_data(dssdev);
- 	struct panel_drv_data *drv_data = dev_get_drvdata(&dssdev->dev);
- 	struct panel_config *panel_config = drv_data->panel_config;
-@@ -582,6 +583,11 @@ static int generic_dpi_panel_power_on(struct omap_dss_device *dssdev)
- 			goto err1;
- 	}
- 
-+	for (i = 0; i < panel_data->num_gpios; ++i) {
-+		gpio_set_value_cansleep(panel_data->gpios[i],
-+				panel_data->gpio_invert[i] ? 0 : 1);
-+	}
-+
- 	return 0;
- err1:
- 	omapdss_dpi_display_disable(dssdev);
-@@ -594,10 +600,16 @@ static void generic_dpi_panel_power_off(struct omap_dss_device *dssdev)
- 	struct panel_generic_dpi_data *panel_data = get_panel_data(dssdev);
- 	struct panel_drv_data *drv_data = dev_get_drvdata(&dssdev->dev);
- 	struct panel_config *panel_config = drv_data->panel_config;
-+	int i;
- 
- 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
- 		return;
- 
-+	for (i = panel_data->num_gpios - 1; i >= 0; --i) {
-+		gpio_set_value_cansleep(panel_data->gpios[i],
-+				panel_data->gpio_invert[i] ? 1 : 0);
-+	}
-+
- 	if (panel_data->platform_disable)
- 		panel_data->platform_disable(dssdev);
- 
-@@ -613,7 +625,7 @@ static int generic_dpi_panel_probe(struct omap_dss_device *dssdev)
- 	struct panel_generic_dpi_data *panel_data = get_panel_data(dssdev);
- 	struct panel_config *panel_config = NULL;
- 	struct panel_drv_data *drv_data = NULL;
--	int i;
-+	int i, r;
- 
- 	dev_dbg(&dssdev->dev, "probe\n");
- 
-@@ -630,6 +642,15 @@ static int generic_dpi_panel_probe(struct omap_dss_device *dssdev)
- 	if (!panel_config)
- 		return -EINVAL;
- 
-+	for (i = 0; i < panel_data->num_gpios; ++i) {
-+		r = devm_gpio_request_one(&dssdev->dev, panel_data->gpios[i],
-+				panel_data->gpio_invert[i] ?
-+				GPIOF_OUT_INIT_HIGH : GPIOF_OUT_INIT_LOW,
-+				"panel gpio");
-+		if (r)
-+			return r;
-+	}
-+
- 	dssdev->panel.timings = panel_config->timings;
- 
- 	drv_data = devm_kzalloc(&dssdev->dev, sizeof(*drv_data), GFP_KERNEL);
-diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
-index e8e30f9..eec93f1 100644
---- a/include/video/omap-panel-data.h
-+++ b/include/video/omap-panel-data.h
-@@ -34,11 +34,18 @@ struct omap_dss_device;
-  * @name: panel name
-  * @platform_enable: platform specific panel enable function
-  * @platform_disable: platform specific panel disable function
-+ * @num_gpios: number of gpios connected to panel
-+ * @gpios: gpio numbers on the platform
-+ * @gpio_invert: configure gpio as active high or low
-  */
- struct panel_generic_dpi_data {
- 	const char *name;
- 	int (*platform_enable)(struct omap_dss_device *dssdev);
- 	void (*platform_disable)(struct omap_dss_device *dssdev);
-+
-+	int num_gpios;
-+	int gpios[10];
-+	bool gpio_invert[10];
- };
- 
- /**
+-#define MAKE_PF(alpha, red, blue, green, size, c0, c1, c2, c3) \
++#define MAKE_PF(alpha, red, green, blue, size, c0, c1, c2, c3) \
+ 	cpu_to_le32(PF_BYTE_F | (alpha << PF_ALPHA_C_SHIFT) | \
+ 	(blue << PF_BLUE_C_SHIFT) | (green << PF_GREEN_C_SHIFT) | \
+ 	(red << PF_RED_C_SHIFT) | (c3 << PF_COMP_3_SHIFT) | \
+@@ -954,10 +954,10 @@ static u32 fsl_diu_get_pixel_format(unsigned int bits_per_pixel)
+ 	switch (bits_per_pixel) {
+ 	case 32:
+ 		/* 0x88883316 */
+-		return MAKE_PF(3, 2, 0, 1, 3, 8, 8, 8, 8);
++		return MAKE_PF(3, 2, 1, 0, 3, 8, 8, 8, 8);
+ 	case 24:
+ 		/* 0x88082219 */
+-		return MAKE_PF(4, 0, 1, 2, 2, 0, 8, 8, 8);
++		return MAKE_PF(4, 0, 1, 2, 2, 8, 8, 8, 0);
+ 	case 16:
+ 		/* 0x65053118 */
+ 		return MAKE_PF(4, 2, 1, 0, 1, 5, 6, 5, 0);
 -- 
-1.7.9.5
+1.7.5.4
 

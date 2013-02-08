@@ -1,246 +1,167 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Date: Sun, 03 Feb 2013 19:17:22 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 08 Feb 2013 11:40:02 +0000
 Subject: Re: [RFC PATCH 0/4] Common Display Framework-TF
-Message-Id: <3272191.03RiBNfhoM@flatron>
+Message-Id: <5114E412.5030806@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig6AD41DF01F886D1011BF422C"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359560343-31636-1-git-send-email-t.figa@samsung.com> <4292748.rtElrP8BXd@avalon>
-In-Reply-To: <4292748.rtElrP8BXd@avalon>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Tomasz Figa <t.figa@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, kyungmin.park@samsung.com, m.szyprowski@samsung.com, Daniel Vetter <daniel@ffwll.ch>, Marcus Lorentzon <marcus.xm.lorentzon@stericsson.com>, rob@ti.com, tomi.valkeinen@ti.com, Vikas Sajjan <vikas.sajjan@linaro.org>, inki.dae@samsung.com, dh09.lee@samsung.com, ville.syrjala@intel.com, s.nawrocki@samsung.com
+References: <1359560343-31636-1-git-send-email-t.figa@samsung.com> <4292748.rtElrP8BXd@avalon> <3272191.03RiBNfhoM@flatron>
+In-Reply-To: <3272191.03RiBNfhoM@flatron>
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Tomasz Figa <t.figa@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, kyungmin.park@samsung.com, m.szyprowski@samsung.com, Daniel Vetter <daniel@ffwll.ch>, Marcus Lorentzon <marcus.xm.lorentzon@stericsson.com>, rob@ti.com, Vikas Sajjan <vikas.sajjan@linaro.org>, inki.dae@samsung.com, dh09.lee@samsung.com, ville.syrjala@intel.com, s.nawrocki@samsung.com
 
-Hi Laurent,
+--------------enig6AD41DF01F886D1011BF422C
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Saturday 02 of February 2013 11:39:59 Laurent Pinchart wrote:
-> Hi Tomasz,
-> 
-> Thank you for your RFC.
-> 
-> On Wednesday 30 January 2013 16:38:59 Tomasz Figa wrote:
-> > Hi,
-> > 
-> > After pretty long time of trying to adapt Exynos-specific DSI display
-> > support to Common Display Framework I'm ready to show some preliminary
-> > RFC patches. This series shows some ideas for CDF that came to my
-> > mind during my work, some changes based on comments received by
-> > Tomi's edition of CDF and also preliminarys version of Exynos DSI
-> > (video source part only, still with some FIXMEs) and Samsung S6E8AX0
-> > DSI panel drivers.
-> > 
-> > It is heavily based on Tomi's work which can be found here:
-> > http://thread.gmane.org/gmane.comp.video.dri.devel/78227
-> > 
-> > The code might be a bit hacky in places, as I wanted to get it to a
-> > kind of complete and working state first. However I hope that some of
-> > the ideas might useful for further works.
-> > 
-> > So, here comes the TF edition of Common Clock Framework.
-> > --------------------------------------------------------
-> > 
-> > Changes done to Tomi's edition of CDF:
-> >  - Replaced set_operation_mode, set_pixel_format and set_size video
-> >  source>  
-> >    operations with get_params display entity operation, as it was
-> >    originally in Laurent's version.
-> >    
-> >    We have discussed this matter on the mailing list and decided that
-> >    it
-> >    would be better to have the source ask the sink for its parameter
-> >    structure and do whatever appropriate with it.
-> 
-> Could you briefly outline the rationale behind this ?
+Hi,
 
-Display interfaces may be described by an arbitrary number of parameters. 
-Some will require just video timings, others like DSI will require a 
-significant number of additional bus-specific ones.
+On 2013-02-03 21:17, Tomasz Figa wrote:
+> Hi Laurent,
+>=20
+> On Saturday 02 of February 2013 11:39:59 Laurent Pinchart wrote:
+>> Hi Tomasz,
+>>
+>> Thank you for your RFC.
+>>
+>> On Wednesday 30 January 2013 16:38:59 Tomasz Figa wrote:
 
-Separating all the parameters (all of which are usually set at the same 
-time) into a lot of ops setting single parameter will just add unnecessary 
-complexity.
+>>> Changes done to Tomi's edition of CDF:
+>>>  - Replaced set_operation_mode, set_pixel_format and set_size video
+>>>  source> =20
+>>>    operations with get_params display entity operation, as it was
+>>>    originally in Laurent's version.
+>>>   =20
+>>>    We have discussed this matter on the mailing list and decided that=
 
-> I'm wondering whether get_params could limit us if a device needs to
-> modify parameters at runtime. For instance a panel might need to change
-> clock frequencies or number of used data lane depending on various
-> runtime conditions. I don't have a real use case here, so it might just
-> be a bit of over-engineering.
+>>>    it
+>>>    would be better to have the source ask the sink for its parameter
+>>>    structure and do whatever appropriate with it.
+>>
+>> Could you briefly outline the rationale behind this ?
+>=20
+> Display interfaces may be described by an arbitrary number of parameter=
+s.=20
+> Some will require just video timings, others like DSI will require a=20
+> significant number of additional bus-specific ones.
+>=20
+> Separating all the parameters (all of which are usually set at the same=
+=20
+> time) into a lot of ops setting single parameter will just add unnecess=
+ary=20
+> complexity.
 
-Hmm, isn't it in the opposite direction (the user requests the display 
-interface to change, for example, video mode, which in turn reconfigures 
-the link and requests the panel to update its settings)?
+I have nothing against combining the parameters that way. I think the
+important thing here is just that we have to allow changing of the
+parameters, whenever the display device needs that. So the bus
+parameters cannot be a one time constant setting.
 
-However it might be reasonable to split the parameters into constant and 
-variable ones. In case of DSI bus, there is a lot of parameters that are 
-considered just at link initialization time (the whole dsi params struct I 
-defined). Video mode, however, is a variable parameter that can be changed 
-on some displays.
+>> I'm wondering whether get_params could limit us if a device needs to
+>> modify parameters at runtime. For instance a panel might need to chang=
+e
+>> clock frequencies or number of used data lane depending on various
+>> runtime conditions. I don't have a real use case here, so it might jus=
+t
+>> be a bit of over-engineering.
+>=20
+> Hmm, isn't it in the opposite direction (the user requests the display =
 
-> 
-> >  - Defined a preliminary set of DSI bus parameters.
-> >  
-> >    Following parameters are defined:
-> >    
-> >    1. Pixel format used for video data transmission.
-> >    
-> >    2. Mode flags (several bit flags ORed together):
-> >      a) DSI_MODE_VIDEO - entity uses video mode (as opposed to command
-> >      
-> >         mode), following DSI_MODE_VIDEO_* flags are relevant only if
-> >         this
-> >         flag is set.
-> >         b) DSI_MODE_VIDEO_BURST - entity uses burst transfer for video
-> >         data
-> >         c) DSI_MODE_VIDEO_SYNC_PULSE - entity uses sync pulses (as
-> >         opposed
-> >         
-> >            to sync events)
-> >         
-> >         d) DSI_MODE_VIDEO_AUTO_VERT - entity uses automatic video mode
-> >         
-> >            detection
-> >         
-> >         e) DSI_MODE_VIDEO_HSE - entity needs horizontal sync end
-> >         packets
-> >         f) DSI_MODE_VIDEO_HFP - entity needs horizontal front porch
-> >         area
-> >         g) DSI_MODE_VIDEO_HBP - entity needs horizontal back porch
-> >         area
-> >         h) DSI_MODE_VIDEO_HSA - entity needs horizontal sync active
-> >         area
-> >      
-> >      i) DSI_MODE_VSYNC_FLUSH - vertical sync pulse flushes video data
-> >      j) DSI_MODE_EOT_PACKET - entity needs EoT packets
-> >    
-> >    3. Bit (serial) clock frequency in HS mode.
-> >    4. Escape mode clock frequency.
-> >    5. Mask of used data lanes (each bit represents single lane).
-> 
-> From my experience with MIPI CSI (Camera Serial Interface, similar to
-> DSI) some transceivers can reroute data lanes internally. Is that true
-> for DSI as well ? In that case we would need a list of data lanes, not
-> just a mask.
+> interface to change, for example, video mode, which in turn reconfigure=
+s=20
+> the link and requests the panel to update its settings)?
 
-Hmm, I don't remember at the moment, will have to look to the 
-specification. Exynos DSI master doesn't support such feature.
+Well, now, that's the question.
 
-> >    6. Command allow area in video mode - amount of lines after
-> >    transmitting>    
-> >       video data when generic commands are accepted.
-> >    
-> >    Feel free to suggest anything missing or wrong, as the list of
-> >    parameters is based merely on what was used in original Exynos MIPI
-> >    DSIM driver.
-> >  
-> >  - Redesigned source-entity matching.
-> >  
-> >    Now each source has name string and integer id and each entity has
-> >    source name and source id. In addition, they can have of_node
-> >    specified, which is used for Device Tree-based matching.
-> >    
-> >    The matching procedure is as follows:
-> >    
-> >    1. Matching takes place when display entity registers.
-> >    
-> >      a) If there is of_node specified for the entity then
-> >      "video-source"
-> >      
-> >         phandle of this node is being parsed and list of registered
-> >         sources
-> >         is traversed in search of a source with of_node received from
-> >         parsing the phandle.
-> >      
-> >      b) Otherwise the matching key is a pair of source name and id.
-> >    
-> >    2. If no matching source is found, display_entity_register returns
-> >    
-> >       -EPROBE_DEFER error which causes the entity driver to defer its
-> >       probe until the source registers.
-> >    
-> >    3. Otherwise an optional bind operation of video source is called,
-> >    
-> >       sink field of source and source field of entity are set and the
-> >       matching ends successfully.
-> >  
-> >  - Some initial concept of source-entity cross-locking.
-> >  
-> >    Only video source is protected at the moment, as I still have to
-> >    think
-> >    a bit about locking the entity in a way where removing it by user
-> >    request is still possible.
-> 
-> One of the main locking issues here are cross-references. The display
-> entity holds a reference to the video source (for video operations),
-> and the display controller driver holds a reference to the display
-> entity (for control operations), resulting in a cross-references lock
-> situation. One possible solution would be to first unbind the display
-> entity device from its driver to break the cycle.
+Let's consider a simplified case with DSI output from the SoC, and a DSI
+panel. If the panel is a rather simple one, you could well call a method
+in the API in the DSI output driver, which would do necessary
+configuration and inform the panel driver to do any configuration it
+needs to do, based on the parameters.
 
-Yes, this is a problem that requires a bit more thought.
+However, in my experience display devices, DSI devices in particular,
+are often quite "interesting". If the control of the operation in
+question is in the DSI output side, we are limited about what kind of
+DSI panels we can use, as the DSI output driver has to know all the
+tricks needed to make the panels work.
 
-I've been discussing this issue with Sylwester and we came to a conclusion 
-that for sure a display entity can normally get a reference to its video 
-source (e.g. module_get, to prevent unloading the module), as there should 
-be no possibility of video source going away, leaving display entity 
-present and so there is no need for unregistering a bound video source. 
-This is what I implemented in my code.
+I'm having hard time trying to explain this, so let's try an example.
+Consider the initial powering up of the bus. If the DSI output driver is
+in control, something like the following probably happens:
 
-Now it shall be possible to unregister a bound display entity, for example 
-to have the ability of unplugging a hotpluggable display (HDMI, Display 
-Port), but this will need some non-trivial synchronization. I'm still 
-thinking how to do it properly.
+- output driver asks for the parameters from the panel driver
+- output driver programs the DSI output according to these parameters
+- output driver informs the panel that the bus is now up and running
 
-Best regards,
-Tomasz
- 
-> >  - Dropped any panels and chips that I can't test.
-> >  
-> >    They are irrelevant for this series, so there is no point in
-> >    including
-> >    them.
-> >  
-> >  - Added Exynos DSI video source driver.
-> >  
-> >    This is a new driver for the DSI controller found in Exynos SoCs.
-> >    It
-> >    still needs some work, but in current state can be considered an
-> >    example of DSI video source implementation for my version of CDF.
-> >  
-> >  - Added Samsung S6E8AX0 DSI panel driver.
-> >  
-> >    This is the old Exynos-specific driver, just migrated to CDF and
-> >    with
-> >    some hacks to provide control over entity state to userspace using
-> >    lcd device. However it can be used to demonstrate video source ops
-> >    in
-> >    use.
-> > 
-> > Feel free to comment as much as you can.
-> > 
-> > Tomasz Figa (4):
-> >   video: add display-core
-> >   video: add makefile & kconfig
-> >   video: display: Add exynos-dsi video source driver
-> >   video: display: Add Samsung s6e8ax0 display panel driver
-> >  
-> >  drivers/video/Kconfig                     |    1 +
-> >  drivers/video/Makefile                    |    1 +
-> >  drivers/video/display/Kconfig             |   16 +
-> >  drivers/video/display/Makefile            |    3 +
-> >  drivers/video/display/display-core.c      |  295 +++++++
-> >  drivers/video/display/panel-s6e8ax0.c     | 1027
-> >  ++++++++++++++++++++++
-> >  drivers/video/display/source-exynos_dsi.c | 1313
-> >  ++++++++++++++++++++++++++ include/video/display.h                  
-> >  |  230 +++++
-> >  include/video/exynos_dsi.h                |   41 +
-> >  include/video/panel-s6e8ax0.h             |   41 +
-> >  10 files changed, 2968 insertions(+)
-> >  create mode 100644 drivers/video/display/Kconfig
-> >  create mode 100644 drivers/video/display/Makefile
-> >  create mode 100644 drivers/video/display/display-core.c
-> >  create mode 100644 drivers/video/display/panel-s6e8ax0.c
-> >  create mode 100644 drivers/video/display/source-exynos_dsi.c
-> >  create mode 100644 include/video/display.h
-> >  create mode 100644 include/video/exynos_dsi.h
-> >  create mode 100644 include/video/panel-s6e8ax0.h
+Then consider a totally invented case, but which perhaps describes the
+problem with the above approach: The DSI panel requires the DSI bus
+first to be started in HS mode, but with a certain predefined bus speed,
+and only one lane used. This predefined bus setup is used to send
+configuration commands to the panel hardware, and only after that can
+you reconfigure the bus with proper speed and lanes.
+
+That kind of thing is a bit difficult to manage with the DSI output
+driver is in control. However, if the DSI panel driver is in control,
+it's simple:
+
+- panel driver calls config methods in the DSI output driver, setting
+the predefined speed and one lane
+- panel driver sends configuration commands to the panel
+- panel driver calls config methods in the DSI output driver, setting
+the final bus config
+
+>>>    5. Mask of used data lanes (each bit represents single lane).
+>>
+>> From my experience with MIPI CSI (Camera Serial Interface, similar to
+>> DSI) some transceivers can reroute data lanes internally. Is that true=
+
+>> for DSI as well ? In that case we would need a list of data lanes, not=
+
+>> just a mask.
+>=20
+> Hmm, I don't remember at the moment, will have to look to the=20
+> specification. Exynos DSI master doesn't support such feature.
+
+In OMAP you can configure the DSI pins quite freely. We have the
+following struct:
+
+struct omap_dsi_pin_config {
+	int num_pins;
+	/*
+	 * pin numbers in the following order:
+	 * clk+, clk-
+	 * data1+, data1-
+	 * data2+, data2-
+	 * ...
+	 */
+	int pins[OMAP_DSS_MAX_DSI_PINS];
+};
+
+ Tomi
+
+
+
+--------------enig6AD41DF01F886D1011BF422C
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRFOQSAAoJEPo9qoy8lh71YdkP/jof2z/2QbV1P0PLxtcOLJ0A
+pd+baGugVZTBC8XV6u8X6r2Tmr152VgO7+j+6qElGU4s6JkU3278RC98hCT0g6FV
+uq0Ez4kdiPDoRZBijOafZxsxZc2MbgGV3YWKCQXBnJ07TujoMW4R8fq2N1v5ki0V
+7qZMwg+bz+RxUBodq7afRlsRkrRkvDP4p+J4+/j4rgBclhdIUSRwSpfxE/cQiPui
+WwHtG0quLnEq/JPLMirGcYkf2HG32Spn5VTUmf8IRtTZUns35YBP8istjyJd/56O
+ea/rX3edPRRsQ+tMiTBalIRuC0MNFJ1j+DKpFNWL97aCziygdhHw96/RE4lX9eNH
+Df7Wvkj+FjAMmW6ibHHValMekssRQ1z9wmmAU1chIjBNuMz/d7A4aLg9pjOeMar1
+L/VvV4F+YxB837ZKNMPoX9GF+TBw0Ng0YbcEHq4yXona/A2JoOzy2whTSX74ezmp
+9xjIhJdA52O/L9soA6+A4UvhCDCI+SvE0H76OK5ksbVHaXC8qmrnYCBD7QxjmS/Z
+DiFaasbIZIJF/CnY60302L0emT4RN8e0uE2vxvElIbowm/t4fsdBnG62Vdxft19D
+ChfI54wus++wOLzqExPSLY2XdO4mzX9Tibrko+vZuGPTcS1aoafOsscrw6GJxdwT
+yRVpS7MsKYXkXmYf+ytC
+=96X/
+-----END PGP SIGNATURE-----
+
+--------------enig6AD41DF01F886D1011BF422C--

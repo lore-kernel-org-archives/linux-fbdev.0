@@ -1,73 +1,68 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 06 Feb 2013 09:52:56 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 08 Feb 2013 10:51:14 +0000
 Subject: Re: [RFC v2 0/5] Common Display Framework
-Message-Id: <511227C2.8060808@ti.com>
+Message-Id: <5114D8A2.6010806@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig308484A2EEB6AD9AAACDD463"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1353620736-6517-1-git-send-email-laurent.pinchart@ideasonboard.com> <1987992.4TmVjQaiLj@amdc1227> <50EC5283.80006@stericsson.com> <3057999.UZLp2j2DkQ@avalon> <510F8807.2020406@stericsson.com>
 In-Reply-To: <510F8807.2020406@stericsson.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: Marcus Lorentzon <marcus.xm.lorentzon@stericsson.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Vikas Sajjan <vikas.sajjan@linaro.org>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Tom Gall <tom.gall@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Rob Clark <rob.clark@linaro.org>, Ragesh Radhakrishnan <Ragesh.R@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, sunil joshi <joshi@samsung.com>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Tomasz Figa <t.figa@samsung.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, Tom Gall <tom.gall@linaro.org>, Ragesh Radhakrishnan <Ragesh.R@linaro.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Rob Clark <rob.clark@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, sunil joshi <joshi@samsung.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Bryan Wu <bryan.wu@canonical.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Sebastien Guiriec <s-guiriec@ti.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
 
-On Monday 04 February 2013 03:35 PM, Marcus Lorentzon wrote:
-> On 02/02/2013 12:35 AM, Laurent Pinchart wrote:
->> Hi Marcus,
->>
->> On Tuesday 08 January 2013 18:08:19 Marcus Lorentzon wrote:
->>> On 01/08/2013 05:36 PM, Tomasz Figa wrote:
->>>> On Tuesday 08 of January 2013 11:12:26 Marcus Lorentzon wrote:
-> [...]
->>>>> But it is not perfect. After a couple of products we realized that
->>>>> most
->>>>> panel drivers want an easy way to send a bunch of init commands in one
->>>>> go. So I think it should be an op for sending an array of commands at
->>>>> once. Something like
->>>>>
->>>>> struct dsi_cmd {
->>>>>        enum mipi_pkt_type type; /* MIPI DSI, DCS, SetPacketLen, ... */
->>>>>        u8 cmd;
->>>>>        int dataLen;
->>>>>        u8 *data;
->>>>> }
->>>>>
->>>>> struct dsi_ops {
->>>>>        int dsi_write(source, int num_cmds, struct dsi_cmd *cmds);
->>>>>        ...
->>>>> }
->> Do you have DSI IP(s) that can handle a list of commands ? Or would
->> all DSI
->> transmitter drivers need to iterate over the commands manually ? In
->> the later
->> case a lower-level API might be easier to implement in DSI transmitter
->> drivers. Helper functions could provide the higher-level API you
->> proposed.
->
-> The HW has a FIFO, so it can handle a few. Currently we use the low
-> level type of call with one call per command. But we have found DSI
-> command mode panels that don't accept any commands during the "update"
-> (write start+continues). And so we must use a mutex/state machine to
-> exclude any async calls to send DSI commands during update. But if you
-> need to send more than one command per frame this will be hard (like
-> CABC and backlight commands). It will be a ping pong between update and
-> command calls. One option is to expose the mutex to the caller so it can
-> make many calls before the next update grabs the mutex again.
-> So maybe we could create a helper that handle the op for list of
-> commands and another op for single command that you actually have to
-> implement.
+--------------enig308484A2EEB6AD9AAACDD463
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-fyi, the DSI IP on OMAP3+ SoCs also has a FIFO. It can provide 
-interrupts after each command is pushed out, and also when the FIFO gets 
-empty(all commands are pushed). The only thing to take care is to not 
-overflow FIFO.
+On 2013-02-04 12:05, Marcus Lorentzon wrote:
 
-DSI video mode panels generally have a few dozen internal registers 
-which need to be configured via DSI commands. It's more fast(and 
-convenient) to configure a handful of internal registers in one shot, 
-and then perform a single BTA to know from the panel whether the 
-commands were received correctly.
+> As discussed at FOSDEM I will give DSI bus with full feature set a
+> try.
 
-Regards,
-Archit
+Please do, but as a reminder I want to raise the issues I see with a DSI
+bus:
 
+- A device can be a child of only one bus. So if DSI is used only for
+video, the device is a child of, say, i2c bus, and thus there's no DSI
+bus. How to configure and use DSI in this case?
+
+- If DSI is used for both control and video, we have two separate APIs
+for the bus. What I mean here is that for the video-only case above, we
+need a video-only-API for DSI. This API should contain all necessary
+methods to configure DSI. But we need similar methods for the control
+API also.
+
+So, I hope you come up with some solution for this, but as I see it,
+it's easily the most simple and clear option to have one video_source
+style entity for the DSI bus itself, which is used for both control and
+video.
+
+ Tomi
+
+
+
+--------------enig308484A2EEB6AD9AAACDD463
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRFNiiAAoJEPo9qoy8lh71BaQP/3CSjn7rhwfgye1Vb2vLQ/n6
+ec5YmiNyMSvvW/8TyDAC7uYpSErDjwyZ6P0ZaCi2CgAIYWa6glsXpgZPRNOogRls
+6BQNCTovsQ7Dj98KKJTsYz+p20imlAnBjMU+PW4xOsW2WPIPxMJr+32k9OeOvBmr
+gjNJ01t6xhlfRNRly+Yfdf/y62sDswhPdFKU30h6lx0zkGpEBKdD+8vnBlz6dxbE
+aIKi+qzsgaxy0mP1wDHrzK12j7VLrhuLLfFW/NJx1xOWArHNoPM4+lvLsRtOOX7X
+rkbsvIO/vY0IcCPzWnrRI1NbNPpFPmKnZ/hy+1oUhWIfuKzw2AyEZ0laXzMo/iB2
+prKTGGDbstup891bj6QJZiq16XSmNLeAbNs9og8BbFtuXkyto6EJcjkkOtvjJrv1
+ErF+/AUrNeQKzl2pM+ciiQMpAQ/KDOFBNLJo1CjEZ0TP+PpBnEyAvQ0++c0YYZMX
+xAZx0uLeMOLPGXU6Ea4wDODCCLQI7TSrS2DAhSqjX7N/29qwtPcbRb3pAvxmXDr3
+5GXTmfXSjbLvpSWVLXBd/nXgXYrD4Jp4sHB+rY1kmouS+nQZ5kO9GZf06sU91H4X
+1NRCPobxTba/x8bnKlr/QFdc0CDYGZbZK9CQ/TrYxXN3ZiLMugOrS3UUSVTTByo0
+OM5tqbyJZuCYbRBV7a+6
+=9+uQ
+-----END PGP SIGNATURE-----
+
+--------------enig308484A2EEB6AD9AAACDD463--

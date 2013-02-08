@@ -1,15 +1,16 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Tue, 05 Feb 2013 13:35:11 +0000
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Date: Fri, 08 Feb 2013 16:35:14 +0000
 Subject: [PATCH 1/5] atmel_lcdfb: fix 16-bpp modes on older SOCs
-Message-Id: <1360071315-4032-2-git-send-email-jhovold@gmail.com>
+Message-Id: <7543f557bed835c79f6981989e96034a326bb48f.1360340791.git.nicolas.ferre@atmel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130129135435.GN7360@game.jcrosoft.org>
- <1360071315-4032-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1360071315-4032-1-git-send-email-jhovold@gmail.com>
+References: <cover.1360340791.git.nicolas.ferre@atmel.com>
+In-Reply-To: <cover.1360340791.git.nicolas.ferre@atmel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
+
+From: Johan Hovold <jhovold@gmail.com>
 
 Fix regression introduced by commit 787f9fd23283 ("atmel_lcdfb: support
 16bit BGR:565 mode, remove unsupported 15bit modes") which broke 16-bpp
@@ -23,6 +24,7 @@ Tested on at91sam9263 and at91sam9g45.
 Cc: <stable@vger.kernel.org>
 Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
 Signed-off-by: Johan Hovold <jhovold@gmail.com>
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 ---
  drivers/video/atmel_lcdfb.c | 22 +++++++++++++++-------
  include/video/atmel_lcdc.h  |  1 +
@@ -94,5 +96,5 @@ index 28447f1..5f0e234 100644
  
  #define ATMEL_LCDC_DMABADDR1	0x00
 -- 
-1.8.1.1
+1.8.0
 

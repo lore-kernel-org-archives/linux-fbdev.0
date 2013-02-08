@@ -1,61 +1,48 @@
-From: Mark Zhang <nvmarkzhang@gmail.com>
-Date: Fri, 01 Feb 2013 04:19:39 +0000
-Subject: Re: [RFC 1/4] video: panel: add CLAA101WA01A panel support
-Message-Id: <510B425B.1040807@gmail.com>
+From: Ruslan Bilovol <ruslan.bilovol@ti.com>
+Date: Fri, 08 Feb 2013 15:43:39 +0000
+Subject: [PATCH v2 0/1] OMAP4: DSS: Add panel for Blaze Tablet boards
+Message-Id: <1360338220-12753-1-git-send-email-ruslan.bilovol@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359514939-15653-1-git-send-email-acourbot@nvidia.com> <1359514939-15653-2-git-send-email-acourbot@nvidia.com> <5108C9C1.1090707@gmail.com> <51098064.7030902@wwwdotorg.org> <5109EA2A.8020204@gmail.com> <510AA7F8.7070000@wwwdotorg.org>
-In-Reply-To: <510AA7F8.7070000-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Cc: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+To: andi@etezian.org, tomi.valkeinen@ti.com, FlorianSchandinat@gmx.de, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
 
-On 02/01/2013 01:20 AM, Stephen Warren wrote:
-> On 01/30/2013 08:51 PM, Mark Zhang wrote:
->> On 01/31/2013 04:19 AM, Stephen Warren wrote:
->>> On 01/30/2013 12:20 AM, Mark Zhang wrote:
->>>> On 01/30/2013 11:02 AM, Alexandre Courbot wrote:
->>>>> Add support for the Chunghwa CLAA101WA01A display panel.
->>>
->>>>> +static int panel_claa101_get_modes(struct display_entity *entity,
->>>>> +				   const struct videomode **modes)
->>>>> +{
->>>>> +	/* TODO get modes from EDID? */
->>>>
->>>> Why not move the "nvidia,ddc" from encoder's DT to panel's DT? In that
->>>> case, you can get EDID here. I know drm has some helpers to fetch EDID
->>>> but I recall there are some other functions which has no drm
->>>> dependencies which may be suitable for you.
->>>
->>> DDC access is a property of the display controller, not the panel
->>> itself. The panel might be hooked up to a display controller's DDC/I2C
->>> channel as the target, but it isn't the host/controller of the DDC/I2C
->>> channel. As such, placing the nvidia,ddc property into the display
->>> controller node makes sense.
->>
->> Yes, DC triggers the DDC access and is the host of the DDC/I2C channel.
->> So I think it's reasonable to put nvidia,ddc property into the display
->> controller node. But the video mode info in EDID which be fetched via
->> DDC is the property of the panel, so this info should be provided by
->> panel driver.
-> 
-> No, that makes absolutely no sense at all in the EDID case.
-> 
-> By the same argument, we'd need a panel driver for every external
-> monitor which implemented EDID, just to transfer the EDID results from
-> the display controller's DDC channel into the panel driver and back into
-> the display controller code, which wants the mode list.
-> 
+Hi,
 
-Ah, yes, this is right. We can't write driver for every external monitor
-which implements EDID. Although I think it's more reasonable that panel
-decides whether the DDC probe is necessary.
+This patch adds support for TC358765 DSI-to-LVDS transmitter
+from Toshiba, that is used in OMAP4 Blaze Tablet development
+platform. It was originally developed a long time ago and
+was used internally survived few kernel migrations.
+Different people worked in this driver during last two
+years changing its sources to what each new version of
+kernel expects.
 
-> Again, if the mode list is coming from DDC, the display controller
-> should retrieve it in exactly the same way it retrieves it for any
-> external monitor - by direct control of the DDC channel to read the
-> EDID. The only time it makes sense for the panel driver to get involved
-> in supplying the mode list is when there's no EDID, so the list must be
-> hard-coded into the driver.
-> 
+Current version is ported from internal kernel v3.4 to 3.8.0-rc6
+Tested basic functioning under busybox.
+
+------------------------------------------------
+v2:
+- added returns of correct errno instead of magic numbers
+- used delays, based on hrtimers where possible
+- fixed typo
+- switched to devres management of resources instead of raw
+  calls
+
+
+Tomi Valkeinen (1):
+  OMAP4: DSS: Add panel for Blaze Tablet boards
+
+ drivers/video/omap2/displays/Kconfig          |   15 +
+ drivers/video/omap2/displays/Makefile         |    1 +
+ drivers/video/omap2/displays/panel-tc358765.c | 1000 +++++++++++++++++++++++++
+ drivers/video/omap2/displays/panel-tc358765.h |  170 +++++
+ include/video/omap-panel-tc358765.h           |   53 ++
+ 5 files changed, 1239 insertions(+)
+ create mode 100644 drivers/video/omap2/displays/panel-tc358765.c
+ create mode 100644 drivers/video/omap2/displays/panel-tc358765.h
+ create mode 100644 include/video/omap-panel-tc358765.h
+
+-- 
+1.7.9.5
+

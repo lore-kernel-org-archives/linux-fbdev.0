@@ -1,7 +1,7 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Fri, 08 Feb 2013 16:52:24 +0000
+From: Olof Johansson <olof@lixom.net>
+Date: Sun, 10 Feb 2013 00:47:40 +0000
 Subject: Re: [PATCH 0/5] at91: atmel_lcdfb: regression fixes and cpu_is removal
-Message-Id: <20130208165224.GF30595@game.jcrosoft.org>
+Message-Id: <20130210004740.GH16278@quad.lixom.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1360340791.git.nicolas.ferre@atmel.com>
 In-Reply-To: <cover.1360340791.git.nicolas.ferre@atmel.com>
@@ -10,15 +10,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-HI,
-
-on all
-
-Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-
-Best Regards,
-J.
-On 17:35 Fri 08 Feb     , Nicolas Ferre wrote:
+On Fri, Feb 08, 2013 at 05:35:13PM +0100, Nicolas Ferre wrote:
 > These patches fix a regression in 16-bpp support for older SOCs which use
 > IBGR:555 rather than BGR:565 pixel layout. Use SOC-type to determine if the
 > controller uses the intensity-bit and restore the old layout in that case.
@@ -37,30 +29,10 @@ On 17:35 Fri 08 Feb     , Nicolas Ferre wrote:
 > as it seems that old fbdev drivers are not so much reviewed those days, can we
 > take the decision to queue this material through arm-soc with other AT91
 > drivers updates?
-> 
-> Best regards,
-> 
-> Johan Hovold (5):
->   atmel_lcdfb: fix 16-bpp modes on older SOCs
->   ARM: at91/neocore926: fix LCD-wiring mode
->   ARM: at91/avr32/atmel_lcdfb: add bus-clock entry
->   atmel_lcdfb: move lcdcon2 register access to compute_hozval
->   ARM: at91/avr32/atmel_lcdfb: add platform device-id table
-> 
->  arch/arm/mach-at91/at91sam9261.c         |   2 +
->  arch/arm/mach-at91/at91sam9261_devices.c |   6 +-
->  arch/arm/mach-at91/at91sam9263.c         |   1 +
->  arch/arm/mach-at91/at91sam9263_devices.c |   2 +-
->  arch/arm/mach-at91/at91sam9g45.c         |   2 +
->  arch/arm/mach-at91/at91sam9g45_devices.c |   6 +-
->  arch/arm/mach-at91/at91sam9rl.c          |   1 +
->  arch/arm/mach-at91/at91sam9rl_devices.c  |   2 +-
->  arch/arm/mach-at91/board-neocore926.c    |   2 +-
->  arch/avr32/mach-at32ap/at32ap700x.c      |   6 +-
->  drivers/video/atmel_lcdfb.c              | 130 ++++++++++++++++++++++++-------
->  include/video/atmel_lcdc.h               |   4 +-
->  12 files changed, 127 insertions(+), 37 deletions(-)
-> 
-> -- 
-> 1.8.0
-> 
+
+It would be beneficial to get an ack from Florian. Was he involved in the
+review of the code that regressed 16-bpp support in the first place? When was
+the regression introduced?
+
+
+-Olof

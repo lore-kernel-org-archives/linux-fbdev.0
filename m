@@ -1,158 +1,102 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Sun, 17 Feb 2013 17:59:04 +0000
-Subject: [PATCH 2/9] video: sysfb: new vbefb device type
-Message-Id: <1361123951-587-3-git-send-email-dh.herrmann@gmail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 13 Feb 2013 14:33:55 +0000
+Subject: [PATCH 03/33] arm: omap: board-2430: use generic dpi panel's gpio handling
+Message-Id: <1360765345-19312-4-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
-In-Reply-To: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
+References: <1360765345-19312-1-git-send-email-archit@ti.com>
+In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, David Herrmann <dh.herrmann@googlemail.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>, Tony Lindgren <tony@atomide.com>
 
-From: David Herrmann <dh.herrmann@googlemail.com>
+The 2430sdp board file currently requests gpios required to configure the NEC
+DPI panel, and provides platform_enable/disable callbacks to configure them.
 
-This adds the VESA BIOS Extension (VBE) device type. Platform code needs
-to provide the "vbefb" platform-device with a screen_info structure as
-platform code.
+These tasks have been moved to the generic dpi panel driver itself and shouldn't
+be done in the board files.
 
-All drivers that depend on VBE can now register as bus drivers and bind
-to SYSFB_VBE devices. There is no distinction between graphics
-framebuffers or plain text VGA. Drivers ought to inspect the screen_info
-and return -ENODEV during probe() is they cannot make use of the device.
+Remove the gpio requests and the platform callbacks from the board file.
+Add the gpio information to generic dpi panel's platform data so that it's
+passed to the panel driver.
 
-Only one framebuffer of type SYSFB_VBE is available on a system at a time.
-
-Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+Cc: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/sysfb.c | 77 +++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/sysfb.h |  5 +++-
- 2 files changed, 81 insertions(+), 1 deletion(-)
+ arch/arm/mach-omap2/board-2430sdp.c |   43 +++++------------------------------
+ 1 file changed, 6 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/video/sysfb.c b/drivers/video/sysfb.c
-index 8249006..5b47a9a 100644
---- a/drivers/video/sysfb.c
-+++ b/drivers/video/sysfb.c
-@@ -205,6 +205,72 @@ void sysfb_taint(struct sysfb_device *sdev, bool set)
- }
- EXPORT_SYMBOL(sysfb_taint);
+diff --git a/arch/arm/mach-omap2/board-2430sdp.c b/arch/arm/mach-omap2/board-2430sdp.c
+index 13a1a3b..c888a58 100644
+--- a/arch/arm/mach-omap2/board-2430sdp.c
++++ b/arch/arm/mach-omap2/board-2430sdp.c
+@@ -107,24 +107,13 @@ static struct platform_device *sdp2430_devices[] __initdata = {
+ #define SDP2430_LCD_PANEL_BACKLIGHT_GPIO	91
+ #define SDP2430_LCD_PANEL_ENABLE_GPIO		154
  
-+static void sysfb_dev_release(struct device *dev)
-+{
-+	struct sysfb_device *sdev = to_sysfb_device(dev);
-+
-+	kfree(sdev);
-+}
-+
-+static struct sysfb_device *sysfb_dev_new(struct device *parent)
-+{
-+	struct sysfb_device *sdev;
-+
-+	sdev = kzalloc(sizeof(*sdev), GFP_KERNEL);
-+	if (!sdev)
-+		return NULL;
-+
-+	device_initialize(&sdev->dev);
-+	sdev->dev.release = sysfb_dev_release;
-+	sdev->dev.bus = &sysfb_bus_type;
-+	sdev->dev.parent = parent;
-+
-+	return sdev;
-+}
-+
-+static int sysfb_vbe_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+	struct sysfb_device *sdev;
-+
-+	sdev = sysfb_dev_new(&pdev->dev);
-+	if (!sdev)
-+		return -ENOMEM;
-+
-+	dev_set_name(&sdev->dev, "vbefb");
-+	sdev->type = SYSFB_VBE;
-+	sdev->screen = pdev->dev.platform_data;
-+
-+	ret = device_add(&sdev->dev);
-+	if (ret)
-+		goto err_free;
-+
-+	platform_set_drvdata(pdev, sdev);
-+	return 0;
-+
-+err_free:
-+	put_device(&sdev->dev);
-+	return ret;
-+}
-+
-+static int sysfb_vbe_remove(struct platform_device *pdev)
-+{
-+	struct sysfb_device *sdev = platform_get_drvdata(pdev);
-+
-+	device_del(&sdev->dev);
-+	put_device(&sdev->dev);
-+	return 0;
-+}
-+
-+static struct platform_driver sysfb_vbe_driver = {
-+	.driver = {
-+		.name = "vbefb",
-+		.owner = THIS_MODULE,
+-static int sdp2430_panel_enable_lcd(struct omap_dss_device *dssdev)
+-{
+-	gpio_direction_output(SDP2430_LCD_PANEL_ENABLE_GPIO, 1);
+-	gpio_direction_output(SDP2430_LCD_PANEL_BACKLIGHT_GPIO, 1);
+-
+-	return 0;
+-}
+-
+-static void sdp2430_panel_disable_lcd(struct omap_dss_device *dssdev)
+-{
+-	gpio_direction_output(SDP2430_LCD_PANEL_ENABLE_GPIO, 0);
+-	gpio_direction_output(SDP2430_LCD_PANEL_BACKLIGHT_GPIO, 0);
+-}
+-
+ static struct panel_generic_dpi_data sdp2430_panel_data = {
+ 	.name			= "nec_nl2432dr22-11b",
+-	.platform_enable	= sdp2430_panel_enable_lcd,
+-	.platform_disable	= sdp2430_panel_disable_lcd,
++	.num_gpios		= 2,
++	.gpios			= {
++		SDP2430_LCD_PANEL_ENABLE_GPIO,
++		SDP2430_LCD_PANEL_BACKLIGHT_GPIO,
 +	},
-+	.probe = sysfb_vbe_probe,
-+	.remove = sysfb_vbe_remove,
-+};
-+
- static int __init sysfb_init(void)
- {
- 	int ret;
-@@ -215,11 +281,22 @@ static int __init sysfb_init(void)
- 		return ret;
- 	}
- 
-+	ret = platform_driver_register(&sysfb_vbe_driver);
-+	if (ret) {
-+		pr_err("cannot register VBE framebuffer driver\n");
-+		goto err_bus;
-+	}
-+
- 	return 0;
-+
-+err_bus:
-+	bus_unregister(&sysfb_bus_type);
-+	return ret;
- }
- 
- static void __exit sysfb_exit(void)
- {
-+	platform_driver_unregister(&sysfb_vbe_driver);
- 	bus_unregister(&sysfb_bus_type);
- }
- 
-diff --git a/include/linux/sysfb.h b/include/linux/sysfb.h
-index 6cd3c24..1796c1e 100644
---- a/include/linux/sysfb.h
-+++ b/include/linux/sysfb.h
-@@ -20,6 +20,7 @@
- 
- /**
-  * sysfb_type
-+ * @SYSFB_VBE: VESA BIOS Extension compatible device (includes VGA devices)
-  *
-  * Different types of available framebuffer devices. Only one device of each
-  * type can be available at a time. In most systems there even is only one
-@@ -29,7 +30,9 @@
-  * devices.
-  */
- enum sysfb_type {
--	SYSFB_TYPES = 0,
-+	SYSFB_VBE = 0x01,
-+
-+	SYSFB_TYPES = SYSFB_VBE,
  };
  
- /**
+ static struct omap_dss_device sdp2430_lcd_device = {
+@@ -145,26 +134,6 @@ static struct omap_dss_board_info sdp2430_dss_data = {
+ 	.default_device	= &sdp2430_lcd_device,
+ };
+ 
+-static void __init sdp2430_display_init(void)
+-{
+-	int r;
+-
+-	static struct gpio gpios[] __initdata = {
+-		{ SDP2430_LCD_PANEL_ENABLE_GPIO, GPIOF_OUT_INIT_LOW,
+-			"LCD reset" },
+-		{ SDP2430_LCD_PANEL_BACKLIGHT_GPIO, GPIOF_OUT_INIT_LOW,
+-			"LCD Backlight" },
+-	};
+-
+-	r = gpio_request_array(gpios, ARRAY_SIZE(gpios));
+-	if (r) {
+-		pr_err("Cannot request LCD GPIOs, error %d\n", r);
+-		return;
+-	}
+-
+-	omap_display_init(&sdp2430_dss_data);
+-}
+-
+ #if defined(CONFIG_SMC91X) || defined(CONFIG_SMC91x_MODULE)
+ 
+ static struct omap_smc91x_platform_data board_smc91x_data = {
+@@ -271,7 +240,7 @@ static void __init omap_2430sdp_init(void)
+ 	gpio_request_one(SECONDARY_LCD_GPIO, GPIOF_OUT_INIT_LOW,
+ 			 "Secondary LCD backlight");
+ 
+-	sdp2430_display_init();
++	omap_display_init(&sdp2430_dss_data);
+ }
+ 
+ MACHINE_START(OMAP_2430SDP, "OMAP2430 sdp2430 board")
 -- 
-1.8.1.3
+1.7.9.5
 

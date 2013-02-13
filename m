@@ -1,37 +1,114 @@
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Date: Wed, 27 Feb 2013 18:26:56 +0000
-Subject: [PATCH] video: make goldfish option have a dependency on goldfish
-Message-Id: <1361989616-1842-1-git-send-email-paul.gortmaker@windriver.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 13 Feb 2013 14:34:06 +0000
+Subject: [PATCH 14/33] arm: omap: board-sdp3430: use sharp panel's gpio handling
+Message-Id: <1360765345-19312-15-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1360765345-19312-1-git-send-email-archit@ti.com>
+In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>, Tony Lindgren <tony@atomide.com>
 
-Nearly all the other goldfish peripherals (mtd, keyboard, etc)
-have a dependency on the main platform's GOLDFISH Kconfig item,
-but this one got skipped, so add it.
+The omap3430sdp board file currently requests gpios required by the sharp_ls dpi
+panel, and provides platform_enable/disable callbacks to configure them.
 
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+These tasks have been moved to the sharp_ls panel driver itself and shouldn't
+be done in the board files.
+
+Remove the gpio requests and the platform callbacks from the board file.
+Add the gpio information to panel_sharp_ls037v7dw01_data so that it's
+passed to the panel driver.
+
+Out of sharp panel's configurable pins, all apart from resb_gpio are managed by
+a CPLD on the display and set to a default value. Only the configurable pin is
+passed to platform data.
+
+The backlight GPIO doesn't go directly to the sharp panel, it is used to set up
+a voltage supply which goes to the LED+ pin of the panel, hence it isn't passed
+to panel as platform data, and configured in the board file itself. The
+backlight used to previously toggle through the platform_enable/disable
+callbacks, but now it is always on. This needs to be revisited.
+
+Cc: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm/mach-omap2/board-3430sdp.c |   42 +++++++++++++++--------------------
+ 1 file changed, 18 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 4c1546f..2df6d9c 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2208,7 +2208,7 @@ config FB_XILINX
+diff --git a/arch/arm/mach-omap2/board-3430sdp.c b/arch/arm/mach-omap2/board-3430sdp.c
+index fb75a81..13f1431 100644
+--- a/arch/arm/mach-omap2/board-3430sdp.c
++++ b/arch/arm/mach-omap2/board-3430sdp.c
+@@ -106,34 +106,22 @@ static struct twl4030_keypad_data sdp3430_kp_data = {
+ #define SDP3430_LCD_PANEL_BACKLIGHT_GPIO	8
+ #define SDP3430_LCD_PANEL_ENABLE_GPIO		5
  
- config FB_GOLDFISH
- 	tristate "Goldfish Framebuffer"
--	depends on FB
-+	depends on FB && GOLDFISH
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
+-static struct gpio sdp3430_dss_gpios[] __initdata = {
+-	{SDP3430_LCD_PANEL_ENABLE_GPIO,    GPIOF_OUT_INIT_LOW, "LCD reset"    },
+-	{SDP3430_LCD_PANEL_BACKLIGHT_GPIO, GPIOF_OUT_INIT_LOW, "LCD Backlight"},
+-};
+-
+ static void __init sdp3430_display_init(void)
+ {
+ 	int r;
+ 
+-	r = gpio_request_array(sdp3430_dss_gpios,
+-			       ARRAY_SIZE(sdp3430_dss_gpios));
++	/*
++	 * the backlight GPIO doesn't directly go to the panel, it enables
++	 * an internal circuit on 3430sdp to create the signal V_BKL_28V,
++	 * this is connected to LED+ pin of the sharp panel. This GPIO
++	 * is left enabled in the board file, and not passed to the panel
++	 * as platform_data.
++	 */
++	r = gpio_request_one(SDP3430_LCD_PANEL_BACKLIGHT_GPIO,
++				GPIOF_OUT_INIT_HIGH, "LCD Backlight");
+ 	if (r)
+-		printk(KERN_ERR "failed to get LCD control GPIOs\n");
+-
+-}
+-
+-static int sdp3430_panel_enable_lcd(struct omap_dss_device *dssdev)
+-{
+-	gpio_direction_output(SDP3430_LCD_PANEL_ENABLE_GPIO, 1);
+-	gpio_direction_output(SDP3430_LCD_PANEL_BACKLIGHT_GPIO, 1);
+-
+-	return 0;
+-}
++		pr_err("failed to get LCD Backlight GPIO\n");
+ 
+-static void sdp3430_panel_disable_lcd(struct omap_dss_device *dssdev)
+-{
+-	gpio_direction_output(SDP3430_LCD_PANEL_ENABLE_GPIO, 0);
+-	gpio_direction_output(SDP3430_LCD_PANEL_BACKLIGHT_GPIO, 0);
+ }
+ 
+ static int sdp3430_panel_enable_tv(struct omap_dss_device *dssdev)
+@@ -145,14 +133,20 @@ static void sdp3430_panel_disable_tv(struct omap_dss_device *dssdev)
+ {
+ }
+ 
++static struct panel_sharp_ls037v7dw01_data sdp3430_lcd_data = {
++	.resb_gpio = SDP3430_LCD_PANEL_ENABLE_GPIO,
++	.ini_gpio = -1,
++	.mo_gpio = -1,
++	.lr_gpio = -1,
++	.ud_gpio = -1,
++};
+ 
+ static struct omap_dss_device sdp3430_lcd_device = {
+ 	.name			= "lcd",
+ 	.driver_name		= "sharp_ls_panel",
+ 	.type			= OMAP_DISPLAY_TYPE_DPI,
+ 	.phy.dpi.data_lines	= 16,
+-	.platform_enable	= sdp3430_panel_enable_lcd,
+-	.platform_disable	= sdp3430_panel_disable_lcd,
++	.data			= &sdp3430_lcd_data,
+ };
+ 
+ static struct tfp410_platform_data dvi_panel = {
 -- 
-1.8.1.2
+1.7.9.5
 

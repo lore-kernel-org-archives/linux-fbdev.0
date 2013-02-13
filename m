@@ -1,67 +1,77 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 13 Feb 2013 15:28:19 +0000
+Date: Wed, 13 Feb 2013 15:59:58 +0000
 Subject: Re: [PATCH 05/33] arm: omap: board-cm-t35: use generic dpi panel's gpio handling
-Message-Id: <511BB113.3020108@ti.com>
+Message-Id: <511BB87E.60003@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig72DDD45D03F23D0E27289D19"
+Content-Type: multipart/mixed; boundary="------------enig8F7467E38DAD39865B469EDB"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360765345-19312-1-git-send-email-archit@ti.com> <1360765345-19312-6-git-send-email-archit@ti.com> <511BAE50.2090507@compulab.co.il>
-In-Reply-To: <511BAE50.2090507@compulab.co.il>
+References: <1360765345-19312-1-git-send-email-archit@ti.com> <1360765345-19312-6-git-send-email-archit@ti.com> <511BAE50.2090507@compulab.co.il> <511BB113.3020108@ti.com>
+In-Reply-To: <511BB113.3020108@ti.com>
 To: Igor Grinberg <grinberg@compulab.co.il>
 Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tony Lindgren <tony@atomide.com>
 
---------------enig72DDD45D03F23D0E27289D19
+--------------enig8F7467E38DAD39865B469EDB
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 2013-02-13 17:16, Igor Grinberg wrote:
-> Hi Archit,
->=20
-> On 02/13/13 16:21, Archit Taneja wrote:
->> The cm-t35 board file currently requests gpios required to configure t=
-he tdo35s
->> panel, and provides platform_enable/disable callbacks to configure the=
-m.
+On 2013-02-13 17:28, Tomi Valkeinen wrote:
+> On 2013-02-13 17:16, Igor Grinberg wrote:
+>> Hi Archit,
 >>
->> These tasks have been moved to the generic dpi panel driver itself and=
- shouldn't
->> be done in the board files.
+>> On 02/13/13 16:21, Archit Taneja wrote:
+>>> The cm-t35 board file currently requests gpios required to configure =
+the tdo35s
+>>> panel, and provides platform_enable/disable callbacks to configure th=
+em.
+>>>
+>>> These tasks have been moved to the generic dpi panel driver itself an=
+d shouldn't
+>>> be done in the board files.
+>>>
+>>> Remove the gpio requests and the platform callbacks from the board fi=
+le.
+>>> Add the gpio information to generic dpi panel's platform data so that=
+ it's
+>>> passed to the panel driver.
+>>>
+>>> Note: In cm_t35_init_display(), the gpios were disabled, and the LCD_=
+EN gpio was
+>>> enabled after a 50 millisecond delay. This code has been removed and =
+is not
+>>> taken care of in the generic panel driver. The impact of this needs t=
+o be
+>>> tested. The panel's gpios are also not exported any more. Hence, they=
+ can't be
+>>> accessed via sysfs interface.
 >>
->> Remove the gpio requests and the platform callbacks from the board fil=
-e.
->> Add the gpio information to generic dpi panel's platform data so that =
-it's
->> passed to the panel driver.
->>
->> Note: In cm_t35_init_display(), the gpios were disabled, and the LCD_E=
-N gpio was
->> enabled after a 50 millisecond delay. This code has been removed and i=
-s not
->> taken care of in the generic panel driver. The impact of this needs to=
- be
->> tested. The panel's gpios are also not exported any more. Hence, they =
-can't be
->> accessed via sysfs interface.
->=20
-> Indeed, there is an impact - the LCD no longer works.
-> The reason for the LCD_EN gpio being pushed high after the 50ms delay,
-> is to get the LCD out of reset, so the SPI transaction will succeed
-> and initialize the LCD.
-> Now, when you remove the gpio handling for the LCD_EN pin,
-> the LCD no longer works.
+>> Indeed, there is an impact - the LCD no longer works.
+>> The reason for the LCD_EN gpio being pushed high after the 50ms delay,=
 
-So between what is the sleep done? It's not clear from the code. LCD_EN
-needs to be 0 for 50ms, or...?
+>> is to get the LCD out of reset, so the SPI transaction will succeed
+>> and initialize the LCD.
+>> Now, when you remove the gpio handling for the LCD_EN pin,
+>> the LCD no longer works.
+>=20
+> So between what is the sleep done? It's not clear from the code. LCD_EN=
 
-If the panel requires specific reset handling, does it work right even
-currently when the panel is turned off and later turned on? The msleep
-is only used at boot time.
+> needs to be 0 for 50ms, or...?
+>=20
+> If the panel requires specific reset handling, does it work right even
+> currently when the panel is turned off and later turned on? The msleep
+> is only used at boot time.
+
+Okay, so I just realized there's an spi backlight driver used here, and
+that backlight driver is actually handling the SPI transactions with the
+panel, instead of the panel driver. So this looks quite messed up.
+
+For a quick solution, can we just set the LCD_EN at boot time (with the
+msleep), and not touch it after that?
 
  Tomi
 
 
 
---------------enig72DDD45D03F23D0E27289D19
+--------------enig8F7467E38DAD39865B469EDB
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -70,19 +80,19 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.11 (GNU/Linux)
 Comment: Using GnuPG with undefined - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJRG7ETAAoJEPo9qoy8lh71VpwP/iuvdTTdyKqsslQfy0+CuTAC
-cNeej/IQ2FY7kMyDC/N1FGbbF+62vb/SXEwc4rYqpOcnF/nEuyBKXMhdvoG+4YkY
-au1J+PYQvok2Vqc6gW3WZ9buCTxdKECgybdjJR0lIrjiAmbA8T7PogSXJXJVnVU5
-YeDKgN2gLyOLW+cr6cUFpap8faxVLOJHkGOBBSDdHwIo/MrwxzZdGGCHigpz6/P9
-t7I/kR9E/3NI+iAeuSyw/Va8EybusHB5JGlhocb6ecYH1Rj93E1J2csbKBFE5JyQ
-p6PjNmWt2B7EgZKpLRNuJ2SWlJ6Y0QEgklNHQgto32cQIzXNNi8HPqMuPUXAEUvX
-hvk3TcOMv6yoxrC24XiazHj69sNSquNG+TSvlPrqWyo8812IFGCq46nSVo4tWVnP
-HwHma04IlWaKGxlrsM+Ka9iPw1zaoxBi8LZFVvrXlY61FwaEQ9Tjnxf/wr3X1zcT
-DBbbF/01zyg8hQjPSMa1MkFLrl/Sq06DuqZ0Y9YbtjEMESmvBd2hSuQ6KLtnKMRH
-W8X20iLdbBASJEWxwSloocMjUHEW+NHaOoUKAybUWExTgFrweHF+qIfF86IOp07u
-ALwRSu1j2qPKi03oH37v/lJ5hIeLQoqPBt0WDGKmb959iCR1NUtWNZMUa3h3jZiA
-mkmLV/sN1qan4gxknC8Y
-=6c8L
+iQIcBAEBAgAGBQJRG7h+AAoJEPo9qoy8lh71CI8P/RMP4RheaGqbNZKW9gEWk8KJ
+2LVpV7NrZOVSgXfpOHUwL6mfxu4+0ePnBhho/pVjISQp/bU3Cq064Cb6De6eMh2l
+o1KgQVcGHzDA+QEWZo2EZel6o71U4E9ONPrmCaLhhDJZvQ23ZE/r6kIUZGzQa887
+V5IssXSfiE53eEN4o/S/nbL12fsu0d/1HU8SsFUct5V7RgyY1IBX7ppDl8l6P+5P
+B6LXFa42on+3JmgklkJw6FVL/IgpnVzfL0XlOf+vM04/jjfRLF5MXmkv6RZKnnEb
+JvkUwzHPeW6p/6OMpuY6qgi4UQgjN8r6YXYkoEmYmdVX9f9T0M+NuuMXuJXy2DZD
++tha4Evajt5rNUZH9OLo5NCajc1IeGhDGKyXV8RX3tqf/c05qwzXZKtKjWkZLIBb
+u0l4RUKy+iSS6FKaPlgusGtudwBshTGCEkj/+WCm5zVrBxnr+JKtn3S3adwfQYXO
+bTvckcJOG1JvBbr5GkaX2VQfl93ly8/4ckZJE6D6qdaS88OSsbtfrokDuxentoeE
+jW9PC3rVKGfffyYTkw7tsNEQ7DZrqPZixtzpn5QkzP261mebrDoiJkJCzw0xOTtK
+nBTqrLWHRz1R6A3wQRUyl8D5lEmY/3H8zRM8pvm4fgrWRu9qzVUAn6e0umwRE8cB
+5cOx8O6J5lA7d5DLXqhX
+=uqHj
 -----END PGP SIGNATURE-----
 
---------------enig72DDD45D03F23D0E27289D19--
+--------------enig8F7467E38DAD39865B469EDB--

@@ -1,150 +1,118 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 11 Feb 2013 10:14:22 +0000
-Subject: Re: [RFC PATCH 0/4] Common Display Framework-TF
-Message-Id: <5118C47E.3070306@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig5F3AA91DB96CC28F8833ADB7"
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 13 Feb 2013 14:33:52 +0000
+Subject: [PATCH 00/33] OMAPDSS: platform_enable/disable callback removal from panel drivers
+Message-Id: <1360765345-19312-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1359560343-31636-1-git-send-email-t.figa@samsung.com> <4292748.rtElrP8BXd@avalon> <3272191.03RiBNfhoM@flatron> <5114E412.5030806@ti.com> <5114F224.6010201@stericsson.com> <5114F7C9.4040803@ti.com> <5114FD86.2020400@stericsson.com> <5115055B.2080509@ti.com> <511511B3.3060404@stericsson.com> <5118AA00.2000505@ti.com> <5118BA80.1020604@stericsson.com>
-In-Reply-To: <5118BA80.1020604@stericsson.com>
-To: Marcus Lorentzon <marcus.xm.lorentzon@stericsson.com>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Tomasz Figa <t.figa@samsung.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>, "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>, Daniel Vetter <daniel@ffwll.ch>, Vikas Sajjan <vikas.sajjan@linaro.org>, "inki.dae@samsung.com" <inki.dae@samsung.com>, "dh09.lee@samsung.com" <dh09.lee@samsung.com>, "ville.syrjala@intel.com" <ville.syrjala@intel.com>, "s.nawrocki@samsung.com" <s.nawrocki@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
---------------enig5F3AA91DB96CC28F8833ADB7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+init functions in omap board files request panel specific gpios, and provide
+functions which omapdss panel drivers call to enable or disable them.
 
-On 2013-02-11 11:31, Marcus Lorentzon wrote:
+Instead of the board files requesting these gpios, they should just pass the
+platform specific data(like the gpio numbers), the panel should retrieve the
+platform data and request the gpios. Doing this prevents the need of the panel
+driver calling platform functions in board files.
 
-> Ok, so what about a compromise which I think would work for "both" HWs
-> ... we allow the "configure" operation during video on, then each HW
-> driver could decide if this means you have to stop or not to do the
-> changes required. But then it is also important that we keep all config=
+Panel drivers have their own platform data struct, and the board files populate
+these structs and pass the pointer to the 'data' field of omap_dss_device. This
+work will make it easier for the panel drivers be more adaptable to the
+DT model.
 
-> in one struct and not split it up. Otherwise HW like ours that has so b=
-e
-> stopped could need to stop once for each setting/operation called.
-> So in short, allow configure(bus_params) during video on, keep all
-> bus_params in the struct. It is in kernel struct so it can easily be
-> changed/refactored.
+There is also removal of passing panel reset_gpio numbers through
+omap_dss_device struct directly, reset gpios are passed through platform data
+only.
 
-Right, we need some way to group the configuration parameters. Either
-one big struct, or something like start_config() and end_config(). I
-think we could also think what parameters make no sense to be configured
-on the fly, and possibly have those separately. Although it may be a bit
-difficult to think of all the (weird) use cases.
+Reference tree:
 
-> Again, this probing and bus muxing is platform/bus specific and not
-> panel specific. Any panel of that type will only ever work on Omap (or
+git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git for-3.9/remove_enable_disable_callbacks
 
-The parameters used for configuration itself is platform specific, and
-that's why it needs to be defined in the DT data. But the API itself is
-not platform specific. The parameters are information about how the
-panel is connected, just like, say, number of data lines is for DPI.
-Which is also something I think should be configured by the panel.
+Archit Taneja (32):
+  OMAPDSS: panels: keep platform data of all panels in a single header
+  arm: omap: board-2430: use generic dpi panel's gpio handling
+  arm: omap: board-devkit8000: use generic dpi panel's gpio handling
+  arm: omap: board-cm-t35: use generic dpi panel's gpio handling
+  arm: omap: board-apollon: use generic dpi panel's gpio handling
+  arm: omap: board-am3517: use generic dpi panel's gpio handling
+  arm: omap: board-ldp: use generic dpi panel's gpio handling
+  OMAPDSS: lb035q02: handle gpios in panel driver
+  arm: omap: board-overo: use lb035q02 dpi panel's gpio handling
+  OMAPDSS: lb035q02 panel: remove platform_enable/disable callbacks
+  OMAPDSS: generic dpi panel: remove platform_enable/disable ops from
+    platform_data
+  arm: omap: board-omap3evm: use sharp panel's gpio handling
+  arm: omap: board-sdp3430: use sharp panel's gpio handling
+  OMAPDSS: sharp-ls panel: remove platform_enable/disable callbacks
+  OMAPDSS: acx565akm panel: handle gpios in panel driver
+  arm: omap: board-rx-51: use acx565akm panel's gpio handling
+  OMAPDSS: nec-nl8048 panel: handle gpios ins panel driver
+  arm: omap: board-zoom: use NEC panel's gpio handling
+  OMAPDSS: nec-nl8048 panel: remove platform_enable/disable callbacks
+  OMAPDSS: tpo-td043 panel: handle gpios in panel driver
+  arm: omap: board-omap3pandora: use tpo panel's gpio handling
+  OMAPDSS: tpo-td043: remove platform_enable/disable callbacks
+  OMAPDSS: picodlp panel: handle gpio data in panel driver
+  arm: omap: dss-common: use picodlp panel's gpio handling
+  OMAPDSS: picodlp panel: remove platform_enable/disable callbacks
+  OMAPDSS: n8x0 panel: handle gpio data in panel driver
+  OMAPDSS: n8x0 panel: remove platform_enable/disable callbacks
+  arm: omap boards: Remove unnecessary platform_enable/disable
+    callbacks for VENC devices
+  OMAPDSS: VENC: remove platform_enable/disable calls
+  OMAPDSS: remove platform_enable/disable callbacks from
+    omap_dss_device
+  arm: dss-common: don't use reset_gpio from omap4_panda_dvi_device
+  OMAPDSS: remove reset_gpio field from omap_dss_device
 
-> someone else implementing the same muxing features) as I see it. So why=
+Tomi Valkeinen (1):
+  OMAPDSS: generic dpi panel: handle gpios in panel driver
 
+ arch/arm/mach-omap2/board-2430sdp.c                |   45 +-----
+ arch/arm/mach-omap2/board-3430sdp.c                |   55 +++-----
+ arch/arm/mach-omap2/board-am3517evm.c              |   77 +----------
+ arch/arm/mach-omap2/board-apollon.c                |   11 +-
+ arch/arm/mach-omap2/board-cm-t35.c                 |   60 +-------
+ arch/arm/mach-omap2/board-devkit8000.c             |   30 +---
+ arch/arm/mach-omap2/board-h4.c                     |    2 +-
+ arch/arm/mach-omap2/board-igep0020.c               |    2 +-
+ arch/arm/mach-omap2/board-ldp.c                    |   63 ++-------
+ arch/arm/mach-omap2/board-omap3beagle.c            |    2 +-
+ arch/arm/mach-omap2/board-omap3evm.c               |   72 +++-------
+ arch/arm/mach-omap2/board-omap3pandora.c           |    7 +-
+ arch/arm/mach-omap2/board-omap3stalker.c           |   14 +-
+ arch/arm/mach-omap2/board-overo.c                  |   61 ++-------
+ arch/arm/mach-omap2/board-rx51-video.c             |   26 +---
+ arch/arm/mach-omap2/board-zoom-display.c           |   38 ++----
+ arch/arm/mach-omap2/dss-common.c                   |   58 +++-----
+ drivers/video/omap2/displays/panel-acx565akm.c     |   48 +++++--
+ drivers/video/omap2/displays/panel-generic-dpi.c   |   33 +++--
+ .../omap2/displays/panel-lgphilips-lb035q02.c      |   44 ++++--
+ drivers/video/omap2/displays/panel-n8x0.c          |   29 ++--
+ .../omap2/displays/panel-nec-nl8048hl11-01b.c      |   53 ++++---
+ drivers/video/omap2/displays/panel-picodlp.c       |   35 +++--
+ .../video/omap2/displays/panel-sharp-ls037v7dw01.c |   78 ++++++++---
+ drivers/video/omap2/displays/panel-taal.c          |    2 +-
+ drivers/video/omap2/displays/panel-tfp410.c        |    2 +-
+ .../video/omap2/displays/panel-tpo-td043mtea1.c    |   45 +++---
+ drivers/video/omap2/dss/venc.c                     |    9 --
+ include/video/omap-panel-data.h                    |  144 ++++++++++++++++++++
+ include/video/omap-panel-generic-dpi.h             |   37 -----
+ include/video/omap-panel-n8x0.h                    |   13 --
+ include/video/omap-panel-nokia-dsi.h               |   32 -----
+ include/video/omap-panel-picodlp.h                 |   23 ----
+ include/video/omap-panel-tfp410.h                  |   35 -----
+ include/video/omapdss.h                            |    6 -
+ 35 files changed, 528 insertions(+), 763 deletions(-)
+ create mode 100644 include/video/omap-panel-data.h
+ delete mode 100644 include/video/omap-panel-generic-dpi.h
+ delete mode 100644 include/video/omap-panel-n8x0.h
+ delete mode 100644 include/video/omap-panel-nokia-dsi.h
+ delete mode 100644 include/video/omap-panel-picodlp.h
+ delete mode 100644 include/video/omap-panel-tfp410.h
 
-No, it works for everyone. Well, at least I still don't see anything
-omap or platform specific in the API. Of course, if the platform/device
-doesn't support modifying the pin functions, then the function does nothi=
-ng.
+-- 
+1.7.9.5
 
-> not just put that config on the bus master, dispc? I still can't see ho=
-w
-> this is panel config. You are only pushing CDF API and meta data to
-> describe something that is only needed by one bus master. I have never
-
-The information about how the panel is connected (the wiring) has to be
-somewhere in the DT data. We could have the info in the DSI master or in
-the DSI slave. Or, in some platforms where the DSS is not involved in
-the muxing/config, the info could be totally separate, in the boards
-pinmuxing data.
-
-I think all those work ok for normal cases without hotplug. But if you
-have hotplug, then you need separate pinmuxing/config data for each panel=
-=2E
-
-You could possibly have a list of panels in your DSI master node,
-containing the muxing data, but that sounds rather hacky, and also very
-hardcoded, i.e. you need to know each panel that is ever going to be
-connected.
-
-If, on the other hand, you have the info in the panel node, it "just
-works". When a new panel is connected, the relevant panel DT data comes
-from somewhere (it's not relevant where), and it tells the DSI master
-how it's connected.
-
-Something like this is probably needed for the BeagleBone capes, if you
-have happened to follow the discussion. Although it could be argued that
-the capes may perhaps be not runtime hotswappable, and thus the
-configuration can be done only once during boot after the cape has been
-probed. But I'd rather not design the API so that we prevent hot swapping=
-=2E
-
-> seen any DSI slave that can change their pin config. And since there is=
-
-
-Well, if omap is the only SoC/device out there that supports configuring
-the pin functions, and everybody is against the API, I'm not going to
-press it.
-
-But then again, I think similar configuration support may be needed even
-for the normal pinmuxing, even in the case where you can't reconfigure
-the DSI pin functions. You still need to mux the pins (perhaps, say,
-between DSI and a GPIO), depending on how many lanes the panel uses.
-
-In fact, speaking about all pins in general, I'm not very fond of having
-a static pinmuxing in the board DT data, handled by the board setup
-code. I think generally the pins should be muxed to safe-mode by the
-board setup code, and then configured to their proper function by the
-driver when it is initializing.
-
-> no generic hot plug detect of DSI panels, at least not before DSI bus i=
-s
-> available, I have to assume this probing it very platform specific. We
-> have some products that provide 1-2 gpios to specify what panel is
-> available, some use I2C sensor probing to then assume the panel plugged=
-=2E
-
-Yes, the hotplug mechanism is platform/board specific. But that's not
-relevant here.
-
-> At least in the first step I don't think this type of hot plug should b=
-e
-> in the API. Then once the base panel driver is in we could discuss
-> different solutions for you hot plug scenario.
-
-Yes, as I said, I also think we shouldn't aim for hotplug in the v1. But
-we also shouldn't prevent it.
-
- Tomi
-
-
-
---------------enig5F3AA91DB96CC28F8833ADB7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRGMR+AAoJEPo9qoy8lh71kTgP/0/TqqxOxZpD1HvvXeRKJ8Aa
-CSoX1/HgNNMWYaec1DDx5h1PMtBZjxVBX2fU+i7/GdlWa3fxGOPou0lLn5bU3SZL
-Vyr2uFNooYt7UjAP8d7zUJOuRn4yqMa7n16JUn/MqO9QgGpffCZN62u1arx0kzXz
-qMnrDLidrRoqgxpkZo/XP/VU5gsgQaqyuCnPku4oP4oEUBdkGs1Vv4h11w8JmIN/
-bAr1N80d1lRFGn21mCe3gDSFStOxL23niwaxgj0F1pOf+KBI6FXv3HcEWXrOFPI5
-vtvD/ucgWDOXCTN5aJ9ag+kzAs3u7P/gh301NPerNQ794JLbvdhSAOYivz6r3n6x
-rukX32dFxL+w1XT0bGTprrzPKPFYjkrbvFrtssmmSphNWeUPJhWHJZ6IxlA9JCRS
-RzdpXWHzYQJk+fup/oHAZscfSfQkd++nhnjwnaDQ7vMNv2iIj+ohnal2PlGGzMQp
-E+OuongvolRhjGPVIIyI7xblEi5ail5IyI8fEDNAkhFM7jU6pc+vRFs+5D3SZdnA
-gusGAbz2JBA79fcUD4QzFa9hoxEp4p/v65Iby99AE62cgtr4Hm+rtSTHepc1IsQz
-DtKKR+wHnriX9lynKJO9XUVef4l3a966H+XXBPWglIij82ppgaBWtLQv4lSHQ3cU
-/E4VCCv8dMEHA33IGCoe
-=uYRQ
------END PGP SIGNATURE-----
-
---------------enig5F3AA91DB96CC28F8833ADB7--

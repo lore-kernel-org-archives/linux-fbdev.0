@@ -1,56 +1,81 @@
-From: Jean Delvare <khali@linux-fr.org>
-Date: Thu, 28 Feb 2013 09:39:08 +0000
-Subject: [PATCH RESEND] matroxfb: Convert struct i2c_msg initialization to C99 format
-Message-Id: <20130228103908.48c7d2c4@endymion.delvare>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 13 Feb 2013 14:34:20 +0000
+Subject: [PATCH 28/33] OMAPDSS: n8x0 panel: remove platform_enable/disable callbacks
+Message-Id: <1360765345-19312-29-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1360765345-19312-1-git-send-email-archit@ti.com>
+In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-From: Shubhrajyoti Datta <omaplinuxkernel@gmail.com>
+The n8x0 panel driver now manages the gpios required to configure the panel.
+This was previously done in panel_n8x0_data's platform_enable/disable callbacks
+defined in board files using this panel.
 
-Convert the struct i2c_msg initialization to C99 format. This makes
-maintaining and editing the code simpler. Also helps once other fields
-like transferred are added in future.
+All the board files using this panel now pass the gpio information as platform
+data via the panel_n8x0_data struct, which is needed by the panel driver to
+configure the gpios connected to the panel. Hence, the platform_enable/disable
+ops can be safely removed now.
 
-Thanks to Julia Lawall for automating the conversion.
-
-Signed-off-by: Shubhrajyoti D <shubhrajyoti@ti.com>
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
-Patch already sent by Shubhrajyoti Datta on 2012-10-10.
+ drivers/video/omap2/displays/panel-n8x0.c |   12 ------------
+ include/video/omap-panel-data.h           |    2 --
+ 2 files changed, 14 deletions(-)
 
- drivers/video/matrox/matroxfb_maven.c |   16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
-
---- linux-3.9-rc0.orig/drivers/video/matrox/matroxfb_maven.c	2013-02-28 09:30:13.134091106 +0100
-+++ linux-3.9-rc0/drivers/video/matrox/matroxfb_maven.c	2013-02-28 09:55:14.731092841 +0100
-@@ -137,8 +137,20 @@ static int* get_ctrl_ptr(struct maven_da
+diff --git a/drivers/video/omap2/displays/panel-n8x0.c b/drivers/video/omap2/displays/panel-n8x0.c
+index c146a3d..f94ead6 100644
+--- a/drivers/video/omap2/displays/panel-n8x0.c
++++ b/drivers/video/omap2/displays/panel-n8x0.c
+@@ -295,12 +295,6 @@ static int n8x0_panel_power_on(struct omap_dss_device *dssdev)
  
- static int maven_get_reg(struct i2c_client* c, char reg) {
- 	char dst;
--	struct i2c_msg msgs[] = {{ c->addr, I2C_M_REV_DIR_ADDR, sizeof(reg), &reg },
--				 { c->addr, I2C_M_RD | I2C_M_NOSTART, sizeof(dst), &dst }};
-+	struct i2c_msg msgs[] = {
-+		{
-+			.addr = c->addr,
-+			.flags = I2C_M_REV_DIR_ADDR,
-+			.len = sizeof(reg),
-+			.buf = &reg
-+		},
-+		{
-+			.addr = c->addr,
-+			.flags = I2C_M_RD | I2C_M_NOSTART,
-+			.len = sizeof(dst),
-+			.buf = &dst
-+		}
-+	};
- 	s32 err;
+ 	gpio_direction_output(bdata->ctrl_pwrdown, 1);
  
- 	err = i2c_transfer(c->adapter, msgs, 2);
-
-
+-	if (bdata->platform_enable) {
+-		r = bdata->platform_enable(dssdev);
+-		if (r)
+-			goto err_plat_en;
+-	}
+-
+ 	omapdss_rfbi_set_size(dssdev, dssdev->panel.timings.x_res,
+ 		dssdev->panel.timings.y_res);
+ 	omapdss_rfbi_set_pixel_size(dssdev, dssdev->ctrl.pixel_size);
+@@ -373,9 +367,6 @@ err_inv_panel:
+ err_inv_chip:
+ 	omapdss_rfbi_display_disable(dssdev);
+ err_rfbi_en:
+-	if (bdata->platform_disable)
+-		bdata->platform_disable(dssdev);
+-err_plat_en:
+ 	gpio_direction_output(bdata->ctrl_pwrdown, 0);
+ 	return r;
+ }
+@@ -392,9 +383,6 @@ static void n8x0_panel_power_off(struct omap_dss_device *dssdev)
+ 	send_display_off(spi);
+ 	send_sleep_in(spi);
+ 
+-	if (bdata->platform_disable)
+-		bdata->platform_disable(dssdev);
+-
+ 	/*
+ 	 * HACK: we should turn off the panel here, but there is some problem
+ 	 * with the initialization sequence, and we fail to init the panel if we
+diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
+index 7cac89e..84f332e 100644
+--- a/include/video/omap-panel-data.h
++++ b/include/video/omap-panel-data.h
+@@ -48,8 +48,6 @@ struct panel_generic_dpi_data {
+  * struct panel_n8x0_data - N800 panel driver configuration data
+  */
+ struct panel_n8x0_data {
+-	int (*platform_enable)(struct omap_dss_device *dssdev);
+-	void (*platform_disable)(struct omap_dss_device *dssdev);
+ 	int panel_reset;
+ 	int ctrl_pwrdown;
+ };
 -- 
-Jean Delvare
+1.7.9.5
+

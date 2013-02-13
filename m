@@ -1,38 +1,68 @@
 From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:19:14 +0000
-Subject: [PATCH 11/11] OMAPDSS: Remove max_backlight_level form omap_dss_device
-Message-Id: <1360764434-18788-12-git-send-email-archit@ti.com>
+Date: Wed, 13 Feb 2013 14:33:58 +0000
+Subject: [PATCH 06/33] arm: omap: board-apollon: use generic dpi panel's gpio handling
+Message-Id: <1360765345-19312-7-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360764434-18788-1-git-send-email-archit@ti.com>
-In-Reply-To: <1360764434-18788-1-git-send-email-archit@ti.com>
+References: <1360765345-19312-1-git-send-email-archit@ti.com>
+In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>, Tony Lindgren <tony@atomide.com>
 
-The maximum backlight level supported is a parameter which should come from
-the panel's platform data. Usage of max_backlight_level in omap_dss_device has
-been removed from all panel drivers. Remove it from the omap_dss_device struct.
+The apollon board file currently configures the LCD_PWR_EN gpio by muxing the
+corresponding pin to gpio 11, and configuring it in PULL UP mode.
 
+Remove this muxing from the board file. Add the gpio information to generic dpi
+panel's platform data so that it's passed to the panel driver. The panel driver
+will take care of requesting and setting the LCD_PWR_EN gpio.
+
+Note: This should be tested to ensure that setting the GPIO is equivalent to
+configuring the GPIO in PULL UP mode. Also, this GPIO was just set once during
+init, and never cleared, where as now the gpio will toggle everytime the panel
+is disabled/enabled. The impact of this needs to be tested.
+
+Cc: Tony Lindgren <tony@atomide.com>
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- include/video/omapdss.h |    2 --
- 1 file changed, 2 deletions(-)
+ arch/arm/mach-omap2/board-apollon.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index ec68769..f0b65a5 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -631,8 +631,6 @@ struct omap_dss_device {
+diff --git a/arch/arm/mach-omap2/board-apollon.c b/arch/arm/mach-omap2/board-apollon.c
+index d2a83a8..5cc957e 100644
+--- a/arch/arm/mach-omap2/board-apollon.c
++++ b/arch/arm/mach-omap2/board-apollon.c
+@@ -55,6 +55,8 @@
+ #define APOLLON_ETH_CS		1
+ #define APOLLON_ETHR_GPIO_IRQ	74
  
- 	int reset_gpio;
++#define APOLLON_LCD_PWR_EN	11
++
+ static struct mtd_partition apollon_partitions[] = {
+ 	{
+ 		.name		= "X-Loader + U-Boot",
+@@ -252,6 +254,10 @@ out:
  
--	int max_backlight_level;
+ static struct panel_generic_dpi_data apollon_panel_data = {
+ 	.name			= "apollon",
++	.num_gpios		= 1,
++	.gpios			= {
++		APOLLON_LCD_PWR_EN,
++	},
+ };
+ 
+ static struct omap_dss_device apollon_lcd_device = {
+@@ -306,9 +312,6 @@ static void __init omap_apollon_init(void)
+ 	/* REVISIT: where's the correct place */
+ 	omap_mux_init_signal("sys_nirq", OMAP_PULL_ENA | OMAP_PULL_UP);
+ 
+-	/* LCD PWR_EN */
+-	omap_mux_init_signal("mcbsp2_dr.gpio_11", OMAP_PULL_ENA | OMAP_PULL_UP);
 -
- 	const char *name;
- 
- 	/* used to match device to driver */
+ 	/* Use Internal loop-back in MMC/SDIO Module Input Clock selection */
+ 	v = omap_ctrl_readl(OMAP2_CONTROL_DEVCONF0);
+ 	v |= (1 << 24);
 -- 
 1.7.9.5
 

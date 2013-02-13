@@ -1,158 +1,58 @@
 From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:19:07 +0000
-Subject: [PATCH 04/11] OMAPDSS: n8x0: remove platform backlight calls
-Message-Id: <1360764434-18788-5-git-send-email-archit@ti.com>
+Date: Wed, 13 Feb 2013 14:19:03 +0000
+Subject: [PATCH 00/11] OMAPDSS: Misc cleanups
+Message-Id: <1360764434-18788-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360764434-18788-1-git-send-email-archit@ti.com>
-In-Reply-To: <1360764434-18788-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+These patches perform cleanups which will help the omapdss driver to migrate
+to DT more easily:
 
-The n8x0 panel contains support to call platform backlight functions.
-These are not used by any board, and can be removed.
+- omapdss panel drivers call platform specific backlight functions defined in
+  board files. These callbacks are removed. Setting of max backlight level
+  in the board file is also removed.
+- other misc changes which thin down the omap_dss_device struct by removing
+  some unnecessary fields.
+- usage of devm_kzalloc in panel drivers.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/displays/panel-n8x0.c |   74 -----------------------------
- include/video/omap-panel-n8x0.h           |    2 -
- 2 files changed, 76 deletions(-)
+Reference branch:
 
-diff --git a/drivers/video/omap2/displays/panel-n8x0.c b/drivers/video/omap2/displays/panel-n8x0.c
-index dd12947..b750480 100644
---- a/drivers/video/omap2/displays/panel-n8x0.c
-+++ b/drivers/video/omap2/displays/panel-n8x0.c
-@@ -5,7 +5,6 @@
- #include <linux/slab.h>
- #include <linux/gpio.h>
- #include <linux/spi/spi.h>
--#include <linux/backlight.h>
- #include <linux/fb.h>
- 
- #include <video/omapdss.h>
-@@ -69,7 +68,6 @@ static struct panel_drv_data {
- 
- 	struct omap_dss_device *dssdev;
- 	struct spi_device *spidev;
--	struct backlight_device *bldev;
- 
- 	int blizzard_ver;
- } s_drv_data;
-@@ -424,55 +422,10 @@ static const struct rfbi_timings n8x0_panel_timings = {
- 	.cs_pulse_width = 0,
- };
- 
--static int n8x0_bl_update_status(struct backlight_device *dev)
--{
--	struct omap_dss_device *dssdev = dev_get_drvdata(&dev->dev);
--	struct panel_n8x0_data *bdata = get_board_data(dssdev);
--	struct panel_drv_data *ddata = get_drv_data(dssdev);
--	int r;
--	int level;
--
--	mutex_lock(&ddata->lock);
--
--	if (dev->props.fb_blank = FB_BLANK_UNBLANK &&
--			dev->props.power = FB_BLANK_UNBLANK)
--		level = dev->props.brightness;
--	else
--		level = 0;
--
--	dev_dbg(&dssdev->dev, "update brightness to %d\n", level);
--
--	if (!bdata->set_backlight)
--		r = -EINVAL;
--	else
--		r = bdata->set_backlight(dssdev, level);
--
--	mutex_unlock(&ddata->lock);
--
--	return r;
--}
--
--static int n8x0_bl_get_intensity(struct backlight_device *dev)
--{
--	if (dev->props.fb_blank = FB_BLANK_UNBLANK &&
--			dev->props.power = FB_BLANK_UNBLANK)
--		return dev->props.brightness;
--
--	return 0;
--}
--
--static const struct backlight_ops n8x0_bl_ops = {
--	.get_brightness = n8x0_bl_get_intensity,
--	.update_status  = n8x0_bl_update_status,
--};
--
- static int n8x0_panel_probe(struct omap_dss_device *dssdev)
- {
- 	struct panel_n8x0_data *bdata = get_board_data(dssdev);
- 	struct panel_drv_data *ddata;
--	struct backlight_device *bldev;
--	struct backlight_properties props;
--	int r;
- 
- 	dev_dbg(&dssdev->dev, "probe\n");
- 
-@@ -491,40 +444,13 @@ static int n8x0_panel_probe(struct omap_dss_device *dssdev)
- 	dssdev->ctrl.rfbi_timings = n8x0_panel_timings;
- 	dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE;
- 
--	memset(&props, 0, sizeof(props));
--	props.max_brightness = 127;
--	props.type = BACKLIGHT_PLATFORM;
--	bldev = backlight_device_register(dev_name(&dssdev->dev), &dssdev->dev,
--			dssdev, &n8x0_bl_ops, &props);
--	if (IS_ERR(bldev)) {
--		r = PTR_ERR(bldev);
--		dev_err(&dssdev->dev, "register backlight failed\n");
--		return r;
--	}
--
--	ddata->bldev = bldev;
--
--	bldev->props.fb_blank = FB_BLANK_UNBLANK;
--	bldev->props.power = FB_BLANK_UNBLANK;
--	bldev->props.brightness = 127;
--
--	n8x0_bl_update_status(bldev);
--
- 	return 0;
- }
- 
- static void n8x0_panel_remove(struct omap_dss_device *dssdev)
- {
--	struct panel_drv_data *ddata = get_drv_data(dssdev);
--	struct backlight_device *bldev;
--
- 	dev_dbg(&dssdev->dev, "remove\n");
- 
--	bldev = ddata->bldev;
--	bldev->props.power = FB_BLANK_POWERDOWN;
--	n8x0_bl_update_status(bldev);
--	backlight_device_unregister(bldev);
--
- 	dev_set_drvdata(&dssdev->dev, NULL);
- }
- 
-diff --git a/include/video/omap-panel-n8x0.h b/include/video/omap-panel-n8x0.h
-index 50a1302..9cc69c8 100644
---- a/include/video/omap-panel-n8x0.h
-+++ b/include/video/omap-panel-n8x0.h
-@@ -8,8 +8,6 @@ struct panel_n8x0_data {
- 	void (*platform_disable)(struct omap_dss_device *dssdev);
- 	int panel_reset;
- 	int ctrl_pwrdown;
--
--	int (*set_backlight)(struct omap_dss_device *dssdev, int level);
- };
- 
- #endif
+git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git for-3.9/misc_cleanups 
+
+Archit Taneja (7):
+  OMAPDSS: ZOOM/NEC-nl8048hl11: remove platform backlight support
+  OMAPDSS: Generic DPI Panel: use devm_kzalloc for allocating driver
+    data
+  OMAPDSS: lb035q02: use devm_kzalloc for allocating driver data
+  OMAPDSS: picodlp: use devm_kzalloc for allocating driver data
+  OMAPDSS: remove unnecessary DSI external TE pin platform info from
+    omap_dss_device
+  OMAPDSS: panel acx565akm: remove omap_dss_device maximum backlight
+    level usage
+  OMAPDSS: Remove max_backlight_level form omap_dss_device
+
+Tomi Valkeinen (4):
+  OMAPDSS: acx565akm: remove platform backlight calls
+  OMAPDSS: ls037v7dw01: remove platform backlight calls
+  OMAPDSS: n8x0: remove platform backlight calls
+  OMAPDSS: remove set_backlight/get_backlight function ptrs
+
+ arch/arm/mach-omap2/board-zoom-display.c           |    2 -
+ drivers/video/omap2/displays/panel-acx565akm.c     |   11 +--
+ drivers/video/omap2/displays/panel-generic-dpi.c   |    6 +-
+ .../omap2/displays/panel-lgphilips-lb035q02.c      |   16 ++---
+ drivers/video/omap2/displays/panel-n8x0.c          |   74 --------------------
+ .../omap2/displays/panel-nec-nl8048hl11-01b.c      |   74 --------------------
+ drivers/video/omap2/displays/panel-picodlp.c       |   16 ++---
+ .../video/omap2/displays/panel-sharp-ls037v7dw01.c |   62 ----------------
+ include/video/omap-panel-n8x0.h                    |    2 -
+ include/video/omapdss.h                            |    7 --
+ 10 files changed, 14 insertions(+), 256 deletions(-)
+
 -- 
 1.7.9.5
 

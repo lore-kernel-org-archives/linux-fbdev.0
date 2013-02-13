@@ -1,131 +1,158 @@
 From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:19:05 +0000
-Subject: [PATCH 02/11] OMAPDSS: ls037v7dw01: remove platform backlight calls
-Message-Id: <1360764434-18788-3-git-send-email-archit@ti.com>
+Date: Wed, 13 Feb 2013 14:34:10 +0000
+Subject: [PATCH 18/33] OMAPDSS: nec-nl8048 panel: handle gpios ins panel driver
+Message-Id: <1360765345-19312-19-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360764434-18788-1-git-send-email-archit@ti.com>
-In-Reply-To: <1360764434-18788-1-git-send-email-archit@ti.com>
+References: <1360765345-19312-1-git-send-email-archit@ti.com>
+In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+The nec-nl8048hl11-01 panel driver leaves gpio configurations to the
+platform_enable and disable calls in the platform's board file. These should
+happen in the panel driver itself.
 
-Sharp ls037v7dw01 driver contains support to call platform backlight
-functions. These are not used by any board, and can be removed.
+Create a platform data struct for the panel, this contains the gpio numbers
+used by the panel driver, this struct will be passed to the panel driver as
+platform data. The driver will request and configure these gpios rather than
+leaving it to platform callbacks in board files.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+This will help in removing the need for the panel drivers to have platform
+related callbacks.
+
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- .../video/omap2/displays/panel-sharp-ls037v7dw01.c |   62 --------------------
- 1 file changed, 62 deletions(-)
+ .../omap2/displays/panel-nec-nl8048hl11-01b.c      |   45 +++++++++++++++-----
+ include/video/omap-panel-data.h                    |   10 +++++
+ 2 files changed, 44 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
-index cada8c6..eb6bd81 100644
---- a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
-+++ b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
-@@ -20,7 +20,6 @@
- #include <linux/module.h>
+diff --git a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+index c197927..3b85e2a 100644
+--- a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
++++ b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+@@ -20,8 +20,10 @@
  #include <linux/delay.h>
- #include <linux/device.h>
--#include <linux/backlight.h>
+ #include <linux/spi/spi.h>
  #include <linux/fb.h>
- #include <linux/err.h>
- #include <linux/slab.h>
-@@ -28,7 +27,6 @@
++#include <linux/gpio.h>
+ 
  #include <video/omapdss.h>
++#include <video/omap-panel-data.h>
  
- struct sharp_data {
--	struct backlight_device *bl;
- };
+ #define LCD_XRES		800
+ #define LCD_YRES		480
+@@ -31,9 +33,6 @@
+  */
+ #define LCD_PIXEL_CLOCK		23800
  
- static struct omap_video_timings sharp_ls_timings = {
-@@ -52,45 +50,10 @@ static struct omap_video_timings sharp_ls_timings = {
- 	.sync_pclk_edge	= OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES,
- };
- 
--static int sharp_ls_bl_update_status(struct backlight_device *bl)
--{
--	struct omap_dss_device *dssdev = dev_get_drvdata(&bl->dev);
--	int level;
--
--	if (!dssdev->set_backlight)
--		return -EINVAL;
--
--	if (bl->props.fb_blank = FB_BLANK_UNBLANK &&
--			bl->props.power = FB_BLANK_UNBLANK)
--		level = bl->props.brightness;
--	else
--		level = 0;
--
--	return dssdev->set_backlight(dssdev, level);
--}
--
--static int sharp_ls_bl_get_brightness(struct backlight_device *bl)
--{
--	if (bl->props.fb_blank = FB_BLANK_UNBLANK &&
--			bl->props.power = FB_BLANK_UNBLANK)
--		return bl->props.brightness;
--
--	return 0;
--}
--
--static const struct backlight_ops sharp_ls_bl_ops = {
--	.get_brightness = sharp_ls_bl_get_brightness,
--	.update_status  = sharp_ls_bl_update_status,
+-struct nec_8048_data {
 -};
 -
--
+ static const struct {
+ 	unsigned char addr;
+ 	unsigned char dat;
+@@ -82,30 +81,46 @@ static struct omap_video_timings nec_8048_panel_timings = {
+ 	.sync_pclk_edge	= OMAPDSS_DRIVE_SIG_RISING_EDGE,
+ };
  
- static int sharp_ls_panel_probe(struct omap_dss_device *dssdev)
++static inline struct panel_nec_nl8048_data
++*get_panel_data(const struct omap_dss_device *dssdev)
++{
++	return (struct panel_nec_nl8048_data *) dssdev->data;
++}
++
+ static int nec_8048_panel_probe(struct omap_dss_device *dssdev)
  {
--	struct backlight_properties props;
--	struct backlight_device *bl;
- 	struct sharp_data *sd;
--	int r;
+-	struct nec_8048_data *necd;
++	struct panel_nec_nl8048_data *pd = get_panel_data(dssdev);
++	int r;
++
++	if (!pd)
++		return -EINVAL;
  
- 	dssdev->panel.timings = sharp_ls_timings;
+ 	dssdev->panel.timings = nec_8048_panel_timings;
  
-@@ -100,37 +63,12 @@ static int sharp_ls_panel_probe(struct omap_dss_device *dssdev)
+-	necd = kzalloc(sizeof(*necd), GFP_KERNEL);
+-	if (!necd)
+-		return -ENOMEM;
++	if (gpio_is_valid(pd->qvga_gpio)) {
++		r = devm_gpio_request_one(&dssdev->dev, pd->qvga_gpio,
++				GPIOF_OUT_INIT_HIGH, "lcd QVGA");
++		if (r)
++			return r;
++	}
  
- 	dev_set_drvdata(&dssdev->dev, sd);
+-	dev_set_drvdata(&dssdev->dev, necd);
++	if (gpio_is_valid(pd->res_gpio)) {
++		r = devm_gpio_request_one(&dssdev->dev, pd->res_gpio,
++				GPIOF_OUT_INIT_LOW, "lcd RES");
++		if (r)
++			return r;
++	}
  
--	memset(&props, 0, sizeof(struct backlight_properties));
--	props.max_brightness = dssdev->max_backlight_level;
--	props.type = BACKLIGHT_RAW;
--
--	bl = backlight_device_register("sharp-ls", &dssdev->dev, dssdev,
--			&sharp_ls_bl_ops, &props);
--	if (IS_ERR(bl)) {
--		r = PTR_ERR(bl);
--		kfree(sd);
--		return r;
--	}
--	sd->bl = bl;
--
--	bl->props.fb_blank = FB_BLANK_UNBLANK;
--	bl->props.power = FB_BLANK_UNBLANK;
--	bl->props.brightness = dssdev->max_backlight_level;
--	r = sharp_ls_bl_update_status(bl);
--	if (r < 0)
--		dev_err(&dssdev->dev, "failed to set lcd brightness\n");
--
  	return 0;
  }
  
- static void __exit sharp_ls_panel_remove(struct omap_dss_device *dssdev)
+ static void nec_8048_panel_remove(struct omap_dss_device *dssdev)
  {
- 	struct sharp_data *sd = dev_get_drvdata(&dssdev->dev);
--	struct backlight_device *bl = sd->bl;
+-	struct nec_8048_data *necd = dev_get_drvdata(&dssdev->dev);
 -
--	bl->props.power = FB_BLANK_POWERDOWN;
--	sharp_ls_bl_update_status(bl);
--	backlight_device_unregister(bl);
- 
- 	kfree(sd);
+-	kfree(necd);
  }
+ 
+ static int nec_8048_panel_power_on(struct omap_dss_device *dssdev)
+ {
++	struct panel_nec_nl8048_data *pd = get_panel_data(dssdev);
+ 	int r;
+ 
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
+@@ -124,6 +139,9 @@ static int nec_8048_panel_power_on(struct omap_dss_device *dssdev)
+ 			goto err1;
+ 	}
+ 
++	if (gpio_is_valid(pd->res_gpio))
++		gpio_set_value_cansleep(pd->res_gpio, 1);
++
+ 	return 0;
+ err1:
+ 	omapdss_dpi_display_disable(dssdev);
+@@ -133,9 +151,14 @@ err0:
+ 
+ static void nec_8048_panel_power_off(struct omap_dss_device *dssdev)
+ {
++	struct panel_nec_nl8048_data *pd = get_panel_data(dssdev);
++
+ 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
+ 		return;
+ 
++	if (gpio_is_valid(pd->res_gpio))
++		gpio_set_value_cansleep(pd->res_gpio, 0);
++
+ 	if (dssdev->platform_disable)
+ 		dssdev->platform_disable(dssdev);
+ 
+diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
+index 6faf0c7..e7698e2 100644
+--- a/include/video/omap-panel-data.h
++++ b/include/video/omap-panel-data.h
+@@ -125,4 +125,14 @@ struct panel_acx565akm_data {
+ 	int reset_gpio;
+ };
+ 
++/**
++ * nec nl8048 panel driver configuration data
++ * @res_gpio: reset signal
++ * @qvga_gpio: selection for resolution(QVGA/WVGA)
++ */
++struct panel_nec_nl8048_data {
++	int res_gpio;
++	int qvga_gpio;
++};
++
+ #endif /* __OMAP_PANEL_DATA_H */
 -- 
 1.7.9.5
 

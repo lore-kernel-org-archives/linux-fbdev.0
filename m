@@ -1,61 +1,171 @@
-From: Anatolij Gustschin <agust@denx.de>
-Date: Fri, 08 Feb 2013 07:35:58 +0000
-Subject: [PATCH RESEND v2 1/2] drivers/video: fsl-diu-fb: fix pixel formats for 24 and 16 bpp
-Message-Id: <1360308959-3096-1-git-send-email-agust@denx.de>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 13 Feb 2013 14:34:21 +0000
+Subject: [PATCH 29/33] arm: omap boards: Remove unnecessary platform_enable/disable callbacks for VENC device
+Message-Id: <1360765345-19312-30-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1360765345-19312-1-git-send-email-archit@ti.com>
+In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>, Tony Lindgren <tony@atomide.com>
 
-Framebuffer colors for 24 and 16 bpp are currently wrong. The order
-of the color component arguments in the MAKE_PF() is not natural
-and causes some confusion. The generated pixel format values for 24
-and 16 bpp depths do not much the values in the comments.
+The omap_dss_device's platform_enable/disable callbacks don't do anything for
+any of the boards. The platform calls from the VENC driver will also be removed
+in the future. Remove these calls from the board which have a VENC device.
 
-Fix the macro arguments to be in the natural RGB order and adjust
-the arguments for all depths to generate correct pixel format values
-(equal to the values mentioned in the comments).
-
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Cc: Timur Tabi <timur@tabi.org>
-Acked-by: Timur Tabi <timur@freescale.com>
+Cc: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- Changes in v2:
-  - none, only added Timur's Acked-by
+ arch/arm/mach-omap2/board-3430sdp.c      |   11 -----------
+ arch/arm/mach-omap2/board-am3517evm.c    |   11 -----------
+ arch/arm/mach-omap2/board-cm-t35.c       |   11 -----------
+ arch/arm/mach-omap2/board-omap3evm.c     |   11 -----------
+ arch/arm/mach-omap2/board-omap3stalker.c |   11 -----------
+ 5 files changed, 55 deletions(-)
 
- This patch is not a very important fix but it would be good to
- have it in v3.8
-
- drivers/video/fsl-diu-fb.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index d3fc92e..1ca32c5 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -944,7 +944,7 @@ static u32 fsl_diu_get_pixel_format(unsigned int bits_per_pixel)
- #define PF_COMP_0_MASK		0x0000000F
- #define PF_COMP_0_SHIFT		0
+diff --git a/arch/arm/mach-omap2/board-3430sdp.c b/arch/arm/mach-omap2/board-3430sdp.c
+index 13f1431..717dd15 100644
+--- a/arch/arm/mach-omap2/board-3430sdp.c
++++ b/arch/arm/mach-omap2/board-3430sdp.c
+@@ -124,15 +124,6 @@ static void __init sdp3430_display_init(void)
  
--#define MAKE_PF(alpha, red, blue, green, size, c0, c1, c2, c3) \
-+#define MAKE_PF(alpha, red, green, blue, size, c0, c1, c2, c3) \
- 	cpu_to_le32(PF_BYTE_F | (alpha << PF_ALPHA_C_SHIFT) | \
- 	(blue << PF_BLUE_C_SHIFT) | (green << PF_GREEN_C_SHIFT) | \
- 	(red << PF_RED_C_SHIFT) | (c3 << PF_COMP_3_SHIFT) | \
-@@ -954,10 +954,10 @@ static u32 fsl_diu_get_pixel_format(unsigned int bits_per_pixel)
- 	switch (bits_per_pixel) {
- 	case 32:
- 		/* 0x88883316 */
--		return MAKE_PF(3, 2, 0, 1, 3, 8, 8, 8, 8);
-+		return MAKE_PF(3, 2, 1, 0, 3, 8, 8, 8, 8);
- 	case 24:
- 		/* 0x88082219 */
--		return MAKE_PF(4, 0, 1, 2, 2, 0, 8, 8, 8);
-+		return MAKE_PF(4, 0, 1, 2, 2, 8, 8, 8, 0);
- 	case 16:
- 		/* 0x65053118 */
- 		return MAKE_PF(4, 2, 1, 0, 1, 5, 6, 5, 0);
+ }
+ 
+-static int sdp3430_panel_enable_tv(struct omap_dss_device *dssdev)
+-{
+-	return 0;
+-}
+-
+-static void sdp3430_panel_disable_tv(struct omap_dss_device *dssdev)
+-{
+-}
+-
+ static struct panel_sharp_ls037v7dw01_data sdp3430_lcd_data = {
+ 	.resb_gpio = SDP3430_LCD_PANEL_ENABLE_GPIO,
+ 	.ini_gpio = -1,
+@@ -167,8 +158,6 @@ static struct omap_dss_device sdp3430_tv_device = {
+ 	.driver_name		= "venc",
+ 	.type			= OMAP_DISPLAY_TYPE_VENC,
+ 	.phy.venc.type		= OMAP_DSS_VENC_TYPE_SVIDEO,
+-	.platform_enable	= sdp3430_panel_enable_tv,
+-	.platform_disable	= sdp3430_panel_disable_tv,
+ };
+ 
+ 
+diff --git a/arch/arm/mach-omap2/board-am3517evm.c b/arch/arm/mach-omap2/board-am3517evm.c
+index eb245a6..edb4cce 100644
+--- a/arch/arm/mach-omap2/board-am3517evm.c
++++ b/arch/arm/mach-omap2/board-am3517evm.c
+@@ -138,22 +138,11 @@ static struct omap_dss_device am3517_evm_lcd_device = {
+ 	.phy.dpi.data_lines 	= 16,
+ };
+ 
+-static int am3517_evm_panel_enable_tv(struct omap_dss_device *dssdev)
+-{
+-	return 0;
+-}
+-
+-static void am3517_evm_panel_disable_tv(struct omap_dss_device *dssdev)
+-{
+-}
+-
+ static struct omap_dss_device am3517_evm_tv_device = {
+ 	.type 			= OMAP_DISPLAY_TYPE_VENC,
+ 	.name 			= "tv",
+ 	.driver_name		= "venc",
+ 	.phy.venc.type		= OMAP_DSS_VENC_TYPE_SVIDEO,
+-	.platform_enable	= am3517_evm_panel_enable_tv,
+-	.platform_disable	= am3517_evm_panel_disable_tv,
+ };
+ 
+ static struct tfp410_platform_data dvi_panel = {
+diff --git a/arch/arm/mach-omap2/board-cm-t35.c b/arch/arm/mach-omap2/board-cm-t35.c
+index 563d5ab..cb3b078 100644
+--- a/arch/arm/mach-omap2/board-cm-t35.c
++++ b/arch/arm/mach-omap2/board-cm-t35.c
+@@ -189,15 +189,6 @@ static inline void cm_t35_init_nand(void) {}
+ #define CM_T35_LCD_BL_GPIO 58
+ #define CM_T35_DVI_EN_GPIO 54
+ 
+-static int cm_t35_panel_enable_tv(struct omap_dss_device *dssdev)
+-{
+-	return 0;
+-}
+-
+-static void cm_t35_panel_disable_tv(struct omap_dss_device *dssdev)
+-{
+-}
+-
+ static struct panel_generic_dpi_data lcd_panel = {
+ 	.name			= "toppoly_tdo35s",
+ 	.num_gpios		= 2,
+@@ -233,8 +224,6 @@ static struct omap_dss_device cm_t35_tv_device = {
+ 	.driver_name		= "venc",
+ 	.type			= OMAP_DISPLAY_TYPE_VENC,
+ 	.phy.venc.type		= OMAP_DSS_VENC_TYPE_SVIDEO,
+-	.platform_enable	= cm_t35_panel_enable_tv,
+-	.platform_disable	= cm_t35_panel_disable_tv,
+ };
+ 
+ static struct omap_dss_device *cm_t35_dss_devices[] = {
+diff --git a/arch/arm/mach-omap2/board-omap3evm.c b/arch/arm/mach-omap2/board-omap3evm.c
+index dfb5e1b..a471476 100644
+--- a/arch/arm/mach-omap2/board-omap3evm.c
++++ b/arch/arm/mach-omap2/board-omap3evm.c
+@@ -201,22 +201,11 @@ static struct omap_dss_device omap3_evm_lcd_device = {
+ 	.data			= &omap3_evm_lcd_data,
+ };
+ 
+-static int omap3_evm_enable_tv(struct omap_dss_device *dssdev)
+-{
+-	return 0;
+-}
+-
+-static void omap3_evm_disable_tv(struct omap_dss_device *dssdev)
+-{
+-}
+-
+ static struct omap_dss_device omap3_evm_tv_device = {
+ 	.name			= "tv",
+ 	.driver_name		= "venc",
+ 	.type			= OMAP_DISPLAY_TYPE_VENC,
+ 	.phy.venc.type		= OMAP_DSS_VENC_TYPE_SVIDEO,
+-	.platform_enable	= omap3_evm_enable_tv,
+-	.platform_disable	= omap3_evm_disable_tv,
+ };
+ 
+ static struct tfp410_platform_data dvi_panel = {
+diff --git a/arch/arm/mach-omap2/board-omap3stalker.c b/arch/arm/mach-omap2/board-omap3stalker.c
+index 621ace1..8f1b0a1 100644
+--- a/arch/arm/mach-omap2/board-omap3stalker.c
++++ b/arch/arm/mach-omap2/board-omap3stalker.c
+@@ -93,15 +93,6 @@ static void __init omap3_stalker_display_init(void)
+ 	return;
+ }
+ 
+-static int omap3_stalker_enable_tv(struct omap_dss_device *dssdev)
+-{
+-	return 0;
+-}
+-
+-static void omap3_stalker_disable_tv(struct omap_dss_device *dssdev)
+-{
+-}
+-
+ static struct omap_dss_device omap3_stalker_tv_device = {
+ 	.name			= "tv",
+ 	.driver_name		= "venc",
+@@ -111,8 +102,6 @@ static struct omap_dss_device omap3_stalker_tv_device = {
+ #elif defined(CONFIG_OMAP2_VENC_OUT_TYPE_COMPOSITE)
+ 	.u.venc.type		= OMAP_DSS_VENC_TYPE_COMPOSITE,
+ #endif
+-	.platform_enable	= omap3_stalker_enable_tv,
+-	.platform_disable	= omap3_stalker_disable_tv,
+ };
+ 
+ static struct tfp410_platform_data dvi_panel = {
 -- 
-1.7.5.4
+1.7.9.5
 

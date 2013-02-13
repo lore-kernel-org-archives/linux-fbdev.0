@@ -1,40 +1,38 @@
 From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:19:08 +0000
-Subject: [PATCH 05/11] OMAPDSS: remove set_backlight/get_backlight function ptrs
-Message-Id: <1360764434-18788-6-git-send-email-archit@ti.com>
+Date: Wed, 13 Feb 2013 14:34:24 +0000
+Subject: [PATCH 32/33] arm: dss-common: don't use reset_gpio from omap4_panda_dvi_device
+Message-Id: <1360765345-19312-33-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360764434-18788-1-git-send-email-archit@ti.com>
-In-Reply-To: <1360764434-18788-1-git-send-email-archit@ti.com>
+References: <1360765345-19312-1-git-send-email-archit@ti.com>
+In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>, Tony Lindgren <tony@atomide.com>
 
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+gpio reset info is passed to the tfp410 panel driver via the panel's platform
+data struct 'tfp410_platform_data'. The tfp driver doesn't use the reset_gpio
+field in the omap4_panda_dvi_device struct. Remove this field.
 
-Now that no board nor panel is using set_backlight and get_backlight
-functions, we can remove them from omapdss.h.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tony Lindgren <tony@atomide.com>
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- include/video/omapdss.h |    2 --
- 1 file changed, 2 deletions(-)
+ arch/arm/mach-omap2/dss-common.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index caefa09..d5dcd50 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -659,8 +659,6 @@ struct omap_dss_device {
- 	/* platform specific  */
- 	int (*platform_enable)(struct omap_dss_device *dssdev);
- 	void (*platform_disable)(struct omap_dss_device *dssdev);
--	int (*set_backlight)(struct omap_dss_device *dssdev, int level);
--	int (*get_backlight)(struct omap_dss_device *dssdev);
+diff --git a/arch/arm/mach-omap2/dss-common.c b/arch/arm/mach-omap2/dss-common.c
+index b073e8b..393aeef 100644
+--- a/arch/arm/mach-omap2/dss-common.c
++++ b/arch/arm/mach-omap2/dss-common.c
+@@ -52,7 +52,6 @@ static struct omap_dss_device omap4_panda_dvi_device = {
+ 	.driver_name		= "tfp410",
+ 	.data			= &omap4_dvi_panel,
+ 	.phy.dpi.data_lines	= 24,
+-	.reset_gpio		= PANDA_DVI_TFP410_POWER_DOWN_GPIO,
+ 	.channel		= OMAP_DSS_CHANNEL_LCD2,
  };
  
- struct omap_dss_hdmi_data
 -- 
 1.7.9.5
 

@@ -1,89 +1,109 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 06 Feb 2013 15:00:24 +0000
-Subject: Re: CDF meeting @FOSDEM report
-Message-Id: <51127008.7050808@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enigA28ED1DA762A810046D2ACDF"
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 13 Feb 2013 14:33:57 +0000
+Subject: [PATCH 05/33] arm: omap: board-cm-t35: use generic dpi panel's gpio handling
+Message-Id: <1360765345-19312-6-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1990856.qS9uisuiVF@avalon> <51123A5F.9050604@ti.com> <CADnq5_P1GFbAwoe9kTeARq8ZLP1tOBc9Rn1h2KrRYxkoLxLXfw@mail.gmail.com>
-In-Reply-To: <CADnq5_P1GFbAwoe9kTeARq8ZLP1tOBc9Rn1h2KrRYxkoLxLXfw@mail.gmail.com>
-To: Alex Deucher <alexdeucher@gmail.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, Sebastien Guiriec <s-guiriec@ti.com>, dri-devel@lists.freedesktop.org, Jesse Barnes <jesse.barnes@intel.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Tom Gall <tom.gall@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, linux-media@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@avionic-desi.gn.de>, Mark Zhang <markz@nvidia.com>, linaro-mm-sig@lists.linaro.org, =?ISO-8859-1?Q?St=E9phane_Marchesin?= <stephane.marchesin@gmail.com>, Alexandre Courbot <acourbot@nvidia.com>, Ragesh Radhakrishnan <Ragesh.R@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Sunil Joshi <joshi@samsung.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@lin>
+References: <1360765345-19312-1-git-send-email-archit@ti.com>
+In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>, Tony Lindgren <tony@atomide.com>
 
---------------enigA28ED1DA762A810046D2ACDF
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+The cm-t35 board file currently requests gpios required to configure the tdo35s
+panel, and provides platform_enable/disable callbacks to configure them.
 
-On 2013-02-06 16:44, Alex Deucher wrote:
-> On Wed, Feb 6, 2013 at 6:11 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> =
-wrote:
+These tasks have been moved to the generic dpi panel driver itself and shouldn't
+be done in the board files.
 
->> What is an encoder? Something that takes a video signal in, and lets t=
-he
->> CPU store the received data to memory? Isn't that a decoder?
->>
->> Or do you mean something that takes a video signal in, and outputs a
->> video signal in another format? (transcoder?)
->=20
-> In KMS parlance, we have two objects a crtc and an encoder.  A crtc
-> reads data from memory and produces a data stream with display timing.
->  The encoder then takes that datastream and timing from the crtc and
-> converts it some sort of physical signal (LVDS, TMDS, DP, etc.).  It's
+Remove the gpio requests and the platform callbacks from the board file.
+Add the gpio information to generic dpi panel's platform data so that it's
+passed to the panel driver.
 
-Isn't the video stream between CRTC and encoder just as physical, it
-just happens to be inside the GPU?
+Note: In cm_t35_init_display(), the gpios were disabled, and the LCD_EN gpio was
+enabled after a 50 millisecond delay. This code has been removed and is not
+taken care of in the generic panel driver. The impact of this needs to be
+tested. The panel's gpios are also not exported any more. Hence, they can't be
+accessed via sysfs interface.
 
-This is the case for OMAP, at least, where DISPC could be considered
-CRTC, and DSI/HDMI/etc could be considered encoder. The stream between
-DISPC and DSI/HDMI is plain parallel RGB signal. The video stream could
-as well be outside OMAP.
+Cc: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ arch/arm/mach-omap2/board-cm-t35.c |   46 ++++--------------------------------
+ 1 file changed, 5 insertions(+), 41 deletions(-)
 
-> not always a perfect match to the hardware.  For example a lot of GPUs
-> have a DVO encoder which feeds a secondary encoder like an sil164 DVO
-> to TMDS encoder.
+diff --git a/arch/arm/mach-omap2/board-cm-t35.c b/arch/arm/mach-omap2/board-cm-t35.c
+index f940a79..563d5ab 100644
+--- a/arch/arm/mach-omap2/board-cm-t35.c
++++ b/arch/arm/mach-omap2/board-cm-t35.c
+@@ -189,32 +189,6 @@ static inline void cm_t35_init_nand(void) {}
+ #define CM_T35_LCD_BL_GPIO 58
+ #define CM_T35_DVI_EN_GPIO 54
+ 
+-static int lcd_enabled;
+-static int dvi_enabled;
+-
+-static int cm_t35_panel_enable_lcd(struct omap_dss_device *dssdev)
+-{
+-	if (dvi_enabled) {
+-		printk(KERN_ERR "cannot enable LCD, DVI is enabled\n");
+-		return -EINVAL;
+-	}
+-
+-	gpio_set_value(CM_T35_LCD_EN_GPIO, 1);
+-	gpio_set_value(CM_T35_LCD_BL_GPIO, 1);
+-
+-	lcd_enabled = 1;
+-
+-	return 0;
+-}
+-
+-static void cm_t35_panel_disable_lcd(struct omap_dss_device *dssdev)
+-{
+-	lcd_enabled = 0;
+-
+-	gpio_set_value(CM_T35_LCD_BL_GPIO, 0);
+-	gpio_set_value(CM_T35_LCD_EN_GPIO, 0);
+-}
+-
+ static int cm_t35_panel_enable_tv(struct omap_dss_device *dssdev)
+ {
+ 	return 0;
+@@ -226,8 +200,11 @@ static void cm_t35_panel_disable_tv(struct omap_dss_device *dssdev)
+ 
+ static struct panel_generic_dpi_data lcd_panel = {
+ 	.name			= "toppoly_tdo35s",
+-	.platform_enable	= cm_t35_panel_enable_lcd,
+-	.platform_disable	= cm_t35_panel_disable_lcd,
++	.num_gpios		= 2,
++	.gpios			= {
++		CM_T35_LCD_BL_GPIO,
++		CM_T35_LCD_EN_GPIO
++	},
+ };
+ 
+ static struct omap_dss_device cm_t35_lcd_device = {
+@@ -303,19 +280,6 @@ static void __init cm_t35_init_display(void)
+ 	spi_register_board_info(cm_t35_lcd_spi_board_info,
+ 				ARRAY_SIZE(cm_t35_lcd_spi_board_info));
+ 
+-	err = gpio_request_array(cm_t35_dss_gpios,
+-				 ARRAY_SIZE(cm_t35_dss_gpios));
+-	if (err) {
+-		pr_err("CM-T35: failed to request DSS control GPIOs\n");
+-		return;
+-	}
+-
+-	gpio_export(CM_T35_LCD_EN_GPIO, 0);
+-	gpio_export(CM_T35_LCD_BL_GPIO, 0);
+-
+-	msleep(50);
+-	gpio_set_value(CM_T35_LCD_EN_GPIO, 1);
+-
+ 	err = omap_display_init(&cm_t35_dss_data);
+ 	if (err) {
+ 		pr_err("CM-T35: failed to register DSS device\n");
+-- 
+1.7.9.5
 
-Right. I think mapping the DRM entities to CDF ones is one of the bigger
-question marks we have with CDF. While I'm no expert on DRM, I think we
-have the following options:
-
-1. Force DRM's model to CDF, meaning one encoder.
-
-2. Extend DRM to support multiple encoders in a chain.
-
-3. Support multiple encoders in a chain in CDF, but somehow map them to
-a single encoder in DRM side.
-
-I really dislike the first option, as it would severely limit where CDF
-can be used, or would force you to write some kind of combined drivers,
-so that you can have one encoder driver running multiple encoder devices.=
-
-
- Tomi
-
-
-
---------------enigA28ED1DA762A810046D2ACDF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJREnAIAAoJEPo9qoy8lh71tHQP/jTAXINjpdJdFARlTztAuSXG
-EZQnQvKvdUEJz96N1avraDYZtTma96VonJFSucZ0NiSU/vfxV4qQv26A3Tqxb+Yr
-PhzWgH9L5mMgtYA8aKY/EBFG4qWKpkHHJVp63WyNdnExRBf2fHT5AuooQ9FigSPD
-EBczM0EdV/Cey5UJidv3URjYLgGgfuT2McVWflq5LQzE+6vAjPuDBpDcu7WAAjqV
-dj7Cg2fRFSICnrNoRLu08oOCNqqIfn8kFM2xbYCNSkkbMoY2pHgvVL/KspC7HvVw
-kHKDCactA1WZdAuA/DSqNJsbBUVgZiw5pJjHD8u1SvYOUoCZA3CaZm9vc4OHg9Gb
-yEo7YOPCWcwljI0RFwZrhCCJ9aINKklPx2LOiJ+eJ7zyp/3qPNmxxVTksfzdY8YR
-SfMcchw2yB8tTcZaH1xI+lR2QFrCk+R79fe/0fpjRLLbMcelR4JZNX1z+w8XLakH
-rJRPN2uXhs3+xNAGrnlfG8TMFm/HYIR5AZ4+T26nNLidFqBO7jFaGtLoGukOHqXw
-8i4sangPD072Sjp2am7U2ud6FouWEClny1PlzKx2z/XbS4aOcoJHzZGPJBCDyGj+
-uujdOzAeOIHnWQ+/6jLrj0OoHMLMHVNjdLhgxKi5fLtzaIN2Laf4+n8yonr6w8s2
-zcOkoe7TUYrS0CYvoflC
-=6uuz
------END PGP SIGNATURE-----
-
---------------enigA28ED1DA762A810046D2ACDF--

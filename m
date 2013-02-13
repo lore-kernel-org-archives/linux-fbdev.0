@@ -1,42 +1,34 @@
-From: Zhou Zhu <zzhu3@marvell.com>
-Date: Fri, 01 Feb 2013 09:21:09 +0000
-Subject: [PATCH v6 8/8] ARM: mmp: add display and fb support in pxa910 defconfig
-Message-Id: <1359710469-10299-1-git-send-email-zzhu3@marvell.com>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Wed, 13 Feb 2013 10:40:27 +0000
+Subject: [PATCH 4/5] fb: hx8357: Remove trailing period
+Message-Id: <1360752028-7301-5-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1360752028-7301-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1360752028-7301-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: joe@perches.com, Andrew Morton <akpm@linux-foundation.org>, Richard Purdie <rpurdie@rpsys.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-kernel@vger.kernel.org
 
-added display and fb support in pxa910 defconfig.
-added tpohvga panel, spi support.
-added logo support.
-
-Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
-Acked-by: Haojian Zhuang <haojian.zhuang@gmail.com>
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 ---
- arch/arm/configs/pxa910_defconfig |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/video/backlight/hx8357.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm/configs/pxa910_defconfig b/arch/arm/configs/pxa910_defconfig
-index 191118c..3bb7771 100644
---- a/arch/arm/configs/pxa910_defconfig
-+++ b/arch/arm/configs/pxa910_defconfig
-@@ -42,6 +42,14 @@ CONFIG_SMC91X=y
- # CONFIG_SERIO is not set
- CONFIG_SERIAL_PXA=y
- CONFIG_SERIAL_PXA_CONSOLE=y
-+CONFIG_SPI=y
-+CONFIG_FB=y
-+CONFIG_MMP_DISP=y
-+CONFIG_MMP_DISP_CONTROLLER=y
-+CONFIG_MMP_SPI=y
-+CONFIG_MMP_PANEL_TPOHVGA=y
-+CONFIG_MMP_FB=y
-+CONFIG_LOGO=y
- # CONFIG_LEGACY_PTYS is not set
- # CONFIG_HW_RANDOM is not set
- # CONFIG_HWMON is not set
+diff --git a/drivers/video/backlight/hx8357.c b/drivers/video/backlight/hx8357.c
+index 7c82561..6da8ebe 100644
+--- a/drivers/video/backlight/hx8357.c
++++ b/drivers/video/backlight/hx8357.c
+@@ -120,7 +120,7 @@ static int hx8357_spi_write_then_read(struct lcd_device *lcdev,
+ 
+ 	ret = spi_sync(lcd->spi, &msg);
+ 	if (ret < 0)
+-		dev_err(&lcdev->dev, "Couldn't send SPI data.\n");
++		dev_err(&lcdev->dev, "Couldn't send SPI data\n");
+ 
+ 	if (txlen)
+ 		kfree(local_txbuf);
 -- 
-1.7.9.5
+1.7.10.4
 

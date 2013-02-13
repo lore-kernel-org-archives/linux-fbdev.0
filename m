@@ -1,7 +1,7 @@
 From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:34:02 +0000
-Subject: [PATCH 10/33] arm: omap: board-overo: use lb035q02 dpi panel's gpio handling
-Message-Id: <1360765345-19312-11-git-send-email-archit@ti.com>
+Date: Wed, 13 Feb 2013 14:34:14 +0000
+Subject: [PATCH 22/33] arm: omap: board-omap3pandora: use tpo panel's gpio handling
+Message-Id: <1360765345-19312-23-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1360765345-19312-1-git-send-email-archit@ti.com>
 In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
@@ -11,123 +11,51 @@ Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>, Tony Lindgren <tony@atomide.com>
 
-The overo board file currently requests gpios required by the lb035q02 panel,
-and provides platform_enable/disable callbacks to configure them.
+The omap3pandora board file currently passes the reset gpio number to the
+tpo-td043mtea1 panel driver via the reset_gpio field in omap_dss_device.
 
-These tasks have been moved to the lb035q02 dpi panel driver itself and should
-be removed from the board files.
+Platform related information should be passed via the panel driver's platform
+data struct.
 
-The lb035q02 panel driver uses generic dpi panel's platform data struct
-internally. Remove the gpio requests and the platform callbacks from the board
-file. Add the gpio information to the generic dpi panel platform data struct so
-that it's passed to the panel driver.
+Add the reset gpio information to panel_tpo_td043_data so that it's passed to
+the panel driver.
 
 Cc: Tony Lindgren <tony@atomide.com>
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- arch/arm/mach-omap2/board-overo.c |   58 +++++++++----------------------------
- 1 file changed, 14 insertions(+), 44 deletions(-)
+ arch/arm/mach-omap2/board-omap3pandora.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-omap2/board-overo.c b/arch/arm/mach-omap2/board-overo.c
-index bf6b2ce..888e150 100644
---- a/arch/arm/mach-omap2/board-overo.c
-+++ b/arch/arm/mach-omap2/board-overo.c
-@@ -144,28 +144,9 @@ static inline void __init overo_init_smsc911x(void) { return; }
- #endif
+diff --git a/arch/arm/mach-omap2/board-omap3pandora.c b/arch/arm/mach-omap2/board-omap3pandora.c
+index a53a668..ddd6322 100644
+--- a/arch/arm/mach-omap2/board-omap3pandora.c
++++ b/arch/arm/mach-omap2/board-omap3pandora.c
+@@ -43,6 +43,7 @@
  
- /* DSS */
--static int lcd_enabled;
--static int dvi_enabled;
--
- #define OVERO_GPIO_LCD_EN 144
- #define OVERO_GPIO_LCD_BL 145
+ #include "common.h"
+ #include <video/omapdss.h>
++#include <video/omap-panel-data.h>
+ #include <linux/platform_data/mtd-nand-omap2.h>
  
--static struct gpio overo_dss_gpios[] __initdata = {
--	{ OVERO_GPIO_LCD_EN, GPIOF_OUT_INIT_HIGH, "OVERO_GPIO_LCD_EN" },
--	{ OVERO_GPIO_LCD_BL, GPIOF_OUT_INIT_HIGH, "OVERO_GPIO_LCD_BL" },
--};
--
--static void __init overo_display_init(void)
--{
--	if (gpio_request_array(overo_dss_gpios, ARRAY_SIZE(overo_dss_gpios))) {
--		printk(KERN_ERR "could not obtain DSS control GPIOs\n");
--		return;
--	}
--
--	gpio_export(OVERO_GPIO_LCD_EN, 0);
--	gpio_export(OVERO_GPIO_LCD_BL, 0);
--}
--
- static struct tfp410_platform_data dvi_panel = {
- 	.i2c_bus_num		= 3,
- 	.power_down_gpio	= -1,
-@@ -186,30 +167,13 @@ static struct omap_dss_device overo_tv_device = {
- 	.phy.venc.type = OMAP_DSS_VENC_TYPE_SVIDEO,
+ #include "mux.h"
+@@ -229,12 +230,16 @@ static struct twl4030_keypad_data pandora_kp_data = {
+ 	.rep		= 1,
  };
  
--static int overo_panel_enable_lcd(struct omap_dss_device *dssdev)
--{
--	if (dvi_enabled) {
--		printk(KERN_ERR "cannot enable LCD, DVI is enabled\n");
--		return -EINVAL;
--	}
--
--	gpio_set_value(OVERO_GPIO_LCD_EN, 1);
--	gpio_set_value(OVERO_GPIO_LCD_BL, 1);
--	lcd_enabled = 1;
--	return 0;
--}
--
--static void overo_panel_disable_lcd(struct omap_dss_device *dssdev)
--{
--	gpio_set_value(OVERO_GPIO_LCD_EN, 0);
--	gpio_set_value(OVERO_GPIO_LCD_BL, 0);
--	lcd_enabled = 0;
--}
--
- static struct panel_generic_dpi_data lcd43_panel = {
- 	.name			= "samsung_lte430wq_f0c",
--	.platform_enable	= overo_panel_enable_lcd,
--	.platform_disable	= overo_panel_disable_lcd,
-+	.num_gpios		= 2,
-+	.gpios			= {
-+		OVERO_GPIO_LCD_EN,
-+		OVERO_GPIO_LCD_BL
-+	},
- };
- 
- static struct omap_dss_device overo_lcd43_device = {
-@@ -222,13 +186,20 @@ static struct omap_dss_device overo_lcd43_device = {
- 
- #if defined(CONFIG_PANEL_LGPHILIPS_LB035Q02) || \
- 	defined(CONFIG_PANEL_LGPHILIPS_LB035Q02_MODULE)
-+static struct panel_generic_dpi_data lcd35_panel = {
-+	.num_gpios		= 2,
-+	.gpios			= {
-+		OVERO_GPIO_LCD_EN,
-+		OVERO_GPIO_LCD_BL
-+	},
++static struct panel_tpo_td043_data lcd_data = {
++	.nreset_gpio		= 157,
 +};
 +
- static struct omap_dss_device overo_lcd35_device = {
+ static struct omap_dss_device pandora_lcd_device = {
+ 	.name			= "lcd",
+ 	.driver_name		= "tpo_td043mtea1_panel",
  	.type			= OMAP_DISPLAY_TYPE_DPI,
- 	.name			= "lcd35",
- 	.driver_name		= "lgphilips_lb035q02_panel",
  	.phy.dpi.data_lines	= 24,
--	.platform_enable	= overo_panel_enable_lcd,
--	.platform_disable	= overo_panel_disable_lcd,
-+	.data			= &lcd35_panel,
+-	.reset_gpio		= 157,
++	.data			= &lcd_data,
  };
- #endif
  
-@@ -502,7 +473,6 @@ static void __init overo_init(void)
- 	usbhs_init(&usbhs_bdata);
- 	overo_spi_init();
- 	overo_init_smsc911x();
--	overo_display_init();
- 	overo_init_led();
- 	overo_init_keys();
- 	omap_twl4030_audio_init("overo");
+ static struct omap_dss_device pandora_tv_device = {
 -- 
 1.7.9.5
 

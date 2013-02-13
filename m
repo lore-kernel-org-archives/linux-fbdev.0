@@ -1,134 +1,158 @@
 From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:34:17 +0000
-Subject: [PATCH 25/33] arm: omap: dss-common: use picodlp panel's gpio handling
-Message-Id: <1360765345-19312-26-git-send-email-archit@ti.com>
+Date: Wed, 13 Feb 2013 14:19:07 +0000
+Subject: [PATCH 04/11] OMAPDSS: n8x0: remove platform backlight calls
+Message-Id: <1360764434-18788-5-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360765345-19312-1-git-send-email-archit@ti.com>
-In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
+References: <1360764434-18788-1-git-send-email-archit@ti.com>
+In-Reply-To: <1360764434-18788-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>, Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The dss-common file currently requests gpios required by the picodlp DPI
-panel on the 4430sdp/blaze board. It also requests DISPLAY_SEL_GPIO and
-DLP_POWER_ON_GPIO gpios which are board specific gpios to switch between lcd2
-panel and picodlp, and setting intermediate power supplies for picodlp
-respectively. These gpios are toggled through platform_enable/disable functions
-called by the picodlp driver.
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Remove the gpio requests for the gpios which are already requested by the panel
-driver, and remove the platform callback functions and set the platform specific
-gpios in such a way that lcd2 panel is selected for the LCD2 overlay manager and
-the power supplies for picodlp are disabled.
+The n8x0 panel contains support to call platform backlight functions.
+These are not used by any board, and can be removed.
 
-Note: We need to revisit this so that we can enable and switch to picodlp if
-that's the only panel driver available for the LCD2 overlay manager.
-
-Cc: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- arch/arm/mach-omap2/dss-common.c |   53 ++++++++++++--------------------------
- 1 file changed, 16 insertions(+), 37 deletions(-)
+ drivers/video/omap2/displays/panel-n8x0.c |   74 -----------------------------
+ include/video/omap-panel-n8x0.h           |    2 -
+ 2 files changed, 76 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/dss-common.c b/arch/arm/mach-omap2/dss-common.c
-index 9c49bbe..b073e8b 100644
---- a/arch/arm/mach-omap2/dss-common.c
-+++ b/arch/arm/mach-omap2/dss-common.c
-@@ -177,45 +177,12 @@ static struct picodlp_panel_data sdp4430_picodlp_pdata = {
- 	.pwrgood_gpio		= 45,
+diff --git a/drivers/video/omap2/displays/panel-n8x0.c b/drivers/video/omap2/displays/panel-n8x0.c
+index dd12947..b750480 100644
+--- a/drivers/video/omap2/displays/panel-n8x0.c
++++ b/drivers/video/omap2/displays/panel-n8x0.c
+@@ -5,7 +5,6 @@
+ #include <linux/slab.h>
+ #include <linux/gpio.h>
+ #include <linux/spi/spi.h>
+-#include <linux/backlight.h>
+ #include <linux/fb.h>
+ 
+ #include <video/omapdss.h>
+@@ -69,7 +68,6 @@ static struct panel_drv_data {
+ 
+ 	struct omap_dss_device *dssdev;
+ 	struct spi_device *spidev;
+-	struct backlight_device *bldev;
+ 
+ 	int blizzard_ver;
+ } s_drv_data;
+@@ -424,55 +422,10 @@ static const struct rfbi_timings n8x0_panel_timings = {
+ 	.cs_pulse_width = 0,
  };
  
--static void sdp4430_picodlp_init(void)
+-static int n8x0_bl_update_status(struct backlight_device *dev)
 -{
+-	struct omap_dss_device *dssdev = dev_get_drvdata(&dev->dev);
+-	struct panel_n8x0_data *bdata = get_board_data(dssdev);
+-	struct panel_drv_data *ddata = get_drv_data(dssdev);
 -	int r;
--	const struct gpio picodlp_gpios[] = {
--		{DLP_POWER_ON_GPIO, GPIOF_OUT_INIT_LOW,
--			"DLP POWER ON"},
--		{sdp4430_picodlp_pdata.emu_done_gpio, GPIOF_IN,
--			"DLP EMU DONE"},
--		{sdp4430_picodlp_pdata.pwrgood_gpio, GPIOF_OUT_INIT_LOW,
--			"DLP PWRGOOD"},
--	};
+-	int level;
 -
--	r = gpio_request_array(picodlp_gpios, ARRAY_SIZE(picodlp_gpios));
--	if (r)
--		pr_err("Cannot request PicoDLP GPIOs, error %d\n", r);
+-	mutex_lock(&ddata->lock);
+-
+-	if (dev->props.fb_blank = FB_BLANK_UNBLANK &&
+-			dev->props.power = FB_BLANK_UNBLANK)
+-		level = dev->props.brightness;
+-	else
+-		level = 0;
+-
+-	dev_dbg(&dssdev->dev, "update brightness to %d\n", level);
+-
+-	if (!bdata->set_backlight)
+-		r = -EINVAL;
+-	else
+-		r = bdata->set_backlight(dssdev, level);
+-
+-	mutex_unlock(&ddata->lock);
+-
+-	return r;
 -}
 -
--static int sdp4430_panel_enable_picodlp(struct omap_dss_device *dssdev)
+-static int n8x0_bl_get_intensity(struct backlight_device *dev)
 -{
--	gpio_set_value(DISPLAY_SEL_GPIO, 0);
--	gpio_set_value(DLP_POWER_ON_GPIO, 1);
+-	if (dev->props.fb_blank = FB_BLANK_UNBLANK &&
+-			dev->props.power = FB_BLANK_UNBLANK)
+-		return dev->props.brightness;
 -
 -	return 0;
 -}
 -
--static void sdp4430_panel_disable_picodlp(struct omap_dss_device *dssdev)
--{
--	gpio_set_value(DLP_POWER_ON_GPIO, 0);
--	gpio_set_value(DISPLAY_SEL_GPIO, 1);
--}
+-static const struct backlight_ops n8x0_bl_ops = {
+-	.get_brightness = n8x0_bl_get_intensity,
+-	.update_status  = n8x0_bl_update_status,
+-};
 -
- static struct omap_dss_device sdp4430_picodlp_device = {
- 	.name			= "picodlp",
- 	.driver_name		= "picodlp_panel",
- 	.type			= OMAP_DISPLAY_TYPE_DPI,
- 	.phy.dpi.data_lines	= 24,
- 	.channel		= OMAP_DSS_CHANNEL_LCD2,
--	.platform_enable	= sdp4430_panel_enable_picodlp,
--	.platform_disable	= sdp4430_panel_disable_picodlp,
- 	.data			= &sdp4430_picodlp_pdata,
- };
- 
-@@ -232,17 +199,26 @@ static struct omap_dss_board_info sdp4430_dss_data = {
- 	.default_device	= &sdp4430_lcd_device,
- };
- 
-+/*
-+ * we select LCD2 by default (instead of Pico DLP) by setting DISPLAY_SEL_GPIO.
-+ * Setting DLP_POWER_ON gpio enables the VDLP_2V5 VDLP_1V8 and VDLP_1V0 rails
-+ * used by picodlp on the 4430sdp platform. Keep this gpio disabled as LCD2 is
-+ * selected by default
-+ */
- void __init omap_4430sdp_display_init(void)
+ static int n8x0_panel_probe(struct omap_dss_device *dssdev)
  {
- 	int r;
+ 	struct panel_n8x0_data *bdata = get_board_data(dssdev);
+ 	struct panel_drv_data *ddata;
+-	struct backlight_device *bldev;
+-	struct backlight_properties props;
+-	int r;
  
--	/* Enable LCD2 by default (instead of Pico DLP) */
- 	r = gpio_request_one(DISPLAY_SEL_GPIO, GPIOF_OUT_INIT_HIGH,
- 			"display_sel");
- 	if (r)
- 		pr_err("%s: Could not get display_sel GPIO\n", __func__);
+ 	dev_dbg(&dssdev->dev, "probe\n");
  
--	sdp4430_picodlp_init();
-+	r = gpio_request_one(DLP_POWER_ON_GPIO, GPIOF_OUT_INIT_LOW,
-+		"DLP POWER ON");
-+	if (r)
-+		pr_err("%s: Could not get DLP POWER ON GPIO\n", __func__);
-+
- 	omap_display_init(&sdp4430_dss_data);
- 	/*
- 	 * OMAP4460SDP/Blaze and OMAP4430 ES2.3 SDP/Blaze boards and
-@@ -262,12 +238,15 @@ void __init omap_4430sdp_display_init_of(void)
- {
- 	int r;
+@@ -491,40 +444,13 @@ static int n8x0_panel_probe(struct omap_dss_device *dssdev)
+ 	dssdev->ctrl.rfbi_timings = n8x0_panel_timings;
+ 	dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE;
  
--	/* Enable LCD2 by default (instead of Pico DLP) */
- 	r = gpio_request_one(DISPLAY_SEL_GPIO, GPIOF_OUT_INIT_HIGH,
- 			"display_sel");
- 	if (r)
- 		pr_err("%s: Could not get display_sel GPIO\n", __func__);
- 
--	sdp4430_picodlp_init();
-+	r = gpio_request_one(DLP_POWER_ON_GPIO, GPIOF_OUT_INIT_LOW,
-+		"DLP POWER ON");
-+	if (r)
-+		pr_err("%s: Could not get DLP POWER ON GPIO\n", __func__);
-+
- 	omap_display_init(&sdp4430_dss_data);
+-	memset(&props, 0, sizeof(props));
+-	props.max_brightness = 127;
+-	props.type = BACKLIGHT_PLATFORM;
+-	bldev = backlight_device_register(dev_name(&dssdev->dev), &dssdev->dev,
+-			dssdev, &n8x0_bl_ops, &props);
+-	if (IS_ERR(bldev)) {
+-		r = PTR_ERR(bldev);
+-		dev_err(&dssdev->dev, "register backlight failed\n");
+-		return r;
+-	}
+-
+-	ddata->bldev = bldev;
+-
+-	bldev->props.fb_blank = FB_BLANK_UNBLANK;
+-	bldev->props.power = FB_BLANK_UNBLANK;
+-	bldev->props.brightness = 127;
+-
+-	n8x0_bl_update_status(bldev);
+-
+ 	return 0;
  }
+ 
+ static void n8x0_panel_remove(struct omap_dss_device *dssdev)
+ {
+-	struct panel_drv_data *ddata = get_drv_data(dssdev);
+-	struct backlight_device *bldev;
+-
+ 	dev_dbg(&dssdev->dev, "remove\n");
+ 
+-	bldev = ddata->bldev;
+-	bldev->props.power = FB_BLANK_POWERDOWN;
+-	n8x0_bl_update_status(bldev);
+-	backlight_device_unregister(bldev);
+-
+ 	dev_set_drvdata(&dssdev->dev, NULL);
+ }
+ 
+diff --git a/include/video/omap-panel-n8x0.h b/include/video/omap-panel-n8x0.h
+index 50a1302..9cc69c8 100644
+--- a/include/video/omap-panel-n8x0.h
++++ b/include/video/omap-panel-n8x0.h
+@@ -8,8 +8,6 @@ struct panel_n8x0_data {
+ 	void (*platform_disable)(struct omap_dss_device *dssdev);
+ 	int panel_reset;
+ 	int ctrl_pwrdown;
+-
+-	int (*set_backlight)(struct omap_dss_device *dssdev, int level);
+ };
+ 
+ #endif
 -- 
 1.7.9.5
 

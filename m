@@ -1,7 +1,7 @@
 From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:34:10 +0000
-Subject: [PATCH 18/33] OMAPDSS: nec-nl8048 panel: handle gpios ins panel driver
-Message-Id: <1360765345-19312-19-git-send-email-archit@ti.com>
+Date: Wed, 13 Feb 2013 14:34:15 +0000
+Subject: [PATCH 23/33] OMAPDSS: tpo-td043: remove platform_enable/disable callbacks
+Message-Id: <1360765345-19312-24-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1360765345-19312-1-git-send-email-archit@ti.com>
 In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
@@ -11,148 +11,47 @@ Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The nec-nl8048hl11-01 panel driver leaves gpio configurations to the
-platform_enable and disable calls in the platform's board file. These should
-happen in the panel driver itself.
+The tpo-td043 panel driver now manages the gpios required to configure the panel.
+This was previously done in omap_dss_device's platform_enable/disable callbacks
+defined in board files using this panel.
 
-Create a platform data struct for the panel, this contains the gpio numbers
-used by the panel driver, this struct will be passed to the panel driver as
-platform data. The driver will request and configure these gpios rather than
-leaving it to platform callbacks in board files.
-
-This will help in removing the need for the panel drivers to have platform
-related callbacks.
+All the board files using this panel now pass the gpio information as platform
+data via the panel_tpo_td043_data struct, which is needed by the panel driver to
+configure the gpios connected to the panel. Hence, the platform_enable/disable
+ops can be safely removed now.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- .../omap2/displays/panel-nec-nl8048hl11-01b.c      |   45 +++++++++++++++-----
- include/video/omap-panel-data.h                    |   10 +++++
- 2 files changed, 44 insertions(+), 11 deletions(-)
+ .../video/omap2/displays/panel-tpo-td043mtea1.c    |    9 ---------
+ 1 file changed, 9 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-index c197927..3b85e2a 100644
---- a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-+++ b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-@@ -20,8 +20,10 @@
- #include <linux/delay.h>
- #include <linux/spi/spi.h>
- #include <linux/fb.h>
-+#include <linux/gpio.h>
+diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+index c8244bc..24bb0ff 100644
+--- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
++++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+@@ -348,12 +348,6 @@ static int tpo_td043_enable_dss(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err0;
  
- #include <video/omapdss.h>
-+#include <video/omap-panel-data.h>
- 
- #define LCD_XRES		800
- #define LCD_YRES		480
-@@ -31,9 +33,6 @@
-  */
- #define LCD_PIXEL_CLOCK		23800
- 
--struct nec_8048_data {
--};
+-	if (dssdev->platform_enable) {
+-		r = dssdev->platform_enable(dssdev);
+-		if (r)
+-			goto err1;
+-	}
 -
- static const struct {
- 	unsigned char addr;
- 	unsigned char dat;
-@@ -82,30 +81,46 @@ static struct omap_video_timings nec_8048_panel_timings = {
- 	.sync_pclk_edge	= OMAPDSS_DRIVE_SIG_RISING_EDGE,
- };
- 
-+static inline struct panel_nec_nl8048_data
-+*get_panel_data(const struct omap_dss_device *dssdev)
-+{
-+	return (struct panel_nec_nl8048_data *) dssdev->data;
-+}
-+
- static int nec_8048_panel_probe(struct omap_dss_device *dssdev)
- {
--	struct nec_8048_data *necd;
-+	struct panel_nec_nl8048_data *pd = get_panel_data(dssdev);
-+	int r;
-+
-+	if (!pd)
-+		return -EINVAL;
- 
- 	dssdev->panel.timings = nec_8048_panel_timings;
- 
--	necd = kzalloc(sizeof(*necd), GFP_KERNEL);
--	if (!necd)
--		return -ENOMEM;
-+	if (gpio_is_valid(pd->qvga_gpio)) {
-+		r = devm_gpio_request_one(&dssdev->dev, pd->qvga_gpio,
-+				GPIOF_OUT_INIT_HIGH, "lcd QVGA");
-+		if (r)
-+			return r;
-+	}
- 
--	dev_set_drvdata(&dssdev->dev, necd);
-+	if (gpio_is_valid(pd->res_gpio)) {
-+		r = devm_gpio_request_one(&dssdev->dev, pd->res_gpio,
-+				GPIOF_OUT_INIT_LOW, "lcd RES");
-+		if (r)
-+			return r;
-+	}
- 
- 	return 0;
- }
- 
- static void nec_8048_panel_remove(struct omap_dss_device *dssdev)
- {
--	struct nec_8048_data *necd = dev_get_drvdata(&dssdev->dev);
--
--	kfree(necd);
- }
- 
- static int nec_8048_panel_power_on(struct omap_dss_device *dssdev)
- {
-+	struct panel_nec_nl8048_data *pd = get_panel_data(dssdev);
- 	int r;
- 
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
-@@ -124,6 +139,9 @@ static int nec_8048_panel_power_on(struct omap_dss_device *dssdev)
- 			goto err1;
- 	}
- 
-+	if (gpio_is_valid(pd->res_gpio))
-+		gpio_set_value_cansleep(pd->res_gpio, 1);
-+
- 	return 0;
- err1:
- 	omapdss_dpi_display_disable(dssdev);
-@@ -133,9 +151,14 @@ err0:
- 
- static void nec_8048_panel_power_off(struct omap_dss_device *dssdev)
- {
-+	struct panel_nec_nl8048_data *pd = get_panel_data(dssdev);
-+
+ 	/*
+ 	 * If we are resuming from system suspend, SPI clocks might not be
+ 	 * enabled yet, so we'll program the LCD from SPI PM resume callback.
+@@ -380,9 +374,6 @@ static void tpo_td043_disable_dss(struct omap_dss_device *dssdev)
  	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
  		return;
  
-+	if (gpio_is_valid(pd->res_gpio))
-+		gpio_set_value_cansleep(pd->res_gpio, 0);
-+
- 	if (dssdev->platform_disable)
- 		dssdev->platform_disable(dssdev);
+-	if (dssdev->platform_disable)
+-		dssdev->platform_disable(dssdev);
+-
+ 	omapdss_dpi_display_disable(dssdev);
  
-diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
-index 6faf0c7..e7698e2 100644
---- a/include/video/omap-panel-data.h
-+++ b/include/video/omap-panel-data.h
-@@ -125,4 +125,14 @@ struct panel_acx565akm_data {
- 	int reset_gpio;
- };
- 
-+/**
-+ * nec nl8048 panel driver configuration data
-+ * @res_gpio: reset signal
-+ * @qvga_gpio: selection for resolution(QVGA/WVGA)
-+ */
-+struct panel_nec_nl8048_data {
-+	int res_gpio;
-+	int qvga_gpio;
-+};
-+
- #endif /* __OMAP_PANEL_DATA_H */
+ 	if (!tpo_td043->spi_suspended)
 -- 
 1.7.9.5
 

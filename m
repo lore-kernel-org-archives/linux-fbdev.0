@@ -1,57 +1,40 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Sun, 17 Feb 2013 17:59:05 +0000
-Subject: [PATCH 3/9] video: sysfb: always provide vbefb device
-Message-Id: <1361123951-587-4-git-send-email-dh.herrmann@gmail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 13 Feb 2013 14:34:23 +0000
+Subject: [PATCH 31/33] OMAPDSS: remove platform_enable/disable callbacks from omap_dss_device
+Message-Id: <1360765345-19312-32-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
-In-Reply-To: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
+References: <1360765345-19312-1-git-send-email-archit@ti.com>
+In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, David Herrmann <dh.herrmann@googlemail.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-From: David Herrmann <dh.herrmann@googlemail.com>
+None of the omapdss panel drivers call platform_enable/disable callbacks, and
+none of the omap board files define these callbacks for any omap_dss_device.
+Hence these callbacks can be removed form the omap_dss_device struct.
 
-HACK: This should be provided by architecture setup code. But to show how it is
-supposed to work, we now simply add a "vbefb" device during initialization.
-
-The better way to do this is by moving this into arch-code. So for instance the
-x86 boot initialization should create this platform-device after VBE/VESA screen
-detection. Other architectures can do the same or introduce other framebuffer
-types than SYSFB_VBE.
-
-Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/sysfb.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ include/video/omapdss.h |    4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/drivers/video/sysfb.c b/drivers/video/sysfb.c
-index 5b47a9a..0c0a4e7 100644
---- a/drivers/video/sysfb.c
-+++ b/drivers/video/sysfb.c
-@@ -271,6 +271,8 @@ static struct platform_driver sysfb_vbe_driver = {
- 	.remove = sysfb_vbe_remove,
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index f0b65a5..e1ebb48 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -650,10 +650,6 @@ struct omap_dss_device {
+ 	enum omap_dss_display_state state;
+ 
+ 	enum omap_dss_audio_state audio_state;
+-
+-	/* platform specific  */
+-	int (*platform_enable)(struct omap_dss_device *dssdev);
+-	void (*platform_disable)(struct omap_dss_device *dssdev);
  };
  
-+static struct platform_device *sysfb_vbe_device;
-+
- static int __init sysfb_init(void)
- {
- 	int ret;
-@@ -287,6 +289,12 @@ static int __init sysfb_init(void)
- 		goto err_bus;
- 	}
- 
-+	sysfb_vbe_device = platform_device_register_data(NULL, "vbefb", -1,
-+							 &screen_info,
-+							 sizeof(screen_info));
-+	if (!sysfb_vbe_device)
-+		pr_warn("cannot create vbefb device\n");
-+
- 	return 0;
- 
- err_bus:
+ struct omap_dss_hdmi_data
 -- 
-1.8.1.3
+1.7.9.5
 

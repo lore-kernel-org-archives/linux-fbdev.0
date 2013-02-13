@@ -1,48 +1,73 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Wed, 13 Feb 2013 10:40:24 +0000
-Subject: [PATCH 1/5] fb: hx8357: Change parameters of the write function to u8
-Message-Id: <1360752028-7301-2-git-send-email-maxime.ripard@free-electrons.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 13 Feb 2013 14:34:16 +0000
+Subject: [PATCH 24/33] OMAPDSS: picodlp panel: handle gpio data in panel driver
+Message-Id: <1360765345-19312-25-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360752028-7301-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1360752028-7301-1-git-send-email-maxime.ripard@free-electrons.com>
+References: <1360765345-19312-1-git-send-email-archit@ti.com>
+In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: joe@perches.com, Andrew Morton <akpm@linux-foundation.org>, Richard Purdie <rpurdie@rpsys.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-kernel@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Moving from void* to u8* removes the need for castslater on in the
-function.
+The picodlp panel driver leaves gpio requests to the platform's board file.
+These should happen in the panel driver itself.
 
-Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+A platform data struct called picodlp_panel_data already exists to hold gpio
+numbers and other platform data. Request all the gpios in the panel driver so
+that the board files which use the the panel don't need to do it.
+
+This will help in removing the need for the panel drivers to have platform
+related callbacks.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/backlight/hx8357.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/omap2/displays/panel-picodlp.c |   21 ++++++++++++++++++++-
+ 1 file changed, 20 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/backlight/hx8357.c b/drivers/video/backlight/hx8357.c
-index 00925c0..071525c 100644
---- a/drivers/video/backlight/hx8357.c
-+++ b/drivers/video/backlight/hx8357.c
-@@ -79,8 +79,8 @@ struct hx8357_data {
- };
+diff --git a/drivers/video/omap2/displays/panel-picodlp.c b/drivers/video/omap2/displays/panel-picodlp.c
+index 56d536c..bc8ac77 100644
+--- a/drivers/video/omap2/displays/panel-picodlp.c
++++ b/drivers/video/omap2/displays/panel-picodlp.c
+@@ -423,10 +423,13 @@ static int picodlp_panel_probe(struct omap_dss_device *dssdev)
+ 	struct picodlp_panel_data *picodlp_pdata = get_panel_data(dssdev);
+ 	struct i2c_adapter *adapter;
+ 	struct i2c_client *picodlp_i2c_client;
+-	int picodlp_adapter_id;
++	int r, picodlp_adapter_id;
  
- static int hx8357_spi_write_then_read(struct lcd_device *lcdev,
--				void *txbuf, u16 txlen,
--				void *rxbuf, u16 rxlen)
-+				u8 *txbuf, u16 txlen,
-+				u8 *rxbuf, u16 rxlen)
- {
- 	struct hx8357_data *lcd = lcd_get_data(lcdev);
- 	struct spi_message msg;
-@@ -102,7 +102,7 @@ static int hx8357_spi_write_then_read(struct lcd_device *lcdev,
- 		}
+ 	dssdev->panel.timings = pico_ls_timings;
  
- 		for (i = 0; i < txlen; i++) {
--			local_txbuf[i] = ((u8 *)txbuf)[i];
-+			local_txbuf[i] = txbuf[i];
- 			if (i > 0)
- 				local_txbuf[i] |= 1 << 8;
- 		}
++	if (!picodlp_pdata)
++		return -EINVAL;
++
+ 	picod = devm_kzalloc(&dssdev->dev, sizeof(*picod), GFP_KERNEL);
+ 	if (!picod)
+ 		return -ENOMEM;
+@@ -452,6 +455,22 @@ static int picodlp_panel_probe(struct omap_dss_device *dssdev)
+ 
+ 	dev_set_drvdata(&dssdev->dev, picod);
+ 
++	if (gpio_is_valid(picodlp_pdata->emu_done_gpio)) {
++		r = devm_gpio_request_one(&dssdev->dev,
++				picodlp_pdata->emu_done_gpio,
++				GPIOF_IN, "DLP EMU DONE");
++		if (r)
++			return r;
++	}
++
++	if (gpio_is_valid(picodlp_pdata->pwrgood_gpio)) {
++		r = devm_gpio_request_one(&dssdev->dev,
++				picodlp_pdata->pwrgood_gpio,
++				GPIOF_OUT_INIT_LOW, "DLP PWRGOOD");
++		if (r)
++			return r;
++	}
++
+ 	return 0;
+ }
+ 
 -- 
-1.7.10.4
+1.7.9.5
 

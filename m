@@ -1,58 +1,67 @@
 From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:19:03 +0000
-Subject: [PATCH 00/11] OMAPDSS: Misc cleanups
-Message-Id: <1360764434-18788-1-git-send-email-archit@ti.com>
+Date: Wed, 13 Feb 2013 14:34:18 +0000
+Subject: [PATCH 26/33] OMAPDSS: picodlp panel: remove platform_enable/disable callbacks
+Message-Id: <1360765345-19312-27-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1360765345-19312-1-git-send-email-archit@ti.com>
+In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-These patches perform cleanups which will help the omapdss driver to migrate
-to DT more easily:
+The picodlp panel driver now manages the gpios required to configure the
+panel. This was previously done in omap_dss_device's platform_enable/disable
+callbacks defined in board files using this panel.
 
-- omapdss panel drivers call platform specific backlight functions defined in
-  board files. These callbacks are removed. Setting of max backlight level
-  in the board file is also removed.
-- other misc changes which thin down the omap_dss_device struct by removing
-  some unnecessary fields.
-- usage of devm_kzalloc in panel drivers.
+All the board files using this panel now pass the gpio information as platform
+data via the panel_generic_dpi_data struct, which is needed by the panel driver
+to configure the gpios connected to the panel. Hence, the
+platform_enable/disable ops can be safely removed now.
 
-Reference branch:
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/displays/panel-picodlp.c |   12 ------------
+ 1 file changed, 12 deletions(-)
 
-git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git for-3.9/misc_cleanups 
-
-Archit Taneja (7):
-  OMAPDSS: ZOOM/NEC-nl8048hl11: remove platform backlight support
-  OMAPDSS: Generic DPI Panel: use devm_kzalloc for allocating driver
-    data
-  OMAPDSS: lb035q02: use devm_kzalloc for allocating driver data
-  OMAPDSS: picodlp: use devm_kzalloc for allocating driver data
-  OMAPDSS: remove unnecessary DSI external TE pin platform info from
-    omap_dss_device
-  OMAPDSS: panel acx565akm: remove omap_dss_device maximum backlight
-    level usage
-  OMAPDSS: Remove max_backlight_level form omap_dss_device
-
-Tomi Valkeinen (4):
-  OMAPDSS: acx565akm: remove platform backlight calls
-  OMAPDSS: ls037v7dw01: remove platform backlight calls
-  OMAPDSS: n8x0: remove platform backlight calls
-  OMAPDSS: remove set_backlight/get_backlight function ptrs
-
- arch/arm/mach-omap2/board-zoom-display.c           |    2 -
- drivers/video/omap2/displays/panel-acx565akm.c     |   11 +--
- drivers/video/omap2/displays/panel-generic-dpi.c   |    6 +-
- .../omap2/displays/panel-lgphilips-lb035q02.c      |   16 ++---
- drivers/video/omap2/displays/panel-n8x0.c          |   74 --------------------
- .../omap2/displays/panel-nec-nl8048hl11-01b.c      |   74 --------------------
- drivers/video/omap2/displays/panel-picodlp.c       |   16 ++---
- .../video/omap2/displays/panel-sharp-ls037v7dw01.c |   62 ----------------
- include/video/omap-panel-n8x0.h                    |    2 -
- include/video/omapdss.h                            |    7 --
- 10 files changed, 14 insertions(+), 256 deletions(-)
-
+diff --git a/drivers/video/omap2/displays/panel-picodlp.c b/drivers/video/omap2/displays/panel-picodlp.c
+index bc8ac77..62f2db0 100644
+--- a/drivers/video/omap2/displays/panel-picodlp.c
++++ b/drivers/video/omap2/displays/panel-picodlp.c
+@@ -354,12 +354,6 @@ static int picodlp_panel_power_on(struct omap_dss_device *dssdev)
+ 	struct picodlp_data *picod = dev_get_drvdata(&dssdev->dev);
+ 	struct picodlp_panel_data *picodlp_pdata = get_panel_data(dssdev);
+ 
+-	if (dssdev->platform_enable) {
+-		r = dssdev->platform_enable(dssdev);
+-		if (r)
+-			return r;
+-	}
+-
+ 	gpio_set_value(picodlp_pdata->pwrgood_gpio, 0);
+ 	msleep(1);
+ 	gpio_set_value(picodlp_pdata->pwrgood_gpio, 1);
+@@ -398,9 +392,6 @@ static int picodlp_panel_power_on(struct omap_dss_device *dssdev)
+ err:
+ 	omapdss_dpi_display_disable(dssdev);
+ err1:
+-	if (dssdev->platform_disable)
+-		dssdev->platform_disable(dssdev);
+-
+ 	return r;
+ }
+ 
+@@ -412,9 +403,6 @@ static void picodlp_panel_power_off(struct omap_dss_device *dssdev)
+ 
+ 	gpio_set_value(picodlp_pdata->emu_done_gpio, 0);
+ 	gpio_set_value(picodlp_pdata->pwrgood_gpio, 0);
+-
+-	if (dssdev->platform_disable)
+-		dssdev->platform_disable(dssdev);
+ }
+ 
+ static int picodlp_panel_probe(struct omap_dss_device *dssdev)
 -- 
 1.7.9.5
 

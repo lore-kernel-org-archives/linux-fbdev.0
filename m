@@ -1,59 +1,72 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Thu, 07 Feb 2013 15:31:57 +0000
-Subject: [PATCH v2 2/3] atmel_lcdfb: move lcdcon2 register access to compute_hozval
-Message-Id: <1360251118-12715-3-git-send-email-jhovold@gmail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 13 Feb 2013 14:19:11 +0000
+Subject: [PATCH 08/11] OMAPDSS: picodlp: use devm_kzalloc for allocating driver data
+Message-Id: <1360764434-18788-9-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130205201145.GE30595@game.jcrosoft.org>
- <1360251118-12715-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1360251118-12715-1-git-send-email-jhovold@gmail.com>
+References: <1360764434-18788-1-git-send-email-archit@ti.com>
+In-Reply-To: <1360764434-18788-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Pass atmel_lcd_info structure to compute_hozval and only do the register
-access on SOCs that actually use it.
+Use devm_kzalloc instead of kzalloc to allocate driver data for the picodlp
+panel driver. This simplifies the driver's probe and remove functions.
 
-This will also simplify the removal of the cpu_is macros.
-
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/atmel_lcdfb.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/video/omap2/displays/panel-picodlp.c |   16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 86cafae..c707130 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -193,14 +193,17 @@ static struct fb_fix_screeninfo atmel_lcdfb_fix __initdata = {
- 	.accel		= FB_ACCEL_NONE,
- };
+diff --git a/drivers/video/omap2/displays/panel-picodlp.c b/drivers/video/omap2/displays/panel-picodlp.c
+index 1b94018..3864299 100644
+--- a/drivers/video/omap2/displays/panel-picodlp.c
++++ b/drivers/video/omap2/displays/panel-picodlp.c
+@@ -423,11 +423,11 @@ static int picodlp_panel_probe(struct omap_dss_device *dssdev)
+ 	struct picodlp_panel_data *picodlp_pdata = get_panel_data(dssdev);
+ 	struct i2c_adapter *adapter;
+ 	struct i2c_client *picodlp_i2c_client;
+-	int r = 0, picodlp_adapter_id;
++	int picodlp_adapter_id;
  
--static unsigned long compute_hozval(unsigned long xres, unsigned long lcdcon2)
-+static unsigned long compute_hozval(struct atmel_lcdfb_info *sinfo,
-+							unsigned long xres)
- {
-+	unsigned long lcdcon2;
- 	unsigned long value;
+ 	dssdev->panel.timings = pico_ls_timings;
  
- 	if (!(cpu_is_at91sam9261() || cpu_is_at91sam9g10()
- 		|| cpu_is_at32ap7000()))
- 		return xres;
+-	picod =  kzalloc(sizeof(struct picodlp_data), GFP_KERNEL);
++	picod = devm_kzalloc(&dssdev->dev, sizeof(*picod), GFP_KERNEL);
+ 	if (!picod)
+ 		return -ENOMEM;
  
-+	lcdcon2 = lcdc_readl(sinfo, ATMEL_LCDC_LCDCON2);
- 	value = xres;
- 	if ((lcdcon2 & ATMEL_LCDC_DISTYPE) != ATMEL_LCDC_DISTYPE_TFT) {
- 		/* STN display */
-@@ -590,8 +593,7 @@ static int atmel_lcdfb_set_par(struct fb_info *info)
- 	lcdc_writel(sinfo, ATMEL_LCDC_TIM2, value);
+@@ -438,25 +438,21 @@ static int picodlp_panel_probe(struct omap_dss_device *dssdev)
+ 	adapter = i2c_get_adapter(picodlp_adapter_id);
+ 	if (!adapter) {
+ 		dev_err(&dssdev->dev, "can't get i2c adapter\n");
+-		r = -ENODEV;
+-		goto err;
++		return -ENODEV;
+ 	}
  
- 	/* Horizontal value (aka line size) */
--	hozval_linesz = compute_hozval(info->var.xres,
--					lcdc_readl(sinfo, ATMEL_LCDC_LCDCON2));
-+	hozval_linesz = compute_hozval(sinfo, info->var.xres);
+ 	picodlp_i2c_client = i2c_new_device(adapter, &picodlp_i2c_board_info);
+ 	if (!picodlp_i2c_client) {
+ 		dev_err(&dssdev->dev, "can't add i2c device::"
+ 					 " picodlp_i2c_client is NULL\n");
+-		r = -ENODEV;
+-		goto err;
++		return -ENODEV;
+ 	}
  
- 	/* Display size */
- 	value = (hozval_linesz - 1) << ATMEL_LCDC_HOZVAL_OFFSET;
+ 	picod->picodlp_i2c_client = picodlp_i2c_client;
+ 
+ 	dev_set_drvdata(&dssdev->dev, picod);
+-	return r;
+-err:
+-	kfree(picod);
+-	return r;
++
++	return 0;
+ }
+ 
+ static void picodlp_panel_remove(struct omap_dss_device *dssdev)
 -- 
-1.8.1.1
+1.7.9.5
 

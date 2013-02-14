@@ -1,80 +1,76 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 13 Feb 2013 08:18:40 +0000
+From: Ruslan Bilovol <ruslan.bilovol@ti.com>
+Date: Thu, 14 Feb 2013 00:07:28 +0000
 Subject: Re: [PATCH v2 0/1] OMAP4: DSS: Add panel for Blaze Tablet boards
-Message-Id: <511B4C60.50404@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig7C42D7DB9231EA301660D5C9"
+Message-Id: <CAB=otbSX_O-zbHZuPWPSEU0D1s3uKfZfeatoguoRiwogS5tVHQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1360338220-12753-1-git-send-email-ruslan.bilovol@ti.com>
-In-Reply-To: <1360338220-12753-1-git-send-email-ruslan.bilovol@ti.com>
-To: Ruslan Bilovol <ruslan.bilovol@ti.com>
+	<511B4C60.50404@ti.com>
+In-Reply-To: <511B4C60.50404@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: andi@etezian.org, FlorianSchandinat@gmx.de, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
 
---------------enig7C42D7DB9231EA301660D5C9
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Tomi,
 
-Hi,
-
-On 2013-02-08 17:43, Ruslan Bilovol wrote:
+On Wed, Feb 13, 2013 at 10:18 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
 > Hi,
->=20
-> This patch adds support for TC358765 DSI-to-LVDS transmitter
-> from Toshiba, that is used in OMAP4 Blaze Tablet development
-> platform. It was originally developed a long time ago and
-> was used internally survived few kernel migrations.
-> Different people worked in this driver during last two
-> years changing its sources to what each new version of
-> kernel expects.
->=20
-> Current version is ported from internal kernel v3.4 to 3.8.0-rc6
-> Tested basic functioning under busybox.
+>
+> On 2013-02-08 17:43, Ruslan Bilovol wrote:
+>> Hi,
+>>
+>> This patch adds support for TC358765 DSI-to-LVDS transmitter
+>> from Toshiba, that is used in OMAP4 Blaze Tablet development
+>> platform. It was originally developed a long time ago and
+>> was used internally survived few kernel migrations.
+>> Different people worked in this driver during last two
+>> years changing its sources to what each new version of
+>> kernel expects.
+>>
+>> Current version is ported from internal kernel v3.4 to 3.8.0-rc6
+>> Tested basic functioning under busybox.
+>
+> Thanks for updating the driver to a recent kernel.
+>
+> I didn't review the patch line by line, but with a brief look it looks
+> fine. However, I'm not quite sure what to do with this patch.
+>
+> The problem is that the driver is a combined driver for the TC358765
+> chip and the panel on Blaze Tablet, and we are very much trying to fix
+> that design issue so that the drivers for the chip and panel could be
+> separate, as they should.
+>
+> So I fear that if I now accept the patch, it'll increase my burden of
+> managing the display drivers during this design rework. Furthermore, to
+> my knowledge the Blaze Tablet is quite a rare board, and it's not even
+> supported in the mainline kernel, so this driver wouldn't be usable by
+> itself.
 
-Thanks for updating the driver to a recent kernel.
+This patch is exactly a part of mainlining of the BlazeTablet board support :)
+The goal is to have as much as possible support of this board in the
+'vanilla' kernel.
+The BlazeTablet mainlining is already ongoing (
+https://patchwork.kernel.org/patch/2118281/ )
+and I hope we will have some support of this board in near future.
+The BlazeTablet's LCD panel support is very important thing for us to
+have it in mainline because
+without it the BlazeTablet becomes a 'black brick' and it is painful
+for us to port this
+driver against each new version of kernel.
 
-I didn't review the patch line by line, but with a brief look it looks
-fine. However, I'm not quite sure what to do with this patch.
+>
+> So if I'm right about the blaze tablet status, I'm inclined to say that
+> I think this should be still kept out of tree.
 
-The problem is that the driver is a combined driver for the TC358765
-chip and the panel on Blaze Tablet, and we are very much trying to fix
-that design issue so that the drivers for the chip and panel could be
-separate, as they should.
+Considering my information above, (and your information that design
+rework will be started later), can we pick this driver for now in its
+current state?
 
-So I fear that if I now accept the patch, it'll increase my burden of
-managing the display drivers during this design rework. Furthermore, to
-my knowledge the Blaze Tablet is quite a rare board, and it's not even
-supported in the mainline kernel, so this driver wouldn't be usable by
-itself.
+Regards,
+Ruslan
 
-So if I'm right about the blaze tablet status, I'm inclined to say that
-I think this should be still kept out of tree.
-
- Tomi
-
-
-
---------------enig7C42D7DB9231EA301660D5C9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRG0xkAAoJEPo9qoy8lh71r6IP/0qk60F4MHPxuzjy3UE2DbZm
-zMjWafevHubQfbfV+GmHbPlTJ5Q+igO4q5T2TTCbpWLVVBh2ettPhO7hRi24cwuF
-fRt89KvprzUx4QY6Up2SJtMr8RqDjC/f9J+rytfAJZ7eNM8lPBGt75oU0z3MWvwm
-srMK/IFCfuB/n7cThZL5NxiVJKOHGzy4lVUgPYPg2+OssSnvvfJ1/xf78XJSkxoI
-R2vjlFe91LjuKvFFqWr4Gy0CFSdmn1wHGzG+ZDefmdh6mhoEQYALqXQQn6qkpgQC
-MzuAHHZlSWBCYy+pCgYRVs9rvmaM1JJLut/b0uWrE0qrF7Fv1CbgkjI/Kk3Tv13d
-FiODNVnORopRx1eXHxgG1L5uppFf9cnarb72ma2t4Ix/Tws+x6AMrgM75cRR6pjo
-5Ni1nzhiCPkIGxkko1WAcGIm2F/Wf8TXI7KwiQbNIPN+eYGZMfF/LvdTmpRnrZ7o
-zxfLlPbyw8HuLN2/HkVMhZPCgBbBVUUFIkVH5jJU+pL2EzvOj4hykxcYxIYJjJGw
-OJVqFvU0AanpuvoCtxsWY2WosRrj6x7Hc2G4g5HXFeHvSHThCvsLYr3rkGxh1eHd
-YfdXSmbCQNVD7fueT1jrEqCF+agvJjmRaNYpJCMo8AhQronkpgkocKaB80kqFl3R
-jdG0kwUuz2lvo1PntM2s
-=dLJt
------END PGP SIGNATURE-----
-
---------------enig7C42D7DB9231EA301660D5C9--
+>
+>  Tomi
+>
+>

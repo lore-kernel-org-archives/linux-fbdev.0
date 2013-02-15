@@ -1,266 +1,254 @@
-From: Zhou Zhu <zzhu3@marvell.com>
-Date: Fri, 01 Feb 2013 09:20:29 +0000
-Subject: [PATCH v6 4/8] video: mmp: add tpo hvga panel supported
-Message-Id: <1359710429-9715-1-git-send-email-zzhu3@marvell.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 15 Feb 2013 10:36:29 +0000
+Subject: [RFC] ARM: shmobile: add framebuffer and backlight support to kzm9g-reference
+Message-Id: <Pine.LNX.4.64.1302151127010.7446@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <Pine.LNX.4.64.1302151101140.7446@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1302151101140.7446@axis700.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, devicetree-discuss@lists.ozlabs.org, Samuel Ortiz <sameo@linux.intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Liam Girdwood <lrg@ti.com>, Richard Purdie <rpurdie@rpsys.net>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org
 
-From: Lisa Du <cldu@marvell.com>
+This adds support for the framebuffer and an AS3711 PMIC, used for supplying
+power to the CPU, some peripherals and the backlight.
 
-Add tpo hvga panel support in marvell display framework.
-This panel driver implements modes query and power on/off.
-
-This panel driver gets panel config/ plat power on/off/ connected
-path name from machine-info and registered as a spi device.
-This panel driver uses mmp_disp supplied register_panel function to
-register panel to path as machine-info defined.
-
-Signed-off-by: Lisa Du <cldu@marvell.com>
-Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
-Acked-by: Haojian Zhuang <haojian.zhuang@gmail.com>
+not-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
- drivers/video/mmp/Kconfig                 |    1 +
- drivers/video/mmp/Makefile                |    2 +-
- drivers/video/mmp/panel/Kconfig           |    6 +
- drivers/video/mmp/panel/Makefile          |    1 +
- drivers/video/mmp/panel/tpo_tj032md01bw.c |  186 +++++++++++++++++++++++++++++
- 5 files changed, 195 insertions(+), 1 deletion(-)
- create mode 100644 drivers/video/mmp/panel/Kconfig
- create mode 100644 drivers/video/mmp/panel/Makefile
- create mode 100644 drivers/video/mmp/panel/tpo_tj032md01bw.c
 
-diff --git a/drivers/video/mmp/Kconfig b/drivers/video/mmp/Kconfig
-index ed51d15..e9ea39e 100644
---- a/drivers/video/mmp/Kconfig
-+++ b/drivers/video/mmp/Kconfig
-@@ -6,5 +6,6 @@ menuconfig MMP_DISP
+As is clear from the not-Sob line and the RFC in the subject, this is not 
+for mainline. This is just an illustration how the recently submitted 
+"mfd: as3711: add OF support" patch can be used with the kzm9g board. I 
+had to add the framebuffer support to kzm9g, because without it the 
+backlight would just be turned on with no image on the LCD, which doesn't 
+look pretty. In the future, if needed, we could first only apply the 
+regulator part of the .dts, leaving the backlight disabled.
+
+ arch/arm/boot/dts/sh73a0-kzm9g-reference.dts   |   90 ++++++++++++++++++++++++
+ arch/arm/mach-shmobile/board-kzm9g-reference.c |   73 +++++++++++++++++++-
+ 2 files changed, 162 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/boot/dts/sh73a0-kzm9g-reference.dts b/arch/arm/boot/dts/sh73a0-kzm9g-reference.dts
+index b93b16a..a5810fc 100644
+--- a/arch/arm/boot/dts/sh73a0-kzm9g-reference.dts
++++ b/arch/arm/boot/dts/sh73a0-kzm9g-reference.dts
+@@ -99,6 +99,12 @@
+ 		toshiba,mmc-wrprotect-disable;
+ 		toshiba,mmc-has-idle-wait;
+ 	};
++
++	/* A dummy LCDC DT node for now */
++	lcdc: lcdc@0xfe940000 {
++		compatible = "renesas,sh-mobile-lcdc";
++		reg = <0xfe940000 0x4000>;
++	};
+ };
  
- if MMP_DISP
- source "drivers/video/mmp/hw/Kconfig"
-+source "drivers/video/mmp/panel/Kconfig"
- source "drivers/video/mmp/fb/Kconfig"
- endif
-diff --git a/drivers/video/mmp/Makefile b/drivers/video/mmp/Makefile
-index 6999a09..a014cb3 100644
---- a/drivers/video/mmp/Makefile
-+++ b/drivers/video/mmp/Makefile
-@@ -1 +1 @@
--obj-y += core.o hw/ fb/
-+obj-y += core.o hw/ panel/ fb/
-diff --git a/drivers/video/mmp/panel/Kconfig b/drivers/video/mmp/panel/Kconfig
-new file mode 100644
-index 0000000..4b2c4f4
---- /dev/null
-+++ b/drivers/video/mmp/panel/Kconfig
-@@ -0,0 +1,6 @@
-+config MMP_PANEL_TPOHVGA
-+	bool "tpohvga panel TJ032MD01BW support"
-+	depends on SPI_MASTER
-+	default n
-+	help
-+		tpohvga panel support
-diff --git a/drivers/video/mmp/panel/Makefile b/drivers/video/mmp/panel/Makefile
-new file mode 100644
-index 0000000..2f91611
---- /dev/null
-+++ b/drivers/video/mmp/panel/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_MMP_PANEL_TPOHVGA)    += tpo_tj032md01bw.o
-diff --git a/drivers/video/mmp/panel/tpo_tj032md01bw.c b/drivers/video/mmp/panel/tpo_tj032md01bw.c
-new file mode 100644
-index 0000000..998978b
---- /dev/null
-+++ b/drivers/video/mmp/panel/tpo_tj032md01bw.c
-@@ -0,0 +1,186 @@
-+/*
-+ * linux/drivers/video/mmp/panel/tpo_tj032md01bw.c
-+ * active panel using spi interface to do init
-+ *
-+ * Copyright (C) 2012 Marvell Technology Group Ltd.
-+ * Authors:  Guoqing Li <ligq@marvell.com>
-+ *          Lisa Du <cldu@marvell.com>
-+ *          Zhou Zhu <zzhu3@marvell.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the
-+ * Free Software Foundation; either version 2 of the License, or (at your
-+ * option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
-+ *
-+ */
+ &i2c3 {
+@@ -106,6 +112,90 @@
+ 	pinctrl-0 = <&i2c3_pins>;
+ };
+ 
++&i2c0 {
++	as3711@40 {
++		compatible = "ams,as3711";
++		reg = <0x40>;
 +
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/string.h>
-+#include <linux/delay.h>
-+#include <linux/platform_device.h>
-+#include <linux/err.h>
-+#include <linux/spi/spi.h>
-+#include <video/mmp_disp.h>
++		regulators {
++			sd1 {
++				regulator-name = "1.315V CPU";
++				regulator-min-microvolt = <1315000>;
++				regulator-max-microvolt = <1335000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++			sd2 {
++				regulator-name = "1.8V";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++			sd4 {
++				regulator-name = "1.215V";
++				regulator-min-microvolt = <1215000>;
++				regulator-max-microvolt = <1235000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++			ldo2 {
++				regulator-name = "2.8V CPU";
++				regulator-min-microvolt = <2800000>;
++				regulator-max-microvolt = <2800000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++			ldo3 {
++				regulator-name = "3.0V CPU";
++				regulator-min-microvolt = <3000000>;
++				regulator-max-microvolt = <3000000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++			ldo4 {
++				regulator-name = "2.8V";
++				regulator-min-microvolt = <2800000>;
++				regulator-max-microvolt = <2800000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++			ldo5 {
++				regulator-name = "2.8V #2";
++				regulator-min-microvolt = <2800000>;
++				regulator-max-microvolt = <2800000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++			ldo7 {
++				regulator-name = "1.15V CPU";
++				regulator-min-microvolt = <1150000>;
++				regulator-max-microvolt = <1150000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++			ldo8 {
++				regulator-name = "1.15V CPU #2";
++				regulator-min-microvolt = <1150000>;
++				regulator-max-microvolt = <1150000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++		};
 +
-+static u16 init[] = {
-+	0x0801,
-+	0x0800,
-+	0x0200,
-+	0x0304,
-+	0x040e,
-+	0x0903,
-+	0x0b18,
-+	0x0c53,
-+	0x0d01,
-+	0x0ee0,
-+	0x0f01,
-+	0x1058,
-+	0x201e,
-+	0x210a,
-+	0x220a,
-+	0x231e,
-+	0x2400,
-+	0x2532,
-+	0x2600,
-+	0x27ac,
-+	0x2904,
-+	0x2aa2,
-+	0x2b45,
-+	0x2c45,
-+	0x2d15,
-+	0x2e5a,
-+	0x2fff,
-+	0x306b,
-+	0x310d,
-+	0x3248,
-+	0x3382,
-+	0x34bd,
-+	0x35e7,
-+	0x3618,
-+	0x3794,
-+	0x3801,
-+	0x395d,
-+	0x3aae,
-+	0x3bff,
-+	0x07c9,
++		backlight {
++			compatible = "ams,as3711-bl";
++			su2-dev = <&lcdc>;
++			su2-max-uA = <36000>;
++			su2-feedback-curr-auto;
++			su2-fbprot-gpio4;
++			su2-auto-curr1;
++			su2-auto-curr2;
++			su2-auto-curr3;
++		};
++	};
 +};
 +
-+static u16 poweroff[] = {
-+	0x07d9,
+ &gpio {
+ 	sdhi0_pins: pfc_sdhi0_pins {
+ 		renesas,pins = "sdhi0_data4", "sdhi0_ctrl", "sdhi0_wp", "sdhi0_cd";
+diff --git a/arch/arm/mach-shmobile/board-kzm9g-reference.c b/arch/arm/mach-shmobile/board-kzm9g-reference.c
+index 1490246..9d520ca 100644
+--- a/arch/arm/mach-shmobile/board-kzm9g-reference.c
++++ b/arch/arm/mach-shmobile/board-kzm9g-reference.c
+@@ -31,6 +31,7 @@
+ #include <linux/regulator/fixed.h>
+ #include <linux/regulator/machine.h>
+ #include <linux/smsc911x.h>
++#include <linux/videodev2.h>
+ 
+ #include <mach/irqs.h>
+ #include <mach/sh73a0.h>
+@@ -39,6 +40,62 @@
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+ 
++#include <video/sh_mobile_lcdc.h>
++
++/* LCDC */
++static struct fb_videomode kzm_lcdc_mode = {
++	.name		= "WVGA Panel",
++	.xres		= 800,
++	.yres		= 480,
++	.left_margin	= 220,
++	.right_margin	= 110,
++	.hsync_len	= 70,
++	.upper_margin	= 20,
++	.lower_margin	= 5,
++	.vsync_len	= 5,
++	.sync		= 0,
 +};
 +
-+struct tpohvga_plat_data {
-+	void (*plat_onoff)(int status);
-+	struct spi_device *spi;
-+};
-+
-+static void tpohvga_onoff(struct mmp_panel *panel, int status)
-+{
-+	struct tpohvga_plat_data *plat = panel->plat_data;
-+	int ret;
-+
-+	if (status) {
-+		plat->plat_onoff(1);
-+
-+		ret = spi_write(plat->spi, init, sizeof(init));
-+		if (ret < 0)
-+			dev_warn(panel->dev, "init cmd failed(%d)\n", ret);
-+	} else {
-+		ret = spi_write(plat->spi, poweroff, sizeof(poweroff));
-+		if (ret < 0)
-+			dev_warn(panel->dev, "poweroff cmd failed(%d)\n", ret);
-+
-+		plat->plat_onoff(0);
++static struct sh_mobile_lcdc_info lcdc_info = {
++	.clock_source = LCDC_CLK_BUS,
++	.ch[0] = {
++		.chan		= LCDC_CHAN_MAINLCD,
++		.fourcc		= V4L2_PIX_FMT_RGB565,
++		.interface_type	= RGB24,
++		.lcd_modes	= &kzm_lcdc_mode,
++		.num_modes	= 1,
++		.clock_divider	= 5,
++		.flags		= 0,
++		.panel_cfg = {
++			.width	= 152,
++			.height	= 91,
++		},
 +	}
-+}
++};
 +
-+static struct mmp_mode mmp_modes_tpohvga[] = {
++static struct resource lcdc_resources[] = {
 +	[0] = {
-+		.pixclock_freq = 10394400,
-+		.refresh = 60,
-+		.xres = 320,
-+		.yres = 480,
-+		.hsync_len = 10,
-+		.left_margin = 15,
-+		.right_margin = 10,
-+		.vsync_len = 2,
-+		.upper_margin = 4,
-+		.lower_margin = 2,
-+		.invert_pixclock = 1,
-+		.pix_fmt_out = PIXFMT_RGB565,
++		.name	= "LCDC",
++		.start	= 0xfe940000,
++		.end	= 0xfe943fff,
++		.flags	= IORESOURCE_MEM,
++	},
++	[1] = {
++		.start	= intcs_evt2irq(0x580),
++		.flags	= IORESOURCE_IRQ,
 +	},
 +};
 +
-+static int tpohvga_get_modelist(struct mmp_panel *panel,
-+		struct mmp_mode **modelist)
-+{
-+	*modelist = mmp_modes_tpohvga;
-+	return 1;
-+}
-+
-+static struct mmp_panel panel_tpohvga = {
-+	.name = "tpohvga",
-+	.panel_type = PANELTYPE_ACTIVE,
-+	.get_modelist = tpohvga_get_modelist,
-+	.set_onoff = tpohvga_onoff,
-+};
-+
-+static int tpohvga_probe(struct spi_device *spi)
-+{
-+	struct mmp_mach_panel_info *mi;
-+	int ret;
-+	struct tpohvga_plat_data *plat_data;
-+
-+	/* get configs from platform data */
-+	mi = spi->dev.platform_data;
-+	if (mi = NULL) {
-+		dev_err(&spi->dev, "%s: no platform data defined\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	/* setup spi related info */
-+	spi->bits_per_word = 16;
-+	ret = spi_setup(spi);
-+	if (ret < 0) {
-+		dev_err(&spi->dev, "spi setup failed %d", ret);
-+		return ret;
-+	}
-+
-+	plat_data = kzalloc(sizeof(*plat_data), GFP_KERNEL);
-+	if (plat_data = NULL)
-+		return -ENOMEM;
-+
-+	plat_data->spi = spi;
-+	plat_data->plat_onoff = mi->plat_set_onoff;
-+	panel_tpohvga.plat_data = plat_data;
-+	panel_tpohvga.plat_path_name = mi->plat_path_name;
-+	panel_tpohvga.dev = &spi->dev;
-+
-+	mmp_register_panel(&panel_tpohvga);
-+
-+	return 0;
-+}
-+
-+static struct spi_driver panel_tpohvga_driver = {
-+	.driver		= {
-+		.name	= "tpo-hvga",
-+		.owner	= THIS_MODULE,
++static struct platform_device lcdc_device = {
++	.name		= "sh_mobile_lcdc_fb",
++	.num_resources	= ARRAY_SIZE(lcdc_resources),
++	.resource	= lcdc_resources,
++	.dev	= {
++		.platform_data	= &lcdc_info,
++		.coherent_dma_mask = ~0,
 +	},
-+	.probe		= tpohvga_probe,
 +};
-+module_spi_driver(panel_tpohvga_driver);
 +
-+MODULE_AUTHOR("Lisa Du<cldu@marvell.com>");
-+MODULE_DESCRIPTION("Panel driver for tpohvga");
-+MODULE_LICENSE("GPL");
+ /* Dummy supplies, where voltage doesn't matter */
+ static struct regulator_consumer_supply dummy_supplies[] = {
+ 	REGULATOR_SUPPLY("vddvario", "smsc911x"),
+@@ -79,6 +136,15 @@ static const struct pinctrl_map kzm_pinctrl_map[] = {
+ 				  "scifa4_data", "scifa4"),
+ 	PIN_MAP_MUX_GROUP_DEFAULT("sh-sci.4", "e6050000.pfc",
+ 				  "scifa4_ctrl", "scifa4"),
++	PIN_MAP_MUX_GROUP_DEFAULT("sh_mobile_lcdc_fb.0", "e6050000.pfc",
++				  "lcd_data24", "lcd"),
++	PIN_MAP_MUX_GROUP_DEFAULT("sh_mobile_lcdc_fb.0", "e6050000.pfc",
++				  "lcd_sync", "lcd"),
++};
++
++static struct platform_device *kzm_devices[] __initdata = {
++	&smsc_device,
++	&lcdc_device,
+ };
+ 
+ static void __init kzm_init(void)
+@@ -88,7 +154,10 @@ static void __init kzm_init(void)
+ 	pinctrl_register_mappings(kzm_pinctrl_map, ARRAY_SIZE(kzm_pinctrl_map));
+ 
+ 	regulator_register_fixed(2, dummy_supplies, ARRAY_SIZE(dummy_supplies));
+-	platform_device_register(&smsc_device);
++
++	/* LCDC */
++	gpio_request_one(222, GPIOF_OUT_INIT_HIGH, NULL); /* LCDCDON */
++	gpio_request_one(226, GPIOF_OUT_INIT_HIGH, NULL); /* SC */
+ 
+ 	/*
+ 	 * Enable SD: this is a pseudo-GPIO, it actually only sets bit 28 in
+@@ -101,6 +170,8 @@ static void __init kzm_init(void)
+ 	/* Early BRESP enable, Shared attribute override enable, 64K*8way */
+ 	l2x0_init(IOMEM(0xf0100000), 0x40460000, 0x82000fff);
+ #endif
++
++	platform_add_devices(kzm_devices, ARRAY_SIZE(kzm_devices));
+ }
+ 
+ static void kzm9g_restart(char mode, const char *cmd)
 -- 
-1.7.9.5
+1.7.2.5
 

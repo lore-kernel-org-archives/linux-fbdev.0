@@ -1,78 +1,67 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 07 Feb 2013 09:13:01 +0000
-Subject: Re: [PATCH v3 00/10] video: da8xx-fb: runtime timing configuration
-Message-Id: <5113701D.2080009@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig84BFB8ADE209F0A10B699267"
+From: Simon Horman <horms@verge.net.au>
+Date: Sat, 16 Feb 2013 02:04:12 +0000
+Subject: Re: [PATCH v2] fbdev: Add Renesas vdc4 framebuffer driver
+Message-Id: <20130216020412.GA3637@verge.net.au>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1358250489.git.afzal@ti.com> <C8443D0743D26F4388EA172BF4E2A7A93EAA2846@DBDE01.ent.ti.com>
-In-Reply-To: <C8443D0743D26F4388EA172BF4E2A7A93EAA2846@DBDE01.ent.ti.com>
-To: "Mohammed, Afzal" <afzal@ti.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "Nori, Sekhar" <nsekhar@ti.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <1347267372-22949-1-git-send-email-phil.edworthy@renesas.com>
+In-Reply-To: <1347267372-22949-1-git-send-email-phil.edworthy@renesas.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---------------enig84BFB8ADE209F0A10B699267
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Fri, Oct 05, 2012 at 05:34:54PM +0100, phil.edworthy@renesas.com wrote:
+> Hi,
+> 
+> Any news on this patch?
 
-Hi,
+Phil, did this patch get merged in the end?
 
-On 2013-02-07 11:05, Mohammed, Afzal wrote:
-> Hi Tomi, Florian,
->=20
-> On Tue, Jan 15, 2013 at 19:00:50, Mohammed, Afzal wrote:
->=20
->> This series makes da8xx-fb driver (device found on DaVinci and AM335x)=
-
->> capable of handling runtime timing configuration by adding fb_set_par.=
-
->>
->> The last change adds actual fb_set_par support. Other preceeding
->> changes makes the way clear for it as well as does certain cleanup's
->> on the way.
->>
->> This has been tested on da850 evm as is. This was also tested on
->> am335x-evm & am335x-evmsk with a series that adds DT support.
->>
->> This is based on v3.8-rc3, this is the only change in this revision.
->> The new version of this series is being posted so that this series can=
-
->> be applied easily (as __dev* are removed, there would be merge
->> conflicts with v2, which was based on -rc2).
->> series
->=20
-> Can you please consider this series for inclusion. There are no
-> pending comments or dependency for this series. If you need a
-> pull request, let me know, I will sent it.
-
-I handled only the pull request for 3.8 merge window to help Florian
-with it. I didn't mean to become a co-maintainer or such =3D).
-
- Tomi
-
-
-
---------------enig84BFB8ADE209F0A10B699267
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRE3AdAAoJEPo9qoy8lh71KvwP/j7flxTpyAiBAE+bOxK4G7Kt
-9Gn1FdshJPQAfMtgq9i/8TPeAAEPAA5deXr3lzHFzZVRcmlgP/t20hW19Fd6G5BB
-17Z6ARmEXbl6zgMavI8G6eQ8VSs1RAOtrc1wksVRDSJzYNSQ7qeh2yjQ5xj/eUQu
-6a0vInt5UzYFOjnayqLMl4ur75PhLPQ1qfzwsTjQ5SNK4iX04SKDSJwIs2ujZeMH
-aICzD5CvoaMDxKljl6qu3IQ+9YOAmBJGIwW8jPc7s/MbUBsiFu680sRRKm69yeLZ
-9947pZ4o+889fywmEiaDW+FJIDte/IrYeI3WdM5eRQ9aYi8wVKY44lfmU6Uxiddc
-GSE5DnfNNMInUexcQcIZbYIjoqBbysG49CXdV/dm4QHdfbztoTuBoL3IdfIunUUC
-ki8CARKFEQvXUakrFZgHopFp5tndLlUK0TZ1Z0hH7BkbSpSAfV0qw7umZK4uYNki
-MPPLd6rClcdLavEvP0y/AJqbqqsN7ejPb6iUfraS87H4e6iO6KUnO6bYVMVdgfLU
-hwWeDtoKfS+P0TWApo89nWRO7mPbfrAQsNWWliL3XDcEVuJnhSSniYpjO+I9W3YW
-Ll6AjTEbCukLEgpwOZJKN1mtRy5w9PbLqq9xpOn46uwEzbl10/An+GdI8ovijQNF
-NnDJizsamiCHjVE7fweJ
-=l0He
------END PGP SIGNATURE-----
-
---------------enig84BFB8ADE209F0A10B699267--
+> 
+> Thanks
+> Phil
+> 
+> > From: Jingoo Han <jg1.han@samsung.com>
+> > To: "'Phil Edworthy'" <phil.edworthy@renesas.com>, 
+> > Cc: "'Florian Tobias Schandinat'" <FlorianSchandinat@gmx.de>, linux-
+> > fbdev@vger.kernel.org, linux-sh@vger.kernel.org, "'Jingoo Han'" 
+> > <jg1.han@samsung.com>
+> > Date: 11/09/2012 03:31
+> > Subject: Re: [PATCH v2] fbdev: Add Renesas vdc4 framebuffer driver
+> > 
+> > On Monday, September 10, 2012 5:56 PM Phil Edworthy wrote
+> > > 
+> > > The vdc4 display hardware is found on the sh7269 device.
+> > > 
+> > > Signed-off-by: Phil Edworthy <phil.edworthy@renesas.com>
+> > 
+> > 
+> > Reviewed-by: Jingoo Han <jg1.han@samsung.com>
+> > 
+> > Best regards,
+> > Jingoo Han
+> > 
+> > 
+> > > ---
+> > > v2:
+> > >  * Use devm_ variants of clk_get, ioremap_nocache, request_irq.
+> > >  * Replace spaces with tabs.
+> > >  * Check ren_vdc4_start return value.
+> > >  * Fix headers used.
+> > > 
+> > >  drivers/video/Kconfig      |   10 +
+> > >  drivers/video/Makefile     |    1 +
+> > >  drivers/video/ren_vdc4fb.c |  641 +++++++++++++++++++++++++++++++
+> > +++++++++++++
+> > >  include/video/ren_vdc4fb.h |   19 ++
+> > >  4 files changed, 671 insertions(+), 0 deletions(-)
+> > >  create mode 100644 drivers/video/ren_vdc4fb.c
+> > >  create mode 100644 include/video/ren_vdc4fb.h
+> > 
+> > 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 

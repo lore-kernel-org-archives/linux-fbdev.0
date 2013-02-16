@@ -1,29 +1,18 @@
 From: Simon Horman <horms@verge.net.au>
-Date: Sat, 16 Feb 2013 02:26:30 +0000
+Date: Sat, 16 Feb 2013 05:54:55 +0000
 Subject: Re: [PATCH/RFC] mfd: as3711: add OF support
-Message-Id: <20130216022630.GA11628@verge.net.au>
+Message-Id: <20130216055454.GA17713@verge.net.au>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <Pine.LNX.4.64.1302151101140.7446@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1302151101140.7446@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1302151101140.7446-0199iw4Nj15frtckUFj5Ag@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, devicetree-discuss@lists.ozlabs.org, Samuel Ortiz <sameo@linux.intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Liam Girdwood <lrg@ti.com>, Richard Purdie <rpurdie@rpsys.net>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org
+To: Guennadi Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Liam Girdwood <lrg-l0cyMroinI0@public.gmane.org>
 
 On Fri, Feb 15, 2013 at 11:07:16AM +0100, Guennadi Liakhovetski wrote:
 > Add device-tree bindings to the AS3711 regulator and backlight drivers.
-
-Hi,
-
-at this stage I do not expect this code to go through the renesas tree.
-However, in order to provide a basis for work on renesas SoCs I have added
-this patch to the topic/backlight topic branch in the reneas tree on
-kernel.org and merged it into topic/all+next.
-
-In other words, I am not picking this patch up to merge it or add it to
-linux-next, rather I am storing it for reference.
-
 > 
 > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 > ---
@@ -150,6 +139,11 @@ linux-next, rather I am storing it for reference.
 > +	} else {
 > +		if (!of_device_is_available(client->dev.of_node))
 > +			return -ENODEV;
+
+The wonder that is kbuild tells me that the above call to
+of_device_is_available() may cause a build-time error.
+Perhaps it or this entire else clause should be guarded by CONFIG_OF?
+
 > +
 > +		pdata = devm_kzalloc(&client->dev,
 > +				     sizeof(*pdata), GFP_KERNEL);

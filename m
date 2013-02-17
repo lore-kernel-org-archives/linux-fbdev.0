@@ -1,516 +1,373 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 18 Feb 2013 05:15:30 +0000
-Subject: [PATCH 3/5 RESEND] video: s3c-fb: remove unnecessary brackets
-Message-Id: <000401ce0d96$f8613a20$e923ae60$%han@samsung.com>
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Sun, 17 Feb 2013 17:59:11 +0000
+Subject: [PATCH 9/9] drm: dvbe: add optional fbdev frontend
+Message-Id: <1361123951-587-10-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <000201ce0d96$9fa550b0$deeff210$%han@samsung.com>
-In-Reply-To: <000201ce0d96$9fa550b0$deeff210$%han@samsung.com>
+References: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
+In-Reply-To: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Andrew Morton' <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, 'Jingoo Han' <jg1.han@samsung.com>
+To: linux-kernel@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, David Herrmann <dh.herrmann@gmail.com>
 
-This patch removes unnecessary brackets and the duplicated
-VIDTCON2 definition.
+This adds a new fbdev frontend to the dvbe driver. It allows userspace to
+access the dvbe driver via an fbdev frontend.
 
-Also, header comment is modified, because EXYNOS series is
-supported and <mach/regs-fb.h> is not available.
+It is disabled by default so you can use dvbe without CONFIG_FB. It should
+only be used for backwards-compatibility. Use the DRM dumb API to access
+dvbe buffers properly.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
 ---
- include/video/samsung_fimd.h |  199 ++++++++++++++++++++---------------------
- 1 files changed, 97 insertions(+), 102 deletions(-)
+ drivers/gpu/drm/dvbe/Kconfig      |  18 +++
+ drivers/gpu/drm/dvbe/Makefile     |   1 +
+ drivers/gpu/drm/dvbe/dvbe.h       |  23 ++++
+ drivers/gpu/drm/dvbe/dvbe_fbdev.c | 235 ++++++++++++++++++++++++++++++++++++++
+ drivers/gpu/drm/dvbe/dvbe_main.c  |   2 +
+ 5 files changed, 279 insertions(+)
+ create mode 100644 drivers/gpu/drm/dvbe/dvbe_fbdev.c
 
-diff --git a/include/video/samsung_fimd.h b/include/video/samsung_fimd.h
-index 0865256..be7b853 100644
---- a/include/video/samsung_fimd.h
-+++ b/include/video/samsung_fimd.h
-@@ -8,12 +8,8 @@
-  * S3C Platform - new-style fimd and framebuffer register definitions
-  *
-  * This is the register set for the fimd and new style framebuffer interface
-- * found from the S3C2443 onwards into the S3C2416, S3C2450 and the
-- * S3C64XX series such as the S3C6400 and S3C6410.
-- *
-- * The file does not contain the cpu specific items which are based on
-- * whichever architecture is selected, it only contains the core of the
-- * register set. See <mach/regs-fb.h> to get the specifics.
-+ * found from the S3C2443 onwards into the S3C2416, S3C2450, the
-+ * S3C64XX series such as the S3C6400 and S3C6410, and EXYNOS series.
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License version 2 as
-@@ -22,10 +18,10 @@
+diff --git a/drivers/gpu/drm/dvbe/Kconfig b/drivers/gpu/drm/dvbe/Kconfig
+index e49df10..ca27455 100644
+--- a/drivers/gpu/drm/dvbe/Kconfig
++++ b/drivers/gpu/drm/dvbe/Kconfig
+@@ -27,3 +27,21 @@ config DRM_DVBE
  
- /* VIDCON0 */
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called dvbe.
++
++config DRM_DVBE_FBDEV
++	bool "VESA BIOS Extension DRM fbdev Compatibility Layer"
++	depends on DRM_DVBE && FB
++	select FB_CFB_FILLRECT
++	select FB_CFB_COPYAREA
++	select FB_CFB_IMAGEBLIT
++	help
++	  This provides an fbdev frontend (via /dev/fbX) for the DVBE VESA
++	  driver. Old userspace that depends on the fbdev API can access the
++	  DVBE driver this way. It provides full backwards compatibility to the
++	  old vesafb driver.
++
++	  Newer userspace accesses graphics devices via the DRM API and the old
++	  fbdev compatibility layer is not needed. Activate it only if you
++	  really need to run old userspace programs.
++
++	  If unsure, say N.
+diff --git a/drivers/gpu/drm/dvbe/Makefile b/drivers/gpu/drm/dvbe/Makefile
+index f6fb888..e01aaa1 100644
+--- a/drivers/gpu/drm/dvbe/Makefile
++++ b/drivers/gpu/drm/dvbe/Makefile
+@@ -1,4 +1,5 @@
+ ccflags-y := -Iinclude/drm
  
--#define VIDCON0					(0x00)
-+#define VIDCON0					0x00
- #define VIDCON0_INTERLACE			(1 << 29)
- #define VIDCON0_VIDOUT_MASK			(0x7 << 26)
--#define VIDCON0_VIDOUT_SHIFT			(26)
-+#define VIDCON0_VIDOUT_SHIFT			26
- #define VIDCON0_VIDOUT_RGB			(0x0 << 26)
- #define VIDCON0_VIDOUT_TV			(0x1 << 26)
- #define VIDCON0_VIDOUT_I80_LDI0			(0x2 << 26)
-@@ -35,7 +31,7 @@
- #define VIDCON0_VIDOUT_WB_I80_LDI1		(0x7 << 26)
+ dvbe-y := dvbe_drv.o dvbe_main.o dvbe_mem.o dvbe_vesa.o
++dvbe-$(CONFIG_DRM_DVBE_FBDEV) += dvbe_fbdev.o
+ obj-$(CONFIG_DRM_DVBE) := dvbe.o
+diff --git a/drivers/gpu/drm/dvbe/dvbe.h b/drivers/gpu/drm/dvbe/dvbe.h
+index 68fd452..dfe7c20 100644
+--- a/drivers/gpu/drm/dvbe/dvbe.h
++++ b/drivers/gpu/drm/dvbe/dvbe.h
+@@ -14,6 +14,7 @@
+ #define DVBE_DRV_H
  
- #define VIDCON0_L1_DATA_MASK			(0x7 << 23)
--#define VIDCON0_L1_DATA_SHIFT			(23)
-+#define VIDCON0_L1_DATA_SHIFT			23
- #define VIDCON0_L1_DATA_16BPP			(0x0 << 23)
- #define VIDCON0_L1_DATA_18BPP16			(0x1 << 23)
- #define VIDCON0_L1_DATA_18BPP9			(0x2 << 23)
-@@ -44,7 +40,7 @@
- #define VIDCON0_L1_DATA_16BPP8			(0x5 << 23)
+ #include <linux/errno.h>
++#include <linux/fb.h>
+ #include <linux/kernel.h>
+ #include <linux/mm.h>
+ #include <linux/module.h>
+@@ -47,6 +48,9 @@ struct dvbe_device {
+ 	struct drm_encoder enc;
+ 	struct drm_connector conn;
+ 	struct drm_display_mode *mode;
++
++	/* fbdev */
++	void *fbdev;
+ };
  
- #define VIDCON0_L0_DATA_MASK			(0x7 << 20)
--#define VIDCON0_L0_DATA_SHIFT			(20)
-+#define VIDCON0_L0_DATA_SHIFT			20
- #define VIDCON0_L0_DATA_16BPP			(0x0 << 20)
- #define VIDCON0_L0_DATA_18BPP16			(0x1 << 20)
- #define VIDCON0_L0_DATA_18BPP9			(0x2 << 20)
-@@ -53,7 +49,7 @@
- #define VIDCON0_L0_DATA_16BPP8			(0x5 << 20)
+ int dvbe_drm_load(struct drm_device *ddev, unsigned long flags);
+@@ -95,4 +99,23 @@ int dvbe_vesa_damage(struct dvbe_device *dvbe, struct dvbe_framebuffer *fb,
+ 		     unsigned int flags, unsigned int color,
+ 		     struct drm_clip_rect *clips, unsigned int num);
  
- #define VIDCON0_PNRMODE_MASK			(0x3 << 17)
--#define VIDCON0_PNRMODE_SHIFT			(17)
-+#define VIDCON0_PNRMODE_SHIFT			17
- #define VIDCON0_PNRMODE_RGB			(0x0 << 17)
- #define VIDCON0_PNRMODE_BGR			(0x1 << 17)
- #define VIDCON0_PNRMODE_SERIAL_RGB		(0x2 << 17)
-@@ -61,14 +57,14 @@
++/* fbdev helpers */
++
++#ifdef CONFIG_DRM_DVBE_FBDEV
++
++void dvbe_fbdev_init(struct dvbe_device *dvbe);
++void dvbe_fbdev_cleanup(struct dvbe_device *dvbe);
++
++#else /* CONFIG_DRM_DVBE_FBDEV */
++
++static inline void dvbe_fbdev_init(struct dvbe_device *dvbe)
++{
++}
++
++static inline void dvbe_fbdev_cleanup(struct dvbe_device *dvbe)
++{
++}
++
++#endif /* CONFIG_DRM_DVBE_FBDEV */
++
+ #endif /* DVBE_DRV_H */
+diff --git a/drivers/gpu/drm/dvbe/dvbe_fbdev.c b/drivers/gpu/drm/dvbe/dvbe_fbdev.c
+new file mode 100644
+index 0000000..0e22e12
+--- /dev/null
++++ b/drivers/gpu/drm/dvbe/dvbe_fbdev.c
+@@ -0,0 +1,235 @@
++/*
++ * DRM VESA BIOS Extension Driver
++ * Copyright (c) 2012-2013 David Herrmann <dh.herrmann@gmail.com>
++ */
++
++/*
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the Free
++ * Software Foundation; either version 2 of the License, or (at your option)
++ * any later version.
++ */
++
++/*
++ * fbdev compatibility layer
++ * This provides an fbdev framebuffer device for the DVBE driver. It is
++ * based on the old vesafb.c driver:
++ *   (c) 1998 Gerd Knorr <kraxel@goldbach.in-berlin.de>
++ */
++
++#include <linux/errno.h>
++#include <linux/kernel.h>
++#include <linux/mm.h>
++#include <linux/module.h>
++#include <linux/string.h>
++#include <linux/fb.h>
++#include "dvbe.h"
++
++struct dvbe_fbdev {
++	struct dvbe_device *dvbe;
++	u32 palette[256];
++};
++
++static int dvbe_fbdev_setcolreg(unsigned regno, unsigned red, unsigned green,
++				unsigned blue, unsigned transp,
++				struct fb_info *info)
++{
++	/*
++	 * Set a single color register. The values supplied are
++	 * already rounded down to the hardware's capabilities
++	 * (according to the entries in the `var' structure). Return != 0 for
++	 * invalid regno.
++	 */
++
++	if (regno >= info->cmap.len)
++		return 1;
++	if (info->var.bits_per_pixel = 8)
++		return -EINVAL;
++	if (regno >= 16)
++		return 0;
++
++	switch (info->var.bits_per_pixel) {
++	case 16:
++		if (info->var.red.offset = 10) {
++			/* 1:5:5:5 */
++			((u32*) (info->pseudo_palette))[regno] +				((red   & 0xf800) >>  1) |
++				((green & 0xf800) >>  6) |
++				((blue  & 0xf800) >> 11);
++		} else {
++			/* 0:5:6:5 */
++			((u32*) (info->pseudo_palette))[regno] +				((red   & 0xf800)      ) |
++				((green & 0xfc00) >>  5) |
++				((blue  & 0xf800) >> 11);
++		}
++		break;
++	case 24:
++	case 32:
++		red   >>= 8;
++		green >>= 8;
++		blue  >>= 8;
++		((u32*) (info->pseudo_palette))[regno] +			(red   << info->var.red.offset)   |
++			(green << info->var.green.offset) |
++			(blue  << info->var.blue.offset);
++		break;
++	}
++
++	return 0;
++}
++
++static void dvbe_fbdev_free(struct dvbe_device *dvbe, struct fb_info *info)
++{
++	dev_info(dvbe->ddev->dev, "fbdev cleanup\n");
++	fb_dealloc_cmap(&info->cmap);
++	framebuffer_release(info);
++}
++
++static void dvbe_fbdev_destroy(struct fb_info *info)
++{
++	struct dvbe_fbdev *fb = info->par;
++	struct dvbe_device *dvbe = fb->dvbe;
++
++	mutex_lock(&dvbe->ddev->struct_mutex);
++	info = dvbe->fbdev;
++	dvbe->fbdev = NULL;
++	mutex_unlock(&dvbe->ddev->struct_mutex);
++
++	if (info)
++		dvbe_fbdev_free(dvbe, info);
++}
++
++static struct fb_ops dvbe_fbdev_ops = {
++	.owner		= THIS_MODULE,
++	.fb_destroy	= dvbe_fbdev_destroy,
++	.fb_setcolreg	= dvbe_fbdev_setcolreg,
++	.fb_fillrect	= cfb_fillrect,
++	.fb_copyarea	= cfb_copyarea,
++	.fb_imageblit	= cfb_imageblit,
++};
++
++void dvbe_fbdev_init(struct dvbe_device *dvbe)
++{
++	struct dvbe_fbdev *fb;
++	struct fb_info *info;
++	int ret;
++
++	info = framebuffer_alloc(sizeof(struct dvbe_fbdev), dvbe->ddev->dev);
++	if (!info) {
++		ret = -ENOMEM;
++		goto err_out;
++	}
++
++	fb = info->par;
++	fb->dvbe = dvbe;
++	info->flags = FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE;
++	info->pseudo_palette = fb->palette;
++	info->screen_base = dvbe->vbe_map;
++	info->fbops = &dvbe_fbdev_ops;
++
++	strncpy(info->fix.id, "dvbedrmfb", 15);
++	info->fix.type = FB_TYPE_PACKED_PIXELS;
++	info->fix.accel = FB_ACCEL_NONE;
++	info->fix.smem_start = (unsigned long)dvbe->vbe_addr;
++	info->fix.smem_len = dvbe->vbe_size;
++	info->fix.line_length = dvbe->vbe_stride;
++
++	if (dvbe->vbe_bpp = 8)
++		info->fix.visual = FB_VISUAL_STATIC_PSEUDOCOLOR;
++	else
++		info->fix.visual = FB_VISUAL_TRUECOLOR;
++
++	info->var.activate = FB_ACTIVATE_NOW;
++	info->var.vmode = FB_VMODE_NONINTERLACED;
++	info->var.bits_per_pixel = dvbe->vbe_bpp;
++	info->var.xres = dvbe->vbe_width;
++	info->var.yres = dvbe->vbe_height;
++	info->var.xres_virtual = info->var.xres;
++	info->var.yres_virtual = info->var.yres;
++
++	/* some dummy values for timing to make fbset happy */
++	info->var.pixclock = 10000000 / info->var.xres * 1000 / info->var.yres;
++	info->var.left_margin = (info->var.xres / 8) & 0xf8;
++	info->var.right_margin = 32;
++	info->var.upper_margin = 16;
++	info->var.lower_margin = 4;
++	info->var.hsync_len = (info->var.xres / 8) & 0xf8;
++	info->var.vsync_len = 4;
++
++	info->var.red.offset    = dvbe->vbe_red_pos;
++	info->var.red.length    = dvbe->vbe_red_size;
++	info->var.green.offset  = dvbe->vbe_green_pos;
++	info->var.green.length  = dvbe->vbe_green_size;
++	info->var.blue.offset   = dvbe->vbe_blue_pos;
++	info->var.blue.length   = dvbe->vbe_blue_size;
++
++	if (info->var.bits_per_pixel <= 8) {
++		info->var.red.length = info->var.bits_per_pixel;
++		info->var.green.length = info->var.bits_per_pixel;
++		info->var.blue.length = info->var.bits_per_pixel;
++	}
++
++	info->apertures = alloc_apertures(1);
++	if (!info->apertures) {
++		ret = -ENOMEM;
++		goto err_free;
++	}
++	info->apertures->ranges[0].base = (unsigned long)dvbe->vbe_addr;
++	info->apertures->ranges[0].size = dvbe->vbe_vsize;
++
++	ret = fb_alloc_cmap(&info->cmap, 256, 0);
++	if (ret < 0)
++		goto err_free;
++
++	/*
++	 * TODO: Fix register_framebuffer() to not reset refcounts!
++	 * So register_framebuffer() resets the refcnt of \info to 1. However,
++	 * any other context might call remove_conflicting_framebuffers()
++	 * before our call to register_framebuffer() returns.
++	 * remove_conflicting_framebuffers() calls unregister_framebuffer()
++	 * which then calls put_fb_info() and destroys \info by calling our
++	 * fb_destroy() callback.
++	 * To summarize, \info might be dead after register_framebuffer()
++	 * returns so don't access it afterwards. There is _no_ reliable way to
++	 * detect that so don't use \info at all now.
++	 * Instead we lock all accesses around dvbe->fbdev and the first one who
++	 * resets it is responsible of freeing it.
++	 */
++
++	dvbe->fbdev = info;
++	ret = register_framebuffer(info);
++	if (ret < 0)
++		goto err_cmap;
++
++	mutex_lock(&dvbe->ddev->struct_mutex);
++	if (dvbe->fbdev)
++		dev_info(dvbe->ddev->dev, "fbdev frontend %s as fb%d\n",
++			 info->fix.id, info->node);
++	mutex_unlock(&dvbe->ddev->struct_mutex);
++
++	return;
++
++err_cmap:
++	fb_dealloc_cmap(&info->cmap);
++err_free:
++	framebuffer_release(info);
++err_out:
++	dev_warn(dvbe->ddev->dev, "cannot create fbdev frontend (%d)\n", ret);
++}
++
++void dvbe_fbdev_cleanup(struct dvbe_device *dvbe)
++{
++	struct fb_info *info;
++
++	mutex_lock(&dvbe->ddev->struct_mutex);
++	info = dvbe->fbdev;
++	dvbe->fbdev = NULL;
++	mutex_unlock(&dvbe->ddev->struct_mutex);
++
++	if (!info)
++		return;
++
++	unregister_framebuffer(info);
++	dvbe_fbdev_free(dvbe, info);
++}
+diff --git a/drivers/gpu/drm/dvbe/dvbe_main.c b/drivers/gpu/drm/dvbe/dvbe_main.c
+index c418310..95241a6 100644
+--- a/drivers/gpu/drm/dvbe/dvbe_main.c
++++ b/drivers/gpu/drm/dvbe/dvbe_main.c
+@@ -408,6 +408,7 @@ int dvbe_drm_load(struct drm_device *ddev, unsigned long flags)
+ 	if (ret)
+ 		goto err_cleanup;
  
- #define VIDCON0_CLKVALUP			(1 << 16)
- #define VIDCON0_CLKVAL_F_MASK			(0xff << 6)
--#define VIDCON0_CLKVAL_F_SHIFT			(6)
--#define VIDCON0_CLKVAL_F_LIMIT			(0xff)
-+#define VIDCON0_CLKVAL_F_SHIFT			6
-+#define VIDCON0_CLKVAL_F_LIMIT			0xff
- #define VIDCON0_CLKVAL_F(_x)			((_x) << 6)
- #define VIDCON0_VLCKFREE			(1 << 5)
- #define VIDCON0_CLKDIR				(1 << 4)
++	dvbe_fbdev_init(dvbe);
+ 	return 0;
  
- #define VIDCON0_CLKSEL_MASK			(0x3 << 2)
--#define VIDCON0_CLKSEL_SHIFT			(2)
-+#define VIDCON0_CLKSEL_SHIFT			2
- #define VIDCON0_CLKSEL_HCLK			(0x0 << 2)
- #define VIDCON0_CLKSEL_LCD			(0x1 << 2)
- #define VIDCON0_CLKSEL_27M			(0x3 << 2)
-@@ -76,13 +72,13 @@
- #define VIDCON0_ENVID				(1 << 1)
- #define VIDCON0_ENVID_F				(1 << 0)
+ err_cleanup:
+@@ -422,6 +423,7 @@ int dvbe_drm_unload(struct drm_device *ddev)
+ {
+ 	struct dvbe_device *dvbe = ddev->dev_private;
  
--#define VIDCON1					(0x04)
-+#define VIDCON1					0x04
- #define VIDCON1_LINECNT_MASK			(0x7ff << 16)
--#define VIDCON1_LINECNT_SHIFT			(16)
-+#define VIDCON1_LINECNT_SHIFT			16
- #define VIDCON1_LINECNT_GET(_v)			(((_v) >> 16) & 0x7ff)
- #define VIDCON1_FSTATUS_EVEN			(1 << 15)
- #define VIDCON1_VSTATUS_MASK			(0x3 << 13)
--#define VIDCON1_VSTATUS_SHIFT			(13)
-+#define VIDCON1_VSTATUS_SHIFT			13
- #define VIDCON1_VSTATUS_VSYNC			(0x0 << 13)
- #define VIDCON1_VSTATUS_BACKPORCH		(0x1 << 13)
- #define VIDCON1_VSTATUS_ACTIVE			(0x2 << 13)
-@@ -98,12 +94,12 @@
- 
- /* VIDCON2 */
- 
--#define VIDCON2					(0x08)
-+#define VIDCON2					0x08
- #define VIDCON2_EN601				(1 << 23)
- #define VIDCON2_TVFMTSEL_SW			(1 << 14)
- 
- #define VIDCON2_TVFMTSEL1_MASK			(0x3 << 12)
--#define VIDCON2_TVFMTSEL1_SHIFT			(12)
-+#define VIDCON2_TVFMTSEL1_SHIFT			12
- #define VIDCON2_TVFMTSEL1_RGB			(0x0 << 12)
- #define VIDCON2_TVFMTSEL1_YUV422		(0x1 << 12)
- #define VIDCON2_TVFMTSEL1_YUV444		(0x2 << 12)
-@@ -115,74 +111,73 @@
-  * Might not be present in the S3C6410 documentation,
-  * but tests prove it's there almost for sure; shouldn't hurt in any case.
-  */
--#define PRTCON					(0x0c)
-+#define PRTCON					0x0c
- #define PRTCON_PROTECT				(1 << 11)
- 
- /* VIDTCON0 */
- 
--#define VIDTCON0				(0x10)
-+#define VIDTCON0				0x10
- #define VIDTCON0_VBPDE_MASK			(0xff << 24)
--#define VIDTCON0_VBPDE_SHIFT			(24)
--#define VIDTCON0_VBPDE_LIMIT			(0xff)
-+#define VIDTCON0_VBPDE_SHIFT			24
-+#define VIDTCON0_VBPDE_LIMIT			0xff
- #define VIDTCON0_VBPDE(_x)			((_x) << 24)
- 
- #define VIDTCON0_VBPD_MASK			(0xff << 16)
--#define VIDTCON0_VBPD_SHIFT			(16)
--#define VIDTCON0_VBPD_LIMIT			(0xff)
-+#define VIDTCON0_VBPD_SHIFT			16
-+#define VIDTCON0_VBPD_LIMIT			0xff
- #define VIDTCON0_VBPD(_x)			((_x) << 16)
- 
- #define VIDTCON0_VFPD_MASK			(0xff << 8)
--#define VIDTCON0_VFPD_SHIFT			(8)
--#define VIDTCON0_VFPD_LIMIT			(0xff)
-+#define VIDTCON0_VFPD_SHIFT			8
-+#define VIDTCON0_VFPD_LIMIT			0xff
- #define VIDTCON0_VFPD(_x)			((_x) << 8)
- 
- #define VIDTCON0_VSPW_MASK			(0xff << 0)
--#define VIDTCON0_VSPW_SHIFT			(0)
--#define VIDTCON0_VSPW_LIMIT			(0xff)
-+#define VIDTCON0_VSPW_SHIFT			0
-+#define VIDTCON0_VSPW_LIMIT			0xff
- #define VIDTCON0_VSPW(_x)			((_x) << 0)
- 
- /* VIDTCON1 */
- 
--#define VIDTCON1				(0x14)
-+#define VIDTCON1				0x14
- #define VIDTCON1_VFPDE_MASK			(0xff << 24)
--#define VIDTCON1_VFPDE_SHIFT			(24)
--#define VIDTCON1_VFPDE_LIMIT			(0xff)
-+#define VIDTCON1_VFPDE_SHIFT			24
-+#define VIDTCON1_VFPDE_LIMIT			0xff
- #define VIDTCON1_VFPDE(_x)			((_x) << 24)
- 
- #define VIDTCON1_HBPD_MASK			(0xff << 16)
--#define VIDTCON1_HBPD_SHIFT			(16)
--#define VIDTCON1_HBPD_LIMIT			(0xff)
-+#define VIDTCON1_HBPD_SHIFT			16
-+#define VIDTCON1_HBPD_LIMIT			0xff
- #define VIDTCON1_HBPD(_x)			((_x) << 16)
- 
- #define VIDTCON1_HFPD_MASK			(0xff << 8)
--#define VIDTCON1_HFPD_SHIFT			(8)
--#define VIDTCON1_HFPD_LIMIT			(0xff)
-+#define VIDTCON1_HFPD_SHIFT			8
-+#define VIDTCON1_HFPD_LIMIT			0xff
- #define VIDTCON1_HFPD(_x)			((_x) << 8)
- 
- #define VIDTCON1_HSPW_MASK			(0xff << 0)
--#define VIDTCON1_HSPW_SHIFT			(0)
--#define VIDTCON1_HSPW_LIMIT			(0xff)
-+#define VIDTCON1_HSPW_SHIFT			0
-+#define VIDTCON1_HSPW_LIMIT			0xff
- #define VIDTCON1_HSPW(_x)			((_x) << 0)
- 
--#define VIDTCON2				(0x18)
--#define VIDTCON2				(0x18)
-+#define VIDTCON2				0x18
- #define VIDTCON2_LINEVAL_E(_x)			((((_x) & 0x800) >> 11) << 23)
- #define VIDTCON2_LINEVAL_MASK			(0x7ff << 11)
--#define VIDTCON2_LINEVAL_SHIFT			(11)
--#define VIDTCON2_LINEVAL_LIMIT			(0x7ff)
-+#define VIDTCON2_LINEVAL_SHIFT			11
-+#define VIDTCON2_LINEVAL_LIMIT			0x7ff
- #define VIDTCON2_LINEVAL(_x)			(((_x) & 0x7ff) << 11)
- 
- #define VIDTCON2_HOZVAL_E(_x)			((((_x) & 0x800) >> 11) << 22)
- #define VIDTCON2_HOZVAL_MASK			(0x7ff << 0)
--#define VIDTCON2_HOZVAL_SHIFT			(0)
--#define VIDTCON2_HOZVAL_LIMIT			(0x7ff)
-+#define VIDTCON2_HOZVAL_SHIFT			0
-+#define VIDTCON2_HOZVAL_LIMIT			0x7ff
- #define VIDTCON2_HOZVAL(_x)			(((_x) & 0x7ff) << 0)
- 
- /* WINCONx */
- 
- #define WINCON(_win)				(0x20 + ((_win) * 4))
- #define WINCONx_CSCWIDTH_MASK			(0x3 << 26)
--#define WINCONx_CSCWIDTH_SHIFT			(26)
-+#define WINCONx_CSCWIDTH_SHIFT			26
- #define WINCONx_CSCWIDTH_WIDE			(0x0 << 26)
- #define WINCONx_CSCWIDTH_NARROW			(0x3 << 26)
- #define WINCONx_ENLOCAL				(1 << 22)
-@@ -195,14 +190,14 @@
- #define WINCONx_WSWP				(1 << 15)
- #define WINCONx_YCbCr				(1 << 13)
- #define WINCONx_BURSTLEN_MASK			(0x3 << 9)
--#define WINCONx_BURSTLEN_SHIFT			(9)
-+#define WINCONx_BURSTLEN_SHIFT			9
- #define WINCONx_BURSTLEN_16WORD			(0x0 << 9)
- #define WINCONx_BURSTLEN_8WORD			(0x1 << 9)
- #define WINCONx_BURSTLEN_4WORD			(0x2 << 9)
- #define WINCONx_ENWIN				(1 << 0)
- 
- #define WINCON0_BPPMODE_MASK			(0xf << 2)
--#define WINCON0_BPPMODE_SHIFT			(2)
-+#define WINCON0_BPPMODE_SHIFT			2
- #define WINCON0_BPPMODE_1BPP			(0x0 << 2)
- #define WINCON0_BPPMODE_2BPP			(0x1 << 2)
- #define WINCON0_BPPMODE_4BPP			(0x2 << 2)
-@@ -215,7 +210,7 @@
- #define WINCON1_LOCALSEL_CAMIF			(1 << 23)
- #define WINCON1_BLD_PIX				(1 << 6)
- #define WINCON1_BPPMODE_MASK			(0xf << 2)
--#define WINCON1_BPPMODE_SHIFT			(2)
-+#define WINCON1_BPPMODE_SHIFT			2
- #define WINCON1_BPPMODE_1BPP			(0x0 << 2)
- #define WINCON1_BPPMODE_2BPP			(0x1 << 2)
- #define WINCON1_BPPMODE_4BPP			(0x2 << 2)
-@@ -234,7 +229,7 @@
- #define WINCON1_ALPHA_SEL			(1 << 1)
- 
- /* S5PV210 */
--#define SHADOWCON				(0x34)
-+#define SHADOWCON				0x34
- #define SHADOWCON_WINx_PROTECT(_win)		(1 << (10 + (_win)))
- /* DMA channels (all windows) */
- #define SHADOWCON_CHx_ENABLE(_win)		(1 << (_win))
-@@ -243,52 +238,52 @@
- 
- /* VIDOSDx */
- 
--#define VIDOSD_BASE				(0x40)
-+#define VIDOSD_BASE				0x40
- #define VIDOSDxA_TOPLEFT_X_E(_x)		((((_x) & 0x800) >> 11) << 23)
- #define VIDOSDxA_TOPLEFT_X_MASK			(0x7ff << 11)
--#define VIDOSDxA_TOPLEFT_X_SHIFT		(11)
--#define VIDOSDxA_TOPLEFT_X_LIMIT		(0x7ff)
-+#define VIDOSDxA_TOPLEFT_X_SHIFT		11
-+#define VIDOSDxA_TOPLEFT_X_LIMIT		0x7ff
- #define VIDOSDxA_TOPLEFT_X(_x)			(((_x) & 0x7ff) << 11)
- 
- #define VIDOSDxA_TOPLEFT_Y_E(_x)		((((_x) & 0x800) >> 11) << 22)
- #define VIDOSDxA_TOPLEFT_Y_MASK			(0x7ff << 0)
--#define VIDOSDxA_TOPLEFT_Y_SHIFT		(0)
--#define VIDOSDxA_TOPLEFT_Y_LIMIT		(0x7ff)
-+#define VIDOSDxA_TOPLEFT_Y_SHIFT		0
-+#define VIDOSDxA_TOPLEFT_Y_LIMIT		0x7ff
- #define VIDOSDxA_TOPLEFT_Y(_x)			(((_x) & 0x7ff) << 0)
- 
- #define VIDOSDxB_BOTRIGHT_X_E(_x)		((((_x) & 0x800) >> 11) << 23)
- #define VIDOSDxB_BOTRIGHT_X_MASK		(0x7ff << 11)
--#define VIDOSDxB_BOTRIGHT_X_SHIFT		(11)
--#define VIDOSDxB_BOTRIGHT_X_LIMIT		(0x7ff)
-+#define VIDOSDxB_BOTRIGHT_X_SHIFT		11
-+#define VIDOSDxB_BOTRIGHT_X_LIMIT		0x7ff
- #define VIDOSDxB_BOTRIGHT_X(_x)			(((_x) & 0x7ff) << 11)
- 
- #define VIDOSDxB_BOTRIGHT_Y_E(_x)		((((_x) & 0x800) >> 11) << 22)
- #define VIDOSDxB_BOTRIGHT_Y_MASK		(0x7ff << 0)
--#define VIDOSDxB_BOTRIGHT_Y_SHIFT		(0)
--#define VIDOSDxB_BOTRIGHT_Y_LIMIT		(0x7ff)
-+#define VIDOSDxB_BOTRIGHT_Y_SHIFT		0
-+#define VIDOSDxB_BOTRIGHT_Y_LIMIT		0x7ff
- #define VIDOSDxB_BOTRIGHT_Y(_x)			(((_x) & 0x7ff) << 0)
- 
- /* For VIDOSD[1..4]C */
- #define VIDISD14C_ALPHA0_R(_x)			((_x) << 20)
- #define VIDISD14C_ALPHA0_G_MASK			(0xf << 16)
--#define VIDISD14C_ALPHA0_G_SHIFT		(16)
--#define VIDISD14C_ALPHA0_G_LIMIT		(0xf)
-+#define VIDISD14C_ALPHA0_G_SHIFT		16
-+#define VIDISD14C_ALPHA0_G_LIMIT		0xf
- #define VIDISD14C_ALPHA0_G(_x)			((_x) << 16)
- #define VIDISD14C_ALPHA0_B_MASK			(0xf << 12)
--#define VIDISD14C_ALPHA0_B_SHIFT		(12)
--#define VIDISD14C_ALPHA0_B_LIMIT		(0xf)
-+#define VIDISD14C_ALPHA0_B_SHIFT		12
-+#define VIDISD14C_ALPHA0_B_LIMIT		0xf
- #define VIDISD14C_ALPHA0_B(_x)			((_x) << 12)
- #define VIDISD14C_ALPHA1_R_MASK			(0xf << 8)
--#define VIDISD14C_ALPHA1_R_SHIFT		(8)
--#define VIDISD14C_ALPHA1_R_LIMIT		(0xf)
-+#define VIDISD14C_ALPHA1_R_SHIFT		8
-+#define VIDISD14C_ALPHA1_R_LIMIT		0xf
- #define VIDISD14C_ALPHA1_R(_x)			((_x) << 8)
- #define VIDISD14C_ALPHA1_G_MASK			(0xf << 4)
--#define VIDISD14C_ALPHA1_G_SHIFT		(4)
--#define VIDISD14C_ALPHA1_G_LIMIT		(0xf)
-+#define VIDISD14C_ALPHA1_G_SHIFT		4
-+#define VIDISD14C_ALPHA1_G_LIMIT		0xf
- #define VIDISD14C_ALPHA1_G(_x)			((_x) << 4)
- #define VIDISD14C_ALPHA1_B_MASK			(0xf << 0)
--#define VIDISD14C_ALPHA1_B_SHIFT		(0)
--#define VIDISD14C_ALPHA1_B_LIMIT		(0xf)
-+#define VIDISD14C_ALPHA1_B_SHIFT		0
-+#define VIDISD14C_ALPHA1_B_LIMIT		0xf
- #define VIDISD14C_ALPHA1_B(_x)			((_x) << 0)
- 
- /* Video buffer addresses */
-@@ -300,22 +295,22 @@
- 
- #define VIDW_BUF_SIZE_OFFSET_E(_x)		((((_x) & 0x2000) >> 13) << 27)
- #define VIDW_BUF_SIZE_OFFSET_MASK		(0x1fff << 13)
--#define VIDW_BUF_SIZE_OFFSET_SHIFT		(13)
--#define VIDW_BUF_SIZE_OFFSET_LIMIT		(0x1fff)
-+#define VIDW_BUF_SIZE_OFFSET_SHIFT		13
-+#define VIDW_BUF_SIZE_OFFSET_LIMIT		0x1fff
- #define VIDW_BUF_SIZE_OFFSET(_x)		(((_x) & 0x1fff) << 13)
- 
- #define VIDW_BUF_SIZE_PAGEWIDTH_E(_x)		((((_x) & 0x2000) >> 13) << 26)
- #define VIDW_BUF_SIZE_PAGEWIDTH_MASK		(0x1fff << 0)
--#define VIDW_BUF_SIZE_PAGEWIDTH_SHIFT		(0)
--#define VIDW_BUF_SIZE_PAGEWIDTH_LIMIT		(0x1fff)
-+#define VIDW_BUF_SIZE_PAGEWIDTH_SHIFT		0
-+#define VIDW_BUF_SIZE_PAGEWIDTH_LIMIT		0x1fff
- #define VIDW_BUF_SIZE_PAGEWIDTH(_x)		(((_x) & 0x1fff) << 0)
- 
- /* Interrupt controls and status */
- 
--#define VIDINTCON0				(0x130)
-+#define VIDINTCON0				0x130
- #define VIDINTCON0_FIFOINTERVAL_MASK		(0x3f << 20)
--#define VIDINTCON0_FIFOINTERVAL_SHIFT		(20)
--#define VIDINTCON0_FIFOINTERVAL_LIMIT		(0x3f)
-+#define VIDINTCON0_FIFOINTERVAL_SHIFT		20
-+#define VIDINTCON0_FIFOINTERVAL_LIMIT		0x3f
- #define VIDINTCON0_FIFOINTERVAL(_x)		((_x) << 20)
- 
- #define VIDINTCON0_INT_SYSMAINCON		(1 << 19)
-@@ -323,7 +318,7 @@
- #define VIDINTCON0_INT_I80IFDONE		(1 << 17)
- 
- #define VIDINTCON0_FRAMESEL0_MASK		(0x3 << 15)
--#define VIDINTCON0_FRAMESEL0_SHIFT		(15)
-+#define VIDINTCON0_FRAMESEL0_SHIFT		15
- #define VIDINTCON0_FRAMESEL0_BACKPORCH		(0x0 << 15)
- #define VIDINTCON0_FRAMESEL0_VSYNC		(0x1 << 15)
- #define VIDINTCON0_FRAMESEL0_ACTIVE		(0x2 << 15)
-@@ -338,7 +333,7 @@
- 
- #define VIDINTCON0_INT_FRAME			(1 << 12)
- #define VIDINTCON0_FIFIOSEL_MASK		(0x7f << 5)
--#define VIDINTCON0_FIFIOSEL_SHIFT		(5)
-+#define VIDINTCON0_FIFIOSEL_SHIFT		5
- #define VIDINTCON0_FIFIOSEL_WINDOW0		(0x1 << 5)
- #define VIDINTCON0_FIFIOSEL_WINDOW1		(0x2 << 5)
- #define VIDINTCON0_FIFIOSEL_WINDOW2		(0x10 << 5)
-@@ -346,7 +341,7 @@
- #define VIDINTCON0_FIFIOSEL_WINDOW4		(0x40 << 5)
- 
- #define VIDINTCON0_FIFOLEVEL_MASK		(0x7 << 2)
--#define VIDINTCON0_FIFOLEVEL_SHIFT		(2)
-+#define VIDINTCON0_FIFOLEVEL_SHIFT		2
- #define VIDINTCON0_FIFOLEVEL_TO25PC		(0x0 << 2)
- #define VIDINTCON0_FIFOLEVEL_TO50PC		(0x1 << 2)
- #define VIDINTCON0_FIFOLEVEL_TO75PC		(0x2 << 2)
-@@ -354,46 +349,46 @@
- #define VIDINTCON0_FIFOLEVEL_FULL		(0x4 << 2)
- 
- #define VIDINTCON0_INT_FIFO_MASK		(0x3 << 0)
--#define VIDINTCON0_INT_FIFO_SHIFT		(0)
-+#define VIDINTCON0_INT_FIFO_SHIFT		0
- #define VIDINTCON0_INT_ENABLE			(1 << 0)
- 
--#define VIDINTCON1				(0x134)
-+#define VIDINTCON1				0x134
- #define VIDINTCON1_INT_I180			(1 << 2)
- #define VIDINTCON1_INT_FRAME			(1 << 1)
- #define VIDINTCON1_INT_FIFO			(1 << 0)
- 
- /* Window colour-key control registers */
--#define WKEYCON					(0x140)	/* 6410,V210 */
-+#define WKEYCON					0x140
- 
--#define WKEYCON0				(0x00)
--#define WKEYCON1				(0x04)
-+#define WKEYCON0				0x00
-+#define WKEYCON1				0x04
- 
- #define WxKEYCON0_KEYBL_EN			(1 << 26)
- #define WxKEYCON0_KEYEN_F			(1 << 25)
- #define WxKEYCON0_DIRCON			(1 << 24)
- #define WxKEYCON0_COMPKEY_MASK			(0xffffff << 0)
--#define WxKEYCON0_COMPKEY_SHIFT			(0)
--#define WxKEYCON0_COMPKEY_LIMIT			(0xffffff)
-+#define WxKEYCON0_COMPKEY_SHIFT			0
-+#define WxKEYCON0_COMPKEY_LIMIT			0xffffff
- #define WxKEYCON0_COMPKEY(_x)			((_x) << 0)
- #define WxKEYCON1_COLVAL_MASK			(0xffffff << 0)
--#define WxKEYCON1_COLVAL_SHIFT			(0)
--#define WxKEYCON1_COLVAL_LIMIT			(0xffffff)
-+#define WxKEYCON1_COLVAL_SHIFT			0
-+#define WxKEYCON1_COLVAL_LIMIT			0xffffff
- #define WxKEYCON1_COLVAL(_x)			((_x) << 0)
- 
- /* Dithering control */
--#define DITHMODE				(0x170)
-+#define DITHMODE				0x170
- #define DITHMODE_R_POS_MASK			(0x3 << 5)
--#define DITHMODE_R_POS_SHIFT			(5)
-+#define DITHMODE_R_POS_SHIFT			5
- #define DITHMODE_R_POS_8BIT			(0x0 << 5)
- #define DITHMODE_R_POS_6BIT			(0x1 << 5)
- #define DITHMODE_R_POS_5BIT			(0x2 << 5)
- #define DITHMODE_G_POS_MASK			(0x3 << 3)
--#define DITHMODE_G_POS_SHIFT			(3)
-+#define DITHMODE_G_POS_SHIFT			3
- #define DITHMODE_G_POS_8BIT			(0x0 << 3)
- #define DITHMODE_G_POS_6BIT			(0x1 << 3)
- #define DITHMODE_G_POS_5BIT			(0x2 << 3)
- #define DITHMODE_B_POS_MASK			(0x3 << 1)
--#define DITHMODE_B_POS_SHIFT			(1)
-+#define DITHMODE_B_POS_SHIFT			1
- #define DITHMODE_B_POS_8BIT			(0x0 << 1)
- #define DITHMODE_B_POS_6BIT			(0x1 << 1)
- #define DITHMODE_B_POS_5BIT			(0x2 << 1)
-@@ -403,18 +398,18 @@
- #define WINxMAP(_win)				(0x180 + ((_win) * 4))
- #define WINxMAP_MAP				(1 << 24)
- #define WINxMAP_MAP_COLOUR_MASK			(0xffffff << 0)
--#define WINxMAP_MAP_COLOUR_SHIFT		(0)
--#define WINxMAP_MAP_COLOUR_LIMIT		(0xffffff)
-+#define WINxMAP_MAP_COLOUR_SHIFT		0
-+#define WINxMAP_MAP_COLOUR_LIMIT		0xffffff
- #define WINxMAP_MAP_COLOUR(_x)			((_x) << 0)
- 
- /* Winodw palette control */
--#define WPALCON					(0x1A0)
-+#define WPALCON					0x1A0
- #define WPALCON_PAL_UPDATE			(1 << 9)
- #define WPALCON_W4PAL_16BPP_A555		(1 << 8)
- #define WPALCON_W3PAL_16BPP_A555		(1 << 7)
- #define WPALCON_W2PAL_16BPP_A555		(1 << 6)
- #define WPALCON_W1PAL_MASK			(0x7 << 3)
--#define WPALCON_W1PAL_SHIFT			(3)
-+#define WPALCON_W1PAL_SHIFT			3
- #define WPALCON_W1PAL_25BPP_A888		(0x0 << 3)
- #define WPALCON_W1PAL_24BPP			(0x1 << 3)
- #define WPALCON_W1PAL_19BPP_A666		(0x2 << 3)
-@@ -423,7 +418,7 @@
- #define WPALCON_W1PAL_16BPP_A555		(0x5 << 3)
- #define WPALCON_W1PAL_16BPP_565			(0x6 << 3)
- #define WPALCON_W0PAL_MASK			(0x7 << 0)
--#define WPALCON_W0PAL_SHIFT			(0)
-+#define WPALCON_W0PAL_SHIFT			0
- #define WPALCON_W0PAL_25BPP_A888		(0x0 << 0)
- #define WPALCON_W0PAL_24BPP			(0x1 << 0)
- #define WPALCON_W0PAL_19BPP_A666		(0x2 << 0)
-@@ -433,7 +428,7 @@
- #define WPALCON_W0PAL_16BPP_565			(0x6 << 0)
- 
- /* Blending equation control */
--#define BLENDCON				(0x260)
-+#define BLENDCON				0x260
- #define BLENDCON_NEW_MASK			(1 << 0)
- #define BLENDCON_NEW_8BIT_ALPHA_VALUE		(1 << 0)
- #define BLENDCON_NEW_4BIT_ALPHA_VALUE		(0 << 0)
-@@ -460,8 +455,8 @@
- */
- 
- /* FIMD Version 8 register offset definitions */
--#define FIMD_V8_VIDTCON0	(0x20010)
--#define FIMD_V8_VIDTCON1	(0x20014)
--#define FIMD_V8_VIDTCON2	(0x20018)
--#define FIMD_V8_VIDTCON3	(0x2001C)
--#define FIMD_V8_VIDCON1		(0x20004)
-+#define FIMD_V8_VIDTCON0	0x20010
-+#define FIMD_V8_VIDTCON1	0x20014
-+#define FIMD_V8_VIDTCON2	0x20018
-+#define FIMD_V8_VIDTCON3	0x2001C
-+#define FIMD_V8_VIDCON1		0x20004
++	dvbe_fbdev_cleanup(dvbe);
+ 	drm_mode_config_cleanup(ddev);
+ 	dvbe_vesa_cleanup(dvbe);
+ 	kfree(dvbe);
 -- 
-1.7.2.5
-
+1.8.1.3
 

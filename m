@@ -1,266 +1,142 @@
-From: Zhou Zhu <zzhu3@marvell.com>
-Date: Fri, 01 Feb 2013 09:20:38 +0000
-Subject: [PATCH v6 5/8] video: mmpdisp: add spi port in display controller
-Message-Id: <1359710438-9850-1-git-send-email-zzhu3@marvell.com>
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Sun, 17 Feb 2013 17:59:07 +0000
+Subject: [PATCH 5/9] video: vesafb: use sysfb bus
+Message-Id: <1361123951-587-6-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
+In-Reply-To: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, David Herrmann <dh.herrmann@gmail.com>
 
-Added spi port support in mmp display controller.
-This port is from display controller and for panel usage.
-This driver implemented and registered as a spi master.
+Instead of using our own platform device, we now register as sysfb driver
+and get notified whenever we are loaded on a system VBE device. This
+allows other VBE drivers to be loaded at the same time and users can
+bind/unbind drivers via sysfs. We also no longer need to fake a
+platform-device because the sysfb bus provides all devices now.
 
-Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
-Acked-by: Haojian Zhuang <haojian.zhuang@gmail.com>
+Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
 ---
- drivers/video/mmp/hw/Kconfig    |    8 ++
- drivers/video/mmp/hw/Makefile   |    1 +
- drivers/video/mmp/hw/mmp_ctrl.c |    6 ++
- drivers/video/mmp/hw/mmp_ctrl.h |    4 +
- drivers/video/mmp/hw/mmp_spi.c  |  180 +++++++++++++++++++++++++++++++++++++++
- 5 files changed, 199 insertions(+)
- create mode 100644 drivers/video/mmp/hw/mmp_spi.c
+ drivers/video/Kconfig  |  1 +
+ drivers/video/vesafb.c | 49 +++++++++++++++----------------------------------
+ 2 files changed, 16 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/video/mmp/hw/Kconfig b/drivers/video/mmp/hw/Kconfig
-index 6c1dd34..02f109a 100644
---- a/drivers/video/mmp/hw/Kconfig
-+++ b/drivers/video/mmp/hw/Kconfig
-@@ -9,4 +9,12 @@ config MMP_DISP_CONTROLLER
- 		this controller is used on Marvell PXA910,
- 		MMP2, MMP3, PXA988 chips
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index d5723c2..5c23d32 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -776,6 +776,7 @@ config FB_VESA
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+ 	select FB_BOOT_VESA_SUPPORT
++	select SYSFB
+ 	help
+ 	  This is the frame buffer device driver for generic VESA 2.0
+ 	  compliant graphic cards. The older VESA 1.2 cards are not supported.
+diff --git a/drivers/video/vesafb.c b/drivers/video/vesafb.c
+index 4ad7b40..652858f 100644
+--- a/drivers/video/vesafb.c
++++ b/drivers/video/vesafb.c
+@@ -19,6 +19,7 @@
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
+ #include <linux/screen_info.h>
++#include <linux/sysfb.h>
  
-+config MMP_DISP_SPI
-+	bool "mmp display controller spi port"
-+	depends on MMP_DISP_CONTROLLER && SPI_MASTER
-+	default y
-+	help
-+		Marvell MMP display hw controller spi port support
-+		will register as a spi master for panel usage
-+
- endif
-diff --git a/drivers/video/mmp/hw/Makefile b/drivers/video/mmp/hw/Makefile
-index f34ace8..0000a71 100644
---- a/drivers/video/mmp/hw/Makefile
-+++ b/drivers/video/mmp/hw/Makefile
-@@ -1 +1,2 @@
- obj-$(CONFIG_MMP_DISP_CONTROLLER)  += mmp_ctrl.o
-+obj-$(CONFIG_MMP_DISP_SPI)	   += mmp_spi.o
-diff --git a/drivers/video/mmp/hw/mmp_ctrl.c b/drivers/video/mmp/hw/mmp_ctrl.c
-index 1b5d299..4bd31b2 100644
---- a/drivers/video/mmp/hw/mmp_ctrl.c
-+++ b/drivers/video/mmp/hw/mmp_ctrl.c
-@@ -535,6 +535,12 @@ static int mmphw_probe(struct platform_device *pdev)
- 		}
- 	}
- 
-+#ifdef CONFIG_MMP_DISP_SPI
-+	ret = lcd_spi_register(ctrl);
-+	if (ret < 0)
-+		goto failed_path_init;
-+#endif
-+
- 	dev_info(ctrl->dev, "device init done\n");
- 
+ #include <video/vga.h>
+ #include <asm/io.h>
+@@ -214,7 +215,7 @@ static int vesafb_setup(char *options)
  	return 0;
-diff --git a/drivers/video/mmp/hw/mmp_ctrl.h b/drivers/video/mmp/hw/mmp_ctrl.h
-index b125f53..6408d8e 100644
---- a/drivers/video/mmp/hw/mmp_ctrl.h
-+++ b/drivers/video/mmp/hw/mmp_ctrl.h
-@@ -1967,4 +1967,8 @@ static inline struct lcd_regs *path_regs(struct mmp_path *path)
- 		return NULL;
- 	}
  }
-+
-+#ifdef CONFIG_MMP_DISP_SPI
-+extern int lcd_spi_register(struct mmphw_ctrl *ctrl);
-+#endif
- #endif	/* _MMP_CTRL_H_ */
-diff --git a/drivers/video/mmp/hw/mmp_spi.c b/drivers/video/mmp/hw/mmp_spi.c
-new file mode 100644
-index 0000000..e62ca7b
---- /dev/null
-+++ b/drivers/video/mmp/hw/mmp_spi.c
-@@ -0,0 +1,180 @@
-+/*
-+ * linux/drivers/video/mmp/hw/mmp_spi.c
-+ * using the spi in LCD controler for commands send
-+ *
-+ * Copyright (C) 2012 Marvell Technology Group Ltd.
-+ * Authors:  Guoqing Li <ligq@marvell.com>
-+ *          Lisa Du <cldu@marvell.com>
-+ *          Zhou Zhu <zzhu3@marvell.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the
-+ * Free Software Foundation; either version 2 of the License, or (at your
-+ * option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
-+ *
-+ */
-+#include <linux/errno.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/spi/spi.h>
-+#include "mmp_ctrl.h"
-+
-+/**
-+ * spi_write - write command to the SPI port
-+ * @data: can be 8/16/32-bit, MSB justified data to write.
-+ * @len:  data length.
-+ *
-+ * Wait bus transfer complete IRQ.
-+ * The caller is expected to perform the necessary locking.
-+ *
-+ * Returns:
-+ *   %-ETIMEDOUT	timeout occurred
-+ *   0			success
-+ */
-+static inline int lcd_spi_write(struct spi_device *spi, u32 data)
-+{
-+	int timeout = 100000, isr, ret = 0;
-+	u32 tmp;
-+	void *reg_base +		*(void **)spi_master_get_devdata(spi->master);
-+
-+	/* clear ISR */
-+	writel_relaxed(~SPI_IRQ_MASK, reg_base + SPU_IRQ_ISR);
-+
-+	switch (spi->bits_per_word) {
-+	case 8:
-+		writel_relaxed((u8)data, reg_base + LCD_SPU_SPI_TXDATA);
-+		break;
-+	case 16:
-+		writel_relaxed((u16)data, reg_base + LCD_SPU_SPI_TXDATA);
-+		break;
-+	case 32:
-+		writel_relaxed((u32)data, reg_base + LCD_SPU_SPI_TXDATA);
-+		break;
-+	default:
-+		dev_err(&spi->dev, "Wrong spi bit length\n");
-+	}
-+
-+	/* SPI start to send command */
-+	tmp = readl_relaxed(reg_base + LCD_SPU_SPI_CTRL);
-+	tmp &= ~CFG_SPI_START_MASK;
-+	tmp |= CFG_SPI_START(1);
-+	writel(tmp, reg_base + LCD_SPU_SPI_CTRL);
-+
-+	isr = readl_relaxed(reg_base + SPU_IRQ_ISR);
-+	while (!(isr & SPI_IRQ_ENA_MASK)) {
-+		udelay(100);
-+		isr = readl_relaxed(reg_base + SPU_IRQ_ISR);
-+		if (!--timeout) {
-+			ret = -ETIMEDOUT;
-+			dev_err(&spi->dev, "spi cmd send time out\n");
-+			break;
-+		}
-+	}
-+
-+	tmp = readl_relaxed(reg_base + LCD_SPU_SPI_CTRL);
-+	tmp &= ~CFG_SPI_START_MASK;
-+	tmp |= CFG_SPI_START(0);
-+	writel_relaxed(tmp, reg_base + LCD_SPU_SPI_CTRL);
-+
-+	writel_relaxed(~SPI_IRQ_MASK, reg_base + SPU_IRQ_ISR);
-+
-+	return ret;
-+}
-+
-+static int lcd_spi_setup(struct spi_device *spi)
-+{
-+	void *reg_base +		*(void **)spi_master_get_devdata(spi->master);
-+	u32 tmp;
-+
-+	tmp = CFG_SCLKCNT(16) |
-+		CFG_TXBITS(spi->bits_per_word) |
-+		CFG_SPI_SEL(1) | CFG_SPI_ENA(1) |
-+		CFG_SPI_3W4WB(1);
-+	writel(tmp, reg_base + LCD_SPU_SPI_CTRL);
-+
-+	/*
-+	 * After set mode it need a time to pull up the spi singals,
-+	 * or it would cause the wrong waveform when send spi command,
-+	 * especially on pxa910h
-+	 */
-+	tmp = readl_relaxed(reg_base + SPU_IOPAD_CONTROL);
-+	if ((tmp & CFG_IOPADMODE_MASK) != IOPAD_DUMB18SPI)
-+		writel_relaxed(IOPAD_DUMB18SPI |
-+			(tmp & ~CFG_IOPADMODE_MASK),
-+			reg_base + SPU_IOPAD_CONTROL);
-+	udelay(20);
-+	return 0;
-+}
-+
-+static int lcd_spi_one_transfer(struct spi_device *spi, struct spi_message *m)
-+{
-+	struct spi_transfer *t;
-+	int i;
-+
-+	list_for_each_entry(t, &m->transfers, transfer_list) {
-+		switch (spi->bits_per_word) {
-+		case 8:
-+			for (i = 0; i < t->len; i++)
-+				lcd_spi_write(spi, ((u8 *)t->tx_buf)[i]);
-+			break;
-+		case 16:
-+			for (i = 0; i < t->len/2; i++)
-+				lcd_spi_write(spi, ((u16 *)t->tx_buf)[i]);
-+			break;
-+		case 32:
-+			for (i = 0; i < t->len/4; i++)
-+				lcd_spi_write(spi, ((u32 *)t->tx_buf)[i]);
-+			break;
-+		default:
-+			dev_err(&spi->dev, "Wrong spi bit length\n");
-+		}
-+	}
-+
-+	m->status = 0;
-+	if (m->complete)
-+		m->complete(m->context);
-+	return 0;
-+}
-+
-+int lcd_spi_register(struct mmphw_ctrl *ctrl)
-+{
-+	struct spi_master *master;
-+	void **p_regbase;
-+	int err;
-+
-+	master = spi_alloc_master(ctrl->dev, sizeof(void *));
-+	if (!master) {
-+		dev_err(ctrl->dev, "unable to allocate SPI master\n");
-+		return -ENOMEM;
-+	}
-+	p_regbase = spi_master_get_devdata(master);
-+	*p_regbase = ctrl->reg_base;
-+
-+	/* set bus num to 5 to avoid conflict with other spi hosts */
-+	master->bus_num = 5;
-+	master->num_chipselect = 1;
-+	master->setup = lcd_spi_setup;
-+	master->transfer = lcd_spi_one_transfer;
-+
-+	err = spi_register_master(master);
-+	if (err < 0) {
-+		dev_err(ctrl->dev, "unable to register SPI master\n");
-+		spi_master_put(master);
-+		return err;
-+	}
-+
-+	dev_info(&master->dev, "registered\n");
-+
-+	return 0;
-+}
+ 
+-static int vesafb_probe(struct platform_device *dev)
++static int vesafb_probe(struct sysfb_device *dev)
+ {
+ 	struct fb_info *info;
+ 	struct vesafb_par *par;
+@@ -491,7 +492,7 @@ static int vesafb_probe(struct platform_device *dev)
+ 	}
+ 	printk(KERN_INFO "fb%d: %s frame buffer device\n",
+ 	       info->node, info->fix.id);
+-	platform_set_drvdata(dev, info);
++	dev_set_drvdata(&dev->dev, info);
+ 	return 0;
+ err:
+ 	if (info->screen_base)
+@@ -501,59 +502,39 @@ err:
+ 	return err;
+ }
+ 
+-static int vesafb_remove(struct platform_device *dev)
++static void vesafb_remove(struct sysfb_device *dev)
+ {
+-	struct fb_info *info = platform_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(&dev->dev);
+ 
+ 	unregister_framebuffer(info);
+-	return 0;
+ }
+ 
+-static struct platform_driver vesafb_driver = {
++static struct sysfb_driver vesafb_driver = {
++	.type_mask = SYSFB_VBE,
++	.allow_tainted = false,
++	.driver = {
++		.name = "vesafb",
++		.owner = THIS_MODULE,
++		.mod_name = KBUILD_MODNAME,
++	},
+ 	.probe = vesafb_probe,
+ 	.remove = vesafb_remove,
+-	.driver	= {
+-		.name	= "vesafb",
+-	},
+ };
+ 
+-static struct platform_device *vesafb_device;
+-
+ static int __init vesafb_init(void)
+ {
+-	int ret;
+ 	char *option = NULL;
+ 
+ 	/* ignore error return of fb_get_options */
+ 	fb_get_options("vesafb", &option);
+ 	vesafb_setup(option);
+ 
+-	vesafb_device = platform_device_alloc("vesafb", -1);
+-	if (!vesafb_device)
+-		return -ENOMEM;
+-
+-	ret = platform_driver_register(&vesafb_driver);
+-	if (ret)
+-		goto err_dev;
+-
+-	ret = platform_device_add(vesafb_device);
+-	if (ret)
+-		goto err_drv;
+-
+-	return 0;
+-
+-err_drv:
+-	platform_driver_unregister(&vesafb_driver);
+-err_dev:
+-	platform_device_put(vesafb_device);
+-	return ret;
++	return sysfb_register_driver(&vesafb_driver);
+ }
+ 
+ static void __exit vesafb_exit(void)
+ {
+-	platform_device_del(vesafb_device);
+-	platform_device_put(vesafb_device);
+-	platform_driver_unregister(&vesafb_driver);
++	sysfb_unregister_driver(&vesafb_driver);
+ }
+ 
+ module_init(vesafb_init);
 -- 
-1.7.9.5
+1.8.1.3
 

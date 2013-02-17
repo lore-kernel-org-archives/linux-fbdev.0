@@ -1,170 +1,487 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Date: Fri, 08 Feb 2013 16:35:16 +0000
-Subject: [PATCH 3/5] ARM: at91/avr32/atmel_lcdfb: add bus-clock entry
-Message-Id: <a8b6b6e8dcee64943273143dab76db716d4dc3d4.1360340791.git.nicolas.ferre@atmel.com>
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Sun, 17 Feb 2013 17:59:10 +0000
+Subject: [PATCH 8/9] drm: dvbe: implement VBE/VESA blitting backend
+Message-Id: <1361123951-587-9-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1360340791.git.nicolas.ferre@atmel.com>
-In-Reply-To: <cover.1360340791.git.nicolas.ferre@atmel.com>
+References: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
+In-Reply-To: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, David Herrmann <dh.herrmann@gmail.com>
 
-From: Johan Hovold <jhovold@gmail.com>
+Extend the dvbe core driver by a VESA/VBE backend that simply blits the
+data from a framebuffer into the hardware framebuffer on damage.
+Modesetting has to be done during the boot-process by the architecture
+code (same way as vesafb requires it). No runtime modesetting is allowed
+due to RealMode/ProtectedMode restrictions.
 
-Add hclk entry for the atmel_lcdfb bus clock.
+On dirty-ioctls we simply vmap the framebuffer memory and copy each pixel
+into the target framebuffer. Unfortunately, the VBE bpp/depth combinations
+cannot easily be forwarded to the user via the DRM API as it allows a lot
+more combinations. Hence, we need to convert each pixel from the user's
+buffer format into the target format while blitting.
+Fast-paths for xrgb32/etc. could be implemented if we want to improve
+blitting performance.
 
-On at91sam9261, at91sam9g10 and at32ap the bus clock has to be enabled
-as well as the peripheral clock. Add the appropriate lookup entries to
-these SOCs and fake clocks to the SOCs that do not use it.
-
-This allows us to get rid of the conditional enabling of the clocks in
-the driver which relied on the cpu_is macros.
-
-Tested on at91sam9263 and at91sam9g45, compile-tested for other
-AT91-SOCs, and untested for AVR32.
-
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
 ---
- arch/arm/mach-at91/at91sam9261.c    |  1 +
- arch/arm/mach-at91/at91sam9263.c    |  1 +
- arch/arm/mach-at91/at91sam9g45.c    |  1 +
- arch/arm/mach-at91/at91sam9rl.c     |  1 +
- arch/avr32/mach-at32ap/at32ap700x.c |  4 ++--
- drivers/video/atmel_lcdfb.c         | 23 ++++++++---------------
- 6 files changed, 14 insertions(+), 17 deletions(-)
+ drivers/gpu/drm/dvbe/Kconfig     |   1 +
+ drivers/gpu/drm/dvbe/Makefile    |   2 +-
+ drivers/gpu/drm/dvbe/dvbe.h      |  25 ++++
+ drivers/gpu/drm/dvbe/dvbe_main.c |  39 +++++-
+ drivers/gpu/drm/dvbe/dvbe_vesa.c | 263 +++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 325 insertions(+), 5 deletions(-)
+ create mode 100644 drivers/gpu/drm/dvbe/dvbe_vesa.c
 
-diff --git a/arch/arm/mach-at91/at91sam9261.c b/arch/arm/mach-at91/at91sam9261.c
-index 2998a08..5838f12 100644
---- a/arch/arm/mach-at91/at91sam9261.c
-+++ b/arch/arm/mach-at91/at91sam9261.c
-@@ -169,6 +169,7 @@ static struct clk *periph_clocks[] __initdata = {
- };
+diff --git a/drivers/gpu/drm/dvbe/Kconfig b/drivers/gpu/drm/dvbe/Kconfig
+index bb3aa7b..e49df10 100644
+--- a/drivers/gpu/drm/dvbe/Kconfig
++++ b/drivers/gpu/drm/dvbe/Kconfig
+@@ -3,6 +3,7 @@ config DRM_DVBE
+ 	depends on DRM
+ 	select DRM_KMS_HELPER
+ 	select DRM_SYSFB
++	select FB_BOOT_VESA_SUPPORT
+ 	help
+ 	  This is a DRM/KMS driver for VESA BIOS Extension (VBE) compatible
+ 	  cards. At least VBE 2.0 is needed. Older VBE 1.2 cards are not
+diff --git a/drivers/gpu/drm/dvbe/Makefile b/drivers/gpu/drm/dvbe/Makefile
+index b053da3..f6fb888 100644
+--- a/drivers/gpu/drm/dvbe/Makefile
++++ b/drivers/gpu/drm/dvbe/Makefile
+@@ -1,4 +1,4 @@
+ ccflags-y := -Iinclude/drm
  
- static struct clk_lookup periph_clocks_lookups[] = {
-+	CLKDEV_CON_DEV_ID("hclk", "atmel_lcdfb.0", &hck1),
- 	CLKDEV_CON_DEV_ID("spi_clk", "atmel_spi.0", &spi0_clk),
- 	CLKDEV_CON_DEV_ID("spi_clk", "atmel_spi.1", &spi1_clk),
- 	CLKDEV_CON_DEV_ID("t0_clk", "atmel_tcb.0", &tc0_clk),
-diff --git a/arch/arm/mach-at91/at91sam9263.c b/arch/arm/mach-at91/at91sam9263.c
-index b9fc60d..520a63d 100644
---- a/arch/arm/mach-at91/at91sam9263.c
-+++ b/arch/arm/mach-at91/at91sam9263.c
-@@ -190,6 +190,7 @@ static struct clk_lookup periph_clocks_lookups[] = {
- 	CLKDEV_CON_DEV_ID("pclk", "at91rm9200_ssc.1", &ssc1_clk),
- 	CLKDEV_CON_DEV_ID("pclk", "fff98000.ssc", &ssc0_clk),
- 	CLKDEV_CON_DEV_ID("pclk", "fff9c000.ssc", &ssc1_clk),
-+	CLKDEV_CON_DEV_ID("hclk", "atmel_lcdfb.0", &lcdc_clk),
- 	CLKDEV_CON_DEV_ID("mci_clk", "atmel_mci.0", &mmc0_clk),
- 	CLKDEV_CON_DEV_ID("mci_clk", "atmel_mci.1", &mmc1_clk),
- 	CLKDEV_CON_DEV_ID("spi_clk", "atmel_spi.0", &spi0_clk),
-diff --git a/arch/arm/mach-at91/at91sam9g45.c b/arch/arm/mach-at91/at91sam9g45.c
-index d3addee..ea6b62b 100644
---- a/arch/arm/mach-at91/at91sam9g45.c
-+++ b/arch/arm/mach-at91/at91sam9g45.c
-@@ -228,6 +228,7 @@ static struct clk_lookup periph_clocks_lookups[] = {
- 	CLKDEV_CON_ID("hclk", &macb_clk),
- 	/* One additional fake clock for ohci */
- 	CLKDEV_CON_ID("ohci_clk", &uhphs_clk),
-+	CLKDEV_CON_DEV_ID("hclk", "atmel_lcdfb.0", &lcdc_clk),
- 	CLKDEV_CON_DEV_ID("ehci_clk", "atmel-ehci", &uhphs_clk),
- 	CLKDEV_CON_DEV_ID("hclk", "atmel_usba_udc", &utmi_clk),
- 	CLKDEV_CON_DEV_ID("pclk", "atmel_usba_udc", &udphs_clk),
-diff --git a/arch/arm/mach-at91/at91sam9rl.c b/arch/arm/mach-at91/at91sam9rl.c
-index eb98704..4cd4fa9 100644
---- a/arch/arm/mach-at91/at91sam9rl.c
-+++ b/arch/arm/mach-at91/at91sam9rl.c
-@@ -179,6 +179,7 @@ static struct clk *periph_clocks[] __initdata = {
- };
+-dvbe-y := dvbe_drv.o dvbe_main.o dvbe_mem.o
++dvbe-y := dvbe_drv.o dvbe_main.o dvbe_mem.o dvbe_vesa.o
+ obj-$(CONFIG_DRM_DVBE) := dvbe.o
+diff --git a/drivers/gpu/drm/dvbe/dvbe.h b/drivers/gpu/drm/dvbe/dvbe.h
+index 0235a95..68fd452 100644
+--- a/drivers/gpu/drm/dvbe/dvbe.h
++++ b/drivers/gpu/drm/dvbe/dvbe.h
+@@ -25,6 +25,23 @@
+ struct dvbe_device {
+ 	struct drm_device *ddev;
  
- static struct clk_lookup periph_clocks_lookups[] = {
-+	CLKDEV_CON_DEV_ID("hclk", "atmel_lcdfb.0", &lcdc_clk),
- 	CLKDEV_CON_DEV_ID("hclk", "atmel_usba_udc", &utmi_clk),
- 	CLKDEV_CON_DEV_ID("pclk", "atmel_usba_udc", &udphs_clk),
- 	CLKDEV_CON_DEV_ID("t0_clk", "atmel_tcb.0", &tc0_clk),
-diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
-index b323d8d..cd25b01 100644
---- a/arch/avr32/mach-at32ap/at32ap700x.c
-+++ b/arch/avr32/mach-at32ap/at32ap700x.c
-@@ -1453,7 +1453,7 @@ static struct resource atmel_lcdfb0_resource[] = {
- 	},
- };
- DEFINE_DEV_DATA(atmel_lcdfb, 0);
--DEV_CLK(hck1, atmel_lcdfb0, hsb, 7);
-+DEV_CLK(hclk, atmel_lcdfb0, hsb, 7);
- static struct clk atmel_lcdfb0_pixclk = {
- 	.name		= "lcdc_clk",
- 	.dev		= &atmel_lcdfb0_device.dev,
-@@ -2246,7 +2246,7 @@ static __initdata struct clk *init_clocks[] = {
- 	&atmel_twi0_pclk,
- 	&atmel_mci0_pclk,
- #if defined(CONFIG_CPU_AT32AP7000) || defined(CONFIG_CPU_AT32AP7002)
--	&atmel_lcdfb0_hck1,
-+	&atmel_lcdfb0_hclk,
- 	&atmel_lcdfb0_pixclk,
- #endif
- 	&ssc0_pclk,
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 025428e..c5883ca 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -821,15 +821,13 @@ static int __init atmel_lcdfb_init_fbinfo(struct atmel_lcdfb_info *sinfo)
++	/* vbe information */
++	unsigned long vbe_addr;
++	unsigned long vbe_vsize;
++	unsigned long vbe_size;
++	unsigned int vbe_depth;
++	unsigned int vbe_bpp;
++	unsigned int vbe_width;
++	unsigned int vbe_height;
++	unsigned int vbe_stride;
++	uint8_t vbe_red_size;
++	uint8_t vbe_red_pos;
++	uint8_t vbe_green_size;
++	uint8_t vbe_green_pos;
++	uint8_t vbe_blue_size;
++	uint8_t vbe_blue_pos;
++	uint8_t *vbe_map;
++
+ 	/* mode-setting objects */
+ 	struct drm_crtc crtc;
+ 	struct drm_encoder enc;
+@@ -70,4 +87,12 @@ struct dvbe_framebuffer {
  
- static void atmel_lcdfb_start_clock(struct atmel_lcdfb_info *sinfo)
+ #define to_dvbe_fb(x) container_of(x, struct dvbe_framebuffer, base)
+ 
++/* vesa helpers */
++
++int dvbe_vesa_init(struct dvbe_device *dvbe);
++void dvbe_vesa_cleanup(struct dvbe_device *dvbe);
++int dvbe_vesa_damage(struct dvbe_device *dvbe, struct dvbe_framebuffer *fb,
++		     unsigned int flags, unsigned int color,
++		     struct drm_clip_rect *clips, unsigned int num);
++
+ #endif /* DVBE_DRV_H */
+diff --git a/drivers/gpu/drm/dvbe/dvbe_main.c b/drivers/gpu/drm/dvbe/dvbe_main.c
+index e73c77e..c418310 100644
+--- a/drivers/gpu/drm/dvbe/dvbe_main.c
++++ b/drivers/gpu/drm/dvbe/dvbe_main.c
+@@ -46,6 +46,15 @@ static bool dvbe_crtc_mode_fixup(struct drm_crtc *crtc,
+ 				 const struct drm_display_mode *mode,
+ 				 struct drm_display_mode *adjusted_mode)
  {
--	if (sinfo->bus_clk)
--		clk_enable(sinfo->bus_clk);
-+	clk_enable(sinfo->bus_clk);
- 	clk_enable(sinfo->lcdc_clk);
++	struct dvbe_device *dvbe = crtc->dev->dev_private;
++
++	if (mode->hdisplay != dvbe->vbe_width ||
++	    mode->vdisplay != dvbe->vbe_height) {
++		dev_dbg(dvbe->ddev->dev, "invalid mode %ux%u\n",
++			mode->hdisplay, mode->vdisplay);
++		return false;
++	}
++
+ 	drm_mode_copy(adjusted_mode, mode);
+ 	return true;
+ }
+@@ -66,6 +75,7 @@ static int dvbe_crtc_mode_set(struct drm_crtc *crtc,
+ 			      int x, int y,
+ 			      struct drm_framebuffer *old_fb)
+ {
++	struct dvbe_device *dvbe = crtc->dev->dev_private;
+ 	struct dvbe_framebuffer *dfb = to_dvbe_fb(crtc->fb);
+ 
+ 	/* We can scan out any framebuffer that is given. The framebuffer
+@@ -79,7 +89,7 @@ static int dvbe_crtc_mode_set(struct drm_crtc *crtc,
+ 	if (x >= dfb->base.width || y >= dfb->base.height)
+ 		return -EINVAL;
+ 
+-	return 0;
++	return dvbe_vesa_damage(dvbe, dfb, 0, 0, NULL, 0);
  }
  
- static void atmel_lcdfb_stop_clock(struct atmel_lcdfb_info *sinfo)
+ /*
+@@ -89,12 +99,13 @@ static int dvbe_crtc_mode_set(struct drm_crtc *crtc,
+ static int dvbe_crtc_mode_set_base(struct drm_crtc *crtc, int x, int y,
+ 				   struct drm_framebuffer *fb)
  {
--	if (sinfo->bus_clk)
--		clk_disable(sinfo->bus_clk);
-+	clk_disable(sinfo->bus_clk);
- 	clk_disable(sinfo->lcdc_clk);
++	struct dvbe_device *dvbe = crtc->dev->dev_private;
+ 	struct dvbe_framebuffer *dfb = to_dvbe_fb(crtc->fb);
+ 
+ 	if (x >= dfb->base.width || y >= dfb->base.height)
+ 		return -EINVAL;
+ 
+-	return 0;
++	return dvbe_vesa_damage(dvbe, dfb, 0, 0, NULL, 0);
  }
  
-@@ -888,13 +886,10 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
- 	info->fix = atmel_lcdfb_fix;
+ static const struct drm_crtc_helper_funcs dvbe_crtc_helper_ops = {
+@@ -159,7 +170,19 @@ static const struct drm_encoder_funcs dvbe_enc_ops = {
  
- 	/* Enable LCDC Clocks */
--	if (cpu_is_at91sam9261() || cpu_is_at91sam9g10()
--	 || cpu_is_at32ap7000()) {
--		sinfo->bus_clk = clk_get(dev, "hck1");
--		if (IS_ERR(sinfo->bus_clk)) {
--			ret = PTR_ERR(sinfo->bus_clk);
--			goto free_info;
--		}
-+	sinfo->bus_clk = clk_get(dev, "hclk");
-+	if (IS_ERR(sinfo->bus_clk)) {
-+		ret = PTR_ERR(sinfo->bus_clk);
-+		goto free_info;
- 	}
- 	sinfo->lcdc_clk = clk_get(dev, "lcdc_clk");
- 	if (IS_ERR(sinfo->lcdc_clk)) {
-@@ -1055,8 +1050,7 @@ stop_clk:
- 	atmel_lcdfb_stop_clock(sinfo);
- 	clk_put(sinfo->lcdc_clk);
- put_bus_clk:
--	if (sinfo->bus_clk)
--		clk_put(sinfo->bus_clk);
-+	clk_put(sinfo->bus_clk);
- free_info:
- 	framebuffer_release(info);
- out:
-@@ -1081,8 +1075,7 @@ static int __exit atmel_lcdfb_remove(struct platform_device *pdev)
- 	unregister_framebuffer(info);
- 	atmel_lcdfb_stop_clock(sinfo);
- 	clk_put(sinfo->lcdc_clk);
--	if (sinfo->bus_clk)
--		clk_put(sinfo->bus_clk);
-+	clk_put(sinfo->bus_clk);
- 	fb_dealloc_cmap(&info->cmap);
- 	free_irq(sinfo->irq_base, info);
- 	iounmap(sinfo->mmio);
+ static int dvbe_conn_get_modes(struct drm_connector *conn)
+ {
+-	return 0;
++	struct dvbe_device *dvbe = conn->dev->dev_private;
++	struct drm_display_mode *mode;
++
++	mode = drm_gtf_mode(dvbe->ddev, dvbe->vbe_width, dvbe->vbe_height,
++			    60, 0, 0);
++	if (!mode)
++		return 0;
++
++	mode->type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED;
++	drm_mode_probed_add(conn, mode);
++	dvbe->mode = mode;
++
++	return 1;
+ }
+ 
+ static int dvbe_conn_mode_valid(struct drm_connector *conn,
+@@ -226,11 +249,12 @@ static int dvbe_fb_dirty(struct drm_framebuffer *fb, struct drm_file *file,
+ 			 struct drm_clip_rect *clips, unsigned int num)
+ {
+ 	struct dvbe_device *dvbe = fb->dev->dev_private;
++	struct dvbe_framebuffer *dfb = to_dvbe_fb(fb);
+ 
+ 	if (dvbe->crtc.fb != fb)
+ 		return 0;
+ 
+-	return 0;
++	return dvbe_vesa_damage(dvbe, dfb, flags, color, clips, num);
+ }
+ 
+ static void dvbe_fb_destroy(struct drm_framebuffer *fb)
+@@ -334,6 +358,10 @@ int dvbe_drm_load(struct drm_device *ddev, unsigned long flags)
+ 	dvbe->ddev = ddev;
+ 	ddev->dev_private = dvbe;
+ 
++	ret = dvbe_vesa_init(dvbe);
++	if (ret)
++		goto err_free;
++
+ 	drm_mode_config_init(ddev);
+ 	ddev->mode_config.min_width = 0;
+ 	ddev->mode_config.min_height = 0;
+@@ -384,6 +412,8 @@ int dvbe_drm_load(struct drm_device *ddev, unsigned long flags)
+ 
+ err_cleanup:
+ 	drm_mode_config_cleanup(ddev);
++	dvbe_vesa_cleanup(dvbe);
++err_free:
+ 	kfree(dvbe);
+ 	return ret;
+ }
+@@ -393,6 +423,7 @@ int dvbe_drm_unload(struct drm_device *ddev)
+ 	struct dvbe_device *dvbe = ddev->dev_private;
+ 
+ 	drm_mode_config_cleanup(ddev);
++	dvbe_vesa_cleanup(dvbe);
+ 	kfree(dvbe);
+ 
+ 	return 0;
+diff --git a/drivers/gpu/drm/dvbe/dvbe_vesa.c b/drivers/gpu/drm/dvbe/dvbe_vesa.c
+new file mode 100644
+index 0000000..c3f96a0
+--- /dev/null
++++ b/drivers/gpu/drm/dvbe/dvbe_vesa.c
+@@ -0,0 +1,263 @@
++/*
++ * DRM VESA BIOS Extension Driver
++ * Copyright (c) 2012-2013 David Herrmann <dh.herrmann@gmail.com>
++ */
++
++/*
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the Free
++ * Software Foundation; either version 2 of the License, or (at your option)
++ * any later version.
++ */
++
++/*
++ * VESA BIOS Extension Layer
++ * This layer provides access to the VBE data for the dvbe driver. It reads the
++ * mode information from the initial boot screen_info and initializes the
++ * framebuffer for user-mode access.
++ *
++ * This driver requires the VESA mode to be a TRUECOLOR format with a bpp value
++ * of 8, 15, 16 or 32. All other layouts are unsupported.
++ */
++
++#include <asm/io.h>
++#include <linux/ioport.h>
++#include <linux/module.h>
++#include <linux/screen_info.h>
++#include <drm/drmP.h>
++#include "dvbe.h"
++
++static void dvbe_vesa_read(const uint8_t *src, unsigned int format,
++			   uint8_t *r, uint8_t *g, uint8_t *b)
++{
++	uint32_t val;
++
++	switch (format) {
++	case DRM_FORMAT_RGB565:
++		val = *(uint16_t*)src;
++		*r = (val & 0xf800) >> 11;
++		*g = (val & 0x07e0) >> 5;
++		*b = (val & 0x001f) >> 0;
++		break;
++	case DRM_FORMAT_BGR565:
++		val = *(uint16_t*)src;
++		*b = (val & 0xf800) >> 11;
++		*g = (val & 0x07e0) >> 5;
++		*r = (val & 0x001f) >> 0;
++		break;
++	case DRM_FORMAT_XRGB8888:
++	case DRM_FORMAT_ARGB8888:
++		val = *(uint32_t*)src;
++		*r = (val & 0x00ff0000) >> 16;
++		*g = (val & 0x0000ff00) >> 8;
++		*b = (val & 0x000000ff) >> 0;
++		break;
++	case DRM_FORMAT_XBGR8888:
++	case DRM_FORMAT_ABGR8888:
++		val = *(uint32_t*)src;
++		*b = (val & 0x00ff0000) >> 16;
++		*g = (val & 0x0000ff00) >> 8;
++		*r = (val & 0x000000ff) >> 0;
++		break;
++	default:
++		*r = 0;
++		*g = 0;
++		*b = 0;
++	}
++}
++
++static void dvbe_vesa_write(struct dvbe_device *dvbe, uint8_t *dst,
++			    uint8_t r, uint8_t g, uint8_t b)
++{
++	uint32_t val;
++
++	val = (r >> (8 - dvbe->vbe_red_size)) << dvbe->vbe_red_pos;
++	val |= (g >> (8 - dvbe->vbe_green_size)) << dvbe->vbe_green_pos;
++	val |= (b >> (8 - dvbe->vbe_blue_size)) << dvbe->vbe_blue_pos;
++
++	switch (dvbe->vbe_bpp) {
++	case 8:
++		*dst = val & 0xff;
++		break;
++	case 16:
++		*((uint16_t*)dst) = val & 0xffff;
++		break;
++	case 32:
++		*((uint32_t*)dst) = val & 0xffffffff;
++		break;
++	}
++}
++
++static void dvbe_vesa_blit(struct dvbe_device *dvbe, const uint8_t *src,
++			   unsigned int src_stride, unsigned int src_f,
++			   unsigned int src_bpp, unsigned int x, unsigned int y,
++			   unsigned int width, unsigned int height)
++{
++	uint8_t *dst, *d, r, g, b;
++	const uint8_t *s;
++	unsigned int i, j, sBpp, dBpp;
++
++	sBpp = src_bpp / 8;
++	dBpp = dvbe->vbe_bpp / 8;
++	src = src + y * src_stride + x * sBpp;
++	dst = dvbe->vbe_map + y * dvbe->vbe_stride + x * dBpp;
++
++	for (i = 0; i < height; ++i) {
++		s = src;
++		d = dst;
++		for (j = 0; j < width; ++j) {
++			dvbe_vesa_read(src, src_f, &r, &g, &b);
++			dvbe_vesa_write(dvbe, d, r, g, b);
++			s += sBpp;
++			d += dBpp;
++		}
++
++		src += src_stride;
++		dst += dvbe->vbe_stride;
++	}
++}
++
++int dvbe_vesa_damage(struct dvbe_device *dvbe, struct dvbe_framebuffer *fb,
++		     unsigned int flags, unsigned int color,
++		     struct drm_clip_rect *clips, unsigned int num)
++{
++	unsigned int i, maxw, maxh;
++	unsigned int width, height, ret;
++	uint8_t *src;
++	bool annotated;
++
++	ret = dvbe_gem_vmap(fb->obj);
++	if (ret)
++		return ret;
++
++	annotated = flags & DRM_MODE_FB_DIRTY_ANNOTATE_COPY;
++	src = fb->obj->vmapping + fb->base.offsets[0];
++	maxw = min(fb->base.width, dvbe->vbe_width);
++	maxh = min(fb->base.height, dvbe->vbe_height);
++
++	if (!num) {
++		dvbe_vesa_blit(dvbe, src, fb->base.pitches[0],
++			       fb->base.pixel_format, fb->base.bits_per_pixel,
++			       0, 0, maxw, maxh);
++		return 0;
++	}
++
++	for (i = 0; i < num; ++i) {
++		if (annotated && !(i & 0x1))
++			continue;
++		if (clips[i].x2 <= clips[i].x1 || clips[i].y2 <= clips[i].y1)
++			continue;
++
++		/* clip to framebuffer size */
++		if (clips[i].x1 >= maxw ||
++		    clips[i].y1 >= maxh)
++			continue;
++		if (clips[i].x2 > maxw)
++			width = maxw - clips[i].x1;
++		else
++			width = clips[i].x2 - clips[i].x1;
++		if (clips[i].y2 > maxh)
++			height = maxh - clips[i].y1;
++		else
++			height = clips[i].y2 - clips[i].y1;
++
++		dvbe_vesa_blit(dvbe, src, fb->base.pitches[0],
++			       fb->base.pixel_format, fb->base.bits_per_pixel,
++			       clips[i].x1, clips[i].y1, width, height);
++	}
++
++	return 0;
++}
++
++int dvbe_vesa_init(struct dvbe_device *dvbe)
++{
++	int ret;
++
++	if (screen_info.orig_video_isVGA != VIDEO_TYPE_VLFB) {
++		dev_info(dvbe->ddev->dev, "no VBE capable device found\n");
++		return -ENODEV;
++	}
++
++	dvbe->vbe_addr = (unsigned long)screen_info.lfb_base;
++	dvbe->vbe_width = screen_info.lfb_width;
++	dvbe->vbe_height = screen_info.lfb_height;
++	dvbe->vbe_stride = screen_info.lfb_linelength;
++	dvbe->vbe_depth = screen_info.lfb_depth;
++	dvbe->vbe_bpp = (dvbe->vbe_depth = 15) ? 16 : dvbe->vbe_depth;
++	dvbe->vbe_size = dvbe->vbe_height * dvbe->vbe_stride;
++	dvbe->vbe_vsize = screen_info.lfb_size * 0x10000;
++	if (dvbe->vbe_vsize < dvbe->vbe_size)
++		dvbe->vbe_vsize = dvbe->vbe_size;
++
++	dev_info(dvbe->ddev->dev, "VMEM at: %ld vsize: %ld rsize: %ld\n",
++		 dvbe->vbe_addr, dvbe->vbe_vsize, dvbe->vbe_size);
++	dev_info(dvbe->ddev->dev, "width: %d height: %d stride: %d bpp: %d\n",
++		 dvbe->vbe_width, dvbe->vbe_height, dvbe->vbe_stride,
++		 dvbe->vbe_bpp);
++
++	if (dvbe->vbe_bpp != 8 && dvbe->vbe_bpp != 16 && dvbe->vbe_bpp != 32) {
++		dev_err(dvbe->ddev->dev, "unsupported bpp value %d\n",
++			dvbe->vbe_bpp);
++		return -ENODEV;
++	}
++	if (!screen_info.red_pos && !screen_info.green_pos &&
++	    !screen_info.blue_pos) {
++		dev_err(dvbe->ddev->dev, "hardware not truecolor capable\n");
++		return -ENODEV;
++	}
++	if (!screen_info.red_size && !screen_info.green_size &&
++	    !screen_info.blue_size) {
++		dev_err(dvbe->ddev->dev, "hardware not truecolor capable\n");
++		return -ENODEV;
++	}
++
++	dvbe->vbe_red_size = screen_info.red_size;
++	dvbe->vbe_red_pos = screen_info.red_pos;
++	dvbe->vbe_green_size = screen_info.green_size;
++	dvbe->vbe_green_pos = screen_info.green_pos;
++	dvbe->vbe_blue_size = screen_info.blue_size;
++	dvbe->vbe_blue_pos = screen_info.blue_pos;
++
++	dev_info(dvbe->ddev->dev, "color %d:%d r: %d:%d g: %d:%d b: %d:%d\n",
++		 dvbe->vbe_depth, dvbe->vbe_bpp,
++		 dvbe->vbe_red_pos, dvbe->vbe_red_size,
++		 dvbe->vbe_green_pos, dvbe->vbe_green_size,
++		 dvbe->vbe_blue_pos, dvbe->vbe_blue_size);
++
++	if (!request_mem_region(dvbe->vbe_addr, dvbe->vbe_vsize, "dvbe")) {
++		dev_err(dvbe->ddev->dev, "cannot reserve VMEM\n");
++		return -EIO;
++	}
++
++	if (!request_region(0x3c0, 32, "dvbe")) {
++		dev_err(dvbe->ddev->dev, "cannot reserve VBIOS\n");
++		ret = -EIO;
++		goto err_mem_region;
++	}
++
++	dvbe->vbe_map = ioremap(dvbe->vbe_addr, dvbe->vbe_size);
++	if (!dvbe->vbe_map) {
++		dev_err(dvbe->ddev->dev, "cannot remap VMEM\n");
++		ret = -EIO;
++		goto err_region;
++	}
++
++	dev_info(dvbe->ddev->dev, "initialized VBE mode to %ux%u at %p\n",
++		 dvbe->vbe_width, dvbe->vbe_height, dvbe->vbe_map);
++
++	return 0;
++
++err_region:
++	release_region(0x3c0, 32);
++err_mem_region:
++	release_mem_region(dvbe->vbe_addr, dvbe->vbe_vsize);
++	return -ENODEV;
++}
++
++void dvbe_vesa_cleanup(struct dvbe_device *dvbe)
++{
++	dev_info(dvbe->ddev->dev, "VBE cleanup\n");
++	iounmap(dvbe->vbe_map);
++	release_region(0x3c0, 32);
++	release_mem_region(dvbe->vbe_addr, dvbe->vbe_vsize);
++}
 -- 
-1.8.0
+1.8.1.3
 

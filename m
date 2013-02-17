@@ -1,254 +1,479 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Fri, 15 Feb 2013 10:36:29 +0000
-Subject: [RFC] ARM: shmobile: add framebuffer and backlight support to kzm9g-reference
-Message-Id: <Pine.LNX.4.64.1302151127010.7446@axis700.grange>
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Sun, 17 Feb 2013 17:59:03 +0000
+Subject: [PATCH 1/9] video: introduce system framebuffer bus
+Message-Id: <1361123951-587-2-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1302151101140.7446@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1302151101140.7446@axis700.grange>
+References: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
+In-Reply-To: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
-Cc: Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, devicetree-discuss@lists.ozlabs.org, Samuel Ortiz <sameo@linux.intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Liam Girdwood <lrg@ti.com>, Richard Purdie <rpurdie@rpsys.net>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, David Herrmann <dh.herrmann@googlemail.com>
 
-This adds support for the framebuffer and an AS3711 PMIC, used for supplying
-power to the CPU, some peripherals and the backlight.
+From: David Herrmann <dh.herrmann@googlemail.com>
 
-not-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+For a long time now we have the problem that there are multiple drivers
+available that try to use system framebuffers (like EFI, VESA/VBE, ...).
+There is no way to control which driver gets access to the devices, but
+instead works on a first-come-first-serve basis.
+
+Furthermore, hardware drivers (eg., gpu/drm/*) that get loaded on the
+real hardware bus (eg., pci-bus) of the framebuffer devices have a hard
+time unloading other drivers that currently use system framebuffers.
+
+This introduces a new bus-type: sysfb (system framebuffer bus)
+
+Any available system framebuffer gets registered as a device on this bus.
+A bus-driver can then pick up the device and use it. Standard sysfs
+bind/unbind interfaces can be used to change drivers on-the-fly.
+
+There are actually two types of drivers: generic and real drivers
+
+Generic drivers use the generic framebuffer interface exclusively. They
+are often used as a fallback interface where no real driver for the
+hardware is available. Generic drivers register as sysfb drivers to the
+sysfb bus and will get loaded dynamically. User-space can bind/unbind them
+via sysfs to control which driver should get access.
+Only one driver can be active per device. During probe the driver can
+retrieve additional information via a screen_info object of the device.
+Generic drivers include: efifb, (u)vesafb, vgacon, ...
+
+Real drivers work differently. Instead of being loaded via sysfb, they
+register as drivers on the real bus (eg., pci-bus). During probe they
+should verify whether their real device provides a system-framebuffer. If
+it does, they call sysfb_claim() to claim exclusive access to the device.
+This guarantees that any generic driver gets unloaded and the real
+hardware driver can gain access. This also guarantees that a real hardware
+driver always takes precedence over generic fallback drivers.
+Real drivers include: i915, radeon, nouveau, ...
+
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
 ---
+ drivers/video/Kconfig  |  17 ++++
+ drivers/video/Makefile |   1 +
+ drivers/video/sysfb.c  | 230 +++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/sysfb.h  | 134 ++++++++++++++++++++++++++++
+ 4 files changed, 382 insertions(+)
+ create mode 100644 drivers/video/sysfb.c
+ create mode 100644 include/linux/sysfb.h
 
-As is clear from the not-Sob line and the RFC in the subject, this is not 
-for mainline. This is just an illustration how the recently submitted 
-"mfd: as3711: add OF support" patch can be used with the kzm9g board. I 
-had to add the framebuffer support to kzm9g, because without it the 
-backlight would just be turned on with no image on the LCD, which doesn't 
-look pretty. In the future, if needed, we could first only apply the 
-regulator part of the .dts, leaving the backlight disabled.
-
- arch/arm/boot/dts/sh73a0-kzm9g-reference.dts   |   90 ++++++++++++++++++++++++
- arch/arm/mach-shmobile/board-kzm9g-reference.c |   73 +++++++++++++++++++-
- 2 files changed, 162 insertions(+), 1 deletions(-)
-
-diff --git a/arch/arm/boot/dts/sh73a0-kzm9g-reference.dts b/arch/arm/boot/dts/sh73a0-kzm9g-reference.dts
-index b93b16a..a5810fc 100644
---- a/arch/arm/boot/dts/sh73a0-kzm9g-reference.dts
-+++ b/arch/arm/boot/dts/sh73a0-kzm9g-reference.dts
-@@ -99,6 +99,12 @@
- 		toshiba,mmc-wrprotect-disable;
- 		toshiba,mmc-has-idle-wait;
- 	};
-+
-+	/* A dummy LCDC DT node for now */
-+	lcdc: lcdc@0xfe940000 {
-+		compatible = "renesas,sh-mobile-lcdc";
-+		reg = <0xfe940000 0x4000>;
-+	};
- };
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index d08d799..eac56ef 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -27,6 +27,23 @@ config VGASTATE
+        tristate
+        default n
  
- &i2c3 {
-@@ -106,6 +112,90 @@
- 	pinctrl-0 = <&i2c3_pins>;
- };
++config SYSFB
++	tristate "System Framebuffer Bus"
++	help
++	  Framebuffers like VGA, VESA/VBE, EFI and others can be handled by many
++	  different drivers. This bus provides an infrastructure for drivers to
++	  register themselves and then get bound/unbound to these system-wide
++	  framebuffers.
++	  This bus prevents framebuffers from being used by multiple drivers
++	  simultaneously and also provides a sysfs API to bind/rebind different
++	  drivers to each device from userspace.
++
++	  Chipset-specific drivers (like real GPU drivers) will always take
++	  precedence over generic framebuffer drivers.
++
++	  A driver should normally select this bus-option automatically. Enable
++	  it only if you need out-of-tree builds.
++
+ config VIDEO_OUTPUT_CONTROL
+ 	tristate "Lowlevel video output switch controls"
+ 	help
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 23e948e..f0eb006 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -5,6 +5,7 @@
+ # Each configuration option enables a list of files.
  
-+&i2c0 {
-+	as3711@40 {
-+		compatible = "ams,as3711";
-+		reg = <0x40>;
+ obj-$(CONFIG_VGASTATE)            += vgastate.o
++obj-$(CONFIG_SYSFB)		  += sysfb.o
+ obj-y                             += fb_notify.o
+ obj-$(CONFIG_FB)                  += fb.o
+ fb-y                              := fbmem.o fbmon.o fbcmap.o fbsysfs.o \
+diff --git a/drivers/video/sysfb.c b/drivers/video/sysfb.c
+new file mode 100644
+index 0000000..8249006
+--- /dev/null
++++ b/drivers/video/sysfb.c
+@@ -0,0 +1,230 @@
++/*
++ * System framebuffer bus
++ * Copyright (c) 2013 David Herrmann
++ */
 +
-+		regulators {
-+			sd1 {
-+				regulator-name = "1.315V CPU";
-+				regulator-min-microvolt = <1315000>;
-+				regulator-max-microvolt = <1335000>;
-+				regulator-always-on;
-+				regulator-boot-on;
-+			};
-+			sd2 {
-+				regulator-name = "1.8V";
-+				regulator-min-microvolt = <1800000>;
-+				regulator-max-microvolt = <1800000>;
-+				regulator-always-on;
-+				regulator-boot-on;
-+			};
-+			sd4 {
-+				regulator-name = "1.215V";
-+				regulator-min-microvolt = <1215000>;
-+				regulator-max-microvolt = <1235000>;
-+				regulator-always-on;
-+				regulator-boot-on;
-+			};
-+			ldo2 {
-+				regulator-name = "2.8V CPU";
-+				regulator-min-microvolt = <2800000>;
-+				regulator-max-microvolt = <2800000>;
-+				regulator-always-on;
-+				regulator-boot-on;
-+			};
-+			ldo3 {
-+				regulator-name = "3.0V CPU";
-+				regulator-min-microvolt = <3000000>;
-+				regulator-max-microvolt = <3000000>;
-+				regulator-always-on;
-+				regulator-boot-on;
-+			};
-+			ldo4 {
-+				regulator-name = "2.8V";
-+				regulator-min-microvolt = <2800000>;
-+				regulator-max-microvolt = <2800000>;
-+				regulator-always-on;
-+				regulator-boot-on;
-+			};
-+			ldo5 {
-+				regulator-name = "2.8V #2";
-+				regulator-min-microvolt = <2800000>;
-+				regulator-max-microvolt = <2800000>;
-+				regulator-always-on;
-+				regulator-boot-on;
-+			};
-+			ldo7 {
-+				regulator-name = "1.15V CPU";
-+				regulator-min-microvolt = <1150000>;
-+				regulator-max-microvolt = <1150000>;
-+				regulator-always-on;
-+				regulator-boot-on;
-+			};
-+			ldo8 {
-+				regulator-name = "1.15V CPU #2";
-+				regulator-min-microvolt = <1150000>;
-+				regulator-max-microvolt = <1150000>;
-+				regulator-always-on;
-+				regulator-boot-on;
-+			};
-+		};
++/*
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the Free
++ * Software Foundation; either version 2 of the License, or (at your option)
++ * any later version.
++ */
 +
-+		backlight {
-+			compatible = "ams,as3711-bl";
-+			su2-dev = <&lcdc>;
-+			su2-max-uA = <36000>;
-+			su2-feedback-curr-auto;
-+			su2-fbprot-gpio4;
-+			su2-auto-curr1;
-+			su2-auto-curr2;
-+			su2-auto-curr3;
-+		};
-+	};
-+};
++/*
++ * The system framebuffer bus (sysfb) provides a way to register global system
++ * framebuffers and load different drivers for it. This includes VESA/VBE and
++ * EFI framebuffers.
++ * Platform code is responsible of adding the framebuffer devices to the system
++ * platform bus. The sysfb bus will pick up known devices and provide them via
++ * the sysfb bus to system drivers. This guarantees that only one driver uses
++ * a single system framebuffer at a time.
++ *
++ * Drivers that can make use of the generic interfaces of system framebuffers
++ * should register as a sysfb driver. They will get notified via probe/remove
++ * callbacks just like any other hotpluggable driver. Users can load/unload
++ * drivers via the sysfs bus interface so drivers must be hotplug capable.
++ *
++ * Drivers that cannot make use of the generic interfaces but instead control
++ * the real hardware should instead claim the device. These drivers normally
++ * register through PCI or platform devices and control the device via another
++ * interface.
++ * By claiming a device, all other generic drivers are unregistered and no more
++ * drivers will be probed unless the device is released again.
++ *
++ * Only _real_ hardware drivers should claim devices as there is always another
++ * mechanism to control which real hardware driver gets loaded (eg. pci-bus).
++ * Generic drivers which aren't controlled via another bus should use this
++ * generic sysfb driver interface instead of claiming a device.
++ *
++ * All drivers must make sure that after they get unloaded or release a device,
++ * the device is reset to a usable state. If the driver cannot guarantee that,
++ * it should taint the device so other drivers will notice it and can
++ * optionally recover the device.
++ */
 +
- &gpio {
- 	sdhi0_pins: pfc_sdhi0_pins {
- 		renesas,pins = "sdhi0_data4", "sdhi0_ctrl", "sdhi0_wp", "sdhi0_cd";
-diff --git a/arch/arm/mach-shmobile/board-kzm9g-reference.c b/arch/arm/mach-shmobile/board-kzm9g-reference.c
-index 1490246..9d520ca 100644
---- a/arch/arm/mach-shmobile/board-kzm9g-reference.c
-+++ b/arch/arm/mach-shmobile/board-kzm9g-reference.c
-@@ -31,6 +31,7 @@
- #include <linux/regulator/fixed.h>
- #include <linux/regulator/machine.h>
- #include <linux/smsc911x.h>
-+#include <linux/videodev2.h>
- 
- #include <mach/irqs.h>
- #include <mach/sh73a0.h>
-@@ -39,6 +40,62 @@
- #include <asm/mach-types.h>
- #include <asm/mach/arch.h>
- 
-+#include <video/sh_mobile_lcdc.h>
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 +
-+/* LCDC */
-+static struct fb_videomode kzm_lcdc_mode = {
-+	.name		= "WVGA Panel",
-+	.xres		= 800,
-+	.yres		= 480,
-+	.left_margin	= 220,
-+	.right_margin	= 110,
-+	.hsync_len	= 70,
-+	.upper_margin	= 20,
-+	.lower_margin	= 5,
-+	.vsync_len	= 5,
-+	.sync		= 0,
-+};
++#include <linux/device.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/platform_device.h>
++#include <linux/screen_info.h>
++#include <linux/slab.h>
++#include <linux/spinlock.h>
++#include <linux/sysfb.h>
 +
-+static struct sh_mobile_lcdc_info lcdc_info = {
-+	.clock_source = LCDC_CLK_BUS,
-+	.ch[0] = {
-+		.chan		= LCDC_CHAN_MAINLCD,
-+		.fourcc		= V4L2_PIX_FMT_RGB565,
-+		.interface_type	= RGB24,
-+		.lcd_modes	= &kzm_lcdc_mode,
-+		.num_modes	= 1,
-+		.clock_divider	= 5,
-+		.flags		= 0,
-+		.panel_cfg = {
-+			.width	= 152,
-+			.height	= 91,
-+		},
++static DEFINE_SPINLOCK(sysfb_lock);
++static unsigned int claimed_types;
++
++static int sysfb_bus_match(struct device *dev, struct device_driver *drv)
++{
++	struct sysfb_device *sdev = to_sysfb_device(dev);
++	struct sysfb_driver *sdrv = to_sysfb_driver(drv);
++
++	return (sdrv->type_mask & sdev->type) &&
++	       (sdrv->allow_tainted || !sdev->tainted);
++}
++
++static int sysfb_bus_probe(struct device *dev)
++{
++	struct sysfb_device *sdev = to_sysfb_device(dev);
++	struct sysfb_driver *sdrv = to_sysfb_driver(dev->driver);
++	unsigned long flags;
++	int ret;
++
++	if (!(sdrv->type_mask & sdev->type))
++		return -ENODEV;
++	if (!sdrv->allow_tainted && sdev->tainted)
++		return -ENODEV;
++
++	spin_lock_irqsave(&sysfb_lock, flags);
++	if ((claimed_types & sdev->type)) {
++		spin_unlock_irqrestore(&sysfb_lock, flags);
++		return -ENODEV;
 +	}
++	spin_unlock_irqrestore(&sysfb_lock, flags);
++
++	if (sdrv->probe) {
++		ret = sdrv->probe(sdev);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++
++static int sysfb_bus_remove(struct device *dev)
++{
++	struct sysfb_device *sdev = to_sysfb_device(dev);
++	struct sysfb_driver *sdrv = to_sysfb_driver(dev->driver);
++
++	if (sdrv->remove)
++		sdrv->remove(sdev);
++
++	return 0;
++}
++
++static struct bus_type sysfb_bus_type = {
++	.name = "sysfb",
++	.match = sysfb_bus_match,
++	.probe = sysfb_bus_probe,
++	.remove = sysfb_bus_remove,
 +};
 +
-+static struct resource lcdc_resources[] = {
-+	[0] = {
-+		.name	= "LCDC",
-+		.start	= 0xfe940000,
-+		.end	= 0xfe943fff,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= intcs_evt2irq(0x580),
-+		.flags	= IORESOURCE_IRQ,
-+	},
++int sysfb_register_driver(struct sysfb_driver *drv)
++{
++	int ret;
++
++	drv->driver.bus = &sysfb_bus_type;
++
++	ret = driver_register(&drv->driver);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++EXPORT_SYMBOL(sysfb_register_driver);
++
++void sysfb_unregister_driver(struct sysfb_driver *drv)
++{
++	driver_unregister(&drv->driver);
++}
++EXPORT_SYMBOL(sysfb_unregister_driver);
++
++static int __sysfb_rescan(struct device *dev, void *data)
++{
++	return device_attach(dev);
++}
++
++static void sysfb_rescan(void)
++{
++	bus_for_each_dev(&sysfb_bus_type, NULL, NULL, __sysfb_rescan);
++}
++
++static int __sysfb_claim(struct device *dev, void *data)
++{
++	struct sysfb_device *sdev = to_sysfb_device(dev);
++	unsigned int claim = (long)data;
++
++	if (!(sdev->type & claim))
++		return 0;
++
++	device_release_driver(dev);
++	return 0;
++}
++
++int sysfb_claim(unsigned int types)
++{
++	unsigned long flags;
++	int ret;
++
++	if (!(types & SYSFB_TYPES))
++		return -EINVAL;
++
++	spin_lock_irqsave(&sysfb_lock, flags);
++	if ((claimed_types & types)) {
++		spin_unlock_irqrestore(&sysfb_lock, flags);
++		return -EALREADY;
++	}
++	claimed_types |= types;
++	spin_unlock_irqrestore(&sysfb_lock, flags);
++
++	ret = bus_for_each_dev(&sysfb_bus_type, NULL, (void*)(long)types,
++			       __sysfb_claim);
++	if (ret)
++		goto err_restore;
++
++	return 0;
++
++err_restore:
++	spin_lock_irqsave(&sysfb_lock, flags);
++	claimed_types &= ~types;
++	spin_unlock_irqrestore(&sysfb_lock, flags);
++
++	sysfb_rescan();
++	return ret;
++}
++EXPORT_SYMBOL(sysfb_claim);
++
++void sysfb_release(unsigned int types)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&sysfb_lock, flags);
++	claimed_types &= ~types;
++	spin_unlock_irqrestore(&sysfb_lock, flags);
++
++	sysfb_rescan();
++}
++EXPORT_SYMBOL(sysfb_release);
++
++void sysfb_taint(struct sysfb_device *sdev, bool set)
++{
++	sdev->tainted = set;
++}
++EXPORT_SYMBOL(sysfb_taint);
++
++static int __init sysfb_init(void)
++{
++	int ret;
++
++	ret = bus_register(&sysfb_bus_type);
++	if (ret) {
++		pr_err("cannot register sysfb bus\n");
++		return ret;
++	}
++
++	return 0;
++}
++
++static void __exit sysfb_exit(void)
++{
++	bus_unregister(&sysfb_bus_type);
++}
++
++module_init(sysfb_init);
++module_exit(sysfb_exit);
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("David Herrmann <dh.herrmann@gmail.com>");
++MODULE_DESCRIPTION("System framebuffer bus");
+diff --git a/include/linux/sysfb.h b/include/linux/sysfb.h
+new file mode 100644
+index 0000000..6cd3c24
+--- /dev/null
++++ b/include/linux/sysfb.h
+@@ -0,0 +1,134 @@
++#ifndef __LINUX_SYSFB_H_
++#define __LINUX_SYSFB_H_
++
++/*
++ * System framebuffer bus
++ * Copyright (c) 2013 David Herrmann
++ */
++
++/*
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the Free
++ * Software Foundation; either version 2 of the License, or (at your option)
++ * any later version.
++ */
++
++#include <linux/device.h>
++#include <linux/kernel.h>
++#include <linux/screen_info.h>
++#include <linux/types.h>
++
++/**
++ * sysfb_type
++ *
++ * Different types of available framebuffer devices. Only one device of each
++ * type can be available at a time. In most systems there even is only one
++ * device at all.
++ *
++ * Use the sysfb_device->screen pointer to get information about the framebuffer
++ * devices.
++ */
++enum sysfb_type {
++	SYSFB_TYPES = 0,
 +};
 +
-+static struct platform_device lcdc_device = {
-+	.name		= "sh_mobile_lcdc_fb",
-+	.num_resources	= ARRAY_SIZE(lcdc_resources),
-+	.resource	= lcdc_resources,
-+	.dev	= {
-+		.platform_data	= &lcdc_info,
-+		.coherent_dma_mask = ~0,
-+	},
++/**
++ * sysfb_device
++ * @tainted: whether the device was tainted or not
++ * @type: type of the fb device (@sysfb_type)
++ * @screen: pointer to supplemental screen-info object
++ * @dev: device object
++ *
++ * Each framebuffer device is represented by a sysfb_device object. The sysfb
++ * core manages them and they cannot be registered from the outside.
++ */
++struct sysfb_device {
++	bool tainted;
++	unsigned int type;
++	struct screen_info *screen;
++	struct device dev;
 +};
 +
- /* Dummy supplies, where voltage doesn't matter */
- static struct regulator_consumer_supply dummy_supplies[] = {
- 	REGULATOR_SUPPLY("vddvario", "smsc911x"),
-@@ -79,6 +136,15 @@ static const struct pinctrl_map kzm_pinctrl_map[] = {
- 				  "scifa4_data", "scifa4"),
- 	PIN_MAP_MUX_GROUP_DEFAULT("sh-sci.4", "e6050000.pfc",
- 				  "scifa4_ctrl", "scifa4"),
-+	PIN_MAP_MUX_GROUP_DEFAULT("sh_mobile_lcdc_fb.0", "e6050000.pfc",
-+				  "lcd_data24", "lcd"),
-+	PIN_MAP_MUX_GROUP_DEFAULT("sh_mobile_lcdc_fb.0", "e6050000.pfc",
-+				  "lcd_sync", "lcd"),
++#define to_sysfb_device(_dev) container_of((_dev), struct sysfb_device, dev)
++
++/**
++ * sysfb_driver
++ * @type_mask: mask of device-types that are supported (@sysfb_type)
++ * @allow_tainted: whether the driver can be bound to tainted devices
++ * @driver: driver object
++ * @probe: probe callback
++ * @remove: remove callback
++ *
++ * Each generic framebuffer driver must provide this structure when registering
++ * to the sysfb core. The @driver field must also be provided by the caller
++ * except for the 'driver.bus' field which is initialized by the core.
++ */
++struct sysfb_driver {
++	unsigned int type_mask;
++	bool allow_tainted;
++	struct device_driver driver;
++
++	int (*probe) (struct sysfb_device *dev);
++	void (*remove) (struct sysfb_device *dev);
 +};
 +
-+static struct platform_device *kzm_devices[] __initdata = {
-+	&smsc_device,
-+	&lcdc_device,
- };
- 
- static void __init kzm_init(void)
-@@ -88,7 +154,10 @@ static void __init kzm_init(void)
- 	pinctrl_register_mappings(kzm_pinctrl_map, ARRAY_SIZE(kzm_pinctrl_map));
- 
- 	regulator_register_fixed(2, dummy_supplies, ARRAY_SIZE(dummy_supplies));
--	platform_device_register(&smsc_device);
++#define to_sysfb_driver(_drv) container_of((_drv), struct sysfb_driver, driver)
 +
-+	/* LCDC */
-+	gpio_request_one(222, GPIOF_OUT_INIT_HIGH, NULL); /* LCDCDON */
-+	gpio_request_one(226, GPIOF_OUT_INIT_HIGH, NULL); /* SC */
- 
- 	/*
- 	 * Enable SD: this is a pseudo-GPIO, it actually only sets bit 28 in
-@@ -101,6 +170,8 @@ static void __init kzm_init(void)
- 	/* Early BRESP enable, Shared attribute override enable, 64K*8way */
- 	l2x0_init(IOMEM(0xf0100000), 0x40460000, 0x82000fff);
- #endif
++/**
++ * sysfb_register_driver
++ * @drv: Driver object
++ *
++ * Register a new driver on the sysfb bus.
++ */
++int sysfb_register_driver(struct sysfb_driver *drv);
 +
-+	platform_add_devices(kzm_devices, ARRAY_SIZE(kzm_devices));
- }
- 
- static void kzm9g_restart(char mode, const char *cmd)
++/**
++ * sysfb_unregister_driver
++ * @drv: Driver object
++ *
++ * Remove a driver from the sysfb bus.
++ */
++void sysfb_unregister_driver(struct sysfb_driver *drv);
++
++/**
++ * sysfb_claim
++ * @types: Bitmask of sysfb_type flags
++ *
++ * Unbind all drivers from all devices matching the given types and prevent
++ * further drivers to get loaded on these types of devices. This allows real
++ * hardware drivers that are loaded by other bus-types (eg. pci-bus) to prevent
++ * any generic driver from using the given framebuffer types.
++ *
++ * Return 0 if the types could be claimed, otherwise a negative error code
++ * is returned.
++ */
++int sysfb_claim(unsigned int types);
++
++/**
++ * sysfb_release
++ * @types: Bitmask of sysfb_type flags
++ *
++ * Releases the given previously claimed types. See sysfb_claim(). This does
++ * not check whether the types are actually claimed or who claimed them. So make
++ * sure to call this only when you really claimed these types previously.
++ */
++void sysfb_release(unsigned int types);
++
++/**
++ * sysfb_taint
++ * @sdev: sysfb device
++ * @set: whether to taint or untaint
++ *
++ * This taints a given sysfb device. This should be done by all drivers if they
++ * change the framebuffer device in a way that other generic drivers might not
++ * be able to detect afterwards.
++ * This includes changing the resolution or properties of a framebuffer without
++ * adjusting the screen_info object.
++ * This can be reset to 'false' after all the changes have been undone.
++ *
++ * This is an unlocked function. You must call it from within your probe/remove
++ * callbacks in the driver.
++ */
++void sysfb_taint(struct sysfb_device *sdev, bool set);
++
++#endif /* __LINUX_SYSFB_H_ */
 -- 
-1.7.2.5
+1.8.1.3
 

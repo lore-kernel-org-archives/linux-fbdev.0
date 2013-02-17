@@ -1,37 +1,85 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 28 Feb 2013 13:22:14 +0000
-Subject: Re: [PATCH 0/9] System Framebuffer Bus (sysfb)
-Message-Id: <CAMuHMdUfyOe_ySL0gB_FQLjz2ACQhk6cPWi_ty5pMb6=zZduSA@mail.gmail.com>
+From: Grazvydas Ignotas <notasas@gmail.com>
+Date: Sun, 17 Feb 2013 00:43:12 +0000
+Subject: [PATCH] OMAPDSS: tpo-td043 panel: fix data passing between SPI/DSS parts
+Message-Id: <1361061792-2350-1-git-send-email-notasas@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
-	<CAPM=9txQtJ6FLFTEFr_Wi6RK=W9y3gKYxV_+zPCo6kLi4nM8eA@mail.gmail.com>
-	<CANq1E4TTB-Lp+eVRPpzOMnS7XNbzHJRTicwCcwXw3AUs11XFMw@mail.gmail.com>
-	<CAPM=9tzDXLqUG3c6VsMjaJ_1997h7f+_3kB0C0N2imuQcXsD6Q@mail.gmail.com>
-	<CANq1E4QoutxRkuBj3p2vaw2U4-GN0Gz4ueopKkDavX_ZmgMC-w@mail.gmail.com>
-In-Reply-To: <CANq1E4QoutxRkuBj3p2vaw2U4-GN0Gz4ueopKkDavX_ZmgMC-w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Herrmann <dh.herrmann@gmail.com>
-Cc: Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org
+To: linux-fbdev@vger.kernel.org
+Cc: linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Archit Taneja <archit@ti.com>, Grazvydas Ignotas <notasas@gmail.com>
 
-On Thu, Feb 28, 2013 at 1:20 PM, David Herrmann <dh.herrmann@gmail.com> wrote:
-> We currently have different drivers that can make use of "system
-> framebuffers" (as I call them for now):
->  - vgacon
->  - fbdev
->  - DRM
-> (- vgalog) (similar to fblog/drmlog but using vga/VBE)
+This driver uses omap_dss_device that it gets from a board file through
+SPI platfrom_data pointer to pass data from SPI to DSS portion of the
+driver by using dev_set_drvdata(). However this trick no longer works,
+as DSS core no longer uses omap_dss_device from a board file to create
+the real device, so use a global pointer to accomplish this instead,
+like other SPI panel drivers do.
 
-offb
+Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
+---
+ .../video/omap2/displays/panel-tpo-td043mtea1.c    |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-Gr{oetje,eeting}s,
+diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+index 6b66439..048c983 100644
+--- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
++++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+@@ -63,6 +63,9 @@ struct tpo_td043_device {
+ 	u32 power_on_resume:1;
+ };
+ 
++/* used to pass spi_device from SPI to DSS portion of the driver */
++static struct tpo_td043_device *g_tpo_td043;
++
+ static int tpo_td043_write(struct spi_device *spi, u8 addr, u8 data)
+ {
+ 	struct spi_message	m;
+@@ -403,7 +406,7 @@ static void tpo_td043_disable(struct omap_dss_device *dssdev)
+ 
+ static int tpo_td043_probe(struct omap_dss_device *dssdev)
+ {
+-	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(&dssdev->dev);
++	struct tpo_td043_device *tpo_td043 = g_tpo_td043;
+ 	int nreset_gpio = dssdev->reset_gpio;
+ 	int ret = 0;
+ 
+@@ -440,6 +443,8 @@ static int tpo_td043_probe(struct omap_dss_device *dssdev)
+ 	if (ret)
+ 		dev_warn(&dssdev->dev, "failed to create sysfs files\n");
+ 
++	dev_set_drvdata(&dssdev->dev, tpo_td043);
++
+ 	return 0;
+ 
+ fail_gpio_req:
+@@ -505,6 +510,9 @@ static int tpo_td043_spi_probe(struct spi_device *spi)
+ 		return -ENODEV;
+ 	}
+ 
++	if (g_tpo_td043 != NULL)
++		return -EBUSY;
++
+ 	spi->bits_per_word = 16;
+ 	spi->mode = SPI_MODE_0;
+ 
+@@ -521,7 +529,7 @@ static int tpo_td043_spi_probe(struct spi_device *spi)
+ 	tpo_td043->spi = spi;
+ 	tpo_td043->nreset_gpio = dssdev->reset_gpio;
+ 	dev_set_drvdata(&spi->dev, tpo_td043);
+-	dev_set_drvdata(&dssdev->dev, tpo_td043);
++	g_tpo_td043 = tpo_td043;
+ 
+ 	omap_dss_register_driver(&tpo_td043_driver);
+ 
+@@ -534,6 +542,7 @@ static int tpo_td043_spi_remove(struct spi_device *spi)
+ 
+ 	omap_dss_unregister_driver(&tpo_td043_driver);
+ 	kfree(tpo_td043);
++	g_tpo_td043 = NULL;
+ 
+ 	return 0;
+ }
+-- 
+1.7.9.5
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

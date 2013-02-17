@@ -1,134 +1,238 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:34:05 +0000
-Subject: [PATCH 13/33] arm: omap: board-omap3evm: use sharp panel's gpio handling
-Message-Id: <1360765345-19312-14-git-send-email-archit@ti.com>
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Sun, 17 Feb 2013 17:59:06 +0000
+Subject: [PATCH 4/9] video: vesafb: allow building as module
+Message-Id: <1361123951-587-5-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360765345-19312-1-git-send-email-archit@ti.com>
-In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
+References: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
+In-Reply-To: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>, Tony Lindgren <tony@atomide.com>
+To: linux-kernel@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, David Herrmann <dh.herrmann@googlemail.com>
 
-The omap3evm board file currently requests gpios required by the sharp_ls dpi
-panel, and provides platform_enable/disable callbacks to configure them.
+From: David Herrmann <dh.herrmann@googlemail.com>
 
-These tasks have been moved to the sharp_ls panel driver itself and shouldn't
-be done in the board files.
+Fix the vesafb module to no longer use any static __init data. Also add a
+module_exit() function that destroys the platform device.
 
-Remove the gpio requests and the platform callbacks from the board file.
-Add the gpio information to panel_sharp_ls037v7dw01_data so that it's passed
-to the panel driver.
+Note that fbdev hotplugging is broken and the self-reference actually
+prevents sane module-unloading. Anyway, this at least allows delayed
+module loading of vesafb and helps debugging vesafb a lot.
 
-Note: The GPIOs OMAP3EVM_LCD_PANEL_ENVDD and OMAP3EVM_LCD_PANEL_BKLIGHT_GPIO
-aren't directly connected to the sharp panel, hence they aren't passed to the
-panel driver as platform data. These are set to a default value such that LCD
-is enabled and backlight is on. These used to previously toggle through the
-platform_enable/disable callbacks, but now these are always on. This needs to
-be revisited.
-
-Cc: Tony Lindgren <tony@atomide.com>
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
 ---
- arch/arm/mach-omap2/board-omap3evm.c |   59 ++++++++++++----------------------
- 1 file changed, 20 insertions(+), 39 deletions(-)
+ drivers/video/Kconfig  |   2 +-
+ drivers/video/vesafb.c | 100 +++++++++++++++++++++++++++++++------------------
+ 2 files changed, 64 insertions(+), 38 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-omap3evm.c b/arch/arm/mach-omap2/board-omap3evm.c
-index 335127d..dfb5e1b 100644
---- a/arch/arm/mach-omap2/board-omap3evm.c
-+++ b/arch/arm/mach-omap2/board-omap3evm.c
-@@ -154,61 +154,43 @@ static inline void __init omap3evm_init_smsc911x(void) { return; }
- #define OMAP3EVM_LCD_PANEL_LR		2
- #define OMAP3EVM_LCD_PANEL_UD		3
- #define OMAP3EVM_LCD_PANEL_INI		152
--#define OMAP3EVM_LCD_PANEL_ENVDD	153
- #define OMAP3EVM_LCD_PANEL_QVGA		154
- #define OMAP3EVM_LCD_PANEL_RESB		155
-+
-+#define OMAP3EVM_LCD_PANEL_ENVDD	153
- #define OMAP3EVM_LCD_PANEL_BKLIGHT_GPIO	210
-+
-+/*
-+ * OMAP3EVM DVI control signals
-+ */
- #define OMAP3EVM_DVI_PANEL_EN_GPIO	199
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index eac56ef..d5723c2 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -770,7 +770,7 @@ config FB_UVESA
+ 	  If unsure, say N.
  
--static struct gpio omap3_evm_dss_gpios[] __initdata = {
--	{ OMAP3EVM_LCD_PANEL_RESB,  GPIOF_OUT_INIT_HIGH, "lcd_panel_resb"  },
--	{ OMAP3EVM_LCD_PANEL_INI,   GPIOF_OUT_INIT_HIGH, "lcd_panel_ini"   },
--	{ OMAP3EVM_LCD_PANEL_QVGA,  GPIOF_OUT_INIT_LOW,  "lcd_panel_qvga"  },
--	{ OMAP3EVM_LCD_PANEL_LR,    GPIOF_OUT_INIT_HIGH, "lcd_panel_lr"    },
--	{ OMAP3EVM_LCD_PANEL_UD,    GPIOF_OUT_INIT_HIGH, "lcd_panel_ud"    },
--	{ OMAP3EVM_LCD_PANEL_ENVDD, GPIOF_OUT_INIT_LOW,  "lcd_panel_envdd" },
-+static struct panel_sharp_ls037v7dw01_data omap3_evm_lcd_data = {
-+	.resb_gpio = OMAP3EVM_LCD_PANEL_RESB,
-+	.ini_gpio = OMAP3EVM_LCD_PANEL_INI,
-+	.mo_gpio = OMAP3EVM_LCD_PANEL_QVGA,
-+	.lr_gpio = OMAP3EVM_LCD_PANEL_LR,
-+	.ud_gpio = OMAP3EVM_LCD_PANEL_UD,
- };
+ config FB_VESA
+-	bool "VESA VGA graphics support"
++	tristate "VESA VGA graphics support"
+ 	depends on (FB = y) && X86
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+diff --git a/drivers/video/vesafb.c b/drivers/video/vesafb.c
+index 501b340..4ad7b40 100644
+--- a/drivers/video/vesafb.c
++++ b/drivers/video/vesafb.c
+@@ -29,27 +29,10 @@
  
--static int lcd_enabled;
--static int dvi_enabled;
+ /* --------------------------------------------------------------------- */
+ 
+-static struct fb_var_screeninfo vesafb_defined __initdata = {
+-	.activate	= FB_ACTIVATE_NOW,
+-	.height		= -1,
+-	.width		= -1,
+-	.right_margin	= 32,
+-	.upper_margin	= 16,
+-	.lower_margin	= 4,
+-	.vsync_len	= 4,
+-	.vmode		= FB_VMODE_NONINTERLACED,
+-};
 -
- static void __init omap3_evm_display_init(void)
+-static struct fb_fix_screeninfo vesafb_fix __initdata = {
+-	.id	= "VESA VGA",
+-	.type	= FB_TYPE_PACKED_PIXELS,
+-	.accel	= FB_ACCEL_NONE,
+-};
+-
+ static int   inverse    __read_mostly;
+ static int   mtrr       __read_mostly;		/* disable mtrr */
+-static int   vram_remap __initdata;		/* Set amount of memory to be used */
+-static int   vram_total __initdata;		/* Set total amount of memory */
++static int   vram_remap;			/* Set amount of memory to be used */
++static int   vram_total;			/* Set total amount of memory */
+ static int   pmi_setpal __read_mostly = 1;	/* pmi for palette changes ??? */
+ static int   ypan       __read_mostly;		/* 0..nothing, 1..ypan, 2..ywrap */
+ static void  (*pmi_start)(void) __read_mostly;
+@@ -58,6 +41,11 @@ static int   depth      __read_mostly;
+ static int   vga_compat __read_mostly;
+ /* --------------------------------------------------------------------- */
+ 
++struct vesafb_par {
++	struct fb_ops ops;
++	u32 palette[256];
++};
++
+ static int vesafb_pan_display(struct fb_var_screeninfo *var,
+                               struct fb_info *info)
  {
- 	int r;
- 
--	r = gpio_request_array(omap3_evm_dss_gpios,
--			       ARRAY_SIZE(omap3_evm_dss_gpios));
-+	r = gpio_request_one(OMAP3EVM_LCD_PANEL_ENVDD, GPIOF_OUT_INIT_LOW,
-+				"lcd_panel_envdd");
- 	if (r)
--		printk(KERN_ERR "failed to get lcd_panel_* gpios\n");
--}
-+		pr_err("failed to get lcd_panel_envdd GPIO\n");
- 
--static int omap3_evm_enable_lcd(struct omap_dss_device *dssdev)
--{
--	if (dvi_enabled) {
--		printk(KERN_ERR "cannot enable LCD, DVI is enabled\n");
--		return -EINVAL;
--	}
--	gpio_set_value(OMAP3EVM_LCD_PANEL_ENVDD, 0);
-+	r = gpio_request_one(OMAP3EVM_LCD_PANEL_BKLIGHT_GPIO,
-+				GPIOF_OUT_INIT_LOW, "lcd_panel_bklight");
-+	if (r)
-+		pr_err("failed to get lcd_panel_bklight GPIO\n");
- 
- 	if (get_omap3_evm_rev() >= OMAP3EVM_BOARD_GEN_2)
- 		gpio_set_value_cansleep(OMAP3EVM_LCD_PANEL_BKLIGHT_GPIO, 0);
- 	else
- 		gpio_set_value_cansleep(OMAP3EVM_LCD_PANEL_BKLIGHT_GPIO, 1);
--
--	lcd_enabled = 1;
--	return 0;
--}
--
--static void omap3_evm_disable_lcd(struct omap_dss_device *dssdev)
--{
--	gpio_set_value(OMAP3EVM_LCD_PANEL_ENVDD, 1);
--
--	if (get_omap3_evm_rev() >= OMAP3EVM_BOARD_GEN_2)
--		gpio_set_value_cansleep(OMAP3EVM_LCD_PANEL_BKLIGHT_GPIO, 1);
--	else
--		gpio_set_value_cansleep(OMAP3EVM_LCD_PANEL_BKLIGHT_GPIO, 0);
--
--	lcd_enabled = 0;
+@@ -182,7 +170,7 @@ static void vesafb_destroy(struct fb_info *info)
+ 	framebuffer_release(info);
  }
  
- static struct omap_dss_device omap3_evm_lcd_device = {
-@@ -216,8 +198,7 @@ static struct omap_dss_device omap3_evm_lcd_device = {
- 	.driver_name		= "sharp_ls_panel",
- 	.type			= OMAP_DISPLAY_TYPE_DPI,
- 	.phy.dpi.data_lines	= 18,
--	.platform_enable	= omap3_evm_enable_lcd,
--	.platform_disable	= omap3_evm_disable_lcd,
-+	.data			= &omap3_evm_lcd_data,
+-static struct fb_ops vesafb_ops = {
++static const struct fb_ops vesafb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_destroy     = vesafb_destroy,
+ 	.fb_setcolreg	= vesafb_setcolreg,
+@@ -192,7 +180,7 @@ static struct fb_ops vesafb_ops = {
+ 	.fb_imageblit	= cfb_imageblit,
  };
  
- static int omap3_evm_enable_tv(struct omap_dss_device *dssdev)
+-static int __init vesafb_setup(char *options)
++static int vesafb_setup(char *options)
+ {
+ 	char *this_opt;
+ 	
+@@ -226,13 +214,29 @@ static int __init vesafb_setup(char *options)
+ 	return 0;
+ }
+ 
+-static int __init vesafb_probe(struct platform_device *dev)
++static int vesafb_probe(struct platform_device *dev)
+ {
+ 	struct fb_info *info;
++	struct vesafb_par *par;
+ 	int i, err;
+ 	unsigned int size_vmode;
+ 	unsigned int size_remap;
+ 	unsigned int size_total;
++	struct fb_var_screeninfo vesafb_defined = {
++		.activate	= FB_ACTIVATE_NOW,
++		.height		= -1,
++		.width		= -1,
++		.right_margin	= 32,
++		.upper_margin	= 16,
++		.lower_margin	= 4,
++		.vsync_len	= 4,
++		.vmode		= FB_VMODE_NONINTERLACED,
++	};
++	struct fb_fix_screeninfo vesafb_fix = {
++		.id	= "VESA VGA",
++		.type	= FB_TYPE_PACKED_PIXELS,
++		.accel	= FB_ACCEL_NONE,
++	};
+ 
+ 	if (screen_info.orig_video_isVGA != VIDEO_TYPE_VLFB)
+ 		return -ENODEV;
+@@ -287,13 +291,14 @@ static int __init vesafb_probe(struct platform_device *dev)
+ 		   spaces our resource handlers simply don't know about */
+ 	}
+ 
+-	info = framebuffer_alloc(sizeof(u32) * 256, &dev->dev);
++	info = framebuffer_alloc(sizeof(struct vesafb_par), &dev->dev);
+ 	if (!info) {
+ 		release_mem_region(vesafb_fix.smem_start, size_total);
+ 		return -ENOMEM;
+ 	}
+-	info->pseudo_palette = info->par;
+-	info->par = NULL;
++	par = info->par;
++	par->ops = vesafb_ops;
++	info->pseudo_palette = par->palette;
+ 
+ 	/* set vesafb aperture size for generic probing */
+ 	info->apertures = alloc_apertures(1);
+@@ -466,7 +471,7 @@ static int __init vesafb_probe(struct platform_device *dev)
+ 	       vesafb_fix.smem_start, info->screen_base,
+ 	       size_remap/1024, size_total/1024);
+ 
+-	info->fbops = &vesafb_ops;
++	info->fbops = &par->ops;
+ 	info->var = vesafb_defined;
+ 	info->fix = vesafb_fix;
+ 	info->flags = FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE |
+@@ -486,6 +491,7 @@ static int __init vesafb_probe(struct platform_device *dev)
+ 	}
+ 	printk(KERN_INFO "fb%d: %s frame buffer device\n",
+ 	       info->node, info->fix.id);
++	platform_set_drvdata(dev, info);
+ 	return 0;
+ err:
+ 	if (info->screen_base)
+@@ -495,7 +501,17 @@ err:
+ 	return err;
+ }
+ 
++static int vesafb_remove(struct platform_device *dev)
++{
++	struct fb_info *info = platform_get_drvdata(dev);
++
++	unregister_framebuffer(info);
++	return 0;
++}
++
+ static struct platform_driver vesafb_driver = {
++	.probe = vesafb_probe,
++	.remove = vesafb_remove,
+ 	.driver	= {
+ 		.name	= "vesafb",
+ 	},
+@@ -512,24 +528,34 @@ static int __init vesafb_init(void)
+ 	fb_get_options("vesafb", &option);
+ 	vesafb_setup(option);
+ 
+-	vesafb_device = platform_device_alloc("vesafb", 0);
++	vesafb_device = platform_device_alloc("vesafb", -1);
+ 	if (!vesafb_device)
+ 		return -ENOMEM;
+ 
++	ret = platform_driver_register(&vesafb_driver);
++	if (ret)
++		goto err_dev;
++
+ 	ret = platform_device_add(vesafb_device);
+-	if (!ret) {
+-		ret = platform_driver_probe(&vesafb_driver, vesafb_probe);
+-		if (ret)
+-			platform_device_del(vesafb_device);
+-	}
++	if (ret)
++		goto err_drv;
+ 
+-	if (ret) {
+-		platform_device_put(vesafb_device);
+-		vesafb_device = NULL;
+-	}
++	return 0;
+ 
++err_drv:
++	platform_driver_unregister(&vesafb_driver);
++err_dev:
++	platform_device_put(vesafb_device);
+ 	return ret;
+ }
+-module_init(vesafb_init);
+ 
++static void __exit vesafb_exit(void)
++{
++	platform_device_del(vesafb_device);
++	platform_device_put(vesafb_device);
++	platform_driver_unregister(&vesafb_driver);
++}
++
++module_init(vesafb_init);
++module_exit(vesafb_exit);
+ MODULE_LICENSE("GPL");
 -- 
-1.7.9.5
+1.8.1.3
 

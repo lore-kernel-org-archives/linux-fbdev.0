@@ -1,105 +1,57 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:34:11 +0000
-Subject: [PATCH 19/33] arm: omap: board-zoom: use NEC panel's gpio handling
-Message-Id: <1360765345-19312-20-git-send-email-archit@ti.com>
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Sun, 17 Feb 2013 17:59:05 +0000
+Subject: [PATCH 3/9] video: sysfb: always provide vbefb device
+Message-Id: <1361123951-587-4-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360765345-19312-1-git-send-email-archit@ti.com>
-In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
+References: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
+In-Reply-To: <1361123951-587-1-git-send-email-dh.herrmann@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>, Tony Lindgren <tony@atomide.com>
+To: linux-kernel@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, David Herrmann <dh.herrmann@googlemail.com>
 
-The zoom board file currently requests gpios required by the nec-nl8048hl11-01
-dpi panel, and provides dummy platform_enable/disable callbacks.
+From: David Herrmann <dh.herrmann@googlemail.com>
 
-gpio request and configuration have been moved to the nec-nl8048hl11-01 panel
-driver itself and shouldn't be done in the board files.
+HACK: This should be provided by architecture setup code. But to show how it is
+supposed to work, we now simply add a "vbefb" device during initialization.
 
-Remove the gpio requests and the platform callbacks from the board file. Add the
-gpio information to panel_nec_nl8048_data so that it's passed to the panel
-driver.
+The better way to do this is by moving this into arch-code. So for instance the
+x86 boot initialization should create this platform-device after VBE/VESA screen
+detection. Other architectures can do the same or introduce other framebuffer
+types than SYSFB_VBE.
 
-Cc: Tony Lindgren <tony@atomide.com>
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
 ---
- arch/arm/mach-omap2/board-zoom-display.c |   38 ++++++++++--------------------
- 1 file changed, 13 insertions(+), 25 deletions(-)
+ drivers/video/sysfb.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/arm/mach-omap2/board-zoom-display.c b/arch/arm/mach-omap2/board-zoom-display.c
-index 4717ed5..bd79082 100644
---- a/arch/arm/mach-omap2/board-zoom-display.c
-+++ b/arch/arm/mach-omap2/board-zoom-display.c
-@@ -16,8 +16,9 @@
- #include <linux/spi/spi.h>
- #include <linux/platform_data/spi-omap2-mcspi.h>
- #include <video/omapdss.h>
--#include "board-zoom.h"
-+#include <video/omap-panel-data.h>
- 
-+#include "board-zoom.h"
- #include "soc.h"
- #include "common.h"
- 
-@@ -25,30 +26,11 @@
- #define LCD_PANEL_RESET_GPIO_PILOT	55
- #define LCD_PANEL_QVGA_GPIO		56
- 
--static struct gpio zoom_lcd_gpios[] __initdata = {
--	{ -EINVAL,		GPIOF_OUT_INIT_HIGH, "lcd reset" },
--	{ LCD_PANEL_QVGA_GPIO,	GPIOF_OUT_INIT_HIGH, "lcd qvga"	 },
-+static struct panel_nec_nl8048_data zoom_lcd_data = {
-+	/* res_gpio filled in code */
-+	.qvga_gpio = LCD_PANEL_QVGA_GPIO,
+diff --git a/drivers/video/sysfb.c b/drivers/video/sysfb.c
+index 5b47a9a..0c0a4e7 100644
+--- a/drivers/video/sysfb.c
++++ b/drivers/video/sysfb.c
+@@ -271,6 +271,8 @@ static struct platform_driver sysfb_vbe_driver = {
+ 	.remove = sysfb_vbe_remove,
  };
  
--static void __init zoom_lcd_panel_init(void)
--{
--	zoom_lcd_gpios[0].gpio = (omap_rev() > OMAP3430_REV_ES3_0) ?
--			LCD_PANEL_RESET_GPIO_PROD :
--			LCD_PANEL_RESET_GPIO_PILOT;
--
--	if (gpio_request_array(zoom_lcd_gpios, ARRAY_SIZE(zoom_lcd_gpios)))
--		pr_err("%s: Failed to get LCD GPIOs.\n", __func__);
--}
--
--static int zoom_panel_enable_lcd(struct omap_dss_device *dssdev)
--{
--	return 0;
--}
--
--static void zoom_panel_disable_lcd(struct omap_dss_device *dssdev)
--{
--}
--
- /*
-  * PWMA/B register offsets (TWL4030_MODULE_PWMA)
-  */
-@@ -107,8 +89,7 @@ static struct omap_dss_device zoom_lcd_device = {
- 	.driver_name		= "NEC_8048_panel",
- 	.type			= OMAP_DISPLAY_TYPE_DPI,
- 	.phy.dpi.data_lines	= 24,
--	.platform_enable	= zoom_panel_enable_lcd,
--	.platform_disable	= zoom_panel_disable_lcd,
-+	.data			= &zoom_lcd_data,
- };
- 
- static struct omap_dss_device *zoom_dss_devices[] = {
-@@ -121,6 +102,13 @@ static struct omap_dss_board_info zoom_dss_data = {
- 	.default_device		= &zoom_lcd_device,
- };
- 
-+static void __init zoom_lcd_panel_init(void)
-+{
-+	zoom_lcd_data.res_gpio = (omap_rev() > OMAP3430_REV_ES3_0) ?
-+			LCD_PANEL_RESET_GPIO_PROD :
-+			LCD_PANEL_RESET_GPIO_PILOT;
-+}
++static struct platform_device *sysfb_vbe_device;
 +
- static struct omap2_mcspi_device_config dss_lcd_mcspi_config = {
- 	.turbo_mode		= 1,
- };
+ static int __init sysfb_init(void)
+ {
+ 	int ret;
+@@ -287,6 +289,12 @@ static int __init sysfb_init(void)
+ 		goto err_bus;
+ 	}
+ 
++	sysfb_vbe_device = platform_device_register_data(NULL, "vbefb", -1,
++							 &screen_info,
++							 sizeof(screen_info));
++	if (!sysfb_vbe_device)
++		pr_warn("cannot create vbefb device\n");
++
+ 	return 0;
+ 
+ err_bus:
 -- 
-1.7.9.5
+1.8.1.3
 

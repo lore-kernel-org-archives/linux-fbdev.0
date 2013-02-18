@@ -1,85 +1,60 @@
-From: Grazvydas Ignotas <notasas@gmail.com>
-Date: Sun, 17 Feb 2013 00:43:12 +0000
-Subject: [PATCH] OMAPDSS: tpo-td043 panel: fix data passing between SPI/DSS parts
-Message-Id: <1361061792-2350-1-git-send-email-notasas@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 18 Feb 2013 08:40:20 +0000
+Subject: Re: [PATCH] OMAPDSS: tpo-td043 panel: fix data passing between SPI/DSS parts
+Message-Id: <5121E8F4.5090707@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig6EE5F5303265013AE3C13BFB"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Archit Taneja <archit@ti.com>, Grazvydas Ignotas <notasas@gmail.com>
+References: <1361061792-2350-1-git-send-email-notasas@gmail.com>
+In-Reply-To: <1361061792-2350-1-git-send-email-notasas@gmail.com>
+To: Grazvydas Ignotas <notasas@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-This driver uses omap_dss_device that it gets from a board file through
-SPI platfrom_data pointer to pass data from SPI to DSS portion of the
-driver by using dev_set_drvdata(). However this trick no longer works,
-as DSS core no longer uses omap_dss_device from a board file to create
-the real device, so use a global pointer to accomplish this instead,
-like other SPI panel drivers do.
+--------------enig6EE5F5303265013AE3C13BFB
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
----
- .../video/omap2/displays/panel-tpo-td043mtea1.c    |   13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+On 2013-02-17 02:43, Grazvydas Ignotas wrote:
+> This driver uses omap_dss_device that it gets from a board file through=
 
-diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-index 6b66439..048c983 100644
---- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-+++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-@@ -63,6 +63,9 @@ struct tpo_td043_device {
- 	u32 power_on_resume:1;
- };
- 
-+/* used to pass spi_device from SPI to DSS portion of the driver */
-+static struct tpo_td043_device *g_tpo_td043;
-+
- static int tpo_td043_write(struct spi_device *spi, u8 addr, u8 data)
- {
- 	struct spi_message	m;
-@@ -403,7 +406,7 @@ static void tpo_td043_disable(struct omap_dss_device *dssdev)
- 
- static int tpo_td043_probe(struct omap_dss_device *dssdev)
- {
--	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(&dssdev->dev);
-+	struct tpo_td043_device *tpo_td043 = g_tpo_td043;
- 	int nreset_gpio = dssdev->reset_gpio;
- 	int ret = 0;
- 
-@@ -440,6 +443,8 @@ static int tpo_td043_probe(struct omap_dss_device *dssdev)
- 	if (ret)
- 		dev_warn(&dssdev->dev, "failed to create sysfs files\n");
- 
-+	dev_set_drvdata(&dssdev->dev, tpo_td043);
-+
- 	return 0;
- 
- fail_gpio_req:
-@@ -505,6 +510,9 @@ static int tpo_td043_spi_probe(struct spi_device *spi)
- 		return -ENODEV;
- 	}
- 
-+	if (g_tpo_td043 != NULL)
-+		return -EBUSY;
-+
- 	spi->bits_per_word = 16;
- 	spi->mode = SPI_MODE_0;
- 
-@@ -521,7 +529,7 @@ static int tpo_td043_spi_probe(struct spi_device *spi)
- 	tpo_td043->spi = spi;
- 	tpo_td043->nreset_gpio = dssdev->reset_gpio;
- 	dev_set_drvdata(&spi->dev, tpo_td043);
--	dev_set_drvdata(&dssdev->dev, tpo_td043);
-+	g_tpo_td043 = tpo_td043;
- 
- 	omap_dss_register_driver(&tpo_td043_driver);
- 
-@@ -534,6 +542,7 @@ static int tpo_td043_spi_remove(struct spi_device *spi)
- 
- 	omap_dss_unregister_driver(&tpo_td043_driver);
- 	kfree(tpo_td043);
-+	g_tpo_td043 = NULL;
- 
- 	return 0;
- }
--- 
-1.7.9.5
+> SPI platfrom_data pointer to pass data from SPI to DSS portion of the
+> driver by using dev_set_drvdata(). However this trick no longer works,
+> as DSS core no longer uses omap_dss_device from a board file to create
+> the real device, so use a global pointer to accomplish this instead,
+> like other SPI panel drivers do.
 
+Thanks, looks fine to me.
+
+As a side note, I'm working on removing the omap_dss_device stuff, and
+after that change this driver can be a plain SPI driver. That should
+make things simpler.
+
+ Tomi
+
+
+
+--------------enig6EE5F5303265013AE3C13BFB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRIej0AAoJEPo9qoy8lh71QKcQAJf7bV8Q42vIMriLjUELAlWC
+abynTt6sxCigesoMrz8EGg4N/CB48wLJr4t2RddDu0dOZtsAVdFIZKoVC9XdxETR
+Jd9WoZbGlOrKPnX+z09ZmrrW7iUcB6Zsn9C/E4BCqaDhC966DVU/gw2d9IC6HYDz
+um3zSTf0OqVP1ya8t988JEpnAeiAvRHyAPtsheMGGpyjK0uMTq875wlzaeWNjI9H
+oyQmZ2P7QywDbJY4EIpbCBMJfeDCNW1mIe4wACal2h9PwdanCNl59IdFG9dn70ro
+diD5ATrNpRaXI5gLeFjcDy58+4qA05XRWIuqoaDtrqhJWaVKb5NEU7OIwy7WsH9a
+LX/09TXrJtWHDueJD9jt14YjyYS0em0QY9vEt4R2gcX8PAkzks41NrKviLiYfXpW
+d+x47mrJQ4djWnK9h7aaQ+M3lV6tk7EJh8u1Z+EGisZidkyZMDjD2JTKFv9kaxL4
+JBqQ4Gb16gJaLsusX/wQ6wkC0S0gRni+SS1jKwzcL7rBzJ9Gk5phrzFzgFTLhN7F
+1+AARi1ijI2pkwRPrRe0Rj9y8Rb7JE39+tYK3kAT6Kun515k/NLtRM7ieoQHob+0
+LTqoO+1s/O5tR77qA7UF5+aEj6UWhJ6PzWX4w2O5/+jQ6zWhL0xmegJZpi99flNP
+P3weoyrK7V4rQSwEPMpQ
+=PHVV
+-----END PGP SIGNATURE-----
+
+--------------enig6EE5F5303265013AE3C13BFB--

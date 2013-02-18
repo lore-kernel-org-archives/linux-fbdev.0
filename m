@@ -1,7 +1,7 @@
 From: Archit Taneja <archit@ti.com>
-Date: Thu, 14 Feb 2013 07:20:38 +0000
+Date: Mon, 18 Feb 2013 07:45:21 +0000
 Subject: Re: [PATCH 16/33] OMAPDSS: acx565akm panel: handle gpios in panel driver
-Message-Id: <511C8D76.40609@ti.com>
+Message-Id: <5121D941.3060609@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1360765345-19312-1-git-send-email-archit@ti.com> <1360765345-19312-17-git-send-email-archit@ti.com> <20130213172913.GD21750@blackmetal.musicnaut.iki.fi> <511C896C.10007@ti.com> <511C8B16.5060605@ti.com>
 In-Reply-To: <511C8B16.5060605@ti.com>
@@ -40,7 +40,10 @@ On Thursday 14 February 2013 12:28 PM, Tomi Valkeinen wrote:
 > I remember us having similar constructs in some other panel drivers
 > also. I think they are unnecessary also.
 
-Ah okay, I'll take care of it.
+I was considering keeping the get_panel_data() funcs in the panel 
+drivers though. This way, whenever the way of retrieving platform data 
+changes because of DT or CDF or something else, we would just need to 
+modify the get_panel_data func.
 
 Archit
 

@@ -1,7 +1,7 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 18 Feb 2013 05:13:01 +0000
-Subject: [PATCH 1/5 RESEND] video: s3c-fb: use ARCH_ dependancy
-Message-Id: <000201ce0d96$9fa550b0$deeff210$%han@samsung.com>
+Date: Mon, 18 Feb 2013 05:24:09 +0000
+Subject: [PATCH 1/2 RESEND] video: exynos_dp: add missing of_node_put()
+Message-Id: <000801ce0d98$2e103fd0$8a30bf70$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -9,29 +9,69 @@ Content-Transfer-Encoding: 7bit
 To: 'Andrew Morton' <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, 'Jingoo Han' <jg1.han@samsung.com>
 
-This patch uses ARCH_ dependancy when using s3c-fb.
-S3C_DEV_FB, S5P_DEV_FIMD0 cannot be enabled on EXYNOS5.
-So, ARCH_ should be used as dependancy for s3c-fb.
+of_find_node_by_name() returns a node pointer with refcount
+incremented, use of_node_put() on it when done.
+
+of_find_node_by_name() will call of_node_put() against
+the node pass to from parameter, thus we also need to call
+of_node_get(from) before calling of_find_node_by_name().
 
 Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/Kconfig |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/video/exynos/exynos_dp_core.c |   19 +++++++++++++------
+ 1 files changed, 13 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index e7068c5..049fff1 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2025,7 +2025,8 @@ config FB_TMIO_ACCELL
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index 2ed9776..c7374c0 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -965,10 +965,11 @@ static struct exynos_dp_platdata *exynos_dp_dt_parse_pdata(struct device *dev)
  
- config FB_S3C
- 	tristate "Samsung S3C framebuffer support"
--	depends on FB && (S3C_DEV_FB || S5P_DEV_FIMD0)
-+	depends on FB && (CPU_S3C2416 || ARCH_S3C64XX || ARCH_S5P64X0 || \
-+		ARCH_S5PC100 || ARCH_S5PV210 || ARCH_EXYNOS)
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
+ static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
+ {
+-	struct device_node *dp_phy_node;
++	struct device_node *dp_phy_node = of_node_get(dp->dev->of_node);
+ 	u32 phy_base;
++	int ret = 0;
+ 
+-	dp_phy_node = of_find_node_by_name(dp->dev->of_node, "dptx-phy");
++	dp_phy_node = of_find_node_by_name(dp_phy_node, "dptx-phy");
+ 	if (!dp_phy_node) {
+ 		dev_err(dp->dev, "could not find dptx-phy node\n");
+ 		return -ENODEV;
+@@ -976,22 +977,28 @@ static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
+ 
+ 	if (of_property_read_u32(dp_phy_node, "reg", &phy_base)) {
+ 		dev_err(dp->dev, "faild to get reg for dptx-phy\n");
+-		return -EINVAL;
++		ret = -EINVAL;
++		goto err;
+ 	}
+ 
+ 	if (of_property_read_u32(dp_phy_node, "samsung,enable-mask",
+ 				&dp->enable_mask)) {
+ 		dev_err(dp->dev, "faild to get enable-mask for dptx-phy\n");
+-		return -EINVAL;
++		ret = -EINVAL;
++		goto err;
+ 	}
+ 
+ 	dp->phy_addr = ioremap(phy_base, SZ_4);
+ 	if (!dp->phy_addr) {
+ 		dev_err(dp->dev, "failed to ioremap dp-phy\n");
+-		return -ENOMEM;
++		ret = -ENOMEM;
++		goto err;
+ 	}
+ 
+-	return 0;
++err:
++	of_node_put(dp_phy_node);
++
++	return ret;
+ }
+ 
+ static void exynos_dp_phy_init(struct exynos_dp_device *dp)
 -- 
 1.7.2.5
 

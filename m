@@ -1,102 +1,50 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:33:55 +0000
-Subject: [PATCH 03/33] arm: omap: board-2430: use generic dpi panel's gpio handling
-Message-Id: <1360765345-19312-4-git-send-email-archit@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 18 Feb 2013 05:25:19 +0000
+Subject: [PATCH 2/2 RESEND] video: exynos_dp: move disable_irq() to exynos_dp_suspend()
+Message-Id: <000901ce0d98$5794c240$06be46c0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360765345-19312-1-git-send-email-archit@ti.com>
-In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
+References: <000801ce0d98$2e103fd0$8a30bf70$%han@samsung.com>
+In-Reply-To: <000801ce0d98$2e103fd0$8a30bf70$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>, Tony Lindgren <tony@atomide.com>
+To: 'Andrew Morton' <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, 'Jingoo Han' <jg1.han@samsung.com>
 
-The 2430sdp board file currently requests gpios required to configure the NEC
-DPI panel, and provides platform_enable/disable callbacks to configure them.
+From: Ajay Kumar <ajaykumar.rs@samsung.com>
 
-These tasks have been moved to the generic dpi panel driver itself and shouldn't
-be done in the board files.
+disable_irq() should be moved to exynos_dp_suspend(), because
+enable_irq() is called at exynos_dp_resume().
 
-Remove the gpio requests and the platform callbacks from the board file.
-Add the gpio information to generic dpi panel's platform data so that it's
-passed to the panel driver.
-
-Cc: Tony Lindgren <tony@atomide.com>
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- arch/arm/mach-omap2/board-2430sdp.c |   43 +++++------------------------------
- 1 file changed, 6 insertions(+), 37 deletions(-)
+ drivers/video/exynos/exynos_dp_core.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-2430sdp.c b/arch/arm/mach-omap2/board-2430sdp.c
-index 13a1a3b..c888a58 100644
---- a/arch/arm/mach-omap2/board-2430sdp.c
-+++ b/arch/arm/mach-omap2/board-2430sdp.c
-@@ -107,24 +107,13 @@ static struct platform_device *sdp2430_devices[] __initdata = {
- #define SDP2430_LCD_PANEL_BACKLIGHT_GPIO	91
- #define SDP2430_LCD_PANEL_ENABLE_GPIO		154
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index c7374c0..de9d4da 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -1124,8 +1124,6 @@ static int exynos_dp_remove(struct platform_device *pdev)
+ 	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
+ 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
  
--static int sdp2430_panel_enable_lcd(struct omap_dss_device *dssdev)
--{
--	gpio_direction_output(SDP2430_LCD_PANEL_ENABLE_GPIO, 1);
--	gpio_direction_output(SDP2430_LCD_PANEL_BACKLIGHT_GPIO, 1);
+-	disable_irq(dp->irq);
 -
--	return 0;
--}
--
--static void sdp2430_panel_disable_lcd(struct omap_dss_device *dssdev)
--{
--	gpio_direction_output(SDP2430_LCD_PANEL_ENABLE_GPIO, 0);
--	gpio_direction_output(SDP2430_LCD_PANEL_BACKLIGHT_GPIO, 0);
--}
--
- static struct panel_generic_dpi_data sdp2430_panel_data = {
- 	.name			= "nec_nl2432dr22-11b",
--	.platform_enable	= sdp2430_panel_enable_lcd,
--	.platform_disable	= sdp2430_panel_disable_lcd,
-+	.num_gpios		= 2,
-+	.gpios			= {
-+		SDP2430_LCD_PANEL_ENABLE_GPIO,
-+		SDP2430_LCD_PANEL_BACKLIGHT_GPIO,
-+	},
- };
+ 	flush_work(&dp->hotplug_work);
  
- static struct omap_dss_device sdp2430_lcd_device = {
-@@ -145,26 +134,6 @@ static struct omap_dss_board_info sdp2430_dss_data = {
- 	.default_device	= &sdp2430_lcd_device,
- };
+ 	if (pdev->dev.of_node) {
+@@ -1148,6 +1146,8 @@ static int exynos_dp_suspend(struct device *dev)
+ 	struct exynos_dp_platdata *pdata = dev->platform_data;
+ 	struct exynos_dp_device *dp = dev_get_drvdata(dev);
  
--static void __init sdp2430_display_init(void)
--{
--	int r;
--
--	static struct gpio gpios[] __initdata = {
--		{ SDP2430_LCD_PANEL_ENABLE_GPIO, GPIOF_OUT_INIT_LOW,
--			"LCD reset" },
--		{ SDP2430_LCD_PANEL_BACKLIGHT_GPIO, GPIOF_OUT_INIT_LOW,
--			"LCD Backlight" },
--	};
--
--	r = gpio_request_array(gpios, ARRAY_SIZE(gpios));
--	if (r) {
--		pr_err("Cannot request LCD GPIOs, error %d\n", r);
--		return;
--	}
--
--	omap_display_init(&sdp2430_dss_data);
--}
--
- #if defined(CONFIG_SMC91X) || defined(CONFIG_SMC91x_MODULE)
++	disable_irq(dp->irq);
++
+ 	flush_work(&dp->hotplug_work);
  
- static struct omap_smc91x_platform_data board_smc91x_data = {
-@@ -271,7 +240,7 @@ static void __init omap_2430sdp_init(void)
- 	gpio_request_one(SECONDARY_LCD_GPIO, GPIOF_OUT_INIT_LOW,
- 			 "Secondary LCD backlight");
- 
--	sdp2430_display_init();
-+	omap_display_init(&sdp2430_dss_data);
- }
- 
- MACHINE_START(OMAP_2430SDP, "OMAP2430 sdp2430 board")
+ 	if (dev->of_node) {
 -- 
-1.7.9.5
+1.7.2.5
+
 

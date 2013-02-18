@@ -1,142 +1,405 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 01 Feb 2013 07:40:42 +0000
-Subject: Re: [PATCH v16 RESEND 0/7] of: add display helper
-Message-Id: <16247195.783631359704440861.JavaMail.weblogic@epml02>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Mon, 18 Feb 2013 09:57:44 +0000
+Subject: [PATCH v2] mfd: as3711: add OF support
+Message-Id: <Pine.LNX.4.64.1302181049510.4526@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1358766482-6275-1-git-send-email-s.trumtrar@pengutronix.de>
-In-Reply-To: <1358766482-6275-1-git-send-email-s.trumtrar@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Cc: Rob Clark <robdclark@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Mohammed, Afzal" <afzal@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Rob Herring <robherring2@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Guennady Liakhovetski <g.liakhovetski@gmx.de>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>, Jingoo Han <jg1.han@samsung.com>
+To: linux-kernel@vger.kernel.org
+Cc: Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, devicetree-discuss@lists.ozlabs.org, Samuel Ortiz <sameo@linux.intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Liam Girdwood <lrg@ti.com>, Richard Purdie <rpurdie@rpsys.net>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org
 
-SGkgU3RlZmZlbiwNCg0KWW91IGNhbiBhZGQgbXkgdGVzdGVkLWJ5IGZvciB0aGlzIHNlcmllcy4N
-CkkgaGF2ZSB0ZXN0ZWQgdGhlbSBmb3IgRXh5bm9zOiBzbWRrNDIxMCBib2FyZC4NCg0KQmVhdCBy
-ZWdhcmRzLA0KSmluZ29vIEhhbg0KDQpPbiBXZWRuZXNkYXksIEphbnVhcnkgMjMsIDIwMTMgNjox
-MiBQTSwgU3RlZmZlbiBUcnVtdHJhciB3cm90ZQ0KPiBPbiBUdWUsIEphbiAyMiwgMjAxMyBhdCAw
-Mzo1MDo0OFBNIC0wNjAwLCBSb2IgQ2xhcmsgd3JvdGU6DQo+ID4gT24gTW9uLCBKYW4gMjEsIDIw
-MTMgYXQgNTowNyBBTSwgU3RlZmZlbiBUcnVtdHJhcg0KPiA+IDxzLnRydW10cmFyQHBlbmd1dHJv
-bml4LmRlPiB3cm90ZToNCj4gPiA+IEhpIQ0KPiA+ID4NCj4gPiA+IFRoZXJlIHdhcyBzdGlsbCBu
-byBtYWludGFpbmVyLCB0aGF0IGNvbW1lbnRlZCwgYWNrJ2QsIG5hY2snZCwgYXBwbHknZCB0aGUN
-Cj4gPiA+IHNlcmllcy4gU28sIHRoaXMgaXMganVzdCBhIHJlc2VuZC4NCj4gPiA+IFRoZSBwYXRj
-aGVzIHdlcmUgdGVzdGVkIHdpdGg6DQo+ID4gPg0KPiA+ID4gICAgICAgICAtIHYxNSBvbiBUZWdy
-YSBieSBUaGllcnJ5DQo+ID4gPiAgICAgICAgIC0gc2gtbW9iaWxlLWxjZGNmYiBieSBMYXVyZW50
-DQo+ID4gPiAgICAgICAgIC0gTVg1M1FTQiBieSBNYXJlaw0KPiA+ID4gICAgICAgICAtIEV4eW5v
-czogc21kazUyNTAgYnkgTGVlbGENCj4gPiA+ICAgICAgICAgLSBBTTMzNVggRVZNICYgQU0zMzVY
-IEVWTS1TSyBieSBBZnphbA0KPiA+ID4gICAgICAgICAtIGlteDZxOiBzYWJyZWxpdGUsIHNhYnJl
-c2QgYnkgUGhpbGlwcCBhbmQgbWUNCj4gPiA+ICAgICAgICAgLSBpbXg1MzogdHFtYTUzL21iYTUz
-IGJ5IG1lDQo+ID4NCj4gPg0KPiA+IGJ0dywgeW91IGNhbiBhZGQgbXkgdGVzdGVkLWJ5IGZvciB0
-aGlzIHNlcmllcy4uICBJJ3ZlIGJlZW4gdXNpbmcgdGhlbQ0KPiA+IGZvciB0aGUgdGlsY2RjIGxj
-ZC1wYW5lbCBvdXRwdXQgZHJpdmVyIHN1cHBvcnQuDQo+ID4NCj4gDQo+IFRoYW5rcy4gVGhlIG1v
-cmUgZHJpdmVycyB0aGUgbWVycmllciA7LSkNCj4gDQo+IFN0ZWZmZW4NCj4gDQo+ID4gPg0KPiA+
-ID4NCj4gPiA+IENoYW5nZXMgc2luY2UgdjE1Og0KPiA+ID4gICAgICAgICAtIG1vdmUgaW5jbHVk
-ZS9saW51eC97dmlkZW9tb2RlLGRpc3BsYXlfdGltaW5nfS5oIHRvIGluY2x1ZGUvdmlkZW8NCj4g
-PiA+ICAgICAgICAgLSBtb3ZlIGluY2x1ZGUvbGludXgvb2Zfe3ZpZGVvbW9kZSxkaXNwbGF5X3Rp
-bWluZ30uaCB0byBpbmNsdWRlL3ZpZGVvDQo+ID4gPiAgICAgICAgIC0gcmVpbXBsZW1lbnQgZmxh
-Z3M6IGFkZCBWRVNBIGZsYWdzIGFuZCBkYXRhIGZsYWdzDQo+ID4gPiAgICAgICAgIC0gbGV0IHBp
-eGVsY2xvY2sgaW4gc3RydWN0IHZpZGVvbW9kZSBiZSB1bnNpZ25lZCBsb25nDQo+ID4gPiAgICAg
-ICAgIC0gcmVuYW1lIG9mX2Rpc3BsYXlfdGltaW5nc19leGlzdHMgdG8gb2ZfZGlzcGxheV90aW1p
-bmdzX2V4aXN0DQo+ID4gPiAgICAgICAgIC0gcmV2aXNlIGxvZ2dpbmcvZXJyb3IgbWVzc2FnZXM6
-IHJlcGxhY2UgX19mdW5jX18gd2l0aCBucC0+ZnVsbF9uYW1lDQo+ID4gPiAgICAgICAgIC0gcmVu
-YW1lIHBpeGVsY2xrLWludmVydGVkIHRvIHBpeGVsY2xrLWFjdGl2ZQ0KPiA+ID4gICAgICAgICAt
-IHJldmlzZSBjb21tZW50cyBpbiBjb2RlDQo+ID4gPg0KPiA+ID4gQ2hhbmdlcyBzaW5jZSB2MTQ6
-DQo+ID4gPiAgICAgICAgIC0gZml4ICJjb25zdCBzdHJ1Y3QgKiIgd2FybmluZw0KPiA+ID4gICAg
-ICAgICAgICAgICAgIChyZXBvcnRlZCBieTogTGVlbGEgS3Jpc2huYSBBbXVkYWxhIDxsLmtyaXNo
-bmFAc2Ftc3VuZy5jb20+KQ0KPiA+ID4gICAgICAgICAtIHJldHVybiAtRUlOVkFMIHdoZW4gaHRv
-dGFsIG9yIHZ0b3RhbCBhcmUgemVybw0KPiA+ID4gICAgICAgICAtIHJlbW92ZSB1bnJlYWNoYWJs
-ZSBjb2RlIGluIG9mX2dldF9kaXNwbGF5X3RpbWluZ3MNCj4gPiA+ICAgICAgICAgLSBpbmNsdWRl
-IGhlYWRlcnMgaW4gLmMgZmlsZXMgYW5kIG5vdCBpbXBsaWNpdCBpbiAuaA0KPiA+ID4gICAgICAg
-ICAtIHNvcnQgaW5jbHVkZXMgYWxwaGFiZXRpY2FsbHkNCj4gPiA+ICAgICAgICAgLSBmaXggbG93
-ZXIvdXBwZXJjYXNlIGluIGJpbmRpbmcgZG9jdW1lbnRhdGlvbg0KPiA+ID4gICAgICAgICAtIHJl
-YmFzZSBvbnRvIHYzLjctcmM3DQo+ID4gPg0KPiA+ID4gQ2hhbmdlcyBzaW5jZSB2MTM6DQo+ID4g
-PiAgICAgICAgIC0gZml4ICJjb25zdCBzdHJ1Y3QgKiIgd2FybmluZw0KPiA+ID4gICAgICAgICAg
-ICAgICAgIChyZXBvcnRlZCBieTogTGF1cmVudCBQaW5jaGFydCA8bGF1cmVudC5waW5jaGFydEBp
-ZGVhc29uYm9hcmQuY29tPikNCj4gPiA+ICAgICAgICAgLSBwcmV2ZW50IGRpdmlzaW9uIGJ5IHpl
-cm8gaW4gZmJfdmlkZW9tb2RlX2Zyb21fdmlkZW9tb2RlDQo+ID4gPg0KPiA+ID4gQ2hhbmdlcyBz
-aW5jZSB2MTI6DQo+ID4gPiAgICAgICAgIC0gcmVuYW1lIHN0cnVjdCBkaXNwbGF5X3RpbWluZyB0
-byB2aWFfZGlzcGxheV90aW1pbmcgaW4gdmlhIHN1YnN5c3RlbQ0KPiA+ID4gICAgICAgICAtIGZp
-eCByZWZyZXNocmF0ZSBjYWxjdWxhdGlvbg0KPiA+ID4gICAgICAgICAtIGZpeCAiY29uc3Qgc3Ry
-dWN0ICoiIHdhcm5pbmdzDQo+ID4gPiAgICAgICAgICAgICAgICAgKHJlcG9ydGVkIGJ5OiBNYW5q
-dW5hdGhhcHBhLCBQcmFrYXNoIDxwcmFrYXNoLnBtQHRpLmNvbT4pDQo+ID4gPiAgICAgICAgIC0g
-c29tZSBDb2RpbmdTdHlsZSBmaXhlcw0KPiA+ID4gICAgICAgICAtIHJld3JpdGUgcGFydHMgb2Yg
-Y29tbWl0IG1lc3NhZ2VzIGFuZCBkaXNwbGF5LXRpbWluZ3MudHh0DQo+ID4gPiAgICAgICAgIC0g
-bGV0IGRpc3BsYXlfdGltaW5nX2dldF92YWx1ZSBnZXQgYWxsIHZhbHVlcyBpbnN0ZWFkIG9mIGp1
-c3QgdHlwaWNhbA0KPiA+ID4NCj4gPiA+IENoYW5nZXMgc2luY2UgdjExOg0KPiA+ID4gICAgICAg
-ICAtIG1ha2UgcG9pbnRlcnMgY29uc3Qgd2hlcmUgYXBwbGljYWJsZQ0KPiA+ID4gICAgICAgICAt
-IGFkZCByZXZpZXdlZC1ieSBMYXVyZW50IFBpbmNoYXJ0DQo+ID4gPg0KPiA+ID4gQ2hhbmdlcyBz
-aW5jZSB2MTA6DQo+ID4gPiAgICAgICAgIC0gZml4IGZ1bmN0aW9uIG5hbWUgKGRybV8pZGlzcGxh
-eV9tb2RlX2Zyb21fdmlkZW9tb2RlDQo+ID4gPiAgICAgICAgIC0gYWRkIGFja2VkLWJ5LCByZXZp
-ZXdlZC1ieSwgdGVzdGVkLWJ5DQo+ID4gPg0KPiA+ID4gQ2hhbmdlcyBzaW5jZSB2OToNCj4gPiA+
-ICAgICAgICAgLSBkb24ndCBsZWFrIG1lbW9yeSB3aGVuIHByZXZpb3VzIHRpbWluZ3Mgd2VyZSBj
-b3JyZWN0DQo+ID4gPiAgICAgICAgIC0gQ29kaW5nU3R5bGUgZml4ZXMNCj4gPiA+ICAgICAgICAg
-LSBtb3ZlIGJsYW5rIGxpbmVzIGFyb3VuZA0KPiA+ID4NCj4gPiA+IENoYW5nZXMgc2luY2Ugdjg6
-DQo+ID4gPiAgICAgICAgIC0gZml4IG1lbW9yeSBsZWFrcw0KPiA+ID4gICAgICAgICAtIGNoYW5n
-ZSBBUEkgdG8gYmUgbW9yZSBjb25zaXN0ZW50IChmb29fZnJvbV9iYXIoc3RydWN0IGJhciwgc3Ry
-dWN0IGZvbykpDQo+ID4gPiAgICAgICAgIC0gaW5jbHVkZSBoZWFkZXJzIHdlcmUgbmVjZXNzYXJ5
-DQo+ID4gPiAgICAgICAgIC0gbWlzYyBtaW5vciBidWdmaXhlcw0KPiA+ID4NCj4gPiA+IENoYW5n
-ZXMgc2luY2Ugdjc6DQo+ID4gPiAgICAgICAgIC0gbW92ZSBvZl94eHggdG8gZHJpdmVycy92aWRl
-bw0KPiA+ID4gICAgICAgICAtIHJlbW92ZSBub24tYmluZGluZyBkb2N1bWVudGF0aW9uIGZyb20g
-ZGlzcGxheS10aW1pbmdzLnR4dA0KPiA+ID4gICAgICAgICAtIHNxdWFzaCBkaXNwbGF5X3RpbWlu
-Z3MgYW5kIHZpZGVvbW9kZSBpbiBvbmUgcGF0Y2gNCj4gPiA+ICAgICAgICAgLSBtaXNjIG1pbm9y
-IGZpeGVzDQo+ID4gPg0KPiA+ID4gQ2hhbmdlcyBzaW5jZSB2NjoNCj4gPiA+ICAgICAgICAgLSBn
-ZXQgcmlkIG9mIHNvbWUgZW1wdHkgbGluZXMgZXRjLg0KPiA+ID4gICAgICAgICAtIG1vdmUgZnVu
-Y3Rpb25zIHRvIHRoZWlyIHN1YnN5c3RlbXMNCj4gPiA+ICAgICAgICAgLSBzcGxpdCBvZl8gZnJv
-bSBub24tb2ZfIGZ1bmN0aW9ucw0KPiA+ID4gICAgICAgICAtIGFkZCBhdCBsZWFzdCBzb21lIGtl
-cm5lbGRvYyB0byBzb21lIGZ1bmN0aW9ucw0KPiA+ID4NCj4gPiA+IENoYW5nZXMgc2luY2UgdjU6
-DQo+ID4gPiAgICAgICAgIC0gcmVtb3ZlZCBhbGwgZGlzcGxheSBzdHVmZiBhbmQganVzdCBkZXNj
-cmliZSB0aW1pbmdzDQo+ID4gPg0KPiA+ID4gQ2hhbmdlcyBzaW5jZSB2NDoNCj4gPiA+ICAgICAg
-ICAgLSByZWZhY3RvcmVkIGZ1bmN0aW9ucw0KPiA+ID4NCj4gPiA+IENoYW5nZXMgc2luY2UgdjM6
-DQo+ID4gPiAgICAgICAgIC0gcHJpbnQgZXJyb3IgbWVzc2FnZXMNCj4gPiA+ICAgICAgICAgLSBm
-cmVlIGFsbG9jZWQgbWVtb3J5DQo+ID4gPiAgICAgICAgIC0gZ2VuZXJhbCBjbGVhbnVwDQo+ID4g
-Pg0KPiA+ID4gQ2hhbmdlcyBzaW5jZSB2MjoNCj4gPiA+ICAgICAgICAgLSB1c2UgaGFyZHdhcmUt
-bmVhciBwcm9wZXJ0eS1uYW1lcw0KPiA+ID4gICAgICAgICAtIHByb3ZpZGUgYSB2aWRlb21vZGUg
-c3RydWN0dXJlDQo+ID4gPiAgICAgICAgIC0gYWxsb3cgcmFuZ2VzIGZvciBhbGwgcHJvcGVydGll
-cyAoPG1pbix0eXAsbWF4PikNCj4gPiA+ICAgICAgICAgLSBmdW5jdGlvbnMgdG8gZ2V0IGRpc3Bs
-YXlfbW9kZSBvciBmYl92aWRlb21vZGUNCj4gPiA+DQo+ID4gPg0KPiA+ID4gUmVnYXJkcywNCj4g
-PiA+IFN0ZWZmZW4NCj4gPiA+DQo+ID4gPg0KPiA+ID4gU3RlZmZlbiBUcnVtdHJhciAoNyk6DQo+
-ID4gPiAgIHZpYWZiOiByZW5hbWUgZGlzcGxheV90aW1pbmcgdG8gdmlhX2Rpc3BsYXlfdGltaW5n
-DQo+ID4gPiAgIHZpZGVvOiBhZGQgZGlzcGxheV90aW1pbmcgYW5kIHZpZGVvbW9kZQ0KPiA+ID4g
-ICB2aWRlbzogYWRkIG9mIGhlbHBlciBmb3IgZGlzcGxheSB0aW1pbmdzL3ZpZGVvbW9kZQ0KPiA+
-ID4gICBmYm1vbjogYWRkIHZpZGVvbW9kZSBoZWxwZXJzDQo+ID4gPiAgIGZibW9uOiBhZGQgb2Zf
-dmlkZW9tb2RlIGhlbHBlcnMNCj4gPiA+ICAgZHJtX21vZGVzOiBhZGQgdmlkZW9tb2RlIGhlbHBl
-cnMNCj4gPiA+ICAgZHJtX21vZGVzOiBhZGQgb2ZfdmlkZW9tb2RlIGhlbHBlcnMNCj4gPiA+DQo+
-ID4gPiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3MvdmlkZW8vZGlzcGxheS10aW1pbmcudHh0ICAg
-fCAgMTA5ICsrKysrKysrKw0KPiA+ID4gIGRyaXZlcnMvZ3B1L2RybS9kcm1fbW9kZXMuYyAgICAg
-ICAgICAgICAgICAgICAgICAgIHwgICA3MCArKysrKysNCj4gPiA+ICBkcml2ZXJzL3ZpZGVvL0tj
-b25maWcgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAgMjEgKysNCj4gPiA+ICBkcml2
-ZXJzL3ZpZGVvL01ha2VmaWxlICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAgIDQgKw0K
-PiA+ID4gIGRyaXZlcnMvdmlkZW8vZGlzcGxheV90aW1pbmcuYyAgICAgICAgICAgICAgICAgICAg
-IHwgICAyNCArKw0KPiA+ID4gIGRyaXZlcnMvdmlkZW8vZmJtb24uYyAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgIHwgICA5NCArKysrKysrKw0KPiA+ID4gIGRyaXZlcnMvdmlkZW8vb2ZfZGlz
-cGxheV90aW1pbmcuYyAgICAgICAgICAgICAgICAgIHwgIDIzOSArKysrKysrKysrKysrKysrKysr
-Kw0KPiA+ID4gIGRyaXZlcnMvdmlkZW8vb2ZfdmlkZW9tb2RlLmMgICAgICAgICAgICAgICAgICAg
-ICAgIHwgICA1NCArKysrKw0KPiA+ID4gIGRyaXZlcnMvdmlkZW8vdmlhL2h3LmMgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgIHwgICAgNiArLQ0KPiA+ID4gIGRyaXZlcnMvdmlkZW8vdmlhL2h3
-LmggICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAgMiArLQ0KPiA+ID4gIGRyaXZlcnMv
-dmlkZW8vdmlhL2xjZC5jICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAgMiArLQ0KPiA+
-ID4gIGRyaXZlcnMvdmlkZW8vdmlhL3NoYXJlLmggICAgICAgICAgICAgICAgICAgICAgICAgIHwg
-ICAgMiArLQ0KPiA+ID4gIGRyaXZlcnMvdmlkZW8vdmlhL3ZpYV9tb2Rlc2V0dGluZy5jICAgICAg
-ICAgICAgICAgIHwgICAgOCArLQ0KPiA+ID4gIGRyaXZlcnMvdmlkZW8vdmlhL3ZpYV9tb2Rlc2V0
-dGluZy5oICAgICAgICAgICAgICAgIHwgICAgNiArLQ0KPiA+ID4gIGRyaXZlcnMvdmlkZW8vdmlk
-ZW9tb2RlLmMgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAzOSArKysrDQo+ID4gPiAgaW5j
-bHVkZS9kcm0vZHJtUC5oICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAgICA5ICsN
-Cj4gPiA+ICBpbmNsdWRlL2xpbnV4L2ZiLmggICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICB8ICAgIDggKw0KPiA+ID4gIGluY2x1ZGUvdmlkZW8vZGlzcGxheV90aW1pbmcuaCAgICAgICAg
-ICAgICAgICAgICAgIHwgIDEyNCArKysrKysrKysrDQo+ID4gPiAgaW5jbHVkZS92aWRlby9vZl9k
-aXNwbGF5X3RpbWluZy5oICAgICAgICAgICAgICAgICAgfCAgIDIwICsrDQo+ID4gPiAgaW5jbHVk
-ZS92aWRlby9vZl92aWRlb21vZGUuaCAgICAgICAgICAgICAgICAgICAgICAgfCAgIDE4ICsrDQo+
-ID4gPiAgaW5jbHVkZS92aWRlby92aWRlb21vZGUuaCAgICAgICAgICAgICAgICAgICAgICAgICAg
-fCAgIDQ4ICsrKysNCj4gPiA+ICAyMSBmaWxlcyBjaGFuZ2VkLCA4OTQgaW5zZXJ0aW9ucygrKSwg
-MTMgZGVsZXRpb25zKC0pDQo+ID4gPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24v
-ZGV2aWNldHJlZS9iaW5kaW5ncy92aWRlby9kaXNwbGF5LXRpbWluZy50eHQNCj4gPiA+ICBjcmVh
-dGUgbW9kZSAxMDA2NDQgZHJpdmVycy92aWRlby9kaXNwbGF5X3RpbWluZy5jDQo+ID4gPiAgY3Jl
-YXRlIG1vZGUgMTAwNjQ0IGRyaXZlcnMvdmlkZW8vb2ZfZGlzcGxheV90aW1pbmcuYw0KPiA+ID4g
-IGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3ZpZGVvL29mX3ZpZGVvbW9kZS5jDQo+ID4gPiAg
-Y3JlYXRlIG1vZGUgMTAwNjQ0IGRyaXZlcnMvdmlkZW8vdmlkZW9tb2RlLmMNCj4gPiA+ICBjcmVh
-dGUgbW9kZSAxMDA2NDQgaW5jbHVkZS92aWRlby9kaXNwbGF5X3RpbWluZy5oDQo+ID4gPiAgY3Jl
-YXRlIG1vZGUgMTAwNjQ0IGluY2x1ZGUvdmlkZW8vb2ZfZGlzcGxheV90aW1pbmcuaA0KPiA+ID4g
-IGNyZWF0ZSBtb2RlIDEwMDY0NCBpbmNsdWRlL3ZpZGVvL29mX3ZpZGVvbW9kZS5oDQo+ID4gPiAg
-Y3JlYXRlIG1vZGUgMTAwNjQ0IGluY2x1ZGUvdmlkZW8vdmlkZW9tb2RlLmgNCj4gPiA+DQo+ID4g
-PiAtLQ0KPiA+ID4gMS43LjEwLjQNCj4gPiA+DQo+ID4NCj4gDQo
+Add device-tree bindings to the AS3711 regulator and backlight drivers.
+
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
+
+v2:
+1. remove of_device_is_available() - it breaks compilation with CONFIG_OF 
+disabled and is redundant anyway - I2C devices are only registered for 
+available devoces
+2. add parenthesis to eliminate a compiler warning
+
+ Documentation/devicetree/bindings/mfd/as3711.txt |   73 +++++++++++++
+ drivers/mfd/as3711.c                             |   27 ++++-
+ drivers/regulator/as3711-regulator.c             |   69 ++++++++++++-
+ drivers/video/backlight/as3711_bl.c              |  118 +++++++++++++++++++++-
+ 4 files changed, 279 insertions(+), 8 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/mfd/as3711.txt
+
+diff --git a/Documentation/devicetree/bindings/mfd/as3711.txt b/Documentation/devicetree/bindings/mfd/as3711.txt
+new file mode 100644
+index 0000000..d98cf18
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mfd/as3711.txt
+@@ -0,0 +1,73 @@
++AS3711 is an I2C PMIC from Austria MicroSystems with multiple DCDC and LDO power
++supplies, a battery charger and an RTC. So far only bindings for the two stepup
++DCDC converters are defined. Other DCDC and LDO supplies are configured, using
++standard regulator properties, they must belong to a sub-node, called
++"regulators" and be called "sd1" to "sd4" and "ldo1" to "ldo8." Stepup converter
++configuration should be placed in a subnode, called "backlight."
++
++Compulsory properties:
++- compatible		: must be "ams,as3711"
++- reg			: specifies the I2C address
++
++To use the SU1 converter as a backlight source the following two properties must
++be provided:
++- su1-dev		: framebuffer phandle
++- su1-max-uA		: maximum current
++
++To use the SU2 converter as a backlight source the following two properties must
++be provided:
++- su2-dev		: framebuffer phandle
++- su1-max-uA		: maximum current
++
++Additionally one of these properties must be provided to select the type of
++feedback used:
++- su2-feedback-voltage	: voltage feedback is used
++- su2-feedback-curr1	: CURR1 input used for current feedback
++- su2-feedback-curr2	: CURR2 input used for current feedback
++- su2-feedback-curr3	: CURR3 input used for current feedback
++- su2-feedback-curr-auto: automatic current feedback selection
++
++and one of these to select the over-voltage protection pin
++- su2-fbprot-lx-sd4	: LX_SD4 is used for over-voltage protection
++- su2-fbprot-gpio2	: GPIO2 is used for over-voltage protection
++- su2-fbprot-gpio3	: GPIO3 is used for over-voltage protection
++- su2-fbprot-gpio4	: GPIO4 is used for over-voltage protection
++
++If "su2-feedback-curr-auto" is selected, one or more of the following properties
++have to be specified:
++- su2-auto-curr1	: use CURR1 input for current feedback
++- su2-auto-curr2	: use CURR2 input for current feedback
++- su2-auto-curr3	: use CURR3 input for current feedback
++
++Example:
++
++as3711@40 {
++	compatible = "ams,as3711";
++	reg = <0x40>;
++
++	regulators {
++		sd4 {
++			regulator-name = "1.215V";
++			regulator-min-microvolt = <1215000>;
++			regulator-max-microvolt = <1235000>;
++		};
++		ldo2 {
++			regulator-name = "2.8V CPU";
++			regulator-min-microvolt = <2800000>;
++			regulator-max-microvolt = <2800000>;
++			regulator-always-on;
++			regulator-boot-on;
++		};
++	};
++
++	backlight {
++		compatible = "ams,as3711-bl";
++		su2-dev = <&lcdc>;
++		su2-max-uA = <36000>;
++		su2-feedback-curr-auto;
++		su2-fbprot-gpio4;
++		su2-auto-curr1;
++		su2-auto-curr2;
++		su2-auto-curr3;
++	};
++};
+diff --git a/drivers/mfd/as3711.c b/drivers/mfd/as3711.c
+index e994c96..01e4141 100644
+--- a/drivers/mfd/as3711.c
++++ b/drivers/mfd/as3711.c
+@@ -112,16 +112,34 @@ static const struct regmap_config as3711_regmap_config = {
+ 	.cache_type = REGCACHE_RBTREE,
+ };
+ 
++#ifdef CONFIG_OF
++static struct of_device_id as3711_of_match[] = {
++	{.compatible = "ams,as3711",},
++	{}
++};
++MODULE_DEVICE_TABLE(of, as3711_of_match);
++#endif
++
+ static int as3711_i2c_probe(struct i2c_client *client,
+ 			    const struct i2c_device_id *id)
+ {
+ 	struct as3711 *as3711;
+-	struct as3711_platform_data *pdata = client->dev.platform_data;
++	struct as3711_platform_data *pdata;
+ 	unsigned int id1, id2;
+ 	int ret;
+ 
+-	if (!pdata)
+-		dev_dbg(&client->dev, "Platform data not found\n");
++	if (!client->dev.of_node) {
++		pdata = client->dev.platform_data;
++		if (!pdata)
++			dev_dbg(&client->dev, "Platform data not found\n");
++	} else {
++		pdata = devm_kzalloc(&client->dev,
++				     sizeof(*pdata), GFP_KERNEL);
++		if (!pdata) {
++			dev_err(&client->dev, "Failed to allocate pdata\n");
++			return -ENOMEM;
++		}
++	}
+ 
+ 	as3711 = devm_kzalloc(&client->dev, sizeof(struct as3711), GFP_KERNEL);
+ 	if (!as3711) {
+@@ -193,7 +211,8 @@ static struct i2c_driver as3711_i2c_driver = {
+ 	.driver = {
+ 		   .name = "as3711",
+ 		   .owner = THIS_MODULE,
+-		   },
++		   .of_match_table = of_match_ptr(as3711_of_match),
++	},
+ 	.probe = as3711_i2c_probe,
+ 	.remove = as3711_i2c_remove,
+ 	.id_table = as3711_i2c_id,
+diff --git a/drivers/regulator/as3711-regulator.c b/drivers/regulator/as3711-regulator.c
+index f0ba8c4..cf145fc 100644
+--- a/drivers/regulator/as3711-regulator.c
++++ b/drivers/regulator/as3711-regulator.c
+@@ -13,9 +13,11 @@
+ #include <linux/init.h>
+ #include <linux/mfd/as3711.h>
+ #include <linux/module.h>
++#include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/regmap.h>
+ #include <linux/regulator/driver.h>
++#include <linux/regulator/of_regulator.h>
+ #include <linux/slab.h>
+ 
+ struct as3711_regulator_info {
+@@ -276,6 +278,57 @@ static struct as3711_regulator_info as3711_reg_info[] = {
+ 
+ #define AS3711_REGULATOR_NUM ARRAY_SIZE(as3711_reg_info)
+ 
++static const char *as3711_regulator_of_names[AS3711_REGULATOR_NUM] = {
++	[AS3711_REGULATOR_SD_1] = "sd1",
++	[AS3711_REGULATOR_SD_2] = "sd2",
++	[AS3711_REGULATOR_SD_3] = "sd3",
++	[AS3711_REGULATOR_SD_4] = "sd4",
++	[AS3711_REGULATOR_LDO_1] = "ldo1",
++	[AS3711_REGULATOR_LDO_2] = "ldo2",
++	[AS3711_REGULATOR_LDO_3] = "ldo3",
++	[AS3711_REGULATOR_LDO_4] = "ldo4",
++	[AS3711_REGULATOR_LDO_5] = "ldo5",
++	[AS3711_REGULATOR_LDO_6] = "ldo6",
++	[AS3711_REGULATOR_LDO_7] = "ldo7",
++	[AS3711_REGULATOR_LDO_8] = "ldo8",
++};
++
++static int as3711_regulator_parse_dt(struct device *dev)
++{
++	struct as3711_regulator_pdata *pdata = dev_get_platdata(dev);
++	struct device_node *regulators +		of_find_node_by_name(dev->parent->of_node, "regulators");
++	struct of_regulator_match *matches, *match;
++	const int count = AS3711_REGULATOR_NUM;
++	int ret, i;
++
++	if (!regulators) {
++		dev_err(dev, "regulator node not found\n");
++		return -ENODEV;
++	}
++
++	matches = devm_kzalloc(dev, sizeof(*matches) * count, GFP_KERNEL);
++	if (!matches)
++		return -ENOMEM;
++
++	for (i = 0, match = matches; i < count; i++, match++) {
++		match->name = as3711_regulator_of_names[i];
++		match->driver_data = as3711_reg_info + i;
++	}
++
++	ret = of_regulator_match(dev->parent, regulators, matches, count);
++	if (ret < 0) {
++		dev_err(dev, "Error parsing regulator init data: %d\n", ret);
++		return ret;
++	}
++
++	for (i = 0, match = matches; i < count; i++, match++)
++		if (match->of_node)
++			pdata->init_data[i] = match->init_data;
++
++	return 0;
++}
++
+ static int as3711_regulator_probe(struct platform_device *pdev)
+ {
+ 	struct as3711_regulator_pdata *pdata = dev_get_platdata(&pdev->dev);
+@@ -289,8 +342,18 @@ static int as3711_regulator_probe(struct platform_device *pdev)
+ 	int ret;
+ 	int id;
+ 
+-	if (!pdata)
+-		dev_dbg(&pdev->dev, "No platform data...\n");
++	if (!pdata) {
++		dev_err(&pdev->dev, "No platform data...\n");
++		return -ENODEV;
++	}
++
++	if (pdev->dev.parent->of_node) {
++		ret = as3711_regulator_parse_dt(&pdev->dev);
++		if (ret < 0) {
++			dev_err(&pdev->dev, "DT parsing failed: %d\n", ret);
++			return ret;
++		}
++	}
+ 
+ 	regs = devm_kzalloc(&pdev->dev, AS3711_REGULATOR_NUM *
+ 			sizeof(struct as3711_regulator), GFP_KERNEL);
+@@ -300,7 +363,7 @@ static int as3711_regulator_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	for (id = 0, ri = as3711_reg_info; id < AS3711_REGULATOR_NUM; ++id, ri++) {
+-		reg_data = pdata ? pdata->init_data[id] : NULL;
++		reg_data = pdata->init_data[id];
+ 
+ 		/* No need to register if there is no regulator data */
+ 		if (!reg_data)
+diff --git a/drivers/video/backlight/as3711_bl.c b/drivers/video/backlight/as3711_bl.c
+index c6bc65d..c78e4cb 100644
+--- a/drivers/video/backlight/as3711_bl.c
++++ b/drivers/video/backlight/as3711_bl.c
+@@ -257,6 +257,109 @@ static int as3711_bl_register(struct platform_device *pdev,
+ 	return 0;
+ }
+ 
++static int as3711_backlight_parse_dt(struct device *dev)
++{
++	struct as3711_bl_pdata *pdata = dev_get_platdata(dev);
++	struct device_node *bl +		of_find_node_by_name(dev->parent->of_node, "backlight"), *fb;
++	int ret;
++
++	if (!bl) {
++		dev_dbg(dev, "backlight node not found\n");
++		return -ENODEV;
++	}
++
++	fb = of_parse_phandle(bl, "su1-dev", 0);
++	if (fb) {
++		pdata->su1_fb = fb->full_name;
++
++		ret = of_property_read_u32(bl, "su1-max-uA", &pdata->su1_max_uA);
++		if (pdata->su1_max_uA <= 0)
++			ret = -EINVAL;
++		if (ret < 0)
++			return ret;
++	}
++
++	fb = of_parse_phandle(bl, "su2-dev", 0);
++	if (fb) {
++		int count = 0;
++
++		pdata->su2_fb = fb->full_name;
++
++		ret = of_property_read_u32(bl, "su2-max-uA", &pdata->su2_max_uA);
++		if (pdata->su2_max_uA <= 0)
++			ret = -EINVAL;
++		if (ret < 0)
++			return ret;
++
++		if (of_find_property(bl, "su2-feedback-voltage", NULL)) {
++			pdata->su2_feedback = AS3711_SU2_VOLTAGE;
++			count++;
++		}
++		if (of_find_property(bl, "su2-feedback-curr1", NULL)) {
++			pdata->su2_feedback = AS3711_SU2_CURR1;
++			count++;
++		}
++		if (of_find_property(bl, "su2-feedback-curr2", NULL)) {
++			pdata->su2_feedback = AS3711_SU2_CURR2;
++			count++;
++		}
++		if (of_find_property(bl, "su2-feedback-curr3", NULL)) {
++			pdata->su2_feedback = AS3711_SU2_CURR3;
++			count++;
++		}
++		if (of_find_property(bl, "su2-feedback-curr-auto", NULL)) {
++			pdata->su2_feedback = AS3711_SU2_CURR_AUTO;
++			count++;
++		}
++		if (count != 1)
++			return -EINVAL;
++
++		count = 0;
++		if (of_find_property(bl, "su2-fbprot-lx-sd4", NULL)) {
++			pdata->su2_fbprot = AS3711_SU2_LX_SD4;
++			count++;
++		}
++		if (of_find_property(bl, "su2-fbprot-gpio2", NULL)) {
++			pdata->su2_fbprot = AS3711_SU2_GPIO2;
++			count++;
++		}
++		if (of_find_property(bl, "su2-fbprot-gpio3", NULL)) {
++			pdata->su2_fbprot = AS3711_SU2_GPIO3;
++			count++;
++		}
++		if (of_find_property(bl, "su2-fbprot-gpio4", NULL)) {
++			pdata->su2_fbprot = AS3711_SU2_GPIO4;
++			count++;
++		}
++		if (count != 1)
++			return -EINVAL;
++
++		count = 0;
++		if (of_find_property(bl, "su2-auto-curr1", NULL)) {
++			pdata->su2_auto_curr1 = true;
++			count++;
++		}
++		if (of_find_property(bl, "su2-auto-curr2", NULL)) {
++			pdata->su2_auto_curr2 = true;
++			count++;
++		}
++		if (of_find_property(bl, "su2-auto-curr3", NULL)) {
++			pdata->su2_auto_curr3 = true;
++			count++;
++		}
++
++		/*
++		 * At least one su2-auto-curr* must be specified iff
++		 * AS3711_SU2_CURR_AUTO is used
++		 */
++		if (!count ^ (pdata->su2_feedback != AS3711_SU2_CURR_AUTO))
++			return -EINVAL;
++	}
++
++	return 0;
++}
++
+ static int as3711_backlight_probe(struct platform_device *pdev)
+ {
+ 	struct as3711_bl_pdata *pdata = dev_get_platdata(&pdev->dev);
+@@ -266,11 +369,24 @@ static int as3711_backlight_probe(struct platform_device *pdev)
+ 	unsigned int max_brightness;
+ 	int ret;
+ 
+-	if (!pdata || (!pdata->su1_fb && !pdata->su2_fb)) {
++	if (!pdata) {
+ 		dev_err(&pdev->dev, "No platform data, exiting...\n");
+ 		return -ENODEV;
+ 	}
+ 
++	if (pdev->dev.parent->of_node) {
++		ret = as3711_backlight_parse_dt(&pdev->dev);
++		if (ret < 0) {
++			dev_err(&pdev->dev, "DT parsing failed: %d\n", ret);
++			return ret;
++		}
++	}
++
++	if (!pdata->su1_fb && !pdata->su2_fb) {
++		dev_err(&pdev->dev, "No framebuffer specified\n");
++		return -EINVAL;
++	}
++
+ 	/*
+ 	 * Due to possible hardware damage I chose to block all modes,
+ 	 * unsupported on my hardware. Anyone, wishing to use any of those modes
+-- 
+1.7.2.5
 

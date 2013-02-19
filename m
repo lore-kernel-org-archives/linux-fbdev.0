@@ -1,117 +1,46 @@
-From: Igor Grinberg <grinberg@compulab.co.il>
-Date: Thu, 14 Feb 2013 13:51:00 +0000
-Subject: Re: [PATCH 05/33] arm: omap: board-cm-t35: use generic dpi panel's gpio handling
-Message-Id: <511CEBC4.6050400@compulab.co.il>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 19 Feb 2013 02:57:31 +0000
+Subject: [GIT PULL] exynos-dp updates for v3.9
+Message-Id: <003a01ce0e4c$dc0f80f0$942e82d0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360765345-19312-1-git-send-email-archit@ti.com> <1360765345-19312-6-git-send-email-archit@ti.com> <511BAE50.2090507@compulab.co.il> <511BB113.3020108@ti.com> <511BB87E.60003@ti.com> <511C8A83.5070407@compulab.co.il> <511C8D8F.9060805@ti.com> <511CA247.80606@compulab.co.il> <511CA9B3.70401@ti.com> <511CB1B3.80605@compulab.co.il> <511CC37C.3020706@ti.com> <511CDA91.1050300@compulab.co.il> <511CDE12.60701@ti.com>
-In-Reply-To: <511CDE12.60701@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+To: 'Linus Torvalds' <torvalds@linux-foundation.org>
+Cc: 'linux-fbdev' <linux-fbdev@vger.kernel.org>, 'linux-kernel' <linux-kernel@vger.kernel.org>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, 'Andrew Morton' <akpm@linux-foundation.org>, 'Jingoo Han' <jg1.han@samsung.com>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Hi Linus,
 
-On 02/14/13 14:52, Tomi Valkeinen wrote:
-> On 2013-02-14 14:37, Igor Grinberg wrote:
->> On 02/14/13 12:59, Tomi Valkeinen wrote:
->>> On 2013-02-14 11:43, Igor Grinberg wrote:
->>
->>>>> True, it's generic, but does it work reliably? The panel hardware is now
->>>>> partly handled in the backlight driver, and partly in the omap's panel
->>>>> driver (and wherever on other platforms).
->>>>
->>>> It works reliably on other platforms, but not on OMAP - because
->>>> we need to cope with the OMAP specific framework...
->>
->>> How do you handle the gpios on other platform? Those are the ones
->>> causing the issues here, right?
->>
->> Well, I'm also talking about something that is a history already.
->> Remember, we had multiple panel drivers inside the
->> video/omap2/displays and then they were consolidated into the
->> "generic dpi/dsi/whatever".
-> 
-> Sorry, I miss the point. Was that a bad thing? Didn't it simplify the
-> task for you with simple panels? It could've been taken even further,
-> though (see below).
+Florian, the fbdev maintainer, has been very busy lately, so I send the pull request
+for exynos-dp for this merge window.
 
-Yes it was a good thing (I have already told this below).
+The following changes since commit 19f949f52599ba7c3f67a5897ac6be14bfcb1200:
 
-> 
->> And yes you are right, on the platforms I'm aware of, the GPIO is not
->> handled. Apparently its hardware default (pull resistor) is always on...
-> 
-> Ok, so the simple fix of setting the GPIOs only in the board file is
-> acceptable for now.
+ Linux 3.8 (Mon Feb 18 15:58:34 2013 -0800)
 
-Yep. I also told this already in one of the previous emails.
+are available in the git repository at:
+  git://github.com/jingoo/linux.git exynos-dp-next
 
-> 
-> Can the LCD_BL_GPIO be handled by the omap panel driver? Otherwise the
-> backlight will supposedly be always on. Is it just a simple switch for
-> the BL power, which does not affect the SPI in any way?
+for you to fetch changes up to bb80934325dab97b479815aed237ebec33ed1c57:
 
-Yes, it can for now.
-Also, I think we should also take into account the backlight framework,
-including PMW.
+ video: exynos_dp: move disable_irq() to exynos_dp_suspend() (Tue Jan 29 18:26:05 2013 +0900)
 
-> 
->>> Or is there something else with OMAP DSS that you need to specifically
->>> cope with?
->>
->> The fact there is a need to create a OMAP specific driver.
->> I'm not talking about the generic driver which only needs to have the
->> controller specific data (e.g. porches, pixel clock, bus width).
->> The generic driver was one of the good ways to go.
-> 
-> Well, we could also have an even more generic driver that takes the
-> video timings from the board file as platform data. Then all you would
-> need to do is to define the timings in the board file, as I think is
-> done for other platforms also.
+----------------------------------------------------------------
+exynos-dp updates for the v3.9:
 
-Yep. That sounds reasonable also for cases where the bus width is the
-hardware (board) property.
+- The missing function calls are fixed.
+----------------------------------------------------------------
 
-> 
-> I'm not very fond of that idea, as I think hardcoded device specific
-> data should not be given as parameters, but they should be handled by
-> the device driver internally, as it should know that device specific
-> data already.
+Ajay Kumar (1):
+      video: exynos_dp: move disable_irq() to exynos_dp_suspend()
 
-Yes, that is why I think the generic driver for "simple" panels
-was a good idea. There was some flexibility missing though.
-For example the resolution setting which in turn drags another set
-of timings and pixel clock.
-There are panels that support more than one resolution.
+Jingoo Han (1):
+      video: exynos_dp: add missing of_node_put()
 
-> 
-> But, in practice, making this kind of even more generic panel driver
-> will probably make life easier for everyone, so I think we'll have one
-> with CDF.
+drivers/video/exynos/exynos_dp_core.c |   24 +++++++++++++++---------
+ 1 files changed, 15 insertions(+), 9 deletions(-)
 
-I'm looking forward to see it happening!
+--
+Best regards,
+Jingoo Han
 
-- -- 
-Regards,
-Igor.
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.17 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRHOvEAAoJEBDE8YO64EfaCZ0P/32SYC7MZRJMfUVrnzZtJZpn
-9BKzrvO0h/GKZMbKoKKNFwmvlTxEocELLkljF35ipbc51C/dpD45ZmMBvu4s8owE
-6bopGw6ssTahTKk0zY5PekTamZT7UlY86hI9ZcZBxSzY8xaj7UCSPnJ3qzY2ZGzA
-4heJW01mlHr9i1qkOzxz0IHA2CdQmQltAsW12NFCWYBRpDfhrYtECwhlnvLXHEzy
-nqXNpRHOnrL/hqvJwor1X+D/O1JlyxUiVr6+7sAZqXxvv/iMX8Nc1XeTObgGbse6
-1bpipPD57etqISsN1g9ur1tU5f6KvoR4IA35RaCCkBFINIXMEBl7kr5X9Bcg3giE
-3pz23k91KRloOcXJ0OvLHp7RnSrwswU/4C3Cse+95cY0wyChaVlwJtySEnfGALWV
-aiuw89v6DXaC5WDQq55UtTc3qjc23Ehut8i184PAv5HKrDHLLjVg4HqgGjC9uGEn
-JKOxOnfMTstqyKC2whW+Pep3g4npJAHsn/0QmpdSJQ/vEwm7CmXBZeR6DwcTSLAT
-xR1SUWwHav2HqpYUz4y7TgIPuwsR+VNKn/mSOTbhbLB4s9bowPMxMiqz2AQn3ige
-YyMTo7KnObivXZydrVrx0/e/DJC4ENGpE3macVQytr0BpjJhK1+XiNMHa17+Mymm
-U45VDKrUgaYcYXW2L4JN
-=xeSz
------END PGP SIGNATURE-----

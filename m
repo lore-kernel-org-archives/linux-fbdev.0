@@ -1,40 +1,30 @@
-From: Haiyang Zhang <haiyangz@microsoft.com>
-Date: Tue, 19 Feb 2013 17:48:39 +0000
-Subject: RE: [PATCH RFC] video: Add Hyper-V Synthetic Video Frame Buffer Driver
-Message-Id: <1ca36b5d55c64ac6b8854c4f216ef8e5@DFM-TK5MBX15-06.exchange.corp.microsoft.com>
+From: Olaf Hering <olaf@aepfle.de>
+Date: Tue, 19 Feb 2013 18:40:09 +0000
+Subject: Re: [PATCH RFC] video: Add Hyper-V Synthetic Video Frame Buffer Driver
+Message-Id: <20130219184009.GA21783@aepfle.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1360955396-14183-1-git-send-email-haiyangz@microsoft.com>
  <20130219165118.GA17715@aepfle.de>
-In-Reply-To: <20130219165118.GA17715@aepfle.de>
+ <1ca36b5d55c64ac6b8854c4f216ef8e5@DFM-TK5MBX15-06.exchange.corp.microsoft.com>
+In-Reply-To: <1ca36b5d55c64ac6b8854c4f216ef8e5@DFM-TK5MBX15-06.exchange.corp.microsoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Olaf Hering <olaf@aepfle.de>
+To: Haiyang Zhang <haiyangz@microsoft.com>
 Cc: "FlorianSchandinat@gmx.de" <FlorianSchandinat@gmx.de>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, KY Srinivasan <kys@microsoft.com>, "jasowang@redhat.com" <jasowang@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBPbGFmIEhlcmluZyBbbWFpbHRv
-Om9sYWZAYWVwZmxlLmRlXQ0KPiBTZW50OiBUdWVzZGF5LCBGZWJydWFyeSAxOSwgMjAxMyAxMTo1
-MSBBTQ0KPiBUbzogSGFpeWFuZyBaaGFuZw0KPiBDYzogRmxvcmlhblNjaGFuZGluYXRAZ214LmRl
-OyBsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmc7IEtZIFNyaW5pdmFzYW47DQo+IGphc293YW5n
-QHJlZGhhdC5jb207IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+IGRldmVsQGxpbnV4
-ZHJpdmVycHJvamVjdC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCBSRkNdIHZpZGVvOiBBZGQg
-SHlwZXItViBTeW50aGV0aWMgVmlkZW8gRnJhbWUgQnVmZmVyDQo+IERyaXZlcg0KPiANCj4gT24g
-RnJpLCBGZWIgMTUsIEhhaXlhbmcgWmhhbmcgd3JvdGU6DQo+IA0KPiA+IEBAIC01MDgsNiArNTQ0
-LDE4IEBAIHN0YXRpYyBpbnQgX19pbml0IHZlc2FmYl9pbml0KHZvaWQpDQo+ID4gIAlpbnQgcmV0
-Ow0KPiA+ICAJY2hhciAqb3B0aW9uID0gTlVMTDsNCj4gPg0KPiA+ICsjaWYgSVNfRU5BQkxFRChD
-T05GSUdfSFlQRVJWX0ZCKQ0KPiA+ICsJLyoNCj4gPiArCSAqIE9uIEh5cGVyLVYgYm90aCB0aGUg
-ZW11bGF0ZWQgYW5kIHN5bnRoZXRpYyB2aWRlbyBkZXZpY2VzIGFyZQ0KPiA+ICsJICogYXZhaWxh
-YmxlLiBUbyBhdm9pZCBjb25mbGljdHMsIHdlIGRpc2FibGUgdmVzYWZiIGZvciB0aGUNCj4gZW11
-bGF0ZWQNCj4gPiArCSAqIHZpZGVvIGlmIGh5cGVydl9mYiBpcyBjb25maWd1cmVkLg0KPiA+ICsJ
-ICovDQo+ID4gKwlpZiAoaXNfaHlwZXJ2KCkpIHsNCj4gPiArCQlwcl9pbmZvKCJEaXNhYmxlZCB2
-ZXNhZmIgb24gSHlwZXItVi5cbiIpOw0KPiA+ICsJCXJldHVybiAtRU5PREVWOw0KPiA+ICsJfQ0K
-PiA+ICsjZW5kaWYNCj4gDQo+IFdoYXQgaXMgdGhlIHJlYXNvbiBmb3IgdGhpcyBob29rPyBJcyBp
-dCBub3QgcG9zc2libGUgdG8gY2xhaW0gdGhlDQo+IGRpc3BsYXkgbGlrZSBpdHMgYXBwZWFyZW50
-bHkgZG9uZSBieSBvdGhlciBkcml2ZXJzIChsaWtlIHJhZGVvbmZiIGNhbg0KPiB0YWtlIG92ZXIg
-ZGlzcGxheSBmcm9tIHZlc2FmYik/DQoNClRoZSBlbXVsYXRlZCB2aWRlbyBkZXZpY2UgaXMgYSBz
-ZXBhcmF0ZSBkZXZpY2UgZnJvbSB0aGUgc3ludGhldGljIHZpZGVvLg0KVGhlIHN5bnRoZXRpYyBk
-cml2ZXIgY2FuIG9ubHkgdGFrZSBjb250cm9sIG9mIHRoZSBzeW50aGV0aWMgdmlkZW8sIGJ1dCBu
-b3QNCnRoZSBlbXVsYXRlZCB2aWRlby4NCg0KQWN0dWFsbHksIHdlIGFscmVhZHkgaGF2ZSBhIHNp
-bWlsYXIgbWVjaGFuaXNtIGluIGF0YS9hdGFfcGlpeC5jIHRvIGRpc2FibGUNCmVtdWxhdGVkIElE
-RSBkcml2ZSBvbiBIeXBlci1WLCBzbyBpdCB3b24ndCBjb25mbGljdCB3aXRoIHRoZSBzeW50aGV0
-aWMgZHJpdmUuDQoNClRoYW5rcywNCi0gSGFpeWFuZw0KDQo
+On Tue, Feb 19, Haiyang Zhang wrote:
+
+> The emulated video device is a separate device from the synthetic video.
+> The synthetic driver can only take control of the synthetic video, but not
+> the emulated video.
+
+Please add this to the comment above.
+
+> Actually, we already have a similar mechanism in ata/ata_piix.c to disable
+> emulated IDE drive on Hyper-V, so it won't conflict with the synthetic drive.
+
+I havent read the vesafb code, but I think it can kind of give up the
+hardware, something ata_piix can not do.
+
+Olaf

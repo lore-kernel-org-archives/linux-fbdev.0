@@ -1,60 +1,68 @@
-From: Ruslan Bilovol <ruslan.bilovol@ti.com>
-Date: Mon, 18 Feb 2013 14:30:41 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 19 Feb 2013 11:34:17 +0000
 Subject: Re: [PATCH v2 0/1] OMAP4: DSS: Add panel for Blaze Tablet boards
-Message-Id: <CAB=otbRAj41dFMe_i+LDGbi29kMV0C-tw-HXyz7iF4m4R+5R+Q@mail.gmail.com>
+Message-Id: <51236339.90407@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig492D6F5DAB0BCF265F5BC086"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360338220-12753-1-git-send-email-ruslan.bilovol@ti.com>
-	<511B4C60.50404@ti.com>
-	<CAB=otbSX_O-zbHZuPWPSEU0D1s3uKfZfeatoguoRiwogS5tVHQ@mail.gmail.com>
-	<511CAD5D.2050502@ti.com>
-In-Reply-To: <511CAD5D.2050502@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1360338220-12753-1-git-send-email-ruslan.bilovol@ti.com> <511B4C60.50404@ti.com> <CAB=otbSX_O-zbHZuPWPSEU0D1s3uKfZfeatoguoRiwogS5tVHQ@mail.gmail.com> <511CAD5D.2050502@ti.com> <CAB=otbRAj41dFMe_i+LDGbi29kMV0C-tw-HXyz7iF4m4R+5R+Q@mail.gmail.com>
+In-Reply-To: <CAB=otbRAj41dFMe_i+LDGbi29kMV0C-tw-HXyz7iF4m4R+5R+Q@mail.gmail.com>
+To: Ruslan Bilovol <ruslan.bilovol@ti.com>
 Cc: andi@etezian.org, FlorianSchandinat@gmx.de, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
 
-Hi Tomi,
+--------------enig492D6F5DAB0BCF265F5BC086
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Feb 14, 2013 at 11:24 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On 2013-02-14 02:07, Ruslan Bilovol wrote:
->
->> This patch is exactly a part of mainlining of the BlazeTablet board support :)
->> The goal is to have as much as possible support of this board in the
->> 'vanilla' kernel.
->> The BlazeTablet mainlining is already ongoing (
->> https://patchwork.kernel.org/patch/2118281/ )
->> and I hope we will have some support of this board in near future.
->> The BlazeTablet's LCD panel support is very important thing for us to
->> have it in mainline because
->> without it the BlazeTablet becomes a 'black brick' and it is painful
->> for us to port this
->> driver against each new version of kernel.
->
-> Ok, good to hear you're pushing it to mainline. However, you should
-> mentally prepare for it being a black brick =(.
->
-> Tony said he's not adding new board files, only DT from now on. The
-> display subsystem driver and the panel drivers do not work with DT yet,
-> and it will still take some time for that to realize.
->
-> Thus adding this driver would help nothing, as it couldn't be used. And
-> after the DSS and the panel drivers are made to work with DT (which is a
-> big job, needing large rewrites of the drivers), there's a rework that
-> has to be done with this driver to make it compatible with the new DSS
-> model.
->
-> So, I'm still inclined to say that we shouldn't merge this.
+On 2013-02-18 16:30, Ruslan Bilovol wrote:
 
-Thanks for explanation.
+>> So, I'm still inclined to say that we shouldn't merge this.
+>=20
+> Thanks for explanation.
+>=20
+> Do you have some plan when DSS will be ready to port this driver?
+> (3.10, 3.11 or later)?
 
-Do you have some plan when DSS will be ready to port this driver?
-(3.10, 3.11 or later)?
+When it's ready =3D). The work depends also on common display framework,
+so it's not only up to me.
 
-Best regards,
-Ruslan
+That said, I have a prototype branch, with my version of CDF, that
+somewhat works for the couple of boards and panels that I have ported.
+It doesn't have DT code there, though (DSS DT is in a separate branch
+for now). If all goes extremely well, I could imagine 3.10 having the
+support allowing to port this driver.
 
->
->  Tomi
->
->
+And if you're interested in some prototype code, kernel crashes, DSS
+debugging, etc, I can point you to my branch and give you some notes, so
+you could try porting this panel driver to (my version of) CDF. Give me
+a private email if you want to try that.
+
+ Tomi
+
+
+
+--------------enig492D6F5DAB0BCF265F5BC086
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRI2M5AAoJEPo9qoy8lh71YtkP/jmbXmSx8oETXWGFZLJCtyfF
+l5qF5hMbqMVXxPOY5p5Tg0e0ldJWVjdwJ5Na+DWbzwuTYPKT9FgQJfR7NEy0jzp1
+BFdXSvtlP1as7ZtT4GDHyGGFfAa4MzVictoNndws1kCze9IrQduUl0YXejnaJlLV
+rviVyVqvyTz8y1dTjV9qC3g/U/F1k6LBOxXudblWHaBmlPQ66mcmemdEr6ZtEh7Q
+tzZkTmmePtYisIiPmgOjIShAJ5q3BN0B19BWTE4jUYGUyUgH2+jRKNYyU4QteA8O
+6CFP59g33Jc1i3VUtofYbVCHl01o/y8uEZTuDewryoIipapFrkwk31wVwOoe8+dE
++NA7nhh5HYjMvWCKOxb2H6X5Fcmb741QBatiVU27yCBq9Yl+uYQXDpyTOOiwCNGC
+aih7WI00k3pdRsMJZzMVGcKy4UNKbSV8Z5geQTmtTVhL3rw+Q5uN6L15G42xteyu
+Ix0cKS4GJo5dSY+2Nuk/IDwx/mNdgeQw72gewMfsSbtozUX6bCbNRRAzS7Gu7gWE
+glCr52cNTxbbljOdbmqJbW+N9clxExsxMK+EQnhuHnp8hzRm9ABODiQG3QootSpD
+A45LLfkOybUl+OWtpWKzJL7rer/o3Q+ilRUIBB8Oag1mXknSUElqfxIqmefSc1li
+Hy6pchrSf65HXQmEAeR+
+=16Rq
+-----END PGP SIGNATURE-----
+
+--------------enig492D6F5DAB0BCF265F5BC086--

@@ -1,100 +1,37 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Date: Fri, 08 Feb 2013 16:35:14 +0000
-Subject: [PATCH 1/5] atmel_lcdfb: fix 16-bpp modes on older SOCs
-Message-Id: <7543f557bed835c79f6981989e96034a326bb48f.1360340791.git.nicolas.ferre@atmel.com>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Wed, 20 Feb 2013 17:25:01 +0000
+Subject: [PATCH] video: mx3fb: Use NULL for pointer
+Message-Id: <1361381101-21325-1-git-send-email-festevam@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1360340791.git.nicolas.ferre@atmel.com>
-In-Reply-To: <cover.1360340791.git.nicolas.ferre@atmel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-From: Johan Hovold <jhovold@gmail.com>
+From: Fabio Estevam <fabio.estevam@freescale.com>
 
-Fix regression introduced by commit 787f9fd23283 ("atmel_lcdfb: support
-16bit BGR:565 mode, remove unsupported 15bit modes") which broke 16-bpp
-modes for older SOCs which use IBGR:555 (msb is intensity) rather
-than BGR:565.
+Fix the following sparse error:
 
-Use SOC-type to determine the pixel layout.
+drivers/video/mx3fb.c:1309:28: warning: Using plain integer as NULL pointer
 
-Tested on at91sam9263 and at91sam9g45.
-
-Cc: <stable@vger.kernel.org>
-Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
 ---
- drivers/video/atmel_lcdfb.c | 22 +++++++++++++++-------
- include/video/atmel_lcdc.h  |  1 +
- 2 files changed, 16 insertions(+), 7 deletions(-)
+ drivers/video/mx3fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 12cf5f3..025428e 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -422,17 +422,22 @@ static int atmel_lcdfb_check_var(struct fb_var_screeninfo *var,
- 			= var->bits_per_pixel;
- 		break;
- 	case 16:
-+		/* Older SOCs use IBGR:555 rather than BGR:565. */
-+		if (sinfo->have_intensity_bit)
-+			var->green.length = 5;
-+		else
-+			var->green.length = 6;
-+
- 		if (sinfo->lcd_wiring_mode = ATMEL_LCDC_WIRING_RGB) {
--			/* RGB:565 mode */
--			var->red.offset = 11;
-+			/* RGB:5X5 mode */
-+			var->red.offset = var->green.length + 5;
- 			var->blue.offset = 0;
- 		} else {
--			/* BGR:565 mode */
-+			/* BGR:5X5 mode */
- 			var->red.offset = 0;
--			var->blue.offset = 11;
-+			var->blue.offset = var->green.length + 5;
- 		}
- 		var->green.offset = 5;
--		var->green.length = 6;
- 		var->red.length = var->blue.length = 5;
- 		break;
- 	case 32:
-@@ -679,8 +684,7 @@ static int atmel_lcdfb_setcolreg(unsigned int regno, unsigned int red,
+diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+index 7368872..cfdb380 100644
+--- a/drivers/video/mx3fb.c
++++ b/drivers/video/mx3fb.c
+@@ -1306,7 +1306,7 @@ static int mx3fb_unmap_video_memory(struct fb_info *fbi)
+ 	dma_free_writecombine(fbi->device, fbi->fix.smem_len,
+ 			      fbi->screen_base, fbi->fix.smem_start);
  
- 	case FB_VISUAL_PSEUDOCOLOR:
- 		if (regno < 256) {
--			if (cpu_is_at91sam9261() || cpu_is_at91sam9263()
--			    || cpu_is_at91sam9rl()) {
-+			if (sinfo->have_intensity_bit) {
- 				/* old style I+BGR:555 */
- 				val  = ((red   >> 11) & 0x001f);
- 				val |= ((green >>  6) & 0x03e0);
-@@ -870,6 +874,10 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
- 	}
- 	sinfo->info = info;
- 	sinfo->pdev = pdev;
-+	if (cpu_is_at91sam9261() || cpu_is_at91sam9263() ||
-+							cpu_is_at91sam9rl()) {
-+		sinfo->have_intensity_bit = true;
-+	}
- 
- 	strcpy(info->fix.id, sinfo->pdev->name);
- 	info->flags = ATMEL_LCDFB_FBINFO_DEFAULT;
-diff --git a/include/video/atmel_lcdc.h b/include/video/atmel_lcdc.h
-index 28447f1..5f0e234 100644
---- a/include/video/atmel_lcdc.h
-+++ b/include/video/atmel_lcdc.h
-@@ -62,6 +62,7 @@ struct atmel_lcdfb_info {
- 	void (*atmel_lcdfb_power_control)(int on);
- 	struct fb_monspecs	*default_monspecs;
- 	u32			pseudo_palette[16];
-+	bool			have_intensity_bit;
- };
- 
- #define ATMEL_LCDC_DMABADDR1	0x00
+-	fbi->screen_base = 0;
++	fbi->screen_base = NULL;
+ 	mutex_lock(&fbi->mm_lock);
+ 	fbi->fix.smem_start = 0;
+ 	fbi->fix.smem_len = 0;
 -- 
-1.8.0
+1.7.9.5
 

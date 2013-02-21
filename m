@@ -1,38 +1,38 @@
-From: Haiyang Zhang <haiyangz@microsoft.com>
-Date: Tue, 19 Feb 2013 19:04:48 +0000
-Subject: RE: [PATCH RFC] video: Add Hyper-V Synthetic Video Frame Buffer Driver
-Message-Id: <7267f77544c24531b8fcccc2192b9f48@DFM-TK5MBX15-06.exchange.corp.microsoft.com>
+From: Olaf Hering <olaf@aepfle.de>
+Date: Thu, 21 Feb 2013 15:53:59 +0000
+Subject: Re: [PATCH RFC] video: Add Hyper-V Synthetic Video Frame Buffer Driver
+Message-Id: <20130221155359.GA28637@aepfle.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1360955396-14183-1-git-send-email-haiyangz@microsoft.com>
  <20130219165118.GA17715@aepfle.de>
  <1ca36b5d55c64ac6b8854c4f216ef8e5@DFM-TK5MBX15-06.exchange.corp.microsoft.com>
  <20130219184009.GA21783@aepfle.de>
-In-Reply-To: <20130219184009.GA21783@aepfle.de>
+ <7267f77544c24531b8fcccc2192b9f48@DFM-TK5MBX15-06.exchange.corp.microsoft.com>
+In-Reply-To: <7267f77544c24531b8fcccc2192b9f48@DFM-TK5MBX15-06.exchange.corp.microsoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Olaf Hering <olaf@aepfle.de>
+To: Haiyang Zhang <haiyangz@microsoft.com>
 Cc: "FlorianSchandinat@gmx.de" <FlorianSchandinat@gmx.de>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, KY Srinivasan <kys@microsoft.com>, "jasowang@redhat.com" <jasowang@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51eC1mYmRldi1vd25lckB2
-Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1mYmRldi0NCj4gb3duZXJAdmdlci5rZXJuZWwu
-b3JnXSBPbiBCZWhhbGYgT2YgT2xhZiBIZXJpbmcNCj4gU2VudDogVHVlc2RheSwgRmVicnVhcnkg
-MTksIDIwMTMgMTo0MCBQTQ0KPiBUbzogSGFpeWFuZyBaaGFuZw0KPiBDYzogRmxvcmlhblNjaGFu
-ZGluYXRAZ214LmRlOyBsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmc7IEtZIFNyaW5pdmFzYW47
-DQo+IGphc293YW5nQHJlZGhhdC5jb207IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+
-IGRldmVsQGxpbnV4ZHJpdmVycHJvamVjdC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCBSRkNd
-IHZpZGVvOiBBZGQgSHlwZXItViBTeW50aGV0aWMgVmlkZW8gRnJhbWUgQnVmZmVyDQo+IERyaXZl
-cg0KPiANCj4gT24gVHVlLCBGZWIgMTksIEhhaXlhbmcgWmhhbmcgd3JvdGU6DQo+IA0KPiA+IFRo
-ZSBlbXVsYXRlZCB2aWRlbyBkZXZpY2UgaXMgYSBzZXBhcmF0ZSBkZXZpY2UgZnJvbSB0aGUgc3lu
-dGhldGljDQo+IHZpZGVvLg0KPiA+IFRoZSBzeW50aGV0aWMgZHJpdmVyIGNhbiBvbmx5IHRha2Ug
-Y29udHJvbCBvZiB0aGUgc3ludGhldGljIHZpZGVvLCBidXQNCj4gbm90DQo+ID4gdGhlIGVtdWxh
-dGVkIHZpZGVvLg0KPiANCj4gUGxlYXNlIGFkZCB0aGlzIHRvIHRoZSBjb21tZW50IGFib3ZlLg0K
-DQpXaWxsIGRvLg0KDQo+ID4gQWN0dWFsbHksIHdlIGFscmVhZHkgaGF2ZSBhIHNpbWlsYXIgbWVj
-aGFuaXNtIGluIGF0YS9hdGFfcGlpeC5jIHRvDQo+IGRpc2FibGUNCj4gPiBlbXVsYXRlZCBJREUg
-ZHJpdmUgb24gSHlwZXItViwgc28gaXQgd29uJ3QgY29uZmxpY3Qgd2l0aCB0aGUgc3ludGhldGlj
-DQo+IGRyaXZlLg0KPiANCj4gSSBoYXZlbnQgcmVhZCB0aGUgdmVzYWZiIGNvZGUsIGJ1dCBJIHRo
-aW5rIGl0IGNhbiBraW5kIG9mIGdpdmUgdXAgdGhlDQo+IGhhcmR3YXJlLCBzb21ldGhpbmcgYXRh
-X3BpaXggY2FuIG5vdCBkby4NCg0KSW4gbXkgdGVzdCwgdGhlIHZlc2FmYiBkb2Vzbid0IGF1dG9t
-YXRpY2FsbHkgZ2l2ZSB1cCB0aGUgZW11bGF0ZWQgdmlkZW8gZGV2aWNlLA0KdW5sZXNzIEkgYWRk
-IHRoZSBETUkgYmFzZWQgbWVjaGFuaXNtIHRvIGxldCBpdCBleGl0IG9uIEh5cGVyLVYuDQoNClRo
-YW5rcywNCi0gSGFpeWFuZw0KDQo
+On Tue, Feb 19, Haiyang Zhang wrote:
+
+> > I havent read the vesafb code, but I think it can kind of give up the
+> > hardware, something ata_piix can not do.
+> 
+> In my test, the vesafb doesn't automatically give up the emulated video device,
+> unless I add the DMI based mechanism to let it exit on Hyper-V.
+
+From reading the code, it seems to do that via
+do_remove_conflicting_framebuffers(). hypervfb does not set apertures
+etc, so that function is a noop.
+
+
+My point is that with this new driver distro kernel will have no console
+output until hypervfb is loaded. On native hardware there is at least
+vesafb which can display something until initrd is running. So if the
+hypervisor allows that hypervfb can shutdown the emulated vesa hardware
+then it should do that.
+
+
+Olaf

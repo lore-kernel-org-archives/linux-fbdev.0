@@ -1,66 +1,52 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:34:03 +0000
-Subject: [PATCH 11/33] OMAPDSS: lb035q02 panel: remove platform_enable/disable callbacks
-Message-Id: <1360765345-19312-12-git-send-email-archit@ti.com>
+From: David Howells <dhowells@redhat.com>
+Date: Thu, 21 Feb 2013 13:49:24 +0000
+Subject: [GIT PULL] UAPI disintegration for the framebuffer layer
+Message-Id: <7511.1361454564@warthog.procyon.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360765345-19312-1-git-send-email-archit@ti.com>
-In-Reply-To: <1360765345-19312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: torvalds@linux-foundation.org
+Cc: dhowells@redhat.com, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The lgphilips panel driver now manages the gpios required to configure the
-panel. This was previously done in omap_dss_device's platform_enable/disable
-callbacks defined in board files using this panel.
 
-All the board files using this panel now pass the gpio information as platform
-data via the panel_generic_dpi_data struct, which is needed by the panel driver
-to configure the gpios connected to the panel. Hence, the
-platform_enable/disable ops can be safely removed now.
+Hi Linus,
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+Here are the UAPI disintegration bits for the fbdev drivers.  It appears that
+Florian hasn't had time to deal with my patch, but back in December he did say
+he didn't mind if I pushed it forward.  I recommend pulling it after any other
+fbdev stuff and I can easily regenerate it if necessary.
+
+David
 ---
- .../omap2/displays/panel-lgphilips-lb035q02.c      |   12 +-----------
- 1 file changed, 1 insertion(+), 11 deletions(-)
+The following changes since commit 1800098549fc310cffffefdcb3722adaad0edda8:
 
-diff --git a/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c b/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
-index 63cd8857..4ea6548 100644
---- a/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
-+++ b/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
-@@ -71,20 +71,13 @@ static int lb035q02_panel_power_on(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err0;
- 
--	if (dssdev->platform_enable) {
--		r = dssdev->platform_enable(dssdev);
--		if (r)
--			goto err1;
--	}
--
- 	for (i = 0; i < panel_data->num_gpios; ++i) {
- 		gpio_set_value_cansleep(panel_data->gpios[i],
- 				panel_data->gpio_invert[i] ? 0 : 1);
- 	}
- 
- 	return 0;
--err1:
--	omapdss_dpi_display_disable(dssdev);
-+
- err0:
- 	return r;
- }
-@@ -102,9 +95,6 @@ static void lb035q02_panel_power_off(struct omap_dss_device *dssdev)
- 				panel_data->gpio_invert[i] ? 1 : 0);
- 	}
- 
--	if (dssdev->platform_disable)
--		dssdev->platform_disable(dssdev);
--
- 	omapdss_dpi_display_disable(dssdev);
- }
- 
--- 
-1.7.9.5
+  ARM: OMAP: Fix build breakage due to missing include in i2c.c (2012-12-20 08:43:25 -0800)
 
+are available in the git repository at:
+
+  git://git.infradead.org/users/dhowells/linux-headers.git tags/disintegrate-fbdev-20121220
+
+for you to fetch changes up to b889fcf63cb62e7fdb7816565e28f44dbe4a76a5:
+
+  UAPI: (Scripted) Disintegrate include/video (2012-12-20 17:14:26 +0000)
+
+----------------------------------------------------------------
+UAPI disintegration 2012-12-20
+
+----------------------------------------------------------------
+David Howells (1):
+      UAPI: (Scripted) Disintegrate include/video
+
+ include/uapi/video/Kbuild    |   3 +
+ include/uapi/video/edid.h    |   9 ++
+ include/uapi/video/sisfb.h   | 209 +++++++++++++++++++++++++++++++++++++++++++
+ include/uapi/video/uvesafb.h |  60 +++++++++++++
+ include/video/Kbuild         |   3 -
+ include/video/edid.h         |   7 +-
+ include/video/sisfb.h        | 189 +-------------------------------------
+ include/video/uvesafb.h      |  58 +-----------
+ 8 files changed, 284 insertions(+), 254 deletions(-)
+ create mode 100644 include/uapi/video/edid.h
+ create mode 100644 include/uapi/video/sisfb.h
+ create mode 100644 include/uapi/video/uvesafb.h

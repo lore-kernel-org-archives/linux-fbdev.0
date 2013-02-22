@@ -1,53 +1,28 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 21 Feb 2013 05:17:38 +0000
-Subject: [GIT PULL] samsung-fb updates for v3.9
-Message-Id: <00b801ce0ff2$c3dfa800$4b9ef800$%han@samsung.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 22 Feb 2013 01:48:37 +0000
+Subject: Re: [GIT PULL] samsung-fb updates for v3.9
+Message-Id: <CA+55aFyaQDwQPW3GMZu9gcQr-FhPY3vHKXUo0HMERR0Uxw-xmQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <003901ce0e4b$fd839c40$f88ad4c0$%han@samsung.com>
-In-Reply-To: <003901ce0e4b$fd839c40$f88ad4c0$%han@samsung.com>
+References: <00b801ce0ff2$c3dfa800$4b9ef800$%han@samsung.com>
+In-Reply-To: <00b801ce0ff2$c3dfa800$4b9ef800$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Linus Torvalds' <torvalds@linux-foundation.org>
-Cc: 'linux-fbdev' <linux-fbdev@vger.kernel.org>, 'linux-kernel' <linux-kernel@vger.kernel.org>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, 'Andrew Morton' <akpm@linux-foundation.org>, 'Jingoo Han' <jg1.han@samsung.com>
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Andrew Morton <akpm@linux-foundation.org>
 
-Hi Linus,
+On Wed, Feb 20, 2013 at 9:17 PM, Jingoo Han <jg1.han@samsung.com> wrote:
+> samsung-fb updates for the v3.9:
 
-Florian, the fbdev maintainer, has been very busy lately, so I send the pull request
-for samsung-fb for this merge window.
+Ok, there's a good gpg signed tag now, with a very recent gpg key. Try
+to get that key signed by a few people.
 
-The following changes since commit 19f949f52599ba7c3f67a5897ac6be14bfcb1200:
+Anyway, I pulled, and noticed that I had gotten these patches through
+Andrew, so then I undid my pull as unnecessary. But I bet Andrew will
+be happy if he can rely on you maintaining it, so I guess this whole
+thing will work out in the future.
 
- Linux 3.8 (Mon Feb 18 15:58:34 2013 -0800)
+Of course, I'd be even happier if somebody were to step up maintaining
+all of fbdev. Oh well.
 
-are available in the git repository at:
-  git://github.com/jingoo/linux.git tags/samsung-fb-3.9
-
-for you to fetch changes up to 5a415ae252d5922de9eadefabe8510115395fbc6:
-
- video: s3c-fb: Fix typo in definition of VIDCON1_VSTATUS_FRONTPORCH value (Sat Nov 17 21:31:00 2012 +0000)
-
-----------------------------------------------------------------
-samsung-fb updates for the v3.9:
-
-- The bit definitions of header file are updated.
-- The dependancy is fixed.
-----------------------------------------------------------------
-
-Jingoo Han (4):
-      video: s3c-fb: use ARCH_ dependancy
-      video: s3c-fb: remove duplicated S3C_FB_MAX_WIN
-      video: s3c-fb: remove unnecessary brackets
-      video: s3c-fb: add the bit definitions for CSC EQ709 and EQ601
-
-Tomasz Figa (1):
-      video: s3c-fb: Fix typo in definition of VIDCON1_VSTATUS_FRONTPORCH value
-
- drivers/video/Kconfig        |    3 +-
- include/video/samsung_fimd.h |  205 ++++++++++++++++++++---------------------
- 2 files changed, 102 insertions(+), 106 deletions(-)
-
---
-Best regards,
-Jingoo Han
-
+            Linus

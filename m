@@ -1,13 +1,15 @@
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Mon, 18 Feb 2013 09:57:44 +0000
+Date: Mon, 25 Feb 2013 11:26:48 +0000
 Subject: [PATCH v2] mfd: as3711: add OF support
-Message-Id: <Pine.LNX.4.64.1302181049510.4526@axis700.grange>
+Message-Id: <Pine.LNX.4.64.1302251223150.3030@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <Pine.LNX.4.64.1302151101140.7446@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1302151101140.7446-0199iw4Nj15frtckUFj5Ag@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, devicetree-discuss@lists.ozlabs.org, Samuel Ortiz <sameo@linux.intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Liam Girdwood <lrg@ti.com>, Richard Purdie <rpurdie@rpsys.net>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Liam Girdwood <lrg-l0cyMroinI0@public.gmane.org>
 
 Add device-tree bindings to the AS3711 regulator and backlight drivers.
 
@@ -15,16 +17,16 @@ Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
 
 v2:
-1. remove of_device_is_available() - it breaks compilation with CONFIG_OF 
-disabled and is redundant anyway - I2C devices are only registered for 
-available devoces
-2. add parenthesis to eliminate a compiler warning
+1. remove a redundant of_device_is_available() check, this also eliminates 
+   a compile breakage
+2. add .of_node regulator configuration field initialisation
+3. add parenthesis to silence compiler warnings
 
  Documentation/devicetree/bindings/mfd/as3711.txt |   73 +++++++++++++
  drivers/mfd/as3711.c                             |   27 ++++-
- drivers/regulator/as3711-regulator.c             |   69 ++++++++++++-
+ drivers/regulator/as3711-regulator.c             |   74 +++++++++++++-
  drivers/video/backlight/as3711_bl.c              |  118 +++++++++++++++++++++-
- 4 files changed, 279 insertions(+), 8 deletions(-)
+ 4 files changed, 284 insertions(+), 8 deletions(-)
  create mode 100644 Documentation/devicetree/bindings/mfd/as3711.txt
 
 diff --git a/Documentation/devicetree/bindings/mfd/as3711.txt b/Documentation/devicetree/bindings/mfd/as3711.txt
@@ -159,7 +161,7 @@ index e994c96..01e4141 100644
  	.remove = as3711_i2c_remove,
  	.id_table = as3711_i2c_id,
 diff --git a/drivers/regulator/as3711-regulator.c b/drivers/regulator/as3711-regulator.c
-index f0ba8c4..cf145fc 100644
+index f0ba8c4..0539b3e 100644
 --- a/drivers/regulator/as3711-regulator.c
 +++ b/drivers/regulator/as3711-regulator.c
 @@ -13,9 +13,11 @@
@@ -174,7 +176,7 @@ index f0ba8c4..cf145fc 100644
  #include <linux/slab.h>
  
  struct as3711_regulator_info {
-@@ -276,6 +278,57 @@ static struct as3711_regulator_info as3711_reg_info[] = {
+@@ -276,6 +278,60 @@ static struct as3711_regulator_info as3711_reg_info[] = {
  
  #define AS3711_REGULATOR_NUM ARRAY_SIZE(as3711_reg_info)
  
@@ -193,12 +195,12 @@ index f0ba8c4..cf145fc 100644
 +	[AS3711_REGULATOR_LDO_8] = "ldo8",
 +};
 +
-+static int as3711_regulator_parse_dt(struct device *dev)
++static int as3711_regulator_parse_dt(struct device *dev,
++				struct device_node **of_node, const int count)
 +{
 +	struct as3711_regulator_pdata *pdata = dev_get_platdata(dev);
 +	struct device_node *regulators +		of_find_node_by_name(dev->parent->of_node, "regulators");
 +	struct of_regulator_match *matches, *match;
-+	const int count = AS3711_REGULATOR_NUM;
 +	int ret, i;
 +
 +	if (!regulators) {
@@ -216,14 +218,17 @@ index f0ba8c4..cf145fc 100644
 +	}
 +
 +	ret = of_regulator_match(dev->parent, regulators, matches, count);
++	of_node_put(regulators);
 +	if (ret < 0) {
 +		dev_err(dev, "Error parsing regulator init data: %d\n", ret);
 +		return ret;
 +	}
 +
 +	for (i = 0, match = matches; i < count; i++, match++)
-+		if (match->of_node)
++		if (match->of_node) {
 +			pdata->init_data[i] = match->init_data;
++			of_node[i] = match->of_node;
++		}
 +
 +	return 0;
 +}
@@ -231,7 +236,13 @@ index f0ba8c4..cf145fc 100644
  static int as3711_regulator_probe(struct platform_device *pdev)
  {
  	struct as3711_regulator_pdata *pdata = dev_get_platdata(&pdev->dev);
-@@ -289,8 +342,18 @@ static int as3711_regulator_probe(struct platform_device *pdev)
+@@ -284,13 +340,24 @@ static int as3711_regulator_probe(struct platform_device *pdev)
+ 	struct regulator_config config = {.dev = &pdev->dev,};
+ 	struct as3711_regulator *reg = NULL;
+ 	struct as3711_regulator *regs;
++	struct device_node *of_node[AS3711_REGULATOR_NUM] = {};
+ 	struct regulator_dev *rdev;
+ 	struct as3711_regulator_info *ri;
  	int ret;
  	int id;
  
@@ -243,7 +254,7 @@ index f0ba8c4..cf145fc 100644
 +	}
 +
 +	if (pdev->dev.parent->of_node) {
-+		ret = as3711_regulator_parse_dt(&pdev->dev);
++		ret = as3711_regulator_parse_dt(&pdev->dev, of_node, AS3711_REGULATOR_NUM);
 +		if (ret < 0) {
 +			dev_err(&pdev->dev, "DT parsing failed: %d\n", ret);
 +			return ret;
@@ -252,7 +263,7 @@ index f0ba8c4..cf145fc 100644
  
  	regs = devm_kzalloc(&pdev->dev, AS3711_REGULATOR_NUM *
  			sizeof(struct as3711_regulator), GFP_KERNEL);
-@@ -300,7 +363,7 @@ static int as3711_regulator_probe(struct platform_device *pdev)
+@@ -300,7 +367,7 @@ static int as3711_regulator_probe(struct platform_device *pdev)
  	}
  
  	for (id = 0, ri = as3711_reg_info; id < AS3711_REGULATOR_NUM; ++id, ri++) {
@@ -261,6 +272,14 @@ index f0ba8c4..cf145fc 100644
  
  		/* No need to register if there is no regulator data */
  		if (!reg_data)
+@@ -312,6 +379,7 @@ static int as3711_regulator_probe(struct platform_device *pdev)
+ 		config.init_data = reg_data;
+ 		config.driver_data = reg;
+ 		config.regmap = as3711->regmap;
++		config.of_node = of_node[id];
+ 
+ 		rdev = regulator_register(&ri->desc, &config);
+ 		if (IS_ERR(rdev)) {
 diff --git a/drivers/video/backlight/as3711_bl.c b/drivers/video/backlight/as3711_bl.c
 index c6bc65d..c78e4cb 100644
 --- a/drivers/video/backlight/as3711_bl.c

@@ -1,65 +1,37 @@
-From: Archit Taneja <archit@ti.com>
-Date: Mon, 18 Feb 2013 08:35:57 +0000
-Subject: Re: [PATCH 16/33] OMAPDSS: acx565akm panel: handle gpios in panel driver
-Message-Id: <5121E51D.50808@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 26 Feb 2013 03:05:50 +0000
+Subject: [PATCH] fbmon: use VESA_DMT_VSYNC_HIGH to fix typo
+Message-Id: <009501ce13ce$2e912d20$8bb38760$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360765345-19312-1-git-send-email-archit@ti.com> <1360765345-19312-17-git-send-email-archit@ti.com> <20130213172913.GD21750@blackmetal.musicnaut.iki.fi> <511C896C.10007@ti.com> <511C8B16.5060605@ti.com> <5121D941.3060609@ti.com> <5121E24A.6090502@ti.com>
-In-Reply-To: <5121E24A.6090502@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: 'Dave Airlie' <airlied@linux.ie>
+Cc: linux-fbdev@vger.kernel.org, 'Steffen Trumtrar' <s.trumtrar@pengutronix.de>, dri-devel@lists.freedesktop.org, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>
 
-On Monday 18 February 2013 01:41 PM, Tomi Valkeinen wrote:
-> On 2013-02-18 09:33, Archit Taneja wrote:
->> On Thursday 14 February 2013 12:28 PM, Tomi Valkeinen wrote:
->>> On 2013-02-14 08:51, Archit Taneja wrote:
->>>> On Wednesday 13 February 2013 10:59 PM, Aaro Koskinen wrote:
->>>>> Hi,
->>>>>
->>>>> On Wed, Feb 13, 2013 at 07:52:08PM +0530, Archit Taneja wrote:
->>>>>> +static struct panel_acx565akm_data *get_panel_data(struct
->>>>>> omap_dss_device *dssdev)
->>>>>> +{
->>>>>> +    return (struct panel_acx565akm_data *) dssdev->data;
->>>>>> +}
->>>>>> +
->>>>>>     static int acx_panel_probe(struct omap_dss_device *dssdev)
->>>>>>     {
->>>>>>         int r;
->>>>>>         struct acx565akm_device *md = &acx_dev;
->>>>>> +    struct panel_acx565akm_data *panel_data = get_panel_data(dssdev);
->>>>>
->>>>> Why the get_panel_data function is needed, isn't the cast unnecessary?
->>>>
->>>> the 'data' member of omap_dss_device has the type 'void *', we need to
->>>> cast it to access the panel_acx565akm_data struct pointer.
->>>
->>> You don't need an explicit cast to assign a void pointer to a pointer to
->>> something else (or vice versa, I think).
->>>
->>> I remember us having similar constructs in some other panel drivers
->>> also. I think they are unnecessary also.
->>
->> I was considering keeping the get_panel_data() funcs in the panel
->> drivers though. This way, whenever the way of retrieving platform data
->> changes because of DT or CDF or something else, we would just need to
->> modify the get_panel_data func.
->
-> I think it's simpler if we manage the fetching of the platform data in
-> probe one, and just store a struct panel_acx565akm_data or such to the
-> panel driver's data.
->
-> For DT we don't have platform data, but we can create the same platform
-> data struct from the DT properties.
->
-> So the above would become something like:
->
-> struct acx565akm_device *md = &acx_dev;
-> struct panel_acx565akm_data *panel_data = md->pdata;
+VESA_DMT_VSYNC_HIGH should be used instead of VESA_DMT_HSYNC_HIGH,
+because FB_SYNC_VERT_HIGH_ACT is related to vsync, not to hsync.
 
-okay, that seems to be a better way.
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+---
+ drivers/video/fbmon.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Archit
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 94ad0f7..7f67099 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -1400,7 +1400,7 @@ int fb_videomode_from_videomode(const struct videomode *vm,
+ 	fbmode->vmode = 0;
+ 	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
+ 		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
+-	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
++	if (vm->dmt_flags & VESA_DMT_VSYNC_HIGH)
+ 		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
+ 	if (vm->data_flags & DISPLAY_FLAGS_INTERLACED)
+ 		fbmode->vmode |= FB_VMODE_INTERLACED;
+-- 
+1.7.2.5
+
 

@@ -1,51 +1,111 @@
-From: Fabio Porcedda <fabio.porcedda@gmail.com>
-Date: Thu, 14 Mar 2013 17:09:35 +0000
-Subject: [PATCH v2 5/8] drivers: memory: use module_platform_driver_probe()
-Message-Id: <1363280978-24051-6-git-send-email-fabio.porcedda@gmail.com>
+From: Markus Pargmann <mpa@pengutronix.de>
+Date: Fri, 01 Mar 2013 15:41:06 +0000
+Subject: [PATCH 1/2] imxfb: Set alpha value of the framebuffer
+Message-Id: <1362152467-27998-2-git-send-email-mpa@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363280978-24051-1-git-send-email-fabio.porcedda@gmail.com>
-In-Reply-To: <1363280978-24051-1-git-send-email-fabio.porcedda@gmail.com>
+References: <1362152467-27998-1-git-send-email-mpa@pengutronix.de>
+In-Reply-To: <1362152467-27998-1-git-send-email-mpa@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-This patch converts the drivers to use the
-module_platform_driver_probe() macro which makes the code smaller and
-a bit simpler.
+From: Christian Hemp <c.hemp@phytec.de>
 
-Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Benoit Cousson <b-cousson@ti.com>
-Cc: Aneesh V <aneesh@ti.com>
+Based on Sascha Hauer's patch i.MX27 clock: Do not disable lcd clocks during
+startup.
+This patch gives a interface to chance the alphavalue of the framebuffer.
+
+Signed-off-by: Christian Hemp <c.hemp@phytec.de>
+
+rebased to 3.7
+Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 ---
- drivers/memory/emif.c | 12 +-----------
- 1 file changed, 1 insertion(+), 11 deletions(-)
+ drivers/video/imxfb.c                     | 35 +++++++++++++++++++++++++++++++
+ include/linux/platform_data/video-imxfb.h |  3 +++
+ 2 files changed, 38 insertions(+)
 
-diff --git a/drivers/memory/emif.c b/drivers/memory/emif.c
-index df08736..ecbc1a9 100644
---- a/drivers/memory/emif.c
-+++ b/drivers/memory/emif.c
-@@ -1841,18 +1841,8 @@ static struct platform_driver emif_driver = {
- 	},
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index 0abf2bf..ef2b587 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -31,6 +31,7 @@
+ #include <linux/dma-mapping.h>
+ #include <linux/io.h>
+ #include <linux/math64.h>
++#include <linux/uaccess.h>
+ 
+ #include <linux/platform_data/video-imxfb.h>
+ 
+@@ -112,6 +113,10 @@
+ #define LCDISR_EOF	(1<<1)
+ #define LCDISR_BOF	(1<<0)
+ 
++#define LCDC_LGWCR	0x64
++#define LGWCR_GWAV(alpha)	(((alpha) & 0xff) << 24)
++#define LGWCR_GWE	(1 << 22)
++
+ /* Used fb-mode. Can be set on kernel command line, therefore file-static. */
+ static const char *fb_mode;
+ 
+@@ -610,6 +615,35 @@ static int imxfb_blank(int blank, struct fb_info *info)
+ 	return 0;
+ }
+ 
++static int imxfb_ioctl(struct fb_info *info, unsigned int cmd,
++			unsigned long arg)
++{
++	struct imxfb_info *fbi = info->par;
++	int alpha, ret = 0;
++	unsigned int tmp;
++
++	switch (cmd) {
++	case IMXFB_ALPHA:
++		if (get_user(alpha, (int __user *)arg)) {
++			ret = -EFAULT;
++		} else {
++			tmp = readl(fbi->regs + LCDC_LGWCR);
++			tmp &= ~LGWCR_GWAV(0xff);
++			tmp |= LGWCR_GWAV(alpha);
++			if (!alpha)
++				tmp &= ~LGWCR_GWE;
++			else
++				tmp |= LGWCR_GWE;
++			writel(tmp , fbi->regs + LCDC_LGWCR);
++		}
++		break;
++	default:
++		ret = -EINVAL;
++	}
++
++	return ret;
++}
++
+ static struct fb_ops imxfb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_check_var	= imxfb_check_var,
+@@ -619,6 +653,7 @@ static struct fb_ops imxfb_ops = {
+ 	.fb_copyarea	= cfb_copyarea,
+ 	.fb_imageblit	= cfb_imageblit,
+ 	.fb_blank	= imxfb_blank,
++	.fb_ioctl	= imxfb_ioctl,
  };
  
--static int __init_or_module emif_register(void)
--{
--	return platform_driver_probe(&emif_driver, emif_probe);
--}
--
--static void __exit emif_unregister(void)
--{
--	platform_driver_unregister(&emif_driver);
--}
-+module_platform_driver_probe(emif_driver, emif_probe);
+ /*
+diff --git a/include/linux/platform_data/video-imxfb.h b/include/linux/platform_data/video-imxfb.h
+index 9de8f06..ce3875f 100644
+--- a/include/linux/platform_data/video-imxfb.h
++++ b/include/linux/platform_data/video-imxfb.h
+@@ -51,6 +51,9 @@
+ #define DMACR_HM(x)	(((x) & 0xf) << 16)
+ #define DMACR_TM(x)	((x) & 0xf)
  
--module_init(emif_register);
--module_exit(emif_unregister);
- MODULE_DESCRIPTION("TI EMIF SDRAM Controller Driver");
- MODULE_LICENSE("GPL");
- MODULE_ALIAS("platform:emif");
++#define IMXFB_IOW(num, dtype)	_IOW('I', num, dtype)
++#define IMXFB_ALPHA		IMXFB_IOW(31, int)
++
+ struct imx_fb_videomode {
+ 	struct fb_videomode mode;
+ 	u32 pcr;
 -- 
-1.8.1.5
+1.8.1.4
 

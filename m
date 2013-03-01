@@ -1,78 +1,369 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 27 Mar 2013 07:47:22 +0000
-Subject: Re: [PATCH v3 3/8] drm/omap: Make fixed resolution panels work
-Message-Id: <5152A13A.7060805@ti.com>
+From: Markus Pargmann <mpa@pengutronix.de>
+Date: Fri, 01 Mar 2013 15:41:07 +0000
+Subject: [PATCH 2/2] video: imxfb: Add DT support
+Message-Id: <1362152467-27998-3-git-send-email-mpa@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1362493070-17706-1-git-send-email-archit@ti.com> <1364305525-28496-1-git-send-email-archit@ti.com> <1364305525-28496-4-git-send-email-archit@ti.com> <51529EC2.4040403@ti.com>
-In-Reply-To: <51529EC2.4040403@ti.com>
+References: <1362152467-27998-1-git-send-email-mpa@pengutronix.de>
+In-Reply-To: <1362152467-27998-1-git-send-email-mpa@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: robdclark@gmail.com, andy.gross@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Wednesday 27 March 2013 12:54 PM, Tomi Valkeinen wrote:
-> On 2013-03-26 15:45, Archit Taneja wrote:
->> The omapdrm driver requires omapdss panel drivers to expose ops like detect,
->> set_timings and check_timings. These can be NULL for fixed panel DPI, DBI, DSI
->> and SDI drivers. At some places, there are no checks to see if the panel driver
->> has these ops or not, and that leads to a crash.
->>
->> The following things are done to make fixed panels work:
->>
->> - The omap_connector's detect function is modified such that it considers panel
->>    types which are generally fixed panels as always connected(provided the panel
->>    driver doesn't have a detect op). Hence, the connector corresponding to these
->>    panels is always in a 'connected' state.
->>
->> - If a panel driver doesn't have a check_timings op, assume that it supports the
->>    mode passed to omap_connector_mode_valid(the 'mode_valid' drm helper function)
->>
->> - The function omap_encoder_update shouldn't really do anything for fixed
->>    resolution panels, make sure that it calls set_timings only if the panel
->>    driver has one.
->>
->> Signed-off-by: Archit Taneja <archit@ti.com>
->> ---
->> v3: clear the timings local variable first before using memcmp
->> v2: make sure the timings we try to set for a fixed resolution panel match the
->>      panel's timings
->>
->>   drivers/gpu/drm/omapdrm/omap_connector.c |   27 +++++++++++++++++++++++++--
->>   drivers/gpu/drm/omapdrm/omap_encoder.c   |   17 +++++++++++++++--
->>   2 files changed, 40 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/gpu/drm/omapdrm/omap_connector.c b/drivers/gpu/drm/omapdrm/omap_connector.c
->> index c451c41..912759d 100644
->> --- a/drivers/gpu/drm/omapdrm/omap_connector.c
->> +++ b/drivers/gpu/drm/omapdrm/omap_connector.c
->> @@ -110,6 +110,11 @@ static enum drm_connector_status omap_connector_detect(
->>   			ret = connector_status_connected;
->>   		else
->>   			ret = connector_status_disconnected;
->> +	} else if (dssdev->type = OMAP_DISPLAY_TYPE_DPI ||
->> +			dssdev->type = OMAP_DISPLAY_TYPE_DBI ||
->> +			dssdev->type = OMAP_DISPLAY_TYPE_SDI ||
->> +			dssdev->type = OMAP_DISPLAY_TYPE_DSI) {
->> +		ret = connector_status_connected;
->>   	} else {
->>   		ret = connector_status_unknown;
->>   	}
->
-> Can we leave this part out? I don't like hardcoding things like that,
-> and if I'm not mistaken, this only affects VENC.
->
-> If the code above would use detect where available, and presume the
-> panel is connected in other cases, it'll be right for all other displays
-> but VENC, for which we have no connect information.
->
-> Or, there could be a special case for VENC, like above, which sets the
-> connector status to unknown for that. And connected for all others. It'd
-> still be hardcoded, but for much less cases.
+Add devicetree support for imx framebuffer driver. It uses the generic
+display bindings and helper functions.
 
-I guess we can leave the status for VENC as always connected too, if we 
-leave it as unknown by default and have no detect func for VENC, it 
-would never run with omapdrm.
+Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+---
+ .../devicetree/bindings/video/fsl,imx-fb.txt       |  30 ++++
+ drivers/video/imxfb.c                              | 176 +++++++++++++++++----
+ 2 files changed, 173 insertions(+), 33 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/fsl,imx-fb.txt
 
-Archit
+diff --git a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
+new file mode 100644
+index 0000000..fd88d26
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
+@@ -0,0 +1,30 @@
++Freescale imx21 Framebuffer
++
++This framebuffer driver supports chips imx1 and imx21.
++
++Required properties:
++- compatible : "fsl,<chip>-fb"
++- reg : Should contain 1 register ranges(address and length)
++- interrupts : One interrupt of the fb dev
++
++Required nodes:
++- display: a display node is required to initialize the lcd panel
++	This should be in the board dts. See definition in
++	Documentation/devicetree/bindings/video/via,vt8500-fb.txt
++- default-mode: a videomode node as specified in
++	Documentation/devicetree/bindings/video/via,vt8500-fb.txt
++
++Optional properties:
++- pwmr: Address of pwmr register
++- lscr1: Address of lscr1 register
++- dmacr: Address of dmacr register
++
++Example:
++
++	imxfb: fb@10021000 {
++		compatible = "fsl,imx27-fb", "fsl,imx21-fb";
++		interrupts = <61>;
++		reg = <0x10021000 0x1000>;
++		display = <&display0>;
++		default-mode = <&mode0>;
++	};
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index ef2b587..6f1b04c 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -32,6 +32,12 @@
+ #include <linux/io.h>
+ #include <linux/math64.h>
+ #include <linux/uaccess.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
++
++#include <video/of_display_timing.h>
++#include <video/of_videomode.h>
++#include <video/videomode.h>
+ 
+ #include <linux/platform_data/video-imxfb.h>
+ 
+@@ -120,7 +126,6 @@
+ /* Used fb-mode. Can be set on kernel command line, therefore file-static. */
+ static const char *fb_mode;
+ 
+-
+ /*
+  * These are the bitfields for each
+  * display depth that we support.
+@@ -192,6 +197,19 @@ static struct platform_device_id imxfb_devtype[] = {
+ };
+ MODULE_DEVICE_TABLE(platform, imxfb_devtype);
+ 
++static struct of_device_id imxfb_of_dev_id[] = {
++	{
++		.compatible = "fsl,imx1-fb",
++		.data = &imxfb_devtype[IMX1_FB],
++	}, {
++		.compatible = "fsl,imx21-fb",
++		.data = &imxfb_devtype[IMX21_FB],
++	}, {
++		/* sentinel */
++	}
++};
++MODULE_DEVICE_TABLE(of, imxfb_of_dev_id);
++
+ static inline int is_imx1_fb(struct imxfb_info *fbi)
+ {
+ 	return fbi->devtype = IMX1_FB;
+@@ -324,6 +342,9 @@ static const struct imx_fb_videomode *imxfb_find_mode(struct imxfb_info *fbi)
+ 	struct imx_fb_videomode *m;
+ 	int i;
+ 
++	if (!fb_mode)
++		return &fbi->mode[0];
++
+ 	for (i = 0, m = &fbi->mode[0]; i < fbi->num_modes; i++, m++) {
+ 		if (!strcmp(m->mode.name, fb_mode))
+ 			return m;
+@@ -758,13 +779,13 @@ static int imxfb_resume(struct platform_device *dev)
+ #define imxfb_resume	NULL
+ #endif
+ 
+-static int __init imxfb_init_fbinfo(struct platform_device *pdev)
++static int imxfb_init_fbinfo(struct platform_device *pdev)
+ {
+ 	struct imx_fb_platform_data *pdata = pdev->dev.platform_data;
+ 	struct fb_info *info = dev_get_drvdata(&pdev->dev);
+ 	struct imxfb_info *fbi = info->par;
+-	struct imx_fb_videomode *m;
+-	int i;
++	struct device_node *np;
++	int ret;
+ 
+ 	pr_debug("%s\n",__func__);
+ 
+@@ -795,41 +816,93 @@ static int __init imxfb_init_fbinfo(struct platform_device *pdev)
+ 	info->fbops			= &imxfb_ops;
+ 	info->flags			= FBINFO_FLAG_DEFAULT |
+ 					  FBINFO_READS_FAST;
+-	info->var.grayscale		= pdata->cmap_greyscale;
+-	fbi->cmap_inverse		= pdata->cmap_inverse;
+-	fbi->cmap_static		= pdata->cmap_static;
+-	fbi->lscr1			= pdata->lscr1;
+-	fbi->dmacr			= pdata->dmacr;
+-	fbi->pwmr			= pdata->pwmr;
+-	fbi->lcd_power			= pdata->lcd_power;
+-	fbi->backlight_power		= pdata->backlight_power;
+-
+-	for (i = 0, m = &pdata->mode[0]; i < pdata->num_modes; i++, m++)
+-		info->fix.smem_len = max_t(size_t, info->fix.smem_len,
+-				m->mode.xres * m->mode.yres * m->bpp / 8);
++	if (pdata) {
++		info->var.grayscale		= pdata->cmap_greyscale;
++		fbi->cmap_inverse		= pdata->cmap_inverse;
++		fbi->cmap_static		= pdata->cmap_static;
++		fbi->lscr1			= pdata->lscr1;
++		fbi->dmacr			= pdata->dmacr;
++		fbi->pwmr			= pdata->pwmr;
++		fbi->lcd_power			= pdata->lcd_power;
++		fbi->backlight_power		= pdata->backlight_power;
++	} else {
++		np = pdev->dev.of_node;
++		info->var.grayscale = of_property_read_bool(np,
++						"cmap-greyscale");
++		fbi->cmap_inverse = of_property_read_bool(np, "cmap-inverse");
++		fbi->cmap_static = of_property_read_bool(np, "cmap-static");
++
++		ret = of_property_read_u32(np, "lscr1", &fbi->lscr1);
++		if (ret)
++			fbi->lscr1 = 0;
++		ret = of_property_read_u32(np, "dmacr", &fbi->dmacr);
++		if (ret)
++			fbi->dmacr = 0;
++		ret = of_property_read_u32(np, "pwmr", &fbi->pwmr);
++		if (ret)
++			fbi->pwmr = 0;
++
++		/* These two function pointers could be used by some specific
++		 * platforms. */
++		fbi->lcd_power = NULL;
++		fbi->backlight_power = NULL;
++	}
+ 
+ 	return 0;
+ }
+ 
+-static int __init imxfb_probe(struct platform_device *pdev)
++static int imxfb_of_read_mode(struct device_node *np,
++		struct imx_fb_videomode *imxfb_mode)
++{
++	int ret;
++	struct fb_videomode *of_mode = &imxfb_mode->mode;
++	u32 bpp;
++	u32 pcr;
++
++	ret = of_property_read_string(np, "model", &of_mode->name);
++	if (ret)
++		of_mode->name = NULL;
++
++	ret = of_get_fb_videomode(np, of_mode, OF_USE_NATIVE_MODE);
++	if (ret)
++		return ret;
++
++	ret = of_property_read_u32(np, "bpp", &bpp);
++	ret |= of_property_read_u32(np, "pcr", &pcr);
++
++	if (ret)
++		return ret;
++
++	if (bpp > 255)
++		return -EINVAL;
++
++	imxfb_mode->bpp = bpp;
++	imxfb_mode->pcr = pcr;
++
++	return ret;
++}
++
++static int imxfb_probe(struct platform_device *pdev)
+ {
+ 	struct imxfb_info *fbi;
+ 	struct fb_info *info;
+ 	struct imx_fb_platform_data *pdata;
+ 	struct resource *res;
++	struct imx_fb_videomode *m;
++	const struct of_device_id *of_id;
+ 	int ret, i;
+ 
+ 	dev_info(&pdev->dev, "i.MX Framebuffer driver\n");
+ 
++	of_id = of_match_device(imxfb_of_dev_id, &pdev->dev);
++	if (of_id)
++		pdev->id_entry = of_id->data;
++
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!res)
+ 		return -ENODEV;
+ 
+ 	pdata = pdev->dev.platform_data;
+-	if (!pdata) {
+-		dev_err(&pdev->dev,"No platform_data available\n");
+-		return -ENOMEM;
+-	}
+ 
+ 	info = framebuffer_alloc(sizeof(struct imxfb_info), &pdev->dev);
+ 	if (!info)
+@@ -837,15 +910,51 @@ static int __init imxfb_probe(struct platform_device *pdev)
+ 
+ 	fbi = info->par;
+ 
+-	if (!fb_mode)
+-		fb_mode = pdata->mode[0].mode.name;
+-
+ 	platform_set_drvdata(pdev, info);
+ 
+ 	ret = imxfb_init_fbinfo(pdev);
+ 	if (ret < 0)
+ 		goto failed_init;
+ 
++	if (pdata) {
++		if (!fb_mode)
++			fb_mode = pdata->mode[0].mode.name;
++
++		fbi->mode = pdata->mode;
++		fbi->num_modes = pdata->num_modes;
++	} else {
++		struct device_node *display_np;
++		fb_mode = NULL;
++
++		display_np = of_parse_phandle(pdev->dev.of_node, "display", 0);
++		if (!display_np) {
++			dev_err(&pdev->dev, "No display defined in devicetree\n");
++			ret = -EINVAL;
++			goto failed_of_parse;
++		}
++
++		/*
++		 * imxfb does not support more modes, we choose only the native
++		 * mode.
++		 */
++		fbi->num_modes = 1;
++
++		fbi->mode = devm_kzalloc(&pdev->dev,
++				sizeof(struct imx_fb_videomode), GFP_KERNEL);
++		if (!fbi->mode) {
++			ret = -ENOMEM;
++			goto failed_of_parse;
++		}
++
++		ret = imxfb_of_read_mode(display_np, fbi->mode);
++		if (ret)
++			goto failed_of_parse;
++	}
++
++	for (i = 0, m = &fbi->mode[0]; i < fbi->num_modes; i++, m++)
++		info->fix.smem_len = max_t(size_t, info->fix.smem_len,
++				m->mode.xres * m->mode.yres * m->bpp / 8);
++
+ 	res = request_mem_region(res->start, resource_size(res),
+ 				DRIVER_NAME);
+ 	if (!res) {
+@@ -878,7 +987,8 @@ static int __init imxfb_probe(struct platform_device *pdev)
+ 		goto failed_ioremap;
+ 	}
+ 
+-	if (!pdata->fixed_screen_cpu) {
++	/* Seems not being used by anyone, so no support for oftree */
++	if (!pdata || !pdata->fixed_screen_cpu) {
+ 		fbi->map_size = PAGE_ALIGN(info->fix.smem_len);
+ 		fbi->map_cpu = dma_alloc_writecombine(&pdev->dev,
+ 				fbi->map_size, &fbi->map_dma, GFP_KERNEL);
+@@ -903,18 +1013,16 @@ static int __init imxfb_probe(struct platform_device *pdev)
+ 		info->fix.smem_start = fbi->screen_dma;
+ 	}
+ 
+-	if (pdata->init) {
++	if (pdata && pdata->init) {
+ 		ret = pdata->init(fbi->pdev);
+ 		if (ret)
+ 			goto failed_platform_init;
+ 	}
+ 
+-	fbi->mode = pdata->mode;
+-	fbi->num_modes = pdata->num_modes;
+ 
+ 	INIT_LIST_HEAD(&info->modelist);
+-	for (i = 0; i < pdata->num_modes; i++)
+-		fb_add_videomode(&pdata->mode[i].mode, &info->modelist);
++	for (i = 0; i < fbi->num_modes; i++)
++		fb_add_videomode(&fbi->mode[i].mode, &info->modelist);
+ 
+ 	/*
+ 	 * This makes sure that our colour bitfield
+@@ -944,10 +1052,10 @@ static int __init imxfb_probe(struct platform_device *pdev)
+ failed_register:
+ 	fb_dealloc_cmap(&info->cmap);
+ failed_cmap:
+-	if (pdata->exit)
++	if (pdata && pdata->exit)
+ 		pdata->exit(fbi->pdev);
+ failed_platform_init:
+-	if (!pdata->fixed_screen_cpu)
++	if (pdata && !pdata->fixed_screen_cpu)
+ 		dma_free_writecombine(&pdev->dev,fbi->map_size,fbi->map_cpu,
+ 			fbi->map_dma);
+ failed_map:
+@@ -956,6 +1064,7 @@ failed_ioremap:
+ failed_getclock:
+ 	release_mem_region(res->start, resource_size(res));
+ failed_req:
++failed_of_parse:
+ 	kfree(info->pseudo_palette);
+ failed_init:
+ 	platform_set_drvdata(pdev, NULL);
+@@ -980,7 +1089,7 @@ static int imxfb_remove(struct platform_device *pdev)
+ 	unregister_framebuffer(info);
+ 
+ 	pdata = pdev->dev.platform_data;
+-	if (pdata->exit)
++	if (pdata && pdata->exit)
+ 		pdata->exit(fbi->pdev);
+ 
+ 	fb_dealloc_cmap(&info->cmap);
+@@ -1009,6 +1118,7 @@ static struct platform_driver imxfb_driver = {
+ 	.shutdown	= imxfb_shutdown,
+ 	.driver		= {
+ 		.name	= DRIVER_NAME,
++		.of_match_table = imxfb_of_dev_id,
+ 	},
+ 	.id_table	= imxfb_devtype,
+ };
+-- 
+1.8.1.4
 

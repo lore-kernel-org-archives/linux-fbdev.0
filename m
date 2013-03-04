@@ -1,99 +1,43 @@
-From: Fabio Porcedda <fabio.porcedda@gmail.com>
-Date: Thu, 14 Mar 2013 13:11:22 +0000
-Subject: [PATCH] drivers: misc: use module_platform_driver_probe()
-Message-Id: <1363266691-15757-3-git-send-email-fabio.porcedda@gmail.com>
+From: Akinobu Mita <akinobu.mita@gmail.com>
+Date: Mon, 04 Mar 2013 12:58:19 +0000
+Subject: [PATCH -v3 11/23] video/uvesafb: rename random32() to prandom_u32()
+Message-Id: <1362401911-14074-12-git-send-email-akinobu.mita@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
-In-Reply-To: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
+References: <1362401911-14074-1-git-send-email-akinobu.mita@gmail.com>
+In-Reply-To: <1362401911-14074-1-git-send-email-akinobu.mita@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Cc: Akinobu Mita <akinobu.mita@gmail.com>, Michal Januszewski <spock@gentoo.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
 
-This patch converts the drivers to use the
-module_platform_driver_probe() macro which makes the code smaller and
-a bit simpler.
+Use more preferable function name which implies using a pseudo-random
+number generator.
 
-Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Michal Januszewski <spock@gentoo.org>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
 ---
- drivers/misc/arm-charlcd.c | 13 +------------
- drivers/misc/atmel_pwm.c   | 12 +-----------
- drivers/misc/ep93xx_pwm.c  | 13 +------------
- 3 files changed, 3 insertions(+), 35 deletions(-)
 
-diff --git a/drivers/misc/arm-charlcd.c b/drivers/misc/arm-charlcd.c
-index fe8616a..48651ef 100644
---- a/drivers/misc/arm-charlcd.c
-+++ b/drivers/misc/arm-charlcd.c
-@@ -378,18 +378,7 @@ static struct platform_driver charlcd_driver = {
- 	.remove = __exit_p(charlcd_remove),
- };
+No change from v2
+
+ drivers/video/uvesafb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index b75db01..0d0a43c 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -166,7 +166,7 @@ static int uvesafb_exec(struct uvesafb_ktask *task)
+ 	memcpy(&m->id, &uvesafb_cn_id, sizeof(m->id));
+ 	m->seq = seq;
+ 	m->len = len;
+-	m->ack = random32();
++	m->ack = prandom_u32();
  
--static int __init charlcd_init(void)
--{
--	return platform_driver_probe(&charlcd_driver, charlcd_probe);
--}
--
--static void __exit charlcd_exit(void)
--{
--	platform_driver_unregister(&charlcd_driver);
--}
--
--module_init(charlcd_init);
--module_exit(charlcd_exit);
-+module_platform_driver_probe(charlcd_driver, charlcd_probe);
- 
- MODULE_AUTHOR("Linus Walleij <triad@df.lth.se>");
- MODULE_DESCRIPTION("ARM Character LCD Driver");
-diff --git a/drivers/misc/atmel_pwm.c b/drivers/misc/atmel_pwm.c
-index 28f5aaa..494d050 100644
---- a/drivers/misc/atmel_pwm.c
-+++ b/drivers/misc/atmel_pwm.c
-@@ -393,17 +393,7 @@ static struct platform_driver atmel_pwm_driver = {
- 	 */
- };
- 
--static int __init pwm_init(void)
--{
--	return platform_driver_probe(&atmel_pwm_driver, pwm_probe);
--}
--module_init(pwm_init);
--
--static void __exit pwm_exit(void)
--{
--	platform_driver_unregister(&atmel_pwm_driver);
--}
--module_exit(pwm_exit);
-+module_platform_driver_probe(atmel_pwm_driver, pwm_probe);
- 
- MODULE_DESCRIPTION("Driver for AT32/AT91 PWM module");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/misc/ep93xx_pwm.c b/drivers/misc/ep93xx_pwm.c
-index 16d7179..96787ec 100644
---- a/drivers/misc/ep93xx_pwm.c
-+++ b/drivers/misc/ep93xx_pwm.c
-@@ -365,18 +365,7 @@ static struct platform_driver ep93xx_pwm_driver = {
- 	.remove		= __exit_p(ep93xx_pwm_remove),
- };
- 
--static int __init ep93xx_pwm_init(void)
--{
--	return platform_driver_probe(&ep93xx_pwm_driver, ep93xx_pwm_probe);
--}
--
--static void __exit ep93xx_pwm_exit(void)
--{
--	platform_driver_unregister(&ep93xx_pwm_driver);
--}
--
--module_init(ep93xx_pwm_init);
--module_exit(ep93xx_pwm_exit);
-+module_platform_driver_probe(ep93xx_pwm_driver, ep93xx_pwm_probe);
- 
- MODULE_AUTHOR("Matthieu Crapet <mcrapet@gmail.com>, "
- 	      "H Hartley Sweeten <hsweeten@visionengravers.com>");
+ 	/* uvesafb_task structure */
+ 	memcpy(m + 1, &task->t, sizeof(task->t));
 -- 
-1.8.1.5
+1.8.1.2
 

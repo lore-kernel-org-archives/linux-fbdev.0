@@ -1,19 +1,44 @@
-From: "Kim, Milo" <Milo.Kim@ti.com>
-Date: Sun, 10 Mar 2013 23:04:06 +0000
-Subject: RE: [PATCH 2/3] video: backlight: lp855x_bl: fix compiler warning in lp855x_probe
-Message-Id: <A874F61F95741C4A9BA573A70FE3998F82E47CFB@DQHE02.ent.ti.com>
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Date: Mon, 04 Mar 2013 21:03:20 +0000
+Subject: [PATCH 2/2] omapfb: fix broken build on Amstrad E3/Delta
+Message-Id: <1362431000-15141-2-git-send-email-aaro.koskinen@iki.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1362771069-16345-2-git-send-email-devendra.aaru@gmail.com>
-In-Reply-To: <1362771069-16345-2-git-send-email-devendra.aaru@gmail.com>
+References: <1362431000-15141-1-git-send-email-aaro.koskinen@iki.fi>
+In-Reply-To: <1362431000-15141-1-git-send-email-aaro.koskinen@iki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
 
-PiB3aGlsZSBkb2luZyB3aXRoIG1ha2UgVz0xIGdjYyAoZ2NjIChHQ0MpIDQuNy4yIDIwMTIxMTA5
-IChSZWQgSGF0IDQuNy4yLQ0KPiA4KSkNCj4gDQo+IGZvdW5kDQo+IA0KPiBkcml2ZXJzL3ZpZGVv
-L2JhY2tsaWdodC9scDg1NXhfYmwuYzogSW4gZnVuY3Rpb24g4oCYbHA4NTV4X3Byb2Jl4oCZOg0K
-PiBkcml2ZXJzL3ZpZGVvL2JhY2tsaWdodC9scDg1NXhfYmwuYzozNDI6MzU6IHdhcm5pbmc6IHZh
-cmlhYmxlIOKAmG1vZGXigJkNCj4gc2V0IGJ1dCBub3QgdXNlZCBbLVd1bnVzZWQtYnV0LXNldC12
-YXJpYWJsZV0NCj4gDQo+IGZpeGVkIGJ5IHJlbW92aW5nIGl0IGFzIHNpbmNlIGl0cyBub3QgdXNl
-ZCBhbnl3aGVyZQ0KDQpBY2tlZC1ieTogTWlsbyBLaW0gPG1pbG8ua2ltQHRpLmNvbT4NCg0K
+Fix the following build regression in 3.9-rc1 by including
+<machine/hardware.h>:
+
+drivers/video/omap/lcd_ams_delta.c: In function 'ams_delta_lcd_set_power':
+drivers/video/omap/lcd_ams_delta.c:48:4: error: implicit declaration of function 'omap_writeb' [-Werror=implicit-function-declaration]
+drivers/video/omap/lcd_ams_delta.c:49:6: error: 'OMAP_PWL_ENABLE' undeclared (first use in this function)
+drivers/video/omap/lcd_ams_delta.c:49:6: note: each undeclared identifier is reported only once for each function it appears in
+drivers/video/omap/lcd_ams_delta.c:50:19: error: 'OMAP_PWL_CLK_ENABLE' undeclared (first use in this function)
+drivers/video/omap/lcd_ams_delta.c: In function 'ams_delta_lcd_set_contrast':
+drivers/video/omap/lcd_ams_delta.c:66:22: error: 'OMAP_PWL_ENABLE' undeclared (first use in this function)
+
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+---
+ drivers/video/omap/lcd_ams_delta.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/video/omap/lcd_ams_delta.c b/drivers/video/omap/lcd_ams_delta.c
+index ed4cad8..4a5f2cd 100644
+--- a/drivers/video/omap/lcd_ams_delta.c
++++ b/drivers/video/omap/lcd_ams_delta.c
+@@ -27,6 +27,7 @@
+ #include <linux/lcd.h>
+ #include <linux/gpio.h>
+ 
++#include <mach/hardware.h>
+ #include <mach/board-ams-delta.h>
+ 
+ #include "omapfb.h"
+-- 
+1.7.10.4
+

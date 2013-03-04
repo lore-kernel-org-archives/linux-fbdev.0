@@ -1,51 +1,52 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Date: Fri, 15 Mar 2013 10:16:17 +0000
-Subject: Re: [PATCH 0/5] at91: atmel_lcdfb: regression fixes and cpu_is removal
-Message-Id: <5142F4F1.60006@atmel.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Mon, 04 Mar 2013 08:52:40 +0000
+Subject: [PATCH 1/1] video: exynos_mipi_dsi: Convert to devm_ioremap_resource()
+Message-Id: <1362386440-17078-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1360340791.git.nicolas.ferre@atmel.com>
- <5139B169.7050807@atmel.com> <51405126.3090009@atmel.com>
- <201303142303.42283.arnd@arndb.de>
-In-Reply-To: <201303142303.42283.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-On 03/15/2013 12:03 AM, Arnd Bergmann :
-> On Wednesday 13 March 2013, Nicolas Ferre wrote:
->> In case we end-up with an agreement on the path those fixes should
->> follow, here is the location of my updated material rebased on top of 3.9-rc2:
->>
->> The following changes since commit f6161aa153581da4a3867a2d1a7caf4be19b6ec9:
->>
->>   Linux 3.9-rc2 (2013-03-10 16:54:19 -0700)
->>
->> are available in the git repository at:
->>
->>   git://github.com/at91linux/linux-at91.git at91-3.9-fixesLCD
->>
->> for you to fetch changes up to bbd44f6bd9d1aa735b180b29b5719d63a8e87b55:
->>
->>   ARM: at91/avr32/atmel_lcdfb: add platform device-id table (2013-03-13 11:05:12 +0100)
->>
->> ----------------------------------------------------------------
->> Johan Hovold (5):
->>       atmel_lcdfb: fix 16-bpp modes on older SOCs
->>       ARM: at91: fix LCD-wiring mode
->>       ARM: at91/avr32/atmel_lcdfb: add bus-clock entry
->>       atmel_lcdfb: move lcdcon2 register access to compute_hozval
->>       ARM: at91/avr32/atmel_lcdfb: add platform device-id table
->>
-> 
-> I have merged the first two patches into the fixes branch now, from up to commit
-> 67cf9c0a. Please resubmit the remaining ones on top of this commit for 3.10, either
-> through arm-soc or through the framebuffer tree.
+Use the newly introduced devm_ioremap_resource() instead of
+devm_request_and_ioremap() which provides more consistent error handling.
 
-Thanks a lot.
-I have just sent the pull-request for remaining material. Tell me if it
-is what you've expected.
+devm_ioremap_resource() provides its own error messages; so all explicit
+error messages can be removed from the failure code paths.
 
-Best regards,
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Donghwa Lee <dh09.lee@samsung.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+---
+ drivers/video/exynos/exynos_mipi_dsi.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
+index fac7df6..87cd13b 100644
+--- a/drivers/video/exynos/exynos_mipi_dsi.c
++++ b/drivers/video/exynos/exynos_mipi_dsi.c
+@@ -32,6 +32,7 @@
+ #include <linux/notifier.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/pm_runtime.h>
++#include <linux/err.h>
+ 
+ #include <video/exynos_mipi_dsim.h>
+ 
+@@ -384,10 +385,9 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 
+-	dsim->reg_base = devm_request_and_ioremap(&pdev->dev, res);
+-	if (!dsim->reg_base) {
+-		dev_err(&pdev->dev, "failed to remap io region\n");
+-		ret = -ENOMEM;
++	dsim->reg_base = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(dsim->reg_base)) {
++		ret = PTR_ERR(dsim->reg_base);
+ 		goto error;
+ 	}
+ 
 -- 
-Nicolas Ferre
+1.7.4.1
+

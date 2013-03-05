@@ -1,47 +1,42 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Mon, 25 Mar 2013 01:08:40 +0000
-Subject: Re: [PATCH v3 2/3] regulator: as3711: add OF support
-Message-Id: <20130325010839.GH18316@opensource.wolfsonmicro.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="J/zg8ciPNcraoWb6"
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Tue, 05 Mar 2013 05:07:10 +0000
+Subject: [PATCH v2] fbdev: sh_mobile_lcdc: fixup B side hsync adjust settings
+Message-Id: <87txoqmo3p.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363968949-12151-1-git-send-email-g.liakhovetski@gmx.de>
- <1363968949-12151-3-git-send-email-g.liakhovetski@gmx.de>
-In-Reply-To: <1363968949-12151-3-git-send-email-g.liakhovetski@gmx.de>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, devicetree-discuss@lists.ozlabs.org, Samuel Ortiz <sameo@linux.intel.com>, Richard Purdie <rpurdie@rpsys.net>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
+The lcdc B side horizon output is shifted
+if sh_mobile_lcdc_pan() was called.
+This patch fixup this issue.
+It is tested on R8A7740 Armadillo800eva HDMI output.
+Special thanks to Fukushima-san, and Sano-san
 
---J/zg8ciPNcraoWb6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Reported-by: Osamu Fukushima <osamu.fukushima.wr@renesas.com>
+Signed-off-by: Hideyuki Sano <hideyuki.sano.dn@renesas.com>
+Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+---
+v1 -> v2
 
-On Fri, Mar 22, 2013 at 05:15:48PM +0100, Guennadi Liakhovetski wrote:
-> AS3711 regulator OF support only evaluates standard regulator DT
-> properties.
+ - git log has tested SoC/board
 
-Applied, thanks.
+ drivers/video/sh_mobile_lcdcfb.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---J/zg8ciPNcraoWb6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 63203ac..0264704 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -858,6 +858,7 @@ static void sh_mobile_lcdc_geometry(struct sh_mobile_lcdc_chan *ch)
+ 	tmp = ((mode->xres & 7) << 24) | ((display_h_total & 7) << 16)
+ 	    | ((mode->hsync_len & 7) << 8) | (hsync_pos & 7);
+ 	lcdc_write_chan(ch, LDHAJR, tmp);
++	lcdc_write_chan_mirror(ch, LDHAJR, tmp);
+ }
+ 
+ static void sh_mobile_lcdc_overlay_setup(struct sh_mobile_lcdc_overlay *ovl)
+-- 
+1.7.9.5
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJRT6OHAAoJELSic+t+oim9Q20P/2AbTGRKQ8PUj16sD2sZK6l4
-NvBAuX9RsDjkwyWDgcRdODEmAAsV3wuUbZWaws1sbfCcRckJR21Ww0CwFGo0Vzq1
-a1WstGbOrTchZDFyx23w6JzDfclFoySpNlFUF5EtXnDTFfASX3Td/1EVyQ2o81Uo
-fELDNDnJFsvlG9Kj9+9BNdpVXdPlGsGHnURAkVmM9pe8ADOZp/Fw+BvTumjZ6P+f
-NKiuNZMA6RgEdqjDUHggmemTv2Bv1cobQF6t5wZmwpBESRkXC+iAXe60qGwAU9Da
-ZunCpWEo9oxKJfGtgLt/vYgoG7tgYW9SFbL87KScQHsOZd9OSnsz3fe5BUhe5Ofa
-WlgJdtzCWJXo5p8LpfJq4iyAYsF72j6lTVHN9CbUsGSDwxFx5crfM7SGGN6lEI9m
-fNbRdanXIrzJg0r/K5HfTyZeQ2PCjjQqG6mrlnoW1wtN+y9eRZ+xzz4V2ZcEvIV+
-mHAliBHAH1u9DnwZFH5Tt0QGFwl4dV0FHb3ZrqYHBY208kH/70Y21yt1xkf7iOii
-Kw8QgLmcKpAk8f4r7ORd9qY7qqSu9z26AewsWL5t0R3hUGplBpZlbFfYMjbqGebt
-dCKufRiP3a9BHgldsE0rCb7JRihTbcR4mg8l0z4JEuvVX5mi4A7DcR6WjOWJg3Ia
-gPKBuAyGyMbFuileh02L
-=Cnn7
------END PGP SIGNATURE-----
-
---J/zg8ciPNcraoWb6--

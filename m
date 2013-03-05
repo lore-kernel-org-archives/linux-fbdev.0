@@ -1,81 +1,100 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 11 Mar 2013 06:51:35 +0000
-Subject: Re: [PATCH 20/20] OMAPDSS: Taal: remove rotate & mirror support
-Message-Id: <513D7EF7.8070807@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enigC18C99C94139F92EF3337876"
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Tue, 05 Mar 2013 09:24:53 +0000
+Subject: Re: [PATCH v17 2/7] video: add display_timing and videomode
+Message-Id: <20130305092453.GB7042@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com> <1362743515-10152-21-git-send-email-tomi.valkeinen@ti.com> <513D7807.2010509@ti.com>
-In-Reply-To: <513D7807.2010509@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <1359104515-8907-1-git-send-email-s.trumtrar@pengutronix.de>
+ <1359104515-8907-3-git-send-email-s.trumtrar@pengutronix.de>
+ <51223615.4090709@iki.fi> <512E2A1B.6040704@ti.com>
+ <20130227160540.GA10491@pengutronix.de> <512E30BD.7010603@ti.com>
+In-Reply-To: <512E30BD.7010603-l0cyMroinI0@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Mohammed, Afzal" <afzal-l0cyMroinI0@public.gmane.org>, Dave Airlie <airlied-cv59FeDIM0c@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Guennady Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
---------------enigC18C99C94139F92EF3337876
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi!
 
-On 2013-03-11 08:21, Archit Taneja wrote:
-> Hi,
->=20
-> On Friday 08 March 2013 05:21 PM, Tomi Valkeinen wrote:
->> Taal panel driver has support to set rotation and mirroring. However,
->> these features cannot be used without causing tearing, and are never
->> used. The code is just extra bloat, so let's remove it.
->>
->> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->=20
-> <snip>
->>   static ssize_t taal_num_errors_show(struct device *dev,
->> @@ -1025,10 +973,6 @@ static int taal_power_on(struct omap_dss_device
->> *dssdev)
->>       if (r)
->>           goto err;
->>
->> -    r =3D taal_set_addr_mode(td, td->rotate, td->mirror);
->> -    if (r)
->> -        goto err;
->> -
->=20
-> I'm curious if we need to set the address mode(to the default value) at=
+On Wed, Feb 27, 2013 at 06:13:49PM +0200, Tomi Valkeinen wrote:
+> On 2013-02-27 18:05, Steffen Trumtrar wrote:
+> > Ah, sorry. Forgot to answer this.
+> > 
+> > On Wed, Feb 27, 2013 at 05:45:31PM +0200, Tomi Valkeinen wrote:
+> >> Ping.
+> >>
+> >> On 2013-02-18 16:09, Tomi Valkeinen wrote:
+> >>> Hi Steffen,
+> >>>
+> >>> On 2013-01-25 11:01, Steffen Trumtrar wrote:
+> >>>
+> >>>> +/* VESA display monitor timing parameters */
+> >>>> +#define VESA_DMT_HSYNC_LOW		BIT(0)
+> >>>> +#define VESA_DMT_HSYNC_HIGH		BIT(1)
+> >>>> +#define VESA_DMT_VSYNC_LOW		BIT(2)
+> >>>> +#define VESA_DMT_VSYNC_HIGH		BIT(3)
+> >>>> +
+> >>>> +/* display specific flags */
+> >>>> +#define DISPLAY_FLAGS_DE_LOW		BIT(0)	/* data enable flag */
+> >>>> +#define DISPLAY_FLAGS_DE_HIGH		BIT(1)
+> >>>> +#define DISPLAY_FLAGS_PIXDATA_POSEDGE	BIT(2)	/* drive data on pos. edge */
+> >>>> +#define DISPLAY_FLAGS_PIXDATA_NEGEDGE	BIT(3)	/* drive data on neg. edge */
+> >>>> +#define DISPLAY_FLAGS_INTERLACED	BIT(4)
+> >>>> +#define DISPLAY_FLAGS_DOUBLESCAN	BIT(5)
+> >>>
+> >>> <snip>
+> >>>
+> >>>> +	unsigned int dmt_flags;	/* VESA DMT flags */
+> >>>> +	unsigned int data_flags; /* video data flags */
+> >>>
+> >>> Why did you go for this approach? To be able to represent
+> >>> true/false/not-specified?
+> >>>
+> > 
+> > We decided somewhere between v3 and v8 (I think), that those flags can be
+> > high/low/ignored.
+> 
+> Okay. Why aren't they enums, though? That always makes more clear which
+> defines are to be used with which fields.
+> 
 
-> least once. It may not be a requirement for Taal, but if that's the
-> case, why did we have a set_addr_mode() call in taal_power_on() in the
-> first place? Is it because we can prepare rotation and mirroring before=
+Hm...
 
-> we enable the panel?
+> >>> Would it be simpler to just have "flags" field? What does it give us to
+> >>> have those two separately?
+> >>>
+> > 
+> > I decided to split them, so it is clear that some flags are VESA defined and
+> > the others are "invented" for the display-timings framework and may be
+> > extended.
+> 
+> Hmm... Okay. Is it relevant that they are VESA defined? It just feels to
+> complicate handling the flags =).
+> 
+> >>> Should the above say raising edge/falling edge instead of positive
+> >>> edge/negative edge?
+> >>>
+> > 
+> > Hm, I used posedge/negedge because it is shorter (and because of my Verilog past
+> > pretty natural to me :-) ). I don't know what others are thinking though.
+> 
+> I guess it's quite clear, but it's still different terms than used
+> elsewhere, e.g. documentation for videomodes.
+> 
+> Another thing I noticed while using the new videomode, display_timings.h
+> has a few names that are quite short and generic. Like "TE_MIN", which
+> is now a global define. And "timing_entry". Either name could be well
+> used internally in some .c file, and could easily clash.
+> 
 
-The panel resets its registers at HW reset, so in case we have changed
-the rotation or mirroring, we need to set the addr more at power_on to
-keep the user's rotation and mirroring after resuming from blanking. But
-now that the rotation or mirroring is never changed, the default value
-is always fine.
+Yes. You are correct.
+Everyone using this is welcome to send patches now :-)
 
- Tomi
+Regards,
+Steffen
 
-
-
---------------enigC18C99C94139F92EF3337876
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRPX77AAoJEPo9qoy8lh71rQIP/05rP4gqBhbPyBc38IPSusya
-jeOF0Brwt9uYfKl7zubxdgzvGLTZJlQ5VD93yhWaweTRspXtJ6QK6AtryUS9BuCv
-wCCsYwYuHpXEmyh3W8t+Ce0uKlZW8UchY488LnXmoxAixTABxqrWfkt6OZd9cERb
-ongVVMkoxC3H6S4l2TqoO6jx1giNea8xoCjzHshTiiJpiOjMIMC0eulfufYQpYs3
-dUZAeAWvsiGKXqJAFZVqG2WGj1NybogOTiDan3CvU45AB8fAl/J+TjiLmhNf7GY2
-PHgnZKBeEhLdwuVampLwy6pHRDYbfn7HkXFOHJr6mzLpbf/p2L991vegr8V6QKtx
-vFoEZMpnuiX+rwddtxvGwV1+cTWeA5VCgv3h1KgSuko2QYYRwnq3uOB6x1tG/dQ8
-flqz6d9agCWbD/aO/4Gx5lv9J/5I+Bm91tC4AbFvqAAqKvcoIjynXImkz60Md6GC
-41mB/kth1CsQEmCO2q3hz7c/ZkaWiqNSnMscqTmDTO/K59MRIaCQqNebJGGuHNoS
-IMU+cldQVDslzDkM+eU9d6DsT9DJYq/nWckVje4H74xkOB+8bOMDP7xnNCTpUGt8
-77RrO7in4hGTqBDZGrTw1usRHaLjBj3KrO3OD4W4V4FjXpB0IPdjx2ZTGrskXeCs
-QwL7fRvJHRihvT6OQ6Q9
-=qiVu
------END PGP SIGNATURE-----
-
---------------enigC18C99C94139F92EF3337876--
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

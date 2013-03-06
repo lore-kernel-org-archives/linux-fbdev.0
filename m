@@ -1,65 +1,75 @@
-From: Jiang Liu <liuj97@gmail.com>
-Date: Sat, 16 Mar 2013 17:03:27 +0000
-Subject: [PATCH v2, part3 06/12] mm/acornfb: use common help functions to free reserved pages
-Message-Id: <1363453413-8139-7-git-send-email-jiang.liu@huawei.com>
+From: syamsidhardh@gmail.com
+Date: Wed, 06 Mar 2013 20:55:58 +0000
+Subject: [PATCH v1] video: uvesafb: Remove redundant NULL check before kfree
+Message-Id: <1362602638-7163-1-git-send-email-s.syam@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363453413-8139-1-git-send-email-jiang.liu@huawei.com>
-In-Reply-To: <1363453413-8139-1-git-send-email-jiang.liu@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>, David Rientjes <rientjes@google.com>
-Cc: Jiang Liu <jiang.liu@huawei.com>, Wen Congyang <wency@cn.fujitsu.com>, Mel Gorman <mgorman@suse.de>, Minchan Kim <minchan@kernel.org>, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, Michal Hocko <mhocko@suse.cz>, Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-Use common help functions to free reserved pages.
+From: Syam Sidhardhan <s.syam@samsung.com>
 
-Signed-off-by: Jiang Liu <jiang.liu@huawei.com>
-Cc: Florian Tobias Schandinat
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+kfree on NULL pointer is a no-op.
+
+Signed-off-by: Syam Sidhardhan <s.syam@samsung.com>
 ---
- drivers/video/acornfb.c |   28 ++--------------------------
- 1 file changed, 2 insertions(+), 26 deletions(-)
+v1 -> Corrected the from address.
 
-diff --git a/drivers/video/acornfb.c b/drivers/video/acornfb.c
-index 6488a73..344f2bb 100644
---- a/drivers/video/acornfb.c
-+++ b/drivers/video/acornfb.c
-@@ -1188,32 +1188,8 @@ static int acornfb_detect_monitortype(void)
- static inline void
- free_unused_pages(unsigned int virtual_start, unsigned int virtual_end)
+ drivers/video/uvesafb.c |   19 +++++++------------
+ 1 file changed, 7 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index b75db01..7ac0ce6 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -236,8 +236,7 @@ out:
+ static void uvesafb_free(struct uvesafb_ktask *task)
  {
--	int mb_freed = 0;
--
--	/*
--	 * Align addresses
--	 */
--	virtual_start = PAGE_ALIGN(virtual_start);
--	virtual_end = PAGE_ALIGN(virtual_end);
--
--	while (virtual_start < virtual_end) {
--		struct page *page;
--
--		/*
--		 * Clear page reserved bit,
--		 * set count to 1, and free
--		 * the page.
--		 */
--		page = virt_to_page(virtual_start);
--		ClearPageReserved(page);
--		init_page_count(page);
--		free_page(virtual_start);
--
--		virtual_start += PAGE_SIZE;
--		mb_freed += PAGE_SIZE / 1024;
--	}
--
--	printk("acornfb: freed %dK memory\n", mb_freed);
-+	free_reserved_area(virtual_start, PAGE_ALIGN(virtual_end),
-+			   -1, "acornfb");
+ 	if (task) {
+-		if (task->done)
+-			kfree(task->done);
++		kfree(task->done);
+ 		kfree(task);
+ 	}
  }
+@@ -1335,8 +1334,8 @@ setmode:
+ 				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
+ 	info->fix.line_length = mode->bytes_per_scan_line;
  
- static int acornfb_probe(struct platform_device *dev)
+-out:	if (crtc != NULL)
+-		kfree(crtc);
++out:
++	kfree(crtc);
+ 	uvesafb_free(task);
+ 
+ 	return err;
+@@ -1833,8 +1832,7 @@ out_mode:
+ 	fb_destroy_modedb(info->monspecs.modedb);
+ 	fb_dealloc_cmap(&info->cmap);
+ out:
+-	if (par->vbe_modes)
+-		kfree(par->vbe_modes);
++	kfree(par->vbe_modes);
+ 
+ 	framebuffer_release(info);
+ 	return err;
+@@ -1856,12 +1854,9 @@ static int uvesafb_remove(struct platform_device *dev)
+ 		fb_dealloc_cmap(&info->cmap);
+ 
+ 		if (par) {
+-			if (par->vbe_modes)
+-				kfree(par->vbe_modes);
+-			if (par->vbe_state_orig)
+-				kfree(par->vbe_state_orig);
+-			if (par->vbe_state_saved)
+-				kfree(par->vbe_state_saved);
++			kfree(par->vbe_modes);
++			kfree(par->vbe_state_orig);
++			kfree(par->vbe_state_saved);
+ 		}
+ 
+ 		framebuffer_release(info);
 -- 
 1.7.9.5
 

@@ -1,86 +1,115 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Mar 2013 13:33:36 +0000
-Subject: [PATCH 06/26] OMAPDSS: SDI: fix regulators
-Message-Id: <1364304836-18134-7-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 08 Mar 2013 11:52:42 +0000
+Subject: [PATCH 07/14] OMAPDSS: DISPC: add new clock calculation code
+Message-Id: <1362743569-10289-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-SDI requires a regulator to operate. This regulator is, for some reason,
-currently attached to the virtual omapdss device, instead of the SDI
-device. This does not work for DT, as the regulator mappings need to be
-described in the DT data, and the virtual omapdss device is not present
-there.
-
-Fix the issue by acquiring the regulator in the SDI device. To retain
-compatibility with the current board files, the old method of getting
-the regulator is kept. The old method can be removed when the board
-files have been changed to pass the regulator to SDI.
+Add new way to iterate over DISPC clock divisors. dispc_div_calc()
+provides a generic way to go over all the divisors, within given pixel
+clock range. dispc_div_calc() will call a callback function for each
+divider set, making the function reusable for all use cases.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/sdi.c |   20 ++++++++++++++++++--
- 1 file changed, 18 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   60 +++++++++++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/dss.h   |    6 ++++
+ 2 files changed, 66 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index 0155c7e..607244a 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -31,8 +31,11 @@
- #include "dss.h"
- 
- static struct {
-+	struct platform_device *pdev;
-+
- 	bool update_enabled;
- 	struct regulator *vdds_sdi_reg;
-+	bool vdds_sdi_from_core;
- 
- 	struct dss_lcd_mgr_config mgr_config;
- 	struct omap_video_timings timings;
-@@ -258,8 +261,14 @@ static int __init sdi_init_display(struct omap_dss_device *dssdev)
- 		vdds_sdi = dss_get_vdds_sdi();
- 
- 		if (IS_ERR(vdds_sdi)) {
--			DSSERR("can't get VDDS_SDI regulator\n");
--			return PTR_ERR(vdds_sdi);
-+			vdds_sdi = regulator_get(&sdi.pdev->dev, "vdds_sdi");
-+			if (IS_ERR(vdds_sdi)) {
-+				DSSERR("can't get VDDS_SDI regulator\n");
-+				return PTR_ERR(vdds_sdi);
-+			}
-+			sdi.vdds_sdi_from_core = false;
-+		} else {
-+			sdi.vdds_sdi_from_core = true;
- 		}
- 
- 		sdi.vdds_sdi_reg = vdds_sdi;
-@@ -359,6 +368,8 @@ static void __exit sdi_uninit_output(struct platform_device *pdev)
- 
- static int __init omap_sdi_probe(struct platform_device *pdev)
- {
-+	sdi.pdev = pdev;
-+
- 	sdi_init_output(pdev);
- 
- 	if (pdev->dev.platform_data)
-@@ -373,6 +384,11 @@ static int __exit omap_sdi_remove(struct platform_device *pdev)
- 
- 	sdi_uninit_output(pdev);
- 
-+	if (sdi.vdds_sdi_reg != NULL && sdi.vdds_sdi_from_core = false) {
-+		regulator_put(sdi.vdds_sdi_reg);
-+		sdi.vdds_sdi_reg = NULL;
-+	}
-+
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index f564955..cd54e8f 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -3374,6 +3374,66 @@ int dispc_calc_clock_rates(unsigned long dispc_fclk_rate,
  	return 0;
  }
  
++bool dispc_div_calc(unsigned long dispc,
++		unsigned long pck_min, unsigned long pck_max,
++		dispc_div_calc_func func, void *data)
++{
++	int lckd, lckd_start, lckd_stop;
++	int pckd, pckd_start, pckd_stop;
++	unsigned long pck, lck;
++	unsigned long lck_max;
++	unsigned long pckd_hw_min, pckd_hw_max;
++	unsigned min_fck_per_pck;
++	unsigned long fck;
++
++#ifdef CONFIG_OMAP2_DSS_MIN_FCK_PER_PCK
++	min_fck_per_pck = CONFIG_OMAP2_DSS_MIN_FCK_PER_PCK;
++#else
++	min_fck_per_pck = 0;
++#endif
++
++	pckd_hw_min = dss_feat_get_param_min(FEAT_PARAM_DSS_PCD);
++	pckd_hw_max = dss_feat_get_param_max(FEAT_PARAM_DSS_PCD);
++
++	lck_max = dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
++
++	pck_min = pck_min ? pck_min : 1;
++	pck_max = pck_max ? pck_max : ULONG_MAX;
++
++	lckd_start = max(DIV_ROUND_UP(dispc, lck_max), 1ul);
++	lckd_stop = min(dispc / pck_min, 255ul);
++
++	for (lckd = lckd_start; lckd <= lckd_stop; ++lckd) {
++		lck = dispc / lckd;
++
++		pckd_start = max(DIV_ROUND_UP(lck, pck_max), pckd_hw_min);
++		pckd_stop = min(lck / pck_min, pckd_hw_max);
++
++		for (pckd = pckd_start; pckd <= pckd_stop; ++pckd) {
++			pck = lck / pckd;
++
++			/*
++			 * For OMAP2/3 the DISPC fclk is the same as LCD's logic
++			 * clock, which means we're configuring DISPC fclk here
++			 * also. Thus we need to use the calculated lck. For
++			 * OMAP4+ the DISPC fclk is a separate clock.
++			 */
++			if (dss_has_feature(FEAT_CORE_CLK_DIV))
++				fck = dispc_core_clk_rate();
++			else
++				fck = lck;
++
++			if (fck < pck * min_fck_per_pck)
++				continue;
++
++			if (func(lckd, pckd, lck, pck, data))
++				return true;
++		}
++	}
++
++	return false;
++}
++
+ void dispc_mgr_set_clock_div(enum omap_channel channel,
+ 		const struct dispc_clock_info *cinfo)
+ {
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 610c8e5..0ff41dd 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -376,6 +376,12 @@ void dispc_enable_fifomerge(bool enable);
+ void dispc_enable_gamma_table(bool enable);
+ void dispc_set_loadmode(enum omap_dss_load_mode mode);
+ 
++typedef bool (*dispc_div_calc_func)(int lckd, int pckd, unsigned long lck,
++		unsigned long pck, void *data);
++bool dispc_div_calc(unsigned long dispc,
++		unsigned long pck_min, unsigned long pck_max,
++		dispc_div_calc_func func, void *data);
++
+ bool dispc_mgr_timings_ok(enum omap_channel channel,
+ 		const struct omap_video_timings *timings);
+ unsigned long dispc_fclk_rate(void);
 -- 
 1.7.10.4
 

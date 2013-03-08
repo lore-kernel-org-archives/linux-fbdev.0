@@ -1,91 +1,50 @@
-From: Fabio Porcedda <fabio.porcedda@gmail.com>
-Date: Fri, 15 Mar 2013 12:49:41 +0000
-Subject: Re: [PATCH v3] drivers: video: use module_platform_driver_probe()
-Message-Id: <CAHkwnC_rc4sz05_a4_3gkt=WR7cZRrtjzBySQW-PFxC+oZU1_g@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 08 Mar 2013 11:51:54 +0000
+Subject: [PATCH 19/20] OMAPDSS: DSI: fix DSI channel source initialization
+Message-Id: <1362743515-10152-20-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363338019-13092-1-git-send-email-fabio.porcedda@gmail.com> <27269473.thyiPm2NyN@avalon>
-In-Reply-To: <27269473.thyiPm2NyN@avalon>
+References: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, David Howells <dhowells@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Fri, Mar 15, 2013 at 1:37 PM, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
-> Hi Fabio,
->
-> Thank you for the patch.
->
-> On Friday 15 March 2013 10:00:19 Fabio Porcedda wrote:
->> This patch converts the drivers to use the
->> module_platform_driver_probe() macro which makes the code smaller and
->> a bit simpler.
->>
->> Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
->> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
->> Cc: Nicolas Ferre <nicolas.ferre@atmel.com>
->> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
->> Cc: David Howells <dhowells@redhat.com>
->> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
->> Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
->> Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
->> ---
->>
->> Notes:
->>     v3:
->>      - add missing drivers: amifb, atmel_lcdfb, vrfb
->>      - split patch set to each maintainer to easy up respin
->>     v2:
->>      - rebased over linux-next and remove already converted drivers
->>
->>  drivers/video/amifb.c          | 14 +-------------
->>  drivers/video/atmel_lcdfb.c    | 13 +------------
->>  drivers/video/omap2/vrfb.c     | 13 +------------
->>  drivers/video/sh_mipi_dsi.c    | 12 +-----------
->>  drivers/video/sh_mobile_hdmi.c | 12 +-----------
->>  5 files changed, 5 insertions(+), 59 deletions(-)
->>
->> diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
->> index 7fa1bf8..03e2de2 100644
->> --- a/drivers/video/amifb.c
->> +++ b/drivers/video/amifb.c
->> @@ -3788,19 +3788,7 @@ static struct platform_driver amifb_driver = {
->>       },
->>  };
->>
->> -static int __init amifb_init(void)
->> -{
->> -     return platform_driver_probe(&amifb_driver, amifb_probe);
->> -}
->> -
->> -module_init(amifb_init);
->> -
->> -static void __exit amifb_exit(void)
->> -{
->> -     platform_driver_unregister(&amifb_driver);
->> -}
->> -
->> -module_exit(amifb_exit);
->> +return module_platform_driver_probe(amifb_driver, amifb_probe);
->
-> I think think you need a "return" here.
->
-> After fixing that,
+During the initialization of the DSI protocol registers, we always set
+the sources of all DSI channels to L4. However, we don't update the
+value in the dsi_data, so we may end up with a different value in the
+register and in the dsi_data, leading to DSI problems.
 
-Thanks for reviewing.
-I will send shortly the patch v4.
+This patch fixes the issue by initializing also the channel source in
+the dsi_data.
 
-Regards
-Fabio Porcedda
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dsi.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-> Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
->
->>  MODULE_LICENSE("GPL");
->>  MODULE_ALIAS("platform:amiga-video");
->
-> --
-> Regards,
->
-> Laurent Pinchart
->
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index da8a678..2d95ed9 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -2794,6 +2794,7 @@ static int dsi_vc_enable(struct platform_device *dsidev, int channel,
+ 
+ static void dsi_vc_initial_config(struct platform_device *dsidev, int channel)
+ {
++	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	u32 r;
+ 
+ 	DSSDBG("Initial config of virtual channel %d", channel);
+@@ -2818,6 +2819,8 @@ static void dsi_vc_initial_config(struct platform_device *dsidev, int channel)
+ 	r = FLD_MOD(r, 4, 23, 21); /* DMA_TX_REQ_NB = no dma */
+ 
+ 	dsi_write_reg(dsidev, DSI_VC_CTRL(channel), r);
++
++	dsi->vc[channel].source = DSI_VC_SOURCE_L4;
+ }
+ 
+ static int dsi_vc_config_source(struct platform_device *dsidev, int channel,
+-- 
+1.7.10.4
+

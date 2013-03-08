@@ -1,301 +1,109 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Mar 2013 13:33:48 +0000
-Subject: [PATCH 18/26] OMAPDSS: panel-generic-dpi: convert to platform device
-Message-Id: <1364304836-18134-19-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 08 Mar 2013 11:52:45 +0000
+Subject: [PATCH 10/14] OMAPDSS: SDI: use new clock calculation code
+Message-Id: <1362743569-10289-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Convert panel-generic-dpi driver from omap_dss_driver to a platform
-driver. The driver uses the new panel support from omapdss.
+Use the new clock calculation code in the SDI driver.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/displays/panel-generic-dpi.c |  141 ++++++++++++++--------
- 1 file changed, 91 insertions(+), 50 deletions(-)
+ drivers/video/omap2/dss/sdi.c |   68 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 67 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
-index c904f42..cc49c48 100644
---- a/drivers/video/omap2/displays/panel-generic-dpi.c
-+++ b/drivers/video/omap2/displays/panel-generic-dpi.c
-@@ -33,10 +33,14 @@
- #include <linux/module.h>
- #include <linux/delay.h>
- #include <linux/slab.h>
-+#include <linux/platform_device.h>
- #include <video/omapdss.h>
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index eb4ee17..5754245 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -41,6 +41,72 @@ static struct {
+ 	struct omap_dss_output output;
+ } sdi;
  
- #include <video/omap-panel-generic-dpi.h>
- 
-+static struct omap_dss_driver generic_dpi_panel_driver;
-+#define to_drv_data(x) container_of(x, struct panel_drv_data, dssdev)
++struct sdi_clk_calc_ctx {
++	unsigned long pck_min, pck_max;
 +
- struct panel_config {
- 	struct omap_video_timings timings;
- 
-@@ -517,12 +521,16 @@ static struct panel_config generic_dpi_panels[] = {
- };
- 
- struct panel_drv_data {
-+	struct omap_dss_device dssdev;
- 
--	struct omap_dss_device *dssdev;
--
--	struct panel_config *panel_config;
-+	const struct panel_config *panel_config;
- 
- 	struct mutex lock;
-+
-+	const struct panel_generic_dpi_data *pdata;
-+
-+	const char *name;
-+	int data_lines;
- };
- 
- static inline struct panel_generic_dpi_data
-@@ -534,9 +542,9 @@ static inline struct panel_generic_dpi_data
- static int generic_dpi_panel_power_on(struct omap_dss_device *dssdev)
- {
- 	int r;
--	struct panel_generic_dpi_data *panel_data = get_panel_data(dssdev);
--	struct panel_drv_data *drv_data = dev_get_drvdata(&dssdev->dev);
--	struct panel_config *panel_config = drv_data->panel_config;
-+	struct panel_drv_data *drv_data = to_drv_data(dssdev);
-+	const struct panel_config *panel_config = drv_data->panel_config;
-+	const struct panel_generic_dpi_data *pdata = drv_data->pdata;
- 
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
- 		return 0;
-@@ -552,8 +560,8 @@ static int generic_dpi_panel_power_on(struct omap_dss_device *dssdev)
- 	if (panel_config->power_on_delay)
- 		msleep(panel_config->power_on_delay);
- 
--	if (panel_data->platform_enable) {
--		r = panel_data->platform_enable(dssdev);
-+	if (pdata && pdata->platform_enable) {
-+		r = pdata->platform_enable(dssdev);
- 		if (r)
- 			goto err1;
- 	}
-@@ -567,15 +575,15 @@ err0:
- 
- static void generic_dpi_panel_power_off(struct omap_dss_device *dssdev)
- {
--	struct panel_generic_dpi_data *panel_data = get_panel_data(dssdev);
--	struct panel_drv_data *drv_data = dev_get_drvdata(&dssdev->dev);
--	struct panel_config *panel_config = drv_data->panel_config;
-+	struct panel_drv_data *drv_data = to_drv_data(dssdev);
-+	const struct panel_config *panel_config = drv_data->panel_config;
-+	const struct panel_generic_dpi_data *pdata = drv_data->pdata;
- 
- 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
- 		return;
- 
--	if (panel_data->platform_disable)
--		panel_data->platform_disable(dssdev);
-+	if (pdata && pdata->platform_disable)
-+		pdata->platform_disable(dssdev);
- 
- 	/* wait couple of vsyncs after disabling the LCD */
- 	if (panel_config->power_off_delay)
-@@ -584,20 +592,16 @@ static void generic_dpi_panel_power_off(struct omap_dss_device *dssdev)
- 	omapdss_dpi_display_disable(dssdev);
- }
- 
--static int generic_dpi_panel_probe(struct omap_dss_device *dssdev)
-+static int generic_dpi_panel_probe_pdata(struct platform_device *pdev)
- {
--	struct panel_generic_dpi_data *panel_data = get_panel_data(dssdev);
-+	const struct panel_generic_dpi_data *pdata +		dev_get_platdata(&pdev->dev);
-+	struct panel_drv_data *drv_data = dev_get_drvdata(&pdev->dev);
- 	struct panel_config *panel_config = NULL;
--	struct panel_drv_data *drv_data = NULL;
- 	int i;
- 
--	dev_dbg(&dssdev->dev, "probe\n");
--
--	if (!panel_data || !panel_data->name)
--		return -EINVAL;
--
- 	for (i = 0; i < ARRAY_SIZE(generic_dpi_panels); i++) {
--		if (strcmp(panel_data->name, generic_dpi_panels[i].name) = 0) {
-+		if (strcmp(pdata->name, generic_dpi_panels[i].name) = 0) {
- 			panel_config = &generic_dpi_panels[i];
- 			break;
- 		}
-@@ -606,36 +610,70 @@ static int generic_dpi_panel_probe(struct omap_dss_device *dssdev)
- 	if (!panel_config)
- 		return -EINVAL;
- 
--	dssdev->panel.timings = panel_config->timings;
-+	drv_data->panel_config = panel_config;
-+	drv_data->pdata = pdata;
-+	drv_data->name = pdata->display_name;
-+	drv_data->data_lines = pdata->data_lines;
- 
--	drv_data = kzalloc(sizeof(*drv_data), GFP_KERNEL);
-+	return 0;
-+}
-+
-+static int generic_dpi_panel_probe(struct platform_device *pdev)
-+{
-+	struct panel_drv_data *drv_data;
-+	struct omap_dss_device *dssdev;
-+	int r;
-+
-+	dev_dbg(&pdev->dev, "probe\n");
-+
-+	drv_data = devm_kzalloc(&pdev->dev, sizeof(*drv_data), GFP_KERNEL);
- 	if (!drv_data)
- 		return -ENOMEM;
- 
--	drv_data->dssdev = dssdev;
--	drv_data->panel_config = panel_config;
-+	dev_set_drvdata(&pdev->dev, drv_data);
-+
-+	if (dev_get_platdata(&pdev->dev)) {
-+		r = generic_dpi_panel_probe_pdata(pdev);
-+		if (r)
-+			return r;
-+	} else {
-+		return -EINVAL;
-+	}
- 
- 	mutex_init(&drv_data->lock);
- 
--	dev_set_drvdata(&dssdev->dev, drv_data);
-+	dssdev = &drv_data->dssdev;
-+	dssdev->driver = &generic_dpi_panel_driver;
-+	dssdev->name = drv_data->name;
-+	dssdev->phy.dpi.data_lines = drv_data->data_lines;
-+	dssdev->panel.timings = drv_data->panel_config->timings;
-+	dssdev->panel_dev = &pdev->dev;
-+
-+	r = omap_dpi_register_panel(dssdev);
-+	if (r) {
-+		dev_err(&pdev->dev, "Failed to register panel\n");
-+		return r;
-+	}
- 
- 	return 0;
- }
- 
--static void __exit generic_dpi_panel_remove(struct omap_dss_device *dssdev)
-+static int __exit generic_dpi_panel_remove(struct platform_device *pdev)
- {
--	struct panel_drv_data *drv_data = dev_get_drvdata(&dssdev->dev);
-+	struct panel_drv_data *drv_data = dev_get_drvdata(&pdev->dev);
- 
--	dev_dbg(&dssdev->dev, "remove\n");
-+	dev_dbg(&pdev->dev, "remove\n");
- 
--	kfree(drv_data);
-+	omap_dpi_free_panel(&drv_data->dssdev);
- 
--	dev_set_drvdata(&dssdev->dev, NULL);
-+	dev_set_drvdata(&pdev->dev, NULL);
-+
-+	return 0;
- }
- 
- static int generic_dpi_panel_enable(struct omap_dss_device *dssdev)
- {
--	struct panel_drv_data *drv_data = dev_get_drvdata(&dssdev->dev);
-+	struct panel_drv_data *drv_data = to_drv_data(dssdev);
- 	int r;
- 
- 	mutex_lock(&drv_data->lock);
-@@ -653,7 +691,7 @@ err:
- 
- static void generic_dpi_panel_disable(struct omap_dss_device *dssdev)
- {
--	struct panel_drv_data *drv_data = dev_get_drvdata(&dssdev->dev);
-+	struct panel_drv_data *drv_data = to_drv_data(dssdev);
- 
- 	mutex_lock(&drv_data->lock);
- 
-@@ -667,7 +705,7 @@ static void generic_dpi_panel_disable(struct omap_dss_device *dssdev)
- static void generic_dpi_panel_set_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
- {
--	struct panel_drv_data *drv_data = dev_get_drvdata(&dssdev->dev);
-+	struct panel_drv_data *drv_data = to_drv_data(dssdev);
- 
- 	mutex_lock(&drv_data->lock);
- 
-@@ -681,7 +719,7 @@ static void generic_dpi_panel_set_timings(struct omap_dss_device *dssdev,
- static void generic_dpi_panel_get_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
- {
--	struct panel_drv_data *drv_data = dev_get_drvdata(&dssdev->dev);
-+	struct panel_drv_data *drv_data = to_drv_data(dssdev);
- 
- 	mutex_lock(&drv_data->lock);
- 
-@@ -693,7 +731,7 @@ static void generic_dpi_panel_get_timings(struct omap_dss_device *dssdev,
- static int generic_dpi_panel_check_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
- {
--	struct panel_drv_data *drv_data = dev_get_drvdata(&dssdev->dev);
-+	struct panel_drv_data *drv_data = to_drv_data(dssdev);
- 	int r;
- 
- 	mutex_lock(&drv_data->lock);
-@@ -705,10 +743,7 @@ static int generic_dpi_panel_check_timings(struct omap_dss_device *dssdev,
- 	return r;
- }
- 
--static struct omap_dss_driver dpi_driver = {
--	.probe		= generic_dpi_panel_probe,
--	.remove		= __exit_p(generic_dpi_panel_remove),
--
-+static struct omap_dss_driver generic_dpi_panel_driver = {
- 	.enable		= generic_dpi_panel_enable,
- 	.disable	= generic_dpi_panel_disable,
- 
-@@ -716,22 +751,28 @@ static struct omap_dss_driver dpi_driver = {
- 	.get_timings	= generic_dpi_panel_get_timings,
- 	.check_timings	= generic_dpi_panel_check_timings,
- 
--	.driver         = {
--		.name   = "generic_dpi_panel",
--		.owner  = THIS_MODULE,
-+	.get_resolution	= omapdss_default_get_resolution,
++	struct dss_clock_info dss_cinfo;
++	struct dispc_clock_info dispc_cinfo;
 +};
 +
-+static struct platform_driver generic_dpi_panel_platform_driver = {
-+	.probe	= generic_dpi_panel_probe,
-+	.remove	= __exit_p(generic_dpi_panel_remove),
-+	.driver	= {
-+		.name	= "generic_dpi_panel",
-+		.owner	= THIS_MODULE,
- 	},
- };
- 
--static int __init generic_dpi_panel_drv_init(void)
-+static int __init generic_dpi_panel_init(void)
++static bool dpi_calc_dispc_cb(int lckd, int pckd, unsigned long lck,
++		unsigned long pck, void *data)
++{
++	struct sdi_clk_calc_ctx *ctx = data;
++
++	ctx->dispc_cinfo.lck_div = lckd;
++	ctx->dispc_cinfo.pck_div = pckd;
++	ctx->dispc_cinfo.lck = lck;
++	ctx->dispc_cinfo.pck = pck;
++
++	return true;
++}
++
++static bool dpi_calc_dss_cb(int fckd, unsigned long fck, void *data)
++{
++	struct sdi_clk_calc_ctx *ctx = data;
++
++	ctx->dss_cinfo.fck = fck;
++	ctx->dss_cinfo.fck_div = fckd;
++
++	return dispc_div_calc(fck, ctx->pck_min, ctx->pck_max,
++			dpi_calc_dispc_cb, ctx);
++}
++
++static int sdi_calc_clock_div(unsigned long pclk,
++		struct dss_clock_info *dss_cinfo,
++		struct dispc_clock_info *dispc_cinfo)
++{
++	int i;
++	struct sdi_clk_calc_ctx ctx;
++
++	/*
++	 * DSS fclk gives us very few possibilities, so finding a good pixel
++	 * clock may not be possible. We try multiple times to find the clock,
++	 * each time widening the pixel clock range we look for, up to
++	 * +/- 1MHz.
++	 */
++
++	for (i = 0; i < 10; ++i) {
++		bool ok;
++
++		memset(&ctx, 0, sizeof(ctx));
++		if (pclk > 1000 * i * i * i)
++			ctx.pck_min = max(pclk - 1000 * i * i * i, 0lu);
++		else
++			ctx.pck_min = 0;
++		ctx.pck_max = pclk + 1000 * i * i * i;
++
++		ok = dss_div_calc(ctx.pck_min, dpi_calc_dss_cb, &ctx);
++		if (ok) {
++			*dss_cinfo = ctx.dss_cinfo;
++			*dispc_cinfo = ctx.dispc_cinfo;
++			return 0;
++		}
++	}
++
++	return -EINVAL;
++}
++
+ static void sdi_config_lcd_manager(struct omap_dss_device *dssdev)
  {
--	return omap_dss_register_driver(&dpi_driver);
-+	return platform_driver_register(&generic_dpi_panel_platform_driver);
- }
+ 	struct omap_overlay_manager *mgr = dssdev->output->manager;
+@@ -88,7 +154,7 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+ 	t->data_pclk_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE;
+ 	t->sync_pclk_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE;
  
--static void __exit generic_dpi_panel_drv_exit(void)
-+static void __exit generic_dpi_panel_exit(void)
- {
--	omap_dss_unregister_driver(&dpi_driver);
-+	platform_driver_unregister(&generic_dpi_panel_platform_driver);
- }
+-	r = dss_calc_clock_div(t->pixel_clock * 1000, &dss_cinfo, &dispc_cinfo);
++	r = sdi_calc_clock_div(t->pixel_clock * 1000, &dss_cinfo, &dispc_cinfo);
+ 	if (r)
+ 		goto err_calc_clock_div;
  
--module_init(generic_dpi_panel_drv_init);
--module_exit(generic_dpi_panel_drv_exit);
-+module_init(generic_dpi_panel_init);
-+module_exit(generic_dpi_panel_exit);
- MODULE_LICENSE("GPL");
 -- 
 1.7.10.4
 

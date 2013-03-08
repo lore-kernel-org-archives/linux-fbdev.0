@@ -1,136 +1,48 @@
-From: Fabio Porcedda <fabio.porcedda@gmail.com>
-Date: Thu, 14 Mar 2013 16:40:58 +0000
-Subject: Re: [PATCH 01/10] drivers: media: use module_platform_driver_probe()
-Message-Id: <CAHkwnC8cGMi83wTWG8C7kOdhHB3O-ZktzmU12qw3f9cTxTYvrg@mail.gmail.com>
+From: Devendra Naga <devendra.aaru@gmail.com>
+Date: Fri, 08 Mar 2013 19:31:07 +0000
+Subject: [PATCH 1/3] video: backlight: adp5520: fix compiler warning in adp5520_show
+Message-Id: <1362771069-16345-1-git-send-email-devendra.aaru@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
- <1363266691-15757-2-git-send-email-fabio.porcedda@gmail.com>
- <Pine.LNX.4.64.1303141424390.22728@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1303141424390.22728@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-fbdev@vger.kernel.org
 
-On Thu, Mar 14, 2013 at 2:25 PM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> Hi Fabio
->
-> On Thu, 14 Mar 2013, Fabio Porcedda wrote:
->
->> This patch converts the drivers to use the
->> module_platform_driver_probe() macro which makes the code smaller and
->> a bit simpler.
->>
->> Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
->> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
->> Cc: Josh Wu <josh.wu@atmel.com>
->> Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
->> Cc: Hans Verkuil <hans.verkuil@cisco.com>
->> Cc: linux-media@vger.kernel.org
->
-> Thanks for the patch. Subtracting this series
-> http://thread.gmane.org/gmane.linux.drivers.video-input-infrastructure/61403
-> you only need to convert atmel-isi.c. Please, respin.
+while compiling with make W=1 (gcc gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8))
 
-Ok, I'll send a updated one.
+found the following warning
 
-Thanks for the reviewing the patch.
+drivers/video/backlight/adp5520_bl.c: In function ‘adp5520_show’:
+drivers/video/backlight/adp5520_bl.c:146:6: warning: variable ‘error’ set but not used [-Wunused-but-set-variable]
 
-Best regards
-Fabio Porcedda
+fixed by removing the variable
 
-> Thanks
-> Guennadi
->
->> ---
->>  drivers/media/platform/sh_vou.c                | 13 +------------
->>  drivers/media/platform/soc_camera/atmel-isi.c  | 12 +-----------
->>  drivers/media/platform/soc_camera/mx1_camera.c | 13 +------------
->>  3 files changed, 3 insertions(+), 35 deletions(-)
->>
->> diff --git a/drivers/media/platform/sh_vou.c b/drivers/media/platform/sh_vou.c
->> index 66c8da1..d853162 100644
->> --- a/drivers/media/platform/sh_vou.c
->> +++ b/drivers/media/platform/sh_vou.c
->> @@ -1485,18 +1485,7 @@ static struct platform_driver __refdata sh_vou = {
->>       },
->>  };
->>
->> -static int __init sh_vou_init(void)
->> -{
->> -     return platform_driver_probe(&sh_vou, sh_vou_probe);
->> -}
->> -
->> -static void __exit sh_vou_exit(void)
->> -{
->> -     platform_driver_unregister(&sh_vou);
->> -}
->> -
->> -module_init(sh_vou_init);
->> -module_exit(sh_vou_exit);
->> +module_platform_driver_probe(sh_vou, sh_vou_probe);
->>
->>  MODULE_DESCRIPTION("SuperH VOU driver");
->>  MODULE_AUTHOR("Guennadi Liakhovetski <g.liakhovetski@gmx.de>");
->> diff --git a/drivers/media/platform/soc_camera/atmel-isi.c b/drivers/media/platform/soc_camera/atmel-isi.c
->> index 82dbf99..12ba31d 100644
->> --- a/drivers/media/platform/soc_camera/atmel-isi.c
->> +++ b/drivers/media/platform/soc_camera/atmel-isi.c
->> @@ -1081,17 +1081,7 @@ static struct platform_driver atmel_isi_driver = {
->>       },
->>  };
->>
->> -static int __init atmel_isi_init_module(void)
->> -{
->> -     return  platform_driver_probe(&atmel_isi_driver, &atmel_isi_probe);
->> -}
->> -
->> -static void __exit atmel_isi_exit(void)
->> -{
->> -     platform_driver_unregister(&atmel_isi_driver);
->> -}
->> -module_init(atmel_isi_init_module);
->> -module_exit(atmel_isi_exit);
->> +module_platform_driver_probe(atmel_isi_driver, atmel_isi_probe);
->>
->>  MODULE_AUTHOR("Josh Wu <josh.wu@atmel.com>");
->>  MODULE_DESCRIPTION("The V4L2 driver for Atmel Linux");
->> diff --git a/drivers/media/platform/soc_camera/mx1_camera.c b/drivers/media/platform/soc_camera/mx1_camera.c
->> index 25b2a28..4389f43 100644
->> --- a/drivers/media/platform/soc_camera/mx1_camera.c
->> +++ b/drivers/media/platform/soc_camera/mx1_camera.c
->> @@ -859,18 +859,7 @@ static struct platform_driver mx1_camera_driver = {
->>       .remove         = __exit_p(mx1_camera_remove),
->>  };
->>
->> -static int __init mx1_camera_init(void)
->> -{
->> -     return platform_driver_probe(&mx1_camera_driver, mx1_camera_probe);
->> -}
->> -
->> -static void __exit mx1_camera_exit(void)
->> -{
->> -     return platform_driver_unregister(&mx1_camera_driver);
->> -}
->> -
->> -module_init(mx1_camera_init);
->> -module_exit(mx1_camera_exit);
->> +module_platform_driver_probe(mx1_camera_driver, mx1_camera_probe);
->>
->>  MODULE_DESCRIPTION("i.MX1/i.MXL SoC Camera Host driver");
->>  MODULE_AUTHOR("Paulius Zaleckas <paulius.zaleckas@teltonika.lt>");
->> --
->> 1.8.1.5
->>
->
-> ---
-> Guennadi Liakhovetski, Ph.D.
-> Freelance Open-Source Software Developer
-> http://www.open-technology.de/
+Cc: Jingoo Han <jg1.han@samsung.com>
+Cc: Michael Hennerich <michael.hennerich@analog.com>
+Cc: Richard Purdie <rpurdie@rpsys.net>
 
+Signed-off-by: Devendra Naga <devendra.aaru@gmail.com>
+---
+ drivers/video/backlight/adp5520_bl.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-
+diff --git a/drivers/video/backlight/adp5520_bl.c b/drivers/video/backlight/adp5520_bl.c
+index a1e41d4..9f8b20b 100644
+--- a/drivers/video/backlight/adp5520_bl.c
++++ b/drivers/video/backlight/adp5520_bl.c
+@@ -143,11 +143,10 @@ static int adp5520_bl_setup(struct backlight_device *bl)
+ static ssize_t adp5520_show(struct device *dev, char *buf, int reg)
+ {
+ 	struct adp5520_bl *data = dev_get_drvdata(dev);
+-	int error;
+ 	uint8_t reg_val;
+ 
+ 	mutex_lock(&data->lock);
+-	error = adp5520_read(data->master, reg, &reg_val);
++	adp5520_read(data->master, reg, &reg_val);
+ 	mutex_unlock(&data->lock);
+ 
+ 	return sprintf(buf, "%u\n", reg_val);
 -- 
-Fabio Porcedda
+1.8.1.2
+

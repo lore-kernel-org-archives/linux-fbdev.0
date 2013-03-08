@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 08 Mar 2013 11:51:41 +0000
-Subject: [PATCH 06/20] OMAPDSS: APPLY: remove dssdev from dss_mgr_wait_for_vsync
-Message-Id: <1362743515-10152-7-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 08 Mar 2013 11:51:50 +0000
+Subject: [PATCH 15/20] OMAP: dss-common.c: remove uses of dss channel (LATER)
+Message-Id: <1362743515-10152-16-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,56 +11,66 @@ Content-Transfer-Encoding: 7bit
 To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-dss_mgr_wait_for_vsync() uses dssdev->type to find out if the output is
-going to VENC, HDMI, or something else. This creates a dependency on
-dssdev, which we want to remove. The task is more logically done by
-looking at the output to which the overlay manager in question is
-connected to.
-
-This patch changes the code to use output->id to find out which kind of
-output we use.
+Now that omap_dss_device's channel is resolved automatically, we can
+remove its uses from the board files.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/apply.c |   15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
+ arch/arm/mach-omap2/dss-common.c |    6 ------
+ 1 file changed, 6 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index d446bdf..a4b356a 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -435,20 +435,27 @@ static inline struct omap_dss_device *dss_mgr_get_device(struct omap_overlay_man
- static int dss_mgr_wait_for_vsync(struct omap_overlay_manager *mgr)
- {
- 	unsigned long timeout = msecs_to_jiffies(500);
--	struct omap_dss_device *dssdev = mgr->get_device(mgr);
- 	u32 irq;
- 	int r;
+diff --git a/arch/arm/mach-omap2/dss-common.c b/arch/arm/mach-omap2/dss-common.c
+index 4be5cfc..125c4eb 100644
+--- a/arch/arm/mach-omap2/dss-common.c
++++ b/arch/arm/mach-omap2/dss-common.c
+@@ -55,7 +55,6 @@ static struct omap_dss_device omap4_panda_dvi_device = {
+ 	.data			= &omap4_dvi_panel,
+ 	.phy.dpi.data_lines	= 24,
+ 	.reset_gpio		= PANDA_DVI_TFP410_POWER_DOWN_GPIO,
+-	.channel		= OMAP_DSS_CHANNEL_LCD2,
+ };
  
-+	if (mgr->output = NULL)
-+		return -ENODEV;
-+
- 	r = dispc_runtime_get();
- 	if (r)
- 		return r;
+ static struct omap_dss_hdmi_data omap4_panda_hdmi_data = {
+@@ -68,7 +67,6 @@ static struct omap_dss_device  omap4_panda_hdmi_device = {
+ 	.name = "hdmi",
+ 	.driver_name = "hdmi_panel",
+ 	.type = OMAP_DISPLAY_TYPE_HDMI,
+-	.channel = OMAP_DSS_CHANNEL_DIGIT,
+ 	.data = &omap4_panda_hdmi_data,
+ };
  
--	if (dssdev->type = OMAP_DISPLAY_TYPE_VENC)
-+	switch (mgr->output->id) {
-+	case OMAP_DSS_OUTPUT_VENC:
- 		irq = DISPC_IRQ_EVSYNC_ODD;
--	else if (dssdev->type = OMAP_DISPLAY_TYPE_HDMI)
-+		break;
-+	case OMAP_DSS_OUTPUT_HDMI:
- 		irq = DISPC_IRQ_EVSYNC_EVEN;
--	else
-+		break;
-+	default:
- 		irq = dispc_mgr_get_vsync_irq(mgr->id);
-+		break;
-+	}
+@@ -132,7 +130,6 @@ static struct omap_dss_device sdp4430_lcd_device = {
+ 	.phy.dsi		= {
+ 		.module		= 0,
+ 	},
+-	.channel		= OMAP_DSS_CHANNEL_LCD,
+ };
  
- 	r = omap_dispc_wait_for_irq_interruptible_timeout(irq, timeout);
+ static struct nokia_dsi_panel_data dsi2_panel = {
+@@ -156,7 +153,6 @@ static struct omap_dss_device sdp4430_lcd2_device = {
  
+ 		.module		= 1,
+ 	},
+-	.channel		= OMAP_DSS_CHANNEL_LCD2,
+ };
+ 
+ static struct omap_dss_hdmi_data sdp4430_hdmi_data = {
+@@ -169,7 +165,6 @@ static struct omap_dss_device sdp4430_hdmi_device = {
+ 	.name = "hdmi",
+ 	.driver_name = "hdmi_panel",
+ 	.type = OMAP_DISPLAY_TYPE_HDMI,
+-	.channel = OMAP_DSS_CHANNEL_DIGIT,
+ 	.data = &sdp4430_hdmi_data,
+ };
+ 
+@@ -215,7 +210,6 @@ static struct omap_dss_device sdp4430_picodlp_device = {
+ 	.driver_name		= "picodlp_panel",
+ 	.type			= OMAP_DISPLAY_TYPE_DPI,
+ 	.phy.dpi.data_lines	= 24,
+-	.channel		= OMAP_DSS_CHANNEL_LCD2,
+ 	.platform_enable	= sdp4430_panel_enable_picodlp,
+ 	.platform_disable	= sdp4430_panel_disable_picodlp,
+ 	.data			= &sdp4430_picodlp_pdata,
 -- 
 1.7.10.4
 

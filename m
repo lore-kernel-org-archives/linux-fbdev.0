@@ -1,43 +1,88 @@
-From: Samuel Ortiz <sameo@linux.intel.com>
-Date: Fri, 22 Mar 2013 14:09:06 +0000
-Subject: Re: [PATCH v2] mfd: as3711: add OF support
-Message-Id: <20130322140906.GA13778@zurbaran>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 08 Mar 2013 11:52:43 +0000
+Subject: [PATCH 08/14] OMAPDSS: DSS: add new clock calculation code
+Message-Id: <1362743569-10289-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1302181049510.4526@axis700.grange>
- <20130302041547.GJ6610@opensource.wolfsonmicro.com>
- <Pine.LNX.4.64.1303202034090.24222@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1303202034090.24222@axis700.grange>
+References: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, devicetree-discuss@lists.ozlabs.org, Liam Girdwood <lrg@ti.com>, Richard Purdie <rpurdie@rpsys.net>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org
+To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi Guennadi,
+Add new way to iterate over DSS clock divisors. dss_div_calc() provides
+a generic way to go over all the divisors, within given clock range.
+dss_div_calc() will call a callback function for each divider set,
+making the function reusable for all use cases.
 
-On Wed, Mar 20, 2013 at 08:40:15PM +0100, Guennadi Liakhovetski wrote:
-> Hi all
-> 
-> On Sat, 2 Mar 2013, Mark Brown wrote:
-> 
-> > On Mon, Feb 18, 2013 at 10:57:44AM +0100, Guennadi Liakhovetski wrote:
-> > > Add device-tree bindings to the AS3711 regulator and backlight drivers.
-> > 
-> > Reviwed-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> 
-> This patch has been submitted more than a month ago and only has got one 
-> reviewed-be (thanks) and no comments otherwise. The patch touches multiple 
-> subsystems, so, it is a bit difficult to decide via which tree it should 
-> be pushed. Since the least trivial and largest portion of the patch is 
-> backlight-related, maybe Samuel could add his ack and then Andrew could 
-> pull it via his tree?
-We could do that, yes. But it also seems to me that this patch could be split
-into 3 different ones that could go in via their own trees. Is there a runtime
-dependency that I'm missing here ?
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dss.c |   36 ++++++++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/dss.h |    3 +++
+ 2 files changed, 39 insertions(+)
 
-Cheers,
-Samuel.
-
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 054c2a2..21a3dc8 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -473,6 +473,42 @@ int dss_calc_clock_rates(struct dss_clock_info *cinfo)
+ 	return 0;
+ }
+ 
++bool dss_div_calc(unsigned long fck_min, dss_div_calc_func func, void *data)
++{
++	int fckd, fckd_start, fckd_stop;
++	unsigned long fck;
++	unsigned long fck_hw_max;
++	unsigned long fckd_hw_max;
++	unsigned long prate;
++
++	if (dss.dpll4_m4_ck = NULL) {
++		/* XXX can we change the clock on omap2? */
++		fck = clk_get_rate(dss.dss_clk);
++		fckd = 1;
++
++		return func(fckd, fck, data);
++	}
++
++	fck_hw_max = dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
++	fckd_hw_max = dss.feat->fck_div_max;
++
++	prate = dss_get_dpll4_rate() * dss.feat->dss_fck_multiplier;
++
++	fck_min = fck_min ? fck_min : 1;
++
++	fckd_start = min(prate / fck_min, fckd_hw_max);
++	fckd_stop = max(DIV_ROUND_UP(prate, fck_hw_max), 1ul);
++
++	for (fckd = fckd_start; fckd >= fckd_stop; --fckd) {
++		fck = prate / fckd;
++
++		if (func(fckd, fck, data))
++			return true;
++	}
++
++	return false;
++}
++
+ int dss_set_clock_div(struct dss_clock_info *cinfo)
+ {
+ 	if (dss.dpll4_m4_ck) {
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 0ff41dd..4180302 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -271,6 +271,9 @@ int dss_set_clock_div(struct dss_clock_info *cinfo);
+ int dss_calc_clock_div(unsigned long req_pck, struct dss_clock_info *dss_cinfo,
+ 		struct dispc_clock_info *dispc_cinfo);
+ 
++typedef bool (*dss_div_calc_func)(int fckd, unsigned long fck, void *data);
++bool dss_div_calc(unsigned long fck_min, dss_div_calc_func func, void *data);
++
+ /* SDI */
+ int sdi_init_platform_driver(void) __init;
+ void sdi_uninit_platform_driver(void) __exit;
 -- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+1.7.10.4
+

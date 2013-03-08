@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 08 Mar 2013 11:52:42 +0000
-Subject: [PATCH 07/14] OMAPDSS: DISPC: add new clock calculation code
-Message-Id: <1362743569-10289-8-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 08 Mar 2013 11:52:39 +0000
+Subject: [PATCH 04/14] OMAPDSS: DSI: get line buffer size at probe
+Message-Id: <1362743569-10289-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,105 +11,60 @@ Content-Transfer-Encoding: 7bit
 To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add new way to iterate over DISPC clock divisors. dispc_div_calc()
-provides a generic way to go over all the divisors, within given pixel
-clock range. dispc_div_calc() will call a callback function for each
-divider set, making the function reusable for all use cases.
+To find out the DSI line buffer size we need to read HW registers. To
+make it possible to do DSI configuration calculations without HW powered
+up, store the line buffer size at DSI driver's probe.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |   60 +++++++++++++++++++++++++++++++++++++++
- drivers/video/omap2/dss/dss.h   |    6 ++++
- 2 files changed, 66 insertions(+)
+ drivers/video/omap2/dss/dsi.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index f564955..cd54e8f 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -3374,6 +3374,66 @@ int dispc_calc_clock_rates(unsigned long dispc_fclk_rate,
- 	return 0;
- }
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 901b721..374fd8f 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -336,6 +336,7 @@ struct dsi_data {
+ 	unsigned long lpdiv_max;
  
-+bool dispc_div_calc(unsigned long dispc,
-+		unsigned long pck_min, unsigned long pck_max,
-+		dispc_div_calc_func func, void *data)
-+{
-+	int lckd, lckd_start, lckd_stop;
-+	int pckd, pckd_start, pckd_stop;
-+	unsigned long pck, lck;
-+	unsigned long lck_max;
-+	unsigned long pckd_hw_min, pckd_hw_max;
-+	unsigned min_fck_per_pck;
-+	unsigned long fck;
-+
-+#ifdef CONFIG_OMAP2_DSS_MIN_FCK_PER_PCK
-+	min_fck_per_pck = CONFIG_OMAP2_DSS_MIN_FCK_PER_PCK;
-+#else
-+	min_fck_per_pck = 0;
-+#endif
-+
-+	pckd_hw_min = dss_feat_get_param_min(FEAT_PARAM_DSS_PCD);
-+	pckd_hw_max = dss_feat_get_param_max(FEAT_PARAM_DSS_PCD);
-+
-+	lck_max = dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
-+
-+	pck_min = pck_min ? pck_min : 1;
-+	pck_max = pck_max ? pck_max : ULONG_MAX;
-+
-+	lckd_start = max(DIV_ROUND_UP(dispc, lck_max), 1ul);
-+	lckd_stop = min(dispc / pck_min, 255ul);
-+
-+	for (lckd = lckd_start; lckd <= lckd_stop; ++lckd) {
-+		lck = dispc / lckd;
-+
-+		pckd_start = max(DIV_ROUND_UP(lck, pck_max), pckd_hw_min);
-+		pckd_stop = min(lck / pck_min, pckd_hw_max);
-+
-+		for (pckd = pckd_start; pckd <= pckd_stop; ++pckd) {
-+			pck = lck / pckd;
-+
-+			/*
-+			 * For OMAP2/3 the DISPC fclk is the same as LCD's logic
-+			 * clock, which means we're configuring DISPC fclk here
-+			 * also. Thus we need to use the calculated lck. For
-+			 * OMAP4+ the DISPC fclk is a separate clock.
-+			 */
-+			if (dss_has_feature(FEAT_CORE_CLK_DIV))
-+				fck = dispc_core_clk_rate();
-+			else
-+				fck = lck;
-+
-+			if (fck < pck * min_fck_per_pck)
-+				continue;
-+
-+			if (func(lckd, pckd, lck, pck, data))
-+				return true;
-+		}
-+	}
-+
-+	return false;
-+}
-+
- void dispc_mgr_set_clock_div(enum omap_channel channel,
- 		const struct dispc_clock_info *cinfo)
- {
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 610c8e5..0ff41dd 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -376,6 +376,12 @@ void dispc_enable_fifomerge(bool enable);
- void dispc_enable_gamma_table(bool enable);
- void dispc_set_loadmode(enum omap_dss_load_mode mode);
+ 	unsigned num_lanes_supported;
++	unsigned line_buffer_size;
  
-+typedef bool (*dispc_div_calc_func)(int lckd, int pckd, unsigned long lck,
-+		unsigned long pck, void *data);
-+bool dispc_div_calc(unsigned long dispc,
-+		unsigned long pck_min, unsigned long pck_max,
-+		dispc_div_calc_func func, void *data);
+ 	struct dsi_lane_config lanes[DSI_MAX_NR_LANES];
+ 	unsigned num_lanes_used;
+@@ -3791,13 +3792,12 @@ static void dsi_config_vp_num_line_buffers(struct platform_device *dsidev)
+ 
+ 	if (dsi->mode = OMAP_DSS_DSI_VIDEO_MODE) {
+ 		int bpp = dsi_get_pixel_size(dsi->pix_fmt);
+-		unsigned line_buf_size = dsi_get_line_buf_size(dsidev);
+ 		struct omap_video_timings *timings = &dsi->timings;
+ 		/*
+ 		 * Don't use line buffers if width is greater than the video
+ 		 * port's line buffer size
+ 		 */
+-		if (line_buf_size <= timings->x_res * bpp / 8)
++		if (dsi->line_buffer_size <= timings->x_res * bpp / 8)
+ 			num_line_buffers = 0;
+ 		else
+ 			num_line_buffers = 2;
+@@ -4447,7 +4447,7 @@ static void dsi_update_screen_dispc(struct platform_device *dsidev)
+ 	u32 l;
+ 	int r;
+ 	const unsigned channel = dsi->update_channel;
+-	const unsigned line_buf_size = dsi_get_line_buf_size(dsidev);
++	const unsigned line_buf_size = dsi->line_buffer_size;
+ 	u16 w = dsi->timings.x_res;
+ 	u16 h = dsi->timings.y_res;
+ 
+@@ -5290,6 +5290,8 @@ static int __init omap_dsihw_probe(struct platform_device *dsidev)
+ 	else
+ 		dsi->num_lanes_supported = 3;
+ 
++	dsi->line_buffer_size = dsi_get_line_buf_size(dsidev);
 +
- bool dispc_mgr_timings_ok(enum omap_channel channel,
- 		const struct omap_video_timings *timings);
- unsigned long dispc_fclk_rate(void);
+ 	dsi_init_output(dsidev);
+ 
+ 	dsi_probe_pdata(dsidev);
 -- 
 1.7.10.4
 

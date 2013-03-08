@@ -1,78 +1,227 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 08 Mar 2013 11:52:41 +0000
-Subject: [PATCH 06/14] OMAPDSS: DSI remove unneeded clk source setup code
-Message-Id: <1362743569-10289-7-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 08 Mar 2013 11:51:40 +0000
+Subject: [PATCH 05/20] OMAPDSS: Taal: remove multi-panel support
+Message-Id: <1362743515-10152-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-We always use the same clock sources for DSI, so let's remove the
-unnecessary clock source fields from dsi_data.
+Taal panel driver was originally meant to support multiple different DSI
+command mode panel models. This never realized, and the multi-panel
+support code is lying there unused, making the driver more difficult to
+maintain.
+
+This patch removes the multi-panel support from Taal driver.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dsi.c |   24 ++++++------------------
- 1 file changed, 6 insertions(+), 18 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |  109 ++++-------------------------
+ 1 file changed, 15 insertions(+), 94 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 7faad58..aabe472 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -269,10 +269,6 @@ struct dsi_data {
- 	struct dispc_clock_info user_dispc_cinfo;
- 	struct dsi_clock_info user_dsi_cinfo;
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index a32407a..038a815 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -54,61 +54,6 @@ static int _taal_enable_te(struct omap_dss_device *dssdev, bool enable);
  
--	enum omap_dss_clk_source user_dispc_fclk_src;
--	enum omap_dss_clk_source user_lcd_clk_src;
--	enum omap_dss_clk_source user_dsi_fclk_src;
--
- 	struct dsi_clock_info current_cinfo;
+ static int taal_panel_reset(struct omap_dss_device *dssdev);
  
- 	bool vdds_dsi_enabled;
-@@ -4327,18 +4323,6 @@ static int dsi_set_clocks(struct omap_dss_device *dssdev,
- 	dsi->user_dispc_cinfo.lck_div = dispc_cinfo.lck_div;
- 	dsi->user_dispc_cinfo.pck_div = dispc_cinfo.pck_div;
+-/**
+- * struct panel_config - panel configuration
+- * @name: panel name
+- * @type: panel type
+- * @timings: panel resolution
+- * @sleep: various panel specific delays, passed to msleep() if non-zero
+- * @reset_sequence: reset sequence timings, passed to udelay() if non-zero
+- * @regulators: array of panel regulators
+- * @num_regulators: number of regulators in the array
+- */
+-struct panel_config {
+-	const char *name;
+-	int type;
+-
+-	struct omap_video_timings timings;
+-
+-	struct {
+-		unsigned int sleep_in;
+-		unsigned int sleep_out;
+-		unsigned int hw_reset;
+-		unsigned int enable_te;
+-	} sleep;
+-
+-	struct {
+-		unsigned int high;
+-		unsigned int low;
+-	} reset_sequence;
+-
+-};
+-
+-enum {
+-	PANEL_TAAL,
+-};
+-
+-static struct panel_config panel_configs[] = {
+-	{
+-		.name		= "taal",
+-		.type		= PANEL_TAAL,
+-		.timings	= {
+-			.x_res		= 864,
+-			.y_res		= 480,
+-		},
+-		.sleep		= {
+-			.sleep_in	= 5,
+-			.sleep_out	= 5,
+-			.hw_reset	= 5,
+-			.enable_te	= 100, /* possible panel bug */
+-		},
+-		.reset_sequence	= {
+-			.high		= 10,
+-			.low		= 10,
+-		},
+-	},
+-};
+-
+ struct taal_data {
+ 	struct mutex lock;
  
--	dsi->user_dispc_fclk_src = OMAP_DSS_CLK_SRC_FCK;
+@@ -121,9 +66,6 @@ struct taal_data {
+ 
+ 	struct omap_dss_device *dssdev;
+ 
+-	/* panel specific HW info */
+-	struct panel_config *panel_config;
 -
--	dsi->user_lcd_clk_src -		dsi->module_id = 0 ?
--		OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC :
--		OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC;
--
--	dsi->user_dsi_fclk_src -		dsi->module_id = 0 ?
--		OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DSI :
--		OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DSI;
--
+ 	/* panel HW configuration from DT or platform data */
+ 	int reset_gpio;
+ 	int ext_te_gpio;
+@@ -221,8 +163,7 @@ static int taal_sleep_in(struct taal_data *td)
+ 
+ 	hw_guard_start(td, 120);
+ 
+-	if (td->panel_config->sleep.sleep_in)
+-		msleep(td->panel_config->sleep.sleep_in);
++	msleep(5);
+ 
  	return 0;
- err:
- 	return r;
-@@ -4635,7 +4619,9 @@ static int dsi_display_init_dispc(struct platform_device *dsidev,
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 	int r;
+ }
+@@ -239,8 +180,7 @@ static int taal_sleep_out(struct taal_data *td)
  
--	dss_select_lcd_clk_source(mgr->id, dsi->user_lcd_clk_src);
-+	dss_select_lcd_clk_source(mgr->id, dsi->module_id = 0 ?
-+			OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC :
-+			OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC);
+ 	hw_guard_start(td, 120);
  
- 	if (dsi->mode = OMAP_DSS_DSI_CMD_MODE) {
- 		dsi->timings.hsw = 1;
-@@ -4741,7 +4727,9 @@ static int dsi_display_init_dsi(struct platform_device *dsidev)
+-	if (td->panel_config->sleep.sleep_out)
+-		msleep(td->panel_config->sleep.sleep_out);
++	msleep(5);
+ 
+ 	return 0;
+ }
+@@ -845,17 +785,14 @@ static void taal_hw_reset(struct omap_dss_device *dssdev)
+ 		return;
+ 
+ 	gpio_set_value(td->reset_gpio, 1);
+-	if (td->panel_config->reset_sequence.high)
+-		udelay(td->panel_config->reset_sequence.high);
++	udelay(10);
+ 	/* reset the panel */
+ 	gpio_set_value(td->reset_gpio, 0);
+ 	/* assert reset */
+-	if (td->panel_config->reset_sequence.low)
+-		udelay(td->panel_config->reset_sequence.low);
++	udelay(10);
+ 	gpio_set_value(td->reset_gpio, 1);
+ 	/* wait after releasing reset */
+-	if (td->panel_config->sleep.hw_reset)
+-		msleep(td->panel_config->sleep.hw_reset);
++	msleep(5);
+ }
+ 
+ static void taal_probe_pdata(struct taal_data *td,
+@@ -881,8 +818,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 	struct backlight_properties props;
+ 	struct taal_data *td;
+ 	struct backlight_device *bldev = NULL;
+-	int r, i;
+-	const char *panel_name;
++	int r;
+ 
+ 	dev_dbg(&dssdev->dev, "probe\n");
+ 
+@@ -897,26 +833,12 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 		const struct nokia_dsi_panel_data *pdata = dssdev->data;
+ 
+ 		taal_probe_pdata(td, pdata);
+-
+-		panel_name = pdata->name;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+ 
+-	if (panel_name = NULL)
+-		return -EINVAL;
+-
+-	for (i = 0; i < ARRAY_SIZE(panel_configs); i++) {
+-		if (strcmp(panel_name, panel_configs[i].name) = 0) {
+-			td->panel_config = &panel_configs[i];
+-			break;
+-		}
+-	}
+-
+-	if (!td->panel_config)
+-		return -EINVAL;
+-
+-	dssdev->panel.timings = td->panel_config->timings;
++	dssdev->panel.timings.x_res = 864;
++	dssdev->panel.timings.y_res = 480;
+ 	dssdev->panel.dsi_pix_fmt = OMAP_DSS_DSI_FMT_RGB888;
+ 	dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE |
+ 		OMAP_DSS_DISPLAY_CAP_TEAR_ELIM;
+@@ -1086,8 +1008,7 @@ static int taal_power_on(struct omap_dss_device *dssdev)
+ 		goto err;
+ 
+ 	/* on early Taal revisions CABC is broken */
+-	if (td->panel_config->type = PANEL_TAAL &&
+-		(id2 = 0x00 || id2 = 0xff || id2 = 0x81))
++	if (id2 = 0x00 || id2 = 0xff || id2 = 0x81)
+ 		td->cabc_broken = true;
+ 
+ 	r = taal_dcs_write_1(td, DCS_BRIGHTNESS, 0xff);
+@@ -1129,8 +1050,8 @@ static int taal_power_on(struct omap_dss_device *dssdev)
+ 	td->enabled = 1;
+ 
+ 	if (!td->intro_printed) {
+-		dev_info(&dssdev->dev, "%s panel revision %02x.%02x.%02x\n",
+-			td->panel_config->name, id1, id2, id3);
++		dev_info(&dssdev->dev, "panel revision %02x.%02x.%02x\n",
++			id1, id2, id3);
+ 		if (td->cabc_broken)
+ 			dev_info(&dssdev->dev,
+ 					"old Taal version, CABC disabled\n");
+@@ -1311,8 +1232,8 @@ static int taal_update(struct omap_dss_device *dssdev,
+ 
+ 	/* XXX no need to send this every frame, but dsi break if not done */
+ 	r = taal_set_update_window(td, 0, 0,
+-			td->panel_config->timings.x_res,
+-			td->panel_config->timings.y_res);
++			dssdev->panel.timings.x_res,
++			dssdev->panel.timings.y_res);
  	if (r)
- 		goto err1;
+ 		goto err;
  
--	dss_select_dsi_clk_source(dsi->module_id, dsi->user_dsi_fclk_src);
-+	dss_select_dsi_clk_source(dsi->module_id, dsi->module_id = 0 ?
-+			OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DSI :
-+			OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DSI);
+@@ -1365,8 +1286,8 @@ static int _taal_enable_te(struct omap_dss_device *dssdev, bool enable)
+ 	if (!gpio_is_valid(td->ext_te_gpio))
+ 		omapdss_dsi_enable_te(dssdev, enable);
  
- 	DSSDBG("PLL OK\n");
+-	if (td->panel_config->sleep.enable_te)
+-		msleep(td->panel_config->sleep.enable_te);
++	/* possible panel bug */
++	msleep(100);
  
+ 	return r;
+ }
 -- 
 1.7.10.4
 

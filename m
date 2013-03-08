@@ -1,86 +1,78 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Thu, 28 Mar 2013 12:04:29 +0000
-Subject: [PATCH 3/4] compat-drivers: simplify backport fb_info->skip_vt_switch CE
-Message-Id: <1364472270-9297-4-git-send-email-mcgrof@do-not-panic.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 08 Mar 2013 11:52:41 +0000
+Subject: [PATCH 06/14] OMAPDSS: DSI remove unneeded clk source setup code
+Message-Id: <1362743569-10289-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364472270-9297-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1364472270-9297-1-git-send-email-mcgrof@do-not-panic.com>
+References: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: FlorianSchandinat@gmx.de
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, jbarnes@virtuousgeek.org, backports@vger.kernel.org, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, julia.lawall@lip6.fr, rodrigo.vivi@gmail.com, daniel.vetter@ffwll.ch, rafael.j.wysocki@intel.com, "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+We always use the same clock sources for DSI, so let's remove the
+unnecessary clock source fields from dsi_data.
 
-The collateral evolution (CE) on the fb_info data structure
-that added the skip_vt_switch element can be simplified
-further by replacing the #ifdef hell with a static inline.
-
-Furthermore, if the static inline is added upstream it'd mean
-we can get rid of all these static inline replacements for
-this data structure element CE.
-
-Cc: cocci@systeme.lip6.fr
-Cc: backports@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: Julia Lawall <julia.lawall@lip6.fr>
-Cc: Rodrigo Vivi <rodrigo.vivi@gmail.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Luis R. Rodriguez <mcgrof@do-not-panic.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- .../drm/0001-fb-info-vt_switch.patch               |   25 ++++----------------
- 1 file changed, 4 insertions(+), 21 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   24 ++++++------------------
+ 1 file changed, 6 insertions(+), 18 deletions(-)
 
-diff --git a/patches/collateral-evolutions/drm/0001-fb-info-vt_switch.patch b/patches/collateral-evolutions/drm/0001-fb-info-vt_switch.patch
-index cdced87..39b13d1 100644
---- a/patches/collateral-evolutions/drm/0001-fb-info-vt_switch.patch
-+++ b/patches/collateral-evolutions/drm/0001-fb-info-vt_switch.patch
-@@ -8,23 +8,7 @@ pm_vt_switch_unregister() would not have been made.
- This patch cannot be broken down further so I'm pegging
- this as the first one with 4 digits under the DRM folder
- for collateral evolutions. This reflects its as atomic as
--is possible. As we'll see on the next commit, these type
--of collateral evolutions can best be backported not by
--keeping ifdef's as below but instead by using a wrapper
--caller, to help reduce with the amount of lines of code
--we need. If a static inline is added upstream for these
--changes, then no code is required for backporting, at all,
--we'd just implement the static inline later upstream as
--a no-op.
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 7faad58..aabe472 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -269,10 +269,6 @@ struct dsi_data {
+ 	struct dispc_clock_info user_dispc_cinfo;
+ 	struct dsi_clock_info user_dsi_cinfo;
+ 
+-	enum omap_dss_clk_source user_dispc_fclk_src;
+-	enum omap_dss_clk_source user_lcd_clk_src;
+-	enum omap_dss_clk_source user_dsi_fclk_src;
 -
--The tradeoffs to consider for this is if we can live with
--these practices upstream, we may be able to support full
--subsystems only with a compat module, and no need for
--patches. This also means less code and likely less bugs
--on the distribution front when backporting is required.
--At least IMHO this may be worthy to consider at least to
--support kernels listed as supported on kernel.org. We could
--just leave the ifdef hell to older unsupported kernels.
-+is possible.
+ 	struct dsi_clock_info current_cinfo;
  
- Relevant commits below, starting with the first one that
- added this new collateral evolution.
-@@ -60,14 +44,13 @@ Date:   Tue Mar 26 09:25:45 2013 -0700
+ 	bool vdds_dsi_enabled;
+@@ -4327,18 +4323,6 @@ static int dsi_set_clocks(struct omap_dss_device *dssdev,
+ 	dsi->user_dispc_cinfo.lck_div = dispc_cinfo.lck_div;
+ 	dsi->user_dispc_cinfo.pck_div = dispc_cinfo.pck_div;
  
- --- a/drivers/gpu/drm/i915/intel_fb.c
- +++ b/drivers/gpu/drm/i915/intel_fb.c
--@@ -150,8 +150,10 @@ static int intelfb_create(struct drm_fb_
-+@@ -150,8 +150,8 @@ static int intelfb_create(struct drm_fb_
-  	}
-  	info->screen_size = size;
-  
--+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
-  	/* This driver doesn't need a VT switch to restore the mode on resume */
-- 	info->skip_vt_switch = true;
--+#endif
-+- 	info->skip_vt_switch = true;
-++ 	fb_enable_skip_vt_switch(info);
-  
-  	drm_fb_helper_fill_fix(info, fb->pitches[0], fb->depth);
-  	drm_fb_helper_fill_var(info, &ifbdev->helper, sizes->fb_width, sizes->fb_height);
+-	dsi->user_dispc_fclk_src = OMAP_DSS_CLK_SRC_FCK;
+-
+-	dsi->user_lcd_clk_src -		dsi->module_id = 0 ?
+-		OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC :
+-		OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC;
+-
+-	dsi->user_dsi_fclk_src -		dsi->module_id = 0 ?
+-		OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DSI :
+-		OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DSI;
+-
+ 	return 0;
+ err:
+ 	return r;
+@@ -4635,7 +4619,9 @@ static int dsi_display_init_dispc(struct platform_device *dsidev,
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	int r;
+ 
+-	dss_select_lcd_clk_source(mgr->id, dsi->user_lcd_clk_src);
++	dss_select_lcd_clk_source(mgr->id, dsi->module_id = 0 ?
++			OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC :
++			OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC);
+ 
+ 	if (dsi->mode = OMAP_DSS_DSI_CMD_MODE) {
+ 		dsi->timings.hsw = 1;
+@@ -4741,7 +4727,9 @@ static int dsi_display_init_dsi(struct platform_device *dsidev)
+ 	if (r)
+ 		goto err1;
+ 
+-	dss_select_dsi_clk_source(dsi->module_id, dsi->user_dsi_fclk_src);
++	dss_select_dsi_clk_source(dsi->module_id, dsi->module_id = 0 ?
++			OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DSI :
++			OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DSI);
+ 
+ 	DSSDBG("PLL OK\n");
+ 
 -- 
 1.7.10.4
 

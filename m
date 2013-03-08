@@ -1,33 +1,241 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Fri, 29 Mar 2013 07:29:44 +0000
-Subject: Re: [PATCH] compat/compat-drivers/linux-next: fb skip_vt_switch
-Message-Id: <CAB=NE6U2-4uc90p5Os1kUp6QWChMcjarCMR7af0g=XUbGEXjGg@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 08 Mar 2013 11:51:55 +0000
+Subject: [PATCH 20/20] OMAPDSS: Taal: remove rotate & mirror support
+Message-Id: <1362743515-10152-21-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364472270-9297-1-git-send-email-mcgrof@do-not-panic.com>
- <20130328083943.01e61b4b@jbarnes-desktop> <alpine.DEB.2.02.1303281718490.1928@hadrien>
- <CAB=NE6WbNwPqEPYsASAPaECe4qbAWdd4=eJ402ib+CzZbT69=g@mail.gmail.com>
- <alpine.DEB.2.02.1303281909570.1928@hadrien> <CAB=NE6VPRu8DvneVdwd=pXF0ngi5OifNTpZtX3pLi50i116_OA@mail.gmail.com>
- <alpine.DEB.2.02.1303282328200.2022@localhost6.localdomain6>
- <CAB=NE6WX5Dv9p2jrNwe9GxfH=EUm596uvSspsLQ5-Uuonc6Fqg@mail.gmail.com> <alpine.DEB.2.02.1303290720350.2023@localhost6.localdomain6>
-In-Reply-To: <alpine.DEB.2.02.1303290720350.2023@localhost6.localdomain6>
+References: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Julia Lawall <julia.lawall@lip6.fr>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, florianschandinat <FlorianSchandinat@gmx.de>, linux-fbdev <linux-fbdev@vger.kernel.org>, dri-devel@lists.freedesktop.org, "backports@vger.kernel.org" <backports@vger.kernel.org>, cocci@systeme.lip6.fr, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rodrigo.vivi" <rodrigo.vivi@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, "rafael.j.wysocki" <rafael.j.wysocki@intel.com>
+To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Thu, Mar 28, 2013 at 11:21 PM, Julia Lawall <julia.lawall@lip6.fr> wrote:
->> > I looked in today's linux-next, and there seems to be only one
->> > initialization of this field, to true, and one test of this field.  So
->> > perhaps the case for setting the field to false just isn't needed.
->>
->> Oh sorry now I get what you mean! I thought about this -- and yes I
->> decided to not add a bool false setting for the structure field given
->> that the assumption is this would not be something dynamic, and data
->> structure would be kzalloc()'d so by default they are 0.
->
-> What do you do about the test, though?
+Taal panel driver has support to set rotation and mirroring. However,
+these features cannot be used without causing tearing, and are never
+used. The code is just extra bloat, so let's remove it.
 
-Return the value.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/displays/panel-taal.c |  170 +----------------------------
+ 1 file changed, 2 insertions(+), 168 deletions(-)
 
-  Luis
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 038a815..bc4c95e 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -76,8 +76,6 @@ struct taal_data {
+ 
+ 	/* runtime variables */
+ 	bool enabled;
+-	u8 rotate;
+-	bool mirror;
+ 
+ 	bool te_enabled;
+ 
+@@ -202,49 +200,6 @@ static int taal_get_id(struct taal_data *td, u8 *id1, u8 *id2, u8 *id3)
+ 	return 0;
+ }
+ 
+-static int taal_set_addr_mode(struct taal_data *td, u8 rotate, bool mirror)
+-{
+-	int r;
+-	u8 mode;
+-	int b5, b6, b7;
+-
+-	r = taal_dcs_read_1(td, MIPI_DCS_GET_ADDRESS_MODE, &mode);
+-	if (r)
+-		return r;
+-
+-	switch (rotate) {
+-	default:
+-	case 0:
+-		b7 = 0;
+-		b6 = 0;
+-		b5 = 0;
+-		break;
+-	case 1:
+-		b7 = 0;
+-		b6 = 1;
+-		b5 = 1;
+-		break;
+-	case 2:
+-		b7 = 1;
+-		b6 = 1;
+-		b5 = 0;
+-		break;
+-	case 3:
+-		b7 = 1;
+-		b6 = 0;
+-		b5 = 1;
+-		break;
+-	}
+-
+-	if (mirror)
+-		b6 = !b6;
+-
+-	mode &= ~((1<<7) | (1<<6) | (1<<5));
+-	mode |= (b7 << 7) | (b6 << 6) | (b5 << 5);
+-
+-	return taal_dcs_write_1(td, MIPI_DCS_SET_ADDRESS_MODE, mode);
+-}
+-
+ static int taal_set_update_window(struct taal_data *td,
+ 		u16 x, u16 y, u16 w, u16 h)
+ {
+@@ -455,15 +410,8 @@ static const struct backlight_ops taal_bl_ops = {
+ static void taal_get_resolution(struct omap_dss_device *dssdev,
+ 		u16 *xres, u16 *yres)
+ {
+-	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+-
+-	if (td->rotate = 0 || td->rotate = 2) {
+-		*xres = dssdev->panel.timings.x_res;
+-		*yres = dssdev->panel.timings.y_res;
+-	} else {
+-		*yres = dssdev->panel.timings.x_res;
+-		*xres = dssdev->panel.timings.y_res;
+-	}
++	*xres = dssdev->panel.timings.x_res;
++	*yres = dssdev->panel.timings.y_res;
+ }
+ 
+ static ssize_t taal_num_errors_show(struct device *dev,
+@@ -1025,10 +973,6 @@ static int taal_power_on(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err;
+ 
+-	r = taal_set_addr_mode(td, td->rotate, td->mirror);
+-	if (r)
+-		goto err;
+-
+ 	if (!td->cabc_broken) {
+ 		r = taal_dcs_write_1(td, DCS_WRITE_CABC, td->cabc_mode);
+ 		if (r)
+@@ -1340,112 +1284,6 @@ static int taal_get_te(struct omap_dss_device *dssdev)
+ 	return r;
+ }
+ 
+-static int taal_rotate(struct omap_dss_device *dssdev, u8 rotate)
+-{
+-	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+-	u16 dw, dh;
+-	int r;
+-
+-	dev_dbg(&dssdev->dev, "rotate %d\n", rotate);
+-
+-	mutex_lock(&td->lock);
+-
+-	if (td->rotate = rotate)
+-		goto end;
+-
+-	dsi_bus_lock(dssdev);
+-
+-	if (td->enabled) {
+-		r = taal_wake_up(dssdev);
+-		if (r)
+-			goto err;
+-
+-		r = taal_set_addr_mode(td, rotate, td->mirror);
+-		if (r)
+-			goto err;
+-	}
+-
+-	if (rotate = 0 || rotate = 2) {
+-		dw = dssdev->panel.timings.x_res;
+-		dh = dssdev->panel.timings.y_res;
+-	} else {
+-		dw = dssdev->panel.timings.y_res;
+-		dh = dssdev->panel.timings.x_res;
+-	}
+-
+-	omapdss_dsi_set_size(dssdev, dw, dh);
+-
+-	td->rotate = rotate;
+-
+-	dsi_bus_unlock(dssdev);
+-end:
+-	mutex_unlock(&td->lock);
+-	return 0;
+-err:
+-	dsi_bus_unlock(dssdev);
+-	mutex_unlock(&td->lock);
+-	return r;
+-}
+-
+-static u8 taal_get_rotate(struct omap_dss_device *dssdev)
+-{
+-	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+-	int r;
+-
+-	mutex_lock(&td->lock);
+-	r = td->rotate;
+-	mutex_unlock(&td->lock);
+-
+-	return r;
+-}
+-
+-static int taal_mirror(struct omap_dss_device *dssdev, bool enable)
+-{
+-	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+-	int r;
+-
+-	dev_dbg(&dssdev->dev, "mirror %d\n", enable);
+-
+-	mutex_lock(&td->lock);
+-
+-	if (td->mirror = enable)
+-		goto end;
+-
+-	dsi_bus_lock(dssdev);
+-	if (td->enabled) {
+-		r = taal_wake_up(dssdev);
+-		if (r)
+-			goto err;
+-
+-		r = taal_set_addr_mode(td, td->rotate, enable);
+-		if (r)
+-			goto err;
+-	}
+-
+-	td->mirror = enable;
+-
+-	dsi_bus_unlock(dssdev);
+-end:
+-	mutex_unlock(&td->lock);
+-	return 0;
+-err:
+-	dsi_bus_unlock(dssdev);
+-	mutex_unlock(&td->lock);
+-	return r;
+-}
+-
+-static bool taal_get_mirror(struct omap_dss_device *dssdev)
+-{
+-	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+-	int r;
+-
+-	mutex_lock(&td->lock);
+-	r = td->mirror;
+-	mutex_unlock(&td->lock);
+-
+-	return r;
+-}
+-
+ static int taal_run_test(struct omap_dss_device *dssdev, int test_num)
+ {
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+@@ -1679,10 +1517,6 @@ static struct omap_dss_driver taal_driver = {
+ 	.enable_te	= taal_enable_te,
+ 	.get_te		= taal_get_te,
+ 
+-	.set_rotate	= taal_rotate,
+-	.get_rotate	= taal_get_rotate,
+-	.set_mirror	= taal_mirror,
+-	.get_mirror	= taal_get_mirror,
+ 	.run_test	= taal_run_test,
+ 	.memory_read	= taal_memory_read,
+ 
+-- 
+1.7.10.4
+

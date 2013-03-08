@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 08 Mar 2013 11:51:37 +0000
-Subject: [PATCH 02/20] OMAPDSS: HDMI: remove HDMI clk divisors from dssdev
-Message-Id: <1362743515-10152-3-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 08 Mar 2013 11:51:52 +0000
+Subject: [PATCH 17/20] OMAPDSS: add pdata->default_display_name
+Message-Id: <1362743515-10152-18-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,64 +11,46 @@ Content-Transfer-Encoding: 7bit
 To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-struct omap_dss_device contains HDMI clock divisors. The idea is that the
-board file can pass precalculated divisors to the display driver.
-However, these divsors are no longer needed, as the omapdss driver can
-calculate the divisors during runtime.
+We can currently set the default display (i.e. the initial display) in
+the omapdss platform data by using a pointer to the default
+omap_dss_device. Internally omapdss uses the device's name to resolve
+the default display.
 
-This patch removes the divisors from omap_dss_device, and their uses
-from the hdmi driver.
+As it's difficult to get the omap_dss_device pointer in the future,
+after we've changed the omapdss device model, this patch adds a new way
+to define the default display, by using the name of the display.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/hdmi.c |   11 +++--------
- include/video/omapdss.h        |    8 --------
- 2 files changed, 3 insertions(+), 16 deletions(-)
+ drivers/video/omap2/dss/core.c |    2 ++
+ include/video/omapdss.h        |    1 +
+ 2 files changed, 3 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 769d082..e5682ae 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -472,17 +472,12 @@ static void hdmi_compute_pll(struct omap_dss_device *dssdev, int phy,
- 	 * Input clock is predivided by N + 1
- 	 * out put of which is reference clk
- 	 */
--	if (dssdev->clocks.hdmi.regn = 0)
--		pi->regn = HDMI_DEFAULT_REGN;
--	else
--		pi->regn = dssdev->clocks.hdmi.regn;
-+
-+	pi->regn = HDMI_DEFAULT_REGN;
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index f8779d4..a9bab9f 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -238,6 +238,8 @@ static int __init omap_dss_probe(struct platform_device *pdev)
  
- 	refclk = clkin / pi->regn;
+ 	if (def_disp_name)
+ 		core.default_display_name = def_disp_name;
++	else if (pdata->default_display_name)
++		core.default_display_name = pdata->default_display_name;
+ 	else if (pdata->default_device)
+ 		core.default_display_name = pdata->default_device->name;
  
--	if (dssdev->clocks.hdmi.regm2 = 0)
--		pi->regm2 = HDMI_DEFAULT_REGM2;
--	else
--		pi->regm2 = dssdev->clocks.hdmi.regm2;
-+	pi->regm2 = HDMI_DEFAULT_REGM2;
- 
- 	/*
- 	 * multiplier is pixel_clk/ref_clk
 diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 255bcf5..2cb2b0e 100644
+index cd028c8..9057e21 100644
 --- a/include/video/omapdss.h
 +++ b/include/video/omapdss.h
-@@ -591,14 +591,6 @@ struct omap_dss_device {
- 	} phy;
- 
- 	struct {
--		struct {
--			/* regn is one greater than TRM's REGN value */
--			u16 regn;
--			u16 regm2;
--		} hdmi;
--	} clocks;
--
--	struct {
- 		struct omap_video_timings timings;
- 
- 		enum omap_dss_dsi_pixel_format dsi_pix_fmt;
+@@ -334,6 +334,7 @@ struct omap_dss_board_info {
+ 	int num_devices;
+ 	struct omap_dss_device **devices;
+ 	struct omap_dss_device *default_device;
++	const char *default_display_name;
+ 	int (*dsi_enable_pads)(int dsi_id, unsigned lane_mask);
+ 	void (*dsi_disable_pads)(int dsi_id, unsigned lane_mask);
+ 	int (*set_min_bus_tput)(struct device *dev, unsigned long r);
 -- 
 1.7.10.4
 

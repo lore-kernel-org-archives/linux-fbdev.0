@@ -1,104 +1,101 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 19 Mar 2013 11:56:45 +0000
-Subject: Re: How to manage OMAP display drivers in the future
-Message-Id: <5148527D.1080102@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enigB51FC82F41A50B44C795D5AB"
+Date: Fri, 08 Mar 2013 11:52:40 +0000
+Subject: [PATCH 05/14] OMAPDSS: DSI: add enum omap_dss_dsi_trans_mode
+Message-Id: <1362743569-10289-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <51403F91.7070401@iki.fi>
-	<CAF6AEGs_6kLU=OR-mX9kvr=_t9-z4+StobksaW+MfcnhEu2XvA@mail.gmail.com>
-In-Reply-To: <CAF6AEGs_6kLU=OR-mX9kvr=_t9-z4+StobksaW+MfcnhEu2XvA@mail.gmail.com>
-To: Rob Clark <robdclark@gmail.com>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
+References: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
---------------enigB51FC82F41A50B44C795D5AB
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Instead of managing DSI sync ends with booleans, add an enum for the DSI
+transfer mode. This is much cleaner way to handle the DSI syncs.
 
-On 2013-03-18 22:46, Rob Clark wrote:
-> On Wed, Mar 13, 2013 at 4:57 AM, Tomi Valkeinen <tomba@iki.fi> wrote:
->> Hi Dave,
->>
->> I'm writing this mail to get some ideas how we should manage OMAP's
->> display drivers in the future.
->>
->> As a short intro, we have the following players around:
->>
->> omapdss - omapdss handles the DSS (display subsystem) hardware. omapds=
-s
->> doesn't do any buffer management or expose any userspace API (except a=
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dsi.c |   15 ++++++++++-----
+ include/video/omapdss.h       |   13 ++++++++++---
+ 2 files changed, 20 insertions(+), 8 deletions(-)
 
->> few sysfs files), so it doesn't do anything by itself.
->> (drivers/video/omap2/dss/)
->>
->> panel drivers - Drivers for various panel models. The panel drivers us=
-e
->> omapdss API to manage the video bus. (drivers/video/omap2/displays/)
->>
->> omapfb - Framebuffer driver, uses omapdss to handle the HW.
->> (drivers/video/omap2/omapfb/)
->>
->> omap_vout - V4L2 driver for showing video, uses omapdss to handle the
->> HW. (drivers/media/platform/omap/)
->>
->> omapdrm - DRM driver, uses omapdss to handle the HW.
->> (drivers/gpu/drm/omapdrm/)
->>
->> omapdss and the panel drivers form the lowest level layer. omapfb and
->> omap_vout can be used at the same time, but omapdrm must be used alone=
-,
->> without omapfb or omap_vout.
->>
->> omapfb and omap_vout are not much developed anymore, even though they
->> are still commonly used. Most of the development happens in omapdss,
->> panel drivers and omapdrm.
->=20
-> I'd guess if changes in omapfb or omap_vout are mainly just updates
-> resulting from omapdss changes, maybe merging it all via drm tree
-> would make most sense..
->=20
-> Although I tend to think life would be easier w/ some copy/paste.. Ie.
-> just move a copy of omapdss into omapdrm directory and start
-> refactoring.. Offhand I think at least in the hdmi code, I think we
-> could jettison the big timings table, and avi-infoframe stuff and use
-> drm helpers.  Probably other places where we could get rid of code
-> that duplicates stuff that drm does (or could) provide helpers for..
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 374fd8f..7faad58 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -3813,18 +3813,22 @@ static void dsi_config_vp_num_line_buffers(struct platform_device *dsidev)
+ static void dsi_config_vp_sync_events(struct platform_device *dsidev)
+ {
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+-	bool vsync_end = dsi->vm_timings.vp_vsync_end;
+-	bool hsync_end = dsi->vm_timings.vp_hsync_end;
++	bool sync_end;
+ 	u32 r;
+ 
++	if (dsi->vm_timings.trans_mode = OMAP_DSS_DSI_PULSE_MODE)
++		sync_end = true;
++	else
++		sync_end = false;
++
+ 	r = dsi_read_reg(dsidev, DSI_CTRL);
+ 	r = FLD_MOD(r, 1, 9, 9);		/* VP_DE_POL */
+ 	r = FLD_MOD(r, 1, 10, 10);		/* VP_HSYNC_POL */
+ 	r = FLD_MOD(r, 1, 11, 11);		/* VP_VSYNC_POL */
+ 	r = FLD_MOD(r, 1, 15, 15);		/* VP_VSYNC_START */
+-	r = FLD_MOD(r, vsync_end, 16, 16);	/* VP_VSYNC_END */
++	r = FLD_MOD(r, sync_end, 16, 16);	/* VP_VSYNC_END */
+ 	r = FLD_MOD(r, 1, 17, 17);		/* VP_HSYNC_START */
+-	r = FLD_MOD(r, hsync_end, 18, 18);	/* VP_HSYNC_END */
++	r = FLD_MOD(r, sync_end, 18, 18);	/* VP_HSYNC_END */
+ 	dsi_write_reg(dsidev, DSI_CTRL, r);
+ }
+ 
+@@ -4171,11 +4175,12 @@ static void dsi_proto_timings(struct platform_device *dsidev)
+ 		int vfp = dsi->vm_timings.vfp;
+ 		int vbp = dsi->vm_timings.vbp;
+ 		int window_sync = dsi->vm_timings.window_sync;
+-		bool hsync_end = dsi->vm_timings.vp_hsync_end;
++		bool hsync_end;
+ 		struct omap_video_timings *timings = &dsi->timings;
+ 		int bpp = dsi_get_pixel_size(dsi->pix_fmt);
+ 		int tl, t_he, width_bytes;
+ 
++		hsync_end = dsi->vm_timings.trans_mode = OMAP_DSS_DSI_PULSE_MODE;
+ 		t_he = hsync_end ?
+ 			((hsa = 0 && ndl = 3) ? 1 : DIV_ROUND_UP(4, ndl)) : 0;
+ 
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 4a52197..161011e 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -257,6 +257,15 @@ void rfbi_bus_unlock(void);
+ 
+ /* DSI */
+ 
++enum omap_dss_dsi_trans_mode {
++	/* Sync Pulses: both sync start and end packets sent */
++	OMAP_DSS_DSI_PULSE_MODE,
++	/* Sync Events: only sync start packets sent */
++	OMAP_DSS_DSI_EVENT_MODE,
++	/* Burst: only sync start packets sent, pixels are time compressed */
++	OMAP_DSS_DSI_BURST_MODE,
++};
++
+ struct omap_dss_dsi_videomode_timings {
+ 	/* DSI video mode blanking data */
+ 	/* Unit: byte clock cycles */
+@@ -274,9 +283,7 @@ struct omap_dss_dsi_videomode_timings {
+ 	int hbp_blanking_mode;
+ 	int hfp_blanking_mode;
+ 
+-	/* Video port sync events */
+-	bool vp_vsync_end;
+-	bool vp_hsync_end;
++	enum omap_dss_dsi_trans_mode trans_mode;
+ 
+ 	bool ddr_clk_always_on;
+ 	int window_sync;
+-- 
+1.7.10.4
 
-I've been playing with that idea, but copying omapdss is not so
-straightforward either. The panel drivers, headers, kconfig options,
-board file code related to dss... It could easily create a rather
-confusing mess.
-
-I'm hoping that CDF in some form would realize soon, and then copying
-omapdss would be at least somewhwat easier, as there's no need to drag
-the panel drivers along.
-
- Tomi
-
-
-
---------------enigB51FC82F41A50B44C795D5AB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRSFKAAAoJEPo9qoy8lh71KJ0P/iL/DyIxZxZdL7hJ7hm2jqk1
-uNeMVYnub+GAXtN1mAAx39H+N/98MOLlydYH9Pcz/BI9ASmu9Cgbs+8zEb8S5c1V
-w66uS4scFC6oCBWh/V2Bwz5Pg1xogeC8O9S3Vu82NOIIQ3KNMRiSzi+H7K63G/Vz
-2g7F5464zje3cvNf2xqnHpxXt24hueUY+/QPvCwogEhCJwNH+209b5u4MV4yDE+w
-VLEN7eGLKPTLWHyAdSrZfxD3ynMghWWAd3bZT6x2TZ/n1BluembsISU7RjDfs4Ca
-3HDL+y6O6BrpyFpq+UlJ0GiwFj/0dmKdXQsIV9aF+4SnuBCbItwsZA35EirJlcx/
-ZYxpDBLwRJ63atQHpLThv4bGVV4SCUsn1Y3EDVet/j31/adp+f+DeCIG4Idq1yqy
-nmqP9x0cLV963kCs+TYTefS31kZYVhk0Q02X2oc4aAqB07WHVf9osVev5PztLAoP
-iYDiGx2VA1ihzUzVunKpZo2FhLEhwB+uI0Dq85u/8fCv9AJc1BH6tmIb+rRCiQdo
-7IbPZrpf/umq6hcYAAiES7Yyx4X+9BKZ8dNlc4z0oW6lfmyu4Ic2hoSglSKIECQ2
-kBTc3YVWIGDDi8D9mvS3dhr0XiEa/mw7II9jvjKR5939rxXw7TrsTH0oW8mSwuoA
-JxJFq8CDll3BI6hWqR7D
-=BWkW
------END PGP SIGNATURE-----
-
---------------enigB51FC82F41A50B44C795D5AB--

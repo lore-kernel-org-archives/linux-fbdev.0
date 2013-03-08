@@ -1,46 +1,74 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 27 Mar 2013 08:47:38 +0000
-Subject: Re: [PATCH v2 0/8] omapdss/omapdrm: Misc fixes and improvements
-Message-Id: <5152AF5A.3000707@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 08 Mar 2013 11:52:36 +0000
+Subject: [PATCH 01/14] OMAPDSS: DISPC: store core clk rate
+Message-Id: <1362743569-10289-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1362493070-17706-1-git-send-email-archit@ti.com> <1364305525-28496-1-git-send-email-archit@ti.com> <5152A5D1.3010209@ti.com>
-In-Reply-To: <5152A5D1.3010209@ti.com>
+References: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: robdclark@gmail.com, andy.gross@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Wednesday 27 March 2013 01:24 PM, Tomi Valkeinen wrote:
-> On 2013-03-26 15:45, Archit Taneja wrote:
->> These are misc fixes and improvements within omapdrm and omapdss. The fixes do the
->> following:
->>
->> - Make omapdrm smarter to choose the right overlay managers as it's crtcs. This
->>    makes sure that omapdrm is functional for OMAP platforms with different
->>    combinations of panels connected to it.
->>
->> - Fix certain areas in omapdrm which allow fixed resolution panels to work.
->>
->> - Fix functional and pixel clock limits for DISPC, this ensures we don't try
->>    to try a mode that the hardware can't support.
->>
->> - Some changes that came in OMAP5 ES2 silicon.
->>
->> Note: The branch is based on the DSS misc series and dsi video mode calc series
->> posted by Tomi. Reference branch:
->>
->> git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git for-3.10/misc_drm_dss
->
-> Which of the fixes should go for 3.9? We need those separately, based on
-> the mainline.
+Store dispc core clock rate so that it's available for calculations even
+if the HW is disabled.
 
-The most important fix is omapdrm change which allocates crtcs in a 
-better way, but it needs the 'dispc_channel' parameter in outputs, so 
-that can't go.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dispc.c |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-We could queue patches 7 and 8 for 3.9, they are 2 things which we would 
-want to have in 3.9 itself. These should apply on mainline directly.
-
-Archit
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 05ff2b9..f564955 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -97,6 +97,8 @@ static struct {
+ 
+ 	int irq;
+ 
++	unsigned long core_clk_rate;
++
+ 	u32 fifo_size[DISPC_MAX_NR_FIFOS];
+ 	/* maps which plane is using a fifo. fifo-id -> plane-id */
+ 	int fifo_assignment[DISPC_MAX_NR_FIFOS];
+@@ -2951,6 +2953,10 @@ static void dispc_mgr_set_lcd_divisor(enum omap_channel channel, u16 lck_div,
+ 
+ 	dispc_write_reg(DISPC_DIVISORo(channel),
+ 			FLD_VAL(lck_div, 23, 16) | FLD_VAL(pck_div, 7, 0));
++
++	if (dss_has_feature(FEAT_CORE_CLK_DIV) = false &&
++			channel = OMAP_DSS_CHANNEL_LCD)
++		dispc.core_clk_rate = dispc_fclk_rate() / lck_div;
+ }
+ 
+ static void dispc_mgr_get_lcd_divisor(enum omap_channel channel, int *lck_div,
+@@ -3056,15 +3062,7 @@ unsigned long dispc_mgr_pclk_rate(enum omap_channel channel)
+ 
+ unsigned long dispc_core_clk_rate(void)
+ {
+-	int lcd;
+-	unsigned long fclk = dispc_fclk_rate();
+-
+-	if (dss_has_feature(FEAT_CORE_CLK_DIV))
+-		lcd = REG_GET(DISPC_DIVISOR, 23, 16);
+-	else
+-		lcd = REG_GET(DISPC_DIVISORo(OMAP_DSS_CHANNEL_LCD), 23, 16);
+-
+-	return fclk / lcd;
++	return dispc.core_clk_rate;
+ }
+ 
+ static unsigned long dispc_plane_pclk_rate(enum omap_plane plane)
+@@ -3451,6 +3449,8 @@ static void _omap_dispc_initial_config(void)
+ 		l = FLD_MOD(l, 1, 0, 0);
+ 		l = FLD_MOD(l, 1, 23, 16);
+ 		dispc_write_reg(DISPC_DIVISOR, l);
++
++		dispc.core_clk_rate = dispc_fclk_rate();
+ 	}
+ 
+ 	/* FUNCGATED */
+-- 
+1.7.10.4
 

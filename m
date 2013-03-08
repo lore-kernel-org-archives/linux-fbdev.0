@@ -1,114 +1,114 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Mar 2013 13:33:31 +0000
-Subject: [PATCH 01/26] OMAPDSS: only probe pdata if there's one
-Message-Id: <1364304836-18134-2-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 08 Mar 2013 11:51:44 +0000
+Subject: [PATCH 09/20] OMAPDSS: add output->name
+Message-Id: <1362743515-10152-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-omapdss output drivers always read the platform data. This crashes when
-there's no platform data when using DT.
-
-Add a check to read the platform data only if it exists.
+Add name field to omapdss's outputs to help debugging.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dpi.c  |    3 ++-
- drivers/video/omap2/dss/dsi.c  |    3 ++-
- drivers/video/omap2/dss/hdmi.c |    3 ++-
- drivers/video/omap2/dss/rfbi.c |    3 ++-
- drivers/video/omap2/dss/sdi.c  |    3 ++-
- drivers/video/omap2/dss/venc.c |    3 ++-
- 6 files changed, 12 insertions(+), 6 deletions(-)
+ drivers/video/omap2/dss/dpi.c  |    1 +
+ drivers/video/omap2/dss/dsi.c  |    1 +
+ drivers/video/omap2/dss/hdmi.c |    1 +
+ drivers/video/omap2/dss/rfbi.c |    1 +
+ drivers/video/omap2/dss/sdi.c  |    1 +
+ drivers/video/omap2/dss/venc.c |    1 +
+ include/video/omapdss.h        |    3 +++
+ 7 files changed, 9 insertions(+)
 
 diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index abe1a4e2..ad67a9c 100644
+index cb6b280..e282456 100644
 --- a/drivers/video/omap2/dss/dpi.c
 +++ b/drivers/video/omap2/dss/dpi.c
-@@ -702,7 +702,8 @@ static int __init omap_dpi_probe(struct platform_device *pdev)
+@@ -512,6 +512,7 @@ static void __init dpi_init_output(struct platform_device *pdev)
+ 	out->pdev = pdev;
+ 	out->id = OMAP_DSS_OUTPUT_DPI;
+ 	out->type = OMAP_DISPLAY_TYPE_DPI;
++	out->name = "dpi";
  
- 	dpi_init_output(pdev);
- 
--	dpi_probe_pdata(pdev);
-+	if (pdev->dev.platform_data)
-+		dpi_probe_pdata(pdev);
- 
- 	return 0;
+ 	dss_register_output(out);
  }
 diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 8db29bf..ddb8bf6 100644
+index 815c930..1a6ad6f 100644
 --- a/drivers/video/omap2/dss/dsi.c
 +++ b/drivers/video/omap2/dss/dsi.c
-@@ -5573,7 +5573,8 @@ static int __init omap_dsihw_probe(struct platform_device *dsidev)
+@@ -5183,6 +5183,7 @@ static void __init dsi_init_output(struct platform_device *dsidev)
+ 			OMAP_DSS_OUTPUT_DSI1 : OMAP_DSS_OUTPUT_DSI2;
  
- 	dsi_init_output(dsidev);
+ 	out->type = OMAP_DISPLAY_TYPE_DSI;
++	out->name = dsi->module_id = 0 ? "dsi0" : "dsi1";
  
--	dsi_probe_pdata(dsidev);
-+	if (dsidev->dev.platform_data)
-+		dsi_probe_pdata(dsidev);
- 
- 	dsi_runtime_put(dsidev);
- 
+ 	dss_register_output(out);
+ }
 diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index a6f9538..4b32dd3 100644
+index f3768d0..888cfe3 100644
 --- a/drivers/video/omap2/dss/hdmi.c
 +++ b/drivers/video/omap2/dss/hdmi.c
-@@ -1102,7 +1102,8 @@ static int __init omapdss_hdmihw_probe(struct platform_device *pdev)
+@@ -1046,6 +1046,7 @@ static void __init hdmi_init_output(struct platform_device *pdev)
+ 	out->pdev = pdev;
+ 	out->id = OMAP_DSS_OUTPUT_HDMI;
+ 	out->type = OMAP_DISPLAY_TYPE_HDMI;
++	out->name = "hdmi";
  
- 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
- 
--	hdmi_probe_pdata(pdev);
-+	if (pdev->dev.platform_data)
-+		hdmi_probe_pdata(pdev);
- 
- 	return 0;
- 
+ 	dss_register_output(out);
+ }
 diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index 1a691bb..946c415 100644
+index e903dd3..a47a9e5 100644
 --- a/drivers/video/omap2/dss/rfbi.c
 +++ b/drivers/video/omap2/dss/rfbi.c
-@@ -1091,7 +1091,8 @@ static int __init omap_rfbihw_probe(struct platform_device *pdev)
+@@ -1025,6 +1025,7 @@ static void __init rfbi_init_output(struct platform_device *pdev)
+ 	out->pdev = pdev;
+ 	out->id = OMAP_DSS_OUTPUT_DBI;
+ 	out->type = OMAP_DISPLAY_TYPE_DBI;
++	out->name = "rfbi";
  
- 	rfbi_init_output(pdev);
- 
--	rfbi_probe_pdata(pdev);
-+	if (pdev->dev.platform_data)
-+		rfbi_probe_pdata(pdev);
- 
- 	return 0;
- 
+ 	dss_register_output(out);
+ }
 diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index e6baee2..0155c7e 100644
+index 62b5374..0802927 100644
 --- a/drivers/video/omap2/dss/sdi.c
 +++ b/drivers/video/omap2/dss/sdi.c
-@@ -361,7 +361,8 @@ static int __init omap_sdi_probe(struct platform_device *pdev)
- {
- 	sdi_init_output(pdev);
+@@ -278,6 +278,7 @@ static void __init sdi_init_output(struct platform_device *pdev)
+ 	out->pdev = pdev;
+ 	out->id = OMAP_DSS_OUTPUT_SDI;
+ 	out->type = OMAP_DISPLAY_TYPE_SDI;
++	out->name = "sdi";
  
--	sdi_probe_pdata(pdev);
-+	if (pdev->dev.platform_data)
-+		sdi_probe_pdata(pdev);
- 
- 	return 0;
+ 	dss_register_output(out);
  }
 diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 5cb983e..f5e8a5b 100644
+index 006caf3..c8130f8 100644
 --- a/drivers/video/omap2/dss/venc.c
 +++ b/drivers/video/omap2/dss/venc.c
-@@ -879,7 +879,8 @@ static int __init omap_venchw_probe(struct platform_device *pdev)
+@@ -819,6 +819,7 @@ static void __init venc_init_output(struct platform_device *pdev)
+ 	out->pdev = pdev;
+ 	out->id = OMAP_DSS_OUTPUT_VENC;
+ 	out->type = OMAP_DISPLAY_TYPE_VENC;
++	out->name = "venc";
  
- 	venc_init_output(pdev);
+ 	dss_register_output(out);
+ }
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 2cb2b0e..ba9cea7 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -541,6 +541,9 @@ struct omap_dss_writeback_info {
+ struct omap_dss_output {
+ 	struct list_head list;
  
--	venc_probe_pdata(pdev);
-+	if (pdev->dev.platform_data)
-+		venc_probe_pdata(pdev);
- 
- 	return 0;
++	/* name of the output for debug */
++	const char *name;
++
+ 	/* display type supported by the output */
+ 	enum omap_display_type type;
  
 -- 
 1.7.10.4

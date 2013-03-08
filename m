@@ -1,76 +1,131 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 08 Mar 2013 11:51:50 +0000
-Subject: [PATCH 15/20] OMAP: dss-common.c: remove uses of dss channel (LATER)
-Message-Id: <1362743515-10152-16-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 08 Mar 2013 11:52:44 +0000
+Subject: [PATCH 09/14] OMAPDSS: DSI: add new clock calculation code
+Message-Id: <1362743569-10289-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Now that omap_dss_device's channel is resolved automatically, we can
-remove its uses from the board files.
+Add new way to iterate over DSI PLL and HSDIV clock divisors.
+dsi_pll_calc() and dss_hsdiv_calc() provide a generic way to go over
+all the divisors, within given clock range. The functions will call a
+callback function for each divider set, making the function reusable for
+all use cases.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-omap2/dss-common.c |    6 ------
- 1 file changed, 6 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   69 +++++++++++++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/dss.h |   12 +++++++
+ 2 files changed, 81 insertions(+)
 
-diff --git a/arch/arm/mach-omap2/dss-common.c b/arch/arm/mach-omap2/dss-common.c
-index 4be5cfc..125c4eb 100644
---- a/arch/arm/mach-omap2/dss-common.c
-+++ b/arch/arm/mach-omap2/dss-common.c
-@@ -55,7 +55,6 @@ static struct omap_dss_device omap4_panda_dvi_device = {
- 	.data			= &omap4_dvi_panel,
- 	.phy.dpi.data_lines	= 24,
- 	.reset_gpio		= PANDA_DVI_TFP410_POWER_DOWN_GPIO,
--	.channel		= OMAP_DSS_CHANNEL_LCD2,
- };
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index aabe472..c8d5574 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -1280,6 +1280,75 @@ static int dsi_pll_power(struct platform_device *dsidev,
+ 	return 0;
+ }
  
- static struct omap_dss_hdmi_data omap4_panda_hdmi_data = {
-@@ -68,7 +67,6 @@ static struct omap_dss_device  omap4_panda_hdmi_device = {
- 	.name = "hdmi",
- 	.driver_name = "hdmi_panel",
- 	.type = OMAP_DISPLAY_TYPE_HDMI,
--	.channel = OMAP_DSS_CHANNEL_DIGIT,
- 	.data = &omap4_panda_hdmi_data,
- };
++unsigned long dsi_get_pll_clkin(struct platform_device *dsidev)
++{
++	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
++	return clk_get_rate(dsi->sys_clk);
++}
++
++bool dsi_hsdiv_calc(struct platform_device *dsidev, unsigned long pll,
++		unsigned long out_min, dsi_hsdiv_calc_func func, void *data)
++{
++	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
++	int regm, regm_start, regm_stop;
++	unsigned long out_max;
++	unsigned long out;
++
++	out_min = out_min ? out_min : 1;
++	out_max = dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
++
++	regm_start = max(DIV_ROUND_UP(pll, out_max), 1ul);
++	regm_stop = min(pll / out_min, dsi->regm_dispc_max);
++
++	for (regm = regm_start; regm <= regm_stop; ++regm) {
++		out = pll / regm;
++
++		if (func(regm, out, data))
++			return true;
++	}
++
++	return false;
++}
++
++bool dsi_pll_calc(struct platform_device *dsidev, unsigned long clkin,
++		unsigned long pll_min, unsigned long pll_max,
++		dsi_pll_calc_func func, void *data)
++{
++	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
++	int regn, regn_start, regn_stop;
++	int regm, regm_start, regm_stop;
++	unsigned long fint, pll;
++	const unsigned long pll_hw_max = 1800000000;
++	unsigned long fint_hw_min, fint_hw_max;
++
++	fint_hw_min = dsi->fint_min;
++	fint_hw_max = dsi->fint_max;
++
++	regn_start = max(DIV_ROUND_UP(clkin, fint_hw_max), 1ul);
++	regn_stop = min(clkin / fint_hw_min, dsi->regn_max);
++
++	pll_max = pll_max ? pll_max : ULONG_MAX;
++
++	for (regn = regn_start; regn <= regn_stop; ++regn) {
++		fint = clkin / regn;
++
++		regm_start = max(DIV_ROUND_UP(DIV_ROUND_UP(pll_min, fint), 2),
++				1ul);
++		regm_stop = min3(pll_max / fint / 2,
++				pll_hw_max / fint / 2,
++				dsi->regm_max);
++
++		for (regm = regm_start; regm <= regm_stop; ++regm) {
++			pll = 2 * regm * fint;
++
++			if (func(regn, regm, fint, pll, data))
++				return true;
++		}
++	}
++
++	return false;
++}
++
+ /* calculate clock rates using dividers in cinfo */
+ static int dsi_calc_clock_rates(struct platform_device *dsidev,
+ 		struct dsi_clock_info *cinfo)
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 4180302..dde6cc1 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -295,6 +295,18 @@ void dsi_dump_clocks(struct seq_file *s);
+ void dsi_irq_handler(void);
+ u8 dsi_get_pixel_size(enum omap_dss_dsi_pixel_format fmt);
  
-@@ -132,7 +130,6 @@ static struct omap_dss_device sdp4430_lcd_device = {
- 	.phy.dsi		= {
- 		.module		= 0,
- 	},
--	.channel		= OMAP_DSS_CHANNEL_LCD,
- };
- 
- static struct nokia_dsi_panel_data dsi2_panel = {
-@@ -156,7 +153,6 @@ static struct omap_dss_device sdp4430_lcd2_device = {
- 
- 		.module		= 1,
- 	},
--	.channel		= OMAP_DSS_CHANNEL_LCD2,
- };
- 
- static struct omap_dss_hdmi_data sdp4430_hdmi_data = {
-@@ -169,7 +165,6 @@ static struct omap_dss_device sdp4430_hdmi_device = {
- 	.name = "hdmi",
- 	.driver_name = "hdmi_panel",
- 	.type = OMAP_DISPLAY_TYPE_HDMI,
--	.channel = OMAP_DSS_CHANNEL_DIGIT,
- 	.data = &sdp4430_hdmi_data,
- };
- 
-@@ -215,7 +210,6 @@ static struct omap_dss_device sdp4430_picodlp_device = {
- 	.driver_name		= "picodlp_panel",
- 	.type			= OMAP_DISPLAY_TYPE_DPI,
- 	.phy.dpi.data_lines	= 24,
--	.channel		= OMAP_DSS_CHANNEL_LCD2,
- 	.platform_enable	= sdp4430_panel_enable_picodlp,
- 	.platform_disable	= sdp4430_panel_disable_picodlp,
- 	.data			= &sdp4430_picodlp_pdata,
++unsigned long dsi_get_pll_clkin(struct platform_device *dsidev);
++
++typedef bool (*dsi_pll_calc_func)(int regn, int regm, unsigned long fint,
++		unsigned long pll, void *data);
++typedef bool (*dsi_hsdiv_calc_func)(int regm_dispc, unsigned long dispc,
++		void *data);
++bool dsi_hsdiv_calc(struct platform_device *dsidev, unsigned long pll,
++		unsigned long out_min, dsi_hsdiv_calc_func func, void *data);
++bool dsi_pll_calc(struct platform_device *dsidev, unsigned long clkin,
++		unsigned long pll_min, unsigned long pll_max,
++		dsi_pll_calc_func func, void *data);
++
+ unsigned long dsi_get_pll_hsdiv_dispc_rate(struct platform_device *dsidev);
+ int dsi_pll_set_clock_div(struct platform_device *dsidev,
+ 		struct dsi_clock_info *cinfo);
 -- 
 1.7.10.4
 

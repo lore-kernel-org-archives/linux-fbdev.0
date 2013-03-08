@@ -1,61 +1,49 @@
-From: Fabio Porcedda <fabio.porcedda@gmail.com>
-Date: Thu, 14 Mar 2013 13:11:20 +0000
-Subject: [PATCH 00/10] Use module_platform_driver_probe() part 2
-Message-Id: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
+From: Devendra Naga <devendra.aaru@gmail.com>
+Date: Fri, 08 Mar 2013 19:31:09 +0000
+Subject: [PATCH 3/3] drivers: video: console: fbcon_cw: fix compiler warning in cw_update_attr
+Message-Id: <1362771069-16345-3-git-send-email-devendra.aaru@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-fbdev@vger.kernel.org
 
-Hi all,
-this patch set is the second part for the conversion to use
-new module_platform_driver_probe() macro.
+with make W=1
 
-I will send a part 3 for the remaining drivers.
+saw
 
-Fabio Porcedda (10):
-  drivers: media: use module_platform_driver_probe()
-  drivers: ata: use module_platform_driver_probe()
-  drivers: char: use module_platform_driver_probe()
-  drivers: hwmon: use module_platform_driver_probe()
-  drivers: ide: use module_platform_driver_probe()
-  drivers: input: use module_platform_driver_probe()
-  drivers: memory: use module_platform_driver_probe()
-  drivers: mfd: use module_platform_driver_probe()
-  drivers: video: use module_platform_driver_probe()
-  drivers: misc: use module_platform_driver_probe()
+drivers/video/console/fbcon_cw.c: In function ‘cw_update_attr’:
+drivers/video/console/fbcon_cw.c:30:8: warning: variable ‘t’ set but not used [-Wunused-but-set-variable]
 
- drivers/ata/pata_at32.c                        | 13 +------------
- drivers/ata/pata_samsung_cf.c                  | 13 +------------
- drivers/char/hw_random/mxc-rnga.c              | 13 +------------
- drivers/char/hw_random/tx4939-rng.c            | 13 +------------
- drivers/hwmon/mc13783-adc.c                    | 13 +------------
- drivers/ide/gayle.c                            | 15 +--------------
- drivers/ide/tx4938ide.c                        | 13 +------------
- drivers/ide/tx4939ide.c                        | 13 +------------
- drivers/input/keyboard/amikbd.c                | 14 +-------------
- drivers/input/keyboard/davinci_keyscan.c       | 12 +-----------
- drivers/input/keyboard/nomadik-ske-keypad.c    | 12 +-----------
- drivers/input/misc/twl4030-pwrbutton.c         | 13 +------------
- drivers/input/mouse/amimouse.c                 | 14 +-------------
- drivers/input/serio/at32psif.c                 | 13 +------------
- drivers/input/serio/q40kbd.c                   | 13 +------------
- drivers/input/touchscreen/atmel-wm97xx.c       | 12 +-----------
- drivers/input/touchscreen/mc13783_ts.c         | 12 +-----------
- drivers/media/platform/sh_vou.c                | 13 +------------
- drivers/media/platform/soc_camera/atmel-isi.c  | 12 +-----------
- drivers/media/platform/soc_camera/mx1_camera.c | 13 +------------
- drivers/memory/emif.c                          | 12 +-----------
- drivers/mfd/davinci_voicecodec.c               | 12 +-----------
- drivers/mfd/htc-pasic3.c                       | 13 +------------
- drivers/misc/atmel_pwm.c                       | 12 +-----------
- drivers/misc/ep93xx_pwm.c                      | 13 +------------
- drivers/video/backlight/atmel-pwm-bl.c         | 12 +-----------
- drivers/video/sh_mipi_dsi.c                    | 12 +-----------
- drivers/video/sh_mobile_hdmi.c                 | 12 +-----------
- 28 files changed, 28 insertions(+), 329 deletions(-)
+fixed by removing as since its used nowhere
 
+Cc: Antonino A. Daplas <adaplas@gmail.com>
+Signed-off-by: Devendra Naga <devendra.aaru@gmail.com>
+---
+ drivers/video/console/fbcon_cw.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/video/console/fbcon_cw.c b/drivers/video/console/fbcon_cw.c
+index 6a73782..a93670e 100644
+--- a/drivers/video/console/fbcon_cw.c
++++ b/drivers/video/console/fbcon_cw.c
+@@ -27,7 +27,7 @@ static void cw_update_attr(u8 *dst, u8 *src, int attribute,
+ {
+ 	int i, j, offset = (vc->vc_font.height < 10) ? 1 : 2;
+ 	int width = (vc->vc_font.height + 7) >> 3;
+-	u8 c, t = 0, msk = ~(0xff >> offset);
++	u8 c, msk = ~(0xff >> offset);
+ 
+ 	for (i = 0; i < vc->vc_font.width; i++) {
+ 		for (j = 0; j < width; j++) {
+@@ -40,7 +40,6 @@ static void cw_update_attr(u8 *dst, u8 *src, int attribute,
+ 				c = ~c;
+ 			src++;
+ 			*dst++ = c;
+-			t = c;
+ 		}
+ 	}
+ }
 -- 
-1.8.1.5
+1.8.1.2
 

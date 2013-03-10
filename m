@@ -1,71 +1,41 @@
-From: Syam Sidhardhan <syamsidhardh@gmail.com>
-Date: Tue, 05 Mar 2013 19:50:37 +0000
-Subject: [PATCH] video: uvesafb: Remove redundant NULL check before kfree
-Message-Id: <1362512317-3880-1-git-send-email-s.syam@samsung.com>
+From: Tim Gardner <tim.gardner@canonical.com>
+Date: Sun, 10 Mar 2013 17:53:31 +0000
+Subject: [PATCH linux-next] intelfb: intelfbhw_mode_to_hw: Silence m1/m2 'may be used uninitialized' warnings
+Message-Id: <1362938011-85394-1-git-send-email-tim.gardner@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Tim Gardner <tim.gardner@canonical.com>, Maik Broemme <mbroemme@plusserver.de>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
 
-kfree on NULL pointer is a no-op.
+drivers/video/intelfb/intelfbhw.c: In function 'intelfbhw_mode_to_hw':
+drivers/video/intelfb/intelfbhw.c:1144:35: warning: 'm2' may be used uninitialized in this function [-Wuninitialized]
+drivers/video/intelfb/intelfbhw.c:1145:13: warning: 'm1' may be used uninitialized in this function [-Wuninitialized]
 
-Signed-off-by: Syam Sidhardhan <s.syam@samsung.com>
+gcc version 4.6.3
+
+Cc: Maik Broemme <mbroemme@plusserver.de>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
 ---
- drivers/video/uvesafb.c |   19 +++++++------------
- 1 file changed, 7 insertions(+), 12 deletions(-)
+ drivers/video/intelfb/intelfbhw.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-index b75db01..7ac0ce6 100644
---- a/drivers/video/uvesafb.c
-+++ b/drivers/video/uvesafb.c
-@@ -236,8 +236,7 @@ out:
- static void uvesafb_free(struct uvesafb_ktask *task)
+diff --git a/drivers/video/intelfb/intelfbhw.c b/drivers/video/intelfb/intelfbhw.c
+index fbad61d..cb05307 100644
+--- a/drivers/video/intelfb/intelfbhw.c
++++ b/drivers/video/intelfb/intelfbhw.c
+@@ -935,7 +935,7 @@ static int splitp(int index, unsigned int p, unsigned int *retp1,
+ static int calc_pll_params(int index, int clock, u32 *retm1, u32 *retm2,
+ 			   u32 *retn, u32 *retp1, u32 *retp2, u32 *retclock)
  {
- 	if (task) {
--		if (task->done)
--			kfree(task->done);
-+		kfree(task->done);
- 		kfree(task);
- 	}
- }
-@@ -1335,8 +1334,8 @@ setmode:
- 				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
- 	info->fix.line_length = mode->bytes_per_scan_line;
- 
--out:	if (crtc != NULL)
--		kfree(crtc);
-+out:
-+	kfree(crtc);
- 	uvesafb_free(task);
- 
- 	return err;
-@@ -1833,8 +1832,7 @@ out_mode:
- 	fb_destroy_modedb(info->monspecs.modedb);
- 	fb_dealloc_cmap(&info->cmap);
- out:
--	if (par->vbe_modes)
--		kfree(par->vbe_modes);
-+	kfree(par->vbe_modes);
- 
- 	framebuffer_release(info);
- 	return err;
-@@ -1856,12 +1854,9 @@ static int uvesafb_remove(struct platform_device *dev)
- 		fb_dealloc_cmap(&info->cmap);
- 
- 		if (par) {
--			if (par->vbe_modes)
--				kfree(par->vbe_modes);
--			if (par->vbe_state_orig)
--				kfree(par->vbe_state_orig);
--			if (par->vbe_state_saved)
--				kfree(par->vbe_state_saved);
-+			kfree(par->vbe_modes);
-+			kfree(par->vbe_state_orig);
-+			kfree(par->vbe_state_saved);
- 		}
- 
- 		framebuffer_release(info);
+-	u32 m1, m2, n, p1, p2, n1, testm;
++	u32 m1 = 0, m2 = 0, n, p1, p2, n1, testm;
+ 	u32 f_vco, p, p_best = 0, m, f_out = 0;
+ 	u32 err_max, err_target, err_best = 10000000;
+ 	u32 n_best = 0, m_best = 0, f_best, f_err;
 -- 
 1.7.9.5
 

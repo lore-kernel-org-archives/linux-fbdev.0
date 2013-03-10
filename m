@@ -1,49 +1,19 @@
-From: Devendra Naga <devendra.aaru@gmail.com>
-Date: Fri, 08 Mar 2013 19:31:08 +0000
-Subject: [PATCH 2/3] video: backlight: lp855x_bl: fix compiler warning in lp855x_probe
-Message-Id: <1362771069-16345-2-git-send-email-devendra.aaru@gmail.com>
+From: "Kim, Milo" <Milo.Kim@ti.com>
+Date: Sun, 10 Mar 2013 23:04:06 +0000
+Subject: RE: [PATCH 2/3] video: backlight: lp855x_bl: fix compiler warning in lp855x_probe
+Message-Id: <A874F61F95741C4A9BA573A70FE3998F82E47CFB@DQHE02.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1362771069-16345-2-git-send-email-devendra.aaru@gmail.com>
+In-Reply-To: <1362771069-16345-2-git-send-email-devendra.aaru@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-while doing with make W=1 gcc (gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8))
-
-found
-
-drivers/video/backlight/lp855x_bl.c: In function ‘lp855x_probe’:
-drivers/video/backlight/lp855x_bl.c:342:35: warning: variable ‘mode’ set but not used [-Wunused-but-set-variable]
-
-fixed by removing it as since its not used anywhere
-
-Cc: Milo(Woogyom) Kim <milo.kim@ti.com>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Signed-off-by: Devendra Naga <devendra.aaru@gmail.com>
----
- drivers/video/backlight/lp855x_bl.c | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-index 7ae9ae6..20111ef 100644
---- a/drivers/video/backlight/lp855x_bl.c
-+++ b/drivers/video/backlight/lp855x_bl.c
-@@ -339,7 +339,6 @@ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
- {
- 	struct lp855x *lp;
- 	struct lp855x_platform_data *pdata = cl->dev.platform_data;
--	enum lp855x_brightness_ctrl_mode mode;
- 	int ret;
- 
- 	if (!pdata) {
-@@ -354,7 +353,6 @@ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
- 	if (!lp)
- 		return -ENOMEM;
- 
--	mode = pdata->mode;
- 	lp->client = cl;
- 	lp->dev = &cl->dev;
- 	lp->pdata = pdata;
--- 
-1.8.1.2
-
+PiB3aGlsZSBkb2luZyB3aXRoIG1ha2UgVz0xIGdjYyAoZ2NjIChHQ0MpIDQuNy4yIDIwMTIxMTA5
+IChSZWQgSGF0IDQuNy4yLQ0KPiA4KSkNCj4gDQo+IGZvdW5kDQo+IA0KPiBkcml2ZXJzL3ZpZGVv
+L2JhY2tsaWdodC9scDg1NXhfYmwuYzogSW4gZnVuY3Rpb24g4oCYbHA4NTV4X3Byb2Jl4oCZOg0K
+PiBkcml2ZXJzL3ZpZGVvL2JhY2tsaWdodC9scDg1NXhfYmwuYzozNDI6MzU6IHdhcm5pbmc6IHZh
+cmlhYmxlIOKAmG1vZGXigJkNCj4gc2V0IGJ1dCBub3QgdXNlZCBbLVd1bnVzZWQtYnV0LXNldC12
+YXJpYWJsZV0NCj4gDQo+IGZpeGVkIGJ5IHJlbW92aW5nIGl0IGFzIHNpbmNlIGl0cyBub3QgdXNl
+ZCBhbnl3aGVyZQ0KDQpBY2tlZC1ieTogTWlsbyBLaW0gPG1pbG8ua2ltQHRpLmNvbT4NCg0K

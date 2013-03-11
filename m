@@ -1,16 +1,16 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 11 Mar 2013 11:54:21 +0000
+Date: Mon, 11 Mar 2013 12:01:45 +0000
 Subject: Re: [PATCH 10/20] OMAPDSS: Resolve channels for outputs
-Message-Id: <513DC5ED.30208@ti.com>
+Message-Id: <513DC7A9.5000405@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enigD1C4E12EF9B888A0FBB4D34B"
+Content-Type: multipart/mixed; boundary="------------enig83AEF23C369237EB65820988"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com> <1362743515-10152-11-git-send-email-tomi.valkeinen@ti.com> <513D716C.2050807@ti.com>
 In-Reply-To: <513D716C.2050807@ti.com>
 To: Archit Taneja <archit@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
---------------enigD1C4E12EF9B888A0FBB4D34B
+--------------enig83AEF23C369237EB65820988
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
@@ -85,25 +85,80 @@ o
 > DSS_CLK from PRCM. So it's not a very flexible channel to use. We could=
 
 > use LCD3 (at the cost of not using DSI2).
-
-Ok. Yes, this looks to be the case. I'll use LCD3 for DPI for now. In
-the worst case we may need to pass some channel setup parameters via
-omapdss DT data or platform data, but I'd really much like the driver to
-be able to resolve the dispc channels by itself...
-
+>=20
 > We also need to fix dpi_get_dsidev() for OMAP5. Currently, it assumes
 > that LCD2_CLK can be sourced from DSI2 PLL, we need to ensure DPI has a=
 
 > dsidev only if it's LCD1 or LCD3.
 
-Right. I'll add if (OMAP5) there, and return DSI2 PLL for LCD3, and NULL
-for LCD2.
-
- Tomi
+I fixed it this way:
 
 
+Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date:   Mon Mar 11 13:57:38 2013 +0200
 
---------------enigD1C4E12EF9B888A0FBB4D34B
+    OMAPDSS: DPI: fix dpi_get_dsidev() for omap5
+   =20
+    On OMAP5 the DISPC channels and DSI PLLs are not connected the same w=
+ay.
+    LCD2 on OMAP5 cannot use any DSI PLL as a source clock, but LCD3 can =
+use
+    DSI2's PLL.
+   =20
+    This patch fixes dpi_get_dsidev() by adding separate case for OMAP5 t=
+o
+    handle the difference.
+   =20
+    Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.=
+c
+index 409e53b..433eff7 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -63,15 +63,29 @@ static struct platform_device *dpi_get_dsidev(enum om=
+ap_channel channel)
+ 	case OMAPDSS_VER_OMAP3630:
+ 	case OMAPDSS_VER_AM35xx:
+ 		return NULL;
+-	default:
+-		break;
+-	}
+=20
+-	switch (channel) {
+-	case OMAP_DSS_CHANNEL_LCD:
+-		return dsi_get_dsidev_from_id(0);
+-	case OMAP_DSS_CHANNEL_LCD2:
+-		return dsi_get_dsidev_from_id(1);
++	case OMAPDSS_VER_OMAP4430_ES1:
++	case OMAPDSS_VER_OMAP4430_ES2:
++	case OMAPDSS_VER_OMAP4:
++		switch (channel) {
++		case OMAP_DSS_CHANNEL_LCD:
++			return dsi_get_dsidev_from_id(0);
++		case OMAP_DSS_CHANNEL_LCD2:
++			return dsi_get_dsidev_from_id(1);
++		default:
++			return NULL;
++		}
++
++	case OMAPDSS_VER_OMAP5:
++		switch (channel) {
++		case OMAP_DSS_CHANNEL_LCD:
++			return dsi_get_dsidev_from_id(0);
++		case OMAP_DSS_CHANNEL_LCD3:
++			return dsi_get_dsidev_from_id(1);
++		default:
++			return NULL;
++		}
++
+ 	default:
+ 		return NULL;
+ 	}
+
+
+
+--------------enig83AEF23C369237EB65820988
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -112,19 +167,19 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.11 (GNU/Linux)
 Comment: Using GnuPG with undefined - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJRPcXtAAoJEPo9qoy8lh714NMQAJl5MyDmPuWxvB0cLwCgOi0t
-24XxhDjAILKuTGCBp9/OIkbgYa5tjBdyPvz32Gl5P6Pd0URQxXLkvlo3556B7Cb/
-8uI8t+X7DH/b7MqCytz82LDtqrnpy7uxOnmdgaKNDYZWPPziqHVn5ceaQSY5tYgh
-k6Jvg08nzHKvQ+flH6DIrNg7z78QKLuSp/Ojwbk5VYkuQwRL/tazO0Ie6NvjqEpz
-HQG8hp0Ijl+P+Qj46/iDjohhw8ysrPsB3umGJRZCrf52HuOy6sKuOzUKbIsoQbGX
-wDs2MJvJW/1sga7MwYKBzuWv2d0OM27C3UgxZddmK/XIWWjTQe6YXOo/QCfmgTAt
-zQw18cnf2Ui97EOGJqTp2HDRmkEPQB0ukpf+DaYleG9G1B0zwL8i0T2iIm7Ldknh
-/Z8pl3z1ZDvLc5gxLUi/5Xl9CaSIDUlDZFBN6wN+PHfXNPT58zDPXjhXTn7ICbbh
-xK5THJ5EH4a/TlMP3UPnhXZzDmGUMjmbjrPXlNCNXeQNUL4v8eanSWxBa+BwFMHq
-OJWakRC+h1GZVh7MlbFUkOhkOA/K3UstAI2hAZCtb9/G9ELznsvaPNnEXnCjqVdJ
-NZE80rISmEzm5cqlmxgW0O/MB0U8+wdLyHhIgWpeF+UXOZoaZ7JCaL5etjJUtuxu
-DNQhJF4ZB6GxD9w6Jh0L
-=pvJj
+iQIcBAEBAgAGBQJRPcepAAoJEPo9qoy8lh71/cEQAJ8w0l680m8oqWwGupuET06A
+/bdFJ1FSEsxSLmBQ+2ZQ32IMb5IOI5oPFF4HVF6azI49KSqZfzj8Tz8RUN6pl0xu
+fOAKqncR6ml3YS9efK1SkJ12WZFF3HyUjhYYKIcyDAHta9SmyIZbYEgArfs4grgQ
+YqHHXftAzxJZArDTtbwsiDJrRZsiG/13SN7o7Te06gmXa5y1B8rrvAOsac7Jz/Ve
+C7fxf42IpDuH2cpYIjDSEyw+wVm7zhMf7bTwrVdElzr1e7Jq2tWcLnHWyvD6zfdr
+z/Ci3qWEia+sz64OQTwUuUJinqoO61BpVRCnu5M7GOsGuptVNYynXBjKnYdXx5tR
+8SW5pmFLCB6f52snGKoQbk4QhoUomzC94NyYl9EGzMO3I340sSNtzknakAVDKrLd
+KnrQJPOH+Mg0l6Yv90t3PDZaq/lpkTGlnNdPBpt7XnBOYc7jtDbL6NxH9DbyWGzM
+xtWDfPGuf6rpK/kCKTvaCcbRS+GiiWO45sBLdDF0jwLrjQpcIxFhOEr8SdWhewmO
+b+BLXEJngQT99ItrnJdtGnCAqjB0iCA19o9wkTTwv2V+1lHf8cIk38tRlbxz+i2u
+k0xMA5Cb540qFKzCAcR1YJpr5Z8E3bVQVCRcNY0WDKOYo4BwkPiaAK/4bwjpYFvp
+Y4A4vRywxRev8OvsP+cl
+=xCS2
 -----END PGP SIGNATURE-----
 
---------------enigD1C4E12EF9B888A0FBB4D34B--
+--------------enig83AEF23C369237EB65820988--

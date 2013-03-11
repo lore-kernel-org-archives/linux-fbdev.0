@@ -1,51 +1,45 @@
-From: Donghwa Lee <dh09.lee@samsung.com>
-Date: Wed, 27 Mar 2013 23:52:50 +0000
-Subject: Re: [PATCH] video: exynos: Convert to devm_ioremap_resource()
-Message-Id: <51538652.7040005@samsung.com>
+From: Paul Bolle <pebolle@tiscali.nl>
+Date: Mon, 11 Mar 2013 20:47:03 +0000
+Subject: [PATCH] backlight: fix typo "MACH_SAM9...EK" three times
+Message-Id: <1363034823.3137.110.camel@x61.thuisdomein>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364416081-24113-1-git-send-email-epure.andrei@gmail.com>
-In-Reply-To: <1364416081-24113-1-git-send-email-epure.andrei@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrei Epure <epure.andrei@gmail.com>
-Cc: inki.dae@samsung.com, kyungmin.park@samsung.com, FlorianSchandinat@gmx.de, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Richard Purdie <rpurdie@rpsys.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
+Fix three typos (originally) introduced by commit
+a9a84c37d1ee50db8f3752b117caf2b48dcd4f8a ("atmel_lcdfb: backlight
+control").
 
-Hi,
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+0) Tested by grepping the tree.
 
-Please refer to the following link.
+1) So two of these typos were introduced in v2.6.25. (The third was
+introduced in commit 915190f7d4f08e413e5fde6b0abcd5375aeacdf4 ("[ARM]
+5614/1: at91: atmel_lcdfb: add at91sam9g10 support to atmel LCD
+driver")). Checking these commits reveals that the default value of 'y'
+has never been set automatically in all releases since v2.6.25! Perhaps
+this line might as well be dropped.
 
-http://marc.info/?l=linux-fbdev&m5963121130437&w=2
+ drivers/video/backlight/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Best regard,
-Donghwa Lee
-
-On Thu, Mar 28, 2013 at 05:28, Andrei Epure wrote:
-> The new devm_ioremap_resource() provides its own error messages.
-> Patch found using coccinelle.
->
-> Signed-off-by: Andrei Epure <epure.andrei@gmail.com>
-> ---
->   drivers/video/exynos/exynos_mipi_dsi.c |    7 +++----
->   1 file changed, 3 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
-> index fac7df6..dd5e5e9 100644
-> --- a/drivers/video/exynos/exynos_mipi_dsi.c
-> +++ b/drivers/video/exynos/exynos_mipi_dsi.c
-> @@ -384,10 +384,9 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
->   
->   	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->   
-> -	dsim->reg_base = devm_request_and_ioremap(&pdev->dev, res);
-> -	if (!dsim->reg_base) {
-> -		dev_err(&pdev->dev, "failed to remap io region\n");
-> -		ret = -ENOMEM;
-> +	dsim->reg_base = devm_ioremap_resource(&pdev->dev, res);
-> +	if (IS_ERR(dsim->reg_base)) {
-> +		ret = PTR_ERR(dsim->reg_base);
->   		goto error;
->   	}
->   
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index db10d01..a4481df 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -161,7 +161,7 @@ if BACKLIGHT_CLASS_DEVICE
+ config BACKLIGHT_ATMEL_LCDC
+ 	bool "Atmel LCDC Contrast-as-Backlight control"
+ 	depends on FB_ATMEL
+-	default y if MACH_SAM9261EK || MACH_SAM9G10EK || MACH_SAM9263EK
++	default y if MACH_AT91SAM9261EK || MACH_AT91SAM9G10EK || MACH_AT91SAM9263EK
+ 	help
+ 	  This provides a backlight control internal to the Atmel LCDC
+ 	  driver.  If the LCD "contrast control" on your board is wired
+-- 
+1.7.11.7
 

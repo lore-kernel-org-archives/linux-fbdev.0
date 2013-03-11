@@ -1,7 +1,7 @@
 From: Archit Taneja <archit@ti.com>
-Date: Mon, 11 Mar 2013 05:47:02 +0000
+Date: Mon, 11 Mar 2013 05:54:33 +0000
 Subject: Re: [PATCH 10/20] OMAPDSS: Resolve channels for outputs
-Message-Id: <513D6D06.7030902@ti.com>
+Message-Id: <513D716C.2050807@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com> <1362743515-10152-11-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1362743515-10152-11-git-send-email-tomi.valkeinen@ti.com>
@@ -10,8 +10,6 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-Hi,
 
 On Friday 08 March 2013 05:21 PM, Tomi Valkeinen wrote:
 > The DISPC channel used for each output is currently passed in panel
@@ -67,6 +65,18 @@ On Friday 08 March 2013 05:21 PM, Tomi Valkeinen wrote:
 > +		return OMAP_DSS_CHANNEL_LCD;
 > +	}
 > +}
+
+I had another comment for this patch. On OMAP5, it makes sense for us to 
+not use LCD2 as the recommended channel. LCD2_CLK's only source is 
+DSS_CLK from PRCM. So it's not a very flexible channel to use. We could 
+use LCD3 (at the cost of not using DSI2).
+
+We also need to fix dpi_get_dsidev() for OMAP5. Currently, it assumes 
+that LCD2_CLK can be sourced from DSI2 PLL, we need to ensure DPI has a 
+dsidev only if it's LCD1 or LCD3.
+
+Archit
+
 > +
 >   static int __init dpi_init_display(struct omap_dss_device *dssdev)
 >   {
@@ -75,15 +85,6 @@ On Friday 08 March 2013 05:21 PM, Tomi Valkeinen wrote:
 >   	DSSDBG("init_display\n");
 >
 > +	dssdev->channel = dpi_get_channel();
-
-In patch 14 of the series, we remove these dssdev->channel assignments. 
-I don't see the point of adding them in this patch in the first place. 
-The dssdev->channel assignments will not be modified in this series, so 
-we don't need to worry about a kernel crash or something after this patch.
-
-I feel this patch should only add the dpi_get_channel and 
-dsi_get_channel funcs.
-
 > +
 >   	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI) &&
 >   					dpi.vdds_dsi_reg = NULL) {
@@ -118,16 +119,78 @@ dsi_get_channel funcs.
 > +{
 > +	switch (omapdss_get_version()) {
 > +	case OMAPDSS_VER_OMAP24xx:
-
-We should remove the above case so that we hit the default case and get 
-a warning about omap2 not having DSI.
-
 > +	case OMAPDSS_VER_OMAP34xx_ES1:
 > +	case OMAPDSS_VER_OMAP34xx_ES3:
 > +	case OMAPDSS_VER_OMAP3630:
 > +	case OMAPDSS_VER_AM35xx:
-
-<snip>
-
-Archit
+> +		return OMAP_DSS_CHANNEL_LCD;
+> +
+> +	case OMAPDSS_VER_OMAP4430_ES1:
+> +	case OMAPDSS_VER_OMAP4430_ES2:
+> +	case OMAPDSS_VER_OMAP4:
+> +		switch (module_id) {
+> +		case 0:
+> +			return OMAP_DSS_CHANNEL_LCD;
+> +		case 1:
+> +			return OMAP_DSS_CHANNEL_LCD2;
+> +		default:
+> +			DSSWARN("unsupported module id\n");
+> +			return OMAP_DSS_CHANNEL_LCD;
+> +		}
+> +
+> +	case OMAPDSS_VER_OMAP5:
+> +		switch (module_id) {
+> +		case 0:
+> +			return OMAP_DSS_CHANNEL_LCD;
+> +		case 1:
+> +			return OMAP_DSS_CHANNEL_LCD3;
+> +		default:
+> +			DSSWARN("unsupported module id\n");
+> +			return OMAP_DSS_CHANNEL_LCD;
+> +		}
+> +
+> +	default:
+> +		DSSWARN("unsupported DSS version\n");
+> +		return OMAP_DSS_CHANNEL_LCD;
+> +	}
+> +}
+> +
+>   static int __init dsi_init_display(struct omap_dss_device *dssdev)
+>   {
+>   	struct platform_device *dsidev > @@ -4954,6 +5000,8 @@ static int __init dsi_init_display(struct omap_dss_device *dssdev)
+>
+>   	DSSDBG("DSI init\n");
+>
+> +	dssdev->channel = dsi_get_channel(dsi->module_id);
+> +
+>   	if (dsi->vdds_dsi_reg = NULL) {
+>   		struct regulator *vdds_dsi;
+>
+> diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+> index a47a9e5..04c4ab6 100644
+> --- a/drivers/video/omap2/dss/rfbi.c
+> +++ b/drivers/video/omap2/dss/rfbi.c
+> @@ -945,6 +945,8 @@ EXPORT_SYMBOL(omapdss_rfbi_display_disable);
+>
+>   static int __init rfbi_init_display(struct omap_dss_device *dssdev)
+>   {
+> +	dssdev->channel = OMAP_DSS_CHANNEL_LCD;
+> +
+>   	rfbi.dssdev[dssdev->phy.rfbi.channel] = dssdev;
+>   	return 0;
+>   }
+> diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+> index 0802927..d24e971 100644
+> --- a/drivers/video/omap2/dss/sdi.c
+> +++ b/drivers/video/omap2/dss/sdi.c
+> @@ -186,6 +186,8 @@ static int __init sdi_init_display(struct omap_dss_device *dssdev)
+>   {
+>   	DSSDBG("SDI init\n");
+>
+> +	dssdev->channel = OMAP_DSS_CHANNEL_LCD;
+> +
+>   	if (sdi.vdds_sdi_reg = NULL) {
+>   		struct regulator *vdds_sdi;
+>
+>
 

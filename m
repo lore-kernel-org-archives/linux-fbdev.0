@@ -1,395 +1,196 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Mar 2013 13:33:40 +0000
-Subject: [PATCH 10/26] OMAPDSS: implement display sysfs without dss bus
-Message-Id: <1364304836-18134-11-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 12 Mar 2013 10:19:35 +0000
+Subject: [PATCH 2/5] videomode: combine videomode dmt_flags and data_flags
+Message-Id: <1363083578-17062-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1363083578-17062-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1363083578-17062-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-We aim to remove the custom omapdss bus totally, as it's quite a strange
-construct and won't be compatible with common display framework. One
-problem on the road is that we have sysfs files for each display, and
-they depend on the omapdss bus.
+Both videomode and display_timing contain flags describing the modes.
+These are stored in dmt_flags and data_flags. There's no need to
+separate these flags, and having separate fields just makes the flags
+more difficult to use.
 
-This patch creates the display sysfs files independent of the omapdss
-bus. This gives us backwards compatibility without using the omapdss bus
-for the sysfs files.
+This patch combines the fields and renames VESA_DMT_* flags to
+DISPLAY_FLAGS_*.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 ---
- drivers/video/omap2/dss/apply.c         |   15 ++--
- drivers/video/omap2/dss/core.c          |   28 -------
- drivers/video/omap2/dss/display-sysfs.c |  125 ++++++++++++++++++-------------
- drivers/video/omap2/dss/dss.h           |    6 +-
- 4 files changed, 79 insertions(+), 95 deletions(-)
+ drivers/gpu/drm/drm_modes.c       |   12 ++++++------
+ drivers/video/fbmon.c             |    8 ++++----
+ drivers/video/of_display_timing.c |   19 +++++++++----------
+ drivers/video/videomode.c         |    3 +--
+ include/video/display_timing.h    |   26 +++++++++++---------------
+ include/video/videomode.h         |    3 +--
+ 6 files changed, 32 insertions(+), 39 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index a4b356a..44f94b8 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -1569,7 +1569,6 @@ static DEFINE_MUTEX(compat_init_lock);
- int omapdss_compat_init(void)
- {
- 	struct platform_device *pdev = dss_get_core_pdev();
--	struct omap_dss_device *dssdev = NULL;
- 	int i, r;
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 0698c0e..f83f071 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -523,17 +523,17 @@ int drm_display_mode_from_videomode(const struct videomode *vm,
+ 	dmode->clock = vm->pixelclock / 1000;
  
- 	mutex_lock(&compat_init_lock);
-@@ -1615,12 +1614,9 @@ int omapdss_compat_init(void)
- 	if (r)
- 		goto err_mgr_ops;
+ 	dmode->flags = 0;
+-	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
++	if (vm->flags & DISPLAY_FLAGS_HSYNC_HIGH)
+ 		dmode->flags |= DRM_MODE_FLAG_PHSYNC;
+-	else if (vm->dmt_flags & VESA_DMT_HSYNC_LOW)
++	else if (vm->flags & DISPLAY_FLAGS_HSYNC_LOW)
+ 		dmode->flags |= DRM_MODE_FLAG_NHSYNC;
+-	if (vm->dmt_flags & VESA_DMT_VSYNC_HIGH)
++	if (vm->flags & DISPLAY_FLAGS_VSYNC_HIGH)
+ 		dmode->flags |= DRM_MODE_FLAG_PVSYNC;
+-	else if (vm->dmt_flags & VESA_DMT_VSYNC_LOW)
++	else if (vm->flags & DISPLAY_FLAGS_VSYNC_LOW)
+ 		dmode->flags |= DRM_MODE_FLAG_NVSYNC;
+-	if (vm->data_flags & DISPLAY_FLAGS_INTERLACED)
++	if (vm->flags & DISPLAY_FLAGS_INTERLACED)
+ 		dmode->flags |= DRM_MODE_FLAG_INTERLACE;
+-	if (vm->data_flags & DISPLAY_FLAGS_DOUBLESCAN)
++	if (vm->flags & DISPLAY_FLAGS_DOUBLESCAN)
+ 		dmode->flags |= DRM_MODE_FLAG_DBLSCAN;
+ 	drm_mode_set_name(dmode);
  
--	for_each_dss_dev(dssdev) {
--		r = display_init_sysfs(pdev, dssdev);
--		/* XXX uninit sysfs files on error */
--		if (r)
--			goto err_disp_sysfs;
--	}
-+	r = display_init_sysfs(pdev);
-+	if (r)
-+		goto err_disp_sysfs;
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 368cedf..e5cc2fd 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -1398,13 +1398,13 @@ int fb_videomode_from_videomode(const struct videomode *vm,
  
- 	dispc_runtime_get();
+ 	fbmode->sync = 0;
+ 	fbmode->vmode = 0;
+-	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
++	if (vm->flags & DISPLAY_FLAGS_HSYNC_HIGH)
+ 		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
+-	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
++	if (vm->flags & DISPLAY_FLAGS_HSYNC_HIGH)
+ 		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
+-	if (vm->data_flags & DISPLAY_FLAGS_INTERLACED)
++	if (vm->flags & DISPLAY_FLAGS_INTERLACED)
+ 		fbmode->vmode |= FB_VMODE_INTERLACED;
+-	if (vm->data_flags & DISPLAY_FLAGS_DOUBLESCAN)
++	if (vm->flags & DISPLAY_FLAGS_DOUBLESCAN)
+ 		fbmode->vmode |= FB_VMODE_DOUBLE;
+ 	fbmode->flag = 0;
  
-@@ -1637,6 +1633,7 @@ out:
+diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
+index 13ecd98..56009bc 100644
+--- a/drivers/video/of_display_timing.c
++++ b/drivers/video/of_display_timing.c
+@@ -79,25 +79,24 @@ static struct display_timing *of_get_display_timing(struct device_node *np)
+ 	ret |= parse_timing_property(np, "vsync-len", &dt->vsync_len);
+ 	ret |= parse_timing_property(np, "clock-frequency", &dt->pixelclock);
  
- err_init_irq:
- 	dispc_runtime_put();
-+	display_uninit_sysfs(pdev);
+-	dt->dmt_flags = 0;
+-	dt->data_flags = 0;
++	dt->flags = 0;
+ 	if (!of_property_read_u32(np, "vsync-active", &val))
+-		dt->dmt_flags |= val ? VESA_DMT_VSYNC_HIGH :
+-				VESA_DMT_VSYNC_LOW;
++		dt->flags |= val ? DISPLAY_FLAGS_VSYNC_HIGH :
++				DISPLAY_FLAGS_VSYNC_LOW;
+ 	if (!of_property_read_u32(np, "hsync-active", &val))
+-		dt->dmt_flags |= val ? VESA_DMT_HSYNC_HIGH :
+-				VESA_DMT_HSYNC_LOW;
++		dt->flags |= val ? DISPLAY_FLAGS_HSYNC_HIGH :
++				DISPLAY_FLAGS_HSYNC_LOW;
+ 	if (!of_property_read_u32(np, "de-active", &val))
+-		dt->data_flags |= val ? DISPLAY_FLAGS_DE_HIGH :
++		dt->flags |= val ? DISPLAY_FLAGS_DE_HIGH :
+ 				DISPLAY_FLAGS_DE_LOW;
+ 	if (!of_property_read_u32(np, "pixelclk-active", &val))
+-		dt->data_flags |= val ? DISPLAY_FLAGS_PIXDATA_POSEDGE :
++		dt->flags |= val ? DISPLAY_FLAGS_PIXDATA_POSEDGE :
+ 				DISPLAY_FLAGS_PIXDATA_NEGEDGE;
  
- err_disp_sysfs:
- 	dss_uninstall_mgr_ops();
-@@ -1656,7 +1653,6 @@ EXPORT_SYMBOL(omapdss_compat_init);
- void omapdss_compat_uninit(void)
- {
- 	struct platform_device *pdev = dss_get_core_pdev();
--	struct omap_dss_device *dssdev = NULL;
+ 	if (of_property_read_bool(np, "interlaced"))
+-		dt->data_flags |= DISPLAY_FLAGS_INTERLACED;
++		dt->flags |= DISPLAY_FLAGS_INTERLACED;
+ 	if (of_property_read_bool(np, "doublescan"))
+-		dt->data_flags |= DISPLAY_FLAGS_DOUBLESCAN;
++		dt->flags |= DISPLAY_FLAGS_DOUBLESCAN;
  
- 	mutex_lock(&compat_init_lock);
+ 	if (ret) {
+ 		pr_err("%s: error reading timing properties\n",
+diff --git a/drivers/video/videomode.c b/drivers/video/videomode.c
+index 21c47a2..810afff 100644
+--- a/drivers/video/videomode.c
++++ b/drivers/video/videomode.c
+@@ -31,8 +31,7 @@ int videomode_from_timing(const struct display_timings *disp,
+ 	vm->vback_porch = display_timing_get_value(&dt->vback_porch, TE_TYP);
+ 	vm->vsync_len = display_timing_get_value(&dt->vsync_len, TE_TYP);
  
-@@ -1665,8 +1661,7 @@ void omapdss_compat_uninit(void)
- 
- 	dss_dispc_uninitialize_irq();
- 
--	for_each_dss_dev(dssdev)
--		display_uninit_sysfs(pdev, dssdev);
-+	display_uninit_sysfs(pdev);
- 
- 	dss_uninstall_mgr_ops();
- 
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index 5bdd442..054e980 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -287,37 +287,9 @@ static int dss_bus_match(struct device *dev, struct device_driver *driver)
- 	return strcmp(dssdev->driver_name, driver->name) = 0;
- }
- 
--static ssize_t device_name_show(struct device *dev,
--		struct device_attribute *attr, char *buf)
--{
--	struct omap_dss_device *dssdev = to_dss_device(dev);
--	return snprintf(buf, PAGE_SIZE, "%s\n",
--			dssdev->name ?
--			dssdev->name : "");
--}
--
--static struct device_attribute default_dev_attrs[] = {
--	__ATTR(name, S_IRUGO, device_name_show, NULL),
--	__ATTR_NULL,
--};
--
--static ssize_t driver_name_show(struct device_driver *drv, char *buf)
--{
--	struct omap_dss_driver *dssdrv = to_dss_driver(drv);
--	return snprintf(buf, PAGE_SIZE, "%s\n",
--			dssdrv->driver.name ?
--			dssdrv->driver.name : "");
--}
--static struct driver_attribute default_drv_attrs[] = {
--	__ATTR(name, S_IRUGO, driver_name_show, NULL),
--	__ATTR_NULL,
--};
--
- static struct bus_type dss_bus_type = {
- 	.name = "omapdss",
- 	.match = dss_bus_match,
--	.dev_attrs = default_dev_attrs,
--	.drv_attrs = default_drv_attrs,
- };
- 
- static void dss_bus_release(struct device *dev)
-diff --git a/drivers/video/omap2/dss/display-sysfs.c b/drivers/video/omap2/dss/display-sysfs.c
-index 18211a9..537921b 100644
---- a/drivers/video/omap2/dss/display-sysfs.c
-+++ b/drivers/video/omap2/dss/display-sysfs.c
-@@ -22,17 +22,40 @@
- 
- #include <linux/kernel.h>
- #include <linux/module.h>
--#include <linux/jiffies.h>
- #include <linux/platform_device.h>
-+#include <linux/sysfs.h>
- 
- #include <video/omapdss.h>
- #include "dss.h"
--#include "dss_features.h"
-+
-+static struct omap_dss_device *to_dss_device_sysfs(struct device *dev)
-+{
-+	struct omap_dss_device *dssdev = NULL;
-+
-+	for_each_dss_dev(dssdev) {
-+		if (&dssdev->dev = dev) {
-+			omap_dss_put_device(dssdev);
-+			return dssdev;
-+		}
-+	}
-+
-+	return NULL;
-+}
-+
-+static ssize_t display_name_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
-+
-+	return snprintf(buf, PAGE_SIZE, "%s\n",
-+			dssdev->name ?
-+			dssdev->name : "");
-+}
- 
- static ssize_t display_enabled_show(struct device *dev,
- 		struct device_attribute *attr, char *buf)
- {
--	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
- 	bool enabled = dssdev->state != OMAP_DSS_DISPLAY_DISABLED;
- 
- 	return snprintf(buf, PAGE_SIZE, "%d\n", enabled);
-@@ -42,7 +65,7 @@ static ssize_t display_enabled_store(struct device *dev,
- 		struct device_attribute *attr,
- 		const char *buf, size_t size)
- {
--	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
- 	int r;
- 	bool enabled;
- 
-@@ -66,7 +89,7 @@ static ssize_t display_enabled_store(struct device *dev,
- static ssize_t display_tear_show(struct device *dev,
- 		struct device_attribute *attr, char *buf)
- {
--	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
- 	return snprintf(buf, PAGE_SIZE, "%d\n",
- 			dssdev->driver->get_te ?
- 			dssdev->driver->get_te(dssdev) : 0);
-@@ -75,7 +98,7 @@ static ssize_t display_tear_show(struct device *dev,
- static ssize_t display_tear_store(struct device *dev,
- 		struct device_attribute *attr, const char *buf, size_t size)
- {
--	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
- 	int r;
- 	bool te;
- 
-@@ -96,7 +119,7 @@ static ssize_t display_tear_store(struct device *dev,
- static ssize_t display_timings_show(struct device *dev,
- 		struct device_attribute *attr, char *buf)
- {
--	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
- 	struct omap_video_timings t;
- 
- 	if (!dssdev->driver->get_timings)
-@@ -113,7 +136,7 @@ static ssize_t display_timings_show(struct device *dev,
- static ssize_t display_timings_store(struct device *dev,
- 		struct device_attribute *attr, const char *buf, size_t size)
- {
--	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
- 	struct omap_video_timings t = dssdev->panel.timings;
- 	int r, found;
- 
-@@ -152,7 +175,7 @@ static ssize_t display_timings_store(struct device *dev,
- static ssize_t display_rotate_show(struct device *dev,
- 		struct device_attribute *attr, char *buf)
- {
--	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
- 	int rotate;
- 	if (!dssdev->driver->get_rotate)
- 		return -ENOENT;
-@@ -163,7 +186,7 @@ static ssize_t display_rotate_show(struct device *dev,
- static ssize_t display_rotate_store(struct device *dev,
- 		struct device_attribute *attr, const char *buf, size_t size)
- {
--	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
- 	int rot, r;
- 
- 	if (!dssdev->driver->set_rotate || !dssdev->driver->get_rotate)
-@@ -183,7 +206,7 @@ static ssize_t display_rotate_store(struct device *dev,
- static ssize_t display_mirror_show(struct device *dev,
- 		struct device_attribute *attr, char *buf)
- {
--	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
- 	int mirror;
- 	if (!dssdev->driver->get_mirror)
- 		return -ENOENT;
-@@ -194,7 +217,7 @@ static ssize_t display_mirror_show(struct device *dev,
- static ssize_t display_mirror_store(struct device *dev,
- 		struct device_attribute *attr, const char *buf, size_t size)
- {
--	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
- 	int r;
- 	bool mirror;
- 
-@@ -215,7 +238,7 @@ static ssize_t display_mirror_store(struct device *dev,
- static ssize_t display_wss_show(struct device *dev,
- 		struct device_attribute *attr, char *buf)
- {
--	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
- 	unsigned int wss;
- 
- 	if (!dssdev->driver->get_wss)
-@@ -229,7 +252,7 @@ static ssize_t display_wss_show(struct device *dev,
- static ssize_t display_wss_store(struct device *dev,
- 		struct device_attribute *attr, const char *buf, size_t size)
- {
--	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
- 	u32 wss;
- 	int r;
- 
-@@ -250,6 +273,7 @@ static ssize_t display_wss_store(struct device *dev,
- 	return size;
- }
- 
-+static DEVICE_ATTR(name, S_IRUGO, display_name_show, NULL);
- static DEVICE_ATTR(enabled, S_IRUGO|S_IWUSR,
- 		display_enabled_show, display_enabled_store);
- static DEVICE_ATTR(tear_elim, S_IRUGO|S_IWUSR,
-@@ -263,59 +287,54 @@ static DEVICE_ATTR(mirror, S_IRUGO|S_IWUSR,
- static DEVICE_ATTR(wss, S_IRUGO|S_IWUSR,
- 		display_wss_show, display_wss_store);
- 
--static struct device_attribute *display_sysfs_attrs[] = {
--	&dev_attr_enabled,
--	&dev_attr_tear_elim,
--	&dev_attr_timings,
--	&dev_attr_rotate,
--	&dev_attr_mirror,
--	&dev_attr_wss,
-+static const struct attribute *display_sysfs_attrs[] = {
-+	&dev_attr_name.attr,
-+	&dev_attr_enabled.attr,
-+	&dev_attr_tear_elim.attr,
-+	&dev_attr_timings.attr,
-+	&dev_attr_rotate.attr,
-+	&dev_attr_mirror.attr,
-+	&dev_attr_wss.attr,
- 	NULL
- };
- 
--int display_init_sysfs(struct platform_device *pdev,
--		struct omap_dss_device *dssdev)
-+int display_init_sysfs(struct platform_device *pdev)
- {
--	struct device_attribute *attr;
--	int i, r;
-+	struct omap_dss_device *dssdev = NULL;
-+	int r;
- 
--	/* create device sysfs files */
--	i = 0;
--	while ((attr = display_sysfs_attrs[i++]) != NULL) {
--		r = device_create_file(&dssdev->dev, attr);
--		if (r) {
--			for (i = i - 2; i >= 0; i--) {
--				attr = display_sysfs_attrs[i];
--				device_remove_file(&dssdev->dev, attr);
--			}
-+	for_each_dss_dev(dssdev) {
-+		struct kobject *kobj = &dssdev->dev.kobj;
- 
--			DSSERR("failed to create sysfs file\n");
--			return r;
-+		r = sysfs_create_files(kobj, display_sysfs_attrs);
-+		if (r) {
-+			DSSERR("failed to create sysfs files\n");
-+			goto err;
- 		}
--	}
- 
--	/* create display? sysfs links */
--	r = sysfs_create_link(&pdev->dev.kobj, &dssdev->dev.kobj,
--			dev_name(&dssdev->dev));
--	if (r) {
--		while ((attr = display_sysfs_attrs[i++]) != NULL)
--			device_remove_file(&dssdev->dev, attr);
-+		r = sysfs_create_link(&pdev->dev.kobj, kobj, dssdev->alias);
-+		if (r) {
-+			sysfs_remove_files(kobj, display_sysfs_attrs);
- 
--		DSSERR("failed to create sysfs display link\n");
--		return r;
-+			DSSERR("failed to create sysfs display link\n");
-+			goto err;
-+		}
- 	}
+-	vm->dmt_flags = dt->dmt_flags;
+-	vm->data_flags = dt->data_flags;
++	vm->flags = dt->flags;
  
  	return 0;
-+
-+err:
-+	display_uninit_sysfs(pdev);
-+
-+	return r;
  }
+diff --git a/include/video/display_timing.h b/include/video/display_timing.h
+index 71e9a38..a8a4be5 100644
+--- a/include/video/display_timing.h
++++ b/include/video/display_timing.h
+@@ -12,19 +12,16 @@
+ #include <linux/bitops.h>
+ #include <linux/types.h>
  
--void display_uninit_sysfs(struct platform_device *pdev,
--		struct omap_dss_device *dssdev)
-+void display_uninit_sysfs(struct platform_device *pdev)
- {
--	struct device_attribute *attr;
--	int i = 0;
-+	struct omap_dss_device *dssdev = NULL;
- 
--	sysfs_remove_link(&pdev->dev.kobj, dev_name(&dssdev->dev));
+-/* VESA display monitor timing parameters */
+-#define VESA_DMT_HSYNC_LOW		BIT(0)
+-#define VESA_DMT_HSYNC_HIGH		BIT(1)
+-#define VESA_DMT_VSYNC_LOW		BIT(2)
+-#define VESA_DMT_VSYNC_HIGH		BIT(3)
 -
--	while ((attr = display_sysfs_attrs[i++]) != NULL)
--		device_remove_file(&dssdev->dev, attr);
-+	for_each_dss_dev(dssdev) {
-+		sysfs_remove_link(&pdev->dev.kobj, dssdev->alias);
-+		sysfs_remove_files(&dssdev->dev.kobj, display_sysfs_attrs);
-+	}
- }
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 5252423..d603a40 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -188,10 +188,8 @@ int dss_suspend_all_devices(void);
- int dss_resume_all_devices(void);
- void dss_disable_all_devices(void);
+-/* display specific flags */
+-#define DISPLAY_FLAGS_DE_LOW		BIT(0)	/* data enable flag */
+-#define DISPLAY_FLAGS_DE_HIGH		BIT(1)
+-#define DISPLAY_FLAGS_PIXDATA_POSEDGE	BIT(2)	/* drive data on pos. edge */
+-#define DISPLAY_FLAGS_PIXDATA_NEGEDGE	BIT(3)	/* drive data on neg. edge */
+-#define DISPLAY_FLAGS_INTERLACED	BIT(4)
+-#define DISPLAY_FLAGS_DOUBLESCAN	BIT(5)
++#define DISPLAY_FLAGS_HSYNC_LOW		BIT(0)
++#define DISPLAY_FLAGS_HSYNC_HIGH	BIT(1)
++#define DISPLAY_FLAGS_VSYNC_LOW		BIT(2)
++#define DISPLAY_FLAGS_VSYNC_HIGH	BIT(3)
++#define DISPLAY_FLAGS_DE_LOW		BIT(4)	/* data enable flag */
++#define DISPLAY_FLAGS_DE_HIGH		BIT(5)
++#define DISPLAY_FLAGS_PIXDATA_POSEDGE	BIT(6)	/* drive data on pos. edge */
++#define DISPLAY_FLAGS_PIXDATA_NEGEDGE	BIT(7)	/* drive data on neg. edge */
++#define DISPLAY_FLAGS_INTERLACED	BIT(8)
++#define DISPLAY_FLAGS_DOUBLESCAN	BIT(9)
  
--int display_init_sysfs(struct platform_device *pdev,
--		struct omap_dss_device *dssdev);
--void display_uninit_sysfs(struct platform_device *pdev,
--		struct omap_dss_device *dssdev);
-+int display_init_sysfs(struct platform_device *pdev);
-+void display_uninit_sysfs(struct platform_device *pdev);
+ /*
+  * A single signal can be specified via a range of minimal and maximal values
+@@ -72,8 +69,7 @@ struct display_timing {
+ 	struct timing_entry vback_porch;	/* ver. back porch */
+ 	struct timing_entry vsync_len;		/* ver. sync len */
  
- /* manager */
- int dss_init_overlay_managers(struct platform_device *pdev);
+-	unsigned int dmt_flags;			/* VESA DMT flags */
+-	unsigned int data_flags;		/* video data flags */
++	unsigned int flags;			/* display flags */
+ };
+ 
+ /*
+diff --git a/include/video/videomode.h b/include/video/videomode.h
+index a421562..f4ae6ed 100644
+--- a/include/video/videomode.h
++++ b/include/video/videomode.h
+@@ -29,8 +29,7 @@ struct videomode {
+ 	u32 vback_porch;
+ 	u32 vsync_len;
+ 
+-	unsigned int dmt_flags;	/* VESA DMT flags */
+-	unsigned int data_flags; /* video data flags */
++	unsigned int flags; /* display flags */
+ };
+ 
+ /**
 -- 
 1.7.10.4
 

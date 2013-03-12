@@ -1,146 +1,103 @@
-From: Heiko =?utf-8?q?St=C3=BCbner?= <heiko@sntech.de>
-Date: Fri, 22 Mar 2013 14:16:29 +0000
-Subject: [PATCH 7/9] AUO-K190x: add a 16bit truecolor mode
-Message-Id: <201303221516.29815.heiko@sntech.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 12 Mar 2013 10:19:37 +0000
+Subject: [PATCH 4/5] videomode: remove timing_entry_index
+Message-Id: <1363083578-17062-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1363083578-17062-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1363083578-17062-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Some applications seem to have problems using the 8bit grayscale mode.
-Therefore provide a 16bit truecolor mode which also gets converted to
-the 4bit grayscale the display uses, when updating a region.
+Display timing's fields have minimum, typical and maximum values. These
+can be accessed by using timing_entry_index enum, and
+display_timing_get_value() function.
 
-Signed-off-by: Heiko St=C3=BCbner <heiko@sntech.de>
+There's no real need for this extra complexity. The values can be
+accessed more easily by just using the min/typ/max fields.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 ---
- drivers/video/auo_k190x.c |   71 +++++++++++++++++++++++++++++++++++++++++=
-++-
- 1 files changed, 69 insertions(+), 2 deletions(-)
+ drivers/video/videomode.c      |   18 +++++++++---------
+ include/video/display_timing.h |   25 -------------------------
+ 2 files changed, 9 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/video/auo_k190x.c b/drivers/video/auo_k190x.c
-index 848cfe9..69abb9c 100644
---- a/drivers/video/auo_k190x.c
-+++ b/drivers/video/auo_k190x.c
-@@ -59,6 +59,46 @@ static void auok190x_issue_cmd(struct auok190xfb_par *pa=
-r, u16 data)
- 	par->board->set_ctl(par, AUOK190X_I80_DC, 1);
- }
-=20
-+/**
-+ * Conversion of 16bit color to 4bit grayscale
-+ * does roughly (0.3 * R + 0.6 G + 0.1 B) / 2
-+ */
-+static inline int rgb565_to_gray4(u16 data, struct fb_var_screeninfo *var)
-+{
-+	return ((((data & 0xF800) >> var->red.offset) * 77 +
-+		 ((data & 0x07E0) >> (var->green.offset + 1)) * 151 +
-+		 ((data & 0x1F) >> var->blue.offset) * 28) >> 8 >> 1);
-+}
-+
-+static int auok190x_issue_pixels_rgb565(struct auok190xfb_par *par, int si=
-ze,
-+					u16 *data)
-+{
-+	struct fb_var_screeninfo *var =3D &par->info->var;
-+	struct device *dev =3D par->info->device;
-+	int i;
-+	u16 tmp;
-+
-+	if (size & 7) {
-+		dev_err(dev, "issue_pixels: size %d must be a multiple of 8\n",
-+			size);
-+		return -EINVAL;
-+	}
-+
-+	for (i =3D 0; i < (size >> 2); i++) {
-+		par->board->set_ctl(par, AUOK190X_I80_WR, 0);
-+
-+		tmp  =3D (rgb565_to_gray4(data[4*i], var) & 0x000F);
-+		tmp |=3D (rgb565_to_gray4(data[4*i+1], var) << 4) & 0x00F0;
-+		tmp |=3D (rgb565_to_gray4(data[4*i+2], var) << 8) & 0x0F00;
-+		tmp |=3D (rgb565_to_gray4(data[4*i+3], var) << 12) & 0xF000;
-+
-+		par->board->set_hdb(par, tmp);
-+		par->board->set_ctl(par, AUOK190X_I80_WR, 1);
-+	}
-+
-+	return 0;
-+}
-+
- static int auok190x_issue_pixels_gray8(struct auok190xfb_par *par, int siz=
-e,
- 				       u16 *data)
- {
-@@ -98,6 +138,8 @@ static int auok190x_issue_pixels(struct auok190xfb_par *=
-par, int size,
-=20
- 	if (info->var.bits_per_pixel =3D 8 && info->var.grayscale)
- 		auok190x_issue_pixels_gray8(par, size, data);
-+	else if (info->var.bits_per_pixel =3D 16)
-+		auok190x_issue_pixels_rgb565(par, size, data);
- 	else
- 		dev_err(dev, "unsupported color mode (bits: %d, gray: %d)\n",
- 			info->var.bits_per_pixel, info->var.grayscale);
-@@ -418,6 +460,22 @@ static int auok190xfb_check_var(struct fb_var_screenin=
-fo *var,
- 		var->transp.length =3D 0;
- 		var->transp.offset =3D 0;
- 		var->transp.msb_right =3D 0;
-+	} else if (var->bits_per_pixel =3D 16) {
-+		var->red.length =3D 5;
-+		var->red.offset =3D 11;
-+		var->red.msb_right =3D 0;
-+
-+		var->green.length =3D 6;
-+		var->green.offset =3D 5;
-+		var->green.msb_right =3D 0;
-+
-+		var->blue.length =3D 5;
-+		var->blue.offset =3D 0;
-+		var->blue.msb_right =3D 0;
-+
-+		var->transp.length =3D 0;
-+		var->transp.offset =3D 0;
-+		var->transp.msb_right =3D 0;
- 	} else {
- 		dev_warn(dev, "unsupported color mode (bits: %d, grayscale: %d)\n",
- 			info->var.bits_per_pixel, info->var.grayscale);
-@@ -471,6 +529,15 @@ static int auok190xfb_set_fix(struct fb_info *info)
- 	return 0;
- }
-=20
-+static int auok190xfb_set_par(struct fb_info *info)
-+{
-+	struct auok190xfb_par *par =3D info->par;
-+
-+	auok190xfb_set_fix(info);
-+
-+	return 0;
-+}
-+
- static struct fb_ops auok190xfb_ops =3D {
- 	.owner		=3D THIS_MODULE,
- 	.fb_read	=3D fb_sys_read,
-@@ -479,6 +546,7 @@ static struct fb_ops auok190xfb_ops =3D {
- 	.fb_copyarea	=3D auok190xfb_copyarea,
- 	.fb_imageblit	=3D auok190xfb_imageblit,
- 	.fb_check_var	=3D auok190xfb_check_var,
-+	.fb_set_par     =3D auok190xfb_set_par,
+diff --git a/drivers/video/videomode.c b/drivers/video/videomode.c
+index 810afff..a3d95f2 100644
+--- a/drivers/video/videomode.c
++++ b/drivers/video/videomode.c
+@@ -20,16 +20,16 @@ int videomode_from_timing(const struct display_timings *disp,
+ 	if (!dt)
+ 		return -EINVAL;
+ 
+-	vm->pixelclock = display_timing_get_value(&dt->pixelclock, TE_TYP);
+-	vm->hactive = display_timing_get_value(&dt->hactive, TE_TYP);
+-	vm->hfront_porch = display_timing_get_value(&dt->hfront_porch, TE_TYP);
+-	vm->hback_porch = display_timing_get_value(&dt->hback_porch, TE_TYP);
+-	vm->hsync_len = display_timing_get_value(&dt->hsync_len, TE_TYP);
++	vm->pixelclock = dt->pixelclock.typ;
++	vm->hactive = dt->hactive.typ;
++	vm->hfront_porch = dt->hfront_porch.typ;
++	vm->hback_porch = dt->hback_porch.typ;
++	vm->hsync_len = dt->hsync_len.typ;
+ 
+-	vm->vactive = display_timing_get_value(&dt->vactive, TE_TYP);
+-	vm->vfront_porch = display_timing_get_value(&dt->vfront_porch, TE_TYP);
+-	vm->vback_porch = display_timing_get_value(&dt->vback_porch, TE_TYP);
+-	vm->vsync_len = display_timing_get_value(&dt->vsync_len, TE_TYP);
++	vm->vactive = dt->vactive.typ;
++	vm->vfront_porch = dt->vfront_porch.typ;
++	vm->vback_porch = dt->vback_porch.typ;
++	vm->vsync_len = dt->vsync_len.typ;
+ 
+ 	vm->flags = dt->flags;
+ 
+diff --git a/include/video/display_timing.h b/include/video/display_timing.h
+index b63471d..5d0259b 100644
+--- a/include/video/display_timing.h
++++ b/include/video/display_timing.h
+@@ -39,12 +39,6 @@ struct timing_entry {
+ 	u32 max;
  };
-=20
+ 
+-enum timing_entry_index {
+-	TE_MIN = 0,
+-	TE_TYP = 1,
+-	TE_MAX = 2,
+-};
+-
  /*
-@@ -965,8 +1033,7 @@ int __devinit auok190x_common_probe(struct platform_de=
-vice *pdev,
-=20
- 	/* videomemory handling */
-=20
--	videomemorysize =3D roundup((panel->w * panel->h) *
--				info->var.bits_per_pixel / 8, PAGE_SIZE);
-+	videomemorysize =3D roundup((panel->w * panel->h) * 2, PAGE_SIZE);
- 	videomemory =3D vmalloc(videomemorysize);
- 	if (!videomemory) {
- 		ret =3D -ENOMEM;
---=20
-1.7.2.3
+  * Single "mode" entry. This describes one set of signal timings a display can
+  * have in one setting. This struct can later be converted to struct videomode
+@@ -91,25 +85,6 @@ struct display_timings {
+ 	struct display_timing **timings;
+ };
+ 
+-/* get value specified by index from struct timing_entry */
+-static inline u32 display_timing_get_value(const struct timing_entry *te,
+-					   enum timing_entry_index index)
+-{
+-	switch (index) {
+-	case TE_MIN:
+-		return te->min;
+-		break;
+-	case TE_TYP:
+-		return te->typ;
+-		break;
+-	case TE_MAX:
+-		return te->max;
+-		break;
+-	default:
+-		return te->typ;
+-	}
+-}
+-
+ /* get one entry from struct display_timings */
+ static inline struct display_timing *display_timings_get(const struct
+ 							 display_timings *disp,
+-- 
+1.7.10.4
 

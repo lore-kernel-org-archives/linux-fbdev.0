@@ -1,85 +1,256 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 12 Mar 2013 13:40:14 +0000
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Tue, 12 Mar 2013 13:53:12 +0000
 Subject: Re: [PATCH 5/5] videomode: rename fields
-Message-Id: <513F303E.5000007@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig6824E10AB9A285DB6E50F0C2"
+Message-Id: <20130312135312.GB3891@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1363083578-17062-1-git-send-email-tomi.valkeinen@ti.com>
 	<1363083578-17062-5-git-send-email-tomi.valkeinen@ti.com>
-	<16625567.P7GdYge43z@avalon>
-In-Reply-To: <16625567.P7GdYge43z@avalon>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Steffen Trumtrar <s.trumtrar@pengutronix.de>
+In-Reply-To: <1363083578-17062-5-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
---------------enig6824E10AB9A285DB6E50F0C2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, Mar 12, 2013 at 12:19:38PM +0200, Tomi Valkeinen wrote:
+> Structs videomode and display_timing have rather long field names for
+> the timing values. Nothing wrong with that as such, but this patch
+> changes them to abbreviations for the following reasons:
+> 
+> * The timing values often need to be used in calculations, and long
+>   field names makes their direct use clumsier.
+> 
+> * The current names are a bit of a mishmash: some words are used as
+>   such, some are shortened, and for some only first letter is used. Some
+>   names use underscode, some don't. All this makes it difficult to
+>   remember what the field names are.
+> 
+> * The abbreviations used in this patch are very common, and there
+>   shouldn't be any misunderstanding about their meaning.
+> 
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+> ---
+>  drivers/gpu/drm/drm_modes.c       |   18 +++++++++---------
+>  drivers/video/fbmon.c             |   24 +++++++++++-------------
+>  drivers/video/of_display_timing.c |   16 ++++++++--------
+>  drivers/video/videomode.c         |   16 ++++++++--------
+>  include/video/display_timing.h    |   16 ++++++++--------
+>  include/video/videomode.h         |   18 +++++++++---------
+>  6 files changed, 53 insertions(+), 55 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+> index f83f071..d744e95 100644
+> --- a/drivers/gpu/drm/drm_modes.c
+> +++ b/drivers/gpu/drm/drm_modes.c
+> @@ -510,15 +510,15 @@ EXPORT_SYMBOL(drm_gtf_mode);
+>  int drm_display_mode_from_videomode(const struct videomode *vm,
+>  				    struct drm_display_mode *dmode)
+>  {
+> -	dmode->hdisplay = vm->hactive;
+> -	dmode->hsync_start = dmode->hdisplay + vm->hfront_porch;
+> -	dmode->hsync_end = dmode->hsync_start + vm->hsync_len;
+> -	dmode->htotal = dmode->hsync_end + vm->hback_porch;
+> +	dmode->hdisplay = vm->hact;
+> +	dmode->hsync_start = dmode->hdisplay + vm->hfp;
+> +	dmode->hsync_end = dmode->hsync_start + vm->hsl;
+> +	dmode->htotal = dmode->hsync_end + vm->hbp;
+>  
+> -	dmode->vdisplay = vm->vactive;
+> -	dmode->vsync_start = dmode->vdisplay + vm->vfront_porch;
+> -	dmode->vsync_end = dmode->vsync_start + vm->vsync_len;
+> -	dmode->vtotal = dmode->vsync_end + vm->vback_porch;
+> +	dmode->vdisplay = vm->vact;
+> +	dmode->vsync_start = dmode->vdisplay + vm->vfp;
+> +	dmode->vsync_end = dmode->vsync_start + vm->vsl;
+> +	dmode->vtotal = dmode->vsync_end + vm->vbp;
+>  
+>  	dmode->clock = vm->pixelclock / 1000;
+>  
+> @@ -565,7 +565,7 @@ int of_get_drm_display_mode(struct device_node *np,
+>  	drm_display_mode_from_videomode(&vm, dmode);
+>  
+>  	pr_debug("%s: got %dx%d display mode from %s\n",
+> -		of_node_full_name(np), vm.hactive, vm.vactive, np->name);
+> +		of_node_full_name(np), vm.hact, vm.vact, np->name);
+>  	drm_mode_debug_printmodeline(dmode);
+>  
+>  	return 0;
+> diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+> index e5cc2fd..8103fc9 100644
+> --- a/drivers/video/fbmon.c
+> +++ b/drivers/video/fbmon.c
+> @@ -1382,15 +1382,15 @@ int fb_videomode_from_videomode(const struct videomode *vm,
+>  {
+>  	unsigned int htotal, vtotal;
+>  
+> -	fbmode->xres = vm->hactive;
+> -	fbmode->left_margin = vm->hback_porch;
+> -	fbmode->right_margin = vm->hfront_porch;
+> -	fbmode->hsync_len = vm->hsync_len;
+> +	fbmode->xres = vm->hact;
+> +	fbmode->left_margin = vm->hbp;
+> +	fbmode->right_margin = vm->hfp;
+> +	fbmode->hsync_len = vm->hsl;
+>  
+> -	fbmode->yres = vm->vactive;
+> -	fbmode->upper_margin = vm->vback_porch;
+> -	fbmode->lower_margin = vm->vfront_porch;
+> -	fbmode->vsync_len = vm->vsync_len;
+> +	fbmode->yres = vm->vact;
+> +	fbmode->upper_margin = vm->vbp;
+> +	fbmode->lower_margin = vm->vfp;
+> +	fbmode->vsync_len = vm->vsl;
+>  
+>  	/* prevent division by zero in KHZ2PICOS macro */
+>  	fbmode->pixclock = vm->pixelclock ?
+> @@ -1408,10 +1408,8 @@ int fb_videomode_from_videomode(const struct videomode *vm,
+>  		fbmode->vmode |= FB_VMODE_DOUBLE;
+>  	fbmode->flag = 0;
+>  
+> -	htotal = vm->hactive + vm->hfront_porch + vm->hback_porch +
+> -		 vm->hsync_len;
+> -	vtotal = vm->vactive + vm->vfront_porch + vm->vback_porch +
+> -		 vm->vsync_len;
+> +	htotal = vm->hact + vm->hfp + vm->hbp + vm->hsl;
+> +	vtotal = vm->vact + vm->vfp + vm->vbp + vm->vsl;
+>  	/* prevent division by zero */
+>  	if (htotal && vtotal) {
+>  		fbmode->refresh = vm->pixelclock / (htotal * vtotal);
+> @@ -1458,7 +1456,7 @@ int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
+>  	fb_videomode_from_videomode(&vm, fb);
+>  
+>  	pr_debug("%s: got %dx%d display mode from %s\n",
+> -		of_node_full_name(np), vm.hactive, vm.vactive, np->name);
+> +		of_node_full_name(np), vm.hact, vm.vact, np->name);
+>  	dump_fb_videomode(fb);
+>  
+>  	return 0;
+> diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
+> index 56009bc..79660937 100644
+> --- a/drivers/video/of_display_timing.c
+> +++ b/drivers/video/of_display_timing.c
+> @@ -69,14 +69,14 @@ static struct display_timing *of_get_display_timing(struct device_node *np)
+>  		return NULL;
+>  	}
+>  
+> -	ret |= parse_timing_property(np, "hback-porch", &dt->hback_porch);
+> -	ret |= parse_timing_property(np, "hfront-porch", &dt->hfront_porch);
+> -	ret |= parse_timing_property(np, "hactive", &dt->hactive);
+> -	ret |= parse_timing_property(np, "hsync-len", &dt->hsync_len);
+> -	ret |= parse_timing_property(np, "vback-porch", &dt->vback_porch);
+> -	ret |= parse_timing_property(np, "vfront-porch", &dt->vfront_porch);
+> -	ret |= parse_timing_property(np, "vactive", &dt->vactive);
+> -	ret |= parse_timing_property(np, "vsync-len", &dt->vsync_len);
+> +	ret |= parse_timing_property(np, "hback-porch", &dt->hbp);
+> +	ret |= parse_timing_property(np, "hfront-porch", &dt->hfp);
+> +	ret |= parse_timing_property(np, "hactive", &dt->hact);
+> +	ret |= parse_timing_property(np, "hsync-len", &dt->hsl);
+> +	ret |= parse_timing_property(np, "vback-porch", &dt->vbp);
+> +	ret |= parse_timing_property(np, "vfront-porch", &dt->vfp);
+> +	ret |= parse_timing_property(np, "vactive", &dt->vact);
+> +	ret |= parse_timing_property(np, "vsync-len", &dt->vsl);
+>  	ret |= parse_timing_property(np, "clock-frequency", &dt->pixelclock);
+>  
+>  	dt->flags = 0;
+> diff --git a/drivers/video/videomode.c b/drivers/video/videomode.c
+> index a3d95f2..c42689a 100644
+> --- a/drivers/video/videomode.c
+> +++ b/drivers/video/videomode.c
+> @@ -21,15 +21,15 @@ int videomode_from_timing(const struct display_timings *disp,
+>  		return -EINVAL;
+>  
+>  	vm->pixelclock = dt->pixelclock.typ;
+> -	vm->hactive = dt->hactive.typ;
+> -	vm->hfront_porch = dt->hfront_porch.typ;
+> -	vm->hback_porch = dt->hback_porch.typ;
+> -	vm->hsync_len = dt->hsync_len.typ;
+> +	vm->hact = dt->hact.typ;
+> +	vm->hfp = dt->hfp.typ;
+> +	vm->hbp = dt->hbp.typ;
+> +	vm->hsl = dt->hsl.typ;
+>  
+> -	vm->vactive = dt->vactive.typ;
+> -	vm->vfront_porch = dt->vfront_porch.typ;
+> -	vm->vback_porch = dt->vback_porch.typ;
+> -	vm->vsync_len = dt->vsync_len.typ;
+> +	vm->vact = dt->vact.typ;
+> +	vm->vfp = dt->vfp.typ;
+> +	vm->vbp = dt->vbp.typ;
+> +	vm->vsl = dt->vsl.typ;
+>  
+>  	vm->flags = dt->flags;
+>  
+> diff --git a/include/video/display_timing.h b/include/video/display_timing.h
+> index 5d0259b..db98ef9 100644
+> --- a/include/video/display_timing.h
+> +++ b/include/video/display_timing.h
+> @@ -59,15 +59,15 @@ struct timing_entry {
+>  struct display_timing {
+>  	struct timing_entry pixelclock;
+>  
+> -	struct timing_entry hactive;		/* hor. active video */
+> -	struct timing_entry hfront_porch;	/* hor. front porch */
+> -	struct timing_entry hback_porch;	/* hor. back porch */
+> -	struct timing_entry hsync_len;		/* hor. sync len */
+> +	struct timing_entry hact;		/* hor. active video */
+> +	struct timing_entry hfp;		/* hor. front porch */
+> +	struct timing_entry hbp;		/* hor. back porch */
+> +	struct timing_entry hsl;		/* hor. sync len */
+>  
+> -	struct timing_entry vactive;		/* ver. active video */
+> -	struct timing_entry vfront_porch;	/* ver. front porch */
+> -	struct timing_entry vback_porch;	/* ver. back porch */
+> -	struct timing_entry vsync_len;		/* ver. sync len */
+> +	struct timing_entry vact;		/* ver. active video */
+> +	struct timing_entry vfp;		/* ver. front porch */
+> +	struct timing_entry vbp;		/* ver. back porch */
+> +	struct timing_entry vsl;		/* ver. sync len */
+>  
+>  	enum display_flags flags;		/* display flags */
+>  };
+> diff --git a/include/video/videomode.h b/include/video/videomode.h
+> index 8b12e60..b601c0c 100644
+> --- a/include/video/videomode.h
+> +++ b/include/video/videomode.h
+> @@ -19,15 +19,15 @@
+>  struct videomode {
+>  	unsigned long pixelclock;	/* pixelclock in Hz */
+>  
+> -	u32 hactive;
+> -	u32 hfront_porch;
+> -	u32 hback_porch;
+> -	u32 hsync_len;
+> -
+> -	u32 vactive;
+> -	u32 vfront_porch;
+> -	u32 vback_porch;
+> -	u32 vsync_len;
+> +	u32 hact;
+> +	u32 hfp;
+> +	u32 hbp;
+> +	u32 hsl;
+> +
+> +	u32 vact;
+> +	u32 vfp;
+> +	u32 vbp;
+> +	u32 vsl;
+>  
+>  	enum display_flags flags; /* display flags */
+>  };
+> 
 
 Hi,
 
-On 2013-03-12 15:37, Laurent Pinchart wrote:
-> Hi Tomi,
->=20
-> Thanks for the patch.
->=20
-> On Tuesday 12 March 2013 12:19:38 Tomi Valkeinen wrote:
->> Structs videomode and display_timing have rather long field names for
->> the timing values. Nothing wrong with that as such, but this patch
->> changes them to abbreviations for the following reasons:
->>
->> * The timing values often need to be used in calculations, and long
->>   field names makes their direct use clumsier.
->>
->> * The current names are a bit of a mishmash: some words are used as
->>   such, some are shortened, and for some only first letter is used. So=
-me
->>   names use underscode, some don't. All this makes it difficult to
->>   remember what the field names are.
->>
->> * The abbreviations used in this patch are very common, and there
->>   shouldn't be any misunderstanding about their meaning.
->>
->> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->> Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
->> ---
->=20
-> I have no strong opinion on this, but I find the existing names easier =
-to=20
-> read. I might be biased by having read them often though.
+I really don't like this. It may be shorter, but I think it makes it really
+hard to read. And the direct mapping of DT<->C is lost.
 
-Yes, the last patch was a bit of a "teaser" =3D). I found myself typoing
-them a lot, using helper local variables to shorten the code lines, and
-as I mention in the description, I find them a bit of a mishmash. So,
-while they're not used in any drivers yet, I thought it'd be worth a
-shot to change them.
-
- Tomi
+Regards,
+Steffen
 
 
-
---------------enig6824E10AB9A285DB6E50F0C2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRPzA+AAoJEPo9qoy8lh7151MP/0KHshfVkKASv3xRKeQsC3SR
-xGThJC9yWTOpajNo6+FFE0PRQ7RnXGhsC4/KraMNs3QXSnUG5c/8ZtNxng9T1ekD
-GeT/s/ieriD7qmnUGMdthf+xFJo43AN1QFfP5PaRJ9kvM1A+VR1Yu9V0KpXIXzqp
-CDtLq1BK99jXT75rY6Aor1QzAnfmCldtNyg6A1FsFq5DA+KNUH2i3rCzPC3NAYlH
-Dl7AHZ/4tDxZsTrTTVdb8uGnJpYolZCsVp+2ml3o1783RAzEsXqsrvi90hAjvsPm
-Xg9Sf/7KQkZcGTPgx4Tq/yjTAiQs41cqMRZZSHL8Ib/LZnVf7slx7Zj6WbXfStnM
-x+UF+CdkADC4KMitUZhr+tuOV1oMA0acDKk/uKb5gZCtUaFJ9YdKcLarvyBbYNDX
-xpOxJsEys6oKFTesfhMm2zT7uXmMYpGS/ru95h1ihFk1NXftqbLaJ7grmwBiq8vT
-Z9vjakvIrPg7fat+/aArgzNPvBddlApTgZ+I2HFEYWia82/ZTakfJWYc9/pkbZkV
-qIcid8FA1qGokd+N5cscDcG0c7HrAToCdxBvnYj6XWnCKHTJRLZ15PE642OH3sE8
-uTcClcKIEGBImNFSYUWLqTCGDfYLymnaHGaSj4ZIdfuqn9ve3mchn2KONn5gmMqu
-HXInkVzH1/8eCV2qMEon
-=aoU5
------END PGP SIGNATURE-----
-
---------------enig6824E10AB9A285DB6E50F0C2--
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

@@ -1,76 +1,34 @@
-From: Anatolij Gustschin <agust@denx.de>
-Date: Wed, 13 Mar 2013 15:24:09 +0000
-Subject: [PATCH] fbdev: fsl-diu-fb: optionally configure frame buffer depth in DT
-Message-Id: <1363188249-29341-1-git-send-email-agust@denx.de>
+From: Timur Tabi <timur@tabi.org>
+Date: Wed, 13 Mar 2013 15:37:39 +0000
+Subject: Re: [PATCH] fbdev: fsl-diu-fb: optionally configure frame buffer depth in DT
+Message-Id: <51409D43.4080902@tabi.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1363188249-29341-1-git-send-email-agust@denx.de>
+In-Reply-To: <1363188249-29341-1-git-send-email-agust@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Timur Tabi <timur-N01EOCouUvQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
+To: linux-fbdev@vger.kernel.org
 
-Add support for 'depth' property to configure default frame
-buffer color depth over device tree.
+On 03/13/2013 10:24 AM, Anatolij Gustschin wrote:
+> @@ -30,5 +31,6 @@ Example for MPC5121:
+>  		reg = <0x2100 0x100>;
+>  		interrupts = <64 0x8>;
+>  		interrupt-parent = <&ipic>;
+> +		depth = <16>;
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
----
- .../devicetree/bindings/powerpc/fsl/diu.txt        |    2 ++
- drivers/video/fsl-diu-fb.c                         |   16 ++++++++++++++++
- 2 files changed, 18 insertions(+), 0 deletions(-)
+NACK.
 
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/diu.txt b/Documentation/devicetree/bindings/powerpc/fsl/diu.txt
-index b66cb6d..502aae5 100644
---- a/Documentation/devicetree/bindings/powerpc/fsl/diu.txt
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/diu.txt
-@@ -12,6 +12,7 @@ Required properties:
-   services interrupts for this device.
- 
- Optional properties:
-+- depth : default frame buffer color depth
- - edid : verbatim EDID data block describing attached display.
-   Data from the detailed timing descriptor will be used to
-   program the display controller.
-@@ -30,5 +31,6 @@ Example for MPC5121:
- 		reg = <0x2100 0x100>;
- 		interrupts = <64 0x8>;
- 		interrupt-parent = <&ipic>;
-+		depth = <16>;
- 		edid = [edid-data];
- 	};
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 41fbd94..2287817 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -1534,6 +1534,7 @@ static int fsl_diu_probe(struct platform_device *pdev)
- 	const void *prop;
- 	unsigned int i;
- 	int ret;
-+	u32 depth;
- 
- 	data = dmam_alloc_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
- 				   &dma_addr, GFP_DMA | __GFP_ZERO);
-@@ -1584,6 +1585,21 @@ static int fsl_diu_probe(struct platform_device *pdev)
- 		data->has_edid = true;
- 	}
- 
-+	if (!of_property_read_u32(np, "depth", &depth)) {
-+		switch (depth) {
-+		case 32:
-+		case 24:
-+		case 16:
-+		case 8:
-+			default_bpp = depth;
-+			break;
-+		default:
-+			dev_err(&pdev->dev,
-+				"%s: invalid depth property\n",
-+				np->full_name);
-+		}
-+	}
-+
- 	data->diu_reg = of_iomap(np, 0);
- 	if (!data->diu_reg) {
- 		dev_err(&pdev->dev, "cannot map DIU registers\n");
--- 
-1.7.5.4
+Device trees are supposed to be used for describing the hardware, not
+for software configuration.  Besides, the driver already supports a
+command-line parameter for the color depth.  Your patch just overrides
+that parameter (default_bpp) with a device tree property.
 
+module_param_named(mode, fb_mode, charp, 0);
+MODULE_PARM_DESC(mode,
+        "Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\" ");
+module_param_named(bpp, default_bpp, ulong, 0);
+MODULE_PARM_DESC(bpp, "Specify bit-per-pixel if not specified in 'mode'");
+module_param_named(monitor, monitor_string, charp, 0);
+MODULE_PARM_DESC(monitor, "Specify the monitor port "
+        "(\"dvi\", \"lvds\", or \"dlvds\") if supported by the platform");

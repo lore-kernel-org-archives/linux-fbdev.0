@@ -1,109 +1,76 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 08 Mar 2013 11:52:45 +0000
-Subject: [PATCH 10/14] OMAPDSS: SDI: use new clock calculation code
-Message-Id: <1362743569-10289-11-git-send-email-tomi.valkeinen@ti.com>
+From: Fabio Porcedda <fabio.porcedda@gmail.com>
+Date: Thu, 14 Mar 2013 13:11:23 +0000
+Subject: [PATCH 02/10] drivers: ata: use module_platform_driver_probe()
+Message-Id: <1363266691-15757-4-git-send-email-fabio.porcedda@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
+In-Reply-To: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Use the new clock calculation code in the SDI driver.
+This patch converts the drivers to use the
+module_platform_driver_probe() macro which makes the code smaller and
+a bit simpler.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jeff Garzik <jgarzik@pobox.com>
+Cc: linux-ide@vger.kernel.org
 ---
- drivers/video/omap2/dss/sdi.c |   68 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 67 insertions(+), 1 deletion(-)
+ drivers/ata/pata_at32.c       | 13 +------------
+ drivers/ata/pata_samsung_cf.c | 13 +------------
+ 2 files changed, 2 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index eb4ee17..5754245 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -41,6 +41,72 @@ static struct {
- 	struct omap_dss_output output;
- } sdi;
+diff --git a/drivers/ata/pata_at32.c b/drivers/ata/pata_at32.c
+index 36f189c..8d493b4 100644
+--- a/drivers/ata/pata_at32.c
++++ b/drivers/ata/pata_at32.c
+@@ -393,18 +393,7 @@ static struct platform_driver pata_at32_driver = {
+ 	},
+ };
  
-+struct sdi_clk_calc_ctx {
-+	unsigned long pck_min, pck_max;
-+
-+	struct dss_clock_info dss_cinfo;
-+	struct dispc_clock_info dispc_cinfo;
-+};
-+
-+static bool dpi_calc_dispc_cb(int lckd, int pckd, unsigned long lck,
-+		unsigned long pck, void *data)
-+{
-+	struct sdi_clk_calc_ctx *ctx = data;
-+
-+	ctx->dispc_cinfo.lck_div = lckd;
-+	ctx->dispc_cinfo.pck_div = pckd;
-+	ctx->dispc_cinfo.lck = lck;
-+	ctx->dispc_cinfo.pck = pck;
-+
-+	return true;
-+}
-+
-+static bool dpi_calc_dss_cb(int fckd, unsigned long fck, void *data)
-+{
-+	struct sdi_clk_calc_ctx *ctx = data;
-+
-+	ctx->dss_cinfo.fck = fck;
-+	ctx->dss_cinfo.fck_div = fckd;
-+
-+	return dispc_div_calc(fck, ctx->pck_min, ctx->pck_max,
-+			dpi_calc_dispc_cb, ctx);
-+}
-+
-+static int sdi_calc_clock_div(unsigned long pclk,
-+		struct dss_clock_info *dss_cinfo,
-+		struct dispc_clock_info *dispc_cinfo)
-+{
-+	int i;
-+	struct sdi_clk_calc_ctx ctx;
-+
-+	/*
-+	 * DSS fclk gives us very few possibilities, so finding a good pixel
-+	 * clock may not be possible. We try multiple times to find the clock,
-+	 * each time widening the pixel clock range we look for, up to
-+	 * +/- 1MHz.
-+	 */
-+
-+	for (i = 0; i < 10; ++i) {
-+		bool ok;
-+
-+		memset(&ctx, 0, sizeof(ctx));
-+		if (pclk > 1000 * i * i * i)
-+			ctx.pck_min = max(pclk - 1000 * i * i * i, 0lu);
-+		else
-+			ctx.pck_min = 0;
-+		ctx.pck_max = pclk + 1000 * i * i * i;
-+
-+		ok = dss_div_calc(ctx.pck_min, dpi_calc_dss_cb, &ctx);
-+		if (ok) {
-+			*dss_cinfo = ctx.dss_cinfo;
-+			*dispc_cinfo = ctx.dispc_cinfo;
-+			return 0;
-+		}
-+	}
-+
-+	return -EINVAL;
-+}
-+
- static void sdi_config_lcd_manager(struct omap_dss_device *dssdev)
- {
- 	struct omap_overlay_manager *mgr = dssdev->output->manager;
-@@ -88,7 +154,7 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- 	t->data_pclk_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE;
- 	t->sync_pclk_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE;
+-static int __init pata_at32_init(void)
+-{
+-	return platform_driver_probe(&pata_at32_driver, pata_at32_probe);
+-}
+-
+-static void __exit pata_at32_exit(void)
+-{
+-	platform_driver_unregister(&pata_at32_driver);
+-}
+-
+-module_init(pata_at32_init);
+-module_exit(pata_at32_exit);
++module_platform_driver_probe(pata_at32_driver, pata_at32_probe);
  
--	r = dss_calc_clock_div(t->pixel_clock * 1000, &dss_cinfo, &dispc_cinfo);
-+	r = sdi_calc_clock_div(t->pixel_clock * 1000, &dss_cinfo, &dispc_cinfo);
- 	if (r)
- 		goto err_calc_clock_div;
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("AVR32 SMC/CFC PATA Driver");
+diff --git a/drivers/ata/pata_samsung_cf.c b/drivers/ata/pata_samsung_cf.c
+index 70b0e01..6ef27e9 100644
+--- a/drivers/ata/pata_samsung_cf.c
++++ b/drivers/ata/pata_samsung_cf.c
+@@ -661,18 +661,7 @@ static struct platform_driver pata_s3c_driver = {
+ 	},
+ };
  
+-static int __init pata_s3c_init(void)
+-{
+-	return platform_driver_probe(&pata_s3c_driver, pata_s3c_probe);
+-}
+-
+-static void __exit pata_s3c_exit(void)
+-{
+-	platform_driver_unregister(&pata_s3c_driver);
+-}
+-
+-module_init(pata_s3c_init);
+-module_exit(pata_s3c_exit);
++module_platform_driver_probe(pata_s3c_driver, pata_s3c_probe);
+ 
+ MODULE_AUTHOR("Abhilash Kesavan, <a.kesavan@samsung.com>");
+ MODULE_DESCRIPTION("low-level driver for Samsung PATA controller");
 -- 
-1.7.10.4
+1.8.1.5
 

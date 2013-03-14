@@ -1,49 +1,51 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 08 Mar 2013 11:52:35 +0000
-Subject: [PATCH 00/14] OMAPDSS: new clock calculation + DSI VM
-Message-Id: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Date: Thu, 14 Mar 2013 05:53:27 +0000
+Subject: [PATCH 3/6] video: mxsfb: remove dotclk_delay from platform_data
+Message-Id: <1363240410-16865-4-git-send-email-shawn.guo@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1363240410-16865-1-git-send-email-shawn.guo@linaro.org>
+In-Reply-To: <1363240410-16865-1-git-send-email-shawn.guo@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+There is no in-tree mxsfb users using mxsfb_platform_data dotclk_delay.
+Let's remove it from mxsfb_platform_data to ease full device tree
+adoption of mxsfb driver.  If later we have platform/board need to
+configure this parameter, we can add it into device tree bindings.
 
-Here's a series for improving omapdss clock calculation, and also automatically
-calculating DSI videomode parameters, instead of requiring them to be
-precalculated and passed to omapdss. These are based on the previous misc
-patches series.
+Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+---
+ drivers/video/mxsfb.c |    1 -
+ include/linux/mxsfb.h |    1 -
+ 2 files changed, 2 deletions(-)
 
- Tomi
-
-Tomi Valkeinen (14):
-  OMAPDSS: DISPC: store core clk rate
-  OMAPDSS: DSI: fix wrong unsigned long long use
-  OMAPDSS: DSI: simplify dsi configuration
-  OMAPDSS: DSI: get line buffer size at probe
-  OMAPDSS: DSI: add enum omap_dss_dsi_trans_mode
-  OMAPDSS: DSI remove unneeded clk source setup code
-  OMAPDSS: DISPC: add new clock calculation code
-  OMAPDSS: DSS: add new clock calculation code
-  OMAPDSS: DSI: add new clock calculation code
-  OMAPDSS: SDI: use new clock calculation code
-  OMAPDSS: DPI: use new clock calculation code
-  OMAPDSS: DSI: use new clock calculation code
-  OMAPDSS: remove unused old clock calculation code
-  OMAPDSS: remove dsi videomode from dssdev
-
- drivers/video/omap2/displays/panel-taal.c |   19 +-
- drivers/video/omap2/dss/dispc.c           |  124 ++--
- drivers/video/omap2/dss/dpi.c             |  212 +++++--
- drivers/video/omap2/dss/dsi.c             |  959 +++++++++++++++++------------
- drivers/video/omap2/dss/dss.c             |  151 ++---
- drivers/video/omap2/dss/dss.h             |   36 +-
- drivers/video/omap2/dss/sdi.c             |   68 +-
- include/video/omapdss.h                   |   51 +-
- 8 files changed, 977 insertions(+), 643 deletions(-)
-
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 776d0d5..001983a 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -700,7 +700,6 @@ static int mxsfb_init_fbinfo(struct mxsfb_info *host)
+ 	var->accel_flags = 0;
+ 	var->vmode = FB_VMODE_NONINTERLACED;
+ 
+-	host->dotclk_delay = pdata->dotclk_delay;
+ 	host->ld_intf_width = pdata->ld_intf_width;
+ 
+ 	/* Memory allocation for framebuffer */
+diff --git a/include/linux/mxsfb.h b/include/linux/mxsfb.h
+index 93fc34b..6d64e2e 100644
+--- a/include/linux/mxsfb.h
++++ b/include/linux/mxsfb.h
+@@ -33,7 +33,6 @@ struct mxsfb_platform_data {
+ 
+ 	unsigned default_bpp;
+ 
+-	unsigned dotclk_delay;	/* refer manual HW_LCDIF_VDCTRL4 register */
+ 	unsigned ld_intf_width;	/* refer STMLCDIF_* macros */
+ };
+ 
 -- 
-1.7.10.4
+1.7.9.5
+
 

@@ -1,38 +1,74 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Wed, 13 Mar 2013 23:15:02 +0000
-Subject: Re: [PATCH v2] video: backlight: add ili922x lcd driver
-Message-Id: <20130313161502.d089ea17cb695415ec9b01d8@linux-foundation.org>
+From: Fabio Porcedda <fabio.porcedda@gmail.com>
+Date: Thu, 14 Mar 2013 17:09:38 +0000
+Subject: [PATCH v2 8/8] drivers: misc: use module_platform_driver_probe()
+Message-Id: <1363280978-24051-9-git-send-email-fabio.porcedda@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363178617-21940-1-git-send-email-agust@denx.de>
-In-Reply-To: <1363178617-21940-1-git-send-email-agust@denx.de>
+References: <1363280978-24051-1-git-send-email-fabio.porcedda@gmail.com>
+In-Reply-To: <1363280978-24051-1-git-send-email-fabio.porcedda@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Wed, 13 Mar 2013 13:43:37 +0100 Anatolij Gustschin <agust@denx.de> wrote:
+This patch converts the drivers to use the
+module_platform_driver_probe() macro which makes the code smaller and
+a bit simpler.
 
-> From: Stefano Babic <sbabic@denx.de>
-> 
-> Add LCD driver for Ilitek ILI9221/ILI9222 controller.
-> The driver uses SPI interface for controller access
-> and configuration and RGB interface for graphics data
-> transfer.
-> 
-> ...
->
-> +#define START_BYTE(id, rs, rw)	\
-> +	(0x70 | (((id) & 0x01) << 2) | (((rs) & 0x01) << 1) | ((rw) & 0x01))
-> +#define CHECK_FREQ_REG(s, x)	\
-> +	do {			\
-> +		if (s->max_speed_hz > ILITEK_MAX_FREQ_REG)	\
-> +			((struct spi_transfer *)x)->speed_hz =	\
-> +					ILITEK_MAX_FREQ_REG;	\
-> +	} while (0)
-> +#define POWER_IS_ON(pwr)	((pwr) <= FB_BLANK_NORMAL)
-> +#define set_tx_byte(b)		(tx_invert ? ~(b) : b)
+Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/misc/atmel_pwm.c  | 12 +-----------
+ drivers/misc/ep93xx_pwm.c | 13 +------------
+ 2 files changed, 2 insertions(+), 23 deletions(-)
 
-All of the above could have been implemented as regular old C
-functions, and would be better if they were!
+diff --git a/drivers/misc/atmel_pwm.c b/drivers/misc/atmel_pwm.c
+index 28f5aaa..494d050 100644
+--- a/drivers/misc/atmel_pwm.c
++++ b/drivers/misc/atmel_pwm.c
+@@ -393,17 +393,7 @@ static struct platform_driver atmel_pwm_driver = {
+ 	 */
+ };
+ 
+-static int __init pwm_init(void)
+-{
+-	return platform_driver_probe(&atmel_pwm_driver, pwm_probe);
+-}
+-module_init(pwm_init);
+-
+-static void __exit pwm_exit(void)
+-{
+-	platform_driver_unregister(&atmel_pwm_driver);
+-}
+-module_exit(pwm_exit);
++module_platform_driver_probe(atmel_pwm_driver, pwm_probe);
+ 
+ MODULE_DESCRIPTION("Driver for AT32/AT91 PWM module");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/misc/ep93xx_pwm.c b/drivers/misc/ep93xx_pwm.c
+index 16d7179..96787ec 100644
+--- a/drivers/misc/ep93xx_pwm.c
++++ b/drivers/misc/ep93xx_pwm.c
+@@ -365,18 +365,7 @@ static struct platform_driver ep93xx_pwm_driver = {
+ 	.remove		= __exit_p(ep93xx_pwm_remove),
+ };
+ 
+-static int __init ep93xx_pwm_init(void)
+-{
+-	return platform_driver_probe(&ep93xx_pwm_driver, ep93xx_pwm_probe);
+-}
+-
+-static void __exit ep93xx_pwm_exit(void)
+-{
+-	platform_driver_unregister(&ep93xx_pwm_driver);
+-}
+-
+-module_init(ep93xx_pwm_init);
+-module_exit(ep93xx_pwm_exit);
++module_platform_driver_probe(ep93xx_pwm_driver, ep93xx_pwm_probe);
+ 
+ MODULE_AUTHOR("Matthieu Crapet <mcrapet@gmail.com>, "
+ 	      "H Hartley Sweeten <hsweeten@visionengravers.com>");
+-- 
+1.8.1.5
 
-It otherwise all looks nice.

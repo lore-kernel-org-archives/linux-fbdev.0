@@ -1,35 +1,51 @@
-From: Wang YanQing <udknight@gmail.com>
-Date: Sat, 30 Mar 2013 02:53:30 +0000
-Subject: [PATCH]video:uvesafb: Fix dereference NULL pointer code path
-Message-Id: <20130330025330.GA25246@udknight>
+From: Fabio Porcedda <fabio.porcedda@gmail.com>
+Date: Thu, 14 Mar 2013 13:11:28 +0000
+Subject: [PATCH 07/10] drivers: memory: use module_platform_driver_probe()
+Message-Id: <1363266691-15757-9-git-send-email-fabio.porcedda@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
+In-Reply-To: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: spock@gentoo.org, linux-fbdev@vger.kernel.org, FlorianSchandinat@gmx.de, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-platform_device_alloc could failed and return NULL,
-we should check this before call platform_device_put.
+This patch converts the drivers to use the
+module_platform_driver_probe() macro which makes the code smaller and
+a bit simpler.
 
-Signed-off-by: Wang YanQing <udknight@gmail.com>
+Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Benoit Cousson <b-cousson@ti.com>
+Cc: Aneesh V <aneesh@ti.com>
 ---
- drivers/video/uvesafb.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/memory/emif.c | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
-diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-index 2f8f82d..230bd45 100644
---- a/drivers/video/uvesafb.c
-+++ b/drivers/video/uvesafb.c
-@@ -1975,7 +1975,8 @@ static int __devinit uvesafb_init(void)
- 			err = -ENOMEM;
+diff --git a/drivers/memory/emif.c b/drivers/memory/emif.c
+index df08736..ecbc1a9 100644
+--- a/drivers/memory/emif.c
++++ b/drivers/memory/emif.c
+@@ -1841,18 +1841,8 @@ static struct platform_driver emif_driver = {
+ 	},
+ };
  
- 		if (err) {
--			platform_device_put(uvesafb_device);
-+			if (uvesafb_device)
-+				platform_device_put(uvesafb_device);
- 			platform_driver_unregister(&uvesafb_driver);
- 			cn_del_callback(&uvesafb_cn_id);
- 			return err;
+-static int __init_or_module emif_register(void)
+-{
+-	return platform_driver_probe(&emif_driver, emif_probe);
+-}
+-
+-static void __exit emif_unregister(void)
+-{
+-	platform_driver_unregister(&emif_driver);
+-}
++module_platform_driver_probe(emif_driver, emif_probe);
+ 
+-module_init(emif_register);
+-module_exit(emif_unregister);
+ MODULE_DESCRIPTION("TI EMIF SDRAM Controller Driver");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS("platform:emif");
 -- 
-1.7.11.1.116.g8228a23
+1.8.1.5
+

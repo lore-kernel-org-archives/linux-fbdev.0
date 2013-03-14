@@ -1,136 +1,51 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Mar 2013 13:33:39 +0000
-Subject: [PATCH 09/26] OMAPDSS: don't use dss bus in suspend/resume
-Message-Id: <1364304836-18134-10-git-send-email-tomi.valkeinen@ti.com>
+From: Fabio Porcedda <fabio.porcedda@gmail.com>
+Date: Thu, 14 Mar 2013 17:09:35 +0000
+Subject: [PATCH v2 5/8] drivers: memory: use module_platform_driver_probe()
+Message-Id: <1363280978-24051-6-git-send-email-fabio.porcedda@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1363280978-24051-1-git-send-email-fabio.porcedda@gmail.com>
+In-Reply-To: <1363280978-24051-1-git-send-email-fabio.porcedda@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-We have support functions to suspend and resume all the displays that
-are used with system suspend. These functions use the dss bus to iterate
-the display devices.
+This patch converts the drivers to use the
+module_platform_driver_probe() macro which makes the code smaller and
+a bit simpler.
 
-As we aim to remove the custom dss bus totally, this patch removes the
-explicit use of dss bus from these functions. Instead the
-for_each_dss_dev() macro is used to go through the devices.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Benoit Cousson <b-cousson@ti.com>
+Cc: Aneesh V <aneesh@ti.com>
 ---
- drivers/video/omap2/dss/display.c |   77 ++++++++++++++-----------------------
- 1 file changed, 28 insertions(+), 49 deletions(-)
+ drivers/memory/emif.c | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
-index 50792bf..85e1cd3 100644
---- a/drivers/video/omap2/dss/display.c
-+++ b/drivers/video/omap2/dss/display.c
-@@ -76,74 +76,53 @@ void omapdss_default_get_timings(struct omap_dss_device *dssdev,
- }
- EXPORT_SYMBOL(omapdss_default_get_timings);
+diff --git a/drivers/memory/emif.c b/drivers/memory/emif.c
+index df08736..ecbc1a9 100644
+--- a/drivers/memory/emif.c
++++ b/drivers/memory/emif.c
+@@ -1841,18 +1841,8 @@ static struct platform_driver emif_driver = {
+ 	},
+ };
  
--static int dss_suspend_device(struct device *dev, void *data)
+-static int __init_or_module emif_register(void)
 -{
--	struct omap_dss_device *dssdev = to_dss_device(dev);
--
--	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE) {
--		dssdev->activate_after_resume = false;
--		return 0;
--	}
--
--	dssdev->driver->disable(dssdev);
--
--	dssdev->activate_after_resume = true;
--
--	return 0;
+-	return platform_driver_probe(&emif_driver, emif_probe);
 -}
 -
- int dss_suspend_all_devices(void)
- {
--	int r;
--	struct bus_type *bus = dss_get_bus();
--
--	r = bus_for_each_dev(bus, NULL, NULL, dss_suspend_device);
--	if (r) {
--		/* resume all displays that were suspended */
--		dss_resume_all_devices();
--		return r;
--	}
--
--	return 0;
--}
-+	struct omap_dss_device *dssdev = NULL;
- 
--static int dss_resume_device(struct device *dev, void *data)
+-static void __exit emif_unregister(void)
 -{
--	int r;
--	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	for_each_dss_dev(dssdev) {
-+		if (!dssdev->driver)
-+			continue;
- 
--	if (dssdev->activate_after_resume) {
--		r = dssdev->driver->enable(dssdev);
--		if (r)
--			return r;
-+		if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
-+			dssdev->driver->disable(dssdev);
-+			dssdev->activate_after_resume = true;
-+		} else {
-+			dssdev->activate_after_resume = false;
-+		}
- 	}
- 
--	dssdev->activate_after_resume = false;
--
- 	return 0;
- }
- 
- int dss_resume_all_devices(void)
- {
--	struct bus_type *bus = dss_get_bus();
--
--	return bus_for_each_dev(bus, NULL, NULL, dss_resume_device);
+-	platform_driver_unregister(&emif_driver);
 -}
-+	struct omap_dss_device *dssdev = NULL;
++module_platform_driver_probe(emif_driver, emif_probe);
  
--static int dss_disable_device(struct device *dev, void *data)
--{
--	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	for_each_dss_dev(dssdev) {
-+		if (!dssdev->driver)
-+			continue;
- 
--	if (dssdev->state != OMAP_DSS_DISPLAY_DISABLED)
--		dssdev->driver->disable(dssdev);
-+		if (dssdev->activate_after_resume) {
-+			dssdev->driver->enable(dssdev);
-+			dssdev->activate_after_resume = false;
-+		}
-+	}
- 
- 	return 0;
- }
- 
- void dss_disable_all_devices(void)
- {
--	struct bus_type *bus = dss_get_bus();
--	bus_for_each_dev(bus, NULL, NULL, dss_disable_device);
-+	struct omap_dss_device *dssdev = NULL;
-+
-+	for_each_dss_dev(dssdev) {
-+		if (!dssdev->driver)
-+			continue;
-+
-+		if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
-+			dssdev->driver->disable(dssdev);
-+	}
- }
- 
- static LIST_HEAD(panel_list);
+-module_init(emif_register);
+-module_exit(emif_unregister);
+ MODULE_DESCRIPTION("TI EMIF SDRAM Controller Driver");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS("platform:emif");
 -- 
-1.7.10.4
+1.8.1.5
 

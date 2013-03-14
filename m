@@ -1,62 +1,249 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 27 Mar 2013 06:48:01 +0000
-Subject: Re: Call for fbdev patches for 3.10
-Message-Id: <51529621.2070509@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig89E57758B455A6633BA59E94"
+From: Fabio Porcedda <fabio.porcedda@gmail.com>
+Date: Thu, 14 Mar 2013 17:09:34 +0000
+Subject: [PATCH v2 4/8] drivers: input: use module_platform_driver_probe()
+Message-Id: <1363280978-24051-5-git-send-email-fabio.porcedda@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <515295CE.6060706@iki.fi>
-In-Reply-To: <515295CE.6060706@iki.fi>
-To: linux-fbdev@vger.kernel.org
+References: <1363280978-24051-1-git-send-email-fabio.porcedda@gmail.com>
+In-Reply-To: <1363280978-24051-1-git-send-email-fabio.porcedda@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---------------enig89E57758B455A6633BA59E94
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This patch converts the drivers to use the
+module_platform_driver_probe() macro which makes the code smaller and
+a bit simpler.
 
-On 2013-03-27 08:46, Tomi Valkeinen wrote:
-> Hi,
->=20
-> If nobody objects, I'll collect fbdev patches for 3.10 in addition to
-> collecting fbdev fixes for 3.9.
->=20
-> So, send the patches to me if there's only a few of them, but for bigge=
-r
-> series please send me a proper pull request, with annotated tag shortly=
+Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: Bill Pemberton <wfp5p@virginia.edu>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: David Howells <dhowells@redhat.com>
+Cc: linux-input@vger.kernel.org
+---
+ drivers/input/keyboard/amikbd.c             | 14 +-------------
+ drivers/input/keyboard/davinci_keyscan.c    | 12 +-----------
+ drivers/input/keyboard/nomadik-ske-keypad.c | 12 +-----------
+ drivers/input/misc/twl4030-pwrbutton.c      | 13 +------------
+ drivers/input/mouse/amimouse.c              | 14 +-------------
+ drivers/input/serio/at32psif.c              | 13 +------------
+ drivers/input/serio/q40kbd.c                | 13 +------------
+ drivers/input/touchscreen/atmel-wm97xx.c    | 12 +-----------
+ drivers/input/touchscreen/mc13783_ts.c      | 12 +-----------
+ 9 files changed, 9 insertions(+), 106 deletions(-)
 
-> describing the changes.
->=20
-> And only reviewed and good patches, nothing controversial =3D).
+diff --git a/drivers/input/keyboard/amikbd.c b/drivers/input/keyboard/amikbd.c
+index 79172af..ba0b36f 100644
+--- a/drivers/input/keyboard/amikbd.c
++++ b/drivers/input/keyboard/amikbd.c
+@@ -260,18 +260,6 @@ static struct platform_driver amikbd_driver = {
+ 	},
+ };
+ 
+-static int __init amikbd_init(void)
+-{
+-	return platform_driver_probe(&amikbd_driver, amikbd_probe);
+-}
+-
+-module_init(amikbd_init);
+-
+-static void __exit amikbd_exit(void)
+-{
+-	platform_driver_unregister(&amikbd_driver);
+-}
+-
+-module_exit(amikbd_exit);
++module_platform_driver_probe(amikbd_driver, amikbd_probe);
+ 
+ MODULE_ALIAS("platform:amiga-keyboard");
+diff --git a/drivers/input/keyboard/davinci_keyscan.c b/drivers/input/keyboard/davinci_keyscan.c
+index 4e4e453..8297537 100644
+--- a/drivers/input/keyboard/davinci_keyscan.c
++++ b/drivers/input/keyboard/davinci_keyscan.c
+@@ -329,17 +329,7 @@ static struct platform_driver davinci_ks_driver = {
+ 	.remove	= davinci_ks_remove,
+ };
+ 
+-static int __init davinci_ks_init(void)
+-{
+-	return platform_driver_probe(&davinci_ks_driver, davinci_ks_probe);
+-}
+-module_init(davinci_ks_init);
+-
+-static void __exit davinci_ks_exit(void)
+-{
+-	platform_driver_unregister(&davinci_ks_driver);
+-}
+-module_exit(davinci_ks_exit);
++module_platform_driver_probe(davinci_ks_driver, davinci_ks_probe);
+ 
+ MODULE_AUTHOR("Miguel Aguilar");
+ MODULE_DESCRIPTION("Texas Instruments DaVinci Key Scan Driver");
+diff --git a/drivers/input/keyboard/nomadik-ske-keypad.c b/drivers/input/keyboard/nomadik-ske-keypad.c
+index 0e6a815..c7d505c 100644
+--- a/drivers/input/keyboard/nomadik-ske-keypad.c
++++ b/drivers/input/keyboard/nomadik-ske-keypad.c
+@@ -430,17 +430,7 @@ static struct platform_driver ske_keypad_driver = {
+ 	.remove = ske_keypad_remove,
+ };
+ 
+-static int __init ske_keypad_init(void)
+-{
+-	return platform_driver_probe(&ske_keypad_driver, ske_keypad_probe);
+-}
+-module_init(ske_keypad_init);
+-
+-static void __exit ske_keypad_exit(void)
+-{
+-	platform_driver_unregister(&ske_keypad_driver);
+-}
+-module_exit(ske_keypad_exit);
++module_platform_driver_probe(ske_keypad_driver, ske_keypad_probe);
+ 
+ MODULE_LICENSE("GPL v2");
+ MODULE_AUTHOR("Naveen Kumar <naveen.gaddipati@stericsson.com> / Sundar Iyer <sundar.iyer@stericsson.com>");
+diff --git a/drivers/input/misc/twl4030-pwrbutton.c b/drivers/input/misc/twl4030-pwrbutton.c
+index 27c2bc8..1700947 100644
+--- a/drivers/input/misc/twl4030-pwrbutton.c
++++ b/drivers/input/misc/twl4030-pwrbutton.c
+@@ -114,18 +114,7 @@ static struct platform_driver twl4030_pwrbutton_driver = {
+ 	},
+ };
+ 
+-static int __init twl4030_pwrbutton_init(void)
+-{
+-	return platform_driver_probe(&twl4030_pwrbutton_driver,
+-			twl4030_pwrbutton_probe);
+-}
+-module_init(twl4030_pwrbutton_init);
+-
+-static void __exit twl4030_pwrbutton_exit(void)
+-{
+-	platform_driver_unregister(&twl4030_pwrbutton_driver);
+-}
+-module_exit(twl4030_pwrbutton_exit);
++module_platform_driver_probe(twl4030_pwrbutton_driver, twl4030_pwrbutton_probe);
+ 
+ MODULE_ALIAS("platform:twl4030_pwrbutton");
+ MODULE_DESCRIPTION("Triton2 Power Button");
+diff --git a/drivers/input/mouse/amimouse.c b/drivers/input/mouse/amimouse.c
+index 5fa9934..b55d5af 100644
+--- a/drivers/input/mouse/amimouse.c
++++ b/drivers/input/mouse/amimouse.c
+@@ -146,18 +146,6 @@ static struct platform_driver amimouse_driver = {
+ 	},
+ };
+ 
+-static int __init amimouse_init(void)
+-{
+-	return platform_driver_probe(&amimouse_driver, amimouse_probe);
+-}
+-
+-module_init(amimouse_init);
+-
+-static void __exit amimouse_exit(void)
+-{
+-	platform_driver_unregister(&amimouse_driver);
+-}
+-
+-module_exit(amimouse_exit);
++module_platform_driver_probe(amimouse_driver, amimouse_probe);
+ 
+ MODULE_ALIAS("platform:amiga-mouse");
+diff --git a/drivers/input/serio/at32psif.c b/drivers/input/serio/at32psif.c
+index 36e799c..190ce35 100644
+--- a/drivers/input/serio/at32psif.c
++++ b/drivers/input/serio/at32psif.c
+@@ -359,18 +359,7 @@ static struct platform_driver psif_driver = {
+ 	},
+ };
+ 
+-static int __init psif_init(void)
+-{
+-	return platform_driver_probe(&psif_driver, psif_probe);
+-}
+-
+-static void __exit psif_exit(void)
+-{
+-	platform_driver_unregister(&psif_driver);
+-}
+-
+-module_init(psif_init);
+-module_exit(psif_exit);
++module_platform_driver_probe(psif_driver, psif_probe);
+ 
+ MODULE_AUTHOR("Hans-Christian Egtvedt <egtvedt@samfundet.no>");
+ MODULE_DESCRIPTION("Atmel AVR32 PSIF PS/2 driver");
+diff --git a/drivers/input/serio/q40kbd.c b/drivers/input/serio/q40kbd.c
+index 70fe542..436a343 100644
+--- a/drivers/input/serio/q40kbd.c
++++ b/drivers/input/serio/q40kbd.c
+@@ -193,15 +193,4 @@ static struct platform_driver q40kbd_driver = {
+ 	.remove		= q40kbd_remove,
+ };
+ 
+-static int __init q40kbd_init(void)
+-{
+-	return platform_driver_probe(&q40kbd_driver, q40kbd_probe);
+-}
+-
+-static void __exit q40kbd_exit(void)
+-{
+-	platform_driver_unregister(&q40kbd_driver);
+-}
+-
+-module_init(q40kbd_init);
+-module_exit(q40kbd_exit);
++module_platform_driver_probe(q40kbd_driver, q40kbd_probe);
+diff --git a/drivers/input/touchscreen/atmel-wm97xx.c b/drivers/input/touchscreen/atmel-wm97xx.c
+index c5c2dbb..2c1e46b 100644
+--- a/drivers/input/touchscreen/atmel-wm97xx.c
++++ b/drivers/input/touchscreen/atmel-wm97xx.c
+@@ -432,17 +432,7 @@ static struct platform_driver atmel_wm97xx_driver = {
+ 	},
+ };
+ 
+-static int __init atmel_wm97xx_init(void)
+-{
+-	return platform_driver_probe(&atmel_wm97xx_driver, atmel_wm97xx_probe);
+-}
+-module_init(atmel_wm97xx_init);
+-
+-static void __exit atmel_wm97xx_exit(void)
+-{
+-	platform_driver_unregister(&atmel_wm97xx_driver);
+-}
+-module_exit(atmel_wm97xx_exit);
++module_platform_driver_probe(atmel_wm97xx_driver, atmel_wm97xx_probe);
+ 
+ MODULE_AUTHOR("Hans-Christian Egtvedt <egtvedt@samfundet.no>");
+ MODULE_DESCRIPTION("wm97xx continuous touch driver for Atmel AT91 and AVR32");
+diff --git a/drivers/input/touchscreen/mc13783_ts.c b/drivers/input/touchscreen/mc13783_ts.c
+index 02103b6..89308fe 100644
+--- a/drivers/input/touchscreen/mc13783_ts.c
++++ b/drivers/input/touchscreen/mc13783_ts.c
+@@ -250,17 +250,7 @@ static struct platform_driver mc13783_ts_driver = {
+ 	},
+ };
+ 
+-static int __init mc13783_ts_init(void)
+-{
+-	return platform_driver_probe(&mc13783_ts_driver, &mc13783_ts_probe);
+-}
+-module_init(mc13783_ts_init);
+-
+-static void __exit mc13783_ts_exit(void)
+-{
+-	platform_driver_unregister(&mc13783_ts_driver);
+-}
+-module_exit(mc13783_ts_exit);
++module_platform_driver_probe(mc13783_ts_driver, mc13783_ts_probe);
+ 
+ MODULE_DESCRIPTION("MC13783 input touchscreen driver");
+ MODULE_AUTHOR("Sascha Hauer <s.hauer@pengutronix.de>");
+-- 
+1.8.1.5
 
-Oops, that was meant to be sent from my @ti address. So please send the
-patches/pull requests to my ti.com address.
-
- Tomi
-
-
-
-
---------------enig89E57758B455A6633BA59E94
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRUpYhAAoJEPo9qoy8lh71cSwQAJbrg2jyLPVEB4RoalFBACNM
-VPE6nSHQJyNVo9UJYmoLNewK5ii9SNFe6fLTrlQQDmhQnkAd0sJkruNG7kJEXX5E
-8GERO6f8FzHpg8eY55QYYSNYdQjWM3l33Y4MVnQDwEs/hJLQW1CWJLFG6rAfG0uS
-+JQ+5v/k2pX5Fs9EunlZmgSvQAZPEptBYVUBqHr3qHJP5BhrGE3TMs9Gu5XuSz7t
-imhZlyEz+ZQgAwxl0lAdqKkrPlNmm/MlQyCEatON+SZ/hkM0dYHccTjufDAQLr6b
-HJVMm7BS2O7j6SkQ1ZKyorAsbcWtyWt0w+qvVaHYQUyVIfcRS7btMjveoZPceF0Q
-AUGm3aVLVU3fzyRoCMSFdkyoPAY95+CrqqH3vM6LO1bzan5v09UfZLlnRBb2htIQ
-u/YdsHvoPO5ZvTtob62Kw9wYlg2DQYDJKs8HpmGBmrlWRfSM97myIi6oYozgntMV
-9nxwRFc7L2EG/VmviUQCl3rvxor8NxsP8ycp01sr2iO4qCOnwL6jgq/2kG/qQGz3
-E3bqDCCTwqq4Pe0h594QoAo+XomHFMCOvKKWwQNbSWv02VwSy0JLLRei7iU4Ptob
-H7pi+HGlEmgHYwaTodgJ+obYkG1gU7feYgMPaa1YvMAlL1sMSRb0TJOAGUag53Ti
-FWvUDXEtJLB+6FlX6PnU
-=DyAu
------END PGP SIGNATURE-----
-
---------------enig89E57758B455A6633BA59E94--

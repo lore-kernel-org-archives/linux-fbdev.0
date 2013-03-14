@@ -1,74 +1,249 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 26 Mar 2013 13:57:25 +0000
-Subject: [PATCH v2 8/8] OMAPDSS: DISPC: Revert to older DISPC Smart Standby mechanism for OMAP5
-Message-Id: <1364305525-28496-9-git-send-email-archit@ti.com>
+From: Fabio Porcedda <fabio.porcedda@gmail.com>
+Date: Thu, 14 Mar 2013 13:11:27 +0000
+Subject: [PATCH 06/10] drivers: input: use module_platform_driver_probe()
+Message-Id: <1363266691-15757-8-git-send-email-fabio.porcedda@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1362493070-17706-1-git-send-email-archit@ti.com>
- <1364305525-28496-1-git-send-email-archit@ti.com>
-In-Reply-To: <1364305525-28496-1-git-send-email-archit@ti.com>
+References: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
+In-Reply-To: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, robdclark@gmail.com, andy.gross@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-DISPC on OMAP5 has a more optimised mechanism of asserting Mstandby to achieve
-more power savings when DISPC is configured in Smart Standby mode. This
-mechanism leads to underflows when multiple DISPC pipes are enabled.
+This patch converts the drivers to use the
+module_platform_driver_probe() macro which makes the code smaller and
+a bit simpler.
 
-There is a register field which can let us revert to the older mechanism of
-asserting Mstandby. Configure this field to prevent underflows.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: Bill Pemberton <wfp5p@virginia.edu>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: David Howells <dhowells@redhat.com>
+Cc: linux-input@vger.kernel.org
 ---
- drivers/video/omap2/dss/dispc.c |    7 +++++++
- drivers/video/omap2/dss/dispc.h |    1 +
- 2 files changed, 8 insertions(+)
+ drivers/input/keyboard/amikbd.c             | 14 +-------------
+ drivers/input/keyboard/davinci_keyscan.c    | 12 +-----------
+ drivers/input/keyboard/nomadik-ske-keypad.c | 12 +-----------
+ drivers/input/misc/twl4030-pwrbutton.c      | 13 +------------
+ drivers/input/mouse/amimouse.c              | 14 +-------------
+ drivers/input/serio/at32psif.c              | 13 +------------
+ drivers/input/serio/q40kbd.c                | 13 +------------
+ drivers/input/touchscreen/atmel-wm97xx.c    | 12 +-----------
+ drivers/input/touchscreen/mc13783_ts.c      | 12 +-----------
+ 9 files changed, 9 insertions(+), 106 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index ddbf031..b33b016 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -87,6 +87,9 @@ struct dispc_features {
- 
- 	/* no DISPC_IRQ_FRAMEDONETV on this SoC */
- 	bool no_framedone_tv:1;
-+
-+	/* revert to the OMAP4 mechanism of DISPC Smart Standby operation */
-+	bool mstandby_workaround:1;
+diff --git a/drivers/input/keyboard/amikbd.c b/drivers/input/keyboard/amikbd.c
+index 79172af..ba0b36f 100644
+--- a/drivers/input/keyboard/amikbd.c
++++ b/drivers/input/keyboard/amikbd.c
+@@ -260,18 +260,6 @@ static struct platform_driver amikbd_driver = {
+ 	},
  };
  
- #define DISPC_MAX_NR_FIFOS 5
-@@ -3502,6 +3505,9 @@ static void _omap_dispc_initial_config(void)
- 	dispc_configure_burst_sizes();
+-static int __init amikbd_init(void)
+-{
+-	return platform_driver_probe(&amikbd_driver, amikbd_probe);
+-}
+-
+-module_init(amikbd_init);
+-
+-static void __exit amikbd_exit(void)
+-{
+-	platform_driver_unregister(&amikbd_driver);
+-}
+-
+-module_exit(amikbd_exit);
++module_platform_driver_probe(amikbd_driver, amikbd_probe);
  
- 	dispc_ovl_enable_zorder_planes();
-+
-+	if (dispc.feat->mstandby_workaround)
-+		REG_FLD_MOD(DISPC_MSTANDBY_CTRL, 1, 0, 0);
- }
- 
- static const struct dispc_features omap24xx_dispc_feats __initconst = {
-@@ -3596,6 +3602,7 @@ static const struct dispc_features omap54xx_dispc_feats __initconst = {
- 	.calc_core_clk		=	calc_core_clk_44xx,
- 	.num_fifos		=	5,
- 	.gfx_fifo_workaround	=	true,
-+	.mstandby_workaround	=	true,
+ MODULE_ALIAS("platform:amiga-keyboard");
+diff --git a/drivers/input/keyboard/davinci_keyscan.c b/drivers/input/keyboard/davinci_keyscan.c
+index 4e4e453..8297537 100644
+--- a/drivers/input/keyboard/davinci_keyscan.c
++++ b/drivers/input/keyboard/davinci_keyscan.c
+@@ -329,17 +329,7 @@ static struct platform_driver davinci_ks_driver = {
+ 	.remove	= davinci_ks_remove,
  };
  
- static int __init dispc_init_features(struct platform_device *pdev)
-diff --git a/drivers/video/omap2/dss/dispc.h b/drivers/video/omap2/dss/dispc.h
-index 222363c..de4863d 100644
---- a/drivers/video/omap2/dss/dispc.h
-+++ b/drivers/video/omap2/dss/dispc.h
-@@ -39,6 +39,7 @@
- #define DISPC_GLOBAL_BUFFER		0x0800
- #define DISPC_CONTROL3                  0x0848
- #define DISPC_CONFIG3                   0x084C
-+#define DISPC_MSTANDBY_CTRL		0x0858
+-static int __init davinci_ks_init(void)
+-{
+-	return platform_driver_probe(&davinci_ks_driver, davinci_ks_probe);
+-}
+-module_init(davinci_ks_init);
+-
+-static void __exit davinci_ks_exit(void)
+-{
+-	platform_driver_unregister(&davinci_ks_driver);
+-}
+-module_exit(davinci_ks_exit);
++module_platform_driver_probe(davinci_ks_driver, davinci_ks_probe);
  
- /* DISPC overlay registers */
- #define DISPC_OVL_BA0(n)		(DISPC_OVL_BASE(n) + \
+ MODULE_AUTHOR("Miguel Aguilar");
+ MODULE_DESCRIPTION("Texas Instruments DaVinci Key Scan Driver");
+diff --git a/drivers/input/keyboard/nomadik-ske-keypad.c b/drivers/input/keyboard/nomadik-ske-keypad.c
+index 0e6a815..c7d505c 100644
+--- a/drivers/input/keyboard/nomadik-ske-keypad.c
++++ b/drivers/input/keyboard/nomadik-ske-keypad.c
+@@ -430,17 +430,7 @@ static struct platform_driver ske_keypad_driver = {
+ 	.remove = ske_keypad_remove,
+ };
+ 
+-static int __init ske_keypad_init(void)
+-{
+-	return platform_driver_probe(&ske_keypad_driver, ske_keypad_probe);
+-}
+-module_init(ske_keypad_init);
+-
+-static void __exit ske_keypad_exit(void)
+-{
+-	platform_driver_unregister(&ske_keypad_driver);
+-}
+-module_exit(ske_keypad_exit);
++module_platform_driver_probe(ske_keypad_driver, ske_keypad_probe);
+ 
+ MODULE_LICENSE("GPL v2");
+ MODULE_AUTHOR("Naveen Kumar <naveen.gaddipati@stericsson.com> / Sundar Iyer <sundar.iyer@stericsson.com>");
+diff --git a/drivers/input/misc/twl4030-pwrbutton.c b/drivers/input/misc/twl4030-pwrbutton.c
+index 27c2bc8..1700947 100644
+--- a/drivers/input/misc/twl4030-pwrbutton.c
++++ b/drivers/input/misc/twl4030-pwrbutton.c
+@@ -114,18 +114,7 @@ static struct platform_driver twl4030_pwrbutton_driver = {
+ 	},
+ };
+ 
+-static int __init twl4030_pwrbutton_init(void)
+-{
+-	return platform_driver_probe(&twl4030_pwrbutton_driver,
+-			twl4030_pwrbutton_probe);
+-}
+-module_init(twl4030_pwrbutton_init);
+-
+-static void __exit twl4030_pwrbutton_exit(void)
+-{
+-	platform_driver_unregister(&twl4030_pwrbutton_driver);
+-}
+-module_exit(twl4030_pwrbutton_exit);
++module_platform_driver_probe(twl4030_pwrbutton_driver, twl4030_pwrbutton_probe);
+ 
+ MODULE_ALIAS("platform:twl4030_pwrbutton");
+ MODULE_DESCRIPTION("Triton2 Power Button");
+diff --git a/drivers/input/mouse/amimouse.c b/drivers/input/mouse/amimouse.c
+index 5fa9934..b55d5af 100644
+--- a/drivers/input/mouse/amimouse.c
++++ b/drivers/input/mouse/amimouse.c
+@@ -146,18 +146,6 @@ static struct platform_driver amimouse_driver = {
+ 	},
+ };
+ 
+-static int __init amimouse_init(void)
+-{
+-	return platform_driver_probe(&amimouse_driver, amimouse_probe);
+-}
+-
+-module_init(amimouse_init);
+-
+-static void __exit amimouse_exit(void)
+-{
+-	platform_driver_unregister(&amimouse_driver);
+-}
+-
+-module_exit(amimouse_exit);
++module_platform_driver_probe(amimouse_driver, amimouse_probe);
+ 
+ MODULE_ALIAS("platform:amiga-mouse");
+diff --git a/drivers/input/serio/at32psif.c b/drivers/input/serio/at32psif.c
+index 36e799c..190ce35 100644
+--- a/drivers/input/serio/at32psif.c
++++ b/drivers/input/serio/at32psif.c
+@@ -359,18 +359,7 @@ static struct platform_driver psif_driver = {
+ 	},
+ };
+ 
+-static int __init psif_init(void)
+-{
+-	return platform_driver_probe(&psif_driver, psif_probe);
+-}
+-
+-static void __exit psif_exit(void)
+-{
+-	platform_driver_unregister(&psif_driver);
+-}
+-
+-module_init(psif_init);
+-module_exit(psif_exit);
++module_platform_driver_probe(psif_driver, psif_probe);
+ 
+ MODULE_AUTHOR("Hans-Christian Egtvedt <egtvedt@samfundet.no>");
+ MODULE_DESCRIPTION("Atmel AVR32 PSIF PS/2 driver");
+diff --git a/drivers/input/serio/q40kbd.c b/drivers/input/serio/q40kbd.c
+index 70fe542..436a343 100644
+--- a/drivers/input/serio/q40kbd.c
++++ b/drivers/input/serio/q40kbd.c
+@@ -193,15 +193,4 @@ static struct platform_driver q40kbd_driver = {
+ 	.remove		= q40kbd_remove,
+ };
+ 
+-static int __init q40kbd_init(void)
+-{
+-	return platform_driver_probe(&q40kbd_driver, q40kbd_probe);
+-}
+-
+-static void __exit q40kbd_exit(void)
+-{
+-	platform_driver_unregister(&q40kbd_driver);
+-}
+-
+-module_init(q40kbd_init);
+-module_exit(q40kbd_exit);
++module_platform_driver_probe(q40kbd_driver, q40kbd_probe);
+diff --git a/drivers/input/touchscreen/atmel-wm97xx.c b/drivers/input/touchscreen/atmel-wm97xx.c
+index c5c2dbb..2c1e46b 100644
+--- a/drivers/input/touchscreen/atmel-wm97xx.c
++++ b/drivers/input/touchscreen/atmel-wm97xx.c
+@@ -432,17 +432,7 @@ static struct platform_driver atmel_wm97xx_driver = {
+ 	},
+ };
+ 
+-static int __init atmel_wm97xx_init(void)
+-{
+-	return platform_driver_probe(&atmel_wm97xx_driver, atmel_wm97xx_probe);
+-}
+-module_init(atmel_wm97xx_init);
+-
+-static void __exit atmel_wm97xx_exit(void)
+-{
+-	platform_driver_unregister(&atmel_wm97xx_driver);
+-}
+-module_exit(atmel_wm97xx_exit);
++module_platform_driver_probe(atmel_wm97xx_driver, atmel_wm97xx_probe);
+ 
+ MODULE_AUTHOR("Hans-Christian Egtvedt <egtvedt@samfundet.no>");
+ MODULE_DESCRIPTION("wm97xx continuous touch driver for Atmel AT91 and AVR32");
+diff --git a/drivers/input/touchscreen/mc13783_ts.c b/drivers/input/touchscreen/mc13783_ts.c
+index 02103b6..89308fe 100644
+--- a/drivers/input/touchscreen/mc13783_ts.c
++++ b/drivers/input/touchscreen/mc13783_ts.c
+@@ -250,17 +250,7 @@ static struct platform_driver mc13783_ts_driver = {
+ 	},
+ };
+ 
+-static int __init mc13783_ts_init(void)
+-{
+-	return platform_driver_probe(&mc13783_ts_driver, &mc13783_ts_probe);
+-}
+-module_init(mc13783_ts_init);
+-
+-static void __exit mc13783_ts_exit(void)
+-{
+-	platform_driver_unregister(&mc13783_ts_driver);
+-}
+-module_exit(mc13783_ts_exit);
++module_platform_driver_probe(mc13783_ts_driver, mc13783_ts_probe);
+ 
+ MODULE_DESCRIPTION("MC13783 input touchscreen driver");
+ MODULE_AUTHOR("Sascha Hauer <s.hauer@pengutronix.de>");
 -- 
-1.7.10.4
+1.8.1.5
 

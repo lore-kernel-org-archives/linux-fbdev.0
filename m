@@ -1,141 +1,74 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 27 Mar 2013 10:09:12 +0000
-Subject: Re: [RFC 02/14] ARM: OMAP2+: add omapdss_init_of()
-Message-Id: <5152C548.9030500@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enigF94C5C548F92B7548B4235DC"
+From: Fabio Porcedda <fabio.porcedda@gmail.com>
+Date: Thu, 14 Mar 2013 13:11:31 +0000
+Subject: [PATCH 10/10] drivers: misc: use module_platform_driver_probe()
+Message-Id: <1363266691-15757-12-git-send-email-fabio.porcedda@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
- <1364373921-7599-3-git-send-email-tomi.valkeinen@ti.com>
- <5152BBD3.9070202@ti.com>
-In-Reply-To: <5152BBD3.9070202@ti.com>
+References: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
+In-Reply-To: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---------------enigF94C5C548F92B7548B4235DC
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This patch converts the drivers to use the
+module_platform_driver_probe() macro which makes the code smaller and
+a bit simpler.
 
-On 2013-03-27 11:28, Benoit Cousson wrote:
-> Hi Tomi,
+Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/misc/atmel_pwm.c  | 12 +-----------
+ drivers/misc/ep93xx_pwm.c | 13 +------------
+ 2 files changed, 2 insertions(+), 23 deletions(-)
 
-Hi Benoit. Thanks for your comments!
+diff --git a/drivers/misc/atmel_pwm.c b/drivers/misc/atmel_pwm.c
+index 28f5aaa..494d050 100644
+--- a/drivers/misc/atmel_pwm.c
++++ b/drivers/misc/atmel_pwm.c
+@@ -393,17 +393,7 @@ static struct platform_driver atmel_pwm_driver = {
+ 	 */
+ };
+ 
+-static int __init pwm_init(void)
+-{
+-	return platform_driver_probe(&atmel_pwm_driver, pwm_probe);
+-}
+-module_init(pwm_init);
+-
+-static void __exit pwm_exit(void)
+-{
+-	platform_driver_unregister(&atmel_pwm_driver);
+-}
+-module_exit(pwm_exit);
++module_platform_driver_probe(atmel_pwm_driver, pwm_probe);
+ 
+ MODULE_DESCRIPTION("Driver for AT32/AT91 PWM module");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/misc/ep93xx_pwm.c b/drivers/misc/ep93xx_pwm.c
+index 16d7179..96787ec 100644
+--- a/drivers/misc/ep93xx_pwm.c
++++ b/drivers/misc/ep93xx_pwm.c
+@@ -365,18 +365,7 @@ static struct platform_driver ep93xx_pwm_driver = {
+ 	.remove		= __exit_p(ep93xx_pwm_remove),
+ };
+ 
+-static int __init ep93xx_pwm_init(void)
+-{
+-	return platform_driver_probe(&ep93xx_pwm_driver, ep93xx_pwm_probe);
+-}
+-
+-static void __exit ep93xx_pwm_exit(void)
+-{
+-	platform_driver_unregister(&ep93xx_pwm_driver);
+-}
+-
+-module_init(ep93xx_pwm_init);
+-module_exit(ep93xx_pwm_exit);
++module_platform_driver_probe(ep93xx_pwm_driver, ep93xx_pwm_probe);
+ 
+ MODULE_AUTHOR("Matthieu Crapet <mcrapet@gmail.com>, "
+ 	      "H Hartley Sweeten <hsweeten@visionengravers.com>");
+-- 
+1.8.1.5
 
-> On 03/27/2013 09:45 AM, Tomi Valkeinen wrote:
->> omapdss driver uses a omapdss platform device to pass platform specifi=
-c
->> function pointers and DSS hardware version from the arch code to the
->> driver. This device is needed also when booting with DT.
->>
->> This patch adds omapdss_init_of() function, called from board-generic =
-at
->> init time, which creates the omapdss device.
->>
->> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->> ---
->>  arch/arm/mach-omap2/board-generic.c |    1 +
->>  arch/arm/mach-omap2/common.h        |    2 ++
->>  arch/arm/mach-omap2/display.c       |   34 ++++++++++++++++++++++++++=
-++++++++
->>  3 files changed, 37 insertions(+)
->>
->> diff --git a/arch/arm/mach-omap2/board-generic.c b/arch/arm/mach-omap2=
-/board-generic.c
->> index a61544b..29eb085 100644
->> --- a/arch/arm/mach-omap2/board-generic.c
->> +++ b/arch/arm/mach-omap2/board-generic.c
->> @@ -41,6 +41,7 @@ static void __init omap_generic_init(void)
->> =20
->>  	of_platform_populate(NULL, omap_dt_match_table, NULL, NULL);
->> =20
->> +	omapdss_init_of();
->=20
-> Mmm, you should not have to call that explicitly. It looks like a hack
-> to me. Everything in theory should be initialized during
-> of_platform_populate / driver probe.
-
-All the "real" devices are initialized properly. However, we still have
-a "virtual" omapdss device, which does not represent a particular HW
-block as such, and is not represented in the DT data. It's a legacy
-thing, and slowly on its way out.
-
-However, it still helps us to pass the platform callbacks via platform
-data even in DT call, so we have this (hacky) omapdss_init_of() call.
-
-And we also pass the OMAP revision information via the platform data, as
-we need to know the DSS HW version. The only way to get that is to know
-the OMAP version and revision. If we would set the DSS HW version
-information into DT data, we could need separate dts files for each OMAP
-revision.
-
->> +
->> +int __init omapdss_init_of(void)
->> +{
->> +	int r;
->> +	enum omapdss_version ver;
->> +
->> +	static struct omap_dss_board_info board_data =3D {
->> +		.dsi_enable_pads =3D omap_dsi_enable_pads,
->> +		.dsi_disable_pads =3D omap_dsi_disable_pads,
->=20
-> Pads config should be handle by pinmux framework is possible. Otherwise=
-
-> a dedicated driver will be required.
-
-Hmm. These functions touch the OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_DSIPHY
-(CONTROL_DSIPHY in the TRM) register. It's not a normal padconfig thing
-(like, selecting between GPIO and some other function).
-
-Can they be handled by the pinmux framework? I'm not familiar with it.
-What do you mean with dedicated driver? Dedicated pinmux driver, or
-something else?
-
->> +		.get_context_loss_count =3D omap_pm_get_dev_context_loss_count,
->> +		.set_min_bus_tput =3D omap_dss_set_min_bus_tput,
->=20
->=20
-> All that code should disappear with DT. hacking a platform device with
-> pdata is the old way of initializing a device.
->=20
-> I know that you do have some omap_pm callback, but you'd better get rid=
-
-> of them in case of DT boot.
-> Fixing that is a generic issue, and as soon as a solution will be done
-> to handle these specific hooks, every drivers will be able to use that.=
-
-
-So, what you're saying is that this is not the correct way, but there's
-no other way to handle it currently? If so, yes, I know that, but, well,
-there's no other way to handle it currently.
-
-I could leave them out, but in that case when booting with DT there must
-be no DSS context loss, and OPP must be at OPP100 all the time.
-
- Tomi
-
-
-
---------------enigF94C5C548F92B7548B4235DC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRUsVIAAoJEPo9qoy8lh71E88P/3FdcC5kqgumiFNb3dJ50lxE
-CmS/vdD+kJvofm4dEcyBHgwlskDca7058iMNX3KRLoJA6xp53C5yFRt/zRwQEd5w
-TAygqbizVSZT91Ig8h0rhXMgdU0ayPW2eIscEcNmK1JdIr45KchtHY89325uDcxX
-C+jChXnbwaaDZFgPXrn+o25rf5CGn1QNXlZXkLrI82bK6UcH+L47kaMVyS2tM1V0
-LF2ndg+igNHs8RGyYyQHSLMBH6Asp1pMmTJDZsN2hvAi2AOQ2fpPB1GBqKa3U5tA
-fbXFiB3bFjeazgJOO2yo6Nk8aYLGQM//eeY6GqbwKEsTvwdu1dyGU9/VPl+Snf5q
-eAGdYUqxWN2oThQpqQqUCm5FaiEL/yCXnN4AWix2Tj2G0c+6ZvqQ8Ru7xPaLS7ix
-GAwaBIiCzWt3aNW/QUBrqSXsYYu86cAoiD5jYqDQbgqAKqeV1DngD2mneO4cfHpn
-icxTBBMvKPo8LJpYVVSI4FAIy+HD/gk7j8y0Gc5ySSDFo5OqDYA/aReUsmONffts
-57vrBQDBB1flOpk/t5d3AKjXF2hAVh49V2Vf99WT+16AyfTFfP71c1pQWVQGlD6f
-XgXqc/RGFuf+pYW8nxHQ1GMCU6FxrVJii3GUIEbmVYBSRfF9/EEueaio9RUvBsGm
-VAmPtggvgH96nHl2Lkll
-=Vj1V
------END PGP SIGNATURE-----
-
---------------enigF94C5C548F92B7548B4235DC--

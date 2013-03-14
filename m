@@ -1,38 +1,99 @@
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-Date: Mon, 04 Mar 2013 21:03:19 +0000
-Subject: [PATCH 1/2] omapfb: fix broken build on OMAP1
-Message-Id: <1362431000-15141-1-git-send-email-aaro.koskinen@iki.fi>
+From: Fabio Porcedda <fabio.porcedda@gmail.com>
+Date: Thu, 14 Mar 2013 13:11:30 +0000
+Subject: [PATCH 09/10] drivers: video: use module_platform_driver_probe()
+Message-Id: <1363266691-15757-11-git-send-email-fabio.porcedda@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
+In-Reply-To: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: linux-arm-kernel@lists.infradead.org
 
-Fix the following build regression in 3.9-rc1 by including
-<mach/hardware.h>:
+This patch converts the drivers to use the
+module_platform_driver_probe() macro which makes the code smaller and
+a bit simpler.
 
-drivers/video/omap/omapfb_main.c: In function 'set_fb_var':
-drivers/video/omap/omapfb_main.c:505:3: error: implicit declaration of function 'cpu_is_omap15xx' [-Werror=implicit-function-declaration]
-
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Richard Purdie <rpurdie@rpsys.net>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
 ---
- drivers/video/omap/omapfb_main.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/backlight/atmel-pwm-bl.c | 12 +-----------
+ drivers/video/sh_mipi_dsi.c            | 12 +-----------
+ drivers/video/sh_mobile_hdmi.c         | 12 +-----------
+ 3 files changed, 3 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/video/omap/omapfb_main.c b/drivers/video/omap/omapfb_main.c
-index e31f5b3..d40612c 100644
---- a/drivers/video/omap/omapfb_main.c
-+++ b/drivers/video/omap/omapfb_main.c
-@@ -32,6 +32,8 @@
+diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
+index de5e5e7..20b330d 100644
+--- a/drivers/video/backlight/atmel-pwm-bl.c
++++ b/drivers/video/backlight/atmel-pwm-bl.c
+@@ -225,17 +225,7 @@ static struct platform_driver atmel_pwm_bl_driver = {
+ 	.remove = __exit_p(atmel_pwm_bl_remove),
+ };
  
- #include <linux/omap-dma.h>
+-static int __init atmel_pwm_bl_init(void)
+-{
+-	return platform_driver_probe(&atmel_pwm_bl_driver, atmel_pwm_bl_probe);
+-}
+-module_init(atmel_pwm_bl_init);
+-
+-static void __exit atmel_pwm_bl_exit(void)
+-{
+-	platform_driver_unregister(&atmel_pwm_bl_driver);
+-}
+-module_exit(atmel_pwm_bl_exit);
++module_platform_driver_probe(atmel_pwm_bl_driver, atmel_pwm_bl_probe);
  
-+#include <mach/hardware.h>
-+
- #include "omapfb.h"
- #include "lcdc.h"
+ MODULE_AUTHOR("Hans-Christian egtvedt <hans-christian.egtvedt@atmel.com>");
+ MODULE_DESCRIPTION("Atmel PWM backlight driver");
+diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
+index 701b461..6cad530 100644
+--- a/drivers/video/sh_mipi_dsi.c
++++ b/drivers/video/sh_mipi_dsi.c
+@@ -581,17 +581,7 @@ static struct platform_driver sh_mipi_driver = {
+ 	},
+ };
  
+-static int __init sh_mipi_init(void)
+-{
+-	return platform_driver_probe(&sh_mipi_driver, sh_mipi_probe);
+-}
+-module_init(sh_mipi_init);
+-
+-static void __exit sh_mipi_exit(void)
+-{
+-	platform_driver_unregister(&sh_mipi_driver);
+-}
+-module_exit(sh_mipi_exit);
++module_platform_driver_probe(sh_mipi_driver, sh_mipi_probe);
+ 
+ MODULE_AUTHOR("Guennadi Liakhovetski <g.liakhovetski@gmx.de>");
+ MODULE_DESCRIPTION("SuperH / ARM-shmobile MIPI DSI driver");
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index 930e550..bfe4728 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -1445,17 +1445,7 @@ static struct platform_driver sh_hdmi_driver = {
+ 	},
+ };
+ 
+-static int __init sh_hdmi_init(void)
+-{
+-	return platform_driver_probe(&sh_hdmi_driver, sh_hdmi_probe);
+-}
+-module_init(sh_hdmi_init);
+-
+-static void __exit sh_hdmi_exit(void)
+-{
+-	platform_driver_unregister(&sh_hdmi_driver);
+-}
+-module_exit(sh_hdmi_exit);
++module_platform_driver_probe(sh_hdmi_driver, sh_hdmi_probe);
+ 
+ MODULE_AUTHOR("Guennadi Liakhovetski <g.liakhovetski@gmx.de>");
+ MODULE_DESCRIPTION("SuperH / ARM-shmobile HDMI driver");
 -- 
-1.7.10.4
+1.8.1.5
 

@@ -1,102 +1,61 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 27 Mar 2013 08:45:17 +0000
-Subject: [RFC 10/14] ARM: omap4.dtsi: add omapdss information
-Message-Id: <1364373921-7599-11-git-send-email-tomi.valkeinen@ti.com>
+From: Fabio Porcedda <fabio.porcedda@gmail.com>
+Date: Thu, 14 Mar 2013 13:11:20 +0000
+Subject: [PATCH 00/10] Use module_platform_driver_probe() part 2
+Message-Id: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364373921-7599-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, Andy Gross <andy.gross-l0cyMroinI0@public.gmane.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- arch/arm/boot/dts/omap4.dtsi |   71 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 71 insertions(+)
+Hi all,
+this patch set is the second part for the conversion to use
+new module_platform_driver_probe() macro.
 
-diff --git a/arch/arm/boot/dts/omap4.dtsi b/arch/arm/boot/dts/omap4.dtsi
-index 739bb79..967f706 100644
---- a/arch/arm/boot/dts/omap4.dtsi
-+++ b/arch/arm/boot/dts/omap4.dtsi
-@@ -529,5 +529,76 @@
- 			ti,hwmods = "timer11";
- 			ti,timer-pwm;
- 		};
-+
-+		dss@58000000 {
-+			compatible = "ti,omap4-dss", "simple-bus";
-+			reg = <0x58000000 0x80>;
-+			ti,hwmods = "dss_core";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges;
-+
-+			dispc@58001000 {
-+				compatible = "ti,omap4-dispc";
-+				reg = <0x58001000 0x1000>;
-+				interrupts = <0 25 0x4>;
-+				ti,hwmods = "dss_dispc";
-+			};
-+
-+			dpi: dpi {
-+				compatible = "ti,omap4-dpi";
-+			};
-+
-+			rfbi: rfbi@58002000  {
-+				compatible = "ti,omap4-rfbi";
-+				reg = <0x58002000 0x1000>;
-+				ti,hwmods = "dss_rfbi";
-+			};
-+
-+			/*
-+			 * Accessing venc registers cause a crash on omap4, so
-+			 * this is disabled for now.
-+			 */
-+			/*
-+			venc: venc@58003000 {
-+				compatible = "ti,omap4-venc";
-+				reg = <0x58003000 0x1000>;
-+				ti,hwmods = "dss_venc";
-+			};
-+			*/
-+
-+			dsi1: dsi@58004000 {
-+				compatible = "ti,omap4-dsi";
-+				reg = <0x58004000 0x200>;
-+				interrupts = <0 53 0x4>;
-+				ti,hwmods = "dss_dsi1";
-+
-+				/*
-+				 * XXX dss_core needs to know module-id,
-+				 * so this data should be there.
-+				 */
-+				ti,dsi-module-id = <0>;
-+			};
-+
-+			dsi2: dsi@58005000 {
-+				compatible = "ti,omap4-dsi";
-+				reg = <0x58005000 0x200>;
-+				interrupts = <0 84 0x4>;
-+				ti,hwmods = "dss_dsi2";
-+
-+				/*
-+				 * XXX dss_core needs to know module-id,
-+				 * so this data should be there.
-+				 */
-+				ti,dsi-module-id = <1>;
-+			};
-+
-+			hdmi: hdmi@58006000 {
-+				compatible = "ti,omap4-hdmi";
-+				reg = <0x58006000 0x1000>;
-+				interrupts = <0 101 0x4>;
-+				ti,hwmods = "dss_hdmi";
-+			};
-+		};
- 	};
- };
+I will send a part 3 for the remaining drivers.
+
+Fabio Porcedda (10):
+  drivers: media: use module_platform_driver_probe()
+  drivers: ata: use module_platform_driver_probe()
+  drivers: char: use module_platform_driver_probe()
+  drivers: hwmon: use module_platform_driver_probe()
+  drivers: ide: use module_platform_driver_probe()
+  drivers: input: use module_platform_driver_probe()
+  drivers: memory: use module_platform_driver_probe()
+  drivers: mfd: use module_platform_driver_probe()
+  drivers: video: use module_platform_driver_probe()
+  drivers: misc: use module_platform_driver_probe()
+
+ drivers/ata/pata_at32.c                        | 13 +------------
+ drivers/ata/pata_samsung_cf.c                  | 13 +------------
+ drivers/char/hw_random/mxc-rnga.c              | 13 +------------
+ drivers/char/hw_random/tx4939-rng.c            | 13 +------------
+ drivers/hwmon/mc13783-adc.c                    | 13 +------------
+ drivers/ide/gayle.c                            | 15 +--------------
+ drivers/ide/tx4938ide.c                        | 13 +------------
+ drivers/ide/tx4939ide.c                        | 13 +------------
+ drivers/input/keyboard/amikbd.c                | 14 +-------------
+ drivers/input/keyboard/davinci_keyscan.c       | 12 +-----------
+ drivers/input/keyboard/nomadik-ske-keypad.c    | 12 +-----------
+ drivers/input/misc/twl4030-pwrbutton.c         | 13 +------------
+ drivers/input/mouse/amimouse.c                 | 14 +-------------
+ drivers/input/serio/at32psif.c                 | 13 +------------
+ drivers/input/serio/q40kbd.c                   | 13 +------------
+ drivers/input/touchscreen/atmel-wm97xx.c       | 12 +-----------
+ drivers/input/touchscreen/mc13783_ts.c         | 12 +-----------
+ drivers/media/platform/sh_vou.c                | 13 +------------
+ drivers/media/platform/soc_camera/atmel-isi.c  | 12 +-----------
+ drivers/media/platform/soc_camera/mx1_camera.c | 13 +------------
+ drivers/memory/emif.c                          | 12 +-----------
+ drivers/mfd/davinci_voicecodec.c               | 12 +-----------
+ drivers/mfd/htc-pasic3.c                       | 13 +------------
+ drivers/misc/atmel_pwm.c                       | 12 +-----------
+ drivers/misc/ep93xx_pwm.c                      | 13 +------------
+ drivers/video/backlight/atmel-pwm-bl.c         | 12 +-----------
+ drivers/video/sh_mipi_dsi.c                    | 12 +-----------
+ drivers/video/sh_mobile_hdmi.c                 | 12 +-----------
+ 28 files changed, 28 insertions(+), 329 deletions(-)
+
 -- 
-1.7.10.4
+1.8.1.5
 

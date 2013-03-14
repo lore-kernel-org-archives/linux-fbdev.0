@@ -1,74 +1,38 @@
-From: Fabio Porcedda <fabio.porcedda@gmail.com>
-Date: Thu, 14 Mar 2013 13:11:31 +0000
-Subject: [PATCH 10/10] drivers: misc: use module_platform_driver_probe()
-Message-Id: <1363266691-15757-12-git-send-email-fabio.porcedda@gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 14 Mar 2013 13:58:05 +0000
+Subject: Re: [PATCH 10/10] drivers: misc: use module_platform_driver_probe()
+Message-Id: <201303141358.05616.arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
-In-Reply-To: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
+ <1363266691-15757-12-git-send-email-fabio.porcedda@gmail.com>
+In-Reply-To: <1363266691-15757-12-git-send-email-fabio.porcedda@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-This patch converts the drivers to use the
-module_platform_driver_probe() macro which makes the code smaller and
-a bit simpler.
+On Thursday 14 March 2013, Fabio Porcedda wrote:
+> This patch converts the drivers to use the
+> module_platform_driver_probe() macro which makes the code smaller and
+> a bit simpler.
+> 
+> Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/misc/atmel_pwm.c  | 12 +-----------
+>  drivers/misc/ep93xx_pwm.c | 13 +------------
+>  2 files changed, 2 insertions(+), 23 deletions(-)
 
-Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
----
- drivers/misc/atmel_pwm.c  | 12 +-----------
- drivers/misc/ep93xx_pwm.c | 13 +------------
- 2 files changed, 2 insertions(+), 23 deletions(-)
+The patch itself seems fine, but there are two issues around it:
 
-diff --git a/drivers/misc/atmel_pwm.c b/drivers/misc/atmel_pwm.c
-index 28f5aaa..494d050 100644
---- a/drivers/misc/atmel_pwm.c
-+++ b/drivers/misc/atmel_pwm.c
-@@ -393,17 +393,7 @@ static struct platform_driver atmel_pwm_driver = {
- 	 */
- };
- 
--static int __init pwm_init(void)
--{
--	return platform_driver_probe(&atmel_pwm_driver, pwm_probe);
--}
--module_init(pwm_init);
--
--static void __exit pwm_exit(void)
--{
--	platform_driver_unregister(&atmel_pwm_driver);
--}
--module_exit(pwm_exit);
-+module_platform_driver_probe(atmel_pwm_driver, pwm_probe);
- 
- MODULE_DESCRIPTION("Driver for AT32/AT91 PWM module");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/misc/ep93xx_pwm.c b/drivers/misc/ep93xx_pwm.c
-index 16d7179..96787ec 100644
---- a/drivers/misc/ep93xx_pwm.c
-+++ b/drivers/misc/ep93xx_pwm.c
-@@ -365,18 +365,7 @@ static struct platform_driver ep93xx_pwm_driver = {
- 	.remove		= __exit_p(ep93xx_pwm_remove),
- };
- 
--static int __init ep93xx_pwm_init(void)
--{
--	return platform_driver_probe(&ep93xx_pwm_driver, ep93xx_pwm_probe);
--}
--
--static void __exit ep93xx_pwm_exit(void)
--{
--	platform_driver_unregister(&ep93xx_pwm_driver);
--}
--
--module_init(ep93xx_pwm_init);
--module_exit(ep93xx_pwm_exit);
-+module_platform_driver_probe(ep93xx_pwm_driver, ep93xx_pwm_probe);
- 
- MODULE_AUTHOR("Matthieu Crapet <mcrapet@gmail.com>, "
- 	      "H Hartley Sweeten <hsweeten@visionengravers.com>");
--- 
-1.8.1.5
+* The PWM drivers should really get moved to drivers/pwm and converted to the new
+  PWM subsystem. I don't know if Hartley or Hans-Christian have plans to do
+  that already.
 
+* Regarding the use of module_platform_driver_probe, I'm a little worried about
+  the interactions with deferred probing. I don't think there are any regressions,
+  but we should probably make people aware that one cannot return -EPROBE_DEFER
+  from a platform_driver_probe function.
+
+	Arnd

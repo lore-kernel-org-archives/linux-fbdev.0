@@ -1,60 +1,46 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Sat, 23 Mar 2013 06:46:31 +0000
-Subject: [PATCH 3/5] video: vt8500: Correct descriptions in video/Kconfig
-Message-Id: <1364021193-19835-4-git-send-email-linux@prisktech.co.nz>
+From: Shawn Guo <shawn.guo@linaro.org>
+Date: Thu, 14 Mar 2013 05:53:24 +0000
+Subject: [PATCH 0/6] Remove mxsfb auxdata
+Message-Id: <1363240410-16865-1-git-send-email-shawn.guo@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364021193-19835-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1364021193-19835-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-This patch corrects the descriptions for the VIA VT8500 and
-Wondermedia WM8xxx-series framebuffer drivers to correctly reflect
-which hardware they support.
+The mxsfb driver was converted to device tree by asking platform to
+pass mxsfb_platform_data with auxdata.  We did this to have mach-mxs
+be DT only platform when there was no videomode bindings.  Now with
+the videomode bindings and helpers in place, the series changes mxsfb
+driver to get display_timings from device tree, and removes mxsfb
+platform_data and auxdata completely.
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
----
- drivers/video/Kconfig |   11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+To maintain the bisectability, the series needs to go via single tree,
+and I prefer to arm-soc tree.
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 661aa54..ad762ed 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -1789,7 +1789,7 @@ config FB_AU1200
- 	  option au1200fb:panel=<name>.
- 
- config FB_VT8500
--	bool "VT8500 LCD Driver"
-+	bool "VIA VT8500 framebuffer support"
- 	depends on (FB = y) && ARM && ARCH_VT8500
- 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
-@@ -1799,17 +1799,18 @@ config FB_VT8500
- 	  controller.
- 
- config FB_WM8505
--	bool "WM8505 frame buffer support"
-+	bool "Wondermedia WM8xxx-series frame buffer support"
- 	depends on (FB = y) && ARM && ARCH_VT8500
- 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_IMAGEBLIT
- 	help
--	  This is the framebuffer driver for WonderMedia WM8505/WM8650
--	  integrated LCD controller.
-+	  This is the framebuffer driver for WonderMedia WM8xxx-series
-+	  integrated LCD controller. This driver covers the WM8505, WM8650
-+	  and WM8850 SoCs.
- 
- config FB_WMT_GE_ROPS
--	bool "VT8500/WM85xx accelerated raster ops support"
-+	bool "VT8500/WM8xxx accelerated raster ops support"
- 	depends on (FB = y) && (FB_VT8500 || FB_WM8505)
- 	default n
- 	help
+Shawn Guo (6):
+  video: mxsfb: use devm_* managed functions
+  video: mxsfb: remove fb_phys/fb_size from platform_data
+  video: mxsfb: remove dotclk_delay from platform_data
+  video: mxsfb: get display timings from device tree
+  ARM: mxs: move display timing configurations into device tree
+  video: mxsfb: remove mxsfb_platform_data
+
+ Documentation/devicetree/bindings/fb/mxsfb.txt |   34 ++++
+ arch/arm/boot/dts/imx23-evk.dts                |   25 +++
+ arch/arm/boot/dts/imx28-apf28dev.dts           |   25 +++
+ arch/arm/boot/dts/imx28-apx4devkit.dts         |   25 +++
+ arch/arm/boot/dts/imx28-cfa10049.dts           |   25 +++
+ arch/arm/boot/dts/imx28-evk.dts                |   25 +++
+ arch/arm/boot/dts/imx28-m28evk.dts             |   25 +++
+ arch/arm/mach-mxs/mach-mxs.c                   |  153 -----------------
+ drivers/video/Kconfig                          |    2 +
+ drivers/video/mxsfb.c                          |  219 +++++++++++++++---------
+ include/linux/mxsfb.h                          |   49 ------
+ 11 files changed, 320 insertions(+), 287 deletions(-)
+ delete mode 100644 include/linux/mxsfb.h
+
 -- 
 1.7.9.5
+
 

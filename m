@@ -1,93 +1,76 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Thu, 28 Mar 2013 04:59:53 +0000
-Subject: Re: [PATCH] video: fixed missing iounmap coccinelle errors
-Message-Id: <1364446793.15039.2.camel@gitbox>
+From: Fabio Porcedda <fabio.porcedda@gmail.com>
+Date: Thu, 14 Mar 2013 17:09:36 +0000
+Subject: [PATCH v2 6/8] drivers: mfd: use module_platform_driver_probe()
+Message-Id: <1363280978-24051-7-git-send-email-fabio.porcedda@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364427805-11972-1-git-send-email-epure.andrei@gmail.com>
-In-Reply-To: <1364427805-11972-1-git-send-email-epure.andrei@gmail.com>
+References: <1363280978-24051-1-git-send-email-fabio.porcedda@gmail.com>
+In-Reply-To: <1363280978-24051-1-git-send-email-fabio.porcedda@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Thu, 2013-03-28 at 01:43 +0200, Andrei Epure wrote:
-> Modified or added the necessary goto statements so that the ioremapped
-> regions get unmapped before return.
-> 
-> Signed-off-by: Andrei Epure <epure.andrei@gmail.com>
-> ---
->  drivers/video/vt8500lcdfb.c |    7 ++++---
->  drivers/video/wm8505fb.c    |    7 ++++---
->  2 files changed, 8 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
-> index aa2579c..b4ccca2 100644
-> --- a/drivers/video/vt8500lcdfb.c
-> +++ b/drivers/video/vt8500lcdfb.c
-> @@ -350,7 +350,7 @@ static int vt8500lcd_probe(struct platform_device *pdev)
->  	if (!np) {
->  		pr_err("%s: No display description in Device Tree\n", __func__);
->  		ret = -EINVAL;
-> -		goto failed_free_res;
-> +		goto failed_free_io;
->  	}
->  
->  	/*
-> @@ -369,7 +369,7 @@ static int vt8500lcd_probe(struct platform_device *pdev)
->  	ret |= of_property_read_u32(np, "bpp", &bpp);
->  	if (ret) {
->  		pr_err("%s: Unable to read display properties\n", __func__);
-> -		goto failed_free_res;
-> +		goto failed_free_io;
->  	}
->  	of_mode.vmode = FB_VMODE_NONINTERLACED;
->  
-> @@ -379,7 +379,8 @@ static int vt8500lcd_probe(struct platform_device *pdev)
->  				GFP_KERNEL);
->  	if (!fb_mem_virt) {
->  		pr_err("%s: Failed to allocate framebuffer\n", __func__);
-> -		return -ENOMEM;
-> +		ret = -ENOMEM;
-> +		goto failed_free_io;
->  	};
->  
->  	fbi->fb.fix.smem_start	= fb_mem_phys;
-> diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
-> index 4dd0580..2e8298e 100644
-> --- a/drivers/video/wm8505fb.c
-> +++ b/drivers/video/wm8505fb.c
-> @@ -332,7 +332,7 @@ static int wm8505fb_probe(struct platform_device *pdev)
->  	if (!np) {
->  		pr_err("%s: No display description in Device Tree\n", __func__);
->  		ret = -EINVAL;
-> -		goto failed_free_res;
-> +		goto failed_free_io;
->  	}
->  
->  	/*
-> @@ -351,7 +351,7 @@ static int wm8505fb_probe(struct platform_device *pdev)
->  	ret |= of_property_read_u32(np, "bpp", &bpp);
->  	if (ret) {
->  		pr_err("%s: Unable to read display properties\n", __func__);
-> -		goto failed_free_res;
-> +		goto failed_free_io;
->  	}
->  
->  	of_mode.vmode = FB_VMODE_NONINTERLACED;
-> @@ -369,7 +369,8 @@ static int wm8505fb_probe(struct platform_device *pdev)
->  				GFP_KERNEL);
->  	if (!fb_mem_virt) {
->  		pr_err("%s: Failed to allocate framebuffer\n", __func__);
-> -		return -ENOMEM;
-> +		ret = -ENOMEM;
-> +		goto failed_free_io;
->  	};
->  
->  	fbi->fb.var.xres_virtual	= of_mode.xres;
+This patch converts the drivers to use the
+module_platform_driver_probe() macro which makes the code smaller and
+a bit simpler.
 
-NACK
-Already have a patch queued up for this from Julia Lawall
+Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-arm-kernel@lists.infradead.org
+---
+ drivers/mfd/davinci_voicecodec.c | 12 +-----------
+ drivers/mfd/htc-pasic3.c         | 13 +------------
+ 2 files changed, 2 insertions(+), 23 deletions(-)
 
-Regards
-Tony P
+diff --git a/drivers/mfd/davinci_voicecodec.c b/drivers/mfd/davinci_voicecodec.c
+index c0bcc87..c60ab0c 100644
+--- a/drivers/mfd/davinci_voicecodec.c
++++ b/drivers/mfd/davinci_voicecodec.c
+@@ -177,17 +177,7 @@ static struct platform_driver davinci_vc_driver = {
+ 	.remove	= davinci_vc_remove,
+ };
+ 
+-static int __init davinci_vc_init(void)
+-{
+-	return platform_driver_probe(&davinci_vc_driver, davinci_vc_probe);
+-}
+-module_init(davinci_vc_init);
+-
+-static void __exit davinci_vc_exit(void)
+-{
+-	platform_driver_unregister(&davinci_vc_driver);
+-}
+-module_exit(davinci_vc_exit);
++module_platform_driver_probe(davinci_vc_driver, davinci_vc_probe);
+ 
+ MODULE_AUTHOR("Miguel Aguilar");
+ MODULE_DESCRIPTION("Texas Instruments DaVinci Voice Codec Core Interface");
+diff --git a/drivers/mfd/htc-pasic3.c b/drivers/mfd/htc-pasic3.c
+index 9e5453d..0285fce 100644
+--- a/drivers/mfd/htc-pasic3.c
++++ b/drivers/mfd/htc-pasic3.c
+@@ -208,18 +208,7 @@ static struct platform_driver pasic3_driver = {
+ 	.remove		= pasic3_remove,
+ };
+ 
+-static int __init pasic3_base_init(void)
+-{
+-	return platform_driver_probe(&pasic3_driver, pasic3_probe);
+-}
+-
+-static void __exit pasic3_base_exit(void)
+-{
+-	platform_driver_unregister(&pasic3_driver);
+-}
+-
+-module_init(pasic3_base_init);
+-module_exit(pasic3_base_exit);
++module_platform_driver_probe(pasic3_driver, pasic3_probe);
+ 
+ MODULE_AUTHOR("Philipp Zabel <philipp.zabel@gmail.com>");
+ MODULE_DESCRIPTION("Core driver for HTC PASIC3");
+-- 
+1.8.1.5
 

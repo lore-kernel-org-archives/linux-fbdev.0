@@ -1,7 +1,7 @@
 From: Fabio Porcedda <fabio.porcedda@gmail.com>
-Date: Thu, 14 Mar 2013 13:11:23 +0000
-Subject: [PATCH 02/10] drivers: ata: use module_platform_driver_probe()
-Message-Id: <1363266691-15757-4-git-send-email-fabio.porcedda@gmail.com>
+Date: Thu, 14 Mar 2013 13:11:26 +0000
+Subject: [PATCH 05/10] drivers: ide: use module_platform_driver_probe()
+Message-Id: <1363266691-15757-7-git-send-email-fabio.porcedda@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
 In-Reply-To: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
@@ -16,61 +16,88 @@ a bit simpler.
 
 Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jeff Garzik <jgarzik@pobox.com>
+Cc: "David S. Miller" <davem@davemloft.net>
 Cc: linux-ide@vger.kernel.org
 ---
- drivers/ata/pata_at32.c       | 13 +------------
- drivers/ata/pata_samsung_cf.c | 13 +------------
- 2 files changed, 2 insertions(+), 24 deletions(-)
+ drivers/ide/gayle.c     | 15 +--------------
+ drivers/ide/tx4938ide.c | 13 +------------
+ drivers/ide/tx4939ide.c | 13 +------------
+ 3 files changed, 3 insertions(+), 38 deletions(-)
 
-diff --git a/drivers/ata/pata_at32.c b/drivers/ata/pata_at32.c
-index 36f189c..8d493b4 100644
---- a/drivers/ata/pata_at32.c
-+++ b/drivers/ata/pata_at32.c
-@@ -393,18 +393,7 @@ static struct platform_driver pata_at32_driver = {
+diff --git a/drivers/ide/gayle.c b/drivers/ide/gayle.c
+index 51beb85..0a8440a 100644
+--- a/drivers/ide/gayle.c
++++ b/drivers/ide/gayle.c
+@@ -183,20 +183,7 @@ static struct platform_driver amiga_gayle_ide_driver = {
  	},
  };
  
--static int __init pata_at32_init(void)
+-static int __init amiga_gayle_ide_init(void)
 -{
--	return platform_driver_probe(&pata_at32_driver, pata_at32_probe);
+-	return platform_driver_probe(&amiga_gayle_ide_driver,
+-				     amiga_gayle_ide_probe);
 -}
 -
--static void __exit pata_at32_exit(void)
+-module_init(amiga_gayle_ide_init);
+-
+-static void __exit amiga_gayle_ide_exit(void)
 -{
--	platform_driver_unregister(&pata_at32_driver);
+-	platform_driver_unregister(&amiga_gayle_ide_driver);
 -}
 -
--module_init(pata_at32_init);
--module_exit(pata_at32_exit);
-+module_platform_driver_probe(pata_at32_driver, pata_at32_probe);
+-module_exit(amiga_gayle_ide_exit);
++module_platform_driver_probe(amiga_gayle_ide_driver, amiga_gayle_ide_probe);
  
  MODULE_LICENSE("GPL");
- MODULE_DESCRIPTION("AVR32 SMC/CFC PATA Driver");
-diff --git a/drivers/ata/pata_samsung_cf.c b/drivers/ata/pata_samsung_cf.c
-index 70b0e01..6ef27e9 100644
---- a/drivers/ata/pata_samsung_cf.c
-+++ b/drivers/ata/pata_samsung_cf.c
-@@ -661,18 +661,7 @@ static struct platform_driver pata_s3c_driver = {
- 	},
+ MODULE_ALIAS("platform:amiga-gayle-ide");
+diff --git a/drivers/ide/tx4938ide.c b/drivers/ide/tx4938ide.c
+index 91d49dd..ede8575 100644
+--- a/drivers/ide/tx4938ide.c
++++ b/drivers/ide/tx4938ide.c
+@@ -203,18 +203,7 @@ static struct platform_driver tx4938ide_driver = {
+ 	.remove = __exit_p(tx4938ide_remove),
  };
  
--static int __init pata_s3c_init(void)
+-static int __init tx4938ide_init(void)
 -{
--	return platform_driver_probe(&pata_s3c_driver, pata_s3c_probe);
+-	return platform_driver_probe(&tx4938ide_driver, tx4938ide_probe);
 -}
 -
--static void __exit pata_s3c_exit(void)
+-static void __exit tx4938ide_exit(void)
 -{
--	platform_driver_unregister(&pata_s3c_driver);
+-	platform_driver_unregister(&tx4938ide_driver);
 -}
 -
--module_init(pata_s3c_init);
--module_exit(pata_s3c_exit);
-+module_platform_driver_probe(pata_s3c_driver, pata_s3c_probe);
+-module_init(tx4938ide_init);
+-module_exit(tx4938ide_exit);
++module_platform_driver_probe(tx4938ide_driver, tx4938ide_probe);
  
- MODULE_AUTHOR("Abhilash Kesavan, <a.kesavan@samsung.com>");
- MODULE_DESCRIPTION("low-level driver for Samsung PATA controller");
+ MODULE_DESCRIPTION("TX4938 internal IDE driver");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/ide/tx4939ide.c b/drivers/ide/tx4939ide.c
+index c0ab800..4ecdee5 100644
+--- a/drivers/ide/tx4939ide.c
++++ b/drivers/ide/tx4939ide.c
+@@ -624,18 +624,7 @@ static struct platform_driver tx4939ide_driver = {
+ 	.resume = tx4939ide_resume,
+ };
+ 
+-static int __init tx4939ide_init(void)
+-{
+-	return platform_driver_probe(&tx4939ide_driver, tx4939ide_probe);
+-}
+-
+-static void __exit tx4939ide_exit(void)
+-{
+-	platform_driver_unregister(&tx4939ide_driver);
+-}
+-
+-module_init(tx4939ide_init);
+-module_exit(tx4939ide_exit);
++module_platform_driver_probe(tx4939ide_driver, tx4939ide_probe);
+ 
+ MODULE_DESCRIPTION("TX4939 internal IDE driver");
+ MODULE_LICENSE("GPL");
 -- 
 1.8.1.5
 

@@ -1,30 +1,58 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 15 Mar 2013 11:28:48 +0000
-Subject: Re: [PATCH 10/10] drivers: misc: use module_platform_driver_probe()
-Message-Id: <201303151128.48432.arnd@arndb.de>
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+Date: Fri, 15 Mar 2013 17:43:48 +0000
+Subject: RE: [PATCH 10/10] drivers: misc: use module_platform_driver_probe()
+Message-Id: <ADE657CA350FB648AAC2C43247A983F0020980106B9E@AUSP01VMBX24.collaborationhost.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
- <20130314140631.GM1906@pengutronix.de>
- <CAHkwnC9nGsdgOTQZ6VpeDyPWXw7tpP+2oHvnLv6LEr1cNdnrsg@mail.gmail.com>
-In-Reply-To: <CAHkwnC9nGsdgOTQZ6VpeDyPWXw7tpP+2oHvnLv6LEr1cNdnrsg@mail.gmail.com>
+ <1363266691-15757-12-git-send-email-fabio.porcedda@gmail.com>
+ <201303141358.05616.arnd@arndb.de>
+In-Reply-To: <201303141358.05616.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Friday 15 March 2013, Fabio Porcedda wrote:
-> >> * Regarding the use of module_platform_driver_probe, I'm a little worried about
-> >>   the interactions with deferred probing. I don't think there are any regressions,
-> >>   but we should probably make people aware that one cannot return -EPROBE_DEFER
-> >>   from a platform_driver_probe function.
-> 
-> The use of module_platform_driver_probe() doesn't change anything about that,
-> it's exactly the same thing as using "return platform_driver_probe()".
-> I'm right or I'm missing something? Maybe are you just speaking about
-> the misuse of "platform_driver_probe"?
+On Thursday, March 14, 2013 6:58 AM, Arnd Bergmann wrote:
+> On Thursday 14 March 2013, Fabio Porcedda wrote:
+>> This patch converts the drivers to use the
+>> module_platform_driver_probe() macro which makes the code smaller and
+>> a bit simpler.
+>> 
+>> Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
+>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>> Cc: Arnd Bergmann <arnd@arndb.de>
+>> ---
+>>  drivers/misc/atmel_pwm.c  | 12 +-----------
+>>  drivers/misc/ep93xx_pwm.c | 13 +------------
+>>  2 files changed, 2 insertions(+), 23 deletions(-)
+>
+> The patch itself seems fine, but there are two issues around it:
+>
+> * The PWM drivers should really get moved to drivers/pwm and converted to the new
+>   PWM subsystem. I don't know if Hartley or Hans-Christian have plans to do
+>   that already.
 
-Yes, that was what I meant. The point is that if we need to review or remove
-all uses of platform_driver_probe, it would be better not to introduce a
-module_platform_driver_probe() interface to make it easier to use.
+Arnd,
 
-	Arnd
+Ill look at converting the ep93xx pwm driver to the PWM subsystem. The only issue is
+the current driver exposes a sysfs interface that I think is not available in that subsystem.
+
+>* Regarding the use of module_platform_driver_probe, I'm a little worried about
+>  the interactions with deferred probing. I don't think there are any regressions,
+>  but we should probably make people aware that one cannot return -EPROBE_DEFER
+>  from a platform_driver_probe function.
+
+The ep93xx pwm driver does not need to use platform_driver_probe(). It can be changed
+to use module_platform_driver() by just moving the .probe to the platform_driver. This
+driver was added before module_platform_driver() was available and I used the
+platform_driver_probe() thinking it would save a couple lines of code.
+
+I'll change this in a bit. Right now I'm trying to work out why kernel 3.8 is not booting
+on the ep93xx. I had 3.6.6 on my development board and 3.7 works fine but 3.8 hangs
+without uncompressing the kernel.
+
+Regards,
+Hartley
+
+
+

@@ -1,49 +1,70 @@
-From: Devendra Naga <devendra.aaru@gmail.com>
-Date: Fri, 08 Mar 2013 19:31:09 +0000
-Subject: [PATCH 3/3] drivers: video: console: fbcon_cw: fix compiler warning in cw_update_attr
-Message-Id: <1362771069-16345-3-git-send-email-devendra.aaru@gmail.com>
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+Date: Sat, 16 Mar 2013 01:05:09 +0000
+Subject: [PATCH 2/3] video: ep93xx-fb.c: fix section mismatch and use module_platform_driver
+Message-Id: <201303151805.10277.hartleys@visionengravers.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: linux-fbdev@vger.kernel.org, Ryan Mallon <rmallon@gmail.com>, FlorianSchandinat@gmx.de
 
-with make W=1
+Remove the __init tags from the ep93xxfb_calc_fbsize() and
+ep93xxfb_alloc_videomem() functions to fix the section mismatch
+warnings.
 
-saw
+Use module_platform_driver() to remove the init/exit boilerplate.
 
-drivers/video/console/fbcon_cw.c: In function ‘cw_update_attr’:
-drivers/video/console/fbcon_cw.c:30:8: warning: variable ‘t’ set but not used [-Wunused-but-set-variable]
-
-fixed by removing as since its used nowhere
-
-Cc: Antonino A. Daplas <adaplas@gmail.com>
-Signed-off-by: Devendra Naga <devendra.aaru@gmail.com>
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Ryan Mallon <rmallon@gmail.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/console/fbcon_cw.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/ep93xx-fb.c | 18 +++---------------
+ 1 file changed, 3 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/video/console/fbcon_cw.c b/drivers/video/console/fbcon_cw.c
-index 6a73782..a93670e 100644
---- a/drivers/video/console/fbcon_cw.c
-+++ b/drivers/video/console/fbcon_cw.c
-@@ -27,7 +27,7 @@ static void cw_update_attr(u8 *dst, u8 *src, int attribute,
- {
- 	int i, j, offset = (vc->vc_font.height < 10) ? 1 : 2;
- 	int width = (vc->vc_font.height + 7) >> 3;
--	u8 c, t = 0, msk = ~(0xff >> offset);
-+	u8 c, msk = ~(0xff >> offset);
+diff --git a/drivers/video/ep93xx-fb.c b/drivers/video/ep93xx-fb.c
+index e06cd5d..ee1ee54 100644
+--- a/drivers/video/ep93xx-fb.c
++++ b/drivers/video/ep93xx-fb.c
+@@ -419,7 +419,7 @@ static struct fb_ops ep93xxfb_ops = {
+ 	.fb_mmap	= ep93xxfb_mmap,
+ };
  
- 	for (i = 0; i < vc->vc_font.width; i++) {
- 		for (j = 0; j < width; j++) {
-@@ -40,7 +40,6 @@ static void cw_update_attr(u8 *dst, u8 *src, int attribute,
- 				c = ~c;
- 			src++;
- 			*dst++ = c;
--			t = c;
- 		}
- 	}
+-static int __init ep93xxfb_calc_fbsize(struct ep93xxfb_mach_info *mach_info)
++static int ep93xxfb_calc_fbsize(struct ep93xxfb_mach_info *mach_info)
+ {
+ 	int i, fb_size = 0;
+ 
+@@ -441,7 +441,7 @@ static int __init ep93xxfb_calc_fbsize(struct ep93xxfb_mach_info *mach_info)
+ 	return fb_size;
  }
+ 
+-static int __init ep93xxfb_alloc_videomem(struct fb_info *info)
++static int ep93xxfb_alloc_videomem(struct fb_info *info)
+ {
+ 	struct ep93xx_fbi *fbi = info->par;
+ 	char __iomem *virt_addr;
+@@ -627,19 +627,7 @@ static struct platform_driver ep93xxfb_driver = {
+ 		.owner	= THIS_MODULE,
+ 	},
+ };
+-
+-static int ep93xxfb_init(void)
+-{
+-	return platform_driver_register(&ep93xxfb_driver);
+-}
+-
+-static void __exit ep93xxfb_exit(void)
+-{
+-	platform_driver_unregister(&ep93xxfb_driver);
+-}
+-
+-module_init(ep93xxfb_init);
+-module_exit(ep93xxfb_exit);
++module_platform_driver(ep93xxfb_driver);
+ 
+ MODULE_DESCRIPTION("EP93XX Framebuffer Driver");
+ MODULE_ALIAS("platform:ep93xx-fb");
 -- 
-1.8.1.2
+1.8.1.4
 

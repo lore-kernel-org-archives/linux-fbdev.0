@@ -1,84 +1,46 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Thu, 28 Mar 2013 05:04:41 +0000
-Subject: Re: [PATCH 6/6] video: fb: vt8500: Convert framebuffer drivers to standardized binding
-Message-Id: <1364447081.15039.5.camel@gitbox>
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+Date: Sat, 16 Mar 2013 01:03:08 +0000
+Subject: [PATCH 1/3] backlight: ep93xx_bl: fix section mismatch
+Message-Id: <201303151803.08774.hartleys@visionengravers.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364374021-10844-1-git-send-email-linux@prisktech.co.nz>
- <1364374021-10844-7-git-send-email-linux@prisktech.co.nz>
- <5152D39F.1090104@ti.com>
-In-Reply-To: <5152D39F.1090104@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: linux-fbdev@vger.kernel.org, Ryan Mallon <rmallon@gmail.com>, rpurdie@rpsys.net, FlorianSchandinat@gmx.de
 
-On Wed, 2013-03-27 at 13:10 +0200, Tomi Valkeinen wrote:
-> Hi,
-> 
-> On 2013-03-27 10:47, Tony Prisk wrote:
-> > Now that a display timing binding is available, convert our almost identical
-> > binding to use the standard binding.
-> > 
-> > This patch converts the vt8500 and wm8505 framebuffer drivers and
-> > associated dts/dtsi files to use the standard binding as defined in
-> > bindings/video/display-timing.txt.
-> > 
-> > There are two side-effects of making this conversion:
-> > 
-> > 1) The fb node should now be in the board file, rather than the soc file as
-> > the display-timing node is a child of the fb node.
-> > 
-> > 2) We still require a bits per pixel property to initialize the framebuffer
-> > for the different lcd panels. Rather than including this as part of the
-> > display timing, it is moved into the framebuffer node.
-> > 
-> > I have also taken the opportunity to alphabetise the includes of each
-> > driver to avoid double-ups.
-> 
-> I don't think this is correct. I don't have that much experience with
-> DT, but I think you should have, for example:
-> 
-> wm8850.dtsi:
-> 
-> 	fb: fb@d8051700 {
-> 		compatible = "wm,wm8505-fb";
-> 		reg = <0xd8051700 0x200>;
-> 	};
-> 
-> wm8850-w70v2.dts:
-> 
-> &fb {
-> 	bits-per-pixel = <16>;
-> 
-> 	display-timings {
-> 		native-mode = <&timing0>;
-> 		timing0: 800x480 {
-> 			clock-frequency = <0>;
-> 			...
-> 		};
-> 	};
-> };
-> 
-> So, the core fb part should be in the SoC's file, as it's part of the
-> SoC. And the stuff that tells what kind of display is attached is in the
-> board dts file.
-> 
-> Also, just a word of warning, I think the videomode series I've sent for
-> review will cause some breakage with this series if the videomode series
-> is accepted. Nothing difficult to fix, though, but we'll need some extra
-> management to avoid compilation failures.
-> 
->  Tomi
-> 
-> 
+Remove the __init tag from ep93xxbl_probe() to fix the section
+mismatch warning.
 
-Thanks for the feedback and the heads-up.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Ryan Mallon <rmallon@gmail.com>
+Cc: Richard Purdie <rpurdie@rpsys.net>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+---
+ drivers/video/backlight/ep93xx_bl.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-I believe you are correct about the DT info - it looks right when
-described the way you did, so I have changed it.
-
-If there is no other feedback, I will post a version 2 after Easter.
-
-Regards
-Tony P
+diff --git a/drivers/video/backlight/ep93xx_bl.c b/drivers/video/backlight/ep93xx_bl.c
+index ef3e21e..17b8abb 100644
+--- a/drivers/video/backlight/ep93xx_bl.c
++++ b/drivers/video/backlight/ep93xx_bl.c
+@@ -60,7 +60,7 @@ static const struct backlight_ops ep93xxbl_ops = {
+ 	.get_brightness	= ep93xxbl_get_brightness,
+ };
+ 
+-static int __init ep93xxbl_probe(struct platform_device *dev)
++static int ep93xxbl_probe(struct platform_device *dev)
+ {
+ 	struct ep93xxbl *ep93xxbl;
+ 	struct backlight_device *bl;
+@@ -145,7 +145,6 @@ static struct platform_driver ep93xxbl_driver = {
+ 	.suspend	= ep93xxbl_suspend,
+ 	.resume		= ep93xxbl_resume,
+ };
+-
+ module_platform_driver(ep93xxbl_driver);
+ 
+ MODULE_DESCRIPTION("EP93xx Backlight Driver");
+-- 
+1.8.1.4
 

@@ -1,55 +1,31 @@
-From: Ryan Mallon <rmallon@gmail.com>
-Date: Sat, 16 Mar 2013 02:19:48 +0000
-Subject: Re: [PATCH 1/3] backlight: ep93xx_bl: fix section mismatch
-Message-Id: <5143D6C4.9060503@gmail.com>
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+Date: Mon, 18 Mar 2013 17:51:29 +0000
+Subject: RE: [PATCH 1/3] backlight: ep93xx_bl: fix section mismatch
+Message-Id: <ADE657CA350FB648AAC2C43247A983F0020980106E11@AUSP01VMBX24.collaborationhost.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <201303151803.08774.hartleys@visionengravers.com>
-In-Reply-To: <201303151803.08774.hartleys@visionengravers.com>
+ <5143D6C4.9060503@gmail.com>
+In-Reply-To: <5143D6C4.9060503@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org, rpurdie@rpsys.net, FlorianSchandinat@gmx.de
+To: Ryan Mallon <rmallon@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "rpurdie@rpsys.net" <rpurdie@rpsys.net>, "FlorianSchandinat@gmx.de" <FlorianSchandinat@gmx.de>
 
-On 16/03/13 12:03, H Hartley Sweeten wrote:
-
-> Remove the __init tag from ep93xxbl_probe() to fix the section
-> mismatch warning.
-> 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> Cc: Ryan Mallon <rmallon@gmail.com>
-> Cc: Richard Purdie <rpurdie@rpsys.net>
-> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-
-
-There is a patch for this already queued in Andrew Morton's tree.
-
-~Ryan
-
-> ---
->  drivers/video/backlight/ep93xx_bl.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/ep93xx_bl.c b/drivers/video/backlight/ep93xx_bl.c
-> index ef3e21e..17b8abb 100644
-> --- a/drivers/video/backlight/ep93xx_bl.c
-> +++ b/drivers/video/backlight/ep93xx_bl.c
-> @@ -60,7 +60,7 @@ static const struct backlight_ops ep93xxbl_ops = {
->  	.get_brightness	= ep93xxbl_get_brightness,
->  };
->  
-> -static int __init ep93xxbl_probe(struct platform_device *dev)
-> +static int ep93xxbl_probe(struct platform_device *dev)
->  {
->  	struct ep93xxbl *ep93xxbl;
->  	struct backlight_device *bl;
-> @@ -145,7 +145,6 @@ static struct platform_driver ep93xxbl_driver = {
->  	.suspend	= ep93xxbl_suspend,
->  	.resume		= ep93xxbl_resume,
->  };
-> -
->  module_platform_driver(ep93xxbl_driver);
->  
->  MODULE_DESCRIPTION("EP93xx Backlight Driver");
-
-
+T24gRnJpZGF5LCBNYXJjaCAxNSwgMjAxMyA3OjIwIFBNLCBSeWFuIE1hbGxvbiB3cm90ZToNCj4g
+T24gMTYvMDMvMTMgMTI6MDMsIEggSGFydGxleSBTd2VldGVuIHdyb3RlOg0KPg0KPj4gUmVtb3Zl
+IHRoZSBfX2luaXQgdGFnIGZyb20gZXA5M3h4YmxfcHJvYmUoKSB0byBmaXggdGhlIHNlY3Rpb24N
+Cj4+IG1pc21hdGNoIHdhcm5pbmcuDQo+PiANCj4+IFNpZ25lZC1vZmYtYnk6IEggSGFydGxleSBT
+d2VldGVuIDxoc3dlZXRlbkB2aXNpb25lbmdyYXZlcnMuY29tPg0KPj4gQ2M6IFJ5YW4gTWFsbG9u
+IDxybWFsbG9uQGdtYWlsLmNvbT4NCj4+IENjOiBSaWNoYXJkIFB1cmRpZSA8cnB1cmRpZUBycHN5
+cy5uZXQ+DQo+PiBDYzogRmxvcmlhbiBUb2JpYXMgU2NoYW5kaW5hdCA8RmxvcmlhblNjaGFuZGlu
+YXRAZ214LmRlPg0KPg0KPg0KPiBUaGVyZSBpcyBhIHBhdGNoIGZvciB0aGlzIGFscmVhZHkgcXVl
+dWVkIGluIEFuZHJldyBNb3J0b24ncyB0cmVlLg0KDQpBaCwgbWlzc2VkIHRoYXQgb25lLiBQbGVh
+c2UgZHJvcCBwYXRjaCAxLzMuDQoNClRoZSBvdGhlciB0d28sIGFzIHdlbGwgYXMgdGhlIGNvbXBp
+bGUgYnVnIGZpeCBmb3IgZXA5M3h4X2ZiLmMgc2hvdWxkIHN0aWxsDQpiZSBvay4gVGhlIGJ1ZyBm
+aXggcGF0Y2ggaXMgcHJvYmFibHkgdmFsaWQgZm9yIHN0YWJsZSBhcyBhcHByb3ByaWF0ZS4NCg0K
+W1BBVENIXSB2aWRlbzogZXA5M3h4X2ZiOiBpbmNsdWRlIDxsaW51eC9pby5oPiBmb3IgZGV2bV9p
+b3JlbWFwKCkNCltQQVRDSCAyLzNdIHZpZGVvOiBlcDkzeHgtZmIuYzogZml4IHNlY3Rpb24gbWlz
+bWF0Y2ggYW5kIHVzZSBtb2R1bGVfcGxhdGZvcm1fZHJpdmVyDQpbUEFUQ0ggMy8zXSBtaXNjOiBl
+cDkzeHhfcHdtLmM6IGZpeCBzZWN0aW9uIG1pc21hdGNoIGFuZCB1c2UgbW9kdWxlX3BsYXRmb3Jt
+X2RyaXZlcg0KDQpUaGFua3MsDQpIYXJ0bGV5DQoNCg=

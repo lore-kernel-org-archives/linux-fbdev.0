@@ -1,52 +1,55 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Wed, 27 Mar 2013 08:46:55 +0000
-Subject: [PATCH 0/6] fb: vt8500: patches for 3.10
-Message-Id: <1364374021-10844-1-git-send-email-linux@prisktech.co.nz>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Mon, 18 Mar 2013 15:35:29 +0000
+Subject: [PATCH V3 7/7] fbcon: queue work on any cpu
+Message-Id: <e82c429f56d058cb6e2bbcad40232c11a4be511a.1363617402.git.viresh.kumar@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1363617402.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1363617402.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: pjt@google.com, paul.mckenney@linaro.org, tglx@linutronix.de, tj@kernel.org, suresh.b.siddha@intel.com, venki@google.com, mingo@redhat.com, peterz@infradead.org, rostedt@goodmis.org
+Cc: linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, Arvind.Chauhan@arm.com, linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Dave Airlie <airlied@redhat.com>, linux-fbdev@vger.kernel.org
 
-Hi Tomi,
+fbcon uses workqueues and it has no real dependency of scheduling these on the
+cpu which scheduled them.
 
-Not sure if you are willing to take these patches or not, but thought I would
-send them just in case. These patches were sent in the 3.9 merge window, but
-I didn't recieve any replies, and they didn't go in.
+On a idle system, it is observed that and idle cpu wakes up few times just to
+service this work. It would be better if we can schedule it on a cpu which isn't
+idle to save on power.
 
-All the patches are specific to arch-vt8500 framebuffer drivers.
+By idle cpu (from scheduler's perspective) we mean:
+- Current task is idle task
+- nr_running = 0
+- wake_list is empty
 
-Regards
-Tony Prisk
+This patch replaces schedule_work() routine with queue_work_on_any_cpu()
+sibling with system_wq as workqueue.
 
-Julia Lawall (1):
-  drivers/video/wm8505fb.c: use devm_ functions
+This routine would look for the closest (via scheduling domains) non-idle cpu
+(non-idle from schedulers perspective). If the current cpu is not idle or all
+cpus are idle, work will be scheduled on local cpu.
 
-Tony Prisk (5):
-  video: vt8500: Make wmt_ge_rops optional
-  video: vt8500: Remove unused platform_data/video-vt8500lcdfb.h
-  video: vt8500: Correct descriptions in video/Kconfig
-  video: vt8500: Adjust contrast in wm8505 framebuffer driver.
-  video: fb: vt8500: Convert framebuffer drivers to standardized
-    binding
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/video/console/fbcon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- .../devicetree/bindings/video/via,vt8500-fb.txt    |   48 ++----
- .../devicetree/bindings/video/wm,wm8505-fb.txt     |   32 ++--
- arch/arm/boot/dts/vt8500-bv07.dts                  |   24 +--
- arch/arm/boot/dts/vt8500.dtsi                      |    8 -
- arch/arm/boot/dts/wm8505-ref.dts                   |   21 ++-
- arch/arm/boot/dts/wm8505.dtsi                      |    7 -
- arch/arm/boot/dts/wm8650-mid.dts                   |   21 ++-
- arch/arm/boot/dts/wm8650.dtsi                      |    7 -
- arch/arm/boot/dts/wm8850-w70v2.dts                 |   21 ++-
- arch/arm/boot/dts/wm8850.dtsi                      |    7 -
- drivers/video/Kconfig                              |   37 +++--
- drivers/video/vt8500lcdfb.c                        |   70 ++++-----
- drivers/video/wm8505fb.c                           |  160 ++++++++------------
- include/linux/platform_data/video-vt8500lcdfb.h    |   31 ----
- 14 files changed, 194 insertions(+), 300 deletions(-)
- delete mode 100644 include/linux/platform_data/video-vt8500lcdfb.h
-
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 3cd6759..a900997 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -404,7 +404,7 @@ static void cursor_timer_handler(unsigned long dev_addr)
+ 	struct fb_info *info = (struct fb_info *) dev_addr;
+ 	struct fbcon_ops *ops = info->fbcon_par;
+ 
+-	schedule_work(&info->queue);
++	queue_work_on_any_cpu(system_wq, &info->queue);
+ 	mod_timer(&ops->cursor_timer, jiffies + HZ/5);
+ }
+ 
 -- 
-1.7.9.5
+1.7.12.rc2.18.g61b472e
 

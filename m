@@ -1,93 +1,47 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 27 Mar 2013 09:57:57 +0000
-Subject: Re: [PATCH 05/26] OMAPDSS: DPI: fix regulators
-Message-Id: <5152C274.4070901@ti.com>
+From: Paul Bolle <pebolle@tiscali.nl>
+Date: Tue, 19 Mar 2013 10:07:57 +0000
+Subject: [PATCH] ARM: OMAP: remove "config FB_OMAP_CONSISTENT_DMA_SIZE"
+Message-Id: <1363687677.1390.6.camel@x61.thuisdomein>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com> <1364304836-18134-6-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364304836-18134-6-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tuesday 26 March 2013 07:03 PM, Tomi Valkeinen wrote:
-> On some platforms DPI requires a regulator to be enabled to power up the
-> output pins. This regulator is, for some reason, currently attached to
-> the virtual omapdss device, instead of the DPI device. This does not
-> work for DT, as the regulator mappings need to be described in the DT
-> data, and the virtual omapdss device is not present there.
->
-> Fix the issue by acquiring the regulator in the DPI device. To retain
-> compatibility with the current board files, the old method of getting
-> the regulator is kept. The old method can be removed when the board
-> files have been changed to pass the regulator to DPI.
->
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->   drivers/video/omap2/dss/dpi.c |   21 ++++++++++++++++++---
->   1 file changed, 18 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-> index ad67a9c..08342d1 100644
-> --- a/drivers/video/omap2/dss/dpi.c
-> +++ b/drivers/video/omap2/dss/dpi.c
-> @@ -37,7 +37,10 @@
->   #include "dss_features.h"
->
->   static struct {
-> +	struct platform_device *pdev;
+The only user of Kconfig symbol FB_OMAP_CONSISTENT_DMA_SIZE got removed
+in v3.8, with commit 6ba54ab4a49bbad736b0254aa6bdf0cb83013815 ("ARM:
+OMAP: Remove omap_init_consistent_dma_size()"). Remove this symbol too.
 
-We can use dpi.output.pdev, we don't really need to have another pdev 
-pointer. Same for SDI in the next patch.
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+Eyeball tested only.
 
-Archit
+ drivers/video/omap/Kconfig | 11 -----------
+ 1 file changed, 11 deletions(-)
 
-> +
->   	struct regulator *vdds_dsi_reg;
-> +	bool vdds_dsi_from_core;
->   	struct platform_device *dsidev;
->
->   	struct mutex lock;
-> @@ -583,10 +586,15 @@ static int __init dpi_init_display(struct omap_dss_device *dssdev)
->   		struct regulator *vdds_dsi;
->
->   		vdds_dsi = dss_get_vdds_dsi();
-> -
->   		if (IS_ERR(vdds_dsi)) {
-> -			DSSERR("can't get VDDS_DSI regulator\n");
-> -			return PTR_ERR(vdds_dsi);
-> +			vdds_dsi = regulator_get(&dpi.pdev->dev, "vdds_dsi");
-> +			if (IS_ERR(vdds_dsi)) {
-> +				DSSERR("can't get VDDS_DSI regulator\n");
-> +				return PTR_ERR(vdds_dsi);
-> +			}
-> +			dpi.vdds_dsi_from_core = false;
-> +		} else {
-> +			dpi.vdds_dsi_from_core = true;
->   		}
->
->   		dpi.vdds_dsi_reg = vdds_dsi;
-> @@ -698,6 +706,8 @@ static void __exit dpi_uninit_output(struct platform_device *pdev)
->
->   static int __init omap_dpi_probe(struct platform_device *pdev)
->   {
-> +	dpi.pdev = pdev;
-> +
->   	mutex_init(&dpi.lock);
->
->   	dpi_init_output(pdev);
-> @@ -714,6 +724,11 @@ static int __exit omap_dpi_remove(struct platform_device *pdev)
->
->   	dpi_uninit_output(pdev);
->
-> +	if (dpi.vdds_dsi_reg != NULL && dpi.vdds_dsi_from_core = false) {
-> +		regulator_put(dpi.vdds_dsi_reg);
-> +		dpi.vdds_dsi_reg = NULL;
-> +	}
-> +
->   	return 0;
->   }
->
->
+diff --git a/drivers/video/omap/Kconfig b/drivers/video/omap/Kconfig
+index e512581..0bc3a93 100644
+--- a/drivers/video/omap/Kconfig
++++ b/drivers/video/omap/Kconfig
+@@ -39,17 +39,6 @@ config FB_OMAP_LCD_MIPID
+ 	  the Mobile Industry Processor Interface DBI-C/DCS
+ 	  specification. (Supported LCDs: Philips LPH8923, Sharp LS041Y3)
+ 
+-config FB_OMAP_CONSISTENT_DMA_SIZE
+-	int "Consistent DMA memory size (MB)"
+-	depends on FB_OMAP
+-	range 1 14
+-	default 2
+-	help
+-	  Increase the DMA consistent memory size according to your video
+-	  memory needs, for example if you want to use multiple planes.
+-	  The size must be 2MB aligned.
+-	  If unsure say 1.
+-
+ config FB_OMAP_DMA_TUNE
+         bool "Set DMA SDRAM access priority high"
+         depends on FB_OMAP
+-- 
+1.7.11.7
 

@@ -1,97 +1,85 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 20 Mar 2013 11:20:33 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 20 Mar 2013 11:36:08 +0000
 Subject: Re: [PATCH 01/14] OMAPDSS: DISPC: store core clk rate
-Message-Id: <514998B1.8040907@ti.com>
+Message-Id: <51499F28.8090109@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig6FA955B1C128890EB61CC33B"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com> <1362743569-10289-2-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1362743569-10289-2-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com> <1362743569-10289-2-git-send-email-tomi.valkeinen@ti.com> <514998B1.8040907@ti.com>
+In-Reply-To: <514998B1.8040907@ti.com>
+To: Archit Taneja <archit@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Hi,
+--------------enig6FA955B1C128890EB61CC33B
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Friday 08 March 2013 05:22 PM, Tomi Valkeinen wrote:
-> Store dispc core clock rate so that it's available for calculations even
-> if the HW is disabled.
+On 2013-03-20 13:08, Archit Taneja wrote:
+> Hi,
+>=20
+> On Friday 08 March 2013 05:22 PM, Tomi Valkeinen wrote:
+>> Store dispc core clock rate so that it's available for calculations ev=
+en
+>> if the HW is disabled.
+>=20
+> I think the core_clk_rate variable should change when we change the lcd=
 
-I think the core_clk_rate variable should change when we change the lcd 
-clock source through dss_select_lcd_clk_source() for omap3.
+> clock source through dss_select_lcd_clk_source() for omap3.
+>=20
+> If we have the following sequence:
+>=20
+> ...
+> dispc_mgr_set_lcd_divisor();
+> dss_select_lcd_clk_source();
+> ...
+>=20
+> The value of core_clock variable would be based on the previous clock
+> source, and not the current one.
+>=20
+> This situation doesn't occur currently as the 'apply' framework delays
+> all dispc writes to the point when we enable the manager. So the
+> sequence above cannot occur. But maybe we should keep this in mind when=
 
-If we have the following sequence:
+> we move more things to omapdrm, where 'apply' isn't in use.
 
-...
-dispc_mgr_set_lcd_divisor();
-dss_select_lcd_clk_source();
-...
+Hmm. Good point.
 
-The value of core_clock variable would be based on the previous clock 
-source, and not the current one.
+I don't think this has to do with apply system. The clock source is set
+by the output drivers, and the output drivers also calculate the
+divisors, and call the functions to set the divisors. Both DPI and DSI
+drivers first set the clock source, and then call the
+dss_mgr_set_lcd_config() which sets the divisors (causing the recalc).
 
-This situation doesn't occur currently as the 'apply' framework delays 
-all dispc writes to the point when we enable the manager. So the 
-sequence above cannot occur. But maybe we should keep this in mind when 
-we move more things to omapdrm, where 'apply' isn't in use.
+Whether using the apply or not, I think it should work correctly. But
+it's clearly something that is a bit fragile.
+*cough*commonclockframework*cough*.
 
-Archit
+ Tomi
 
->
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->   drivers/video/omap2/dss/dispc.c |   18 +++++++++---------
->   1 file changed, 9 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-> index 05ff2b9..f564955 100644
-> --- a/drivers/video/omap2/dss/dispc.c
-> +++ b/drivers/video/omap2/dss/dispc.c
-> @@ -97,6 +97,8 @@ static struct {
->
->   	int irq;
->
-> +	unsigned long core_clk_rate;
-> +
->   	u32 fifo_size[DISPC_MAX_NR_FIFOS];
->   	/* maps which plane is using a fifo. fifo-id -> plane-id */
->   	int fifo_assignment[DISPC_MAX_NR_FIFOS];
-> @@ -2951,6 +2953,10 @@ static void dispc_mgr_set_lcd_divisor(enum omap_channel channel, u16 lck_div,
->
->   	dispc_write_reg(DISPC_DIVISORo(channel),
->   			FLD_VAL(lck_div, 23, 16) | FLD_VAL(pck_div, 7, 0));
-> +
-> +	if (dss_has_feature(FEAT_CORE_CLK_DIV) = false &&
-> +			channel = OMAP_DSS_CHANNEL_LCD)
-> +		dispc.core_clk_rate = dispc_fclk_rate() / lck_div;
->   }
->
->   static void dispc_mgr_get_lcd_divisor(enum omap_channel channel, int *lck_div,
-> @@ -3056,15 +3062,7 @@ unsigned long dispc_mgr_pclk_rate(enum omap_channel channel)
->
->   unsigned long dispc_core_clk_rate(void)
->   {
-> -	int lcd;
-> -	unsigned long fclk = dispc_fclk_rate();
-> -
-> -	if (dss_has_feature(FEAT_CORE_CLK_DIV))
-> -		lcd = REG_GET(DISPC_DIVISOR, 23, 16);
-> -	else
-> -		lcd = REG_GET(DISPC_DIVISORo(OMAP_DSS_CHANNEL_LCD), 23, 16);
-> -
-> -	return fclk / lcd;
-> +	return dispc.core_clk_rate;
->   }
->
->   static unsigned long dispc_plane_pclk_rate(enum omap_plane plane)
-> @@ -3451,6 +3449,8 @@ static void _omap_dispc_initial_config(void)
->   		l = FLD_MOD(l, 1, 0, 0);
->   		l = FLD_MOD(l, 1, 23, 16);
->   		dispc_write_reg(DISPC_DIVISOR, l);
-> +
-> +		dispc.core_clk_rate = dispc_fclk_rate();
->   	}
->
->   	/* FUNCGATED */
->
 
+
+--------------enig6FA955B1C128890EB61CC33B
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRSZ8oAAoJEPo9qoy8lh713EQP/3sIk0ZN6ABnaIdtmwom0A4i
+Bb0J+yUQBkUIWy1+F8Ug7bHEoKWDGvpm9Q+04Mxj9yakVzxYAqfgBwYCc8qjyhnm
+iXdaaC5N17xy75k2p+mCP/RpuJJWVtvrMUibMs4CPK2uDm+xcZTYW6hAKHDuxwU6
+sy+UX7gEjIuYj05l42Qy8pENn4NNbLaHIL3i9N/HcQKaicYucVAbEQq9Dj3Cnkaj
+06AYtU8pQwPAsT+R9SVXnlOfj4soNqakGGYDoe67D03i2WtaLBc4i9BhmhFzBYZ1
+PtgcQLsnkG9tiOqWV/45YKSgOaGR5z0r02zg8FSTgVyLsp6qnsY+rsu9SF4saOiv
+EycRzZfXVvcK+4eN9DtDAb2Gukg/oSSA/qKhmvJnuad6Tw8348Nx76bj76t0NnEi
+KeDnkk2EIF218L4tGr7eU5YV0iQHXI1t/CXcvCdZckah+kG9eZcGCir9SWafB8A6
+viLA+bfh6iURPMO3zSDOpclVxj21mjTS1qlP8DtHxrWKapSP4W7E2Zhfkvf00RcG
+2sQ7TnT1gBM8Ih1+4p4cnRwWy1h1OEDUwT3J/65ghGtcHNhVWSy/Val1hOsgCZRM
+wGhXeH8+tmo7h74huX0u9cSD+L3MT3tM5uQS971orYuiHaiVNsluizdA4KmV7AWe
+Au9KhWwORt9lQQLIpISz
+=FUu3
+-----END PGP SIGNATURE-----
+
+--------------enig6FA955B1C128890EB61CC33B--

@@ -1,88 +1,97 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 08 Mar 2013 11:52:43 +0000
-Subject: [PATCH 08/14] OMAPDSS: DSS: add new clock calculation code
-Message-Id: <1362743569-10289-9-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 20 Mar 2013 15:28:39 +0000
+Subject: Re: [PATCH 08/14] OMAPDSS: DSS: add new clock calculation code
+Message-Id: <5149D5A7.204@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig8D2C8AA64E69F6487637CDFD"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com> <1362743569-10289-9-git-send-email-tomi.valkeinen@ti.com> <5149D30F.2010801@ti.com>
+In-Reply-To: <5149D30F.2010801@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Add new way to iterate over DSS clock divisors. dss_div_calc() provides
-a generic way to go over all the divisors, within given clock range.
-dss_div_calc() will call a callback function for each divider set,
-making the function reusable for all use cases.
+--------------enig8D2C8AA64E69F6487637CDFD
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/dss.c |   36 ++++++++++++++++++++++++++++++++++++
- drivers/video/omap2/dss/dss.h |    3 +++
- 2 files changed, 39 insertions(+)
+On 2013-03-20 17:17, Archit Taneja wrote:
+> On Friday 08 March 2013 05:22 PM, Tomi Valkeinen wrote:
+>> Add new way to iterate over DSS clock divisors. dss_div_calc() provide=
+s
+>> a generic way to go over all the divisors, within given clock range.
+>> dss_div_calc() will call a callback function for each divider set,
+>> making the function reusable for all use cases.
+>>
+>> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+>> ---
+>>   drivers/video/omap2/dss/dss.c |   36
+>> ++++++++++++++++++++++++++++++++++++
+>>   drivers/video/omap2/dss/dss.h |    3 +++
+>>   2 files changed, 39 insertions(+)
+>>
+>> diff --git a/drivers/video/omap2/dss/dss.c
+>> b/drivers/video/omap2/dss/dss.c
+>> index 054c2a2..21a3dc8 100644
+>> --- a/drivers/video/omap2/dss/dss.c
+>> +++ b/drivers/video/omap2/dss/dss.c
+>> @@ -473,6 +473,42 @@ int dss_calc_clock_rates(struct dss_clock_info
+>> *cinfo)
+>>       return 0;
+>>   }
+>>
+>> +bool dss_div_calc(unsigned long fck_min, dss_div_calc_func func, void=
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 054c2a2..21a3dc8 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -473,6 +473,42 @@ int dss_calc_clock_rates(struct dss_clock_info *cinfo)
- 	return 0;
- }
- 
-+bool dss_div_calc(unsigned long fck_min, dss_div_calc_func func, void *data)
-+{
-+	int fckd, fckd_start, fckd_stop;
-+	unsigned long fck;
-+	unsigned long fck_hw_max;
-+	unsigned long fckd_hw_max;
-+	unsigned long prate;
-+
-+	if (dss.dpll4_m4_ck = NULL) {
-+		/* XXX can we change the clock on omap2? */
-+		fck = clk_get_rate(dss.dss_clk);
-+		fckd = 1;
-+
-+		return func(fckd, fck, data);
-+	}
-+
-+	fck_hw_max = dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
-+	fckd_hw_max = dss.feat->fck_div_max;
-+
-+	prate = dss_get_dpll4_rate() * dss.feat->dss_fck_multiplier;
-+
-+	fck_min = fck_min ? fck_min : 1;
-+
-+	fckd_start = min(prate / fck_min, fckd_hw_max);
-+	fckd_stop = max(DIV_ROUND_UP(prate, fck_hw_max), 1ul);
-+
-+	for (fckd = fckd_start; fckd >= fckd_stop; --fckd) {
-+		fck = prate / fckd;
-+
-+		if (func(fckd, fck, data))
-+			return true;
-+	}
-+
-+	return false;
-+}
-+
- int dss_set_clock_div(struct dss_clock_info *cinfo)
- {
- 	if (dss.dpll4_m4_ck) {
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 0ff41dd..4180302 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -271,6 +271,9 @@ int dss_set_clock_div(struct dss_clock_info *cinfo);
- int dss_calc_clock_div(unsigned long req_pck, struct dss_clock_info *dss_cinfo,
- 		struct dispc_clock_info *dispc_cinfo);
- 
-+typedef bool (*dss_div_calc_func)(int fckd, unsigned long fck, void *data);
-+bool dss_div_calc(unsigned long fck_min, dss_div_calc_func func, void *data);
-+
- /* SDI */
- int sdi_init_platform_driver(void) __init;
- void sdi_uninit_platform_driver(void) __exit;
--- 
-1.7.10.4
+>> *data)
+>> +{
+>> +    int fckd, fckd_start, fckd_stop;
+>> +    unsigned long fck;
+>> +    unsigned long fck_hw_max;
+>> +    unsigned long fckd_hw_max;
+>> +    unsigned long prate;
+>> +
+>> +    if (dss.dpll4_m4_ck =3D=3D NULL) {
+>> +        /* XXX can we change the clock on omap2? */
+>=20
+> We can change dss_fclk1 on omap2, and the cclock2420_data.c and
+> cclock2430_data.c have clksel structs which allow a set of dividers. Th=
+e
+> dividers are not continuous though, 1 to 12 and 16 are allowed. So we
+> might need to change the code here a bit, if we want to change the cloc=
+k
+> in the first place.
 
+Ok, good to know. Note that the comment is copied from the old code. I
+think I tried changing the clock on N800 with clk_set_rate long ago, but
+I didn't get it to work. Things might have changed, but, well, I don't
+think we should spend time on omap2 code. I'm sure we'll get a patch if
+somebody needs it =3D).
+
+ Tomi
+
+
+
+--------------enig8D2C8AA64E69F6487637CDFD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRSdWnAAoJEPo9qoy8lh71ubwP+gPcyBBbnSbRmkA4YfVRntT4
+uW6ZtKEwnaiHvg6qEA2Wi6qLJLPSdgkW2259bcDc9KCIVkSkOYa7n9mt4j0Upr1h
+du4Raq/wYPxFLka2su7fBxPsRVb3jlg5jk5o8DP6J9x5nJx+3eDdG6xdQv7ajpmz
+l0n9AdLuFephT4dDYeEqe26SgI9Hjozjvt+k/ERlbtdcY/XA6EsaiPhgT2vgxzNT
+vC16HjNj9FIcH6SuNr/3R96uJ4+8v6JRT+1Uw9RsCVARDYQDhcHivdxn7ySem++5
+tfQ/Fhri58kdk47Uf+YuJByUD9TSRRNkUjzLfrGSFS7JKT+SvtPSC7V+O+ynooy2
+BFSvNsZcOwY5Iw9sfVpUktl18fAGkvP78dp0k0LIqykYhTjZKKVpGcod/FxW/E3Z
+HxyYLf7XTEkcKit0e/zLkuTyTpJi4mOGbTxc+f0K/D4o6q89jSXykaz9jVXhULx+
+n0Bos6W31tOn4mI0ORg2AvaP7UkeKFxMdRcDK34i2iKHl5dGnjkQsR7TKDO9hNWD
++o75B4yusKNvX/Riths5xCXU1O+TMnroG89KbUoXbiW2Tz6jjd5l2z+F3/vz9t+3
+MKAUK+DoG6WEB787iC/GKxulaEm9Rp0yQ3etfSX31r+o693yqP0oEHXnqlsh88o7
+t2L4p9BRdzY2gnyo+Uqk
+=ZYyw
+-----END PGP SIGNATURE-----
+
+--------------enig8D2C8AA64E69F6487637CDFD--

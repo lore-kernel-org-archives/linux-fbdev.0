@@ -1,96 +1,35 @@
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Date: Thu, 28 Mar 2013 12:04:30 +0000
-Subject: [PATCH 4/4] fb: add helpers to enable and test for the skip_vt_switch
-Message-Id: <1364472270-9297-5-git-send-email-mcgrof@do-not-panic.com>
+From: Haiyang Zhang <haiyangz@microsoft.com>
+Date: Thu, 21 Mar 2013 21:32:57 +0000
+Subject: [PATCH] video: fix a type warning in hyperv_fb.c
+Message-Id: <1363901577-16064-1-git-send-email-haiyangz@microsoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364472270-9297-1-git-send-email-mcgrof@do-not-panic.com>
-In-Reply-To: <1364472270-9297-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: FlorianSchandinat@gmx.de
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, jbarnes@virtuousgeek.org, backports@vger.kernel.org, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, julia.lawall@lip6.fr, rodrigo.vivi@gmail.com, daniel.vetter@ffwll.ch, rafael.j.wysocki@intel.com, "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+To: FlorianSchandinat@gmx.de, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org
+Cc: haiyangz@microsoft.com, kys@microsoft.com, olaf@aepfle.de, jasowang@redhat.com, linux-kernel@vger.kernel.org, devel@linuxdriverproject.org
 
-From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Reported-by: kbuild test robot <fengguang.wu@intel.com>
+Signed-off-by: Haiyang Zhang <haiyangz@microsoft.com>
+Reviewed-by: K. Y. Srinivasan <kys@microsoft.com>
 
-This adds helpers to enable and test for the skip_vt_switch.
-This gets us two things:
-
-1) It allows us to require less collateral evolutions
-   should we need changes on the fb_info data structure
-   later (perhaps a bitmap flag).
-
-2) Allows this feature to be backported with 0 delta
-   required on the upstream drivers, we'd just require
-   the static inline to do a no-op.
-
-1) may be worth while considering, 2) is a new consideration
-I'm trying to get others to evaluate to help with automatically
-backporting the Linux kernel. This is the first time I am
-aware someone argues for it.
-
-Cc: cocci@systeme.lip6.fr
-Cc: backports@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: Julia Lawall <julia.lawall@lip6.fr>
-Cc: Rodrigo Vivi <rodrigo.vivi@gmail.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Luis R. Rodriguez <mcgrof@do-not-panic.com>
 ---
- drivers/gpu/drm/i915/intel_fb.c |    2 +-
- drivers/video/fbmem.c           |    2 +-
- include/linux/fb.h              |   10 ++++++++++
- 3 files changed, 12 insertions(+), 2 deletions(-)
+ drivers/video/hyperv_fb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/intel_fb.c b/drivers/gpu/drm/i915/intel_fb.c
-index 8d81c929..c0f306c 100644
---- a/drivers/gpu/drm/i915/intel_fb.c
-+++ b/drivers/gpu/drm/i915/intel_fb.c
-@@ -151,7 +151,7 @@ static int intelfb_create(struct drm_fb_helper *helper,
- 	info->screen_size = size;
+diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c
+index ceb33b0..d4d2c5f 100644
+--- a/drivers/video/hyperv_fb.c
++++ b/drivers/video/hyperv_fb.c
+@@ -624,7 +624,7 @@ static int hvfb_getmem(struct fb_info *info)
+ {
+ 	struct pci_dev *pdev;
+ 	ulong fb_phys;
+-	void *fb_virt;
++	void __iomem *fb_virt;
  
- 	/* This driver doesn't need a VT switch to restore the mode on resume */
--	info->skip_vt_switch = true;
-+	fb_enable_skip_vt_switch(info);
- 
- 	drm_fb_helper_fill_fix(info, fb->pitches[0], fb->depth);
- 	drm_fb_helper_fill_var(info, &ifbdev->helper, sizes->fb_width, sizes->fb_height);
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index ccd44b0..daffadc 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1645,7 +1645,7 @@ static int do_register_framebuffer(struct fb_info *fb_info)
- 	if (!fb_info->modelist.prev || !fb_info->modelist.next)
- 		INIT_LIST_HEAD(&fb_info->modelist);
- 
--	if (fb_info->skip_vt_switch)
-+	if (fb_skip_vt_switch_isset(fb_info))
- 		pm_vt_switch_required(fb_info->dev, false);
- 	else
- 		pm_vt_switch_required(fb_info->dev, true);
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index d49c60f..d534966 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -505,6 +505,16 @@ struct fb_info {
- 	bool skip_vt_switch; /* no VT switch on suspend/resume required */
- };
- 
-+static inline void fb_enable_skip_vt_switch(struct fb_info *info)
-+{
-+	info->skip_vt_switch = true;
-+}
-+
-+static inline bool fb_skip_vt_switch_isset(struct fb_info *info)
-+{
-+	return info->skip_vt_switch;
-+}
-+
- static inline struct apertures_struct *alloc_apertures(unsigned int max_num) {
- 	struct apertures_struct *a = kzalloc(sizeof(struct apertures_struct)
- 			+ max_num * sizeof(struct aperture), GFP_KERNEL);
+ 	pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
+ 			      PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
 -- 
-1.7.10.4
+1.7.4.1
 

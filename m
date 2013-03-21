@@ -1,43 +1,44 @@
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Thu, 21 Mar 2013 10:19:13 +0000
-Subject: Re: [PATCH v2 3/8] drivers: char: use module_platform_driver_probe()
-Message-Id: <20130321101912.GA27199@gondor.apana.org.au>
+From: Paul Bolle <pebolle@tiscali.nl>
+Date: Thu, 21 Mar 2013 20:20:58 +0000
+Subject: [PATCH] video: nuc900fb: remove "config FB_NUC900_DEBUG"
+Message-Id: <1363897258.1390.153.camel@x61.thuisdomein>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363280978-24051-1-git-send-email-fabio.porcedda@gmail.com>
- <1363280978-24051-4-git-send-email-fabio.porcedda@gmail.com>
- <20130321095542.GH26931@gondor.apana.org.au>
- <CAHkwnC_AJpeVw2o8oJn+zMvSg1Lbmm1aXRYxCmtDYhkJG9nvig@mail.gmail.com>
-In-Reply-To: <CAHkwnC_AJpeVw2o8oJn+zMvSg1Lbmm1aXRYxCmtDYhkJG9nvig@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, Mar 21, 2013 at 11:15:26AM +0100, Fabio Porcedda wrote:
-> On Thu, Mar 21, 2013 at 10:55 AM, Herbert Xu
-> <herbert@gondor.apana.org.au> wrote:
-> > On Thu, Mar 14, 2013 at 06:09:33PM +0100, Fabio Porcedda wrote:
-> >> This patch converts the drivers to use the
-> >> module_platform_driver_probe() macro which makes the code smaller and
-> >> a bit simpler.
-> >>
-> >> Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
-> >> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> >> Cc: Matt Mackall <mpm@selenic.com>
-> >> Cc: Herbert Xu <herbert@gondor.apana.org.au>
-> >> Cc: Fabio Estevam <fabio.estevam@freescale.com>
-> >> Cc: Sascha Hauer <s.hauer@pengutronix.de>
-> >
-> > Patch applied.
-> 
-> The patch is already in
-> git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/char-misc.git.
-> Are you speaking about that?
+When the NUC900 LCD Controller Driver got added (in v3.4) a Kconfig
+entry for FB_NUC900_DEBUG got added too. It has never been used. It
+appears that its users were dropped during review. Anyhow, this entry
+can be removed.
 
-OK, I'll remove it from my tree.
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+Untested.
 
-Thanks,
+ drivers/video/Kconfig | 7 -------
+ 1 file changed, 7 deletions(-)
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 4c1546f..fba178b 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2107,13 +2107,6 @@ config GPM1040A0_320X240
+         bool "Giantplus Technology GPM1040A0 320x240 Color TFT LCD"
+         depends on FB_NUC900
+ 
+-config FB_NUC900_DEBUG
+-        bool "NUC900 lcd debug messages"
+-        depends on FB_NUC900
+-        help
+-          Turn on debugging messages. Note that you can set/unset at run time
+-          through sysfs
+-
+ config FB_SM501
+ 	tristate "Silicon Motion SM501 framebuffer support"
+ 	depends on FB && MFD_SM501
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+1.7.11.7
+

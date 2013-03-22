@@ -1,52 +1,55 @@
-From: Fabio Porcedda <fabio.porcedda@gmail.com>
-Date: Thu, 14 Mar 2013 17:09:30 +0000
-Subject: [PATCH v2 0/8] Use module_platform_driver_probe() part 2
-Message-Id: <1363280978-24051-1-git-send-email-fabio.porcedda@gmail.com>
+From: Heiko =?utf-8?q?St=C3=BCbner?= <heiko@sntech.de>
+Date: Fri, 22 Mar 2013 14:17:32 +0000
+Subject: [PATCH 9/9] AUO-K190x: Add resolutions for portrait displays
+Message-Id: <201303221517.33111.heiko@sntech.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-Hi all,
-this patch set is the second part for the conversion to use
-new module_platform_driver_probe() macro.
+The controller also contains support for displays in a portrait
+orientation and it seems devices which such displays really reached
+the market - Pandigital Novell seems to be one example.
 
-v2:
-  - rebased againg next and so dropped the already converted drivers.
+Signed-off-by: Heiko St=C3=BCbner <heiko@sntech.de>
+---
+ drivers/video/auo_k190x.c   |    8 ++++++++
+ include/video/auo_k190xfb.h |    2 ++
+ 2 files changed, 10 insertions(+), 0 deletions(-)
 
-Fabio Porcedda (8):
-  drivers: media: use module_platform_driver_probe()
-  drivers: ata: use module_platform_driver_probe()
-  drivers: char: use module_platform_driver_probe()
-  drivers: input: use module_platform_driver_probe()
-  drivers: memory: use module_platform_driver_probe()
-  drivers: mfd: use module_platform_driver_probe()
-  drivers: video: use module_platform_driver_probe()
-  drivers: misc: use module_platform_driver_probe()
-
- drivers/ata/pata_at32.c                       | 13 +------------
- drivers/char/hw_random/mxc-rnga.c             | 13 +------------
- drivers/char/hw_random/tx4939-rng.c           | 13 +------------
- drivers/input/keyboard/amikbd.c               | 14 +-------------
- drivers/input/keyboard/davinci_keyscan.c      | 12 +-----------
- drivers/input/keyboard/nomadik-ske-keypad.c   | 12 +-----------
- drivers/input/misc/twl4030-pwrbutton.c        | 13 +------------
- drivers/input/mouse/amimouse.c                | 14 +-------------
- drivers/input/serio/at32psif.c                | 13 +------------
- drivers/input/serio/q40kbd.c                  | 13 +------------
- drivers/input/touchscreen/atmel-wm97xx.c      | 12 +-----------
- drivers/input/touchscreen/mc13783_ts.c        | 12 +-----------
- drivers/media/platform/soc_camera/atmel-isi.c | 12 +-----------
- drivers/memory/emif.c                         | 12 +-----------
- drivers/mfd/davinci_voicecodec.c              | 12 +-----------
- drivers/mfd/htc-pasic3.c                      | 13 +------------
- drivers/misc/atmel_pwm.c                      | 12 +-----------
- drivers/misc/ep93xx_pwm.c                     | 13 +------------
- drivers/video/sh_mipi_dsi.c                   | 12 +-----------
- drivers/video/sh_mobile_hdmi.c                | 12 +-----------
- 20 files changed, 20 insertions(+), 232 deletions(-)
-
--- 
-1.8.1.5
+diff --git a/drivers/video/auo_k190x.c b/drivers/video/auo_k190x.c
+index 87cff5b..3bb32c2 100644
+--- a/drivers/video/auo_k190x.c
++++ b/drivers/video/auo_k190x.c
+@@ -39,6 +39,14 @@ static struct panel_info panel_table[] =3D {
+ 		.w =3D 1024,
+ 		.h =3D 768,
+ 	},
++	[AUOK190X_RESOLUTION_600_800] =3D {
++		.w =3D 600,
++		.h =3D 800,
++	},
++	[AUOK190X_RESOLUTION_768_1024] =3D {
++		.w =3D 768,
++		.h =3D 1024,
++	},
+ };
+=20
+ /*
+diff --git a/include/video/auo_k190xfb.h b/include/video/auo_k190xfb.h
+index ad7bc51..ac329ee 100644
+--- a/include/video/auo_k190xfb.h
++++ b/include/video/auo_k190xfb.h
+@@ -22,6 +22,8 @@
+  */
+ #define AUOK190X_RESOLUTION_800_600		0
+ #define AUOK190X_RESOLUTION_1024_768		1
++#define AUOK190X_RESOLUTION_600_800		4
++#define AUOK190X_RESOLUTION_768_1024		5
+=20
+ /*
+  * struct used by auok190x. board specific stuff comes from *board
+--=20
+1.7.2.3
 

@@ -1,185 +1,159 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 13 Feb 2013 14:19:06 +0000
-Subject: [PATCH 03/11] OMAPDSS: ZOOM/NEC-nl8048hl11: remove platform backlight support
-Message-Id: <1360764434-18788-4-git-send-email-archit@ti.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 22 Mar 2013 16:15:47 +0000
+Subject: [PATCH v3 1/3] mfd: as3711: add OF support
+Message-Id: <1363968949-12151-2-git-send-email-g.liakhovetski@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360764434-18788-1-git-send-email-archit@ti.com>
-In-Reply-To: <1360764434-18788-1-git-send-email-archit@ti.com>
+References: <1363968949-12151-1-git-send-email-g.liakhovetski@gmx.de>
+In-Reply-To: <1363968949-12151-1-git-send-email-g.liakhovetski@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>, Tony Lindgren <tony@atomide.com>
+To: linux-kernel@vger.kernel.org
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, devicetree-discuss@lists.ozlabs.org, Samuel Ortiz <sameo@linux.intel.com>, Richard Purdie <rpurdie@rpsys.net>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
 
-omap_dss_device provides a callback function to set backlight. Panel backlight
-on Zoom board is implemented by the function zoom_set_bl_intensity() in the
-board file. This needs to be removed. The PWM backlight should be implemented
-with the pwm_bl driver.
+Add Flat Device Tree support to the AS3711 MFD driver. This patch just
+allows to bind the driver to I2C devices, instantiated from the DT.
+DT support for AS3711 cell drivers will be added in separate drivers.
 
-For now, function zoom_set_bl_intensity() is left as is, but omap_dss_device's
-set_backlight func pointer and max_brightness_level are removed. NEC-nl8048hl11
-panel driver contains support to call platform backlight functions. These are
-not used any more in zoom and are now removed.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
+Reviwed-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- arch/arm/mach-omap2/board-zoom-display.c           |    2 -
- .../omap2/displays/panel-nec-nl8048hl11-01b.c      |   74 --------------------
- 2 files changed, 76 deletions(-)
+ Documentation/devicetree/bindings/mfd/as3711.txt |   73 ++++++++++++++++++++++
+ drivers/mfd/as3711.c                             |   27 +++++++-
+ 2 files changed, 96 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/mfd/as3711.txt
 
-diff --git a/arch/arm/mach-omap2/board-zoom-display.c b/arch/arm/mach-omap2/board-zoom-display.c
-index 1c7c834..4717ed5 100644
---- a/arch/arm/mach-omap2/board-zoom-display.c
-+++ b/arch/arm/mach-omap2/board-zoom-display.c
-@@ -109,8 +109,6 @@ static struct omap_dss_device zoom_lcd_device = {
- 	.phy.dpi.data_lines	= 24,
- 	.platform_enable	= zoom_panel_enable_lcd,
- 	.platform_disable	= zoom_panel_disable_lcd,
--	.max_backlight_level	= 100,
--	.set_backlight		= zoom_set_bl_intensity,
+diff --git a/Documentation/devicetree/bindings/mfd/as3711.txt b/Documentation/devicetree/bindings/mfd/as3711.txt
+new file mode 100644
+index 0000000..d98cf18
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mfd/as3711.txt
+@@ -0,0 +1,73 @@
++AS3711 is an I2C PMIC from Austria MicroSystems with multiple DCDC and LDO power
++supplies, a battery charger and an RTC. So far only bindings for the two stepup
++DCDC converters are defined. Other DCDC and LDO supplies are configured, using
++standard regulator properties, they must belong to a sub-node, called
++"regulators" and be called "sd1" to "sd4" and "ldo1" to "ldo8." Stepup converter
++configuration should be placed in a subnode, called "backlight."
++
++Compulsory properties:
++- compatible		: must be "ams,as3711"
++- reg			: specifies the I2C address
++
++To use the SU1 converter as a backlight source the following two properties must
++be provided:
++- su1-dev		: framebuffer phandle
++- su1-max-uA		: maximum current
++
++To use the SU2 converter as a backlight source the following two properties must
++be provided:
++- su2-dev		: framebuffer phandle
++- su1-max-uA		: maximum current
++
++Additionally one of these properties must be provided to select the type of
++feedback used:
++- su2-feedback-voltage	: voltage feedback is used
++- su2-feedback-curr1	: CURR1 input used for current feedback
++- su2-feedback-curr2	: CURR2 input used for current feedback
++- su2-feedback-curr3	: CURR3 input used for current feedback
++- su2-feedback-curr-auto: automatic current feedback selection
++
++and one of these to select the over-voltage protection pin
++- su2-fbprot-lx-sd4	: LX_SD4 is used for over-voltage protection
++- su2-fbprot-gpio2	: GPIO2 is used for over-voltage protection
++- su2-fbprot-gpio3	: GPIO3 is used for over-voltage protection
++- su2-fbprot-gpio4	: GPIO4 is used for over-voltage protection
++
++If "su2-feedback-curr-auto" is selected, one or more of the following properties
++have to be specified:
++- su2-auto-curr1	: use CURR1 input for current feedback
++- su2-auto-curr2	: use CURR2 input for current feedback
++- su2-auto-curr3	: use CURR3 input for current feedback
++
++Example:
++
++as3711@40 {
++	compatible = "ams,as3711";
++	reg = <0x40>;
++
++	regulators {
++		sd4 {
++			regulator-name = "1.215V";
++			regulator-min-microvolt = <1215000>;
++			regulator-max-microvolt = <1235000>;
++		};
++		ldo2 {
++			regulator-name = "2.8V CPU";
++			regulator-min-microvolt = <2800000>;
++			regulator-max-microvolt = <2800000>;
++			regulator-always-on;
++			regulator-boot-on;
++		};
++	};
++
++	backlight {
++		compatible = "ams,as3711-bl";
++		su2-dev = <&lcdc>;
++		su2-max-uA = <36000>;
++		su2-feedback-curr-auto;
++		su2-fbprot-gpio4;
++		su2-auto-curr1;
++		su2-auto-curr2;
++		su2-auto-curr3;
++	};
++};
+diff --git a/drivers/mfd/as3711.c b/drivers/mfd/as3711.c
+index e994c96..01e4141 100644
+--- a/drivers/mfd/as3711.c
++++ b/drivers/mfd/as3711.c
+@@ -112,16 +112,34 @@ static const struct regmap_config as3711_regmap_config = {
+ 	.cache_type = REGCACHE_RBTREE,
  };
  
- static struct omap_dss_device *zoom_dss_devices[] = {
-diff --git a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-index c4e9c2b..c197927 100644
---- a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-+++ b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-@@ -19,7 +19,6 @@
- #include <linux/module.h>
- #include <linux/delay.h>
- #include <linux/spi/spi.h>
--#include <linux/backlight.h>
- #include <linux/fb.h>
- 
- #include <video/omapdss.h>
-@@ -33,7 +32,6 @@
- #define LCD_PIXEL_CLOCK		23800
- 
- struct nec_8048_data {
--	struct backlight_device *bl;
- };
- 
- static const struct {
-@@ -84,43 +82,9 @@ static struct omap_video_timings nec_8048_panel_timings = {
- 	.sync_pclk_edge	= OMAPDSS_DRIVE_SIG_RISING_EDGE,
- };
- 
--static int nec_8048_bl_update_status(struct backlight_device *bl)
--{
--	struct omap_dss_device *dssdev = dev_get_drvdata(&bl->dev);
--	int level;
--
--	if (!dssdev->set_backlight)
--		return -EINVAL;
--
--	if (bl->props.fb_blank = FB_BLANK_UNBLANK &&
--			bl->props.power = FB_BLANK_UNBLANK)
--		level = bl->props.brightness;
--	else
--		level = 0;
--
--	return dssdev->set_backlight(dssdev, level);
--}
--
--static int nec_8048_bl_get_brightness(struct backlight_device *bl)
--{
--	if (bl->props.fb_blank = FB_BLANK_UNBLANK &&
--			bl->props.power = FB_BLANK_UNBLANK)
--		return bl->props.brightness;
--
--	return 0;
--}
--
--static const struct backlight_ops nec_8048_bl_ops = {
--	.get_brightness	= nec_8048_bl_get_brightness,
--	.update_status	= nec_8048_bl_update_status,
--};
--
- static int nec_8048_panel_probe(struct omap_dss_device *dssdev)
++#ifdef CONFIG_OF
++static struct of_device_id as3711_of_match[] = {
++	{.compatible = "ams,as3711",},
++	{}
++};
++MODULE_DEVICE_TABLE(of, as3711_of_match);
++#endif
++
+ static int as3711_i2c_probe(struct i2c_client *client,
+ 			    const struct i2c_device_id *id)
  {
--	struct backlight_device *bl;
- 	struct nec_8048_data *necd;
--	struct backlight_properties props;
--	int r;
+ 	struct as3711 *as3711;
+-	struct as3711_platform_data *pdata = client->dev.platform_data;
++	struct as3711_platform_data *pdata;
+ 	unsigned int id1, id2;
+ 	int ret;
  
- 	dssdev->panel.timings = nec_8048_panel_timings;
+-	if (!pdata)
+-		dev_dbg(&client->dev, "Platform data not found\n");
++	if (!client->dev.of_node) {
++		pdata = client->dev.platform_data;
++		if (!pdata)
++			dev_dbg(&client->dev, "Platform data not found\n");
++	} else {
++		pdata = devm_kzalloc(&client->dev,
++				     sizeof(*pdata), GFP_KERNEL);
++		if (!pdata) {
++			dev_err(&client->dev, "Failed to allocate pdata\n");
++			return -ENOMEM;
++		}
++	}
  
-@@ -130,38 +94,12 @@ static int nec_8048_panel_probe(struct omap_dss_device *dssdev)
- 
- 	dev_set_drvdata(&dssdev->dev, necd);
- 
--	memset(&props, 0, sizeof(struct backlight_properties));
--	props.max_brightness = 255;
--
--	bl = backlight_device_register("nec-8048", &dssdev->dev, dssdev,
--			&nec_8048_bl_ops, &props);
--	if (IS_ERR(bl)) {
--		r = PTR_ERR(bl);
--		kfree(necd);
--		return r;
--	}
--	necd->bl = bl;
--
--	bl->props.fb_blank = FB_BLANK_UNBLANK;
--	bl->props.power = FB_BLANK_UNBLANK;
--	bl->props.max_brightness = dssdev->max_backlight_level;
--	bl->props.brightness = dssdev->max_backlight_level;
--
--	r = nec_8048_bl_update_status(bl);
--	if (r < 0)
--		dev_err(&dssdev->dev, "failed to set lcd brightness\n");
--
- 	return 0;
- }
- 
- static void nec_8048_panel_remove(struct omap_dss_device *dssdev)
- {
- 	struct nec_8048_data *necd = dev_get_drvdata(&dssdev->dev);
--	struct backlight_device *bl = necd->bl;
--
--	bl->props.power = FB_BLANK_POWERDOWN;
--	nec_8048_bl_update_status(bl);
--	backlight_device_unregister(bl);
- 
- 	kfree(necd);
- }
-@@ -169,8 +107,6 @@ static void nec_8048_panel_remove(struct omap_dss_device *dssdev)
- static int nec_8048_panel_power_on(struct omap_dss_device *dssdev)
- {
- 	int r;
--	struct nec_8048_data *necd = dev_get_drvdata(&dssdev->dev);
--	struct backlight_device *bl = necd->bl;
- 
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
- 		return 0;
-@@ -188,10 +124,6 @@ static int nec_8048_panel_power_on(struct omap_dss_device *dssdev)
- 			goto err1;
- 	}
- 
--	r = nec_8048_bl_update_status(bl);
--	if (r < 0)
--		dev_err(&dssdev->dev, "failed to set lcd brightness\n");
--
- 	return 0;
- err1:
- 	omapdss_dpi_display_disable(dssdev);
-@@ -201,15 +133,9 @@ err0:
- 
- static void nec_8048_panel_power_off(struct omap_dss_device *dssdev)
- {
--	struct nec_8048_data *necd = dev_get_drvdata(&dssdev->dev);
--	struct backlight_device *bl = necd->bl;
--
- 	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
- 		return;
- 
--	bl->props.brightness = 0;
--	nec_8048_bl_update_status(bl);
--
- 	if (dssdev->platform_disable)
- 		dssdev->platform_disable(dssdev);
- 
+ 	as3711 = devm_kzalloc(&client->dev, sizeof(struct as3711), GFP_KERNEL);
+ 	if (!as3711) {
+@@ -193,7 +211,8 @@ static struct i2c_driver as3711_i2c_driver = {
+ 	.driver = {
+ 		   .name = "as3711",
+ 		   .owner = THIS_MODULE,
+-		   },
++		   .of_match_table = of_match_ptr(as3711_of_match),
++	},
+ 	.probe = as3711_i2c_probe,
+ 	.remove = as3711_i2c_remove,
+ 	.id_table = as3711_i2c_id,
 -- 
-1.7.9.5
+1.7.2.5
 

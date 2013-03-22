@@ -1,37 +1,77 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Sat, 23 Mar 2013 06:46:33 +0000
-Subject: [PATCH 5/5] video: vt8500: Adjust contrast in wm8505 framebuffer driver.
-Message-Id: <1364021193-19835-6-git-send-email-linux@prisktech.co.nz>
+From: Heiko =?utf-8?q?St=C3=BCbner?= <heiko@sntech.de>
+Date: Fri, 22 Mar 2013 14:13:37 +0000
+Subject: [PATCH 2/9] AUO-K190x: add runtime-pm calls to controller init functions
+Message-Id: <201303221513.38091.heiko@sntech.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364021193-19835-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1364021193-19835-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-The contrast value was typo'd on the original commit (0x80 instead of
-0x08). Following feedback from an enduser, a value of 0x10 seems more
-suitable due to the default backlight being <100%.
+The controller init may be called from a context where the device
+is runtime suspended, leading to a deadlock, as the controllers only
+accepts the wakeup command when suspended.
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+Signed-off-by: Heiko St=C3=BCbner <heiko@sntech.de>
 ---
- drivers/video/wm8505fb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/auo_k1900fb.c |    6 ++++++
+ drivers/video/auo_k1901fb.c |    6 ++++++
+ 2 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
-index b94ebc9..5057457 100644
---- a/drivers/video/wm8505fb.c
-+++ b/drivers/video/wm8505fb.c
-@@ -373,7 +373,7 @@ static int wm8505fb_probe(struct platform_device *pdev)
- 	fbi->fb.screen_base		= fb_mem_virt;
- 	fbi->fb.screen_size		= fb_mem_len;
- 
--	fbi->contrast = 0x80;
-+	fbi->contrast = 0x10;
- 	ret = wm8505fb_set_par(&fbi->fb);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Failed to set parameters\n");
--- 
-1.7.9.5
+diff --git a/drivers/video/auo_k1900fb.c b/drivers/video/auo_k1900fb.c
+index b02fab5d..8cf4847 100644
+--- a/drivers/video/auo_k1900fb.c
++++ b/drivers/video/auo_k1900fb.c
+@@ -60,9 +60,12 @@
+=20
+ static void auok1900_init(struct auok190xfb_par *par)
+ {
++	struct device *dev =3D par->info->device;
+ 	struct auok190x_board *board =3D par->board;
+ 	u16 init_param =3D 0;
+=20
++	pm_runtime_get_sync(dev);
++
+ 	init_param |=3D AUOK1900_INIT_TEMP_AVERAGE;
+ 	init_param |=3D AUOK1900_INIT_ROTATE(par->rotation);
+ 	init_param |=3D AUOK190X_INIT_INVERSE_WHITE;
+@@ -74,6 +77,9 @@ static void auok1900_init(struct auok190xfb_par *par)
+=20
+ 	/* let the controller finish */
+ 	board->wait_for_rdy(par);
++
++	pm_runtime_mark_last_busy(dev);
++	pm_runtime_put_autosuspend(dev);
+ }
+=20
+ static void auok1900_update_region(struct auok190xfb_par *par, int mode,
+diff --git a/drivers/video/auo_k1901fb.c b/drivers/video/auo_k1901fb.c
+index ece99b8..98aa222 100644
+--- a/drivers/video/auo_k1901fb.c
++++ b/drivers/video/auo_k1901fb.c
+@@ -101,9 +101,12 @@
+=20
+ static void auok1901_init(struct auok190xfb_par *par)
+ {
++	struct device *dev =3D par->info->device;
+ 	struct auok190x_board *board =3D par->board;
+ 	u16 init_param =3D 0;
+=20
++	pm_runtime_get_sync(dev);
++
+ 	init_param |=3D AUOK190X_INIT_INVERSE_WHITE;
+ 	init_param |=3D AUOK190X_INIT_FORMAT0;
+ 	init_param |=3D AUOK1901_INIT_RESOLUTION(par->resolution);
+@@ -113,6 +116,9 @@ static void auok1901_init(struct auok190xfb_par *par)
+=20
+ 	/* let the controller finish */
+ 	board->wait_for_rdy(par);
++
++	pm_runtime_mark_last_busy(dev);
++	pm_runtime_put_autosuspend(dev);
+ }
+=20
+ static void auok1901_update_region(struct auok190xfb_par *par, int mode,
+--=20
+1.7.2.3
 

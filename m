@@ -1,133 +1,37 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 27 Mar 2013 08:45:14 +0000
-Subject: [RFC 07/14] OMAPDSS: TFP410: Add DT support
-Message-Id: <1364373921-7599-8-git-send-email-tomi.valkeinen@ti.com>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Sat, 23 Mar 2013 06:46:33 +0000
+Subject: [PATCH 5/5] video: vt8500: Adjust contrast in wm8505 framebuffer driver.
+Message-Id: <1364021193-19835-6-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1364021193-19835-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1364021193-19835-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Cc: Archit Taneja <archit@ti.com>, Andy Gross <andy.gross@ti.com>, Tony Lindgren <tony@atomide.com>, Benoit Cousson <b-cousson@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-In the DT data we model the TFP410 chip and the DVI connector. For the
-moment we have only 1 driver to handle those both.
+The contrast value was typo'd on the original commit (0x80 instead of
+0x08). Following feedback from an enduser, a value of 0x10 seems more
+suitable due to the default backlight being <100%.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
 ---
- drivers/video/omap2/displays/panel-tfp410.c |   71 +++++++++++++++++++++++++++
- 1 file changed, 71 insertions(+)
+ drivers/video/wm8505fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/displays/panel-tfp410.c b/drivers/video/omap2/displays/panel-tfp410.c
-index a225ea1..a087489c 100644
---- a/drivers/video/omap2/displays/panel-tfp410.c
-+++ b/drivers/video/omap2/displays/panel-tfp410.c
-@@ -24,6 +24,8 @@
- #include <linux/gpio.h>
- #include <linux/platform_device.h>
- #include <drm/drm_edid.h>
-+#include <linux/of_gpio.h>
-+#include <linux/of_i2c.h>
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index b94ebc9..5057457 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -373,7 +373,7 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 	fbi->fb.screen_base		= fb_mem_virt;
+ 	fbi->fb.screen_size		= fb_mem_len;
  
- #include <video/omap-panel-tfp410.h>
- 
-@@ -112,6 +114,63 @@ static int tfp410_probe_pdata(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int tfp410_probe_of(struct platform_device *pdev)
-+{
-+	struct device_node *node = pdev->dev.of_node;
-+	struct panel_drv_data *ddata = dev_get_drvdata(&pdev->dev);
-+	struct device_node *adapter_node;
-+	struct i2c_adapter *adapter;
-+	int r, gpio, datalines;
-+
-+	ddata->name = node->name;
-+
-+	node = of_parse_phandle(node, "video-source", 0);
-+	if (!node) {
-+		dev_err(&pdev->dev, "failed to parse video source\n");
-+		return -ENODEV;
-+	}
-+
-+	gpio = of_get_gpio(node, 0);
-+
-+	if (gpio_is_valid(gpio)) {
-+		r = devm_gpio_request_one(&pdev->dev, gpio,
-+				GPIOF_OUT_INIT_LOW, "tfp410 pd");
-+		if (r) {
-+			dev_err(&pdev->dev, "Failed to request PD GPIO %d\n",
-+					gpio);
-+			return r;
-+		}
-+
-+		ddata->pd_gpio = gpio;
-+	} else if (gpio = -ENOENT) {
-+		ddata->pd_gpio = -1;
-+	} else {
-+		dev_err(&pdev->dev, "failed to parse PD gpio\n");
-+		return gpio;
-+	}
-+
-+	r = of_property_read_u32(node, "data-lines", &datalines);
-+	if (r) {
-+		dev_err(&pdev->dev, "failed to parse datalines");
-+		return r;
-+	}
-+
-+	ddata->data_lines = datalines;
-+
-+	adapter_node = of_parse_phandle(node, "i2c-bus", 0);
-+	if (adapter_node) {
-+		adapter = of_find_i2c_adapter_by_node(adapter_node);
-+		if (adapter = NULL) {
-+			dev_err(&pdev->dev, "failed to parse i2c-bus\n");
-+			return -EINVAL;
-+		}
-+
-+		ddata->i2c_adapter = adapter;
-+	}
-+
-+	return 0;
-+}
-+
- static int tfp410_probe(struct platform_device *pdev)
- {
- 	struct tfp410_platform_data *pdata = dev_get_platdata(&pdev->dev);
-@@ -131,6 +190,10 @@ static int tfp410_probe(struct platform_device *pdev)
- 		r = tfp410_probe_pdata(pdev);
- 		if (r)
- 			return r;
-+	} else if (pdev->dev.of_node) {
-+		r = tfp410_probe_of(pdev);
-+		if (r)
-+			return r;
- 	} else {
- 		return -ENODEV;
- 	}
-@@ -380,12 +443,20 @@ static struct omap_dss_driver tfp410_driver = {
- 	.detect		= tfp410_detect,
- };
- 
-+static const struct of_device_id tfp410_of_match[] = {
-+	{
-+		.compatible = "ti,dvi_connector",
-+	},
-+	{},
-+};
-+
- static struct platform_driver tfp410_platform_driver = {
- 	.probe	= tfp410_probe,
- 	.remove	= __exit_p(tfp410_remove),
- 	.driver	= {
- 		.name	= "tfp410",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = tfp410_of_match,
- 	},
- };
- 
+-	fbi->contrast = 0x80;
++	fbi->contrast = 0x10;
+ 	ret = wm8505fb_set_par(&fbi->fb);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to set parameters\n");
 -- 
-1.7.10.4
+1.7.9.5
 

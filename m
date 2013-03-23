@@ -1,94 +1,158 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Mar 2013 13:33:52 +0000
-Subject: [PATCH 22/26] ARM: OMAP: Panda: use new TFP410 platform driver
-Message-Id: <1364304836-18134-23-git-send-email-tomi.valkeinen@ti.com>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Sat, 23 Mar 2013 06:46:29 +0000
+Subject: [PATCH 1/5] video: vt8500: Make wmt_ge_rops optional
+Message-Id: <1364021193-19835-2-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1364021193-19835-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1364021193-19835-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Use the new TFP410 platform driver instead of the old omap_dss_driver.
+wmt_ge_rops is a seperate driver to vt8500/wm8505 framebuffer
+driver but is currently a required option. This patch makes
+accelerated raster ops optional.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
 ---
- arch/arm/mach-omap2/dss-common.c |   24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+ drivers/video/Kconfig       |   22 ++++++++++++----------
+ drivers/video/vt8500lcdfb.c |   15 +++++++++++++++
+ drivers/video/wm8505fb.c    |   15 +++++++++++++++
+ 3 files changed, 42 insertions(+), 10 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/dss-common.c b/arch/arm/mach-omap2/dss-common.c
-index 4be5cfc..0e94df8 100644
---- a/arch/arm/mach-omap2/dss-common.c
-+++ b/arch/arm/mach-omap2/dss-common.c
-@@ -25,6 +25,7 @@
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 4c1546f..661aa54 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -212,14 +212,6 @@ config FB_SYS_FOPS
+        depends on FB
+        default n
  
- #include <linux/kernel.h>
- #include <linux/gpio.h>
-+#include <linux/platform_device.h>
+-config FB_WMT_GE_ROPS
+-	tristate
+-	depends on FB
+-	default n
+-	---help---
+-	  Include functions for accelerated rectangle filling and area
+-	  copying using WonderMedia Graphics Engine operations.
+-
+ config FB_DEFERRED_IO
+ 	bool
+ 	depends on FB
+@@ -1799,7 +1791,8 @@ config FB_AU1200
+ config FB_VT8500
+ 	bool "VT8500 LCD Driver"
+ 	depends on (FB = y) && ARM && ARCH_VT8500
+-	select FB_WMT_GE_ROPS
++	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
++	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_IMAGEBLIT
+ 	help
+ 	  This is the framebuffer driver for VIA VT8500 integrated LCD
+@@ -1808,12 +1801,21 @@ config FB_VT8500
+ config FB_WM8505
+ 	bool "WM8505 frame buffer support"
+ 	depends on (FB = y) && ARM && ARCH_VT8500
+-	select FB_WMT_GE_ROPS
++	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
++	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_IMAGEBLIT
+ 	help
+ 	  This is the framebuffer driver for WonderMedia WM8505/WM8650
+ 	  integrated LCD controller.
  
- #include <video/omapdss.h>
- #include <video/omap-panel-tfp410.h>
-@@ -42,20 +43,18 @@
- /* Display DVI */
- #define PANDA_DVI_TFP410_POWER_DOWN_GPIO	0
++config FB_WMT_GE_ROPS
++	bool "VT8500/WM85xx accelerated raster ops support"
++	depends on (FB = y) && (FB_VT8500 || FB_WM8505)
++	default n
++	help
++	  This adds support for accelerated raster operations on the
++	  VIA VT8500 and Wondermedia 85xx series SoCs.
++
+ source "drivers/video/geode/Kconfig"
  
--/* Using generic display panel */
--static struct tfp410_platform_data omap4_dvi_panel = {
-+static struct tfp410_platform_data omap4_tfp410_pdata = {
-+	.name			= "dvi",
-+	.source			= "dpi.0",
- 	.i2c_bus_num		= 3,
-+	.data_lines		= 24,
- 	.power_down_gpio	= PANDA_DVI_TFP410_POWER_DOWN_GPIO,
- };
+ config FB_HIT
+diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
+index aa2579c..d8cc1f6 100644
+--- a/drivers/video/vt8500lcdfb.c
++++ b/drivers/video/vt8500lcdfb.c
+@@ -33,7 +33,10 @@
+ #include <linux/platform_data/video-vt8500lcdfb.h>
  
--static struct omap_dss_device omap4_panda_dvi_device = {
--	.type			= OMAP_DISPLAY_TYPE_DPI,
--	.name			= "dvi",
--	.driver_name		= "tfp410",
--	.data			= &omap4_dvi_panel,
--	.phy.dpi.data_lines	= 24,
--	.reset_gpio		= PANDA_DVI_TFP410_POWER_DOWN_GPIO,
--	.channel		= OMAP_DSS_CHANNEL_LCD2,
-+static struct platform_device omap4_panda_tfp410_device = {
-+	.name			= "tfp410",
-+	.id			= 0,
-+	.dev.platform_data	= &omap4_tfp410_pdata,
- };
+ #include "vt8500lcdfb.h"
++
++#ifdef CONFIG_FB_WMT_GE_ROPS
+ #include "wmt_ge_rops.h"
++#endif
  
- static struct omap_dss_hdmi_data omap4_panda_hdmi_data = {
-@@ -73,19 +72,19 @@ static struct omap_dss_device  omap4_panda_hdmi_device = {
- };
- 
- static struct omap_dss_device *omap4_panda_dss_devices[] = {
--	&omap4_panda_dvi_device,
- 	&omap4_panda_hdmi_device,
- };
- 
- static struct omap_dss_board_info omap4_panda_dss_data = {
- 	.num_devices	= ARRAY_SIZE(omap4_panda_dss_devices),
- 	.devices	= omap4_panda_dss_devices,
--	.default_device	= &omap4_panda_dvi_device,
-+	.default_display_name = "dvi",
- };
- 
- void __init omap4_panda_display_init(void)
- {
- 	omap_display_init(&omap4_panda_dss_data);
-+	platform_device_register(&omap4_panda_tfp410_device);
- 
- 	/*
- 	 * OMAP4460SDP/Blaze and OMAP4430 ES2.3 SDP/Blaze boards and
-@@ -104,6 +103,7 @@ void __init omap4_panda_display_init(void)
- void __init omap4_panda_display_init_of(void)
- {
- 	omap_display_init(&omap4_panda_dss_data);
-+	platform_device_register(&omap4_panda_tfp410_device);
+ #ifdef CONFIG_OF
+ #include <linux/of.h>
+@@ -249,12 +252,24 @@ static int vt8500lcd_blank(int blank, struct fb_info *info)
+ 	return 0;
  }
  
++#ifndef CONFIG_FB_WMT_GE_ROPS
++static int wmt_ge_sync(struct fb_info *p)
++{
++	return 0;
++}
++#endif
++
+ static struct fb_ops vt8500lcd_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_set_par	= vt8500lcd_set_par,
+ 	.fb_setcolreg	= vt8500lcd_setcolreg,
++#ifdef CONFIG_FB_WMT_GE_ROPS
+ 	.fb_fillrect	= wmt_ge_fillrect,
+ 	.fb_copyarea	= wmt_ge_copyarea,
++#else
++	.fb_fillrect	= sys_fillrect,
++	.fb_copyarea	= sys_copyarea,
++#endif
+ 	.fb_imageblit	= sys_imageblit,
+ 	.fb_sync	= wmt_ge_sync,
+ 	.fb_ioctl	= vt8500lcd_ioctl,
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index 4dd0580..db49803 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -35,7 +35,10 @@
+ #include <linux/platform_data/video-vt8500lcdfb.h>
  
+ #include "wm8505fb_regs.h"
++
++#ifdef CONFIG_FB_WMT_GE_ROPS
+ #include "wmt_ge_rops.h"
++#endif
+ 
+ #define DRIVER_NAME "wm8505-fb"
+ 
+@@ -248,12 +251,24 @@ static int wm8505fb_blank(int blank, struct fb_info *info)
+ 	return 0;
+ }
+ 
++#ifndef CONFIG_FB_WMT_GE_ROPS
++static int wmt_ge_sync(struct fb_info *p)
++{
++	return 0;
++}
++#endif
++
+ static struct fb_ops wm8505fb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_set_par	= wm8505fb_set_par,
+ 	.fb_setcolreg	= wm8505fb_setcolreg,
++#ifdef CONFIG_FB_WMT_GE_ROPS
+ 	.fb_fillrect	= wmt_ge_fillrect,
+ 	.fb_copyarea	= wmt_ge_copyarea,
++#else
++	.fb_fillrect	= sys_fillrect,
++	.fb_copyarea	= sys_copyarea,
++#endif
+ 	.fb_imageblit	= sys_imageblit,
+ 	.fb_sync	= wmt_ge_sync,
+ 	.fb_pan_display	= wm8505fb_pan_display,
 -- 
-1.7.10.4
+1.7.9.5
 

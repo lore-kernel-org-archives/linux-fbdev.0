@@ -1,39 +1,90 @@
-From: Jean Delvare <jdelvare@suse.de>
-Date: Sun, 31 Mar 2013 13:04:15 +0000
-Subject: [PATCH] geodefb: Depend on X86_32
-Message-Id: <1364735055.4223.4.camel@amber.site>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Sat, 23 Mar 2013 06:46:30 +0000
+Subject: [PATCH 2/5] video: vt8500: Remove unused platform_data/video-vt8500lcdfb.h
+Message-Id: <1364021193-19835-3-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1364021193-19835-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1364021193-19835-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-From: Jeff Mahoney <jeffm@suse.com>
+With the conversion to devicetree only for arch-vt8500, this
+header is no longer required. This patch removes the #include
+from the two framebuffer drivers that used it, and the header file.
 
-Geode is 32-bit only so only enable it for X86_32.
-
-Signed-off-by: Jeff Mahoney <jeffm@suse.com>
-Signed-off-by: Jean Delvare <jdelvare@suse.de>
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
 ---
-We have this patch in the Suse kernel tree for almost a year, it would
-be great if it could finally make it upstream.
+ drivers/video/vt8500lcdfb.c                     |    2 --
+ drivers/video/wm8505fb.c                        |    2 --
+ include/linux/platform_data/video-vt8500lcdfb.h |   31 -----------------------
+ 3 files changed, 35 deletions(-)
+ delete mode 100644 include/linux/platform_data/video-vt8500lcdfb.h
 
- drivers/video/geode/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/drivers/video/geode/Kconfig
-+++ b/drivers/video/geode/Kconfig
-@@ -3,7 +3,7 @@
- #
- config FB_GEODE
- 	bool "AMD Geode family framebuffer support"
--	depends on FB && PCI && X86
-+	depends on FB && PCI && X86_32
- 	---help---
- 	  Say 'Y' here to allow you to select framebuffer drivers for
- 	  the AMD Geode family of processors.
-
+diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
+index d8cc1f6..1c34821 100644
+--- a/drivers/video/vt8500lcdfb.c
++++ b/drivers/video/vt8500lcdfb.c
+@@ -30,8 +30,6 @@
+ #include <linux/platform_device.h>
+ #include <linux/wait.h>
+ 
+-#include <linux/platform_data/video-vt8500lcdfb.h>
+-
+ #include "vt8500lcdfb.h"
+ 
+ #ifdef CONFIG_FB_WMT_GE_ROPS
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index db49803..ce23a00 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -32,8 +32,6 @@
+ #include <linux/of_fdt.h>
+ #include <linux/memblock.h>
+ 
+-#include <linux/platform_data/video-vt8500lcdfb.h>
+-
+ #include "wm8505fb_regs.h"
+ 
+ #ifdef CONFIG_FB_WMT_GE_ROPS
+diff --git a/include/linux/platform_data/video-vt8500lcdfb.h b/include/linux/platform_data/video-vt8500lcdfb.h
+deleted file mode 100644
+index 7f399c3..0000000
+--- a/include/linux/platform_data/video-vt8500lcdfb.h
++++ /dev/null
+@@ -1,31 +0,0 @@
+-/*
+- *  VT8500/WM8505 Frame Buffer platform data definitions
+- *
+- *  Copyright (C) 2010 Ed Spiridonov <edo.rus@gmail.com>
+- *
+- * This software is licensed under the terms of the GNU General Public
+- * License version 2, as published by the Free Software Foundation, and
+- * may be copied, distributed, and modified under those terms.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- */
+-
+-#ifndef _VT8500FB_H
+-#define _VT8500FB_H
+-
+-#include <linux/fb.h>
+-
+-struct vt8500fb_platform_data {
+-	struct fb_videomode	mode;
+-	u32			xres_virtual;
+-	u32			yres_virtual;
+-	u32			bpp;
+-	unsigned long		video_mem_phys;
+-	void			*video_mem_virt;
+-	unsigned long		video_mem_len;
+-};
+-
+-#endif /* _VT8500FB_H */
 -- 
-Jean Delvare
-Suse L3
+1.7.9.5
 

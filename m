@@ -1,43 +1,112 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Mar 2013 13:33:47 +0000
-Subject: [PATCH 17/26] OMAPDSS: generic-dpi-panel platform_data changes
-Message-Id: <1364304836-18134-18-git-send-email-tomi.valkeinen@ti.com>
+From: Paul Bolle <pebolle@tiscali.nl>
+Date: Mon, 25 Mar 2013 21:27:19 +0000
+Subject: [PATCH] MIPS: remove obsolete Kconfig macros
+Message-Id: <1364246839.1390.299.camel@x61.thuisdomein>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Ralf Baechle <ralf@linux-mips.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-mips@linux-mips.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The forthcoming omap_dss_device to platform_device conversion requires a
-few new fields to the generic-dpi-panel platform data. Add the platform
-data fields here so that we can make the board file changes
-independently of the panel driver changes.
+The support for PB1100, PB1500, and PB1550 got merged into the code for
+DB1000 and DB1550 code in v3.7. When that was done the three related
+Kconfig symbols were dropped. But not all related Kconfig macros were
+removed. Do so now.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Note that the PB1100 code in the Au1100 LCD driver is removed entirely
+and not converted to use its current Kconfig macro. That is done because
+the macros it uses (PB1100_G_CONTROL, PB1100_G_CONTROL_BL, and
+PB1100_G_CONTROL_VDD) are never defined. Actually only one of these was
+ever defined (PB1100_G_CONTROL) but that define was removed in v2.6.34.
+So, as far as I can tell, this code could have never compiled.
+
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
 ---
- include/video/omap-panel-generic-dpi.h |    3 +++
- 1 file changed, 3 insertions(+)
+None of this is tested.
 
-diff --git a/include/video/omap-panel-generic-dpi.h b/include/video/omap-panel-generic-dpi.h
-index 127e3f2..4ef4419 100644
---- a/include/video/omap-panel-generic-dpi.h
-+++ b/include/video/omap-panel-generic-dpi.h
-@@ -29,9 +29,12 @@ struct omap_dss_device;
-  * @platform_disable: platform specific panel disable function
-  */
- struct panel_generic_dpi_data {
-+	const char *display_name;
-+	const char *source;
- 	const char *name;
- 	int (*platform_enable)(struct omap_dss_device *dssdev);
- 	void (*platform_disable)(struct omap_dss_device *dssdev);
-+	int data_lines;
- };
+ arch/mips/alchemy/Platform | 22 ++--------------------
+ drivers/video/au1100fb.c   | 22 ++++------------------
+ 2 files changed, 6 insertions(+), 38 deletions(-)
+
+diff --git a/arch/mips/alchemy/Platform b/arch/mips/alchemy/Platform
+index fa1bdd1..b3afcdd 100644
+--- a/arch/mips/alchemy/Platform
++++ b/arch/mips/alchemy/Platform
+@@ -5,32 +5,14 @@ platform-$(CONFIG_MIPS_ALCHEMY) += alchemy/common/
  
- #endif /* __OMAP_PANEL_GENERIC_DPI_H */
+
+ #
+-# AMD Alchemy Pb1100 eval board
+-#
+-platform-$(CONFIG_MIPS_PB1100)	+= alchemy/devboards/
+-load-$(CONFIG_MIPS_PB1100)	+= 0xffffffff80100000
+-
+-#
+-# AMD Alchemy Pb1500 eval board
+-#
+-platform-$(CONFIG_MIPS_PB1500)	+= alchemy/devboards/
+-load-$(CONFIG_MIPS_PB1500)	+= 0xffffffff80100000
+-
+-#
+-# AMD Alchemy Pb1550 eval board
+-#
+-platform-$(CONFIG_MIPS_PB1550)	+= alchemy/devboards/
+-load-$(CONFIG_MIPS_PB1550)	+= 0xffffffff80100000
+-
+-#
+-# AMD Alchemy Db1000/Db1500/Db1100 eval boards
++# AMD Alchemy Db1000/Db1500/Pb1500/Db1100/Pb1100 eval boards
+ #
+ platform-$(CONFIG_MIPS_DB1000)	+= alchemy/devboards/
+ cflags-$(CONFIG_MIPS_DB1000)	+= -I$(srctree)/arch/mips/include/asm/mach-db1x00
+ load-$(CONFIG_MIPS_DB1000)	+= 0xffffffff80100000
+ 
+ #
+-# AMD Alchemy Db1200/Pb1200/Db1550/Db1300 eval boards
++# AMD Alchemy Db1200/Pb1200/Db1550/Pb1550/Db1300 eval boards
+ #
+ platform-$(CONFIG_MIPS_DB1235)	+= alchemy/devboards/
+ cflags-$(CONFIG_MIPS_DB1235)	+= -I$(srctree)/arch/mips/include/asm/mach-db1x00
+diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
+index ddabaa8..700cac0 100644
+--- a/drivers/video/au1100fb.c
++++ b/drivers/video/au1100fb.c
+@@ -111,30 +111,16 @@ static int au1100fb_fb_blank(int blank_mode, struct fb_info *fbi)
+ 	switch (blank_mode) {
+ 
+ 	case VESA_NO_BLANKING:
+-			/* Turn on panel */
+-			fbdev->regs->lcd_control |= LCD_CONTROL_GO;
+-#ifdef CONFIG_MIPS_PB1100
+-			if (fbdev->panel_idx = 1) {
+-				au_writew(au_readw(PB1100_G_CONTROL)
+-					  | (PB1100_G_CONTROL_BL | PB1100_G_CONTROL_VDD),
+-			PB1100_G_CONTROL);
+-			}
+-#endif
++		/* Turn on panel */
++		fbdev->regs->lcd_control |= LCD_CONTROL_GO;
+ 		au_sync();
+ 		break;
+ 
+ 	case VESA_VSYNC_SUSPEND:
+ 	case VESA_HSYNC_SUSPEND:
+ 	case VESA_POWERDOWN:
+-			/* Turn off panel */
+-			fbdev->regs->lcd_control &= ~LCD_CONTROL_GO;
+-#ifdef CONFIG_MIPS_PB1100
+-			if (fbdev->panel_idx = 1) {
+-				au_writew(au_readw(PB1100_G_CONTROL)
+-				  	  & ~(PB1100_G_CONTROL_BL | PB1100_G_CONTROL_VDD),
+-			PB1100_G_CONTROL);
+-			}
+-#endif
++		/* Turn off panel */
++		fbdev->regs->lcd_control &= ~LCD_CONTROL_GO;
+ 		au_sync();
+ 		break;
+ 	default:
 -- 
-1.7.10.4
+1.7.11.7
 

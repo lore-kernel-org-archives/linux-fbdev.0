@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Mar 2013 13:33:38 +0000
-Subject: [PATCH 08/26] OMAPDSS: use the panel list in omap_dss_get_next_device
-Message-Id: <1364304836-18134-9-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 26 Mar 2013 13:33:53 +0000
+Subject: [PATCH 23/26] ARM: OMAP: Panda & SDP: use new HDMI driver
+Message-Id: <1364304836-18134-24-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,106 +11,99 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-omap_dss_get_next_device() uses the dss bus to iterate over the
-displays. This patch changes omap_dss_get_next_device() to use the new
-panel list instead.
+Change Pandaboard and 4430SDP to use the new HDMI platform driver
+instead of the old omap_dss_driver.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/display.c |   63 +++++++++++++++++++++++++++----------
- 1 file changed, 46 insertions(+), 17 deletions(-)
+ arch/arm/mach-omap2/dss-common.c |   31 ++++++++++++-------------------
+ 1 file changed, 12 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
-index e785694..50792bf 100644
---- a/drivers/video/omap2/dss/display.c
-+++ b/drivers/video/omap2/dss/display.c
-@@ -189,27 +189,51 @@ void omap_dss_put_device(struct omap_dss_device *dssdev)
- }
- EXPORT_SYMBOL(omap_dss_put_device);
+diff --git a/arch/arm/mach-omap2/dss-common.c b/arch/arm/mach-omap2/dss-common.c
+index 0e94df8..64ca888 100644
+--- a/arch/arm/mach-omap2/dss-common.c
++++ b/arch/arm/mach-omap2/dss-common.c
+@@ -63,21 +63,13 @@ static struct omap_dss_hdmi_data omap4_panda_hdmi_data = {
+ 	.hpd_gpio = HDMI_GPIO_HPD,
+ };
  
--/* ref count of the found device is incremented. ref count
-- * of from-device is decremented. */
-+/*
-+ * ref count of the found device is incremented.
-+ * ref count of from-device is decremented.
-+ */
- struct omap_dss_device *omap_dss_get_next_device(struct omap_dss_device *from)
+-static struct omap_dss_device  omap4_panda_hdmi_device = {
+-	.name = "hdmi",
+-	.driver_name = "hdmi_panel",
+-	.type = OMAP_DISPLAY_TYPE_HDMI,
+-	.channel = OMAP_DSS_CHANNEL_DIGIT,
+-	.data = &omap4_panda_hdmi_data,
+-};
+-
+-static struct omap_dss_device *omap4_panda_dss_devices[] = {
+-	&omap4_panda_hdmi_device,
++static struct platform_device omap4_panda_hdmi_device = {
++	.name			= "hdmi_panel",
++	.id			= 0,
++	.dev.platform_data	= &omap4_panda_hdmi_data,
+ };
+ 
+ static struct omap_dss_board_info omap4_panda_dss_data = {
+-	.num_devices	= ARRAY_SIZE(omap4_panda_dss_devices),
+-	.devices	= omap4_panda_dss_devices,
+ 	.default_display_name = "dvi",
+ };
+ 
+@@ -85,6 +77,7 @@ void __init omap4_panda_display_init(void)
  {
--	struct device *dev;
--	struct device *dev_start = NULL;
--	struct omap_dss_device *dssdev = NULL;
-+	struct list_head *l;
-+	struct omap_dss_device *dssdev;
-+
-+	mutex_lock(&panel_list_mutex);
-+
-+	if (list_empty(&panel_list)) {
-+		dssdev = NULL;
-+		goto out;
-+	}
+ 	omap_display_init(&omap4_panda_dss_data);
+ 	platform_device_register(&omap4_panda_tfp410_device);
++	platform_device_register(&omap4_panda_hdmi_device);
  
--	int match(struct device *dev, void *data)
--	{
--		return 1;
-+	if (from = NULL) {
-+		dssdev = list_first_entry(&panel_list, struct omap_dss_device,
-+				panel_list);
-+		omap_dss_get_device(dssdev);
-+		goto out;
- 	}
- 
--	if (from)
--		dev_start = &from->dev;
--	dev = bus_find_device(dss_get_bus(), dev_start, NULL, match);
--	if (dev)
--		dssdev = to_dss_device(dev);
--	if (from)
--		put_device(&from->dev);
-+	omap_dss_put_device(from);
-+
-+	list_for_each(l, &panel_list) {
-+		dssdev = list_entry(l, struct omap_dss_device, panel_list);
-+		if (dssdev = from) {
-+			if (list_is_last(l, &panel_list)) {
-+				dssdev = NULL;
-+				goto out;
-+			}
-+
-+			dssdev = list_entry(l->next, struct omap_dss_device,
-+					panel_list);
-+			omap_dss_get_device(dssdev);
-+			goto out;
-+		}
-+	}
-+
-+	WARN(1, "'from' dssdev not found\n");
- 
-+	dssdev = NULL;
-+out:
-+	mutex_unlock(&panel_list_mutex);
- 	return dssdev;
- }
- EXPORT_SYMBOL(omap_dss_get_next_device);
-@@ -219,12 +243,17 @@ struct omap_dss_device *omap_dss_find_device(void *data,
+ 	/*
+ 	 * OMAP4460SDP/Blaze and OMAP4430 ES2.3 SDP/Blaze boards and
+@@ -104,6 +97,7 @@ void __init omap4_panda_display_init_of(void)
  {
- 	struct omap_dss_device *dssdev = NULL;
- 
-+	mutex_lock(&panel_list_mutex);
-+
- 	while ((dssdev = omap_dss_get_next_device(dssdev)) != NULL) {
- 		if (match(dssdev, data))
--			return dssdev;
-+			goto out;
- 	}
- 
--	return NULL;
-+	dssdev = NULL;
-+out:
-+	mutex_unlock(&panel_list_mutex);
-+	return dssdev;
+ 	omap_display_init(&omap4_panda_dss_data);
+ 	platform_device_register(&omap4_panda_tfp410_device);
++	platform_device_register(&omap4_panda_hdmi_device);
  }
- EXPORT_SYMBOL(omap_dss_find_device);
  
+ 
+@@ -165,12 +159,10 @@ static struct omap_dss_hdmi_data sdp4430_hdmi_data = {
+ 	.hpd_gpio = HDMI_GPIO_HPD,
+ };
+ 
+-static struct omap_dss_device sdp4430_hdmi_device = {
+-	.name = "hdmi",
+-	.driver_name = "hdmi_panel",
+-	.type = OMAP_DISPLAY_TYPE_HDMI,
+-	.channel = OMAP_DSS_CHANNEL_DIGIT,
+-	.data = &sdp4430_hdmi_data,
++static struct platform_device sdp4430_hdmi_device = {
++	.name			= "hdmi_panel",
++	.id			= 0,
++	.dev.platform_data	= &sdp4430_hdmi_data,
+ };
+ 
+ static struct picodlp_panel_data sdp4430_picodlp_pdata = {
+@@ -224,7 +216,6 @@ static struct omap_dss_device sdp4430_picodlp_device = {
+ static struct omap_dss_device *sdp4430_dss_devices[] = {
+ 	&sdp4430_lcd_device,
+ 	&sdp4430_lcd2_device,
+-	&sdp4430_hdmi_device,
+ 	&sdp4430_picodlp_device,
+ };
+ 
+@@ -246,6 +237,7 @@ void __init omap_4430sdp_display_init(void)
+ 
+ 	sdp4430_picodlp_init();
+ 	omap_display_init(&sdp4430_dss_data);
++	platform_device_register(&sdp4430_hdmi_device);
+ 	/*
+ 	 * OMAP4460SDP/Blaze and OMAP4430 ES2.3 SDP/Blaze boards and
+ 	 * later have external pull up on the HDMI I2C lines
+@@ -272,4 +264,5 @@ void __init omap_4430sdp_display_init_of(void)
+ 
+ 	sdp4430_picodlp_init();
+ 	omap_display_init(&sdp4430_dss_data);
++	platform_device_register(&sdp4430_hdmi_device);
+ }
 -- 
 1.7.10.4
 

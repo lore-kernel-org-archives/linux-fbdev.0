@@ -1,28 +1,45 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 25 Mar 2013 05:27:12 +0000
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Tue, 26 Mar 2013 06:37:36 +0000
 Subject: Re: Submitting fbdev tree patches
-Message-Id: <25978865.106801364189231752.JavaMail.weblogic@epv6ml06>
+Message-Id: <1364279856.25738.4.camel@gitbox>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364188287.25442.4.camel@gitbox>
-In-Reply-To: <1364188287.25442.4.camel@gitbox>
+References: <25978865.106801364189231752.JavaMail.weblogic@epv6ml06>
+In-Reply-To: <25978865.106801364189231752.JavaMail.weblogic@epv6ml06>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tony Prisk <linux@prisktech.co.nz>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "FlorianSchandinat@gmx.de" <FlorianSchandinat@gmx.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arm Kernel Mailing List <linux-arm-kernel@lists.infradead.org>, tomi.valkeinen@ti.com, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, Jingoo Han <jg1.han@samsung.com>
+To: linux-arm-kernel@lists.infradead.org
 
-T24gTW9uZGF5LCBNYXJjaCAyNSwgMjAxMyAyOjExIFBNLCBUb255IFByaXNrIHdyb3RlOg0KPiAN
-Cj4gSXMgYW55b25lIHRha2luZyBwYXRjaGVzIGZvciBmYmRldiBhdCB0aGUgbW9tZW50Pw0KPiAN
-Cj4gSSBzZW50IGluIHNvbWUgcGF0Y2hlcyBmb3IgMy45IGJ1dCBkaWRuJ3QgaGVhciBiYWNrIC0g
-Y2hlY2tpbmcgdGhlIGxpc3RzDQo+IGl0IGRvZXNuJ3QgYXBwZWFyIEZsb3JpYW4gaGFzIHBvc3Rl
-ZCBtdWNoIHNpbmNlIHRoZSBlbmQgb2YgT2N0IDIwMTIuDQoNCkNDJ2VkIFRvbWkgVmFsa2VpbmVu
-LCBBbmRyZXcgTW9ydG9uDQoNCg0KSGkgVG9ueSBQcmlzaywNCg0KVG9teSBWYWxrZWllbiB3aWxs
-IHRha2UgY2FyZSBvZiBmYmRldiBmaXhlcyBmb3IgMy45Lg0KKGh0dHA6Ly93d3cuc3Bpbmljcy5u
-ZXQvbGlzdHMvbGludXgtZmJkZXYvbXNnMTAyNDMuaHRtbCkNCg0KSG93IGFib3V0IHNlbmRpbmcg
-YSBwdWxsIHJlcXVlc3QgdG8gVG9teT8NCg0KQmVzdCByZWdhcmRzLA0KSmluZ29vIEhhbg0KDQo+
-IA0KPiBSZWdhcmRzDQo+IFRvbnkgUHJpc2sNCj4gDQo+IC0tDQo+IFRvIHVuc3Vic2NyaWJlIGZy
-b20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4N
-Cj4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcNCj4g
-TW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8t
-aW5mby5odG1sDQo
+On Mon, 2013-03-25 at 05:27 +0000, Jingoo Han wrote:
+> On Monday, March 25, 2013 2:11 PM, Tony Prisk wrote:
+> > 
+> > Is anyone taking patches for fbdev at the moment?
+> > 
+> > I sent in some patches for 3.9 but didn't hear back - checking the lists
+> > it doesn't appear Florian has posted much since the end of Oct 2012.
+> 
+> CC'ed Tomi Valkeinen, Andrew Morton
+> 
+> 
+> Hi Tony Prisk,
+> 
+> Tomy Valkeien will take care of fbdev fixes for 3.9.
+> (http://www.spinics.net/lists/linux-fbdev/msg10243.html)
+> 
+> How about sending a pull request to Tomy?
+> 
+> Best regards,
+> Jingoo Han
+> 
+> > 
+> > Regards
+> > Tony Prisk
+> > 
+
+These are not fixes but new features/changes for 3.10 - I don't want to
+create too much work for someone. Any idea when Florian will be back on
+board?
+
+Regards
+Ton
 

@@ -1,174 +1,395 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 27 Mar 2013 06:58:21 +0000
-Subject: [PATCHv2 1/5] videomode: simplify videomode Kconfig and Makefile
-Message-Id: <1364367505-4366-2-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 26 Mar 2013 13:33:40 +0000
+Subject: [PATCH 10/26] OMAPDSS: implement display sysfs without dss bus
+Message-Id: <1364304836-18134-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364367505-4366-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364367505-4366-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Steffen Trumtrar <s.trumtrar@pengutronix.de>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This patch simplifies videomode related Kconfig and Makefile. After this
-patch, there's only one non-user selectable Kconfig option left,
-VIDEOMODE_HELPERS. The reasons for the change:
+We aim to remove the custom omapdss bus totally, as it's quite a strange
+construct and won't be compatible with common display framework. One
+problem on the road is that we have sysfs files for each display, and
+they depend on the omapdss bus.
 
-* Videomode helper functions are not something that should be shown in
-  the kernel configuration options. The related code should just be
-  included if it's needed, i.e. selected by drivers using videomode.
-
-* There's no need to have separate Kconfig options for videomode and
-  display_timing. First of all, the amount of code for both is quite
-  small. Second, videomode depends on display_timing, and display_timing
-  in itself is not really useful, so both would be included in any case.
-
-* CONFIG_VIDEOMODE is a bit vague name, and CONFIG_VIDEOMODE_HELPERS
-  describes better what's included.
+This patch creates the display sysfs files independent of the omapdss
+bus. This gives us backwards compatibility without using the omapdss bus
+for the sysfs files.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/gpu/drm/drm_modes.c    |    8 ++++----
- drivers/gpu/drm/tilcdc/Kconfig |    3 +--
- drivers/video/Kconfig          |   22 ++--------------------
- drivers/video/Makefile         |    8 ++++----
- drivers/video/fbmon.c          |    8 ++++----
- 5 files changed, 15 insertions(+), 34 deletions(-)
+ drivers/video/omap2/dss/apply.c         |   15 ++--
+ drivers/video/omap2/dss/core.c          |   28 -------
+ drivers/video/omap2/dss/display-sysfs.c |  125 ++++++++++++++++++-------------
+ drivers/video/omap2/dss/dss.h           |    6 +-
+ 4 files changed, 79 insertions(+), 95 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index 04fa6f1..0698c0e 100644
---- a/drivers/gpu/drm/drm_modes.c
-+++ b/drivers/gpu/drm/drm_modes.c
-@@ -506,7 +506,7 @@ drm_gtf_mode(struct drm_device *dev, int hdisplay, int vdisplay, int vrefresh,
- }
- EXPORT_SYMBOL(drm_gtf_mode);
- 
--#if IS_ENABLED(CONFIG_VIDEOMODE)
-+#ifdef CONFIG_VIDEOMODE_HELPERS
- int drm_display_mode_from_videomode(const struct videomode *vm,
- 				    struct drm_display_mode *dmode)
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index a4b356a..44f94b8 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -1569,7 +1569,6 @@ static DEFINE_MUTEX(compat_init_lock);
+ int omapdss_compat_init(void)
  {
-@@ -540,9 +540,8 @@ int drm_display_mode_from_videomode(const struct videomode *vm,
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(drm_display_mode_from_videomode);
--#endif
+ 	struct platform_device *pdev = dss_get_core_pdev();
+-	struct omap_dss_device *dssdev = NULL;
+ 	int i, r;
  
--#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+#ifdef CONFIG_OF
- /**
-  * of_get_drm_display_mode - get a drm_display_mode from devicetree
-  * @np: device_node with the timing specification
-@@ -572,7 +571,8 @@ int of_get_drm_display_mode(struct device_node *np,
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(of_get_drm_display_mode);
--#endif
-+#endif /* CONFIG_OF */
-+#endif /* CONFIG_VIDEOMODE_HELPERS */
+ 	mutex_lock(&compat_init_lock);
+@@ -1615,12 +1614,9 @@ int omapdss_compat_init(void)
+ 	if (r)
+ 		goto err_mgr_ops;
  
- /**
-  * drm_mode_set_name - set the name on a mode
-diff --git a/drivers/gpu/drm/tilcdc/Kconfig b/drivers/gpu/drm/tilcdc/Kconfig
-index d24d040..e461e99 100644
---- a/drivers/gpu/drm/tilcdc/Kconfig
-+++ b/drivers/gpu/drm/tilcdc/Kconfig
-@@ -4,8 +4,7 @@ config DRM_TILCDC
- 	select DRM_KMS_HELPER
- 	select DRM_KMS_CMA_HELPER
- 	select DRM_GEM_CMA_HELPER
--	select OF_VIDEOMODE
--	select OF_DISPLAY_TIMING
-+	select VIDEOMODE_HELPERS
- 	select BACKLIGHT_CLASS_DEVICE
- 	help
- 	  Choose this option if you have an TI SoC with LCDC display
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 4c1546f..2a81b11 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -31,26 +31,8 @@ config VIDEO_OUTPUT_CONTROL
- 	  This framework adds support for low-level control of the video 
- 	  output switch.
+-	for_each_dss_dev(dssdev) {
+-		r = display_init_sysfs(pdev, dssdev);
+-		/* XXX uninit sysfs files on error */
+-		if (r)
+-			goto err_disp_sysfs;
+-	}
++	r = display_init_sysfs(pdev);
++	if (r)
++		goto err_disp_sysfs;
  
--config DISPLAY_TIMING
--       bool
--
--config VIDEOMODE
--       bool
--
--config OF_DISPLAY_TIMING
--	bool "Enable device tree display timing support"
--	depends on OF
--	select DISPLAY_TIMING
--	help
--	  helper to parse display timings from the devicetree
--
--config OF_VIDEOMODE
--	bool "Enable device tree videomode support"
--	depends on OF
--	select VIDEOMODE
--	select OF_DISPLAY_TIMING
--	help
--	  helper to get videomodes from the devicetree
-+config VIDEOMODE_HELPERS
-+	bool
+ 	dispc_runtime_get();
  
- config HDMI
- 	bool
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index 9df3873..e414378 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -171,7 +171,7 @@ obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
+@@ -1637,6 +1633,7 @@ out:
  
- #video output switch sysfs driver
- obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) += output.o
--obj-$(CONFIG_DISPLAY_TIMING) += display_timing.o
--obj-$(CONFIG_OF_DISPLAY_TIMING) += of_display_timing.o
--obj-$(CONFIG_VIDEOMODE) += videomode.o
--obj-$(CONFIG_OF_VIDEOMODE) += of_videomode.o
-+obj-$(CONFIG_VIDEOMODE_HELPERS) += display_timing.o videomode.o
-+ifeq ($(CONFIG_OF),y)
-+obj-$(CONFIG_VIDEOMODE_HELPERS) += of_display_timing.o of_videomode.o
-+endif
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index 94ad0f7..368cedf 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -1376,7 +1376,7 @@ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_inf
- 	return err;
- }
+ err_init_irq:
+ 	dispc_runtime_put();
++	display_uninit_sysfs(pdev);
  
--#if IS_ENABLED(CONFIG_VIDEOMODE)
-+#ifdef CONFIG_VIDEOMODE_HELPERS
- int fb_videomode_from_videomode(const struct videomode *vm,
- 				struct fb_videomode *fbmode)
+ err_disp_sysfs:
+ 	dss_uninstall_mgr_ops();
+@@ -1656,7 +1653,6 @@ EXPORT_SYMBOL(omapdss_compat_init);
+ void omapdss_compat_uninit(void)
  {
-@@ -1424,9 +1424,8 @@ int fb_videomode_from_videomode(const struct videomode *vm,
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
--#endif
+ 	struct platform_device *pdev = dss_get_core_pdev();
+-	struct omap_dss_device *dssdev = NULL;
  
--#if IS_ENABLED(CONFIG_OF_VIDEOMODE)
-+#ifdef CONFIG_OF
- static inline void dump_fb_videomode(const struct fb_videomode *m)
+ 	mutex_lock(&compat_init_lock);
+ 
+@@ -1665,8 +1661,7 @@ void omapdss_compat_uninit(void)
+ 
+ 	dss_dispc_uninitialize_irq();
+ 
+-	for_each_dss_dev(dssdev)
+-		display_uninit_sysfs(pdev, dssdev);
++	display_uninit_sysfs(pdev);
+ 
+ 	dss_uninstall_mgr_ops();
+ 
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 5bdd442..054e980 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -287,37 +287,9 @@ static int dss_bus_match(struct device *dev, struct device_driver *driver)
+ 	return strcmp(dssdev->driver_name, driver->name) = 0;
+ }
+ 
+-static ssize_t device_name_show(struct device *dev,
+-		struct device_attribute *attr, char *buf)
+-{
+-	struct omap_dss_device *dssdev = to_dss_device(dev);
+-	return snprintf(buf, PAGE_SIZE, "%s\n",
+-			dssdev->name ?
+-			dssdev->name : "");
+-}
+-
+-static struct device_attribute default_dev_attrs[] = {
+-	__ATTR(name, S_IRUGO, device_name_show, NULL),
+-	__ATTR_NULL,
+-};
+-
+-static ssize_t driver_name_show(struct device_driver *drv, char *buf)
+-{
+-	struct omap_dss_driver *dssdrv = to_dss_driver(drv);
+-	return snprintf(buf, PAGE_SIZE, "%s\n",
+-			dssdrv->driver.name ?
+-			dssdrv->driver.name : "");
+-}
+-static struct driver_attribute default_drv_attrs[] = {
+-	__ATTR(name, S_IRUGO, driver_name_show, NULL),
+-	__ATTR_NULL,
+-};
+-
+ static struct bus_type dss_bus_type = {
+ 	.name = "omapdss",
+ 	.match = dss_bus_match,
+-	.dev_attrs = default_dev_attrs,
+-	.drv_attrs = default_drv_attrs,
+ };
+ 
+ static void dss_bus_release(struct device *dev)
+diff --git a/drivers/video/omap2/dss/display-sysfs.c b/drivers/video/omap2/dss/display-sysfs.c
+index 18211a9..537921b 100644
+--- a/drivers/video/omap2/dss/display-sysfs.c
++++ b/drivers/video/omap2/dss/display-sysfs.c
+@@ -22,17 +22,40 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+-#include <linux/jiffies.h>
+ #include <linux/platform_device.h>
++#include <linux/sysfs.h>
+ 
+ #include <video/omapdss.h>
+ #include "dss.h"
+-#include "dss_features.h"
++
++static struct omap_dss_device *to_dss_device_sysfs(struct device *dev)
++{
++	struct omap_dss_device *dssdev = NULL;
++
++	for_each_dss_dev(dssdev) {
++		if (&dssdev->dev = dev) {
++			omap_dss_put_device(dssdev);
++			return dssdev;
++		}
++	}
++
++	return NULL;
++}
++
++static ssize_t display_name_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
++
++	return snprintf(buf, PAGE_SIZE, "%s\n",
++			dssdev->name ?
++			dssdev->name : "");
++}
+ 
+ static ssize_t display_enabled_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
  {
- 	pr_debug("fb_videomode = %ux%u@%uHz (%ukHz) %u %u %u %u %u %u %u %u %u\n",
-@@ -1465,7 +1464,8 @@ int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(of_get_fb_videomode);
--#endif
-+#endif /* CONFIG_OF */
-+#endif /* CONFIG_VIDEOMODE_HELPERS */
+-	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
+ 	bool enabled = dssdev->state != OMAP_DSS_DISPLAY_DISABLED;
  
- #else
- int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+ 	return snprintf(buf, PAGE_SIZE, "%d\n", enabled);
+@@ -42,7 +65,7 @@ static ssize_t display_enabled_store(struct device *dev,
+ 		struct device_attribute *attr,
+ 		const char *buf, size_t size)
+ {
+-	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
+ 	int r;
+ 	bool enabled;
+ 
+@@ -66,7 +89,7 @@ static ssize_t display_enabled_store(struct device *dev,
+ static ssize_t display_tear_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+ {
+-	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
+ 	return snprintf(buf, PAGE_SIZE, "%d\n",
+ 			dssdev->driver->get_te ?
+ 			dssdev->driver->get_te(dssdev) : 0);
+@@ -75,7 +98,7 @@ static ssize_t display_tear_show(struct device *dev,
+ static ssize_t display_tear_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t size)
+ {
+-	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
+ 	int r;
+ 	bool te;
+ 
+@@ -96,7 +119,7 @@ static ssize_t display_tear_store(struct device *dev,
+ static ssize_t display_timings_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+ {
+-	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
+ 	struct omap_video_timings t;
+ 
+ 	if (!dssdev->driver->get_timings)
+@@ -113,7 +136,7 @@ static ssize_t display_timings_show(struct device *dev,
+ static ssize_t display_timings_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t size)
+ {
+-	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
+ 	struct omap_video_timings t = dssdev->panel.timings;
+ 	int r, found;
+ 
+@@ -152,7 +175,7 @@ static ssize_t display_timings_store(struct device *dev,
+ static ssize_t display_rotate_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+ {
+-	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
+ 	int rotate;
+ 	if (!dssdev->driver->get_rotate)
+ 		return -ENOENT;
+@@ -163,7 +186,7 @@ static ssize_t display_rotate_show(struct device *dev,
+ static ssize_t display_rotate_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t size)
+ {
+-	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
+ 	int rot, r;
+ 
+ 	if (!dssdev->driver->set_rotate || !dssdev->driver->get_rotate)
+@@ -183,7 +206,7 @@ static ssize_t display_rotate_store(struct device *dev,
+ static ssize_t display_mirror_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+ {
+-	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
+ 	int mirror;
+ 	if (!dssdev->driver->get_mirror)
+ 		return -ENOENT;
+@@ -194,7 +217,7 @@ static ssize_t display_mirror_show(struct device *dev,
+ static ssize_t display_mirror_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t size)
+ {
+-	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
+ 	int r;
+ 	bool mirror;
+ 
+@@ -215,7 +238,7 @@ static ssize_t display_mirror_store(struct device *dev,
+ static ssize_t display_wss_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+ {
+-	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
+ 	unsigned int wss;
+ 
+ 	if (!dssdev->driver->get_wss)
+@@ -229,7 +252,7 @@ static ssize_t display_wss_show(struct device *dev,
+ static ssize_t display_wss_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t size)
+ {
+-	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_device *dssdev = to_dss_device_sysfs(dev);
+ 	u32 wss;
+ 	int r;
+ 
+@@ -250,6 +273,7 @@ static ssize_t display_wss_store(struct device *dev,
+ 	return size;
+ }
+ 
++static DEVICE_ATTR(name, S_IRUGO, display_name_show, NULL);
+ static DEVICE_ATTR(enabled, S_IRUGO|S_IWUSR,
+ 		display_enabled_show, display_enabled_store);
+ static DEVICE_ATTR(tear_elim, S_IRUGO|S_IWUSR,
+@@ -263,59 +287,54 @@ static DEVICE_ATTR(mirror, S_IRUGO|S_IWUSR,
+ static DEVICE_ATTR(wss, S_IRUGO|S_IWUSR,
+ 		display_wss_show, display_wss_store);
+ 
+-static struct device_attribute *display_sysfs_attrs[] = {
+-	&dev_attr_enabled,
+-	&dev_attr_tear_elim,
+-	&dev_attr_timings,
+-	&dev_attr_rotate,
+-	&dev_attr_mirror,
+-	&dev_attr_wss,
++static const struct attribute *display_sysfs_attrs[] = {
++	&dev_attr_name.attr,
++	&dev_attr_enabled.attr,
++	&dev_attr_tear_elim.attr,
++	&dev_attr_timings.attr,
++	&dev_attr_rotate.attr,
++	&dev_attr_mirror.attr,
++	&dev_attr_wss.attr,
+ 	NULL
+ };
+ 
+-int display_init_sysfs(struct platform_device *pdev,
+-		struct omap_dss_device *dssdev)
++int display_init_sysfs(struct platform_device *pdev)
+ {
+-	struct device_attribute *attr;
+-	int i, r;
++	struct omap_dss_device *dssdev = NULL;
++	int r;
+ 
+-	/* create device sysfs files */
+-	i = 0;
+-	while ((attr = display_sysfs_attrs[i++]) != NULL) {
+-		r = device_create_file(&dssdev->dev, attr);
+-		if (r) {
+-			for (i = i - 2; i >= 0; i--) {
+-				attr = display_sysfs_attrs[i];
+-				device_remove_file(&dssdev->dev, attr);
+-			}
++	for_each_dss_dev(dssdev) {
++		struct kobject *kobj = &dssdev->dev.kobj;
+ 
+-			DSSERR("failed to create sysfs file\n");
+-			return r;
++		r = sysfs_create_files(kobj, display_sysfs_attrs);
++		if (r) {
++			DSSERR("failed to create sysfs files\n");
++			goto err;
+ 		}
+-	}
+ 
+-	/* create display? sysfs links */
+-	r = sysfs_create_link(&pdev->dev.kobj, &dssdev->dev.kobj,
+-			dev_name(&dssdev->dev));
+-	if (r) {
+-		while ((attr = display_sysfs_attrs[i++]) != NULL)
+-			device_remove_file(&dssdev->dev, attr);
++		r = sysfs_create_link(&pdev->dev.kobj, kobj, dssdev->alias);
++		if (r) {
++			sysfs_remove_files(kobj, display_sysfs_attrs);
+ 
+-		DSSERR("failed to create sysfs display link\n");
+-		return r;
++			DSSERR("failed to create sysfs display link\n");
++			goto err;
++		}
+ 	}
+ 
+ 	return 0;
++
++err:
++	display_uninit_sysfs(pdev);
++
++	return r;
+ }
+ 
+-void display_uninit_sysfs(struct platform_device *pdev,
+-		struct omap_dss_device *dssdev)
++void display_uninit_sysfs(struct platform_device *pdev)
+ {
+-	struct device_attribute *attr;
+-	int i = 0;
++	struct omap_dss_device *dssdev = NULL;
+ 
+-	sysfs_remove_link(&pdev->dev.kobj, dev_name(&dssdev->dev));
+-
+-	while ((attr = display_sysfs_attrs[i++]) != NULL)
+-		device_remove_file(&dssdev->dev, attr);
++	for_each_dss_dev(dssdev) {
++		sysfs_remove_link(&pdev->dev.kobj, dssdev->alias);
++		sysfs_remove_files(&dssdev->dev.kobj, display_sysfs_attrs);
++	}
+ }
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 5252423..d603a40 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -188,10 +188,8 @@ int dss_suspend_all_devices(void);
+ int dss_resume_all_devices(void);
+ void dss_disable_all_devices(void);
+ 
+-int display_init_sysfs(struct platform_device *pdev,
+-		struct omap_dss_device *dssdev);
+-void display_uninit_sysfs(struct platform_device *pdev,
+-		struct omap_dss_device *dssdev);
++int display_init_sysfs(struct platform_device *pdev);
++void display_uninit_sysfs(struct platform_device *pdev);
+ 
+ /* manager */
+ int dss_init_overlay_managers(struct platform_device *pdev);
 -- 
 1.7.10.4
 

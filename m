@@ -1,73 +1,146 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 27 Mar 2013 08:45:18 +0000
-Subject: [RFC 11/14] ARM: omap4-panda.dts: add display information
-Message-Id: <1364373921-7599-12-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 26 Mar 2013 13:33:49 +0000
+Subject: [PATCH 19/26] OMAPDSS: HDMI: convert to platform device
+Message-Id: <1364304836-18134-20-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Cc: Archit Taneja <archit@ti.com>, Andy Gross <andy.gross@ti.com>, Tony Lindgren <tony@atomide.com>, Benoit Cousson <b-cousson@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+
+Convert HDMI driver from omap_dss_driver to a platform driver. The
+driver uses the new panel support from omapdss.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/boot/dts/omap4-panda.dts |   44 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+ drivers/video/omap2/dss/hdmi_panel.c |   48 +++++++++++++++++++++++++++-------
+ 1 file changed, 38 insertions(+), 10 deletions(-)
 
-diff --git a/arch/arm/boot/dts/omap4-panda.dts b/arch/arm/boot/dts/omap4-panda.dts
-index 4122efe..45dd40a 100644
---- a/arch/arm/boot/dts/omap4-panda.dts
-+++ b/arch/arm/boot/dts/omap4-panda.dts
-@@ -206,3 +206,47 @@
- &twl_usb_comparator {
- 	usb-supply = <&vusb>;
+diff --git a/drivers/video/omap2/dss/hdmi_panel.c b/drivers/video/omap2/dss/hdmi_panel.c
+index dfb8eda..bc4dea3 100644
+--- a/drivers/video/omap2/dss/hdmi_panel.c
++++ b/drivers/video/omap2/dss/hdmi_panel.c
+@@ -26,10 +26,13 @@
+ #include <linux/module.h>
+ #include <video/omapdss.h>
+ #include <linux/slab.h>
++#include <linux/platform_device.h>
+ 
+ #include "dss.h"
+ 
+ static struct {
++	struct omap_dss_device dssdev;
++
+ 	/* This protects the panel ops, mainly when accessing the HDMI IP. */
+ 	struct mutex lock;
+ #if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+@@ -38,8 +41,9 @@ static struct {
+ #endif
+ } hdmi;
+ 
++static struct omap_dss_driver hdmi_driver;
+ 
+-static int hdmi_panel_probe(struct omap_dss_device *dssdev)
++static int hdmi_panel_probe(struct platform_device *pdev)
+ {
+ 	/* Initialize default timings to VGA in DVI mode */
+ 	const struct omap_video_timings default_timings = {
+@@ -59,9 +63,22 @@ static int hdmi_panel_probe(struct omap_dss_device *dssdev)
+ 		.interlace	= false,
+ 	};
+ 
++	struct omap_dss_hdmi_data *pdata = dev_get_platdata(&pdev->dev);
++	struct omap_dss_device *dssdev = &hdmi.dssdev;
++	int r;
++
+ 	DSSDBG("ENTER hdmi_panel_probe\n");
+ 
+ 	dssdev->panel.timings = default_timings;
++	dssdev->driver = &hdmi_driver;
++	dssdev->name = "hdmi";
++	dssdev->panel_dev = &pdev->dev;
++
++	/*
++	 * XXX for now, the hdmi panel's platform data contains the gpios for
++	 * the tpd level shifter chip, so we pass this data to the hdmi driver.
++	 */
++	dssdev->data = pdata;
+ 
+ 	DSSDBG("hdmi_panel_probe x_res= %d y_res = %d\n",
+ 		dssdev->panel.timings.x_res,
+@@ -69,12 +86,19 @@ static int hdmi_panel_probe(struct omap_dss_device *dssdev)
+ 
+ 	omapdss_hdmi_display_set_timing(dssdev, &dssdev->panel.timings);
+ 
++	r = omap_hdmi_register_panel(dssdev);
++	if (r) {
++		DSSERR("Failed to register panel\n");
++		return r;
++	}
++
+ 	return 0;
+ }
+ 
+-static void hdmi_panel_remove(struct omap_dss_device *dssdev)
++static int hdmi_panel_remove(struct platform_device *pdev)
+ {
+-
++	omap_hdmi_free_panel(&hdmi.dssdev);
++	return 0;
+ }
+ 
+ #if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+@@ -375,8 +399,6 @@ err:
+ }
+ 
+ static struct omap_dss_driver hdmi_driver = {
+-	.probe		= hdmi_panel_probe,
+-	.remove		= hdmi_panel_remove,
+ 	.enable		= hdmi_panel_enable,
+ 	.disable	= hdmi_panel_disable,
+ 	.get_timings	= hdmi_get_timings,
+@@ -384,15 +406,21 @@ static struct omap_dss_driver hdmi_driver = {
+ 	.check_timings	= hdmi_check_timings,
+ 	.read_edid	= hdmi_read_edid,
+ 	.detect		= hdmi_detect,
++	.get_resolution	= omapdss_default_get_resolution,
+ 	.audio_enable	= hdmi_panel_audio_enable,
+ 	.audio_disable	= hdmi_panel_audio_disable,
+ 	.audio_start	= hdmi_panel_audio_start,
+ 	.audio_stop	= hdmi_panel_audio_stop,
+ 	.audio_supported	= hdmi_panel_audio_supported,
+ 	.audio_config	= hdmi_panel_audio_config,
+-	.driver			= {
+-		.name   = "hdmi_panel",
+-		.owner  = THIS_MODULE,
++};
++
++static struct platform_driver hdmi_panel_platform_driver = {
++	.probe	= hdmi_panel_probe,
++	.remove	= hdmi_panel_remove,
++	.driver	= {
++		.name	= "hdmi_panel",
++		.owner	= THIS_MODULE,
+ 	},
  };
-+
-+&dsi1 {
-+	vdds_dsi-supply = <&vcxio>;
-+};
-+
-+&dsi2 {
-+	vdds_dsi-supply = <&vcxio>;
-+};
-+
-+&hdmi {
-+	vdda_hdmi_dac-supply = <&vdac>;
-+};
-+
-+/ {
-+	tfp410: tfp410 {
-+		compatible = "ti,tfp410";
-+		video-source = <&dpi>;
-+		data-lines = <24>;
-+		gpios = <&gpio1 0 0>;	/* 0, power-down */
-+		i2c-bus = <&i2c3>;
-+	};
-+
-+	dvi {
-+		compatible = "ti,dvi_connector";
-+
-+		video-source = <&tfp410>;
-+	};
-+
-+	tpd12s015: tpd12s015 {
-+		compatible = "ti,tpd12s015";
-+
-+		video-source = <&hdmi>;
-+
-+		gpios = <&gpio2 28 0>,	/* 60, CT CP HPD */
-+			<&gpio2 9 0>,	/* 41, LS OE */
-+			<&gpio2 31 0>;	/* 63, HPD */
-+	};
-+
-+	hdmi {
-+		compatible = "ti,hdmi_connector";
-+
-+		video-source = <&tpd12s015>;
-+	};
-+};
+ 
+@@ -404,11 +432,11 @@ int hdmi_panel_init(void)
+ 	spin_lock_init(&hdmi.audio_lock);
+ #endif
+ 
+-	return omap_dss_register_driver(&hdmi_driver);
++	return platform_driver_register(&hdmi_panel_platform_driver);
+ }
+ 
+ void hdmi_panel_exit(void)
+ {
+-	omap_dss_unregister_driver(&hdmi_driver);
++	platform_driver_unregister(&hdmi_panel_platform_driver);
+ 
+ }
 -- 
 1.7.10.4
 

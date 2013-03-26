@@ -1,78 +1,61 @@
-From: Fabio Porcedda <fabio.porcedda@gmail.com>
-Date: Thu, 14 Mar 2013 13:11:24 +0000
-Subject: [PATCH 03/10] drivers: char: use module_platform_driver_probe()
-Message-Id: <1363266691-15757-5-git-send-email-fabio.porcedda@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 26 Mar 2013 13:33:32 +0000
+Subject: [PATCH 02/26] OMAPDSS: add omap_dss_find_output()
+Message-Id: <1364304836-18134-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
-In-Reply-To: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
+References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This patch converts the drivers to use the
-module_platform_driver_probe() macro which makes the code smaller and
-a bit simpler.
+Add a support function to find a DSS output by given name. This is used
+in later patches to link the panels to DSS outputs.
 
-Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Matt Mackall <mpm@selenic.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Fabio Estevam <fabio.estevam@freescale.com>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/char/hw_random/mxc-rnga.c   | 13 +------------
- drivers/char/hw_random/tx4939-rng.c | 13 +------------
- 2 files changed, 2 insertions(+), 24 deletions(-)
+ drivers/video/omap2/dss/output.c |   13 +++++++++++++
+ include/video/omapdss.h          |    1 +
+ 2 files changed, 14 insertions(+)
 
-diff --git a/drivers/char/hw_random/mxc-rnga.c b/drivers/char/hw_random/mxc-rnga.c
-index f05d857..895d0b8 100644
---- a/drivers/char/hw_random/mxc-rnga.c
-+++ b/drivers/char/hw_random/mxc-rnga.c
-@@ -228,18 +228,7 @@ static struct platform_driver mxc_rnga_driver = {
- 	.remove = __exit_p(mxc_rnga_remove),
- };
+diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
+index 5214df6..3274628 100644
+--- a/drivers/video/omap2/dss/output.c
++++ b/drivers/video/omap2/dss/output.c
+@@ -115,6 +115,19 @@ struct omap_dss_output *omap_dss_get_output(enum omap_dss_output_id id)
+ }
+ EXPORT_SYMBOL(omap_dss_get_output);
  
--static int __init mod_init(void)
--{
--	return platform_driver_probe(&mxc_rnga_driver, mxc_rnga_probe);
--}
--
--static void __exit mod_exit(void)
--{
--	platform_driver_unregister(&mxc_rnga_driver);
--}
--
--module_init(mod_init);
--module_exit(mod_exit);
-+module_platform_driver_probe(mxc_rnga_driver, mxc_rnga_probe);
++struct omap_dss_output *omap_dss_find_output(const char *name)
++{
++	struct omap_dss_output *out;
++
++	list_for_each_entry(out, &output_list, list) {
++		if (strcmp(out->name, name) = 0)
++			return out;
++	}
++
++	return NULL;
++}
++EXPORT_SYMBOL(omap_dss_find_output);
++
+ static const struct dss_mgr_ops *dss_mgr_ops;
  
- MODULE_AUTHOR("Freescale Semiconductor, Inc.");
- MODULE_DESCRIPTION("H/W RNGA driver for i.MX");
-diff --git a/drivers/char/hw_random/tx4939-rng.c b/drivers/char/hw_random/tx4939-rng.c
-index 3099198..d34a24a 100644
---- a/drivers/char/hw_random/tx4939-rng.c
-+++ b/drivers/char/hw_random/tx4939-rng.c
-@@ -166,18 +166,7 @@ static struct platform_driver tx4939_rng_driver = {
- 	.remove = tx4939_rng_remove,
- };
+ int dss_install_mgr_ops(const struct dss_mgr_ops *mgr_ops)
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index d5f1fff..aad47a2 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -779,6 +779,7 @@ int omap_dss_get_num_overlays(void);
+ struct omap_overlay *omap_dss_get_overlay(int num);
  
--static int __init tx4939rng_init(void)
--{
--	return platform_driver_probe(&tx4939_rng_driver, tx4939_rng_probe);
--}
--
--static void __exit tx4939rng_exit(void)
--{
--	platform_driver_unregister(&tx4939_rng_driver);
--}
--
--module_init(tx4939rng_init);
--module_exit(tx4939rng_exit);
-+module_platform_driver_probe(tx4939_rng_driver, tx4939_rng_probe);
- 
- MODULE_DESCRIPTION("H/W Random Number Generator (RNG) driver for TX4939");
- MODULE_LICENSE("GPL");
+ struct omap_dss_output *omap_dss_get_output(enum omap_dss_output_id id);
++struct omap_dss_output *omap_dss_find_output(const char *name);
+ int omapdss_output_set_device(struct omap_dss_output *out,
+ 		struct omap_dss_device *dssdev);
+ int omapdss_output_unset_device(struct omap_dss_output *out);
 -- 
-1.8.1.5
+1.7.10.4
 

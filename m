@@ -1,154 +1,54 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Date: Thu, 14 Mar 2013 05:53:25 +0000
-Subject: [PATCH 1/6] video: mxsfb: use devm_* managed functions
-Message-Id: <1363240410-16865-2-git-send-email-shawn.guo@linaro.org>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 26 Mar 2013 13:57:18 +0000
+Subject: [PATCH v2 1/8] drm/omap: Don't return from modeset_init if a panel doesn't satisfy omapdrm requireme
+Message-Id: <1364305525-28496-2-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363240410-16865-1-git-send-email-shawn.guo@linaro.org>
-In-Reply-To: <1363240410-16865-1-git-send-email-shawn.guo@linaro.org>
+References: <1362493070-17706-1-git-send-email-archit@ti.com>
+ <1364305525-28496-1-git-send-email-archit@ti.com>
+In-Reply-To: <1364305525-28496-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com, robdclark@gmail.com, andy.gross@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>
 
-Use devm_* managed functions to make code a little cleaner.
+modeset_init iterates through all the registered omapdss devices and has some
+initial checks to see if the panel has a driver and the required driver ops for
+it to be usable by omapdrm.
 
-Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+The function bails out from modeset_init if a panel doesn't meet the
+requirements, and stops the registration of the future panels and encoders which
+come after it, that isn't the correct thing to do, we should go through the rest
+of the panels. Replace the 'return's with 'continue's.
+
+Reviewed-by: Rob Clark <robdclark@gmail.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/mxsfb.c |   50 ++++++++++++++++---------------------------------
- 1 file changed, 16 insertions(+), 34 deletions(-)
+ drivers/gpu/drm/omapdrm/omap_drv.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
-index 755556c..2c5ab15 100644
---- a/drivers/video/mxsfb.c
-+++ b/drivers/video/mxsfb.c
-@@ -801,23 +801,19 @@ static int mxsfb_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
- 
--	if (!request_mem_region(res->start, resource_size(res), pdev->name))
--		return -EBUSY;
--
- 	fb_info = framebuffer_alloc(sizeof(struct mxsfb_info), &pdev->dev);
- 	if (!fb_info) {
- 		dev_err(&pdev->dev, "Failed to allocate fbdev\n");
--		ret = -ENOMEM;
--		goto error_alloc_info;
-+		return -ENOMEM;
- 	}
- 
- 	host = to_imxfb_host(fb_info);
- 
--	host->base = ioremap(res->start, resource_size(res));
--	if (!host->base) {
-+	host->base = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(host->base)) {
- 		dev_err(&pdev->dev, "ioremap failed\n");
--		ret = -ENOMEM;
--		goto error_ioremap;
-+		ret = PTR_ERR(host->base);
-+		goto fb_release;
- 	}
- 
- 	host->pdev = pdev;
-@@ -828,13 +824,13 @@ static int mxsfb_probe(struct platform_device *pdev)
- 	pinctrl = devm_pinctrl_get_select_default(&pdev->dev);
- 	if (IS_ERR(pinctrl)) {
- 		ret = PTR_ERR(pinctrl);
--		goto error_getpin;
-+		goto fb_release;
- 	}
- 
--	host->clk = clk_get(&host->pdev->dev, NULL);
-+	host->clk = devm_clk_get(&host->pdev->dev, NULL);
- 	if (IS_ERR(host->clk)) {
- 		ret = PTR_ERR(host->clk);
--		goto error_getclock;
-+		goto fb_release;
- 	}
- 
- 	panel_enable = of_get_named_gpio_flags(pdev->dev.of_node,
-@@ -849,21 +845,22 @@ static int mxsfb_probe(struct platform_device *pdev)
- 			dev_err(&pdev->dev,
- 				"failed to request gpio %d: %d\n",
- 				panel_enable, ret);
--			goto error_panel_enable;
-+			goto fb_release;
+diff --git a/drivers/gpu/drm/omapdrm/omap_drv.c b/drivers/gpu/drm/omapdrm/omap_drv.c
+index 079c54c..77b7225 100644
+--- a/drivers/gpu/drm/omapdrm/omap_drv.c
++++ b/drivers/gpu/drm/omapdrm/omap_drv.c
+@@ -121,7 +121,7 @@ static int omap_modeset_init(struct drm_device *dev)
+ 		if (!dssdev->driver) {
+ 			dev_warn(dev->dev, "%s has no driver.. skipping it\n",
+ 					dssdev->name);
+-			return 0;
++			continue;
  		}
- 	}
  
--	fb_info->pseudo_palette = kmalloc(sizeof(u32) * 16, GFP_KERNEL);
-+	fb_info->pseudo_palette = devm_kzalloc(&pdev->dev, sizeof(u32) * 16,
-+					       GFP_KERNEL);
- 	if (!fb_info->pseudo_palette) {
- 		ret = -ENOMEM;
--		goto error_pseudo_pallette;
-+		goto fb_release;
- 	}
+ 		if (!(dssdev->driver->get_timings ||
+@@ -129,7 +129,7 @@ static int omap_modeset_init(struct drm_device *dev)
+ 			dev_warn(dev->dev, "%s driver does not support "
+ 				"get_timings or read_edid.. skipping it!\n",
+ 				dssdev->name);
+-			return 0;
++			continue;
+ 		}
  
- 	INIT_LIST_HEAD(&fb_info->modelist);
- 
- 	ret = mxsfb_init_fbinfo(host);
- 	if (ret != 0)
--		goto error_init_fb;
-+		goto fb_release;
- 
- 	for (i = 0; i < pdata->mode_count; i++)
- 		fb_add_videomode(&pdata->mode_list[i], &fb_info->modelist);
-@@ -880,7 +877,7 @@ static int mxsfb_probe(struct platform_device *pdev)
- 	ret = register_framebuffer(fb_info);
- 	if (ret != 0) {
- 		dev_err(&pdev->dev,"Failed to register framebuffer\n");
--		goto error_register;
-+		goto fb_destroy;
- 	}
- 
- 	if (!host->enabled) {
-@@ -893,22 +890,12 @@ static int mxsfb_probe(struct platform_device *pdev)
- 
- 	return 0;
- 
--error_register:
-+fb_destroy:
- 	if (host->enabled)
- 		clk_disable_unprepare(host->clk);
- 	fb_destroy_modelist(&fb_info->modelist);
--error_init_fb:
--	kfree(fb_info->pseudo_palette);
--error_pseudo_pallette:
--error_panel_enable:
--	clk_put(host->clk);
--error_getclock:
--error_getpin:
--	iounmap(host->base);
--error_ioremap:
-+fb_release:
- 	framebuffer_release(fb_info);
--error_alloc_info:
--	release_mem_region(res->start, resource_size(res));
- 
- 	return ret;
- }
-@@ -917,19 +904,14 @@ static int mxsfb_remove(struct platform_device *pdev)
- {
- 	struct fb_info *fb_info = platform_get_drvdata(pdev);
- 	struct mxsfb_info *host = to_imxfb_host(fb_info);
--	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 
- 	if (host->enabled)
- 		mxsfb_disable_controller(fb_info);
- 
- 	unregister_framebuffer(fb_info);
--	kfree(fb_info->pseudo_palette);
- 	mxsfb_free_videomem(host);
--	iounmap(host->base);
--	clk_put(host->clk);
- 
- 	framebuffer_release(fb_info);
--	release_mem_region(res->start, resource_size(res));
- 
- 	platform_set_drvdata(pdev, NULL);
- 
+ 		encoder = omap_encoder_init(dev, dssdev);
 -- 
-1.7.9.5
-
+1.7.10.4
 

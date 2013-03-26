@@ -1,86 +1,74 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 12 Mar 2013 10:19:36 +0000
-Subject: [PATCH 3/5] videomode: create enum for videomode's display flags
-Message-Id: <1363083578-17062-3-git-send-email-tomi.valkeinen@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 26 Mar 2013 13:57:25 +0000
+Subject: [PATCH v2 8/8] OMAPDSS: DISPC: Revert to older DISPC Smart Standby mechanism for OMAP5
+Message-Id: <1364305525-28496-9-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363083578-17062-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1363083578-17062-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1362493070-17706-1-git-send-email-archit@ti.com>
+ <1364305525-28496-1-git-send-email-archit@ti.com>
+In-Reply-To: <1364305525-28496-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Steffen Trumtrar <s.trumtrar@pengutronix.de>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: tomi.valkeinen@ti.com, robdclark@gmail.com, andy.gross@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>
 
-Instead of having plain defines for the videomode's flags, add an enum
-for the flags. This makes the flags clearer to use, as the enum tells
-which values can be used with the flags field.
+DISPC on OMAP5 has a more optimised mechanism of asserting Mstandby to achieve
+more power savings when DISPC is configured in Smart Standby mode. This
+mechanism leads to underflows when multiple DISPC pipes are enabled.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+There is a register field which can let us revert to the older mechanism of
+asserting Mstandby. Configure this field to prevent underflows.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- include/video/display_timing.h |   28 +++++++++++++++++-----------
- include/video/videomode.h      |    2 +-
- 2 files changed, 18 insertions(+), 12 deletions(-)
+ drivers/video/omap2/dss/dispc.c |    7 +++++++
+ drivers/video/omap2/dss/dispc.h |    1 +
+ 2 files changed, 8 insertions(+)
 
-diff --git a/include/video/display_timing.h b/include/video/display_timing.h
-index a8a4be5..b63471d 100644
---- a/include/video/display_timing.h
-+++ b/include/video/display_timing.h
-@@ -12,16 +12,22 @@
- #include <linux/bitops.h>
- #include <linux/types.h>
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index ddbf031..b33b016 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -87,6 +87,9 @@ struct dispc_features {
  
--#define DISPLAY_FLAGS_HSYNC_LOW		BIT(0)
--#define DISPLAY_FLAGS_HSYNC_HIGH	BIT(1)
--#define DISPLAY_FLAGS_VSYNC_LOW		BIT(2)
--#define DISPLAY_FLAGS_VSYNC_HIGH	BIT(3)
--#define DISPLAY_FLAGS_DE_LOW		BIT(4)	/* data enable flag */
--#define DISPLAY_FLAGS_DE_HIGH		BIT(5)
--#define DISPLAY_FLAGS_PIXDATA_POSEDGE	BIT(6)	/* drive data on pos. edge */
--#define DISPLAY_FLAGS_PIXDATA_NEGEDGE	BIT(7)	/* drive data on neg. edge */
--#define DISPLAY_FLAGS_INTERLACED	BIT(8)
--#define DISPLAY_FLAGS_DOUBLESCAN	BIT(9)
-+enum display_flags {
-+	DISPLAY_FLAGS_HSYNC_LOW		= BIT(0),
-+	DISPLAY_FLAGS_HSYNC_HIGH	= BIT(1),
-+	DISPLAY_FLAGS_VSYNC_LOW		= BIT(2),
-+	DISPLAY_FLAGS_VSYNC_HIGH	= BIT(3),
+ 	/* no DISPC_IRQ_FRAMEDONETV on this SoC */
+ 	bool no_framedone_tv:1;
 +
-+	/* data enable flag */
-+	DISPLAY_FLAGS_DE_LOW		= BIT(4),
-+	DISPLAY_FLAGS_DE_HIGH		= BIT(5),
-+	/* drive data on pos. edge */
-+	DISPLAY_FLAGS_PIXDATA_POSEDGE	= BIT(6),
-+	/* drive data on neg. edge */
-+	DISPLAY_FLAGS_PIXDATA_NEGEDGE	= BIT(7),
-+	DISPLAY_FLAGS_INTERLACED	= BIT(8),
-+	DISPLAY_FLAGS_DOUBLESCAN	= BIT(9),
-+};
- 
- /*
-  * A single signal can be specified via a range of minimal and maximal values
-@@ -69,7 +75,7 @@ struct display_timing {
- 	struct timing_entry vback_porch;	/* ver. back porch */
- 	struct timing_entry vsync_len;		/* ver. sync len */
- 
--	unsigned int flags;			/* display flags */
-+	enum display_flags flags;		/* display flags */
++	/* revert to the OMAP4 mechanism of DISPC Smart Standby operation */
++	bool mstandby_workaround:1;
  };
  
- /*
-diff --git a/include/video/videomode.h b/include/video/videomode.h
-index f4ae6ed..8b12e60 100644
---- a/include/video/videomode.h
-+++ b/include/video/videomode.h
-@@ -29,7 +29,7 @@ struct videomode {
- 	u32 vback_porch;
- 	u32 vsync_len;
+ #define DISPC_MAX_NR_FIFOS 5
+@@ -3502,6 +3505,9 @@ static void _omap_dispc_initial_config(void)
+ 	dispc_configure_burst_sizes();
  
--	unsigned int flags; /* display flags */
-+	enum display_flags flags; /* display flags */
+ 	dispc_ovl_enable_zorder_planes();
++
++	if (dispc.feat->mstandby_workaround)
++		REG_FLD_MOD(DISPC_MSTANDBY_CTRL, 1, 0, 0);
+ }
+ 
+ static const struct dispc_features omap24xx_dispc_feats __initconst = {
+@@ -3596,6 +3602,7 @@ static const struct dispc_features omap54xx_dispc_feats __initconst = {
+ 	.calc_core_clk		=	calc_core_clk_44xx,
+ 	.num_fifos		=	5,
+ 	.gfx_fifo_workaround	=	true,
++	.mstandby_workaround	=	true,
  };
  
- /**
+ static int __init dispc_init_features(struct platform_device *pdev)
+diff --git a/drivers/video/omap2/dss/dispc.h b/drivers/video/omap2/dss/dispc.h
+index 222363c..de4863d 100644
+--- a/drivers/video/omap2/dss/dispc.h
++++ b/drivers/video/omap2/dss/dispc.h
+@@ -39,6 +39,7 @@
+ #define DISPC_GLOBAL_BUFFER		0x0800
+ #define DISPC_CONTROL3                  0x0848
+ #define DISPC_CONFIG3                   0x084C
++#define DISPC_MSTANDBY_CTRL		0x0858
+ 
+ /* DISPC overlay registers */
+ #define DISPC_OVL_BA0(n)		(DISPC_OVL_BASE(n) + \
 -- 
 1.7.10.4
 

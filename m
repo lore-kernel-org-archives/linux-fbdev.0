@@ -1,40 +1,128 @@
-From: Marek Vasut <marex@denx.de>
-Date: Tue, 19 Mar 2013 10:33:33 +0000
-Subject: Re: [PATCH] ARM: video: mxs: Fix mxsfb misconfiguring VDCTRL0
-Message-Id: <201303191133.33879.marex@denx.de>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 26 Mar 2013 13:57:22 +0000
+Subject: [PATCH v2 5/8] omapdss: DISPC: add max pixel clock limits for LCD and TV managers
+Message-Id: <1364305525-28496-6-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAOMZO5CDuODRrJEEaDKm5nepfkuvuF77ZQmarB69hL6gg386ww@mail.gmail.com>
- <201303181619.52377.marex@denx.de>
- <20130319054846.GI12462@S2101-09.ap.freescale.net>
-In-Reply-To: <20130319054846.GI12462@S2101-09.ap.freescale.net>
+References: <1362493070-17706-1-git-send-email-archit@ti.com>
+ <1364305525-28496-1-git-send-email-archit@ti.com>
+In-Reply-To: <1364305525-28496-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com, robdclark@gmail.com, andy.gross@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>
 
-Dear Shawn Guo,
+Each version of OMAP has a limitation on the maximum pixel clock frequency
+supported by an overlay manager. This limit isn't checked by omapdss. Add
+dispc feats for lcd and tv managers and check whether the target timings can
+be supported or not.
 
-> On Mon, Mar 18, 2013 at 04:19:52PM +0100, Marek Vasut wrote:
-> > Dear Shawn Guo,
-> > 
-> > > On Mon, Mar 18, 2013 at 03:18:13PM +0100, Marek Vasut wrote:
-> > > > Did you manage to test it please?
-> > > 
-> > > I do not have X11 environment handy to test, but framework console
-> > > seems still working.
-> > 
-> > Even after me poking in it, lol :-)
-> > 
-> > You can grab [1], extract it onto card or NFS and just use it as root
-> > filesystem, the X11 will come up automagically.
-> 
-> Thanks, Marek.  Yeah, now I can see the problem and your patch does fix
-> it.
+The pixel clock limitations are actually more complex. They depend on which OPP
+OMAP is in, and they also depend on which encoder is the manager connected to.
+The OPP dependence is ignored as DSS forces the PM framework to be on OPP100
+when DSS is enabled, and the encoder dependencies are ignored by DISPC for now.
+These limits should come from the encoder driver.
 
-Whew, cool. Can you please apply it and push mainline so I can re-send the one 
-for -stable then?
+The OMAP2 TRM doesn't mention the maximum pixel clock limit. This value is left
+as half of DSS_FCLK, as OMAP2 requires the PCD to be atleast 2.
 
-Thank you!
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/dispc.c |   32 +++++++++++++++++++++++++++-----
+ 1 file changed, 27 insertions(+), 5 deletions(-)
 
-Best regards,
-Marek Vasut
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 8cfa27b..73a730a 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -69,6 +69,8 @@ struct dispc_features {
+ 	u8 mgr_height_start;
+ 	u16 mgr_width_max;
+ 	u16 mgr_height_max;
++	unsigned long max_lcd_pclk;
++	unsigned long max_tv_pclk;
+ 	int (*calc_scaling) (unsigned long pclk, unsigned long lclk,
+ 		const struct omap_video_timings *mgr_timings,
+ 		u16 width, u16 height, u16 out_width, u16 out_height,
+@@ -2825,6 +2827,15 @@ static bool _dispc_lcd_timings_ok(int hsw, int hfp, int hbp,
+ 	return true;
+ }
+ 
++static bool _dispc_mgr_pclk_ok(enum omap_channel channel,
++		unsigned long pclk)
++{
++	if (dss_mgr_is_lcd(channel))
++		return pclk <= dispc.feat->max_lcd_pclk ? true : false;
++	else
++		return pclk <= dispc.feat->max_tv_pclk ? true : false;
++}
++
+ bool dispc_mgr_timings_ok(enum omap_channel channel,
+ 		const struct omap_video_timings *timings)
+ {
+@@ -2832,11 +2843,13 @@ bool dispc_mgr_timings_ok(enum omap_channel channel,
+ 
+ 	timings_ok = _dispc_mgr_size_ok(timings->x_res, timings->y_res);
+ 
+-	if (dss_mgr_is_lcd(channel))
+-		timings_ok =  timings_ok && _dispc_lcd_timings_ok(timings->hsw,
+-						timings->hfp, timings->hbp,
+-						timings->vsw, timings->vfp,
+-						timings->vbp);
++	timings_ok &= _dispc_mgr_pclk_ok(channel, timings->pixel_clock * 1000);
++
++	if (dss_mgr_is_lcd(channel)) {
++		timings_ok &= _dispc_lcd_timings_ok(timings->hsw, timings->hfp,
++				timings->hbp, timings->vsw, timings->vfp,
++				timings->vbp);
++	}
+ 
+ 	return timings_ok;
+ }
+@@ -3491,6 +3504,7 @@ static const struct dispc_features omap24xx_dispc_feats __initconst = {
+ 	.mgr_height_start	=	26,
+ 	.mgr_width_max		=	2048,
+ 	.mgr_height_max		=	2048,
++	.max_lcd_pclk		=	66500000,
+ 	.calc_scaling		=	dispc_ovl_calc_scaling_24xx,
+ 	.calc_core_clk		=	calc_core_clk_24xx,
+ 	.num_fifos		=	3,
+@@ -3508,6 +3522,8 @@ static const struct dispc_features omap34xx_rev1_0_dispc_feats __initconst = {
+ 	.mgr_height_start	=	26,
+ 	.mgr_width_max		=	2048,
+ 	.mgr_height_max		=	2048,
++	.max_lcd_pclk		=	173000000,
++	.max_tv_pclk		=	59000000,
+ 	.calc_scaling		=	dispc_ovl_calc_scaling_34xx,
+ 	.calc_core_clk		=	calc_core_clk_34xx,
+ 	.num_fifos		=	3,
+@@ -3525,6 +3541,8 @@ static const struct dispc_features omap34xx_rev3_0_dispc_feats __initconst = {
+ 	.mgr_height_start	=	26,
+ 	.mgr_width_max		=	2048,
+ 	.mgr_height_max		=	2048,
++	.max_lcd_pclk		=	173000000,
++	.max_tv_pclk		=	59000000,
+ 	.calc_scaling		=	dispc_ovl_calc_scaling_34xx,
+ 	.calc_core_clk		=	calc_core_clk_34xx,
+ 	.num_fifos		=	3,
+@@ -3542,6 +3560,8 @@ static const struct dispc_features omap44xx_dispc_feats __initconst = {
+ 	.mgr_height_start	=	26,
+ 	.mgr_width_max		=	2048,
+ 	.mgr_height_max		=	2048,
++	.max_lcd_pclk		=	170000000,
++	.max_tv_pclk		=	185625000,
+ 	.calc_scaling		=	dispc_ovl_calc_scaling_44xx,
+ 	.calc_core_clk		=	calc_core_clk_44xx,
+ 	.num_fifos		=	5,
+@@ -3559,6 +3579,8 @@ static const struct dispc_features omap54xx_dispc_feats __initconst = {
+ 	.mgr_height_start	=	27,
+ 	.mgr_width_max		=	4096,
+ 	.mgr_height_max		=	4096,
++	.max_lcd_pclk		=	170000000,
++	.max_tv_pclk		=	186000000,
+ 	.calc_scaling		=	dispc_ovl_calc_scaling_44xx,
+ 	.calc_core_clk		=	calc_core_clk_44xx,
+ 	.num_fifos		=	5,
+-- 
+1.7.10.4
+

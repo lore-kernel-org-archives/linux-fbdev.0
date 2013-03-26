@@ -1,296 +1,93 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 08 Mar 2013 11:52:46 +0000
-Subject: [PATCH 11/14] OMAPDSS: DPI: use new clock calculation code
-Message-Id: <1362743569-10289-12-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 26 Mar 2013 13:33:52 +0000
+Subject: [PATCH 22/26] ARM: OMAP: Panda: use new TFP410 platform driver
+Message-Id: <1364304836-18134-23-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1362743569-10289-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Use the new clock calculation code in the DPI driver.
+Use the new TFP410 platform driver instead of the old omap_dss_driver.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dpi.c |  212 +++++++++++++++++++++++++++++++++--------
- 1 file changed, 172 insertions(+), 40 deletions(-)
+ arch/arm/mach-omap2/dss-common.c |   24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index 775214c..c7363b1 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -91,31 +91,170 @@ static enum omap_dss_clk_source dpi_get_alt_clk_src(enum omap_channel channel)
- 	}
+diff --git a/arch/arm/mach-omap2/dss-common.c b/arch/arm/mach-omap2/dss-common.c
+index 4be5cfc..0e94df8 100644
+--- a/arch/arm/mach-omap2/dss-common.c
++++ b/arch/arm/mach-omap2/dss-common.c
+@@ -25,6 +25,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/gpio.h>
++#include <linux/platform_device.h>
+ 
+ #include <video/omapdss.h>
+ #include <video/omap-panel-tfp410.h>
+@@ -42,20 +43,18 @@
+ /* Display DVI */
+ #define PANDA_DVI_TFP410_POWER_DOWN_GPIO	0
+ 
+-/* Using generic display panel */
+-static struct tfp410_platform_data omap4_dvi_panel = {
++static struct tfp410_platform_data omap4_tfp410_pdata = {
++	.name			= "dvi",
++	.source			= "dpi.0",
+ 	.i2c_bus_num		= 3,
++	.data_lines		= 24,
+ 	.power_down_gpio	= PANDA_DVI_TFP410_POWER_DOWN_GPIO,
+ };
+ 
+-static struct omap_dss_device omap4_panda_dvi_device = {
+-	.type			= OMAP_DISPLAY_TYPE_DPI,
+-	.name			= "dvi",
+-	.driver_name		= "tfp410",
+-	.data			= &omap4_dvi_panel,
+-	.phy.dpi.data_lines	= 24,
+-	.reset_gpio		= PANDA_DVI_TFP410_POWER_DOWN_GPIO,
+-	.channel		= OMAP_DSS_CHANNEL_LCD2,
++static struct platform_device omap4_panda_tfp410_device = {
++	.name			= "tfp410",
++	.id			= 0,
++	.dev.platform_data	= &omap4_tfp410_pdata,
+ };
+ 
+ static struct omap_dss_hdmi_data omap4_panda_hdmi_data = {
+@@ -73,19 +72,19 @@ static struct omap_dss_device  omap4_panda_hdmi_device = {
+ };
+ 
+ static struct omap_dss_device *omap4_panda_dss_devices[] = {
+-	&omap4_panda_dvi_device,
+ 	&omap4_panda_hdmi_device,
+ };
+ 
+ static struct omap_dss_board_info omap4_panda_dss_data = {
+ 	.num_devices	= ARRAY_SIZE(omap4_panda_dss_devices),
+ 	.devices	= omap4_panda_dss_devices,
+-	.default_device	= &omap4_panda_dvi_device,
++	.default_display_name = "dvi",
+ };
+ 
+ void __init omap4_panda_display_init(void)
+ {
+ 	omap_display_init(&omap4_panda_dss_data);
++	platform_device_register(&omap4_panda_tfp410_device);
+ 
+ 	/*
+ 	 * OMAP4460SDP/Blaze and OMAP4430 ES2.3 SDP/Blaze boards and
+@@ -104,6 +103,7 @@ void __init omap4_panda_display_init(void)
+ void __init omap4_panda_display_init_of(void)
+ {
+ 	omap_display_init(&omap4_panda_dss_data);
++	platform_device_register(&omap4_panda_tfp410_device);
  }
  
-+struct dpi_clk_calc_ctx {
-+	struct platform_device *dsidev;
-+
-+	/* inputs */
-+
-+	unsigned long pck_min, pck_max;
-+
-+	/* outputs */
-+
-+	struct dsi_clock_info dsi_cinfo;
-+	struct dss_clock_info dss_cinfo;
-+	struct dispc_clock_info dispc_cinfo;
-+};
-+
-+static bool dpi_calc_dispc_cb(int lckd, int pckd, unsigned long lck,
-+		unsigned long pck, void *data)
-+{
-+	struct dpi_clk_calc_ctx *ctx = data;
-+
-+	/*
-+	 * Odd dividers give us uneven duty cycle, causing problem when level
-+	 * shifted. So skip all odd dividers when the pixel clock is on the
-+	 * higher side.
-+	 */
-+	if (ctx->pck_min >= 1000000) {
-+		if (lckd > 1 && lckd % 2 != 0)
-+			return false;
-+
-+		if (pckd > 1 && pckd % 2 != 0)
-+			return false;
-+	}
-+
-+	ctx->dispc_cinfo.lck_div = lckd;
-+	ctx->dispc_cinfo.pck_div = pckd;
-+	ctx->dispc_cinfo.lck = lck;
-+	ctx->dispc_cinfo.pck = pck;
-+
-+	return true;
-+}
-+
-+
-+static bool dpi_calc_hsdiv_cb(int regm_dispc, unsigned long dispc,
-+		void *data)
-+{
-+	struct dpi_clk_calc_ctx *ctx = data;
-+
-+	/*
-+	 * Odd dividers give us uneven duty cycle, causing problem when level
-+	 * shifted. So skip all odd dividers when the pixel clock is on the
-+	 * higher side.
-+	 */
-+	if (regm_dispc > 1 && regm_dispc % 2 != 0 && ctx->pck_min >= 1000000)
-+		return false;
-+
-+	ctx->dsi_cinfo.regm_dispc = regm_dispc;
-+	ctx->dsi_cinfo.dsi_pll_hsdiv_dispc_clk = dispc;
-+
-+	return dispc_div_calc(dispc, ctx->pck_min, ctx->pck_max,
-+			dpi_calc_dispc_cb, ctx);
-+}
-+
-+
-+static bool dpi_calc_pll_cb(int regn, int regm, unsigned long fint,
-+		unsigned long pll,
-+		void *data)
-+{
-+	struct dpi_clk_calc_ctx *ctx = data;
-+
-+	ctx->dsi_cinfo.regn = regn;
-+	ctx->dsi_cinfo.regm = regm;
-+	ctx->dsi_cinfo.fint = fint;
-+	ctx->dsi_cinfo.clkin4ddr = pll;
-+
-+	return dsi_hsdiv_calc(ctx->dsidev, pll, ctx->pck_min,
-+			dpi_calc_hsdiv_cb, ctx);
-+}
-+
-+static bool dpi_calc_dss_cb(int fckd, unsigned long fck, void *data)
-+{
-+	struct dpi_clk_calc_ctx *ctx = data;
-+
-+	ctx->dss_cinfo.fck = fck;
-+	ctx->dss_cinfo.fck_div = fckd;
-+
-+	return dispc_div_calc(fck, ctx->pck_min, ctx->pck_max,
-+			dpi_calc_dispc_cb, ctx);
-+}
-+
-+static bool dpi_dsi_clk_calc(unsigned long pck, struct dpi_clk_calc_ctx *ctx)
-+{
-+	unsigned long clkin;
-+	unsigned long pll_min, pll_max;
-+
-+	clkin = dsi_get_pll_clkin(dpi.dsidev);
-+
-+	memset(ctx, 0, sizeof(*ctx));
-+	ctx->dsidev = dpi.dsidev;
-+	ctx->pck_min = pck - 1000;
-+	ctx->pck_max = pck + 1000;
-+	ctx->dsi_cinfo.clkin = clkin;
-+
-+	pll_min = 0;
-+	pll_max = 0;
-+
-+	return dsi_pll_calc(dpi.dsidev, clkin,
-+			pll_min, pll_max,
-+			dpi_calc_pll_cb, ctx);
-+}
-+
-+static bool dpi_dss_clk_calc(unsigned long pck, struct dpi_clk_calc_ctx *ctx)
-+{
-+	int i;
-+
-+	/*
-+	 * DSS fck gives us very few possibilities, so finding a good pixel
-+	 * clock may not be possible. We try multiple times to find the clock,
-+	 * each time widening the pixel clock range we look for, up to
-+	 * +/- 1MHz.
-+	 */
-+
-+	for (i = 0; i < 10; ++i) {
-+		bool ok;
-+
-+		memset(ctx, 0, sizeof(*ctx));
-+		if (pck > 1000 * i * i * i)
-+			ctx->pck_min = max(pck - 1000 * i * i * i, 0lu);
-+		else
-+			ctx->pck_min = 0;
-+		ctx->pck_max = pck + 1000 * i * i * i;
-+
-+		ok = dss_div_calc(ctx->pck_min, dpi_calc_dss_cb, ctx);
-+		if (ok)
-+			return ok;
-+	}
-+
-+	return false;
-+}
-+
-+
-+
- static int dpi_set_dsi_clk(enum omap_channel channel,
- 		unsigned long pck_req, unsigned long *fck, int *lck_div,
- 		int *pck_div)
- {
--	struct dsi_clock_info dsi_cinfo;
--	struct dispc_clock_info dispc_cinfo;
-+	struct dpi_clk_calc_ctx ctx;
- 	int r;
-+	bool ok;
- 
--	r = dsi_pll_calc_clock_div_pck(dpi.dsidev, pck_req, &dsi_cinfo,
--			&dispc_cinfo);
--	if (r)
--		return r;
-+	ok = dpi_dsi_clk_calc(pck_req, &ctx);
-+	if (!ok)
-+		return -EINVAL;
- 
--	r = dsi_pll_set_clock_div(dpi.dsidev, &dsi_cinfo);
-+	r = dsi_pll_set_clock_div(dpi.dsidev, &ctx.dsi_cinfo);
- 	if (r)
- 		return r;
- 
- 	dss_select_lcd_clk_source(channel,
- 			dpi_get_alt_clk_src(channel));
- 
--	dpi.mgr_config.clock_info = dispc_cinfo;
-+	dpi.mgr_config.clock_info = ctx.dispc_cinfo;
- 
--	*fck = dsi_cinfo.dsi_pll_hsdiv_dispc_clk;
--	*lck_div = dispc_cinfo.lck_div;
--	*pck_div = dispc_cinfo.pck_div;
-+	*fck = ctx.dsi_cinfo.dsi_pll_hsdiv_dispc_clk;
-+	*lck_div = ctx.dispc_cinfo.lck_div;
-+	*pck_div = ctx.dispc_cinfo.pck_div;
- 
- 	return 0;
- }
-@@ -123,23 +262,23 @@ static int dpi_set_dsi_clk(enum omap_channel channel,
- static int dpi_set_dispc_clk(unsigned long pck_req, unsigned long *fck,
- 		int *lck_div, int *pck_div)
- {
--	struct dss_clock_info dss_cinfo;
--	struct dispc_clock_info dispc_cinfo;
-+	struct dpi_clk_calc_ctx ctx;
- 	int r;
-+	bool ok;
- 
--	r = dss_calc_clock_div(pck_req, &dss_cinfo, &dispc_cinfo);
--	if (r)
--		return r;
-+	ok = dpi_dss_clk_calc(pck_req, &ctx);
-+	if (!ok)
-+		return -EINVAL;
- 
--	r = dss_set_clock_div(&dss_cinfo);
-+	r = dss_set_clock_div(&ctx.dss_cinfo);
- 	if (r)
- 		return r;
- 
--	dpi.mgr_config.clock_info = dispc_cinfo;
-+	dpi.mgr_config.clock_info = ctx.dispc_cinfo;
- 
--	*fck = dss_cinfo.fck;
--	*lck_div = dispc_cinfo.lck_div;
--	*pck_div = dispc_cinfo.pck_div;
-+	*fck = ctx.dss_cinfo.fck;
-+	*lck_div = ctx.dispc_cinfo.lck_div;
-+	*pck_div = ctx.dispc_cinfo.pck_div;
- 
- 	return 0;
- }
-@@ -319,12 +458,12 @@ EXPORT_SYMBOL(omapdss_dpi_set_timings);
- int dpi_check_timings(struct omap_dss_device *dssdev,
- 			struct omap_video_timings *timings)
- {
--	int r;
- 	struct omap_overlay_manager *mgr = dpi.output.manager;
- 	int lck_div, pck_div;
- 	unsigned long fck;
- 	unsigned long pck;
--	struct dispc_clock_info dispc_cinfo;
-+	struct dpi_clk_calc_ctx ctx;
-+	bool ok;
- 
- 	if (mgr && !dispc_mgr_timings_ok(mgr->id, timings))
- 		return -EINVAL;
-@@ -333,28 +472,21 @@ int dpi_check_timings(struct omap_dss_device *dssdev,
- 		return -EINVAL;
- 
- 	if (dpi.dsidev) {
--		struct dsi_clock_info dsi_cinfo;
--		r = dsi_pll_calc_clock_div_pck(dpi.dsidev,
--				timings->pixel_clock * 1000,
--				&dsi_cinfo, &dispc_cinfo);
-+		ok = dpi_dsi_clk_calc(timings->pixel_clock * 1000, &ctx);
-+		if (!ok)
-+			return -EINVAL;
- 
--		if (r)
--			return r;
--
--		fck = dsi_cinfo.dsi_pll_hsdiv_dispc_clk;
-+		fck = ctx.dsi_cinfo.dsi_pll_hsdiv_dispc_clk;
- 	} else {
--		struct dss_clock_info dss_cinfo;
--		r = dss_calc_clock_div(timings->pixel_clock * 1000,
--				&dss_cinfo, &dispc_cinfo);
--
--		if (r)
--			return r;
-+		ok = dpi_dss_clk_calc(timings->pixel_clock * 1000, &ctx);
-+		if (!ok)
-+			return -EINVAL;
- 
--		fck = dss_cinfo.fck;
-+		fck = ctx.dss_cinfo.fck;
- 	}
- 
--	lck_div = dispc_cinfo.lck_div;
--	pck_div = dispc_cinfo.pck_div;
-+	lck_div = ctx.dispc_cinfo.lck_div;
-+	pck_div = ctx.dispc_cinfo.pck_div;
- 
- 	pck = fck / lck_div / pck_div / 1000;
  
 -- 
 1.7.10.4

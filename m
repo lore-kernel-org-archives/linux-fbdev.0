@@ -1,156 +1,116 @@
-From: Heiko =?utf-8?q?St=C3=BCbner?= <heiko@sntech.de>
-Date: Fri, 22 Mar 2013 14:15:55 +0000
-Subject: [PATCH 6/9] AUO-K190x: make color handling more flexible
-Message-Id: <201303221515.55477.heiko@sntech.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 26 Mar 2013 13:33:38 +0000
+Subject: [PATCH 08/26] OMAPDSS: use the panel list in omap_dss_get_next_device
+Message-Id: <1364304836-18134-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Don't hardcode the 8bit mode in all parts. This creates the possibility
-to add another colormode easily later on.
+omap_dss_get_next_device() uses the dss bus to iterate over the
+displays. This patch changes omap_dss_get_next_device() to use the new
+panel list instead.
 
-Signed-off-by: Heiko St=C3=BCbner <heiko@sntech.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/auo_k190x.c |   79 +++++++++++++++++++++++++++++++++++++----=
-----
- 1 files changed, 65 insertions(+), 14 deletions(-)
+ drivers/video/omap2/dss/display.c |   63 +++++++++++++++++++++++++++----------
+ 1 file changed, 46 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/video/auo_k190x.c b/drivers/video/auo_k190x.c
-index 7f4c4ef..848cfe9 100644
---- a/drivers/video/auo_k190x.c
-+++ b/drivers/video/auo_k190x.c
-@@ -59,8 +59,8 @@ static void auok190x_issue_cmd(struct auok190xfb_par *par=
-, u16 data)
- 	par->board->set_ctl(par, AUOK190X_I80_DC, 1);
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index e785694..50792bf 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -189,27 +189,51 @@ void omap_dss_put_device(struct omap_dss_device *dssdev)
  }
-=20
--static int auok190x_issue_pixels(struct auok190xfb_par *par, int size,
--				 u16 *data)
-+static int auok190x_issue_pixels_gray8(struct auok190xfb_par *par, int siz=
-e,
-+				       u16 *data)
+ EXPORT_SYMBOL(omap_dss_put_device);
+ 
+-/* ref count of the found device is incremented. ref count
+- * of from-device is decremented. */
++/*
++ * ref count of the found device is incremented.
++ * ref count of from-device is decremented.
++ */
+ struct omap_dss_device *omap_dss_get_next_device(struct omap_dss_device *from)
  {
- 	struct device *dev =3D par->info->device;
- 	int i;
-@@ -90,6 +90,21 @@ static int auok190x_issue_pixels(struct auok190xfb_par *=
-par, int size,
- 	return 0;
- }
-=20
-+static int auok190x_issue_pixels(struct auok190xfb_par *par, int size,
-+				 u16 *data)
-+{
-+	struct fb_info *info =3D par->info;
-+	struct device *dev =3D par->info->device;
+-	struct device *dev;
+-	struct device *dev_start = NULL;
+-	struct omap_dss_device *dssdev = NULL;
++	struct list_head *l;
++	struct omap_dss_device *dssdev;
 +
-+	if (info->var.bits_per_pixel =3D 8 && info->var.grayscale)
-+		auok190x_issue_pixels_gray8(par, size, data);
-+	else
-+		dev_err(dev, "unsupported color mode (bits: %d, gray: %d)\n",
-+			info->var.bits_per_pixel, info->var.grayscale);
++	mutex_lock(&panel_list_mutex);
 +
-+	return 0;
-+}
++	if (list_empty(&panel_list)) {
++		dssdev = NULL;
++		goto out;
++	}
+ 
+-	int match(struct device *dev, void *data)
+-	{
+-		return 1;
++	if (from = NULL) {
++		dssdev = list_first_entry(&panel_list, struct omap_dss_device,
++				panel_list);
++		omap_dss_get_device(dssdev);
++		goto out;
+ 	}
+ 
+-	if (from)
+-		dev_start = &from->dev;
+-	dev = bus_find_device(dss_get_bus(), dev_start, NULL, match);
+-	if (dev)
+-		dssdev = to_dss_device(dev);
+-	if (from)
+-		put_device(&from->dev);
++	omap_dss_put_device(from);
 +
- static u16 auok190x_read_data(struct auok190xfb_par *par)
- {
- 	u16 data;
-@@ -381,6 +396,35 @@ static int auok190xfb_check_var(struct fb_var_screenin=
-fo *var,
- 	int size;
-=20
- 	/*
-+	 * Color depth
-+	 */
++	list_for_each(l, &panel_list) {
++		dssdev = list_entry(l, struct omap_dss_device, panel_list);
++		if (dssdev = from) {
++			if (list_is_last(l, &panel_list)) {
++				dssdev = NULL;
++				goto out;
++			}
 +
-+	if (var->bits_per_pixel =3D 8 && var->grayscale =3D 1) {
-+		/*
-+		 * For 8-bit grayscale, R, G, and B offset are equal.
-+		 */
-+		var->red.length =3D 8;
-+		var->red.offset =3D 0;
-+		var->red.msb_right =3D 0;
-+
-+		var->green.length =3D 8;
-+		var->green.offset =3D 0;
-+		var->green.msb_right =3D 0;
-+
-+		var->blue.length =3D 8;
-+		var->blue.offset =3D 0;
-+		var->blue.msb_right =3D 0;
-+
-+		var->transp.length =3D 0;
-+		var->transp.offset =3D 0;
-+		var->transp.msb_right =3D 0;
-+	} else {
-+		dev_warn(dev, "unsupported color mode (bits: %d, grayscale: %d)\n",
-+			info->var.bits_per_pixel, info->var.grayscale);
-+		return -EINVAL;
++			dssdev = list_entry(l->next, struct omap_dss_device,
++					panel_list);
++			omap_dss_get_device(dssdev);
++			goto out;
++		}
 +	}
 +
-+	/*
- 	 * Dimensions
- 	 */
-=20
-@@ -409,6 +453,24 @@ static int auok190xfb_check_var(struct fb_var_screenin=
-fo *var,
- 	return 0;
++	WARN(1, "'from' dssdev not found\n");
+ 
++	dssdev = NULL;
++out:
++	mutex_unlock(&panel_list_mutex);
+ 	return dssdev;
  }
-=20
-+static int auok190xfb_set_fix(struct fb_info *info)
-+{
-+	struct fb_fix_screeninfo *fix =3D &info->fix;
-+	struct fb_var_screeninfo *var =3D &info->var;
+ EXPORT_SYMBOL(omap_dss_get_next_device);
+@@ -219,12 +243,17 @@ struct omap_dss_device *omap_dss_find_device(void *data,
+ {
+ 	struct omap_dss_device *dssdev = NULL;
+ 
++	mutex_lock(&panel_list_mutex);
 +
-+	fix->line_length =3D var->xres_virtual * var->bits_per_pixel / 8;
-+
-+	fix->type =3D FB_TYPE_PACKED_PIXELS;
-+	fix->accel =3D FB_ACCEL_NONE;
-+	fix->visual =3D (var->grayscale) ? FB_VISUAL_STATIC_PSEUDOCOLOR
-+				       : FB_VISUAL_TRUECOLOR;
-+	fix->xpanstep =3D 0;
-+	fix->ypanstep =3D 0;
-+	fix->ywrapstep =3D 0;
-+
-+	return 0;
-+}
-+
- static struct fb_ops auok190xfb_ops =3D {
- 	.owner		=3D THIS_MODULE,
- 	.fb_read	=3D fb_sys_read,
-@@ -893,18 +955,8 @@ int __devinit auok190x_common_probe(struct platform_de=
-vice *pdev,
- 	/* initialise fix, var, resolution and rotation */
-=20
- 	strlcpy(info->fix.id, init->id, 16);
--	info->fix.type =3D FB_TYPE_PACKED_PIXELS;
--	info->fix.visual =3D FB_VISUAL_STATIC_PSEUDOCOLOR;
--	info->fix.xpanstep =3D 0;
--	info->fix.ypanstep =3D 0;
--	info->fix.ywrapstep =3D 0;
--	info->fix.accel =3D FB_ACCEL_NONE;
--
- 	info->var.bits_per_pixel =3D 8;
- 	info->var.grayscale =3D 1;
--	info->var.red.length =3D 8;
--	info->var.green.length =3D 8;
--	info->var.blue.length =3D 8;
-=20
- 	panel =3D &panel_table[board->resolution];
-=20
-@@ -932,8 +984,7 @@ int __devinit auok190x_common_probe(struct platform_dev=
-ice *pdev,
- 	if (ret)
- 		goto err_defio;
-=20
--	info->fix.line_length =3D info->var.xres_virtual *
--				info->var.bits_per_pixel / 8;
-+	auok190xfb_set_fix(info);
-=20
- 	/* deferred io init */
-=20
---=20
-1.7.2.3
+ 	while ((dssdev = omap_dss_get_next_device(dssdev)) != NULL) {
+ 		if (match(dssdev, data))
+-			return dssdev;
++			goto out;
+ 	}
+ 
+-	return NULL;
++	dssdev = NULL;
++out:
++	mutex_unlock(&panel_list_mutex);
++	return dssdev;
+ }
+ EXPORT_SYMBOL(omap_dss_find_device);
+ 
+-- 
+1.7.10.4
 

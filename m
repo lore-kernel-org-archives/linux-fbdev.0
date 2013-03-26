@@ -1,55 +1,72 @@
-From: Heiko =?utf-8?q?St=C3=BCbner?= <heiko@sntech.de>
-Date: Fri, 22 Mar 2013 14:17:32 +0000
-Subject: [PATCH 9/9] AUO-K190x: Add resolutions for portrait displays
-Message-Id: <201303221517.33111.heiko@sntech.de>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 26 Mar 2013 13:57:24 +0000
+Subject: [PATCH v2 7/8] OMAPDSS: DISPC: Configure doublestride for NV12 when using 2D Tiler buffers
+Message-Id: <1364305525-28496-8-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1362493070-17706-1-git-send-email-archit@ti.com>
+ <1364305525-28496-1-git-send-email-archit@ti.com>
+In-Reply-To: <1364305525-28496-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com, robdclark@gmail.com, andy.gross@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>
 
-The controller also contains support for displays in a portrait
-orientation and it seems devices which such displays really reached
-the market - Pandigital Novell seems to be one example.
+When using a DISPC video pipeline to a fetch a NV12 buffer in a 2D container, we
+need to set set a doublestride bit in the video pipe's ATTRIBUTES register. This
+is needed because the stride for the UV plane(using a 16 bit Tiler container) is
+double the stride for the Y plane(using a 8 bit Tiler container) for the 0 or
+180 degree views. The ROW_INC register is meant for the Y plane, and the HW will
+calculate the row increment needed for the UV plane by using double the stride
+value based on whether this bit is set or not.
 
-Signed-off-by: Heiko St=C3=BCbner <heiko@sntech.de>
+Set the bit when we are using a 2D Tiler buffer and when rotation is 0 or 180
+degrees. The stride value is the same for 90 and 270 degree Tiler views, hence
+the bit shouldn't be set.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/auo_k190x.c   |    8 ++++++++
- include/video/auo_k190xfb.h |    2 ++
- 2 files changed, 10 insertions(+), 0 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/auo_k190x.c b/drivers/video/auo_k190x.c
-index 87cff5b..3bb32c2 100644
---- a/drivers/video/auo_k190x.c
-+++ b/drivers/video/auo_k190x.c
-@@ -39,6 +39,14 @@ static struct panel_info panel_table[] =3D {
- 		.w =3D 1024,
- 		.h =3D 768,
- 	},
-+	[AUOK190X_RESOLUTION_600_800] =3D {
-+		.w =3D 600,
-+		.h =3D 800,
-+	},
-+	[AUOK190X_RESOLUTION_768_1024] =3D {
-+		.w =3D 768,
-+		.h =3D 1024,
-+	},
- };
-=20
- /*
-diff --git a/include/video/auo_k190xfb.h b/include/video/auo_k190xfb.h
-index ad7bc51..ac329ee 100644
---- a/include/video/auo_k190xfb.h
-+++ b/include/video/auo_k190xfb.h
-@@ -22,6 +22,8 @@
-  */
- #define AUOK190X_RESOLUTION_800_600		0
- #define AUOK190X_RESOLUTION_1024_768		1
-+#define AUOK190X_RESOLUTION_600_800		4
-+#define AUOK190X_RESOLUTION_768_1024		5
-=20
- /*
-  * struct used by auok190x. board specific stuff comes from *board
---=20
-1.7.2.3
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 73a730a..ddbf031 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -1588,6 +1588,7 @@ static void dispc_ovl_set_scaling(enum omap_plane plane,
+ }
+ 
+ static void dispc_ovl_set_rotation_attrs(enum omap_plane plane, u8 rotation,
++		enum omap_dss_rotation_type rotation_type,
+ 		bool mirroring, enum omap_color_mode color_mode)
+ {
+ 	bool row_repeat = false;
+@@ -1638,6 +1639,15 @@ static void dispc_ovl_set_rotation_attrs(enum omap_plane plane, u8 rotation,
+ 	if (dss_has_feature(FEAT_ROWREPEATENABLE))
+ 		REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane),
+ 			row_repeat ? 1 : 0, 18, 18);
++
++	if (color_mode = OMAP_DSS_COLOR_NV12) {
++		bool doublestride = (rotation_type = OMAP_DSS_ROT_TILER) &&
++					(rotation = OMAP_DSS_ROT_0 ||
++					rotation = OMAP_DSS_ROT_180);
++		/* DOUBLESTRIDE */
++		REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), doublestride, 22, 22);
++	}
++
+ }
+ 
+ static int color_mode_to_bpp(enum omap_color_mode color_mode)
+@@ -2516,7 +2526,8 @@ static int dispc_ovl_setup_common(enum omap_plane plane,
+ 		dispc_ovl_set_vid_color_conv(plane, cconv);
+ 	}
+ 
+-	dispc_ovl_set_rotation_attrs(plane, rotation, mirror, color_mode);
++	dispc_ovl_set_rotation_attrs(plane, rotation, rotation_type, mirror,
++			color_mode);
+ 
+ 	dispc_ovl_set_zorder(plane, caps, zorder);
+ 	dispc_ovl_set_pre_mult_alpha(plane, caps, pre_mult_alpha);
+-- 
+1.7.10.4
 

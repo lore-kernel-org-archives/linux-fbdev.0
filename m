@@ -1,76 +1,99 @@
-From: Fabio Porcedda <fabio.porcedda@gmail.com>
-Date: Thu, 14 Mar 2013 13:11:29 +0000
-Subject: [PATCH 08/10] drivers: mfd: use module_platform_driver_probe()
-Message-Id: <1363266691-15757-10-git-send-email-fabio.porcedda@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 26 Mar 2013 13:33:30 +0000
+Subject: [PATCH 00/26] DSS device model change
+Message-Id: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
-In-Reply-To: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Tony Lindgren <tony@atomide.com>
 
-This patch converts the drivers to use the
-module_platform_driver_probe() macro which makes the code smaller and
-a bit simpler.
+Hi,
 
-Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linus Walleij <linus.walleij@linaro.org>
-Cc: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-arm-kernel@lists.infradead.org
----
- drivers/mfd/davinci_voicecodec.c | 12 +-----------
- drivers/mfd/htc-pasic3.c         | 13 +------------
- 2 files changed, 2 insertions(+), 23 deletions(-)
+To make it possible to add DT support to DSS, and later use the Common Display
+Framework, we need to change the DSS device model. We currently have a custom
+dss bus, and omap_dss_devices on that bus, and the aim is to get rid of that
+bus.
 
-diff --git a/drivers/mfd/davinci_voicecodec.c b/drivers/mfd/davinci_voicecodec.c
-index c0bcc87..c60ab0c 100644
---- a/drivers/mfd/davinci_voicecodec.c
-+++ b/drivers/mfd/davinci_voicecodec.c
-@@ -177,17 +177,7 @@ static struct platform_driver davinci_vc_driver = {
- 	.remove	= davinci_vc_remove,
- };
- 
--static int __init davinci_vc_init(void)
--{
--	return platform_driver_probe(&davinci_vc_driver, davinci_vc_probe);
--}
--module_init(davinci_vc_init);
--
--static void __exit davinci_vc_exit(void)
--{
--	platform_driver_unregister(&davinci_vc_driver);
--}
--module_exit(davinci_vc_exit);
-+module_platform_driver_probe(davinci_vc_driver, davinci_vc_probe);
- 
- MODULE_AUTHOR("Miguel Aguilar");
- MODULE_DESCRIPTION("Texas Instruments DaVinci Voice Codec Core Interface");
-diff --git a/drivers/mfd/htc-pasic3.c b/drivers/mfd/htc-pasic3.c
-index 9e5453d..0285fce 100644
---- a/drivers/mfd/htc-pasic3.c
-+++ b/drivers/mfd/htc-pasic3.c
-@@ -208,18 +208,7 @@ static struct platform_driver pasic3_driver = {
- 	.remove		= pasic3_remove,
- };
- 
--static int __init pasic3_base_init(void)
--{
--	return platform_driver_probe(&pasic3_driver, pasic3_probe);
--}
--
--static void __exit pasic3_base_exit(void)
--{
--	platform_driver_unregister(&pasic3_driver);
--}
--
--module_init(pasic3_base_init);
--module_exit(pasic3_base_exit);
-+module_platform_driver_probe(pasic3_driver, pasic3_probe);
- 
- MODULE_AUTHOR("Philipp Zabel <philipp.zabel@gmail.com>");
- MODULE_DESCRIPTION("Core driver for HTC PASIC3");
+The panel devices will be converted occording to the control bus of the panel.
+For many panels this means that the panel device will become a platform_device.
+For some, it means the panel devices become i2c or spi devices.
+
+This series takes the first step toward that goal. This series:
+
+* Converts DPI, HDMI and DSI outputs to work with new style panels
+* Converts TFP410, Taal and generic-dpi panels to new model
+* Converts Panda, 4430SDP and Overo boards to use the new panels
+
+The non-converted outputs and panels still work, so they can be converted in
+stages.
+
+Note about board files: I only convert a few board files here for example. I
+have a branch with board file changes for all the affected board files. I did
+not include them as they are more or less identical. If this series looks good,
+I will create an independent branch for the arch/arm stuff, so it can be pulled
+separately.
+
+This series can also be found from:
+
+git://gitorious.org/linux-omap-dss2/linux.git work/dss-dev-model-review
+
+ Tomi
+
+Tomi Valkeinen (26):
+  OMAPDSS: only probe pdata if there's one
+  OMAPDSS: add omap_dss_find_output()
+  OMAPDSS: add omap_dss_find_output_by_node()
+  OMAPDSS: fix dss_get_ctx_loss_count for DT
+  OMAPDSS: DPI: fix regulators
+  OMAPDSS: SDI: fix regulators
+  OMAPDSS: add panel list
+  OMAPDSS: use the panel list in omap_dss_get_next_device
+  OMAPDSS: don't use dss bus in suspend/resume
+  OMAPDSS: implement display sysfs without dss bus
+  OMAPDSS: Add panel_dev pointer to dssdev
+  OMAPDSS: DPI: new panel registration
+  OMAPDSS: DSI: new panel registration
+  OMAPDSS: HDMI: new panel registration
+  OMAPDSS: TFP410 platform_data changes
+  OMAPDSS: TFP410: convert to platform device
+  OMAPDSS: generic-dpi-panel platform_data changes
+  OMAPDSS: panel-generic-dpi: convert to platform device
+  OMAPDSS: HDMI: convert to platform device
+  OMAPDSS: Taal platform_data changes
+  OMAPDSS: Taal: convert to platform device
+  ARM: OMAP: Panda: use new TFP410 platform driver
+  ARM: OMAP: Panda & SDP: use new HDMI driver
+  ARM: OMAP: 4430SDP: use new Taal driver
+  ARM: OMAP: Overo: use new TFP410 platform driver
+  ARM: OMAP: Overo: use new generic-dpi-panel platform driver
+
+ arch/arm/mach-omap2/board-overo.c                |   95 +++----
+ arch/arm/mach-omap2/dss-common.c                 |   96 +++----
+ drivers/video/omap2/displays/panel-generic-dpi.c |  141 +++++++----
+ drivers/video/omap2/displays/panel-taal.c        |  294 +++++++++++++---------
+ drivers/video/omap2/displays/panel-tfp410.c      |  205 +++++++++------
+ drivers/video/omap2/dss/apply.c                  |   15 +-
+ drivers/video/omap2/dss/core.c                   |   32 +--
+ drivers/video/omap2/dss/display-sysfs.c          |  126 ++++++----
+ drivers/video/omap2/dss/display.c                |  166 +++++++-----
+ drivers/video/omap2/dss/dpi.c                    |   59 ++++-
+ drivers/video/omap2/dss/dsi.c                    |   58 ++++-
+ drivers/video/omap2/dss/dss.c                    |    3 +-
+ drivers/video/omap2/dss/dss.h                    |   11 +-
+ drivers/video/omap2/dss/hdmi.c                   |   44 +++-
+ drivers/video/omap2/dss/hdmi_panel.c             |   48 +++-
+ drivers/video/omap2/dss/output.c                 |   26 ++
+ drivers/video/omap2/dss/rfbi.c                   |    3 +-
+ drivers/video/omap2/dss/sdi.c                    |   23 +-
+ drivers/video/omap2/dss/venc.c                   |    3 +-
+ include/video/omap-panel-generic-dpi.h           |    3 +
+ include/video/omap-panel-nokia-dsi.h             |    1 +
+ include/video/omap-panel-tfp410.h                |    5 +
+ include/video/omapdss.h                          |   16 ++
+ 23 files changed, 940 insertions(+), 533 deletions(-)
+
 -- 
-1.8.1.5
+1.7.10.4
 

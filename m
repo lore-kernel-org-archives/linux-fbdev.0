@@ -1,103 +1,43 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 27 Mar 2013 06:58:24 +0000
-Subject: [PATCHv2 4/5] videomode: remove timing_entry_index
-Message-Id: <1364367505-4366-5-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 26 Mar 2013 13:33:34 +0000
+Subject: [PATCH 04/26] OMAPDSS: fix dss_get_ctx_loss_count for DT
+Message-Id: <1364304836-18134-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364367505-4366-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364367505-4366-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Steffen Trumtrar <s.trumtrar@pengutronix.de>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Display timing's fields have minimum, typical and maximum values. These
-can be accessed by using timing_entry_index enum, and
-display_timing_get_value() function.
+When using DT, dss device does not have platform data. However,
+dss_get_ctx_loss_count() uses dss device's platform data to find the
+get_ctx_loss_count function pointer.
 
-There's no real need for this extra complexity. The values can be
-accessed more easily by just using the min/typ/max fields.
+To fix this, change dss_get_ctx_loss_count() needs to be changed to get
+the platform data from the omapdss device, which is a "virtual" device
+and always has platform data.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 ---
- drivers/video/videomode.c      |   18 +++++++++---------
- include/video/display_timing.h |   25 -------------------------
- 2 files changed, 9 insertions(+), 34 deletions(-)
+ drivers/video/omap2/dss/dss.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/videomode.c b/drivers/video/videomode.c
-index 810afff..a3d95f2 100644
---- a/drivers/video/videomode.c
-+++ b/drivers/video/videomode.c
-@@ -20,16 +20,16 @@ int videomode_from_timing(const struct display_timings *disp,
- 	if (!dt)
- 		return -EINVAL;
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index fdd32e8..62db201 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -157,7 +157,8 @@ static void dss_restore_context(void)
  
--	vm->pixelclock = display_timing_get_value(&dt->pixelclock, TE_TYP);
--	vm->hactive = display_timing_get_value(&dt->hactive, TE_TYP);
--	vm->hfront_porch = display_timing_get_value(&dt->hfront_porch, TE_TYP);
--	vm->hback_porch = display_timing_get_value(&dt->hback_porch, TE_TYP);
--	vm->hsync_len = display_timing_get_value(&dt->hsync_len, TE_TYP);
-+	vm->pixelclock = dt->pixelclock.typ;
-+	vm->hactive = dt->hactive.typ;
-+	vm->hfront_porch = dt->hfront_porch.typ;
-+	vm->hback_porch = dt->hback_porch.typ;
-+	vm->hsync_len = dt->hsync_len.typ;
+ int dss_get_ctx_loss_count(void)
+ {
+-	struct omap_dss_board_info *board_data = dss.pdev->dev.platform_data;
++	struct platform_device *core_pdev = dss_get_core_pdev();
++	struct omap_dss_board_info *board_data = core_pdev->dev.platform_data;
+ 	int cnt;
  
--	vm->vactive = display_timing_get_value(&dt->vactive, TE_TYP);
--	vm->vfront_porch = display_timing_get_value(&dt->vfront_porch, TE_TYP);
--	vm->vback_porch = display_timing_get_value(&dt->vback_porch, TE_TYP);
--	vm->vsync_len = display_timing_get_value(&dt->vsync_len, TE_TYP);
-+	vm->vactive = dt->vactive.typ;
-+	vm->vfront_porch = dt->vfront_porch.typ;
-+	vm->vback_porch = dt->vback_porch.typ;
-+	vm->vsync_len = dt->vsync_len.typ;
- 
- 	vm->flags = dt->flags;
- 
-diff --git a/include/video/display_timing.h b/include/video/display_timing.h
-index b63471d..5d0259b 100644
---- a/include/video/display_timing.h
-+++ b/include/video/display_timing.h
-@@ -39,12 +39,6 @@ struct timing_entry {
- 	u32 max;
- };
- 
--enum timing_entry_index {
--	TE_MIN = 0,
--	TE_TYP = 1,
--	TE_MAX = 2,
--};
--
- /*
-  * Single "mode" entry. This describes one set of signal timings a display can
-  * have in one setting. This struct can later be converted to struct videomode
-@@ -91,25 +85,6 @@ struct display_timings {
- 	struct display_timing **timings;
- };
- 
--/* get value specified by index from struct timing_entry */
--static inline u32 display_timing_get_value(const struct timing_entry *te,
--					   enum timing_entry_index index)
--{
--	switch (index) {
--	case TE_MIN:
--		return te->min;
--		break;
--	case TE_TYP:
--		return te->typ;
--		break;
--	case TE_MAX:
--		return te->max;
--		break;
--	default:
--		return te->typ;
--	}
--}
--
- /* get one entry from struct display_timings */
- static inline struct display_timing *display_timings_get(const struct
- 							 display_timings *disp,
+ 	if (!board_data->get_context_loss_count)
 -- 
 1.7.10.4
 

@@ -1,75 +1,102 @@
-From: Fabio Porcedda <fabio.porcedda@gmail.com>
-Date: Thu, 14 Mar 2013 17:09:37 +0000
-Subject: [PATCH v2 7/8] drivers: video: use module_platform_driver_probe()
-Message-Id: <1363280978-24051-8-git-send-email-fabio.porcedda@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 27 Mar 2013 08:45:17 +0000
+Subject: [RFC 10/14] ARM: omap4.dtsi: add omapdss information
+Message-Id: <1364373921-7599-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363280978-24051-1-git-send-email-fabio.porcedda@gmail.com>
-In-Reply-To: <1363280978-24051-1-git-send-email-fabio.porcedda@gmail.com>
+References: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1364373921-7599-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, Andy Gross <andy.gross-l0cyMroinI0@public.gmane.org>
 
-This patch converts the drivers to use the
-module_platform_driver_probe() macro which makes the code smaller and
-a bit simpler.
-
-Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Richard Purdie <rpurdie@rpsys.net>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/sh_mipi_dsi.c    | 12 +-----------
- drivers/video/sh_mobile_hdmi.c | 12 +-----------
- 2 files changed, 2 insertions(+), 22 deletions(-)
+ arch/arm/boot/dts/omap4.dtsi |   71 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 71 insertions(+)
 
-diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
-index 701b461..6cad530 100644
---- a/drivers/video/sh_mipi_dsi.c
-+++ b/drivers/video/sh_mipi_dsi.c
-@@ -581,17 +581,7 @@ static struct platform_driver sh_mipi_driver = {
- 	},
+diff --git a/arch/arm/boot/dts/omap4.dtsi b/arch/arm/boot/dts/omap4.dtsi
+index 739bb79..967f706 100644
+--- a/arch/arm/boot/dts/omap4.dtsi
++++ b/arch/arm/boot/dts/omap4.dtsi
+@@ -529,5 +529,76 @@
+ 			ti,hwmods = "timer11";
+ 			ti,timer-pwm;
+ 		};
++
++		dss@58000000 {
++			compatible = "ti,omap4-dss", "simple-bus";
++			reg = <0x58000000 0x80>;
++			ti,hwmods = "dss_core";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges;
++
++			dispc@58001000 {
++				compatible = "ti,omap4-dispc";
++				reg = <0x58001000 0x1000>;
++				interrupts = <0 25 0x4>;
++				ti,hwmods = "dss_dispc";
++			};
++
++			dpi: dpi {
++				compatible = "ti,omap4-dpi";
++			};
++
++			rfbi: rfbi@58002000  {
++				compatible = "ti,omap4-rfbi";
++				reg = <0x58002000 0x1000>;
++				ti,hwmods = "dss_rfbi";
++			};
++
++			/*
++			 * Accessing venc registers cause a crash on omap4, so
++			 * this is disabled for now.
++			 */
++			/*
++			venc: venc@58003000 {
++				compatible = "ti,omap4-venc";
++				reg = <0x58003000 0x1000>;
++				ti,hwmods = "dss_venc";
++			};
++			*/
++
++			dsi1: dsi@58004000 {
++				compatible = "ti,omap4-dsi";
++				reg = <0x58004000 0x200>;
++				interrupts = <0 53 0x4>;
++				ti,hwmods = "dss_dsi1";
++
++				/*
++				 * XXX dss_core needs to know module-id,
++				 * so this data should be there.
++				 */
++				ti,dsi-module-id = <0>;
++			};
++
++			dsi2: dsi@58005000 {
++				compatible = "ti,omap4-dsi";
++				reg = <0x58005000 0x200>;
++				interrupts = <0 84 0x4>;
++				ti,hwmods = "dss_dsi2";
++
++				/*
++				 * XXX dss_core needs to know module-id,
++				 * so this data should be there.
++				 */
++				ti,dsi-module-id = <1>;
++			};
++
++			hdmi: hdmi@58006000 {
++				compatible = "ti,omap4-hdmi";
++				reg = <0x58006000 0x1000>;
++				interrupts = <0 101 0x4>;
++				ti,hwmods = "dss_hdmi";
++			};
++		};
+ 	};
  };
- 
--static int __init sh_mipi_init(void)
--{
--	return platform_driver_probe(&sh_mipi_driver, sh_mipi_probe);
--}
--module_init(sh_mipi_init);
--
--static void __exit sh_mipi_exit(void)
--{
--	platform_driver_unregister(&sh_mipi_driver);
--}
--module_exit(sh_mipi_exit);
-+module_platform_driver_probe(sh_mipi_driver, sh_mipi_probe);
- 
- MODULE_AUTHOR("Guennadi Liakhovetski <g.liakhovetski@gmx.de>");
- MODULE_DESCRIPTION("SuperH / ARM-shmobile MIPI DSI driver");
-diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-index 930e550..bfe4728 100644
---- a/drivers/video/sh_mobile_hdmi.c
-+++ b/drivers/video/sh_mobile_hdmi.c
-@@ -1445,17 +1445,7 @@ static struct platform_driver sh_hdmi_driver = {
- 	},
- };
- 
--static int __init sh_hdmi_init(void)
--{
--	return platform_driver_probe(&sh_hdmi_driver, sh_hdmi_probe);
--}
--module_init(sh_hdmi_init);
--
--static void __exit sh_hdmi_exit(void)
--{
--	platform_driver_unregister(&sh_hdmi_driver);
--}
--module_exit(sh_hdmi_exit);
-+module_platform_driver_probe(sh_hdmi_driver, sh_hdmi_probe);
- 
- MODULE_AUTHOR("Guennadi Liakhovetski <g.liakhovetski@gmx.de>");
- MODULE_DESCRIPTION("SuperH / ARM-shmobile HDMI driver");
 -- 
-1.8.1.5
+1.7.10.4
 

@@ -1,118 +1,48 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Mar 2013 13:33:54 +0000
-Subject: [PATCH 24/26] ARM: OMAP: 4430SDP: use new Taal driver
-Message-Id: <1364304836-18134-25-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 27 Mar 2013 08:45:20 +0000
+Subject: [RFC 13/14] ARM: omap3-tobi.dts: add lcd (TEST)
+Message-Id: <1364373921-7599-14-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1364373921-7599-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, Andy Gross <andy.gross-l0cyMroinI0@public.gmane.org>
 
-Change 4430SDP to use the new Taal platform driver instead of the old
-omap_dss_driver.
+This is a test for Overo with Palo43 expansion, _not_ Tobi. Palo43
+doesn't have a dts, but seems to work ok with omap3-tobi.dts, so I used
+it as a test.
+
+Not to be merged.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-omap2/dss-common.c |   41 ++++++++++++++++----------------------
- 1 file changed, 17 insertions(+), 24 deletions(-)
+ arch/arm/boot/dts/omap3-tobi.dts |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/arch/arm/mach-omap2/dss-common.c b/arch/arm/mach-omap2/dss-common.c
-index 64ca888..a10c56b 100644
---- a/arch/arm/mach-omap2/dss-common.c
-+++ b/arch/arm/mach-omap2/dss-common.c
-@@ -107,7 +107,8 @@ void __init omap4_panda_display_init_of(void)
- #define DLP_POWER_ON_GPIO	40
- 
- static struct nokia_dsi_panel_data dsi1_panel = {
--		.name		= "taal",
-+		.name		= "lcd",
-+		.source		= "dsi.0",
- 		.reset_gpio	= 102,
- 		.use_ext_te	= false,
- 		.ext_te_gpio	= 101,
-@@ -118,19 +119,15 @@ static struct nokia_dsi_panel_data dsi1_panel = {
- 		},
+diff --git a/arch/arm/boot/dts/omap3-tobi.dts b/arch/arm/boot/dts/omap3-tobi.dts
+index a13d12d..68e3c1b 100644
+--- a/arch/arm/boot/dts/omap3-tobi.dts
++++ b/arch/arm/boot/dts/omap3-tobi.dts
+@@ -33,3 +33,16 @@
+ &mmc3 {
+ 	status = "disabled";
  };
- 
--static struct omap_dss_device sdp4430_lcd_device = {
--	.name			= "lcd",
--	.driver_name		= "taal",
--	.type			= OMAP_DISPLAY_TYPE_DSI,
--	.data			= &dsi1_panel,
--	.phy.dsi		= {
--		.module		= 0,
--	},
--	.channel		= OMAP_DSS_CHANNEL_LCD,
-+static struct platform_device sdp4430_lcd1_device = {
-+	.name			= "taal",
-+	.id			= 0,
-+	.dev.platform_data	= &dsi1_panel,
- };
- 
- static struct nokia_dsi_panel_data dsi2_panel = {
--		.name		= "taal",
-+		.name		= "lcd2",
-+		.source		= "dsi.1",
- 		.reset_gpio	= 104,
- 		.use_ext_te	= false,
- 		.ext_te_gpio	= 103,
-@@ -141,16 +138,10 @@ static struct nokia_dsi_panel_data dsi2_panel = {
- 		},
- };
- 
--static struct omap_dss_device sdp4430_lcd2_device = {
--	.name			= "lcd2",
--	.driver_name		= "taal",
--	.type			= OMAP_DISPLAY_TYPE_DSI,
--	.data			= &dsi2_panel,
--	.phy.dsi		= {
--
--		.module		= 1,
--	},
--	.channel		= OMAP_DSS_CHANNEL_LCD2,
-+static struct platform_device sdp4430_lcd2_device = {
-+	.name			= "taal",
-+	.id			= 1,
-+	.dev.platform_data	= &dsi2_panel,
- };
- 
- static struct omap_dss_hdmi_data sdp4430_hdmi_data = {
-@@ -214,15 +205,13 @@ static struct omap_dss_device sdp4430_picodlp_device = {
- };
- 
- static struct omap_dss_device *sdp4430_dss_devices[] = {
--	&sdp4430_lcd_device,
--	&sdp4430_lcd2_device,
- 	&sdp4430_picodlp_device,
- };
- 
- static struct omap_dss_board_info sdp4430_dss_data = {
- 	.num_devices	= ARRAY_SIZE(sdp4430_dss_devices),
- 	.devices	= sdp4430_dss_devices,
--	.default_device	= &sdp4430_lcd_device,
-+	.default_display_name = "lcd",
- };
- 
- void __init omap_4430sdp_display_init(void)
-@@ -238,6 +227,8 @@ void __init omap_4430sdp_display_init(void)
- 	sdp4430_picodlp_init();
- 	omap_display_init(&sdp4430_dss_data);
- 	platform_device_register(&sdp4430_hdmi_device);
-+	platform_device_register(&sdp4430_lcd1_device);
-+	platform_device_register(&sdp4430_lcd2_device);
- 	/*
- 	 * OMAP4460SDP/Blaze and OMAP4430 ES2.3 SDP/Blaze boards and
- 	 * later have external pull up on the HDMI I2C lines
-@@ -265,4 +256,6 @@ void __init omap_4430sdp_display_init_of(void)
- 	sdp4430_picodlp_init();
- 	omap_display_init(&sdp4430_dss_data);
- 	platform_device_register(&sdp4430_hdmi_device);
-+	platform_device_register(&sdp4430_lcd1_device);
-+	platform_device_register(&sdp4430_lcd2_device);
- }
++
++&dpi {
++	vdds_dsi-supply = <&vpll2>;
++};
++
++/ {
++	lcd43 {
++		compatible = "ti,dpi_panel";
++		video-source = <&dpi>;
++		data-lines = <24>;
++		panel-name = "samsung_lte430wq_f0c";
++	};
++};
 -- 
 1.7.10.4
 

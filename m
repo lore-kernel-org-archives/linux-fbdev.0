@@ -1,117 +1,141 @@
-From: Benoit Cousson <b-cousson@ti.com>
-Date: Wed, 27 Mar 2013 09:28:51 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 27 Mar 2013 10:09:12 +0000
 Subject: Re: [RFC 02/14] ARM: OMAP2+: add omapdss_init_of()
-Message-Id: <5152BBD3.9070202@ti.com>
+Message-Id: <5152C548.9030500@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enigF94C5C548F92B7548B4235DC"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
  <1364373921-7599-3-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364373921-7599-3-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <5152BBD3.9070202@ti.com>
+In-Reply-To: <5152BBD3.9070202@ti.com>
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Tomi,
+--------------enigF94C5C548F92B7548B4235DC
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On 03/27/2013 09:45 AM, Tomi Valkeinen wrote:
-> omapdss driver uses a omapdss platform device to pass platform specific
-> function pointers and DSS hardware version from the arch code to the
-> driver. This device is needed also when booting with DT.
-> 
-> This patch adds omapdss_init_of() function, called from board-generic at
-> init time, which creates the omapdss device.
-> 
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->  arch/arm/mach-omap2/board-generic.c |    1 +
->  arch/arm/mach-omap2/common.h        |    2 ++
->  arch/arm/mach-omap2/display.c       |   34 ++++++++++++++++++++++++++++++++++
->  3 files changed, 37 insertions(+)
-> 
-> diff --git a/arch/arm/mach-omap2/board-generic.c b/arch/arm/mach-omap2/board-generic.c
-> index a61544b..29eb085 100644
-> --- a/arch/arm/mach-omap2/board-generic.c
-> +++ b/arch/arm/mach-omap2/board-generic.c
-> @@ -41,6 +41,7 @@ static void __init omap_generic_init(void)
->  
->  	of_platform_populate(NULL, omap_dt_match_table, NULL, NULL);
->  
-> +	omapdss_init_of();
+On 2013-03-27 11:28, Benoit Cousson wrote:
+> Hi Tomi,
 
-Mmm, you should not have to call that explicitly. It looks like a hack
-to me. Everything in theory should be initialized during
-of_platform_populate / driver probe.
+Hi Benoit. Thanks for your comments!
 
->  }
->  
->  #ifdef CONFIG_SOC_OMAP2420
-> diff --git a/arch/arm/mach-omap2/common.h b/arch/arm/mach-omap2/common.h
-> index 40f4a03..e9ac1fd 100644
-> --- a/arch/arm/mach-omap2/common.h
-> +++ b/arch/arm/mach-omap2/common.h
-> @@ -293,5 +293,7 @@ extern void omap_reserve(void);
->  struct omap_hwmod;
->  extern int omap_dss_reset(struct omap_hwmod *);
->  
-> +int __init omapdss_init_of(void);
-> +
->  #endif /* __ASSEMBLER__ */
->  #endif /* __ARCH_ARM_MACH_OMAP2PLUS_COMMON_H */
-> diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
-> index ff37be1..c62aee0 100644
-> --- a/arch/arm/mach-omap2/display.c
-> +++ b/arch/arm/mach-omap2/display.c
-> @@ -23,6 +23,8 @@
->  #include <linux/clk.h>
->  #include <linux/err.h>
->  #include <linux/delay.h>
-> +#include <linux/of.h>
-> +#include <linux/of_platform.h>
->  
->  #include <video/omapdss.h>
->  #include "omap_hwmod.h"
-> @@ -564,3 +566,35 @@ int omap_dss_reset(struct omap_hwmod *oh)
->  
->  	return r;
->  }
-> +
-> +int __init omapdss_init_of(void)
-> +{
-> +	int r;
-> +	enum omapdss_version ver;
-> +
-> +	static struct omap_dss_board_info board_data = {
-> +		.dsi_enable_pads = omap_dsi_enable_pads,
-> +		.dsi_disable_pads = omap_dsi_disable_pads,
+> On 03/27/2013 09:45 AM, Tomi Valkeinen wrote:
+>> omapdss driver uses a omapdss platform device to pass platform specifi=
+c
+>> function pointers and DSS hardware version from the arch code to the
+>> driver. This device is needed also when booting with DT.
+>>
+>> This patch adds omapdss_init_of() function, called from board-generic =
+at
+>> init time, which creates the omapdss device.
+>>
+>> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+>> ---
+>>  arch/arm/mach-omap2/board-generic.c |    1 +
+>>  arch/arm/mach-omap2/common.h        |    2 ++
+>>  arch/arm/mach-omap2/display.c       |   34 ++++++++++++++++++++++++++=
+++++++++
+>>  3 files changed, 37 insertions(+)
+>>
+>> diff --git a/arch/arm/mach-omap2/board-generic.c b/arch/arm/mach-omap2=
+/board-generic.c
+>> index a61544b..29eb085 100644
+>> --- a/arch/arm/mach-omap2/board-generic.c
+>> +++ b/arch/arm/mach-omap2/board-generic.c
+>> @@ -41,6 +41,7 @@ static void __init omap_generic_init(void)
+>> =20
+>>  	of_platform_populate(NULL, omap_dt_match_table, NULL, NULL);
+>> =20
+>> +	omapdss_init_of();
+>=20
+> Mmm, you should not have to call that explicitly. It looks like a hack
+> to me. Everything in theory should be initialized during
+> of_platform_populate / driver probe.
 
-Pads config should be handle by pinmux framework is possible. Otherwise
-a dedicated driver will be required.
+All the "real" devices are initialized properly. However, we still have
+a "virtual" omapdss device, which does not represent a particular HW
+block as such, and is not represented in the DT data. It's a legacy
+thing, and slowly on its way out.
 
-> +		.get_context_loss_count = omap_pm_get_dev_context_loss_count,
-> +		.set_min_bus_tput = omap_dss_set_min_bus_tput,
+However, it still helps us to pass the platform callbacks via platform
+data even in DT call, so we have this (hacky) omapdss_init_of() call.
+
+And we also pass the OMAP revision information via the platform data, as
+we need to know the DSS HW version. The only way to get that is to know
+the OMAP version and revision. If we would set the DSS HW version
+information into DT data, we could need separate dts files for each OMAP
+revision.
+
+>> +
+>> +int __init omapdss_init_of(void)
+>> +{
+>> +	int r;
+>> +	enum omapdss_version ver;
+>> +
+>> +	static struct omap_dss_board_info board_data =3D {
+>> +		.dsi_enable_pads =3D omap_dsi_enable_pads,
+>> +		.dsi_disable_pads =3D omap_dsi_disable_pads,
+>=20
+> Pads config should be handle by pinmux framework is possible. Otherwise=
+
+> a dedicated driver will be required.
+
+Hmm. These functions touch the OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_DSIPHY
+(CONTROL_DSIPHY in the TRM) register. It's not a normal padconfig thing
+(like, selecting between GPIO and some other function).
+
+Can they be handled by the pinmux framework? I'm not familiar with it.
+What do you mean with dedicated driver? Dedicated pinmux driver, or
+something else?
+
+>> +		.get_context_loss_count =3D omap_pm_get_dev_context_loss_count,
+>> +		.set_min_bus_tput =3D omap_dss_set_min_bus_tput,
+>=20
+>=20
+> All that code should disappear with DT. hacking a platform device with
+> pdata is the old way of initializing a device.
+>=20
+> I know that you do have some omap_pm callback, but you'd better get rid=
+
+> of them in case of DT boot.
+> Fixing that is a generic issue, and as soon as a solution will be done
+> to handle these specific hooks, every drivers will be able to use that.=
 
 
-All that code should disappear with DT. hacking a platform device with
-pdata is the old way of initializing a device.
+So, what you're saying is that this is not the correct way, but there's
+no other way to handle it currently? If so, yes, I know that, but, well,
+there's no other way to handle it currently.
 
-I know that you do have some omap_pm callback, but you'd better get rid
-of them in case of DT boot.
-Fixing that is a generic issue, and as soon as a solution will be done
-to handle these specific hooks, every drivers will be able to use that.
+I could leave them out, but in that case when booting with DT there must
+be no DSS context loss, and OPP must be at OPP100 all the time.
 
-> +	};
-> +
-> +	ver = omap_display_get_version();
-> +
-> +	if (ver = OMAPDSS_VER_UNKNOWN) {
-> +		pr_err("DSS not supported on this SoC\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	board_data.version = ver;
-> +
-> +	omap_display_device.dev.platform_data = &board_data;
+ Tomi
 
-Regards,
-Benoit
 
+
+--------------enigF94C5C548F92B7548B4235DC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRUsVIAAoJEPo9qoy8lh71E88P/3FdcC5kqgumiFNb3dJ50lxE
+CmS/vdD+kJvofm4dEcyBHgwlskDca7058iMNX3KRLoJA6xp53C5yFRt/zRwQEd5w
+TAygqbizVSZT91Ig8h0rhXMgdU0ayPW2eIscEcNmK1JdIr45KchtHY89325uDcxX
+C+jChXnbwaaDZFgPXrn+o25rf5CGn1QNXlZXkLrI82bK6UcH+L47kaMVyS2tM1V0
+LF2ndg+igNHs8RGyYyQHSLMBH6Asp1pMmTJDZsN2hvAi2AOQ2fpPB1GBqKa3U5tA
+fbXFiB3bFjeazgJOO2yo6Nk8aYLGQM//eeY6GqbwKEsTvwdu1dyGU9/VPl+Snf5q
+eAGdYUqxWN2oThQpqQqUCm5FaiEL/yCXnN4AWix2Tj2G0c+6ZvqQ8Ru7xPaLS7ix
+GAwaBIiCzWt3aNW/QUBrqSXsYYu86cAoiD5jYqDQbgqAKqeV1DngD2mneO4cfHpn
+icxTBBMvKPo8LJpYVVSI4FAIy+HD/gk7j8y0Gc5ySSDFo5OqDYA/aReUsmONffts
+57vrBQDBB1flOpk/t5d3AKjXF2hAVh49V2Vf99WT+16AyfTFfP71c1pQWVQGlD6f
+XgXqc/RGFuf+pYW8nxHQ1GMCU6FxrVJii3GUIEbmVYBSRfF9/EEueaio9RUvBsGm
+VAmPtggvgH96nHl2Lkll
+=Vj1V
+-----END PGP SIGNATURE-----
+
+--------------enigF94C5C548F92B7548B4235DC--

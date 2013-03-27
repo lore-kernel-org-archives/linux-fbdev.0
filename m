@@ -1,38 +1,105 @@
-From: Andrei Epure <epure.andrei@gmail.com>
-Date: Wed, 27 Mar 2013 20:35:37 +0000
-Subject: [PATCH] video: omap2: dss: use PTR_RET function
-Message-Id: <1364416537-25367-1-git-send-email-epure.andrei@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 27 Mar 2013 08:45:10 +0000
+Subject: [RFC 03/14] OMAPDSS: Add DT support to DSS, DISPC, DPI
+Message-Id: <1364373921-7599-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, FlorianSchandinat@gmx.de
-Cc: sumit.semwal@ti.com, archit@ti.com, cmahapatra@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Andrei Epure <epure.andrei@gmail.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Archit Taneja <archit@ti.com>, Andy Gross <andy.gross@ti.com>, Tony Lindgren <tony@atomide.com>, Benoit Cousson <b-cousson@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Use PTR_RET function instead of IS_ERR + PTR_ERR.
-Patch found using coccinelle.
+Add the code to make DSS, DISPC and DPI drivers work with device tree on
+OMAP3 and OMAP4. The only change is adding the of_match_tables.
 
-Signed-off-by: Andrei Epure <epure.andrei@gmail.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/core.c |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/video/omap2/dss/dispc.c |    7 +++++++
+ drivers/video/omap2/dss/dpi.c   |    8 ++++++++
+ drivers/video/omap2/dss/dss.c   |    7 +++++++
+ 3 files changed, 22 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index f8779d4..60cc6fe 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -181,10 +181,7 @@ int dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *))
- 	d = debugfs_create_file(name, S_IRUGO, dss_debugfs_dir,
- 			write, &dss_debug_fops);
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 8cfa27b..be53d64 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -3705,12 +3705,19 @@ static const struct dev_pm_ops dispc_pm_ops = {
+ 	.runtime_resume = dispc_runtime_resume,
+ };
  
--	if (IS_ERR(d))
--		return PTR_ERR(d);
--
--	return 0;
-+	return PTR_RET(d);
++static const struct of_device_id dispc_of_match[] = {
++	{ .compatible = "ti,omap3-dispc", },
++	{ .compatible = "ti,omap4-dispc", },
++	{},
++};
++
+ static struct platform_driver omap_dispchw_driver = {
+ 	.remove         = __exit_p(omap_dispchw_remove),
+ 	.driver         = {
+ 		.name   = "omapdss_dispc",
+ 		.owner  = THIS_MODULE,
+ 		.pm	= &dispc_pm_ops,
++		.of_match_table = dispc_of_match,
+ 	},
+ };
+ 
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index e7beea2..dc7e324 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -30,6 +30,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/string.h>
++#include <linux/of.h>
+ 
+ #include <video/omapdss.h>
+ 
+@@ -765,11 +766,18 @@ static int __exit omap_dpi_remove(struct platform_device *pdev)
+ 	return 0;
  }
- #else /* CONFIG_OMAP2_DSS_DEBUGFS */
- static inline int dss_initialize_debugfs(void)
+ 
++static const struct of_device_id dpi_of_match[] = {
++	{ .compatible = "ti,omap3-dpi", },
++	{ .compatible = "ti,omap4-dpi", },
++	{},
++};
++
+ static struct platform_driver omap_dpi_driver = {
+ 	.remove         = __exit_p(omap_dpi_remove),
+ 	.driver         = {
+ 		.name   = "omapdss_dpi",
+ 		.owner  = THIS_MODULE,
++		.of_match_table = dpi_of_match,
+ 	},
+ };
+ 
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 62db201..dc721f4 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -962,12 +962,19 @@ static const struct dev_pm_ops dss_pm_ops = {
+ 	.runtime_resume = dss_runtime_resume,
+ };
+ 
++static const struct of_device_id dss_of_match[] = {
++	{ .compatible = "ti,omap3-dss", },
++	{ .compatible = "ti,omap4-dss", },
++	{},
++};
++
+ static struct platform_driver omap_dsshw_driver = {
+ 	.remove         = __exit_p(omap_dsshw_remove),
+ 	.driver         = {
+ 		.name   = "omapdss_dss",
+ 		.owner  = THIS_MODULE,
+ 		.pm	= &dss_pm_ops,
++		.of_match_table = dss_of_match,
+ 	},
+ };
+ 
 -- 
-1.7.9.5
+1.7.10.4
 

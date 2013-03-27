@@ -1,103 +1,90 @@
-From: Fabio Porcedda <fabio.porcedda@gmail.com>
-Date: Thu, 14 Mar 2013 13:11:26 +0000
-Subject: [PATCH 05/10] drivers: ide: use module_platform_driver_probe()
-Message-Id: <1363266691-15757-7-git-send-email-fabio.porcedda@gmail.com>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Wed, 27 Mar 2013 08:46:57 +0000
+Subject: [PATCH 2/6] video: vt8500: Remove unused platform_data/video-vt8500lcdfb.h
+Message-Id: <1364374021-10844-3-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
-In-Reply-To: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
+References: <1364374021-10844-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1364374021-10844-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-This patch converts the drivers to use the
-module_platform_driver_probe() macro which makes the code smaller and
-a bit simpler.
+With the conversion to devicetree only for arch-vt8500, this
+header is no longer required. This patch removes the #include
+from the two framebuffer drivers that used it, and the header file.
 
-Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: linux-ide@vger.kernel.org
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
 ---
- drivers/ide/gayle.c     | 15 +--------------
- drivers/ide/tx4938ide.c | 13 +------------
- drivers/ide/tx4939ide.c | 13 +------------
- 3 files changed, 3 insertions(+), 38 deletions(-)
+ drivers/video/vt8500lcdfb.c                     |    2 --
+ drivers/video/wm8505fb.c                        |    2 --
+ include/linux/platform_data/video-vt8500lcdfb.h |   31 -----------------------
+ 3 files changed, 35 deletions(-)
+ delete mode 100644 include/linux/platform_data/video-vt8500lcdfb.h
 
-diff --git a/drivers/ide/gayle.c b/drivers/ide/gayle.c
-index 51beb85..0a8440a 100644
---- a/drivers/ide/gayle.c
-+++ b/drivers/ide/gayle.c
-@@ -183,20 +183,7 @@ static struct platform_driver amiga_gayle_ide_driver = {
- 	},
- };
+diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
+index d8cc1f6..1c34821 100644
+--- a/drivers/video/vt8500lcdfb.c
++++ b/drivers/video/vt8500lcdfb.c
+@@ -30,8 +30,6 @@
+ #include <linux/platform_device.h>
+ #include <linux/wait.h>
  
--static int __init amiga_gayle_ide_init(void)
--{
--	return platform_driver_probe(&amiga_gayle_ide_driver,
--				     amiga_gayle_ide_probe);
--}
+-#include <linux/platform_data/video-vt8500lcdfb.h>
 -
--module_init(amiga_gayle_ide_init);
--
--static void __exit amiga_gayle_ide_exit(void)
--{
--	platform_driver_unregister(&amiga_gayle_ide_driver);
--}
--
--module_exit(amiga_gayle_ide_exit);
-+module_platform_driver_probe(amiga_gayle_ide_driver, amiga_gayle_ide_probe);
+ #include "vt8500lcdfb.h"
  
- MODULE_LICENSE("GPL");
- MODULE_ALIAS("platform:amiga-gayle-ide");
-diff --git a/drivers/ide/tx4938ide.c b/drivers/ide/tx4938ide.c
-index 91d49dd..ede8575 100644
---- a/drivers/ide/tx4938ide.c
-+++ b/drivers/ide/tx4938ide.c
-@@ -203,18 +203,7 @@ static struct platform_driver tx4938ide_driver = {
- 	.remove = __exit_p(tx4938ide_remove),
- };
+ #ifdef CONFIG_FB_WMT_GE_ROPS
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index db49803..ce23a00 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -32,8 +32,6 @@
+ #include <linux/of_fdt.h>
+ #include <linux/memblock.h>
  
--static int __init tx4938ide_init(void)
--{
--	return platform_driver_probe(&tx4938ide_driver, tx4938ide_probe);
--}
+-#include <linux/platform_data/video-vt8500lcdfb.h>
 -
--static void __exit tx4938ide_exit(void)
--{
--	platform_driver_unregister(&tx4938ide_driver);
--}
--
--module_init(tx4938ide_init);
--module_exit(tx4938ide_exit);
-+module_platform_driver_probe(tx4938ide_driver, tx4938ide_probe);
+ #include "wm8505fb_regs.h"
  
- MODULE_DESCRIPTION("TX4938 internal IDE driver");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/ide/tx4939ide.c b/drivers/ide/tx4939ide.c
-index c0ab800..4ecdee5 100644
---- a/drivers/ide/tx4939ide.c
-+++ b/drivers/ide/tx4939ide.c
-@@ -624,18 +624,7 @@ static struct platform_driver tx4939ide_driver = {
- 	.resume = tx4939ide_resume,
- };
- 
--static int __init tx4939ide_init(void)
--{
--	return platform_driver_probe(&tx4939ide_driver, tx4939ide_probe);
--}
+ #ifdef CONFIG_FB_WMT_GE_ROPS
+diff --git a/include/linux/platform_data/video-vt8500lcdfb.h b/include/linux/platform_data/video-vt8500lcdfb.h
+deleted file mode 100644
+index 7f399c3..0000000
+--- a/include/linux/platform_data/video-vt8500lcdfb.h
++++ /dev/null
+@@ -1,31 +0,0 @@
+-/*
+- *  VT8500/WM8505 Frame Buffer platform data definitions
+- *
+- *  Copyright (C) 2010 Ed Spiridonov <edo.rus@gmail.com>
+- *
+- * This software is licensed under the terms of the GNU General Public
+- * License version 2, as published by the Free Software Foundation, and
+- * may be copied, distributed, and modified under those terms.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- */
 -
--static void __exit tx4939ide_exit(void)
--{
--	platform_driver_unregister(&tx4939ide_driver);
--}
+-#ifndef _VT8500FB_H
+-#define _VT8500FB_H
 -
--module_init(tx4939ide_init);
--module_exit(tx4939ide_exit);
-+module_platform_driver_probe(tx4939ide_driver, tx4939ide_probe);
- 
- MODULE_DESCRIPTION("TX4939 internal IDE driver");
- MODULE_LICENSE("GPL");
+-#include <linux/fb.h>
+-
+-struct vt8500fb_platform_data {
+-	struct fb_videomode	mode;
+-	u32			xres_virtual;
+-	u32			yres_virtual;
+-	u32			bpp;
+-	unsigned long		video_mem_phys;
+-	void			*video_mem_virt;
+-	unsigned long		video_mem_len;
+-};
+-
+-#endif /* _VT8500FB_H */
 -- 
-1.8.1.5
+1.7.9.5
 

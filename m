@@ -1,114 +1,132 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 08 Mar 2013 11:51:44 +0000
-Subject: [PATCH 09/20] OMAPDSS: add output->name
-Message-Id: <1362743515-10152-10-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 27 Mar 2013 08:45:14 +0000
+Subject: [RFC 07/14] OMAPDSS: TFP410: Add DT support
+Message-Id: <1364373921-7599-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Archit Taneja <archit@ti.com>, Andy Gross <andy.gross@ti.com>, Tony Lindgren <tony@atomide.com>, Benoit Cousson <b-cousson@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add name field to omapdss's outputs to help debugging.
+In the DT data we model the TFP410 chip and the DVI connector. For the
+moment we have only 1 driver to handle those both.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dpi.c  |    1 +
- drivers/video/omap2/dss/dsi.c  |    1 +
- drivers/video/omap2/dss/hdmi.c |    1 +
- drivers/video/omap2/dss/rfbi.c |    1 +
- drivers/video/omap2/dss/sdi.c  |    1 +
- drivers/video/omap2/dss/venc.c |    1 +
- include/video/omapdss.h        |    3 +++
- 7 files changed, 9 insertions(+)
+ drivers/video/omap2/displays/panel-tfp410.c |   71 +++++++++++++++++++++++++++
+ 1 file changed, 71 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index cb6b280..e282456 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -512,6 +512,7 @@ static void __init dpi_init_output(struct platform_device *pdev)
- 	out->pdev = pdev;
- 	out->id = OMAP_DSS_OUTPUT_DPI;
- 	out->type = OMAP_DISPLAY_TYPE_DPI;
-+	out->name = "dpi";
+diff --git a/drivers/video/omap2/displays/panel-tfp410.c b/drivers/video/omap2/displays/panel-tfp410.c
+index a225ea1..a087489c 100644
+--- a/drivers/video/omap2/displays/panel-tfp410.c
++++ b/drivers/video/omap2/displays/panel-tfp410.c
+@@ -24,6 +24,8 @@
+ #include <linux/gpio.h>
+ #include <linux/platform_device.h>
+ #include <drm/drm_edid.h>
++#include <linux/of_gpio.h>
++#include <linux/of_i2c.h>
  
- 	dss_register_output(out);
+ #include <video/omap-panel-tfp410.h>
+ 
+@@ -112,6 +114,63 @@ static int tfp410_probe_pdata(struct platform_device *pdev)
+ 	return 0;
  }
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 815c930..1a6ad6f 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -5183,6 +5183,7 @@ static void __init dsi_init_output(struct platform_device *dsidev)
- 			OMAP_DSS_OUTPUT_DSI1 : OMAP_DSS_OUTPUT_DSI2;
  
- 	out->type = OMAP_DISPLAY_TYPE_DSI;
-+	out->name = dsi->module_id = 0 ? "dsi0" : "dsi1";
- 
- 	dss_register_output(out);
- }
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index f3768d0..888cfe3 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -1046,6 +1046,7 @@ static void __init hdmi_init_output(struct platform_device *pdev)
- 	out->pdev = pdev;
- 	out->id = OMAP_DSS_OUTPUT_HDMI;
- 	out->type = OMAP_DISPLAY_TYPE_HDMI;
-+	out->name = "hdmi";
- 
- 	dss_register_output(out);
- }
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index e903dd3..a47a9e5 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -1025,6 +1025,7 @@ static void __init rfbi_init_output(struct platform_device *pdev)
- 	out->pdev = pdev;
- 	out->id = OMAP_DSS_OUTPUT_DBI;
- 	out->type = OMAP_DISPLAY_TYPE_DBI;
-+	out->name = "rfbi";
- 
- 	dss_register_output(out);
- }
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index 62b5374..0802927 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -278,6 +278,7 @@ static void __init sdi_init_output(struct platform_device *pdev)
- 	out->pdev = pdev;
- 	out->id = OMAP_DSS_OUTPUT_SDI;
- 	out->type = OMAP_DISPLAY_TYPE_SDI;
-+	out->name = "sdi";
- 
- 	dss_register_output(out);
- }
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 006caf3..c8130f8 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -819,6 +819,7 @@ static void __init venc_init_output(struct platform_device *pdev)
- 	out->pdev = pdev;
- 	out->id = OMAP_DSS_OUTPUT_VENC;
- 	out->type = OMAP_DISPLAY_TYPE_VENC;
-+	out->name = "venc";
- 
- 	dss_register_output(out);
- }
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 2cb2b0e..ba9cea7 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -541,6 +541,9 @@ struct omap_dss_writeback_info {
- struct omap_dss_output {
- 	struct list_head list;
- 
-+	/* name of the output for debug */
-+	const char *name;
++static int tfp410_probe_of(struct platform_device *pdev)
++{
++	struct device_node *node = pdev->dev.of_node;
++	struct panel_drv_data *ddata = dev_get_drvdata(&pdev->dev);
++	struct device_node *adapter_node;
++	struct i2c_adapter *adapter;
++	int r, gpio, datalines;
 +
- 	/* display type supported by the output */
- 	enum omap_display_type type;
++	ddata->name = node->name;
++
++	node = of_parse_phandle(node, "video-source", 0);
++	if (!node) {
++		dev_err(&pdev->dev, "failed to parse video source\n");
++		return -ENODEV;
++	}
++
++	gpio = of_get_gpio(node, 0);
++
++	if (gpio_is_valid(gpio)) {
++		r = devm_gpio_request_one(&pdev->dev, gpio,
++				GPIOF_OUT_INIT_LOW, "tfp410 pd");
++		if (r) {
++			dev_err(&pdev->dev, "Failed to request PD GPIO %d\n",
++					gpio);
++			return r;
++		}
++
++		ddata->pd_gpio = gpio;
++	} else if (gpio = -ENOENT) {
++		ddata->pd_gpio = -1;
++	} else {
++		dev_err(&pdev->dev, "failed to parse PD gpio\n");
++		return gpio;
++	}
++
++	r = of_property_read_u32(node, "data-lines", &datalines);
++	if (r) {
++		dev_err(&pdev->dev, "failed to parse datalines");
++		return r;
++	}
++
++	ddata->data_lines = datalines;
++
++	adapter_node = of_parse_phandle(node, "i2c-bus", 0);
++	if (adapter_node) {
++		adapter = of_find_i2c_adapter_by_node(adapter_node);
++		if (adapter = NULL) {
++			dev_err(&pdev->dev, "failed to parse i2c-bus\n");
++			return -EINVAL;
++		}
++
++		ddata->i2c_adapter = adapter;
++	}
++
++	return 0;
++}
++
+ static int tfp410_probe(struct platform_device *pdev)
+ {
+ 	struct tfp410_platform_data *pdata = dev_get_platdata(&pdev->dev);
+@@ -131,6 +190,10 @@ static int tfp410_probe(struct platform_device *pdev)
+ 		r = tfp410_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = tfp410_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -380,12 +443,20 @@ static struct omap_dss_driver tfp410_driver = {
+ 	.detect		= tfp410_detect,
+ };
+ 
++static const struct of_device_id tfp410_of_match[] = {
++	{
++		.compatible = "ti,dvi_connector",
++	},
++	{},
++};
++
+ static struct platform_driver tfp410_platform_driver = {
+ 	.probe	= tfp410_probe,
+ 	.remove	= __exit_p(tfp410_remove),
+ 	.driver	= {
+ 		.name	= "tfp410",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = tfp410_of_match,
+ 	},
+ };
  
 -- 
 1.7.10.4

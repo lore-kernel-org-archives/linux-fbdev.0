@@ -1,46 +1,65 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Date: Thu, 14 Mar 2013 05:53:24 +0000
-Subject: [PATCH 0/6] Remove mxsfb auxdata
-Message-Id: <1363240410-16865-1-git-send-email-shawn.guo@linaro.org>
+From: Andrei Epure <epure.andrei@gmail.com>
+Date: Wed, 27 Mar 2013 23:55:24 +0000
+Subject: [PATCH] video: fix invalid free of devm_ allocated data
+Message-Id: <1364428524-13821-1-git-send-email-epure.andrei@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-The mxsfb driver was converted to device tree by asking platform to
-pass mxsfb_platform_data with auxdata.  We did this to have mach-mxs
-be DT only platform when there was no videomode bindings.  Now with
-the videomode bindings and helpers in place, the series changes mxsfb
-driver to get display_timings from device tree, and removes mxsfb
-platform_data and auxdata completely.
+The objects allocated by devm_* APIs are managed by devres and are freed when
+the device is detached. Hence there is no need to use kfree() explicitly.
+Patch found using coccinelle.
 
-To maintain the bisectability, the series needs to go via single tree,
-and I prefer to arm-soc tree.
+Signed-off-by: Andrei Epure <epure.andrei@gmail.com>
+---
+ drivers/video/vt8500lcdfb.c |    3 ---
+ drivers/video/wm8505fb.c    |    3 ---
+ 2 files changed, 6 deletions(-)
 
-Shawn Guo (6):
-  video: mxsfb: use devm_* managed functions
-  video: mxsfb: remove fb_phys/fb_size from platform_data
-  video: mxsfb: remove dotclk_delay from platform_data
-  video: mxsfb: get display timings from device tree
-  ARM: mxs: move display timing configurations into device tree
-  video: mxsfb: remove mxsfb_platform_data
-
- Documentation/devicetree/bindings/fb/mxsfb.txt |   34 ++++
- arch/arm/boot/dts/imx23-evk.dts                |   25 +++
- arch/arm/boot/dts/imx28-apf28dev.dts           |   25 +++
- arch/arm/boot/dts/imx28-apx4devkit.dts         |   25 +++
- arch/arm/boot/dts/imx28-cfa10049.dts           |   25 +++
- arch/arm/boot/dts/imx28-evk.dts                |   25 +++
- arch/arm/boot/dts/imx28-m28evk.dts             |   25 +++
- arch/arm/mach-mxs/mach-mxs.c                   |  153 -----------------
- drivers/video/Kconfig                          |    2 +
- drivers/video/mxsfb.c                          |  219 +++++++++++++++---------
- include/linux/mxsfb.h                          |   49 ------
- 11 files changed, 320 insertions(+), 287 deletions(-)
- delete mode 100644 include/linux/mxsfb.h
-
+diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
+index b4ccca2..ea3ee61 100644
+--- a/drivers/video/vt8500lcdfb.c
++++ b/drivers/video/vt8500lcdfb.c
+@@ -465,7 +465,6 @@ failed_free_res:
+ 	release_mem_region(res->start, resource_size(res));
+ failed_fbi:
+ 	platform_set_drvdata(pdev, NULL);
+-	kfree(fbi);
+ failed:
+ 	return ret;
+ }
+@@ -494,8 +493,6 @@ static int vt8500lcd_remove(struct platform_device *pdev)
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	release_mem_region(res->start, resource_size(res));
+ 
+-	kfree(fbi);
+-
+ 	return 0;
+ }
+ 
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index 2e8298e..34a2de1 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -427,7 +427,6 @@ failed_free_res:
+ 	release_mem_region(res->start, resource_size(res));
+ failed_fbi:
+ 	platform_set_drvdata(pdev, NULL);
+-	kfree(fbi);
+ failed:
+ 	return ret;
+ }
+@@ -451,8 +450,6 @@ static int wm8505fb_remove(struct platform_device *pdev)
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	release_mem_region(res->start, resource_size(res));
+ 
+-	kfree(fbi);
+-
+ 	return 0;
+ }
+ 
 -- 
 1.7.9.5
-
 

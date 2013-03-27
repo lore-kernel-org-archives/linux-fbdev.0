@@ -1,48 +1,106 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Mar 2013 13:33:45 +0000
-Subject: [PATCH 15/26] OMAPDSS: TFP410 platform_data changes
-Message-Id: <1364304836-18134-16-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 27 Mar 2013 08:45:15 +0000
+Subject: [RFC 08/14] OMAPDSS: panel-generic-dpi: add DT support
+Message-Id: <1364373921-7599-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1364373921-7599-1-git-send-email-tomi.valkeinen-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-
-The forthcoming omap_dss_device to platform_device conversion requires a
-few new fields to the TFP410 platform data. Add the platform data fields
-here so that we can make the board file changes independently of the
-panel driver changes.
+To: linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, Andy Gross <andy.gross-l0cyMroinI0@public.gmane.org>
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- include/video/omap-panel-tfp410.h |    5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/video/omap2/displays/panel-generic-dpi.c |   47 ++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
 
-diff --git a/include/video/omap-panel-tfp410.h b/include/video/omap-panel-tfp410.h
-index aef35e4..cb37c87 100644
---- a/include/video/omap-panel-tfp410.h
-+++ b/include/video/omap-panel-tfp410.h
-@@ -24,12 +24,17 @@ struct omap_dss_device;
+diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
+index cc49c48..a00c942 100644
+--- a/drivers/video/omap2/displays/panel-generic-dpi.c
++++ b/drivers/video/omap2/displays/panel-generic-dpi.c
+@@ -34,6 +34,7 @@
+ #include <linux/delay.h>
+ #include <linux/slab.h>
+ #include <linux/platform_device.h>
++#include <linux/of.h>
+ #include <video/omapdss.h>
  
- /**
-  * struct tfp410_platform_data - panel driver configuration data
-+ * @name: name for this output
-+ * @source: name for the video source
-  * @i2c_bus_num: i2c bus id for the panel
-  * @power_down_gpio: gpio number for PD pin (or -1 if not available)
-  */
- struct tfp410_platform_data {
-+	const char *name;
-+	const char *source;
- 	int i2c_bus_num;
- 	int power_down_gpio;
-+	int data_lines;
+ #include <video/omap-panel-generic-dpi.h>
+@@ -618,6 +619,42 @@ static int generic_dpi_panel_probe_pdata(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int generic_dpi_panel_probe_of(struct platform_device *pdev)
++{
++	struct device_node *node = pdev->dev.of_node;
++	struct panel_drv_data *drv_data = dev_get_drvdata(&pdev->dev);
++	struct panel_config *panel_config = NULL;
++	int r, i;
++	int datalines;
++	const char *panel_name;
++
++	r = of_property_read_string(node, "panel-name", &panel_name);
++	if (r)
++		return r;
++
++	for (i = 0; i < ARRAY_SIZE(generic_dpi_panels); i++) {
++		if (strcmp(panel_name, generic_dpi_panels[i].name) = 0) {
++			panel_config = &generic_dpi_panels[i];
++			break;
++		}
++	}
++
++	if (!panel_config)
++		return -EINVAL;
++
++	r = of_property_read_u32(node, "data-lines", &datalines);
++	if (r) {
++		dev_err(&pdev->dev, "failed to parse datalines");
++		return r;
++	}
++
++	drv_data->panel_config = panel_config;
++	drv_data->name = node->name;
++	drv_data->data_lines = datalines;
++
++	return 0;
++}
++
+ static int generic_dpi_panel_probe(struct platform_device *pdev)
+ {
+ 	struct panel_drv_data *drv_data;
+@@ -636,6 +673,10 @@ static int generic_dpi_panel_probe(struct platform_device *pdev)
+ 		r = generic_dpi_panel_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = generic_dpi_panel_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -EINVAL;
+ 	}
+@@ -754,12 +795,18 @@ static struct omap_dss_driver generic_dpi_panel_driver = {
+ 	.get_resolution	= omapdss_default_get_resolution,
  };
  
- #endif /* __OMAP_PANEL_TFP410_H */
++static const struct of_device_id generic_dpi_panel_of_match[] = {
++	{ .compatible = "ti,dpi_panel", },
++	{},
++};
++
+ static struct platform_driver generic_dpi_panel_platform_driver = {
+ 	.probe	= generic_dpi_panel_probe,
+ 	.remove	= __exit_p(generic_dpi_panel_remove),
+ 	.driver	= {
+ 		.name	= "generic_dpi_panel",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = generic_dpi_panel_of_match,
+ 	},
+ };
+ 
 -- 
 1.7.10.4
 

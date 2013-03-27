@@ -1,51 +1,45 @@
-From: Fabio Porcedda <fabio.porcedda@gmail.com>
-Date: Thu, 14 Mar 2013 13:11:28 +0000
-Subject: [PATCH 07/10] drivers: memory: use module_platform_driver_probe()
-Message-Id: <1363266691-15757-9-git-send-email-fabio.porcedda@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 27 Mar 2013 06:58:20 +0000
+Subject: [PATCHv2 0/5] videomode patches
+Message-Id: <1364367505-4366-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
-In-Reply-To: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-This patch converts the drivers to use the
-module_platform_driver_probe() macro which makes the code smaller and
-a bit simpler.
+Hi,
 
-Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Benoit Cousson <b-cousson@ti.com>
-Cc: Aneesh V <aneesh@ti.com>
----
- drivers/memory/emif.c | 12 +-----------
- 1 file changed, 1 insertion(+), 11 deletions(-)
+Here's a v2 of the videomode series. The changes compared to v1:
 
-diff --git a/drivers/memory/emif.c b/drivers/memory/emif.c
-index df08736..ecbc1a9 100644
---- a/drivers/memory/emif.c
-+++ b/drivers/memory/emif.c
-@@ -1841,18 +1841,8 @@ static struct platform_driver emif_driver = {
- 	},
- };
- 
--static int __init_or_module emif_register(void)
--{
--	return platform_driver_probe(&emif_driver, emif_probe);
--}
--
--static void __exit emif_unregister(void)
--{
--	platform_driver_unregister(&emif_driver);
--}
-+module_platform_driver_probe(emif_driver, emif_probe);
- 
--module_init(emif_register);
--module_exit(emif_unregister);
- MODULE_DESCRIPTION("TI EMIF SDRAM Controller Driver");
- MODULE_LICENSE("GPL");
- MODULE_ALIAS("platform:emif");
+* Dropped "videomode: rename fields", as it received only negative comments
+* New patch: "videomode: videomode_from_timing work"
+
+Patches 1-4 are unchanged.
+
+ Tomi
+
+Tomi Valkeinen (5):
+  videomode: simplify videomode Kconfig and Makefile
+  videomode: combine videomode dmt_flags and data_flags
+  videomode: create enum for videomode's display flags
+  videomode: remove timing_entry_index
+  videomode: videomode_from_timing work
+
+ drivers/gpu/drm/drm_modes.c           |   20 ++++++------
+ drivers/gpu/drm/tilcdc/Kconfig        |    3 +-
+ drivers/gpu/drm/tilcdc/tilcdc_panel.c |    2 +-
+ drivers/video/Kconfig                 |   22 ++-----------
+ drivers/video/Makefile                |    8 ++---
+ drivers/video/fbmon.c                 |   16 ++++-----
+ drivers/video/of_display_timing.c     |   19 ++++++-----
+ drivers/video/of_videomode.c          |    2 +-
+ drivers/video/videomode.c             |   36 ++++++++++++---------
+ include/video/display_timing.h        |   57 ++++++++++-----------------------
+ include/video/videomode.h             |   18 ++++++++---
+ 11 files changed, 88 insertions(+), 115 deletions(-)
+
 -- 
-1.8.1.5
+1.7.10.4
 

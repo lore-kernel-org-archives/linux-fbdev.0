@@ -1,60 +1,86 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Wed, 27 Mar 2013 08:46:58 +0000
-Subject: [PATCH 3/6] video: vt8500: Correct descriptions in video/Kconfig
-Message-Id: <1364374021-10844-4-git-send-email-linux@prisktech.co.nz>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 27 Mar 2013 06:58:23 +0000
+Subject: [PATCHv2 3/5] videomode: create enum for videomode's display flags
+Message-Id: <1364367505-4366-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364374021-10844-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1364374021-10844-1-git-send-email-linux@prisktech.co.nz>
+References: <1364367505-4366-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1364367505-4366-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-This patch corrects the descriptions for the VIA VT8500 and
-Wondermedia WM8xxx-series framebuffer drivers to correctly reflect
-which hardware they support.
+Instead of having plain defines for the videomode's flags, add an enum
+for the flags. This makes the flags clearer to use, as the enum tells
+which values can be used with the flags field.
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 ---
- drivers/video/Kconfig |   11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ include/video/display_timing.h |   28 +++++++++++++++++-----------
+ include/video/videomode.h      |    2 +-
+ 2 files changed, 18 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 661aa54..ad762ed 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -1789,7 +1789,7 @@ config FB_AU1200
- 	  option au1200fb:panel=<name>.
+diff --git a/include/video/display_timing.h b/include/video/display_timing.h
+index a8a4be5..b63471d 100644
+--- a/include/video/display_timing.h
++++ b/include/video/display_timing.h
+@@ -12,16 +12,22 @@
+ #include <linux/bitops.h>
+ #include <linux/types.h>
  
- config FB_VT8500
--	bool "VT8500 LCD Driver"
-+	bool "VIA VT8500 framebuffer support"
- 	depends on (FB = y) && ARM && ARCH_VT8500
- 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
-@@ -1799,17 +1799,18 @@ config FB_VT8500
- 	  controller.
+-#define DISPLAY_FLAGS_HSYNC_LOW		BIT(0)
+-#define DISPLAY_FLAGS_HSYNC_HIGH	BIT(1)
+-#define DISPLAY_FLAGS_VSYNC_LOW		BIT(2)
+-#define DISPLAY_FLAGS_VSYNC_HIGH	BIT(3)
+-#define DISPLAY_FLAGS_DE_LOW		BIT(4)	/* data enable flag */
+-#define DISPLAY_FLAGS_DE_HIGH		BIT(5)
+-#define DISPLAY_FLAGS_PIXDATA_POSEDGE	BIT(6)	/* drive data on pos. edge */
+-#define DISPLAY_FLAGS_PIXDATA_NEGEDGE	BIT(7)	/* drive data on neg. edge */
+-#define DISPLAY_FLAGS_INTERLACED	BIT(8)
+-#define DISPLAY_FLAGS_DOUBLESCAN	BIT(9)
++enum display_flags {
++	DISPLAY_FLAGS_HSYNC_LOW		= BIT(0),
++	DISPLAY_FLAGS_HSYNC_HIGH	= BIT(1),
++	DISPLAY_FLAGS_VSYNC_LOW		= BIT(2),
++	DISPLAY_FLAGS_VSYNC_HIGH	= BIT(3),
++
++	/* data enable flag */
++	DISPLAY_FLAGS_DE_LOW		= BIT(4),
++	DISPLAY_FLAGS_DE_HIGH		= BIT(5),
++	/* drive data on pos. edge */
++	DISPLAY_FLAGS_PIXDATA_POSEDGE	= BIT(6),
++	/* drive data on neg. edge */
++	DISPLAY_FLAGS_PIXDATA_NEGEDGE	= BIT(7),
++	DISPLAY_FLAGS_INTERLACED	= BIT(8),
++	DISPLAY_FLAGS_DOUBLESCAN	= BIT(9),
++};
  
- config FB_WM8505
--	bool "WM8505 frame buffer support"
-+	bool "Wondermedia WM8xxx-series frame buffer support"
- 	depends on (FB = y) && ARM && ARCH_VT8500
- 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_IMAGEBLIT
- 	help
--	  This is the framebuffer driver for WonderMedia WM8505/WM8650
--	  integrated LCD controller.
-+	  This is the framebuffer driver for WonderMedia WM8xxx-series
-+	  integrated LCD controller. This driver covers the WM8505, WM8650
-+	  and WM8850 SoCs.
+ /*
+  * A single signal can be specified via a range of minimal and maximal values
+@@ -69,7 +75,7 @@ struct display_timing {
+ 	struct timing_entry vback_porch;	/* ver. back porch */
+ 	struct timing_entry vsync_len;		/* ver. sync len */
  
- config FB_WMT_GE_ROPS
--	bool "VT8500/WM85xx accelerated raster ops support"
-+	bool "VT8500/WM8xxx accelerated raster ops support"
- 	depends on (FB = y) && (FB_VT8500 || FB_WM8505)
- 	default n
- 	help
+-	unsigned int flags;			/* display flags */
++	enum display_flags flags;		/* display flags */
+ };
+ 
+ /*
+diff --git a/include/video/videomode.h b/include/video/videomode.h
+index f4ae6ed..8b12e60 100644
+--- a/include/video/videomode.h
++++ b/include/video/videomode.h
+@@ -29,7 +29,7 @@ struct videomode {
+ 	u32 vback_porch;
+ 	u32 vsync_len;
+ 
+-	unsigned int flags; /* display flags */
++	enum display_flags flags; /* display flags */
+ };
+ 
+ /**
 -- 
-1.7.9.5
+1.7.10.4
 

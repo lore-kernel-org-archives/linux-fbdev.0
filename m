@@ -1,249 +1,103 @@
-From: Fabio Porcedda <fabio.porcedda@gmail.com>
-Date: Thu, 14 Mar 2013 13:11:27 +0000
-Subject: [PATCH 06/10] drivers: input: use module_platform_driver_probe()
-Message-Id: <1363266691-15757-8-git-send-email-fabio.porcedda@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 27 Mar 2013 06:58:24 +0000
+Subject: [PATCHv2 4/5] videomode: remove timing_entry_index
+Message-Id: <1364367505-4366-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
-In-Reply-To: <1363266691-15757-1-git-send-email-fabio.porcedda@gmail.com>
+References: <1364367505-4366-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1364367505-4366-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-This patch converts the drivers to use the
-module_platform_driver_probe() macro which makes the code smaller and
-a bit simpler.
+Display timing's fields have minimum, typical and maximum values. These
+can be accessed by using timing_entry_index enum, and
+display_timing_get_value() function.
 
-Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: Bill Pemberton <wfp5p@virginia.edu>
-Cc: Linus Walleij <linus.walleij@linaro.org>
-Cc: David Howells <dhowells@redhat.com>
-Cc: linux-input@vger.kernel.org
+There's no real need for this extra complexity. The values can be
+accessed more easily by just using the min/typ/max fields.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 ---
- drivers/input/keyboard/amikbd.c             | 14 +-------------
- drivers/input/keyboard/davinci_keyscan.c    | 12 +-----------
- drivers/input/keyboard/nomadik-ske-keypad.c | 12 +-----------
- drivers/input/misc/twl4030-pwrbutton.c      | 13 +------------
- drivers/input/mouse/amimouse.c              | 14 +-------------
- drivers/input/serio/at32psif.c              | 13 +------------
- drivers/input/serio/q40kbd.c                | 13 +------------
- drivers/input/touchscreen/atmel-wm97xx.c    | 12 +-----------
- drivers/input/touchscreen/mc13783_ts.c      | 12 +-----------
- 9 files changed, 9 insertions(+), 106 deletions(-)
+ drivers/video/videomode.c      |   18 +++++++++---------
+ include/video/display_timing.h |   25 -------------------------
+ 2 files changed, 9 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/input/keyboard/amikbd.c b/drivers/input/keyboard/amikbd.c
-index 79172af..ba0b36f 100644
---- a/drivers/input/keyboard/amikbd.c
-+++ b/drivers/input/keyboard/amikbd.c
-@@ -260,18 +260,6 @@ static struct platform_driver amikbd_driver = {
- 	},
+diff --git a/drivers/video/videomode.c b/drivers/video/videomode.c
+index 810afff..a3d95f2 100644
+--- a/drivers/video/videomode.c
++++ b/drivers/video/videomode.c
+@@ -20,16 +20,16 @@ int videomode_from_timing(const struct display_timings *disp,
+ 	if (!dt)
+ 		return -EINVAL;
+ 
+-	vm->pixelclock = display_timing_get_value(&dt->pixelclock, TE_TYP);
+-	vm->hactive = display_timing_get_value(&dt->hactive, TE_TYP);
+-	vm->hfront_porch = display_timing_get_value(&dt->hfront_porch, TE_TYP);
+-	vm->hback_porch = display_timing_get_value(&dt->hback_porch, TE_TYP);
+-	vm->hsync_len = display_timing_get_value(&dt->hsync_len, TE_TYP);
++	vm->pixelclock = dt->pixelclock.typ;
++	vm->hactive = dt->hactive.typ;
++	vm->hfront_porch = dt->hfront_porch.typ;
++	vm->hback_porch = dt->hback_porch.typ;
++	vm->hsync_len = dt->hsync_len.typ;
+ 
+-	vm->vactive = display_timing_get_value(&dt->vactive, TE_TYP);
+-	vm->vfront_porch = display_timing_get_value(&dt->vfront_porch, TE_TYP);
+-	vm->vback_porch = display_timing_get_value(&dt->vback_porch, TE_TYP);
+-	vm->vsync_len = display_timing_get_value(&dt->vsync_len, TE_TYP);
++	vm->vactive = dt->vactive.typ;
++	vm->vfront_porch = dt->vfront_porch.typ;
++	vm->vback_porch = dt->vback_porch.typ;
++	vm->vsync_len = dt->vsync_len.typ;
+ 
+ 	vm->flags = dt->flags;
+ 
+diff --git a/include/video/display_timing.h b/include/video/display_timing.h
+index b63471d..5d0259b 100644
+--- a/include/video/display_timing.h
++++ b/include/video/display_timing.h
+@@ -39,12 +39,6 @@ struct timing_entry {
+ 	u32 max;
  };
  
--static int __init amikbd_init(void)
--{
--	return platform_driver_probe(&amikbd_driver, amikbd_probe);
--}
+-enum timing_entry_index {
+-	TE_MIN = 0,
+-	TE_TYP = 1,
+-	TE_MAX = 2,
+-};
 -
--module_init(amikbd_init);
--
--static void __exit amikbd_exit(void)
--{
--	platform_driver_unregister(&amikbd_driver);
--}
--
--module_exit(amikbd_exit);
-+module_platform_driver_probe(amikbd_driver, amikbd_probe);
- 
- MODULE_ALIAS("platform:amiga-keyboard");
-diff --git a/drivers/input/keyboard/davinci_keyscan.c b/drivers/input/keyboard/davinci_keyscan.c
-index 4e4e453..8297537 100644
---- a/drivers/input/keyboard/davinci_keyscan.c
-+++ b/drivers/input/keyboard/davinci_keyscan.c
-@@ -329,17 +329,7 @@ static struct platform_driver davinci_ks_driver = {
- 	.remove	= davinci_ks_remove,
+ /*
+  * Single "mode" entry. This describes one set of signal timings a display can
+  * have in one setting. This struct can later be converted to struct videomode
+@@ -91,25 +85,6 @@ struct display_timings {
+ 	struct display_timing **timings;
  };
  
--static int __init davinci_ks_init(void)
+-/* get value specified by index from struct timing_entry */
+-static inline u32 display_timing_get_value(const struct timing_entry *te,
+-					   enum timing_entry_index index)
 -{
--	return platform_driver_probe(&davinci_ks_driver, davinci_ks_probe);
--}
--module_init(davinci_ks_init);
--
--static void __exit davinci_ks_exit(void)
--{
--	platform_driver_unregister(&davinci_ks_driver);
--}
--module_exit(davinci_ks_exit);
-+module_platform_driver_probe(davinci_ks_driver, davinci_ks_probe);
- 
- MODULE_AUTHOR("Miguel Aguilar");
- MODULE_DESCRIPTION("Texas Instruments DaVinci Key Scan Driver");
-diff --git a/drivers/input/keyboard/nomadik-ske-keypad.c b/drivers/input/keyboard/nomadik-ske-keypad.c
-index 0e6a815..c7d505c 100644
---- a/drivers/input/keyboard/nomadik-ske-keypad.c
-+++ b/drivers/input/keyboard/nomadik-ske-keypad.c
-@@ -430,17 +430,7 @@ static struct platform_driver ske_keypad_driver = {
- 	.remove = ske_keypad_remove,
- };
- 
--static int __init ske_keypad_init(void)
--{
--	return platform_driver_probe(&ske_keypad_driver, ske_keypad_probe);
--}
--module_init(ske_keypad_init);
--
--static void __exit ske_keypad_exit(void)
--{
--	platform_driver_unregister(&ske_keypad_driver);
--}
--module_exit(ske_keypad_exit);
-+module_platform_driver_probe(ske_keypad_driver, ske_keypad_probe);
- 
- MODULE_LICENSE("GPL v2");
- MODULE_AUTHOR("Naveen Kumar <naveen.gaddipati@stericsson.com> / Sundar Iyer <sundar.iyer@stericsson.com>");
-diff --git a/drivers/input/misc/twl4030-pwrbutton.c b/drivers/input/misc/twl4030-pwrbutton.c
-index 27c2bc8..1700947 100644
---- a/drivers/input/misc/twl4030-pwrbutton.c
-+++ b/drivers/input/misc/twl4030-pwrbutton.c
-@@ -114,18 +114,7 @@ static struct platform_driver twl4030_pwrbutton_driver = {
- 	},
- };
- 
--static int __init twl4030_pwrbutton_init(void)
--{
--	return platform_driver_probe(&twl4030_pwrbutton_driver,
--			twl4030_pwrbutton_probe);
--}
--module_init(twl4030_pwrbutton_init);
--
--static void __exit twl4030_pwrbutton_exit(void)
--{
--	platform_driver_unregister(&twl4030_pwrbutton_driver);
--}
--module_exit(twl4030_pwrbutton_exit);
-+module_platform_driver_probe(twl4030_pwrbutton_driver, twl4030_pwrbutton_probe);
- 
- MODULE_ALIAS("platform:twl4030_pwrbutton");
- MODULE_DESCRIPTION("Triton2 Power Button");
-diff --git a/drivers/input/mouse/amimouse.c b/drivers/input/mouse/amimouse.c
-index 5fa9934..b55d5af 100644
---- a/drivers/input/mouse/amimouse.c
-+++ b/drivers/input/mouse/amimouse.c
-@@ -146,18 +146,6 @@ static struct platform_driver amimouse_driver = {
- 	},
- };
- 
--static int __init amimouse_init(void)
--{
--	return platform_driver_probe(&amimouse_driver, amimouse_probe);
+-	switch (index) {
+-	case TE_MIN:
+-		return te->min;
+-		break;
+-	case TE_TYP:
+-		return te->typ;
+-		break;
+-	case TE_MAX:
+-		return te->max;
+-		break;
+-	default:
+-		return te->typ;
+-	}
 -}
 -
--module_init(amimouse_init);
--
--static void __exit amimouse_exit(void)
--{
--	platform_driver_unregister(&amimouse_driver);
--}
--
--module_exit(amimouse_exit);
-+module_platform_driver_probe(amimouse_driver, amimouse_probe);
- 
- MODULE_ALIAS("platform:amiga-mouse");
-diff --git a/drivers/input/serio/at32psif.c b/drivers/input/serio/at32psif.c
-index 36e799c..190ce35 100644
---- a/drivers/input/serio/at32psif.c
-+++ b/drivers/input/serio/at32psif.c
-@@ -359,18 +359,7 @@ static struct platform_driver psif_driver = {
- 	},
- };
- 
--static int __init psif_init(void)
--{
--	return platform_driver_probe(&psif_driver, psif_probe);
--}
--
--static void __exit psif_exit(void)
--{
--	platform_driver_unregister(&psif_driver);
--}
--
--module_init(psif_init);
--module_exit(psif_exit);
-+module_platform_driver_probe(psif_driver, psif_probe);
- 
- MODULE_AUTHOR("Hans-Christian Egtvedt <egtvedt@samfundet.no>");
- MODULE_DESCRIPTION("Atmel AVR32 PSIF PS/2 driver");
-diff --git a/drivers/input/serio/q40kbd.c b/drivers/input/serio/q40kbd.c
-index 70fe542..436a343 100644
---- a/drivers/input/serio/q40kbd.c
-+++ b/drivers/input/serio/q40kbd.c
-@@ -193,15 +193,4 @@ static struct platform_driver q40kbd_driver = {
- 	.remove		= q40kbd_remove,
- };
- 
--static int __init q40kbd_init(void)
--{
--	return platform_driver_probe(&q40kbd_driver, q40kbd_probe);
--}
--
--static void __exit q40kbd_exit(void)
--{
--	platform_driver_unregister(&q40kbd_driver);
--}
--
--module_init(q40kbd_init);
--module_exit(q40kbd_exit);
-+module_platform_driver_probe(q40kbd_driver, q40kbd_probe);
-diff --git a/drivers/input/touchscreen/atmel-wm97xx.c b/drivers/input/touchscreen/atmel-wm97xx.c
-index c5c2dbb..2c1e46b 100644
---- a/drivers/input/touchscreen/atmel-wm97xx.c
-+++ b/drivers/input/touchscreen/atmel-wm97xx.c
-@@ -432,17 +432,7 @@ static struct platform_driver atmel_wm97xx_driver = {
- 	},
- };
- 
--static int __init atmel_wm97xx_init(void)
--{
--	return platform_driver_probe(&atmel_wm97xx_driver, atmel_wm97xx_probe);
--}
--module_init(atmel_wm97xx_init);
--
--static void __exit atmel_wm97xx_exit(void)
--{
--	platform_driver_unregister(&atmel_wm97xx_driver);
--}
--module_exit(atmel_wm97xx_exit);
-+module_platform_driver_probe(atmel_wm97xx_driver, atmel_wm97xx_probe);
- 
- MODULE_AUTHOR("Hans-Christian Egtvedt <egtvedt@samfundet.no>");
- MODULE_DESCRIPTION("wm97xx continuous touch driver for Atmel AT91 and AVR32");
-diff --git a/drivers/input/touchscreen/mc13783_ts.c b/drivers/input/touchscreen/mc13783_ts.c
-index 02103b6..89308fe 100644
---- a/drivers/input/touchscreen/mc13783_ts.c
-+++ b/drivers/input/touchscreen/mc13783_ts.c
-@@ -250,17 +250,7 @@ static struct platform_driver mc13783_ts_driver = {
- 	},
- };
- 
--static int __init mc13783_ts_init(void)
--{
--	return platform_driver_probe(&mc13783_ts_driver, &mc13783_ts_probe);
--}
--module_init(mc13783_ts_init);
--
--static void __exit mc13783_ts_exit(void)
--{
--	platform_driver_unregister(&mc13783_ts_driver);
--}
--module_exit(mc13783_ts_exit);
-+module_platform_driver_probe(mc13783_ts_driver, mc13783_ts_probe);
- 
- MODULE_DESCRIPTION("MC13783 input touchscreen driver");
- MODULE_AUTHOR("Sascha Hauer <s.hauer@pengutronix.de>");
+ /* get one entry from struct display_timings */
+ static inline struct display_timing *display_timings_get(const struct
+ 							 display_timings *disp,
 -- 
-1.8.1.5
+1.7.10.4
 

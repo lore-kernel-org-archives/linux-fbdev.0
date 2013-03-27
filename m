@@ -1,50 +1,35 @@
-From: Heiko =?utf-8?q?St=C3=BCbner?= <heiko@sntech.de>
-Date: Fri, 22 Mar 2013 14:14:52 +0000
-Subject: [PATCH 4/9] AUO-K190x: make memory check in check_var more flexible
-Message-Id: <201303221514.53235.heiko@sntech.de>
+From: Andrei Epure <epure.andrei@gmail.com>
+Date: Wed, 27 Mar 2013 20:12:19 +0000
+Subject: [PATCH] drivers: video: matrox: changed kmalloc+memset with kzalloc
+Message-Id: <1364415139-22303-1-git-send-email-epure.andrei@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: FlorianSchandinat@gmx.de, linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Andrei Epure <epure.andrei@gmail.com>
 
-Use only information from the new var to calculate the amount
-of memory needed.
-
-Signed-off-by: Heiko St=C3=BCbner <heiko@sntech.de>
+Signed-off-by: Andrei Epure <epure.andrei@gmail.com>
 ---
- drivers/video/auo_k190x.c |   10 +++++++---
- 1 files changed, 7 insertions(+), 3 deletions(-)
+ drivers/video/matrox/matroxfb_base.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/video/auo_k190x.c b/drivers/video/auo_k190x.c
-index 954b781..9cd9b7e 100644
---- a/drivers/video/auo_k190x.c
-+++ b/drivers/video/auo_k190x.c
-@@ -375,6 +375,9 @@ static void auok190xfb_imageblit(struct fb_info *info,
- static int auok190xfb_check_var(struct fb_var_screeninfo *var,
- 				   struct fb_info *info)
- {
-+	struct device *dev =3D info->device;
-+	int size;
-+
- 	if (info->var.xres !=3D var->xres || info->var.yres !=3D var->yres ||
- 	    info->var.xres_virtual !=3D var->xres_virtual ||
- 	    info->var.yres_virtual !=3D var->yres_virtual) {
-@@ -387,9 +390,10 @@ static int auok190xfb_check_var(struct fb_var_screenin=
-fo *var,
- 	 *  Memory limit
- 	 */
-=20
--	if ((info->fix.line_length * var->yres_virtual) > info->fix.smem_len) {
--		pr_info("%s: Memory Limit requested yres_virtual =3D %u\n",
--			 __func__, var->yres_virtual);
-+	size =3D var->xres_virtual * var->yres_virtual * var->bits_per_pixel / 8;
-+	if (size > info->fix.smem_len) {
-+		dev_err(dev, "Memory limit exceeded, requested %dK\n",
-+			size >> 10);
- 		return -ENOMEM;
+diff --git a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
+index 401a56e..2456529 100644
+--- a/drivers/video/matrox/matroxfb_base.c
++++ b/drivers/video/matrox/matroxfb_base.c
+@@ -2029,10 +2029,9 @@ static int matroxfb_probe(struct pci_dev* pdev, const struct pci_device_id* dumm
+ 		return -1;
  	}
-=20
---=20
-1.7.2.3
+ 
+-	minfo = kmalloc(sizeof(*minfo), GFP_KERNEL);
++	minfo = kzalloc(sizeof(*minfo), GFP_KERNEL);
+ 	if (!minfo)
+ 		return -1;
+-	memset(minfo, 0, sizeof(*minfo));
+ 
+ 	minfo->pcidev = pdev;
+ 	minfo->dead = 0;
+-- 
+1.7.9.5
 

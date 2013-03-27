@@ -1,95 +1,107 @@
-From: Markus Pargmann <mpa@pengutronix.de>
-Date: Tue, 05 Mar 2013 16:40:14 +0000
-Subject: Re: [PATCH 2/2] video: imxfb: Add DT support
-Message-Id: <20130305164014.GA11656@pengutronix.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 27 Mar 2013 08:45:07 +0000
+Subject: [RFC 00/14] Add DT support to OMAPDSS
+Message-Id: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1362152467-27998-1-git-send-email-mpa@pengutronix.de>
- <1362152467-27998-3-git-send-email-mpa@pengutronix.de>
- <20130304074851.GZ1906@pengutronix.de>
-In-Reply-To: <20130304074851.GZ1906@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Mon, Mar 04, 2013 at 08:48:51AM +0100, Sascha Hauer wrote:
-> On Fri, Mar 01, 2013 at 04:41:07PM +0100, Markus Pargmann wrote:
-> > Add devicetree support for imx framebuffer driver. It uses the generic
-> > display bindings and helper functions.
-> > 
-> > Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
-> > ---
-> >  .../devicetree/bindings/video/fsl,imx-fb.txt       |  30 ++++
-> >  drivers/video/imxfb.c                              | 176 +++++++++++++++++----
-> >  2 files changed, 173 insertions(+), 33 deletions(-)
-> >  create mode 100644 Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-> > 
-> > diff --git a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-> > new file mode 100644
-> > index 0000000..fd88d26
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-> > @@ -0,0 +1,30 @@
-> > +Freescale imx21 Framebuffer
-> > +
-> > +This framebuffer driver supports chips imx1 and imx21.
-> > +
-> > +Required properties:
-> > +- compatible : "fsl,<chip>-fb"
-> > +- reg : Should contain 1 register ranges(address and length)
-> > +- interrupts : One interrupt of the fb dev
-> > +
-> > +Required nodes:
-> > +- display: a display node is required to initialize the lcd panel
-> > +	This should be in the board dts. See definition in
-> > +	Documentation/devicetree/bindings/video/via,vt8500-fb.txt
-> > +- default-mode: a videomode node as specified in
-> > +	Documentation/devicetree/bindings/video/via,vt8500-fb.txt
-> 
-> Since the of_videomode helpers didn't add a binding in itself, they
-> don't have a binding description in Documentation/devicetree/.
-> It's forseeable that drivers will use this binding in the near
-> future, so we should probably add a separate Documentation file
-> for it instead of referencing some driver which already implements
-> the binding.
+Hi,
 
-I checked again, there is a binding description at
-Documentation/devicetree/bindings/video/display-timing.txt . I replaced
-the reference to the other driver. That was actually from a previous
-version of this patch.
+This is an RFC for OMAPDSS DT support. I've only added support for a few boards
+and a few DSS outputs, but they should give quite a good range of different use
+cases. If these work well, I think the rest of the outputs and panels will be
+ok too.
 
-> 
-> > +
-> > +Optional properties:
-> > +- pwmr: Address of pwmr register
-> 
-> This describes the imxfb internal PWM controller. Please drop this for
-> now or add a proper PWM driver for it.
+The purpose of this series is to get comments about the dts changes. There are
+still work to be done, like adding DT binding documentation.
 
-Okay, removed.
+Some notes:
 
-> 
-> > +- lscr1: Address of lscr1 register
-> > +- dmacr: Address of dmacr register
-> 
-> I think we shouldn't expose these to the devicetree. With platform_data
-> this hasn't been nice, but ok. With devicetree this becomes an API, so
-> we should think of something better. Can't we make up sensible values
-> during runtime?
+* DSS Submodules
 
-I checked the definitions of the platform-data. It seems that all
-definitions use the same lscr1 value. So I simply droped that property
-and introduced a default value.
-For pwmr1 exist two different values, one for eukrea boards and another
-for all other boards, so I added two defaults here. The different value
-can be selected by setting a bool property 'dmacr-eukrea'.
+The DSS submodules are children of the dss_core node. This is done because the
+submodules require the dss_core to be alive and initialized to work, even if
+the submodules are not really behind dss_core. Having the submodules as
+children will make runtime PM automatically handle the dependency to dss_core.
+I think usually a node being a child means that it's on the parent's bus, which
+is not the case here. I'm not sure if that's an issue or not.
 
-Regards,
+* ti,dsi-module-id
 
-Markus
+There's a ti,dsi-module-id property in the dsi node. The reason for this
+module-id property is that we have muxes in the dss_core that route clocks
+to/from a particular DSI module. So we need some way to index the DSI modules.
+Another option would be to have a list of DSI modules (phandles) in the
+dss_core. Both options feel a bit wrong to me, but I went for the module-id
+approach as that is already used when not using DT.
+
+* Display chains
+
+Currently omapdss driver can handle only one display device connected to one
+OMAP SoC output. This is not right in many cases, as there may be multiple
+display devices in a chain, like first an external encoder and then a panel.
+However, I tried to model this right in the dts. 
+
+So, for example, for Panda HDMI output we have the following display "entities"
+in a chain: OMAP SoC HDMI output, TPD12S015 ESD/level shifter, and HDMI
+connector. These are connected using the "video-source" property, which tells
+where the component in question gets its video data.
+
+You could ask why there's a separate node for HDMI connector. It's true it's
+not really a proper device, but we need some kind of terminator for the display
+chains. For HDMI we could as well have an embedded solution, having a chain
+like this: SoC HDMI, TPD12S015, hardwired embedded HDMI panel. So the connector
+marks the end of the chain, and acts as a panel in a sense.
+
+* DSI lanes
+
+The DSI panels contain "lanes" property, which tells how the SoCs DSI pins are
+connected to the DSI panel. I'm not sure if the panel data is the proper place
+for this, or should the data be separately for the OMAP DSI node.
+
+ Tomi
+
+Tomi Valkeinen (14):
+  ARM: OMAP: remove DSS DT hack
+  ARM: OMAP2+: add omapdss_init_of()
+  OMAPDSS: Add DT support to DSS, DISPC, DPI
+  OMAPDSS: Add DT support to DSI
+  OMAPDSS: Add DT support to HDMI
+  OMAPDSS: Taal: Add DT support
+  OMAPDSS: TFP410: Add DT support
+  OMAPDSS: panel-generic-dpi: add DT support
+  ARM: omap3.dtsi: add omapdss information
+  ARM: omap4.dtsi: add omapdss information
+  ARM: omap4-panda.dts: add display information
+  ARM: omap4-sdp.dts: add display information
+  ARM: omap3-tobi.dts: add lcd (TEST)
+  ARM: omap3-beagle.dts: add TFP410
+
+ arch/arm/boot/dts/omap3-beagle.dts               |   20 +++++
+ arch/arm/boot/dts/omap3-tobi.dts                 |   13 ++++
+ arch/arm/boot/dts/omap3.dtsi                     |   49 ++++++++++++
+ arch/arm/boot/dts/omap4-panda.dts                |   44 +++++++++++
+ arch/arm/boot/dts/omap4-sdp.dts                  |   64 ++++++++++++++++
+ arch/arm/boot/dts/omap4.dtsi                     |   71 +++++++++++++++++
+ arch/arm/mach-omap2/board-generic.c              |    9 +--
+ arch/arm/mach-omap2/common.h                     |    2 +
+ arch/arm/mach-omap2/display.c                    |   34 +++++++++
+ arch/arm/mach-omap2/dss-common.c                 |   24 ------
+ arch/arm/mach-omap2/dss-common.h                 |    2 -
+ drivers/video/omap2/displays/panel-generic-dpi.c |   47 ++++++++++++
+ drivers/video/omap2/displays/panel-taal.c        |   89 ++++++++++++++++++++++
+ drivers/video/omap2/displays/panel-tfp410.c      |   71 +++++++++++++++++
+ drivers/video/omap2/dss/dispc.c                  |    7 ++
+ drivers/video/omap2/dss/dpi.c                    |    8 ++
+ drivers/video/omap2/dss/dsi.c                    |   24 +++++-
+ drivers/video/omap2/dss/dss.c                    |    7 ++
+ drivers/video/omap2/dss/hdmi.c                   |    7 ++
+ drivers/video/omap2/dss/hdmi_panel.c             |   86 ++++++++++++++++++++-
+ 20 files changed, 641 insertions(+), 37 deletions(-)
 
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+1.7.10.4
+

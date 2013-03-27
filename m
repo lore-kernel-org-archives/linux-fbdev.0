@@ -1,158 +1,150 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Wed, 27 Mar 2013 08:46:56 +0000
-Subject: [PATCH 1/6] video: vt8500: Make wmt_ge_rops optional
-Message-Id: <1364374021-10844-2-git-send-email-linux@prisktech.co.nz>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 27 Mar 2013 08:45:13 +0000
+Subject: [RFC 06/14] OMAPDSS: Taal: Add DT support
+Message-Id: <1364373921-7599-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364374021-10844-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1364374021-10844-1-git-send-email-linux@prisktech.co.nz>
+References: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Archit Taneja <archit@ti.com>, Andy Gross <andy.gross@ti.com>, Tony Lindgren <tony@atomide.com>, Benoit Cousson <b-cousson@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-wmt_ge_rops is a seperate driver to vt8500/wm8505 framebuffer
-driver but is currently a required option. This patch makes
-accelerated raster ops optional.
+Add DT support to Taal panel driver.
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/Kconfig       |   22 ++++++++++++----------
- drivers/video/vt8500lcdfb.c |   15 +++++++++++++++
- drivers/video/wm8505fb.c    |   15 +++++++++++++++
- 3 files changed, 42 insertions(+), 10 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |   89 +++++++++++++++++++++++++++++
+ 1 file changed, 89 insertions(+)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 4c1546f..661aa54 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -212,14 +212,6 @@ config FB_SYS_FOPS
-        depends on FB
-        default n
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 01de2a9..f8771da 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -32,6 +32,8 @@
+ #include <linux/slab.h>
+ #include <linux/mutex.h>
+ #include <linux/platform_device.h>
++#include <linux/of_device.h>
++#include <linux/of_gpio.h>
  
--config FB_WMT_GE_ROPS
--	tristate
--	depends on FB
--	default n
--	---help---
--	  Include functions for accelerated rectangle filling and area
--	  copying using WonderMedia Graphics Engine operations.
--
- config FB_DEFERRED_IO
- 	bool
- 	depends on FB
-@@ -1799,7 +1791,8 @@ config FB_AU1200
- config FB_VT8500
- 	bool "VT8500 LCD Driver"
- 	depends on (FB = y) && ARM && ARCH_VT8500
--	select FB_WMT_GE_ROPS
-+	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
-+	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_IMAGEBLIT
- 	help
- 	  This is the framebuffer driver for VIA VT8500 integrated LCD
-@@ -1808,12 +1801,21 @@ config FB_VT8500
- config FB_WM8505
- 	bool "WM8505 frame buffer support"
- 	depends on (FB = y) && ARM && ARCH_VT8500
--	select FB_WMT_GE_ROPS
-+	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
-+	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_IMAGEBLIT
- 	help
- 	  This is the framebuffer driver for WonderMedia WM8505/WM8650
- 	  integrated LCD controller.
- 
-+config FB_WMT_GE_ROPS
-+	bool "VT8500/WM85xx accelerated raster ops support"
-+	depends on (FB = y) && (FB_VT8500 || FB_WM8505)
-+	default n
-+	help
-+	  This adds support for accelerated raster operations on the
-+	  VIA VT8500 and Wondermedia 85xx series SoCs.
-+
- source "drivers/video/geode/Kconfig"
- 
- config FB_HIT
-diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
-index aa2579c..d8cc1f6 100644
---- a/drivers/video/vt8500lcdfb.c
-+++ b/drivers/video/vt8500lcdfb.c
-@@ -33,7 +33,10 @@
- #include <linux/platform_data/video-vt8500lcdfb.h>
- 
- #include "vt8500lcdfb.h"
-+
-+#ifdef CONFIG_FB_WMT_GE_ROPS
- #include "wmt_ge_rops.h"
-+#endif
- 
- #ifdef CONFIG_OF
- #include <linux/of.h>
-@@ -249,12 +252,24 @@ static int vt8500lcd_blank(int blank, struct fb_info *info)
+ #include <video/omapdss.h>
+ #include <video/omap-panel-nokia-dsi.h>
+@@ -788,6 +790,81 @@ static int taal_probe_pdata(struct platform_device *pdev)
  	return 0;
  }
  
-+#ifndef CONFIG_FB_WMT_GE_ROPS
-+static int wmt_ge_sync(struct fb_info *p)
++static int taal_probe_of(struct platform_device *pdev)
 +{
++	struct device_node *node = pdev->dev.of_node;
++	struct taal_data *td = dev_get_drvdata(&pdev->dev);
++	struct property *prop;
++	struct device_node *src_node;
++	u32 lane_arr[10];
++	int gpio, len, num_pins;
++	int r, i;
++
++	src_node = of_parse_phandle(node, "video-source", 0);
++	if (!src_node) {
++		dev_err(&pdev->dev, "failed to parse video source\n");
++		return -ENODEV;
++	}
++
++	td->src = omap_dss_find_output_by_node(src_node);
++	if (!td->src) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return -ENODEV;
++	}
++
++	gpio = of_get_gpio(node, 0);
++
++	if (gpio_is_valid(gpio)) {
++		td->reset_gpio = gpio;
++	} else {
++		dev_err(&pdev->dev, "failed to parse reset gpio\n");
++		return gpio;
++	}
++
++	if (of_gpio_count(node) > 1) {
++		gpio = of_get_gpio(node, 1);
++
++		if (gpio_is_valid(gpio)) {
++			td->ext_te_gpio = gpio;
++		} else if (gpio = -ENOENT) {
++			td->ext_te_gpio = -1;
++		} else {
++			dev_err(&pdev->dev, "failed to parse TE gpio\n");
++			return gpio;
++		}
++	} else {
++		td->ext_te_gpio = -1;
++	}
++
++	prop = of_find_property(node, "lanes", &len);
++	if (prop = NULL) {
++		dev_err(&pdev->dev, "failed to find lane data\n");
++		return -EINVAL;
++	}
++
++	num_pins = len / sizeof(u32);
++
++	if (num_pins < 4 || num_pins % 2 != 0
++			|| num_pins > ARRAY_SIZE(lane_arr)) {
++		dev_err(&pdev->dev, "bad number of lanes\n");
++		return -EINVAL;
++	}
++
++	r = of_property_read_u32_array(node, "lanes", lane_arr, num_pins);
++	if (r) {
++		dev_err(&pdev->dev, "failed to read lane data\n");
++		return r;
++	}
++
++	td->pin_config.num_pins = num_pins;
++	for (i = 0; i < num_pins; ++i)
++		td->pin_config.pins[i] = (int)lane_arr[i];
++
++	td->dssdev.name = node->name;
++
 +	return 0;
 +}
-+#endif
 +
- static struct fb_ops vt8500lcd_ops = {
- 	.owner		= THIS_MODULE,
- 	.fb_set_par	= vt8500lcd_set_par,
- 	.fb_setcolreg	= vt8500lcd_setcolreg,
-+#ifdef CONFIG_FB_WMT_GE_ROPS
- 	.fb_fillrect	= wmt_ge_fillrect,
- 	.fb_copyarea	= wmt_ge_copyarea,
-+#else
-+	.fb_fillrect	= sys_fillrect,
-+	.fb_copyarea	= sys_copyarea,
-+#endif
- 	.fb_imageblit	= sys_imageblit,
- 	.fb_sync	= wmt_ge_sync,
- 	.fb_ioctl	= vt8500lcd_ioctl,
-diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
-index 4dd0580..db49803 100644
---- a/drivers/video/wm8505fb.c
-+++ b/drivers/video/wm8505fb.c
-@@ -35,7 +35,10 @@
- #include <linux/platform_data/video-vt8500lcdfb.h>
+ static int taal_probe(struct platform_device *pdev)
+ {
+ 	const struct nokia_dsi_panel_data *pdata = dev_get_platdata(&pdev->dev);
+@@ -813,6 +890,12 @@ static int taal_probe(struct platform_device *pdev)
+ 			dev_err(&pdev->dev, "failed to read platform data\n");
+ 			return r;
+ 		}
++	} else if (pdev->dev.of_node) {
++		r = taal_probe_of(pdev);
++		if (r) {
++			dev_err(&pdev->dev, "failed to parse OF data\n");
++			return r;
++		}
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -1576,12 +1659,18 @@ static struct omap_dss_driver taal_driver = {
+ 	.memory_read	= taal_memory_read,
+ };
  
- #include "wm8505fb_regs.h"
++static const struct of_device_id taal_of_match[] = {
++	{ .compatible = "tpo,taal", },
++	{},
++};
 +
-+#ifdef CONFIG_FB_WMT_GE_ROPS
- #include "wmt_ge_rops.h"
-+#endif
+ static struct platform_driver taal_platform_driver = {
+ 	.probe	= taal_probe,
+ 	.remove	= __exit_p(taal_remove),
+ 	.driver	= {
+ 		.name	= "taal",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = taal_of_match,
+ 	},
+ };
  
- #define DRIVER_NAME "wm8505-fb"
- 
-@@ -248,12 +251,24 @@ static int wm8505fb_blank(int blank, struct fb_info *info)
- 	return 0;
- }
- 
-+#ifndef CONFIG_FB_WMT_GE_ROPS
-+static int wmt_ge_sync(struct fb_info *p)
-+{
-+	return 0;
-+}
-+#endif
-+
- static struct fb_ops wm8505fb_ops = {
- 	.owner		= THIS_MODULE,
- 	.fb_set_par	= wm8505fb_set_par,
- 	.fb_setcolreg	= wm8505fb_setcolreg,
-+#ifdef CONFIG_FB_WMT_GE_ROPS
- 	.fb_fillrect	= wmt_ge_fillrect,
- 	.fb_copyarea	= wmt_ge_copyarea,
-+#else
-+	.fb_fillrect	= sys_fillrect,
-+	.fb_copyarea	= sys_copyarea,
-+#endif
- 	.fb_imageblit	= sys_imageblit,
- 	.fb_sync	= wmt_ge_sync,
- 	.fb_pan_display	= wm8505fb_pan_display,
 -- 
-1.7.9.5
+1.7.10.4
 

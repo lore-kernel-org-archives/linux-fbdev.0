@@ -1,35 +1,60 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Fri, 22 Mar 2013 16:15:46 +0000
-Subject: [PATCH v3 0/3] DT support for AS3711 MFD, regulator and backlight drivers
-Message-Id: <1363968949-12151-1-git-send-email-g.liakhovetski@gmx.de>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Wed, 27 Mar 2013 08:46:58 +0000
+Subject: [PATCH 3/6] video: vt8500: Correct descriptions in video/Kconfig
+Message-Id: <1364374021-10844-4-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1364374021-10844-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1364374021-10844-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Guennadi Liakhovetski <g.liakhovetski-Mmb7MZpHnFY@public.gmane.org>
+To: linux-arm-kernel@lists.infradead.org
 
-This is just a split of the previous version of this patch(-set), no code 
-changes.
+This patch corrects the descriptions for the VIA VT8500 and
+Wondermedia WM8xxx-series framebuffer drivers to correctly reflect
+which hardware they support.
 
-Guennadi Liakhovetski (3):
-  mfd: as3711: add OF support
-  regulator: as3711: add OF support
-  backlight: as3711: add OF support
-
- Documentation/devicetree/bindings/mfd/as3711.txt |   73 +++++++++++++
- drivers/mfd/as3711.c                             |   27 ++++-
- drivers/regulator/as3711-regulator.c             |   74 +++++++++++++-
- drivers/video/backlight/as3711_bl.c              |  118 +++++++++++++++++++++-
- 4 files changed, 284 insertions(+), 8 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/mfd/as3711.txt
-
--- 
-1.7.2.5
-
-Thanks
-Guennadi
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+ drivers/video/Kconfig |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 661aa54..ad762ed 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1789,7 +1789,7 @@ config FB_AU1200
+ 	  option au1200fb:panel=<name>.
+ 
+ config FB_VT8500
+-	bool "VT8500 LCD Driver"
++	bool "VIA VT8500 framebuffer support"
+ 	depends on (FB = y) && ARM && ARCH_VT8500
+ 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
+@@ -1799,17 +1799,18 @@ config FB_VT8500
+ 	  controller.
+ 
+ config FB_WM8505
+-	bool "WM8505 frame buffer support"
++	bool "Wondermedia WM8xxx-series frame buffer support"
+ 	depends on (FB = y) && ARM && ARCH_VT8500
+ 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_IMAGEBLIT
+ 	help
+-	  This is the framebuffer driver for WonderMedia WM8505/WM8650
+-	  integrated LCD controller.
++	  This is the framebuffer driver for WonderMedia WM8xxx-series
++	  integrated LCD controller. This driver covers the WM8505, WM8650
++	  and WM8850 SoCs.
+ 
+ config FB_WMT_GE_ROPS
+-	bool "VT8500/WM85xx accelerated raster ops support"
++	bool "VT8500/WM8xxx accelerated raster ops support"
+ 	depends on (FB = y) && (FB_VT8500 || FB_WM8505)
+ 	default n
+ 	help
+-- 
+1.7.9.5
+

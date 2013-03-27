@@ -1,72 +1,101 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 26 Mar 2013 13:57:24 +0000
-Subject: [PATCH v2 7/8] OMAPDSS: DISPC: Configure doublestride for NV12 when using 2D Tiler buffers
-Message-Id: <1364305525-28496-8-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 27 Mar 2013 08:45:08 +0000
+Subject: [RFC 01/14] ARM: OMAP: remove DSS DT hack
+Message-Id: <1364373921-7599-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1362493070-17706-1-git-send-email-archit@ti.com>
- <1364305525-28496-1-git-send-email-archit@ti.com>
-In-Reply-To: <1364305525-28496-1-git-send-email-archit@ti.com>
+References: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, robdclark@gmail.com, andy.gross@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Archit Taneja <archit@ti.com>, Andy Gross <andy.gross@ti.com>, Tony Lindgren <tony@atomide.com>, Benoit Cousson <b-cousson@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-When using a DISPC video pipeline to a fetch a NV12 buffer in a 2D container, we
-need to set set a doublestride bit in the video pipe's ATTRIBUTES register. This
-is needed because the stride for the UV plane(using a 16 bit Tiler container) is
-double the stride for the Y plane(using a 8 bit Tiler container) for the 0 or
-180 degree views. The ROW_INC register is meant for the Y plane, and the HW will
-calculate the row increment needed for the UV plane by using double the stride
-value based on whether this bit is set or not.
+As a temporary solution to enable DSS for selected boards when booting
+with DT, a hack was added to board-generic.c in
+63d5fc0c2f748e20f38a0a0ec1c8494bddf5c288 (OMAP: board-generic: enable
+DSS for panda & sdp boards).
 
-Set the bit when we are using a 2D Tiler buffer and when rotation is 0 or 180
-degrees. The stride value is the same for 90 and 270 degree Tiler views, hence
-the bit shouldn't be set.
+We're now adding proper DT support, so the hack can be removed.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ arch/arm/mach-omap2/board-generic.c |    8 --------
+ arch/arm/mach-omap2/dss-common.c    |   24 ------------------------
+ arch/arm/mach-omap2/dss-common.h    |    2 --
+ 3 files changed, 34 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 73a730a..ddbf031 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -1588,6 +1588,7 @@ static void dispc_ovl_set_scaling(enum omap_plane plane,
+diff --git a/arch/arm/mach-omap2/board-generic.c b/arch/arm/mach-omap2/board-generic.c
+index e54a480..a61544b 100644
+--- a/arch/arm/mach-omap2/board-generic.c
++++ b/arch/arm/mach-omap2/board-generic.c
+@@ -41,14 +41,6 @@ static void __init omap_generic_init(void)
+ 
+ 	of_platform_populate(NULL, omap_dt_match_table, NULL, NULL);
+ 
+-	/*
+-	 * HACK: call display setup code for selected boards to enable omapdss.
+-	 * This will be removed when omapdss supports DT.
+-	 */
+-	if (of_machine_is_compatible("ti,omap4-panda"))
+-		omap4_panda_display_init_of();
+-	else if (of_machine_is_compatible("ti,omap4-sdp"))
+-		omap_4430sdp_display_init_of();
  }
  
- static void dispc_ovl_set_rotation_attrs(enum omap_plane plane, u8 rotation,
-+		enum omap_dss_rotation_type rotation_type,
- 		bool mirroring, enum omap_color_mode color_mode)
- {
- 	bool row_repeat = false;
-@@ -1638,6 +1639,15 @@ static void dispc_ovl_set_rotation_attrs(enum omap_plane plane, u8 rotation,
- 	if (dss_has_feature(FEAT_ROWREPEATENABLE))
- 		REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane),
- 			row_repeat ? 1 : 0, 18, 18);
-+
-+	if (color_mode = OMAP_DSS_COLOR_NV12) {
-+		bool doublestride = (rotation_type = OMAP_DSS_ROT_TILER) &&
-+					(rotation = OMAP_DSS_ROT_0 ||
-+					rotation = OMAP_DSS_ROT_180);
-+		/* DOUBLESTRIDE */
-+		REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), doublestride, 22, 22);
-+	}
-+
+ #ifdef CONFIG_SOC_OMAP2420
+diff --git a/arch/arm/mach-omap2/dss-common.c b/arch/arm/mach-omap2/dss-common.c
+index a10c56b..78e409a 100644
+--- a/arch/arm/mach-omap2/dss-common.c
++++ b/arch/arm/mach-omap2/dss-common.c
+@@ -93,13 +93,6 @@ void __init omap4_panda_display_init(void)
+ 	omap_mux_init_gpio(HDMI_GPIO_HPD, OMAP_PIN_INPUT_PULLDOWN);
  }
  
- static int color_mode_to_bpp(enum omap_color_mode color_mode)
-@@ -2516,7 +2526,8 @@ static int dispc_ovl_setup_common(enum omap_plane plane,
- 		dispc_ovl_set_vid_color_conv(plane, cconv);
- 	}
+-void __init omap4_panda_display_init_of(void)
+-{
+-	omap_display_init(&omap4_panda_dss_data);
+-	platform_device_register(&omap4_panda_tfp410_device);
+-	platform_device_register(&omap4_panda_hdmi_device);
+-}
+-
  
--	dispc_ovl_set_rotation_attrs(plane, rotation, mirror, color_mode);
-+	dispc_ovl_set_rotation_attrs(plane, rotation, rotation_type, mirror,
-+			color_mode);
+ /* OMAP4 Blaze display data */
  
- 	dispc_ovl_set_zorder(plane, caps, zorder);
- 	dispc_ovl_set_pre_mult_alpha(plane, caps, pre_mult_alpha);
+@@ -242,20 +235,3 @@ void __init omap_4430sdp_display_init(void)
+ 	omap_mux_init_gpio(HDMI_GPIO_CT_CP_HPD, OMAP_PIN_OUTPUT);
+ 	omap_mux_init_gpio(HDMI_GPIO_HPD, OMAP_PIN_INPUT_PULLDOWN);
+ }
+-
+-void __init omap_4430sdp_display_init_of(void)
+-{
+-	int r;
+-
+-	/* Enable LCD2 by default (instead of Pico DLP) */
+-	r = gpio_request_one(DISPLAY_SEL_GPIO, GPIOF_OUT_INIT_HIGH,
+-			"display_sel");
+-	if (r)
+-		pr_err("%s: Could not get display_sel GPIO\n", __func__);
+-
+-	sdp4430_picodlp_init();
+-	omap_display_init(&sdp4430_dss_data);
+-	platform_device_register(&sdp4430_hdmi_device);
+-	platform_device_register(&sdp4430_lcd1_device);
+-	platform_device_register(&sdp4430_lcd2_device);
+-}
+diff --git a/arch/arm/mach-omap2/dss-common.h b/arch/arm/mach-omap2/dss-common.h
+index 915f6ff..611b341 100644
+--- a/arch/arm/mach-omap2/dss-common.h
++++ b/arch/arm/mach-omap2/dss-common.h
+@@ -7,8 +7,6 @@
+  */
+ 
+ void __init omap4_panda_display_init(void);
+-void __init omap4_panda_display_init_of(void);
+ void __init omap_4430sdp_display_init(void);
+-void __init omap_4430sdp_display_init_of(void);
+ 
+ #endif
 -- 
 1.7.10.4
 

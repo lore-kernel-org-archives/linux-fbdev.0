@@ -1,38 +1,40 @@
-From: Archit Taneja <archit@ti.com>
-Date: Mon, 11 Mar 2013 06:17:24 +0000
-Subject: Re: [PATCH 18/20] OMAPDSS: DSI: delay dispc initialization
-Message-Id: <513D7424.1000609@ti.com>
+From: Andrei Epure <epure.andrei@gmail.com>
+Date: Wed, 27 Mar 2013 20:28:01 +0000
+Subject: [PATCH] video: exynos: Convert to devm_ioremap_resource()
+Message-Id: <1364416081-24113-1-git-send-email-epure.andrei@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com> <1362743515-10152-19-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1362743515-10152-19-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: inki.dae@samsung.com, dh09.lee@samsung.com, kyungmin.park@samsung.com, FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Andrei Epure <epure.andrei@gmail.com>
 
-On Friday 08 March 2013 05:21 PM, Tomi Valkeinen wrote:
-> We currently setup both DSI and DISPC related things when the DSI bus is
-> enabled. There's no need for DISPC related thing at that point, though,
-> but only later when the video output is enabled.
->
-> To make it possible to use the DSI bus before DISPC overlay manager is
-> selected, this patch moves DSI's DISPC initialization to
-> dsi_enable_video_output(), from omapdss_dsi_display_enable(). We also
-> move the selection of DISPC's LCD clock to dsi_enable_video_output.
->
-> This way there are no DISPC dependencies until the video output is
-> enabled.
+The new devm_ioremap_resource() provides its own error messages.
+Patch found using coccinelle.
 
-This is a good patch. I hope CDF also makes sure the Display controller 
-and DSI bus are made more independent in this manner.
+Signed-off-by: Andrei Epure <epure.andrei@gmail.com>
+---
+ drivers/video/exynos/exynos_mipi_dsi.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-One thing which we should eventually add is to ensure that 
-omap_dsi_update() for command mode panels is called only after 
-dsi_enable_video_output() is called. I think we manage this in our panel 
-driver, but maybe some sort of check could help there.
-
-<snip>
-
-Archit
+diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
+index fac7df6..dd5e5e9 100644
+--- a/drivers/video/exynos/exynos_mipi_dsi.c
++++ b/drivers/video/exynos/exynos_mipi_dsi.c
+@@ -384,10 +384,9 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 
+-	dsim->reg_base = devm_request_and_ioremap(&pdev->dev, res);
+-	if (!dsim->reg_base) {
+-		dev_err(&pdev->dev, "failed to remap io region\n");
+-		ret = -ENOMEM;
++	dsim->reg_base = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(dsim->reg_base)) {
++		ret = PTR_ERR(dsim->reg_base);
+ 		goto error;
+ 	}
+ 
+-- 
+1.7.9.5
 

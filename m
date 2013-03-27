@@ -1,152 +1,196 @@
-From: Heiko =?utf-8?q?St=C3=BCbner?= <heiko@sntech.de>
-Date: Fri, 22 Mar 2013 14:13:02 +0000
-Subject: [PATCH 1/9] AUO-K190x: Use correct line length
-Message-Id: <201303221513.02390.heiko@sntech.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 27 Mar 2013 06:58:22 +0000
+Subject: [PATCHv2 2/5] videomode: combine videomode dmt_flags and data_flags
+Message-Id: <1364367505-4366-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1364367505-4366-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1364367505-4366-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Steffen Trumtrar <s.trumtrar@pengutronix.de>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-Previously all functions that used the line length used xres directly,
-thus hardcoding a 8bits per pixel value.
+Both videomode and display_timing contain flags describing the modes.
+These are stored in dmt_flags and data_flags. There's no need to
+separate these flags, and having separate fields just makes the flags
+more difficult to use.
 
-This patch calculates the correct line length according to the actual
-bits per pixel value and changes all line length users to use the
-calculated line length value.
+This patch combines the fields and renames VESA_DMT_* flags to
+DISPLAY_FLAGS_*.
 
-Signed-off-by: Heiko St=C3=BCbner <heiko@sntech.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 ---
- drivers/video/auo_k1900fb.c |    5 +++--
- drivers/video/auo_k1901fb.c |    5 +++--
- drivers/video/auo_k190x.c   |   15 ++++++++-------
- 3 files changed, 14 insertions(+), 11 deletions(-)
+ drivers/gpu/drm/drm_modes.c       |   12 ++++++------
+ drivers/video/fbmon.c             |    8 ++++----
+ drivers/video/of_display_timing.c |   19 +++++++++----------
+ drivers/video/videomode.c         |    3 +--
+ include/video/display_timing.h    |   26 +++++++++++---------------
+ include/video/videomode.h         |    3 +--
+ 6 files changed, 32 insertions(+), 39 deletions(-)
 
-diff --git a/drivers/video/auo_k1900fb.c b/drivers/video/auo_k1900fb.c
-index c36cf96..b02fab5d 100644
---- a/drivers/video/auo_k1900fb.c
-+++ b/drivers/video/auo_k1900fb.c
-@@ -82,6 +82,7 @@ static void auok1900_update_region(struct auok190xfb_par =
-*par, int mode,
- 	struct device *dev =3D par->info->device;
- 	unsigned char *buf =3D (unsigned char *)par->info->screen_base;
- 	int xres =3D par->info->var.xres;
-+	int line_length =3D par->info->fix.line_length;
- 	u16 args[4];
-=20
- 	pm_runtime_get_sync(dev);
-@@ -100,9 +101,9 @@ static void auok1900_update_region(struct auok190xfb_pa=
-r *par, int mode,
- 	args[1] =3D y1 + 1;
- 	args[2] =3D xres;
- 	args[3] =3D y2 - y1;
--	buf +=3D y1 * xres;
-+	buf +=3D y1 * line_length;
- 	auok190x_send_cmdargs_pixels(par, AUOK1900_CMD_PARTIALDISP, 4, args,
--				     ((y2 - y1) * xres)/2, (u16 *) buf);
-+				     ((y2 - y1) * line_length)/2, (u16 *) buf);
- 	auok190x_send_command(par, AUOK190X_CMD_DATA_STOP);
-=20
- 	par->update_cnt++;
-diff --git a/drivers/video/auo_k1901fb.c b/drivers/video/auo_k1901fb.c
-index 1c054c1..ece99b8 100644
---- a/drivers/video/auo_k1901fb.c
-+++ b/drivers/video/auo_k1901fb.c
-@@ -121,6 +121,7 @@ static void auok1901_update_region(struct auok190xfb_pa=
-r *par, int mode,
- 	struct device *dev =3D par->info->device;
- 	unsigned char *buf =3D (unsigned char *)par->info->screen_base;
- 	int xres =3D par->info->var.xres;
-+	int line_length =3D par->info->fix.line_length;
- 	u16 args[5];
-=20
- 	pm_runtime_get_sync(dev);
-@@ -139,9 +140,9 @@ static void auok1901_update_region(struct auok190xfb_pa=
-r *par, int mode,
- 	args[1] =3D y1 + 1;
- 	args[2] =3D xres;
- 	args[3] =3D y2 - y1;
--	buf +=3D y1 * xres;
-+	buf +=3D y1 * line_length;
- 	auok190x_send_cmdargs_pixels_nowait(par, AUOK1901_CMD_DMA_START, 4,
--					    args, ((y2 - y1) * xres)/2,
-+					    args, ((y2 - y1) * line_length)/2,
- 					    (u16 *) buf);
- 	auok190x_send_command_nowait(par, AUOK190X_CMD_DATA_STOP);
-=20
-diff --git a/drivers/video/auo_k190x.c b/drivers/video/auo_k190x.c
-index 77da6a2..6c2879d 100644
---- a/drivers/video/auo_k190x.c
-+++ b/drivers/video/auo_k190x.c
-@@ -223,8 +223,8 @@ static void auok190xfb_dpy_deferred_io(struct fb_info *=
-info,
- {
- 	struct fb_deferred_io *fbdefio =3D info->fbdefio;
- 	struct auok190xfb_par *par =3D info->par;
-+	u16 line_length =3D info->fix.line_length;
- 	u16 yres =3D info->var.yres;
--	u16 xres =3D info->var.xres;
- 	u16 y1 =3D 0, h =3D 0;
- 	int prev_index =3D -1;
- 	struct page *cur;
-@@ -253,7 +253,7 @@ static void auok190xfb_dpy_deferred_io(struct fb_info *=
-info,
- 	}
-=20
- 	/* height increment is fixed per page */
--	h_inc =3D DIV_ROUND_UP(PAGE_SIZE , xres);
-+	h_inc =3D DIV_ROUND_UP(PAGE_SIZE , line_length);
-=20
- 	/* calculate number of pages from pixel height */
- 	threshold =3D par->consecutive_threshold / h_inc;
-@@ -264,7 +264,7 @@ static void auok190xfb_dpy_deferred_io(struct fb_info *=
-info,
- 	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
- 		if (prev_index < 0) {
- 			/* just starting so assign first page */
--			y1 =3D (cur->index << PAGE_SHIFT) / xres;
-+			y1 =3D (cur->index << PAGE_SHIFT) / line_length;
- 			h =3D h_inc;
- 		} else if ((cur->index - prev_index) <=3D threshold) {
- 			/* page is within our threshold for single updates */
-@@ -274,7 +274,7 @@ static void auok190xfb_dpy_deferred_io(struct fb_info *=
-info,
- 			par->update_partial(par, y1, y1 + h);
-=20
- 			/* start over with our non consecutive page */
--			y1 =3D (cur->index << PAGE_SHIFT) / xres;
-+			y1 =3D (cur->index << PAGE_SHIFT) / line_length;
- 			h =3D h_inc;
- 		}
- 		prev_index =3D cur->index;
-@@ -895,13 +895,13 @@ int __devinit auok190x_common_probe(struct platform_d=
-evice *pdev,
- 		info->var.yres =3D panel->w;
- 		info->var.xres_virtual =3D panel->h;
- 		info->var.yres_virtual =3D panel->w;
--		info->fix.line_length =3D panel->h;
-+		info->fix.line_length =3D panel->h * info->var.bits_per_pixel / 8;
- 	} else {
- 		info->var.xres =3D panel->w;
- 		info->var.yres =3D panel->h;
- 		info->var.xres_virtual =3D panel->w;
- 		info->var.yres_virtual =3D panel->h;
--		info->fix.line_length =3D panel->w;
-+		info->fix.line_length =3D panel->w * info->var.bits_per_pixel / 8;
- 	}
-=20
- 	par->resolution =3D board->resolution;
-@@ -909,7 +909,8 @@ int __devinit auok190x_common_probe(struct platform_dev=
-ice *pdev,
-=20
- 	/* videomemory handling */
-=20
--	videomemorysize =3D roundup((panel->w * panel->h), PAGE_SIZE);
-+	videomemorysize =3D roundup((panel->w * panel->h) *
-+				info->var.bits_per_pixel / 8, PAGE_SIZE);
- 	videomemory =3D vmalloc(videomemorysize);
- 	if (!videomemory) {
- 		ret =3D -ENOMEM;
---=20
-1.7.2.3
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 0698c0e..f83f071 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -523,17 +523,17 @@ int drm_display_mode_from_videomode(const struct videomode *vm,
+ 	dmode->clock = vm->pixelclock / 1000;
+ 
+ 	dmode->flags = 0;
+-	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
++	if (vm->flags & DISPLAY_FLAGS_HSYNC_HIGH)
+ 		dmode->flags |= DRM_MODE_FLAG_PHSYNC;
+-	else if (vm->dmt_flags & VESA_DMT_HSYNC_LOW)
++	else if (vm->flags & DISPLAY_FLAGS_HSYNC_LOW)
+ 		dmode->flags |= DRM_MODE_FLAG_NHSYNC;
+-	if (vm->dmt_flags & VESA_DMT_VSYNC_HIGH)
++	if (vm->flags & DISPLAY_FLAGS_VSYNC_HIGH)
+ 		dmode->flags |= DRM_MODE_FLAG_PVSYNC;
+-	else if (vm->dmt_flags & VESA_DMT_VSYNC_LOW)
++	else if (vm->flags & DISPLAY_FLAGS_VSYNC_LOW)
+ 		dmode->flags |= DRM_MODE_FLAG_NVSYNC;
+-	if (vm->data_flags & DISPLAY_FLAGS_INTERLACED)
++	if (vm->flags & DISPLAY_FLAGS_INTERLACED)
+ 		dmode->flags |= DRM_MODE_FLAG_INTERLACE;
+-	if (vm->data_flags & DISPLAY_FLAGS_DOUBLESCAN)
++	if (vm->flags & DISPLAY_FLAGS_DOUBLESCAN)
+ 		dmode->flags |= DRM_MODE_FLAG_DBLSCAN;
+ 	drm_mode_set_name(dmode);
+ 
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 368cedf..e5cc2fd 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -1398,13 +1398,13 @@ int fb_videomode_from_videomode(const struct videomode *vm,
+ 
+ 	fbmode->sync = 0;
+ 	fbmode->vmode = 0;
+-	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
++	if (vm->flags & DISPLAY_FLAGS_HSYNC_HIGH)
+ 		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
+-	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
++	if (vm->flags & DISPLAY_FLAGS_HSYNC_HIGH)
+ 		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
+-	if (vm->data_flags & DISPLAY_FLAGS_INTERLACED)
++	if (vm->flags & DISPLAY_FLAGS_INTERLACED)
+ 		fbmode->vmode |= FB_VMODE_INTERLACED;
+-	if (vm->data_flags & DISPLAY_FLAGS_DOUBLESCAN)
++	if (vm->flags & DISPLAY_FLAGS_DOUBLESCAN)
+ 		fbmode->vmode |= FB_VMODE_DOUBLE;
+ 	fbmode->flag = 0;
+ 
+diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
+index 13ecd98..56009bc 100644
+--- a/drivers/video/of_display_timing.c
++++ b/drivers/video/of_display_timing.c
+@@ -79,25 +79,24 @@ static struct display_timing *of_get_display_timing(struct device_node *np)
+ 	ret |= parse_timing_property(np, "vsync-len", &dt->vsync_len);
+ 	ret |= parse_timing_property(np, "clock-frequency", &dt->pixelclock);
+ 
+-	dt->dmt_flags = 0;
+-	dt->data_flags = 0;
++	dt->flags = 0;
+ 	if (!of_property_read_u32(np, "vsync-active", &val))
+-		dt->dmt_flags |= val ? VESA_DMT_VSYNC_HIGH :
+-				VESA_DMT_VSYNC_LOW;
++		dt->flags |= val ? DISPLAY_FLAGS_VSYNC_HIGH :
++				DISPLAY_FLAGS_VSYNC_LOW;
+ 	if (!of_property_read_u32(np, "hsync-active", &val))
+-		dt->dmt_flags |= val ? VESA_DMT_HSYNC_HIGH :
+-				VESA_DMT_HSYNC_LOW;
++		dt->flags |= val ? DISPLAY_FLAGS_HSYNC_HIGH :
++				DISPLAY_FLAGS_HSYNC_LOW;
+ 	if (!of_property_read_u32(np, "de-active", &val))
+-		dt->data_flags |= val ? DISPLAY_FLAGS_DE_HIGH :
++		dt->flags |= val ? DISPLAY_FLAGS_DE_HIGH :
+ 				DISPLAY_FLAGS_DE_LOW;
+ 	if (!of_property_read_u32(np, "pixelclk-active", &val))
+-		dt->data_flags |= val ? DISPLAY_FLAGS_PIXDATA_POSEDGE :
++		dt->flags |= val ? DISPLAY_FLAGS_PIXDATA_POSEDGE :
+ 				DISPLAY_FLAGS_PIXDATA_NEGEDGE;
+ 
+ 	if (of_property_read_bool(np, "interlaced"))
+-		dt->data_flags |= DISPLAY_FLAGS_INTERLACED;
++		dt->flags |= DISPLAY_FLAGS_INTERLACED;
+ 	if (of_property_read_bool(np, "doublescan"))
+-		dt->data_flags |= DISPLAY_FLAGS_DOUBLESCAN;
++		dt->flags |= DISPLAY_FLAGS_DOUBLESCAN;
+ 
+ 	if (ret) {
+ 		pr_err("%s: error reading timing properties\n",
+diff --git a/drivers/video/videomode.c b/drivers/video/videomode.c
+index 21c47a2..810afff 100644
+--- a/drivers/video/videomode.c
++++ b/drivers/video/videomode.c
+@@ -31,8 +31,7 @@ int videomode_from_timing(const struct display_timings *disp,
+ 	vm->vback_porch = display_timing_get_value(&dt->vback_porch, TE_TYP);
+ 	vm->vsync_len = display_timing_get_value(&dt->vsync_len, TE_TYP);
+ 
+-	vm->dmt_flags = dt->dmt_flags;
+-	vm->data_flags = dt->data_flags;
++	vm->flags = dt->flags;
+ 
+ 	return 0;
+ }
+diff --git a/include/video/display_timing.h b/include/video/display_timing.h
+index 71e9a38..a8a4be5 100644
+--- a/include/video/display_timing.h
++++ b/include/video/display_timing.h
+@@ -12,19 +12,16 @@
+ #include <linux/bitops.h>
+ #include <linux/types.h>
+ 
+-/* VESA display monitor timing parameters */
+-#define VESA_DMT_HSYNC_LOW		BIT(0)
+-#define VESA_DMT_HSYNC_HIGH		BIT(1)
+-#define VESA_DMT_VSYNC_LOW		BIT(2)
+-#define VESA_DMT_VSYNC_HIGH		BIT(3)
+-
+-/* display specific flags */
+-#define DISPLAY_FLAGS_DE_LOW		BIT(0)	/* data enable flag */
+-#define DISPLAY_FLAGS_DE_HIGH		BIT(1)
+-#define DISPLAY_FLAGS_PIXDATA_POSEDGE	BIT(2)	/* drive data on pos. edge */
+-#define DISPLAY_FLAGS_PIXDATA_NEGEDGE	BIT(3)	/* drive data on neg. edge */
+-#define DISPLAY_FLAGS_INTERLACED	BIT(4)
+-#define DISPLAY_FLAGS_DOUBLESCAN	BIT(5)
++#define DISPLAY_FLAGS_HSYNC_LOW		BIT(0)
++#define DISPLAY_FLAGS_HSYNC_HIGH	BIT(1)
++#define DISPLAY_FLAGS_VSYNC_LOW		BIT(2)
++#define DISPLAY_FLAGS_VSYNC_HIGH	BIT(3)
++#define DISPLAY_FLAGS_DE_LOW		BIT(4)	/* data enable flag */
++#define DISPLAY_FLAGS_DE_HIGH		BIT(5)
++#define DISPLAY_FLAGS_PIXDATA_POSEDGE	BIT(6)	/* drive data on pos. edge */
++#define DISPLAY_FLAGS_PIXDATA_NEGEDGE	BIT(7)	/* drive data on neg. edge */
++#define DISPLAY_FLAGS_INTERLACED	BIT(8)
++#define DISPLAY_FLAGS_DOUBLESCAN	BIT(9)
+ 
+ /*
+  * A single signal can be specified via a range of minimal and maximal values
+@@ -72,8 +69,7 @@ struct display_timing {
+ 	struct timing_entry vback_porch;	/* ver. back porch */
+ 	struct timing_entry vsync_len;		/* ver. sync len */
+ 
+-	unsigned int dmt_flags;			/* VESA DMT flags */
+-	unsigned int data_flags;		/* video data flags */
++	unsigned int flags;			/* display flags */
+ };
+ 
+ /*
+diff --git a/include/video/videomode.h b/include/video/videomode.h
+index a421562..f4ae6ed 100644
+--- a/include/video/videomode.h
++++ b/include/video/videomode.h
+@@ -29,8 +29,7 @@ struct videomode {
+ 	u32 vback_porch;
+ 	u32 vsync_len;
+ 
+-	unsigned int dmt_flags;	/* VESA DMT flags */
+-	unsigned int data_flags; /* video data flags */
++	unsigned int flags; /* display flags */
+ };
+ 
+ /**
+-- 
+1.7.10.4
 

@@ -1,112 +1,158 @@
-From: Paul Bolle <pebolle@tiscali.nl>
-Date: Mon, 25 Mar 2013 21:27:19 +0000
-Subject: [PATCH] MIPS: remove obsolete Kconfig macros
-Message-Id: <1364246839.1390.299.camel@x61.thuisdomein>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Wed, 27 Mar 2013 08:46:56 +0000
+Subject: [PATCH 1/6] video: vt8500: Make wmt_ge_rops optional
+Message-Id: <1364374021-10844-2-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1364374021-10844-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1364374021-10844-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ralf Baechle <ralf@linux-mips.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-mips@linux-mips.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-The support for PB1100, PB1500, and PB1550 got merged into the code for
-DB1000 and DB1550 code in v3.7. When that was done the three related
-Kconfig symbols were dropped. But not all related Kconfig macros were
-removed. Do so now.
+wmt_ge_rops is a seperate driver to vt8500/wm8505 framebuffer
+driver but is currently a required option. This patch makes
+accelerated raster ops optional.
 
-Note that the PB1100 code in the Au1100 LCD driver is removed entirely
-and not converted to use its current Kconfig macro. That is done because
-the macros it uses (PB1100_G_CONTROL, PB1100_G_CONTROL_BL, and
-PB1100_G_CONTROL_VDD) are never defined. Actually only one of these was
-ever defined (PB1100_G_CONTROL) but that define was removed in v2.6.34.
-So, as far as I can tell, this code could have never compiled.
-
-Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
 ---
-None of this is tested.
+ drivers/video/Kconfig       |   22 ++++++++++++----------
+ drivers/video/vt8500lcdfb.c |   15 +++++++++++++++
+ drivers/video/wm8505fb.c    |   15 +++++++++++++++
+ 3 files changed, 42 insertions(+), 10 deletions(-)
 
- arch/mips/alchemy/Platform | 22 ++--------------------
- drivers/video/au1100fb.c   | 22 ++++------------------
- 2 files changed, 6 insertions(+), 38 deletions(-)
-
-diff --git a/arch/mips/alchemy/Platform b/arch/mips/alchemy/Platform
-index fa1bdd1..b3afcdd 100644
---- a/arch/mips/alchemy/Platform
-+++ b/arch/mips/alchemy/Platform
-@@ -5,32 +5,14 @@ platform-$(CONFIG_MIPS_ALCHEMY) += alchemy/common/
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 4c1546f..661aa54 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -212,14 +212,6 @@ config FB_SYS_FOPS
+        depends on FB
+        default n
  
-
- #
--# AMD Alchemy Pb1100 eval board
--#
--platform-$(CONFIG_MIPS_PB1100)	+= alchemy/devboards/
--load-$(CONFIG_MIPS_PB1100)	+= 0xffffffff80100000
+-config FB_WMT_GE_ROPS
+-	tristate
+-	depends on FB
+-	default n
+-	---help---
+-	  Include functions for accelerated rectangle filling and area
+-	  copying using WonderMedia Graphics Engine operations.
 -
--#
--# AMD Alchemy Pb1500 eval board
--#
--platform-$(CONFIG_MIPS_PB1500)	+= alchemy/devboards/
--load-$(CONFIG_MIPS_PB1500)	+= 0xffffffff80100000
--
--#
--# AMD Alchemy Pb1550 eval board
--#
--platform-$(CONFIG_MIPS_PB1550)	+= alchemy/devboards/
--load-$(CONFIG_MIPS_PB1550)	+= 0xffffffff80100000
--
--#
--# AMD Alchemy Db1000/Db1500/Db1100 eval boards
-+# AMD Alchemy Db1000/Db1500/Pb1500/Db1100/Pb1100 eval boards
- #
- platform-$(CONFIG_MIPS_DB1000)	+= alchemy/devboards/
- cflags-$(CONFIG_MIPS_DB1000)	+= -I$(srctree)/arch/mips/include/asm/mach-db1x00
- load-$(CONFIG_MIPS_DB1000)	+= 0xffffffff80100000
+ config FB_DEFERRED_IO
+ 	bool
+ 	depends on FB
+@@ -1799,7 +1791,8 @@ config FB_AU1200
+ config FB_VT8500
+ 	bool "VT8500 LCD Driver"
+ 	depends on (FB = y) && ARM && ARCH_VT8500
+-	select FB_WMT_GE_ROPS
++	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
++	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_IMAGEBLIT
+ 	help
+ 	  This is the framebuffer driver for VIA VT8500 integrated LCD
+@@ -1808,12 +1801,21 @@ config FB_VT8500
+ config FB_WM8505
+ 	bool "WM8505 frame buffer support"
+ 	depends on (FB = y) && ARM && ARCH_VT8500
+-	select FB_WMT_GE_ROPS
++	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
++	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_IMAGEBLIT
+ 	help
+ 	  This is the framebuffer driver for WonderMedia WM8505/WM8650
+ 	  integrated LCD controller.
  
- #
--# AMD Alchemy Db1200/Pb1200/Db1550/Db1300 eval boards
-+# AMD Alchemy Db1200/Pb1200/Db1550/Pb1550/Db1300 eval boards
- #
- platform-$(CONFIG_MIPS_DB1235)	+= alchemy/devboards/
- cflags-$(CONFIG_MIPS_DB1235)	+= -I$(srctree)/arch/mips/include/asm/mach-db1x00
-diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
-index ddabaa8..700cac0 100644
---- a/drivers/video/au1100fb.c
-+++ b/drivers/video/au1100fb.c
-@@ -111,30 +111,16 @@ static int au1100fb_fb_blank(int blank_mode, struct fb_info *fbi)
- 	switch (blank_mode) {
++config FB_WMT_GE_ROPS
++	bool "VT8500/WM85xx accelerated raster ops support"
++	depends on (FB = y) && (FB_VT8500 || FB_WM8505)
++	default n
++	help
++	  This adds support for accelerated raster operations on the
++	  VIA VT8500 and Wondermedia 85xx series SoCs.
++
+ source "drivers/video/geode/Kconfig"
  
- 	case VESA_NO_BLANKING:
--			/* Turn on panel */
--			fbdev->regs->lcd_control |= LCD_CONTROL_GO;
--#ifdef CONFIG_MIPS_PB1100
--			if (fbdev->panel_idx = 1) {
--				au_writew(au_readw(PB1100_G_CONTROL)
--					  | (PB1100_G_CONTROL_BL | PB1100_G_CONTROL_VDD),
--			PB1100_G_CONTROL);
--			}
--#endif
-+		/* Turn on panel */
-+		fbdev->regs->lcd_control |= LCD_CONTROL_GO;
- 		au_sync();
- 		break;
+ config FB_HIT
+diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
+index aa2579c..d8cc1f6 100644
+--- a/drivers/video/vt8500lcdfb.c
++++ b/drivers/video/vt8500lcdfb.c
+@@ -33,7 +33,10 @@
+ #include <linux/platform_data/video-vt8500lcdfb.h>
  
- 	case VESA_VSYNC_SUSPEND:
- 	case VESA_HSYNC_SUSPEND:
- 	case VESA_POWERDOWN:
--			/* Turn off panel */
--			fbdev->regs->lcd_control &= ~LCD_CONTROL_GO;
--#ifdef CONFIG_MIPS_PB1100
--			if (fbdev->panel_idx = 1) {
--				au_writew(au_readw(PB1100_G_CONTROL)
--				  	  & ~(PB1100_G_CONTROL_BL | PB1100_G_CONTROL_VDD),
--			PB1100_G_CONTROL);
--			}
--#endif
-+		/* Turn off panel */
-+		fbdev->regs->lcd_control &= ~LCD_CONTROL_GO;
- 		au_sync();
- 		break;
- 	default:
+ #include "vt8500lcdfb.h"
++
++#ifdef CONFIG_FB_WMT_GE_ROPS
+ #include "wmt_ge_rops.h"
++#endif
+ 
+ #ifdef CONFIG_OF
+ #include <linux/of.h>
+@@ -249,12 +252,24 @@ static int vt8500lcd_blank(int blank, struct fb_info *info)
+ 	return 0;
+ }
+ 
++#ifndef CONFIG_FB_WMT_GE_ROPS
++static int wmt_ge_sync(struct fb_info *p)
++{
++	return 0;
++}
++#endif
++
+ static struct fb_ops vt8500lcd_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_set_par	= vt8500lcd_set_par,
+ 	.fb_setcolreg	= vt8500lcd_setcolreg,
++#ifdef CONFIG_FB_WMT_GE_ROPS
+ 	.fb_fillrect	= wmt_ge_fillrect,
+ 	.fb_copyarea	= wmt_ge_copyarea,
++#else
++	.fb_fillrect	= sys_fillrect,
++	.fb_copyarea	= sys_copyarea,
++#endif
+ 	.fb_imageblit	= sys_imageblit,
+ 	.fb_sync	= wmt_ge_sync,
+ 	.fb_ioctl	= vt8500lcd_ioctl,
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index 4dd0580..db49803 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -35,7 +35,10 @@
+ #include <linux/platform_data/video-vt8500lcdfb.h>
+ 
+ #include "wm8505fb_regs.h"
++
++#ifdef CONFIG_FB_WMT_GE_ROPS
+ #include "wmt_ge_rops.h"
++#endif
+ 
+ #define DRIVER_NAME "wm8505-fb"
+ 
+@@ -248,12 +251,24 @@ static int wm8505fb_blank(int blank, struct fb_info *info)
+ 	return 0;
+ }
+ 
++#ifndef CONFIG_FB_WMT_GE_ROPS
++static int wmt_ge_sync(struct fb_info *p)
++{
++	return 0;
++}
++#endif
++
+ static struct fb_ops wm8505fb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_set_par	= wm8505fb_set_par,
+ 	.fb_setcolreg	= wm8505fb_setcolreg,
++#ifdef CONFIG_FB_WMT_GE_ROPS
+ 	.fb_fillrect	= wmt_ge_fillrect,
+ 	.fb_copyarea	= wmt_ge_copyarea,
++#else
++	.fb_fillrect	= sys_fillrect,
++	.fb_copyarea	= sys_copyarea,
++#endif
+ 	.fb_imageblit	= sys_imageblit,
+ 	.fb_sync	= wmt_ge_sync,
+ 	.fb_pan_display	= wm8505fb_pan_display,
 -- 
-1.7.11.7
+1.7.9.5
 

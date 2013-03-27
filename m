@@ -1,7 +1,7 @@
 From: Benoit Cousson <b-cousson@ti.com>
-Date: Wed, 27 Mar 2013 09:30:50 +0000
+Date: Wed, 27 Mar 2013 09:41:11 +0000
 Subject: Re: [RFC 00/14] Add DT support to OMAPDSS
-Message-Id: <5152BC4A.1060804@ti.com>
+Message-Id: <5152BEB7.4060804@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1364373921-7599-1-git-send-email-tomi.valkeinen@ti.com>
@@ -10,38 +10,12 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Tomi,
++ mturquette and Rajendra
 
 On 03/27/2013 09:45 AM, Tomi Valkeinen wrote:
-> Hi,
-> 
-> This is an RFC for OMAPDSS DT support. I've only added support for a few boards
-> and a few DSS outputs, but they should give quite a good range of different use
-> cases. If these work well, I think the rest of the outputs and panels will be
-> ok too.
-> 
-> The purpose of this series is to get comments about the dts changes. There are
-> still work to be done, like adding DT binding documentation.
-> 
-> Some notes:
-> 
-> * DSS Submodules
-> 
-> The DSS submodules are children of the dss_core node. This is done because the
-> submodules require the dss_core to be alive and initialized to work, even if
-> the submodules are not really behind dss_core. Having the submodules as
-> children will make runtime PM automatically handle the dependency to dss_core.
-> I think usually a node being a child means that it's on the parent's bus, which
-> is not the case here. I'm not sure if that's an issue or not.
 
-FWIW, there is a L4_DSS interconnect. It is used internally to connect
-all the submodules to the DSS L3 port. So this representation is
-perfectly valid and does represent accurately the HW.
+...
 
-Regards,
-Benoit
-
-> 
 > * ti,dsi-module-id
 > 
 > There's a ti,dsi-module-id property in the dsi node. The reason for this
@@ -50,6 +24,14 @@ Benoit
 > Another option would be to have a list of DSI modules (phandles) in the
 > dss_core. Both options feel a bit wrong to me, but I went for the module-id
 > approach as that is already used when not using DT.
+
+That's not a very nice representation. Ideally you should expose 1 clock
+node per DSI node, and enabling one will select the proper mux for you.
+
+Regards,
+Benoit
+
+
 > 
 > * Display chains
 > 

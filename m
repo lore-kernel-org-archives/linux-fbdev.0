@@ -1,111 +1,86 @@
-From: Markus Pargmann <mpa@pengutronix.de>
-Date: Tue, 05 Mar 2013 17:30:07 +0000
-Subject: [PATCH v2 1/2] imxfb: Set alpha value of the framebuffer
-Message-Id: <1362504608-15839-2-git-send-email-mpa@pengutronix.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 28 Mar 2013 12:26:37 +0000
+Subject: [GIT PULL] fbdev fixes for 3.9
+Message-Id: <515436FD.6020004@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enigCDF8D88454D26DD074F8D15F"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1362504608-15839-1-git-send-email-mpa@pengutronix.de>
-In-Reply-To: <1362504608-15839-1-git-send-email-mpa@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev <linux-fbdev@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 
-From: Christian Hemp <c.hemp@phytec.de>
+--------------enigCDF8D88454D26DD074F8D15F
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Based on Sascha Hauer's patch i.MX27 clock: Do not disable lcd clocks during
-startup.
-This patch gives a interface to chance the alphavalue of the framebuffer.
+Hi Linus,
 
-Signed-off-by: Christian Hemp <c.hemp@phytec.de>
+Since Florian is still away/inactive, I volunteered to collect fbdev fixe=
+s for
+3.9 and changes for 3.10. I didn't receive any other fbdev fixes than OMA=
+P yet,
+but I didn't want to delay this further as there's a compilation fix for =
+OMAP1.
+So there could be still some fbdev fixes on the way a bit later.
 
-rebased to 3.7
-Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
----
- drivers/video/imxfb.c                     | 35 +++++++++++++++++++++++++++++++
- include/linux/platform_data/video-imxfb.h |  3 +++
- 2 files changed, 38 insertions(+)
+ Tomi
 
-diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 0abf2bf..ef2b587 100644
---- a/drivers/video/imxfb.c
-+++ b/drivers/video/imxfb.c
-@@ -31,6 +31,7 @@
- #include <linux/dma-mapping.h>
- #include <linux/io.h>
- #include <linux/math64.h>
-+#include <linux/uaccess.h>
- 
- #include <linux/platform_data/video-imxfb.h>
- 
-@@ -112,6 +113,10 @@
- #define LCDISR_EOF	(1<<1)
- #define LCDISR_BOF	(1<<0)
- 
-+#define LCDC_LGWCR	0x64
-+#define LGWCR_GWAV(alpha)	(((alpha) & 0xff) << 24)
-+#define LGWCR_GWE	(1 << 22)
-+
- /* Used fb-mode. Can be set on kernel command line, therefore file-static. */
- static const char *fb_mode;
- 
-@@ -610,6 +615,35 @@ static int imxfb_blank(int blank, struct fb_info *info)
- 	return 0;
- }
- 
-+static int imxfb_ioctl(struct fb_info *info, unsigned int cmd,
-+			unsigned long arg)
-+{
-+	struct imxfb_info *fbi = info->par;
-+	int alpha, ret = 0;
-+	unsigned int tmp;
-+
-+	switch (cmd) {
-+	case IMXFB_ALPHA:
-+		if (get_user(alpha, (int __user *)arg)) {
-+			ret = -EFAULT;
-+		} else {
-+			tmp = readl(fbi->regs + LCDC_LGWCR);
-+			tmp &= ~LGWCR_GWAV(0xff);
-+			tmp |= LGWCR_GWAV(alpha);
-+			if (!alpha)
-+				tmp &= ~LGWCR_GWE;
-+			else
-+				tmp |= LGWCR_GWE;
-+			writel(tmp , fbi->regs + LCDC_LGWCR);
-+		}
-+		break;
-+	default:
-+		ret = -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
- static struct fb_ops imxfb_ops = {
- 	.owner		= THIS_MODULE,
- 	.fb_check_var	= imxfb_check_var,
-@@ -619,6 +653,7 @@ static struct fb_ops imxfb_ops = {
- 	.fb_copyarea	= cfb_copyarea,
- 	.fb_imageblit	= cfb_imageblit,
- 	.fb_blank	= imxfb_blank,
-+	.fb_ioctl	= imxfb_ioctl,
- };
- 
- /*
-diff --git a/include/linux/platform_data/video-imxfb.h b/include/linux/platform_data/video-imxfb.h
-index 9de8f06..ce3875f 100644
---- a/include/linux/platform_data/video-imxfb.h
-+++ b/include/linux/platform_data/video-imxfb.h
-@@ -51,6 +51,9 @@
- #define DMACR_HM(x)	(((x) & 0xf) << 16)
- #define DMACR_TM(x)	((x) & 0xf)
- 
-+#define IMXFB_IOW(num, dtype)	_IOW('I', num, dtype)
-+#define IMXFB_ALPHA		IMXFB_IOW(31, int)
-+
- struct imx_fb_videomode {
- 	struct fb_videomode mode;
- 	u32 pcr;
--- 
-1.8.1.4
+The following changes since commit a937536b868b8369b98967929045f1df542343=
+23:
 
+  Linux 3.9-rc3 (2013-03-17 15:59:32 -0700)
+
+are available in the git repository at:
+
+  git://gitorious.org/linux-omap-dss2/linux.git tags/fbdev-fixes-3.9-rc4
+
+for you to fetch changes up to ff588d83bf12fe05521a64e85dd4e2b848c0b20d:
+
+  omapdss: features: fix supported outputs for OMAP4 (2013-03-22 10:14:32=
+ +0200)
+
+----------------------------------------------------------------
+* Fix OMAP1 compilation
+* OMAP display fixes
+
+----------------------------------------------------------------
+Aaro Koskinen (1):
+      omapfb: fix broken build on OMAP1
+
+Archit Taneja (1):
+      omapdss: features: fix supported outputs for OMAP4
+
+Grazvydas Ignotas (1):
+      OMAPDSS: tpo-td043 panel: fix data passing between SPI/DSS parts
+
+ drivers/video/omap/omapfb_main.c                    |    2 ++
+ drivers/video/omap2/displays/panel-tpo-td043mtea1.c |   13 +++++++++++--=
+
+ drivers/video/omap2/dss/dss_features.c              |    6 ++----
+ 3 files changed, 15 insertions(+), 6 deletions(-)
+
+
+--------------enigCDF8D88454D26DD074F8D15F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRVDb9AAoJEPo9qoy8lh71apQP/1ak58UeAItvJw+pZFz5/yqS
+8AniWHlLiHSbbhIwOJjk9Unji74GIH2pg6SfCNPdpov/W7mgVC/7zqLRwOhUOmjP
+nG2pWUCh8lZCDQGpUvtiCYpAQpT7R3IZj7uH1oEoJH9GgnIwPdSc779PGfz6bZfR
+zQnJT9NSbdVczJVZef4jEIw40l4CZdG0H1KZS/dQPD3ikSwUrrM7FIRcGMMqwiFM
+pWPIiu4yWQECyG728++MaPJ4f5Rm3tovIaMy2e4KVrehVKSiohkZdhHwgBTIfwPz
+29xy7boocb/DUDtUFLMCaP9jfiL/Au9OgkMOks41bnLFLULJB7Gi7PhaYzFYyRZt
+i5p4HkndI2t2syYyI1F7h5+8k3O9vVNuJKdrbBqzO//QeT1AlRa7Ume/Xtnpjnhv
+2lXylSoupG2WTUtJCNoc1gQ+/WD5D+qIG61YiNFqrOqNeKLG+zfn2ASClBDDZl+z
+aBO/oFYqyZboPvW2sjAnx+su8AsJSDMrcDJIf49YXZhszd0NM+dHDxroy7XvpRCv
+GJflcHmgXAjLuQYaIeyXARsM2JhhE0SHauKL4ZNSK9cucqpQHxfY4jYgmQSXHBgo
+1pz/nFuAhY1D6xGD2a+kJwOsl+qIcX37DpFnxjJ/G6GCx3kAo6QeSuAPBX9PC4ti
+4UsL9aedmKPCq5EKPCoW
+=VotD
+-----END PGP SIGNATURE-----
+
+--------------enigCDF8D88454D26DD074F8D15F--

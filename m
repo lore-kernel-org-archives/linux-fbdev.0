@@ -1,109 +1,86 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Mar 2013 13:33:53 +0000
-Subject: [PATCH 23/26] ARM: OMAP: Panda & SDP: use new HDMI driver
-Message-Id: <1364304836-18134-24-git-send-email-tomi.valkeinen@ti.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Thu, 28 Mar 2013 12:04:29 +0000
+Subject: [PATCH 3/4] compat-drivers: simplify backport fb_info->skip_vt_switch CE
+Message-Id: <1364472270-9297-4-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1364472270-9297-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1364472270-9297-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, jbarnes@virtuousgeek.org, backports@vger.kernel.org, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, julia.lawall@lip6.fr, rodrigo.vivi@gmail.com, daniel.vetter@ffwll.ch, rafael.j.wysocki@intel.com, "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
 
-Change Pandaboard and 4430SDP to use the new HDMI platform driver
-instead of the old omap_dss_driver.
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+The collateral evolution (CE) on the fb_info data structure
+that added the skip_vt_switch element can be simplified
+further by replacing the #ifdef hell with a static inline.
+
+Furthermore, if the static inline is added upstream it'd mean
+we can get rid of all these static inline replacements for
+this data structure element CE.
+
+Cc: cocci@systeme.lip6.fr
+Cc: backports@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: Julia Lawall <julia.lawall@lip6.fr>
+Cc: Rodrigo Vivi <rodrigo.vivi@gmail.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Luis R. Rodriguez <mcgrof@do-not-panic.com>
 ---
- arch/arm/mach-omap2/dss-common.c |   31 ++++++++++++-------------------
- 1 file changed, 12 insertions(+), 19 deletions(-)
+ .../drm/0001-fb-info-vt_switch.patch               |   25 ++++----------------
+ 1 file changed, 4 insertions(+), 21 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/dss-common.c b/arch/arm/mach-omap2/dss-common.c
-index 0e94df8..64ca888 100644
---- a/arch/arm/mach-omap2/dss-common.c
-+++ b/arch/arm/mach-omap2/dss-common.c
-@@ -63,21 +63,13 @@ static struct omap_dss_hdmi_data omap4_panda_hdmi_data = {
- 	.hpd_gpio = HDMI_GPIO_HPD,
- };
- 
--static struct omap_dss_device  omap4_panda_hdmi_device = {
--	.name = "hdmi",
--	.driver_name = "hdmi_panel",
--	.type = OMAP_DISPLAY_TYPE_HDMI,
--	.channel = OMAP_DSS_CHANNEL_DIGIT,
--	.data = &omap4_panda_hdmi_data,
--};
+diff --git a/patches/collateral-evolutions/drm/0001-fb-info-vt_switch.patch b/patches/collateral-evolutions/drm/0001-fb-info-vt_switch.patch
+index cdced87..39b13d1 100644
+--- a/patches/collateral-evolutions/drm/0001-fb-info-vt_switch.patch
++++ b/patches/collateral-evolutions/drm/0001-fb-info-vt_switch.patch
+@@ -8,23 +8,7 @@ pm_vt_switch_unregister() would not have been made.
+ This patch cannot be broken down further so I'm pegging
+ this as the first one with 4 digits under the DRM folder
+ for collateral evolutions. This reflects its as atomic as
+-is possible. As we'll see on the next commit, these type
+-of collateral evolutions can best be backported not by
+-keeping ifdef's as below but instead by using a wrapper
+-caller, to help reduce with the amount of lines of code
+-we need. If a static inline is added upstream for these
+-changes, then no code is required for backporting, at all,
+-we'd just implement the static inline later upstream as
+-a no-op.
 -
--static struct omap_dss_device *omap4_panda_dss_devices[] = {
--	&omap4_panda_hdmi_device,
-+static struct platform_device omap4_panda_hdmi_device = {
-+	.name			= "hdmi_panel",
-+	.id			= 0,
-+	.dev.platform_data	= &omap4_panda_hdmi_data,
- };
+-The tradeoffs to consider for this is if we can live with
+-these practices upstream, we may be able to support full
+-subsystems only with a compat module, and no need for
+-patches. This also means less code and likely less bugs
+-on the distribution front when backporting is required.
+-At least IMHO this may be worthy to consider at least to
+-support kernels listed as supported on kernel.org. We could
+-just leave the ifdef hell to older unsupported kernels.
++is possible.
  
- static struct omap_dss_board_info omap4_panda_dss_data = {
--	.num_devices	= ARRAY_SIZE(omap4_panda_dss_devices),
--	.devices	= omap4_panda_dss_devices,
- 	.default_display_name = "dvi",
- };
+ Relevant commits below, starting with the first one that
+ added this new collateral evolution.
+@@ -60,14 +44,13 @@ Date:   Tue Mar 26 09:25:45 2013 -0700
  
-@@ -85,6 +77,7 @@ void __init omap4_panda_display_init(void)
- {
- 	omap_display_init(&omap4_panda_dss_data);
- 	platform_device_register(&omap4_panda_tfp410_device);
-+	platform_device_register(&omap4_panda_hdmi_device);
- 
- 	/*
- 	 * OMAP4460SDP/Blaze and OMAP4430 ES2.3 SDP/Blaze boards and
-@@ -104,6 +97,7 @@ void __init omap4_panda_display_init_of(void)
- {
- 	omap_display_init(&omap4_panda_dss_data);
- 	platform_device_register(&omap4_panda_tfp410_device);
-+	platform_device_register(&omap4_panda_hdmi_device);
- }
- 
- 
-@@ -165,12 +159,10 @@ static struct omap_dss_hdmi_data sdp4430_hdmi_data = {
- 	.hpd_gpio = HDMI_GPIO_HPD,
- };
- 
--static struct omap_dss_device sdp4430_hdmi_device = {
--	.name = "hdmi",
--	.driver_name = "hdmi_panel",
--	.type = OMAP_DISPLAY_TYPE_HDMI,
--	.channel = OMAP_DSS_CHANNEL_DIGIT,
--	.data = &sdp4430_hdmi_data,
-+static struct platform_device sdp4430_hdmi_device = {
-+	.name			= "hdmi_panel",
-+	.id			= 0,
-+	.dev.platform_data	= &sdp4430_hdmi_data,
- };
- 
- static struct picodlp_panel_data sdp4430_picodlp_pdata = {
-@@ -224,7 +216,6 @@ static struct omap_dss_device sdp4430_picodlp_device = {
- static struct omap_dss_device *sdp4430_dss_devices[] = {
- 	&sdp4430_lcd_device,
- 	&sdp4430_lcd2_device,
--	&sdp4430_hdmi_device,
- 	&sdp4430_picodlp_device,
- };
- 
-@@ -246,6 +237,7 @@ void __init omap_4430sdp_display_init(void)
- 
- 	sdp4430_picodlp_init();
- 	omap_display_init(&sdp4430_dss_data);
-+	platform_device_register(&sdp4430_hdmi_device);
- 	/*
- 	 * OMAP4460SDP/Blaze and OMAP4430 ES2.3 SDP/Blaze boards and
- 	 * later have external pull up on the HDMI I2C lines
-@@ -272,4 +264,5 @@ void __init omap_4430sdp_display_init_of(void)
- 
- 	sdp4430_picodlp_init();
- 	omap_display_init(&sdp4430_dss_data);
-+	platform_device_register(&sdp4430_hdmi_device);
- }
+ --- a/drivers/gpu/drm/i915/intel_fb.c
+ +++ b/drivers/gpu/drm/i915/intel_fb.c
+-@@ -150,8 +150,10 @@ static int intelfb_create(struct drm_fb_
++@@ -150,8 +150,8 @@ static int intelfb_create(struct drm_fb_
+  	}
+  	info->screen_size = size;
+  
+-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
+  	/* This driver doesn't need a VT switch to restore the mode on resume */
+- 	info->skip_vt_switch = true;
+-+#endif
++- 	info->skip_vt_switch = true;
+++ 	fb_enable_skip_vt_switch(info);
+  
+  	drm_fb_helper_fill_fix(info, fb->pitches[0], fb->depth);
+  	drm_fb_helper_fill_var(info, &ifbdev->helper, sizes->fb_width, sizes->fb_height);
 -- 
 1.7.10.4
 

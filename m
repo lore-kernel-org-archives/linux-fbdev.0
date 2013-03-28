@@ -1,146 +1,96 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 26 Mar 2013 13:33:49 +0000
-Subject: [PATCH 19/26] OMAPDSS: HDMI: convert to platform device
-Message-Id: <1364304836-18134-20-git-send-email-tomi.valkeinen@ti.com>
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Thu, 28 Mar 2013 12:04:30 +0000
+Subject: [PATCH 4/4] fb: add helpers to enable and test for the skip_vt_switch
+Message-Id: <1364472270-9297-5-git-send-email-mcgrof@do-not-panic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1364472270-9297-1-git-send-email-mcgrof@do-not-panic.com>
+In-Reply-To: <1364472270-9297-1-git-send-email-mcgrof@do-not-panic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, jbarnes@virtuousgeek.org, backports@vger.kernel.org, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, julia.lawall@lip6.fr, rodrigo.vivi@gmail.com, daniel.vetter@ffwll.ch, rafael.j.wysocki@intel.com, "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
 
-Convert HDMI driver from omap_dss_driver to a platform driver. The
-driver uses the new panel support from omapdss.
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+This adds helpers to enable and test for the skip_vt_switch.
+This gets us two things:
+
+1) It allows us to require less collateral evolutions
+   should we need changes on the fb_info data structure
+   later (perhaps a bitmap flag).
+
+2) Allows this feature to be backported with 0 delta
+   required on the upstream drivers, we'd just require
+   the static inline to do a no-op.
+
+1) may be worth while considering, 2) is a new consideration
+I'm trying to get others to evaluate to help with automatically
+backporting the Linux kernel. This is the first time I am
+aware someone argues for it.
+
+Cc: cocci@systeme.lip6.fr
+Cc: backports@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: Julia Lawall <julia.lawall@lip6.fr>
+Cc: Rodrigo Vivi <rodrigo.vivi@gmail.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Luis R. Rodriguez <mcgrof@do-not-panic.com>
 ---
- drivers/video/omap2/dss/hdmi_panel.c |   48 +++++++++++++++++++++++++++-------
- 1 file changed, 38 insertions(+), 10 deletions(-)
+ drivers/gpu/drm/i915/intel_fb.c |    2 +-
+ drivers/video/fbmem.c           |    2 +-
+ include/linux/fb.h              |   10 ++++++++++
+ 3 files changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi_panel.c b/drivers/video/omap2/dss/hdmi_panel.c
-index dfb8eda..bc4dea3 100644
---- a/drivers/video/omap2/dss/hdmi_panel.c
-+++ b/drivers/video/omap2/dss/hdmi_panel.c
-@@ -26,10 +26,13 @@
- #include <linux/module.h>
- #include <video/omapdss.h>
- #include <linux/slab.h>
-+#include <linux/platform_device.h>
+diff --git a/drivers/gpu/drm/i915/intel_fb.c b/drivers/gpu/drm/i915/intel_fb.c
+index 8d81c929..c0f306c 100644
+--- a/drivers/gpu/drm/i915/intel_fb.c
++++ b/drivers/gpu/drm/i915/intel_fb.c
+@@ -151,7 +151,7 @@ static int intelfb_create(struct drm_fb_helper *helper,
+ 	info->screen_size = size;
  
- #include "dss.h"
+ 	/* This driver doesn't need a VT switch to restore the mode on resume */
+-	info->skip_vt_switch = true;
++	fb_enable_skip_vt_switch(info);
  
- static struct {
-+	struct omap_dss_device dssdev;
-+
- 	/* This protects the panel ops, mainly when accessing the HDMI IP. */
- 	struct mutex lock;
- #if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
-@@ -38,8 +41,9 @@ static struct {
- #endif
- } hdmi;
+ 	drm_fb_helper_fill_fix(info, fb->pitches[0], fb->depth);
+ 	drm_fb_helper_fill_var(info, &ifbdev->helper, sizes->fb_width, sizes->fb_height);
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index ccd44b0..daffadc 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1645,7 +1645,7 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+ 	if (!fb_info->modelist.prev || !fb_info->modelist.next)
+ 		INIT_LIST_HEAD(&fb_info->modelist);
  
-+static struct omap_dss_driver hdmi_driver;
- 
--static int hdmi_panel_probe(struct omap_dss_device *dssdev)
-+static int hdmi_panel_probe(struct platform_device *pdev)
- {
- 	/* Initialize default timings to VGA in DVI mode */
- 	const struct omap_video_timings default_timings = {
-@@ -59,9 +63,22 @@ static int hdmi_panel_probe(struct omap_dss_device *dssdev)
- 		.interlace	= false,
- 	};
- 
-+	struct omap_dss_hdmi_data *pdata = dev_get_platdata(&pdev->dev);
-+	struct omap_dss_device *dssdev = &hdmi.dssdev;
-+	int r;
-+
- 	DSSDBG("ENTER hdmi_panel_probe\n");
- 
- 	dssdev->panel.timings = default_timings;
-+	dssdev->driver = &hdmi_driver;
-+	dssdev->name = "hdmi";
-+	dssdev->panel_dev = &pdev->dev;
-+
-+	/*
-+	 * XXX for now, the hdmi panel's platform data contains the gpios for
-+	 * the tpd level shifter chip, so we pass this data to the hdmi driver.
-+	 */
-+	dssdev->data = pdata;
- 
- 	DSSDBG("hdmi_panel_probe x_res= %d y_res = %d\n",
- 		dssdev->panel.timings.x_res,
-@@ -69,12 +86,19 @@ static int hdmi_panel_probe(struct omap_dss_device *dssdev)
- 
- 	omapdss_hdmi_display_set_timing(dssdev, &dssdev->panel.timings);
- 
-+	r = omap_hdmi_register_panel(dssdev);
-+	if (r) {
-+		DSSERR("Failed to register panel\n");
-+		return r;
-+	}
-+
- 	return 0;
- }
- 
--static void hdmi_panel_remove(struct omap_dss_device *dssdev)
-+static int hdmi_panel_remove(struct platform_device *pdev)
- {
--
-+	omap_hdmi_free_panel(&hdmi.dssdev);
-+	return 0;
- }
- 
- #if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
-@@ -375,8 +399,6 @@ err:
- }
- 
- static struct omap_dss_driver hdmi_driver = {
--	.probe		= hdmi_panel_probe,
--	.remove		= hdmi_panel_remove,
- 	.enable		= hdmi_panel_enable,
- 	.disable	= hdmi_panel_disable,
- 	.get_timings	= hdmi_get_timings,
-@@ -384,15 +406,21 @@ static struct omap_dss_driver hdmi_driver = {
- 	.check_timings	= hdmi_check_timings,
- 	.read_edid	= hdmi_read_edid,
- 	.detect		= hdmi_detect,
-+	.get_resolution	= omapdss_default_get_resolution,
- 	.audio_enable	= hdmi_panel_audio_enable,
- 	.audio_disable	= hdmi_panel_audio_disable,
- 	.audio_start	= hdmi_panel_audio_start,
- 	.audio_stop	= hdmi_panel_audio_stop,
- 	.audio_supported	= hdmi_panel_audio_supported,
- 	.audio_config	= hdmi_panel_audio_config,
--	.driver			= {
--		.name   = "hdmi_panel",
--		.owner  = THIS_MODULE,
-+};
-+
-+static struct platform_driver hdmi_panel_platform_driver = {
-+	.probe	= hdmi_panel_probe,
-+	.remove	= hdmi_panel_remove,
-+	.driver	= {
-+		.name	= "hdmi_panel",
-+		.owner	= THIS_MODULE,
- 	},
+-	if (fb_info->skip_vt_switch)
++	if (fb_skip_vt_switch_isset(fb_info))
+ 		pm_vt_switch_required(fb_info->dev, false);
+ 	else
+ 		pm_vt_switch_required(fb_info->dev, true);
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index d49c60f..d534966 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -505,6 +505,16 @@ struct fb_info {
+ 	bool skip_vt_switch; /* no VT switch on suspend/resume required */
  };
  
-@@ -404,11 +432,11 @@ int hdmi_panel_init(void)
- 	spin_lock_init(&hdmi.audio_lock);
- #endif
- 
--	return omap_dss_register_driver(&hdmi_driver);
-+	return platform_driver_register(&hdmi_panel_platform_driver);
- }
- 
- void hdmi_panel_exit(void)
- {
--	omap_dss_unregister_driver(&hdmi_driver);
-+	platform_driver_unregister(&hdmi_panel_platform_driver);
- 
- }
++static inline void fb_enable_skip_vt_switch(struct fb_info *info)
++{
++	info->skip_vt_switch = true;
++}
++
++static inline bool fb_skip_vt_switch_isset(struct fb_info *info)
++{
++	return info->skip_vt_switch;
++}
++
+ static inline struct apertures_struct *alloc_apertures(unsigned int max_num) {
+ 	struct apertures_struct *a = kzalloc(sizeof(struct apertures_struct)
+ 			+ max_num * sizeof(struct aperture), GFP_KERNEL);
 -- 
 1.7.10.4
 

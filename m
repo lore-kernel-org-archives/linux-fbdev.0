@@ -1,49 +1,30 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 27 Mar 2013 11:29:15 +0000
-Subject: Re: [PATCH 16/26] OMAPDSS: TFP410: convert to platform device
-Message-Id: <5152D53B.9000509@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Fri, 29 Mar 2013 01:40:50 +0000
+Subject: [PATCH RESEND] fbmon: use VESA_DMT_VSYNC_HIGH to fix typo
+Message-Id: <8984685.165951364521249756.JavaMail.weblogic@epml18>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364304836-18134-1-git-send-email-tomi.valkeinen@ti.com> <1364304836-18134-17-git-send-email-tomi.valkeinen@ti.com> <5152D3E8.9040603@ti.com> <5152D49A.2090309@ti.com>
-In-Reply-To: <5152D49A.2090309@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, FlorianSchandinat@gmx.de, s.trumtrar@pengutronix.de, plagnioj@jcrosoft.com, jg1.han@samsung.com
 
-On Wednesday 27 March 2013 04:44 PM, Tomi Valkeinen wrote:
-> On 2013-03-27 13:11, Archit Taneja wrote:
->> On Tuesday 26 March 2013 07:03 PM, Tomi Valkeinen wrote:
->>> Convert TFP410 driver from omap_dss_driver to a platform driver. The
->>> driver uses the new panel support from omapdss.
->>>
->>> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->>> ---
->>>    drivers/video/omap2/displays/panel-tfp410.c |  205
->>> +++++++++++++++++----------
->>>    1 file changed, 128 insertions(+), 77 deletions(-)
->>>
->
->>> -        ddata->i2c_adapter = adapter;
->>> +    dssdev = &ddata->dssdev;
->>> +    dssdev->driver = &tfp410_driver;
->>> +    dssdev->panel.timings = tfp410_default_timings;
->>> +    dssdev->name = ddata->name;
->>> +    dssdev->phy.dpi.data_lines = ddata->data_lines;
->>> +    dssdev->panel_dev = &pdev->dev;
->>
->> Some of the omap_dss_device fields populated here(like data_lines) are
->> not going to be used anywhere. Are you populating all of them just for
->> the sake of clarity, so that they can be removed in another series later
->> on? Or is there some other reason?
->
-> Unfortunately the datalines are used in
-> omapdss_default_get_recommended_bpp(). So there are some fields
-> populated just to keep things working, and I expect that they are
-> removed later.
+VkVTQV9ETVRfVlNZTkNfSElHSCBzaG91bGQgYmUgdXNlZCBpbnN0ZWFkIG9mIFZFU0FfRE1UX0hT
+WU5DX0hJR0gsDQpiZWNhdXNlIEZCX1NZTkNfVkVSVF9ISUdIX0FDVCBpcyByZWxhdGVkIHRvIHZz
+eW5jLCBub3QgdG8gaHN5bmMuDQoNClNpZ25lZC1vZmYtYnk6IEppbmdvbyBIYW4gPGpnMS5oYW5A
+c2Ftc3VuZy5jb20+DQpDYzogU3RlZmZlbiBUcnVtdHJhciA8cy50cnVtdHJhckBwZW5ndXRyb25p
+eC5kZT4NCkNjOiBUb21pIFZhbGtlaW5lbiA8dG9taS52YWxrZWluZW5AdGkuY29tPg0KLS0tDQog
+ZHJpdmVycy92aWRlby9mYm1vbi5jIHwgICAgMiArLQ0KIDEgZmlsZXMgY2hhbmdlZCwgMSBpbnNl
+cnRpb25zKCspLCAxIGRlbGV0aW9ucygtKQ0KDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9m
+Ym1vbi5jIGIvZHJpdmVycy92aWRlby9mYm1vbi5jDQppbmRleCA5NGFkMGY3Li43ZjY3MDk5IDEw
+MDY0NA0KLS0tIGEvZHJpdmVycy92aWRlby9mYm1vbi5jDQorKysgYi9kcml2ZXJzL3ZpZGVvL2Zi
+bW9uLmMNCkBAIC0xNDAwLDcgKzE0MDAsNyBAQCBpbnQgZmJfdmlkZW9tb2RlX2Zyb21fdmlkZW9t
+b2RlKGNvbnN0IHN0cnVjdCB2aWRlb21vZGUgKnZtLA0KIAlmYm1vZGUtPnZtb2RlID0gMDsNCiAJ
+aWYgKHZtLT5kbXRfZmxhZ3MgJiBWRVNBX0RNVF9IU1lOQ19ISUdIKQ0KIAkJZmJtb2RlLT5zeW5j
+IHw9IEZCX1NZTkNfSE9SX0hJR0hfQUNUOw0KLQlpZiAodm0tPmRtdF9mbGFncyAmIFZFU0FfRE1U
+X0hTWU5DX0hJR0gpDQorCWlmICh2bS0+ZG10X2ZsYWdzICYgVkVTQV9ETVRfVlNZTkNfSElHSCkN
+CiAJCWZibW9kZS0+c3luYyB8PSBGQl9TWU5DX1ZFUlRfSElHSF9BQ1Q7DQogCWlmICh2bS0+ZGF0
+YV9mbGFncyAmIERJU1BMQVlfRkxBR1NfSU5URVJMQUNFRCkNCiAJCWZibW9kZS0+dm1vZGUgfD0g
+RkJfVk1PREVfSU5URVJMQUNFRDsNCi0tIA0KMS43LjIuNQ0K
 
-Ah okay, missed that. I guess it will be easier to remove these later on 
-anyway.
-
-Archit
 

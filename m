@@ -1,30 +1,54 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 29 Mar 2013 01:40:50 +0000
-Subject: [PATCH RESEND] fbmon: use VESA_DMT_VSYNC_HIGH to fix typo
-Message-Id: <8984685.165951364521249756.JavaMail.weblogic@epml18>
+From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Date: Fri, 29 Mar 2013 08:41:14 +0000
+Subject: Re: [PATCH RESEND] fbmon: use VESA_DMT_VSYNC_HIGH to fix typo
+Message-Id: <20130329084114.GB32161@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <8984685.165951364521249756.JavaMail.weblogic@epml18>
+In-Reply-To: <8984685.165951364521249756.JavaMail.weblogic@epml18>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, FlorianSchandinat@gmx.de, s.trumtrar@pengutronix.de, plagnioj@jcrosoft.com, jg1.han@samsung.com
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, FlorianSchandinat@gmx.de, plagnioj@jcrosoft.com
 
-VkVTQV9ETVRfVlNZTkNfSElHSCBzaG91bGQgYmUgdXNlZCBpbnN0ZWFkIG9mIFZFU0FfRE1UX0hT
-WU5DX0hJR0gsDQpiZWNhdXNlIEZCX1NZTkNfVkVSVF9ISUdIX0FDVCBpcyByZWxhdGVkIHRvIHZz
-eW5jLCBub3QgdG8gaHN5bmMuDQoNClNpZ25lZC1vZmYtYnk6IEppbmdvbyBIYW4gPGpnMS5oYW5A
-c2Ftc3VuZy5jb20+DQpDYzogU3RlZmZlbiBUcnVtdHJhciA8cy50cnVtdHJhckBwZW5ndXRyb25p
-eC5kZT4NCkNjOiBUb21pIFZhbGtlaW5lbiA8dG9taS52YWxrZWluZW5AdGkuY29tPg0KLS0tDQog
-ZHJpdmVycy92aWRlby9mYm1vbi5jIHwgICAgMiArLQ0KIDEgZmlsZXMgY2hhbmdlZCwgMSBpbnNl
-cnRpb25zKCspLCAxIGRlbGV0aW9ucygtKQ0KDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9m
-Ym1vbi5jIGIvZHJpdmVycy92aWRlby9mYm1vbi5jDQppbmRleCA5NGFkMGY3Li43ZjY3MDk5IDEw
-MDY0NA0KLS0tIGEvZHJpdmVycy92aWRlby9mYm1vbi5jDQorKysgYi9kcml2ZXJzL3ZpZGVvL2Zi
-bW9uLmMNCkBAIC0xNDAwLDcgKzE0MDAsNyBAQCBpbnQgZmJfdmlkZW9tb2RlX2Zyb21fdmlkZW9t
-b2RlKGNvbnN0IHN0cnVjdCB2aWRlb21vZGUgKnZtLA0KIAlmYm1vZGUtPnZtb2RlID0gMDsNCiAJ
-aWYgKHZtLT5kbXRfZmxhZ3MgJiBWRVNBX0RNVF9IU1lOQ19ISUdIKQ0KIAkJZmJtb2RlLT5zeW5j
-IHw9IEZCX1NZTkNfSE9SX0hJR0hfQUNUOw0KLQlpZiAodm0tPmRtdF9mbGFncyAmIFZFU0FfRE1U
-X0hTWU5DX0hJR0gpDQorCWlmICh2bS0+ZG10X2ZsYWdzICYgVkVTQV9ETVRfVlNZTkNfSElHSCkN
-CiAJCWZibW9kZS0+c3luYyB8PSBGQl9TWU5DX1ZFUlRfSElHSF9BQ1Q7DQogCWlmICh2bS0+ZGF0
-YV9mbGFncyAmIERJU1BMQVlfRkxBR1NfSU5URVJMQUNFRCkNCiAJCWZibW9kZS0+dm1vZGUgfD0g
-RkJfVk1PREVfSU5URVJMQUNFRDsNCi0tIA0KMS43LjIuNQ0K
+On Fri, Mar 29, 2013 at 01:40:52AM +0000, Jingoo Han wrote:
+> VESA_DMT_VSYNC_HIGH should be used instead of VESA_DMT_HSYNC_HIGH,
+> because FB_SYNC_VERT_HIGH_ACT is related to vsync, not to hsync.
+> 
+> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+> Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> ---
+>  drivers/video/fbmon.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+> index 94ad0f7..7f67099 100644
+> --- a/drivers/video/fbmon.c
+> +++ b/drivers/video/fbmon.c
+> @@ -1400,7 +1400,7 @@ int fb_videomode_from_videomode(const struct videomode *vm,
+>  	fbmode->vmode = 0;
+>  	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
+>  		fbmode->sync |= FB_SYNC_HOR_HIGH_ACT;
+> -	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
+> +	if (vm->dmt_flags & VESA_DMT_VSYNC_HIGH)
+>  		fbmode->sync |= FB_SYNC_VERT_HIGH_ACT;
+>  	if (vm->data_flags & DISPLAY_FLAGS_INTERLACED)
+>  		fbmode->vmode |= FB_VMODE_INTERLACED;
+> -- 
+> 1.7.2.5
 
+Hi,
 
+I already implied this on the original mail, but to be clear:
+
+Acked-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+
+Thanks,
+Steffen
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

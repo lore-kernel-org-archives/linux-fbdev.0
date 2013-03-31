@@ -1,12 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Sun, 31 Mar 2013 14:39:05 +0000
+Date: Sun, 31 Mar 2013 14:43:47 +0000
 Subject: [PATCH V4 4/4] fbcon: queue work on unbound wq
-Message-Id: <2a30b6c081a7899fbce88bddf20b94c348eb4654.1364739015.git.viresh.kumar@linaro.org>
+Message-Id: <2a30b6c081a7899fbce88bddf20b94c348eb4654.1364740180.git.viresh.kumar@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1364740180.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1364740180.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tj@kernel.org
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, davem@davemloft.net, airlied@redhat.com, axboe@kernel.dk, tglx@linutronix.de, peterz@infradead.org, mingo@redhat.com, rostedt@goodmis.org, linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-fbdev@vger.kernel.org
 
 fbcon uses workqueues and it has no real dependency of scheduling these on the
 cpu which scheduled them.

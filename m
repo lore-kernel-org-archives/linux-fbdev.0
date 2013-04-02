@@ -1,59 +1,71 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 23 Apr 2013 06:36:56 +0000
-Subject: [PATCH 09/11] fbdev/sgivwfb: use vm_iomap_memory()
-Message-Id: <1366699018-5439-9-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 02 Apr 2013 10:34:43 +0000
+Subject: Re: [PATCH]video:uvesafb: Fix dereference NULL pointer code path
+Message-Id: <515AB443.4060407@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig3D1B5BF4A1575E49B5861BCF"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <20130330025330.GA25246@udknight>
+In-Reply-To: <20130330025330.GA25246@udknight>
+To: Wang YanQing <udknight@gmail.com>, spock@gentoo.org, linux-fbdev@vger.kernel.org, FlorianSchandinat@gmx.de, linux-kernel@vger.kernel.org
 
-Use vm_iomap_memory() instead of [io_]remap_pfn_range().
-vm_iomap_memory() gives us much simpler API to map memory to userspace,
-and reduces possibilities for bugs.
+--------------enig3D1B5BF4A1575E49B5861BCF
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/sgivwfb.c |   20 +++++++-------------
- 1 file changed, 7 insertions(+), 13 deletions(-)
+On 2013-03-30 04:53, Wang YanQing wrote:
+> platform_device_alloc could failed and return NULL,
+> we should check this before call platform_device_put.
+>=20
+> Signed-off-by: Wang YanQing <udknight@gmail.com>
+> ---
+>  drivers/video/uvesafb.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+> index 2f8f82d..230bd45 100644
+> --- a/drivers/video/uvesafb.c
+> +++ b/drivers/video/uvesafb.c
+> @@ -1975,7 +1975,8 @@ static int __devinit uvesafb_init(void)
+>  			err =3D -ENOMEM;
+> =20
+>  		if (err) {
+> -			platform_device_put(uvesafb_device);
+> +			if (uvesafb_device)
+> +				platform_device_put(uvesafb_device);
+>  			platform_driver_unregister(&uvesafb_driver);
+>  			cn_del_callback(&uvesafb_cn_id);
+>  			return err;
+>=20
 
-diff --git a/drivers/video/sgivwfb.c b/drivers/video/sgivwfb.c
-index 2331fad..b2a8912 100644
---- a/drivers/video/sgivwfb.c
-+++ b/drivers/video/sgivwfb.c
-@@ -705,23 +705,17 @@ static int sgivwfb_setcolreg(u_int regno, u_int red, u_int green,
- static int sgivwfb_mmap(struct fb_info *info,
- 			struct vm_area_struct *vma)
- {
--	unsigned long size = vma->vm_end - vma->vm_start;
--	unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
-+	int r;
- 
--	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
--		return -EINVAL;
--	if (offset + size > sgivwfb_mem_size)
--		return -EINVAL;
--	offset += sgivwfb_mem_phys;
- 	pgprot_val(vma->vm_page_prot) -	    pgprot_val(vma->vm_page_prot) | _PAGE_PCD;
--	vma->vm_flags |= VM_IO;
--	if (remap_pfn_range(vma, vma->vm_start, offset >> PAGE_SHIFT,
--						size, vma->vm_page_prot))
--		return -EAGAIN;
-+		pgprot_val(vma->vm_page_prot) | _PAGE_PCD;
-+
-+	r = vm_iomap_memory(vma, sgivwfb_mem_phys, sgivwfb_mem_size);
-+
- 	printk(KERN_DEBUG "sgivwfb: mmap framebuffer P(%lx)->V(%lx)\n",
- 	       offset, vma->vm_start);
--	return 0;
-+
-+	return r;
- }
- 
- int __init sgivwfb_setup(char *options)
--- 
-1.7.10.4
+Thanks, queued to fbdev fixes.
 
+ Tomi
+
+
+
+--------------enig3D1B5BF4A1575E49B5861BCF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRWrRDAAoJEPo9qoy8lh71WiQP/iN8cIg9igTchq8wAHbA6Kaw
+KCYsHLXI1AOxyg2n0F7l3o/7WwHzwG59D5tJEatvtwYDKQifW2qSdu1/8W1sGWbR
+PEeOUTJ5U2nFj7cs5gtbjL6FytFjCtm5FYjP+pWhiBj2EwKCyfr4qBr2Ec0a+Jv+
+L0WlD5/gP7gefvqdQGUxKlB5LCdwd4haHUuWP+qIPjLR8xLuI84c/6NEHGUzN+yl
+iI3hAaawMsm4ZuPNOYTo2gejH6XXVJn/jo25fPhzaRK5jYoGGQK56emHUzho+sya
+xsV1diNQ0bmIkFPNQKYbYewWgyScy/G8zBBs/pu1qP1FQWE3VrNyUa3w6IHTf3vX
+rLHEME5Sll1HuNMVi1t5q/coo0FHasjgcNI1IELFTwyvi/ZXs+qYlx4OhRf02OD6
+bhNaqahHE5CZ7djToFczmbl3duNbAq90/o3QNn50l3e1bcIQYrbKDpF9tkv1Hwxm
+XnglnvVsh+DGl+nnzBmlUUqh3/oo5mV1HR4L//m2hpiBSGCZomyeu9x7I8Fqluh5
+xnZobrMqQoK8adRvvplZVLphEhZ7yd4Ezfe3NsbAo+pN5Oym9k7FJ0DUpZQLdo5k
+sctMElN4KoIC2C4QBfkWGZILw0gLrwWqTkD8wqIfSnYPWRPcqf3f6sM5jJCkc2YB
+TZrcyna6eK98HQYtKegZ
+=auSt
+-----END PGP SIGNATURE-----
+
+--------------enig3D1B5BF4A1575E49B5861BCF--

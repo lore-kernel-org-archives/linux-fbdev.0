@@ -1,69 +1,61 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 23 Apr 2013 06:36:51 +0000
-Subject: [PATCH 04/11] fbdev/au1200fb: use vm_iomap_memory()
-Message-Id: <1366699018-5439-4-git-send-email-tomi.valkeinen@ti.com>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Tue, 02 Apr 2013 18:20:35 +0000
+Subject: [PATCHv3 3/6] video: vt8500: Correct descriptions in video/Kconfig
+Message-Id: <1364926838-6721-4-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1364926838-6721-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1364926838-6721-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Ralf Baechle <ralf@linux-mips.org>, Manuel Lauss <manuel.lauss@googlemail.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Use vm_iomap_memory() instead of [io_]remap_pfn_range().
-vm_iomap_memory() gives us much simpler API to map memory to userspace,
-and reduces possibilities for bugs.
+This patch corrects the descriptions for the VIA VT8500 and
+Wondermedia WM8xxx-series framebuffer drivers to correctly reflect
+which hardware they support.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Cc: Manuel Lauss <manuel.lauss@googlemail.com>
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+Reviewed-by: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 ---
- drivers/video/au1200fb.c |   26 +-------------------------
- 1 file changed, 1 insertion(+), 25 deletions(-)
+ drivers/video/Kconfig |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
-index 1b59054..6ce6b83 100644
---- a/drivers/video/au1200fb.c
-+++ b/drivers/video/au1200fb.c
-@@ -1235,36 +1235,12 @@ static int au1200fb_fb_blank(int blank_mode, struct fb_info *fbi)
- static int au1200fb_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 661aa54..ad762ed 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1789,7 +1789,7 @@ config FB_AU1200
+ 	  option au1200fb:panel=<name>.
  
- {
--	unsigned int len;
--	unsigned long start=0, off;
- 	struct au1200fb_device *fbdev = info->par;
+ config FB_VT8500
+-	bool "VT8500 LCD Driver"
++	bool "VIA VT8500 framebuffer support"
+ 	depends on (FB = y) && ARM && ARCH_VT8500
+ 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
+@@ -1799,17 +1799,18 @@ config FB_VT8500
+ 	  controller.
  
--	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT)) {
--		return -EINVAL;
--	}
--
--	start = fbdev->fb_phys & PAGE_MASK;
--	len = PAGE_ALIGN((start & ~PAGE_MASK) + fbdev->fb_len);
--
--	off = vma->vm_pgoff << PAGE_SHIFT;
--
--	if ((vma->vm_end - vma->vm_start + off) > len) {
--		return -EINVAL;
--	}
--
--	off += start;
--	vma->vm_pgoff = off >> PAGE_SHIFT;
--
- 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
- 	pgprot_val(vma->vm_page_prot) |= _CACHE_MASK; /* CCA=7 */
+ config FB_WM8505
+-	bool "WM8505 frame buffer support"
++	bool "Wondermedia WM8xxx-series frame buffer support"
+ 	depends on (FB = y) && ARM && ARCH_VT8500
+ 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_IMAGEBLIT
+ 	help
+-	  This is the framebuffer driver for WonderMedia WM8505/WM8650
+-	  integrated LCD controller.
++	  This is the framebuffer driver for WonderMedia WM8xxx-series
++	  integrated LCD controller. This driver covers the WM8505, WM8650
++	  and WM8850 SoCs.
  
--	vma->vm_flags |= VM_IO;
--
--	return io_remap_pfn_range(vma, vma->vm_start, off >> PAGE_SHIFT,
--				  vma->vm_end - vma->vm_start,
--				  vma->vm_page_prot);
--
--	return 0;
-+	return vm_iomap_memory(vma, fbdev->fb_phys, fbdev->fb_len);
- }
- 
- static void set_global(u_int cmd, struct au1200_lcd_global_regs_t *pdata)
+ config FB_WMT_GE_ROPS
+-	bool "VT8500/WM85xx accelerated raster ops support"
++	bool "VT8500/WM8xxx accelerated raster ops support"
+ 	depends on (FB = y) && (FB_VT8500 || FB_WM8505)
+ 	default n
+ 	help
 -- 
-1.7.10.4
+1.7.9.5
 

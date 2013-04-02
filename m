@@ -1,34 +1,91 @@
-From: Markus Pargmann <mpa@pengutronix.de>
-Date: Wed, 24 Apr 2013 13:39:09 +0000
-Subject: [PATCH v5 0/2] video: imxfb DT support
-Message-Id: <1366810751-26860-1-git-send-email-mpa@pengutronix.de>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Tue, 02 Apr 2013 04:49:56 +0000
+Subject: [PATCHv2 2/6] video: vt8500: Remove unused platform_data/video-vt8500lcdfb.h
+Message-Id: <1364878200-26343-3-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1364878200-26343-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1364878200-26343-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+With the conversion to devicetree only for arch-vt8500, this
+header is no longer required. This patch removes the #include
+from the two framebuffer drivers that used it, and the header file.
 
-This series adds DT support for imxfb. Changes are listed in the notes section
-of each patch.
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+Reviewed-by: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+---
+ drivers/video/vt8500lcdfb.c                     |    2 --
+ drivers/video/wm8505fb.c                        |    2 --
+ include/linux/platform_data/video-vt8500lcdfb.h |   31 -----------------------
+ 3 files changed, 35 deletions(-)
+ delete mode 100644 include/linux/platform_data/video-vt8500lcdfb.h
 
-Regards,
-
-Markus
-
-
-
-Christian Hemp (1):
-      imxfb: Set alpha value of the framebuffer
-
-Markus Pargmann (1):
-      video: imxfb: Add DT support
-
- Documentation/devicetree/bindings/video/fsl,imx-fb.txt |  51 +++++++++++++
- drivers/video/Kconfig                                  |   2 +
- drivers/video/imxfb.c                                  | 229 +++++++++++++++++++++++++++++++++++++++++++++++---------
- include/linux/platform_data/video-imxfb.h              |   3 +
- 4 files changed, 250 insertions(+), 35 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/video/fsl,imx-fb.txt
+diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
+index d8cc1f6..1c34821 100644
+--- a/drivers/video/vt8500lcdfb.c
++++ b/drivers/video/vt8500lcdfb.c
+@@ -30,8 +30,6 @@
+ #include <linux/platform_device.h>
+ #include <linux/wait.h>
+ 
+-#include <linux/platform_data/video-vt8500lcdfb.h>
+-
+ #include "vt8500lcdfb.h"
+ 
+ #ifdef CONFIG_FB_WMT_GE_ROPS
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index db49803..ce23a00 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -32,8 +32,6 @@
+ #include <linux/of_fdt.h>
+ #include <linux/memblock.h>
+ 
+-#include <linux/platform_data/video-vt8500lcdfb.h>
+-
+ #include "wm8505fb_regs.h"
+ 
+ #ifdef CONFIG_FB_WMT_GE_ROPS
+diff --git a/include/linux/platform_data/video-vt8500lcdfb.h b/include/linux/platform_data/video-vt8500lcdfb.h
+deleted file mode 100644
+index 7f399c3..0000000
+--- a/include/linux/platform_data/video-vt8500lcdfb.h
++++ /dev/null
+@@ -1,31 +0,0 @@
+-/*
+- *  VT8500/WM8505 Frame Buffer platform data definitions
+- *
+- *  Copyright (C) 2010 Ed Spiridonov <edo.rus@gmail.com>
+- *
+- * This software is licensed under the terms of the GNU General Public
+- * License version 2, as published by the Free Software Foundation, and
+- * may be copied, distributed, and modified under those terms.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- */
+-
+-#ifndef _VT8500FB_H
+-#define _VT8500FB_H
+-
+-#include <linux/fb.h>
+-
+-struct vt8500fb_platform_data {
+-	struct fb_videomode	mode;
+-	u32			xres_virtual;
+-	u32			yres_virtual;
+-	u32			bpp;
+-	unsigned long		video_mem_phys;
+-	void			*video_mem_virt;
+-	unsigned long		video_mem_len;
+-};
+-
+-#endif /* _VT8500FB_H */
+-- 
+1.7.9.5
 

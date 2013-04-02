@@ -1,67 +1,83 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 04 Apr 2013 10:16:08 +0000
-Subject: Re: [PATCHv3 0/6] fb: vt8500: patches for 3.10
-Message-Id: <515D52E8.4010206@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig70FA6F1D82F01F891C43FB5B"
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Tue, 02 Apr 2013 11:45:23 +0000
+Subject: [PATCH 1/1] OMAPDSS: DSI: Use devm_clk_get()
+Message-Id: <1364902403-9980-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364926838-6721-1-git-send-email-linux@prisktech.co.nz>
- <515D0F5E.5010805@prisktech.co.nz>
-In-Reply-To: <515D0F5E.5010805@prisktech.co.nz>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, FlorianSchandinat@gmx.de, akpm@linux-foundation.org, sachin.kamat@linaro.org
 
---------------enig70FA6F1D82F01F891C43FB5B
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Using devm_clk_get cleans up some code.
 
-On 2013-04-04 08:27, Tony Prisk wrote:
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+---
+Compile tested on linux-next tree (20130402).
+---
+ drivers/video/omap2/dss/dsi.c |   19 ++-----------------
+ 1 file changed, 2 insertions(+), 17 deletions(-)
 
-> Tomi,
->=20
-> If no one has any further comments, are you still prepared to take this=
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 8db29bf..9b1c5ec 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -5347,7 +5347,7 @@ static int dsi_get_clocks(struct platform_device *dsidev)
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	struct clk *clk;
+ 
+-	clk = clk_get(&dsidev->dev, "fck");
++	clk = devm_clk_get(&dsidev->dev, "fck");
+ 	if (IS_ERR(clk)) {
+ 		DSSERR("can't get fck\n");
+ 		return PTR_ERR(clk);
+@@ -5355,11 +5355,9 @@ static int dsi_get_clocks(struct platform_device *dsidev)
+ 
+ 	dsi->dss_clk = clk;
+ 
+-	clk = clk_get(&dsidev->dev, "sys_clk");
++	clk = devm_clk_get(&dsidev->dev, "sys_clk");
+ 	if (IS_ERR(clk)) {
+ 		DSSERR("can't get sys_clk\n");
+-		clk_put(dsi->dss_clk);
+-		dsi->dss_clk = NULL;
+ 		return PTR_ERR(clk);
+ 	}
+ 
+@@ -5368,16 +5366,6 @@ static int dsi_get_clocks(struct platform_device *dsidev)
+ 	return 0;
+ }
+ 
+-static void dsi_put_clocks(struct platform_device *dsidev)
+-{
+-	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+-
+-	if (dsi->dss_clk)
+-		clk_put(dsi->dss_clk);
+-	if (dsi->sys_clk)
+-		clk_put(dsi->sys_clk);
+-}
+-
+ static struct omap_dss_device * __init dsi_find_dssdev(struct platform_device *pdev)
+ {
+ 	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
+@@ -5592,7 +5580,6 @@ static int __init omap_dsihw_probe(struct platform_device *dsidev)
+ 
+ err_runtime_get:
+ 	pm_runtime_disable(&dsidev->dev);
+-	dsi_put_clocks(dsidev);
+ 	return r;
+ }
+ 
+@@ -5608,8 +5595,6 @@ static int __exit omap_dsihw_remove(struct platform_device *dsidev)
+ 
+ 	pm_runtime_disable(&dsidev->dev);
+ 
+-	dsi_put_clocks(dsidev);
+-
+ 	if (dsi->vdds_dsi_reg != NULL) {
+ 		if (dsi->vdds_dsi_enabled) {
+ 			regulator_disable(dsi->vdds_dsi_reg);
+-- 
+1.7.9.5
 
-> series?
-> If so, I will send a pull-request.
-
-Yes, I can take it. No need for pull-request, it was simple enough to
-apply. I'll push it to linux-next today or tomorrow.
-
-> With regards to the earlier concern about your current patch series, I
-> think its easiest if you do take this series then you could do a fixup
-> patch if this one is merged first. From what I remember of your series,=
-
-> it is basically a rename of of_get_display_timings() to
-> of_get_display_timing() and some new code which I don't use. Seems a
-> rather trivial patch for a fixup later.
-
-Yes, I can fix it. Should be trivial.
-
- Tomi
-
-
-
---------------enig70FA6F1D82F01F891C43FB5B
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRXVLoAAoJEPo9qoy8lh71OSQQAI7d5OZ6hV+edvyK7Kgb+2Q5
-OWzzkNA81QP4Jk4sZ7HZhFgjdYZOLwSxmP0CKg6X8AI9/JE+Fw4RTPjz0TnH/R9S
-jBdQFqLCP2gg5raI5/UXHQqlMMvTqKClKGB3U3SqmO4TbD1u/lTr01vxZHTKdvDO
-/XY8yiwBJGiGxw7f/nMjx8zBNQPmEMZZYm/t90IBQgIPfHtqOJxEVfW8zpyL0ao+
-ESii37XFCgV3Di63tFSLd4cqnf8NMiB5yhgeyQNEgVEeWyuQh1cWfbqRuaCED/nw
-6S+EHKCr4fEiw9SDuRIUrbwCLaCQ1ddMIvTDohnuC2p5Mr9dey8di2WFDAm7cw9U
-dPIs+hs0JSb3aC5e3nVm5sZaALmjXAw9N2rK7pnLPOIq2f3yPeHD6Weh6zVtcq87
-PB+GvIYIcB97wJILBVl1BLzMgcIXRM9rsBvC2hNz/Lj3RJksRS+QhJOz5OyDPWKX
-tWMePvZX8AcoTlP98tzoM/QyM9YBliwOibieBQNuhIs6qIcxtjYcKdLM0uFWcGTh
-lSCCX5ntyHIO8kWRWLIGyZyIHYbiNI01j3bxaxU0NhNizBH9nWDRestRMeifzIE+
-vTpsagSzcSlO+FtBDlBt46lLzr8nWvnMQjRop9JZ/L0YH7K+yaeEMbzjxLtgBV5i
-2NrKih4C1IxZ2kSfuVZa
-=Ccg/
------END PGP SIGNATURE-----
-
---------------enig70FA6F1D82F01F891C43FB5B--

@@ -1,52 +1,224 @@
-From: Prabhakar Lad <prabhakar.csengg@gmail.com>
-Date: Wed, 24 Apr 2013 12:12:08 +0000
-Subject: [PATCH 6/6] ARM: davinci: dm644x: enable fbdev driver
-Message-Id: <1366804808-22720-7-git-send-email-prabhakar.csengg@gmail.com>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Tue, 02 Apr 2013 04:49:58 +0000
+Subject: [PATCHv2 4/6] drivers/video/wm8505fb.c: use devm_ functions
+Message-Id: <1364878200-26343-5-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366804808-22720-1-git-send-email-prabhakar.csengg@gmail.com>
-In-Reply-To: <1366804808-22720-1-git-send-email-prabhakar.csengg@gmail.com>
+References: <1364878200-26343-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1364878200-26343-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-This patch enables fbdev driver by creating fbdev device and register it.
+The various devm_ functions allocate memory that is released when a driver
+detaches.  This patch uses these functions for data that is allocated in
+the probe function of a platform device and is only freed in the remove
+function.
 
-Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+The patch makes some other cleanups.  First, the original code used
+devm_kzalloc, but kfree.  This would lead to a double free.  The problem
+was found using the following semantic match (http://coccinelle.lip6.fr/):
+
+// <smpl>
+@@
+expression x,e;
+@@
+x = devm_kzalloc(...)
+... when != x = e
+?-kfree(x,...);
+// </smpl>
+
+The error-handing code of devm_request_and_ioremap does not print any
+warning message, because devm_request_and_ioremap does this.
+
+The call to dma_alloc_coherent is converted to its devm equivalent,
+dmam_alloc_coherent.  This implicitly introduces a call to
+dmam_free_coherent, which was completly missing in the original code.
+
+A semicolon is removed at the end of the error-handling code for the call
+to dma_alloc_coherent.
+
+The block of code calling fb_alloc_cmap is moved below the block of code
+calling wm8505fb_set_par, so that the error-handing code of the call to
+wm8505fb_set_par can just return ret.  This way there is only one block of
+error-handling code that needs to call fb_dealloc_cmap, and so this is
+moved up to the place where it is needed, eliminating the need for all
+gotos and labels in the function.  This was suggested by Tony Prisk.
+
+The initializations of fbi and ret at the beginning of the function are not
+necessary and are removed.  The call platform_set_drvdata(pdev, NULL); at
+the end of the function is also removed.
+
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+Reviewed-by: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 ---
- arch/arm/mach-davinci/dm644x.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+ drivers/video/wm8505fb.c |   79 +++++++++++-----------------------------------
+ 1 file changed, 19 insertions(+), 60 deletions(-)
 
-diff --git a/arch/arm/mach-davinci/dm644x.c b/arch/arm/mach-davinci/dm644x.c
-index c2a9273..a4fee07 100644
---- a/arch/arm/mach-davinci/dm644x.c
-+++ b/arch/arm/mach-davinci/dm644x.c
-@@ -745,6 +745,15 @@ static struct platform_device dm644x_vpbe_display = {
- 	},
- };
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index ce23a00..b94ebc9 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -287,15 +287,11 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 	unsigned long fb_mem_len;
+ 	void *fb_mem_virt;
  
-+static struct platform_device dm644x_davincifb = {
-+	.name           = "davinci-vpbe-fb",
-+	.id             = -1,
-+	.dev            = {
-+		.dma_mask		= &dm644x_video_dma_mask,
-+		.coherent_dma_mask	= DMA_BIT_MASK(32),
-+	},
-+};
-+
- static struct venc_platform_data dm644x_venc_pdata = {
- 	.setup_clock	= dm644x_venc_setup_clock,
- };
-@@ -909,6 +918,7 @@ int __init dm644x_init_video(struct vpfe_config *vpfe_cfg,
- 		platform_device_register(&dm644x_venc_dev);
- 		platform_device_register(&dm644x_vpbe_dev);
- 		platform_device_register(&dm644x_vpbe_display);
-+		platform_device_register(&dm644x_davincifb);
+-	ret = -ENOMEM;
+-	fbi = NULL;
+-
+ 	fbi = devm_kzalloc(&pdev->dev, sizeof(struct wm8505fb_info) +
+ 			sizeof(u32) * 16, GFP_KERNEL);
+ 	if (!fbi) {
+ 		dev_err(&pdev->dev, "Failed to initialize framebuffer device\n");
+-		ret = -ENOMEM;
+-		goto failed;
++		return -ENOMEM;
  	}
  
+ 	strcpy(fbi->fb.fix.id, DRIVER_NAME);
+@@ -321,31 +317,14 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 	fbi->fb.pseudo_palette	= addr;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (res = NULL) {
+-		dev_err(&pdev->dev, "no I/O memory resource defined\n");
+-		ret = -ENODEV;
+-		goto failed_fbi;
+-	}
+-
+-	res = request_mem_region(res->start, resource_size(res), DRIVER_NAME);
+-	if (res = NULL) {
+-		dev_err(&pdev->dev, "failed to request I/O memory\n");
+-		ret = -EBUSY;
+-		goto failed_fbi;
+-	}
+-
+-	fbi->regbase = ioremap(res->start, resource_size(res));
+-	if (fbi->regbase = NULL) {
+-		dev_err(&pdev->dev, "failed to map I/O memory\n");
+-		ret = -EBUSY;
+-		goto failed_free_res;
+-	}
++	fbi->regbase = devm_request_and_ioremap(&pdev->dev, res);
++	if (fbi->regbase = NULL)
++		return -EBUSY;
+ 
+ 	np = of_parse_phandle(pdev->dev.of_node, "default-mode", 0);
+ 	if (!np) {
+ 		pr_err("%s: No display description in Device Tree\n", __func__);
+-		ret = -EINVAL;
+-		goto failed_free_res;
++		return -EINVAL;
+ 	}
+ 
+ 	/*
+@@ -364,7 +343,7 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 	ret |= of_property_read_u32(np, "bpp", &bpp);
+ 	if (ret) {
+ 		pr_err("%s: Unable to read display properties\n", __func__);
+-		goto failed_free_res;
++		return -EINVAL;
+ 	}
+ 
+ 	of_mode.vmode = FB_VMODE_NONINTERLACED;
+@@ -378,12 +357,12 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 
+ 	/* try allocating the framebuffer */
+ 	fb_mem_len = of_mode.xres * of_mode.yres * 2 * (bpp / 8);
+-	fb_mem_virt = dma_alloc_coherent(&pdev->dev, fb_mem_len, &fb_mem_phys,
++	fb_mem_virt = dmam_alloc_coherent(&pdev->dev, fb_mem_len, &fb_mem_phys,
+ 				GFP_KERNEL);
+ 	if (!fb_mem_virt) {
+ 		pr_err("%s: Failed to allocate framebuffer\n", __func__);
+ 		return -ENOMEM;
+-	};
++	}
+ 
+ 	fbi->fb.var.xres_virtual	= of_mode.xres;
+ 	fbi->fb.var.yres_virtual	= of_mode.yres * 2;
+@@ -394,28 +373,29 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 	fbi->fb.screen_base		= fb_mem_virt;
+ 	fbi->fb.screen_size		= fb_mem_len;
+ 
+-	if (fb_alloc_cmap(&fbi->fb.cmap, 256, 0) < 0) {
+-		dev_err(&pdev->dev, "Failed to allocate color map\n");
+-		ret = -ENOMEM;
+-		goto failed_free_io;
+-	}
+-
+-	wm8505fb_init_hw(&fbi->fb);
+-
+ 	fbi->contrast = 0x80;
+ 	ret = wm8505fb_set_par(&fbi->fb);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to set parameters\n");
+-		goto failed_free_cmap;
++		return ret;
+ 	}
+ 
++	if (fb_alloc_cmap(&fbi->fb.cmap, 256, 0) < 0) {
++		dev_err(&pdev->dev, "Failed to allocate color map\n");
++		return -ENOMEM;
++	}
++
++	wm8505fb_init_hw(&fbi->fb);
++
+ 	platform_set_drvdata(pdev, fbi);
+ 
+ 	ret = register_framebuffer(&fbi->fb);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev,
+ 			"Failed to register framebuffer device: %d\n", ret);
+-		goto failed_free_cmap;
++		if (fbi->fb.cmap.len)
++			fb_dealloc_cmap(&fbi->fb.cmap);
++		return ret;
+ 	}
+ 
+ 	ret = device_create_file(&pdev->dev, &dev_attr_contrast);
+@@ -429,25 +409,11 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 	       fbi->fb.fix.smem_start + fbi->fb.fix.smem_len - 1);
+ 
  	return 0;
+-
+-failed_free_cmap:
+-	if (fbi->fb.cmap.len)
+-		fb_dealloc_cmap(&fbi->fb.cmap);
+-failed_free_io:
+-	iounmap(fbi->regbase);
+-failed_free_res:
+-	release_mem_region(res->start, resource_size(res));
+-failed_fbi:
+-	platform_set_drvdata(pdev, NULL);
+-	kfree(fbi);
+-failed:
+-	return ret;
+ }
+ 
+ static int wm8505fb_remove(struct platform_device *pdev)
+ {
+ 	struct wm8505fb_info *fbi = platform_get_drvdata(pdev);
+-	struct resource *res;
+ 
+ 	device_remove_file(&pdev->dev, &dev_attr_contrast);
+ 
+@@ -458,13 +424,6 @@ static int wm8505fb_remove(struct platform_device *pdev)
+ 	if (fbi->fb.cmap.len)
+ 		fb_dealloc_cmap(&fbi->fb.cmap);
+ 
+-	iounmap(fbi->regbase);
+-
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	release_mem_region(res->start, resource_size(res));
+-
+-	kfree(fbi);
+-
+ 	return 0;
+ }
+ 
 -- 
-1.7.4.1
+1.7.9.5
 

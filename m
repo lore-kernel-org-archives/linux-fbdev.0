@@ -1,67 +1,174 @@
-From: Alexandre Courbot <gnurou@gmail.com>
-Date: Sat, 27 Apr 2013 15:36:45 +0000
-Subject: Re: [PATCH v8 0/3] Runtime Interpreted Power Sequences
-Message-Id: <CAAVeFuLCoi07-9KWyi+iJ58Zb-aiQg1pgCvq1fmF+FKuzfCRiQ@mail.gmail.com>
+From: Fabio Porcedda <fabio.porcedda@gmail.com>
+Date: Tue, 02 Apr 2013 10:08:02 +0000
+Subject: Re: [PATCH v4] drivers: video: use module_platform_driver_probe()
+Message-Id: <CAHkwnC9FFp+55RZQjTsETPtTZ5p_z_x5XD1h=1f2iNrG8QL_7g@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1353047903-14363-1-git-send-email-acourbot@nvidia.com> <CAPnjgZ1P6dmRB0sO2qBUtd=WBiNcY339NAit2faaotAfEqQDeQ@mail.gmail.com>
-In-Reply-To: <CAPnjgZ1P6dmRB0sO2qBUtd=WBiNcY339NAit2faaotAfEqQDeQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+References: <1363352558-6275-1-git-send-email-fabio.porcedda@gmail.com>
+In-Reply-To: <1363352558-6275-1-git-send-email-fabio.porcedda@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Anton Vorontsov <cbouatmailru-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Leela Krishna Amudala <l.krishna-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, lk <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Devicetree Discuss <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: linux-fbdev <linux-fbdev@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, David Howells <dhowells@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 
-Hi Simon,
-
-On Sat, Apr 27, 2013 at 3:55 AM, Simon Glass <sjg@chromium.org> wrote:
-> Hi,
+On Fri, Mar 15, 2013 at 2:02 PM, Fabio Porcedda
+<fabio.porcedda@gmail.com> wrote:
+> This patch converts the drivers to use the
+> module_platform_driver_probe() macro which makes the code smaller and
+> a bit simpler.
 >
-> On Thu, Nov 15, 2012 at 10:38 PM, Alexandre Courbot <acourbot@nvidia.com> wrote:
->> Hopefully the final series before the feature gets merged. Anton Vorontsov
->> kindly accepted to take it into his tree, so this series is mostly a call for
->> acks, tests and reviews notices before the merge window for 3.8 opens. If you
->> are interested in seeing this feature, please add your name.
->>
->> This series also adds an entry for the subsystem into MAINTAINERS, setting me as
->> the person in charge.
->>
->> Changes from v7:
->> - fix bug reported by Tony Prisk
->> - add MAINTAINERS entry
->>
->> Alexandre Courbot (3):
->>   Runtime Interpreted Power Sequences
->>   pwm_backlight: use power sequences
->>   Take maintainership of power sequences
+> Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
+> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+> Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com> # atmel_lcdfb.c
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: David Howells <dhowells@redhat.com>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com> # amifb.c
+> Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+> ---
 >
-> Did this actually land? I can't see it in linux-next.
+> Notes:
+>     v4:
+>      - add acked-by Nicolas & Laurent
+>      - fix amifb.c
+>     v3:
+>      - add missing drivers: amifb, atmel_lcdfb, vrfb
+>      - split patch set to each maintainer to easy up respin
+>     v2:
+>      - rebased over linux-next and remove already converted drivers
+>
+>  drivers/video/amifb.c          | 14 +-------------
+>  drivers/video/atmel_lcdfb.c    | 13 +------------
+>  drivers/video/omap2/vrfb.c     | 13 +------------
+>  drivers/video/sh_mipi_dsi.c    | 12 +-----------
+>  drivers/video/sh_mobile_hdmi.c | 12 +-----------
+>  5 files changed, 5 insertions(+), 59 deletions(-)
+>
+> diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
+> index 7fa1bf8..77cb4ff 100644
+> --- a/drivers/video/amifb.c
+> +++ b/drivers/video/amifb.c
+> @@ -3788,19 +3788,7 @@ static struct platform_driver amifb_driver = {
+>         },
+>  };
+>
+> -static int __init amifb_init(void)
+> -{
+> -       return platform_driver_probe(&amifb_driver, amifb_probe);
+> -}
+> -
+> -module_init(amifb_init);
+> -
+> -static void __exit amifb_exit(void)
+> -{
+> -       platform_driver_unregister(&amifb_driver);
+> -}
+> -
+> -module_exit(amifb_exit);
+> +module_platform_driver_probe(amifb_driver, amifb_probe);
+>
+>  MODULE_LICENSE("GPL");
+>  MODULE_ALIAS("platform:amiga-video");
+> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+> index 12cf5f3..654e102 100644
+> --- a/drivers/video/atmel_lcdfb.c
+> +++ b/drivers/video/atmel_lcdfb.c
+> @@ -1150,18 +1150,7 @@ static struct platform_driver atmel_lcdfb_driver = {
+>         },
+>  };
+>
+> -static int __init atmel_lcdfb_init(void)
+> -{
+> -       return platform_driver_probe(&atmel_lcdfb_driver, atmel_lcdfb_probe);
+> -}
+> -
+> -static void __exit atmel_lcdfb_exit(void)
+> -{
+> -       platform_driver_unregister(&atmel_lcdfb_driver);
+> -}
+> -
+> -module_init(atmel_lcdfb_init);
+> -module_exit(atmel_lcdfb_exit);
+> +module_platform_driver_probe(atmel_lcdfb_driver, atmel_lcdfb_probe);
+>
+>  MODULE_DESCRIPTION("AT91/AT32 LCD Controller framebuffer driver");
+>  MODULE_AUTHOR("Nicolas Ferre <nicolas.ferre@atmel.com>");
+> diff --git a/drivers/video/omap2/vrfb.c b/drivers/video/omap2/vrfb.c
+> index 10560ef..5261229 100644
+> --- a/drivers/video/omap2/vrfb.c
+> +++ b/drivers/video/omap2/vrfb.c
+> @@ -397,18 +397,7 @@ static struct platform_driver vrfb_driver = {
+>         .remove         = __exit_p(vrfb_remove),
+>  };
+>
+> -static int __init vrfb_init(void)
+> -{
+> -       return platform_driver_probe(&vrfb_driver, &vrfb_probe);
+> -}
+> -
+> -static void __exit vrfb_exit(void)
+> -{
+> -       platform_driver_unregister(&vrfb_driver);
+> -}
+> -
+> -module_init(vrfb_init);
+> -module_exit(vrfb_exit);
+> +module_platform_driver_probe(vrfb_driver, vrfb_probe);
+>
+>  MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@ti.com>");
+>  MODULE_DESCRIPTION("OMAP VRFB");
+> diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
+> index 701b461..6cad530 100644
+> --- a/drivers/video/sh_mipi_dsi.c
+> +++ b/drivers/video/sh_mipi_dsi.c
+> @@ -581,17 +581,7 @@ static struct platform_driver sh_mipi_driver = {
+>         },
+>  };
+>
+> -static int __init sh_mipi_init(void)
+> -{
+> -       return platform_driver_probe(&sh_mipi_driver, sh_mipi_probe);
+> -}
+> -module_init(sh_mipi_init);
+> -
+> -static void __exit sh_mipi_exit(void)
+> -{
+> -       platform_driver_unregister(&sh_mipi_driver);
+> -}
+> -module_exit(sh_mipi_exit);
+> +module_platform_driver_probe(sh_mipi_driver, sh_mipi_probe);
+>
+>  MODULE_AUTHOR("Guennadi Liakhovetski <g.liakhovetski@gmx.de>");
+>  MODULE_DESCRIPTION("SuperH / ARM-shmobile MIPI DSI driver");
+> diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+> index 930e550..bfe4728 100644
+> --- a/drivers/video/sh_mobile_hdmi.c
+> +++ b/drivers/video/sh_mobile_hdmi.c
+> @@ -1445,17 +1445,7 @@ static struct platform_driver sh_hdmi_driver = {
+>         },
+>  };
+>
+> -static int __init sh_hdmi_init(void)
+> -{
+> -       return platform_driver_probe(&sh_hdmi_driver, sh_hdmi_probe);
+> -}
+> -module_init(sh_hdmi_init);
+> -
+> -static void __exit sh_hdmi_exit(void)
+> -{
+> -       platform_driver_unregister(&sh_hdmi_driver);
+> -}
+> -module_exit(sh_hdmi_exit);
+> +module_platform_driver_probe(sh_hdmi_driver, sh_hdmi_probe);
+>
+>  MODULE_AUTHOR("Guennadi Liakhovetski <g.liakhovetski@gmx.de>");
+>  MODULE_DESCRIPTION("SuperH / ARM-shmobile HDMI driver");
+> --
+> 1.8.1.5
+>
 
-It has not landed yet, and will not land in the form that I proposed
-initially. There were some obvious issues with describing the
-sequences in the device tree, and I decided to rethink the whole
-thing, study the state of the art some more (especially ACPI) and
-start again from a blank page.
+ping
 
-The v2 idea is almost ready to be shared, but it needs a cleaner way
-to manage GPIOs, which itself requires gpiolib to be refactored and
-the GENERIC_GPIO option to be removed. These last two items will land
-in 3.10, so I hope to have both the gpiod interface *and* the new
-power seqs ready and approved for 3.11. Then my $@?*^! panel backlight
-will maybe finally switch on (no kidding - that's really what this
-whole thing is about).
-
-The new power seqs will fundamentally work in a similar fashion to v1
-(a simple bytecode that controls power-related items), but will not be
-encoded through the DT. Instead, I'd like to have small power control
-objects that can be referenced by the platform data of pseq-enabled
-drivers, or fetched and associated to the driver through the
-compatible property of the DT. These objects will have, as before,
-power resources they need to request, and power methods that the
-driver can call as needed.
-
-I hate to give dates, but my wish is to come with a first version of
-the code by the time the merge window closes. And yes, I still plan to
-use Anton as a trojan horse to get this in. ;)
-
-Thanks,
-Alex.
+Regards
+--
+Fabio Porcedda

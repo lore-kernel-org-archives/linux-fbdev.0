@@ -1,181 +1,223 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 29 Apr 2013 11:14:27 +0000
-Subject: [GIT PULL] fbdev changes for 3.10
-Message-Id: <517E5613.5020403@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig781EACB3A432CD150EFE1299"
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Tue, 02 Apr 2013 18:20:36 +0000
+Subject: [PATCHv3 4/6] drivers/video/wm8505fb.c: use devm_ functions
+Message-Id: <1364926838-6721-5-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
+References: <1364926838-6721-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1364926838-6721-1-git-send-email-linux@prisktech.co.nz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---------------enig781EACB3A432CD150EFE1299
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-Hi Linus,
+The various devm_ functions allocate memory that is released when a driver
+detaches.  This patch uses these functions for data that is allocated in
+the probe function of a platform device and is only freed in the remove
+function.
 
-The following changes since commit 60d509fa6a9c4653a86ad830e4c4b30360b23f=
-0e:
+The patch makes some other cleanups.  First, the original code used
+devm_kzalloc, but kfree.  This would lead to a double free.  The problem
+was found using the following semantic match (http://coccinelle.lip6.fr/):
 
-  Linux 3.9-rc8 (2013-04-21 14:38:45 -0700)
+// <smpl>
+@@
+expression x,e;
+@@
+x = devm_kzalloc(...)
+... when != x = e
+?-kfree(x,...);
+// </smpl>
 
-are available in the git repository at:
+The error-handing code of devm_request_and_ioremap does not print any
+warning message, because devm_request_and_ioremap does this.
 
-  git://gitorious.org/linux-omap-dss2/linux.git tags/fbdev-for-3.10
+The call to dma_alloc_coherent is converted to its devm equivalent,
+dmam_alloc_coherent.  This implicitly introduces a call to
+dmam_free_coherent, which was completly missing in the original code.
 
-for you to fetch changes up to 9bf9d47a29afbf7a43eae74a988a4aefe88ccbfd:
+A semicolon is removed at the end of the error-handling code for the call
+to dma_alloc_coherent.
 
-  Merge branch '3.10/fb-mmap' into for-next (2013-04-26 09:14:47 +0300)
+The block of code calling fb_alloc_cmap is moved below the block of code
+calling wm8505fb_set_par, so that the error-handing code of the call to
+wm8505fb_set_par can just return ret.  This way there is only one block of
+error-handling code that needs to call fb_dealloc_cmap, and so this is
+moved up to the place where it is needed, eliminating the need for all
+gotos and labels in the function.  This was suggested by Tony Prisk.
 
-----------------------------------------------------------------
+The initializations of fbi and ret at the beginning of the function are not
+necessary and are removed.  The call platform_set_drvdata(pdev, NULL); at
+the end of the function is also removed.
 
-fbdev for 3.10
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+---
+ drivers/video/wm8505fb.c |   79 +++++++++++-----------------------------------
+ 1 file changed, 19 insertions(+), 60 deletions(-)
 
-* use vm_iomap_memory() in various fb drivers to map the fb memory to use=
-rspace
-* Cleanups for the videomode and display_timing features
-* Updates to vt8500, wm8505 and auo-k190x fb drivers
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index fe9afd6..020df1d 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -272,15 +272,11 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 	unsigned long fb_mem_len;
+ 	void *fb_mem_virt;
+ 
+-	ret = -ENOMEM;
+-	fbi = NULL;
+-
+ 	fbi = devm_kzalloc(&pdev->dev, sizeof(struct wm8505fb_info) +
+ 			sizeof(u32) * 16, GFP_KERNEL);
+ 	if (!fbi) {
+ 		dev_err(&pdev->dev, "Failed to initialize framebuffer device\n");
+-		ret = -ENOMEM;
+-		goto failed;
++		return -ENOMEM;
+ 	}
+ 
+ 	strcpy(fbi->fb.fix.id, DRIVER_NAME);
+@@ -306,31 +302,14 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 	fbi->fb.pseudo_palette	= addr;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (res = NULL) {
+-		dev_err(&pdev->dev, "no I/O memory resource defined\n");
+-		ret = -ENODEV;
+-		goto failed_fbi;
+-	}
+-
+-	res = request_mem_region(res->start, resource_size(res), DRIVER_NAME);
+-	if (res = NULL) {
+-		dev_err(&pdev->dev, "failed to request I/O memory\n");
+-		ret = -EBUSY;
+-		goto failed_fbi;
+-	}
+-
+-	fbi->regbase = ioremap(res->start, resource_size(res));
+-	if (fbi->regbase = NULL) {
+-		dev_err(&pdev->dev, "failed to map I/O memory\n");
+-		ret = -EBUSY;
+-		goto failed_free_res;
+-	}
++	fbi->regbase = devm_request_and_ioremap(&pdev->dev, res);
++	if (fbi->regbase = NULL)
++		return -EBUSY;
+ 
+ 	np = of_parse_phandle(pdev->dev.of_node, "default-mode", 0);
+ 	if (!np) {
+ 		pr_err("%s: No display description in Device Tree\n", __func__);
+-		ret = -EINVAL;
+-		goto failed_free_res;
++		return -EINVAL;
+ 	}
+ 
+ 	/*
+@@ -349,7 +328,7 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 	ret |= of_property_read_u32(np, "bpp", &bpp);
+ 	if (ret) {
+ 		pr_err("%s: Unable to read display properties\n", __func__);
+-		goto failed_free_res;
++		return -EINVAL;
+ 	}
+ 
+ 	of_mode.vmode = FB_VMODE_NONINTERLACED;
+@@ -363,12 +342,12 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 
+ 	/* try allocating the framebuffer */
+ 	fb_mem_len = of_mode.xres * of_mode.yres * 2 * (bpp / 8);
+-	fb_mem_virt = dma_alloc_coherent(&pdev->dev, fb_mem_len, &fb_mem_phys,
++	fb_mem_virt = dmam_alloc_coherent(&pdev->dev, fb_mem_len, &fb_mem_phys,
+ 				GFP_KERNEL);
+ 	if (!fb_mem_virt) {
+ 		pr_err("%s: Failed to allocate framebuffer\n", __func__);
+ 		return -ENOMEM;
+-	};
++	}
+ 
+ 	fbi->fb.var.xres_virtual	= of_mode.xres;
+ 	fbi->fb.var.yres_virtual	= of_mode.yres * 2;
+@@ -379,28 +358,29 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 	fbi->fb.screen_base		= fb_mem_virt;
+ 	fbi->fb.screen_size		= fb_mem_len;
+ 
+-	if (fb_alloc_cmap(&fbi->fb.cmap, 256, 0) < 0) {
+-		dev_err(&pdev->dev, "Failed to allocate color map\n");
+-		ret = -ENOMEM;
+-		goto failed_free_io;
+-	}
+-
+-	wm8505fb_init_hw(&fbi->fb);
+-
+ 	fbi->contrast = 0x80;
+ 	ret = wm8505fb_set_par(&fbi->fb);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to set parameters\n");
+-		goto failed_free_cmap;
++		return ret;
+ 	}
+ 
++	if (fb_alloc_cmap(&fbi->fb.cmap, 256, 0) < 0) {
++		dev_err(&pdev->dev, "Failed to allocate color map\n");
++		return -ENOMEM;
++	}
++
++	wm8505fb_init_hw(&fbi->fb);
++
+ 	platform_set_drvdata(pdev, fbi);
+ 
+ 	ret = register_framebuffer(&fbi->fb);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev,
+ 			"Failed to register framebuffer device: %d\n", ret);
+-		goto failed_free_cmap;
++		if (fbi->fb.cmap.len)
++			fb_dealloc_cmap(&fbi->fb.cmap);
++		return ret;
+ 	}
+ 
+ 	ret = device_create_file(&pdev->dev, &dev_attr_contrast);
+@@ -414,25 +394,11 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 	       fbi->fb.fix.smem_start + fbi->fb.fix.smem_len - 1);
+ 
+ 	return 0;
+-
+-failed_free_cmap:
+-	if (fbi->fb.cmap.len)
+-		fb_dealloc_cmap(&fbi->fb.cmap);
+-failed_free_io:
+-	iounmap(fbi->regbase);
+-failed_free_res:
+-	release_mem_region(res->start, resource_size(res));
+-failed_fbi:
+-	platform_set_drvdata(pdev, NULL);
+-	kfree(fbi);
+-failed:
+-	return ret;
+ }
+ 
+ static int wm8505fb_remove(struct platform_device *pdev)
+ {
+ 	struct wm8505fb_info *fbi = platform_get_drvdata(pdev);
+-	struct resource *res;
+ 
+ 	device_remove_file(&pdev->dev, &dev_attr_contrast);
+ 
+@@ -443,13 +409,6 @@ static int wm8505fb_remove(struct platform_device *pdev)
+ 	if (fbi->fb.cmap.len)
+ 		fb_dealloc_cmap(&fbi->fb.cmap);
+ 
+-	iounmap(fbi->regbase);
+-
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	release_mem_region(res->start, resource_size(res));
+-
+-	kfree(fbi);
+-
+ 	return 0;
+ }
+ 
+-- 
+1.7.9.5
 
-----------------------------------------------------------------
-Arnd Bergmann (2):
-      video/exynos: remove unnecessary header inclusions
-      video/s3c: move platform_data out of arch/arm
-
-Fabio Porcedda (1):
-      drivers: video: use module_platform_driver_probe()
-
-Heiko St=FCbner (9):
-      AUO-K190x: Use correct line length
-      AUO-K190x: add runtime-pm calls to controller init functions
-      AUO-K190x: set the correct runtime-pm state in recover
-      AUO-K190x: make memory check in check_var more flexible
-      AUO-K190x: move var resolution-handling into check_var
-      AUO-K190x: make color handling more flexible
-      AUO-K190x: add a 16bit truecolor mode
-      AUO-K190x: add framebuffer rotation support
-      AUO-K190x: Add resolutions for portrait displays
-
-Julia Lawall (1):
-      drivers/video/wm8505fb.c: use devm_ functions
-
-Paul Bolle (1):
-      ARM: OMAP: remove "config FB_OMAP_CONSISTENT_DMA_SIZE"
-
-Sachin Kamat (1):
-      video: wm8505fb: Convert to devm_ioremap_resource()
-
-Timur Tabi (1):
-      drivers/video: fsl-diu-fb: add hardware cursor support
-
-Tomi Valkeinen (17):
-      videomode: simplify videomode Kconfig and Makefile
-      videomode: combine videomode dmt_flags and data_flags
-      videomode: create enum for videomode's display flags
-      videomode: remove timing_entry_index
-      videomode: videomode_from_timing work
-      fbdev: Merge fbdev topic branches
-      video: vt8500: fix Kconfig for videomode
-      fbdev/omapfb: use vm_iomap_memory()
-      fbdev/controlfb: use vm_iomap_memory()
-      fbdev/fb-puv3: use vm_iomap_memory()
-      fbdev/sa1100fb: use vm_iomap_memory()
-      fbdev/vermillion: use vm_iomap_memory()
-      fbdev/sgivwfb: use vm_iomap_memory()
-      fbdev/ps3fb: use vm_iomap_memory()
-      fbdev: improve fb_mmap bounds checks
-      fbdev: fix check for fb_mmap's mmio availability
-      Merge branch '3.10/fb-mmap' into for-next
-
-Tony Prisk (5):
-      video: vt8500: Make wmt_ge_rops optional
-      video: vt8500: Remove unused platform_data/video-vt8500lcdfb.h
-      video: vt8500: Correct descriptions in video/Kconfig
-      video: vt8500: Adjust contrast in wm8505 framebuffer driver.
-      video: fb: vt8500: Convert framebuffer drivers to standardized bind=
-ing
-
- .../devicetree/bindings/video/via,vt8500-fb.txt    |   48 +---
- .../devicetree/bindings/video/wm,wm8505-fb.txt     |   32 ++-
- arch/arm/boot/dts/vt8500-bv07.dts                  |   34 ++-
- arch/arm/boot/dts/vt8500.dtsi                      |    4 +-
- arch/arm/boot/dts/wm8505-ref.dts                   |   34 ++-
- arch/arm/boot/dts/wm8505.dtsi                      |    4 +-
- arch/arm/boot/dts/wm8650-mid.dts                   |   36 ++-
- arch/arm/boot/dts/wm8650.dtsi                      |    4 +-
- arch/arm/boot/dts/wm8850-w70v2.dts                 |   40 ++--
- arch/arm/boot/dts/wm8850.dtsi                      |    4 +-
- arch/arm/plat-samsung/include/plat/fb.h            |   50 +----
- drivers/gpu/drm/drm_modes.c                        |   20 +-
- drivers/gpu/drm/tilcdc/Kconfig                     |    3 +-
- drivers/gpu/drm/tilcdc/tilcdc_panel.c              |    2 +-
- drivers/video/Kconfig                              |   57 ++---
- drivers/video/Makefile                             |    8 +-
- drivers/video/amifb.c                              |   14 +-
- drivers/video/atmel_lcdfb.c                        |   13 +-
- drivers/video/auo_k1900fb.c                        |   11 +-
- drivers/video/auo_k1901fb.c                        |   11 +-
- drivers/video/auo_k190x.c                          |  235 ++++++++++++++=
-++----
- drivers/video/controlfb.c                          |   50 ++---
- drivers/video/exynos/exynos_mipi_dsi.c             |    2 -
- drivers/video/exynos/exynos_mipi_dsi_common.c      |    2 -
- drivers/video/exynos/exynos_mipi_dsi_lowlevel.c    |    2 -
- drivers/video/fb-puv3.c                            |   14 +-
- drivers/video/fbmem.c                              |    5 +
- drivers/video/fbmon.c                              |   16 +-
- drivers/video/fsl-diu-fb.c                         |  157 ++++++++++++-
- drivers/video/gbefb.c                              |    4 +-
- drivers/video/of_display_timing.c                  |   19 +-
- drivers/video/of_videomode.c                       |    2 +-
- drivers/video/omap/Kconfig                         |   11 -
- drivers/video/omap2/omapfb/omapfb-main.c           |   30 +--
- drivers/video/omap2/vrfb.c                         |   13 +-
- drivers/video/ps3fb.c                              |   18 +-
- drivers/video/s3c-fb.c                             |    3 +-
- drivers/video/sa1100fb.c                           |   16 +-
- drivers/video/sgivwfb.c                            |   20 +-
- drivers/video/sh_mipi_dsi.c                        |   12 +-
- drivers/video/sh_mobile_hdmi.c                     |   12 +-
- drivers/video/smscufx.c                            |    6 +-
- drivers/video/udlfb.c                              |    6 +-
- drivers/video/vermilion/vermilion.c                |   14 +-
- drivers/video/vfb.c                                |    7 +-
- drivers/video/videomode.c                          |   36 +--
- drivers/video/vt8500lcdfb.c                        |   55 ++---
- drivers/video/wm8505fb.c                           |  145 ++++--------
- drivers/video/wmt_ge_rops.h                        |   23 ++
- include/linux/platform_data/video-vt8500lcdfb.h    |   31 ---
- include/linux/platform_data/video_s3c.h            |   54 +++++
- include/video/auo_k190xfb.h                        |    3 +-
- include/video/display_timing.h                     |   57 ++---
- include/video/videomode.h                          |   18 +-
- 54 files changed, 799 insertions(+), 728 deletions(-)
- delete mode 100644 include/linux/platform_data/video-vt8500lcdfb.h
- create mode 100644 include/linux/platform_data/video_s3c.h
-
-
---------------enig781EACB3A432CD150EFE1299
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRflYTAAoJEPo9qoy8lh71Fi8QAJomTKYmczmDcJwTwAXENjbV
-Pmoit/SP6QDK0FyorL3nMO317k9L8izt12VTI+dAq6gu+wJddEaetWZWhofNpMY+
-+16y1vHBpIuDbjcHty9gpinr+hwLcH1GppZOtvx5aZhJgqvnvbyHuneEk66bDkQk
-RiH69g4ZsZnLJz4mIO0QrL3uqXx9S32xg/3IbJ6oFZPD8NqFFkMYiOTcDL4h1Hh/
-RNjHix9q1c5K3sMEWD/sHTxt4opzbFOwjbQVh3QE4TG3FMU4rBSD3CpjIrJEGtvw
-XSknFmCt5w8UZqIkq873ZhhvdFyqTuwEUXxQZR7sJmcYC9+s3+dynjOSiQSUJ4fU
-MtIYbqGLDz2EYmM8etf1KLrzOhRnBeHW6i/XLT6j0TdsdVY041pBG1tfFxnLnFM5
-12pwSxZOe+pZujov1q7V5+pn/6LoPtSqE5eV5ANkVx7h6sH8N66t1ImqJXzTVPB5
-saU3CiDlNMENe0fvsapR7Qwrz1av3KxTmEZIwpZJJokO5BBvKaTHwoFxq9ng/22z
-4DNvzPYUyLYngYrps7MIVYXJ2PAer1oSZt8v/MbZC8wy+vkXw1HZJlmuo79ZfLjX
-RaRpp+z4EbHFMqwtvyGyXe8QdPL1OpIzofOJY7xFFCIB25P7tQ8M+iVEgnZYTDMo
-EDtcUjkBG52yvYkmkeDO
-=O/Lo
------END PGP SIGNATURE-----
-
---------------enig781EACB3A432CD150EFE1299--

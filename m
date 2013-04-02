@@ -1,129 +1,78 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Mon, 22 Apr 2013 10:02:25 +0000
-Subject: [PATCH 4/4] ssd1307fb: Make use of horizontal addressing mode
-Message-Id: <1366624945-5708-5-git-send-email-maxime.ripard@free-electrons.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 02 Apr 2013 10:13:36 +0000
+Subject: Re: [PATCH] video: omap2: dss: use PTR_RET function
+Message-Id: <515AAF50.9010504@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enigFC07AC7C235DE6BE0BECC3F8"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366624945-5708-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1366624945-5708-1-git-send-email-maxime.ripard@free-electrons.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+References: <1364416537-25367-1-git-send-email-epure.andrei@gmail.com>
+In-Reply-To: <1364416537-25367-1-git-send-email-epure.andrei@gmail.com>
+To: Andrei Epure <epure.andrei@gmail.com>
+Cc: FlorianSchandinat@gmx.de, archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-By default, the ssd1307 controller uses an addressing mode called page
-addressing. This mode only increments the column cursor in memory when
-writing data but will not increments the page cursor when we are at the
-end of the page.
+--------------enigFC07AC7C235DE6BE0BECC3F8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-However, the controller supports another addressing mode, called
-horizontal addressing, that will maintain both the page and column
-cursors when writing data to the controller.
+Hi,
 
-That means that we can just remove the code that increments the current
-page address and reset the column cursor when reaching the end of the
-line, allowing to have a lower data overhead, and a simpler driver.
+On 2013-03-27 22:35, Andrei Epure wrote:
+> Use PTR_RET function instead of IS_ERR + PTR_ERR.
+> Patch found using coccinelle.
+>=20
+> Signed-off-by: Andrei Epure <epure.andrei@gmail.com>
+> ---
+>  drivers/video/omap2/dss/core.c |    5 +----
+>  1 file changed, 1 insertion(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/c=
+ore.c
+> index f8779d4..60cc6fe 100644
+> --- a/drivers/video/omap2/dss/core.c
+> +++ b/drivers/video/omap2/dss/core.c
+> @@ -181,10 +181,7 @@ int dss_debugfs_create_file(const char *name, void=
+ (*write)(struct seq_file *))
+>  	d =3D debugfs_create_file(name, S_IRUGO, dss_debugfs_dir,
+>  			write, &dss_debug_fops);
+> =20
+> -	if (IS_ERR(d))
+> -		return PTR_ERR(d);
+> -
+> -	return 0;
+> +	return PTR_RET(d);
+>  }
+>  #else /* CONFIG_OMAP2_DSS_DEBUGFS */
+>  static inline int dss_initialize_debugfs(void)
+>=20
 
-Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
----
- drivers/video/ssd1307fb.c |   51 +++++++++++++++++++++++++++++++++------------
- 1 file changed, 38 insertions(+), 13 deletions(-)
+There's an identical patch from Alexandru Gheorghiu already queued.
 
-diff --git a/drivers/video/ssd1307fb.c b/drivers/video/ssd1307fb.c
-index cab5f7c..259c9ee 100644
---- a/drivers/video/ssd1307fb.c
-+++ b/drivers/video/ssd1307fb.c
-@@ -19,6 +19,12 @@
- #define SSD1307FB_DATA			0x40
- #define SSD1307FB_COMMAND		0x80
- 
-+#define SSD1307FB_SET_ADDRESS_MODE	0x20
-+#define SSD1307FB_SET_ADDRESS_MODE_HORIZONTAL	(0x00)
-+#define SSD1307FB_SET_ADDRESS_MODE_VERTICAL	(0x01)
-+#define SSD1307FB_SET_ADDRESS_MODE_PAGE		(0x02)
-+#define SSD1307FB_SET_COL_RANGE		0x21
-+#define SSD1307FB_SET_PAGE_RANGE	0x22
- #define SSD1307FB_CONTRAST		0x81
- #define	SSD1307FB_CHARGE_PUMP		0x8d
- #define SSD1307FB_SEG_REMAP_ON		0xa1
-@@ -135,9 +141,15 @@ static inline int ssd1307fb_write_data(struct i2c_client *client, u8 data)
- 
- static void ssd1307fb_update_display(struct ssd1307fb_par *par)
- {
-+	struct ssd1307fb_array *array;
- 	u8 *vmem = par->info->screen_base;
- 	int i, j, k;
- 
-+	array = ssd1307fb_alloc_array(par->width * par->height / 8,
-+				      SSD1307FB_DATA);
-+	if (!array)
-+		return;
-+
- 	/*
- 	 * The screen is divided in pages, each having a height of 8
- 	 * pixels, and the width of the screen. When sending a byte of
-@@ -168,29 +180,22 @@ static void ssd1307fb_update_display(struct ssd1307fb_par *par)
- 	 */
- 
- 	for (i = 0; i < (par->height / 8); i++) {
--		struct ssd1307fb_array *array;
--		ssd1307fb_write_cmd(par->client,
--				    SSD1307FB_START_PAGE_ADDRESS + i + par->page_offset);
--		ssd1307fb_write_cmd(par->client, 0x00);
--		ssd1307fb_write_cmd(par->client, 0x10);
--
--		array = ssd1307fb_alloc_array(par->width, SSD1307FB_DATA);
--
- 		for (j = 0; j < par->width; j++) {
--			array->data[j] = 0;
-+			u32 array_idx = i * par->width + j;
-+			array->data[array_idx] = 0;
- 			for (k = 0; k < 8; k++) {
- 				u32 page_length = par->width * i;
- 				u32 index = page_length + (par->width * k + j) / 8;
- 				u8 byte = *(vmem + index);
- 				u8 bit = byte & (1 << (j % 8));
- 				bit = bit >> (j % 8);
--				array->data[j] |= bit << k;
-+				array->data[array_idx] |= bit << k;
- 			}
- 		}
--
--		ssd1307fb_write_array(par->client, array, par->width);
--		kfree(array);
- 	}
-+
-+	ssd1307fb_write_array(par->client, array, par->width * par->height / 8);
-+	kfree(array);
- }
- 
- 
-@@ -371,6 +376,26 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par *par)
- 	if (ret < 0)
- 		return ret;
- 
-+	/* Switch to horizontal addressing mode */
-+	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_ADDRESS_MODE);
-+	ret = ret & ssd1307fb_write_cmd(par->client,
-+					SSD1307FB_SET_ADDRESS_MODE_HORIZONTAL);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_COL_RANGE);
-+	ret = ret & ssd1307fb_write_cmd(par->client, 0x0);
-+	ret = ret & ssd1307fb_write_cmd(par->client, par->width - 1);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_PAGE_RANGE);
-+	ret = ret & ssd1307fb_write_cmd(par->client, 0x0);
-+	ret = ret & ssd1307fb_write_cmd(par->client,
-+					par->page_offset + (par->height / 8) - 1);
-+	if (ret < 0)
-+		return ret;
-+
- 	/* Turn on the display */
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_ON);
- 	if (ret < 0)
--- 
-1.7.10.4
+ Tomi
 
+
+
+--------------enigFC07AC7C235DE6BE0BECC3F8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRWq9QAAoJEPo9qoy8lh7119YP/098U8am6Ljox7mOGjoVC86j
+puhBovr4Qmtea+FqomExIaS7zmvawpvNnrO/9AKzHGJuqHmUMIbfJFR3VxNm5gZk
+iPG29BiI9K0C4h7jCzN4kxVr+waQzCVm2pJNrqtkxow0f39sII3+bv/TULyVR3iw
+eVLIwVl0QaQlBNQyonUh++0DIbrsreR77Il4Zid1lA7RP+2nX1L/fCq+2eZp9j/0
+TfjPx/CuRykiJJuNCrAIZIYxb4160nzBbjfQ+31YqFTJIhwSGgUQBD1zWRiO3i0K
+Np0l0atAikD5h4iUalZctT0XZ+XykQFTgHtQi5FGyep7AM46NIXRmtorO/hjjmv0
+/GDYFRtagnOnC8lj4kUGk5aGjRijTL8b6dHs9D+BMfYic5UxsCnFcuaSgtm0C3OE
+qh3+5jHFEwOBHpRhqNRYO8HnVCdqR121guf3T8SK1GNmy6t2r8iLCTMCcNfX/StP
+gSf5tB0O3RMk3Q76ZGxQgoFO1x/d7wYvxHWQnxdwuummIZokkF9GdnhQX5nWldSs
+iBt772fetw8XYSlU/RvKfXY+ZhvThVS9dqS8+VQ9mC8WXf49b3wcznXLnWXusBdg
+BqB6cyarWGHpr4cBPJVQnvFaYye1WDv292GpCPsU1D4qFIRoMvclxsCILLJoDa5u
+of93dqQQJGtgGoqNzWF4
+=cgro
+-----END PGP SIGNATURE-----
+
+--------------enigFC07AC7C235DE6BE0BECC3F8--

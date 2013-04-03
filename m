@@ -1,61 +1,84 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Tue, 02 Apr 2013 18:20:35 +0000
-Subject: [PATCHv3 3/6] video: vt8500: Correct descriptions in video/Kconfig
-Message-Id: <1364926838-6721-4-git-send-email-linux@prisktech.co.nz>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Wed, 03 Apr 2013 01:30:53 +0000
+Subject: [PATCH 2/2] video: mxsfb: Use of_get_display_gpio_enable()
+Message-Id: <1364952653-7567-2-git-send-email-festevam@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364926838-6721-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1364926838-6721-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-This patch corrects the descriptions for the VIA VT8500 and
-Wondermedia WM8xxx-series framebuffer drivers to correctly reflect
-which hardware they support.
+From: Fabio Estevam <fabio.estevam@freescale.com>
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
-Reviewed-by: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Use of_get_display_gpio_enable() helper to retrieve the GPIO from devicetree 
+that turns on the display.
+
+This lets the code smaller and cleaner.
+
+Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
 ---
- drivers/video/Kconfig |   11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ drivers/video/Kconfig |    1 +
+ drivers/video/mxsfb.c |   21 ++++-----------------
+ 2 files changed, 5 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 661aa54..ad762ed 100644
+index 7607f42..810f990 100644
 --- a/drivers/video/Kconfig
 +++ b/drivers/video/Kconfig
-@@ -1789,7 +1789,7 @@ config FB_AU1200
- 	  option au1200fb:panel=<name>.
- 
- config FB_VT8500
--	bool "VT8500 LCD Driver"
-+	bool "VIA VT8500 framebuffer support"
- 	depends on (FB = y) && ARM && ARCH_VT8500
- 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
-@@ -1799,17 +1799,18 @@ config FB_VT8500
- 	  controller.
- 
- config FB_WM8505
--	bool "WM8505 frame buffer support"
-+	bool "Wondermedia WM8xxx-series frame buffer support"
- 	depends on (FB = y) && ARM && ARCH_VT8500
- 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_IMAGEBLIT
+@@ -2445,6 +2445,7 @@ config FB_MXS
+ 	select FB_CFB_IMAGEBLIT
+ 	select FB_MODE_HELPERS
+ 	select OF_VIDEOMODE
++	select OF_DISPLAY_ENABLE_GPIO
  	help
--	  This is the framebuffer driver for WonderMedia WM8505/WM8650
--	  integrated LCD controller.
-+	  This is the framebuffer driver for WonderMedia WM8xxx-series
-+	  integrated LCD controller. This driver covers the WM8505, WM8650
-+	  and WM8850 SoCs.
+ 	  Framebuffer support for the MXS SoC.
  
- config FB_WMT_GE_ROPS
--	bool "VT8500/WM85xx accelerated raster ops support"
-+	bool "VT8500/WM8xxx accelerated raster ops support"
- 	depends on (FB = y) && (FB_VT8500 || FB_WM8505)
- 	default n
- 	help
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index eac7c1a..50b041a9 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -51,6 +51,7 @@
+ #include <linux/pinctrl/consumer.h>
+ #include <linux/fb.h>
+ #include <video/videomode.h>
++#include <video/of_display_gpio.h>
+ 
+ #define REG_SET	4
+ #define REG_CLR	8
+@@ -859,8 +860,6 @@ static int mxsfb_probe(struct platform_device *pdev)
+ 	struct fb_info *fb_info;
+ 	struct fb_modelist *modelist;
+ 	struct pinctrl *pinctrl;
+-	int panel_enable;
+-	enum of_gpio_flags flags;
+ 	int ret;
+ 
+ 	if (of_id)
+@@ -904,21 +903,9 @@ static int mxsfb_probe(struct platform_device *pdev)
+ 		goto fb_release;
+ 	}
+ 
+-	panel_enable = of_get_named_gpio_flags(pdev->dev.of_node,
+-					       "panel-enable-gpios", 0, &flags);
+-	if (gpio_is_valid(panel_enable)) {
+-		unsigned long f = GPIOF_OUT_INIT_HIGH;
+-		if (flags = OF_GPIO_ACTIVE_LOW)
+-			f = GPIOF_OUT_INIT_LOW;
+-		ret = devm_gpio_request_one(&pdev->dev, panel_enable,
+-					    f, "panel-enable");
+-		if (ret) {
+-			dev_err(&pdev->dev,
+-				"failed to request gpio %d: %d\n",
+-				panel_enable, ret);
+-			goto fb_release;
+-		}
+-	}
++	ret = of_get_display_gpio_enable(pdev);
++	if (ret)
++		goto fb_release;
+ 
+ 	fb_info->pseudo_palette = devm_kzalloc(&pdev->dev, sizeof(u32) * 16,
+ 					       GFP_KERNEL);
 -- 
 1.7.9.5
 

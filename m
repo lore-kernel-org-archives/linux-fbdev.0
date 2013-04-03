@@ -1,237 +1,229 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Date: Sun, 07 Apr 2013 06:33:44 +0000
-Subject: Re: [PATCH v5] video: mxsfb: Introduce regulator support
-Message-Id: <20130407063342.GC11898@S2101-09.ap.freescale.net>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 03 Apr 2013 12:02:02 +0000
+Subject: Re: [PATCH 05/33] arm: omap: board-cm-t35: use generic dpi panel's gpio handling
+Message-Id: <515C1A3A.6050906@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enigE7C1FCF36BA9F8727FAA4D83"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1365171587-31833-1-git-send-email-fabio.estevam@freescale.com>
-In-Reply-To: <1365171587-31833-1-git-send-email-fabio.estevam@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+References: <1360765345-19312-1-git-send-email-archit@ti.com> <1360765345-19312-6-git-send-email-archit@ti.com> <511BAE50.2090507@compulab.co.il> <511BB113.3020108@ti.com> <511BB87E.60003@ti.com> <511C8A83.5070407@compulab.co.il> <511C8D8F.9060805@ti.com> <511CA247.80606@compulab.co.il> <511CA9B3.70401@ti.com> <511CB1B3.80605@compulab.co.il> <511CC37C.3020706@ti.com> <511CDA91.1050300@compulab.co.il> <511CDE12.60701@ti.com> <511CEBC4.6050400@compulab.co.il>
+In-Reply-To: <511CEBC4.6050400@compulab.co.il>
+To: Igor Grinberg <grinberg@compulab.co.il>
+Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Tony Lindgren <tony@atomide.com>
 
-On Fri, Apr 05, 2013 at 11:19:47AM -0300, Fabio Estevam wrote:
-> Instead of using a custom binding for retrieving the GPIO that activates the 
-> LCD from devicetree, use a standard regulator.
-> 
-> This approach has the advantage to be more generic. 
-> 
-> For example: in the case of a board that has a PMIC supplying the LCD voltage, 
-> the current approach would not work, as it only searches for a GPIO pin.
-> 
-> Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
-> ---
-> Chages since v4:
-> - Merged the 2 previous patches into one in order not to break keep mxsfb functionality
-> - Remove unneeded change in mxsfb.txt
-> - Use regulator_disable to pair with regulator_enable
-> Changes since v3:
-> - None
-> Changes since v2:
-> - Use devm_regulator_get()
-> Changes since v1:
-> - No changes
->  Documentation/devicetree/bindings/fb/mxsfb.txt |    2 --
->  arch/arm/boot/dts/imx23-evk.dts                |   11 ++++++-
->  arch/arm/boot/dts/imx28-evk.dts                |   11 ++++++-
->  drivers/video/mxsfb.c                          |   41 +++++++++++++-----------
->  4 files changed, 43 insertions(+), 22 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/fb/mxsfb.txt b/Documentation/devicetree/bindings/fb/mxsfb.txt
-> index 7ba3b76..5d810eb 100644
-> --- a/Documentation/devicetree/bindings/fb/mxsfb.txt
-> +++ b/Documentation/devicetree/bindings/fb/mxsfb.txt
-> @@ -8,7 +8,6 @@ Required properties:
->  - display : phandle to display node (see below for details)
->  
->  Optional properties:
+--------------enigE7C1FCF36BA9F8727FAA4D83
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-So this line should be removed together?
+On 2013-02-14 15:51, Igor Grinberg wrote:
+> On 02/14/13 14:52, Tomi Valkeinen wrote:
+>> On 2013-02-14 14:37, Igor Grinberg wrote:
+>>> On 02/14/13 12:59, Tomi Valkeinen wrote:
+>>>> On 2013-02-14 11:43, Igor Grinberg wrote:
+>>>
+>>>>>> True, it's generic, but does it work reliably? The panel hardware =
+is now
+>>>>>> partly handled in the backlight driver, and partly in the omap's p=
+anel
+>>>>>> driver (and wherever on other platforms).
+>>>>>
+>>>>> It works reliably on other platforms, but not on OMAP - because
+>>>>> we need to cope with the OMAP specific framework...
+>>>
+>>>> How do you handle the gpios on other platform? Those are the ones
+>>>> causing the issues here, right?
+>>>
+>>> Well, I'm also talking about something that is a history already.
+>>> Remember, we had multiple panel drivers inside the
+>>> video/omap2/displays and then they were consolidated into the
+>>> "generic dpi/dsi/whatever".
+>=20
+>> Sorry, I miss the point. Was that a bad thing? Didn't it simplify the
+>> task for you with simple panels? It could've been taken even further,
+>> though (see below).
+>=20
+> Yes it was a good thing (I have already told this below).
+>=20
+>=20
+>>> And yes you are right, on the platforms I'm aware of, the GPIO is not=
 
-> -- panel-enable-gpios : Should specify the gpio for panel enable
->  
->  * display node
->  
-> @@ -25,7 +24,6 @@ lcdif@80030000 {
->  	compatible = "fsl,imx28-lcdif";
->  	reg = <0x80030000 2000>;
->  	interrupts = <38 86>;
-> -	panel-enable-gpios = <&gpio3 30 0>;
->  
->  	display: display {
->  		bits-per-pixel = <32>;
-> diff --git a/arch/arm/boot/dts/imx23-evk.dts b/arch/arm/boot/dts/imx23-evk.dts
-> index 7880e17..da0588a 100644
-> --- a/arch/arm/boot/dts/imx23-evk.dts
-> +++ b/arch/arm/boot/dts/imx23-evk.dts
-> @@ -59,7 +59,7 @@
->  			lcdif@80030000 {
->  				pinctrl-names = "default";
->  				pinctrl-0 = <&lcdif_24bit_pins_a>;
-> -				panel-enable-gpios = <&gpio1 18 0>;
-> +				lcd-supply = <&reg_lcd_3v3>;
->  				display = <&display>;
->  				status = "okay";
->  
-> @@ -120,6 +120,15 @@
->  			regulator-max-microvolt = <3300000>;
->  			gpio = <&gpio1 29 0>;
->  		};
-> +
-> +		reg_lcd_3v3: lcd-3v3 {
-> +			compatible = "regulator-fixed";
-> +			regulator-name = "lcd-3v3";
-> +			regulator-min-microvolt = <3300000>;
-> +			regulator-max-microvolt = <3300000>;
-> +			gpio = <&gpio1 18 0>;
-> +			enable-active-high;
-> +		};
->  	};
->  
->  	backlight {
-> diff --git a/arch/arm/boot/dts/imx28-evk.dts b/arch/arm/boot/dts/imx28-evk.dts
-> index 2d4ea3b..3637bf3 100644
-> --- a/arch/arm/boot/dts/imx28-evk.dts
-> +++ b/arch/arm/boot/dts/imx28-evk.dts
-> @@ -123,7 +123,7 @@
->  				pinctrl-names = "default";
->  				pinctrl-0 = <&lcdif_24bit_pins_a
->  					     &lcdif_pins_evk>;
-> -				panel-enable-gpios = <&gpio3 30 0>;
-> +				lcd-supply = <&reg_lcd_3v3>;
->  				display = <&display>;
->  				status = "okay";
->  
-> @@ -310,6 +310,15 @@
->  			gpio = <&gpio3 8 0>;
->  			enable-active-high;
->  		};
-> +
-> +		reg_lcd_3v3: lcd-3v3 {
-> +			compatible = "regulator-fixed";
-> +			regulator-name = "lcd-3v3";
-> +			regulator-min-microvolt = <3300000>;
-> +			regulator-max-microvolt = <3300000>;
-> +			gpio = <&gpio3 30 0>;
-> +			enable-active-high;
-> +		};
->  	};
->  
->  	sound {
-> diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
-> index eac7c1a..74fbfd1 100644
-> --- a/drivers/video/mxsfb.c
-> +++ b/drivers/video/mxsfb.c
-> @@ -42,7 +42,6 @@
->  #include <linux/module.h>
->  #include <linux/kernel.h>
->  #include <linux/of_device.h>
-> -#include <linux/of_gpio.h>
->  #include <video/of_display_timing.h>
->  #include <linux/platform_device.h>
->  #include <linux/clk.h>
-> @@ -50,6 +49,7 @@
->  #include <linux/io.h>
->  #include <linux/pinctrl/consumer.h>
->  #include <linux/fb.h>
-> +#include <linux/regulator/consumer.h>
->  #include <video/videomode.h>
->  
->  #define REG_SET	4
-> @@ -179,6 +179,7 @@ struct mxsfb_info {
->  	unsigned dotclk_delay;
->  	const struct mxsfb_devdata *devdata;
->  	u32 sync;
-> +	struct regulator *reg_lcd;
->  };
->  
->  #define mxsfb_is_v3(host) (host->devdata->ipversion = 3)
-> @@ -338,9 +339,19 @@ static void mxsfb_enable_controller(struct fb_info *fb_info)
->  {
->  	struct mxsfb_info *host = to_imxfb_host(fb_info);
->  	u32 reg;
-> +	int ret;
->  
->  	dev_dbg(&host->pdev->dev, "%s\n", __func__);
->  
-> +	if (!IS_ERR(host->reg_lcd)) {
-> +		ret = regulator_enable(host->reg_lcd);
-> +		if (ret) {
-> +			dev_err(&host->pdev->dev,
-> +				"lcd regulator enable failed:	%d\n", ret);
-> +			return;
-> +		}
-> +	}
-> +
->  	clk_prepare_enable(host->clk);
->  	clk_set_rate(host->clk, PICOS2KHZ(fb_info->var.pixclock) * 1000U);
->  
-> @@ -362,9 +373,19 @@ static void mxsfb_disable_controller(struct fb_info *fb_info)
->  	struct mxsfb_info *host = to_imxfb_host(fb_info);
->  	unsigned loop;
->  	u32 reg;
-> +	int ret;
->  
->  	dev_dbg(&host->pdev->dev, "%s\n", __func__);
->  
-> +	if (!IS_ERR(host->reg_lcd)) {
-> +		ret = regulator_disable(host->reg_lcd);
-> +		if (ret) {
-> +			dev_err(&host->pdev->dev,
-> +				"lcd regulator disable failed: %d\n", ret);
-> +			return;
-> +		}
-> +	}
-> +
-Shouldn't this be done as the last step of disabling?
+>>> handled. Apparently its hardware default (pull resistor) is always on=
+=2E..
+>=20
+>> Ok, so the simple fix of setting the GPIOs only in the board file is
+>> acceptable for now.
+>=20
+> Yep. I also told this already in one of the previous emails.
+>=20
+>=20
+>> Can the LCD_BL_GPIO be handled by the omap panel driver? Otherwise the=
 
->  	/*
->  	 * Even if we disable the controller here, it will still continue
->  	 * until its FIFOs are running out of data
-> @@ -859,8 +880,6 @@ static int mxsfb_probe(struct platform_device *pdev)
->  	struct fb_info *fb_info;
->  	struct fb_modelist *modelist;
->  	struct pinctrl *pinctrl;
-> -	int panel_enable;
-> -	enum of_gpio_flags flags;
->  	int ret;
->  
->  	if (of_id)
-> @@ -904,21 +923,7 @@ static int mxsfb_probe(struct platform_device *pdev)
->  		goto fb_release;
->  	}
->  
-> -	panel_enable = of_get_named_gpio_flags(pdev->dev.of_node,
-> -					       "panel-enable-gpios", 0, &flags);
-> -	if (gpio_is_valid(panel_enable)) {
-> -		unsigned long f = GPIOF_OUT_INIT_HIGH;
-> -		if (flags = OF_GPIO_ACTIVE_LOW)
-> -			f = GPIOF_OUT_INIT_LOW;
-> -		ret = devm_gpio_request_one(&pdev->dev, panel_enable,
-> -					    f, "panel-enable");
-> -		if (ret) {
-> -			dev_err(&pdev->dev,
-> -				"failed to request gpio %d: %d\n",
-> -				panel_enable, ret);
-> -			goto fb_release;
-> -		}
-> -	}
-> +	host->reg_lcd = devm_regulator_get(&pdev->dev, "lcd");
+>> backlight will supposedly be always on. Is it just a simple switch for=
 
-I prefer to check return here ...
+>> the BL power, which does not affect the SPI in any way?
+>=20
+> Yes, it can for now.
+> Also, I think we should also take into account the backlight framework,=
 
-	if (IS_ERR(host->reg_lcd))
-		host->reg_lcd = NULL;
+> including PMW.
 
-... and then use if (host->reg_lcd) in mxsfb_enable[disable]_controller().
+I've updated this patch to set the LCD EN gpio once at boot time, and pas=
+s the
+LCD BL gpio to the panel driver. Updated patch below.
 
-Shawn
+---
 
->  
->  	fb_info->pseudo_palette = devm_kzalloc(&pdev->dev, sizeof(u32) * 16,
->  					       GFP_KERNEL);
-> -- 
-> 1.7.9.5
-> 
-> 
+commit a58a72363aa4359cdb75878de1517bd50faf9eb4
+Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date:   Mon Dec 3 16:05:06 2012 +0530
 
+    arm: omap: board-cm-t35: use generic dpi panel's gpio handling
+   =20
+    The cm-t35 board file currently requests gpios required to configure =
+the tdo35s
+    panel, and provides platform_enable/disable callbacks to configure th=
+em.
+   =20
+    These tasks have been moved to the generic dpi panel driver itself an=
+d shouldn't
+    be done in the board files.
+   =20
+    Remove the gpio requests and the platform callbacks from the board fi=
+le.
+    Add the gpio information to generic dpi panel's platform data so that=
+ it's
+    passed to the panel driver.
+   =20
+    Note: Only BL enable gpio is handled in the panel driver. The LCD ena=
+ble
+    GPIO is handled in the board file at init time, as there's a 50 ms de=
+lay
+    required when using the GPIO, and the panel driver doesn't know about=
+
+    that.
+   =20
+    Cc: Tony Lindgren <tony@atomide.com>
+    Cc: Igor Grinberg <grinberg@compulab.co.il>
+    Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+
+diff --git a/arch/arm/mach-omap2/board-cm-t35.c b/arch/arm/mach-omap2/boa=
+rd-cm-t35.c
+index bccd3e5..cccbfea 100644
+--- a/arch/arm/mach-omap2/board-cm-t35.c
++++ b/arch/arm/mach-omap2/board-cm-t35.c
+@@ -190,32 +190,6 @@ static inline void cm_t35_init_nand(void) {}
+ #define CM_T35_LCD_BL_GPIO 58
+ #define CM_T35_DVI_EN_GPIO 54
+=20
+-static int lcd_enabled;
+-static int dvi_enabled;
+-
+-static int cm_t35_panel_enable_lcd(struct omap_dss_device *dssdev)
+-{
+-	if (dvi_enabled) {
+-		printk(KERN_ERR "cannot enable LCD, DVI is enabled\n");
+-		return -EINVAL;
+-	}
+-
+-	gpio_set_value(CM_T35_LCD_EN_GPIO, 1);
+-	gpio_set_value(CM_T35_LCD_BL_GPIO, 1);
+-
+-	lcd_enabled =3D 1;
+-
+-	return 0;
+-}
+-
+-static void cm_t35_panel_disable_lcd(struct omap_dss_device *dssdev)
+-{
+-	lcd_enabled =3D 0;
+-
+-	gpio_set_value(CM_T35_LCD_BL_GPIO, 0);
+-	gpio_set_value(CM_T35_LCD_EN_GPIO, 0);
+-}
+-
+ static int cm_t35_panel_enable_tv(struct omap_dss_device *dssdev)
+ {
+ 	return 0;
+@@ -227,8 +201,10 @@ static void cm_t35_panel_disable_tv(struct omap_dss_=
+device *dssdev)
+=20
+ static struct panel_generic_dpi_data lcd_panel =3D {
+ 	.name			=3D "toppoly_tdo35s",
+-	.platform_enable	=3D cm_t35_panel_enable_lcd,
+-	.platform_disable	=3D cm_t35_panel_disable_lcd,
++	.num_gpios		=3D 1,
++	.gpios			=3D {
++		CM_T35_LCD_BL_GPIO,
++	},
+ };
+=20
+ static struct omap_dss_device cm_t35_lcd_device =3D {
+@@ -292,11 +268,6 @@ static struct spi_board_info cm_t35_lcd_spi_board_in=
+fo[] __initdata =3D {
+ 	},
+ };
+=20
+-static struct gpio cm_t35_dss_gpios[] __initdata =3D {
+-	{ CM_T35_LCD_EN_GPIO, GPIOF_OUT_INIT_LOW,  "lcd enable"    },
+-	{ CM_T35_LCD_BL_GPIO, GPIOF_OUT_INIT_LOW,  "lcd bl enable" },
+-};
+-
+ static void __init cm_t35_init_display(void)
+ {
+ 	int err;
+@@ -304,23 +275,21 @@ static void __init cm_t35_init_display(void)
+ 	spi_register_board_info(cm_t35_lcd_spi_board_info,
+ 				ARRAY_SIZE(cm_t35_lcd_spi_board_info));
+=20
+-	err =3D gpio_request_array(cm_t35_dss_gpios,
+-				 ARRAY_SIZE(cm_t35_dss_gpios));
++
++	err =3D gpio_request_one(CM_T35_LCD_EN_GPIO, GPIOF_OUT_INIT_LOW,
++			"lcd bl enable");
+ 	if (err) {
+-		pr_err("CM-T35: failed to request DSS control GPIOs\n");
++		pr_err("CM-T35: failed to request LCD EN GPIO\n");
+ 		return;
+ 	}
+=20
+-	gpio_export(CM_T35_LCD_EN_GPIO, 0);
+-	gpio_export(CM_T35_LCD_BL_GPIO, 0);
+-
+ 	msleep(50);
+ 	gpio_set_value(CM_T35_LCD_EN_GPIO, 1);
+=20
+ 	err =3D omap_display_init(&cm_t35_dss_data);
+ 	if (err) {
+ 		pr_err("CM-T35: failed to register DSS device\n");
+-		gpio_free_array(cm_t35_dss_gpios, ARRAY_SIZE(cm_t35_dss_gpios));
++		gpio_free(CM_T35_LCD_EN_GPIO);
+ 	}
+ }
+=20
+
+
+
+--------------enigE7C1FCF36BA9F8727FAA4D83
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRXBo6AAoJEPo9qoy8lh718gcP/1EiSLj1wZR33i9Rhpk6aFOp
++GzHpv2vZG+P8n9v0GnfPXsvfX1sEMjUZIMznm4qnqXzWLUW8fS0eZvcZ/T4cKM9
+v83h6yF7jRHH2FBMzcmnIksNyEnrKfmBpJQ0e9Zqluzu8cBTZwtg739/PF1n5rCb
+IXxIsPsPA8GtrYrp7jKoLSN7jVKr776zptpkwP/76VWJG7r11SfKAKV7UT3nqn9J
+Y/w3/4YPJSbPVqV77EfHQ3hOWjGsIaRoFGsT+NZe4zZXQ32ljr5jNgZ+A4AFgfIi
+cBVIbIlkhEBfAADi/JTbdPfouWr59vNZYzAYAIjWaemWUsAIgaaQ0EbI2mCwjwvQ
+gyffV+4kAOSOntWYxk3rmL17ryzNZZwBGjSe1kgWZZpZOpMfeMrUsZiu2yMhqrVv
+cz9zVNA2BDsZPBkhygESGR3owRNW7ZhWIPVApgSmnG2H+17X4MHs+HGiVNubLEgf
+KXoeJpLljo5i6MP0p/OIz4DZiUqBwXxfIb010OQtZeCzKpYAKMVRt11Kvwyitr+a
+jUD2VogKjKRvJbddbdaJRrixJ0/7nhGyDDznQGliRTRj42/GWlZOg3FxeUjgWr0f
+vtbtEQDhs0XJQMV/RJI0LmSCc0yzTGe8evugh42+QvABZv9Z27yZimxlArjHFw0z
+5WU+kuyDAFoP94zuPs0d
+=TaHV
+-----END PGP SIGNATURE-----
+
+--------------enigE7C1FCF36BA9F8727FAA4D83--

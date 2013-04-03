@@ -1,50 +1,112 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Tue, 30 Apr 2013 13:27:55 +0000
-Subject: Re: [alsa-devel] [PATCH] MAINTAINERS: Add linux-samsung-soc list to all related entries
-Message-Id: <20130430132755.GB1023@sirena.org.uk>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 03 Apr 2013 12:28:08 +0000
+Subject: Re: [PATCH 00/33] OMAPDSS: platform_enable/disable callback removal from panel drivers
+Message-Id: <515C2058.8030402@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="WYTEVAkct0FjGQmd"
+Content-Type: multipart/mixed; boundary="------------enig8C68F38AD37C7426C75A6C7D"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366572050-626-1-git-send-email-tomasz.figa@gmail.com>
- <CAH9JG2U7Qdq_xQbuqHu6PXzURS2fWwBC=HJmyrXT5n3n_pAa0w@mail.gmail.com>
-In-Reply-To: <CAH9JG2U7Qdq_xQbuqHu6PXzURS2fWwBC=HJmyrXT5n3n_pAa0w@mail.gmail.com>
-To: Kyungmin Park <kmpark@infradead.org>
-Cc: t.stanislaws@samsung.com, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, jy0922.shim@samsung.com, alsa-devel@alsa-project.org, sbkim73@samsung.com, sw0312.kim@samsung.com, jg1.han@samsung.com, linux-mmc@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, dri-devel@lists.freedesktop.org, inki.dae@samsung.com, jtp.park@samsung.com, dh09.lee@samsung.com, linux-arm-kernel@lists.infradead.org, s.nawrocki@samsung.com, k.debski@samsung.com, linux-media@vger.kernel.org
+References: <1360765345-19312-1-git-send-email-archit@ti.com> <20130213164647.GF7144@atomide.com>
+In-Reply-To: <20130213164647.GF7144@atomide.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+
+--------------enig8C68F38AD37C7426C75A6C7D
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi Tony,
+
+On 2013-02-13 18:46, Tony Lindgren wrote:
+> * Archit Taneja <archit@ti.com> [130213 06:26]:
+>> init functions in omap board files request panel specific gpios, and p=
+rovide
+>> functions which omapdss panel drivers call to enable or disable them.
+>>
+>> Instead of the board files requesting these gpios, they should just pa=
+ss the
+>> platform specific data(like the gpio numbers), the panel should retrie=
+ve the
+>> platform data and request the gpios. Doing this prevents the need of t=
+he panel
+>> driver calling platform functions in board files.
+>>
+>> Panel drivers have their own platform data struct, and the board files=
+ populate
+>> these structs and pass the pointer to the 'data' field of omap_dss_dev=
+ice. This
+>> work will make it easier for the panel drivers be more adaptable to th=
+e
+>> DT model.
+>>
+>> There is also removal of passing panel reset_gpio numbers through
+>> omap_dss_device struct directly, reset gpios are passed through platfo=
+rm data
+>> only.
+>=20
+> To avoid merge conflicts and dependencies between drivers and core
+> Soc code, please break thes kind of patches into following parts:
+>=20
+> 1. Any platform_data header changes needed so both I and Tomi
+>    can pull it in as needed.
+>=20
+> 2. Changes to DSS drivers. Please keep stubs around for the
+>    board specific callback functions so omap2plus_defconfig
+>    won't break with just #1 merged into arm soc tree.
+>=20
+> 3. All the arch/arm/*omap* changes based on #1 above to
+>    drop obsolete callback functions and add new pdata if still
+>    needed. This needs to build and boot on #1 so I can merge
+>    this in via arm soc tree.
+>=20
+> 4. Any .dts changes needed.
+
+Tony, I've split these patches as follows:
+
+Platform data header file changes:
+git://gitorious.org/linux-omap-dss2/linux.git 3.10/0-dss-headers
+
+Board file changes (based on header changes):
+git://gitorious.org/linux-omap-dss2/linux.git 3.10-lo/board-cleanup
+
+DSS panel changes (based on header changes):
+git://gitorious.org/linux-omap-dss2/linux.git 3.10/1-panel-cleanup
+
+Removing unused fields from header files (based on panel changes):
+git://gitorious.org/linux-omap-dss2/linux.git 3.10/2-late-panel-cleanup
+
+The 2-late-panel-cleanup breaks compilation if the arch changes are not
+merged, so I'll leave that until they have been merged.
+
+Do you mind if I add the board-cleanup branch temporarily to omapdss's
+for-next, to simplify testing? When everything looks ok, I'll remove it
+and pass the branch to you to be handled through l-o.
+
+ Tomi
 
 
---WYTEVAkct0FjGQmd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-On Mon, Apr 22, 2013 at 03:23:29PM +0900, Kyungmin Park wrote:
-
-> I don't think it's not required, each tree has each own mailing list. don't
-> need to post all patches to samsung-soc list.
-
-It can be useful to get system level input on some stuff, I guess it
-mostly depends if the people on the generic list mind the extra traffic
-or if they find it useful.
-
---WYTEVAkct0FjGQmd
+--------------enig8C68F38AD37C7426C75A6C7D
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJRf8bYAAoJELSic+t+oim94ZAP/Ai447rSkEVniIBHDvQujNow
-iWTgGZ89Oq19hA3sMbjtIjd018lK2ScCA6Ky1XM/1890EEPmnd/EBjvmvD6NK6oq
-XOtpDHV89ESxIUmS6R70ZHCOT2ttGDCk23UG+H/ljEzfQt//+krR7vWYINAnx1e4
-6//OCCjv1GR2IHhw0nnN3Vx0z5Ocp2Qph+7U8vjq6UYpyQSRH8ujXSYzSOvm6ru/
-EwJSrR9GljjafuTlKSEyNAsd7FCWsK6Pts9jhVTSpcuOVaME6CILiRIHyCH/0McU
-QP5YQ/c1lTwl3qfo6HMchXU1lT2AJAhsxjQQM1fQjkJZJlr+B5FaYRZoD6lxt4mz
-oaax5ZP/hmFWmS27FXSk+LTSu7pYyrsx6M/kfABgWxT5llCEug4frvSd2Ng0Fcj2
-lvOvpGK9RX8HnalwM2mBnPa1TuBqiMcVhB3ukMMONaTeVEkPg14yAjKxDvqxGNkQ
-Htr/wSwoJk3v18Y4gRnQnjMIVL4cY/nW5TeOeX8oUtap9Wc2AYUt2BCOF77JME05
-Vs+6BZJGdaj3i8gEcWR6Sd6Nnh5wlhlb+QWBQCz1gA/k0/4KdRdXUxIuV8rr9BOm
-ZbC1RkBOTLoW2iUiFSw2vpzh3NZGbr9K5a0XFZ0FTqNCmOt7YjwfcPHJX829XqBf
-ed7vmgSWjNtae1yfHn+Q
-=5DJR
+iQIcBAEBAgAGBQJRXCBYAAoJEPo9qoy8lh71D+EP/A9J/rALoWB485tRw+vmwFpq
++8+IKFQweBA69kMWKG36EPdueNFQc1nv3xyltyv99sjuZlZ1vXS/dVp+Hxez1/Of
+S+E3etnEW5M3Ltf3y1UtDaHllWWq710mPn6F20tQxL9Z9m2x/W43eSzL/NSfoCp5
+ssmbNDR5yJSH4yvvHHkVAMM8099F0D/WdPDmEDKNQwVHgTLGgNb45xGnPoWLha2k
+3OAVcLgVcL1auzs6RI1vDGPix6G3CxtcdG0Phan+iX9fKzE2xlLhIyiOOvm0ekIm
+0/tOsqBq0esFoXipaQGEaIwr5FsPEEiLU09deCTKjzw3bLbbawj3FGlkJWXe66kf
+lkW+71neI/JA+nRbiGhJAjJBMu0haM0hF6Xa2S3IGl1URIhFFEcy2RSLRv9w2ugr
+F/xBo+7WeosFy8XMSxLK0C39dJfcHmFtrKVVwb0p/9sKMdXjKxOVcSjNxIvDw0ta
+T9I4mWEo6tWAkOBysigG7R8/vA8+1NYv9YZyCz+ZVQJO1qVkblxapJCOAG/UQkuD
+dYVTh9jeY7HZHZvvkLE9TlLCpKEzi+2ax14MVGm3KjAWo6v5maj/6f2plDZ+690W
+Zo3vdmoCwzXIo7bbBp7kzIx+rkp0Su1+EF72M4jIbjU27Gyimb5CoVD5WY/GtXAy
+aeZemDSJMEaU115FagiO
+=LrHN
 -----END PGP SIGNATURE-----
 
---WYTEVAkct0FjGQmd--
+--------------enig8C68F38AD37C7426C75A6C7D--

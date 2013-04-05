@@ -1,75 +1,76 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 16 Apr 2013 00:53:12 +0000
-Subject: Re: [PATCH v2] backlight: platform_lcd: introduce probe callback
-Message-Id: <001601ce3a3c$c5680360$50380a20$%han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 05 Apr 2013 06:57:00 +0000
+Subject: Re: [PATCH RESEND] fbmon: use VESA_DMT_VSYNC_HIGH to fix typo
+Message-Id: <515E75BC.20604@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig4249E8C466D3C5A781E9B0C9"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1365705391-23181-1-git-send-email-abrestic@chromium.org>
- <1365711890-15168-1-git-send-email-abrestic@chromium.org>
- <20130415160632.99e867b25418189c95fbc826@linux-foundation.org>
-In-Reply-To: <20130415160632.99e867b25418189c95fbc826@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: 'Andrew Morton' <akpm@linux-foundation.org>, 'Andrew Bresticker' <abrestic@chromium.org>
-Cc: linux-fbdev@vger.kernel.org, 'Richard Purdie' <rpurdie@rpsys.net>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, linux-kernel@vger.kernel.org, 'Doug Anderson' <dianders@chromium.org>, 'Jingoo Han' <jg1.han@samsung.com>
+References: <8984685.165951364521249756.JavaMail.weblogic@epml18>
+In-Reply-To: <8984685.165951364521249756.JavaMail.weblogic@epml18>
+To: jg1.han@samsung.com
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, FlorianSchandinat@gmx.de, s.trumtrar@pengutronix.de, plagnioj@jcrosoft.com
 
-On Tuesday, April 16, 2013 8:07 AM, Andrew Morton wrote:
-> 
-> On Thu, 11 Apr 2013 13:24:50 -0700 Andrew Bresticker <abrestic@chromium.org> wrote:
-> 
-> > Platform LCD devices may need to do some device-specific
-> > initialization before they can be used (regulator or GPIO setup,
-> > for example), but currently the driver does not support any way of
-> > doing this.  This patch adds a probe() callback to plat_lcd_data
-> > which platform LCD devices can set to indicate that device-specific
-> > initialization is needed.
-> >
-> > index 17a6b83..f46180e 100644
-> > --- a/drivers/video/backlight/platform_lcd.c
-> > +++ b/drivers/video/backlight/platform_lcd.c
-> > @@ -86,6 +86,12 @@ static int platform_lcd_probe(struct platform_device *pdev)
-> >  		return -EINVAL;
-> >  	}
-> >
-> > +	if (pdata->probe) {
-> > +		err = pdata->probe(pdata);
-> > +		if (err)
-> > +			return err;
-> > +	}
-> > +
-> >  	plcd = devm_kzalloc(&pdev->dev, sizeof(struct platform_lcd),
-> >  			    GFP_KERNEL);
-> >  	if (!plcd) {
-> > diff --git a/include/video/platform_lcd.h b/include/video/platform_lcd.h
-> > index ad3bdfe..23864b2 100644
-> > --- a/include/video/platform_lcd.h
-> > +++ b/include/video/platform_lcd.h
-> > @@ -15,6 +15,7 @@ struct plat_lcd_data;
-> >  struct fb_info;
-> >
-> >  struct plat_lcd_data {
-> > +	int	(*probe)(struct plat_lcd_data *);
-> >  	void	(*set_power)(struct plat_lcd_data *, unsigned int power);
-> >  	int	(*match_fb)(struct plat_lcd_data *, struct fb_info *);
-> >  };
-> 
-> Sigh.  I see that this entire interface has been lovingly undocumented.
-> It's an invitation for us to grow bugs, incompatibilities, leaks, etc.
-> 
-> Possible example: what happens if pdata->probe does some resource
-> allocation or device initialisation which should be backed out if, say,
-> platform_lcd_probe() later fails?
+--------------enig4249E8C466D3C5A781E9B0C9
+Content-Type: text/plain; charset=EUC-KR
+Content-Transfer-Encoding: quoted-printable
 
-Hi Andrew,
+Hi,
 
-I agree with you.
-Indeed, the documentation is necessary.
+On 2013-03-29 03:40, Jingoo Han wrote:
+> VESA_DMT_VSYNC_HIGH should be used instead of VESA_DMT_HSYNC_HIGH,
+> because FB_SYNC_VERT_HIGH_ACT is related to vsync, not to hsync.
+>=20
+> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+> Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> ---
+>  drivers/video/fbmon.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+> index 94ad0f7..7f67099 100644
+> --- a/drivers/video/fbmon.c
+> +++ b/drivers/video/fbmon.c
+> @@ -1400,7 +1400,7 @@ int fb_videomode_from_videomode(const struct vide=
+omode *vm,
+>  	fbmode->vmode =3D 0;
+>  	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
+>  		fbmode->sync |=3D FB_SYNC_HOR_HIGH_ACT;
+> -	if (vm->dmt_flags & VESA_DMT_HSYNC_HIGH)
+> +	if (vm->dmt_flags & VESA_DMT_VSYNC_HIGH)
+>  		fbmode->sync |=3D FB_SYNC_VERT_HIGH_ACT;
+>  	if (vm->data_flags & DISPLAY_FLAGS_INTERLACED)
+>  		fbmode->vmode |=3D FB_VMODE_INTERLACED;
 
-Andrew Bresticker,
-Would you make the document?
-It would be very helpful.
+I'll apply this to fbdev fixes.
 
-Best regards,
-Jingoo Han
+ Tomi
 
 
+
+
+--------------enig4249E8C466D3C5A781E9B0C9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRXnW8AAoJEPo9qoy8lh71uokP/3o1AXKvr93wv2ogtCyFWcFO
+CkyzRMB1dpcmts6GasRcCSSxf8+4tiFEfZfu0uSKBVZf90IE1C7fbD+TdXd+sU8B
+td9x7RmSi2zWWTupoHLWZP4tL6UMsJCWcbFVQ0i2cZMYzcVcsPlg2COoZekfia9E
+9Mtqc71KP9MJmoPDy9HpSfFImI26cZjlIJr94+Xp2RS/h8/shnkEk9R2LnIPKZkK
+n/ioEgicBRdmoUaQAQRew9boHB2oBjn97RlwQmUqBtvNxCgwBQ3y/Ydxjc1yUkip
+xGb/GWUl1iVIc37/0Qi5Zq++5fZK6BC+79tdIfwdx6G8oXJGwi4a4a5cwsUWltj3
+UOkIjhz0jEPi5J/yovOUtqSEAln6jiqSXHQqY8CbyaJuz8nW87b/GGolTYNBBzmM
+GetvEoKv47pY7o3tcZssciWXMeHmljDsaQp95Wpri7gTsEykGpxKnirP8JHXPGC5
+F6G6aWl3juC3Xeo5qe46kVnNcwIUD1CRhCl0Q1Q/QNqA+x4OLffnqHJQlHtzHEGn
+irMKFgRqqkTUpeL4LmlRT/hUzorwuhWzOt+fzGHhhJePCnZeujs6WteNIvLklnZT
+qABz+xF78CDxnwsDZg9IZNfmXT3fwAye6snX/xSJ6T0fieGOzo4yoYXU7PKiD1+S
+8bQu0aTNcyTpp+TFNC84
+=V2so
+-----END PGP SIGNATURE-----
+
+--------------enig4249E8C466D3C5A781E9B0C9--

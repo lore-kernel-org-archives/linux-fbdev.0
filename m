@@ -1,62 +1,73 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 08 Mar 2013 11:51:35 +0000
-Subject: [PATCH 00/20] OMAPDSS: misc improvements
-Message-Id: <1362743515-10152-1-git-send-email-tomi.valkeinen@ti.com>
+From: Lars-Peter Clausen <lars@metafoo.de>
+Date: Sun, 07 Apr 2013 08:21:38 +0000
+Subject: [PATCH] OMAPDSS: nec-nl8048 panel: Use dev_pm_ops
+Message-Id: <1365326053-16248-1-git-send-email-lars@metafoo.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>
 
-Hi,
+Use dev_pm_ops instead of the deprecated legacy suspend/resume callbacks.
 
-Here are a bunch of misc patches, created when working on improving DSS device
-model. Most notable is the recommended_channel stuff, which removes the need to
-pass LCD channel from the board file, which has been rather problematic.
+Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+---
+ .../video/omap2/displays/panel-nec-nl8048hl11-01b.c  | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
-Two of the patches are marked LATER, as they affect the board files. They're
-pure cleanups, and can be sent after the rest are merged.
-
- Tomi
-
-Tomi Valkeinen (20):
-  OMAPDSS: DSI: remove DSI & DISPC clk divisors from dssdev
-  OMAPDSS: HDMI: remove HDMI clk divisors from dssdev
-  OMAPDSS: DPI: remove omap_dss_device uses
-  OMAPDSS: DSI: remove omap_dss_device uses
-  OMAPDSS: Taal: remove multi-panel support
-  OMAPDSS: APPLY: remove dssdev from dss_mgr_wait_for_vsync
-  OMAPDSS: add missing export for omap_dss_get_output()
-  OMAPDSS: HDMI: init output earlier
-  OMAPDSS: add output->name
-  OMAPDSS: Resolve channels for outputs
-  OMAPDSS: add output->recommended_channel
-  OMAPDSS: DPI: use output->recommended_channel
-  OMAPFB: use output->recommended_channel
-  OMAPDSS: remove dssdev->channel assignments
-  OMAP: dss-common.c: remove uses of dss channel (LATER)
-  OMAPDSS: omapdss.h: remove channel field from omap_dss_device (LATER)
-  OMAPDSS: add pdata->default_display_name
-  OMAPDSS: DSI: delay dispc initialization
-  OMAPDSS: DSI: fix DSI channel source initialization
-  OMAPDSS: Taal: remove rotate & mirror support
-
- arch/arm/mach-omap2/dss-common.c          |    6 -
- drivers/video/omap2/displays/panel-taal.c |  279 ++---------------------------
- drivers/video/omap2/dss/apply.c           |   15 +-
- drivers/video/omap2/dss/core.c            |    2 +
- drivers/video/omap2/dss/dpi.c             |   74 +++++---
- drivers/video/omap2/dss/dsi.c             |  219 +++++++++++++---------
- drivers/video/omap2/dss/hdmi.c            |   19 +-
- drivers/video/omap2/dss/output.c          |    1 +
- drivers/video/omap2/dss/rfbi.c            |    2 +
- drivers/video/omap2/dss/sdi.c             |    2 +
- drivers/video/omap2/dss/venc.c            |    4 +-
- drivers/video/omap2/omapfb/omapfb-main.c  |    2 +-
- include/video/omapdss.h                   |   38 +---
- 13 files changed, 235 insertions(+), 428 deletions(-)
-
+diff --git a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+index 1e0097d..20c3cd9 100644
+--- a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
++++ b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+@@ -242,16 +242,22 @@ static int nec_8048_spi_remove(struct spi_device *spi)
+ 	return 0;
+ }
+ 
+-static int nec_8048_spi_suspend(struct spi_device *spi, pm_message_t mesg)
++#ifdef CONFIG_PM_SLEEP
++
++static int nec_8048_spi_suspend(struct device *dev)
+ {
++	struct spi_device *spi = to_spi_device(dev);
++
+ 	nec_8048_spi_send(spi, 2, 0x01);
+ 	mdelay(40);
+ 
+ 	return 0;
+ }
+ 
+-static int nec_8048_spi_resume(struct spi_device *spi)
++static int nec_8048_spi_resume(struct device *dev)
+ {
++	struct spi_device *spi = to_spi_device(dev);
++
+ 	/* reinitialize the panel */
+ 	spi_setup(spi);
+ 	nec_8048_spi_send(spi, 2, 0x00);
+@@ -260,14 +266,20 @@ static int nec_8048_spi_resume(struct spi_device *spi)
+ 	return 0;
+ }
+ 
++static SIMPLE_DEV_PM_OPS(nec_8048_spi_pm_ops, nec_8048_spi_suspend,
++		nec_8048_spi_resume);
++#define NEC_8048_SPI_PM_OPS (&nec_8048_spi_pm_ops)
++#else
++#define NEC_8048_SPI_PM_OPS NULL
++#endif
++
+ static struct spi_driver nec_8048_spi_driver = {
+ 	.probe		= nec_8048_spi_probe,
+ 	.remove		= nec_8048_spi_remove,
+-	.suspend	= nec_8048_spi_suspend,
+-	.resume		= nec_8048_spi_resume,
+ 	.driver		= {
+ 		.name	= "nec_8048_spi",
+ 		.owner	= THIS_MODULE,
++		.pm	= NEC_8048_SPI_PM_OPS,
+ 	},
+ };
+ 
 -- 
-1.7.10.4
+1.8.0
 

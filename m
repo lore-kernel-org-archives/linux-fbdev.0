@@ -1,64 +1,173 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 18 Apr 2013 03:40:08 +0000
-Subject: Re: [PATCH 00/33] OMAPDSS: platform_enable/disable callback removal from panel drivers
-Message-Id: <516F6B18.8080407@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig68FF7CC488801802B8F2A4F8"
+From: Archit Taneja <archit@ti.com>
+Date: Mon, 08 Apr 2013 08:56:50 +0000
+Subject: [PATCH] omapdss: use devm_clk_get()
+Message-Id: <1365411346-30611-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360765345-19312-1-git-send-email-archit@ti.com> <20130213164647.GF7144@atomide.com> <515C2058.8030402@ti.com> <20130403154645.GV10155@atomide.com> <516BC897.5020802@ti.com> <20130415212022.GP10155@atomide.com> <516CD17A.5050403@ti.com> <20130418003419.GB10155@atomide.com>
-In-Reply-To: <20130418003419.GB10155@atomide.com>
-To: Tony Lindgren <tony@atomide.com>
-Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
---------------enig68FF7CC488801802B8F2A4F8
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Use devm_clk_get() instead of clk_get() for dss, and for outputs hdmi and venc.
+This reduces reduces code and simplifies error handling.
 
-On 2013-04-18 03:34, Tony Lindgren wrote:
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/dss.c  |   18 +++---------------
+ drivers/video/omap2/dss/hdmi.c |   16 ++--------------
+ drivers/video/omap2/dss/venc.c |   10 +---------
+ 3 files changed, 6 insertions(+), 38 deletions(-)
 
-> Just one request: Let's do branches like this early on before -rc6,
-> not what might be five days before the merge window potentially
-> opens..
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 054c2a2..645b3bc 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -767,13 +767,11 @@ int dss_dpi_select_source(enum omap_channel channel)
+ static int dss_get_clocks(void)
+ {
+ 	struct clk *clk;
+-	int r;
+ 
+-	clk = clk_get(&dss.pdev->dev, "fck");
++	clk = devm_clk_get(&dss.pdev->dev, "fck");
+ 	if (IS_ERR(clk)) {
+ 		DSSERR("can't get clock fck\n");
+-		r = PTR_ERR(clk);
+-		goto err;
++		return PTR_ERR(clk);
+ 	}
+ 
+ 	dss.dss_clk = clk;
+@@ -782,8 +780,7 @@ static int dss_get_clocks(void)
+ 		clk = clk_get(NULL, dss.feat->clk_name);
+ 		if (IS_ERR(clk)) {
+ 			DSSERR("Failed to get %s\n", dss.feat->clk_name);
+-			r = PTR_ERR(clk);
+-			goto err;
++			return PTR_ERR(clk);
+ 		}
+ 	} else {
+ 		clk = NULL;
+@@ -792,21 +789,12 @@ static int dss_get_clocks(void)
+ 	dss.dpll4_m4_ck = clk;
+ 
+ 	return 0;
+-
+-err:
+-	if (dss.dss_clk)
+-		clk_put(dss.dss_clk);
+-	if (dss.dpll4_m4_ck)
+-		clk_put(dss.dpll4_m4_ck);
+-
+-	return r;
+ }
+ 
+ static void dss_put_clocks(void)
+ {
+ 	if (dss.dpll4_m4_ck)
+ 		clk_put(dss.dpll4_m4_ck);
+-	clk_put(dss.dss_clk);
+ }
+ 
+ static int dss_runtime_get(void)
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 7292364..c7e0bf7 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -804,7 +804,7 @@ static int hdmi_get_clocks(struct platform_device *pdev)
+ {
+ 	struct clk *clk;
+ 
+-	clk = clk_get(&pdev->dev, "sys_clk");
++	clk = devm_clk_get(&pdev->dev, "sys_clk");
+ 	if (IS_ERR(clk)) {
+ 		DSSERR("can't get sys_clk\n");
+ 		return PTR_ERR(clk);
+@@ -815,12 +815,6 @@ static int hdmi_get_clocks(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static void hdmi_put_clocks(void)
+-{
+-	if (hdmi.sys_clk)
+-		clk_put(hdmi.sys_clk);
+-}
+-
+ #if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+ int hdmi_compute_acr(u32 sample_freq, u32 *n, u32 *cts)
+ {
+@@ -1100,7 +1094,7 @@ static int __init omapdss_hdmihw_probe(struct platform_device *pdev)
+ 	r = hdmi_panel_init();
+ 	if (r) {
+ 		DSSERR("can't init panel\n");
+-		goto err_panel_init;
++		return r;
+ 	}
+ 
+ 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
+@@ -1110,10 +1104,6 @@ static int __init omapdss_hdmihw_probe(struct platform_device *pdev)
+ 	hdmi_probe_pdata(pdev);
+ 
+ 	return 0;
+-
+-err_panel_init:
+-	hdmi_put_clocks();
+-	return r;
+ }
+ 
+ static int __exit hdmi_remove_child(struct device *dev, void *data)
+@@ -1135,8 +1125,6 @@ static int __exit omapdss_hdmihw_remove(struct platform_device *pdev)
+ 
+ 	pm_runtime_disable(&pdev->dev);
+ 
+-	hdmi_put_clocks();
+-
+ 	return 0;
+ }
+ 
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 006caf3..c27ab6f 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -721,7 +721,7 @@ static int venc_get_clocks(struct platform_device *pdev)
+ 	struct clk *clk;
+ 
+ 	if (dss_has_feature(FEAT_VENC_REQUIRES_TV_DAC_CLK)) {
+-		clk = clk_get(&pdev->dev, "tv_dac_clk");
++		clk = devm_clk_get(&pdev->dev, "tv_dac_clk");
+ 		if (IS_ERR(clk)) {
+ 			DSSERR("can't get tv_dac_clk\n");
+ 			return PTR_ERR(clk);
+@@ -735,12 +735,6 @@ static int venc_get_clocks(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static void venc_put_clocks(void)
+-{
+-	if (venc.tv_dac_clk)
+-		clk_put(venc.tv_dac_clk);
+-}
+-
+ static struct omap_dss_device * __init venc_find_dssdev(struct platform_device *pdev)
+ {
+ 	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
+@@ -886,7 +880,6 @@ static int __init omap_venchw_probe(struct platform_device *pdev)
+ err_panel_init:
+ err_runtime_get:
+ 	pm_runtime_disable(&pdev->dev);
+-	venc_put_clocks();
+ 	return r;
+ }
+ 
+@@ -904,7 +897,6 @@ static int __exit omap_venchw_remove(struct platform_device *pdev)
+ 	venc_uninit_output(pdev);
+ 
+ 	pm_runtime_disable(&pdev->dev);
+-	venc_put_clocks();
+ 
+ 	return 0;
+ }
+-- 
+1.7.10.4
 
-Agreed, it got a bit late. But the branch itself has been stable and in
-linux-next for some time.
-
-Perhaps it would've been better to merge it to l-o earlier, instead of
-me pushing it to linux-next via my tree. Any possible found problems
-(there weren't any this time) could've been fixed with a new fixes branch=
-=2E
-
-> I've pulled them into omap-for-v3.10/dss and will send a pull
-> request for Arnd and Olof.
-
-Ok, thanks!
-
- Tomi
-
-
-
---------------enig68FF7CC488801802B8F2A4F8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRb2scAAoJEPo9qoy8lh71QAYQAKpqTpp8IcTWe7BvASWjyvu3
-lTlB0i4YXRFdoILyFFYL9LbSY3lEXsHDytRvyoonnu+Lvpthli/Hen0u3MLFzoq3
-os7reHf0NS6SIpl3AJrh/i69N4ANrXPmFumg74OdpV1wtxQwu5/DAJZUjhWb6K+i
-AHhqYLs/fmJS+X+5Wny32eXdXdzJ5FhTzXxOd9vdpuH6KHGayZhcq4piSsYt28gn
-3tpW1Ay1WoOuycOkaaznHluVjkKJFC95U9sd/2RzNBe6oqdYDAo5Z3vX4rOGnLrJ
-c+PnutwKE+prq6ARWHCVOF7jdeChp1NmBr9+uiLGSHnigL6e/mEm8wX2g0vktxPv
-qCtosWmtAImZ/+lcS2W/+ZOBA7HjuBi/9MxuevD22LrJoMCWBhIRSQQ9DjxvE2xW
-hBcNGdsqFhYKMYl3yanMYThS4Pv4UKAu6jL6qSWQfBn3O0z5f5/hV1WflIWrx77K
-yTU89jI9CRDbRPXHNGDq52nv0cyyjByVdxuRPrGUJ/eeH4cRChUl8gLjsGU/q91j
-TZ3g86lZmnwPbYQPvG2p90fdsivTbQgXcH/Gt+FHIPcYoJrO0ZrM2HkSZvyRBiFk
-4i9uKyjlTIBOf0cJs8iSTlbeacOuFlHf+8LalzFb4CmVx7DH8fpasHZPYnVUk8ut
-HBQNqkWd8Sc8E1GmnEEb
-=1Ll0
------END PGP SIGNATURE-----
-
---------------enig68FF7CC488801802B8F2A4F8--

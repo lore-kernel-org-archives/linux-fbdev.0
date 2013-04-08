@@ -1,71 +1,49 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 02 Apr 2013 10:34:43 +0000
-Subject: Re: [PATCH]video:uvesafb: Fix dereference NULL pointer code path
-Message-Id: <515AB443.4060407@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig3D1B5BF4A1575E49B5861BCF"
+From: Mohsin Kazmi <mohsin_kazmi@mentor.com>
+Date: Mon, 08 Apr 2013 11:05:49 +0000
+Subject: [PATCH] of: videomode: Fix module loading problem
+Message-Id: <1365419149-29581-1-git-send-email-mohsin_kazmi@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130330025330.GA25246@udknight>
-In-Reply-To: <20130330025330.GA25246@udknight>
-To: Wang YanQing <udknight@gmail.com>, spock@gentoo.org, linux-fbdev@vger.kernel.org, FlorianSchandinat@gmx.de, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---------------enig3D1B5BF4A1575E49B5861BCF
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This patch adds the support load as a module of_videomode.c which is required by parallel display.
+I have encountered the following problem.
 
-On 2013-03-30 04:53, Wang YanQing wrote:
-> platform_device_alloc could failed and return NULL,
-> we should check this before call platform_device_put.
->=20
-> Signed-off-by: Wang YanQing <udknight@gmail.com>
-> ---
->  drivers/video/uvesafb.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-> index 2f8f82d..230bd45 100644
-> --- a/drivers/video/uvesafb.c
-> +++ b/drivers/video/uvesafb.c
-> @@ -1975,7 +1975,8 @@ static int __devinit uvesafb_init(void)
->  			err =3D -ENOMEM;
-> =20
->  		if (err) {
-> -			platform_device_put(uvesafb_device);
-> +			if (uvesafb_device)
-> +				platform_device_put(uvesafb_device);
->  			platform_driver_unregister(&uvesafb_driver);
->  			cn_del_callback(&uvesafb_cn_id);
->  			return err;
->=20
+imx_parallel_display: Unknown symbol of_get_video_mode (err 0)
+insmod: can't insert 'imx-parallel-display.ko': unknown symbol in module, or unknown parameter
 
-Thanks, queued to fbdev fixes.
+of_get_video_mode() is available in of_videomode.c but it couldn't loaded and gave the following error.
 
- Tomi
+of_videomode: Unknown symbol of_property_read_u32_array (err 0)
+modprobe: can't load module of_videomode (kernel/drivers/of/of_videomode.ko): unknown symbol in module, or unknown parameter
 
+I have discussed this with Dmitry Eremin-Solenikov. He told me to do so as in this patch and it works.
 
+Signed-off-by: Mohsin Kazmi <mohsin_kazmi@mentor.com>
+---
+ drivers/of/of_videomode.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
---------------enig3D1B5BF4A1575E49B5861BCF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+diff --git a/drivers/of/of_videomode.c b/drivers/of/of_videomode.c
+index 859aefb..cd55f89 100644
+--- a/drivers/of/of_videomode.c
++++ b/drivers/of/of_videomode.c
+@@ -10,6 +10,7 @@
+ #include <linux/export.h>
+ #include <drm/drmP.h>
+ #include <drm/drm_crtc.h>
++#include <linux/module.h>
+ 
+ int of_get_video_mode(struct device_node *np, struct drm_display_mode *dmode,
+ 		struct fb_videomode *fbmode)
+@@ -106,3 +107,5 @@ int of_get_video_mode(struct device_node *np, struct drm_display_mode *dmode,
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(of_get_video_mode);
++
++MODULE_LICENSE("GPL");
+-- 
+1.8.0
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRWrRDAAoJEPo9qoy8lh71WiQP/iN8cIg9igTchq8wAHbA6Kaw
-KCYsHLXI1AOxyg2n0F7l3o/7WwHzwG59D5tJEatvtwYDKQifW2qSdu1/8W1sGWbR
-PEeOUTJ5U2nFj7cs5gtbjL6FytFjCtm5FYjP+pWhiBj2EwKCyfr4qBr2Ec0a+Jv+
-L0WlD5/gP7gefvqdQGUxKlB5LCdwd4haHUuWP+qIPjLR8xLuI84c/6NEHGUzN+yl
-iI3hAaawMsm4ZuPNOYTo2gejH6XXVJn/jo25fPhzaRK5jYoGGQK56emHUzho+sya
-xsV1diNQ0bmIkFPNQKYbYewWgyScy/G8zBBs/pu1qP1FQWE3VrNyUa3w6IHTf3vX
-rLHEME5Sll1HuNMVi1t5q/coo0FHasjgcNI1IELFTwyvi/ZXs+qYlx4OhRf02OD6
-bhNaqahHE5CZ7djToFczmbl3duNbAq90/o3QNn50l3e1bcIQYrbKDpF9tkv1Hwxm
-XnglnvVsh+DGl+nnzBmlUUqh3/oo5mV1HR4L//m2hpiBSGCZomyeu9x7I8Fqluh5
-xnZobrMqQoK8adRvvplZVLphEhZ7yd4Ezfe3NsbAo+pN5Oym9k7FJ0DUpZQLdo5k
-sctMElN4KoIC2C4QBfkWGZILw0gLrwWqTkD8wqIfSnYPWRPcqf3f6sM5jJCkc2YB
-TZrcyna6eK98HQYtKegZ
-=auSt
------END PGP SIGNATURE-----
-
---------------enig3D1B5BF4A1575E49B5861BCF--

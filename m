@@ -1,173 +1,105 @@
-From: Archit Taneja <archit@ti.com>
-Date: Mon, 08 Apr 2013 08:56:50 +0000
-Subject: [PATCH] omapdss: use devm_clk_get()
-Message-Id: <1365411346-30611-1-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 10 Apr 2013 08:13:25 +0000
+Subject: Re: [PATCH] omapdss: use devm_clk_get()
+Message-Id: <51651F25.3020302@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enigF3B58E4BF45C549AFA3C4D8A"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+References: <1365411346-30611-1-git-send-email-archit@ti.com>
+In-Reply-To: <1365411346-30611-1-git-send-email-archit@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Use devm_clk_get() instead of clk_get() for dss, and for outputs hdmi and venc.
-This reduces reduces code and simplifies error handling.
+--------------enigF3B58E4BF45C549AFA3C4D8A
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/dss.c  |   18 +++---------------
- drivers/video/omap2/dss/hdmi.c |   16 ++--------------
- drivers/video/omap2/dss/venc.c |   10 +---------
- 3 files changed, 6 insertions(+), 38 deletions(-)
+On 2013-04-08 11:55, Archit Taneja wrote:
+> Use devm_clk_get() instead of clk_get() for dss, and for outputs hdmi a=
+nd venc.
+> This reduces reduces code and simplifies error handling.
+>=20
+> Signed-off-by: Archit Taneja <archit@ti.com>
+> ---
+>  drivers/video/omap2/dss/dss.c  |   18 +++---------------
+>  drivers/video/omap2/dss/hdmi.c |   16 ++--------------
+>  drivers/video/omap2/dss/venc.c |   10 +---------
+>  3 files changed, 6 insertions(+), 38 deletions(-)
+>=20
+> diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/ds=
+s.c
+> index 054c2a2..645b3bc 100644
+> --- a/drivers/video/omap2/dss/dss.c
+> +++ b/drivers/video/omap2/dss/dss.c
+> @@ -767,13 +767,11 @@ int dss_dpi_select_source(enum omap_channel chann=
+el)
+>  static int dss_get_clocks(void)
+>  {
+>  	struct clk *clk;
+> -	int r;
+> =20
+> -	clk =3D clk_get(&dss.pdev->dev, "fck");
+> +	clk =3D devm_clk_get(&dss.pdev->dev, "fck");
+>  	if (IS_ERR(clk)) {
+>  		DSSERR("can't get clock fck\n");
+> -		r =3D PTR_ERR(clk);
+> -		goto err;
+> +		return PTR_ERR(clk);
+>  	}
+> =20
+>  	dss.dss_clk =3D clk;
+> @@ -782,8 +780,7 @@ static int dss_get_clocks(void)
+>  		clk =3D clk_get(NULL, dss.feat->clk_name);
+>  		if (IS_ERR(clk)) {
+>  			DSSERR("Failed to get %s\n", dss.feat->clk_name);
+> -			r =3D PTR_ERR(clk);
+> -			goto err;
+> +			return PTR_ERR(clk);
+>  		}
+>  	} else {
+>  		clk =3D NULL;
+> @@ -792,21 +789,12 @@ static int dss_get_clocks(void)
+>  	dss.dpll4_m4_ck =3D clk;
+> =20
+>  	return 0;
+> -
+> -err:
+> -	if (dss.dss_clk)
+> -		clk_put(dss.dss_clk);
+> -	if (dss.dpll4_m4_ck)
+> -		clk_put(dss.dpll4_m4_ck);
+> -
+> -	return r;
+>  }
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 054c2a2..645b3bc 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -767,13 +767,11 @@ int dss_dpi_select_source(enum omap_channel channel)
- static int dss_get_clocks(void)
- {
- 	struct clk *clk;
--	int r;
- 
--	clk = clk_get(&dss.pdev->dev, "fck");
-+	clk = devm_clk_get(&dss.pdev->dev, "fck");
- 	if (IS_ERR(clk)) {
- 		DSSERR("can't get clock fck\n");
--		r = PTR_ERR(clk);
--		goto err;
-+		return PTR_ERR(clk);
- 	}
- 
- 	dss.dss_clk = clk;
-@@ -782,8 +780,7 @@ static int dss_get_clocks(void)
- 		clk = clk_get(NULL, dss.feat->clk_name);
- 		if (IS_ERR(clk)) {
- 			DSSERR("Failed to get %s\n", dss.feat->clk_name);
--			r = PTR_ERR(clk);
--			goto err;
-+			return PTR_ERR(clk);
- 		}
- 	} else {
- 		clk = NULL;
-@@ -792,21 +789,12 @@ static int dss_get_clocks(void)
- 	dss.dpll4_m4_ck = clk;
- 
- 	return 0;
--
--err:
--	if (dss.dss_clk)
--		clk_put(dss.dss_clk);
--	if (dss.dpll4_m4_ck)
--		clk_put(dss.dpll4_m4_ck);
--
--	return r;
- }
- 
- static void dss_put_clocks(void)
- {
- 	if (dss.dpll4_m4_ck)
- 		clk_put(dss.dpll4_m4_ck);
--	clk_put(dss.dss_clk);
- }
- 
- static int dss_runtime_get(void)
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 7292364..c7e0bf7 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -804,7 +804,7 @@ static int hdmi_get_clocks(struct platform_device *pdev)
- {
- 	struct clk *clk;
- 
--	clk = clk_get(&pdev->dev, "sys_clk");
-+	clk = devm_clk_get(&pdev->dev, "sys_clk");
- 	if (IS_ERR(clk)) {
- 		DSSERR("can't get sys_clk\n");
- 		return PTR_ERR(clk);
-@@ -815,12 +815,6 @@ static int hdmi_get_clocks(struct platform_device *pdev)
- 	return 0;
- }
- 
--static void hdmi_put_clocks(void)
--{
--	if (hdmi.sys_clk)
--		clk_put(hdmi.sys_clk);
--}
--
- #if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
- int hdmi_compute_acr(u32 sample_freq, u32 *n, u32 *cts)
- {
-@@ -1100,7 +1094,7 @@ static int __init omapdss_hdmihw_probe(struct platform_device *pdev)
- 	r = hdmi_panel_init();
- 	if (r) {
- 		DSSERR("can't init panel\n");
--		goto err_panel_init;
-+		return r;
- 	}
- 
- 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
-@@ -1110,10 +1104,6 @@ static int __init omapdss_hdmihw_probe(struct platform_device *pdev)
- 	hdmi_probe_pdata(pdev);
- 
- 	return 0;
--
--err_panel_init:
--	hdmi_put_clocks();
--	return r;
- }
- 
- static int __exit hdmi_remove_child(struct device *dev, void *data)
-@@ -1135,8 +1125,6 @@ static int __exit omapdss_hdmihw_remove(struct platform_device *pdev)
- 
- 	pm_runtime_disable(&pdev->dev);
- 
--	hdmi_put_clocks();
--
- 	return 0;
- }
- 
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 006caf3..c27ab6f 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -721,7 +721,7 @@ static int venc_get_clocks(struct platform_device *pdev)
- 	struct clk *clk;
- 
- 	if (dss_has_feature(FEAT_VENC_REQUIRES_TV_DAC_CLK)) {
--		clk = clk_get(&pdev->dev, "tv_dac_clk");
-+		clk = devm_clk_get(&pdev->dev, "tv_dac_clk");
- 		if (IS_ERR(clk)) {
- 			DSSERR("can't get tv_dac_clk\n");
- 			return PTR_ERR(clk);
-@@ -735,12 +735,6 @@ static int venc_get_clocks(struct platform_device *pdev)
- 	return 0;
- }
- 
--static void venc_put_clocks(void)
--{
--	if (venc.tv_dac_clk)
--		clk_put(venc.tv_dac_clk);
--}
--
- static struct omap_dss_device * __init venc_find_dssdev(struct platform_device *pdev)
- {
- 	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
-@@ -886,7 +880,6 @@ static int __init omap_venchw_probe(struct platform_device *pdev)
- err_panel_init:
- err_runtime_get:
- 	pm_runtime_disable(&pdev->dev);
--	venc_put_clocks();
- 	return r;
- }
- 
-@@ -904,7 +897,6 @@ static int __exit omap_venchw_remove(struct platform_device *pdev)
- 	venc_uninit_output(pdev);
- 
- 	pm_runtime_disable(&pdev->dev);
--	venc_put_clocks();
- 
- 	return 0;
- }
--- 
-1.7.10.4
+Why didn't you use devm_clk_get for the dpll4_m4_ck clock also?
 
+ Tomi
+
+
+
+--------------enigF3B58E4BF45C549AFA3C4D8A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRZR8lAAoJEPo9qoy8lh71FcIP/1Esm8au9nHdXy1EF9R21PVg
+Ns5x7vxDhmg5xMdThfMNRWUSDiBL4Ohy0a4y/G0yn4k/425yAvoLkvqtsDg6Sb4l
+ByXhhpq05jP1GADPuQyGppbm9piqU7FJsjEJIsNcxMWuf4YvTteAr5RtjFKBhSez
+QNy5c0Kh9dE5hV5yzR6eJYPqgwMysqSB7zT2e9fm/Tq0uZrqljNLOBipQWI6UpPT
+pdjQ9eBwH/hndF86er5srfId6Sks+vilZD0Xwj2KpEuaMpGgAeyFdU63HD9flZGt
+isI8gBTSlrUDGJ8SlKpr2MOK4wm4nS5gxiKOo7RhpkASoDeSRPyYmr6kFuhTHygE
+S8faizvPSFfHArJxSsO1M8mT+zJbxEdFhfAZ5QngaLc4BP4XJZUT24ixbFhG8q2+
+EDzRDsPTybV1VqTCRO7OSjb+7BCmtU0LiRxvul6ypqzmCqi0rVO9hIl9bn3tDvMx
+UARPSq6KFot/k6fLb0Cenxw6PzHDewuPRA86FV/m5TlozawyJK9DoEtskUjKIT6r
+0J3/xZ2umSJ8FrKWTbVrhXHX8bcs/8xS7C5E8Per4/0k7A8fim5coiJ9l1mpNxcD
+D8H1CyB7NwcpCl7Cqs5TxJv5F+9FYFuPoBUYYI3/9R6QY2hhYbm1cymeV8OOfLDW
+fz2Gif8szVCnC2xmRvgH
+=Ezk9
+-----END PGP SIGNATURE-----
+
+--------------enigF3B58E4BF45C549AFA3C4D8A--

@@ -1,67 +1,105 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 10 Apr 2013 09:32:06 +0000
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 10 Apr 2013 09:40:17 +0000
 Subject: Re: [PATCH] omapdss: use devm_clk_get()
-Message-Id: <51653196.6050304@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enigE3F0C2176BEB9A1AF3E02900"
+Message-Id: <516530B1.80203@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1365411346-30611-1-git-send-email-archit@ti.com> <51651F25.3020302@ti.com> <516524B8.60205@ti.com> <51652EA4.9010606@ti.com> <516530B1.80203@ti.com>
-In-Reply-To: <516530B1.80203@ti.com>
-To: Archit Taneja <archit@ti.com>
+References: <1365411346-30611-1-git-send-email-archit@ti.com> <51651F25.3020302@ti.com> <516524B8.60205@ti.com> <51652EA4.9010606@ti.com>
+In-Reply-To: <51652EA4.9010606@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
---------------enigE3F0C2176BEB9A1AF3E02900
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wednesday 10 April 2013 02:49 PM, Tomi Valkeinen wrote:
+> On 2013-04-10 11:37, Archit Taneja wrote:
+>> On Wednesday 10 April 2013 01:43 PM, Tomi Valkeinen wrote:
+>>> On 2013-04-08 11:55, Archit Taneja wrote:
+>>>> Use devm_clk_get() instead of clk_get() for dss, and for outputs hdmi
+>>>> and venc.
+>>>> This reduces reduces code and simplifies error handling.
+>>>>
+>>>> Signed-off-by: Archit Taneja <archit@ti.com>
+>>>> ---
+>>>>    drivers/video/omap2/dss/dss.c  |   18 +++---------------
+>>>>    drivers/video/omap2/dss/hdmi.c |   16 ++--------------
+>>>>    drivers/video/omap2/dss/venc.c |   10 +---------
+>>>>    3 files changed, 6 insertions(+), 38 deletions(-)
+>>>>
+>>>> diff --git a/drivers/video/omap2/dss/dss.c
+>>>> b/drivers/video/omap2/dss/dss.c
+>>>> index 054c2a2..645b3bc 100644
+>>>> --- a/drivers/video/omap2/dss/dss.c
+>>>> +++ b/drivers/video/omap2/dss/dss.c
+>>>> @@ -767,13 +767,11 @@ int dss_dpi_select_source(enum omap_channel
+>>>> channel)
+>>>>    static int dss_get_clocks(void)
+>>>>    {
+>>>>        struct clk *clk;
+>>>> -    int r;
+>>>>
+>>>> -    clk = clk_get(&dss.pdev->dev, "fck");
+>>>> +    clk = devm_clk_get(&dss.pdev->dev, "fck");
+>>>>        if (IS_ERR(clk)) {
+>>>>            DSSERR("can't get clock fck\n");
+>>>> -        r = PTR_ERR(clk);
+>>>> -        goto err;
+>>>> +        return PTR_ERR(clk);
+>>>>        }
+>>>>
+>>>>        dss.dss_clk = clk;
+>>>> @@ -782,8 +780,7 @@ static int dss_get_clocks(void)
+>>>>            clk = clk_get(NULL, dss.feat->clk_name);
+>>>>            if (IS_ERR(clk)) {
+>>>>                DSSERR("Failed to get %s\n", dss.feat->clk_name);
+>>>> -            r = PTR_ERR(clk);
+>>>> -            goto err;
+>>>> +            return PTR_ERR(clk);
+>>>>            }
+>>>>        } else {
+>>>>            clk = NULL;
+>>>> @@ -792,21 +789,12 @@ static int dss_get_clocks(void)
+>>>>        dss.dpll4_m4_ck = clk;
+>>>>
+>>>>        return 0;
+>>>> -
+>>>> -err:
+>>>> -    if (dss.dss_clk)
+>>>> -        clk_put(dss.dss_clk);
+>>>> -    if (dss.dpll4_m4_ck)
+>>>> -        clk_put(dss.dpll4_m4_ck);
+>>>> -
+>>>> -    return r;
+>>>>    }
+>>>
+>>> Why didn't you use devm_clk_get for the dpll4_m4_ck clock also?
+>>
+>> clk_get of dpll4_m4_ck isn't tied to a device:
+>>
+>>      clk = clk_get(NULL, dss.feat->clk_name);
+>>
+>> We can't use devm_clk_get() if we don't tie it to a device, right?
+>
+> Ah, true.
+>
+>> I think the dss.dss_clk clock above is same as the dpll4_m4_ck for all
+>> OMAPs. We could probably remove the dpll4_m4_clk all together, and use
+>> dss_clk to get the rate of DSS_FCK coming from PRCM.
+>
+> Hmm, no, if I recall right, dpll4_m4_clk is the parent of dss clock (or
+> parent of the parent of...), and the dss_fck_multiplier affects the
+> resulting dss fck. Or something like that. It's a bit messy, especially
+> as we can't just use the dss fck to change the rate, we need to change
+> the rate at the parent for some reason.
 
-On 2013-04-10 12:28, Archit Taneja wrote:
+Ah ok, I remember it now. One of the DPLL's divider's output is DSS_FCK. 
+We get the parent's rate and iterate through all the possible hsdivider 
+values to get the closest pixel clock. We don't/can't change 
+dpll4_m4_clk as such, we just need to know it's rate for our calculations.
 
-> Ah ok, I remember it now. One of the DPLL's divider's output is DSS_FCK=
-=2E
-> We get the parent's rate and iterate through all the possible hsdivider=
+So yes, we need dpll4_m4_clk, we just need to rename it to a better 
+thing. Like dss_clk_parent.
 
-> values to get the closest pixel clock. We don't/can't change
-> dpll4_m4_clk as such, we just need to know it's rate for our calculatio=
-ns.
->=20
-> So yes, we need dpll4_m4_clk, we just need to rename it to a better
-> thing. Like dss_clk_parent.
+Anyway,
+Archit
 
-Right. And the field name in struct dss_features, "clk_name" is rather
-vague.
-
-At some point we should fix the omap clk framework so that we can set
-the dss fck directly. Presuming there's no good reason to have it as it
-is now.
-
-I'll apply the patch as it is now.
-
- Tomi
-
-
-
---------------enigE3F0C2176BEB9A1AF3E02900
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRZTGWAAoJEPo9qoy8lh71Q7gP/A+QS74CR3OezWoZtrf2lh5m
-753Cv0d+q/vs8D3HJfTn+f3uXhHrRSe9J+o/+Ijb4S+8iUWZeXDMS6tXvN/ybM+s
-uL8pEM52sTj58nfMVB2CGQdMBpgrcufbJshLzfZbz159e8E2ScvLBsWmIAymZNB2
-TTjyVSceG8WEOWZNEtIg+inBtFXfue29A56Caq2pC04/9UbH6OkHop5bcO4HkeKT
-Tadj2x+TQdcbEcuB8Hg7TqpUghXIlAku0E/HhSDTE0IGzUlYtQFO1/2Ha/38nP//
-h+vKZ/8g88JJJT4Jzympol146WhxCj65zkShbvWeg9pwz+ZqKbVjPBxzTkjHGRfL
-6/z0cLlsOokd43cAaOuF6ueACwuLpQNB0DfOT7mMi6Vhw0aig/x6gpdfNyuwyFun
-tB81sEOLojl2UCYN/KKaB/0dvALLj1jnRdE/P73y2tcN/KSh9xFDwF+29g7adNkN
-KIX/AUHZvBxSi4ak5JH9t9fGSPpsT43khQJrYF4IMwjElKZIGQXvpuZ3tiigT7vc
-HvephB8wSdAyf+QlPWVBEOSv4lcUdoyr5pQ31IO3KEqu9uCr/EtEPkjTCPOtXG1R
-DdBZ6pizoyhBDfSwqQh7eAZyVLJ69yXSg1fxgJOWxEztdFPn3NGlEs8CX4JUVcuP
-VIgnK2hjlPFUGsthcvjA
-=PXqh
------END PGP SIGNATURE-----
-
---------------enigE3F0C2176BEB9A1AF3E02900--

@@ -1,73 +1,57 @@
-From: Lars-Peter Clausen <lars@metafoo.de>
-Date: Sun, 07 Apr 2013 08:21:38 +0000
-Subject: [PATCH] OMAPDSS: nec-nl8048 panel: Use dev_pm_ops
-Message-Id: <1365326053-16248-1-git-send-email-lars@metafoo.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 10 Apr 2013 08:07:18 +0000
+Subject: Re: [PATCH] OMAPDSS: nec-nl8048 panel: Use dev_pm_ops
+Message-Id: <51651DB6.2050504@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig3FCD09A59EE8B38FF4AF6CA8"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>
+References: <1365326053-16248-1-git-send-email-lars@metafoo.de>
+In-Reply-To: <1365326053-16248-1-git-send-email-lars@metafoo.de>
+To: Lars-Peter Clausen <lars@metafoo.de>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Use dev_pm_ops instead of the deprecated legacy suspend/resume callbacks.
+--------------enig3FCD09A59EE8B38FF4AF6CA8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
----
- .../video/omap2/displays/panel-nec-nl8048hl11-01b.c  | 20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
+On 2013-04-07 12:14, Lars-Peter Clausen wrote:
+> Use dev_pm_ops instead of the deprecated legacy suspend/resume callback=
+s.
+>=20
+> Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+> ---
+>  .../video/omap2/displays/panel-nec-nl8048hl11-01b.c  | 20 ++++++++++++=
+++++----
+>  1 file changed, 16 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-index 1e0097d..20c3cd9 100644
---- a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-+++ b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-@@ -242,16 +242,22 @@ static int nec_8048_spi_remove(struct spi_device *spi)
- 	return 0;
- }
- 
--static int nec_8048_spi_suspend(struct spi_device *spi, pm_message_t mesg)
-+#ifdef CONFIG_PM_SLEEP
-+
-+static int nec_8048_spi_suspend(struct device *dev)
- {
-+	struct spi_device *spi = to_spi_device(dev);
-+
- 	nec_8048_spi_send(spi, 2, 0x01);
- 	mdelay(40);
- 
- 	return 0;
- }
- 
--static int nec_8048_spi_resume(struct spi_device *spi)
-+static int nec_8048_spi_resume(struct device *dev)
- {
-+	struct spi_device *spi = to_spi_device(dev);
-+
- 	/* reinitialize the panel */
- 	spi_setup(spi);
- 	nec_8048_spi_send(spi, 2, 0x00);
-@@ -260,14 +266,20 @@ static int nec_8048_spi_resume(struct spi_device *spi)
- 	return 0;
- }
- 
-+static SIMPLE_DEV_PM_OPS(nec_8048_spi_pm_ops, nec_8048_spi_suspend,
-+		nec_8048_spi_resume);
-+#define NEC_8048_SPI_PM_OPS (&nec_8048_spi_pm_ops)
-+#else
-+#define NEC_8048_SPI_PM_OPS NULL
-+#endif
-+
- static struct spi_driver nec_8048_spi_driver = {
- 	.probe		= nec_8048_spi_probe,
- 	.remove		= nec_8048_spi_remove,
--	.suspend	= nec_8048_spi_suspend,
--	.resume		= nec_8048_spi_resume,
- 	.driver		= {
- 		.name	= "nec_8048_spi",
- 		.owner	= THIS_MODULE,
-+		.pm	= NEC_8048_SPI_PM_OPS,
- 	},
- };
- 
--- 
-1.8.0
+Thanks, looks good to me. I'll add to fbdev misc patches.
 
+ Tomi
+
+
+
+--------------enig3FCD09A59EE8B38FF4AF6CA8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRZR22AAoJEPo9qoy8lh71uFQQAJmWtDVTVXn0ape+VYW20Oon
+Ga8y5D/q8gZFwHGB0UVjLsEiGY9wIbNh86IqZ36A7Y21m5mVlhOpa2RAKYzQEupy
+AkKKZ8BUa4CIMfdCUZNUZ29S5f94pDZZevoJImPujmnRcJVJgOZhDYN5OlHKPFKR
+jyhnEDWbl2lFuUB5tncg1KOttCT3jf0AZ9c0tb2MgpIjZN8RvJJuZ0QQCc8olm1s
+96j+uDDXvYg5p8SCWh1EfHMMTJo5rtXadxskxknxEd8FFPeFE/u9XE9NmfSg0xxK
+omlQmSlMfc+ebtcHujR33gijjkTde3NxdRdVoyNpaxzCAZKMAjM6jRuc7/gJnLsT
++xP9NZ1r2JyOUkoR9KhmZ5skIFUObtBnxR5pGK+Yxk4UmEU/oEIJ6UeSCj2KAuqM
+/7NKx5qohaePrtIaZ2/odI/R1+Px9O4FcqzwdXVVcmpRa5AMcbL/4xuIlOgq8q01
+R0ml9A+4+zoFgJThI9H/araXSvsVe3mrH3onpV0kE5oyLfsevEbEHf9Y3xnSusQx
+hE06ch61YofRnRDFY9lzZxw8IbOHxsyc/0bsA+p3+VklNLsqpWrPSH/yeXNYudn1
+EjcjZEWoaFHPmba+TlVPJcMUYMY/hUnfGywXzPzblxOerfLyitnOOG42c8BGa3pj
+u//K5Tn5m4J3du8ZlLX5
+=j0rv
+-----END PGP SIGNATURE-----
+
+--------------enig3FCD09A59EE8B38FF4AF6CA8--

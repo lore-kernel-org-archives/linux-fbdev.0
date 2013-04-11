@@ -1,112 +1,167 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 11 Apr 2013 09:49:28 +0000
-Subject: Re: How to manage OMAP display drivers in the future
-Message-Id: <12886065.a3bE0bBX2i@avalon>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="nextPart1873136.QCsC9hHaEa"
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 11 Apr 2013 00:04:55 +0000
+Subject: [PATCH 13/30] video/s3c: move platform_data out of arch/arm
+Message-Id: <1365638712-1028578-14-git-send-email-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <51403F91.7070401@iki.fi> <5165382F.8050401@ti.com>
-In-Reply-To: <5165382F.8050401@ti.com>
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
-
-
---nextPart1873136.QCsC9hHaEa
-Content-Transfer-Encoding: 7Bit
+References: <1365638712-1028578-1-git-send-email-arnd@arndb.de>
+In-Reply-To: <1365638712-1028578-1-git-send-email-arnd@arndb.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-Hi Tomi,
+The s3c-fb driver requires header files from the samsung platforms
+to find its platform_data definition, but this no longer works on
+multiplatform kernels, so let's move the data into a new header
+file under include/linux/platform_data.
 
-On Wednesday 10 April 2013 13:00:15 Tomi Valkeinen wrote:
-> On 2013-03-13 10:57, Tomi Valkeinen wrote:
-> > Hi Dave,
-> > 
-> > I'm writing this mail to get some ideas how we should manage OMAP's
-> > display drivers in the future.
-> > 
-> > As a short intro, we have the following players around:
-> > 
-> > omapdss - omapdss handles the DSS (display subsystem) hardware. omapdss
-> > doesn't do any buffer management or expose any userspace API (except a
-> > few sysfs files), so it doesn't do anything by itself.
-> > (drivers/video/omap2/dss/)
-> > 
-> > panel drivers - Drivers for various panel models. The panel drivers use
-> > omapdss API to manage the video bus. (drivers/video/omap2/displays/)
-> > 
-> > omapfb - Framebuffer driver, uses omapdss to handle the HW.
-> > (drivers/video/omap2/omapfb/)
-> > 
-> > omap_vout - V4L2 driver for showing video, uses omapdss to handle the
-> > HW. (drivers/media/platform/omap/)
-> > 
-> > omapdrm - DRM driver, uses omapdss to handle the HW.
-> > (drivers/gpu/drm/omapdrm/)
-> > 
-> > omapdss and the panel drivers form the lowest level layer. omapfb and
-> > omap_vout can be used at the same time, but omapdrm must be used alone,
-> > without omapfb or omap_vout.
-> > 
-> > omapfb and omap_vout are not much developed anymore, even though they
-> > are still commonly used. Most of the development happens in omapdss,
-> > panel drivers and omapdrm.
-> > 
-> > So that's what we have now. In the distant future I see omapfb and
-> > omap_vout disappear totally,
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Jingoo Han <jg1.han@samsung.com>
+---
+ arch/arm/plat-samsung/include/plat/fb.h | 50 +-----------------------------
+ drivers/video/s3c-fb.c                  |  3 +-
+ include/linux/platform_data/video_s3c.h | 54 +++++++++++++++++++++++++++++++++
+ 3 files changed, 56 insertions(+), 51 deletions(-)
+ create mode 100644 include/linux/platform_data/video_s3c.h
 
-I'm all for that, but we need a migration plan. I plan to port my omap3-isp-
-live application to omapdrm, I'll report any issue with my use cases.
-
-> > the panel drivers would be made generic using Common Display Framework,
-> > and omapdss and omapdrm would more or less be merged together. However,
-> > all that is still far away, and we need some plan to go forward for now.
-> >
-> > Most pressing question is how to get OMAP display patches merged. It
-> > seems that there's not really an fbdev maintainer for the time being,
-> > and fbdev tree has been the route for omapdss, panels and omapfb in the
-> > past. Now that omapdrm is the new main driver for omap display, fbdev
-> > would be somewhat wrong in any case.
-> > 
-> > Dave, how would you feel about merging changes to all the above
-> > components through DRM tree? Merging all the above together would be the
-> > easiest way, as the changes may have dependencies to each other.
-> > 
-> > As I said, most of the development should be in omapdss, panels and
-> > omapdrm. There would be an occasional fix for omapfb and omap_vout, or
-> > small changes when omapdss changes require changes elsewhere.
-> 
-> Ping. Do you have any thoughts of the above?
-> 
-> We have a few patches for omapdrm for 3.10 that depend on omapdss
-> patches. I'm currently acting as a fbdev maintainer (well, more like
-> somebody who collects the fbdev patches that are quite surely ok), so I
-> can take the problematic omapdrm patches via fbdev tree with the omapdss
-> patches, if that's ok for you. And send the other omapdrm patches to be
-> merged via drm tree.
-> 
-> Or, I could take all the omapdrm patches via fbdev tree, if that's
-> better. There aren't too many of them for 3.10.
-
+diff --git a/arch/arm/plat-samsung/include/plat/fb.h b/arch/arm/plat-samsung/include/plat/fb.h
+index b885322..9ae5072 100644
+--- a/arch/arm/plat-samsung/include/plat/fb.h
++++ b/arch/arm/plat-samsung/include/plat/fb.h
+@@ -15,55 +15,7 @@
+ #ifndef __PLAT_S3C_FB_H
+ #define __PLAT_S3C_FB_H __FILE__
+ 
+-/* S3C_FB_MAX_WIN
+- * Set to the maximum number of windows that any of the supported hardware
+- * can use. Since the platform data uses this for an array size, having it
+- * set to the maximum of any version of the hardware can do is safe.
+- */
+-#define S3C_FB_MAX_WIN	(5)
+-
+-/**
+- * struct s3c_fb_pd_win - per window setup data
+- * @xres     : The window X size.
+- * @yres     : The window Y size.
+- * @virtual_x: The virtual X size.
+- * @virtual_y: The virtual Y size.
+- */
+-struct s3c_fb_pd_win {
+-	unsigned short		default_bpp;
+-	unsigned short		max_bpp;
+-	unsigned short		xres;
+-	unsigned short		yres;
+-	unsigned short		virtual_x;
+-	unsigned short		virtual_y;
+-};
+-
+-/**
+- * struct s3c_fb_platdata -  S3C driver platform specific information
+- * @setup_gpio: Setup the external GPIO pins to the right state to transfer
+- *		the data from the display system to the connected display
+- *		device.
+- * @vidcon0: The base vidcon0 values to control the panel data format.
+- * @vidcon1: The base vidcon1 values to control the panel data output.
+- * @vtiming: Video timing when connected to a RGB type panel.
+- * @win: The setup data for each hardware window, or NULL for unused.
+- * @display_mode: The LCD output display mode.
+- *
+- * The platform data supplies the video driver with all the information
+- * it requires to work with the display(s) attached to the machine. It
+- * controls the initial mode, the number of display windows (0 is always
+- * the base framebuffer) that are initialised etc.
+- *
+- */
+-struct s3c_fb_platdata {
+-	void	(*setup_gpio)(void);
+-
+-	struct s3c_fb_pd_win	*win[S3C_FB_MAX_WIN];
+-	struct fb_videomode     *vtiming;
+-
+-	u32			 vidcon0;
+-	u32			 vidcon1;
+-};
++#include <linux/platform_data/video_s3c.h>
+ 
+ /**
+  * s3c_fb_set_platdata() - Setup the FB device with platform data.
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 968a625..2e7991c 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -24,10 +24,9 @@
+ #include <linux/uaccess.h>
+ #include <linux/interrupt.h>
+ #include <linux/pm_runtime.h>
++#include <linux/platform_data/video_s3c.h>
+ 
+ #include <video/samsung_fimd.h>
+-#include <mach/map.h>
+-#include <plat/fb.h>
+ 
+ /* This driver will export a number of framebuffer interfaces depending
+  * on the configuration passed in via the platform data. Each fb instance
+diff --git a/include/linux/platform_data/video_s3c.h b/include/linux/platform_data/video_s3c.h
+new file mode 100644
+index 0000000..fa40f96
+--- /dev/null
++++ b/include/linux/platform_data/video_s3c.h
+@@ -0,0 +1,54 @@
++#ifndef __PLATFORM_DATA_VIDEO_S3C
++#define __PLATFORM_DATA_VIDEO_S3C
++
++/* S3C_FB_MAX_WIN
++ * Set to the maximum number of windows that any of the supported hardware
++ * can use. Since the platform data uses this for an array size, having it
++ * set to the maximum of any version of the hardware can do is safe.
++ */
++#define S3C_FB_MAX_WIN	(5)
++
++/**
++ * struct s3c_fb_pd_win - per window setup data
++ * @xres     : The window X size.
++ * @yres     : The window Y size.
++ * @virtual_x: The virtual X size.
++ * @virtual_y: The virtual Y size.
++ */
++struct s3c_fb_pd_win {
++	unsigned short		default_bpp;
++	unsigned short		max_bpp;
++	unsigned short		xres;
++	unsigned short		yres;
++	unsigned short		virtual_x;
++	unsigned short		virtual_y;
++};
++
++/**
++ * struct s3c_fb_platdata -  S3C driver platform specific information
++ * @setup_gpio: Setup the external GPIO pins to the right state to transfer
++ *		the data from the display system to the connected display
++ *		device.
++ * @vidcon0: The base vidcon0 values to control the panel data format.
++ * @vidcon1: The base vidcon1 values to control the panel data output.
++ * @vtiming: Video timing when connected to a RGB type panel.
++ * @win: The setup data for each hardware window, or NULL for unused.
++ * @display_mode: The LCD output display mode.
++ *
++ * The platform data supplies the video driver with all the information
++ * it requires to work with the display(s) attached to the machine. It
++ * controls the initial mode, the number of display windows (0 is always
++ * the base framebuffer) that are initialised etc.
++ *
++ */
++struct s3c_fb_platdata {
++	void	(*setup_gpio)(void);
++
++	struct s3c_fb_pd_win	*win[S3C_FB_MAX_WIN];
++	struct fb_videomode     *vtiming;
++
++	u32			 vidcon0;
++	u32			 vidcon1;
++};
++ 
++#endif
 -- 
-Regards,
-
-Laurent Pinchart
-
---nextPart1873136.QCsC9hHaEa
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAABAgAGBQJRZocuAAoJEIkPb2GL7hl1hmYH/0JvOY+BKHC7F6VhT9vmlYQG
-feoryLKpwj9lvfecvJUv0oCZnzr07iLdyLoV1NUAZwy83k/T/4qgL+3K3fF5vG2I
-WIAe5lY5bPl3wEoRfWCQhU+vZRv+QiXTaqHyCjzvez28r7nBxqegLy+g6KGv27oi
-Bs3J79lrg/uT9L8Nuz07cUsDE1hUmTFojolJcjnftoxUH3DIEnxg5PWnkpf0NjMI
-J9B/2fgVV74lNvP9NA2cS2gMH8MI0MD9u/FFXANFzRE4TbvZeAiO19ptmC49KuJR
-TJCKl3EeLywyyvwWocvUXuNDdLxPFKrqgRw+s9txXPlAOYkApfyhToDSKLIiUbY=
-=1i8X
------END PGP SIGNATURE-----
-
---nextPart1873136.QCsC9hHaEa--
+1.8.1.2
 

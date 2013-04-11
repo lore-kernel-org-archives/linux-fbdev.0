@@ -1,160 +1,87 @@
-From: Pawel Moll <pawel.moll@arm.com>
-Date: Wed, 17 Apr 2013 15:17:22 +0000
-Subject: [RFC 10/10] ARM: vexpress: Add CLCD Device Tree properties
-Message-Id: <1366211842-21497-11-git-send-email-pawel.moll@arm.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 11 Apr 2013 09:31:01 +0000
+Subject: [PATCH 1/2] OMAPDSS: fix dss_fck clock rate rounding
+Message-Id: <1365672662-612-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366211842-21497-1-git-send-email-pawel.moll@arm.com>
-In-Reply-To: <1366211842-21497-1-git-send-email-pawel.moll@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Signed-off-by: Pawel Moll <pawel.moll@arm.com>
+DSS func clock is calculated with prate / div * m. However, the current
+omapdss code calculates it with prate * m / div, which yields a slightly
+different result when there's a remainder. For example, 432000000 / 14 *
+2 = 61714284, but 432000000 * 2 / 14 = 61714285.
+
+In addition to that, the clock framework wants the clock rate given with
+clk_set_rate to be higher than the actual (truncated) end result. So, if
+prate is 432000000, and div is 14, the real result is 30857142.8571...
+We need to call clk_set_rate with 30857143, which gives us a clock of
+30857142. That's why we need to use DIV_ROUND_UP() when calling
+clk_set_rate.
+
+This patch fixes the clock calculation.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/boot/dts/vexpress-v2m-rs1.dtsi |   17 +++++++++++++----
- arch/arm/boot/dts/vexpress-v2m.dtsi     |   17 +++++++++++++----
- arch/arm/boot/dts/vexpress-v2p-ca9.dts  |    5 +++++
- 3 files changed, 31 insertions(+), 8 deletions(-)
+ drivers/video/omap2/dss/dss.c |   17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
-index ac870fb..aac9459 100644
---- a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
-+++ b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
-@@ -41,7 +41,7 @@
- 			bank-width = <4>;
- 		};
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index fdd32e8..b9f6f24 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -480,6 +480,7 @@ bool dss_div_calc(unsigned long fck_min, dss_div_calc_func func, void *data)
+ 	unsigned long fck_hw_max;
+ 	unsigned long fckd_hw_max;
+ 	unsigned long prate;
++	unsigned m;
  
--		vram@2,00000000 {
-+		v2m_vram: vram@2,00000000 {
- 			compatible = "arm,vexpress-vram";
- 			reg = <2 0x00000000 0x00800000>;
- 		};
-@@ -233,6 +233,12 @@
- 				interrupts = <14>;
- 				clocks = <&v2m_oscclk1>, <&smbclk>;
- 				clock-names = "clcdclk", "apb_pclk";
-+				label = "IOFPGA CLCD";
-+				video-ram = <&v2m_vram>;
-+				display = <&v2m_muxfpga 0>;
-+				max-hactive = <640>;
-+				max-vactive = <480>;
-+				max-bpp = <16>;
- 			};
- 		};
+ 	if (dss.dpll4_m4_ck = NULL) {
+ 		/*
+@@ -495,15 +496,16 @@ bool dss_div_calc(unsigned long fck_min, dss_div_calc_func func, void *data)
+ 	fck_hw_max = dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
+ 	fckd_hw_max = dss.feat->fck_div_max;
  
-@@ -282,7 +288,7 @@
- 				/* CLCD clock */
- 				compatible = "arm,vexpress-osc";
- 				arm,vexpress-sysreg,func = <1 1>;
--				freq-range = <23750000 63500000>;
-+				freq-range = <23750000 65000000>;
- 				#clock-cells = <0>;
- 				clock-output-names = "v2m:oscclk1";
- 			};
-@@ -317,9 +323,11 @@
- 				arm,vexpress-sysreg,func = <5 0>;
- 			};
+-	prate = dss_get_dpll4_rate() * dss.feat->dss_fck_multiplier;
++	m = dss.feat->dss_fck_multiplier;
++	prate = dss_get_dpll4_rate();
  
--			muxfpga@0 {
-+			v2m_muxfpga: muxfpga@0 {
- 				compatible = "arm,vexpress-muxfpga";
- 				arm,vexpress-sysreg,func = <7 0>;
-+				#display-cells = <1>;
-+				display = <&v2m_dvimode>;
- 			};
+ 	fck_min = fck_min ? fck_min : 1;
  
- 			shutdown@0 {
-@@ -332,9 +340,10 @@
- 				arm,vexpress-sysreg,func = <9 0>;
- 			};
+-	fckd_start = min(prate / fck_min, fckd_hw_max);
+-	fckd_stop = max(DIV_ROUND_UP(prate, fck_hw_max), 1ul);
++	fckd_start = min(prate * m / fck_min, fckd_hw_max);
++	fckd_stop = max(DIV_ROUND_UP(prate * m, fck_hw_max), 1ul);
  
--			dvimode@0 {
-+			v2m_dvimode: dvimode@0 {
- 				compatible = "arm,vexpress-dvimode";
- 				arm,vexpress-sysreg,func = <11 0>;
-+				#display-cells = <0>;
- 			};
- 		};
- 	};
-diff --git a/arch/arm/boot/dts/vexpress-v2m.dtsi b/arch/arm/boot/dts/vexpress-v2m.dtsi
-index f142036..4d080d0 100644
---- a/arch/arm/boot/dts/vexpress-v2m.dtsi
-+++ b/arch/arm/boot/dts/vexpress-v2m.dtsi
-@@ -40,7 +40,7 @@
- 			bank-width = <4>;
- 		};
+ 	for (fckd = fckd_start; fckd >= fckd_stop; --fckd) {
+-		fck = prate / fckd;
++		fck = prate / fckd * m;
  
--		vram@3,00000000 {
-+		v2m_vram: vram@3,00000000 {
- 			compatible = "arm,vexpress-vram";
- 			reg = <3 0x00000000 0x00800000>;
- 		};
-@@ -232,6 +232,12 @@
- 				interrupts = <14>;
- 				clocks = <&v2m_oscclk1>, <&smbclk>;
- 				clock-names = "clcdclk", "apb_pclk";
-+				label = "IOFPGA CLCD";
-+				video-ram = <&v2m_vram>;
-+				display = <&v2m_muxfpga 0>;
-+				max-hactive = <640>;
-+				max-vactive = <480>;
-+				max-bpp = <16>;
- 			};
- 		};
+ 		if (func(fckd, fck, data))
+ 			return true;
+@@ -521,7 +523,8 @@ int dss_set_clock_div(struct dss_clock_info *cinfo)
+ 		prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
+ 		DSSDBG("dpll4_m4 = %ld\n", prate);
  
-@@ -281,7 +287,7 @@
- 				/* CLCD clock */
- 				compatible = "arm,vexpress-osc";
- 				arm,vexpress-sysreg,func = <1 1>;
--				freq-range = <23750000 63500000>;
-+				freq-range = <23750000 65000000>;
- 				#clock-cells = <0>;
- 				clock-output-names = "v2m:oscclk1";
- 			};
-@@ -316,9 +322,11 @@
- 				arm,vexpress-sysreg,func = <5 0>;
- 			};
+-		r = clk_set_rate(dss.dpll4_m4_ck, prate / cinfo->fck_div);
++		r = clk_set_rate(dss.dpll4_m4_ck,
++				DIV_ROUND_UP(prate, cinfo->fck_div));
+ 		if (r)
+ 			return r;
+ 	} else {
+@@ -531,7 +534,9 @@ int dss_set_clock_div(struct dss_clock_info *cinfo)
  
--			muxfpga@0 {
-+			v2m_muxfpga: muxfpga@0 {
- 				compatible = "arm,vexpress-muxfpga";
- 				arm,vexpress-sysreg,func = <7 0>;
-+				#display-cells = <1>;
-+				display = <&v2m_dvimode>;
- 			};
+ 	dss.dss_clk_rate = clk_get_rate(dss.dss_clk);
  
- 			shutdown@0 {
-@@ -331,9 +339,10 @@
- 				arm,vexpress-sysreg,func = <9 0>;
- 			};
+-	WARN_ONCE(dss.dss_clk_rate != cinfo->fck, "clk rate mismatch");
++	WARN_ONCE(dss.dss_clk_rate != cinfo->fck,
++			"clk rate mismatch: %lu != %lu", dss.dss_clk_rate,
++			cinfo->fck);
  
--			dvimode@0 {
-+			v2m_dvimode: dvimode@0 {
- 				compatible = "arm,vexpress-dvimode";
- 				arm,vexpress-sysreg,func = <11 0>;
-+				#display-cells = <0>;
- 			};
- 		};
- 	};
-diff --git a/arch/arm/boot/dts/vexpress-v2p-ca9.dts b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
-index 1420bb1..2a63510 100644
---- a/arch/arm/boot/dts/vexpress-v2p-ca9.dts
-+++ b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
-@@ -73,6 +73,11 @@
- 		interrupts = <0 44 4>;
- 		clocks = <&oscclk1>, <&oscclk2>;
- 		clock-names = "clcdclk", "apb_pclk";
-+		label = "V2P-CA9 CLCD";
-+		display = <&v2m_muxfpga 0xf>;
-+		max-hactive = <1024>;
-+		max-vactive = <768>;
-+		max-bpp = <16>;
- 	};
+ 	DSSDBG("fck = %ld (%d)\n", cinfo->fck, cinfo->fck_div);
  
- 	memory-controller@100e0000 {
 -- 
 1.7.10.4
-
 

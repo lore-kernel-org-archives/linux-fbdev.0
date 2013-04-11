@@ -1,82 +1,67 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 11 Apr 2013 05:07:02 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 11 Apr 2013 11:51:55 +0000
 Subject: Re: [PATCH 12/30] video/exynos: remove unnecessary header inclusions
-Message-Id: <003201ce3672$66f72e50$34e58af0$%han@samsung.com>
+Message-Id: <5166A3DB.6060700@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enigAB4BA7E4E18BE84D4AFF1829"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1365638712-1028578-1-git-send-email-arnd@arndb.de>
  <1365638712-1028578-13-git-send-email-arnd@arndb.de>
 In-Reply-To: <1365638712-1028578-13-git-send-email-arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Thursday, April 11, 2013 9:05 AM, Arnd Bergmann wrote:
-> 
+--------------enigAB4BA7E4E18BE84D4AFF1829
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On 2013-04-11 03:04, Arnd Bergmann wrote:
 > In multiplatform configurations, we cannot include headers
 > provided by only the exynos platform. Fortunately a number
 > of drivers that include those headers do not actually need
 > them, so we can just remove the inclusions.
-> 
+>=20
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 > Cc: linux-fbdev@vger.kernel.org
 > Cc: Jingoo Han <jg1.han@samsung.com>
-
-CC'ed Tomi Valkeinen, Inki Dae, Donghwa Lee, Kyungmin Park
-
-
-Acked-by: Jingoo Han <jg1.han@samsung.com>
-
-Best regards,
-Jingoo Han
-
 > ---
 >  drivers/video/exynos/exynos_mipi_dsi.c          | 2 --
 >  drivers/video/exynos/exynos_mipi_dsi_common.c   | 2 --
 >  drivers/video/exynos/exynos_mipi_dsi_lowlevel.c | 2 --
 >  3 files changed, 6 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
-> index fac7df6..3dd43ca 100644
-> --- a/drivers/video/exynos/exynos_mipi_dsi.c
-> +++ b/drivers/video/exynos/exynos_mipi_dsi.c
-> @@ -35,8 +35,6 @@
-> 
->  #include <video/exynos_mipi_dsim.h>
-> 
-> -#include <plat/fb.h>
-> -
->  #include "exynos_mipi_dsi_common.h"
->  #include "exynos_mipi_dsi_lowlevel.h"
-> 
-> diff --git a/drivers/video/exynos/exynos_mipi_dsi_common.c
-> b/drivers/video/exynos/exynos_mipi_dsi_common.c
-> index c70cb89..520fc9b 100644
-> --- a/drivers/video/exynos/exynos_mipi_dsi_common.c
-> +++ b/drivers/video/exynos/exynos_mipi_dsi_common.c
-> @@ -31,8 +31,6 @@
->  #include <video/mipi_display.h>
->  #include <video/exynos_mipi_dsim.h>
-> 
-> -#include <mach/map.h>
-> -
->  #include "exynos_mipi_dsi_regs.h"
->  #include "exynos_mipi_dsi_lowlevel.h"
->  #include "exynos_mipi_dsi_common.h"
-> diff --git a/drivers/video/exynos/exynos_mipi_dsi_lowlevel.c
-> b/drivers/video/exynos/exynos_mipi_dsi_lowlevel.c
-> index 95cb99a..15c5abd 100644
-> --- a/drivers/video/exynos/exynos_mipi_dsi_lowlevel.c
-> +++ b/drivers/video/exynos/exynos_mipi_dsi_lowlevel.c
-> @@ -26,8 +26,6 @@
-> 
->  #include <video/exynos_mipi_dsim.h>
-> 
-> -#include <mach/map.h>
-> -
->  #include "exynos_mipi_dsi_regs.h"
-> 
->  void exynos_mipi_dsi_func_reset(struct mipi_dsim_device *dsim)
-> --
-> 1.8.1.2
 
+I've applied this and the next patch ([PATCH 13/30] video/s3c: move
+platform_data out of arch/arm) to fbdev.
+
+I also fixed the extra space mentioned by Jingoo.
+
+ Tomi
+
+
+
+--------------enigAB4BA7E4E18BE84D4AFF1829
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRZqPbAAoJEPo9qoy8lh71PlAQAJ1DaLc2zDE6qQNWqKoOPjrm
+GU1dYSGqqXsiR9YaZy9zzTzS0kB+VhUchrBvrixvHVIdZyaxGR5VzqS2eeg5Iqh9
+fHDcHpzN/gngg3DmDVcP1rmqltP6Wayhv3Der/1YfQXe2NukpY/Y+BOy+H5cNc2U
+WCIom6Lu18g0BfWLCnYr594izyE3hrk1DsbOZdUq5DKQuL8UfrMC45GlzLx2T3GT
+rhNG5WwcORxOq4odSlxI7GWrHv3FclqpLNqzc7nDGRZWTHHRmiPf+GrGHrPWYTRZ
+5YhiNwGB6EdjKvMmyXiIOwqDGASYIU9Q5zNt9lucT2ppYkHfe4up+Bquuf7awR/6
+U1lT5Gy6VwowAiWediyGsVMp/1YeOtpbp6Dnwz1RcLZ/lms/VaSDowWfpM6JjMgc
+YdBT4yUfs9GH+iytaAWgZiBLqqWagTroPSHoRhUurt0N2lB+MsDLwYRtnib/pXvi
+agrRCIC4ZNUCGdtRLKamB1zYenigEqg9OjbDXnKi0kCMu3TF8b4L9qrGiTDVM3H5
+iNr7aGTOIzjODwj6xCiYFd037rzAdqb/pm1B0Nvvf+EJ1yaW/wtsyZ7nYzGEC1A6
+VhcbxBkS9SbqqnZ1XWyT+mr4tSLhjH7N6jqrfLglhTSJyBuXkJyuXVjxf+OqUqjb
+4xeyZlsS03PTiuPZumF0
+=QPWV
+-----END PGP SIGNATURE-----
+
+--------------enigAB4BA7E4E18BE84D4AFF1829--

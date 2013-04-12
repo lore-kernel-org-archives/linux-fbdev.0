@@ -1,84 +1,75 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 10 Apr 2013 08:23:09 +0000
-Subject: Re: [PATCH 1/1] video: wm8505fb: Convert to devm_ioremap_resource()
-Message-Id: <5165216D.8090705@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enigB17EB971E4FD592C34F602B7"
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Fri, 12 Apr 2013 08:00:03 +0000
+Subject: [PATCH 2/2] ARM: dts: cfa10036: Change the OLED display to SSD1306
+Message-Id: <1365753603-4438-3-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1365415496-6825-1-git-send-email-sachin.kamat@linaro.org>
-In-Reply-To: <1365415496-6825-1-git-send-email-sachin.kamat@linaro.org>
-To: linux-fbdev@vger.kernel.org
+References: <1365753603-4438-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1365753603-4438-1-git-send-email-maxime.ripard@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---------------enigB17EB971E4FD592C34F602B7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+The SSD1307 was used in an early prototype that will never get
+distributed. The final board now has a SSD1306 instead, that has its own
+power generation unit and thus doesn't need any PWM. The panel attached
+to it also changed.
 
-On 2013-04-08 13:04, Sachin Kamat wrote:
-> Use the newly introduced devm_ioremap_resource() instead of
-> devm_request_and_ioremap() which provides more consistent error handlin=
-g.
->=20
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> ---
->  drivers/video/wm8505fb.c |    7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
-> index 19e2e7f..01f9ace 100644
-> --- a/drivers/video/wm8505fb.c
-> +++ b/drivers/video/wm8505fb.c
-> @@ -18,6 +18,7 @@
->  #include <linux/dma-mapping.h>
->  #include <linux/fb.h>
->  #include <linux/errno.h>
-> +#include <linux/err.h>
->  #include <linux/init.h>
->  #include <linux/interrupt.h>
->  #include <linux/io.h>
-> @@ -303,9 +304,9 @@ static int wm8505fb_probe(struct platform_device *p=
-dev)
->  	fbi->fb.pseudo_palette	=3D addr;
-> =20
->  	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	fbi->regbase =3D devm_request_and_ioremap(&pdev->dev, res);
-> -	if (fbi->regbase =3D=3D NULL)
-> -		return -EBUSY;
-> +	fbi->regbase =3D devm_ioremap_resource(&pdev->dev, res);
-> +	if (IS_ERR(fbi->regbase))
-> +		return PTR_ERR(fbi->regbase);
-> =20
->  	disp_timing =3D of_get_display_timings(pdev->dev.of_node);
->  	if (!disp_timing)
->=20
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+ arch/arm/boot/dts/imx28-cfa10036.dts |   14 +++++---------
+ arch/arm/boot/dts/imx28-cfa10049.dts |    4 ++--
+ 2 files changed, 7 insertions(+), 11 deletions(-)
 
-Thanks, applying on top of the previous series from Tony Prisk.
+diff --git a/arch/arm/boot/dts/imx28-cfa10036.dts b/arch/arm/boot/dts/imx28-cfa10036.dts
+index 1594694..40488f5a8 100644
+--- a/arch/arm/boot/dts/imx28-cfa10036.dts
++++ b/arch/arm/boot/dts/imx28-cfa10036.dts
+@@ -58,12 +58,6 @@
+ 		};
+ 
+ 		apbx@80040000 {
+-			pwm: pwm@80064000 {
+-				pinctrl-names = "default";
+-				pinctrl-0 = <&pwm4_pins_a>;
+-				status = "okay";
+-			};
+-
+ 			duart: serial@80074000 {
+ 				pinctrl-names = "default";
+ 				pinctrl-0 = <&duart_pins_b>;
+@@ -75,11 +69,13 @@
+ 				pinctrl-0 = <&i2c0_pins_b>;
+ 				status = "okay";
+ 
+-				ssd1307: oled@3c {
+-					compatible = "solomon,ssd1307fb-i2c";
++				ssd1306: oled@3c {
++					compatible = "solomon,ssd1306fb-i2c";
+ 					reg = <0x3c>;
+-					pwms = <&pwm 4 3000>;
+ 					reset-gpios = <&gpio2 7 0>;
++					solomon,height = <32>;
++					solomon,width = <128>;
++					solomon,page-offset = <0>;
+ 				};
+ 			};
+ 		};
+diff --git a/arch/arm/boot/dts/imx28-cfa10049.dts b/arch/arm/boot/dts/imx28-cfa10049.dts
+index a0d3e9f..ded7784 100644
+--- a/arch/arm/boot/dts/imx28-cfa10049.dts
++++ b/arch/arm/boot/dts/imx28-cfa10049.dts
+@@ -132,8 +132,8 @@
+ 
+ 		apbx@80040000 {
+ 			pwm: pwm@80064000 {
+-				pinctrl-names = "default", "default";
+-				pinctrl-1 = <&pwm3_pins_b>;
++				pinctrl-names = "default";
++				pinctrl-0 = <&pwm3_pins_b>;
+ 				status = "okay";
+ 			};
+ 
+-- 
+1.7.10.4
 
- Tomi
-
-
-
---------------enigB17EB971E4FD592C34F602B7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRZSFtAAoJEPo9qoy8lh71p/wP/2FGqwan5HLlw0Q8ukwKX59s
-qfE09j5qXEYQ+S1Zeq1XbWqX5HnOkM91yH6lxJ0D7zaB7ntc0+IixP5tUGlocxlA
-hX8mIzcaBLzAZbfBQRqGg4TQWETCPLffkWkubakE8VW2lVaBJt5ITlZ6AMMtmzip
-nJLJj0De9d2Xi6+7foe4r0mAHDCmt2AZwBxcw1f9rCV8SPgEQPeQqhpLAgRsEB5d
-7v7l3d6Z4fbgGsywdVQGs1ej9eWdyzk9psHnn02VsNLKlPUCM89sGKeiwZGWKDKs
-jSA9lYXHdSJJyYshhoS9nARHQN9D7w+sDW0jogWtLj9o/SIQnso6s2BDybGH6vRr
-5xWNu/mHlkIb07XYyeqahFmSloi/+JqUsGZJkLS4NwoTUs9E+oUaH+YJRZXFAsdd
-V/CMun/IzbujiiSlvFm3N4dbpRg5LFF8uKP8lUUMzgCRD73t829P+4Y3Vbc4C2NG
-DpxzCKFZ7mJrVGKuIasMfcZmTPdBT49vK4XIvidqcS88ukdydc3r/Z/OicGngMi9
-DP1VVdRkmgAwn5SnFMz7XYANPjCLN9ZnsSur3AKlGNGYPo69In0UZOtqZOddFd+f
-oxUZ21t/vk/dtYZ4QRyoI7BXAe2GnN8LDOXJQ6Gx3ImtwRN5YJVnKgIGB6eKHrxe
-Y7sq9O8yJ/wCpJsZFZq6
-=WoPI
------END PGP SIGNATURE-----
-
---------------enigB17EB971E4FD592C34F602B7--

@@ -1,82 +1,95 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Wed, 03 Apr 2013 15:46:45 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 15 Apr 2013 09:29:59 +0000
 Subject: Re: [PATCH 00/33] OMAPDSS: platform_enable/disable callback removal from panel drivers
-Message-Id: <20130403154645.GV10155@atomide.com>
+Message-Id: <516BC897.5020802@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enigCB0B3C95A048B0EEEE3962F0"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360765345-19312-1-git-send-email-archit@ti.com>
- <20130213164647.GF7144@atomide.com>
- <515C2058.8030402@ti.com>
-In-Reply-To: <515C2058.8030402@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1360765345-19312-1-git-send-email-archit@ti.com> <20130213164647.GF7144@atomide.com> <515C2058.8030402@ti.com> <20130403154645.GV10155@atomide.com>
+In-Reply-To: <20130403154645.GV10155@atomide.com>
+To: Tony Lindgren <tony@atomide.com>
 Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [130403 05:32]:
-> Hi Tony,
-> 
-> On 2013-02-13 18:46, Tony Lindgren wrote:
-> > * Archit Taneja <archit@ti.com> [130213 06:26]:
-> >> init functions in omap board files request panel specific gpios, and provide
-> >> functions which omapdss panel drivers call to enable or disable them.
-> >>
-> >> Instead of the board files requesting these gpios, they should just pass the
-> >> platform specific data(like the gpio numbers), the panel should retrieve the
-> >> platform data and request the gpios. Doing this prevents the need of the panel
-> >> driver calling platform functions in board files.
-> >>
-> >> Panel drivers have their own platform data struct, and the board files populate
-> >> these structs and pass the pointer to the 'data' field of omap_dss_device. This
-> >> work will make it easier for the panel drivers be more adaptable to the
-> >> DT model.
-> >>
-> >> There is also removal of passing panel reset_gpio numbers through
-> >> omap_dss_device struct directly, reset gpios are passed through platform data
-> >> only.
-> > 
-> > To avoid merge conflicts and dependencies between drivers and core
-> > Soc code, please break thes kind of patches into following parts:
-> > 
-> > 1. Any platform_data header changes needed so both I and Tomi
-> >    can pull it in as needed.
-> > 
-> > 2. Changes to DSS drivers. Please keep stubs around for the
-> >    board specific callback functions so omap2plus_defconfig
-> >    won't break with just #1 merged into arm soc tree.
-> > 
-> > 3. All the arch/arm/*omap* changes based on #1 above to
-> >    drop obsolete callback functions and add new pdata if still
-> >    needed. This needs to build and boot on #1 so I can merge
-> >    this in via arm soc tree.
-> > 
-> > 4. Any .dts changes needed.
-> 
-> Tony, I've split these patches as follows:
-> 
-> Platform data header file changes:
-> git://gitorious.org/linux-omap-dss2/linux.git 3.10/0-dss-headers
-> 
-> Board file changes (based on header changes):
-> git://gitorious.org/linux-omap-dss2/linux.git 3.10-lo/board-cleanup
-> 
-> DSS panel changes (based on header changes):
-> git://gitorious.org/linux-omap-dss2/linux.git 3.10/1-panel-cleanup
-> 
-> Removing unused fields from header files (based on panel changes):
-> git://gitorious.org/linux-omap-dss2/linux.git 3.10/2-late-panel-cleanup
-> 
-> The 2-late-panel-cleanup breaks compilation if the arch changes are not
-> merged, so I'll leave that until they have been merged.
-> 
-> Do you mind if I add the board-cleanup branch temporarily to omapdss's
-> for-next, to simplify testing? When everything looks ok, I'll remove it
-> and pass the branch to you to be handled through l-o.
+--------------enigCB0B3C95A048B0EEEE3962F0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Sure please go ahead. There are still some board-*.c related patches
-that I have not merged, but we'll see those merge conflicts before
-next as I usually do a merge with next before sending out pull reqs.
+Hi Tony,
 
-Regards,
+On 2013-04-03 18:46, Tony Lindgren wrote:
 
-Tony
+>> Tony, I've split these patches as follows:
+>>
+>> Platform data header file changes:
+>> git://gitorious.org/linux-omap-dss2/linux.git 3.10/0-dss-headers
+>>
+>> Board file changes (based on header changes):
+>> git://gitorious.org/linux-omap-dss2/linux.git 3.10-lo/board-cleanup
+>>
+>> DSS panel changes (based on header changes):
+>> git://gitorious.org/linux-omap-dss2/linux.git 3.10/1-panel-cleanup
+>>
+>> Removing unused fields from header files (based on panel changes):
+>> git://gitorious.org/linux-omap-dss2/linux.git 3.10/2-late-panel-cleanu=
+p
+>>
+>> The 2-late-panel-cleanup breaks compilation if the arch changes are no=
+t
+>> merged, so I'll leave that until they have been merged.
+>>
+>> Do you mind if I add the board-cleanup branch temporarily to omapdss's=
+
+>> for-next, to simplify testing? When everything looks ok, I'll remove i=
+t
+>> and pass the branch to you to be handled through l-o.
+>=20
+> Sure please go ahead. There are still some board-*.c related patches
+> that I have not merged, but we'll see those merge conflicts before
+> next as I usually do a merge with next before sending out pull reqs.
+
+The code seems to work ok, so I think we can declare the branches
+stable. I've pushed new for-next branch that does not contain the arch
+files anymore. In fact, I removed all omapdss patches also, as omapdss
+should be merged through the drm tree, and I don't want to have
+conflicts with drm's for-next branch.
+
+So, to recap, the common header changes are located in:
+
+git://gitorious.org/linux-omap-dss2/linux.git 3.10/0-dss-headers
+
+And the branch for linux-omap is:
+
+git://gitorious.org/linux-omap-dss2/linux.git 3.10-lo/board-cleanup
+
+After merging those, some displays won't start anymore until the omapdss
+changes are in, but things should still compile.
+
+ Tomi
+
+
+
+--------------enigCB0B3C95A048B0EEEE3962F0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRa8iXAAoJEPo9qoy8lh71ra4P/AuXzv1x9ITZe42OYdj8qdLF
+vfmgKn6NTPJtdATAcL9iyqakyUpm4pEalWw4XF71COV4Q246g0FbsNpkT3SwGBJG
+bTqoC1UTdWMRTqejAbZPuG+Bu9+QeB+oktiR3KDjc8SrkNmUzCiawky9whx2/GN+
+Ex6+sm6ksL33nufu54OOItZah/YdJTaPaBr9d65j39a15ptEL3I5VsL0YFWb24aA
+sryrN2nxaWJXR09ZfdnpWuagU71ULQduqLI1VIzBNjpxrv75xwBrJYjb+GJMpmBI
+hV+HC4wFehQsk6UbmTQTOE5RalgUg8NQjWCI7pwEem1N1VBOHKivrFGrgmtWrZ8e
+XIGDBeAl8FT452yZHGWSXDHe9Xa8Wfcs92pg5Btw+gqCvoW3gkqG3hkLBFzVN6BI
+cPYBSG13jW21db+fSPpZ256L86B4PGSpaP+Hw0cTtXqz8z5PJRNCPesYPP9PR4WK
+nMz/NHxdOQqF80UIa2txZ8AwV+FqsBgJ9N3r/0foOmXSud0OgVTaxsbxmRwqj8aX
+Q6670Yu5Q2yCv/vhRini4VSuCgURAH5i6OXOK/jZLNk4uxVgdfiFizJn0+4Z52dB
+fGkruC4ZgIij6fcc5MI0HbNofMyB5BpvX3OsFVaeGJBMCNDa6yM/FejgDEQr6Uy1
+azFxrQPCUJBvKkj0aIza
+=aaOH
+-----END PGP SIGNATURE-----
+
+--------------enigCB0B3C95A048B0EEEE3962F0--

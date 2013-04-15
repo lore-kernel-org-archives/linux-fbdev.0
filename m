@@ -1,7 +1,7 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Mon, 15 Apr 2013 13:23:22 +0000
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Date: Mon, 15 Apr 2013 19:47:38 +0000
 Subject: Re: [PATCH v3 2/2] video: imxfb: Add DT support
-Message-Id: <20130415132322.GC15139@game.jcrosoft.org>
+Message-Id: <20130415194738.GE1906@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1365157876-1757-1-git-send-email-mpa@pengutronix.de>
  <1365157876-1757-3-git-send-email-mpa@pengutronix.de>
@@ -15,69 +15,9 @@ Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 To: linux-arm-kernel@lists.infradead.org
 
-On 15:13 Mon 15 Apr     , Eric B=E9nard wrote:
+On Mon, Apr 15, 2013 at 03:13:16PM +0200, Eric B=E9nard wrote:
 > Hi,
 >=20
-> Le Mon, 15 Apr 2013 14:43:21 +0200,
-> Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com> a =E9crit :
->=20
-> > On 16:31 Sun 14 Apr     , Markus Pargmann wrote:
-> > > On Mon, Apr 08, 2013 at 09:57:42AM +0200, Jean-Christophe PLAGNIOL-VI=
-LLARD wrote:
-> > > > On 12:31 Fri 05 Apr     , Markus Pargmann wrote:
-> > > > > Add devicetree support for imx framebuffer driver. It uses the ge=
-neric
-> > > > > display bindings and helper functions.
-> > > > >=20
-> > > > > Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
-> > > > > Cc: Fabio Estevam <festevam@gmail.com>
-> > > > > Cc: Mark Rutland <mark.rutland@arm.com>
-> > > > > ---
-> > > > >  .../devicetree/bindings/video/fsl,imx-fb.txt       |  49 ++++++
-> > > > >  drivers/video/imxfb.c                              | 192 +++++++=
-++++++++++----
-> > > > >  2 files changed, 207 insertions(+), 34 deletions(-)
-> > > > >  create mode 100644 Documentation/devicetree/bindings/video/fsl,i=
-mx-fb.txt
-> > > > >=20
-> > > > > diff --git a/Documentation/devicetree/bindings/video/fsl,imx-fb.t=
-xt b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-> > > > > new file mode 100644
-> > > > > index 0000000..bde9c77
-> > > > > --- /dev/null
-> > > > > +++ b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-> > > > > @@ -0,0 +1,49 @@
-> > > > > +Freescale imx21 Framebuffer
-> > > > > +
-> > > > > +This framebuffer driver supports devices imx1, imx21, imx25, and=
- imx27.
-> > > > > +
-> > > > > +Required properties:
-> > > > > +- compatible : "fsl,<chip>-fb", chip should be imx1 or imx21
-> > > > > +- reg : Should contain 1 register ranges(address and length)
-> > > > > +- interrupts : One interrupt of the fb dev
-> > > > > +
-> > > > > +Required nodes:
-> > > > > +- display: Phandle to a display node as described in
-> > > > > +	Documentation/devicetree/bindings/video/display-timing.txt
-> > > > > +	Additional, the display node has to define properties:
-> > > > > +	- fsl,bpp: Bits per pixel
-> > > > > +	- fsl,pcr: LCDC PCR value
-> > > > > +
-> > > > > +Optional properties:
-> > > > > +- dmacr-eukrea: Should be set for eukrea boards.
-> > > > why ?
-> > >=20
-> > > Because eukrea boards have a different dmacr then all other boards us=
-ing
-> > > imxfb. The dmacr address is hardcoded as defaults in the code. I could
-> > > also search for the board name in the DT, but there are no eukrea boa=
-rds
-> > > with DT at the moment, so I thought a bool property may be better for
-> > > the moment.
-> > so no if an other board come will have an other property no
-> >=20
-> > add an optionnal option to pass the dmacr
 >=20
 > I didn't follow the thread but dmacr is not specific to our boards :
 > $ grep -rn dmacr arch/arm/mach-imx/
@@ -92,9 +32,19 @@ rds
 > arch/arm/mach-imx/pcm970-baseboard.c:185:	.dmacr		=3D 0x00020010,
 > arch/arm/mach-imx/mach-mx25_3ds.c:173:	.dmacr		=3D 0x00020010,
 
-with this it even more clear nack on the dmacr-eukrea property
+The reference manual has this about the dmacr register:
 
-use an optional property where we can specify the value to use
+The dynamic mode is recommend, and also the TM and HM reset value are
+recommend in the dynamic mode. The same recommendation is for the
+graphic DMA control.
 
-Best Regsrds,
-J.
+So maybe we should ask whether the boards really have to change this
+value or if the reset value is suitable for all.
+
+Sascha
+
+--=20
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

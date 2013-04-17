@@ -1,288 +1,202 @@
-From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
-Date: Fri, 26 Apr 2013 20:02:16 +0000
-Subject: [PATCH 2/9] s3c2410fb: Make most of register definitions local
-Message-Id: <1367006543-5458-3-git-send-email-sylvester.nawrocki@gmail.com>
+From: Pawel Moll <pawel.moll@arm.com>
+Date: Wed, 17 Apr 2013 15:17:21 +0000
+Subject: [RFC 09/10] video: Versatile Express DVI mode driver
+Message-Id: <1366211842-21497-10-git-send-email-pawel.moll@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1367006543-5458-1-git-send-email-sylvester.nawrocki@gmail.com>
-In-Reply-To: <1367006543-5458-1-git-send-email-sylvester.nawrocki@gmail.com>
+References: <1366211842-21497-1-git-send-email-pawel.moll@arm.com>
+In-Reply-To: <1366211842-21497-1-git-send-email-pawel.moll@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>
 
-Move most of the register definitions to the driver's private header file.
-Some of the register bit field definitions are used in the platform data
-structure and will be moved to include/linux/platform_data/fb-s3c2410.h
-in subsequent patch.
+Versatile Express DVI output is driven by a Sii9022 chip. It can be
+controller to a limited extend by the Motherboard Config Controller,
+and that's what the driver is doing now. It is a temporary measure
+till there's a full I2C driver for the chip.
 
-Signed-off-by: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
+Signed-off-by: Pawel Moll <pawel.moll@arm.com>
 ---
- arch/arm/mach-s3c24xx/include/mach/regs-lcd.h |  110 ------------------------
- drivers/video/s3c2410fb.h                     |  114 ++++++++++++++++++++++++-
- 2 files changed, 112 insertions(+), 112 deletions(-)
+ drivers/video/Makefile           |    1 +
+ drivers/video/vexpress-dvimode.c |  158 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 159 insertions(+)
+ create mode 100644 drivers/video/vexpress-dvimode.c
 
-diff --git a/arch/arm/mach-s3c24xx/include/mach/regs-lcd.h b/arch/arm/mach-s3c24xx/include/mach/regs-lcd.h
-index ee8f040..369511f 100644
---- a/arch/arm/mach-s3c24xx/include/mach/regs-lcd.h
-+++ b/arch/arm/mach-s3c24xx/include/mach/regs-lcd.h
-@@ -12,16 +12,6 @@
- #ifndef ___ASM_ARCH_REGS_LCD_H
- #define ___ASM_ARCH_REGS_LCD_H
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 84c6083..9347e00 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -179,3 +179,4 @@ obj-$(CONFIG_OF_VIDEOMODE) += of_videomode.o
  
--#define S3C2410_LCDREG(x)	(x)
--
--/* LCD control registers */
--#define S3C2410_LCDCON1	    S3C2410_LCDREG(0x00)
--#define S3C2410_LCDCON2	    S3C2410_LCDREG(0x04)
--#define S3C2410_LCDCON3	    S3C2410_LCDREG(0x08)
--#define S3C2410_LCDCON4	    S3C2410_LCDREG(0x0C)
--#define S3C2410_LCDCON5	    S3C2410_LCDREG(0x10)
--
--#define S3C2410_LCDCON1_CLKVAL(x)  ((x) << 8)
- #define S3C2410_LCDCON1_MMODE	   (1<<7)
- #define S3C2410_LCDCON1_DSCAN4	   (0<<5)
- #define S3C2410_LCDCON1_STN4	   (1<<5)
-@@ -45,32 +35,6 @@
- 
- #define S3C2410_LCDCON1_MODEMASK    0x1E
- 
--#define S3C2410_LCDCON2_VBPD(x)	    ((x) << 24)
--#define S3C2410_LCDCON2_LINEVAL(x)  ((x) << 14)
--#define S3C2410_LCDCON2_VFPD(x)	    ((x) << 6)
--#define S3C2410_LCDCON2_VSPW(x)	    ((x) << 0)
--
--#define S3C2410_LCDCON2_GET_VBPD(x) ( ((x) >> 24) & 0xFF)
--#define S3C2410_LCDCON2_GET_VFPD(x) ( ((x) >>  6) & 0xFF)
--#define S3C2410_LCDCON2_GET_VSPW(x) ( ((x) >>  0) & 0x3F)
--
--#define S3C2410_LCDCON3_HBPD(x)	    ((x) << 19)
--#define S3C2410_LCDCON3_WDLY(x)	    ((x) << 19)
--#define S3C2410_LCDCON3_HOZVAL(x)   ((x) << 8)
--#define S3C2410_LCDCON3_HFPD(x)	    ((x) << 0)
--#define S3C2410_LCDCON3_LINEBLANK(x)((x) << 0)
--
--#define S3C2410_LCDCON3_GET_HBPD(x) ( ((x) >> 19) & 0x7F)
--#define S3C2410_LCDCON3_GET_HFPD(x) ( ((x) >>  0) & 0xFF)
--
--/* LDCCON4 changes for STN mode on the S3C2412 */
--
--#define S3C2410_LCDCON4_MVAL(x)	    ((x) << 8)
--#define S3C2410_LCDCON4_HSPW(x)	    ((x) << 0)
--#define S3C2410_LCDCON4_WLH(x)	    ((x) << 0)
--
--#define S3C2410_LCDCON4_GET_HSPW(x) ( ((x) >>  0) & 0xFF)
--
- #define S3C2410_LCDCON5_BPP24BL	    (1<<12)
- #define S3C2410_LCDCON5_FRM565	    (1<<11)
- #define S3C2410_LCDCON5_INVVCLK	    (1<<10)
-@@ -85,78 +49,4 @@
- #define S3C2410_LCDCON5_BSWP	    (1<<1)
- #define S3C2410_LCDCON5_HWSWP	    (1<<0)
- 
--/* framebuffer start addressed */
--#define S3C2410_LCDSADDR1   S3C2410_LCDREG(0x14)
--#define S3C2410_LCDSADDR2   S3C2410_LCDREG(0x18)
--#define S3C2410_LCDSADDR3   S3C2410_LCDREG(0x1C)
--
--#define S3C2410_LCDBANK(x)	((x) << 21)
--#define S3C2410_LCDBASEU(x)	(x)
--
--#define S3C2410_OFFSIZE(x)	((x) << 11)
--#define S3C2410_PAGEWIDTH(x)	(x)
--
--/* colour lookup and miscellaneous controls */
--
--#define S3C2410_REDLUT	   S3C2410_LCDREG(0x20)
--#define S3C2410_GREENLUT   S3C2410_LCDREG(0x24)
--#define S3C2410_BLUELUT	   S3C2410_LCDREG(0x28)
--
--#define S3C2410_DITHMODE   S3C2410_LCDREG(0x4C)
--#define S3C2410_TPAL	   S3C2410_LCDREG(0x50)
--
--#define S3C2410_TPAL_EN		(1<<24)
--
--/* interrupt info */
--#define S3C2410_LCDINTPND  S3C2410_LCDREG(0x54)
--#define S3C2410_LCDSRCPND  S3C2410_LCDREG(0x58)
--#define S3C2410_LCDINTMSK  S3C2410_LCDREG(0x5C)
--#define S3C2410_LCDINT_FIWSEL	(1<<2)
--#define	S3C2410_LCDINT_FRSYNC	(1<<1)
--#define S3C2410_LCDINT_FICNT	(1<<0)
--
--/* s3c2442 extra stn registers */
--
--#define S3C2442_REDLUT		S3C2410_LCDREG(0x20)
--#define S3C2442_GREENLUT	S3C2410_LCDREG(0x24)
--#define S3C2442_BLUELUT		S3C2410_LCDREG(0x28)
--#define S3C2442_DITHMODE	S3C2410_LCDREG(0x20)
--
--#define S3C2410_LPCSEL	   S3C2410_LCDREG(0x60)
--
--#define S3C2410_TFTPAL(x)  S3C2410_LCDREG((0x400 + (x)*4))
--
--/* S3C2412 registers */
--
--#define S3C2412_TPAL		S3C2410_LCDREG(0x20)
--
--#define S3C2412_LCDINTPND	S3C2410_LCDREG(0x24)
--#define S3C2412_LCDSRCPND	S3C2410_LCDREG(0x28)
--#define S3C2412_LCDINTMSK	S3C2410_LCDREG(0x2C)
--
--#define S3C2412_TCONSEL		S3C2410_LCDREG(0x30)
--
--#define S3C2412_LCDCON6		S3C2410_LCDREG(0x34)
--#define S3C2412_LCDCON7		S3C2410_LCDREG(0x38)
--#define S3C2412_LCDCON8		S3C2410_LCDREG(0x3C)
--#define S3C2412_LCDCON9		S3C2410_LCDREG(0x40)
--
--#define S3C2412_REDLUT(x)	S3C2410_LCDREG(0x44 + ((x)*4))
--#define S3C2412_GREENLUT(x)	S3C2410_LCDREG(0x60 + ((x)*4))
--#define S3C2412_BLUELUT(x)	S3C2410_LCDREG(0x98 + ((x)*4))
--
--#define S3C2412_FRCPAT(x)	S3C2410_LCDREG(0xB4 + ((x)*4))
--
--/* general registers */
--
--/* base of the LCD registers, where INTPND, INTSRC and then INTMSK
-- * are available. */
--
--#define S3C2410_LCDINTBASE	S3C2410_LCDREG(0x54)
--#define S3C2412_LCDINTBASE	S3C2410_LCDREG(0x24)
--
--#define S3C24XX_LCDINTPND	(0x00)
--#define S3C24XX_LCDSRCPND	(0x04)
--#define S3C24XX_LCDINTMSK	(0x08)
--
- #endif /* ___ASM_ARCH_REGS_LCD_H */
-diff --git a/drivers/video/s3c2410fb.h b/drivers/video/s3c2410fb.h
-index 47a17bd..4e56b77 100644
---- a/drivers/video/s3c2410fb.h
-+++ b/drivers/video/s3c2410fb.h
-@@ -7,12 +7,122 @@
-  * This file is subject to the terms and conditions of the GNU General Public
-  * License.  See the file COPYING in the main directory of this archive for
-  * more details.
-- *
--*/
-+ */
- 
- #ifndef __S3C2410FB_H
- #define __S3C2410FB_H
- 
-+/* LCD control registers */
-+#define S3C2410_LCDCON1			0x00
-+#define S3C2410_LCDCON1_CLKVAL(x)	((x) << 8)
-+#define S3C2410_LCDCON1_ENVID		1
-+#define S3C2410_LCDCON1_MODEMASK	0x1e
-+#define S3C2410_LCDCON1_MMODE		(1 << 7)
-+
-+#define S3C2410_LCDCON2			0x04
-+#define S3C2410_LCDCON2_VBPD(x)		((x) << 24)
-+#define S3C2410_LCDCON2_LINEVAL(x)	((x) << 14)
-+#define S3C2410_LCDCON2_VFPD(x)		((x) << 6)
-+#define S3C2410_LCDCON2_VSPW(x)		((x) << 0)
-+
-+#define S3C2410_LCDCON2_GET_VBPD(x)	(((x) >> 24) & 0xff)
-+#define S3C2410_LCDCON2_GET_VFPD(x)	(((x) >>  6) & 0xff)
-+#define S3C2410_LCDCON2_GET_VSPW(x)	(((x) >>  0) & 0x3f)
-+
-+#define S3C2410_LCDCON3			0x08
-+#define S3C2410_LCDCON3_HBPD(x)		((x) << 19)
-+#define S3C2410_LCDCON3_WDLY(x)		((x) << 19)
-+#define S3C2410_LCDCON3_HOZVAL(x)	((x) << 8)
-+#define S3C2410_LCDCON3_HFPD(x)		((x) << 0)
-+#define S3C2410_LCDCON3_LINEBLANK(x)	((x) << 0)
-+
-+#define S3C2410_LCDCON3_GET_HBPD(x)	(((x) >> 19) & 0x7f)
-+#define S3C2410_LCDCON3_GET_HFPD(x)	(((x) >>  0) & 0xff)
-+
-+/* LDCCON4 changes for STN mode on the S3C2412 */
-+
-+#define S3C2410_LCDCON4			0x0c
-+#define S3C2410_LCDCON4_MVAL(x)		((x) << 8)
-+#define S3C2410_LCDCON4_HSPW(x)		((x) << 0)
-+#define S3C2410_LCDCON4_WLH(x)		((x) << 0)
-+#define S3C2410_LCDCON4_GET_HSPW(x)	(((x) >>  0) & 0xff)
-+
-+#define S3C2410_LCDCON5			0x10
-+
-+/* framebuffer start addressed */
-+#define S3C2410_LCDSADDR1		0x14
-+#define S3C2410_LCDSADDR2		0x18
-+#define S3C2410_LCDSADDR3		0x1c
-+
-+#define S3C2410_LCDBANK(x)		((x) << 21)
-+#define S3C2410_LCDBASEU(x)		(x)
-+
-+#define S3C2410_OFFSIZE(x)		((x) << 11)
-+#define S3C2410_PAGEWIDTH(x)		(x)
-+
-+/* colour lookup and miscellaneous controls */
-+
-+#define S3C2410_REDLUT			0x20
-+#define S3C2410_GREENLUT		0x24
-+#define S3C2410_BLUELUT			0x28
-+
-+#define S3C2410_DITHMODE		0x4c
-+#define S3C2410_TPAL			0x50
-+
-+#define S3C2410_TPAL_EN			(1 << 24)
-+
-+/* interrupt info */
-+#define S3C2410_LCDINTPND		0x54
-+#define S3C2410_LCDSRCPND		0x58
-+#define S3C2410_LCDINTMSK		0x5c
-+#define S3C2410_LCDINT_FIWSEL		(1 << 2)
-+#define S3C2410_LCDINT_FRSYNC		(1 << 1)
-+#define S3C2410_LCDINT_FICNT		(1 << 0)
-+
-+/* s3c2442 extra stn registers */
-+
-+#define S3C2442_REDLUT			0x20
-+#define S3C2442_GREENLUT		0x24
-+#define S3C2442_BLUELUT			0x28
-+#define S3C2442_DITHMODE		0x20
-+
-+#define S3C2410_LPCSEL			0x60
-+
-+#define S3C2410_TFTPAL(x)		(0x400 + ((x) * 4))
-+
-+/* S3C2412 registers */
-+
-+#define S3C2412_TPAL			0x20
-+
-+#define S3C2412_LCDINTPND		0x24
-+#define S3C2412_LCDSRCPND		0x28
-+#define S3C2412_LCDINTMSK		0x2c
-+#define S3C2412_TCONSEL			0x30
-+#define S3C2412_LCDCON6			0x34
-+#define S3C2412_LCDCON7			0x38
-+#define S3C2412_LCDCON8			0x3c
-+#define S3C2412_LCDCON9			0x40
-+
-+#define S3C2412_REDLUT(x)		(0x44 + ((x) * 4))
-+#define S3C2412_GREENLUT(x)		(0x60 + ((x) * 4))
-+#define S3C2412_BLUELUT(x)		(0x98 + ((x) * 4))
-+
-+#define S3C2412_FRCPAT(x)		(0xb4 + ((x)*4))
-+
-+/* General registers. */
-+
+ # platform specific output drivers
+ obj-$(CONFIG_VEXPRESS_CONFIG)	  += vexpress-muxfpga.o
++obj-$(CONFIG_VEXPRESS_CONFIG)	  += vexpress-dvimode.o
+diff --git a/drivers/video/vexpress-dvimode.c b/drivers/video/vexpress-dvimode.c
+new file mode 100644
+index 0000000..85d5608
+--- /dev/null
++++ b/drivers/video/vexpress-dvimode.c
+@@ -0,0 +1,158 @@
 +/*
-+ * Base of the LCD registers, where INTPND, INTSRC and then INTMSK
-+ * are available.
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * Copyright (C) 2013 ARM Limited
 + */
-+#define S3C2410_LCDINTBASE		0x54
-+#define S3C2412_LCDINTBASE		0x24
 +
-+#define S3C24XX_LCDINTPND		0x00
-+#define S3C24XX_LCDSRCPND		0x04
-+#define S3C24XX_LCDINTMSK		0x08
++#define pr_fmt(fmt) "vexpress-dvimode: " fmt
++
++#include <linux/fb.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
++#include <linux/vexpress.h>
++#include <video/display.h>
++#include <video/videomode.h>
 +
 +
- enum s3c_drv_type {
- 	DRV_S3C2410,
- 	DRV_S3C2412,
++static struct vexpress_config_func *vexpress_dvimode_func;
++
++
++static int vexpress_dvimode_display_update(struct display_entity *display,
++		const struct videomode *mode)
++{
++	static const struct {
++		u32 hactive, vactive, dvimode;
++	} dvimodes[] = {
++		{ 640, 480, 0 }, /* VGA */
++		{ 800, 600, 1 }, /* SVGA */
++		{ 1024, 768, 2 }, /* XGA */
++		{ 1280, 1024, 3 }, /* SXGA */
++		{ 1600, 1200, 4 }, /* UXGA */
++		{ 1920, 1080, 5 }, /* HD1080 */
++	};
++	int err = -ENOENT;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(dvimodes); i++) {
++		if (dvimodes[i].hactive == mode->hactive &&
++				dvimodes[i].vactive == mode->vactive) {
++			pr_debug("mode: %ux%u = %d\n", mode->hactive,
++					mode->vactive, dvimodes[i].dvimode);
++			err = vexpress_config_write(vexpress_dvimode_func, 0,
++					dvimodes[i].dvimode);
++			break;
++		}
++	}
++
++	if (err)
++		pr_warn("Failed to set %ux%u mode! (%d)\n", mode->hactive,
++				mode->vactive, err);
++
++	return err;
++}
++
++static int vexpress_dvimode_display_get_modes(struct display_entity *display,
++		const struct videomode **modes)
++{
++	static const struct videomode m[] = {
++		{
++			/* VGA */
++			.pixelclock	= 25175000,
++			.hactive	= 640,
++			.hback_porch	= 40,
++			.hfront_porch	= 24,
++			.vfront_porch	= 11,
++			.hsync_len	= 96,
++			.vactive	= 480,
++			.vback_porch	= 32,
++			.vsync_len	= 2,
++		}, {
++			/* XGA */
++			.pixelclock	= 63500127,
++			.hactive	= 1024,
++			.hback_porch	= 152,
++			.hfront_porch	= 48,
++			.hsync_len	= 104,
++			.vactive	= 768,
++			.vback_porch	= 23,
++			.vfront_porch	= 3,
++			.vsync_len	= 4,
++		}, {
++			/* SXGA */
++			.pixelclock	= 108000000,
++			.hactive	= 1280,
++			.hback_porch	= 248,
++			.hfront_porch	= 48,
++			.hsync_len	= 112,
++			.vactive	= 1024,
++			.vback_porch	= 38,
++			.vfront_porch	= 1,
++			.vsync_len	= 3,
++		},
++	};
++
++	*modes = m;
++
++	return ARRAY_SIZE(m);
++}
++
++static int vexpress_dvimode_display_get_params(struct display_entity *display,
++		struct display_entity_interface_params *params)
++{
++	params->type = DISPLAY_ENTITY_INTERFACE_TFT_PARALLEL;
++	params->p.tft_parallel.r_bits = 8;
++	params->p.tft_parallel.g_bits = 8;
++	params->p.tft_parallel.b_bits = 8;
++	params->p.tft_parallel.r_b_swapped = 0;
++
++	return 0;
++}
++
++static const struct display_entity_control_ops vexpress_dvimode_display_ops = {
++	.update = vexpress_dvimode_display_update,
++	.get_modes = vexpress_dvimode_display_get_modes,
++	.get_params = vexpress_dvimode_display_get_params,
++};
++
++static struct display_entity vexpress_dvimode_display = {
++	.ops.ctrl = &vexpress_dvimode_display_ops,
++};
++
++static struct of_device_id vexpress_dvimode_of_match[] = {
++	{ .compatible = "arm,vexpress-dvimode", },
++	{}
++};
++
++static int vexpress_dvimode_probe(struct platform_device *pdev)
++{
++	vexpress_dvimode_func = vexpress_config_func_get_by_dev(&pdev->dev);
++
++	vexpress_dvimode_display.dev = &pdev->dev;
++	display_entity_register(&vexpress_dvimode_display);
++	of_display_entity_add_provider(pdev->dev.of_node,
++			of_display_entity_provider_simple_get,
++			&vexpress_dvimode_display);
++
++	return 0;
++}
++
++static struct platform_driver vexpress_dvimode_driver = {
++	.probe = vexpress_dvimode_probe,
++	.driver = {
++		.name = "vexpress-dvimode",
++		.of_match_table = vexpress_dvimode_of_match,
++	},
++};
++
++static int __init vexpress_dvimode_init(void)
++{
++	return platform_driver_register(&vexpress_dvimode_driver);
++}
++device_initcall(vexpress_dvimode_init);
 -- 
-1.7.4.1
+1.7.10.4
+
 

@@ -1,99 +1,60 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 29 Apr 2013 10:22:33 +0000
-Subject: [PATCH 06/10] OMAPDSS: DPI: use platform_driver_register()
-Message-Id: <1367230957-32337-7-git-send-email-tomi.valkeinen@ti.com>
+From: Pawel Moll <pawel.moll@arm.com>
+Date: Wed, 17 Apr 2013 15:17:16 +0000
+Subject: [RFC 04/10] video: display: Add generic TFT display type
+Message-Id: <1366211842-21497-5-git-send-email-pawel.moll@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1366211842-21497-1-git-send-email-pawel.moll@arm.com>
+In-Reply-To: <1366211842-21497-1-git-send-email-pawel.moll@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, grygorii.strashko@ti.com, chf.fritz@googlemail.com, Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>
 
-Use platform_driver_register() instead of platform_driver_probe() so
-that we can support EPROBE_DEFER.
+TFT panels may be interfaced via a simple parallel interface
+carrying RGB data, pixel clock and synchronisation signals.
+From the video generator point of view the width of the data
+channels (number of bits per R/G/B components) may be an
+important factor in setting up the display model.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Above information is based on the presentations by Dave Anders
+available here: http://elinux.org/Elc-lcd
+
+This patch adds the parallel TFT display type and basic parameters
+structure. Maybe it should be split into a separate header, eg.
+include/video/tft.h? Or maybe it's just the INTERFACE_DPI I'm
+talking about?
+
+Signed-off-by: Pawel Moll <pawel.moll@arm.com>
 ---
- drivers/video/omap2/dss/dpi.c |   15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ include/video/display.h |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index e93c4de..2024787 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -520,7 +520,7 @@ void omapdss_dpi_set_data_lines(struct omap_dss_device *dssdev, int data_lines)
- }
- EXPORT_SYMBOL(omapdss_dpi_set_data_lines);
+diff --git a/include/video/display.h b/include/video/display.h
+index 7fe8b2f..875e230 100644
+--- a/include/video/display.h
++++ b/include/video/display.h
+@@ -69,10 +69,19 @@ enum display_entity_stream_state {
  
--static int __init dpi_verify_dsi_pll(struct platform_device *dsidev)
-+static int dpi_verify_dsi_pll(struct platform_device *dsidev)
- {
- 	int r;
+ enum display_entity_interface_type {
+ 	DISPLAY_ENTITY_INTERFACE_DPI,
++	DISPLAY_ENTITY_INTERFACE_TFT_PARALLEL,
++};
++
++struct tft_parallel_interface_params {
++	int r_bits, g_bits, b_bits;
++	int r_b_swapped;
+ };
  
-@@ -572,7 +572,7 @@ static enum omap_channel dpi_get_channel(void)
- 	}
- }
+ struct display_entity_interface_params {
+ 	enum display_entity_interface_type type;
++	union {
++		struct tft_parallel_interface_params tft_parallel;
++	} p;
+ };
  
--static int __init dpi_init_display(struct omap_dss_device *dssdev)
-+static int dpi_init_display(struct omap_dss_device *dssdev)
- {
- 	struct platform_device *dsidev;
- 
-@@ -607,7 +607,7 @@ static int __init dpi_init_display(struct omap_dss_device *dssdev)
- 	return 0;
- }
- 
--static struct omap_dss_device * __init dpi_find_dssdev(struct platform_device *pdev)
-+static struct omap_dss_device *dpi_find_dssdev(struct platform_device *pdev)
- {
- 	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
- 	const char *def_disp_name = omapdss_get_default_display_name();
-@@ -635,7 +635,7 @@ static struct omap_dss_device * __init dpi_find_dssdev(struct platform_device *p
- 	return def_dssdev;
- }
- 
--static void __init dpi_probe_pdata(struct platform_device *dpidev)
-+static void dpi_probe_pdata(struct platform_device *dpidev)
- {
- 	struct omap_dss_device *plat_dssdev;
- 	struct omap_dss_device *dssdev;
-@@ -676,7 +676,7 @@ static void __init dpi_probe_pdata(struct platform_device *dpidev)
- 	}
- }
- 
--static void __init dpi_init_output(struct platform_device *pdev)
-+static void dpi_init_output(struct platform_device *pdev)
- {
- 	struct omap_dss_output *out = &dpi.output;
- 
-@@ -696,7 +696,7 @@ static void __exit dpi_uninit_output(struct platform_device *pdev)
- 	dss_unregister_output(out);
- }
- 
--static int __init omap_dpi_probe(struct platform_device *pdev)
-+static int omap_dpi_probe(struct platform_device *pdev)
- {
- 	mutex_init(&dpi.lock);
- 
-@@ -717,6 +717,7 @@ static int __exit omap_dpi_remove(struct platform_device *pdev)
- }
- 
- static struct platform_driver omap_dpi_driver = {
-+	.probe		= omap_dpi_probe,
- 	.remove         = __exit_p(omap_dpi_remove),
- 	.driver         = {
- 		.name   = "omapdss_dpi",
-@@ -726,7 +727,7 @@ static struct platform_driver omap_dpi_driver = {
- 
- int __init dpi_init_platform_driver(void)
- {
--	return platform_driver_probe(&omap_dpi_driver, omap_dpi_probe);
-+	return platform_driver_register(&omap_dpi_driver);
- }
- 
- void __exit dpi_uninit_platform_driver(void)
+ struct display_entity_control_ops {
 -- 
 1.7.10.4
+
 

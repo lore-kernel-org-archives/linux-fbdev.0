@@ -1,83 +1,63 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 29 Apr 2013 10:22:29 +0000
-Subject: [PATCH 02/10] OMAPFB: use module_platform_driver()
-Message-Id: <1367230957-32337-3-git-send-email-tomi.valkeinen@ti.com>
+From: Pawel Moll <pawel.moll@arm.com>
+Date: Wed, 17 Apr 2013 15:17:19 +0000
+Subject: [RFC 07/10] mfd: vexpress: Allow external drivers to parse site ids
+Message-Id: <1366211842-21497-8-git-send-email-pawel.moll@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1366211842-21497-1-git-send-email-pawel.moll@arm.com>
+In-Reply-To: <1366211842-21497-1-git-send-email-pawel.moll@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, grygorii.strashko@ti.com, chf.fritz@googlemail.com, Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>
 
-Instead of using platform_driver_probe(), use module_platform_driver()
-so that we can support deferred probing.
+... by providing a function translating the MASTER
+value into the currently valid site number and
+a _LAST constant providing all possible site id values.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Pawel Moll <pawel.moll@arm.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c |   28 +++-------------------------
- 1 file changed, 3 insertions(+), 25 deletions(-)
+ drivers/mfd/vexpress-sysreg.c |    5 +++++
+ include/linux/vexpress.h      |    2 ++
+ 2 files changed, 7 insertions(+)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index f38348e..808f6af 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -2422,7 +2422,7 @@ static int omapfb_init_connections(struct omapfb2_device *fbdev,
- 	return 0;
+diff --git a/drivers/mfd/vexpress-sysreg.c b/drivers/mfd/vexpress-sysreg.c
+index bf75e96..4158e26 100644
+--- a/drivers/mfd/vexpress-sysreg.c
++++ b/drivers/mfd/vexpress-sysreg.c
+@@ -81,6 +81,11 @@ void vexpress_flags_set(u32 data)
+ 	writel(data, vexpress_sysreg_base + SYS_FLAGSSET);
  }
  
--static int __init omapfb_probe(struct platform_device *pdev)
-+static int omapfb_probe(struct platform_device *pdev)
++u32 vexpress_get_site(int site)
++{
++	return site == VEXPRESS_SITE_MASTER ? vexpress_master_site : site;
++}
++
+ u32 vexpress_get_procid(int site)
  {
- 	struct omapfb2_device *fbdev = NULL;
- 	int r = 0;
-@@ -2595,6 +2595,7 @@ static int __exit omapfb_remove(struct platform_device *pdev)
- }
+ 	if (site == VEXPRESS_SITE_MASTER)
+diff --git a/include/linux/vexpress.h b/include/linux/vexpress.h
+index 7581874..1ebbcf5 100644
+--- a/include/linux/vexpress.h
++++ b/include/linux/vexpress.h
+@@ -19,6 +19,7 @@
+ #define VEXPRESS_SITE_MB		0
+ #define VEXPRESS_SITE_DB1		1
+ #define VEXPRESS_SITE_DB2		2
++#define __VEXPRESS_SITE_LAST		3
+ #define VEXPRESS_SITE_MASTER		0xf
  
- static struct platform_driver omapfb_driver = {
-+	.probe		= omapfb_probe,
- 	.remove         = __exit_p(omapfb_remove),
- 	.driver         = {
- 		.name   = "omapfb",
-@@ -2602,36 +2603,13 @@ static struct platform_driver omapfb_driver = {
- 	},
- };
+ #define VEXPRESS_CONFIG_STATUS_DONE	0
+@@ -103,6 +104,7 @@ int vexpress_config_write(struct vexpress_config_func *func, int offset,
  
--static int __init omapfb_init(void)
--{
--	DBG("omapfb_init\n");
--
--	if (platform_driver_probe(&omapfb_driver, omapfb_probe)) {
--		printk(KERN_ERR "failed to register omapfb driver\n");
--		return -ENODEV;
--	}
--
--	return 0;
--}
--
--static void __exit omapfb_exit(void)
--{
--	DBG("omapfb_exit\n");
--	platform_driver_unregister(&omapfb_driver);
--}
--
- module_param_named(mode, def_mode, charp, 0);
- module_param_named(vram, def_vram, charp, 0);
- module_param_named(rotate, def_rotate, int, 0);
- module_param_named(vrfb, def_vrfb, bool, 0);
- module_param_named(mirror, def_mirror, bool, 0);
+ /* Platform control */
  
--/* late_initcall to let panel/ctrl drivers loaded first.
-- * I guess better option would be a more dynamic approach,
-- * so that omapfb reacts to new panels when they are loaded */
--late_initcall(omapfb_init);
--/*module_init(omapfb_init);*/
--module_exit(omapfb_exit);
-+module_platform_driver(omapfb_driver);
- 
- MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@nokia.com>");
- MODULE_DESCRIPTION("OMAP2/3 Framebuffer");
++u32 vexpress_get_site(int site);
+ u32 vexpress_get_procid(int site);
+ u32 vexpress_get_hbi(int site);
+ void *vexpress_get_24mhz_clock_base(void);
 -- 
 1.7.10.4
+
 

@@ -1,84 +1,72 @@
-From: Peter Jones <pjones@redhat.com>
-Date: Tue, 23 Apr 2013 15:23:18 +0000
-Subject: [PATCH] Handle efifb with no lfb_base better.
-Message-Id: <1366730598-13942-1-git-send-email-pjones@redhat.com>
+From: Pawel Moll <pawel.moll@arm.com>
+Date: Wed, 17 Apr 2013 15:17:14 +0000
+Subject: [RFC 02/10] video: display: Update the display with the video mode data
+Message-Id: <1366211842-21497-3-git-send-email-pawel.moll@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1366211842-21497-1-git-send-email-pawel.moll@arm.com>
+In-Reply-To: <1366211842-21497-1-git-send-email-pawel.moll@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Josh Boyer <jwboyer@redhat.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Jones <pjones@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>
 
-Right now we get a WARN from platform_device_unregister() because our
-platform_device has no ->release function.  This is clearly wrong, but
-we should be warning so we can figure out what happened, as this failure
-results in bug reports.  So WARN() about the real problem, and use the
-registration function that gives us a default release() function.
+The display entity (sink) may need to know about the mode being
+changed, eg. to update timings.
 
-This fixes the tracback reported at
-https://bugzilla.redhat.com/show_bug.cgi?id=840621 , though it does not
-fix the actual /problem/ the user is seeing.
+Alternatively there could be a separate set_mode() operation...
 
-Signed-off-by: Peter Jones <pjones@redhat.com>
+Signed-off-by: Pawel Moll <pawel.moll@arm.com>
 ---
- drivers/video/efifb.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ drivers/video/display/display-core.c |    5 +++--
+ include/video/display.h              |    6 ++++--
+ 2 files changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
-index 50fe668..390b61b 100644
---- a/drivers/video/efifb.c
-+++ b/drivers/video/efifb.c
-@@ -285,6 +285,7 @@ static void efifb_destroy(struct fb_info *info)
+diff --git a/drivers/video/display/display-core.c b/drivers/video/display/display-core.c
+index d2daa15..4b8e45a 100644
+--- a/drivers/video/display/display-core.c
++++ b/drivers/video/display/display-core.c
+@@ -69,12 +69,13 @@ EXPORT_SYMBOL_GPL(display_entity_set_state);
+  *
+  * Return 0 on success or a negative error code otherwise.
+  */
+-int display_entity_update(struct display_entity *entity)
++int display_entity_update(struct display_entity *entity,
++			     const struct videomode *mode)
  {
- 	if (info->screen_base)
- 		iounmap(info->screen_base);
-+	fb_dealloc_cmap(&info->cmap);
- 	if (request_mem_succeeded)
- 		release_mem_region(info->apertures->ranges[0].base,
- 				   info->apertures->ranges[0].size);
-@@ -382,6 +383,8 @@ static int __init efifb_probe(struct platform_device *d=
-ev)
- 	if (!screen_info.pages)
- 		screen_info.pages =3D 1;
- 	if (!screen_info.lfb_base) {
-+		WARN(1, KERN_WARNING, "invalid framebuffer address for "
-+				      "device '%s'\n", dev_name(dev));
- 		printk(KERN_DEBUG "efifb: invalid framebuffer address\n");
- 		return -ENODEV;
- 	}
-@@ -544,9 +547,7 @@ static struct platform_driver efifb_driver =3D {
- 	},
- };
-=20
--static struct platform_device efifb_device =3D {
--	.name	=3D "efifb",
--};
-+static struct platform_device *efifb_device;
-=20
- static int __init efifb_init(void)
- {
-@@ -571,9 +572,9 @@ static int __init efifb_init(void)
- 	if (!screen_info.lfb_linelength)
- 		return -ENODEV;
-=20
--	ret =3D platform_device_register(&efifb_device);
--	if (ret)
--		return ret;
-+	efifb_device =3D platform_device_register_simple("efifb", 0, NULL, 0);
-+	if (IS_ERROR(efifb_device))
-+		return PTR_ERR(efifb_device);
-=20
- 	/*
- 	 * This is not just an optimization.  We will interfere
-@@ -582,7 +583,7 @@ static int __init efifb_init(void)
- 	 */
- 	ret =3D platform_driver_probe(&efifb_driver, efifb_probe);
- 	if (ret) {
--		platform_device_unregister(&efifb_device);
-+		platform_device_unregister(efifb_device);
- 		return ret;
- 	}
-=20
---=20
-1.8.1.4
+ 	if (!entity->ops.ctrl || !entity->ops.ctrl->update)
+ 		return 0;
+ 
+-	return entity->ops.ctrl->update(entity);
++	return entity->ops.ctrl->update(entity, mode);
+ }
+ EXPORT_SYMBOL_GPL(display_entity_update);
+ 
+diff --git a/include/video/display.h b/include/video/display.h
+index 90d18ca..64f84d5 100644
+--- a/include/video/display.h
++++ b/include/video/display.h
+@@ -77,7 +77,8 @@ struct display_entity_interface_params {
+ struct display_entity_control_ops {
+ 	int (*set_state)(struct display_entity *ent,
+ 			 enum display_entity_state state);
+-	int (*update)(struct display_entity *ent);
++	int (*update)(struct display_entity *ent,
++			 const struct videomode *mode);
+ 	int (*get_modes)(struct display_entity *ent,
+ 			 const struct videomode **modes);
+ 	int (*get_params)(struct display_entity *ent,
+@@ -111,7 +112,8 @@ struct display_entity {
+ 
+ int display_entity_set_state(struct display_entity *entity,
+ 			     enum display_entity_state state);
+-int display_entity_update(struct display_entity *entity);
++int display_entity_update(struct display_entity *entity,
++			     const struct videomode *mode);
+ int display_entity_get_modes(struct display_entity *entity,
+ 			     const struct videomode **modes);
+ int display_entity_get_params(struct display_entity *entity,
+-- 
+1.7.10.4
+
 

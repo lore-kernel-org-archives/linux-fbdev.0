@@ -1,88 +1,81 @@
-From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
-Date: Fri, 26 Apr 2013 20:02:19 +0000
-Subject: [PATCH 5/9] s3c2410fb: Use dev_pm_ops
-Message-Id: <1367006543-5458-6-git-send-email-sylvester.nawrocki@gmail.com>
+From: Pawel Moll <pawel.moll@arm.com>
+Date: Wed, 17 Apr 2013 15:17:17 +0000
+Subject: [RFC 05/10] fbmon: Add extra video helper
+Message-Id: <1366211842-21497-6-git-send-email-pawel.moll@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1367006543-5458-1-git-send-email-sylvester.nawrocki@gmail.com>
-In-Reply-To: <1367006543-5458-1-git-send-email-sylvester.nawrocki@gmail.com>
+References: <1366211842-21497-1-git-send-email-pawel.moll@arm.com>
+In-Reply-To: <1366211842-21497-1-git-send-email-pawel.moll@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>
 
-Use the driver PM ops rather than legacy suspend/resume callbacks.
-Also use CONFIG_PM_SLEEP switch to compile in the system sleep
-code instead of CONFIG_PM.
+This function converts the fb_var_screeninfo to the videomode
+structure, to be used in fbdev drivers working with the
+Common Display Framework.
 
-Signed-off-by: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
+Signed-off-by: Pawel Moll <pawel.moll@arm.com>
 ---
- drivers/video/s3c2410fb.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+ drivers/video/fbmon.c |   29 +++++++++++++++++++++++++++++
+ include/linux/fb.h    |    3 +++
+ 2 files changed, 32 insertions(+)
 
-diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
-index d6706f7..479ab45 100644
---- a/drivers/video/s3c2410fb.c
-+++ b/drivers/video/s3c2410fb.c
-@@ -26,6 +26,7 @@
- #include <linux/dma-mapping.h>
- #include <linux/interrupt.h>
- #include <linux/platform_device.h>
-+#include <linux/pm.h>
- #include <linux/clk.h>
- #include <linux/cpufreq.h>
- #include <linux/io.h>
-@@ -36,10 +37,6 @@
- #include <asm/mach/map.h>
- #include <mach/regs-gpio.h>
- 
--#ifdef CONFIG_PM
--#include <linux/pm.h>
--#endif
--
- #include "s3c2410fb.h"
- 
- /* Debugging stuff */
-@@ -1044,8 +1041,7 @@ static int s3c2410fb_remove(struct platform_device *pdev)
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 7f67099..f0ff2bf 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -1424,6 +1424,35 @@ int fb_videomode_from_videomode(const struct videomode *vm,
  	return 0;
  }
- 
--#ifdef CONFIG_PM
--
-+#ifdef CONFIG_PM_SLEEP
- /* suspend and resume support for the lcd controller */
- static int s3c2410fb_suspend(struct platform_device *dev, pm_message_t state)
- {
-@@ -1081,9 +1077,14 @@ static int s3c2410fb_resume(struct platform_device *dev)
- 	return 0;
- }
- 
-+static const struct dev_pm_ops s3c2410fb_pm_ops = {
-+	.resume = s3c2410fb_resume,
-+	.suspend = s3c2410fb_suspend,
-+};
+ EXPORT_SYMBOL_GPL(fb_videomode_from_videomode);
 +
-+#define S3C2410FB_PM_OPS (&s3c2410fb_pm_ops)
- #else
--#define s3c2410fb_suspend NULL
--#define s3c2410fb_resume  NULL
-+#define S3C2410FB_PM_OPS (NULL)
++void videomode_from_fb_var_screeninfo(const struct fb_var_screeninfo *var,
++				      struct videomode *vm)
++{
++	vm->pixelclock = PICOS2KHZ(var->pixclock) * 1000;
++
++	vm->hactive = var->xres;
++	vm->hfront_porch = var->right_margin;
++	vm->hback_porch = var->left_margin;
++	vm->hsync_len = var->hsync_len;
++
++	vm->vactive = var->yres;
++	vm->vfront_porch = var->lower_margin;
++	vm->vback_porch = var->upper_margin;
++	vm->vsync_len = var->vsync_len;
++
++	vm->dmt_flags = 0;
++	if (var->sync & FB_SYNC_HOR_HIGH_ACT)
++		vm->dmt_flags |= VESA_DMT_HSYNC_HIGH;
++	if (var->sync & FB_SYNC_VERT_HIGH_ACT)
++		vm->dmt_flags |= VESA_DMT_VSYNC_HIGH;
++
++	vm->data_flags = 0;
++	if (var->vmode & FB_VMODE_INTERLACED)
++		vm->data_flags |= DISPLAY_FLAGS_INTERLACED;
++	if (var->vmode & FB_VMODE_DOUBLE)
++		vm->data_flags |= DISPLAY_FLAGS_DOUBLESCAN;
++}
++EXPORT_SYMBOL_GPL(videomode_from_fb_var_screeninfo);
  #endif
  
- static struct platform_device_id s3c2410fb_driver_ids[] = {
-@@ -1099,12 +1100,11 @@ static struct platform_device_id s3c2410fb_driver_ids[] = {
- static struct platform_driver s3c2410fb_driver = {
- 	.probe		= s3c2410fb_probe,
- 	.remove		= s3c2410fb_remove,
--	.suspend	= s3c2410fb_suspend,
--	.resume		= s3c2410fb_resume,
- 	.id_table	= s3c2410fb_driver_ids,
- 	.driver		= {
- 		.name	= "s3c2410-lcd",
- 		.owner	= THIS_MODULE,
-+		.pm	= S3C2410FB_PM_OPS,
- 	},
- };
+ #if IS_ENABLED(CONFIG_OF_VIDEOMODE)
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 58b9860..aae2ed3 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -721,6 +721,9 @@ extern int of_get_fb_videomode(struct device_node *np,
+ 			       int index);
+ extern int fb_videomode_from_videomode(const struct videomode *vm,
+ 				       struct fb_videomode *fbmode);
++extern void videomode_from_fb_var_screeninfo(
++				const struct fb_var_screeninfo *var,
++				struct videomode *vm);
  
+ /* drivers/video/modedb.c */
+ #define VESA_MODEDB_SIZE 34
 -- 
-1.7.4.1
+1.7.10.4
+
 

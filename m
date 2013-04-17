@@ -1,107 +1,105 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Date: Tue, 16 Apr 2013 12:35:24 +0000
-Subject: Re: [PATCH 2/8] video: atmel_lcdfb: introduce atmel_lcdfb_power_control
-Message-Id: <516D458C.8050205@atmel.com>
+From: Pawel Moll <pawel.moll@arm.com>
+Date: Wed, 17 Apr 2013 15:17:12 +0000
+Subject: [RFC 00/10] Versatile Express CLCD DVI output support
+Message-Id: <1366211842-21497-1-git-send-email-pawel.moll@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130411145741.GB25242@game.jcrosoft.org>
- <1365692422-9565-1-git-send-email-plagnioj@jcrosoft.com>
- <1365692422-9565-2-git-send-email-plagnioj@jcrosoft.com>
-In-Reply-To: <1365692422-9565-2-git-send-email-plagnioj@jcrosoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>
 
-On 04/11/2013 05:00 PM, Jean-Christophe PLAGNIOL-VILLARD :
-> to simplify the check on the presence of the callback
-> 
-> Signed-off-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: Nicolas Ferre <nicolas.ferre@atmel.com>
+Hello All,
 
-Simple and nice
+This series implements support for the Versatile Express
+video output pipeline, which is not the simplest one available...
 
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+It is meant as a RFC only and I'm hoping to attract all possible
+feedback (*including* naming ;-).
+
+The VE's "MultiMedia Bus" [1] comprises three video signal sources
+(motherboard's CLCD cell and a implementation-specific driver
+on each of the daugtherboards) and a FPGA multiplexer routing
+data from one of the sources to DVI/HDMI formatter chip (Sii9022).
+
++-----+
+| DB1 |>--+                         DVI connector
++-----+   |   +------+                   +--+
+          +-->|      |                   |oo|
++-----+       | mux  |    +---------+    |oo|
+| DB2 |>----->|      |>-->| sii9022 |>-->|oo|
++-----+       | FPGA |    +---------+    |oo|
+          +-->|      |                   |oo|
++-----+   |   +------+                   +--+
+| MB  |>--+
++-----+
+
+The series is based on Laurent Pinchart's Common Display Framework
+patch (not in mainline yet, v2 discussed here: [2]) and extends it
+by adding DT bindings and basic support for TFT panels.
+
+The CLCD driver has been adapted to work with the framework and
+the Device Tree information.
+
+Also a set of drivers for the VE-specific components is included
+(note that the sii9022 is now driven via the moterboard firmware;
+this is intended to be replaced by a proper I2C driver for the
+chip).
+
+It is worth mentioning that the CDF caters for both fbdev and DRM
+so the solution should be suitable for all potential DRM-driven
+display controllers.
+
+[1] http://infocenter.arm.com/help/topic/com.arm.doc.dui0447h/CHDEHEAA.html#CACGIGGC
+[2] http://thread.gmane.org/gmane.linux.drivers.video-input-infrastructure/57298
 
 
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> ---
->  drivers/video/atmel_lcdfb.c |   22 +++++++++++-----------
->  1 file changed, 11 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-> index 98733cd4..9574c47 100644
-> --- a/drivers/video/atmel_lcdfb.c
-> +++ b/drivers/video/atmel_lcdfb.c
-> @@ -283,6 +283,13 @@ static void init_contrast(struct atmel_lcdfb_info *sinfo)
->  		init_backlight(sinfo);
->  }
->  
-> +static inline void atmel_lcdfb_power_control(struct atmel_lcdfb_info *sinfo, int on)
-> +{
-> +	struct atmel_lcdfb_pdata *pdata = &sinfo->pdata;
-> +
-> +	if (pdata->atmel_lcdfb_power_control)
-> +		pdata->atmel_lcdfb_power_control(on);
-> +}
->  
->  static struct fb_fix_screeninfo atmel_lcdfb_fix __initdata = {
->  	.type		= FB_TYPE_PACKED_PIXELS,
-> @@ -1114,8 +1121,7 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
->  	fb_add_videomode(&fbmode, &info->modelist);
->  
->  	/* Power up the LCDC screen */
-> -	if (pdata->atmel_lcdfb_power_control)
-> -		pdata->atmel_lcdfb_power_control(1);
-> +	atmel_lcdfb_power_control(sinfo, 1);
->  
->  	dev_info(dev, "fb%d: Atmel LCDC at 0x%08lx (mapped at %p), irq %d\n",
->  		       info->node, info->fix.mmio_start, sinfo->mmio, sinfo->irq_base);
-> @@ -1169,8 +1175,7 @@ static int __exit atmel_lcdfb_remove(struct platform_device *pdev)
->  
->  	cancel_work_sync(&sinfo->task);
->  	exit_backlight(sinfo);
-> -	if (pdata->atmel_lcdfb_power_control)
-> -		pdata->atmel_lcdfb_power_control(0);
-> +	atmel_lcdfb_power_control(sinfo, 0);
->  	unregister_framebuffer(info);
->  	atmel_lcdfb_stop_clock(sinfo);
->  	clk_put(sinfo->lcdc_clk);
-> @@ -1198,7 +1203,6 @@ static int atmel_lcdfb_suspend(struct platform_device *pdev, pm_message_t mesg)
->  {
->  	struct fb_info *info = platform_get_drvdata(pdev);
->  	struct atmel_lcdfb_info *sinfo = info->par;
-> -	struct atmel_lcdfb_pdata *pdata = &sinfo->pdata;
->  
->  	/*
->  	 * We don't want to handle interrupts while the clock is
-> @@ -1208,9 +1212,7 @@ static int atmel_lcdfb_suspend(struct platform_device *pdev, pm_message_t mesg)
->  
->  	sinfo->saved_lcdcon = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_CTR);
->  	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, 0);
-> -	if (pdata->atmel_lcdfb_power_control)
-> -		pdata->atmel_lcdfb_power_control(0);
-> -
-> +	atmel_lcdfb_power_control(sinfo, 0);
->  	atmel_lcdfb_stop(sinfo);
->  	atmel_lcdfb_stop_clock(sinfo);
->  
-> @@ -1221,12 +1223,10 @@ static int atmel_lcdfb_resume(struct platform_device *pdev)
->  {
->  	struct fb_info *info = platform_get_drvdata(pdev);
->  	struct atmel_lcdfb_info *sinfo = info->par;
-> -	struct atmel_lcdfb_pdata *pdata = &sinfo->pdata;
->  
->  	atmel_lcdfb_start_clock(sinfo);
->  	atmel_lcdfb_start(sinfo);
-> -	if (pdata->atmel_lcdfb_power_control)
-> -		pdata->atmel_lcdfb_power_control(1);
-> +	atmel_lcdfb_power_control(sinfo, 1);
->  	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, sinfo->saved_lcdcon);
->  
->  	/* Enable FIFO & DMA errors */
-> 
+Laurent Pinchart (1):
+  video: Add generic display entity core
 
+Pawel Moll (9):
+  video: display: Update the display with the video mode data
+  video: display: Add Device Tree bindings
+  video: display: Add generic TFT display type
+  fbmon: Add extra video helper
+  video: ARM CLCD: Add DT & CDF support
+  mfd: vexpress: Allow external drivers to parse site ids
+  video: Versatile Express MUXFPGA driver
+  video: Versatile Express DVI mode driver
+  ARM: vexpress: Add CLCD Device Tree properties
+
+ .../testing/sysfs-driver-video-vexpress-muxfpga    |    5 +
+ .../devicetree/bindings/video/arm,pl11x.txt        |   35 ++
+ .../devicetree/bindings/video/display-bindings.txt |   75 ++++
+ arch/arm/boot/dts/vexpress-v2m-rs1.dtsi            |   17 +-
+ arch/arm/boot/dts/vexpress-v2m.dtsi                |   17 +-
+ arch/arm/boot/dts/vexpress-v2p-ca9.dts             |    5 +
+ drivers/mfd/vexpress-sysreg.c                      |    5 +
+ drivers/video/Kconfig                              |    2 +
+ drivers/video/Makefile                             |    5 +
+ drivers/video/amba-clcd.c                          |  244 +++++++++++
+ drivers/video/display/Kconfig                      |    4 +
+ drivers/video/display/Makefile                     |    1 +
+ drivers/video/display/display-core.c               |  447 ++++++++++++++++++++
+ drivers/video/fbmon.c                              |   29 ++
+ drivers/video/vexpress-dvimode.c                   |  158 +++++++
+ drivers/video/vexpress-muxfpga.c                   |  228 ++++++++++
+ include/linux/amba/clcd.h                          |    2 +
+ include/linux/fb.h                                 |    3 +
+ include/linux/vexpress.h                           |    2 +
+ include/video/display.h                            |  172 ++++++++
+ 20 files changed, 1448 insertions(+), 8 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-driver-video-vexpress-muxfpga
+ create mode 100644 Documentation/devicetree/bindings/video/arm,pl11x.txt
+ create mode 100644 Documentation/devicetree/bindings/video/display-bindings.txt
+ create mode 100644 drivers/video/display/Kconfig
+ create mode 100644 drivers/video/display/Makefile
+ create mode 100644 drivers/video/display/display-core.c
+ create mode 100644 drivers/video/vexpress-dvimode.c
+ create mode 100644 drivers/video/vexpress-muxfpga.c
+ create mode 100644 include/video/display.h
 
 -- 
-Nicolas Ferre
+1.7.10.4
+
+

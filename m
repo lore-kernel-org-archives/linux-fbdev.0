@@ -1,7 +1,7 @@
-From: Marek Vasut <marex@denx.de>
-Date: Thu, 18 Apr 2013 14:00:27 +0000
+From: Shawn Guo <shawn.guo@linaro.org>
+Date: Thu, 18 Apr 2013 14:48:39 +0000
 Subject: Re: [PATCH] video: mxsfb: Fix colors display on lower color depth
-Message-Id: <201304181600.27813.marex@denx.de>
+Message-Id: <20130418144838.GD2222@S2101-09.ap.freescale.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <516EBCA4.1020609@free-electrons.com>
  <1366277032-671-1-git-send-email-maxime.ripard@free-electrons.com>
@@ -11,8 +11,11 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Dear Maxime Ripard,
+Copy Sascha.
 
+Shawn
+
+On Thu, Apr 18, 2013 at 11:23:52AM +0200, Maxime Ripard wrote:
 > The current code always registers as a 32 bits display, and uses the
 > hardware to drop the MSB of each color to abjust to the interface width
 > used by the panel.
@@ -29,14 +32,27 @@ Dear Maxime Ripard,
 > behaviour.
 > 
 > Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+> ---
+>  drivers/video/mxsfb.c |    5 -----
+>  1 file changed, 5 deletions(-)
+> 
+> diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+> index 755556c..2cfaf8b 100644
+> --- a/drivers/video/mxsfb.c
+> +++ b/drivers/video/mxsfb.c
+> @@ -424,11 +424,6 @@ static int mxsfb_set_par(struct fb_info *fb_info)
+>  			return -EINVAL;
+>  		case STMLCDIF_16BIT:
+>  		case STMLCDIF_18BIT:
+> -			/* 24 bit to 18 bit mapping */
+> -			ctrl |= CTRL_DF24; /* ignore the upper 2 bits in
+> -					    *  each colour component
+> -					    */
+> -			break;
+>  		case STMLCDIF_24BIT:
+>  			/* real 24 bit */
+>  			break;
+> -- 
+> 1.7.10.4
+> 
 
-Isn't this what M28EVK is doing already? This was last tested on 3.9-rc3 I 
-think:
-
-bits-per-pixel = <16>;
-bus-width = <18>;
-
-But it's also true we have all 24 data lines routed to the LCD.
-
-Best regards,
-Marek Vasut

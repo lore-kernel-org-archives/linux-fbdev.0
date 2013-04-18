@@ -1,68 +1,64 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Thu, 18 Apr 2013 00:34:20 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 18 Apr 2013 03:40:08 +0000
 Subject: Re: [PATCH 00/33] OMAPDSS: platform_enable/disable callback removal from panel drivers
-Message-Id: <20130418003419.GB10155@atomide.com>
+Message-Id: <516F6B18.8080407@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------enig68FF7CC488801802B8F2A4F8"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1360765345-19312-1-git-send-email-archit@ti.com>
- <20130213164647.GF7144@atomide.com>
- <515C2058.8030402@ti.com>
- <20130403154645.GV10155@atomide.com>
- <516BC897.5020802@ti.com>
- <20130415212022.GP10155@atomide.com>
- <516CD17A.5050403@ti.com>
-In-Reply-To: <516CD17A.5050403@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1360765345-19312-1-git-send-email-archit@ti.com> <20130213164647.GF7144@atomide.com> <515C2058.8030402@ti.com> <20130403154645.GV10155@atomide.com> <516BC897.5020802@ti.com> <20130415212022.GP10155@atomide.com> <516CD17A.5050403@ti.com> <20130418003419.GB10155@atomide.com>
+In-Reply-To: <20130418003419.GB10155@atomide.com>
+To: Tony Lindgren <tony@atomide.com>
 Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [130415 21:25]:
-> On 2013-04-16 00:20, Tony Lindgren wrote:
-> 
-> >> So, to recap, the common header changes are located in:
-> >>
-> >> git://gitorious.org/linux-omap-dss2/linux.git 3.10/0-dss-headers
-> >>
-> >> And the branch for linux-omap is:
-> >>
-> >> git://gitorious.org/linux-omap-dss2/linux.git 3.10-lo/board-cleanup
-> >>
-> >> After merging those, some displays won't start anymore until the omapdss
-> >> changes are in, but things should still compile.
-> > 
-> > Sounds like it's best that you merge those branches via your
-> > tree as the conflicts have been already resolved in linux next.
-> 
-> The dss changes are going through drm tree this time, as there are some
-> drm dependencies also, and I've already sent the pull request for those.
-> And when I asked Dave Airlie if he can merge the dss changes, I didn't
-> talk about a big chunk of arch file changes getting included.
+--------------enig68FF7CC488801802B8F2A4F8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-OK sorry I did not know that and was assuming you will be sending
-a pull request to Linus.
- 
-> Also, the whole division to two independent branches was done only to
-> make it possible for the arch changes to go through l-o tree.
+On 2013-04-18 03:34, Tony Lindgren wrote:
 
-Yup. That probably caused you to fix up few other things while doing
-it though ;)
- 
-> There will probably be more these kind of changes in the future, so I
-> think we should agree how to handle those and stick to the plan.
-> Dividing the arch file changes to a separate branch is often quite
-> laborious, and I'd rather not do that for nothing.
+> Just one request: Let's do branches like this early on before -rc6,
+> not what might be five days before the merge window potentially
+> opens..
 
-Thanks for doing all that. And yes, let's plan on always separating
-driver changes from arch/arm changes to cut away the dependencies.
+Agreed, it got a bit late. But the branch itself has been stable and in
+linux-next for some time.
 
-Just one request: Let's do branches like this early on before -rc6,
-not what might be five days before the merge window potentially
-opens..
+Perhaps it would've been better to merge it to l-o earlier, instead of
+me pushing it to linux-next via my tree. Any possible found problems
+(there weren't any this time) could've been fixed with a new fixes branch=
+=2E
 
-I've pulled them into omap-for-v3.10/dss and will send a pull
-request for Arnd and Olof.
+> I've pulled them into omap-for-v3.10/dss and will send a pull
+> request for Arnd and Olof.
 
-Regards,
+Ok, thanks!
 
-Tony
+ Tomi
+
+
+
+--------------enig68FF7CC488801802B8F2A4F8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with undefined - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRb2scAAoJEPo9qoy8lh71QAYQAKpqTpp8IcTWe7BvASWjyvu3
+lTlB0i4YXRFdoILyFFYL9LbSY3lEXsHDytRvyoonnu+Lvpthli/Hen0u3MLFzoq3
+os7reHf0NS6SIpl3AJrh/i69N4ANrXPmFumg74OdpV1wtxQwu5/DAJZUjhWb6K+i
+AHhqYLs/fmJS+X+5Wny32eXdXdzJ5FhTzXxOd9vdpuH6KHGayZhcq4piSsYt28gn
+3tpW1Ay1WoOuycOkaaznHluVjkKJFC95U9sd/2RzNBe6oqdYDAo5Z3vX4rOGnLrJ
+c+PnutwKE+prq6ARWHCVOF7jdeChp1NmBr9+uiLGSHnigL6e/mEm8wX2g0vktxPv
+qCtosWmtAImZ/+lcS2W/+ZOBA7HjuBi/9MxuevD22LrJoMCWBhIRSQQ9DjxvE2xW
+hBcNGdsqFhYKMYl3yanMYThS4Pv4UKAu6jL6qSWQfBn3O0z5f5/hV1WflIWrx77K
+yTU89jI9CRDbRPXHNGDq52nv0cyyjByVdxuRPrGUJ/eeH4cRChUl8gLjsGU/q91j
+TZ3g86lZmnwPbYQPvG2p90fdsivTbQgXcH/Gt+FHIPcYoJrO0ZrM2HkSZvyRBiFk
+4i9uKyjlTIBOf0cJs8iSTlbeacOuFlHf+8LalzFb4CmVx7DH8fpasHZPYnVUk8ut
+HBQNqkWd8Sc8E1GmnEEb
+=1Ll0
+-----END PGP SIGNATURE-----
+
+--------------enig68FF7CC488801802B8F2A4F8--

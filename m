@@ -1,132 +1,37 @@
-From: Prabhakar Lad <prabhakar.csengg@gmail.com>
-Date: Wed, 24 Apr 2013 12:12:03 +0000
-Subject: [PATCH 1/6] media: davinci: vpbe: fix checkpatch warning for CamelCase
-Message-Id: <1366804808-22720-2-git-send-email-prabhakar.csengg@gmail.com>
+From: <jordan.buechler@mymail.nwtc.edu>
+Date: Fri, 19 Apr 2013 21:59:01 +0000
+Subject: Darlehen anbieten
+Message-Id: <f6841aaf1bc.5171be25@mymail.nwtc.edu>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366804808-22720-1-git-send-email-prabhakar.csengg@gmail.com>
-In-Reply-To: <1366804808-22720-1-git-send-email-prabhakar.csengg@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-From: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+Sehr geehrter Kunde,
 
-This patch fixes checkpatch warning to avoid CamelCase.
+Sie ben=F6tigen Darlehen zu zahlen Sie Ihre Schulden oder begleichen Sie Ih=
+re Rechnung? Sind Sie in irgendeiner finanziellen Schlamassel oder ben=F6ti=
+gen Sie Fonds zu starten Ihr eigenes Gesch=E4ft? NORTON FINANCE=20
+ist bereit, Ihnen Kredit zu 3% Zins. wenn interessiert f=FCllen das Anmelde=
+formular unten f=FCr die dringende Bearbeitung Ihres Darlehens. Kontakt: no=
+rtonfinan@blumail.org
 
-Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
----
- drivers/media/platform/davinci/vpbe_display.c |    2 +-
- drivers/media/platform/davinci/vpbe_osd.c     |   24 ++++++++++++------------
- include/media/davinci/vpbe_osd.h              |    4 ++--
- 3 files changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/media/platform/davinci/vpbe_display.c b/drivers/media/platform/davinci/vpbe_display.c
-index 1802f11..1c4ba89 100644
---- a/drivers/media/platform/davinci/vpbe_display.c
-+++ b/drivers/media/platform/davinci/vpbe_display.c
-@@ -929,7 +929,7 @@ static int vpbe_display_s_fmt(struct file *file, void *priv,
- 	cfg->interlaced = vpbe_dev->current_timings.interlaced;
- 
- 	if (V4L2_PIX_FMT_UYVY = pixfmt->pixelformat)
--		cfg->pixfmt = PIXFMT_YCbCrI;
-+		cfg->pixfmt = PIXFMT_YCBCRI;
- 
- 	/* Change of the default pixel format for both video windows */
- 	if (V4L2_PIX_FMT_NV12 = pixfmt->pixelformat) {
-diff --git a/drivers/media/platform/davinci/vpbe_osd.c b/drivers/media/platform/davinci/vpbe_osd.c
-index 396a51c..6ed82e8 100644
---- a/drivers/media/platform/davinci/vpbe_osd.c
-+++ b/drivers/media/platform/davinci/vpbe_osd.c
-@@ -119,7 +119,7 @@ static inline u32 osd_modify(struct osd_state *sd, u32 mask, u32 val,
- #define is_rgb_pixfmt(pixfmt) \
- 	(((pixfmt) = PIXFMT_RGB565) || ((pixfmt) = PIXFMT_RGB888))
- #define is_yc_pixfmt(pixfmt) \
--	(((pixfmt) = PIXFMT_YCbCrI) || ((pixfmt) = PIXFMT_YCrCbI) || \
-+	(((pixfmt) = PIXFMT_YCBCRI) || ((pixfmt) = PIXFMT_YCRCBI) || \
- 	((pixfmt) = PIXFMT_NV12))
- #define MAX_WIN_SIZE OSD_VIDWIN0XP_V0X
- #define MAX_LINE_LENGTH (OSD_VIDWIN0OFST_V0LO << 5)
-@@ -360,8 +360,8 @@ static void _osd_enable_color_key(struct osd_state *sd,
- 			osd_write(sd, colorkey & OSD_TRANSPVALL_RGBL,
- 				  OSD_TRANSPVALL);
- 		break;
--	case PIXFMT_YCbCrI:
--	case PIXFMT_YCrCbI:
-+	case PIXFMT_YCBCRI:
-+	case PIXFMT_YCRCBI:
- 		if (sd->vpbe_type = VPBE_VERSION_3)
- 			osd_modify(sd, OSD_TRANSPVALU_Y, colorkey,
- 				   OSD_TRANSPVALU);
-@@ -813,8 +813,8 @@ static int try_layer_config(struct osd_state *sd, enum osd_layer layer,
- 		if (osd->vpbe_type = VPBE_VERSION_1)
- 			bad_config = !is_vid_win(layer);
- 		break;
--	case PIXFMT_YCbCrI:
--	case PIXFMT_YCrCbI:
-+	case PIXFMT_YCBCRI:
-+	case PIXFMT_YCRCBI:
- 		bad_config = !is_vid_win(layer);
- 		break;
- 	case PIXFMT_RGB888:
-@@ -950,9 +950,9 @@ static void _osd_set_cbcr_order(struct osd_state *sd,
- 	 * The caller must ensure that all windows using YC pixfmt use the same
- 	 * Cb/Cr order.
- 	 */
--	if (pixfmt = PIXFMT_YCbCrI)
-+	if (pixfmt = PIXFMT_YCBCRI)
- 		osd_clear(sd, OSD_MODE_CS, OSD_MODE);
--	else if (pixfmt = PIXFMT_YCrCbI)
-+	else if (pixfmt = PIXFMT_YCRCBI)
- 		osd_set(sd, OSD_MODE_CS, OSD_MODE);
- }
- 
-@@ -981,8 +981,8 @@ static void _osd_set_layer_config(struct osd_state *sd, enum osd_layer layer,
- 				winmd |= (2 << OSD_OSDWIN0MD_BMP0MD_SHIFT);
- 				_osd_enable_rgb888_pixblend(sd, OSDWIN_OSD0);
- 				break;
--			case PIXFMT_YCbCrI:
--			case PIXFMT_YCrCbI:
-+			case PIXFMT_YCBCRI:
-+			case PIXFMT_YCRCBI:
- 				winmd |= (3 << OSD_OSDWIN0MD_BMP0MD_SHIFT);
- 				break;
- 			default:
-@@ -1128,8 +1128,8 @@ static void _osd_set_layer_config(struct osd_state *sd, enum osd_layer layer,
- 					_osd_enable_rgb888_pixblend(sd,
- 							OSDWIN_OSD1);
- 					break;
--				case PIXFMT_YCbCrI:
--				case PIXFMT_YCrCbI:
-+				case PIXFMT_YCBCRI:
-+				case PIXFMT_YCRCBI:
- 					winmd | 					    (3 << OSD_OSDWIN1MD_BMP1MD_SHIFT);
- 					break;
-@@ -1508,7 +1508,7 @@ static int osd_initialize(struct osd_state *osd)
- 	_osd_init(osd);
- 
- 	/* set default Cb/Cr order */
--	osd->yc_pixfmt = PIXFMT_YCbCrI;
-+	osd->yc_pixfmt = PIXFMT_YCBCRI;
- 
- 	if (osd->vpbe_type = VPBE_VERSION_3) {
- 		/*
-diff --git a/include/media/davinci/vpbe_osd.h b/include/media/davinci/vpbe_osd.h
-index 42628fc..de59364 100644
---- a/include/media/davinci/vpbe_osd.h
-+++ b/include/media/davinci/vpbe_osd.h
-@@ -82,9 +82,9 @@ enum osd_pix_format {
- 	PIXFMT_4BPP,
- 	PIXFMT_8BPP,
- 	PIXFMT_RGB565,
--	PIXFMT_YCbCrI,
-+	PIXFMT_YCBCRI,
- 	PIXFMT_RGB888,
--	PIXFMT_YCrCbI,
-+	PIXFMT_YCRCBI,
- 	PIXFMT_NV12,
- 	PIXFMT_OSD_ATTR,
- };
--- 
-1.7.4.1
+Vorname: ........................
+Adresse: ...........................
+Land: ...........................
+Telefonnummer: ......................
+Beruf: .............. .........
+Monatliches Einkommen: ...................
+Zweck des Darlehens: ...................
+Ben=F6tigte Menge ....................
+Dauer der Ausleihe: .....................
+Alter: ...............................
 
+Mit freundlichen Gr=FC=DFen,
+Sarah Bell-
+Loan Officer
+E-Mail: nortonfinan@blumail.org
+Tells: Tell: +447035958575
+Fax: +448447742385

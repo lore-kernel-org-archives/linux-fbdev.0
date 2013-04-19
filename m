@@ -1,61 +1,41 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Tue, 02 Apr 2013 18:18:29 +0000
-Subject: Re: [PATCHv2 6/6] video: fb: vt8500: Convert framebuffer drivers to standardized binding
-Message-Id: <515B20F5.4000708@prisktech.co.nz>
+From: Borislav Petkov <bp@alien8.de>
+Date: Fri, 19 Apr 2013 14:05:25 +0000
+Subject: [PATCH] uvesafb: Correct/simplify warning message
+Message-Id: <1366380325-2038-1-git-send-email-bp@alien8.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364878200-26343-1-git-send-email-linux@prisktech.co.nz>
- <1364878200-26343-7-git-send-email-linux@prisktech.co.nz>
- <515AB229.4050204@ti.com>
- <CABjd4Yx7zBAR+o-X7u9K9+iUeMq5qc=8n70qx1EoKPBT1JMR4A@mail.gmail.com>
- <20130402115014.GL20693@game.jcrosoft.org>
-In-Reply-To: <20130402115014.GL20693@game.jcrosoft.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-On 03/04/13 00:50, Jean-Christophe PLAGNIOL-VILLARD wrote:
-> On 14:41 Tue 02 Apr     , Alexey Charkov wrote:
->> 2013/4/2 Tomi Valkeinen <tomi.valkeinen@ti.com>:
->>> On 2013-04-02 07:50, Tony Prisk wrote:
->>>> Now that a display timing binding is available, convert our almost identical
->>>> binding to use the standard binding.
->>>>
->>>> This patch converts the vt8500 and wm8505 framebuffer drivers and
->>>> associated dts/dtsi files to use the standard binding as defined in
->>>> bindings/video/display-timing.txt.
->>>>
->>>> There are two side-effects of making this conversion:
->>>>
->>>> 1) The fb node should now be in the board file, rather than the soc file as
->>>> the display-timing node is a child of the fb node.
->>>>
->>>> 2) We still require a bits per pixel property to initialize the framebuffer
->>>> for the different lcd panels. Rather than including this as part of the
->>>> display timing, it is moved into the framebuffer node.
->>> This means that the boards using the current DT bindings won't work with
->>> a kernel with these patches, right? Is that ok?
->> There are no known products shipping any DT-enabled firmware with
->> these chips in the wild. The only way to run modern kernels on
->> VIA/WonderMedia chips so far is by using the "appended DTB"
->> workaround, and the instructions that have been posted to Wiki's and
->> mailing list discussions imply that a fresh DTB is compiled from
->> current kernel sources to produce a bootable image.
->>
->> Thus, it seems that this change should not really break anything
->> major, as the user base is quite small and those who use new code are
->> most likely to use new DTB as well.
-> I usually disagree but ok
->
-> Best Regards,
-> J.
-The original binding was only ever meant to be a stop-gap as it was 
-required for us to make the conversion to multiplatform/devicetree, and
-was only agreed upon because without it all the other code was pointless 
-and arch-vt8500 was suffering from bitrot at the time. It was always the 
-intention to update to the standardized binding once it was mainlined.I 
-haven't been able to find the original thread where it was discussed, 
-but it was around Aug 2012.
+From: Borislav Petkov <bp@suse.de>
 
-Regards
-Tony P
+Streamline it a bit. No functional change.
+
+Signed-off-by: Borislav Petkov <bp@suse.de>
+Cc: Wang YanQing <udknight@gmail.com>
+Cc: Michal Januszewski <spock@gentoo.org>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+---
+ drivers/video/uvesafb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index d4284458377e..a309f9fabe8b 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -819,8 +819,8 @@ static int uvesafb_vbe_init(struct fb_info *info)
+ 	if (par->pmi_setpal || par->ypan) {
+ 		if (__supported_pte_mask & _PAGE_NX) {
+ 			par->pmi_setpal = par->ypan = 0;
+-			printk(KERN_WARNING "uvesafb: NX protection is actively."
+-				"We have better not to use the PMI.\n");
++			printk(KERN_WARNING "uvesafb: NX protection is active, "
++					    "better not use the PMI.\n");
+ 		} else {
+ 			uvesafb_vbe_getpmi(task, par);
+ 		}
+-- 
+1.8.2.135.g7b592fa
+

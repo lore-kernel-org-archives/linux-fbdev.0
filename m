@@ -1,55 +1,51 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 11 Apr 2013 05:12:18 +0000
-Subject: Re: [PATCH 13/30] video/s3c: move platform_data out of arch/arm
-Message-Id: <003301ce3673$23ae2f80$6b0a8e80$%han@samsung.com>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Mon, 22 Apr 2013 08:11:50 +0000
+Subject: [PATCH RESEND] video: mxsfb: Fix colors display on lower color depth
+Message-Id: <1366618310-7068-1-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1365638712-1028578-1-git-send-email-arnd@arndb.de>
- <1365638712-1028578-14-git-send-email-arnd@arndb.de>
-In-Reply-To: <1365638712-1028578-14-git-send-email-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Thursday, April 11, 2013 9:05 AM, Arnd Bergmann wrote:
-> 
-> The s3c-fb driver requires header files from the samsung platforms
-> to find its platform_data definition, but this no longer works on
-> multiplatform kernels, so let's move the data into a new header
-> file under include/linux/platform_data.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: Jingoo Han <jg1.han@samsung.com>
-> ---
->  arch/arm/plat-samsung/include/plat/fb.h | 50 +-----------------------------
->  drivers/video/s3c-fb.c                  |  3 +-
->  include/linux/platform_data/video_s3c.h | 54 +++++++++++++++++++++++++++++++++
->  3 files changed, 56 insertions(+), 51 deletions(-)
->  create mode 100644 include/linux/platform_data/video_s3c.h
-> 
+The current code always registers as a 32 bits display, and uses the
+hardware to drop the MSB of each color to abjust to the interface width
+used by the panel.
 
-[.....]
+This results on 18 bits (and probably 16 bits display as well) in colors
+being displayed poorly, because the MSB are obviously the most important
+bits for each color definition.
 
-> +struct s3c_fb_platdata {
-> +	void	(*setup_gpio)(void);
-> +
-> +	struct s3c_fb_pd_win	*win[S3C_FB_MAX_WIN];
-> +	struct fb_videomode     *vtiming;
-> +
-> +	u32			 vidcon0;
-> +	u32			 vidcon1;
-> +};
-> + 
+The default controller behaviour when using an interface width smaller
+than the color depth is to drop the LSBs of each color, which makes more
+sense because you lose the least important part of the color definition.
 
-There is an unnecessary space.
-When the patch is merged, this space should be removed.
+So, to fix the colors display, just get back to the default controller
+behaviour.
 
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+  - Copied Sascha
 
-Best regards,
-Jingoo Han
+ drivers/video/mxsfb.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
-> +#endif
-> --
-> 1.8.1.2
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 755556c..2cfaf8b 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -424,11 +424,6 @@ static int mxsfb_set_par(struct fb_info *fb_info)
+ 			return -EINVAL;
+ 		case STMLCDIF_16BIT:
+ 		case STMLCDIF_18BIT:
+-			/* 24 bit to 18 bit mapping */
+-			ctrl |= CTRL_DF24; /* ignore the upper 2 bits in
+-					    *  each colour component
+-					    */
+-			break;
+ 		case STMLCDIF_24BIT:
+ 			/* real 24 bit */
+ 			break;
+-- 
+1.7.10.4
 

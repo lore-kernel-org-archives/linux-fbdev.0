@@ -1,10 +1,10 @@
 From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Fri, 12 Apr 2013 08:00:03 +0000
+Date: Mon, 22 Apr 2013 09:55:55 +0000
 Subject: [PATCH 2/2] ARM: dts: cfa10036: Change the OLED display to SSD1306
-Message-Id: <1365753603-4438-3-git-send-email-maxime.ripard@free-electrons.com>
+Message-Id: <1366624555-5616-3-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1365753603-4438-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1365753603-4438-1-git-send-email-maxime.ripard@free-electrons.com>
+References: <1366624555-5616-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1366624555-5616-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

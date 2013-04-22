@@ -1,37 +1,137 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 29 Apr 2013 10:22:28 +0000
-Subject: [PATCH 01/10] OMAPDSS: Makefile: move omapfb after panels
-Message-Id: <1367230957-32337-2-git-send-email-tomi.valkeinen@ti.com>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Mon, 22 Apr 2013 10:02:23 +0000
+Subject: [PATCH 2/4] ssd1307fb: Rework the communication functions
+Message-Id: <1366624945-5708-3-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1366624945-5708-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1366624945-5708-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, grygorii.strashko@ti.com, chf.fritz@googlemail.com, Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-omapfb requires the panels to have been probed before omapfb's probe. We
-currently manage that by having omapfb in late initcall level. However,
-a much simpler way is to just change the makefile so that omapfb is
-after the panel drivers.
+To efficiently send a whole page to the display, we need to be able to
+manipulate more easily the data arrays that has to be sent to the OLED
+controller. As such, this patch introduces a ssd1307fb_array structure
+that handles both the small header to be sent over i2c, which contains
+the type of information sent, and the raw bytes after that.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 ---
- drivers/video/omap2/Makefile |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/ssd1307fb.c |   77 +++++++++++++++++++++++++++++----------------
+ 1 file changed, 50 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/video/omap2/Makefile b/drivers/video/omap2/Makefile
-index 5ea7cb9..296e5c5 100644
---- a/drivers/video/omap2/Makefile
-+++ b/drivers/video/omap2/Makefile
-@@ -1,5 +1,5 @@
- obj-$(CONFIG_OMAP2_VRFB) += vrfb.o
+diff --git a/drivers/video/ssd1307fb.c b/drivers/video/ssd1307fb.c
+index 5ab5281..35f5348 100644
+--- a/drivers/video/ssd1307fb.c
++++ b/drivers/video/ssd1307fb.c
+@@ -51,6 +51,11 @@ struct ssd1307fb_par {
+ 	u32 width;
+ };
  
- obj-$(CONFIG_OMAP2_DSS) += dss/
--obj-$(CONFIG_FB_OMAP2) += omapfb/
- obj-y += displays/
-+obj-$(CONFIG_FB_OMAP2) += omapfb/
++struct ssd1307fb_array {
++	u8	type;
++	u8	data[0];
++};
++
+ static struct fb_fix_screeninfo ssd1307fb_fix = {
+ 	.id		= "Solomon SSD1307",
+ 	.type		= FB_TYPE_PACKED_PIXELS,
+@@ -65,49 +70,67 @@ static struct fb_var_screeninfo ssd1307fb_var = {
+ 	.bits_per_pixel	= 1,
+ };
+ 
+-static int ssd1307fb_write_array(struct i2c_client *client, u8 type, u8 *cmd, u32 len)
++static struct ssd1307fb_array *ssd1307fb_alloc_array(u32 len, u8 type)
+ {
+-	u8 *buf;
+-	int ret = 0;
+-
+-	buf = kzalloc(len + 1, GFP_KERNEL);
+-	if (!buf) {
+-		dev_err(&client->dev, "Couldn't allocate sending buffer.\n");
+-		return -ENOMEM;
+-	}
++	struct ssd1307fb_array *array;
+ 
+-	buf[0] = type;
+-	memcpy(buf + 1, cmd, len);
++	array = kzalloc(sizeof(struct ssd1307fb_array) + len, GFP_KERNEL);
++	if (!array)
++		return NULL;
+ 
+-	ret = i2c_master_send(client, buf, len + 1);
+-	if (ret != len + 1) {
+-		dev_err(&client->dev, "Couldn't send I2C command.\n");
+-		goto error;
+-	}
++	array->type = type;
+ 
+-error:
+-	kfree(buf);
+-	return ret;
++	return array;
+ }
+ 
+-static inline int ssd1307fb_write_cmd_array(struct i2c_client *client, u8 *cmd, u32 len)
++static int ssd1307fb_write_array(struct i2c_client *client,
++				 struct ssd1307fb_array *array, u32 len)
+ {
+-	return ssd1307fb_write_array(client, SSD1307FB_COMMAND, cmd, len);
++	int ret;
++
++	len += sizeof(struct ssd1307fb_array);
++
++	ret = i2c_master_send(client, (u8 *)array, len);
++	if (ret != len) {
++		dev_err(&client->dev, "Couldn't send I2C command.\n");
++		return ret;
++	}
++
++	return 0;
+ }
+ 
+ static inline int ssd1307fb_write_cmd(struct i2c_client *client, u8 cmd)
+ {
+-	return ssd1307fb_write_cmd_array(client, &cmd, 1);
+-}
++	struct ssd1307fb_array *array;
++	int ret;
+ 
+-static inline int ssd1307fb_write_data_array(struct i2c_client *client, u8 *cmd, u32 len)
+-{
+-	return ssd1307fb_write_array(client, SSD1307FB_DATA, cmd, len);
++	array = ssd1307fb_alloc_array(1, SSD1307FB_COMMAND);
++	if (!array)
++		return -ENOMEM;
++
++	array->data[0] = cmd;
++
++	ret = ssd1307fb_write_array(client, array, 1);
++	kfree(array);
++
++	return ret;
+ }
+ 
+ static inline int ssd1307fb_write_data(struct i2c_client *client, u8 data)
+ {
+-	return ssd1307fb_write_data_array(client, &data, 1);
++	struct ssd1307fb_array *array;
++	int ret;
++
++	array = ssd1307fb_alloc_array(1, SSD1307FB_DATA);
++	if (!array)
++		return -ENOMEM;
++
++	array->data[0] = data;
++
++	ret = ssd1307fb_write_array(client, array, 1);
++	kfree(array);
++
++	return ret;
+ }
+ 
+ static void ssd1307fb_update_display(struct ssd1307fb_par *par)
 -- 
 1.7.10.4
 

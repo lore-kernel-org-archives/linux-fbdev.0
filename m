@@ -1,10 +1,10 @@
 From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Fri, 12 Apr 2013 08:00:02 +0000
+Date: Mon, 22 Apr 2013 09:55:54 +0000
 Subject: [PATCH 1/2] video: ssd1307fb: Add support for SSD1306 OLED controller
-Message-Id: <1365753603-4438-2-git-send-email-maxime.ripard@free-electrons.com>
+Message-Id: <1366624555-5616-2-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1365753603-4438-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1365753603-4438-1-git-send-email-maxime.ripard@free-electrons.com>
+References: <1366624555-5616-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1366624555-5616-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,8 +17,8 @@ the 1307, and while the 1306 can generate its own power without any PWM.
 Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 ---
  .../devicetree/bindings/video/ssd1307fb.txt        |   10 +-
- drivers/video/ssd1307fb.c                          |  267 ++++++++++++++------
- 2 files changed, 203 insertions(+), 74 deletions(-)
+ drivers/video/ssd1307fb.c                          |  273 +++++++++++++++-----
+ 2 files changed, 209 insertions(+), 74 deletions(-)
 
 diff --git a/Documentation/devicetree/bindings/video/ssd1307fb.txt b/Documentation/devicetree/bindings/video/ssd1307fb.txt
 index 3d0060c..7a12542 100644
@@ -46,7 +46,7 @@ index 3d0060c..7a12542 100644
  Optional properties:
    - reset-active-low: Is the reset gpio is active on physical low?
 diff --git a/drivers/video/ssd1307fb.c b/drivers/video/ssd1307fb.c
-index 395cb6a..95f76e2 100644
+index 395cb6a..5ab5281 100644
 --- a/drivers/video/ssd1307fb.c
 +++ b/drivers/video/ssd1307fb.c
 @@ -16,24 +16,39 @@
@@ -108,14 +108,15 @@ index 395cb6a..95f76e2 100644
  	.bits_per_pixel	= 1,
  };
  
-@@ -134,16 +144,16 @@ static void ssd1307fb_update_display(struct ssd1307fb_par *par)
+@@ -134,16 +144,17 @@ static void ssd1307fb_update_display(struct ssd1307fb_par *par)
  	 *  (5) A4 B4 C4 D4 E4 F4 G4 H4
  	 */
  
 -	for (i = 0; i < (SSD1307FB_HEIGHT / 8); i++) {
 -		ssd1307fb_write_cmd(par->client, SSD1307FB_START_PAGE_ADDRESS + (i + 1));
 +	for (i = 0; i < (par->height / 8); i++) {
-+		ssd1307fb_write_cmd(par->client, SSD1307FB_START_PAGE_ADDRESS + i + par->page_offset);
++		ssd1307fb_write_cmd(par->client,
++				    SSD1307FB_START_PAGE_ADDRESS + i + par->page_offset);
  		ssd1307fb_write_cmd(par->client, 0x00);
  		ssd1307fb_write_cmd(par->client, 0x10);
  
@@ -130,11 +131,12 @@ index 395cb6a..95f76e2 100644
  				u8 byte = *(vmem + index);
  				u8 bit = byte & (1 << (j % 8));
  				bit = bit >> (j % 8);
-@@ -227,16 +237,137 @@ static struct fb_deferred_io ssd1307fb_defio = {
+@@ -227,16 +238,147 @@ static struct fb_deferred_io ssd1307fb_defio = {
  	.deferred_io	= ssd1307fb_deferred_io,
  };
  
-+static int ssd1307fb_ssd1307_init(struct ssd1307fb_par *par) {
++static int ssd1307fb_ssd1307_init(struct ssd1307fb_par *par)
++{
 +	int ret;
 +
 +	par->pwm = pwm_get(&par->client->dev, NULL);
@@ -148,7 +150,8 @@ index 395cb6a..95f76e2 100644
 +	pwm_config(par->pwm, par->pwm_period / 2, par->pwm_period);
 +	pwm_enable(par->pwm);
 +
-+	dev_dbg(&par->client->dev, "Using PWM%d with a %dns period.\n", par->pwm->pwm, par->pwm_period);
++	dev_dbg(&par->client->dev, "Using PWM%d with a %dns period.\n",
++		par->pwm->pwm, par->pwm_period);
 +
 +	/* Map column 127 of the OLED to segment 0 */
 +	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SEG_REMAP_ON);
@@ -163,7 +166,8 @@ index 395cb6a..95f76e2 100644
 +	return 0;
 +}
 +
-+static int ssd1307fb_ssd1307_remove(struct ssd1307fb_par *par) {
++static int ssd1307fb_ssd1307_remove(struct ssd1307fb_par *par)
++{
 +	pwm_disable(par->pwm);
 +	pwm_put(par->pwm);
 +	return 0;
@@ -174,7 +178,8 @@ index 395cb6a..95f76e2 100644
 +	.remove	= ssd1307fb_ssd1307_remove,
 +};
 +
-+static int ssd1307fb_ssd1306_init(struct ssd1307fb_par *par) {
++static int ssd1307fb_ssd1306_init(struct ssd1307fb_par *par)
++{
 +	int ret;
 +
 +	/* Set initial contrast */
@@ -248,8 +253,14 @@ index 395cb6a..95f76e2 100644
 +};
 +
 +static const struct of_device_id ssd1307fb_of_match[] = {
-+	{ .compatible = "solomon,ssd1306fb-i2c", .data = (void*)&ssd1307fb_ssd1306_ops },
-+	{ .compatible = "solomon,ssd1307fb-i2c", .data = (void*)&ssd1307fb_ssd1307_ops },
++	{
++		.compatible = "solomon,ssd1306fb-i2c",
++		.data = (void *)&ssd1307fb_ssd1306_ops,
++	},
++	{
++		.compatible = "solomon,ssd1307fb-i2c",
++		.data = (void *)&ssd1307fb_ssd1307_ops,
++	},
 +	{},
 +};
 +MODULE_DEVICE_TABLE(of, ssd1307fb_of_match);
@@ -270,7 +281,7 @@ index 395cb6a..95f76e2 100644
  		dev_err(&client->dev, "No device tree data found!\n");
  		return -EINVAL;
  	}
-@@ -247,6 +378,36 @@ static int ssd1307fb_probe(struct i2c_client *client,
+@@ -247,6 +389,31 @@ static int ssd1307fb_probe(struct i2c_client *client,
  		return -ENOMEM;
  	}
  
@@ -278,7 +289,8 @@ index 395cb6a..95f76e2 100644
 +	par->info = info;
 +	par->client = client;
 +
-+	par->ops = (struct ssd1307fb_ops*)of_match_device(ssd1307fb_of_match, &client->dev)->data;
++	par->ops = (struct ssd1307fb_ops *)of_match_device(ssd1307fb_of_match,
++							   &client->dev)->data;
 +
 +	par->reset = of_get_named_gpio(client->dev.of_node,
 +					 "reset-gpios", 0);
@@ -290,24 +302,18 @@ index 395cb6a..95f76e2 100644
 +	if (of_property_read_u32(node, "solomon,width", &par->width))
 +		par->width = 96;
 +
-+	printk("Width\t%u\n", par->width);
-+
 +	if (of_property_read_u32(node, "solomon,height", &par->height))
 +		par->width = 16;
 +
-+	printk("Height\t%u\n", par->height);
-+
 +	if (of_property_read_u32(node, "solomon,page-offset", &par->page_offset))
 +		par->page_offset = 1;
-+
-+	printk("Offset\t%u\n", par->page_offset);
 +
 +	vmem_size = par->width * par->height / 8;
 +
  	vmem = devm_kzalloc(&client->dev, vmem_size, GFP_KERNEL);
  	if (!vmem) {
  		dev_err(&client->dev, "Couldn't allocate graphical memory.\n");
-@@ -256,9 +417,15 @@ static int ssd1307fb_probe(struct i2c_client *client,
+@@ -256,9 +423,15 @@ static int ssd1307fb_probe(struct i2c_client *client,
  
  	info->fbops = &ssd1307fb_ops;
  	info->fix = ssd1307fb_fix;
@@ -323,7 +329,7 @@ index 395cb6a..95f76e2 100644
  	info->var.red.length = 1;
  	info->var.red.offset = 0;
  	info->var.green.length = 1;
-@@ -272,17 +439,6 @@ static int ssd1307fb_probe(struct i2c_client *client,
+@@ -272,17 +445,6 @@ static int ssd1307fb_probe(struct i2c_client *client,
  
  	fb_deferred_io_init(info);
  
@@ -341,7 +347,7 @@ index 395cb6a..95f76e2 100644
  	ret = devm_gpio_request_one(&client->dev, par->reset,
  				    GPIOF_OUT_INIT_HIGH,
  				    "oled-reset");
-@@ -293,23 +449,6 @@ static int ssd1307fb_probe(struct i2c_client *client,
+@@ -293,23 +455,6 @@ static int ssd1307fb_probe(struct i2c_client *client,
  		goto reset_oled_error;
  	}
  
@@ -365,7 +371,7 @@ index 395cb6a..95f76e2 100644
  	i2c_set_clientdata(client, info);
  
  	/* Reset the screen */
-@@ -318,34 +457,25 @@ static int ssd1307fb_probe(struct i2c_client *client,
+@@ -318,34 +463,25 @@ static int ssd1307fb_probe(struct i2c_client *client,
  	gpio_set_value(par->reset, 1);
  	udelay(4);
  
@@ -411,7 +417,7 @@ index 395cb6a..95f76e2 100644
  reset_oled_error:
  	fb_deferred_io_cleanup(info);
  fb_alloc_error:
-@@ -359,8 +489,8 @@ static int ssd1307fb_remove(struct i2c_client *client)
+@@ -359,8 +495,8 @@ static int ssd1307fb_remove(struct i2c_client *client)
  	struct ssd1307fb_par *par = info->par;
  
  	unregister_framebuffer(info);
@@ -422,7 +428,7 @@ index 395cb6a..95f76e2 100644
  	fb_deferred_io_cleanup(info);
  	framebuffer_release(info);
  
-@@ -368,17 +498,12 @@ static int ssd1307fb_remove(struct i2c_client *client)
+@@ -368,17 +504,12 @@ static int ssd1307fb_remove(struct i2c_client *client)
  }
  
  static const struct i2c_device_id ssd1307fb_i2c_id[] = {

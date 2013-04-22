@@ -1,91 +1,129 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Tue, 02 Apr 2013 18:20:34 +0000
-Subject: [PATCHv3 2/6] video: vt8500: Remove unused platform_data/video-vt8500lcdfb.h
-Message-Id: <1364926838-6721-3-git-send-email-linux@prisktech.co.nz>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Mon, 22 Apr 2013 10:02:25 +0000
+Subject: [PATCH 4/4] ssd1307fb: Make use of horizontal addressing mode
+Message-Id: <1366624945-5708-5-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364926838-6721-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1364926838-6721-1-git-send-email-linux@prisktech.co.nz>
+References: <1366624945-5708-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1366624945-5708-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-With the conversion to devicetree only for arch-vt8500, this
-header is no longer required. This patch removes the #include
-from the two framebuffer drivers that used it, and the header file.
+By default, the ssd1307 controller uses an addressing mode called page
+addressing. This mode only increments the column cursor in memory when
+writing data but will not increments the page cursor when we are at the
+end of the page.
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
-Reviewed-by: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+However, the controller supports another addressing mode, called
+horizontal addressing, that will maintain both the page and column
+cursors when writing data to the controller.
+
+That means that we can just remove the code that increments the current
+page address and reset the column cursor when reaching the end of the
+line, allowing to have a lower data overhead, and a simpler driver.
+
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 ---
- drivers/video/vt8500lcdfb.c                     |    2 --
- drivers/video/wm8505fb.c                        |    2 --
- include/linux/platform_data/video-vt8500lcdfb.h |   31 -----------------------
- 3 files changed, 35 deletions(-)
- delete mode 100644 include/linux/platform_data/video-vt8500lcdfb.h
+ drivers/video/ssd1307fb.c |   51 +++++++++++++++++++++++++++++++++------------
+ 1 file changed, 38 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
-index aa2579c..2ff2312 100644
---- a/drivers/video/vt8500lcdfb.c
-+++ b/drivers/video/vt8500lcdfb.c
-@@ -30,8 +30,6 @@
- #include <linux/platform_device.h>
- #include <linux/wait.h>
+diff --git a/drivers/video/ssd1307fb.c b/drivers/video/ssd1307fb.c
+index cab5f7c..259c9ee 100644
+--- a/drivers/video/ssd1307fb.c
++++ b/drivers/video/ssd1307fb.c
+@@ -19,6 +19,12 @@
+ #define SSD1307FB_DATA			0x40
+ #define SSD1307FB_COMMAND		0x80
  
--#include <linux/platform_data/video-vt8500lcdfb.h>
--
- #include "vt8500lcdfb.h"
- #include "wmt_ge_rops.h"
++#define SSD1307FB_SET_ADDRESS_MODE	0x20
++#define SSD1307FB_SET_ADDRESS_MODE_HORIZONTAL	(0x00)
++#define SSD1307FB_SET_ADDRESS_MODE_VERTICAL	(0x01)
++#define SSD1307FB_SET_ADDRESS_MODE_PAGE		(0x02)
++#define SSD1307FB_SET_COL_RANGE		0x21
++#define SSD1307FB_SET_PAGE_RANGE	0x22
+ #define SSD1307FB_CONTRAST		0x81
+ #define	SSD1307FB_CHARGE_PUMP		0x8d
+ #define SSD1307FB_SEG_REMAP_ON		0xa1
+@@ -135,9 +141,15 @@ static inline int ssd1307fb_write_data(struct i2c_client *client, u8 data)
  
-diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
-index 4dd0580..fe9afd6 100644
---- a/drivers/video/wm8505fb.c
-+++ b/drivers/video/wm8505fb.c
-@@ -32,8 +32,6 @@
- #include <linux/of_fdt.h>
- #include <linux/memblock.h>
+ static void ssd1307fb_update_display(struct ssd1307fb_par *par)
+ {
++	struct ssd1307fb_array *array;
+ 	u8 *vmem = par->info->screen_base;
+ 	int i, j, k;
  
--#include <linux/platform_data/video-vt8500lcdfb.h>
--
- #include "wm8505fb_regs.h"
- #include "wmt_ge_rops.h"
++	array = ssd1307fb_alloc_array(par->width * par->height / 8,
++				      SSD1307FB_DATA);
++	if (!array)
++		return;
++
+ 	/*
+ 	 * The screen is divided in pages, each having a height of 8
+ 	 * pixels, and the width of the screen. When sending a byte of
+@@ -168,29 +180,22 @@ static void ssd1307fb_update_display(struct ssd1307fb_par *par)
+ 	 */
  
-diff --git a/include/linux/platform_data/video-vt8500lcdfb.h b/include/linux/platform_data/video-vt8500lcdfb.h
-deleted file mode 100644
-index 7f399c3..0000000
---- a/include/linux/platform_data/video-vt8500lcdfb.h
-+++ /dev/null
-@@ -1,31 +0,0 @@
--/*
-- *  VT8500/WM8505 Frame Buffer platform data definitions
-- *
-- *  Copyright (C) 2010 Ed Spiridonov <edo.rus@gmail.com>
-- *
-- * This software is licensed under the terms of the GNU General Public
-- * License version 2, as published by the Free Software Foundation, and
-- * may be copied, distributed, and modified under those terms.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- */
+ 	for (i = 0; i < (par->height / 8); i++) {
+-		struct ssd1307fb_array *array;
+-		ssd1307fb_write_cmd(par->client,
+-				    SSD1307FB_START_PAGE_ADDRESS + i + par->page_offset);
+-		ssd1307fb_write_cmd(par->client, 0x00);
+-		ssd1307fb_write_cmd(par->client, 0x10);
 -
--#ifndef _VT8500FB_H
--#define _VT8500FB_H
+-		array = ssd1307fb_alloc_array(par->width, SSD1307FB_DATA);
 -
--#include <linux/fb.h>
+ 		for (j = 0; j < par->width; j++) {
+-			array->data[j] = 0;
++			u32 array_idx = i * par->width + j;
++			array->data[array_idx] = 0;
+ 			for (k = 0; k < 8; k++) {
+ 				u32 page_length = par->width * i;
+ 				u32 index = page_length + (par->width * k + j) / 8;
+ 				u8 byte = *(vmem + index);
+ 				u8 bit = byte & (1 << (j % 8));
+ 				bit = bit >> (j % 8);
+-				array->data[j] |= bit << k;
++				array->data[array_idx] |= bit << k;
+ 			}
+ 		}
 -
--struct vt8500fb_platform_data {
--	struct fb_videomode	mode;
--	u32			xres_virtual;
--	u32			yres_virtual;
--	u32			bpp;
--	unsigned long		video_mem_phys;
--	void			*video_mem_virt;
--	unsigned long		video_mem_len;
--};
--
--#endif /* _VT8500FB_H */
+-		ssd1307fb_write_array(par->client, array, par->width);
+-		kfree(array);
+ 	}
++
++	ssd1307fb_write_array(par->client, array, par->width * par->height / 8);
++	kfree(array);
+ }
+ 
+ 
+@@ -371,6 +376,26 @@ static int ssd1307fb_ssd1306_init(struct ssd1307fb_par *par)
+ 	if (ret < 0)
+ 		return ret;
+ 
++	/* Switch to horizontal addressing mode */
++	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_ADDRESS_MODE);
++	ret = ret & ssd1307fb_write_cmd(par->client,
++					SSD1307FB_SET_ADDRESS_MODE_HORIZONTAL);
++	if (ret < 0)
++		return ret;
++
++	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_COL_RANGE);
++	ret = ret & ssd1307fb_write_cmd(par->client, 0x0);
++	ret = ret & ssd1307fb_write_cmd(par->client, par->width - 1);
++	if (ret < 0)
++		return ret;
++
++	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_PAGE_RANGE);
++	ret = ret & ssd1307fb_write_cmd(par->client, 0x0);
++	ret = ret & ssd1307fb_write_cmd(par->client,
++					par->page_offset + (par->height / 8) - 1);
++	if (ret < 0)
++		return ret;
++
+ 	/* Turn on the display */
+ 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_ON);
+ 	if (ret < 0)
 -- 
-1.7.9.5
+1.7.10.4
 

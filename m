@@ -1,105 +1,84 @@
-From: Pawel Moll <pawel.moll@arm.com>
-Date: Wed, 17 Apr 2013 15:17:12 +0000
-Subject: [RFC 00/10] Versatile Express CLCD DVI output support
-Message-Id: <1366211842-21497-1-git-send-email-pawel.moll@arm.com>
+From: Peter Jones <pjones@redhat.com>
+Date: Tue, 23 Apr 2013 15:23:18 +0000
+Subject: [PATCH] Handle efifb with no lfb_base better.
+Message-Id: <1366730598-13942-1-git-send-email-pjones@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Josh Boyer <jwboyer@redhat.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Jones <pjones@redhat.com>
 
-Hello All,
+Right now we get a WARN from platform_device_unregister() because our
+platform_device has no ->release function.  This is clearly wrong, but
+we should be warning so we can figure out what happened, as this failure
+results in bug reports.  So WARN() about the real problem, and use the
+registration function that gives us a default release() function.
 
-This series implements support for the Versatile Express
-video output pipeline, which is not the simplest one available...
+This fixes the tracback reported at
+https://bugzilla.redhat.com/show_bug.cgi?id=840621 , though it does not
+fix the actual /problem/ the user is seeing.
 
-It is meant as a RFC only and I'm hoping to attract all possible
-feedback (*including* naming ;-).
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ drivers/video/efifb.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-The VE's "MultiMedia Bus" [1] comprises three video signal sources
-(motherboard's CLCD cell and a implementation-specific driver
-on each of the daugtherboards) and a FPGA multiplexer routing
-data from one of the sources to DVI/HDMI formatter chip (Sii9022).
-
-+-----+
-| DB1 |>--+                         DVI connector
-+-----+   |   +------+                   +--+
-          +-->|      |                   |oo|
-+-----+       | mux  |    +---------+    |oo|
-| DB2 |>----->|      |>-->| sii9022 |>-->|oo|
-+-----+       | FPGA |    +---------+    |oo|
-          +-->|      |                   |oo|
-+-----+   |   +------+                   +--+
-| MB  |>--+
-+-----+
-
-The series is based on Laurent Pinchart's Common Display Framework
-patch (not in mainline yet, v2 discussed here: [2]) and extends it
-by adding DT bindings and basic support for TFT panels.
-
-The CLCD driver has been adapted to work with the framework and
-the Device Tree information.
-
-Also a set of drivers for the VE-specific components is included
-(note that the sii9022 is now driven via the moterboard firmware;
-this is intended to be replaced by a proper I2C driver for the
-chip).
-
-It is worth mentioning that the CDF caters for both fbdev and DRM
-so the solution should be suitable for all potential DRM-driven
-display controllers.
-
-[1] http://infocenter.arm.com/help/topic/com.arm.doc.dui0447h/CHDEHEAA.html#CACGIGGC
-[2] http://thread.gmane.org/gmane.linux.drivers.video-input-infrastructure/57298
-
-
-Laurent Pinchart (1):
-  video: Add generic display entity core
-
-Pawel Moll (9):
-  video: display: Update the display with the video mode data
-  video: display: Add Device Tree bindings
-  video: display: Add generic TFT display type
-  fbmon: Add extra video helper
-  video: ARM CLCD: Add DT & CDF support
-  mfd: vexpress: Allow external drivers to parse site ids
-  video: Versatile Express MUXFPGA driver
-  video: Versatile Express DVI mode driver
-  ARM: vexpress: Add CLCD Device Tree properties
-
- .../testing/sysfs-driver-video-vexpress-muxfpga    |    5 +
- .../devicetree/bindings/video/arm,pl11x.txt        |   35 ++
- .../devicetree/bindings/video/display-bindings.txt |   75 ++++
- arch/arm/boot/dts/vexpress-v2m-rs1.dtsi            |   17 +-
- arch/arm/boot/dts/vexpress-v2m.dtsi                |   17 +-
- arch/arm/boot/dts/vexpress-v2p-ca9.dts             |    5 +
- drivers/mfd/vexpress-sysreg.c                      |    5 +
- drivers/video/Kconfig                              |    2 +
- drivers/video/Makefile                             |    5 +
- drivers/video/amba-clcd.c                          |  244 +++++++++++
- drivers/video/display/Kconfig                      |    4 +
- drivers/video/display/Makefile                     |    1 +
- drivers/video/display/display-core.c               |  447 ++++++++++++++++++++
- drivers/video/fbmon.c                              |   29 ++
- drivers/video/vexpress-dvimode.c                   |  158 +++++++
- drivers/video/vexpress-muxfpga.c                   |  228 ++++++++++
- include/linux/amba/clcd.h                          |    2 +
- include/linux/fb.h                                 |    3 +
- include/linux/vexpress.h                           |    2 +
- include/video/display.h                            |  172 ++++++++
- 20 files changed, 1448 insertions(+), 8 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-driver-video-vexpress-muxfpga
- create mode 100644 Documentation/devicetree/bindings/video/arm,pl11x.txt
- create mode 100644 Documentation/devicetree/bindings/video/display-bindings.txt
- create mode 100644 drivers/video/display/Kconfig
- create mode 100644 drivers/video/display/Makefile
- create mode 100644 drivers/video/display/display-core.c
- create mode 100644 drivers/video/vexpress-dvimode.c
- create mode 100644 drivers/video/vexpress-muxfpga.c
- create mode 100644 include/video/display.h
-
--- 
-1.7.10.4
-
+diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
+index 50fe668..390b61b 100644
+--- a/drivers/video/efifb.c
++++ b/drivers/video/efifb.c
+@@ -285,6 +285,7 @@ static void efifb_destroy(struct fb_info *info)
+ {
+ 	if (info->screen_base)
+ 		iounmap(info->screen_base);
++	fb_dealloc_cmap(&info->cmap);
+ 	if (request_mem_succeeded)
+ 		release_mem_region(info->apertures->ranges[0].base,
+ 				   info->apertures->ranges[0].size);
+@@ -382,6 +383,8 @@ static int __init efifb_probe(struct platform_device *d=
+ev)
+ 	if (!screen_info.pages)
+ 		screen_info.pages =3D 1;
+ 	if (!screen_info.lfb_base) {
++		WARN(1, KERN_WARNING, "invalid framebuffer address for "
++				      "device '%s'\n", dev_name(dev));
+ 		printk(KERN_DEBUG "efifb: invalid framebuffer address\n");
+ 		return -ENODEV;
+ 	}
+@@ -544,9 +547,7 @@ static struct platform_driver efifb_driver =3D {
+ 	},
+ };
+=20
+-static struct platform_device efifb_device =3D {
+-	.name	=3D "efifb",
+-};
++static struct platform_device *efifb_device;
+=20
+ static int __init efifb_init(void)
+ {
+@@ -571,9 +572,9 @@ static int __init efifb_init(void)
+ 	if (!screen_info.lfb_linelength)
+ 		return -ENODEV;
+=20
+-	ret =3D platform_device_register(&efifb_device);
+-	if (ret)
+-		return ret;
++	efifb_device =3D platform_device_register_simple("efifb", 0, NULL, 0);
++	if (IS_ERROR(efifb_device))
++		return PTR_ERR(efifb_device);
+=20
+ 	/*
+ 	 * This is not just an optimization.  We will interfere
+@@ -582,7 +583,7 @@ static int __init efifb_init(void)
+ 	 */
+ 	ret =3D platform_driver_probe(&efifb_driver, efifb_probe);
+ 	if (ret) {
+-		platform_device_unregister(&efifb_device);
++		platform_device_unregister(efifb_device);
+ 		return ret;
+ 	}
+=20
+--=20
+1.8.1.4
 

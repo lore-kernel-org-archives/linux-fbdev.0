@@ -1,132 +1,69 @@
-From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
-Date: Fri, 26 Apr 2013 20:02:18 +0000
-Subject: [PATCH 4/9] s3c2410fb: Register single platform driver
-Message-Id: <1367006543-5458-5-git-send-email-sylvester.nawrocki@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 23 Apr 2013 06:36:51 +0000
+Subject: [PATCH 04/11] fbdev/au1200fb: use vm_iomap_memory()
+Message-Id: <1366699018-5439-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1367006543-5458-1-git-send-email-sylvester.nawrocki@gmail.com>
-In-Reply-To: <1367006543-5458-1-git-send-email-sylvester.nawrocki@gmail.com>
+References: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Ralf Baechle <ralf@linux-mips.org>, Manuel Lauss <manuel.lauss@googlemail.com>
 
-Use the id_table instead of registering two separate platform drivers.
-This allows then to declare the driver with module_platform_driver().
+Use vm_iomap_memory() instead of [io_]remap_pfn_range().
+vm_iomap_memory() gives us much simpler API to map memory to userspace,
+and reduces possibilities for bugs.
 
-Signed-off-by: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Manuel Lauss <manuel.lauss@googlemail.com>
 ---
- drivers/video/s3c2410fb.c |   59 +++++++++++---------------------------------
- 1 files changed, 15 insertions(+), 44 deletions(-)
+ drivers/video/au1200fb.c |   26 +-------------------------
+ 1 file changed, 1 insertion(+), 25 deletions(-)
 
-diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
-index 12ac94e..d6706f7 100644
---- a/drivers/video/s3c2410fb.c
-+++ b/drivers/video/s3c2410fb.c
-@@ -818,8 +818,7 @@ static inline void s3c2410fb_cpufreq_deregister(struct s3c2410fb_info *info)
+diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
+index 1b59054..6ce6b83 100644
+--- a/drivers/video/au1200fb.c
++++ b/drivers/video/au1200fb.c
+@@ -1235,36 +1235,12 @@ static int au1200fb_fb_blank(int blank_mode, struct fb_info *fbi)
+ static int au1200fb_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
  
- static const char driver_name[] = "s3c2410fb";
- 
--static int s3c24xxfb_probe(struct platform_device *pdev,
--			   enum s3c_drv_type drv_type)
-+static int s3c2410fb_probe(struct platform_device *pdev)
  {
- 	struct s3c2410fb_info *info;
- 	struct s3c2410fb_display *display;
-@@ -861,7 +860,7 @@ static int s3c24xxfb_probe(struct platform_device *pdev,
+-	unsigned int len;
+-	unsigned long start=0, off;
+ 	struct au1200fb_device *fbdev = info->par;
  
- 	info = fbinfo->par;
- 	info->dev = &pdev->dev;
--	info->drv_type = drv_type;
-+	info->drv_type = platform_get_device_id(pdev)->driver_data;
+-	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT)) {
+-		return -EINVAL;
+-	}
+-
+-	start = fbdev->fb_phys & PAGE_MASK;
+-	len = PAGE_ALIGN((start & ~PAGE_MASK) + fbdev->fb_len);
+-
+-	off = vma->vm_pgoff << PAGE_SHIFT;
+-
+-	if ((vma->vm_end - vma->vm_start + off) > len) {
+-		return -EINVAL;
+-	}
+-
+-	off += start;
+-	vma->vm_pgoff = off >> PAGE_SHIFT;
+-
+ 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 	pgprot_val(vma->vm_page_prot) |= _CACHE_MASK; /* CCA=7 */
  
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (res = NULL) {
-@@ -885,7 +884,7 @@ static int s3c24xxfb_probe(struct platform_device *pdev,
- 		goto release_mem;
- 	}
- 
--	if (drv_type = DRV_S3C2412)
-+	if (info->drv_type = DRV_S3C2412)
- 		info->irq_base = info->io + S3C2412_LCDINTBASE;
- 	else
- 		info->irq_base = info->io + S3C2410_LCDINTBASE;
-@@ -1009,17 +1008,6 @@ dealloc_fb:
- 	return ret;
+-	vma->vm_flags |= VM_IO;
+-
+-	return io_remap_pfn_range(vma, vma->vm_start, off >> PAGE_SHIFT,
+-				  vma->vm_end - vma->vm_start,
+-				  vma->vm_page_prot);
+-
+-	return 0;
++	return vm_iomap_memory(vma, fbdev->fb_phys, fbdev->fb_len);
  }
  
--static int s3c2410fb_probe(struct platform_device *pdev)
--{
--	return s3c24xxfb_probe(pdev, DRV_S3C2410);
--}
--
--static int s3c2412fb_probe(struct platform_device *pdev)
--{
--	return s3c24xxfb_probe(pdev, DRV_S3C2412);
--}
--
--
- /*
-  *  Cleanup
-  */
-@@ -1098,46 +1086,29 @@ static int s3c2410fb_resume(struct platform_device *dev)
- #define s3c2410fb_resume  NULL
- #endif
- 
--static struct platform_driver s3c2410fb_driver = {
--	.probe		= s3c2410fb_probe,
--	.remove		= s3c2410fb_remove,
--	.suspend	= s3c2410fb_suspend,
--	.resume		= s3c2410fb_resume,
--	.driver		= {
--		.name	= "s3c2410-lcd",
--		.owner	= THIS_MODULE,
-+static struct platform_device_id s3c2410fb_driver_ids[] = {
-+	{
-+		.name = "s3c2410-lcd",
-+		.driver_data = (unsigned long)DRV_S3C2410,
-+	}, {
-+		.name = "s3c2412-lcd",
-+		.driver_data = (unsigned long)DRV_S3C2412,
- 	},
- };
- 
--static struct platform_driver s3c2412fb_driver = {
--	.probe		= s3c2412fb_probe,
-+static struct platform_driver s3c2410fb_driver = {
-+	.probe		= s3c2410fb_probe,
- 	.remove		= s3c2410fb_remove,
- 	.suspend	= s3c2410fb_suspend,
- 	.resume		= s3c2410fb_resume,
-+	.id_table	= s3c2410fb_driver_ids,
- 	.driver		= {
--		.name	= "s3c2412-lcd",
-+		.name	= "s3c2410-lcd",
- 		.owner	= THIS_MODULE,
- 	},
- };
- 
--int __init s3c2410fb_init(void)
--{
--	int ret = platform_driver_register(&s3c2410fb_driver);
--
--	if (ret = 0)
--		ret = platform_driver_register(&s3c2412fb_driver);
--
--	return ret;
--}
--
--static void __exit s3c2410fb_cleanup(void)
--{
--	platform_driver_unregister(&s3c2410fb_driver);
--	platform_driver_unregister(&s3c2412fb_driver);
--}
--
--module_init(s3c2410fb_init);
--module_exit(s3c2410fb_cleanup);
-+module_platform_driver(s3c2410fb_driver);
- 
- MODULE_AUTHOR("Arnaud Patard <arnaud.patard@rtp-net.org>");
- MODULE_AUTHOR("Ben Dooks <ben-linux@fluff.org>");
+ static void set_global(u_int cmd, struct au1200_lcd_global_regs_t *pdata)
 -- 
-1.7.4.1
+1.7.10.4
 

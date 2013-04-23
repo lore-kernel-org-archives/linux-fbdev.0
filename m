@@ -1,34 +1,86 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Fri, 12 Apr 2013 08:00:01 +0000
-Subject: [PATCH RESEND 0/2] Add support for the Solomon SSD1306 OLED Controller
-Message-Id: <1365753603-4438-1-git-send-email-maxime.ripard@free-electrons.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 23 Apr 2013 06:36:49 +0000
+Subject: [PATCH 02/11] fbdev/omapfb: use vm_iomap_memory()
+Message-Id: <1366699018-5439-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi,
+Use vm_iomap_memory() instead of [io_]remap_pfn_range().
+vm_iomap_memory() gives us much simpler API to map memory to userspace,
+and reduces possibilities for bugs.
 
-This patchset adds the needed bits to the ssd1307fb driver to support the
-very similar Solomon SSD1306 controller.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/omapfb/omapfb-main.c |   30 +++++++-----------------------
+ 1 file changed, 7 insertions(+), 23 deletions(-)
 
-Since the SSD1307 has been replaced by the SSD1306 in the latest CFA-10036
-production samples, we also need to change the device tree accordingly.
-
-Thanks,
-Maxime
-
-Maxime Ripard (2):
-  video: ssd1307fb: Add support for SSD1306 OLED controller
-  ARM: dts: cfa10036: Change the OLED display to SSD1306
-
- .../devicetree/bindings/video/ssd1307fb.txt        |   10 +-
- arch/arm/boot/dts/imx28-cfa10036.dts               |   14 +-
- arch/arm/boot/dts/imx28-cfa10049.dts               |    4 +-
- drivers/video/ssd1307fb.c                          |  267 ++++++++++++++------
- 4 files changed, 210 insertions(+), 85 deletions(-)
-
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index ca585ef..717f13a 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -1101,41 +1101,25 @@ static int omapfb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
+ 	struct omapfb_info *ofbi = FB2OFB(fbi);
+ 	struct fb_fix_screeninfo *fix = &fbi->fix;
+ 	struct omapfb2_mem_region *rg;
+-	unsigned long off;
+ 	unsigned long start;
+ 	u32 len;
+-	int r = -EINVAL;
+-
+-	if (vma->vm_end - vma->vm_start = 0)
+-		return 0;
+-	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
+-		return -EINVAL;
+-	off = vma->vm_pgoff << PAGE_SHIFT;
++	int r;
+ 
+ 	rg = omapfb_get_mem_region(ofbi->region);
+ 
+ 	start = omapfb_get_region_paddr(ofbi);
+ 	len = fix->smem_len;
+-	if (off >= len)
+-		goto error;
+-	if ((vma->vm_end - vma->vm_start + off) > len)
+-		goto error;
+-
+-	off += start;
+ 
+-	DBG("user mmap region start %lx, len %d, off %lx\n", start, len, off);
++	DBG("user mmap region start %lx, len %d, off %lx\n", start, len,
++			vma->vm_pgoff << PAGE_SHIFT);
+ 
+-	vma->vm_pgoff = off >> PAGE_SHIFT;
+-	/* VM_IO | VM_DONTEXPAND | VM_DONTDUMP are set by remap_pfn_range() */
+ 	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+ 	vma->vm_ops = &mmap_user_ops;
+ 	vma->vm_private_data = rg;
+-	if (io_remap_pfn_range(vma, vma->vm_start, off >> PAGE_SHIFT,
+-			       vma->vm_end - vma->vm_start,
+-			       vma->vm_page_prot)) {
+-		r = -EAGAIN;
++
++	r = vm_iomap_memory(vma, start, len);
++	if (r)
+ 		goto error;
+-	}
+ 
+ 	/* vm_ops.open won't be called for mmap itself. */
+ 	atomic_inc(&rg->map_count);
+@@ -1144,7 +1128,7 @@ static int omapfb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
+ 
+ 	return 0;
+ 
+- error:
++error:
+ 	omapfb_put_mem_region(ofbi->region);
+ 
+ 	return r;
 -- 
 1.7.10.4
 

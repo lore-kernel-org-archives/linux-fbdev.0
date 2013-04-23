@@ -1,87 +1,59 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 11 Apr 2013 09:31:01 +0000
-Subject: [PATCH 1/2] OMAPDSS: fix dss_fck clock rate rounding
-Message-Id: <1365672662-612-1-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 23 Apr 2013 06:36:56 +0000
+Subject: [PATCH 09/11] fbdev/sgivwfb: use vm_iomap_memory()
+Message-Id: <1366699018-5439-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-DSS func clock is calculated with prate / div * m. However, the current
-omapdss code calculates it with prate * m / div, which yields a slightly
-different result when there's a remainder. For example, 432000000 / 14 *
-2 = 61714284, but 432000000 * 2 / 14 = 61714285.
-
-In addition to that, the clock framework wants the clock rate given with
-clk_set_rate to be higher than the actual (truncated) end result. So, if
-prate is 432000000, and div is 14, the real result is 30857142.8571...
-We need to call clk_set_rate with 30857143, which gives us a clock of
-30857142. That's why we need to use DIV_ROUND_UP() when calling
-clk_set_rate.
-
-This patch fixes the clock calculation.
+Use vm_iomap_memory() instead of [io_]remap_pfn_range().
+vm_iomap_memory() gives us much simpler API to map memory to userspace,
+and reduces possibilities for bugs.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dss.c |   17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
+ drivers/video/sgivwfb.c |   20 +++++++-------------
+ 1 file changed, 7 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index fdd32e8..b9f6f24 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -480,6 +480,7 @@ bool dss_div_calc(unsigned long fck_min, dss_div_calc_func func, void *data)
- 	unsigned long fck_hw_max;
- 	unsigned long fckd_hw_max;
- 	unsigned long prate;
-+	unsigned m;
+diff --git a/drivers/video/sgivwfb.c b/drivers/video/sgivwfb.c
+index 2331fad..b2a8912 100644
+--- a/drivers/video/sgivwfb.c
++++ b/drivers/video/sgivwfb.c
+@@ -705,23 +705,17 @@ static int sgivwfb_setcolreg(u_int regno, u_int red, u_int green,
+ static int sgivwfb_mmap(struct fb_info *info,
+ 			struct vm_area_struct *vma)
+ {
+-	unsigned long size = vma->vm_end - vma->vm_start;
+-	unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
++	int r;
  
- 	if (dss.dpll4_m4_ck = NULL) {
- 		/*
-@@ -495,15 +496,16 @@ bool dss_div_calc(unsigned long fck_min, dss_div_calc_func func, void *data)
- 	fck_hw_max = dss_feat_get_param_max(FEAT_PARAM_DSS_FCK);
- 	fckd_hw_max = dss.feat->fck_div_max;
+-	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
+-		return -EINVAL;
+-	if (offset + size > sgivwfb_mem_size)
+-		return -EINVAL;
+-	offset += sgivwfb_mem_phys;
+ 	pgprot_val(vma->vm_page_prot) -	    pgprot_val(vma->vm_page_prot) | _PAGE_PCD;
+-	vma->vm_flags |= VM_IO;
+-	if (remap_pfn_range(vma, vma->vm_start, offset >> PAGE_SHIFT,
+-						size, vma->vm_page_prot))
+-		return -EAGAIN;
++		pgprot_val(vma->vm_page_prot) | _PAGE_PCD;
++
++	r = vm_iomap_memory(vma, sgivwfb_mem_phys, sgivwfb_mem_size);
++
+ 	printk(KERN_DEBUG "sgivwfb: mmap framebuffer P(%lx)->V(%lx)\n",
+ 	       offset, vma->vm_start);
+-	return 0;
++
++	return r;
+ }
  
--	prate = dss_get_dpll4_rate() * dss.feat->dss_fck_multiplier;
-+	m = dss.feat->dss_fck_multiplier;
-+	prate = dss_get_dpll4_rate();
- 
- 	fck_min = fck_min ? fck_min : 1;
- 
--	fckd_start = min(prate / fck_min, fckd_hw_max);
--	fckd_stop = max(DIV_ROUND_UP(prate, fck_hw_max), 1ul);
-+	fckd_start = min(prate * m / fck_min, fckd_hw_max);
-+	fckd_stop = max(DIV_ROUND_UP(prate * m, fck_hw_max), 1ul);
- 
- 	for (fckd = fckd_start; fckd >= fckd_stop; --fckd) {
--		fck = prate / fckd;
-+		fck = prate / fckd * m;
- 
- 		if (func(fckd, fck, data))
- 			return true;
-@@ -521,7 +523,8 @@ int dss_set_clock_div(struct dss_clock_info *cinfo)
- 		prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
- 		DSSDBG("dpll4_m4 = %ld\n", prate);
- 
--		r = clk_set_rate(dss.dpll4_m4_ck, prate / cinfo->fck_div);
-+		r = clk_set_rate(dss.dpll4_m4_ck,
-+				DIV_ROUND_UP(prate, cinfo->fck_div));
- 		if (r)
- 			return r;
- 	} else {
-@@ -531,7 +534,9 @@ int dss_set_clock_div(struct dss_clock_info *cinfo)
- 
- 	dss.dss_clk_rate = clk_get_rate(dss.dss_clk);
- 
--	WARN_ONCE(dss.dss_clk_rate != cinfo->fck, "clk rate mismatch");
-+	WARN_ONCE(dss.dss_clk_rate != cinfo->fck,
-+			"clk rate mismatch: %lu != %lu", dss.dss_clk_rate,
-+			cinfo->fck);
- 
- 	DSSDBG("fck = %ld (%d)\n", cinfo->fck, cinfo->fck_div);
- 
+ int __init sgivwfb_setup(char *options)
 -- 
 1.7.10.4
 

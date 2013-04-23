@@ -1,75 +1,61 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Mon, 22 Apr 2013 09:55:55 +0000
-Subject: [PATCH 2/2] ARM: dts: cfa10036: Change the OLED display to SSD1306
-Message-Id: <1366624555-5616-3-git-send-email-maxime.ripard@free-electrons.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 23 Apr 2013 06:36:54 +0000
+Subject: [PATCH 07/11] fbdev/sa1100fb: use vm_iomap_memory()
+Message-Id: <1366699018-5439-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366624555-5616-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1366624555-5616-1-git-send-email-maxime.ripard@free-electrons.com>
+References: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Russell King <rmk+kernel@arm.linux.org.uk>
 
-The SSD1307 was used in an early prototype that will never get
-distributed. The final board now has a SSD1306 instead, that has its own
-power generation unit and thus doesn't need any PWM. The panel attached
-to it also changed.
+Use vm_iomap_memory() instead of [io_]remap_pfn_range().
+vm_iomap_memory() gives us much simpler API to map memory to userspace,
+and reduces possibilities for bugs.
 
-Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- arch/arm/boot/dts/imx28-cfa10036.dts |   14 +++++---------
- arch/arm/boot/dts/imx28-cfa10049.dts |    4 ++--
- 2 files changed, 7 insertions(+), 11 deletions(-)
+ drivers/video/sa1100fb.c |   16 +++-------------
+ 1 file changed, 3 insertions(+), 13 deletions(-)
 
-diff --git a/arch/arm/boot/dts/imx28-cfa10036.dts b/arch/arm/boot/dts/imx28-cfa10036.dts
-index 1594694..40488f5a8 100644
---- a/arch/arm/boot/dts/imx28-cfa10036.dts
-+++ b/arch/arm/boot/dts/imx28-cfa10036.dts
-@@ -58,12 +58,6 @@
- 		};
+diff --git a/drivers/video/sa1100fb.c b/drivers/video/sa1100fb.c
+index cfbde5e..f34c858 100644
+--- a/drivers/video/sa1100fb.c
++++ b/drivers/video/sa1100fb.c
+@@ -556,7 +556,7 @@ static int sa1100fb_mmap(struct fb_info *info,
+ 			 struct vm_area_struct *vma)
+ {
+ 	struct sa1100fb_info *fbi = (struct sa1100fb_info *)info;
+-	unsigned long start, len, off = vma->vm_pgoff << PAGE_SHIFT;
++	unsigned long off = vma->vm_pgoff << PAGE_SHIFT;
  
- 		apbx@80040000 {
--			pwm: pwm@80064000 {
--				pinctrl-names = "default";
--				pinctrl-0 = <&pwm4_pins_a>;
--				status = "okay";
--			};
+ 	if (off < info->fix.smem_len) {
+ 		vma->vm_pgoff += 1; /* skip over the palette */
+@@ -564,19 +564,9 @@ static int sa1100fb_mmap(struct fb_info *info,
+ 					     fbi->map_dma, fbi->map_size);
+ 	}
+ 
+-	start = info->fix.mmio_start;
+-	len = PAGE_ALIGN((start & ~PAGE_MASK) + info->fix.mmio_len);
 -
- 			duart: serial@80074000 {
- 				pinctrl-names = "default";
- 				pinctrl-0 = <&duart_pins_b>;
-@@ -75,11 +69,13 @@
- 				pinctrl-0 = <&i2c0_pins_b>;
- 				status = "okay";
+-	if ((vma->vm_end - vma->vm_start + off) > len)
+-		return -EINVAL;
+-
+-	off += start & PAGE_MASK;
+-	vma->vm_pgoff = off >> PAGE_SHIFT;
+-	vma->vm_flags |= VM_IO;
+ 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+-	return io_remap_pfn_range(vma, vma->vm_start, off >> PAGE_SHIFT,
+-				   vma->vm_end - vma->vm_start,
+-				   vma->vm_page_prot);
++
++	return vm_iomap_memory(vma, info->fix.mmio_start, info->fix.mmio_len);
+ }
  
--				ssd1307: oled@3c {
--					compatible = "solomon,ssd1307fb-i2c";
-+				ssd1306: oled@3c {
-+					compatible = "solomon,ssd1306fb-i2c";
- 					reg = <0x3c>;
--					pwms = <&pwm 4 3000>;
- 					reset-gpios = <&gpio2 7 0>;
-+					solomon,height = <32>;
-+					solomon,width = <128>;
-+					solomon,page-offset = <0>;
- 				};
- 			};
- 		};
-diff --git a/arch/arm/boot/dts/imx28-cfa10049.dts b/arch/arm/boot/dts/imx28-cfa10049.dts
-index a0d3e9f..ded7784 100644
---- a/arch/arm/boot/dts/imx28-cfa10049.dts
-+++ b/arch/arm/boot/dts/imx28-cfa10049.dts
-@@ -132,8 +132,8 @@
- 
- 		apbx@80040000 {
- 			pwm: pwm@80064000 {
--				pinctrl-names = "default", "default";
--				pinctrl-1 = <&pwm3_pins_b>;
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&pwm3_pins_b>;
- 				status = "okay";
- 			};
- 
+ static struct fb_ops sa1100fb_ops = {
 -- 
 1.7.10.4
 

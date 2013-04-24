@@ -1,107 +1,51 @@
 From: Markus Pargmann <mpa@pengutronix.de>
-Date: Tue, 16 Apr 2013 14:17:29 +0000
-Subject: Re: [PATCH v3 2/2] video: imxfb: Add DT support
-Message-Id: <20130416141729.GC13272@pengutronix.de>
+Date: Wed, 24 Apr 2013 08:08:14 +0000
+Subject: [PATCH 2/2] drivers/video: mxs-fb: Fix build, use renamed function
+Message-Id: <1366790894-20426-3-git-send-email-mpa@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1365157876-1757-1-git-send-email-mpa@pengutronix.de>
- <1365157876-1757-3-git-send-email-mpa@pengutronix.de>
- <20130408075742.GR20693@game.jcrosoft.org>
- <20130414143132.GD27394@pengutronix.de>
- <20130415124321.GB15139@game.jcrosoft.org>
- <20130415151316.4d49e9b2@e6520eb>
- <20130415132322.GC15139@game.jcrosoft.org>
-In-Reply-To: <20130415132322.GC15139@game.jcrosoft.org>
+References: <1366790894-20426-1-git-send-email-mpa@pengutronix.de>
+In-Reply-To: <1366790894-20426-1-git-send-email-mpa@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Mon, Apr 15, 2013 at 03:23:22PM +0200, Jean-Christophe PLAGNIOL-VILLARD wrote:
-> On 15:13 Mon 15 Apr     , Eric Bénard wrote:
-> > Hi,
-> > 
-> > Le Mon, 15 Apr 2013 14:43:21 +0200,
-> > Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com> a écrit :
-> > 
-> > > On 16:31 Sun 14 Apr     , Markus Pargmann wrote:
-> > > > On Mon, Apr 08, 2013 at 09:57:42AM +0200, Jean-Christophe PLAGNIOL-VILLARD wrote:
-> > > > > On 12:31 Fri 05 Apr     , Markus Pargmann wrote:
-> > > > > > Add devicetree support for imx framebuffer driver. It uses the generic
-> > > > > > display bindings and helper functions.
-> > > > > > 
-> > > > > > Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
-> > > > > > Cc: Fabio Estevam <festevam@gmail.com>
-> > > > > > Cc: Mark Rutland <mark.rutland@arm.com>
-> > > > > > ---
-> > > > > >  .../devicetree/bindings/video/fsl,imx-fb.txt       |  49 ++++++
-> > > > > >  drivers/video/imxfb.c                              | 192 +++++++++++++++++----
-> > > > > >  2 files changed, 207 insertions(+), 34 deletions(-)
-> > > > > >  create mode 100644 Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-> > > > > > 
-> > > > > > diff --git a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-> > > > > > new file mode 100644
-> > > > > > index 0000000..bde9c77
-> > > > > > --- /dev/null
-> > > > > > +++ b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-> > > > > > @@ -0,0 +1,49 @@
-> > > > > > +Freescale imx21 Framebuffer
-> > > > > > +
-> > > > > > +This framebuffer driver supports devices imx1, imx21, imx25, and imx27.
-> > > > > > +
-> > > > > > +Required properties:
-> > > > > > +- compatible : "fsl,<chip>-fb", chip should be imx1 or imx21
-> > > > > > +- reg : Should contain 1 register ranges(address and length)
-> > > > > > +- interrupts : One interrupt of the fb dev
-> > > > > > +
-> > > > > > +Required nodes:
-> > > > > > +- display: Phandle to a display node as described in
-> > > > > > +	Documentation/devicetree/bindings/video/display-timing.txt
-> > > > > > +	Additional, the display node has to define properties:
-> > > > > > +	- fsl,bpp: Bits per pixel
-> > > > > > +	- fsl,pcr: LCDC PCR value
-> > > > > > +
-> > > > > > +Optional properties:
-> > > > > > +- dmacr-eukrea: Should be set for eukrea boards.
-> > > > > why ?
-> > > > 
-> > > > Because eukrea boards have a different dmacr then all other boards using
-> > > > imxfb. The dmacr address is hardcoded as defaults in the code. I could
-> > > > also search for the board name in the DT, but there are no eukrea boards
-> > > > with DT at the moment, so I thought a bool property may be better for
-> > > > the moment.
-> > > so no if an other board come will have an other property no
-> > > 
-> > > add an optionnal option to pass the dmacr
-> > 
-> > I didn't follow the thread but dmacr is not specific to our boards :
-> > $ grep -rn dmacr arch/arm/mach-imx/
-> > arch/arm/mach-imx/mach-mx27_3ds.c:446:	.dmacr		= 0x00020010,
-> > arch/arm/mach-imx/mach-mx21ads.c:231:	.dmacr		= 0x00020008,
-> > arch/arm/mach-imx/mach-mxt_td60.c:210:	.dmacr		= 0x00020010,
-> > arch/arm/mach-imx/eukrea_mbimx27-baseboard.c:192:	.dmacr		= 0x00040060,
-> > arch/arm/mach-imx/eukrea_mbimxsd25-baseboard.c:165:	.dmacr		= 0x00040060,
-> > arch/arm/mach-imx/mach-mx27ads.c:241:	.dmacr		= 0x00020010,
-> > arch/arm/mach-imx/mach-pca100.c:351:	.dmacr		= 0x00020010,
-> > arch/arm/mach-imx/pcm970-baseboard.c:185:	.dmacr		= 0x00020010,
-> > arch/arm/mach-imx/mach-mx25_3ds.c:173:	.dmacr		= 0x00020010,
-> 
-> with this it even more clear nack on the dmacr-eukrea property
-> 
-> use an optional property where we can specify the value to use
-> 
-> Best Regsrds,
-> J.
-> 
+From: Markus Pargmann <mpargmann@allfex.org>
 
-v4 will contain a optional fsl,dmacr property now. By default the reset
-value of dmacr register is not changed.
+Kernel build fails with commit 669406534b4abb827d1bdc39bb5e2d5255818ae2
 
-Regards,
+This patch renames videomode_from_timing to videomode_from_timings and
+vm.data_flags to vm.flags.
 
-Markus
+Signed-off-by: Markus Pargmann <mpargmann@allfex.org>
+---
+ drivers/video/mxsfb.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 1b2c26d..d78827e 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -777,16 +777,16 @@ static int mxsfb_init_fbinfo_dt(struct mxsfb_info *host)
+ 		struct videomode vm;
+ 		struct fb_videomode fb_vm;
+ 
+-		ret = videomode_from_timing(timings, &vm, i);
++		ret = videomode_from_timings(timings, &vm, i);
+ 		if (ret < 0)
+ 			goto put_timings_node;
+ 		ret = fb_videomode_from_videomode(&vm, &fb_vm);
+ 		if (ret < 0)
+ 			goto put_timings_node;
+ 
+-		if (vm.data_flags & DISPLAY_FLAGS_DE_HIGH)
++		if (vm.flags & DISPLAY_FLAGS_DE_HIGH)
+ 			host->sync |= MXSFB_SYNC_DATA_ENABLE_HIGH_ACT;
+-		if (vm.data_flags & DISPLAY_FLAGS_PIXDATA_NEGEDGE)
++		if (vm.flags & DISPLAY_FLAGS_PIXDATA_NEGEDGE)
+ 			host->sync |= MXSFB_SYNC_DOTCLK_FALLING_ACT;
+ 		fb_add_videomode(&fb_vm, &fb_info->modelist);
+ 	}
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+1.8.1.5
+

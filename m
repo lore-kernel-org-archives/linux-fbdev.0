@@ -1,24 +1,39 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Tue, 23 Apr 2013 18:53:50 +0000
-Subject: Re: [PATCH 07/11] fbdev/sa1100fb: use vm_iomap_memory()
-Message-Id: <20130423185350.GV14496@n2100.arm.linux.org.uk>
+From: Markus Pargmann <mpa@pengutronix.de>
+Date: Wed, 24 Apr 2013 08:08:13 +0000
+Subject: [PATCH 1/2] drivers/video: Kconfig, fix mxsfb build
+Message-Id: <1366790894-20426-2-git-send-email-mpa@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com> <1366699018-5439-7-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1366699018-5439-7-git-send-email-tomi.valkeinen@ti.com>
+References: <1366790894-20426-1-git-send-email-mpa@pengutronix.de>
+In-Reply-To: <1366790894-20426-1-git-send-email-mpa@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Tue, Apr 23, 2013 at 09:36:54AM +0300, Tomi Valkeinen wrote:
-> Use vm_iomap_memory() instead of [io_]remap_pfn_range().
-> vm_iomap_memory() gives us much simpler API to map memory to userspace,
-> and reduces possibilities for bugs.
-> 
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+From: Markus Pargmann <mpargmann@allfex.org>
 
-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Kernel build fails with commit 669406534b4abb827d1bdc39bb5e2d5255818ae2
 
-Thanks.
+This patch replaces OF_VIDEOMODE symbol by VIDEOMODE_HELPERS.
+
+Signed-off-by: Markus Pargmann <mpargmann@allfex.org>
+---
+ drivers/video/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index d8ecc52..6246056 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2429,7 +2429,7 @@ config FB_MXS
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+ 	select FB_MODE_HELPERS
+-	select OF_VIDEOMODE
++	select VIDEOMODE_HELPERS
+ 	help
+ 	  Framebuffer support for the MXS SoC.
+ 
+-- 
+1.8.1.5
+

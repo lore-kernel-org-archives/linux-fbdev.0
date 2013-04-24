@@ -1,86 +1,110 @@
-From: Matus Ujhelyi <ujhelyi.m@gmail.com>
-Date: Fri, 26 Apr 2013 09:15:33 +0000
-Subject: [PATCH 1/1] backlight: add default brightness value option for tps65217-bl driver
-Message-Id: <1366967733-29958-1-git-send-email-matus.ujhelyi@streamunlimited.com>
+From: Prabhakar Lad <prabhakar.csengg@gmail.com>
+Date: Wed, 24 Apr 2013 12:12:06 +0000
+Subject: [PATCH 4/6] ARM: davinci: dm355: enable fbdev driver
+Message-Id: <1366804808-22720-5-git-send-email-prabhakar.csengg@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1366804808-22720-1-git-send-email-prabhakar.csengg@gmail.com>
+In-Reply-To: <1366804808-22720-1-git-send-email-prabhakar.csengg@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: grant.likely@secretlab.ca, rob.herring@calxeda.com, rob@landley.net, rpurdie@rpsys.net, FlorianSchandinat@gmx.de
-Cc: devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, marek.belisko@streamunlimited.com, zonque@gmail.com, ujhelyi.m@gmail.com, Matus Ujhelyi <matus.ujhelyi@streamunlimited.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Signed-off-by: Matus Ujhelyi <matus.ujhelyi@streamunlimited.com>
+From: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+
+This patch enables fbdev driver by creating fbdev device and register it.
+Alongside renames 'vpfe_capture_dma_mask' to 'dm355_video_dma_mask' for better
+clarity since it was reused by capture and diplay aswell.
+
+Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
 ---
- .../video/backlight/tps65217-backlight.txt         |    2 ++
- drivers/video/backlight/tps65217_bl.c              |   15 ++++++++++++++-
- include/linux/mfd/tps65217.h                       |    1 +
- 3 files changed, 17 insertions(+), 1 deletion(-)
+ arch/arm/mach-davinci/dm355.c |   24 +++++++++++++++++-------
+ 1 files changed, 17 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/backlight/tps65217-backlight.txt b/Documentation/devicetree/bindings/video/backlight/tps65217-backlight.txt
-index cc4ee25..5fb9279 100644
---- a/Documentation/devicetree/bindings/video/backlight/tps65217-backlight.txt
-+++ b/Documentation/devicetree/bindings/video/backlight/tps65217-backlight.txt
-@@ -9,6 +9,7 @@ Required properties:
- - backlight: node for specifying WLED1 and WLED2 lines in TPS65217
- - isel: selection bit, valid values: 1 for ISEL1 (low-level) and 2 for ISEL2 (high-level)
- - fdim: PWM dimming frequency, valid values: 100, 200, 500, 1000
-+- default-brightness: valid values: 0-100
- 
- Each regulator is defined using the standard binding for regulators.
- 
-@@ -20,6 +21,7 @@ Example:
- 		backlight {
- 			isel = <1>;  /* 1 - ISET1, 2 ISET2 */
- 			fdim = <100>; /* TPS65217_BL_FDIM_100HZ */
-+			default-brightness = <50>;
- 		};
- 	};
- 
-diff --git a/drivers/video/backlight/tps65217_bl.c b/drivers/video/backlight/tps65217_bl.c
-index 7088163..0578231 100644
---- a/drivers/video/backlight/tps65217_bl.c
-+++ b/drivers/video/backlight/tps65217_bl.c
-@@ -245,6 +245,18 @@ tps65217_bl_parse_dt(struct platform_device *pdev)
- 		}
- 	}
- 
-+	if (!of_property_read_u32(node, "default-brightness", &val)) {
-+		if (val < 0 ||
-+			val > 100) {
-+			dev_err(&pdev->dev,
-+				"invalid 'default-brightness' value in the device tree\n");
-+			err = ERR_PTR(-EINVAL);
-+			goto err;
-+		}
-+
-+		pdata->dft_brightness = val;
-+	}
-+
- 	of_node_put(node);
- 
- 	return pdata;
-@@ -311,7 +323,8 @@ static int tps65217_bl_probe(struct platform_device *pdev)
- 		return PTR_ERR(tps65217_bl->bl);
- 	}
- 
--	tps65217_bl->bl->props.brightness = 0;
-+	tps65217_bl->bl->props.brightness = pdata->dft_brightness;
-+	backlight_update_status(tps65217_bl->bl);
- 	platform_set_drvdata(pdev, tps65217_bl);
- 
- 	return 0;
-diff --git a/include/linux/mfd/tps65217.h b/include/linux/mfd/tps65217.h
-index 290762f..29eab2b 100644
---- a/include/linux/mfd/tps65217.h
-+++ b/include/linux/mfd/tps65217.h
-@@ -228,6 +228,7 @@ enum tps65217_bl_fdim {
- struct tps65217_bl_pdata {
- 	enum tps65217_bl_isel isel;
- 	enum tps65217_bl_fdim fdim;
-+	int dft_brightness;
+diff --git a/arch/arm/mach-davinci/dm355.c b/arch/arm/mach-davinci/dm355.c
+index bf9a9d4..fe50814 100644
+--- a/arch/arm/mach-davinci/dm355.c
++++ b/arch/arm/mach-davinci/dm355.c
+@@ -714,7 +714,7 @@ static struct resource vpfe_resources[] = {
+ 	},
  };
  
- /**
+-static u64 vpfe_capture_dma_mask = DMA_BIT_MASK(32);
++static u64 dm355_video_dma_mask = DMA_BIT_MASK(32);
+ static struct resource dm355_ccdc_resource[] = {
+ 	/* CCDC Base address */
+ 	{
+@@ -729,7 +729,7 @@ static struct platform_device dm355_ccdc_dev = {
+ 	.num_resources  = ARRAY_SIZE(dm355_ccdc_resource),
+ 	.resource       = dm355_ccdc_resource,
+ 	.dev = {
+-		.dma_mask               = &vpfe_capture_dma_mask,
++		.dma_mask               = &dm355_video_dma_mask,
+ 		.coherent_dma_mask      = DMA_BIT_MASK(32),
+ 		.platform_data		= dm355_ccdc_setup_pinmux,
+ 	},
+@@ -741,7 +741,7 @@ static struct platform_device vpfe_capture_dev = {
+ 	.num_resources	= ARRAY_SIZE(vpfe_resources),
+ 	.resource	= vpfe_resources,
+ 	.dev = {
+-		.dma_mask		= &vpfe_capture_dma_mask,
++		.dma_mask		= &dm355_video_dma_mask,
+ 		.coherent_dma_mask	= DMA_BIT_MASK(32),
+ 	},
+ };
+@@ -760,7 +760,7 @@ static struct platform_device dm355_osd_dev = {
+ 	.num_resources	= ARRAY_SIZE(dm355_osd_resources),
+ 	.resource	= dm355_osd_resources,
+ 	.dev		= {
+-		.dma_mask		= &vpfe_capture_dma_mask,
++		.dma_mask		= &dm355_video_dma_mask,
+ 		.coherent_dma_mask	= DMA_BIT_MASK(32),
+ 	},
+ };
+@@ -855,7 +855,16 @@ static struct platform_device dm355_vpbe_display = {
+ 	.num_resources	= ARRAY_SIZE(dm355_v4l2_disp_resources),
+ 	.resource	= dm355_v4l2_disp_resources,
+ 	.dev		= {
+-		.dma_mask		= &vpfe_capture_dma_mask,
++		.dma_mask		= &dm355_video_dma_mask,
++		.coherent_dma_mask	= DMA_BIT_MASK(32),
++	},
++};
++
++static struct platform_device dm355_davincifb = {
++	.name		= "davinci-vpbe-fb",
++	.id		= -1,
++	.dev		= {
++		.dma_mask		= &dm355_video_dma_mask,
+ 		.coherent_dma_mask	= DMA_BIT_MASK(32),
+ 	},
+ };
+@@ -871,7 +880,7 @@ static struct platform_device dm355_venc_dev = {
+ 	.num_resources	= ARRAY_SIZE(dm355_venc_resources),
+ 	.resource	= dm355_venc_resources,
+ 	.dev		= {
+-		.dma_mask		= &vpfe_capture_dma_mask,
++		.dma_mask		= &dm355_video_dma_mask,
+ 		.coherent_dma_mask	= DMA_BIT_MASK(32),
+ 		.platform_data		= (void *)&dm355_venc_pdata,
+ 	},
+@@ -881,7 +890,7 @@ static struct platform_device dm355_vpbe_dev = {
+ 	.name		= "vpbe_controller",
+ 	.id		= -1,
+ 	.dev		= {
+-		.dma_mask		= &vpfe_capture_dma_mask,
++		.dma_mask		= &dm355_video_dma_mask,
+ 		.coherent_dma_mask	= DMA_BIT_MASK(32),
+ 	},
+ };
+@@ -1023,6 +1032,7 @@ int __init dm355_init_video(struct vpfe_config *vpfe_cfg,
+ 		platform_device_register(&dm355_venc_dev);
+ 		platform_device_register(&dm355_vpbe_dev);
+ 		platform_device_register(&dm355_vpbe_display);
++		platform_device_register(&dm355_davincifb);
+ 	}
+ 
+ 	return 0;
 -- 
-1.7.9.5
+1.7.4.1
 

@@ -1,59 +1,45 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 23 Apr 2013 06:36:55 +0000
-Subject: [PATCH 08/11] fbdev/vermillion: use vm_iomap_memory()
-Message-Id: <1366699018-5439-8-git-send-email-tomi.valkeinen@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Wed, 24 Apr 2013 11:54:57 +0000
+Subject: [PATCH V5 5/5] fbcon: queue work on power efficient wq
+Message-Id: <89924f001e3ddd66ab41a16500569a976ea846fd.1366803121.git.viresh.kumar@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1366803121.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1366803121.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Alan Hourihane <alanh@fairlite.demon.co.uk>
+To: tj@kernel.org
+Cc: davem@davemloft.net, airlied@redhat.com, axboe@kernel.dk, tglx@linutronix.de, peterz@infradead.org, mingo@redhat.com, rostedt@goodmis.org, linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-fbdev@vger.kernel.org
 
-Use vm_iomap_memory() instead of [io_]remap_pfn_range().
-vm_iomap_memory() gives us much simpler API to map memory to userspace,
-and reduces possibilities for bugs.
+fbcon uses workqueues and it has no real dependency of scheduling these on the
+cpu which scheduled them.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Alan Hourihane <alanh@fairlite.demon.co.uk>
+On a idle system, it is observed that and idle cpu wakes up many times just to
+service this work. It would be better if we can schedule it on a cpu which the
+scheduler believes to be the most appropriate one.
+
+This patch replaces system_wq with system_power_efficient_wq.
+
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/video/vermilion/vermilion.c |   14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+ drivers/video/console/fbcon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/vermilion/vermilion.c b/drivers/video/vermilion/vermilion.c
-index 0aa516f..09a1366 100644
---- a/drivers/video/vermilion/vermilion.c
-+++ b/drivers/video/vermilion/vermilion.c
-@@ -1003,24 +1003,18 @@ static int vmlfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- static int vmlfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
- {
- 	struct vml_info *vinfo = container_of(info, struct vml_info, info);
--	unsigned long size = vma->vm_end - vma->vm_start;
- 	unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
- 	int ret;
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 3cd6759..0cae83d 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -404,7 +404,7 @@ static void cursor_timer_handler(unsigned long dev_addr)
+ 	struct fb_info *info = (struct fb_info *) dev_addr;
+ 	struct fbcon_ops *ops = info->fbcon_par;
  
--	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
--		return -EINVAL;
--	if (offset + size > vinfo->vram_contig_size)
--		return -EINVAL;
- 	ret = vmlfb_vram_offset(vinfo, offset);
- 	if (ret)
- 		return -EINVAL;
--	offset += vinfo->vram_start;
-+
- 	pgprot_val(vma->vm_page_prot) |= _PAGE_PCD;
- 	pgprot_val(vma->vm_page_prot) &= ~_PAGE_PWT;
--	if (remap_pfn_range(vma, vma->vm_start, offset >> PAGE_SHIFT,
--						size, vma->vm_page_prot))
--		return -EAGAIN;
--	return 0;
-+
-+	return vm_iomap_memory(vma, vinfo->vram_start,
-+			vinfo->vram_contig_size);
+-	schedule_work(&info->queue);
++	queue_work(system_power_efficient_wq, &info->queue);
+ 	mod_timer(&ops->cursor_timer, jiffies + HZ/5);
  }
  
- static int vmlfb_sync(struct fb_info *info)
 -- 
-1.7.10.4
+1.7.12.rc2.18.g61b472e
 

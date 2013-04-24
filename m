@@ -1,101 +1,132 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 29 Apr 2013 10:22:34 +0000
-Subject: [PATCH 07/10] OMAPDSS: DPI: Add error handling for dpi_probe_pdata
-Message-Id: <1367230957-32337-8-git-send-email-tomi.valkeinen@ti.com>
+From: Prabhakar Lad <prabhakar.csengg@gmail.com>
+Date: Wed, 24 Apr 2013 12:12:03 +0000
+Subject: [PATCH 1/6] media: davinci: vpbe: fix checkpatch warning for CamelCase
+Message-Id: <1366804808-22720-2-git-send-email-prabhakar.csengg@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1366804808-22720-1-git-send-email-prabhakar.csengg@gmail.com>
+In-Reply-To: <1366804808-22720-1-git-send-email-prabhakar.csengg@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, grygorii.strashko@ti.com, chf.fritz@googlemail.com, Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Add proper error handling for dpi_probe_pdata(). This will cause
-EPROBE_DEFER to be properly passed upwards, causing the DPI driver to be
-probed again later if a resource was missing.
+From: Lad, Prabhakar <prabhakar.csengg@gmail.com>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+This patch fixes checkpatch warning to avoid CamelCase.
+
+Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
 ---
- drivers/video/omap2/dss/dpi.c |   22 +++++++++++++++-------
- 1 file changed, 15 insertions(+), 7 deletions(-)
+ drivers/media/platform/davinci/vpbe_display.c |    2 +-
+ drivers/media/platform/davinci/vpbe_osd.c     |   24 ++++++++++++------------
+ include/media/davinci/vpbe_osd.h              |    4 ++--
+ 3 files changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index 2024787..757b57f 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -635,7 +635,7 @@ static struct omap_dss_device *dpi_find_dssdev(struct platform_device *pdev)
- 	return def_dssdev;
+diff --git a/drivers/media/platform/davinci/vpbe_display.c b/drivers/media/platform/davinci/vpbe_display.c
+index 1802f11..1c4ba89 100644
+--- a/drivers/media/platform/davinci/vpbe_display.c
++++ b/drivers/media/platform/davinci/vpbe_display.c
+@@ -929,7 +929,7 @@ static int vpbe_display_s_fmt(struct file *file, void *priv,
+ 	cfg->interlaced = vpbe_dev->current_timings.interlaced;
+ 
+ 	if (V4L2_PIX_FMT_UYVY = pixfmt->pixelformat)
+-		cfg->pixfmt = PIXFMT_YCbCrI;
++		cfg->pixfmt = PIXFMT_YCBCRI;
+ 
+ 	/* Change of the default pixel format for both video windows */
+ 	if (V4L2_PIX_FMT_NV12 = pixfmt->pixelformat) {
+diff --git a/drivers/media/platform/davinci/vpbe_osd.c b/drivers/media/platform/davinci/vpbe_osd.c
+index 396a51c..6ed82e8 100644
+--- a/drivers/media/platform/davinci/vpbe_osd.c
++++ b/drivers/media/platform/davinci/vpbe_osd.c
+@@ -119,7 +119,7 @@ static inline u32 osd_modify(struct osd_state *sd, u32 mask, u32 val,
+ #define is_rgb_pixfmt(pixfmt) \
+ 	(((pixfmt) = PIXFMT_RGB565) || ((pixfmt) = PIXFMT_RGB888))
+ #define is_yc_pixfmt(pixfmt) \
+-	(((pixfmt) = PIXFMT_YCbCrI) || ((pixfmt) = PIXFMT_YCrCbI) || \
++	(((pixfmt) = PIXFMT_YCBCRI) || ((pixfmt) = PIXFMT_YCRCBI) || \
+ 	((pixfmt) = PIXFMT_NV12))
+ #define MAX_WIN_SIZE OSD_VIDWIN0XP_V0X
+ #define MAX_LINE_LENGTH (OSD_VIDWIN0OFST_V0LO << 5)
+@@ -360,8 +360,8 @@ static void _osd_enable_color_key(struct osd_state *sd,
+ 			osd_write(sd, colorkey & OSD_TRANSPVALL_RGBL,
+ 				  OSD_TRANSPVALL);
+ 		break;
+-	case PIXFMT_YCbCrI:
+-	case PIXFMT_YCrCbI:
++	case PIXFMT_YCBCRI:
++	case PIXFMT_YCRCBI:
+ 		if (sd->vpbe_type = VPBE_VERSION_3)
+ 			osd_modify(sd, OSD_TRANSPVALU_Y, colorkey,
+ 				   OSD_TRANSPVALU);
+@@ -813,8 +813,8 @@ static int try_layer_config(struct osd_state *sd, enum osd_layer layer,
+ 		if (osd->vpbe_type = VPBE_VERSION_1)
+ 			bad_config = !is_vid_win(layer);
+ 		break;
+-	case PIXFMT_YCbCrI:
+-	case PIXFMT_YCrCbI:
++	case PIXFMT_YCBCRI:
++	case PIXFMT_YCRCBI:
+ 		bad_config = !is_vid_win(layer);
+ 		break;
+ 	case PIXFMT_RGB888:
+@@ -950,9 +950,9 @@ static void _osd_set_cbcr_order(struct osd_state *sd,
+ 	 * The caller must ensure that all windows using YC pixfmt use the same
+ 	 * Cb/Cr order.
+ 	 */
+-	if (pixfmt = PIXFMT_YCbCrI)
++	if (pixfmt = PIXFMT_YCBCRI)
+ 		osd_clear(sd, OSD_MODE_CS, OSD_MODE);
+-	else if (pixfmt = PIXFMT_YCrCbI)
++	else if (pixfmt = PIXFMT_YCRCBI)
+ 		osd_set(sd, OSD_MODE_CS, OSD_MODE);
  }
  
--static void dpi_probe_pdata(struct platform_device *dpidev)
-+static int dpi_probe_pdata(struct platform_device *dpidev)
- {
- 	struct omap_dss_device *plat_dssdev;
- 	struct omap_dss_device *dssdev;
-@@ -644,11 +644,11 @@ static void dpi_probe_pdata(struct platform_device *dpidev)
- 	plat_dssdev = dpi_find_dssdev(dpidev);
+@@ -981,8 +981,8 @@ static void _osd_set_layer_config(struct osd_state *sd, enum osd_layer layer,
+ 				winmd |= (2 << OSD_OSDWIN0MD_BMP0MD_SHIFT);
+ 				_osd_enable_rgb888_pixblend(sd, OSDWIN_OSD0);
+ 				break;
+-			case PIXFMT_YCbCrI:
+-			case PIXFMT_YCrCbI:
++			case PIXFMT_YCBCRI:
++			case PIXFMT_YCRCBI:
+ 				winmd |= (3 << OSD_OSDWIN0MD_BMP0MD_SHIFT);
+ 				break;
+ 			default:
+@@ -1128,8 +1128,8 @@ static void _osd_set_layer_config(struct osd_state *sd, enum osd_layer layer,
+ 					_osd_enable_rgb888_pixblend(sd,
+ 							OSDWIN_OSD1);
+ 					break;
+-				case PIXFMT_YCbCrI:
+-				case PIXFMT_YCrCbI:
++				case PIXFMT_YCBCRI:
++				case PIXFMT_YCRCBI:
+ 					winmd | 					    (3 << OSD_OSDWIN1MD_BMP1MD_SHIFT);
+ 					break;
+@@ -1508,7 +1508,7 @@ static int osd_initialize(struct osd_state *osd)
+ 	_osd_init(osd);
  
- 	if (!plat_dssdev)
--		return;
-+		return 0;
+ 	/* set default Cb/Cr order */
+-	osd->yc_pixfmt = PIXFMT_YCbCrI;
++	osd->yc_pixfmt = PIXFMT_YCBCRI;
  
- 	dssdev = dss_alloc_and_init_device(&dpidev->dev);
- 	if (!dssdev)
--		return;
-+		return -ENOMEM;
- 
- 	dss_copy_device_pdata(dssdev, plat_dssdev);
- 
-@@ -656,7 +656,7 @@ static void dpi_probe_pdata(struct platform_device *dpidev)
- 	if (r) {
- 		DSSERR("device %s init failed: %d\n", dssdev->name, r);
- 		dss_put_device(dssdev);
--		return;
-+		return r;
- 	}
- 
- 	r = omapdss_output_set_device(&dpi.output, dssdev);
-@@ -664,7 +664,7 @@ static void dpi_probe_pdata(struct platform_device *dpidev)
- 		DSSERR("failed to connect output to new device: %s\n",
- 				dssdev->name);
- 		dss_put_device(dssdev);
--		return;
-+		return r;
- 	}
- 
- 	r = dss_add_device(dssdev);
-@@ -672,8 +672,10 @@ static void dpi_probe_pdata(struct platform_device *dpidev)
- 		DSSERR("device %s register failed: %d\n", dssdev->name, r);
- 		omapdss_output_unset_device(&dpi.output);
- 		dss_put_device(dssdev);
--		return;
-+		return r;
- 	}
-+
-+	return 0;
- }
- 
- static void dpi_init_output(struct platform_device *pdev)
-@@ -698,11 +700,17 @@ static void __exit dpi_uninit_output(struct platform_device *pdev)
- 
- static int omap_dpi_probe(struct platform_device *pdev)
- {
-+	int r;
-+
- 	mutex_init(&dpi.lock);
- 
- 	dpi_init_output(pdev);
- 
--	dpi_probe_pdata(pdev);
-+	r = dpi_probe_pdata(pdev);
-+	if (r) {
-+		dpi_uninit_output(pdev);
-+		return r;
-+	}
- 
- 	return 0;
- }
+ 	if (osd->vpbe_type = VPBE_VERSION_3) {
+ 		/*
+diff --git a/include/media/davinci/vpbe_osd.h b/include/media/davinci/vpbe_osd.h
+index 42628fc..de59364 100644
+--- a/include/media/davinci/vpbe_osd.h
++++ b/include/media/davinci/vpbe_osd.h
+@@ -82,9 +82,9 @@ enum osd_pix_format {
+ 	PIXFMT_4BPP,
+ 	PIXFMT_8BPP,
+ 	PIXFMT_RGB565,
+-	PIXFMT_YCbCrI,
++	PIXFMT_YCBCRI,
+ 	PIXFMT_RGB888,
+-	PIXFMT_YCrCbI,
++	PIXFMT_YCRCBI,
+ 	PIXFMT_NV12,
+ 	PIXFMT_OSD_ATTR,
+ };
 -- 
-1.7.10.4
+1.7.4.1
 

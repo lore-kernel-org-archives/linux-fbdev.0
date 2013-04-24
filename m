@@ -1,7 +1,7 @@
-From: Markus Pargmann <mpa@pengutronix.de>
-Date: Wed, 24 Apr 2013 09:00:02 +0000
+From: Shawn Guo <shawn.guo@linaro.org>
+Date: Wed, 24 Apr 2013 11:49:45 +0000
 Subject: Re: [PATCH 0/2] drivers/video: mxs-fb: build fixes
-Message-Id: <20130424090002.GB3973@pengutronix.de>
+Message-Id: <20130424114943.GA2736@S2101-09.ap.freescale.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1366790894-20426-1-git-send-email-mpa@pengutronix.de>
 In-Reply-To: <1366790894-20426-1-git-send-email-mpa@pengutronix.de>
@@ -23,22 +23,11 @@ On Wed, Apr 24, 2013 at 10:08:12AM +0200, Markus Pargmann wrote:
 > 6cd2c7db41eab204b6474534df4ca68a7dc53d86 videomode: videomode_from_timing work
 > 
 > All of them are in linux-next, so mxs-fb fails to build there.
-> 
-> Regards,
-> 
-> Markus
-> 
-> 
-> 
 
-Sorry for the noise. This was already fixed and queued for 3.10-rc.
+Fabio already had a patch [1] for that.  I will send it mainline during
+3.10-rc.
 
-Regards,
+Shawn
 
-Markus
+[1] http://thread.gmane.org/gmane.linux.ports.arm.kernel/230938
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

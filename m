@@ -1,46 +1,52 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 29 Apr 2013 10:22:30 +0000
-Subject: [PATCH 03/10] OMAPFB: defer probe if no displays
-Message-Id: <1367230957-32337-4-git-send-email-tomi.valkeinen@ti.com>
+From: Prabhakar Lad <prabhakar.csengg@gmail.com>
+Date: Wed, 24 Apr 2013 12:12:07 +0000
+Subject: [PATCH 5/6] ARM: davinci: dm365: enable fbdev driver
+Message-Id: <1366804808-22720-6-git-send-email-prabhakar.csengg@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1366804808-22720-1-git-send-email-prabhakar.csengg@gmail.com>
+In-Reply-To: <1366804808-22720-1-git-send-email-prabhakar.csengg@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, grygorii.strashko@ti.com, chf.fritz@googlemail.com, Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-omapfb requires the panel drivers to have been probed when omapfb is
-initialized. omapfb does not support insertion of new panels after its
-probe. This causes a problem in case omapdss or the panel probes have
-been deferred due to EPROBE_DEFER error, as omapfb won't find any
-displays.
+From: Lad, Prabhakar <prabhakar.csengg@gmail.com>
 
-As a quick fix, this patch changes the omapfb probe so that if omapfb
-does not find any displays, it'll return EPROBE_DEFER. This is not
-perfect, as with a board with no displays, omapfb will get deferred
-forever. Also, if the board has multiple displays, but only some of them
-have been probed, omapfb will start and leave the unprobed displays out.
+This patch enables fbdev driver by creating fbdev device and register it.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm/mach-davinci/dm365.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 808f6af..ff00d1d 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -2484,7 +2484,7 @@ static int omapfb_probe(struct platform_device *pdev)
+diff --git a/arch/arm/mach-davinci/dm365.c b/arch/arm/mach-davinci/dm365.c
+index ff771ce..b06623c 100644
+--- a/arch/arm/mach-davinci/dm365.c
++++ b/arch/arm/mach-davinci/dm365.c
+@@ -1349,6 +1349,15 @@ static struct platform_device dm365_vpbe_display = {
+ 	},
+ };
  
- 	if (fbdev->num_displays = 0) {
- 		dev_err(&pdev->dev, "no displays\n");
--		r = -EINVAL;
-+		r = -EPROBE_DEFER;
- 		goto cleanup;
++static struct platform_device dm365_davincifb = {
++	.name           = "davinci-vpbe-fb",
++	.id             = -1,
++	.dev            = {
++		.dma_mask		= &dm365_video_dma_mask,
++		.coherent_dma_mask	= DMA_BIT_MASK(32),
++	},
++};
++
+ struct venc_platform_data dm365_venc_pdata = {
+ 	.setup_pinmux	= dm365_vpbe_setup_pinmux,
+ 	.setup_clock	= dm365_venc_setup_clock,
+@@ -1392,6 +1401,7 @@ int __init dm365_init_video(struct vpfe_config *vpfe_cfg,
+ 		platform_device_register(&dm365_venc_dev);
+ 		platform_device_register(&dm365_vpbe_dev);
+ 		platform_device_register(&dm365_vpbe_display);
++		platform_device_register(&dm365_davincifb);
  	}
  
+ 	return 0;
 -- 
-1.7.10.4
+1.7.4.1
 

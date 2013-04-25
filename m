@@ -1,7 +1,7 @@
 From: Wang YanQing <udknight@gmail.com>
-Date: Mon, 22 Apr 2013 01:19:12 +0000
+Date: Thu, 25 Apr 2013 00:45:42 +0000
 Subject: Re: [PATCH] uvesafb: Correct/simplify warning message
-Message-Id: <20130422011912.GA2001@udknight>
+Message-Id: <20130425004542.GA1935@udknight>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1366380325-2038-1-git-send-email-bp@alien8.de>
 In-Reply-To: <1366380325-2038-1-git-send-email-bp@alien8.de>
@@ -41,7 +41,4 @@ On Fri, Apr 19, 2013 at 04:05:25PM +0200, Borislav Petkov wrote:
 >  		}
 > -- 
 > 1.8.2.135.g7b592fa
-
-Acked-by: Wang YanQing <udknight@gmail.com>
-
-Thanks.
+Cc:tomi.valkeinen@ti.com

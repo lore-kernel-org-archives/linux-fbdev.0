@@ -1,97 +1,71 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 29 Apr 2013 10:22:36 +0000
-Subject: [PATCH 09/10] OMAPDSS: HDMI: Add error handling for hdmi_probe_pdata
-Message-Id: <1367230957-32337-10-git-send-email-tomi.valkeinen@ti.com>
+From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
+Date: Fri, 26 Apr 2013 20:02:14 +0000
+Subject: [PATCH 0/9] s3c24xx LCD controller driver cleanup
+Message-Id: <1367006543-5458-1-git-send-email-sylvester.nawrocki@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, grygorii.strashko@ti.com, chf.fritz@googlemail.com, Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Add proper error handling for hdmi_probe_pdata(). This will cause
-EPROBE_DEFER to be properly passed upwards, causing the HDMI driver to be
-probed again later if a resource was missing.
+This patch series moves the s3c2410fb driver header files from 
+arch/arm/mach-s3c24xx to the driver specific directories. It 
+also includes couple cleanups to the driver itself and a patch 
+actually enabling the display during initialization, so it works
+with FRAMEBUFFER_CONSOLE disabled.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/hdmi.c |   22 +++++++++++++++-------
- 1 file changed, 15 insertions(+), 7 deletions(-)
+Patches 6...9 have no dependencies on rest of the series.
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 9aefe60..17f4d55 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -982,7 +982,7 @@ static struct omap_dss_device *hdmi_find_dssdev(struct platform_device *pdev)
- 	return def_dssdev;
- }
- 
--static void hdmi_probe_pdata(struct platform_device *pdev)
-+static int hdmi_probe_pdata(struct platform_device *pdev)
- {
- 	struct omap_dss_device *plat_dssdev;
- 	struct omap_dss_device *dssdev;
-@@ -992,11 +992,11 @@ static void hdmi_probe_pdata(struct platform_device *pdev)
- 	plat_dssdev = hdmi_find_dssdev(pdev);
- 
- 	if (!plat_dssdev)
--		return;
-+		return 0;
- 
- 	dssdev = dss_alloc_and_init_device(&pdev->dev);
- 	if (!dssdev)
--		return;
-+		return -ENOMEM;
- 
- 	dss_copy_device_pdata(dssdev, plat_dssdev);
- 
-@@ -1010,7 +1010,7 @@ static void hdmi_probe_pdata(struct platform_device *pdev)
- 	if (r) {
- 		DSSERR("device %s init failed: %d\n", dssdev->name, r);
- 		dss_put_device(dssdev);
--		return;
-+		return r;
- 	}
- 
- 	r = omapdss_output_set_device(&hdmi.output, dssdev);
-@@ -1018,7 +1018,7 @@ static void hdmi_probe_pdata(struct platform_device *pdev)
- 		DSSERR("failed to connect output to new device: %s\n",
- 				dssdev->name);
- 		dss_put_device(dssdev);
--		return;
-+		return r;
- 	}
- 
- 	r = dss_add_device(dssdev);
-@@ -1027,8 +1027,10 @@ static void hdmi_probe_pdata(struct platform_device *pdev)
- 		omapdss_output_unset_device(&hdmi.output);
- 		hdmi_uninit_display(dssdev);
- 		dss_put_device(dssdev);
--		return;
-+		return r;
- 	}
-+
-+	return 0;
- }
- 
- static void hdmi_init_output(struct platform_device *pdev)
-@@ -1096,7 +1098,13 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 
- 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
- 
--	hdmi_probe_pdata(pdev);
-+	r = hdmi_probe_pdata(pdev);
-+	if (r) {
-+		hdmi_panel_exit();
-+		hdmi_uninit_output(pdev);
-+		pm_runtime_disable(&pdev->dev);
-+		return r;
-+	}
- 
- 	return 0;
- }
+The whole series is also available at:
+git://github.com/snawrocki/linux.git cleanup/s3c2410fb
+
+It has been tested on the Micro2440 board.
+
+Sylwester Nawrocki (9):
+  s3c2410fb: Move platform data declarations to
+    include/linux/platform_data
+  s3c2410fb: Make most of register definitions local
+  ARM: S3C24XX: Remove include/mach/regs-lcd.h header file
+  s3c2410fb: Register single platform driver
+  s3c2410fb: Use dev_pm_ops
+  s3c2410fb: Enable display by default
+  s3c2410fb: Use devm_ioremap_resource()
+  s3c2410fb: Remove redundant platform_set_drvdata()
+  s3c2410fb: Use module parameter instead of a sysfs entry
+
+ arch/arm/mach-s3c24xx/dma-s3c2410.c             |    1 -
+ arch/arm/mach-s3c24xx/dma-s3c2412.c             |    1 -
+ arch/arm/mach-s3c24xx/dma-s3c2440.c             |    1 -
+ arch/arm/mach-s3c24xx/dma-s3c2443.c             |    1 -
+ arch/arm/mach-s3c24xx/include/mach/fb.h         |    1 -
+ arch/arm/mach-s3c24xx/include/mach/regs-lcd.h   |  162 ----------------------
+ arch/arm/mach-s3c24xx/mach-anubis.c             |    1 -
+ arch/arm/mach-s3c24xx/mach-at2440evb.c          |    3 +-
+ arch/arm/mach-s3c24xx/mach-bast.c               |    3 +-
+ arch/arm/mach-s3c24xx/mach-gta02.c              |    2 +-
+ arch/arm/mach-s3c24xx/mach-h1940.c              |    3 +-
+ arch/arm/mach-s3c24xx/mach-jive.c               |    3 +-
+ arch/arm/mach-s3c24xx/mach-mini2440.c           |    3 +-
+ arch/arm/mach-s3c24xx/mach-n30.c                |    3 +-
+ arch/arm/mach-s3c24xx/mach-osiris.c             |    1 -
+ arch/arm/mach-s3c24xx/mach-qt2410.c             |    3 +-
+ arch/arm/mach-s3c24xx/mach-rx1950.c             |    3 +-
+ arch/arm/mach-s3c24xx/mach-smdk2413.c           |    3 +-
+ arch/arm/mach-s3c24xx/mach-smdk2416.c           |    1 -
+ arch/arm/mach-s3c24xx/mach-smdk2440.c           |    3 +-
+ arch/arm/mach-s3c24xx/mach-smdk2443.c           |    3 +-
+ arch/arm/mach-s3c24xx/mach-vstms.c              |    4 +-
+ arch/arm/plat-samsung/devs.c                    |    2 +-
+ arch/arm/plat-samsung/include/plat/fb-s3c2410.h |   72 ----------
+ drivers/video/s3c2410fb.c                       |  165 ++++++-----------------
+ drivers/video/s3c2410fb.h                       |  114 +++++++++++++++-
+ include/linux/platform_data/fb-s3c2410.h        |  106 +++++++++++++++
+ 27 files changed, 272 insertions(+), 396 deletions(-)
+ delete mode 100644 arch/arm/mach-s3c24xx/include/mach/fb.h
+ delete mode 100644 arch/arm/mach-s3c24xx/include/mach/regs-lcd.h
+ delete mode 100644 arch/arm/plat-samsung/include/plat/fb-s3c2410.h
+ create mode 100644 include/linux/platform_data/fb-s3c2410.h
+
 -- 
-1.7.10.4
+1.7.4.1
 

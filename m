@@ -1,45 +1,88 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Wed, 24 Apr 2013 11:54:57 +0000
-Subject: [PATCH V5 5/5] fbcon: queue work on power efficient wq
-Message-Id: <89924f001e3ddd66ab41a16500569a976ea846fd.1366803121.git.viresh.kumar@linaro.org>
+From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
+Date: Fri, 26 Apr 2013 20:02:19 +0000
+Subject: [PATCH 5/9] s3c2410fb: Use dev_pm_ops
+Message-Id: <1367006543-5458-6-git-send-email-sylvester.nawrocki@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1366803121.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1366803121.git.viresh.kumar@linaro.org>
+References: <1367006543-5458-1-git-send-email-sylvester.nawrocki@gmail.com>
+In-Reply-To: <1367006543-5458-1-git-send-email-sylvester.nawrocki@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tj@kernel.org
-Cc: davem@davemloft.net, airlied@redhat.com, axboe@kernel.dk, tglx@linutronix.de, peterz@infradead.org, mingo@redhat.com, rostedt@goodmis.org, linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-fbcon uses workqueues and it has no real dependency of scheduling these on the
-cpu which scheduled them.
+Use the driver PM ops rather than legacy suspend/resume callbacks.
+Also use CONFIG_PM_SLEEP switch to compile in the system sleep
+code instead of CONFIG_PM.
 
-On a idle system, it is observed that and idle cpu wakes up many times just to
-service this work. It would be better if we can schedule it on a cpu which the
-scheduler believes to be the most appropriate one.
-
-This patch replaces system_wq with system_power_efficient_wq.
-
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
 ---
- drivers/video/console/fbcon.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/s3c2410fb.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 3cd6759..0cae83d 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -404,7 +404,7 @@ static void cursor_timer_handler(unsigned long dev_addr)
- 	struct fb_info *info = (struct fb_info *) dev_addr;
- 	struct fbcon_ops *ops = info->fbcon_par;
+diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
+index d6706f7..479ab45 100644
+--- a/drivers/video/s3c2410fb.c
++++ b/drivers/video/s3c2410fb.c
+@@ -26,6 +26,7 @@
+ #include <linux/dma-mapping.h>
+ #include <linux/interrupt.h>
+ #include <linux/platform_device.h>
++#include <linux/pm.h>
+ #include <linux/clk.h>
+ #include <linux/cpufreq.h>
+ #include <linux/io.h>
+@@ -36,10 +37,6 @@
+ #include <asm/mach/map.h>
+ #include <mach/regs-gpio.h>
  
--	schedule_work(&info->queue);
-+	queue_work(system_power_efficient_wq, &info->queue);
- 	mod_timer(&ops->cursor_timer, jiffies + HZ/5);
+-#ifdef CONFIG_PM
+-#include <linux/pm.h>
+-#endif
+-
+ #include "s3c2410fb.h"
+ 
+ /* Debugging stuff */
+@@ -1044,8 +1041,7 @@ static int s3c2410fb_remove(struct platform_device *pdev)
+ 	return 0;
  }
  
+-#ifdef CONFIG_PM
+-
++#ifdef CONFIG_PM_SLEEP
+ /* suspend and resume support for the lcd controller */
+ static int s3c2410fb_suspend(struct platform_device *dev, pm_message_t state)
+ {
+@@ -1081,9 +1077,14 @@ static int s3c2410fb_resume(struct platform_device *dev)
+ 	return 0;
+ }
+ 
++static const struct dev_pm_ops s3c2410fb_pm_ops = {
++	.resume = s3c2410fb_resume,
++	.suspend = s3c2410fb_suspend,
++};
++
++#define S3C2410FB_PM_OPS (&s3c2410fb_pm_ops)
+ #else
+-#define s3c2410fb_suspend NULL
+-#define s3c2410fb_resume  NULL
++#define S3C2410FB_PM_OPS (NULL)
+ #endif
+ 
+ static struct platform_device_id s3c2410fb_driver_ids[] = {
+@@ -1099,12 +1100,11 @@ static struct platform_device_id s3c2410fb_driver_ids[] = {
+ static struct platform_driver s3c2410fb_driver = {
+ 	.probe		= s3c2410fb_probe,
+ 	.remove		= s3c2410fb_remove,
+-	.suspend	= s3c2410fb_suspend,
+-	.resume		= s3c2410fb_resume,
+ 	.id_table	= s3c2410fb_driver_ids,
+ 	.driver		= {
+ 		.name	= "s3c2410-lcd",
+ 		.owner	= THIS_MODULE,
++		.pm	= S3C2410FB_PM_OPS,
+ 	},
+ };
+ 
 -- 
-1.7.12.rc2.18.g61b472e
+1.7.4.1
 

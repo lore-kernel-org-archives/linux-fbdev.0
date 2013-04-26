@@ -1,68 +1,37 @@
-From: Fabio Porcedda <fabio.porcedda@gmail.com>
-Date: Thu, 04 Apr 2013 11:47:40 +0000
-Subject: Re: [PATCH v4] drivers: video: use module_platform_driver_probe()
-Message-Id: <CAHkwnC_iesmqvqmD22f5oAFmnEs8Z+qYGa0Dvm9mEj3JGrPHzA@mail.gmail.com>
+From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
+Date: Fri, 26 Apr 2013 20:02:22 +0000
+Subject: [PATCH 8/9] s3c2410fb: Remove redundant platform_set_drvdata()
+Message-Id: <1367006543-5458-9-git-send-email-sylvester.nawrocki@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1363352558-6275-1-git-send-email-fabio.porcedda@gmail.com>
- <515AB113.6030700@ti.com> <CAHkwnC_AAJ5bcoH0=Zq8vVufKXqwC4WVtc9wY01h07FbZveGeg@mail.gmail.com>
- <515D66D3.3040904@ti.com>
-In-Reply-To: <515D66D3.3040904@ti.com>
+References: <1367006543-5458-1-git-send-email-sylvester.nawrocki@gmail.com>
+In-Reply-To: <1367006543-5458-1-git-send-email-sylvester.nawrocki@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Howells <dhowells@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+To: linux-arm-kernel@lists.infradead.org
 
-On Thu, Apr 4, 2013 at 1:41 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On 2013-04-04 14:38, Fabio Porcedda wrote:
->> On Tue, Apr 2, 2013 at 12:21 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
->>> On 2013-03-15 15:02, Fabio Porcedda wrote:
->>>> This patch converts the drivers to use the
->>>> module_platform_driver_probe() macro which makes the code smaller and
->>>> a bit simpler.
->>>>
->>>> Signed-off-by: Fabio Porcedda <fabio.porcedda@gmail.com>
->>>> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
->>>> Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com> # atmel_lcdfb.c
->>>> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
->>>> Cc: David Howells <dhowells@redhat.com>
->>>> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
->>>> Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com> # amifb.c
->>>> Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
->>>> ---
->>>>
->>>> Notes:
->>>>     v4:
->>>>      - add acked-by Nicolas & Laurent
->>>>      - fix amifb.c
->>>>     v3:
->>>>      - add missing drivers: amifb, atmel_lcdfb, vrfb
->>>>      - split patch set to each maintainer to easy up respin
->>>>     v2:
->>>>      - rebased over linux-next and remove already converted drivers
->>>>
->>>>  drivers/video/amifb.c          | 14 +-------------
->>>>  drivers/video/atmel_lcdfb.c    | 13 +------------
->>>>  drivers/video/omap2/vrfb.c     | 13 +------------
->>>>  drivers/video/sh_mipi_dsi.c    | 12 +-----------
->>>>  drivers/video/sh_mobile_hdmi.c | 12 +-----------
->>>>  5 files changed, 5 insertions(+), 59 deletions(-)
->>>
->>> Thanks, applied to fbdev branch.
->>
->> Thanks for taking it.
->> I don't see this patch neither in linux-next nor in
->> git://gitorious.org/linux-omap-dss2/linux.git,
->> in which repository/branch is it?
->
-> I just pushed for-next branch an hour ago or so, to the above mentioned
-> gitorious tree. So should be in linux-next tomorrow, I guess.
+driver_data field is being cleared by the driver core since
+commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
+device-core: Ensure drvdata = NULL when no driver is bound
+hence there is no need to do it in the driver's remove() callback.
 
-Thanks.
+Signed-off-by: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
+---
+ drivers/video/s3c2410fb.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
---
-Fabio Porcedda
+diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
+index 11f98ca..0439ed0 100644
+--- a/drivers/video/s3c2410fb.c
++++ b/drivers/video/s3c2410fb.c
+@@ -1013,7 +1013,6 @@ static int s3c2410fb_remove(struct platform_device *pdev)
+ 	irq = platform_get_irq(pdev, 0);
+ 	free_irq(irq, info);
+ 
+-	platform_set_drvdata(pdev, NULL);
+ 	framebuffer_release(fbinfo);
+ 
+ 	return 0;
+-- 
+1.7.4.1
 
->  Tomi
->
->

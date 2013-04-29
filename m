@@ -1,61 +1,94 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Tue, 02 Apr 2013 04:49:57 +0000
-Subject: [PATCHv2 3/6] video: vt8500: Correct descriptions in video/Kconfig
-Message-Id: <1364878200-26343-4-git-send-email-linux@prisktech.co.nz>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 29 Apr 2013 10:22:32 +0000
+Subject: [PATCH 05/10] OMAPDSS: DSI: Add error handling for dsi_probe_pdata
+Message-Id: <1367230957-32337-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364878200-26343-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1364878200-26343-1-git-send-email-linux@prisktech.co.nz>
+References: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>, grygorii.strashko@ti.com, chf.fritz@googlemail.com, Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This patch corrects the descriptions for the VIA VT8500 and
-Wondermedia WM8xxx-series framebuffer drivers to correctly reflect
-which hardware they support.
+Add proper error handling for dsi_probe_pdata(). This will cause
+EPROBE_DEFER to be properly passed upwards, causing the DSI driver to be
+probed again later if a resource was missing.
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
-Reviewed-by: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/Kconfig |   11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 661aa54..ad762ed 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -1789,7 +1789,7 @@ config FB_AU1200
- 	  option au1200fb:panel=<name>.
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 55fc0d4..a73dedc 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -5398,7 +5398,7 @@ static struct omap_dss_device *dsi_find_dssdev(struct platform_device *pdev)
+ 	return def_dssdev;
+ }
  
- config FB_VT8500
--	bool "VT8500 LCD Driver"
-+	bool "VIA VT8500 framebuffer support"
- 	depends on (FB = y) && ARM && ARCH_VT8500
- 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
-@@ -1799,17 +1799,18 @@ config FB_VT8500
- 	  controller.
+-static void dsi_probe_pdata(struct platform_device *dsidev)
++static int dsi_probe_pdata(struct platform_device *dsidev)
+ {
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	struct omap_dss_device *plat_dssdev;
+@@ -5408,11 +5408,11 @@ static void dsi_probe_pdata(struct platform_device *dsidev)
+ 	plat_dssdev = dsi_find_dssdev(dsidev);
  
- config FB_WM8505
--	bool "WM8505 frame buffer support"
-+	bool "Wondermedia WM8xxx-series frame buffer support"
- 	depends on (FB = y) && ARM && ARCH_VT8500
- 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
- 	select FB_SYS_IMAGEBLIT
- 	help
--	  This is the framebuffer driver for WonderMedia WM8505/WM8650
--	  integrated LCD controller.
-+	  This is the framebuffer driver for WonderMedia WM8xxx-series
-+	  integrated LCD controller. This driver covers the WM8505, WM8650
-+	  and WM8850 SoCs.
+ 	if (!plat_dssdev)
+-		return;
++		return 0;
  
- config FB_WMT_GE_ROPS
--	bool "VT8500/WM85xx accelerated raster ops support"
-+	bool "VT8500/WM8xxx accelerated raster ops support"
- 	depends on (FB = y) && (FB_VT8500 || FB_WM8505)
- 	default n
- 	help
+ 	dssdev = dss_alloc_and_init_device(&dsidev->dev);
+ 	if (!dssdev)
+-		return;
++		return -ENOMEM;
+ 
+ 	dss_copy_device_pdata(dssdev, plat_dssdev);
+ 
+@@ -5420,7 +5420,7 @@ static void dsi_probe_pdata(struct platform_device *dsidev)
+ 	if (r) {
+ 		DSSERR("device %s init failed: %d\n", dssdev->name, r);
+ 		dss_put_device(dssdev);
+-		return;
++		return r;
+ 	}
+ 
+ 	r = omapdss_output_set_device(&dsi->output, dssdev);
+@@ -5428,7 +5428,7 @@ static void dsi_probe_pdata(struct platform_device *dsidev)
+ 		DSSERR("failed to connect output to new device: %s\n",
+ 				dssdev->name);
+ 		dss_put_device(dssdev);
+-		return;
++		return r;
+ 	}
+ 
+ 	r = dss_add_device(dssdev);
+@@ -5458,7 +5458,7 @@ static void dsi_init_output(struct platform_device *dsidev)
+ 	dss_register_output(out);
+ }
+ 
+-static void __exit dsi_uninit_output(struct platform_device *dsidev)
++static void dsi_uninit_output(struct platform_device *dsidev)
+ {
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	struct omap_dss_output *out = &dsi->output;
+@@ -5563,7 +5563,13 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
+ 
+ 	dsi_init_output(dsidev);
+ 
+-	dsi_probe_pdata(dsidev);
++	r = dsi_probe_pdata(dsidev);
++	if (r) {
++		dsi_runtime_put(dsidev);
++		dsi_uninit_output(dsidev);
++		pm_runtime_disable(&dsidev->dev);
++		return r;
++	}
+ 
+ 	dsi_runtime_put(dsidev);
+ 
 -- 
-1.7.9.5
+1.7.10.4
 

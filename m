@@ -1,82 +1,99 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 04 Apr 2013 11:14:41 +0000
-Subject: Re: [PATCHv2 0/5] videomode patches
-Message-Id: <515D60A1.7060904@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enig86F440CB01C9CBAA24E6EC7B"
+Date: Mon, 29 Apr 2013 10:22:33 +0000
+Subject: [PATCH 06/10] OMAPDSS: DPI: use platform_driver_register()
+Message-Id: <1367230957-32337-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364367505-4366-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1364367505-4366-1-git-send-email-tomi.valkeinen@ti.com>
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Steffen Trumtrar <s.trumtrar@pengutronix.de>
+References: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>, grygorii.strashko@ti.com, chf.fritz@googlemail.com, Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
---------------enig86F440CB01C9CBAA24E6EC7B
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Use platform_driver_register() instead of platform_driver_probe() so
+that we can support EPROBE_DEFER.
 
-On 2013-03-27 08:58, Tomi Valkeinen wrote:
-> Hi,
->=20
-> Here's a v2 of the videomode series. The changes compared to v1:
->=20
-> * Dropped "videomode: rename fields", as it received only negative comm=
-ents
-> * New patch: "videomode: videomode_from_timing work"
->=20
-> Patches 1-4 are unchanged.
->=20
->  Tomi
->=20
-> Tomi Valkeinen (5):
->   videomode: simplify videomode Kconfig and Makefile
->   videomode: combine videomode dmt_flags and data_flags
->   videomode: create enum for videomode's display flags
->   videomode: remove timing_entry_index
->   videomode: videomode_from_timing work
->=20
->  drivers/gpu/drm/drm_modes.c           |   20 ++++++------
->  drivers/gpu/drm/tilcdc/Kconfig        |    3 +-
->  drivers/gpu/drm/tilcdc/tilcdc_panel.c |    2 +-
->  drivers/video/Kconfig                 |   22 ++-----------
->  drivers/video/Makefile                |    8 ++---
->  drivers/video/fbmon.c                 |   16 ++++-----
->  drivers/video/of_display_timing.c     |   19 ++++++-----
->  drivers/video/of_videomode.c          |    2 +-
->  drivers/video/videomode.c             |   36 ++++++++++++---------
->  include/video/display_timing.h        |   57 ++++++++++---------------=
---------
->  include/video/videomode.h             |   18 ++++++++---
->  11 files changed, 88 insertions(+), 115 deletions(-)
->=20
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dpi.c |   15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-If there are no objections, I can merge this through fbdev tree.
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index e93c4de..2024787 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -520,7 +520,7 @@ void omapdss_dpi_set_data_lines(struct omap_dss_device *dssdev, int data_lines)
+ }
+ EXPORT_SYMBOL(omapdss_dpi_set_data_lines);
+ 
+-static int __init dpi_verify_dsi_pll(struct platform_device *dsidev)
++static int dpi_verify_dsi_pll(struct platform_device *dsidev)
+ {
+ 	int r;
+ 
+@@ -572,7 +572,7 @@ static enum omap_channel dpi_get_channel(void)
+ 	}
+ }
+ 
+-static int __init dpi_init_display(struct omap_dss_device *dssdev)
++static int dpi_init_display(struct omap_dss_device *dssdev)
+ {
+ 	struct platform_device *dsidev;
+ 
+@@ -607,7 +607,7 @@ static int __init dpi_init_display(struct omap_dss_device *dssdev)
+ 	return 0;
+ }
+ 
+-static struct omap_dss_device * __init dpi_find_dssdev(struct platform_device *pdev)
++static struct omap_dss_device *dpi_find_dssdev(struct platform_device *pdev)
+ {
+ 	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
+ 	const char *def_disp_name = omapdss_get_default_display_name();
+@@ -635,7 +635,7 @@ static struct omap_dss_device * __init dpi_find_dssdev(struct platform_device *p
+ 	return def_dssdev;
+ }
+ 
+-static void __init dpi_probe_pdata(struct platform_device *dpidev)
++static void dpi_probe_pdata(struct platform_device *dpidev)
+ {
+ 	struct omap_dss_device *plat_dssdev;
+ 	struct omap_dss_device *dssdev;
+@@ -676,7 +676,7 @@ static void __init dpi_probe_pdata(struct platform_device *dpidev)
+ 	}
+ }
+ 
+-static void __init dpi_init_output(struct platform_device *pdev)
++static void dpi_init_output(struct platform_device *pdev)
+ {
+ 	struct omap_dss_output *out = &dpi.output;
+ 
+@@ -696,7 +696,7 @@ static void __exit dpi_uninit_output(struct platform_device *pdev)
+ 	dss_unregister_output(out);
+ }
+ 
+-static int __init omap_dpi_probe(struct platform_device *pdev)
++static int omap_dpi_probe(struct platform_device *pdev)
+ {
+ 	mutex_init(&dpi.lock);
+ 
+@@ -717,6 +717,7 @@ static int __exit omap_dpi_remove(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver omap_dpi_driver = {
++	.probe		= omap_dpi_probe,
+ 	.remove         = __exit_p(omap_dpi_remove),
+ 	.driver         = {
+ 		.name   = "omapdss_dpi",
+@@ -726,7 +727,7 @@ static struct platform_driver omap_dpi_driver = {
+ 
+ int __init dpi_init_platform_driver(void)
+ {
+-	return platform_driver_probe(&omap_dpi_driver, omap_dpi_probe);
++	return platform_driver_register(&omap_dpi_driver);
+ }
+ 
+ void __exit dpi_uninit_platform_driver(void)
+-- 
+1.7.10.4
 
- Tomi
-
-
-
---------------enig86F440CB01C9CBAA24E6EC7B
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRXWChAAoJEPo9qoy8lh716R4QAJR5Mu0QXM5MQkBhX3YkdWW8
-JtPhxWViJkAWBa+OIn9i9kvSApKeDFc7FTip+5fZ8CM80mXOPO+xA6i1Cg8CLPPI
-medc0ItGl1pNT11JYVP2kuvs+gV7OFjCwZ/sEqjUHBsT7YVdqc1/fSYv5EA2VGeP
-WTpeQnfn1cjXlWilfma2UnDxQoOMSSia6CLsHoscvbg6mNH8BKdWELSALX//GfAs
-FZMPhqCD1JbxXeE1waBm5arIfc89Kp0Udmp7w1dY++fWB6RxLlRjAMBS6biDBl01
-N9P5mjGIaPRmSx+R91DbEGYf/a3gN4ERtXn3dRLgVesdeZUVSXMy61Ihe+e66OTb
-RfYhJKdURSvpj2HYRZ5vR2km7sTpN3O9M+3KWSZkHy+wFQ4mC8kGno8dF+FBNt85
-PLX2QQps5h2S9hffCLmPIF8wxTgcrywSR3BKCUlTO/hasHNnV4zs8rp3dhHwPuuD
-2YGSbSh+a6L8cBEJ3lFxY1gBn/65jrhBfIOWBRKjMFm1J16rfYWLuv0ewz51hTxn
-qrzBKBL4oBxngVpHD3Ku2HgfS87aNYmOMd1tfrgLuUSe/bijDXh55K4f2VPxYsJ3
-wbj/Khikw175sTDGO3dHx4b3S4yL1f6RrqAyV9KAmifo24wJX5eQwlJ/eko0vCF9
-zGM3VOflDzOfA2APJc3j
-=q2dj
------END PGP SIGNATURE-----
-
---------------enig86F440CB01C9CBAA24E6EC7B--

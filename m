@@ -1,86 +1,97 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 23 Apr 2013 06:36:52 +0000
-Subject: [PATCH 05/11] fbdev/controlfb: use vm_iomap_memory()
-Message-Id: <1366699018-5439-5-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 29 Apr 2013 10:22:36 +0000
+Subject: [PATCH 09/10] OMAPDSS: HDMI: Add error handling for hdmi_probe_pdata
+Message-Id: <1367230957-32337-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>, grygorii.strashko@ti.com, chf.fritz@googlemail.com, Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Use vm_iomap_memory() instead of [io_]remap_pfn_range().
-vm_iomap_memory() gives us much simpler API to map memory to userspace,
-and reduces possibilities for bugs.
+Add proper error handling for hdmi_probe_pdata(). This will cause
+EPROBE_DEFER to be properly passed upwards, causing the HDMI driver to be
+probed again later if a resource was missing.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/controlfb.c |   50 ++++++++++++++++++---------------------------
- 1 file changed, 20 insertions(+), 30 deletions(-)
+ drivers/video/omap2/dss/hdmi.c |   22 +++++++++++++++-------
+ 1 file changed, 15 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/controlfb.c b/drivers/video/controlfb.c
-index 0c189b3..67b77b4 100644
---- a/drivers/video/controlfb.c
-+++ b/drivers/video/controlfb.c
-@@ -285,36 +285,26 @@ static int controlfb_pan_display(struct fb_var_screeninfo *var,
- static int controlfb_mmap(struct fb_info *info,
-                        struct vm_area_struct *vma)
- {
--       unsigned long off, start;
--       u32 len;
--
--       off = vma->vm_pgoff << PAGE_SHIFT;
--
--       /* frame buffer memory */
--       start = info->fix.smem_start;
--       len = PAGE_ALIGN((start & ~PAGE_MASK)+info->fix.smem_len);
--       if (off >= len) {
--               /* memory mapped io */
--               off -= len;
--               if (info->var.accel_flags)
--                       return -EINVAL;
--               start = info->fix.mmio_start;
--               len = PAGE_ALIGN((start & ~PAGE_MASK)+info->fix.mmio_len);
--	       vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
--       } else {
--               /* framebuffer */
--	       vma->vm_page_prot = pgprot_cached_wthru(vma->vm_page_prot);
--       }
--       start &= PAGE_MASK;
--       if ((vma->vm_end - vma->vm_start + off) > len)
--       		return -EINVAL;
--       off += start;
--       vma->vm_pgoff = off >> PAGE_SHIFT;
--       if (io_remap_pfn_range(vma, vma->vm_start, off >> PAGE_SHIFT,
--           vma->vm_end - vma->vm_start, vma->vm_page_prot))
--               return -EAGAIN;
--
--       return 0;
-+	unsigned long mmio_pgoff;
-+	unsigned long start;
-+	u32 len;
-+
-+	start = info->fix.smem_start;
-+	len = info->fix.smem_len;
-+	mmio_pgoff = PAGE_ALIGN((start & ~PAGE_MASK) + len) >> PAGE_SHIFT;
-+	if (vma->vm_pgoff >= mmio_pgoff) {
-+		if (info->var.accel_flags)
-+			return -EINVAL;
-+		vma->vm_pgoff -= mmio_pgoff;
-+		start = info->fix.mmio_start;
-+		len = info->fix.mmio_len;
-+		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-+	} else {
-+		/* framebuffer */
-+		vma->vm_page_prot = pgprot_cached_wthru(vma->vm_page_prot);
-+	}
-+
-+	return vm_iomap_memory(vma, start, len);
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 9aefe60..17f4d55 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -982,7 +982,7 @@ static struct omap_dss_device *hdmi_find_dssdev(struct platform_device *pdev)
+ 	return def_dssdev;
  }
  
- static int controlfb_blank(int blank_mode, struct fb_info *info)
+-static void hdmi_probe_pdata(struct platform_device *pdev)
++static int hdmi_probe_pdata(struct platform_device *pdev)
+ {
+ 	struct omap_dss_device *plat_dssdev;
+ 	struct omap_dss_device *dssdev;
+@@ -992,11 +992,11 @@ static void hdmi_probe_pdata(struct platform_device *pdev)
+ 	plat_dssdev = hdmi_find_dssdev(pdev);
+ 
+ 	if (!plat_dssdev)
+-		return;
++		return 0;
+ 
+ 	dssdev = dss_alloc_and_init_device(&pdev->dev);
+ 	if (!dssdev)
+-		return;
++		return -ENOMEM;
+ 
+ 	dss_copy_device_pdata(dssdev, plat_dssdev);
+ 
+@@ -1010,7 +1010,7 @@ static void hdmi_probe_pdata(struct platform_device *pdev)
+ 	if (r) {
+ 		DSSERR("device %s init failed: %d\n", dssdev->name, r);
+ 		dss_put_device(dssdev);
+-		return;
++		return r;
+ 	}
+ 
+ 	r = omapdss_output_set_device(&hdmi.output, dssdev);
+@@ -1018,7 +1018,7 @@ static void hdmi_probe_pdata(struct platform_device *pdev)
+ 		DSSERR("failed to connect output to new device: %s\n",
+ 				dssdev->name);
+ 		dss_put_device(dssdev);
+-		return;
++		return r;
+ 	}
+ 
+ 	r = dss_add_device(dssdev);
+@@ -1027,8 +1027,10 @@ static void hdmi_probe_pdata(struct platform_device *pdev)
+ 		omapdss_output_unset_device(&hdmi.output);
+ 		hdmi_uninit_display(dssdev);
+ 		dss_put_device(dssdev);
+-		return;
++		return r;
+ 	}
++
++	return 0;
+ }
+ 
+ static void hdmi_init_output(struct platform_device *pdev)
+@@ -1096,7 +1098,13 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ 
+ 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
+ 
+-	hdmi_probe_pdata(pdev);
++	r = hdmi_probe_pdata(pdev);
++	if (r) {
++		hdmi_panel_exit();
++		hdmi_uninit_output(pdev);
++		pm_runtime_disable(&pdev->dev);
++		return r;
++	}
+ 
+ 	return 0;
+ }
 -- 
 1.7.10.4
 

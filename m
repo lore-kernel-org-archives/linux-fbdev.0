@@ -1,111 +1,83 @@
-From: Markus Pargmann <mpa@pengutronix.de>
-Date: Wed, 24 Apr 2013 13:39:10 +0000
-Subject: [PATCH v5 1/2] imxfb: Set alpha value of the framebuffer
-Message-Id: <1366810751-26860-2-git-send-email-mpa@pengutronix.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 29 Apr 2013 10:22:29 +0000
+Subject: [PATCH 02/10] OMAPFB: use module_platform_driver()
+Message-Id: <1367230957-32337-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366810751-26860-1-git-send-email-mpa@pengutronix.de>
-In-Reply-To: <1366810751-26860-1-git-send-email-mpa@pengutronix.de>
+References: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>, grygorii.strashko@ti.com, chf.fritz@googlemail.com, Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Christian Hemp <c.hemp@phytec.de>
+Instead of using platform_driver_probe(), use module_platform_driver()
+so that we can support deferred probing.
 
-Based on Sascha Hauer's patch i.MX27 clock: Do not disable lcd clocks during
-startup.
-This patch gives a interface to chance the alphavalue of the framebuffer.
-
-Signed-off-by: Christian Hemp <c.hemp@phytec.de>
-
-rebased to 3.7
-Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/imxfb.c                     | 35 +++++++++++++++++++++++++++++++
- include/linux/platform_data/video-imxfb.h |  3 +++
- 2 files changed, 38 insertions(+)
+ drivers/video/omap2/omapfb/omapfb-main.c |   28 +++-------------------------
+ 1 file changed, 3 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 0abf2bf..ef2b587 100644
---- a/drivers/video/imxfb.c
-+++ b/drivers/video/imxfb.c
-@@ -31,6 +31,7 @@
- #include <linux/dma-mapping.h>
- #include <linux/io.h>
- #include <linux/math64.h>
-+#include <linux/uaccess.h>
- 
- #include <linux/platform_data/video-imxfb.h>
- 
-@@ -112,6 +113,10 @@
- #define LCDISR_EOF	(1<<1)
- #define LCDISR_BOF	(1<<0)
- 
-+#define LCDC_LGWCR	0x64
-+#define LGWCR_GWAV(alpha)	(((alpha) & 0xff) << 24)
-+#define LGWCR_GWE	(1 << 22)
-+
- /* Used fb-mode. Can be set on kernel command line, therefore file-static. */
- static const char *fb_mode;
- 
-@@ -610,6 +615,35 @@ static int imxfb_blank(int blank, struct fb_info *info)
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index f38348e..808f6af 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -2422,7 +2422,7 @@ static int omapfb_init_connections(struct omapfb2_device *fbdev,
  	return 0;
  }
  
-+static int imxfb_ioctl(struct fb_info *info, unsigned int cmd,
-+			unsigned long arg)
-+{
-+	struct imxfb_info *fbi = info->par;
-+	int alpha, ret = 0;
-+	unsigned int tmp;
-+
-+	switch (cmd) {
-+	case IMXFB_ALPHA:
-+		if (get_user(alpha, (int __user *)arg)) {
-+			ret = -EFAULT;
-+		} else {
-+			tmp = readl(fbi->regs + LCDC_LGWCR);
-+			tmp &= ~LGWCR_GWAV(0xff);
-+			tmp |= LGWCR_GWAV(alpha);
-+			if (!alpha)
-+				tmp &= ~LGWCR_GWE;
-+			else
-+				tmp |= LGWCR_GWE;
-+			writel(tmp , fbi->regs + LCDC_LGWCR);
-+		}
-+		break;
-+	default:
-+		ret = -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
- static struct fb_ops imxfb_ops = {
- 	.owner		= THIS_MODULE,
- 	.fb_check_var	= imxfb_check_var,
-@@ -619,6 +653,7 @@ static struct fb_ops imxfb_ops = {
- 	.fb_copyarea	= cfb_copyarea,
- 	.fb_imageblit	= cfb_imageblit,
- 	.fb_blank	= imxfb_blank,
-+	.fb_ioctl	= imxfb_ioctl,
+-static int __init omapfb_probe(struct platform_device *pdev)
++static int omapfb_probe(struct platform_device *pdev)
+ {
+ 	struct omapfb2_device *fbdev = NULL;
+ 	int r = 0;
+@@ -2595,6 +2595,7 @@ static int __exit omapfb_remove(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver omapfb_driver = {
++	.probe		= omapfb_probe,
+ 	.remove         = __exit_p(omapfb_remove),
+ 	.driver         = {
+ 		.name   = "omapfb",
+@@ -2602,36 +2603,13 @@ static struct platform_driver omapfb_driver = {
+ 	},
  };
  
- /*
-diff --git a/include/linux/platform_data/video-imxfb.h b/include/linux/platform_data/video-imxfb.h
-index 9de8f06..ce3875f 100644
---- a/include/linux/platform_data/video-imxfb.h
-+++ b/include/linux/platform_data/video-imxfb.h
-@@ -51,6 +51,9 @@
- #define DMACR_HM(x)	(((x) & 0xf) << 16)
- #define DMACR_TM(x)	((x) & 0xf)
+-static int __init omapfb_init(void)
+-{
+-	DBG("omapfb_init\n");
+-
+-	if (platform_driver_probe(&omapfb_driver, omapfb_probe)) {
+-		printk(KERN_ERR "failed to register omapfb driver\n");
+-		return -ENODEV;
+-	}
+-
+-	return 0;
+-}
+-
+-static void __exit omapfb_exit(void)
+-{
+-	DBG("omapfb_exit\n");
+-	platform_driver_unregister(&omapfb_driver);
+-}
+-
+ module_param_named(mode, def_mode, charp, 0);
+ module_param_named(vram, def_vram, charp, 0);
+ module_param_named(rotate, def_rotate, int, 0);
+ module_param_named(vrfb, def_vrfb, bool, 0);
+ module_param_named(mirror, def_mirror, bool, 0);
  
-+#define IMXFB_IOW(num, dtype)	_IOW('I', num, dtype)
-+#define IMXFB_ALPHA		IMXFB_IOW(31, int)
-+
- struct imx_fb_videomode {
- 	struct fb_videomode mode;
- 	u32 pcr;
+-/* late_initcall to let panel/ctrl drivers loaded first.
+- * I guess better option would be a more dynamic approach,
+- * so that omapfb reacts to new panels when they are loaded */
+-late_initcall(omapfb_init);
+-/*module_init(omapfb_init);*/
+-module_exit(omapfb_exit);
++module_platform_driver(omapfb_driver);
+ 
+ MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@nokia.com>");
+ MODULE_DESCRIPTION("OMAP2/3 Framebuffer");
 -- 
-1.8.1.5
+1.7.10.4
 

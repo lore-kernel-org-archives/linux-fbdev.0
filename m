@@ -1,78 +1,46 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 02 Apr 2013 10:13:36 +0000
-Subject: Re: [PATCH] video: omap2: dss: use PTR_RET function
-Message-Id: <515AAF50.9010504@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------enigFC07AC7C235DE6BE0BECC3F8"
+Date: Mon, 29 Apr 2013 10:22:30 +0000
+Subject: [PATCH 03/10] OMAPFB: defer probe if no displays
+Message-Id: <1367230957-32337-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1364416537-25367-1-git-send-email-epure.andrei@gmail.com>
-In-Reply-To: <1364416537-25367-1-git-send-email-epure.andrei@gmail.com>
-To: Andrei Epure <epure.andrei@gmail.com>
-Cc: FlorianSchandinat@gmx.de, archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>, grygorii.strashko@ti.com, chf.fritz@googlemail.com, Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
---------------enigFC07AC7C235DE6BE0BECC3F8
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+omapfb requires the panel drivers to have been probed when omapfb is
+initialized. omapfb does not support insertion of new panels after its
+probe. This causes a problem in case omapdss or the panel probes have
+been deferred due to EPROBE_DEFER error, as omapfb won't find any
+displays.
 
-Hi,
+As a quick fix, this patch changes the omapfb probe so that if omapfb
+does not find any displays, it'll return EPROBE_DEFER. This is not
+perfect, as with a board with no displays, omapfb will get deferred
+forever. Also, if the board has multiple displays, but only some of them
+have been probed, omapfb will start and leave the unprobed displays out.
 
-On 2013-03-27 22:35, Andrei Epure wrote:
-> Use PTR_RET function instead of IS_ERR + PTR_ERR.
-> Patch found using coccinelle.
->=20
-> Signed-off-by: Andrei Epure <epure.andrei@gmail.com>
-> ---
->  drivers/video/omap2/dss/core.c |    5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
->=20
-> diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/c=
-ore.c
-> index f8779d4..60cc6fe 100644
-> --- a/drivers/video/omap2/dss/core.c
-> +++ b/drivers/video/omap2/dss/core.c
-> @@ -181,10 +181,7 @@ int dss_debugfs_create_file(const char *name, void=
- (*write)(struct seq_file *))
->  	d =3D debugfs_create_file(name, S_IRUGO, dss_debugfs_dir,
->  			write, &dss_debug_fops);
-> =20
-> -	if (IS_ERR(d))
-> -		return PTR_ERR(d);
-> -
-> -	return 0;
-> +	return PTR_RET(d);
->  }
->  #else /* CONFIG_OMAP2_DSS_DEBUGFS */
->  static inline int dss_initialize_debugfs(void)
->=20
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/omapfb/omapfb-main.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-There's an identical patch from Alexandru Gheorghiu already queued.
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 808f6af..ff00d1d 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -2484,7 +2484,7 @@ static int omapfb_probe(struct platform_device *pdev)
+ 
+ 	if (fbdev->num_displays = 0) {
+ 		dev_err(&pdev->dev, "no displays\n");
+-		r = -EINVAL;
++		r = -EPROBE_DEFER;
+ 		goto cleanup;
+ 	}
+ 
+-- 
+1.7.10.4
 
- Tomi
-
-
-
---------------enigFC07AC7C235DE6BE0BECC3F8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with undefined - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRWq9QAAoJEPo9qoy8lh7119YP/098U8am6Ljox7mOGjoVC86j
-puhBovr4Qmtea+FqomExIaS7zmvawpvNnrO/9AKzHGJuqHmUMIbfJFR3VxNm5gZk
-iPG29BiI9K0C4h7jCzN4kxVr+waQzCVm2pJNrqtkxow0f39sII3+bv/TULyVR3iw
-eVLIwVl0QaQlBNQyonUh++0DIbrsreR77Il4Zid1lA7RP+2nX1L/fCq+2eZp9j/0
-TfjPx/CuRykiJJuNCrAIZIYxb4160nzBbjfQ+31YqFTJIhwSGgUQBD1zWRiO3i0K
-Np0l0atAikD5h4iUalZctT0XZ+XykQFTgHtQi5FGyep7AM46NIXRmtorO/hjjmv0
-/GDYFRtagnOnC8lj4kUGk5aGjRijTL8b6dHs9D+BMfYic5UxsCnFcuaSgtm0C3OE
-qh3+5jHFEwOBHpRhqNRYO8HnVCdqR121guf3T8SK1GNmy6t2r8iLCTMCcNfX/StP
-gSf5tB0O3RMk3Q76ZGxQgoFO1x/d7wYvxHWQnxdwuummIZokkF9GdnhQX5nWldSs
-iBt772fetw8XYSlU/RvKfXY+ZhvThVS9dqS8+VQ9mC8WXf49b3wcznXLnWXusBdg
-BqB6cyarWGHpr4cBPJVQnvFaYye1WDv292GpCPsU1D4qFIRoMvclxsCILLJoDa5u
-of93dqQQJGtgGoqNzWF4
-=cgro
------END PGP SIGNATURE-----
-
---------------enigFC07AC7C235DE6BE0BECC3F8--

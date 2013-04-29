@@ -1,56 +1,54 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 23 Apr 2013 06:36:57 +0000
-Subject: [PATCH 10/11] fbdev/ps3fb: use vm_iomap_memory()
-Message-Id: <1366699018-5439-10-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 29 Apr 2013 10:22:27 +0000
+Subject: [PATCH 00/10] OMAPDSS: Basic deferred probe support
+Message-Id: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1366699018-5439-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>, grygorii.strashko@ti.com, chf.fritz@googlemail.com, Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Use vm_iomap_memory() instead of [io_]remap_pfn_range().
-vm_iomap_memory() gives us much simpler API to map memory to userspace,
-and reduces possibilities for bugs.
+Hi,
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- drivers/video/ps3fb.c |   15 ++++-----------
- 1 file changed, 4 insertions(+), 11 deletions(-)
+omapdss, omapfb and the panel drivers do not currently support deferred probe,
+which is causing the display drivers fail when booting with DT.
 
-diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
-index 920c27b..1bdeb08 100644
---- a/drivers/video/ps3fb.c
-+++ b/drivers/video/ps3fb.c
-@@ -705,21 +705,14 @@ static int ps3fb_pan_display(struct fb_var_screeninfo *var,
- 
- static int ps3fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
- {
--	unsigned long size, offset;
-+	int r;
- 
--	size = vma->vm_end - vma->vm_start;
--	offset = vma->vm_pgoff << PAGE_SHIFT;
--	if (offset + size > info->fix.smem_len)
--		return -EINVAL;
--
--	offset += info->fix.smem_start;
--	if (remap_pfn_range(vma, vma->vm_start, offset >> PAGE_SHIFT,
--			    size, vma->vm_page_prot))
--		return -EAGAIN;
-+	r = vm_ioremap_memory(vma, info->fix.smem_start, info->fix.smem_len);
- 
- 	dev_dbg(info->device, "ps3fb: mmap framebuffer P(%lx)->V(%lx)\n",
- 		offset, vma->vm_start);
--	return 0;
-+
-+	return r;
- }
- 
-     /*
+This series adds very basic support for deferred probing, which hopefully fixes
+the issues for omap4 panda and sdp boards with the current kernel.
+
+Limitations:
+
+* Deferred probe support for omap_vout and omapdrm is still totally missing.
+* If it so happens that at omapfb probe time one panel has been probed, but
+  another has been deferred, only the probed one will be used.
+* Only DPI, DSI and HDMI outputs have been fixed.
+* Some panel drivers may need modifications to support EPROBE_DEFER
+
+Patches based on linux-next, i.e. the latest omapdss stuff.
+
+ Tomi
+
+Tomi Valkeinen (10):
+  OMAPDSS: Makefile: move omapfb after panels
+  OMAPFB: use module_platform_driver()
+  OMAPFB: defer probe if no displays
+  OMAPDSS: DSI: use platform_driver_register()
+  OMAPDSS: DSI: Add error handling for dsi_probe_pdata
+  OMAPDSS: DPI: use platform_driver_register()
+  OMAPDSS: DPI: Add error handling for dpi_probe_pdata
+  OMAPDSS: HDMI: use platform_driver_register()
+  OMAPDSS: HDMI: Add error handling for hdmi_probe_pdata
+  OMAPDSS: TFP410: return EPROBE_DEFER if the i2c adapter not found
+
+ drivers/video/omap2/Makefile                |    2 +-
+ drivers/video/omap2/displays/panel-tfp410.c |    2 +-
+ drivers/video/omap2/dss/dpi.c               |   35 +++++++++++++++++----------
+ drivers/video/omap2/dss/dsi.c               |   35 +++++++++++++++++----------
+ drivers/video/omap2/dss/hdmi.c              |   33 ++++++++++++++++---------
+ drivers/video/omap2/omapfb/omapfb-main.c    |   30 +++--------------------
+ 6 files changed, 71 insertions(+), 66 deletions(-)
+
 -- 
 1.7.10.4
 

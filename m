@@ -1,110 +1,101 @@
-From: Prabhakar Lad <prabhakar.csengg@gmail.com>
-Date: Wed, 24 Apr 2013 12:12:06 +0000
-Subject: [PATCH 4/6] ARM: davinci: dm355: enable fbdev driver
-Message-Id: <1366804808-22720-5-git-send-email-prabhakar.csengg@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 29 Apr 2013 10:22:34 +0000
+Subject: [PATCH 07/10] OMAPDSS: DPI: Add error handling for dpi_probe_pdata
+Message-Id: <1367230957-32337-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366804808-22720-1-git-send-email-prabhakar.csengg@gmail.com>
-In-Reply-To: <1366804808-22720-1-git-send-email-prabhakar.csengg@gmail.com>
+References: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>, grygorii.strashko@ti.com, chf.fritz@googlemail.com, Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+Add proper error handling for dpi_probe_pdata(). This will cause
+EPROBE_DEFER to be properly passed upwards, causing the DPI driver to be
+probed again later if a resource was missing.
 
-This patch enables fbdev driver by creating fbdev device and register it.
-Alongside renames 'vpfe_capture_dma_mask' to 'dm355_video_dma_mask' for better
-clarity since it was reused by capture and diplay aswell.
-
-Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-davinci/dm355.c |   24 +++++++++++++++++-------
- 1 files changed, 17 insertions(+), 7 deletions(-)
+ drivers/video/omap2/dss/dpi.c |   22 +++++++++++++++-------
+ 1 file changed, 15 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm/mach-davinci/dm355.c b/arch/arm/mach-davinci/dm355.c
-index bf9a9d4..fe50814 100644
---- a/arch/arm/mach-davinci/dm355.c
-+++ b/arch/arm/mach-davinci/dm355.c
-@@ -714,7 +714,7 @@ static struct resource vpfe_resources[] = {
- 	},
- };
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 2024787..757b57f 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -635,7 +635,7 @@ static struct omap_dss_device *dpi_find_dssdev(struct platform_device *pdev)
+ 	return def_dssdev;
+ }
  
--static u64 vpfe_capture_dma_mask = DMA_BIT_MASK(32);
-+static u64 dm355_video_dma_mask = DMA_BIT_MASK(32);
- static struct resource dm355_ccdc_resource[] = {
- 	/* CCDC Base address */
- 	{
-@@ -729,7 +729,7 @@ static struct platform_device dm355_ccdc_dev = {
- 	.num_resources  = ARRAY_SIZE(dm355_ccdc_resource),
- 	.resource       = dm355_ccdc_resource,
- 	.dev = {
--		.dma_mask               = &vpfe_capture_dma_mask,
-+		.dma_mask               = &dm355_video_dma_mask,
- 		.coherent_dma_mask      = DMA_BIT_MASK(32),
- 		.platform_data		= dm355_ccdc_setup_pinmux,
- 	},
-@@ -741,7 +741,7 @@ static struct platform_device vpfe_capture_dev = {
- 	.num_resources	= ARRAY_SIZE(vpfe_resources),
- 	.resource	= vpfe_resources,
- 	.dev = {
--		.dma_mask		= &vpfe_capture_dma_mask,
-+		.dma_mask		= &dm355_video_dma_mask,
- 		.coherent_dma_mask	= DMA_BIT_MASK(32),
- 	},
- };
-@@ -760,7 +760,7 @@ static struct platform_device dm355_osd_dev = {
- 	.num_resources	= ARRAY_SIZE(dm355_osd_resources),
- 	.resource	= dm355_osd_resources,
- 	.dev		= {
--		.dma_mask		= &vpfe_capture_dma_mask,
-+		.dma_mask		= &dm355_video_dma_mask,
- 		.coherent_dma_mask	= DMA_BIT_MASK(32),
- 	},
- };
-@@ -855,7 +855,16 @@ static struct platform_device dm355_vpbe_display = {
- 	.num_resources	= ARRAY_SIZE(dm355_v4l2_disp_resources),
- 	.resource	= dm355_v4l2_disp_resources,
- 	.dev		= {
--		.dma_mask		= &vpfe_capture_dma_mask,
-+		.dma_mask		= &dm355_video_dma_mask,
-+		.coherent_dma_mask	= DMA_BIT_MASK(32),
-+	},
-+};
-+
-+static struct platform_device dm355_davincifb = {
-+	.name		= "davinci-vpbe-fb",
-+	.id		= -1,
-+	.dev		= {
-+		.dma_mask		= &dm355_video_dma_mask,
- 		.coherent_dma_mask	= DMA_BIT_MASK(32),
- 	},
- };
-@@ -871,7 +880,7 @@ static struct platform_device dm355_venc_dev = {
- 	.num_resources	= ARRAY_SIZE(dm355_venc_resources),
- 	.resource	= dm355_venc_resources,
- 	.dev		= {
--		.dma_mask		= &vpfe_capture_dma_mask,
-+		.dma_mask		= &dm355_video_dma_mask,
- 		.coherent_dma_mask	= DMA_BIT_MASK(32),
- 		.platform_data		= (void *)&dm355_venc_pdata,
- 	},
-@@ -881,7 +890,7 @@ static struct platform_device dm355_vpbe_dev = {
- 	.name		= "vpbe_controller",
- 	.id		= -1,
- 	.dev		= {
--		.dma_mask		= &vpfe_capture_dma_mask,
-+		.dma_mask		= &dm355_video_dma_mask,
- 		.coherent_dma_mask	= DMA_BIT_MASK(32),
- 	},
- };
-@@ -1023,6 +1032,7 @@ int __init dm355_init_video(struct vpfe_config *vpfe_cfg,
- 		platform_device_register(&dm355_venc_dev);
- 		platform_device_register(&dm355_vpbe_dev);
- 		platform_device_register(&dm355_vpbe_display);
-+		platform_device_register(&dm355_davincifb);
+-static void dpi_probe_pdata(struct platform_device *dpidev)
++static int dpi_probe_pdata(struct platform_device *dpidev)
+ {
+ 	struct omap_dss_device *plat_dssdev;
+ 	struct omap_dss_device *dssdev;
+@@ -644,11 +644,11 @@ static void dpi_probe_pdata(struct platform_device *dpidev)
+ 	plat_dssdev = dpi_find_dssdev(dpidev);
+ 
+ 	if (!plat_dssdev)
+-		return;
++		return 0;
+ 
+ 	dssdev = dss_alloc_and_init_device(&dpidev->dev);
+ 	if (!dssdev)
+-		return;
++		return -ENOMEM;
+ 
+ 	dss_copy_device_pdata(dssdev, plat_dssdev);
+ 
+@@ -656,7 +656,7 @@ static void dpi_probe_pdata(struct platform_device *dpidev)
+ 	if (r) {
+ 		DSSERR("device %s init failed: %d\n", dssdev->name, r);
+ 		dss_put_device(dssdev);
+-		return;
++		return r;
  	}
  
+ 	r = omapdss_output_set_device(&dpi.output, dssdev);
+@@ -664,7 +664,7 @@ static void dpi_probe_pdata(struct platform_device *dpidev)
+ 		DSSERR("failed to connect output to new device: %s\n",
+ 				dssdev->name);
+ 		dss_put_device(dssdev);
+-		return;
++		return r;
+ 	}
+ 
+ 	r = dss_add_device(dssdev);
+@@ -672,8 +672,10 @@ static void dpi_probe_pdata(struct platform_device *dpidev)
+ 		DSSERR("device %s register failed: %d\n", dssdev->name, r);
+ 		omapdss_output_unset_device(&dpi.output);
+ 		dss_put_device(dssdev);
+-		return;
++		return r;
+ 	}
++
++	return 0;
+ }
+ 
+ static void dpi_init_output(struct platform_device *pdev)
+@@ -698,11 +700,17 @@ static void __exit dpi_uninit_output(struct platform_device *pdev)
+ 
+ static int omap_dpi_probe(struct platform_device *pdev)
+ {
++	int r;
++
+ 	mutex_init(&dpi.lock);
+ 
+ 	dpi_init_output(pdev);
+ 
+-	dpi_probe_pdata(pdev);
++	r = dpi_probe_pdata(pdev);
++	if (r) {
++		dpi_uninit_output(pdev);
++		return r;
++	}
+ 
  	return 0;
+ }
 -- 
-1.7.4.1
+1.7.10.4
 

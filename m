@@ -1,65 +1,49 @@
-From: Olof Johansson <olof@lixom.net>
-Date: Mon, 29 Apr 2013 22:40:44 +0000
+From: Tomi Valkeinen <tomi.valkeinen@iki.fi>
+Date: Tue, 30 Apr 2013 07:27:01 +0000
 Subject: Re: [PATCH V2] video: implement a simple framebuffer driver
-Message-Id: <CAOesGMiCvBwck0Z6Nyo9zW=1=J=wjhJW68qNGMrN_8iim=8Srg@mail.gmail.com>
+Message-Id: <517F7245.2050606@iki.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1365043183-28905-1-git-send-email-swarren@wwwdotorg.org>
- <6607610.omg016OAvj@avalon> <201304300004.20320.arnd@arndb.de>
- <2040099.REU8D4ds1g@avalon>
-In-Reply-To: <2040099.REU8D4ds1g@avalon>
+In-Reply-To: <1365043183-28905-1-git-send-email-swarren@wwwdotorg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Mon, Apr 29, 2013 at 3:23 PM, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
-> Hi Arnd,
->
-> On Tuesday 30 April 2013 00:04:20 Arnd Bergmann wrote:
->> On Monday 29 April 2013, Laurent Pinchart wrote:
->> > On Monday 29 April 2013 23:31:30 Tomasz Figa wrote:
->> > > Good point. Stephen, would it be a problem to make this a KMS driver
->> > > instead? Old fbdev API could be emulated on top of it, until it goes out
->> > > of use, couldn't it?
->> >
->> > There's already an fbdev emulation layer in KMS, for such a simple use
->> > case it will work fine.
->>
->> I suggested the same to Stephen when he first brought up this driver.
->> Unfortunately his attempt to create a simple KMS driver resulted in a
->> significantly larger driver than the one he did for the framebuffer
->> interface. This means that either Stephen did something really wrong in his
->> attempt, or the KMS interface isn't as good as it should be if we want to
->> move people away from frame buffer drivers.
->
-> Implementing a KMS driver requires a fair amount of code. The DRM/KMS
-> subsystem provides helpers that significantly reduce the driver size. Those
-> helpers have been designed around common use cases found in existing KMS
-> drivers.
->
-> I'm pretty sure we will be able to add useful helpers for existing fbdev
-> drivers that will make porting them to KMS pretty easy, but that first
-> requires starting to port drivers to find out what common code could be
-> factored out.
+Hi,
 
-Meanwhile this tiny driver will allow us to use hardware that can't
-otherwise be used (because the proper graphics drivers for said
-hardware is _also_ stuck behind large reworks, i.e. common display
-framework, which has uncertain progress at this time).
+On 04/04/2013 05:39 AM, Stephen Warren wrote:
+> A simple frame-buffer describes a raw memory region that may be rendered
+> to, with the assumption that the display hardware has already been set
+> up to scan out from that buffer.
+> 
+> This is useful in cases where a bootloader exists and has set up the
+> display hardware, but a Linux driver doesn't yet exist for the display
+> hardware.
 
-As Stephen mentioned in the original patch, this particular driver is
-very useful for Raspberry Pi. But it is also the best way forward
-(right now) for getting basic upstream usability out of the Samsung
-ARM-based Chromebook. As a matter of fact, as of this weekend
-linux-next boots on that platform with keyboard, trackpad, framebuffer
-and USB2.0 without a single out-of-tree patch. Getting the same
-functionality out of 3.10 would be very desirable.
+I had an idea related to this driver. There are two requirements that I
+believe are (or will be) quite common:
 
-So, I clearly understand the desire to move over to a more modern
-framework. At the same time, there's definite value in merging this
-small driver while that's happening. Holding useful code hostage isn't
-always very productive.
+On embedded devices quite often the bootloader initializes the display,
+with the purpose of having a valid image on the screen for the whole
+boot up process (company logo, or whatever).
 
+With multi-arch kernels, we'll have display drivers for all platforms
+and panels compiled with the kernel. If all these are built-in, they
+will possibly increase the kernel size quite a bit, so it would be good
+to have the display drivers as modules.
 
--Olof
+Now, if we have the display drivers as modules, the point when the
+kernel/userspace can update the screen will be pretty late. Also,
+there's no chance to get any early kernel boot messages on the screen.
+
+So how about if we had this kind of simple fb, built-in to the kernel,
+used only for the boot time until the proper driver is loaded. A "bootfb".
+
+The bootloader would init the display hardware, the bootfb would give an
+early /dev/fb0 for the kernel and userspace, and when the real display
+driver is loaded, the bootfb would be unbound and the real driver would
+take over.
+
+ Tomi
+

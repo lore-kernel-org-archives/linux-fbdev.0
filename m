@@ -1,94 +1,43 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 29 Apr 2013 10:22:32 +0000
-Subject: [PATCH 05/10] OMAPDSS: DSI: Add error handling for dsi_probe_pdata
-Message-Id: <1367230957-32337-6-git-send-email-tomi.valkeinen@ti.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 30 Apr 2013 15:07:57 +0000
+Subject: Re: Re[2]: [PATCH V2] video: implement a simple framebuffer driver
+Message-Id: <201304301707.57197.arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1365043183-28905-1-git-send-email-swarren@wwwdotorg.org>
+ <517F753F.5090909@ti.com> <1367332685.945287573@f287.mail.ru>
+In-Reply-To: <1367332685.945287573@f287.mail.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, grygorii.strashko@ti.com, chf.fritz@googlemail.com, Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Add proper error handling for dsi_probe_pdata(). This will cause
-EPROBE_DEFER to be properly passed upwards, causing the DSI driver to be
-probed again later if a resource was missing.
+On Tuesday 30 April 2013, Alexander Shiyan wrote:
+> > On 04/04/2013 05:39 AM, Stephen Warren wrote:
+> > > A simple frame-buffer describes a raw memory region that may be rendered
+> > > to, with the assumption that the display hardware has already been set
+> > > up to scan out from that buffer.
+> > > 
+> > > This is useful in cases where a bootloader exists and has set up the
+> > > display hardware, but a Linux driver doesn't yet exist for the display
+> > > hardware.
+> > > 
+> > > Signed-off-by: Stephen Warren <swarren@wwwdotorg.org>
+> ...
+> > > +   framebuffer {
+> > > +           compatible = "simple-framebuffer";
+> > > +           reg = <0x1d385000 (1600 * 1200 * 2)>;
+> > > +           width = <1600>;
+> > > +           height = <1200>;
+> > > +           stride = <(1600 * 2)>;
+> > > +           format = "r5g6b5";
+> > > +   };
+> > 
+> > I'm not an expert on DT, but I think the point of DT is to describe the
+> > hardware. This doesn't describe the hardware at all.
+> 
+> On my incompetent opinion, "bpp" parameter can replace size of
+> framebuffer and "stride". Is not it?
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/dsi.c |   20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+Not necessarily: you could have a stride that is larger than a line.
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 55fc0d4..a73dedc 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -5398,7 +5398,7 @@ static struct omap_dss_device *dsi_find_dssdev(struct platform_device *pdev)
- 	return def_dssdev;
- }
- 
--static void dsi_probe_pdata(struct platform_device *dsidev)
-+static int dsi_probe_pdata(struct platform_device *dsidev)
- {
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 	struct omap_dss_device *plat_dssdev;
-@@ -5408,11 +5408,11 @@ static void dsi_probe_pdata(struct platform_device *dsidev)
- 	plat_dssdev = dsi_find_dssdev(dsidev);
- 
- 	if (!plat_dssdev)
--		return;
-+		return 0;
- 
- 	dssdev = dss_alloc_and_init_device(&dsidev->dev);
- 	if (!dssdev)
--		return;
-+		return -ENOMEM;
- 
- 	dss_copy_device_pdata(dssdev, plat_dssdev);
- 
-@@ -5420,7 +5420,7 @@ static void dsi_probe_pdata(struct platform_device *dsidev)
- 	if (r) {
- 		DSSERR("device %s init failed: %d\n", dssdev->name, r);
- 		dss_put_device(dssdev);
--		return;
-+		return r;
- 	}
- 
- 	r = omapdss_output_set_device(&dsi->output, dssdev);
-@@ -5428,7 +5428,7 @@ static void dsi_probe_pdata(struct platform_device *dsidev)
- 		DSSERR("failed to connect output to new device: %s\n",
- 				dssdev->name);
- 		dss_put_device(dssdev);
--		return;
-+		return r;
- 	}
- 
- 	r = dss_add_device(dssdev);
-@@ -5458,7 +5458,7 @@ static void dsi_init_output(struct platform_device *dsidev)
- 	dss_register_output(out);
- }
- 
--static void __exit dsi_uninit_output(struct platform_device *dsidev)
-+static void dsi_uninit_output(struct platform_device *dsidev)
- {
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 	struct omap_dss_output *out = &dsi->output;
-@@ -5563,7 +5563,13 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
- 
- 	dsi_init_output(dsidev);
- 
--	dsi_probe_pdata(dsidev);
-+	r = dsi_probe_pdata(dsidev);
-+	if (r) {
-+		dsi_runtime_put(dsidev);
-+		dsi_uninit_output(dsidev);
-+		pm_runtime_disable(&dsidev->dev);
-+		return r;
-+	}
- 
- 	dsi_runtime_put(dsidev);
- 
--- 
-1.7.10.4
-
+	Arnd

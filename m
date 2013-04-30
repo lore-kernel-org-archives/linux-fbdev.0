@@ -1,117 +1,73 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 30 Apr 2013 07:39:43 +0000
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 30 Apr 2013 09:50:38 +0000
 Subject: Re: [PATCH V2] video: implement a simple framebuffer driver
-Message-Id: <517F753F.5090909@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2FJCRKBMWXSCPKGPWNMOA"
+Message-Id: <2567859.E04yremImW@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1365043183-28905-1-git-send-email-swarren@wwwdotorg.org>
-In-Reply-To: <1365043183-28905-1-git-send-email-swarren@wwwdotorg.org>
+ <2040099.REU8D4ds1g@avalon>
+ <CAOesGMiCvBwck0Z6Nyo9zW=1=J=wjhJW68qNGMrN_8iim=8Srg@mail.gmail.com>
+In-Reply-To: <CAOesGMiCvBwck0Z6Nyo9zW=1=J=wjhJW68qNGMrN_8iim=8Srg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-------enig2FJCRKBMWXSCPKGPWNMOA
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Olof,
 
-On 04/04/2013 05:39 AM, Stephen Warren wrote:
-> A simple frame-buffer describes a raw memory region that may be rendere=
-d
-> to, with the assumption that the display hardware has already been set
-> up to scan out from that buffer.
->=20
-> This is useful in cases where a bootloader exists and has set up the
-> display hardware, but a Linux driver doesn't yet exist for the display
-> hardware.
->=20
-> Signed-off-by: Stephen Warren <swarren@wwwdotorg.org>
-> ---
-> v2: s/dumb/simple/ throughout. Provide more details on pixel format.
->=20
-> I ended up going with a separate FB driver:
-> * DRM/KMS look much more complex, and don't provide any benefit that I =
-can
->   tell for this simple driver.
-> * Creating a separate driver rather than adjusting offb.c to work allow=
-s a
->   new clean binding to be defined, and doesn't require removing or ifde=
-fing
->   PPC-isms in offb.c.
-> ---
->  .../bindings/video/simple-framebuffer.txt          |   25 +++
->  drivers/video/Kconfig                              |   17 ++
->  drivers/video/Makefile                             |    1 +
->  drivers/video/simplefb.c                           |  234 ++++++++++++=
-++++++++
->  4 files changed, 277 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/video/simple-fram=
-ebuffer.txt
->  create mode 100644 drivers/video/simplefb.c
->=20
-> diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer=
-=2Etxt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
-> new file mode 100644
-> index 0000000..3ea4605
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
-> @@ -0,0 +1,25 @@
-> +Simple Framebuffer
-> +
-> +A simple frame-buffer describes a raw memory region that may be render=
-ed to,
-> +with the assumption that the display hardware has already been set up =
-to scan
-> +out from that buffer.
-> +
-> +Required properties:
-> +- compatible: "simple-framebuffer"
-> +- reg: Should contain the location and size of the framebuffer memory.=
+On Monday 29 April 2013 15:40:44 Olof Johansson wrote:
+> On Mon, Apr 29, 2013 at 3:23 PM, Laurent Pinchart wrote:
+> > On Tuesday 30 April 2013 00:04:20 Arnd Bergmann wrote:
+> >> On Monday 29 April 2013, Laurent Pinchart wrote:
+> >> > On Monday 29 April 2013 23:31:30 Tomasz Figa wrote:
+> >> > > Good point. Stephen, would it be a problem to make this a KMS driver
+> >> > > instead? Old fbdev API could be emulated on top of it, until it goes
+> >> > > out of use, couldn't it?
+> >> > 
+> >> > There's already an fbdev emulation layer in KMS, for such a simple use
+> >> > case it will work fine.
+> >> 
+> >> I suggested the same to Stephen when he first brought up this driver.
+> >> Unfortunately his attempt to create a simple KMS driver resulted in a
+> >> significantly larger driver than the one he did for the framebuffer
+> >> interface. This means that either Stephen did something really wrong in
+> >> his attempt, or the KMS interface isn't as good as it should be if we
+> >> want to move people away from frame buffer drivers.
+> > 
+> > Implementing a KMS driver requires a fair amount of code. The DRM/KMS
+> > subsystem provides helpers that significantly reduce the driver size.
+> > Those helpers have been designed around common use cases found in existing
+> > KMS drivers.
+> > 
+> > I'm pretty sure we will be able to add useful helpers for existing fbdev
+> > drivers that will make porting them to KMS pretty easy, but that first
+> > requires starting to port drivers to find out what common code could be
+> > factored out.
+> 
+> Meanwhile this tiny driver will allow us to use hardware that can't
+> otherwise be used (because the proper graphics drivers for said hardware is
+> _also_ stuck behind large reworks, i.e. common display framework, which has
+> uncertain progress at this time).
 
-> +- width: The width of the framebuffer in pixels.
-> +- height: The height of the framebuffer in pixels.
-> +- stride: The number of bytes in each line of the framebuffer.
-> +- format: The format of the framebuffer surface. Valid values are:
-> +  - r5g6b5 (16-bit pixels, d[15:11]=3Dr, d[10:5]=3Dg, d[4:0]=3Db).
-> +
-> +Example:
-> +
-> +	framebuffer {
-> +		compatible =3D "simple-framebuffer";
-> +		reg =3D <0x1d385000 (1600 * 1200 * 2)>;
-> +		width =3D <1600>;
-> +		height =3D <1200>;
-> +		stride =3D <(1600 * 2)>;
-> +		format =3D "r5g6b5";
-> +	};
+Point taken :-)
 
-I'm not an expert on DT, but I think the point of DT is to describe the
-hardware. This doesn't describe the hardware at all.
+> As Stephen mentioned in the original patch, this particular driver is very
+> useful for Raspberry Pi. But it is also the best way forward (right now) for
+> getting basic upstream usability out of the Samsung ARM-based Chromebook. As
+> a matter of fact, as of this weekend linux-next boots on that platform with
+> keyboard, trackpad, framebuffer and USB2.0 without a single out-of-tree
+> patch. Getting the same functionality out of 3.10 would be very desirable.
+> 
+> So, I clearly understand the desire to move over to a more modern framework.
+> At the same time, there's definite value in merging this small driver while
+> that's happening. Holding useful code hostage isn't always very productive.
 
- Tomi
+I want to be clear about this, even though I believe we should put as much 
+effort as possible behind KMS drivers, I won't nack this patch. It has real 
+use cases and is useful, I'm just concerned it will get abused (but it's far 
+from being the only piece of code that could be subject to abuse).
 
+-- 
+Regards,
 
+Laurent Pinchart
 
-------enig2FJCRKBMWXSCPKGPWNMOA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRf3U/AAoJEPo9qoy8lh71wFcP/jxnFSLarF5hL1OgI3KnKCvF
-EakOmcaKb5BNqav3K59WFQhW+Jw9L2w/ryYdCx41bIawcGusSoNxjxXbXQf73W8a
-Zcc4BVm6+lCSvunIYQfCqbeNDkDZiPC4nzBLcN1lQ4nXEgqoJmuGy3G5mqSj6ntR
-N0bde/Mk4kkqyMGAri2+ejQlt7UDO+rD0FHp8jMg6JBcyeTebvaeKhLYqSEoENrL
-YFPgYHjlOYs6LQ/BOBtUmihSS8FzfoNxGZQY0fpLWWUi2ePDkQg55BKx6upwUaIJ
-NUgaTb7y6BAO4IaTjPhMDH8LLnmOqU/3LDLws2plOYr8dzTBkEFwzTBiWzIIt6/i
-A/DILbo3RfM6eIQEOIb9TDfdxU6bUal0rPD2sWbkARYoUgNlpZOenWZMFI51TgCi
-40nNB4GMfL4M5oerT9X9jIPORKIhppfW+nMzw1sDzsXHJdkPWhrnRzcj0KUK43TV
-RfIUqFrFgPvKY6wVDFZsW8huV6Q1k6mlur7MdQTg36fgiFLyH5LidgXsQA09Ko9H
-NE66hzWbLv1qykyArI44Wzi5k5q2ArrMez/pqJPgwaIMC8nmTXxH5lH5+lPrr0jX
-fy643WTbwt2ggE3XSL31TO5+DZ1RC8eNLPwnnwJHzbTwgpcz62mE9ABB/G8xBKH1
-tndqOuUqkWvlQxOkvH50
-=2Xf9
------END PGP SIGNATURE-----
-
-------enig2FJCRKBMWXSCPKGPWNMOA--

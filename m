@@ -1,49 +1,64 @@
-From: Tomi Valkeinen <tomi.valkeinen@iki.fi>
-Date: Tue, 30 Apr 2013 07:27:01 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 30 Apr 2013 07:28:35 +0000
 Subject: Re: [PATCH V2] video: implement a simple framebuffer driver
-Message-Id: <517F7245.2050606@iki.fi>
+Message-Id: <517F72A3.6010009@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="----enig2UHKKHCHSTVEIUVTHVASA"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1365043183-28905-1-git-send-email-swarren@wwwdotorg.org>
-In-Reply-To: <1365043183-28905-1-git-send-email-swarren@wwwdotorg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <20130408171637.98b5ad1f867bcbda883af68b@linux-foundation.org>
+ <2569832.XQDrhUGNaI@avalon> <2863648.BDvrAG5uPk@flatron>
+In-Reply-To: <2863648.BDvrAG5uPk@flatron>
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+------enig2UHKKHCHSTVEIUVTHVASA
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On 04/04/2013 05:39 AM, Stephen Warren wrote:
-> A simple frame-buffer describes a raw memory region that may be rendered
-> to, with the assumption that the display hardware has already been set
-> up to scan out from that buffer.
-> 
-> This is useful in cases where a bootloader exists and has set up the
-> display hardware, but a Linux driver doesn't yet exist for the display
-> hardware.
+On 04/30/2013 12:15 AM, Tomasz Figa wrote:
 
-I had an idea related to this driver. There are two requirements that I
-believe are (or will be) quite common:
+> Well, there is also at least one legitimate use case for this driver.
+>=20
+> I believe there exist embedded devices on which there is no need to=20
+> dynamically control the framebuffer. It needs one time initialization, =
 
-On embedded devices quite often the bootloader initializes the display,
-with the purpose of having a valid image on the screen for the whole
-boot up process (company logo, or whatever).
+> usually in bootloader, and then it is used as is, using constant=20
+> parameters as long as the system is running.
+>=20
+> I doubt there is a need for any KMS (or any other control) driver for s=
+uch=20
+> devices - dumb framebuffer driver would be everything needed in such ca=
+se.
 
-With multi-arch kernels, we'll have display drivers for all platforms
-and panels compiled with the kernel. If all these are built-in, they
-will possibly increase the kernel size quite a bit, so it would be good
-to have the display drivers as modules.
-
-Now, if we have the display drivers as modules, the point when the
-kernel/userspace can update the screen will be pretty late. Also,
-there's no chance to get any early kernel boot messages on the screen.
-
-So how about if we had this kind of simple fb, built-in to the kernel,
-used only for the boot time until the proper driver is loaded. A "bootfb".
-
-The bootloader would init the display hardware, the bootfb would give an
-early /dev/fb0 for the kernel and userspace, and when the real display
-driver is loaded, the bootfb would be unbound and the real driver would
-take over.
+Isn't there usually the need to power off the hardware when
+blanking/suspending?
 
  Tomi
 
+
+
+------enig2UHKKHCHSTVEIUVTHVASA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRf3KjAAoJEPo9qoy8lh71W4AP+wfd4jG+Gmk3CFBu+XdV9xpV
+hmmbNpN+PLeKVU/+tPZYq/eswVlnwvuEOuOpftstcGqlURP9MUxRKyrnKGvWJjQ+
+zoAvM7oIOHzQmKNW39OJQbJdmCXb0si44lJXSvD/4qa311E107eHCOKGTgG0DU5v
+r7pVkTaiZ7aft8ZReGyFWvE5W4LV2OXVroXVSM5kdfjDOvPT7VBk72cpb0PI3zH7
+FA05XmEzNSDcOBrzTfIpwY/2zuQ2fd6KXU6NX64wSkEjasBLIAuooW/8wrqmDM+O
+p/wuL8uFf8M/hgV9H8JOpyLyMHc0n8j8vLyupO2cpSm23mdtqT0F8zjVAKx1MOsG
+3RKp6rXwI7Yapfe79tPny9n9n1N6t4hkp6aLWowpLxOSDcEQHmIgqJKMd93IuchF
+Hy29nwG5HZlus7AoNeqlGjtDj002Ii14wE5ihJKoodHcxq9lcckrNW/0L6N8OgCa
+aTSD69HUtoeKIw4yJqrfPyi5qgmg/QhOEM+JGSn6GfDmWPJa9LeyBaUgnb3kWtDn
+vsb4ZTNUNXl3O4vUJM+xRllP6w3rbjcMDhn4f4wtuxkALrSAy1mNR1G2LorXo3Mb
+ATku6/uBykIcegF9QhFo4GZ+JzV5EAHeAd0lk98o5nRmEmum/wmVVRCyUOTTwFAa
+3MKmm20xNQeKNYLNkI+m
+=n47N
+-----END PGP SIGNATURE-----
+
+------enig2UHKKHCHSTVEIUVTHVASA--

@@ -1,111 +1,37 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 16 May 2013 13:00:02 +0000
-Subject: [PATCH 2/2] videomode: implement public of_get_display_timing()
-Message-Id: <1368709202-1056-2-git-send-email-tomi.valkeinen@ti.com>
+From: Tony Lindgren <tony@atomide.com>
+Date: Wed, 01 May 2013 16:55:08 +0000
+Subject: Re: [PATCH 00/10] OMAPDSS: Basic deferred probe support
+Message-Id: <20130501165507.GI28721@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1368709202-1056-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1368709202-1056-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, grygorii.strashko@ti.com, chf.fritz@googlemail.com, Archit Taneja <archit@ti.com>
 
-The current of_get_display_timings() reads multiple display timings,
-allocating memory for the entries. However, most of the time when
-parsing display timings from DT data is needed, there's only one display
-timing as it's not common for a LCD panel to support multiple videomodes.
+* Tomi Valkeinen <tomi.valkeinen@ti.com> [130429 03:28]:
+> Hi,
+> 
+> omapdss, omapfb and the panel drivers do not currently support deferred probe,
+> which is causing the display drivers fail when booting with DT.
+> 
+> This series adds very basic support for deferred probing, which hopefully fixes
+> the issues for omap4 panda and sdp boards with the current kernel.
+> 
+> Limitations:
+> 
+> * Deferred probe support for omap_vout and omapdrm is still totally missing.
+> * If it so happens that at omapfb probe time one panel has been probed, but
+>   another has been deferred, only the probed one will be used.
+> * Only DPI, DSI and HDMI outputs have been fixed.
+> * Some panel drivers may need modifications to support EPROBE_DEFER
+> 
+> Patches based on linux-next, i.e. the latest omapdss stuff.
 
-This patch creates a new function:
+Great, these fix the issues at least for panda booted with DT.
 
-int of_get_display_timing(struct device_node *np, const char *name,
-               struct display_timing *dt);
+Regards,
 
-which can be used to parse a single display timing entry from the given
-node name.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Philipp Zabel <p.zabel@pengutronix.de>
----
- drivers/video/of_display_timing.c | 33 ++++++++++++++++++++++++++++++---
- include/video/of_display_timing.h |  2 ++
- 2 files changed, 32 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
-index 0e81023..9c0f17b 100644
---- a/drivers/video/of_display_timing.c
-+++ b/drivers/video/of_display_timing.c
-@@ -53,10 +53,10 @@ static int parse_timing_property(struct device_node *np, const char *name,
- }
- 
- /**
-- * of_get_display_timing - parse display_timing entry from device_node
-+ * of_parse_display_timing - parse display_timing entry from device_node
-  * @np: device_node with the properties
-  **/
--static int of_get_display_timing(struct device_node *np,
-+static int of_parse_display_timing(struct device_node *np,
- 		struct display_timing *dt)
- {
- 	u32 val = 0;
-@@ -103,6 +103,33 @@ static int of_get_display_timing(struct device_node *np,
- }
- 
- /**
-+ * of_get_display_timing - parse a display_timing entry
-+ * @np: device_node with the timing subnode
-+ * @name: name of the timing node
-+ * @dt: display_timing struct to fill
-+ **/
-+int of_get_display_timing(struct device_node *np, const char *name,
-+		struct display_timing *dt)
-+{
-+	struct device_node *timing_np;
-+
-+	if (!np) {
-+		pr_err("%s: no devicenode given\n", of_node_full_name(np));
-+		return -EINVAL;
-+	}
-+
-+	timing_np = of_find_node_by_name(np, name);
-+	if (!timing_np) {
-+		pr_err("%s: could not find node '%s'\n",
-+			of_node_full_name(np), name);
-+		return -ENOENT;
-+	}
-+
-+	return of_parse_display_timing(timing_np, dt);
-+}
-+EXPORT_SYMBOL_GPL(of_get_display_timing);
-+
-+/**
-  * of_get_display_timings - parse all display_timing entries from a device_node
-  * @np: device_node with the subnodes
-  **/
-@@ -177,7 +204,7 @@ struct display_timings *of_get_display_timings(struct device_node *np)
- 			goto timingfail;
- 		}
- 
--		r = of_get_display_timing(entry, dt);
-+		r = of_parse_display_timing(entry, dt);
- 		if (r) {
- 			/*
- 			 * to not encourage wrong devicetrees, fail in case of
-diff --git a/include/video/of_display_timing.h b/include/video/of_display_timing.h
-index 8016eb7..6562ad9 100644
---- a/include/video/of_display_timing.h
-+++ b/include/video/of_display_timing.h
-@@ -14,6 +14,8 @@ struct display_timings;
- 
- #define OF_USE_NATIVE_MODE -1
- 
-+int of_get_display_timing(struct device_node *np, const char *name,
-+		struct display_timing *dt);
- struct display_timings *of_get_display_timings(struct device_node *np);
- int of_display_timings_exist(struct device_node *np);
- 
--- 
-1.8.1.2
-
+Tony

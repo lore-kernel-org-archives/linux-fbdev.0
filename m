@@ -1,21 +1,36 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 31 May 2013 13:38:08 +0000
-Subject: Re: [PATCH v3 6/8] video: xilinxfb: Add support for little endian accesses
-Message-Id: <1991235.Da6plQRqqE@wuerfel>
+From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
+Date: Wed, 01 May 2013 10:28:17 +0000
+Subject: Re: [alsa-devel] [PATCH] MAINTAINERS: Add linux-samsung-soc list to all related entries
+Message-Id: <5180EE41.50302@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1370004925.git.michal.simek@xilinx.com> <c1791574b211528b9f59af634018b7c83678f963.1370004925.git.michal.simek@xilinx.com>
-In-Reply-To: <c1791574b211528b9f59af634018b7c83678f963.1370004925.git.michal.simek@xilinx.com>
+References: <1366572050-626-1-git-send-email-tomasz.figa@gmail.com> <CAH9JG2U7Qdq_xQbuqHu6PXzURS2fWwBC=HJmyrXT5n3n_pAa0w@mail.gmail.com> <20130430132755.GB1023@sirena.org.uk>
+In-Reply-To: <20130430132755.GB1023@sirena.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michal Simek <michal.simek@xilinx.com>
-Cc: linux-kernel@vger.kernel.org, Michal Simek <monstr@monstr.eu>, Timur Tabi <timur@tabi.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Kyungmin Park <kmpark@infradead.org>, t.stanislaws@samsung.com, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, jy0922.shim@samsung.com, alsa-devel@alsa-project.org, sbkim73@samsung.com, sw0312.kim@samsung.com, jg1.han@samsung.com, linux-mmc@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, dri-devel@lists.freedesktop.org, inki.dae@samsung.com, jtp.park@samsung.com, dh09.lee@samsung.com, linux-arm-kernel@lists.infradead.org, s.nawrocki@samsung.com, k.debski@samsung.com, linux-media@vger.kernel.org
 
-On Friday 31 May 2013 14:55:36 Michal Simek wrote:
-> Dynamically detect endianess on IP and use
-> ioread/iowrite functions instead of powerpc and microblaze
-> specific out_be32.
-> 
-> Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+On 04/30/2013 03:27 PM, Mark Brown wrote:
+> On Mon, Apr 22, 2013 at 03:23:29PM +0900, Kyungmin Park wrote:
+>
+>> I don't think it's not required, each tree has each own mailing list. don't
+>> need to post all patches to samsung-soc list.
+>
+> It can be useful to get system level input on some stuff, I guess it
+> mostly depends if the people on the generic list mind the extra traffic
+> or if they find it useful.
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+I think this could also improve testing coverage, if more people are aware
+of stuff going in through various mailing lists.
+
+Also on a specific subsystem mailing lists yet another SoC specific patches
+may not get enough attention, as people care most about the core subsystem
+changes.
+
+So I would in general encourage others to Cc linux-samsung-soc, even if the
+$subject patch gets ignored.
+
+I seriously doubt anyone would have ever been disturbed with additional
+traffic on the list, with its current average of about 20..50 emails per 
+day.

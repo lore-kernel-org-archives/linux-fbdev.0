@@ -1,33 +1,62 @@
-From: Dave Airlie <airlied@gmail.com>
-Date: Fri, 31 May 2013 03:47:26 +0000
-Subject: Re: [PATCH v3 3/9] drm: Update drm_addmap and drm_mmap to use PAT WC instead of MTRRs
-Message-Id: <CAPM=9tx+pdFmXnLzZKpa1VcvH_6siydZckhLVSWOM_aJAj0WUg@mail.gmail.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 02 May 2013 05:31:43 +0000
+Subject: Re: [PATCH 8/9] s3c2410fb: Remove redundant platform_set_drvdata()
+Message-Id: <000001ce46f6$54f27cc0$fed77640$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1368485053.git.luto@amacapital.net>
-	<b1c6c2652b302431a4d4cff46ac872db8e520b6a.1368485053.git.luto@amacapital.net>
-In-Reply-To: <b1c6c2652b302431a4d4cff46ac872db8e520b6a.1368485053.git.luto@amacapital.net>
+References: <1367006543-5458-1-git-send-email-sylvester.nawrocki@gmail.com>
+ <1367006543-5458-9-git-send-email-sylvester.nawrocki@gmail.com>
+In-Reply-To: <1367006543-5458-9-git-send-email-sylvester.nawrocki@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andy Lutomirski <luto@amacapital.net>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>
+To: linux-arm-kernel@lists.infradead.org
 
-On Tue, May 14, 2013 at 9:58 AM, Andy Lutomirski <luto@amacapital.net> wrote:
-> Previously, DRM_FRAME_BUFFER mappings, as well as DRM_REGISTERS
-> mappings with DRM_WRITE_COMBINING set, resulted in an unconditional
-> MTRR being added but the actual mappings being created as UC-.
->
-> Now these mappings have the MTRR added only if needed, but they will
-> be mapped with pgprot_writecombine.
->
-> The non-WC DRM_REGISTERS case now uses pgprot_noncached instead of
-> hardcoding the bit twiddling.
->
-> The DRM_AGP case is unchanged for now.
+On Saturday, April 27, 2013 5:02 AM, Sylwester Nawrocki wrote:
+> driver_data field is being cleared by the driver core since
+> commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
+> device-core: Ensure drvdata = NULL when no driver is bound
+> hence there is no need to do it in the driver's remove() callback.
+> 
+> Signed-off-by: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
+> ---
+>  drivers/video/s3c2410fb.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
+> index 11f98ca..0439ed0 100644
+> --- a/drivers/video/s3c2410fb.c
+> +++ b/drivers/video/s3c2410fb.c
+> @@ -1013,7 +1013,6 @@ static int s3c2410fb_remove(struct platform_device *pdev)
+>  	irq = platform_get_irq(pdev, 0);
+>  	free_irq(irq, info);
+> 
+> -	platform_set_drvdata(pdev, NULL);
+>  	framebuffer_release(fbinfo);
 
-Just FYI this breaks on powerpc build, I've fixed it up and pushed the
-fixed version to
-drm-next-staging, I'll push that to drm-next in a couple of days, once
-kbuild robot hits it.
+Hi Sylwester,
 
-Dave.
+How about eliminating platform_set_drvdata(pdev, NULL)
+in s3c24xxfb_probe() as well as s3c2410fb_remove()?
+
+@@ -1005,7 +1005,6 @@ release_regs:
+ release_mem:
+        release_mem_region(res->start, size);
+ dealloc_fb:
+-       platform_set_drvdata(pdev, NULL);
+        framebuffer_release(fbinfo);
+        return ret;
+ }
+
+Best regards,
+Jingoo Han
+
+> 
+>  	return 0;
+> --
+> 1.7.4.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+

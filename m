@@ -1,52 +1,57 @@
-From: Sekhar Nori <nsekhar@ti.com>
-Date: Fri, 03 May 2013 09:56:37 +0000
+From: Prabhakar Lad <prabhakar.csengg@gmail.com>
+Date: Fri, 03 May 2013 10:27:44 +0000
 Subject: Re: [PATCH 0/6] Davinci fbdev driver and enable it for DMx platform
-Message-Id: <51838994.7070805@ti.com>
+Message-Id: <CA+V-a8tM=VxvCt5dvbLSJz-pz7OS88QaHJ9r_Y+ysxP_JUzn2Q@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1366804808-22720-1-git-send-email-prabhakar.csengg@gmail.com>
  <1780031.B4OAypccep@avalon>
  <CA+V-a8sLD2dP1RLb8ibZDOsLCP8hhMNUTr-zzU1zx_2ALDaDrg@mail.gmail.com>
-In-Reply-To: <CA+V-a8sLD2dP1RLb8ibZDOsLCP8hhMNUTr-zzU1zx_2ALDaDrg@mail.gmail.com>
+ <51838994.7070805@ti.com>
+In-Reply-To: <51838994.7070805@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On 4/26/2013 11:16 AM, Prabhakar Lad wrote:
-> Hi Laurent,
-> 
-> On Thu, Apr 25, 2013 at 2:32 AM, Laurent Pinchart
-> <laurent.pinchart@ideasonboard.com> wrote:
->> Hi Prabhakar,
+On Fri, May 3, 2013 at 3:25 PM, Sekhar Nori <nsekhar@ti.com> wrote:
+> On 4/26/2013 11:16 AM, Prabhakar Lad wrote:
+>> Hi Laurent,
 >>
->> Thank you for the patch.
->>
->> On Wednesday 24 April 2013 17:30:02 Prabhakar Lad wrote:
->>> From: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+>> On Thu, Apr 25, 2013 at 2:32 AM, Laurent Pinchart
+>> <laurent.pinchart@ideasonboard.com> wrote:
+>>> Hi Prabhakar,
 >>>
->>> This patch series adds an fbdev driver for Texas
->>> Instruments Davinci SoC.The display subsystem consists
->>> of OSD and VENC, with OSD supporting 2 RGb planes and
->>> 2 video planes.
->>> http://focus.ti.com/general/docs/lit/
->>> getliterature.tsp?literatureNumber=sprue37d&fileType=pdf
+>>> Thank you for the patch.
 >>>
->>> A good amount of the OSD and VENC enabling code is
->>> present in the kernel, and this patch series adds the
->>> fbdev interface.
+>>> On Wednesday 24 April 2013 17:30:02 Prabhakar Lad wrote:
+>>>> From: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+>>>>
+>>>> This patch series adds an fbdev driver for Texas
+>>>> Instruments Davinci SoC.The display subsystem consists
+>>>> of OSD and VENC, with OSD supporting 2 RGb planes and
+>>>> 2 video planes.
+>>>> http://focus.ti.com/general/docs/lit/
+>>>> getliterature.tsp?literatureNumber=sprue37d&fileType=pdf
+>>>>
+>>>> A good amount of the OSD and VENC enabling code is
+>>>> present in the kernel, and this patch series adds the
+>>>> fbdev interface.
+>>>>
+>>>> The fbdev driver exports 4 nodes representing each
+>>>> plane to the user - from fb0 to fb3.
 >>>
->>> The fbdev driver exports 4 nodes representing each
->>> plane to the user - from fb0 to fb3.
->>
->> The obvious question is: why not a KMS driver instead ? :-)
->>
-> I did go through the KMS model (thanks for pointing to your work and the video)
-> and it looks like this would require a fair amount of development, at this point
-> of time I would go with the current implementation and revisit on KMS model
-> at later point of time.
+>>> The obvious question is: why not a KMS driver instead ? :-)
+>>>
+>> I did go through the KMS model (thanks for pointing to your work and the video)
+>> and it looks like this would require a fair amount of development, at this point
+>> of time I would go with the current implementation and revisit on KMS model
+>> at later point of time.
+>
+> But I doubt you will be able to sneak a new fbdev driver through. Last
+> time I heard, Andrew is only taking in fixes not new features.
+>
+Then we have no choice left and go with KMS driver itself though it would take
+some time since KMS is a new inclusion into DRM.
 
-But I doubt you will be able to sneak a new fbdev driver through. Last
-time I heard, Andrew is only taking in fixes not new features.
-
-Thanks,
-Sekhar
+Regards,
+--Prabhakar

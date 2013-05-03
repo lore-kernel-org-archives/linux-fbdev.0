@@ -1,186 +1,66 @@
 From: Andy Lutomirski <luto@amacapital.net>
-Date: Thu, 09 May 2013 19:46:26 +0000
-Subject: [RFC/PATCH v2 7/8] uvesafb: Clean up MTRR code
-Message-Id: <9b38320eba51f38d4d646438399313f7932d3a04.1368128020.git.luto@amacapital.net>
+Date: Fri, 03 May 2013 23:00:28 +0000
+Subject: [PATCH 0/7] Clean up write-combining MTRR addition
+Message-Id: <cover.1367621038.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1368128020.git.luto@amacapital.net>
-In-Reply-To: <cover.1368128020.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>, Michal Januszewski <spock@gentoo.org>
+Cc: Andy Lutomirski <luto@amacapital.net>
 
-The old code allowed very strange memory types.  Now it works like
-all the other video drivers: ioremap_wc is used unconditionally,
-and MTRRs are set if PAT is unavailable (unless MTRR is disabled
-by a module parameter).
+A fair number of drivers (mostly graphics) add write-combining MTRRs.
+Most ignore errors and most add the MTRR even on PAT systems which don't
+need to use MTRRs.
 
-UC, WB, and WT support is gone.  If there are MTRR conflicts that prevent
-addition of a WC MTRR, adding a non-conflicting MTRR is pointless; it's
-better to just turn off MTRR support entirely.
+This series adds new functions mtrr_{add,del}_wc_if_needed and
+drm_mtrr_{add,del}_wc that report errors and do nothing if PAT is
+enabled.
 
-As an added bonus, any MTRR added is freed on unload.
+I've only tested the radeon driver, since I don't have test hardware
+easily available for the other drivers.
 
-Signed-off-by: Andy Lutomirski <luto@amacapital.net>
----
- Documentation/fb/uvesafb.txt | 16 ++++------
- drivers/video/uvesafb.c      | 70 +++++++++++---------------------------------
- include/video/uvesafb.h      |  1 +
- 3 files changed, 23 insertions(+), 64 deletions(-)
+Benefits include:
+ - Simpler code
+ - No more complaints about MTRR conflict warnings on PAT systems
+ - Eventual unexporting of the MTRR API?
 
-diff --git a/Documentation/fb/uvesafb.txt b/Documentation/fb/uvesafb.txt
-index eefdd91..f6362d8 100644
---- a/Documentation/fb/uvesafb.txt
-+++ b/Documentation/fb/uvesafb.txt
-@@ -81,17 +81,11 @@ pmipal  Use the protected mode interface for palette changes.
- 
- mtrr:n  Setup memory type range registers for the framebuffer
-         where n:
--              0 - disabled (equivalent to nomtrr) (default)
--              1 - uncachable
--              2 - write-back
--              3 - write-combining
--              4 - write-through
--
--        If you see the following in dmesg, choose the type that matches
--        the old one.  In this example, use "mtrr:2".
--...
--mtrr: type mismatch for e0000000,8000000 old: write-back new: write-combining
--...
-+              0 - disabled (equivalent to nomtrr)
-+              3 - write-combining (default)
-+
-+	Values other than 0 and 3 will result in a warning and will be
-+	treated just like 3.
- 
- nomtrr  Do not use memory type range registers.
- 
-diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-index d428445..8701f96 100644
---- a/drivers/video/uvesafb.c
-+++ b/drivers/video/uvesafb.c
-@@ -24,9 +24,6 @@
- #ifdef CONFIG_X86
- #include <video/vga.h>
- #endif
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
- #include "edid.h"
- 
- static struct cb_id uvesafb_cn_id = {
-@@ -1540,67 +1537,30 @@ static void uvesafb_init_info(struct fb_info *info, struct vbe_mode_ib *mode)
- 
- static void uvesafb_init_mtrr(struct fb_info *info)
- {
--#ifdef CONFIG_MTRR
-+	struct uvesafb_par *par = info->par;
-+
- 	if (mtrr && !(info->fix.smem_start & (PAGE_SIZE - 1))) {
- 		int temp_size = info->fix.smem_len;
--		unsigned int type = 0;
- 
--		switch (mtrr) {
--		case 1:
--			type = MTRR_TYPE_UNCACHABLE;
--			break;
--		case 2:
--			type = MTRR_TYPE_WRBACK;
--			break;
--		case 3:
--			type = MTRR_TYPE_WRCOMB;
--			break;
--		case 4:
--			type = MTRR_TYPE_WRTHROUGH;
--			break;
--		default:
--			type = 0;
--			break;
--		}
-+		int rc;
- 
--		if (type) {
--			int rc;
-+		/* Find the largest power-of-two */
-+		temp_size = roundup_pow_of_two(temp_size);
- 
--			/* Find the largest power-of-two */
--			temp_size = roundup_pow_of_two(temp_size);
-+		/* Try and find a power of two to add */
-+		do {
-+			rc = arch_phys_wc_add(info->fix.smem_start, temp_size);
-+			temp_size >>= 1;
-+		} while (temp_size >= PAGE_SIZE && rc = -EINVAL);
- 
--			/* Try and find a power of two to add */
--			do {
--				rc = mtrr_add(info->fix.smem_start,
--					      temp_size, type, 1);
--				temp_size >>= 1;
--			} while (temp_size >= PAGE_SIZE && rc = -EINVAL);
--		}
-+		if (rc >= 0)
-+			par->mtrr_handle = rc;
- 	}
--#endif /* CONFIG_MTRR */
- }
- 
- static void uvesafb_ioremap(struct fb_info *info)
- {
--#ifdef CONFIG_X86
--	switch (mtrr) {
--	case 1: /* uncachable */
--		info->screen_base = ioremap_nocache(info->fix.smem_start, info->fix.smem_len);
--		break;
--	case 2: /* write-back */
--		info->screen_base = ioremap_cache(info->fix.smem_start, info->fix.smem_len);
--		break;
--	case 3: /* write-combining */
--		info->screen_base = ioremap_wc(info->fix.smem_start, info->fix.smem_len);
--		break;
--	case 4: /* write-through */
--	default:
--		info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
--		break;
--	}
--#else
--	info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
--#endif /* CONFIG_X86 */
-+	info->screen_base = ioremap_wc(info->fix.smem_start, info->fix.smem_len);
- }
- 
- static ssize_t uvesafb_show_vbe_ver(struct device *dev,
-@@ -1851,6 +1811,7 @@ static int uvesafb_remove(struct platform_device *dev)
- 		unregister_framebuffer(info);
- 		release_region(0x3c0, 32);
- 		iounmap(info->screen_base);
-+		arch_phys_wc_del(par->mtrr_handle);
- 		release_mem_region(info->fix.smem_start, info->fix.smem_len);
- 		fb_destroy_modedb(info->monspecs.modedb);
- 		fb_dealloc_cmap(&info->cmap);
-@@ -1930,6 +1891,9 @@ static int uvesafb_setup(char *options)
- 		}
- 	}
- 
-+	if (mtrr != 3 && mtrr != 1)
-+		pr_warn("uvesafb: mtrr should be set to 0 or 3; %d is unsupported", mtrr);
-+
- 	return 0;
- }
- #endif /* !MODULE */
-diff --git a/include/video/uvesafb.h b/include/video/uvesafb.h
-index 1a91850..30f5362 100644
---- a/include/video/uvesafb.h
-+++ b/include/video/uvesafb.h
-@@ -134,6 +134,7 @@ struct uvesafb_par {
- 
- 	int mode_idx;
- 	struct vbe_crtc_ib crtc;
-+	int mtrr_handle;
- };
- 
- #endif /* _UVESAFB_H */
+This series eliminates about half of the mtrr_add calls in drivers/.
+
+The series is also at:
+https://git.kernel.org/cgit/linux/kernel/git/luto/linux.git/log/?h=mtrr_cleanup
+
+Andy Lutomirski (7):
+  x86: Add mtrr_{add,del}_wc_if_needed
+  drm (ast,cirrus,mgag200,nouveau,savage,vmwgfx): Rework
+    drm_mtrr_{add,del}
+  drm: Update drm_addmap and drm_mmap to use PAT WC instead of MTRRs
+  drm: Use drm_mtrr_add_wc for the AGP aperture
+  i915: Use drm_mtrr_{add,del}_wc
+  radeon: Switch to drm_mtrr_add_wc and add a missing drm_mtrr_del_wc
+  uvesafb: Clean up MTRR code
+
+ Documentation/fb/uvesafb.txt           | 16 +++-----
+ arch/x86/include/asm/mtrr.h            | 21 ++++++++++
+ arch/x86/kernel/cpu/mtrr/main.c        | 53 +++++++++++++++++++++++++
+ drivers/gpu/drm/ast/ast_ttm.c          | 14 ++-----
+ drivers/gpu/drm/cirrus/cirrus_ttm.c    | 15 ++------
+ drivers/gpu/drm/drm_bufs.c             | 11 ++----
+ drivers/gpu/drm/drm_pci.c              |  8 ++--
+ drivers/gpu/drm/drm_stub.c             | 10 +----
+ drivers/gpu/drm/drm_vm.c               | 13 ++++---
+ drivers/gpu/drm/i915/i915_dma.c        | 43 +++------------------
+ drivers/gpu/drm/mgag200/mgag200_ttm.c  | 14 ++-----
+ drivers/gpu/drm/nouveau/nouveau_ttm.c  | 13 ++-----
+ drivers/gpu/drm/radeon/radeon_object.c |  5 ++-
+ drivers/gpu/drm/savage/savage_bci.c    | 42 ++++++++------------
+ drivers/gpu/drm/savage/savage_drv.h    |  5 +--
+ drivers/gpu/drm/vmwgfx/vmwgfx_drv.c    | 10 ++---
+ drivers/video/uvesafb.c                | 70 +++++++++-------------------------
+ include/drm/drmP.h                     | 23 +++++------
+ include/video/uvesafb.h                |  1 +
+ 19 files changed, 169 insertions(+), 218 deletions(-)
+
 -- 
 1.8.1.4
 

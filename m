@@ -1,142 +1,99 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 23 May 2013 09:56:53 +0000
-Subject: [PATCH] OMAPDSS: Fix crash with DT boot
-Message-Id: <1369303013-1161-1-git-send-email-tomi.valkeinen@ti.com>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Fri, 03 May 2013 23:00:33 +0000
+Subject: [PATCH 5/7] i915: Use drm_mtrr_{add,del}_wc
+Message-Id: <55ce0249bc74fc15af617349cfd5e68a159cf75b.1367621039.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1367621038.git.luto@amacapital.net>
+In-Reply-To: <cover.1367621038.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Andy Lutomirski <luto@amacapital.net>
 
-When booting with DT, there's a crash when omapfb is probed. This is
-caused by the fact that omapdss+DT is not yet supported, and thus
-omapdss is not probed at all. On the other hand, omapfb is always
-probed. When omapfb tries to use omapdss, there's a NULL pointer
-dereference crash. The same error should most likely happen with omapdrm
-and omap_vout also.
+i915 open-coded logic that was essentially equivalent to the new
+drm_mtrr_{add,del}_wc.
 
-To fix this, add an "initialized" state to omapdss. When omapdss has
-been probed, it's marked as initialized. omapfb, omapdrm and omap_vout
-check this state when they are probed to see that omapdss is actually
-there.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Tested-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
 ---
- drivers/gpu/drm/omapdrm/omap_drv.c       |  3 +++
- drivers/media/platform/omap/omap_vout.c  |  3 +++
- drivers/video/omap2/dss/core.c           | 20 +++++++++++++++++++-
- drivers/video/omap2/omapfb/omapfb-main.c |  3 +++
- include/video/omapdss.h                  |  1 +
- 5 files changed, 29 insertions(+), 1 deletion(-)
+ drivers/gpu/drm/i915/i915_dma.c | 43 ++++++-----------------------------------
+ 1 file changed, 6 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/gpu/drm/omapdrm/omap_drv.c b/drivers/gpu/drm/omapdrm/omap_drv.c
-index 079c54c..902074b 100644
---- a/drivers/gpu/drm/omapdrm/omap_drv.c
-+++ b/drivers/gpu/drm/omapdrm/omap_drv.c
-@@ -548,6 +548,9 @@ static void pdev_shutdown(struct platform_device *device)
- 
- static int pdev_probe(struct platform_device *device)
- {
-+	if (omapdss_is_initialized() = false)
-+		return -EPROBE_DEFER;
-+
- 	DBG("%s", device->name);
- 	return drm_platform_init(&omap_drm_driver, device);
+diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
+index 4fa6beb..0fc95ba 100644
+--- a/drivers/gpu/drm/i915/i915_dma.c
++++ b/drivers/gpu/drm/i915/i915_dma.c
+@@ -1393,29 +1393,6 @@ void i915_master_destroy(struct drm_device *dev, struct drm_master *master)
+ 	master->driver_priv = NULL;
  }
-diff --git a/drivers/media/platform/omap/omap_vout.c b/drivers/media/platform/omap/omap_vout.c
-index 96c4a17..0a489bd 100644
---- a/drivers/media/platform/omap/omap_vout.c
-+++ b/drivers/media/platform/omap/omap_vout.c
-@@ -2144,6 +2144,9 @@ static int __init omap_vout_probe(struct platform_device *pdev)
- 	struct omap_dss_device *def_display;
- 	struct omap2video_device *vid_dev = NULL;
  
-+	if (omapdss_is_initialized() = false)
-+		return -EPROBE_DEFER;
-+
- 	ret = omapdss_compat_init();
- 	if (ret) {
- 		dev_err(&pdev->dev, "failed to init dss\n");
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index f8779d4..f49ddb9 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -53,6 +53,8 @@ static char *def_disp_name;
- module_param_named(def_disp, def_disp_name, charp, 0);
- MODULE_PARM_DESC(def_disp, "default display name");
- 
-+static bool dss_initialized;
-+
- const char *omapdss_get_default_display_name(void)
+-static void
+-i915_mtrr_setup(struct drm_i915_private *dev_priv, unsigned long base,
+-		unsigned long size)
+-{
+-	dev_priv->mm.gtt_mtrr = -1;
+-
+-#if defined(CONFIG_X86_PAT)
+-	if (cpu_has_pat)
+-		return;
+-#endif
+-
+-	/* Set up a WC MTRR for non-PAT systems.  This is more common than
+-	 * one would think, because the kernel disables PAT on first
+-	 * generation Core chips because WC PAT gets overridden by a UC
+-	 * MTRR if present.  Even if a UC MTRR isn't present.
+-	 */
+-	dev_priv->mm.gtt_mtrr = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
+-	if (dev_priv->mm.gtt_mtrr < 0) {
+-		DRM_INFO("MTRR allocation failed.  Graphics "
+-			 "performance may suffer.\n");
+-	}
+-}
+-
+ static void i915_kick_out_firmware_fb(struct drm_i915_private *dev_priv)
  {
- 	return core.default_display_name;
-@@ -66,6 +68,12 @@ enum omapdss_version omapdss_get_version(void)
- }
- EXPORT_SYMBOL(omapdss_get_version);
- 
-+bool omapdss_is_initialized(void)
-+{
-+	return dss_initialized;
-+}
-+EXPORT_SYMBOL(omapdss_is_initialized);
-+
- struct platform_device *dss_get_core_pdev(void)
- {
- 	return core.pdev;
-@@ -606,6 +614,8 @@ static int __init omap_dss_init(void)
- 		return r;
+ 	struct apertures_struct *ap;
+@@ -1552,8 +1529,8 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
+ 		goto out_rmmap;
  	}
  
-+	dss_initialized = true;
-+
- 	return 0;
- }
+-	i915_mtrr_setup(dev_priv, dev_priv->gtt.mappable_base,
+-			aperture_size);
++	dev_priv->mm.gtt_mtrr = drm_mtrr_add_wc(dev_priv->gtt.mappable_base,
++						aperture_size);
  
-@@ -636,7 +646,15 @@ static int __init omap_dss_init(void)
+ 	/* The i915 workqueue is primarily used for batched retirement of
+ 	 * requests (and thus managing bo) once the task has been completed
+@@ -1656,12 +1633,8 @@ out_gem_unload:
+ 	intel_teardown_mchbar(dev);
+ 	destroy_workqueue(dev_priv->wq);
+ out_mtrrfree:
+-	if (dev_priv->mm.gtt_mtrr >= 0) {
+-		mtrr_del(dev_priv->mm.gtt_mtrr,
+-			 dev_priv->gtt.mappable_base,
+-			 aperture_size);
+-		dev_priv->mm.gtt_mtrr = -1;
+-	}
++	drm_mtrr_del_wc(dev_priv->mm.gtt_mtrr);
++	dev_priv->mm.gtt_mtrr = -1;
+ 	io_mapping_free(dev_priv->gtt.mappable);
+ out_rmmap:
+ 	pci_iounmap(dev->pdev, dev_priv->regs);
+@@ -1697,12 +1670,8 @@ int i915_driver_unload(struct drm_device *dev)
+ 	cancel_delayed_work_sync(&dev_priv->mm.retire_work);
  
- static int __init omap_dss_init2(void)
- {
--	return omap_dss_register_drivers();
-+	int r;
-+
-+	r = omap_dss_register_drivers();
-+	if (r)
-+		return r;
-+
-+	dss_initialized = true;
-+
-+	return 0;
- }
+ 	io_mapping_free(dev_priv->gtt.mappable);
+-	if (dev_priv->mm.gtt_mtrr >= 0) {
+-		mtrr_del(dev_priv->mm.gtt_mtrr,
+-			 dev_priv->gtt.mappable_base,
+-			 dev_priv->gtt.mappable_end);
+-		dev_priv->mm.gtt_mtrr = -1;
+-	}
++	drm_mtrr_del_wc(dev_priv->mm.gtt_mtrr);
++	dev_priv->mm.gtt_mtrr = -1;
  
- core_initcall(omap_dss_init);
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 717f13a..bb5f9fe 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -2416,6 +2416,9 @@ static int __init omapfb_probe(struct platform_device *pdev)
+ 	acpi_video_unregister();
  
- 	DBG("omapfb_probe\n");
- 
-+	if (omapdss_is_initialized() = false)
-+		return -EPROBE_DEFER;
-+
- 	if (pdev->num_resources != 0) {
- 		dev_err(&pdev->dev, "probed for an unknown device\n");
- 		r = -ENODEV;
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index caefa09..9b52340 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -741,6 +741,7 @@ struct omap_dss_driver {
- };
- 
- enum omapdss_version omapdss_get_version(void);
-+bool omapdss_is_initialized(void);
- 
- int omap_dss_register_driver(struct omap_dss_driver *);
- void omap_dss_unregister_driver(struct omap_dss_driver *);
 -- 
-1.8.1.2
+1.8.1.4
 

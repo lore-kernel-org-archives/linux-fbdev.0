@@ -1,62 +1,90 @@
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-Date: Tue, 14 May 2013 16:33:18 +0000
-Subject: Re: Build regressions/improvements in v3.10-rc1 (cris)
-Message-Id: <20130514163318.GQ8853@axis.com>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Fri, 03 May 2013 23:00:31 +0000
+Subject: [PATCH 3/7] drm: Update drm_addmap and drm_mmap to use PAT WC instead of MTRRs
+Message-Id: <d6e5e371e464b7de1115a00f02b5b834315cd986.1367621039.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.00.1305122130270.3789@ayla.of.borg>
- <alpine.DEB.2.00.1305122239040.5463@ayla.of.borg>
- <alpine.DEB.2.00.1305122242430.5463@ayla.of.borg>
- <CAMuHMdW6p6tP=wwBNV9uAAbwwgpyzMiPxsBSJNOUazhznYC4iQ@mail.gmail.com>
-In-Reply-To: <CAMuHMdW6p6tP=wwBNV9uAAbwwgpyzMiPxsBSJNOUazhznYC4iQ@mail.gmail.com>
+References: <cover.1367621038.git.luto@amacapital.net>
+In-Reply-To: <cover.1367621038.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-cris-kernel <linux-cris-kernel@axis.com>
+To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Andy Lutomirski <luto@amacapital.net>
 
-On Tue, May 14, 2013 at 02:06:51PM +0200, Geert Uytterhoeven wrote:
-> On Sun, May 12, 2013 at 10:44 PM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
-> > drivers/video/console/fonts.c:71:2: error: #error No fonts configured.: 2 errors in 2 logs
-> >         v3.10-rc1/cris/cris-allmodconfig v3.10-rc1/cris/cris-allyesconfig
-> >
-> >         Fbdev issue?
-> 
-> This is caused by cris not using the generic drivers/Kconfig, and thus not
-> traversing drivers/video/console/Kconfig.
-> As the build system does traverse drivers/video/console/Makefile, fonts.c
-> is compiled with an inconsistent configuration.
-> 
-> Two solutions:
->   1. Add drivers/video/console/Kconfig to arch/cris/Kconfig,
->   2. Switch cris to drivers/Kconfig,
-> 
-> I prefer two, as this is what's done by all (except h8300) other
-> architectures. This will seriously broaden the scope of allmodconfig,
-> though, and require more fixes (e.g. missing <asm/vga.h>).
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+---
 
-I would have no objections a conversion of CRIS to use the
-drivers/Kconfig, though it feels a bit strange to compile
-video drivers for SoCs that don't have any video out hardware.
+This needs careful review.  I don't really know what this code does, nor
+do I have the hardware.  (I don't understand AGP and the associated
+caching implications.)
 
-> Note: The decision logic for compiling drivers/video/console/fonts.c is
->       overly complicated, and seems to be buggy for some stuff living
->       outside drivers drivers/video (drivers/media/platform/vivi.c and
->       drivers/staging/media/solo6x10/solo6x10-enc.c). I think this should
->       be resolved in Kconfig logic, using a new FONT_SUPPORT
->       symbol (FONTS is already taken).
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
+ drivers/gpu/drm/drm_bufs.c | 11 ++++-------
+ drivers/gpu/drm/drm_vm.c   | 13 +++++++------
+ 2 files changed, 11 insertions(+), 13 deletions(-)
 
-/^JN - Jesper Nilsson
+diff --git a/drivers/gpu/drm/drm_bufs.c b/drivers/gpu/drm/drm_bufs.c
+index 0128147..0ae9cbb 100644
+--- a/drivers/gpu/drm/drm_bufs.c
++++ b/drivers/gpu/drm/drm_bufs.c
+@@ -210,8 +210,8 @@ static int drm_addmap_core(struct drm_device * dev, resource_size_t offset,
+ 		if (drm_core_has_MTRR(dev)) {
+ 			if (map->type = _DRM_FRAME_BUFFER ||
+ 			    (map->flags & _DRM_WRITE_COMBINING)) {
+-				map->mtrr = mtrr_add(map->offset, map->size,
+-						     MTRR_TYPE_WRCOMB, 1);
++				map->mtrr +					drm_mtrr_add_wc(map->offset, map->size);
+ 			}
+ 		}
+ 		if (map->type = _DRM_REGISTERS) {
+@@ -451,11 +451,8 @@ int drm_rmmap_locked(struct drm_device *dev, struct drm_local_map *map)
+ 		iounmap(map->handle);
+ 		/* FALLTHROUGH */
+ 	case _DRM_FRAME_BUFFER:
+-		if (drm_core_has_MTRR(dev) && map->mtrr >= 0) {
+-			int retcode;
+-			retcode = mtrr_del(map->mtrr, map->offset, map->size);
+-			DRM_DEBUG("mtrr_del=%d\n", retcode);
+-		}
++		if (drm_core_has_MTRR(dev))
++			drm_mtrr_del_wc(map->mtrr);
+ 		break;
+ 	case _DRM_SHM:
+ 		vfree(map->handle);
+diff --git a/drivers/gpu/drm/drm_vm.c b/drivers/gpu/drm/drm_vm.c
+index db7bd29..b255fd7 100644
+--- a/drivers/gpu/drm/drm_vm.c
++++ b/drivers/gpu/drm/drm_vm.c
+@@ -43,15 +43,16 @@
+ static void drm_vm_open(struct vm_area_struct *vma);
+ static void drm_vm_close(struct vm_area_struct *vma);
+ 
+-static pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma)
++static pgprot_t drm_io_prot(struct drm_local_map *map,
++			    struct vm_area_struct *vma)
+ {
+ 	pgprot_t tmp = vm_get_page_prot(vma->vm_flags);
+ 
+ #if defined(__i386__) || defined(__x86_64__)
+-	if (boot_cpu_data.x86 > 3 && map_type != _DRM_AGP) {
+-		pgprot_val(tmp) |= _PAGE_PCD;
+-		pgprot_val(tmp) &= ~_PAGE_PWT;
+-	}
++	if (map->flags & _DRM_WRITE_COMBINING)
++		tmp = pgprot_writecombine(tmp);
++	else if (map->type != _DRM_AGP)
++		tmp = pgprot_noncached(tmp);
+ #elif defined(__powerpc__)
+ 	pgprot_val(tmp) |= _PAGE_NO_CACHE;
+ 	if (map_type = _DRM_REGISTERS)
+@@ -617,7 +618,7 @@ int drm_mmap_locked(struct file *filp, struct vm_area_struct *vma)
+ 	case _DRM_REGISTERS:
+ 		offset = drm_core_get_reg_ofs(dev);
+ 		vma->vm_flags |= VM_IO;	/* not in core dump */
+-		vma->vm_page_prot = drm_io_prot(map->type, vma);
++		vma->vm_page_prot = drm_io_prot(map, vma);
+ 		if (io_remap_pfn_range(vma, vma->vm_start,
+ 				       (map->offset + offset) >> PAGE_SHIFT,
+ 				       vma->vm_end - vma->vm_start,
 -- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+1.8.1.4
+

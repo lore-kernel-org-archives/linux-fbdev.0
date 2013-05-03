@@ -1,49 +1,44 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:34:29 +0000
-Subject: [PATCH 08/32] OMAPDSS: clean up dss_[ovl|mgr]_get_device()
-Message-Id: <1369906493-27538-9-git-send-email-tomi.valkeinen@ti.com>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Fri, 03 May 2013 23:00:34 +0000
+Subject: [PATCH 6/7] radeon: Switch to drm_mtrr_add_wc and add a missing drm_mtrr_del_wc
+Message-Id: <134d5e30d48f0355d1558597333aab2a680dfbdd.1367621039.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1367621038.git.luto@amacapital.net>
+In-Reply-To: <cover.1367621038.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Andy Lutomirski <luto@amacapital.net>
 
-Minor cleanup for the dss_[ovl|mgr]_get_device() functions to make them
-more readable.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
 ---
- drivers/video/omap2/dss/apply.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ drivers/gpu/drm/radeon/radeon_object.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index a4b356a..b84bd99 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -420,16 +420,14 @@ static void wait_pending_extra_info_updates(void)
- 		DSSWARN("timeout in wait_pending_extra_info_updates\n");
- }
- 
--static inline struct omap_dss_device *dss_ovl_get_device(struct omap_overlay *ovl)
-+static struct omap_dss_device *dss_mgr_get_device(struct omap_overlay_manager *mgr)
+diff --git a/drivers/gpu/drm/radeon/radeon_object.c b/drivers/gpu/drm/radeon/radeon_object.c
+index d3aface..01d4906 100644
+--- a/drivers/gpu/drm/radeon/radeon_object.c
++++ b/drivers/gpu/drm/radeon/radeon_object.c
+@@ -321,8 +321,8 @@ void radeon_bo_force_delete(struct radeon_device *rdev)
+ int radeon_bo_init(struct radeon_device *rdev)
  {
--	return ovl->manager ?
--		(ovl->manager->output ? ovl->manager->output->device : NULL) :
--		NULL;
-+	return mgr->output ? mgr->output->device : NULL;
- }
- 
--static inline struct omap_dss_device *dss_mgr_get_device(struct omap_overlay_manager *mgr)
-+static struct omap_dss_device *dss_ovl_get_device(struct omap_overlay *ovl)
+ 	/* Add an MTRR for the VRAM */
+-	rdev->mc.vram_mtrr = mtrr_add(rdev->mc.aper_base, rdev->mc.aper_size,
+-			MTRR_TYPE_WRCOMB, 1);
++	rdev->mc.vram_mtrr = drm_mtrr_add_wc(rdev->mc.aper_base,
++					     rdev->mc.aper_size);
+ 	DRM_INFO("Detected VRAM RAM=%lluM, BAR=%lluM\n",
+ 		rdev->mc.mc_vram_size >> 20,
+ 		(unsigned long long)rdev->mc.aper_size >> 20);
+@@ -334,6 +334,7 @@ int radeon_bo_init(struct radeon_device *rdev)
+ void radeon_bo_fini(struct radeon_device *rdev)
  {
--	return mgr->output ? mgr->output->device : NULL;
-+	return ovl->manager ? dss_mgr_get_device(ovl->manager) : NULL;
+ 	radeon_ttm_fini(rdev);
++	drm_mtrr_del_wc(rdev->mc.vram_mtrr);
  }
  
- static int dss_mgr_wait_for_vsync(struct omap_overlay_manager *mgr)
+ void radeon_bo_list_add_object(struct radeon_bo_list *lobj,
 -- 
-1.8.1.2
+1.8.1.4
 

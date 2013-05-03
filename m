@@ -1,7 +1,7 @@
 From: Andy Lutomirski <luto@amacapital.net>
-Date: Fri, 03 May 2013 23:00:34 +0000
-Subject: [PATCH 6/7] radeon: Switch to drm_mtrr_add_wc and add a missing drm_mtrr_del_wc
-Message-Id: <134d5e30d48f0355d1558597333aab2a680dfbdd.1367621039.git.luto@amacapital.net>
+Date: Fri, 03 May 2013 23:00:32 +0000
+Subject: [PATCH 4/7] drm: Use drm_mtrr_add_wc for the AGP aperture
+Message-Id: <d39eb3baa01479e37638b25135d7f95c3e096858.1367621039.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1367621038.git.luto@amacapital.net>
 In-Reply-To: <cover.1367621038.git.luto@amacapital.net>
@@ -13,32 +13,49 @@ Cc: Andy Lutomirski <luto@amacapital.net>
 
 Signed-off-by: Andy Lutomirski <luto@amacapital.net>
 ---
- drivers/gpu/drm/radeon/radeon_object.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/drm_pci.c  |  8 ++++----
+ drivers/gpu/drm/drm_stub.c | 10 ++--------
+ 2 files changed, 6 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/gpu/drm/radeon/radeon_object.c b/drivers/gpu/drm/radeon/radeon_object.c
-index d3aface..01d4906 100644
---- a/drivers/gpu/drm/radeon/radeon_object.c
-+++ b/drivers/gpu/drm/radeon/radeon_object.c
-@@ -321,8 +321,8 @@ void radeon_bo_force_delete(struct radeon_device *rdev)
- int radeon_bo_init(struct radeon_device *rdev)
- {
- 	/* Add an MTRR for the VRAM */
--	rdev->mc.vram_mtrr = mtrr_add(rdev->mc.aper_base, rdev->mc.aper_size,
--			MTRR_TYPE_WRCOMB, 1);
-+	rdev->mc.vram_mtrr = drm_mtrr_add_wc(rdev->mc.aper_base,
-+					     rdev->mc.aper_size);
- 	DRM_INFO("Detected VRAM RAM=%lluM, BAR=%lluM\n",
- 		rdev->mc.mc_vram_size >> 20,
- 		(unsigned long long)rdev->mc.aper_size >> 20);
-@@ -334,6 +334,7 @@ int radeon_bo_init(struct radeon_device *rdev)
- void radeon_bo_fini(struct radeon_device *rdev)
- {
- 	radeon_ttm_fini(rdev);
-+	drm_mtrr_del_wc(rdev->mc.vram_mtrr);
- }
+diff --git a/drivers/gpu/drm/drm_pci.c b/drivers/gpu/drm/drm_pci.c
+index bd719e9..3628683 100644
+--- a/drivers/gpu/drm/drm_pci.c
++++ b/drivers/gpu/drm/drm_pci.c
+@@ -278,10 +278,10 @@ int drm_pci_agp_init(struct drm_device *dev)
+ 		}
+ 		if (drm_core_has_MTRR(dev)) {
+ 			if (dev->agp)
+-				dev->agp->agp_mtrr -					mtrr_add(dev->agp->agp_info.aper_base,
+-						 dev->agp->agp_info.aper_size *
+-						 1024 * 1024, MTRR_TYPE_WRCOMB, 1);
++				dev->agp->agp_mtrr = drm_mtrr_add_wc(
++					dev->agp->agp_info.aper_base,
++					dev->agp->agp_info.aper_size *
++					1024 * 1024);
+ 		}
+ 	}
+ 	return 0;
+diff --git a/drivers/gpu/drm/drm_stub.c b/drivers/gpu/drm/drm_stub.c
+index 7d30802..96e21bd 100644
+--- a/drivers/gpu/drm/drm_stub.c
++++ b/drivers/gpu/drm/drm_stub.c
+@@ -451,14 +451,8 @@ void drm_put_dev(struct drm_device *dev)
  
- void radeon_bo_list_add_object(struct radeon_bo_list *lobj,
+ 	drm_lastclose(dev);
+ 
+-	if (drm_core_has_MTRR(dev) && drm_core_has_AGP(dev) &&
+-	    dev->agp && dev->agp->agp_mtrr >= 0) {
+-		int retval;
+-		retval = mtrr_del(dev->agp->agp_mtrr,
+-				  dev->agp->agp_info.aper_base,
+-				  dev->agp->agp_info.aper_size * 1024 * 1024);
+-		DRM_DEBUG("mtrr_del=%d\n", retval);
+-	}
++	if (drm_core_has_MTRR(dev) && drm_core_has_AGP(dev) && dev->agp)
++		drm_mtrr_del_wc(dev->agp->agp_mtrr);
+ 
+ 	if (dev->driver->unload)
+ 		dev->driver->unload(dev);
 -- 
 1.8.1.4
 

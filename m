@@ -1,561 +1,191 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Sat, 18 May 2013 09:15:12 +0000
-Subject: [PATCH 2/4] fb: vt8500: Convert to use vendor register names
-Message-Id: <1368868514-18975-3-git-send-email-linux@prisktech.co.nz>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Fri, 03 May 2013 23:00:35 +0000
+Subject: [PATCH 7/7] uvesafb: Clean up MTRR code
+Message-Id: <1692ae3da2fd85aaa267d7d38954bc701f9f7bfd.1367621039.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1368868514-18975-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1368868514-18975-1-git-send-email-linux@prisktech.co.nz>
+References: <cover.1367621038.git.luto@amacapital.net>
+In-Reply-To: <cover.1367621038.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Andy Lutomirski <luto@amacapital.net>, Michal Januszewski <spock@gentoo.org>
 
-Change all the #defines to match the vendor defined names, and change the
-references in wm8505fb.c and wmt_ge_rops.c.
-Add all the missing register offsets as well to prevent churn in the future.
+The old code allowed very strange memory types.  Now it works like
+all the other video drivers: ioremap_wc is used unconditionally,
+and MTRRs are set if PAT is unavailable (unless MTRR is disabled
+by a module parameter).
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+UC, WB, and WT support is gone.  If there are MTRR conflicts that prevent
+addition of a WC MTRR, adding a non-conflicting MTRR is pointless; it's
+better to just turn off MTRR support entirely.
+
+As an added bonus, any MTRR added is freed on unload.
+
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
 ---
- drivers/video/wm8505fb.c    |  159 ++++++++++++++++--------
- drivers/video/wmt_ge_rops.c |  280 +++++++++++++++++++++++++++++++++----------
- 2 files changed, 332 insertions(+), 107 deletions(-)
 
-diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
-index f824af8..167a9e2 100644
---- a/drivers/video/wm8505fb.c
-+++ b/drivers/video/wm8505fb.c
-@@ -38,29 +38,94 @@
+I can't test this -- the link to v86d in Documentation/fb/uvesafb.txt
+seems to be broken, and Fedora doesn't seem to package it.
+
+ Documentation/fb/uvesafb.txt | 16 ++++------
+ drivers/video/uvesafb.c      | 70 ++++++++++++--------------------------------
+ include/video/uvesafb.h      |  1 +
+ 3 files changed, 24 insertions(+), 63 deletions(-)
+
+diff --git a/Documentation/fb/uvesafb.txt b/Documentation/fb/uvesafb.txt
+index eefdd91..f6362d8 100644
+--- a/Documentation/fb/uvesafb.txt
++++ b/Documentation/fb/uvesafb.txt
+@@ -81,17 +81,11 @@ pmipal  Use the protected mode interface for palette changes.
  
- #define DRIVER_NAME "wm8505-fb"
+ mtrr:n  Setup memory type range registers for the framebuffer
+         where n:
+-              0 - disabled (equivalent to nomtrr) (default)
+-              1 - uncachable
+-              2 - write-back
+-              3 - write-combining
+-              4 - write-through
+-
+-        If you see the following in dmesg, choose the type that matches
+-        the old one.  In this example, use "mtrr:2".
+-...
+-mtrr: type mismatch for e0000000,8000000 old: write-back new: write-combining
+-...
++              0 - disabled (equivalent to nomtrr)
++              3 - write-combining (default)
++
++	Values other than 0 and 3 will result in a warning and will be
++	treated just like 3.
  
--#define WMT_GOVR_COLORSPACE1	0x030
--#define WMT_GOVR_MIF_ENABLE	0x080
--#define WMT_GOVR_FBADDR		0x090
--#define WMT_GOVR_FBADDR1	0x094
--#define WMT_GOVR_XRES		0x098
--#define WMT_GOVR_XRES_VIRTUAL	0x09c
--#define WMT_GOVR_YPAN		0x0a0
--#define WMT_GOVR_XPAN		0x0a4
--#define WMT_GOVR_FHI		0x0a8
--#define WMT_GOVR_REG_UPDATE	0x0e4
--#define WMT_GOVR_TG		0x100
--#define WMT_GOVR_TIMING_H_ALL	0x108
--#define WMT_GOVR_TIMING_V_ALL	0x10c
--#define WMT_GOVR_TIMING_V_START	0x110
--#define WMT_GOVR_TIMING_V_END	0x114
--#define WMT_GOVR_TIMING_H_START	0x118
--#define WMT_GOVR_TIMING_H_END	0x11c
--#define WMT_GOVR_TIMING_V_SYNC	0x128
--#define WMT_GOVR_TIMING_H_SYNC	0x12c
--#define WMT_GOVR_DVO_SET	0x148
--#define WMT_GOVR_CONTRAST	0x1b8
--#define WMT_GOVR_BRGHTNESS	0x1bc
--#define WMT_GOVR_COLORSPACE	0x1e4
-+#define REG_GOVRH_CUR_ADDR		0x0000
-+#define REG_GOVRH_CUR_WIDTH		0x0004
-+#define REG_GOVRH_CUR_FB_WIDTH		0x0008
-+#define REG_GOVRH_CUR_VCROP		0x000C
-+#define REG_GOVRH_CUR_HCROP		0x0010
-+#define REG_GOVRH_CUR_HCOORD		0x0014
-+#define REG_GOVRH_CUR_VCOORD		0x0018
-+#define REG_GOVRH_CUR_STATUS		0x001C
-+#define REG_GOVRH_CUR_COLOR_KEY		0x0020
-+#define REG_GOVRH_DVO_PIX		0x0030
-+#define REG_GOVRH_DVO_DLY_SEL		0x0034
-+#define REG_GOVRH_INT			0x0038
-+#define REG_GOVRH_DVO_BLANK_DATA	0x003C
-+#define REG_GOVRH_DIRPATH		0x0040	/* WM8750+ */
-+#define REG_GOVRH_MIF			0x0080
-+#define REG_GOVRH_COLFMT		0x0084
-+#define REG_GOVRH_SRCFMT		0x0088
-+#define REG_GOVRH_DSTFMT		0x008C
-+#define REG_GOVRH_YSA			0x0090
-+#define REG_GOVRH_CSA			0x0094
-+#define REG_GOVRH_PIXWID		0x0098
-+#define REG_GOVRH_BUFWID		0x009C
-+#define REG_GOVRH_VCROP			0x00A0
-+#define REG_GOVRH_HCROP			0x00A4
-+#define REG_GOVRH_FHI			0x00A8
-+#define REG_GOVRH_COLFMT2		0x00AC
-+#define REG_GOVRH_YSA2			0x00B0	/* WM8950 */
-+#define REG_GOVRH_CSA2			0x00B4	/* WM8950 */
-+#define REG_GOVRH_MIF_FRAME_MODE	0x00B8	/* WM8950 */
-+#define REG_GOVRH_REG_STS		0x00E4
-+#define REG_GOVRH_SWFLD			0x00E8
-+#define REG_GOVRH_TG_ENABLE		0x0100
-+#define REG_GOVRH_READ_CYC		0x0104
-+#define REG_GOVRH_H_ALLPXL		0x0108
-+#define REG_GOVRH_V_ALLLN		0x010C
-+#define REG_GOVRH_ACTLN_BG		0x0110
-+#define REG_GOVRH_ACTLN_END		0x0114
-+#define REG_GOVRH_ACTPX_BG		0x0118
-+#define REG_GOVRH_ACTPX_END		0x011C
-+#define REG_GOVRH_VBIE_LINE		0x0120
-+#define REG_GOVRH_PVBI_LINE		0x0124
-+#define REG_GOVRH_HDMI_VBISW		0x0128
-+#define REG_GOVRH_HDMI_HSYNW		0x012C
-+#define REG_GOVRH_VSYNC_OFFSET		0x0130
-+#define REG_GOVRH_FIELD_STATUS		0x0134
-+#define REG_GOVRH_HDMI_3D		0x013C	/* WM8950 */
-+#define REG_GOVRH_DVO_SET		0x0148
-+#define REG_GOVRH_CB_ENABLE		0x0150
-+#define REG_GOVRH_H_ALLPXL2		0x0158
-+#define REG_GOVRH_V_ALLLN2		0x015C
-+#define REG_GOVRH_ACTLN_BG2		0x0160
-+#define REG_GOVRH_ACTLN_END2		0x0164
-+#define REG_GOVRH_ACTPX_BG2		0x0168
-+#define REG_GOVRH_ACTPX_END2		0x016C
-+#define REG_GOVRH_VBIE_LINE2		0x0170
-+#define REG_GOVRH_PVBI_LINE2		0x0174
-+#define REG_GOVRH_HDMI_VBISW2		0x0178
-+#define REG_GOVRH_HDMI_HSYNW2		0x017C
-+#define REG_GOVRH_LVDS_CTRL		0x0180	/* WM8750+ */
-+#define REG_GOVRH_LVDS_CTRL2		0x0184	/* WM8750+ */
-+#define REG_GOVRH_DAC_LP_SENSE_VAL	0x0188	/* WM8750 */
-+#define REG_GOVRH_DAC_TEST_MODE		0x018C	/* WM8750 */
-+#define REG_GOVRH_VGA_HSYNW		0x0190	/* WM8750 */
-+#define REG_GOVRH_VGA_VSYNW		0x0194	/* WM8750 */
-+#define REG_GOVRH_VGA_SYNPOLAR		0x0198	/* WM8750 */
-+#define REG_GOVRH_DAC_MOD		0x019C	/* WM8750 */
-+#define REG_GOVRH_DAC_VAL		0x01A0	/* WM8750 */
-+#define REG_GOVRH_DAC_CON		0x01A4	/* WM8750 */
-+#define REG_GOVRH_DAC_TEST		0x01A8	/* WM8750 */
-+#define REG_GOVRH_DAC_BTEST		0x01AC	/* WM8750 */
-+#define REG_GOVRH_DAC_CTEST		0x01B0	/* WM8750 */
-+#define REG_GOVRH_DAC_DBG		0x01B4	/* WM8750 */
-+#define REG_GOVRH_CONTRAST		0x01B8
-+#define REG_GOVRH_BRIGHTNESS		0x01BC
-+#define REG_GOVRH_DMACSC_COEF0		0x01C0
-+#define REG_GOVRH_DMACSC_COEF1		0x01C4
-+#define REG_GOVRH_DMACSC_COEF2		0x01C8
-+#define REG_GOVRH_DMACSC_COEF3		0x01CC
-+#define REG_GOVRH_DMACSC_COEF4		0x01D0
-+#define REG_GOVRH_DMACSC_COEF5		0x01D8
-+#define REG_GOVRH_DMACSC_COEF6		0x01DC
-+#define REG_GOVRH_CSC_MODE		0x01E0
-+#define REG_GOVRH_YUVRGB		0x01E4
-+#define REG_GOVRH_H264_INPUT_EN		0x01E8
-+#define REG_GOVRH_DISP_EN		0x01EC	/* WM8750 */
-+#define REG_GOVRH_HSCALE_UP		0x01F4
-+#define REG_GOVRH_IGS_MODE		0x01F8
-+#define REG_GOVRH_IGS_MODE2		0x01FC
+ nomtrr  Do not use memory type range registers.
  
- #define to_wm8505fb_info(__info) container_of(__info, \
- 						struct wm8505fb_info, fb)
-@@ -82,26 +147,26 @@ static int wm8505fb_init_hw(struct fb_info *info)
- 		writel(0, fbi->regbase + i);
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index d428445..4f447ad 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -24,9 +24,7 @@
+ #ifdef CONFIG_X86
+ #include <video/vga.h>
+ #endif
+-#ifdef CONFIG_MTRR
+ #include <asm/mtrr.h>
+-#endif
+ #include "edid.h"
  
- 	/* Set frame buffer address */
--	writel(fbi->fb.fix.smem_start, fbi->regbase + WMT_GOVR_FBADDR);
--	writel(fbi->fb.fix.smem_start, fbi->regbase + WMT_GOVR_FBADDR1);
-+	writel(fbi->fb.fix.smem_start, fbi->regbase + REG_GOVRH_YSA);
-+	writel(fbi->fb.fix.smem_start, fbi->regbase + REG_GOVRH_CSA);
+ static struct cb_id uvesafb_cn_id = {
+@@ -1540,67 +1538,31 @@ static void uvesafb_init_info(struct fb_info *info, struct vbe_mode_ib *mode)
  
- 	/*
- 	 * Set in-memory picture format to RGB
- 	 * 0x31C sets the correct color mode (RGB565) for WM8650
- 	 * Bit 8+9 (0x300) are ignored on WM8505 as reserved
- 	 */
--	writel(0x31c,		       fbi->regbase + WMT_GOVR_COLORSPACE);
--	writel(1,		       fbi->regbase + WMT_GOVR_COLORSPACE1);
-+	writel(0x31c,		       fbi->regbase + REG_GOVRH_YUVRGB);
-+	writel(1,		       fbi->regbase + REG_GOVRH_DVO_PIX);
- 
- 	/* Virtual buffer size */
--	writel(info->var.xres,	       fbi->regbase + WMT_GOVR_XRES);
--	writel(info->var.xres_virtual, fbi->regbase + WMT_GOVR_XRES_VIRTUAL);
-+	writel(info->var.xres,	       fbi->regbase + REG_GOVRH_PIXWID);
-+	writel(info->var.xres_virtual, fbi->regbase + REG_GOVRH_BUFWID);
- 
- 	/* black magic ;) */
--	writel(0xf,		       fbi->regbase + WMT_GOVR_FHI);
--	writel(4,		       fbi->regbase + WMT_GOVR_DVO_SET);
--	writel(1,		       fbi->regbase + WMT_GOVR_MIF_ENABLE);
--	writel(1,		       fbi->regbase + WMT_GOVR_REG_UPDATE);
-+	writel(0xf,		       fbi->regbase + REG_GOVRH_FHI);
-+	writel(4,		       fbi->regbase + REG_GOVRH_DVO_SET);
-+	writel(1,		       fbi->regbase + REG_GOVRH_MIF);
-+	writel(1,		       fbi->regbase + REG_GOVRH_REG_STS);
- 
- 	return 0;
- }
-@@ -120,19 +185,19 @@ static int wm8505fb_set_timing(struct fb_info *info)
- 	int v_all = v_end + info->var.lower_margin;
- 	int v_sync = info->var.vsync_len;
- 
--	writel(0, fbi->regbase + WMT_GOVR_TG);
-+	writel(0, fbi->regbase + REG_GOVRH_TG_ENABLE);
- 
--	writel(h_start, fbi->regbase + WMT_GOVR_TIMING_H_START);
--	writel(h_end,   fbi->regbase + WMT_GOVR_TIMING_H_END);
--	writel(h_all,   fbi->regbase + WMT_GOVR_TIMING_H_ALL);
--	writel(h_sync,  fbi->regbase + WMT_GOVR_TIMING_H_SYNC);
-+	writel(h_start, fbi->regbase + REG_GOVRH_ACTPX_BG);
-+	writel(h_end,   fbi->regbase + REG_GOVRH_ACTPX_END);
-+	writel(h_all,   fbi->regbase + REG_GOVRH_H_ALLPXL);
-+	writel(h_sync,  fbi->regbase + REG_GOVRH_HDMI_HSYNW);
- 
--	writel(v_start, fbi->regbase + WMT_GOVR_TIMING_V_START);
--	writel(v_end,   fbi->regbase + WMT_GOVR_TIMING_V_END);
--	writel(v_all,   fbi->regbase + WMT_GOVR_TIMING_V_ALL);
--	writel(v_sync,  fbi->regbase + WMT_GOVR_TIMING_V_SYNC);
-+	writel(v_start, fbi->regbase + REG_GOVRH_ACTLN_BG);
-+	writel(v_end,   fbi->regbase + REG_GOVRH_ACTLN_END);
-+	writel(v_all,   fbi->regbase + REG_GOVRH_V_ALLLN);
-+	writel(v_sync,  fbi->regbase + REG_GOVRH_HDMI_VBISW);
- 
--	writel(1, fbi->regbase + WMT_GOVR_TG);
-+	writel(1, fbi->regbase + REG_GOVRH_TG_ENABLE);
- 
- 	return 0;
- }
-@@ -174,7 +239,7 @@ static int wm8505fb_set_par(struct fb_info *info)
- 	wm8505fb_set_timing(info);
- 
- 	writel(fbi->contrast<<16 | fbi->contrast<<8 | fbi->contrast,
--		fbi->regbase + WMT_GOVR_CONTRAST);
-+		fbi->regbase + REG_GOVRH_CONTRAST);
- 
- 	return 0;
- }
-@@ -250,8 +315,8 @@ static int wm8505fb_pan_display(struct fb_var_screeninfo *var,
+ static void uvesafb_init_mtrr(struct fb_info *info)
  {
- 	struct wm8505fb_info *fbi = to_wm8505fb_info(info);
+-#ifdef CONFIG_MTRR
++	struct uvesafb_par *par = info->par;
++
+ 	if (mtrr && !(info->fix.smem_start & (PAGE_SIZE - 1))) {
+ 		int temp_size = info->fix.smem_len;
+-		unsigned int type = 0;
  
--	writel(var->xoffset, fbi->regbase + WMT_GOVR_XPAN);
--	writel(var->yoffset, fbi->regbase + WMT_GOVR_YPAN);
-+	writel(var->xoffset, fbi->regbase + REG_GOVRH_VCROP);
-+	writel(var->yoffset, fbi->regbase + REG_GOVRH_HCROP);
- 	return 0;
+-		switch (mtrr) {
+-		case 1:
+-			type = MTRR_TYPE_UNCACHABLE;
+-			break;
+-		case 2:
+-			type = MTRR_TYPE_WRBACK;
+-			break;
+-		case 3:
+-			type = MTRR_TYPE_WRCOMB;
+-			break;
+-		case 4:
+-			type = MTRR_TYPE_WRTHROUGH;
+-			break;
+-		default:
+-			type = 0;
+-			break;
+-		}
++		int rc;
+ 
+-		if (type) {
+-			int rc;
++		/* Find the largest power-of-two */
++		temp_size = roundup_pow_of_two(temp_size);
+ 
+-			/* Find the largest power-of-two */
+-			temp_size = roundup_pow_of_two(temp_size);
++		/* Try and find a power of two to add */
++		do {
++			rc = mtrr_add_wc_if_needed(info->fix.smem_start,
++						   temp_size);
++			temp_size >>= 1;
++		} while (temp_size >= PAGE_SIZE && rc = -EINVAL);
+ 
+-			/* Try and find a power of two to add */
+-			do {
+-				rc = mtrr_add(info->fix.smem_start,
+-					      temp_size, type, 1);
+-				temp_size >>= 1;
+-			} while (temp_size >= PAGE_SIZE && rc = -EINVAL);
+-		}
++		if (rc >= 0)
++			par->mtrr_handle = rc;
+ 	}
+-#endif /* CONFIG_MTRR */
  }
  
-@@ -264,7 +329,7 @@ static int wm8505fb_blank(int blank, struct fb_info *info)
- 		wm8505fb_set_timing(info);
- 		break;
- 	default:
--		writel(0,  fbi->regbase + WMT_GOVR_TIMING_V_SYNC);
-+		writel(0,  fbi->regbase + REG_GOVRH_HDMI_VBISW);
- 		break;
+ static void uvesafb_ioremap(struct fb_info *info)
+ {
+-#ifdef CONFIG_X86
+-	switch (mtrr) {
+-	case 1: /* uncachable */
+-		info->screen_base = ioremap_nocache(info->fix.smem_start, info->fix.smem_len);
+-		break;
+-	case 2: /* write-back */
+-		info->screen_base = ioremap_cache(info->fix.smem_start, info->fix.smem_len);
+-		break;
+-	case 3: /* write-combining */
+-		info->screen_base = ioremap_wc(info->fix.smem_start, info->fix.smem_len);
+-		break;
+-	case 4: /* write-through */
+-	default:
+-		info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
+-		break;
+-	}
+-#else
+-	info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
+-#endif /* CONFIG_X86 */
++	info->screen_base = ioremap_wc(info->fix.smem_start, info->fix.smem_len);
+ }
+ 
+ static ssize_t uvesafb_show_vbe_ver(struct device *dev,
+@@ -1851,6 +1813,7 @@ static int uvesafb_remove(struct platform_device *dev)
+ 		unregister_framebuffer(info);
+ 		release_region(0x3c0, 32);
+ 		iounmap(info->screen_base);
++		mtrr_del_wc_if_needed(par->mtrr_handle);
+ 		release_mem_region(info->fix.smem_start, info->fix.smem_len);
+ 		fb_destroy_modedb(info->monspecs.modedb);
+ 		fb_dealloc_cmap(&info->cmap);
+@@ -1930,6 +1893,9 @@ static int uvesafb_setup(char *options)
+ 		}
  	}
  
-diff --git a/drivers/video/wmt_ge_rops.c b/drivers/video/wmt_ge_rops.c
-index 4aaeb18..68de46a 100644
---- a/drivers/video/wmt_ge_rops.c
-+++ b/drivers/video/wmt_ge_rops.c
-@@ -20,29 +20,189 @@
- #include <linux/platform_device.h>
- #include "fb_draw.h"
- 
--#define GE_COMMAND_OFF		0x00
--#define GE_DEPTH_OFF		0x04
--#define GE_HIGHCOLOR_OFF	0x08
--#define GE_ROPCODE_OFF		0x14
--#define GE_FIRE_OFF		0x18
--#define GE_SRCBASE_OFF		0x20
--#define GE_SRCDISPW_OFF		0x24
--#define GE_SRCDISPH_OFF		0x28
--#define GE_SRCAREAX_OFF		0x2c
--#define GE_SRCAREAY_OFF		0x30
--#define GE_SRCAREAW_OFF		0x34
--#define GE_SRCAREAH_OFF		0x38
--#define GE_DESTBASE_OFF		0x3c
--#define GE_DESTDISPW_OFF	0x40
--#define GE_DESTDISPH_OFF	0x44
--#define GE_DESTAREAX_OFF	0x48
--#define GE_DESTAREAY_OFF	0x4c
--#define GE_DESTAREAW_OFF	0x50
--#define GE_DESTAREAH_OFF	0x54
--#define GE_PAT0C_OFF		0x88	/* Pattern 0 color */
--#define GE_ENABLE_OFF		0xec
--#define GE_INTEN_OFF		0xf0
--#define GE_STATUS_OFF		0xf8
-+#define GE_COMMAND		0x0000
-+#define GE_COLOR_DEPTH		0x0004
-+#define GE_HM_SEL		0x0008
-+#define GE_PAT_TRAN_EN		0x000C
-+#define GE_FONT_TRAN_EN		0x0010
-+#define GE_ROP_CODE		0x0014
-+#define GE_FIRE			0x0018
-+#define GE_ROP_BG_CODE		0x001C
-+#define GE_SRC_BADDR		0x0020
-+#define GE_SRC_DISP_W		0x0024
-+#define GE_SRC_DISP_H		0x0028
-+#define GE_SRC_X_START		0x002C
-+#define GE_SRC_Y_START		0x0030
-+#define GE_SRC_WIDTH		0x0034
-+#define GE_SRC_HEIGHT		0x0038
-+#define GE_DES_BADDR		0x003C
-+#define GE_DES_DISP_W		0x0040
-+#define GE_DES_DISP_H		0x0044
-+#define GE_DES_X_START		0x0048
-+#define GE_DES_Y_START		0x004C
-+#define GE_DES_WIDTH		0x0050
-+#define GE_DES_HEIGHT		0x0054
-+#define GE_FONT0_BUF		0x0058
-+#define GE_FONT1_BUF		0x005C
-+#define GE_FONT2_BUF		0x0060
-+#define GE_FONT3_BUF		0x0064
-+#define GE_PAT0_BUF		0x0068
-+#define GE_PAT1_BUF		0x006C
-+#define GE_PAT2_BUF		0x0070
-+#define GE_PAT3_BUF		0x0074
-+#define GE_PAT4_BUF		0x0078
-+#define GE_PAT5_BUF		0x007C
-+#define GE_PAT6_BUF		0x0080
-+#define GE_PAT7_BUF		0x0084
-+#define GE_PAT0_COLOR		0x0088
-+#define GE_PAT1_COLOR		0x008C
-+#define GE_PAT2_COLOR		0x0090
-+#define GE_PAT3_COLOR		0x0094
-+#define GE_PAT4_COLOR		0x0098
-+#define GE_PAT5_COLOR		0x009C
-+#define GE_PAT6_COLOR		0x00A0
-+#define GE_PAT7_COLOR		0x00A4
-+#define GE_PAT8_COLOR		0x00A8
-+#define GE_PAT9_COLOR		0x00AC
-+#define GE_PAT10_COLOR		0x00B0
-+#define GE_PAT11_COLOR		0x00B4
-+#define GE_PAT12_COLOR		0x00B8
-+#define GE_PAT13_COLOR		0x00BC
-+#define GE_PAT14_COLOR		0x00C0
-+#define GE_PAT15_COLOR		0x00C4
-+#define GE_CK_SEL		0x00C8
-+#define GE_SRC_CK		0x00CC
-+#define GE_DES_CK		0x00D0
-+#define GE_ALPHA_SEL		0x00D4
-+#define GE_BITBLT_ALPHA		0x00D8
-+#define GE_DES_PATH_EN		0x00DC
-+#define GE_ROTATE_MODE		0x00E0
-+#define GE_MIRROR_MODE		0x00E4
-+#define GE_GE_DELAY		0x00E8
-+#define GE_ENABLE		0x00EC
-+#define GE_INT_EN		0x00F0
-+#define GE_INT_FLAG		0x00F4
-+#define GE_STATUS		0x00F8
-+#define GE_SWID			0x00FC
-+#define GE_LN_X_START		0x0100
-+#define GE_LN_X_END		0x0104
-+#define GE_LN_Y_START		0x0108
-+#define GE_LN_Y_END		0x0110
-+#define GE_LN_TCK		0x0114
-+#define GE_AMX_CSC_BYPASS	0x0118
-+#define GE_C1_COEF		0x011C
-+#define GE_LN_STL_TB		0x0120
-+#define GE_LN_STL_RTN		0x0124
-+#define GE_LN_STL_DATA		0x0128
-+#define GE_LN_STL_APA		0x012C
-+#define GE_BC_P1X		0x0130
-+#define GE_BC_P1Y		0x0134
-+#define GE_BC_P2X		0x0138
-+#define GE_BC_P2Y		0x013C
-+#define GE_BC_P3X		0x0140
-+#define GE_BC_P3Y		0x0144
-+#define GE_BC_COLOR		0x0148
-+#define GE_BC_ALPHA		0x014C
-+#define GE_BC_DELTA_T		0x0150
-+#define GE_BC_L_STL		0x0154
-+#define GE_BC_L_STL_RTN		0x0158
-+#define GE_C2_COEF		0x015C
-+#define GE_C3_COEF		0x0160
-+#define GE_C4_COEF		0x0164
-+#define GE_C5_COEF		0x0168
-+#define GE_C6_COEF		0x016C
-+#define GE_C7_COEF		0x0170
-+#define GE_C8_COEF		0x0174
-+#define GE_YUV2_Y_BADDR		0x0178
-+#define GE_YUV2_C_BADDR		0x017C
-+#define GE_VQ_EN		0x0180
-+#define GE_VQ_SIZE		0x0184
-+#define GE_VQ_UDPTR		0x0188
-+#define GE_VQ_BASEADDR		0x018C
-+#define GE_VQ_WRSIZE		0x0190
-+#define GE_VQ_STADDRW		0x0194
-+#define GE_VQ_THR		0x0198
-+#define GE_VQ_YUV2_Y_FBW	0x019C
-+#define GE_ROP4_EN		0x01A0
-+#define GE_ALPHA_PLANE_EN	0x01A4
-+#define GE_MASK_BADDR		0x01A8
-+#define GE_MASK_DISP_W		0x01AC
-+#define GE_MASK_DISP_H		0x01B0
-+#define GE_MASK_X_START		0x01B4
-+#define GE_MASK_Y_START		0x01B8
-+#define GE_MASK_WIDTH		0x01BC
-+#define GE_MASK_HEIGHT		0x01C0
-+#define GE_DW_MASK_BADDR	0x01C4
-+#define GE_ALPHA_PLANE_WBE	0x01C8
-+#define GE_YUV2_C_FBW		0x01CC
-+#define GE_ADAP_BLEND_EN	0x01D0
-+#define GE_SRC_ALPHA_SEL	0x01D4
-+#define GE_SRC_BLEND_APA	0x01D8
-+#define GE_DES_ALPHA_SEL	0x01DC
-+#define GE_DES_BLEND_APA	0x01E0
-+#define GE_ADAP_CLAMP_EN	0x01E4
-+#define GE_YUV2_C_BLEND_SEL	0x01E8
-+#define GE_SRC_INDEP_MODE	0x01EC
-+#define GE_C9_COEF		0x01F0
-+#define GE_COEF_I		0x01F4
-+#define GE_COEF_J		0x01F8
-+#define GE_COEF_K		0x01FC
-+#define GE_G1_CD		0x0200
-+#define GE_G2_CD		0x0204
-+#define GE_G1_FG_ADDR		0x0210
-+#define GE_G1_BG_ADDR		0x0214
-+#define GE_G1_FB_SEL		0x0218
-+#define GE_G2_FG_ADDR		0x021C
-+#define GE_G2_BG_ADDR		0x0220
-+#define GE_G2_FB_SEL		0x0224
-+#define GE_G1_X_START		0x0230
-+#define GE_G1_X_END		0x0234
-+#define GE_G1_Y_START		0x0238
-+#define GE_G1_Y_END		0x023C
-+#define GE_G2_X_START		0x0240
-+#define GE_G2_X_END		0x0244
-+#define GE_G2_Y_START		0x0248
-+#define GE_G2_Y_END		0x024C
-+#define GE_DISP_X_END		0x0250
-+#define GE_DISP_Y_END		0x0254
-+#define GE_AMX_CB		0x0258
-+#define GE_G1_YUV_MODE_EN	0x025C
-+#define GE_G2_YUV_MODE_EN	0x0260
-+#define GE_G1_YUV_FMT_SEL	0x0264
-+#define GE_G1_YUV_OUTP_SEL	0x0268
-+#define GE_G2_YUV_FMT_SEL	0x026C
-+#define GE_G2_YUV_OUTP_SEL	0x0270
-+#define GE_AMX_CSC_CFG		0x0274
-+#define GE_AMX_CSC_MODE		0x0278
-+#define GE_AMX_Y_SUB_16_EN	0x027C
-+#define GE_G1_YUV_ADDR		0x0280
-+#define GE_G2_YUV_ADDR		0x0284
-+#define GE_G1_CK_EN		0x0298
-+#define GE_G2_CK_EN		0x029C
-+#define GE_G1_C_KEY		0x02A0
-+#define GE_G2_C_KEY		0x02A4
-+#define GE_G1_AMX_EN		0x02A8
-+#define GE_G2_AMX_EN		0x02AC
-+#define GE_CK2_APA		0x02B0
-+#define GE_AMX_CTL		0x02B4
-+#define GE_CK_APA		0x02B8
-+#define GE_FIX_APA		0x02BC
-+#define GE_G1_AMX_HM		0x02C0
-+#define GE_G2_AMX_HM		0x02C4
-+#define GE_NH_DATA		0x02C8
-+#define GE_VSYNC_STS		0x02CC
-+#define GE_REG_UPD		0x02D0
-+#define GE_REG_SEL		0x02D4
-+#define GE_REG_AMX2_CTL		0x02D8
-+#define GE_FIX2_APA		0x02DC
-+#define GE_G1_H_SCALE		0x02E0
-+#define GE_G2_H_SCALE		0x02E4
-+#define GE_G1_FBW		0x02E8
-+#define GE_G1_VCROP		0x02EC
-+#define GE_G1_HCROP		0x02F0
-+#define GE_G2_FBW		0x02F4
-+#define GE_G2_VCROP		0x02F8
-+#define GE_G2_HCROP		0x02FC
- 
- static void __iomem *regbase;
- 
-@@ -65,20 +225,20 @@ void wmt_ge_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
- 		p->fbops->fb_sync(p);
- 
- 	writel(p->var.bits_per_pixel = 32 ? 3 :
--	      (p->var.bits_per_pixel = 8 ? 0 : 1), regbase + GE_DEPTH_OFF);
--	writel(p->var.bits_per_pixel = 15 ? 1 : 0, regbase + GE_HIGHCOLOR_OFF);
--	writel(p->fix.smem_start, regbase + GE_DESTBASE_OFF);
--	writel(p->var.xres_virtual - 1, regbase + GE_DESTDISPW_OFF);
--	writel(p->var.yres_virtual - 1, regbase + GE_DESTDISPH_OFF);
--	writel(rect->dx, regbase + GE_DESTAREAX_OFF);
--	writel(rect->dy, regbase + GE_DESTAREAY_OFF);
--	writel(rect->width - 1, regbase + GE_DESTAREAW_OFF);
--	writel(rect->height - 1, regbase + GE_DESTAREAH_OFF);
--
--	writel(pat, regbase + GE_PAT0C_OFF);
--	writel(1, regbase + GE_COMMAND_OFF);
--	writel(rect->rop = ROP_XOR ? 0x5a : 0xf0, regbase + GE_ROPCODE_OFF);
--	writel(1, regbase + GE_FIRE_OFF);
-+	      (p->var.bits_per_pixel = 8 ? 0 : 1), regbase + GE_COLOR_DEPTH);
-+	writel(p->var.bits_per_pixel = 15 ? 1 : 0, regbase + GE_HM_SEL);
-+	writel(p->fix.smem_start, regbase + GE_DES_BADDR);
-+	writel(p->var.xres_virtual - 1, regbase + GE_DES_DISP_W);
-+	writel(p->var.yres_virtual - 1, regbase + GE_DES_DISP_H);
-+	writel(rect->dx, regbase + GE_DES_X_START);
-+	writel(rect->dy, regbase + GE_DES_Y_START);
-+	writel(rect->width - 1, regbase + GE_DES_WIDTH);
-+	writel(rect->height - 1, regbase + GE_DES_HEIGHT);
++	if (mtrr != 3 && mtrr != 1)
++		pr_warn("uvesafb: mtrr should be set to 0 or 3; %d is unsupported", mtrr);
 +
-+	writel(pat, regbase + GE_PAT0_COLOR);
-+	writel(1, regbase + GE_COMMAND);
-+	writel(rect->rop = ROP_XOR ? 0x5a : 0xf0, regbase + GE_ROP_CODE);
-+	writel(1, regbase + GE_FIRE);
- }
- EXPORT_SYMBOL_GPL(wmt_ge_fillrect);
- 
-@@ -91,34 +251,34 @@ void wmt_ge_copyarea(struct fb_info *p, const struct fb_copyarea *area)
- 		p->fbops->fb_sync(p);
- 
- 	writel(p->var.bits_per_pixel > 16 ? 3 :
--	      (p->var.bits_per_pixel > 8 ? 1 : 0), regbase + GE_DEPTH_OFF);
--
--	writel(p->fix.smem_start, regbase + GE_SRCBASE_OFF);
--	writel(p->var.xres_virtual - 1, regbase + GE_SRCDISPW_OFF);
--	writel(p->var.yres_virtual - 1, regbase + GE_SRCDISPH_OFF);
--	writel(area->sx, regbase + GE_SRCAREAX_OFF);
--	writel(area->sy, regbase + GE_SRCAREAY_OFF);
--	writel(area->width - 1, regbase + GE_SRCAREAW_OFF);
--	writel(area->height - 1, regbase + GE_SRCAREAH_OFF);
--
--	writel(p->fix.smem_start, regbase + GE_DESTBASE_OFF);
--	writel(p->var.xres_virtual - 1, regbase + GE_DESTDISPW_OFF);
--	writel(p->var.yres_virtual - 1, regbase + GE_DESTDISPH_OFF);
--	writel(area->dx, regbase + GE_DESTAREAX_OFF);
--	writel(area->dy, regbase + GE_DESTAREAY_OFF);
--	writel(area->width - 1, regbase + GE_DESTAREAW_OFF);
--	writel(area->height - 1, regbase + GE_DESTAREAH_OFF);
--
--	writel(0xcc, regbase + GE_ROPCODE_OFF);
--	writel(1, regbase + GE_COMMAND_OFF);
--	writel(1, regbase + GE_FIRE_OFF);
-+	      (p->var.bits_per_pixel > 8 ? 1 : 0), regbase + GE_COLOR_DEPTH);
-+
-+	writel(p->fix.smem_start, regbase + GE_SRC_BADDR);
-+	writel(p->var.xres_virtual - 1, regbase + GE_SRC_DISP_W);
-+	writel(p->var.yres_virtual - 1, regbase + GE_SRC_DISP_H);
-+	writel(area->sx, regbase + GE_SRC_X_START);
-+	writel(area->sy, regbase + GE_SRC_Y_START);
-+	writel(area->width - 1, regbase + GE_SRC_WIDTH);
-+	writel(area->height - 1, regbase + GE_SRC_HEIGHT);
-+
-+	writel(p->fix.smem_start, regbase + GE_DES_BADDR);
-+	writel(p->var.xres_virtual - 1, regbase + GE_DES_DISP_W);
-+	writel(p->var.yres_virtual - 1, regbase + GE_DES_DISP_H);
-+	writel(area->dx, regbase + GE_DES_X_START);
-+	writel(area->dy, regbase + GE_DES_Y_START);
-+	writel(area->width - 1, regbase + GE_DES_WIDTH);
-+	writel(area->height - 1, regbase + GE_DES_HEIGHT);
-+
-+	writel(0xcc, regbase + GE_ROP_CODE);
-+	writel(1, regbase + GE_COMMAND);
-+	writel(1, regbase + GE_FIRE);
- }
- EXPORT_SYMBOL_GPL(wmt_ge_copyarea);
- 
- int wmt_ge_sync(struct fb_info *p)
- {
- 	int loops = 5000000;
--	while ((readl(regbase + GE_STATUS_OFF) & 4) && --loops)
-+	while ((readl(regbase + GE_STATUS) & 4) && --loops)
- 		cpu_relax();
- 	return loops > 0 ? 0 : -EBUSY;
- }
-@@ -146,7 +306,7 @@ static int wmt_ge_rops_probe(struct platform_device *pdev)
- 		return -EBUSY;
- 	}
- 
--	writel(1, regbase + GE_ENABLE_OFF);
-+	writel(1, regbase + GE_ENABLE);
- 	printk(KERN_INFO "Enabled support for WMT GE raster acceleration\n");
- 
  	return 0;
+ }
+ #endif /* !MODULE */
+diff --git a/include/video/uvesafb.h b/include/video/uvesafb.h
+index 1a91850..30f5362 100644
+--- a/include/video/uvesafb.h
++++ b/include/video/uvesafb.h
+@@ -134,6 +134,7 @@ struct uvesafb_par {
+ 
+ 	int mode_idx;
+ 	struct vbe_crtc_ib crtc;
++	int mtrr_handle;
+ };
+ 
+ #endif /* _UVESAFB_H */
 -- 
-1.7.9.5
+1.8.1.4
 

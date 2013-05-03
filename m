@@ -1,71 +1,142 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Date: Fri, 31 May 2013 12:55:34 +0000
-Subject: [PATCH v3 4/8] video: xilinxfb: Use drvdata->regs_phys instead of physaddr
-Message-Id: <ef73f4a9d2f95a19819e1e37c0f3377033779cd6.1370004925.git.michal.simek@xilinx.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-8141-1370004958-0001"
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Fri, 03 May 2013 23:00:29 +0000
+Subject: [PATCH 1/7] x86: Add mtrr_{add,del}_wc_if_needed
+Message-Id: <e4281b0d2c36d94a1e8b98d73ec7cc29f6161e43.1367621039.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1370004925.git.michal.simek@xilinx.com>
-In-Reply-To: <cover.1370004925.git.michal.simek@xilinx.com>
-To: linux-kernel@vger.kernel.org
-Cc: Michal Simek <monstr@monstr.eu>, Michal Simek <michal.simek@xilinx.com>, Arnd Bergmann <arnd@arndb.de>, Timur Tabi <timur@tabi.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-
-This is a MIME GnuPG-signed message.  If you see this text, it means that
-your E-mail or Usenet software does not support MIME signed messages.
-The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
-To open this message correctly you will need to install E-mail or Usenet
-software that supports modern Internet standards.
-
---=_mimegpg-monstr-desktop-8141-1370004958-0001
-
-physaddr will be remove in the next patch.
-
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
----
-Changes in v3:
-- New patch in this patchset based on discussions
-
-Changes in v2: None
-
- drivers/video/xilinxfb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index d94c992..1b55f18 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -325,7 +325,7 @@ static int xilinxfb_assign(struct device *dev,
-
- 	if (drvdata->flags & BUS_ACCESS_FLAG) {
- 		/* Put a banner in the log (for DEBUG) */
--		dev_dbg(dev, "regs: phys=%lx, virt=%p\n", physaddr,
-+		dev_dbg(dev, "regs: phys=%x, virt=%p\n", drvdata->regs_phys,
- 					drvdata->regs);
- 	}
- 	/* Put a banner in the log (for DEBUG) */
-@@ -353,7 +353,7 @@ err_fbmem:
-
- err_map:
- 	if (drvdata->flags & BUS_ACCESS_FLAG)
--		release_mem_region(physaddr, 8);
-+		release_mem_region(drvdata->regs_phys, 8);
-
- err_region:
- 	kfree(drvdata);
---
-1.8.2.3
-
-
---=_mimegpg-monstr-desktop-8141-1370004958-0001
-Content-Type: application/pgp-signature
+References: <cover.1367621038.git.luto@amacapital.net>
+In-Reply-To: <cover.1367621038.git.luto@amacapital.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Andy Lutomirski <luto@amacapital.net>, x86@kernel.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+These MTRR helpers add a WC MTRR if PAT is disabled.  Modern drivers should
+be using ioremap_wc, etc. to get WC memory; the MTRR is just a fallback
+if the system doesn't have PAT.  So, rather than allocating an unnecessary
+MTRR even on PAT systems and having error handling spread out and handled
+differently by different drivers, consolidate it all and don't waste the
+MTRR on PAT-supporting systems.  (Follow-up changes will update drivers.)
 
-iEYEABECAAYFAlGond4ACgkQykllyylKDCE2MwCfRF9/Bav3CqONvZ/8bTYb+Ktj
-pGUAoII9nudByTfMZc13zPVxEtrXxDR0
-=E5bI
------END PGP SIGNATURE-----
+This should be a simple change, a bit of a clean-up, and it will flush
+out any drivers that actually depend on the MTRR for write combining.
 
---=_mimegpg-monstr-desktop-8141-1370004958-0001--
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+---
+ arch/x86/include/asm/mtrr.h     | 21 ++++++++++++++++
+ arch/x86/kernel/cpu/mtrr/main.c | 53 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 74 insertions(+)
+
+diff --git a/arch/x86/include/asm/mtrr.h b/arch/x86/include/asm/mtrr.h
+index e235582..cc96c72 100644
+--- a/arch/x86/include/asm/mtrr.h
++++ b/arch/x86/include/asm/mtrr.h
+@@ -45,6 +45,18 @@ extern void mtrr_aps_init(void);
+ extern void mtrr_bp_restore(void);
+ extern int mtrr_trim_uncached_memory(unsigned long end_pfn);
+ extern int amd_special_default_mtrr(void);
++
++/*
++ * These are for drivers (mostly video) that want to add WC MTRRs as a
++ * fallback if PAT is unavailable.  There is no need to check for errors.
++ *
++ * The handles used by the _if_needed functions are *not* MTRR indices.
++ * mtrr_del_wc_if_needed(0) and mtrr_del_wc_if_needed(-1) are
++ * guaranteed to have no effect.
++ */
++extern int __must_check mtrr_add_wc_if_needed(unsigned long base,
++					      unsigned long size);
++extern void mtrr_del_wc_if_needed(int handle);
+ #  else
+ static inline u8 mtrr_type_lookup(u64 addr, u64 end)
+ {
+@@ -86,6 +98,15 @@ static inline void mtrr_centaur_report_mcr(int mcr, u32 lo, u32 hi)
+ #define set_mtrr_aps_delayed_init() do {} while (0)
+ #define mtrr_aps_init() do {} while (0)
+ #define mtrr_bp_restore() do {} while (0)
++
++static inline int __must_check mtrr_add_wc_if_needed(unsigned long base,
++						     unsigned long size)
++{
++	return -ENODEV;
++}
++static inline void mtrr_del_wc_if_needed(int handle)
++{
++}
+ #  endif
+ 
+ #ifdef CONFIG_COMPAT
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index 726bf96..6370238 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -51,6 +51,7 @@
+ #include <asm/e820.h>
+ #include <asm/mtrr.h>
+ #include <asm/msr.h>
++#include <asm/pat.h>
+ 
+ #include "mtrr.h"
+ 
+@@ -524,6 +525,58 @@ int mtrr_del(int reg, unsigned long base, unsigned long size)
+ }
+ EXPORT_SYMBOL(mtrr_del);
+ 
++/**
++ * mtrr_add_wc_if_needed - add a WC MTRR and handle errors if PAT is unavailable
++ * @base: Physical base address
++ * @size: Size of region
++ *
++ * If PAT is available, this does nothing.  If PAT is unavailable, it
++ * attempts to add a WC MTRR covering size bytes starting at base and
++ * logs an error if this fails.
++ *
++ * Drivers must store the return value to pass to mtrr_del_wc_if_needed,
++ * but drivers should not try to interpret that return value.
++ */
++int mtrr_add_wc_if_needed(unsigned long base, unsigned long size)
++{
++	int ret;
++
++	if (pat_enabled) {
++		/*
++		 * Don't bother -- we don't need the MTRR.  Return an error
++		 * so that no one gets confused.
++		 */
++		return -EBUSY;  /* The error doesn't matter. */
++	}
++
++	ret = mtrr_add(base, size, MTRR_TYPE_WRCOMB, true);
++	if (ret < 0) {
++	  pr_warn("Failed to add WC MTRR for [%p-%p]; performance will suffer.",
++		  (void *)base, (void *)(base + size - 1));
++		return ret;
++	}
++	return ret + 1000;
++}
++EXPORT_SYMBOL(mtrr_add_wc_if_needed);
++
++/*
++ * mtrr_del_wc_if_needed - undoes mtrr_add_wc_if_needed
++ * @handle: Return value from mtrr_add_wc_if_needed
++ *
++ * This cleans up after mtrr_add_wc_if_needed.
++ *
++ * The API guarantees that mtrr_del_wc_if_needed(-1) and
++ * mtrr_del_wc_if_needed(0) do nothing.
++ */
++extern void mtrr_del_wc_if_needed(int handle)
++{
++	if (handle >= 1) {
++		WARN_ON(handle < 1000);
++		mtrr_del(handle - 1000, 0, 0);
++	}
++}
++EXPORT_SYMBOL(mtrr_del_wc_if_needed);
++
+ /*
+  * HACK ALERT!
+  * These should be called implicitly, but we can't yet until all the initcall
+-- 
+1.8.1.4
+

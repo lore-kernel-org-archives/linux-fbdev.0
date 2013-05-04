@@ -1,40 +1,91 @@
-From: Richard Genoud <richard.genoud@gmail.com>
-Date: Tue, 28 May 2013 11:37:45 +0000
-Subject: Re: fb_monspecs and device tree
-Message-Id: <CACQ1gAg-PyMkswKb3jz_ZMRXiRCU5WNoDv9U9_vf_xWK5SWkhA@mail.gmail.com>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Sat, 04 May 2013 17:45:55 +0000
+Subject: Re: [PATCH 2/7] drm (ast, cirrus, mgag200, nouveau, savage, vmwgfx): Rework drm_mtrr_{add, del}
+Message-Id: <20130504174555.GT5763@phenom.ffwll.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CACQ1gAg=nyZrXMKk2g+cFvn5g7kHnRKMQ9R2G7ufAqs07dkYHg@mail.gmail.com>
- <20130528104748.GL1952@game.jcrosoft.org>
-In-Reply-To: <20130528104748.GL1952-RQcB7r2h9QmfDR2tN2SG5Ni2O/JbrIOy@public.gmane.org>
+References: <cover.1367621038.git.luto@amacapital.net>
+	<4615b8566e9530e2169a36a5870f1b2eb7e621cd.1367621039.git.luto@amacapital.net>
+In-Reply-To: <4615b8566e9530e2169a36a5870f1b2eb7e621cd.1367621039.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Steffen Trumtrar <s.trumtrar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>
+To: Andy Lutomirski <luto@amacapital.net>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-2013/5/28 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>:
-> On 11:41 Tue 28 May     , Richard Genoud wrote:
->> Hi !
->>
->> I've been using the display-timings device tree node (great job !) on
->> a sam9x5 soc.
->>
->> I was wondering if there's a planned support for struct fb_monspecs in
->> device tree, (or if it is irrelevant), if someone is already working
->> on that etc...
->
->  I'm working on this but not on fbdev on DRI/KMS
->  so we can have a full support of the overlay & co
->  but I'm going to change complely the dt binding with the one present on
->  github
->
->  beawre the lcdc is already done on fbdev with display-timings
->
->  but I'll be off the first week on June so wait a few for sam9x5
->
->  Best Regards,
->  J.
+On Fri, May 03, 2013 at 04:00:30PM -0700, Andy Lutomirski wrote:
+> This replaces drm_mtrr_{add,del} with drm_mtrr_{add,del}_wc.  The
+> interface is simplified (because the base and size parameters to
+> drm_mtrr_del never did anything) and it uses
+> mtrr_{add,del}_wc_if_needed to avoid allocating MTRRs on systems
+> that don't need them.
+> 
+> Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+> ---
 
-ok, that's good news !
+[snip]
 
-thanks.
+> diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+> index 2d94d74..2a3e1fd 100644
+> --- a/include/drm/drmP.h
+> +++ b/include/drm/drmP.h
+> @@ -1250,18 +1250,15 @@ static inline int drm_core_has_MTRR(struct drm_device *dev)
+>  	return drm_core_check_feature(dev, DRIVER_USE_MTRR);
+>  }
+>  
+> -#define DRM_MTRR_WC		MTRR_TYPE_WRCOMB
+> -
+> -static inline int drm_mtrr_add(unsigned long offset, unsigned long size,
+> -			       unsigned int flags)
+> +static inline int __must_check drm_mtrr_add_wc(unsigned long offset,
+> +					       unsigned long size)
+>  {
+> -	return mtrr_add(offset, size, flags, 1);
+> +	return mtrr_add_wc_if_needed(offset, size);
+>  }
+>  
+> -static inline int drm_mtrr_del(int handle, unsigned long offset,
+> -			       unsigned long size, unsigned int flags)
+> +static inline void drm_mtrr_del_wc(int handle)
+>  {
+> -	return mtrr_del(handle, offset, size);
+> +	mtrr_del_wc_if_needed(handle);
+>  }
+>  
+>  #else
+> @@ -1269,16 +1266,14 @@ static inline int drm_mtrr_del(int handle, unsigned long offset,
+>  
+>  #define DRM_MTRR_WC		0
+>  
+> -static inline int drm_mtrr_add(unsigned long offset, unsigned long size,
+> -			       unsigned int flags)
+> +static inline int __must_check drm_mtrr_add_wc(unsigned long offset,
+> +					       unsigned long size)
+>  {
+> -	return 0;
+> +	return -1;
+>  }
+>  
+> -static inline int drm_mtrr_del(int handle, unsigned long offset,
+> -			       unsigned long size, unsigned int flags)
+> +static inline void drm_mtrr_del_wc(int handle)
+>  {
+> -	return 0;
+>  }
+
+Tbh I'm not a big fan of the drm_ indirection. Historically that was
+useful as an OS abstraction layer so that the same drivers could be used
+unchanged on Linux and the *BSD. But those days are long gone and drm
+drivers are now proper Linux drivers, and generally OS HALs seem to be
+frowned upon.
+
+Is there another reason than just being consistent with the historic stuff
+here? If we need dummy functions for !CONFIG_MTRR I think those should
+simply be in the core.
+
+And if the inconsistency bugs you I'd volunteer myself to ditch the old
+drm_ mtrr helpers.
+-Daniel
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch

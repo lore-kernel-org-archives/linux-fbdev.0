@@ -1,90 +1,32 @@
 From: Andy Lutomirski <luto@amacapital.net>
-Date: Fri, 03 May 2013 23:00:31 +0000
-Subject: [PATCH 3/7] drm: Update drm_addmap and drm_mmap to use PAT WC instead of MTRRs
-Message-Id: <d6e5e371e464b7de1115a00f02b5b834315cd986.1367621039.git.luto@amacapital.net>
+Date: Mon, 06 May 2013 21:22:37 +0000
+Subject: Re: [PATCH 3/7] drm: Update drm_addmap and drm_mmap to use PAT WC instead of MTRRs
+Message-Id: <CALCETrVe=JSPB=x79e1fAK=DrMgo7_Liagihib9quJDJ0N670Q@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1367621038.git.luto@amacapital.net>
-In-Reply-To: <cover.1367621038.git.luto@amacapital.net>
+References: <cover.1367621038.git.luto@amacapital.net> <d6e5e371e464b7de1115a00f02b5b834315cd986.1367621039.git.luto@amacapital.net>
+In-Reply-To: <d6e5e371e464b7de1115a00f02b5b834315cd986.1367621039.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 Cc: Andy Lutomirski <luto@amacapital.net>
 
-Signed-off-by: Andy Lutomirski <luto@amacapital.net>
----
+On Fri, May 3, 2013 at 4:00 PM, Andy Lutomirski <luto@amacapital.net> wrote:
+> Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+> ---
+>
+> This needs careful review.  I don't really know what this code does, nor
+> do I have the hardware.  (I don't understand AGP and the associated
+> caching implications.)
 
-This needs careful review.  I don't really know what this code does, nor
-do I have the hardware.  (I don't understand AGP and the associated
-caching implications.)
+This patch is wrong (I didn't update the matching mtrr_del), and I'm
+reworking this whole series.  But I may need some help on this one:
+why is the mtrr handle of a map (whatever a map is) exported to
+userspace via the ADD_MAP and GET_MAP ioctls?  What (if anything) is
+userspace supposed to do with it?  Do I need to return a valid MTRR
+register number?  Is there any userspace code at all that sets
+_DRM_WRITE_COMBINING in DRM_IOCTL_ADD_MAP with appropriate alignment
+and needs the MTRR, for which the drm driver doesn't already add the
+MTRR?
 
- drivers/gpu/drm/drm_bufs.c | 11 ++++-------
- drivers/gpu/drm/drm_vm.c   | 13 +++++++------
- 2 files changed, 11 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/gpu/drm/drm_bufs.c b/drivers/gpu/drm/drm_bufs.c
-index 0128147..0ae9cbb 100644
---- a/drivers/gpu/drm/drm_bufs.c
-+++ b/drivers/gpu/drm/drm_bufs.c
-@@ -210,8 +210,8 @@ static int drm_addmap_core(struct drm_device * dev, resource_size_t offset,
- 		if (drm_core_has_MTRR(dev)) {
- 			if (map->type = _DRM_FRAME_BUFFER ||
- 			    (map->flags & _DRM_WRITE_COMBINING)) {
--				map->mtrr = mtrr_add(map->offset, map->size,
--						     MTRR_TYPE_WRCOMB, 1);
-+				map->mtrr +					drm_mtrr_add_wc(map->offset, map->size);
- 			}
- 		}
- 		if (map->type = _DRM_REGISTERS) {
-@@ -451,11 +451,8 @@ int drm_rmmap_locked(struct drm_device *dev, struct drm_local_map *map)
- 		iounmap(map->handle);
- 		/* FALLTHROUGH */
- 	case _DRM_FRAME_BUFFER:
--		if (drm_core_has_MTRR(dev) && map->mtrr >= 0) {
--			int retcode;
--			retcode = mtrr_del(map->mtrr, map->offset, map->size);
--			DRM_DEBUG("mtrr_del=%d\n", retcode);
--		}
-+		if (drm_core_has_MTRR(dev))
-+			drm_mtrr_del_wc(map->mtrr);
- 		break;
- 	case _DRM_SHM:
- 		vfree(map->handle);
-diff --git a/drivers/gpu/drm/drm_vm.c b/drivers/gpu/drm/drm_vm.c
-index db7bd29..b255fd7 100644
---- a/drivers/gpu/drm/drm_vm.c
-+++ b/drivers/gpu/drm/drm_vm.c
-@@ -43,15 +43,16 @@
- static void drm_vm_open(struct vm_area_struct *vma);
- static void drm_vm_close(struct vm_area_struct *vma);
- 
--static pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma)
-+static pgprot_t drm_io_prot(struct drm_local_map *map,
-+			    struct vm_area_struct *vma)
- {
- 	pgprot_t tmp = vm_get_page_prot(vma->vm_flags);
- 
- #if defined(__i386__) || defined(__x86_64__)
--	if (boot_cpu_data.x86 > 3 && map_type != _DRM_AGP) {
--		pgprot_val(tmp) |= _PAGE_PCD;
--		pgprot_val(tmp) &= ~_PAGE_PWT;
--	}
-+	if (map->flags & _DRM_WRITE_COMBINING)
-+		tmp = pgprot_writecombine(tmp);
-+	else if (map->type != _DRM_AGP)
-+		tmp = pgprot_noncached(tmp);
- #elif defined(__powerpc__)
- 	pgprot_val(tmp) |= _PAGE_NO_CACHE;
- 	if (map_type = _DRM_REGISTERS)
-@@ -617,7 +618,7 @@ int drm_mmap_locked(struct file *filp, struct vm_area_struct *vma)
- 	case _DRM_REGISTERS:
- 		offset = drm_core_get_reg_ofs(dev);
- 		vma->vm_flags |= VM_IO;	/* not in core dump */
--		vma->vm_page_prot = drm_io_prot(map->type, vma);
-+		vma->vm_page_prot = drm_io_prot(map, vma);
- 		if (io_remap_pfn_range(vma, vma->vm_start,
- 				       (map->offset + offset) >> PAGE_SHIFT,
- 				       vma->vm_end - vma->vm_start,
--- 
-1.8.1.4
-
+--Andy

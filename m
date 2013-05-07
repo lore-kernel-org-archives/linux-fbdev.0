@@ -1,7 +1,7 @@
-From: Dave Airlie <airlied@gmail.com>
-Date: Tue, 07 May 2013 03:09:48 +0000
+From: Alex Deucher <alexdeucher@gmail.com>
+Date: Tue, 07 May 2013 14:08:59 +0000
 Subject: Re: [PATCH 3/7] drm: Update drm_addmap and drm_mmap to use PAT WC instead of MTRRs
-Message-Id: <CAPM=9twx2VL2_Xo2-byhWcZ5csbYzyV18trEOzAqmHT8javGrg@mail.gmail.com>
+Message-Id: <CADnq5_OJF5NB8r3Pj5E9VaiBLMTyHtERC4N4X0yYLwXQLqqrmw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1367621038.git.luto@amacapital.net>
 	<d6e5e371e464b7de1115a00f02b5b834315cd986.1367621039.git.luto@amacapital.net>
@@ -13,8 +13,30 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Andy Lutomirski <luto@amacapital.net>
-Cc: Jerome Glisse <j.glisse@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Jerome Glisse <j.glisse@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
+On Mon, May 6, 2013 at 7:39 PM, Andy Lutomirski <luto@amacapital.net> wrote:
+> On Mon, May 6, 2013 at 4:04 PM, Jerome Glisse <j.glisse@gmail.com> wrote:
+>> On Mon, May 6, 2013 at 5:22 PM, Andy Lutomirski <luto@amacapital.net> wrote:
+>>> On Fri, May 3, 2013 at 4:00 PM, Andy Lutomirski <luto@amacapital.net> wrote:
+>>>> Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+>>>> ---
+>>>>
+>>>> This needs careful review.  I don't really know what this code does, nor
+>>>> do I have the hardware.  (I don't understand AGP and the associated
+>>>> caching implications.)
+>>>
+>>> This patch is wrong (I didn't update the matching mtrr_del), and I'm
+>>> reworking this whole series.  But I may need some help on this one:
+>>> why is the mtrr handle of a map (whatever a map is) exported to
+>>> userspace via the ADD_MAP and GET_MAP ioctls?  What (if anything) is
+>>> userspace supposed to do with it?  Do I need to return a valid MTRR
+>>> register number?  Is there any userspace code at all that sets
+>>> _DRM_WRITE_COMBINING in DRM_IOCTL_ADD_MAP with appropriate alignment
+>>> and needs the MTRR, for which the drm driver doesn't already add the
+>>> MTRR?
+>>>
+>>> --Andy
 >>
 >> From memory, even on pat system we need mtrr for VRAM is PCI BAR. We
 >> cover it with a write combine MTRR. The whole ioctl is use by some ddx
@@ -29,6 +51,8 @@ Cc: Jerome Glisse <j.glisse@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@
 > framebuffer and another part is an outgoing command ring, won't one of
 > them end up with the wrong memory type?
 
-Nobody sane puts the command ring in VRAM.
+A lot of old chips used to put the registers and framebuffer in the
+same BAR.  IIRC, the xserver and later libpciaccess had workarounds to
+deal with this.
 
-Dave.
+Alex

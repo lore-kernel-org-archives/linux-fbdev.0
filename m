@@ -1,137 +1,48 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Mon, 13 May 2013 23:58:43 +0000
-Subject: [PATCH v3 4/9] drm,agpgart: Use pgprot_writecombine for AGP maps and make the MTRR optional
-Message-Id: <809e6805f78212758097c0a74f9f59053cfdafaf.1368485053.git.luto@amacapital.net>
+From: Tomi Valkeinen <tomi.valkeinen@iki.fi>
+Date: Wed, 08 May 2013 06:57:24 +0000
+Subject: Re: [PATCH 0/4] drivers: video: Optimisations for the ssd1307fb driver
+Message-Id: <5189F754.1030402@iki.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1368485053.git.luto@amacapital.net>
-In-Reply-To: <cover.1368485053.git.luto@amacapital.net>
+References: <1366624945-5708-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1366624945-5708-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>
+To: linux-arm-kernel@lists.infradead.org
 
-I'm not sure I understand the intent of the previous behavior.  mmap
-on /dev/agpgart and DRM_AGP maps had no cache flags set, so they
-would be fully cacheable.  But the DRM code (most of the time) would
-add a write-combining MTRR that would change the effective memory
-type to WC.
+On 22/04/13 13:02, Maxime Ripard wrote:
+> Hi everyone,
+> 
+> This is a patchset to improve significantly (by an order of magnitude)
+> the refreshing time of the SSD1306 and SSD1307.
+> 
+> We do so by sending the pixels by batches, instead of 8 at a time,
+> combined with some additionnal features found on these controllers
+> that allows to send a whole screen content at once.
+> 
+> This obviously removes the tearing effect that was previously seen
+> with these controllers.
+> 
+> This patchset depends on the "Add support for the Solomon SSD1306 OLED
+> Controller" I sent previously.
+> 
+> Thanks,
+> Maxime
+> 
+> Maxime Ripard (4):
+>   ARM: cfa10036: dt: Change i2c0 clock frequency
+>   ssd1307fb: Rework the communication functions
+>   ssd1307fb: Speed up the communication with the controller
+>   ssd1307fb: Make use of horizontal addressing mode
+> 
+>  arch/arm/boot/dts/imx28-cfa10036.dts |    1 +
+>  drivers/video/ssd1307fb.c            |  123 ++++++++++++++++++++++++----------
+>  2 files changed, 89 insertions(+), 35 deletions(-)
+> 
 
-The new behavior just requests WC explicitly for all AGP maps.
+I've taken the patches 2-4 into fbdev 3.11 branch. The first patch "ARM:
+cfa10036: dt: Change i2c0 clock frequency" should preferably go through
+arch tree.
 
-If there is any code out there that expects cacheable access to the
-AGP aperture (because the drm driver doesn't request an MTRR or
-because it's using /dev/agpgart directly), then it will now end up
-with a UC or WC mapping, depending on the architecture and PAT
-availability.  But cacheable access to the aperture seems like it's
-asking for trouble, because, AIUI, the aperture is an alias of RAM.
-
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Signed-off-by: Andy Lutomirski <luto@amacapital.net>
----
-
-It's conceivable that libpciaccess could have issues with this due to
-memtype conflicts, but I think this is unlikely (as long as a WC
-mapping gets there first, I think the conflict resolution rules will
-all work out).  In any case, everything that maps the AGP aperture
-ought to be using /dev/agpgart or the DRM API, in which case
-everything should be okay.
-
-I don't have anything with an AGP slot to test AFAIK.
-
- drivers/char/agp/frontend.c |  8 +++++---
- drivers/gpu/drm/drm_pci.c   |  8 ++++----
- drivers/gpu/drm/drm_stub.c  | 10 ++--------
- drivers/gpu/drm/drm_vm.c    | 11 ++++-------
- 4 files changed, 15 insertions(+), 22 deletions(-)
-
-diff --git a/drivers/char/agp/frontend.c b/drivers/char/agp/frontend.c
-index 2e04433..1b19239 100644
---- a/drivers/char/agp/frontend.c
-+++ b/drivers/char/agp/frontend.c
-@@ -603,7 +603,8 @@ static int agp_mmap(struct file *file, struct vm_area_struct *vma)
- 			vma->vm_ops = kerninfo.vm_ops;
- 		} else if (io_remap_pfn_range(vma, vma->vm_start,
- 				(kerninfo.aper_base + offset) >> PAGE_SHIFT,
--					    size, vma->vm_page_prot)) {
-+				size,
-+				pgprot_writecombine(vma->vm_page_prot))) {
- 			goto out_again;
- 		}
- 		mutex_unlock(&(agp_fe.agp_mutex));
-@@ -618,8 +619,9 @@ static int agp_mmap(struct file *file, struct vm_area_struct *vma)
- 		if (kerninfo.vm_ops) {
- 			vma->vm_ops = kerninfo.vm_ops;
- 		} else if (io_remap_pfn_range(vma, vma->vm_start,
--					    kerninfo.aper_base >> PAGE_SHIFT,
--					    size, vma->vm_page_prot)) {
-+				kerninfo.aper_base >> PAGE_SHIFT,
-+				size,
-+				pgprot_writecombine(vma->vm_page_prot))) {
- 			goto out_again;
- 		}
- 		mutex_unlock(&(agp_fe.agp_mutex));
-diff --git a/drivers/gpu/drm/drm_pci.c b/drivers/gpu/drm/drm_pci.c
-index bd719e9..d0f6699 100644
---- a/drivers/gpu/drm/drm_pci.c
-+++ b/drivers/gpu/drm/drm_pci.c
-@@ -278,10 +278,10 @@ int drm_pci_agp_init(struct drm_device *dev)
- 		}
- 		if (drm_core_has_MTRR(dev)) {
- 			if (dev->agp)
--				dev->agp->agp_mtrr -					mtrr_add(dev->agp->agp_info.aper_base,
--						 dev->agp->agp_info.aper_size *
--						 1024 * 1024, MTRR_TYPE_WRCOMB, 1);
-+				dev->agp->agp_mtrr = arch_phys_wc_add(
-+					dev->agp->agp_info.aper_base,
-+					dev->agp->agp_info.aper_size *
-+					1024 * 1024);
- 		}
- 	}
- 	return 0;
-diff --git a/drivers/gpu/drm/drm_stub.c b/drivers/gpu/drm/drm_stub.c
-index 7d30802..9e2acdf 100644
---- a/drivers/gpu/drm/drm_stub.c
-+++ b/drivers/gpu/drm/drm_stub.c
-@@ -451,14 +451,8 @@ void drm_put_dev(struct drm_device *dev)
- 
- 	drm_lastclose(dev);
- 
--	if (drm_core_has_MTRR(dev) && drm_core_has_AGP(dev) &&
--	    dev->agp && dev->agp->agp_mtrr >= 0) {
--		int retval;
--		retval = mtrr_del(dev->agp->agp_mtrr,
--				  dev->agp->agp_info.aper_base,
--				  dev->agp->agp_info.aper_size * 1024 * 1024);
--		DRM_DEBUG("mtrr_del=%d\n", retval);
--	}
-+	if (drm_core_has_MTRR(dev) && drm_core_has_AGP(dev) && dev->agp)
-+		arch_phys_wc_del(dev->agp->agp_mtrr);
- 
- 	if (dev->driver->unload)
- 		dev->driver->unload(dev);
-diff --git a/drivers/gpu/drm/drm_vm.c b/drivers/gpu/drm/drm_vm.c
-index 163f436..b1e4ec8 100644
---- a/drivers/gpu/drm/drm_vm.c
-+++ b/drivers/gpu/drm/drm_vm.c
-@@ -49,13 +49,10 @@ static pgprot_t drm_io_prot(struct drm_local_map *map,
- 	pgprot_t tmp = vm_get_page_prot(vma->vm_flags);
- 
- #if defined(__i386__) || defined(__x86_64__)
--	if (map->type != _DRM_AGP) {
--		if (map->type = _DRM_FRAME_BUFFER ||
--		    map->flags & _DRM_WRITE_COMBINING)
--			tmp = pgprot_writecombine(tmp);
--		else
--			tmp = pgprot_noncached(tmp);
--	}
-+	if (map->type = _DRM_REGISTERS && !(map->flags & _DRM_WRITE_COMBINING))
-+		tmp = pgprot_noncached(tmp);
-+	else
-+		tmp = pgprot_writecombine(tmp);
- #elif defined(__powerpc__)
- 	pgprot_val(tmp) |= _PAGE_NO_CACHE;
- 	if (map_type = _DRM_REGISTERS)
--- 
-1.8.1.4
+ Tomi
 

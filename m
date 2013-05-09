@@ -1,124 +1,109 @@
-From: Lad Prabhakar <prabhakar.csengg@gmail.com>
-Date: Thu, 16 May 2013 07:22:57 +0000
-Subject: [PATCH 2/2] video:da8xx-fb: Convert to devm_* api
-Message-Id: <1368688257-18705-3-git-send-email-prabhakar.csengg@gmail.com>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Thu, 09 May 2013 19:46:24 +0000
+Subject: [RFC/PATCH v2 5/8] i915: Use arch_phys_wc_{add,del}
+Message-Id: <2d9af02b508eaf182c72b6e60a63070de265a759.1368128020.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1368688257-18705-1-git-send-email-prabhakar.csengg@gmail.com>
-In-Reply-To: <1368688257-18705-1-git-send-email-prabhakar.csengg@gmail.com>
+References: <cover.1368128020.git.luto@amacapital.net>
+In-Reply-To: <cover.1368128020.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: DLOS <davinci-linux-open-source@linux.davincidsp.com>, LFBDEV <linux-fbdev@vger.kernel.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>
 
-From: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+i915 open-coded logic that was essentially equivalent to the new API.
 
-Use devm_ioremap_resource instead of reques_mem_region()/ioremap() and
-devm_request_irq() instead of request_irq().
-
-This ensures more consistent error values and simplifies error paths.
-
-Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
 ---
- drivers/video/da8xx-fb.c |   39 +++++++--------------------------------
- 1 files changed, 7 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index aafe8b9..d35ea1d 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -134,7 +134,6 @@
- #define LOWER_MARGIN	32
+Changes from v1: More cleanup
+
+ drivers/gpu/drm/i915/i915_dma.c | 44 ++++++-----------------------------------
+ 1 file changed, 6 insertions(+), 38 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
+index 4fa6beb..cfdfb45 100644
+--- a/drivers/gpu/drm/i915/i915_dma.c
++++ b/drivers/gpu/drm/i915/i915_dma.c
+@@ -42,7 +42,6 @@
+ #include <linux/vga_switcheroo.h>
+ #include <linux/slab.h>
+ #include <acpi/video.h>
+-#include <asm/pat.h>
  
- static void __iomem *da8xx_fb_reg_base;
--static struct resource *lcdc_regs;
- static unsigned int lcd_revision;
- static irq_handler_t lcdc_irq_handler;
- static wait_queue_head_t frame_done_wq;
-@@ -1015,12 +1014,9 @@ static int fb_remove(struct platform_device *dev)
- 				  par->p_palette_base);
- 		dma_free_coherent(NULL, par->vram_size, par->vram_virt,
- 				  par->vram_phys);
--		free_irq(par->irq, par);
- 		pm_runtime_put_sync(&dev->dev);
- 		pm_runtime_disable(&dev->dev);
- 		framebuffer_release(info);
--		iounmap(da8xx_fb_reg_base);
--		release_mem_region(lcdc_regs->start, resource_size(lcdc_regs));
+ #define LP_RING(d) (&((struct drm_i915_private *)(d))->ring[RCS])
  
- 	}
- 	return 0;
-@@ -1212,12 +1208,12 @@ static int fb_probe(struct platform_device *device)
- {
- 	struct da8xx_lcdc_platform_data *fb_pdata  						device->dev.platform_data;
-+	static struct resource *lcdc_regs;
- 	struct lcd_ctrl_config *lcd_cfg;
- 	struct fb_videomode *lcdc_info;
- 	struct fb_info *da8xx_fb_info;
- 	struct clk *fb_clk = NULL;
- 	struct da8xx_fb_par *par;
--	resource_size_t len;
- 	int ret, i;
- 	unsigned long ulcm;
- 
-@@ -1227,29 +1223,14 @@ static int fb_probe(struct platform_device *device)
- 	}
- 
- 	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
--	if (!lcdc_regs) {
--		dev_err(&device->dev,
--			"Can not get memory resource for LCD controller\n");
--		return -ENOENT;
--	}
--
--	len = resource_size(lcdc_regs);
--
--	lcdc_regs = request_mem_region(lcdc_regs->start, len, lcdc_regs->name);
--	if (!lcdc_regs)
--		return -EBUSY;
--
--	da8xx_fb_reg_base = ioremap(lcdc_regs->start, len);
--	if (!da8xx_fb_reg_base) {
--		ret = -EBUSY;
--		goto err_request_mem;
--	}
-+	da8xx_fb_reg_base = devm_ioremap_resource(&device->dev, lcdc_regs);
-+	if (IS_ERR(da8xx_fb_reg_base))
-+		return PTR_ERR(da8xx_fb_reg_base);
- 
- 	fb_clk = clk_get(&device->dev, "fck");
- 	if (IS_ERR(fb_clk)) {
- 		dev_err(&device->dev, "Can not get device clock\n");
--		ret = -ENODEV;
--		goto err_ioremap;
-+		return -ENODEV;
- 	}
- 
- 	pm_runtime_enable(&device->dev);
-@@ -1430,8 +1411,8 @@ static int fb_probe(struct platform_device *device)
- 		lcdc_irq_handler = lcdc_irq_handler_rev02;
- 	}
- 
--	ret = request_irq(par->irq, lcdc_irq_handler, 0,
--			DRIVER_NAME, par);
-+	ret = devm_request_irq(&device->dev, par->irq, lcdc_irq_handler, 0,
-+			       DRIVER_NAME, par);
- 	if (ret)
- 		goto irq_freq;
- 	return 0;
-@@ -1460,12 +1441,6 @@ err_pm_runtime_disable:
- 	pm_runtime_put_sync(&device->dev);
- 	pm_runtime_disable(&device->dev);
- 
--err_ioremap:
--	iounmap(da8xx_fb_reg_base);
--
--err_request_mem:
--	release_mem_region(lcdc_regs->start, len);
--
- 	return ret;
+@@ -1393,29 +1392,6 @@ void i915_master_destroy(struct drm_device *dev, struct drm_master *master)
+ 	master->driver_priv = NULL;
  }
  
+-static void
+-i915_mtrr_setup(struct drm_i915_private *dev_priv, unsigned long base,
+-		unsigned long size)
+-{
+-	dev_priv->mm.gtt_mtrr = -1;
+-
+-#if defined(CONFIG_X86_PAT)
+-	if (cpu_has_pat)
+-		return;
+-#endif
+-
+-	/* Set up a WC MTRR for non-PAT systems.  This is more common than
+-	 * one would think, because the kernel disables PAT on first
+-	 * generation Core chips because WC PAT gets overridden by a UC
+-	 * MTRR if present.  Even if a UC MTRR isn't present.
+-	 */
+-	dev_priv->mm.gtt_mtrr = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
+-	if (dev_priv->mm.gtt_mtrr < 0) {
+-		DRM_INFO("MTRR allocation failed.  Graphics "
+-			 "performance may suffer.\n");
+-	}
+-}
+-
+ static void i915_kick_out_firmware_fb(struct drm_i915_private *dev_priv)
+ {
+ 	struct apertures_struct *ap;
+@@ -1552,8 +1528,8 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
+ 		goto out_rmmap;
+ 	}
+ 
+-	i915_mtrr_setup(dev_priv, dev_priv->gtt.mappable_base,
+-			aperture_size);
++	dev_priv->mm.gtt_mtrr = arch_phys_wc_add(dev_priv->gtt.mappable_base,
++						 aperture_size);
+ 
+ 	/* The i915 workqueue is primarily used for batched retirement of
+ 	 * requests (and thus managing bo) once the task has been completed
+@@ -1656,12 +1632,8 @@ out_gem_unload:
+ 	intel_teardown_mchbar(dev);
+ 	destroy_workqueue(dev_priv->wq);
+ out_mtrrfree:
+-	if (dev_priv->mm.gtt_mtrr >= 0) {
+-		mtrr_del(dev_priv->mm.gtt_mtrr,
+-			 dev_priv->gtt.mappable_base,
+-			 aperture_size);
+-		dev_priv->mm.gtt_mtrr = -1;
+-	}
++	arch_phys_wc_del(dev_priv->mm.gtt_mtrr);
++	dev_priv->mm.gtt_mtrr = 0;
+ 	io_mapping_free(dev_priv->gtt.mappable);
+ out_rmmap:
+ 	pci_iounmap(dev->pdev, dev_priv->regs);
+@@ -1697,12 +1669,8 @@ int i915_driver_unload(struct drm_device *dev)
+ 	cancel_delayed_work_sync(&dev_priv->mm.retire_work);
+ 
+ 	io_mapping_free(dev_priv->gtt.mappable);
+-	if (dev_priv->mm.gtt_mtrr >= 0) {
+-		mtrr_del(dev_priv->mm.gtt_mtrr,
+-			 dev_priv->gtt.mappable_base,
+-			 dev_priv->gtt.mappable_end);
+-		dev_priv->mm.gtt_mtrr = -1;
+-	}
++	arch_phys_wc_del(dev_priv->mm.gtt_mtrr);
++	dev_priv->mm.gtt_mtrr = 0;
+ 
+ 	acpi_video_unregister();
+ 
 -- 
-1.7.4.1
+1.8.1.4
 

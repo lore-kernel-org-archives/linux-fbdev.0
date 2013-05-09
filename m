@@ -1,122 +1,77 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Fri, 10 May 2013 09:36:05 +0000
-Subject: Re: [RFC/PATCH v2 5/8] i915: Use arch_phys_wc_{add,del}
-Message-Id: <20130510093605.GI12292@phenom.ffwll.local>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Thu, 09 May 2013 19:46:19 +0000
+Subject: [RFC/PATCH v2 0/8] Clean up write-combining MTRR addition
+Message-Id: <cover.1368128020.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1368128020.git.luto@amacapital.net>
- <2d9af02b508eaf182c72b6e60a63070de265a759.1368128020.git.luto@amacapital.net>
-In-Reply-To: <2d9af02b508eaf182c72b6e60a63070de265a759.1368128020.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andy Lutomirski <luto@amacapital.net>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>
+To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>
 
-On Thu, May 09, 2013 at 12:46:24PM -0700, Andy Lutomirski wrote:
-> i915 open-coded logic that was essentially equivalent to the new API.
-> 
-> Signed-off-by: Andy Lutomirski <luto@amacapital.net>
-> ---
-> 
-> Changes from v1: More cleanup
-> 
->  drivers/gpu/drm/i915/i915_dma.c | 44 ++++++-----------------------------------
->  1 file changed, 6 insertions(+), 38 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
-> index 4fa6beb..cfdfb45 100644
-> --- a/drivers/gpu/drm/i915/i915_dma.c
-> +++ b/drivers/gpu/drm/i915/i915_dma.c
-> @@ -42,7 +42,6 @@
->  #include <linux/vga_switcheroo.h>
->  #include <linux/slab.h>
->  #include <acpi/video.h>
-> -#include <asm/pat.h>
->  
->  #define LP_RING(d) (&((struct drm_i915_private *)(d))->ring[RCS])
->  
-> @@ -1393,29 +1392,6 @@ void i915_master_destroy(struct drm_device *dev, struct drm_master *master)
->  	master->driver_priv = NULL;
->  }
->  
-> -static void
-> -i915_mtrr_setup(struct drm_i915_private *dev_priv, unsigned long base,
-> -		unsigned long size)
-> -{
-> -	dev_priv->mm.gtt_mtrr = -1;
-> -
-> -#if defined(CONFIG_X86_PAT)
-> -	if (cpu_has_pat)
-> -		return;
-> -#endif
-> -
-> -	/* Set up a WC MTRR for non-PAT systems.  This is more common than
-> -	 * one would think, because the kernel disables PAT on first
-> -	 * generation Core chips because WC PAT gets overridden by a UC
-> -	 * MTRR if present.  Even if a UC MTRR isn't present.
-> -	 */
-> -	dev_priv->mm.gtt_mtrr = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
-> -	if (dev_priv->mm.gtt_mtrr < 0) {
-> -		DRM_INFO("MTRR allocation failed.  Graphics "
-> -			 "performance may suffer.\n");
-> -	}
-> -}
-> -
->  static void i915_kick_out_firmware_fb(struct drm_i915_private *dev_priv)
->  {
->  	struct apertures_struct *ap;
-> @@ -1552,8 +1528,8 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
->  		goto out_rmmap;
->  	}
->  
-> -	i915_mtrr_setup(dev_priv, dev_priv->gtt.mappable_base,
-> -			aperture_size);
-> +	dev_priv->mm.gtt_mtrr = arch_phys_wc_add(dev_priv->gtt.mappable_base,
-> +						 aperture_size);
->  
->  	/* The i915 workqueue is primarily used for batched retirement of
->  	 * requests (and thus managing bo) once the task has been completed
-> @@ -1656,12 +1632,8 @@ out_gem_unload:
->  	intel_teardown_mchbar(dev);
->  	destroy_workqueue(dev_priv->wq);
->  out_mtrrfree:
-> -	if (dev_priv->mm.gtt_mtrr >= 0) {
-> -		mtrr_del(dev_priv->mm.gtt_mtrr,
-> -			 dev_priv->gtt.mappable_base,
-> -			 aperture_size);
-> -		dev_priv->mm.gtt_mtrr = -1;
-> -	}
-> +	arch_phys_wc_del(dev_priv->mm.gtt_mtrr);
-> +	dev_priv->mm.gtt_mtrr = 0;
+A fair number of drivers (mostly graphics) add write-combining MTRRs.
+Most ignore errors and most add the MTRR even on PAT systems which don't
+need to use MTRRs.
 
-I think you can drop this gtt_mtrr = 0 asignment (and the one below) since
-the driver will be unloaded anyway and no longer care. And with my
-bikeshed on the first 1 patch it'd be wrong, too.
--Daniel
+This series adds new functions arch_phys_wc_{add,del} that, on PAT-less
+x86 systems with MTRRs, add MTRRs and report errors, and that do nothing
+otherwise.  (Other architectures, if any, with a similar mechanism could
+implement them.)
 
->  	io_mapping_free(dev_priv->gtt.mappable);
->  out_rmmap:
->  	pci_iounmap(dev->pdev, dev_priv->regs);
-> @@ -1697,12 +1669,8 @@ int i915_driver_unload(struct drm_device *dev)
->  	cancel_delayed_work_sync(&dev_priv->mm.retire_work);
->  
->  	io_mapping_free(dev_priv->gtt.mappable);
-> -	if (dev_priv->mm.gtt_mtrr >= 0) {
-> -		mtrr_del(dev_priv->mm.gtt_mtrr,
-> -			 dev_priv->gtt.mappable_base,
-> -			 dev_priv->gtt.mappable_end);
-> -		dev_priv->mm.gtt_mtrr = -1;
-> -	}
-> +	arch_phys_wc_del(dev_priv->mm.gtt_mtrr);
-> +	dev_priv->mm.gtt_mtrr = 0;
->  
->  	acpi_video_unregister();
->  
-> -- 
-> 1.8.1.4
-> 
+I've only tested the radeon driver, since I don't have test hardware
+easily available for the other drivers.
+
+Benefits include:
+ - Simpler code
+ - No more complaints about MTRR conflict warnings on PAT systems
+ - Eventual unexporting of the MTRR API?
+
+This series eliminates about half of the mtrr_add calls in drivers/.
+
+Changes from v1:
+ - Helpers renamed
+ - Lots of bugs fixed
+
+The series is also at:
+https://git.kernel.org/cgit/linux/kernel/git/luto/linux.git/log/?h=mtrr_cleanup/rfc_v2
+
+Andy Lutomirski (8):
+  Add arch_phys_wc_{add,del} to manipulate WC MTRRs if needed
+  drm (ast,cirrus,mgag200,nouveau,savage,vmwgfx): Remove
+    drm_mtrr_{add,del}
+  drm: Update drm_addmap and drm_mmap to use PAT WC instead of MTRRs
+  drm,agpgart: Use pgprot_writecombine for AGP maps and make the MTRR
+    optional
+  i915: Use arch_phys_wc_{add,del}
+  radeon: Switch to arch_phys_wc_add and add a missing ..._del
+  uvesafb: Clean up MTRR code
+  drm: Remove mtrr_add and mtrr_del fallback hack for non-MTRR systems
+
+ Documentation/fb/uvesafb.txt           | 16 +++-----
+ arch/x86/include/asm/io.h              |  7 ++++
+ arch/x86/include/asm/mtrr.h            |  5 ++-
+ arch/x86/kernel/cpu/mtrr/main.c        | 48 +++++++++++++++++++++++
+ drivers/char/agp/frontend.c            |  8 ++--
+ drivers/gpu/drm/ast/ast_ttm.c          | 13 ++-----
+ drivers/gpu/drm/cirrus/cirrus_ttm.c    | 15 ++------
+ drivers/gpu/drm/drm_bufs.c             | 17 +++++----
+ drivers/gpu/drm/drm_pci.c              |  8 ++--
+ drivers/gpu/drm/drm_stub.c             | 10 +----
+ drivers/gpu/drm/drm_vm.c               | 22 +++++------
+ drivers/gpu/drm/i915/i915_dma.c        | 44 +++------------------
+ drivers/gpu/drm/mgag200/mgag200_ttm.c  | 14 ++-----
+ drivers/gpu/drm/nouveau/nouveau_ttm.c  | 13 ++-----
+ drivers/gpu/drm/radeon/radeon_object.c |  5 ++-
+ drivers/gpu/drm/savage/savage_bci.c    | 43 ++++++++-------------
+ drivers/gpu/drm/savage/savage_drv.h    |  5 +--
+ drivers/gpu/drm/vmwgfx/vmwgfx_drv.c    | 10 ++---
+ drivers/video/uvesafb.c                | 70 +++++++++-------------------------
+ include/drm/drmP.h                     | 34 +----------------
+ include/drm/drm_os_linux.h             | 16 --------
+ include/linux/io.h                     | 25 ++++++++++++
+ include/video/uvesafb.h                |  1 +
+ 23 files changed, 181 insertions(+), 268 deletions(-)
 
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+1.8.1.4
+

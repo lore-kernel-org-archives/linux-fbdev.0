@@ -1,85 +1,76 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 16 May 2013 13:00:01 +0000
-Subject: [PATCH 1/2] videomode: don't allocate mem in of_get_display_timing()
-Message-Id: <1368709202-1056-1-git-send-email-tomi.valkeinen@ti.com>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Thu, 09 May 2013 19:46:27 +0000
+Subject: [RFC/PATCH v2 8/8] drm: Remove mtrr_add and mtrr_del fallback hack for non-MTRR systems
+Message-Id: <20c48ef6c4353a67091f13ed8ff071595b01b9b8.1368128020.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1368128020.git.luto@amacapital.net>
+In-Reply-To: <cover.1368128020.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>
 
-Move the allocation of display_timing memory from of_get_display_timing() to
-of_get_display_timings(). This allows us to use of_get_display_timing()
-in a way that doesn't require dynamic memory allocation.
+There are no users left in drivers/gpu.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Philipp Zabel <p.zabel@pengutronix.de>
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
 ---
- drivers/video/of_display_timing.c | 26 ++++++++++++++------------
- 1 file changed, 14 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
-index 56009bc..0e81023 100644
---- a/drivers/video/of_display_timing.c
-+++ b/drivers/video/of_display_timing.c
-@@ -56,18 +56,13 @@ static int parse_timing_property(struct device_node *np, const char *name,
-  * of_get_display_timing - parse display_timing entry from device_node
-  * @np: device_node with the properties
-  **/
--static struct display_timing *of_get_display_timing(struct device_node *np)
-+static int of_get_display_timing(struct device_node *np,
-+		struct display_timing *dt)
- {
--	struct display_timing *dt;
- 	u32 val = 0;
- 	int ret = 0;
+This is new in v2.  The code I'm deleting is kind of gross.
+
+ include/drm/drmP.h         |  5 +----
+ include/drm/drm_os_linux.h | 16 ----------------
+ 2 files changed, 1 insertion(+), 20 deletions(-)
+
+diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+index 3e6cfa0..7a9fef5 100644
+--- a/include/drm/drmP.h
++++ b/include/drm/drmP.h
+@@ -55,16 +55,13 @@
+ #include <linux/mm.h>
+ #include <linux/cdev.h>
+ #include <linux/mutex.h>
++#include <linux/io.h>
+ #include <linux/slab.h>
+ #if defined(__alpha__) || defined(__powerpc__)
+ #include <asm/pgtable.h>	/* For pte_wrprotect */
+ #endif
+-#include <asm/io.h>
+ #include <asm/mman.h>
+ #include <asm/uaccess.h>
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+ #if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
+ #include <linux/types.h>
+ #include <linux/agp_backend.h>
+diff --git a/include/drm/drm_os_linux.h b/include/drm/drm_os_linux.h
+index 3933691..35c7c2b 100644
+--- a/include/drm/drm_os_linux.h
++++ b/include/drm/drm_os_linux.h
+@@ -65,22 +65,6 @@ struct no_agp_kern {
+ #define DRM_AGP_KERN            struct no_agp_kern
+ #endif
  
--	dt = kzalloc(sizeof(*dt), GFP_KERNEL);
--	if (!dt) {
--		pr_err("%s: could not allocate display_timing struct\n",
--			of_node_full_name(np));
--		return NULL;
--	}
-+	memset(dt, 0, sizeof(*dt));
- 
- 	ret |= parse_timing_property(np, "hback-porch", &dt->hback_porch);
- 	ret |= parse_timing_property(np, "hfront-porch", &dt->hfront_porch);
-@@ -101,11 +96,10 @@ static struct display_timing *of_get_display_timing(struct device_node *np)
- 	if (ret) {
- 		pr_err("%s: error reading timing properties\n",
- 			of_node_full_name(np));
--		kfree(dt);
--		return NULL;
-+		return -EINVAL;
- 	}
- 
--	return dt;
-+	return 0;
- }
- 
- /**
-@@ -174,9 +168,17 @@ struct display_timings *of_get_display_timings(struct device_node *np)
- 
- 	for_each_child_of_node(timings_np, entry) {
- 		struct display_timing *dt;
-+		int r;
- 
--		dt = of_get_display_timing(entry);
-+		dt = kzalloc(sizeof(*dt), GFP_KERNEL);
- 		if (!dt) {
-+			pr_err("%s: could not allocate display_timing struct\n",
-+					of_node_full_name(np));
-+			goto timingfail;
-+		}
-+
-+		r = of_get_display_timing(entry, dt);
-+		if (r) {
- 			/*
- 			 * to not encourage wrong devicetrees, fail in case of
- 			 * an error
+-#if !(__OS_HAS_MTRR)
+-static __inline__ int mtrr_add(unsigned long base, unsigned long size,
+-			       unsigned int type, char increment)
+-{
+-	return -ENODEV;
+-}
+-
+-static __inline__ int mtrr_del(int reg, unsigned long base, unsigned long size)
+-{
+-	return -ENODEV;
+-}
+-
+-#define MTRR_TYPE_WRCOMB     1
+-
+-#endif
+-
+ /** Other copying of data to kernel space */
+ #define DRM_COPY_FROM_USER(arg1, arg2, arg3)		\
+ 	copy_from_user(arg1, arg2, arg3)
 -- 
-1.8.1.2
+1.8.1.4
 

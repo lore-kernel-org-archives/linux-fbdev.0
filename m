@@ -1,57 +1,128 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Sat, 11 May 2013 12:56:06 +0000
-Subject: [PATCH 11/15] video: pxa: remove unnecessary platform_set_drvdata()
-Message-Id: <000b01ce4e46$e6da5a70$b48f0f50$@samsung.com>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Thu, 09 May 2013 19:46:22 +0000
+Subject: [RFC/PATCH v2 3/8] drm: Update drm_addmap and drm_mmap to use PAT WC instead of MTRRs
+Message-Id: <6d7055acfc3f468641cb0c70681ee05f96505eb7.1368128020.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1368128020.git.luto@amacapital.net>
+In-Reply-To: <cover.1368128020.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>
 
-The driver core clears the driver data to NULL after device_release
-or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
-(device-core: Ensure drvdata = NULL when no driver is bound).
-Thus, it is not needed to manually clear the device driver data to NULL.
+Previously, DRM_FRAME_BUFFER mappings, as well as DRM_REGISTERS
+mappings with DRM_WRITE_COMBINING set, resulted in an unconditional
+MTRR being added but the actual mappings being created as UC-.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Now these mappings have the MTRR added only if needed, but they will
+be mapped with pgprot_writecombine.
+
+The non-WC DRM_REGISTERS case now uses pgprot_noncached instead of
+hardcoding the bit twiddling.
+
+The DRM_AGP case is unchanged for now.
+
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
 ---
- drivers/video/pxa3xx-gcu.c |    2 --
- drivers/video/pxafb.c      |    1 -
- 2 files changed, 0 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/pxa3xx-gcu.c b/drivers/video/pxa3xx-gcu.c
-index 97563c5..95c3c4ae 100644
---- a/drivers/video/pxa3xx-gcu.c
-+++ b/drivers/video/pxa3xx-gcu.c
-@@ -711,7 +711,6 @@ err_misc_deregister:
- 	misc_deregister(&priv->misc_dev);
+Unlike v1, this should work well even for drivers that call
+drmAddMap from userspace.  I didn't understand how the flags were
+supposed to work last time around.
+
+ drivers/gpu/drm/drm_bufs.c | 17 +++++++++--------
+ drivers/gpu/drm/drm_vm.c   | 23 +++++++++++------------
+ 2 files changed, 20 insertions(+), 20 deletions(-)
+
+diff --git a/drivers/gpu/drm/drm_bufs.c b/drivers/gpu/drm/drm_bufs.c
+index 0128147..0190fce 100644
+--- a/drivers/gpu/drm/drm_bufs.c
++++ b/drivers/gpu/drm/drm_bufs.c
+@@ -210,12 +210,16 @@ static int drm_addmap_core(struct drm_device * dev, resource_size_t offset,
+ 		if (drm_core_has_MTRR(dev)) {
+ 			if (map->type = _DRM_FRAME_BUFFER ||
+ 			    (map->flags & _DRM_WRITE_COMBINING)) {
+-				map->mtrr = mtrr_add(map->offset, map->size,
+-						     MTRR_TYPE_WRCOMB, 1);
++				map->mtrr +					arch_phys_wc_add(map->offset, map->size);
+ 			}
+ 		}
+ 		if (map->type = _DRM_REGISTERS) {
+-			map->handle = ioremap(map->offset, map->size);
++			if (map->flags & _DRM_WRITE_COMBINING)
++				map->handle = ioremap_wc(map->offset,
++							 map->size);
++			else
++				map->handle = ioremap(map->offset, map->size);
+ 			if (!map->handle) {
+ 				kfree(map);
+ 				return -ENOMEM;
+@@ -451,11 +455,8 @@ int drm_rmmap_locked(struct drm_device *dev, struct drm_local_map *map)
+ 		iounmap(map->handle);
+ 		/* FALLTHROUGH */
+ 	case _DRM_FRAME_BUFFER:
+-		if (drm_core_has_MTRR(dev) && map->mtrr >= 0) {
+-			int retcode;
+-			retcode = mtrr_del(map->mtrr, map->offset, map->size);
+-			DRM_DEBUG("mtrr_del=%d\n", retcode);
+-		}
++		if (drm_core_has_MTRR(dev))
++			arch_phys_wc_del(map->mtrr);
+ 		break;
+ 	case _DRM_SHM:
+ 		vfree(map->handle);
+diff --git a/drivers/gpu/drm/drm_vm.c b/drivers/gpu/drm/drm_vm.c
+index db7bd29..163f436 100644
+--- a/drivers/gpu/drm/drm_vm.c
++++ b/drivers/gpu/drm/drm_vm.c
+@@ -43,14 +43,18 @@
+ static void drm_vm_open(struct vm_area_struct *vma);
+ static void drm_vm_close(struct vm_area_struct *vma);
  
- err_free_priv:
--	platform_set_drvdata(dev, NULL);
- 	free_buffers(dev, priv);
- 	kfree(priv);
- 	return ret;
-@@ -729,7 +728,6 @@ static int pxa3xx_gcu_remove(struct platform_device *dev)
- 			priv->shared, priv->shared_phys);
- 	iounmap(priv->mmio_base);
- 	release_mem_region(r->start, resource_size(r));
--	platform_set_drvdata(dev, NULL);
- 	clk_disable(priv->clk);
- 	free_buffers(dev, priv);
- 	kfree(priv);
-diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-index 580f80c..eca2de4 100644
---- a/drivers/video/pxafb.c
-+++ b/drivers/video/pxafb.c
-@@ -2256,7 +2256,6 @@ failed_free_res:
- 	release_mem_region(r->start, resource_size(r));
- failed_fbi:
- 	clk_put(fbi->clk);
--	platform_set_drvdata(dev, NULL);
- 	kfree(fbi);
- failed:
- 	return ret;
+-static pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma)
++static pgprot_t drm_io_prot(struct drm_local_map *map,
++			    struct vm_area_struct *vma)
+ {
+ 	pgprot_t tmp = vm_get_page_prot(vma->vm_flags);
+ 
+ #if defined(__i386__) || defined(__x86_64__)
+-	if (boot_cpu_data.x86 > 3 && map_type != _DRM_AGP) {
+-		pgprot_val(tmp) |= _PAGE_PCD;
+-		pgprot_val(tmp) &= ~_PAGE_PWT;
++	if (map->type != _DRM_AGP) {
++		if (map->type = _DRM_FRAME_BUFFER ||
++		    map->flags & _DRM_WRITE_COMBINING)
++			tmp = pgprot_writecombine(tmp);
++		else
++			tmp = pgprot_noncached(tmp);
+ 	}
+ #elif defined(__powerpc__)
+ 	pgprot_val(tmp) |= _PAGE_NO_CACHE;
+@@ -250,13 +254,8 @@ static void drm_vm_shm_close(struct vm_area_struct *vma)
+ 			switch (map->type) {
+ 			case _DRM_REGISTERS:
+ 			case _DRM_FRAME_BUFFER:
+-				if (drm_core_has_MTRR(dev) && map->mtrr >= 0) {
+-					int retcode;
+-					retcode = mtrr_del(map->mtrr,
+-							   map->offset,
+-							   map->size);
+-					DRM_DEBUG("mtrr_del = %d\n", retcode);
+-				}
++				if (drm_core_has_MTRR(dev))
++					arch_phys_wc_del(map->mtrr);
+ 				iounmap(map->handle);
+ 				break;
+ 			case _DRM_SHM:
+@@ -617,7 +616,7 @@ int drm_mmap_locked(struct file *filp, struct vm_area_struct *vma)
+ 	case _DRM_REGISTERS:
+ 		offset = drm_core_get_reg_ofs(dev);
+ 		vma->vm_flags |= VM_IO;	/* not in core dump */
+-		vma->vm_page_prot = drm_io_prot(map->type, vma);
++		vma->vm_page_prot = drm_io_prot(map, vma);
+ 		if (io_remap_pfn_range(vma, vma->vm_start,
+ 				       (map->offset + offset) >> PAGE_SHIFT,
+ 				       vma->vm_end - vma->vm_start,
 -- 
-1.7.2.5
-
+1.8.1.4
 

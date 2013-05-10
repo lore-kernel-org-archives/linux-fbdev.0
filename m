@@ -1,198 +1,48 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:34:23 +0000
-Subject: [PATCH 02/32] OMAPDSS: only probe pdata if there's one
-Message-Id: <1369906493-27538-3-git-send-email-tomi.valkeinen@ti.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Fri, 10 May 2013 11:58:48 +0000
+Subject: [PATCH 1/2] video: udlfb: Use NULL instead of 0
+Message-Id: <1368186409-30709-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-omapdss output drivers always read the platform data. This crashes when
-there's no platform data when using DT.
+Pointer variables should be initialized with NULL instead of 0.
 
-Add a check to read the platform data only if it exists.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 ---
- drivers/video/omap2/dss/dpi.c  | 12 ++++++++----
- drivers/video/omap2/dss/dsi.c  | 13 +++++++------
- drivers/video/omap2/dss/hdmi.c | 16 ++++++++++------
- drivers/video/omap2/dss/rfbi.c | 11 ++++++-----
- drivers/video/omap2/dss/sdi.c  | 12 ++++++++----
- drivers/video/omap2/dss/venc.c | 13 +++++++------
- 6 files changed, 46 insertions(+), 31 deletions(-)
+ drivers/video/udlfb.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index 757b57f..ef8fca2 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -706,13 +706,17 @@ static int omap_dpi_probe(struct platform_device *pdev)
+diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
+index ec03e72..20353a6 100644
+--- a/drivers/video/udlfb.c
++++ b/drivers/video/udlfb.c
+@@ -434,10 +434,10 @@ static void dlfb_compress_hline(
  
- 	dpi_init_output(pdev);
+ 	while ((pixel_end > pixel) &&
+ 	       (cmd_buffer_end - MIN_RLX_CMD_BYTES > cmd)) {
+-		uint8_t *raw_pixels_count_byte = 0;
+-		uint8_t *cmd_pixels_count_byte = 0;
+-		const uint16_t *raw_pixel_start = 0;
+-		const uint16_t *cmd_pixel_start, *cmd_pixel_end = 0;
++		uint8_t *raw_pixels_count_byte = NULL;
++		uint8_t *cmd_pixels_count_byte = NULL;
++		const uint16_t *raw_pixel_start = NULL;
++		const uint16_t *cmd_pixel_start, *cmd_pixel_end = NULL;
  
--	r = dpi_probe_pdata(pdev);
--	if (r) {
--		dpi_uninit_output(pdev);
--		return r;
-+	if (pdev->dev.platform_data) {
-+		r = dpi_probe_pdata(pdev);
-+		if (r)
-+			goto err_probe;
- 	}
+ 		prefetchw((void *) cmd); /* pull in one cache line at least */
  
- 	return 0;
-+
-+err_probe:
-+	dpi_uninit_output(pdev);
-+	return r;
- }
+@@ -1588,7 +1588,7 @@ static int dlfb_usb_probe(struct usb_interface *interface,
+ 			const struct usb_device_id *id)
+ {
+ 	struct usb_device *usbdev;
+-	struct dlfb_data *dev = 0;
++	struct dlfb_data *dev = NULL;
+ 	int retval = -ENOMEM;
  
- static int __exit omap_dpi_remove(struct platform_device *pdev)
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index a73dedc..bdddd0d 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -5563,12 +5563,10 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
- 
- 	dsi_init_output(dsidev);
- 
--	r = dsi_probe_pdata(dsidev);
--	if (r) {
--		dsi_runtime_put(dsidev);
--		dsi_uninit_output(dsidev);
--		pm_runtime_disable(&dsidev->dev);
--		return r;
-+	if (dsidev->dev.platform_data) {
-+		r = dsi_probe_pdata(dsidev);
-+		if (r)
-+			goto err_probe;
- 	}
- 
- 	dsi_runtime_put(dsidev);
-@@ -5586,6 +5584,9 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
- #endif
- 	return 0;
- 
-+err_probe:
-+	dsi_runtime_put(dsidev);
-+	dsi_uninit_output(dsidev);
- err_runtime_get:
- 	pm_runtime_disable(&dsidev->dev);
- 	return r;
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 17f4d55..99f4ab5 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -1098,15 +1098,19 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 
- 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
- 
--	r = hdmi_probe_pdata(pdev);
--	if (r) {
--		hdmi_panel_exit();
--		hdmi_uninit_output(pdev);
--		pm_runtime_disable(&pdev->dev);
--		return r;
-+	if (pdev->dev.platform_data) {
-+		r = hdmi_probe_pdata(pdev);
-+		if (r)
-+			goto err_probe;
- 	}
- 
- 	return 0;
-+
-+err_probe:
-+	hdmi_panel_exit();
-+	hdmi_uninit_output(pdev);
-+	pm_runtime_disable(&pdev->dev);
-+	return r;
- }
- 
- static int __exit hdmi_remove_child(struct device *dev, void *data)
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index 1a17dd1..1ff221e 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -1093,15 +1093,16 @@ static int omap_rfbihw_probe(struct platform_device *pdev)
- 
- 	rfbi_init_output(pdev);
- 
--	r = rfbi_probe_pdata(pdev);
--	if (r) {
--		rfbi_uninit_output(pdev);
--		pm_runtime_disable(&pdev->dev);
--		return r;
-+	if (pdev->dev.platform_data) {
-+		r = rfbi_probe_pdata(pdev);
-+		if (r)
-+			goto err_probe;
- 	}
- 
- 	return 0;
- 
-+err_probe:
-+	rfbi_uninit_output(pdev);
- err_runtime_get:
- 	pm_runtime_disable(&pdev->dev);
- 	return r;
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index 0bcd302..6277c05 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -365,13 +365,17 @@ static int omap_sdi_probe(struct platform_device *pdev)
- 
- 	sdi_init_output(pdev);
- 
--	r = sdi_probe_pdata(pdev);
--	if (r) {
--		sdi_uninit_output(pdev);
--		return r;
-+	if (pdev->dev.platform_data) {
-+		r = sdi_probe_pdata(pdev);
-+		if (r)
-+			goto err_probe;
- 	}
- 
- 	return 0;
-+
-+err_probe:
-+	sdi_uninit_output(pdev);
-+	return r;
- }
- 
- static int __exit omap_sdi_remove(struct platform_device *pdev)
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 74fdb3e..7b2e3ae 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -866,16 +866,17 @@ static int omap_venchw_probe(struct platform_device *pdev)
- 
- 	venc_init_output(pdev);
- 
--	r = venc_probe_pdata(pdev);
--	if (r) {
--		venc_panel_exit();
--		venc_uninit_output(pdev);
--		pm_runtime_disable(&pdev->dev);
--		return r;
-+	if (pdev->dev.platform_data) {
-+		r = venc_probe_pdata(pdev);
-+		if (r)
-+			goto err_probe;
- 	}
- 
- 	return 0;
- 
-+err_probe:
-+	venc_panel_exit();
-+	venc_uninit_output(pdev);
- err_panel_init:
- err_runtime_get:
- 	pm_runtime_disable(&pdev->dev);
+ 	/* usb initialization */
 -- 
-1.8.1.2
+1.7.9.5
 

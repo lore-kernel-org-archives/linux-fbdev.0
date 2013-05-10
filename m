@@ -1,75 +1,40 @@
-From: Michal Simek <monstr@monstr.eu>
-Date: Fri, 31 May 2013 07:39:10 +0000
-Subject: Re: [PATCH v2 2/3] video: xilinxfb: Do not use out_be32 IO function
-Message-Id: <51A8539E.3000702@monstr.eu>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2EAQEAPKAAQBWPFIJBOKV"
+From: Wolfram Sang <wsa@the-dreams.de>
+Date: Fri, 10 May 2013 08:17:18 +0000
+Subject: [RFC 33/42] drivers/video/omap2: don't check resource with devm_ioremap_resource
+Message-Id: <1368173847-5661-34-git-send-email-wsa@the-dreams.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <27e53d5633766ab0dc1ac492023d5a0d0199e3aa.1369906849.git.michal.simek@xilinx.com> <a15de155a3f32fc1416833df1b281db05d347541.1369906849.git.michal.simek@xilinx.com> <3808365.SOUxDqkW9J@wuerfel>
-In-Reply-To: <3808365.SOUxDqkW9J@wuerfel>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Michal Simek <michal.simek@xilinx.com>, linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
+References: <1368173847-5661-1-git-send-email-wsa@the-dreams.de>
+In-Reply-To: <1368173847-5661-1-git-send-email-wsa@the-dreams.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: Wolfram Sang <wsa@the-dreams.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
-------enig2EAQEAPKAAQBWPFIJBOKV
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+devm_ioremap_resource does sanity checks on the given resource. No need to
+duplicate this in the driver.
 
-On 05/31/2013 12:04 AM, Arnd Bergmann wrote:
-> On Thursday 30 May 2013 11:41:01 Michal Simek wrote:
->>   * To perform the read/write on the registers we need to check on
->>   * which bus its connected and call the appropriate write API.
->>   */
->> -static void xilinx_fb_out_be32(struct xilinxfb_drvdata *drvdata, u32 =
-offset,
->> +static void xilinx_fb_out32(struct xilinxfb_drvdata *drvdata, u32 off=
-set,
->>                                 u32 val)
->>  {
->>         if (drvdata->flags & PLB_ACCESS_FLAG)
->> -               out_be32(drvdata->regs + (offset << 2), val);
->> +               __raw_writel(val, drvdata->regs + (offset << 2));
->>  #ifdef CONFIG_PPC_DCR
->>         else
->>                 dcr_write(drvdata->dcr_host, offset, val);
->>
->=20
-> This is probably missing barriers, and is wrong on systems on which
-> the endianess of the device is different from the CPU.
->=20
-> You already have an indirection in there, so I guess it won't hurt
-> to create a third case for little-endian registers and add
-> another bit in drvdata->flags, or make it depend on the architecture,
-> if the endianess of the device registers is known at compile time.
+Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+---
+ drivers/video/omap2/vrfb.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
-The PLB_ACCESS_FLAGS is incorrectly named. It means BUS_ACCESS.
-But I will find a way how to autodetect endianess directly on IP
-as I have done it for uartlite and will send v3.
+diff --git a/drivers/video/omap2/vrfb.c b/drivers/video/omap2/vrfb.c
+index 5261229..f346b02 100644
+--- a/drivers/video/omap2/vrfb.c
++++ b/drivers/video/omap2/vrfb.c
+@@ -353,11 +353,6 @@ static int __init vrfb_probe(struct platform_device *pdev)
+ 	/* first resource is the register res, the rest are vrfb contexts */
+ 
+ 	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (!mem) {
+-		dev_err(&pdev->dev, "can't get vrfb base address\n");
+-		return -EINVAL;
+-	}
+-
+ 	vrfb_base = devm_ioremap_resource(&pdev->dev, mem);
+ 	if (IS_ERR(vrfb_base))
+ 		return PTR_ERR(vrfb_base);
+-- 
+1.7.10.4
 
-Thanks,
-Michal
-
---=20
-Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel - Microblaze cpu - http://www.monstr.eu/fdt/
-Maintainer of Linux kernel - Xilinx Zynq ARM architecture
-Microblaze U-BOOT custodian and responsible for u-boot arm zynq platform
-
-
-
-------enig2EAQEAPKAAQBWPFIJBOKV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iEYEARECAAYFAlGoU54ACgkQykllyylKDCGGWwCfWeZ7MzVgmIK+ZdEihwY0RXjQ
-0hMAnjL7HT82h2WCTLU3uhhT7gS5zCLm
-=ZggY
------END PGP SIGNATURE-----
-
-------enig2EAQEAPKAAQBWPFIJBOKV--

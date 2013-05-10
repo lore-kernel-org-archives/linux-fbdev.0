@@ -1,28 +1,43 @@
-From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Date: Mon, 13 May 2013 00:49:23 +0000
-Subject: Re: [PATCH 08/15] video: sh_mipi_dsi: remove unnecessary platform_set_drvdata()
-Message-Id: <87li7jn1pr.wl%kuninori.morimoto.gx@renesas.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Date: Fri, 10 May 2013 08:17:19 +0000
+Subject: [RFC 34/42] drivers/video/omap2/dss: don't check resource with devm_ioremap_resource
+Message-Id: <1368173847-5661-35-git-send-email-wsa@the-dreams.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <000801ce4e46$74893770$5d9ba650$@samsung.com>
-In-Reply-To: <000801ce4e46$74893770$5d9ba650$@samsung.com>
+References: <1368173847-5661-1-git-send-email-wsa@the-dreams.de>
+In-Reply-To: <1368173847-5661-1-git-send-email-wsa@the-dreams.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Wolfram Sang <wsa@the-dreams.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
+devm_ioremap_resource does sanity checks on the given resource. No need to
+duplicate this in the driver.
 
-Hi
-
-> The driver core clears the driver data to NULL after device_release
-> or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
-> (device-core: Ensure drvdata = NULL when no driver is bound).
-> Thus, it is not needed to manually clear the device driver data to NULL.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> ---
-
-Acked-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-
-Best regards
+Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
 ---
-Kuninori Morimoto
+ drivers/video/omap2/dss/hdmi.c |    7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 17f4d55..7bc6762 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -1064,13 +1064,8 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ 	mutex_init(&hdmi.lock);
+ 	mutex_init(&hdmi.ip_data.lock);
+ 
+-	res = platform_get_resource(hdmi.pdev, IORESOURCE_MEM, 0);
+-	if (!res) {
+-		DSSERR("can't get IORESOURCE_MEM HDMI\n");
+-		return -EINVAL;
+-	}
+-
+ 	/* Base address taken from platform */
++	res = platform_get_resource(hdmi.pdev, IORESOURCE_MEM, 0);
+ 	hdmi.ip_data.base_wp = devm_ioremap_resource(&pdev->dev, res);
+ 	if (IS_ERR(hdmi.ip_data.base_wp))
+ 		return PTR_ERR(hdmi.ip_data.base_wp);
+-- 
+1.7.10.4
+

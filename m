@@ -1,65 +1,36 @@
-From: Lad Prabhakar <prabhakar.csengg@gmail.com>
-Date: Thu, 16 May 2013 07:22:56 +0000
-Subject: [PATCH 1/2] video: da8xx-fb: remove unwanted header inclusion and sort the alphabetically
-Message-Id: <1368688257-18705-2-git-send-email-prabhakar.csengg@gmail.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Sat, 11 May 2013 12:51:33 +0000
+Subject: [PATCH 07/15] video: sa1100fb: remove unnecessary platform_set_drvdata()
+Message-Id: <000701ce4e46$43c31a20$cb494e60$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1368688257-18705-1-git-send-email-prabhakar.csengg@gmail.com>
-In-Reply-To: <1368688257-18705-1-git-send-email-prabhakar.csengg@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: DLOS <davinci-linux-open-source@linux.davincidsp.com>, LFBDEV <linux-fbdev@vger.kernel.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-From: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+The driver core clears the driver data to NULL after device_release
+or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
+(device-core: Ensure drvdata = NULL when no driver is bound).
+Thus, it is not needed to manually clear the device driver data to NULL.
 
-This patch removes unwanted header inclusion and sorts them alphabetically
-
-Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/da8xx-fb.c |   23 ++++++++++-------------
- 1 files changed, 10 insertions(+), 13 deletions(-)
+ drivers/video/sa1100fb.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 0810939..aafe8b9 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -19,25 +19,22 @@
-  * along with this program; if not, write to the Free Software
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-  */
--#include <linux/module.h>
--#include <linux/kernel.h>
--#include <linux/fb.h>
-+
-+#include <linux/clk.h>
-+#include <linux/console.h>
-+#include <linux/cpufreq.h>
- #include <linux/dma-mapping.h>
--#include <linux/device.h>
-+#include <linux/fb.h>
-+#include <linux/interrupt.h>
-+#include <linux/module.h>
- #include <linux/platform_device.h>
--#include <linux/uaccess.h>
- #include <linux/pm_runtime.h>
--#include <linux/interrupt.h>
--#include <linux/wait.h>
--#include <linux/clk.h>
--#include <linux/cpufreq.h>
--#include <linux/console.h>
--#include <linux/spinlock.h>
--#include <linux/slab.h>
-+#include <linux/uaccess.h>
-+
- #include <linux/delay.h>
- #include <linux/lcm.h>
-+
- #include <video/da8xx-fb.h>
--#include <asm/div64.h>
- 
- #define DRIVER_NAME "da8xx_lcdc"
- 
+diff --git a/drivers/video/sa1100fb.c b/drivers/video/sa1100fb.c
+index f34c858..de76da0 100644
+--- a/drivers/video/sa1100fb.c
++++ b/drivers/video/sa1100fb.c
+@@ -1271,7 +1271,6 @@ static int sa1100fb_probe(struct platform_device *pdev)
+  failed:
+ 	if (fbi)
+ 		iounmap(fbi->base);
+-	platform_set_drvdata(pdev, NULL);
+ 	kfree(fbi);
+ 	release_mem_region(res->start, resource_size(res));
+ 	return ret;
 -- 
-1.7.4.1
+1.7.2.5
+
 

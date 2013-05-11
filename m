@@ -1,92 +1,65 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:34:52 +0000
-Subject: [PATCH 31/32] OMAPDSS: output: increase refcount in find_output funcs
-Message-Id: <1369906493-27538-32-git-send-email-tomi.valkeinen@ti.com>
+From: Jiang Liu <liuj97@gmail.com>
+Date: Sat, 11 May 2013 17:34:40 +0000
+Subject: [PATCH v6, part3 07/16] mm, acornfb: use free_reserved_area() to simplify code
+Message-Id: <1368293689-16410-8-git-send-email-jiang.liu@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1368293689-16410-1-git-send-email-jiang.liu@huawei.com>
+In-Reply-To: <1368293689-16410-1-git-send-email-jiang.liu@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jiang Liu <jiang.liu@huawei.com>, David Rientjes <rientjes@google.com>, Wen Congyang <wency@cn.fujitsu.com>, Mel Gorman <mgorman@suse.de>, Minchan Kim <minchan@kernel.org>, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, Michal Hocko <mhocko@suse.cz>, James Bottomley <James.Bottomley@HansenPartnership.com>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, David Howells <dhowells@redhat.com>, Mark Salter <msalter@redhat.com>, Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
 
-Now that omap_dss_output has been combined into omap_dss_device, we can
-add ref counting for the relevant output functions also.
+Use common help function free_reserved_area() to simplify code.
 
-This patch adds omap_dss_get_device() calls to the various find_output()
-style functions. This, of course, means that the users of those
-find_output functions need to do a omap_dss_put_device() after use.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Jiang Liu <jiang.liu@huawei.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 ---
- drivers/gpu/drm/omapdrm/omap_drv.c |  2 ++
- drivers/video/omap2/dss/output.c   | 13 +++++++++----
- 2 files changed, 11 insertions(+), 4 deletions(-)
+ drivers/video/acornfb.c | 28 ++--------------------------
+ 1 file changed, 2 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/gpu/drm/omapdrm/omap_drv.c b/drivers/gpu/drm/omapdrm/omap_drv.c
-index a72100c..4c0bc40 100644
---- a/drivers/gpu/drm/omapdrm/omap_drv.c
-+++ b/drivers/gpu/drm/omapdrm/omap_drv.c
-@@ -277,6 +277,8 @@ static int omap_modeset_init(struct drm_device *dev)
- 			if (supported_outputs & output->id)
- 				encoder->possible_crtcs |= (1 << id);
- 		}
-+
-+		omap_dss_put_device(output);
- 	}
- 
- 	DBG("registered %d planes, %d crtcs, %d encoders and %d connectors\n",
-diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
-index cc81fec..9ad7d21 100644
---- a/drivers/video/omap2/dss/output.c
-+++ b/drivers/video/omap2/dss/output.c
-@@ -121,7 +121,7 @@ struct omap_dss_device *omap_dss_find_output(const char *name)
- 
- 	list_for_each_entry(out, &output_list, list) {
- 		if (strcmp(out->name, name) = 0)
--			return out;
-+			return omap_dss_get_device(out);
- 	}
- 
- 	return NULL;
-@@ -134,7 +134,7 @@ struct omap_dss_device *omap_dss_find_output_by_node(struct device_node *node)
- 
- 	list_for_each_entry(out, &output_list, list) {
- 		if (out->dev->of_node = node)
--			return out;
-+			return omap_dss_get_device(out);
- 	}
- 
- 	return NULL;
-@@ -143,20 +143,25 @@ EXPORT_SYMBOL(omap_dss_find_output_by_node);
- 
- struct omap_dss_device *omapdss_find_output_from_display(struct omap_dss_device *dssdev)
+diff --git a/drivers/video/acornfb.c b/drivers/video/acornfb.c
+index 6488a73..344f2bb 100644
+--- a/drivers/video/acornfb.c
++++ b/drivers/video/acornfb.c
+@@ -1188,32 +1188,8 @@ static int acornfb_detect_monitortype(void)
+ static inline void
+ free_unused_pages(unsigned int virtual_start, unsigned int virtual_end)
  {
--	return dssdev->output;
-+	return omap_dss_get_device(dssdev->output);
+-	int mb_freed = 0;
+-
+-	/*
+-	 * Align addresses
+-	 */
+-	virtual_start = PAGE_ALIGN(virtual_start);
+-	virtual_end = PAGE_ALIGN(virtual_end);
+-
+-	while (virtual_start < virtual_end) {
+-		struct page *page;
+-
+-		/*
+-		 * Clear page reserved bit,
+-		 * set count to 1, and free
+-		 * the page.
+-		 */
+-		page = virt_to_page(virtual_start);
+-		ClearPageReserved(page);
+-		init_page_count(page);
+-		free_page(virtual_start);
+-
+-		virtual_start += PAGE_SIZE;
+-		mb_freed += PAGE_SIZE / 1024;
+-	}
+-
+-	printk("acornfb: freed %dK memory\n", mb_freed);
++	free_reserved_area(virtual_start, PAGE_ALIGN(virtual_end),
++			   -1, "acornfb");
  }
- EXPORT_SYMBOL(omapdss_find_output_from_display);
  
- struct omap_overlay_manager *omapdss_find_mgr_from_display(struct omap_dss_device *dssdev)
- {
- 	struct omap_dss_device *out;
-+	struct omap_overlay_manager *mgr;
- 
- 	out = omapdss_find_output_from_display(dssdev);
- 
- 	if (out = NULL)
- 		return NULL;
- 
--	return out->manager;
-+	mgr = out->manager;
-+
-+	omap_dss_put_device(out);
-+
-+	return mgr;
- }
- EXPORT_SYMBOL(omapdss_find_mgr_from_display);
- 
+ static int acornfb_probe(struct platform_device *dev)
 -- 
 1.8.1.2
 

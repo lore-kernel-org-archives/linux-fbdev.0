@@ -1,47 +1,57 @@
-From: Richard Genoud <richard.genoud@gmail.com>
-Date: Fri, 31 May 2013 15:49:35 +0000
-Subject: [PATCHv2 2/2] atmel_lcdfb: blank the backlight on remove
-Message-Id: <1370015375-5954-1-git-send-email-richard.genoud@gmail.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Sat, 11 May 2013 12:56:06 +0000
+Subject: [PATCH 11/15] video: pxa: remove unnecessary platform_set_drvdata()
+Message-Id: <000b01ce4e46$e6da5a70$b48f0f50$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CACQ1gAh5HL8ouhe3YeGe4B9AO+L02C+wF5a2pUvka01PbupCDg@mail.gmail.com>
-In-Reply-To: <CACQ1gAh5HL8ouhe3YeGe4B9AO+L02C+wF5a2pUvka01PbupCDg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Richard Genoud <richard.genoud@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-When removing atmel_lcdfb module, the backlight is unregistered but not
-blanked. (only for CONFIG_BACKLIGHT_ATMEL_LCDC case).
-This can result in the screen going full white depending on how the PWM
-is wired.
+The driver core clears the driver data to NULL after device_release
+or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
+(device-core: Ensure drvdata = NULL when no driver is bound).
+Thus, it is not needed to manually clear the device driver data to NULL.
 
-Signed-off-by: Richard Genoud <richard.genoud@gmail.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/atmel_lcdfb.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/video/pxa3xx-gcu.c |    2 --
+ drivers/video/pxafb.c      |    1 -
+ 2 files changed, 0 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 6e6491f..effdb37 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -223,8 +223,14 @@ static void init_backlight(struct atmel_lcdfb_info *sinfo)
+diff --git a/drivers/video/pxa3xx-gcu.c b/drivers/video/pxa3xx-gcu.c
+index 97563c5..95c3c4ae 100644
+--- a/drivers/video/pxa3xx-gcu.c
++++ b/drivers/video/pxa3xx-gcu.c
+@@ -711,7 +711,6 @@ err_misc_deregister:
+ 	misc_deregister(&priv->misc_dev);
  
- static void exit_backlight(struct atmel_lcdfb_info *sinfo)
- {
--	if (sinfo->backlight)
--		backlight_device_unregister(sinfo->backlight);
-+	if (!sinfo->backlight)
-+		return;
-+
-+	if (sinfo->backlight->ops) {
-+		sinfo->backlight->props.power = FB_BLANK_POWERDOWN;
-+		sinfo->backlight->ops->update_status(sinfo->backlight);
-+	}
-+	backlight_device_unregister(sinfo->backlight);
- }
- 
- #else
+ err_free_priv:
+-	platform_set_drvdata(dev, NULL);
+ 	free_buffers(dev, priv);
+ 	kfree(priv);
+ 	return ret;
+@@ -729,7 +728,6 @@ static int pxa3xx_gcu_remove(struct platform_device *dev)
+ 			priv->shared, priv->shared_phys);
+ 	iounmap(priv->mmio_base);
+ 	release_mem_region(r->start, resource_size(r));
+-	platform_set_drvdata(dev, NULL);
+ 	clk_disable(priv->clk);
+ 	free_buffers(dev, priv);
+ 	kfree(priv);
+diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
+index 580f80c..eca2de4 100644
+--- a/drivers/video/pxafb.c
++++ b/drivers/video/pxafb.c
+@@ -2256,7 +2256,6 @@ failed_free_res:
+ 	release_mem_region(r->start, resource_size(r));
+ failed_fbi:
+ 	clk_put(fbi->clk);
+-	platform_set_drvdata(dev, NULL);
+ 	kfree(fbi);
+ failed:
+ 	return ret;
 -- 
-1.7.10.4
+1.7.2.5
+
 

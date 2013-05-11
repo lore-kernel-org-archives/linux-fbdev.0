@@ -1,169 +1,49 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:36:06 +0000
-Subject: [PATCH 13/27] OMAPDSS: AnalogTV: Add ops
-Message-Id: <1369906580-27585-14-git-send-email-tomi.valkeinen@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Sat, 11 May 2013 13:03:04 +0000
+Subject: [PATCH 15/15] video: mmp: remove unnecessary platform_set_drvdata()
+Message-Id: <000f01ce4e47$e00c4c70$a024e550$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Add "ops" style method for using analog TV functionality.
+The driver core clears the driver data to NULL after device_release
+or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
+(device-core: Ensure drvdata = NULL when no driver is bound).
+Thus, it is not needed to manually clear the device driver data to NULL.
 
-Ops style calls will allow us to have arbitrarily long display
-pipelines, where each entity can call ops in the previous display
-entity.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/omap2/dss/venc.c | 72 ++++++++++++++++++++++++++++++++++++++++++
- include/video/omapdss.h        | 26 +++++++++++++++
- 2 files changed, 98 insertions(+)
+ drivers/video/mmp/fb/mmpfb.c    |    1 -
+ drivers/video/mmp/hw/mmp_ctrl.c |    1 -
+ 2 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 291a40d..f5ee767 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -568,6 +568,16 @@ int omapdss_venc_check_timings(struct omap_dss_device *dssdev,
- 	return -EINVAL;
- }
+diff --git a/drivers/video/mmp/fb/mmpfb.c b/drivers/video/mmp/fb/mmpfb.c
+index 6d1fa96..4ab95b8 100644
+--- a/drivers/video/mmp/fb/mmpfb.c
++++ b/drivers/video/mmp/fb/mmpfb.c
+@@ -659,7 +659,6 @@ failed_destroy_mutex:
+ 	mutex_destroy(&fbi->access_ok);
+ failed:
+ 	dev_err(fbi->dev, "mmp-fb: frame buffer device init failed\n");
+-	platform_set_drvdata(pdev, NULL);
  
-+static void venc_get_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings)
-+{
-+	mutex_lock(&venc.venc_lock);
-+
-+	*timings = venc.timings;
-+
-+	mutex_unlock(&venc.venc_lock);
-+}
-+
- u32 omapdss_venc_get_wss(struct omap_dss_device *dssdev)
- {
- 	/* Invert due to VENC_L21_WC_CTL:INV=1 */
-@@ -783,6 +793,67 @@ static int venc_probe_pdata(struct platform_device *vencdev)
- 	return 0;
- }
+ 	framebuffer_release(info);
  
-+static int venc_connect(struct omap_dss_device *dssdev,
-+		struct omap_dss_device *dst)
-+{
-+	struct omap_overlay_manager *mgr;
-+	int r;
-+
-+	r = venc_init_regulator();
-+	if (r)
-+		return r;
-+
-+	mgr = omap_dss_get_overlay_manager(dssdev->dispc_channel);
-+	if (!mgr)
-+		return -ENODEV;
-+
-+	r = dss_mgr_connect(mgr, dssdev);
-+	if (r)
-+		return r;
-+
-+	r = omapdss_output_set_device(dssdev, dst);
-+	if (r) {
-+		DSSERR("failed to connect output to new device: %s\n",
-+				dst->name);
-+		dss_mgr_disconnect(mgr, dssdev);
-+		return r;
-+	}
-+
-+	return 0;
-+}
-+
-+static void venc_disconnect(struct omap_dss_device *dssdev,
-+		struct omap_dss_device *dst)
-+{
-+	WARN_ON(dst != dssdev->device);
-+
-+	if (dst != dssdev->device)
-+		return;
-+
-+	omapdss_output_unset_device(dssdev);
-+
-+	if (dssdev->manager)
-+		dss_mgr_disconnect(dssdev->manager, dssdev);
-+}
-+
-+static const struct omapdss_atv_ops venc_ops = {
-+	.connect = venc_connect,
-+	.disconnect = venc_disconnect,
-+
-+	.enable = omapdss_venc_display_enable,
-+	.disable = omapdss_venc_display_disable,
-+
-+	.check_timings = omapdss_venc_check_timings,
-+	.set_timings = omapdss_venc_set_timings,
-+	.get_timings = venc_get_timings,
-+
-+	.set_type = omapdss_venc_set_type,
-+	.invert_vid_out_polarity = omapdss_venc_invert_vid_out_polarity,
-+
-+	.set_wss = omapdss_venc_set_wss,
-+	.get_wss = omapdss_venc_get_wss,
-+};
-+
- static void venc_init_output(struct platform_device *pdev)
- {
- 	struct omap_dss_device *out = &venc.output;
-@@ -792,6 +863,7 @@ static void venc_init_output(struct platform_device *pdev)
- 	out->output_type = OMAP_DISPLAY_TYPE_VENC;
- 	out->name = "venc.0";
- 	out->dispc_channel = OMAP_DSS_CHANNEL_DIGIT;
-+	out->ops.atv = &venc_ops;
- 	out->owner = THIS_MODULE;
+diff --git a/drivers/video/mmp/hw/mmp_ctrl.c b/drivers/video/mmp/hw/mmp_ctrl.c
+index 4bd31b2..c46bf5a 100644
+--- a/drivers/video/mmp/hw/mmp_ctrl.c
++++ b/drivers/video/mmp/hw/mmp_ctrl.c
+@@ -566,7 +566,6 @@ failed:
+ 		devm_kfree(ctrl->dev, ctrl);
+ 	}
  
- 	omapdss_register_output(out);
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 9f87fc0..cb6c478 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -628,6 +628,31 @@ struct omapdss_dvi_ops {
- 			struct omap_video_timings *timings);
- };
+-	platform_set_drvdata(pdev, NULL);
+ 	dev_err(&pdev->dev, "device init failed\n");
  
-+struct omapdss_atv_ops {
-+	int (*connect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+	void (*disconnect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+
-+	int (*enable)(struct omap_dss_device *dssdev);
-+	void (*disable)(struct omap_dss_device *dssdev);
-+
-+	int (*check_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*set_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*get_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+
-+	void (*set_type)(struct omap_dss_device *dssdev,
-+		enum omap_dss_venc_type type);
-+	void (*invert_vid_out_polarity)(struct omap_dss_device *dssdev,
-+		bool invert_polarity);
-+
-+	int (*set_wss)(struct omap_dss_device *dssdev, u32 wss);
-+	u32 (*get_wss)(struct omap_dss_device *dssdev);
-+};
-+
- struct omap_dss_device {
- 	/* old device, to be removed */
- 	struct device old_dev;
-@@ -704,6 +729,7 @@ struct omap_dss_device {
- 		const struct omapdss_dpi_ops *dpi;
- 		const struct omapdss_sdi_ops *sdi;
- 		const struct omapdss_dvi_ops *dvi;
-+		const struct omapdss_atv_ops *atv;
- 	} ops;
- 
- 	/* helper variable for driver suspend/resume */
+ 	return ret;
 -- 
-1.8.1.2
+1.7.2.5
+
 

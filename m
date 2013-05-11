@@ -1,136 +1,36 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Thu, 09 May 2013 19:46:23 +0000
-Subject: [RFC/PATCH v2 4/8] drm,agpgart: Use pgprot_writecombine for AGP maps and make the MTRR optional
-Message-Id: <3b4e9864e52428a9f73289c92baa37a073a33077.1368128020.git.luto@amacapital.net>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Sat, 11 May 2013 12:54:49 +0000
+Subject: [PATCH 10/15] video: au1100fb: remove unnecessary platform_set_drvdata()
+Message-Id: <000a01ce4e46$b8e362b0$2aaa2810$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1368128020.git.luto@amacapital.net>
-In-Reply-To: <cover.1368128020.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>
+To: linux-fbdev@vger.kernel.org
 
-I'm not sure I understand the intent of the previous behavior.  mmap
-on /dev/agpgart and DRM_AGP maps had no cache flags set, so they
-would be fully cacheable.  But the DRM code (most of the time) would
-add a write-combining MTRR that would change the effective memory
-type to WC.
+The driver core clears the driver data to NULL after device_release
+or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
+(device-core: Ensure drvdata = NULL when no driver is bound).
+Thus, it is not needed to manually clear the device driver data to NULL.
 
-The new behavior just requests WC explicitly for all AGP maps.
-
-If there is any code out there that expects cacheable access to the
-AGP aperture (because the drm driver doesn't request an MTRR or
-because it's using /dev/agpgart directly), then it will now end up
-with a UC or WC mapping, depending on the architecture and PAT
-availability.  But cacheable access to the aperture seems like it's
-asking for trouble, because, AIUI, the aperture is an alias of RAM.
-
-Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
+ drivers/video/au1100fb.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-It's conceivable that libpciaccess could have issues with this due to
-memtype conflicts, but I think this is unlikely (as long as a WC
-mapping gets there first, I think the conflict resolution rules will
-all work out).  In any case, everything that maps the AGP aperture
-ought to be using /dev/agpgart or the DRM API, in which case
-everything should be okay.
-
-I don't have anything with an AGP slot to test AFAIK.
-
- drivers/char/agp/frontend.c |  8 +++++---
- drivers/gpu/drm/drm_pci.c   |  8 ++++----
- drivers/gpu/drm/drm_stub.c  | 10 ++--------
- drivers/gpu/drm/drm_vm.c    | 11 ++++-------
- 4 files changed, 15 insertions(+), 22 deletions(-)
-
-diff --git a/drivers/char/agp/frontend.c b/drivers/char/agp/frontend.c
-index 2e04433..1b19239 100644
---- a/drivers/char/agp/frontend.c
-+++ b/drivers/char/agp/frontend.c
-@@ -603,7 +603,8 @@ static int agp_mmap(struct file *file, struct vm_area_struct *vma)
- 			vma->vm_ops = kerninfo.vm_ops;
- 		} else if (io_remap_pfn_range(vma, vma->vm_start,
- 				(kerninfo.aper_base + offset) >> PAGE_SHIFT,
--					    size, vma->vm_page_prot)) {
-+				size,
-+				pgprot_writecombine(vma->vm_page_prot))) {
- 			goto out_again;
- 		}
- 		mutex_unlock(&(agp_fe.agp_mutex));
-@@ -618,8 +619,9 @@ static int agp_mmap(struct file *file, struct vm_area_struct *vma)
- 		if (kerninfo.vm_ops) {
- 			vma->vm_ops = kerninfo.vm_ops;
- 		} else if (io_remap_pfn_range(vma, vma->vm_start,
--					    kerninfo.aper_base >> PAGE_SHIFT,
--					    size, vma->vm_page_prot)) {
-+				kerninfo.aper_base >> PAGE_SHIFT,
-+				size,
-+				pgprot_writecombine(vma->vm_page_prot))) {
- 			goto out_again;
- 		}
- 		mutex_unlock(&(agp_fe.agp_mutex));
-diff --git a/drivers/gpu/drm/drm_pci.c b/drivers/gpu/drm/drm_pci.c
-index bd719e9..d0f6699 100644
---- a/drivers/gpu/drm/drm_pci.c
-+++ b/drivers/gpu/drm/drm_pci.c
-@@ -278,10 +278,10 @@ int drm_pci_agp_init(struct drm_device *dev)
- 		}
- 		if (drm_core_has_MTRR(dev)) {
- 			if (dev->agp)
--				dev->agp->agp_mtrr -					mtrr_add(dev->agp->agp_info.aper_base,
--						 dev->agp->agp_info.aper_size *
--						 1024 * 1024, MTRR_TYPE_WRCOMB, 1);
-+				dev->agp->agp_mtrr = arch_phys_wc_add(
-+					dev->agp->agp_info.aper_base,
-+					dev->agp->agp_info.aper_size *
-+					1024 * 1024);
- 		}
+diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
+index 700cac0..606a3ba 100644
+--- a/drivers/video/au1100fb.c
++++ b/drivers/video/au1100fb.c
+@@ -579,7 +579,6 @@ failed:
+ 	if (fbdev->info.cmap.len != 0) {
+ 		fb_dealloc_cmap(&fbdev->info.cmap);
  	}
- 	return 0;
-diff --git a/drivers/gpu/drm/drm_stub.c b/drivers/gpu/drm/drm_stub.c
-index 7d30802..9e2acdf 100644
---- a/drivers/gpu/drm/drm_stub.c
-+++ b/drivers/gpu/drm/drm_stub.c
-@@ -451,14 +451,8 @@ void drm_put_dev(struct drm_device *dev)
+-	platform_set_drvdata(dev, NULL);
  
- 	drm_lastclose(dev);
- 
--	if (drm_core_has_MTRR(dev) && drm_core_has_AGP(dev) &&
--	    dev->agp && dev->agp->agp_mtrr >= 0) {
--		int retval;
--		retval = mtrr_del(dev->agp->agp_mtrr,
--				  dev->agp->agp_info.aper_base,
--				  dev->agp->agp_info.aper_size * 1024 * 1024);
--		DRM_DEBUG("mtrr_del=%d\n", retval);
--	}
-+	if (drm_core_has_MTRR(dev) && drm_core_has_AGP(dev) && dev->agp)
-+		arch_phys_wc_del(dev->agp->agp_mtrr);
- 
- 	if (dev->driver->unload)
- 		dev->driver->unload(dev);
-diff --git a/drivers/gpu/drm/drm_vm.c b/drivers/gpu/drm/drm_vm.c
-index 163f436..b1e4ec8 100644
---- a/drivers/gpu/drm/drm_vm.c
-+++ b/drivers/gpu/drm/drm_vm.c
-@@ -49,13 +49,10 @@ static pgprot_t drm_io_prot(struct drm_local_map *map,
- 	pgprot_t tmp = vm_get_page_prot(vma->vm_flags);
- 
- #if defined(__i386__) || defined(__x86_64__)
--	if (map->type != _DRM_AGP) {
--		if (map->type = _DRM_FRAME_BUFFER ||
--		    map->flags & _DRM_WRITE_COMBINING)
--			tmp = pgprot_writecombine(tmp);
--		else
--			tmp = pgprot_noncached(tmp);
--	}
-+	if (map->type = _DRM_REGISTERS && !(map->flags & _DRM_WRITE_COMBINING))
-+		tmp = pgprot_noncached(tmp);
-+	else
-+		tmp = pgprot_writecombine(tmp);
- #elif defined(__powerpc__)
- 	pgprot_val(tmp) |= _PAGE_NO_CACHE;
- 	if (map_type = _DRM_REGISTERS)
+ 	return -ENODEV;
+ }
 -- 
-1.8.1.4
+1.7.2.5
+
 

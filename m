@@ -1,39 +1,36 @@
-From: Adam Jackson <ajax@redhat.com>
-Date: Wed, 15 May 2013 21:04:11 +0000
-Subject: [PATCH] video: Use less worrisome language in fbdev handoff
-Message-Id: <1368651851-14326-1-git-send-email-ajax@redhat.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Sat, 11 May 2013 12:50:34 +0000
+Subject: [PATCH 06/15] video: nuc900fb: remove unnecessary platform_set_drvdata()
+Message-Id: <000601ce4e46$20f2e6b0$62d8b410$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-For some reason people see "conflicting" and think it's a problem, even
-though it's totally normal.  Just call it a handoff.
+The driver core clears the driver data to NULL after device_release
+or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
+(device-core: Ensure drvdata = NULL when no driver is bound).
+Thus, it is not needed to manually clear the device driver data to NULL.
 
-Signed-off-by: Adam Jackson <ajax@redhat.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/fbmem.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ drivers/video/nuc900fb.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 098bfc6..2ec56a2 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1576,10 +1576,9 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
- 		if (fb_do_apertures_overlap(gen_aper, a) ||
- 			(primary && gen_aper && gen_aper->count &&
- 			 gen_aper->ranges[0].base = VGA_FB_PHYS)) {
--
--			printk(KERN_INFO "fb: conflicting fb hw usage "
--			       "%s vs %s - removing generic driver\n",
--			       name, registered_fb[i]->fix.id);
-+			printk(KERN_INFO "fb: Handoff from generic %s "
-+			       "driver to %s\n", registered_fb[i]->fix.id,
-+			       name);
- 			do_unregister_framebuffer(registered_fb[i]);
- 		}
- 	}
+diff --git a/drivers/video/nuc900fb.c b/drivers/video/nuc900fb.c
+index 32581c7..8c527e5 100644
+--- a/drivers/video/nuc900fb.c
++++ b/drivers/video/nuc900fb.c
+@@ -707,7 +707,6 @@ static int nuc900fb_remove(struct platform_device *pdev)
+ 	release_resource(fbi->mem);
+ 	kfree(fbi->mem);
+ 
+-	platform_set_drvdata(pdev, NULL);
+ 	framebuffer_release(fbinfo);
+ 
+ 	return 0;
 -- 
-1.8.2.1
+1.7.2.5
+
 

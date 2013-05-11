@@ -1,38 +1,36 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:34:49 +0000
-Subject: [PATCH 28/32] OMAPDSS: omapdss.h: add owner field to omap_dss_device
-Message-Id: <1369906493-27538-29-git-send-email-tomi.valkeinen@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Sat, 11 May 2013 13:00:43 +0000
+Subject: [PATCH 14/15] video: vga16fb: remove unnecessary platform_set_drvdata()
+Message-Id: <000e01ce4e47$8bc410d0$a34c3270$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Add struct module *owner field to omap_dss_device, which points to the
-module containing the ops for this omap_dss_device. This will be used to
-manage the ref count for the module.
+The driver core clears the driver data to NULL after device_release
+or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
+(device-core: Ensure drvdata = NULL when no driver is bound).
+Thus, it is not needed to manually clear the device driver data to NULL.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- include/video/omapdss.h | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/vga16fb.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 5046264..c32d90e 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -579,6 +579,8 @@ struct omap_dss_device {
- 	/* new device, pointer to panel device */
- 	struct device *dev;
+diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
+index 545faec..830ded4 100644
+--- a/drivers/video/vga16fb.c
++++ b/drivers/video/vga16fb.c
+@@ -1269,7 +1269,6 @@ static void vga16fb_destroy(struct fb_info *info)
+ 	iounmap(info->screen_base);
+ 	fb_dealloc_cmap(&info->cmap);
+ 	/* XXX unshare VGA regions */
+-	platform_set_drvdata(dev, NULL);
+ 	framebuffer_release(info);
+ }
  
-+	struct module *owner;
-+
- 	struct list_head panel_list;
- 
- 	/* alias in the form of "display%d" */
 -- 
-1.8.1.2
+1.7.2.5
+
 

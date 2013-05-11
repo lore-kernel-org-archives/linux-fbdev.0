@@ -1,56 +1,37 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:36:18 +0000
-Subject: [PATCH 25/27] ARM: OMAP: fix dsi regulator names
-Message-Id: <1369906580-27585-26-git-send-email-tomi.valkeinen@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Sat, 11 May 2013 12:48:55 +0000
+Subject: [PATCH 04/15] video: jz4740: remove unnecessary platform_set_drvdata()
+Message-Id: <000401ce4e45$e593ed30$b0bbc790$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-board-cm-t35.c and board-ldp.c contain regulator supply entries for
-vdds_dsi. However, the given device name is wrong.
+The driver core clears the driver data to NULL after device_release
+or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
+(device-core: Ensure drvdata = NULL when no driver is bound).
+Thus, it is not needed to manually clear the device driver data to NULL.
 
-This patch fixes the device name from omapdss_dsi1 to omapdss_dsi.0.
-
-Note that as far as I know, DSI driver is not used on these boards, so
-this should not have caused any problems.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- arch/arm/mach-omap2/board-cm-t35.c | 2 +-
- arch/arm/mach-omap2/board-ldp.c    | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/jz4740_fb.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-cm-t35.c b/arch/arm/mach-omap2/board-cm-t35.c
-index ee6218c..ce00968 100644
---- a/arch/arm/mach-omap2/board-cm-t35.c
-+++ b/arch/arm/mach-omap2/board-cm-t35.c
-@@ -293,7 +293,7 @@ static struct regulator_consumer_supply cm_t35_vsim_supply[] = {
- static struct regulator_consumer_supply cm_t35_vio_supplies[] = {
- 	REGULATOR_SUPPLY("vcc", "spi1.0"),
- 	REGULATOR_SUPPLY("vdds_dsi", "omapdss"),
--	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dsi1"),
-+	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dsi.0"),
- };
+diff --git a/drivers/video/jz4740_fb.c b/drivers/video/jz4740_fb.c
+index 36979b4..2c49112 100644
+--- a/drivers/video/jz4740_fb.c
++++ b/drivers/video/jz4740_fb.c
+@@ -737,8 +737,6 @@ static int jzfb_remove(struct platform_device *pdev)
+ 	fb_dealloc_cmap(&jzfb->fb->cmap);
+ 	jzfb_free_devmem(jzfb);
  
- /* VMMC1 for MMC1 pins CMD, CLK, DAT0..DAT3 (20 mA, plus card = max 220 mA) */
-diff --git a/arch/arm/mach-omap2/board-ldp.c b/arch/arm/mach-omap2/board-ldp.c
-index d0d17bc..3dbc881 100644
---- a/arch/arm/mach-omap2/board-ldp.c
-+++ b/arch/arm/mach-omap2/board-ldp.c
-@@ -272,7 +272,7 @@ static struct regulator_init_data ldp_vaux1 = {
+-	platform_set_drvdata(pdev, NULL);
+-
+ 	framebuffer_release(jzfb->fb);
  
- static struct regulator_consumer_supply ldp_vpll2_supplies[] = {
- 	REGULATOR_SUPPLY("vdds_dsi", "omapdss"),
--	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dsi1"),
-+	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dsi.0"),
- };
- 
- static struct regulator_init_data ldp_vpll2 = {
+ 	return 0;
 -- 
-1.8.1.2
+1.7.2.5
+
 

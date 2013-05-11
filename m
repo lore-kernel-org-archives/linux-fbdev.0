@@ -1,47 +1,36 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Date: Mon, 27 May 2013 12:33:05 +0000
-Subject: [PATCH] video: display_timing: make parameter const
-Message-Id: <1369657985-11703-1-git-send-email-l.stach@pengutronix.de>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Sat, 11 May 2013 12:53:25 +0000
+Subject: [PATCH 09/15] video: vt8500: remove unnecessary platform_set_drvdata()
+Message-Id: <000901ce4e46$86fe40d0$94fac270$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org
-Cc: Dave Airlie <airlied@redhat.com>, linux-fbdev@vger.kernel.org, kernel@pengutronix.de, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-fbdev@vger.kernel.org
 
-From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+The driver core clears the driver data to NULL after device_release
+or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
+(device-core: Ensure drvdata = NULL when no driver is bound).
+Thus, it is not needed to manually clear the device driver data to NULL.
 
-As the device_node pointer is not changed in of_get_display_timing and
-parse_timing_property it can be a const pointer.
-
-Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/of_display_timing.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/video/vt8500lcdfb.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
-index 56009bc..85c1a41 100644
---- a/drivers/video/of_display_timing.c
-+++ b/drivers/video/of_display_timing.c
-@@ -23,7 +23,7 @@
-  * Every display_timing can be specified with either just the typical value or
-  * a range consisting of min/typ/max. This function helps handling this
-  **/
--static int parse_timing_property(struct device_node *np, const char *name,
-+static int parse_timing_property(const struct device_node *np, const char *name,
- 			  struct timing_entry *result)
- {
- 	struct property *prop;
-@@ -56,7 +56,8 @@ static int parse_timing_property(struct device_node *np, const char *name,
-  * of_get_display_timing - parse display_timing entry from device_node
-  * @np: device_node with the properties
-  **/
--static struct display_timing *of_get_display_timing(struct device_node *np)
-+static struct display_timing *of_get_display_timing(const struct device_node
-+						    *np)
- {
- 	struct display_timing *dt;
- 	u32 val = 0;
+diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
+index 9547e18..897484903 100644
+--- a/drivers/video/vt8500lcdfb.c
++++ b/drivers/video/vt8500lcdfb.c
+@@ -448,7 +448,6 @@ failed_free_io:
+ failed_free_res:
+ 	release_mem_region(res->start, resource_size(res));
+ failed_fbi:
+-	platform_set_drvdata(pdev, NULL);
+ 	kfree(fbi);
+ failed:
+ 	return ret;
 -- 
-1.7.10.4
+1.7.2.5
+
 

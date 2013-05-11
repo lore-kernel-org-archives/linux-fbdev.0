@@ -1,155 +1,44 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:34:31 +0000
-Subject: [PATCH 10/32] OMAPDSS: split overlay manager creation
-Message-Id: <1369906493-27538-11-git-send-email-tomi.valkeinen@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Sat, 11 May 2013 12:47:08 +0000
+Subject: [PATCH 02/15] video: ep93xx: remove unnecessary platform_set_drvdata()
+Message-Id: <000201ce4e45$a5da7330$f18f5990$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Split the function that creates overlay manager structs into two: one
-that creates just the structs, and one that creates the sysfs files for
-the manager.
+The driver core clears the driver data to NULL after device_release
+or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
+(device-core: Ensure drvdata = NULL when no driver is bound).
+Thus, it is not needed to manually clear the device driver data to NULL.
 
-This will help us use the overlay manager structs with omapdrm in the
-following patches, while still leaving the sysfs files out.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/omap2/dss/apply.c         |  9 ++++++---
- drivers/video/omap2/dss/dss.h           |  6 ++++--
- drivers/video/omap2/dss/manager-sysfs.c |  2 ++
- drivers/video/omap2/dss/manager.c       | 29 ++++++++++++++++++++++-------
- 4 files changed, 34 insertions(+), 12 deletions(-)
+ drivers/video/ep93xx-fb.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index b84bd99..74d1d00 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -1577,7 +1577,8 @@ int omapdss_compat_init(void)
+diff --git a/drivers/video/ep93xx-fb.c b/drivers/video/ep93xx-fb.c
+index ee1ee54..28a837d 100644
+--- a/drivers/video/ep93xx-fb.c
++++ b/drivers/video/ep93xx-fb.c
+@@ -595,7 +595,6 @@ failed_videomem:
+ 	fb_dealloc_cmap(&info->cmap);
+ failed_cmap:
+ 	kfree(info);
+-	platform_set_drvdata(pdev, NULL);
  
- 	apply_init_priv();
- 
--	dss_init_overlay_managers(pdev);
-+	dss_init_overlay_managers();
-+	dss_init_overlay_managers_sysfs(pdev);
- 	dss_init_overlays(pdev);
- 
- 	for (i = 0; i < omap_dss_get_num_overlay_managers(); i++) {
-@@ -1640,7 +1641,8 @@ err_disp_sysfs:
- 	dss_uninstall_mgr_ops();
- 
- err_mgr_ops:
--	dss_uninit_overlay_managers(pdev);
-+	dss_uninit_overlay_managers_sysfs(pdev);
-+	dss_uninit_overlay_managers();
- 	dss_uninit_overlays(pdev);
- 
- 	compat_refcnt--;
-@@ -1668,7 +1670,8 @@ void omapdss_compat_uninit(void)
- 
- 	dss_uninstall_mgr_ops();
- 
--	dss_uninit_overlay_managers(pdev);
-+	dss_uninit_overlay_managers_sysfs(pdev);
-+	dss_uninit_overlay_managers();
- 	dss_uninit_overlays(pdev);
- out:
- 	mutex_unlock(&compat_init_lock);
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 8475893..7964d3b 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -194,8 +194,10 @@ void display_uninit_sysfs(struct platform_device *pdev,
- 		struct omap_dss_device *dssdev);
- 
- /* manager */
--int dss_init_overlay_managers(struct platform_device *pdev);
--void dss_uninit_overlay_managers(struct platform_device *pdev);
-+int dss_init_overlay_managers(void);
-+void dss_uninit_overlay_managers(void);
-+int dss_init_overlay_managers_sysfs(struct platform_device *pdev);
-+void dss_uninit_overlay_managers_sysfs(struct platform_device *pdev);
- int dss_mgr_simple_check(struct omap_overlay_manager *mgr,
- 		const struct omap_overlay_manager_info *info);
- int dss_mgr_check_timings(struct omap_overlay_manager *mgr,
-diff --git a/drivers/video/omap2/dss/manager-sysfs.c b/drivers/video/omap2/dss/manager-sysfs.c
-index 5104681..72784b3 100644
---- a/drivers/video/omap2/dss/manager-sysfs.c
-+++ b/drivers/video/omap2/dss/manager-sysfs.c
-@@ -511,4 +511,6 @@ void dss_manager_kobj_uninit(struct omap_overlay_manager *mgr)
- {
- 	kobject_del(&mgr->kobj);
- 	kobject_put(&mgr->kobj);
-+
-+	memset(&mgr->kobj, 0, sizeof(mgr->kobj));
+ 	return err;
  }
-diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
-index 2551eaa..1aac9b4 100644
---- a/drivers/video/omap2/dss/manager.c
-+++ b/drivers/video/omap2/dss/manager.c
-@@ -36,9 +36,9 @@
- static int num_managers;
- static struct omap_overlay_manager *managers;
+@@ -614,7 +613,6 @@ static int ep93xxfb_remove(struct platform_device *pdev)
+ 		fbi->mach_info->teardown(pdev);
  
--int dss_init_overlay_managers(struct platform_device *pdev)
-+int dss_init_overlay_managers(void)
- {
--	int i, r;
-+	int i;
+ 	kfree(info);
+-	platform_set_drvdata(pdev, NULL);
  
- 	num_managers = dss_feat_get_num_mgrs();
- 
-@@ -76,6 +76,17 @@ int dss_init_overlay_managers(struct platform_device *pdev)
- 			dss_feat_get_supported_outputs(mgr->id);
- 
- 		INIT_LIST_HEAD(&mgr->overlays);
-+	}
-+
-+	return 0;
-+}
-+
-+int dss_init_overlay_managers_sysfs(struct platform_device *pdev)
-+{
-+	int i, r;
-+
-+	for (i = 0; i < num_managers; ++i) {
-+		struct omap_overlay_manager *mgr = &managers[i];
- 
- 		r = dss_manager_kobj_init(mgr, pdev);
- 		if (r)
-@@ -85,18 +96,22 @@ int dss_init_overlay_managers(struct platform_device *pdev)
  	return 0;
  }
- 
--void dss_uninit_overlay_managers(struct platform_device *pdev)
-+void dss_uninit_overlay_managers(void)
-+{
-+	kfree(managers);
-+	managers = NULL;
-+	num_managers = 0;
-+}
-+
-+void dss_uninit_overlay_managers_sysfs(struct platform_device *pdev)
- {
- 	int i;
- 
- 	for (i = 0; i < num_managers; ++i) {
- 		struct omap_overlay_manager *mgr = &managers[i];
-+
- 		dss_manager_kobj_uninit(mgr);
- 	}
--
--	kfree(managers);
--	managers = NULL;
--	num_managers = 0;
- }
- 
- int omap_dss_get_num_overlay_managers(void)
 -- 
-1.8.1.2
+1.7.2.5
+
 

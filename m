@@ -1,73 +1,70 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:34:50 +0000
-Subject: [PATCH 29/32] OMAPDSS: add module_get/put to omap_dss_get/put_device()
-Message-Id: <1369906493-27538-30-git-send-email-tomi.valkeinen@ti.com>
+From: Lars-Peter Clausen <lars@metafoo.de>
+Date: Sun, 12 May 2013 18:14:07 +0000
+Subject: [PATCH] video: jz4740-fb: Use clk_prepare_enable/clk_disable_unprepare
+Message-Id: <1368382447-4536-1-git-send-email-lars@metafoo.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-omap_dss_get_device() should be called for omap_dss_device before it is
-used to increase its refcount. Currently we only increase the refcount
-for the underlying device.
+In preparation to switching the jz4740 clk driver to the common clk framework
+update the clk enable/disable calls to clk_prepare_enable/clk_disable_unprepare.
 
-This patch adds managing the ref count to the underlying module also,
-which contains the ops for the omap_dss_device.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
 ---
- drivers/video/omap2/dss/display.c | 13 +++++++++++--
- include/video/omapdss.h           |  2 +-
- 2 files changed, 12 insertions(+), 3 deletions(-)
+ drivers/video/jz4740_fb.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
-index 8096764..0daf3e3 100644
---- a/drivers/video/omap2/dss/display.c
-+++ b/drivers/video/omap2/dss/display.c
-@@ -158,15 +158,24 @@ void omapdss_unregister_display(struct omap_dss_device *dssdev)
- }
- EXPORT_SYMBOL(omapdss_unregister_display);
+diff --git a/drivers/video/jz4740_fb.c b/drivers/video/jz4740_fb.c
+index 36979b4..5ed6ffc 100644
+--- a/drivers/video/jz4740_fb.c
++++ b/drivers/video/jz4740_fb.c
+@@ -471,7 +471,7 @@ static int jzfb_set_par(struct fb_info *info)
+ 	writel(ctrl, jzfb->base + JZ_REG_LCD_CTRL);
  
--void omap_dss_get_device(struct omap_dss_device *dssdev)
-+struct omap_dss_device *omap_dss_get_device(struct omap_dss_device *dssdev)
+ 	if (!jzfb->is_enabled)
+-		clk_disable(jzfb->ldclk);
++		clk_disable_unprepare(jzfb->ldclk);
+ 
+ 	mutex_unlock(&jzfb->lock);
+ 
+@@ -485,7 +485,7 @@ static void jzfb_enable(struct jzfb *jzfb)
  {
--	get_device(dssdev->dev);
-+	if (!try_module_get(dssdev->owner))
-+		return NULL;
-+
-+	if (get_device(dssdev->dev) = NULL) {
-+		module_put(dssdev->owner);
-+		return NULL;
-+	}
-+
-+	return dssdev;
- }
- EXPORT_SYMBOL(omap_dss_get_device);
+ 	uint32_t ctrl;
  
- void omap_dss_put_device(struct omap_dss_device *dssdev)
+-	clk_enable(jzfb->ldclk);
++	clk_prepare_enable(jzfb->ldclk);
+ 
+ 	jz_gpio_bulk_resume(jz_lcd_ctrl_pins, jzfb_num_ctrl_pins(jzfb));
+ 	jz_gpio_bulk_resume(jz_lcd_data_pins, jzfb_num_data_pins(jzfb));
+@@ -514,7 +514,7 @@ static void jzfb_disable(struct jzfb *jzfb)
+ 	jz_gpio_bulk_suspend(jz_lcd_ctrl_pins, jzfb_num_ctrl_pins(jzfb));
+ 	jz_gpio_bulk_suspend(jz_lcd_data_pins, jzfb_num_data_pins(jzfb));
+ 
+-	clk_disable(jzfb->ldclk);
++	clk_disable_unprepare(jzfb->ldclk);
+ }
+ 
+ static int jzfb_blank(int blank_mode, struct fb_info *info)
+@@ -693,7 +693,7 @@ static int jzfb_probe(struct platform_device *pdev)
+ 
+ 	fb_alloc_cmap(&fb->cmap, 256, 0);
+ 
+-	clk_enable(jzfb->ldclk);
++	clk_prepare_enable(jzfb->ldclk);
+ 	jzfb->is_enabled = 1;
+ 
+ 	writel(jzfb->framedesc->next, jzfb->base + JZ_REG_LCD_DA0);
+@@ -765,7 +765,7 @@ static int jzfb_suspend(struct device *dev)
+ static int jzfb_resume(struct device *dev)
  {
- 	put_device(dssdev->dev);
-+	module_put(dssdev->owner);
- }
- EXPORT_SYMBOL(omap_dss_put_device);
+ 	struct jzfb *jzfb = dev_get_drvdata(dev);
+-	clk_enable(jzfb->ldclk);
++	clk_prepare_enable(jzfb->ldclk);
  
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index c32d90e..b2e6160 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -766,7 +766,7 @@ void omap_dss_unregister_driver(struct omap_dss_driver *);
- int omapdss_register_display(struct omap_dss_device *dssdev);
- void omapdss_unregister_display(struct omap_dss_device *dssdev);
- 
--void omap_dss_get_device(struct omap_dss_device *dssdev);
-+struct omap_dss_device *omap_dss_get_device(struct omap_dss_device *dssdev);
- void omap_dss_put_device(struct omap_dss_device *dssdev);
- #define for_each_dss_dev(d) while ((d = omap_dss_get_next_device(d)) != NULL)
- struct omap_dss_device *omap_dss_get_next_device(struct omap_dss_device *from);
+ 	mutex_lock(&jzfb->lock);
+ 	if (jzfb->is_enabled)
 -- 
-1.8.1.2
+1.8.2.1
 

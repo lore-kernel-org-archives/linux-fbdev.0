@@ -1,222 +1,221 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:36:08 +0000
-Subject: [PATCH 15/27] OMAPDSS: DSI: Add ops
-Message-Id: <1369906580-27585-16-git-send-email-tomi.valkeinen@ti.com>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Mon, 13 May 2013 23:58:40 +0000
+Subject: [PATCH v3 1/9] Add arch_phys_wc_{add,del} to manipulate WC MTRRs if needed
+Message-Id: <89c33a8d4a367b33dfb3fe4af2ad85b59b02ec22.1368485053.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1368485053.git.luto@amacapital.net>
+In-Reply-To: <cover.1368485053.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>
 
-Add "ops" style method for using DSI functionality.
+Several drivers currently use mtrr_add through various #ifdef guards
+and/or drm wrappers.  The vast majority of them want to add WC MTRRs
+on x86 systems and don't actually need the MTRR if PAT (i.e.
+ioremap_wc, etc) are working.
 
-Ops style calls will allow us to have arbitrarily long display
-pipelines, where each entity can call ops in the previous display
-entity.
+arch_phys_wc_add and arch_phys_wc_del are new functions, available
+on all architectures and configurations, that add WC MTRRs on x86 if
+needed (and handle errors) and do nothing at all otherwise.  They're
+also easier to use than mtrr_add and mtrr_del, so the call sites can
+be simplified.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+As an added benefit, this will avoid wasting MTRRs and possibly
+warning pointlessly on PAT-supporting systems.
+
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
 ---
- drivers/video/omap2/dss/dsi.c | 93 +++++++++++++++++++++++++++++++++++++++++++
- include/video/omapdss.h       | 58 +++++++++++++++++++++++++++
- 2 files changed, 151 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 4ecc0c1..a6b7d85 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -383,6 +383,15 @@ static inline struct dsi_data *dsi_get_dsidrv_data(struct platform_device *dside
+Changes from v2:
+ - Make MTRR_TO_PHYS_WC_OFFSET a macro instead of open-coding it.
+ - Add phys_wc_to_mtrr_index to make drmGetMap keep working.  Sigh.
+
+ arch/x86/include/asm/io.h       |  7 ++++
+ arch/x86/include/asm/mtrr.h     | 10 +++++-
+ arch/x86/kernel/cpu/mtrr/main.c | 71 +++++++++++++++++++++++++++++++++++++++++
+ include/linux/io.h              | 25 +++++++++++++++
+ 4 files changed, 112 insertions(+), 1 deletion(-)
+
+diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
+index d8e8eef..34f69cb 100644
+--- a/arch/x86/include/asm/io.h
++++ b/arch/x86/include/asm/io.h
+@@ -345,4 +345,11 @@ extern bool xen_biovec_phys_mergeable(const struct bio_vec *vec1,
  
- static inline struct platform_device *dsi_get_dsidev_from_dssdev(struct omap_dss_device *dssdev)
+ #define IO_SPACE_LIMIT 0xffff
+ 
++#ifdef CONFIG_MTRR
++extern int __must_check arch_phys_wc_add(unsigned long base,
++					 unsigned long size);
++extern void arch_phys_wc_del(int handle);
++#define arch_phys_wc_add arch_phys_wc_add
++#endif
++
+ #endif /* _ASM_X86_IO_H */
+diff --git a/arch/x86/include/asm/mtrr.h b/arch/x86/include/asm/mtrr.h
+index e235582..f768f62 100644
+--- a/arch/x86/include/asm/mtrr.h
++++ b/arch/x86/include/asm/mtrr.h
+@@ -26,7 +26,10 @@
+ #include <uapi/asm/mtrr.h>
+ 
+ 
+-/*  The following functions are for use by other drivers  */
++/*
++ * The following functions are for use by other drivers that cannot use
++ * arch_phys_wc_add and arch_phys_wc_del.
++ */
+ # ifdef CONFIG_MTRR
+ extern u8 mtrr_type_lookup(u64 addr, u64 end);
+ extern void mtrr_save_fixed_ranges(void *);
+@@ -45,6 +48,7 @@ extern void mtrr_aps_init(void);
+ extern void mtrr_bp_restore(void);
+ extern int mtrr_trim_uncached_memory(unsigned long end_pfn);
+ extern int amd_special_default_mtrr(void);
++extern int phys_wc_to_mtrr_index(int handle);
+ #  else
+ static inline u8 mtrr_type_lookup(u64 addr, u64 end)
  {
-+	/* HACK: dssdev can be either the panel device, when using old API, or
-+	 * the dsi device itself, when using the new API. So we solve this for
-+	 * now by checking the dssdev->id. This will be removed when the old API
-+	 * is removed.
-+	 */
-+	if (dssdev->id = OMAP_DSS_OUTPUT_DSI1 ||
-+			dssdev->id = OMAP_DSS_OUTPUT_DSI2)
-+		return to_platform_device(dssdev->dev);
-+
- 	return to_platform_device(dssdev->output->dev);
+@@ -80,6 +84,10 @@ static inline int mtrr_trim_uncached_memory(unsigned long end_pfn)
+ static inline void mtrr_centaur_report_mcr(int mcr, u32 lo, u32 hi)
+ {
  }
- 
-@@ -5412,6 +5421,89 @@ static int dsi_probe_pdata(struct platform_device *dsidev)
- 	return 0;
- }
- 
-+static int dsi_connect(struct omap_dss_device *dssdev,
-+		struct omap_dss_device *dst)
++static inline int phys_wc_to_mtrr_index(int handle)
 +{
-+	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
-+	struct omap_overlay_manager *mgr;
-+	int r;
++	return -1;
++}
+ 
+ #define mtrr_ap_init() do {} while (0)
+ #define mtrr_bp_init() do {} while (0)
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index 726bf96..3533d4d 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -51,9 +51,13 @@
+ #include <asm/e820.h>
+ #include <asm/mtrr.h>
+ #include <asm/msr.h>
++#include <asm/pat.h>
+ 
+ #include "mtrr.h"
+ 
++/* arch_phys_wc_add returns an MTRR register index plus this offset. */
++#define MTRR_TO_PHYS_WC_OFFSET 1000
 +
-+	r = dsi_regulator_init(dsidev);
-+	if (r)
-+		return r;
+ u32 num_var_ranges;
+ 
+ unsigned int mtrr_usage_table[MTRR_MAX_VAR_RANGES];
+@@ -524,6 +528,73 @@ int mtrr_del(int reg, unsigned long base, unsigned long size)
+ }
+ EXPORT_SYMBOL(mtrr_del);
+ 
++/**
++ * arch_phys_wc_add - add a WC MTRR and handle errors if PAT is unavailable
++ * @base: Physical base address
++ * @size: Size of region
++ *
++ * If PAT is available, this does nothing.  If PAT is unavailable, it
++ * attempts to add a WC MTRR covering size bytes starting at base and
++ * logs an error if this fails.
++ *
++ * Drivers must store the return value to pass to mtrr_del_wc_if_needed,
++ * but drivers should not try to interpret that return value.
++ */
++int arch_phys_wc_add(unsigned long base, unsigned long size)
++{
++	int ret;
 +
-+	mgr = omap_dss_get_overlay_manager(dssdev->dispc_channel);
-+	if (!mgr)
-+		return -ENODEV;
++	if (pat_enabled)
++		return 0;  /* Success!  (We don't need to do anything.) */
 +
-+	r = dss_mgr_connect(mgr, dssdev);
-+	if (r)
-+		return r;
-+
-+	r = omapdss_output_set_device(dssdev, dst);
-+	if (r) {
-+		DSSERR("failed to connect output to new device: %s\n",
-+				dssdev->name);
-+		dss_mgr_disconnect(mgr, dssdev);
-+		return r;
++	ret = mtrr_add(base, size, MTRR_TYPE_WRCOMB, true);
++	if (ret < 0) {
++		pr_warn("Failed to add WC MTRR for [%p-%p]; performance may suffer.",
++			(void *)base, (void *)(base + size - 1));
++		return ret;
 +	}
-+
-+	return 0;
++	return ret + MTRR_TO_PHYS_WC_OFFSET;
 +}
++EXPORT_SYMBOL(arch_phys_wc_add);
 +
-+static void dsi_disconnect(struct omap_dss_device *dssdev,
-+		struct omap_dss_device *dst)
++/*
++ * arch_phys_wc_del - undoes arch_phys_wc_add
++ * @handle: Return value from arch_phys_wc_add
++ *
++ * This cleans up after mtrr_add_wc_if_needed.
++ *
++ * The API guarantees that mtrr_del_wc_if_needed(error code) and
++ * mtrr_del_wc_if_needed(0) do nothing.
++ */
++void arch_phys_wc_del(int handle)
 +{
-+	WARN_ON(dst != dssdev->device);
++	if (handle >= 1) {
++		WARN_ON(handle < MTRR_TO_PHYS_WC_OFFSET);
++		mtrr_del(handle - MTRR_TO_PHYS_WC_OFFSET, 0, 0);
++	}
++}
++EXPORT_SYMBOL(arch_phys_wc_del);
 +
-+	if (dst != dssdev->device)
-+		return;
++/*
++ * phys_wc_to_mtrr_index - translates arch_phys_wc_add's return value
++ * @handle: Return value from arch_phys_wc_add
++ *
++ * This will turn the return value from arch_phys_wc_add into an mtrr
++ * index suitable for debugging.
++ *
++ * Note: There is no legitimate use for this function, except possibly
++ * in printk line.  Alas there is an illegitimate use in some ancient
++ * drm ioctls.
++ */
++int phys_wc_to_mtrr_index(int handle)
++{
++	if (handle < MTRR_TO_PHYS_WC_OFFSET)
++		return -1;
++	else
++		return handle - MTRR_TO_PHYS_WC_OFFSET;
++}
++EXPORT_SYMBOL_GPL(phys_wc_to_mtrr_index);
 +
-+	omapdss_output_unset_device(dssdev);
-+
-+	if (dssdev->manager)
-+		dss_mgr_disconnect(dssdev->manager, dssdev);
+ /*
+  * HACK ALERT!
+  * These should be called implicitly, but we can't yet until all the initcall
+diff --git a/include/linux/io.h b/include/linux/io.h
+index 069e407..f4f42fa 100644
+--- a/include/linux/io.h
++++ b/include/linux/io.h
+@@ -76,4 +76,29 @@ void devm_ioremap_release(struct device *dev, void *res);
+ #define arch_has_dev_port()     (1)
+ #endif
+ 
++/*
++ * Some systems (x86 without PAT) have a somewhat reliable way to mark a
++ * physical address range such that uncached mappings will actually
++ * end up write-combining.  This facility should be used in conjunction
++ * with pgprot_writecombine, ioremap-wc, or set_memory_wc, since it has
++ * no effect if the per-page mechanisms are functional.
++ * (On x86 without PAT, these functions manipulate MTRRs.)
++ *
++ * arch_phys_del_wc(0) or arch_phys_del_wc(any error code) is guaranteed
++ * to have no effect.
++ */
++#ifndef arch_phys_wc_add
++static inline int __must_check arch_phys_wc_add(unsigned long base,
++						unsigned long size)
++{
++	return 0;  /* It worked (i.e. did nothing). */
 +}
 +
-+static const struct omapdss_dsi_ops dsi_ops = {
-+	.connect = dsi_connect,
-+	.disconnect = dsi_disconnect,
++static inline void arch_phys_wc_del(int handle)
++{
++}
 +
-+	.bus_lock = dsi_bus_lock,
-+	.bus_unlock = dsi_bus_unlock,
++#define arch_phys_wc_add arch_phys_wc_add
++#endif
 +
-+	.enable = omapdss_dsi_display_enable,
-+	.disable = omapdss_dsi_display_disable,
-+
-+	.enable_hs = omapdss_dsi_vc_enable_hs,
-+
-+	.configure_pins = omapdss_dsi_configure_pins,
-+	.set_config = omapdss_dsi_set_config,
-+
-+	.enable_video_output = dsi_enable_video_output,
-+	.disable_video_output = dsi_disable_video_output,
-+
-+	.update = omap_dsi_update,
-+
-+	.enable_te = omapdss_dsi_enable_te,
-+
-+	.request_vc = omap_dsi_request_vc,
-+	.set_vc_id = omap_dsi_set_vc_id,
-+	.release_vc = omap_dsi_release_vc,
-+
-+	.dcs_write = dsi_vc_dcs_write,
-+	.dcs_write_nosync = dsi_vc_dcs_write_nosync,
-+	.dcs_read = dsi_vc_dcs_read,
-+
-+	.gen_write = dsi_vc_generic_write,
-+	.gen_write_nosync = dsi_vc_generic_write_nosync,
-+	.gen_read = dsi_vc_generic_read,
-+
-+	.bta_sync = dsi_vc_send_bta_sync,
-+
-+	.set_max_rx_packet_size = dsi_vc_set_max_rx_packet_size,
-+};
-+
- static void dsi_init_output(struct platform_device *dsidev)
- {
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
-@@ -5424,6 +5516,7 @@ static void dsi_init_output(struct platform_device *dsidev)
- 	out->output_type = OMAP_DISPLAY_TYPE_DSI;
- 	out->name = dsi->module_id = 0 ? "dsi.0" : "dsi.1";
- 	out->dispc_channel = dsi_get_channel(dsi->module_id);
-+	out->ops.dsi = &dsi_ops;
- 	out->owner = THIS_MODULE;
- 
- 	omapdss_register_output(out);
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index f0aee54..f8c26c5 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -694,6 +694,63 @@ struct omapdss_hdmi_ops {
- 	void (*audio_stop)(struct omap_dss_device *dssdev);
- };
- 
-+struct omapdss_dsi_ops {
-+	int (*connect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+	void (*disconnect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+
-+	int (*enable)(struct omap_dss_device *dssdev);
-+	void (*disable)(struct omap_dss_device *dssdev, bool disconnect_lanes,
-+			bool enter_ulps);
-+
-+	/* bus configuration */
-+	int (*set_config)(struct omap_dss_device *dssdev,
-+			const struct omap_dss_dsi_config *cfg);
-+	int (*configure_pins)(struct omap_dss_device *dssdev,
-+			const struct omap_dsi_pin_config *pin_cfg);
-+
-+	void (*enable_hs)(struct omap_dss_device *dssdev, int channel,
-+			bool enable);
-+	int (*enable_te)(struct omap_dss_device *dssdev, bool enable);
-+
-+	int (*update)(struct omap_dss_device *dssdev, int channel,
-+			void (*callback)(int, void *), void *data);
-+
-+	void (*bus_lock)(struct omap_dss_device *dssdev);
-+	void (*bus_unlock)(struct omap_dss_device *dssdev);
-+
-+	int (*enable_video_output)(struct omap_dss_device *dssdev, int channel);
-+	void (*disable_video_output)(struct omap_dss_device *dssdev,
-+			int channel);
-+
-+	int (*request_vc)(struct omap_dss_device *dssdev, int *channel);
-+	int (*set_vc_id)(struct omap_dss_device *dssdev, int channel,
-+			int vc_id);
-+	void (*release_vc)(struct omap_dss_device *dssdev, int channel);
-+
-+	/* data transfer */
-+	int (*dcs_write)(struct omap_dss_device *dssdev, int channel,
-+			u8 *data, int len);
-+	int (*dcs_write_nosync)(struct omap_dss_device *dssdev, int channel,
-+			u8 *data, int len);
-+	int (*dcs_read)(struct omap_dss_device *dssdev, int channel, u8 dcs_cmd,
-+			u8 *data, int len);
-+
-+	int (*gen_write)(struct omap_dss_device *dssdev, int channel,
-+			u8 *data, int len);
-+	int (*gen_write_nosync)(struct omap_dss_device *dssdev, int channel,
-+			u8 *data, int len);
-+	int (*gen_read)(struct omap_dss_device *dssdev, int channel,
-+			u8 *reqdata, int reqlen,
-+			u8 *data, int len);
-+
-+	int (*bta_sync)(struct omap_dss_device *dssdev, int channel);
-+
-+	int (*set_max_rx_packet_size)(struct omap_dss_device *dssdev,
-+			int channel, u16 plen);
-+};
-+
- struct omap_dss_device {
- 	/* old device, to be removed */
- 	struct device old_dev;
-@@ -772,6 +829,7 @@ struct omap_dss_device {
- 		const struct omapdss_dvi_ops *dvi;
- 		const struct omapdss_hdmi_ops *hdmi;
- 		const struct omapdss_atv_ops *atv;
-+		const struct omapdss_dsi_ops *dsi;
- 	} ops;
- 
- 	/* helper variable for driver suspend/resume */
+ #endif /* _LINUX_IO_H */
 -- 
-1.8.1.2
+1.8.1.4
 

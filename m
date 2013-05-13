@@ -1,73 +1,74 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:35:55 +0000
-Subject: [PATCH 02/27] OMAPDSS: modify get/find functions to go through the device chain
-Message-Id: <1369906580-27585-3-git-send-email-tomi.valkeinen@ti.com>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Mon, 13 May 2013 23:58:47 +0000
+Subject: [PATCH v3 8/9] drm: Remove mtrr_add and mtrr_del fallback hack for non-MTRR systems
+Message-Id: <59d447ca22519276803d6b12b5ce125e8cb77c19.1368485053.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1368485053.git.luto@amacapital.net>
+In-Reply-To: <cover.1368485053.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>
 
-In the future will have arbitrarily long video pipeline chains, instead
-of the current two-entities-per-pipeline model.
+There are no users left in drivers/gpu.
 
-This patch changes the affected get/find style functions so that they
-properly go through the video pipeline chain, for example when getting
-the overlay manager connected to a given display.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
 ---
- drivers/video/omap2/dss/apply.c  | 14 +++++++++++++-
- drivers/video/omap2/dss/output.c |  8 +++++++-
- 2 files changed, 20 insertions(+), 2 deletions(-)
+ include/drm/drmP.h         |  5 +----
+ include/drm/drm_os_linux.h | 16 ----------------
+ 2 files changed, 1 insertion(+), 20 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 752b985..d6212d63 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -422,7 +422,19 @@ static void wait_pending_extra_info_updates(void)
+diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+index 3e6cfa0..7a9fef5 100644
+--- a/include/drm/drmP.h
++++ b/include/drm/drmP.h
+@@ -55,16 +55,13 @@
+ #include <linux/mm.h>
+ #include <linux/cdev.h>
+ #include <linux/mutex.h>
++#include <linux/io.h>
+ #include <linux/slab.h>
+ #if defined(__alpha__) || defined(__powerpc__)
+ #include <asm/pgtable.h>	/* For pte_wrprotect */
+ #endif
+-#include <asm/io.h>
+ #include <asm/mman.h>
+ #include <asm/uaccess.h>
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+ #if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
+ #include <linux/types.h>
+ #include <linux/agp_backend.h>
+diff --git a/include/drm/drm_os_linux.h b/include/drm/drm_os_linux.h
+index 3933691..35c7c2b 100644
+--- a/include/drm/drm_os_linux.h
++++ b/include/drm/drm_os_linux.h
+@@ -65,22 +65,6 @@ struct no_agp_kern {
+ #define DRM_AGP_KERN            struct no_agp_kern
+ #endif
  
- static struct omap_dss_device *dss_mgr_get_device(struct omap_overlay_manager *mgr)
- {
--	return mgr->output ? mgr->output->device : NULL;
-+	struct omap_dss_device *dssdev;
-+
-+	dssdev = mgr->output;
-+	if (dssdev = NULL)
-+		return NULL;
-+
-+	while (dssdev->device)
-+		dssdev = dssdev->device;
-+
-+	if (dssdev->driver)
-+		return dssdev;
-+	else
-+		return NULL;
- }
- 
- static struct omap_dss_device *dss_ovl_get_device(struct omap_overlay *ovl)
-diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
-index 0ba168e..3f5c0a7 100644
---- a/drivers/video/omap2/dss/output.c
-+++ b/drivers/video/omap2/dss/output.c
-@@ -146,7 +146,13 @@ EXPORT_SYMBOL(omap_dss_find_output_by_node);
- 
- struct omap_dss_device *omapdss_find_output_from_display(struct omap_dss_device *dssdev)
- {
--	return omap_dss_get_device(dssdev->output);
-+	while (dssdev->output)
-+		dssdev = dssdev->output;
-+
-+	if (dssdev->id != 0)
-+		return omap_dss_get_device(dssdev);
-+
-+	return NULL;
- }
- EXPORT_SYMBOL(omapdss_find_output_from_display);
- 
+-#if !(__OS_HAS_MTRR)
+-static __inline__ int mtrr_add(unsigned long base, unsigned long size,
+-			       unsigned int type, char increment)
+-{
+-	return -ENODEV;
+-}
+-
+-static __inline__ int mtrr_del(int reg, unsigned long base, unsigned long size)
+-{
+-	return -ENODEV;
+-}
+-
+-#define MTRR_TYPE_WRCOMB     1
+-
+-#endif
+-
+ /** Other copying of data to kernel space */
+ #define DRM_COPY_FROM_USER(arg1, arg2, arg3)		\
+ 	copy_from_user(arg1, arg2, arg3)
 -- 
-1.8.1.2
+1.8.1.4
 

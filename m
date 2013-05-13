@@ -1,77 +1,332 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 27 May 2013 08:36:16 +0000
-Subject: [PATCH] console/dummy: Move screen size selection from CPP to Kconfig
-Message-Id: <1369643776-20516-1-git-send-email-geert@linux-m68k.org>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Mon, 13 May 2013 23:58:41 +0000
+Subject: [PATCH v3 2/9] drm (ast,cirrus,mgag200,nouveau,savage,vmwgfx): Remove drm_mtrr_{add,del}
+Message-Id: <96d2f54b2259e6d27db61bae7a2007df4e283968.1368485053.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1368485053.git.luto@amacapital.net>
+In-Reply-To: <cover.1368485053.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>
 
-PA-RISC already handled the dummy console screen size selection in Kconfig,
-so generalize this to other platforms.
+This replaces drm_mtrr_{add,del} with arch_phys_wc_{add,del}.  The
+interface is simplified (because the base and size parameters to
+drm_mtrr_del never did anything), and it no longer adds MTRRs on
+systems that don't need them.
 
-ARM keeps on using screen_info, which is filled in by platform-specific
-code, or from ATAGS.
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
 ---
- drivers/video/console/Kconfig    |   16 ++++++++++------
- drivers/video/console/dummycon.c |    5 +----
- 2 files changed, 11 insertions(+), 10 deletions(-)
+ drivers/gpu/drm/ast/ast_ttm.c         | 13 +++--------
+ drivers/gpu/drm/cirrus/cirrus_ttm.c   | 15 ++++--------
+ drivers/gpu/drm/mgag200/mgag200_ttm.c | 14 ++++--------
+ drivers/gpu/drm/nouveau/nouveau_ttm.c | 13 ++++-------
+ drivers/gpu/drm/savage/savage_bci.c   | 43 ++++++++++++-----------------------
+ drivers/gpu/drm/savage/savage_drv.h   |  5 +---
+ drivers/gpu/drm/vmwgfx/vmwgfx_drv.c   | 10 ++++----
+ include/drm/drmP.h                    | 29 -----------------------
+ 8 files changed, 35 insertions(+), 107 deletions(-)
 
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index 8af6ad3..7bfe7e1 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -76,18 +76,22 @@ config DUMMY_CONSOLE
+diff --git a/drivers/gpu/drm/ast/ast_ttm.c b/drivers/gpu/drm/ast/ast_ttm.c
+index 3602731..c4574fd 100644
+--- a/drivers/gpu/drm/ast/ast_ttm.c
++++ b/drivers/gpu/drm/ast/ast_ttm.c
+@@ -271,26 +271,19 @@ int ast_mm_init(struct ast_private *ast)
+ 		return ret;
+ 	}
  
- config DUMMY_CONSOLE_COLUMNS
-         int "Initial number of console screen columns"
--        depends on PARISC && DUMMY_CONSOLE
--        default "160"
-+        depends on DUMMY_CONSOLE && !ARM
-+        default 160 if PARISC
-+        default 80
-         help
--          The default value is 160, which should fit a 1280x1024 monitor.
-+          On PA-RISC, the default value is 160, which should fit a 1280x1024
-+          monitor.
-           Select 80 if you use a 640x480 resolution by default.
+-	ast->fb_mtrr = drm_mtrr_add(pci_resource_start(dev->pdev, 0),
+-				    pci_resource_len(dev->pdev, 0),
+-				    DRM_MTRR_WC);
++	ast->fb_mtrr = arch_phys_wc_add(pci_resource_start(dev->pdev, 0),
++					pci_resource_len(dev->pdev, 0));
  
- config DUMMY_CONSOLE_ROWS
-         int "Initial number of console screen rows"
--        depends on PARISC && DUMMY_CONSOLE
--        default "64"
-+        depends on DUMMY_CONSOLE && !ARM
-+        default 64 if PARISC
-+        default 25
-         help
--          The default value is 64, which should fit a 1280x1024 monitor.
-+          On PA-RISC, the default value is 64, which should fit a 1280x1024
-+          monitor.
-           Select 25 if you use a 640x480 resolution by default.
+ 	return 0;
+ }
  
- config FRAMEBUFFER_CONSOLE
-diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
-index b63860f..6b1a5d1 100644
---- a/drivers/video/console/dummycon.c
-+++ b/drivers/video/console/dummycon.c
-@@ -20,13 +20,10 @@
- #if defined(__arm__)
- #define DUMMY_COLUMNS	screen_info.orig_video_cols
- #define DUMMY_ROWS	screen_info.orig_video_lines
--#elif defined(__hppa__)
-+#else
- /* set by Kconfig. Use 80x25 for 640x480 and 160x64 for 1280x1024 */
- #define DUMMY_COLUMNS	CONFIG_DUMMY_CONSOLE_COLUMNS
- #define DUMMY_ROWS	CONFIG_DUMMY_CONSOLE_ROWS
--#else
--#define DUMMY_COLUMNS	80
--#define DUMMY_ROWS	25
+ void ast_mm_fini(struct ast_private *ast)
+ {
+-	struct drm_device *dev = ast->dev;
+ 	ttm_bo_device_release(&ast->ttm.bdev);
+ 
+ 	ast_ttm_global_release(ast);
+ 
+-	if (ast->fb_mtrr >= 0) {
+-		drm_mtrr_del(ast->fb_mtrr,
+-			     pci_resource_start(dev->pdev, 0),
+-			     pci_resource_len(dev->pdev, 0), DRM_MTRR_WC);
+-		ast->fb_mtrr = -1;
+-	}
++	arch_phys_wc_del(ast->fb_mtrr);
+ }
+ 
+ void ast_ttm_placement(struct ast_bo *bo, int domain)
+diff --git a/drivers/gpu/drm/cirrus/cirrus_ttm.c b/drivers/gpu/drm/cirrus/cirrus_ttm.c
+index 1413a26..09f06d3 100644
+--- a/drivers/gpu/drm/cirrus/cirrus_ttm.c
++++ b/drivers/gpu/drm/cirrus/cirrus_ttm.c
+@@ -271,9 +271,8 @@ int cirrus_mm_init(struct cirrus_device *cirrus)
+ 		return ret;
+ 	}
+ 
+-	cirrus->fb_mtrr = drm_mtrr_add(pci_resource_start(dev->pdev, 0),
+-				    pci_resource_len(dev->pdev, 0),
+-				    DRM_MTRR_WC);
++	cirrus->fb_mtrr = arch_phys_wc_add(pci_resource_start(dev->pdev, 0),
++					   pci_resource_len(dev->pdev, 0));
+ 
+ 	cirrus->mm_inited = true;
+ 	return 0;
+@@ -281,8 +280,6 @@ int cirrus_mm_init(struct cirrus_device *cirrus)
+ 
+ void cirrus_mm_fini(struct cirrus_device *cirrus)
+ {
+-	struct drm_device *dev = cirrus->dev;
+-
+ 	if (!cirrus->mm_inited)
+ 		return;
+ 
+@@ -290,12 +287,8 @@ void cirrus_mm_fini(struct cirrus_device *cirrus)
+ 
+ 	cirrus_ttm_global_release(cirrus);
+ 
+-	if (cirrus->fb_mtrr >= 0) {
+-		drm_mtrr_del(cirrus->fb_mtrr,
+-			     pci_resource_start(dev->pdev, 0),
+-			     pci_resource_len(dev->pdev, 0), DRM_MTRR_WC);
+-		cirrus->fb_mtrr = -1;
+-	}
++	arch_phys_wc_del(cirrus->fb_mtrr);
++	cirrus->fb_mtrr = 0;
+ }
+ 
+ void cirrus_ttm_placement(struct cirrus_bo *bo, int domain)
+diff --git a/drivers/gpu/drm/mgag200/mgag200_ttm.c b/drivers/gpu/drm/mgag200/mgag200_ttm.c
+index 8fc9d92..5c6f3c8 100644
+--- a/drivers/gpu/drm/mgag200/mgag200_ttm.c
++++ b/drivers/gpu/drm/mgag200/mgag200_ttm.c
+@@ -270,26 +270,20 @@ int mgag200_mm_init(struct mga_device *mdev)
+ 		return ret;
+ 	}
+ 
+-	mdev->fb_mtrr = drm_mtrr_add(pci_resource_start(dev->pdev, 0),
+-				    pci_resource_len(dev->pdev, 0),
+-				    DRM_MTRR_WC);
++	mdev->fb_mtrr = arch_phys_wc_add(pci_resource_start(dev->pdev, 0),
++					 pci_resource_len(dev->pdev, 0));
+ 
+ 	return 0;
+ }
+ 
+ void mgag200_mm_fini(struct mga_device *mdev)
+ {
+-	struct drm_device *dev = mdev->dev;
+ 	ttm_bo_device_release(&mdev->ttm.bdev);
+ 
+ 	mgag200_ttm_global_release(mdev);
+ 
+-	if (mdev->fb_mtrr >= 0) {
+-		drm_mtrr_del(mdev->fb_mtrr,
+-			     pci_resource_start(dev->pdev, 0),
+-			     pci_resource_len(dev->pdev, 0), DRM_MTRR_WC);
+-		mdev->fb_mtrr = -1;
+-	}
++	arch_phys_wc_del(mdev->fb_mtrr);
++	mdev->fb_mtrr = 0;
+ }
+ 
+ void mgag200_ttm_placement(struct mgag200_bo *bo, int domain)
+diff --git a/drivers/gpu/drm/nouveau/nouveau_ttm.c b/drivers/gpu/drm/nouveau/nouveau_ttm.c
+index 9be9cb5..63fa6a5 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_ttm.c
++++ b/drivers/gpu/drm/nouveau/nouveau_ttm.c
+@@ -377,9 +377,8 @@ nouveau_ttm_init(struct nouveau_drm *drm)
+ 		return ret;
+ 	}
+ 
+-	drm->ttm.mtrr = drm_mtrr_add(pci_resource_start(dev->pdev, 1),
+-				     pci_resource_len(dev->pdev, 1),
+-				     DRM_MTRR_WC);
++	drm->ttm.mtrr = arch_phys_wc_add(pci_resource_start(dev->pdev, 1),
++					 pci_resource_len(dev->pdev, 1));
+ 
+ 	/* GART init */
+ 	if (drm->agp.stat != ENABLED) {
+@@ -414,10 +413,6 @@ nouveau_ttm_fini(struct nouveau_drm *drm)
+ 
+ 	nouveau_ttm_global_release(drm);
+ 
+-	if (drm->ttm.mtrr >= 0) {
+-		drm_mtrr_del(drm->ttm.mtrr,
+-			     pci_resource_start(drm->dev->pdev, 1),
+-			     pci_resource_len(drm->dev->pdev, 1), DRM_MTRR_WC);
+-		drm->ttm.mtrr = -1;
+-	}
++	arch_phys_wc_del(drm->ttm.mtrr);
++	drm->ttm.mtrr = 0;
+ }
+diff --git a/drivers/gpu/drm/savage/savage_bci.c b/drivers/gpu/drm/savage/savage_bci.c
+index b55c1d6..bd6b2cf 100644
+--- a/drivers/gpu/drm/savage/savage_bci.c
++++ b/drivers/gpu/drm/savage/savage_bci.c
+@@ -570,9 +570,6 @@ int savage_driver_firstopen(struct drm_device *dev)
+ 	unsigned int fb_rsrc, aper_rsrc;
+ 	int ret = 0;
+ 
+-	dev_priv->mtrr[0].handle = -1;
+-	dev_priv->mtrr[1].handle = -1;
+-	dev_priv->mtrr[2].handle = -1;
+ 	if (S3_SAVAGE3D_SERIES(dev_priv->chipset)) {
+ 		fb_rsrc = 0;
+ 		fb_base = pci_resource_start(dev->pdev, 0);
+@@ -584,21 +581,14 @@ int savage_driver_firstopen(struct drm_device *dev)
+ 		if (pci_resource_len(dev->pdev, 0) = 0x08000000) {
+ 			/* Don't make MMIO write-cobining! We need 3
+ 			 * MTRRs. */
+-			dev_priv->mtrr[0].base = fb_base;
+-			dev_priv->mtrr[0].size = 0x01000000;
+-			dev_priv->mtrr[0].handle -			    drm_mtrr_add(dev_priv->mtrr[0].base,
+-				         dev_priv->mtrr[0].size, DRM_MTRR_WC);
+-			dev_priv->mtrr[1].base = fb_base + 0x02000000;
+-			dev_priv->mtrr[1].size = 0x02000000;
+-			dev_priv->mtrr[1].handle -			    drm_mtrr_add(dev_priv->mtrr[1].base,
+-					 dev_priv->mtrr[1].size, DRM_MTRR_WC);
+-			dev_priv->mtrr[2].base = fb_base + 0x04000000;
+-			dev_priv->mtrr[2].size = 0x04000000;
+-			dev_priv->mtrr[2].handle -			    drm_mtrr_add(dev_priv->mtrr[2].base,
+-					 dev_priv->mtrr[2].size, DRM_MTRR_WC);
++			dev_priv->mtrr_handles[0] +				arch_phys_wc_add(fb_base, 0x01000000);
++			dev_priv->mtrr_handles[1] +				arch_phys_wc_add(fb_base + 0x02000000,
++						 0x02000000);
++			dev_priv->mtrr_handles[2] +				arch_phys_wc_add(fb_base + 0x04000000,
++						0x04000000);
+ 		} else {
+ 			DRM_ERROR("strange pci_resource_len %08llx\n",
+ 				  (unsigned long long)
+@@ -616,11 +606,9 @@ int savage_driver_firstopen(struct drm_device *dev)
+ 		if (pci_resource_len(dev->pdev, 1) = 0x08000000) {
+ 			/* Can use one MTRR to cover both fb and
+ 			 * aperture. */
+-			dev_priv->mtrr[0].base = fb_base;
+-			dev_priv->mtrr[0].size = 0x08000000;
+-			dev_priv->mtrr[0].handle -			    drm_mtrr_add(dev_priv->mtrr[0].base,
+-					 dev_priv->mtrr[0].size, DRM_MTRR_WC);
++			dev_priv->mtrr_handles[0] +				arch_phys_wc_add(fb_base,
++						 0x08000000);
+ 		} else {
+ 			DRM_ERROR("strange pci_resource_len %08llx\n",
+ 				  (unsigned long long)
+@@ -660,11 +648,10 @@ void savage_driver_lastclose(struct drm_device *dev)
+ 	drm_savage_private_t *dev_priv = dev->dev_private;
+ 	int i;
+ 
+-	for (i = 0; i < 3; ++i)
+-		if (dev_priv->mtrr[i].handle >= 0)
+-			drm_mtrr_del(dev_priv->mtrr[i].handle,
+-				 dev_priv->mtrr[i].base,
+-				 dev_priv->mtrr[i].size, DRM_MTRR_WC);
++	for (i = 0; i < 3; ++i) {
++		arch_phys_wc_del(dev_priv->mtrr_handles[i]);
++		dev_priv->mtrr_handles[i] = 0;
++	}
+ }
+ 
+ int savage_driver_unload(struct drm_device *dev)
+diff --git a/drivers/gpu/drm/savage/savage_drv.h b/drivers/gpu/drm/savage/savage_drv.h
+index df2aac6..c05082a 100644
+--- a/drivers/gpu/drm/savage/savage_drv.h
++++ b/drivers/gpu/drm/savage/savage_drv.h
+@@ -160,10 +160,7 @@ typedef struct drm_savage_private {
+ 	drm_local_map_t *cmd_dma;
+ 	drm_local_map_t fake_dma;
+ 
+-	struct {
+-		int handle;
+-		unsigned long base, size;
+-	} mtrr[3];
++	int mtrr_handles[3];
+ 
+ 	/* BCI and status-related stuff */
+ 	volatile uint32_t *status_ptr, *bci_ptr;
+diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c b/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
+index 07dfd82..78e2164 100644
+--- a/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
++++ b/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
+@@ -565,8 +565,8 @@ static int vmw_driver_load(struct drm_device *dev, unsigned long chipset)
+ 		dev_priv->has_gmr = false;
+ 	}
+ 
+-	dev_priv->mmio_mtrr = drm_mtrr_add(dev_priv->mmio_start,
+-					   dev_priv->mmio_size, DRM_MTRR_WC);
++	dev_priv->mmio_mtrr = arch_phys_wc_add(dev_priv->mmio_start,
++					       dev_priv->mmio_size);
+ 
+ 	dev_priv->mmio_virt = ioremap_wc(dev_priv->mmio_start,
+ 					 dev_priv->mmio_size);
+@@ -664,8 +664,7 @@ out_no_device:
+ out_err4:
+ 	iounmap(dev_priv->mmio_virt);
+ out_err3:
+-	drm_mtrr_del(dev_priv->mmio_mtrr, dev_priv->mmio_start,
+-		     dev_priv->mmio_size, DRM_MTRR_WC);
++	arch_phys_wc_del(dev_priv->mmio_mtrr);
+ 	if (dev_priv->has_gmr)
+ 		(void) ttm_bo_clean_mm(&dev_priv->bdev, VMW_PL_GMR);
+ 	(void)ttm_bo_clean_mm(&dev_priv->bdev, TTM_PL_VRAM);
+@@ -709,8 +708,7 @@ static int vmw_driver_unload(struct drm_device *dev)
+ 
+ 	ttm_object_device_release(&dev_priv->tdev);
+ 	iounmap(dev_priv->mmio_virt);
+-	drm_mtrr_del(dev_priv->mmio_mtrr, dev_priv->mmio_start,
+-		     dev_priv->mmio_size, DRM_MTRR_WC);
++	arch_phys_wc_del(dev_priv->mmio_mtrr);
+ 	if (dev_priv->has_gmr)
+ 		(void)ttm_bo_clean_mm(&dev_priv->bdev, VMW_PL_GMR);
+ 	(void)ttm_bo_clean_mm(&dev_priv->bdev, TTM_PL_VRAM);
+diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+index 2d94d74..3e6cfa0 100644
+--- a/include/drm/drmP.h
++++ b/include/drm/drmP.h
+@@ -1249,37 +1249,8 @@ static inline int drm_core_has_MTRR(struct drm_device *dev)
+ {
+ 	return drm_core_check_feature(dev, DRIVER_USE_MTRR);
+ }
+-
+-#define DRM_MTRR_WC		MTRR_TYPE_WRCOMB
+-
+-static inline int drm_mtrr_add(unsigned long offset, unsigned long size,
+-			       unsigned int flags)
+-{
+-	return mtrr_add(offset, size, flags, 1);
+-}
+-
+-static inline int drm_mtrr_del(int handle, unsigned long offset,
+-			       unsigned long size, unsigned int flags)
+-{
+-	return mtrr_del(handle, offset, size);
+-}
+-
+ #else
+ #define drm_core_has_MTRR(dev) (0)
+-
+-#define DRM_MTRR_WC		0
+-
+-static inline int drm_mtrr_add(unsigned long offset, unsigned long size,
+-			       unsigned int flags)
+-{
+-	return 0;
+-}
+-
+-static inline int drm_mtrr_del(int handle, unsigned long offset,
+-			       unsigned long size, unsigned int flags)
+-{
+-	return 0;
+-}
  #endif
  
- static const char *dummycon_startup(void)
+ static inline void drm_device_set_unplugged(struct drm_device *dev)
 -- 
-1.7.0.4
+1.8.1.4
 

@@ -1,47 +1,45 @@
-From: Kevin Hilman <khilman@linaro.org>
-Date: Fri, 31 May 2013 19:31:43 +0000
-Subject: Re: [PATCH 05/32] OMAPDSS: fix dss_get_ctx_loss_count for DT
-Message-Id: <871u8nymhs.fsf@linaro.org>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Mon, 13 May 2013 23:58:45 +0000
+Subject: [PATCH v3 6/9] radeon: Switch to arch_phys_wc_add and add a missing ..._del
+Message-Id: <bf7788cfd4695d05f2b414735744105906650e42.1368485053.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
-	<1369906493-27538-6-git-send-email-tomi.valkeinen@ti.com>
-	<874ndk5sse.fsf@linaro.org> <51A8BF17.4050209@ti.com>
-In-Reply-To: <51A8BF17.4050209@ti.com> (Grygorii Strashko's message of "Fri,
-	31 May 2013 18:17:43 +0300")
+References: <cover.1368485053.git.luto@amacapital.net>
+In-Reply-To: <cover.1368485053.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>
 
-Hi Grygorii,
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+---
+ drivers/gpu/drm/radeon/radeon_object.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Grygorii Strashko <grygorii.strashko@ti.com> writes:
+diff --git a/drivers/gpu/drm/radeon/radeon_object.c b/drivers/gpu/drm/radeon/radeon_object.c
+index d3aface..15cd34b 100644
+--- a/drivers/gpu/drm/radeon/radeon_object.c
++++ b/drivers/gpu/drm/radeon/radeon_object.c
+@@ -321,8 +321,8 @@ void radeon_bo_force_delete(struct radeon_device *rdev)
+ int radeon_bo_init(struct radeon_device *rdev)
+ {
+ 	/* Add an MTRR for the VRAM */
+-	rdev->mc.vram_mtrr = mtrr_add(rdev->mc.aper_base, rdev->mc.aper_size,
+-			MTRR_TYPE_WRCOMB, 1);
++	rdev->mc.vram_mtrr = arch_phys_wc_add(rdev->mc.aper_base,
++					      rdev->mc.aper_size);
+ 	DRM_INFO("Detected VRAM RAM=%lluM, BAR=%lluM\n",
+ 		rdev->mc.mc_vram_size >> 20,
+ 		(unsigned long long)rdev->mc.aper_size >> 20);
+@@ -334,6 +334,7 @@ int radeon_bo_init(struct radeon_device *rdev)
+ void radeon_bo_fini(struct radeon_device *rdev)
+ {
+ 	radeon_ttm_fini(rdev);
++	arch_phys_wc_del(rdev->mc.vram_mtrr);
+ }
+ 
+ void radeon_bo_list_add_object(struct radeon_bo_list *lobj,
+-- 
+1.8.1.4
 
-[...]
-
-> I've a question:
-> Why don't add API in "Kernel/Base PM" framework for context lost detection?
-> Like pm_was_ctx_lost().
-
-I'm not aware of any proposals to do this in a generic way.  Feel free
-to propose one if you're so moved.
-
-One complexity is that such a call is not needed on platforms that use
-generic power domains (not OMAP). With gen_pd, the runtime PM callbacks
-do not get called unless the power domains actually lose power.  So for
-gen_pd, you assume context has been lost when your runtime PM callbacks
-are called.
-
-This is a bit different than how we've done it on OMAP, and there's been
-some work in exploring how to adapt OMAP to gen_pd, but there's not
-anyone actively working on it at the moment.
-
-That being said, I'm still leaning towards simply removing the context
-loss logic from all the OMAP drivers.  This feature adds a relatively
-minor optimization, and a more configurable optimization could be done
-using runtime PM autosuspend timeouts (configurable from userspace.)
-Combined with the fact that adoption of gen_pd means we don't need it,
-I'm included to drop it all together.
-
-Kevin

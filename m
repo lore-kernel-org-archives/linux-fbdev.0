@@ -1,63 +1,137 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:36:05 +0000
-Subject: [PATCH 12/27] OMAPDSS: DVI: Add ops
-Message-Id: <1369906580-27585-13-git-send-email-tomi.valkeinen@ti.com>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Mon, 13 May 2013 23:58:43 +0000
+Subject: [PATCH v3 4/9] drm,agpgart: Use pgprot_writecombine for AGP maps and make the MTRR optional
+Message-Id: <809e6805f78212758097c0a74f9f59053cfdafaf.1368485053.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1368485053.git.luto@amacapital.net>
+In-Reply-To: <cover.1368485053.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>
 
-Add "ops" style method for using DVI functionality.
+I'm not sure I understand the intent of the previous behavior.  mmap
+on /dev/agpgart and DRM_AGP maps had no cache flags set, so they
+would be fully cacheable.  But the DRM code (most of the time) would
+add a write-combining MTRR that would change the effective memory
+type to WC.
 
-Ops style calls will allow us to have arbitrarily long display
-pipelines, where each entity can call ops in the previous display
-entity.
+The new behavior just requests WC explicitly for all AGP maps.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+If there is any code out there that expects cacheable access to the
+AGP aperture (because the drm driver doesn't request an MTRR or
+because it's using /dev/agpgart directly), then it will now end up
+with a UC or WC mapping, depending on the architecture and PAT
+availability.  But cacheable access to the aperture seems like it's
+asking for trouble, because, AIUI, the aperture is an alias of RAM.
+
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
 ---
- include/video/omapdss.h | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
 
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 79e9ec8..9f87fc0 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -611,6 +611,23 @@ struct omapdss_sdi_ops {
- 	void (*set_datapairs)(struct omap_dss_device *dssdev, int datapairs);
- };
+It's conceivable that libpciaccess could have issues with this due to
+memtype conflicts, but I think this is unlikely (as long as a WC
+mapping gets there first, I think the conflict resolution rules will
+all work out).  In any case, everything that maps the AGP aperture
+ought to be using /dev/agpgart or the DRM API, in which case
+everything should be okay.
+
+I don't have anything with an AGP slot to test AFAIK.
+
+ drivers/char/agp/frontend.c |  8 +++++---
+ drivers/gpu/drm/drm_pci.c   |  8 ++++----
+ drivers/gpu/drm/drm_stub.c  | 10 ++--------
+ drivers/gpu/drm/drm_vm.c    | 11 ++++-------
+ 4 files changed, 15 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/char/agp/frontend.c b/drivers/char/agp/frontend.c
+index 2e04433..1b19239 100644
+--- a/drivers/char/agp/frontend.c
++++ b/drivers/char/agp/frontend.c
+@@ -603,7 +603,8 @@ static int agp_mmap(struct file *file, struct vm_area_struct *vma)
+ 			vma->vm_ops = kerninfo.vm_ops;
+ 		} else if (io_remap_pfn_range(vma, vma->vm_start,
+ 				(kerninfo.aper_base + offset) >> PAGE_SHIFT,
+-					    size, vma->vm_page_prot)) {
++				size,
++				pgprot_writecombine(vma->vm_page_prot))) {
+ 			goto out_again;
+ 		}
+ 		mutex_unlock(&(agp_fe.agp_mutex));
+@@ -618,8 +619,9 @@ static int agp_mmap(struct file *file, struct vm_area_struct *vma)
+ 		if (kerninfo.vm_ops) {
+ 			vma->vm_ops = kerninfo.vm_ops;
+ 		} else if (io_remap_pfn_range(vma, vma->vm_start,
+-					    kerninfo.aper_base >> PAGE_SHIFT,
+-					    size, vma->vm_page_prot)) {
++				kerninfo.aper_base >> PAGE_SHIFT,
++				size,
++				pgprot_writecombine(vma->vm_page_prot))) {
+ 			goto out_again;
+ 		}
+ 		mutex_unlock(&(agp_fe.agp_mutex));
+diff --git a/drivers/gpu/drm/drm_pci.c b/drivers/gpu/drm/drm_pci.c
+index bd719e9..d0f6699 100644
+--- a/drivers/gpu/drm/drm_pci.c
++++ b/drivers/gpu/drm/drm_pci.c
+@@ -278,10 +278,10 @@ int drm_pci_agp_init(struct drm_device *dev)
+ 		}
+ 		if (drm_core_has_MTRR(dev)) {
+ 			if (dev->agp)
+-				dev->agp->agp_mtrr -					mtrr_add(dev->agp->agp_info.aper_base,
+-						 dev->agp->agp_info.aper_size *
+-						 1024 * 1024, MTRR_TYPE_WRCOMB, 1);
++				dev->agp->agp_mtrr = arch_phys_wc_add(
++					dev->agp->agp_info.aper_base,
++					dev->agp->agp_info.aper_size *
++					1024 * 1024);
+ 		}
+ 	}
+ 	return 0;
+diff --git a/drivers/gpu/drm/drm_stub.c b/drivers/gpu/drm/drm_stub.c
+index 7d30802..9e2acdf 100644
+--- a/drivers/gpu/drm/drm_stub.c
++++ b/drivers/gpu/drm/drm_stub.c
+@@ -451,14 +451,8 @@ void drm_put_dev(struct drm_device *dev)
  
-+struct omapdss_dvi_ops {
-+	int (*connect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+	void (*disconnect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+
-+	int (*enable)(struct omap_dss_device *dssdev);
-+	void (*disable)(struct omap_dss_device *dssdev);
-+
-+	int (*check_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*set_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*get_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+};
-+
- struct omap_dss_device {
- 	/* old device, to be removed */
- 	struct device old_dev;
-@@ -686,6 +703,7 @@ struct omap_dss_device {
- 	union {
- 		const struct omapdss_dpi_ops *dpi;
- 		const struct omapdss_sdi_ops *sdi;
-+		const struct omapdss_dvi_ops *dvi;
- 	} ops;
+ 	drm_lastclose(dev);
  
- 	/* helper variable for driver suspend/resume */
+-	if (drm_core_has_MTRR(dev) && drm_core_has_AGP(dev) &&
+-	    dev->agp && dev->agp->agp_mtrr >= 0) {
+-		int retval;
+-		retval = mtrr_del(dev->agp->agp_mtrr,
+-				  dev->agp->agp_info.aper_base,
+-				  dev->agp->agp_info.aper_size * 1024 * 1024);
+-		DRM_DEBUG("mtrr_del=%d\n", retval);
+-	}
++	if (drm_core_has_MTRR(dev) && drm_core_has_AGP(dev) && dev->agp)
++		arch_phys_wc_del(dev->agp->agp_mtrr);
+ 
+ 	if (dev->driver->unload)
+ 		dev->driver->unload(dev);
+diff --git a/drivers/gpu/drm/drm_vm.c b/drivers/gpu/drm/drm_vm.c
+index 163f436..b1e4ec8 100644
+--- a/drivers/gpu/drm/drm_vm.c
++++ b/drivers/gpu/drm/drm_vm.c
+@@ -49,13 +49,10 @@ static pgprot_t drm_io_prot(struct drm_local_map *map,
+ 	pgprot_t tmp = vm_get_page_prot(vma->vm_flags);
+ 
+ #if defined(__i386__) || defined(__x86_64__)
+-	if (map->type != _DRM_AGP) {
+-		if (map->type = _DRM_FRAME_BUFFER ||
+-		    map->flags & _DRM_WRITE_COMBINING)
+-			tmp = pgprot_writecombine(tmp);
+-		else
+-			tmp = pgprot_noncached(tmp);
+-	}
++	if (map->type = _DRM_REGISTERS && !(map->flags & _DRM_WRITE_COMBINING))
++		tmp = pgprot_noncached(tmp);
++	else
++		tmp = pgprot_writecombine(tmp);
+ #elif defined(__powerpc__)
+ 	pgprot_val(tmp) |= _PAGE_NO_CACHE;
+ 	if (map_type = _DRM_REGISTERS)
 -- 
-1.8.1.2
+1.8.1.4
 

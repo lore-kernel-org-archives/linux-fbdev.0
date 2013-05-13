@@ -1,54 +1,44 @@
-From: Rob Landley <rob@landley.net>
-Date: Fri, 24 May 2013 04:50:30 +0000
-Subject: Re: [PATCH] build some drivers only when compile-testing
-Message-Id: <1369371030.2776.17@driftwood>
+From: Maarten Lankhorst <maarten.lankhorst@canonical.com>
+Date: Mon, 13 May 2013 08:00:52 +0000
+Subject: Re: Introduce a new helper framework for buffer synchronization
+Message-Id: <51909DB4.2060208@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-In-Reply-To: <1369317700.3469.256.camel@deadeye.wl.decadent.org.uk> (from
-	ben@decadent.org.uk on Thu May 23 09:01:40 2013)
-References: <20130523022327.GB6159@kroah.com>
-In-Reply-To: <20130523022327.GB6159@kroah.com>
+References: <CAAQKjZNNw4qddo6bE5OY_CahrqDtqkxdO7Pm9RCguXyj9F4cMQ@mail.gmail.com>
+In-Reply-To: <CAAQKjZNNw4qddo6bE5OY_CahrqDtqkxdO7Pm9RCguXyj9F4cMQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ben Hutchings <ben@decadent.org.uk>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, jirislaby@gmail.com, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Jeff Mahoney <jeffm@suse.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, linux-usb@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-geode@lists.infradead.org, linux-fbdev@vger.kernel.org, Richard Cochran <richardcochran@gmail.com>, netdev@vger.kernel.org, "Keller, Jacob E" <jacob.e.keller@intel.com>
+To: Inki Dae <inki.dae@samsung.com>
+Cc: Rob Clark <robdclark@gmail.com>, Daniel Vetter <daniel@ffwll.ch>, DRI mailing list <dri-devel@lists.freedesktop.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, "myungjoo.ham" <myungjoo.ham@samsung.com>, YoungJun Cho <yj44.cho@samsung.com>
 
-On 05/23/2013 09:01:40 AM, Ben Hutchings wrote:
-> On Wed, 2013-05-22 at 19:23 -0700, Greg Kroah-Hartman wrote:
-> > On Wed, May 22, 2013 at 11:18:46AM +0200, Jiri Slaby wrote:
-> > > Some drivers can be built on more platforms than they run on. This
-> > > causes users and distributors packaging burden when they have to
-> > > manually deselect some drivers from their allmodconfigs. Or  
-> sometimes
-> > > it is even impossible to disable the drivers without patching the
-> > > kernel.
-> > >
-> > > Introduce a new config option COMPILE_TEST and make all those  
-> drivers
-> > > to depend on the platform they run on, or on the COMPILE_TEST  
-> option.
-> > > Now, when users/distributors choose COMPILE_TEST=n they will not  
-> have
-> > > the drivers in their allmodconfig setups, but developers still can
-> > > compile-test them with COMPILE_TEST=y.
-> >
-> > I understand the urge, and it's getting hard for distros to handle  
-> these
-> > drivers that just don't work on other architectures, but it's really
-> > valuable to ensure that they build properly, for those of us that  
-> don't
-> > have many/any cross compilers set up.
+Op 09-05-13 09:33, Inki Dae schreef:
+> Hi all,
+>
+> This post introduces a new helper framework based on dma fence. And the
+> purpose of this post is to collect other opinions and advices before RFC
+> posting.
+>
+> First of all, this helper framework, called fence helper, is in progress
+> yet so might not have enough comments in codes and also might need to be
+> more cleaned up. Moreover, we might be missing some parts of the dma fence.
+> However, I'd like to say that all things mentioned below has been tested
+> with Linux platform and worked well.
 
-In http://landley.net/aboriginal/bin grab the cross-compiler-*.tar.bz2  
-tarballs, extract them, add the "bin" subdirectory of each to the  
-$PATH. Congratulations, you have cross compilers set up. (They're  
-statically linked and relocatable, so should run just about anywhere.  
-If they don't, let me know and I'll fix it.)
+> ....
+>
+> And tutorial for user process.
+>         just before cpu access
+>                 struct dma_buf_fence *df;
+>
+>                 df->type = DMA_BUF_ACCESS_READ or DMA_BUF_ACCESS_WRITE;
+>                 ioctl(fd, DMA_BUF_GET_FENCE, &df);
+>
+>         after memset or memcpy
+>                 ioctl(fd, DMA_BUF_PUT_FENCE, &df);
+NAK.
 
-Example build:
+Userspace doesn't need to trigger fences. It can do a buffer idle wait, and postpone submitting new commands until after it's done using the buffer.
+Kernel space doesn't need the root hole you created by giving a dereferencing a pointer passed from userspace.
+Your next exercise should be to write a security exploit from the api you created here. It's the only way to learn how to write safe code. Hint: df.ctx = mmap(..);
 
-   make ARCH=sparc sparc32_defconfig
-   PATH=/home/landley/simple-cross-compiler-sparc/bin:$PATH \
-     make ARCH=sparc CROSS_COMPILE=sparc-
-
-Rob
+~Maarten

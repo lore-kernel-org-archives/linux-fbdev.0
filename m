@@ -1,339 +1,187 @@
 From: Andy Lutomirski <luto@amacapital.net>
-Date: Fri, 03 May 2013 23:00:30 +0000
-Subject: [PATCH 2/7] drm (ast,cirrus,mgag200,nouveau,savage,vmwgfx): Rework drm_mtrr_{add,del}
-Message-Id: <4615b8566e9530e2169a36a5870f1b2eb7e621cd.1367621039.git.luto@amacapital.net>
+Date: Mon, 13 May 2013 23:58:46 +0000
+Subject: [PATCH v3 7/9] uvesafb: Clean up MTRR code
+Message-Id: <d3b3c5ea13e5b2d38af340b02a844b055cb61e2c.1368485053.git.luto@amacapital.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1367621038.git.luto@amacapital.net>
-In-Reply-To: <cover.1367621038.git.luto@amacapital.net>
+References: <cover.1368485053.git.luto@amacapital.net>
+In-Reply-To: <cover.1368485053.git.luto@amacapital.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>
 
-This replaces drm_mtrr_{add,del} with drm_mtrr_{add,del}_wc.  The
-interface is simplified (because the base and size parameters to
-drm_mtrr_del never did anything) and it uses
-mtrr_{add,del}_wc_if_needed to avoid allocating MTRRs on systems
-that don't need them.
+The old code allowed very strange memory types.  Now it works like
+all the other video drivers: ioremap_wc is used unconditionally,
+and MTRRs are set if PAT is unavailable (unless MTRR is disabled
+by a module parameter).
 
+UC, WB, and WT support is gone.  If there are MTRR conflicts that prevent
+addition of a WC MTRR, adding a non-conflicting MTRR is pointless; it's
+better to just turn off MTRR support entirely.
+
+As an added bonus, any MTRR added is freed on unload.
+
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 Signed-off-by: Andy Lutomirski <luto@amacapital.net>
 ---
- drivers/gpu/drm/ast/ast_ttm.c         | 14 ++++--------
- drivers/gpu/drm/cirrus/cirrus_ttm.c   | 15 ++++---------
- drivers/gpu/drm/mgag200/mgag200_ttm.c | 14 ++++--------
- drivers/gpu/drm/nouveau/nouveau_ttm.c | 13 ++++-------
- drivers/gpu/drm/savage/savage_bci.c   | 42 +++++++++++++----------------------
- drivers/gpu/drm/savage/savage_drv.h   |  5 +----
- drivers/gpu/drm/vmwgfx/vmwgfx_drv.c   | 10 ++++-----
- include/drm/drmP.h                    | 23 ++++++++-----------
- 8 files changed, 45 insertions(+), 91 deletions(-)
+ Documentation/fb/uvesafb.txt | 16 ++++------
+ drivers/video/uvesafb.c      | 70 +++++++++++---------------------------------
+ include/video/uvesafb.h      |  1 +
+ 3 files changed, 23 insertions(+), 64 deletions(-)
 
-diff --git a/drivers/gpu/drm/ast/ast_ttm.c b/drivers/gpu/drm/ast/ast_ttm.c
-index 3602731..5286c96 100644
---- a/drivers/gpu/drm/ast/ast_ttm.c
-+++ b/drivers/gpu/drm/ast/ast_ttm.c
-@@ -271,26 +271,20 @@ int ast_mm_init(struct ast_private *ast)
- 		return ret;
- 	}
+diff --git a/Documentation/fb/uvesafb.txt b/Documentation/fb/uvesafb.txt
+index eefdd91..f6362d8 100644
+--- a/Documentation/fb/uvesafb.txt
++++ b/Documentation/fb/uvesafb.txt
+@@ -81,17 +81,11 @@ pmipal  Use the protected mode interface for palette changes.
  
--	ast->fb_mtrr = drm_mtrr_add(pci_resource_start(dev->pdev, 0),
--				    pci_resource_len(dev->pdev, 0),
--				    DRM_MTRR_WC);
-+	ast->fb_mtrr = drm_mtrr_add_wc(pci_resource_start(dev->pdev, 0),
-+				       pci_resource_len(dev->pdev, 0));
- 
- 	return 0;
- }
- 
- void ast_mm_fini(struct ast_private *ast)
- {
--	struct drm_device *dev = ast->dev;
- 	ttm_bo_device_release(&ast->ttm.bdev);
- 
- 	ast_ttm_global_release(ast);
- 
--	if (ast->fb_mtrr >= 0) {
--		drm_mtrr_del(ast->fb_mtrr,
--			     pci_resource_start(dev->pdev, 0),
--			     pci_resource_len(dev->pdev, 0), DRM_MTRR_WC);
--		ast->fb_mtrr = -1;
--	}
-+	drm_mtrr_del_wc(ast->fb_mtrr);
-+	ast->fb_mtrr = -1;
- }
- 
- void ast_ttm_placement(struct ast_bo *bo, int domain)
-diff --git a/drivers/gpu/drm/cirrus/cirrus_ttm.c b/drivers/gpu/drm/cirrus/cirrus_ttm.c
-index 1413a26..95e87ee 100644
---- a/drivers/gpu/drm/cirrus/cirrus_ttm.c
-+++ b/drivers/gpu/drm/cirrus/cirrus_ttm.c
-@@ -271,9 +271,8 @@ int cirrus_mm_init(struct cirrus_device *cirrus)
- 		return ret;
- 	}
- 
--	cirrus->fb_mtrr = drm_mtrr_add(pci_resource_start(dev->pdev, 0),
--				    pci_resource_len(dev->pdev, 0),
--				    DRM_MTRR_WC);
-+	cirrus->fb_mtrr = drm_mtrr_add_wc(pci_resource_start(dev->pdev, 0),
-+					  pci_resource_len(dev->pdev, 0));
- 
- 	cirrus->mm_inited = true;
- 	return 0;
-@@ -281,8 +280,6 @@ int cirrus_mm_init(struct cirrus_device *cirrus)
- 
- void cirrus_mm_fini(struct cirrus_device *cirrus)
- {
--	struct drm_device *dev = cirrus->dev;
+ mtrr:n  Setup memory type range registers for the framebuffer
+         where n:
+-              0 - disabled (equivalent to nomtrr) (default)
+-              1 - uncachable
+-              2 - write-back
+-              3 - write-combining
+-              4 - write-through
 -
- 	if (!cirrus->mm_inited)
- 		return;
+-        If you see the following in dmesg, choose the type that matches
+-        the old one.  In this example, use "mtrr:2".
+-...
+-mtrr: type mismatch for e0000000,8000000 old: write-back new: write-combining
+-...
++              0 - disabled (equivalent to nomtrr)
++              3 - write-combining (default)
++
++	Values other than 0 and 3 will result in a warning and will be
++	treated just like 3.
  
-@@ -290,12 +287,8 @@ void cirrus_mm_fini(struct cirrus_device *cirrus)
+ nomtrr  Do not use memory type range registers.
  
- 	cirrus_ttm_global_release(cirrus);
- 
--	if (cirrus->fb_mtrr >= 0) {
--		drm_mtrr_del(cirrus->fb_mtrr,
--			     pci_resource_start(dev->pdev, 0),
--			     pci_resource_len(dev->pdev, 0), DRM_MTRR_WC);
--		cirrus->fb_mtrr = -1;
--	}
-+	drm_mtrr_del_wc(cirrus->fb_mtrr);
-+	cirrus->fb_mtrr = -1;
- }
- 
- void cirrus_ttm_placement(struct cirrus_bo *bo, int domain)
-diff --git a/drivers/gpu/drm/mgag200/mgag200_ttm.c b/drivers/gpu/drm/mgag200/mgag200_ttm.c
-index 8fc9d92..62245b4 100644
---- a/drivers/gpu/drm/mgag200/mgag200_ttm.c
-+++ b/drivers/gpu/drm/mgag200/mgag200_ttm.c
-@@ -270,26 +270,20 @@ int mgag200_mm_init(struct mga_device *mdev)
- 		return ret;
- 	}
- 
--	mdev->fb_mtrr = drm_mtrr_add(pci_resource_start(dev->pdev, 0),
--				    pci_resource_len(dev->pdev, 0),
--				    DRM_MTRR_WC);
-+	mdev->fb_mtrr = drm_mtrr_add_wc(pci_resource_start(dev->pdev, 0),
-+					pci_resource_len(dev->pdev, 0));
- 
- 	return 0;
- }
- 
- void mgag200_mm_fini(struct mga_device *mdev)
- {
--	struct drm_device *dev = mdev->dev;
- 	ttm_bo_device_release(&mdev->ttm.bdev);
- 
- 	mgag200_ttm_global_release(mdev);
- 
--	if (mdev->fb_mtrr >= 0) {
--		drm_mtrr_del(mdev->fb_mtrr,
--			     pci_resource_start(dev->pdev, 0),
--			     pci_resource_len(dev->pdev, 0), DRM_MTRR_WC);
--		mdev->fb_mtrr = -1;
--	}
-+	drm_mtrr_del_wc(mdev->fb_mtrr);
-+	mdev->fb_mtrr = -1;
- }
- 
- void mgag200_ttm_placement(struct mgag200_bo *bo, int domain)
-diff --git a/drivers/gpu/drm/nouveau/nouveau_ttm.c b/drivers/gpu/drm/nouveau/nouveau_ttm.c
-index 9be9cb5..1506d78 100644
---- a/drivers/gpu/drm/nouveau/nouveau_ttm.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_ttm.c
-@@ -377,9 +377,8 @@ nouveau_ttm_init(struct nouveau_drm *drm)
- 		return ret;
- 	}
- 
--	drm->ttm.mtrr = drm_mtrr_add(pci_resource_start(dev->pdev, 1),
--				     pci_resource_len(dev->pdev, 1),
--				     DRM_MTRR_WC);
-+	drm->ttm.mtrr = drm_mtrr_add_wc(pci_resource_start(dev->pdev, 1),
-+					pci_resource_len(dev->pdev, 1));
- 
- 	/* GART init */
- 	if (drm->agp.stat != ENABLED) {
-@@ -414,10 +413,6 @@ nouveau_ttm_fini(struct nouveau_drm *drm)
- 
- 	nouveau_ttm_global_release(drm);
- 
--	if (drm->ttm.mtrr >= 0) {
--		drm_mtrr_del(drm->ttm.mtrr,
--			     pci_resource_start(drm->dev->pdev, 1),
--			     pci_resource_len(drm->dev->pdev, 1), DRM_MTRR_WC);
--		drm->ttm.mtrr = -1;
--	}
-+	drm_mtrr_del_wc(drm->ttm.mtrr);
-+	drm->ttm.mtrr = -1;
- }
-diff --git a/drivers/gpu/drm/savage/savage_bci.c b/drivers/gpu/drm/savage/savage_bci.c
-index b55c1d6..5b15215 100644
---- a/drivers/gpu/drm/savage/savage_bci.c
-+++ b/drivers/gpu/drm/savage/savage_bci.c
-@@ -570,9 +570,9 @@ int savage_driver_firstopen(struct drm_device *dev)
- 	unsigned int fb_rsrc, aper_rsrc;
- 	int ret = 0;
- 
--	dev_priv->mtrr[0].handle = -1;
--	dev_priv->mtrr[1].handle = -1;
--	dev_priv->mtrr[2].handle = -1;
-+	dev_priv->mtrr_handles[0] = -1;
-+	dev_priv->mtrr_handles[1] = -1;
-+	dev_priv->mtrr_handles[2] = -1;
- 	if (S3_SAVAGE3D_SERIES(dev_priv->chipset)) {
- 		fb_rsrc = 0;
- 		fb_base = pci_resource_start(dev->pdev, 0);
-@@ -584,21 +584,14 @@ int savage_driver_firstopen(struct drm_device *dev)
- 		if (pci_resource_len(dev->pdev, 0) = 0x08000000) {
- 			/* Don't make MMIO write-cobining! We need 3
- 			 * MTRRs. */
--			dev_priv->mtrr[0].base = fb_base;
--			dev_priv->mtrr[0].size = 0x01000000;
--			dev_priv->mtrr[0].handle -			    drm_mtrr_add(dev_priv->mtrr[0].base,
--				         dev_priv->mtrr[0].size, DRM_MTRR_WC);
--			dev_priv->mtrr[1].base = fb_base + 0x02000000;
--			dev_priv->mtrr[1].size = 0x02000000;
--			dev_priv->mtrr[1].handle -			    drm_mtrr_add(dev_priv->mtrr[1].base,
--					 dev_priv->mtrr[1].size, DRM_MTRR_WC);
--			dev_priv->mtrr[2].base = fb_base + 0x04000000;
--			dev_priv->mtrr[2].size = 0x04000000;
--			dev_priv->mtrr[2].handle -			    drm_mtrr_add(dev_priv->mtrr[2].base,
--					 dev_priv->mtrr[2].size, DRM_MTRR_WC);
-+			dev_priv->mtrr_handles[0] +				drm_mtrr_add_wc(fb_base, 0x01000000);
-+			dev_priv->mtrr_handles[1] +				drm_mtrr_add_wc(fb_base + 0x02000000,
-+						0x02000000);
-+			dev_priv->mtrr_handles[2] +				drm_mtrr_add_wc(fb_base + 0x04000000,
-+						0x04000000);
- 		} else {
- 			DRM_ERROR("strange pci_resource_len %08llx\n",
- 				  (unsigned long long)
-@@ -616,11 +609,9 @@ int savage_driver_firstopen(struct drm_device *dev)
- 		if (pci_resource_len(dev->pdev, 1) = 0x08000000) {
- 			/* Can use one MTRR to cover both fb and
- 			 * aperture. */
--			dev_priv->mtrr[0].base = fb_base;
--			dev_priv->mtrr[0].size = 0x08000000;
--			dev_priv->mtrr[0].handle -			    drm_mtrr_add(dev_priv->mtrr[0].base,
--					 dev_priv->mtrr[0].size, DRM_MTRR_WC);
-+			dev_priv->mtrr_handles[0] +				drm_mtrr_add_wc(fb_base,
-+						0x08000000);
- 		} else {
- 			DRM_ERROR("strange pci_resource_len %08llx\n",
- 				  (unsigned long long)
-@@ -661,10 +652,7 @@ void savage_driver_lastclose(struct drm_device *dev)
- 	int i;
- 
- 	for (i = 0; i < 3; ++i)
--		if (dev_priv->mtrr[i].handle >= 0)
--			drm_mtrr_del(dev_priv->mtrr[i].handle,
--				 dev_priv->mtrr[i].base,
--				 dev_priv->mtrr[i].size, DRM_MTRR_WC);
-+		drm_mtrr_del_wc(dev_priv->mtrr_handles[i]);
- }
- 
- int savage_driver_unload(struct drm_device *dev)
-diff --git a/drivers/gpu/drm/savage/savage_drv.h b/drivers/gpu/drm/savage/savage_drv.h
-index df2aac6..c05082a 100644
---- a/drivers/gpu/drm/savage/savage_drv.h
-+++ b/drivers/gpu/drm/savage/savage_drv.h
-@@ -160,10 +160,7 @@ typedef struct drm_savage_private {
- 	drm_local_map_t *cmd_dma;
- 	drm_local_map_t fake_dma;
- 
--	struct {
--		int handle;
--		unsigned long base, size;
--	} mtrr[3];
-+	int mtrr_handles[3];
- 
- 	/* BCI and status-related stuff */
- 	volatile uint32_t *status_ptr, *bci_ptr;
-diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c b/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
-index 07dfd82..c104ae4 100644
---- a/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
-+++ b/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
-@@ -565,8 +565,8 @@ static int vmw_driver_load(struct drm_device *dev, unsigned long chipset)
- 		dev_priv->has_gmr = false;
- 	}
- 
--	dev_priv->mmio_mtrr = drm_mtrr_add(dev_priv->mmio_start,
--					   dev_priv->mmio_size, DRM_MTRR_WC);
-+	dev_priv->mmio_mtrr = drm_mtrr_add_wc(dev_priv->mmio_start,
-+					      dev_priv->mmio_size);
- 
- 	dev_priv->mmio_virt = ioremap_wc(dev_priv->mmio_start,
- 					 dev_priv->mmio_size);
-@@ -664,8 +664,7 @@ out_no_device:
- out_err4:
- 	iounmap(dev_priv->mmio_virt);
- out_err3:
--	drm_mtrr_del(dev_priv->mmio_mtrr, dev_priv->mmio_start,
--		     dev_priv->mmio_size, DRM_MTRR_WC);
-+	drm_mtrr_del_wc(dev_priv->mmio_mtrr);
- 	if (dev_priv->has_gmr)
- 		(void) ttm_bo_clean_mm(&dev_priv->bdev, VMW_PL_GMR);
- 	(void)ttm_bo_clean_mm(&dev_priv->bdev, TTM_PL_VRAM);
-@@ -709,8 +708,7 @@ static int vmw_driver_unload(struct drm_device *dev)
- 
- 	ttm_object_device_release(&dev_priv->tdev);
- 	iounmap(dev_priv->mmio_virt);
--	drm_mtrr_del(dev_priv->mmio_mtrr, dev_priv->mmio_start,
--		     dev_priv->mmio_size, DRM_MTRR_WC);
-+	drm_mtrr_del_wc(dev_priv->mmio_mtrr);
- 	if (dev_priv->has_gmr)
- 		(void)ttm_bo_clean_mm(&dev_priv->bdev, VMW_PL_GMR);
- 	(void)ttm_bo_clean_mm(&dev_priv->bdev, TTM_PL_VRAM);
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index 2d94d74..2a3e1fd 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -1250,18 +1250,15 @@ static inline int drm_core_has_MTRR(struct drm_device *dev)
- 	return drm_core_check_feature(dev, DRIVER_USE_MTRR);
- }
- 
--#define DRM_MTRR_WC		MTRR_TYPE_WRCOMB
--
--static inline int drm_mtrr_add(unsigned long offset, unsigned long size,
--			       unsigned int flags)
-+static inline int __must_check drm_mtrr_add_wc(unsigned long offset,
-+					       unsigned long size)
- {
--	return mtrr_add(offset, size, flags, 1);
-+	return mtrr_add_wc_if_needed(offset, size);
- }
- 
--static inline int drm_mtrr_del(int handle, unsigned long offset,
--			       unsigned long size, unsigned int flags)
-+static inline void drm_mtrr_del_wc(int handle)
- {
--	return mtrr_del(handle, offset, size);
-+	mtrr_del_wc_if_needed(handle);
- }
- 
- #else
-@@ -1269,16 +1266,14 @@ static inline int drm_mtrr_del(int handle, unsigned long offset,
- 
- #define DRM_MTRR_WC		0
- 
--static inline int drm_mtrr_add(unsigned long offset, unsigned long size,
--			       unsigned int flags)
-+static inline int __must_check drm_mtrr_add_wc(unsigned long offset,
-+					       unsigned long size)
- {
--	return 0;
-+	return -1;
- }
- 
--static inline int drm_mtrr_del(int handle, unsigned long offset,
--			       unsigned long size, unsigned int flags)
-+static inline void drm_mtrr_del_wc(int handle)
- {
--	return 0;
- }
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index d428445..8701f96 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -24,9 +24,6 @@
+ #ifdef CONFIG_X86
+ #include <video/vga.h>
  #endif
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+ #include "edid.h"
  
+ static struct cb_id uvesafb_cn_id = {
+@@ -1540,67 +1537,30 @@ static void uvesafb_init_info(struct fb_info *info, struct vbe_mode_ib *mode)
+ 
+ static void uvesafb_init_mtrr(struct fb_info *info)
+ {
+-#ifdef CONFIG_MTRR
++	struct uvesafb_par *par = info->par;
++
+ 	if (mtrr && !(info->fix.smem_start & (PAGE_SIZE - 1))) {
+ 		int temp_size = info->fix.smem_len;
+-		unsigned int type = 0;
+ 
+-		switch (mtrr) {
+-		case 1:
+-			type = MTRR_TYPE_UNCACHABLE;
+-			break;
+-		case 2:
+-			type = MTRR_TYPE_WRBACK;
+-			break;
+-		case 3:
+-			type = MTRR_TYPE_WRCOMB;
+-			break;
+-		case 4:
+-			type = MTRR_TYPE_WRTHROUGH;
+-			break;
+-		default:
+-			type = 0;
+-			break;
+-		}
++		int rc;
+ 
+-		if (type) {
+-			int rc;
++		/* Find the largest power-of-two */
++		temp_size = roundup_pow_of_two(temp_size);
+ 
+-			/* Find the largest power-of-two */
+-			temp_size = roundup_pow_of_two(temp_size);
++		/* Try and find a power of two to add */
++		do {
++			rc = arch_phys_wc_add(info->fix.smem_start, temp_size);
++			temp_size >>= 1;
++		} while (temp_size >= PAGE_SIZE && rc = -EINVAL);
+ 
+-			/* Try and find a power of two to add */
+-			do {
+-				rc = mtrr_add(info->fix.smem_start,
+-					      temp_size, type, 1);
+-				temp_size >>= 1;
+-			} while (temp_size >= PAGE_SIZE && rc = -EINVAL);
+-		}
++		if (rc >= 0)
++			par->mtrr_handle = rc;
+ 	}
+-#endif /* CONFIG_MTRR */
+ }
+ 
+ static void uvesafb_ioremap(struct fb_info *info)
+ {
+-#ifdef CONFIG_X86
+-	switch (mtrr) {
+-	case 1: /* uncachable */
+-		info->screen_base = ioremap_nocache(info->fix.smem_start, info->fix.smem_len);
+-		break;
+-	case 2: /* write-back */
+-		info->screen_base = ioremap_cache(info->fix.smem_start, info->fix.smem_len);
+-		break;
+-	case 3: /* write-combining */
+-		info->screen_base = ioremap_wc(info->fix.smem_start, info->fix.smem_len);
+-		break;
+-	case 4: /* write-through */
+-	default:
+-		info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
+-		break;
+-	}
+-#else
+-	info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
+-#endif /* CONFIG_X86 */
++	info->screen_base = ioremap_wc(info->fix.smem_start, info->fix.smem_len);
+ }
+ 
+ static ssize_t uvesafb_show_vbe_ver(struct device *dev,
+@@ -1851,6 +1811,7 @@ static int uvesafb_remove(struct platform_device *dev)
+ 		unregister_framebuffer(info);
+ 		release_region(0x3c0, 32);
+ 		iounmap(info->screen_base);
++		arch_phys_wc_del(par->mtrr_handle);
+ 		release_mem_region(info->fix.smem_start, info->fix.smem_len);
+ 		fb_destroy_modedb(info->monspecs.modedb);
+ 		fb_dealloc_cmap(&info->cmap);
+@@ -1930,6 +1891,9 @@ static int uvesafb_setup(char *options)
+ 		}
+ 	}
+ 
++	if (mtrr != 3 && mtrr != 1)
++		pr_warn("uvesafb: mtrr should be set to 0 or 3; %d is unsupported", mtrr);
++
+ 	return 0;
+ }
+ #endif /* !MODULE */
+diff --git a/include/video/uvesafb.h b/include/video/uvesafb.h
+index 1a91850..30f5362 100644
+--- a/include/video/uvesafb.h
++++ b/include/video/uvesafb.h
+@@ -134,6 +134,7 @@ struct uvesafb_par {
+ 
+ 	int mode_idx;
+ 	struct vbe_crtc_ib crtc;
++	int mtrr_handle;
+ };
+ 
+ #endif /* _UVESAFB_H */
 -- 
 1.8.1.4
 

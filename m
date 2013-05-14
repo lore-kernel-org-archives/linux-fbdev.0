@@ -1,60 +1,54 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Thu, 16 May 2013 21:00:28 +0000
-Subject: Re: [PATCH v3 6/9] radeon: Switch to arch_phys_wc_add and add a missing ..._del
-Message-Id: <CALCETrUMeZSvPfV0m+S7nXDiOJrzATMzvoi48Yv116tJw1fPzA@mail.gmail.com>
+From: Laurent Navet <laurent.navet@gmail.com>
+Date: Tue, 14 May 2013 09:25:08 +0000
+Subject: [PATCH] drivers: video: mxsfb: clean use of devm_ioremap_resource()
+Message-Id: <1368523508-30967-1-git-send-email-laurent.navet@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1368485053.git.luto@amacapital.net> <bf7788cfd4695d05f2b414735744105906650e42.1368485053.git.luto@amacapital.net>
- <CADnq5_O6tZeRVq=gmJfn3JWQGgECSE1JuonpSKgFCYSD8RCqHQ@mail.gmail.com>
- <CAH3drwbSLdjd4Y8x8YfzhM5WK+A-L7mnYeS0kdqu7MwEB5kbCQ@mail.gmail.com>
- <CALCETrVo-6cnKZsDJnBJcwGjpPbW9QAYriyjAZavaZ8O2OkjnQ@mail.gmail.com>
- <CAH3drwb743_q5ZrNDNsnOUUNVDMcefaq9NH3+t863OGc98-D-Q@mail.gmail.com>
- <CALCETrXA-nbdDEv1TyU9e4mcGZzAoCTTDX33M1o31rZkgHHTFg@mail.gmail.com> <CAH3drwY0vVGnf05v-coSmS4OQyHuufycLojEn9que6iL_r3AUw@mail.gmail.com>
-In-Reply-To: <CAH3drwY0vVGnf05v-coSmS4OQyHuufycLojEn9que6iL_r3AUw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jerome Glisse <j.glisse@gmail.com>
-Cc: Alex Deucher <alexdeucher@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@gmail.com>
+To: FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Laurent Navet <laurent.navet@gmail.com>
 
-On Thu, May 16, 2013 at 6:50 AM, Jerome Glisse <j.glisse@gmail.com> wrote:
-> On Wed, May 15, 2013 at 2:22 PM, Andy Lutomirski <luto@amacapital.net> wrote:
->> On Wed, May 15, 2013 at 7:49 AM, Jerome Glisse <j.glisse@gmail.com> wrote:
->>> On Tue, May 14, 2013 at 5:35 PM, Andy Lutomirski <luto@amacapital.net> wrote:
->>>> On Tue, May 14, 2013 at 6:37 AM, Jerome Glisse <j.glisse@gmail.com> wrote:
->>>>> On Tue, May 14, 2013 at 8:58 AM, Alex Deucher <alexdeucher@gmail.com> wrote:
->>>>>> On Mon, May 13, 2013 at 7:58 PM, Andy Lutomirski <luto@amacapital.net> wrote:
->>>>>>> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
->>>>>>> Signed-off-by: Andy Lutomirski <luto@amacapital.net>
->>>>>>
->>>>>> Reviewed-by: Alex Deucher <alexander.deucher@amd.com>
->>>>>
->>>>> I believe it will break something but we could deal with the fallout
->>>>> once it happens.
->>>>
->>>> FWIW, I'm running with this code on my machine right now using the
->>>> radeon driver.  Everything seems fine.  If I build without MTRRs and
->>>> without PAT, though, graphics are slow (as expected).  So I think
->>>> everything's okay.
->>>>
->>>> --Andy
->>>
->>> I am worried on p4 where i last see issue with that notably with agp.
->>
->> Do you remember any details?  It looks like PAT is enabled on Pentium
->> 4 (i.e. famliy 0xF).
->>
->> --Andy
->
-> No i don't, i think it was some pat errata on those about non real ram
-> address and with agp. Memory is fuzzy. I might have time in couple of
-> week to plug back my p4 and see how it behave.
+Check of 'res' and calls to dev_err are already done in devm_ioremap_resource,
+so no need to do them twice.
 
-Hmm.  I couldn't find any PAT errata related to AGP.
+Signed-off-by: Laurent Navet <laurent.navet@gmail.com>
+---
+ drivers/video/mxsfb.c |   14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
 
-Is it possible that the issue was that, if there was no MTRR covering
-the AGP aperture, that the mapping ended up as writeback?  If so, I
-fixed that in this series.
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 21223d4..0f3d0fc 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -884,9 +884,10 @@ static int mxsfb_probe(struct platform_device *pdev)
+ 		pdev->id_entry = of_id->data;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (!res) {
+-		dev_err(&pdev->dev, "Cannot get memory IO resource\n");
+-		return -ENODEV;
++	host->base = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(host->base)) {
++		ret = PTR_ERR(host->base);
++		goto fb_release;
+ 	}
+ 
+ 	fb_info = framebuffer_alloc(sizeof(struct mxsfb_info), &pdev->dev);
+@@ -897,13 +898,6 @@ static int mxsfb_probe(struct platform_device *pdev)
+ 
+ 	host = to_imxfb_host(fb_info);
+ 
+-	host->base = devm_ioremap_resource(&pdev->dev, res);
+-	if (IS_ERR(host->base)) {
+-		dev_err(&pdev->dev, "ioremap failed\n");
+-		ret = PTR_ERR(host->base);
+-		goto fb_release;
+-	}
+-
+ 	host->pdev = pdev;
+ 	platform_set_drvdata(pdev, host);
+ 
+-- 
+1.7.10.4
 
-In any case, if you see any problems, please let me know.
-
---Andy

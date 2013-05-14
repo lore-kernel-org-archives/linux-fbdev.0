@@ -1,142 +1,39 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:34:40 +0000
-Subject: [PATCH 19/32] OMAPDSS: add videomode conversion support
-Message-Id: <1369906493-27538-20-git-send-email-tomi.valkeinen@ti.com>
+From: Tomasz Figa <t.figa@samsung.com>
+Date: Tue, 14 May 2013 14:16:38 +0000
+Subject: Re: [PATCH 1/2] video: exynos_dp: Add parsing of gpios pins to exynos-dp driver
+Message-Id: <1528008.HgBKZQmFTy@amdc1227>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1368536152-13370-1-git-send-email-vikas.sajjan@linaro.org>
+ <1368536152-13370-2-git-send-email-vikas.sajjan@linaro.org>
+In-Reply-To: <1368536152-13370-2-git-send-email-vikas.sajjan@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Vikas Sajjan <vikas.sajjan@linaro.org>
+Cc: jg1.han@samsung.com, linux-samsung-soc@vger.kernel.org, kgene.kim@samsung.com, devicetree-discuss@lists.ozlabs.org, patches@linaro.org, linaro-kernel@lists.linaro.org, rpurdie@rpsys.net, FlorianSchandinat@gmx.de, linux-fbdev@vger.kernel.org
 
-Add helper functions to convert between omapdss specific video timings
-and the common videomode.
+Hi Vikas,
 
-Eventually omapdss will be changed to use only the common video timings,
-and these helper functions will make the transition easier.
+On Tuesday 14 of May 2013 18:25:51 Vikas Sajjan wrote:
+>  Adds GPIO parsing functionality for "LCD backlight" and "LCD enable"
+>  GPIO pins of exynos dp controller.
+> 
+> Signed-off-by: Vikas Sajjan <vikas.sajjan@linaro.org>
+> ---
+>  drivers/video/exynos/exynos_dp_core.c |   45
+> +++++++++++++++++++++++++++++++++ 1 file changed, 45 insertions(+)
+> 
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/Kconfig   |  1 +
- drivers/video/omap2/dss/display.c | 69 +++++++++++++++++++++++++++++++++++++++
- include/video/omapdss.h           |  7 ++++
- 3 files changed, 77 insertions(+)
+I don't think that Exynos DP driver is right place for such code. Backlight 
+and LCD drivers are responsible for backlight and LCD power control using 
+backlight and LCD subsystems.
 
-diff --git a/drivers/video/omap2/dss/Kconfig b/drivers/video/omap2/dss/Kconfig
-index cb0f145..8f70a83 100644
---- a/drivers/video/omap2/dss/Kconfig
-+++ b/drivers/video/omap2/dss/Kconfig
-@@ -1,5 +1,6 @@
- menuconfig OMAP2_DSS
-         tristate "OMAP2+ Display Subsystem support"
-+	select VIDEOMODE_HELPERS
-         help
- 	  OMAP2+ Display Subsystem support.
- 
-diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
-index 0aa8ad8..72ac058 100644
---- a/drivers/video/omap2/dss/display.c
-+++ b/drivers/video/omap2/dss/display.c
-@@ -219,3 +219,72 @@ void omap_dss_stop_device(struct omap_dss_device *dssdev)
- }
- EXPORT_SYMBOL(omap_dss_stop_device);
- 
-+void videomode_to_omap_video_timings(const struct videomode *vm,
-+		struct omap_video_timings *ovt)
-+{
-+	memset(ovt, 0, sizeof(*ovt));
-+
-+	ovt->pixel_clock = vm->pixelclock / 1000;
-+	ovt->x_res = vm->hactive;
-+	ovt->hbp = vm->hback_porch;
-+	ovt->hfp = vm->hfront_porch;
-+	ovt->hsw = vm->hsync_len;
-+	ovt->y_res = vm->vactive;
-+	ovt->vbp = vm->vback_porch;
-+	ovt->vfp = vm->vfront_porch;
-+	ovt->vsw = vm->vsync_len;
-+
-+	ovt->vsync_level = vm->flags & DISPLAY_FLAGS_VSYNC_HIGH ?
-+		OMAPDSS_SIG_ACTIVE_HIGH :
-+		OMAPDSS_SIG_ACTIVE_LOW;
-+	ovt->hsync_level = vm->flags & DISPLAY_FLAGS_HSYNC_HIGH ?
-+		OMAPDSS_SIG_ACTIVE_HIGH :
-+		OMAPDSS_SIG_ACTIVE_LOW;
-+	ovt->de_level = vm->flags & DISPLAY_FLAGS_DE_HIGH ?
-+		OMAPDSS_SIG_ACTIVE_HIGH :
-+		OMAPDSS_SIG_ACTIVE_HIGH;
-+	ovt->data_pclk_edge = vm->flags & DISPLAY_FLAGS_PIXDATA_POSEDGE ?
-+		OMAPDSS_DRIVE_SIG_RISING_EDGE :
-+		OMAPDSS_DRIVE_SIG_FALLING_EDGE;
-+
-+	ovt->sync_pclk_edge = OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES;
-+}
-+EXPORT_SYMBOL(videomode_to_omap_video_timings);
-+
-+void omap_video_timings_to_videomode(const struct omap_video_timings *ovt,
-+		struct videomode *vm)
-+{
-+	memset(vm, 0, sizeof(*vm));
-+
-+	vm->pixelclock = ovt->pixel_clock * 1000;
-+
-+	vm->hactive = ovt->x_res;
-+	vm->hback_porch = ovt->hbp;
-+	vm->hfront_porch = ovt->hfp;
-+	vm->hsync_len = ovt->hsw;
-+	vm->vactive = ovt->y_res;
-+	vm->vback_porch = ovt->vbp;
-+	vm->vfront_porch = ovt->vfp;
-+	vm->vsync_len = ovt->vsw;
-+
-+	if (ovt->hsync_level = OMAPDSS_SIG_ACTIVE_HIGH)
-+		vm->flags |= DISPLAY_FLAGS_HSYNC_HIGH;
-+	else
-+		vm->flags |= DISPLAY_FLAGS_HSYNC_LOW;
-+
-+	if (ovt->vsync_level = OMAPDSS_SIG_ACTIVE_HIGH)
-+		vm->flags |= DISPLAY_FLAGS_VSYNC_HIGH;
-+	else
-+		vm->flags |= DISPLAY_FLAGS_VSYNC_LOW;
-+
-+	if (ovt->de_level = OMAPDSS_SIG_ACTIVE_HIGH)
-+		vm->flags |= DISPLAY_FLAGS_DE_HIGH;
-+	else
-+		vm->flags |= DISPLAY_FLAGS_DE_LOW;
-+
-+	if (ovt->data_pclk_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE)
-+		vm->flags |= DISPLAY_FLAGS_PIXDATA_POSEDGE;
-+	else
-+		vm->flags |= DISPLAY_FLAGS_PIXDATA_NEGEDGE;
-+}
-+EXPORT_SYMBOL(omap_video_timings_to_videomode);
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index f747266..6c422f7 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -23,6 +23,8 @@
- #include <linux/device.h>
- #include <linux/interrupt.h>
- 
-+#include <video/videomode.h>
-+
- #define DISPC_IRQ_FRAMEDONE		(1 << 0)
- #define DISPC_IRQ_VSYNC			(1 << 1)
- #define DISPC_IRQ_EVSYNC_EVEN		(1 << 2)
-@@ -767,6 +769,11 @@ const char *omapdss_get_default_display_name(void);
- int omap_dss_start_device(struct omap_dss_device *dssdev);
- void omap_dss_stop_device(struct omap_dss_device *dssdev);
- 
-+void videomode_to_omap_video_timings(const struct videomode *vm,
-+		struct omap_video_timings *ovt);
-+void omap_video_timings_to_videomode(const struct omap_video_timings *ovt,
-+		struct videomode *vm);
-+
- int dss_feat_get_num_mgrs(void);
- int dss_feat_get_num_ovls(void);
- enum omap_display_type dss_feat_get_supported_displays(enum omap_channel channel);
--- 
-1.8.1.2
+IMHO the correct solution would be to either extend existing backlight/lcd 
+drivers found in drivers/video/backlight to support direct GPIO control and 
+parse GPIO pins from device tree or create new gpio_bl and gpio_lcd drivers.
+
+CCing Richard, Florian and linux-fbdev.
+
+Best regards,
+Tomasz
 

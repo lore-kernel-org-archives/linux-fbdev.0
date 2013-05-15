@@ -1,490 +1,172 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:34:33 +0000
-Subject: [PATCH 12/32] OMAPDSS: Implement display (dis)connect support
-Message-Id: <1369906493-27538-13-git-send-email-tomi.valkeinen@ti.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 15 May 2013 11:40:50 +0000
+Subject: [PATCH] console/font: Refactor font support code selection logic
+Message-Id: <1368618050-26895-1-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
+Cc: Hans Verkuil <hverkuil@xs4all.nl>, Ismael Luceno <ismael.luceno@corp.bluecherry.net>, Thomas Winischhofer <thomas@winischhofer.net>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Helge Deller <deller@gmx.de>, linux-media@vger.kernel.org, devel@driverdev.osuosl.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-We currently have two steps in panel initialization and startup: probing
-and enabling. After the panel has been probed, it's ready and can be
-configured and later enabled.
+The current Makefile rules to build font support are messy and buggy.
+Replace them by Kconfig rules:
+  - Introduce CONFIG_FONT_SUPPORT, which controls the building of all font
+    code,
+  - Select CONFIG_FONT_SUPPORT for all drivers that use fonts,
+  - Select CONFIG_FONT_8x16 for all drivers that default to the VGA8x16
+    font,
+  - Drop the bogus console dependency for CONFIG_VIDEO_VIVI.
 
-This model is not enough with more complex display pipelines, where we
-may have, for example, two panels, of which only one can be used at a
-time, connected to the same video output.
+This fixes (if CONFIG_SOLO6X10=y and there are no built-in console
+drivers):
 
-To support that kind of scenarios, we need to add new step to the
-initialization: connect.
+drivers/built-in.o: In function `solo_osd_print':
+drivers/staging/media/solo6x10/solo6x10-enc.c:144: undefined reference to `.find_font'
 
-This patch adds support for connecting and disconnecting panels. After
-probe, but before connect, no panel ops should be called. When the
-connect is called, a proper video pipeline is established, and the panel
-is ready for use. If some part in the video pipeline is already
-connected (by some other panel), the connect call fails.
-
-One key difference with the old style setup is that connect() handles
-also connecting to the overlay manager. This means that the omapfb (or
-omapdrm) no longer needs to figure out which overlay manager to use, but
-it can just call connect() on the panel, and the proper overlay manager
-is connected by omapdss.
-
-This also allows us to add back the support for dynamic switching
-between two exclusive panels. However, the current panel device model is
-not changed to support this, as the new device model is implemented in
-the following patches and the old model will be removed. The new device
-model supports dynamic switching.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/gpu/drm/omapdrm/omap_crtc.c      | 24 +++++++++++++++++
- drivers/gpu/drm/omapdrm/omap_drv.c       | 12 ++++++++-
- drivers/video/omap2/dss/apply.c          | 14 ++++++++++
- drivers/video/omap2/dss/core.c           | 44 +++++++++++++++++++++++++++++++
- drivers/video/omap2/dss/display-sysfs.c  | 28 +++++++++++---------
- drivers/video/omap2/dss/manager-sysfs.c  | 45 ++++++++++++++++++++------------
- drivers/video/omap2/dss/output.c         | 14 ++++++++++
- drivers/video/omap2/omapfb/omapfb-main.c | 25 ++++++++++--------
- include/video/omapdss.h                  | 23 ++++++++++++++++
- 9 files changed, 188 insertions(+), 41 deletions(-)
+ drivers/media/platform/Kconfig         |    2 +-
+ drivers/staging/media/solo6x10/Kconfig |    2 ++
+ drivers/usb/misc/sisusbvga/Kconfig     |    1 +
+ drivers/video/console/Kconfig          |   12 ++++++++++--
+ drivers/video/console/Makefile         |   14 +++++---------
+ 5 files changed, 19 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/gpu/drm/omapdrm/omap_crtc.c b/drivers/gpu/drm/omapdrm/omap_crtc.c
-index 02075bf..b2ab2f5 100644
---- a/drivers/gpu/drm/omapdrm/omap_crtc.c
-+++ b/drivers/gpu/drm/omapdrm/omap_crtc.c
-@@ -94,6 +94,28 @@ uint32_t pipe2vbl(struct drm_crtc *crtc)
- static struct omap_crtc *omap_crtcs[8];
+diff --git a/drivers/media/platform/Kconfig b/drivers/media/platform/Kconfig
+index 0cbe1ff..c1f29d5 100644
+--- a/drivers/media/platform/Kconfig
++++ b/drivers/media/platform/Kconfig
+@@ -220,7 +220,7 @@ if V4L_TEST_DRIVERS
+ config VIDEO_VIVI
+ 	tristate "Virtual Video Driver"
+ 	depends on VIDEO_DEV && VIDEO_V4L2 && !SPARC32 && !SPARC64
+-	depends on FRAMEBUFFER_CONSOLE || STI_CONSOLE
++	select FONT_SUPPORT
+ 	select FONT_8x16
+ 	select VIDEOBUF2_VMALLOC
+ 	default n
+diff --git a/drivers/staging/media/solo6x10/Kconfig b/drivers/staging/media/solo6x10/Kconfig
+index ec32776..b34bb6c 100644
+--- a/drivers/staging/media/solo6x10/Kconfig
++++ b/drivers/staging/media/solo6x10/Kconfig
+@@ -1,6 +1,8 @@
+ config SOLO6X10
+ 	tristate "Softlogic 6x10 MPEG codec cards"
+ 	depends on PCI && VIDEO_DEV && SND && I2C
++	select FONT_SUPPORT
++	select FONT_8x16
+ 	select VIDEOBUF2_DMA_SG
+ 	select VIDEOBUF2_DMA_CONTIG
+ 	select SND_PCM
+diff --git a/drivers/usb/misc/sisusbvga/Kconfig b/drivers/usb/misc/sisusbvga/Kconfig
+index 0d03a52..36bc28c 100644
+--- a/drivers/usb/misc/sisusbvga/Kconfig
++++ b/drivers/usb/misc/sisusbvga/Kconfig
+@@ -2,6 +2,7 @@
+ config USB_SISUSBVGA
+ 	tristate "USB 2.0 SVGA dongle support (Net2280/SiS315)"
+ 	depends on (USB_MUSB_HDRC || USB_EHCI_HCD)
++	select FONT_SUPPORT if USB_SISUSBVGA_CON
+         ---help---
+ 	  Say Y here if you intend to attach a USB2VGA dongle based on a
+ 	  Net2280 and a SiS315 chip.
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index bc922c4..baf27dc 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -62,6 +62,7 @@ config MDA_CONSOLE
+ config SGI_NEWPORT_CONSOLE
+         tristate "SGI Newport Console support"
+         depends on SGI_IP22 
++        select FONT_SUPPORT
+         help
+           Say Y here if you want the console on the Newport aka XL graphics
+           card of your Indy.  Most people say Y here.
+@@ -91,6 +92,7 @@ config FRAMEBUFFER_CONSOLE
+ 	tristate "Framebuffer Console support"
+ 	depends on FB
+ 	select CRC32
++	select FONT_SUPPORT
+ 	help
+ 	  Low-level framebuffer-based console driver.
  
- /* we can probably ignore these until we support command-mode panels: */
-+static int omap_crtc_connect(struct omap_overlay_manager *mgr,
-+		struct omap_dss_output *dst)
-+{
-+	if (mgr->output)
-+		return -EINVAL;
+@@ -123,12 +125,18 @@ config FRAMEBUFFER_CONSOLE_ROTATION
+ config STI_CONSOLE
+         bool "STI text console"
+         depends on PARISC
++        select FONT_SUPPORT
+         default y
+         help
+           The STI console is the builtin display/keyboard on HP-PARISC
+           machines.  Say Y here to build support for it into your kernel.
+           The alternative is to use your primary serial port as a console.
+ 
++config FONT_SUPPORT
++	tristate
 +
-+	if ((mgr->supported_outputs & dst->id) = 0)
-+		return -EINVAL;
++if FONT_SUPPORT
 +
-+	dst->manager = mgr;
-+	mgr->output = dst;
+ config FONTS
+ 	bool "Select compiled-in fonts"
+ 	depends on FRAMEBUFFER_CONSOLE || STI_CONSOLE
+@@ -158,7 +166,6 @@ config FONT_8x8
+ 
+ config FONT_8x16
+ 	bool "VGA 8x16 font" if FONTS
+-	depends on FRAMEBUFFER_CONSOLE || SGI_NEWPORT_CONSOLE || STI_CONSOLE || USB_SISUSBVGA_CON
+ 	default y if !SPARC && !FONTS
+ 	help
+ 	  This is the "high resolution" font for the VGA frame buffer (the one
+@@ -226,7 +233,6 @@ config FONT_10x18
+ 
+ config FONT_AUTOSELECT
+ 	def_bool y
+-	depends on FRAMEBUFFER_CONSOLE || SGI_NEWPORT_CONSOLE || STI_CONSOLE || USB_SISUSBVGA_CON
+ 	depends on !FONT_8x8
+ 	depends on !FONT_6x11
+ 	depends on !FONT_7x14
+@@ -238,5 +244,7 @@ config FONT_AUTOSELECT
+ 	depends on !FONT_10x18
+ 	select FONT_8x16
+ 
++endif # FONT_SUPPORT
 +
-+	return 0;
-+}
-+
-+static void omap_crtc_disconnect(struct omap_overlay_manager *mgr,
-+		struct omap_dss_output *dst)
-+{
-+	mgr->output->manager = NULL;
-+	mgr->output = NULL;
-+}
-+
- static void omap_crtc_start_update(struct omap_overlay_manager *mgr)
- {
- }
-@@ -138,6 +160,8 @@ static void omap_crtc_unregister_framedone_handler(
- }
+ endmenu
  
- static const struct dss_mgr_ops mgr_ops = {
-+		.connect = omap_crtc_connect,
-+		.disconnect = omap_crtc_disconnect,
- 		.start_update = omap_crtc_start_update,
- 		.enable = omap_crtc_enable,
- 		.disable = omap_crtc_disable,
-diff --git a/drivers/gpu/drm/omapdrm/omap_drv.c b/drivers/gpu/drm/omapdrm/omap_drv.c
-index f8947f9..58bd259 100644
---- a/drivers/gpu/drm/omapdrm/omap_drv.c
-+++ b/drivers/gpu/drm/omapdrm/omap_drv.c
-@@ -97,6 +97,7 @@ static int omap_modeset_init(struct drm_device *dev)
- 	int num_mgrs = dss_feat_get_num_mgrs();
- 	int num_crtcs;
- 	int i, id = 0;
-+	int r;
+diff --git a/drivers/video/console/Makefile b/drivers/video/console/Makefile
+index a862e91..3a11b63 100644
+--- a/drivers/video/console/Makefile
++++ b/drivers/video/console/Makefile
+@@ -18,14 +18,14 @@ font-objs-$(CONFIG_FONT_MINI_4x6)  += font_mini_4x6.o
  
- 	omap_crtc_pre_init();
+ font-objs += $(font-objs-y)
  
-@@ -118,6 +119,7 @@ static int omap_modeset_init(struct drm_device *dev)
- 		struct drm_connector *connector;
- 		struct drm_encoder *encoder;
- 		enum omap_channel channel;
-+		struct omap_overlay_manager *mgr;
+-# Each configuration option enables a list of files.
++obj-$(CONFIG_FONT_SUPPORT)         += font.o
  
- 		if (!dssdev->driver) {
- 			dev_warn(dev->dev, "%s has no driver.. skipping it\n",
-@@ -133,6 +135,13 @@ static int omap_modeset_init(struct drm_device *dev)
- 			continue;
- 		}
+ obj-$(CONFIG_DUMMY_CONSOLE)       += dummycon.o
+-obj-$(CONFIG_SGI_NEWPORT_CONSOLE) += newport_con.o font.o
+-obj-$(CONFIG_STI_CONSOLE)         += sticon.o sticore.o font.o
++obj-$(CONFIG_SGI_NEWPORT_CONSOLE) += newport_con.o
++obj-$(CONFIG_STI_CONSOLE)         += sticon.o sticore.o
+ obj-$(CONFIG_VGA_CONSOLE)         += vgacon.o
+ obj-$(CONFIG_MDA_CONSOLE)         += mdacon.o
+-obj-$(CONFIG_FRAMEBUFFER_CONSOLE) += fbcon.o bitblit.o font.o softcursor.o
++obj-$(CONFIG_FRAMEBUFFER_CONSOLE) += fbcon.o bitblit.o softcursor.o
+ ifeq ($(CONFIG_FB_TILEBLITTING),y)
+ obj-$(CONFIG_FRAMEBUFFER_CONSOLE)     += tileblit.o
+ endif
+@@ -34,8 +34,4 @@ obj-$(CONFIG_FRAMEBUFFER_CONSOLE)     += fbcon_rotate.o fbcon_cw.o fbcon_ud.o \
+                                          fbcon_ccw.o
+ endif
  
-+		r = dssdev->driver->connect(dssdev);
-+		if (r) {
-+			dev_err(dev->dev, "could not connect display: %s\n",
-+					dssdev->name);
-+			continue;
-+		}
-+
- 		encoder = omap_encoder_init(dev, dssdev);
- 
- 		if (!encoder) {
-@@ -174,8 +183,9 @@ static int omap_modeset_init(struct drm_device *dev)
- 		 * other possible channels to which the encoder can connect are
- 		 * not considered.
- 		 */
--		channel = dssdev->output->dispc_channel;
- 
-+		mgr = omapdss_find_mgr_from_display(dssdev);
-+		channel = mgr->id;
- 		/*
- 		 * if this channel hasn't already been taken by a previously
- 		 * allocated crtc, we create a new crtc for it
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index c844071..dbd3c2f 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -790,6 +790,18 @@ static void mgr_clear_shadow_dirty(struct omap_overlay_manager *mgr)
- 	}
- }
- 
-+static int dss_mgr_connect_compat(struct omap_overlay_manager *mgr,
-+		struct omap_dss_output *dst)
-+{
-+	return mgr->set_output(mgr, dst);
-+}
-+
-+static void dss_mgr_disconnect_compat(struct omap_overlay_manager *mgr,
-+		struct omap_dss_output *dst)
-+{
-+	mgr->unset_output(mgr);
-+}
-+
- static void dss_mgr_start_update_compat(struct omap_overlay_manager *mgr)
- {
- 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
-@@ -1552,6 +1564,8 @@ static void dss_mgr_unregister_framedone_handler_compat(struct omap_overlay_mana
- }
- 
- static const struct dss_mgr_ops apply_mgr_ops = {
-+	.connect = dss_mgr_connect_compat,
-+	.disconnect = dss_mgr_disconnect_compat,
- 	.start_update = dss_mgr_start_update_compat,
- 	.enable = dss_mgr_enable_compat,
- 	.disable = dss_mgr_disable_compat,
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index 502ec1b..4bd8f79 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -371,6 +371,46 @@ static int dss_driver_remove(struct device *dev)
- 	return 0;
- }
- 
-+static int omapdss_default_connect(struct omap_dss_device *dssdev)
-+{
-+	struct omap_dss_output *out;
-+	struct omap_overlay_manager *mgr;
-+	int r;
-+
-+	out = dssdev->output;
-+
-+	if (out = NULL)
-+		return -ENODEV;
-+
-+	mgr = omap_dss_get_overlay_manager(out->dispc_channel);
-+	if (!mgr)
-+		return -ENODEV;
-+
-+	r = dss_mgr_connect(mgr, out);
-+	if (r)
-+		return r;
-+
-+	return 0;
-+}
-+
-+static void omapdss_default_disconnect(struct omap_dss_device *dssdev)
-+{
-+	struct omap_dss_output *out;
-+	struct omap_overlay_manager *mgr;
-+
-+	out = dssdev->output;
-+
-+	if (out = NULL)
-+		return;
-+
-+	mgr = out->manager;
-+
-+	if (mgr = NULL)
-+		return;
-+
-+	dss_mgr_disconnect(mgr, out);
-+}
-+
- int omap_dss_register_driver(struct omap_dss_driver *dssdriver)
- {
- 	dssdriver->driver.bus = &dss_bus_type;
-@@ -384,6 +424,10 @@ int omap_dss_register_driver(struct omap_dss_driver *dssdriver)
- 			omapdss_default_get_recommended_bpp;
- 	if (dssdriver->get_timings = NULL)
- 		dssdriver->get_timings = omapdss_default_get_timings;
-+	if (dssdriver->connect = NULL)
-+		dssdriver->connect = omapdss_default_connect;
-+	if (dssdriver->disconnect = NULL)
-+		dssdriver->disconnect = omapdss_default_disconnect;
- 
- 	return driver_register(&dssdriver->driver);
- }
-diff --git a/drivers/video/omap2/dss/display-sysfs.c b/drivers/video/omap2/dss/display-sysfs.c
-index 18211a9..81d5dc6 100644
---- a/drivers/video/omap2/dss/display-sysfs.c
-+++ b/drivers/video/omap2/dss/display-sysfs.c
-@@ -33,9 +33,9 @@ static ssize_t display_enabled_show(struct device *dev,
- 		struct device_attribute *attr, char *buf)
- {
- 	struct omap_dss_device *dssdev = to_dss_device(dev);
--	bool enabled = dssdev->state != OMAP_DSS_DISPLAY_DISABLED;
- 
--	return snprintf(buf, PAGE_SIZE, "%d\n", enabled);
-+	return snprintf(buf, PAGE_SIZE, "%d\n",
-+			omapdss_device_is_enabled(dssdev));
- }
- 
- static ssize_t display_enabled_store(struct device *dev,
-@@ -44,20 +44,24 @@ static ssize_t display_enabled_store(struct device *dev,
- {
- 	struct omap_dss_device *dssdev = to_dss_device(dev);
- 	int r;
--	bool enabled;
-+	bool enable;
- 
--	r = strtobool(buf, &enabled);
-+	r = strtobool(buf, &enable);
- 	if (r)
- 		return r;
- 
--	if (enabled != (dssdev->state != OMAP_DSS_DISPLAY_DISABLED)) {
--		if (enabled) {
--			r = dssdev->driver->enable(dssdev);
--			if (r)
--				return r;
--		} else {
--			dssdev->driver->disable(dssdev);
--		}
-+	if (enable = omapdss_device_is_enabled(dssdev))
-+		return size;
-+
-+	if (omapdss_device_is_connected(dssdev) = false)
-+		return -ENODEV;
-+
-+	if (enable) {
-+		r = dssdev->driver->enable(dssdev);
-+		if (r)
-+			return r;
-+	} else {
-+		dssdev->driver->disable(dssdev);
- 	}
- 
- 	return size;
-diff --git a/drivers/video/omap2/dss/manager-sysfs.c b/drivers/video/omap2/dss/manager-sysfs.c
-index 72784b3..de7e7b5 100644
---- a/drivers/video/omap2/dss/manager-sysfs.c
-+++ b/drivers/video/omap2/dss/manager-sysfs.c
-@@ -50,6 +50,7 @@ static ssize_t manager_display_store(struct omap_overlay_manager *mgr,
- 	int r = 0;
- 	size_t len = size;
- 	struct omap_dss_device *dssdev = NULL;
-+	struct omap_dss_device *old_dssdev;
- 
- 	int match(struct omap_dss_device *dssdev, void *data)
- 	{
-@@ -66,34 +67,44 @@ static ssize_t manager_display_store(struct omap_overlay_manager *mgr,
- 	if (len > 0 && dssdev = NULL)
- 		return -EINVAL;
- 
--	if (dssdev)
-+	if (dssdev) {
- 		DSSDBG("display %s found\n", dssdev->name);
- 
--	if (mgr->output) {
--		r = mgr->unset_output(mgr);
--		if (r) {
--			DSSERR("failed to unset current output\n");
-+		if (omapdss_device_is_connected(dssdev)) {
-+			DSSERR("new display is already connected\n");
-+			r = -EINVAL;
-+			goto put_device;
-+		}
-+
-+		if (omapdss_device_is_enabled(dssdev)) {
-+			DSSERR("new display is not disabled\n");
-+			r = -EINVAL;
- 			goto put_device;
- 		}
- 	}
- 
--	if (dssdev) {
--		struct omap_dss_output *out;
-+	old_dssdev = mgr->get_device(mgr);
-+	if (old_dssdev) {
-+		if (omapdss_device_is_enabled(old_dssdev)) {
-+			DSSERR("old display is not disabled\n");
-+			r = -EINVAL;
-+			goto put_device;
-+		}
- 
--		out = omapdss_find_output_from_display(dssdev);
-+		old_dssdev->driver->disconnect(old_dssdev);
-+	}
- 
--		/*
--		 * a registered device should have an output connected to it
--		 * already
--		 */
--		if (!out) {
--			DSSERR("device has no output connected to it\n");
-+	if (dssdev) {
-+		r = dssdev->driver->connect(dssdev);
-+		if (r) {
-+			DSSERR("failed to connect new device\n");
- 			goto put_device;
- 		}
- 
--		r = mgr->set_output(mgr, out);
--		if (r) {
--			DSSERR("failed to set manager output\n");
-+		old_dssdev = mgr->get_device(mgr);
-+		if (old_dssdev != dssdev) {
-+			DSSERR("failed to connect device to this manager\n");
-+			dssdev->driver->disconnect(dssdev);
- 			goto put_device;
- 		}
- 
-diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
-index ab2c0f0..a53b08b 100644
---- a/drivers/video/omap2/dss/output.c
-+++ b/drivers/video/omap2/dss/output.c
-@@ -179,6 +179,20 @@ void dss_uninstall_mgr_ops(void)
- }
- EXPORT_SYMBOL(dss_uninstall_mgr_ops);
- 
-+int dss_mgr_connect(struct omap_overlay_manager *mgr,
-+		struct omap_dss_output *dst)
-+{
-+	return dss_mgr_ops->connect(mgr, dst);
-+}
-+EXPORT_SYMBOL(dss_mgr_connect);
-+
-+void dss_mgr_disconnect(struct omap_overlay_manager *mgr,
-+		struct omap_dss_output *dst)
-+{
-+	dss_mgr_ops->disconnect(mgr, dst);
-+}
-+EXPORT_SYMBOL(dss_mgr_disconnect);
-+
- void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
- 		const struct omap_video_timings *timings)
- {
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index dd972c5..eacbafa 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -1853,6 +1853,8 @@ static void omapfb_free_resources(struct omapfb2_device *fbdev)
- 		if (dssdev->state != OMAP_DSS_DISPLAY_DISABLED)
- 			dssdev->driver->disable(dssdev);
- 
-+		dssdev->driver->disconnect(dssdev);
-+
- 		omap_dss_put_device(dssdev);
- 	}
- 
-@@ -2363,22 +2365,23 @@ static int omapfb_init_connections(struct omapfb2_device *fbdev,
- 	int i, r;
- 	struct omap_overlay_manager *mgr;
- 
-+	r = def_dssdev->driver->connect(def_dssdev);
-+	if (r) {
-+		dev_err(fbdev->dev, "failed to connect default display\n");
-+		return r;
-+	}
-+
- 	for (i = 0; i < fbdev->num_displays; ++i) {
- 		struct omap_dss_device *dssdev = fbdev->displays[i].dssdev;
--		struct omap_dss_output *out;
- 
--		out = omapdss_find_output_from_display(dssdev);
--		if (!out)
-+		if (dssdev = def_dssdev)
- 			continue;
- 
--		mgr = omap_dss_get_overlay_manager(out->dispc_channel);
--		if (!mgr)
--			continue;
+-obj-$(CONFIG_FB_STI)              += sticore.o font.o
 -
--		if (mgr->output)
--			mgr->unset_output(mgr);
--
--		mgr->set_output(mgr, out);
-+		/*
-+		 * We don't care if the connect succeeds or not. We just want to
-+		 * connect as many displays as possible.
-+		 */
-+		dssdev->driver->connect(dssdev);
- 	}
- 
- 	mgr = omapdss_find_mgr_from_display(def_dssdev);
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 68b2345..f747266 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -689,6 +689,9 @@ struct omap_dss_driver {
- 	int (*probe)(struct omap_dss_device *);
- 	void (*remove)(struct omap_dss_device *);
- 
-+	int (*connect)(struct omap_dss_device *dssdev);
-+	void (*disconnect)(struct omap_dss_device *dssdev);
-+
- 	int (*enable)(struct omap_dss_device *display);
- 	void (*disable)(struct omap_dss_device *display);
- 	int (*run_test)(struct omap_dss_device *display, int test);
-@@ -888,6 +891,11 @@ int omapdss_compat_init(void);
- void omapdss_compat_uninit(void);
- 
- struct dss_mgr_ops {
-+	int (*connect)(struct omap_overlay_manager *mgr,
-+		struct omap_dss_output *dst);
-+	void (*disconnect)(struct omap_overlay_manager *mgr,
-+		struct omap_dss_output *dst);
-+
- 	void (*start_update)(struct omap_overlay_manager *mgr);
- 	int (*enable)(struct omap_overlay_manager *mgr);
- 	void (*disable)(struct omap_overlay_manager *mgr);
-@@ -904,6 +912,10 @@ struct dss_mgr_ops {
- int dss_install_mgr_ops(const struct dss_mgr_ops *mgr_ops);
- void dss_uninstall_mgr_ops(void);
- 
-+int dss_mgr_connect(struct omap_overlay_manager *mgr,
-+		struct omap_dss_output *dst);
-+void dss_mgr_disconnect(struct omap_overlay_manager *mgr,
-+		struct omap_dss_output *dst);
- void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
- 		const struct omap_video_timings *timings);
- void dss_mgr_set_lcd_config(struct omap_overlay_manager *mgr,
-@@ -915,4 +927,15 @@ int dss_mgr_register_framedone_handler(struct omap_overlay_manager *mgr,
- 		void (*handler)(void *), void *data);
- void dss_mgr_unregister_framedone_handler(struct omap_overlay_manager *mgr,
- 		void (*handler)(void *), void *data);
-+
-+static inline bool omapdss_device_is_connected(struct omap_dss_device *dssdev)
-+{
-+	return dssdev->output;
-+}
-+
-+static inline bool omapdss_device_is_enabled(struct omap_dss_device *dssdev)
-+{
-+	return dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
-+}
-+
- #endif
+-ifeq ($(CONFIG_USB_SISUSBVGA_CON),y)
+-obj-$(CONFIG_USB_SISUSBVGA)           += font.o
+-endif
++obj-$(CONFIG_FB_STI)              += sticore.o
 -- 
-1.8.1.2
+1.7.0.4
 

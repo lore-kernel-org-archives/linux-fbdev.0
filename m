@@ -1,37 +1,42 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Wed, 01 May 2013 16:55:08 +0000
-Subject: Re: [PATCH 00/10] OMAPDSS: Basic deferred probe support
-Message-Id: <20130501165507.GI28721@atomide.com>
+From: Geoff Levand <geoff@infradead.org>
+Date: Wed, 15 May 2013 03:12:37 +0000
+Subject: [PATCH] ps3fb: Fix compile warning
+Message-Id: <1368587557.4004.3.camel@clam>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1367230957-32337-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, grygorii.strashko@ti.com, chf.fritz@googlemail.com, Archit Taneja <archit@ti.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-fbdev@vger.kernel.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [130429 03:28]:
-> Hi,
-> 
-> omapdss, omapfb and the panel drivers do not currently support deferred probe,
-> which is causing the display drivers fail when booting with DT.
-> 
-> This series adds very basic support for deferred probing, which hopefully fixes
-> the issues for omap4 panda and sdp boards with the current kernel.
-> 
-> Limitations:
-> 
-> * Deferred probe support for omap_vout and omapdrm is still totally missing.
-> * If it so happens that at omapfb probe time one panel has been probed, but
->   another has been deferred, only the probed one will be used.
-> * Only DPI, DSI and HDMI outputs have been fixed.
-> * Some panel drivers may need modifications to support EPROBE_DEFER
-> 
-> Patches based on linux-next, i.e. the latest omapdss stuff.
+Fix the following compile warning when -Wparentheses is set:
 
-Great, these fix the issues at least for panda booted with DT.
+ drivers/video/ps3fb.c: warning: suggest parentheses around ‘+’ inside ‘<<’
 
-Regards,
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+---
+Hi Florian,
 
-Tony
+Please apply.
+
+-Geoff
+
+ drivers/video/ps3fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
+index d9f08c6..a397271d 100644
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -710,7 +710,7 @@ static int ps3fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	r = vm_iomap_memory(vma, info->fix.smem_start, info->fix.smem_len);
+ 
+ 	dev_dbg(info->device, "ps3fb: mmap framebuffer P(%lx)->V(%lx)\n",
+-		info->fix.smem_start + vma->vm_pgoff << PAGE_SHIFT,
++		(info->fix.smem_start + vma->vm_pgoff) << PAGE_SHIFT,
+ 		vma->vm_start);
+ 
+ 	return r;
+-- 
+1.8.1.2
+
+

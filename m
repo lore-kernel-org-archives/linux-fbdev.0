@@ -1,46 +1,73 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Mon, 27 May 2013 14:43:13 +0000
-Subject: Re: [PATCH 1/3] video: display_timing: add doubleclk flag
-Message-Id: <20130527144313.GC23825@game.jcrosoft.org>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Wed, 15 May 2013 16:41:12 +0000
+Subject: Re: fb driver for logiCVC
+Message-Id: <20130515184112.251bb949@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369658015-11743-1-git-send-email-l.stach@pengutronix.de>
-In-Reply-To: <1369658015-11743-1-git-send-email-l.stach@pengutronix.de>
+References: <9D79B9A9194389468A922F618415D0A401229E7E@abc.xylon.local>
+In-Reply-To: <9D79B9A9194389468A922F618415D0A401229E7E@abc.xylon.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: Dave Airlie <airlied@redhat.com>, linux-fbdev@vger.kernel.org, kernel@pengutronix.de, dri-devel@lists.freedesktop.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: Davor Joja <Davor.Joja@logicbricks.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On 14:33 Mon 27 May     , Lucas Stach wrote:
-> From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-> 
-> Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Hello Davor,
 
-If you want to take it via dri I'm fine otherwise via fbdev
+On Tue, 14 May 2013 "Davor Joja" wrote:
+> Can I get suggestion how to send driver to this list which consists of
+> several files and folders, as one (big) patch or as described in
+> "how-to" as link to some ftp or git?
+> My previous mail has not been replied, because of link to driver or
+> other issue (tested on kernel 3.8)?
 
-Best Regards,
-J.
-> ---
->  include/video/display_timing.h |    1 +
->  1 file changed, 1 insertion(+)
+You should also send it to linux-fbdev (CCed) so interested people have
+a better chance of seeing it (and quoting previous mail below).
+
+If you have a git tree with history it might be nice. Otherwise it's
+easier to review if you can split the big-patch into multiple incremental
+parts adding some functionality each (that incremental nature would also
+be expected from a git tree).
+
+Your tree at https://github.com/logicbricks/linux_kernel looks weird,
+you seem to have imported just the subfolders of kernel tree you worked
+on instead of cloning e.g. v3.8 release and applying your driver on top
+of it. This way it's not possible to merge your tree and it's rather hard
+to find out what belongs to your driver or not.
+
+Bruno
+
+On Wed, 08 May 2013 "Davor Joja" wrote:
+> I am sending link to frame buffer driver for Xylon "logiCVC" FPGA IP
+> core, so I would kindly ask for driver review.
+> logiCVC is Configurable Video Controller developed for Xilinx FPGA
+> devices.
+> logiCVC device together with xylonfb driver is widely used in Xilinx
+> Targeted Referent Designs on Zynq SoC platforms (ZC702, ZC706, ZED, TED,
+> Xilinx customers and Xilinx university program) and on custom projects
+> from Xylon and Xylon customers.
 > 
-> diff --git a/include/video/display_timing.h b/include/video/display_timing.h
-> index 5d0259b..28d9d0d 100644
-> --- a/include/video/display_timing.h
-> +++ b/include/video/display_timing.h
-> @@ -27,6 +27,7 @@ enum display_flags {
->  	DISPLAY_FLAGS_PIXDATA_NEGEDGE	= BIT(7),
->  	DISPLAY_FLAGS_INTERLACED	= BIT(8),
->  	DISPLAY_FLAGS_DOUBLESCAN	= BIT(9),
-> +	DISPLAY_FLAGS_DOUBLECLK		= BIT(10),
->  };
->  
->  /*
-> -- 
-> 1.7.10.4
+> Driver implements platform and open firmware registration types.
+> It has built in interface with V4L2 ADV7511 HDMI transmitter driver for
+> handling EDID and miscellaneous clock generator SI570 driver.
+> I would seek an advice for above mentioned and other issues which will
+> get to surface in review.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> For now fb driver runs on 3.8 kernel (ARM architecture), and it was
+> tested in all its configurations with:
+> - Xylon test application
+> - fbdev - Frame buffer device test application
+> - DirectFB,
+> - QT
+> - Ubuntu 10.04 (16bpp and 32bpp color depth) Driver build was tested by
+> Open Source Technology Center.
+> 
+> Latest driver is available at
+> https://github.com/logicbricks/linux_kernel.git under
+> "drivers/video/xylon" and "include/linux" "Documentation (xylonfb
+> devicetree parameters)"
+> It is available on https://github.com/xilinx but not latest version.
+> 
+> I have placed on ftp.logicbricks.com logiCVC datasheet, application
+> note, current xylonfb driver user manual and test applications.
+> Username: xylonfb
+> Password: xylonfb

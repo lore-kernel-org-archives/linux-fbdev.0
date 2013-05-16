@@ -1,54 +1,50 @@
-From: Laurent Navet <laurent.navet@gmail.com>
-Date: Tue, 14 May 2013 09:25:08 +0000
-Subject: [PATCH] drivers: video: mxsfb: clean use of devm_ioremap_resource()
-Message-Id: <1368523508-30967-1-git-send-email-laurent.navet@gmail.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 16 May 2013 08:41:28 +0000
+Subject: Re: [PATCH] drivers: video: mxsfb: clean use of devm_ioremap_resource()
+Message-Id: <19650694.136921368693687337.JavaMail.weblogic@epml12>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1368523508-30967-1-git-send-email-laurent.navet@gmail.com>
+In-Reply-To: <1368523508-30967-1-git-send-email-laurent.navet@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: FlorianSchandinat@gmx.de
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Laurent Navet <laurent.navet@gmail.com>
+To: Laurent Navet <laurent.navet@gmail.com>, "FlorianSchandinat@gmx.de" <FlorianSchandinat@gmx.de>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jingoo Han <jg1.han@samsung.com>
 
-Check of 'res' and calls to dev_err are already done in devm_ioremap_resource,
-so no need to do them twice.
-
-Signed-off-by: Laurent Navet <laurent.navet@gmail.com>
----
- drivers/video/mxsfb.c |   14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
-index 21223d4..0f3d0fc 100644
---- a/drivers/video/mxsfb.c
-+++ b/drivers/video/mxsfb.c
-@@ -884,9 +884,10 @@ static int mxsfb_probe(struct platform_device *pdev)
- 		pdev->id_entry = of_id->data;
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	if (!res) {
--		dev_err(&pdev->dev, "Cannot get memory IO resource\n");
--		return -ENODEV;
-+	host->base = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(host->base)) {
-+		ret = PTR_ERR(host->base);
-+		goto fb_release;
- 	}
- 
- 	fb_info = framebuffer_alloc(sizeof(struct mxsfb_info), &pdev->dev);
-@@ -897,13 +898,6 @@ static int mxsfb_probe(struct platform_device *pdev)
- 
- 	host = to_imxfb_host(fb_info);
- 
--	host->base = devm_ioremap_resource(&pdev->dev, res);
--	if (IS_ERR(host->base)) {
--		dev_err(&pdev->dev, "ioremap failed\n");
--		ret = PTR_ERR(host->base);
--		goto fb_release;
--	}
--
- 	host->pdev = pdev;
- 	platform_set_drvdata(pdev, host);
- 
--- 
-1.7.10.4
+VHVlc2RheSwgTWF5IDE0LCAyMDEzIDY6MjUgUE0sIExhdXJlbnQgTmF2ZXQgd3JvdGU6DQo+IA0K
+PiBDaGVjayBvZiAncmVzJyBhbmQgY2FsbHMgdG8gZGV2X2VyciBhcmUgYWxyZWFkeSBkb25lIGlu
+IGRldm1faW9yZW1hcF9yZXNvdXJjZSwNCj4gc28gbm8gbmVlZCB0byBkbyB0aGVtIHR3aWNlLg0K
+PiANCj4gU2lnbmVkLW9mZi1ieTogTGF1cmVudCBOYXZldCA8bGF1cmVudC5uYXZldEBnbWFpbC5j
+b20+DQo+IC0tLQ0KPiAgZHJpdmVycy92aWRlby9teHNmYi5jIHwgICAxNCArKysrLS0tLS0tLS0t
+LQ0KPiAgMSBmaWxlIGNoYW5nZWQsIDQgaW5zZXJ0aW9ucygrKSwgMTAgZGVsZXRpb25zKC0pDQo+
+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9teHNmYi5jIGIvZHJpdmVycy92aWRlby9t
+eHNmYi5jDQo+IGluZGV4IDIxMjIzZDQuLjBmM2QwZmMgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMv
+dmlkZW8vbXhzZmIuYw0KPiArKysgYi9kcml2ZXJzL3ZpZGVvL214c2ZiLmMNCj4gQEAgLTg4NCw5
+ICs4ODQsMTAgQEAgc3RhdGljIGludCBteHNmYl9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNl
+ICpwZGV2KQ0KPiAgCQlwZGV2LT5pZF9lbnRyeSA9IG9mX2lkLT5kYXRhOw0KPiANCj4gIAlyZXMg
+PSBwbGF0Zm9ybV9nZXRfcmVzb3VyY2UocGRldiwgSU9SRVNPVVJDRV9NRU0sIDApOw0KPiAtCWlm
+ICghcmVzKSB7DQo+IC0JCWRldl9lcnIoJnBkZXYtPmRldiwgIkNhbm5vdCBnZXQgbWVtb3J5IElP
+IHJlc291cmNlXG4iKTsNCj4gLQkJcmV0dXJuIC1FTk9ERVY7DQo+ICsJaG9zdC0+YmFzZSA9IGRl
+dm1faW9yZW1hcF9yZXNvdXJjZSgmcGRldi0+ZGV2LCByZXMpOw0KPiArCWlmIChJU19FUlIoaG9z
+dC0+YmFzZSkpIHsNCj4gKwkJcmV0ID0gUFRSX0VSUihob3N0LT5iYXNlKTsNCj4gKwkJZ290byBm
+Yl9yZWxlYXNlOw0KDQpJdCBtYWtlcyBidWlsZCB3YXJuaW5nIGFzIGJlbG93Og0KDQpkcml2ZXJz
+L3ZpZGVvL214c2ZiLmM6ODg3OjEzOiB3YXJuaW5nOiAnaG9zdCcgaXMgdXNlZCB1bmluaXRpYWxp
+emVkIGluIHRoaXMgZnVuY3Rpb24gWy1XdW5pbml0aWFsaXplZF0NCmRyaXZlcnMvdmlkZW8vbXhz
+ZmIuYzo5NjU6MjE6IHdhcm5pbmc6ICdmYl9pbmZvJyBtYXkgYmUgdXNlZCB1bmluaXRpYWxpemVk
+IGluIHRoaXMgZnVuY3Rpb24gWy1XdW5pbml0aWFsaXplZF0NCg0KSXQgYnJlYWtzIHRoZSBhc3Np
+Z25tZW50Lg0KCWhvc3QgPSB0b19pbXhmYl9ob3N0KGZiX2luZm8pOw0KDQpBbHNvLCAnZ290byBm
+Yl9yZWxlYXNlOycgaXMgbm90IGdvb2QuDQpQbGVhc2UgdXNlICcgcmV0dXJuIFBUUl9FUlIoaG9z
+dC0+YmFzZSk7JyBhcyBiZWxvdzoNCisgICAgICAgaG9zdC0+YmFzZSA9IGRldm1faW9yZW1hcF9y
+ZXNvdXJjZSgmcGRldi0+ZGV2LCByZXMpOw0KKyAgICAgICBpZiAoSVNfRVJSKGhvc3QtPmJhc2Up
+KQ0KKyAgICAgICAgICAgICAgIHJldHVybiBQVFJfRVJSKGhvc3QtPmJhc2UpOw0KDQoNCkJlc3Qg
+cmVnYXJkcywNCkppbmdvbyBIYW4NCg0KPiAgCX0NCj4gDQo+ICAJZmJfaW5mbyA9IGZyYW1lYnVm
+ZmVyX2FsbG9jKHNpemVvZihzdHJ1Y3QgbXhzZmJfaW5mbyksICZwZGV2LT5kZXYpOw0KPiBAQCAt
+ODk3LDEzICs4OTgsNiBAQCBzdGF0aWMgaW50IG14c2ZiX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9k
+ZXZpY2UgKnBkZXYpDQo+IA0KPiAgCWhvc3QgPSB0b19pbXhmYl9ob3N0KGZiX2luZm8pOw0KPiAN
+Cj4gLQlob3N0LT5iYXNlID0gZGV2bV9pb3JlbWFwX3Jlc291cmNlKCZwZGV2LT5kZXYsIHJlcyk7
+DQo+IC0JaWYgKElTX0VSUihob3N0LT5iYXNlKSkgew0KPiAtCQlkZXZfZXJyKCZwZGV2LT5kZXYs
+ICJpb3JlbWFwIGZhaWxlZFxuIik7DQo+IC0JCXJldCA9IFBUUl9FUlIoaG9zdC0+YmFzZSk7DQo+
+IC0JCWdvdG8gZmJfcmVsZWFzZTsNCj4gLQl9DQo+IC0NCj4gIAlob3N0LT5wZGV2ID0gcGRldjsN
+Cj4gIAlwbGF0Zm9ybV9zZXRfZHJ2ZGF0YShwZGV2LCBob3N0KTsNCj4gDQo+IC0tDQo+IDEuNy4x
+MC40DQo
 

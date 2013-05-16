@@ -1,73 +1,81 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Wed, 15 May 2013 16:41:12 +0000
-Subject: Re: fb driver for logiCVC
-Message-Id: <20130515184112.251bb949@neptune.home>
+From: "Davor Joja" <Davor.Joja@logicbricks.com>
+Date: Thu, 16 May 2013 10:35:38 +0000
+Subject: RE: fb driver for logiCVC
+Message-Id: <ABCSCiTtUDvkm6WeI5J00000073@abc.logicbricks.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <9D79B9A9194389468A922F618415D0A401229E7E@abc.xylon.local>
-In-Reply-To: <9D79B9A9194389468A922F618415D0A401229E7E@abc.xylon.local>
+References: <9D79B9A9194389468A922F618415D0A401229E7E@abc.xylon.local> <20130515184112.251bb949@neptune.home>
+In-Reply-To: <20130515184112.251bb949@neptune.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Davor Joja <Davor.Joja@logicbricks.com>
+To: =?utf-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>
 Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Hello Davor,
-
-On Tue, 14 May 2013 "Davor Joja" wrote:
-> Can I get suggestion how to send driver to this list which consists of
-> several files and folders, as one (big) patch or as described in
-> "how-to" as link to some ftp or git?
-> My previous mail has not been replied, because of link to driver or
-> other issue (tested on kernel 3.8)?
-
-You should also send it to linux-fbdev (CCed) so interested people have
-a better chance of seeing it (and quoting previous mail below).
-
-If you have a git tree with history it might be nice. Otherwise it's
-easier to review if you can split the big-patch into multiple incremental
-parts adding some functionality each (that incremental nature would also
-be expected from a git tree).
-
-Your tree at https://github.com/logicbricks/linux_kernel looks weird,
-you seem to have imported just the subfolders of kernel tree you worked
-on instead of cloning e.g. v3.8 release and applying your driver on top
-of it. This way it's not possible to merge your tree and it's rather hard
-to find out what belongs to your driver or not.
-
-Bruno
-
-On Wed, 08 May 2013 "Davor Joja" wrote:
-> I am sending link to frame buffer driver for Xylon "logiCVC" FPGA IP
-> core, so I would kindly ask for driver review.
-> logiCVC is Configurable Video Controller developed for Xilinx FPGA
-> devices.
-> logiCVC device together with xylonfb driver is widely used in Xilinx
-> Targeted Referent Designs on Zynq SoC platforms (ZC702, ZC706, ZED, TED,
-> Xilinx customers and Xilinx university program) and on custom projects
-> from Xylon and Xylon customers.
-> 
-> Driver implements platform and open firmware registration types.
-> It has built in interface with V4L2 ADV7511 HDMI transmitter driver for
-> handling EDID and miscellaneous clock generator SI570 driver.
-> I would seek an advice for above mentioned and other issues which will
-> get to surface in review.
-> 
-> For now fb driver runs on 3.8 kernel (ARM architecture), and it was
-> tested in all its configurations with:
-> - Xylon test application
-> - fbdev - Frame buffer device test application
-> - DirectFB,
-> - QT
-> - Ubuntu 10.04 (16bpp and 32bpp color depth) Driver build was tested by
-> Open Source Technology Center.
-> 
-> Latest driver is available at
-> https://github.com/logicbricks/linux_kernel.git under
-> "drivers/video/xylon" and "include/linux" "Documentation (xylonfb
-> devicetree parameters)"
-> It is available on https://github.com/xilinx but not latest version.
-> 
-> I have placed on ftp.logicbricks.com logiCVC datasheet, application
-> note, current xylonfb driver user manual and test applications.
-> Username: xylonfb
-> Password: xylonfb
+SGVsbG8gQnJ1bm8sDQoNClRoYW5rIHlvdSBmb3IgdGhlIGFuc3dlciENCg0KSSBkaWQgbm90IHNl
+bmQgaXQgYmVmb3JlIHRvIGxpbnV4LWZiZGV2IHNpbmNlIEkgdGhvdWdodCB0aGF0IGl0IGlzIG1v
+cmUgbGlrZWx5IHRvIGdldCBhbnN3ZXIgYXQgbGludXgta2VybmVsIGxpc3QuDQpXaWxsIGRvIHRo
+YXQgZnJvbSBub3cuDQoNClVuZm9ydHVuYXRlbHksIEkgaGF2ZSB0aGlzIGRyaXZlciBvbiBtZW50
+aW9uZWQgZ2l0IG9ubHkgZm9yIGZldyB3ZWVrcywgc28gdGhlcmUgaXMgbm8gdXNhYmxlIGhpc3Rv
+cnkuDQpTaW5jZSB0aGlzIGlzIG5ldyBkcml2ZXIsIHRlc3RlZCBhbmQgZnVuY3Rpb25hbCAob24g
+a2VybmVsIDMuOCksIHdpdGhvdXQgZ2l0IGhpc3RvcnkgYXMgc3RhdGVkIGFib3ZlLCBkbyB5b3Ug
+aGF2ZSBpZGVhIGhvdyB0byBicmVhayBpdCB0byBzbWFsbGVyIHBpZWNlcz8gSSBjYW4gb25seSB0
+aGluayBvZmYgYXMgb25lIGJpZyBwYXRjaCBhZ2FpbnN0IDMuOC54IHZlcnNpb24uDQpUaGF0IGNv
+dWxkIGJlIGFjY2VwdGVkIGZvciBuZXcgZHJpdmVyPw0KDQpZb3UgYXJlIHJpZ2h0IGFib3V0IGdp
+dCwgaXQgaXMgbm90IG9yZ2FuaXplZCBpbiBzdGFuZGFyZCB3YXkuDQpJdCBpcyBjcmVhdGVkIGZv
+ciBvdXIgY3VzdG9tZXJzIHRvIGVhc2lseSBnZXQgbGF0ZXN0IGRyaXZlcnMgZm9yIFh5bG9uIElQ
+IGNvcmVzIGJlY2F1c2UgdGhleSBhbHJlYWR5IGtub3cgd2hhdCB0aGV5IG5lZWQgYW5kIGluIHdo
+aWNoIGZvbGRlciB0byBzZWFyY2guIE1heWJlIHRoaXMgd2FzIG5vdCBnb29kIGlkZWEgdG8gc2Vu
+ZCB0aGF0IGdpdCBsaW5rIGZvciByZXZpZXcuIFdpbGwgc3RpdGNoIHRvIHBhdGNoZXMgaW4gdGhl
+IGZ1dHVyZSwgZXZlbiBmb3IgbmV3IGRyaXZlcnMuDQoNClJlZ2FyZHMsDQpEYXZvcg0KDQoNCi0t
+LS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBCcnVubyBQcsOpbW9udCBbbWFpbHRvOmJv
+bmJvbnNAbGludXgtdnNlcnZlci5vcmddIA0KU2VudDogV2VkbmVzZGF5LCBNYXkgMTUsIDIwMTMg
+Njo0MSBQTQ0KVG86IERhdm9yIEpvamENCkNjOiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3Jn
+OyBsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmcNClN1YmplY3Q6IFJlOiBmYiBkcml2ZXIgZm9y
+IGxvZ2lDVkMNCg0KSGVsbG8gRGF2b3IsDQoNCk9uIFR1ZSwgMTQgTWF5IDIwMTMgIkRhdm9yIEpv
+amEiIHdyb3RlOg0KPiBDYW4gSSBnZXQgc3VnZ2VzdGlvbiBob3cgdG8gc2VuZCBkcml2ZXIgdG8g
+dGhpcyBsaXN0IHdoaWNoIGNvbnNpc3RzIG9mIA0KPiBzZXZlcmFsIGZpbGVzIGFuZCBmb2xkZXJz
+LCBhcyBvbmUgKGJpZykgcGF0Y2ggb3IgYXMgZGVzY3JpYmVkIGluIA0KPiAiaG93LXRvIiBhcyBs
+aW5rIHRvIHNvbWUgZnRwIG9yIGdpdD8NCj4gTXkgcHJldmlvdXMgbWFpbCBoYXMgbm90IGJlZW4g
+cmVwbGllZCwgYmVjYXVzZSBvZiBsaW5rIHRvIGRyaXZlciBvciANCj4gb3RoZXIgaXNzdWUgKHRl
+c3RlZCBvbiBrZXJuZWwgMy44KT8NCg0KWW91IHNob3VsZCBhbHNvIHNlbmQgaXQgdG8gbGludXgt
+ZmJkZXYgKENDZWQpIHNvIGludGVyZXN0ZWQgcGVvcGxlIGhhdmUgYSBiZXR0ZXIgY2hhbmNlIG9m
+IHNlZWluZyBpdCAoYW5kIHF1b3RpbmcgcHJldmlvdXMgbWFpbCBiZWxvdykuDQoNCklmIHlvdSBo
+YXZlIGEgZ2l0IHRyZWUgd2l0aCBoaXN0b3J5IGl0IG1pZ2h0IGJlIG5pY2UuIE90aGVyd2lzZSBp
+dCdzIGVhc2llciB0byByZXZpZXcgaWYgeW91IGNhbiBzcGxpdCB0aGUgYmlnLXBhdGNoIGludG8g
+bXVsdGlwbGUgaW5jcmVtZW50YWwgcGFydHMgYWRkaW5nIHNvbWUgZnVuY3Rpb25hbGl0eSBlYWNo
+ICh0aGF0IGluY3JlbWVudGFsIG5hdHVyZSB3b3VsZCBhbHNvIGJlIGV4cGVjdGVkIGZyb20gYSBn
+aXQgdHJlZSkuDQoNCllvdXIgdHJlZSBhdCBodHRwczovL2dpdGh1Yi5jb20vbG9naWNicmlja3Mv
+bGludXhfa2VybmVsIGxvb2tzIHdlaXJkLCB5b3Ugc2VlbSB0byBoYXZlIGltcG9ydGVkIGp1c3Qg
+dGhlIHN1YmZvbGRlcnMgb2Yga2VybmVsIHRyZWUgeW91IHdvcmtlZCBvbiBpbnN0ZWFkIG9mIGNs
+b25pbmcgZS5nLiB2My44IHJlbGVhc2UgYW5kIGFwcGx5aW5nIHlvdXIgZHJpdmVyIG9uIHRvcCBv
+ZiBpdC4gVGhpcyB3YXkgaXQncyBub3QgcG9zc2libGUgdG8gbWVyZ2UgeW91ciB0cmVlIGFuZCBp
+dCdzIHJhdGhlciBoYXJkIHRvIGZpbmQgb3V0IHdoYXQgYmVsb25ncyB0byB5b3VyIGRyaXZlciBv
+ciBub3QuDQoNCkJydW5vDQoNCk9uIFdlZCwgMDggTWF5IDIwMTMgIkRhdm9yIEpvamEiIHdyb3Rl
+Og0KPiBJIGFtIHNlbmRpbmcgbGluayB0byBmcmFtZSBidWZmZXIgZHJpdmVyIGZvciBYeWxvbiAi
+bG9naUNWQyIgRlBHQSBJUCANCj4gY29yZSwgc28gSSB3b3VsZCBraW5kbHkgYXNrIGZvciBkcml2
+ZXIgcmV2aWV3Lg0KPiBsb2dpQ1ZDIGlzIENvbmZpZ3VyYWJsZSBWaWRlbyBDb250cm9sbGVyIGRl
+dmVsb3BlZCBmb3IgWGlsaW54IEZQR0EgDQo+IGRldmljZXMuDQo+IGxvZ2lDVkMgZGV2aWNlIHRv
+Z2V0aGVyIHdpdGggeHlsb25mYiBkcml2ZXIgaXMgd2lkZWx5IHVzZWQgaW4gWGlsaW54IA0KPiBU
+YXJnZXRlZCBSZWZlcmVudCBEZXNpZ25zIG9uIFp5bnEgU29DIHBsYXRmb3JtcyAoWkM3MDIsIFpD
+NzA2LCBaRUQsIA0KPiBURUQsIFhpbGlueCBjdXN0b21lcnMgYW5kIFhpbGlueCB1bml2ZXJzaXR5
+IHByb2dyYW0pIGFuZCBvbiBjdXN0b20gDQo+IHByb2plY3RzIGZyb20gWHlsb24gYW5kIFh5bG9u
+IGN1c3RvbWVycy4NCj4gDQo+IERyaXZlciBpbXBsZW1lbnRzIHBsYXRmb3JtIGFuZCBvcGVuIGZp
+cm13YXJlIHJlZ2lzdHJhdGlvbiB0eXBlcy4NCj4gSXQgaGFzIGJ1aWx0IGluIGludGVyZmFjZSB3
+aXRoIFY0TDIgQURWNzUxMSBIRE1JIHRyYW5zbWl0dGVyIGRyaXZlciANCj4gZm9yIGhhbmRsaW5n
+IEVESUQgYW5kIG1pc2NlbGxhbmVvdXMgY2xvY2sgZ2VuZXJhdG9yIFNJNTcwIGRyaXZlci4NCj4g
+SSB3b3VsZCBzZWVrIGFuIGFkdmljZSBmb3IgYWJvdmUgbWVudGlvbmVkIGFuZCBvdGhlciBpc3N1
+ZXMgd2hpY2ggd2lsbCANCj4gZ2V0IHRvIHN1cmZhY2UgaW4gcmV2aWV3Lg0KPiANCj4gRm9yIG5v
+dyBmYiBkcml2ZXIgcnVucyBvbiAzLjgga2VybmVsIChBUk0gYXJjaGl0ZWN0dXJlKSwgYW5kIGl0
+IHdhcyANCj4gdGVzdGVkIGluIGFsbCBpdHMgY29uZmlndXJhdGlvbnMgd2l0aDoNCj4gLSBYeWxv
+biB0ZXN0IGFwcGxpY2F0aW9uDQo+IC0gZmJkZXYgLSBGcmFtZSBidWZmZXIgZGV2aWNlIHRlc3Qg
+YXBwbGljYXRpb24NCj4gLSBEaXJlY3RGQiwNCj4gLSBRVA0KPiAtIFVidW50dSAxMC4wNCAoMTZi
+cHAgYW5kIDMyYnBwIGNvbG9yIGRlcHRoKSBEcml2ZXIgYnVpbGQgd2FzIHRlc3RlZCANCj4gYnkg
+T3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIuDQo+IA0KPiBMYXRlc3QgZHJpdmVyIGlzIGF2
+YWlsYWJsZSBhdA0KPiBodHRwczovL2dpdGh1Yi5jb20vbG9naWNicmlja3MvbGludXhfa2VybmVs
+LmdpdCB1bmRlciANCj4gImRyaXZlcnMvdmlkZW8veHlsb24iIGFuZCAiaW5jbHVkZS9saW51eCIg
+IkRvY3VtZW50YXRpb24gKHh5bG9uZmIgDQo+IGRldmljZXRyZWUgcGFyYW1ldGVycykiDQo+IEl0
+IGlzIGF2YWlsYWJsZSBvbiBodHRwczovL2dpdGh1Yi5jb20veGlsaW54IGJ1dCBub3QgbGF0ZXN0
+IHZlcnNpb24uDQo+IA0KPiBJIGhhdmUgcGxhY2VkIG9uIGZ0cC5sb2dpY2JyaWNrcy5jb20gbG9n
+aUNWQyBkYXRhc2hlZXQsIGFwcGxpY2F0aW9uIA0KPiBub3RlLCBjdXJyZW50IHh5bG9uZmIgZHJp
+dmVyIHVzZXIgbWFudWFsIGFuZCB0ZXN0IGFwcGxpY2F0aW9ucy4NCj4gVXNlcm5hbWU6IHh5bG9u
+ZmINCj4gUGFzc3dvcmQ6IHh5bG9uZmINCg=

@@ -1,53 +1,60 @@
-From: Jerome Glisse <j.glisse@gmail.com>
-Date: Thu, 16 May 2013 13:50:01 +0000
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Thu, 16 May 2013 21:00:28 +0000
 Subject: Re: [PATCH v3 6/9] radeon: Switch to arch_phys_wc_add and add a missing ..._del
-Message-Id: <CAH3drwY0vVGnf05v-coSmS4OQyHuufycLojEn9que6iL_r3AUw@mail.gmail.com>
+Message-Id: <CALCETrUMeZSvPfV0m+S7nXDiOJrzATMzvoi48Yv116tJw1fPzA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1368485053.git.luto@amacapital.net>
-	<bf7788cfd4695d05f2b414735744105906650e42.1368485053.git.luto@amacapital.net>
-	<CADnq5_O6tZeRVq=gmJfn3JWQGgECSE1JuonpSKgFCYSD8RCqHQ@mail.gmail.com>
-	<CAH3drwbSLdjd4Y8x8YfzhM5WK+A-L7mnYeS0kdqu7MwEB5kbCQ@mail.gmail.com>
-	<CALCETrVo-6cnKZsDJnBJcwGjpPbW9QAYriyjAZavaZ8O2OkjnQ@mail.gmail.com>
-	<CAH3drwb743_q5ZrNDNsnOUUNVDMcefaq9NH3+t863OGc98-D-Q@mail.gmail.com>
-	<CALCETrXA-nbdDEv1TyU9e4mcGZzAoCTTDX33M1o31rZkgHHTFg@mail.gmail.com>
-In-Reply-To: <CALCETrXA-nbdDEv1TyU9e4mcGZzAoCTTDX33M1o31rZkgHHTFg@mail.gmail.com>
+References: <cover.1368485053.git.luto@amacapital.net> <bf7788cfd4695d05f2b414735744105906650e42.1368485053.git.luto@amacapital.net>
+ <CADnq5_O6tZeRVq=gmJfn3JWQGgECSE1JuonpSKgFCYSD8RCqHQ@mail.gmail.com>
+ <CAH3drwbSLdjd4Y8x8YfzhM5WK+A-L7mnYeS0kdqu7MwEB5kbCQ@mail.gmail.com>
+ <CALCETrVo-6cnKZsDJnBJcwGjpPbW9QAYriyjAZavaZ8O2OkjnQ@mail.gmail.com>
+ <CAH3drwb743_q5ZrNDNsnOUUNVDMcefaq9NH3+t863OGc98-D-Q@mail.gmail.com>
+ <CALCETrXA-nbdDEv1TyU9e4mcGZzAoCTTDX33M1o31rZkgHHTFg@mail.gmail.com> <CAH3drwY0vVGnf05v-coSmS4OQyHuufycLojEn9que6iL_r3AUw@mail.gmail.com>
+In-Reply-To: <CAH3drwY0vVGnf05v-coSmS4OQyHuufycLojEn9que6iL_r3AUw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andy Lutomirski <luto@amacapital.net>
+To: Jerome Glisse <j.glisse@gmail.com>
 Cc: Alex Deucher <alexdeucher@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@gmail.com>
 
-On Wed, May 15, 2013 at 2:22 PM, Andy Lutomirski <luto@amacapital.net> wrote:
-> On Wed, May 15, 2013 at 7:49 AM, Jerome Glisse <j.glisse@gmail.com> wrote:
->> On Tue, May 14, 2013 at 5:35 PM, Andy Lutomirski <luto@amacapital.net> wrote:
->>> On Tue, May 14, 2013 at 6:37 AM, Jerome Glisse <j.glisse@gmail.com> wrote:
->>>> On Tue, May 14, 2013 at 8:58 AM, Alex Deucher <alexdeucher@gmail.com> wrote:
->>>>> On Mon, May 13, 2013 at 7:58 PM, Andy Lutomirski <luto@amacapital.net> wrote:
->>>>>> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
->>>>>> Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+On Thu, May 16, 2013 at 6:50 AM, Jerome Glisse <j.glisse@gmail.com> wrote:
+> On Wed, May 15, 2013 at 2:22 PM, Andy Lutomirski <luto@amacapital.net> wrote:
+>> On Wed, May 15, 2013 at 7:49 AM, Jerome Glisse <j.glisse@gmail.com> wrote:
+>>> On Tue, May 14, 2013 at 5:35 PM, Andy Lutomirski <luto@amacapital.net> wrote:
+>>>> On Tue, May 14, 2013 at 6:37 AM, Jerome Glisse <j.glisse@gmail.com> wrote:
+>>>>> On Tue, May 14, 2013 at 8:58 AM, Alex Deucher <alexdeucher@gmail.com> wrote:
+>>>>>> On Mon, May 13, 2013 at 7:58 PM, Andy Lutomirski <luto@amacapital.net> wrote:
+>>>>>>> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+>>>>>>> Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+>>>>>>
+>>>>>> Reviewed-by: Alex Deucher <alexander.deucher@amd.com>
 >>>>>
->>>>> Reviewed-by: Alex Deucher <alexander.deucher@amd.com>
+>>>>> I believe it will break something but we could deal with the fallout
+>>>>> once it happens.
 >>>>
->>>> I believe it will break something but we could deal with the fallout
->>>> once it happens.
+>>>> FWIW, I'm running with this code on my machine right now using the
+>>>> radeon driver.  Everything seems fine.  If I build without MTRRs and
+>>>> without PAT, though, graphics are slow (as expected).  So I think
+>>>> everything's okay.
+>>>>
+>>>> --Andy
 >>>
->>> FWIW, I'm running with this code on my machine right now using the
->>> radeon driver.  Everything seems fine.  If I build without MTRRs and
->>> without PAT, though, graphics are slow (as expected).  So I think
->>> everything's okay.
->>>
->>> --Andy
+>>> I am worried on p4 where i last see issue with that notably with agp.
 >>
->> I am worried on p4 where i last see issue with that notably with agp.
+>> Do you remember any details?  It looks like PAT is enabled on Pentium
+>> 4 (i.e. famliy 0xF).
+>>
+>> --Andy
 >
-> Do you remember any details?  It looks like PAT is enabled on Pentium
-> 4 (i.e. famliy 0xF).
->
-> --Andy
+> No i don't, i think it was some pat errata on those about non real ram
+> address and with agp. Memory is fuzzy. I might have time in couple of
+> week to plug back my p4 and see how it behave.
 
-No i don't, i think it was some pat errata on those about non real ram
-address and with agp. Memory is fuzzy. I might have time in couple of
-week to plug back my p4 and see how it behave.
+Hmm.  I couldn't find any PAT errata related to AGP.
 
-Cheers,
-Jerome
+Is it possible that the issue was that, if there was no MTRR covering
+the AGP aperture, that the mapping ended up as writeback?  If so, I
+fixed that in this series.
+
+In any case, if you see any problems, please let me know.
+
+--Andy

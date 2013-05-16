@@ -1,48 +1,124 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Sat, 04 May 2013 17:48:33 +0000
-Subject: Re: [PATCH 2/7] drm (ast, cirrus, mgag200, nouveau, savage, vmwgfx): Rework drm_mtrr_{add, del}
-Message-Id: <CALCETrXVN_b2T93kMc=342h+1++mjucHS0btir1UZOa3CS+R-g@mail.gmail.com>
+From: Lad Prabhakar <prabhakar.csengg@gmail.com>
+Date: Thu, 16 May 2013 07:22:57 +0000
+Subject: [PATCH 2/2] video:da8xx-fb: Convert to devm_* api
+Message-Id: <1368688257-18705-3-git-send-email-prabhakar.csengg@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1367621038.git.luto@amacapital.net> <4615b8566e9530e2169a36a5870f1b2eb7e621cd.1367621039.git.luto@amacapital.net>
- <20130504174555.GT5763@phenom.ffwll.local>
-In-Reply-To: <20130504174555.GT5763@phenom.ffwll.local>
+References: <1368688257-18705-1-git-send-email-prabhakar.csengg@gmail.com>
+In-Reply-To: <1368688257-18705-1-git-send-email-prabhakar.csengg@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andy Lutomirski <luto@amacapital.net>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: DLOS <davinci-linux-open-source@linux.davincidsp.com>, LFBDEV <linux-fbdev@vger.kernel.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
 
-On Sat, May 4, 2013 at 10:45 AM, Daniel Vetter <daniel@ffwll.ch> wrote:
-> On Fri, May 03, 2013 at 04:00:30PM -0700, Andy Lutomirski wrote:
->> This replaces drm_mtrr_{add,del} with drm_mtrr_{add,del}_wc.  The
->> interface is simplified (because the base and size parameters to
->> drm_mtrr_del never did anything) and it uses
->> mtrr_{add,del}_wc_if_needed to avoid allocating MTRRs on systems
->> that don't need them.
->>
->> Signed-off-by: Andy Lutomirski <luto@amacapital.net>
->> ---
->
->
-> Tbh I'm not a big fan of the drm_ indirection. Historically that was
-> useful as an OS abstraction layer so that the same drivers could be used
-> unchanged on Linux and the *BSD. But those days are long gone and drm
-> drivers are now proper Linux drivers, and generally OS HALs seem to be
-> frowned upon.
->
-> Is there another reason than just being consistent with the historic stuff
-> here? If we need dummy functions for !CONFIG_MTRR I think those should
-> simply be in the core.
+From: Lad, Prabhakar <prabhakar.csengg@gmail.com>
 
+Use devm_ioremap_resource instead of reques_mem_region()/ioremap() and
+devm_request_irq() instead of request_irq().
 
-I admit to a bit of cargo-culting.  There was a layer of indirection,
-so I kept it.  I'll just call mtrr_add/del_wc_if_needed directly in v2
-(I added those functions in patch 1 of this series).
+This ensures more consistent error values and simplifies error paths.
 
-I'd assume you're okay with skipping mtrr addition if PAT is available
-since i915 already does it :)  (Although the current logic is buggy --
-cpu_has_pat is the wrong flag to check -- I think pat_enabled is
-better.)
+Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+---
+ drivers/video/da8xx-fb.c |   39 +++++++--------------------------------
+ 1 files changed, 7 insertions(+), 32 deletions(-)
 
-Note to self: I should remove #include <asm/pat.h> in i915_dma.c in v2.
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index aafe8b9..d35ea1d 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -134,7 +134,6 @@
+ #define LOWER_MARGIN	32
+ 
+ static void __iomem *da8xx_fb_reg_base;
+-static struct resource *lcdc_regs;
+ static unsigned int lcd_revision;
+ static irq_handler_t lcdc_irq_handler;
+ static wait_queue_head_t frame_done_wq;
+@@ -1015,12 +1014,9 @@ static int fb_remove(struct platform_device *dev)
+ 				  par->p_palette_base);
+ 		dma_free_coherent(NULL, par->vram_size, par->vram_virt,
+ 				  par->vram_phys);
+-		free_irq(par->irq, par);
+ 		pm_runtime_put_sync(&dev->dev);
+ 		pm_runtime_disable(&dev->dev);
+ 		framebuffer_release(info);
+-		iounmap(da8xx_fb_reg_base);
+-		release_mem_region(lcdc_regs->start, resource_size(lcdc_regs));
+ 
+ 	}
+ 	return 0;
+@@ -1212,12 +1208,12 @@ static int fb_probe(struct platform_device *device)
+ {
+ 	struct da8xx_lcdc_platform_data *fb_pdata  						device->dev.platform_data;
++	static struct resource *lcdc_regs;
+ 	struct lcd_ctrl_config *lcd_cfg;
+ 	struct fb_videomode *lcdc_info;
+ 	struct fb_info *da8xx_fb_info;
+ 	struct clk *fb_clk = NULL;
+ 	struct da8xx_fb_par *par;
+-	resource_size_t len;
+ 	int ret, i;
+ 	unsigned long ulcm;
+ 
+@@ -1227,29 +1223,14 @@ static int fb_probe(struct platform_device *device)
+ 	}
+ 
+ 	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
+-	if (!lcdc_regs) {
+-		dev_err(&device->dev,
+-			"Can not get memory resource for LCD controller\n");
+-		return -ENOENT;
+-	}
+-
+-	len = resource_size(lcdc_regs);
+-
+-	lcdc_regs = request_mem_region(lcdc_regs->start, len, lcdc_regs->name);
+-	if (!lcdc_regs)
+-		return -EBUSY;
+-
+-	da8xx_fb_reg_base = ioremap(lcdc_regs->start, len);
+-	if (!da8xx_fb_reg_base) {
+-		ret = -EBUSY;
+-		goto err_request_mem;
+-	}
++	da8xx_fb_reg_base = devm_ioremap_resource(&device->dev, lcdc_regs);
++	if (IS_ERR(da8xx_fb_reg_base))
++		return PTR_ERR(da8xx_fb_reg_base);
+ 
+ 	fb_clk = clk_get(&device->dev, "fck");
+ 	if (IS_ERR(fb_clk)) {
+ 		dev_err(&device->dev, "Can not get device clock\n");
+-		ret = -ENODEV;
+-		goto err_ioremap;
++		return -ENODEV;
+ 	}
+ 
+ 	pm_runtime_enable(&device->dev);
+@@ -1430,8 +1411,8 @@ static int fb_probe(struct platform_device *device)
+ 		lcdc_irq_handler = lcdc_irq_handler_rev02;
+ 	}
+ 
+-	ret = request_irq(par->irq, lcdc_irq_handler, 0,
+-			DRIVER_NAME, par);
++	ret = devm_request_irq(&device->dev, par->irq, lcdc_irq_handler, 0,
++			       DRIVER_NAME, par);
+ 	if (ret)
+ 		goto irq_freq;
+ 	return 0;
+@@ -1460,12 +1441,6 @@ err_pm_runtime_disable:
+ 	pm_runtime_put_sync(&device->dev);
+ 	pm_runtime_disable(&device->dev);
+ 
+-err_ioremap:
+-	iounmap(da8xx_fb_reg_base);
+-
+-err_request_mem:
+-	release_mem_region(lcdc_regs->start, len);
+-
+ 	return ret;
+ }
+ 
+-- 
+1.7.4.1
 
---Andy

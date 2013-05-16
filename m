@@ -1,42 +1,111 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 09 May 2013 21:04:43 +0000
-Subject: [PATCH 01/12] fbdev: FB_GOLDFISH should depend on HAS_DMA
-Message-Id: <1368133494-22198-1-git-send-email-geert@linux-m68k.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 16 May 2013 13:00:02 +0000
+Subject: [PATCH 2/2] videomode: implement public of_get_display_timing()
+Message-Id: <1368709202-1056-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1368709202-1056-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1368709202-1056-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-If NO_DMA=y:
+The current of_get_display_timings() reads multiple display timings,
+allocating memory for the entries. However, most of the time when
+parsing display timings from DT data is needed, there's only one display
+timing as it's not common for a LCD panel to support multiple videomodes.
 
-drivers/built-in.o: In function `goldfish_fb_remove':
-drivers/video/goldfishfb.c:301: undefined reference to `dma_free_coherent'
-drivers/built-in.o: In function `goldfish_fb_probe':
-drivers/video/goldfishfb.c:247: undefined reference to `dma_alloc_coherent'
-drivers/video/goldfishfb.c:280: undefined reference to `dma_free_coherent'
+This patch creates a new function:
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org
+int of_get_display_timing(struct device_node *np, const char *name,
+               struct display_timing *dt);
+
+which can be used to parse a single display timing entry from the given
+node name.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Philipp Zabel <p.zabel@pengutronix.de>
 ---
- drivers/video/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/of_display_timing.c | 33 ++++++++++++++++++++++++++++++---
+ include/video/of_display_timing.h |  2 ++
+ 2 files changed, 32 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 9669c9c..da01cec 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2199,7 +2199,7 @@ config FB_XILINX
+diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
+index 0e81023..9c0f17b 100644
+--- a/drivers/video/of_display_timing.c
++++ b/drivers/video/of_display_timing.c
+@@ -53,10 +53,10 @@ static int parse_timing_property(struct device_node *np, const char *name,
+ }
  
- config FB_GOLDFISH
- 	tristate "Goldfish Framebuffer"
--	depends on FB
-+	depends on FB && HAS_DMA
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
+ /**
+- * of_get_display_timing - parse display_timing entry from device_node
++ * of_parse_display_timing - parse display_timing entry from device_node
+  * @np: device_node with the properties
+  **/
+-static int of_get_display_timing(struct device_node *np,
++static int of_parse_display_timing(struct device_node *np,
+ 		struct display_timing *dt)
+ {
+ 	u32 val = 0;
+@@ -103,6 +103,33 @@ static int of_get_display_timing(struct device_node *np,
+ }
+ 
+ /**
++ * of_get_display_timing - parse a display_timing entry
++ * @np: device_node with the timing subnode
++ * @name: name of the timing node
++ * @dt: display_timing struct to fill
++ **/
++int of_get_display_timing(struct device_node *np, const char *name,
++		struct display_timing *dt)
++{
++	struct device_node *timing_np;
++
++	if (!np) {
++		pr_err("%s: no devicenode given\n", of_node_full_name(np));
++		return -EINVAL;
++	}
++
++	timing_np = of_find_node_by_name(np, name);
++	if (!timing_np) {
++		pr_err("%s: could not find node '%s'\n",
++			of_node_full_name(np), name);
++		return -ENOENT;
++	}
++
++	return of_parse_display_timing(timing_np, dt);
++}
++EXPORT_SYMBOL_GPL(of_get_display_timing);
++
++/**
+  * of_get_display_timings - parse all display_timing entries from a device_node
+  * @np: device_node with the subnodes
+  **/
+@@ -177,7 +204,7 @@ struct display_timings *of_get_display_timings(struct device_node *np)
+ 			goto timingfail;
+ 		}
+ 
+-		r = of_get_display_timing(entry, dt);
++		r = of_parse_display_timing(entry, dt);
+ 		if (r) {
+ 			/*
+ 			 * to not encourage wrong devicetrees, fail in case of
+diff --git a/include/video/of_display_timing.h b/include/video/of_display_timing.h
+index 8016eb7..6562ad9 100644
+--- a/include/video/of_display_timing.h
++++ b/include/video/of_display_timing.h
+@@ -14,6 +14,8 @@ struct display_timings;
+ 
+ #define OF_USE_NATIVE_MODE -1
+ 
++int of_get_display_timing(struct device_node *np, const char *name,
++		struct display_timing *dt);
+ struct display_timings *of_get_display_timings(struct device_node *np);
+ int of_display_timings_exist(struct device_node *np);
+ 
 -- 
-1.7.0.4
+1.8.1.2
 

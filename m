@@ -1,32 +1,34 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 16 May 2013 11:23:07 +0000
-Subject: Re: fb driver for logiCVC
-Message-Id: <CAMuHMdUW-tVY6=Bu9mabKrkNJsTxJM+Umo6jjcnXpWpzh_5AVw@mail.gmail.com>
+From: "Davor Joja" <Davor.Joja@logicbricks.com>
+Date: Thu, 16 May 2013 11:51:34 +0000
+Subject: RE: fb driver for logiCVC
+Message-Id: <ABCPY3ZCHWRJhEG4r3o0000007d@abc.logicbricks.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <9D79B9A9194389468A922F618415D0A401229E7E@abc.xylon.local>
-	<20130515184112.251bb949@neptune.home>
-	<ABCSCiTtUDvkm6WeI5J00000073@abc.logicbricks.com>
-In-Reply-To: <ABCSCiTtUDvkm6WeI5J00000073@abc.logicbricks.com>
+References: <9D79B9A9194389468A922F618415D0A401229E7E@abc.xylon.local><20130515184112.251bb949@neptune.home><ABCSCiTtUDvkm6WeI5J00000073@abc.logicbricks.com> <CAMuHMdUW-tVY6=Bu9mabKrkNJsTxJM+Umo6jjcnXpWpzh_5AVw@mail.gmail.com>
+In-Reply-To: <CAMuHMdUW-tVY6=Bu9mabKrkNJsTxJM+Umo6jjcnXpWpzh_5AVw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Davor Joja <Davor.Joja@logicbricks.com>
-Cc: =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: =?utf-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>, linux-kernel@vger.kernel.org, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
 
-On Thu, May 16, 2013 at 12:35 PM, Davor Joja <Davor.Joja@logicbricks.com> wrote:
-> Unfortunately, I have this driver on mentioned git only for few weeks, so there is no usable history.
-> Since this is new driver, tested and functional (on kernel 3.8), without git history as stated above, do you have idea how to break it to smaller pieces? I can only think off as one big patch against 3.8.x version.
-> That could be accepted for new driver?
-
-A single patch is OK for a new driver.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+VGhhbmtzIEdlZXJ0IQ0KDQpSZWdhcmRzLA0KRGF2b3INCg0KLS0tLS1PcmlnaW5hbCBNZXNzYWdl
+LS0tLS0NCkZyb206IGdlZXJ0LnV5dHRlcmhvZXZlbkBnbWFpbC5jb20gW21haWx0bzpnZWVydC51
+eXR0ZXJob2V2ZW5AZ21haWwuY29tXSBPbiBCZWhhbGYgT2YgR2VlcnQgVXl0dGVyaG9ldmVuDQpT
+ZW50OiBUaHVyc2RheSwgTWF5IDE2LCAyMDEzIDE6MjMgUE0NClRvOiBEYXZvciBKb2phDQpDYzog
+QnJ1bm8gUHLDqW1vbnQ7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IExpbnV4IEZiZGV2
+IGRldmVsb3BtZW50IGxpc3QNClN1YmplY3Q6IFJlOiBmYiBkcml2ZXIgZm9yIGxvZ2lDVkMNCg0K
+T24gVGh1LCBNYXkgMTYsIDIwMTMgYXQgMTI6MzUgUE0sIERhdm9yIEpvamEgPERhdm9yLkpvamFA
+bG9naWNicmlja3MuY29tPiB3cm90ZToNCj4gVW5mb3J0dW5hdGVseSwgSSBoYXZlIHRoaXMgZHJp
+dmVyIG9uIG1lbnRpb25lZCBnaXQgb25seSBmb3IgZmV3IHdlZWtzLCBzbyB0aGVyZSBpcyBubyB1
+c2FibGUgaGlzdG9yeS4NCj4gU2luY2UgdGhpcyBpcyBuZXcgZHJpdmVyLCB0ZXN0ZWQgYW5kIGZ1
+bmN0aW9uYWwgKG9uIGtlcm5lbCAzLjgpLCB3aXRob3V0IGdpdCBoaXN0b3J5IGFzIHN0YXRlZCBh
+Ym92ZSwgZG8geW91IGhhdmUgaWRlYSBob3cgdG8gYnJlYWsgaXQgdG8gc21hbGxlciBwaWVjZXM/
+IEkgY2FuIG9ubHkgdGhpbmsgb2ZmIGFzIG9uZSBiaWcgcGF0Y2ggYWdhaW5zdCAzLjgueCB2ZXJz
+aW9uLg0KPiBUaGF0IGNvdWxkIGJlIGFjY2VwdGVkIGZvciBuZXcgZHJpdmVyPw0KDQpBIHNpbmds
+ZSBwYXRjaCBpcyBPSyBmb3IgYSBuZXcgZHJpdmVyLg0KDQpHcntvZXRqZSxlZXRpbmd9cywNCg0K
+ICAgICAgICAgICAgICAgICAgICAgICAgR2VlcnQNCg0KLS0NCkdlZXJ0IFV5dHRlcmhvZXZlbiAt
+LSBUaGVyZSdzIGxvdHMgb2YgTGludXggYmV5b25kIGlhMzIgLS0gZ2VlcnRAbGludXgtbTY4ay5v
+cmcNCg0KSW4gcGVyc29uYWwgY29udmVyc2F0aW9ucyB3aXRoIHRlY2huaWNhbCBwZW9wbGUsIEkg
+Y2FsbCBteXNlbGYgYSBoYWNrZXIuIEJ1dCB3aGVuIEknbSB0YWxraW5nIHRvIGpvdXJuYWxpc3Rz
+IEkganVzdCBzYXkgInByb2dyYW1tZXIiIG9yIHNvbWV0aGluZyBsaWtlIHRoYXQuDQogICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIC0tIExpbnVzIFRvcnZhbGRzDQo

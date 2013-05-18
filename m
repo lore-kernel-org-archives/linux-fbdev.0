@@ -1,36 +1,41 @@
-From: Rob Landley <rob@landley.net>
-Date: Wed, 08 May 2013 20:58:30 +0000
+From: Alexandre Courbot <gnurou@gmail.com>
+Date: Sat, 18 May 2013 10:29:53 +0000
 Subject: Re: [PATCH V2] video: implement a simple framebuffer driver
-Message-Id: <1368046710.18069.217@driftwood>
+Message-Id: <CAAVeFuJ5q4Y0QtvJX2iVmq_O2ofs1B9=MB_aA8VdcEBdM4zf2Q@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1365043183-28905-1-git-send-email-swarren@wwwdotorg.org>
- <201304300004.20320.arnd@arndb.de> <5182AF83.4080705@wwwdotorg.org>
- <1956593.M6NmITdEKh@avalon>
- <20130507143338.79b3d893fcdc3bd79fbe9a57@linux-foundation.org>
- <5189BA36.9000105@wwwdotorg.org>
-In-Reply-To: <5189BA36.9000105@wwwdotorg.org> (from swarren@wwwdotorg.org on
- Tue May  7 21:36:38 2013)
+In-Reply-To: <1365043183-28905-1-git-send-email-swarren@wwwdotorg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On 05/07/2013 09:36:38 PM, Stephen Warren wrote:
-> On 05/07/2013 03:33 PM, Andrew Morton wrote:
-...
-> Subject: drivers/video: implement a simple framebuffer driver
-> 
-> A simple frame-buffer describes a raw memory region that may be  
-> rendered
-> to, with the assumption that the display hardware has already been set
-> up to scan out from that buffer.
-> 
-> This is useful in cases where a bootloader exists and has set up the
-> display hardware, but a Linux driver doesn't yet exist for the display
-> hardware.
-> 
-> Examples use-cases include:
+On Thu, Apr 4, 2013 at 11:39 AM, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> +struct simplefb_format {
+> +       const char *name;
+> +       u32 bits_per_pixel;
+> +       struct fb_bitfield red;
+> +       struct fb_bitfield green;
+> +       struct fb_bitfield blue;
+> +       struct fb_bitfield transp;
+> +};
+> +
+> +struct simplefb_format simplefb_formats[] = {
+> +       { "r5g6b5", 16, {11, 5}, {5, 6}, {0, 5}, {0, 0} },
+> +};
 
-Virtual environments such as QEMU.
+I have been adding a few extra formats to this list, and I wonder if
+this could not simply be turned into a function that would directly
+convert the name string into the corresponding right format. The
+mapping between name and format seems to be a 1:1 and this would
+probably avoid errors in the future. I'm especially thinking about
+color order here - I started adding a mode that reads
 
-Rob
+    { "r8g8b8a8", 32, {0, 8}, {8, 8}, {16, 8}, {24, 8} },
+
+while it should probably be called "a8b8g8r8" as the order of colors
+is not the same as your r5g6b5.
+
+I can submit a patch if there is no issue with that idea.
+
+Alex.

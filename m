@@ -1,191 +1,136 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Fri, 03 May 2013 23:00:35 +0000
-Subject: [PATCH 7/7] uvesafb: Clean up MTRR code
-Message-Id: <1692ae3da2fd85aaa267d7d38954bc701f9f7bfd.1367621039.git.luto@amacapital.net>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Sat, 18 May 2013 09:15:13 +0000
+Subject: [PATCH 3/4] fb: vt8500: Require a device clock for wm8505fb driver
+Message-Id: <1368868514-18975-4-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1367621038.git.luto@amacapital.net>
-In-Reply-To: <cover.1367621038.git.luto@amacapital.net>
+References: <1368868514-18975-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1368868514-18975-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Andy Lutomirski <luto@amacapital.net>, Michal Januszewski <spock@gentoo.org>
+To: linux-arm-kernel@lists.infradead.org
 
-The old code allowed very strange memory types.  Now it works like
-all the other video drivers: ioremap_wc is used unconditionally,
-and MTRRs are set if PAT is unavailable (unless MTRR is disabled
-by a module parameter).
+The wm8505fb driver requires a clock to work properly. Without a clock,
+the driver can only initialize the display resolution that was set in
+uboot.
+This patch updates the driver to get and use a clock, and updates
+the devicetree documentation to indicate the requirement for a clock.
 
-UC, WB, and WT support is gone.  If there are MTRR conflicts that prevent
-addition of a WC MTRR, adding a non-conflicting MTRR is pointless; it's
-better to just turn off MTRR support entirely.
-
-As an added bonus, any MTRR added is freed on unload.
-
-Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
 ---
+ .../devicetree/bindings/video/wm,wm8505-fb.txt     |    4 ++-
+ drivers/video/wm8505fb.c                           |   30 +++++++++++++++++---
+ 2 files changed, 29 insertions(+), 5 deletions(-)
 
-I can't test this -- the link to v86d in Documentation/fb/uvesafb.txt
-seems to be broken, and Fedora doesn't seem to package it.
-
- Documentation/fb/uvesafb.txt | 16 ++++------
- drivers/video/uvesafb.c      | 70 ++++++++++++--------------------------------
- include/video/uvesafb.h      |  1 +
- 3 files changed, 24 insertions(+), 63 deletions(-)
-
-diff --git a/Documentation/fb/uvesafb.txt b/Documentation/fb/uvesafb.txt
-index eefdd91..f6362d8 100644
---- a/Documentation/fb/uvesafb.txt
-+++ b/Documentation/fb/uvesafb.txt
-@@ -81,17 +81,11 @@ pmipal  Use the protected mode interface for palette changes.
+diff --git a/Documentation/devicetree/bindings/video/wm,wm8505-fb.txt b/Documentation/devicetree/bindings/video/wm,wm8505-fb.txt
+index 0bcadb2..601416c 100644
+--- a/Documentation/devicetree/bindings/video/wm,wm8505-fb.txt
++++ b/Documentation/devicetree/bindings/video/wm,wm8505-fb.txt
+@@ -5,6 +5,7 @@ Required properties:
+ - compatible : "wm,wm8505-fb"
+ - reg : Should contain 1 register ranges(address and length)
+ - bits-per-pixel : bit depth of framebuffer (16 or 32)
++- clocks : phandle to DVO clock
  
- mtrr:n  Setup memory type range registers for the framebuffer
-         where n:
--              0 - disabled (equivalent to nomtrr) (default)
--              1 - uncachable
--              2 - write-back
--              3 - write-combining
--              4 - write-through
--
--        If you see the following in dmesg, choose the type that matches
--        the old one.  In this example, use "mtrr:2".
--...
--mtrr: type mismatch for e0000000,8000000 old: write-back new: write-combining
--...
-+              0 - disabled (equivalent to nomtrr)
-+              3 - write-combining (default)
-+
-+	Values other than 0 and 3 will result in a warning and will be
-+	treated just like 3.
+ Required subnodes:
+ - display-timings: see display-timing.txt for information
+@@ -15,11 +16,12 @@ Example:
+ 		compatible = "wm,wm8505-fb";
+ 		reg = <0xd8051700 0x200>;
+ 		bits-per-pixel = <16>;
++		clocks = <&clkdvo>;
  
- nomtrr  Do not use memory type range registers.
+ 		display-timings {
+ 			native-mode = <&timing0>;
+ 			timing0: 800x480 {
+-				clock-frequency = <0>; /* unused but required */
++				clock-frequency = <30000000>;
+ 				hactive = <800>;
+ 				vactive = <480>;
+ 				hfront-porch = <40>;
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index 167a9e2..f8bffc2 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -14,6 +14,7 @@
+  * GNU General Public License for more details.
+  */
  
-diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-index d428445..4f447ad 100644
---- a/drivers/video/uvesafb.c
-+++ b/drivers/video/uvesafb.c
-@@ -24,9 +24,7 @@
- #ifdef CONFIG_X86
- #include <video/vga.h>
- #endif
--#ifdef CONFIG_MTRR
- #include <asm/mtrr.h>
--#endif
- #include "edid.h"
- 
- static struct cb_id uvesafb_cn_id = {
-@@ -1540,67 +1538,31 @@ static void uvesafb_init_info(struct fb_info *info, struct vbe_mode_ib *mode)
- 
- static void uvesafb_init_mtrr(struct fb_info *info)
- {
--#ifdef CONFIG_MTRR
-+	struct uvesafb_par *par = info->par;
-+
- 	if (mtrr && !(info->fix.smem_start & (PAGE_SIZE - 1))) {
- 		int temp_size = info->fix.smem_len;
--		unsigned int type = 0;
- 
--		switch (mtrr) {
--		case 1:
--			type = MTRR_TYPE_UNCACHABLE;
--			break;
--		case 2:
--			type = MTRR_TYPE_WRBACK;
--			break;
--		case 3:
--			type = MTRR_TYPE_WRCOMB;
--			break;
--		case 4:
--			type = MTRR_TYPE_WRTHROUGH;
--			break;
--		default:
--			type = 0;
--			break;
--		}
-+		int rc;
- 
--		if (type) {
--			int rc;
-+		/* Find the largest power-of-two */
-+		temp_size = roundup_pow_of_two(temp_size);
- 
--			/* Find the largest power-of-two */
--			temp_size = roundup_pow_of_two(temp_size);
-+		/* Try and find a power of two to add */
-+		do {
-+			rc = mtrr_add_wc_if_needed(info->fix.smem_start,
-+						   temp_size);
-+			temp_size >>= 1;
-+		} while (temp_size >= PAGE_SIZE && rc = -EINVAL);
- 
--			/* Try and find a power of two to add */
--			do {
--				rc = mtrr_add(info->fix.smem_start,
--					      temp_size, type, 1);
--				temp_size >>= 1;
--			} while (temp_size >= PAGE_SIZE && rc = -EINVAL);
--		}
-+		if (rc >= 0)
-+			par->mtrr_handle = rc;
- 	}
--#endif /* CONFIG_MTRR */
- }
- 
- static void uvesafb_ioremap(struct fb_info *info)
- {
--#ifdef CONFIG_X86
--	switch (mtrr) {
--	case 1: /* uncachable */
--		info->screen_base = ioremap_nocache(info->fix.smem_start, info->fix.smem_len);
--		break;
--	case 2: /* write-back */
--		info->screen_base = ioremap_cache(info->fix.smem_start, info->fix.smem_len);
--		break;
--	case 3: /* write-combining */
--		info->screen_base = ioremap_wc(info->fix.smem_start, info->fix.smem_len);
--		break;
--	case 4: /* write-through */
--	default:
--		info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
--		break;
--	}
--#else
--	info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
--#endif /* CONFIG_X86 */
-+	info->screen_base = ioremap_wc(info->fix.smem_start, info->fix.smem_len);
- }
- 
- static ssize_t uvesafb_show_vbe_ver(struct device *dev,
-@@ -1851,6 +1813,7 @@ static int uvesafb_remove(struct platform_device *dev)
- 		unregister_framebuffer(info);
- 		release_region(0x3c0, 32);
- 		iounmap(info->screen_base);
-+		mtrr_del_wc_if_needed(par->mtrr_handle);
- 		release_mem_region(info->fix.smem_start, info->fix.smem_len);
- 		fb_destroy_modedb(info->monspecs.modedb);
- 		fb_dealloc_cmap(&info->cmap);
-@@ -1930,6 +1893,9 @@ static int uvesafb_setup(char *options)
- 		}
- 	}
- 
-+	if (mtrr != 3 && mtrr != 1)
-+		pr_warn("uvesafb: mtrr should be set to 0 or 3; %d is unsupported", mtrr);
-+
- 	return 0;
- }
- #endif /* !MODULE */
-diff --git a/include/video/uvesafb.h b/include/video/uvesafb.h
-index 1a91850..30f5362 100644
---- a/include/video/uvesafb.h
-+++ b/include/video/uvesafb.h
-@@ -134,6 +134,7 @@ struct uvesafb_par {
- 
- 	int mode_idx;
- 	struct vbe_crtc_ib crtc;
-+	int mtrr_handle;
++#include <linux/clk.h>
+ #include <linux/delay.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/fb.h>
+@@ -130,9 +131,11 @@
+ #define to_wm8505fb_info(__info) container_of(__info, \
+ 						struct wm8505fb_info, fb)
+ struct wm8505fb_info {
+-	struct fb_info		fb;
+-	void __iomem		*regbase;
+-	unsigned int		contrast;
++	struct fb_info fb;
++	void __iomem *regbase;
++	unsigned int contrast;
++	struct device *dev;
++	struct clk *clk_dvo;
  };
  
- #endif /* _UVESAFB_H */
+ 
+@@ -210,6 +213,13 @@ static int wm8505fb_set_par(struct fb_info *info)
+ 	if (!fbi)
+ 		return -EINVAL;
+ 
++	if (info->var.pixclock = 0) {
++		dev_err(fbi->dev, "requested pixclock = 0\n");
++		return -EINVAL;
++	}
++
++	clk_set_rate(fbi->clk_dvo, PICOS2KHZ(info->var.pixclock)*1000);
++
+ 	if (info->var.bits_per_pixel = 32) {
+ 		info->var.red.offset = 16;
+ 		info->var.red.length = 8;
+@@ -369,6 +379,8 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 	}
+ 
++	fbi->dev = &pdev->dev;
++
+ 	strcpy(fbi->fb.fix.id, DRIVER_NAME);
+ 
+ 	fbi->fb.fix.type	= FB_TYPE_PACKED_PIXELS;
+@@ -408,6 +420,14 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
++	fbi->clk_dvo = of_clk_get(pdev->dev.of_node, 0);
++	if (IS_ERR(fbi->clk_dvo)) {
++		dev_err(&pdev->dev, "Error retrieving clock\n");
++		return PTR_ERR(fbi->clk_dvo);
++	}
++
++	clk_prepare_enable(fbi->clk_dvo);
++
+ 	fb_videomode_to_var(&fbi->fb.var, &mode);
+ 
+ 	fbi->fb.var.nonstd		= 0;
+@@ -421,7 +441,7 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 	fb_mem_virt = dmam_alloc_coherent(&pdev->dev, fb_mem_len, &fb_mem_phys,
+ 				GFP_KERNEL);
+ 	if (!fb_mem_virt) {
+-		pr_err("%s: Failed to allocate framebuffer\n", __func__);
++		dev_err(&pdev->dev, "Failed to allocate framebuffer\n");
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -480,6 +500,8 @@ static int wm8505fb_remove(struct platform_device *pdev)
+ 
+ 	unregister_framebuffer(&fbi->fb);
+ 
++	clk_disable_unprepare(fbi->clk_dvo);
++
+ 	writel(0, fbi->regbase);
+ 
+ 	if (fbi->fb.cmap.len)
 -- 
-1.8.1.4
+1.7.9.5
 

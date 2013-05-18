@@ -1,154 +1,137 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Fri, 10 May 2013 19:34:37 +0000
-Subject: Re: [RFC/PATCH v2 1/8] Add arch_phys_wc_{add,del} to manipulate WC MTRRs if needed
-Message-Id: <20130510193437.GT12292@phenom.ffwll.local>
+From: Tony Prisk <linux@prisktech.co.nz>
+Date: Sat, 18 May 2013 09:15:14 +0000
+Subject: [PATCH 4/4] fb: vt8500: Add VGA output support to wm8505fb driver.
+Message-Id: <1368868514-18975-5-git-send-email-linux@prisktech.co.nz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1368128020.git.luto@amacapital.net>
- <97346b603822ffd8ab446316fc08fbf7686c9d50.1368128020.git.luto@amacapital.net>
- <20130510091923.GH12292@phenom.ffwll.local>
- <CALCETrVQzMjxZ87zY=+-TUKAMARnR9m3CzYdWZgEopJxF0TkDw@mail.gmail.com>
- <20130510190954.GS12292@phenom.ffwll.local>
- <CALCETrXbO9ePZf5nUZQXG1LSr8N7XCw34QKj7EqAF1sY3L1UdQ@mail.gmail.com>
-In-Reply-To: <CALCETrXbO9ePZf5nUZQXG1LSr8N7XCw34QKj7EqAF1sY3L1UdQ@mail.gmail.com>
+References: <1368868514-18975-1-git-send-email-linux@prisktech.co.nz>
+In-Reply-To: <1368868514-18975-1-git-send-email-linux@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andy Lutomirski <luto@amacapital.net>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>
+To: linux-arm-kernel@lists.infradead.org
 
-On Fri, May 10, 2013 at 12:27:54PM -0700, Andy Lutomirski wrote:
-> On Fri, May 10, 2013 at 12:09 PM, Daniel Vetter <daniel@ffwll.ch> wrote:
-> > On Fri, May 10, 2013 at 11:00:56AM -0700, Andy Lutomirski wrote:
-> >> On Fri, May 10, 2013 at 2:19 AM, Daniel Vetter <daniel@ffwll.ch> wrote:
-> >> > On Thu, May 09, 2013 at 12:46:20PM -0700, Andy Lutomirski wrote:
-> >> >> Several drivers currently use mtrr_add through various #ifdef guards
-> >> >> and/or drm wrappers.  The vast majority of them want to add WC MTRRs
-> >> >> on x86 systems and don't actually need the MTRR if PAT (i.e.
-> >> >> ioremap_wc, etc) are working.
-> >> >>
-> >> >> arch_phys_wc_add and arch_phys_wc_del are new functions, available
-> >> >> on all architectures and configurations, that add WC MTRRs on x86 if
-> >> >> needed (and handle errors) and do nothing at all otherwise.  They're
-> >> >> also easier to use than mtrr_add and mtrr_del, so the call sites can
-> >> >> be simplified.
-> >> >>
-> >> >> As an added benefit, this will avoid wasting MTRRs and possibly
-> >> >> warning pointlessly on PAT-supporting systems.
-> >> >>
-> >> >> Signed-off-by: Andy Lutomirski <luto@amacapital.net>
-> >> >> ---
-> >> >>  arch/x86/include/asm/io.h       |  7 ++++++
-> >> >>  arch/x86/include/asm/mtrr.h     |  5 ++++-
-> >> >>  arch/x86/kernel/cpu/mtrr/main.c | 48 +++++++++++++++++++++++++++++++++++++++++
-> >> >>  include/linux/io.h              | 25 +++++++++++++++++++++
-> >> >>  4 files changed, 84 insertions(+), 1 deletion(-)
-> >> >>
-> >> >> diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
-> >> >> index d8e8eef..34f69cb 100644
-> >> >> --- a/arch/x86/include/asm/io.h
-> >> >> +++ b/arch/x86/include/asm/io.h
-> >> >> @@ -345,4 +345,11 @@ extern bool xen_biovec_phys_mergeable(const struct bio_vec *vec1,
-> >> >>
-> >> >>  #define IO_SPACE_LIMIT 0xffff
-> >> >>
-> >> >> +#ifdef CONFIG_MTRR
-> >> >> +extern int __must_check arch_phys_wc_add(unsigned long base,
-> >> >> +                                      unsigned long size);
-> >> >> +extern void arch_phys_wc_del(int handle);
-> >> >> +#define arch_phys_wc_add arch_phys_wc_add
-> >> >> +#endif
-> >> >> +
-> >> >>  #endif /* _ASM_X86_IO_H */
-> >> >> diff --git a/arch/x86/include/asm/mtrr.h b/arch/x86/include/asm/mtrr.h
-> >> >> index e235582..10d0fba 100644
-> >> >> --- a/arch/x86/include/asm/mtrr.h
-> >> >> +++ b/arch/x86/include/asm/mtrr.h
-> >> >> @@ -26,7 +26,10 @@
-> >> >>  #include <uapi/asm/mtrr.h>
-> >> >>
-> >> >>
-> >> >> -/*  The following functions are for use by other drivers  */
-> >> >> +/*
-> >> >> + * The following functions are for use by other drivers that cannot use
-> >> >> + * arch_phys_wc_add and arch_phys_wc_del.
-> >> >> + */
-> >> >>  # ifdef CONFIG_MTRR
-> >> >>  extern u8 mtrr_type_lookup(u64 addr, u64 end);
-> >> >>  extern void mtrr_save_fixed_ranges(void *);
-> >> >> diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
-> >> >> index 726bf96..23bd49a 100644
-> >> >> --- a/arch/x86/kernel/cpu/mtrr/main.c
-> >> >> +++ b/arch/x86/kernel/cpu/mtrr/main.c
-> >> >> @@ -51,6 +51,7 @@
-> >> >>  #include <asm/e820.h>
-> >> >>  #include <asm/mtrr.h>
-> >> >>  #include <asm/msr.h>
-> >> >> +#include <asm/pat.h>
-> >> >>
-> >> >>  #include "mtrr.h"
-> >> >>
-> >> >> @@ -524,6 +525,53 @@ int mtrr_del(int reg, unsigned long base, unsigned long size)
-> >> >>  }
-> >> >>  EXPORT_SYMBOL(mtrr_del);
-> >> >>
-> >> >> +/**
-> >> >> + * arch_phys_wc_add - add a WC MTRR and handle errors if PAT is unavailable
-> >> >> + * @base: Physical base address
-> >> >> + * @size: Size of region
-> >> >> + *
-> >> >> + * If PAT is available, this does nothing.  If PAT is unavailable, it
-> >> >> + * attempts to add a WC MTRR covering size bytes starting at base and
-> >> >> + * logs an error if this fails.
-> >> >> + *
-> >> >> + * Drivers must store the return value to pass to mtrr_del_wc_if_needed,
-> >> >> + * but drivers should not try to interpret that return value.
-> >> >> + */
-> >> >> +int arch_phys_wc_add(unsigned long base, unsigned long size)
-> >> >> +{
-> >> >> +     int ret;
-> >> >> +
-> >> >> +     if (pat_enabled)
-> >> >> +             return 0;  /* Success!  (We don't need to do anything.) */
-> >> >
-> >> > Shouldn't we #define a big number for this case since mtrr_add returns
-> >> > 0-based mtrr indices? Rather unlikely that the very first mtrr is unused I
-> >> > know, but still feels like a cleaner interface. And we don't need to leak
-> >> > that #define out at all to users of this interface.
-> >>
-> >> I did something more like that in v1, but I like having the property
-> >> that arch_phys_wc_del(0) does nothing as opposed to possibly breaking
-> >> the system.  Given that almost all of these things are stored in
-> >> kzalloced space, this seems safer to me.  The return value here could
-> >> just as easily be -ENOSYS, but nothing should care.
-> >>
-> >> There is an issue, though: the drm maps interface is leaking the
-> >> return values to userspace via a couple of ioctls, so I should fix it
-> >> to at least return the correct value.  (Why that interface includes an
-> >> mtrr number is a mystery to me.)
-> >
-> > Old drm interfaces are horrible. Best approach is to simply stay far away
-> > from them ...
-> >
-> >> Have I convinced you that my bike shed color is okay?  I'll send out a
-> >> v3 later today with a fix for the leaking-to-userspace issue and I'll
-> >> fix the i915 thing.
-> >
-> > A comment in your arch_phys_wc_add/del functions that we do have an mtrr
-> > with index 0, but won't ever get that would be fine with me. Still feels a
-> > bit irky though ;-)
-> 
-> Hmm.  Maybe you missed the hack I ended up using a couple of lines
-> below.  I'm always using strictly positive values to indicate a real
-> MTRR -- I'm adding 1000 to the result if we actually do anything.  So
-> a return value of 0 is genuinely safe.  (I still have to fix up the
-> two places in the drm code that pass that hacked-up value back to
-> userspace.)
+The APC8750 does not support an LCD panel, but provides a VGA connector.
+This patch adds support for the VGA interface, and defines an optional
+devicetree property to specify the output interface. The default if not
+specified is LCD for backward compatibility.
 
-Oops, I've indeed missed that one. Only noticed the special 0 and started
-hunting down the semantics of mtrr_add. With that cleared up this is
+Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+---
+ .../devicetree/bindings/video/wm,wm8505-fb.txt     |    5 ++++
+ drivers/video/wm8505fb.c                           |   31 ++++++++++++++++++--
+ 2 files changed, 34 insertions(+), 2 deletions(-)
 
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+diff --git a/Documentation/devicetree/bindings/video/wm,wm8505-fb.txt b/Documentation/devicetree/bindings/video/wm,wm8505-fb.txt
+index 601416c..9f1d648 100644
+--- a/Documentation/devicetree/bindings/video/wm,wm8505-fb.txt
++++ b/Documentation/devicetree/bindings/video/wm,wm8505-fb.txt
+@@ -7,6 +7,10 @@ Required properties:
+ - bits-per-pixel : bit depth of framebuffer (16 or 32)
+ - clocks : phandle to DVO clock
+ 
++Optional properties:
++- output-interface : the interface the fb should output on. Valid values are
++	"lcd" or "vga". If not specified, the default is "lcd".
++
+ Required subnodes:
+ - display-timings: see display-timing.txt for information
+ 
+@@ -17,6 +21,7 @@ Example:
+ 		reg = <0xd8051700 0x200>;
+ 		bits-per-pixel = <16>;
+ 		clocks = <&clkdvo>;
++		output-interface = "vga";
+ 
+ 		display-timings {
+ 			native-mode = <&timing0>;
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index f8bffc2..d1f7f33 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -130,12 +130,17 @@
+ 
+ #define to_wm8505fb_info(__info) container_of(__info, \
+ 						struct wm8505fb_info, fb)
++
++#define INTERFACE_LCD	1
++#define INTERFACE_VGA	2
++
+ struct wm8505fb_info {
+ 	struct fb_info fb;
+ 	void __iomem *regbase;
+ 	unsigned int contrast;
+ 	struct device *dev;
+ 	struct clk *clk_dvo;
++	int interface;
+ };
+ 
+ 
+@@ -158,7 +163,11 @@ static int wm8505fb_init_hw(struct fb_info *info)
+ 	 * 0x31C sets the correct color mode (RGB565) for WM8650
+ 	 * Bit 8+9 (0x300) are ignored on WM8505 as reserved
+ 	 */
+-	writel(0x31c,		       fbi->regbase + REG_GOVRH_YUVRGB);
++	if (fbi->interface = INTERFACE_VGA)
++		writel(0x338, fbi->regbase + REG_GOVRH_YUVRGB);
++	else
++		writel(0x31c, fbi->regbase + REG_GOVRH_YUVRGB);
++
+ 	writel(1,		       fbi->regbase + REG_GOVRH_DVO_PIX);
+ 
+ 	/* Virtual buffer size */
+@@ -167,7 +176,12 @@ static int wm8505fb_init_hw(struct fb_info *info)
+ 
+ 	/* black magic ;) */
+ 	writel(0xf,		       fbi->regbase + REG_GOVRH_FHI);
+-	writel(4,		       fbi->regbase + REG_GOVRH_DVO_SET);
++
++	if (fbi->interface = INTERFACE_VGA)
++		writel(0xe, fbi->regbase + REG_GOVRH_DVO_SET);
++	else
++		writel(4, fbi->regbase + REG_GOVRH_DVO_SET);
++
+ 	writel(1,		       fbi->regbase + REG_GOVRH_MIF);
+ 	writel(1,		       fbi->regbase + REG_GOVRH_REG_STS);
+ 
+@@ -194,11 +208,15 @@ static int wm8505fb_set_timing(struct fb_info *info)
+ 	writel(h_end,   fbi->regbase + REG_GOVRH_ACTPX_END);
+ 	writel(h_all,   fbi->regbase + REG_GOVRH_H_ALLPXL);
+ 	writel(h_sync,  fbi->regbase + REG_GOVRH_HDMI_HSYNW);
++	if (fbi->interface = INTERFACE_VGA)
++		writel(h_sync,  fbi->regbase + REG_GOVRH_VGA_HSYNW);
+ 
+ 	writel(v_start, fbi->regbase + REG_GOVRH_ACTLN_BG);
+ 	writel(v_end,   fbi->regbase + REG_GOVRH_ACTLN_END);
+ 	writel(v_all,   fbi->regbase + REG_GOVRH_V_ALLLN);
+ 	writel(v_sync,  fbi->regbase + REG_GOVRH_HDMI_VBISW);
++	if (fbi->interface = INTERFACE_VGA)
++		writel(info->var.pixclock,  fbi->regbase + REG_GOVRH_VGA_VSYNW);
+ 
+ 	writel(1, fbi->regbase + REG_GOVRH_TG_ENABLE);
+ 
+@@ -371,6 +389,7 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 	dma_addr_t fb_mem_phys;
+ 	unsigned long fb_mem_len;
+ 	void *fb_mem_virt;
++	const char *intf;
+ 
+ 	fbi = devm_kzalloc(&pdev->dev, sizeof(struct wm8505fb_info) +
+ 			sizeof(u32) * 16, GFP_KERNEL);
+@@ -428,6 +447,14 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 
+ 	clk_prepare_enable(fbi->clk_dvo);
+ 
++	fbi->interface = INTERFACE_LCD;
++	ret = of_property_read_string(pdev->dev.of_node, "output-interface",
++					&intf);
++	if (!ret) {
++		if (!strcmp(intf, "vga"))
++			fbi->interface = INTERFACE_VGA;
++	}
++
+ 	fb_videomode_to_var(&fbi->fb.var, &mode);
+ 
+ 	fbi->fb.var.nonstd		= 0;
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+1.7.9.5
+

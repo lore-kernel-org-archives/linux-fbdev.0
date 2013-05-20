@@ -1,74 +1,51 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Date: Fri, 31 May 2013 12:55:30 +0000
-Subject: [PATCH v3 0/8] xilinxfb changes
-Message-Id: <cover.1370004925.git.michal.simek@xilinx.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-8064-1370004938-0001"
+From: Peter Huewe <peterhuewe@gmx.de>
+Date: Mon, 20 May 2013 19:56:39 +0000
+Subject: [PATCH v2] video/matrox/matroxfb_maven: Use module_i2c_driver to register driver
+Message-Id: <1369080097-6856-1-git-send-email-peterhuewe@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Timur Tabi <timur-N01EOCouUvQ@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Michal Simek <michal.simek-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-
-This is a MIME GnuPG-signed message.  If you see this text, it means that
-your E-mail or Usenet software does not support MIME signed messages.
-The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
-To open this message correctly you will need to install E-mail or Usenet
-software that supports modern Internet standards.
-
---=_mimegpg-monstr-desktop-8064-1370004938-0001
-
-Hi,
-
-I have done more changes in the driver to support probing
-on little and big endian system where detection is done
-directly on the hardware.
-I have also done some cleanups to get it to the better shape.
-
-Thanks for your review,
-Michal
-
-Changes in v3:
-- Remove out_be IO name from function name
-- Change patch subject from "Do not use out_be32 IO function"
-  to "Do not name out_be32 in function name"
-- New patch in this patchset based on discussions
-- New patch in this patchset based on discussions
-- New patch in this patchset
-- New patch in this patchset based on discussions
-- New patch in this patchset
-
-Changes in v2:
-- use of_property_read_u32 helper function
-Series-changes: 3
-- fix commit message
-
-Michal Simek (8):
-  video: xilinxfb: Fix OF probing on little-endian systems
-  video: xilinxfb: Do not name out_be32 in function name
-  video: xilinxfb: Rename PLB_ACCESS_FLAG to BUS_ACCESS_FLAG
-  video: xilinxfb: Use drvdata->regs_phys instead of physaddr
-  video: xilinxfb: Group bus initialization
-  video: xilinxfb: Add support for little endian accesses
-  video: xilinxfb: Fix sparse warnings
-  video: xilinxfb: Use driver for Xilinx ARM Zynq
-
- drivers/video/Kconfig    |   2 +-
- drivers/video/xilinxfb.c | 157 ++++++++++++++++++++++++-----------------------
- 2 files changed, 81 insertions(+), 78 deletions(-)
-
---
-1.8.2.3
-
-
---=_mimegpg-monstr-desktop-8064-1370004938-0001
-Content-Type: application/pgp-signature
+References: <20130520214206.078bc580@endymion.delvare>
+In-Reply-To: <20130520214206.078bc580@endymion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Jean Delvare <khali@linux-fr.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Peter Huewe <peterhuewe@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Removing some boilerplate by using module_i2c_driver instead of calling
+register and unregister in the otherwise empty init/exit functions.
+Also removed a useless comment as suggested by Jean Delvare
 
-iEYEABECAAYFAlGoncoACgkQykllyylKDCH6YgCdFWERa94V6WU4izCoqkwPTwit
-Tk8AnRrcmvOeFNtkYcPge4Slbs3wJkfR
-=18q7
------END PGP SIGNATURE-----
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+Reviewed-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/video/matrox/matroxfb_maven.c | 14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
 
---=_mimegpg-monstr-desktop-8064-1370004938-0001--
+diff --git a/drivers/video/matrox/matroxfb_maven.c b/drivers/video/matrox/matroxfb_maven.c
+index 217678e..6360796 100644
+--- a/drivers/video/matrox/matroxfb_maven.c
++++ b/drivers/video/matrox/matroxfb_maven.c
+@@ -1283,19 +1283,7 @@ static struct i2c_driver maven_driver={
+ 	.id_table	= maven_id,
+ };
+ 
+-static int __init matroxfb_maven_init(void)
+-{
+-	return i2c_add_driver(&maven_driver);
+-}
+-
+-static void __exit matroxfb_maven_exit(void)
+-{
+-	i2c_del_driver(&maven_driver);
+-}
+-
++module_i2c_driver(maven_driver);
+ MODULE_AUTHOR("(c) 1999-2002 Petr Vandrovec <vandrove@vc.cvut.cz>");
+ MODULE_DESCRIPTION("Matrox G200/G400 Matrox MGA-TVO driver");
+ MODULE_LICENSE("GPL");
+-module_init(matroxfb_maven_init);
+-module_exit(matroxfb_maven_exit);
+-/* we do not have __setup() yet */
+-- 
+1.8.1.5
+

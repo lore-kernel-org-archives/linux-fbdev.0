@@ -1,34 +1,47 @@
-From: Dave Airlie <airlied@gmail.com>
-Date: Fri, 31 May 2013 03:16:54 +0000
-Subject: Re: [PATCH v3 0/9] Clean up write-combining MTRR addition
-Message-Id: <CAPM=9tx87GFyGzgC+q3daUk5hP6GOJYXcKBnRE4d2ujC_LLALA@mail.gmail.com>
+From: Peter Huewe <peterhuewe@gmx.de>
+Date: Mon, 20 May 2013 19:36:18 +0000
+Subject: [PATCH] video/matrox/matroxfb_maven: Use module_i2c_driver to register driver
+Message-Id: <1369078578-3138-1-git-send-email-peterhuewe@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1368485053.git.luto@amacapital.net>
-	<CALCETrXd=6aJwQdDL+XU9x2Pnh0V_9120iw1NHaguN1ahRhhXQ@mail.gmail.com>
-In-Reply-To: <CALCETrXd=6aJwQdDL+XU9x2Pnh0V_9120iw1NHaguN1ahRhhXQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andy Lutomirski <luto@amacapital.net>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Wolfram Sang <w.sang@pengutronix.de>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Peter Huewe <peterhuewe@gmx.de>, Jean Delvare <khali@linux-fr.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, May 24, 2013 at 4:35 AM, Andy Lutomirski <luto@amacapital.net> wrote:
-> On Mon, May 13, 2013 at 4:58 PM, Andy Lutomirski <luto@amacapital.net> wrote:
->> A fair number of drivers (mostly graphics) add write-combining MTRRs.
->> Most ignore errors and most add the MTRR even on PAT systems which don't
->> need to use MTRRs.
->>
->> This series adds new functions arch_phys_wc_{add,del} that, on PAT-less
->> x86 systems with MTRRs, add MTRRs and report errors, and that do nothing
->> otherwise.  (Other architectures, if any, with a similar mechanism could
->> implement them.)
->
-> That's the path to upstream for this?  Should it go through drm-next?
-> (Sorry for possible noob question -- I've never sent in anything other
-> than trivial fixes to drm stuff before.)
+Removing some boilerplate by using module_i2c_driver instead of calling
+register and unregister in the otherwise empty init/exit functions
 
-I've pulled the v3 series into drm-next, lets see how they go for a while,
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+---
+ drivers/video/matrox/matroxfb_maven.c | 13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
 
-I suppose I should try and boot an AGP box with them.
+diff --git a/drivers/video/matrox/matroxfb_maven.c b/drivers/video/matrox/matroxfb_maven.c
+index 217678e..fd4b64e 100644
+--- a/drivers/video/matrox/matroxfb_maven.c
++++ b/drivers/video/matrox/matroxfb_maven.c
+@@ -1283,19 +1283,8 @@ static struct i2c_driver maven_driver={
+ 	.id_table	= maven_id,
+ };
+ 
+-static int __init matroxfb_maven_init(void)
+-{
+-	return i2c_add_driver(&maven_driver);
+-}
+-
+-static void __exit matroxfb_maven_exit(void)
+-{
+-	i2c_del_driver(&maven_driver);
+-}
+-
++module_i2c_driver(maven_driver);
+ MODULE_AUTHOR("(c) 1999-2002 Petr Vandrovec <vandrove@vc.cvut.cz>");
+ MODULE_DESCRIPTION("Matrox G200/G400 Matrox MGA-TVO driver");
+ MODULE_LICENSE("GPL");
+-module_init(matroxfb_maven_init);
+-module_exit(matroxfb_maven_exit);
+ /* we do not have __setup() yet */
+-- 
+1.8.1.5
 
-Dave.

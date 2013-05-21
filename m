@@ -1,83 +1,27 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:34:37 +0000
-Subject: [PATCH 16/32] OMAPDSS: HDMI: add hdmi_init_regulator
-Message-Id: <1369906493-27538-17-git-send-email-tomi.valkeinen@ti.com>
+From: "root@brinstanroom.com" <root@brinstanroom.com>
+Date: Tue, 21 May 2013 13:01:36 +0000
+Subject: Find girls for chat and hookup now.
+Message-Id: <519BD29B.5DCA2AD8@192.227.135.198>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-ext4-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ha-dev-cunTk1MwBs9DHfOqEeIffh2eb7JE58TQ@public.gmane.org, linux-help-mtg-iCYJNvnsbHs8qNwGfFDJ/Q@public.gmane.org, linux-india-cunTk1MwBs9qd80yoKVOQ4aCUm+kVXi4@public.gmane.org, linux-informix-qTB+/3op4OQ@public.gmane.org, linux-kbuild-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-pFTr4yDReMQpLY+iQtz4oH4Z0sVMXfX4hC4ANOJQIlc@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-VZNHf3L845pBDgjK7y7TUQ@public.gmane.org
 
-Separate regulator init code into its own function for clarity.
+Chat with lonely women in your area and hook up.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/hdmi.c | 42 ++++++++++++++++++++++++++----------------
- 1 file changed, 26 insertions(+), 16 deletions(-)
+http://dir.orangefronthost.info
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 99f4ab5..960083b 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -328,6 +328,29 @@ static void hdmi_runtime_put(void)
- 	WARN_ON(r < 0 && r != -ENOSYS);
- }
- 
-+static int hdmi_init_regulator(void)
-+{
-+	struct regulator *reg;
-+
-+	if (hdmi.vdda_hdmi_dac_reg != NULL)
-+		return 0;
-+
-+	reg = devm_regulator_get(&hdmi.pdev->dev, "vdda_hdmi_dac");
-+
-+	/* DT HACK: try VDAC to make omapdss work for o4 sdp/panda */
-+	if (IS_ERR(reg))
-+		reg = devm_regulator_get(&hdmi.pdev->dev, "VDAC");
-+
-+	if (IS_ERR(reg)) {
-+		DSSERR("can't get VDDA_HDMI_DAC regulator\n");
-+		return PTR_ERR(reg);
-+	}
-+
-+	hdmi.vdda_hdmi_dac_reg = reg;
-+
-+	return 0;
-+}
-+
- static int hdmi_init_display(struct omap_dss_device *dssdev)
- {
- 	int r;
-@@ -342,22 +365,9 @@ static int hdmi_init_display(struct omap_dss_device *dssdev)
- 
- 	dss_init_hdmi_ip_ops(&hdmi.ip_data, omapdss_get_version());
- 
--	if (hdmi.vdda_hdmi_dac_reg = NULL) {
--		struct regulator *reg;
--
--		reg = devm_regulator_get(&hdmi.pdev->dev, "vdda_hdmi_dac");
--
--		/* DT HACK: try VDAC to make omapdss work for o4 sdp/panda */
--		if (IS_ERR(reg))
--			reg = devm_regulator_get(&hdmi.pdev->dev, "VDAC");
--
--		if (IS_ERR(reg)) {
--			DSSERR("can't get VDDA_HDMI_DAC regulator\n");
--			return PTR_ERR(reg);
--		}
--
--		hdmi.vdda_hdmi_dac_reg = reg;
--	}
-+	r = hdmi_init_regulator();
-+	if (r)
-+		return r;
- 
- 	r = gpio_request_array(gpios, ARRAY_SIZE(gpios));
- 	if (r)
--- 
-1.8.1.2
+
+
+
+
+
+
+
+
+
+
+xrfhlofrtsj
 

@@ -1,45 +1,52 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Sat, 11 May 2013 12:59:54 +0000
-Subject: [PATCH 13/15] video: tmiofb: remove unnecessary platform_set_drvdata()
-Message-Id: <000d01ce4e47$6e9bc570$4bd35050$@samsung.com>
+From: Laurent Navet <laurent.navet@gmail.com>
+Date: Tue, 21 May 2013 12:33:49 +0000
+Subject: [PATCH V2] drivers: video: mxsfb: clean use of devm_ioremap_resource()
+Message-Id: <1369139629-20638-1-git-send-email-laurent.navet@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <19650694.136921368693687337.JavaMail.weblogic@epml12>
+In-Reply-To: <19650694.136921368693687337.JavaMail.weblogic@epml12>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: FlorianSchandinat@gmx.de, jg1.han@samsung.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Laurent Navet <laurent.navet@gmail.com>
 
-The driver core clears the driver data to NULL after device_release
-or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
-(device-core: Ensure drvdata = NULL when no driver is bound).
-Thus, it is not needed to manually clear the device driver data to NULL.
+Check of 'res' and calls to dev_err are already done in devm_ioremap_resource,
+so no need to do them twice.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Laurent Navet <laurent.navet@gmail.com>
 ---
- drivers/video/tmiofb.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+ drivers/video/mxsfb.c |    8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
-diff --git a/drivers/video/tmiofb.c b/drivers/video/tmiofb.c
-index dc4fb86..deb8733 100644
---- a/drivers/video/tmiofb.c
-+++ b/drivers/video/tmiofb.c
-@@ -794,7 +794,6 @@ err_hw_init:
- 		cell->disable(dev);
- err_enable:
- err_find_mode:
--	platform_set_drvdata(dev, NULL);
- 	free_irq(irq, info);
- err_request_irq:
- 	iounmap(info->screen_base);
-@@ -823,8 +822,6 @@ static int tmiofb_remove(struct platform_device *dev)
- 		if (cell->disable)
- 			cell->disable(dev);
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 21223d4..6a1b338 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -883,12 +883,6 @@ static int mxsfb_probe(struct platform_device *pdev)
+ 	if (of_id)
+ 		pdev->id_entry = of_id->data;
  
--		platform_set_drvdata(dev, NULL);
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (!res) {
+-		dev_err(&pdev->dev, "Cannot get memory IO resource\n");
+-		return -ENODEV;
+-	}
 -
- 		free_irq(irq, info);
+ 	fb_info = framebuffer_alloc(sizeof(struct mxsfb_info), &pdev->dev);
+ 	if (!fb_info) {
+ 		dev_err(&pdev->dev, "Failed to allocate fbdev\n");
+@@ -897,9 +891,9 @@ static int mxsfb_probe(struct platform_device *pdev)
  
- 		iounmap(info->screen_base);
+ 	host = to_imxfb_host(fb_info);
+ 
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	host->base = devm_ioremap_resource(&pdev->dev, res);
+ 	if (IS_ERR(host->base)) {
+-		dev_err(&pdev->dev, "ioremap failed\n");
+ 		ret = PTR_ERR(host->base);
+ 		goto fb_release;
+ 	}
 -- 
-1.7.2.5
-
+1.7.10.4
 

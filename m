@@ -1,122 +1,36 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Thu, 23 May 2013 16:27:54 +0000
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 23 May 2013 16:57:55 +0000
 Subject: Re: [PATCH] video: simplefb: add mode parsing function
-Message-Id: <519E438A.9030408@wwwdotorg.org>
+Message-Id: <CAMuHMdVs4hy7dWAGxN51XP3YuWBY6rk22Z6tCU+-HujZH4jL2Q@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1369296231-26597-1-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1369296231-26597-1-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+ <519E438A.9030408@wwwdotorg.org>
+In-Reply-To: <519E438A.9030408-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+Cc: gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
 
-On 05/23/2013 02:03 AM, Alexandre Courbot wrote:
-> The naming scheme of simplefb's mode is precise enough to allow building
-> the mode structure from it instead of using a static list of modes. This
-> patch introduces a function that does this. In case exotic modes that
-> cannot be represented from their name alone are needed, the static list
-> of modes is still available as a backup.
-> 
-> Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
-> ---
-> Stephen, please note that the "r5g6b5" mode initially supported
-> by the driver becomes "b5g6r5" with the new function. This is because
-> the least significant bits are defined first in the string - this
-> makes parsing much easier, notably for modes which do not fill whole
-> bytes (e.g. 15 bit modes). I hope this is not a problem - it's probably
-> better to do the change now while the driver is still new.
+On Thu, May 23, 2013 at 6:27 PM, Stephen Warren <swarren@wwwdotorg.org> wrote:
+>> +
+>> +             cpt += field->length;
+>> +     }
+>> +
+>> +     format->bits_per_pixel = ((cpt + 7) / 8) * 8;
+>
+> Should this error-check that isn't > 32?
 
-Hmm. searchin Google (and even looking at the VDPAU spec I myself wrote)
-does imply that format names like this do typically list the LSBs first.
+So pixels can't be larger than 32 bits?
+IIRC, some SGI and Sun graphics cards had e.g. 80 bit pixels (incl. Z buffer).
 
-I guess the problem is that when I decided to change from rgb565 to a
-machine-parsable r5g6b5, I didn't think enough to realize that the field
-order in the name "rgb565" didn't follow the same convention as when you
-write out the fields in the style "r5g6b5"/"b5g6r5":-(
+Gr{oetje,eeting}s,
 
-I guess this driver and DT binding are only in linux-next and targeted
-at 3.11, and didn't make 3.10, so I'd assert it's probably still OK to
-change the DT binding, if this patch also gets into 3.11.
+                        Geert
 
-The only two users of it I know are:
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-a) From U-Boot on the Raspberry Pi, and those patches haven't been
-accepted into U-Boot yet.
-
-b) From U-Boot on the Samsung ARM Chromebook yet. I know Olof built a
-U-Boot that uses them and it'd linked from the chromiumos.org web pages.
-I assume it's not too horrible for him to update them. I don't know how
-widely the patch that enables simple-fb in that binary is distributed
-though. Olof, care to comment on how much pain it'd be to change?
-
-> diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer.txt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
-
-> -- format: The format of the framebuffer surface. Valid values are:
-> -  - r5g6b5 (16-bit pixels, d[15:11]=r, d[10:5]=g, d[4:0]=b).
-> +- format: The format of the framebuffer surface. Described as a sequence of
-> +	channel/nbbits pairs, where each pair describes how many bits are used
-
-Change nbbits to bitcount, num-bits, nr-bits?
-
-> +	by a given color channel. Value channels are "r" (red), "g" (green),
-> +	"b" (blue) and "a" (alpha).
-
-I think you'll need "x" too, to represent any gaps/unused bits.
-
-> Channels are listed starting in bit-significance order.
-
-I would explicitly add ", starting from the LSB." to the end there.
-Perhaps drop "-significance" too?
-
-> For instance, a format named "r5g6b5" describes
-> +	a 16-bit format where red is encoded in the 5 less significant bits,
-> +	green in the 6 following ones, and blue in the 5 last:
-> +				BBBBBGGG GGGRRRRR
-> +				^               ^
-> +			       MSB             LSB
-
-> diff --git a/drivers/video/simplefb.c b/drivers/video/simplefb.c
-
-> +static struct simplefb_format *simplefb_parse_format(struct device *dev,
-> +						     const char *str)
-> +{
-> +	struct simplefb_format *format;
-> +	unsigned int cpt = 0;
-
-What does cpt mean? Something like bit or bitnum or bitindex might be
-more descriptive.
-
-> +	unsigned int i = 0;
-> +
-> +	format = devm_kzalloc(dev, sizeof(*format), GFP_KERNEL);
-> +	if (!format)
-> +		return ERR_PTR(-ENOMEM);
-
-Can we just add some storage into the FB object itself for this, so we
-don't need to make a special allocation? The first parameter to
-framebuffer_alloc() allows allocating that, although you would have to
-rejig the order of probe() a bit to do that:-( Perhaps it's fine as you
-wrote it.
-
-> +		field->offset = cpt;
-> +		field->length = c - '0';
-
-What about R10G10B10A2? Something like strtol() is needed here.
-
-> +
-> +		cpt += field->length;
-> +	}
-> +
-> +	format->bits_per_pixel = ((cpt + 7) / 8) * 8;
-
-Should this error-check that isn't > 32?
-
-> +	if (!params->format || IS_ERR(params->format)) {
-
-That's just saying IS_ERR_OR_NULL(params->format). It'd be better to
-pick one thing to represent errors; either NULL or an error-pointer. I
-think having simplefb_parse_format() just return NULL on error would be
-best; the caller can't really do anything useful with the information
-anyway.
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

@@ -1,78 +1,58 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 08 May 2013 06:56:08 +0000
-Subject: Re: [PATCHv2 0/2] Add support for the Solomon SSD1306 OLED Controller
-Message-Id: <5189F708.1040508@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2UHIBKMBRQCJNGKIEDBFT"
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Thu, 23 May 2013 02:23:27 +0000
+Subject: Re: [PATCH] build some drivers only when compile-testing
+Message-Id: <20130523022327.GB6159@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366624555-5616-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1366624555-5616-1-git-send-email-maxime.ripard@free-electrons.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <1369214326-6558-1-git-send-email-jslaby@suse.cz>
+In-Reply-To: <1369214326-6558-1-git-send-email-jslaby@suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Jeff Mahoney <jeffm@suse.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, linux-usb@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-geode@lists.infradead.org, linux-fbdev@vger.kernel.org, Richard Cochran <richardcochran@gmail.com>, netdev@vger.kernel.org, Ben Hutchings <ben@decadent.org.uk>, "Keller, Jacob E" <jacob.e.keller@intel.com>
 
-------enig2UHIBKMBRQCJNGKIEDBFT
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wed, May 22, 2013 at 11:18:46AM +0200, Jiri Slaby wrote:
+> Some drivers can be built on more platforms than they run on. This
+> causes users and distributors packaging burden when they have to
+> manually deselect some drivers from their allmodconfigs. Or sometimes
+> it is even impossible to disable the drivers without patching the
+> kernel.
+> 
+> Introduce a new config option COMPILE_TEST and make all those drivers
+> to depend on the platform they run on, or on the COMPILE_TEST option.
+> Now, when users/distributors choose COMPILE_TEST=n they will not have
+> the drivers in their allmodconfig setups, but developers still can
+> compile-test them with COMPILE_TEST=y.
 
-On 22/04/13 12:55, Maxime Ripard wrote:
-> Hi,
->=20
-> This patchset adds the needed bits to the ssd1307fb driver to support t=
-he
-> very similar Solomon SSD1306 controller.
->=20
-> Since the SSD1307 has been replaced by the SSD1306 in the latest CFA-10=
-036
-> production samples, we also need to change the device tree accordingly.=
+I understand the urge, and it's getting hard for distros to handle these
+drivers that just don't work on other architectures, but it's really
+valuable to ensure that they build properly, for those of us that don't
+have many/any cross compilers set up.
 
->=20
-> Thanks,
-> Maxime
->=20
-> Changes from v1:
->   - Fix style errors
->=20
-> Maxime Ripard (2):
->   video: ssd1307fb: Add support for SSD1306 OLED controller
->   ARM: dts: cfa10036: Change the OLED display to SSD1306
->=20
->  .../devicetree/bindings/video/ssd1307fb.txt        |   10 +-
->  arch/arm/boot/dts/imx28-cfa10036.dts               |   14 +-
->  arch/arm/boot/dts/imx28-cfa10049.dts               |    4 +-
->  drivers/video/ssd1307fb.c                          |  273 ++++++++++++=
-+++-----
->  4 files changed, 216 insertions(+), 85 deletions(-)
+> Now the drivers where we use this new option:
+> * PTP_1588_CLOCK_PCH: The PCH EG20T is only compatible with Intel Atom
+>   processors so it should depend on x86.
+> * FB_GEODE: Geode is 32-bit only so only enable it for X86_32.
+> * USB_CHIPIDEA_IMX: The OF_DEVICE dependency will be met on powerpc
+>   systems -- which do not actually support the hardware via that
+>   method.
 
-I've taken the first patch, "video: ssd1307fb: Add support for SSD1306
-OLED controller" into fbdev 3.11 branch. The dts changes should
-preferably go through arch tree.
+This seems ripe to start to get really messy, really quickly.  Shouldn't
+"default configs" handle if this "should" be enabled for a platform or
+not, and let the rest of us just build them with no problems?
 
- Tomi
+What problems is this causing you?  Are you running out of space in
+kernel packages with drivers that will never be actually used?
 
+> +config COMPILE_TEST
+> +	bool "Compile also drivers which will not load" if EXPERT
 
+EXPERT is getting to be the "let's hide it here" option, isn't it...
 
+I don't know, if no one else strongly objects, I can be convinced that
+this is needed, but so far, I don't see why it really is, or what this
+is going to help with.
 
-------enig2UHIBKMBRQCJNGKIEDBFT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+thanks,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRifcIAAoJEPo9qoy8lh716KkP/0OaGEMb4e95siV1Lug0YyEi
-dPMaKnEL3kIpCpvmMRGjAf/crJZKpE3QQUt5Rb2UgCKEBw4tFVF6Z2TJAJozqG5b
-UlGfAlfLVC3Kled49jcVZwUvc2AETioNBozrtY+3tHAqdJA2nZvCjr/Xh0aJs3SS
-zBybogYnaat8MCyHAw0taydCKHEV7tjcnXjQrCbihisJQdPb1X6YLK0R8WOpNfnI
-vYyMErDzoJIwqcE+NbNW2P6ikLk02Ah9B0WROfjPcJtD04Sw7lVmwxqKPA0ISzZ5
-6bUfnrx4JUIjJQNaml2CswmZAXIeoMznxcpIVkelUQhLI/ItI6OBatws//pl7Rl4
-/8Og6DgFl4YPg/COVM+8YdbkHDPenoHYjMHxZqz0lRuByy5lQcUcdP0rnj4rtjvb
-q2d0obHqRuRy63by69LLtYNZPZcQ+bvEoOmyATJ/mVBz9qKK0edAkD+jIt+iLumV
-Pyl49XIouJ70ExPdSjddmK8o7JQvqOMItFOPGTC/ED4egqYI1cemEWU4YoUnEau1
-N7gT+3soF4w7rIvI1cJmJMifsHRahA7corsu0eAGsSBaWL+UZLCiBTrtJFzHdoqc
-dLfCOUDfZ636PGCK9qoUI1hwpYh7KiN0JVk2p4HV61tOweVIW8/KhMRkXS/3WV+I
-eUyMjW9rz5jYlzKQQFYO
-=SL0d
------END PGP SIGNATURE-----
-
-------enig2UHIBKMBRQCJNGKIEDBFT--
+greg k-h

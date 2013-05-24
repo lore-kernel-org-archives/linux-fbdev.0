@@ -1,68 +1,131 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 23 May 2013 19:42:57 +0000
+From: Alex Courbot <acourbot@nvidia.com>
+Date: Fri, 24 May 2013 07:30:49 +0000
 Subject: Re: [PATCH] video: simplefb: add mode parsing function
-Message-Id: <CAMuHMdWLvWcQXCyvag1DCU=6De2_8US6Zj2VhnZ6Fo5UKwG5WA@mail.gmail.com>
+Message-Id: <519F1729.2050003@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1369296231-26597-1-git-send-email-acourbot@nvidia.com>
  <519E438A.9030408@wwwdotorg.org>
- <CAMuHMdVs4hy7dWAGxN51XP3YuWBY6rk22Z6tCU+-HujZH4jL2Q@mail.gmail.com>
- <519E6C37.2010706@wwwdotorg.org>
-In-Reply-To: <519E6C37.2010706-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+In-Reply-To: <519E438A.9030408-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Cc: gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
+Cc: "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 
-On Thu, May 23, 2013 at 9:21 PM, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> On 05/23/2013 10:57 AM, Geert Uytterhoeven wrote:
->> On Thu, May 23, 2013 at 6:27 PM, Stephen Warren <swarren@wwwdotorg.org> wrote:
->>>> +
->>>> +             cpt += field->length;
->>>> +     }
->>>> +
->>>> +     format->bits_per_pixel = ((cpt + 7) / 8) * 8;
->>>
->>> Should this error-check that isn't > 32?
->>
->> So pixels can't be larger than 32 bits?
->> IIRC, some SGI and Sun graphics cards had e.g. 80 bit pixels (incl. Z buffer).
+On 05/24/2013 01:27 AM, Stephen Warren wrote:
+>> Stephen, please note that the "r5g6b5" mode initially supported
+>> by the driver becomes "b5g6r5" with the new function. This is because
+>> the least significant bits are defined first in the string - this
+>> makes parsing much easier, notably for modes which do not fill whole
+>> bytes (e.g. 15 bit modes). I hope this is not a problem - it's probably
+>> better to do the change now while the driver is still new.
 >
-> That's a good point.
+> Hmm. searchin Google (and even looking at the VDPAU spec I myself wrote)
+> does imply that format names like this do typically list the LSBs first.
 >
-> Out of curiosity, how does the FB core treat these format definitions?
-> Are they expected to fit into a 16-/32-/64-/128- bit power-of-two
-> bit-size, or are they treated as a string of bytes that get serialized
-> into memory LSB first (or perhaps MSB first on BE systems?)
+> I guess the problem is that when I decided to change from rgb565 to a
+> machine-parsable r5g6b5, I didn't think enough to realize that the field
+> order in the name "rgb565" didn't follow the same convention as when you
+> write out the fields in the style "r5g6b5"/"b5g6r5":-(
 >
-> The difference would be that from a CPU perspective only, if you pack
-> the RGB components into a u32, then write that to RAM as a u32, then the
-> in-memory byte-by-byte order is different on different endian systems,
-> whereas if the FB core treats it as a series of bytes only, then
-> presumably the in-memory byte-by-byte order is identical irrespective of
-> host CPU endianness.
+> I guess this driver and DT binding are only in linux-next and targeted
+> at 3.11, and didn't make 3.10, so I'd assert it's probably still OK to
+> change the DT binding, if this patch also gets into 3.11.
 
-I don't think any of the current FB drivers support these.
+Great, keeping it like that then.
 
-Conceptually, a (packed) frame buffer is just a block of memory,
-containing lines
-of line_length bytes.
-Each line contains xres_virtual pixels, each of bits_per_pixel bits.
+>> -- format: The format of the framebuffer surface. Valid values are:
+>> -  - r5g6b5 (16-bit pixels, d[15:11]=r, d[10:5]=g, d[4:0]=b).
+>> +- format: The format of the framebuffer surface. Described as a sequence of
+>> +	channel/nbbits pairs, where each pair describes how many bits are used
+>
+> Change nbbits to bitcount, num-bits, nr-bits?
 
-As long as bits_per_pixel is an integer multiple of 8, it's
-more-or-less well-defined.
-We did have issues with endianness on e.g. bits_per_pixel = 4 (2 pixels in
-one byte, which order?), bits_per_pixel = 16 (byteswapped RGB565), etc.
-If bits_per_pixel is larger than 32, and not an integer multiple of 32,
-you indeed can have more of them...
+Ok.
 
-Gr{oetje,eeting}s,
+>> +	by a given color channel. Value channels are "r" (red), "g" (green),
+>> +	"b" (blue) and "a" (alpha).
+>
+> I think you'll need "x" too, to represent any gaps/unused bits.
 
-                        Geert
+Are there such formats? 15-bit formats do exist but AFAIK they just drop 
+the MSB. Anyway, this can be done easily, so I won't argue. :)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>> Channels are listed starting in bit-significance order.
+>
+> I would explicitly add ", starting from the LSB." to the end there.
+> Perhaps drop "-significance" too?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Agreed, sounds better.
+
+>> +static struct simplefb_format *simplefb_parse_format(struct device *dev,
+>> +						     const char *str)
+>> +{
+>> +	struct simplefb_format *format;
+>> +	unsigned int cpt = 0;
+>
+> What does cpt mean? Something like bit or bitnum or bitindex might be
+> more descriptive.
+
+Fixed.
+
+>> +	unsigned int i = 0;
+>> +
+>> +	format = devm_kzalloc(dev, sizeof(*format), GFP_KERNEL);
+>> +	if (!format)
+>> +		return ERR_PTR(-ENOMEM);
+>
+> Can we just add some storage into the FB object itself for this, so we
+> don't need to make a special allocation? The first parameter to
+> framebuffer_alloc() allows allocating that, although you would have to
+> rejig the order of probe() a bit to do that:-( Perhaps it's fine as you
+> wrote it.
+
+The less allocations the better - if using framebuffer_alloc does not 
+make things more confusing, I'll gladly use that solution.
+
+>> +		field->offset = cpt;
+>> +		field->length = c - '0';
+>
+> What about R10G10B10A2? Something like strtol() is needed here.
+
+True. That's probably more color depth than humans can perceive, but 
+will make the mantis shrimp happy.
+
+>> +
+>> +		cpt += field->length;
+>> +	}
+>> +
+>> +	format->bits_per_pixel = ((cpt + 7) / 8) * 8;
+>
+> Should this error-check that isn't > 32?
+
+That would make the mantis shrimp sad.
+
+>> +	if (!params->format || IS_ERR(params->format)) {
+>
+> That's just saying IS_ERR_OR_NULL(params->format). It'd be better to
+> pick one thing to represent errors; either NULL or an error-pointer. I
+> think having simplefb_parse_format() just return NULL on error would be
+> best; the caller can't really do anything useful with the information
+> anyway.
+
+Weird - I actually removed that NULL check since the parse function can 
+only return a valid pointed an error code. Probably forgot to 
+format-patch again after that.
+
+It seems more customary to let the function that fails decide the error 
+code and have it propagated by its caller (even though in the current 
+case there is no much variety in the returned error codes). If you see 
+no problem with it, I will stick to that way of doing.
+
+Thanks for the review - will send an update soon.
+Alex.
+
+
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------

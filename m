@@ -1,17 +1,23 @@
-From: Steve Glendinning <steve@shawell.net>
-Date: Fri, 10 May 2013 16:21:52 +0000
-Subject: Re: [PATCH 1/1] video: smscufx: Use NULL instead of 0
-Message-Id: <CAKh2mn4Eu9x_GPiKBHaaAbR1kEXc7kfYVZaujp9kf2ELV=yrFg@mail.gmail.com>
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Date: Fri, 24 May 2013 15:38:35 +0000
+Subject: [RFC] Add co-maintainer for fbdev
+Message-Id: <20130524153835.GF15839@game.jcrosoft.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1368185707-12852-1-git-send-email-sachin.kamat@linaro.org>
-In-Reply-To: <1368185707-12852-1-git-send-email-sachin.kamat@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-> 'info' is a pointer. Use NULL instead of 0.
->
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Hi Florian,
 
-Acked-by: Steve Glendinning <steve.glendinning@shawell.net>
+	As you seems very busy I'd like to propose the help you to handle the
+	fbdev subsystem to easier the rich of the fbdev patch to Linus
+
+	As I'm working on fbdev on at91 and others and already Co-Maintain the
+	at91 mach on ARM
+
+	And if you are not willing to continue I could take over
+
+Best Regards,
+J.

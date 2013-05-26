@@ -1,42 +1,56 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 24 May 2013 18:56:42 +0000
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 26 May 2013 23:41:45 +0000
 Subject: Re: [RFC] Add co-maintainer for fbdev
-Message-Id: <201305242056.42482.arnd@arndb.de>
+Message-Id: <51A29DB9.7030505@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130524153835.GF15839@game.jcrosoft.org> <CAOesGMj26_=6eQk+=0MPCoobymqrHPwwtiUnv63hz0a9Ou_VMw@mail.gmail.com>
-In-Reply-To: <CAOesGMj26_=6eQk+=0MPCoobymqrHPwwtiUnv63hz0a9Ou_VMw@mail.gmail.com>
+References: <20130524153835.GF15839@game.jcrosoft.org> <CAOesGMj26_=6eQk+=0MPCoobymqrHPwwtiUnv63hz0a9Ou_VMw@mail.gmail.com> <201305242056.42482.arnd@arndb.de>
+In-Reply-To: <201305242056.42482.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Olof Johansson <olof@lixom.net>
-Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Andrew Morton <akpm@linux-foundation.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Olof Johansson <olof@lixom.net>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Andrew Morton <akpm@linux-foundation.org>
 
-On Friday 24 May 2013, Olof Johansson wrote:
-> [+akpm]
+Hi Jean-Christophe,
 
-[+florian]
-
-> On Fri, May 24, 2013 at 8:38 AM, Jean-Christophe PLAGNIOL-VILLARD
-> <plagnioj@jcrosoft.com> wrote:
-> > Hi Florian,
-> >
-> >         As you seems very busy I'd like to propose the help you to handle the
-> >         fbdev subsystem to easier the rich of the fbdev patch to Linus
-> >
-> >         As I'm working on fbdev on at91 and others and already Co-Maintain the
-> >         at91 mach on ARM
-> >
-> >         And if you are not willing to continue I could take over
+On 05/24/2013 06:56 PM, Arnd Bergmann wrote:
+> On Friday 24 May 2013, Olof Johansson wrote:
+>> [+akpm]
 > 
-> Andrew has been fallback fbdev maintainer for a while, we have the
-> option of formalizing that as well. Adding him on cc so he sees this.
+> [+florian]
 
-It seems that Florian himself was missing on Cc too, probably by accident.
+Thanks for CC'ing me. Lately I got dropped frequently from the
+mailinglist (after 1 or 2 days). Guess I should try subscribing via my
+own mail server.
 
-I would certainly welcome Jean-Christophe to step in for fbdev, since I
-frequently have trivial patches for the subsystem, either from myself
-or one of the subarch maintainers, and it would be helpful to get feedback
-on them in order to merge them through arm-soc when they depend on other
-patches we carry, or to have them picked up into a git tree.
+>> On Fri, May 24, 2013 at 8:38 AM, Jean-Christophe PLAGNIOL-VILLARD
+>> <plagnioj@jcrosoft.com> wrote:
+>>> Hi Florian,
+>>>
+>>>         As you seems very busy I'd like to propose the help you to handle the
+>>>         fbdev subsystem to easier the rich of the fbdev patch to Linus
+>>>
+>>>         As I'm working on fbdev on at91 and others and already Co-Maintain the
+>>>         at91 mach on ARM
+>>>
+>>>         And if you are not willing to continue I could take over
 
-	Arnd
+Yeah, it would be great if you could help, at the moment I get barely
+any sleep, let alone that I could keep up with the majority of mail I
+get. I'll let you decide whether you want to be sole maintainer or not.
+I still have interest in the subsystem, but it looks like VIA won't
+provide any information for their new VX11 chipset IGP for any open
+source driver and I'm still looking for a small, quiet mobile device as
+a replacement for my precious netbook that broke down last autumn to
+allow me working when I'm not at home.
+
+>> Andrew has been fallback fbdev maintainer for a while, we have the
+>> option of formalizing that as well. Adding him on cc so he sees this.
+
+At this point I'd like to thank all people who have helped out so far,
+especially Tomi and Andrew.
+
+
+Best regards,
+
+Florian Tobias Schandinat

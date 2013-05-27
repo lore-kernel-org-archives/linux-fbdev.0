@@ -1,54 +1,57 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Sat, 11 May 2013 05:37:22 +0000
-Subject: Re: [RFC 33/42] drivers/video/omap2: don't check resource with devm_ioremap_resource
-Message-Id: <002e01ce4e09$9c849590$d58dc0b0$@samsung.com>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Mon, 27 May 2013 01:48:14 +0000
+Subject: [PATCH] video: mxsfb: Let device core handle pinctrl
+Message-Id: <1369619294-10362-1-git-send-email-festevam@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1368173847-5661-1-git-send-email-wsa@the-dreams.de>
- <1368173847-5661-34-git-send-email-wsa@the-dreams.de>
-In-Reply-To: <1368173847-5661-34-git-send-email-wsa@the-dreams.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Wolfram Sang' <wsa@the-dreams.de>, linux-kernel@vger.kernel.org
-Cc: 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Friday, May 10, 2013 5:17 PM, Wolfram Sang wrote:
-> 
-> devm_ioremap_resource does sanity checks on the given resource. No need to
-> duplicate this in the driver.
-> 
-> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+From: Fabio Estevam <fabio.estevam@freescale.com>
 
-Reviewed-by: Jingoo Han <jg1.han@samsung.com>
+Since commit ab78029 (drivers/pinctrl: grab default handles from device core)
+we can rely on device core for handling pinctrl, so remove 
+devm_pinctrl_get_select_default() from the driver.
 
-Best regards,
-Jingoo Han
+Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
+---
+ drivers/video/mxsfb.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-> ---
->  drivers/video/omap2/vrfb.c |    5 -----
->  1 file changed, 5 deletions(-)
-> 
-> diff --git a/drivers/video/omap2/vrfb.c b/drivers/video/omap2/vrfb.c
-> index 5261229..f346b02 100644
-> --- a/drivers/video/omap2/vrfb.c
-> +++ b/drivers/video/omap2/vrfb.c
-> @@ -353,11 +353,6 @@ static int __init vrfb_probe(struct platform_device *pdev)
->  	/* first resource is the register res, the rest are vrfb contexts */
-> 
->  	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	if (!mem) {
-> -		dev_err(&pdev->dev, "can't get vrfb base address\n");
-> -		return -EINVAL;
-> -	}
-> -
->  	vrfb_base = devm_ioremap_resource(&pdev->dev, mem);
->  	if (IS_ERR(vrfb_base))
->  		return PTR_ERR(vrfb_base);
-> --
-> 1.7.10.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 21223d4..9d6a286 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -46,7 +46,6 @@
+ #include <linux/clk.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/io.h>
+-#include <linux/pinctrl/consumer.h>
+ #include <linux/fb.h>
+ #include <linux/regulator/consumer.h>
+ #include <video/of_display_timing.h>
+@@ -877,7 +876,6 @@ static int mxsfb_probe(struct platform_device *pdev)
+ 	struct mxsfb_info *host;
+ 	struct fb_info *fb_info;
+ 	struct fb_modelist *modelist;
+-	struct pinctrl *pinctrl;
+ 	int ret;
+ 
+ 	if (of_id)
+@@ -909,12 +907,6 @@ static int mxsfb_probe(struct platform_device *pdev)
+ 
+ 	host->devdata = &mxsfb_devdata[pdev->id_entry->driver_data];
+ 
+-	pinctrl = devm_pinctrl_get_select_default(&pdev->dev);
+-	if (IS_ERR(pinctrl)) {
+-		ret = PTR_ERR(pinctrl);
+-		goto fb_release;
+-	}
+-
+ 	host->clk = devm_clk_get(&host->pdev->dev, NULL);
+ 	if (IS_ERR(host->clk)) {
+ 		ret = PTR_ERR(host->clk);
+-- 
+1.8.1.2
 

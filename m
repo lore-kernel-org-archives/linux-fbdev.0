@@ -1,7 +1,7 @@
 From: Inki Dae <inki.dae@samsung.com>
-Date: Tue, 28 May 2013 02:49:29 +0000
+Date: Tue, 28 May 2013 03:56:57 +0000
 Subject: RE: Introduce a new helper framework for buffer synchronization
-Message-Id: <005601ce5b4d$f95e0160$ec1a0420$%dae@samsung.com>
+Message-Id: <005701ce5b57$667c7d40$337577c0$%dae@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <51909DB4.2060208@canonical.com>
 In-Reply-To: <51909DB4.2060208@canonical.com>
@@ -13,17 +13,17 @@ To: linux-fbdev@vger.kernel.org
 
 
 > -----Original Message-----
-> From: Maarten Lankhorst [mailto:maarten.lankhorst@canonical.com]
-> Sent: Tuesday, May 28, 2013 12:23 AM
+> From: linux-fbdev-owner@vger.kernel.org [mailto:linux-fbdev-
+> owner@vger.kernel.org] On Behalf Of Rob Clark
+> Sent: Tuesday, May 28, 2013 12:48 AM
 > To: Inki Dae
-> Cc: 'Daniel Vetter'; 'Rob Clark'; 'linux-fbdev'; 'YoungJun Cho'; 'Kyungmin
-> Park'; 'myungjoo.ham'; 'DRI mailing list'; linux-arm-
-> kernel@lists.infradead.org; linux-media@vger.kernel.org
+> Cc: Maarten Lankhorst; Daniel Vetter; linux-fbdev; YoungJun Cho; Kyungmin
+> Park; myungjoo.ham; DRI mailing list;
+linux-arm-kernel@lists.infradead.org;
+> linux-media@vger.kernel.org
 > Subject: Re: Introduce a new helper framework for buffer synchronization
 >=20
-> Hey,
->=20
-> Op 27-05-13 12:38, Inki Dae schreef:
+> On Mon, May 27, 2013 at 6:38 AM, Inki Dae <inki.dae@samsung.com> wrote:
 > > Hi all,
 > >
 > > I have been removed previous branch and added new one with more cleanup.
@@ -61,28 +61,46 @@ To: linux-fbdev@vger.kernel.org
 > > and reservation need more review and addition work. So I'd glad for
 > somebody
 > > giving other opinions and advices in advance before RFC posting.
+>=20
+> thoughts from a *really* quick, pre-coffee, first look:
+> * any sort of helper to simplify single-buffer sort of use-cases (v4l)
+> probably wouldn't want to bake in assumption that seqno_fence is used.
+> * I guess g2d is probably not actually a simple use case, since I
+> expect you can submit blits involving multiple buffers :-P
+
+I don't think so. One and more buffers can be used: seqno_fence also has
+only one buffer. Actually, we have already applied this approach to most
+devices; multimedia, gpu and display controller. And this approach shows
+more performance; reduced power consumption against traditional way. And g2d
+example is just to show you how to apply my approach to device driver.
+
+> * otherwise, you probably don't want to depend on dmabuf, which is why
+> reservation/fence is split out the way it is..  you want to be able to
+> use a single reservation/fence mechanism within your driver without
+> having to care about which buffers are exported to dmabuf's and which
+> are not.  Creating a dmabuf for every GEM bo is too heavyweight.
+
+Right. But I think we should dealt with this separately. Actually, we are
+trying to use reservation for gpu pipe line synchronization such as sgx sync
+object and this approach is used without dmabuf. In order words, some device
+can use only reservation for such pipe line synchronization and at the same
+time, fence helper or similar thing with dmabuf for buffer synchronization.
+
+>=20
+> I'm not entirely sure if reservation/fence could/should be made any
+> simpler for multi-buffer users.  Probably the best thing to do is just
+> get reservation/fence rolled out in a few drivers and see if some
+> common patterns emerge.
+>=20
+> BR,
+> -R
+>=20
 > >
-> NAK.
->=20
-> For examples for how to handle locking properly, see Documentation/ww-
-> mutex-design.txt in my recent tree.
-> I could list what I believe is wrong with your implementation, but real
-> problem is that the approach you're taking is wrong.
-
-I just removed ticket stubs to show my approach you guys as simple as
-possible, and I just wanted to show that we could use buffer synchronization
-mechanism without ticket stubs.
-
-Question, WW-Mutexes could be used for all devices? I guess this has
-dependence on x86 gpu: gpu has VRAM and it means different memory domain.
-And could you tell my why shared fence should have only eight objects? I
-think we could need more than eight objects for read access. Anyway I think
-I don't surely understand yet so there might be my missing point.
-
-Thanks,
-Inki Dae
-
->=20
-
-> ~Maarten
+> > Thanks,
+> > Inki Dae
+> >
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 

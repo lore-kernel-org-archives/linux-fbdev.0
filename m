@@ -1,33 +1,51 @@
-From: Alexandre Courbot <gnurou@gmail.com>
-Date: Tue, 28 May 2013 02:31:22 +0000
+From: Stephen Warren <swarren@wwwdotorg.org>
+Date: Tue, 28 May 2013 04:13:09 +0000
 Subject: Re: [PATCH v2] video: simplefb: add mode parsing function
-Message-Id: <CAAVeFuJssMGNi=7gtxHjgaS9s+VTkfBme+T68=Zf7Ech2+hMQw@mail.gmail.com>
+Message-Id: <51A42ED5.2060104@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1369626821-28494-1-git-send-email-acourbot@nvidia.com>
- <CANq1E4Qa6g-zrA6o_u3w6mpVcUk8-ZPPR+edu6EXgpk-kGQULQ@mail.gmail.com>
-In-Reply-To: <CANq1E4Qa6g-zrA6o_u3w6mpVcUk8-ZPPR+edu6EXgpk-kGQULQ@mail.gmail.com>
+In-Reply-To: <1369626821-28494-1-git-send-email-acourbot@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi David,
+On 05/26/2013 09:53 PM, Alexandre Courbot wrote:
+> The naming scheme of simplefb's mode is precise enough to allow building
+> the mode structure from it instead of using a static list of modes. This
+> patch introduces a function that does this. In case exotic modes that
+> cannot be represented from their name alone are needed, the static list
+> of modes is still available as a backup.
+> 
+> It also changes the order in which colors are declared from MSB first to
+> the more standard LSB first.
+> 
+> Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+> ---
+> Changes from v1:
+> - amended documentation following Stephen's suggestion
+> - allow parsing of bitfields larger than 9 bits
+> - made it clear that the parsing order of bits is changed with respect
+>   to the original patch
+> 
+> Andrew, since this patch introduces a (small) change in the DT bindings,
+> could we try to merge it during the -rc cycle so we don't have to come
+> with a more complex solution in the future?
 
-On Tue, May 28, 2013 at 3:22 AM, David Herrmann <dh.herrmann@gmail.com> wrote:
-> If we apply this patch it will get very hard to support this with a
-> KMS driver. So any reason why we cannot use the DRM FOURCC constants
-> instead?
+So, I think we shouldn't change the DT binding at all now. The original
+driver is now merged for 3.10, and I think it's far too late to take
+code that implements new features for 3.10. This means that we couldn't
+merge this patch until 3.11. However, by then, we shouldn't be changing
+the DT binding in incompatible ways. Olof has already published some
+U-Boot binaries that use the current binding, and on IRC indicated he'd
+prefer not to change the binding because of that.
 
-I don't see any. Maybe Stephen can confirm.
+As such, we should either:
 
-> The dvbe proposal is available here: (also see the two following patches)
->   http://lkml.indiana.edu/hypermail/linux/kernel/1302.2/00274.html
->
-> it provides a simple DRM driver that uses VESA / VBE. I am currently
-> trying to rework it to "SimpleDRM" which can support arbitrary
-> firmware framebuffers.
+a) Just add new entries into the format array that already exists in the
+driver. Given David's response, this might be simplest.
 
-Ok. I am personally fine with using FOURCC codes for describing video
-modes. Maybe we can just drop this patch if it gets in your way.
-
-Alex.
+b) Extend the DT binding in a 100% backwards-compatible way, which would
+mean defaulting the bit-order to match the existing 1 format, and adding
+a new Boolean property to indicate that the format string is specified
+in the other order.

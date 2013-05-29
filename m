@@ -1,77 +1,59 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Date: Fri, 17 May 2013 12:29:35 +0000
-Subject: Re: [PATCH 1/2] video: exynos_dp: Add parsing of gpios pins to exynos-dp driver
-Message-Id: <6459883.FZan3akiXR@amdc1227>
+From: Michal Simek <michal.simek@xilinx.com>
+Date: Wed, 29 May 2013 16:12:56 +0000
+Subject: [PATCH 1/3] video: xilinxfb: Fix OF probing on little-endian systems
+Message-Id: <502367ddf6d79b7b343b3165ad54cb9e2d4713db.1369843969.git.michal.simek@xilinx.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-20177-1369843978-0001"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <26364319.123371368669839202.JavaMail.weblogic@epml12>
-In-Reply-To: <26364319.123371368669839202.JavaMail.weblogic@epml12>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: jg1.han@samsung.com
-Cc: Vikas Sajjan <vikas.sajjan@linaro.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, =?utf-8?B?6rmA6rWt7KeE?= <kgene.kim@samsung.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "patches@linaro.org" <patches@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "rpurdie@rpsys.net" <rpurdie@rpsys.net>, "FlorianSchandinat@gmx.de" <FlorianSchandinat@gmx.de>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: Michal Simek <monstr@monstr.eu>, Michal Simek <michal.simek@xilinx.com>, Pallav Joshi <pallav.joshi@xilinx.com>, git-dev@xilinx.com, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
 
-Hi Jingoo,
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
 
-On Thursday 16 of May 2013 02:03:59 한진구 wrote:
-> Tuesday, May 14, 2013 11:17 PM, Vikas Sajjan wrote:
-> 
-> > 
-> > Hi Vikas,
-> > 
-> > On Tuesday 14 of May 2013 18:25:51 Vikas Sajjan wrote:
-> > 
-> > >  Adds GPIO parsing functionality for "LCD backlight" and "LCD enable"
-> > >  GPIO pins of exynos dp controller.
-> > >
-> > >
-> > >
-> > > Signed-off-by: Vikas Sajjan <vikas.sajjan@linaro.org>
-> > > ---
-> > > 
-> > >  drivers/video/exynos/exynos_dp_core.c |   45
-> > > 
-> > > +++++++++++++++++++++++++++++++++ 1 file changed, 45 insertions(+)
-> > >
-> > >
-> > 
-> > 
-> > I don't think that Exynos DP driver is right place for such code.
-> > Backlight
- and LCD drivers are responsible for backlight and LCD power
-> > control using backlight and LCD subsystems.
-> > 
-> > IMHO the correct solution would be to either extend existing
-> > backlight/lcd
-> > drivers found in drivers/video/backlight to support direct GPIO control
-> > and
- parse GPIO pins from device tree or create new gpio_bl and gpio_lcd
-> > drivers.
-> 
-> Hi Vikas Sajian,
-> 
-> I agree with Tomasz Figa's opinion.
-> Backlight/LCD framework should be used.
-> eDP panel backlight on SMDK5210 board can be controlled by PWM;
-> thus, pwm-backlight driver should be used.
-> Also, eDP panel reset pin should be controlled by using
-> platform-lcd driver.
-> 
-> 
-> > 
-> > CCing Richard, Florian and linux-fbdev.
-> 
-> 
-> Also, I have been doing backlight reviews instead of Richard,
-> please do CC'ing me.
+--=_mimegpg-monstr-desktop-20177-1369843978-0001
 
-OK. I used get_maintainers script, but it seems like the result was a bit off 
-in this case. Will remember for future.
+From: Michal Simek <monstr@monstr.eu>
 
-Best regards,
--- 
-Tomasz Figa
-Linux Kernel Developer
-Samsung R&D Institute Poland
-Samsung Electronics
+DTB is always big-endian that's why is necessary
+to convert it.
 
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+---
+ drivers/video/xilinxfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index af0b4fd..5af341e 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -428,7 +428,7 @@ static int xilinxfb_of_probe(struct platform_device *op)
+ 	 * interface and initialize the tft_access accordingly.
+ 	 */
+ 	p = (u32 *)of_get_property(op->dev.of_node, "xlnx,dcr-splb-slave-if", NULL);
+-	tft_access = p ? *p : 0;
++	tft_access = p ? be32_to_cpup(p) : 0;
+
+ 	/*
+ 	 * Fill the resource structure if its direct PLB interface
+--
+1.8.2.3
+
+
+--=_mimegpg-monstr-desktop-20177-1369843978-0001
+Content-Type: application/pgp-signature
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAlGmKQoACgkQykllyylKDCGRDACdFhAfvGOqg5FRNxxY7Z6jpDjT
+UJkAn0qNz0kIgKdx64JbuIlvuKX9fooG
+=azUL
+-----END PGP SIGNATURE-----
+
+--=_mimegpg-monstr-desktop-20177-1369843978-0001--

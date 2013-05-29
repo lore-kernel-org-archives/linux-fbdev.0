@@ -1,407 +1,56 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:36:11 +0000
-Subject: [PATCH 18/27] OMAPDSS: Add new DVI Connector driver
-Message-Id: <1369906580-27585-19-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 29 May 2013 06:37:25 +0000
+Subject: Fbdev changes
+Message-Id: <51A5A225.3060800@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="----enig2CROHFFPCKLFGBBSWJHLN"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Add DVI Connector driver which uses the new DSS device model and DSS
-ops.
+------enig2CROHFFPCKLFGBBSWJHLN
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/displays-new/Kconfig         |   6 +
- drivers/video/omap2/displays-new/Makefile        |   1 +
- drivers/video/omap2/displays-new/connector-dvi.c | 351 +++++++++++++++++++++++
- 3 files changed, 358 insertions(+)
- create mode 100644 drivers/video/omap2/displays-new/connector-dvi.c
+Hi Jean-Christophe,
 
-diff --git a/drivers/video/omap2/displays-new/Kconfig b/drivers/video/omap2/displays-new/Kconfig
-index 6e4af85..76570fc 100644
---- a/drivers/video/omap2/displays-new/Kconfig
-+++ b/drivers/video/omap2/displays-new/Kconfig
-@@ -12,4 +12,10 @@ config DISPLAY_ENCODER_TPD12S015
- 	  Driver for TPD12S015, which offers HDMI ESD protection and level
- 	  shifting.
- 
-+config DISPLAY_CONNECTOR_DVI
-+        tristate "DVI Connector"
-+	depends on I2C
-+	help
-+	  Driver for a generic DVI connector.
-+
- endmenu
-diff --git a/drivers/video/omap2/displays-new/Makefile b/drivers/video/omap2/displays-new/Makefile
-index c2ee45e..ed7dd06 100644
---- a/drivers/video/omap2/displays-new/Makefile
-+++ b/drivers/video/omap2/displays-new/Makefile
-@@ -1,2 +1,3 @@
- obj-$(CONFIG_DISPLAY_ENCODER_TFP410) += encoder-tfp410.o
- obj-$(CONFIG_DISPLAY_ENCODER_TPD12S015) += encoder-tpd12s015.o
-+obj-$(CONFIG_DISPLAY_CONNECTOR_DVI) += connector-dvi.o
-diff --git a/drivers/video/omap2/displays-new/connector-dvi.c b/drivers/video/omap2/displays-new/connector-dvi.c
-new file mode 100644
-index 0000000..a427460
---- /dev/null
-+++ b/drivers/video/omap2/displays-new/connector-dvi.c
-@@ -0,0 +1,351 @@
-+/*
-+ * Generic DVI Connector driver
-+ *
-+ * Copyright (C) 2013 Texas Instruments
-+ * Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ */
-+
-+#include <linux/i2c.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+
-+#include <drm/drm_edid.h>
-+
-+#include <video/omapdss.h>
-+#include <video/omap-panel-data.h>
-+
-+static const struct omap_video_timings dvic_default_timings = {
-+	.x_res		= 640,
-+	.y_res		= 480,
-+
-+	.pixel_clock	= 23500,
-+
-+	.hfp		= 48,
-+	.hsw		= 32,
-+	.hbp		= 80,
-+
-+	.vfp		= 3,
-+	.vsw		= 4,
-+	.vbp		= 7,
-+
-+	.vsync_level	= OMAPDSS_SIG_ACTIVE_HIGH,
-+	.hsync_level	= OMAPDSS_SIG_ACTIVE_HIGH,
-+	.data_pclk_edge	= OMAPDSS_DRIVE_SIG_RISING_EDGE,
-+	.de_level	= OMAPDSS_SIG_ACTIVE_HIGH,
-+	.sync_pclk_edge	= OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES,
-+};
-+
-+struct panel_drv_data {
-+	struct omap_dss_device dssdev;
-+	struct omap_dss_device *in;
-+
-+	struct omap_video_timings timings;
-+
-+	struct i2c_adapter *i2c_adapter;
-+};
-+
-+#define to_panel_data(x) container_of(x, struct panel_drv_data, dssdev)
-+
-+static int dvic_connect(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+	int r;
-+
-+	if (omapdss_device_is_connected(dssdev))
-+		return 0;
-+
-+	r = in->ops.dvi->connect(in, dssdev);
-+	if (r)
-+		return r;
-+
-+	return 0;
-+}
-+
-+static void dvic_disconnect(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+
-+	if (!omapdss_device_is_connected(dssdev))
-+		return;
-+
-+	in->ops.dvi->disconnect(in, dssdev);
-+}
-+
-+static int dvic_enable(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+	int r;
-+
-+	if (!omapdss_device_is_connected(dssdev))
-+		return -ENODEV;
-+
-+	if (omapdss_device_is_enabled(dssdev))
-+		return 0;
-+
-+	in->ops.dvi->set_timings(in, &ddata->timings);
-+
-+	r = in->ops.dvi->enable(in);
-+	if (r)
-+		return r;
-+
-+	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
-+
-+	return 0;
-+}
-+
-+static void dvic_disable(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+
-+	if (!omapdss_device_is_enabled(dssdev))
-+		return;
-+
-+	in->ops.dvi->disable(in);
-+
-+	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
-+}
-+
-+static void dvic_set_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+
-+	ddata->timings = *timings;
-+	dssdev->panel.timings = *timings;
-+
-+	in->ops.dvi->set_timings(in, timings);
-+}
-+
-+static void dvic_get_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+
-+	*timings = ddata->timings;
-+}
-+
-+static int dvic_check_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+
-+	return in->ops.dvi->check_timings(in, timings);
-+}
-+
-+static int dvic_ddc_read(struct i2c_adapter *adapter,
-+		unsigned char *buf, u16 count, u8 offset)
-+{
-+	int r, retries;
-+
-+	for (retries = 3; retries > 0; retries--) {
-+		struct i2c_msg msgs[] = {
-+			{
-+				.addr   = DDC_ADDR,
-+				.flags  = 0,
-+				.len    = 1,
-+				.buf    = &offset,
-+			}, {
-+				.addr   = DDC_ADDR,
-+				.flags  = I2C_M_RD,
-+				.len    = count,
-+				.buf    = buf,
-+			}
-+		};
-+
-+		r = i2c_transfer(adapter, msgs, 2);
-+		if (r = 2)
-+			return 0;
-+
-+		if (r != -EAGAIN)
-+			break;
-+	}
-+
-+	return r < 0 ? r : -EIO;
-+}
-+
-+static int dvic_read_edid(struct omap_dss_device *dssdev,
-+		u8 *edid, int len)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	int r, l, bytes_read;
-+
-+	if (!ddata->i2c_adapter)
-+		return -ENODEV;
-+
-+	l = min(EDID_LENGTH, len);
-+	r = dvic_ddc_read(ddata->i2c_adapter, edid, l, 0);
-+	if (r)
-+		return r;
-+
-+	bytes_read = l;
-+
-+	/* if there are extensions, read second block */
-+	if (len > EDID_LENGTH && edid[0x7e] > 0) {
-+		l = min(EDID_LENGTH, len - EDID_LENGTH);
-+
-+		r = dvic_ddc_read(ddata->i2c_adapter, edid + EDID_LENGTH,
-+				l, EDID_LENGTH);
-+		if (r)
-+			return r;
-+
-+		bytes_read += l;
-+	}
-+
-+	return bytes_read;
-+}
-+
-+static bool dvic_detect(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	unsigned char out;
-+	int r;
-+
-+	if (!ddata->i2c_adapter)
-+		return true;
-+
-+	r = dvic_ddc_read(ddata->i2c_adapter, &out, 1, 0);
-+
-+	return r = 0;
-+}
-+
-+static struct omap_dss_driver dvic_driver = {
-+	.connect	= dvic_connect,
-+	.disconnect	= dvic_disconnect,
-+
-+	.enable		= dvic_enable,
-+	.disable	= dvic_disable,
-+
-+	.set_timings	= dvic_set_timings,
-+	.get_timings	= dvic_get_timings,
-+	.check_timings	= dvic_check_timings,
-+
-+	.get_resolution	= omapdss_default_get_resolution,
-+
-+	.read_edid	= dvic_read_edid,
-+	.detect		= dvic_detect,
-+};
-+
-+static int dvic_probe_pdata(struct platform_device *pdev)
-+{
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct connector_dvi_platform_data *pdata;
-+	struct omap_dss_device *in, *dssdev;
-+	int i2c_bus_num;
-+
-+	pdata = dev_get_platdata(&pdev->dev);
-+	i2c_bus_num = pdata->i2c_bus_num;
-+
-+	if (i2c_bus_num != -1) {
-+		struct i2c_adapter *adapter;
-+
-+		adapter = i2c_get_adapter(i2c_bus_num);
-+		if (!adapter) {
-+			dev_err(&pdev->dev,
-+					"Failed to get I2C adapter, bus %d\n",
-+					i2c_bus_num);
-+			return -EINVAL;
-+		}
-+
-+		ddata->i2c_adapter = adapter;
-+	}
-+
-+	in = omap_dss_find_output(pdata->source);
-+	if (in = NULL) {
-+		dev_err(&pdev->dev, "Failed to find video source\n");
-+		return -ENODEV;
-+	}
-+
-+	ddata->in = in;
-+
-+	dssdev = &ddata->dssdev;
-+	dssdev->name = pdata->name;
-+
-+	return 0;
-+}
-+
-+static int dvic_probe(struct platform_device *pdev)
-+{
-+	struct panel_drv_data *ddata;
-+	struct omap_dss_device *dssdev;
-+	int r;
-+
-+	ddata = devm_kzalloc(&pdev->dev, sizeof(*ddata), GFP_KERNEL);
-+	if (!ddata)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, ddata);
-+
-+	if (dev_get_platdata(&pdev->dev)) {
-+		r = dvic_probe_pdata(pdev);
-+		if (r)
-+			return r;
-+	} else {
-+		return -ENODEV;
-+	}
-+
-+	ddata->timings = dvic_default_timings;
-+
-+	dssdev = &ddata->dssdev;
-+	dssdev->driver = &dvic_driver;
-+	dssdev->dev = &pdev->dev;
-+	dssdev->type = OMAP_DISPLAY_TYPE_DVI;
-+	dssdev->owner = THIS_MODULE;
-+	dssdev->panel.timings = dvic_default_timings;
-+
-+	r = omapdss_register_display(dssdev);
-+	if (r) {
-+		dev_err(&pdev->dev, "Failed to register panel\n");
-+		goto err_reg;
-+	}
-+
-+	return 0;
-+
-+err_reg:
-+	omap_dss_put_device(ddata->in);
-+	return r;
-+}
-+
-+static int __exit dvic_remove(struct platform_device *pdev)
-+{
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct omap_dss_device *dssdev = &ddata->dssdev;
-+	struct omap_dss_device *in = ddata->in;
-+
-+	omapdss_unregister_display(&ddata->dssdev);
-+
-+	dvic_disable(dssdev);
-+	dvic_disconnect(dssdev);
-+
-+	omap_dss_put_device(in);
-+
-+	if (ddata->i2c_adapter)
-+		i2c_put_adapter(ddata->i2c_adapter);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver dvi_connector_driver = {
-+	.probe	= dvic_probe,
-+	.remove	= __exit_p(dvic_remove),
-+	.driver	= {
-+		.name	= "connector-dvi",
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+module_platform_driver(dvi_connector_driver);
-+
-+MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@ti.com>");
-+MODULE_DESCRIPTION("Generic DVI Connector driver");
-+MODULE_LICENSE("GPL");
--- 
-1.8.1.2
+I've pushed the patches I had already collected for fbdev:
 
+git://gitorious.org/linux-omap-dss2/linux.git fbdev-3.10-fixes
+git://gitorious.org/linux-omap-dss2/linux.git fbdev-3.11
+
+fbdev-3.10-fixes contains two fixes for 3.10.
+
+fbdev-3.11 contains ssd1307fb patches from Maxime Ripard, and minor
+improvement for the common videomode code from me.
+
+Feel free to cherry pick/rebase the patches, I don't think a merge is
+necessary for these.
+
+ Tomi
+
+
+------enig2CROHFFPCKLFGBBSWJHLN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRpaIoAAoJEPo9qoy8lh71H8wQALCXvB/yRlH+mDdmbJJ3z5hC
+uwAgp5MoN7nVZLlBXYXVKyNCAMsPLtD1AlkHOwk6QAhLx22H7Yi35IBzLjYYMjD9
+CkIix4UpjnRHPimBTX3MNd08EinKzL69EGj6ly0zhx51GW4ylXbexBJZbwcDlO6l
+LOJEtdYXBoT9WM9zyqm1u0Ls+d+JPv4UWg9P5viaCnuhqAwOdby2w5RpD8drrXrr
+aJa9VlJ5CQkFWH5jvSoPSHVTxl1Zhs5E3ptZ4SEksTZwMViSH/WRdOVOzl+FrM2q
+URgZDGiczqmyYmWzVyZ0yxGQUETFTmcND/YP5C3XKyCzJr1emfCBfb8ChBk3JEQD
+g4vGHYsCvz5T6KFDOx2/7IGFlFRMLRS/42IeVtf5yD1liaB5yAxZo5F1cV51Qcmt
+GFg0gOFWhRbJAej58Ns0CgtITwEFjKvplFQ2BGMZydZLOHOIxNZkpSNTK/3APw04
+1GmwsjcjCpFc59pry15eYvgUAQhCFCBhZ2N2FLEovjQmoh/12PiQeQqF0cEf1WAQ
+ZPVHwFa71LTPK7pH/gf/VjG5PDG/88ybOu7TmfGeUN1XKzgvim0WW/Lr9UD1FXpf
+Im/KpiLy8gzwnYHLy9opWgIFAgxVmcfZGCV6w2wpzqt+pJUwBY27wkKV2hO9zCmf
+BrH9BVVXob8WaN3PLSzm
+=wpaN
+-----END PGP SIGNATURE-----
+
+------enig2CROHFFPCKLFGBBSWJHLN--

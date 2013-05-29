@@ -1,34 +1,90 @@
-From: "Davor Joja" <Davor.Joja@logicbricks.com>
-Date: Thu, 16 May 2013 11:51:34 +0000
-Subject: RE: fb driver for logiCVC
-Message-Id: <ABCPY3ZCHWRJhEG4r3o0000007d@abc.logicbricks.com>
+From: Richard Genoud <richard.genoud@gmail.com>
+Date: Wed, 29 May 2013 14:36:11 +0000
+Subject: Re: [PATCH 1/8] video: atmel_lcdfb: fix platform data struct
+Message-Id: <CACQ1gAjF5kuu-czkj56-pQdTBUhvY5VodvfnF3RA_DN-O0b9NQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <9D79B9A9194389468A922F618415D0A401229E7E@abc.xylon.local><20130515184112.251bb949@neptune.home><ABCSCiTtUDvkm6WeI5J00000073@abc.logicbricks.com> <CAMuHMdUW-tVY6=Bu9mabKrkNJsTxJM+Umo6jjcnXpWpzh_5AVw@mail.gmail.com>
-In-Reply-To: <CAMuHMdUW-tVY6=Bu9mabKrkNJsTxJM+Umo6jjcnXpWpzh_5AVw@mail.gmail.com>
+References: <20130411145741.GB25242@game.jcrosoft.org>
+ <1365692422-9565-1-git-send-email-plagnioj@jcrosoft.com>
+In-Reply-To: <1365692422-9565-1-git-send-email-plagnioj@jcrosoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: =?utf-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>, linux-kernel@vger.kernel.org, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-VGhhbmtzIEdlZXJ0IQ0KDQpSZWdhcmRzLA0KRGF2b3INCg0KLS0tLS1PcmlnaW5hbCBNZXNzYWdl
-LS0tLS0NCkZyb206IGdlZXJ0LnV5dHRlcmhvZXZlbkBnbWFpbC5jb20gW21haWx0bzpnZWVydC51
-eXR0ZXJob2V2ZW5AZ21haWwuY29tXSBPbiBCZWhhbGYgT2YgR2VlcnQgVXl0dGVyaG9ldmVuDQpT
-ZW50OiBUaHVyc2RheSwgTWF5IDE2LCAyMDEzIDE6MjMgUE0NClRvOiBEYXZvciBKb2phDQpDYzog
-QnJ1bm8gUHLDqW1vbnQ7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IExpbnV4IEZiZGV2
-IGRldmVsb3BtZW50IGxpc3QNClN1YmplY3Q6IFJlOiBmYiBkcml2ZXIgZm9yIGxvZ2lDVkMNCg0K
-T24gVGh1LCBNYXkgMTYsIDIwMTMgYXQgMTI6MzUgUE0sIERhdm9yIEpvamEgPERhdm9yLkpvamFA
-bG9naWNicmlja3MuY29tPiB3cm90ZToNCj4gVW5mb3J0dW5hdGVseSwgSSBoYXZlIHRoaXMgZHJp
-dmVyIG9uIG1lbnRpb25lZCBnaXQgb25seSBmb3IgZmV3IHdlZWtzLCBzbyB0aGVyZSBpcyBubyB1
-c2FibGUgaGlzdG9yeS4NCj4gU2luY2UgdGhpcyBpcyBuZXcgZHJpdmVyLCB0ZXN0ZWQgYW5kIGZ1
-bmN0aW9uYWwgKG9uIGtlcm5lbCAzLjgpLCB3aXRob3V0IGdpdCBoaXN0b3J5IGFzIHN0YXRlZCBh
-Ym92ZSwgZG8geW91IGhhdmUgaWRlYSBob3cgdG8gYnJlYWsgaXQgdG8gc21hbGxlciBwaWVjZXM/
-IEkgY2FuIG9ubHkgdGhpbmsgb2ZmIGFzIG9uZSBiaWcgcGF0Y2ggYWdhaW5zdCAzLjgueCB2ZXJz
-aW9uLg0KPiBUaGF0IGNvdWxkIGJlIGFjY2VwdGVkIGZvciBuZXcgZHJpdmVyPw0KDQpBIHNpbmds
-ZSBwYXRjaCBpcyBPSyBmb3IgYSBuZXcgZHJpdmVyLg0KDQpHcntvZXRqZSxlZXRpbmd9cywNCg0K
-ICAgICAgICAgICAgICAgICAgICAgICAgR2VlcnQNCg0KLS0NCkdlZXJ0IFV5dHRlcmhvZXZlbiAt
-LSBUaGVyZSdzIGxvdHMgb2YgTGludXggYmV5b25kIGlhMzIgLS0gZ2VlcnRAbGludXgtbTY4ay5v
-cmcNCg0KSW4gcGVyc29uYWwgY29udmVyc2F0aW9ucyB3aXRoIHRlY2huaWNhbCBwZW9wbGUsIEkg
-Y2FsbCBteXNlbGYgYSBoYWNrZXIuIEJ1dCB3aGVuIEknbSB0YWxraW5nIHRvIGpvdXJuYWxpc3Rz
-IEkganVzdCBzYXkgInByb2dyYW1tZXIiIG9yIHNvbWV0aGluZyBsaWtlIHRoYXQuDQogICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgIC0tIExpbnVzIFRvcnZhbGRzDQo
+2013/4/11 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>:
+> Today we mix pdata and drivers data in the struct atmel_lcdfb_info
+> Fix it and introduce a new struct atmel_lcdfb_pdata for platform data only
+>
+> Signed-off-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: Nicolas Ferre <nicolas.ferre@atmel.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+> ---
+>  arch/arm/mach-at91/at91sam9261_devices.c    |    6 +-
+>  arch/arm/mach-at91/at91sam9263_devices.c    |    6 +-
+>  arch/arm/mach-at91/at91sam9g45_devices.c    |    6 +-
+>  arch/arm/mach-at91/at91sam9rl_devices.c     |    6 +-
+>  arch/arm/mach-at91/board-sam9261ek.c        |    6 +-
+>  arch/arm/mach-at91/board-sam9263ek.c        |    4 +-
+>  arch/arm/mach-at91/board-sam9m10g45ek.c     |    4 +-
+>  arch/arm/mach-at91/board-sam9rlek.c         |    4 +-
+>  arch/arm/mach-at91/board.h                  |    4 +-
+>  arch/avr32/boards/atngw100/evklcd10x.c      |    6 +-
+>  arch/avr32/boards/atngw100/mrmt.c           |    4 +-
+>  arch/avr32/boards/atstk1000/atstk1000.h     |    2 +-
+>  arch/avr32/boards/atstk1000/setup.c         |    2 +-
+>  arch/avr32/boards/favr-32/setup.c           |    2 +-
+>  arch/avr32/boards/hammerhead/setup.c        |    2 +-
+>  arch/avr32/boards/merisc/display.c          |    2 +-
+>  arch/avr32/boards/mimc200/setup.c           |    4 +-
+>  arch/avr32/mach-at32ap/at32ap700x.c         |    8 +--
+>  arch/avr32/mach-at32ap/include/mach/board.h |    4 +-
+>  drivers/video/atmel_lcdfb.c                 |  104 +++++++++++++++++----------
+>  include/video/atmel_lcdc.h                  |   24 +------
+>  21 files changed, 109 insertions(+), 101 deletions(-)
+>
+[snip]
+> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+> index c1a2914..98733cd4 100644
+> --- a/drivers/video/atmel_lcdfb.c
+> +++ b/drivers/video/atmel_lcdfb.c
+> @@ -20,12 +20,45 @@
+>  #include <linux/gfp.h>
+>  #include <linux/module.h>
+>  #include <linux/platform_data/atmel.h>
+> +#include <video/of_display_timing.h>
+>
+>  #include <mach/cpu.h>
+>  #include <asm/gpio.h>
+>
+>  #include <video/atmel_lcdc.h>
+>
+> +struct atmel_lcdfb_config {
+> +       bool have_alt_pixclock;
+> +       bool have_hozval;
+> +       bool have_intensity_bit;
+> +};
+> +
+> + /* LCD Controller info data structure, stored in device platform_data */
+> +struct atmel_lcdfb_info {
+> +       spinlock_t              lock;
+> +       struct fb_info          *info;
+> +       void __iomem            *mmio;
+> +       int                     irq_base;
+> +       struct work_struct      task;
+> +
+> +       unsigned int            smem_len;
+> +       struct platform_device  *pdev;
+> +       struct clk              *bus_clk;
+> +       struct clk              *lcdc_clk;
+> +
+> +       struct backlight_device *backlight;
+> +       u8                      bl_power;
+> +       bool                    lcdcon_pol_negative;
+I think lcdcon_pol_negative should be part of pdata, because it really
+depends on how the PWM is wired on the board.
+
+
+Regards,
+Richard.

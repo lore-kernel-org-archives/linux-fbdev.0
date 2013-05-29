@@ -1,450 +1,60 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:36:10 +0000
-Subject: [PATCH 17/27] OMAPDSS: Add new TPD12S015 Encoder driver
-Message-Id: <1369906580-27585-18-git-send-email-tomi.valkeinen@ti.com>
+From: Michal Simek <michal.simek@xilinx.com>
+Date: Wed, 29 May 2013 16:12:58 +0000
+Subject: [PATCH 3/3] video: xilinxfb: Use driver for Xilinx ARM Zynq
+Message-Id: <d534cf63d4d5c5e4d8a7547198895f60cff8948b.1369843969.git.michal.simek@xilinx.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-20207-1369843983-0001"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <502367ddf6d79b7b343b3165ad54cb9e2d4713db.1369843969.git.michal.simek@xilinx.com>
+In-Reply-To: <502367ddf6d79b7b343b3165ad54cb9e2d4713db.1369843969.git.michal.simek@xilinx.com>
+To: linux-kernel@vger.kernel.org
+Cc: Michal Simek <monstr@monstr.eu>, Michal Simek <michal.simek@xilinx.com>, Pallav Joshi <pallav.joshi@xilinx.com>, git-dev@xilinx.com, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
 
-Add TPD12S015 HDMI ESD protection and level shifter encoder driver which
-uses the new DSS device model and DSS ops.
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+--=_mimegpg-monstr-desktop-20207-1369843983-0001
+
+From: Michal Simek <monstr@monstr.eu>
+
+Enable this driver for all Xilinx platforms.
+
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
 ---
- drivers/video/omap2/displays-new/Kconfig           |   6 +
- drivers/video/omap2/displays-new/Makefile          |   1 +
- .../video/omap2/displays-new/encoder-tpd12s015.c   | 395 +++++++++++++++++++++
- 3 files changed, 402 insertions(+)
- create mode 100644 drivers/video/omap2/displays-new/encoder-tpd12s015.c
+ drivers/video/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/displays-new/Kconfig b/drivers/video/omap2/displays-new/Kconfig
-index 92c2324..6e4af85 100644
---- a/drivers/video/omap2/displays-new/Kconfig
-+++ b/drivers/video/omap2/displays-new/Kconfig
-@@ -6,4 +6,10 @@ config DISPLAY_ENCODER_TFP410
- 	help
- 	  Driver for TFP410 DPI to DVI encoder.
- 
-+config DISPLAY_ENCODER_TPD12S015
-+        tristate "TPD12S015 HDMI ESD protection and level shifter"
-+	help
-+	  Driver for TPD12S015, which offers HDMI ESD protection and level
-+	  shifting.
-+
- endmenu
-diff --git a/drivers/video/omap2/displays-new/Makefile b/drivers/video/omap2/displays-new/Makefile
-index b0d3457..c2ee45e 100644
---- a/drivers/video/omap2/displays-new/Makefile
-+++ b/drivers/video/omap2/displays-new/Makefile
-@@ -1 +1,2 @@
- obj-$(CONFIG_DISPLAY_ENCODER_TFP410) += encoder-tfp410.o
-+obj-$(CONFIG_DISPLAY_ENCODER_TPD12S015) += encoder-tpd12s015.o
-diff --git a/drivers/video/omap2/displays-new/encoder-tpd12s015.c b/drivers/video/omap2/displays-new/encoder-tpd12s015.c
-new file mode 100644
-index 0000000..d510c8e
---- /dev/null
-+++ b/drivers/video/omap2/displays-new/encoder-tpd12s015.c
-@@ -0,0 +1,395 @@
-+/*
-+ * TPD12S015 HDMI ESD protection & level shifter chip driver
-+ *
-+ * Copyright (C) 2013 Texas Instruments
-+ * Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/slab.h>
-+#include <linux/gpio.h>
-+#include <linux/platform_device.h>
-+
-+#include <video/omapdss.h>
-+#include <video/omap-panel-data.h>
-+
-+struct panel_drv_data {
-+	struct omap_dss_device dssdev;
-+	struct omap_dss_device *in;
-+
-+	int ct_cp_hpd_gpio;
-+	int ls_oe_gpio;
-+	int hpd_gpio;
-+
-+	struct omap_video_timings timings;
-+};
-+
-+#define to_panel_data(x) container_of(x, struct panel_drv_data, dssdev)
-+
-+static int tpd_connect(struct omap_dss_device *dssdev,
-+		struct omap_dss_device *dst)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+	int r;
-+
-+	r = gpio_request_one(ddata->ct_cp_hpd_gpio, GPIOF_OUT_INIT_LOW,
-+			"hdmi_ct_cp_hpd");
-+	if (r)
-+		goto err_ct_cp_hpd;
-+
-+	if (gpio_is_valid(ddata->ls_oe_gpio)) {
-+		r = gpio_request_one(ddata->ls_oe_gpio, GPIOF_OUT_INIT_LOW,
-+				"hdmi_ls_oe");
-+		if (r)
-+			goto err_ls_oe;
-+	}
-+
-+	r = gpio_request_one(ddata->hpd_gpio, GPIOF_DIR_IN,
-+			"hdmi_hpd");
-+	if (r)
-+		goto err_hpd;
-+
-+
-+	/* XXX */
-+	in->ops.hdmi->set_hpd_gpio(in, ddata->hpd_gpio);
-+
-+	r = in->ops.hdmi->connect(in, dssdev);
-+	if (r)
-+		goto err_conn;
-+
-+	dst->output = dssdev;
-+	dssdev->device = dst;
-+
-+	return 0;
-+
-+err_conn:
-+	gpio_free(ddata->hpd_gpio);
-+err_hpd:
-+	if (gpio_is_valid(ddata->ls_oe_gpio))
-+		gpio_free(ddata->ls_oe_gpio);
-+err_ls_oe:
-+	gpio_free(ddata->ct_cp_hpd_gpio);
-+err_ct_cp_hpd:
-+	return r;
-+}
-+
-+static void tpd_disconnect(struct omap_dss_device *dssdev,
-+		struct omap_dss_device *dst)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+
-+	WARN_ON(dst != dssdev->device);
-+
-+	if (dst != dssdev->device)
-+		return;
-+
-+	dst->output = NULL;
-+	dssdev->device = NULL;
-+
-+	in->ops.hdmi->disconnect(in, &ddata->dssdev);
-+
-+	gpio_free(ddata->hpd_gpio);
-+	if (gpio_is_valid(ddata->ls_oe_gpio))
-+		gpio_free(ddata->ls_oe_gpio);
-+	gpio_free(ddata->ct_cp_hpd_gpio);
-+}
-+
-+static int tpd_enable(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+	int r;
-+
-+	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
-+		return 0;
-+
-+	gpio_set_value(ddata->ct_cp_hpd_gpio, 1);
-+	gpio_set_value(ddata->ls_oe_gpio, 1);
-+
-+	in->ops.hdmi->set_timings(in, &ddata->timings);
-+
-+	r = in->ops.hdmi->enable(in);
-+	if (r)
-+		return r;
-+
-+	if (gpio_is_valid(ddata->ls_oe_gpio))
-+		gpio_set_value_cansleep(ddata->ls_oe_gpio, 1);
-+
-+	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
-+
-+	return r;
-+}
-+
-+static void tpd_disable(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+
-+	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
-+		return;
-+
-+	if (gpio_is_valid(ddata->ls_oe_gpio))
-+		gpio_set_value_cansleep(ddata->ls_oe_gpio, 0);
-+
-+	in->ops.hdmi->disable(in);
-+
-+	gpio_set_value(ddata->ct_cp_hpd_gpio, 0);
-+	gpio_set_value(ddata->ls_oe_gpio, 0);
-+
-+	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
-+}
-+
-+static void tpd_set_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+
-+	ddata->timings = *timings;
-+	dssdev->panel.timings = *timings;
-+
-+	in->ops.hdmi->set_timings(in, timings);
-+}
-+
-+static void tpd_get_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+
-+	*timings = ddata->timings;
-+}
-+
-+static int tpd_check_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+	int r;
-+
-+	r = in->ops.hdmi->check_timings(in, timings);
-+
-+	return r;
-+}
-+
-+static int tpd_read_edid(struct omap_dss_device *dssdev,
-+		u8 *edid, int len)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+	bool need_enable;
-+	int r;
-+
-+	need_enable = dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
-+
-+	if (need_enable) {
-+		gpio_set_value(ddata->ct_cp_hpd_gpio, 1);
-+		gpio_set_value(ddata->ls_oe_gpio, 1);
-+	}
-+
-+	r = in->ops.hdmi->read_edid(in, edid, len);
-+
-+	if (need_enable) {
-+		gpio_set_value(ddata->ct_cp_hpd_gpio, 0);
-+		gpio_set_value(ddata->ls_oe_gpio, 0);
-+	}
-+
-+	return r;
-+}
-+
-+static bool tpd_detect(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+	bool need_enable;
-+	bool det;
-+
-+	need_enable = dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
-+
-+	if (need_enable) {
-+		gpio_set_value(ddata->ct_cp_hpd_gpio, 1);
-+		gpio_set_value(ddata->ls_oe_gpio, 1);
-+	}
-+
-+	det = in->ops.hdmi->detect(in);
-+
-+	if (need_enable) {
-+		gpio_set_value(ddata->ct_cp_hpd_gpio, 0);
-+		gpio_set_value(ddata->ls_oe_gpio, 0);
-+	}
-+
-+	return det;
-+}
-+
-+static int tpd_audio_enable(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+
-+	return in->ops.hdmi->audio_enable(in);
-+}
-+
-+static void tpd_audio_disable(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+
-+	in->ops.hdmi->audio_disable(in);
-+}
-+
-+static int tpd_audio_start(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+
-+	return in->ops.hdmi->audio_start(in);
-+}
-+
-+static void tpd_audio_stop(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+
-+	in->ops.hdmi->audio_stop(in);
-+}
-+
-+static bool tpd_audio_supported(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+
-+	return in->ops.hdmi->audio_supported(in);
-+}
-+
-+static int tpd_audio_config(struct omap_dss_device *dssdev,
-+		struct omap_dss_audio *audio)
-+{
-+	struct panel_drv_data *ddata = to_panel_data(dssdev);
-+	struct omap_dss_device *in = ddata->in;
-+
-+	return in->ops.hdmi->audio_config(in, audio);
-+}
-+
-+static const struct omapdss_hdmi_ops tpd_hdmi_ops = {
-+	.connect		= tpd_connect,
-+	.disconnect		= tpd_disconnect,
-+
-+	.enable			= tpd_enable,
-+	.disable		= tpd_disable,
-+
-+	.check_timings		= tpd_check_timings,
-+	.set_timings		= tpd_set_timings,
-+	.get_timings		= tpd_get_timings,
-+
-+	.read_edid		= tpd_read_edid,
-+	.detect			= tpd_detect,
-+
-+	.audio_enable		= tpd_audio_enable,
-+	.audio_disable		= tpd_audio_disable,
-+	.audio_start		= tpd_audio_start,
-+	.audio_stop		= tpd_audio_stop,
-+	.audio_supported	= tpd_audio_supported,
-+	.audio_config		= tpd_audio_config,
-+};
-+
-+static int tpd_probe_pdata(struct platform_device *pdev)
-+{
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct encoder_tpd12s015_platform_data *pdata;
-+	struct omap_dss_device *dssdev, *in;
-+
-+	pdata = dev_get_platdata(&pdev->dev);
-+
-+	ddata->ct_cp_hpd_gpio = pdata->ct_cp_hpd_gpio;
-+	ddata->ls_oe_gpio = pdata->ls_oe_gpio;
-+	ddata->hpd_gpio = pdata->hpd_gpio;
-+
-+	in = omap_dss_find_output(pdata->source);
-+	if (in = NULL) {
-+		dev_err(&pdev->dev, "Failed to find video source\n");
-+		return -ENODEV;
-+	}
-+
-+	ddata->in = in;
-+
-+	dssdev = &ddata->dssdev;
-+	dssdev->name = pdata->name;
-+
-+	return 0;
-+}
-+
-+static int tpd_probe(struct platform_device *pdev)
-+{
-+	struct omap_dss_device *in, *dssdev;
-+	struct panel_drv_data *ddata;
-+	int r;
-+
-+	ddata = devm_kzalloc(&pdev->dev, sizeof(*ddata), GFP_KERNEL);
-+	if (!ddata)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, ddata);
-+
-+	if (dev_get_platdata(&pdev->dev)) {
-+		r = tpd_probe_pdata(pdev);
-+		if (r)
-+			return r;
-+	} else {
-+		return -ENODEV;
-+	}
-+
-+	dssdev = &ddata->dssdev;
-+	dssdev->ops.hdmi = &tpd_hdmi_ops;
-+	dssdev->dev = &pdev->dev;
-+	dssdev->type = OMAP_DISPLAY_TYPE_HDMI;
-+	dssdev->output_type = OMAP_DISPLAY_TYPE_HDMI;
-+	dssdev->owner = THIS_MODULE;
-+
-+	in = ddata->in;
-+
-+	r = omapdss_register_output(dssdev);
-+	if (r) {
-+		dev_err(&pdev->dev, "Failed to register output\n");
-+		goto err_reg;
-+	}
-+
-+	return 0;
-+err_reg:
-+	omap_dss_put_device(in);
-+	return r;
-+}
-+
-+static int __exit tpd_remove(struct platform_device *pdev)
-+{
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct omap_dss_device *in = ddata->in;
-+
-+	omapdss_unregister_output(&ddata->dssdev);
-+
-+	if (ddata->dssdev.output)
-+		in->ops.hdmi->disconnect(in, &ddata->dssdev);
-+
-+	omap_dss_put_device(in);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver tpd_driver = {
-+	.probe	= tpd_probe,
-+	.remove	= __exit_p(tpd_remove),
-+	.driver	= {
-+		.name	= "tpd12s015",
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+module_platform_driver(tpd_driver);
-+
-+MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@ti.com>");
-+MODULE_DESCRIPTION("TPD12S015 driver");
-+MODULE_LICENSE("GPL");
--- 
-1.8.1.2
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 2e937bd..2c301f8 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2188,7 +2188,7 @@ config FB_PS3_DEFAULT_SIZE_M
 
+ config FB_XILINX
+ 	tristate "Xilinx frame buffer support"
+-	depends on FB && (XILINX_VIRTEX || MICROBLAZE)
++	depends on FB && (XILINX_VIRTEX || MICROBLAZE || ARCH_ZYNQ)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+--
+1.8.2.3
+
+
+--=_mimegpg-monstr-desktop-20207-1369843983-0001
+Content-Type: application/pgp-signature
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAlGmKQ8ACgkQykllyylKDCHL9wCfYbhSoda01iLDi7O3HfJ2CJ2j
+VSwAoI4k9SmNDYP0sVjU0U/MeBs1DPQH
+=vkBw
+-----END PGP SIGNATURE-----
+
+--=_mimegpg-monstr-desktop-20207-1369843983-0001--

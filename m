@@ -1,34 +1,74 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Tue, 28 May 2013 15:25:17 +0000
-Subject: Re: [PATCH] video: mxsfb: Let device core handle pinctrl
-Message-Id: <20130528152517.GA23899@game.jcrosoft.org>
+From: Lars-Peter Clausen <lars@metafoo.de>
+Date: Wed, 29 May 2013 12:17:39 +0000
+Subject: [PATCH] fbdev: bfin-lq035q1-fb: Use dev_pm_ops
+Message-Id: <1369829859-13405-1-git-send-email-lars@metafoo.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369619294-10362-1-git-send-email-festevam@gmail.com>
-In-Reply-To: <1369619294-10362-1-git-send-email-festevam@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On 12:09 Tue 28 May     , Fabio Estevam wrote:
-> Hi Jean-Christophe,
-> 
-> On Mon, May 27, 2013 at 11:44 AM, Jean-Christophe PLAGNIOL-VILLARD
-> <plagnioj@jcrosoft.com> wrote:
-> > On 22:48 Sun 26 May     , Fabio Estevam wrote:
-> >> From: Fabio Estevam <fabio.estevam@freescale.com>
-> >>
-> >> Since commit ab78029 (drivers/pinctrl: grab default handles from device core)
-> >> we can rely on device core for handling pinctrl, so remove
-> >> devm_pinctrl_get_select_default() from the driver.
-> > Linus we should do a pass on the kernel to clean this
-> 
-> Not sure which 'Linus' the comment was meant to be directed to, but I
-> have already sent several patches removing
-> devm_pinctrl_get_select_default() and many of them were already
-> applied by the maintainers.
+Use dev_pm_ops instead of the legacy suspend/resume callbacks.
 
-here I mean linusw
+Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+---
+ drivers/video/bfin-lq035q1-fb.c | 22 ++++++++++++++--------
+ 1 file changed, 14 insertions(+), 8 deletions(-)
 
-Best Regards,
-J.
+diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
+index 29d8c04..6084c17 100644
+--- a/drivers/video/bfin-lq035q1-fb.c
++++ b/drivers/video/bfin-lq035q1-fb.c
+@@ -170,16 +170,19 @@ static int lq035q1_spidev_remove(struct spi_device *spi)
+ 	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
+ }
+ 
+-#ifdef CONFIG_PM
+-static int lq035q1_spidev_suspend(struct spi_device *spi, pm_message_t state)
++#ifdef CONFIG_PM_SLEEP
++static int lq035q1_spidev_suspend(struct device *dev)
+ {
++	struct spi_device *spi = to_spi_device(dev);
++
+ 	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
+ }
+ 
+-static int lq035q1_spidev_resume(struct spi_device *spi)
++static int lq035q1_spidev_resume(struct device *dev)
+ {
+-	int ret;
++	struct spi_device *spi = to_spi_device(dev);
+ 	struct spi_control *ctl = spi_get_drvdata(spi);
++	int ret;
+ 
+ 	ret = lq035q1_control(spi, LQ035_DRIVER_OUTPUT_CTL, ctl->mode);
+ 	if (ret)
+@@ -187,9 +190,13 @@ static int lq035q1_spidev_resume(struct spi_device *spi)
+ 
+ 	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_ON);
+ }
++
++static SIMPLE_DEV_PM_OPS(lq035q1_spidev_pm_ops, lq035q1_spidev_suspend,
++	lq035q1_spidev_resume);
++#define LQ035Q1_SPIDEV_PM_OPS (&lq035q1_spidev_pm_ops)
++
+ #else
+-# define lq035q1_spidev_suspend NULL
+-# define lq035q1_spidev_resume  NULL
++#define LQ035Q1_SPIDEV_PM_OPS NULL
+ #endif
+ 
+ /* Power down all displays on reboot, poweroff or halt */
+@@ -708,8 +715,7 @@ static int bfin_lq035q1_probe(struct platform_device *pdev)
+ 	info->spidrv.probe    = lq035q1_spidev_probe;
+ 	info->spidrv.remove   = lq035q1_spidev_remove;
+ 	info->spidrv.shutdown = lq035q1_spidev_shutdown;
+-	info->spidrv.suspend  = lq035q1_spidev_suspend;
+-	info->spidrv.resume   = lq035q1_spidev_resume;
++	info->spidrv.driver.pm = LQ035Q1_SPIDEV_PM_OPS;
+ 
+ 	ret = spi_register_driver(&info->spidrv);
+ 	if (ret < 0) {
+-- 
+1.8.0
+

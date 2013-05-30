@@ -1,149 +1,73 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Sat, 18 May 2013 09:15:11 +0000
-Subject: [PATCH 1/4] fb: vt8500: Move register defines inside driver
-Message-Id: <1368868514-18975-2-git-send-email-linux@prisktech.co.nz>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:34:50 +0000
+Subject: [PATCH 29/32] OMAPDSS: add module_get/put to omap_dss_get/put_device()
+Message-Id: <1369906493-27538-30-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1368868514-18975-1-git-send-email-linux@prisktech.co.nz>
-In-Reply-To: <1368868514-18975-1-git-send-email-linux@prisktech.co.nz>
+References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The #defines in wm8505fb_regs.h are only used in the wm8505fb driver,
-and don't need to be visible outside.
+omap_dss_get_device() should be called for omap_dss_device before it is
+used to increase its refcount. Currently we only increase the refcount
+for the underlying device.
 
-Move the defines into the driver and remove the header.
+This patch adds managing the ref count to the underlying module also,
+which contains the ops for the omap_dss_device.
 
-Signed-off-by: Tony Prisk <linux@prisktech.co.nz>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/wm8505fb.c      |   25 +++++++++++++-
- drivers/video/wm8505fb_regs.h |   76 -----------------------------------------
- 2 files changed, 24 insertions(+), 77 deletions(-)
- delete mode 100644 drivers/video/wm8505fb_regs.h
+ drivers/video/omap2/dss/display.c | 13 +++++++++++--
+ include/video/omapdss.h           |  2 +-
+ 2 files changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
-index 01f9ace..f824af8 100644
---- a/drivers/video/wm8505fb.c
-+++ b/drivers/video/wm8505fb.c
-@@ -34,11 +34,34 @@
- #include <linux/wait.h>
- #include <video/of_display_timing.h>
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index 8096764..0daf3e3 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -158,15 +158,24 @@ void omapdss_unregister_display(struct omap_dss_device *dssdev)
+ }
+ EXPORT_SYMBOL(omapdss_unregister_display);
  
--#include "wm8505fb_regs.h"
- #include "wmt_ge_rops.h"
- 
- #define DRIVER_NAME "wm8505-fb"
- 
-+#define WMT_GOVR_COLORSPACE1	0x030
-+#define WMT_GOVR_MIF_ENABLE	0x080
-+#define WMT_GOVR_FBADDR		0x090
-+#define WMT_GOVR_FBADDR1	0x094
-+#define WMT_GOVR_XRES		0x098
-+#define WMT_GOVR_XRES_VIRTUAL	0x09c
-+#define WMT_GOVR_YPAN		0x0a0
-+#define WMT_GOVR_XPAN		0x0a4
-+#define WMT_GOVR_FHI		0x0a8
-+#define WMT_GOVR_REG_UPDATE	0x0e4
-+#define WMT_GOVR_TG		0x100
-+#define WMT_GOVR_TIMING_H_ALL	0x108
-+#define WMT_GOVR_TIMING_V_ALL	0x10c
-+#define WMT_GOVR_TIMING_V_START	0x110
-+#define WMT_GOVR_TIMING_V_END	0x114
-+#define WMT_GOVR_TIMING_H_START	0x118
-+#define WMT_GOVR_TIMING_H_END	0x11c
-+#define WMT_GOVR_TIMING_V_SYNC	0x128
-+#define WMT_GOVR_TIMING_H_SYNC	0x12c
-+#define WMT_GOVR_DVO_SET	0x148
-+#define WMT_GOVR_CONTRAST	0x1b8
-+#define WMT_GOVR_BRGHTNESS	0x1bc
-+#define WMT_GOVR_COLORSPACE	0x1e4
+-void omap_dss_get_device(struct omap_dss_device *dssdev)
++struct omap_dss_device *omap_dss_get_device(struct omap_dss_device *dssdev)
+ {
+-	get_device(dssdev->dev);
++	if (!try_module_get(dssdev->owner))
++		return NULL;
 +
- #define to_wm8505fb_info(__info) container_of(__info, \
- 						struct wm8505fb_info, fb)
- struct wm8505fb_info {
-diff --git a/drivers/video/wm8505fb_regs.h b/drivers/video/wm8505fb_regs.h
-deleted file mode 100644
-index 4dd4166..0000000
---- a/drivers/video/wm8505fb_regs.h
-+++ /dev/null
-@@ -1,76 +0,0 @@
--/*
-- *  GOVR registers list for WM8505 chips
-- *
-- *  Copyright (C) 2010 Ed Spiridonov <edo.rus@gmail.com>
-- *   Based on VIA/WonderMedia wm8510-govrh-reg.h
-- *   http://github.com/projectgus/kernel_wm8505/blob/wm8505_2.6.29/
-- *         drivers/video/wmt/register/wm8510/wm8510-govrh-reg.h
-- *
-- * This software is licensed under the terms of the GNU General Public
-- * License version 2, as published by the Free Software Foundation, and
-- * may be copied, distributed, and modified under those terms.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- */
--
--#ifndef _WM8505FB_REGS_H
--#define _WM8505FB_REGS_H
--
--/*
-- * Color space select register, default value 0x1c
-- *   BIT0 GOVRH_DVO_YUV2RGB_ENABLE
-- *   BIT1 GOVRH_VGA_YUV2RGB_ENABLE
-- *   BIT2 GOVRH_RGB_MODE
-- *   BIT3 GOVRH_DAC_CLKINV
-- *   BIT4 GOVRH_BLANK_ZERO
-- */
--#define WMT_GOVR_COLORSPACE	0x1e4
--/*
-- * Another colorspace select register, default value 1
-- *   BIT0 GOVRH_DVO_RGB
-- *   BIT1 GOVRH_DVO_YUV422
-- */
--#define WMT_GOVR_COLORSPACE1	 0x30
--
--#define WMT_GOVR_CONTRAST	0x1b8
--#define WMT_GOVR_BRGHTNESS	0x1bc /* incompatible with RGB? */
--
--/* Framubeffer address */
--#define WMT_GOVR_FBADDR		 0x90
--#define WMT_GOVR_FBADDR1	 0x94 /* UV offset in YUV mode */
--
--/* Offset of visible window */
--#define WMT_GOVR_XPAN		 0xa4
--#define WMT_GOVR_YPAN		 0xa0
--
--#define WMT_GOVR_XRES		 0x98
--#define WMT_GOVR_XRES_VIRTUAL	 0x9c
--
--#define WMT_GOVR_MIF_ENABLE	 0x80
--#define WMT_GOVR_FHI		 0xa8
--#define WMT_GOVR_REG_UPDATE	 0xe4
--
--/*
-- *   BIT0 GOVRH_DVO_OUTWIDTH
-- *   BIT1 GOVRH_DVO_SYNC_POLAR
-- *   BIT2 GOVRH_DVO_ENABLE
-- */
--#define WMT_GOVR_DVO_SET	0x148
--
--/* Timing generator? */
--#define WMT_GOVR_TG		0x100
--
--/* Timings */
--#define WMT_GOVR_TIMING_H_ALL	0x108
--#define WMT_GOVR_TIMING_V_ALL	0x10c
--#define WMT_GOVR_TIMING_V_START	0x110
--#define WMT_GOVR_TIMING_V_END	0x114
--#define WMT_GOVR_TIMING_H_START	0x118
--#define WMT_GOVR_TIMING_H_END	0x11c
--#define WMT_GOVR_TIMING_V_SYNC	0x128
--#define WMT_GOVR_TIMING_H_SYNC	0x12c
--
--#endif /* _WM8505FB_REGS_H */
++	if (get_device(dssdev->dev) = NULL) {
++		module_put(dssdev->owner);
++		return NULL;
++	}
++
++	return dssdev;
+ }
+ EXPORT_SYMBOL(omap_dss_get_device);
+ 
+ void omap_dss_put_device(struct omap_dss_device *dssdev)
+ {
+ 	put_device(dssdev->dev);
++	module_put(dssdev->owner);
+ }
+ EXPORT_SYMBOL(omap_dss_put_device);
+ 
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index c32d90e..b2e6160 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -766,7 +766,7 @@ void omap_dss_unregister_driver(struct omap_dss_driver *);
+ int omapdss_register_display(struct omap_dss_device *dssdev);
+ void omapdss_unregister_display(struct omap_dss_device *dssdev);
+ 
+-void omap_dss_get_device(struct omap_dss_device *dssdev);
++struct omap_dss_device *omap_dss_get_device(struct omap_dss_device *dssdev);
+ void omap_dss_put_device(struct omap_dss_device *dssdev);
+ #define for_each_dss_dev(d) while ((d = omap_dss_get_next_device(d)) != NULL)
+ struct omap_dss_device *omap_dss_get_next_device(struct omap_dss_device *from);
 -- 
-1.7.9.5
+1.8.1.2
 

@@ -1,420 +1,174 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:36:07 +0000
-Subject: [PATCH 14/27] OMAPDSS: HDMI: Add ops
-Message-Id: <1369906580-27585-15-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:34:30 +0000
+Subject: [PATCH 09/32] OMAPDSS: add helpers to get mgr or output from display
+Message-Id: <1369906493-27538-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add "ops" style method for using HDMI functionality.
+Add two helper functions that can be used to find either the DSS output
+or the overlay manager that is connected to the given display.
 
-Ops style calls will allow us to have arbitrarily long display
-pipelines, where each entity can call ops in the previous display
-entity.
+This hides how the output and the manager are actually connected, making
+it easier to change the connections in the future.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/hdmi.c | 248 ++++++++++++++++++++++++++++++++++++++++-
- include/video/omapdss.h        |  47 +++++++-
- 2 files changed, 284 insertions(+), 11 deletions(-)
+ drivers/gpu/drm/omapdrm/omap_drv.c        |  5 ++++-
+ drivers/video/omap2/dss/manager-sysfs.c   |  4 +++-
+ drivers/video/omap2/dss/output.c          | 19 +++++++++++++++++++
+ drivers/video/omap2/omapfb/omapfb-ioctl.c |  9 +++++++--
+ drivers/video/omap2/omapfb/omapfb-main.c  | 16 +++++++---------
+ include/video/omapdss.h                   |  3 +++
+ 6 files changed, 43 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 42376d1..9420923 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -70,6 +70,8 @@ static struct {
- 	int ls_oe_gpio;
- 	int hpd_gpio;
- 
-+	bool core_enabled;
+diff --git a/drivers/gpu/drm/omapdrm/omap_drv.c b/drivers/gpu/drm/omapdrm/omap_drv.c
+index 9c53c25..691e760 100644
+--- a/drivers/gpu/drm/omapdrm/omap_drv.c
++++ b/drivers/gpu/drm/omapdrm/omap_drv.c
+@@ -247,6 +247,9 @@ static int omap_modeset_init(struct drm_device *dev)
+ 		struct drm_encoder *encoder = priv->encoders[i];
+ 		struct omap_dss_device *dssdev  					omap_encoder_get_dssdev(encoder);
++		struct omap_dss_output *output;
 +
- 	struct omap_dss_device output;
- } hdmi;
++		output = omapdss_find_output_from_display(dssdev);
  
-@@ -521,8 +523,10 @@ static int hdmi_power_on_core(struct omap_dss_device *dssdev)
- {
- 	int r;
+ 		/* figure out which crtc's we can connect the encoder to: */
+ 		encoder->possible_crtcs = 0;
+@@ -259,7 +262,7 @@ static int omap_modeset_init(struct drm_device *dev)
+ 			supported_outputs  				dss_feat_get_supported_outputs(crtc_channel);
  
--	gpio_set_value(hdmi.ct_cp_hpd_gpio, 1);
--	gpio_set_value(hdmi.ls_oe_gpio, 1);
-+	if (gpio_is_valid(hdmi.ct_cp_hpd_gpio))
-+		gpio_set_value(hdmi.ct_cp_hpd_gpio, 1);
-+	if (gpio_is_valid(hdmi.ls_oe_gpio))
-+		gpio_set_value(hdmi.ls_oe_gpio, 1);
+-			if (supported_outputs & dssdev->output->id)
++			if (supported_outputs & output->id)
+ 				encoder->possible_crtcs |= (1 << id);
+ 		}
+ 	}
+diff --git a/drivers/video/omap2/dss/manager-sysfs.c b/drivers/video/omap2/dss/manager-sysfs.c
+index 9a2fb59..5104681 100644
+--- a/drivers/video/omap2/dss/manager-sysfs.c
++++ b/drivers/video/omap2/dss/manager-sysfs.c
+@@ -78,7 +78,9 @@ static ssize_t manager_display_store(struct omap_overlay_manager *mgr,
+ 	}
  
- 	/* wait 300us after CT_CP_HPD for the 5V power output to reach 90% */
- 	udelay(300);
-@@ -538,22 +542,30 @@ static int hdmi_power_on_core(struct omap_dss_device *dssdev)
- 	/* Make selection of HDMI in DSS */
- 	dss_select_hdmi_venc_clk_source(DSS_HDMI_M_PCLK);
- 
-+	hdmi.core_enabled = true;
+ 	if (dssdev) {
+-		struct omap_dss_output *out = dssdev->output;
++		struct omap_dss_output *out;
 +
- 	return 0;
++		out = omapdss_find_output_from_display(dssdev);
  
- err_runtime_get:
- 	regulator_disable(hdmi.vdda_hdmi_dac_reg);
- err_vdac_enable:
--	gpio_set_value(hdmi.ct_cp_hpd_gpio, 0);
--	gpio_set_value(hdmi.ls_oe_gpio, 0);
-+	if (gpio_is_valid(hdmi.ct_cp_hpd_gpio))
-+		gpio_set_value(hdmi.ct_cp_hpd_gpio, 0);
-+	if (gpio_is_valid(hdmi.ls_oe_gpio))
-+		gpio_set_value(hdmi.ls_oe_gpio, 0);
- 	return r;
+ 		/*
+ 		 * a registered device should have an output connected to it
+diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
+index 4d01001..ab2c0f0 100644
+--- a/drivers/video/omap2/dss/output.c
++++ b/drivers/video/omap2/dss/output.c
+@@ -141,6 +141,25 @@ struct omap_dss_output *omap_dss_find_output_by_node(struct device_node *node)
  }
+ EXPORT_SYMBOL(omap_dss_find_output_by_node);
  
- static void hdmi_power_off_core(struct omap_dss_device *dssdev)
- {
-+	hdmi.core_enabled = false;
++struct omap_dss_output *omapdss_find_output_from_display(struct omap_dss_device *dssdev)
++{
++	return dssdev->output;
++}
++EXPORT_SYMBOL(omapdss_find_output_from_display);
 +
- 	hdmi_runtime_put();
- 	regulator_disable(hdmi.vdda_hdmi_dac_reg);
--	gpio_set_value(hdmi.ct_cp_hpd_gpio, 0);
--	gpio_set_value(hdmi.ls_oe_gpio, 0);
-+	if (gpio_is_valid(hdmi.ct_cp_hpd_gpio))
-+		gpio_set_value(hdmi.ct_cp_hpd_gpio, 0);
-+	if (gpio_is_valid(hdmi.ls_oe_gpio))
-+		gpio_set_value(hdmi.ls_oe_gpio, 0);
- }
++struct omap_overlay_manager *omapdss_find_mgr_from_display(struct omap_dss_device *dssdev)
++{
++	struct omap_dss_output *out;
++
++	out = omapdss_find_output_from_display(dssdev);
++
++	if (out = NULL)
++		return NULL;
++
++	return out->manager;
++}
++EXPORT_SYMBOL(omapdss_find_mgr_from_display);
++
+ static const struct dss_mgr_ops *dss_mgr_ops;
  
- static int hdmi_power_on_full(struct omap_dss_device *dssdev)
-@@ -666,6 +678,18 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev,
- 	mutex_unlock(&hdmi.lock);
- }
+ int dss_install_mgr_ops(const struct dss_mgr_ops *mgr_ops)
+diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+index d30b45d..146b6f5 100644
+--- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
++++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+@@ -770,12 +770,17 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
  
-+static void omapdss_hdmi_display_get_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings)
-+{
-+	const struct hdmi_config *cfg;
+ 	case OMAPFB_WAITFORVSYNC:
+ 		DBG("ioctl WAITFORVSYNC\n");
+-		if (!display || !display->output || !display->output->manager) {
 +
-+	cfg = hdmi_get_timings();
-+	if (cfg = NULL)
-+		cfg = &vesa_timings[0];
-+
-+	memcpy(timings, &cfg->timings, sizeof(cfg->timings));
-+}
-+
- static void hdmi_dump_regs(struct seq_file *s)
- {
- 	mutex_lock(&hdmi.lock);
-@@ -1033,6 +1057,213 @@ static int hdmi_probe_pdata(struct platform_device *pdev)
- 	return 0;
- }
++		if (!display) {
+ 			r = -EINVAL;
+ 			break;
+ 		}
  
-+static int hdmi_connect(struct omap_dss_device *dssdev,
-+		struct omap_dss_device *dst)
-+{
-+	struct omap_overlay_manager *mgr;
-+	int r;
-+
-+	dss_init_hdmi_ip_ops(&hdmi.ip_data, omapdss_get_version());
-+
-+	r = hdmi_init_regulator();
-+	if (r)
-+		return r;
-+
-+	mgr = omap_dss_get_overlay_manager(dssdev->dispc_channel);
-+	if (!mgr)
-+		return -ENODEV;
-+
-+	r = dss_mgr_connect(mgr, dssdev);
-+	if (r)
-+		return r;
-+
-+	r = omapdss_output_set_device(dssdev, dst);
-+	if (r) {
-+		DSSERR("failed to connect output to new device: %s\n",
-+				dst->name);
-+		dss_mgr_disconnect(mgr, dssdev);
-+		return r;
-+	}
-+
-+	return 0;
-+}
-+
-+static void hdmi_disconnect(struct omap_dss_device *dssdev,
-+		struct omap_dss_device *dst)
-+{
-+	WARN_ON(dst != dssdev->device);
-+
-+	if (dst != dssdev->device)
-+		return;
-+
-+	omapdss_output_unset_device(dssdev);
-+
-+	if (dssdev->manager)
-+		dss_mgr_disconnect(dssdev->manager, dssdev);
-+}
-+
-+static void omapdss_hdmi_set_hpd_gpio(struct omap_dss_device *dssdev,
-+			int hpd_gpio)
-+{
-+	hdmi.hpd_gpio = hpd_gpio;
-+}
-+
-+static int hdmi_read_edid(struct omap_dss_device *dssdev,
-+		u8 *edid, int len)
-+{
-+	bool need_enable;
-+	int r;
-+
-+	need_enable = hdmi.core_enabled = false;
-+
-+	if (need_enable) {
-+		r = omapdss_hdmi_core_enable(dssdev);
-+		if (r)
-+			return r;
-+	}
-+
-+	r = omapdss_hdmi_read_edid(edid, len);
-+
-+	if (need_enable)
-+		omapdss_hdmi_core_disable(dssdev);
-+
-+	return r;
-+}
-+
-+static bool hdmi_detect(struct omap_dss_device *dssdev)
-+{
-+	return omapdss_hdmi_detect();
-+}
-+
-+#if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
-+static int omapdss_hdmi_audio_enable(struct omap_dss_device *dssdev)
-+{
-+	int r;
-+
-+	mutex_lock(&hdmi.lock);
-+
-+	if (!hdmi_mode_has_audio()) {
-+		r = -EPERM;
-+		goto err;
-+	}
-+
-+	r = hdmi_audio_enable();
-+	if (r)
-+		goto err;
-+
-+	mutex_unlock(&hdmi.lock);
-+	return 0;
-+
-+err:
-+	mutex_unlock(&hdmi.lock);
-+	return r;
-+}
-+
-+static void omapdss_hdmi_audio_disable(struct omap_dss_device *dssdev)
-+{
-+	hdmi_audio_disable();
-+}
-+
-+static int omapdss_hdmi_audio_start(struct omap_dss_device *dssdev)
-+{
-+	return hdmi_audio_start();
-+}
-+
-+static void omapdss_hdmi_audio_stop(struct omap_dss_device *dssdev)
-+{
-+	hdmi_audio_stop();
-+}
-+
-+static bool omapdss_hdmi_audio_supported(struct omap_dss_device *dssdev)
-+{
-+	bool r;
-+
-+	mutex_lock(&hdmi.lock);
-+
-+	r = hdmi_mode_has_audio();
-+
-+	mutex_unlock(&hdmi.lock);
-+	return r;
-+}
-+
-+static int omapdss_hdmi_audio_config(struct omap_dss_device *dssdev,
-+		struct omap_dss_audio *audio)
-+{
-+	int r;
-+
-+	mutex_lock(&hdmi.lock);
-+
-+	if (!hdmi_mode_has_audio()) {
-+		r = -EPERM;
-+		goto err;
-+	}
-+
-+	r = hdmi_audio_config(audio);
-+	if (r)
-+		goto err;
-+
-+	mutex_unlock(&hdmi.lock);
-+	return 0;
-+
-+err:
-+	mutex_unlock(&hdmi.lock);
-+	return r;
-+}
-+#else
-+static int omapdss_hdmi_audio_enable(struct omap_dss_device *dssdev)
-+{
-+	return -EPERM;
-+}
-+
-+static void omapdss_hdmi_audio_disable(struct omap_dss_device *dssdev)
-+{
-+}
-+
-+static int omapdss_hdmi_audio_start(struct omap_dss_device *dssdev)
-+{
-+	return -EPERM;
-+}
-+
-+static void omapdss_hdmi_audio_stop(struct omap_dss_device *dssdev)
-+{
-+}
-+
-+static bool omapdss_hdmi_audio_supported(struct omap_dss_device *dssdev)
-+{
-+	return false;
-+}
-+
-+static int omapdss_hdmi_audio_config(struct omap_dss_device *dssdev,
-+		struct omap_dss_audio *audio)
-+{
-+	return -EPERM;
-+}
-+#endif
-+
-+static const struct omapdss_hdmi_ops hdmi_ops = {
-+	.connect		= hdmi_connect,
-+	.disconnect		= hdmi_disconnect,
-+
-+	.enable			= omapdss_hdmi_display_enable,
-+	.disable		= omapdss_hdmi_display_disable,
-+
-+	.check_timings		= omapdss_hdmi_display_check_timing,
-+	.set_timings		= omapdss_hdmi_display_set_timing,
-+	.get_timings		= omapdss_hdmi_display_get_timings,
-+
-+	.set_hpd_gpio		= omapdss_hdmi_set_hpd_gpio,
-+
-+	.read_edid		= hdmi_read_edid,
-+	.detect			= hdmi_detect,
-+
-+	.audio_enable		= omapdss_hdmi_audio_enable,
-+	.audio_disable		= omapdss_hdmi_audio_disable,
-+	.audio_start		= omapdss_hdmi_audio_start,
-+	.audio_stop		= omapdss_hdmi_audio_stop,
-+	.audio_supported	= omapdss_hdmi_audio_supported,
-+	.audio_config		= omapdss_hdmi_audio_config,
-+};
-+
- static void hdmi_init_output(struct platform_device *pdev)
- {
- 	struct omap_dss_device *out = &hdmi.output;
-@@ -1042,6 +1273,7 @@ static void hdmi_init_output(struct platform_device *pdev)
- 	out->output_type = OMAP_DISPLAY_TYPE_HDMI;
- 	out->name = "hdmi.0";
- 	out->dispc_channel = OMAP_DSS_CHANNEL_DIGIT;
-+	out->ops.hdmi = &hdmi_ops;
- 	out->owner = THIS_MODULE;
+-		mgr = display->output->manager;
++		mgr = omapdss_find_mgr_from_display(display);
++		if (!mgr) {
++			r = -EINVAL;
++			break;
++		}
  
- 	omapdss_register_output(out);
-@@ -1089,6 +1321,10 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 	hdmi.ip_data.pll_offset = HDMI_PLLCTRL;
- 	hdmi.ip_data.phy_offset = HDMI_PHY;
+ 		r = mgr->wait_for_vsync(mgr);
+ 		break;
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index c84bb8a..dd972c5 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -2363,18 +2363,16 @@ static int omapfb_init_connections(struct omapfb2_device *fbdev,
+ 	int i, r;
+ 	struct omap_overlay_manager *mgr;
  
-+	hdmi.ct_cp_hpd_gpio = -1;
-+	hdmi.ls_oe_gpio = -1;
-+	hdmi.hpd_gpio = -1;
-+
- 	hdmi_init_output(pdev);
+-	if (!def_dssdev->output) {
+-		dev_err(fbdev->dev, "no output for the default display\n");
+-		return -EINVAL;
+-	}
+-
+ 	for (i = 0; i < fbdev->num_displays; ++i) {
+ 		struct omap_dss_device *dssdev = fbdev->displays[i].dssdev;
+-		struct omap_dss_output *out = dssdev->output;
++		struct omap_dss_output *out;
  
- 	r = hdmi_panel_init();
+-		mgr = omap_dss_get_overlay_manager(out->dispc_channel);
++		out = omapdss_find_output_from_display(dssdev);
++		if (!out)
++			continue;
+ 
+-		if (!mgr || !out)
++		mgr = omap_dss_get_overlay_manager(out->dispc_channel);
++		if (!mgr)
+ 			continue;
+ 
+ 		if (mgr->output)
+@@ -2383,7 +2381,7 @@ static int omapfb_init_connections(struct omapfb2_device *fbdev,
+ 		mgr->set_output(mgr, out);
+ 	}
+ 
+-	mgr = def_dssdev->output->manager;
++	mgr = omapdss_find_mgr_from_display(def_dssdev);
+ 
+ 	if (!mgr) {
+ 		dev_err(fbdev->dev, "no ovl manager for the default display\n");
 diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index cb6c478..f0aee54 100644
+index 7fe6144..68b2345 100644
 --- a/include/video/omapdss.h
 +++ b/include/video/omapdss.h
-@@ -172,6 +172,11 @@ enum omap_dss_audio_state {
- 	OMAP_DSS_AUDIO_PLAYING,
- };
+@@ -785,6 +785,9 @@ int omapdss_output_set_device(struct omap_dss_output *out,
+ 		struct omap_dss_device *dssdev);
+ int omapdss_output_unset_device(struct omap_dss_output *out);
  
-+struct omap_dss_audio {
-+	struct snd_aes_iec958 *iec;
-+	struct snd_cea_861_aud_if *cea;
-+};
++struct omap_dss_output *omapdss_find_output_from_display(struct omap_dss_device *dssdev);
++struct omap_overlay_manager *omapdss_find_mgr_from_display(struct omap_dss_device *dssdev);
 +
- enum omap_dss_rotation_type {
- 	OMAP_DSS_ROT_DMA	= 1 << 0,
- 	OMAP_DSS_ROT_VRFB	= 1 << 1,
-@@ -653,6 +658,42 @@ struct omapdss_atv_ops {
- 	u32 (*get_wss)(struct omap_dss_device *dssdev);
- };
- 
-+struct omapdss_hdmi_ops {
-+	int (*connect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+	void (*disconnect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+
-+	int (*enable)(struct omap_dss_device *dssdev);
-+	void (*disable)(struct omap_dss_device *dssdev);
-+
-+	int (*check_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*set_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*get_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+
-+	void (*set_hpd_gpio)(struct omap_dss_device *dssdev,
-+			int hpd_gpio);
-+
-+	int (*read_edid)(struct omap_dss_device *dssdev, u8 *buf, int len);
-+	bool (*detect)(struct omap_dss_device *dssdev);
-+
-+	/*
-+	 * Note: These functions might sleep. Do not call while
-+	 * holding a spinlock/readlock.
-+	 */
-+	int (*audio_enable)(struct omap_dss_device *dssdev);
-+	void (*audio_disable)(struct omap_dss_device *dssdev);
-+	bool (*audio_supported)(struct omap_dss_device *dssdev);
-+	int (*audio_config)(struct omap_dss_device *dssdev,
-+		struct omap_dss_audio *audio);
-+	/* Note: These functions may not sleep */
-+	int (*audio_start)(struct omap_dss_device *dssdev);
-+	void (*audio_stop)(struct omap_dss_device *dssdev);
-+};
-+
- struct omap_dss_device {
- 	/* old device, to be removed */
- 	struct device old_dev;
-@@ -729,6 +770,7 @@ struct omap_dss_device {
- 		const struct omapdss_dpi_ops *dpi;
- 		const struct omapdss_sdi_ops *sdi;
- 		const struct omapdss_dvi_ops *dvi;
-+		const struct omapdss_hdmi_ops *hdmi;
- 		const struct omapdss_atv_ops *atv;
- 	} ops;
- 
-@@ -773,11 +815,6 @@ struct omap_dss_hdmi_data
- 	int hpd_gpio;
- };
- 
--struct omap_dss_audio {
--	struct snd_aes_iec958 *iec;
--	struct snd_cea_861_aud_if *cea;
--};
--
- struct omap_dss_driver {
- 	struct device_driver driver;
- 
+ void omapdss_default_get_resolution(struct omap_dss_device *dssdev,
+ 		u16 *xres, u16 *yres);
+ int omapdss_default_get_recommended_bpp(struct omap_dss_device *dssdev);
 -- 
 1.8.1.2
 

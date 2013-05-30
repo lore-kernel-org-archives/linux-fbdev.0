@@ -1,331 +1,350 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Thu, 09 May 2013 19:46:21 +0000
-Subject: [RFC/PATCH v2 2/8] drm (ast,cirrus,mgag200,nouveau,savage,vmwgfx): Remove drm_mtrr_{add,del}
-Message-Id: <07b3ea46b2f21f8c1702929e6cc3b0fa25200758.1368128020.git.luto@amacapital.net>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:36:09 +0000
+Subject: [PATCH 16/27] OMAPDSS: Add new TFP410 Encoder driver
+Message-Id: <1369906580-27585-17-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1368128020.git.luto@amacapital.net>
-In-Reply-To: <cover.1368128020.git.luto@amacapital.net>
+References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This replaces drm_mtrr_{add,del} with arch_phys_wc_{add,del}.  The
-interface is simplified (because the base and size parameters to
-drm_mtrr_del never did anything), and it no longer adds MTRRs on
-systems that don't need them.
+Add TFP410 DPI-to-DVI Encoder driver which uses the new DSS device
+model and DSS ops.
 
-Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/gpu/drm/ast/ast_ttm.c         | 13 +++--------
- drivers/gpu/drm/cirrus/cirrus_ttm.c   | 15 ++++--------
- drivers/gpu/drm/mgag200/mgag200_ttm.c | 14 ++++--------
- drivers/gpu/drm/nouveau/nouveau_ttm.c | 13 ++++-------
- drivers/gpu/drm/savage/savage_bci.c   | 43 ++++++++++++-----------------------
- drivers/gpu/drm/savage/savage_drv.h   |  5 +---
- drivers/gpu/drm/vmwgfx/vmwgfx_drv.c   | 10 ++++----
- include/drm/drmP.h                    | 29 -----------------------
- 8 files changed, 35 insertions(+), 107 deletions(-)
+ drivers/video/omap2/Kconfig                       |   1 +
+ drivers/video/omap2/Makefile                      |   1 +
+ drivers/video/omap2/displays-new/Kconfig          |   9 +
+ drivers/video/omap2/displays-new/Makefile         |   1 +
+ drivers/video/omap2/displays-new/encoder-tfp410.c | 270 ++++++++++++++++++++++
+ 5 files changed, 282 insertions(+)
+ create mode 100644 drivers/video/omap2/displays-new/Kconfig
+ create mode 100644 drivers/video/omap2/displays-new/Makefile
+ create mode 100644 drivers/video/omap2/displays-new/encoder-tfp410.c
 
-diff --git a/drivers/gpu/drm/ast/ast_ttm.c b/drivers/gpu/drm/ast/ast_ttm.c
-index 3602731..c4574fd 100644
---- a/drivers/gpu/drm/ast/ast_ttm.c
-+++ b/drivers/gpu/drm/ast/ast_ttm.c
-@@ -271,26 +271,19 @@ int ast_mm_init(struct ast_private *ast)
- 		return ret;
- 	}
+diff --git a/drivers/video/omap2/Kconfig b/drivers/video/omap2/Kconfig
+index b07b2b0..56cad0f 100644
+--- a/drivers/video/omap2/Kconfig
++++ b/drivers/video/omap2/Kconfig
+@@ -6,5 +6,6 @@ if ARCH_OMAP2PLUS
+ source "drivers/video/omap2/dss/Kconfig"
+ source "drivers/video/omap2/omapfb/Kconfig"
+ source "drivers/video/omap2/displays/Kconfig"
++source "drivers/video/omap2/displays-new/Kconfig"
  
--	ast->fb_mtrr = drm_mtrr_add(pci_resource_start(dev->pdev, 0),
--				    pci_resource_len(dev->pdev, 0),
--				    DRM_MTRR_WC);
-+	ast->fb_mtrr = arch_phys_wc_add(pci_resource_start(dev->pdev, 0),
-+					pci_resource_len(dev->pdev, 0));
+ endif
+diff --git a/drivers/video/omap2/Makefile b/drivers/video/omap2/Makefile
+index 296e5c5..86873c2 100644
+--- a/drivers/video/omap2/Makefile
++++ b/drivers/video/omap2/Makefile
+@@ -2,4 +2,5 @@ obj-$(CONFIG_OMAP2_VRFB) += vrfb.o
  
- 	return 0;
- }
- 
- void ast_mm_fini(struct ast_private *ast)
- {
--	struct drm_device *dev = ast->dev;
- 	ttm_bo_device_release(&ast->ttm.bdev);
- 
- 	ast_ttm_global_release(ast);
- 
--	if (ast->fb_mtrr >= 0) {
--		drm_mtrr_del(ast->fb_mtrr,
--			     pci_resource_start(dev->pdev, 0),
--			     pci_resource_len(dev->pdev, 0), DRM_MTRR_WC);
--		ast->fb_mtrr = -1;
--	}
-+	arch_phys_wc_del(ast->fb_mtrr);
- }
- 
- void ast_ttm_placement(struct ast_bo *bo, int domain)
-diff --git a/drivers/gpu/drm/cirrus/cirrus_ttm.c b/drivers/gpu/drm/cirrus/cirrus_ttm.c
-index 1413a26..09f06d3 100644
---- a/drivers/gpu/drm/cirrus/cirrus_ttm.c
-+++ b/drivers/gpu/drm/cirrus/cirrus_ttm.c
-@@ -271,9 +271,8 @@ int cirrus_mm_init(struct cirrus_device *cirrus)
- 		return ret;
- 	}
- 
--	cirrus->fb_mtrr = drm_mtrr_add(pci_resource_start(dev->pdev, 0),
--				    pci_resource_len(dev->pdev, 0),
--				    DRM_MTRR_WC);
-+	cirrus->fb_mtrr = arch_phys_wc_add(pci_resource_start(dev->pdev, 0),
-+					   pci_resource_len(dev->pdev, 0));
- 
- 	cirrus->mm_inited = true;
- 	return 0;
-@@ -281,8 +280,6 @@ int cirrus_mm_init(struct cirrus_device *cirrus)
- 
- void cirrus_mm_fini(struct cirrus_device *cirrus)
- {
--	struct drm_device *dev = cirrus->dev;
--
- 	if (!cirrus->mm_inited)
- 		return;
- 
-@@ -290,12 +287,8 @@ void cirrus_mm_fini(struct cirrus_device *cirrus)
- 
- 	cirrus_ttm_global_release(cirrus);
- 
--	if (cirrus->fb_mtrr >= 0) {
--		drm_mtrr_del(cirrus->fb_mtrr,
--			     pci_resource_start(dev->pdev, 0),
--			     pci_resource_len(dev->pdev, 0), DRM_MTRR_WC);
--		cirrus->fb_mtrr = -1;
--	}
-+	arch_phys_wc_del(cirrus->fb_mtrr);
-+	cirrus->fb_mtrr = 0;
- }
- 
- void cirrus_ttm_placement(struct cirrus_bo *bo, int domain)
-diff --git a/drivers/gpu/drm/mgag200/mgag200_ttm.c b/drivers/gpu/drm/mgag200/mgag200_ttm.c
-index 8fc9d92..5c6f3c8 100644
---- a/drivers/gpu/drm/mgag200/mgag200_ttm.c
-+++ b/drivers/gpu/drm/mgag200/mgag200_ttm.c
-@@ -270,26 +270,20 @@ int mgag200_mm_init(struct mga_device *mdev)
- 		return ret;
- 	}
- 
--	mdev->fb_mtrr = drm_mtrr_add(pci_resource_start(dev->pdev, 0),
--				    pci_resource_len(dev->pdev, 0),
--				    DRM_MTRR_WC);
-+	mdev->fb_mtrr = arch_phys_wc_add(pci_resource_start(dev->pdev, 0),
-+					 pci_resource_len(dev->pdev, 0));
- 
- 	return 0;
- }
- 
- void mgag200_mm_fini(struct mga_device *mdev)
- {
--	struct drm_device *dev = mdev->dev;
- 	ttm_bo_device_release(&mdev->ttm.bdev);
- 
- 	mgag200_ttm_global_release(mdev);
- 
--	if (mdev->fb_mtrr >= 0) {
--		drm_mtrr_del(mdev->fb_mtrr,
--			     pci_resource_start(dev->pdev, 0),
--			     pci_resource_len(dev->pdev, 0), DRM_MTRR_WC);
--		mdev->fb_mtrr = -1;
--	}
-+	arch_phys_wc_del(mdev->fb_mtrr);
-+	mdev->fb_mtrr = 0;
- }
- 
- void mgag200_ttm_placement(struct mgag200_bo *bo, int domain)
-diff --git a/drivers/gpu/drm/nouveau/nouveau_ttm.c b/drivers/gpu/drm/nouveau/nouveau_ttm.c
-index 9be9cb5..63fa6a5 100644
---- a/drivers/gpu/drm/nouveau/nouveau_ttm.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_ttm.c
-@@ -377,9 +377,8 @@ nouveau_ttm_init(struct nouveau_drm *drm)
- 		return ret;
- 	}
- 
--	drm->ttm.mtrr = drm_mtrr_add(pci_resource_start(dev->pdev, 1),
--				     pci_resource_len(dev->pdev, 1),
--				     DRM_MTRR_WC);
-+	drm->ttm.mtrr = arch_phys_wc_add(pci_resource_start(dev->pdev, 1),
-+					 pci_resource_len(dev->pdev, 1));
- 
- 	/* GART init */
- 	if (drm->agp.stat != ENABLED) {
-@@ -414,10 +413,6 @@ nouveau_ttm_fini(struct nouveau_drm *drm)
- 
- 	nouveau_ttm_global_release(drm);
- 
--	if (drm->ttm.mtrr >= 0) {
--		drm_mtrr_del(drm->ttm.mtrr,
--			     pci_resource_start(drm->dev->pdev, 1),
--			     pci_resource_len(drm->dev->pdev, 1), DRM_MTRR_WC);
--		drm->ttm.mtrr = -1;
--	}
-+	arch_phys_wc_del(drm->ttm.mtrr);
-+	drm->ttm.mtrr = 0;
- }
-diff --git a/drivers/gpu/drm/savage/savage_bci.c b/drivers/gpu/drm/savage/savage_bci.c
-index b55c1d6..bd6b2cf 100644
---- a/drivers/gpu/drm/savage/savage_bci.c
-+++ b/drivers/gpu/drm/savage/savage_bci.c
-@@ -570,9 +570,6 @@ int savage_driver_firstopen(struct drm_device *dev)
- 	unsigned int fb_rsrc, aper_rsrc;
- 	int ret = 0;
- 
--	dev_priv->mtrr[0].handle = -1;
--	dev_priv->mtrr[1].handle = -1;
--	dev_priv->mtrr[2].handle = -1;
- 	if (S3_SAVAGE3D_SERIES(dev_priv->chipset)) {
- 		fb_rsrc = 0;
- 		fb_base = pci_resource_start(dev->pdev, 0);
-@@ -584,21 +581,14 @@ int savage_driver_firstopen(struct drm_device *dev)
- 		if (pci_resource_len(dev->pdev, 0) = 0x08000000) {
- 			/* Don't make MMIO write-cobining! We need 3
- 			 * MTRRs. */
--			dev_priv->mtrr[0].base = fb_base;
--			dev_priv->mtrr[0].size = 0x01000000;
--			dev_priv->mtrr[0].handle -			    drm_mtrr_add(dev_priv->mtrr[0].base,
--				         dev_priv->mtrr[0].size, DRM_MTRR_WC);
--			dev_priv->mtrr[1].base = fb_base + 0x02000000;
--			dev_priv->mtrr[1].size = 0x02000000;
--			dev_priv->mtrr[1].handle -			    drm_mtrr_add(dev_priv->mtrr[1].base,
--					 dev_priv->mtrr[1].size, DRM_MTRR_WC);
--			dev_priv->mtrr[2].base = fb_base + 0x04000000;
--			dev_priv->mtrr[2].size = 0x04000000;
--			dev_priv->mtrr[2].handle -			    drm_mtrr_add(dev_priv->mtrr[2].base,
--					 dev_priv->mtrr[2].size, DRM_MTRR_WC);
-+			dev_priv->mtrr_handles[0] +				arch_phys_wc_add(fb_base, 0x01000000);
-+			dev_priv->mtrr_handles[1] +				arch_phys_wc_add(fb_base + 0x02000000,
-+						 0x02000000);
-+			dev_priv->mtrr_handles[2] +				arch_phys_wc_add(fb_base + 0x04000000,
-+						0x04000000);
- 		} else {
- 			DRM_ERROR("strange pci_resource_len %08llx\n",
- 				  (unsigned long long)
-@@ -616,11 +606,9 @@ int savage_driver_firstopen(struct drm_device *dev)
- 		if (pci_resource_len(dev->pdev, 1) = 0x08000000) {
- 			/* Can use one MTRR to cover both fb and
- 			 * aperture. */
--			dev_priv->mtrr[0].base = fb_base;
--			dev_priv->mtrr[0].size = 0x08000000;
--			dev_priv->mtrr[0].handle -			    drm_mtrr_add(dev_priv->mtrr[0].base,
--					 dev_priv->mtrr[0].size, DRM_MTRR_WC);
-+			dev_priv->mtrr_handles[0] +				arch_phys_wc_add(fb_base,
-+						 0x08000000);
- 		} else {
- 			DRM_ERROR("strange pci_resource_len %08llx\n",
- 				  (unsigned long long)
-@@ -660,11 +648,10 @@ void savage_driver_lastclose(struct drm_device *dev)
- 	drm_savage_private_t *dev_priv = dev->dev_private;
- 	int i;
- 
--	for (i = 0; i < 3; ++i)
--		if (dev_priv->mtrr[i].handle >= 0)
--			drm_mtrr_del(dev_priv->mtrr[i].handle,
--				 dev_priv->mtrr[i].base,
--				 dev_priv->mtrr[i].size, DRM_MTRR_WC);
-+	for (i = 0; i < 3; ++i) {
-+		arch_phys_wc_del(dev_priv->mtrr_handles[i]);
-+		dev_priv->mtrr_handles[i] = 0;
+ obj-$(CONFIG_OMAP2_DSS) += dss/
+ obj-y += displays/
++obj-y += displays-new/
+ obj-$(CONFIG_FB_OMAP2) += omapfb/
+diff --git a/drivers/video/omap2/displays-new/Kconfig b/drivers/video/omap2/displays-new/Kconfig
+new file mode 100644
+index 0000000..92c2324
+--- /dev/null
++++ b/drivers/video/omap2/displays-new/Kconfig
+@@ -0,0 +1,9 @@
++menu "OMAP Display Device Drivers"
++        depends on OMAP2_DSS
++
++config DISPLAY_ENCODER_TFP410
++        tristate "TFP410 DPI to DVI Encoder"
++	help
++	  Driver for TFP410 DPI to DVI encoder.
++
++endmenu
+diff --git a/drivers/video/omap2/displays-new/Makefile b/drivers/video/omap2/displays-new/Makefile
+new file mode 100644
+index 0000000..b0d3457
+--- /dev/null
++++ b/drivers/video/omap2/displays-new/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_DISPLAY_ENCODER_TFP410) += encoder-tfp410.o
+diff --git a/drivers/video/omap2/displays-new/encoder-tfp410.c b/drivers/video/omap2/displays-new/encoder-tfp410.c
+new file mode 100644
+index 0000000..5fff526
+--- /dev/null
++++ b/drivers/video/omap2/displays-new/encoder-tfp410.c
+@@ -0,0 +1,270 @@
++/*
++ * TFP410 DPI-to-DVI encoder driver
++ *
++ * Copyright (C) 2013 Texas Instruments
++ * Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ */
++
++#include <linux/gpio.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++
++#include <video/omapdss.h>
++#include <video/omap-panel-data.h>
++
++struct panel_drv_data {
++	struct omap_dss_device dssdev;
++	struct omap_dss_device *in;
++
++	int pd_gpio;
++	int data_lines;
++
++	struct omap_video_timings timings;
++};
++
++#define to_panel_data(x) container_of(x, struct panel_drv_data, dssdev)
++
++static int tfp410_connect(struct omap_dss_device *dssdev,
++		struct omap_dss_device *dst)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++	int r;
++
++	if (omapdss_device_is_connected(dssdev))
++		return -EBUSY;
++
++	r = in->ops.dpi->connect(in, dssdev);
++	if (r)
++		return r;
++
++	dst->output = dssdev;
++	dssdev->device = dst;
++
++	return 0;
++}
++
++static void tfp410_disconnect(struct omap_dss_device *dssdev,
++		struct omap_dss_device *dst)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++
++	WARN_ON(!omapdss_device_is_connected(dssdev));
++	if (!omapdss_device_is_connected(dssdev))
++		return;
++
++	WARN_ON(dst != dssdev->device);
++	if (dst != dssdev->device)
++		return;
++
++	dst->output = NULL;
++	dssdev->device = NULL;
++
++	in->ops.dpi->disconnect(in, &ddata->dssdev);
++}
++
++static int tfp410_enable(struct omap_dss_device *dssdev)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++	int r;
++
++	if (!omapdss_device_is_connected(dssdev))
++		return -ENODEV;
++
++	if (omapdss_device_is_enabled(dssdev))
++		return 0;
++
++	in->ops.dpi->set_timings(in, &ddata->timings);
++	in->ops.dpi->set_data_lines(in, ddata->data_lines);
++
++	r = in->ops.dpi->enable(in);
++	if (r)
++		return r;
++
++	if (gpio_is_valid(ddata->pd_gpio))
++		gpio_set_value_cansleep(ddata->pd_gpio, 1);
++
++	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
++
++	return 0;
++}
++
++static void tfp410_disable(struct omap_dss_device *dssdev)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++
++	if (!omapdss_device_is_enabled(dssdev))
++		return;
++
++	if (gpio_is_valid(ddata->pd_gpio))
++		gpio_set_value_cansleep(ddata->pd_gpio, 0);
++
++	in->ops.dpi->disable(in);
++
++	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
++}
++
++static void tfp410_set_timings(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++
++	ddata->timings = *timings;
++	dssdev->panel.timings = *timings;
++
++	in->ops.dpi->set_timings(in, timings);
++}
++
++static void tfp410_get_timings(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++
++	*timings = ddata->timings;
++}
++
++static int tfp410_check_timings(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings)
++{
++	struct panel_drv_data *ddata = to_panel_data(dssdev);
++	struct omap_dss_device *in = ddata->in;
++
++	return in->ops.dpi->check_timings(in, timings);
++}
++
++static const struct omapdss_dvi_ops tfp410_dvi_ops = {
++	.connect	= tfp410_connect,
++	.disconnect	= tfp410_disconnect,
++
++	.enable		= tfp410_enable,
++	.disable	= tfp410_disable,
++
++	.check_timings	= tfp410_check_timings,
++	.set_timings	= tfp410_set_timings,
++	.get_timings	= tfp410_get_timings,
++};
++
++static int tfp410_probe_pdata(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct encoder_tfp410_platform_data *pdata;
++	struct omap_dss_device *dssdev, *in;
++	int r, gpio;
++
++	pdata = dev_get_platdata(&pdev->dev);
++	gpio = pdata->power_down_gpio;
++
++	if (gpio_is_valid(gpio)) {
++		r = devm_gpio_request_one(&pdev->dev, gpio,
++				GPIOF_OUT_INIT_LOW, "tfp410 pd");
++		if (r) {
++			dev_err(&pdev->dev, "Failed to request PD GPIO %d\n",
++					gpio);
++			return r;
++		}
++
++		ddata->pd_gpio = gpio;
++	} else {
++		ddata->pd_gpio = -1;
 +	}
- }
- 
- int savage_driver_unload(struct drm_device *dev)
-diff --git a/drivers/gpu/drm/savage/savage_drv.h b/drivers/gpu/drm/savage/savage_drv.h
-index df2aac6..c05082a 100644
---- a/drivers/gpu/drm/savage/savage_drv.h
-+++ b/drivers/gpu/drm/savage/savage_drv.h
-@@ -160,10 +160,7 @@ typedef struct drm_savage_private {
- 	drm_local_map_t *cmd_dma;
- 	drm_local_map_t fake_dma;
- 
--	struct {
--		int handle;
--		unsigned long base, size;
--	} mtrr[3];
-+	int mtrr_handles[3];
- 
- 	/* BCI and status-related stuff */
- 	volatile uint32_t *status_ptr, *bci_ptr;
-diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c b/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
-index 07dfd82..78e2164 100644
---- a/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
-+++ b/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
-@@ -565,8 +565,8 @@ static int vmw_driver_load(struct drm_device *dev, unsigned long chipset)
- 		dev_priv->has_gmr = false;
- 	}
- 
--	dev_priv->mmio_mtrr = drm_mtrr_add(dev_priv->mmio_start,
--					   dev_priv->mmio_size, DRM_MTRR_WC);
-+	dev_priv->mmio_mtrr = arch_phys_wc_add(dev_priv->mmio_start,
-+					       dev_priv->mmio_size);
- 
- 	dev_priv->mmio_virt = ioremap_wc(dev_priv->mmio_start,
- 					 dev_priv->mmio_size);
-@@ -664,8 +664,7 @@ out_no_device:
- out_err4:
- 	iounmap(dev_priv->mmio_virt);
- out_err3:
--	drm_mtrr_del(dev_priv->mmio_mtrr, dev_priv->mmio_start,
--		     dev_priv->mmio_size, DRM_MTRR_WC);
-+	arch_phys_wc_del(dev_priv->mmio_mtrr);
- 	if (dev_priv->has_gmr)
- 		(void) ttm_bo_clean_mm(&dev_priv->bdev, VMW_PL_GMR);
- 	(void)ttm_bo_clean_mm(&dev_priv->bdev, TTM_PL_VRAM);
-@@ -709,8 +708,7 @@ static int vmw_driver_unload(struct drm_device *dev)
- 
- 	ttm_object_device_release(&dev_priv->tdev);
- 	iounmap(dev_priv->mmio_virt);
--	drm_mtrr_del(dev_priv->mmio_mtrr, dev_priv->mmio_start,
--		     dev_priv->mmio_size, DRM_MTRR_WC);
-+	arch_phys_wc_del(dev_priv->mmio_mtrr);
- 	if (dev_priv->has_gmr)
- 		(void)ttm_bo_clean_mm(&dev_priv->bdev, VMW_PL_GMR);
- 	(void)ttm_bo_clean_mm(&dev_priv->bdev, TTM_PL_VRAM);
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index 2d94d74..3e6cfa0 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -1249,37 +1249,8 @@ static inline int drm_core_has_MTRR(struct drm_device *dev)
- {
- 	return drm_core_check_feature(dev, DRIVER_USE_MTRR);
- }
--
--#define DRM_MTRR_WC		MTRR_TYPE_WRCOMB
--
--static inline int drm_mtrr_add(unsigned long offset, unsigned long size,
--			       unsigned int flags)
--{
--	return mtrr_add(offset, size, flags, 1);
--}
--
--static inline int drm_mtrr_del(int handle, unsigned long offset,
--			       unsigned long size, unsigned int flags)
--{
--	return mtrr_del(handle, offset, size);
--}
--
- #else
- #define drm_core_has_MTRR(dev) (0)
--
--#define DRM_MTRR_WC		0
--
--static inline int drm_mtrr_add(unsigned long offset, unsigned long size,
--			       unsigned int flags)
--{
--	return 0;
--}
--
--static inline int drm_mtrr_del(int handle, unsigned long offset,
--			       unsigned long size, unsigned int flags)
--{
--	return 0;
--}
- #endif
- 
- static inline void drm_device_set_unplugged(struct drm_device *dev)
++
++	ddata->data_lines = pdata->data_lines;
++
++	in = omap_dss_find_output(pdata->source);
++	if (in = NULL) {
++		dev_err(&pdev->dev, "Failed to find video source\n");
++		return -ENODEV;
++	}
++
++	ddata->in = in;
++
++	dssdev = &ddata->dssdev;
++	dssdev->name = pdata->name;
++
++	return 0;
++}
++
++static int tfp410_probe(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata;
++	struct omap_dss_device *dssdev;
++	int r;
++
++	ddata = devm_kzalloc(&pdev->dev, sizeof(*ddata), GFP_KERNEL);
++	if (!ddata)
++		return -ENOMEM;
++
++	platform_set_drvdata(pdev, ddata);
++
++	if (dev_get_platdata(&pdev->dev)) {
++		r = tfp410_probe_pdata(pdev);
++		if (r)
++			return r;
++	} else {
++		return -ENODEV;
++	}
++
++	dssdev = &ddata->dssdev;
++	dssdev->ops.dvi = &tfp410_dvi_ops;
++	dssdev->dev = &pdev->dev;
++	dssdev->type = OMAP_DISPLAY_TYPE_DPI;
++	dssdev->output_type = OMAP_DISPLAY_TYPE_DVI;
++	dssdev->owner = THIS_MODULE;
++	dssdev->phy.dpi.data_lines = ddata->data_lines;
++
++	r = omapdss_register_output(dssdev);
++	if (r) {
++		dev_err(&pdev->dev, "Failed to register output\n");
++		goto err_reg;
++	}
++
++	return 0;
++err_reg:
++	omap_dss_put_device(ddata->in);
++	return r;
++}
++
++static int __exit tfp410_remove(struct platform_device *pdev)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct omap_dss_device *dssdev = &ddata->dssdev;
++	struct omap_dss_device *in = ddata->in;
++
++	omapdss_unregister_output(&ddata->dssdev);
++
++	WARN_ON(omapdss_device_is_enabled(dssdev));
++	if (omapdss_device_is_enabled(dssdev))
++		tfp410_disable(dssdev);
++
++	WARN_ON(omapdss_device_is_connected(dssdev));
++	if (omapdss_device_is_connected(dssdev))
++		tfp410_disconnect(dssdev, dssdev->device);
++
++	omap_dss_put_device(in);
++
++	return 0;
++}
++
++static struct platform_driver tfp410_driver = {
++	.probe	= tfp410_probe,
++	.remove	= __exit_p(tfp410_remove),
++	.driver	= {
++		.name	= "tfp410",
++		.owner	= THIS_MODULE,
++	},
++};
++
++module_platform_driver(tfp410_driver);
++
++MODULE_AUTHOR("Tomi Valkeinen <tomi.valkeinen@ti.com>");
++MODULE_DESCRIPTION("TFP410 DPI to DVI encoder driver");
++MODULE_LICENSE("GPL");
 -- 
-1.8.1.4
+1.8.1.2
 

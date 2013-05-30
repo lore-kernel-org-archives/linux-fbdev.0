@@ -1,74 +1,88 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Thu, 30 May 2013 11:07:07 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 11:40:10 +0000
 Subject: Re: [PATCH 03/32] OMAPDSS: add omap_dss_find_output()
-Message-Id: <20130530110707.GH19468@game.jcrosoft.org>
+Message-Id: <51A73A9A.8010801@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="----enig2GEQIIJPMEHWFVPGLCDUB"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
- <1369906493-27538-4-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906493-27538-4-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com> <1369906493-27538-4-git-send-email-tomi.valkeinen@ti.com> <20130530110707.GH19468@game.jcrosoft.org>
+In-Reply-To: <20130530110707.GH19468@game.jcrosoft.org>
+To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-On 12:34 Thu 30 May     , Tomi Valkeinen wrote:
-> Add a support function to find a DSS output by given name. This is used
-> in later patches to link the panels to DSS outputs.
-> 
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->  drivers/video/omap2/dss/output.c | 13 +++++++++++++
->  include/video/omapdss.h          |  1 +
->  2 files changed, 14 insertions(+)
-> 
-> diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
-> index 5214df6..3274628 100644
-> --- a/drivers/video/omap2/dss/output.c
-> +++ b/drivers/video/omap2/dss/output.c
-> @@ -115,6 +115,19 @@ struct omap_dss_output *omap_dss_get_output(enum omap_dss_output_id id)
->  }
->  EXPORT_SYMBOL(omap_dss_get_output);
-GPL please
->  
-> +struct omap_dss_output *omap_dss_find_output(const char *name)
-> +{
-> +	struct omap_dss_output *out;
-> +
-> +	list_for_each_entry(out, &output_list, list) {
-> +		if (strcmp(out->name, name) = 0)
-> +			return out;
-> +	}
-> +
-> +	return NULL;
-> +}
-I this in so many drivers could we have a macro to generate such function?
+------enig2GEQIIJPMEHWFVPGLCDUB
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> +EXPORT_SYMBOL(omap_dss_find_output);
-ditto GPL
+On 30/05/13 14:07, Jean-Christophe PLAGNIOL-VILLARD wrote:
+> On 12:34 Thu 30 May     , Tomi Valkeinen wrote:
+>> Add a support function to find a DSS output by given name. This is use=
+d
+>> in later patches to link the panels to DSS outputs.
+>>
+>> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+>> ---
+>>  drivers/video/omap2/dss/output.c | 13 +++++++++++++
+>>  include/video/omapdss.h          |  1 +
+>>  2 files changed, 14 insertions(+)
+>>
+>> diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/ds=
+s/output.c
+>> index 5214df6..3274628 100644
+>> --- a/drivers/video/omap2/dss/output.c
+>> +++ b/drivers/video/omap2/dss/output.c
+>> @@ -115,6 +115,19 @@ struct omap_dss_output *omap_dss_get_output(enum =
+omap_dss_output_id id)
+>>  }
+>>  EXPORT_SYMBOL(omap_dss_get_output);
+> GPL please
 
-Best Regards,
-J.
-> +
->  static const struct dss_mgr_ops *dss_mgr_ops;
->  
->  int dss_install_mgr_ops(const struct dss_mgr_ops *mgr_ops)
-> diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-> index d5f1fff..aad47a2 100644
-> --- a/include/video/omapdss.h
-> +++ b/include/video/omapdss.h
-> @@ -779,6 +779,7 @@ int omap_dss_get_num_overlays(void);
->  struct omap_overlay *omap_dss_get_overlay(int num);
->  
->  struct omap_dss_output *omap_dss_get_output(enum omap_dss_output_id id);
-> +struct omap_dss_output *omap_dss_find_output(const char *name);
->  int omapdss_output_set_device(struct omap_dss_output *out,
->  		struct omap_dss_device *dssdev);
->  int omapdss_output_unset_device(struct omap_dss_output *out);
-> -- 
-> 1.8.1.2
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+The omapdss driver uses EXPORT_SYMBOL. I don't want to start mixing both
+EXPORT_SYMBOLs and EXPORT_SYMBOL_GPLs.
+
+>> +struct omap_dss_output *omap_dss_find_output(const char *name)
+>> +{
+>> +	struct omap_dss_output *out;
+>> +
+>> +	list_for_each_entry(out, &output_list, list) {
+>> +		if (strcmp(out->name, name) =3D=3D 0)
+>> +			return out;
+>> +	}
+>> +
+>> +	return NULL;
+>> +}
+> I this in so many drivers could we have a macro to generate such functi=
+on?
+
+What would that help? Wouldn't it just increase the code size of the kern=
+el?
+
+ Tomi
+
+
+
+------enig2GEQIIJPMEHWFVPGLCDUB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRpzqaAAoJEPo9qoy8lh71dF8P/AzhvXY/SzDGt66OlVRRnTmh
+6BicGTRMeD2uubRclOmG9+NkkkDWARomLYglUmDAP4iMq+UiHaDG5m8cgNrGsKIZ
+9RRjt/i3iEHv63UYdhKyrDkypo/bbDpe/cj+ZaLJhy2L/tOSIlF6xvw8Ca//0E+X
+uEOO9asT9kquio1YjA3RBLMB4h4ZVP/d266zRlfLMg/UENjvpPjktHaq9D8nUcYc
++tyJSXnBipKCJCqd8xD0Aow6YRPBhfuzyMcWSfTMcelaCkvV+IxXxWpERcGsbbla
+Rm39fc8A3Eijih2mhzLLU5BgPKL18leTU6Gx1HJc1SZqZA9VDTxDg4W7vZkrLdB6
+Lnw2Xtg17hcxnM0tjFBdTzx2TOa5LvTx/O6F+FxsRCwRQ0FhJJvRsuVq8DYExpb8
+FGg5xTFXXuw8JeC/JkC0JS5dNelsUqmWN9fUnjWfvEVWS+VK1t7br+oAlQvIJY0p
+nbDDrh7LmTs8pprSX1q4U1mHdQrT+WdinE+qV/FE7vfr24SY08Y9Atgr1v6uv64B
+eeTrdppSFQIjPh9WDl40T9psx9Q4oZdHdjCeGSBKFBLcYt2/eXpCnhMD2qpVXXc2
+hJus+y2NjbQUmZbDMosqckP7ULAq6VG2xIytmWmV9L+SONs++kNlkbvDHvVYEMQp
+0mvPgnqv+9kxxOTHNj3o
+=Qk5x
+-----END PGP SIGNATURE-----
+
+------enig2GEQIIJPMEHWFVPGLCDUB--

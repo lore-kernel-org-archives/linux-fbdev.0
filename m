@@ -1,99 +1,164 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Fri, 03 May 2013 23:00:33 +0000
-Subject: [PATCH 5/7] i915: Use drm_mtrr_{add,del}_wc
-Message-Id: <55ce0249bc74fc15af617349cfd5e68a159cf75b.1367621039.git.luto@amacapital.net>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:36:03 +0000
+Subject: [PATCH 10/27] OMAPDSS: DPI: Add ops
+Message-Id: <1369906580-27585-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1367621038.git.luto@amacapital.net>
-In-Reply-To: <cover.1367621038.git.luto@amacapital.net>
+References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Andy Lutomirski <luto@amacapital.net>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-i915 open-coded logic that was essentially equivalent to the new
-drm_mtrr_{add,del}_wc.
+Add "ops" style method for using DPI functionality.
 
-Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+Ops style calls will allow us to have arbitrarily long display
+pipelines, where each entity can call ops in the previous display
+entity.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/gpu/drm/i915/i915_dma.c | 43 ++++++-----------------------------------
- 1 file changed, 6 insertions(+), 37 deletions(-)
+ drivers/video/omap2/dss/dpi.c | 70 +++++++++++++++++++++++++++++++++++++++++++
+ include/video/omapdss.h       | 23 ++++++++++++++
+ 2 files changed, 93 insertions(+)
 
-diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
-index 4fa6beb..0fc95ba 100644
---- a/drivers/gpu/drm/i915/i915_dma.c
-+++ b/drivers/gpu/drm/i915/i915_dma.c
-@@ -1393,29 +1393,6 @@ void i915_master_destroy(struct drm_device *dev, struct drm_master *master)
- 	master->driver_priv = NULL;
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 3299e27..a7d40dd 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -462,6 +462,16 @@ void omapdss_dpi_set_timings(struct omap_dss_device *dssdev,
+ }
+ EXPORT_SYMBOL(omapdss_dpi_set_timings);
+ 
++static void dpi_get_timings(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings)
++{
++	mutex_lock(&dpi.lock);
++
++	*timings = dpi.timings;
++
++	mutex_unlock(&dpi.lock);
++}
++
+ int dpi_check_timings(struct omap_dss_device *dssdev,
+ 			struct omap_video_timings *timings)
+ {
+@@ -682,6 +692,65 @@ static int dpi_probe_pdata(struct platform_device *dpidev)
+ 	return 0;
  }
  
--static void
--i915_mtrr_setup(struct drm_i915_private *dev_priv, unsigned long base,
--		unsigned long size)
--{
--	dev_priv->mm.gtt_mtrr = -1;
--
--#if defined(CONFIG_X86_PAT)
--	if (cpu_has_pat)
--		return;
--#endif
--
--	/* Set up a WC MTRR for non-PAT systems.  This is more common than
--	 * one would think, because the kernel disables PAT on first
--	 * generation Core chips because WC PAT gets overridden by a UC
--	 * MTRR if present.  Even if a UC MTRR isn't present.
--	 */
--	dev_priv->mm.gtt_mtrr = mtrr_add(base, size, MTRR_TYPE_WRCOMB, 1);
--	if (dev_priv->mm.gtt_mtrr < 0) {
--		DRM_INFO("MTRR allocation failed.  Graphics "
--			 "performance may suffer.\n");
--	}
--}
--
- static void i915_kick_out_firmware_fb(struct drm_i915_private *dev_priv)
++static int dpi_connect(struct omap_dss_device *dssdev,
++		struct omap_dss_device *dst)
++{
++	struct omap_overlay_manager *mgr;
++	int r;
++
++	r = dpi_init_regulator();
++	if (r)
++		return r;
++
++	dpi_init_pll();
++
++	mgr = omap_dss_get_overlay_manager(dssdev->dispc_channel);
++	if (!mgr)
++		return -ENODEV;
++
++	r = dss_mgr_connect(mgr, dssdev);
++	if (r)
++		return r;
++
++	r = omapdss_output_set_device(dssdev, dst);
++	if (r) {
++		DSSERR("failed to connect output to new device: %s\n",
++				dst->name);
++		dss_mgr_disconnect(mgr, dssdev);
++		return r;
++	}
++
++	return 0;
++}
++
++static void dpi_disconnect(struct omap_dss_device *dssdev,
++		struct omap_dss_device *dst)
++{
++	WARN_ON(dst != dssdev->device);
++
++	if (dst != dssdev->device)
++		return;
++
++	omapdss_output_unset_device(dssdev);
++
++	if (dssdev->manager)
++		dss_mgr_disconnect(dssdev->manager, dssdev);
++}
++
++static const struct omapdss_dpi_ops dpi_ops = {
++	.connect = dpi_connect,
++	.disconnect = dpi_disconnect,
++
++	.enable = omapdss_dpi_display_enable,
++	.disable = omapdss_dpi_display_disable,
++
++	.check_timings = dpi_check_timings,
++	.set_timings = omapdss_dpi_set_timings,
++	.get_timings = dpi_get_timings,
++
++	.set_data_lines = omapdss_dpi_set_data_lines,
++};
++
+ static void dpi_init_output(struct platform_device *pdev)
  {
- 	struct apertures_struct *ap;
-@@ -1552,8 +1529,8 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
- 		goto out_rmmap;
- 	}
+ 	struct omap_dss_device *out = &dpi.output;
+@@ -691,6 +760,7 @@ static void dpi_init_output(struct platform_device *pdev)
+ 	out->output_type = OMAP_DISPLAY_TYPE_DPI;
+ 	out->name = "dpi.0";
+ 	out->dispc_channel = dpi_get_channel();
++	out->ops.dpi = &dpi_ops;
+ 	out->owner = THIS_MODULE;
  
--	i915_mtrr_setup(dev_priv, dev_priv->gtt.mappable_base,
--			aperture_size);
-+	dev_priv->mm.gtt_mtrr = drm_mtrr_add_wc(dev_priv->gtt.mappable_base,
-+						aperture_size);
+ 	omapdss_register_output(out);
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 6796b0d..d458e43 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -573,6 +573,25 @@ struct omap_dss_writeback_info {
+ 	u8 pre_mult_alpha;
+ };
  
- 	/* The i915 workqueue is primarily used for batched retirement of
- 	 * requests (and thus managing bo) once the task has been completed
-@@ -1656,12 +1633,8 @@ out_gem_unload:
- 	intel_teardown_mchbar(dev);
- 	destroy_workqueue(dev_priv->wq);
- out_mtrrfree:
--	if (dev_priv->mm.gtt_mtrr >= 0) {
--		mtrr_del(dev_priv->mm.gtt_mtrr,
--			 dev_priv->gtt.mappable_base,
--			 aperture_size);
--		dev_priv->mm.gtt_mtrr = -1;
--	}
-+	drm_mtrr_del_wc(dev_priv->mm.gtt_mtrr);
-+	dev_priv->mm.gtt_mtrr = -1;
- 	io_mapping_free(dev_priv->gtt.mappable);
- out_rmmap:
- 	pci_iounmap(dev->pdev, dev_priv->regs);
-@@ -1697,12 +1670,8 @@ int i915_driver_unload(struct drm_device *dev)
- 	cancel_delayed_work_sync(&dev_priv->mm.retire_work);
++struct omapdss_dpi_ops {
++	int (*connect)(struct omap_dss_device *dssdev,
++			struct omap_dss_device *dst);
++	void (*disconnect)(struct omap_dss_device *dssdev,
++			struct omap_dss_device *dst);
++
++	int (*enable)(struct omap_dss_device *dssdev);
++	void (*disable)(struct omap_dss_device *dssdev);
++
++	int (*check_timings)(struct omap_dss_device *dssdev,
++			struct omap_video_timings *timings);
++	void (*set_timings)(struct omap_dss_device *dssdev,
++			struct omap_video_timings *timings);
++	void (*get_timings)(struct omap_dss_device *dssdev,
++			struct omap_video_timings *timings);
++
++	void (*set_data_lines)(struct omap_dss_device *dssdev, int data_lines);
++};
++
+ struct omap_dss_device {
+ 	/* old device, to be removed */
+ 	struct device old_dev;
+@@ -645,6 +664,10 @@ struct omap_dss_device {
  
- 	io_mapping_free(dev_priv->gtt.mappable);
--	if (dev_priv->mm.gtt_mtrr >= 0) {
--		mtrr_del(dev_priv->mm.gtt_mtrr,
--			 dev_priv->gtt.mappable_base,
--			 dev_priv->gtt.mappable_end);
--		dev_priv->mm.gtt_mtrr = -1;
--	}
-+	drm_mtrr_del_wc(dev_priv->mm.gtt_mtrr);
-+	dev_priv->mm.gtt_mtrr = -1;
+ 	struct omap_dss_driver *driver;
  
- 	acpi_video_unregister();
++	union {
++		const struct omapdss_dpi_ops *dpi;
++	} ops;
++
+ 	/* helper variable for driver suspend/resume */
+ 	bool activate_after_resume;
  
 -- 
-1.8.1.4
+1.8.1.2
 

@@ -1,70 +1,92 @@
-From: Lars-Peter Clausen <lars@metafoo.de>
-Date: Sun, 12 May 2013 18:14:07 +0000
-Subject: [PATCH] video: jz4740-fb: Use clk_prepare_enable/clk_disable_unprepare
-Message-Id: <1368382447-4536-1-git-send-email-lars@metafoo.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:34:52 +0000
+Subject: [PATCH 31/32] OMAPDSS: output: increase refcount in find_output funcs
+Message-Id: <1369906493-27538-32-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-In preparation to switching the jz4740 clk driver to the common clk framework
-update the clk enable/disable calls to clk_prepare_enable/clk_disable_unprepare.
+Now that omap_dss_output has been combined into omap_dss_device, we can
+add ref counting for the relevant output functions also.
 
-Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+This patch adds omap_dss_get_device() calls to the various find_output()
+style functions. This, of course, means that the users of those
+find_output functions need to do a omap_dss_put_device() after use.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/jz4740_fb.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/gpu/drm/omapdrm/omap_drv.c |  2 ++
+ drivers/video/omap2/dss/output.c   | 13 +++++++++----
+ 2 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/jz4740_fb.c b/drivers/video/jz4740_fb.c
-index 36979b4..5ed6ffc 100644
---- a/drivers/video/jz4740_fb.c
-+++ b/drivers/video/jz4740_fb.c
-@@ -471,7 +471,7 @@ static int jzfb_set_par(struct fb_info *info)
- 	writel(ctrl, jzfb->base + JZ_REG_LCD_CTRL);
+diff --git a/drivers/gpu/drm/omapdrm/omap_drv.c b/drivers/gpu/drm/omapdrm/omap_drv.c
+index a72100c..4c0bc40 100644
+--- a/drivers/gpu/drm/omapdrm/omap_drv.c
++++ b/drivers/gpu/drm/omapdrm/omap_drv.c
+@@ -277,6 +277,8 @@ static int omap_modeset_init(struct drm_device *dev)
+ 			if (supported_outputs & output->id)
+ 				encoder->possible_crtcs |= (1 << id);
+ 		}
++
++		omap_dss_put_device(output);
+ 	}
  
- 	if (!jzfb->is_enabled)
--		clk_disable(jzfb->ldclk);
-+		clk_disable_unprepare(jzfb->ldclk);
+ 	DBG("registered %d planes, %d crtcs, %d encoders and %d connectors\n",
+diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
+index cc81fec..9ad7d21 100644
+--- a/drivers/video/omap2/dss/output.c
++++ b/drivers/video/omap2/dss/output.c
+@@ -121,7 +121,7 @@ struct omap_dss_device *omap_dss_find_output(const char *name)
  
- 	mutex_unlock(&jzfb->lock);
+ 	list_for_each_entry(out, &output_list, list) {
+ 		if (strcmp(out->name, name) = 0)
+-			return out;
++			return omap_dss_get_device(out);
+ 	}
  
-@@ -485,7 +485,7 @@ static void jzfb_enable(struct jzfb *jzfb)
+ 	return NULL;
+@@ -134,7 +134,7 @@ struct omap_dss_device *omap_dss_find_output_by_node(struct device_node *node)
+ 
+ 	list_for_each_entry(out, &output_list, list) {
+ 		if (out->dev->of_node = node)
+-			return out;
++			return omap_dss_get_device(out);
+ 	}
+ 
+ 	return NULL;
+@@ -143,20 +143,25 @@ EXPORT_SYMBOL(omap_dss_find_output_by_node);
+ 
+ struct omap_dss_device *omapdss_find_output_from_display(struct omap_dss_device *dssdev)
  {
- 	uint32_t ctrl;
- 
--	clk_enable(jzfb->ldclk);
-+	clk_prepare_enable(jzfb->ldclk);
- 
- 	jz_gpio_bulk_resume(jz_lcd_ctrl_pins, jzfb_num_ctrl_pins(jzfb));
- 	jz_gpio_bulk_resume(jz_lcd_data_pins, jzfb_num_data_pins(jzfb));
-@@ -514,7 +514,7 @@ static void jzfb_disable(struct jzfb *jzfb)
- 	jz_gpio_bulk_suspend(jz_lcd_ctrl_pins, jzfb_num_ctrl_pins(jzfb));
- 	jz_gpio_bulk_suspend(jz_lcd_data_pins, jzfb_num_data_pins(jzfb));
- 
--	clk_disable(jzfb->ldclk);
-+	clk_disable_unprepare(jzfb->ldclk);
+-	return dssdev->output;
++	return omap_dss_get_device(dssdev->output);
  }
+ EXPORT_SYMBOL(omapdss_find_output_from_display);
  
- static int jzfb_blank(int blank_mode, struct fb_info *info)
-@@ -693,7 +693,7 @@ static int jzfb_probe(struct platform_device *pdev)
- 
- 	fb_alloc_cmap(&fb->cmap, 256, 0);
- 
--	clk_enable(jzfb->ldclk);
-+	clk_prepare_enable(jzfb->ldclk);
- 	jzfb->is_enabled = 1;
- 
- 	writel(jzfb->framedesc->next, jzfb->base + JZ_REG_LCD_DA0);
-@@ -765,7 +765,7 @@ static int jzfb_suspend(struct device *dev)
- static int jzfb_resume(struct device *dev)
+ struct omap_overlay_manager *omapdss_find_mgr_from_display(struct omap_dss_device *dssdev)
  {
- 	struct jzfb *jzfb = dev_get_drvdata(dev);
--	clk_enable(jzfb->ldclk);
-+	clk_prepare_enable(jzfb->ldclk);
+ 	struct omap_dss_device *out;
++	struct omap_overlay_manager *mgr;
  
- 	mutex_lock(&jzfb->lock);
- 	if (jzfb->is_enabled)
+ 	out = omapdss_find_output_from_display(dssdev);
+ 
+ 	if (out = NULL)
+ 		return NULL;
+ 
+-	return out->manager;
++	mgr = out->manager;
++
++	omap_dss_put_device(out);
++
++	return mgr;
+ }
+ EXPORT_SYMBOL(omapdss_find_mgr_from_display);
+ 
 -- 
-1.8.2.1
+1.8.1.2
 

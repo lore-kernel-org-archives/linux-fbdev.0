@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:34:32 +0000
-Subject: [PATCH 11/32] OMAPDRM: fix overlay manager handling
-Message-Id: <1369906493-27538-12-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:34:47 +0000
+Subject: [PATCH 26/32] OMAPDSS: remove omap_dss_start/stop_device()
+Message-Id: <1369906493-27538-27-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,189 +11,291 @@ Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Currently omapdrm creates crtcs, which map directly to DSS overlay
-managers, only on demand at init time. This would make it difficult to
-manage connecting the display entities in the future, as the code cannot
-just search for a suitable overlay manager.
+The omap_dss_start_device() and omap_dss_stop_device(), called by the
+DSS output drivers, are old relics. They originally did something
+totally else, but nowadays they increase the module ref count for panels
+that are enabled.
 
-We cannot fix this the sane way, which would be to create crtcs for each
-overlay manager, because we need an overlay for each crtc. With limited
-number of overlays, that's not possible.
+This model is quite broken: the panel modules may be used even before
+they are enabled. For example, configuring the panel requires calls to
+functions located in the panel modules.
 
-So the solution for now is to detach the overlay manager from the crtc.
-crtcs are still created on demand at init time, but all overlay managers
-are always initialized by the omapdss.
-
-This way we can create and connect whole display pipelines from the
-overlay manager to the display, regardless of which crtcs omapdrm would
-create.
+In the following patches we try to improve the ref count management for
+the modules and display devices. The first step, however, is to remove
+the omap_dss_start/stop_device() totally.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/gpu/drm/omapdrm/omap_crtc.c | 22 +++++++++++++++-------
- drivers/gpu/drm/omapdrm/omap_drv.c  |  2 ++
- drivers/gpu/drm/omapdrm/omap_drv.h  |  1 +
- drivers/video/omap2/dss/apply.c     |  3 ---
- drivers/video/omap2/dss/dispc.c     |  4 ++++
- 5 files changed, 22 insertions(+), 10 deletions(-)
+ drivers/video/omap2/dss/display.c | 20 --------------------
+ drivers/video/omap2/dss/dpi.c     | 10 ----------
+ drivers/video/omap2/dss/dsi.c     | 10 ----------
+ drivers/video/omap2/dss/hdmi.c    | 12 +-----------
+ drivers/video/omap2/dss/rfbi.c    |  9 ---------
+ drivers/video/omap2/dss/sdi.c     | 10 ----------
+ drivers/video/omap2/dss/venc.c    | 12 +-----------
+ include/video/omapdss.h           |  3 ---
+ 8 files changed, 2 insertions(+), 84 deletions(-)
 
-diff --git a/drivers/gpu/drm/omapdrm/omap_crtc.c b/drivers/gpu/drm/omapdrm/omap_crtc.c
-index 79b200a..02075bf 100644
---- a/drivers/gpu/drm/omapdrm/omap_crtc.c
-+++ b/drivers/gpu/drm/omapdrm/omap_crtc.c
-@@ -40,7 +40,7 @@ struct omap_crtc {
- 	 * mgr->id.)  Eventually this will be replaced w/ something
- 	 * more common-panel-framework-y
- 	 */
--	struct omap_overlay_manager mgr;
-+	struct omap_overlay_manager *mgr;
- 
- 	struct omap_video_timings timings;
- 	bool enabled;
-@@ -90,6 +90,9 @@ uint32_t pipe2vbl(struct drm_crtc *crtc)
-  * job of sequencing the setup of the video pipe in the proper order
-  */
- 
-+/* ovl-mgr-id -> crtc */
-+static struct omap_crtc *omap_crtcs[8];
-+
- /* we can probably ignore these until we support command-mode panels: */
- static void omap_crtc_start_update(struct omap_overlay_manager *mgr)
- {
-@@ -107,7 +110,7 @@ static void omap_crtc_disable(struct omap_overlay_manager *mgr)
- static void omap_crtc_set_timings(struct omap_overlay_manager *mgr,
- 		const struct omap_video_timings *timings)
- {
--	struct omap_crtc *omap_crtc = container_of(mgr, struct omap_crtc, mgr);
-+	struct omap_crtc *omap_crtc = omap_crtcs[mgr->id];
- 	DBG("%s", omap_crtc->name);
- 	omap_crtc->timings = *timings;
- 	omap_crtc->full_update = true;
-@@ -116,7 +119,7 @@ static void omap_crtc_set_timings(struct omap_overlay_manager *mgr,
- static void omap_crtc_set_lcd_config(struct omap_overlay_manager *mgr,
- 		const struct dss_lcd_mgr_config *config)
- {
--	struct omap_crtc *omap_crtc = container_of(mgr, struct omap_crtc, mgr);
-+	struct omap_crtc *omap_crtc = omap_crtcs[mgr->id];
- 	DBG("%s", omap_crtc->name);
- 	dispc_mgr_set_lcd_config(omap_crtc->channel, config);
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index a9a1d55..8096764 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -233,26 +233,6 @@ struct omap_dss_device *omap_dss_find_device(void *data,
  }
-@@ -569,7 +572,7 @@ static void omap_crtc_pre_apply(struct omap_drm_apply *apply)
- 	} else {
- 		if (encoder) {
- 			omap_encoder_set_enabled(encoder, false);
--			omap_encoder_update(encoder, &omap_crtc->mgr,
-+			omap_encoder_update(encoder, omap_crtc->mgr,
- 					&omap_crtc->timings);
- 			omap_encoder_set_enabled(encoder, true);
- 			omap_crtc->full_update = false;
-@@ -595,6 +598,11 @@ static const char *channel_names[] = {
- 		[OMAP_DSS_CHANNEL_LCD2] = "lcd2",
- };
+ EXPORT_SYMBOL(omap_dss_find_device);
  
-+void omap_crtc_pre_init(void)
-+{
-+	dss_install_mgr_ops(&mgr_ops);
-+}
-+
- /* initialize crtc */
- struct drm_crtc *omap_crtc_init(struct drm_device *dev,
- 		struct drm_plane *plane, enum omap_channel channel, int id)
-@@ -635,9 +643,7 @@ struct drm_crtc *omap_crtc_init(struct drm_device *dev,
- 	omap_irq_register(dev, &omap_crtc->error_irq);
- 
- 	/* temporary: */
--	omap_crtc->mgr.id = channel;
+-int omap_dss_start_device(struct omap_dss_device *dssdev)
+-{
+-	if (!dssdev->driver) {
+-		DSSDBG("no driver\n");
+-		return -ENODEV;
+-	}
 -
--	dss_install_mgr_ops(&mgr_ops);
-+	omap_crtc->mgr = omap_dss_get_overlay_manager(channel);
+-	if (!try_module_get(dssdev->dev->driver->owner))
+-		return -ENODEV;
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL(omap_dss_start_device);
+-
+-void omap_dss_stop_device(struct omap_dss_device *dssdev)
+-{
+-	module_put(dssdev->dev->driver->owner);
+-}
+-EXPORT_SYMBOL(omap_dss_stop_device);
+-
+ void videomode_to_omap_video_timings(const struct videomode *vm,
+ 		struct omap_video_timings *ovt)
+ {
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 66ba9a6..d369927 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -365,12 +365,6 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
+ 		goto err_no_out_mgr;
+ 	}
  
- 	/* TODO: fix hard-coded setup.. add properties! */
- 	info = &omap_crtc->info;
-@@ -651,6 +657,8 @@ struct drm_crtc *omap_crtc_init(struct drm_device *dev,
+-	r = omap_dss_start_device(dssdev);
+-	if (r) {
+-		DSSERR("failed to start device\n");
+-		goto err_start_dev;
+-	}
+-
+ 	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI)) {
+ 		r = regulator_enable(dpi.vdds_dsi_reg);
+ 		if (r)
+@@ -425,8 +419,6 @@ err_get_dispc:
+ 	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI))
+ 		regulator_disable(dpi.vdds_dsi_reg);
+ err_reg_enable:
+-	omap_dss_stop_device(dssdev);
+-err_start_dev:
+ err_no_out_mgr:
+ err_no_reg:
+ 	mutex_unlock(&dpi.lock);
+@@ -453,8 +445,6 @@ void omapdss_dpi_display_disable(struct omap_dss_device *dssdev)
+ 	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI))
+ 		regulator_disable(dpi.vdds_dsi_reg);
  
- 	omap_plane_install_properties(omap_crtc->plane, &crtc->base);
+-	omap_dss_stop_device(dssdev);
+-
+ 	mutex_unlock(&dpi.lock);
+ }
+ EXPORT_SYMBOL(omapdss_dpi_display_disable);
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 37ca980..892838e 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -4592,12 +4592,6 @@ int omapdss_dsi_display_enable(struct omap_dss_device *dssdev)
  
-+	omap_crtcs[channel] = omap_crtc;
-+
- 	return crtc;
+ 	mutex_lock(&dsi->lock);
  
- fail:
-diff --git a/drivers/gpu/drm/omapdrm/omap_drv.c b/drivers/gpu/drm/omapdrm/omap_drv.c
-index 691e760..f8947f9 100644
---- a/drivers/gpu/drm/omapdrm/omap_drv.c
-+++ b/drivers/gpu/drm/omapdrm/omap_drv.c
-@@ -98,6 +98,8 @@ static int omap_modeset_init(struct drm_device *dev)
- 	int num_crtcs;
- 	int i, id = 0;
+-	r = omap_dss_start_device(dssdev);
+-	if (r) {
+-		DSSERR("failed to start device\n");
+-		goto err_start_dev;
+-	}
+-
+ 	r = dsi_runtime_get(dsidev);
+ 	if (r)
+ 		goto err_get_dsi;
+@@ -4618,8 +4612,6 @@ err_init_dsi:
+ 	dsi_enable_pll_clock(dsidev, 0);
+ 	dsi_runtime_put(dsidev);
+ err_get_dsi:
+-	omap_dss_stop_device(dssdev);
+-err_start_dev:
+ 	mutex_unlock(&dsi->lock);
+ 	DSSDBG("dsi_display_enable FAILED\n");
+ 	return r;
+@@ -4648,8 +4640,6 @@ void omapdss_dsi_display_disable(struct omap_dss_device *dssdev,
+ 	dsi_runtime_put(dsidev);
+ 	dsi_enable_pll_clock(dsidev, 0);
  
-+	omap_crtc_pre_init();
-+
- 	drm_mode_config_init(dev);
+-	omap_dss_stop_device(dssdev);
+-
+ 	mutex_unlock(&dsi->lock);
+ }
+ EXPORT_SYMBOL(omapdss_dsi_display_disable);
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 6d1e97c..e7fe182 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -735,23 +735,15 @@ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
  
- 	omap_drm_irq_install(dev);
-diff --git a/drivers/gpu/drm/omapdrm/omap_drv.h b/drivers/gpu/drm/omapdrm/omap_drv.h
-index 215a20d..14f17da 100644
---- a/drivers/gpu/drm/omapdrm/omap_drv.h
-+++ b/drivers/gpu/drm/omapdrm/omap_drv.h
-@@ -157,6 +157,7 @@ const struct omap_video_timings *omap_crtc_timings(struct drm_crtc *crtc);
- enum omap_channel omap_crtc_channel(struct drm_crtc *crtc);
- int omap_crtc_apply(struct drm_crtc *crtc,
- 		struct omap_drm_apply *apply);
-+void omap_crtc_pre_init(void);
- struct drm_crtc *omap_crtc_init(struct drm_device *dev,
- 		struct drm_plane *plane, enum omap_channel channel, int id);
+ 	hdmi.ip_data.hpd_gpio = hdmi.hpd_gpio;
  
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 74d1d00..c844071 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -1577,7 +1577,6 @@ int omapdss_compat_init(void)
+-	r = omap_dss_start_device(dssdev);
+-	if (r) {
+-		DSSERR("failed to start device\n");
+-		goto err0;
+-	}
+-
+ 	r = hdmi_power_on_full(dssdev);
+ 	if (r) {
+ 		DSSERR("failed to power on device\n");
+-		goto err1;
++		goto err0;
+ 	}
  
- 	apply_init_priv();
+ 	mutex_unlock(&hdmi.lock);
+ 	return 0;
  
--	dss_init_overlay_managers();
- 	dss_init_overlay_managers_sysfs(pdev);
- 	dss_init_overlays(pdev);
+-err1:
+-	omap_dss_stop_device(dssdev);
+ err0:
+ 	mutex_unlock(&hdmi.lock);
+ 	return r;
+@@ -765,8 +757,6 @@ void omapdss_hdmi_display_disable(struct omap_dss_device *dssdev)
  
-@@ -1642,7 +1641,6 @@ err_disp_sysfs:
+ 	hdmi_power_off_full(dssdev);
  
- err_mgr_ops:
- 	dss_uninit_overlay_managers_sysfs(pdev);
--	dss_uninit_overlay_managers();
- 	dss_uninit_overlays(pdev);
+-	omap_dss_stop_device(dssdev);
+-
+ 	mutex_unlock(&hdmi.lock);
+ }
  
- 	compat_refcnt--;
-@@ -1671,7 +1669,6 @@ void omapdss_compat_uninit(void)
- 	dss_uninstall_mgr_ops();
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index cfcb52f..30ff0e0 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -902,12 +902,6 @@ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		return r;
  
- 	dss_uninit_overlay_managers_sysfs(pdev);
--	dss_uninit_overlay_managers();
- 	dss_uninit_overlays(pdev);
- out:
- 	mutex_unlock(&compat_init_lock);
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index b33b016..83d7bb9 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -3710,6 +3710,8 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
+-	r = omap_dss_start_device(dssdev);
+-	if (r) {
+-		DSSERR("failed to start device\n");
+-		goto err0;
+-	}
+-
+ 	r = dss_mgr_register_framedone_handler(out->manager,
+ 			framedone_callback, NULL);
+ 	if (r) {
+@@ -924,8 +918,6 @@ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
  
+ 	return 0;
+ err1:
+-	omap_dss_stop_device(dssdev);
+-err0:
+ 	rfbi_runtime_put();
+ 	return r;
+ }
+@@ -937,7 +929,6 @@ void omapdss_rfbi_display_disable(struct omap_dss_device *dssdev)
+ 
+ 	dss_mgr_unregister_framedone_handler(out->manager,
+ 			framedone_callback, NULL);
+-	omap_dss_stop_device(dssdev);
+ 
+ 	rfbi_runtime_put();
+ }
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index e723687..ce37c80 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -139,12 +139,6 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+ 		return -ENODEV;
+ 	}
+ 
+-	r = omap_dss_start_device(dssdev);
+-	if (r) {
+-		DSSERR("failed to start device\n");
+-		goto err_start_dev;
+-	}
+-
+ 	r = regulator_enable(sdi.vdds_sdi_reg);
+ 	if (r)
+ 		goto err_reg_enable;
+@@ -216,8 +210,6 @@ err_calc_clock_div:
+ err_get_dispc:
+ 	regulator_disable(sdi.vdds_sdi_reg);
+ err_reg_enable:
+-	omap_dss_stop_device(dssdev);
+-err_start_dev:
+ 	return r;
+ }
+ EXPORT_SYMBOL(omapdss_sdi_display_enable);
+@@ -233,8 +225,6 @@ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev)
  	dispc_runtime_put();
  
-+	dss_init_overlay_managers();
-+
- 	dss_debugfs_create_file("dispc", dispc_dump_regs);
+ 	regulator_disable(sdi.vdds_sdi_reg);
+-
+-	omap_dss_stop_device(dssdev);
+ }
+ EXPORT_SYMBOL(omapdss_sdi_display_disable);
+ 
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index af404b4..bac904c 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -513,23 +513,15 @@ int omapdss_venc_display_enable(struct omap_dss_device *dssdev)
+ 		goto err0;
+ 	}
+ 
+-	r = omap_dss_start_device(dssdev);
+-	if (r) {
+-		DSSERR("failed to start device\n");
+-		goto err0;
+-	}
+-
+ 	r = venc_power_on(dssdev);
+ 	if (r)
+-		goto err1;
++		goto err0;
+ 
+ 	venc.wss_data = 0;
+ 
+ 	mutex_unlock(&venc.venc_lock);
  
  	return 0;
-@@ -3723,6 +3725,8 @@ static int __exit omap_dispchw_remove(struct platform_device *pdev)
- {
- 	pm_runtime_disable(&pdev->dev);
+-err1:
+-	omap_dss_stop_device(dssdev);
+ err0:
+ 	mutex_unlock(&venc.venc_lock);
+ 	return r;
+@@ -543,8 +535,6 @@ void omapdss_venc_display_disable(struct omap_dss_device *dssdev)
  
-+	dss_uninit_overlay_managers();
-+
- 	return 0;
+ 	venc_power_off(dssdev);
+ 
+-	omap_dss_stop_device(dssdev);
+-
+ 	mutex_unlock(&venc.venc_lock);
  }
  
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index f8e0e64..3aa89c4 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -778,9 +778,6 @@ struct omap_dss_device *omap_dss_find_device(void *data,
+ 		int (*match)(struct omap_dss_device *dssdev, void *data));
+ const char *omapdss_get_default_display_name(void);
+ 
+-int omap_dss_start_device(struct omap_dss_device *dssdev);
+-void omap_dss_stop_device(struct omap_dss_device *dssdev);
+-
+ void videomode_to_omap_video_timings(const struct videomode *vm,
+ 		struct omap_video_timings *ovt);
+ void omap_video_timings_to_videomode(const struct omap_video_timings *ovt,
 -- 
 1.8.1.2
 

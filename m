@@ -1,36 +1,87 @@
-From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
-Date: Wed, 01 May 2013 10:28:17 +0000
-Subject: Re: [alsa-devel] [PATCH] MAINTAINERS: Add linux-samsung-soc list to all related entries
-Message-Id: <5180EE41.50302@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:34:27 +0000
+Subject: [PATCH 06/32] OMAPDSS: DPI: fix regulators for DT
+Message-Id: <1369906493-27538-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366572050-626-1-git-send-email-tomasz.figa@gmail.com> <CAH9JG2U7Qdq_xQbuqHu6PXzURS2fWwBC=HJmyrXT5n3n_pAa0w@mail.gmail.com> <20130430132755.GB1023@sirena.org.uk>
-In-Reply-To: <20130430132755.GB1023@sirena.org.uk>
+References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@kernel.org>
-Cc: Kyungmin Park <kmpark@infradead.org>, t.stanislaws@samsung.com, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, jy0922.shim@samsung.com, alsa-devel@alsa-project.org, sbkim73@samsung.com, sw0312.kim@samsung.com, jg1.han@samsung.com, linux-mmc@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, dri-devel@lists.freedesktop.org, inki.dae@samsung.com, jtp.park@samsung.com, dh09.lee@samsung.com, linux-arm-kernel@lists.infradead.org, s.nawrocki@samsung.com, k.debski@samsung.com, linux-media@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 04/30/2013 03:27 PM, Mark Brown wrote:
-> On Mon, Apr 22, 2013 at 03:23:29PM +0900, Kyungmin Park wrote:
->
->> I don't think it's not required, each tree has each own mailing list. don't
->> need to post all patches to samsung-soc list.
->
-> It can be useful to get system level input on some stuff, I guess it
-> mostly depends if the people on the generic list mind the extra traffic
-> or if they find it useful.
+On some platforms DPI requires a regulator to be enabled to power up the
+output pins. This regulator is, for some reason, currently attached to
+the virtual omapdss device, instead of the DPI device. This does not
+work for DT, as the regulator mappings need to be described in the DT
+data, and the virtual omapdss device is not present there.
 
-I think this could also improve testing coverage, if more people are aware
-of stuff going in through various mailing lists.
+Fix the issue by acquiring the regulator in the DPI device. To retain
+compatibility with the current board files, the old method of getting
+the regulator is kept. The old method can be removed when the board
+files have been changed to pass the regulator to DPI.
 
-Also on a specific subsystem mailing lists yet another SoC specific patches
-may not get enough attention, as people care most about the core subsystem
-changes.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dpi.c | 21 ++++++++++++++++++---
+ 1 file changed, 18 insertions(+), 3 deletions(-)
 
-So I would in general encourage others to Cc linux-samsung-soc, even if the
-$subject patch gets ignored.
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index ef8fca2..43f6b26 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -37,7 +37,10 @@
+ #include "dss_features.h"
+ 
+ static struct {
++	struct platform_device *pdev;
++
+ 	struct regulator *vdds_dsi_reg;
++	bool vdds_dsi_from_core;
+ 	struct platform_device *dsidev;
+ 
+ 	struct mutex lock;
+@@ -583,10 +586,15 @@ static int dpi_init_display(struct omap_dss_device *dssdev)
+ 		struct regulator *vdds_dsi;
+ 
+ 		vdds_dsi = dss_get_vdds_dsi();
+-
+ 		if (IS_ERR(vdds_dsi)) {
+-			DSSERR("can't get VDDS_DSI regulator\n");
+-			return PTR_ERR(vdds_dsi);
++			vdds_dsi = regulator_get(&dpi.pdev->dev, "vdds_dsi");
++			if (IS_ERR(vdds_dsi)) {
++				DSSERR("can't get VDDS_DSI regulator\n");
++				return PTR_ERR(vdds_dsi);
++			}
++			dpi.vdds_dsi_from_core = false;
++		} else {
++			dpi.vdds_dsi_from_core = true;
+ 		}
+ 
+ 		dpi.vdds_dsi_reg = vdds_dsi;
+@@ -702,6 +710,8 @@ static int omap_dpi_probe(struct platform_device *pdev)
+ {
+ 	int r;
+ 
++	dpi.pdev = pdev;
++
+ 	mutex_init(&dpi.lock);
+ 
+ 	dpi_init_output(pdev);
+@@ -725,6 +735,11 @@ static int __exit omap_dpi_remove(struct platform_device *pdev)
+ 
+ 	dpi_uninit_output(pdev);
+ 
++	if (dpi.vdds_dsi_reg != NULL && dpi.vdds_dsi_from_core = false) {
++		regulator_put(dpi.vdds_dsi_reg);
++		dpi.vdds_dsi_reg = NULL;
++	}
++
+ 	return 0;
+ }
+ 
+-- 
+1.8.1.2
 
-I seriously doubt anyone would have ever been disturbed with additional
-traffic on the list, with its current average of about 20..50 emails per 
-day.

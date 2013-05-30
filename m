@@ -1,21 +1,73 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Fri, 31 May 2013 19:48:38 +0000
-Subject: Jean-Christophe PLAGNIOL-VILLARD off until 10th of June
-Message-Id: <20130531194838.GI23653@game.jcrosoft.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:35:55 +0000
+Subject: [PATCH 02/27] OMAPDSS: modify get/find functions to go through the device chain
+Message-Id: <1369906580-27585-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi,
+In the future will have arbitrarily long video pipeline chains, instead
+of the current two-entities-per-pipeline model.
 
-	I'm Traveling back to France next week to go to my sister weeding
-	so I'll be off tonight and will start to be back end of next week
-	And fully back the 10th of June.
+This patch changes the affected get/find style functions so that they
+properly go through the video pipeline chain, for example when getting
+the overlay manager connected to a given display.
 
-	If any urgent matter for FBDEV please ping Tomi and for AT91 ping
-	Nicolas
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/apply.c  | 14 +++++++++++++-
+ drivers/video/omap2/dss/output.c |  8 +++++++-
+ 2 files changed, 20 insertions(+), 2 deletions(-)
 
-Best Regards,
-J.
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 752b985..d6212d63 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -422,7 +422,19 @@ static void wait_pending_extra_info_updates(void)
+ 
+ static struct omap_dss_device *dss_mgr_get_device(struct omap_overlay_manager *mgr)
+ {
+-	return mgr->output ? mgr->output->device : NULL;
++	struct omap_dss_device *dssdev;
++
++	dssdev = mgr->output;
++	if (dssdev = NULL)
++		return NULL;
++
++	while (dssdev->device)
++		dssdev = dssdev->device;
++
++	if (dssdev->driver)
++		return dssdev;
++	else
++		return NULL;
+ }
+ 
+ static struct omap_dss_device *dss_ovl_get_device(struct omap_overlay *ovl)
+diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
+index 0ba168e..3f5c0a7 100644
+--- a/drivers/video/omap2/dss/output.c
++++ b/drivers/video/omap2/dss/output.c
+@@ -146,7 +146,13 @@ EXPORT_SYMBOL(omap_dss_find_output_by_node);
+ 
+ struct omap_dss_device *omapdss_find_output_from_display(struct omap_dss_device *dssdev)
+ {
+-	return omap_dss_get_device(dssdev->output);
++	while (dssdev->output)
++		dssdev = dssdev->output;
++
++	if (dssdev->id != 0)
++		return omap_dss_get_device(dssdev);
++
++	return NULL;
+ }
+ EXPORT_SYMBOL(omapdss_find_output_from_display);
+ 
+-- 
+1.8.1.2
+

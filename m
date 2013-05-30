@@ -1,65 +1,102 @@
-From: Richard Genoud <richard.genoud@gmail.com>
-Date: Fri, 31 May 2013 15:41:07 +0000
-Subject: Re: [PATCH 2/2] atmel_lcdfb: blank the backlight on remove
-Message-Id: <CACQ1gAh5HL8ouhe3YeGe4B9AO+L02C+wF5a2pUvka01PbupCDg@mail.gmail.com>
+From: Liu Ying <Ying.Liu@freescale.com>
+Date: Thu, 30 May 2013 08:13:53 +0000
+Subject: [PATCH] backlight: Turn backlight on/off when necessary
+Message-Id: <1369901633-31561-1-git-send-email-Ying.Liu@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1370010519-18691-1-git-send-email-richard.genoud@gmail.com>
- <1370010519-18691-2-git-send-email-richard.genoud@gmail.com> <20130531151926.GR19468@game.jcrosoft.org>
-In-Reply-To: <20130531151926.GR19468@game.jcrosoft.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, liu.y.victor@gmail.com, Liu Ying <Ying.Liu@freescale.com>
 
-2013/5/31 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>:
-> On 16:28 Fri 31 May     , Richard Genoud wrote:
->> When removing atmel_lcdfb module, the backlight is unregistered but not
->> blanked. (only for CONFIG_BACKLIGHT_ATMEL_LCDC case).
->> This can result in the screen going full white depending on how the PWM
->> is wired.
->>
->> Signed-off-by: Richard Genoud <richard.genoud@gmail.com>
->> ---
->>  drivers/video/atmel_lcdfb.c |    7 ++++++-
->>  1 file changed, 6 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
->> index 6e6491f..e00318f 100644
->> --- a/drivers/video/atmel_lcdfb.c
->> +++ b/drivers/video/atmel_lcdfb.c
->> @@ -223,8 +223,13 @@ static void init_backlight(struct atmel_lcdfb_info *sinfo)
->>
->>  static void exit_backlight(struct atmel_lcdfb_info *sinfo)
->>  {
->> -     if (sinfo->backlight)
->> +     if (sinfo->backlight) {
-> if (!sinfo->backlight)
->         return;
->
-Well, I usually prefer to have a single exit point (when it doesn't
-make the code go beyond the 80chars limit).
+We don't have to turn backlight on/off everytime a blanking
+or unblanking event comes because the backlight status may have
+already been what we want. Another thought is that one backlight
+device may be shared by multiple framebuffers. We don't hope that
+blanking one of the framebuffers would turn the backlight off for
+all the other framebuffers, since they are likely active to show
+display content. This patch adds logic to record each framebuffer's
+backlight status to determine the backlight device use count and
+whether the backlight should be turned on or off.
 
-but if you prefer something like:
+Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
+---
+ drivers/video/backlight/backlight.c |   23 +++++++++++++++++------
+ include/linux/backlight.h           |    6 ++++++
+ 2 files changed, 23 insertions(+), 6 deletions(-)
 
-if (!sinfo->backlight)
-	return;
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index c74e7aa..97ea2b8 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -31,13 +31,14 @@ static const char *const backlight_types[] = {
+ 			   defined(CONFIG_BACKLIGHT_CLASS_DEVICE_MODULE))
+ /* This callback gets called when something important happens inside a
+  * framebuffer driver. We're looking if that important event is blanking,
+- * and if it is, we're switching backlight power as well ...
++ * and if it is and necessary, we're switching backlight power as well ...
+  */
+ static int fb_notifier_callback(struct notifier_block *self,
+ 				unsigned long event, void *data)
+ {
+ 	struct backlight_device *bd;
+ 	struct fb_event *evdata = data;
++	int node = evdata->info->node;
+ 
+ 	/* If we aren't interested in this event, skip it immediately ... */
+ 	if (event != FB_EVENT_BLANK && event != FB_EVENT_CONBLANK)
+@@ -49,11 +50,21 @@ static int fb_notifier_callback(struct notifier_block *self,
+ 		if (!bd->ops->check_fb ||
+ 		    bd->ops->check_fb(bd, evdata->info)) {
+ 			bd->props.fb_blank = *(int *)evdata->data;
+-			if (bd->props.fb_blank = FB_BLANK_UNBLANK)
+-				bd->props.state &= ~BL_CORE_FBBLANK;
+-			else
+-				bd->props.state |= BL_CORE_FBBLANK;
+-			backlight_update_status(bd);
++			if (bd->props.fb_blank = FB_BLANK_UNBLANK &&
++			    !bd->fb_bl_on[node]) {
++				bd->fb_bl_on[node] = true;
++				if (!bd->use_count++) {
++					bd->props.state &= ~BL_CORE_FBBLANK;
++					backlight_update_status(bd);
++				}
++			} else if (bd->props.fb_blank != FB_BLANK_UNBLANK &&
++				   bd->fb_bl_on[node]) {
++				bd->fb_bl_on[node] = false;
++				if (!(--bd->use_count)) {
++					bd->props.state |= BL_CORE_FBBLANK;
++					backlight_update_status(bd);
++				}
++			}
+ 		}
+ 	mutex_unlock(&bd->ops_lock);
+ 	return 0;
+diff --git a/include/linux/backlight.h b/include/linux/backlight.h
+index da9a082..5de71a0 100644
+--- a/include/linux/backlight.h
++++ b/include/linux/backlight.h
+@@ -9,6 +9,7 @@
+ #define _LINUX_BACKLIGHT_H
+ 
+ #include <linux/device.h>
++#include <linux/fb.h>
+ #include <linux/mutex.h>
+ #include <linux/notifier.h>
+ 
+@@ -101,6 +102,11 @@ struct backlight_device {
+ 	struct notifier_block fb_notif;
+ 
+ 	struct device dev;
++
++	/* Multiple framebuffers may share one backlight device */
++	bool fb_bl_on[FB_MAX];
++
++	int use_count;
+ };
+ 
+ static inline void backlight_update_status(struct backlight_device *bd)
+-- 
+1.7.1
 
-if (sinfo->backlight->ops) {
-	sinfo->backlight->props.power = FB_BLANK_POWERDOWN;
-	sinfo->backlight->ops->update_status(sinfo->backlight);
-}
-backlight_device_unregister(sinfo->backlight);
 
-I'll send the modified patch.
-
->         other look ok
->
-> if you want ot hte next RC you have 3h to send a v2 before I work off for few
-> days
-
-ok, bonnes vacances !
-
->
-> Best Regards,
-> J.

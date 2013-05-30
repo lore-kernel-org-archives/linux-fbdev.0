@@ -1,76 +1,119 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Thu, 09 May 2013 19:46:27 +0000
-Subject: [RFC/PATCH v2 8/8] drm: Remove mtrr_add and mtrr_del fallback hack for non-MTRR systems
-Message-Id: <20c48ef6c4353a67091f13ed8ff071595b01b9b8.1368128020.git.luto@amacapital.net>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:35:59 +0000
+Subject: [PATCH 06/27] ARM: OMAP: rx51: use new display drivers
+Message-Id: <1369906580-27585-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1368128020.git.luto@amacapital.net>
-In-Reply-To: <cover.1368128020.git.luto@amacapital.net>
+References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-There are no users left in drivers/gpu.
+Use the new display drivers for RX51 board.
 
-Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
+ arch/arm/mach-omap2/board-rx51-peripherals.c | 12 ++++++++++
+ arch/arm/mach-omap2/board-rx51-video.c       | 35 ++++++++++------------------
+ 2 files changed, 24 insertions(+), 23 deletions(-)
 
-This is new in v2.  The code I'm deleting is kind of gross.
-
- include/drm/drmP.h         |  5 +----
- include/drm/drm_os_linux.h | 16 ----------------
- 2 files changed, 1 insertion(+), 20 deletions(-)
-
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index 3e6cfa0..7a9fef5 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -55,16 +55,13 @@
- #include <linux/mm.h>
- #include <linux/cdev.h>
- #include <linux/mutex.h>
-+#include <linux/io.h>
- #include <linux/slab.h>
- #if defined(__alpha__) || defined(__powerpc__)
- #include <asm/pgtable.h>	/* For pte_wrprotect */
+diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
+index 18ca61e..e35e0b6 100644
+--- a/arch/arm/mach-omap2/board-rx51-peripherals.c
++++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
+@@ -45,6 +45,8 @@
+ #include <linux/platform_data/tsl2563.h>
+ #include <linux/lis3lv02d.h>
+ 
++#include <video/omap-panel-data.h>
++
+ #if defined(CONFIG_IR_RX51) || defined(CONFIG_IR_RX51_MODULE)
+ #include <media/ir-rx51.h>
  #endif
--#include <asm/io.h>
- #include <asm/mman.h>
- #include <asm/uaccess.h>
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
- #if defined(CONFIG_AGP) || defined(CONFIG_AGP_MODULE)
- #include <linux/types.h>
- #include <linux/agp_backend.h>
-diff --git a/include/drm/drm_os_linux.h b/include/drm/drm_os_linux.h
-index 3933691..35c7c2b 100644
---- a/include/drm/drm_os_linux.h
-+++ b/include/drm/drm_os_linux.h
-@@ -65,22 +65,6 @@ struct no_agp_kern {
- #define DRM_AGP_KERN            struct no_agp_kern
+@@ -226,6 +228,15 @@ static struct lp55xx_platform_data rx51_lp5523_platform_data = {
+ };
  #endif
  
--#if !(__OS_HAS_MTRR)
--static __inline__ int mtrr_add(unsigned long base, unsigned long size,
--			       unsigned int type, char increment)
--{
--	return -ENODEV;
--}
++#define RX51_LCD_RESET_GPIO	90
++
++static struct panel_acx565akm_platform_data acx_pdata = {
++	.name		= "lcd",
++	.source		= "sdi.0",
++	.reset_gpio	= RX51_LCD_RESET_GPIO,
++	.datapairs	= 2,
++};
++
+ static struct omap2_mcspi_device_config wl1251_mcspi_config = {
+ 	.turbo_mode	= 0,
+ };
+@@ -254,6 +265,7 @@ static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
+ 		.chip_select		= 2,
+ 		.max_speed_hz		= 6000000,
+ 		.controller_data	= &mipid_mcspi_config,
++		.platform_data		= &acx_pdata,
+ 	},
+ 	[RX51_SPI_TSC2005] = {
+ 		.modalias		= "tsc2005",
+diff --git a/arch/arm/mach-omap2/board-rx51-video.c b/arch/arm/mach-omap2/board-rx51-video.c
+index bd74f9f..b007fd3 100644
+--- a/arch/arm/mach-omap2/board-rx51-video.c
++++ b/arch/arm/mach-omap2/board-rx51-video.c
+@@ -29,34 +29,21 @@
+ 
+ #if defined(CONFIG_FB_OMAP2) || defined(CONFIG_FB_OMAP2_MODULE)
+ 
+-static struct panel_acx565akm_data lcd_data = {
+-	.reset_gpio	= RX51_LCD_RESET_GPIO,
++static struct connector_atv_platform_data rx51_tv_pdata = {
++	.name = "tv",
++	.source = "venc.0",
++	.connector_type = OMAP_DSS_VENC_TYPE_COMPOSITE,
++	.invert_polarity = false,
+ };
+ 
+-static struct omap_dss_device rx51_lcd_device = {
+-	.name			= "lcd",
+-	.driver_name		= "panel-acx565akm",
+-	.type			= OMAP_DISPLAY_TYPE_SDI,
+-	.phy.sdi.datapairs	= 2,
+-	.data			= &lcd_data,
+-};
 -
--static __inline__ int mtrr_del(int reg, unsigned long base, unsigned long size)
--{
--	return -ENODEV;
--}
+-static struct omap_dss_device  rx51_tv_device = {
+-	.name			= "tv",
+-	.type			= OMAP_DISPLAY_TYPE_VENC,
+-	.driver_name		= "venc",
+-	.phy.venc.type	        = OMAP_DSS_VENC_TYPE_COMPOSITE,
+-};
 -
--#define MTRR_TYPE_WRCOMB     1
--
--#endif
--
- /** Other copying of data to kernel space */
- #define DRM_COPY_FROM_USER(arg1, arg2, arg3)		\
- 	copy_from_user(arg1, arg2, arg3)
+-static struct omap_dss_device *rx51_dss_devices[] = {
+-	&rx51_lcd_device,
+-	&rx51_tv_device,
++static struct platform_device rx51_tv_device = {
++	.name                   = "connector-analog-tv",
++	.id                     = 0,
++	.dev.platform_data      = &rx51_tv_pdata,
+ };
+ 
+ static struct omap_dss_board_info rx51_dss_board_info = {
+-	.num_devices	= ARRAY_SIZE(rx51_dss_devices),
+-	.devices	= rx51_dss_devices,
+-	.default_device	= &rx51_lcd_device,
++	.default_display_name = "lcd",
+ };
+ 
+ static int __init rx51_video_init(void)
+@@ -71,6 +58,8 @@ static int __init rx51_video_init(void)
+ 
+ 	omap_display_init(&rx51_dss_board_info);
+ 
++	platform_device_register(&rx51_tv_device);
++
+ 	return 0;
+ }
+ 
 -- 
-1.8.1.4
+1.8.1.2
 

@@ -1,39 +1,61 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Date: Thu, 16 May 2013 11:15:54 +0000
-Subject: [PATCH 26/33] drivers/video/omap2/dss: don't check resource with devm_ioremap_resource
-Message-Id: <1368702961-4325-27-git-send-email-wsa@the-dreams.de>
+From: Michal Simek <michal.simek@xilinx.com>
+Date: Thu, 30 May 2013 09:41:02 +0000
+Subject: [PATCH v2 3/3] video: xilinxfb: Use driver for Xilinx ARM Zynq
+Message-Id: <2ec6211297b805a6423898e13751add9a931c686.1369906849.git.michal.simek@xilinx.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-15087-1369906871-0001"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1368702961-4325-1-git-send-email-wsa@the-dreams.de>
-In-Reply-To: <1368702961-4325-1-git-send-email-wsa@the-dreams.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <27e53d5633766ab0dc1ac492023d5a0d0199e3aa.1369906849.git.michal.simek@xilinx.com>
+In-Reply-To: <27e53d5633766ab0dc1ac492023d5a0d0199e3aa.1369906849.git.michal.simek@xilinx.com>
 To: linux-kernel@vger.kernel.org
-Cc: Wolfram Sang <wsa@the-dreams.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Michal Simek <monstr@monstr.eu>, Michal Simek <michal.simek@xilinx.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
 
-devm_ioremap_resource does sanity checks on the given resource. No need to
-duplicate this in the driver.
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
 
-Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+--=_mimegpg-monstr-desktop-15087-1369906871-0001
+
+From: Michal Simek <monstr@monstr.eu>
+
+Enable this driver for all Xilinx platforms.
+
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
 ---
- drivers/video/omap2/dss/hdmi.c |    4 ----
- 1 file changed, 4 deletions(-)
+Changes in v2: None
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 17f4d55..a109934 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -1065,10 +1065,6 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
- 	mutex_init(&hdmi.ip_data.lock);
- 
- 	res = platform_get_resource(hdmi.pdev, IORESOURCE_MEM, 0);
--	if (!res) {
--		DSSERR("can't get IORESOURCE_MEM HDMI\n");
--		return -EINVAL;
--	}
- 
- 	/* Base address taken from platform */
- 	hdmi.ip_data.base_wp = devm_ioremap_resource(&pdev->dev, res);
--- 
-1.7.10.4
+ drivers/video/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 2e937bd..2c301f8 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2188,7 +2188,7 @@ config FB_PS3_DEFAULT_SIZE_M
+
+ config FB_XILINX
+ 	tristate "Xilinx frame buffer support"
+-	depends on FB && (XILINX_VIRTEX || MICROBLAZE)
++	depends on FB && (XILINX_VIRTEX || MICROBLAZE || ARCH_ZYNQ)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+--
+1.8.2.3
+
+
+--=_mimegpg-monstr-desktop-15087-1369906871-0001
+Content-Type: application/pgp-signature
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAlGnHrcACgkQykllyylKDCH38QCfWLbGygE650nSvIrMW9NFhZA/
+g3EAoJPi6W/IKJo3hza+2A8EdOTZ5GZq
+=I870
+-----END PGP SIGNATURE-----
+
+--=_mimegpg-monstr-desktop-15087-1369906871-0001--

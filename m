@@ -1,172 +1,490 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Fri, 31 May 2013 05:02:51 +0000
-Subject: Re: [PATCH] backlight: Turn backlight on/off when necessary
-Message-Id: <20130531050251.GP19468@game.jcrosoft.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:34:33 +0000
+Subject: [PATCH 12/32] OMAPDSS: Implement display (dis)connect support
+Message-Id: <1369906493-27538-13-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369901633-31561-1-git-send-email-Ying.Liu@freescale.com>
- <20130530110306.GG19468@game.jcrosoft.org>
- <CA+8Hj80pF_zNqr8DC70FV0=NU39QbZOZm=2YeJSGEnr4aEFT4g@mail.gmail.com>
-In-Reply-To: <CA+8Hj80pF_zNqr8DC70FV0=NU39QbZOZm=2YeJSGEnr4aEFT4g@mail.gmail.com>
+References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Liu Ying <liu.y.victor@gmail.com>
-Cc: Liu Ying <Ying.Liu@freescale.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 10:31 Fri 31 May     , Liu Ying wrote:
->    2013/5/30 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-> 
->      On 16:13 Thu 30 May     , Liu Ying wrote:
->      > We don't have to turn backlight on/off everytime a blanking
->      > or unblanking event comes because the backlight status may have
->      > already been what we want. Another thought is that one backlight
->      > device may be shared by multiple framebuffers. We don't hope that
->      > blanking one of the framebuffers would turn the backlight off for
->      > all the other framebuffers, since they are likely active to show
->      > display content. This patch adds logic to record each framebuffer's
->      > backlight status to determine the backlight device use count and
->      > whether the backlight should be turned on or off.
->      >
->      > Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
->      > ---
->      >  drivers/video/backlight/backlight.c |   23 +++++++++++++++++------
->      >  include/linux/backlight.h           |    6 ++++++
->      >  2 files changed, 23 insertions(+), 6 deletions(-)
->      >
->      > diff --git a/drivers/video/backlight/backlight.c
->      b/drivers/video/backlight/backlight.c
->      > index c74e7aa..97ea2b8 100644
->      > --- a/drivers/video/backlight/backlight.c
->      > +++ b/drivers/video/backlight/backlight.c
->      > @@ -31,13 +31,14 @@ static const char *const backlight_types[] = {
->      >                        
->       defined(CONFIG_BACKLIGHT_CLASS_DEVICE_MODULE))
->      >  /* This callback gets called when something important happens inside
->      a
->      >   * framebuffer driver. We're looking if that important event is
->      blanking,
->      > - * and if it is, we're switching backlight power as well ...
->      > + * and if it is and necessary, we're switching backlight power as
->      well ...
->      >   */
->      >  static int fb_notifier_callback(struct notifier_block *self,
->      >                               unsigned long event, void *data)
->      >  {
->      >       struct backlight_device *bd;
->      >       struct fb_event *evdata = data;
->      > +     int node = evdata->info->node;
->      >
->      >       /* If we aren't interested in this event, skip it immediately
->      ... */
->      >       if (event != FB_EVENT_BLANK && event != FB_EVENT_CONBLANK)
->      > @@ -49,11 +50,21 @@ static int fb_notifier_callback(struct
->      notifier_block *self,
->      >               if (!bd->ops->check_fb ||
->      >                   bd->ops->check_fb(bd, evdata->info)) {
->      >                       bd->props.fb_blank = *(int *)evdata->data;
->      > -                     if (bd->props.fb_blank = FB_BLANK_UNBLANK)
->      > -                             bd->props.state &= ~BL_CORE_FBBLANK;
->      > -                     else
->      > -                             bd->props.state |= BL_CORE_FBBLANK;
->      > -                     backlight_update_status(bd);
->      > +                     if (bd->props.fb_blank = FB_BLANK_UNBLANK &&
->      > +                         !bd->fb_bl_on[node]) {
->      > +                             bd->fb_bl_on[node] = true;
->      > +                             if (!bd->use_count++) {
->      > +                                     bd->props.state &>      ~BL_CORE_FBBLANK;
->      > +                                     backlight_update_status(bd);
->      > +                             }
->      > +                     } else if (bd->props.fb_blank !>      FB_BLANK_UNBLANK &&
->      > +                                bd->fb_bl_on[node]) {
->      > +                             bd->fb_bl_on[node] = false;
->      > +                             if (!(--bd->use_count)) {
->      > +                                     bd->props.state |>      BL_CORE_FBBLANK;
->      > +                                     backlight_update_status(bd);
->      > +                             }
->      > +                     }
->      >               }
->      >       mutex_unlock(&bd->ops_lock);
->      >       return 0;
->      > diff --git a/include/linux/backlight.h b/include/linux/backlight.h
->      > index da9a082..5de71a0 100644
->      > --- a/include/linux/backlight.h
->      > +++ b/include/linux/backlight.h
->      > @@ -9,6 +9,7 @@
->      >  #define _LINUX_BACKLIGHT_H
->      >
->      >  #include <linux/device.h>
->      > +#include <linux/fb.h>
->      >  #include <linux/mutex.h>
->      >  #include <linux/notifier.h>
->      >
->      > @@ -101,6 +102,11 @@ struct backlight_device {
->      >       struct notifier_block fb_notif;
->      >
->      >       struct device dev;
->      > +
->      > +     /* Multiple framebuffers may share one backlight device */
->      > +     bool fb_bl_on[FB_MAX];
-> 
->      I don't like such array at all
-> 
->      I understand the fact you will have only on hw backlight for x fb or
->      overlay
->      but have a static on no
-> 
->     
->    My board has two LVDS display panels. They share one PWM backlight.
->    The framebuffer HW engine may drive a background framebuffer and an
->    overlay framebuffer on one panel, and only one background framebuffer on
->    the other panel. The three framebuffers may be active simultaneously.
->     
-> 
->      if you want to track all user create a strcut and register it or do more
->      simple just as a int to count the number of user and shut down it if 0
->      and
->      enable it otherwise
-> 
->    Users may unblank a framebuffer for multiple times continuously and then
->    trigger a blanking operation.
->    If that framebuffer is the only user of the backlight, the backlight will
->    be turned off after the blanking operation.
->    This is the behavior before this patch is applied to kernel. And, this
->    patch doesn't change the behavior here.
->    So, it seems that it is reasonable to record backlight status(on or off)
->    for framebuffers. And, I use a straightforward array for the recording. 
->    I thought about changing to use a list instead for the recording, but it
->    appears to me it would take more CPU cycles to search and update entries.
->    It is basically a kind of space-against-speed trade-off.
->    You probably have already provided me a better way to do this, but it
->    looks I didn't catch it. If this is the case, would you please shed more
->    light on this? Thanks!
+We currently have two steps in panel initialization and startup: probing
+and enabling. After the panel has been probed, it's ready and can be
+configured and later enabled.
 
-so just use a int
+This model is not enough with more complex display pipelines, where we
+may have, for example, two panels, of which only one can be used at a
+time, connected to the same video output.
 
-check who we do for clk_enable/disable on at91
+To support that kind of scenarios, we need to add new step to the
+initialization: connect.
 
-arch/arm/mach-at91/clock.c
+This patch adds support for connecting and disconnecting panels. After
+probe, but before connect, no panel ops should be called. When the
+connect is called, a proper video pipeline is established, and the panel
+is ready for use. If some part in the video pipeline is already
+connected (by some other panel), the connect call fails.
 
-Best Regards,
-J.
-> 
->      Best Regards,
->      J.
->      > +
->      > +     int use_count;
->      >  };
->      >
->      >  static inline void backlight_update_status(struct backlight_device
->      *bd)
->      > --
->      > 1.7.1
->      >
->      >
->      > --
->      > To unsubscribe from this list: send the line "unsubscribe linux-fbdev"
->      in
->      > the body of a message to majordomo@vger.kernel.org
->      > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
->    --
->    Best Regards,
->    Liu Ying
+One key difference with the old style setup is that connect() handles
+also connecting to the overlay manager. This means that the omapfb (or
+omapdrm) no longer needs to figure out which overlay manager to use, but
+it can just call connect() on the panel, and the proper overlay manager
+is connected by omapdss.
+
+This also allows us to add back the support for dynamic switching
+between two exclusive panels. However, the current panel device model is
+not changed to support this, as the new device model is implemented in
+the following patches and the old model will be removed. The new device
+model supports dynamic switching.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/gpu/drm/omapdrm/omap_crtc.c      | 24 +++++++++++++++++
+ drivers/gpu/drm/omapdrm/omap_drv.c       | 12 ++++++++-
+ drivers/video/omap2/dss/apply.c          | 14 ++++++++++
+ drivers/video/omap2/dss/core.c           | 44 +++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/display-sysfs.c  | 28 +++++++++++---------
+ drivers/video/omap2/dss/manager-sysfs.c  | 45 ++++++++++++++++++++------------
+ drivers/video/omap2/dss/output.c         | 14 ++++++++++
+ drivers/video/omap2/omapfb/omapfb-main.c | 25 ++++++++++--------
+ include/video/omapdss.h                  | 23 ++++++++++++++++
+ 9 files changed, 188 insertions(+), 41 deletions(-)
+
+diff --git a/drivers/gpu/drm/omapdrm/omap_crtc.c b/drivers/gpu/drm/omapdrm/omap_crtc.c
+index 02075bf..b2ab2f5 100644
+--- a/drivers/gpu/drm/omapdrm/omap_crtc.c
++++ b/drivers/gpu/drm/omapdrm/omap_crtc.c
+@@ -94,6 +94,28 @@ uint32_t pipe2vbl(struct drm_crtc *crtc)
+ static struct omap_crtc *omap_crtcs[8];
+ 
+ /* we can probably ignore these until we support command-mode panels: */
++static int omap_crtc_connect(struct omap_overlay_manager *mgr,
++		struct omap_dss_output *dst)
++{
++	if (mgr->output)
++		return -EINVAL;
++
++	if ((mgr->supported_outputs & dst->id) = 0)
++		return -EINVAL;
++
++	dst->manager = mgr;
++	mgr->output = dst;
++
++	return 0;
++}
++
++static void omap_crtc_disconnect(struct omap_overlay_manager *mgr,
++		struct omap_dss_output *dst)
++{
++	mgr->output->manager = NULL;
++	mgr->output = NULL;
++}
++
+ static void omap_crtc_start_update(struct omap_overlay_manager *mgr)
+ {
+ }
+@@ -138,6 +160,8 @@ static void omap_crtc_unregister_framedone_handler(
+ }
+ 
+ static const struct dss_mgr_ops mgr_ops = {
++		.connect = omap_crtc_connect,
++		.disconnect = omap_crtc_disconnect,
+ 		.start_update = omap_crtc_start_update,
+ 		.enable = omap_crtc_enable,
+ 		.disable = omap_crtc_disable,
+diff --git a/drivers/gpu/drm/omapdrm/omap_drv.c b/drivers/gpu/drm/omapdrm/omap_drv.c
+index f8947f9..58bd259 100644
+--- a/drivers/gpu/drm/omapdrm/omap_drv.c
++++ b/drivers/gpu/drm/omapdrm/omap_drv.c
+@@ -97,6 +97,7 @@ static int omap_modeset_init(struct drm_device *dev)
+ 	int num_mgrs = dss_feat_get_num_mgrs();
+ 	int num_crtcs;
+ 	int i, id = 0;
++	int r;
+ 
+ 	omap_crtc_pre_init();
+ 
+@@ -118,6 +119,7 @@ static int omap_modeset_init(struct drm_device *dev)
+ 		struct drm_connector *connector;
+ 		struct drm_encoder *encoder;
+ 		enum omap_channel channel;
++		struct omap_overlay_manager *mgr;
+ 
+ 		if (!dssdev->driver) {
+ 			dev_warn(dev->dev, "%s has no driver.. skipping it\n",
+@@ -133,6 +135,13 @@ static int omap_modeset_init(struct drm_device *dev)
+ 			continue;
+ 		}
+ 
++		r = dssdev->driver->connect(dssdev);
++		if (r) {
++			dev_err(dev->dev, "could not connect display: %s\n",
++					dssdev->name);
++			continue;
++		}
++
+ 		encoder = omap_encoder_init(dev, dssdev);
+ 
+ 		if (!encoder) {
+@@ -174,8 +183,9 @@ static int omap_modeset_init(struct drm_device *dev)
+ 		 * other possible channels to which the encoder can connect are
+ 		 * not considered.
+ 		 */
+-		channel = dssdev->output->dispc_channel;
+ 
++		mgr = omapdss_find_mgr_from_display(dssdev);
++		channel = mgr->id;
+ 		/*
+ 		 * if this channel hasn't already been taken by a previously
+ 		 * allocated crtc, we create a new crtc for it
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index c844071..dbd3c2f 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -790,6 +790,18 @@ static void mgr_clear_shadow_dirty(struct omap_overlay_manager *mgr)
+ 	}
+ }
+ 
++static int dss_mgr_connect_compat(struct omap_overlay_manager *mgr,
++		struct omap_dss_output *dst)
++{
++	return mgr->set_output(mgr, dst);
++}
++
++static void dss_mgr_disconnect_compat(struct omap_overlay_manager *mgr,
++		struct omap_dss_output *dst)
++{
++	mgr->unset_output(mgr);
++}
++
+ static void dss_mgr_start_update_compat(struct omap_overlay_manager *mgr)
+ {
+ 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
+@@ -1552,6 +1564,8 @@ static void dss_mgr_unregister_framedone_handler_compat(struct omap_overlay_mana
+ }
+ 
+ static const struct dss_mgr_ops apply_mgr_ops = {
++	.connect = dss_mgr_connect_compat,
++	.disconnect = dss_mgr_disconnect_compat,
+ 	.start_update = dss_mgr_start_update_compat,
+ 	.enable = dss_mgr_enable_compat,
+ 	.disable = dss_mgr_disable_compat,
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 502ec1b..4bd8f79 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -371,6 +371,46 @@ static int dss_driver_remove(struct device *dev)
+ 	return 0;
+ }
+ 
++static int omapdss_default_connect(struct omap_dss_device *dssdev)
++{
++	struct omap_dss_output *out;
++	struct omap_overlay_manager *mgr;
++	int r;
++
++	out = dssdev->output;
++
++	if (out = NULL)
++		return -ENODEV;
++
++	mgr = omap_dss_get_overlay_manager(out->dispc_channel);
++	if (!mgr)
++		return -ENODEV;
++
++	r = dss_mgr_connect(mgr, out);
++	if (r)
++		return r;
++
++	return 0;
++}
++
++static void omapdss_default_disconnect(struct omap_dss_device *dssdev)
++{
++	struct omap_dss_output *out;
++	struct omap_overlay_manager *mgr;
++
++	out = dssdev->output;
++
++	if (out = NULL)
++		return;
++
++	mgr = out->manager;
++
++	if (mgr = NULL)
++		return;
++
++	dss_mgr_disconnect(mgr, out);
++}
++
+ int omap_dss_register_driver(struct omap_dss_driver *dssdriver)
+ {
+ 	dssdriver->driver.bus = &dss_bus_type;
+@@ -384,6 +424,10 @@ int omap_dss_register_driver(struct omap_dss_driver *dssdriver)
+ 			omapdss_default_get_recommended_bpp;
+ 	if (dssdriver->get_timings = NULL)
+ 		dssdriver->get_timings = omapdss_default_get_timings;
++	if (dssdriver->connect = NULL)
++		dssdriver->connect = omapdss_default_connect;
++	if (dssdriver->disconnect = NULL)
++		dssdriver->disconnect = omapdss_default_disconnect;
+ 
+ 	return driver_register(&dssdriver->driver);
+ }
+diff --git a/drivers/video/omap2/dss/display-sysfs.c b/drivers/video/omap2/dss/display-sysfs.c
+index 18211a9..81d5dc6 100644
+--- a/drivers/video/omap2/dss/display-sysfs.c
++++ b/drivers/video/omap2/dss/display-sysfs.c
+@@ -33,9 +33,9 @@ static ssize_t display_enabled_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+ {
+ 	struct omap_dss_device *dssdev = to_dss_device(dev);
+-	bool enabled = dssdev->state != OMAP_DSS_DISPLAY_DISABLED;
+ 
+-	return snprintf(buf, PAGE_SIZE, "%d\n", enabled);
++	return snprintf(buf, PAGE_SIZE, "%d\n",
++			omapdss_device_is_enabled(dssdev));
+ }
+ 
+ static ssize_t display_enabled_store(struct device *dev,
+@@ -44,20 +44,24 @@ static ssize_t display_enabled_store(struct device *dev,
+ {
+ 	struct omap_dss_device *dssdev = to_dss_device(dev);
+ 	int r;
+-	bool enabled;
++	bool enable;
+ 
+-	r = strtobool(buf, &enabled);
++	r = strtobool(buf, &enable);
+ 	if (r)
+ 		return r;
+ 
+-	if (enabled != (dssdev->state != OMAP_DSS_DISPLAY_DISABLED)) {
+-		if (enabled) {
+-			r = dssdev->driver->enable(dssdev);
+-			if (r)
+-				return r;
+-		} else {
+-			dssdev->driver->disable(dssdev);
+-		}
++	if (enable = omapdss_device_is_enabled(dssdev))
++		return size;
++
++	if (omapdss_device_is_connected(dssdev) = false)
++		return -ENODEV;
++
++	if (enable) {
++		r = dssdev->driver->enable(dssdev);
++		if (r)
++			return r;
++	} else {
++		dssdev->driver->disable(dssdev);
+ 	}
+ 
+ 	return size;
+diff --git a/drivers/video/omap2/dss/manager-sysfs.c b/drivers/video/omap2/dss/manager-sysfs.c
+index 72784b3..de7e7b5 100644
+--- a/drivers/video/omap2/dss/manager-sysfs.c
++++ b/drivers/video/omap2/dss/manager-sysfs.c
+@@ -50,6 +50,7 @@ static ssize_t manager_display_store(struct omap_overlay_manager *mgr,
+ 	int r = 0;
+ 	size_t len = size;
+ 	struct omap_dss_device *dssdev = NULL;
++	struct omap_dss_device *old_dssdev;
+ 
+ 	int match(struct omap_dss_device *dssdev, void *data)
+ 	{
+@@ -66,34 +67,44 @@ static ssize_t manager_display_store(struct omap_overlay_manager *mgr,
+ 	if (len > 0 && dssdev = NULL)
+ 		return -EINVAL;
+ 
+-	if (dssdev)
++	if (dssdev) {
+ 		DSSDBG("display %s found\n", dssdev->name);
+ 
+-	if (mgr->output) {
+-		r = mgr->unset_output(mgr);
+-		if (r) {
+-			DSSERR("failed to unset current output\n");
++		if (omapdss_device_is_connected(dssdev)) {
++			DSSERR("new display is already connected\n");
++			r = -EINVAL;
++			goto put_device;
++		}
++
++		if (omapdss_device_is_enabled(dssdev)) {
++			DSSERR("new display is not disabled\n");
++			r = -EINVAL;
+ 			goto put_device;
+ 		}
+ 	}
+ 
+-	if (dssdev) {
+-		struct omap_dss_output *out;
++	old_dssdev = mgr->get_device(mgr);
++	if (old_dssdev) {
++		if (omapdss_device_is_enabled(old_dssdev)) {
++			DSSERR("old display is not disabled\n");
++			r = -EINVAL;
++			goto put_device;
++		}
+ 
+-		out = omapdss_find_output_from_display(dssdev);
++		old_dssdev->driver->disconnect(old_dssdev);
++	}
+ 
+-		/*
+-		 * a registered device should have an output connected to it
+-		 * already
+-		 */
+-		if (!out) {
+-			DSSERR("device has no output connected to it\n");
++	if (dssdev) {
++		r = dssdev->driver->connect(dssdev);
++		if (r) {
++			DSSERR("failed to connect new device\n");
+ 			goto put_device;
+ 		}
+ 
+-		r = mgr->set_output(mgr, out);
+-		if (r) {
+-			DSSERR("failed to set manager output\n");
++		old_dssdev = mgr->get_device(mgr);
++		if (old_dssdev != dssdev) {
++			DSSERR("failed to connect device to this manager\n");
++			dssdev->driver->disconnect(dssdev);
+ 			goto put_device;
+ 		}
+ 
+diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
+index ab2c0f0..a53b08b 100644
+--- a/drivers/video/omap2/dss/output.c
++++ b/drivers/video/omap2/dss/output.c
+@@ -179,6 +179,20 @@ void dss_uninstall_mgr_ops(void)
+ }
+ EXPORT_SYMBOL(dss_uninstall_mgr_ops);
+ 
++int dss_mgr_connect(struct omap_overlay_manager *mgr,
++		struct omap_dss_output *dst)
++{
++	return dss_mgr_ops->connect(mgr, dst);
++}
++EXPORT_SYMBOL(dss_mgr_connect);
++
++void dss_mgr_disconnect(struct omap_overlay_manager *mgr,
++		struct omap_dss_output *dst)
++{
++	dss_mgr_ops->disconnect(mgr, dst);
++}
++EXPORT_SYMBOL(dss_mgr_disconnect);
++
+ void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
+ 		const struct omap_video_timings *timings)
+ {
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index dd972c5..eacbafa 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -1853,6 +1853,8 @@ static void omapfb_free_resources(struct omapfb2_device *fbdev)
+ 		if (dssdev->state != OMAP_DSS_DISPLAY_DISABLED)
+ 			dssdev->driver->disable(dssdev);
+ 
++		dssdev->driver->disconnect(dssdev);
++
+ 		omap_dss_put_device(dssdev);
+ 	}
+ 
+@@ -2363,22 +2365,23 @@ static int omapfb_init_connections(struct omapfb2_device *fbdev,
+ 	int i, r;
+ 	struct omap_overlay_manager *mgr;
+ 
++	r = def_dssdev->driver->connect(def_dssdev);
++	if (r) {
++		dev_err(fbdev->dev, "failed to connect default display\n");
++		return r;
++	}
++
+ 	for (i = 0; i < fbdev->num_displays; ++i) {
+ 		struct omap_dss_device *dssdev = fbdev->displays[i].dssdev;
+-		struct omap_dss_output *out;
+ 
+-		out = omapdss_find_output_from_display(dssdev);
+-		if (!out)
++		if (dssdev = def_dssdev)
+ 			continue;
+ 
+-		mgr = omap_dss_get_overlay_manager(out->dispc_channel);
+-		if (!mgr)
+-			continue;
+-
+-		if (mgr->output)
+-			mgr->unset_output(mgr);
+-
+-		mgr->set_output(mgr, out);
++		/*
++		 * We don't care if the connect succeeds or not. We just want to
++		 * connect as many displays as possible.
++		 */
++		dssdev->driver->connect(dssdev);
+ 	}
+ 
+ 	mgr = omapdss_find_mgr_from_display(def_dssdev);
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 68b2345..f747266 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -689,6 +689,9 @@ struct omap_dss_driver {
+ 	int (*probe)(struct omap_dss_device *);
+ 	void (*remove)(struct omap_dss_device *);
+ 
++	int (*connect)(struct omap_dss_device *dssdev);
++	void (*disconnect)(struct omap_dss_device *dssdev);
++
+ 	int (*enable)(struct omap_dss_device *display);
+ 	void (*disable)(struct omap_dss_device *display);
+ 	int (*run_test)(struct omap_dss_device *display, int test);
+@@ -888,6 +891,11 @@ int omapdss_compat_init(void);
+ void omapdss_compat_uninit(void);
+ 
+ struct dss_mgr_ops {
++	int (*connect)(struct omap_overlay_manager *mgr,
++		struct omap_dss_output *dst);
++	void (*disconnect)(struct omap_overlay_manager *mgr,
++		struct omap_dss_output *dst);
++
+ 	void (*start_update)(struct omap_overlay_manager *mgr);
+ 	int (*enable)(struct omap_overlay_manager *mgr);
+ 	void (*disable)(struct omap_overlay_manager *mgr);
+@@ -904,6 +912,10 @@ struct dss_mgr_ops {
+ int dss_install_mgr_ops(const struct dss_mgr_ops *mgr_ops);
+ void dss_uninstall_mgr_ops(void);
+ 
++int dss_mgr_connect(struct omap_overlay_manager *mgr,
++		struct omap_dss_output *dst);
++void dss_mgr_disconnect(struct omap_overlay_manager *mgr,
++		struct omap_dss_output *dst);
+ void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
+ 		const struct omap_video_timings *timings);
+ void dss_mgr_set_lcd_config(struct omap_overlay_manager *mgr,
+@@ -915,4 +927,15 @@ int dss_mgr_register_framedone_handler(struct omap_overlay_manager *mgr,
+ 		void (*handler)(void *), void *data);
+ void dss_mgr_unregister_framedone_handler(struct omap_overlay_manager *mgr,
+ 		void (*handler)(void *), void *data);
++
++static inline bool omapdss_device_is_connected(struct omap_dss_device *dssdev)
++{
++	return dssdev->output;
++}
++
++static inline bool omapdss_device_is_enabled(struct omap_dss_device *dssdev)
++{
++	return dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
++}
++
+ #endif
+-- 
+1.8.1.2
+

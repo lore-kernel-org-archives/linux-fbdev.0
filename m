@@ -1,65 +1,42 @@
-From: Jiang Liu <liuj97@gmail.com>
-Date: Sat, 11 May 2013 17:34:40 +0000
-Subject: [PATCH v6, part3 07/16] mm, acornfb: use free_reserved_area() to simplify code
-Message-Id: <1368293689-16410-8-git-send-email-jiang.liu@huawei.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:36:02 +0000
+Subject: [PATCH 09/27] drm/omap: DVI connector fix
+Message-Id: <1369906580-27585-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1368293689-16410-1-git-send-email-jiang.liu@huawei.com>
-In-Reply-To: <1368293689-16410-1-git-send-email-jiang.liu@huawei.com>
+References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jiang Liu <jiang.liu@huawei.com>, David Rientjes <rientjes@google.com>, Wen Congyang <wency@cn.fujitsu.com>, Mel Gorman <mgorman@suse.de>, Minchan Kim <minchan@kernel.org>, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, Michal Hocko <mhocko@suse.cz>, James Bottomley <James.Bottomley@HansenPartnership.com>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, David Howells <dhowells@redhat.com>, Mark Salter <msalter@redhat.com>, Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Use common help function free_reserved_area() to simplify code.
+The omapdrm driver currently uses a string comparison to find out if the
+display is a DVI display. This is not reliable, and as we now have a
+specific display type for DVI, let's use that.
 
-Signed-off-by: Jiang Liu <jiang.liu@huawei.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/acornfb.c | 28 ++--------------------------
- 1 file changed, 2 insertions(+), 26 deletions(-)
+ drivers/gpu/drm/omapdrm/omap_drv.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/acornfb.c b/drivers/video/acornfb.c
-index 6488a73..344f2bb 100644
---- a/drivers/video/acornfb.c
-+++ b/drivers/video/acornfb.c
-@@ -1188,32 +1188,8 @@ static int acornfb_detect_monitortype(void)
- static inline void
- free_unused_pages(unsigned int virtual_start, unsigned int virtual_end)
- {
--	int mb_freed = 0;
--
--	/*
--	 * Align addresses
--	 */
--	virtual_start = PAGE_ALIGN(virtual_start);
--	virtual_end = PAGE_ALIGN(virtual_end);
--
--	while (virtual_start < virtual_end) {
--		struct page *page;
--
--		/*
--		 * Clear page reserved bit,
--		 * set count to 1, and free
--		 * the page.
--		 */
--		page = virt_to_page(virtual_start);
--		ClearPageReserved(page);
--		init_page_count(page);
--		free_page(virtual_start);
--
--		virtual_start += PAGE_SIZE;
--		mb_freed += PAGE_SIZE / 1024;
--	}
--
--	printk("acornfb: freed %dK memory\n", mb_freed);
-+	free_reserved_area(virtual_start, PAGE_ALIGN(virtual_end),
-+			   -1, "acornfb");
- }
- 
- static int acornfb_probe(struct platform_device *dev)
+diff --git a/drivers/gpu/drm/omapdrm/omap_drv.c b/drivers/gpu/drm/omapdrm/omap_drv.c
+index 4c0bc40..8949246 100644
+--- a/drivers/gpu/drm/omapdrm/omap_drv.c
++++ b/drivers/gpu/drm/omapdrm/omap_drv.c
+@@ -65,10 +65,8 @@ static int get_connector_type(struct omap_dss_device *dssdev)
+ 	switch (dssdev->type) {
+ 	case OMAP_DISPLAY_TYPE_HDMI:
+ 		return DRM_MODE_CONNECTOR_HDMIA;
+-	case OMAP_DISPLAY_TYPE_DPI:
+-		if (!strcmp(dssdev->name, "dvi"))
+-			return DRM_MODE_CONNECTOR_DVID;
+-		/* fallthrough */
++	case OMAP_DISPLAY_TYPE_DVI:
++		return DRM_MODE_CONNECTOR_DVID;
+ 	default:
+ 		return DRM_MODE_CONNECTOR_Unknown;
+ 	}
 -- 
 1.8.1.2
 

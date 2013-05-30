@@ -1,17 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Wed, 29 May 2013 21:36:22 +0000
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 30 May 2013 00:32:34 +0000
 Subject: Re: [PATCH] fbdev: bfin-lq035q1-fb: Use dev_pm_ops
-Message-Id: <5152912.Hgl9OZ5vTi@vostro.rjw.lan>
+Message-Id: <001801ce5ccd$2dd30be0$897923a0$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369829859-13405-1-git-send-email-lars@metafoo.de> <51A60F83.7070403@analog.com> <20130529192013.GA19468@game.jcrosoft.org>
+References: <1369829859-13405-1-git-send-email-lars@metafoo.de>
+ <51A60F83.7070403@analog.com> <20130529192013.GA19468@game.jcrosoft.org>
 In-Reply-To: <20130529192013.GA19468@game.jcrosoft.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Cc: Michael Hennerich <michael.hennerich@analog.com>, Lars-Peter Clausen <lars@metafoo.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org
+To: 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>, 'Michael Hennerich' <michael.hennerich@analog.com>, "'Rafael J. Wysocki'" <rjw@sisk.pl>
+Cc: 'Lars-Peter Clausen' <lars@metafoo.de>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org, Jingoo Han <jg1.han@samsung.com>
 
-On Wednesday, May 29, 2013 09:20:13 PM Jean-Christophe PLAGNIOL-VILLARD wrote:
+On Thursday, May 30, 2013 4:20 AM, Jean-Christophe PLAGNIOL-VILLARD wrote:
 > On 16:24 Wed 29 May     , Michael Hennerich wrote:
 > > On 05/29/2013 02:17 PM, Lars-Peter Clausen wrote:
 > > >Use dev_pm_ops instead of the legacy suspend/resume callbacks.
@@ -61,18 +62,38 @@ On Wednesday, May 29, 2013 09:20:13 PM Jean-Christophe PLAGNIOL-VILLARD wrote:
 > > >+#define LQ035Q1_SPIDEV_PM_OPS NULL
 > > >  #endif
 > we really need to ahve a macro like for DT of_match_ptr to drop the #else
+
+Hi Jean-Christophe PLAGNIOL-VILLARD,
+
+I submitted the following patch. :)
+(https://patchwork.kernel.org/patch/2502971/)
+
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -55,8 +55,10 @@  struct device;
+ 
+ #ifdef CONFIG_PM
+ extern const char power_group_name[];		/* = "power" */
++#define pm_ops_ptr(_ptr)	(_ptr)
+ #else
+ #define power_group_name	NULL
++#define pm_ops_ptr(_ptr)	NULL
+ #endif
+
+
+This patch was accepted by Rafael Wysocki, and will be merged to v3.11-rc1.
+
+
+Best regards,
+Jingoo Han
+
 > 
 > I known it's related to this patch but someone should do it
 > 
 > Rafael what do you think
-
-There's a patch adding something like that in the linux-next branch of my tree
-(if I understand correctly what you mean).
-
-Thanks,
-Rafael
-
-
+> 
+> Best Regards,
+> J.
 > > >  /* Power down all displays on reboot, poweroff or halt */
 > > >@@ -708,8 +715,7 @@ static int bfin_lq035q1_probe(struct platform_device *pdev)
 > > >  	info->spidrv.probe    = lq035q1_spidev_probe;
@@ -83,9 +104,21 @@ Rafael
 > > >+	info->spidrv.driver.pm = LQ035Q1_SPIDEV_PM_OPS;
 > > >  	ret = spi_register_driver(&info->spidrv);
 > > >  	if (ret < 0) {
-> > 
-> > 
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> >
+> >
+> > --
+> > Greetings,
+> > Michael
+> >
+> > --
+> > Analog Devices GmbH      Wilhelm-Wagenfeld-Str. 6      80807 Muenchen
+> > Sitz der Gesellschaft: Muenchen; Registergericht: Muenchen HRB 40368;
+> > Geschaeftsfuehrer:Dr.Carsten Suckrow, Thomas Wessel, William A. Martin,
+> > Margaret Seif
+> >
+> >
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+

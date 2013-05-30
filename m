@@ -1,128 +1,164 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Date: Fri, 31 May 2013 12:55:32 +0000
-Subject: [PATCH v3 2/8] video: xilinxfb: Do not name out_be32 in function name
-Message-Id: <777c3f640bdd77581456ec9f036990479bcfe407.1370004925.git.michal.simek@xilinx.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-8096-1370004952-0001"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:34:41 +0000
+Subject: [PATCH 20/32] OMAPDSS: remove dssdev uses in trivial cases
+Message-Id: <1369906493-27538-21-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1370004925.git.michal.simek@xilinx.com>
-In-Reply-To: <cover.1370004925.git.michal.simek@xilinx.com>
-To: linux-kernel@vger.kernel.org
-Cc: Michal Simek <monstr@monstr.eu>, Michal Simek <michal.simek@xilinx.com>, Arnd Bergmann <arnd@arndb.de>, Timur Tabi <timur@tabi.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-
-This is a MIME GnuPG-signed message.  If you see this text, it means that
-your E-mail or Usenet software does not support MIME signed messages.
-The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
-To open this message correctly you will need to install E-mail or Usenet
-software that supports modern Internet standards.
-
---=_mimegpg-monstr-desktop-8096-1370004952-0001
-
-out_be32 IO function is not supported by ARM.
-It is only available for PPC and Microblaze.
-Because this driver can be used on ARM let's
-remove out_be32 from function name.
-
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
----
-Changes in v3:
-- Remove out_be IO name from function name
-- Change patch subject from "Do not use out_be32 IO function"
-  to "Do not name out_be32 in function name"
-
-Changes in v2: None
-
- drivers/video/xilinxfb.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index aecd15d..c9b442b 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -57,7 +57,7 @@
-  * In case of direct PLB access the second control register will be at
-  * an offset of 4 as compared to the DCR access where the offset is 1
-  * i.e. REG_CTRL. So this is taken care in the function
-- * xilinx_fb_out_be32 where it left shifts the offset 2 times in case of
-+ * xilinx_fb_out32 where it left shifts the offset 2 times in case of
-  * direct PLB access.
-  */
- #define NUM_REGS	2
-@@ -150,7 +150,7 @@ struct xilinxfb_drvdata {
-  * To perform the read/write on the registers we need to check on
-  * which bus its connected and call the appropriate write API.
-  */
--static void xilinx_fb_out_be32(struct xilinxfb_drvdata *drvdata, u32 offset,
-+static void xilinx_fb_out32(struct xilinxfb_drvdata *drvdata, u32 offset,
- 				u32 val)
- {
- 	if (drvdata->flags & PLB_ACCESS_FLAG)
-@@ -197,7 +197,7 @@ xilinx_fb_blank(int blank_mode, struct fb_info *fbi)
- 	switch (blank_mode) {
- 	case FB_BLANK_UNBLANK:
- 		/* turn on panel */
--		xilinx_fb_out_be32(drvdata, REG_CTRL, drvdata->reg_ctrl_default);
-+		xilinx_fb_out32(drvdata, REG_CTRL, drvdata->reg_ctrl_default);
- 		break;
-
- 	case FB_BLANK_NORMAL:
-@@ -205,7 +205,7 @@ xilinx_fb_blank(int blank_mode, struct fb_info *fbi)
- 	case FB_BLANK_HSYNC_SUSPEND:
- 	case FB_BLANK_POWERDOWN:
- 		/* turn off panel */
--		xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
-+		xilinx_fb_out32(drvdata, REG_CTRL, 0);
- 	default:
- 		break;
-
-@@ -280,13 +280,13 @@ static int xilinxfb_assign(struct device *dev,
- 	memset_io((void __iomem *)drvdata->fb_virt, 0, fbsize);
-
- 	/* Tell the hardware where the frame buffer is */
--	xilinx_fb_out_be32(drvdata, REG_FB_ADDR, drvdata->fb_phys);
-+	xilinx_fb_out32(drvdata, REG_FB_ADDR, drvdata->fb_phys);
-
- 	/* Turn on the display */
- 	drvdata->reg_ctrl_default = REG_CTRL_ENABLE;
- 	if (pdata->rotate_screen)
- 		drvdata->reg_ctrl_default |= REG_CTRL_ROTATE;
--	xilinx_fb_out_be32(drvdata, REG_CTRL,
-+	xilinx_fb_out32(drvdata, REG_CTRL,
- 					drvdata->reg_ctrl_default);
-
- 	/* Fill struct fb_info */
-@@ -345,7 +345,7 @@ err_cmap:
- 		iounmap(drvdata->fb_virt);
-
- 	/* Turn off the display */
--	xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
-+	xilinx_fb_out32(drvdata, REG_CTRL, 0);
-
- err_fbmem:
- 	if (drvdata->flags & PLB_ACCESS_FLAG)
-@@ -381,7 +381,7 @@ static int xilinxfb_release(struct device *dev)
- 		iounmap(drvdata->fb_virt);
-
- 	/* Turn off the display */
--	xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
-+	xilinx_fb_out32(drvdata, REG_CTRL, 0);
-
- 	/* Release the resources, as allocated based on interface */
- 	if (drvdata->flags & PLB_ACCESS_FLAG) {
---
-1.8.2.3
-
-
---=_mimegpg-monstr-desktop-8096-1370004952-0001
-Content-Type: application/pgp-signature
+References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+In the future the "dssdev" parameter passed to output drivers will
+change its meaning. Instead of being a pointer to the panel device, it's
+a pointer to the output instance.
 
-iEYEABECAAYFAlGondgACgkQykllyylKDCFzKwCfW0tJXsLNybk5cNzqujQTG9vY
-L5MAn2XLQxtZaSL2coZJJZjZH3jBGrd7
-=k1k6
------END PGP SIGNATURE-----
+To make the transition easier, some of the uses for this dssdev
+parameter can be easily removed.
 
---=_mimegpg-monstr-desktop-8096-1370004952-0001--
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/hdmi.c | 6 +++---
+ drivers/video/omap2/dss/rfbi.c | 8 ++++----
+ drivers/video/omap2/dss/sdi.c  | 6 +++---
+ drivers/video/omap2/dss/venc.c | 6 +++---
+ 4 files changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 960083b..6d1e97c 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -560,7 +560,7 @@ static int hdmi_power_on_full(struct omap_dss_device *dssdev)
+ {
+ 	int r;
+ 	struct omap_video_timings *p;
+-	struct omap_overlay_manager *mgr = dssdev->output->manager;
++	struct omap_overlay_manager *mgr = hdmi.output.manager;
+ 	unsigned long phy;
+ 
+ 	r = hdmi_power_on_core(dssdev);
+@@ -623,7 +623,7 @@ err_pll_enable:
+ 
+ static void hdmi_power_off_full(struct omap_dss_device *dssdev)
+ {
+-	struct omap_overlay_manager *mgr = dssdev->output->manager;
++	struct omap_overlay_manager *mgr = hdmi.output.manager;
+ 
+ 	dss_mgr_disable(mgr);
+ 
+@@ -720,7 +720,7 @@ bool omapdss_hdmi_detect(void)
+ 
+ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
+ {
+-	struct omap_dss_output *out = dssdev->output;
++	struct omap_dss_output *out = &hdmi.output;
+ 	int r = 0;
+ 
+ 	DSSDBG("ENTER hdmi_display_enable\n");
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 1ff221e..cfcb52f 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -312,7 +312,7 @@ static int rfbi_transfer_area(struct omap_dss_device *dssdev,
+ {
+ 	u32 l;
+ 	int r;
+-	struct omap_overlay_manager *mgr = dssdev->output->manager;
++	struct omap_overlay_manager *mgr = rfbi.output.manager;
+ 	u16 width = rfbi.timings.x_res;
+ 	u16 height = rfbi.timings.y_res;
+ 
+@@ -852,7 +852,7 @@ static void rfbi_dump_regs(struct seq_file *s)
+ 
+ static void rfbi_config_lcd_manager(struct omap_dss_device *dssdev)
+ {
+-	struct omap_overlay_manager *mgr = dssdev->output->manager;
++	struct omap_overlay_manager *mgr = rfbi.output.manager;
+ 	struct dss_lcd_mgr_config mgr_config;
+ 
+ 	mgr_config.io_pad_mode = DSS_IO_PAD_MODE_RFBI;
+@@ -890,7 +890,7 @@ static void rfbi_config_lcd_manager(struct omap_dss_device *dssdev)
+ 
+ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
+ {
+-	struct omap_dss_output *out = dssdev->output;
++	struct omap_dss_output *out = &rfbi.output;
+ 	int r;
+ 
+ 	if (out = NULL || out->manager = NULL) {
+@@ -933,7 +933,7 @@ EXPORT_SYMBOL(omapdss_rfbi_display_enable);
+ 
+ void omapdss_rfbi_display_disable(struct omap_dss_device *dssdev)
+ {
+-	struct omap_dss_output *out = dssdev->output;
++	struct omap_dss_output *out = &rfbi.output;
+ 
+ 	dss_mgr_unregister_framedone_handler(out->manager,
+ 			framedone_callback, NULL);
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 9801a6e..e723687 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -112,7 +112,7 @@ static int sdi_calc_clock_div(unsigned long pclk,
+ 
+ static void sdi_config_lcd_manager(struct omap_dss_device *dssdev)
+ {
+-	struct omap_overlay_manager *mgr = dssdev->output->manager;
++	struct omap_overlay_manager *mgr = sdi.output.manager;
+ 
+ 	sdi.mgr_config.io_pad_mode = DSS_IO_PAD_MODE_BYPASS;
+ 
+@@ -127,7 +127,7 @@ static void sdi_config_lcd_manager(struct omap_dss_device *dssdev)
+ 
+ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+ {
+-	struct omap_dss_output *out = dssdev->output;
++	struct omap_dss_output *out = &sdi.output;
+ 	struct omap_video_timings *t = &sdi.timings;
+ 	struct dss_clock_info dss_cinfo;
+ 	struct dispc_clock_info dispc_cinfo;
+@@ -224,7 +224,7 @@ EXPORT_SYMBOL(omapdss_sdi_display_enable);
+ 
+ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev)
+ {
+-	struct omap_overlay_manager *mgr = dssdev->output->manager;
++	struct omap_overlay_manager *mgr = sdi.output.manager;
+ 
+ 	dss_mgr_disable(mgr);
+ 
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index f484b9f..af404b4 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -429,7 +429,7 @@ static const struct venc_config *venc_timings_to_config(
+ 
+ static int venc_power_on(struct omap_dss_device *dssdev)
+ {
+-	struct omap_overlay_manager *mgr = dssdev->output->manager;
++	struct omap_overlay_manager *mgr = venc.output.manager;
+ 	u32 l;
+ 	int r;
+ 
+@@ -480,7 +480,7 @@ err0:
+ 
+ static void venc_power_off(struct omap_dss_device *dssdev)
+ {
+-	struct omap_overlay_manager *mgr = dssdev->output->manager;
++	struct omap_overlay_manager *mgr = venc.output.manager;
+ 
+ 	venc_write_reg(VENC_OUTPUT_CONTROL, 0);
+ 	dss_set_dac_pwrdn_bgz(0);
+@@ -500,7 +500,7 @@ unsigned long venc_get_pixel_clock(void)
+ 
+ int omapdss_venc_display_enable(struct omap_dss_device *dssdev)
+ {
+-	struct omap_dss_output *out = dssdev->output;
++	struct omap_dss_output *out = &venc.output;
+ 	int r;
+ 
+ 	DSSDBG("venc_display_enable\n");
+-- 
+1.8.1.2
+

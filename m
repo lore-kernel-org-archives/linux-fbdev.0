@@ -1,49 +1,155 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Mon, 20 May 2013 15:25:46 +0000
-Subject: Re: [PATCH V2] video: implement a simple framebuffer driver
-Message-Id: <519A407A.4040006@wwwdotorg.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:34:31 +0000
+Subject: [PATCH 10/32] OMAPDSS: split overlay manager creation
+Message-Id: <1369906493-27538-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1365043183-28905-1-git-send-email-swarren@wwwdotorg.org>
- <CAAVeFuJ5q4Y0QtvJX2iVmq_O2ofs1B9=MB_aA8VdcEBdM4zf2Q@mail.gmail.com>
-In-Reply-To: <CAAVeFuJ5q4Y0QtvJX2iVmq_O2ofs1B9=MB_aA8VdcEBdM4zf2Q@mail.gmail.com>
+References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 05/18/2013 04:29 AM, Alexandre Courbot wrote:
-> On Thu, Apr 4, 2013 at 11:39 AM, Stephen Warren <swarren@wwwdotorg.org> wrote:
->> +struct simplefb_format {
->> +       const char *name;
->> +       u32 bits_per_pixel;
->> +       struct fb_bitfield red;
->> +       struct fb_bitfield green;
->> +       struct fb_bitfield blue;
->> +       struct fb_bitfield transp;
->> +};
->> +
->> +struct simplefb_format simplefb_formats[] = {
->> +       { "r5g6b5", 16, {11, 5}, {5, 6}, {0, 5}, {0, 0} },
->> +};
-> 
-> I have been adding a few extra formats to this list, and I wonder if
-> this could not simply be turned into a function that would directly
-> convert the name string into the corresponding right format. The
-> mapping between name and format seems to be a 1:1 and this would
-> probably avoid errors in the future. I'm especially thinking about
-> color order here - I started adding a mode that reads
-> 
->     { "r8g8b8a8", 32, {0, 8}, {8, 8}, {16, 8}, {24, 8} },
-> 
-> while it should probably be called "a8b8g8r8" as the order of colors
-> is not the same as your r5g6b5.
-> 
-> I can submit a patch if there is no issue with that idea.
+Split the function that creates overlay manager structs into two: one
+that creates just the structs, and one that creates the sysfs files for
+the manager.
 
-I chose r5g6b5 rather than rgb565 specifically to make that format
-trivially name machine-parsable. So, I'm not opposed to converting that
-table to code. I'm not 100% sure if it's worth it or necessary by the
-time we get to just 2 formats in the array, but I don't see any big
-disadvantage, so why not. The DT binding documentation might want
-enhancing with a more general description of how formats should be
-represented if this is implemented.
+This will help us use the overlay manager structs with omapdrm in the
+following patches, while still leaving the sysfs files out.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/apply.c         |  9 ++++++---
+ drivers/video/omap2/dss/dss.h           |  6 ++++--
+ drivers/video/omap2/dss/manager-sysfs.c |  2 ++
+ drivers/video/omap2/dss/manager.c       | 29 ++++++++++++++++++++++-------
+ 4 files changed, 34 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index b84bd99..74d1d00 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -1577,7 +1577,8 @@ int omapdss_compat_init(void)
+ 
+ 	apply_init_priv();
+ 
+-	dss_init_overlay_managers(pdev);
++	dss_init_overlay_managers();
++	dss_init_overlay_managers_sysfs(pdev);
+ 	dss_init_overlays(pdev);
+ 
+ 	for (i = 0; i < omap_dss_get_num_overlay_managers(); i++) {
+@@ -1640,7 +1641,8 @@ err_disp_sysfs:
+ 	dss_uninstall_mgr_ops();
+ 
+ err_mgr_ops:
+-	dss_uninit_overlay_managers(pdev);
++	dss_uninit_overlay_managers_sysfs(pdev);
++	dss_uninit_overlay_managers();
+ 	dss_uninit_overlays(pdev);
+ 
+ 	compat_refcnt--;
+@@ -1668,7 +1670,8 @@ void omapdss_compat_uninit(void)
+ 
+ 	dss_uninstall_mgr_ops();
+ 
+-	dss_uninit_overlay_managers(pdev);
++	dss_uninit_overlay_managers_sysfs(pdev);
++	dss_uninit_overlay_managers();
+ 	dss_uninit_overlays(pdev);
+ out:
+ 	mutex_unlock(&compat_init_lock);
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 8475893..7964d3b 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -194,8 +194,10 @@ void display_uninit_sysfs(struct platform_device *pdev,
+ 		struct omap_dss_device *dssdev);
+ 
+ /* manager */
+-int dss_init_overlay_managers(struct platform_device *pdev);
+-void dss_uninit_overlay_managers(struct platform_device *pdev);
++int dss_init_overlay_managers(void);
++void dss_uninit_overlay_managers(void);
++int dss_init_overlay_managers_sysfs(struct platform_device *pdev);
++void dss_uninit_overlay_managers_sysfs(struct platform_device *pdev);
+ int dss_mgr_simple_check(struct omap_overlay_manager *mgr,
+ 		const struct omap_overlay_manager_info *info);
+ int dss_mgr_check_timings(struct omap_overlay_manager *mgr,
+diff --git a/drivers/video/omap2/dss/manager-sysfs.c b/drivers/video/omap2/dss/manager-sysfs.c
+index 5104681..72784b3 100644
+--- a/drivers/video/omap2/dss/manager-sysfs.c
++++ b/drivers/video/omap2/dss/manager-sysfs.c
+@@ -511,4 +511,6 @@ void dss_manager_kobj_uninit(struct omap_overlay_manager *mgr)
+ {
+ 	kobject_del(&mgr->kobj);
+ 	kobject_put(&mgr->kobj);
++
++	memset(&mgr->kobj, 0, sizeof(mgr->kobj));
+ }
+diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+index 2551eaa..1aac9b4 100644
+--- a/drivers/video/omap2/dss/manager.c
++++ b/drivers/video/omap2/dss/manager.c
+@@ -36,9 +36,9 @@
+ static int num_managers;
+ static struct omap_overlay_manager *managers;
+ 
+-int dss_init_overlay_managers(struct platform_device *pdev)
++int dss_init_overlay_managers(void)
+ {
+-	int i, r;
++	int i;
+ 
+ 	num_managers = dss_feat_get_num_mgrs();
+ 
+@@ -76,6 +76,17 @@ int dss_init_overlay_managers(struct platform_device *pdev)
+ 			dss_feat_get_supported_outputs(mgr->id);
+ 
+ 		INIT_LIST_HEAD(&mgr->overlays);
++	}
++
++	return 0;
++}
++
++int dss_init_overlay_managers_sysfs(struct platform_device *pdev)
++{
++	int i, r;
++
++	for (i = 0; i < num_managers; ++i) {
++		struct omap_overlay_manager *mgr = &managers[i];
+ 
+ 		r = dss_manager_kobj_init(mgr, pdev);
+ 		if (r)
+@@ -85,18 +96,22 @@ int dss_init_overlay_managers(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-void dss_uninit_overlay_managers(struct platform_device *pdev)
++void dss_uninit_overlay_managers(void)
++{
++	kfree(managers);
++	managers = NULL;
++	num_managers = 0;
++}
++
++void dss_uninit_overlay_managers_sysfs(struct platform_device *pdev)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < num_managers; ++i) {
+ 		struct omap_overlay_manager *mgr = &managers[i];
++
+ 		dss_manager_kobj_uninit(mgr);
+ 	}
+-
+-	kfree(managers);
+-	managers = NULL;
+-	num_managers = 0;
+ }
+ 
+ int omap_dss_get_num_overlay_managers(void)
+-- 
+1.8.1.2
+

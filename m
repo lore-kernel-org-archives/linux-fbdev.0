@@ -1,48 +1,96 @@
-From: Tomi Valkeinen <tomi.valkeinen@iki.fi>
-Date: Wed, 08 May 2013 06:57:24 +0000
-Subject: Re: [PATCH 0/4] drivers: video: Optimisations for the ssd1307fb driver
-Message-Id: <5189F754.1030402@iki.fi>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:34:43 +0000
+Subject: [PATCH 22/32] OMAPDSS: use the panel list in omap_dss_get_next_device
+Message-Id: <1369906493-27538-23-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366624945-5708-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1366624945-5708-1-git-send-email-maxime.ripard@free-electrons.com>
+References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 22/04/13 13:02, Maxime Ripard wrote:
-> Hi everyone,
-> 
-> This is a patchset to improve significantly (by an order of magnitude)
-> the refreshing time of the SSD1306 and SSD1307.
-> 
-> We do so by sending the pixels by batches, instead of 8 at a time,
-> combined with some additionnal features found on these controllers
-> that allows to send a whole screen content at once.
-> 
-> This obviously removes the tearing effect that was previously seen
-> with these controllers.
-> 
-> This patchset depends on the "Add support for the Solomon SSD1306 OLED
-> Controller" I sent previously.
-> 
-> Thanks,
-> Maxime
-> 
-> Maxime Ripard (4):
->   ARM: cfa10036: dt: Change i2c0 clock frequency
->   ssd1307fb: Rework the communication functions
->   ssd1307fb: Speed up the communication with the controller
->   ssd1307fb: Make use of horizontal addressing mode
-> 
->  arch/arm/boot/dts/imx28-cfa10036.dts |    1 +
->  drivers/video/ssd1307fb.c            |  123 ++++++++++++++++++++++++----------
->  2 files changed, 89 insertions(+), 35 deletions(-)
-> 
+omap_dss_get_next_device() uses the dss bus to iterate over the
+displays. This patch changes omap_dss_get_next_device() to use the new
+panel list instead.
 
-I've taken the patches 2-4 into fbdev 3.11 branch. The first patch "ARM:
-cfa10036: dt: Change i2c0 clock frequency" should preferably go through
-arch tree.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/display.c | 54 ++++++++++++++++++++++++++++-----------
+ 1 file changed, 39 insertions(+), 15 deletions(-)
 
- Tomi
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index 1c175a4..ba83ec3 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -191,27 +191,51 @@ void omap_dss_put_device(struct omap_dss_device *dssdev)
+ }
+ EXPORT_SYMBOL(omap_dss_put_device);
+ 
+-/* ref count of the found device is incremented. ref count
+- * of from-device is decremented. */
++/*
++ * ref count of the found device is incremented.
++ * ref count of from-device is decremented.
++ */
+ struct omap_dss_device *omap_dss_get_next_device(struct omap_dss_device *from)
+ {
+-	struct device *dev;
+-	struct device *dev_start = NULL;
+-	struct omap_dss_device *dssdev = NULL;
++	struct list_head *l;
++	struct omap_dss_device *dssdev;
++
++	mutex_lock(&panel_list_mutex);
+ 
+-	int match(struct device *dev, void *data)
+-	{
+-		return 1;
++	if (list_empty(&panel_list)) {
++		dssdev = NULL;
++		goto out;
+ 	}
+ 
+-	if (from)
+-		dev_start = &from->dev;
+-	dev = bus_find_device(dss_get_bus(), dev_start, NULL, match);
+-	if (dev)
+-		dssdev = to_dss_device(dev);
+-	if (from)
+-		put_device(&from->dev);
++	if (from = NULL) {
++		dssdev = list_first_entry(&panel_list, struct omap_dss_device,
++				panel_list);
++		omap_dss_get_device(dssdev);
++		goto out;
++	}
++
++	omap_dss_put_device(from);
++
++	list_for_each(l, &panel_list) {
++		dssdev = list_entry(l, struct omap_dss_device, panel_list);
++		if (dssdev = from) {
++			if (list_is_last(l, &panel_list)) {
++				dssdev = NULL;
++				goto out;
++			}
++
++			dssdev = list_entry(l->next, struct omap_dss_device,
++					panel_list);
++			omap_dss_get_device(dssdev);
++			goto out;
++		}
++	}
+ 
++	WARN(1, "'from' dssdev not found\n");
++
++	dssdev = NULL;
++out:
++	mutex_unlock(&panel_list_mutex);
+ 	return dssdev;
+ }
+ EXPORT_SYMBOL(omap_dss_get_next_device);
+-- 
+1.8.1.2
 

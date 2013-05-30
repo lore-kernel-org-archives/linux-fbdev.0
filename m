@@ -1,79 +1,87 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Mon, 13 May 2013 23:58:48 +0000
-Subject: [PATCH v3 9/9] drm: Don't leak phys_wc "handles" to userspace
-Message-Id: <49cb9bfb3edeaf86ec659f1722893ddbd31075c4.1368485053.git.luto@amacapital.net>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:34:39 +0000
+Subject: [PATCH 18/32] OMAPDSS: VENC: clean up regulator init
+Message-Id: <1369906493-27538-19-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1368485053.git.luto@amacapital.net>
-In-Reply-To: <cover.1368485053.git.luto@amacapital.net>
+References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-I didn't fix this in the earlier patch -- it would have broken the
-build due to the now-deleted garbage in drm_os_linux.h.
+Clean up the VENC driver's regulator init to remove the (unused)
+omap_dss_device parameter, renaming the function to a more sensible
+name, and making the code slightly clearer.
 
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/gpu/drm/drm_bufs.c  |  9 +++++++++
- drivers/gpu/drm/drm_ioctl.c | 15 ++++++++++++++-
- 2 files changed, 23 insertions(+), 1 deletion(-)
+ drivers/video/omap2/dss/venc.c | 32 ++++++++++++++------------------
+ 1 file changed, 14 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_bufs.c b/drivers/gpu/drm/drm_bufs.c
-index 0190fce..5a4dbb4 100644
---- a/drivers/gpu/drm/drm_bufs.c
-+++ b/drivers/gpu/drm/drm_bufs.c
-@@ -414,6 +414,15 @@ int drm_addmap_ioctl(struct drm_device *dev, void *data,
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 7b2e3ae..f484b9f 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -633,23 +633,22 @@ void omapdss_venc_invert_vid_out_polarity(struct omap_dss_device *dssdev,
+ 	mutex_unlock(&venc.venc_lock);
+ }
  
- 	/* avoid a warning on 64-bit, this casting isn't very nice, but the API is set so too late */
- 	map->handle = (void *)(unsigned long)maplist->user_token;
-+
-+	/*
-+	 * It appears that there are no users of this value whatsoever --
-+	 * drmAddMap just discards it.  Let's not encourage its use.
-+	 * (Keeping drm_addmap_core's returned mtrr value would be wrong --
-+	 *  it's not a real mtrr index anymore.)
-+	 */
-+	map->mtrr = -1;
+-static int venc_init_display(struct omap_dss_device *dssdev)
++static int venc_init_regulator(void)
+ {
+-	DSSDBG("init_display\n");
++	struct regulator *vdda_dac;
+ 
+-	if (venc.vdda_dac_reg = NULL) {
+-		struct regulator *vdda_dac;
+-
+-		vdda_dac = regulator_get(&venc.pdev->dev, "vdda_dac");
++	if (venc.vdda_dac_reg != NULL)
++		return 0;
+ 
+-		if (IS_ERR(vdda_dac)) {
+-			DSSERR("can't get VDDA_DAC regulator\n");
+-			return PTR_ERR(vdda_dac);
+-		}
++	vdda_dac = regulator_get(&venc.pdev->dev, "vdda_dac");
+ 
+-		venc.vdda_dac_reg = vdda_dac;
++	if (IS_ERR(vdda_dac)) {
++		DSSERR("can't get VDDA_DAC regulator\n");
++		return PTR_ERR(vdda_dac);
+ 	}
+ 
++	venc.vdda_dac_reg = vdda_dac;
 +
  	return 0;
  }
  
-diff --git a/drivers/gpu/drm/drm_ioctl.c b/drivers/gpu/drm/drm_ioctl.c
-index e77bd8b..ffd7a7b 100644
---- a/drivers/gpu/drm/drm_ioctl.c
-+++ b/drivers/gpu/drm/drm_ioctl.c
-@@ -38,6 +38,9 @@
+@@ -765,19 +764,16 @@ static int venc_probe_pdata(struct platform_device *vencdev)
+ 	if (!plat_dssdev)
+ 		return 0;
  
- #include <linux/pci.h>
- #include <linux/export.h>
-+#ifdef CONFIG_X86
-+#include <asm/mtrr.h>
-+#endif
- 
- /**
-  * Get the bus id.
-@@ -181,7 +184,17 @@ int drm_getmap(struct drm_device *dev, void *data,
- 	map->type = r_list->map->type;
- 	map->flags = r_list->map->flags;
- 	map->handle = (void *)(unsigned long) r_list->user_token;
--	map->mtrr = r_list->map->mtrr;
++	r = venc_init_regulator();
++	if (r)
++		return r;
 +
-+#ifdef CONFIG_X86
-+	/*
-+	 * There appears to be exactly one user of the mtrr index: dritest.
-+	 * It's easy enough to keep it working on non-PAT systems.
-+	 */
-+	map->mtrr = phys_wc_to_mtrr_index(r_list->map->mtrr);
-+#else
-+	map->mtrr = -1;
-+#endif
-+
- 	mutex_unlock(&dev->struct_mutex);
+ 	dssdev = dss_alloc_and_init_device(&vencdev->dev);
+ 	if (!dssdev)
+ 		return -ENOMEM;
  
- 	return 0;
+ 	dss_copy_device_pdata(dssdev, plat_dssdev);
+ 
+-	r = venc_init_display(dssdev);
+-	if (r) {
+-		DSSERR("device %s init failed: %d\n", dssdev->name, r);
+-		dss_put_device(dssdev);
+-		return r;
+-	}
+-
+ 	r = omapdss_output_set_device(&venc.output, dssdev);
+ 	if (r) {
+ 		DSSERR("failed to connect output to new device: %s\n",
 -- 
-1.8.1.4
+1.8.1.2
 

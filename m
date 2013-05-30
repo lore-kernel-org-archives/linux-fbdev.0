@@ -1,62 +1,96 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:34:34 +0000
-Subject: [PATCH 13/32] OMAPDSS: CORE: use devm_regulator_get
-Message-Id: <1369906493-27538-14-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:36:19 +0000
+Subject: [PATCH 26/27] ARM: OMAP: add vdds_dsi supply for dpi.0
+Message-Id: <1369906580-27585-27-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Use devm_regulator_get() instead of regulator_get() to simplify code.
+DPI driver gets currently the vdds_dsi regulator via omapdss device.
+This is not correct, and we'll change the DPI driver to get the
+regulator directly.
+
+This patch changes the relevant board files to add vdds_dsi supply for
+dpi.0 device.
+
+Note that the vdds_dsi supply for omapdss device is still left there, as
+the current display driver uses it. When both the board files and the
+display driver has been changed, we can remove the unused supply.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/core.c | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+ arch/arm/mach-omap2/board-cm-t35.c       | 1 +
+ arch/arm/mach-omap2/board-devkit8000.c   | 1 +
+ arch/arm/mach-omap2/board-ldp.c          | 1 +
+ arch/arm/mach-omap2/board-omap3pandora.c | 1 +
+ arch/arm/mach-omap2/twl-common.c         | 1 +
+ 5 files changed, 5 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index 4bd8f79..f64d0ac 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -80,7 +80,7 @@ struct regulator *dss_get_vdds_dsi(void)
- 	if (core.vdds_dsi_reg != NULL)
- 		return core.vdds_dsi_reg;
+diff --git a/arch/arm/mach-omap2/board-cm-t35.c b/arch/arm/mach-omap2/board-cm-t35.c
+index ce00968..d4622ed 100644
+--- a/arch/arm/mach-omap2/board-cm-t35.c
++++ b/arch/arm/mach-omap2/board-cm-t35.c
+@@ -293,6 +293,7 @@ static struct regulator_consumer_supply cm_t35_vsim_supply[] = {
+ static struct regulator_consumer_supply cm_t35_vio_supplies[] = {
+ 	REGULATOR_SUPPLY("vcc", "spi1.0"),
+ 	REGULATOR_SUPPLY("vdds_dsi", "omapdss"),
++	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dpi.0"),
+ 	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dsi.0"),
+ };
  
--	reg = regulator_get(&core.pdev->dev, "vdds_dsi");
-+	reg = devm_regulator_get(&core.pdev->dev, "vdds_dsi");
- 	if (!IS_ERR(reg))
- 		core.vdds_dsi_reg = reg;
+diff --git a/arch/arm/mach-omap2/board-devkit8000.c b/arch/arm/mach-omap2/board-devkit8000.c
+index 5764205..f1d91ba 100644
+--- a/arch/arm/mach-omap2/board-devkit8000.c
++++ b/arch/arm/mach-omap2/board-devkit8000.c
+@@ -222,6 +222,7 @@ static struct twl4030_gpio_platform_data devkit8000_gpio_data = {
  
-@@ -94,7 +94,7 @@ struct regulator *dss_get_vdds_sdi(void)
- 	if (core.vdds_sdi_reg != NULL)
- 		return core.vdds_sdi_reg;
+ static struct regulator_consumer_supply devkit8000_vpll1_supplies[] = {
+ 	REGULATOR_SUPPLY("vdds_dsi", "omapdss"),
++	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dpi.0"),
+ 	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dsi.0"),
+ };
  
--	reg = regulator_get(&core.pdev->dev, "vdds_sdi");
-+	reg = devm_regulator_get(&core.pdev->dev, "vdds_sdi");
- 	if (!IS_ERR(reg))
- 		core.vdds_sdi_reg = reg;
+diff --git a/arch/arm/mach-omap2/board-ldp.c b/arch/arm/mach-omap2/board-ldp.c
+index 3dbc881..62e4f70 100644
+--- a/arch/arm/mach-omap2/board-ldp.c
++++ b/arch/arm/mach-omap2/board-ldp.c
+@@ -272,6 +272,7 @@ static struct regulator_init_data ldp_vaux1 = {
  
-@@ -654,16 +654,6 @@ static int __init omap_dss_init(void)
+ static struct regulator_consumer_supply ldp_vpll2_supplies[] = {
+ 	REGULATOR_SUPPLY("vdds_dsi", "omapdss"),
++	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dpi.0"),
+ 	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dsi.0"),
+ };
  
- static void __exit omap_dss_exit(void)
- {
--	if (core.vdds_dsi_reg != NULL) {
--		regulator_put(core.vdds_dsi_reg);
--		core.vdds_dsi_reg = NULL;
--	}
--
--	if (core.vdds_sdi_reg != NULL) {
--		regulator_put(core.vdds_sdi_reg);
--		core.vdds_sdi_reg = NULL;
--	}
--
- 	omap_dss_unregister_drivers();
+diff --git a/arch/arm/mach-omap2/board-omap3pandora.c b/arch/arm/mach-omap2/board-omap3pandora.c
+index 28133d5..b1547a0 100644
+--- a/arch/arm/mach-omap2/board-omap3pandora.c
++++ b/arch/arm/mach-omap2/board-omap3pandora.c
+@@ -343,6 +343,7 @@ static struct regulator_consumer_supply pandora_vmmc3_supply[] = {
+ static struct regulator_consumer_supply pandora_vdds_supplies[] = {
+ 	REGULATOR_SUPPLY("vdds_sdi", "omapdss"),
+ 	REGULATOR_SUPPLY("vdds_dsi", "omapdss"),
++	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dpi.0"),
+ 	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dsi.0"),
+ };
  
- 	omap_dss_bus_unregister();
+diff --git a/arch/arm/mach-omap2/twl-common.c b/arch/arm/mach-omap2/twl-common.c
+index 51e138c..c05898f 100644
+--- a/arch/arm/mach-omap2/twl-common.c
++++ b/arch/arm/mach-omap2/twl-common.c
+@@ -140,6 +140,7 @@ static struct regulator_init_data omap3_vdac_idata = {
+ 
+ static struct regulator_consumer_supply omap3_vpll2_supplies[] = {
+ 	REGULATOR_SUPPLY("vdds_dsi", "omapdss"),
++	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dpi.0"),
+ 	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dsi.0"),
+ };
+ 
 -- 
 1.8.1.2
 

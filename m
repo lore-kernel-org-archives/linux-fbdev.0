@@ -1,57 +1,155 @@
-From: Prabhakar Lad <prabhakar.csengg@gmail.com>
-Date: Fri, 03 May 2013 10:27:44 +0000
-Subject: Re: [PATCH 0/6] Davinci fbdev driver and enable it for DMx platform
-Message-Id: <CA+V-a8tM=VxvCt5dvbLSJz-pz7OS88QaHJ9r_Y+ysxP_JUzn2Q@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:34:36 +0000
+Subject: [PATCH 15/32] OMAPDSS: DPI: cleanup pll & regulator init
+Message-Id: <1369906493-27538-16-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366804808-22720-1-git-send-email-prabhakar.csengg@gmail.com>
- <1780031.B4OAypccep@avalon>
- <CA+V-a8sLD2dP1RLb8ibZDOsLCP8hhMNUTr-zzU1zx_2ALDaDrg@mail.gmail.com>
- <51838994.7070805@ti.com>
-In-Reply-To: <51838994.7070805@ti.com>
+References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Fri, May 3, 2013 at 3:25 PM, Sekhar Nori <nsekhar@ti.com> wrote:
-> On 4/26/2013 11:16 AM, Prabhakar Lad wrote:
->> Hi Laurent,
->>
->> On Thu, Apr 25, 2013 at 2:32 AM, Laurent Pinchart
->> <laurent.pinchart@ideasonboard.com> wrote:
->>> Hi Prabhakar,
->>>
->>> Thank you for the patch.
->>>
->>> On Wednesday 24 April 2013 17:30:02 Prabhakar Lad wrote:
->>>> From: Lad, Prabhakar <prabhakar.csengg@gmail.com>
->>>>
->>>> This patch series adds an fbdev driver for Texas
->>>> Instruments Davinci SoC.The display subsystem consists
->>>> of OSD and VENC, with OSD supporting 2 RGb planes and
->>>> 2 video planes.
->>>> http://focus.ti.com/general/docs/lit/
->>>> getliterature.tsp?literatureNumber=sprue37d&fileType=pdf
->>>>
->>>> A good amount of the OSD and VENC enabling code is
->>>> present in the kernel, and this patch series adds the
->>>> fbdev interface.
->>>>
->>>> The fbdev driver exports 4 nodes representing each
->>>> plane to the user - from fb0 to fb3.
->>>
->>> The obvious question is: why not a KMS driver instead ? :-)
->>>
->> I did go through the KMS model (thanks for pointing to your work and the video)
->> and it looks like this would require a fair amount of development, at this point
->> of time I would go with the current implementation and revisit on KMS model
->> at later point of time.
->
-> But I doubt you will be able to sneak a new fbdev driver through. Last
-> time I heard, Andrew is only taking in fixes not new features.
->
-Then we have no choice left and go with KMS driver itself though it would take
-some time since KMS is a new inclusion into DRM.
+Split regulator and DSI PLL init code to their own functions for
+clarity.
 
-Regards,
---Prabhakar
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dpi.c | 100 ++++++++++++++++++++++--------------------
+ 1 file changed, 53 insertions(+), 47 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 43f6b26..66ba9a6 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -545,6 +545,53 @@ static int dpi_verify_dsi_pll(struct platform_device *dsidev)
+ 	return 0;
+ }
+ 
++static int dpi_init_regulator(void)
++{
++	struct regulator *vdds_dsi;
++
++	if (!dss_has_feature(FEAT_DPI_USES_VDDS_DSI))
++		return 0;
++
++	if (dpi.vdds_dsi_reg)
++		return 0;
++
++	vdds_dsi = dss_get_vdds_dsi();
++
++	if (!IS_ERR(vdds_dsi)) {
++		dpi.vdds_dsi_from_core = true;
++		dpi.vdds_dsi_reg = vdds_dsi;
++		return 0;
++	}
++
++	vdds_dsi = regulator_get(&dpi.pdev->dev, "vdds_dsi");
++	if (!IS_ERR(vdds_dsi)) {
++		dpi.vdds_dsi_from_core = false;
++		dpi.vdds_dsi_reg = vdds_dsi;
++		return 0;
++	}
++
++	return PTR_ERR(vdds_dsi);
++}
++
++static void dpi_init_pll(void)
++{
++	struct platform_device *dsidev;
++
++	if (dpi.dsidev)
++		return;
++
++	dsidev = dpi_get_dsidev(dpi.output.dispc_channel);
++	if (!dsidev)
++		return;
++
++	if (dpi_verify_dsi_pll(dsidev)) {
++		DSSWARN("DSI PLL not operational\n");
++		return;
++	}
++
++	dpi.dsidev = dsidev;
++}
++
+ /*
+  * Return a hardcoded channel for the DPI output. This should work for
+  * current use cases, but this can be later expanded to either resolve
+@@ -575,46 +622,6 @@ static enum omap_channel dpi_get_channel(void)
+ 	}
+ }
+ 
+-static int dpi_init_display(struct omap_dss_device *dssdev)
+-{
+-	struct platform_device *dsidev;
+-
+-	DSSDBG("init_display\n");
+-
+-	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI) &&
+-					dpi.vdds_dsi_reg = NULL) {
+-		struct regulator *vdds_dsi;
+-
+-		vdds_dsi = dss_get_vdds_dsi();
+-		if (IS_ERR(vdds_dsi)) {
+-			vdds_dsi = regulator_get(&dpi.pdev->dev, "vdds_dsi");
+-			if (IS_ERR(vdds_dsi)) {
+-				DSSERR("can't get VDDS_DSI regulator\n");
+-				return PTR_ERR(vdds_dsi);
+-			}
+-			dpi.vdds_dsi_from_core = false;
+-		} else {
+-			dpi.vdds_dsi_from_core = true;
+-		}
+-
+-		dpi.vdds_dsi_reg = vdds_dsi;
+-	}
+-
+-	dsidev = dpi_get_dsidev(dpi.output.dispc_channel);
+-
+-	if (dsidev && dpi_verify_dsi_pll(dsidev)) {
+-		dsidev = NULL;
+-		DSSWARN("DSI PLL not operational\n");
+-	}
+-
+-	if (dsidev)
+-		DSSDBG("using DSI PLL for DPI clock\n");
+-
+-	dpi.dsidev = dsidev;
+-
+-	return 0;
+-}
+-
+ static struct omap_dss_device *dpi_find_dssdev(struct platform_device *pdev)
+ {
+ 	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
+@@ -654,19 +661,18 @@ static int dpi_probe_pdata(struct platform_device *dpidev)
+ 	if (!plat_dssdev)
+ 		return 0;
+ 
++	r = dpi_init_regulator();
++	if (r)
++		return r;
++
++	dpi_init_pll();
++
+ 	dssdev = dss_alloc_and_init_device(&dpidev->dev);
+ 	if (!dssdev)
+ 		return -ENOMEM;
+ 
+ 	dss_copy_device_pdata(dssdev, plat_dssdev);
+ 
+-	r = dpi_init_display(dssdev);
+-	if (r) {
+-		DSSERR("device %s init failed: %d\n", dssdev->name, r);
+-		dss_put_device(dssdev);
+-		return r;
+-	}
+-
+ 	r = omapdss_output_set_device(&dpi.output, dssdev);
+ 	if (r) {
+ 		DSSERR("failed to connect output to new device: %s\n",
+-- 
+1.8.1.2
+

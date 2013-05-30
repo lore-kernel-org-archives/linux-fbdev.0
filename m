@@ -1,180 +1,199 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Date: Fri, 31 May 2013 12:55:33 +0000
-Subject: [PATCH v3 3/8] video: xilinxfb: Rename PLB_ACCESS_FLAG to BUS_ACCESS_FLAG
-Message-Id: <d160ae90d823d93efddc10b11406e7427a542175.1370004925.git.michal.simek@xilinx.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-8112-1370004955-0001"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:34:32 +0000
+Subject: [PATCH 11/32] OMAPDRM: fix overlay manager handling
+Message-Id: <1369906493-27538-12-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1370004925.git.michal.simek@xilinx.com>
-In-Reply-To: <cover.1370004925.git.michal.simek@xilinx.com>
-To: linux-kernel@vger.kernel.org
-Cc: Michal Simek <monstr@monstr.eu>, Michal Simek <michal.simek@xilinx.com>, Arnd Bergmann <arnd@arndb.de>, Timur Tabi <timur@tabi.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-
-This is a MIME GnuPG-signed message.  If you see this text, it means that
-your E-mail or Usenet software does not support MIME signed messages.
-The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
-To open this message correctly you will need to install E-mail or Usenet
-software that supports modern Internet standards.
-
---=_mimegpg-monstr-desktop-8112-1370004955-0001
-
-Using only PLB name is wrong for a long time because
-the same access functions are also used for AXI.
-s/PLB/BUS/g
-
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
----
-Changes in v3:
-- New patch in this patchset based on discussions
-
-Changes in v2: None
-
- drivers/video/xilinxfb.c | 32 ++++++++++++++++----------------
- 1 file changed, 16 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index c9b442b..d94c992 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -44,7 +44,7 @@
-
-
- /*
-- * Xilinx calls it "PLB TFT LCD Controller" though it can also be used for
-+ * Xilinx calls it "TFT LCD Controller" though it can also be used for
-  * the VGA port on the Xilinx ML40x board. This is a hardware display
-  * controller for a 640x480 resolution TFT or VGA screen.
-  *
-@@ -54,11 +54,11 @@
-  * don't start thinking about scrolling).  The second allows the LCD to
-  * be turned on or off as well as rotated 180 degrees.
-  *
-- * In case of direct PLB access the second control register will be at
-+ * In case of direct BUS access the second control register will be at
-  * an offset of 4 as compared to the DCR access where the offset is 1
-  * i.e. REG_CTRL. So this is taken care in the function
-  * xilinx_fb_out32 where it left shifts the offset 2 times in case of
-- * direct PLB access.
-+ * direct BUS access.
-  */
- #define NUM_REGS	2
- #define REG_FB_ADDR	0
-@@ -116,7 +116,7 @@ static struct fb_var_screeninfo xilinx_fb_var = {
- };
-
-
--#define PLB_ACCESS_FLAG	0x1		/* 1 = PLB, 0 = DCR */
-+#define BUS_ACCESS_FLAG		0x1 /* 1 = BUS, 0 = DCR */
-
- struct xilinxfb_drvdata {
-
-@@ -146,14 +146,14 @@ struct xilinxfb_drvdata {
- 	container_of(_info, struct xilinxfb_drvdata, info)
-
- /*
-- * The XPS TFT Controller can be accessed through PLB or DCR interface.
-+ * The XPS TFT Controller can be accessed through BUS or DCR interface.
-  * To perform the read/write on the registers we need to check on
-  * which bus its connected and call the appropriate write API.
-  */
- static void xilinx_fb_out32(struct xilinxfb_drvdata *drvdata, u32 offset,
- 				u32 val)
- {
--	if (drvdata->flags & PLB_ACCESS_FLAG)
-+	if (drvdata->flags & BUS_ACCESS_FLAG)
- 		out_be32(drvdata->regs + (offset << 2), val);
- #ifdef CONFIG_PPC_DCR
- 	else
-@@ -235,10 +235,10 @@ static int xilinxfb_assign(struct device *dev,
- 	int rc;
- 	int fbsize = pdata->xvirt * pdata->yvirt * BYTES_PER_PIXEL;
-
--	if (drvdata->flags & PLB_ACCESS_FLAG) {
-+	if (drvdata->flags & BUS_ACCESS_FLAG) {
- 		/*
- 		 * Map the control registers in if the controller
--		 * is on direct PLB interface.
-+		 * is on direct BUS interface.
- 		 */
- 		if (!request_mem_region(physaddr, 8, DRIVER_NAME)) {
- 			dev_err(dev, "Couldn't lock memory region at 0x%08lX\n",
-@@ -270,7 +270,7 @@ static int xilinxfb_assign(struct device *dev,
- 	if (!drvdata->fb_virt) {
- 		dev_err(dev, "Could not allocate frame buffer memory\n");
- 		rc = -ENOMEM;
--		if (drvdata->flags & PLB_ACCESS_FLAG)
-+		if (drvdata->flags & BUS_ACCESS_FLAG)
- 			goto err_fbmem;
- 		else
- 			goto err_region;
-@@ -323,7 +323,7 @@ static int xilinxfb_assign(struct device *dev,
- 		goto err_regfb;
- 	}
-
--	if (drvdata->flags & PLB_ACCESS_FLAG) {
-+	if (drvdata->flags & BUS_ACCESS_FLAG) {
- 		/* Put a banner in the log (for DEBUG) */
- 		dev_dbg(dev, "regs: phys=%lx, virt=%p\n", physaddr,
- 					drvdata->regs);
-@@ -348,11 +348,11 @@ err_cmap:
- 	xilinx_fb_out32(drvdata, REG_CTRL, 0);
-
- err_fbmem:
--	if (drvdata->flags & PLB_ACCESS_FLAG)
-+	if (drvdata->flags & BUS_ACCESS_FLAG)
- 		iounmap(drvdata->regs);
-
- err_map:
--	if (drvdata->flags & PLB_ACCESS_FLAG)
-+	if (drvdata->flags & BUS_ACCESS_FLAG)
- 		release_mem_region(physaddr, 8);
-
- err_region:
-@@ -384,7 +384,7 @@ static int xilinxfb_release(struct device *dev)
- 	xilinx_fb_out32(drvdata, REG_CTRL, 0);
-
- 	/* Release the resources, as allocated based on interface */
--	if (drvdata->flags & PLB_ACCESS_FLAG) {
-+	if (drvdata->flags & BUS_ACCESS_FLAG) {
- 		iounmap(drvdata->regs);
- 		release_mem_region(drvdata->regs_phys, 8);
- 	}
-@@ -423,18 +423,18 @@ static int xilinxfb_of_probe(struct platform_device *op)
- 	}
-
- 	/*
--	 * To check whether the core is connected directly to DCR or PLB
-+	 * To check whether the core is connected directly to DCR or BUS
- 	 * interface and initialize the tft_access accordingly.
- 	 */
- 	of_property_read_u32(op->dev.of_node, "xlnx,dcr-splb-slave-if",
- 			     &tft_access);
-
- 	/*
--	 * Fill the resource structure if its direct PLB interface
-+	 * Fill the resource structure if its direct BUS interface
- 	 * otherwise fill the dcr_host structure.
- 	 */
- 	if (tft_access) {
--		drvdata->flags |= PLB_ACCESS_FLAG;
-+		drvdata->flags |= BUS_ACCESS_FLAG;
- 		rc = of_address_to_resource(op->dev.of_node, 0, &res);
- 		if (rc) {
- 			dev_err(&op->dev, "invalid address\n");
---
-1.8.2.3
-
-
---=_mimegpg-monstr-desktop-8112-1370004955-0001
-Content-Type: application/pgp-signature
+References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Currently omapdrm creates crtcs, which map directly to DSS overlay
+managers, only on demand at init time. This would make it difficult to
+manage connecting the display entities in the future, as the code cannot
+just search for a suitable overlay manager.
 
-iEYEABECAAYFAlGondsACgkQykllyylKDCGAWgCeIJNaBmzCIG90xxYLx7+RwnrG
-uucAnRdXzpOhUqZl0WGHsTGAfkGIp8u2
-=x/4p
------END PGP SIGNATURE-----
+We cannot fix this the sane way, which would be to create crtcs for each
+overlay manager, because we need an overlay for each crtc. With limited
+number of overlays, that's not possible.
 
---=_mimegpg-monstr-desktop-8112-1370004955-0001--
+So the solution for now is to detach the overlay manager from the crtc.
+crtcs are still created on demand at init time, but all overlay managers
+are always initialized by the omapdss.
+
+This way we can create and connect whole display pipelines from the
+overlay manager to the display, regardless of which crtcs omapdrm would
+create.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/gpu/drm/omapdrm/omap_crtc.c | 22 +++++++++++++++-------
+ drivers/gpu/drm/omapdrm/omap_drv.c  |  2 ++
+ drivers/gpu/drm/omapdrm/omap_drv.h  |  1 +
+ drivers/video/omap2/dss/apply.c     |  3 ---
+ drivers/video/omap2/dss/dispc.c     |  4 ++++
+ 5 files changed, 22 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/gpu/drm/omapdrm/omap_crtc.c b/drivers/gpu/drm/omapdrm/omap_crtc.c
+index 79b200a..02075bf 100644
+--- a/drivers/gpu/drm/omapdrm/omap_crtc.c
++++ b/drivers/gpu/drm/omapdrm/omap_crtc.c
+@@ -40,7 +40,7 @@ struct omap_crtc {
+ 	 * mgr->id.)  Eventually this will be replaced w/ something
+ 	 * more common-panel-framework-y
+ 	 */
+-	struct omap_overlay_manager mgr;
++	struct omap_overlay_manager *mgr;
+ 
+ 	struct omap_video_timings timings;
+ 	bool enabled;
+@@ -90,6 +90,9 @@ uint32_t pipe2vbl(struct drm_crtc *crtc)
+  * job of sequencing the setup of the video pipe in the proper order
+  */
+ 
++/* ovl-mgr-id -> crtc */
++static struct omap_crtc *omap_crtcs[8];
++
+ /* we can probably ignore these until we support command-mode panels: */
+ static void omap_crtc_start_update(struct omap_overlay_manager *mgr)
+ {
+@@ -107,7 +110,7 @@ static void omap_crtc_disable(struct omap_overlay_manager *mgr)
+ static void omap_crtc_set_timings(struct omap_overlay_manager *mgr,
+ 		const struct omap_video_timings *timings)
+ {
+-	struct omap_crtc *omap_crtc = container_of(mgr, struct omap_crtc, mgr);
++	struct omap_crtc *omap_crtc = omap_crtcs[mgr->id];
+ 	DBG("%s", omap_crtc->name);
+ 	omap_crtc->timings = *timings;
+ 	omap_crtc->full_update = true;
+@@ -116,7 +119,7 @@ static void omap_crtc_set_timings(struct omap_overlay_manager *mgr,
+ static void omap_crtc_set_lcd_config(struct omap_overlay_manager *mgr,
+ 		const struct dss_lcd_mgr_config *config)
+ {
+-	struct omap_crtc *omap_crtc = container_of(mgr, struct omap_crtc, mgr);
++	struct omap_crtc *omap_crtc = omap_crtcs[mgr->id];
+ 	DBG("%s", omap_crtc->name);
+ 	dispc_mgr_set_lcd_config(omap_crtc->channel, config);
+ }
+@@ -569,7 +572,7 @@ static void omap_crtc_pre_apply(struct omap_drm_apply *apply)
+ 	} else {
+ 		if (encoder) {
+ 			omap_encoder_set_enabled(encoder, false);
+-			omap_encoder_update(encoder, &omap_crtc->mgr,
++			omap_encoder_update(encoder, omap_crtc->mgr,
+ 					&omap_crtc->timings);
+ 			omap_encoder_set_enabled(encoder, true);
+ 			omap_crtc->full_update = false;
+@@ -595,6 +598,11 @@ static const char *channel_names[] = {
+ 		[OMAP_DSS_CHANNEL_LCD2] = "lcd2",
+ };
+ 
++void omap_crtc_pre_init(void)
++{
++	dss_install_mgr_ops(&mgr_ops);
++}
++
+ /* initialize crtc */
+ struct drm_crtc *omap_crtc_init(struct drm_device *dev,
+ 		struct drm_plane *plane, enum omap_channel channel, int id)
+@@ -635,9 +643,7 @@ struct drm_crtc *omap_crtc_init(struct drm_device *dev,
+ 	omap_irq_register(dev, &omap_crtc->error_irq);
+ 
+ 	/* temporary: */
+-	omap_crtc->mgr.id = channel;
+-
+-	dss_install_mgr_ops(&mgr_ops);
++	omap_crtc->mgr = omap_dss_get_overlay_manager(channel);
+ 
+ 	/* TODO: fix hard-coded setup.. add properties! */
+ 	info = &omap_crtc->info;
+@@ -651,6 +657,8 @@ struct drm_crtc *omap_crtc_init(struct drm_device *dev,
+ 
+ 	omap_plane_install_properties(omap_crtc->plane, &crtc->base);
+ 
++	omap_crtcs[channel] = omap_crtc;
++
+ 	return crtc;
+ 
+ fail:
+diff --git a/drivers/gpu/drm/omapdrm/omap_drv.c b/drivers/gpu/drm/omapdrm/omap_drv.c
+index 691e760..f8947f9 100644
+--- a/drivers/gpu/drm/omapdrm/omap_drv.c
++++ b/drivers/gpu/drm/omapdrm/omap_drv.c
+@@ -98,6 +98,8 @@ static int omap_modeset_init(struct drm_device *dev)
+ 	int num_crtcs;
+ 	int i, id = 0;
+ 
++	omap_crtc_pre_init();
++
+ 	drm_mode_config_init(dev);
+ 
+ 	omap_drm_irq_install(dev);
+diff --git a/drivers/gpu/drm/omapdrm/omap_drv.h b/drivers/gpu/drm/omapdrm/omap_drv.h
+index 215a20d..14f17da 100644
+--- a/drivers/gpu/drm/omapdrm/omap_drv.h
++++ b/drivers/gpu/drm/omapdrm/omap_drv.h
+@@ -157,6 +157,7 @@ const struct omap_video_timings *omap_crtc_timings(struct drm_crtc *crtc);
+ enum omap_channel omap_crtc_channel(struct drm_crtc *crtc);
+ int omap_crtc_apply(struct drm_crtc *crtc,
+ 		struct omap_drm_apply *apply);
++void omap_crtc_pre_init(void);
+ struct drm_crtc *omap_crtc_init(struct drm_device *dev,
+ 		struct drm_plane *plane, enum omap_channel channel, int id);
+ 
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 74d1d00..c844071 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -1577,7 +1577,6 @@ int omapdss_compat_init(void)
+ 
+ 	apply_init_priv();
+ 
+-	dss_init_overlay_managers();
+ 	dss_init_overlay_managers_sysfs(pdev);
+ 	dss_init_overlays(pdev);
+ 
+@@ -1642,7 +1641,6 @@ err_disp_sysfs:
+ 
+ err_mgr_ops:
+ 	dss_uninit_overlay_managers_sysfs(pdev);
+-	dss_uninit_overlay_managers();
+ 	dss_uninit_overlays(pdev);
+ 
+ 	compat_refcnt--;
+@@ -1671,7 +1669,6 @@ void omapdss_compat_uninit(void)
+ 	dss_uninstall_mgr_ops();
+ 
+ 	dss_uninit_overlay_managers_sysfs(pdev);
+-	dss_uninit_overlay_managers();
+ 	dss_uninit_overlays(pdev);
+ out:
+ 	mutex_unlock(&compat_init_lock);
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index b33b016..83d7bb9 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -3710,6 +3710,8 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
+ 
+ 	dispc_runtime_put();
+ 
++	dss_init_overlay_managers();
++
+ 	dss_debugfs_create_file("dispc", dispc_dump_regs);
+ 
+ 	return 0;
+@@ -3723,6 +3725,8 @@ static int __exit omap_dispchw_remove(struct platform_device *pdev)
+ {
+ 	pm_runtime_disable(&pdev->dev);
+ 
++	dss_uninit_overlay_managers();
++
+ 	return 0;
+ }
+ 
+-- 
+1.8.1.2
+

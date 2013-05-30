@@ -1,62 +1,288 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Fri, 31 May 2013 19:42:09 +0000
-Subject: [PULL] FBDEV: some small fixes for 3.10-rc4
-Message-Id: <20130531194209.GS19468@game.jcrosoft.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:35:57 +0000
+Subject: [PATCH 04/27] ARM: OMAP: dss-common: use new display drivers
+Message-Id: <1369906580-27585-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi Linus,
+Use the new display drivers for OMAP4 Panda and OMAP4 SDP boards.
 
-	This contain some small fixes for Atmel LCDC, ps3fb and OMAPDSS
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/mach-omap2/dss-common.c | 185 +++++++++++++++++++++++----------------
+ 1 file changed, 108 insertions(+), 77 deletions(-)
 
-please pull
-The following changes since commit e4aa937ec75df0eea0bee03bffa3303ad36c986b:
+diff --git a/arch/arm/mach-omap2/dss-common.c b/arch/arm/mach-omap2/dss-common.c
+index 393aeef..17e0a08 100644
+--- a/arch/arm/mach-omap2/dss-common.c
++++ b/arch/arm/mach-omap2/dss-common.c
+@@ -25,6 +25,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/gpio.h>
++#include <linux/platform_device.h>
+ 
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+@@ -37,53 +38,76 @@
+ #define HDMI_GPIO_LS_OE 41 /* Level shifter for HDMI */
+ #define HDMI_GPIO_HPD  63 /* Hotplug detect */
+ 
+-/* Display DVI */
+ #define PANDA_DVI_TFP410_POWER_DOWN_GPIO	0
+ 
+-/* Using generic display panel */
+-static struct tfp410_platform_data omap4_dvi_panel = {
+-	.i2c_bus_num		= 3,
+-	.power_down_gpio	= PANDA_DVI_TFP410_POWER_DOWN_GPIO,
++/* DVI Connector */
++static struct connector_dvi_platform_data omap4_panda_dvi_connector_pdata = {
++	.name                   = "dvi",
++	.source                 = "tfp410.0",
++	.i2c_bus_num            = 3,
+ };
+ 
+-static struct omap_dss_device omap4_panda_dvi_device = {
+-	.type			= OMAP_DISPLAY_TYPE_DPI,
+-	.name			= "dvi",
+-	.driver_name		= "tfp410",
+-	.data			= &omap4_dvi_panel,
+-	.phy.dpi.data_lines	= 24,
+-	.channel		= OMAP_DSS_CHANNEL_LCD2,
++static struct platform_device omap4_panda_dvi_connector_device = {
++	.name                   = "connector-dvi",
++	.id                     = 0,
++	.dev.platform_data      = &omap4_panda_dvi_connector_pdata,
++};
++
++/* TFP410 DPI-to-DVI chip */
++static struct encoder_tfp410_platform_data omap4_panda_tfp410_pdata = {
++	.name                   = "tfp410.0",
++	.source                 = "dpi.0",
++	.data_lines             = 24,
++	.power_down_gpio        = PANDA_DVI_TFP410_POWER_DOWN_GPIO,
++};
++
++static struct platform_device omap4_panda_tfp410_device = {
++	.name                   = "tfp410",
++	.id                     = 0,
++	.dev.platform_data      = &omap4_panda_tfp410_pdata,
+ };
+ 
+-static struct omap_dss_hdmi_data omap4_panda_hdmi_data = {
++/* HDMI Connector */
++static struct connector_hdmi_platform_data omap4_panda_hdmi_connector_pdata = {
++	.name                   = "hdmi",
++	.source                 = "tpd12s015.0",
++};
++
++static struct platform_device omap4_panda_hdmi_connector_device = {
++	.name                   = "connector-hdmi",
++	.id                     = 0,
++	.dev.platform_data      = &omap4_panda_hdmi_connector_pdata,
++};
++
++/* TPD12S015 HDMI ESD protection & level shifter chip */
++static struct encoder_tpd12s015_platform_data omap4_panda_tpd_pdata = {
++	.name                   = "tpd12s015.0",
++	.source                 = "hdmi.0",
++
+ 	.ct_cp_hpd_gpio = HDMI_GPIO_CT_CP_HPD,
+ 	.ls_oe_gpio = HDMI_GPIO_LS_OE,
+ 	.hpd_gpio = HDMI_GPIO_HPD,
+ };
+ 
+-static struct omap_dss_device  omap4_panda_hdmi_device = {
+-	.name = "hdmi",
+-	.driver_name = "hdmi_panel",
+-	.type = OMAP_DISPLAY_TYPE_HDMI,
+-	.channel = OMAP_DSS_CHANNEL_DIGIT,
+-	.data = &omap4_panda_hdmi_data,
+-};
+-
+-static struct omap_dss_device *omap4_panda_dss_devices[] = {
+-	&omap4_panda_dvi_device,
+-	&omap4_panda_hdmi_device,
++static struct platform_device omap4_panda_tpd_device = {
++	.name                   = "tpd12s015",
++	.id                     = 0,
++	.dev.platform_data      = &omap4_panda_tpd_pdata,
+ };
+ 
+ static struct omap_dss_board_info omap4_panda_dss_data = {
+-	.num_devices	= ARRAY_SIZE(omap4_panda_dss_devices),
+-	.devices	= omap4_panda_dss_devices,
+-	.default_device	= &omap4_panda_dvi_device,
++	.default_display_name = "dvi",
+ };
+ 
+ void __init omap4_panda_display_init(void)
+ {
+ 	omap_display_init(&omap4_panda_dss_data);
+ 
++	platform_device_register(&omap4_panda_tfp410_device);
++	platform_device_register(&omap4_panda_dvi_connector_device);
++
++	platform_device_register(&omap4_panda_tpd_device);
++	platform_device_register(&omap4_panda_hdmi_connector_device);
+ 	/*
+ 	 * OMAP4460SDP/Blaze and OMAP4430 ES2.3 SDP/Blaze boards and
+ 	 * later have external pull up on the HDMI I2C lines
+@@ -109,67 +133,71 @@ void __init omap4_panda_display_init_of(void)
+ #define DISPLAY_SEL_GPIO	59	/* LCD2/PicoDLP switch */
+ #define DLP_POWER_ON_GPIO	40
+ 
+-static struct nokia_dsi_panel_data dsi1_panel = {
+-		.name		= "taal",
+-		.reset_gpio	= 102,
+-		.use_ext_te	= false,
+-		.ext_te_gpio	= 101,
+-		.esd_interval	= 0,
+-		.pin_config = {
+-			.num_pins	= 6,
+-			.pins		= { 0, 1, 2, 3, 4, 5 },
+-		},
+-};
+-
+-static struct omap_dss_device sdp4430_lcd_device = {
+-	.name			= "lcd",
+-	.driver_name		= "taal",
+-	.type			= OMAP_DISPLAY_TYPE_DSI,
+-	.data			= &dsi1_panel,
+-	.phy.dsi		= {
+-		.module		= 0,
++static struct panel_dsicm_platform_data dsi1_panel = {
++	.name		= "lcd",
++	.source		= "dsi.0",
++	.reset_gpio	= 102,
++	.use_ext_te	= false,
++	.ext_te_gpio	= 101,
++	.pin_config = {
++		.num_pins	= 6,
++		.pins		= { 0, 1, 2, 3, 4, 5 },
+ 	},
+-	.channel		= OMAP_DSS_CHANNEL_LCD,
+ };
+ 
+-static struct nokia_dsi_panel_data dsi2_panel = {
+-		.name		= "taal",
+-		.reset_gpio	= 104,
+-		.use_ext_te	= false,
+-		.ext_te_gpio	= 103,
+-		.esd_interval	= 0,
+-		.pin_config = {
+-			.num_pins	= 6,
+-			.pins		= { 0, 1, 2, 3, 4, 5 },
+-		},
++static struct platform_device sdp4430_lcd_device = {
++	.name                   = "panel-dsi-cm",
++	.id                     = 0,
++	.dev.platform_data	= &dsi1_panel,
+ };
+ 
+-static struct omap_dss_device sdp4430_lcd2_device = {
+-	.name			= "lcd2",
+-	.driver_name		= "taal",
+-	.type			= OMAP_DISPLAY_TYPE_DSI,
+-	.data			= &dsi2_panel,
+-	.phy.dsi		= {
+-
+-		.module		= 1,
++static struct panel_dsicm_platform_data dsi2_panel = {
++	.name		= "lcd2",
++	.source		= "dsi.1",
++	.reset_gpio	= 104,
++	.use_ext_te	= false,
++	.ext_te_gpio	= 103,
++	.pin_config = {
++		.num_pins	= 6,
++		.pins		= { 0, 1, 2, 3, 4, 5 },
+ 	},
+-	.channel		= OMAP_DSS_CHANNEL_LCD2,
+ };
+ 
+-static struct omap_dss_hdmi_data sdp4430_hdmi_data = {
++static struct platform_device sdp4430_lcd2_device = {
++	.name                   = "panel-dsi-cm",
++	.id                     = 1,
++	.dev.platform_data	= &dsi2_panel,
++};
++
++/* HDMI Connector */
++static struct connector_hdmi_platform_data sdp4430_hdmi_connector_pdata = {
++	.name                   = "hdmi",
++	.source                 = "tpd12s015.0",
++};
++
++static struct platform_device sdp4430_hdmi_connector_device = {
++	.name                   = "connector-hdmi",
++	.id                     = 0,
++	.dev.platform_data      = &sdp4430_hdmi_connector_pdata,
++};
++
++/* TPD12S015 HDMI ESD protection & level shifter chip */
++static struct encoder_tpd12s015_platform_data sdp4430_tpd_pdata = {
++	.name                   = "tpd12s015.0",
++	.source                 = "hdmi.0",
++
+ 	.ct_cp_hpd_gpio = HDMI_GPIO_CT_CP_HPD,
+ 	.ls_oe_gpio = HDMI_GPIO_LS_OE,
+ 	.hpd_gpio = HDMI_GPIO_HPD,
+ };
+ 
+-static struct omap_dss_device sdp4430_hdmi_device = {
+-	.name = "hdmi",
+-	.driver_name = "hdmi_panel",
+-	.type = OMAP_DISPLAY_TYPE_HDMI,
+-	.channel = OMAP_DSS_CHANNEL_DIGIT,
+-	.data = &sdp4430_hdmi_data,
++static struct platform_device sdp4430_tpd_device = {
++	.name                   = "tpd12s015",
++	.id                     = 0,
++	.dev.platform_data      = &sdp4430_tpd_pdata,
+ };
+ 
++
+ static struct picodlp_panel_data sdp4430_picodlp_pdata = {
+ 	.picodlp_adapter_id	= 2,
+ 	.emu_done_gpio		= 44,
+@@ -186,16 +214,13 @@ static struct omap_dss_device sdp4430_picodlp_device = {
+ };
+ 
+ static struct omap_dss_device *sdp4430_dss_devices[] = {
+-	&sdp4430_lcd_device,
+-	&sdp4430_lcd2_device,
+-	&sdp4430_hdmi_device,
+ 	&sdp4430_picodlp_device,
+ };
+ 
+ static struct omap_dss_board_info sdp4430_dss_data = {
+ 	.num_devices	= ARRAY_SIZE(sdp4430_dss_devices),
+ 	.devices	= sdp4430_dss_devices,
+-	.default_device	= &sdp4430_lcd_device,
++	.default_display_name = "lcd",
+ };
+ 
+ /*
+@@ -231,6 +256,12 @@ void __init omap_4430sdp_display_init(void)
+ 	omap_mux_init_gpio(HDMI_GPIO_LS_OE, OMAP_PIN_OUTPUT);
+ 	omap_mux_init_gpio(HDMI_GPIO_CT_CP_HPD, OMAP_PIN_OUTPUT);
+ 	omap_mux_init_gpio(HDMI_GPIO_HPD, OMAP_PIN_INPUT_PULLDOWN);
++
++	platform_device_register(&sdp4430_lcd_device);
++	platform_device_register(&sdp4430_lcd2_device);
++
++	platform_device_register(&sdp4430_tpd_device);
++	platform_device_register(&sdp4430_hdmi_connector_device);
+ }
+ 
+ void __init omap_4430sdp_display_init_of(void)
+-- 
+1.8.1.2
 
-  Linux 3.10-rc3 (2013-05-26 16:00:47 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/plagnioj/linux-fbdev.git tags/fbdev-for-3.10-rc4
-
-for you to fetch changes up to 56c21b53ab071feb3ce93375a563ead745fa7105:
-
-  atmel_lcdfb: blank the backlight on remove (2013-06-01 03:18:55 +0800)
-
-----------------------------------------------------------------
-fbdev: fixes for 3.10-rc4
-
-This contains some small fixes
-
-Atmel LCDC: fix blank the backlight on remove
-ps3fb: fix compile warning
-OMAPDSS: Fix crash with DT boot
-
-Signed-off-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-
-----------------------------------------------------------------
-Jean-Christophe PLAGNIOL-VILLARD (1):
-      Merge branch 'fbdev-3.10-fixes' of git://gitorious.org/linux-omap-dss2/linux into linux-fbdev/for-3.10-fixes
-
-Richard Genoud (2):
-      trivial: atmel_lcdfb: add missing error message
-      atmel_lcdfb: blank the backlight on remove
-
-Tomi Valkeinen (2):
-      fbdev/ps3fb: fix compile warning
-      OMAPDSS: Fix crash with DT boot
-
- drivers/gpu/drm/omapdrm/omap_drv.c       |    3 +++
- drivers/media/platform/omap/omap_vout.c  |    3 +++
- drivers/video/atmel_lcdfb.c              |   15 ++++++++++++---
- drivers/video/omap2/dss/core.c           |   20 +++++++++++++++++++-
- drivers/video/omap2/omapfb/omapfb-main.c |    3 +++
- drivers/video/ps3fb.c                    |    2 +-
- include/video/omapdss.h                  |    1 +
- 7 files changed, 42 insertions(+), 5 deletions(-)
-
-Brest Regards,
-J.

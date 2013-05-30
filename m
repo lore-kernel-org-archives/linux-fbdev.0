@@ -1,66 +1,224 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Fri, 03 May 2013 23:00:28 +0000
-Subject: [PATCH 0/7] Clean up write-combining MTRR addition
-Message-Id: <cover.1367621038.git.luto@amacapital.net>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:35:54 +0000
+Subject: [PATCH 01/27] OMAPDSS: public omapdss_register_output()
+Message-Id: <1369906580-27585-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Andy Lutomirski <luto@amacapital.net>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-A fair number of drivers (mostly graphics) add write-combining MTRRs.
-Most ignore errors and most add the MTRR even on PAT systems which don't
-need to use MTRRs.
+In order to allow multiple display block in a video pipeline, we need to
+give the drivers way to register themselves. For now we have
+the omapdss_register_display() which is used to register panels, and
+dss_register_output() which is used to register DSS encoders.
 
-This series adds new functions mtrr_{add,del}_wc_if_needed and
-drm_mtrr_{add,del}_wc that report errors and do nothing if PAT is
-enabled.
+This patch makes dss_register_output() public (with the name of
+omapdss_register_output), which can be used to register also external
+encoders. The distinction between register_output and register_display
+is that a "display" is an entity at the end of the videopipeline, and
+"output" is something inside the pipeline.
 
-I've only tested the radeon driver, since I don't have test hardware
-easily available for the other drivers.
+The registration and naming will be made saner in the future, but the
+current names and functions are kept to minimize changes during the dss
+device model transition.
 
-Benefits include:
- - Simpler code
- - No more complaints about MTRR conflict warnings on PAT systems
- - Eventual unexporting of the MTRR API?
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dpi.c    | 4 ++--
+ drivers/video/omap2/dss/dsi.c    | 4 ++--
+ drivers/video/omap2/dss/dss.h    | 4 ----
+ drivers/video/omap2/dss/hdmi.c   | 4 ++--
+ drivers/video/omap2/dss/output.c | 7 +++++--
+ drivers/video/omap2/dss/rfbi.c   | 4 ++--
+ drivers/video/omap2/dss/sdi.c    | 4 ++--
+ drivers/video/omap2/dss/venc.c   | 4 ++--
+ include/video/omapdss.h          | 2 ++
+ 9 files changed, 19 insertions(+), 18 deletions(-)
 
-This series eliminates about half of the mtrr_add calls in drivers/.
-
-The series is also at:
-https://git.kernel.org/cgit/linux/kernel/git/luto/linux.git/log/?h=mtrr_cleanup
-
-Andy Lutomirski (7):
-  x86: Add mtrr_{add,del}_wc_if_needed
-  drm (ast,cirrus,mgag200,nouveau,savage,vmwgfx): Rework
-    drm_mtrr_{add,del}
-  drm: Update drm_addmap and drm_mmap to use PAT WC instead of MTRRs
-  drm: Use drm_mtrr_add_wc for the AGP aperture
-  i915: Use drm_mtrr_{add,del}_wc
-  radeon: Switch to drm_mtrr_add_wc and add a missing drm_mtrr_del_wc
-  uvesafb: Clean up MTRR code
-
- Documentation/fb/uvesafb.txt           | 16 +++-----
- arch/x86/include/asm/mtrr.h            | 21 ++++++++++
- arch/x86/kernel/cpu/mtrr/main.c        | 53 +++++++++++++++++++++++++
- drivers/gpu/drm/ast/ast_ttm.c          | 14 ++-----
- drivers/gpu/drm/cirrus/cirrus_ttm.c    | 15 ++------
- drivers/gpu/drm/drm_bufs.c             | 11 ++----
- drivers/gpu/drm/drm_pci.c              |  8 ++--
- drivers/gpu/drm/drm_stub.c             | 10 +----
- drivers/gpu/drm/drm_vm.c               | 13 ++++---
- drivers/gpu/drm/i915/i915_dma.c        | 43 +++------------------
- drivers/gpu/drm/mgag200/mgag200_ttm.c  | 14 ++-----
- drivers/gpu/drm/nouveau/nouveau_ttm.c  | 13 ++-----
- drivers/gpu/drm/radeon/radeon_object.c |  5 ++-
- drivers/gpu/drm/savage/savage_bci.c    | 42 ++++++++------------
- drivers/gpu/drm/savage/savage_drv.h    |  5 +--
- drivers/gpu/drm/vmwgfx/vmwgfx_drv.c    | 10 ++---
- drivers/video/uvesafb.c                | 70 +++++++++-------------------------
- include/drm/drmP.h                     | 23 +++++------
- include/video/uvesafb.h                |  1 +
- 19 files changed, 169 insertions(+), 218 deletions(-)
-
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 0afbcd5..3299e27 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -693,14 +693,14 @@ static void dpi_init_output(struct platform_device *pdev)
+ 	out->dispc_channel = dpi_get_channel();
+ 	out->owner = THIS_MODULE;
+ 
+-	dss_register_output(out);
++	omapdss_register_output(out);
+ }
+ 
+ static void __exit dpi_uninit_output(struct platform_device *pdev)
+ {
+ 	struct omap_dss_device *out = &dpi.output;
+ 
+-	dss_unregister_output(out);
++	omapdss_unregister_output(out);
+ }
+ 
+ static int omap_dpi_probe(struct platform_device *pdev)
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 2f90019..4ecc0c1 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -5426,7 +5426,7 @@ static void dsi_init_output(struct platform_device *dsidev)
+ 	out->dispc_channel = dsi_get_channel(dsi->module_id);
+ 	out->owner = THIS_MODULE;
+ 
+-	dss_register_output(out);
++	omapdss_register_output(out);
+ }
+ 
+ static void dsi_uninit_output(struct platform_device *dsidev)
+@@ -5434,7 +5434,7 @@ static void dsi_uninit_output(struct platform_device *dsidev)
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	struct omap_dss_device *out = &dsi->output;
+ 
+-	dss_unregister_output(out);
++	omapdss_unregister_output(out);
+ }
+ 
+ /* DSI1 HW IP initialisation */
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 67a509e..902d458 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -179,10 +179,6 @@ void dss_put_device(struct omap_dss_device *dssdev);
+ void dss_copy_device_pdata(struct omap_dss_device *dst,
+ 		const struct omap_dss_device *src);
+ 
+-/* output */
+-void dss_register_output(struct omap_dss_device *out);
+-void dss_unregister_output(struct omap_dss_device *out);
+-
+ /* display */
+ int dss_suspend_all_devices(void);
+ int dss_resume_all_devices(void);
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 1a7b179..42376d1 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -1044,14 +1044,14 @@ static void hdmi_init_output(struct platform_device *pdev)
+ 	out->dispc_channel = OMAP_DSS_CHANNEL_DIGIT;
+ 	out->owner = THIS_MODULE;
+ 
+-	dss_register_output(out);
++	omapdss_register_output(out);
+ }
+ 
+ static void __exit hdmi_uninit_output(struct platform_device *pdev)
+ {
+ 	struct omap_dss_device *out = &hdmi.output;
+ 
+-	dss_unregister_output(out);
++	omapdss_unregister_output(out);
+ }
+ 
+ /* HDMI HW IP initialisation */
+diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
+index 9ad7d21..0ba168e 100644
+--- a/drivers/video/omap2/dss/output.c
++++ b/drivers/video/omap2/dss/output.c
+@@ -92,15 +92,18 @@ err:
+ }
+ EXPORT_SYMBOL(omapdss_output_unset_device);
+ 
+-void dss_register_output(struct omap_dss_device *out)
++int omapdss_register_output(struct omap_dss_device *out)
+ {
+ 	list_add_tail(&out->list, &output_list);
++	return 0;
+ }
++EXPORT_SYMBOL(omapdss_register_output);
+ 
+-void dss_unregister_output(struct omap_dss_device *out)
++void omapdss_unregister_output(struct omap_dss_device *out)
+ {
+ 	list_del(&out->list);
+ }
++EXPORT_SYMBOL(omapdss_unregister_output);
+ 
+ struct omap_dss_device *omap_dss_get_output(enum omap_dss_output_id id)
+ {
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index f18c946..fdfe6e6 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -1022,14 +1022,14 @@ static void rfbi_init_output(struct platform_device *pdev)
+ 	out->dispc_channel = OMAP_DSS_CHANNEL_LCD;
+ 	out->owner = THIS_MODULE;
+ 
+-	dss_register_output(out);
++	omapdss_register_output(out);
+ }
+ 
+ static void __exit rfbi_uninit_output(struct platform_device *pdev)
+ {
+ 	struct omap_dss_device *out = &rfbi.output;
+ 
+-	dss_unregister_output(out);
++	omapdss_unregister_output(out);
+ }
+ 
+ /* RFBI HW IP initialisation */
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 10268a2..0343d08 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -350,14 +350,14 @@ static void sdi_init_output(struct platform_device *pdev)
+ 	out->dispc_channel = OMAP_DSS_CHANNEL_LCD;
+ 	out->owner = THIS_MODULE;
+ 
+-	dss_register_output(out);
++	omapdss_register_output(out);
+ }
+ 
+ static void __exit sdi_uninit_output(struct platform_device *pdev)
+ {
+ 	struct omap_dss_device *out = &sdi.output;
+ 
+-	dss_unregister_output(out);
++	omapdss_unregister_output(out);
+ }
+ 
+ static int omap_sdi_probe(struct platform_device *pdev)
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 0deb771..291a40d 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -794,14 +794,14 @@ static void venc_init_output(struct platform_device *pdev)
+ 	out->dispc_channel = OMAP_DSS_CHANNEL_DIGIT;
+ 	out->owner = THIS_MODULE;
+ 
+-	dss_register_output(out);
++	omapdss_register_output(out);
+ }
+ 
+ static void __exit venc_uninit_output(struct platform_device *pdev)
+ {
+ 	struct omap_dss_device *out = &venc.output;
+ 
+-	dss_unregister_output(out);
++	omapdss_unregister_output(out);
+ }
+ 
+ /* VENC HW IP initialisation */
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index b2e6160..3582edf 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -793,6 +793,8 @@ struct omap_overlay_manager *omap_dss_get_overlay_manager(int num);
+ int omap_dss_get_num_overlays(void);
+ struct omap_overlay *omap_dss_get_overlay(int num);
+ 
++int omapdss_register_output(struct omap_dss_device *output);
++void omapdss_unregister_output(struct omap_dss_device *output);
+ struct omap_dss_device *omap_dss_get_output(enum omap_dss_output_id id);
+ struct omap_dss_device *omap_dss_find_output(const char *name);
+ struct omap_dss_device *omap_dss_find_output_by_node(struct device_node *node);
 -- 
-1.8.1.4
+1.8.1.2
 

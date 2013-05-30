@@ -1,113 +1,190 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:34:21 +0000
-Subject: [PATCH 00/32] OMAPDSS: dss-dev-model "base" (Part 1/2)
-Message-Id: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:35:56 +0000
+Subject: [PATCH 03/27] OMAPDSS: add platform data structs for new panel drivers
+Message-Id: <1369906580-27585-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi,
+With the new DSS device model, we'll have new panel and encoder drivers.
+This patch adds the platform data structs for all the new drivers.
 
-Here's are the first sets of patches targeting towards enabling DT for DSS and
-changing the DSS device model to be more versatile. The exact division of the
-sets of patches is still a bit open, and some splitting up for arch/driver
-changes is needed, but most likely there will be at least the following major
-sets, each based on the former one:
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ include/video/omap-panel-data.h | 150 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 150 insertions(+)
 
-- base, containing cleanups and changes that do not yet really bring bigger new
-  features
-- dev-model, implements the new DSS device model, including new panel drivers
-- dt, adds DSS DT support (not at all ready yet, although works for a few boards)
-
-The patches can be found from the following branches:
-
-git://gitorious.org/linux-omap-dss2/linux.git work/dss-dev-model-base
-git://gitorious.org/linux-omap-dss2/linux.git work/dss-dev-model
-git://gitorious.org/linux-omap-dss2/linux.git work/dss-dev-model-dt
-
-The set you are looking at is the "base" set.
-
-The "base" set shouldn't change anything from the user's point of view. It
-contains patches that do not make much sense until "dev-model" and "dt" are
-merged, but those patches should not cause any problems either. Most likely the
-"base" set is quite stable, I don't expect any changes to it.
-
- Tomi
-
-
-Tomi Valkeinen (32):
-  OMAPDSS: add pdata->default_display_name
-  OMAPDSS: only probe pdata if there's one
-  OMAPDSS: add omap_dss_find_output()
-  OMAPDSS: add omap_dss_find_output_by_node()
-  OMAPDSS: fix dss_get_ctx_loss_count for DT
-  OMAPDSS: DPI: fix regulators for DT
-  OMAPDSS: SDI: fix regulators for DT
-  OMAPDSS: clean up dss_[ovl|mgr]_get_device()
-  OMAPDSS: add helpers to get mgr or output from display
-  OMAPDSS: split overlay manager creation
-  OMAPDRM: fix overlay manager handling
-  OMAPDSS: Implement display (dis)connect support
-  OMAPDSS: CORE: use devm_regulator_get
-  OMAPDSS: DSI: cleanup regulator init
-  OMAPDSS: DPI: cleanup pll & regulator init
-  OMAPDSS: HDMI: add hdmi_init_regulator
-  OMAPDSS: SDI: clean up regulator init
-  OMAPDSS: VENC: clean up regulator init
-  OMAPDSS: add videomode conversion support
-  OMAPDSS: remove dssdev uses in trivial cases
-  OMAPDSS: add panel list
-  OMAPDSS: use the panel list in omap_dss_get_next_device
-  OMAPDSS: don't use dss bus in suspend/resume
-  OMAPDSS: implement display sysfs without dss bus
-  OMAPDSS: Add panel dev pointer to dssdev
-  OMAPDSS: remove omap_dss_start/stop_device()
-  OMAPDSS: combine omap_dss_output into omap_dss_device
-  OMAPDSS: omapdss.h: add owner field to omap_dss_device
-  OMAPDSS: add module_get/put to omap_dss_get/put_device()
-  OMAPDSS: add THIS_MODULE owner to DSS outputs
-  OMAPDSS: output: increase refcount in find_output funcs
-  OMAPFB: use EPROBE_DEFER if default display is not present
-
- drivers/gpu/drm/omapdrm/omap_crtc.c                |  46 +++-
- drivers/gpu/drm/omapdrm/omap_drv.c                 |  21 +-
- drivers/gpu/drm/omapdrm/omap_drv.h                 |   1 +
- drivers/video/omap2/displays/panel-acx565akm.c     |  16 +-
- drivers/video/omap2/displays/panel-generic-dpi.c   |  26 +--
- .../omap2/displays/panel-lgphilips-lb035q02.c      |  10 +-
- drivers/video/omap2/displays/panel-n8x0.c          |  30 +--
- .../omap2/displays/panel-nec-nl8048hl11-01b.c      |   4 +-
- drivers/video/omap2/displays/panel-picodlp.c       |  32 +--
- .../video/omap2/displays/panel-sharp-ls037v7dw01.c |  10 +-
- drivers/video/omap2/displays/panel-taal.c          | 164 +++++++-------
- drivers/video/omap2/displays/panel-tfp410.c        |  32 +--
- .../video/omap2/displays/panel-tpo-td043mtea1.c    |  36 +--
- drivers/video/omap2/dss/Kconfig                    |   1 +
- drivers/video/omap2/dss/apply.c                    |  47 ++--
- drivers/video/omap2/dss/core.c                     | 108 +++++----
- drivers/video/omap2/dss/dispc.c                    |   4 +
- drivers/video/omap2/dss/display-sysfs.c            | 154 +++++++------
- drivers/video/omap2/dss/display.c                  | 246 ++++++++++++++-------
- drivers/video/omap2/dss/dpi.c                      | 140 ++++++------
- drivers/video/omap2/dss/dsi.c                      | 124 ++++-------
- drivers/video/omap2/dss/dss.c                      |   3 +-
- drivers/video/omap2/dss/dss.h                      |  16 +-
- drivers/video/omap2/dss/hdmi.c                     |  87 ++++----
- drivers/video/omap2/dss/manager-sysfs.c            |  47 ++--
- drivers/video/omap2/dss/manager.c                  |  29 ++-
- drivers/video/omap2/dss/output.c                   |  78 ++++++-
- drivers/video/omap2/dss/rfbi.c                     |  39 ++--
- drivers/video/omap2/dss/sdi.c                      |  78 ++++---
- drivers/video/omap2/dss/venc.c                     |  74 +++----
- drivers/video/omap2/dss/venc_panel.c               |  16 +-
- drivers/video/omap2/omapfb/omapfb-ioctl.c          |   9 +-
- drivers/video/omap2/omapfb/omapfb-main.c           |  27 +--
- include/video/omapdss.h                            | 103 ++++++---
- 34 files changed, 1088 insertions(+), 770 deletions(-)
-
+diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
+index 0c3b46d..317ee36 100644
+--- a/include/video/omap-panel-data.h
++++ b/include/video/omap-panel-data.h
+@@ -27,6 +27,8 @@
+ #ifndef __OMAP_PANEL_DATA_H
+ #define __OMAP_PANEL_DATA_H
+ 
++#include <video/omapdss.h>
++
+ struct omap_dss_device;
+ 
+ /**
+@@ -147,4 +149,152 @@ struct panel_tpo_td043_data {
+ 	int nreset_gpio;
+ };
+ 
++/**
++ * panel_dpi platform data
++ * @name: name for this display entity
++ * @source: name of the display entity used as a video source
++ * @data_lines: number of DPI datalines
++ * @display_timing: timings for this panel
++ * @backlight_gpio: gpio to enable/disable the backlight (or -1)
++ * @enable_gpio: gpio to enable/disable the panel (or -1)
++ */
++struct panel_dpi_platform_data {
++	const char *name;
++	const char *source;
++
++	int data_lines;
++
++	const struct display_timing *display_timing;
++
++	int backlight_gpio;
++	int enable_gpio;
++};
++
++/**
++ * panel_dsicm platform data
++ * @name: name for this display entity
++ * @source: name of the display entity used as a video source
++ * @reset_gpio: gpio to reset the panel (or -1)
++ * @use_ext_te: use external TE GPIO
++ * @ext_te_gpio: external TE GPIO
++ * @ulps_timeout: time to wait before entering ULPS, 0 = disabled (ms)
++ * @use_dsi_backlight: true if panel uses DSI command to control backlight
++ * @pin_config: DSI pin configuration
++ */
++struct panel_dsicm_platform_data {
++	const char *name;
++	const char *source;
++
++	int reset_gpio;
++
++	bool use_ext_te;
++	int ext_te_gpio;
++
++	unsigned ulps_timeout;
++
++	bool use_dsi_backlight;
++
++	struct omap_dsi_pin_config pin_config;
++};
++
++/**
++ * panel_acx565akm platform data
++ * @name: name for this display entity
++ * @source: name of the display entity used as a video source
++ * @reset_gpio: gpio to reset the panel (or -1)
++ * @datapairs: number of SDI datapairs
++ */
++struct panel_acx565akm_platform_data {
++	const char *name;
++	const char *source;
++
++	int reset_gpio;
++
++	int datapairs;
++};
++
++/**
++ * panel_lb035q02 platform data
++ * @name: name for this display entity
++ * @source: name of the display entity used as a video source
++ * @data_lines: number of DPI datalines
++ * @backlight_gpio: gpio to enable/disable the backlight (or -1)
++ * @enable_gpio: gpio to enable/disable the panel (or -1)
++ */
++struct panel_lb035q02_platform_data {
++	const char *name;
++	const char *source;
++
++	int data_lines;
++
++	int backlight_gpio;
++	int enable_gpio;
++};
++
++/**
++ * connector_dvi platform data
++ * @name: name for this display entity
++ * @source: name of the display entity used as a video source
++ * @i2c_bus_num: i2c bus number to be used for reading EDID
++ */
++struct connector_dvi_platform_data {
++	const char *name;
++	const char *source;
++	int i2c_bus_num;
++};
++
++/**
++ * connector_hdmi platform data
++ * @name: name for this display entity
++ * @source: name of the display entity used as a video source
++ */
++struct connector_hdmi_platform_data {
++	const char *name;
++	const char *source;
++};
++
++/**
++ * connector_atv platform data
++ * @name: name for this display entity
++ * @source: name of the display entity used as a video source
++ * @connector_type: composite/svideo
++ * @invert_polarity: invert signal polarity
++ */
++struct connector_atv_platform_data {
++	const char *name;
++	const char *source;
++
++	enum omap_dss_venc_type connector_type;
++	bool invert_polarity;
++};
++
++/**
++ * encoder_tfp410 platform data
++ * @name: name for this display entity
++ * @power_down_gpio: gpio number for PD pin (or -1 if not available)
++ * @data_lines: number of DPI datalines
++ */
++struct encoder_tfp410_platform_data {
++	const char *name;
++	const char *source;
++	int power_down_gpio;
++	int data_lines;
++};
++
++/**
++ * encoder_tpd12s015 platform data
++ * @name: name for this display entity
++ * @ct_cp_hpd_gpio: CT_CP_HPD gpio number
++ * @ls_oe_gpio: LS_OE gpio number
++ * @hpd_gpio: HPD gpio number
++ */
++struct encoder_tpd12s015_platform_data {
++	const char *name;
++	const char *source;
++
++	int ct_cp_hpd_gpio;
++	int ls_oe_gpio;
++	int hpd_gpio;
++};
++
+ #endif /* __OMAP_PANEL_DATA_H */
 -- 
 1.8.1.2
 

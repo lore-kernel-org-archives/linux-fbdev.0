@@ -1,221 +1,101 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Mon, 13 May 2013 23:58:40 +0000
-Subject: [PATCH v3 1/9] Add arch_phys_wc_{add,del} to manipulate WC MTRRs if needed
-Message-Id: <89c33a8d4a367b33dfb3fe4af2ad85b59b02ec22.1368485053.git.luto@amacapital.net>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:34:51 +0000
+Subject: [PATCH 30/32] OMAPDSS: add THIS_MODULE owner to DSS outputs
+Message-Id: <1369906493-27538-31-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1368485053.git.luto@amacapital.net>
-In-Reply-To: <cover.1368485053.git.luto@amacapital.net>
+References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jerome Glisse <j.glisse@gmail.com>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@gmail.com>, Andy Lutomirski <luto@amacapital.net>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Several drivers currently use mtrr_add through various #ifdef guards
-and/or drm wrappers.  The vast majority of them want to add WC MTRRs
-on x86 systems and don't actually need the MTRR if PAT (i.e.
-ioremap_wc, etc) are working.
+Setup the owner field for DSS output's omap_dss_device so that module
+refcounting works.
 
-arch_phys_wc_add and arch_phys_wc_del are new functions, available
-on all architectures and configurations, that add WC MTRRs on x86 if
-needed (and handle errors) and do nothing at all otherwise.  They're
-also easier to use than mtrr_add and mtrr_del, so the call sites can
-be simplified.
-
-As an added benefit, this will avoid wasting MTRRs and possibly
-warning pointlessly on PAT-supporting systems.
-
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
+ drivers/video/omap2/dss/dpi.c  | 1 +
+ drivers/video/omap2/dss/dsi.c  | 1 +
+ drivers/video/omap2/dss/hdmi.c | 1 +
+ drivers/video/omap2/dss/rfbi.c | 1 +
+ drivers/video/omap2/dss/sdi.c  | 1 +
+ drivers/video/omap2/dss/venc.c | 1 +
+ 6 files changed, 6 insertions(+)
 
-Changes from v2:
- - Make MTRR_TO_PHYS_WC_OFFSET a macro instead of open-coding it.
- - Add phys_wc_to_mtrr_index to make drmGetMap keep working.  Sigh.
-
- arch/x86/include/asm/io.h       |  7 ++++
- arch/x86/include/asm/mtrr.h     | 10 +++++-
- arch/x86/kernel/cpu/mtrr/main.c | 71 +++++++++++++++++++++++++++++++++++++++++
- include/linux/io.h              | 25 +++++++++++++++
- 4 files changed, 112 insertions(+), 1 deletion(-)
-
-diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
-index d8e8eef..34f69cb 100644
---- a/arch/x86/include/asm/io.h
-+++ b/arch/x86/include/asm/io.h
-@@ -345,4 +345,11 @@ extern bool xen_biovec_phys_mergeable(const struct bio_vec *vec1,
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 03d8afd..0afbcd5 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -691,6 +691,7 @@ static void dpi_init_output(struct platform_device *pdev)
+ 	out->output_type = OMAP_DISPLAY_TYPE_DPI;
+ 	out->name = "dpi.0";
+ 	out->dispc_channel = dpi_get_channel();
++	out->owner = THIS_MODULE;
  
- #define IO_SPACE_LIMIT 0xffff
- 
-+#ifdef CONFIG_MTRR
-+extern int __must_check arch_phys_wc_add(unsigned long base,
-+					 unsigned long size);
-+extern void arch_phys_wc_del(int handle);
-+#define arch_phys_wc_add arch_phys_wc_add
-+#endif
-+
- #endif /* _ASM_X86_IO_H */
-diff --git a/arch/x86/include/asm/mtrr.h b/arch/x86/include/asm/mtrr.h
-index e235582..f768f62 100644
---- a/arch/x86/include/asm/mtrr.h
-+++ b/arch/x86/include/asm/mtrr.h
-@@ -26,7 +26,10 @@
- #include <uapi/asm/mtrr.h>
- 
- 
--/*  The following functions are for use by other drivers  */
-+/*
-+ * The following functions are for use by other drivers that cannot use
-+ * arch_phys_wc_add and arch_phys_wc_del.
-+ */
- # ifdef CONFIG_MTRR
- extern u8 mtrr_type_lookup(u64 addr, u64 end);
- extern void mtrr_save_fixed_ranges(void *);
-@@ -45,6 +48,7 @@ extern void mtrr_aps_init(void);
- extern void mtrr_bp_restore(void);
- extern int mtrr_trim_uncached_memory(unsigned long end_pfn);
- extern int amd_special_default_mtrr(void);
-+extern int phys_wc_to_mtrr_index(int handle);
- #  else
- static inline u8 mtrr_type_lookup(u64 addr, u64 end)
- {
-@@ -80,6 +84,10 @@ static inline int mtrr_trim_uncached_memory(unsigned long end_pfn)
- static inline void mtrr_centaur_report_mcr(int mcr, u32 lo, u32 hi)
- {
+ 	dss_register_output(out);
  }
-+static inline int phys_wc_to_mtrr_index(int handle)
-+{
-+	return -1;
-+}
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 9aafefc..2f90019 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -5424,6 +5424,7 @@ static void dsi_init_output(struct platform_device *dsidev)
+ 	out->output_type = OMAP_DISPLAY_TYPE_DSI;
+ 	out->name = dsi->module_id = 0 ? "dsi.0" : "dsi.1";
+ 	out->dispc_channel = dsi_get_channel(dsi->module_id);
++	out->owner = THIS_MODULE;
  
- #define mtrr_ap_init() do {} while (0)
- #define mtrr_bp_init() do {} while (0)
-diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
-index 726bf96..3533d4d 100644
---- a/arch/x86/kernel/cpu/mtrr/main.c
-+++ b/arch/x86/kernel/cpu/mtrr/main.c
-@@ -51,9 +51,13 @@
- #include <asm/e820.h>
- #include <asm/mtrr.h>
- #include <asm/msr.h>
-+#include <asm/pat.h>
- 
- #include "mtrr.h"
- 
-+/* arch_phys_wc_add returns an MTRR register index plus this offset. */
-+#define MTRR_TO_PHYS_WC_OFFSET 1000
-+
- u32 num_var_ranges;
- 
- unsigned int mtrr_usage_table[MTRR_MAX_VAR_RANGES];
-@@ -524,6 +528,73 @@ int mtrr_del(int reg, unsigned long base, unsigned long size)
+ 	dss_register_output(out);
  }
- EXPORT_SYMBOL(mtrr_del);
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index e33e708..1a7b179 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -1042,6 +1042,7 @@ static void hdmi_init_output(struct platform_device *pdev)
+ 	out->output_type = OMAP_DISPLAY_TYPE_HDMI;
+ 	out->name = "hdmi.0";
+ 	out->dispc_channel = OMAP_DSS_CHANNEL_DIGIT;
++	out->owner = THIS_MODULE;
  
-+/**
-+ * arch_phys_wc_add - add a WC MTRR and handle errors if PAT is unavailable
-+ * @base: Physical base address
-+ * @size: Size of region
-+ *
-+ * If PAT is available, this does nothing.  If PAT is unavailable, it
-+ * attempts to add a WC MTRR covering size bytes starting at base and
-+ * logs an error if this fails.
-+ *
-+ * Drivers must store the return value to pass to mtrr_del_wc_if_needed,
-+ * but drivers should not try to interpret that return value.
-+ */
-+int arch_phys_wc_add(unsigned long base, unsigned long size)
-+{
-+	int ret;
-+
-+	if (pat_enabled)
-+		return 0;  /* Success!  (We don't need to do anything.) */
-+
-+	ret = mtrr_add(base, size, MTRR_TYPE_WRCOMB, true);
-+	if (ret < 0) {
-+		pr_warn("Failed to add WC MTRR for [%p-%p]; performance may suffer.",
-+			(void *)base, (void *)(base + size - 1));
-+		return ret;
-+	}
-+	return ret + MTRR_TO_PHYS_WC_OFFSET;
-+}
-+EXPORT_SYMBOL(arch_phys_wc_add);
-+
-+/*
-+ * arch_phys_wc_del - undoes arch_phys_wc_add
-+ * @handle: Return value from arch_phys_wc_add
-+ *
-+ * This cleans up after mtrr_add_wc_if_needed.
-+ *
-+ * The API guarantees that mtrr_del_wc_if_needed(error code) and
-+ * mtrr_del_wc_if_needed(0) do nothing.
-+ */
-+void arch_phys_wc_del(int handle)
-+{
-+	if (handle >= 1) {
-+		WARN_ON(handle < MTRR_TO_PHYS_WC_OFFSET);
-+		mtrr_del(handle - MTRR_TO_PHYS_WC_OFFSET, 0, 0);
-+	}
-+}
-+EXPORT_SYMBOL(arch_phys_wc_del);
-+
-+/*
-+ * phys_wc_to_mtrr_index - translates arch_phys_wc_add's return value
-+ * @handle: Return value from arch_phys_wc_add
-+ *
-+ * This will turn the return value from arch_phys_wc_add into an mtrr
-+ * index suitable for debugging.
-+ *
-+ * Note: There is no legitimate use for this function, except possibly
-+ * in printk line.  Alas there is an illegitimate use in some ancient
-+ * drm ioctls.
-+ */
-+int phys_wc_to_mtrr_index(int handle)
-+{
-+	if (handle < MTRR_TO_PHYS_WC_OFFSET)
-+		return -1;
-+	else
-+		return handle - MTRR_TO_PHYS_WC_OFFSET;
-+}
-+EXPORT_SYMBOL_GPL(phys_wc_to_mtrr_index);
-+
- /*
-  * HACK ALERT!
-  * These should be called implicitly, but we can't yet until all the initcall
-diff --git a/include/linux/io.h b/include/linux/io.h
-index 069e407..f4f42fa 100644
---- a/include/linux/io.h
-+++ b/include/linux/io.h
-@@ -76,4 +76,29 @@ void devm_ioremap_release(struct device *dev, void *res);
- #define arch_has_dev_port()     (1)
- #endif
+ 	dss_register_output(out);
+ }
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 35836eb..f18c946 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -1020,6 +1020,7 @@ static void rfbi_init_output(struct platform_device *pdev)
+ 	out->output_type = OMAP_DISPLAY_TYPE_DBI;
+ 	out->name = "rfbi.0";
+ 	out->dispc_channel = OMAP_DSS_CHANNEL_LCD;
++	out->owner = THIS_MODULE;
  
-+/*
-+ * Some systems (x86 without PAT) have a somewhat reliable way to mark a
-+ * physical address range such that uncached mappings will actually
-+ * end up write-combining.  This facility should be used in conjunction
-+ * with pgprot_writecombine, ioremap-wc, or set_memory_wc, since it has
-+ * no effect if the per-page mechanisms are functional.
-+ * (On x86 without PAT, these functions manipulate MTRRs.)
-+ *
-+ * arch_phys_del_wc(0) or arch_phys_del_wc(any error code) is guaranteed
-+ * to have no effect.
-+ */
-+#ifndef arch_phys_wc_add
-+static inline int __must_check arch_phys_wc_add(unsigned long base,
-+						unsigned long size)
-+{
-+	return 0;  /* It worked (i.e. did nothing). */
-+}
-+
-+static inline void arch_phys_wc_del(int handle)
-+{
-+}
-+
-+#define arch_phys_wc_add arch_phys_wc_add
-+#endif
-+
- #endif /* _LINUX_IO_H */
+ 	dss_register_output(out);
+ }
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index a226c37..10268a2 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -348,6 +348,7 @@ static void sdi_init_output(struct platform_device *pdev)
+ 	out->output_type = OMAP_DISPLAY_TYPE_SDI;
+ 	out->name = "sdi.0";
+ 	out->dispc_channel = OMAP_DSS_CHANNEL_LCD;
++	out->owner = THIS_MODULE;
+ 
+ 	dss_register_output(out);
+ }
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 7bfcba4..0deb771 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -792,6 +792,7 @@ static void venc_init_output(struct platform_device *pdev)
+ 	out->output_type = OMAP_DISPLAY_TYPE_VENC;
+ 	out->name = "venc.0";
+ 	out->dispc_channel = OMAP_DSS_CHANNEL_DIGIT;
++	out->owner = THIS_MODULE;
+ 
+ 	dss_register_output(out);
+ }
 -- 
-1.8.1.4
+1.8.1.2
 

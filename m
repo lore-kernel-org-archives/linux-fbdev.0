@@ -1,73 +1,69 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 11:35:44 +0000
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 30 May 2013 13:05:00 +0000
 Subject: Re: [PATCH 06/32] OMAPDSS: DPI: fix regulators for DT
-Message-Id: <51A73990.5040709@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2EDNKKAIJBQEPIMERRIPQ"
+Message-Id: <201305301505.00529.arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com> <1369906493-27538-7-git-send-email-tomi.valkeinen@ti.com> <20130530111253.GJ19468@game.jcrosoft.org>
-In-Reply-To: <20130530111253.GJ19468@game.jcrosoft.org>
-To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Cc: Grant Likely <grant.likely@secretlab.ca>, Arnd Bergmann <arnd@arndb.de>, Linus Walleij <linus.walleij@linaro.org>, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com> <20130530111253.GJ19468@game.jcrosoft.org> <51A73990.5040709@ti.com>
+In-Reply-To: <51A73990.5040709@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Grant Likely <grant.likely@secretlab.ca>, Linus Walleij <linus.walleij@linaro.org>, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-------enig2EDNKKAIJBQEPIMERRIPQ
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Thursday 30 May 2013, Tomi Valkeinen wrote:
+>   On 30/05/13 14:12, Jean-Christophe PLAGNIOL-VILLARD wrote:
+> > On 12:34 Thu 30 May     , Tomi Valkeinen wrote:
+> >> On some platforms DPI requires a regulator to be enabled to power up the
+> >> output pins. This regulator is, for some reason, currently attached to
+> >> the virtual omapdss device, instead of the DPI device. This does not
+> >> work for DT, as the regulator mappings need to be described in the DT
+> >> data, and the virtual omapdss device is not present there.
+> >>
+> >> Fix the issue by acquiring the regulator in the DPI device. To retain
+> >> compatibility with the current board files, the old method of getting
+> >> the regulator is kept. The old method can be removed when the board
+> >> files have been changed to pass the regulator to DPI.
+> > 
+> > as discuss with Arnd we should handle regular enable and disable at device
+> > probe for every device as we do for pinctrl
+> 
+> I'm not sure what you mean. Enable of what? The regulator? Why would we
+> enable it in the device's probe, as the device may never even be used?
 
-On 30/05/13 14:12, Jean-Christophe PLAGNIOL-VILLARD wrote:
-> On 12:34 Thu 30 May     , Tomi Valkeinen wrote:
->> On some platforms DPI requires a regulator to be enabled to power up t=
-he
->> output pins. This regulator is, for some reason, currently attached to=
+It's an idea I had a while ago, but not yet discussed in the open.
 
->> the virtual omapdss device, instead of the DPI device. This does not
->> work for DT, as the regulator mappings need to be described in the DT
->> data, and the virtual omapdss device is not present there.
->>
->> Fix the issue by acquiring the regulator in the DPI device. To retain
->> compatibility with the current board files, the old method of getting
->> the regulator is kept. The old method can be removed when the board
->> files have been changed to pass the regulator to DPI.
->=20
-> as discuss with Arnd we should handle regular enable and disable at dev=
-ice
-> probe for every device as we do for pinctrl
+Jean-Christophe just posted patches to move the mapping of interrupt numbers
+into platform_drv_probe(), just before calling the driver ->probe() callback,
+and we already have similar code to set up the default pinctrl state of
+a device before calling probe().
 
-I'm not sure what you mean. Enable of what? The regulator? Why would we
-enable it in the device's probe, as the device may never even be used?
+This can be extended to further subsystems, but that has to be done
+carefully to avoid regressions. Ideally we would move a lot of boilerplate
+code out of the driver specific ->probe() function into common code.
+Possible candidates for this include:
 
-Or do you mean regulator_get()? Doing that in DPI driver's probe is
-problematic, as not all boards have any panels using DPI, and thus they
-may not have the regulator set up, but all boards have the DPI device
-added automatically. So for those boards the DPI probe would fail,
-always, if we tried to get the regulator.
+* calling devm_request_mem_region for the "reg" property
+* calling devm_ioremap on the "reg" property"
+* calling devm_gpio_request for all gpio lines
+* calling devm_regulator_get on all regulators
+* calling devm_reset_control_get on all reset lines
+* calling devm_dma_request_slave_channel on all dma channels
+* calling devm_of_pwm_get for all pwm channels
+* ...
 
- Tomi
+For most of these (maybe all), I think we need some form of opt-in
+model on the driver side because there are cases where aquiring some
+of these resources is not mandatory, and it only works if the driver
+is using DT probing.
 
+IF we want to do this, it also needs a lot of thought, and we shouldn't
+do it carelessly. We might also need some extra infrastructure in revres
+to simplify access to the resources we got from the OF node.
 
+The irq resources are particularly trivial because we already claim
+them in of_platform_populate, so moving that to platform_drv_probe()
+is straightforward and solves existing bugs without creating a huge
+regression potential, but it's harder for the others.
 
-------enig2EDNKKAIJBQEPIMERRIPQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRpzmQAAoJEPo9qoy8lh7178MP/jqiuUSCrUGMPrlOEj7Ujx5B
-elzSifZ9sN9jdMO3Syb03YIxKIZpV+9r6eP+QSYhhDIG4+O+zNq8DsMVcw2+uz5Q
-ZyBm63I7aoV/HVH9HqG3sRo2nibi83JHcHg2XjFlTuxSlXp2V/eL/aQX/lgL2a5f
-AF4wmOwH3tVP381BPZdI003ZF/tsOa1URxcRq1FgiCj3A7BjnDawavXZ29hVcZbF
-9G8rbh1psTAw/0dxxVebfzkSQWeexENgQjxflpl7Yk4tqc9aIvJzI3H0vzkSlE3s
-gAHmDN3xvnHtfpE77oSN98pkn6nYMu0gQKWwy3/lAiCsGifmvPNNbrVKqSrv7kqz
-NHMWX1twHGh6xOfxEIPEP3aDLeIdzW1YWTSB92igeq8K1DTdhYyT5e9J6+hRayFz
-FekBLCWHG4WzAAij/8D7Md6CCXxaR4FXmhu9HHVRi8uuVS5HFhL0OxP4+j1DmeG4
-DX+oWA4EK6SoG6unAC+pbr/HZc5GfUaf4+1VlHCgSR+TU5iMQT8whdGWKNX5DqAl
-Me+Qs+5nWKVoAzCCrv6qWoiFTDr3zkZlVlG+IYUD7dp6frPvTXZrabHpXL1J2VY7
-yjLKlibrty5udBqiYexFIno4N5784edppxckJOLRX9IBHmMW14n+VTbB0xHMzXJm
-BYNr3/ULbmirdMqfhoqq
-=1WFa
------END PGP SIGNATURE-----
-
-------enig2EDNKKAIJBQEPIMERRIPQ--
+	Arnd

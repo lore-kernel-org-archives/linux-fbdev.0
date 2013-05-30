@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:36:00 +0000
-Subject: [PATCH 07/27] ARM: OMAP: beagle: use new display drivers
-Message-Id: <1369906580-27585-8-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 30 May 2013 09:36:08 +0000
+Subject: [PATCH 15/27] OMAPDSS: DSI: Add ops
+Message-Id: <1369906580-27585-16-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,104 +11,212 @@ Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Use the new display drivers for Beagleboard.
+Add "ops" style method for using DSI functionality.
+
+Ops style calls will allow us to have arbitrarily long display
+pipelines, where each entity can call ops in the previous display
+entity.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-omap2/board-omap3beagle.c | 56 +++++++++++++++++++++------------
- 1 file changed, 36 insertions(+), 20 deletions(-)
+ drivers/video/omap2/dss/dsi.c | 93 +++++++++++++++++++++++++++++++++++++++++++
+ include/video/omapdss.h       | 58 +++++++++++++++++++++++++++
+ 2 files changed, 151 insertions(+)
 
-diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-index 04c1165..30724e8 100644
---- a/arch/arm/mach-omap2/board-omap3beagle.c
-+++ b/arch/arm/mach-omap2/board-omap3beagle.c
-@@ -225,35 +225,46 @@ static struct mtd_partition omap3beagle_nand_partitions[] = {
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 4ecc0c1..a6b7d85 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -383,6 +383,15 @@ static inline struct dsi_data *dsi_get_dsidrv_data(struct platform_device *dside
  
- /* DSS */
+ static inline struct platform_device *dsi_get_dsidev_from_dssdev(struct omap_dss_device *dssdev)
+ {
++	/* HACK: dssdev can be either the panel device, when using old API, or
++	 * the dsi device itself, when using the new API. So we solve this for
++	 * now by checking the dssdev->id. This will be removed when the old API
++	 * is removed.
++	 */
++	if (dssdev->id = OMAP_DSS_OUTPUT_DSI1 ||
++			dssdev->id = OMAP_DSS_OUTPUT_DSI2)
++		return to_platform_device(dssdev->dev);
++
+ 	return to_platform_device(dssdev->output->dev);
+ }
  
--static struct tfp410_platform_data dvi_panel = {
--	.i2c_bus_num = 3,
--	.power_down_gpio = -1,
-+static struct connector_dvi_platform_data beagle_dvi_connector_pdata = {
-+	.name                   = "dvi",
-+	.source                 = "tfp410.0",
-+	.i2c_bus_num            = 3,
- };
+@@ -5412,6 +5421,89 @@ static int dsi_probe_pdata(struct platform_device *dsidev)
+ 	return 0;
+ }
  
--static struct omap_dss_device beagle_dvi_device = {
--	.type = OMAP_DISPLAY_TYPE_DPI,
--	.name = "dvi",
--	.driver_name = "tfp410",
--	.data = &dvi_panel,
--	.phy.dpi.data_lines = 24,
-+static struct platform_device beagle_dvi_connector_device = {
-+	.name                   = "connector-dvi",
-+	.id                     = 0,
-+	.dev.platform_data      = &beagle_dvi_connector_pdata,
- };
- 
--static struct omap_dss_device beagle_tv_device = {
-+static struct encoder_tfp410_platform_data beagle_tfp410_pdata = {
-+	.name                   = "tfp410.0",
-+	.source                 = "dpi.0",
-+	.data_lines             = 24,
-+	.power_down_gpio        = -1,
++static int dsi_connect(struct omap_dss_device *dssdev,
++		struct omap_dss_device *dst)
++{
++	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
++	struct omap_overlay_manager *mgr;
++	int r;
++
++	r = dsi_regulator_init(dsidev);
++	if (r)
++		return r;
++
++	mgr = omap_dss_get_overlay_manager(dssdev->dispc_channel);
++	if (!mgr)
++		return -ENODEV;
++
++	r = dss_mgr_connect(mgr, dssdev);
++	if (r)
++		return r;
++
++	r = omapdss_output_set_device(dssdev, dst);
++	if (r) {
++		DSSERR("failed to connect output to new device: %s\n",
++				dssdev->name);
++		dss_mgr_disconnect(mgr, dssdev);
++		return r;
++	}
++
++	return 0;
++}
++
++static void dsi_disconnect(struct omap_dss_device *dssdev,
++		struct omap_dss_device *dst)
++{
++	WARN_ON(dst != dssdev->device);
++
++	if (dst != dssdev->device)
++		return;
++
++	omapdss_output_unset_device(dssdev);
++
++	if (dssdev->manager)
++		dss_mgr_disconnect(dssdev->manager, dssdev);
++}
++
++static const struct omapdss_dsi_ops dsi_ops = {
++	.connect = dsi_connect,
++	.disconnect = dsi_disconnect,
++
++	.bus_lock = dsi_bus_lock,
++	.bus_unlock = dsi_bus_unlock,
++
++	.enable = omapdss_dsi_display_enable,
++	.disable = omapdss_dsi_display_disable,
++
++	.enable_hs = omapdss_dsi_vc_enable_hs,
++
++	.configure_pins = omapdss_dsi_configure_pins,
++	.set_config = omapdss_dsi_set_config,
++
++	.enable_video_output = dsi_enable_video_output,
++	.disable_video_output = dsi_disable_video_output,
++
++	.update = omap_dsi_update,
++
++	.enable_te = omapdss_dsi_enable_te,
++
++	.request_vc = omap_dsi_request_vc,
++	.set_vc_id = omap_dsi_set_vc_id,
++	.release_vc = omap_dsi_release_vc,
++
++	.dcs_write = dsi_vc_dcs_write,
++	.dcs_write_nosync = dsi_vc_dcs_write_nosync,
++	.dcs_read = dsi_vc_dcs_read,
++
++	.gen_write = dsi_vc_generic_write,
++	.gen_write_nosync = dsi_vc_generic_write_nosync,
++	.gen_read = dsi_vc_generic_read,
++
++	.bta_sync = dsi_vc_send_bta_sync,
++
++	.set_max_rx_packet_size = dsi_vc_set_max_rx_packet_size,
 +};
 +
-+static struct platform_device beagle_tfp410_device = {
-+	.name                   = "tfp410",
-+	.id                     = 0,
-+	.dev.platform_data      = &beagle_tfp410_pdata,
+ static void dsi_init_output(struct platform_device *dsidev)
+ {
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+@@ -5424,6 +5516,7 @@ static void dsi_init_output(struct platform_device *dsidev)
+ 	out->output_type = OMAP_DISPLAY_TYPE_DSI;
+ 	out->name = dsi->module_id = 0 ? "dsi.0" : "dsi.1";
+ 	out->dispc_channel = dsi_get_channel(dsi->module_id);
++	out->ops.dsi = &dsi_ops;
+ 	out->owner = THIS_MODULE;
+ 
+ 	omapdss_register_output(out);
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index f0aee54..f8c26c5 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -694,6 +694,63 @@ struct omapdss_hdmi_ops {
+ 	void (*audio_stop)(struct omap_dss_device *dssdev);
+ };
+ 
++struct omapdss_dsi_ops {
++	int (*connect)(struct omap_dss_device *dssdev,
++			struct omap_dss_device *dst);
++	void (*disconnect)(struct omap_dss_device *dssdev,
++			struct omap_dss_device *dst);
++
++	int (*enable)(struct omap_dss_device *dssdev);
++	void (*disable)(struct omap_dss_device *dssdev, bool disconnect_lanes,
++			bool enter_ulps);
++
++	/* bus configuration */
++	int (*set_config)(struct omap_dss_device *dssdev,
++			const struct omap_dss_dsi_config *cfg);
++	int (*configure_pins)(struct omap_dss_device *dssdev,
++			const struct omap_dsi_pin_config *pin_cfg);
++
++	void (*enable_hs)(struct omap_dss_device *dssdev, int channel,
++			bool enable);
++	int (*enable_te)(struct omap_dss_device *dssdev, bool enable);
++
++	int (*update)(struct omap_dss_device *dssdev, int channel,
++			void (*callback)(int, void *), void *data);
++
++	void (*bus_lock)(struct omap_dss_device *dssdev);
++	void (*bus_unlock)(struct omap_dss_device *dssdev);
++
++	int (*enable_video_output)(struct omap_dss_device *dssdev, int channel);
++	void (*disable_video_output)(struct omap_dss_device *dssdev,
++			int channel);
++
++	int (*request_vc)(struct omap_dss_device *dssdev, int *channel);
++	int (*set_vc_id)(struct omap_dss_device *dssdev, int channel,
++			int vc_id);
++	void (*release_vc)(struct omap_dss_device *dssdev, int channel);
++
++	/* data transfer */
++	int (*dcs_write)(struct omap_dss_device *dssdev, int channel,
++			u8 *data, int len);
++	int (*dcs_write_nosync)(struct omap_dss_device *dssdev, int channel,
++			u8 *data, int len);
++	int (*dcs_read)(struct omap_dss_device *dssdev, int channel, u8 dcs_cmd,
++			u8 *data, int len);
++
++	int (*gen_write)(struct omap_dss_device *dssdev, int channel,
++			u8 *data, int len);
++	int (*gen_write_nosync)(struct omap_dss_device *dssdev, int channel,
++			u8 *data, int len);
++	int (*gen_read)(struct omap_dss_device *dssdev, int channel,
++			u8 *reqdata, int reqlen,
++			u8 *data, int len);
++
++	int (*bta_sync)(struct omap_dss_device *dssdev, int channel);
++
++	int (*set_max_rx_packet_size)(struct omap_dss_device *dssdev,
++			int channel, u16 plen);
 +};
 +
-+static struct connector_atv_platform_data beagle_tv_pdata = {
- 	.name = "tv",
--	.driver_name = "venc",
--	.type = OMAP_DISPLAY_TYPE_VENC,
--	.phy.venc.type = OMAP_DSS_VENC_TYPE_SVIDEO,
-+	.source = "venc.0",
-+	.connector_type = OMAP_DSS_VENC_TYPE_SVIDEO,
-+	.invert_polarity = false,
- };
+ struct omap_dss_device {
+ 	/* old device, to be removed */
+ 	struct device old_dev;
+@@ -772,6 +829,7 @@ struct omap_dss_device {
+ 		const struct omapdss_dvi_ops *dvi;
+ 		const struct omapdss_hdmi_ops *hdmi;
+ 		const struct omapdss_atv_ops *atv;
++		const struct omapdss_dsi_ops *dsi;
+ 	} ops;
  
--static struct omap_dss_device *beagle_dss_devices[] = {
--	&beagle_dvi_device,
--	&beagle_tv_device,
-+static struct platform_device beagle_tv_device = {
-+	.name                   = "connector-analog-tv",
-+	.id                     = 0,
-+	.dev.platform_data      = &beagle_tv_pdata,
- };
- 
- static struct omap_dss_board_info beagle_dss_data = {
--	.num_devices = ARRAY_SIZE(beagle_dss_devices),
--	.devices = beagle_dss_devices,
--	.default_device = &beagle_dvi_device,
-+	.default_display_name = "dvi",
- };
- 
- #include "sdram-micron-mt46h32m32lf-6.h"
-@@ -332,7 +343,7 @@ static int beagle_twl_gpio_setup(struct device *dev,
- 		if (gpio_request_one(gpio + 1, GPIOF_IN, "EHCI_nOC"))
- 			pr_err("%s: unable to configure EHCI_nOC\n", __func__);
- 	}
--	dvi_panel.power_down_gpio = beagle_config.dvi_pd_gpio;
-+	beagle_tfp410_pdata.power_down_gpio = beagle_config.dvi_pd_gpio;
- 
- 	/* TWL4030_GPIO_MAX i.e. LED_GPO controls HS USB Port 2 power */
- 	phy_data[0].vcc_gpio = gpio + TWL4030_GPIO_MAX;
-@@ -547,6 +558,11 @@ static void __init omap3_beagle_init(void)
- 	if (gpio_is_valid(beagle_config.dvi_pd_gpio))
- 		omap_mux_init_gpio(beagle_config.dvi_pd_gpio, OMAP_PIN_OUTPUT);
- 	omap_display_init(&beagle_dss_data);
-+
-+	platform_device_register(&beagle_tfp410_device);
-+	platform_device_register(&beagle_dvi_connector_device);
-+	platform_device_register(&beagle_tv_device);
-+
- 	omap_serial_init();
- 	omap_sdrc_init(mt46h32m32lf6_sdrc_params,
- 				  mt46h32m32lf6_sdrc_params);
+ 	/* helper variable for driver suspend/resume */
 -- 
 1.8.1.2
 

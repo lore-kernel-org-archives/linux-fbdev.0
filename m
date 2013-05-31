@@ -1,73 +1,62 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Date: Thu, 30 May 2013 09:41:00 +0000
-Subject: [PATCH v2 1/3] video: xilinxfb: Fix OF probing on little-endian systems
-Message-Id: <27e53d5633766ab0dc1ac492023d5a0d0199e3aa.1369906849.git.michal.simek@xilinx.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-15062-1369906862-0001"
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Date: Fri, 31 May 2013 19:42:09 +0000
+Subject: [PULL] FBDEV: some small fixes for 3.10-rc4
+Message-Id: <20130531194209.GS19468@game.jcrosoft.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: Michal Simek <monstr@monstr.eu>, Michal Simek <michal.simek@xilinx.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
-
-This is a MIME GnuPG-signed message.  If you see this text, it means that
-your E-mail or Usenet software does not support MIME signed messages.
-The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
-To open this message correctly you will need to install E-mail or Usenet
-software that supports modern Internet standards.
-
---=_mimegpg-monstr-desktop-15062-1369906862-0001
-
-From: Michal Simek <monstr@monstr.eu>
-
-DTB is always big-endian that's why is necessary
-to convert it.
-
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
----
-Changes in v2:
-- use of_property_read_u32 helper function
-
- drivers/video/xilinxfb.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index af0b4fd..aecd15d 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -406,8 +406,7 @@ static int xilinxfb_release(struct device *dev)
- static int xilinxfb_of_probe(struct platform_device *op)
- {
- 	const u32 *prop;
--	u32 *p;
--	u32 tft_access;
-+	u32 tft_access = 0;
- 	struct xilinxfb_platform_data pdata;
- 	struct resource res;
- 	int size, rc;
-@@ -427,8 +426,8 @@ static int xilinxfb_of_probe(struct platform_device *op)
- 	 * To check whether the core is connected directly to DCR or PLB
- 	 * interface and initialize the tft_access accordingly.
- 	 */
--	p = (u32 *)of_get_property(op->dev.of_node, "xlnx,dcr-splb-slave-if", NULL);
--	tft_access = p ? *p : 0;
-+	of_property_read_u32(op->dev.of_node, "xlnx,dcr-splb-slave-if",
-+			     &tft_access);
-
- 	/*
- 	 * Fill the resource structure if its direct PLB interface
---
-1.8.2.3
-
-
---=_mimegpg-monstr-desktop-15062-1369906862-0001
-Content-Type: application/pgp-signature
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Hi Linus,
 
-iEYEABECAAYFAlGnHq4ACgkQykllyylKDCHicQCfa321WW8tMg8wbS2w8IIhGCM8
-jm4An3UPkCJTRPQjf42rvMccZNuBsrFl
-=eLYO
------END PGP SIGNATURE-----
+	This contain some small fixes for Atmel LCDC, ps3fb and OMAPDSS
 
---=_mimegpg-monstr-desktop-15062-1369906862-0001--
+please pull
+The following changes since commit e4aa937ec75df0eea0bee03bffa3303ad36c986b:
+
+  Linux 3.10-rc3 (2013-05-26 16:00:47 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/plagnioj/linux-fbdev.git tags/fbdev-for-3.10-rc4
+
+for you to fetch changes up to 56c21b53ab071feb3ce93375a563ead745fa7105:
+
+  atmel_lcdfb: blank the backlight on remove (2013-06-01 03:18:55 +0800)
+
+----------------------------------------------------------------
+fbdev: fixes for 3.10-rc4
+
+This contains some small fixes
+
+Atmel LCDC: fix blank the backlight on remove
+ps3fb: fix compile warning
+OMAPDSS: Fix crash with DT boot
+
+Signed-off-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+
+----------------------------------------------------------------
+Jean-Christophe PLAGNIOL-VILLARD (1):
+      Merge branch 'fbdev-3.10-fixes' of git://gitorious.org/linux-omap-dss2/linux into linux-fbdev/for-3.10-fixes
+
+Richard Genoud (2):
+      trivial: atmel_lcdfb: add missing error message
+      atmel_lcdfb: blank the backlight on remove
+
+Tomi Valkeinen (2):
+      fbdev/ps3fb: fix compile warning
+      OMAPDSS: Fix crash with DT boot
+
+ drivers/gpu/drm/omapdrm/omap_drv.c       |    3 +++
+ drivers/media/platform/omap/omap_vout.c  |    3 +++
+ drivers/video/atmel_lcdfb.c              |   15 ++++++++++++---
+ drivers/video/omap2/dss/core.c           |   20 +++++++++++++++++++-
+ drivers/video/omap2/omapfb/omapfb-main.c |    3 +++
+ drivers/video/ps3fb.c                    |    2 +-
+ include/video/omapdss.h                  |    1 +
+ 7 files changed, 42 insertions(+), 5 deletions(-)
+
+Brest Regards,
+J.

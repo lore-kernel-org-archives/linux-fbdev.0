@@ -1,224 +1,71 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:35:54 +0000
-Subject: [PATCH 01/27] OMAPDSS: public omapdss_register_output()
-Message-Id: <1369906580-27585-2-git-send-email-tomi.valkeinen@ti.com>
+From: Michal Simek <michal.simek@xilinx.com>
+Date: Fri, 31 May 2013 12:55:34 +0000
+Subject: [PATCH v3 4/8] video: xilinxfb: Use drvdata->regs_phys instead of physaddr
+Message-Id: <ef73f4a9d2f95a19819e1e37c0f3377033779cd6.1370004925.git.michal.simek@xilinx.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-8141-1370004958-0001"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906580-27585-1-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <cover.1370004925.git.michal.simek@xilinx.com>
+In-Reply-To: <cover.1370004925.git.michal.simek@xilinx.com>
+To: linux-kernel@vger.kernel.org
+Cc: Michal Simek <monstr@monstr.eu>, Michal Simek <michal.simek@xilinx.com>, Arnd Bergmann <arnd@arndb.de>, Timur Tabi <timur@tabi.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-In order to allow multiple display block in a video pipeline, we need to
-give the drivers way to register themselves. For now we have
-the omapdss_register_display() which is used to register panels, and
-dss_register_output() which is used to register DSS encoders.
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
 
-This patch makes dss_register_output() public (with the name of
-omapdss_register_output), which can be used to register also external
-encoders. The distinction between register_output and register_display
-is that a "display" is an entity at the end of the videopipeline, and
-"output" is something inside the pipeline.
+--=_mimegpg-monstr-desktop-8141-1370004958-0001
 
-The registration and naming will be made saner in the future, but the
-current names and functions are kept to minimize changes during the dss
-device model transition.
+physaddr will be remove in the next patch.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
 ---
- drivers/video/omap2/dss/dpi.c    | 4 ++--
- drivers/video/omap2/dss/dsi.c    | 4 ++--
- drivers/video/omap2/dss/dss.h    | 4 ----
- drivers/video/omap2/dss/hdmi.c   | 4 ++--
- drivers/video/omap2/dss/output.c | 7 +++++--
- drivers/video/omap2/dss/rfbi.c   | 4 ++--
- drivers/video/omap2/dss/sdi.c    | 4 ++--
- drivers/video/omap2/dss/venc.c   | 4 ++--
- include/video/omapdss.h          | 2 ++
- 9 files changed, 19 insertions(+), 18 deletions(-)
+Changes in v3:
+- New patch in this patchset based on discussions
 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index 0afbcd5..3299e27 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -693,14 +693,14 @@ static void dpi_init_output(struct platform_device *pdev)
- 	out->dispc_channel = dpi_get_channel();
- 	out->owner = THIS_MODULE;
- 
--	dss_register_output(out);
-+	omapdss_register_output(out);
- }
- 
- static void __exit dpi_uninit_output(struct platform_device *pdev)
- {
- 	struct omap_dss_device *out = &dpi.output;
- 
--	dss_unregister_output(out);
-+	omapdss_unregister_output(out);
- }
- 
- static int omap_dpi_probe(struct platform_device *pdev)
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 2f90019..4ecc0c1 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -5426,7 +5426,7 @@ static void dsi_init_output(struct platform_device *dsidev)
- 	out->dispc_channel = dsi_get_channel(dsi->module_id);
- 	out->owner = THIS_MODULE;
- 
--	dss_register_output(out);
-+	omapdss_register_output(out);
- }
- 
- static void dsi_uninit_output(struct platform_device *dsidev)
-@@ -5434,7 +5434,7 @@ static void dsi_uninit_output(struct platform_device *dsidev)
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 	struct omap_dss_device *out = &dsi->output;
- 
--	dss_unregister_output(out);
-+	omapdss_unregister_output(out);
- }
- 
- /* DSI1 HW IP initialisation */
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 67a509e..902d458 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -179,10 +179,6 @@ void dss_put_device(struct omap_dss_device *dssdev);
- void dss_copy_device_pdata(struct omap_dss_device *dst,
- 		const struct omap_dss_device *src);
- 
--/* output */
--void dss_register_output(struct omap_dss_device *out);
--void dss_unregister_output(struct omap_dss_device *out);
--
- /* display */
- int dss_suspend_all_devices(void);
- int dss_resume_all_devices(void);
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 1a7b179..42376d1 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -1044,14 +1044,14 @@ static void hdmi_init_output(struct platform_device *pdev)
- 	out->dispc_channel = OMAP_DSS_CHANNEL_DIGIT;
- 	out->owner = THIS_MODULE;
- 
--	dss_register_output(out);
-+	omapdss_register_output(out);
- }
- 
- static void __exit hdmi_uninit_output(struct platform_device *pdev)
- {
- 	struct omap_dss_device *out = &hdmi.output;
- 
--	dss_unregister_output(out);
-+	omapdss_unregister_output(out);
- }
- 
- /* HDMI HW IP initialisation */
-diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
-index 9ad7d21..0ba168e 100644
---- a/drivers/video/omap2/dss/output.c
-+++ b/drivers/video/omap2/dss/output.c
-@@ -92,15 +92,18 @@ err:
- }
- EXPORT_SYMBOL(omapdss_output_unset_device);
- 
--void dss_register_output(struct omap_dss_device *out)
-+int omapdss_register_output(struct omap_dss_device *out)
- {
- 	list_add_tail(&out->list, &output_list);
-+	return 0;
- }
-+EXPORT_SYMBOL(omapdss_register_output);
- 
--void dss_unregister_output(struct omap_dss_device *out)
-+void omapdss_unregister_output(struct omap_dss_device *out)
- {
- 	list_del(&out->list);
- }
-+EXPORT_SYMBOL(omapdss_unregister_output);
- 
- struct omap_dss_device *omap_dss_get_output(enum omap_dss_output_id id)
- {
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index f18c946..fdfe6e6 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -1022,14 +1022,14 @@ static void rfbi_init_output(struct platform_device *pdev)
- 	out->dispc_channel = OMAP_DSS_CHANNEL_LCD;
- 	out->owner = THIS_MODULE;
- 
--	dss_register_output(out);
-+	omapdss_register_output(out);
- }
- 
- static void __exit rfbi_uninit_output(struct platform_device *pdev)
- {
- 	struct omap_dss_device *out = &rfbi.output;
- 
--	dss_unregister_output(out);
-+	omapdss_unregister_output(out);
- }
- 
- /* RFBI HW IP initialisation */
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index 10268a2..0343d08 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -350,14 +350,14 @@ static void sdi_init_output(struct platform_device *pdev)
- 	out->dispc_channel = OMAP_DSS_CHANNEL_LCD;
- 	out->owner = THIS_MODULE;
- 
--	dss_register_output(out);
-+	omapdss_register_output(out);
- }
- 
- static void __exit sdi_uninit_output(struct platform_device *pdev)
- {
- 	struct omap_dss_device *out = &sdi.output;
- 
--	dss_unregister_output(out);
-+	omapdss_unregister_output(out);
- }
- 
- static int omap_sdi_probe(struct platform_device *pdev)
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 0deb771..291a40d 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -794,14 +794,14 @@ static void venc_init_output(struct platform_device *pdev)
- 	out->dispc_channel = OMAP_DSS_CHANNEL_DIGIT;
- 	out->owner = THIS_MODULE;
- 
--	dss_register_output(out);
-+	omapdss_register_output(out);
- }
- 
- static void __exit venc_uninit_output(struct platform_device *pdev)
- {
- 	struct omap_dss_device *out = &venc.output;
- 
--	dss_unregister_output(out);
-+	omapdss_unregister_output(out);
- }
- 
- /* VENC HW IP initialisation */
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index b2e6160..3582edf 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -793,6 +793,8 @@ struct omap_overlay_manager *omap_dss_get_overlay_manager(int num);
- int omap_dss_get_num_overlays(void);
- struct omap_overlay *omap_dss_get_overlay(int num);
- 
-+int omapdss_register_output(struct omap_dss_device *output);
-+void omapdss_unregister_output(struct omap_dss_device *output);
- struct omap_dss_device *omap_dss_get_output(enum omap_dss_output_id id);
- struct omap_dss_device *omap_dss_find_output(const char *name);
- struct omap_dss_device *omap_dss_find_output_by_node(struct device_node *node);
--- 
-1.8.1.2
+Changes in v2: None
 
+ drivers/video/xilinxfb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index d94c992..1b55f18 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -325,7 +325,7 @@ static int xilinxfb_assign(struct device *dev,
+
+ 	if (drvdata->flags & BUS_ACCESS_FLAG) {
+ 		/* Put a banner in the log (for DEBUG) */
+-		dev_dbg(dev, "regs: phys=%lx, virt=%p\n", physaddr,
++		dev_dbg(dev, "regs: phys=%x, virt=%p\n", drvdata->regs_phys,
+ 					drvdata->regs);
+ 	}
+ 	/* Put a banner in the log (for DEBUG) */
+@@ -353,7 +353,7 @@ err_fbmem:
+
+ err_map:
+ 	if (drvdata->flags & BUS_ACCESS_FLAG)
+-		release_mem_region(physaddr, 8);
++		release_mem_region(drvdata->regs_phys, 8);
+
+ err_region:
+ 	kfree(drvdata);
+--
+1.8.2.3
+
+
+--=_mimegpg-monstr-desktop-8141-1370004958-0001
+Content-Type: application/pgp-signature
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAlGond4ACgkQykllyylKDCE2MwCfRF9/Bav3CqONvZ/8bTYb+Ktj
+pGUAoII9nudByTfMZc13zPVxEtrXxDR0
+=E5bI
+-----END PGP SIGNATURE-----
+
+--=_mimegpg-monstr-desktop-8141-1370004958-0001--

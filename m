@@ -1,63 +1,126 @@
-From: Pawel Moll <pawel.moll@arm.com>
-Date: Wed, 17 Apr 2013 15:17:19 +0000
-Subject: [RFC 07/10] mfd: vexpress: Allow external drivers to parse site ids
-Message-Id: <1366211842-21497-8-git-send-email-pawel.moll@arm.com>
+From: Michal Simek <michal.simek@xilinx.com>
+Date: Fri, 31 May 2013 12:55:37 +0000
+Subject: [PATCH v3 7/8] video: xilinxfb: Fix sparse warnings
+Message-Id: <ea3d6fcbb9f7a00a9cdbd3d0a7a4d3401265ebf0.1370004925.git.michal.simek@xilinx.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-8196-1370004968-0001"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366211842-21497-1-git-send-email-pawel.moll@arm.com>
-In-Reply-To: <1366211842-21497-1-git-send-email-pawel.moll@arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>
+References: <cover.1370004925.git.michal.simek@xilinx.com>
+In-Reply-To: <cover.1370004925.git.michal.simek@xilinx.com>
+To: linux-kernel@vger.kernel.org
+Cc: Michal Simek <monstr@monstr.eu>, Michal Simek <michal.simek@xilinx.com>, Arnd Bergmann <arnd@arndb.de>, Timur Tabi <timur@tabi.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-... by providing a function translating the MASTER
-value into the currently valid site number and
-a _LAST constant providing all possible site id values.
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
 
-Signed-off-by: Pawel Moll <pawel.moll@arm.com>
+--=_mimegpg-monstr-desktop-8196-1370004968-0001
+
+Use proper casting for fb_virt variable.
+
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
 ---
- drivers/mfd/vexpress-sysreg.c |    5 +++++
- include/linux/vexpress.h      |    2 ++
- 2 files changed, 7 insertions(+)
+Changes in v3:
+- New patch in this patchset
 
-diff --git a/drivers/mfd/vexpress-sysreg.c b/drivers/mfd/vexpress-sysreg.c
-index bf75e96..4158e26 100644
---- a/drivers/mfd/vexpress-sysreg.c
-+++ b/drivers/mfd/vexpress-sysreg.c
-@@ -81,6 +81,11 @@ void vexpress_flags_set(u32 data)
- 	writel(data, vexpress_sysreg_base + SYS_FLAGSSET);
- }
- 
-+u32 vexpress_get_site(int site)
-+{
-+	return site == VEXPRESS_SITE_MASTER ? vexpress_master_site : site;
-+}
-+
- u32 vexpress_get_procid(int site)
- {
- 	if (site == VEXPRESS_SITE_MASTER)
-diff --git a/include/linux/vexpress.h b/include/linux/vexpress.h
-index 7581874..1ebbcf5 100644
---- a/include/linux/vexpress.h
-+++ b/include/linux/vexpress.h
-@@ -19,6 +19,7 @@
- #define VEXPRESS_SITE_MB		0
- #define VEXPRESS_SITE_DB1		1
- #define VEXPRESS_SITE_DB2		2
-+#define __VEXPRESS_SITE_LAST		3
- #define VEXPRESS_SITE_MASTER		0xf
- 
- #define VEXPRESS_CONFIG_STATUS_DONE	0
-@@ -103,6 +104,7 @@ int vexpress_config_write(struct vexpress_config_func *func, int offset,
- 
- /* Platform control */
- 
-+u32 vexpress_get_site(int site);
- u32 vexpress_get_procid(int site);
- u32 vexpress_get_hbi(int site);
- void *vexpress_get_24mhz_clock_base(void);
--- 
-1.7.10.4
+Changes in v2: None
+
+ drivers/video/xilinxfb.c | 24 ++++++++++++++----------
+ 1 file changed, 14 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index f3d4a69..e27a4f6 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -131,7 +131,7 @@ struct xilinxfb_drvdata {
+ 	dcr_host_t      dcr_host;
+ 	unsigned int    dcr_len;
+ #endif
+-	void		*fb_virt;	/* virt. address of the frame buffer */
++	void __iomem	*fb_virt;	/* virt. address of the frame buffer */
+ 	dma_addr_t	fb_phys;	/* phys. address of the frame buffer */
+ 	int		fb_alloced;	/* Flag, was the fb memory alloced? */
+
+@@ -273,8 +273,10 @@ static int xilinxfb_assign(struct platform_device *pdev,
+ 		drvdata->fb_virt = ioremap(pdata->fb_phys, fbsize);
+ 	} else {
+ 		drvdata->fb_alloced = 1;
+-		drvdata->fb_virt = dma_alloc_coherent(dev, PAGE_ALIGN(fbsize),
+-					&drvdata->fb_phys, GFP_KERNEL);
++		drvdata->fb_virt = (__force void __iomem *)
++				   dma_alloc_coherent(dev, PAGE_ALIGN(fbsize),
++						      &drvdata->fb_phys,
++						      GFP_KERNEL);
+ 	}
+
+ 	if (!drvdata->fb_virt) {
+@@ -287,7 +289,7 @@ static int xilinxfb_assign(struct platform_device *pdev,
+ 	}
+
+ 	/* Clear (turn to black) the framebuffer */
+-	memset_io((void __iomem *)drvdata->fb_virt, 0, fbsize);
++	memset_io(drvdata->fb_virt, 0, fbsize);
+
+ 	/* Tell the hardware where the frame buffer is */
+ 	xilinx_fb_out32(drvdata, REG_FB_ADDR, drvdata->fb_phys);
+@@ -307,7 +309,7 @@ static int xilinxfb_assign(struct platform_device *pdev,
+
+ 	/* Fill struct fb_info */
+ 	drvdata->info.device = dev;
+-	drvdata->info.screen_base = (void __iomem *)drvdata->fb_virt;
++	drvdata->info.screen_base = drvdata->fb_virt;
+ 	drvdata->info.fbops = &xilinxfb_ops;
+ 	drvdata->info.fix = xilinx_fb_fix;
+ 	drvdata->info.fix.smem_start = drvdata->fb_phys;
+@@ -341,8 +343,8 @@ static int xilinxfb_assign(struct platform_device *pdev,
+
+ 	if (drvdata->flags & BUS_ACCESS_FLAG) {
+ 		/* Put a banner in the log (for DEBUG) */
+-		dev_dbg(dev, "regs: phys=%x, virt=%p\n", drvdata->regs_phys,
+-					drvdata->regs);
++		dev_dbg(dev, "regs: phys=%x, virt=%p\n",
++			(u32)drvdata->regs_phys, drvdata->regs);
+ 	}
+ 	/* Put a banner in the log (for DEBUG) */
+ 	dev_dbg(dev, "fb: phys=%llx, virt=%p, size=%x\n",
+@@ -355,8 +357,9 @@ err_regfb:
+
+ err_cmap:
+ 	if (drvdata->fb_alloced)
+-		dma_free_coherent(dev, PAGE_ALIGN(fbsize), drvdata->fb_virt,
+-			drvdata->fb_phys);
++		dma_free_coherent(dev, PAGE_ALIGN(fbsize),
++				  (__force void *)drvdata->fb_virt,
++				  drvdata->fb_phys);
+ 	else
+ 		iounmap(drvdata->fb_virt);
+
+@@ -388,7 +391,8 @@ static int xilinxfb_release(struct device *dev)
+
+ 	if (drvdata->fb_alloced)
+ 		dma_free_coherent(dev, PAGE_ALIGN(drvdata->info.fix.smem_len),
+-				  drvdata->fb_virt, drvdata->fb_phys);
++				  (__force void *)drvdata->fb_virt,
++				  drvdata->fb_phys);
+ 	else
+ 		iounmap(drvdata->fb_virt);
+
+--
+1.8.2.3
 
 
+--=_mimegpg-monstr-desktop-8196-1370004968-0001
+Content-Type: application/pgp-signature
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAlGonegACgkQykllyylKDCEZUACePZ/J7l9I/d21unFDJM5QL47Q
+/yQAoIANX+aDeer2S5ol5lvTaLD2vnqj
+=ctnG
+-----END PGP SIGNATURE-----
+
+--=_mimegpg-monstr-desktop-8196-1370004968-0001--

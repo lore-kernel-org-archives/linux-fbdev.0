@@ -1,22 +1,45 @@
-From: Jiang Liu <liuj97@gmail.com>
-Date: Fri, 31 May 2013 04:31:15 +0000
-Subject: Re: [PATCH v8, part3 06/14] mm, acornfb: use free_reserved_area() to simplify code
-Message-Id: <51A82793.4080204@gmail.com>
+From: Richard Genoud <richard.genoud@gmail.com>
+Date: Fri, 31 May 2013 14:28:39 +0000
+Subject: [PATCH 2/2] atmel_lcdfb: blank the backlight on remove
+Message-Id: <1370010519-18691-2-git-send-email-richard.genoud@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369575522-26405-1-git-send-email-jiang.liu@huawei.com> <1369575522-26405-7-git-send-email-jiang.liu@huawei.com> <20130530145844.902b3a947c1f7430c1c2ecf5@linux-foundation.org>
-In-Reply-To: <20130530145844.902b3a947c1f7430c1c2ecf5@linux-foundation.org>
+References: <1370010519-18691-1-git-send-email-richard.genoud@gmail.com>
+In-Reply-To: <1370010519-18691-1-git-send-email-richard.genoud@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jiang Liu <jiang.liu@huawei.com>, David Rientjes <rientjes@google.com>, Wen Congyang <wency@cn.fujitsu.com>, Mel Gorman <mgorman@suse.de>, Minchan Kim <minchan@kernel.org>, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, Michal Hocko <mhocko@suse.cz>, James Bottomley <james.bottomley@hansenpartnership.com>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, David Howells <dhowells@redhat.com>, Mark Salter <msalter@redhat.com>, Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, Florian Tobias Schandinat <florianschandinat@gmx.de>, linux-fbdev@vger.kernel.org
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Richard Genoud <richard.genoud@gmail.com>
 
-On Fri 31 May 2013 05:58:44 AM CST, Andrew Morton wrote:
-> On Sun, 26 May 2013 21:38:34 +0800 Jiang Liu <liuj97@gmail.com> wrote:
->
->> Use common help function free_reserved_area() to simplify code.
->
-> http://ozlabs.org/~akpm/mmots/broken-out/drivers-video-acornfbc-remove-dead-code.patch
-> removes all the code which your patch alters.
-Thanks Andrew, please just drop that patch.
+When removing atmel_lcdfb module, the backlight is unregistered but not
+blanked. (only for CONFIG_BACKLIGHT_ATMEL_LCDC case).
+This can result in the screen going full white depending on how the PWM
+is wired.
+
+Signed-off-by: Richard Genoud <richard.genoud@gmail.com>
+---
+ drivers/video/atmel_lcdfb.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 6e6491f..e00318f 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -223,8 +223,13 @@ static void init_backlight(struct atmel_lcdfb_info *sinfo)
+ 
+ static void exit_backlight(struct atmel_lcdfb_info *sinfo)
+ {
+-	if (sinfo->backlight)
++	if (sinfo->backlight) {
++		if (sinfo->backlight->ops) {
++			sinfo->backlight->props.power = FB_BLANK_POWERDOWN;
++			sinfo->backlight->ops->update_status(sinfo->backlight);
++		}
+ 		backlight_device_unregister(sinfo->backlight);
++	}
+ }
+ 
+ #else
+-- 
+1.7.10.4
 

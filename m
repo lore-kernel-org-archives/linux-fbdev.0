@@ -1,301 +1,170 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 30 May 2013 09:34:47 +0000
-Subject: [PATCH 26/32] OMAPDSS: remove omap_dss_start/stop_device()
-Message-Id: <1369906493-27538-27-git-send-email-tomi.valkeinen@ti.com>
+From: Michal Simek <michal.simek@xilinx.com>
+Date: Fri, 31 May 2013 12:55:35 +0000
+Subject: [PATCH v3 5/8] video: xilinxfb: Group bus initialization
+Message-Id: <2d8626a5a15f7880c272ee5a2c7f8dee697ac0f3.1370004925.git.michal.simek@xilinx.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-8172-1370004961-0001"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <cover.1370004925.git.michal.simek@xilinx.com>
+In-Reply-To: <cover.1370004925.git.michal.simek@xilinx.com>
+To: linux-kernel@vger.kernel.org
+Cc: Michal Simek <monstr@monstr.eu>, Michal Simek <michal.simek@xilinx.com>, Arnd Bergmann <arnd@arndb.de>, Timur Tabi <timur@tabi.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-The omap_dss_start_device() and omap_dss_stop_device(), called by the
-DSS output drivers, are old relics. They originally did something
-totally else, but nowadays they increase the module ref count for panels
-that are enabled.
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
 
-This model is quite broken: the panel modules may be used even before
-they are enabled. For example, configuring the panel requires calls to
-functions located in the panel modules.
+--=_mimegpg-monstr-desktop-8172-1370004961-0001
 
-In the following patches we try to improve the ref count management for
-the modules and display devices. The first step, however, is to remove
-the omap_dss_start/stop_device() totally.
+Move of_address_to_resource() to xilinxfb_assign()
+which simplify driver probing.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
 ---
- drivers/video/omap2/dss/display.c | 20 --------------------
- drivers/video/omap2/dss/dpi.c     | 10 ----------
- drivers/video/omap2/dss/dsi.c     | 10 ----------
- drivers/video/omap2/dss/hdmi.c    | 12 +-----------
- drivers/video/omap2/dss/rfbi.c    |  9 ---------
- drivers/video/omap2/dss/sdi.c     | 10 ----------
- drivers/video/omap2/dss/venc.c    | 12 +-----------
- include/video/omapdss.h           |  3 ---
- 8 files changed, 2 insertions(+), 84 deletions(-)
+Changes in v3:
+- New patch in this patchset
 
-diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
-index a9a1d55..8096764 100644
---- a/drivers/video/omap2/dss/display.c
-+++ b/drivers/video/omap2/dss/display.c
-@@ -233,26 +233,6 @@ struct omap_dss_device *omap_dss_find_device(void *data,
- }
- EXPORT_SYMBOL(omap_dss_find_device);
- 
--int omap_dss_start_device(struct omap_dss_device *dssdev)
--{
--	if (!dssdev->driver) {
--		DSSDBG("no driver\n");
--		return -ENODEV;
--	}
--
--	if (!try_module_get(dssdev->dev->driver->owner))
--		return -ENODEV;
--
--	return 0;
--}
--EXPORT_SYMBOL(omap_dss_start_device);
--
--void omap_dss_stop_device(struct omap_dss_device *dssdev)
--{
--	module_put(dssdev->dev->driver->owner);
--}
--EXPORT_SYMBOL(omap_dss_stop_device);
--
- void videomode_to_omap_video_timings(const struct videomode *vm,
- 		struct omap_video_timings *ovt)
+Changes in v2: None
+
+ drivers/video/xilinxfb.c | 56 +++++++++++++-----------------------------------
+ 1 file changed, 15 insertions(+), 41 deletions(-)
+
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index 1b55f18..bd3b85d 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -227,33 +227,23 @@ static struct fb_ops xilinxfb_ops =
+  * Bus independent setup/teardown
+  */
+
+-static int xilinxfb_assign(struct device *dev,
++static int xilinxfb_assign(struct platform_device *pdev,
+ 			   struct xilinxfb_drvdata *drvdata,
+-			   unsigned long physaddr,
+ 			   struct xilinxfb_platform_data *pdata)
  {
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index 66ba9a6..d369927 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -365,12 +365,6 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
- 		goto err_no_out_mgr;
- 	}
- 
--	r = omap_dss_start_device(dssdev);
--	if (r) {
--		DSSERR("failed to start device\n");
--		goto err_start_dev;
--	}
--
- 	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI)) {
- 		r = regulator_enable(dpi.vdds_dsi_reg);
- 		if (r)
-@@ -425,8 +419,6 @@ err_get_dispc:
- 	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI))
- 		regulator_disable(dpi.vdds_dsi_reg);
- err_reg_enable:
--	omap_dss_stop_device(dssdev);
--err_start_dev:
- err_no_out_mgr:
- err_no_reg:
- 	mutex_unlock(&dpi.lock);
-@@ -453,8 +445,6 @@ void omapdss_dpi_display_disable(struct omap_dss_device *dssdev)
- 	if (dss_has_feature(FEAT_DPI_USES_VDDS_DSI))
- 		regulator_disable(dpi.vdds_dsi_reg);
- 
--	omap_dss_stop_device(dssdev);
--
- 	mutex_unlock(&dpi.lock);
- }
- EXPORT_SYMBOL(omapdss_dpi_display_disable);
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 37ca980..892838e 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -4592,12 +4592,6 @@ int omapdss_dsi_display_enable(struct omap_dss_device *dssdev)
- 
- 	mutex_lock(&dsi->lock);
- 
--	r = omap_dss_start_device(dssdev);
--	if (r) {
--		DSSERR("failed to start device\n");
--		goto err_start_dev;
--	}
--
- 	r = dsi_runtime_get(dsidev);
- 	if (r)
- 		goto err_get_dsi;
-@@ -4618,8 +4612,6 @@ err_init_dsi:
- 	dsi_enable_pll_clock(dsidev, 0);
- 	dsi_runtime_put(dsidev);
- err_get_dsi:
--	omap_dss_stop_device(dssdev);
--err_start_dev:
- 	mutex_unlock(&dsi->lock);
- 	DSSDBG("dsi_display_enable FAILED\n");
- 	return r;
-@@ -4648,8 +4640,6 @@ void omapdss_dsi_display_disable(struct omap_dss_device *dssdev,
- 	dsi_runtime_put(dsidev);
- 	dsi_enable_pll_clock(dsidev, 0);
- 
--	omap_dss_stop_device(dssdev);
--
- 	mutex_unlock(&dsi->lock);
- }
- EXPORT_SYMBOL(omapdss_dsi_display_disable);
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 6d1e97c..e7fe182 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -735,23 +735,15 @@ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
- 
- 	hdmi.ip_data.hpd_gpio = hdmi.hpd_gpio;
- 
--	r = omap_dss_start_device(dssdev);
--	if (r) {
--		DSSERR("failed to start device\n");
--		goto err0;
--	}
--
- 	r = hdmi_power_on_full(dssdev);
- 	if (r) {
- 		DSSERR("failed to power on device\n");
--		goto err1;
-+		goto err0;
- 	}
- 
- 	mutex_unlock(&hdmi.lock);
- 	return 0;
- 
--err1:
--	omap_dss_stop_device(dssdev);
- err0:
- 	mutex_unlock(&hdmi.lock);
- 	return r;
-@@ -765,8 +757,6 @@ void omapdss_hdmi_display_disable(struct omap_dss_device *dssdev)
- 
- 	hdmi_power_off_full(dssdev);
- 
--	omap_dss_stop_device(dssdev);
--
- 	mutex_unlock(&hdmi.lock);
- }
- 
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index cfcb52f..30ff0e0 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -902,12 +902,6 @@ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		return r;
- 
--	r = omap_dss_start_device(dssdev);
--	if (r) {
--		DSSERR("failed to start device\n");
--		goto err0;
--	}
--
- 	r = dss_mgr_register_framedone_handler(out->manager,
- 			framedone_callback, NULL);
- 	if (r) {
-@@ -924,8 +918,6 @@ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
- 
- 	return 0;
- err1:
--	omap_dss_stop_device(dssdev);
--err0:
- 	rfbi_runtime_put();
- 	return r;
- }
-@@ -937,7 +929,6 @@ void omapdss_rfbi_display_disable(struct omap_dss_device *dssdev)
- 
- 	dss_mgr_unregister_framedone_handler(out->manager,
- 			framedone_callback, NULL);
--	omap_dss_stop_device(dssdev);
- 
- 	rfbi_runtime_put();
- }
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index e723687..ce37c80 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -139,12 +139,6 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- 		return -ENODEV;
- 	}
- 
--	r = omap_dss_start_device(dssdev);
--	if (r) {
--		DSSERR("failed to start device\n");
--		goto err_start_dev;
--	}
--
- 	r = regulator_enable(sdi.vdds_sdi_reg);
- 	if (r)
- 		goto err_reg_enable;
-@@ -216,8 +210,6 @@ err_calc_clock_div:
- err_get_dispc:
- 	regulator_disable(sdi.vdds_sdi_reg);
- err_reg_enable:
--	omap_dss_stop_device(dssdev);
--err_start_dev:
- 	return r;
- }
- EXPORT_SYMBOL(omapdss_sdi_display_enable);
-@@ -233,8 +225,6 @@ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev)
- 	dispc_runtime_put();
- 
- 	regulator_disable(sdi.vdds_sdi_reg);
--
--	omap_dss_stop_device(dssdev);
- }
- EXPORT_SYMBOL(omapdss_sdi_display_disable);
- 
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index af404b4..bac904c 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -513,23 +513,15 @@ int omapdss_venc_display_enable(struct omap_dss_device *dssdev)
- 		goto err0;
- 	}
- 
--	r = omap_dss_start_device(dssdev);
--	if (r) {
--		DSSERR("failed to start device\n");
--		goto err0;
--	}
--
- 	r = venc_power_on(dssdev);
- 	if (r)
--		goto err1;
-+		goto err0;
- 
- 	venc.wss_data = 0;
- 
- 	mutex_unlock(&venc.venc_lock);
- 
- 	return 0;
--err1:
--	omap_dss_stop_device(dssdev);
- err0:
- 	mutex_unlock(&venc.venc_lock);
- 	return r;
-@@ -543,8 +535,6 @@ void omapdss_venc_display_disable(struct omap_dss_device *dssdev)
- 
- 	venc_power_off(dssdev);
- 
--	omap_dss_stop_device(dssdev);
--
- 	mutex_unlock(&venc.venc_lock);
- }
- 
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index f8e0e64..3aa89c4 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -778,9 +778,6 @@ struct omap_dss_device *omap_dss_find_device(void *data,
- 		int (*match)(struct omap_dss_device *dssdev, void *data));
- const char *omapdss_get_default_display_name(void);
- 
--int omap_dss_start_device(struct omap_dss_device *dssdev);
--void omap_dss_stop_device(struct omap_dss_device *dssdev);
--
- void videomode_to_omap_video_timings(const struct videomode *vm,
- 		struct omap_video_timings *ovt);
- void omap_video_timings_to_videomode(const struct omap_video_timings *ovt,
--- 
-1.8.1.2
+ 	int rc;
++	struct device *dev = &pdev->dev;
+ 	int fbsize = pdata->xvirt * pdata->yvirt * BYTES_PER_PIXEL;
 
+ 	if (drvdata->flags & BUS_ACCESS_FLAG) {
+-		/*
+-		 * Map the control registers in if the controller
+-		 * is on direct BUS interface.
+-		 */
+-		if (!request_mem_region(physaddr, 8, DRIVER_NAME)) {
+-			dev_err(dev, "Couldn't lock memory region at 0x%08lX\n",
+-				physaddr);
+-			rc = -ENODEV;
+-			goto err_region;
+-		}
++		struct resource *res;
+
+-		drvdata->regs_phys = physaddr;
+-		drvdata->regs = ioremap(physaddr, 8);
++		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++		drvdata->regs_phys = res->start;
++		drvdata->regs = devm_request_and_ioremap(&pdev->dev, res);
+ 		if (!drvdata->regs) {
+-			dev_err(dev, "Couldn't lock memory region at 0x%08lX\n",
+-				physaddr);
+-			rc = -ENODEV;
+-			goto err_map;
++			rc = -EADDRNOTAVAIL;
++			goto err_region;
+ 		}
+ 	}
+
+@@ -349,11 +339,7 @@ err_cmap:
+
+ err_fbmem:
+ 	if (drvdata->flags & BUS_ACCESS_FLAG)
+-		iounmap(drvdata->regs);
+-
+-err_map:
+-	if (drvdata->flags & BUS_ACCESS_FLAG)
+-		release_mem_region(drvdata->regs_phys, 8);
++		devm_iounmap(dev, drvdata->regs);
+
+ err_region:
+ 	kfree(drvdata);
+@@ -384,10 +370,8 @@ static int xilinxfb_release(struct device *dev)
+ 	xilinx_fb_out32(drvdata, REG_CTRL, 0);
+
+ 	/* Release the resources, as allocated based on interface */
+-	if (drvdata->flags & BUS_ACCESS_FLAG) {
+-		iounmap(drvdata->regs);
+-		release_mem_region(drvdata->regs_phys, 8);
+-	}
++	if (drvdata->flags & BUS_ACCESS_FLAG)
++		devm_iounmap(dev, drvdata->regs);
+ #ifdef CONFIG_PPC_DCR
+ 	else
+ 		dcr_unmap(drvdata->dcr_host, drvdata->dcr_len);
+@@ -408,8 +392,7 @@ static int xilinxfb_of_probe(struct platform_device *op)
+ 	const u32 *prop;
+ 	u32 tft_access = 0;
+ 	struct xilinxfb_platform_data pdata;
+-	struct resource res;
+-	int size, rc;
++	int size;
+ 	struct xilinxfb_drvdata *drvdata;
+
+ 	/* Copy with the default pdata (not a ptr reference!) */
+@@ -435,22 +418,17 @@ static int xilinxfb_of_probe(struct platform_device *op)
+ 	 */
+ 	if (tft_access) {
+ 		drvdata->flags |= BUS_ACCESS_FLAG;
+-		rc = of_address_to_resource(op->dev.of_node, 0, &res);
+-		if (rc) {
+-			dev_err(&op->dev, "invalid address\n");
+-			goto err;
+-		}
+ 	}
+ #ifdef CONFIG_PPC_DCR
+ 	else {
+ 		int start;
+-		res.start = 0;
+ 		start = dcr_resource_start(op->dev.of_node, 0);
+ 		drvdata->dcr_len = dcr_resource_len(op->dev.of_node, 0);
+ 		drvdata->dcr_host = dcr_map(op->dev.of_node, start, drvdata->dcr_len);
+ 		if (!DCR_MAP_OK(drvdata->dcr_host)) {
+ 			dev_err(&op->dev, "invalid DCR address\n");
+-			goto err;
++			kfree(drvdata);
++			return -ENODEV;
+ 		}
+ 	}
+ #endif
+@@ -477,11 +455,7 @@ static int xilinxfb_of_probe(struct platform_device *op)
+ 		pdata.rotate_screen = 1;
+
+ 	dev_set_drvdata(&op->dev, drvdata);
+-	return xilinxfb_assign(&op->dev, drvdata, res.start, &pdata);
+-
+- err:
+-	kfree(drvdata);
+-	return -ENODEV;
++	return xilinxfb_assign(op, drvdata, &pdata);
+ }
+
+ static int xilinxfb_of_remove(struct platform_device *op)
+--
+1.8.2.3
+
+
+--=_mimegpg-monstr-desktop-8172-1370004961-0001
+Content-Type: application/pgp-signature
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAlGoneEACgkQykllyylKDCFx6gCfSrgNqM1VdLSsE4tw4KizMXmC
+l4YAn2ZKhrc/aI5ING785MWEbAUOlNQa
+=+G1y
+-----END PGP SIGNATURE-----
+
+--=_mimegpg-monstr-desktop-8172-1370004961-0001--

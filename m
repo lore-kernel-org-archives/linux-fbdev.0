@@ -1,23 +1,59 @@
-From: Timur Tabi <timur@tabi.org>
-Date: Fri, 31 May 2013 13:05:26 +0000
+From: Michal Simek <monstr@monstr.eu>
+Date: Fri, 31 May 2013 13:09:01 +0000
 Subject: Re: [PATCH v3 1/8] video: xilinxfb: Fix OF probing on little-endian systems
-Message-Id: <51A8A016.3000306@tabi.org>
+Message-Id: <51A8A0ED.8090006@monstr.eu>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="----enig2COALSFKQSHUSOCLLVCQF"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1370004925.git.michal.simek@xilinx.com> <0a546c3de84c4650d019274debef0ded9007b36f.1370004925.git.michal.simek@xilinx.com>
-In-Reply-To: <0a546c3de84c4650d019274debef0ded9007b36f.1370004925.git.michal.simek@xilinx.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Michal Simek <michal.simek@xilinx.com>
-Cc: linux-kernel@vger.kernel.org, Michal Simek <monstr@monstr.eu>, Arnd Bergmann <arnd@arndb.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
+References: <cover.1370004925.git.michal.simek@xilinx.com> <0a546c3de84c4650d019274debef0ded9007b36f.1370004925.git.michal.simek@xilinx.com> <51A8A016.3000306@tabi.org>
+In-Reply-To: <51A8A016.3000306@tabi.org>
+To: Timur Tabi <timur@tabi.org>
+Cc: Michal Simek <michal.simek@xilinx.com>, linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
 
-On 05/31/2013 07:55 AM, Michal Simek wrote:
-> -	p = (u32 *)of_get_property(op->dev.of_node, "xlnx,dcr-splb-slave-if", NULL);
-> -	tft_access = p ? *p : 0;
-> +	of_property_read_u32(op->dev.of_node, "xlnx,dcr-splb-slave-if",
-> +			     &tft_access);
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+------enig2COALSFKQSHUSOCLLVCQF
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-This is okay, but just FYI, you could instead have just used be32_to_cpup().
+On 05/31/2013 03:05 PM, Timur Tabi wrote:
+> On 05/31/2013 07:55 AM, Michal Simek wrote:
+>> -	p =3D (u32 *)of_get_property(op->dev.of_node, "xlnx,dcr-splb-slave-i=
+f", NULL);
+>> -	tft_access =3D p ? *p : 0;
+>> +	of_property_read_u32(op->dev.of_node, "xlnx,dcr-splb-slave-if",
+>> +			     &tft_access);
+>=20
+> This is okay, but just FYI, you could instead have just used be32_to_cp=
+up().
 
--- 
-Timur Tabi
+yep. I was there in v1 but then Soren suggested to use of_property_read_u=
+32
+http://lkml.org/lkml/2013/5/29/365
+
+Thanks,
+Michal
+
+--=20
+Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel - Microblaze cpu - http://www.monstr.eu/fdt/
+Maintainer of Linux kernel - Xilinx Zynq ARM architecture
+Microblaze U-BOOT custodian and responsible for u-boot arm zynq platform
+
+
+
+------enig2COALSFKQSHUSOCLLVCQF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iEYEARECAAYFAlGooO0ACgkQykllyylKDCFm6QCfcErRgHArTC4UtNG0FXRvG0eu
+tjoAnjN4rqVV65w6mQvRKiC0wJs3csAT
+=sghZ
+-----END PGP SIGNATURE-----
+
+------enig2COALSFKQSHUSOCLLVCQF--

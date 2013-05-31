@@ -1,41 +1,75 @@
-From: Timur Tabi <timur@tabi.org>
-Date: Fri, 31 May 2013 01:16:16 +0000
+From: Michal Simek <monstr@monstr.eu>
+Date: Fri, 31 May 2013 07:39:10 +0000
 Subject: Re: [PATCH v2 2/3] video: xilinxfb: Do not use out_be32 IO function
-Message-Id: <CAOZdJXVn9fyhgZKYc9fhJ=Gis9Nqdv1B8EqVNcaswKV5+iCQ1g@mail.gmail.com>
+Message-Id: <51A8539E.3000702@monstr.eu>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="----enig2EAQEAPKAAQBWPFIJBOKV"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <27e53d5633766ab0dc1ac492023d5a0d0199e3aa.1369906849.git.michal.simek@xilinx.com>
-	<a15de155a3f32fc1416833df1b281db05d347541.1369906849.git.michal.simek@xilinx.com>
-	<3808365.SOUxDqkW9J@wuerfel>
+References: <27e53d5633766ab0dc1ac492023d5a0d0199e3aa.1369906849.git.michal.simek@xilinx.com> <a15de155a3f32fc1416833df1b281db05d347541.1369906849.git.michal.simek@xilinx.com> <3808365.SOUxDqkW9J@wuerfel>
 In-Reply-To: <3808365.SOUxDqkW9J@wuerfel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: Arnd Bergmann <arnd@arndb.de>
-Cc: Michal Simek <michal.simek@xilinx.com>, lkml <linux-kernel@vger.kernel.org>, Michal Simek <monstr@monstr.eu>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Cc: Michal Simek <michal.simek@xilinx.com>, linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
 
-On Thu, May 30, 2013 at 5:04 PM, Arnd Bergmann <arnd@arndb.de> wrote:
->
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+------enig2EAQEAPKAAQBWPFIJBOKV
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 05/31/2013 12:04 AM, Arnd Bergmann wrote:
+> On Thursday 30 May 2013 11:41:01 Michal Simek wrote:
+>>   * To perform the read/write on the registers we need to check on
+>>   * which bus its connected and call the appropriate write API.
+>>   */
+>> -static void xilinx_fb_out_be32(struct xilinxfb_drvdata *drvdata, u32 =
+offset,
+>> +static void xilinx_fb_out32(struct xilinxfb_drvdata *drvdata, u32 off=
+set,
+>>                                 u32 val)
+>>  {
+>>         if (drvdata->flags & PLB_ACCESS_FLAG)
+>> -               out_be32(drvdata->regs + (offset << 2), val);
+>> +               __raw_writel(val, drvdata->regs + (offset << 2));
+>>  #ifdef CONFIG_PPC_DCR
+>>         else
+>>                 dcr_write(drvdata->dcr_host, offset, val);
+>>
+>=20
 > This is probably missing barriers, and is wrong on systems on which
 > the endianess of the device is different from the CPU.
+>=20
+> You already have an indirection in there, so I guess it won't hurt
+> to create a third case for little-endian registers and add
+> another bit in drvdata->flags, or make it depend on the architecture,
+> if the endianess of the device registers is known at compile time.
+
+The PLB_ACCESS_FLAGS is incorrectly named. It means BUS_ACCESS.
+But I will find a way how to autodetect endianess directly on IP
+as I have done it for uartlite and will send v3.
+
+Thanks,
+Michal
+
+--=20
+Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel - Microblaze cpu - http://www.monstr.eu/fdt/
+Maintainer of Linux kernel - Xilinx Zynq ARM architecture
+Microblaze U-BOOT custodian and responsible for u-boot arm zynq platform
 
 
-I suggest what was done in fsl_ssi.c:
 
-#ifdef PPC
-#define read_ssi(addr)             in_be32(addr)
-#define write_ssi(val, addr)         out_be32(addr, val)
-#define write_ssi_mask(addr, clear, set) clrsetbits_be32(addr, clear, set)
-#elif defined ARM
-#define read_ssi(addr)             readl(addr)
-#define write_ssi(val, addr)         writel(val, addr)
-/*
- * FIXME: Proper locking should be added at write_ssi_mask caller level
- * to ensure this register read/modify/write sequence is race free.
- */
-static inline void write_ssi_mask(u32 __iomem *addr, u32 clear, u32 set)
-{
-    u32 val = readl(addr);
-    val = (val & ~clear) | set;
-    writel(val, addr);
-}
-#endif
+------enig2EAQEAPKAAQBWPFIJBOKV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iEYEARECAAYFAlGoU54ACgkQykllyylKDCGGWwCfWeZ7MzVgmIK+ZdEihwY0RXjQ
+0hMAnjL7HT82h2WCTLU3uhhT7gS5zCLm
+=ZggY
+-----END PGP SIGNATURE-----
+
+------enig2EAQEAPKAAQBWPFIJBOKV--

@@ -1,61 +1,63 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 26 Jun 2013 08:15:27 +0000
-Subject: Re: [PATCH 13/23] video: da8xx-fb: enable sync lost intr for v2 ip
-Message-Id: <51CAA31F.7080801@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2DSISEJNKPXCBBBQUSLCT"
+From: Shuah Khan <shuah.kh@samsung.com>
+Date: Sat, 01 Jun 2013 23:07:27 +0000
+Subject: [PATCH v3] backlight: Convert from Legacy pm ops to dev_pm_ops
+Message-Id: <1370128047-2444-1-git-send-email-shuah.kh@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1372170171-9561-14-git-send-email-detheridge@ti.com>
-In-Reply-To: <1372170171-9561-14-git-send-email-detheridge@ti.com>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: rpurdie@rpsys.net, FlorianSchandinat@gmx.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, rafael.j.wysocki@intel.com
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-------enig2DSISEJNKPXCBBBQUSLCT
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Convert drivers/video/backlight/class to use dev_pm_ops for power
+management and remove Legacy PM ops hooks. With this change, backlight
+class registers suspend/resume callbacks via class->pm (dev_pm_ops)
+instead of Legacy class->suspend/resume. When __device_suspend() runs
+call-backs, it will find class->pm ops for the backlight class.
 
-On 25/06/13 17:22, Darren Etheridge wrote:
-> From: Afzal Mohammed <afzal@ti.com>
->=20
-> interrupt handler is checking for sync lost interrupt, but it was not
-> enabled, enable it.
->=20
-> Signed-off-by: Afzal Mohammed <afzal@ti.com>
-> Signed-off-by: Darren Etheridge <detheridge@ti.com>
+Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+Cc: Shuah Khan <shuahkhan@gmail.com>
+---
 
-If the patch is a fix, say that it's a fix. Tell what the bug is, what
-symptoms it causes and how it's fixed.
+v2: Updated changelog to correct device class.
+v3: Updated changelog to correct device class.
 
-I really dislike too terse commit descriptions. The descriptions should
-be as short as possible, but no shorter! =3D). For this one, I guess just=
+ drivers/video/backlight/backlight.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-a few more lines would be enough.
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index c74e7aa..0ffb251 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -208,7 +208,7 @@ static ssize_t backlight_show_actual_brightness(struct device *dev,
+ 
+ static struct class *backlight_class;
+ 
+-static int backlight_suspend(struct device *dev, pm_message_t state)
++static int backlight_suspend(struct device *dev)
+ {
+ 	struct backlight_device *bd = to_backlight_device(dev);
+ 
+@@ -236,6 +236,9 @@ static int backlight_resume(struct device *dev)
+ 	return 0;
+ }
+ 
++static SIMPLE_DEV_PM_OPS(backlight_class_dev_pm_ops, backlight_suspend,
++			 backlight_resume);
++
+ static void bl_device_release(struct device *dev)
+ {
+ 	struct backlight_device *bd = to_backlight_device(dev);
+@@ -414,8 +417,7 @@ static int __init backlight_class_init(void)
+ 	}
+ 
+ 	backlight_class->dev_attrs = bl_device_attributes;
+-	backlight_class->suspend = backlight_suspend;
+-	backlight_class->resume = backlight_resume;
++	backlight_class->pm = &backlight_class_dev_pm_ops;
+ 	return 0;
+ }
+ 
+-- 
+1.7.10.4
 
- Tomi
-
-
-
-------enig2DSISEJNKPXCBBBQUSLCT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRyqMfAAoJEPo9qoy8lh711/MP/ik2WSaXz9Jcu2kpUAjkgewN
-EigqVyeS9EY97mo49DZRlVT1HYOkom2IWbKJx1FFbpufgAkzt4HL8GkaaBPH/Wyi
-zPpURcFuA4qmNI7W5il7eSFWn2c5FjNuTuWduF5nXcBoOorLWrEEJVpYLY992+ra
-N64B4k25fQfKRqEOA4keHcqSYUNlTq/OixeYxo1xWs6NO8ULQFC3lMT24wuaFDAn
-HY35IJUFpdaUcOJAndoeiUqVnRoIL9eIqgQ/aFkIlNjQe4yAfF9w93r0d9skiYHb
-7CWkjna01a76It09OFzjC1BaP1bJQnT7FXMS3mDvP2xcMYdGVcKKbWmIVdPy/N94
-IXMGkhkmUngQ7y0yZxr16twXQPGqD9LAD7lITG9Nmk1su6IQeDVuXXkfZwCTqjew
-U2qT9ZSbbl42XRU9ksifQj5F+Y6+0wiNysw+pMx3KKU+6qDFiunVPuYJAS+QDoMT
-fmywdNI5zNo5EJI4aqsg+kszpx/EViHnMBDkMu5v1X/MUNRNHWC8s7WyWq2hohka
-bSOcX4/nOOQMBtZmDSxBYNpKvI5hPgkQCiMN3qbp11vpeegLYVCCuXA2fxIsKCrz
-26WIVA9qvOvdGWhZz+ctzpqF2OrhmuZi8tKO/gslKhuG6jUqoRFBt9Pi5XJcZSVQ
-EsEeHU0q7dz+zkllyEAG
-=RhU6
------END PGP SIGNATURE-----
-
-------enig2DSISEJNKPXCBBBQUSLCT--

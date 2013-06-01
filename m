@@ -1,51 +1,62 @@
-From: Felipe Balbi <balbi@ti.com>
-Date: Thu, 27 Jun 2013 07:52:44 +0000
-Subject: Re: [PATCH v3 2/5] ARM: dts: Add MIPI PHY node to exynos4.dtsi
-Message-Id: <20130627075244.GR15455@arwen.pp.htv.fi>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="o0y1lerN6xYE2ROn"
+From: Shuah Khan <shuah.kh@samsung.com>
+Date: Sat, 01 Jun 2013 03:59:00 +0000
+Subject: [PATCH v2] backlight: Convert from Legacy pm ops to dev_pm_ops
+Message-Id: <2236505237-3336-1-git-send-email-shuah.kh@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1372258946-15607-1-git-send-email-s.nawrocki@samsung.com>
- <1372258946-15607-3-git-send-email-s.nawrocki@samsung.com>
-In-Reply-To: <1372258946-15607-3-git-send-email-s.nawrocki@samsung.com>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: rpurdie@rpsys.net, FlorianSchandinat@gmx.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, rafael.j.wysocki@intel.com
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
---o0y1lerN6xYE2ROn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Convert drivers/video/backlight/class to use dev_pm_ops for power
+management and remove Legacy PM ops hooks. With this change, rtc class
+registers suspend/resume callbacks via class->pm (dev_pm_ops) instead of
+Legacy class->suspend/resume. When __device_suspend() runs call-backs,
+it will find class->pm ops for the backlight class.
 
-On Wed, Jun 26, 2013 at 05:02:23PM +0200, Sylwester Nawrocki wrote:
-> Add PHY provider node for the MIPI CSIS and MIPI DSIM PHYs.
->=20
-> Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+Cc: Shuah Khan <shuahkhan@gmail.com>
+---
 
-Acked-by: Felipe Balbi <balbi@ti.com>
+v2: Updated changelog to correct device class.
 
---=20
-balbi
+ drivers/video/backlight/backlight.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
---o0y1lerN6xYE2ROn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index c74e7aa..0ffb251 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -208,7 +208,7 @@ static ssize_t backlight_show_actual_brightness(struct device *dev,
+ 
+ static struct class *backlight_class;
+ 
+-static int backlight_suspend(struct device *dev, pm_message_t state)
++static int backlight_suspend(struct device *dev)
+ {
+ 	struct backlight_device *bd = to_backlight_device(dev);
+ 
+@@ -236,6 +236,9 @@ static int backlight_resume(struct device *dev)
+ 	return 0;
+ }
+ 
++static SIMPLE_DEV_PM_OPS(backlight_class_dev_pm_ops, backlight_suspend,
++			 backlight_resume);
++
+ static void bl_device_release(struct device *dev)
+ {
+ 	struct backlight_device *bd = to_backlight_device(dev);
+@@ -414,8 +417,7 @@ static int __init backlight_class_init(void)
+ 	}
+ 
+ 	backlight_class->dev_attrs = bl_device_attributes;
+-	backlight_class->suspend = backlight_suspend;
+-	backlight_class->resume = backlight_resume;
++	backlight_class->pm = &backlight_class_dev_pm_ops;
+ 	return 0;
+ }
+ 
+-- 
+1.7.10.4
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJRy+9MAAoJEIaOsuA1yqREEJcP/ixAuKRVjAsuzj47/ABUW7QS
-glerAWcxGRZ3blSvF9X6aHGNVzneWXeg1VVu6knFDehbNXDNMdIcqtxVW5ep7TYv
-skhfoqjAFJYfnmFyHtIyJqk4RkG6VR0OUXOaluVvFbTir72A5zqIhtOI+Blozha1
-v24TJTqUI/69Hxh74vr+Q0IH2RRuzN5qxa/FsUD02at82swbSEJijE31izgK82fS
-4FVMRZY3hhIfdVKTNij1dAcFYhQKWW5RHXfe6NjBZvfbFz83Phuxl+9bR6BNHKnt
-KkEtnymAvGVXXxpU9TU7muue33oNXOsWIU6P1r8qOQJdaVt8wpNIVNAKePLn8EU5
-0jmAqCOnZe3T22QEvZC/5Jxb7EJq/u8l5MB3P0kwXdQ9KbbNZVPWcWo2wqkAebQp
-eoLf/PZAsEnRgQCrfaxgfxDXm4LVQpC0xeKMAfK0ASESkRO7dRjIUavByXL79Wc/
-xTOWA8Di61Iro8Xhhq3vpzPyV3uWZkD696T0S1d4PhB4xo/0hBuCCIY729UCkgQY
-cbNIoHEHUaw9vwjs7E+XJZrhwhFNs7XbcDzlW/1pit8+rcdZdgsu7Mo7Qsba6z3G
-6GK9aTr2H+JSC3O3pQvLvDuaWXONaCRUlQ9ctdH0YGUH14Y82otUk4Q3JEHpYK/4
-pvTE8GSGDNC/b6q/zxoz
-=t4FX
------END PGP SIGNATURE-----
-
---o0y1lerN6xYE2ROn--

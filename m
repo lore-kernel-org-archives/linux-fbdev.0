@@ -1,58 +1,67 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 26 Jun 2013 11:53:20 +0000
-Subject: Re: [PATCH 1/1] video: imxfb: Make local symbols static
-Message-Id: <51CAD630.1020208@ti.com>
+From: Michal Simek <michal.simek@xilinx.com>
+Date: Mon, 03 Jun 2013 10:13:22 +0000
+Subject: [PATCH v4 7/7] video: xilinxfb: Use driver for Xilinx ARM Zynq
+Message-Id: <282ff667cd78aa58ebe93d856142e8446eb837c5.1370254386.git.michal.simek@xilinx.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2JRLVSIABAJNKUFKSVPLE"
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-9811-1370254423-0001"
 List-Id: <linux-fbdev.vger.kernel.org>
-To: linux-fbdev@vger.kernel.org
+References: <cover.1370254386.git.michal.simek@xilinx.com>
+In-Reply-To: <cover.1370254386.git.michal.simek@xilinx.com>
+To: linux-kernel@vger.kernel.org
+Cc: Michal Simek <monstr@monstr.eu>, Michal Simek <michal.simek@xilinx.com>, Arnd Bergmann <arnd@arndb.de>, Timur Tabi <timur@tabi.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-------enig2JRLVSIABAJNKUFKSVPLE
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
 
-On 10/05/13 14:55, Sachin Kamat wrote:
-> These symbols are used only in this file.
-> Make them static.
->=20
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> ---
->  drivers/video/imxfb.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+--=_mimegpg-monstr-desktop-9811-1370254423-0001
 
-I've added this and the following three other small cleanups to my
-fbdev-3.11 branch:
+From: Michal Simek <monstr@monstr.eu>
 
-video: smscufx: Use NULL instead of 0
-video: udlfb: Use NULL instead of 0
-video: udlfb: Make local symbol static
+Enable this driver for all Xilinx platforms.
 
- Tomi
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+---
+Changes in v4:
+- Remove "video: xilinxfb: Fix sparse warnings"
+  patch because it is trying to fix incorrect API
+  usage and sparse should warn about it.
+
+Changes in v3: None
+Changes in v2: None
+
+ drivers/video/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 2e937bd..2c301f8 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2188,7 +2188,7 @@ config FB_PS3_DEFAULT_SIZE_M
+
+ config FB_XILINX
+ 	tristate "Xilinx frame buffer support"
+-	depends on FB && (XILINX_VIRTEX || MICROBLAZE)
++	depends on FB && (XILINX_VIRTEX || MICROBLAZE || ARCH_ZYNQ)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+--
+1.8.2.3
 
 
-
-------enig2JRLVSIABAJNKUFKSVPLE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+--=_mimegpg-monstr-desktop-9811-1370254423-0001
+Content-Type: application/pgp-signature
+Content-Transfer-Encoding: 7bit
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAEBAgAGBQJRytYwAAoJEPo9qoy8lh7127QP/jg4DVwZu5V4ccEZPdayevtb
-bHUNf9dYSf+C2FZ0Ypg40vJ0vBK0l2FIzlL4kcbyvtiB5eZ1zuhUVUD7m28Danhh
-97BP5xbeKLQYAchjK6MkpcWsf+3n6DqJWg67jqSkiRmmw4BFHd9DYpQFVBXoJXxn
-zx0BBmiVzizajSYWGtV7POv249fGDJgGxgHrx8joIxo2REbA89nx+PAv/TJ9dcY/
-mvizXidtgW2CADkJo0hm+h7kSiUvRun6M6gHsEJNDgnq+0fgQAnNH5TKLeygQe85
-VLbGixdeAATSR5hdoJXeLZXJWCAjcQV7pxQ8s0U4BtQnpyIxM0vo7ruoRkEGyvno
-xkBPF77oXdfxsK4/gaO8wZ2XcDF3WSAvfMfPKh/enLf2NEaw4Lx4KAaMH7zzA6cD
-m9pB3z5RRDALq3E9OJ0B2KfzNPI4dca5fABHk9eulidWD/Dd/1Ac7t+y2HQShfN8
-kY+93l32r1AnEWVA4I+hSBrdNK2tHJ9IU9xxT2A+X1huBwitOwbvSMTgw1jf4wO/
-e0kbtx0qeiEovs8Em9aCIGwXoMD6RIoaFqU38FDZXEAqYN5gpAtH4Dhhj7TN7R84
-VLO8pu6PbISwhG5rCYlzqw/frVMPngIeVmd/iNHFSiCknk2547ZkiBCJbt/LvNwQ
-R6Jkv8Ye1e2K1CF7kbXO
-=/VGK
+iEYEABECAAYFAlGsbFcACgkQykllyylKDCFOkQCeMoft8MLrm+CaaEMwdXyORHyn
+aXkAn0FfyrZ+YDaOELLYcf7loWBdJmX4
+=wL2W
 -----END PGP SIGNATURE-----
 
-------enig2JRLVSIABAJNKUFKSVPLE--
+--=_mimegpg-monstr-desktop-9811-1370254423-0001--

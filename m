@@ -1,9 +1,9 @@
 From: Michal Simek <michal.simek@xilinx.com>
-Date: Mon, 03 Jun 2013 10:13:21 +0000
-Subject: [PATCH v4 6/7] video: xilinxfb: Add support for little endian accesses
-Message-Id: <818df253e24e333befbbdb35c027a3cece1830a9.1370254386.git.michal.simek@xilinx.com>
+Date: Mon, 03 Jun 2013 10:13:17 +0000
+Subject: [PATCH v4 2/7] video: xilinxfb: Do not name out_be32 in function name
+Message-Id: <38b90d7403129a10b33641aa71102e38c51bd34a.1370254386.git.michal.simek@xilinx.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-9798-1370254420-0001"
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-9744-1370254409-0001"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1370254386.git.michal.simek@xilinx.com>
 In-Reply-To: <cover.1370254386.git.michal.simek@xilinx.com>
@@ -16,101 +16,114 @@ The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
 To open this message correctly you will need to install E-mail or Usenet
 software that supports modern Internet standards.
 
---=_mimegpg-monstr-desktop-9798-1370254420-0001
+--=_mimegpg-monstr-desktop-9744-1370254409-0001
 
-Dynamically detect endianess on IP and use
-ioread/iowrite functions instead of powerpc and microblaze
-specific out_be32.
+out_be32 IO function is not supported by ARM.
+It is only available for PPC and Microblaze.
+Because this driver can be used on ARM let's
+remove out_be32 from function name.
 
 Signed-off-by: Michal Simek <michal.simek@xilinx.com>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
-Changes in v4:
-- Acked by Arnd
-
+Changes in v4: None
 Changes in v3:
-- New patch in this patchset based on discussions
+- Remove out_be IO name from function name
+- Change patch subject from "Do not use out_be32 IO function"
+  to "Do not name out_be32 in function name"
 
 Changes in v2: None
 
- drivers/video/xilinxfb.c | 30 ++++++++++++++++++++++++++++--
- 1 file changed, 28 insertions(+), 2 deletions(-)
+ drivers/video/xilinxfb.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index bd3b85d..f3d4a69 100644
+index aecd15d..c9b442b 100644
 --- a/drivers/video/xilinxfb.c
 +++ b/drivers/video/xilinxfb.c
-@@ -117,6 +117,7 @@ static struct fb_var_screeninfo xilinx_fb_var = {
-
-
- #define BUS_ACCESS_FLAG		0x1 /* 1 = BUS, 0 = DCR */
-+#define LITTLE_ENDIAN_ACCESS	0x2 /* LITTLE ENDIAN IO functions */
-
- struct xilinxfb_drvdata {
-
-@@ -153,14 +154,33 @@ struct xilinxfb_drvdata {
- static void xilinx_fb_out32(struct xilinxfb_drvdata *drvdata, u32 offset,
+@@ -57,7 +57,7 @@
+  * In case of direct PLB access the second control register will be at
+  * an offset of 4 as compared to the DCR access where the offset is 1
+  * i.e. REG_CTRL. So this is taken care in the function
+- * xilinx_fb_out_be32 where it left shifts the offset 2 times in case of
++ * xilinx_fb_out32 where it left shifts the offset 2 times in case of
+  * direct PLB access.
+  */
+ #define NUM_REGS	2
+@@ -150,7 +150,7 @@ struct xilinxfb_drvdata {
+  * To perform the read/write on the registers we need to check on
+  * which bus its connected and call the appropriate write API.
+  */
+-static void xilinx_fb_out_be32(struct xilinxfb_drvdata *drvdata, u32 offset,
++static void xilinx_fb_out32(struct xilinxfb_drvdata *drvdata, u32 offset,
  				u32 val)
  {
--	if (drvdata->flags & BUS_ACCESS_FLAG)
--		out_be32(drvdata->regs + (offset << 2), val);
-+	if (drvdata->flags & BUS_ACCESS_FLAG) {
-+		if (drvdata->flags & LITTLE_ENDIAN_ACCESS)
-+			iowrite32(val, drvdata->regs + (offset << 2));
-+		else
-+			iowrite32be(val, drvdata->regs + (offset << 2));
-+	}
- #ifdef CONFIG_PPC_DCR
- 	else
- 		dcr_write(drvdata->dcr_host, offset, val);
- #endif
- }
+ 	if (drvdata->flags & PLB_ACCESS_FLAG)
+@@ -197,7 +197,7 @@ xilinx_fb_blank(int blank_mode, struct fb_info *fbi)
+ 	switch (blank_mode) {
+ 	case FB_BLANK_UNBLANK:
+ 		/* turn on panel */
+-		xilinx_fb_out_be32(drvdata, REG_CTRL, drvdata->reg_ctrl_default);
++		xilinx_fb_out32(drvdata, REG_CTRL, drvdata->reg_ctrl_default);
+ 		break;
 
-+static u32 xilinx_fb_in32(struct xilinxfb_drvdata *drvdata, u32 offset)
-+{
-+	if (drvdata->flags & BUS_ACCESS_FLAG) {
-+		if (drvdata->flags & LITTLE_ENDIAN_ACCESS)
-+			return ioread32(drvdata->regs + (offset << 2));
-+		else
-+			return ioread32be(drvdata->regs + (offset << 2));
-+	}
-+#ifdef CONFIG_PPC_DCR
-+	else
-+		return dcr_read(drvdata->dcr_host, offset);
-+#endif
-+	return 0;
-+}
-+
- static int
- xilinx_fb_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned blue,
- 	unsigned transp, struct fb_info *fbi)
-@@ -271,6 +291,12 @@ static int xilinxfb_assign(struct platform_device *pdev,
+ 	case FB_BLANK_NORMAL:
+@@ -205,7 +205,7 @@ xilinx_fb_blank(int blank_mode, struct fb_info *fbi)
+ 	case FB_BLANK_HSYNC_SUSPEND:
+ 	case FB_BLANK_POWERDOWN:
+ 		/* turn off panel */
+-		xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
++		xilinx_fb_out32(drvdata, REG_CTRL, 0);
+ 	default:
+ 		break;
+
+@@ -280,13 +280,13 @@ static int xilinxfb_assign(struct device *dev,
+ 	memset_io((void __iomem *)drvdata->fb_virt, 0, fbsize);
 
  	/* Tell the hardware where the frame buffer is */
- 	xilinx_fb_out32(drvdata, REG_FB_ADDR, drvdata->fb_phys);
-+	rc = xilinx_fb_in32(drvdata, REG_FB_ADDR);
-+	/* Endianess detection */
-+	if (rc != drvdata->fb_phys) {
-+		drvdata->flags |= LITTLE_ENDIAN_ACCESS;
-+		xilinx_fb_out32(drvdata, REG_FB_ADDR, drvdata->fb_phys);
-+	}
+-	xilinx_fb_out_be32(drvdata, REG_FB_ADDR, drvdata->fb_phys);
++	xilinx_fb_out32(drvdata, REG_FB_ADDR, drvdata->fb_phys);
 
  	/* Turn on the display */
  	drvdata->reg_ctrl_default = REG_CTRL_ENABLE;
+ 	if (pdata->rotate_screen)
+ 		drvdata->reg_ctrl_default |= REG_CTRL_ROTATE;
+-	xilinx_fb_out_be32(drvdata, REG_CTRL,
++	xilinx_fb_out32(drvdata, REG_CTRL,
+ 					drvdata->reg_ctrl_default);
+
+ 	/* Fill struct fb_info */
+@@ -345,7 +345,7 @@ err_cmap:
+ 		iounmap(drvdata->fb_virt);
+
+ 	/* Turn off the display */
+-	xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
++	xilinx_fb_out32(drvdata, REG_CTRL, 0);
+
+ err_fbmem:
+ 	if (drvdata->flags & PLB_ACCESS_FLAG)
+@@ -381,7 +381,7 @@ static int xilinxfb_release(struct device *dev)
+ 		iounmap(drvdata->fb_virt);
+
+ 	/* Turn off the display */
+-	xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
++	xilinx_fb_out32(drvdata, REG_CTRL, 0);
+
+ 	/* Release the resources, as allocated based on interface */
+ 	if (drvdata->flags & PLB_ACCESS_FLAG) {
 --
 1.8.2.3
 
 
---=_mimegpg-monstr-desktop-9798-1370254420-0001
+--=_mimegpg-monstr-desktop-9744-1370254409-0001
 Content-Type: application/pgp-signature
 Content-Transfer-Encoding: 7bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAlGsbFQACgkQykllyylKDCF8ewCeLODXNYkSRQThULFJ0zXOP4Re
-YEMAn3ZN8ZHZ7SQCADewiGGiZoGTloV/
-=aMDV
+iEYEABECAAYFAlGsbEkACgkQykllyylKDCFNKACfconpEqvLoo5SSat59E72lhX7
+LBwAnicJb2HLBf1VCsYjJnOlRXPx+I6A
+=NdLs
 -----END PGP SIGNATURE-----
 
---=_mimegpg-monstr-desktop-9798-1370254420-0001--
+--=_mimegpg-monstr-desktop-9744-1370254409-0001--

@@ -1,58 +1,99 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 26 Jun 2013 12:20:35 +0000
-Subject: Re: [PATCH] video: replace strict_strtoul() with kstrtoul()
-Message-Id: <51CADC93.2090405@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2DEQURHEDGNADASKTUIXI"
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 03 Jun 2013 06:21:51 +0000
+Subject: [PATCH] PM: Add pm_sleep_ops_ptr() macro
+Message-Id: <002801ce6022$a2928930$e7b79b90$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <001401ce5e9a$03b485e0$0b1d91a0$@samsung.com>
-In-Reply-To: <001401ce5e9a$03b485e0$0b1d91a0$@samsung.com>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "'Rafael J. Wysocki'" <rjw@sisk.pl>
+Cc: 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>, 'Lars-Peter Clausen' <lars@metafoo.de>, 'Michael Hennerich' <michael.hennerich@analog.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>
 
-------enig2DEQURHEDGNADASKTUIXI
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Add pm_sleep_ops_ptr() macro that allows the .pm entry in the driver structures
+to be assigned without having an #define xxx NULL for the case that PM_SLEEP is
+not enabled.
 
-On 01/06/13 10:31, Jingoo Han wrote:
-> The usage of strict_strtoul() is not preferred, because
-> strict_strtoul() is obsolete. Thus, kstrtoul() should be
-> used.
->=20
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> ---
->  drivers/video/fsl-diu-fb.c                |    4 ++--
->  drivers/video/omap2/displays/panel-taal.c |    6 +++---
->  drivers/video/wm8505fb.c                  |    2 +-
->  3 files changed, 6 insertions(+), 6 deletions(-)
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Cc: Lars-Peter Clausen <lars@metafoo.de>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Michael Hennerich <michael.hennerich@analog.com>
+---
+ drivers/video/bfin-lq035q1-fb.c |   20 +++++++++++---------
+ include/linux/pm.h              |    6 ++++++
+ 2 files changed, 17 insertions(+), 9 deletions(-)
 
-I've added this to my fbdev-3.11 branch.
+diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
+index 29d8c04..4474e64 100644
+--- a/drivers/video/bfin-lq035q1-fb.c
++++ b/drivers/video/bfin-lq035q1-fb.c
+@@ -170,16 +170,19 @@ static int lq035q1_spidev_remove(struct spi_device *spi)
+ 	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
+ }
+ 
+-#ifdef CONFIG_PM
+-static int lq035q1_spidev_suspend(struct spi_device *spi, pm_message_t state)
++#ifdef CONFIG_PM_SLEEP
++static int lq035q1_spidev_suspend(struct device *dev)
+ {
++	struct spi_device *spi = to_spi_device(dev);
++
+ 	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
+ }
+ 
+-static int lq035q1_spidev_resume(struct spi_device *spi)
++static int lq035q1_spidev_resume(struct device *dev)
+ {
+-	int ret;
++	struct spi_device *spi = to_spi_device(dev);
+ 	struct spi_control *ctl = spi_get_drvdata(spi);
++	int ret;
+ 
+ 	ret = lq035q1_control(spi, LQ035_DRIVER_OUTPUT_CTL, ctl->mode);
+ 	if (ret)
+@@ -187,11 +190,11 @@ static int lq035q1_spidev_resume(struct spi_device *spi)
+ 
+ 	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_ON);
+ }
+-#else
+-# define lq035q1_spidev_suspend NULL
+-# define lq035q1_spidev_resume  NULL
+ #endif
+ 
++static SIMPLE_DEV_PM_OPS(lq035q1_spidev_pm_ops, lq035q1_spidev_suspend,
++			lq035q1_spidev_resume);
++
+ /* Power down all displays on reboot, poweroff or halt */
+ static void lq035q1_spidev_shutdown(struct spi_device *spi)
+ {
+@@ -708,8 +711,7 @@ static int bfin_lq035q1_probe(struct platform_device *pdev)
+ 	info->spidrv.probe    = lq035q1_spidev_probe;
+ 	info->spidrv.remove   = lq035q1_spidev_remove;
+ 	info->spidrv.shutdown = lq035q1_spidev_shutdown;
+-	info->spidrv.suspend  = lq035q1_spidev_suspend;
+-	info->spidrv.resume   = lq035q1_spidev_resume;
++	info->spidrv.driver.pm = pm_sleep_ops_ptr(&lq035q1_spidev_pm_ops);
+ 
+ 	ret = spi_register_driver(&info->spidrv);
+ 	if (ret < 0) {
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index bd50d15..999d652 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -61,6 +61,12 @@ extern const char power_group_name[];		/* = "power" */
+ #define pm_ops_ptr(_ptr)	NULL
+ #endif
+ 
++#ifdef CONFIG_PM_SLEEP
++#define pm_sleep_ops_ptr(_ptr)	(_ptr)
++#else
++#define pm_sleep_ops_ptr(_ptr)	NULL
++#endif
++
+ typedef struct pm_message {
+ 	int event;
+ } pm_message_t;
+-- 
+1.7.10.4
 
- Tomi
 
-
-
-------enig2DEQURHEDGNADASKTUIXI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRytyTAAoJEPo9qoy8lh71FG4QAIhAamjKvpmxkfbhjfwqlw0O
-G5F57iOU2qzSYvgZwdp2HdsY3d7jtUgbQseo4f4EXZ5F6xdfI6dR3cfVgye4lS6z
-1AYYsFD585+AgMlkGLejp9pwZit6glfXGv3FnUhdn15XpxCuxi3VHiKlr+jLUcyT
-FY+fk9QA9VLHqZNAbLNZQBDlHz4EfphczAnDwTFvEkbF7DvT4/+JsxYB5VgTFobN
-zf/6mOM8ZZae1GOLV9ROe0m3AM5y+noSUXquBfOiRfbYt/pgO1h4Axafhd5Afcib
-YrBBfsfnWDMv75aPDbM1mTmkH731f+UHThnba9OE0F/S2i/5ALh7CVJEJP8nCcgI
-ng6LwvFQVX8xXq5cH6JsmWo4/X9khkAMofKsaHFqYqqk5mRedgLoWyUrU6XjQw9x
-5a1RHZiCjzOxFTad0R/Nry7gIN6ov9XrX1qbXwEMD5tml3lkUXjD3G9nxaYT+iAm
-sdzi0b0egCrFM6N+EKczYbxPEXWPhXkC84C9up+zNRopMnltZvHKZYuBOmzrDh37
-a4LNI/DMVz0DDA9DaG6pCekCDMWU+SpiVyyfFlZ7LlNhxp4Qks3O35QBFR6JImAX
-0mClu8enNUB6zKhnkHuk7P8g/jHxtj4FDaq6w40pmuR2B0SMuXIr8tc5XIcvwiFB
-ABySWJuNxde1QeWzxO8d
-=pd/l
------END PGP SIGNATURE-----
-
-------enig2DEQURHEDGNADASKTUIXI--

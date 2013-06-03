@@ -1,53 +1,72 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 25 Jun 2013 14:22:37 +0000
-Subject: [PATCH 09/23] video: da8xx-fb: report correct pixclock
-Message-Id: <1372170171-9561-10-git-send-email-detheridge@ti.com>
+From: Michal Simek <michal.simek@xilinx.com>
+Date: Mon, 03 Jun 2013 10:13:19 +0000
+Subject: [PATCH v4 4/7] video: xilinxfb: Use drvdata->regs_phys instead of physaddr
+Message-Id: <75dcc7f6bdffb73163aced18a72f6c77b5930422.1370254386.git.michal.simek@xilinx.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-9772-1370254415-0001"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+References: <cover.1370254386.git.michal.simek@xilinx.com>
+In-Reply-To: <cover.1370254386.git.michal.simek@xilinx.com>
+To: linux-kernel@vger.kernel.org
+Cc: Michal Simek <monstr@monstr.eu>, Michal Simek <michal.simek@xilinx.com>, Arnd Bergmann <arnd@arndb.de>, Timur Tabi <timur@tabi.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-From: Afzal Mohammed <afzal@ti.com>
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
 
-Update "var" pixclock with the value that is configurable in hardware.
-This lets user know the actual pixclock.
+--=_mimegpg-monstr-desktop-9772-1370254415-0001
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
+physaddr will be remove in the next patch.
+
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
 ---
- drivers/video/da8xx-fb.c |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
+Changes in v4: None
+Changes in v3:
+- New patch in this patchset based on discussions
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index a5341d0..0f73c76 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -686,6 +686,15 @@ static inline unsigned da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
- 	return par->lcd_fck_rate / (PICOS2KHZ(pixclock) * 1000);
- }
- 
-+static inline unsigned da8xx_fb_round_clk(struct da8xx_fb_par *par,
-+					  unsigned pixclock)
-+{
-+	unsigned div;
-+
-+	div = da8xx_fb_calc_clk_divider(par, pixclock);
-+	return KHZ2PICOS(par->lcd_fck_rate / (1000 * div));
-+}
-+
- static inline void da8xx_fb_config_clk_divider(unsigned div)
- {
- 	/* Configure the LCD clock divisor. */
-@@ -962,6 +971,8 @@ static int fb_check_var(struct fb_var_screeninfo *var,
- 	if (var->yres + var->yoffset > var->yres_virtual)
- 		var->yoffset = var->yres_virtual - var->yres;
- 
-+	var->pixclock = da8xx_fb_round_clk(par, var->pixclock);
-+
- 	return err;
- }
- 
--- 
-1.7.0.4
+Changes in v2: None
 
+ drivers/video/xilinxfb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index d94c992..1b55f18 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -325,7 +325,7 @@ static int xilinxfb_assign(struct device *dev,
+
+ 	if (drvdata->flags & BUS_ACCESS_FLAG) {
+ 		/* Put a banner in the log (for DEBUG) */
+-		dev_dbg(dev, "regs: phys=%lx, virt=%p\n", physaddr,
++		dev_dbg(dev, "regs: phys=%x, virt=%p\n", drvdata->regs_phys,
+ 					drvdata->regs);
+ 	}
+ 	/* Put a banner in the log (for DEBUG) */
+@@ -353,7 +353,7 @@ err_fbmem:
+
+ err_map:
+ 	if (drvdata->flags & BUS_ACCESS_FLAG)
+-		release_mem_region(physaddr, 8);
++		release_mem_region(drvdata->regs_phys, 8);
+
+ err_region:
+ 	kfree(drvdata);
+--
+1.8.2.3
+
+
+--=_mimegpg-monstr-desktop-9772-1370254415-0001
+Content-Type: application/pgp-signature
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAlGsbE8ACgkQykllyylKDCG3QACggdcxXyk5+c0k9OyIt2ZqfSdA
+ci8An0krRs/WFWoO/q0xWredK+TEBRtx
+=eWzn
+-----END PGP SIGNATURE-----
+
+--=_mimegpg-monstr-desktop-9772-1370254415-0001--

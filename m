@@ -1,77 +1,57 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 17 Jun 2013 04:21:20 +0000
-Subject: linux-next: manual merge of the fbdev tree with the drm tree
-Message-Id: <20130617142120.b42dafb967974d3906a43fc9@canb.auug.org.au>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Signature=_Mon__17_Jun_2013_14_21_20_+1000_9P_cQyBS7OvTq7WB"
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 04 Jun 2013 01:21:38 +0000
+Subject: Re: [PATCH] video: display_timing: make parameter const
+Message-Id: <22104130.xMhTPUUMF8@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Dave Airlie <airlied@linux.ie>
+References: <1369657985-11703-1-git-send-email-l.stach@pengutronix.de>
+In-Reply-To: <1369657985-11703-1-git-send-email-l.stach@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: dri-devel@lists.freedesktop.org
+Cc: Dave Airlie <airlied@redhat.com>, linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, kernel@pengutronix.de
 
---Signature=_Mon__17_Jun_2013_14_21_20_+1000_9P_cQyBS7OvTq7WB
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Hi all,
+On Monday 27 May 2013 14:33:05 Lucas Stach wrote:
+> From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+> 
+> As the device_node pointer is not changed in of_get_display_timing and
+> parse_timing_property it can be a const pointer.
+> 
+> Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
 
-Today's linux-next merge of the fbdev tree got a conflict in
-drivers/video/of_display_timing.c between commit f583662347c6 ("video:
-display_timing: make parameter const") from the drm tree and commits
-fcf7e6e5bd84 ("videomode: don't allocate mem in of_get_display_timing()")
-and ffa3fd21de8a ("videomode: implement public of_get_display_timing()")
-from the fbdev tree.
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-I fixed it up (see below) and can carry the fix as necessary (no action
-is required).
+> ---
+>  drivers/video/of_display_timing.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/of_display_timing.c
+> b/drivers/video/of_display_timing.c index 56009bc..85c1a41 100644
+> --- a/drivers/video/of_display_timing.c
+> +++ b/drivers/video/of_display_timing.c
+> @@ -23,7 +23,7 @@
+>   * Every display_timing can be specified with either just the typical value
+> or * a range consisting of min/typ/max. This function helps handling this
+> **/
+> -static int parse_timing_property(struct device_node *np, const char *name,
+> +static int parse_timing_property(const struct device_node *np, const char
+> *name, struct timing_entry *result)
+>  {
+>  	struct property *prop;
+> @@ -56,7 +56,8 @@ static int parse_timing_property(struct device_node *np,
+> const char *name, * of_get_display_timing - parse display_timing entry from
+> device_node * @np: device_node with the properties
+>   **/
+> -static struct display_timing *of_get_display_timing(struct device_node *np)
+> +static struct display_timing *of_get_display_timing(const struct
+> device_node +						    *np)
+>  {
+>  	struct display_timing *dt;
+>  	u32 val = 0;
+-- 
+Regards,
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Laurent Pinchart
 
-diff --cc drivers/video/of_display_timing.c
-index 2894e03,9c0f17b..0000000
---- a/drivers/video/of_display_timing.c
-+++ b/drivers/video/of_display_timing.c
-@@@ -53,13 -53,12 +53,12 @@@ static int parse_timing_property(const=20
-  }
- =20
-  /**
--  * of_get_display_timing - parse display_timing entry from device_node
-+  * of_parse_display_timing - parse display_timing entry from device_node
-   * @np: device_node with the properties
-   **/
-- static struct display_timing *of_get_display_timing(const struct device_n=
-ode
-- 						    *np)
- -static int of_parse_display_timing(struct device_node *np,
-++static int of_parse_display_timing(const struct device_node *np,
-+ 		struct display_timing *dt)
-  {
-- 	struct display_timing *dt;
-  	u32 val =3D 0;
-  	int ret =3D 0;
- =20
-
---Signature=_Mon__17_Jun_2013_14_21_20_+1000_9P_cQyBS7OvTq7WB
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRvo7FAAoJEECxmPOUX5FE5mcP+wWfcT4MuB4zIGJej3CBOQrV
-gs3/6LNB5TDIr9fAeDsINBjeYY2K+NhWYxp6G+nf1lWFDXi1k7TNAph5uJOzUbNc
-LQZz5beM2XYJgYqJYfd1P2UHwPXd7EHmcawOV+B42Wkbyn5ayfouKf1rxtZyQjxT
-EwIxeGq4aZ3FkI0wVzYWITTyCuXp/v8XLk7mKPTV1LqYuQevbUUcQT+g+Xv8+sVD
-Zxji8NzhrZtAlrvrlYOQnhilHRKASGA4nnwydZ/fC6/NqH54Dn2pT39w3/I6zP8h
-mwZN7bMbhsClpUUQU7KH5AJGIf8rtp06QwO4U8y6MfdOqUNTkN0Su7R9E8ERXFMn
-7MjwVgogJXjUX74QPKtKv8N4bXnG0dYU2G9FRI0wfzMUIKIx0jnZR6Wktpq8nQFF
-SKsNJWUhECipknsB/Do6ofL6m+g+TTJJ4PTtKYPP4fhaWLgIvlsoKs+KYWgHVuWC
-cK7SrIdgS1LFs2LNqzBcL2XIhdKOjVPau1NtP5AR03bBxONAG3V5VcZYUYqKbE12
-QegHgnsbHxj0D0zZ4pL7/d5fFK7uqlzoP4G8glo/hTCY30JGYYjIepzs8h5O56Mo
-pB4HmfsVOfkI8do0dL4hKhmYXDy5ztoI4L9i78XAVkrdSJi466YjcWEfreO9g3Iv
-oacwjSo27LXNB4L9/0uG
-=X2Oz
------END PGP SIGNATURE-----
-
---Signature=_Mon__17_Jun_2013_14_21_20_+1000_9P_cQyBS7OvTq7WB--

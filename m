@@ -1,30 +1,39 @@
-From: Daniel Drake <dsd@laptop.org>
-Date: Fri, 21 Jun 2013 17:31:05 +0000
-Subject: Re: [V2 6/7] video: mmp: calculate pitch value when fb set win
-Message-Id: <CAMLZHHRLv+qZXVOkZSH2FDxanhy6xitYgCbF3DHXS-8FEWNfuQ@mail.gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Thu, 06 Jun 2013 07:49:49 +0000
+Subject: re: uvesafb: Clean up MTRR code
+Message-Id: <20130606074949.GA17350@debian>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1370879585-11452-1-git-send-email-jtzhou@marvell.com>
-In-Reply-To: <1370879585-11452-1-git-send-email-jtzhou@marvell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-On Mon, Jun 10, 2013 at 9:53 AM, Jett.Zhou <jtzhou@marvell.com> wrote:
-> From: Jing Xiang <jxiang@marvell.com>
->
-> Add new func mmpfb_set_win to make code clean, it will calculate pitch
-> value when fb set win in mmpfb_set_win.
+Hello Andy Lutomirski,
 
-It looks like a good idea to create a function for setting window
-parameters from fb info, but this patch also starts to write into the
-pitch[] fields which are not used anywhere. You should rework these
-patches so that the pitch field is introduced, set, and consumed all
-in the same patch.
+This is a semi-automatic email about new static checker warnings.
 
-The commit message for the patch that added pitch[] seems to suggest
-that pitch[1] and pitch[2] are used for YUV formats. But in the code
-posted here, they will not be used for PIXFMT_YUYV, PIXFMT_UYVY, etc.
+The patch 63e28a7a5ffc: "uvesafb: Clean up MTRR code" from May 13, 
+2013, leads to the following Smatch complaint:
 
-Thanks,
-Daniel
+drivers/video/uvesafb.c:1819 uvesafb_remove()
+	 warn: variable dereferenced before check 'par' (see line 1814)
+
+drivers/video/uvesafb.c
+  1813			iounmap(info->screen_base);
+  1814			arch_phys_wc_del(par->mtrr_handle);
+                                         ^^^^^^^^^^^^^^^^
+New dereference.
+
+  1815			release_mem_region(info->fix.smem_start, info->fix.smem_len);
+  1816			fb_destroy_modedb(info->monspecs.modedb);
+  1817			fb_dealloc_cmap(&info->cmap);
+  1818	
+  1819			if (par) {
+                            ^^^
+Old check.
+
+  1820				if (par->vbe_modes)
+  1821					kfree(par->vbe_modes);
+
+regards,
+dan carpenter

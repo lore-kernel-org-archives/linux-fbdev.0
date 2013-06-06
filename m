@@ -1,39 +1,44 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 18 Jun 2013 14:53:14 +0000
-Subject: Re: [PATCH 2/2] i915: i915_gem: Print a size_t with %z
-Message-Id: <CAMuHMdU9tJLDFsDi3AQ49AyJ5=dh_Cer4YUYQHZnbt=WLVNTFA@mail.gmail.com>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Thu, 06 Jun 2013 07:20:59 +0000
+Subject: [PATCH] simplefb: add support for a8b8g8r8 pixel format
+Message-Id: <1370503259-16618-1-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1371561988-30989-1-git-send-email-fabio.estevam@freescale.com>
-	<1371561988-30989-2-git-send-email-fabio.estevam@freescale.com>
-In-Reply-To: <1371561988-30989-2-git-send-email-fabio.estevam@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Fabio Estevam <fabio.estevam@freescale.com>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Fabio Estevam <festevam@gmail.com>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Olof Johansson <olof@lixom.net>
+Cc: gnurou@gmail.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Alexandre Courbot <acourbot@nvidia.com>
 
-On Tue, Jun 18, 2013 at 3:26 PM, Fabio Estevam
-<fabio.estevam@freescale.com> wrote:
-> drivers/gpu/drm/i915/i915_gem.c:3129:3: warning: format '%ld' expects argument of type 'long int', but argument 5 has type 'size_t' [-Wformat]
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+---
+ Documentation/devicetree/bindings/video/simple-framebuffer.txt | 1 +
+ drivers/video/simplefb.c                                       | 1 +
+ 2 files changed, 2 insertions(+)
 
-> --- a/drivers/gpu/drm/i915/i915_gem.c
-> +++ b/drivers/gpu/drm/i915/i915_gem.c
-> @@ -3126,7 +3126,7 @@ i915_gem_object_bind_to_gtt(struct drm_i915_gem_object *obj,
->          * before evicting everything in a vain attempt to find space.
->          */
->         if (obj->base.size > gtt_max) {
-> -               DRM_ERROR("Attempting to bind an object larger than the aperture: object=%zd > %s aperture=%ld\n",
-> +               DRM_ERROR("Attempting to bind an object larger than the aperture: object=%zd > %s aperture=%zd\n",
+diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer.txt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+index 3ea4605..70c26f3 100644
+--- a/Documentation/devicetree/bindings/video/simple-framebuffer.txt
++++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+@@ -12,6 +12,7 @@ Required properties:
+ - stride: The number of bytes in each line of the framebuffer.
+ - format: The format of the framebuffer surface. Valid values are:
+   - r5g6b5 (16-bit pixels, d[15:11]=r, d[10:5]=g, d[4:0]=b).
++  - a8b8g8r8 (32-bit pixels, d[31:24]=a, d[23:16]=b, d[15:8]=g, d[7:0]=r).
+ 
+ Example:
+ 
+diff --git a/drivers/video/simplefb.c b/drivers/video/simplefb.c
+index e2e9e3e..d7041aa 100644
+--- a/drivers/video/simplefb.c
++++ b/drivers/video/simplefb.c
+@@ -84,6 +84,7 @@ struct simplefb_format {
+ 
+ static struct simplefb_format simplefb_formats[] = {
+ 	{ "r5g6b5", 16, {11, 5}, {5, 6}, {0, 5}, {0, 0} },
++	{ "a8b8g8r8", 32, {0, 8}, {8, 8}, {16, 8}, {31, 8} },
+ };
+ 
+ struct simplefb_params {
+-- 
+1.8.3
 
-size_t is unsigned, so you better change it to %zu.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

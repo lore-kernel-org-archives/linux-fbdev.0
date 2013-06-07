@@ -1,66 +1,48 @@
-From: Ismael Luceno <ismael.luceno@gmail.com>
-Date: Sun, 30 Jun 2013 17:54:30 +0000
-Subject: Re: [PATCH] fbmem: Export fb_get_options and (un)register_framebuffer symbols
-Message-Id: <20130630175418.07f024d6@pirotess>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Sig_/xt3NuPtQ=lKv_jp475g_9Q/"
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Fri, 07 Jun 2013 01:39:20 +0000
+Subject: [PATCH] backlight: add CONFIG_PM_SLEEP to suspend/resume functions
+Message-Id: <000201ce631f$d4ad0d50$7e0727f0$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1372624575-7664-1-git-send-email-ismael.luceno@gmail.com>
-In-Reply-To: <1372624575-7664-1-git-send-email-ismael.luceno@gmail.com>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: 'Andrew Morton' <akpm@linux-foundation.org>
+Cc: 'Shuah Khan' <shuah.kh@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com, rpurdie@rpsys.net, FlorianSchandinat@gmx.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, rafael.j.wysocki@intel.com, 'Arnd Bergmann' <arnd@arndb.de>, 'Jingoo Han' <jg1.han@samsung.com>
 
---Sig_/xt3NuPtQ=lKv_jp475g_9Q/
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Add CONFIG_PM_SLEEP to suspend/resume functions to fix the following
+build warning when CONFIG_PM_SLEEP is not selected. This is because
+sleep PM callbacks defined by SIMPLE_DEV_PM_OPS are only used when
+the CONFIG_PM_SLEEP is enabled.
 
-On Sun, 30 Jun 2013 19:42:36 +0200
-David Herrmann <dh.herrmann@gmail.com> wrote:
-> Hi
->=20
-> On Sun, Jun 30, 2013 at 10:36 PM, Ismael Luceno
-> <ismael.luceno@gmail.com> wrote:
-> > Signed-off-by: Ismael Luceno <ismael.luceno@gmail.com>
-> > ---
-> >  drivers/video/fbmem.c | 3 +++
-> >  1 file changed, 3 insertions(+)
-> >
-> > diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-> > index 098bfc6..910909c 100644
-> > --- a/drivers/video/fbmem.c
-> > +++ b/drivers/video/fbmem.c
-> > @@ -1743,6 +1743,7 @@ register_framebuffer(struct fb_info *fb_info)
-> >
-> >         return ret;
-> >  }
-> > +EXPORT_SYMBOL(register_framebuffer);
->=20
-> These EXPORT_SYMBOL() calls should all be available at the end of
-> fbmem.c.
->=20
-> Cheers
-> David
+drivers/video/backlight/backlight.c:211:12: warning: 'backlight_suspend' defined but not used [-Wunused-function]
+drivers/video/backlight/backlight.c:225:12: warning: 'backlight_resume' defined but not used [-Wunused-function]
 
-I noticed that just after sending the patch :/. Sorry for the noise.
-I'm getting the following errors while trying to load ttm and nouveau on
-a vanilla kernel:
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/backlight/backlight.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-drm_kms_helper: Unknown symbol register_framebuffer (err 0)
-drm_kms_helper: Unknown symbol fb_get_options (err 0)
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index cedbcbe..750807c 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -208,6 +208,7 @@ static ssize_t backlight_show_actual_brightness(struct device *dev,
+ 
+ static struct class *backlight_class;
+ 
++#ifdef CONFIG_PM_SLEEP
+ static int backlight_suspend(struct device *dev)
+ {
+ 	struct backlight_device *bd = to_backlight_device(dev);
+@@ -235,6 +236,7 @@ static int backlight_resume(struct device *dev)
+ 
+ 	return 0;
+ }
++#endif
+ 
+ static SIMPLE_DEV_PM_OPS(backlight_class_dev_pm_ops, backlight_suspend,
+ 			 backlight_resume);
+-- 
+1.7.10.4
 
---Sig_/xt3NuPtQ=lKv_jp475g_9Q/
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.13 (GNU/Linux)
-
-iQEcBAEBAgAGBQJR0Jr6AAoJEBH/VE8bKTLbVooIANOlhsYeYzt3ynggdDgi5PpH
-oL2VyBOz3nlSuhxP+hhSKikGoM2FpzPFcFZ7B/nCEr528sly62SkHjW9EXPOp1Ob
-41JBEl47jRFaUd55iHyvQJ8/wQ3Z/YYk8gCCdCM/ukmqUwq7P507uOK9MZX2lSTX
-OdSa+XBATPl9o5jsHp4ootCKiA19H+7pSgJjYlJTMc0xvxyrG/J/rGw6xQDeLjFX
-8c1CvUUZdKsi4iQ0eEJcTYTI5kjNCQV7OIOkRjk1TZ0Y35b+SfG/HDp0mwk0bC1B
-3Bm5WK2k0aNEnAMpuC+xeJHVBEHGjRtwh30fVpQg6u7jzFJw9ZiFBfq10GeKdbo=
-=Ay4o
------END PGP SIGNATURE-----
-
---Sig_/xt3NuPtQ=lKv_jp475g_9Q/--

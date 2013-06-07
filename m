@@ -1,261 +1,161 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Mon, 24 Jun 2013 14:31:27 +0000
-Subject: Re: [PATCH 2/2] fb: backlight: HX8357: Add HX8369 support
-Message-Id: <20130624143127.GH305@game.jcrosoft.org>
+From: Archit Taneja <archit@ti.com>
+Date: Fri, 07 Jun 2013 06:31:24 +0000
+Subject: Re: [PATCH 10/32] OMAPDSS: split overlay manager creation
+Message-Id: <51B17B6C.6050801@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1371839259-543-1-git-send-email-alexandre.belloni@free-electrons.com>
- <1371839259-543-2-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1371839259-543-2-git-send-email-alexandre.belloni@free-electrons.com>
+References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com> <1369906493-27538-11-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906493-27538-11-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: linux-fbdev@vger.kernel.org, jimwall@q.com, brian@crystalfontz.com, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-On 20:27 Fri 21 Jun     , Alexandre Belloni wrote:
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+On Thursday 30 May 2013 03:04 PM, Tomi Valkeinen wrote:
+> Split the function that creates overlay manager structs into two: one
+> that creates just the structs, and one that creates the sysfs files for
+> the manager.
+>
+> This will help us use the overlay manager structs with omapdrm in the
+> following patches, while still leaving the sysfs files out.
+
+Maybe the omapdss Makefile should also reflect this change, we could 
+move manager.o so that it doesn't look like a compat file any more.
+
+Archit
+
+>
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 > ---
->  drivers/video/backlight/hx8357.c | 183 +++++++++++++++++++++++++++++++++++++--
->  1 file changed, 175 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/hx8357.c b/drivers/video/backlight/hx8357.c
-> index 69f5672..b1c4042 100644
-> --- a/drivers/video/backlight/hx8357.c
-> +++ b/drivers/video/backlight/hx8357.c
-> @@ -71,6 +71,18 @@
->  #define HX8357_SET_POWER_NORMAL		0xd2
->  #define HX8357_SET_PANEL_RELATED	0xe9
->  
-> +#define HX8369_SET_DISPLAY_BRIGHTNESS		0x51
-> +#define HX8369_WRITE_CABC_DISPLAY_VALUE		0x53
-> +#define HX8369_WRITE_CABC_BRIGHT_CTRL		0x55
-> +#define HX8369_WRITE_CABC_MIN_BRIGHTNESS	0x5e
-> +#define HX8369_SET_POWER			0xb1
-> +#define HX8369_SET_DISPLAY_MODE			0xb2
-> +#define HX8369_SET_DISPLAY_WAVEFORM_CYC		0xb4
-> +#define HX8369_SET_VCOM				0xb6
-> +#define HX8369_SET_EXTENSION_COMMAND		0xb9
-> +#define HX8369_SET_GIP				0xd5
-> +#define HX8369_SET_GAMMA_CURVE_RELATED		0xe0
+>   drivers/video/omap2/dss/apply.c         |  9 ++++++---
+>   drivers/video/omap2/dss/dss.h           |  6 ++++--
+>   drivers/video/omap2/dss/manager-sysfs.c |  2 ++
+>   drivers/video/omap2/dss/manager.c       | 29 ++++++++++++++++++++++-------
+>   4 files changed, 34 insertions(+), 12 deletions(-)
+>
+> diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+> index b84bd99..74d1d00 100644
+> --- a/drivers/video/omap2/dss/apply.c
+> +++ b/drivers/video/omap2/dss/apply.c
+> @@ -1577,7 +1577,8 @@ int omapdss_compat_init(void)
+>
+>   	apply_init_priv();
+>
+> -	dss_init_overlay_managers(pdev);
+> +	dss_init_overlay_managers();
+> +	dss_init_overlay_managers_sysfs(pdev);
+>   	dss_init_overlays(pdev);
+>
+>   	for (i = 0; i < omap_dss_get_num_overlay_managers(); i++) {
+> @@ -1640,7 +1641,8 @@ err_disp_sysfs:
+>   	dss_uninstall_mgr_ops();
+>
+>   err_mgr_ops:
+> -	dss_uninit_overlay_managers(pdev);
+> +	dss_uninit_overlay_managers_sysfs(pdev);
+> +	dss_uninit_overlay_managers();
+>   	dss_uninit_overlays(pdev);
+>
+>   	compat_refcnt--;
+> @@ -1668,7 +1670,8 @@ void omapdss_compat_uninit(void)
+>
+>   	dss_uninstall_mgr_ops();
+>
+> -	dss_uninit_overlay_managers(pdev);
+> +	dss_uninit_overlay_managers_sysfs(pdev);
+> +	dss_uninit_overlay_managers();
+>   	dss_uninit_overlays(pdev);
+>   out:
+>   	mutex_unlock(&compat_init_lock);
+> diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+> index 8475893..7964d3b 100644
+> --- a/drivers/video/omap2/dss/dss.h
+> +++ b/drivers/video/omap2/dss/dss.h
+> @@ -194,8 +194,10 @@ void display_uninit_sysfs(struct platform_device *pdev,
+>   		struct omap_dss_device *dssdev);
+>
+>   /* manager */
+> -int dss_init_overlay_managers(struct platform_device *pdev);
+> -void dss_uninit_overlay_managers(struct platform_device *pdev);
+> +int dss_init_overlay_managers(void);
+> +void dss_uninit_overlay_managers(void);
+> +int dss_init_overlay_managers_sysfs(struct platform_device *pdev);
+> +void dss_uninit_overlay_managers_sysfs(struct platform_device *pdev);
+>   int dss_mgr_simple_check(struct omap_overlay_manager *mgr,
+>   		const struct omap_overlay_manager_info *info);
+>   int dss_mgr_check_timings(struct omap_overlay_manager *mgr,
+> diff --git a/drivers/video/omap2/dss/manager-sysfs.c b/drivers/video/omap2/dss/manager-sysfs.c
+> index 5104681..72784b3 100644
+> --- a/drivers/video/omap2/dss/manager-sysfs.c
+> +++ b/drivers/video/omap2/dss/manager-sysfs.c
+> @@ -511,4 +511,6 @@ void dss_manager_kobj_uninit(struct omap_overlay_manager *mgr)
+>   {
+>   	kobject_del(&mgr->kobj);
+>   	kobject_put(&mgr->kobj);
 > +
->  struct hx8357_data {
->  	unsigned		im_pins[HX8357_NUM_IM_PINS];
->  	unsigned		reset;
-> @@ -144,6 +156,61 @@ static u8 hx8357_seq_display_mode[] = {
->  	HX8357_SET_DISPLAY_MODE_RGB_INTERFACE,
->  };
->  
-> +static u8 hx8369_seq_write_CABC_min_brightness[] = {
-> +	HX8369_WRITE_CABC_MIN_BRIGHTNESS, 0x00,
-> +};
-> +
-> +static u8 hx8369_seq_write_CABC_control[] = {
-> +	HX8369_WRITE_CABC_DISPLAY_VALUE, 0x24,
-> +};
-> +
-> +static u8 hx8369_seq_set_display_brightness[] = {
-> +	HX8369_SET_DISPLAY_BRIGHTNESS, 0xFF,
-> +};
-> +
-> +static u8 hx8369_seq_write_CABC_control_setting[] = {
-> +	HX8369_WRITE_CABC_BRIGHT_CTRL, 0x02,
-> +};
-> +
-> +static u8 hx8369_seq_extension_command[] = {
-> +	HX8369_SET_EXTENSION_COMMAND, 0xff, 0x83, 0x69,
-> +};
-> +
-> +static u8 hx8369_seq_display_related[] = {
-> +	HX8369_SET_DISPLAY_MODE, 0x00, 0x2b, 0x03, 0x03, 0x70, 0x00,
-> +	0xff, 0x00, 0x00, 0x00, 0x00, 0x03, 0x03, 0x00,	0x01,
-> +};
-> +
-> +static u8 hx8369_seq_panel_waveform_cycle[] = {
-> +	HX8369_SET_DISPLAY_WAVEFORM_CYC, 0x0a, 0x1d, 0x80, 0x06, 0x02,
-> +};
-> +
-> +static u8 hx8369_seq_set_address_mode[] = {
-> +	HX8357_SET_ADDRESS_MODE, 0x00,
-> +};
-> +
-> +static u8 hx8369_seq_vcom[] = {
-> +	HX8369_SET_VCOM, 0x3e, 0x3e,
-> +};
-> +
-> +static u8 hx8369_seq_gip[] = {
-> +	HX8369_SET_GIP, 0x00, 0x01, 0x03, 0x25, 0x01, 0x02, 0x28, 0x70,
-> +	0x11, 0x13, 0x00, 0x00, 0x40, 0x26, 0x51, 0x37, 0x00, 0x00, 0x71,
-> +	0x35, 0x60, 0x24, 0x07, 0x0f, 0x04, 0x04,
-> +};
-> +
-> +static u8 hx8369_seq_power[] = {
-> +	HX8369_SET_POWER, 0x01, 0x00, 0x34, 0x03, 0x00, 0x11, 0x11, 0x32,
-> +	0x2f, 0x3f, 0x3f, 0x01, 0x3a, 0x01, 0xe6, 0xe6, 0xe6, 0xe6, 0xe6,
-> +};
-> +
-> +static u8 hx8369_seq_gamma_curve_related[] = {
-> +	HX8369_SET_GAMMA_CURVE_RELATED, 0x00, 0x0d, 0x19, 0x2f, 0x3b, 0x3d,
-> +	0x2e, 0x4a, 0x08, 0x0e, 0x0f, 0x14, 0x16, 0x14, 0x14, 0x14, 0x1e,
-> +	0x00, 0x0d, 0x19, 0x2f, 0x3b, 0x3d, 0x2e, 0x4a, 0x08, 0x0e, 0x0f,
-> +	0x14, 0x16, 0x14, 0x14, 0x14, 0x1e,
-> +};
-> +
->  static int hx8357_spi_write_then_read(struct lcd_device *lcdev,
->  				u8 *txbuf, u16 txlen,
->  				u8 *rxbuf, u16 rxlen)
-> @@ -242,6 +309,16 @@ static int hx8357_exit_standby(struct lcd_device *lcdev)
->  	return 0;
->  }
->  
-> +static void hx8357_lcd_reset(struct hx8357_data *lcd)
-> +{
-> +	gpio_set_value(lcd->reset, 1);
-> +	usleep_range(10000, 12000);
-> +	gpio_set_value(lcd->reset, 0);
-> +	usleep_range(10000, 12000);
-> +	gpio_set_value(lcd->reset, 1);
-> +	msleep(120);
-> +}
-> +
->  static int hx8357_lcd_init(struct lcd_device *lcdev)
->  {
->  	struct hx8357_data *lcd = lcd_get_data(lcdev);
-> @@ -257,13 +334,7 @@ static int hx8357_lcd_init(struct lcd_device *lcdev)
->  		gpio_set_value_cansleep(lcd->im_pins[2], 1);
->  	}
->  
-> -	/* Reset the screen */
-> -	gpio_set_value(lcd->reset, 1);
-> -	usleep_range(10000, 12000);
-> -	gpio_set_value(lcd->reset, 0);
-> -	usleep_range(10000, 12000);
-> -	gpio_set_value(lcd->reset, 1);
-> -	msleep(120);
-> +	hx8357_lcd_reset(lcd);
->  
->  	ret = hx8357_spi_write_array(lcdev, hx8357_seq_power,
->  				ARRAY_SIZE(hx8357_seq_power));
-> @@ -359,6 +430,97 @@ static int hx8357_lcd_init(struct lcd_device *lcdev)
->  	return 0;
->  }
->  
-> +static int hx8369_lcd_init(struct lcd_device *lcdev)
-> +{
-> +	struct hx8357_data *lcd = lcd_get_data(lcdev);
-> +	int ret;
-> +
-> +	hx8357_lcd_reset(lcd);
-> +
-> +	ret = hx8357_spi_write_array(lcdev, hx8369_seq_extension_command,
-> +				ARRAY_SIZE(hx8369_seq_extension_command));
-> +	if (ret < 0)
-> +		return ret;
-> +	usleep_range(10000, 12000);
-> +
-> +	ret = hx8357_spi_write_array(lcdev, hx8369_seq_display_related,
-> +				ARRAY_SIZE(hx8369_seq_display_related));
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	ret = hx8357_spi_write_array(lcdev, hx8369_seq_panel_waveform_cycle,
-> +				ARRAY_SIZE(hx8369_seq_panel_waveform_cycle));
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	ret = hx8357_spi_write_array(lcdev, hx8369_seq_set_address_mode,
-> +				ARRAY_SIZE(hx8369_seq_set_address_mode));
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	ret = hx8357_spi_write_array(lcdev, hx8369_seq_vcom,
-> +				ARRAY_SIZE(hx8369_seq_vcom));
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	ret = hx8357_spi_write_array(lcdev, hx8369_seq_gip,
-> +				ARRAY_SIZE(hx8369_seq_gip));
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	ret = hx8357_spi_write_array(lcdev, hx8369_seq_power,
-> +				ARRAY_SIZE(hx8369_seq_power));
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	ret = hx8357_spi_write_byte(lcdev, HX8357_EXIT_SLEEP_MODE);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	msleep(120);
-> +
-> +	ret = hx8357_spi_write_array(lcdev, hx8369_seq_gamma_curve_related,
-> +				ARRAY_SIZE(hx8369_seq_gamma_curve_related));
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	ret = hx8357_spi_write_byte(lcdev, HX8357_EXIT_SLEEP_MODE);
-> +	if (ret < 0)
-> +		return ret;
-> +	usleep_range(1000, 1200);
-> +
-> +	ret = hx8357_spi_write_array(lcdev, hx8369_seq_write_CABC_control,
-> +				ARRAY_SIZE(hx8369_seq_write_CABC_control));
-> +	if (ret < 0)
-> +		return ret;
-> +	usleep_range(10000, 12000);
-> +
-> +	ret = hx8357_spi_write_array(lcdev,
-> +			hx8369_seq_write_CABC_control_setting,
-> +			ARRAY_SIZE(hx8369_seq_write_CABC_control_setting));
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	ret = hx8357_spi_write_array(lcdev,
-> +			hx8369_seq_write_CABC_min_brightness,
-> +			ARRAY_SIZE(hx8369_seq_write_CABC_min_brightness));
-> +	if (ret < 0)
-> +		return ret;
-> +	usleep_range(10000, 12000);
-> +
-> +	ret = hx8357_spi_write_array(lcdev, hx8369_seq_set_display_brightness,
-> +				ARRAY_SIZE(hx8369_seq_set_display_brightness));
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	ret = hx8357_spi_write_byte(lcdev, HX8357_SET_DISPLAY_ON);
-> +	if (ret < 0)
-> +		return ret;
-> +	msleep(100);
+> +	memset(&mgr->kobj, 0, sizeof(mgr->kobj));
+>   }
+> diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+> index 2551eaa..1aac9b4 100644
+> --- a/drivers/video/omap2/dss/manager.c
+> +++ b/drivers/video/omap2/dss/manager.c
+> @@ -36,9 +36,9 @@
+>   static int num_managers;
+>   static struct omap_overlay_manager *managers;
+>
+> -int dss_init_overlay_managers(struct platform_device *pdev)
+> +int dss_init_overlay_managers(void)
+>   {
+> -	int i, r;
+> +	int i;
+>
+>   	num_managers = dss_feat_get_num_mgrs();
+>
+> @@ -76,6 +76,17 @@ int dss_init_overlay_managers(struct platform_device *pdev)
+>   			dss_feat_get_supported_outputs(mgr->id);
+>
+>   		INIT_LIST_HEAD(&mgr->overlays);
+> +	}
 > +
 > +	return 0;
 > +}
 > +
->  #define POWER_IS_ON(pwr)	((pwr) <= FB_BLANK_NORMAL)
->  
->  static int hx8357_set_power(struct lcd_device *lcdev, int power)
-> @@ -461,7 +623,11 @@ static int hx8357_probe(struct spi_device *spi)
->  	}
->  	spi_set_drvdata(spi, lcdev);
->  
-> -	ret = hx8357_lcd_init(lcdev);
-> +	ret = -ENODEV;
-> +	if (of_device_is_compatible(spi->dev.of_node, "himax,hx8357"))
-> +		ret = hx8357_lcd_init(lcdev);
-> +	else if (of_device_is_compatible(spi->dev.of_node, "himax,hx8369"))
-> +		ret = hx8369_lcd_init(lcdev);
-so use the data from the compatible to get the function pointer
-and does not have to do a list of if/else compatible
->  	if (ret) {
->  		dev_err(&spi->dev, "Couldn't initialize panel\n");
->  		goto init_error;
-> @@ -486,6 +652,7 @@ static int hx8357_remove(struct spi_device *spi)
->  
->  static const struct of_device_id hx8357_dt_ids[] = {
->  	{ .compatible = "himax,hx8357" },
-> +	{ .compatible = "himax,hx8369" },
->  	{},
->  };
->  MODULE_DEVICE_TABLE(of, hx8357_dt_ids);
-> -- 
-> 1.8.1.2
-> 
+> +int dss_init_overlay_managers_sysfs(struct platform_device *pdev)
+> +{
+> +	int i, r;
+> +
+> +	for (i = 0; i < num_managers; ++i) {
+> +		struct omap_overlay_manager *mgr = &managers[i];
+>
+>   		r = dss_manager_kobj_init(mgr, pdev);
+>   		if (r)
+> @@ -85,18 +96,22 @@ int dss_init_overlay_managers(struct platform_device *pdev)
+>   	return 0;
+>   }
+>
+> -void dss_uninit_overlay_managers(struct platform_device *pdev)
+> +void dss_uninit_overlay_managers(void)
+> +{
+> +	kfree(managers);
+> +	managers = NULL;
+> +	num_managers = 0;
+> +}
+> +
+> +void dss_uninit_overlay_managers_sysfs(struct platform_device *pdev)
+>   {
+>   	int i;
+>
+>   	for (i = 0; i < num_managers; ++i) {
+>   		struct omap_overlay_manager *mgr = &managers[i];
+> +
+>   		dss_manager_kobj_uninit(mgr);
+>   	}
+> -
+> -	kfree(managers);
+> -	managers = NULL;
+> -	num_managers = 0;
+>   }
+>
+>   int omap_dss_get_num_overlay_managers(void)
+>
+

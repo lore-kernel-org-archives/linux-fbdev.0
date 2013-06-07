@@ -1,52 +1,52 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Wed, 05 Jun 2013 00:49:47 +0000
-Subject: Re: linux-next: fbdev-next inclusing
-Message-Id: <20130605104947.e4620043993da793d0c497eb@canb.auug.org.au>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Signature=_Wed__5_Jun_2013_10_49_47_+1000_thTdcU52Bkkn1Ts8"
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Fri, 07 Jun 2013 06:01:09 +0000
+Subject: [PATCH v2] simplefb: add support for a8b8g8r8 pixel format
+Message-Id: <1370584869-2904-1-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130531051325.GQ19468@game.jcrosoft.org>
-In-Reply-To: <20130531051325.GQ19468@game.jcrosoft.org>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Olof Johansson <olof@lixom.net>
+Cc: gnurou@gmail.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Alexandre Courbot <acourbot@nvidia.com>
 
---Signature=_Wed__5_Jun_2013_10_49_47_+1000_thTdcU52Bkkn1Ts8
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+A framebuffer of this format is set up by SHIELD's bootloader. This
+allows us to use it as a framebuffer console.
 
-Hi,
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+Acked-by: Olof Johansson <olof@lixom.net>
+---
+Changes from v1:
+- Added description to motivate the change
+- Added ack
 
-On Tue, 4 Jun 2013 13:13:44 +0200 Jean-Christophe PLAGNIOL-VILLARD <plagnio=
-j@jcrosoft.com> wrote:
->
-> if Florian wish to continue to be in Cc keep but please add
-> Tomi Valkeinen <tomi.valkeinen@ti.com> too
+ Documentation/devicetree/bindings/video/simple-framebuffer.txt | 1 +
+ drivers/video/simplefb.c                                       | 1 +
+ 2 files changed, 2 insertions(+)
 
-Done.  Florian?
+diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer.txt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+index 3ea4605..70c26f3 100644
+--- a/Documentation/devicetree/bindings/video/simple-framebuffer.txt
++++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+@@ -12,6 +12,7 @@ Required properties:
+ - stride: The number of bytes in each line of the framebuffer.
+ - format: The format of the framebuffer surface. Valid values are:
+   - r5g6b5 (16-bit pixels, d[15:11]=r, d[10:5]=g, d[4:0]=b).
++  - a8b8g8r8 (32-bit pixels, d[31:24]=a, d[23:16]=b, d[15:8]=g, d[7:0]=r).
+ 
+ Example:
+ 
+diff --git a/drivers/video/simplefb.c b/drivers/video/simplefb.c
+index e2e9e3e..d7041aa 100644
+--- a/drivers/video/simplefb.c
++++ b/drivers/video/simplefb.c
+@@ -84,6 +84,7 @@ struct simplefb_format {
+ 
+ static struct simplefb_format simplefb_formats[] = {
+ 	{ "r5g6b5", 16, {11, 5}, {5, 6}, {0, 5}, {0, 0} },
++	{ "a8b8g8r8", 32, {0, 8}, {8, 8}, {16, 8}, {31, 8} },
+ };
+ 
+ struct simplefb_params {
+-- 
+1.8.3
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Wed__5_Jun_2013_10_49_47_+1000_thTdcU52Bkkn1Ts8
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRrosrAAoJEECxmPOUX5FEqe0P/0JIR9o5j0Pfd/oPJFTE66y0
-EiVxnHRgt8f2Yol4uotwKe0dYedc9Wz5hptU91rdwDp3z+vVvXkliG1eHU3mI/ig
-mZ8Z0HFjH9mHwsWrtOVdS+eFoLica6Ftz4pPQOyADgIiqm3Cidl6/yRYl2h+9WyM
-7PSaP0houQ8OkKgqiSACkNf2v7FNj6xWp1NeGoeCny2FTDrzdAGuLixNgpAwR0cM
-MX6+gCdY2W/fkLaZs8mP6KfCVgIh0/5l11CHMBpaeTwqmge0bj/TjoqbQQSzkhMX
-dn9gv8/YzbL9iIVcxXMeotRk8uPNlnzC4rRf9okjF8BNdqzLlHgITJkowBcqy3E4
-b/y/g23FytU/cP5n87e5mJ/Czij2Psg3s+Uo1rQuT75BTACOTEE8xj+U6jDfz8f5
-PVAC56fyesA8Y/HOczA2a2slkVc4UsEgVt0V/z/ZYFhTNk2u5IUCSsLTWH07VM1g
-wChnhEmtT9r2vVty7LKrCSselbHvS/y+J5KvQNr7Ne0cycf/ULiKL2TrjfhKmF+l
-qo1oS6lsI20/4SYjx/eU1FFsne4Yg5MGZ9RyEHSHaTnH3R2W1VOvzyfA4WwLj5d0
-t1j/iPp3iVWIp7yvFonTp+rQy6GcokmIKJHwyC+0CYx68ojDcResl+2EA/kLw5NW
-0iS9t/uCXMBBIG/vr8Ng
-=er7y
------END PGP SIGNATURE-----
-
---Signature=_Wed__5_Jun_2013_10_49_47_+1000_thTdcU52Bkkn1Ts8--

@@ -1,87 +1,42 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 26 Jun 2013 07:55:51 +0000
-Subject: Re: [PATCH 07/23] video: da8xx-fb: pix clk and clk div handling cleanup
-Message-Id: <51CA9E87.5000408@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2WQANCTSTEMVHNVAUBDGQ"
+From: ville.syrjala@linux.intel.com
+Date: Fri, 07 Jun 2013 15:43:06 +0000
+Subject: [PATCH 3/4] fb: Make fb_get_options() 'name' parameter const
+Message-Id: <1370619787-15341-3-git-send-email-ville.syrjala@linux.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1372170171-9561-8-git-send-email-detheridge@ti.com>
-In-Reply-To: <1372170171-9561-8-git-send-email-detheridge@ti.com>
-To: linux-fbdev@vger.kernel.org
+References: <1370619787-15341-1-git-send-email-ville.syrjala@linux.intel.com>
+In-Reply-To: <1370619787-15341-1-git-send-email-ville.syrjala@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
+To: dri-devel@lists.freedesktop.org
+Cc: intel-gfx@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org
 
-------enig2WQANCTSTEMVHNVAUBDGQ
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On 25/06/13 17:22, Darren Etheridge wrote:
-> From: Afzal Mohammed <afzal@ti.com>
->=20
-> Use the new modedb field to store pix clk. Reorganize existing clock
-> divider functions with names now corresponding to what they do, add
-> common function prefix.
->=20
-> Fix existing panel modedb pixclock to be in ps instead of Hz. This
-> needed a change in the way clock divider is calculated. As modedb
-> pixclock information is now in ps, override on "var" pixclock over
-> modedb to var conversion is removed.
->=20
-> Signed-off-by: Afzal Mohammed <afzal@ti.com>
-> Signed-off-by: Darren Etheridge <detheridge@ti.com>
-> ---
->  drivers/video/da8xx-fb.c |   48 +++++++++++++++++---------------------=
--------
->  1 files changed, 18 insertions(+), 30 deletions(-)
->=20
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index f1d88ac..7f08644 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -160,7 +160,6 @@ struct da8xx_fb_par {
->  	struct clk *lcdc_clk;
->  	int irq;
->  	unsigned int palette_sz;
-> -	unsigned int pxl_clk;
->  	int blank;
->  	wait_queue_head_t	vsync_wait;
->  	int			vsync_flag;
-> @@ -201,7 +200,7 @@ static struct fb_videomode known_lcd_panels[] =3D {=
-
->  		.name           =3D "Sharp_LCD035Q3DG01",
->  		.xres           =3D 320,
->  		.yres           =3D 240,
-> -		.pixclock       =3D 4608000,
-> +		.pixclock       =3D 217014,
-
-Maybe it'd be better to use a macro here and convert from Hz to ps. The
-panel specs always (afaik) report the pixel clock in Hz, and it also
-makes the units clear to the reader.
-
- Tomi
-
-
-
-------enig2WQANCTSTEMVHNVAUBDGQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRyp6HAAoJEPo9qoy8lh71c5kQAKrs5b+9OwImgfDQBhDrMDcv
-D5np1eMb255dxHmu7M8KYl7L2Fuu25j+jyzWSUdh4WVp4ZL+SG8CJ6CDSDpjiiCW
-Wrz+srofn2U1s6OZTvFfZBnMOmUIqK22t1wmMBBN5yNlNY/gRLKvSLhOULaCdVfA
-oRDr/hqjBxdPkmUUEusGvAEjmsuKWUS0FWHwY6xRNMAmzi2EuaoQ0Hq8QW5c9UQd
-kAsIrQqKEdaD4j6qUAhsiOvh4HL/Gsl/e44X31peVrilnFju9dnaMGAhCkWBqi1T
-RdcWWvw7skLEMFcje/OPcCptRfevtUV7NYWDGDNxNP8fxZllfCCLYkMwHgfNwVJn
-AJX7VXNTjdmYbYxJW5ZKUTQR5cc/OejwKDgtjPbTM2P7PL+SoF/QerSx8W+vA7lW
-YYlDUj6am80fSVnk1NnM8YbVQ/CTCZ8ozOcpj7Ps6kApmd1DtW/GUknxw0CT0zDk
-Fy5iWNkGCuiX+ewMuvtQ1bojwibW8P2LpbAHoJsYQOrugVfDcI66CxPLhpWdpPAQ
-ZhN1xjp0AG2OmE6Nb3EAYxKyPXKLWqoS2FAfn5vckMctlrqPQM47pI/z3D5tdeQ7
-wQ8osmN22KTozyN88Q8fBdmdI7Siq3KeUIBFOBUkZOD6EANhIMLSo3qGz1/nXzq2
-GnRK8NUit/a+rHfVYTNN
-=TiG1
------END PGP SIGNATURE-----
-
-------enig2WQANCTSTEMVHNVAUBDGQ--
+RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQGxpbnV4LmludGVsLmNvbT4KClRo
+ZSBzdHJpbmcgaXNuJ3QgbW9kaWZpZWQgc28gbWFrZSBpdCBjb25zdC4KCkNjOiBKZWFuLUNocmlz
+dG9waGUgUGxhZ25pb2wtVmlsbGFyZCA8cGxhZ25pb2pAamNyb3NvZnQuY29tPgpDYzogVG9taSBW
+YWxrZWluZW4gPHRvbWkudmFsa2VpbmVuQHRpLmNvbT4KQ2M6IGxpbnV4LWZiZGV2QHZnZXIua2Vy
+bmVsLm9yZwpTaWduZWQtb2ZmLWJ5OiBWaWxsZSBTeXJqw6Rsw6QgPHZpbGxlLnN5cmphbGFAbGlu
+dXguaW50ZWwuY29tPgotLS0KIGRyaXZlcnMvdmlkZW8vZmJtZW0uYyB8IDIgKy0KIGluY2x1ZGUv
+bGludXgvZmIuaCAgICB8IDIgKy0KIDIgZmlsZXMgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCAy
+IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJtZW0uYyBiL2RyaXZl
+cnMvdmlkZW8vZmJtZW0uYwppbmRleCAwOThiZmM2Li5kOGQ1Nzc5IDEwMDY0NAotLS0gYS9kcml2
+ZXJzL3ZpZGVvL2ZibWVtLmMKKysrIGIvZHJpdmVycy92aWRlby9mYm1lbS5jCkBAIC0xODgxLDcg
+KzE4ODEsNyBAQCBzdGF0aWMgaW50IG9mb25seSBfX3JlYWRfbW9zdGx5OwogICoKICAqIE5PVEU6
+IE5lZWRlZCB0byBtYWludGFpbiBiYWNrd2FyZHMgY29tcGF0aWJpbGl0eQogICovCi1pbnQgZmJf
+Z2V0X29wdGlvbnMoY2hhciAqbmFtZSwgY2hhciAqKm9wdGlvbikKK2ludCBmYl9nZXRfb3B0aW9u
+cyhjb25zdCBjaGFyICpuYW1lLCBjaGFyICoqb3B0aW9uKQogewogCWNoYXIgKm9wdCwgKm9wdGlv
+bnMgPSBOVUxMOwogCWludCByZXR2YWwgPSAwOwpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9m
+Yi5oIGIvaW5jbHVkZS9saW51eC9mYi5oCmluZGV4IGQ0OWM2MGYuLmZmYWM3MGEgMTAwNjQ0Ci0t
+LSBhL2luY2x1ZGUvbGludXgvZmIuaAorKysgYi9pbmNsdWRlL2xpbnV4L2ZiLmgKQEAgLTYyNCw3
+ICs2MjQsNyBAQCBleHRlcm4gdm9pZCBmYl9wYWRfYWxpZ25lZF9idWZmZXIodTggKmRzdCwgdTMy
+IGRfcGl0Y2gsIHU4ICpzcmMsIHUzMiBzX3BpdGNoLCB1MwogZXh0ZXJuIHZvaWQgZmJfc2V0X3N1
+c3BlbmQoc3RydWN0IGZiX2luZm8gKmluZm8sIGludCBzdGF0ZSk7CiBleHRlcm4gaW50IGZiX2dl
+dF9jb2xvcl9kZXB0aChzdHJ1Y3QgZmJfdmFyX3NjcmVlbmluZm8gKnZhciwKIAkJCSAgICAgIHN0
+cnVjdCBmYl9maXhfc2NyZWVuaW5mbyAqZml4KTsKLWV4dGVybiBpbnQgZmJfZ2V0X29wdGlvbnMo
+Y2hhciAqbmFtZSwgY2hhciAqKm9wdGlvbik7CitleHRlcm4gaW50IGZiX2dldF9vcHRpb25zKGNv
+bnN0IGNoYXIgKm5hbWUsIGNoYXIgKipvcHRpb24pOwogZXh0ZXJuIGludCBmYl9uZXdfbW9kZWxp
+c3Qoc3RydWN0IGZiX2luZm8gKmluZm8pOwogCiBleHRlcm4gc3RydWN0IGZiX2luZm8gKnJlZ2lz
+dGVyZWRfZmJbRkJfTUFYXTsKLS0gCjEuOC4xLjUKCi0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhp
+cyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4KdGhlIGJv
+ZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKTW9yZSBtYWpvcmRv
+bW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s

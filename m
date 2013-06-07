@@ -1,61 +1,91 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 26 Jun 2013 12:15:06 +0000
-Subject: Re: [PATCH 2/2 v2] fb: fix atyfb unused data warnings
-Message-Id: <51CADB4A.1080509@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2QHVIFPSGCXDGRVVLHRRO"
+From: Hector Palacios <hector.palacios@digi.com>
+Date: Fri, 07 Jun 2013 08:10:39 +0000
+Subject: [PATCH] video: mxsfb: fix color settings for 18bit data bus and 32bpp
+Message-Id: <51B1957F.40104@digi.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <51C26B56.20802@infradead.org> <20130624143737.GI305@game.jcrosoft.org> <51C887CC.6000301@infradead.org>
-In-Reply-To: <51C887CC.6000301@infradead.org>
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, LKML <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <519E03B0.1080006@digi.com> <519F4435.5010703@digi.com>
+ <201305241300.25461.jbe@pengutronix.de>
+ <201305241533.19941.jbe@pengutronix.de> <20130607072103.GF14209@lukather>
+ <51B18BA0.50506@digi.com> <20130607074200.GG14209@lukather>
+In-Reply-To: <20130607074200.GG14209@lukather>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-------enig2QHVIFPSGCXDGRVVLHRRO
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+For a combination of 18bit LCD data bus width and a color
+mode of 32bpp, the driver was setting the color mapping to
+rgb666, which is wrong, as the color in memory realy has an
+rgb888 layout.
 
-On 24/06/13 20:54, Randy Dunlap wrote:
-> From: Randy Dunlap <rdunlap@infradead.org>
->=20
-> Fix compiler warnings of data defined but not used by using the
-> __maybe_unused attribute.  The date are only used with certain kconfig
-> settings.
->=20
-> drivers/video/aty/atyfb_base.c:534:13: warning: 'ram_dram' defined but =
-not used [-Wunused-variable]
-> drivers/video/aty/atyfb_base.c:535:13: warning: 'ram_resv' defined but =
-not used [-Wunused-variable]
->=20
+This patch also removes the setting of flag CTRL_DF24 that
+makes the driver dimiss the upper 2 bits when handling 32/24bpp
+colors in a diplay with 18bit data bus width. This flag made
+true color images display wrong in such configurations.
 
-I've added this and the first patch in the series to my fbdev-3.11 branch=
-=2E
+Finally, the color mapping rgb666 has also been removed as nobody
+is using it and high level applications like Qt5 cannot work
+with it either.
 
- Tomi
+Reference: https://lkml.org/lkml/2013/5/23/220
+Signed-off-by: Hector Palacios <hector.palacios@digi.com>
+Acked-by: Juergen Beisert <jbe@pengutronix.de>
+---
+  drivers/video/mxsfb.c | 26 --------------------------
+  1 file changed, 26 deletions(-)
+
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 21223d4..d2c5105 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -239,24 +239,6 @@ static const struct fb_bitfield def_rgb565[] = {
+  	}
+  };
+
+-static const struct fb_bitfield def_rgb666[] = {
+-	[RED] = {
+-		.offset = 16,
+-		.length = 6,
+-	},
+-	[GREEN] = {
+-		.offset = 8,
+-		.length = 6,
+-	},
+-	[BLUE] = {
+-		.offset = 0,
+-		.length = 6,
+-	},
+-	[TRANSP] = {	/* no support for transparency */
+-		.length = 0,
+-	}
+-};
+-
+  static const struct fb_bitfield def_rgb888[] = {
+  	[RED] = {
+  		.offset = 16,
+@@ -309,9 +291,6 @@ static int mxsfb_check_var(struct fb_var_screeninfo *var,
+  			break;
+  		case STMLCDIF_16BIT:
+  		case STMLCDIF_18BIT:
+-			/* 24 bit to 18 bit mapping */
+-			rgb = def_rgb666;
+-			break;
+  		case STMLCDIF_24BIT:
+  			/* real 24 bit */
+  			rgb = def_rgb888;
+@@ -453,11 +432,6 @@ static int mxsfb_set_par(struct fb_info *fb_info)
+  			return -EINVAL;
+  		case STMLCDIF_16BIT:
+  		case STMLCDIF_18BIT:
+-			/* 24 bit to 18 bit mapping */
+-			ctrl |= CTRL_DF24; /* ignore the upper 2 bits in
+-					    *  each colour component
+-					    */
+-			break;
+  		case STMLCDIF_24BIT:
+  			/* real 24 bit */
+  			break;
+--
+1.8.3
 
 
-
-------enig2QHVIFPSGCXDGRVVLHRRO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRyttKAAoJEPo9qoy8lh71hDAQAIqiUhXMRHDxTMwiiWPcVEy8
-s+D+epzZ34+YVAvQvLRrJmX1AldGc8/pbMo5j8DN9dhR/Xr/4Ayh/V06Nd5ffUGc
-stp1ElLnviScb4LQtLNQdWQM5w0s4kbbGmzuHOTeaRq/dO1rBSqy1YWuuEQvpAlB
-c0qxTxE6vj6J/rctuofpYWHbrwByquWQ0YloBz25bqRcn7GFC7+S/PBrwFMOCW2+
-dKdOIkxb88pqv8WAMrHM/C5414knbmASUtpTODYvZ+x1bwDj2l3sPXma4HiBR0xa
-O94CZuyIvTC1ucSFCXKAuIOchJQ1Cu36RCO+tPRIFXzovfafPwcTML8xBRxM89VO
-AeJAoqaG6YHNA6v9GhwePUfnpxK72zLIC5P0+rDki1t9BSjOUTy8pza26+zxlpB4
-nfVTm32dSkjRz9idqoJWmyX7H40wv0hGNtupgK2jhgcy3wfrdHzbuiCHSmXNyc3v
-nMUGepiI1JH/O962i4iSfFX7FuE5lu6V4K7GUeyP+0rFoGo/tr+WdWyxEeC6Z91S
-8amW33rCWCjMcAuHJlgp9jFGG6LsuBoaZXndzo0BkWs2Kq16PeEKeBDzwcV1l/r1
-ZFJ46P9lllPNG4EJRFBqOtt9hLRgOtkD/r8tn1A/36T2CBry0ftIp8bHmz+WH8AF
-zV2SSRj5NHYhyHkfIEqy
-=CQlm
------END PGP SIGNATURE-----
-
-------enig2QHVIFPSGCXDGRVVLHRRO--

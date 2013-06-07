@@ -1,171 +1,46 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Date: Mon, 03 Jun 2013 10:13:20 +0000
-Subject: [PATCH v4 5/7] video: xilinxfb: Group bus initialization
-Message-Id: <565293cecf0605bfb1e8eb9c657731ac4975e496.1370254386.git.michal.simek@xilinx.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-9785-1370254418-0001"
+From: Boris BREZILLON <b.brezillon@overkiz.com>
+Date: Fri, 07 Jun 2013 18:08:57 +0000
+Subject: [RFC PATCH 35/50] at91/avr32/atmel_lcdfb: prepare clk before calling enable
+Message-Id: <1370628537-2712-1-git-send-email-b.brezillon@overkiz.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1370254386.git.michal.simek@xilinx.com>
-In-Reply-To: <cover.1370254386.git.michal.simek@xilinx.com>
-To: linux-kernel@vger.kernel.org
-Cc: Michal Simek <monstr@monstr.eu>, Michal Simek <michal.simek@xilinx.com>, Arnd Bergmann <arnd@arndb.de>, Timur Tabi <timur@tabi.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-
-This is a MIME GnuPG-signed message.  If you see this text, it means that
-your E-mail or Usenet software does not support MIME signed messages.
-The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
-To open this message correctly you will need to install E-mail or Usenet
-software that supports modern Internet standards.
-
---=_mimegpg-monstr-desktop-9785-1370254418-0001
-
-Move of_address_to_resource() to xilinxfb_assign()
-which simplify driver probing.
-
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
----
-Changes in v4: None
-Changes in v3:
-- New patch in this patchset
-
-Changes in v2: None
-
- drivers/video/xilinxfb.c | 56 +++++++++++++-----------------------------------
- 1 file changed, 15 insertions(+), 41 deletions(-)
-
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index 1b55f18..bd3b85d 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -227,33 +227,23 @@ static struct fb_ops xilinxfb_ops =
-  * Bus independent setup/teardown
-  */
-
--static int xilinxfb_assign(struct device *dev,
-+static int xilinxfb_assign(struct platform_device *pdev,
- 			   struct xilinxfb_drvdata *drvdata,
--			   unsigned long physaddr,
- 			   struct xilinxfb_platform_data *pdata)
- {
- 	int rc;
-+	struct device *dev = &pdev->dev;
- 	int fbsize = pdata->xvirt * pdata->yvirt * BYTES_PER_PIXEL;
-
- 	if (drvdata->flags & BUS_ACCESS_FLAG) {
--		/*
--		 * Map the control registers in if the controller
--		 * is on direct BUS interface.
--		 */
--		if (!request_mem_region(physaddr, 8, DRIVER_NAME)) {
--			dev_err(dev, "Couldn't lock memory region at 0x%08lX\n",
--				physaddr);
--			rc = -ENODEV;
--			goto err_region;
--		}
-+		struct resource *res;
-
--		drvdata->regs_phys = physaddr;
--		drvdata->regs = ioremap(physaddr, 8);
-+		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+		drvdata->regs_phys = res->start;
-+		drvdata->regs = devm_request_and_ioremap(&pdev->dev, res);
- 		if (!drvdata->regs) {
--			dev_err(dev, "Couldn't lock memory region at 0x%08lX\n",
--				physaddr);
--			rc = -ENODEV;
--			goto err_map;
-+			rc = -EADDRNOTAVAIL;
-+			goto err_region;
- 		}
- 	}
-
-@@ -349,11 +339,7 @@ err_cmap:
-
- err_fbmem:
- 	if (drvdata->flags & BUS_ACCESS_FLAG)
--		iounmap(drvdata->regs);
--
--err_map:
--	if (drvdata->flags & BUS_ACCESS_FLAG)
--		release_mem_region(drvdata->regs_phys, 8);
-+		devm_iounmap(dev, drvdata->regs);
-
- err_region:
- 	kfree(drvdata);
-@@ -384,10 +370,8 @@ static int xilinxfb_release(struct device *dev)
- 	xilinx_fb_out32(drvdata, REG_CTRL, 0);
-
- 	/* Release the resources, as allocated based on interface */
--	if (drvdata->flags & BUS_ACCESS_FLAG) {
--		iounmap(drvdata->regs);
--		release_mem_region(drvdata->regs_phys, 8);
--	}
-+	if (drvdata->flags & BUS_ACCESS_FLAG)
-+		devm_iounmap(dev, drvdata->regs);
- #ifdef CONFIG_PPC_DCR
- 	else
- 		dcr_unmap(drvdata->dcr_host, drvdata->dcr_len);
-@@ -408,8 +392,7 @@ static int xilinxfb_of_probe(struct platform_device *op)
- 	const u32 *prop;
- 	u32 tft_access = 0;
- 	struct xilinxfb_platform_data pdata;
--	struct resource res;
--	int size, rc;
-+	int size;
- 	struct xilinxfb_drvdata *drvdata;
-
- 	/* Copy with the default pdata (not a ptr reference!) */
-@@ -435,22 +418,17 @@ static int xilinxfb_of_probe(struct platform_device *op)
- 	 */
- 	if (tft_access) {
- 		drvdata->flags |= BUS_ACCESS_FLAG;
--		rc = of_address_to_resource(op->dev.of_node, 0, &res);
--		if (rc) {
--			dev_err(&op->dev, "invalid address\n");
--			goto err;
--		}
- 	}
- #ifdef CONFIG_PPC_DCR
- 	else {
- 		int start;
--		res.start = 0;
- 		start = dcr_resource_start(op->dev.of_node, 0);
- 		drvdata->dcr_len = dcr_resource_len(op->dev.of_node, 0);
- 		drvdata->dcr_host = dcr_map(op->dev.of_node, start, drvdata->dcr_len);
- 		if (!DCR_MAP_OK(drvdata->dcr_host)) {
- 			dev_err(&op->dev, "invalid DCR address\n");
--			goto err;
-+			kfree(drvdata);
-+			return -ENODEV;
- 		}
- 	}
- #endif
-@@ -477,11 +455,7 @@ static int xilinxfb_of_probe(struct platform_device *op)
- 		pdata.rotate_screen = 1;
-
- 	dev_set_drvdata(&op->dev, drvdata);
--	return xilinxfb_assign(&op->dev, drvdata, res.start, &pdata);
--
-- err:
--	kfree(drvdata);
--	return -ENODEV;
-+	return xilinxfb_assign(op, drvdata, &pdata);
- }
-
- static int xilinxfb_of_remove(struct platform_device *op)
---
-1.8.2.3
-
-
---=_mimegpg-monstr-desktop-9785-1370254418-0001
-Content-Type: application/pgp-signature
+References: <1370615115-16979-1-git-send-email-b.brezillon@overkiz.com>
+In-Reply-To: <1370615115-16979-1-git-send-email-b.brezillon@overkiz.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Replace clk_enable/disable with clk_prepare_enable/disable_unprepare to
+avoid common clk framework warnings.
 
-iEYEABECAAYFAlGsbFIACgkQykllyylKDCHyVgCeNtHpyFWsginVfOVbAOpzfUC4
-jbYAn1uxeCnb2odm70dgYsOpEY793nY5
-=ToQ3
------END PGP SIGNATURE-----
+Signed-off-by: Boris BREZILLON <b.brezillon@overkiz.com>
+---
+ drivers/video/atmel_lcdfb.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---=_mimegpg-monstr-desktop-9785-1370254418-0001--
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 540909d..8525457 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -893,14 +893,14 @@ static int __init atmel_lcdfb_init_fbinfo(struct atmel_lcdfb_info *sinfo)
+ 
+ static void atmel_lcdfb_start_clock(struct atmel_lcdfb_info *sinfo)
+ {
+-	clk_enable(sinfo->bus_clk);
+-	clk_enable(sinfo->lcdc_clk);
++	clk_prepare_enable(sinfo->bus_clk);
++	clk_prepare_enable(sinfo->lcdc_clk);
+ }
+ 
+ static void atmel_lcdfb_stop_clock(struct atmel_lcdfb_info *sinfo)
+ {
+-	clk_disable(sinfo->bus_clk);
+-	clk_disable(sinfo->lcdc_clk);
++	clk_disable_unprepare(sinfo->bus_clk);
++	clk_disable_unprepare(sinfo->lcdc_clk);
+ }
+ 
+ 
+-- 
+1.7.9.5
+

@@ -1,61 +1,54 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 07 Jun 2013 01:29:31 +0000
-Subject: Re: [PATCH v3] backlight: Convert from Legacy pm ops to dev_pm_ops
-Message-Id: <000101ce631e$75f5e120$61e1a360$@samsung.com>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Fri, 07 Jun 2013 07:31:30 +0000
+Subject: [PATCH v3] simplefb: add support for a8b8g8r8 pixel format
+Message-Id: <1370590290-13467-1-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1370128047-2444-1-git-send-email-shuah.kh@samsung.com>
- <001a01ce6010$3daaf3c0$b900db40$@samsung.com> <5441622.ypFXsKluBt@wuerfel>
-In-Reply-To: <5441622.ypFXsKluBt@wuerfel>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Arnd Bergmann' <arnd@arndb.de>
-Cc: 'Andrew Morton' <akpm@linux-foundation.org>, 'Shuah Khan' <shuah.kh@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com, rpurdie@rpsys.net, FlorianSchandinat@gmx.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, rafael.j.wysocki@intel.com, Jingoo Han <jg1.han@samsung.com>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Olof Johansson <olof@lixom.net>
+Cc: gnurou@gmail.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Alexandre Courbot <acourbot@nvidia.com>
 
-On Friday, June 07, 2013 6:28 AM, Arnd Bergmann wrote:
-> On Monday 03 June 2013 13:10:10 Jingoo Han wrote:
-> > On Sunday, June 02, 2013 8:07 AM, Shuah Khan wrote:
-> > >
-> > > Convert drivers/video/backlight/class to use dev_pm_ops for power
-> > > management and remove Legacy PM ops hooks. With this change, backlight
-> > > class registers suspend/resume callbacks via class->pm (dev_pm_ops)
-> > > instead of Legacy class->suspend/resume. When __device_suspend() runs
-> > > call-backs, it will find class->pm ops for the backlight class.
-> > >
-> > > Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
-> > > Cc: Shuah Khan <shuahkhan@gmail.com>
-> >
-> > CC'ed Andrew Morton,
-> >
-> > It looks good.
-> >
-> > Acked-by: Jingoo Han <jg1.han@samsung.com>
-> >
-> 
-> I'm getting this build warning now:
-> 
-> arnd@wuerfel:/git/arm-soc$ cat build/omap1_defconfig/faillog
-> /git/arm-soc/drivers/video/backlight/backlight.c:212:12: warning: 'backlight_suspend' defined but not
-> used [-Wunused-function]
->  static int backlight_suspend(struct device *dev)
->             ^
-> /git/arm-soc/drivers/video/backlight/backlight.c:226:12: warning: 'backlight_resume' defined but not
-> used [-Wunused-function]
->  static int backlight_resume(struct device *dev)
+A framebuffer of this format is set up by SHIELD's bootloader.
 
-Hi Arnd Bergmann,
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+Acked-by: Olof Johansson <olof@lixom.net>
+---
+Changes from v2:
+- Fixed typo in format (Thanks Alexander van Heukelum!)
 
-I see what happens.
-This build warning happens when CONFIG_PM is selected and
-CONFIG_PM_SLEEP is not selected.
+Changes from v1:
+- Added description to motivate the change
+- Added ack
 
-So, I will add '#ifdef CONFIG_PM_SLEEP' to './drivers/video/backlight/backlight.c'
-and send it soon.
-Thank you.
+ Documentation/devicetree/bindings/video/simple-framebuffer.txt | 1 +
+ drivers/video/simplefb.c                                       | 1 +
+ 2 files changed, 2 insertions(+)
 
-Best regards,
-Jingoo Han
-
-> 
-> 	Arnd
+diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer.txt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+index 3ea4605..70c26f3 100644
+--- a/Documentation/devicetree/bindings/video/simple-framebuffer.txt
++++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+@@ -12,6 +12,7 @@ Required properties:
+ - stride: The number of bytes in each line of the framebuffer.
+ - format: The format of the framebuffer surface. Valid values are:
+   - r5g6b5 (16-bit pixels, d[15:11]=r, d[10:5]=g, d[4:0]=b).
++  - a8b8g8r8 (32-bit pixels, d[31:24]=a, d[23:16]=b, d[15:8]=g, d[7:0]=r).
+ 
+ Example:
+ 
+diff --git a/drivers/video/simplefb.c b/drivers/video/simplefb.c
+index e2e9e3e..f015482 100644
+--- a/drivers/video/simplefb.c
++++ b/drivers/video/simplefb.c
+@@ -84,6 +84,7 @@ struct simplefb_format {
+ 
+ static struct simplefb_format simplefb_formats[] = {
+ 	{ "r5g6b5", 16, {11, 5}, {5, 6}, {0, 5}, {0, 0} },
++	{ "a8b8g8r8", 32, {0, 8}, {8, 8}, {16, 8}, {24, 8} },
+ };
+ 
+ struct simplefb_params {
+-- 
+1.8.3
 

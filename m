@@ -1,7 +1,7 @@
 From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 07 Jun 2013 10:02:31 +0000
+Date: Fri, 07 Jun 2013 10:22:19 +0000
 Subject: Re: [PATCH] backlight: add CONFIG_PM_SLEEP to suspend/resume functions
-Message-Id: <1944274.r5ID26zhWd@wuerfel>
+Message-Id: <2386569.59VQ9D5dv5@wuerfel>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <000201ce631f$d4ad0d50$7e0727f0$@samsung.com>
 In-Reply-To: <000201ce631f$d4ad0d50$7e0727f0$@samsung.com>
@@ -21,64 +21,7 @@ On Friday 07 June 2013 10:39:20 Jingoo Han wrote:
 > drivers/video/backlight/backlight.c:225:12: warning: 'backlight_resume' defined but not used [-Wunused-function]
 > 
 > Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> ---
->  drivers/video/backlight/backlight.c |    2 ++
->  1 file changed, 2 insertions(+)
 
-Your patch looks ok, but I find it extremely annoying to have new warnings
-like this one come up every single day in linux-next. It really shouldn't
-be this hard to use a macro called SIMPLE_DEV_PM_OPS() correctly.
+I forgot:
 
-Below is an implementation of SIMPLE_DEV_PM_OPS and UNIVERSAL_DEV_PM_OPS
-that avoids this issue by introducing an unused reference to the suspend
-and resume functions. gcc is smart enough to leave out that unused code
-by itself, and it would actually improve compile-time coverage to have
-something like this, besides being harder to misuse.
-
-This would be a better approach if we didn't already have all the "#ifdef
-CONFIG_PM_SLEEP" in place that hide the functions now. Unfortunately we
-already have over 300 uses of SIMPLE_DEV_PM_OPS/UNIVERSAL_DEV_PM_OPS
-in the kernel today, so removing all the #ifdef atomically without
-creating more build errors is rather hard to do.
-
-Maybe someone has an idea how to extend my approach so it works with
-and without the #ifdef, to let us transition to a situation that no
-longer needs them.
-
-	Arnd
-
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index a224c7f..5a801bd 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -320,6 +320,9 @@ struct dev_pm_ops {
- #define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
- #endif
- 
-+#define UNUSED_DEV_PM_OPS(name, func...) \
-+static const int (*__unused_ ## name[])(struct device*) __maybe_unused = { func };
-+
- /*
-  * Use this if you want to use the same suspend and resume callbacks for suspend
-  * to RAM and hibernation.
-@@ -327,7 +332,8 @@ struct dev_pm_ops {
- #define SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
- const struct dev_pm_ops name = { \
- 	SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
--}
-+}; \
-+UNUSED_DEV_PM_OPS(name, suspend_fn, resume_fn)
- 
- /*
-  * Use this for defining a set of PM operations to be used in all situations
-@@ -346,7 +352,8 @@ const struct dev_pm_ops name = { \
- const struct dev_pm_ops name = { \
- 	SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
- 	SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
--}
-+}; \
-+UNUSED_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn)
- 
- /**
-  * PM_EVENT_ messages
-
+Acked-by: Arnd Bergmann <arnd@arndb.de>

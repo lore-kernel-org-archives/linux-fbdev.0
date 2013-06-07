@@ -1,57 +1,148 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 28 Jun 2013 07:14:18 +0000
-Subject: [PATCH V2 0/3] Generic PHY driver for the Exynos SoC DP PHY
-Message-Id: <001e01ce73cf$1ab3ab50$501b01f0$@samsung.com>
+From: Archit Taneja <archit@ti.com>
+Date: Fri, 07 Jun 2013 06:50:21 +0000
+Subject: Re: [PATCH 14/32] OMAPDSS: DSI: cleanup regulator init
+Message-Id: <51B1825C.9050206@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com> <1369906493-27538-15-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1369906493-27538-15-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-This patch series adds a simple driver for the Samsung Exynos SoC
-series DP transmitter PHY, using the generic PHY framework [1].
-Previously the DP PHY used a platform callback or internal DT node
-to control the PHY power enable bit.
-The platform callback and internal DT node can be dropped and this
-driver does not need any calls back to the platform code.
+On Thursday 30 May 2013 03:04 PM, Tomi Valkeinen wrote:
+> Separate the regulator initialization code to its own function, removing
+> duplicate code.
+>
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> ---
+>   drivers/video/omap2/dss/dsi.c | 82 ++++++++++++++++---------------------------
+>   1 file changed, 31 insertions(+), 51 deletions(-)
+>
+> diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+> index bdddd0d..37ca980 100644
+> --- a/drivers/video/omap2/dss/dsi.c
+> +++ b/drivers/video/omap2/dss/dsi.c
+> @@ -1114,6 +1114,30 @@ void dsi_runtime_put(struct platform_device *dsidev)
+>   	WARN_ON(r < 0 && r != -ENOSYS);
+>   }
+>
+> +static int dsi_regulator_init(struct platform_device *dsidev)
+> +{
+> +	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+> +	struct regulator *vdds_dsi;
+> +
+> +	if (dsi->vdds_dsi_reg != NULL)
+> +		return 0;
+> +
+> +	vdds_dsi = regulator_get(&dsi->pdev->dev, "vdds_dsi");
+> +
+> +	/* DT HACK: try VCXIO to make omapdss work for o4 sdp/panda */
+> +	if (IS_ERR(vdds_dsi))
+> +		vdds_dsi = regulator_get(&dsi->pdev->dev, "VCXIO");
+> +
 
-These patches was tested on Exynos5250.
+We could use devm_ versions here too right?
 
-This PATCH v2 follows:
- * PATCH v1, sent on June, 28th 2013
+Archit
 
-Changes between v1 and v2:
-  * Replaced exynos_dp_video_phy_xlate() with of_phy_simple_xlate(),
-    as Kishon Vijay Abraham I guided.
-  * Set the value of phy-cells as 0, because the phy_provider implements
-    only one PHY.
-  * Removed unnecessary header include.
-  * Added '#ifdef CONFIG_OF' and of_match_ptr macro.
-
-This series depends on the generic PHY framework [1]. These patches
-refer to Sylwester Nawrocki's patches about Exynos MIPI [2].
-
-[1] https://lkml.org/lkml/2013/6/26/259
-[2] http://www.spinics.net/lists/linux-samsung-soc/msg20034.html
-
-Jingoo Han (3):
-  phy: Add driver for Exynos DP PHY
-  ARM: dts: Add DP PHY node to exynos5250.dtsi
-  video: exynos_dp: Use the generic PHY driver
-
- .../phy/samsung,exynos5250-dp-video-phy.txt        |    7 ++
- .../devicetree/bindings/video/exynos_dp.txt        |   17 ---
- arch/arm/boot/dts/exynos5250.dtsi                  |   13 ++++++++-----
- drivers/phy/Kconfig                                |    8 ++
- drivers/phy/Makefile                               |    3 +-
- drivers/phy/phy-exynos-dp-video.c                  |  122 ++++++++++++++++++++
- drivers/video/exynos/exynos_dp_core.c              |  118 ++------------------
- drivers/video/exynos/exynos_dp_core.h              |    2 +
- include/video/exynos_dp.h                          |    6 +-
- 9 files changed, 162 insertions(+), 134 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/phy/samsung,exynos5250-dp-video-phy.txt
- create mode 100644 drivers/phy/phy-exynos-dp-video.c
-
---
-1.7.10.4
+> +	if (IS_ERR(vdds_dsi)) {
+> +		DSSERR("can't get VDDS_DSI regulator\n");
+> +		return PTR_ERR(vdds_dsi);
+> +	}
+> +
+> +	dsi->vdds_dsi_reg = vdds_dsi;
+> +
+> +	return 0;
+> +}
+> +
+>   /* source clock for DSI PLL. this could also be PCLKFREE */
+>   static inline void dsi_enable_pll_clock(struct platform_device *dsidev,
+>   		bool enable)
+> @@ -1592,22 +1616,9 @@ int dsi_pll_init(struct platform_device *dsidev, bool enable_hsclk,
+>   	 */
+>   	enable_hsclk = enable_hsdiv = true;
+>
+> -	if (dsi->vdds_dsi_reg = NULL) {
+> -		struct regulator *vdds_dsi;
+> -
+> -		vdds_dsi = regulator_get(&dsi->pdev->dev, "vdds_dsi");
+> -
+> -		/* DT HACK: try VCXIO to make omapdss work for o4 sdp/panda */
+> -		if (IS_ERR(vdds_dsi))
+> -			vdds_dsi = regulator_get(&dsi->pdev->dev, "VCXIO");
+> -
+> -		if (IS_ERR(vdds_dsi)) {
+> -			DSSERR("can't get VDDS_DSI regulator\n");
+> -			return PTR_ERR(vdds_dsi);
+> -		}
+> -
+> -		dsi->vdds_dsi_reg = vdds_dsi;
+> -	}
+> +	r = dsi_regulator_init(dsidev);
+> +	if (r)
+> +		return r;
+>
+>   	dsi_enable_pll_clock(dsidev, 1);
+>   	/*
+> @@ -5225,34 +5236,6 @@ static enum omap_channel dsi_get_channel(int module_id)
+>   	}
+>   }
+>
+> -static int dsi_init_display(struct omap_dss_device *dssdev)
+> -{
+> -	struct platform_device *dsidev > -			dsi_get_dsidev_from_id(dssdev->phy.dsi.module);
+> -	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+> -
+> -	DSSDBG("DSI init\n");
+> -
+> -	if (dsi->vdds_dsi_reg = NULL) {
+> -		struct regulator *vdds_dsi;
+> -
+> -		vdds_dsi = regulator_get(&dsi->pdev->dev, "vdds_dsi");
+> -
+> -		/* DT HACK: try VCXIO to make omapdss work for o4 sdp/panda */
+> -		if (IS_ERR(vdds_dsi))
+> -			vdds_dsi = regulator_get(&dsi->pdev->dev, "VCXIO");
+> -
+> -		if (IS_ERR(vdds_dsi)) {
+> -			DSSERR("can't get VDDS_DSI regulator\n");
+> -			return PTR_ERR(vdds_dsi);
+> -		}
+> -
+> -		dsi->vdds_dsi_reg = vdds_dsi;
+> -	}
+> -
+> -	return 0;
+> -}
+> -
+>   int omap_dsi_request_vc(struct omap_dss_device *dssdev, int *channel)
+>   {
+>   	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+> @@ -5410,19 +5393,16 @@ static int dsi_probe_pdata(struct platform_device *dsidev)
+>   	if (!plat_dssdev)
+>   		return 0;
+>
+> +	r = dsi_regulator_init(dsidev);
+> +	if (r)
+> +		return r;
+> +
+>   	dssdev = dss_alloc_and_init_device(&dsidev->dev);
+>   	if (!dssdev)
+>   		return -ENOMEM;
+>
+>   	dss_copy_device_pdata(dssdev, plat_dssdev);
+>
+> -	r = dsi_init_display(dssdev);
+> -	if (r) {
+> -		DSSERR("device %s init failed: %d\n", dssdev->name, r);
+> -		dss_put_device(dssdev);
+> -		return r;
+> -	}
+> -
+>   	r = omapdss_output_set_device(&dsi->output, dssdev);
+>   	if (r) {
+>   		DSSERR("failed to connect output to new device: %s\n",
+>
 

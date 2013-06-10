@@ -1,53 +1,54 @@
-From: Felipe Balbi <balbi@ti.com>
-Date: Tue, 25 Jun 2013 15:09:08 +0000
-Subject: Re: [PATCH v2 4/5] exynos4-is: Use generic MIPI CSIS PHY driver
-Message-Id: <20130625150908.GC21334@arwen.pp.htv.fi>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="VywGB/WGlW4DM4P8"
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Date: Mon, 10 Jun 2013 13:43:02 +0000
+Subject: Re: [V2 5/7] video: mmp: add pitch info in mmp_win structure
+Message-Id: <20130610134302.GZ19468@game.jcrosoft.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1372170110-12993-1-git-send-email-s.nawrocki@samsung.com>
- <1372170110-12993-4-git-send-email-s.nawrocki@samsung.com>
-In-Reply-To: <1372170110-12993-4-git-send-email-s.nawrocki@samsung.com>
+References: <CACDDiy-Ri=iYNLWg6dd3BwayZx=4+Lb5WC=ZEgtNHpxiSca=nA@mail.gmail.com>
+ <1370780950-21746-1-git-send-email-jtzhou@marvell.com>
+In-Reply-To: <1370780950-21746-1-git-send-email-jtzhou@marvell.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---VywGB/WGlW4DM4P8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 20:29 Sun 09 Jun     , Jett.Zhou wrote:
+> From: Jing Xiang <jxiang@marvell.com>
+> 
 
-On Tue, Jun 25, 2013 at 04:21:49PM +0200, Sylwester Nawrocki wrote:
-> Use the generic PHY API instead of the platform callback to control
-> the MIPI CSIS DPHY. The 'phy_label' field is added to the platform
-> data structure to allow PHY lookup on non-dt platforms
->=20
-> Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+this is impossible to follow
 
-Acked-by: Felipe Balbi <balbi@ti.com>
+resend the patch series fully with a PATCH 0
 
---=20
-balbi
+as I just go back from vacation I'll not read this series until then
 
---VywGB/WGlW4DM4P8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Best Regards,
+J.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJRybKUAAoJEIaOsuA1yqREJ/AP+wVZAqcv5RW7YN7jEYIdeToa
-DVGR4J/QUAG4mdvLT0UNBbOg85dMXVhq/uWcgj9JliWhEtG/yBek98foL1RJweZN
-gEvKRv41uzzrY9TWQI3Q4uYcCWCWLMEzqqBcbB1629wyUOQbrByfxQyhhQ1l9Te/
-yELVyYyGofctYqAYkSMM3zUwhWOWV8WaYVopBbV8nG47bujE0noSlU7EqsGJChKE
-B4gYXgp/L/f06EEySWY2Agssr5oqm2NuK5M5tRLCohEihl/MdYsZHYwxBLMB4cKL
-ODMy3tn6QRofyRtWLYnutJ7D7TwQ9c1B1T8459OZ0tZYkd/zuGmlJycyW9Q4FxD2
-lql7V8Qpryg/9snmkMtBicR9hPVqITWzyYaoikichLP2YV7gpD3yAY4XnsXmq2ca
-s+kuzu54I52Yw5pff8xJF+PZ4F3g2nsf2QvCSSABuReeIxgfVEgjF2mQI1lBuRQN
-PVCkZ+hwFGIt7zypCQg+jF3rC/Gvq83gdLLkVkg5Ny04KT34GoGCiWwG/MGh+Rss
-cDPSOxaC7mPBkiKU/iSBHQ2ehZ/8T1Pq3P5DLRaMQbFiqFp1mxkUWnqTvZVI/5qK
-2L9eKEChTZ7RK1bDkIj32/2G+DVTiZv3l7j3V0DJkUzikzzYU32lj4UC9j/LLOVL
-YeWJUeIme8SU5htkUVsv
-=NPCH
------END PGP SIGNATURE-----
-
---VywGB/WGlW4DM4P8--
+> Add pitch length info of graphics/video layer for mmp_win, if it is
+> YUV format of video layer, u/v pitch will non-zero.
+> 
+> Signed-off-by: Jing Xiang <jxiang@marvell.com>
+> Signed-off-by: Jett.Zhou <jtzhou@marvell.com>
+> ---
+>  include/video/mmp_disp.h |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/video/mmp_disp.h b/include/video/mmp_disp.h
+> index b9dd1fb..462e3bd 100644
+> --- a/include/video/mmp_disp.h
+> +++ b/include/video/mmp_disp.h
+> @@ -91,6 +91,11 @@ struct mmp_win {
+>  	u16	up_crop;
+>  	u16	bottom_crop;
+>  	int	pix_fmt;
+> +	/*
+> +	 * pitch[0]: graphics/video layer line length or y pitch
+> +	 * pitch[1]/pitch[2]: video u/v pitch if non-zero
+> +	 */
+> +	u32	pitch[3];
+>  };
+>  
+>  struct mmp_addr {
+> -- 
+> 1.7.0.4
+> 

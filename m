@@ -1,42 +1,63 @@
-From: ville.syrjala@linux.intel.com
-Date: Fri, 07 Jun 2013 15:43:06 +0000
-Subject: [PATCH 3/4] fb: Make fb_get_options() 'name' parameter const
-Message-Id: <1370619787-15341-3-git-send-email-ville.syrjala@linux.intel.com>
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Date: Mon, 10 Jun 2013 14:22:00 +0000
+Subject: Re: [PATCH 3/4] fb: Make fb_get_options() 'name' parameter const
+Message-Id: <20130610142200.GA305@game.jcrosoft.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1370619787-15341-1-git-send-email-ville.syrjala@linux.intel.com>
-In-Reply-To: <1370619787-15341-1-git-send-email-ville.syrjala@linux.intel.com>
+	<1370619787-15341-3-git-send-email-ville.syrjala@linux.intel.com>
+In-Reply-To: <1370619787-15341-3-git-send-email-ville.syrjala@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: dri-devel@lists.freedesktop.org
-Cc: intel-gfx@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: ville.syrjala@linux.intel.com
+Cc: intel-gfx@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQGxpbnV4LmludGVsLmNvbT4KClRo
-ZSBzdHJpbmcgaXNuJ3QgbW9kaWZpZWQgc28gbWFrZSBpdCBjb25zdC4KCkNjOiBKZWFuLUNocmlz
-dG9waGUgUGxhZ25pb2wtVmlsbGFyZCA8cGxhZ25pb2pAamNyb3NvZnQuY29tPgpDYzogVG9taSBW
-YWxrZWluZW4gPHRvbWkudmFsa2VpbmVuQHRpLmNvbT4KQ2M6IGxpbnV4LWZiZGV2QHZnZXIua2Vy
-bmVsLm9yZwpTaWduZWQtb2ZmLWJ5OiBWaWxsZSBTeXJqw6Rsw6QgPHZpbGxlLnN5cmphbGFAbGlu
-dXguaW50ZWwuY29tPgotLS0KIGRyaXZlcnMvdmlkZW8vZmJtZW0uYyB8IDIgKy0KIGluY2x1ZGUv
-bGludXgvZmIuaCAgICB8IDIgKy0KIDIgZmlsZXMgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCAy
-IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJtZW0uYyBiL2RyaXZl
-cnMvdmlkZW8vZmJtZW0uYwppbmRleCAwOThiZmM2Li5kOGQ1Nzc5IDEwMDY0NAotLS0gYS9kcml2
-ZXJzL3ZpZGVvL2ZibWVtLmMKKysrIGIvZHJpdmVycy92aWRlby9mYm1lbS5jCkBAIC0xODgxLDcg
-KzE4ODEsNyBAQCBzdGF0aWMgaW50IG9mb25seSBfX3JlYWRfbW9zdGx5OwogICoKICAqIE5PVEU6
-IE5lZWRlZCB0byBtYWludGFpbiBiYWNrd2FyZHMgY29tcGF0aWJpbGl0eQogICovCi1pbnQgZmJf
-Z2V0X29wdGlvbnMoY2hhciAqbmFtZSwgY2hhciAqKm9wdGlvbikKK2ludCBmYl9nZXRfb3B0aW9u
-cyhjb25zdCBjaGFyICpuYW1lLCBjaGFyICoqb3B0aW9uKQogewogCWNoYXIgKm9wdCwgKm9wdGlv
-bnMgPSBOVUxMOwogCWludCByZXR2YWwgPSAwOwpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9m
-Yi5oIGIvaW5jbHVkZS9saW51eC9mYi5oCmluZGV4IGQ0OWM2MGYuLmZmYWM3MGEgMTAwNjQ0Ci0t
-LSBhL2luY2x1ZGUvbGludXgvZmIuaAorKysgYi9pbmNsdWRlL2xpbnV4L2ZiLmgKQEAgLTYyNCw3
-ICs2MjQsNyBAQCBleHRlcm4gdm9pZCBmYl9wYWRfYWxpZ25lZF9idWZmZXIodTggKmRzdCwgdTMy
-IGRfcGl0Y2gsIHU4ICpzcmMsIHUzMiBzX3BpdGNoLCB1MwogZXh0ZXJuIHZvaWQgZmJfc2V0X3N1
-c3BlbmQoc3RydWN0IGZiX2luZm8gKmluZm8sIGludCBzdGF0ZSk7CiBleHRlcm4gaW50IGZiX2dl
-dF9jb2xvcl9kZXB0aChzdHJ1Y3QgZmJfdmFyX3NjcmVlbmluZm8gKnZhciwKIAkJCSAgICAgIHN0
-cnVjdCBmYl9maXhfc2NyZWVuaW5mbyAqZml4KTsKLWV4dGVybiBpbnQgZmJfZ2V0X29wdGlvbnMo
-Y2hhciAqbmFtZSwgY2hhciAqKm9wdGlvbik7CitleHRlcm4gaW50IGZiX2dldF9vcHRpb25zKGNv
-bnN0IGNoYXIgKm5hbWUsIGNoYXIgKipvcHRpb24pOwogZXh0ZXJuIGludCBmYl9uZXdfbW9kZWxp
-c3Qoc3RydWN0IGZiX2luZm8gKmluZm8pOwogCiBleHRlcm4gc3RydWN0IGZiX2luZm8gKnJlZ2lz
-dGVyZWRfZmJbRkJfTUFYXTsKLS0gCjEuOC4xLjUKCi0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhp
-cyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4KdGhlIGJv
-ZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKTW9yZSBtYWpvcmRv
-bW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s
+On 18:43 Fri 07 Jun     , ville.syrjala@linux.intel.com wrote:
+> From: Ville Syrj=E4l=E4 <ville.syrjala@linux.intel.com>
+>=20
+> The string isn't modified so make it const.
+>=20
+> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: linux-fbdev@vger.kernel.org
+> Signed-off-by: Ville Syrj=E4l=E4 <ville.syrjala@linux.intel.com>
+
+Applied
+
+Best Regards,
+J.
+> ---
+>  drivers/video/fbmem.c | 2 +-
+>  include/linux/fb.h    | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+> index 098bfc6..d8d5779 100644
+> --- a/drivers/video/fbmem.c
+> +++ b/drivers/video/fbmem.c
+> @@ -1881,7 +1881,7 @@ static int ofonly __read_mostly;
+>   *
+>   * NOTE: Needed to maintain backwards compatibility
+>   */
+> -int fb_get_options(char *name, char **option)
+> +int fb_get_options(const char *name, char **option)
+>  {
+>  	char *opt, *options =3D NULL;
+>  	int retval =3D 0;
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index d49c60f..ffac70a 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -624,7 +624,7 @@ extern void fb_pad_aligned_buffer(u8 *dst, u32 d_pitc=
+h, u8 *src, u32 s_pitch, u3
+>  extern void fb_set_suspend(struct fb_info *info, int state);
+>  extern int fb_get_color_depth(struct fb_var_screeninfo *var,
+>  			      struct fb_fix_screeninfo *fix);
+> -extern int fb_get_options(char *name, char **option);
+> +extern int fb_get_options(const char *name, char **option);
+>  extern int fb_new_modelist(struct fb_info *info);
+> =20
+>  extern struct fb_info *registered_fb[FB_MAX];
+> --=20
+> 1.8.1.5
+>=20

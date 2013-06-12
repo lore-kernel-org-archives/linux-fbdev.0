@@ -1,58 +1,52 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Date: Tue, 25 Jun 2013 14:21:47 +0000
-Subject: [PATCH v2 2/5] ARM: dts: Add MIPI PHY node to exynos4.dtsi
-Message-Id: <1372170110-12993-2-git-send-email-s.nawrocki@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 12 Jun 2013 06:44:52 +0000
+Subject: [PATCH] OMAPDSS: DPI: Fix wrong pixel clock limit
+Message-Id: <1371019492-4582-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1372170110-12993-1-git-send-email-s.nawrocki@samsung.com>
-In-Reply-To: <1372170110-12993-1-git-send-email-s.nawrocki@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Add PHY provider node for the MIPI CSIS and MIPI DSIM PHYs.
+DPI is supposed to skip odd dividers in the clock path when the pixel
+clock is higher than 100MHz. The code, however, defines the pixel clock
+limit as 1MHz. This causes the driver to skip valid clock dividers,
+possibly making the pixel clock to be further away from the requested
+one than necessary.
 
-Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Fix the clock limit to 100MHz.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: NeilBrown <neilb@suse.de>
 ---
- arch/arm/boot/dts/exynos4.dtsi |   10 ++++++++++
- 1 file changed, 10 insertions(+)
 
-diff --git a/arch/arm/boot/dts/exynos4.dtsi b/arch/arm/boot/dts/exynos4.dtsi
-index 4d61120..9542088 100644
---- a/arch/arm/boot/dts/exynos4.dtsi
-+++ b/arch/arm/boot/dts/exynos4.dtsi
-@@ -98,6 +98,12 @@
- 		reg = <0x10010000 0x400>;
- 	};
+This is for 3.10.
+
+ drivers/video/omap2/dss/dpi.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 757b57f..0bdcd41 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -129,7 +129,7 @@ static bool dpi_calc_dispc_cb(int lckd, int pckd, unsigned long lck,
+ 	 * shifted. So skip all odd dividers when the pixel clock is on the
+ 	 * higher side.
+ 	 */
+-	if (ctx->pck_min >= 1000000) {
++	if (ctx->pck_min >= 100000000) {
+ 		if (lckd > 1 && lckd % 2 != 0)
+ 			return false;
  
-+	mipi_phy: video-phy@10020710 {
-+		compatible = "samsung,s5pv210-mipi-video-phy";
-+		reg = <0x10020710 8>;
-+		#phy-cells = <1>;
-+	};
-+
- 	camera {
- 		compatible = "samsung,fimc", "simple-bus";
- 		status = "disabled";
-@@ -147,6 +153,8 @@
- 			interrupts = <0 78 0>;
- 			bus-width = <4>;
- 			samsung,power-domain = <&pd_cam>;
-+			phys = <&mipi_phy 0>;
-+			phy-names = "csis";
- 			status = "disabled";
- 		};
+@@ -156,7 +156,7 @@ static bool dpi_calc_hsdiv_cb(int regm_dispc, unsigned long dispc,
+ 	 * shifted. So skip all odd dividers when the pixel clock is on the
+ 	 * higher side.
+ 	 */
+-	if (regm_dispc > 1 && regm_dispc % 2 != 0 && ctx->pck_min >= 1000000)
++	if (regm_dispc > 1 && regm_dispc % 2 != 0 && ctx->pck_min >= 100000000)
+ 		return false;
  
-@@ -156,6 +164,8 @@
- 			interrupts = <0 80 0>;
- 			bus-width = <2>;
- 			samsung,power-domain = <&pd_cam>;
-+			phys = <&mipi_phy 2>;
-+			phy-names = "csis";
- 			status = "disabled";
- 		};
- 	};
+ 	ctx->dsi_cinfo.regm_dispc = regm_dispc;
 -- 
-1.7.9.5
+1.8.1.2
 

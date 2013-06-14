@@ -1,78 +1,100 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 25 Jun 2013 14:22:49 +0000
-Subject: [PATCH 21/23] video: da8xx-fb: setup struct lcd_ctrl_config for dt
-Message-Id: <1372170171-9561-22-git-send-email-detheridge@ti.com>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Date: Fri, 14 Jun 2013 17:45:50 +0000
+Subject: [RFC PATCH 4/5] exynos4-is: Use generic MIPI CSIS PHY driver
+Message-Id: <1371231951-1969-5-git-send-email-s.nawrocki@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1371231951-1969-1-git-send-email-s.nawrocki@samsung.com>
+In-Reply-To: <1371231951-1969-1-git-send-email-s.nawrocki@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-From: Afzal Mohammed <afzal@ti.com>
+Use the generic PHY API instead of the platform callback to control
+the MIPI CSIS DPHY.
 
-strcut lcd_ctrl_config information required for driver is currently
-obtained via platform data. To handle DT probing, create
-lcd_ctrl_config and populate it with default values, these values are
-sufficient for the panels so far used with this controller to work.
-
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/video/da8xx-fb.c |   34 +++++++++++++++++++++++++++++++++-
- 1 files changed, 33 insertions(+), 1 deletions(-)
+ drivers/media/platform/exynos4-is/mipi-csis.c |   11 +++++++++--
+ include/linux/platform_data/mipi-csis.h       |    9 ---------
+ 2 files changed, 9 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 1c1a616..5455682 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -1254,6 +1254,35 @@ static struct fb_ops da8xx_fb_ops = {
- 	.fb_blank = cfb_blank,
- };
- 
-+static struct lcd_ctrl_config *da8xx_fb_create_cfg(struct platform_device *dev)
-+{
-+	struct lcd_ctrl_config *cfg;
-+
-+	cfg = devm_kzalloc(&dev->dev, sizeof(struct fb_videomode), GFP_KERNEL);
-+	if (!cfg) {
-+		dev_err(&dev->dev, "memory allocation failed\n");
-+		return NULL;
-+	}
-+
-+	/* default values */
-+
-+	if (lcd_revision = LCD_VERSION_1)
-+		cfg->bpp = 16;
-+	else
-+		cfg->bpp = 32;
-+
-+	/*
-+	 * For panels so far used with this LCDC, below statement is sufficient.
-+	 * For new panels, if required, struct lcd_ctrl_cfg fields to be updated
-+	 * with additional/modified values. Those values would have to be then
-+	 * obtained from dt(requiring new dt bindings).
-+	 */
-+
-+	cfg->panel_shade = COLOR_ACTIVE;
-+
-+	return cfg;
-+}
-+
- static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
- {
- 	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
-@@ -1345,7 +1374,10 @@ static int fb_probe(struct platform_device *device)
- 		break;
+diff --git a/drivers/media/platform/exynos4-is/mipi-csis.c b/drivers/media/platform/exynos4-is/mipi-csis.c
+index 0fe80e3..88d0d61 100644
+--- a/drivers/media/platform/exynos4-is/mipi-csis.c
++++ b/drivers/media/platform/exynos4-is/mipi-csis.c
+@@ -20,6 +20,7 @@
+ #include <linux/memory.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/phy/phy.h>
+ #include <linux/platform_data/mipi-csis.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
+@@ -184,6 +185,7 @@ struct csis_drvdata {
+  * @sd: v4l2_subdev associated with CSIS device instance
+  * @index: the hardware instance index
+  * @pdev: CSIS platform device
++ * @phy: pointer to the CSIS generic PHY
+  * @regs: mmaped I/O registers memory
+  * @supplies: CSIS regulator supplies
+  * @clock: CSIS clocks
+@@ -207,6 +209,7 @@ struct csis_state {
+ 	struct v4l2_subdev sd;
+ 	u8 index;
+ 	struct platform_device *pdev;
++	struct phy *phy;
+ 	void __iomem *regs;
+ 	struct regulator_bulk_data supplies[CSIS_NUM_SUPPLIES];
+ 	struct clk *clock[NUM_CSIS_CLOCKS];
+@@ -861,6 +864,10 @@ static int s5pcsis_probe(struct platform_device *pdev)
+ 		return -EINVAL;
  	}
  
--	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
-+	if (device->dev.of_node)
-+		lcd_cfg = da8xx_fb_create_cfg(device);
-+	else
-+		lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
++	state->phy = devm_phy_get(dev, "csis");
++	if (IS_ERR(state->phy))
++		return PTR_ERR(state->phy);
++
+ 	mem_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	state->regs = devm_ioremap_resource(dev, mem_res);
+ 	if (IS_ERR(state->regs))
+@@ -946,7 +953,7 @@ static int s5pcsis_pm_suspend(struct device *dev, bool runtime)
+ 	mutex_lock(&state->lock);
+ 	if (state->flags & ST_POWERED) {
+ 		s5pcsis_stop_stream(state);
+-		ret = s5p_csis_phy_enable(state->index, false);
++		ret = phy_power_off(state->phy);
+ 		if (ret)
+ 			goto unlock;
+ 		ret = regulator_bulk_disable(CSIS_NUM_SUPPLIES,
+@@ -982,7 +989,7 @@ static int s5pcsis_pm_resume(struct device *dev, bool runtime)
+ 					    state->supplies);
+ 		if (ret)
+ 			goto unlock;
+-		ret = s5p_csis_phy_enable(state->index, true);
++		ret = phy_power_on(state->phy);
+ 		if (!ret) {
+ 			state->flags |= ST_POWERED;
+ 		} else {
+diff --git a/include/linux/platform_data/mipi-csis.h b/include/linux/platform_data/mipi-csis.h
+index bf34e17..c2fd902 100644
+--- a/include/linux/platform_data/mipi-csis.h
++++ b/include/linux/platform_data/mipi-csis.h
+@@ -25,13 +25,4 @@ struct s5p_platform_mipi_csis {
+ 	u8 hs_settle;
+ };
  
- 	if (!lcd_cfg) {
- 		ret = -EINVAL;
+-/**
+- * s5p_csis_phy_enable - global MIPI-CSI receiver D-PHY control
+- * @id:     MIPI-CSIS harware instance index (0...1)
+- * @on:     true to enable D-PHY and deassert its reset
+- *          false to disable D-PHY
+- * @return: 0 on success, or negative error code on failure
+- */
+-int s5p_csis_phy_enable(int id, bool on);
+-
+ #endif /* __PLAT_SAMSUNG_MIPI_CSIS_H_ */
 -- 
-1.7.0.4
+1.7.9.5
 

@@ -1,48 +1,57 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 17 Jun 2013 07:23:01 +0000
-Subject: Re: linux-next: manual merge of the fbdev tree with the drm tree
-Message-Id: <51BEB955.1020809@ti.com>
+Date: Fri, 14 Jun 2013 10:23:14 +0000
+Subject: [GIT PULL] fbdev changes for 3.11
+Message-Id: <51BAEF12.4020605@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2TOCMVMLBHOFPOMFKBIQW"
+Content-Type: multipart/mixed; boundary="----enig2CQLWMNXMDEWOTQSVPXAG"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130617142120.b42dafb967974d3906a43fc9@canb.auug.org.au>
-In-Reply-To: <20130617142120.b42dafb967974d3906a43fc9@canb.auug.org.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Dave Airlie <airlied@linux.ie>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Steffen Trumtrar <s.trumtrar@pengutronix.de>
+To: linux-fbdev@vger.kernel.org
 
-------enig2TOCMVMLBHOFPOMFKBIQW
+------enig2CQLWMNXMDEWOTQSVPXAG
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+The following changes since commit f722406faae2d073cc1d01063d1123c3542593=
+9e:
 
-On 17/06/13 07:21, Stephen Rothwell wrote:
-> Hi all,
->=20
-> Today's linux-next merge of the fbdev tree got a conflict in
-> drivers/video/of_display_timing.c between commit f583662347c6 ("video:
-> display_timing: make parameter const") from the drm tree and commits
-> fcf7e6e5bd84 ("videomode: don't allocate mem in of_get_display_timing()=
-")
-> and ffa3fd21de8a ("videomode: implement public of_get_display_timing()"=
-)
-> from the fbdev tree.
->=20
-> I fixed it up (see below) and can carry the fix as necessary (no action=
+  Linux 3.10-rc1 (2013-05-11 17:14:08 -0700)
 
-> is required).
+are available in the git repository at:
 
-Thanks, looks correct to me.
+  git://gitorious.org/linux-omap-dss2/linux.git tags/fbdev-for-3.11
 
-I guess it'd be better to merge videomode and display_timing stuff via a
-single tree from this on. Being in drivers/video/, I suggest the fbdev tr=
-ee.
+for you to fetch changes up to ffa3fd21de8ab0db7962b612d4c6e17c0d88e9c2:
 
- Tomi
+  videomode: implement public of_get_display_timing() (2013-05-28 14:42:5=
+2 +0300)
+
+----------------------------------------------------------------
+Small fbdev changes for 3.11
+
+* Add of_get_display_timing() for parsing single DT entry
+* Add support for SSD1306 OLED controller
+* ssd1307fb performance improvements
+
+----------------------------------------------------------------
+Maxime Ripard (4):
+      video: ssd1307fb: Add support for SSD1306 OLED controller
+      video: ssd1307fb: Rework the communication functions
+      video: ssd1307fb: Speed up the communication with the controller
+      video: ssd1307fb: Make use of horizontal addressing mode
+
+Tomi Valkeinen (2):
+      videomode: don't allocate mem in of_get_display_timing()
+      videomode: implement public of_get_display_timing()
+
+ .../devicetree/bindings/video/ssd1307fb.txt        |  10 +-
+ drivers/video/of_display_timing.c                  |  55 ++-
+ drivers/video/ssd1307fb.c                          | 392 +++++++++++++++=
+------
+ include/video/of_display_timing.h                  |   2 +
+ 4 files changed, 339 insertions(+), 120 deletions(-)
 
 
-
-------enig2TOCMVMLBHOFPOMFKBIQW
+------enig2CQLWMNXMDEWOTQSVPXAG
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -51,19 +60,19 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJRvrlZAAoJEPo9qoy8lh71etgP/jsT/ZZt9o7oZFIrUadXPOVg
-Zi8ZUf/5/4RcWWBDhuXlYbmHOawt6LhlCGVF0tmWiNBa39DBh8HSTE6uXedZ8rlX
-Tf6b5kf1Je5t001Q8l98kIpgkCJT1QzQkFGK6OPvb7vhu8s+AjS//7gRUsfxmxHl
-wZ5BfZsYfQ7muVEyLskhLj+MCq52RddNov0gZQWBshxKVk22jYDNwqYUzgNCAnI4
-24wXPSILBGVZGUBYuZXM379hYiAGGhe6WuChgm9GauNtaX4JXUeVp5WnGhkk4Dz5
-E+LBgiJOLC0Khq+OkCDwkLK49Ru35oYkOVWWn+5ZV5YhiEfM2IcqBM7qLxVnt8Js
-6YoJuiwUUgXbBtfkffJb5gQuwPUK6yvRHb3nxTdXhav84iVZmpz61K4ktUMLB7sR
-dWsI8V8JVMZg1fTQgL4ltak7kNlndtV0jHIQ39+BYjR0lFXW3UqTt/IeZLnzBokN
-t7UdpPaqz36UifUnrX3CV7COS3yXIr1vulKeWGP7EGO8tSTerFer/A0HN93bepdy
-h7540LWtvStoZof3ZTrJtBgGwSoxg1bN2vA3sLIzDh3ojwWKTnqpGc6zlOiDmpQn
-CXpfXwtZ22bAqL5UsIEJ2R5EI2cdDnD3dlf195Bib3ku1zXMW0aGwyRfJaUwiug0
-XpwLocVAFw7rxstdXeZD
-=6nT8
+iQIcBAEBAgAGBQJRuu8SAAoJEPo9qoy8lh71jy8QAIep4hPMfZHfvV/+G9UCc6/c
+sjsxRiwWVXdPllt4wgSco3l3pcsHQsxJc9qZFexKIdlkaETvqqujrAEM8b+IezaK
+IR7RmDoFuU3+WmyaqomUSFbr1h3tP7rtGUU7C3j7FSHmTArEPZPafOZkvx5ejNxU
+kGuFPrrKKT2uzk0h/3pCaDbRNtfDB7jL5DhIK5eiSM/QXhd/dNBEmEUGeicB23M0
+k6wSShAJvXynXSi6CoIKLBULdIkrsD3JAXz32CBetO7oppfOpw28Nu6VYDeiwSNV
+uDI+G5ZAr2RaSVZ4FZ2WGhSfW2gNpXTgugND4CuZZQBqUDXjo+W9sRipPQbj/HNj
+Jg0ee0ig2LWFsGNWboyj4TUld3dyBN4BT5PB2qshnwnQCULnHeb+qsRYOEYUI1zq
+4KFIsYEDHr1LNaKvvVa1nGPJcbBw2ogNuWXwAtq0zdyzDJWTYg4zLOSx1jXA4TMB
+cyS4eznxMFkE9VGDLgOlnDzlNIY/uOv/sdqIFsR8qLsEXcLeP6nCsd2U4vReH2RI
+TCsgfx0rppC1Tc04ghGYhf3SWK0gvTvV0nGrTvLahp3u89WtHwZXQ5m0YpNga4+X
+1NZ1HrBETCrv8/hb3BkaGJknmsTnSce3+kpD2gQDpsMvyxPj6bAAe9VWIjW2XDsU
+wklp2N1CDPlwwTUpShit
+=gR2q
 -----END PGP SIGNATURE-----
 
-------enig2TOCMVMLBHOFPOMFKBIQW--
+------enig2CQLWMNXMDEWOTQSVPXAG--

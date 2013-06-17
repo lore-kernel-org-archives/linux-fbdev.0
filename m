@@ -1,110 +1,76 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Mon, 24 Jun 2013 14:16:54 +0000
-Subject: [PATCHv2 1/2] video: hx8357: Make IM pins optional
-Message-Id: <1372083415-9734-2-git-send-email-alexandre.belloni@free-electrons.com>
+From: "AFG GTBANK LOAN" <turnos-escuelas@ifir-conicet.gov.ar>
+Date: Mon, 17 Jun 2013 19:28:00 +0000
+Subject: 
+Message-Id: <bf2bd1c7747c2b14e57da8b2a5c50f0c.squirrel@ifir-conicet.gov.ar>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1372083415-9734-1-git-send-email-alexandre.belloni@free-electrons.com>
-In-Reply-To: <1372083415-9734-1-git-send-email-alexandre.belloni@free-electrons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Cc: jimwall@q.com, brian@crystalfontz.com, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
 
-The IM pins of the HX8357 controller are used to define the interface used to
-feed pixel stream to the LCD panel.
 
-Most of the time, these pins are directly routed to either the ground or the VCC
-to set their values.
 
-Remove the need to assign GPIOs to these pins when we are in such a case.
+Loan Syndicacion
 
-Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
----
- drivers/video/backlight/hx8357.c | 53 +++++++++++++++++++++++-----------------
- 1 file changed, 31 insertions(+), 22 deletions(-)
+Am AFG Guaranty Trust Bank, zu strukturieren wir Kreditlinien treffen Sie
+unsere
+Kunden spezifischen gesch=E4ftlichen Anforderungen und einen deutlichen
+Mehrwert f=FCr unsere
+Kunden Unternehmen.
+eine Division der AFG Finance und Private Bank plc.
 
-diff --git a/drivers/video/backlight/hx8357.c b/drivers/video/backlight/hx8357.c
-index a0482b5..69f5672 100644
---- a/drivers/video/backlight/hx8357.c
-+++ b/drivers/video/backlight/hx8357.c
-@@ -76,6 +76,7 @@ struct hx8357_data {
- 	unsigned		reset;
- 	struct spi_device	*spi;
- 	int			state;
-+	u8			use_im_pins;
- };
- 
- static u8 hx8357_seq_power[] = {
-@@ -250,9 +251,11 @@ static int hx8357_lcd_init(struct lcd_device *lcdev)
- 	 * Set the interface selection pins to SPI mode, with three
- 	 * wires
- 	 */
--	gpio_set_value_cansleep(lcd->im_pins[0], 1);
--	gpio_set_value_cansleep(lcd->im_pins[1], 0);
--	gpio_set_value_cansleep(lcd->im_pins[2], 1);
-+	if (lcd->use_im_pins) {
-+		gpio_set_value_cansleep(lcd->im_pins[0], 1);
-+		gpio_set_value_cansleep(lcd->im_pins[1], 0);
-+		gpio_set_value_cansleep(lcd->im_pins[2], 1);
-+	}
- 
- 	/* Reset the screen */
- 	gpio_set_value(lcd->reset, 1);
-@@ -424,26 +427,32 @@ static int hx8357_probe(struct spi_device *spi)
- 		return -EINVAL;
- 	}
- 
--	for (i = 0; i < HX8357_NUM_IM_PINS; i++) {
--		lcd->im_pins[i] = of_get_named_gpio(spi->dev.of_node,
--						"im-gpios", i);
--		if (lcd->im_pins[i] = -EPROBE_DEFER) {
--			dev_info(&spi->dev, "GPIO requested is not here yet, deferring the probe\n");
--			return -EPROBE_DEFER;
--		}
--		if (!gpio_is_valid(lcd->im_pins[i])) {
--			dev_err(&spi->dev, "Missing dt property: im-gpios\n");
--			return -EINVAL;
-+	if (of_find_property(spi->dev.of_node, "im-gpios", NULL)) {
-+		lcd->use_im_pins = 1;
-+
-+		for (i = 0; i < HX8357_NUM_IM_PINS; i++) {
-+			lcd->im_pins[i] = of_get_named_gpio(spi->dev.of_node,
-+							    "im-gpios", i);
-+			if (lcd->im_pins[i] = -EPROBE_DEFER) {
-+				dev_info(&spi->dev, "GPIO requested is not here yet, deferring the probe\n");
-+				return -EPROBE_DEFER;
-+			}
-+			if (!gpio_is_valid(lcd->im_pins[i])) {
-+				dev_err(&spi->dev, "Missing dt property: im-gpios\n");
-+				return -EINVAL;
-+			}
-+
-+			ret = devm_gpio_request_one(&spi->dev, lcd->im_pins[i],
-+						    GPIOF_OUT_INIT_LOW,
-+						    "im_pins");
-+			if (ret) {
-+				dev_err(&spi->dev, "failed to request gpio %d: %d\n",
-+					lcd->im_pins[i], ret);
-+				return -EINVAL;
-+			}
- 		}
--
--		ret = devm_gpio_request_one(&spi->dev, lcd->im_pins[i],
--					GPIOF_OUT_INIT_LOW, "im_pins");
--		if (ret) {
--			dev_err(&spi->dev, "failed to request gpio %d: %d\n",
--				lcd->im_pins[i], ret);
--			return -EINVAL;
--		}
--	}
-+	} else
-+		lcd->use_im_pins = 0;
- 
- 	lcdev = lcd_device_register("mxsfb", &spi->dev, lcd, &hx8357_ops);
- 	if (IS_ERR(lcdev)) {
--- 
-1.8.1.2
+Wenn Sie erw=E4gen, eine gro=DFe Akquisition oder ein Gro=DFprojekt sind, k=
+=F6nnen
+Sie
+brauchen eine erhebliche Menge an Kredit. AFG Guaranty Trust Bank setzen
+k=F6nnen
+zusammen das Syndikat, das die gesamte Kredit schn=FCrt f=FCr
+Sie.
+
+
+Als Bank mit internationaler Reichweite, sind wir gekommen, um Darlehen zu
+identifizieren
+Syndizierungen als Teil unseres Kerngesch=E4fts und durch spitzte diese Zei=
+le
+aggressiv sind wir an einem Punkt, wo wir kommen, um als erkannt haben
+Hauptakteur in diesem Bereich.
+
+
+=F6ffnen Sie ein Girokonto heute mit einem Minimum Bankguthaben von 500 =A3=
+ und
+Getup zu =A3 10.000 als Darlehen und auch den Hauch einer Chance und gewann
+die Sterne
+Preis von =A3 500.000 in die sparen und gewinnen promo in may.aply jetzt.
+
+
+mit dem Folowing Informationen =FCber Rechtsanwalt steven lee das Konto
+Offizier.
+
+
+FULL NAME;
+
+
+Wohnadresse;
+
+
+E-MAIL-ADRESSE;
+
+Telefonnummer;
+
+N=E4chsten KINS;
+
+MUTTER MAIDEN NAME;
+
+
+Familienstand;
+
+
+B=DCROADRESSE;
+
+ALTERNATIVE Telefonnummer;
+
+TO @ yahoo.com bar.stevenlee
+NOTE; ALLE Darlehen sind f=FCr 10JAHRE RATE VALID
+ANGEBOT ENDET BALD SO JETZT HURRY
 

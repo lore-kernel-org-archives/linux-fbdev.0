@@ -1,69 +1,77 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 25 Jun 2013 14:22:31 +0000
-Subject: [PATCH 03/23] video: da8xx-fb: use modedb helper to update var
-Message-Id: <1372170171-9561-4-git-send-email-detheridge@ti.com>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 17 Jun 2013 04:21:20 +0000
+Subject: linux-next: manual merge of the fbdev tree with the drm tree
+Message-Id: <20130617142120.b42dafb967974d3906a43fc9@canb.auug.org.au>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Signature=_Mon__17_Jun_2013_14_21_20_+1000_9P_cQyBS7OvTq7WB"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Dave Airlie <airlied@linux.ie>
 
-From: Afzal Mohammed <afzal@ti.com>
+--Signature=_Mon__17_Jun_2013_14_21_20_+1000_9P_cQyBS7OvTq7WB
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-modedb structure is now used to store panel information, run modedb
-helper over it for initial update of "var" information instead of
-equating each fields.
+Hi all,
 
-While at it, remove redundant update of bits_per_pixel.
+Today's linux-next merge of the fbdev tree got a conflict in
+drivers/video/of_display_timing.c between commit f583662347c6 ("video:
+display_timing: make parameter const") from the drm tree and commits
+fcf7e6e5bd84 ("videomode: don't allocate mem in of_get_display_timing()")
+and ffa3fd21de8a ("videomode: implement public of_get_display_timing()")
+from the fbdev tree.
 
-Note: pixclock is overridden with proper value using an existing code
-as currently modedb is having it in Hz instead of ps, this would be
-fixed in a later change and this overide would be removed.
+I fixed it up (see below) and can carry the fix as necessary (no action
+is required).
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
----
- drivers/video/da8xx-fb.c |   18 ++----------------
- 1 files changed, 2 insertions(+), 16 deletions(-)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 52977b1..a1f6544 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -1329,6 +1329,8 @@ static int fb_probe(struct platform_device *device)
- 		par->panel_power_ctrl(1);
- 	}
- 
-+	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
-+
- 	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
- 		dev_err(&device->dev, "lcd_init failed\n");
- 		ret = -EFAULT;
-@@ -1381,25 +1383,9 @@ static int fb_probe(struct platform_device *device)
- 		goto err_release_pl_mem;
- 	}
- 
--	/* Initialize par */
--	da8xx_fb_info->var.bits_per_pixel = lcd_cfg->bpp;
--
--	da8xx_fb_var.xres = lcdc_info->xres;
--	da8xx_fb_var.xres_virtual = lcdc_info->xres;
--
--	da8xx_fb_var.yres         = lcdc_info->yres;
--	da8xx_fb_var.yres_virtual = lcdc_info->yres * LCD_NUM_BUFFERS;
--
- 	da8xx_fb_var.grayscale  	    lcd_cfg->panel_shade = MONOCHROME ? 1 : 0;
- 	da8xx_fb_var.bits_per_pixel = lcd_cfg->bpp;
--
--	da8xx_fb_var.hsync_len = lcdc_info->hsync_len;
--	da8xx_fb_var.vsync_len = lcdc_info->vsync_len;
--	da8xx_fb_var.right_margin = lcdc_info->right_margin;
--	da8xx_fb_var.left_margin  = lcdc_info->left_margin;
--	da8xx_fb_var.lower_margin = lcdc_info->lower_margin;
--	da8xx_fb_var.upper_margin = lcdc_info->upper_margin;
- 	da8xx_fb_var.pixclock = da8xxfb_pixel_clk_period(par);
- 
- 	/* Initialize fbinfo */
--- 
-1.7.0.4
+diff --cc drivers/video/of_display_timing.c
+index 2894e03,9c0f17b..0000000
+--- a/drivers/video/of_display_timing.c
++++ b/drivers/video/of_display_timing.c
+@@@ -53,13 -53,12 +53,12 @@@ static int parse_timing_property(const=20
+  }
+ =20
+  /**
+-  * of_get_display_timing - parse display_timing entry from device_node
++  * of_parse_display_timing - parse display_timing entry from device_node
+   * @np: device_node with the properties
+   **/
+- static struct display_timing *of_get_display_timing(const struct device_n=
+ode
+- 						    *np)
+ -static int of_parse_display_timing(struct device_node *np,
+++static int of_parse_display_timing(const struct device_node *np,
++ 		struct display_timing *dt)
+  {
+- 	struct display_timing *dt;
+  	u32 val =3D 0;
+  	int ret =3D 0;
+ =20
 
+--Signature=_Mon__17_Jun_2013_14_21_20_+1000_9P_cQyBS7OvTq7WB
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRvo7FAAoJEECxmPOUX5FE5mcP+wWfcT4MuB4zIGJej3CBOQrV
+gs3/6LNB5TDIr9fAeDsINBjeYY2K+NhWYxp6G+nf1lWFDXi1k7TNAph5uJOzUbNc
+LQZz5beM2XYJgYqJYfd1P2UHwPXd7EHmcawOV+B42Wkbyn5ayfouKf1rxtZyQjxT
+EwIxeGq4aZ3FkI0wVzYWITTyCuXp/v8XLk7mKPTV1LqYuQevbUUcQT+g+Xv8+sVD
+Zxji8NzhrZtAlrvrlYOQnhilHRKASGA4nnwydZ/fC6/NqH54Dn2pT39w3/I6zP8h
+mwZN7bMbhsClpUUQU7KH5AJGIf8rtp06QwO4U8y6MfdOqUNTkN0Su7R9E8ERXFMn
+7MjwVgogJXjUX74QPKtKv8N4bXnG0dYU2G9FRI0wfzMUIKIx0jnZR6Wktpq8nQFF
+SKsNJWUhECipknsB/Do6ofL6m+g+TTJJ4PTtKYPP4fhaWLgIvlsoKs+KYWgHVuWC
+cK7SrIdgS1LFs2LNqzBcL2XIhdKOjVPau1NtP5AR03bBxONAG3V5VcZYUYqKbE12
+QegHgnsbHxj0D0zZ4pL7/d5fFK7uqlzoP4G8glo/hTCY30JGYYjIepzs8h5O56Mo
+pB4HmfsVOfkI8do0dL4hKhmYXDy5ztoI4L9i78XAVkrdSJi466YjcWEfreO9g3Iv
+oacwjSo27LXNB4L9/0uG
+=X2Oz
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__17_Jun_2013_14_21_20_+1000_9P_cQyBS7OvTq7WB--

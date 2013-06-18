@@ -1,57 +1,60 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Date: Tue, 25 Jun 2013 08:16:02 +0000
-Subject: Re: [PATCH v2 4/4] at91/avr32/atmel_lcdfb: prepare clk before calling enable
-Message-Id: <51C951C2.8090901@atmel.com>
+From: Fabio Estevam <fabio.estevam@freescale.com>
+Date: Tue, 18 Jun 2013 15:18:42 +0000
+Subject: [PATCH v2 1/2] video: fbmem: Use 'const char' in fb_get_options()
+Message-Id: <1371568723-27486-1-git-send-email-fabio.estevam@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1372147702-4074-1-git-send-email-b.brezillon@overkiz.com>
- <1372148053-4477-1-git-send-email-b.brezillon@overkiz.com>
-In-Reply-To: <1372148053-4477-1-git-send-email-b.brezillon@overkiz.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-fbdev@vger.kernel.org
 
-On 25/06/2013 10:14, Boris BREZILLON :
-> Replace clk_enable/disable with clk_prepare_enable/disable_unprepare to
-> avoid common clk framework warnings.
->
-> Signed-off-by: Boris BREZILLON <b.brezillon@overkiz.com>
+Commit d20d31748 (drm: Constify the pretty-print functions) causes the following
+build warning:
 
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+drivers/gpu/drm/drm_fb_helper.c:127:3: warning: passing argument 1 of 'fb_get_options' discards 'const' qualifier from pointer target type [enabled by default]
 
-Jean-Christophe, can you take this one?
+Let's change the first argument of fb_get_options from 'char *' to 'const char *' 
+so that we can get rid of this warning.
 
-Thanks, best regards,
+Cc: Ville Syrjälä <ville.syrjala@linux.intel.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Dave Airlie <airlied@redhat.com>
+Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
+---
+Changes since v1:
+- None
 
-> ---
->   drivers/video/atmel_lcdfb.c |    8 ++++----
->   1 file changed, 4 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-> index 540909d..8525457 100644
-> --- a/drivers/video/atmel_lcdfb.c
-> +++ b/drivers/video/atmel_lcdfb.c
-> @@ -893,14 +893,14 @@ static int __init atmel_lcdfb_init_fbinfo(struct atmel_lcdfb_info *sinfo)
->
->   static void atmel_lcdfb_start_clock(struct atmel_lcdfb_info *sinfo)
->   {
-> -	clk_enable(sinfo->bus_clk);
-> -	clk_enable(sinfo->lcdc_clk);
-> +	clk_prepare_enable(sinfo->bus_clk);
-> +	clk_prepare_enable(sinfo->lcdc_clk);
->   }
->
->   static void atmel_lcdfb_stop_clock(struct atmel_lcdfb_info *sinfo)
->   {
-> -	clk_disable(sinfo->bus_clk);
-> -	clk_disable(sinfo->lcdc_clk);
-> +	clk_disable_unprepare(sinfo->bus_clk);
-> +	clk_disable_unprepare(sinfo->lcdc_clk);
->   }
->
->
->
+ drivers/video/fbmem.c | 2 +-
+ include/linux/fb.h    | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 098bfc6..d8d5779 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1881,7 +1881,7 @@ static int ofonly __read_mostly;
+  *
+  * NOTE: Needed to maintain backwards compatibility
+  */
+-int fb_get_options(char *name, char **option)
++int fb_get_options(const char *name, char **option)
+ {
+ 	char *opt, *options = NULL;
+ 	int retval = 0;
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index d49c60f..ffac70a 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -624,7 +624,7 @@ extern void fb_pad_aligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 s_pitch, u3
+ extern void fb_set_suspend(struct fb_info *info, int state);
+ extern int fb_get_color_depth(struct fb_var_screeninfo *var,
+ 			      struct fb_fix_screeninfo *fix);
+-extern int fb_get_options(char *name, char **option);
++extern int fb_get_options(const char *name, char **option);
+ extern int fb_new_modelist(struct fb_info *info);
+ 
+ extern struct fb_info *registered_fb[FB_MAX];
 -- 
-Nicolas Ferre
+1.8.1.2
+
+

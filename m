@@ -1,52 +1,41 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Thu, 27 Jun 2013 08:49:02 +0000
-Subject: Re: [PATCH v2 1/5] phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
-Message-Id: <20130627084902.GB4283@n2100.arm.linux.org.uk>
+From: Yijing Wang <wangyijing@huawei.com>
+Date: Tue, 18 Jun 2013 08:15:07 +0000
+Subject: [PATCH 3/9] aty128fb: use pdev->pm_cap instead of pci_find_capability(..,PCI_CAP_ID_PM)
+Message-Id: <1371543307-14360-1-git-send-email-wangyijing@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1372170110-12993-1-git-send-email-s.nawrocki@samsung.com>
- <20130625150649.GA21334@arwen.pp.htv.fi> <51CB0212.3050103@samsung.com>
- <20130627061713.GF15455@arwen.pp.htv.fi>
-In-Reply-To: <20130627061713.GF15455@arwen.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Paul Mackerras <paulus@samba.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-kernel@vger.kernel.org, Hanjun Guo <guohanjun@huawei.com>, jiang.liu@huawei.com, Yijing Wang <wangyijing@huawei.com>, linux-fbdev@vger.kernel.org
 
-On Thu, Jun 27, 2013 at 09:17:13AM +0300, Felipe Balbi wrote:
-> On Wed, Jun 26, 2013 at 05:00:34PM +0200, Sylwester Nawrocki wrote:
-> > Hi,
-> > 
-> > On 06/25/2013 05:06 PM, Felipe Balbi wrote:
-> > >> +static struct platform_driver exynos_video_phy_driver = {
-> > >> > +	.probe	= exynos_video_phy_probe,
-> > >
-> > > you *must* provide a remove method. drivers with NULL remove are
-> > > non-removable :-)
-> > 
-> > Actually the remove() callback can be NULL, it's just missing module_exit
-> > function that makes a module not unloadable.
-> 
-> look at the implementation of platform_drv_remove():
-> 
->  499 static int platform_drv_remove(struct device *_dev)
->  500 {
->  501         struct platform_driver *drv = to_platform_driver(_dev->driver);
->  502         struct platform_device *dev = to_platform_device(_dev);
->  503         int ret;
->  504 
->  505         ret = drv->remove(dev);
->  506         if (ACPI_HANDLE(_dev))
->  507                 acpi_dev_pm_detach(_dev, true);
->  508 
->  509         return ret;
->  510 }
-> 
-> that's not a conditional call right :-)
+Pci core has been saved pm cap register offset by pdev->pm_cap in pci_pm_init()
+in init path. So we can use pdev->pm_cap instead of using
+pci_find_capability(pdev, PCI_CAP_ID_PM) for better performance and simplified code.
 
-Wrong.
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+---
+ drivers/video/aty/aty128fb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-        if (drv->remove)
-                drv->driver.remove = platform_drv_remove;
+diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
+index 8c55011..a4dfe8c 100644
+--- a/drivers/video/aty/aty128fb.c
++++ b/drivers/video/aty/aty128fb.c
+@@ -2016,7 +2016,7 @@ static int aty128_init(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	aty128_init_engine(par);
+ 
+-	par->pm_reg = pci_find_capability(pdev, PCI_CAP_ID_PM);
++	par->pm_reg = pdev->pm_cap;
+ 	par->pdev = pdev;
+ 	par->asleep = 0;
+ 	par->lock_blank = 0;
+-- 
+1.7.1
 
-The function you quote will only be used if drv->remove is non-NULL.
-You do not need to provide a remove method.
+

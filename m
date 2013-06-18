@@ -1,71 +1,75 @@
-From: Daniel Drake <dsd@laptop.org>
-Date: Mon, 24 Jun 2013 14:48:14 +0000
-Subject: Re: MMP display subsystem questions
-Message-Id: <CAMLZHHTERYrkeb-m7Q7UDNF2kd-MoQ+2T3K1XyukjzG7RjKPxg@mail.gmail.com>
+From: =?UTF-8?q?Vincent=20Stehl=C3=A9?= <vincent.stehle@freescale.com>
+Date: Tue, 18 Jun 2013 14:23:05 +0000
+Subject: [PATCH linux-next] fb: make fp_get_options name argument const
+Message-Id: <1371565386-23335-1-git-send-email-vincent.stehle@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAMLZHHTmSzzcL-aqk6rMjuD8Ct2zno--p7tUGfVVsocWiyhf8A@mail.gmail.com>
- <51C3BD65.8070206@marvell.com>
- <CAMLZHHQFtXWx0weG3uh14Nm3euqbSqyztBEQHEQFBzjFxWGTZA@mail.gmail.com>
- <51C7F4C5.9040903@marvell.com>
-In-Reply-To: <51C7F4C5.9040903@marvell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-next@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: =?UTF-8?q?Vincent=20Stehl=C3=A9?= <vincent.stehle@freescale.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Airlie <airlied@redhat.com>, trivial@kernel.org
 
-On Mon, Jun 24, 2013 at 1:27 AM, Zhou Zhu <zzhu3@marvell.com> wrote:
-> Actually besides fb, v4l2 and an IOCTL based interface to support what
-> fb/v4l2 not provided are also added. The v4l2 or private interface could
-> also directly use same interface defined in include/video/mmp_disp.h to get
-> path/overlay and manipulate the hardware.
-> Patches for these interfaces would be submitted later and documentation
-> would also be added.
+drm_get_connector_name now returns a const value, which causes the following
+compilation warning:
 
-This kind of reasoning normally does not act as justification for
-adding private interfaces to the kernel. I doubt such patches would be
-accepted. Instead, you would be encouraged to help improve the
-standard interfaces that are missing the functionality you require.
+  drivers/gpu/drm/drm_fb_helper.c: In function ‘drm_fb_helper_parse_command_line’:
+  drivers/gpu/drm/drm_fb_helper.c:127:3: warning: passing argument 1 of ‘fb_get_options’ discards ‘const’ qualifier from pointer target type [enabled by default]
+  In file included from drivers/gpu/drm/drm_fb_helper.c:35:0:
+  include/linux/fb.h:627:12: note: expected ‘char *’ but argument is of type ‘const char *’
 
-> These settings are software related rather than what hw supports.
-> Vsync settings include whether fb wait vsync interrupt to sync buffers when
-> pan display or whether send uevent in vsync (which is a mechanism for
-> Android).
-> For yres_virtual size which is related with pre-reserved fb buffer size and
-> some buffer sync mechanism.
-> As these settings are pure fb related so we just not place it in panel.
+As fb_get_options uses its name argument as read only, make it const. This
+fixes the aforementioned compilation warning.
 
-Thanks, that is clear now.
+Signed-off-by: Vincent Stehlé <vincent.stehle@freescale.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: trivial@kernel.org
+---
 
->> 2. What about pix_fmt_out? Why is pixel format dumped into the mode
->> specifier? If there is a supported panel that really can support
->> different pixel formats, I would expect it to support all the pixel
->> formats for all the resolution. This also seems unused within the
->> driver.
->
-> We added it due to 2 reasons:
-> 1. It impacts output timing settings inside controller for dsi case (we have
-> already in-home patches and would be submitted later). So it's required to
-> indicate that timing need to be changed.
-> 2. It's still possible that for some panel that could support different
-> resolution and pixel formats, but it might not support all pixel formats for
-> all resolutions.
->
-> Also this variable is not used for dumb panel as it's already covered in
-> dumb mode in link config - dumb mode includes not only 16bpp or 24bpp but
-> also whether low 16 bits or high 16 bits used in 24 bits' lines. For coming
-> DSI panel, it's required and would be used.
 
-It is a little irritating trying to work with this driver when a
-number of undocumented strange details are dependent on unsubmitted
-work.
+Hi,
 
-I would suggest keeping this simple and making the pixel format
-specific to the panel, not specific to the resolution. While maybe it
-is possible we will see a panel that supports certain pixel formats at
-only certain resolutions, that seems unlikely, and doesn't seem to be
-anything we are working with at the moment?
-Moving pixel format out of the mode definition will help with
-compatibility with standard devicetree display-timings bindings, which
-is the reason that I asked this question.
+I remarked this warning while building linux-next with imx_v6_v7_defconfig.
+Is changing fb_get_options prototype "permitted", please?
 
-Daniel
+Best regards,
+
+V.
+
+
+ drivers/video/fbmem.c |    2 +-
+ include/linux/fb.h    |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 098bfc6..d8d5779 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1881,7 +1881,7 @@ static int ofonly __read_mostly;
+  *
+  * NOTE: Needed to maintain backwards compatibility
+  */
+-int fb_get_options(char *name, char **option)
++int fb_get_options(const char *name, char **option)
+ {
+ 	char *opt, *options = NULL;
+ 	int retval = 0;
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index d49c60f..ffac70a 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -624,7 +624,7 @@ extern void fb_pad_aligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 s_pitch, u3
+ extern void fb_set_suspend(struct fb_info *info, int state);
+ extern int fb_get_color_depth(struct fb_var_screeninfo *var,
+ 			      struct fb_fix_screeninfo *fix);
+-extern int fb_get_options(char *name, char **option);
++extern int fb_get_options(const char *name, char **option);
+ extern int fb_new_modelist(struct fb_info *info);
+ 
+ extern struct fb_info *registered_fb[FB_MAX];
+-- 
+1.7.10.4
+
+
+

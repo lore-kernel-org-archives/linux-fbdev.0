@@ -1,41 +1,104 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Date: Tue, 18 Jun 2013 09:21:23 +0000
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Tue, 18 Jun 2013 16:04:27 +0000
 Subject: Re: [PATCH] build some drivers only when compile-testing
-Message-Id: <51C02693.9040304@suse.cz>
+Message-Id: <20130618160427.GE28961@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369214326-6558-1-git-send-email-jslaby@suse.cz> <20130523022327.GB6159@kroah.com> <519D8876.9050405@suse.com> <51BF6BFF.7050705@suse.cz> <51BFE754.5080301@suse.cz> <20130618081858.GD5461@arwen.pp.htv.fi> <51C01948.9060708@suse.cz> <20130618083425.GI5461@arwen.pp.htv.fi> <51C01E04.2050908@suse.cz> <20130618085154.GN5461@arwen.pp.htv.fi>
-In-Reply-To: <20130618085154.GN5461@arwen.pp.htv.fi>
+References: <1369214326-6558-1-git-send-email-jslaby@suse.cz>
+ <20130523022327.GB6159@kroah.com>
+ <519D8876.9050405@suse.com>
+ <51BF6BFF.7050705@suse.cz>
+In-Reply-To: <51BF6BFF.7050705@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: balbi@ti.com, Michal Marek <mmarek@suse.cz>
-Cc: Jeff Mahoney <jeffm@suse.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, jirislaby@gmail.com, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, linux-usb@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-geode@lists.infradead.org, linux-fbdev@vger.kernel.org, Richard Cochran <richardcochran@gmail.com>, netdev@vger.kernel.org, Ben Hutchings <ben@decadent.org.uk>, "Keller, Jacob E" <jacob.e.keller@intel.com>, tomi.valkeinen@ti.com
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: Jeff Mahoney <jeffm@suse.com>, jirislaby@gmail.com, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, linux-usb@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-geode@lists.infradead.org, linux-fbdev@vger.kernel.org, Richard Cochran <richardcochran@gmail.com>, netdev@vger.kernel.org, Ben Hutchings <ben@decadent.org.uk>, "Keller, Jacob E" <jacob.e.keller@intel.com>, Michal Marek <mmarek@suse.cz>, tomi.valkeinen@ti.com
 
-On 06/18/2013 10:51 AM, Felipe Balbi wrote:
-> right, but my argument is that I rather not have either. Depend on
-> PCI if you us PCI, depend on EXTCON if you use extcon, but no
-> driver should have an ARCH dependency. Specially since it lets
-> people include mach/* and asm/* headers because "it doesn't break
-> compilation for anyone".
+On Mon, Jun 17, 2013 at 10:05:19PM +0200, Jiri Slaby wrote:
+> On 05/23/2013 05:09 AM, Jeff Mahoney wrote:
+> > On 5/22/13 10:23 PM, Greg Kroah-Hartman wrote:
+> >> On Wed, May 22, 2013 at 11:18:46AM +0200, Jiri Slaby wrote:
+> >>> Some drivers can be built on more platforms than they run on. This
+> >>> causes users and distributors packaging burden when they have to
+> >>> manually deselect some drivers from their allmodconfigs. Or sometimes
+> >>> it is even impossible to disable the drivers without patching the
+> >>> kernel.
+> >>>
+> >>> Introduce a new config option COMPILE_TEST and make all those drivers
+> >>> to depend on the platform they run on, or on the COMPILE_TEST option.
+> >>> Now, when users/distributors choose COMPILE_TEST=n they will not have
+> >>> the drivers in their allmodconfig setups, but developers still can
+> >>> compile-test them with COMPILE_TEST=y.
+> >>
+> >> I understand the urge, and it's getting hard for distros to handle these
+> >> drivers that just don't work on other architectures, but it's really
+> >> valuable to ensure that they build properly, for those of us that don't
+> >> have many/any cross compilers set up.
+> 
+> But this is exactly what COMPILE_TEST will give us when set to "y", or
+> am I missing something?
+> 
+> >>> Now the drivers where we use this new option:
+> >>> * PTP_1588_CLOCK_PCH: The PCH EG20T is only compatible with Intel Atom
+> >>>   processors so it should depend on x86.
+> >>> * FB_GEODE: Geode is 32-bit only so only enable it for X86_32.
+> >>> * USB_CHIPIDEA_IMX: The OF_DEVICE dependency will be met on powerpc
+> >>>   systems -- which do not actually support the hardware via that
+> >>>   method.
+> >>
+> >> This seems ripe to start to get really messy, really quickly.  Shouldn't
+> >> "default configs" handle if this "should" be enabled for a platform or
+> >> not, and let the rest of us just build them with no problems?
+> > 
+> > If every time a new Kconfig option is added, corresponding default
+> > config updates come with it, sure. I just don't see that happening,
+> > especially when it can be done much more clearly in the Kconfig while
+> > the developer is writing the driver.
+> > 
+> >> What problems is this causing you?  Are you running out of space in
+> >> kernel packages with drivers that will never be actually used?
+> > 
+> > Wasted build resources. Wasted disk space on /every/ system the kernel
+> > package is installed on. We're all trying to pare down the kernel
+> > packages to eliminate wasted space and doing it manually means a bunch
+> > of research, sometimes with incorrect assumptions about the results,
+> > needs to be done by someone not usually associated with that code. That
+> > research gets repeated by people maintaining kernel packages for pretty
+> > much every distro.
+> 
+> I second all the above.
+> 
+> >>> +config COMPILE_TEST
+> >>> +	bool "Compile also drivers which will not load" if EXPERT
+> >>
+> >> EXPERT is getting to be the "let's hide it here" option, isn't it...
+> >>
+> >> I don't know, if no one else strongly objects, I can be convinced that
+> >> this is needed, but so far, I don't see why it really is, or what this
+> >> is going to help with.
+> > 
+> > I'm not convinced adding a || COMPILE_TEST option to every driver that
+> > may be arch specific is the best way to go either. Perhaps adding a new
+> > Kconfig verb called "archdepends on" or something that will evaluate as
+> > true if COMPILE_TEST is enabled but will evaluate the conditional if
+> > not. *waves hands*
+> 
+> Sam Ravnborg (the kconfig ex-maintainer) once wrote that he doesn't want
+> to extend the kconfig language for this purpose (which I support). That
+> a config option is fine and sufficient in this case [1]. Except he
+> called the config option "SHOW_ALL_DRIVERS". Adding the current
+> maintainer to CCs ;).
+> 
+> [1] http://comments.gmane.org/gmane.linux.kbuild.devel/9829
+> 
+> The last point I inclined to the Greg's argument to remove the EXPERT
+> dependency.
+> 
+> So currently I have what is attached... Comments?
 
-The argument is elsewhere. If I understand correctly, Kconfig is for
-users, not to be hi-jacked by kernel developers. And users should not
-really care about our development processes, cross compilations or
-whatever bells and whistles we use. They just don't want to see
-drivers which they have no way to *use*, they indeed don't care
-whether some more compile at all. We do not want every kernel packager
-for every distro out in the wild, to go through all the help texts, to
-see whether they should compile and package a driver or not. It's a
-tedious work and this option would save time to the packagers.
+Looks good to me, want me to queue it up through my char/misc driver
+tree for 3.11?
 
-Try to package and maintain a kernel for a distribution, you will find
-out what a cool and surprising work that is...
+thanks,
 
-In the best case I would vote for hard dependencies as cross-compilers
-are easy to obtain and set up nowadays. But well, we still want to
-("cross") compile drivers, so let's add COMPILE_TEST and use that to
-save time to automatic builds.
-
--- 
-js
-suse labs
+greg k-h

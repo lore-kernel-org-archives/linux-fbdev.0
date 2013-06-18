@@ -1,42 +1,39 @@
-From: Fabio Estevam <fabio.estevam@freescale.com>
-Date: Tue, 18 Jun 2013 13:26:28 +0000
-Subject: [PATCH 2/2] i915: i915_gem: Print a size_t with %z
-Message-Id: <1371561988-30989-2-git-send-email-fabio.estevam@freescale.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 18 Jun 2013 14:53:14 +0000
+Subject: Re: [PATCH 2/2] i915: i915_gem: Print a size_t with %z
+Message-Id: <CAMuHMdU9tJLDFsDi3AQ49AyJ5=dh_Cer4YUYQHZnbt=WLVNTFA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1371561988-30989-1-git-send-email-fabio.estevam@freescale.com>
-In-Reply-To: <1371561988-30989-1-git-send-email-fabio.estevam@freescale.com>
+	<1371561988-30989-2-git-send-email-fabio.estevam@freescale.com>
+In-Reply-To: <1371561988-30989-2-git-send-email-fabio.estevam@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com
-Cc: Fabio Estevam <fabio.estevam@freescale.com>, linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, Dave Airlie <airlied@redhat.com>, festevam@gmail.com
+To: Fabio Estevam <fabio.estevam@freescale.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Dave Airlie <airlied@redhat.com>, Fabio Estevam <festevam@gmail.com>
 
-Fix the following build warning:
+On Tue, Jun 18, 2013 at 3:26 PM, Fabio Estevam
+<fabio.estevam@freescale.com> wrote:
+> drivers/gpu/drm/i915/i915_gem.c:3129:3: warning: format '%ld' expects argument of type 'long int', but argument 5 has type 'size_t' [-Wformat]
 
-drivers/gpu/drm/i915/i915_gem.c:3129:3: warning: format '%ld' expects argument of type 'long int', but argument 5 has type 'size_t' [-Wformat]
+> --- a/drivers/gpu/drm/i915/i915_gem.c
+> +++ b/drivers/gpu/drm/i915/i915_gem.c
+> @@ -3126,7 +3126,7 @@ i915_gem_object_bind_to_gtt(struct drm_i915_gem_object *obj,
+>          * before evicting everything in a vain attempt to find space.
+>          */
+>         if (obj->base.size > gtt_max) {
+> -               DRM_ERROR("Attempting to bind an object larger than the aperture: object=%zd > %s aperture=%ld\n",
+> +               DRM_ERROR("Attempting to bind an object larger than the aperture: object=%zd > %s aperture=%zd\n",
 
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: <intel-gfx@lists.freedesktop.org>
-Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
----
- drivers/gpu/drm/i915/i915_gem.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+size_t is unsigned, so you better change it to %zu.
 
-diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
-index 6e469e6..d497ca5 100644
---- a/drivers/gpu/drm/i915/i915_gem.c
-+++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -3126,7 +3126,7 @@ i915_gem_object_bind_to_gtt(struct drm_i915_gem_object *obj,
- 	 * before evicting everything in a vain attempt to find space.
- 	 */
- 	if (obj->base.size > gtt_max) {
--		DRM_ERROR("Attempting to bind an object larger than the aperture: object=%zd > %s aperture=%ld\n",
-+		DRM_ERROR("Attempting to bind an object larger than the aperture: object=%zd > %s aperture=%zd\n",
- 			  obj->base.size,
- 			  map_and_fenceable ? "mappable" : "total",
- 			  gtt_max);
--- 
-1.8.1.2
+Gr{oetje,eeting}s,
 
+                        Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

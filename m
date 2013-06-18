@@ -1,57 +1,45 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 04 Jun 2013 01:21:38 +0000
-Subject: Re: [PATCH] video: display_timing: make parameter const
-Message-Id: <22104130.xMhTPUUMF8@avalon>
+From: Fabio Estevam <fabio.estevam@freescale.com>
+Date: Tue, 18 Jun 2013 15:18:43 +0000
+Subject: [PATCH v2 2/2] i915: i915_gem: Print a size_t with %z
+Message-Id: <1371568723-27486-2-git-send-email-fabio.estevam@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369657985-11703-1-git-send-email-l.stach@pengutronix.de>
-In-Reply-To: <1369657985-11703-1-git-send-email-l.stach@pengutronix.de>
+References: <1371568723-27486-1-git-send-email-fabio.estevam@freescale.com>
+In-Reply-To: <1371568723-27486-1-git-send-email-fabio.estevam@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org
-Cc: Dave Airlie <airlied@redhat.com>, linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, kernel@pengutronix.de
+To: plagnioj@jcrosoft.com
+Cc: Fabio Estevam <fabio.estevam@freescale.com>, linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, geert@linux-m68k.org, Dave Airlie <airlied@redhat.com>, festevam@gmail.com
 
-Hi,
+Fix the following build warning:
 
-On Monday 27 May 2013 14:33:05 Lucas Stach wrote:
-> From: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-> 
-> As the device_node pointer is not changed in of_get_display_timing and
-> parse_timing_property it can be a const pointer.
-> 
-> Signed-off-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+drivers/gpu/drm/i915/i915_gem.c:3129:3: warning: format '%ld' expects argument of type 'long int', but argument 5 has type 'size_t' [-Wformat]
 
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: <intel-gfx@lists.freedesktop.org>
+Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
+---
+Changes since v1:
+- Use %zu instead of %zd, since size_t is unsigned
 
-> ---
->  drivers/video/of_display_timing.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/of_display_timing.c
-> b/drivers/video/of_display_timing.c index 56009bc..85c1a41 100644
-> --- a/drivers/video/of_display_timing.c
-> +++ b/drivers/video/of_display_timing.c
-> @@ -23,7 +23,7 @@
->   * Every display_timing can be specified with either just the typical value
-> or * a range consisting of min/typ/max. This function helps handling this
-> **/
-> -static int parse_timing_property(struct device_node *np, const char *name,
-> +static int parse_timing_property(const struct device_node *np, const char
-> *name, struct timing_entry *result)
->  {
->  	struct property *prop;
-> @@ -56,7 +56,8 @@ static int parse_timing_property(struct device_node *np,
-> const char *name, * of_get_display_timing - parse display_timing entry from
-> device_node * @np: device_node with the properties
->   **/
-> -static struct display_timing *of_get_display_timing(struct device_node *np)
-> +static struct display_timing *of_get_display_timing(const struct
-> device_node +						    *np)
->  {
->  	struct display_timing *dt;
->  	u32 val = 0;
+ drivers/gpu/drm/i915/i915_gem.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
+index 6e469e6..d497ca5 100644
+--- a/drivers/gpu/drm/i915/i915_gem.c
++++ b/drivers/gpu/drm/i915/i915_gem.c
+@@ -3126,7 +3126,7 @@ i915_gem_object_bind_to_gtt(struct drm_i915_gem_object *obj,
+ 	 * before evicting everything in a vain attempt to find space.
+ 	 */
+ 	if (obj->base.size > gtt_max) {
+-		DRM_ERROR("Attempting to bind an object larger than the aperture: object=%zd > %s aperture=%ld\n",
++		DRM_ERROR("Attempting to bind an object larger than the aperture: object=%zd > %s aperture=%zu\n",
+ 			  obj->base.size,
+ 			  map_and_fenceable ? "mappable" : "total",
+ 			  gtt_max);
 -- 
-Regards,
+1.8.1.2
 
-Laurent Pinchart
 

@@ -1,148 +1,137 @@
-From: Inki Dae <inki.dae@samsung.com>
-Date: Tue, 18 Jun 2013 05:27:40 +0000
-Subject: RE: [RFC PATCH v2] dmabuf-sync: Introduce buffer synchronization framework
-Message-Id: <007301ce6be4$8d5c6040$a81520c0$%dae@samsung.com>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Tue, 18 Jun 2013 07:00:16 +0000
+Subject: Re: [RFC PATCH v2] dmabuf-sync: Introduce buffer synchronization framework
+Message-Id: <CAKMK7uECS=eqNB-Ud6s=NvdYMPfxgJaGPbUx9hANfP6kb02j_w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1371467722-665-1-git-send-email-inki.dae@samsung.com>
-In-Reply-To: <1371467722-665-1-git-send-email-inki.dae@samsung.com>
+References: <1371112088-15310-1-git-send-email-inki.dae@samsung.com>
+	<1371467722-665-1-git-send-email-inki.dae@samsung.com>
+	<51BEF458.4090606@canonical.com>
+	<012501ce6b5b$3d39b0b0$b7ad1210$%dae@samsung.com>
+	<20130617133109.GG2718@n2100.arm.linux.org.uk>
+	<CAAQKjZO_t_kZkU46bUPTpoJs_oE1KkEqS2OTrTYjjJYZzBf+XA@mail.gmail.com>
+	<20130617154237.GJ2718@n2100.arm.linux.org.uk>
+In-Reply-To: <20130617154237.GJ2718@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Inki Dae <daeinki@gmail.com>, Maarten Lankhorst <maarten.lankhorst@canonical.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, DRI mailing list <dri-devel@lists.freedesktop.org>, Rob Clark <robdclark@gmail.com>, "myungjoo.ham" <myungjoo.ham@samsung.com>, YoungJun Cho <yj44.cho@samsung.com>, Daniel Vetter <daniel@ffwll.ch>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
 
+On Mon, Jun 17, 2013 at 04:42:37PM +0100, Russell King - ARM Linux wrote:
+> On Tue, Jun 18, 2013 at 12:03:31AM +0900, Inki Dae wrote:
+> > 2013/6/17 Russell King - ARM Linux <linux@arm.linux.org.uk>
+> > Exactly right. But that is not definitely my point. Could you please see
+> > the below simple example?:
+> > (Presume that CPU and DMA share a buffer and the buffer is mapped with user
+> > space as cachable)
+> >
+> >         handle1 = drm_gem_fd_to_handle(a dmabuf fd);  ----> 1
+> >                  ...
+> >         va1 = drm_gem_mmap(handle1);
+> >         va2 = drm_gem_mmap(handle2);
+> >         va3 = malloc(size);
+> >                  ...
+> >
+> >         while (conditions) {
+> >                  memcpy(va1, some data, size);
+>
+> Nooooooooooooooooooooooooooooooooooooooooooooo!
+>
+> Well, the first thing to say here is that under the requirements of the
+> DMA API, the above is immediately invalid, because you're writing to a
+> buffer which under the terms of the DMA API is currently owned by the
+> DMA agent, *not* by the CPU.  You're supposed to call dma_sync_sg_for_cpu()
+> before you do that - but how is userspace supposed to know that requirement?
+> Why should userspace even _have_ to know these requirements of the DMA
+> API?
+>
+> It's also entirely possible that drm_gem_fd_to_handle() (which indirectly
+> causes dma_map_sg() on the buffers scatterlist) followed by mmap'ing it
+> into userspace is a bug too, as it has the potential to touch caches or
+> stuff in ways that maybe the DMA or IOMMU may not expect - but I'm not
+> going to make too big a deal about that, because I don't think we have
+> anything that picky.
+>
+> However, the first point above is the most important one, and exposing
+> the quirks of the DMA API to userland is certainly not a nice thing to be
+> doing.  This needs to be fixed - we can't go and enforce an API which is
+> deeply embedded within the kernel all the way out to userland.
+>
+> What we need is something along the lines of:
+> (a) dma_buf_map_attachment() _not_ to map the scatterlist for DMA.
+> or
+> (b) drm_gem_prime_import() not to call dma_buf_map_attachment() at all.
 
+I strongly vote for (b) (plus adding a dma_buf_map_sync interface to allow
+syncing to other devices/cpu whithout dropping the dma mappings). At least
+that's been the idea behind things, but currently all (x86-based) drm
+drivers cut corners here massively.
 
-> -----Original Message-----
-> From: Russell King - ARM Linux [mailto:linux@arm.linux.org.uk]
-> Sent: Tuesday, June 18, 2013 3:21 AM
-> To: Inki Dae
-> Cc: Maarten Lankhorst; linux-fbdev; Kyungmin Park; DRI mailing list; Rob
-> Clark; myungjoo.ham; YoungJun Cho; Daniel Vetter; linux-arm-
-> kernel@lists.infradead.org; linux-media@vger.kernel.org
-> Subject: Re: [RFC PATCH v2] dmabuf-sync: Introduce buffer synchronization
-> framework
-> 
-> On Tue, Jun 18, 2013 at 02:19:04AM +0900, Inki Dae wrote:
-> > It seems like that all pages of the scatterlist should be mapped with
-> > DMA every time DMA operation  is started (or drm_xxx_set_src_dma_buffer
-> > function call), and the pages should be unmapped from DMA again every
-> > time DMA operation is completed: internally, including each cache
-> > operation.
-> 
-> Correct.
-> 
-> > Isn't that big overhead?
-> 
-> Yes, if you _have_ to do a cache operation to ensure that the DMA agent
-> can see the data the CPU has written.
-> 
-> > And If there is no problem, we should accept such overhead?
-> 
-> If there is no problem then why are we discussing this and why do we need
-> this API extension? :)
+Aside: The entire reason behind hiding the dma map step in the dma-buf
+attachment is to allow drivers to expose crazy iommus (e.g. the tiler unit
+on omap) to other devices. So imo (a) isn't the right choice.
+>
+> and for the scatterlist to be mapped for DMA at the point where the DMA
+> operation is initiated, and unmapped at the point where the DMA operation
+> is complete.
+>
+> So no, the problem is not that we need more APIs and code - we need the
+> existing kernel API fixed so that we don't go exposing userspace to the
+> requirements of the DMA API.  Unless we do that, we're going to end
+> up with a huge world of pain, where kernel architecture people need to
+> audit every damned DRM userspace implementation that happens to be run
+> on their platform, and that's not something arch people really can
+> afford to do.
+>
+> Basically, I think the dma_buf stuff needs to be rewritten with the
+> requirements of the DMA API in the forefront of whosever mind is doing
+> the rewriting.
+>
+> Note: the existing stuff does have the nice side effect of being able
+> to pass buffers which do not have a struct page * associated with them
+> through the dma_buf API - I think we can still preserve that by having
+> dma_buf provide a couple of new APIs to do the SG list map/sync/unmap,
+> but in any case we need to fix the existing API so that:
+>
+> dma_buf_map_attachment() becomes dma_buf_get_sg()
+> dma_buf_unmap_attachment() becomes dma_buf_put_sg()
+>
+> both getting rid of the DMA direction argument, and then we have four
+> new dma_buf calls:
+>
+> dma_buf_map_sg()
+> dma_buf_unmap_sg()
+> dma_buf_sync_sg_for_cpu()
+> dma_buf_sync_sg_for_device()
+>
+> which do the actual sg map/unmap via the DMA API *at the appropriate
+> time for DMA*.
 
-Ok, another issue regardless of dmabuf-sync. Reasonable to me even though
-big overhead. Besides, it seems like that most DRM drivers have same issue.
-Therefore, we may need to solve this issue like below:
-	- do not map a dmabuf with DMA. And just create/update buffer object
-of importer.
-	- map the buffer with DMA every time DMA start or iommu page fault
-occurs.
-	- unmap the buffer from DMA every time DMA operation is completed
+Hm, my idea was to just add a dma_buf_sync_attchment for the device side
+syncing, since the cpu access stuff is already bracketed with the
+begin/end cpu access stuff. We might need a sync_for_cpu or so for mmap,
+but imo mmap support for dma_buf is a bit insane anyway, so I don't care
+too much about it.
 
-With the above approach, cache operation portion of my approach,
-dmabuf-sync, can be removed. However, I'm not sure that we really have to
-use the above approach with a big overhead. Of course, if we don't use the
-above approach then user processes would need to do each cache operation
-before DMA operation is started and also after DMA operation is completed in
-some cases; user space mapped with physical memory as cachable, and CPU and
-DMA share the same buffer.
+Since such dma mappings would be really longstanding in most cases anyway
+drivers could just map with BIDIRECTIONAL and do all the real flushing
+with the new sync stuff.
 
-So I'd like to ask for other DRM maintainers. How do you think about it? it
-seems like that Intel DRM (maintained by Daniel), OMAP DRM (maintained by
-Rob) and GEM CMA helper also have same issue Russell pointed out. I think
-not only the above approach but also the performance is very important.
+Another piece of fun will be integration with the fencing stuff Maarten is
+doing. I'm not sure whether we should integrate that into the dma-buf
+interface (for simple users who don't want to deal with the full
+complexity at least).
 
-Thanks,
-Inki Dae
+>
+> So, the summary of this is - at the moment, I regard DRM Prime and dmabuf
+> to be utterly broken in design for architectures such as ARM where the
+> requirements of the DMA API have to be followed if you're going to have
+> a happy life.
 
-> 
-> > Actually, drm_gem_fd_to_handle() includes to map a
-> > given dmabuf with iommu table (just logical data) of the DMA. And then,
-> the
-> > device address (or iova) already mapped will be set to buffer register
-> of
-> > the DMA with drm_xxx_set_src/dst_dma_buffer(handle1, ...) call.
-> 
-> Consider this with a PIPT cache:
-> 
-> 	dma_map_sg()	- at this point, the kernel addresses of these
-> 			buffers are cleaned and invalidated for the DMA
-> 
-> 	userspace writes to the buffer, the data sits in the CPU cache
-> 	Because the cache is PIPT, this data becomes visible to the
-> 	kernel as well.
-> 
-> 	DMA is started, and it writes to the buffer
-> 
-> Now, at this point, which is the correct data?  The data physically in the
-> RAM which the DMA has written, or the data in the CPU cache.  It may
-> the answer is - they both are, and the loss of either can be a potential
-> data corruption issue - there is no way to tell which data should be
-> kept but the system is in an inconsistent state and _one_ of them will
-> have to be discarded.
-> 
-> 	dma_unmap_sg()	- at this point, the kernel addresses of the
-> 			buffers are _invalidated_ and any data in those
-> 			cache lines is discarded
-> 
-> Which also means that the data in userspace will also be discarded with
-> PIPT caches.
-> 
-> This is precisely why we have buffer rules associated with the DMA API,
-> which are these:
-> 
-> 	dma_map_sg()
-> 	- the buffer transfers ownership from the CPU to the DMA agent.
-> 	- the CPU may not alter the buffer in any way.
-> 	while (cpu_wants_access) {
-> 		dma_sync_sg_for_cpu()
-> 		- the buffer transfers ownership from the DMA to the CPU.
-> 		- the DMA may not alter the buffer in any way.
-> 		dma_sync_sg_for_device()
-> 		- the buffer transfers ownership from the CPU to the DMA
-> 		- the CPU may not alter the buffer in any way.
-> 	}
-> 	dma_unmap_sg()
-> 	- the buffer transfers ownership from the DMA to the CPU.
-> 	- the DMA may not alter the buffer in any way.
-> 
-> Any violation of that is likely to lead to data corruption.  Now, some
-> may say that the DMA API is only about the kernel mapping.  Yes it is,
-> because it takes no regard what so ever about what happens with the
-> userspace mappings.  This is absolutely true when you have VIVT or
-> aliasing VIPT caches.
-> 
-> Now consider that with a PIPT cache, or a non-aliasing VIPT cache (which
-> is exactly the same behaviourally from this aspect) any modification of
-> a userspace mapping is precisely the same as modifying the kernel space
-> mapping - and what you find is that the above rules end up _inherently_
-> applying to the userspace mappings as well.
-> 
-> In other words, userspace applications which have mapped the buffers
-> must _also_ respect these rules.
-> 
-> And there's no way in hell that I'd ever trust userspace to get this
-> anywhere near right, and I *really* do not like these kinds of internal
-> kernel API rules being exposed to userspace.
-> 
-> And so the idea that userspace should be allowed to setup DMA transfers
-> via "set source buffer", "set destination buffer" calls into an API is
-> just plain rediculous.  No, userspace should be allowed to ask for
-> "please copy from buffer X to buffer Y using this transform".
-> 
-> Also remember that drm_xxx_set_src/dst_dma_buffer() would have to
-> deal with the DRM object IDs for the buffer, and not the actual buffer
-> information themselves - that is kept within the kernel, so the kernel
-> knows what's happening.
-
+Agreed. Unfortunately there are not many real drivers shipping in
+upstream, and x86 is _very_ forgiving about all this stuff.
+-Daniel
+--
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch

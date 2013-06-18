@@ -1,83 +1,42 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Fri, 28 Jun 2013 10:43:05 +0000
-Subject: Re: [RFC 0/6] SimpleDRM Driver (was: dvbe driver)
-Message-Id: <CANq1E4R66J2JKdF1BrdczpDpvpNDUFz20v6FKJCma1XWHKWMTg@mail.gmail.com>
+From: Yijing Wang <wangyijing@huawei.com>
+Date: Tue, 18 Jun 2013 08:24:51 +0000
+Subject: [PATCH 9/9] radeon: use pdev->pm_cap instead of pci_find_capability(..,PCI_CAP_ID_PM)
+Message-Id: <1371543891-11460-1-git-send-email-wangyijing@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1372112849-670-1-git-send-email-dh.herrmann@gmail.com>
-	<51CB5D67.3090701@wwwdotorg.org>
-In-Reply-To: <51CB5D67.3090701@wwwdotorg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, linux-kernel <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@gmail.com>, linux-fbdev@vger.kernel.org, Stephen Warren <swarren@nvidia.com>, Olof Johansson <olof@lixom.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-kernel@vger.kernel.org, Hanjun Guo <guohanjun@huawei.com>, jiang.liu@huawei.com, Yijing Wang <wangyijing@huawei.com>, linux-fbdev@vger.kernel.org
 
-Hi
+Pci core has been saved pm cap register offset by pdev->pm_cap in pci_pm_init()
+in init path. So we can use pdev->pm_cap instead of using
+pci_find_capability(pdev, PCI_CAP_ID_PM) for better performance and simplified code.
 
-On Wed, Jun 26, 2013 at 11:30 PM, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> On 06/24/2013 04:27 PM, David Herrmann wrote:
->> Hi
->>
->> This is my second revision of the dvbe driver. I renamed it to SimpleDRM to
->> show the resemblence with the recently introduced simplefb.c fbdev driver. The
->> driver is supposed to be the most basic DRM driver similar to efifb.c, vesafb.c,
->> offb.c, simplefb.c, ...
->> It provides a single virtual CRTC+encoder+connector and allows user-space to
->> create one dumb-buffer at a time and attach it.
->>
->> The setup changed slightly. It no longer uses shadow buffers but instead maps
->> the framebuffer directly into userspace. Furthermore, a new infrastructure is
->> used to unload firmware drivers during real hardware drivers probe cycles. Only
->> nouveau was changed to use it, yet.
->>
->> I still have an odd problem when unloading DRM drivers (not just SimpleDRM) with
->> an fbdev fallback. If I call printk() directly after unregister_framebufer(), I
->> get a NULL-deref somewhere in the VT layer (most times hide_cursor()). I haven't
->> figured out exactly where that happens, but I am also very reluctant to spend
->> more time debugging the VT layer.
->
-> I tested this on a Tegra ARM system, and it basically worked.
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+---
+ drivers/video/aty/radeon_pm.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thanks a lot for the feedback!
+diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
+index 92bda58..f7091ec 100644
+--- a/drivers/video/aty/radeon_pm.c
++++ b/drivers/video/aty/radeon_pm.c
+@@ -2805,7 +2805,7 @@ static void radeonfb_early_resume(void *data)
+ void radeonfb_pm_init(struct radeonfb_info *rinfo, int dynclk, int ignore_devlist, int force_sleep)
+ {
+ 	/* Find PM registers in config space if any*/
+-	rinfo->pm_reg = pci_find_capability(rinfo->pdev, PCI_CAP_ID_PM);
++	rinfo->pm_reg = rinfo->pdev->pm_cap;
+ 
+ 	/* Enable/Disable dynamic clocks: TODO add sysfs access */
+ 	if (rinfo->family = CHIP_FAMILY_RS480)
+-- 
+1.7.1
 
-> I have one question: With the simplefb driver, and console=tty1 on the
-> kernel command-line, I see both the penguins logo and Linux's boot
-> messages on the LCD panel that's hooked up through simplefb. However,
-> with simpledrm, I only see the penguins logo, but no boot messages. Is
-> that expected? How would I solve that if so?
 
-No idea what is going wrong there. Somehow the simpledrm-fbdev device
-is not picked up as primary device. I only got a black-cursor on
-black-background (visible if painting something else on the fb0
-device). And I get NULL-derefs in cursor_hide() during unregistration.
-I digged through fbcon.c to find out what's going wrong but without
-any success. I will see what I can do.
-
-However, X-server or other apps work perfectly fine with it.
-
-> Note: I needed to apply the following patch to get it to compile:
->
-> diff --git a/drivers/gpu/drm/simpledrm/simpledrm_fbdev.c
-> b/drivers/gpu/drm/simpledrm/simpledrm_fbdev.c
-> index 40a2696..39885c8 100644
-> --- a/drivers/gpu/drm/simpledrm/simpledrm_fbdev.c
-> +++ b/drivers/gpu/drm/simpledrm/simpledrm_fbdev.c
-> @@ -159,7 +159,7 @@ void sdrm_fbdev_cleanup(struct sdrm_device *sdrm)
->  {
->         struct fb_info *info;
->
-> -       if (!sdrm->info)
-> +       if (!sdrm->fbdev)
->                 return;
-
-Ugh, embarrassing, sorry. I fixed it up. It was a late fix to a avoid
-fbcon from panicking.
-
-Thanks!
-David
-
->
->         dev_info(sdrm->ddev->dev, "fbdev cleanup\n");
->
->
->

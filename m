@@ -1,45 +1,42 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 25 Jun 2013 14:22:51 +0000
-Subject: [PATCH 23/23] video/da8xx-fb adding am33xx as dependency
-Message-Id: <1372170171-9561-24-git-send-email-detheridge@ti.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Thu, 20 Jun 2013 02:38:13 +0000
+Subject: [PATCH 1/2] fb: fix atyfb build warning
+Message-Id: <51C26B15.3090800@infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Updating Kconfig to allow am33xx to include lcdc fbdev driver
-including some extra dependencies needed by device tree mods.
+From: Randy Dunlap <rdunlap@infradead.org>
 
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
+Fix build warning when neither of CONFIG_FB_ATY_GX or
+CONFIG_FB_ATY_CT is enabled, since ARRAY_SIZE(aty_chips) is 0 in
+that case.
+
+drivers/video/aty/atyfb_base.c:437:11: warning: overflow in implicit constant conversion [-Woverflow]
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc:	Paul Mackerras <paulus@samba.org>
+Cc:	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc:	linux-fbdev@vger.kernel.org
+Cc:	Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc:	Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/Kconfig |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ drivers/video/aty/atyfb_base.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 2e937bd..8ae6d2a 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2226,15 +2226,16 @@ config FB_SH7760
- 	  panels <= 320 pixel horizontal resolution.
+--- linux-next-20130619.orig/drivers/video/aty/atyfb_base.c
++++ linux-next-20130619/drivers/video/aty/atyfb_base.c
+@@ -434,8 +434,8 @@ static int correct_chipset(struct atyfb_
+ 	const char *name;
+ 	int i;
  
- config FB_DA8XX
--	tristate "DA8xx/OMAP-L1xx Framebuffer support"
--	depends on FB && ARCH_DAVINCI_DA8XX
-+	tristate "DA8xx/OMAP-L1xx/AM335x Framebuffer support"
-+	depends on FB && (ARCH_DAVINCI_DA8XX || SOC_AM33XX)
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
- 	select FB_CFB_REV_PIXELS_IN_BYTE
-+	select VIDEOMODE_HELPERS
- 	---help---
- 	  This is the frame buffer device driver for the TI LCD controller
--	  found on DA8xx/OMAP-L1xx SoCs.
-+	  found on DA8xx/OMAP-L1xx/AM335x SoCs.
- 	  If unsure, say N.
+-	for (i = ARRAY_SIZE(aty_chips) - 1; i >= 0; i--)
+-		if (par->pci_id = aty_chips[i].pci_id)
++	for (i = ARRAY_SIZE(aty_chips); i > 0; i--)
++		if (par->pci_id = aty_chips[i - 1].pci_id)
+ 			break;
  
- config FB_VIRTUAL
--- 
-1.7.0.4
-
+ 	if (i < 0)

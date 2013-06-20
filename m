@@ -1,253 +1,42 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 03 Jun 2013 05:15:55 +0000
-Subject: Re: [PATCH] fbdev: bfin-lq035q1-fb: Use dev_pm_ops
-Message-Id: <002101ce6019$6cae6360$460b2a20$@samsung.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Thu, 20 Jun 2013 02:39:18 +0000
+Subject: [PATCH 2/2] fb: fix atyfb unused data warnings
+Message-Id: <51C26B56.20802@infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369829859-13405-1-git-send-email-lars@metafoo.de>
- <20130530104535.GF19468@game.jcrosoft.org>
- <000a01ce5daf$8b228b80$a167a280$@samsung.com>
- <2950029.jFqAppzqh2@vostro.rjw.lan>
-In-Reply-To: <2950029.jFqAppzqh2@vostro.rjw.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "'Rafael J. Wysocki'" <rjw@sisk.pl>
-Cc: 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>, 'Lars-Peter Clausen' <lars@metafoo.de>, 'Michael Hennerich' <michael.hennerich@analog.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org, Jingoo Han <jg1.han@samsung.com>
+To: LKML <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Monday, June 03, 2013 4:30 AM, Rafael J. Wysocki wrote:
-> On Friday, May 31, 2013 12:32:57 PM Jingoo Han wrote:
-> > On Thursday, May 30, 2013 7:46 PM, Jean-Christophe PLAGNIOL-VILLARD wrote:
-> > > On 09:52 Thu 30 May     , Lars-Peter Clausen wrote:
-> > > > On 05/30/2013 09:14 AM, Jean-Christophe PLAGNIOL-VILLARD wrote:
-> > > > > On 09:32 Thu 30 May     , Jingoo Han wrote:
-> > > > >> On Thursday, May 30, 2013 4:20 AM, Jean-Christophe PLAGNIOL-VILLARD wrote:
-> > > > >>> On 16:24 Wed 29 May     , Michael Hennerich wrote:
-> > > > >>>> On 05/29/2013 02:17 PM, Lars-Peter Clausen wrote:
-> > > > >>>>> Use dev_pm_ops instead of the legacy suspend/resume callbacks.
-> > > > >>>>>
-> > > > >>>>> Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
-> > > > >>>> Acked-by: Michael Hennerich <michael.hennerich@analog.com>
-> > > > >>>>> ---
-> > > > >>>>>  drivers/video/bfin-lq035q1-fb.c | 22 ++++++++++++++--------
-> > > > >>>>>  1 file changed, 14 insertions(+), 8 deletions(-)
-> > > > >>>>>
-> > > > >>>>> diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
-> > > > >>>>> index 29d8c04..6084c17 100644
-> > > > >>>>> --- a/drivers/video/bfin-lq035q1-fb.c
-> > > > >>>>> +++ b/drivers/video/bfin-lq035q1-fb.c
-> > > > >>>>> @@ -170,16 +170,19 @@ static int lq035q1_spidev_remove(struct spi_device *spi)
-> > > > >>>>>  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
-> > > > >>>>>  }
-> > > > >>>>> -#ifdef CONFIG_PM
-> > > > >>>>> -static int lq035q1_spidev_suspend(struct spi_device *spi, pm_message_t state)
-> > > > >>>>> +#ifdef CONFIG_PM_SLEEP
-> > > > >>>>> +static int lq035q1_spidev_suspend(struct device *dev)
-> > > > >>>>>  {
-> > > > >>>>> +	struct spi_device *spi = to_spi_device(dev);
-> > > > >>>>> +
-> > > > >>>>>  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
-> > > > >>>>>  }
-> > > > >>>>> -static int lq035q1_spidev_resume(struct spi_device *spi)
-> > > > >>>>> +static int lq035q1_spidev_resume(struct device *dev)
-> > > > >>>>>  {
-> > > > >>>>> -	int ret;
-> > > > >>>>> +	struct spi_device *spi = to_spi_device(dev);
-> > > > >>>>>  	struct spi_control *ctl = spi_get_drvdata(spi);
-> > > > >>>>> +	int ret;
-> > > > >>>>>  	ret = lq035q1_control(spi, LQ035_DRIVER_OUTPUT_CTL, ctl->mode);
-> > > > >>>>>  	if (ret)
-> > > > >>>>> @@ -187,9 +190,13 @@ static int lq035q1_spidev_resume(struct spi_device *spi)
-> > > > >>>>>  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_ON);
-> > > > >>>>>  }
-> > > > >>>>> +
-> > > > >>>>> +static SIMPLE_DEV_PM_OPS(lq035q1_spidev_pm_ops, lq035q1_spidev_suspend,
-> > > > >>>>> +	lq035q1_spidev_resume);
-> > > > >>>>> +#define LQ035Q1_SPIDEV_PM_OPS (&lq035q1_spidev_pm_ops)
-> > > > >>>>> +
-> > > > >>>>>  #else
-> > > > >>>>> -# define lq035q1_spidev_suspend NULL
-> > > > >>>>> -# define lq035q1_spidev_resume  NULL
-> > > > >>>>> +#define LQ035Q1_SPIDEV_PM_OPS NULL
-> > > > >>>>>  #endif
-> > > > >>> we really need to ahve a macro like for DT of_match_ptr to drop the #else
-> > > > >>
-> > > > >> Hi Jean-Christophe PLAGNIOL-VILLARD,
-> > > > >>
-> > > > >> I submitted the following patch. :)
-> > > > >> (https://patchwork.kernel.org/patch/2502971/)
-> > > > >>
-> > > > >> --- a/include/linux/pm.h
-> > > > >> +++ b/include/linux/pm.h
-> > > > >> @@ -55,8 +55,10 @@  struct device;
-> > > > >>
-> > > > >>  #ifdef CONFIG_PM
-> > > > >>  extern const char power_group_name[];		/* = "power" */
-> > > > >> +#define pm_ops_ptr(_ptr)	(_ptr)
-> > > > >>  #else
-> > > > >>  #define power_group_name	NULL
-> > > > >> +#define pm_ops_ptr(_ptr)	NULL
-> > > > >>  #endif
-> > > > >>
-> > > > >>
-> > > > >> This patch was accepted by Rafael Wysocki, and will be merged to v3.11-rc1.
-> > > > >>
-> > > > > Lars-Peter please update with and
-> > > >
-> > > > Since the code depends on CONFIG_PM_SLEEP and not CONFIG_PM I don't think
-> > > > the macro will work.
-> > >
-> > > se please ad a similar macros too
-> >
-> > Hi Jean-Christophe,
-> >
-> > I added pm_sleep_ops_ptr() as below.
-> > Maybe you want it.
-> > There is no build warnings below 4 config situations.
-> >    a) CONFIG_PM is enabled.
-> >    b) only CONFIG_PM_SLEEP is enabled
-> >    c) only CONFIG_PM_RUNTIME is enabled
-> >    d) CONFIG_PM is NOT enabled.
-> >
-> > --- a/drivers/video/bfin-lq035q1-fb.c
-> > +++ b/drivers/video/bfin-lq035q1-fb.c
-> > @@ -170,16 +170,19 @@ static int lq035q1_spidev_remove(struct spi_device *spi)
-> >         return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
-> >  }
-> >
-> > -#ifdef CONFIG_PM
-> > -static int lq035q1_spidev_suspend(struct spi_device *spi, pm_message_t state)
-> > +#ifdef CONFIG_PM_SLEEP
-> > +static int lq035q1_spidev_suspend(struct device *dev)
-> >  {
-> > +       struct spi_device *spi = to_spi_device(dev);
-> > +
-> >         return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
-> >  }
-> >
-> > -static int lq035q1_spidev_resume(struct spi_device *spi)
-> > +static int lq035q1_spidev_resume(struct device *dev)
-> >  {
-> > -       int ret;
-> > +       struct spi_device *spi = to_spi_device(dev);
-> >         struct spi_control *ctl = spi_get_drvdata(spi);
-> > +       int ret;
-> >
-> >         ret = lq035q1_control(spi, LQ035_DRIVER_OUTPUT_CTL, ctl->mode);
-> >         if (ret)
-> > @@ -187,11 +190,11 @@ static int lq035q1_spidev_resume(struct spi_device *spi)
-> >
-> >         return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_ON);
-> >  }
-> > -#else
-> > -# define lq035q1_spidev_suspend NULL
-> > -# define lq035q1_spidev_resume  NULL
-> >  #endif
-> >
-> > +static SIMPLE_DEV_PM_OPS(lq035q1_spidev_pm_ops, lq035q1_spidev_suspend,
-> > +       lq035q1_spidev_resume);
-> > +
-> >  /* Power down all displays on reboot, poweroff or halt */
-> >  static void lq035q1_spidev_shutdown(struct spi_device *spi)
-> >  {
-> > @@ -708,8 +711,7 @@ static int bfin_lq035q1_probe(struct platform_device *pdev)
-> >         info->spidrv.probe    = lq035q1_spidev_probe;
-> >         info->spidrv.remove   = lq035q1_spidev_remove;
-> >         info->spidrv.shutdown = lq035q1_spidev_shutdown;
-> > -       info->spidrv.suspend  = lq035q1_spidev_suspend;
-> > -       info->spidrv.resume   = lq035q1_spidev_resume;
-> > +       info->spidrv.driver.pm = pm_sleep_ops_ptr(&lq035q1_spidev_pm_ops);
-> >
-> >         ret = spi_register_driver(&info->spidrv);
-> >         if (ret < 0) {
-> > diff --git a/include/linux/pm.h b/include/linux/pm.h
-> > index bd50d15..999d652 100644
-> > --- a/include/linux/pm.h
-> > +++ b/include/linux/pm.h
-> > @@ -61,6 +61,12 @@ extern const char power_group_name[];                /* = "power" */
-> >  #define pm_ops_ptr(_ptr)       NULL
-> >  #endif
-> >
-> > +#ifdef CONFIG_PM_SLEEP
-> > +#define pm_sleep_ops_ptr(_ptr) (_ptr)
-> > +#else
-> > +#define pm_sleep_ops_ptr(_ptr) NULL
-> > +#endif
-> > +
-> >
-> >
-> > Hi Rafael J. Wysocki,
-> > How about adding this pm_sleep_ops_ptr() macro?
-> 
-> Are you submitting this instead or in addition to your patch I have in the
-> linux-next branch?
+From: Randy Dunlap <rdunlap@infradead.org>
 
-Hi Rafael,
+Fix compiler warnings of data defined but not used.  They are only used
+with certain kconfig settings.
 
-I will submit this patch, soon.
-Thanks. :)
+drivers/video/aty/atyfb_base.c:534:13: warning: 'ram_dram' defined but not used [-Wunused-variable]
+drivers/video/aty/atyfb_base.c:535:13: warning: 'ram_resv' defined but not used [-Wunused-variable]
 
-Best regards,
-Jingoo Han
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc:	Paul Mackerras <paulus@samba.org>
+Cc:	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc:	linux-fbdev@vger.kernel.org
+Cc:	Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc:	Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/aty/atyfb_base.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-> 
-> Rafael
-> 
-> 
-> > My draft idea is below:
-> > However, I want other's better ideas. :)
-> >
-> > 1. The case that only CONFIG_PM_SLEEP is necessary.
-> > #ifdef CONFIG_PM_SLEEP
-> > static int *_suspend(struct device *dev)
-> > 	[....]
-> > static int *_resume(struct device *dev)
-> > 	[....]
-> > #endif
-> >
-> > static SIMPLE_DEV_PM_OPS(*_pm_ops, *_suspend, *_resume);
-> >
-> > static struct {platform/spi/i2c/etc}_driver *_driver = {
-> > 	.driver = {
-> > 		.pm     = pm_sleep_ops_ptr(&*_pm_ops),
-> >
-> >
-> > 2. The case that both CONFIG_PM_SLEEP & CONFIG_PM_RUNTIME
-> >     are necessary.
-> >
-> > #ifdef CONFIG_PM_SLEEP
-> > static int *_suspend(struct device *dev)
-> > 	[....]
-> > static int *_resume(struct device *dev)
-> > 	[....]
-> > #endif
-> >
-> > #ifdef CONFIG_PM_RUNTIME
-> > static int *_runtime_suspend(struct device *dev)
-> > 	[....]
-> > static int *_runtime_resume(struct device *dev)
-> > 	[....]
-> > #endif
-> >
-> > static const struct dev_pm_ops *_pm_ops = {
-> > 	SET_SYSTEM_SLEEP_PM_OPS(*_suspend, *_resume)
-> > 	SET_RUNTIME_PM_OPS(*_runtime_suspend, *_runtime_resume, NULL)
-> > };
-> >
-> > static struct {platform/spi/i2c/etc}_driver *_driver = {
-> > 	.driver = {
-> > 		.pm     = pm_ops_ptr(&*_pm_ops),
-> >
-> >
-> >
-> > Best regards,
-> > Jingoo Han
-> >
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
-
+--- linux-next-20130619.orig/drivers/video/aty/atyfb_base.c
++++ linux-next-20130619/drivers/video/aty/atyfb_base.c
+@@ -531,8 +531,10 @@ static int correct_chipset(struct atyfb_
+ 	return 0;
+ }
+ 
++#if defined(CONFIG_FB_ATY_GX) || defined(CONFIG_FB_ATY_CT)
+ static char ram_dram[] = "DRAM";
+ static char ram_resv[] = "RESV";
++#endif
+ #ifdef CONFIG_FB_ATY_GX
+ static char ram_vram[] = "VRAM";
+ #endif /* CONFIG_FB_ATY_GX */

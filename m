@@ -1,90 +1,23 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 25 Jun 2013 01:45:57 +0000
-Subject: Re: [PATCH 01/15] video: bfin: remove unnecessary platform_set_drvdata()
-Message-Id: <000001ce7145$bcb58d60$3620a820$@samsung.com>
+From: Daniel Drake <dsd@laptop.org>
+Date: Fri, 21 Jun 2013 17:00:37 +0000
+Subject: Re: [V2 2/7] video: mmp: optimize some register setting code
+Message-Id: <CAMLZHHQXDq6ZT0N85n1FWE9TkEbgkf6AKtZJZP+5db6k7NQT2A@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1370879543-11152-1-git-send-email-jtzhou@marvell.com>
+In-Reply-To: <1370879543-11152-1-git-send-email-jtzhou@marvell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Saturday, May 11, 2013 9:45 PM, Jingoo Han wrote:
-> 
-> The driver core clears the driver data to NULL after device_release
-> or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
-> (device-core: Ensure drvdata = NULL when no driver is bound).
-> Thus, it is not needed to manually clear the device driver data to NULL.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+On Mon, Jun 10, 2013 at 9:52 AM, Jett.Zhou <jtzhou@marvell.com> wrote:
+> From: Guoqing Li <ligq@marvell.com>
+>
+> There are dumplicate code of the smooth setting based on different
+> path, optimized the routine and use readl_relaxed instead.
+>
+> Signed-off-by: Jett.Zhou <jtzhou@marvell.com>
+> Signed-off-by: Jing Xiang <jxiang@marvell.com>
+> Signed-off-by: Guoqing Li <ligq@marvell.com>
 
-Hi,
-
-I will squash everything down into one patch with the ACKs,
-and send it again.
-
-Best regards,
-Jingoo Han
-
-
-> ---
->  drivers/video/bf54x-lq043fb.c    |    1 -
->  drivers/video/bfin-lq035q1-fb.c  |    2 --
->  drivers/video/bfin-t350mcqb-fb.c |    2 --
->  3 files changed, 0 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
-> index 2726a5b..87f288b 100644
-> --- a/drivers/video/bf54x-lq043fb.c
-> +++ b/drivers/video/bf54x-lq043fb.c
-> @@ -681,7 +681,6 @@ out3:
->  out2:
->  	free_dma(CH_EPPI0);
->  out1:
-> -	platform_set_drvdata(pdev, NULL);
-> 
->  	return ret;
->  }
-> diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
-> index 29d8c04..be65bae 100644
-> --- a/drivers/video/bfin-lq035q1-fb.c
-> +++ b/drivers/video/bfin-lq035q1-fb.c
-> @@ -759,7 +759,6 @@ static int bfin_lq035q1_probe(struct platform_device *pdev)
->   out2:
->  	free_dma(CH_PPI);
->   out1:
-> -	platform_set_drvdata(pdev, NULL);
-> 
->  	return ret;
->  }
-> @@ -788,7 +787,6 @@ static int bfin_lq035q1_remove(struct platform_device *pdev)
->  	bfin_lq035q1_free_ports(info->disp_info->ppi_mode =
->  				USE_RGB565_16_BIT_PPI);
-> 
-> -	platform_set_drvdata(pdev, NULL);
->  	framebuffer_release(fbinfo);
-> 
->  	dev_info(&pdev->dev, "unregistered LCD driver\n");
-> diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
-> index d46da01..48c0c4e 100644
-> --- a/drivers/video/bfin-t350mcqb-fb.c
-> +++ b/drivers/video/bfin-t350mcqb-fb.c
-> @@ -578,7 +578,6 @@ out3:
->  out2:
->  	free_dma(CH_PPI);
->  out1:
-> -	platform_set_drvdata(pdev, NULL);
-> 
->  	return ret;
->  }
-> @@ -608,7 +607,6 @@ static int bfin_t350mcqb_remove(struct platform_device *pdev)
-> 
->  	bfin_t350mcqb_request_ports(0);
-> 
-> -	platform_set_drvdata(pdev, NULL);
->  	framebuffer_release(fbinfo);
-> 
->  	printk(KERN_INFO DRIVER_NAME ": Unregister LCD driver.\n");
-> --
-> 1.7.2.5
-
-
+Reviewed-by: Daniel Drake <dsd@laptop.org>

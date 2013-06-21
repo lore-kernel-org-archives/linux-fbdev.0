@@ -1,100 +1,30 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Date: Fri, 14 Jun 2013 17:45:50 +0000
-Subject: [RFC PATCH 4/5] exynos4-is: Use generic MIPI CSIS PHY driver
-Message-Id: <1371231951-1969-5-git-send-email-s.nawrocki@samsung.com>
+From: Daniel Drake <dsd@laptop.org>
+Date: Fri, 21 Jun 2013 17:31:05 +0000
+Subject: Re: [V2 6/7] video: mmp: calculate pitch value when fb set win
+Message-Id: <CAMLZHHRLv+qZXVOkZSH2FDxanhy6xitYgCbF3DHXS-8FEWNfuQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1371231951-1969-1-git-send-email-s.nawrocki@samsung.com>
-In-Reply-To: <1371231951-1969-1-git-send-email-s.nawrocki@samsung.com>
+References: <1370879585-11452-1-git-send-email-jtzhou@marvell.com>
+In-Reply-To: <1370879585-11452-1-git-send-email-jtzhou@marvell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Use the generic PHY API instead of the platform callback to control
-the MIPI CSIS DPHY.
+On Mon, Jun 10, 2013 at 9:53 AM, Jett.Zhou <jtzhou@marvell.com> wrote:
+> From: Jing Xiang <jxiang@marvell.com>
+>
+> Add new func mmpfb_set_win to make code clean, it will calculate pitch
+> value when fb set win in mmpfb_set_win.
 
-Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- drivers/media/platform/exynos4-is/mipi-csis.c |   11 +++++++++--
- include/linux/platform_data/mipi-csis.h       |    9 ---------
- 2 files changed, 9 insertions(+), 11 deletions(-)
+It looks like a good idea to create a function for setting window
+parameters from fb info, but this patch also starts to write into the
+pitch[] fields which are not used anywhere. You should rework these
+patches so that the pitch field is introduced, set, and consumed all
+in the same patch.
 
-diff --git a/drivers/media/platform/exynos4-is/mipi-csis.c b/drivers/media/platform/exynos4-is/mipi-csis.c
-index 0fe80e3..88d0d61 100644
---- a/drivers/media/platform/exynos4-is/mipi-csis.c
-+++ b/drivers/media/platform/exynos4-is/mipi-csis.c
-@@ -20,6 +20,7 @@
- #include <linux/memory.h>
- #include <linux/module.h>
- #include <linux/of.h>
-+#include <linux/phy/phy.h>
- #include <linux/platform_data/mipi-csis.h>
- #include <linux/platform_device.h>
- #include <linux/pm_runtime.h>
-@@ -184,6 +185,7 @@ struct csis_drvdata {
-  * @sd: v4l2_subdev associated with CSIS device instance
-  * @index: the hardware instance index
-  * @pdev: CSIS platform device
-+ * @phy: pointer to the CSIS generic PHY
-  * @regs: mmaped I/O registers memory
-  * @supplies: CSIS regulator supplies
-  * @clock: CSIS clocks
-@@ -207,6 +209,7 @@ struct csis_state {
- 	struct v4l2_subdev sd;
- 	u8 index;
- 	struct platform_device *pdev;
-+	struct phy *phy;
- 	void __iomem *regs;
- 	struct regulator_bulk_data supplies[CSIS_NUM_SUPPLIES];
- 	struct clk *clock[NUM_CSIS_CLOCKS];
-@@ -861,6 +864,10 @@ static int s5pcsis_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
-+	state->phy = devm_phy_get(dev, "csis");
-+	if (IS_ERR(state->phy))
-+		return PTR_ERR(state->phy);
-+
- 	mem_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	state->regs = devm_ioremap_resource(dev, mem_res);
- 	if (IS_ERR(state->regs))
-@@ -946,7 +953,7 @@ static int s5pcsis_pm_suspend(struct device *dev, bool runtime)
- 	mutex_lock(&state->lock);
- 	if (state->flags & ST_POWERED) {
- 		s5pcsis_stop_stream(state);
--		ret = s5p_csis_phy_enable(state->index, false);
-+		ret = phy_power_off(state->phy);
- 		if (ret)
- 			goto unlock;
- 		ret = regulator_bulk_disable(CSIS_NUM_SUPPLIES,
-@@ -982,7 +989,7 @@ static int s5pcsis_pm_resume(struct device *dev, bool runtime)
- 					    state->supplies);
- 		if (ret)
- 			goto unlock;
--		ret = s5p_csis_phy_enable(state->index, true);
-+		ret = phy_power_on(state->phy);
- 		if (!ret) {
- 			state->flags |= ST_POWERED;
- 		} else {
-diff --git a/include/linux/platform_data/mipi-csis.h b/include/linux/platform_data/mipi-csis.h
-index bf34e17..c2fd902 100644
---- a/include/linux/platform_data/mipi-csis.h
-+++ b/include/linux/platform_data/mipi-csis.h
-@@ -25,13 +25,4 @@ struct s5p_platform_mipi_csis {
- 	u8 hs_settle;
- };
- 
--/**
-- * s5p_csis_phy_enable - global MIPI-CSI receiver D-PHY control
-- * @id:     MIPI-CSIS harware instance index (0...1)
-- * @on:     true to enable D-PHY and deassert its reset
-- *          false to disable D-PHY
-- * @return: 0 on success, or negative error code on failure
-- */
--int s5p_csis_phy_enable(int id, bool on);
--
- #endif /* __PLAT_SAMSUNG_MIPI_CSIS_H_ */
--- 
-1.7.9.5
+The commit message for the patch that added pitch[] seems to suggest
+that pitch[1] and pitch[2] are used for YUV formats. But in the code
+posted here, they will not be used for PIXFMT_YUYV, PIXFMT_UYVY, etc.
 
+Thanks,
+Daniel

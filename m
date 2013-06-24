@@ -1,128 +1,82 @@
-From: Donghwa Lee <dh09.lee@samsung.com>
-Date: Fri, 28 Jun 2013 06:18:50 +0000
-Subject: Re: [PATCH v3 3/5] video: exynos_mipi_dsim: Use the generic PHY driver
-Message-Id: <51CD2ACA.1000109@samsung.com>
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Mon, 24 Jun 2013 22:27:23 +0000
+Subject: [RFC 0/6] SimpleDRM Driver (was: dvbe driver)
+Message-Id: <1372112849-670-1-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1372258946-15607-1-git-send-email-s.nawrocki@samsung.com>
- <1372258946-15607-4-git-send-email-s.nawrocki@samsung.com>
-In-Reply-To: <1372258946-15607-4-git-send-email-s.nawrocki@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: dri-devel@lists.freedesktop.org
+Cc: linux-kernel@vger.kernel.org, Dave Airlie <airlied@gmail.com>, linux-fbdev@vger.kernel.org, Stephen Warren <swarren@nvidia.com>, Olof Johansson <olof@lixom.net>, David Herrmann <dh.herrmann@gmail.com>
 
-On 06/28/2013 00:02, Sylwester Nawrocki wrote:
-> Use the generic PHY API instead of the platform callback to control
-> the MIPI DSIM DPHY. The 'phy_label' field is added to the platform
-> data structure to allow PHY lookup on non-dt platforms.
->
-> Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> Acked-by: Felipe Balbi <balbi@ti.com>
-> ---
->   drivers/video/exynos/exynos_mipi_dsi.c |   18 +++++++++---------
->   include/video/exynos_mipi_dsim.h       |    6 ++++--
->   2 files changed, 13 insertions(+), 11 deletions(-)
->
-> diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
-> index 32e5406..1f96004 100644
-> --- a/drivers/video/exynos/exynos_mipi_dsi.c
-> +++ b/drivers/video/exynos/exynos_mipi_dsi.c
-> @@ -156,8 +156,7 @@ static int exynos_mipi_dsi_blank_mode(struct mipi_dsim_device *dsim, int power)
->   		exynos_mipi_regulator_enable(dsim);
->   
->   		/* enable MIPI-DSI PHY. */
-> -		if (dsim->pd->phy_enable)
-> -			dsim->pd->phy_enable(pdev, true);
-> +		phy_power_on(dsim->phy);
->   
->   		clk_enable(dsim->clock);
->   
-> @@ -373,6 +372,10 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
->   		return ret;
->   	}
->   
-> +	dsim->phy = devm_phy_get(&pdev->dev, dsim_pd->phy_label);
-> +	if (IS_ERR(dsim->phy))
-> +		return PTR_ERR(dsim->phy);
-> +
->   	dsim->clock = devm_clk_get(&pdev->dev, "dsim0");
->   	if (IS_ERR(dsim->clock)) {
->   		dev_err(&pdev->dev, "failed to get dsim clock source\n");
-> @@ -439,8 +442,7 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
->   	exynos_mipi_regulator_enable(dsim);
->   
->   	/* enable MIPI-DSI PHY. */
-> -	if (dsim->pd->phy_enable)
-> -		dsim->pd->phy_enable(pdev, true);
-> +	phy_power_on(dsim->phy);
->   
->   	exynos_mipi_update_cfg(dsim);
->   
-> @@ -504,9 +506,8 @@ static int exynos_mipi_dsi_suspend(struct device *dev)
->   	if (client_drv && client_drv->suspend)
->   		client_drv->suspend(client_dev);
->   
-> -	/* enable MIPI-DSI PHY. */
-> -	if (dsim->pd->phy_enable)
-> -		dsim->pd->phy_enable(pdev, false);
-> +	/* disable MIPI-DSI PHY. */
-> +	phy_power_off(dsim->phy);
->   
->   	clk_disable(dsim->clock);
->   
-> @@ -536,8 +537,7 @@ static int exynos_mipi_dsi_resume(struct device *dev)
->   	exynos_mipi_regulator_enable(dsim);
->   
->   	/* enable MIPI-DSI PHY. */
-> -	if (dsim->pd->phy_enable)
-> -		dsim->pd->phy_enable(pdev, true);
-> +	phy_power_on(dsim->phy);
->   
->   	clk_enable(dsim->clock);
->   
-> diff --git a/include/video/exynos_mipi_dsim.h b/include/video/exynos_mipi_dsim.h
-> index 89dc88a..fd69beb 100644
-> --- a/include/video/exynos_mipi_dsim.h
-> +++ b/include/video/exynos_mipi_dsim.h
-> @@ -216,6 +216,7 @@ struct mipi_dsim_config {
->    *	automatically.
->    * @e_clk_src: select byte clock source.
->    * @pd: pointer to MIPI-DSI driver platform data.
-> + * @phy: pointer to the generic PHY
->    */
->   struct mipi_dsim_device {
->   	struct device			*dev;
-> @@ -236,6 +237,7 @@ struct mipi_dsim_device {
->   	bool				suspended;
->   
->   	struct mipi_dsim_platform_data	*pd;
-> +	struct phy			*phy;
->   };
->   
->   /*
-> @@ -248,7 +250,7 @@ struct mipi_dsim_device {
->    * @enabled: indicate whether mipi controller got enabled or not.
->    * @lcd_panel_info: pointer for lcd panel specific structure.
->    *	this structure specifies width, height, timing and polarity and so on.
-> - * @phy_enable: pointer to a callback controlling D-PHY enable/reset
-> + * @phy_label: the generic PHY label
->    */
->   struct mipi_dsim_platform_data {
->   	char				lcd_panel_name[PANEL_NAME_SIZE];
-> @@ -257,7 +259,7 @@ struct mipi_dsim_platform_data {
->   	unsigned int			enabled;
->   	void				*lcd_panel_info;
->   
-> -	int (*phy_enable)(struct platform_device *pdev, bool on);
-> +	const char 			*phy_label;
->   };
->   
->   /*
-I confirmed that this patch operates well. It looks good to me.
+Hi
 
-Acked-by: Donghwa Lee <dh09.lee@samsung.com>
+This is my second revision of the dvbe driver. I renamed it to SimpleDRM to
+show the resemblence with the recently introduced simplefb.c fbdev driver. The
+driver is supposed to be the most basic DRM driver similar to efifb.c, vesafb.c,
+offb.c, simplefb.c, ...
+It provides a single virtual CRTC+encoder+connector and allows user-space to
+create one dumb-buffer at a time and attach it.
 
-Thank you,
-Donghwa Lee
+The setup changed slightly. It no longer uses shadow buffers but instead maps
+the framebuffer directly into userspace. Furthermore, a new infrastructure is
+used to unload firmware drivers during real hardware drivers probe cycles. Only
+nouveau was changed to use it, yet.
+
+I still have an odd problem when unloading DRM drivers (not just SimpleDRM) with
+an fbdev fallback. If I call printk() directly after unregister_framebufer(), I
+get a NULL-deref somewhere in the VT layer (most times hide_cursor()). I haven't
+figured out exactly where that happens, but I am also very reluctant to spend
+more time debugging the VT layer.
+
+Anyhow, comments welcome. If someone wants to test it, you probably need to add
+a line to ./include/linux/platform_data/simplefb.h and add the modeline of your
+VESA/EFI framebuffer.
+
+Cheers
+David
+
+David Herrmann (6):
+  fbdev: simplefb: add init through platform_data
+  x86: provide platform-devices for boot-framebuffers
+  drm: add SimpleDRM driver
+  drm: simpledrm: add fbdev fallback support
+  drm: add helpers to kick out firmware drivers
+  drm: nouveau: kick out firmware drivers during probe
+
+ MAINTAINERS                                 |   8 +
+ arch/x86/Kconfig                            |  18 ++
+ arch/x86/kernel/Makefile                    |   1 +
+ arch/x86/kernel/sysfb.c                     | 157 ++++++++++++
+ drivers/gpu/drm/Kconfig                     |   2 +
+ drivers/gpu/drm/Makefile                    |   1 +
+ drivers/gpu/drm/drm_pci.c                   |   1 +
+ drivers/gpu/drm/drm_platform.c              |   1 +
+ drivers/gpu/drm/drm_stub.c                  | 107 ++++++++
+ drivers/gpu/drm/drm_usb.c                   |   1 +
+ drivers/gpu/drm/nouveau/nouveau_drm.c       |  29 ++-
+ drivers/gpu/drm/simpledrm/Kconfig           |  29 +++
+ drivers/gpu/drm/simpledrm/Makefile          |   9 +
+ drivers/gpu/drm/simpledrm/simpledrm.h       | 114 +++++++++
+ drivers/gpu/drm/simpledrm/simpledrm_drv.c   | 231 ++++++++++++++++++
+ drivers/gpu/drm/simpledrm/simpledrm_fbdev.c | 180 ++++++++++++++
+ drivers/gpu/drm/simpledrm/simpledrm_main.c  | 366 ++++++++++++++++++++++++++++
+ drivers/gpu/drm/simpledrm/simpledrm_mem.c   | 254 +++++++++++++++++++
+ drivers/video/Kconfig                       |   5 +-
+ drivers/video/simplefb.c                    |  45 +++-
+ include/drm/drmP.h                          |  26 ++
+ include/linux/platform_data/simplefb.h      |  40 +++
+ 22 files changed, 1604 insertions(+), 21 deletions(-)
+ create mode 100644 arch/x86/kernel/sysfb.c
+ create mode 100644 drivers/gpu/drm/simpledrm/Kconfig
+ create mode 100644 drivers/gpu/drm/simpledrm/Makefile
+ create mode 100644 drivers/gpu/drm/simpledrm/simpledrm.h
+ create mode 100644 drivers/gpu/drm/simpledrm/simpledrm_drv.c
+ create mode 100644 drivers/gpu/drm/simpledrm/simpledrm_fbdev.c
+ create mode 100644 drivers/gpu/drm/simpledrm/simpledrm_main.c
+ create mode 100644 drivers/gpu/drm/simpledrm/simpledrm_mem.c
+ create mode 100644 include/linux/platform_data/simplefb.h
+
+-- 
+1.8.3.1
 

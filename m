@@ -1,196 +1,183 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 26 Jun 2013 09:51:16 +0000
-Subject: Re: [PATCH 22/23] video: da8xx-fb: set upstream clock rate (if reqd)
-Message-Id: <51CAB994.3030208@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2KORDDVIJVVDQEOMLUOTP"
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Mon, 24 Jun 2013 22:27:24 +0000
+Subject: [RFC 1/6] fbdev: simplefb: add init through platform_data
+Message-Id: <1372112849-670-2-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1372170171-9561-23-git-send-email-detheridge@ti.com>
-In-Reply-To: <1372170171-9561-23-git-send-email-detheridge@ti.com>
-To: linux-fbdev@vger.kernel.org
+References: <1372112849-670-1-git-send-email-dh.herrmann@gmail.com>
+In-Reply-To: <1372112849-670-1-git-send-email-dh.herrmann@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: dri-devel@lists.freedesktop.org
+Cc: linux-kernel@vger.kernel.org, Dave Airlie <airlied@gmail.com>, linux-fbdev@vger.kernel.org, Stephen Warren <swarren@nvidia.com>, Olof Johansson <olof@lixom.net>, David Herrmann <dh.herrmann@gmail.com>
 
-------enig2KORDDVIJVVDQEOMLUOTP
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+If we create proper platform-devices in x86 boot-code, we can use simplefb
+for VBE or EFI framebuffers, too. However, there is normally no OF support
+so we introduce a platform_data object so x86 boot-code can pass the
+paramaters via plain old platform-data.
 
-On 25/06/13 17:22, Darren Etheridge wrote:
-> From: Afzal Mohammed <afzal@ti.com>
->=20
-> LCDC IP has a clock divider to adjust pixel clock, this limits pixel
-> clock range to fck/255 - fck/2(fck - rate of input clock to LCDC IP).
-> In the case of AM335x, where this IP is present, default fck is not
-> sufficient to provide normal pixel clock rates, hence rendering this
-> driver unusable on AM335x.
->=20
-> If input clock too is configurable, allowable range of pixel clock
-> would increase. Here initially it is checked whether with present fck,
-> divider in IP could be configured to obtain required rate, if not,
-> fck is adjusted. This makes it usable on AM335x.
->=20
-> Note:
-> Another solution would be to model an inherited basic clock divider of
-> CCF, an advantage would be a better possible resolution for pixel clk.
-> And trying to instantiate a CCF clock would mean that to be consistent,=
+This also removes the OF dependency as it is not needed. The headers
+provide proper dummies for the case OF is disabled.
 
-> 3 bits being turned on to enable clocks of LCDC IP would have to be
-> modeled as gate clocks. Now that would bring in a total of 4 clocks,
-> including necessity to create a new inherited divider clock, and that
-> mean a branch of clock tree would be present in LCDC driver. This
-> would add complexity to LCDC driver bringing in considerable amount
-> of clock handling code, and this would not bring in much advantage
-> for existing use cases other than providing a higher resolution of
-> pixel clock. And existing use cases work without relying on clock
-> modeling. Another fact is that out of the two platform's using this
-> driver DaVinci is not yet converted to CCF. In future if higher
-> resolution of pixel clock is required, and probably after DaVinci is
-> CCF'ed, modeling clock nodes inside driver may be considered.
->=20
-> Signed-off-by: Afzal Mohammed <afzal@ti.com>
-> Signed-off-by: Darren Etheridge <detheridge@ti.com>
-> ---
->  drivers/video/da8xx-fb.c |   76 +++++++++++++++++++++++++++++++++++---=
---------
->  1 files changed, 58 insertions(+), 18 deletions(-)
->=20
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index 5455682..09dfa12 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -133,6 +133,9 @@
->  #define WSI_TIMEOUT	50
->  #define PALETTE_SIZE	256
-> =20
-> +#define	CLK_MIN_DIV	2
-> +#define	CLK_MAX_DIV	255
-> +
->  static void __iomem *da8xx_fb_reg_base;
->  static struct resource *lcdc_regs;
->  static unsigned int lcd_revision;
-> @@ -683,23 +686,21 @@ static void da8xx_fb_lcd_reset(void)
->  	}
->  }
-> =20
-> -static inline unsigned da8xx_fb_calc_clk_divider(struct da8xx_fb_par *=
-par,
-> -						 unsigned pixclock)
-> -{
-> -	return par->lcd_fck_rate / (PICOS2KHZ(pixclock) * 1000);
-> -}
-> -
-> -static inline unsigned da8xx_fb_round_clk(struct da8xx_fb_par *par,
-> -					  unsigned pixclock)
-> +static int da8xx_fb_config_clk_divider(struct da8xx_fb_par *par,
-> +					      unsigned div, unsigned rate)
+Furthermore, we move the FORMAT-definitions to the common platform header
+so initialization code can use it to transform "struct screen_info" to
+the right format-name.
 
-I would suggest to use better names than 'div' and 'rate'. What div?
-What rate?
+Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
+---
+ drivers/video/Kconfig                  |  5 ++--
+ drivers/video/simplefb.c               | 45 +++++++++++++++++++++++++---------
+ include/linux/platform_data/simplefb.h | 40 ++++++++++++++++++++++++++++++
+ 3 files changed, 76 insertions(+), 14 deletions(-)
+ create mode 100644 include/linux/platform_data/simplefb.h
 
->  {
-> -	unsigned div;
-> +	int ret;
-> =20
-> -	div =3D da8xx_fb_calc_clk_divider(par, pixclock);
-> -	return KHZ2PICOS(par->lcd_fck_rate / (1000 * div));
-> -}
-> +	if (par->lcd_fck_rate !=3D rate) {
-> +		ret =3D clk_set_rate(par->lcdc_clk, rate);
-> +		if (IS_ERR_VALUE(ret)) {
-> +			dev_err(par->dev,
-> +				"unable to set clock rate at %u\n", rate);
-> +			return ret;
-> +		}
-> +		par->lcd_fck_rate =3D clk_get_rate(par->lcdc_clk);
-> +	}
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 2e937bd..22586ee 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2455,7 +2455,7 @@ config FB_HYPERV
+ 
+ config FB_SIMPLE
+ 	bool "Simple framebuffer support"
+-	depends on (FB = y) && OF
++	depends on (FB = y)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -2467,8 +2467,7 @@ config FB_SIMPLE
+ 	  pre-allocated frame buffer surface.
+ 
+ 	  Configuration re: surface address, size, and format must be provided
+-	  through device tree, or potentially plain old platform data in the
+-	  future.
++	  through device tree, or plain old platform data.
+ 
+ source "drivers/video/omap/Kconfig"
+ source "drivers/video/omap2/Kconfig"
+diff --git a/drivers/video/simplefb.c b/drivers/video/simplefb.c
+index e2e9e3e..35e36c5 100644
+--- a/drivers/video/simplefb.c
++++ b/drivers/video/simplefb.c
+@@ -24,6 +24,7 @@
+ #include <linux/fb.h>
+ #include <linux/io.h>
+ #include <linux/module.h>
++#include <linux/platform_data/simplefb.h>
+ #include <linux/platform_device.h>
+ 
+ static struct fb_fix_screeninfo simplefb_fix = {
+@@ -73,17 +74,8 @@ static struct fb_ops simplefb_ops = {
+ 	.fb_imageblit	= cfb_imageblit,
+ };
+ 
+-struct simplefb_format {
+-	const char *name;
+-	u32 bits_per_pixel;
+-	struct fb_bitfield red;
+-	struct fb_bitfield green;
+-	struct fb_bitfield blue;
+-	struct fb_bitfield transp;
+-};
+-
+ static struct simplefb_format simplefb_formats[] = {
+-	{ "r5g6b5", 16, {11, 5}, {5, 6}, {0, 5}, {0, 0} },
++	SIMPLEFB_FORMATS
+ };
+ 
+ struct simplefb_params {
+@@ -139,6 +131,32 @@ static int simplefb_parse_dt(struct platform_device *pdev,
+ 	return 0;
+ }
+ 
++static int simplefb_parse_pd(struct platform_device *pdev,
++			     struct simplefb_params *params)
++{
++	struct simplefb_platform_data *pd = pdev->dev.platform_data;
++	int i;
++
++	params->width = pd->width;
++	params->height = pd->height;
++	params->stride = pd->stride;
++
++	for (i = 0; i < ARRAY_SIZE(simplefb_formats); i++) {
++		if (strcmp(pd->format, simplefb_formats[i].name))
++			continue;
++
++		params->format = &simplefb_formats[i];
++		break;
++	}
++
++	if (!params->format) {
++		dev_err(&pdev->dev, "Invalid format value\n");
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
+ static int simplefb_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+@@ -149,7 +167,12 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	if (fb_get_options("simplefb", NULL))
+ 		return -ENODEV;
+ 
+-	ret = simplefb_parse_dt(pdev, &params);
++	ret = -ENODEV;
++	if (pdev->dev.platform_data)
++		ret = simplefb_parse_pd(pdev, &params);
++	else if (pdev->dev.of_node)
++		ret = simplefb_parse_dt(pdev, &params);
++
+ 	if (ret)
+ 		return ret;
+ 
+diff --git a/include/linux/platform_data/simplefb.h b/include/linux/platform_data/simplefb.h
+new file mode 100644
+index 0000000..a18353d
+--- /dev/null
++++ b/include/linux/platform_data/simplefb.h
+@@ -0,0 +1,40 @@
++/*
++ * simplefb.h - Simple Framebuffer Device
++ *
++ * Copyright (C) 2013 David Herrmann <dh.herrmann@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#ifndef __PLATFORM_DATA_SIMPLEFB_H__
++#define __PLATFORM_DATA_SIMPLEFB_H__
++
++#include <drm/drm_fourcc.h>
++#include <linux/fb.h>
++#include <linux/kernel.h>
++
++#define SIMPLEFB_FORMATS \
++	{ "r5g6b5", 16, {11, 5}, {5, 6}, {0, 5}, {0, 0}, DRM_FORMAT_RGB565 }
++
++struct simplefb_format {
++	const char *name;
++	u32 bits_per_pixel;
++	struct fb_bitfield red;
++	struct fb_bitfield green;
++	struct fb_bitfield blue;
++	struct fb_bitfield transp;
++	u32 fourcc;
++};
++
++/* the framebuffer size and location is available as IORESOURCE_MEM */
++struct simplefb_platform_data {
++	u32 width;
++	u32 height;
++	u32 stride;
++	char format[64];
++};
++
++#endif /* __PLATFORM_DATA_SIMPLEFB_H__ */
+-- 
+1.8.3.1
 
-I think it would be good to require that the caller has calculated the
-rate properly, and used clk_round_rate. So instead of silently storing
-the actual clock rate to lcd_fck_rate, either fail or give a warning if
-the resulting clock rate is different than the requested one.
-
-> -static inline void da8xx_fb_config_clk_divider(unsigned div)
-> -{
->  	/* Configure the LCD clock divisor. */
->  	lcdc_write(LCD_CLK_DIVISOR(div) |
->  			(LCD_RASTER_MODE & 0x1), LCD_CTRL_REG);
-> @@ -707,14 +708,49 @@ static inline void da8xx_fb_config_clk_divider(un=
-signed div)
->  	if (lcd_revision =3D=3D LCD_VERSION_2)
->  		lcdc_write(LCD_V2_DMA_CLK_EN | LCD_V2_LIDD_CLK_EN |
->  				LCD_V2_CORE_CLK_EN, LCD_CLK_ENABLE_REG);
-> +
-> +	return 0;
-> +}
-> +
-> +static unsigned int da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par=
-,
-> +					      unsigned pixclock,
-> +					      unsigned *rate)
-> +{
-> +	unsigned div;
-> +
-> +	pixclock =3D PICOS2KHZ(pixclock) * 1000;
-> +
-> +	*rate =3D par->lcd_fck_rate;
-> +
-> +	if (pixclock < (*rate / CLK_MAX_DIV)) {
-> +		*rate =3D clk_round_rate(par->lcdc_clk, pixclock * CLK_MAX_DIV);
-> +		div =3D CLK_MAX_DIV;
-> +	} else if (pixclock > (*rate / CLK_MIN_DIV)) {
-> +		*rate =3D clk_round_rate(par->lcdc_clk, pixclock * CLK_MIN_DIV);
-> +		div =3D CLK_MIN_DIV;
-> +	} else {
-> +		div =3D *rate / pixclock;
-> +	}
-> +
-> +	return div;
->  }
-
-If I understand correctly, the function returns the LCDC clock divider
-and the fclk clock rate, calculated for the given pixclock.
-
-What happens if this function is called with a pixel clock of 1Hz or
-1GHz (ie. something not achievable)?
-
-And wouldn't it be better to always set the fclk clock rate? Even if the
-pixclock is in the range achieved with a divider between CLK_MIN_DIV and
-CLK_MAX_DIV, it can be quite far from the requested clock rate.
-Adjusting the fclk rate could give a much better match.
-
-> -static inline void da8xx_fb_calc_config_clk_divider(struct da8xx_fb_pa=
-r *par,
-> +static inline int da8xx_fb_calc_config_clk_divider(struct da8xx_fb_par=
- *par,
-
-Don't use inline. The compiler can decide if it's worth to inline a
-function or not. I guess inline is fine for funcs like lcdc_read(), but
-generally leave it for the compiler.
-
- Tomi
-
-
-
-------enig2KORDDVIJVVDQEOMLUOTP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRyrmUAAoJEPo9qoy8lh71wiwP/3uaUpQY3nOGsDfC8xoKSNpw
-nswdUbaLRefrtPhL4lK78zxb3VO85+yiMjUrT/erHdKAn/KgXMV7qLGvQsBi9tw2
-avFylTcqX4xuP5EbkmlSsy6NTUjtVUbM8YtSTu4R8+sy+oGT/GCBIh9/jcBJf3Fr
-WNzrjHmSapUKn+EBRQ7E9ahBzMjU34UYpRYVGuuPABrygSS8utCWtD1RxFg/FV6p
-3cv8P3pi+z1N14lzISBGa8IZXRss22GwH+JEVHKfiRuN2TOaD4gxygHoI3cnCv+0
-HhTXfubTUYXn3gtrt0jKB0yrWa3rJii2y1q7R7ymYKT3veb02XdHFDmWK4/NvNCC
-BvKGOnBDNvxWvANq5cUk9AertlR963eHspfJvBBTVLLLOC5rKkIvftT5F2+GWVR5
-E5gA0kdS1NSwOXrScgDPyqCcxUQSu5sIWrmEpJ1ZTrt8omFtFU4TnUVHEKy/RNJw
-6R9O7u00ehCUJ0+Zi/NCUeJIZYN53O2GS5QevF3aMHq3VHLd434PaKsOTVfEUmTV
-YcyfZxxJRW3jgOHaQuGGlEgrf9YHl8y5Wys5ZcYoK64dGs25GjP/+bG5kzvXC08m
-uNdaSoFmoGKKvtQfnImFpxV0Wyrx5FMjYwR7EllP541/gRHt6uIffGzaQnSDKGk+
-L86+2PbbzFfhXTbSr6hb
-=+RD1
------END PGP SIGNATURE-----
-
-------enig2KORDDVIJVVDQEOMLUOTP--

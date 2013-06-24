@@ -1,176 +1,53 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 17 Jun 2013 13:47:53 +0000
-Subject: [GIT PULL] omapdss changes for 3.11, part 2/2
-Message-Id: <51BF1389.4060901@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2LLIXEXVLCXFNRBFWUFMB"
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Mon, 24 Jun 2013 17:54:20 +0000
+Subject: [PATCH 2/2 v2] fb: fix atyfb unused data warnings
+Message-Id: <51C887CC.6000301@infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <51BF1326.7010206@ti.com>
-In-Reply-To: <51BF1326.7010206@ti.com>
+References: <51C26B56.20802@infradead.org> <20130624143737.GI305@game.jcrosoft.org>
+In-Reply-To: <20130624143737.GI305@game.jcrosoft.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-------enig2LLIXEXVLCXFNRBFWUFMB
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Randy Dunlap <rdunlap@infradead.org>
 
-The following changes since commit 595470a7853848cb971d5ee3fed443b1e3aa0d=
-1b:
+Fix compiler warnings of data defined but not used by using the
+__maybe_unused attribute.  The date are only used with certain kconfig
+settings.
 
-  OMAPDSS: gracefully disable overlay at error (2013-06-17 14:00:56 +0300=
-)
+drivers/video/aty/atyfb_base.c:534:13: warning: 'ram_dram' defined but not used [-Wunused-variable]
+drivers/video/aty/atyfb_base.c:535:13: warning: 'ram_resv' defined but not used [-Wunused-variable]
 
-are available in the git repository at:
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc:	Paul Mackerras <paulus@samba.org>
+Cc:	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc:	linux-fbdev@vger.kernel.org
+Cc:	Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc:	Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/aty/atyfb_base.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-  git://gitorious.org/linux-omap-dss2/linux.git tags/omapdss-for-3.11-2
-
-for you to fetch changes up to c545b59515cca4ccaf920e12582a43836cddaa2b:
-
-  OMAPDSS: panels: add Kconfig comment (2013-06-17 14:33:21 +0300)
-
-----------------------------------------------------------------
-OMAP display subsystem changes for 3.11 (part 2/2)
-
-This is the second part of OMAP DSS changes for 3.11. This part contains =
-the
-new DSS device model support.
-
-The current OMAP panel drivers use a custom DSS bus, and there's a hard l=
-imit
-of one external display block per video pipeline. In the new DSS device m=
-odel
-the devices/drivers are made according to the control bus of the display =
-block,
-usually platform, i2c or spi. The display blocks can also be chained so t=
-hat we
-can have separate drivers for setups with both external encoder and panel=
-=2E
-
-To allow the current board files, which use the old style panels, to func=
-tion,
-the old display drivers are left in their current state, and new ones are=
- added
-to drivers/video/omap2/displays-new/. When the board files have been conv=
-erted
-to use the new style panels, we can remove the old code. This is planned =
-to
-happen in v3.12.
-
-Having to support two very different DSS device models makes the driver
-somewhat confusing in some parts, and prevents us from properly cleaning =
-up
-some other parts. These cleanups will be done when the old code is remove=
-d.
-
-The new device model is designed with CDF (Common Display Framework) in m=
-ind.
-While CDF is still under work, the new DSS device model should be much mo=
-re
-similar to CDF's model than the old device model, which should make the
-eventual conversion to CDF much easier.
-
-----------------------------------------------------------------
-Tomi Valkeinen (23):
-      OMAPDSS: public omapdss_register_output()
-      OMAPDSS: modify get/find functions to go through the device chain
-      OMAPDSS: add OMAP_DISPLAY_TYPE_DVI
-      drm/omap: DVI connector fix
-      OMAPDSS: DPI: Add ops
-      OMAPDSS: SDI: Add ops
-      OMAPDSS: DVI: Add ops
-      OMAPDSS: AnalogTV: Add ops
-      OMAPDSS: HDMI: Add ops
-      OMAPDSS: DSI: Add ops
-      OMAPDSS: Add new TFP410 Encoder driver
-      OMAPDSS: Add new TPD12S015 Encoder driver
-      OMAPDSS: Add new DVI Connector driver
-      OMAPDSS: Add new HDMI Connector driver
-      OMAPDSS: Add new Analog TV Connector driver
-      OMAPDSS: Add new simple DPI panel driver
-      OMAPDSS: Add new DSI Command Mode panel  driver
-      OMAPDSS: Add Sony ACX565AKM panel driver
-      OMAPDSS: Add LG.Philips LB035Q02 panel driver
-      OMAPDSS: Add Sharp LS037V7DW01 panel driver
-      OMAPDSS: Add TPO TD043MTEA1 panel driver
-      OMAPDSS: Add NEC NL8048HL11 panel driver
-      OMAPDSS: panels: add Kconfig comment
-
- drivers/gpu/drm/omapdrm/omap_drv.c                 |    6 +-
- drivers/video/omap2/Kconfig                        |    1 +
- drivers/video/omap2/Makefile                       |    1 +
- drivers/video/omap2/displays-new/Kconfig           |   73 ++
- drivers/video/omap2/displays-new/Makefile          |   12 +
- .../video/omap2/displays-new/connector-analog-tv.c |  265 ++++
- drivers/video/omap2/displays-new/connector-dvi.c   |  351 +++++
- drivers/video/omap2/displays-new/connector-hdmi.c  |  375 ++++++
- drivers/video/omap2/displays-new/encoder-tfp410.c  |  267 ++++
- .../video/omap2/displays-new/encoder-tpd12s015.c   |  395 ++++++
- drivers/video/omap2/displays-new/panel-dpi.c       |  270 ++++
- drivers/video/omap2/displays-new/panel-dsi-cm.c    | 1336 ++++++++++++++=
-++++++
- .../omap2/displays-new/panel-lgphilips-lb035q02.c  |  358 ++++++
- .../omap2/displays-new/panel-nec-nl8048hl11.c      |  394 ++++++
- .../omap2/displays-new/panel-sharp-ls037v7dw01.c   |  324 +++++
- .../omap2/displays-new/panel-sony-acx565akm.c      |  865 +++++++++++++
- .../omap2/displays-new/panel-tpo-td043mtea1.c      |  646 ++++++++++
- drivers/video/omap2/displays/Kconfig               |    2 +-
- drivers/video/omap2/dss/apply.c                    |   14 +-
- drivers/video/omap2/dss/display.c                  |    1 +
- drivers/video/omap2/dss/dpi.c                      |   74 +-
- drivers/video/omap2/dss/dsi.c                      |   97 +-
- drivers/video/omap2/dss/dss.h                      |    4 -
- drivers/video/omap2/dss/hdmi.c                     |  238 +++-
- drivers/video/omap2/dss/output.c                   |   15 +-
- drivers/video/omap2/dss/rfbi.c                     |    4 +-
- drivers/video/omap2/dss/sdi.c                      |   82 +-
- drivers/video/omap2/dss/venc.c                     |   76 +-
- include/video/omap-panel-data.h                    |  209 +++
- include/video/omapdss.h                            |  192 ++-
- 30 files changed, 6911 insertions(+), 36 deletions(-)
- create mode 100644 drivers/video/omap2/displays-new/Kconfig
- create mode 100644 drivers/video/omap2/displays-new/Makefile
- create mode 100644 drivers/video/omap2/displays-new/connector-analog-tv.=
-c
- create mode 100644 drivers/video/omap2/displays-new/connector-dvi.c
- create mode 100644 drivers/video/omap2/displays-new/connector-hdmi.c
- create mode 100644 drivers/video/omap2/displays-new/encoder-tfp410.c
- create mode 100644 drivers/video/omap2/displays-new/encoder-tpd12s015.c
- create mode 100644 drivers/video/omap2/displays-new/panel-dpi.c
- create mode 100644 drivers/video/omap2/displays-new/panel-dsi-cm.c
- create mode 100644 drivers/video/omap2/displays-new/panel-lgphilips-lb03=
-5q02.c
- create mode 100644 drivers/video/omap2/displays-new/panel-nec-nl8048hl11=
-=2Ec
- create mode 100644 drivers/video/omap2/displays-new/panel-sharp-ls037v7d=
-w01.c
- create mode 100644 drivers/video/omap2/displays-new/panel-sony-acx565akm=
-=2Ec
- create mode 100644 drivers/video/omap2/displays-new/panel-tpo-td043mtea1=
-=2Ec
-
-
-------enig2LLIXEXVLCXFNRBFWUFMB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRvxOJAAoJEPo9qoy8lh71wtIP/0595SZ06agw2UU3GMDQbGBz
-qwaEvel1YyV9h5XO95gPVi2ecXqb3XNCcX0OQdkoYi3Zv29toNyemv+5kpcF/bwr
-YjJ/hx7YcD7dFp8bJJu6kgXs8NV6IqRrkDVqxkLdMMa+ONUseuuc4asGlcrlC1UK
-h2EFIiqOqe1jO8D3uUaQNBgOZwLbwTC+EiSY38mMAmA2fs2VIcyW9JS/pCDaob3s
-NdRZA7Miq4bJCqDmyo9c3wkk3j0m1eWCb7jSzhd085ygIJ+cK3ZaaMcsS2vM8uNp
-6qs2o+pBsB/8eW0IhtMgFAPhWHUjlNs99WX/qIs16v1DDwIa4pkqxSx0PsIFq7cd
-k5Oqk2+MdM04v/FU1dvQTvHdrCPushHIVOQmkSnJbryO5+EjLnOjfKaH9iL9XfTA
-CcrCF+Xf4ZGdN1B05SxscW/yHXHeUgBkVNARnuQDD7ipc1x4hYU2pxcOTVO7w23C
-ZNoXVZ9Rx1aPXQjevBYvCln+SPqHBRdaPkHuHQinW9/cCR/nWYyLEtMFbzhZDZ7b
-B/g2OPJP9uVDzyRwHpJY8RhGZSOL7NPs+XAthP/XbzNE5aKBDYNMkgvu1VPBva5P
-m9W19e+ZROw2Aszk+XxlvkOmGFX8efFRGmM4u8n/EOIjuEea755Ohj8f5S1uo8Mp
-UKWJ0B7MSK9wzRaoA8Ky
-=Anwg
------END PGP SIGNATURE-----
-
-------enig2LLIXEXVLCXFNRBFWUFMB--
+--- lnx-310-rc7.orig/drivers/video/aty/atyfb_base.c
++++ lnx-310-rc7/drivers/video/aty/atyfb_base.c
+@@ -58,6 +58,7 @@
+ #include <linux/slab.h>
+ #include <linux/vmalloc.h>
+ #include <linux/delay.h>
++#include <linux/compiler.h>
+ #include <linux/console.h>
+ #include <linux/fb.h>
+ #include <linux/init.h>
+@@ -531,8 +532,8 @@ static int correct_chipset(struct atyfb_
+ 	return 0;
+ }
+ 
+-static char ram_dram[] = "DRAM";
+-static char ram_resv[] = "RESV";
++static char ram_dram[] __maybe_unused = "DRAM";
++static char ram_resv[] __maybe_unused = "RESV";
+ #ifdef CONFIG_FB_ATY_GX
+ static char ram_vram[] = "VRAM";
+ #endif /* CONFIG_FB_ATY_GX */

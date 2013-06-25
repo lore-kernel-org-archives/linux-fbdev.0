@@ -1,230 +1,80 @@
-From: Jerome Glisse <j.glisse@gmail.com>
-Date: Fri, 21 Jun 2013 19:02:26 +0000
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Tue, 25 Jun 2013 09:23:21 +0000
 Subject: Re: [RFC PATCH v2] dmabuf-sync: Introduce buffer synchronization framework
-Message-Id: <CAH3drwZVhs=odjFdB_Mf+K0JLT5NSSbz5mP9aOS=5fx-PVdzSg@mail.gmail.com>
+Message-Id: <CAKMK7uEbkKWFcxu6zs+0P26S9aJrE5v2+b6Jzg7AhORsAg4+9w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130617182127.GM2718@n2100.arm.linux.org.uk>
-	<007301ce6be4$8d5c6040$a81520c0$%dae@samsung.com>
-	<20130618084308.GU2718@n2100.arm.linux.org.uk>
-	<008a01ce6c02$e00a9f50$a01fddf0$%dae@samsung.com>
-	<1371548849.4276.6.camel@weser.hi.pengutronix.de>
-	<008601ce6cb0$2c8cec40$85a6c4c0$%dae@samsung.com>
-	<1371637326.4230.24.camel@weser.hi.pengutronix.de>
-	<00ae01ce6cd9$f4834630$dd89d290$%dae@samsung.com>
-	<1371645247.4230.41.camel@weser.hi.pengutronix.de>
-	<CAAQKjZNJD4HpnJQ7iE+Gez36066M6U0YQeUEdA0+UcSOKqeghg@mail.gmail.com>
-	<20130619182925.GL2718@n2100.arm.linux.org.uk>
-	<00da01ce6d81$76eb3d60$64c1b820$%dae@samsung.com>
-	<1371714427.4230.64.camel@weser.hi.pengutronix.de>
-	<00db01ce6d8f$a3c23dd0$eb46b970$%dae@samsung.com>
-	<1371723063.4114.12.camel@weser.hi.pengutronix.de>
-	<010801ce6da7$896affe0$9c40ffa0$%dae@samsung.com>
-	<1371804843.4114.49.camel@weser.hi.pengutronix.de>
-	<CAAQKjZOxOMuL3zh_yV7tU2LBcZ7oVryiKa+LgjTM5HLY+va8zQ@mail.gmail.com>
-	<1371817628.5882.13.camel@weser.hi.pengutronix.de>
-	<CAAQKjZOeskLB7n6FM+bnB8n7ecuQM5k6uANXJXo=xk979f9s9Q@mail.gmail.com>
-In-Reply-To: <CAAQKjZOeskLB7n6FM+bnB8n7ecuQM5k6uANXJXo=xk979f9s9Q@mail.gmail.com>
+References: <1371112088-15310-1-git-send-email-inki.dae@samsung.com>
+	<1371467722-665-1-git-send-email-inki.dae@samsung.com>
+	<51BEF458.4090606@canonical.com>
+	<012501ce6b5b$3d39b0b0$b7ad1210$%dae@samsung.com>
+	<20130617133109.GG2718@n2100.arm.linux.org.uk>
+	<CAAQKjZO_t_kZkU46bUPTpoJs_oE1KkEqS2OTrTYjjJYZzBf+XA@mail.gmail.com>
+	<20130617154237.GJ2718@n2100.arm.linux.org.uk>
+	<CAKMK7uECS=eqNB-Ud6s=NvdYMPfxgJaGPbUx9hANfP6kb02j_w@mail.gmail.com>
+	<20130618104613.GX2718@n2100.arm.linux.org.uk>
+In-Reply-To: <20130618104613.GX2718@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Inki Dae <daeinki@gmail.com>
-Cc: Lucas Stach <l.stach@pengutronix.de>, linux-fbdev <linux-fbdev@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, DRI mailing list <dri-devel@lists.freedesktop.org>, Kyungmin Park <kyungmin.park@samsung.com>, "myungjoo.ham" <myungjoo.ham@samsung.com>, YoungJun Cho <yj44.cho@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Inki Dae <daeinki@gmail.com>, Maarten Lankhorst <maarten.lankhorst@canonical.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, DRI mailing list <dri-devel@lists.freedesktop.org>, Rob Clark <robdclark@gmail.com>, "myungjoo.ham" <myungjoo.ham@samsung.com>, YoungJun Cho <yj44.cho@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
 
-On Fri, Jun 21, 2013 at 12:55 PM, Inki Dae <daeinki@gmail.com> wrote:
-> 2013/6/21 Lucas Stach <l.stach@pengutronix.de>:
->> Hi Inki,
+On Tue, Jun 18, 2013 at 12:46 PM, Russell King - ARM Linux
+<linux@arm.linux.org.uk> wrote:
+>> > Note: the existing stuff does have the nice side effect of being able
+>> > to pass buffers which do not have a struct page * associated with them
+>> > through the dma_buf API - I think we can still preserve that by having
+>> > dma_buf provide a couple of new APIs to do the SG list map/sync/unmap,
+>> > but in any case we need to fix the existing API so that:
+>> >
+>> > dma_buf_map_attachment() becomes dma_buf_get_sg()
+>> > dma_buf_unmap_attachment() becomes dma_buf_put_sg()
+>> >
+>> > both getting rid of the DMA direction argument, and then we have four
+>> > new dma_buf calls:
+>> >
+>> > dma_buf_map_sg()
+>> > dma_buf_unmap_sg()
+>> > dma_buf_sync_sg_for_cpu()
+>> > dma_buf_sync_sg_for_device()
+>> >
+>> > which do the actual sg map/unmap via the DMA API *at the appropriate
+>> > time for DMA*.
 >>
->> please refrain from sending HTML Mails, it makes proper quoting without
->> messing up the layout everywhere pretty hard.
+>> Hm, my idea was to just add a dma_buf_sync_attchment for the device side
+>> syncing, since the cpu access stuff is already bracketed with the
+>> begin/end cpu access stuff. We might need a sync_for_cpu or so for mmap,
+>> but imo mmap support for dma_buf is a bit insane anyway, so I don't care
+>> too much about it.
 >>
+>> Since such dma mappings would be really longstanding in most cases anyway
+>> drivers could just map with BIDIRECTIONAL and do all the real flushing
+>> with the new sync stuff.
 >
-> Sorry about that. I should have used text mode.
->
->> Am Freitag, den 21.06.2013, 20:01 +0900 schrieb Inki Dae:
->> [...]
->>
->>>         Yeah, you'll some knowledge and understanding about the API
->>>         you are
->>>         working with to get things right. But I think it's not an
->>>         unreasonable
->>>         thing to expect the programmer working directly with kernel
->>>         interfaces
->>>         to read up on how things work.
->>>
->>>         Second thing: I'll rather have *one* consistent API for every
->>>         subsystem,
->>>         even if they differ from each other than having to implement
->>>         this
->>>         syncpoint thing in every subsystem. Remember: a single execbuf
->>>         in DRM
->>>         might reference both GEM objects backed by dma-buf as well
->>>         native SHM or
->>>         CMA backed objects. The dma-buf-mgr proposal already allows
->>>         you to
->>>         handle dma-bufs much the same way during validation than
->>>         native GEM
->>>         objects.
->>>
->>> Actually, at first I had implemented a fence helper framework based on
->>> reservation and dma fence to provide easy-use-interface for device
->>> drivers. However, that was wrong implemention: I had not only
->>> customized the dma fence but also not considered dead lock issue.
->>> After that, I have reimplemented it as dmabuf sync to solve dead
->>> issue, and at that time, I realized that we first need to concentrate
->>> on the most basic thing: the fact CPU and CPU, CPU and DMA, or DMA and
->>> DMA can access a same buffer, And the fact simple is the best, and the
->>> fact we need not only kernel side but also user side interfaces. After
->>> that, I collected what is the common part for all subsystems, and I
->>> have devised this dmabuf sync framework for it. I'm not really
->>> specialist in Desktop world. So question. isn't the execbuf used only
->>> for the GPU? the gpu has dedicated video memory(VRAM) so it needs
->>> migration mechanism between system memory and the dedicated video
->>> memory, and also to consider ordering issue while be migrated.
->>>
->>
->> Yeah, execbuf is pretty GPU specific, but I don't see how this matters
->> for this discussion. Also I don't see a big difference between embedded
->> and desktop GPUs. Buffer migration is more of a detail here. Both take
->> command stream that potentially reference other buffers, which might be
->> native GEM or dma-buf backed objects. Both have to make sure the buffers
->> are in the right domain (caches cleaned and address mappings set up) and
->> are available for the desired operation, meaning you have to sync with
->> other DMA engines and maybe also with CPU.
->
-> Yeah, right. Then, in case of desktop gpu, does't it need additional
-> something to do when a buffer/s is/are migrated from system memory to
-> video memory domain, or from video memory to system memory domain? I
-> guess the below members does similar thing, and all other DMA devices
-> would not need them:
->         struct fence {
->                   ...
->                   unsigned int context, seqno;
->                   ...
->         };
->
-> And,
->        struct seqno_fence {
->                  ...
->                  uint32_t seqno_ofs;
->                  ...
->        };
->
->>
->> The only case where sync isn't clearly defined right now by the current
->> API entrypoints is when you access memory through the dma-buf fallback
->> mmap support, which might happen with some software processing element
->> in a video pipeline or something. I agree that we will need a userspace
->> interface here, but I think this shouldn't be yet another sync object,
->> but rather more a prepare/fini_cpu_access ioctl on the dma-buf which
->> hooks into the existing dma-fence and reservation stuff.
->
-> I think we don't need addition ioctl commands for that. I am thinking
-> of using existing resources as possible. My idea also is similar in
-> using the reservation stuff to your idea because my approach also
-> should use the dma-buf resource. However, My idea is that a user
-> process, that wants buffer synchronization with the other, sees a sync
-> object as a file descriptor like dma-buf does. The below shows simple
-> my idea about it:
->
-> ioctl(dmabuf_fd, DMA_BUF_IOC_OPEN_SYNC, &sync);
->
-> flock(sync->fd, LOCK_SH); <- LOCK_SH means a shared lock.
-> CPU access for read
-> flock(sync->fd, LOCK_UN);
->
-> Or
->
-> flock(sync->fd, LOCK_EX); <- LOCK_EX means an exclusive lock
-> CPU access for write
-> flock(sync->fd, LOCK_UN);
->
-> close(sync->fd);
->
-> As you know, that's similar to dmabuf export feature.
->
-> In addition, a more simple idea,
-> flock(dmabuf_fd, LOCK_SH/EX);
-> CPU access for read/write
-> flock(dmabuf_fd, LOCK_UN);
->
-> However, I'm not sure that the above examples could be worked well,
-> and there are no problems yet: actually, I don't fully understand
-> flock mechanism, so looking into it.
->
->>
->>>
->>>         And to get back to my original point: if you have more than
->>>         one task
->>>         operating together on a buffer you absolutely need some kind
->>>         of real IPC
->>>         to sync them up and do something useful. Both you syncpoints
->>>         and the
->>>         proposed dma-fences only protect the buffer accesses to make
->>>         sure
->>>         different task don't stomp on each other. There is nothing in
->>>         there to
->>>         make sure that the output of your pipeline is valid. You have
->>>         to take
->>>         care of that yourself in userspace. I'll reuse your example to
->>>         make it
->>>         clear what I mean:
->>>
->>>         Task A                                         Task B
->>>         ------                                         -------
->>>         dma_buf_sync_lock(buf1)
->>>         CPU write buf1
->>>         dma_buf_sync_unlock(buf1)
->>>                   ---------schedule Task A again-------
->>>         dma_buf_sync_lock(buf1)
->>>         CPU write buf1
->>>         dma_buf_sync_unlock(buf1)
->>>                     ---------schedule Task B---------
->>>                                                        qbuf(buf1)
->>>
->>>         dma_buf_sync_lock(buf1)
->>>                                                        ....
->>>
->>>         This is what can happen if you don't take care of proper
->>>         syncing. Task A
->>>         writes something to the buffer in expectation that Task B will
->>>         take care
->>>         of it, but before Task B even gets scheduled Task A overwrites
->>>         the
->>>         buffer again. Not what you wanted, isn't it?
->>>
->>> Exactly wrong example. I had already mentioned about that. "In case
->>> that data flow goes from A to B, it needs some kind of IPC between the
->>> two tasks every time"  So again, your example would have no any
->>> problem in case that *two tasks share the same buffer but these tasks
->>> access the buffer(buf1) as write, and data of the buffer(buf1) isn't
->>> needed to be shared*.  They just need to use the buffer as *storage*.
->>> So All they want is to avoid stomping on the buffer in this case.
->>>
->> Sorry, but I don't see the point. If no one is interested in the data of
->> the buffer, why are you sharing it in the first place?
->>
->
-> Just used as a storage. i.e., Task A fills the buffer with "AAAAAA"
-> using CPU, And Task B fills the buffer with "BBBBBB" using DMA. They
-> don't share data of the buffer, but they share *memory region* of the
-> buffer. That would be very useful for the embedded systems with very
-> small size system memory.
+> Note that the DMA API debug doesn't allow you to change the direction
+> argument on an existing mapping (neither should it, again this is
+> documented in the DMA API stuff in Documentation/).  This is where you
+> would need the complete set of four functions I mention above which
+> reflect the functionality of the DMA API.
 
-Just so i understand. You want to share backing memory, you don't want
-to share content ie you want to do memory management in userspace.
-This sounds wrong on so many level (not even considering the security
-implication).
+[Been travelling a bit, hence the delay.]
 
-If Task A need memory and then can release it for Task B usage that
-should be the role of kernel memory management which of course needs
-synchronization btw A and B. But in no case this should be done using
-dma-buf. dma-buf is for sharing content btw different devices not
-sharing resources.
+Just a quick question on your assertion that we need all four
+functions: Since we already have begin/end_cpu_access functions
+(intention here was to allow the dma_buf exporter to ensure the memory
+is pinned, e.g. for swapable gem objects, but also allow cpu cache
+flushing if required) do we still need the sync_sg_for_cpu? At least
+with i915 as the exporter we currently hide the cflushing behind our
+begin_cpu_access callback. For device dma we currently punt on it due
+to lack of the dma_buf_sync_sg_for_device interface.
 
-
-Also don't over complicate the vram case, just consider desktop gpu as
-using system memory directly. They can do it and they do it. Migration
-to vram is orthogonal to all this, it's an optimization so to speak.
-
-Cheers,
-Jerome
+Aside: I know that i915 doing the clflushing dance itself is a bit
+ugly, but thus far we've been the only guys on the x86 block with
+non-coherent dma. But it sounds like a bunch of other blocks on Atom
+SoCs have similar needs, so I guess it would make sense to move that
+into the dma layer.
+-Daniel
+--
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch

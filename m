@@ -1,78 +1,94 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Date: Wed, 26 Jun 2013 15:02:21 +0000
-Subject: [PATCH v3 0/5] Generic PHY driver for the Exynos SoC MIPI CSI-2/DSI DPHYs
-Message-Id: <1372258946-15607-1-git-send-email-s.nawrocki@samsung.com>
+From: Josh Boyer <jwboyer@redhat.com>
+Date: Tue, 25 Jun 2013 14:17:04 +0000
+Subject: Re: [PATCH] Handle efifb with no lfb_base better.
+Message-Id: <20130625141703.GB9410@hansolo.jdub.homelinux.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1366730598-13942-1-git-send-email-pjones@redhat.com>
+In-Reply-To: <1366730598-13942-1-git-send-email-pjones@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Peter Jones <pjones@redhat.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This patch series adds a simple driver for the Samsung S5P/Exynos SoC
-series MIPI CSI-2 receiver (MIPI CSIS) and MIPI DSI transmitter (MIPI
-DSIM) DPHYs, using the generic PHY framework [1]. Previously the MIPI
-CSIS and MIPI DSIM used a platform callback to control the PHY power
-enable and reset bits. The platform callback can now be dropped and
-those drivers don't need any calls back to the platform code, which
-makes migration to the device tree complete for MIPI CSIS.
+On Tue, Apr 23, 2013 at 11:23:18AM -0400, Peter Jones wrote:
+> Right now we get a WARN from platform_device_unregister() because our
+> platform_device has no ->release function.  This is clearly wrong, but
+> we should be warning so we can figure out what happened, as this failure
+> results in bug reports.  So WARN() about the real problem, and use the
+> registration function that gives us a default release() function.
+>=20
+> This fixes the tracback reported at
+> https://bugzilla.redhat.com/show_bug.cgi?id=840621 , though it does not
+> fix the actual /problem/ the user is seeing.
+>=20
+> Signed-off-by: Peter Jones <pjones@redhat.com>
 
-Changes since v2:
- - adapted to the generic PHY API v9: use phy_set/get_drvdata(),
- - fixed of_xlate callback to return ERR_PTR() instead of NULL,
- - namespace cleanup, put "GPL v2" as MODULE_LICENSE, removed pr_debug,
- - removed phy id check in __set_phy_state().
+Is anyone in the fdbdev camp looking at this?  It's been 2 months since
+this was sent out without any comments and I don't see it in the tree
+anywhere.
 
-Patches 2...3/5 are unchanged, description of patch 5/5 has been
-updated.
+josh
 
-Changes since v1:
- - enabled build as module and with CONFIG_OF disabled,
- - added phy_id enum,
- - of_address_to_resource() replaced with platform_get_resource(),
- - adapted to changes in the PHY API v7, v8 - added phy labels,
- - added MODULE_DEVICE_TABLE() entry,
- - the driver file renamed to phy-exynos-mipi-video.c,
- - changed DT compatible string to "samsung,s5pv210-mipi-video-phy",
- - corrected the compatible property's description.
- - patch 3/5 "video: exynos_dsi: Use generic PHY driver" replaced
-   with a patch modifying the MIPI DSIM driver which is currently
-   in mainline.
-
-This series depends on the generic PHY framework [1]. It can be browsed at:
- http://git.linuxtv.org/snawrocki/samsung.git/exynos-mipi-phy
-This branch is based on the 'for-next' branch from:
- git://git.kernel.org/pub/scm/linux/kernel/git/kgene/linux-samsung.git
-and the patch series:
- http://www.spinics.net/lists/arm-kernel/msg254667.html
-
-[1] https://lkml.org/lkml/2013/6/26/259
-
-Sylwester Nawrocki (5):
-  phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
-  ARM: dts: Add MIPI PHY node to exynos4.dtsi
-  video: exynos_mipi_dsim: Use the generic PHY driver
-  exynos4-is: Use the generic MIPI CSIS PHY driver
-  ARM: Samsung: Remove the MIPI PHY setup code
-
- .../phy/samsung,s5pv210-mipi-video-phy.txt         |   14 ++
- arch/arm/boot/dts/exynos4.dtsi                     |   10 ++
- arch/arm/mach-exynos/include/mach/regs-pmu.h       |    5 -
- arch/arm/mach-s5pv210/include/mach/regs-clock.h    |    4 -
- arch/arm/plat-samsung/Kconfig                      |    5 -
- arch/arm/plat-samsung/Makefile                     |    1 -
- arch/arm/plat-samsung/setup-mipiphy.c              |   60 -------
- drivers/media/platform/exynos4-is/mipi-csis.c      |   16 +-
- drivers/phy/Kconfig                                |    9 ++
- drivers/phy/Makefile                               |    3 +-
- drivers/phy/phy-exynos-mipi-video.c                |  170 ++++++++++++++++++++
- drivers/video/exynos/exynos_mipi_dsi.c             |   18 +--
- include/linux/platform_data/mipi-csis.h            |   11 +-
- include/video/exynos_mipi_dsim.h                   |    6 +-
- 14 files changed, 233 insertions(+), 99 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/phy/samsung,s5pv210-mipi-video-phy.txt
- delete mode 100644 arch/arm/plat-samsung/setup-mipiphy.c
- create mode 100644 drivers/phy/phy-exynos-mipi-video.c
-
---
-1.7.9.5
-
+> ---
+>  drivers/video/efifb.c | 15 ++++++++-------
+>  1 file changed, 8 insertions(+), 7 deletions(-)
+>=20
+> diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
+> index 50fe668..390b61b 100644
+> --- a/drivers/video/efifb.c
+> +++ b/drivers/video/efifb.c
+> @@ -285,6 +285,7 @@ static void efifb_destroy(struct fb_info *info)
+>  {
+>  	if (info->screen_base)
+>  		iounmap(info->screen_base);
+> +	fb_dealloc_cmap(&info->cmap);
+>  	if (request_mem_succeeded)
+>  		release_mem_region(info->apertures->ranges[0].base,
+>  				   info->apertures->ranges[0].size);
+> @@ -382,6 +383,8 @@ static int __init efifb_probe(struct platform_device =
+*dev)
+>  	if (!screen_info.pages)
+>  		screen_info.pages =3D 1;
+>  	if (!screen_info.lfb_base) {
+> +		WARN(1, KERN_WARNING, "invalid framebuffer address for "
+> +				      "device '%s'\n", dev_name(dev));
+>  		printk(KERN_DEBUG "efifb: invalid framebuffer address\n");
+>  		return -ENODEV;
+>  	}
+> @@ -544,9 +547,7 @@ static struct platform_driver efifb_driver =3D {
+>  	},
+>  };
+> =20
+> -static struct platform_device efifb_device =3D {
+> -	.name	=3D "efifb",
+> -};
+> +static struct platform_device *efifb_device;
+> =20
+>  static int __init efifb_init(void)
+>  {
+> @@ -571,9 +572,9 @@ static int __init efifb_init(void)
+>  	if (!screen_info.lfb_linelength)
+>  		return -ENODEV;
+> =20
+> -	ret =3D platform_device_register(&efifb_device);
+> -	if (ret)
+> -		return ret;
+> +	efifb_device =3D platform_device_register_simple("efifb", 0, NULL, 0);
+> +	if (IS_ERROR(efifb_device))
+> +		return PTR_ERR(efifb_device);
+> =20
+>  	/*
+>  	 * This is not just an optimization.  We will interfere
+> @@ -582,7 +583,7 @@ static int __init efifb_init(void)
+>  	 */
+>  	ret =3D platform_driver_probe(&efifb_driver, efifb_probe);
+>  	if (ret) {
+> -		platform_device_unregister(&efifb_device);
+> +		platform_device_unregister(efifb_device);
+>  		return ret;
+>  	}
+> =20
+> --=20
+> 1.8.1.4
+>=20

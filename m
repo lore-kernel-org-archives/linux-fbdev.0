@@ -1,121 +1,57 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Date: Tue, 25 Jun 2013 14:21:48 +0000
-Subject: [PATCH v2 3/5] video: exynos_mipi_dsim: Use generic PHY driver
-Message-Id: <1372170110-12993-3-git-send-email-s.nawrocki@samsung.com>
+From: Felipe Balbi <balbi@ti.com>
+Date: Tue, 25 Jun 2013 15:08:13 +0000
+Subject: Re: [PATCH v2 3/5] video: exynos_mipi_dsim: Use generic PHY driver
+Message-Id: <20130625150813.GB21334@arwen.pp.htv.fi>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="dTy3Mrz/UPE2dbVg"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1372170110-12993-1-git-send-email-s.nawrocki@samsung.com>
-In-Reply-To: <1372170110-12993-1-git-send-email-s.nawrocki@samsung.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <1372170110-12993-3-git-send-email-s.nawrocki@samsung.com>
+In-Reply-To: <1372170110-12993-3-git-send-email-s.nawrocki@samsung.com>
 To: linux-arm-kernel@lists.infradead.org
 
-Use the generic PHY API instead of the platform callback to control
-the MIPI DSIM DPHY. The 'phy_label' field is added to the platform
-data structure to allow PHY lookup on non-dt platforms.
+--dTy3Mrz/UPE2dbVg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- drivers/video/exynos/exynos_mipi_dsi.c |   18 +++++++++---------
- include/video/exynos_mipi_dsim.h       |    6 ++++--
- 2 files changed, 13 insertions(+), 11 deletions(-)
+Hi,
 
-diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
-index 32e5406..1f96004 100644
---- a/drivers/video/exynos/exynos_mipi_dsi.c
-+++ b/drivers/video/exynos/exynos_mipi_dsi.c
-@@ -156,8 +156,7 @@ static int exynos_mipi_dsi_blank_mode(struct mipi_dsim_device *dsim, int power)
- 		exynos_mipi_regulator_enable(dsim);
- 
- 		/* enable MIPI-DSI PHY. */
--		if (dsim->pd->phy_enable)
--			dsim->pd->phy_enable(pdev, true);
-+		phy_power_on(dsim->phy);
- 
- 		clk_enable(dsim->clock);
- 
-@@ -373,6 +372,10 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
-+	dsim->phy = devm_phy_get(&pdev->dev, dsim_pd->phy_label);
-+	if (IS_ERR(dsim->phy))
-+		return PTR_ERR(dsim->phy);
-+
- 	dsim->clock = devm_clk_get(&pdev->dev, "dsim0");
- 	if (IS_ERR(dsim->clock)) {
- 		dev_err(&pdev->dev, "failed to get dsim clock source\n");
-@@ -439,8 +442,7 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
- 	exynos_mipi_regulator_enable(dsim);
- 
- 	/* enable MIPI-DSI PHY. */
--	if (dsim->pd->phy_enable)
--		dsim->pd->phy_enable(pdev, true);
-+	phy_power_on(dsim->phy);
- 
- 	exynos_mipi_update_cfg(dsim);
- 
-@@ -504,9 +506,8 @@ static int exynos_mipi_dsi_suspend(struct device *dev)
- 	if (client_drv && client_drv->suspend)
- 		client_drv->suspend(client_dev);
- 
--	/* enable MIPI-DSI PHY. */
--	if (dsim->pd->phy_enable)
--		dsim->pd->phy_enable(pdev, false);
-+	/* disable MIPI-DSI PHY. */
-+	phy_power_off(dsim->phy);
- 
- 	clk_disable(dsim->clock);
- 
-@@ -536,8 +537,7 @@ static int exynos_mipi_dsi_resume(struct device *dev)
- 	exynos_mipi_regulator_enable(dsim);
- 
- 	/* enable MIPI-DSI PHY. */
--	if (dsim->pd->phy_enable)
--		dsim->pd->phy_enable(pdev, true);
-+	phy_power_on(dsim->phy);
- 
- 	clk_enable(dsim->clock);
- 
-diff --git a/include/video/exynos_mipi_dsim.h b/include/video/exynos_mipi_dsim.h
-index 89dc88a..fd69beb 100644
---- a/include/video/exynos_mipi_dsim.h
-+++ b/include/video/exynos_mipi_dsim.h
-@@ -216,6 +216,7 @@ struct mipi_dsim_config {
-  *	automatically.
-  * @e_clk_src: select byte clock source.
-  * @pd: pointer to MIPI-DSI driver platform data.
-+ * @phy: pointer to the generic PHY
-  */
- struct mipi_dsim_device {
- 	struct device			*dev;
-@@ -236,6 +237,7 @@ struct mipi_dsim_device {
- 	bool				suspended;
- 
- 	struct mipi_dsim_platform_data	*pd;
-+	struct phy			*phy;
- };
- 
- /*
-@@ -248,7 +250,7 @@ struct mipi_dsim_device {
-  * @enabled: indicate whether mipi controller got enabled or not.
-  * @lcd_panel_info: pointer for lcd panel specific structure.
-  *	this structure specifies width, height, timing and polarity and so on.
-- * @phy_enable: pointer to a callback controlling D-PHY enable/reset
-+ * @phy_label: the generic PHY label
-  */
- struct mipi_dsim_platform_data {
- 	char				lcd_panel_name[PANEL_NAME_SIZE];
-@@ -257,7 +259,7 @@ struct mipi_dsim_platform_data {
- 	unsigned int			enabled;
- 	void				*lcd_panel_info;
- 
--	int (*phy_enable)(struct platform_device *pdev, bool on);
-+	const char 			*phy_label;
- };
- 
- /*
--- 
-1.7.9.5
+On Tue, Jun 25, 2013 at 04:21:48PM +0200, Sylwester Nawrocki wrote:
+> Use the generic PHY API instead of the platform callback to control
+> the MIPI DSIM DPHY. The 'phy_label' field is added to the platform
+> data structure to allow PHY lookup on non-dt platforms.
+>=20
+> Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 
+this is awesome :-)
+
+Acked-by: Felipe Balbi <balbi@ti.com>
+
+--=20
+balbi
+
+--dTy3Mrz/UPE2dbVg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJRybJdAAoJEIaOsuA1yqREvw4QAJNdJCiPv3WGbVora7qyh0zc
+Ch97HxJ1pgzjJOKK8f/WjuXaYK1HCl1Ly/PxWSRsERPk7l83HkQImebOCJl3XwFj
+R63wGnO10FoHo2ygw1Rw7MwiLl8L/1FPkVct75Z4IPPPuMIRrE0AEsvYomUEwCzp
+hv6M1mEc37So1u0Dcsc5bc25vbHp5U8hxCTB7/W9mUcWkwgvHoPShGQFQlCDyc7A
+jDoQc5KghJaQ9hinTfx8aoBdrJhl+nKPz1eeyuXJq9rHxh8UMayxzaIGeQTYakaq
+FHQwkXfQPd0ZHFSLjNkQAzQ0GGUDNWqiOgWnpE7lGeu+MPZd6w3MoJ9kBWZdq0UE
+h8uAcJd4dVZtzwWargRjHUWYhvaupUAJM5GWLE6Eum4Y18jNN1bOjoWOIH2oDhCo
+fOVhwL+uCYKAfeJdkvGisON5UPs8GixHVXGyOk9kdLl5e5sA5orOIfJLGMaXrCmB
+31l/C9fA2oSyDfgYyUFJ8pXAO+IFwU7gr12AMVYqIK8+gfwta75f5XY1NuesoOw+
+kWrKqE82ey6N+puR8O2Z+RZHxI4Z0Wh7BBag8qQjgh7dDfWfAIRsSclvm6SNENs+
+smC5NViiIsg7NkWGMl/zawaJMG/qs0Z18zWJmhAnuuiT9jPX9LUCd0NNtw16YeeN
+oHA+ftgU7Vgr7lMjwb/H
+=AUJ2
+-----END PGP SIGNATURE-----
+
+--dTy3Mrz/UPE2dbVg--

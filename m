@@ -1,77 +1,121 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 26 Jun 2013 12:18:02 +0000
-Subject: Re: [PATCH] uvesafb: Correct/simplify warning message
-Message-Id: <51CADBFA.6020808@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2LXCRFQFWAIUFIIXGSNBI"
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Date: Tue, 25 Jun 2013 14:21:48 +0000
+Subject: [PATCH v2 3/5] video: exynos_mipi_dsim: Use generic PHY driver
+Message-Id: <1372170110-12993-3-git-send-email-s.nawrocki@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366380325-2038-1-git-send-email-bp@alien8.de>
-In-Reply-To: <1366380325-2038-1-git-send-email-bp@alien8.de>
-To: linux-fbdev@vger.kernel.org
+References: <1372170110-12993-1-git-send-email-s.nawrocki@samsung.com>
+In-Reply-To: <1372170110-12993-1-git-send-email-s.nawrocki@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-------enig2LXCRFQFWAIUFIIXGSNBI
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Use the generic PHY API instead of the platform callback to control
+the MIPI DSIM DPHY. The 'phy_label' field is added to the platform
+data structure to allow PHY lookup on non-dt platforms.
 
-On 19/04/13 17:05, Borislav Petkov wrote:
-> From: Borislav Petkov <bp@suse.de>
->=20
-> Streamline it a bit. No functional change.
->=20
-> Signed-off-by: Borislav Petkov <bp@suse.de>
-> Cc: Wang YanQing <udknight@gmail.com>
-> Cc: Michal Januszewski <spock@gentoo.org>
-> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-> Cc: linux-fbdev@vger.kernel.org
-> ---
->  drivers/video/uvesafb.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-> index d4284458377e..a309f9fabe8b 100644
-> --- a/drivers/video/uvesafb.c
-> +++ b/drivers/video/uvesafb.c
-> @@ -819,8 +819,8 @@ static int uvesafb_vbe_init(struct fb_info *info)
->  	if (par->pmi_setpal || par->ypan) {
->  		if (__supported_pte_mask & _PAGE_NX) {
->  			par->pmi_setpal =3D par->ypan =3D 0;
-> -			printk(KERN_WARNING "uvesafb: NX protection is actively."
-> -				"We have better not to use the PMI.\n");
-> +			printk(KERN_WARNING "uvesafb: NX protection is active, "
-> +					    "better not use the PMI.\n");
->  		} else {
->  			uvesafb_vbe_getpmi(task, par);
->  		}
->=20
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ drivers/video/exynos/exynos_mipi_dsi.c |   18 +++++++++---------
+ include/video/exynos_mipi_dsim.h       |    6 ++++--
+ 2 files changed, 13 insertions(+), 11 deletions(-)
 
-I've added this to my fbdev-3.11 branch.
+diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
+index 32e5406..1f96004 100644
+--- a/drivers/video/exynos/exynos_mipi_dsi.c
++++ b/drivers/video/exynos/exynos_mipi_dsi.c
+@@ -156,8 +156,7 @@ static int exynos_mipi_dsi_blank_mode(struct mipi_dsim_device *dsim, int power)
+ 		exynos_mipi_regulator_enable(dsim);
+ 
+ 		/* enable MIPI-DSI PHY. */
+-		if (dsim->pd->phy_enable)
+-			dsim->pd->phy_enable(pdev, true);
++		phy_power_on(dsim->phy);
+ 
+ 		clk_enable(dsim->clock);
+ 
+@@ -373,6 +372,10 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
++	dsim->phy = devm_phy_get(&pdev->dev, dsim_pd->phy_label);
++	if (IS_ERR(dsim->phy))
++		return PTR_ERR(dsim->phy);
++
+ 	dsim->clock = devm_clk_get(&pdev->dev, "dsim0");
+ 	if (IS_ERR(dsim->clock)) {
+ 		dev_err(&pdev->dev, "failed to get dsim clock source\n");
+@@ -439,8 +442,7 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 	exynos_mipi_regulator_enable(dsim);
+ 
+ 	/* enable MIPI-DSI PHY. */
+-	if (dsim->pd->phy_enable)
+-		dsim->pd->phy_enable(pdev, true);
++	phy_power_on(dsim->phy);
+ 
+ 	exynos_mipi_update_cfg(dsim);
+ 
+@@ -504,9 +506,8 @@ static int exynos_mipi_dsi_suspend(struct device *dev)
+ 	if (client_drv && client_drv->suspend)
+ 		client_drv->suspend(client_dev);
+ 
+-	/* enable MIPI-DSI PHY. */
+-	if (dsim->pd->phy_enable)
+-		dsim->pd->phy_enable(pdev, false);
++	/* disable MIPI-DSI PHY. */
++	phy_power_off(dsim->phy);
+ 
+ 	clk_disable(dsim->clock);
+ 
+@@ -536,8 +537,7 @@ static int exynos_mipi_dsi_resume(struct device *dev)
+ 	exynos_mipi_regulator_enable(dsim);
+ 
+ 	/* enable MIPI-DSI PHY. */
+-	if (dsim->pd->phy_enable)
+-		dsim->pd->phy_enable(pdev, true);
++	phy_power_on(dsim->phy);
+ 
+ 	clk_enable(dsim->clock);
+ 
+diff --git a/include/video/exynos_mipi_dsim.h b/include/video/exynos_mipi_dsim.h
+index 89dc88a..fd69beb 100644
+--- a/include/video/exynos_mipi_dsim.h
++++ b/include/video/exynos_mipi_dsim.h
+@@ -216,6 +216,7 @@ struct mipi_dsim_config {
+  *	automatically.
+  * @e_clk_src: select byte clock source.
+  * @pd: pointer to MIPI-DSI driver platform data.
++ * @phy: pointer to the generic PHY
+  */
+ struct mipi_dsim_device {
+ 	struct device			*dev;
+@@ -236,6 +237,7 @@ struct mipi_dsim_device {
+ 	bool				suspended;
+ 
+ 	struct mipi_dsim_platform_data	*pd;
++	struct phy			*phy;
+ };
+ 
+ /*
+@@ -248,7 +250,7 @@ struct mipi_dsim_device {
+  * @enabled: indicate whether mipi controller got enabled or not.
+  * @lcd_panel_info: pointer for lcd panel specific structure.
+  *	this structure specifies width, height, timing and polarity and so on.
+- * @phy_enable: pointer to a callback controlling D-PHY enable/reset
++ * @phy_label: the generic PHY label
+  */
+ struct mipi_dsim_platform_data {
+ 	char				lcd_panel_name[PANEL_NAME_SIZE];
+@@ -257,7 +259,7 @@ struct mipi_dsim_platform_data {
+ 	unsigned int			enabled;
+ 	void				*lcd_panel_info;
+ 
+-	int (*phy_enable)(struct platform_device *pdev, bool on);
++	const char 			*phy_label;
+ };
+ 
+ /*
+-- 
+1.7.9.5
 
- Tomi
-
-
-
-------enig2LXCRFQFWAIUFIIXGSNBI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRytv6AAoJEPo9qoy8lh71EDcP/2DFJEs/YivTRKcMYVHax2rT
-j7U0x6cJNYB1AcOui6ID4l93F/3nnld0MjLtgh35tFJz6MAZRWFRXGQTeZjgai/9
-ekuPxzNzzuiwA+8EI4GR2xewmDR+mo/HjaPwjlz3HJ0KWOp8m2SBPO12UFIT6uSd
-/wKHp9sJv7UTpziIKXHiIEMOKesMqHTNJKbxEejRfu0Y+4eJWc6JC8nJlimJbrO2
-sdhhOz7P677QhResW/2GwNhnmCDrLSckXIdMEY7wFv9zlrCUNoHibulttViLbXzu
-b4apH1UZwX2VWVAa8HAZmbWs3BcfeMUJHsZKodP4QRI5BGIhGguXv5Df8KwLxUz0
-xSFr5MK21luywXvXPq1eWsA5X2GSxDL0osE5PoN1bFbLyia1xC4MSB4miFyrjhR4
-1Ue3GfH4KqrQVxysBcop29mmBRaMWbHRBk6yfx4wL0dlzlAZH91Z6m8IQp8YU29+
-GVtTMZ7dUy7Hu+nWuTaoLDBXXmChlB6U5fEKbgMLBRFGtPZXaxu6YWz5XSPO9Jpk
-gAJYWfMomMGRavCI1xkil8R9rutT32hpSbLs0ferL+13+4nroaiwvNoOxkKuM0/V
-sC7t393yIsf1pXhPrQVzuVdmTf3onp9IXhMzmk1SsSDI4cwgxx38U3Ei55b5OvPT
-Iktrl7UyeeHYG5rD1pa4
-=uopS
------END PGP SIGNATURE-----
-
-------enig2LXCRFQFWAIUFIIXGSNBI--

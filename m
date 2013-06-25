@@ -1,59 +1,45 @@
-From: Hector Palacios <hector.palacios@digi.com>
-Date: Tue, 18 Jun 2013 08:45:58 +0000
-Subject: Re: [PATCH] video: mxsfb: fix color settings for 18bit data bus and 32bpp
-Message-Id: <51C01E46.8040506@digi.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 25 Jun 2013 14:22:40 +0000
+Subject: [PATCH 12/23] video: da8xx-fb: fix 24bpp raster configuration
+Message-Id: <1372170171-9561-13-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <519E03B0.1080006@digi.com> <519F4435.5010703@digi.com>
- <201305241300.25461.jbe@pengutronix.de>
- <201305241533.19941.jbe@pengutronix.de> <20130607072103.GF14209@lukather>
- <51B18BA0.50506@digi.com> <20130607074200.GG14209@lukather>
- <51B1957F.40104@digi.com> <20130607090228.GI14209@lukather>
- <20130618083229.GC15037@lukather>
-In-Reply-To: <20130618083229.GC15037@lukather>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-On 06/18/2013 10:32 AM, maxime.ripard@free-electrons.com wrote:
-> Hi Hector,
->
-> On Fri, Jun 07, 2013 at 11:02:28AM +0200, maxime.ripard@free-electrons.co=
-m wrote:
->> On Fri, Jun 07, 2013 at 10:10:39AM +0200, Hector Palacios wrote:
->>> For a combination of 18bit LCD data bus width and a color
->>> mode of 32bpp, the driver was setting the color mapping to
->>> rgb666, which is wrong, as the color in memory realy has an
->>> rgb888 layout.
->>>
->>> This patch also removes the setting of flag CTRL_DF24 that
->>> makes the driver dimiss the upper 2 bits when handling 32/24bpp
->>> colors in a diplay with 18bit data bus width. This flag made
->>> true color images display wrong in such configurations.
->>>
->>> Finally, the color mapping rgb666 has also been removed as nobody
->>> is using it and high level applications like Qt5 cannot work
->>> with it either.
->>>
->>> Reference: https://lkml.org/lkml/2013/5/23/220
->>> Signed-off-by: Hector Palacios <hector.palacios@digi.com>
->>> Acked-by: Juergen Beisert <jbe@pengutronix.de>
->>
->> Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
->>
->> Please also note that fbdev is now maintained by Jean Christophe
->> Plagniol-Villard (plagnioj@jcrosoft.com, in CC), and that he is away
->> until the 10th of June, so maybe it should be safe to resend it to him
->> after this date.
->
-> It seems like Jean-Christophe is back online, maybe you should resend
-> him the patch now, it would be great to have it for 3.11.
+From: Manjunathappa, Prakash <prakash.pm@ti.com>
 
-I just resent it. Thanks for the reminder.
+Set only LCD_V2_TFT_24BPP_MODE bit for 24bpp and LCD_V2_TFT_24BPP_UNPACK
+bit along with LCD_V2_TFT_24BPP_MODE for 32bpp configuration.
 
---=20
-H=E9ctor Palacios
+Patch is tested on am335x-evm for 24bpp and da850-evm for 16bpp
+configurations.
 
-Best regards,
---
-Hector Palacios
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
+---
+ drivers/video/da8xx-fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 35a33ca..7f92f37 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -550,10 +550,10 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+ 	case 4:
+ 	case 16:
+ 		break;
+-	case 24:
+-		reg |= LCD_V2_TFT_24BPP_MODE;
+ 	case 32:
+ 		reg |= LCD_V2_TFT_24BPP_UNPACK;
++	case 24:
++		reg |= LCD_V2_TFT_24BPP_MODE;
+ 		break;
+ 
+ 	case 8:
+-- 
+1.7.0.4
+

@@ -1,7 +1,7 @@
 From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 25 Jun 2013 14:22:48 +0000
-Subject: [PATCH 20/23] video: da8xx-fb: ensure pdata only for non-dt
-Message-Id: <1372170171-9561-21-git-send-email-detheridge@ti.com>
+Date: Tue, 25 Jun 2013 14:22:49 +0000
+Subject: [PATCH 21/23] video: da8xx-fb: setup struct lcd_ctrl_config for dt
+Message-Id: <1372170171-9561-22-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,28 +10,69 @@ To: linux-fbdev@vger.kernel.org
 
 From: Afzal Mohammed <afzal@ti.com>
 
-This driver is DT probe-able, hence ensure presence of platform data
-only for non-DT boot.
+strcut lcd_ctrl_config information required for driver is currently
+obtained via platform data. To handle DT probing, create
+lcd_ctrl_config and populate it with default values, these values are
+sufficient for the panels so far used with this controller to work.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- drivers/video/da8xx-fb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/da8xx-fb.c |   34 +++++++++++++++++++++++++++++++++-
+ 1 files changed, 33 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 0c68712..1c1a616 100644
+index 1c1a616..5455682 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -1303,7 +1303,7 @@ static int fb_probe(struct platform_device *device)
- 	int ret;
- 	unsigned long ulcm;
+@@ -1254,6 +1254,35 @@ static struct fb_ops da8xx_fb_ops = {
+ 	.fb_blank = cfb_blank,
+ };
  
--	if (fb_pdata = NULL) {
-+	if (fb_pdata = NULL && !device->dev.of_node) {
- 		dev_err(&device->dev, "Can not get platform data\n");
- 		return -ENOENT;
++static struct lcd_ctrl_config *da8xx_fb_create_cfg(struct platform_device *dev)
++{
++	struct lcd_ctrl_config *cfg;
++
++	cfg = devm_kzalloc(&dev->dev, sizeof(struct fb_videomode), GFP_KERNEL);
++	if (!cfg) {
++		dev_err(&dev->dev, "memory allocation failed\n");
++		return NULL;
++	}
++
++	/* default values */
++
++	if (lcd_revision = LCD_VERSION_1)
++		cfg->bpp = 16;
++	else
++		cfg->bpp = 32;
++
++	/*
++	 * For panels so far used with this LCDC, below statement is sufficient.
++	 * For new panels, if required, struct lcd_ctrl_cfg fields to be updated
++	 * with additional/modified values. Those values would have to be then
++	 * obtained from dt(requiring new dt bindings).
++	 */
++
++	cfg->panel_shade = COLOR_ACTIVE;
++
++	return cfg;
++}
++
+ static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
+ {
+ 	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
+@@ -1345,7 +1374,10 @@ static int fb_probe(struct platform_device *device)
+ 		break;
  	}
+ 
+-	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
++	if (device->dev.of_node)
++		lcd_cfg = da8xx_fb_create_cfg(device);
++	else
++		lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
+ 
+ 	if (!lcd_cfg) {
+ 		ret = -EINVAL;
 -- 
 1.7.0.4
 

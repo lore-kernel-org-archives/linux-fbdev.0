@@ -1,23 +1,97 @@
-From: Daniel Drake <dsd@laptop.org>
-Date: Fri, 21 Jun 2013 17:00:37 +0000
-Subject: Re: [V2 2/7] video: mmp: optimize some register setting code
-Message-Id: <CAMLZHHQXDq6ZT0N85n1FWE9TkEbgkf6AKtZJZP+5db6k7NQT2A@mail.gmail.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 25 Jun 2013 14:22:44 +0000
+Subject: [PATCH 16/23] video: da8xx-fb: reorganize panel detection
+Message-Id: <1372170171-9561-17-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1370879543-11152-1-git-send-email-jtzhou@marvell.com>
-In-Reply-To: <1370879543-11152-1-git-send-email-jtzhou@marvell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-On Mon, Jun 10, 2013 at 9:52 AM, Jett.Zhou <jtzhou@marvell.com> wrote:
-> From: Guoqing Li <ligq@marvell.com>
->
-> There are dumplicate code of the smooth setting based on different
-> path, optimized the routine and use readl_relaxed instead.
->
-> Signed-off-by: Jett.Zhou <jtzhou@marvell.com>
-> Signed-off-by: Jing Xiang <jxiang@marvell.com>
-> Signed-off-by: Guoqing Li <ligq@marvell.com>
+From: Afzal Mohammed <afzal@ti.com>
 
-Reviewed-by: Daniel Drake <dsd@laptop.org>
+Move panel detection to a separate function, this helps in readability
+as well as makes DT support cleaner.
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
+---
+ drivers/video/da8xx-fb.c |   42 ++++++++++++++++++++++++++----------------
+ 1 files changed, 26 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 3b146bc..b6ea5e9 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1253,6 +1253,27 @@ static struct fb_ops da8xx_fb_ops = {
+ 	.fb_blank = cfb_blank,
+ };
+ 
++static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
++{
++	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
++	struct fb_videomode *lcdc_info;
++	int i;
++
++	for (i = 0, lcdc_info = known_lcd_panels;
++		i < ARRAY_SIZE(known_lcd_panels); i++, lcdc_info++) {
++		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
++			break;
++	}
++
++	if (i = ARRAY_SIZE(known_lcd_panels)) {
++		dev_err(&dev->dev, "no panel found\n");
++		return NULL;
++	}
++	dev_info(&dev->dev, "found %s panel\n", lcdc_info->name);
++
++	return lcdc_info;
++}
++
+ static int fb_probe(struct platform_device *device)
+ {
+ 	struct da8xx_lcdc_platform_data *fb_pdata @@ -1262,7 +1283,7 @@ static int fb_probe(struct platform_device *device)
+ 	struct fb_info *da8xx_fb_info;
+ 	struct clk *fb_clk = NULL;
+ 	struct da8xx_fb_par *par;
+-	int ret, i;
++	int ret;
+ 	unsigned long ulcm;
+ 
+ 	if (fb_pdata = NULL) {
+@@ -1270,6 +1291,10 @@ static int fb_probe(struct platform_device *device)
+ 		return -ENOENT;
+ 	}
+ 
++	lcdc_info = da8xx_fb_get_videomode(device);
++	if (lcdc_info = NULL)
++		return -ENODEV;
++
+ 	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
+ 	da8xx_fb_reg_base = devm_request_and_ioremap(&device->dev, lcdc_regs);
+ 	if (!da8xx_fb_reg_base) {
+@@ -1303,21 +1328,6 @@ static int fb_probe(struct platform_device *device)
+ 		break;
+ 	}
+ 
+-	for (i = 0, lcdc_info = known_lcd_panels;
+-		i < ARRAY_SIZE(known_lcd_panels);
+-		i++, lcdc_info++) {
+-		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
+-			break;
+-	}
+-
+-	if (i = ARRAY_SIZE(known_lcd_panels)) {
+-		dev_err(&device->dev, "GLCD: No valid panel found\n");
+-		ret = -ENODEV;
+-		goto err_pm_runtime_disable;
+-	} else
+-		dev_info(&device->dev, "GLCD: Found %s panel\n",
+-					fb_pdata->type);
+-
+ 	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
+ 
+ 	if (!lcd_cfg) {
+-- 
+1.7.0.4
+

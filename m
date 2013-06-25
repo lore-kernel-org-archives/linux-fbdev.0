@@ -1,45 +1,52 @@
-From: Fabio Estevam <fabio.estevam@freescale.com>
-Date: Tue, 18 Jun 2013 15:18:43 +0000
-Subject: [PATCH v2 2/2] i915: i915_gem: Print a size_t with %z
-Message-Id: <1371568723-27486-2-git-send-email-fabio.estevam@freescale.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 25 Jun 2013 14:22:33 +0000
+Subject: [PATCH 05/23] video: da8xx-fb: store current display information
+Message-Id: <1372170171-9561-6-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1371568723-27486-1-git-send-email-fabio.estevam@freescale.com>
-In-Reply-To: <1371568723-27486-1-git-send-email-fabio.estevam@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com
-Cc: Fabio Estevam <fabio.estevam@freescale.com>, linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, geert@linux-m68k.org, Dave Airlie <airlied@redhat.com>, festevam@gmail.com
+To: linux-fbdev@vger.kernel.org
 
-Fix the following build warning:
+From: Afzal Mohammed <afzal@ti.com>
 
-drivers/gpu/drm/i915/i915_gem.c:3129:3: warning: format '%ld' expects argument of type 'long int', but argument 5 has type 'size_t' [-Wformat]
+store current videomode and controller data so that reconfiguring can
+be done easily. Reconfiguring would be required in fb_set_par, which
+is going to be added soon.
 
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: <intel-gfx@lists.freedesktop.org>
-Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
+If these details are not stored, the work probe does to retrieve these
+information would have to repeated at the place of reconfiguring and
+modifying platform data would be necessary to handle controller data
+changes like bpp.
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
-Changes since v1:
-- Use %zu instead of %zd, since size_t is unsigned
+ drivers/video/da8xx-fb.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
- drivers/gpu/drm/i915/i915_gem.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
-index 6e469e6..d497ca5 100644
---- a/drivers/gpu/drm/i915/i915_gem.c
-+++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -3126,7 +3126,7 @@ i915_gem_object_bind_to_gtt(struct drm_i915_gem_object *obj,
- 	 * before evicting everything in a vain attempt to find space.
- 	 */
- 	if (obj->base.size > gtt_max) {
--		DRM_ERROR("Attempting to bind an object larger than the aperture: object=%zd > %s aperture=%ld\n",
-+		DRM_ERROR("Attempting to bind an object larger than the aperture: object=%zd > %s aperture=%zu\n",
- 			  obj->base.size,
- 			  map_and_fenceable ? "mappable" : "total",
- 			  gtt_max);
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 18834fa..d060f14 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -178,6 +178,8 @@ struct da8xx_fb_par {
+ #endif
+ 	void (*panel_power_ctrl)(int);
+ 	u32 pseudo_palette[16];
++	struct fb_videomode	mode;
++	struct lcd_ctrl_config	cfg;
+ };
+ 
+ static struct fb_var_screeninfo da8xx_fb_var;
+@@ -1310,6 +1312,8 @@ static int fb_probe(struct platform_device *device)
+ 	}
+ 
+ 	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
++	fb_var_to_videomode(&par->mode, &da8xx_fb_var);
++	par->cfg = *lcd_cfg;
+ 
+ 	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
+ 		dev_err(&device->dev, "lcd_init failed\n");
 -- 
-1.8.1.2
-
+1.7.0.4
 

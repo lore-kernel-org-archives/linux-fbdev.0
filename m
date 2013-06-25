@@ -1,74 +1,264 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 26 Jun 2013 11:43:31 +0000
-Subject: Re: [PATCH -next] video: mxsfb: remove redundant dev_err call in mxsfb_probe()
-Message-Id: <51CAD3E3.70707@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2LOGFFUFCOMKGSJKKTSOQ"
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Date: Tue, 25 Jun 2013 14:21:46 +0000
+Subject: [PATCH v2 1/5] phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
+Message-Id: <1372170110-12993-1-git-send-email-s.nawrocki@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAPgLHd80wMDBg8ADjtDvZC1=yUoigS7_btHMz1=r8WQTwpgSvg@mail.gmail.com>
-In-Reply-To: <CAPgLHd80wMDBg8ADjtDvZC1=yUoigS7_btHMz1=r8WQTwpgSvg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-To: Wei Yongjun <weiyj.lk-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, yongjun_wei-zrsr2BFq86L20UzCJQGyNP8+0UxHXcjY@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-------enig2LOGFFUFCOMKGSJKKTSOQ
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Add a PHY provider driver for the Samsung S5P/Exynos SoC MIPI CSI-2
+receiver and MIPI DSI transmitter DPHYs.
 
-On 26/06/13 04:50, Wei Yongjun wrote:
-> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
->=20
-> There is a error message within devm_ioremap_resource
-> already, so remove the dev_err call to avoid redundant
-> error message.
->=20
-> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
-> ---
->  drivers/video/mxsfb.c | 1 -
->  1 file changed, 1 deletion(-)
->=20
-> diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
-> index 21223d4..251bbec 100644
-> --- a/drivers/video/mxsfb.c
-> +++ b/drivers/video/mxsfb.c
-> @@ -899,7 +899,6 @@ static int mxsfb_probe(struct platform_device *pdev=
-)
-> =20
->  	host->base =3D devm_ioremap_resource(&pdev->dev, res);
->  	if (IS_ERR(host->base)) {
-> -		dev_err(&pdev->dev, "ioremap failed\n");
->  		ret =3D PTR_ERR(host->base);
->  		goto fb_release;
->  	}
->=20
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+Changes since v1:
+ - enabled build as module and with CONFIG_OF disabled
+ - added phy_id enum,
+ - of_address_to_resource() replaced with platform_get_resource(),
+ - adapted to changes in the PHY API v7, v8 - added phy labels,
+ - added MODULE_DEVICE_TABLE() entry,
+ - driver file renamed to phy-exynos-mipi-video.c,
+ - changed DT compatible string to "samsung,s5pv210-mipi-video-phy",
+ - corrected the compatible property's description.
+---
+ .../phy/samsung,s5pv210-mipi-video-phy.txt         |   14 ++
+ drivers/phy/Kconfig                                |    9 +
+ drivers/phy/Makefile                               |    3 +-
+ drivers/phy/phy-exynos-mipi-video.c                |  173 ++++++++++++++++++++
+ 4 files changed, 198 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/phy/samsung,s5pv210-mipi-video-phy.txt
+ create mode 100644 drivers/phy/phy-exynos-mipi-video.c
 
-I've added this to my fbdev-3.11 branch.
+diff --git a/Documentation/devicetree/bindings/phy/samsung,s5pv210-mipi-video-phy.txt b/Documentation/devicetree/bindings/phy/samsung,s5pv210-mipi-video-phy.txt
+new file mode 100644
+index 0000000..5ff208c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/phy/samsung,s5pv210-mipi-video-phy.txt
+@@ -0,0 +1,14 @@
++Samsung S5P/EXYNOS SoC series MIPI CSIS/DSIM DPHY
++-------------------------------------------------
++
++Required properties:
++- compatible : should be "samsung,s5pv210-mipi-video-phy";
++- reg : offset and length of the MIPI DPHY register set;
++- #phy-cells : from the generic phy bindings, must be 1;
++
++For "samsung,s5pv210-mipi-video-phy" compatible PHYs the second cell in
++the PHY specifier identifies the PHY and its meaning is as follows:
++  0 - MIPI CSIS 0,
++  1 - MIPI DSIM 0,
++  2 - MIPI CSIS 1,
++  3 - MIPI DSIM 1.
+diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
+index 5f85909..6f446d0 100644
+--- a/drivers/phy/Kconfig
++++ b/drivers/phy/Kconfig
+@@ -11,3 +11,12 @@ menuconfig GENERIC_PHY
+ 	  devices present in the kernel. This layer will have the generic
+ 	  API by which phy drivers can create PHY using the phy framework and
+ 	  phy users can obtain reference to the PHY.
++
++if GENERIC_PHY
++
++config PHY_EXYNOS_MIPI_VIDEO
++	tristate "S5P/EXYNOS SoC series MIPI CSI-2/DSI PHY driver"
++	help
++	  Support for MIPI CSI-2 and MIPI DSI DPHY found on Samsung
++	  S5P and EXYNOS SoCs.
++endif
+diff --git a/drivers/phy/Makefile b/drivers/phy/Makefile
+index 9e9560f..71d8841 100644
+--- a/drivers/phy/Makefile
++++ b/drivers/phy/Makefile
+@@ -2,4 +2,5 @@
+ # Makefile for the phy drivers.
+ #
+ 
+-obj-$(CONFIG_GENERIC_PHY)	+= phy-core.o
++obj-$(CONFIG_GENERIC_PHY)		+= phy-core.o
++obj-$(CONFIG_PHY_EXYNOS_MIPI_VIDEO)	+= phy-exynos-mipi-video.o
+diff --git a/drivers/phy/phy-exynos-mipi-video.c b/drivers/phy/phy-exynos-mipi-video.c
+new file mode 100644
+index 0000000..074a623
+--- /dev/null
++++ b/drivers/phy/phy-exynos-mipi-video.c
+@@ -0,0 +1,173 @@
++/*
++ * Samsung S5P/EXYNOS SoC series MIPI CSIS/DSIM DPHY driver
++ *
++ * Copyright (C) 2013 Samsung Electronics Co., Ltd.
++ * Author: Sylwester Nawrocki <s.nawrocki@samsung.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/delay.h>
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++#include <linux/phy/phy.h>
++#include <linux/platform_device.h>
++#include <linux/spinlock.h>
++
++/* MIPI_PHYn_CONTROL register offset: n = 0..1 */
++#define EXYNOS_MIPI_PHY_CONTROL(n)	((n) * 4)
++#define EXYNOS_MIPI_PHY_ENABLE		(1 << 0)
++#define EXYNOS_MIPI_PHY_SRESETN		(1 << 1)
++#define EXYNOS_MIPI_PHY_MRESETN		(1 << 2)
++#define EXYNOS_MIPI_PHY_RESET_MASK	(3 << 1)
++
++enum phy_id {
++	PHY_CSIS0,
++	PHY_DSIM0,
++	PHY_CSIS1,
++	PHY_DSIM1,
++	NUM_PHYS
++};
++
++struct exynos_video_phy {
++	spinlock_t slock;
++	struct phy *phys[NUM_PHYS];
++	void __iomem *regs;
++};
++
++static int __set_phy_state(struct exynos_video_phy *state,
++				enum phy_id id, unsigned int on)
++{
++	void __iomem *addr;
++	unsigned long flags;
++	u32 reg, reset;
++
++	if (WARN_ON(id > NUM_PHYS))
++		return -EINVAL;
++
++	addr = state->regs + EXYNOS_MIPI_PHY_CONTROL(id / 2);
++
++	if (id = PHY_DSIM0 || id = PHY_DSIM1)
++		reset = EXYNOS_MIPI_PHY_MRESETN;
++	else
++		reset = EXYNOS_MIPI_PHY_SRESETN;
++
++	spin_lock_irqsave(&state->slock, flags);
++	reg = readl(addr);
++	if (on)
++		reg |= reset;
++	else
++		reg &= ~reset;
++	writel(reg, addr);
++
++	/* Clear ENABLE bit only if MRESETN, SRESETN bits are not set. */
++	if (on)
++		reg |= EXYNOS_MIPI_PHY_ENABLE;
++	else if (!(reg & EXYNOS_MIPI_PHY_RESET_MASK))
++		reg &= ~EXYNOS_MIPI_PHY_ENABLE;
++
++	writel(reg, addr);
++	spin_unlock_irqrestore(&state->slock, flags);
++
++	pr_debug("%s(): id: %d, on: %d, addr: %#x, base: %#x\n",
++		 __func__, id, on, (u32)addr, (u32)state->regs);
++
++	return 0;
++}
++
++static int exynos_video_phy_power_on(struct phy *phy)
++{
++	struct exynos_video_phy *state = dev_get_drvdata(&phy->dev);
++	return __set_phy_state(state, phy->id, 1);
++}
++
++static int exynos_video_phy_power_off(struct phy *phy)
++{
++	struct exynos_video_phy *state = dev_get_drvdata(&phy->dev);
++	return __set_phy_state(state, phy->id, 0);
++}
++
++static struct phy *exynos_video_phy_xlate(struct device *dev,
++					struct of_phandle_args *args)
++{
++	struct exynos_video_phy *state = dev_get_drvdata(dev);
++
++	if (WARN_ON(args->args[0] > NUM_PHYS))
++		return NULL;
++
++	return state->phys[args->args[0]];
++}
++
++static struct phy_ops exynos_video_phy_ops = {
++	.power_on	= exynos_video_phy_power_on,
++	.power_off	= exynos_video_phy_power_off,
++	.owner		= THIS_MODULE,
++};
++
++static int exynos_video_phy_probe(struct platform_device *pdev)
++{
++	struct exynos_video_phy *state;
++	struct device *dev = &pdev->dev;
++	struct resource *res;
++	struct phy_provider *phy_provider;
++	int i;
++
++	state = devm_kzalloc(dev, sizeof(*state), GFP_KERNEL);
++	if (!state)
++		return -ENOMEM;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++
++	state->regs = devm_ioremap_resource(dev, res);
++	if (IS_ERR(state->regs))
++		return PTR_ERR(state->regs);
++
++	dev_set_drvdata(dev, state);
++
++	phy_provider = devm_of_phy_provider_register(dev,
++					exynos_video_phy_xlate);
++	if (IS_ERR(phy_provider))
++		return PTR_ERR(phy_provider);
++
++	for (i = 0; i < NUM_PHYS; i++) {
++		char label[8];
++
++		snprintf(label, sizeof(label), "%s.%d",
++				i = PHY_DSIM0 || i = PHY_DSIM1 ?
++				"dsim" : "csis", i / 2);
++
++		state->phys[i] = devm_phy_create(dev, i, &exynos_video_phy_ops,
++								label, state);
++		if (IS_ERR(state->phys[i])) {
++			dev_err(dev, "failed to create PHY %s\n", label);
++			return PTR_ERR(state->phys[i]);
++		}
++	}
++
++	return 0;
++}
++
++static const struct of_device_id exynos_video_phy_of_match[] = {
++	{ .compatible = "samsung,s5pv210-mipi-video-phy" },
++	{ },
++};
++MODULE_DEVICE_TABLE(of, exynos_video_phy_of_match);
++
++static struct platform_driver exynos_video_phy_driver = {
++	.probe	= exynos_video_phy_probe,
++	.driver = {
++		.of_match_table	= exynos_video_phy_of_match,
++		.name  = "exynos-mipi-video-phy",
++		.owner = THIS_MODULE,
++	}
++};
++module_platform_driver(exynos_video_phy_driver);
++
++MODULE_DESCRIPTION("Samsung S5P/EXYNOS SoC MIPI CSI-2/DSI PHY driver");
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Sylwester Nawrocki <s.nawrocki@samsung.com>");
+-- 
+1.7.9.5
 
- Tomi
-
-
-
-------enig2LOGFFUFCOMKGSJKKTSOQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRytPjAAoJEPo9qoy8lh71rrYP/1Q4etU0ONBawoDNK2J2aoY/
-qqGuMn0uXUJlf3yNR4KOwiALbQeULTuOkacWg+66YAhEca5WuQMHMr+ehMdIINfz
-jajXFOzxozrCGeCxy01gYp7CpSELiIsFG0Sk8c77LWbKUp3mV9n1c5RMwkoUc10C
-RssLkj5QmcdwxJ/sKOf92nLcWP2bwzDZYd+F0IOrIbFEVVj6E2UMCSGOc2sDB+wa
-2YhP5lxUlxzE/hqP26kd9wohu6IQ87n7gtGEtm5Jlxrws5u8nmS5ZsXNcJ7TNaF6
-keEu/oIJwDl2gcVzhmXgcg3Wt7vfnr62AX/GqPKZyJnjTiyTsE7kRjsibXc9QoyW
-tWpR0RoI2RBZbJfSYGtxfz0uto0YAU/OgdQhgc2RaPsIU7gNRu/bcpasL5sLHjqd
-hLZc4OKTHEEk0F0JXXxMrt1okShNG2cfxfrV1xAJfLctN2pQfyMe/DumZkr9JvGo
-2m5RnOEl/UbrC/Z/uiJFxTliqwTH2Vvo3Qcyz48mXSDrrWRSAIq5vd2WH9JH4Hhm
-WmeOFtTcwyI4F/fqEhDPYe6jR/5NDNZcMGf3csYNWb7BWDeqTDNvn+m33UbhYmLa
-zlVRMLp2HN5zUpW6Z3H8ZfKg7BRrZPFqzlvPxTcu6ekDm8C9SlTk9mGP1frud0+9
-n810nUErcqFtc1si+BZi
-=72HT
------END PGP SIGNATURE-----
-
-------enig2LOGFFUFCOMKGSJKKTSOQ--

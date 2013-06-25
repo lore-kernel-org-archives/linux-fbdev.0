@@ -1,7 +1,7 @@
 From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 25 Jun 2013 14:22:44 +0000
-Subject: [PATCH 16/23] video: da8xx-fb: reorganize panel detection
-Message-Id: <1372170171-9561-17-git-send-email-detheridge@ti.com>
+Date: Tue, 25 Jun 2013 14:22:45 +0000
+Subject: [PATCH 17/23] video: da8xx-fb: minimal dt support
+Message-Id: <1372170171-9561-18-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,88 +10,63 @@ To: linux-fbdev@vger.kernel.org
 
 From: Afzal Mohammed <afzal@ti.com>
 
-Move panel detection to a separate function, this helps in readability
-as well as makes DT support cleaner.
+Driver is provided a means to have the probe triggered by DT.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- drivers/video/da8xx-fb.c |   42 ++++++++++++++++++++++++++----------------
- 1 files changed, 26 insertions(+), 16 deletions(-)
+ .../devicetree/bindings/video/fb-da8xx.txt         |   16 ++++++++++++++++
+ drivers/video/da8xx-fb.c                           |    7 +++++++
+ 2 files changed, 23 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/fb-da8xx.txt
 
+diff --git a/Documentation/devicetree/bindings/video/fb-da8xx.txt b/Documentation/devicetree/bindings/video/fb-da8xx.txt
+new file mode 100644
+index 0000000..581e014
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/fb-da8xx.txt
+@@ -0,0 +1,16 @@
++TI LCD Controller on DA830/DA850/AM335x SoC's
++
++Required properties:
++- compatible:
++	DA830 - "ti,da830-lcdc"
++	AM335x SoC's - "ti,am3352-lcdc", "ti,da830-lcdc"
++- reg: Address range of lcdc register set
++- interrupts: lcdc interrupt
++
++Example:
++
++lcdc@4830e000 {
++	compatible = "ti,am3352-lcdc", "ti,da830-lcdc";
++	reg =  <0x4830e000 0x1000>;
++	interrupts = <36>;
++};
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 3b146bc..b6ea5e9 100644
+index b6ea5e9..08ee8eb 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -1253,6 +1253,27 @@ static struct fb_ops da8xx_fb_ops = {
- 	.fb_blank = cfb_blank,
+@@ -1595,6 +1595,12 @@ static int fb_resume(struct platform_device *dev)
+ #define fb_resume NULL
+ #endif
+ 
++static const struct of_device_id da8xx_fb_of_match[] = {
++	{.compatible = "ti,da830-lcdc", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, da8xx_fb_of_match);
++
+ static struct platform_driver da8xx_fb_driver = {
+ 	.probe = fb_probe,
+ 	.remove = fb_remove,
+@@ -1603,6 +1609,7 @@ static struct platform_driver da8xx_fb_driver = {
+ 	.driver = {
+ 		   .name = DRIVER_NAME,
+ 		   .owner = THIS_MODULE,
++		   .of_match_table = of_match_ptr(da8xx_fb_of_match),
+ 		   },
  };
  
-+static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
-+{
-+	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
-+	struct fb_videomode *lcdc_info;
-+	int i;
-+
-+	for (i = 0, lcdc_info = known_lcd_panels;
-+		i < ARRAY_SIZE(known_lcd_panels); i++, lcdc_info++) {
-+		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
-+			break;
-+	}
-+
-+	if (i = ARRAY_SIZE(known_lcd_panels)) {
-+		dev_err(&dev->dev, "no panel found\n");
-+		return NULL;
-+	}
-+	dev_info(&dev->dev, "found %s panel\n", lcdc_info->name);
-+
-+	return lcdc_info;
-+}
-+
- static int fb_probe(struct platform_device *device)
- {
- 	struct da8xx_lcdc_platform_data *fb_pdata @@ -1262,7 +1283,7 @@ static int fb_probe(struct platform_device *device)
- 	struct fb_info *da8xx_fb_info;
- 	struct clk *fb_clk = NULL;
- 	struct da8xx_fb_par *par;
--	int ret, i;
-+	int ret;
- 	unsigned long ulcm;
- 
- 	if (fb_pdata = NULL) {
-@@ -1270,6 +1291,10 @@ static int fb_probe(struct platform_device *device)
- 		return -ENOENT;
- 	}
- 
-+	lcdc_info = da8xx_fb_get_videomode(device);
-+	if (lcdc_info = NULL)
-+		return -ENODEV;
-+
- 	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
- 	da8xx_fb_reg_base = devm_request_and_ioremap(&device->dev, lcdc_regs);
- 	if (!da8xx_fb_reg_base) {
-@@ -1303,21 +1328,6 @@ static int fb_probe(struct platform_device *device)
- 		break;
- 	}
- 
--	for (i = 0, lcdc_info = known_lcd_panels;
--		i < ARRAY_SIZE(known_lcd_panels);
--		i++, lcdc_info++) {
--		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
--			break;
--	}
--
--	if (i = ARRAY_SIZE(known_lcd_panels)) {
--		dev_err(&device->dev, "GLCD: No valid panel found\n");
--		ret = -ENODEV;
--		goto err_pm_runtime_disable;
--	} else
--		dev_info(&device->dev, "GLCD: Found %s panel\n",
--					fb_pdata->type);
--
- 	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
- 
- 	if (!lcd_cfg) {
 -- 
 1.7.0.4
 

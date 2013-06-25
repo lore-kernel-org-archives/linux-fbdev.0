@@ -1,41 +1,39 @@
-From: Olof Johansson <olof@lixom.net>
-Date: Sun, 02 Jun 2013 05:09:04 +0000
-Subject: Re: [PATCH v2] video: simplefb: add mode parsing function
-Message-Id: <CAOesGMi=f=2S9y96-DtBzOZydhsJ1pF+m26AzdQjj59qtQu-oA@mail.gmail.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 25 Jun 2013 14:22:46 +0000
+Subject: [PATCH 18/23] video: da8xx-fb: invoke platform callback safely
+Message-Id: <1372170171-9561-19-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369626821-28494-1-git-send-email-acourbot@nvidia.com>
- <51A42ED5.2060104@wwwdotorg.org>
- <20130601051223.GB5189@quad.lixom.net>
- <51AAD326.4040809@wwwdotorg.org>
-In-Reply-To: <51AAD326.4040809@wwwdotorg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-On Sat, Jun 1, 2013 at 10:07 PM, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> On 05/31/2013 11:12 PM, Olof Johansson wrote:
->> On Mon, May 27, 2013 at 10:13:09PM -0600, Stephen Warren wrote:
->>> On 05/26/2013 09:53 PM, Alexandre Courbot wrote:
->>>> The naming scheme of simplefb's mode is precise enough to allow building
->>>> the mode structure from it instead of using a static list of modes. This
->>>> patch introduces a function that does this. In case exotic modes that
->>>> cannot be represented from their name alone are needed, the static list
->>>> of modes is still available as a backup.
-> ...
->>> As such, we should either:
->>>
->>> a) Just add new entries into the format array that already exists in the
->>> driver. Given David's response, this might be simplest.
->>
->> I think so too. Is this even needed? Do we have any users of the newer formats
->> or is it just someone trying to feature-creep this driver to make the "simple"
->> part of the name inaccurate? :)
->
-> Alex is working on board support for a new NVIDIA board, where IIRC the
-> bootloader sets up some 32-bit ARGB format for the panel.
+From: Afzal Mohammed <afzal@ti.com>
 
-Ah, ok. Let's just implement that one format too then. :)
+Ensure that platform data is present before checking whether platform
+callback is present (the one used to control backlight). So far this
+was not an issue as driver was purely non-DT triggered, but now DT
+support has been added.
 
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
+---
+ drivers/video/da8xx-fb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
--Olof
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 08ee8eb..0beed20 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1347,7 +1347,7 @@ static int fb_probe(struct platform_device *device)
+ 	par->dev = &device->dev;
+ 	par->lcdc_clk = fb_clk;
+ 	par->lcd_fck_rate = clk_get_rate(fb_clk);
+-	if (fb_pdata->panel_power_ctrl) {
++	if (fb_pdata && fb_pdata->panel_power_ctrl) {
+ 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
+ 		par->panel_power_ctrl(1);
+ 	}
+-- 
+1.7.0.4
+

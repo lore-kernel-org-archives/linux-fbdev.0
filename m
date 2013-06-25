@@ -1,33 +1,135 @@
-From: David Airlie <airlied@redhat.com>
-Date: Tue, 18 Jun 2013 23:00:09 +0000
-Subject: Re: [PATCH v2 1/2] video: fbmem: Use 'const char' in fb_get_options()
-Message-Id: <728837318.19851077.1371596409062.JavaMail.root@redhat.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 25 Jun 2013 14:22:38 +0000
+Subject: [PATCH 10/23] video: da8xx-fb: fb_set_par support
+Message-Id: <1372170171-9561-11-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1371568723-27486-1-git-send-email-fabio.estevam@freescale.com>
-In-Reply-To: <1371568723-27486-1-git-send-email-fabio.estevam@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
+From: Afzal Mohammed <afzal@ti.com>
 
+fb_set_par helps in runtime configuration of lcd controller like
+changing resolution, pixel clock etc. (eg. using fbset utility)
 
------ Original Message -----
-> From: "Fabio Estevam" <fabio.estevam@freescale.com>
-> To: plagnioj@jcrosoft.com
-> Cc: linux-fbdev@vger.kernel.org, festevam@gmail.com, geert@linux-m68k.org, "Fabio Estevam"
-> <fabio.estevam@freescale.com>, "Ville Syrjälä" <ville.syrjala@linux.intel.com>, "Daniel Vetter"
-> <daniel.vetter@ffwll.ch>, "Dave Airlie" <airlied@redhat.com>
-> Sent: Wednesday, 19 June, 2013 1:18:42 AM
-> Subject: [PATCH v2 1/2] video: fbmem: Use 'const char' in fb_get_options()
-> 
-> Commit d20d31748 (drm: Constify the pretty-print functions) causes the
-> following
-> build warning:
+Reconfigure lcd controller based on information passed by framework.
+Enable raster back if it was already enabled.
 
-This patch should already be merged into the fbdev tree, at least the maintainer said it was, hence why I didn't merge it into
-my drm-next tree.
+As fb_set_par would get invoked indirectly from probe via fb_set_var,
+remove existing lcdc initialization in probe and do lcdc reset in
+probe so that reset happens only at the begining.
 
-Is the fbdev queue not in the drm-next?
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
+---
+ drivers/video/da8xx-fb.c |   60 +++++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 49 insertions(+), 11 deletions(-)
 
-Dave.
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 0f73c76..720604c 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -243,6 +243,11 @@ static struct fb_videomode known_lcd_panels[] = {
+ 	},
+ };
+ 
++static inline bool da8xx_fb_is_raster_enabled(void)
++{
++	return !!(lcdc_read(LCD_RASTER_CTRL_REG) & LCD_RASTER_ENABLE);
++}
++
+ /* Enable the Raster Engine of the LCD Controller */
+ static inline void lcd_enable_raster(void)
+ {
+@@ -665,9 +670,6 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 
+ static void da8xx_fb_lcd_reset(void)
+ {
+-	/* Disable the Raster if previously Enabled */
+-	lcd_disable_raster(false);
+-
+ 	/* DMA has to be disabled */
+ 	lcdc_write(0, LCD_DMA_CTRL_REG);
+ 	lcdc_write(0, LCD_RASTER_CTRL_REG);
+@@ -720,8 +722,6 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+ 	u32 bpp;
+ 	int ret = 0;
+ 
+-	da8xx_fb_lcd_reset();
+-
+ 	da8xx_fb_calc_config_clk_divider(par, panel);
+ 
+ 	if (panel->sync & FB_SYNC_CLK_INVERT)
+@@ -1201,9 +1201,52 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
+ 	return ret;
+ }
+ 
++static int da8xxfb_set_par(struct fb_info *info)
++{
++	struct da8xx_fb_par *par = info->par;
++	int ret;
++	bool raster = da8xx_fb_is_raster_enabled();
++
++	if (raster)
++		lcd_disable_raster(true);
++	else
++		lcd_disable_raster(false);
++
++	fb_var_to_videomode(&par->mode, &info->var);
++
++	par->cfg.bpp = info->var.bits_per_pixel;
++
++	info->fix.visual = (par->cfg.bpp <= 8) ?
++				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
++	info->fix.line_length = (par->mode.xres * par->cfg.bpp) / 8;
++
++	ret = lcd_init(par, &par->cfg, &par->mode);
++	if (ret < 0) {
++		dev_err(par->dev, "lcd init failed\n");
++		return ret;
++	}
++
++	par->dma_start = info->fix.smem_start +
++			 info->var.yoffset * info->fix.line_length +
++			 info->var.xoffset * info->var.bits_per_pixel / 8;
++	par->dma_end   = par->dma_start +
++			 info->var.yres * info->fix.line_length - 1;
++
++	lcdc_write(par->dma_start, LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
++	lcdc_write(par->dma_end, LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
++	lcdc_write(par->dma_start, LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
++	lcdc_write(par->dma_end, LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
++
++	if (raster)
++		lcd_enable_raster();
++
++	return 0;
++}
++
+ static struct fb_ops da8xx_fb_ops = {
+ 	.owner = THIS_MODULE,
+ 	.fb_check_var = fb_check_var,
++	.fb_set_par = da8xxfb_set_par,
+ 	.fb_setcolreg = fb_setcolreg,
+ 	.fb_pan_display = da8xx_pan_display,
+ 	.fb_ioctl = fb_ioctl,
+@@ -1312,14 +1355,9 @@ static int fb_probe(struct platform_device *device)
+ 	}
+ 
+ 	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
+-	fb_var_to_videomode(&par->mode, &da8xx_fb_var);
+ 	par->cfg = *lcd_cfg;
+ 
+-	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
+-		dev_err(&device->dev, "lcd_init failed\n");
+-		ret = -EFAULT;
+-		goto err_release_fb;
+-	}
++	da8xx_fb_lcd_reset();
+ 
+ 	/* allocate frame buffer */
+ 	par->vram_size = lcdc_info->xres * lcdc_info->yres * lcd_cfg->bpp;
+-- 
+1.7.0.4
+

@@ -1,54 +1,58 @@
-From: =?UTF-8?q?Vincent=20Stehl=C3=A9?= <vincent.stehle@freescale.com>
-Date: Thu, 27 Jun 2013 12:34:57 +0000
-Subject: [PATCH linux-next] videomode: fix compilation warning
-Message-Id: <1372336497-2005-1-git-send-email-vincent.stehle@freescale.com>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Date: Tue, 25 Jun 2013 14:21:47 +0000
+Subject: [PATCH v2 2/5] ARM: dts: Add MIPI PHY node to exynos4.dtsi
+Message-Id: <1372170110-12993-2-git-send-email-s.nawrocki@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1372170110-12993-1-git-send-email-s.nawrocki@samsung.com>
+In-Reply-To: <1372170110-12993-1-git-send-email-s.nawrocki@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-next@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: =?UTF-8?q?Vincent=20Stehl=C3=A9?= <vincent.stehle@freescale.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, trivial@kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-Add missing include file to fix the following compilation warning:
+Add PHY provider node for the MIPI CSIS and MIPI DSIM PHYs.
 
-  In file included from drivers/video/wm8505fb.c:35:0:
-  include/video/of_display_timing.h:18:10: warning: ‘struct display_timing’ declared inside parameter list [enabled by default]
-  include/video/of_display_timing.h:18:10: warning: its scope is only this definition or declaration, which is probably not what you want [enabled by default]
-
-Signed-off-by: Vincent Stehlé <vincent.stehle@freescale.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: trivial@kernel.org
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
+ arch/arm/boot/dts/exynos4.dtsi |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-
-Hi,
-
-This warning happens on linux-next tag next-20130627, for ARM multi_v7_defconfig.
-
-Best regards,
-
-V.
-
-
- include/video/of_display_timing.h |    2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/include/video/of_display_timing.h b/include/video/of_display_timing.h
-index 6562ad9..d43be98 100644
---- a/include/video/of_display_timing.h
-+++ b/include/video/of_display_timing.h
-@@ -9,6 +9,8 @@
- #ifndef __LINUX_OF_DISPLAY_TIMING_H
- #define __LINUX_OF_DISPLAY_TIMING_H
+diff --git a/arch/arm/boot/dts/exynos4.dtsi b/arch/arm/boot/dts/exynos4.dtsi
+index 4d61120..9542088 100644
+--- a/arch/arm/boot/dts/exynos4.dtsi
++++ b/arch/arm/boot/dts/exynos4.dtsi
+@@ -98,6 +98,12 @@
+ 		reg = <0x10010000 0x400>;
+ 	};
  
-+#include <video/display_timing.h>
++	mipi_phy: video-phy@10020710 {
++		compatible = "samsung,s5pv210-mipi-video-phy";
++		reg = <0x10020710 8>;
++		#phy-cells = <1>;
++	};
 +
- struct device_node;
- struct display_timings;
+ 	camera {
+ 		compatible = "samsung,fimc", "simple-bus";
+ 		status = "disabled";
+@@ -147,6 +153,8 @@
+ 			interrupts = <0 78 0>;
+ 			bus-width = <4>;
+ 			samsung,power-domain = <&pd_cam>;
++			phys = <&mipi_phy 0>;
++			phy-names = "csis";
+ 			status = "disabled";
+ 		};
  
+@@ -156,6 +164,8 @@
+ 			interrupts = <0 80 0>;
+ 			bus-width = <2>;
+ 			samsung,power-domain = <&pd_cam>;
++			phys = <&mipi_phy 2>;
++			phy-names = "csis";
+ 			status = "disabled";
+ 		};
+ 	};
 -- 
-1.7.10.4
-
-
+1.7.9.5
 

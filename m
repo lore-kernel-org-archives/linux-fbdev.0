@@ -1,43 +1,31 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Date: Tue, 25 Jun 2013 18:05:31 +0000
+From: Felipe Balbi <balbi@ti.com>
+Date: Tue, 25 Jun 2013 20:54:52 +0000
 Subject: Re: [PATCH v2 1/5] phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
-Message-Id: <3490805.zE8M3ZYxso@flatron>
+Message-Id: <20130625205452.GC9748@arwen.pp.htv.fi>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="iVCmgExH7+hIHJ1A"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1372170110-12993-1-git-send-email-s.nawrocki@samsung.com>
- <20130625150649.GA21334@arwen.pp.htv.fi> <51C9D714.4000703@samsung.com>
+ <20130625150649.GA21334@arwen.pp.htv.fi>
+ <51C9D714.4000703@samsung.com>
 In-Reply-To: <51C9D714.4000703@samsung.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Sylwester, Felipe,
+--iVCmgExH7+hIHJ1A
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Tuesday 25 of June 2013 19:44:52 Sylwester Nawrocki wrote:
-> Hi Felipe,
-> 
-> Thanks for the review.
-> 
-> On 06/25/2013 05:06 PM, Felipe Balbi wrote:
-> > On Tue, Jun 25, 2013 at 04:21:46PM +0200, Sylwester Nawrocki wrote:
-> >> +enum phy_id {
-> >> +	PHY_CSIS0,
-> >> +	PHY_DSIM0,
-> >> +	PHY_CSIS1,
-> >> +	PHY_DSIM1,
-> >> +	NUM_PHYS
-> > 
-> > please prepend these with EXYNOS_PHY_ or EXYNOS_MIPI_PHY_
-> 
-> OK, will fix that.
-> 
+Hi,
+
+On Tue, Jun 25, 2013 at 07:44:52PM +0200, Sylwester Nawrocki wrote:
 > >> +struct exynos_video_phy {
 > >> +	spinlock_t slock;
 > >> +	struct phy *phys[NUM_PHYS];
-> > 
+> >=20
 > > more than one phy ? This means you should instantiate driver multiple
 > > drivers. Each phy id should call probe again.
-> 
+>=20
 > Why ? This single PHY _provider_ can well handle multiple PHYs.
 > I don't see a good reason to further complicate this driver like
 > this. Please note that MIPI-CSIS 0 and MIPI DSIM 0 share MMIO
@@ -46,79 +34,104 @@ On Tuesday 25 of June 2013 19:44:52 Sylwester Nawrocki wrote:
 > multiplied, but it would have been just a waste of resources
 > with no difference to the PHY consumers.
 
-IMHO one driver instance should represent one instance of IP block. Since 
-this is a single IP block containing multiple PHYs with shared control 
-interface, I think Sylwester did the right thing.
+alright, I misunderstood your code then. When I looked over your id
+usage I missed the "/2" part and assumed that you would have separate
+EXYNOS_MIPI_PHY_CONTROL() register for each ;-)
 
-[snip]
-> >> +static struct phy *exynos_video_phy_xlate(struct device *dev,
-> >> +					struct of_phandle_args *args)
+My bad, you can disregard the other comments.
+
+> >> +static int exynos_video_phy_probe(struct platform_device *pdev)
 > >> +{
-> >> +	struct exynos_video_phy *state = dev_get_drvdata(dev);
+> >> +	struct exynos_video_phy *state;
+> >> +	struct device *dev =3D &pdev->dev;
+> >> +	struct resource *res;
+> >> +	struct phy_provider *phy_provider;
+> >> +	int i;
 > >> +
-> >> +	if (WARN_ON(args->args[0] > NUM_PHYS))
-> >> +		return NULL;
-> > 
-> > please remove this check.
-> 
-> args->args[0] comes from DT as the PHY id and there is nothing
-> preventing it from being greater or equal to the state->phys[]
-> array length, unless I'm missing something. Actually it should
-> have been 'if (args->args[0] >= NUM_PHYS)'.
-
-The xlate() callback gets directly whatever parsed from device tree, so it 
-is possible for an out of range value to get here and so this check is 
-valid. However I think it should rather return an ERR_PTR, not NULL. See 
-of_phy_get().
-
-> >> +	return state->phys[args->args[0]];
-> > 
-> > and your xlate is 'wrong'.
-> 
-> What exactly is wrong here ?
-
-Felipe, could you elaborate a bit more on this? I can't find any serious 
-problems with this code.
-
-[snip]
-> >> +	phy_provider = devm_of_phy_provider_register(dev,
-> >> +					exynos_video_phy_xlate);
-> >> +	if (IS_ERR(phy_provider))
-> >> +		return PTR_ERR(phy_provider);
+> >> +	state =3D devm_kzalloc(dev, sizeof(*state), GFP_KERNEL);
+> >> +	if (!state)
+> >> +		return -ENOMEM;
 > >> +
-> >> +	for (i = 0; i < NUM_PHYS; i++) {
-> >> +		char label[8];
+> >> +	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
 > >> +
-> >> +		snprintf(label, sizeof(label), "%s.%d",
-> >> +				i = PHY_DSIM0 || i = PHY_DSIM1 ?
-> >> +				"dsim" : "csis", i / 2);
+> >> +	state->regs =3D devm_ioremap_resource(dev, res);
+> >> +	if (IS_ERR(state->regs))
+> >> +		return PTR_ERR(state->regs);
 > >> +
-> >> +		state->phys[i] = devm_phy_create(dev, i, 
-&exynos_video_phy_ops,
-> >> +								label, 
-state);
-> >> +		if (IS_ERR(state->phys[i])) {
-> >> +			dev_err(dev, "failed to create PHY %s\n", label);
-> >> +			return PTR_ERR(state->phys[i]);
-> >> +		}
-> >> +	}
-> > 
-> > this really doesn't look correct to me. It looks like you have
-> > multiple
-> > PHYs, one for each ID. So your probe should be called for each PHY ID
-> > and you have several phy_providers too.
-> 
-> Yes, multiple PHY objects, but a single provider. There is no need
-> whatsoever for multiple PHY providers.
+> >> +	dev_set_drvdata(dev, state);
+> >=20
+> > you can use platform_set_drvdata(pdev, state);
+>=20
+> I had it in the previous version, but changed for symmetry with
+> dev_set_drvdata(). I guess those could be replaced with
+> phy_{get, set}_drvdata as you suggested.
 
-The whole concept of whatever-provider is to allow managing multiple 
-objects by one parent object, like one clock provider for the whole clock 
-controller, one interrupt controller object for all interrupts of an 
-interrupt controller block, etc.
+hmm, you do need to set the drvdata() to the phy object, but also to the
+pdev object (should you need it on a suspend/resume callback, for
+instance). Those are separate struct device instances.
 
-This is why a phandle has args, to allow addressing subobjects inside a 
-provider.
+> >> +static const struct of_device_id exynos_video_phy_of_match[] =3D {
+> >> +	{ .compatible =3D "samsung,s5pv210-mipi-video-phy" },
+> >=20
+> > and this should contain all PHY IDs:
+> >=20
+> > 	{ .compatible =3D "samsung,s5pv210-mipi-video-dsim0-phy",
+> > 		.data =3D (const void *) DSIM0, },
+> > 	{ .compatible =3D "samsung,s5pv210-mipi-video-dsim1-phy",
+> > 		.data =3D (const void *) DSIM1, },
+> > 	{ .compatible =3D "samsung,s5pv210-mipi-video-csi0-phy"
+> > 		.data =3D (const void *) CSI0, },
+> > 	{ .compatible =3D "samsung,s5pv210-mipi-video-csi1-phy"
+> > 		.data =3D (const void *) CSI1, },
+> >=20
+> > then on your probe you can fetch that data field and use it as phy->id.
+>=20
+> This looks wrong to me, it doesn't look like a right usage of 'compatible'
+> property. MIPI-CSIS0/MIPI-DSIM0, MIPI-CSIS1/MIPI-DSIM1 are identical pair=
+s,
+> so one compatible property would need to be used for them. We don't use
+> different compatible strings for different instances of same device.
+> And MIPI DSIM and MIPI CSIS share one MMIO register, so they need to be
+> handled by one provider, to synchronize accesses. That's one of the main
+> reasons I turned to the generic PHY framework for those devices.
 
-Best regards,
-Tomasz
+understood :-)
 
+> >> +static struct platform_driver exynos_video_phy_driver =3D {
+> >> +	.probe	=3D exynos_video_phy_probe,
+> >=20
+> > you *must* provide a remove method. drivers with NULL remove are
+> > non-removable :-)
+>=20
+> Oops, my bad. I've forgotten to update this, after enabling build
+> as module. Will update and test that. It will be an empty callback
+> though.
+
+right, because of devm.
+
+--=20
+balbi
+
+--iVCmgExH7+hIHJ1A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJRygOcAAoJEIaOsuA1yqRESeAP/3ZhQKKAuFwfSS60Q7C2Vt0Y
+LFGBMMAg2vwmXmRRXEQaZtJBArYMb3sm4P6pU0gbpEfYMB38MiwgNFE9Gcli99zB
+M60pcT12pa4dPr6Hrgb/oTPu5mQYHAz2EnVn2EktjFAjkSBYW6Xi1Sz0dNtfc2fs
+FcT3V+nqhPdv2gMtUwI9c1k1il1Z0BpoLgVTidvM60BfyfDPKOVbHzvcxMhYMNjq
+4KVN16FgBhbFKa3Bk/mMiM2T+8J5OYYlZ9MvY0lsqkMniXxm28oWG3eGCRVywvQq
+ZiJboBOy5ZEdEaT4cBWs46DdLGBdlCbxYz8/QrE+tw3e8+zRSx+9cUMnKJy7NMQW
+60yBngZ54Ypv8yQ9iTwYiNepDN7R76sb+L4ox9/neJUKHD2OuSf80W2rfx/wf/L4
+5g2IASxt6M5MnKIIyEmsKL0UDai3P+g7OLQSMIqETzgFbxBCr2Ffu3FHUexQNRLm
+BJtZePujspQahHmyHs7M1/+7qbLqoyaBipbsOI94k9r68rQ467u3P4/02F3NRE3q
+WArYPuN9pPN+o+3DRXmaNmQS/qEzNvDbpaW4gRbCHflVP1QDPVlnlszFsH/gqMvQ
+qLKGpA7knmJCq939J4zdz82ilroPFi/9NK7oASWHIWuYOywepCgGYpbPp7zLvts2
+Xtkh7OVV7og7B81/O2dY
+=cnVo
+-----END PGP SIGNATURE-----
+
+--iVCmgExH7+hIHJ1A--

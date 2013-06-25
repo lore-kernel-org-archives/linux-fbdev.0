@@ -1,205 +1,224 @@
-From: Felipe Balbi <balbi@ti.com>
-Date: Tue, 25 Jun 2013 15:06:50 +0000
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Date: Tue, 25 Jun 2013 17:44:52 +0000
 Subject: Re: [PATCH v2 1/5] phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
-Message-Id: <20130625150649.GA21334@arwen.pp.htv.fi>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="IS0zKkzwUGydFO0o"
+Message-Id: <51C9D714.4000703@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1372170110-12993-1-git-send-email-s.nawrocki@samsung.com>
-In-Reply-To: <1372170110-12993-1-git-send-email-s.nawrocki@samsung.com>
+ <20130625150649.GA21334@arwen.pp.htv.fi>
+In-Reply-To: <20130625150649.GA21334@arwen.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---IS0zKkzwUGydFO0o
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Felipe,
 
-Hi,
+Thanks for the review.
 
-On Tue, Jun 25, 2013 at 04:21:46PM +0200, Sylwester Nawrocki wrote:
-> +enum phy_id {
-> +	PHY_CSIS0,
-> +	PHY_DSIM0,
-> +	PHY_CSIS1,
-> +	PHY_DSIM1,
-> +	NUM_PHYS
+On 06/25/2013 05:06 PM, Felipe Balbi wrote:
+> On Tue, Jun 25, 2013 at 04:21:46PM +0200, Sylwester Nawrocki wrote:
+>> +enum phy_id {
+>> +	PHY_CSIS0,
+>> +	PHY_DSIM0,
+>> +	PHY_CSIS1,
+>> +	PHY_DSIM1,
+>> +	NUM_PHYS
+> 
+> please prepend these with EXYNOS_PHY_ or EXYNOS_MIPI_PHY_
 
-please prepend these with EXYNOS_PHY_ or EXYNOS_MIPI_PHY_
+OK, will fix that.
 
-> +struct exynos_video_phy {
-> +	spinlock_t slock;
-> +	struct phy *phys[NUM_PHYS];
+>> +struct exynos_video_phy {
+>> +	spinlock_t slock;
+>> +	struct phy *phys[NUM_PHYS];
+> 
+> more than one phy ? This means you should instantiate driver multiple
+> drivers. Each phy id should call probe again.
 
-more than one phy ? This means you should instantiate driver multiple
-drivers. Each phy id should call probe again.
+Why ? This single PHY _provider_ can well handle multiple PHYs.
+I don't see a good reason to further complicate this driver like
+this. Please note that MIPI-CSIS 0 and MIPI DSIM 0 share MMIO
+register, so does MIPI CSIS 1 and MIPI DSIM 1. There are only 2
+registers for those 4 PHYs. I could have the involved object
+multiplied, but it would have been just a waste of resources
+with no difference to the PHY consumers.
 
-> +static int __set_phy_state(struct exynos_video_phy *state,
-> +				enum phy_id id, unsigned int on)
-> +{
-> +	void __iomem *addr;
-> +	unsigned long flags;
-> +	u32 reg, reset;
-> +
-> +	if (WARN_ON(id > NUM_PHYS))
-> +		return -EINVAL;
+>> +static int __set_phy_state(struct exynos_video_phy *state,
+>> +				enum phy_id id, unsigned int on)
+>> +{
+>> +	void __iomem *addr;
+>> +	unsigned long flags;
+>> +	u32 reg, reset;
+>> +
+>> +	if (WARN_ON(id > NUM_PHYS))
+>> +		return -EINVAL;
+> 
+> you don't want to do this, actually. It'll bug you everytime you want to
+> add another phy ID :-)
 
-you don't want to do this, actually. It'll bug you everytime you want to
-add another phy ID :-)
+If there is an SoC with more PHYs enum phy_id would be extended, and this
+part would not need to be touched. OTOH @id cannot be normally greater
+than NUM_PHYS. I think I'll drop that then.
 
-> +	addr =3D state->regs + EXYNOS_MIPI_PHY_CONTROL(id / 2);
-> +
-> +	if (id =3D=3D PHY_DSIM0 || id =3D=3D PHY_DSIM1)
-> +		reset =3D EXYNOS_MIPI_PHY_MRESETN;
-> +	else
-> +		reset =3D EXYNOS_MIPI_PHY_SRESETN;
-> +
-> +	spin_lock_irqsave(&state->slock, flags);
-> +	reg =3D readl(addr);
-> +	if (on)
-> +		reg |=3D reset;
-> +	else
-> +		reg &=3D ~reset;
-> +	writel(reg, addr);
-> +
-> +	/* Clear ENABLE bit only if MRESETN, SRESETN bits are not set. */
-> +	if (on)
-> +		reg |=3D EXYNOS_MIPI_PHY_ENABLE;
-> +	else if (!(reg & EXYNOS_MIPI_PHY_RESET_MASK))
-> +		reg &=3D ~EXYNOS_MIPI_PHY_ENABLE;
-> +
-> +	writel(reg, addr);
-> +	spin_unlock_irqrestore(&state->slock, flags);
-> +
-> +	pr_debug("%s(): id: %d, on: %d, addr: %#x, base: %#x\n",
-> +		 __func__, id, on, (u32)addr, (u32)state->regs);
+>> +	addr = state->regs + EXYNOS_MIPI_PHY_CONTROL(id / 2);
+>> +
+>> +	if (id = PHY_DSIM0 || id = PHY_DSIM1)
+>> +		reset = EXYNOS_MIPI_PHY_MRESETN;
+>> +	else
+>> +		reset = EXYNOS_MIPI_PHY_SRESETN;
+>> +
+>> +	spin_lock_irqsave(&state->slock, flags);
+>> +	reg = readl(addr);
+>> +	if (on)
+>> +		reg |= reset;
+>> +	else
+>> +		reg &= ~reset;
+>> +	writel(reg, addr);
+>> +
+>> +	/* Clear ENABLE bit only if MRESETN, SRESETN bits are not set. */
+>> +	if (on)
+>> +		reg |= EXYNOS_MIPI_PHY_ENABLE;
+>> +	else if (!(reg & EXYNOS_MIPI_PHY_RESET_MASK))
+>> +		reg &= ~EXYNOS_MIPI_PHY_ENABLE;
+>> +
+>> +	writel(reg, addr);
+>> +	spin_unlock_irqrestore(&state->slock, flags);
+>> +
+>> +	pr_debug("%s(): id: %d, on: %d, addr: %#x, base: %#x\n",
+>> +		 __func__, id, on, (u32)addr, (u32)state->regs);
+> 
+> use dev_dbg() instead.
+> 
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int exynos_video_phy_power_on(struct phy *phy)
+>> +{
+>> +	struct exynos_video_phy *state = dev_get_drvdata(&phy->dev);
+> 
+> looks like we should have phy_get_drvdata() helper :-) Kishon ?
 
-use dev_dbg() instead.
+Indeed, that might be useful.
 
-> +
-> +	return 0;
-> +}
-> +
-> +static int exynos_video_phy_power_on(struct phy *phy)
-> +{
-> +	struct exynos_video_phy *state =3D dev_get_drvdata(&phy->dev);
+>> +static struct phy *exynos_video_phy_xlate(struct device *dev,
+>> +					struct of_phandle_args *args)
+>> +{
+>> +	struct exynos_video_phy *state = dev_get_drvdata(dev);
+>> +
+>> +	if (WARN_ON(args->args[0] > NUM_PHYS))
+>> +		return NULL;
+> 
+> please remove this check.
 
-looks like we should have phy_get_drvdata() helper :-) Kishon ?
+args->args[0] comes from DT as the PHY id and there is nothing
+preventing it from being greater or equal to the state->phys[]
+array length, unless I'm missing something. Actually it should
+have been 'if (args->args[0] >= NUM_PHYS)'.
 
-> +static struct phy *exynos_video_phy_xlate(struct device *dev,
-> +					struct of_phandle_args *args)
-> +{
-> +	struct exynos_video_phy *state =3D dev_get_drvdata(dev);
-> +
-> +	if (WARN_ON(args->args[0] > NUM_PHYS))
-> +		return NULL;
+>> +	return state->phys[args->args[0]];
+> 
+> and your xlate is 'wrong'.
 
-please remove this check.
+What exactly is wrong here ?
 
-> +	return state->phys[args->args[0]];
+>> +}
+>> +
+>> +static struct phy_ops exynos_video_phy_ops = {
+>> +	.power_on	= exynos_video_phy_power_on,
+>> +	.power_off	= exynos_video_phy_power_off,
+>> +	.owner		= THIS_MODULE,
+>> +};
+>> +
+>> +static int exynos_video_phy_probe(struct platform_device *pdev)
+>> +{
+>> +	struct exynos_video_phy *state;
+>> +	struct device *dev = &pdev->dev;
+>> +	struct resource *res;
+>> +	struct phy_provider *phy_provider;
+>> +	int i;
+>> +
+>> +	state = devm_kzalloc(dev, sizeof(*state), GFP_KERNEL);
+>> +	if (!state)
+>> +		return -ENOMEM;
+>> +
+>> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>> +
+>> +	state->regs = devm_ioremap_resource(dev, res);
+>> +	if (IS_ERR(state->regs))
+>> +		return PTR_ERR(state->regs);
+>> +
+>> +	dev_set_drvdata(dev, state);
+> 
+> you can use platform_set_drvdata(pdev, state);
 
-and your xlate is 'wrong'.
+I had it in the previous version, but changed for symmetry with
+dev_set_drvdata(). I guess those could be replaced with
+phy_{get, set}_drvdata as you suggested.
 
-> +}
-> +
-> +static struct phy_ops exynos_video_phy_ops =3D {
-> +	.power_on	=3D exynos_video_phy_power_on,
-> +	.power_off	=3D exynos_video_phy_power_off,
-> +	.owner		=3D THIS_MODULE,
-> +};
-> +
-> +static int exynos_video_phy_probe(struct platform_device *pdev)
-> +{
-> +	struct exynos_video_phy *state;
-> +	struct device *dev =3D &pdev->dev;
-> +	struct resource *res;
-> +	struct phy_provider *phy_provider;
-> +	int i;
-> +
-> +	state =3D devm_kzalloc(dev, sizeof(*state), GFP_KERNEL);
-> +	if (!state)
-> +		return -ENOMEM;
-> +
-> +	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +
-> +	state->regs =3D devm_ioremap_resource(dev, res);
-> +	if (IS_ERR(state->regs))
-> +		return PTR_ERR(state->regs);
-> +
-> +	dev_set_drvdata(dev, state);
+> same thing though, no strong feelings.
+> 
+>> +	phy_provider = devm_of_phy_provider_register(dev,
+>> +					exynos_video_phy_xlate);
+>> +	if (IS_ERR(phy_provider))
+>> +		return PTR_ERR(phy_provider);
+>> +
+>> +	for (i = 0; i < NUM_PHYS; i++) {
+>> +		char label[8];
+>> +
+>> +		snprintf(label, sizeof(label), "%s.%d",
+>> +				i = PHY_DSIM0 || i = PHY_DSIM1 ?
+>> +				"dsim" : "csis", i / 2);
+>> +
+>> +		state->phys[i] = devm_phy_create(dev, i, &exynos_video_phy_ops,
+>> +								label, state);
+>> +		if (IS_ERR(state->phys[i])) {
+>> +			dev_err(dev, "failed to create PHY %s\n", label);
+>> +			return PTR_ERR(state->phys[i]);
+>> +		}
+>> +	}
+> 
+> this really doesn't look correct to me. It looks like you have multiple
+> PHYs, one for each ID. So your probe should be called for each PHY ID
+> and you have several phy_providers too.
 
-you can use platform_set_drvdata(pdev, state);
+Yes, multiple PHY objects, but a single provider. There is no need
+whatsoever for multiple PHY providers.
 
-same thing though, no strong feelings.
+>> +static const struct of_device_id exynos_video_phy_of_match[] = {
+>> +	{ .compatible = "samsung,s5pv210-mipi-video-phy" },
+> 
+> and this should contain all PHY IDs:
+> 
+> 	{ .compatible = "samsung,s5pv210-mipi-video-dsim0-phy",
+> 		.data = (const void *) DSIM0, },
+> 	{ .compatible = "samsung,s5pv210-mipi-video-dsim1-phy",
+> 		.data = (const void *) DSIM1, },
+> 	{ .compatible = "samsung,s5pv210-mipi-video-csi0-phy"
+> 		.data = (const void *) CSI0, },
+> 	{ .compatible = "samsung,s5pv210-mipi-video-csi1-phy"
+> 		.data = (const void *) CSI1, },
+> 
+> then on your probe you can fetch that data field and use it as phy->id.
 
-> +	phy_provider =3D devm_of_phy_provider_register(dev,
-> +					exynos_video_phy_xlate);
-> +	if (IS_ERR(phy_provider))
-> +		return PTR_ERR(phy_provider);
-> +
-> +	for (i =3D 0; i < NUM_PHYS; i++) {
-> +		char label[8];
-> +
-> +		snprintf(label, sizeof(label), "%s.%d",
-> +				i =3D=3D PHY_DSIM0 || i =3D=3D PHY_DSIM1 ?
-> +				"dsim" : "csis", i / 2);
-> +
-> +		state->phys[i] =3D devm_phy_create(dev, i, &exynos_video_phy_ops,
-> +								label, state);
-> +		if (IS_ERR(state->phys[i])) {
-> +			dev_err(dev, "failed to create PHY %s\n", label);
-> +			return PTR_ERR(state->phys[i]);
-> +		}
-> +	}
+This looks wrong to me, it doesn't look like a right usage of 'compatible'
+property. MIPI-CSIS0/MIPI-DSIM0, MIPI-CSIS1/MIPI-DSIM1 are identical pairs,
+so one compatible property would need to be used for them. We don't use
+different compatible strings for different instances of same device.
+And MIPI DSIM and MIPI CSIS share one MMIO register, so they need to be
+handled by one provider, to synchronize accesses. That's one of the main
+reasons I turned to the generic PHY framework for those devices.
 
-this really doesn't look correct to me. It looks like you have multiple
-PHYs, one for each ID. So your probe should be called for each PHY ID
-and you have several phy_providers too.
+>> +static struct platform_driver exynos_video_phy_driver = {
+>> +	.probe	= exynos_video_phy_probe,
+> 
+> you *must* provide a remove method. drivers with NULL remove are
+> non-removable :-)
 
-> +static const struct of_device_id exynos_video_phy_of_match[] =3D {
-> +	{ .compatible =3D "samsung,s5pv210-mipi-video-phy" },
+Oops, my bad. I've forgotten to update this, after enabling build
+as module. Will update and test that. It will be an empty callback
+though.
 
-and this should contain all PHY IDs:
 
-	{ .compatible =3D "samsung,s5pv210-mipi-video-dsim0-phy",
-		.data =3D (const void *) DSIM0, },
-	{ .compatible =3D "samsung,s5pv210-mipi-video-dsim1-phy",
-		.data =3D (const void *) DSIM1, },
-	{ .compatible =3D "samsung,s5pv210-mipi-video-csi0-phy"
-		.data =3D (const void *) CSI0, },
-	{ .compatible =3D "samsung,s5pv210-mipi-video-csi1-phy"
-		.data =3D (const void *) CSI1, },
-
-then on your probe you can fetch that data field and use it as phy->id.
-
-> +static struct platform_driver exynos_video_phy_driver =3D {
-> +	.probe	=3D exynos_video_phy_probe,
-
-you *must* provide a remove method. drivers with NULL remove are
-non-removable :-)
-
---=20
-balbi
-
---IS0zKkzwUGydFO0o
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJRybIJAAoJEIaOsuA1yqRE2K4QAKIVYLVEAUmSfjw4QDEr95QA
-shRIurhJHHmEEOWMijrXymiJ8Fuj/efB8ElSNSq0uuLq8bY2pCI6/zvLCDAFwryf
-lTXmF0enwBrx8GzTVjagUhjq+MdhZayjSaYl8mhJEIaDfD+fKMe6UsoVDAUtM8Fq
-sikoQ5cvHxQjIhiUa3FjK8yBhlHpBgLnz3RPmuxDZGIrWI6K/kNf55C/8R9OqWCJ
-vPfU637QlKKbkYizgij9QrM97OATIz1cjvz20vDVSeqHLTjA0qmxnHq4hQZNe8OX
-f62CHbClM4aRbNmb6TmqeV8WGYcklJauej7JhpznXqdau713fS0yvHbYANrBN2/N
-XlMw+nO8REC7GzKwDRyFWmD1Ta47DO+5n+WHOZvEd52vDC4FuI7V3vRD179HIj/h
-Y9qYGuoZrmZlzY5LfMo5FBan2XVKVlLm1+EAw2iLn6MAjOH9WgOnpmL8uVgDesh9
-thk0duHIae1I9I62ocB46Nqdy6gFmxUphVX0Gg87h6TpdkRQFNoRdspe86EkaOo7
-gYb5m26Rz3pyjF16eezjfpzvAXU15uNd6LXsyNK4jT+nocU3qr0x7ZYoxDrDNtu7
-pXiAkd7EBOOp7gQOmrEiPsbYDbQvNj9CV6qIADQkTATc2hxBhYBARPvnv148Hq8c
-cVgRnwYwot0w2J7vvavT
-=kEo3
------END PGP SIGNATURE-----
-
---IS0zKkzwUGydFO0o--
+Thanks,
+Sylwester

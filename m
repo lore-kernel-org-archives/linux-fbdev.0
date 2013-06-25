@@ -1,224 +1,124 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Date: Tue, 25 Jun 2013 17:44:52 +0000
+From: Tomasz Figa <tomasz.figa@gmail.com>
+Date: Tue, 25 Jun 2013 18:05:31 +0000
 Subject: Re: [PATCH v2 1/5] phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
-Message-Id: <51C9D714.4000703@samsung.com>
+Message-Id: <3490805.zE8M3ZYxso@flatron>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1372170110-12993-1-git-send-email-s.nawrocki@samsung.com>
- <20130625150649.GA21334@arwen.pp.htv.fi>
-In-Reply-To: <20130625150649.GA21334@arwen.pp.htv.fi>
+ <20130625150649.GA21334@arwen.pp.htv.fi> <51C9D714.4000703@samsung.com>
+In-Reply-To: <51C9D714.4000703@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Felipe,
+Hi Sylwester, Felipe,
 
-Thanks for the review.
-
-On 06/25/2013 05:06 PM, Felipe Balbi wrote:
-> On Tue, Jun 25, 2013 at 04:21:46PM +0200, Sylwester Nawrocki wrote:
->> +enum phy_id {
->> +	PHY_CSIS0,
->> +	PHY_DSIM0,
->> +	PHY_CSIS1,
->> +	PHY_DSIM1,
->> +	NUM_PHYS
+On Tuesday 25 of June 2013 19:44:52 Sylwester Nawrocki wrote:
+> Hi Felipe,
 > 
-> please prepend these with EXYNOS_PHY_ or EXYNOS_MIPI_PHY_
-
-OK, will fix that.
-
->> +struct exynos_video_phy {
->> +	spinlock_t slock;
->> +	struct phy *phys[NUM_PHYS];
+> Thanks for the review.
 > 
-> more than one phy ? This means you should instantiate driver multiple
-> drivers. Each phy id should call probe again.
-
-Why ? This single PHY _provider_ can well handle multiple PHYs.
-I don't see a good reason to further complicate this driver like
-this. Please note that MIPI-CSIS 0 and MIPI DSIM 0 share MMIO
-register, so does MIPI CSIS 1 and MIPI DSIM 1. There are only 2
-registers for those 4 PHYs. I could have the involved object
-multiplied, but it would have been just a waste of resources
-with no difference to the PHY consumers.
-
->> +static int __set_phy_state(struct exynos_video_phy *state,
->> +				enum phy_id id, unsigned int on)
->> +{
->> +	void __iomem *addr;
->> +	unsigned long flags;
->> +	u32 reg, reset;
->> +
->> +	if (WARN_ON(id > NUM_PHYS))
->> +		return -EINVAL;
+> On 06/25/2013 05:06 PM, Felipe Balbi wrote:
+> > On Tue, Jun 25, 2013 at 04:21:46PM +0200, Sylwester Nawrocki wrote:
+> >> +enum phy_id {
+> >> +	PHY_CSIS0,
+> >> +	PHY_DSIM0,
+> >> +	PHY_CSIS1,
+> >> +	PHY_DSIM1,
+> >> +	NUM_PHYS
+> > 
+> > please prepend these with EXYNOS_PHY_ or EXYNOS_MIPI_PHY_
 > 
-> you don't want to do this, actually. It'll bug you everytime you want to
-> add another phy ID :-)
-
-If there is an SoC with more PHYs enum phy_id would be extended, and this
-part would not need to be touched. OTOH @id cannot be normally greater
-than NUM_PHYS. I think I'll drop that then.
-
->> +	addr = state->regs + EXYNOS_MIPI_PHY_CONTROL(id / 2);
->> +
->> +	if (id = PHY_DSIM0 || id = PHY_DSIM1)
->> +		reset = EXYNOS_MIPI_PHY_MRESETN;
->> +	else
->> +		reset = EXYNOS_MIPI_PHY_SRESETN;
->> +
->> +	spin_lock_irqsave(&state->slock, flags);
->> +	reg = readl(addr);
->> +	if (on)
->> +		reg |= reset;
->> +	else
->> +		reg &= ~reset;
->> +	writel(reg, addr);
->> +
->> +	/* Clear ENABLE bit only if MRESETN, SRESETN bits are not set. */
->> +	if (on)
->> +		reg |= EXYNOS_MIPI_PHY_ENABLE;
->> +	else if (!(reg & EXYNOS_MIPI_PHY_RESET_MASK))
->> +		reg &= ~EXYNOS_MIPI_PHY_ENABLE;
->> +
->> +	writel(reg, addr);
->> +	spin_unlock_irqrestore(&state->slock, flags);
->> +
->> +	pr_debug("%s(): id: %d, on: %d, addr: %#x, base: %#x\n",
->> +		 __func__, id, on, (u32)addr, (u32)state->regs);
+> OK, will fix that.
 > 
-> use dev_dbg() instead.
+> >> +struct exynos_video_phy {
+> >> +	spinlock_t slock;
+> >> +	struct phy *phys[NUM_PHYS];
+> > 
+> > more than one phy ? This means you should instantiate driver multiple
+> > drivers. Each phy id should call probe again.
 > 
->> +
->> +	return 0;
->> +}
->> +
->> +static int exynos_video_phy_power_on(struct phy *phy)
->> +{
->> +	struct exynos_video_phy *state = dev_get_drvdata(&phy->dev);
+> Why ? This single PHY _provider_ can well handle multiple PHYs.
+> I don't see a good reason to further complicate this driver like
+> this. Please note that MIPI-CSIS 0 and MIPI DSIM 0 share MMIO
+> register, so does MIPI CSIS 1 and MIPI DSIM 1. There are only 2
+> registers for those 4 PHYs. I could have the involved object
+> multiplied, but it would have been just a waste of resources
+> with no difference to the PHY consumers.
+
+IMHO one driver instance should represent one instance of IP block. Since 
+this is a single IP block containing multiple PHYs with shared control 
+interface, I think Sylwester did the right thing.
+
+[snip]
+> >> +static struct phy *exynos_video_phy_xlate(struct device *dev,
+> >> +					struct of_phandle_args *args)
+> >> +{
+> >> +	struct exynos_video_phy *state = dev_get_drvdata(dev);
+> >> +
+> >> +	if (WARN_ON(args->args[0] > NUM_PHYS))
+> >> +		return NULL;
+> > 
+> > please remove this check.
 > 
-> looks like we should have phy_get_drvdata() helper :-) Kishon ?
+> args->args[0] comes from DT as the PHY id and there is nothing
+> preventing it from being greater or equal to the state->phys[]
+> array length, unless I'm missing something. Actually it should
+> have been 'if (args->args[0] >= NUM_PHYS)'.
 
-Indeed, that might be useful.
+The xlate() callback gets directly whatever parsed from device tree, so it 
+is possible for an out of range value to get here and so this check is 
+valid. However I think it should rather return an ERR_PTR, not NULL. See 
+of_phy_get().
 
->> +static struct phy *exynos_video_phy_xlate(struct device *dev,
->> +					struct of_phandle_args *args)
->> +{
->> +	struct exynos_video_phy *state = dev_get_drvdata(dev);
->> +
->> +	if (WARN_ON(args->args[0] > NUM_PHYS))
->> +		return NULL;
+> >> +	return state->phys[args->args[0]];
+> > 
+> > and your xlate is 'wrong'.
 > 
-> please remove this check.
+> What exactly is wrong here ?
 
-args->args[0] comes from DT as the PHY id and there is nothing
-preventing it from being greater or equal to the state->phys[]
-array length, unless I'm missing something. Actually it should
-have been 'if (args->args[0] >= NUM_PHYS)'.
+Felipe, could you elaborate a bit more on this? I can't find any serious 
+problems with this code.
 
->> +	return state->phys[args->args[0]];
+[snip]
+> >> +	phy_provider = devm_of_phy_provider_register(dev,
+> >> +					exynos_video_phy_xlate);
+> >> +	if (IS_ERR(phy_provider))
+> >> +		return PTR_ERR(phy_provider);
+> >> +
+> >> +	for (i = 0; i < NUM_PHYS; i++) {
+> >> +		char label[8];
+> >> +
+> >> +		snprintf(label, sizeof(label), "%s.%d",
+> >> +				i = PHY_DSIM0 || i = PHY_DSIM1 ?
+> >> +				"dsim" : "csis", i / 2);
+> >> +
+> >> +		state->phys[i] = devm_phy_create(dev, i, 
+&exynos_video_phy_ops,
+> >> +								label, 
+state);
+> >> +		if (IS_ERR(state->phys[i])) {
+> >> +			dev_err(dev, "failed to create PHY %s\n", label);
+> >> +			return PTR_ERR(state->phys[i]);
+> >> +		}
+> >> +	}
+> > 
+> > this really doesn't look correct to me. It looks like you have
+> > multiple
+> > PHYs, one for each ID. So your probe should be called for each PHY ID
+> > and you have several phy_providers too.
 > 
-> and your xlate is 'wrong'.
+> Yes, multiple PHY objects, but a single provider. There is no need
+> whatsoever for multiple PHY providers.
 
-What exactly is wrong here ?
+The whole concept of whatever-provider is to allow managing multiple 
+objects by one parent object, like one clock provider for the whole clock 
+controller, one interrupt controller object for all interrupts of an 
+interrupt controller block, etc.
 
->> +}
->> +
->> +static struct phy_ops exynos_video_phy_ops = {
->> +	.power_on	= exynos_video_phy_power_on,
->> +	.power_off	= exynos_video_phy_power_off,
->> +	.owner		= THIS_MODULE,
->> +};
->> +
->> +static int exynos_video_phy_probe(struct platform_device *pdev)
->> +{
->> +	struct exynos_video_phy *state;
->> +	struct device *dev = &pdev->dev;
->> +	struct resource *res;
->> +	struct phy_provider *phy_provider;
->> +	int i;
->> +
->> +	state = devm_kzalloc(dev, sizeof(*state), GFP_KERNEL);
->> +	if (!state)
->> +		return -ENOMEM;
->> +
->> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->> +
->> +	state->regs = devm_ioremap_resource(dev, res);
->> +	if (IS_ERR(state->regs))
->> +		return PTR_ERR(state->regs);
->> +
->> +	dev_set_drvdata(dev, state);
-> 
-> you can use platform_set_drvdata(pdev, state);
+This is why a phandle has args, to allow addressing subobjects inside a 
+provider.
 
-I had it in the previous version, but changed for symmetry with
-dev_set_drvdata(). I guess those could be replaced with
-phy_{get, set}_drvdata as you suggested.
+Best regards,
+Tomasz
 
-> same thing though, no strong feelings.
-> 
->> +	phy_provider = devm_of_phy_provider_register(dev,
->> +					exynos_video_phy_xlate);
->> +	if (IS_ERR(phy_provider))
->> +		return PTR_ERR(phy_provider);
->> +
->> +	for (i = 0; i < NUM_PHYS; i++) {
->> +		char label[8];
->> +
->> +		snprintf(label, sizeof(label), "%s.%d",
->> +				i = PHY_DSIM0 || i = PHY_DSIM1 ?
->> +				"dsim" : "csis", i / 2);
->> +
->> +		state->phys[i] = devm_phy_create(dev, i, &exynos_video_phy_ops,
->> +								label, state);
->> +		if (IS_ERR(state->phys[i])) {
->> +			dev_err(dev, "failed to create PHY %s\n", label);
->> +			return PTR_ERR(state->phys[i]);
->> +		}
->> +	}
-> 
-> this really doesn't look correct to me. It looks like you have multiple
-> PHYs, one for each ID. So your probe should be called for each PHY ID
-> and you have several phy_providers too.
-
-Yes, multiple PHY objects, but a single provider. There is no need
-whatsoever for multiple PHY providers.
-
->> +static const struct of_device_id exynos_video_phy_of_match[] = {
->> +	{ .compatible = "samsung,s5pv210-mipi-video-phy" },
-> 
-> and this should contain all PHY IDs:
-> 
-> 	{ .compatible = "samsung,s5pv210-mipi-video-dsim0-phy",
-> 		.data = (const void *) DSIM0, },
-> 	{ .compatible = "samsung,s5pv210-mipi-video-dsim1-phy",
-> 		.data = (const void *) DSIM1, },
-> 	{ .compatible = "samsung,s5pv210-mipi-video-csi0-phy"
-> 		.data = (const void *) CSI0, },
-> 	{ .compatible = "samsung,s5pv210-mipi-video-csi1-phy"
-> 		.data = (const void *) CSI1, },
-> 
-> then on your probe you can fetch that data field and use it as phy->id.
-
-This looks wrong to me, it doesn't look like a right usage of 'compatible'
-property. MIPI-CSIS0/MIPI-DSIM0, MIPI-CSIS1/MIPI-DSIM1 are identical pairs,
-so one compatible property would need to be used for them. We don't use
-different compatible strings for different instances of same device.
-And MIPI DSIM and MIPI CSIS share one MMIO register, so they need to be
-handled by one provider, to synchronize accesses. That's one of the main
-reasons I turned to the generic PHY framework for those devices.
-
->> +static struct platform_driver exynos_video_phy_driver = {
->> +	.probe	= exynos_video_phy_probe,
-> 
-> you *must* provide a remove method. drivers with NULL remove are
-> non-removable :-)
-
-Oops, my bad. I've forgotten to update this, after enabling build
-as module. Will update and test that. It will be an empty callback
-though.
-
-
-Thanks,
-Sylwester

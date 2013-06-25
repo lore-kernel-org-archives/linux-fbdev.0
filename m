@@ -1,51 +1,106 @@
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Date: Sun, 09 Jun 2013 12:03:11 +0000
-Subject: Re: [V1 5/7] video: mmp: add pitch info in mmp_win structure
-Message-Id: <51B46EFF.7020001@cogentembedded.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 25 Jun 2013 14:22:42 +0000
+Subject: [PATCH 14/23] video: da8xx-fb: use devres
+Message-Id: <1372170171-9561-15-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1370767486-11729-1-git-send-email-jtzhou@marvell.com>
-In-Reply-To: <1370767486-11729-1-git-send-email-jtzhou@marvell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Hello.
+From: Afzal Mohammed <afzal@ti.com>
 
-On 09-06-2013 12:44, Jett.Zhou wrote:
+Replace existing resource handling in the driver with managed device
+resource.
 
-> From: Jing Xiang <jxiang@marvell.com>
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
+---
+ drivers/video/da8xx-fb.c |   35 ++++++-----------------------------
+ 1 files changed, 6 insertions(+), 29 deletions(-)
 
-> Add pitch length info of graphics/video layer for mmp_win, if it is
-> YUV format of video layer, u/v pitch will non-zero.
-
-> Signed-off-by: Jing Xiang <jxiang@marvell.com>
-> Signed-off-by: Jett.Zhou <jtzhou@marvell.com>
-> ---
->   include/video/mmp_disp.h |    3 +++
->   1 files changed, 3 insertions(+), 0 deletions(-)
-
-> diff --git a/include/video/mmp_disp.h b/include/video/mmp_disp.h
-> index b9dd1fb..5708d26 100644
-> --- a/include/video/mmp_disp.h
-> +++ b/include/video/mmp_disp.h
-> @@ -91,6 +91,9 @@ struct mmp_win {
->   	u16	up_crop;
->   	u16	bottom_crop;
->   	int	pix_fmt;
-> +	/* pitch[0]: graphics/video layer line length or y pitch
-> +	 * pitch[1]/pitch[2]: video u/v pitch if non-zero */
-
-    The preferred format for multi-line comments is this:
-
-/*
-  * bla
-  * bla
-  */
-
-> +	u32	pitch[3];
->   };
-
-WBR, Sergei
-
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index ca69e01..7a32e83 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1036,12 +1036,9 @@ static int fb_remove(struct platform_device *dev)
+ 				  par->p_palette_base);
+ 		dma_free_coherent(NULL, par->vram_size, par->vram_virt,
+ 				  par->vram_phys);
+-		free_irq(par->irq, par);
+ 		pm_runtime_put_sync(&dev->dev);
+ 		pm_runtime_disable(&dev->dev);
+ 		framebuffer_release(info);
+-		iounmap(da8xx_fb_reg_base);
+-		release_mem_region(lcdc_regs->start, resource_size(lcdc_regs));
+ 
+ 	}
+ 	return 0;
+@@ -1265,7 +1262,6 @@ static int fb_probe(struct platform_device *device)
+ 	struct fb_info *da8xx_fb_info;
+ 	struct clk *fb_clk = NULL;
+ 	struct da8xx_fb_par *par;
+-	resource_size_t len;
+ 	int ret, i;
+ 	unsigned long ulcm;
+ 
+@@ -1275,29 +1271,16 @@ static int fb_probe(struct platform_device *device)
+ 	}
+ 
+ 	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
+-	if (!lcdc_regs) {
+-		dev_err(&device->dev,
+-			"Can not get memory resource for LCD controller\n");
+-		return -ENOENT;
+-	}
+-
+-	len = resource_size(lcdc_regs);
+-
+-	lcdc_regs = request_mem_region(lcdc_regs->start, len, lcdc_regs->name);
+-	if (!lcdc_regs)
+-		return -EBUSY;
+-
+-	da8xx_fb_reg_base = ioremap(lcdc_regs->start, len);
++	da8xx_fb_reg_base = devm_request_and_ioremap(&device->dev, lcdc_regs);
+ 	if (!da8xx_fb_reg_base) {
+-		ret = -EBUSY;
+-		goto err_request_mem;
++		dev_err(&device->dev, "memory resource setup failed\n");
++		return -EADDRNOTAVAIL;
+ 	}
+ 
+-	fb_clk = clk_get(&device->dev, "fck");
++	fb_clk = devm_clk_get(&device->dev, "fck");
+ 	if (IS_ERR(fb_clk)) {
+ 		dev_err(&device->dev, "Can not get device clock\n");
+-		ret = -ENODEV;
+-		goto err_ioremap;
++		return -ENODEV;
+ 	}
+ 
+ 	pm_runtime_enable(&device->dev);
+@@ -1458,7 +1441,7 @@ static int fb_probe(struct platform_device *device)
+ 		lcdc_irq_handler = lcdc_irq_handler_rev02;
+ 	}
+ 
+-	ret = request_irq(par->irq, lcdc_irq_handler, 0,
++	ret = devm_request_irq(&device->dev, par->irq, lcdc_irq_handler, 0,
+ 			DRIVER_NAME, par);
+ 	if (ret)
+ 		goto irq_freq;
+@@ -1488,12 +1471,6 @@ err_pm_runtime_disable:
+ 	pm_runtime_put_sync(&device->dev);
+ 	pm_runtime_disable(&device->dev);
+ 
+-err_ioremap:
+-	iounmap(da8xx_fb_reg_base);
+-
+-err_request_mem:
+-	release_mem_region(lcdc_regs->start, len);
+-
+ 	return ret;
+ }
+ 
+-- 
+1.7.0.4
 

@@ -1,7 +1,7 @@
-From: Inki Dae <daeinki@gmail.com>
-Date: Tue, 25 Jun 2013 14:17:53 +0000
+From: Jerome Glisse <j.glisse@gmail.com>
+Date: Tue, 25 Jun 2013 14:49:43 +0000
 Subject: Re: [RFC PATCH] dmabuf-sync: Introduce buffer synchronization framework
-Message-Id: <CAAQKjZNjjgG3hoKU2RLsG7w+B-2v7CpTT5hfnnTTJ2DgTEk0vA@mail.gmail.com>
+Message-Id: <CAH3drwYqwddVuFRjDbYyvs+2hVWxsQDC1X8OCXMJURRty2087Q@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20130617182127.GM2718@n2100.arm.linux.org.uk>
 	<007301ce6be4$8d5c6040$a81520c0$%dae@samsung.com>
@@ -26,61 +26,66 @@ References: <20130617182127.GM2718@n2100.arm.linux.org.uk>
 	<CAH3drwZVhs=odjFdB_Mf+K0JLT5NSSbz5mP9aOS=5fx-PVdzSg@mail.gmail.com>
 	<CAAQKjZNnJRddACHzD+VF=A8vJpt9SEy2ttnS3Kw0y3hexu8dnw@mail.gmail.com>
 	<CAF6AEGsBvZbcWDbX3FFtyDxFO1NqYNRLqHEUyP4qUD9wK+ARbA@mail.gmail.com>
-In-Reply-To: <CAF6AEGsBvZbcWDbX3FFtyDxFO1NqYNRLqHEUyP4qUD9wK+ARbA@mail.gmail.com>
+	<CAAQKjZNjjgG3hoKU2RLsG7w+B-2v7CpTT5hfnnTTJ2DgTEk0vA@mail.gmail.com>
+In-Reply-To: <CAAQKjZNjjgG3hoKU2RLsG7w+B-2v7CpTT5hfnnTTJ2DgTEk0vA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Clark <robdclark@gmail.com>
-Cc: Jerome Glisse <j.glisse@gmail.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, DRI mailing list <dri-devel@lists.freedesktop.org>, Kyungmin Park <kyungmin.park@samsung.com>, "myungjoo.ham" <myungjoo.ham@samsung.com>, YoungJun Cho <yj44.cho@samsung.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Inki Dae <daeinki@gmail.com>
+Cc: Rob Clark <robdclark@gmail.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, DRI mailing list <dri-devel@lists.freedesktop.org>, Kyungmin Park <kyungmin.park@samsung.com>, "myungjoo.ham" <myungjoo.ham@samsung.com>, YoungJun Cho <yj44.cho@samsung.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-2013/6/25 Rob Clark <robdclark@gmail.com>:
-> On Tue, Jun 25, 2013 at 5:09 AM, Inki Dae <daeinki@gmail.com> wrote:
->>> that
->>> should be the role of kernel memory management which of course needs
->>> synchronization btw A and B. But in no case this should be done using
->>> dma-buf. dma-buf is for sharing content btw different devices not
->>> sharing resources.
+On Tue, Jun 25, 2013 at 10:17 AM, Inki Dae <daeinki@gmail.com> wrote:
+> 2013/6/25 Rob Clark <robdclark@gmail.com>:
+>> On Tue, Jun 25, 2013 at 5:09 AM, Inki Dae <daeinki@gmail.com> wrote:
+>>>> that
+>>>> should be the role of kernel memory management which of course needs
+>>>> synchronization btw A and B. But in no case this should be done using
+>>>> dma-buf. dma-buf is for sharing content btw different devices not
+>>>> sharing resources.
+>>>>
 >>>
+>>> hmm, is that true? And are you sure? Then how do you think about
+>>> reservation? the reservation also uses dma-buf with same reason as long as I
+>>> know: actually, we use reservation to use dma-buf. As you may know, a
+>>> reservation object is allocated and initialized when a buffer object is
+>>> exported to a dma buf.
 >>
->> hmm, is that true? And are you sure? Then how do you think about
->> reservation? the reservation also uses dma-buf with same reason as long as I
->> know: actually, we use reservation to use dma-buf. As you may know, a
->> reservation object is allocated and initialized when a buffer object is
->> exported to a dma buf.
+>> no, this is why the reservation object can be passed in when you
+>> construction the dmabuf.
 >
-> no, this is why the reservation object can be passed in when you
-> construction the dmabuf.
+> Right, that way, we could use dma buf for buffer synchronization. I
+> just wanted to ask for why Jerome said that "dma-buf is for sharing
+> content btw different devices not sharing resources".
 
-Right, that way, we could use dma buf for buffer synchronization. I
-just wanted to ask for why Jerome said that "dma-buf is for sharing
-content btw different devices not sharing resources".
+From memory, the motivation of dma-buf was to done for few use case,
+among them webcam capturing frame into a buffer and having gpu using
+it directly without memcpy, or one big gpu rendering a scene into a
+buffer that is then use by low power gpu for display ie it was done to
+allow different device to operate on same data using same backing
+memory.
 
-> The fallback is for dmabuf to create it's
-> own, for compatibility and to make life easier for simple devices with
-> few buffers... but I think pretty much all drm drivers would embed the
-> reservation object in the gem buffer and pass it in when the dmabuf is
-> created.
->
-> It is pretty much imperative that synchronization works independently
-> of dmabuf, you really don't want to have two different cases to deal
-> with in your driver, one for synchronizing non-exported objects, and
-> one for synchronizing dmabuf objects.
->
+AFAICT you seem to want to use dma-buf to create scratch buffer, ie a
+process needs to use X amount of memory for an operation, it can
+release|free this memory once its done and a process B can the use
+this X memory for its own operation discarding content of process A. I
+presume that next frame would have the sequence repeat, process A do
+something, then process B does its thing. So to me it sounds like you
+want to implement global scratch buffer using the dmabuf API and that
+sounds bad to me.
 
-Now my approach is concentrating on the most basic implementation,
-buffer synchronization mechanism between CPU and CPU, CPU and DMA, and
-DMA and DMA.  But I think reserveration could be used for other
-purposes such as pipe line synchronization independently of dmabuf as
-you said. Actually, I had already implemented pipe line
-synchronization mechanism using the reservation: in case of MALI-400
-DDK, there was pipe line issue between gp and pp jobs, and we had
-solved the issue using the pipe line synchronization mechanism with
-the reservation. So, we could add more features anytime; those two
-different cases, dmabuf objects and non-exported objects, if needed
-because we are using the reservation object.
+I know most closed driver have several pool of memory, long lived
+object, short lived object and scratch space, then user space allocate
+from one of this pool and there is synchronization done by driver
+using driver specific API to reclaim memory. Of course this work
+nicely if you only talking about one logic block or at very least hw
+that have one memory controller.
 
-Thanks,
-Inki Dae
+Now if you are thinking of doing scratch buffer for several different
+device and share the memory among then you need to be aware of
+security implication, most obvious being that you don't want process B
+being able to read process A scratch memory. I know the argument about
+it being graphic but one day this might become gpu code and it might
+be able to insert jump to malicious gpu code.
 
-> BR,
-> -R
+Cheers,
+Jerome

@@ -1,46 +1,44 @@
-From: Boris BREZILLON <b.brezillon@overkiz.com>
-Date: Fri, 07 Jun 2013 18:08:57 +0000
-Subject: [RFC PATCH 35/50] at91/avr32/atmel_lcdfb: prepare clk before calling enable
-Message-Id: <1370628537-2712-1-git-send-email-b.brezillon@overkiz.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 25 Jun 2013 14:22:36 +0000
+Subject: [PATCH 08/23] video: da8xx-fb: store struct device *
+Message-Id: <1372170171-9561-9-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1370615115-16979-1-git-send-email-b.brezillon@overkiz.com>
-In-Reply-To: <1370615115-16979-1-git-send-email-b.brezillon@overkiz.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Replace clk_enable/disable with clk_prepare_enable/disable_unprepare to
-avoid common clk framework warnings.
+From: Afzal Mohammed <afzal@ti.com>
 
-Signed-off-by: Boris BREZILLON <b.brezillon@overkiz.com>
+store struct device pointer so that dev_dbg/err can be used outside
+of probe.
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- drivers/video/atmel_lcdfb.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/video/da8xx-fb.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 540909d..8525457 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -893,14 +893,14 @@ static int __init atmel_lcdfb_init_fbinfo(struct atmel_lcdfb_info *sinfo)
- 
- static void atmel_lcdfb_start_clock(struct atmel_lcdfb_info *sinfo)
- {
--	clk_enable(sinfo->bus_clk);
--	clk_enable(sinfo->lcdc_clk);
-+	clk_prepare_enable(sinfo->bus_clk);
-+	clk_prepare_enable(sinfo->lcdc_clk);
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 7f08644..a5341d0 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -150,6 +150,7 @@ static inline void lcdc_write(unsigned int val, unsigned int addr)
  }
  
- static void atmel_lcdfb_stop_clock(struct atmel_lcdfb_info *sinfo)
- {
--	clk_disable(sinfo->bus_clk);
--	clk_disable(sinfo->lcdc_clk);
-+	clk_disable_unprepare(sinfo->bus_clk);
-+	clk_disable_unprepare(sinfo->lcdc_clk);
- }
+ struct da8xx_fb_par {
++	struct device		*dev;
+ 	resource_size_t p_palette_base;
+ 	unsigned char *v_palette_base;
+ 	dma_addr_t		vram_phys;
+@@ -1291,6 +1292,7 @@ static int fb_probe(struct platform_device *device)
+ 	}
  
- 
+ 	par = da8xx_fb_info->par;
++	par->dev = &device->dev;
+ 	par->lcdc_clk = fb_clk;
+ 	par->lcd_fck_rate = clk_get_rate(fb_clk);
+ 	if (fb_pdata->panel_power_ctrl) {
 -- 
-1.7.9.5
+1.7.0.4
 

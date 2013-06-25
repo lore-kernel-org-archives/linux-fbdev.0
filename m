@@ -1,80 +1,43 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Sat, 01 Jun 2013 04:08:50 +0000
-Subject: Re: [PATCH] backlight: Convert from Legacy pm ops to dev_pm_ops
-Message-Id: <005801ce5e7d$b9225140$2b66f3c0$@samsung.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 25 Jun 2013 14:22:39 +0000
+Subject: [PATCH 11/23] video: da8xx-fb: make io operations safe
+Message-Id: <1372170171-9561-12-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2236503749-2998-1-git-send-email-shuah.kh@samsung.com>
-In-Reply-To: <2236503749-2998-1-git-send-email-shuah.kh@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Shuah Khan' <shuah.kh@samsung.com>, rpurdie@rpsys.net, FlorianSchandinat@gmx.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, rafael.j.wysocki@intel.com
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com, Jingoo Han <jg1.han@samsung.com>
+To: linux-fbdev@vger.kernel.org
 
-On Wednesday, November 14, 2040 8:02 PM, Shuah Khan wrote:
-> 
-> Convert drivers/video/backlight/class to use dev_pm_ops for power
-> management and remove Legacy PM ops hooks. With this change, rtc class
+From: Afzal Mohammed <afzal@ti.com>
 
-No, this is a backlight class, not rtc class.
+Replace __raw_readl/__raw_writel with readl/writel; this driver is
+reused on ARMv7 (AM335x SoC).
 
-Please fix the typo as below:
-  rtc class -> backlight class.
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
+---
+ drivers/video/da8xx-fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-
-> registers suspend/resume callbacks via class->pm (dev_pm_ops) instead of
-> Legacy class->suspend/resume. When __device_suspend() runs call-backs,
-> it will find class->pm ops for the rtc class.
-
-Same here.
-
-
-Best regards,
-Jingoo Han
-
-> 
-> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
-> Cc: Shuah Khan <shuahkhan@gmail.com>
-> ---
->  drivers/video/backlight/backlight.c |    8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-> index c74e7aa..0ffb251 100644
-> --- a/drivers/video/backlight/backlight.c
-> +++ b/drivers/video/backlight/backlight.c
-> @@ -208,7 +208,7 @@ static ssize_t backlight_show_actual_brightness(struct device *dev,
-> 
->  static struct class *backlight_class;
-> 
-> -static int backlight_suspend(struct device *dev, pm_message_t state)
-> +static int backlight_suspend(struct device *dev)
->  {
->  	struct backlight_device *bd = to_backlight_device(dev);
-> 
-> @@ -236,6 +236,9 @@ static int backlight_resume(struct device *dev)
->  	return 0;
->  }
-> 
-> +static SIMPLE_DEV_PM_OPS(backlight_class_dev_pm_ops, backlight_suspend,
-> +			 backlight_resume);
-> +
->  static void bl_device_release(struct device *dev)
->  {
->  	struct backlight_device *bd = to_backlight_device(dev);
-> @@ -414,8 +417,7 @@ static int __init backlight_class_init(void)
->  	}
-> 
->  	backlight_class->dev_attrs = bl_device_attributes;
-> -	backlight_class->suspend = backlight_suspend;
-> -	backlight_class->resume = backlight_resume;
-> +	backlight_class->pm = &backlight_class_dev_pm_ops;
->  	return 0;
->  }
-> 
-> --
-> 1.7.10.4
-> 
-> --
-
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 720604c..35a33ca 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -141,12 +141,12 @@ static int frame_done_flag;
+ 
+ static inline unsigned int lcdc_read(unsigned int addr)
+ {
+-	return (unsigned int)__raw_readl(da8xx_fb_reg_base + (addr));
++	return (unsigned int)readl(da8xx_fb_reg_base + (addr));
+ }
+ 
+ static inline void lcdc_write(unsigned int val, unsigned int addr)
+ {
+-	__raw_writel(val, da8xx_fb_reg_base + (addr));
++	writel(val, da8xx_fb_reg_base + (addr));
+ }
+ 
+ struct da8xx_fb_par {
+-- 
+1.7.0.4
 

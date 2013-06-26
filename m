@@ -1,62 +1,40 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 26 Jun 2013 11:39:49 +0000
+From: Prabhakar Lad <prabhakar.csengg@gmail.com>
+Date: Wed, 26 Jun 2013 11:57:16 +0000
 Subject: Re: [PATCH 2/2] video:da8xx-fb: Convert to devm_* api
-Message-Id: <51CAD305.30407@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2OITXHCGRTWNDNETKSBJQ"
+Message-Id: <CA+V-a8uhK5-QJKifkiSUN6Nz0aBc2moraWQUJPCmZg9zaFX0eg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1368688257-18705-1-git-send-email-prabhakar.csengg@gmail.com> <1368688257-18705-3-git-send-email-prabhakar.csengg@gmail.com>
-In-Reply-To: <1368688257-18705-3-git-send-email-prabhakar.csengg@gmail.com>
-To: Lad Prabhakar <prabhakar.csengg@gmail.com>
-Cc: DLOS <davinci-linux-open-source@linux.davincidsp.com>, LFBDEV <linux-fbdev@vger.kernel.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, LKML <linux-kernel@vger.kernel.org>, "Etheridge, Darren" <detheridge@ti.com>
+References: <1368688257-18705-1-git-send-email-prabhakar.csengg@gmail.com>
+ <1368688257-18705-3-git-send-email-prabhakar.csengg@gmail.com> <51CAD305.30407@ti.com>
+In-Reply-To: <51CAD305.30407@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, "Etheridge, Darren" <detheridge@ti.com>
+Cc: DLOS <davinci-linux-open-source@linux.davincidsp.com>, LFBDEV <linux-fbdev@vger.kernel.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, LKML <linux-kernel@vger.kernel.org>
 
-------enig2OITXHCGRTWNDNETKSBJQ
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Tomi,
 
-On 16/05/13 10:10, Lad Prabhakar wrote:
-> From: Lad, Prabhakar <prabhakar.csengg@gmail.com>
->=20
-> Use devm_ioremap_resource instead of reques_mem_region()/ioremap() and
-> devm_request_irq() instead of request_irq().
->=20
-> This ensures more consistent error values and simplifies error paths.
->=20
-> Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
-> ---
->  drivers/video/da8xx-fb.c |   39 +++++++-------------------------------=
--
->  1 files changed, 7 insertions(+), 32 deletions(-)
+On Wed, Jun 26, 2013 at 5:09 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+> On 16/05/13 10:10, Lad Prabhakar wrote:
+>> From: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+>>
+>> Use devm_ioremap_resource instead of reques_mem_region()/ioremap() and
+>> devm_request_irq() instead of request_irq().
+>>
+>> This ensures more consistent error values and simplifies error paths.
+>>
+>> Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+>> ---
+>>  drivers/video/da8xx-fb.c |   39 +++++++--------------------------------
+>>  1 files changed, 7 insertions(+), 32 deletions(-)
+>
+> There's something similar in Darren's da8xx-fb series. Can you check if
+> there are differences?
+>
+I don't see similar changes in his patch series.
 
-There's something similar in Darren's da8xx-fb series. Can you check if
-there are differences?
+Darren while you are at it you can take this patch along you series.
+let me know how you plan to.
 
- Tomi
-
-
-
-------enig2OITXHCGRTWNDNETKSBJQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRytMFAAoJEPo9qoy8lh71bL0P/jSpDzpIWoy3BR9Qu4NXSpgn
-vT0jQ7TlDqufQn0UOju4mSLA+mrhk/x8APoiPSe3fidWbCTECMU0vhxelpa99KiT
-ft/EhaUplqm7+f3rukH6V0/q8hbx0VTHl548PcI6nV4MraHCkn8MKDy06nDwloqG
-llXoO2gP0rSIRZSDIHpCip6rCcH4jAP57aIGu37Y9gONAMbWlXBp31OEpV7knsZU
-x0lktlYSrizi4aqKynO7PWQYW8l604I8BB+FtKuHyLjE1RIGjYzl+62RWmPn2ogb
-rmI++iAtOUnYT8B6NbtgLh37n/Sgl81M6OWLZJALXZSJNBR5X26pDqV8e/Xhasxx
-Jw0Ylxxaiq7VmOJ3zkaUCxHfL8OP6tYWSRAHpS9U9LI/ikFTbJmBl3qF3IyJtFDx
-JfvfYw0ZEjaQI0cYdUsg/mBjn/EUryYwlH92r+KG4HnSgS12FtTToe8duqApmmfD
-CyZpTa5iWLAvBoa43jY+eV8mjeyeE1LKZTtiC3I0Iv1OUmPOIMcfLci6ZL6x4KlK
-lH/zqiF1Lckv1gb2+vnSMjga33aayWRyPb1X9QwL79hlB0jQGINBmb6aDNsxwFjO
-P0UfRY4gpTiaANZZO28ssXT6eoB3h7rv74z0nfESirue4YftPef/UugrliaZs2Vi
-1D+SW2sK5xPf4rbtv2qM
-=ikju
------END PGP SIGNATURE-----
-
-------enig2OITXHCGRTWNDNETKSBJQ--
+Regards,
+--Prabhakar Lad

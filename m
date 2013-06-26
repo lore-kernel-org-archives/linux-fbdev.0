@@ -1,135 +1,91 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 25 Jun 2013 14:22:38 +0000
-Subject: [PATCH 10/23] video: da8xx-fb: fb_set_par support
-Message-Id: <1372170171-9561-11-git-send-email-detheridge@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 26 Jun 2013 07:58:54 +0000
+Subject: Re: [PATCH 10/23] video: da8xx-fb: fb_set_par support
+Message-Id: <51CA9F3E.1020100@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="----enig2NRTTDIGBXLJIHQHCWJED"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1372170171-9561-11-git-send-email-detheridge@ti.com>
+In-Reply-To: <1372170171-9561-11-git-send-email-detheridge@ti.com>
 To: linux-fbdev@vger.kernel.org
 
-From: Afzal Mohammed <afzal@ti.com>
+------enig2NRTTDIGBXLJIHQHCWJED
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-fb_set_par helps in runtime configuration of lcd controller like
-changing resolution, pixel clock etc. (eg. using fbset utility)
+On 25/06/13 17:22, Darren Etheridge wrote:
+> From: Afzal Mohammed <afzal@ti.com>
+>=20
+> fb_set_par helps in runtime configuration of lcd controller like
+> changing resolution, pixel clock etc. (eg. using fbset utility)
+>=20
+> Reconfigure lcd controller based on information passed by framework.
+> Enable raster back if it was already enabled.
+>=20
+> As fb_set_par would get invoked indirectly from probe via fb_set_var,
+> remove existing lcdc initialization in probe and do lcdc reset in
+> probe so that reset happens only at the begining.
+>=20
+> Signed-off-by: Afzal Mohammed <afzal@ti.com>
+> Signed-off-by: Darren Etheridge <detheridge@ti.com>
+> ---
+>  drivers/video/da8xx-fb.c |   60 +++++++++++++++++++++++++++++++++++++-=
+-------
+>  1 files changed, 49 insertions(+), 11 deletions(-)
+>=20
 
-Reconfigure lcd controller based on information passed by framework.
-Enable raster back if it was already enabled.
+<snip>
 
-As fb_set_par would get invoked indirectly from probe via fb_set_var,
-remove existing lcdc initialization in probe and do lcdc reset in
-probe so that reset happens only at the begining.
+> @@ -1201,9 +1201,52 @@ static int da8xx_pan_display(struct fb_var_scree=
+ninfo *var,
+>  	return ret;
+>  }
+> =20
+> +static int da8xxfb_set_par(struct fb_info *info)
+> +{
+> +	struct da8xx_fb_par *par =3D info->par;
+> +	int ret;
+> +	bool raster =3D da8xx_fb_is_raster_enabled();
+> +
+> +	if (raster)
+> +		lcd_disable_raster(true);
+> +	else
+> +		lcd_disable_raster(false);
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
----
- drivers/video/da8xx-fb.c |   60 +++++++++++++++++++++++++++++++++++++--------
- 1 files changed, 49 insertions(+), 11 deletions(-)
+Not actually part of this patch, but: that kind of functions are quite
+unclear. What does disable(true) mean? You have to read the function to
+understand the call.
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 0f73c76..720604c 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -243,6 +243,11 @@ static struct fb_videomode known_lcd_panels[] = {
- 	},
- };
- 
-+static inline bool da8xx_fb_is_raster_enabled(void)
-+{
-+	return !!(lcdc_read(LCD_RASTER_CTRL_REG) & LCD_RASTER_ENABLE);
-+}
-+
- /* Enable the Raster Engine of the LCD Controller */
- static inline void lcd_enable_raster(void)
- {
-@@ -665,9 +670,6 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
- 
- static void da8xx_fb_lcd_reset(void)
- {
--	/* Disable the Raster if previously Enabled */
--	lcd_disable_raster(false);
--
- 	/* DMA has to be disabled */
- 	lcdc_write(0, LCD_DMA_CTRL_REG);
- 	lcdc_write(0, LCD_RASTER_CTRL_REG);
-@@ -720,8 +722,6 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
- 	u32 bpp;
- 	int ret = 0;
- 
--	da8xx_fb_lcd_reset();
--
- 	da8xx_fb_calc_config_clk_divider(par, panel);
- 
- 	if (panel->sync & FB_SYNC_CLK_INVERT)
-@@ -1201,9 +1201,52 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
- 	return ret;
- }
- 
-+static int da8xxfb_set_par(struct fb_info *info)
-+{
-+	struct da8xx_fb_par *par = info->par;
-+	int ret;
-+	bool raster = da8xx_fb_is_raster_enabled();
-+
-+	if (raster)
-+		lcd_disable_raster(true);
-+	else
-+		lcd_disable_raster(false);
-+
-+	fb_var_to_videomode(&par->mode, &info->var);
-+
-+	par->cfg.bpp = info->var.bits_per_pixel;
-+
-+	info->fix.visual = (par->cfg.bpp <= 8) ?
-+				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
-+	info->fix.line_length = (par->mode.xres * par->cfg.bpp) / 8;
-+
-+	ret = lcd_init(par, &par->cfg, &par->mode);
-+	if (ret < 0) {
-+		dev_err(par->dev, "lcd init failed\n");
-+		return ret;
-+	}
-+
-+	par->dma_start = info->fix.smem_start +
-+			 info->var.yoffset * info->fix.line_length +
-+			 info->var.xoffset * info->var.bits_per_pixel / 8;
-+	par->dma_end   = par->dma_start +
-+			 info->var.yres * info->fix.line_length - 1;
-+
-+	lcdc_write(par->dma_start, LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
-+	lcdc_write(par->dma_end, LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
-+	lcdc_write(par->dma_start, LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
-+	lcdc_write(par->dma_end, LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
-+
-+	if (raster)
-+		lcd_enable_raster();
-+
-+	return 0;
-+}
-+
- static struct fb_ops da8xx_fb_ops = {
- 	.owner = THIS_MODULE,
- 	.fb_check_var = fb_check_var,
-+	.fb_set_par = da8xxfb_set_par,
- 	.fb_setcolreg = fb_setcolreg,
- 	.fb_pan_display = da8xx_pan_display,
- 	.fb_ioctl = fb_ioctl,
-@@ -1312,14 +1355,9 @@ static int fb_probe(struct platform_device *device)
- 	}
- 
- 	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
--	fb_var_to_videomode(&par->mode, &da8xx_fb_var);
- 	par->cfg = *lcd_cfg;
- 
--	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
--		dev_err(&device->dev, "lcd_init failed\n");
--		ret = -EFAULT;
--		goto err_release_fb;
--	}
-+	da8xx_fb_lcd_reset();
- 
- 	/* allocate frame buffer */
- 	par->vram_size = lcdc_info->xres * lcdc_info->yres * lcd_cfg->bpp;
--- 
-1.7.0.4
+I think it'd be much better to take the wait-for-frame-done code out
+from the lcd_disable_raster function, and call the wait function
+explicitly here in the if (raster) block.
 
+ Tomi
+
+
+
+------enig2NRTTDIGBXLJIHQHCWJED
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRyp8+AAoJEPo9qoy8lh71ZAAP/2Cq+hlyADhXGJ4+gsudNS4W
+a1N4N4dYSTRzKPMzzZ59tyjOtr7mWJTDR0804kXHlGl1WZSx3YmjtFkpSa2+dXsv
+SgrIzBDAl0x7JhSVt8xpx0ZYN/i9kMQk0Oxqp0N2uK31G1SfJPThUqb6WGetfUMk
+bboB1ZTZ+Zgu0A4gLtgT2ZJCfkVHjNNpcHkNWBsaQWC903jdMU1stPjG/ZloTr3f
+R6Mw/eznDwU/Eqii8Jh6McPJfCddn5V4AHr+KLI9Ke7Koc2+RGZnFKvZ9p+VaYw/
+tWWwvPUwphLSUv1VdarYb5HLP7sjTu9DdTtE9W/NaPvcHC/Oc7UnmdXxqwjU03/b
+UTuQcDsfTtyhSS+h5GUSQBfQ9Iip+YCJwVtRGogE8YFF5OuriYNylLl+PvaZkb0Q
+MKh4dsyDNbitLPRNKX0j3WUL8q5UJ+7cRVrICe97G8VDoc3kuADGDSo/qhvCpf1j
+sJDrV/cAzejSSCYxMqFI7m1jI6vPRlNB40/aemrApT2VuL05UWetiuyrXD21Fxy+
+tBA6dNA8PTY3bEixa+nQMm+vD/WoDb7WzCCkLkuABBFsdBNBMtciXspp8epYgtsX
+dKaHj+oPopbFkkR+XvFiOvLFUmMc6p9aiZ06vRmzG0JKMQOWImwdBhYRbIODCyUd
+UD4VZcQgCH6N1hGHdFK2
+=E9ze
+-----END PGP SIGNATURE-----
+
+------enig2NRTTDIGBXLJIHQHCWJED--

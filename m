@@ -1,64 +1,58 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 25 Jun 2013 14:22:29 +0000
-Subject: [PATCH 01/23] video: da8xx-fb: fb_check_var enhancement
-Message-Id: <1372170171-9561-2-git-send-email-detheridge@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 26 Jun 2013 11:53:20 +0000
+Subject: Re: [PATCH 1/1] video: imxfb: Make local symbols static
+Message-Id: <51CAD630.1020208@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="----enig2JRLVSIABAJNKUFKSVPLE"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-From: Afzal Mohammed <afzal@ti.com>
+------enig2JRLVSIABAJNKUFKSVPLE
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Check whether "struct fb_var_screeninfo" fields are sane, if not
-update it to be within allowed limits.
+On 10/05/13 14:55, Sachin Kamat wrote:
+> These symbols are used only in this file.
+> Make them static.
+>=20
+> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+> ---
+>  drivers/video/imxfb.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-If user sends down buggy "var" values, this will bring those within
-allowable limits. And fb_set_par is not supposed to change "var"
-values, fb_check_var has to ensure that values are proper.
+I've added this and the following three other small cleanups to my
+fbdev-3.11 branch:
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
----
- drivers/video/da8xx-fb.c |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
+video: smscufx: Use NULL instead of 0
+video: udlfb: Use NULL instead of 0
+video: udlfb: Make local symbol static
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 0810939..d00dd17 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -888,6 +888,9 @@ static int fb_check_var(struct fb_var_screeninfo *var,
- 			struct fb_info *info)
- {
- 	int err = 0;
-+	struct da8xx_fb_par *par = info->par;
-+	int bpp = var->bits_per_pixel >> 3;
-+	unsigned long line_size = var->xres_virtual * bpp;
- 
- 	if (var->bits_per_pixel > 16 && lcd_revision = LCD_VERSION_1)
- 		return -EINVAL;
-@@ -955,6 +958,21 @@ static int fb_check_var(struct fb_var_screeninfo *var,
- 	var->green.msb_right = 0;
- 	var->blue.msb_right = 0;
- 	var->transp.msb_right = 0;
-+
-+	if (line_size * var->yres_virtual > par->vram_size)
-+		var->yres_virtual = par->vram_size / line_size;
-+
-+	if (var->yres > var->yres_virtual)
-+		var->yres = var->yres_virtual;
-+
-+	if (var->xres > var->xres_virtual)
-+		var->xres = var->xres_virtual;
-+
-+	if (var->xres + var->xoffset > var->xres_virtual)
-+		var->xoffset = var->xres_virtual - var->xres;
-+	if (var->yres + var->yoffset > var->yres_virtual)
-+		var->yoffset = var->yres_virtual - var->yres;
-+
- 	return err;
- }
- 
--- 
-1.7.0.4
+ Tomi
 
+
+
+------enig2JRLVSIABAJNKUFKSVPLE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRytYwAAoJEPo9qoy8lh7127QP/jg4DVwZu5V4ccEZPdayevtb
+bHUNf9dYSf+C2FZ0Ypg40vJ0vBK0l2FIzlL4kcbyvtiB5eZ1zuhUVUD7m28Danhh
+97BP5xbeKLQYAchjK6MkpcWsf+3n6DqJWg67jqSkiRmmw4BFHd9DYpQFVBXoJXxn
+zx0BBmiVzizajSYWGtV7POv249fGDJgGxgHrx8joIxo2REbA89nx+PAv/TJ9dcY/
+mvizXidtgW2CADkJo0hm+h7kSiUvRun6M6gHsEJNDgnq+0fgQAnNH5TKLeygQe85
+VLbGixdeAATSR5hdoJXeLZXJWCAjcQV7pxQ8s0U4BtQnpyIxM0vo7ruoRkEGyvno
+xkBPF77oXdfxsK4/gaO8wZ2XcDF3WSAvfMfPKh/enLf2NEaw4Lx4KAaMH7zzA6cD
+m9pB3z5RRDALq3E9OJ0B2KfzNPI4dca5fABHk9eulidWD/Dd/1Ac7t+y2HQShfN8
+kY+93l32r1AnEWVA4I+hSBrdNK2tHJ9IU9xxT2A+X1huBwitOwbvSMTgw1jf4wO/
+e0kbtx0qeiEovs8Em9aCIGwXoMD6RIoaFqU38FDZXEAqYN5gpAtH4Dhhj7TN7R84
+VLO8pu6PbISwhG5rCYlzqw/frVMPngIeVmd/iNHFSiCknk2547ZkiBCJbt/LvNwQ
+R6Jkv8Ye1e2K1CF7kbXO
+=/VGK
+-----END PGP SIGNATURE-----
+
+------enig2JRLVSIABAJNKUFKSVPLE--

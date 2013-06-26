@@ -1,43 +1,52 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 25 Jun 2013 14:22:39 +0000
-Subject: [PATCH 11/23] video: da8xx-fb: make io operations safe
-Message-Id: <1372170171-9561-12-git-send-email-detheridge@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 26 Jun 2013 07:43:08 +0000
+Subject: Re: [PATCH 11/23] video: da8xx-fb: make io operations safe
+Message-Id: <51CA9B8C.8060407@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="----enig2BBJJLWJEFHRKDWBDVUKH"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1372170171-9561-12-git-send-email-detheridge@ti.com>
+In-Reply-To: <1372170171-9561-12-git-send-email-detheridge@ti.com>
 To: linux-fbdev@vger.kernel.org
 
-From: Afzal Mohammed <afzal@ti.com>
+------enig2BBJJLWJEFHRKDWBDVUKH
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Replace __raw_readl/__raw_writel with readl/writel; this driver is
-reused on ARMv7 (AM335x SoC).
+On 25/06/13 17:22, Darren Etheridge wrote:
+> From: Afzal Mohammed <afzal@ti.com>
+>=20
+> Replace __raw_readl/__raw_writel with readl/writel; this driver is
+> reused on ARMv7 (AM335x SoC).
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
----
- drivers/video/da8xx-fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Why is this needed?
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 720604c..35a33ca 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -141,12 +141,12 @@ static int frame_done_flag;
- 
- static inline unsigned int lcdc_read(unsigned int addr)
- {
--	return (unsigned int)__raw_readl(da8xx_fb_reg_base + (addr));
-+	return (unsigned int)readl(da8xx_fb_reg_base + (addr));
- }
- 
- static inline void lcdc_write(unsigned int val, unsigned int addr)
- {
--	__raw_writel(val, da8xx_fb_reg_base + (addr));
-+	writel(val, da8xx_fb_reg_base + (addr));
- }
- 
- struct da8xx_fb_par {
--- 
-1.7.0.4
+ Tomi
 
+
+
+------enig2BBJJLWJEFHRKDWBDVUKH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRypuQAAoJEPo9qoy8lh71LPUP+wWDZ59WN7fZhyqKHuh275Zp
+NMBnvjXlI1hsJHAVJslkZ7iUO05pko//EXMrqdy91ZZ8/Y0YFDUAo+kpBseyQMY3
+mEOU4GZOorG0t4xbp3x6qldb9j/EgeOIazsUrIi/U8i8UCMdmyKo2FO9QpSAhnWE
+CvcqVfPPKD6PE20FY39W2aSpJ9yjT6z7bT1d+7aqU8L2itLRcL0xZgri+9fGZdpr
+6JsKl0mSyHp4+816pGWjBuCb6RSNTs92G0hFbY4u9YSAmdeeKdwsf/TLe3OuGGr3
+6IqsCwkWWsii4ynWfkC8OwUlOGRdDL7Qmqvsy9JXh5WssL2TUePHXc1H/2Ov9KT6
+8AorBuHKhi8P2Br/6FLVbGwfV8f9RMo2n8HgqrLEK/YtRRhPTMVuhr99Ko7O+KVO
+gR0iynZ1cPo2qKpB+isBbaERKpaHspg4YiQH14jFWXADe3GqwLDzgFW/62iP9sPG
+7pq/NggEset0R4LTUVxop4/QV97wb5lbJ5DhCi/HYxyuK0WtHVvCf4nCaSnSX6Qb
+bqmw53tmYkYeXfOd9jjC8EMfmePzxGeY9X+89XobCwolVe4XY34t4n4NYAY0/Lj0
+RnzjWif7czyWqsO2WDb8ozNw0nLOUL8XQu1SELcMI14vmK5VKhqJUziy0+l1Nwm1
+FfoEfPbnk+pZoONoI0gK
+=U5BM
+-----END PGP SIGNATURE-----
+
+------enig2BBJJLWJEFHRKDWBDVUKH--

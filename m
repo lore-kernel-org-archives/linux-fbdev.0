@@ -1,53 +1,76 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 26 Jun 2013 12:00:36 +0000
+Date: Wed, 26 Jun 2013 12:11:04 +0000
 Subject: Re: [PATCH 2/2] video:da8xx-fb: Convert to devm_* api
-Message-Id: <51CAD7E4.2000403@ti.com>
+Message-Id: <51CADA58.2030602@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2IEJDLSRPTTVQWJLOXTCJ"
+Content-Type: multipart/mixed; boundary="----enig2DTDQJGPMUJFXVEUGNCOD"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1368688257-18705-1-git-send-email-prabhakar.csengg@gmail.com> <1368688257-18705-3-git-send-email-prabhakar.csengg@gmail.com> <51CAD305.30407@ti.com> <CA+V-a8uhK5-QJKifkiSUN6Nz0aBc2moraWQUJPCmZg9zaFX0eg@mail.gmail.com>
-In-Reply-To: <CA+V-a8uhK5-QJKifkiSUN6Nz0aBc2moraWQUJPCmZg9zaFX0eg@mail.gmail.com>
+References: <1368688257-18705-1-git-send-email-prabhakar.csengg@gmail.com> <1368688257-18705-3-git-send-email-prabhakar.csengg@gmail.com> <51CAD305.30407@ti.com> <CA+V-a8uhK5-QJKifkiSUN6Nz0aBc2moraWQUJPCmZg9zaFX0eg@mail.gmail.com> <51CAD7E4.2000403@ti.com> <CA+V-a8u6vjSc5EV3z4FCQ8LEHxL79bUXtHzX8svhQwqVtj6w=g@mail.gmail.com>
+In-Reply-To: <CA+V-a8u6vjSc5EV3z4FCQ8LEHxL79bUXtHzX8svhQwqVtj6w=g@mail.gmail.com>
 To: Prabhakar Lad <prabhakar.csengg@gmail.com>
 Cc: "Etheridge, Darren" <detheridge@ti.com>, DLOS <davinci-linux-open-source@linux.davincidsp.com>, LFBDEV <linux-fbdev@vger.kernel.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, LKML <linux-kernel@vger.kernel.org>
 
-------enig2IEJDLSRPTTVQWJLOXTCJ
+------enig2DTDQJGPMUJFXVEUGNCOD
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 26/06/13 14:56, Prabhakar Lad wrote:
+On 26/06/13 15:06, Prabhakar Lad wrote:
 > Hi Tomi,
 >=20
-> On Wed, Jun 26, 2013 at 5:09 PM, Tomi Valkeinen <tomi.valkeinen@ti.com>=
+> On Wed, Jun 26, 2013 at 5:30 PM, Tomi Valkeinen <tomi.valkeinen@ti.com>=
  wrote:
->> On 16/05/13 10:10, Lad Prabhakar wrote:
->>> From: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+>> On 26/06/13 14:56, Prabhakar Lad wrote:
+>>> Hi Tomi,
 >>>
->>> Use devm_ioremap_resource instead of reques_mem_region()/ioremap() an=
-d
->>> devm_request_irq() instead of request_irq().
->>>
->>> This ensures more consistent error values and simplifies error paths.=
-
->>>
->>> Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
->>> ---
->>>  drivers/video/da8xx-fb.c |   39 +++++++-----------------------------=
----
->>>  1 files changed, 7 insertions(+), 32 deletions(-)
+>>> On Wed, Jun 26, 2013 at 5:09 PM, Tomi Valkeinen <tomi.valkeinen@ti.co=
+m> wrote:
+>>>> On 16/05/13 10:10, Lad Prabhakar wrote:
+>>>>> From: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+>>>>>
+>>>>> Use devm_ioremap_resource instead of reques_mem_region()/ioremap() =
+and
+>>>>> devm_request_irq() instead of request_irq().
+>>>>>
+>>>>> This ensures more consistent error values and simplifies error path=
+s.
+>>>>>
+>>>>> Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+>>>>> ---
+>>>>>  drivers/video/da8xx-fb.c |   39 +++++++---------------------------=
+-----
+>>>>>  1 files changed, 7 insertions(+), 32 deletions(-)
+>>>>
+>>>> There's something similar in Darren's da8xx-fb series. Can you check=
+ if
+>>>> there are differences?
+>>>>
+>>> I don't see similar changes in his patch series.
 >>
->> There's something similar in Darren's da8xx-fb series. Can you check i=
-f
->> there are differences?
+>> [PATCH 14/23] video: da8xx-fb: use devres
 >>
-> I don't see similar changes in his patch series.
+> Oops missed it out :), patch is almost similar except
+> for following block,
+>=20
+> -       fb_clk =3D clk_get(&device->dev, "fck");
+> +       fb_clk =3D devm_clk_get(&device->dev, "fck");
+>         if (IS_ERR(fb_clk)) {
+>                 dev_err(&device->dev, "Can not get device clock\n");
+> -               ret =3D -ENODEV;
+> -               goto err_ioremap;
+> +               return -ENODEV;
+>         }
+>=20
+> How do you suggest to handle it ?
 
-[PATCH 14/23] video: da8xx-fb: use devres
+I think it's easiest if Darren handles the da8xx-fb series for 3.11. So
+if there's something missing from Darren's series, please discuss with hi=
+m.
 
  Tomi
 
 
 
-------enig2IEJDLSRPTTVQWJLOXTCJ
+------enig2DTDQJGPMUJFXVEUGNCOD
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -56,19 +79,19 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJRytfkAAoJEPo9qoy8lh71AsEP/1sQaYeYGmwiI+kmVmjKJS0W
-YNDzHBtcZw+oB6on32pd+16+XPw+r2eLSRjz4L41VAbeQ5Dnq3sKSikCTomdRVKt
-+OtcsSgrrORQf6Le2PhXECaUa663HG2m24di6ijDrnGAeHfsIVZUwtU/LaldD/Ea
-TXWtv/GTm4QcZee6dgriTQACEHCjTgaXND+NHz3SxE4uFvqcardMe/2Gjutub602
-L7Rj7l3M9hWMShR9npkJXeT6CUl1jzHly4T6u3LAZHYwZ1umEkNDe4XfZwOIKsNj
-KHdsWvOu2Kh8rjAqzstogrLVyUjjDMG12E/Bfhs814s9ctAlLey9VnoAraHbNkM1
-uLum/DX4MiG6ylmWHuynUP68rMjkfW4hWUjI/t2xIrucP+SHhH0VXqv0PnYC+pqf
-VCuT2bCJr3YtP06wzmUcSjgJemTGDvftDoJflvpY1wqTpA+lzQ712S7u2lVjh3K+
-BQzXWa3Y6pxEIMn0V7bWoVK5AiFPNpTZhCUcpVlfPaBsc9myJ7yE4ZYKfZx1mVqV
-+9Bh16YFedXVqRvwD9UdVvqPFYKo1EiTiWbXu6BDpXDjcrP+68XL/Dtq9jarUDQ1
-x8FJYv6RJC65pHUllX0yMr1oOTJzSMsgfn5sVBJbD00XY4Zq+5MwQ+9vmjPSnYzu
-oh3y0EgfA+x90WaUbWRY
-=oA6T
+iQIcBAEBAgAGBQJRytpYAAoJEPo9qoy8lh71L9cQAIBjuTmJZrJVRMFWyxc+fR9t
+k124un5lUUxQW/5j2KpYyJi14cEuwwDwxS8pus4D9pBxOVLTR0hp8f8XKH5m3O3/
+867I8aDnIrvR4DlUJcoFYW5dNy0/N+G74P/Mkh13FO0/8aNkhr0kASwuqBrIB1md
+Tp1at3Gl1v5ZMl9k9WhODL+fx0X86jZj/QSXiYuDvlnCFKVJihxqZOYEp7v+I0c7
+smqAiGL3kLctsWoVqesW6a1o4W6kIvtbAtiddA3V4JEvIGTuHisbIbTP2JNj1Mej
+zNKNtMCZrkyB36KUX0lgVCbQsSsE0oavpPaB0vhANJTUl6wziVck4B84LwxdI5tu
+eNeURD51vLbbkBgsHsZRnNMN9OWdJNYn+H4x9fY0gFuME28dF4Ro/wdKL93X6FVZ
+fqSdr6YDSS0BPdsBCQ0hy4X64+XQWxLHEie1RtQAiSukpC0OuFFU0xs01rZU2fBR
+u/pgE1Ly5j9DlzJ9/pcHNtNsZEHp7hdCJ2aXXYhe5lPiOImddO5nHBtX0jbMQ7ZK
+Vl52JpK9GMW4i0HSk7g0XZXxmmChBoPtzN4J7JZ7dDWPUjGzF3gQzODOnvzYtalr
+1issxsMF7jv+ErI/rXYhy5lDb+ZeQb4v1QhtzFxcpUtA/vpLvjLIZZnYbCOv0RjS
+PuXl/aPok8PHtIjFBO7l
+=0NOP
 -----END PGP SIGNATURE-----
 
-------enig2IEJDLSRPTTVQWJLOXTCJ--
+------enig2DTDQJGPMUJFXVEUGNCOD--

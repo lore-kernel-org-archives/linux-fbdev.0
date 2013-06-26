@@ -1,53 +1,61 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Mon, 24 Jun 2013 17:54:20 +0000
-Subject: [PATCH 2/2 v2] fb: fix atyfb unused data warnings
-Message-Id: <51C887CC.6000301@infradead.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 26 Jun 2013 12:15:06 +0000
+Subject: Re: [PATCH 2/2 v2] fb: fix atyfb unused data warnings
+Message-Id: <51CADB4A.1080509@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="----enig2QHVIFPSGCXDGRVVLHRRO"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <51C26B56.20802@infradead.org> <20130624143737.GI305@game.jcrosoft.org>
-In-Reply-To: <20130624143737.GI305@game.jcrosoft.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <51C26B56.20802@infradead.org> <20130624143737.GI305@game.jcrosoft.org> <51C887CC.6000301@infradead.org>
+In-Reply-To: <51C887CC.6000301@infradead.org>
+To: Randy Dunlap <rdunlap@infradead.org>
+Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, LKML <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-From: Randy Dunlap <rdunlap@infradead.org>
+------enig2QHVIFPSGCXDGRVVLHRRO
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Fix compiler warnings of data defined but not used by using the
-__maybe_unused attribute.  The date are only used with certain kconfig
-settings.
+On 24/06/13 20:54, Randy Dunlap wrote:
+> From: Randy Dunlap <rdunlap@infradead.org>
+>=20
+> Fix compiler warnings of data defined but not used by using the
+> __maybe_unused attribute.  The date are only used with certain kconfig
+> settings.
+>=20
+> drivers/video/aty/atyfb_base.c:534:13: warning: 'ram_dram' defined but =
+not used [-Wunused-variable]
+> drivers/video/aty/atyfb_base.c:535:13: warning: 'ram_resv' defined but =
+not used [-Wunused-variable]
+>=20
 
-drivers/video/aty/atyfb_base.c:534:13: warning: 'ram_dram' defined but not used [-Wunused-variable]
-drivers/video/aty/atyfb_base.c:535:13: warning: 'ram_resv' defined but not used [-Wunused-variable]
+I've added this and the first patch in the series to my fbdev-3.11 branch=
+=2E
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc:	Paul Mackerras <paulus@samba.org>
-Cc:	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc:	linux-fbdev@vger.kernel.org
-Cc:	Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc:	Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/aty/atyfb_base.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ Tomi
 
---- lnx-310-rc7.orig/drivers/video/aty/atyfb_base.c
-+++ lnx-310-rc7/drivers/video/aty/atyfb_base.c
-@@ -58,6 +58,7 @@
- #include <linux/slab.h>
- #include <linux/vmalloc.h>
- #include <linux/delay.h>
-+#include <linux/compiler.h>
- #include <linux/console.h>
- #include <linux/fb.h>
- #include <linux/init.h>
-@@ -531,8 +532,8 @@ static int correct_chipset(struct atyfb_
- 	return 0;
- }
- 
--static char ram_dram[] = "DRAM";
--static char ram_resv[] = "RESV";
-+static char ram_dram[] __maybe_unused = "DRAM";
-+static char ram_resv[] __maybe_unused = "RESV";
- #ifdef CONFIG_FB_ATY_GX
- static char ram_vram[] = "VRAM";
- #endif /* CONFIG_FB_ATY_GX */
+
+
+------enig2QHVIFPSGCXDGRVVLHRRO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRyttKAAoJEPo9qoy8lh71hDAQAIqiUhXMRHDxTMwiiWPcVEy8
+s+D+epzZ34+YVAvQvLRrJmX1AldGc8/pbMo5j8DN9dhR/Xr/4Ayh/V06Nd5ffUGc
+stp1ElLnviScb4LQtLNQdWQM5w0s4kbbGmzuHOTeaRq/dO1rBSqy1YWuuEQvpAlB
+c0qxTxE6vj6J/rctuofpYWHbrwByquWQ0YloBz25bqRcn7GFC7+S/PBrwFMOCW2+
+dKdOIkxb88pqv8WAMrHM/C5414knbmASUtpTODYvZ+x1bwDj2l3sPXma4HiBR0xa
+O94CZuyIvTC1ucSFCXKAuIOchJQ1Cu36RCO+tPRIFXzovfafPwcTML8xBRxM89VO
+AeJAoqaG6YHNA6v9GhwePUfnpxK72zLIC5P0+rDki1t9BSjOUTy8pza26+zxlpB4
+nfVTm32dSkjRz9idqoJWmyX7H40wv0hGNtupgK2jhgcy3wfrdHzbuiCHSmXNyc3v
+nMUGepiI1JH/O962i4iSfFX7FuE5lu6V4K7GUeyP+0rFoGo/tr+WdWyxEeC6Z91S
+8amW33rCWCjMcAuHJlgp9jFGG6LsuBoaZXndzo0BkWs2Kq16PeEKeBDzwcV1l/r1
+ZFJ46P9lllPNG4EJRFBqOtt9hLRgOtkD/r8tn1A/36T2CBry0ftIp8bHmz+WH8AF
+zV2SSRj5NHYhyHkfIEqy
+=CQlm
+-----END PGP SIGNATURE-----
+
+------enig2QHVIFPSGCXDGRVVLHRRO--

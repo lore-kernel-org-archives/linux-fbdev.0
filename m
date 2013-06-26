@@ -1,148 +1,78 @@
-From: Archit Taneja <archit@ti.com>
-Date: Fri, 07 Jun 2013 06:50:21 +0000
-Subject: Re: [PATCH 14/32] OMAPDSS: DSI: cleanup regulator init
-Message-Id: <51B1825C.9050206@ti.com>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Date: Wed, 26 Jun 2013 15:02:21 +0000
+Subject: [PATCH v3 0/5] Generic PHY driver for the Exynos SoC MIPI CSI-2/DSI DPHYs
+Message-Id: <1372258946-15607-1-git-send-email-s.nawrocki@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1369906493-27538-1-git-send-email-tomi.valkeinen@ti.com> <1369906493-27538-15-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1369906493-27538-15-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Thursday 30 May 2013 03:04 PM, Tomi Valkeinen wrote:
-> Separate the regulator initialization code to its own function, removing
-> duplicate code.
->
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->   drivers/video/omap2/dss/dsi.c | 82 ++++++++++++++++---------------------------
->   1 file changed, 31 insertions(+), 51 deletions(-)
->
-> diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-> index bdddd0d..37ca980 100644
-> --- a/drivers/video/omap2/dss/dsi.c
-> +++ b/drivers/video/omap2/dss/dsi.c
-> @@ -1114,6 +1114,30 @@ void dsi_runtime_put(struct platform_device *dsidev)
->   	WARN_ON(r < 0 && r != -ENOSYS);
->   }
->
-> +static int dsi_regulator_init(struct platform_device *dsidev)
-> +{
-> +	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
-> +	struct regulator *vdds_dsi;
-> +
-> +	if (dsi->vdds_dsi_reg != NULL)
-> +		return 0;
-> +
-> +	vdds_dsi = regulator_get(&dsi->pdev->dev, "vdds_dsi");
-> +
-> +	/* DT HACK: try VCXIO to make omapdss work for o4 sdp/panda */
-> +	if (IS_ERR(vdds_dsi))
-> +		vdds_dsi = regulator_get(&dsi->pdev->dev, "VCXIO");
-> +
+This patch series adds a simple driver for the Samsung S5P/Exynos SoC
+series MIPI CSI-2 receiver (MIPI CSIS) and MIPI DSI transmitter (MIPI
+DSIM) DPHYs, using the generic PHY framework [1]. Previously the MIPI
+CSIS and MIPI DSIM used a platform callback to control the PHY power
+enable and reset bits. The platform callback can now be dropped and
+those drivers don't need any calls back to the platform code, which
+makes migration to the device tree complete for MIPI CSIS.
 
-We could use devm_ versions here too right?
+Changes since v2:
+ - adapted to the generic PHY API v9: use phy_set/get_drvdata(),
+ - fixed of_xlate callback to return ERR_PTR() instead of NULL,
+ - namespace cleanup, put "GPL v2" as MODULE_LICENSE, removed pr_debug,
+ - removed phy id check in __set_phy_state().
 
-Archit
+Patches 2...3/5 are unchanged, description of patch 5/5 has been
+updated.
 
-> +	if (IS_ERR(vdds_dsi)) {
-> +		DSSERR("can't get VDDS_DSI regulator\n");
-> +		return PTR_ERR(vdds_dsi);
-> +	}
-> +
-> +	dsi->vdds_dsi_reg = vdds_dsi;
-> +
-> +	return 0;
-> +}
-> +
->   /* source clock for DSI PLL. this could also be PCLKFREE */
->   static inline void dsi_enable_pll_clock(struct platform_device *dsidev,
->   		bool enable)
-> @@ -1592,22 +1616,9 @@ int dsi_pll_init(struct platform_device *dsidev, bool enable_hsclk,
->   	 */
->   	enable_hsclk = enable_hsdiv = true;
->
-> -	if (dsi->vdds_dsi_reg = NULL) {
-> -		struct regulator *vdds_dsi;
-> -
-> -		vdds_dsi = regulator_get(&dsi->pdev->dev, "vdds_dsi");
-> -
-> -		/* DT HACK: try VCXIO to make omapdss work for o4 sdp/panda */
-> -		if (IS_ERR(vdds_dsi))
-> -			vdds_dsi = regulator_get(&dsi->pdev->dev, "VCXIO");
-> -
-> -		if (IS_ERR(vdds_dsi)) {
-> -			DSSERR("can't get VDDS_DSI regulator\n");
-> -			return PTR_ERR(vdds_dsi);
-> -		}
-> -
-> -		dsi->vdds_dsi_reg = vdds_dsi;
-> -	}
-> +	r = dsi_regulator_init(dsidev);
-> +	if (r)
-> +		return r;
->
->   	dsi_enable_pll_clock(dsidev, 1);
->   	/*
-> @@ -5225,34 +5236,6 @@ static enum omap_channel dsi_get_channel(int module_id)
->   	}
->   }
->
-> -static int dsi_init_display(struct omap_dss_device *dssdev)
-> -{
-> -	struct platform_device *dsidev > -			dsi_get_dsidev_from_id(dssdev->phy.dsi.module);
-> -	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
-> -
-> -	DSSDBG("DSI init\n");
-> -
-> -	if (dsi->vdds_dsi_reg = NULL) {
-> -		struct regulator *vdds_dsi;
-> -
-> -		vdds_dsi = regulator_get(&dsi->pdev->dev, "vdds_dsi");
-> -
-> -		/* DT HACK: try VCXIO to make omapdss work for o4 sdp/panda */
-> -		if (IS_ERR(vdds_dsi))
-> -			vdds_dsi = regulator_get(&dsi->pdev->dev, "VCXIO");
-> -
-> -		if (IS_ERR(vdds_dsi)) {
-> -			DSSERR("can't get VDDS_DSI regulator\n");
-> -			return PTR_ERR(vdds_dsi);
-> -		}
-> -
-> -		dsi->vdds_dsi_reg = vdds_dsi;
-> -	}
-> -
-> -	return 0;
-> -}
-> -
->   int omap_dsi_request_vc(struct omap_dss_device *dssdev, int *channel)
->   {
->   	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
-> @@ -5410,19 +5393,16 @@ static int dsi_probe_pdata(struct platform_device *dsidev)
->   	if (!plat_dssdev)
->   		return 0;
->
-> +	r = dsi_regulator_init(dsidev);
-> +	if (r)
-> +		return r;
-> +
->   	dssdev = dss_alloc_and_init_device(&dsidev->dev);
->   	if (!dssdev)
->   		return -ENOMEM;
->
->   	dss_copy_device_pdata(dssdev, plat_dssdev);
->
-> -	r = dsi_init_display(dssdev);
-> -	if (r) {
-> -		DSSERR("device %s init failed: %d\n", dssdev->name, r);
-> -		dss_put_device(dssdev);
-> -		return r;
-> -	}
-> -
->   	r = omapdss_output_set_device(&dsi->output, dssdev);
->   	if (r) {
->   		DSSERR("failed to connect output to new device: %s\n",
->
+Changes since v1:
+ - enabled build as module and with CONFIG_OF disabled,
+ - added phy_id enum,
+ - of_address_to_resource() replaced with platform_get_resource(),
+ - adapted to changes in the PHY API v7, v8 - added phy labels,
+ - added MODULE_DEVICE_TABLE() entry,
+ - the driver file renamed to phy-exynos-mipi-video.c,
+ - changed DT compatible string to "samsung,s5pv210-mipi-video-phy",
+ - corrected the compatible property's description.
+ - patch 3/5 "video: exynos_dsi: Use generic PHY driver" replaced
+   with a patch modifying the MIPI DSIM driver which is currently
+   in mainline.
+
+This series depends on the generic PHY framework [1]. It can be browsed at:
+ http://git.linuxtv.org/snawrocki/samsung.git/exynos-mipi-phy
+This branch is based on the 'for-next' branch from:
+ git://git.kernel.org/pub/scm/linux/kernel/git/kgene/linux-samsung.git
+and the patch series:
+ http://www.spinics.net/lists/arm-kernel/msg254667.html
+
+[1] https://lkml.org/lkml/2013/6/26/259
+
+Sylwester Nawrocki (5):
+  phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
+  ARM: dts: Add MIPI PHY node to exynos4.dtsi
+  video: exynos_mipi_dsim: Use the generic PHY driver
+  exynos4-is: Use the generic MIPI CSIS PHY driver
+  ARM: Samsung: Remove the MIPI PHY setup code
+
+ .../phy/samsung,s5pv210-mipi-video-phy.txt         |   14 ++
+ arch/arm/boot/dts/exynos4.dtsi                     |   10 ++
+ arch/arm/mach-exynos/include/mach/regs-pmu.h       |    5 -
+ arch/arm/mach-s5pv210/include/mach/regs-clock.h    |    4 -
+ arch/arm/plat-samsung/Kconfig                      |    5 -
+ arch/arm/plat-samsung/Makefile                     |    1 -
+ arch/arm/plat-samsung/setup-mipiphy.c              |   60 -------
+ drivers/media/platform/exynos4-is/mipi-csis.c      |   16 +-
+ drivers/phy/Kconfig                                |    9 ++
+ drivers/phy/Makefile                               |    3 +-
+ drivers/phy/phy-exynos-mipi-video.c                |  170 ++++++++++++++++++++
+ drivers/video/exynos/exynos_mipi_dsi.c             |   18 +--
+ include/linux/platform_data/mipi-csis.h            |   11 +-
+ include/video/exynos_mipi_dsim.h                   |    6 +-
+ 14 files changed, 233 insertions(+), 99 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/phy/samsung,s5pv210-mipi-video-phy.txt
+ delete mode 100644 arch/arm/plat-samsung/setup-mipiphy.c
+ create mode 100644 drivers/phy/phy-exynos-mipi-video.c
+
+--
+1.7.9.5
 

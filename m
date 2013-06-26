@@ -1,91 +1,58 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Sat, 01 Jun 2013 07:31:21 +0000
-Subject: [PATCH] video: replace strict_strtoul() with kstrtoul()
-Message-Id: <001401ce5e9a$03b485e0$0b1d91a0$@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 26 Jun 2013 12:20:35 +0000
+Subject: Re: [PATCH] video: replace strict_strtoul() with kstrtoul()
+Message-Id: <51CADC93.2090405@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="----enig2DEQURHEDGNADASKTUIXI"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <001401ce5e9a$03b485e0$0b1d91a0$@samsung.com>
+In-Reply-To: <001401ce5e9a$03b485e0$0b1d91a0$@samsung.com>
 To: linux-fbdev@vger.kernel.org
 
-The usage of strict_strtoul() is not preferred, because
-strict_strtoul() is obsolete. Thus, kstrtoul() should be
-used.
+------enig2DEQURHEDGNADASKTUIXI
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
----
- drivers/video/fsl-diu-fb.c                |    4 ++--
- drivers/video/omap2/displays/panel-taal.c |    6 +++---
- drivers/video/wm8505fb.c                  |    2 +-
- 3 files changed, 6 insertions(+), 6 deletions(-)
+On 01/06/13 10:31, Jingoo Han wrote:
+> The usage of strict_strtoul() is not preferred, because
+> strict_strtoul() is obsolete. Thus, kstrtoul() should be
+> used.
+>=20
+> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+> ---
+>  drivers/video/fsl-diu-fb.c                |    4 ++--
+>  drivers/video/omap2/displays/panel-taal.c |    6 +++---
+>  drivers/video/wm8505fb.c                  |    2 +-
+>  3 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 6c27805..6dd7225 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -469,7 +469,7 @@ static enum fsl_diu_monitor_port fsl_diu_name_to_port(const char *s)
- 	unsigned long val;
- 
- 	if (s) {
--		if (!strict_strtoul(s, 10, &val) && (val <= 2))
-+		if (!kstrtoul(s, 10, &val) && (val <= 2))
- 			port = (enum fsl_diu_monitor_port) val;
- 		else if (strncmp(s, "lvds", 4) = 0)
- 			port = FSL_DIU_PORT_LVDS;
-@@ -1853,7 +1853,7 @@ static int __init fsl_diu_setup(char *options)
- 		if (!strncmp(opt, "monitor=", 8)) {
- 			monitor_port = fsl_diu_name_to_port(opt + 8);
- 		} else if (!strncmp(opt, "bpp=", 4)) {
--			if (!strict_strtoul(opt + 4, 10, &val))
-+			if (!kstrtoul(opt + 4, 10, &val))
- 				default_bpp = val;
- 		} else
- 			fb_mode = opt;
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index c4f78bd..52541f2 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -573,7 +573,7 @@ static ssize_t taal_store_esd_interval(struct device *dev,
- 	unsigned long t;
- 	int r;
- 
--	r = strict_strtoul(buf, 10, &t);
-+	r = kstrtoul(buf, 10, &t);
- 	if (r)
- 		return r;
- 
-@@ -611,7 +611,7 @@ static ssize_t taal_store_ulps(struct device *dev,
- 	unsigned long t;
- 	int r;
- 
--	r = strict_strtoul(buf, 10, &t);
-+	r = kstrtoul(buf, 10, &t);
- 	if (r)
- 		return r;
- 
-@@ -660,7 +660,7 @@ static ssize_t taal_store_ulps_timeout(struct device *dev,
- 	unsigned long t;
- 	int r;
- 
--	r = strict_strtoul(buf, 10, &t);
-+	r = kstrtoul(buf, 10, &t);
- 	if (r)
- 		return r;
- 
-diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
-index 01f9ace..3072f30 100644
---- a/drivers/video/wm8505fb.c
-+++ b/drivers/video/wm8505fb.c
-@@ -173,7 +173,7 @@ static ssize_t contrast_store(struct device *dev,
- 	struct wm8505fb_info *fbi = to_wm8505fb_info(info);
- 	unsigned long tmp;
- 
--	if (strict_strtoul(buf, 10, &tmp) || (tmp > 0xff))
-+	if (kstrtoul(buf, 10, &tmp) || (tmp > 0xff))
- 		return -EINVAL;
- 	fbi->contrast = tmp;
- 
--- 
-1.7.10.4
+I've added this to my fbdev-3.11 branch.
+
+ Tomi
 
 
+
+------enig2DEQURHEDGNADASKTUIXI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRytyTAAoJEPo9qoy8lh71FG4QAIhAamjKvpmxkfbhjfwqlw0O
+G5F57iOU2qzSYvgZwdp2HdsY3d7jtUgbQseo4f4EXZ5F6xdfI6dR3cfVgye4lS6z
+1AYYsFD585+AgMlkGLejp9pwZit6glfXGv3FnUhdn15XpxCuxi3VHiKlr+jLUcyT
+FY+fk9QA9VLHqZNAbLNZQBDlHz4EfphczAnDwTFvEkbF7DvT4/+JsxYB5VgTFobN
+zf/6mOM8ZZae1GOLV9ROe0m3AM5y+noSUXquBfOiRfbYt/pgO1h4Axafhd5Afcib
+YrBBfsfnWDMv75aPDbM1mTmkH731f+UHThnba9OE0F/S2i/5ALh7CVJEJP8nCcgI
+ng6LwvFQVX8xXq5cH6JsmWo4/X9khkAMofKsaHFqYqqk5mRedgLoWyUrU6XjQw9x
+5a1RHZiCjzOxFTad0R/Nry7gIN6ov9XrX1qbXwEMD5tml3lkUXjD3G9nxaYT+iAm
+sdzi0b0egCrFM6N+EKczYbxPEXWPhXkC84C9up+zNRopMnltZvHKZYuBOmzrDh37
+a4LNI/DMVz0DDA9DaG6pCekCDMWU+SpiVyyfFlZ7LlNhxp4Qks3O35QBFR6JImAX
+0mClu8enNUB6zKhnkHuk7P8g/jHxtj4FDaq6w40pmuR2B0SMuXIr8tc5XIcvwiFB
+ABySWJuNxde1QeWzxO8d
+=pd/l
+-----END PGP SIGNATURE-----
+
+------enig2DEQURHEDGNADASKTUIXI--

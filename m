@@ -1,75 +1,80 @@
-From: =?UTF-8?q?Vincent=20Stehl=C3=A9?= <vincent.stehle@freescale.com>
-Date: Tue, 18 Jun 2013 14:23:05 +0000
-Subject: [PATCH linux-next] fb: make fp_get_options name argument const
-Message-Id: <1371565386-23335-1-git-send-email-vincent.stehle@freescale.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 26 Jun 2013 13:21:25 +0000
+Subject: Re: [PATCH linux-next] fb: make fp_get_options name argument const
+Message-Id: <51CAEAD5.40601@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="----enig2JKGWVHFRFNQATEGAHBLU"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-next@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: =?UTF-8?q?Vincent=20Stehl=C3=A9?= <vincent.stehle@freescale.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dave Airlie <airlied@redhat.com>, trivial@kernel.org
+References: <1371565386-23335-1-git-send-email-vincent.stehle@freescale.com>
+In-Reply-To: <1371565386-23335-1-git-send-email-vincent.stehle@freescale.com>
+To: =?UTF-8?B?VmluY2VudCBTdGVobMOp?= <vincent.stehle@freescale.com>
+Cc: linux-next@vger.kernel.org, linux-fbdev@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Dave Airlie <airlied@redhat.com>, trivial@kernel.org
 
-drm_get_connector_name now returns a const value, which causes the following
-compilation warning:
+------enig2JKGWVHFRFNQATEGAHBLU
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-  drivers/gpu/drm/drm_fb_helper.c: In function ‘drm_fb_helper_parse_command_line’:
-  drivers/gpu/drm/drm_fb_helper.c:127:3: warning: passing argument 1 of ‘fb_get_options’ discards ‘const’ qualifier from pointer target type [enabled by default]
-  In file included from drivers/gpu/drm/drm_fb_helper.c:35:0:
-  include/linux/fb.h:627:12: note: expected ‘char *’ but argument is of type ‘const char *’
+On 18/06/13 17:23, Vincent Stehl=C3=A9 wrote:
+> drm_get_connector_name now returns a const value, which causes the foll=
+owing
+> compilation warning:
+>=20
+>   drivers/gpu/drm/drm_fb_helper.c: In function =E2=80=98drm_fb_helper_p=
+arse_command_line=E2=80=99:
+>   drivers/gpu/drm/drm_fb_helper.c:127:3: warning: passing argument 1 of=
+ =E2=80=98fb_get_options=E2=80=99 discards =E2=80=98const=E2=80=99 qualif=
+ier from pointer target type [enabled by default]
+>   In file included from drivers/gpu/drm/drm_fb_helper.c:35:0:
+>   include/linux/fb.h:627:12: note: expected =E2=80=98char *=E2=80=99 bu=
+t argument is of type =E2=80=98const char *=E2=80=99
+>=20
+> As fb_get_options uses its name argument as read only, make it const. T=
+his
+> fixes the aforementioned compilation warning.
+>=20
+> Signed-off-by: Vincent Stehl=C3=A9 <vincent.stehle@freescale.com>
+> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: Dave Airlie <airlied@redhat.com>
+> Cc: trivial@kernel.org
+> ---
+>=20
+>=20
+> Hi,
+>=20
+> I remarked this warning while building linux-next with imx_v6_v7_defcon=
+fig.
+> Is changing fb_get_options prototype "permitted", please?
 
-As fb_get_options uses its name argument as read only, make it const. This
-fixes the aforementioned compilation warning.
+I don't see how changing the parameter to const could break anything, so
+I've applied this to fbdev-3.11 branch.
 
-Signed-off-by: Vincent Stehlé <vincent.stehle@freescale.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: trivial@kernel.org
----
-
-
-Hi,
-
-I remarked this warning while building linux-next with imx_v6_v7_defconfig.
-Is changing fb_get_options prototype "permitted", please?
-
-Best regards,
-
-V.
-
-
- drivers/video/fbmem.c |    2 +-
- include/linux/fb.h    |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 098bfc6..d8d5779 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1881,7 +1881,7 @@ static int ofonly __read_mostly;
-  *
-  * NOTE: Needed to maintain backwards compatibility
-  */
--int fb_get_options(char *name, char **option)
-+int fb_get_options(const char *name, char **option)
- {
- 	char *opt, *options = NULL;
- 	int retval = 0;
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index d49c60f..ffac70a 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -624,7 +624,7 @@ extern void fb_pad_aligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 s_pitch, u3
- extern void fb_set_suspend(struct fb_info *info, int state);
- extern int fb_get_color_depth(struct fb_var_screeninfo *var,
- 			      struct fb_fix_screeninfo *fix);
--extern int fb_get_options(char *name, char **option);
-+extern int fb_get_options(const char *name, char **option);
- extern int fb_new_modelist(struct fb_info *info);
- 
- extern struct fb_info *registered_fb[FB_MAX];
--- 
-1.7.10.4
+ Tomi
 
 
 
+------enig2JKGWVHFRFNQATEGAHBLU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJRyurVAAoJEPo9qoy8lh71HA0P/3+qcc/4Z+wuy2wvgcqNxyGs
+5fkPwXzAHhBYAA3yqLUkl776dVElCr6rLQcq3+eBXrB9Uil1Dyw8vPVBXvN0hSFm
+qV3Cnx9DGsz1WFBeM/ezibqtdwHeEsLMNI7jThdSDyFZDgChM2LXSrBwuoZwy8eX
+aLlcG8o3GM/gOtswKdanW7oNaRfYB9ZXqLlaIEr+/zA+LhDpbBVtHDBaqIkIUrnT
+QpUtsrt16pleIFMYPe52It9jdXBwCTx//Pg8wfzPropvMbEqVz8LjYlm2n3dHrsc
+JedqRoZWRDPAnoY4esu6e4wcjQpDzLss0QObXxOD+5cp9RL6mwrjQi6BS3zN23PY
+6Ht+bq57KFiZarto6dIcCP/2YOSNeHjGMf4m6pPImPJPITCOx0A6YpDn8qaqiYuR
+HqZ8N+1L10G53QvVGp9DsBf0E988yToM13icPAQfhUIT912bS3WYo4XKJKBskmuy
+F3NilZdNaGWHZjvqLoj3CJTRj76h8Zx+WfEm9sdqF1deF++91kzBxza4sPirAaQA
+BAhQQJIoZu76Ha3Y0txq9IJIlLfnjnbJsyPyDfyyy0ZtZe/hNPbMUBYrqBiIBDng
+XGL9rxAvmZ1OEpnqZeXLgpx4kYMdoDNWTVt+N5e8540A+E1buUGdgf6dPRJNuI2y
+YYi9aDvezC2BqlQxgVVM
+=rWMD
+-----END PGP SIGNATURE-----
+
+------enig2JKGWVHFRFNQATEGAHBLU--

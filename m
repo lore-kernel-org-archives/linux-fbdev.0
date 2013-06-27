@@ -1,26 +1,35 @@
-From: Alex Courbot <acourbot@nvidia.com>
-Date: Fri, 07 Jun 2013 07:28:29 +0000
-Subject: Re: [PATCH v2] simplefb: add support for a8b8g8r8 pixel format
-Message-Id: <51B18B9D.1030901@nvidia.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Thu, 27 Jun 2013 07:27:17 +0000
+Subject: [PATCH 1/1] video: i740fb: Make i740fb_init static
+Message-Id: <1372317317-4649-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1370584869-2904-1-git-send-email-acourbot@nvidia.com> <1370589753.21409.140661241005617.2A5614D3@webmail.messagingengine.com>
-In-Reply-To: <1370589753.21409.140661241005617.2A5614D3@webmail.messagingengine.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexander van Heukelum <heukelum@fastmail.fm>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Olof Johansson <olof@lixom.net>, "gnurou@gmail.com" <gnurou@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-On 06/07/2013 04:22 PM, Alexander van Heukelum wrote:
->>   static struct simplefb_format simplefb_formats[] = {
->>   	{ "r5g6b5", 16, {11, 5}, {5, 6}, {0, 5}, {0, 0} },
->> +	{ "a8b8g8r8", 32, {0, 8}, {8, 8}, {16, 8}, {31, 8} },
->
-> Hi,
->
-> 31? I assume in practice this doesn't influence anything, but I think it should have read 24.
+i740fb_init is referenced only in this function. Make it static.
 
-Doh. Thanks for pointing it out.
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Ondrej Zary <linux@rainbow-software.org>
+---
+ drivers/video/i740fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Alex.
+diff --git a/drivers/video/i740fb.c b/drivers/video/i740fb.c
+index cfd0c52e..6c48388 100644
+--- a/drivers/video/i740fb.c
++++ b/drivers/video/i740fb.c
+@@ -1302,7 +1302,7 @@ static int  __init i740fb_setup(char *options)
+ }
+ #endif
+ 
+-int __init i740fb_init(void)
++static int __init i740fb_init(void)
+ {
+ #ifndef MODULE
+ 	char *option = NULL;
+-- 
+1.7.9.5
 

@@ -1,84 +1,77 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 26 Jun 2013 13:15:19 +0000
+From: Yijing Wang <wangyijing@huawei.com>
+Date: Thu, 27 Jun 2013 01:51:56 +0000
 Subject: Re: [PATCH 9/9] radeon: use pdev->pm_cap instead of pci_find_capability(..,PCI_CAP_ID_PM)
-Message-Id: <51CAE967.7080704@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2JXSOVFUTAXMWMIWJXHUX"
+Message-Id: <51CB9ABC.20704@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1372209221-16492-1-git-send-email-wangyijing@huawei.com>
-In-Reply-To: <1372209221-16492-1-git-send-email-wangyijing@huawei.com>
-To: Yijing Wang <wangyijing@huawei.com>
+References: <1372209221-16492-1-git-send-email-wangyijing@huawei.com> <51CAE967.7080704@ti.com>
+In-Reply-To: <51CAE967.7080704@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org
 
-------enig2JXSOVFUTAXMWMIWJXHUX
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 2013/6/26 21:15, Tomi Valkeinen wrote:
+> On 26/06/13 04:13, Yijing Wang wrote:
+>> Pci core has been saved pm cap register offset by pdev->pm_cap in pci_pm_init()
+>> in init path. So we can use pdev->pm_cap instead of using
+>> pci_find_capability(pdev, PCI_CAP_ID_PM) for better performance and simplified code.
+>>
+>> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+>> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+>> Cc: linux-fbdev@vger.kernel.org
+>> Cc: linux-kernel@vger.kernel.org
+>> ---
+>>  drivers/video/aty/radeon_pm.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
+>> index 92bda58..f7091ec 100644
+>> --- a/drivers/video/aty/radeon_pm.c
+>> +++ b/drivers/video/aty/radeon_pm.c
+>> @@ -2805,7 +2805,7 @@ static void radeonfb_early_resume(void *data)
+>>  void radeonfb_pm_init(struct radeonfb_info *rinfo, int dynclk, int ignore_devlist, int force_sleep)
+>>  {
+>>  	/* Find PM registers in config space if any*/
+>> -	rinfo->pm_reg = pci_find_capability(rinfo->pdev, PCI_CAP_ID_PM);
+>> +	rinfo->pm_reg = rinfo->pdev->pm_cap;
+>>  
+>>  	/* Enable/Disable dynamic clocks: TODO add sysfs access */
+>>  	if (rinfo->family = CHIP_FAMILY_RS480)
+> 
+> I couldn't find the rest of this series, and I'm not familiar with PCI.
+> So: is this patch and "aty128fb: use pdev->pm_cap instead of
+> pci_find_capability(..,PCI_CAP_ID_PM)" safe to apply for fbdev-3.11
+> without anything else? I.e. has the PCI core changes been merged in 3.10
+> or ealier?
 
-On 26/06/13 04:13, Yijing Wang wrote:
-> Pci core has been saved pm cap register offset by pdev->pm_cap in pci_p=
-m_init()
-> in init path. So we can use pdev->pm_cap instead of using
-> pci_find_capability(pdev, PCI_CAP_ID_PM) for better performance and sim=
-plified code.
->=20
-> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> ---
->  drivers/video/aty/radeon_pm.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->=20
-> diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_p=
-m.c
-> index 92bda58..f7091ec 100644
-> --- a/drivers/video/aty/radeon_pm.c
-> +++ b/drivers/video/aty/radeon_pm.c
-> @@ -2805,7 +2805,7 @@ static void radeonfb_early_resume(void *data)
->  void radeonfb_pm_init(struct radeonfb_info *rinfo, int dynclk, int ign=
-ore_devlist, int force_sleep)
->  {
->  	/* Find PM registers in config space if any*/
-> -	rinfo->pm_reg =3D pci_find_capability(rinfo->pdev, PCI_CAP_ID_PM);
-> +	rinfo->pm_reg =3D rinfo->pdev->pm_cap;
-> =20
->  	/* Enable/Disable dynamic clocks: TODO add sysfs access */
->  	if (rinfo->family =3D=3D CHIP_FAMILY_RS480)
+Hi Tomi,
+   Thanks for your reply. Yes, it's safe, because PCI core has been use pdev->pm_cap to save
+the pm capability offset already. And PCI core changes related this pm init code has been merged
+long long ago(since year 2008). This series changes just to simplifier driver code about pm code.
+It's not necessary to access pci device register to get pm cap again, drivers can use pci device pm_cap
+member. and this series had no changes in PCI core. The rest of this series like for bnx2, bnx2x etc has
+been tested and accepted by other subsystems.
 
-I couldn't find the rest of this series, and I'm not familiar with PCI.
-So: is this patch and "aty128fb: use pdev->pm_cap instead of
-pci_find_capability(..,PCI_CAP_ID_PM)" safe to apply for fbdev-3.11
-without anything else? I.e. has the PCI core changes been merged in 3.10
-or ealier?
-
- Tomi
+link:
+https://patchwork.kernel.org/patch/2739861/
+https://patchwork.kernel.org/patch/2739761/
+https://patchwork.kernel.org/patch/2739771/
+https://patchwork.kernel.org/patch/2739801/
 
 
+Thanks!
+Yijing
 
-------enig2JXSOVFUTAXMWMIWJXHUX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> 
+>  Tomi
+> 
+> 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJRyulnAAoJEPo9qoy8lh718/oP/2XD7of+91CgVPfoHau5k5Rh
-1yYejwTq0PW4g+mygzGXJ6Ce+FAg5QQHbck20wNiJ0MyFHrZJjok5V1zkMNZMwol
-ZftKhgleQ+TcfgyY4cIXDwP0Zsd4Cdker3z7ChDan/t/VhUspM3BMXoSccxhSrO2
-2RtEE6f+FH1IIVAr8Bw7eiyekkMhMjP/3vBALwmwxHkGSAyvs7Wx07yjH/1/BcXW
-gMs7ZprU+faSlI1S3BGzovEqks1/GbSVBf5yI7unnORs5TPKPXuIEXaoZM1e1KVT
-DyGMJI4NhC0eVV8LvG4pcOvLXnDbUC7JUDDKfEJ9DRPw8WirMOfjmN1qbdZeG6vx
-b0HJsg4XdEKIw8El2QIWF+04ygLNyeHHu94e1Aw/KWRlYJE0otzdNKdfUGO1M+MW
-DkncDUuc8qNfuQNJ7/Q7tJVqVUI7CklRZiRz1dgHGVGdU/ZrvjzI6Iq4CpckrFK3
-S7LifuGcJwfzsa01r5PE7SFLr+2ttEFV/OhIXNynOh5ANhhYBExdJ2rNVZ6rRRFG
-szDdLPcWAYtJj3NytJ+eo4F5oH2cS9azRBBNf9eW2QktL33y6dtU0/ZD+YEW3ZUp
-VGWZUvFBlv89CD32p5IHJ64IoD6ZVRQ2lULTyVX0ZbhpjwVijlBSfPgH83NHBxJj
-QHYcko4aI7TgBNJyNHtI
-=fg/V
------END PGP SIGNATURE-----
+-- 
+Thanks!
+Yijing
 
-------enig2JXSOVFUTAXMWMIWJXHUX--

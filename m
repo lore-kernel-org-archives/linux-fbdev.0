@@ -1,58 +1,51 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Date: Wed, 26 Jun 2013 15:02:23 +0000
-Subject: [PATCH v3 2/5] ARM: dts: Add MIPI PHY node to exynos4.dtsi
-Message-Id: <1372258946-15607-3-git-send-email-s.nawrocki@samsung.com>
+From: Felipe Balbi <balbi@ti.com>
+Date: Thu, 27 Jun 2013 07:52:44 +0000
+Subject: Re: [PATCH v3 2/5] ARM: dts: Add MIPI PHY node to exynos4.dtsi
+Message-Id: <20130627075244.GR15455@arwen.pp.htv.fi>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="o0y1lerN6xYE2ROn"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1372258946-15607-1-git-send-email-s.nawrocki@samsung.com>
-In-Reply-To: <1372258946-15607-1-git-send-email-s.nawrocki@samsung.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <1372258946-15607-3-git-send-email-s.nawrocki@samsung.com>
+In-Reply-To: <1372258946-15607-3-git-send-email-s.nawrocki@samsung.com>
 To: linux-arm-kernel@lists.infradead.org
 
-Add PHY provider node for the MIPI CSIS and MIPI DSIM PHYs.
+--o0y1lerN6xYE2ROn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- arch/arm/boot/dts/exynos4.dtsi |   10 ++++++++++
- 1 file changed, 10 insertions(+)
+On Wed, Jun 26, 2013 at 05:02:23PM +0200, Sylwester Nawrocki wrote:
+> Add PHY provider node for the MIPI CSIS and MIPI DSIM PHYs.
+>=20
+> Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 
-diff --git a/arch/arm/boot/dts/exynos4.dtsi b/arch/arm/boot/dts/exynos4.dtsi
-index 4d61120..9542088 100644
---- a/arch/arm/boot/dts/exynos4.dtsi
-+++ b/arch/arm/boot/dts/exynos4.dtsi
-@@ -98,6 +98,12 @@
- 		reg = <0x10010000 0x400>;
- 	};
- 
-+	mipi_phy: video-phy@10020710 {
-+		compatible = "samsung,s5pv210-mipi-video-phy";
-+		reg = <0x10020710 8>;
-+		#phy-cells = <1>;
-+	};
-+
- 	camera {
- 		compatible = "samsung,fimc", "simple-bus";
- 		status = "disabled";
-@@ -147,6 +153,8 @@
- 			interrupts = <0 78 0>;
- 			bus-width = <4>;
- 			samsung,power-domain = <&pd_cam>;
-+			phys = <&mipi_phy 0>;
-+			phy-names = "csis";
- 			status = "disabled";
- 		};
- 
-@@ -156,6 +164,8 @@
- 			interrupts = <0 80 0>;
- 			bus-width = <2>;
- 			samsung,power-domain = <&pd_cam>;
-+			phys = <&mipi_phy 2>;
-+			phy-names = "csis";
- 			status = "disabled";
- 		};
- 	};
--- 
-1.7.9.5
+Acked-by: Felipe Balbi <balbi@ti.com>
 
+--=20
+balbi
+
+--o0y1lerN6xYE2ROn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJRy+9MAAoJEIaOsuA1yqREEJcP/ixAuKRVjAsuzj47/ABUW7QS
+glerAWcxGRZ3blSvF9X6aHGNVzneWXeg1VVu6knFDehbNXDNMdIcqtxVW5ep7TYv
+skhfoqjAFJYfnmFyHtIyJqk4RkG6VR0OUXOaluVvFbTir72A5zqIhtOI+Blozha1
+v24TJTqUI/69Hxh74vr+Q0IH2RRuzN5qxa/FsUD02at82swbSEJijE31izgK82fS
+4FVMRZY3hhIfdVKTNij1dAcFYhQKWW5RHXfe6NjBZvfbFz83Phuxl+9bR6BNHKnt
+KkEtnymAvGVXXxpU9TU7muue33oNXOsWIU6P1r8qOQJdaVt8wpNIVNAKePLn8EU5
+0jmAqCOnZe3T22QEvZC/5Jxb7EJq/u8l5MB3P0kwXdQ9KbbNZVPWcWo2wqkAebQp
+eoLf/PZAsEnRgQCrfaxgfxDXm4LVQpC0xeKMAfK0ASESkRO7dRjIUavByXL79Wc/
+xTOWA8Di61Iro8Xhhq3vpzPyV3uWZkD696T0S1d4PhB4xo/0hBuCCIY729UCkgQY
+cbNIoHEHUaw9vwjs7E+XJZrhwhFNs7XbcDzlW/1pit8+rcdZdgsu7Mo7Qsba6z3G
+6GK9aTr2H+JSC3O3pQvLvDuaWXONaCRUlQ9ctdH0YGUH14Y82otUk4Q3JEHpYK/4
+pvTE8GSGDNC/b6q/zxoz
+=t4FX
+-----END PGP SIGNATURE-----
+
+--o0y1lerN6xYE2ROn--

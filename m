@@ -1,34 +1,59 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Date: Mon, 24 Jun 2013 14:16:53 +0000
-Subject: [PATCHv2 0/2] HX8357 driver improvement
-Message-Id: <1372083415-9734-1-git-send-email-alexandre.belloni@free-electrons.com>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Date: Fri, 28 Jun 2013 13:43:07 +0000
+Subject: [PATCH v4 1/5] ARM: dts: Add MIPI PHY node to exynos4.dtsi
+Message-Id: <1372426991-2482-2-git-send-email-s.nawrocki@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1372426991-2482-1-git-send-email-s.nawrocki@samsung.com>
+In-Reply-To: <1372426991-2482-1-git-send-email-s.nawrocki@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Cc: jimwall@q.com, brian@crystalfontz.com, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Alexandre Belloni <alexandre.belloni@free-electrons.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+Add PHY provider node for the MIPI CSIS and MIPI DSIM PHYs.
 
-This is a set of improvements for the hx8357 driver. The first patch removes the
-need to defines IM pins in the device tree. So that it is possible to use the
-controller with fixed IM pins.
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Acked-by: Felipe Balbi <balbi@ti.com>
+---
+ arch/arm/boot/dts/exynos4.dtsi |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-The second patch adds support for the Himax HX8369 controller which is quite
-similar.
-
-Tested on CFA-10055 (hx8357) and CFA-10056 (hx8369).
-
-Alexandre Belloni (1):
-  fb: backlight: HX8357: Add HX8369 support
-
-Maxime Ripard (1):
-  video: hx8357: Make IM pins optional
-
- drivers/video/backlight/hx8357.c | 256 +++++++++++++++++++++++++++++++++------
- 1 file changed, 219 insertions(+), 37 deletions(-)
-
+diff --git a/arch/arm/boot/dts/exynos4.dtsi b/arch/arm/boot/dts/exynos4.dtsi
+index 4d61120..1750511 100644
+--- a/arch/arm/boot/dts/exynos4.dtsi
++++ b/arch/arm/boot/dts/exynos4.dtsi
+@@ -49,6 +49,12 @@
+ 		reg = <0x10000000 0x100>;
+ 	};
+ 
++	mipi_phy: video-phy@10020710 {
++		compatible = "samsung,s5pv210-mipi-video-phy";
++		reg = <0x10020710 8>;
++		#phy-cells = <1>;
++	};
++
+ 	pd_mfc: mfc-power-domain@10023C40 {
+ 		compatible = "samsung,exynos4210-pd";
+ 		reg = <0x10023C40 0x20>;
+@@ -147,6 +153,8 @@
+ 			interrupts = <0 78 0>;
+ 			bus-width = <4>;
+ 			samsung,power-domain = <&pd_cam>;
++			phys = <&mipi_phy 0>;
++			phy-names = "csis";
+ 			status = "disabled";
+ 		};
+ 
+@@ -156,6 +164,8 @@
+ 			interrupts = <0 80 0>;
+ 			bus-width = <2>;
+ 			samsung,power-domain = <&pd_cam>;
++			phys = <&mipi_phy 2>;
++			phy-names = "csis";
+ 			status = "disabled";
+ 		};
+ 	};
 -- 
-1.8.1.2
+1.7.9.5
 

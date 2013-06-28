@@ -1,80 +1,21 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Date: Mon, 03 Jun 2013 10:13:16 +0000
-Subject: [PATCH v4 1/7] video: xilinxfb: Fix OF probing on little-endian systems
-Message-Id: <262ff72a86eda8d0dfadd11783340a77d04e9b67.1370254386.git.michal.simek@xilinx.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-9731-1370254405-0001"
+From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
+Date: Fri, 28 Jun 2013 17:47:34 +0000
+Subject: =?UTF-8?B?UmVbMl06IGlteC1kcm0gZG9lcyBub3QgcmVwb3J0IGNvcnJlY3QgaW5mbyBp?= =?UTF-8?B?biBmYnNldA==?=
+Message-Id: <1372441654.380748131@f216.mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1370254386.git.michal.simek@xilinx.com>
-In-Reply-To: <cover.1370254386.git.michal.simek@xilinx.com>
-To: linux-kernel@vger.kernel.org
-Cc: Michal Simek <monstr@monstr.eu>, Michal Simek <michal.simek@xilinx.com>, Arnd Bergmann <arnd@arndb.de>, Timur Tabi <timur@tabi.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
-
-This is a MIME GnuPG-signed message.  If you see this text, it means that
-your E-mail or Usenet software does not support MIME signed messages.
-The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
-To open this message correctly you will need to install E-mail or Usenet
-software that supports modern Internet standards.
-
---=_mimegpg-monstr-desktop-9731-1370254405-0001
-
-From: Michal Simek <monstr@monstr.eu>
-
-DTB is always big-endian that's why it is necessary
-to properly convert value (*p).
-It is automatically done in of_property_read_u32().
-
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
----
-Changes in v4: None
-Changes in v3:
-- fix commit message
-
-Changes in v2:
-- use of_property_read_u32 helper function
-
- drivers/video/xilinxfb.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index af0b4fd..aecd15d 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -406,8 +406,7 @@ static int xilinxfb_release(struct device *dev)
- static int xilinxfb_of_probe(struct platform_device *op)
- {
- 	const u32 *prop;
--	u32 *p;
--	u32 tft_access;
-+	u32 tft_access = 0;
- 	struct xilinxfb_platform_data pdata;
- 	struct resource res;
- 	int size, rc;
-@@ -427,8 +426,8 @@ static int xilinxfb_of_probe(struct platform_device *op)
- 	 * To check whether the core is connected directly to DCR or PLB
- 	 * interface and initialize the tft_access accordingly.
- 	 */
--	p = (u32 *)of_get_property(op->dev.of_node, "xlnx,dcr-splb-slave-if", NULL);
--	tft_access = p ? *p : 0;
-+	of_property_read_u32(op->dev.of_node, "xlnx,dcr-splb-slave-if",
-+			     &tft_access);
-
- 	/*
- 	 * Fill the resource structure if its direct PLB interface
---
-1.8.2.3
-
-
---=_mimegpg-monstr-desktop-9731-1370254405-0001
-Content-Type: application/pgp-signature
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAlGsbEUACgkQykllyylKDCHLmACdFjOdPjdUrJxttWT4VSVTxXfY
-VbgAn3GJ0HcuvqmK+/YPTofEdRq1slKq
-=HOLi
------END PGP SIGNATURE-----
-
---=_mimegpg-monstr-desktop-9731-1370254405-0001--
+PiBPbiBGcmksIEp1biAyOCwgMjAxMyBhdCAyOjI4IFBNLCBGYWJpbyBFc3RldmFtIDxmZXN0ZXZh
+bUBnbWFpbC5jb20+IHdyb3RlOgo+ID4gSGkgUGhpbGlwcC9TYXNjaGEsCj4gPgo+ID4gV2hlbiBJ
+IGVuYWJsZSB0aGUgcGFyYWxsZWwgZGlzcGxheSBvbiBhIG14NTNxc2IsIEkgbm90aWNlZCB0aGF0
+IGZic2V0Cj4gPiBkb2VzIG5vdCByZXBvcnQgdGhlIGNvcnJlY3QgaW5mb3JtYXRpb246Cj4gPgo+
+ID4gbW9kZSAiODAweDQ4MC0wIgo+ID4gICAgICAgICAjIEQ6IDAuMDAwIE1IeiwgSDogMC4wMDAg
+a0h6LCBWOiAwLjAwMCBIego+ID4gICAgICAgICBnZW9tZXRyeSA4MDAgNDgwIDgwMCA0ODAgMTYK
+PiA+ICAgICAgICAgdGltaW5ncyAwIDAgMCAwIDAgMCAwCj4gCj4gT2ssIGp1c3QgcmVhbGl6ZWQg
+dGhhdCBteSBob3N0IFBDIHJlcG9ydHMgdGhlIHNhbWUgaW4gdGhlICd0aW1pbmdzJyBsaW5lLgo+
+IAo+IFNvIG5vdCBhbiBpc3N1ZSB3aXRoIHRoZSBpbXgtZHJtIGRyaXZlciB0aGVuLgoKIjgwMHg0
+ODAtMCIKTW9kZSBzaG91bGQgY29udGFpbiB2ZXJ0aWNhbCBmcmVxdWVuY3ksIGxpa2UgODAweDQ4
+MC01MC4KWmVybyBpcyBub3QgdmFsaWQgaGVyZSwgaXMgbm90IGl0PwoKLS0tCg=

@@ -1,61 +1,83 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Wed, 26 Jun 2013 21:30:15 +0000
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Fri, 28 Jun 2013 10:43:05 +0000
 Subject: Re: [RFC 0/6] SimpleDRM Driver (was: dvbe driver)
-Message-Id: <51CB5D67.3090701@wwwdotorg.org>
+Message-Id: <CANq1E4R66J2JKdF1BrdczpDpvpNDUFz20v6FKJCma1XWHKWMTg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1372112849-670-1-git-send-email-dh.herrmann@gmail.com>
-In-Reply-To: <1372112849-670-1-git-send-email-dh.herrmann@gmail.com>
+	<51CB5D67.3090701@wwwdotorg.org>
+In-Reply-To: <51CB5D67.3090701@wwwdotorg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Herrmann <dh.herrmann@gmail.com>
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Dave Airlie <airlied@gmail.com>, linux-fbdev@vger.kernel.org, Stephen Warren <swarren@nvidia.com>, Olof Johansson <olof@lixom.net>
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, linux-kernel <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@gmail.com>, linux-fbdev@vger.kernel.org, Stephen Warren <swarren@nvidia.com>, Olof Johansson <olof@lixom.net>
 
-On 06/24/2013 04:27 PM, David Herrmann wrote:
-> Hi
-> 
-> This is my second revision of the dvbe driver. I renamed it to SimpleDRM to
-> show the resemblence with the recently introduced simplefb.c fbdev driver. The
-> driver is supposed to be the most basic DRM driver similar to efifb.c, vesafb.c,
-> offb.c, simplefb.c, ...
-> It provides a single virtual CRTC+encoder+connector and allows user-space to
-> create one dumb-buffer at a time and attach it.
-> 
-> The setup changed slightly. It no longer uses shadow buffers but instead maps
-> the framebuffer directly into userspace. Furthermore, a new infrastructure is
-> used to unload firmware drivers during real hardware drivers probe cycles. Only
-> nouveau was changed to use it, yet.
-> 
-> I still have an odd problem when unloading DRM drivers (not just SimpleDRM) with
-> an fbdev fallback. If I call printk() directly after unregister_framebufer(), I
-> get a NULL-deref somewhere in the VT layer (most times hide_cursor()). I haven't
-> figured out exactly where that happens, but I am also very reluctant to spend
-> more time debugging the VT layer.
+Hi
 
-I tested this on a Tegra ARM system, and it basically worked.
+On Wed, Jun 26, 2013 at 11:30 PM, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> On 06/24/2013 04:27 PM, David Herrmann wrote:
+>> Hi
+>>
+>> This is my second revision of the dvbe driver. I renamed it to SimpleDRM to
+>> show the resemblence with the recently introduced simplefb.c fbdev driver. The
+>> driver is supposed to be the most basic DRM driver similar to efifb.c, vesafb.c,
+>> offb.c, simplefb.c, ...
+>> It provides a single virtual CRTC+encoder+connector and allows user-space to
+>> create one dumb-buffer at a time and attach it.
+>>
+>> The setup changed slightly. It no longer uses shadow buffers but instead maps
+>> the framebuffer directly into userspace. Furthermore, a new infrastructure is
+>> used to unload firmware drivers during real hardware drivers probe cycles. Only
+>> nouveau was changed to use it, yet.
+>>
+>> I still have an odd problem when unloading DRM drivers (not just SimpleDRM) with
+>> an fbdev fallback. If I call printk() directly after unregister_framebufer(), I
+>> get a NULL-deref somewhere in the VT layer (most times hide_cursor()). I haven't
+>> figured out exactly where that happens, but I am also very reluctant to spend
+>> more time debugging the VT layer.
+>
+> I tested this on a Tegra ARM system, and it basically worked.
 
-I have one question: With the simplefb driver, and console=tty1 on the
-kernel command-line, I see both the penguins logo and Linux's boot
-messages on the LCD panel that's hooked up through simplefb. However,
-with simpledrm, I only see the penguins logo, but no boot messages. Is
-that expected? How would I solve that if so?
+Thanks a lot for the feedback!
 
-Note: I needed to apply the following patch to get it to compile:
+> I have one question: With the simplefb driver, and console=tty1 on the
+> kernel command-line, I see both the penguins logo and Linux's boot
+> messages on the LCD panel that's hooked up through simplefb. However,
+> with simpledrm, I only see the penguins logo, but no boot messages. Is
+> that expected? How would I solve that if so?
 
-diff --git a/drivers/gpu/drm/simpledrm/simpledrm_fbdev.c
-b/drivers/gpu/drm/simpledrm/simpledrm_fbdev.c
-index 40a2696..39885c8 100644
---- a/drivers/gpu/drm/simpledrm/simpledrm_fbdev.c
-+++ b/drivers/gpu/drm/simpledrm/simpledrm_fbdev.c
-@@ -159,7 +159,7 @@ void sdrm_fbdev_cleanup(struct sdrm_device *sdrm)
- {
-        struct fb_info *info;
+No idea what is going wrong there. Somehow the simpledrm-fbdev device
+is not picked up as primary device. I only got a black-cursor on
+black-background (visible if painting something else on the fb0
+device). And I get NULL-derefs in cursor_hide() during unregistration.
+I digged through fbcon.c to find out what's going wrong but without
+any success. I will see what I can do.
 
--       if (!sdrm->info)
-+       if (!sdrm->fbdev)
-                return;
+However, X-server or other apps work perfectly fine with it.
 
-        dev_info(sdrm->ddev->dev, "fbdev cleanup\n");
+> Note: I needed to apply the following patch to get it to compile:
+>
+> diff --git a/drivers/gpu/drm/simpledrm/simpledrm_fbdev.c
+> b/drivers/gpu/drm/simpledrm/simpledrm_fbdev.c
+> index 40a2696..39885c8 100644
+> --- a/drivers/gpu/drm/simpledrm/simpledrm_fbdev.c
+> +++ b/drivers/gpu/drm/simpledrm/simpledrm_fbdev.c
+> @@ -159,7 +159,7 @@ void sdrm_fbdev_cleanup(struct sdrm_device *sdrm)
+>  {
+>         struct fb_info *info;
+>
+> -       if (!sdrm->info)
+> +       if (!sdrm->fbdev)
+>                 return;
 
+Ugh, embarrassing, sorry. I fixed it up. It was a late fix to a avoid
+fbcon from panicking.
 
+Thanks!
+David
 
+>
+>         dev_info(sdrm->ddev->dev, "fbdev cleanup\n");
+>
+>
+>

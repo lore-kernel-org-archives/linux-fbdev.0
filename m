@@ -1,94 +1,44 @@
-From: Josh Boyer <jwboyer@redhat.com>
-Date: Tue, 25 Jun 2013 14:17:04 +0000
-Subject: Re: [PATCH] Handle efifb with no lfb_base better.
-Message-Id: <20130625141703.GB9410@hansolo.jdub.homelinux.org>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Fri, 28 Jun 2013 05:21:15 +0000
+Subject: [PATCH 0/3] Generic PHY driver for the Exynos SoC DP PHY
+Message-Id: <001401ce73bf$4f9a67b0$eecf3710$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1366730598-13942-1-git-send-email-pjones@redhat.com>
-In-Reply-To: <1366730598-13942-1-git-send-email-pjones@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Peter Jones <pjones@redhat.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-On Tue, Apr 23, 2013 at 11:23:18AM -0400, Peter Jones wrote:
-> Right now we get a WARN from platform_device_unregister() because our
-> platform_device has no ->release function.  This is clearly wrong, but
-> we should be warning so we can figure out what happened, as this failure
-> results in bug reports.  So WARN() about the real problem, and use the
-> registration function that gives us a default release() function.
->=20
-> This fixes the tracback reported at
-> https://bugzilla.redhat.com/show_bug.cgi?id=840621 , though it does not
-> fix the actual /problem/ the user is seeing.
->=20
-> Signed-off-by: Peter Jones <pjones@redhat.com>
+This patch series adds a simple driver for the Samsung Exynos SoC
+series DP transmitter PHY, using the generic PHY framework [1].
+Previously the DP PHY used a platform callback or internal DT node
+to control the PHY power enable bit.
+The platform callback and internal DT node can be dropped and this
+driver does not need any calls back to the platform code.
 
-Is anyone in the fdbdev camp looking at this?  It's been 2 months since
-this was sent out without any comments and I don't see it in the tree
-anywhere.
+This series depends on the generic PHY framework [1]. These patches
+refer to Sylwester Nawrocki's patches about Exynos MIPI [2].
 
-josh
+[1] https://lkml.org/lkml/2013/6/26/259
+[2] http://www.spinics.net/lists/linux-samsung-soc/msg20034.html
 
-> ---
->  drivers/video/efifb.c | 15 ++++++++-------
->  1 file changed, 8 insertions(+), 7 deletions(-)
->=20
-> diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
-> index 50fe668..390b61b 100644
-> --- a/drivers/video/efifb.c
-> +++ b/drivers/video/efifb.c
-> @@ -285,6 +285,7 @@ static void efifb_destroy(struct fb_info *info)
->  {
->  	if (info->screen_base)
->  		iounmap(info->screen_base);
-> +	fb_dealloc_cmap(&info->cmap);
->  	if (request_mem_succeeded)
->  		release_mem_region(info->apertures->ranges[0].base,
->  				   info->apertures->ranges[0].size);
-> @@ -382,6 +383,8 @@ static int __init efifb_probe(struct platform_device =
-*dev)
->  	if (!screen_info.pages)
->  		screen_info.pages =3D 1;
->  	if (!screen_info.lfb_base) {
-> +		WARN(1, KERN_WARNING, "invalid framebuffer address for "
-> +				      "device '%s'\n", dev_name(dev));
->  		printk(KERN_DEBUG "efifb: invalid framebuffer address\n");
->  		return -ENODEV;
->  	}
-> @@ -544,9 +547,7 @@ static struct platform_driver efifb_driver =3D {
->  	},
->  };
-> =20
-> -static struct platform_device efifb_device =3D {
-> -	.name	=3D "efifb",
-> -};
-> +static struct platform_device *efifb_device;
-> =20
->  static int __init efifb_init(void)
->  {
-> @@ -571,9 +572,9 @@ static int __init efifb_init(void)
->  	if (!screen_info.lfb_linelength)
->  		return -ENODEV;
-> =20
-> -	ret =3D platform_device_register(&efifb_device);
-> -	if (ret)
-> -		return ret;
-> +	efifb_device =3D platform_device_register_simple("efifb", 0, NULL, 0);
-> +	if (IS_ERROR(efifb_device))
-> +		return PTR_ERR(efifb_device);
-> =20
->  	/*
->  	 * This is not just an optimization.  We will interfere
-> @@ -582,7 +583,7 @@ static int __init efifb_init(void)
->  	 */
->  	ret =3D platform_driver_probe(&efifb_driver, efifb_probe);
->  	if (ret) {
-> -		platform_device_unregister(&efifb_device);
-> +		platform_device_unregister(efifb_device);
->  		return ret;
->  	}
-> =20
-> --=20
-> 1.8.1.4
->=20
+Jingoo Han (3):
+  phy: Add driver for Exynos DP PHY
+  ARM: dts: Add DP PHY node to exynos5250.dtsi
+  video: exynos_dp: Use the generic PHY driver
+
+ .../phy/samsung,exynos5250-dp-video-phy.txt        |    7 ++
+ .../devicetree/bindings/video/exynos_dp.txt        |   17 ---
+ arch/arm/boot/dts/exynos5250.dtsi                  |   13 ++++++++-----
+ drivers/phy/Kconfig                                |    8 ++
+ drivers/phy/Makefile                               |    3 +-
+ drivers/phy/phy-exynos-dp-video.c                  |  130 ++++++++++++++++++++
+ drivers/video/exynos/exynos_dp_core.c              |  118 ++------------------
+ drivers/video/exynos/exynos_dp_core.h              |    2 +
+ include/video/exynos_dp.h                          |    6 +-
+ 9 files changed, 170 insertions(+), 134 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/phy/samsung,exynos5250-dp-video-phy.txt
+ create mode 100644 drivers/phy/phy-exynos-dp-video.c
+
+--
+1.7.10.4
+

@@ -1,163 +1,131 @@
-From: Inki Dae <inki.dae@samsung.com>
-Date: Fri, 07 Jun 2013 09:02:47 +0000
-Subject: Introduce a dmabuf sync framework for buffer synchronization
-Message-Id: <00e201ce635d$c8230650$586912f0$%dae@samsung.com>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Date: Fri, 28 Jun 2013 13:43:09 +0000
+Subject: [PATCH v4 3/5] video: exynos_mipi_dsim: Use the generic PHY driver
+Message-Id: <1372426991-2482-4-git-send-email-s.nawrocki@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1372426991-2482-1-git-send-email-s.nawrocki@samsung.com>
+In-Reply-To: <1372426991-2482-1-git-send-email-s.nawrocki@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-Hi all,
+Use the generic PHY API instead of the platform callback to control
+the MIPI DSIM DPHY. The 'phy_label' field is added to the platform
+data structure to allow PHY lookup on non-dt platforms.
 
-Came back :)
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Acked-by: Felipe Balbi <balbi@ti.com>
+Acked-by: Donghwa Lee <dh09.lee@samsung.com>
+---
+ drivers/video/exynos/exynos_mipi_dsi.c |   19 ++++++++++---------
+ include/video/exynos_mipi_dsim.h       |    6 ++++--
+ 2 files changed, 14 insertions(+), 11 deletions(-)
 
-Please, ignore previous fence helper. I have re-implemented buffer
-synchronization mechanism, dmabuf sync, based on DMA BUF and wound/wait
-style lock v5[1] and tested it with 2d gpu and drm kms drivers.
-
-The below is dmabuf sync framework codes,
-=09
-https://git.kernel.org/cgit/linux/kernel/git/daeinki/drm-exynos.git/commit/?
-h=3Ddmabuf-sync&id=AE6c5a0146ab72ea64d9fc91af4595aacf9a5139
-=09
-And g2d driver with dmabuf sync framework,
-=09
-https://git.kernel.org/cgit/linux/kernel/git/daeinki/drm-exynos.git/commit/?
-h=3Ddmabuf-sync&id@30bdee9bab5841ad32faade528d04cc0c5fc94
-
-And also exynos drm kms framework,
-=09
-https://git.kernel.org/cgit/linux/kernel/git/daeinki/drm-exynos.git/commit/?
-h=3Ddmabuf-sync&idla548e9ea9e865592719ef6b1cde58366af9f5c
-
-[1] https://patchwork-mail1.kernel.org/patch/2625321/
-
-The purpose of this framework is not only to couple synchronizing caches and
-buffer access between CPU and CPU, CPU and DMA, and DMA and DMA but also to
-provide easy-to-use interfaces for device drivers: we may need
-user interfaces but there is no good way for exposing the interfaces to user
-side yet.
-
-Basically, the mechanism of this framework has the following steps,
-Initialize dmabuf sync object - A task gets a new sync object allocated and
-initialized by dmabuf_sync_init(). This work should be done when a context
-or similar thing of device driver is created or before cpu access.
-   =20
-Add a dmabuf to the sync object - A task can add a dmabuf or more that this
-task wants to access to its own sync object. This work should be done just
-before setting up dma buffer relevant registers or buffer cpu access.
-   =20
-Lock a sync object - A task tries to lock all dmabufs added in the sync
-object. And for this, ww-mutexes is used to resolve dead lock. This work
-should be done before dma start or cpu access. The lock means DMA or CPU of
-current task can access dmabufs so the other cannot access dmabufs.
-
-Unlock a sync object - A task tries to unlock all dmabufs added in the sync
-object. This work should be done when after the completion of dma operation
-or CPU access. The unlock means DMA or CPU access of current task has been
-completed so the other can access the dmabufs.
-
-In addition, this framework includes the following two features,
-Consider read and write lock - this feature is for more performance: we
-don't need to take a lock in case that a buffer was accessed for read and
-current task tries to access the buffer for read. So when current task tries
-to take a lock, this feature checks previous access type and desired type to
-a given buffer and then decides if it has to take a lock to the buffer or
-not.
-   =20
-Consider lockup and resource management - this feature considers the case
-that any task never unlocks a buffer after taking a lock to the buffer. In
-this case, a timer handler to this task is called sometimes later and then
-the buffer is unlocked by workqueue handler to avoid lockup and release the
-buffer relevant resources.
-   =20
-Tutorial.
-	when allocating and initializing device context
-		struct dmabuf_sync *sync;
-
-		sync =3D dmabuf_sync_init(NULL, NULL);
-
-	when setting up dma buffer relevant registers
-		/* it can be called repeatly for multiple buffers. */
-		dmabuf_sync_get(sync, dmabuf);
-
-	just before dma start or cpu access
-		dmabuf_sync_lock(sync);
-
-	after the completion of dma operation or cpu access
-		dmabuf_sync_unlock(sync);
-		dmabuf_sync_put_all(sync);
-		dmabuf_sync_fini(sync);
-
-
-Deadlock reproduction with dmabuf sync.
-For deadlock test, I had tried to reproduce deadlock situation like below
-and the below approach had been worked well,
-(Please, presume that two tasks share two dmabufs together.)
-
-	[Task A]
-	struct dmabuf_sync *sync;
-
-	sync =3D dmabuf_sync_init(NULL, NULL);
-=09
-	dmabuf_sync_get(sync, dmabuf A);
-	dmabuf_sync_get(sync, dmabuf B);
-
-	while(1) {
-		dmabuf_sync_lock(sync);
-		sleep(1);
-		dmabuf_sync_unlock(sync);
-		sleep(1);
-	}
-
-	[Task B]
-	struct dmabuf_sync *sync;
-
-	sync =3D dmabuf_sync_init(NULL, NULL);
-=09
-	dmabuf_sync_get(sync, dmabuf C);
-	dmabuf_sync_get(sync, dmabuf A);
-
-	while(1) {
-		dmabuf_sync_lock(sync); <-- deadlock
-		sleep(1);
-		dmabuf_sync_unlock(sync);
-		sleep(1);
-	}
-
-With the above example codes, deadlock occurs when Task B called
-dmabuf_sync_lock function: internally, Task B takes a lock to dmabuf C and
-then tries to take a lock to dmabuf A. But at this time, ww_mutex_lock()
-returns -EDEADLK because ctx->acquired became 1 once taking a lock to dmabuf
-C. And then task B unlocks dmabuf C and takes a slowpath lock to dmabuf A.
-And then once Task A unlocks dmabuf A, Task B tries to take a lock to dmabuf
-C again.
-
-And the below is my concerns and opinions,
-A dma buf has a reservation object when a buffer is exported to the dma buf
-- I'm not sure but it seems that reservation object is used for x86 gpu;
-having vram and different domain, or similar devices. So in case of embedded
-system, most dma devices and cpu share system memory so I think that
-reservation object should be considered for them also because basically,
-buffer synchronization mechanism should be worked based on dmabuf. For this,
-I have added four members to reservation_object; shared_cnt and shared for
-read lock, accessed_type for cache operation, and locked for timeout case.
-Hence, some devices might need specific something for itself. So how about
-remaining only common part for reservation_object structure; it seems that
-fence_excl, fence_shared, and so on are not common part.
-
-Now wound/wait mutex doesn't consider read and write lock - In case of using
-ww-mutexes for buffer synchronization, it seems that we need read and write
-lock for more performance; read access and then read access doesn't need to
-be locked. For this, I have added three members, shared_cnt and shared to
-reservation_object and this is just to show you how we can use read lock.
-However, I'm sure that there is a better/more generic way.
-
-The above all things is just quick implementation for buffer synchronization
-so this should be more cleaned up and there might be my missing point.
-Please give me your advices and opinions.
-
-Thanks,
-Inki Dae
+diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
+index 32e5406..248e444 100644
+--- a/drivers/video/exynos/exynos_mipi_dsi.c
++++ b/drivers/video/exynos/exynos_mipi_dsi.c
+@@ -30,6 +30,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/kthread.h>
+ #include <linux/notifier.h>
++#include <linux/phy/phy.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/err.h>
+@@ -156,8 +157,7 @@ static int exynos_mipi_dsi_blank_mode(struct mipi_dsim_device *dsim, int power)
+ 		exynos_mipi_regulator_enable(dsim);
+ 
+ 		/* enable MIPI-DSI PHY. */
+-		if (dsim->pd->phy_enable)
+-			dsim->pd->phy_enable(pdev, true);
++		phy_power_on(dsim->phy);
+ 
+ 		clk_enable(dsim->clock);
+ 
+@@ -373,6 +373,10 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
++	dsim->phy = devm_phy_get(&pdev->dev, dsim_pd->phy_label);
++	if (IS_ERR(dsim->phy))
++		return PTR_ERR(dsim->phy);
++
+ 	dsim->clock = devm_clk_get(&pdev->dev, "dsim0");
+ 	if (IS_ERR(dsim->clock)) {
+ 		dev_err(&pdev->dev, "failed to get dsim clock source\n");
+@@ -439,8 +443,7 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 	exynos_mipi_regulator_enable(dsim);
+ 
+ 	/* enable MIPI-DSI PHY. */
+-	if (dsim->pd->phy_enable)
+-		dsim->pd->phy_enable(pdev, true);
++	phy_power_on(dsim->phy);
+ 
+ 	exynos_mipi_update_cfg(dsim);
+ 
+@@ -504,9 +507,8 @@ static int exynos_mipi_dsi_suspend(struct device *dev)
+ 	if (client_drv && client_drv->suspend)
+ 		client_drv->suspend(client_dev);
+ 
+-	/* enable MIPI-DSI PHY. */
+-	if (dsim->pd->phy_enable)
+-		dsim->pd->phy_enable(pdev, false);
++	/* disable MIPI-DSI PHY. */
++	phy_power_off(dsim->phy);
+ 
+ 	clk_disable(dsim->clock);
+ 
+@@ -536,8 +538,7 @@ static int exynos_mipi_dsi_resume(struct device *dev)
+ 	exynos_mipi_regulator_enable(dsim);
+ 
+ 	/* enable MIPI-DSI PHY. */
+-	if (dsim->pd->phy_enable)
+-		dsim->pd->phy_enable(pdev, true);
++	phy_power_on(dsim->phy);
+ 
+ 	clk_enable(dsim->clock);
+ 
+diff --git a/include/video/exynos_mipi_dsim.h b/include/video/exynos_mipi_dsim.h
+index 89dc88a..fd69beb 100644
+--- a/include/video/exynos_mipi_dsim.h
++++ b/include/video/exynos_mipi_dsim.h
+@@ -216,6 +216,7 @@ struct mipi_dsim_config {
+  *	automatically.
+  * @e_clk_src: select byte clock source.
+  * @pd: pointer to MIPI-DSI driver platform data.
++ * @phy: pointer to the generic PHY
+  */
+ struct mipi_dsim_device {
+ 	struct device			*dev;
+@@ -236,6 +237,7 @@ struct mipi_dsim_device {
+ 	bool				suspended;
+ 
+ 	struct mipi_dsim_platform_data	*pd;
++	struct phy			*phy;
+ };
+ 
+ /*
+@@ -248,7 +250,7 @@ struct mipi_dsim_device {
+  * @enabled: indicate whether mipi controller got enabled or not.
+  * @lcd_panel_info: pointer for lcd panel specific structure.
+  *	this structure specifies width, height, timing and polarity and so on.
+- * @phy_enable: pointer to a callback controlling D-PHY enable/reset
++ * @phy_label: the generic PHY label
+  */
+ struct mipi_dsim_platform_data {
+ 	char				lcd_panel_name[PANEL_NAME_SIZE];
+@@ -257,7 +259,7 @@ struct mipi_dsim_platform_data {
+ 	unsigned int			enabled;
+ 	void				*lcd_panel_info;
+ 
+-	int (*phy_enable)(struct platform_device *pdev, bool on);
++	const char 			*phy_label;
+ };
+ 
+ /*
+-- 
+1.7.9.5
 

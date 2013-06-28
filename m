@@ -1,90 +1,57 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Mon, 24 Jun 2013 22:27:29 +0000
-Subject: [RFC 6/6] drm: nouveau: kick out firmware drivers during probe
-Message-Id: <1372112849-670-7-git-send-email-dh.herrmann@gmail.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Fri, 28 Jun 2013 07:14:18 +0000
+Subject: [PATCH V2 0/3] Generic PHY driver for the Exynos SoC DP PHY
+Message-Id: <001e01ce73cf$1ab3ab50$501b01f0$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1372112849-670-1-git-send-email-dh.herrmann@gmail.com>
-In-Reply-To: <1372112849-670-1-git-send-email-dh.herrmann@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org
-Cc: linux-kernel@vger.kernel.org, Dave Airlie <airlied@gmail.com>, linux-fbdev@vger.kernel.org, Stephen Warren <swarren@nvidia.com>, Olof Johansson <olof@lixom.net>, David Herrmann <dh.herrmann@gmail.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Use the new DRM infrastructure to kick out firmware drivers before probing
-the real driver.
+This patch series adds a simple driver for the Samsung Exynos SoC
+series DP transmitter PHY, using the generic PHY framework [1].
+Previously the DP PHY used a platform callback or internal DT node
+to control the PHY power enable bit.
+The platform callback and internal DT node can be dropped and this
+driver does not need any calls back to the platform code.
 
-Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
----
- drivers/gpu/drm/nouveau/nouveau_drm.c | 29 ++++++++++++++++++++++-------
- 1 file changed, 22 insertions(+), 7 deletions(-)
+These patches was tested on Exynos5250.
 
-diff --git a/drivers/gpu/drm/nouveau/nouveau_drm.c b/drivers/gpu/drm/nouveau/nouveau_drm.c
-index 383f4e6..418867f 100644
---- a/drivers/gpu/drm/nouveau/nouveau_drm.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_drm.c
-@@ -233,13 +233,11 @@ nouveau_accel_init(struct nouveau_drm *drm)
- 	nouveau_bo_move_init(drm);
- }
- 
--static int nouveau_drm_probe(struct pci_dev *pdev,
--			     const struct pci_device_id *pent)
-+static int nouveau_kick_out_firmware(struct drm_device *dev)
- {
--	struct nouveau_device *device;
- 	struct apertures_struct *aper;
- 	bool boot = false;
--	int ret;
-+	struct pci_dev *pdev = dev->pdev;
- 
- 	/* remove conflicting drivers (vesafb, efifb etc) */
- 	aper = alloc_apertures(3);
-@@ -265,8 +263,18 @@ static int nouveau_drm_probe(struct pci_dev *pdev,
- #ifdef CONFIG_X86
- 	boot = pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
- #endif
--	remove_conflicting_framebuffers(aper, "nouveaufb", boot);
--	kfree(aper);
-+
-+	drm_kick_out_firmware(aper, boot);
-+	dev->apertures = aper;
-+	dev->apert_boot = boot;
-+	return 0;
-+}
-+
-+static int nouveau_drm_probe(struct pci_dev *pdev,
-+			     const struct pci_device_id *pent)
-+{
-+	struct nouveau_device *device;
-+	int ret;
- 
- 	ret = nouveau_device_create(pdev, nouveau_name(pdev), pci_name(pdev),
- 				    nouveau_config, nouveau_debug, &device);
-@@ -294,9 +302,13 @@ nouveau_drm_load(struct drm_device *dev, unsigned long flags)
- 	struct nouveau_drm *drm;
- 	int ret;
- 
--	ret = nouveau_cli_create(pdev, "DRM", sizeof(*drm), (void**)&drm);
-+	ret = nouveau_kick_out_firmware(dev);
- 	if (ret)
- 		return ret;
-+
-+	ret = nouveau_cli_create(pdev, "DRM", sizeof(*drm), (void**)&drm);
-+	if (ret)
-+		goto fail_apert;
- 	lockdep_set_class(&drm->client.mutex, &drm_client_lock_class_key);
- 
- 	dev->dev_private = drm;
-@@ -392,6 +404,9 @@ fail_ttm:
- 	nouveau_vga_fini(drm);
- fail_device:
- 	nouveau_cli_destroy(&drm->client);
-+fail_apert:
-+	kfree(dev->apertures);
-+	dev->apertures = NULL;
- 	return ret;
- }
- 
--- 
-1.8.3.1
+This PATCH v2 follows:
+ * PATCH v1, sent on June, 28th 2013
+
+Changes between v1 and v2:
+  * Replaced exynos_dp_video_phy_xlate() with of_phy_simple_xlate(),
+    as Kishon Vijay Abraham I guided.
+  * Set the value of phy-cells as 0, because the phy_provider implements
+    only one PHY.
+  * Removed unnecessary header include.
+  * Added '#ifdef CONFIG_OF' and of_match_ptr macro.
+
+This series depends on the generic PHY framework [1]. These patches
+refer to Sylwester Nawrocki's patches about Exynos MIPI [2].
+
+[1] https://lkml.org/lkml/2013/6/26/259
+[2] http://www.spinics.net/lists/linux-samsung-soc/msg20034.html
+
+Jingoo Han (3):
+  phy: Add driver for Exynos DP PHY
+  ARM: dts: Add DP PHY node to exynos5250.dtsi
+  video: exynos_dp: Use the generic PHY driver
+
+ .../phy/samsung,exynos5250-dp-video-phy.txt        |    7 ++
+ .../devicetree/bindings/video/exynos_dp.txt        |   17 ---
+ arch/arm/boot/dts/exynos5250.dtsi                  |   13 ++++++++-----
+ drivers/phy/Kconfig                                |    8 ++
+ drivers/phy/Makefile                               |    3 +-
+ drivers/phy/phy-exynos-dp-video.c                  |  122 ++++++++++++++++++++
+ drivers/video/exynos/exynos_dp_core.c              |  118 ++------------------
+ drivers/video/exynos/exynos_dp_core.h              |    2 +
+ include/video/exynos_dp.h                          |    6 +-
+ 9 files changed, 162 insertions(+), 134 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/phy/samsung,exynos5250-dp-video-phy.txt
+ create mode 100644 drivers/phy/phy-exynos-dp-video.c
+
+--
+1.7.10.4
 

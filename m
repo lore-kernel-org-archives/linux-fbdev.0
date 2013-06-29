@@ -1,51 +1,110 @@
-From: Felipe Balbi <balbi@ti.com>
-Date: Fri, 28 Jun 2013 09:32:47 +0000
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Sat, 29 Jun 2013 09:12:09 +0000
 Subject: Re: [PATCH V2 1/3] phy: Add driver for Exynos DP PHY
-Message-Id: <20130628093247.GB11297@arwen.pp.htv.fi>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="kXdP64Ggrk/fb43R"
+Message-Id: <51CEA219.8030001@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <001f01ce73cf$46d8c940$d48a5bc0$@samsung.com>
 In-Reply-To: <001f01ce73cf$46d8c940$d48a5bc0$@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---kXdP64Ggrk/fb43R
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On Fri, Jun 28, 2013 at 04:15:32PM +0900, Jingoo Han wrote:
+On Friday 28 June 2013 12:45 PM, Jingoo Han wrote:
 > Add a PHY provider driver for the Samsung Exynos SoC DP PHY.
->=20
+>
 > Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+> ---
+>   .../phy/samsung,exynos5250-dp-video-phy.txt        |    7 ++
+>   drivers/phy/Kconfig                                |    8 ++
+>   drivers/phy/Makefile                               |    3 +-
+>   drivers/phy/phy-exynos-dp-video.c                  |  122 ++++++++++++++++++++
+>   4 files changed, 139 insertions(+), 1 deletion(-)
+>   create mode 100644 Documentation/devicetree/bindings/phy/samsung,exynos5250-dp-video-phy.txt
+>   create mode 100644 drivers/phy/phy-exynos-dp-video.c
+>
+> diff --git a/Documentation/devicetree/bindings/phy/samsung,exynos5250-dp-video-phy.txt
+> b/Documentation/devicetree/bindings/phy/samsung,exynos5250-dp-video-phy.txt
+> new file mode 100644
+> index 0000000..d1771ef
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/phy/samsung,exynos5250-dp-video-phy.txt
+> @@ -0,0 +1,7 @@
+> +Samsung EXYNOS SoC series DP PHY
+> +-------------------------------------------------
+> +
+> +Required properties:
+> +- compatible : should be "samsung,exynos5250-dp-video-phy";
+> +- reg : offset and length of the DP PHY register set;
+> +- #phy-cells : from the generic phy bindings, must be 0;
+> diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
+> index 5f85909..6d10e3b 100644
+> --- a/drivers/phy/Kconfig
+> +++ b/drivers/phy/Kconfig
+> @@ -11,3 +11,11 @@ menuconfig GENERIC_PHY
+>   	  devices present in the kernel. This layer will have the generic
+>   	  API by which phy drivers can create PHY using the phy framework and
+>   	  phy users can obtain reference to the PHY.
+> +
+> +if GENERIC_PHY
+> +
+> +config PHY_EXYNOS_DP_VIDEO
+> +	tristate "EXYNOS SoC series DP PHY driver"
+> +	help
+> +	  Support for DP PHY found on Samsung EXYNOS SoCs.
+> +endif
+> diff --git a/drivers/phy/Makefile b/drivers/phy/Makefile
+> index 9e9560f..d8d861c 100644
+> --- a/drivers/phy/Makefile
+> +++ b/drivers/phy/Makefile
+> @@ -2,4 +2,5 @@
+>   # Makefile for the phy drivers.
+>   #
+>
+> -obj-$(CONFIG_GENERIC_PHY)	+= phy-core.o
+> +obj-$(CONFIG_GENERIC_PHY)		+= phy-core.o
+> +obj-$(CONFIG_PHY_EXYNOS_DP_VIDEO)	+= phy-exynos-dp-video.o
+> diff --git a/drivers/phy/phy-exynos-dp-video.c b/drivers/phy/phy-exynos-dp-video.c
+> new file mode 100644
+> index 0000000..9a3d6f1
+> --- /dev/null
+> +++ b/drivers/phy/phy-exynos-dp-video.c
+> @@ -0,0 +1,122 @@
+> +/*
+> + * Samsung EXYNOS SoC series DP PHY driver
+> + *
+> + * Copyright (C) 2013 Samsung Electronics Co., Ltd.
+> + * Author: Jingoo Han <jg1.han@samsung.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#include <linux/io.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/of_address.h>
+> +#include <linux/phy/phy.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/spinlock.h>
+> +
+> +/* DPTX_PHY_CONTROL register */
+> +#define EXYNOS_DPTX_PHY_ENABLE		(1 << 0)
+> +
+> +struct exynos_dp_video_phy {
+> +	spinlock_t slock;
 
-Now that you fixed Kishon's concerns, this looks pretty good:
+I think spinlock is not needed at all since the PHY ops is already protected
+by a mutex.
+> +	struct phy *phys;
 
-Acked-by: Felipe Balbi <balbi@ti.com>
+_phys_ no longer need to part of this structure.
+> +	void __iomem *regs;
+> +};
 
---=20
-balbi
-
---kXdP64Ggrk/fb43R
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJRzVg/AAoJEIaOsuA1yqREwDYP/AsIqxzypV1GV5FsilYgeiYv
-lFFb/+n+AlgOFkoe4JJOJMlxkukMBgu2pTXB4dg+QAbF6Nhb+bJ/3XVeUFERQeae
-nzrifhvuFZn9rnqkQ3vhiYucnn7jN2cgbnzIcGogAGGd4KtA+m6JdGsi9tLM/fLS
-kZEHv++owa63Cud6EY6eXfMDk5hk+Ym6Yk5e5RLX0+Ox2mhSzjzo4rmvI+vXq7Of
-lQh8/+GfE75GUs9giYE6bWmrTjGddVZjKD6euv1AfZE4jq8RLdosfnLn4y2ZIagk
-KUSC3vBR2Jk540nUy4ObGxhaG9yT3uR+TU7lXX/AwcL5HwDUDo3gtUUOPOU32wkJ
-vu4207RUwd+IPUZeW2nVtv5b4y8HTjKgOW9JFNrcSSb87s5Eez1GABK98CfszCF9
-MBuIKhYpNYPnLZoxNzjiizBjY50DUzpVrWZvHqfCl9+knoWJEKu5mLfEvqW1JGtq
-7UkCT8jFaKtbHQO+Bdz5JAa1K0+yM3MALWMiFjty2JrNrcckBehFRqGBi/tJZc/U
-ZpDKKS11/twI3D7nELf9WFxt/7L96SaduZtLBKwoZVYmKBbx9U0567H6EwR+GCPY
-OwGUQ2a0QqYV3JQw5oGVeK5hy8ZIgZ6IvFiIxCwmxIiU8ra1AkoMHVOdzLG4PcOi
-N2431qH8bh6agDl78tZh
-=BnXT
------END PGP SIGNATURE-----
-
---kXdP64Ggrk/fb43R--
+Thanks
+Kishon

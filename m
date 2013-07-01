@@ -1,37 +1,98 @@
-From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
-Date: Fri, 26 Jul 2013 07:59:57 +0000
-Subject: =?UTF-8?B?UmU6IFtQQVRDSCAyLzJdIHZpZGVvOiBpbXhmYjogQWRkIGZlYXR1cmUgdG8g?= =?UTF-8?B?c2V0dXAgUFdNIENvb
-Message-Id: <1374825597.724071106@f170.mail.ru>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Date: Mon, 01 Jul 2013 15:48:04 +0000
+Subject: Re: [RFC 2/6] x86: provide platform-devices for boot-framebuffers
+Message-Id: <51D1A4B4.2040905@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1374395709-20898-1-git-send-email-shc_work@mail.ru>
- <20130725212053.b39198a8610efc157a91b7be@mail.ru>
- <20130726073848.GF2737@pengutronix.de>
-In-Reply-To: <20130726073848.GF2737@pengutronix.de>
+References: <1372112849-670-1-git-send-email-dh.herrmann@gmail.com> <1372112849-670-3-git-send-email-dh.herrmann@gmail.com> <51CB53D7.7030602@wwwdotorg.org> <CANq1E4TJjmq2UFfarkdUF7s5KUPuzfUDiDU5BFfF-5QUsjpDwA@mail.gmail.com>
+In-Reply-To: <CANq1E4TJjmq2UFfarkdUF7s5KUPuzfUDiDU5BFfF-5QUsjpDwA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: David Herrmann <dh.herrmann@gmail.com>
+Cc: "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, linux-kernel <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@gmail.com>, linux-fbdev@vger.kernel.org, Stephen Warren <swarren@nvidia.com>, Olof Johansson <olof@lixom.net>
 
-PiBPbiBUaHUsIEp1bCAyNSwgMjAxMyBhdCAwOToyMDo1M1BNICswNDAwLCBBbGV4YW5kZXIgU2hp
-eWFuIHdyb3RlOgo+ID4gT24gVGh1LCAyNSBKdWwgMjAxMyAxNTozODo1NiArMDIwMAo+ID4gTWFy
-a3VzIFBhcmdtYW5uIDxtcGFAcGVuZ3V0cm9uaXguZGU+IHdyb3RlOgo+ID4gCj4gPiA+IEhpLAo+
-ID4gPiAKPiA+ID4gT24gU3VuLCBKdWwgMjEsIDIwMTMgYXQgMTI6MzU6MDlQTSArMDQwMCwgQWxl
-eGFuZGVyIFNoaXlhbiB3cm90ZToKPiA+ID4gPiBUaGlzIHBhdGNoIGFkZHMgZmVhdHVyZSB0byBz
-ZXR1cCBQV00gQ29udHJhc3QgQ29udHJvbCBSZWdpc3Rlci4KPiA+ID4gPiBUaGlzIHJlZ2lzdGVy
-IGlzIHVzZWQgdG8gY29udHJvbCB0aGUgc2lnbmFsIG91dHB1dCBhdCB0aGUgY29udHJhc3QgcGlu
-LAo+ID4gPiA+IHdoaWNoIGNvbnRyb2xzIGNvbnRyYXN0IG9mIHRoZSBMQ0QgcGFuZWwuCj4gPiA+
-IAo+ID4gPiBodHRwOi8vd3d3LnNwaW5pY3MubmV0L2xpc3RzL2xpbnV4LWZiZGV2L21zZzEwMDAy
-Lmh0bWwKPiA+IAo+ID4gUFdNPyBJIGNhbiBub3QgdW5kZXJzdGFuZCBob3cgdGhlIFBXTSBkcml2
-ZXIgd2lsbCBiZSBjb25uZWN0ZWQgdG8gdGhlCj4gPiBmcmFtZWJ1ZmZlciBkcml2ZXIuIEl0IGlz
-IG5vdCBiYWNrbGlnaHQsIHRoaXMgaXMgY29udHJhc3QuCj4gPiBFdmVuIGlmIHdlIGltYWdpbmUg
-dGhhdCB0aGUgZHJpdmVyIHdpbGwgYmUgY29ubmVjdGVkIHRocm91Z2ggcGhhbmRsZSwKPiA+IHRo
-ZW4gd2Ugd2lsbCBuZWVkIHRvIGhhdmUgYXQgbGVhc3QgNCEgYWRkaXRpb25hbCBwYXJhbWV0ZXJz
-IGluIHRoZSBmcmFtZWJ1ZmZlcgo+ID4gZHJpdmVyOiBmcmVxIHNvdXJjZSwgZnJlcXVlbmN5IGFu
-ZCBhY3RpdmUgcHVsc2UgcGVyaW9kICsgcGhhbmRsZSB0byBQV00uCj4gPiBJcyBpdCB3b3J0aCBp
-dCwgZ2l2ZW4gdGhhdCB0aGVzZSBwYXJhbWV0ZXJzIHNob3VsZCBub3QgYmUgYWRqdXN0YWJsZT8K
-PiA+IE9uIG15IG9waW5pb24sIHRoZSBvbmx5IG9uZSBhZGRpdGlvbmFsIHBhcmFtZXRlciBpbiBm
-cmFtZWJ1ZmZlciBpcyBlbm91Z2guCj4gPiBUaGFua3MuCj4gCj4gV2h5IHNob3VsZCB0aGUgY29u
-dHJhc3Qgb2YgYSBkaXNwbGF5IG5vdCBiZSBhZGp1c3RhYmxlPwoKSSBzdGlsbCBjYW4gbm90IHVu
-ZGVyc3RhbmQgdGhlIGludGVyZmFjZSB0aHJvdWdoIHdoaWNoIGl0IGNhbiBiZSBjaGFuZ2VkLgpT
-YW1lIGFzIGhvdyB0aGUgZGVmYXVsdCBzZXR0aW5ncyBjYW4gYmUgcGFzc2VkIHRvIHRoZSBmcmFt
-ZWJ1ZmZlciBkcml2ZXIuCgotLS0K
+On 06/28/2013 04:11 AM, David Herrmann wrote:
+> Hi
+> 
+> On Wed, Jun 26, 2013 at 10:49 PM, Stephen Warren <swarren@wwwdotorg.org> wrote:
+>> On 06/24/2013 04:27 PM, David Herrmann wrote:
+>>> The current situation regarding boot-framebuffers (VGA, VESA/VBE, EFI) on
+>>> x86 causes troubles when loading multiple fbdev drivers. The global
+>>> "struct screen_info" does not provide any state-tracking about which
+>>> drivers use the FBs. request_mem_region() theoretically works, but
+>>> unfortunately vesafb/efifb ignore it due to quirks for broken boards.
+>>>
+>>> Avoid this by creating a "platform-framebuffer" device with a pointer
+>>> to the "struct screen_info" as platform-data. Drivers can now create
+>>> platform-drivers and the driver-core will refuse multiple drivers being
+>>> active simultaneously.
+>>>
+>>> We keep the screen_info available for backwards-compatibility. Drivers
+>>> can be converted in follow-up patches.
+>>>
+>>> Apart from "platform-framebuffer" devices, this also introduces a
+>>> compatibility option for "simple-framebuffer" drivers which recently got
+>>> introduced for OF based systems. If CONFIG_X86_SYSFB is selected, we
+>>> try to match the screen_info against a simple-framebuffer supported
+>>> format. If we succeed, we create a "simple-framebuffer" device instead
+>>> of a platform-framebuffer.
+...
+
+>>> diff --git a/arch/x86/kernel/sysfb.c b/arch/x86/kernel/sysfb.c
+...
+>>> +#else /* CONFIG_X86_SYSFB */
+>>> +
+>>> +static bool parse_mode(const struct screen_info *si,
+>>> +                    struct simplefb_platform_data *mode)
+>>> +{
+>>> +     return false;
+>>> +}
+>>> +
+>>> +static int create_simplefb(const struct screen_info *si,
+>>> +                        const struct simplefb_platform_data *mode)
+>>> +{
+>>> +     return -EINVAL;
+>>> +}
+>>> +
+>>> +#endif /* CONFIG_X86_SYSFB */
+>>
+>> Following on from my ifdef comment above, I believe those versions of
+>> those functions will always cause add_sysfb() to return -ENODEV, so you
+>> may as well provide a static inline for add_sysfb() instead.
+> 
+> No. add_sysfb() is supposed to always succeed. However, if
+> parse_mode/create_simplefb fail, it creates a "platform-framebuffer"
+> as fallback. I don't see any way to avoid these ifdefs. Considering
+> the explanation above, could you elaborate how you think this should
+> work?
+
+Ah, I wasn't getting the fallback mechanism; that if creating a simplefb
+wasn't possible or didn't succeed, a platformfb device would be created
+instead.
+
+Perhaps the following might be slightly clearer; there are certainly
+fewer nesting levels:
+
+static __init int add_sysfb(void)
+{
+	const struct screen_info *si = &screen_info;
+	struct simplefb_platform_data mode;
+	struct platform_device *pd;
+	bool compatible = false;
+	int ret;
+
+	compatible = parse_mode(si, &mode);
+	if (compatible) {
+		ret = create_simplefb(si, &mode);
+		if (!ret)
+			return 0;
+	}
+
+	pd = platform_device_register_resndata(NULL,
+					"platform-framebuffer", 0,
+					NULL, 0, si, sizeof(*si));
+	ret = IS_ERR(pd) ? PTR_ERR(pd) : 0;
+
+	return ret;
+}
+

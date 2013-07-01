@@ -1,68 +1,67 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 01 Jul 2013 05:22:04 +0000
-Subject: [PATCH V3 0/3] Generic PHY driver for the Exynos SoC DP PHY
-Message-Id: <005101ce761a$ec7d6070$c5782150$@samsung.com>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 01 Jul 2013 04:38:24 +0000
+Subject: linux-next: manual merge of the trivial tree with the fbdev tree
+Message-Id: <20130701143824.dcff27129ecf4b29e836401e@canb.auug.org.au>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Signature=_Mon__1_Jul_2013_14_38_24_+1000_IUZgo81xS8uuMOBL"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Masanari Iida <standby24x7@gmail.com>
 
-This patch series adds a simple driver for the Samsung Exynos SoC
-series DP transmitter PHY, using the generic PHY framework [1].
-Previously the DP PHY used a platform callback or internal DT node
-to control the PHY power enable bit.
-The platform callback and internal DT node can be dropped and this
-driver does not need any calls back to the platform code.
+--Signature=_Mon__1_Jul_2013_14_38_24_+1000_IUZgo81xS8uuMOBL
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-These patches was tested on Exynos5250.
+Hi Jiri,
 
-This PATCH v3 follows:
- * PATCH v2, sent on June, 28th 2013
- * PATCH v1, sent on June, 28th 2013
+Today's linux-next merge of the trivial tree got a conflict in
+drivers/video/omap2/displays/panel-n8x0.c between commit ecc8b3708986
+("OMAPDSS: Add panel dev pointer to dssdev") from the fbdev tree and
+commit 8b513d0cf603 ("treewide: Fix typo in printk") from the trivial
+tree.
 
-Changes between v2 and v3:
-  * Removed redundant spinlock
-  * Removed 'struct phy' from 'struct exynos_dp_video_phy'
-  * Updated 'samsung-phy.txt', instead of creating
-    'samsung,exynos5250-dp-video-phy.txt'.
-  * Removed unnecessary additional specifier from 'phys'
-    DT property.
-  * Added 'phys', 'phy-names' properties to 'exynos_dp.txt' file.
-  * Added Felipe Balbi's Acked-by.
+I fixed it up (see below) and can carry the fix as necessary (no action
+is required).
 
-Changes between v1 and v2:
-  * Replaced exynos_dp_video_phy_xlate() with of_phy_simple_xlate(),
-    as Kishon Vijay Abraham I guided.
-  * Set the value of phy-cells as 0, because the phy_provider implements
-    only one PHY.
-  * Removed unnecessary header include.
-  * Added '#ifdef CONFIG_OF' and of_match_ptr macro.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-This series depends on the generic PHY framework [1]. These patches
-refer to Sylwester Nawrocki's patches about Exynos MIPI [2].
+diff --cc drivers/video/omap2/displays/panel-n8x0.c
+index d3860c5,860b180..0000000
+--- a/drivers/video/omap2/displays/panel-n8x0.c
++++ b/drivers/video/omap2/displays/panel-n8x0.c
+@@@ -527,7 -527,7 +527,7 @@@ static int n8x0_panel_update(struct oma
+  	dh =3D dssdev->panel.timings.y_res;
+ =20
+  	if (x !=3D 0 || y !=3D 0 || w !=3D dw || h !=3D dh) {
+- 		dev_err(dssdev->dev, "invaid update region %d, %d, %d, %d\n",
+ -		dev_err(&dssdev->dev, "invalid update region %d, %d, %d, %d\n",
+++		dev_err(dssdev->dev, "invalid update region %d, %d, %d, %d\n",
+  			x, y, w, h);
+  		return -EINVAL;
+  	}
 
-[1] https://lkml.org/lkml/2013/6/26/259
-[2] http://www.spinics.net/lists/linux-samsung-soc/msg20098.html
+--Signature=_Mon__1_Jul_2013_14_38_24_+1000_IUZgo81xS8uuMOBL
+Content-Type: application/pgp-signature
 
-Jingoo Han (3):
-  ARM: dts: Add DP PHY node to exynos5250.dtsi
-  phy: Add driver for Exynos DP PHY
-  video: exynos_dp: Use the generic PHY driver
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
 
- .../devicetree/bindings/phy/samsung-phy.txt        |    8 ++
- .../devicetree/bindings/video/exynos_dp.txt        |   23 +---
- arch/arm/boot/dts/exynos5250.dtsi                  |   13 ++++++++-----
- drivers/phy/Kconfig                                |    5 +
- drivers/phy/Makefile                               |    1 +
- drivers/phy/phy-exynos-dp-video.c                  |  118 ++++++++++++++++++++
- drivers/video/exynos/exynos_dp_core.c              |  118 ++------------------
- drivers/video/exynos/exynos_dp_core.h              |    2 +
- include/video/exynos_dp.h                          |    6 +-
- 9 files changed, 161 insertions(+), 133 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/phy/samsung,exynos5250-dp-video-phy.txt
- create mode 100644 drivers/phy/phy-exynos-dp-video.c
+iQIcBAEBCAAGBQJR0QfGAAoJEECxmPOUX5FEI28QAIr60hm9BliHiYyyOcrwvx4J
+mFJG27KVqUi19GycOySGzmy8o4V3db4owJZh9ZjlzHlo6zR5B0mqUXVVAqIuXRGO
+Qr8RpV7e44T0aY6oIpou0SVFlHDRtv9JbHXCAAFTH+leztVDDnikE1Mub/1nx9Fr
+2KhUtv2pTeH7/kuDiHo6a0uPwCdb2Seflqadx1s4HTUA7SCB9W9edbgGAAM6IOB0
+v06n13r8sFf2Ii9jBA0NskCFvUXp3u0KAXNbkjodfGacMjgR5WxYuH9puu9OA8NE
+HgrzJJtMyjYLpxnzBAKOQZI3NtQTeXfwjY/2trXLwNctHqaLzsYRPVPFJZRWqRyA
+RGaA2h1u5eYremSbnC53uHP6CEfJOZ8zWFDqsvwDivunZUhQXGQteIRyhhiBAluT
+9fPX7FoxGVgjXdG7nm80RaPatkxag+VXrYPhGZn5JBtLeKEUdCEEGyTzbzxxSQCS
+ZQV8wWHmwvbJ35np6NiOCBbY1xMoTN6EbFcLbGyLnBS+b7/d9gfup8kDJlCWqBcn
+Bm6YsLv42Fm6QKF4yVXmwIXCnnqGH9XIXMfMsBpX2OIHNBgmnShqkriuBfnRx2Cw
+ZJiOxLdqlVHSiFQRbUBlUo76bf7m+faa+ylD5IULQjyAIjyYEgTgyR3FAiIltJRV
+oDQ2ldSKViWE1VpFoGnz
+=nm7Z
+-----END PGP SIGNATURE-----
 
---
-1.7.10.4
-
+--Signature=_Mon__1_Jul_2013_14_38_24_+1000_IUZgo81xS8uuMOBL--

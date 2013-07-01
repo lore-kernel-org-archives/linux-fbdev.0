@@ -1,75 +1,68 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Date: Thu, 18 Jul 2013 06:58:16 +0000
-Subject: [PATCH 07/15] usb: phy: omap-usb2: remove *set_suspend* callback from omap-usb2
-Message-Id: <1374129984-765-8-git-send-email-kishon@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 01 Jul 2013 05:22:04 +0000
+Subject: [PATCH V3 0/3] Generic PHY driver for the Exynos SoC DP PHY
+Message-Id: <005101ce761a$ec7d6070$c5782150$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1374129984-765-1-git-send-email-kishon@ti.com>
-In-Reply-To: <1374129984-765-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Now that omap-usb2 is adapted to the new generic PHY framework,
-*set_suspend* ops can be removed from omap-usb2 driver.
+This patch series adds a simple driver for the Samsung Exynos SoC
+series DP transmitter PHY, using the generic PHY framework [1].
+Previously the DP PHY used a platform callback or internal DT node
+to control the PHY power enable bit.
+The platform callback and internal DT node can be dropped and this
+driver does not need any calls back to the platform code.
 
-Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
-Acked-by: Felipe Balbi <balbi@ti.com>
-Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
----
- drivers/usb/phy/phy-omap-usb2.c |   25 -------------------------
- 1 file changed, 25 deletions(-)
+These patches was tested on Exynos5250.
 
-diff --git a/drivers/usb/phy/phy-omap-usb2.c b/drivers/usb/phy/phy-omap-usb2.c
-index 751b30f..3f2b125 100644
---- a/drivers/usb/phy/phy-omap-usb2.c
-+++ b/drivers/usb/phy/phy-omap-usb2.c
-@@ -97,29 +97,6 @@ static int omap_usb_set_peripheral(struct usb_otg *otg,
- 	return 0;
- }
- 
--static int omap_usb2_suspend(struct usb_phy *x, int suspend)
--{
--	u32 ret;
--	struct omap_usb *phy = phy_to_omapusb(x);
--
--	if (suspend && !phy->is_suspended) {
--		omap_control_usb_phy_power(phy->control_dev, 0);
--		pm_runtime_put_sync(phy->dev);
--		phy->is_suspended = 1;
--	} else if (!suspend && phy->is_suspended) {
--		ret = pm_runtime_get_sync(phy->dev);
--		if (ret < 0) {
--			dev_err(phy->dev, "get_sync failed with err %d\n",
--									ret);
--			return ret;
--		}
--		omap_control_usb_phy_power(phy->control_dev, 1);
--		phy->is_suspended = 0;
--	}
--
--	return 0;
--}
--
- static int omap_usb_power_off(struct phy *x)
- {
- 	struct omap_usb *phy = phy_get_drvdata(x);
-@@ -167,7 +144,6 @@ static int omap_usb2_probe(struct platform_device *pdev)
- 
- 	phy->phy.dev		= phy->dev;
- 	phy->phy.label		= "omap-usb2";
--	phy->phy.set_suspend	= omap_usb2_suspend;
- 	phy->phy.otg		= otg;
- 	phy->phy.type		= USB_PHY_TYPE_USB2;
- 
-@@ -182,7 +158,6 @@ static int omap_usb2_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
- 
--	phy->is_suspended	= 1;
- 	omap_control_usb_phy_power(phy->control_dev, 0);
- 
- 	otg->set_host		= omap_usb_set_host;
--- 
+This PATCH v3 follows:
+ * PATCH v2, sent on June, 28th 2013
+ * PATCH v1, sent on June, 28th 2013
+
+Changes between v2 and v3:
+  * Removed redundant spinlock
+  * Removed 'struct phy' from 'struct exynos_dp_video_phy'
+  * Updated 'samsung-phy.txt', instead of creating
+    'samsung,exynos5250-dp-video-phy.txt'.
+  * Removed unnecessary additional specifier from 'phys'
+    DT property.
+  * Added 'phys', 'phy-names' properties to 'exynos_dp.txt' file.
+  * Added Felipe Balbi's Acked-by.
+
+Changes between v1 and v2:
+  * Replaced exynos_dp_video_phy_xlate() with of_phy_simple_xlate(),
+    as Kishon Vijay Abraham I guided.
+  * Set the value of phy-cells as 0, because the phy_provider implements
+    only one PHY.
+  * Removed unnecessary header include.
+  * Added '#ifdef CONFIG_OF' and of_match_ptr macro.
+
+This series depends on the generic PHY framework [1]. These patches
+refer to Sylwester Nawrocki's patches about Exynos MIPI [2].
+
+[1] https://lkml.org/lkml/2013/6/26/259
+[2] http://www.spinics.net/lists/linux-samsung-soc/msg20098.html
+
+Jingoo Han (3):
+  ARM: dts: Add DP PHY node to exynos5250.dtsi
+  phy: Add driver for Exynos DP PHY
+  video: exynos_dp: Use the generic PHY driver
+
+ .../devicetree/bindings/phy/samsung-phy.txt        |    8 ++
+ .../devicetree/bindings/video/exynos_dp.txt        |   23 +---
+ arch/arm/boot/dts/exynos5250.dtsi                  |   13 ++++++++-----
+ drivers/phy/Kconfig                                |    5 +
+ drivers/phy/Makefile                               |    1 +
+ drivers/phy/phy-exynos-dp-video.c                  |  118 ++++++++++++++++++++
+ drivers/video/exynos/exynos_dp_core.c              |  118 ++------------------
+ drivers/video/exynos/exynos_dp_core.h              |    2 +
+ include/video/exynos_dp.h                          |    6 +-
+ 9 files changed, 161 insertions(+), 133 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/phy/samsung,exynos5250-dp-video-phy.txt
+ create mode 100644 drivers/phy/phy-exynos-dp-video.c
+
+--
 1.7.10.4
 

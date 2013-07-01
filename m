@@ -1,141 +1,53 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Date: Thu, 18 Jul 2013 06:58:12 +0000
-Subject: [PATCH 03/15] usb: phy: twl4030: use the new generic PHY framework
-Message-Id: <1374129984-765-4-git-send-email-kishon@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 01 Jul 2013 05:23:19 +0000
+Subject: [PATCH V3 1/3] ARM: dts: Add DP PHY node to exynos5250.dtsi
+Message-Id: <005201ce761b$1903ff50$4b0bfdf0$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1374129984-765-1-git-send-email-kishon@ti.com>
-In-Reply-To: <1374129984-765-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Used the generic PHY framework API to create the PHY. For powering on
-and powering off the PHY, power_on and power_off ops are used. Once the
-MUSB OMAP glue is adapted to the new framework, the suspend and resume
-ops of usb phy library will be removed.
+Add PHY provider node for the DP PHY.
 
-However using the old usb phy library cannot be completely removed
-because otg is intertwined with phy and moving to the new
-framework completely will break otg. Once we have a separate otg state machine,
-we can get rid of the usb phy library.
-
-Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 Acked-by: Felipe Balbi <balbi@ti.com>
-Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
 ---
- drivers/usb/phy/phy-twl4030-usb.c |   50 ++++++++++++++++++++++++++++++++++++-
- 1 file changed, 49 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/exynos5250.dtsi |   13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/usb/phy/phy-twl4030-usb.c b/drivers/usb/phy/phy-twl4030-usb.c
-index 8f78d2d..9051756 100644
---- a/drivers/usb/phy/phy-twl4030-usb.c
-+++ b/drivers/usb/phy/phy-twl4030-usb.c
-@@ -33,6 +33,7 @@
- #include <linux/io.h>
- #include <linux/delay.h>
- #include <linux/usb/otg.h>
-+#include <linux/phy/phy.h>
- #include <linux/usb/musb-omap.h>
- #include <linux/usb/ulpi.h>
- #include <linux/i2c/twl.h>
-@@ -431,6 +432,14 @@ static void twl4030_phy_suspend(struct twl4030_usb *twl, int controller_off)
- 	dev_dbg(twl->dev, "%s\n", __func__);
- }
+diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
+index 41cd625..7e397c6 100644
+--- a/arch/arm/boot/dts/exynos5250.dtsi
++++ b/arch/arm/boot/dts/exynos5250.dtsi
+@@ -614,6 +614,12 @@
+ 		interrupts = <0 94 0>;
+ 	};
  
-+static int twl4030_phy_power_off(struct phy *phy)
-+{
-+	struct twl4030_usb *twl = phy_get_drvdata(phy);
++	dp_phy: video-phy@10040720 {
++		compatible = "samsung,exynos5250-dp-video-phy";
++		reg = <0x10040720 4>;
++		#phy-cells = <0>;
++	};
 +
-+	twl4030_phy_suspend(twl, 0);
-+	return 0;
-+}
-+
- static void __twl4030_phy_resume(struct twl4030_usb *twl)
- {
- 	twl4030_phy_power(twl, 1);
-@@ -459,6 +468,14 @@ static void twl4030_phy_resume(struct twl4030_usb *twl)
- 	}
- }
+ 	dp-controller {
+ 		compatible = "samsung,exynos5-dp";
+ 		reg = <0x145b0000 0x1000>;
+@@ -623,11 +629,8 @@
+ 		clock-names = "dp";
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-
+-		dptx-phy {
+-			reg = <0x10040720>;
+-			samsung,enable-mask = <1>;
+-		};
++		phys = <&dp_phy>;
++		phy-names = "dp";
+ 	};
  
-+static int twl4030_phy_power_on(struct phy *phy)
-+{
-+	struct twl4030_usb *twl = phy_get_drvdata(phy);
-+
-+	twl4030_phy_resume(twl);
-+	return 0;
-+}
-+
- static int twl4030_usb_ldo_init(struct twl4030_usb *twl)
- {
- 	/* Enable writing to power configuration registers */
-@@ -602,13 +619,22 @@ static int twl4030_usb_phy_init(struct usb_phy *phy)
- 	status = twl4030_usb_linkstat(twl);
- 	twl->linkstat = status;
- 
--	if (status = OMAP_MUSB_ID_GROUND || status = OMAP_MUSB_VBUS_VALID)
-+	if (status = OMAP_MUSB_ID_GROUND || status = OMAP_MUSB_VBUS_VALID) {
- 		omap_musb_mailbox(twl->linkstat);
-+		twl4030_phy_resume(twl);
-+	}
- 
- 	sysfs_notify(&twl->dev->kobj, NULL, "vbus");
- 	return 0;
- }
- 
-+static int twl4030_phy_init(struct phy *phy)
-+{
-+	struct twl4030_usb *twl = phy_get_drvdata(phy);
-+
-+	return twl4030_usb_phy_init(&twl->phy);
-+}
-+
- static int twl4030_set_suspend(struct usb_phy *x, int suspend)
- {
- 	struct twl4030_usb *twl = phy_to_twl(x);
-@@ -646,13 +672,22 @@ static int twl4030_set_host(struct usb_otg *otg, struct usb_bus *host)
- 	return 0;
- }
- 
-+static const struct phy_ops ops = {
-+	.init		= twl4030_phy_init,
-+	.power_on	= twl4030_phy_power_on,
-+	.power_off	= twl4030_phy_power_off,
-+	.owner		= THIS_MODULE,
-+};
-+
- static int twl4030_usb_probe(struct platform_device *pdev)
- {
- 	struct twl4030_usb_data *pdata = pdev->dev.platform_data;
- 	struct twl4030_usb	*twl;
-+	struct phy		*phy;
- 	int			status, err;
- 	struct usb_otg		*otg;
- 	struct device_node	*np = pdev->dev.of_node;
-+	struct phy_provider	*phy_provider;
- 
- 	twl = devm_kzalloc(&pdev->dev, sizeof *twl, GFP_KERNEL);
- 	if (!twl)
-@@ -689,6 +724,19 @@ static int twl4030_usb_probe(struct platform_device *pdev)
- 	otg->set_host		= twl4030_set_host;
- 	otg->set_peripheral	= twl4030_set_peripheral;
- 
-+	phy_provider = devm_of_phy_provider_register(twl->dev,
-+		of_phy_simple_xlate);
-+	if (IS_ERR(phy_provider))
-+		return PTR_ERR(phy_provider);
-+
-+	phy = devm_phy_create(twl->dev, 0, &ops, "twl4030");
-+	if (IS_ERR(phy)) {
-+		dev_dbg(&pdev->dev, "Failed to create PHY\n");
-+		return PTR_ERR(phy);
-+	}
-+
-+	phy_set_drvdata(phy, twl);
-+
- 	/* init spinlock for workqueue */
- 	spin_lock_init(&twl->lock);
- 
+ 	fimd {
 -- 
 1.7.10.4
+
 

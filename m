@@ -1,54 +1,65 @@
-From: Peter Jones <pjones@redhat.com>
-Date: Thu, 25 Jul 2013 15:47:46 +0000
-Subject: Re: kmemleak warning in efifb_probe
-Message-Id: <20130725154745.GB25717@fenchurch.internal.datastacks.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Mon, 01 Jul 2013 05:36:28 +0000
+Subject: Re: [PATCH v3 1/5] phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
+Message-Id: <51D1128C.90009@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130721151151.GK24717@sanechka.spb.ru>
- <CAHkRjk4Ansh+Xr+cPQNacwx=aOb65_hW_MNRx5QVtatJCz5tqg@mail.gmail.com>
-In-Reply-To: <CAHkRjk4Ansh+Xr+cPQNacwx=aOb65_hW_MNRx5QVtatJCz5tqg@mail.gmail.com>
+References: <1372258946-15607-1-git-send-email-s.nawrocki@samsung.com>
+ <1372258946-15607-2-git-send-email-s.nawrocki@samsung.com>
+ <51CD4698.3070409@gmail.com> <51CD6153.5050406@samsung.com>
+ <51CEA197.8070207@ti.com> <51CF36AB.4010300@gmail.com>
+In-Reply-To: <51CF36AB.4010300@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: "Alexandra N. Kossovsky" <Alexandra.Kossovsky@oktetlabs.ru>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-On Thu, Jul 25, 2013 at 01:18:31PM +0100, Catalin Marinas wrote:
-> On 21 July 2013 16:11, Alexandra N. Kossovsky
-> <Alexandra.Kossovsky@oktetlabs.ru> wrote:
-> > I am running linux-3.10.0 with kmemleak and see following warnings
-> > in /sys/kernel/debug/kmemleak:
-> >
-> > unreferenced object 0xffff880216fcfe00 (size 512):
-> >   comm "swapper/0", pid 1, jiffies 4294895429 (age 1415.320s)
-> >   hex dump (first 32 bytes):
-> >     00 00 00 00 00 00 00 00 aa aa aa aa aa aa aa aa  ................
-> >     55 55 55 55 55 55 55 55 ff ff ff ff ff ff ff ff  UUUUUUUU........
-> >   backtrace:
-> >     [<ffffffff813e415c>] kmemleak_alloc+0x21/0x3e
-> >     [<ffffffff8111c17f>] kmemleak_alloc_recursive.constprop.57+0x16/0x18
-> >     [<ffffffff8111e63b>] __kmalloc+0xf9/0x144
-> >     [<ffffffff8123d9cf>] fb_alloc_cmap_gfp+0x47/0xe1
-> >     [<ffffffff8123da77>] fb_alloc_cmap+0xe/0x10
-> >     [<ffffffff81aff40a>] efifb_probe+0x3e9/0x48f
-> >     [<ffffffff812c566f>] platform_drv_probe+0x34/0x5e
-> >     [<ffffffff812c3e6d>] driver_probe_device+0x98/0x1b4
-> >     [<ffffffff812c3fd7>] __driver_attach+0x4e/0x6f
-> >     [<ffffffff812c25bf>] bus_for_each_dev+0x57/0x8a
-> >     [<ffffffff812c3984>] driver_attach+0x19/0x1b
-> >     [<ffffffff812c362b>] bus_add_driver+0xde/0x201
-> >     [<ffffffff812c453f>] driver_register+0x8c/0x110
-> >     [<ffffffff812c510d>] platform_driver_register+0x41/0x43
-> >     [<ffffffff812c5127>] platform_driver_probe+0x18/0x8a
-> >     [<ffffffff81aff002>] efifb_init+0x276/0x295
-> 
-> Does the efifb driver has any way to deallocate the cmap? I don't see
-> any explicit call to fb_dealloc_cmap() apart from the error handling.
-> My theory is that the efifb driver gets deregistered via
-> do_remove_conflicting_framebuffers(). I'm not familiar with this code,
-> just commenting from a kmemleak perspective.
+Hi,
 
-You're right, that's the typical deregister path.  I'll follow up with a
-patch to test.
+On Sunday 30 June 2013 01:04 AM, Sylwester Nawrocki wrote:
+> Hi,
+>
+> On 06/29/2013 10:57 AM, Kishon Vijay Abraham I wrote:
+>> On Friday 28 June 2013 03:41 PM, Sylwester Nawrocki wrote:
+>>> On 06/28/2013 10:17 AM, Hui Wang wrote:
+>>>> On 06/26/2013 11:02 PM, Sylwester Nawrocki wrote:
+>>>>> Add a PHY provider driver for the Samsung S5P/Exynos SoC MIPI CSI-2
+>>>>> receiver and MIPI DSI transmitter DPHYs.
+>>>>>
+>>>>> Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+>>>>> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+>>>>> ---
+>>>>> Changes since v2:
+>>>>> - adapted to the generic PHY API v9: use phy_set/get_drvdata(),
+>>>>> - fixed of_xlate callback to return ERR_PTR() instead of NULL,
+>>>>> - namespace cleanup, put "GPL v2" as MODULE_LICENSE, removed pr_debug,
+>>>>> - removed phy id check in __set_phy_state().
+>>>>> ---
+>>>> [...]
+>>>>> +
+>>>>> + if (IS_EXYNOS_MIPI_DSIM_PHY_ID(id))
+>>>>> + reset = EXYNOS_MIPI_PHY_MRESETN;
+>>>>> + else
+>>>>> + reset = EXYNOS_MIPI_PHY_SRESETN;
+>>>>> +
+>>>>> + spin_lock_irqsave(&state->slock, flags);
+>>>>
+>>>> Sorry for one stupid question here, why do you use spin_lock_irqsave()
+>>>> rather than spin_lock(),
+>>>> I don't see the irq handler will use this spinlock anywhere in this c
+>>>> file.
+>>>
+>>> Yes, there is no chance the PHY users could call the phy ops from within
+>>> an interrupt context. Especially now when there is a per phy object
+>>> mutex used in the PHY operation helpers. So I'll replace it with plain
+>>> spin_lock/unlock. Thank you for the review.
+>>
+>> Now that PHY ops is already protected, do you really need a spin_lock here?
+>
+> It is still needed, to synchronize access to the control register from
+> two separate PHY objects. The mutex is per PHY object, while the spinlock
+> is per PHY provider.
 
--- 
-        Peter
+Ok. Makes sense.
+
+Thanks
+Kishon

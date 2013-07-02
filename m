@@ -1,128 +1,79 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 09 Jul 2013 08:05:48 +0000
-Subject: [PATCH V6 4/4] video: exynos_dp: Use the generic PHY driver
-Message-Id: <004101ce7c7b$1f306510$5d912f30$@samsung.com>
+Date: Tue, 02 Jul 2013 08:38:23 +0000
+Subject: [PATCH V4 0/4] Generic PHY driver for the Exynos SoC DP PHY
+Message-Id: <000901ce76ff$83d697e0$8b83c7a0$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Use the generic PHY API to control the DP PHY.
+This patch series adds a simple driver for the Samsung Exynos SoC
+series DP transmitter PHY, using the generic PHY framework [1].
+Previously the DP PHY used an internal DT node to control the PHY
+power enable bit.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-Reviewed-by: Tomasz Figa <t.figa@samsung.com>
----
- .../devicetree/bindings/video/exynos_dp.txt          |   18 +++++++++---------
- drivers/video/exynos/exynos_dp_core.c                |   16 ++++++++++++----
- drivers/video/exynos/exynos_dp_core.h                |    1 +
- 3 files changed, 22 insertions(+), 13 deletions(-)
+These patches was tested on Exynos5250.
 
-diff --git a/Documentation/devicetree/bindings/video/exynos_dp.txt b/Documentation/devicetree/bindings/video/exynos_dp.txt
-index c60da67..e2874ae 100644
---- a/Documentation/devicetree/bindings/video/exynos_dp.txt
-+++ b/Documentation/devicetree/bindings/video/exynos_dp.txt
-@@ -6,10 +6,10 @@ We use two nodes:
- 	-dptx-phy node(defined inside dp-controller node)
+This PATCH v4 follows:
+ * PATCH v3, sent on July, 1st 2013
+ * PATCH v2, sent on June, 28th 2013
+ * PATCH v1, sent on June, 28th 2013
+
+Changes between v3 and v4:
+  * Added OF dependancy.
+  * Removed redundant local variable 'void __iomem *addr'.
+  * Removed unnecessary dev_set_drvdata().
+  * Added a patch that remove non-DT support for Exynos
+    Display Port driver.
+  * Removed unnecessary 'struct exynos_dp_platdata'.
+  * Kept supporting the original bindings for DT compatibility.
+
+Changes between v2 and v3:
+  * Removed redundant spinlock
+  * Removed 'struct phy' from 'struct exynos_dp_video_phy'
+  * Updated 'samsung-phy.txt', instead of creating
+    'samsung,exynos5250-dp-video-phy.txt'.
+  * Removed unnecessary additional specifier from 'phys'
+    DT property.
+  * Added 'phys', 'phy-names' properties to 'exynos_dp.txt' file.
+  * Added Felipe Balbi's Acked-by.
+
+Changes between v1 and v2:
+  * Replaced exynos_dp_video_phy_xlate() with of_phy_simple_xlate(),
+    as Kishon Vijay Abraham I guided.
+  * Set the value of phy-cells as 0, because the phy_provider implements
+    only one PHY.
+  * Removed unnecessary header include.
+  * Added '#ifdef CONFIG_OF' and of_match_ptr macro.
+
+This series depends on the generic PHY framework [1]. These patches
+refer to Sylwester Nawrocki's patches about Exynos MIPI [2].
+
+[1] https://lkml.org/lkml/2013/6/26/259
+[2] http://www.spinics.net/lists/linux-samsung-soc/msg20098.html
+
+Jingoo Han (4):
+  ARM: dts: Add DP PHY node to exynos5250.dtsi
+  phy: Add driver for Exynos DP PHY
+  video: exynos_dp: remove non-DT support for Exynos Display Port
+  video: exynos_dp: Use the generic PHY driver
+
+ .../devicetree/bindings/phy/samsung-phy.txt        |    8 ++
+ .../devicetree/bindings/video/exynos_dp.txt        |   23 +++++---------------
+ arch/arm/boot/dts/exynos5250.dtsi                  |   13 ++++++++-----
+ drivers/phy/Kconfig                                |    6 ++
+ drivers/phy/Makefile                               |    1 +
+ drivers/phy/phy-exynos-dp-video.c                  |  111 ++++++++++++++++++++
+ drivers/video/exynos/Kconfig                       |    2 +-
+ drivers/video/exynos/exynos_dp_core.c              |  132 +++++++----------------------
+ drivers/video/exynos/exynos_dp_core.h              |  111 +++++++++++++++++++++++++++
+ drivers/video/exynos/exynos_dp_reg.c               |    2 -
+ include/video/exynos_dp.h                          |  131 ---------------------------------
+ 11 files changed, 289 insertions(+), 251 deletions(-)
+ create mode 100644 drivers/phy/phy-exynos-dp-video.c
+ delete mode 100644 include/video/exynos_dp.h
  
- For the DP-PHY initialization, we use the dptx-phy node.
--Required properties for dptx-phy:
--	-reg:
-+Required properties for dptx-phy: deprecated, use phys and phy-names
-+	-reg: deprecated
- 		Base address of DP PHY register.
--	-samsung,enable-mask:
-+	-samsung,enable-mask: deprecated
- 		The bit-mask used to enable/disable DP PHY.
- 
- For the Panel initialization, we read data from dp-controller node.
-@@ -21,6 +21,10 @@ Required properties for dp-controller:
- 		of memory mapped region.
- 	-interrupts:
- 		interrupt combiner values.
-+	-phys:
-+		from general PHY binding: the phandle for the PHY device.
-+	-phy-names:
-+		from general PHY binding: Should be "dp".
- 	-interrupt-parent:
- 		phandle to Interrupt combiner node.
- 	-samsung,color-space:
-@@ -61,12 +65,8 @@ SOC specific portion:
- 		reg = <0x145b0000 0x10000>;
- 		interrupts = <10 3>;
- 		interrupt-parent = <&combiner>;
--
--		dptx-phy {
--			reg = <0x10040720>;
--			samsung,enable-mask = <1>;
--		};
--
-+		phys = <&dp_phy>;
-+		phy-names = "dp";
- 	};
- 
- Board Specific portion:
-diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-index 05fed7d..5e1a715 100644
---- a/drivers/video/exynos/exynos_dp_core.c
-+++ b/drivers/video/exynos/exynos_dp_core.c
-@@ -19,6 +19,7 @@
- #include <linux/interrupt.h>
- #include <linux/delay.h>
- #include <linux/of.h>
-+#include <linux/phy/phy.h>
- 
- #include "exynos_dp_core.h"
- 
-@@ -960,8 +961,11 @@ static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
- 
- 	dp_phy_node = of_find_node_by_name(dp_phy_node, "dptx-phy");
- 	if (!dp_phy_node) {
--		dev_err(dp->dev, "could not find dptx-phy node\n");
--		return -ENODEV;
-+		dp->phy = devm_phy_get(dp->dev, "dp");
-+		if (IS_ERR(dp->phy))
-+			return PTR_ERR(dp->phy);
-+		else
-+			return 0;
- 	}
- 
- 	if (of_property_read_u32(dp_phy_node, "reg", &phy_base)) {
-@@ -992,7 +996,9 @@ err:
- 
- static void exynos_dp_phy_init(struct exynos_dp_device *dp)
- {
--	if (dp->phy_addr) {
-+	if (dp->phy) {
-+		phy_power_on(dp->phy);
-+	} else if (dp->phy_addr) {
- 		u32 reg;
- 
- 		reg = __raw_readl(dp->phy_addr);
-@@ -1003,7 +1009,9 @@ static void exynos_dp_phy_init(struct exynos_dp_device *dp)
- 
- static void exynos_dp_phy_exit(struct exynos_dp_device *dp)
- {
--	if (dp->phy_addr) {
-+	if (dp->phy) {
-+		phy_power_off(dp->phy);
-+	} else if (dp->phy_addr) {
- 		u32 reg;
- 
- 		reg = __raw_readl(dp->phy_addr);
-diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
-index 56cfec8..607e36d 100644
---- a/drivers/video/exynos/exynos_dp_core.h
-+++ b/drivers/video/exynos/exynos_dp_core.h
-@@ -151,6 +151,7 @@ struct exynos_dp_device {
- 	struct video_info	*video_info;
- 	struct link_train	link_train;
- 	struct work_struct	hotplug_work;
-+	struct phy		*phy;
- };
- 
- /* exynos_dp_reg.c */
--- 
+--
 1.7.10.4
-
 

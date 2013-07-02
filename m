@@ -1,185 +1,133 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Date: Tue, 30 Jul 2013 05:24:00 +0000
-Subject: Re: [RESEND PATCH v10 1/8] drivers: phy: add generic PHY framework
-Message-Id: <51F74B20.6070005@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 02 Jul 2013 08:42:49 +0000
+Subject: [PATCH V4 4/4] video: exynos_dp: Use the generic PHY driver
+Message-Id: <000d01ce7700$222a35a0$667ea0e0$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1374842963-13545-1-git-send-email-kishon@ti.com>
- <1374842963-13545-2-git-send-email-kishon@ti.com>
- <51F68F73.9060603@samsung.com>
-In-Reply-To: <51F68F73.9060603@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+Use the generic PHY API instead of the platform callback to control
+the DP PHY.
 
-On Monday 29 July 2013 09:21 PM, Sylwester Nawrocki wrote:
-> On 07/26/2013 02:49 PM, Kishon Vijay Abraham I wrote:
->> The PHY framework provides a set of APIs for the PHY drivers to
->> create/destroy a PHY and APIs for the PHY users to obtain a reference to the
->> PHY with or without using phandle. For dt-boot, the PHY drivers should
->> also register *PHY provider* with the framework.
->>
->> PHY drivers should create the PHY by passing id and ops like init, exit,
->> power_on and power_off. This framework is also pm runtime enabled.
->>
->> The documentation for the generic PHY framework is added in
->> Documentation/phy.txt and the documentation for dt binding can be found at
->> Documentation/devicetree/bindings/phy/phy-bindings.txt
->>
->> Cc: Tomasz Figa <t.figa@samsung.com>
->> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
->> Acked-by: Felipe Balbi <balbi@ti.com>
->> Tested-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
->> ---
->>  .../devicetree/bindings/phy/phy-bindings.txt       |   66 ++
->>  Documentation/phy.txt                              |  166 +++++
->>  MAINTAINERS                                        |    8 +
->>  drivers/Kconfig                                    |    2 +
->>  drivers/Makefile                                   |    2 +
->>  drivers/phy/Kconfig                                |   18 +
->>  drivers/phy/Makefile                               |    5 +
->>  drivers/phy/phy-core.c                             |  714 ++++++++++++++++++++
->>  include/linux/phy/phy.h                            |  270 ++++++++
->>  9 files changed, 1251 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/phy/phy-bindings.txt
->>  create mode 100644 Documentation/phy.txt
->>  create mode 100644 drivers/phy/Kconfig
->>  create mode 100644 drivers/phy/Makefile
->>  create mode 100644 drivers/phy/phy-core.c
->>  create mode 100644 include/linux/phy/phy.h
->>
->> diff --git a/Documentation/devicetree/bindings/phy/phy-bindings.txt b/Documentation/devicetree/bindings/phy/phy-bindings.txt
->> new file mode 100644
->> index 0000000..8ae844f
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/phy/phy-bindings.txt
->> @@ -0,0 +1,66 @@
->> +This document explains only the device tree data binding. For general
->> +information about PHY subsystem refer to Documentation/phy.txt
-> [...]
->> @@ -0,0 +1,166 @@
->> +			    PHY SUBSYSTEM
->> +		  Kishon Vijay Abraham I <kishon@ti.com>
->> +
->> +This document explains the Generic PHY Framework along with the APIs provided,
->> +and how-to-use.
->> +
->> +1. Introduction
->> +
->> +*PHY* is the abbreviation for physical layer. It is used to connect a device
->> +to the physical medium e.g., the USB controller has a PHY to provide functions
->> +such as serialization, de-serialization, encoding, decoding and is responsible
->> +for obtaining the required data transmission rate. Note that some USB
->> +controllers have PHY functionality embedded into it and others use an external
->> +PHY. Other peripherals that use PHY include Wireless LAN, Ethernet,
->> +SATA etc.
->> +
->> +The intention of creating this framework is to bring the PHY drivers spread
->> +all over the Linux kernel to drivers/phy to increase code re-use and for
->> +better code maintainability.
->> +
->> +This framework will be of use only to devices that use external PHY (PHY
->> +functionality is not embedded within the controller).
->> +
->> +2. Registering/Unregistering the PHY provider
->> +
->> +PHY provider refers to an entity that implements one or more PHY instances.
->> +For the simple case where the PHY provider implements only a single instance of
->> +the PHY, the framework provides its own implementation of of_xlate in
->> +of_phy_simple_xlate. If the PHY provider implements multiple instances, it
->> +should provide its own implementation of of_xlate. of_xlate is used only for
->> +dt boot case.
->> +
->> +#define of_phy_provider_register(dev, xlate)    \
->> +        __of_phy_provider_register((dev), THIS_MODULE, (xlate))
->> +
->> +#define devm_of_phy_provider_register(dev, xlate)       \
->> +        __of_phy_provider_register((dev), THIS_MODULE, (xlate))
-> 
-> This needs to be:
-> 
-> 	__devm_of_phy_provider_register((dev), THIS_MODULE, (xlate))
-> 
-> as Kamil pointed out. We've tested it here with v9 and it makes
-> Bad Things happen. ;)
-> 
->> +of_phy_provider_register and devm_of_phy_provider_register macros can be used to
->> +register the phy_provider and it takes device and of_xlate as
->> +arguments. For the dt boot case, all PHY providers should use one of the above
->> +2 macros to register the PHY provider.
->> +
->> +void devm_of_phy_provider_unregister(struct device *dev,
->> +	struct phy_provider *phy_provider);
->> +void of_phy_provider_unregister(struct phy_provider *phy_provider);
->> +
->> +devm_of_phy_provider_unregister and of_phy_provider_unregister can be used to
->> +unregister the PHY.
->> +
-> [...]
->> diff --git a/drivers/phy/phy-core.c b/drivers/phy/phy-core.c
->> new file mode 100644
->> index 0000000..f1d15e5
->> --- /dev/null
->> +++ b/drivers/phy/phy-core.c
->> @@ -0,0 +1,714 @@
-> [...]
->> +static struct phy *phy_lookup(struct device *device, const char *port)
->> +{
->> +	unsigned int count;
->> +	struct phy *phy;
->> +	struct device *dev;
->> +	struct phy_consumer *consumers;
->> +	struct class_dev_iter iter;
-> 	
-> Don't you need something like
-> 
-> 	if (phy->init_data = NULL)	
-> 		return ERR_PTR(-EINVAL);
-> 
-> to ensure there is no attempt to dereference NULL platform data ?
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ .../devicetree/bindings/video/exynos_dp.txt        |   23 +++++---------------
+ drivers/video/exynos/exynos_dp_core.c              |   16 ++++++++++----
+ drivers/video/exynos/exynos_dp_core.h              |    2 ++
+ 3 files changed, 20 insertions(+), 21 deletions(-)
 
-hmm.. perhaps a dev_WARN too..
-> 
->> +	class_dev_iter_init(&iter, phy_class, NULL, NULL);
->> +	while ((dev = class_dev_iter_next(&iter))) {
->> +		phy = to_phy(dev);
->> +		count = phy->init_data->num_consumers;
->> +		consumers = phy->init_data->consumers;
->> +		while (count--) {
->> +			if (!strcmp(consumers->dev_name, dev_name(device)) &&
->> +					!strcmp(consumers->port, port)) {
->> +				class_dev_iter_exit(&iter);
->> +				return phy;
->> +			}
->> +			consumers++;
->> +		}
->> +	}
->> +
->> +	class_dev_iter_exit(&iter);
->> +	return ERR_PTR(-ENODEV);
->> +}
->> +
-> [...]
->> +int phy_init(struct phy *phy)
->> +{
->> +	int ret;
->> +
->> +	ret = phy_pm_runtime_get_sync(phy);
->> +	if (ret < 0 && ret != -ENOTSUPP)
->> +		return ret;
->> +
->> +	mutex_lock(&phy->mutex);
->> +	if (phy->init_count++ = 0 && phy->ops->init) {
->> +		ret = phy->ops->init(phy);
->> +		if (ret < 0) {
->> +			dev_err(&phy->dev, "phy init failed --> %d\n", ret);
->> +			goto out;
-> 
-> Is this 'goto' and similar ones below really needed ?
-That's just to signify an error path.. it doesn't affect anyways ;-)
+diff --git a/Documentation/devicetree/bindings/video/exynos_dp.txt b/Documentation/devicetree/bindings/video/exynos_dp.txt
+index 84f10c1..022f4b6 100644
+--- a/Documentation/devicetree/bindings/video/exynos_dp.txt
++++ b/Documentation/devicetree/bindings/video/exynos_dp.txt
+@@ -1,17 +1,6 @@
+ The Exynos display port interface should be configured based on
+ the type of panel connected to it.
+ 
+-We use two nodes:
+-	-dp-controller node
+-	-dptx-phy node(defined inside dp-controller node)
+-
+-For the DP-PHY initialization, we use the dptx-phy node.
+-Required properties for dptx-phy:
+-	-reg:
+-		Base address of DP PHY register.
+-	-samsung,enable-mask:
+-		The bit-mask used to enable/disable DP PHY.
+-
+ For the Panel initialization, we read data from dp-controller node.
+ Required properties for dp-controller:
+ 	-compatible:
+@@ -25,6 +14,10 @@ Required properties for dp-controller:
+ 		from common clock binding: handle to dp clock.
+ 	-clock-names:
+ 		from common clock binding: Shall be "dp".
++	-phys:
++		from general PHY binding: the phandle for the PHY device.
++	-phy-names:
++		from general PHY binding: Should be "dp".
+ 	-interrupt-parent:
+ 		phandle to Interrupt combiner node.
+ 	-samsung,color-space:
+@@ -67,12 +60,8 @@ SOC specific portion:
+ 		interrupt-parent = <&combiner>;
+ 		clocks = <&clock 342>;
+ 		clock-names = "dp";
+-
+-		dptx-phy {
+-			reg = <0x10040720>;
+-			samsung,enable-mask = <1>;
+-		};
+-
++		phys = <&dp_phy>;
++		phy-names = "dp";
+ 	};
+ 
+ Board Specific portion:
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index 05fed7d..5e1a715 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -19,6 +19,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
+ #include <linux/of.h>
++#include <linux/phy/phy.h>
+ 
+ #include "exynos_dp_core.h"
+ 
+@@ -960,8 +961,11 @@ static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
+ 
+ 	dp_phy_node = of_find_node_by_name(dp_phy_node, "dptx-phy");
+ 	if (!dp_phy_node) {
+-		dev_err(dp->dev, "could not find dptx-phy node\n");
+-		return -ENODEV;
++		dp->phy = devm_phy_get(dp->dev, "dp");
++		if (IS_ERR(dp->phy))
++			return PTR_ERR(dp->phy);
++		else
++			return 0;
+ 	}
+ 
+ 	if (of_property_read_u32(dp_phy_node, "reg", &phy_base)) {
+@@ -992,7 +996,9 @@ err:
+ 
+ static void exynos_dp_phy_init(struct exynos_dp_device *dp)
+ {
+-	if (dp->phy_addr) {
++	if (dp->phy) {
++		phy_power_on(dp->phy);
++	} else if (dp->phy_addr) {
+ 		u32 reg;
+ 
+ 		reg = __raw_readl(dp->phy_addr);
+@@ -1003,7 +1009,9 @@ static void exynos_dp_phy_init(struct exynos_dp_device *dp)
+ 
+ static void exynos_dp_phy_exit(struct exynos_dp_device *dp)
+ {
+-	if (dp->phy_addr) {
++	if (dp->phy) {
++		phy_power_off(dp->phy);
++	} else if (dp->phy_addr) {
+ 		u32 reg;
+ 
+ 		reg = __raw_readl(dp->phy_addr);
+diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
+index 56cfec8..87804b6 100644
+--- a/drivers/video/exynos/exynos_dp_core.h
++++ b/drivers/video/exynos/exynos_dp_core.h
+@@ -151,6 +151,8 @@ struct exynos_dp_device {
+ 	struct video_info	*video_info;
+ 	struct link_train	link_train;
+ 	struct work_struct	hotplug_work;
++
++	struct phy		*phy;
+ };
+ 
+ /* exynos_dp_reg.c */
+-- 
+1.7.10.4
 
-Thanks
-Kishon
+

@@ -1,167 +1,76 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 01 Jul 2013 00:35:15 +0000
-Subject: Re: [PATCH 3/3] video: exynos_dp: Use the generic PHY driver
-Message-Id: <000001ce75f2$db156170$91402450$@samsung.com>
+From: "maxime.ripard@free-electrons.com" <maxime.ripard@free-electrons.com>
+Date: Wed, 03 Jul 2013 08:55:05 +0000
+Subject: Re: [PATCH RESEND] video: mxsfb: fix color settings for 18bit data bus and 32bpp
+Message-Id: <20130703085505.GG2969@lukather>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="bFsKbPszpzYNtEU6"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <001701ce73bf$bebf9f20$3c3edd60$@samsung.com>
- <51CD25F2.5010206@ti.com> <001c01ce73c5$552e1cc0$ff8a5640$@samsung.com>
- <51CD56FE.4020302@ti.com>
-In-Reply-To: <51CD56FE.4020302@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <51C01DE1.8030300@digi.com>
+In-Reply-To: <51C01DE1.8030300@digi.com>
 To: linux-arm-kernel@lists.infradead.org
 
-On Friday, June 28, 2013 6:27 PM, Kishon Vijay Abraham I wrote:
-> 
-> Hi,
-> 
-> On Friday 28 June 2013 11:34 AM, Jingoo Han wrote:
-> > On Friday, June 28, 2013 2:58 PM, Kishon Vijay Abraham I wrote:
-> >>
-> >> Hi,
-> >>
-> >> On Friday 28 June 2013 10:54 AM, Jingoo Han wrote:
-> >>> Use the generic PHY API instead of the platform callback to control
-> >>> the DP PHY. The 'phy_label' field is added to the platform data
-> >>> structure to allow PHY lookup on non-dt platforms.
-> >>>
-> >>> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> >>> ---
-> >>>    .../devicetree/bindings/video/exynos_dp.txt        |   17 ---
-> >>>    drivers/video/exynos/exynos_dp_core.c              |  118 ++------------------
-> >>>    drivers/video/exynos/exynos_dp_core.h              |    2 +
-> >>>    include/video/exynos_dp.h                          |    6 +-
-> >>>    4 files changed, 15 insertions(+), 128 deletions(-)
-> >>>
-> >>> diff --git a/Documentation/devicetree/bindings/video/exynos_dp.txt
-> >> b/Documentation/devicetree/bindings/video/exynos_dp.txt
-> >>> index 84f10c1..a8320e3 100644
-> >>> --- a/Documentation/devicetree/bindings/video/exynos_dp.txt
-> >>> +++ b/Documentation/devicetree/bindings/video/exynos_dp.txt
-> >>> @@ -1,17 +1,6 @@
-> >>>    The Exynos display port interface should be configured based on
-> >>>    the type of panel connected to it.
-> >>>
-> >>> -We use two nodes:
-> >>> -	-dp-controller node
-> >>> -	-dptx-phy node(defined inside dp-controller node)
-> >>> -
-> >>> -For the DP-PHY initialization, we use the dptx-phy node.
-> >>> -Required properties for dptx-phy:
-> >>> -	-reg:
-> >>> -		Base address of DP PHY register.
-> >>> -	-samsung,enable-mask:
-> >>> -		The bit-mask used to enable/disable DP PHY.
-> >>> -
-> >>>    For the Panel initialization, we read data from dp-controller node.
-> >>>    Required properties for dp-controller:
-> >>>    	-compatible:
-> >>> @@ -67,12 +56,6 @@ SOC specific portion:
-> >>>    		interrupt-parent = <&combiner>;
-> >>>    		clocks = <&clock 342>;
-> >>>    		clock-names = "dp";
-> >>> -
-> >>> -		dptx-phy {
-> >>> -			reg = <0x10040720>;
-> >>> -			samsung,enable-mask = <1>;
-> >>> -		};
-> >>> -
-> >>>    	};
-> >>>
-> >>>    Board Specific portion:
-> >>> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-> >>> index 12bbede..bac515b 100644
-> >>> --- a/drivers/video/exynos/exynos_dp_core.c
-> >>> +++ b/drivers/video/exynos/exynos_dp_core.c
-> >>> @@ -19,6 +19,7 @@
-> >>>    #include <linux/interrupt.h>
-> >>>    #include <linux/delay.h>
-> >>>    #include <linux/of.h>
-> >>> +#include <linux/phy/phy.h>
-> >>>
-> >>>    #include <video/exynos_dp.h>
-> >>>
-> >>> @@ -960,84 +961,15 @@ static struct exynos_dp_platdata *exynos_dp_dt_parse_pdata(struct device
-> *dev)
-> >>>    		return ERR_PTR(-EINVAL);
-> >>>    	}
-> >>>
-> >>> -	return pd;
-> >>> -}
-> >>> -
-> >>> -static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
-> >>> -{
-> >>> -	struct device_node *dp_phy_node = of_node_get(dp->dev->of_node);
-> >>> -	u32 phy_base;
-> >>> -	int ret = 0;
-> >>> -
-> >>> -	dp_phy_node = of_find_node_by_name(dp_phy_node, "dptx-phy");
-> >>> -	if (!dp_phy_node) {
-> >>> -		dev_err(dp->dev, "could not find dptx-phy node\n");
-> >>> -		return -ENODEV;
-> >>> -	}
-> >>> -
-> >>> -	if (of_property_read_u32(dp_phy_node, "reg", &phy_base)) {
-> >>> -		dev_err(dp->dev, "failed to get reg for dptx-phy\n");
-> >>> -		ret = -EINVAL;
-> >>> -		goto err;
-> >>> -	}
-> >>> -
-> >>> -	if (of_property_read_u32(dp_phy_node, "samsung,enable-mask",
-> >>> -				&dp->enable_mask)) {
-> >>> -		dev_err(dp->dev, "failed to get enable-mask for dptx-phy\n");
-> >>> -		ret = -EINVAL;
-> >>> -		goto err;
-> >>> -	}
-> >>> -
-> >>> -	dp->phy_addr = ioremap(phy_base, SZ_4);
-> >>> -	if (!dp->phy_addr) {
-> >>> -		dev_err(dp->dev, "failed to ioremap dp-phy\n");
-> >>> -		ret = -ENOMEM;
-> >>> -		goto err;
-> >>> -	}
-> >>> -
-> >>> -err:
-> >>> -	of_node_put(dp_phy_node);
-> >>> -
-> >>> -	return ret;
-> >>> -}
-> >>> -
-> >>> -static void exynos_dp_phy_init(struct exynos_dp_device *dp)
-> >>> -{
-> >>> -	u32 reg;
-> >>> -
-> >>> -	reg = __raw_readl(dp->phy_addr);
-> >>> -	reg |= dp->enable_mask;
-> >>> -	__raw_writel(reg, dp->phy_addr);
-> >>> -}
-> >>> -
-> >>> -static void exynos_dp_phy_exit(struct exynos_dp_device *dp)
-> >>> -{
-> >>> -	u32 reg;
-> >>> +	pd->phy_label = "dp";
-> >>
-> >> In the case of non-dt boot, this phy_label should have ideally come from
-> >> platform code.
-> >
-> > No, this is NOT the case of non-dt.
-> >
-> > 'pd->phy_label = "dp";' is included in exynos_dp_dt_parse_pdata(),
-> > not exynos_dp_phy_exit().
-> > Also, exynos_dp_dt_parse_pdata() is called in the case of dt.
-> 
-> ah.. right. Do you support non-dt boot. I dont see any modifications in
-> the platform code?
 
-Platform code for non-DT has not been added; thus, there is no modification
-in the platform code.
+--bFsKbPszpzYNtEU6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Jean-Christophe,
 
-Best regards,
-Jingoo Han
+On Tue, Jun 18, 2013 at 10:44:17AM +0200, Hector Palacios wrote:
+> For a combination of 18bit LCD data bus width and a color
+> mode of 32bpp, the driver was setting the color mapping to
+> rgb666, which is wrong, as the color in memory realy has an
+> rgb888 layout.
+>=20
+> This patch also removes the setting of flag CTRL_DF24 that
+> makes the driver dimiss the upper 2 bits when handling 32/24bpp
+> colors in a diplay with 18bit data bus width. This flag made
+> true color images display wrong in such configurations.
+>=20
+> Finally, the color mapping rgb666 has also been removed as nobody
+> is using it and high level applications like Qt5 cannot work
+> with it either.
+>=20
+> Reference: https://lkml.org/lkml/2013/5/23/220
+> Signed-off-by: Hector Palacios <hector.palacios@digi.com>
+> Acked-by: Juergen Beisert <jbe@pengutronix.de>
+> Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
-> 
-> Thanks
-> Kishon
+I don't see this patch in your for-next branch.
 
+It would be really great to have it for 3.11 if possible.
+
+Could you take a look at this patch please?
+
+Thanks,
+Maxime
+
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
+
+--bFsKbPszpzYNtEU6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJR0+bpAAoJEBx+YmzsjxAgUhwP/iV0i0SDisdJtZA8ixm7mhM0
+qY3QcWXPXaOGw7smEoEZ/fFX8IBuweXYyb31bR9KNBHMjFdfFCYK9sv1f7RPd3UP
+uXDpiyhmtvC86SqoZlGlfG8jSzTgjz/YnyvO6zbEmKBJuxAh/FkWgLCH3Ex88hj9
+5d63AzLaareVJqe4S66PzJKUaeRvCWi1bJfmRTxDm6L7I4cKlkRYik0iPGdrIQCt
++X9AmV2CROVMxubqHLct/jOakPkmANIaShnaoGca06+i7h/wGV3VFUDw5mYQbKb9
+tN+hs4I4SCUp5yVLpsHQUrvCgm6E1L7xlm/j7wIc7i0ereUk6PvUERjoKXsVeYNy
+x4KFRQjJiWSdV72KEgUs+g5+n+rPht4kveVOOGdKVgnJoUm+iSJlSZPyr4FCQsbX
+367GHxNN+DeGUkZhXvmpfFbH0ywizfq6ns+ykfnA2x5b36zPo8W47M4Go8JD0DTx
+ECmv50gVJ07W8exujivSnBUIhaLi5tTP0YlmctIkOHmyyCwfFkl4Bu6e4JzkT/aG
+3NTDtFMbJo3XZEy8LOVURm2MlnKl28ZTwuZsFQajBl2jeJKLAU9uowQ6tArpSODd
+v7g7zTfnQBVv8sNOb2eJfJDraqLhl7awjyDmxnG1tyrNH09Qbt7NvkcgDBhPh3+m
+M4fPnZK8rfh4E0qtpgOs
+=G49y
+-----END PGP SIGNATURE-----
+
+--bFsKbPszpzYNtEU6--

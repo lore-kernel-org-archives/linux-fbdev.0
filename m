@@ -1,90 +1,96 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 30 Jul 2013 06:31:24 +0000
-Subject: [GIT PULL] Small fbdev fixes for 3.11-rc
-Message-Id: <51F75DBC.2060006@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="slEX1Wfd59eSJkkLBSfHeTHmDhFhdQV6L"
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Date: Wed, 03 Jul 2013 11:10:56 +0000
+Subject: Re: [PATCH 01/15] video: bfin: remove unnecessary platform_set_drvdata()
+Message-Id: <20130703111056.GN305@game.jcrosoft.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, linux-kernel <linux-kernel@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---slEX1Wfd59eSJkkLBSfHeTHmDhFhdQV6L
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 10:45 Tue 25 Jun     , Jingoo Han wrote:
+> On Saturday, May 11, 2013 9:45 PM, Jingoo Han wrote:
+> > 
+> > The driver core clears the driver data to NULL after device_release
+> > or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
+> > (device-core: Ensure drvdata = NULL when no driver is bound).
+> > Thus, it is not needed to manually clear the device driver data to NULL.
+> > 
+> > Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+> 
+> Hi,
+> 
+> I will squash everything down into one patch with the ACKs,
+> and send it again.
 
-Hi Linus,
+fine by me
 
-The following changes since commit 3b2f64d00c46e1e4e9bd0bb9bb12619adac27a=
-4b:
-
-  Linux 3.11-rc2 (2013-07-21 12:05:29 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
-v-fixes-3.11-rc2
-
-for you to fetch changes up to 7808e3291e1e101e9ad6e8263119c4a2abae05ef:
-
-  video: sh7760fb: fix to pass correct device identity to free_irq() (201=
-3-07-29 11:25:03 +0300)
-
-----------------------------------------------------------------
-Small fbdev fixes
-
-- Compile fixes
-- atyfb initialization fix
-- Fix freeing of the irq in sh7760fb & nuc900fb
-
-----------------------------------------------------------------
-Dan Carpenter (1):
-      fbdev/atyfb: fix recent breakage in correct_chipset()
-
-Luis Henriques (1):
-      vga16fb: Remove unused variable
-
-Michal Simek (1):
-      video: xilinxfb: Fix compilation warning
-
-Tomi Valkeinen (1):
-      fbdev/sgivwfb: fix compilation error in sgivwfb_mmap()
-
-Wei Yongjun (2):
-      video: nuc900fb: fix to pass correct device identity to request_irq=
-()
-      video: sh7760fb: fix to pass correct device identity to free_irq()
-
- drivers/video/aty/atyfb_base.c | 4 ++--
- drivers/video/nuc900fb.c       | 3 +--
- drivers/video/sgivwfb.c        | 2 +-
- drivers/video/sh7760fb.c       | 2 +-
- drivers/video/vga16fb.c        | 1 -
- drivers/video/xilinxfb.c       | 4 ++--
- 6 files changed, 7 insertions(+), 9 deletions(-)
-
-
---slEX1Wfd59eSJkkLBSfHeTHmDhFhdQV6L
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJR9128AAoJEPo9qoy8lh713t0QALBz7htdpyDp9GE7qmNaiGXW
-d4WLXB1wbOZwkcIZ+vbPv7cDEGHo7xKyukAfs2I16NiezNKo8qFi6UFnvCXU/3hw
-ly/rfZ6+H+NURfs1okGopTb/rsAQRvg9ax+OxxqCQuZLbJYmufxj8uVNU8qeDq52
-8qIasREROBoRa95neKO0M2I4Fl9Zwu3PuHILpzpwvh3vSwhQNhU1XejanYluhedl
-FW1qwGynAx/ehEJNTNDqmI0AGptXm4WRIRZlv+bUGZ69LWaawocdgHQKXEYaVAFz
-ORc3sUtrc205CyCQqlwcF55AhAllgqkzaOk5V4TjSCKfZGsVsUEcVsqfUyPqSiwz
-w9yK64Lm5xFH5FOX6MgMuHC9OIcq6UWY70doJUBDiL3Aa7neNZt5ZTSxO8vE6+8y
-oKrLsDzJTUNd6grgMOQm1wBIvnjrizx/nOkSbzrM5AKCF9t7nii9cq9UK9MGY1IF
-aW0h1WVsIYXTWOtviIzWg7l2Z2tKS6kATM/8qvq4X5E0on1MF/VgYofxPzn6036o
-rFedvc9CycnGt5iwUWgq6tm5arGU0JOVc7C1hSg7KA8kJJtyl+vxgDDV2vxqWqh2
-MEd+J4Foi9KlpdZsw9LP4gcIKD9A88uEVcfuK9VuikzWc/PQW68H8hM+ibWkEh63
-luqZo5gmzrOZDtbSJNCB
-=IG3U
------END PGP SIGNATURE-----
-
---slEX1Wfd59eSJkkLBSfHeTHmDhFhdQV6L--
+Best Regards,
+J.
+> 
+> Best regards,
+> Jingoo Han
+> 
+> 
+> > ---
+> >  drivers/video/bf54x-lq043fb.c    |    1 -
+> >  drivers/video/bfin-lq035q1-fb.c  |    2 --
+> >  drivers/video/bfin-t350mcqb-fb.c |    2 --
+> >  3 files changed, 0 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
+> > index 2726a5b..87f288b 100644
+> > --- a/drivers/video/bf54x-lq043fb.c
+> > +++ b/drivers/video/bf54x-lq043fb.c
+> > @@ -681,7 +681,6 @@ out3:
+> >  out2:
+> >  	free_dma(CH_EPPI0);
+> >  out1:
+> > -	platform_set_drvdata(pdev, NULL);
+> > 
+> >  	return ret;
+> >  }
+> > diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
+> > index 29d8c04..be65bae 100644
+> > --- a/drivers/video/bfin-lq035q1-fb.c
+> > +++ b/drivers/video/bfin-lq035q1-fb.c
+> > @@ -759,7 +759,6 @@ static int bfin_lq035q1_probe(struct platform_device *pdev)
+> >   out2:
+> >  	free_dma(CH_PPI);
+> >   out1:
+> > -	platform_set_drvdata(pdev, NULL);
+> > 
+> >  	return ret;
+> >  }
+> > @@ -788,7 +787,6 @@ static int bfin_lq035q1_remove(struct platform_device *pdev)
+> >  	bfin_lq035q1_free_ports(info->disp_info->ppi_mode =
+> >  				USE_RGB565_16_BIT_PPI);
+> > 
+> > -	platform_set_drvdata(pdev, NULL);
+> >  	framebuffer_release(fbinfo);
+> > 
+> >  	dev_info(&pdev->dev, "unregistered LCD driver\n");
+> > diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
+> > index d46da01..48c0c4e 100644
+> > --- a/drivers/video/bfin-t350mcqb-fb.c
+> > +++ b/drivers/video/bfin-t350mcqb-fb.c
+> > @@ -578,7 +578,6 @@ out3:
+> >  out2:
+> >  	free_dma(CH_PPI);
+> >  out1:
+> > -	platform_set_drvdata(pdev, NULL);
+> > 
+> >  	return ret;
+> >  }
+> > @@ -608,7 +607,6 @@ static int bfin_t350mcqb_remove(struct platform_device *pdev)
+> > 
+> >  	bfin_t350mcqb_request_ports(0);
+> > 
+> > -	platform_set_drvdata(pdev, NULL);
+> >  	framebuffer_release(fbinfo);
+> > 
+> >  	printk(KERN_INFO DRIVER_NAME ": Unregister LCD driver.\n");
+> > --
+> > 1.7.2.5
+> 
+> 

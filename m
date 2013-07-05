@@ -1,79 +1,60 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 02 Jul 2013 08:38:23 +0000
-Subject: [PATCH V4 0/4] Generic PHY driver for the Exynos SoC DP PHY
-Message-Id: <000901ce76ff$83d697e0$8b83c7a0$@samsung.com>
+From: Alison Wang <b18965@freescale.com>
+Date: Fri, 05 Jul 2013 07:51:41 +0000
+Subject: [PATCH 3/4] ARM: clk: vf610: Add DCU and TCON clock support
+Message-Id: <1373010702-9244-4-git-send-email-b18965@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1373010702-9244-1-git-send-email-b18965@freescale.com>
+In-Reply-To: <1373010702-9244-1-git-send-email-b18965@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-This patch series adds a simple driver for the Samsung Exynos SoC
-series DP transmitter PHY, using the generic PHY framework [1].
-Previously the DP PHY used an internal DT node to control the PHY
-power enable bit.
+This patch adds DCU and TCON clock support for Vybrid VF610 platform.
 
-These patches was tested on Exynos5250.
+Signed-off-by: Alison Wang <b18965@freescale.com>
+---
+ arch/arm/mach-imx/clk-vf610.c           | 5 +++++
+ include/dt-bindings/clock/vf610-clock.h | 3 ++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
-This PATCH v4 follows:
- * PATCH v3, sent on July, 1st 2013
- * PATCH v2, sent on June, 28th 2013
- * PATCH v1, sent on June, 28th 2013
-
-Changes between v3 and v4:
-  * Added OF dependancy.
-  * Removed redundant local variable 'void __iomem *addr'.
-  * Removed unnecessary dev_set_drvdata().
-  * Added a patch that remove non-DT support for Exynos
-    Display Port driver.
-  * Removed unnecessary 'struct exynos_dp_platdata'.
-  * Kept supporting the original bindings for DT compatibility.
-
-Changes between v2 and v3:
-  * Removed redundant spinlock
-  * Removed 'struct phy' from 'struct exynos_dp_video_phy'
-  * Updated 'samsung-phy.txt', instead of creating
-    'samsung,exynos5250-dp-video-phy.txt'.
-  * Removed unnecessary additional specifier from 'phys'
-    DT property.
-  * Added 'phys', 'phy-names' properties to 'exynos_dp.txt' file.
-  * Added Felipe Balbi's Acked-by.
-
-Changes between v1 and v2:
-  * Replaced exynos_dp_video_phy_xlate() with of_phy_simple_xlate(),
-    as Kishon Vijay Abraham I guided.
-  * Set the value of phy-cells as 0, because the phy_provider implements
-    only one PHY.
-  * Removed unnecessary header include.
-  * Added '#ifdef CONFIG_OF' and of_match_ptr macro.
-
-This series depends on the generic PHY framework [1]. These patches
-refer to Sylwester Nawrocki's patches about Exynos MIPI [2].
-
-[1] https://lkml.org/lkml/2013/6/26/259
-[2] http://www.spinics.net/lists/linux-samsung-soc/msg20098.html
-
-Jingoo Han (4):
-  ARM: dts: Add DP PHY node to exynos5250.dtsi
-  phy: Add driver for Exynos DP PHY
-  video: exynos_dp: remove non-DT support for Exynos Display Port
-  video: exynos_dp: Use the generic PHY driver
-
- .../devicetree/bindings/phy/samsung-phy.txt        |    8 ++
- .../devicetree/bindings/video/exynos_dp.txt        |   23 +++++---------------
- arch/arm/boot/dts/exynos5250.dtsi                  |   13 ++++++++-----
- drivers/phy/Kconfig                                |    6 ++
- drivers/phy/Makefile                               |    1 +
- drivers/phy/phy-exynos-dp-video.c                  |  111 ++++++++++++++++++++
- drivers/video/exynos/Kconfig                       |    2 +-
- drivers/video/exynos/exynos_dp_core.c              |  132 +++++++----------------------
- drivers/video/exynos/exynos_dp_core.h              |  111 +++++++++++++++++++++++++++
- drivers/video/exynos/exynos_dp_reg.c               |    2 -
- include/video/exynos_dp.h                          |  131 ---------------------------------
- 11 files changed, 289 insertions(+), 251 deletions(-)
- create mode 100644 drivers/phy/phy-exynos-dp-video.c
- delete mode 100644 include/video/exynos_dp.h
+diff --git a/arch/arm/mach-imx/clk-vf610.c b/arch/arm/mach-imx/clk-vf610.c
+index d617c0b..c4dbe32 100644
+--- a/arch/arm/mach-imx/clk-vf610.c
++++ b/arch/arm/mach-imx/clk-vf610.c
+@@ -245,6 +245,8 @@ static void __init vf610_clocks_init(struct device_node *ccm_node)
+ 	clk[VF610_CLK_DCU1_DIV] = imx_clk_divider("dcu1_div", "dcu1_en", CCM_CSCDR3, 20, 3);
+ 	clk[VF610_CLK_DCU1] = imx_clk_gate2("dcu1", "dcu1_div", CCM_CCGR9, CCM_CCGRx_CGn(8));
  
---
-1.7.10.4
++	clk[VF610_CLK_TCON0] = imx_clk_gate2("tcon0", "platform_bus", CCM_CCGR1, CCM_CCGRx_CGn(13));
++
+ 	clk[VF610_CLK_ESAI_SEL] = imx_clk_mux("esai_sel", CCM_CSCMR1, 20, 2, esai_sels, 4);
+ 	clk[VF610_CLK_ESAI_EN] = imx_clk_gate("esai_en", "esai_sel", CCM_CSCDR2, 30);
+ 	clk[VF610_CLK_ESAI_DIV] = imx_clk_divider("esai_div", "esai_en", CCM_CSCDR2, 24, 4);
+@@ -311,6 +313,9 @@ static void __init vf610_clocks_init(struct device_node *ccm_node)
+ 	clk_set_parent(clk[VF610_CLK_SAI2_SEL], clk[VF610_CLK_AUDIO_EXT]);
+ 	clk_set_parent(clk[VF610_CLK_SAI3_SEL], clk[VF610_CLK_AUDIO_EXT]);
+ 
++	clk_set_parent(clk[VF610_CLK_DCU0_SEL], clk[VF610_CLK_PLL1_PFD2]);
++	clk_set_rate(clk[VF610_CLK_DCU0_DIV], 113200000);
++
+ 	/* Add the clocks to provider list */
+ 	clk_data.clks = clk;
+ 	clk_data.clk_num = ARRAY_SIZE(clk);
+diff --git a/include/dt-bindings/clock/vf610-clock.h b/include/dt-bindings/clock/vf610-clock.h
+index 15e997f..a2fc6d9 100644
+--- a/include/dt-bindings/clock/vf610-clock.h
++++ b/include/dt-bindings/clock/vf610-clock.h
+@@ -158,6 +158,7 @@
+ #define VF610_CLK_GPU_SEL		145
+ #define VF610_CLK_GPU_EN		146
+ #define VF610_CLK_GPU2D			147
+-#define VF610_CLK_END			148
++#define VF610_CLK_TCON0			148
++#define VF610_CLK_END			149
+ 
+ #endif /* __DT_BINDINGS_CLOCK_VF610_H */
+-- 
+1.8.0
+
 

@@ -1,45 +1,54 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 30 Jul 2013 18:26:09 +0000
-Subject: [PATCH v2 02/24] video: da8xx-fb: simplify lcd_reset
-Message-Id: <1375208791-15781-3-git-send-email-detheridge@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 08 Jul 2013 02:55:45 +0000
+Subject: [PATCH V5 1/4] ARM: dts: Add DP PHY node to exynos5250.dtsi
+Message-Id: <001c01ce7b86$a4872f00$ed958d00$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-From: Afzal Mohammed <afzal@ti.com>
+Add PHY provider node for the DP PHY.
 
-lcd_reset function doesn't require any arguement, remove it.
-
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Reviewed-by: Tomasz Figa <t.figa@samsung.com>
+Acked-by: Felipe Balbi <balbi@ti.com>
 ---
- drivers/video/da8xx-fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/exynos5250.dtsi |   13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index d00dd17..52977b1 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -681,7 +681,7 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
- }
- #undef CNVT_TOHW
+diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
+index ef57277..2c1e73c 100644
+--- a/arch/arm/boot/dts/exynos5250.dtsi
++++ b/arch/arm/boot/dts/exynos5250.dtsi
+@@ -614,6 +614,12 @@
+ 		interrupts = <0 94 0>;
+ 	};
  
--static void lcd_reset(struct da8xx_fb_par *par)
-+static void da8xx_fb_lcd_reset(void)
- {
- 	/* Disable the Raster if previously Enabled */
- 	lcd_disable_raster(false);
-@@ -721,7 +721,7 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
- 	u32 bpp;
- 	int ret = 0;
++	dp_phy: video-phy@10040720 {
++		compatible = "samsung,exynos5250-dp-video-phy";
++		reg = <0x10040720 4>;
++		#phy-cells = <0>;
++	};
++
+ 	dp-controller {
+ 		compatible = "samsung,exynos5-dp";
+ 		reg = <0x145b0000 0x1000>;
+@@ -623,11 +629,8 @@
+ 		clock-names = "dp";
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-
+-		dptx-phy {
+-			reg = <0x10040720>;
+-			samsung,enable-mask = <1>;
+-		};
++		phys = <&dp_phy>;
++		phy-names = "dp";
+ 	};
  
--	lcd_reset(par);
-+	da8xx_fb_lcd_reset();
- 
- 	/* Calculate the divider */
- 	lcd_calc_clk_divider(par);
+ 	fimd {
 -- 
-1.7.0.4
+1.7.10.4
+
 

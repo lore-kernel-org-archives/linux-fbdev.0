@@ -1,167 +1,549 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 30 Jul 2013 18:26:29 +0000
-Subject: [PATCH v2 22/24] video: da8xx-fb: set upstream clock rate (if reqd)
-Message-Id: <1375208791-15781-23-git-send-email-detheridge@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 08 Jul 2013 02:57:43 +0000
+Subject: [PATCH V5 3/4] video: exynos_dp: remove non-DT support for Exynos Display Port
+Message-Id: <001e01ce7b86$eb866290$c29327b0$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-From: Afzal Mohammed <afzal@ti.com>
+Exynos Display Port can be used only for Exynos SoCs. In addition,
+non-DT for EXYNOS SoCs is not supported from v3.11; thus, there is
+no need to support non-DT for Exynos Display Port.
 
-LCDC IP has a clock divider to adjust pixel clock, this limits pixel
-clock range to fck/255 - fck/2(fck - rate of input clock to LCDC IP).
-In the case of AM335x, where this IP is present, default fck is not
-sufficient to provide normal pixel clock rates, hence rendering this
-driver unusable on AM335x.
+The 'include/video/exynos_dp.h' file has been used for non-DT
+support and the content of file include/video/exynos_dp.h is moved
+to drivers/video/exynos/exynos_dp_core.h. Thus, the 'exynos_dp.h'
+file is removed. Also, 'struct exynos_dp_platdata' is removed,
+because it is not used any more.
 
-If input clock too is configurable, allowable range of pixel clock
-would increase. Here initially it is checked whether with present fck,
-divider in IP could be configured to obtain required rate, if not,
-fck is adjusted. This makes it usable on AM335x.
-
-Note:
-Another solution would be to model an inherited basic clock divider of
-CCF, an advantage would be a better possible resolution for pixel clk.
-And trying to instantiate a CCF clock would mean that to be consistent,
-3 bits being turned on to enable clocks of LCDC IP would have to be
-modeled as gate clocks. Now that would bring in a total of 4 clocks,
-including necessity to create a new inherited divider clock, and that
-mean a branch of clock tree would be present in LCDC driver. This
-would add complexity to LCDC driver bringing in considerable amount
-of clock handling code, and this would not bring in much advantage
-for existing use cases other than providing a higher resolution of
-pixel clock. And existing use cases work without relying on clock
-modeling. Another fact is that out of the two platform's using this
-driver DaVinci is not yet converted to CCF. In future if higher
-resolution of pixel clock is required, and probably after DaVinci is
-CCF'ed, modeling clock nodes inside driver may be considered.
-
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Reviewed-by: Tomasz Figa <t.figa@samsung.com>
 ---
- drivers/video/da8xx-fb.c |   80 ++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 60 insertions(+), 20 deletions(-)
+ drivers/video/exynos/Kconfig          |    2 +-
+ drivers/video/exynos/exynos_dp_core.c |  116 +++++++----------------------
+ drivers/video/exynos/exynos_dp_core.h |  109 +++++++++++++++++++++++++++
+ drivers/video/exynos/exynos_dp_reg.c  |    2 -
+ include/video/exynos_dp.h             |  131 ---------------------------------
+ 5 files changed, 135 insertions(+), 225 deletions(-)
+ delete mode 100644 include/video/exynos_dp.h
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index fe3d79e..471931e 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -133,6 +133,9 @@
- #define WSI_TIMEOUT	50
- #define PALETTE_SIZE	256
+diff --git a/drivers/video/exynos/Kconfig b/drivers/video/exynos/Kconfig
+index 1b035b2..fab9019 100644
+--- a/drivers/video/exynos/Kconfig
++++ b/drivers/video/exynos/Kconfig
+@@ -29,7 +29,7 @@ config EXYNOS_LCD_S6E8AX0
  
-+#define	CLK_MIN_DIV	2
-+#define	CLK_MAX_DIV	255
-+
- static void __iomem *da8xx_fb_reg_base;
- static struct resource *lcdc_regs;
- static unsigned int lcd_revision;
-@@ -684,38 +687,71 @@ static void da8xx_fb_lcd_reset(void)
- 	}
+ config EXYNOS_DP
+ 	bool "EXYNOS DP driver support"
+-	depends on ARCH_EXYNOS
++	depends on OF && ARCH_EXYNOS
+ 	default n
+ 	help
+ 	  This enables support for DP device.
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index 12bbede..05fed7d 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -20,8 +20,6 @@
+ #include <linux/delay.h>
+ #include <linux/of.h>
+ 
+-#include <video/exynos_dp.h>
+-
+ #include "exynos_dp_core.h"
+ 
+ static int exynos_dp_init_dp(struct exynos_dp_device *dp)
+@@ -894,26 +892,17 @@ static void exynos_dp_hotplug(struct work_struct *work)
+ 		dev_err(dp->dev, "unable to config video\n");
  }
  
--static inline unsigned da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
--						 unsigned pixclock)
+-#ifdef CONFIG_OF
+-static struct exynos_dp_platdata *exynos_dp_dt_parse_pdata(struct device *dev)
++static struct video_info *exynos_dp_dt_parse_pdata(struct device *dev)
+ {
+ 	struct device_node *dp_node = dev->of_node;
+-	struct exynos_dp_platdata *pd;
+ 	struct video_info *dp_video_config;
+ 
+-	pd = devm_kzalloc(dev, sizeof(*pd), GFP_KERNEL);
+-	if (!pd) {
+-		dev_err(dev, "memory allocation for pdata failed\n");
+-		return ERR_PTR(-ENOMEM);
+-	}
+ 	dp_video_config = devm_kzalloc(dev,
+ 				sizeof(*dp_video_config), GFP_KERNEL);
+-
+ 	if (!dp_video_config) {
+ 		dev_err(dev, "memory allocation for video config failed\n");
+ 		return ERR_PTR(-ENOMEM);
+ 	}
+-	pd->video_info = dp_video_config;
+ 
+ 	dp_video_config->h_sync_polarity  		of_property_read_bool(dp_node, "hsync-active-high");
+@@ -960,7 +949,7 @@ static struct exynos_dp_platdata *exynos_dp_dt_parse_pdata(struct device *dev)
+ 		return ERR_PTR(-EINVAL);
+ 	}
+ 
+-	return pd;
++	return dp_video_config;
+ }
+ 
+ static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
+@@ -1003,48 +992,30 @@ err:
+ 
+ static void exynos_dp_phy_init(struct exynos_dp_device *dp)
+ {
+-	u32 reg;
++	if (dp->phy_addr) {
++		u32 reg;
+ 
+-	reg = __raw_readl(dp->phy_addr);
+-	reg |= dp->enable_mask;
+-	__raw_writel(reg, dp->phy_addr);
++		reg = __raw_readl(dp->phy_addr);
++		reg |= dp->enable_mask;
++		__raw_writel(reg, dp->phy_addr);
++	}
+ }
+ 
+ static void exynos_dp_phy_exit(struct exynos_dp_device *dp)
+ {
+-	u32 reg;
+-
+-	reg = __raw_readl(dp->phy_addr);
+-	reg &= ~(dp->enable_mask);
+-	__raw_writel(reg, dp->phy_addr);
+-}
+-#else
+-static struct exynos_dp_platdata *exynos_dp_dt_parse_pdata(struct device *dev)
 -{
--	return par->lcd_fck_rate / (PICOS2KHZ(pixclock) * 1000);
+-	return NULL;
 -}
 -
--static inline unsigned da8xx_fb_round_clk(struct da8xx_fb_par *par,
--					  unsigned pixclock)
-+static int da8xx_fb_config_clk_divider(struct da8xx_fb_par *par,
-+					      unsigned lcdc_clk_div, unsigned lcdc_clk_rate)
- {
--	unsigned div;
-+	int ret;
- 
--	div = da8xx_fb_calc_clk_divider(par, pixclock);
--	return KHZ2PICOS(par->lcd_fck_rate / (1000 * div));
--}
-+	if (par->lcd_fck_rate != lcdc_clk_rate) {
-+		ret = clk_set_rate(par->lcdc_clk, lcdc_clk_rate);
-+		if (IS_ERR_VALUE(ret)) {
-+			dev_err(par->dev,
-+				"unable to set clock rate at %u\n", lcdc_clk_rate);
-+			return ret;
-+		}
-+		par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
-+	}
- 
--static inline void da8xx_fb_config_clk_divider(unsigned div)
+-static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
 -{
- 	/* Configure the LCD clock divisor. */
--	lcdc_write(LCD_CLK_DIVISOR(div) |
-+	lcdc_write(LCD_CLK_DIVISOR(lcdc_clk_div) |
- 			(LCD_RASTER_MODE & 0x1), LCD_CTRL_REG);
+-	return -EINVAL;
+-}
+-
+-static void exynos_dp_phy_init(struct exynos_dp_device *dp)
+-{
+-	return;
+-}
++	if (dp->phy_addr) {
++		u32 reg;
  
- 	if (lcd_revision = LCD_VERSION_2)
- 		lcdc_write(LCD_V2_DMA_CLK_EN | LCD_V2_LIDD_CLK_EN |
- 				LCD_V2_CORE_CLK_EN, LCD_CLK_ENABLE_REG);
-+
-+	return 0;
-+}
-+
-+static unsigned int da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
-+					      unsigned pixclock,
-+					      unsigned *lcdc_clk_rate)
-+{
-+	unsigned lcdc_clk_div;
-+
-+	pixclock = PICOS2KHZ(pixclock) * 1000;
-+
-+	*lcdc_clk_rate = par->lcd_fck_rate;
-+
-+	if (pixclock < (*lcdc_clk_rate / CLK_MAX_DIV)) {
-+		*lcdc_clk_rate = clk_round_rate(par->lcdc_clk, pixclock * CLK_MAX_DIV);
-+		lcdc_clk_div = CLK_MAX_DIV;
-+	} else if (pixclock > (*lcdc_clk_rate / CLK_MIN_DIV)) {
-+		*lcdc_clk_rate = clk_round_rate(par->lcdc_clk, pixclock * CLK_MIN_DIV);
-+		lcdc_clk_div = CLK_MIN_DIV;
-+	} else {
-+		lcdc_clk_div = *lcdc_clk_rate / pixclock;
+-static void exynos_dp_phy_exit(struct exynos_dp_device *dp)
+-{
+-	return;
++		reg = __raw_readl(dp->phy_addr);
++		reg &= ~(dp->enable_mask);
++		__raw_writel(reg, dp->phy_addr);
 +	}
-+
-+	return lcdc_clk_div;
  }
+-#endif /* CONFIG_OF */
  
--static inline void da8xx_fb_calc_config_clk_divider(struct da8xx_fb_par *par,
--						    struct fb_videomode *mode)
-+static int da8xx_fb_calc_config_clk_divider(struct da8xx_fb_par *par,
-+					    struct fb_videomode *mode)
+ static int exynos_dp_probe(struct platform_device *pdev)
  {
--	unsigned div = da8xx_fb_calc_clk_divider(par, mode->pixclock);
-+	unsigned lcdc_clk_rate;
-+	unsigned lcdc_clk_div = da8xx_fb_calc_clk_divider(par, mode->pixclock, &lcdc_clk_rate);
+ 	struct resource *res;
+ 	struct exynos_dp_device *dp;
+-	struct exynos_dp_platdata *pdata;
  
--	da8xx_fb_config_clk_divider(div);
-+	return da8xx_fb_config_clk_divider(par, lcdc_clk_div, lcdc_clk_rate);
-+}
-+
-+static inline unsigned da8xx_fb_round_clk(struct da8xx_fb_par *par,
-+					  unsigned pixclock)
-+{
-+	unsigned lcdc_clk_div, lcdc_clk_rate;
-+
-+	lcdc_clk_div = da8xx_fb_calc_clk_divider(par, pixclock, &lcdc_clk_rate);
-+	return KHZ2PICOS(lcdc_clk_rate / (1000 * lcdc_clk_div));
- }
- 
- static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
-@@ -724,7 +760,11 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
- 	u32 bpp;
  	int ret = 0;
  
--	da8xx_fb_calc_config_clk_divider(par, panel);
-+	ret = da8xx_fb_calc_config_clk_divider(par, panel);
-+	if (IS_ERR_VALUE(ret)) {
-+		dev_err(par->dev, "unable to configure clock\n");
-+		return ret;
-+	}
+@@ -1057,21 +1028,13 @@ static int exynos_dp_probe(struct platform_device *pdev)
  
- 	if (panel->sync & FB_SYNC_CLK_INVERT)
- 		lcdc_write((lcdc_read(LCD_RASTER_TIMING_2_REG) |
+ 	dp->dev = &pdev->dev;
+ 
+-	if (pdev->dev.of_node) {
+-		pdata = exynos_dp_dt_parse_pdata(&pdev->dev);
+-		if (IS_ERR(pdata))
+-			return PTR_ERR(pdata);
++	dp->video_info = exynos_dp_dt_parse_pdata(&pdev->dev);
++	if (IS_ERR(dp->video_info))
++		return PTR_ERR(dp->video_info);
+ 
+-		ret = exynos_dp_dt_parse_phydata(dp);
+-		if (ret)
+-			return ret;
+-	} else {
+-		pdata = pdev->dev.platform_data;
+-		if (!pdata) {
+-			dev_err(&pdev->dev, "no platform data\n");
+-			return -EINVAL;
+-		}
+-	}
++	ret = exynos_dp_dt_parse_phydata(dp);
++	if (ret)
++		return ret;
+ 
+ 	dp->clock = devm_clk_get(&pdev->dev, "dp");
+ 	if (IS_ERR(dp->clock)) {
+@@ -1095,15 +1058,7 @@ static int exynos_dp_probe(struct platform_device *pdev)
+ 
+ 	INIT_WORK(&dp->hotplug_work, exynos_dp_hotplug);
+ 
+-	dp->video_info = pdata->video_info;
+-
+-	if (pdev->dev.of_node) {
+-		if (dp->phy_addr)
+-			exynos_dp_phy_init(dp);
+-	} else {
+-		if (pdata->phy_init)
+-			pdata->phy_init();
+-	}
++	exynos_dp_phy_init(dp);
+ 
+ 	exynos_dp_init_dp(dp);
+ 
+@@ -1121,18 +1076,11 @@ static int exynos_dp_probe(struct platform_device *pdev)
+ 
+ static int exynos_dp_remove(struct platform_device *pdev)
+ {
+-	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
+ 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
+ 
+ 	flush_work(&dp->hotplug_work);
+ 
+-	if (pdev->dev.of_node) {
+-		if (dp->phy_addr)
+-			exynos_dp_phy_exit(dp);
+-	} else {
+-		if (pdata->phy_exit)
+-			pdata->phy_exit();
+-	}
++	exynos_dp_phy_exit(dp);
+ 
+ 	clk_disable_unprepare(dp->clock);
+ 
+@@ -1143,20 +1091,13 @@ static int exynos_dp_remove(struct platform_device *pdev)
+ #ifdef CONFIG_PM_SLEEP
+ static int exynos_dp_suspend(struct device *dev)
+ {
+-	struct exynos_dp_platdata *pdata = dev->platform_data;
+ 	struct exynos_dp_device *dp = dev_get_drvdata(dev);
+ 
+ 	disable_irq(dp->irq);
+ 
+ 	flush_work(&dp->hotplug_work);
+ 
+-	if (dev->of_node) {
+-		if (dp->phy_addr)
+-			exynos_dp_phy_exit(dp);
+-	} else {
+-		if (pdata->phy_exit)
+-			pdata->phy_exit();
+-	}
++	exynos_dp_phy_exit(dp);
+ 
+ 	clk_disable_unprepare(dp->clock);
+ 
+@@ -1165,16 +1106,9 @@ static int exynos_dp_suspend(struct device *dev)
+ 
+ static int exynos_dp_resume(struct device *dev)
+ {
+-	struct exynos_dp_platdata *pdata = dev->platform_data;
+ 	struct exynos_dp_device *dp = dev_get_drvdata(dev);
+ 
+-	if (dev->of_node) {
+-		if (dp->phy_addr)
+-			exynos_dp_phy_init(dp);
+-	} else {
+-		if (pdata->phy_init)
+-			pdata->phy_init();
+-	}
++	exynos_dp_phy_init(dp);
+ 
+ 	clk_prepare_enable(dp->clock);
+ 
+@@ -1203,7 +1137,7 @@ static struct platform_driver exynos_dp_driver = {
+ 		.name	= "exynos-dp",
+ 		.owner	= THIS_MODULE,
+ 		.pm	= &exynos_dp_pm_ops,
+-		.of_match_table = of_match_ptr(exynos_dp_match),
++		.of_match_table = exynos_dp_match,
+ 	},
+ };
+ 
+diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
+index 6c567bbf..56cfec8 100644
+--- a/drivers/video/exynos/exynos_dp_core.h
++++ b/drivers/video/exynos/exynos_dp_core.h
+@@ -13,6 +13,99 @@
+ #ifndef _EXYNOS_DP_CORE_H
+ #define _EXYNOS_DP_CORE_H
+ 
++#define DP_TIMEOUT_LOOP_COUNT 100
++#define MAX_CR_LOOP 5
++#define MAX_EQ_LOOP 5
++
++enum link_rate_type {
++	LINK_RATE_1_62GBPS = 0x06,
++	LINK_RATE_2_70GBPS = 0x0a
++};
++
++enum link_lane_count_type {
++	LANE_COUNT1 = 1,
++	LANE_COUNT2 = 2,
++	LANE_COUNT4 = 4
++};
++
++enum link_training_state {
++	START,
++	CLOCK_RECOVERY,
++	EQUALIZER_TRAINING,
++	FINISHED,
++	FAILED
++};
++
++enum voltage_swing_level {
++	VOLTAGE_LEVEL_0,
++	VOLTAGE_LEVEL_1,
++	VOLTAGE_LEVEL_2,
++	VOLTAGE_LEVEL_3,
++};
++
++enum pre_emphasis_level {
++	PRE_EMPHASIS_LEVEL_0,
++	PRE_EMPHASIS_LEVEL_1,
++	PRE_EMPHASIS_LEVEL_2,
++	PRE_EMPHASIS_LEVEL_3,
++};
++
++enum pattern_set {
++	PRBS7,
++	D10_2,
++	TRAINING_PTN1,
++	TRAINING_PTN2,
++	DP_NONE
++};
++
++enum color_space {
++	COLOR_RGB,
++	COLOR_YCBCR422,
++	COLOR_YCBCR444
++};
++
++enum color_depth {
++	COLOR_6,
++	COLOR_8,
++	COLOR_10,
++	COLOR_12
++};
++
++enum color_coefficient {
++	COLOR_YCBCR601,
++	COLOR_YCBCR709
++};
++
++enum dynamic_range {
++	VESA,
++	CEA
++};
++
++enum pll_status {
++	PLL_UNLOCKED,
++	PLL_LOCKED
++};
++
++enum clock_recovery_m_value_type {
++	CALCULATED_M,
++	REGISTER_M
++};
++
++enum video_timing_recognition_type {
++	VIDEO_TIMING_FROM_CAPTURE,
++	VIDEO_TIMING_FROM_REGISTER
++};
++
++enum analog_power_block {
++	AUX_BLOCK,
++	CH0_BLOCK,
++	CH1_BLOCK,
++	CH2_BLOCK,
++	CH3_BLOCK,
++	ANALOG_TOTAL,
++	POWER_ALL
++};
++
+ enum dp_irq_type {
+ 	DP_IRQ_TYPE_HP_CABLE_IN,
+ 	DP_IRQ_TYPE_HP_CABLE_OUT,
+@@ -20,6 +113,22 @@ enum dp_irq_type {
+ 	DP_IRQ_TYPE_UNKNOWN,
+ };
+ 
++struct video_info {
++	char *name;
++
++	bool h_sync_polarity;
++	bool v_sync_polarity;
++	bool interlaced;
++
++	enum color_space color_space;
++	enum dynamic_range dynamic_range;
++	enum color_coefficient ycbcr_coeff;
++	enum color_depth color_depth;
++
++	enum link_rate_type link_rate;
++	enum link_lane_count_type lane_count;
++};
++
+ struct link_train {
+ 	int eq_loop;
+ 	int cr_loop[4];
+diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
+index 29d9d03..b70da50 100644
+--- a/drivers/video/exynos/exynos_dp_reg.c
++++ b/drivers/video/exynos/exynos_dp_reg.c
+@@ -14,8 +14,6 @@
+ #include <linux/io.h>
+ #include <linux/delay.h>
+ 
+-#include <video/exynos_dp.h>
+-
+ #include "exynos_dp_core.h"
+ #include "exynos_dp_reg.h"
+ 
+diff --git a/include/video/exynos_dp.h b/include/video/exynos_dp.h
+deleted file mode 100644
+index bd8cabd..0000000
+--- a/include/video/exynos_dp.h
++++ /dev/null
+@@ -1,131 +0,0 @@
+-/*
+- * Samsung SoC DP device support
+- *
+- * Copyright (C) 2012 Samsung Electronics Co., Ltd.
+- * Author: Jingoo Han <jg1.han@samsung.com>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- */
+-
+-#ifndef _EXYNOS_DP_H
+-#define _EXYNOS_DP_H
+-
+-#define DP_TIMEOUT_LOOP_COUNT 100
+-#define MAX_CR_LOOP 5
+-#define MAX_EQ_LOOP 5
+-
+-enum link_rate_type {
+-	LINK_RATE_1_62GBPS = 0x06,
+-	LINK_RATE_2_70GBPS = 0x0a
+-};
+-
+-enum link_lane_count_type {
+-	LANE_COUNT1 = 1,
+-	LANE_COUNT2 = 2,
+-	LANE_COUNT4 = 4
+-};
+-
+-enum link_training_state {
+-	START,
+-	CLOCK_RECOVERY,
+-	EQUALIZER_TRAINING,
+-	FINISHED,
+-	FAILED
+-};
+-
+-enum voltage_swing_level {
+-	VOLTAGE_LEVEL_0,
+-	VOLTAGE_LEVEL_1,
+-	VOLTAGE_LEVEL_2,
+-	VOLTAGE_LEVEL_3,
+-};
+-
+-enum pre_emphasis_level {
+-	PRE_EMPHASIS_LEVEL_0,
+-	PRE_EMPHASIS_LEVEL_1,
+-	PRE_EMPHASIS_LEVEL_2,
+-	PRE_EMPHASIS_LEVEL_3,
+-};
+-
+-enum pattern_set {
+-	PRBS7,
+-	D10_2,
+-	TRAINING_PTN1,
+-	TRAINING_PTN2,
+-	DP_NONE
+-};
+-
+-enum color_space {
+-	COLOR_RGB,
+-	COLOR_YCBCR422,
+-	COLOR_YCBCR444
+-};
+-
+-enum color_depth {
+-	COLOR_6,
+-	COLOR_8,
+-	COLOR_10,
+-	COLOR_12
+-};
+-
+-enum color_coefficient {
+-	COLOR_YCBCR601,
+-	COLOR_YCBCR709
+-};
+-
+-enum dynamic_range {
+-	VESA,
+-	CEA
+-};
+-
+-enum pll_status {
+-	PLL_UNLOCKED,
+-	PLL_LOCKED
+-};
+-
+-enum clock_recovery_m_value_type {
+-	CALCULATED_M,
+-	REGISTER_M
+-};
+-
+-enum video_timing_recognition_type {
+-	VIDEO_TIMING_FROM_CAPTURE,
+-	VIDEO_TIMING_FROM_REGISTER
+-};
+-
+-enum analog_power_block {
+-	AUX_BLOCK,
+-	CH0_BLOCK,
+-	CH1_BLOCK,
+-	CH2_BLOCK,
+-	CH3_BLOCK,
+-	ANALOG_TOTAL,
+-	POWER_ALL
+-};
+-
+-struct video_info {
+-	char *name;
+-
+-	bool h_sync_polarity;
+-	bool v_sync_polarity;
+-	bool interlaced;
+-
+-	enum color_space color_space;
+-	enum dynamic_range dynamic_range;
+-	enum color_coefficient ycbcr_coeff;
+-	enum color_depth color_depth;
+-
+-	enum link_rate_type link_rate;
+-	enum link_lane_count_type lane_count;
+-};
+-
+-struct exynos_dp_platdata {
+-	struct video_info *video_info;
+-
+-	void (*phy_init)(void);
+-	void (*phy_exit)(void);
+-};
+-
+-#endif /* _EXYNOS_DP_H */
 -- 
-1.7.0.4
+1.7.10.4
+
 

@@ -1,117 +1,85 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Date: Thu, 18 Jul 2013 06:58:09 +0000
-Subject: [PATCH 00/15] PHY framework
-Message-Id: <1374129984-765-1-git-send-email-kishon@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 08 Jul 2013 02:54:48 +0000
+Subject: [PATCH V5 0/4] Generic PHY driver for the Exynos SoC DP PHY
+Message-Id: <001b01ce7b86$828743e0$8795cba0$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Added a generic PHY framework that provides a set of APIs for the PHY drivers
-to create/destroy a PHY and APIs for the PHY users to obtain a reference to
-the PHY with or without using phandle.
+This patch series adds a simple driver for the Samsung Exynos SoC
+series DP transmitter PHY, using the generic PHY framework [1].
+Previously the DP PHY used an internal DT node to control the PHY
+power enable bit.
 
-This framework will be of use only to devices that uses external PHY (PHY
-functionality is not embedded within the controller).
+These patches was tested on Exynos5250.
 
-The intention of creating this framework is to bring the phy drivers spread
-all over the Linux kernel to drivers/phy to increase code re-use and to
-increase code maintainability.
+This PATCH v5 follows:
+ * PATCH v4, sent on July, 2nd 2013
+ * PATCH v3, sent on July, 1st 2013
+ * PATCH v2, sent on June, 28th 2013
+ * PATCH v1, sent on June, 28th 2013
 
-Comments to make PHY as bus wasn't done because PHY devices can be part of
-other bus and making a same device attached to multiple bus leads to bad
-design.
+Changes between v4 and v5:
+  * Marked original bindings as deprecated in 'exynos_dp.txt'
+  * Fixed typo of commit message.
+  * Added Tomasz Figa's Reviewed-by.
 
-If the PHY driver has to send notification on connect/disconnect, the PHY
-driver should make use of the extcon framework. Using this susbsystem
-to use extcon framwork will have to be analysed.
+Changes between v3 and v4:
+  * Added OF dependancy.
+  * Removed redundant local variable 'void __iomem *addr'.
+  * Removed unnecessary dev_set_drvdata().
+  * Added a patch that remove non-DT support for Exynos
+    Display Port driver.
+  * Removed unnecessary 'struct exynos_dp_platdata'.
+  * Kept supporting the original bindings for DT compatibility.
 
-Exynos MIPI CSIS/DSIM PHY and Displayport PHY have started using this
-framework. Have included those patches also in this series.
+Changes between v2 and v3:
+  * Removed redundant spinlock
+  * Removed 'struct phy' from 'struct exynos_dp_video_phy'
+  * Updated 'samsung-phy.txt', instead of creating
+    'samsung,exynos5250-dp-video-phy.txt'.
+  * Removed unnecessary additional specifier from 'phys'
+    DT property.
+  * Added 'phys', 'phy-names' properties to 'exynos_dp.txt' file.
+  * Added Felipe Balbi's Acked-by.
 
-twl4030-usb and omap-usb2 have also been adapted to this framework.
+Changes between v1 and v2:
+  * Replaced exynos_dp_video_phy_xlate() with of_phy_simple_xlate(),
+    as Kishon Vijay Abraham I guided.
+  * Set the value of phy-cells as 0, because the phy_provider implements
+    only one PHY.
+  * Removed unnecessary header include.
+  * Added '#ifdef CONFIG_OF' and of_match_ptr macro.
 
-These patches are also available @
-git://gitorious.org/linuxphy/linuxphy.git tags/phy-for-v3.12
+This series depends on the generic PHY framework [1]. These patches
+refer to Sylwester Nawrocki's patches about Exynos MIPI [2].
 
-Jingoo Han (3):
+[1] https://lkml.org/lkml/2013/6/26/259
+[2] http://www.spinics.net/lists/linux-samsung-soc/msg20098.html
+
+Jingoo Han (4):
+  ARM: dts: Add DP PHY node to exynos5250.dtsi
   phy: Add driver for Exynos DP PHY
   video: exynos_dp: remove non-DT support for Exynos Display Port
   video: exynos_dp: Use the generic PHY driver
 
-Kishon Vijay Abraham I (8):
-  drivers: phy: add generic PHY framework
-  usb: phy: omap-usb2: use the new generic PHY framework
-  usb: phy: twl4030: use the new generic PHY framework
-  ARM: OMAP: USB: Add phy binding information
-  ARM: dts: omap: update usb_otg_hs data
-  usb: musb: omap2430: use the new generic PHY framework
-  usb: phy: omap-usb2: remove *set_suspend* callback from omap-usb2
-  usb: phy: twl4030-usb: remove *set_suspend* and *phy_init* ops
-
-Sylwester Nawrocki (4):
-  phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
-  video: exynos_mipi_dsim: Use the generic PHY driver
-  exynos4-is: Use the generic MIPI CSIS PHY driver
-  ARM: Samsung: Remove the MIPI PHY setup code
-
- .../devicetree/bindings/phy/phy-bindings.txt       |   66 +++
- .../devicetree/bindings/phy/samsung-phy.txt        |   22 +
- Documentation/devicetree/bindings/usb/omap-usb.txt |    5 +
- Documentation/devicetree/bindings/usb/usb-phy.txt  |    6 +
- .../devicetree/bindings/video/exynos_dp.txt        |   18 +-
- Documentation/phy.txt                              |  129 +++++
- MAINTAINERS                                        |    7 +
- arch/arm/boot/dts/omap3-beagle-xm.dts              |    2 +
- arch/arm/boot/dts/omap3-evm.dts                    |    2 +
- arch/arm/boot/dts/omap3-overo.dtsi                 |    2 +
- arch/arm/boot/dts/omap4.dtsi                       |    3 +
- arch/arm/boot/dts/twl4030.dtsi                     |    1 +
- arch/arm/mach-exynos/include/mach/regs-pmu.h       |    5 -
- arch/arm/mach-omap2/usb-musb.c                     |    3 +
- arch/arm/mach-s5pv210/include/mach/regs-clock.h    |    4 -
- arch/arm/plat-samsung/Kconfig                      |    5 -
- arch/arm/plat-samsung/Makefile                     |    1 -
- arch/arm/plat-samsung/setup-mipiphy.c              |   60 ---
- drivers/Kconfig                                    |    2 +
- drivers/Makefile                                   |    2 +
- drivers/media/platform/exynos4-is/mipi-csis.c      |   16 +-
- drivers/phy/Kconfig                                |   28 +
- drivers/phy/Makefile                               |    7 +
- drivers/phy/phy-core.c                             |  544 ++++++++++++++++++++
- drivers/phy/phy-exynos-dp-video.c                  |  111 ++++
- drivers/phy/phy-exynos-mipi-video.c                |  169 ++++++
- drivers/usb/musb/Kconfig                           |    1 +
- drivers/usb/musb/musb_core.c                       |    1 +
- drivers/usb/musb/musb_core.h                       |    3 +
- drivers/usb/musb/omap2430.c                        |   26 +-
- drivers/usb/phy/Kconfig                            |    1 +
- drivers/usb/phy/phy-omap-usb2.c                    |   60 ++-
- drivers/usb/phy/phy-twl4030-usb.c                  |   63 ++-
+ .../devicetree/bindings/phy/samsung-phy.txt        |    8 ++
+ .../devicetree/bindings/video/exynos_dp.txt        |   18 +++++++++---------
+ arch/arm/boot/dts/exynos5250.dtsi                  |   13 ++++++++-----
+ drivers/phy/Kconfig                                |    6 ++
+ drivers/phy/Makefile                               |    1 +
+ drivers/phy/phy-exynos-dp-video.c                  |  111 ++++++++++++++++++++
  drivers/video/exynos/Kconfig                       |    2 +-
- drivers/video/exynos/exynos_dp_core.c              |  132 ++---
- drivers/video/exynos/exynos_dp_core.h              |  110 ++++
+ drivers/video/exynos/exynos_dp_core.c              |  132 +++++++----------------------
+ drivers/video/exynos/exynos_dp_core.h              |  110 +++++++++++++++++++++++++++
  drivers/video/exynos/exynos_dp_reg.c               |    2 -
- drivers/video/exynos/exynos_mipi_dsi.c             |   19 +-
- include/linux/phy/phy.h                            |  344 +++++++++++++
- include/linux/platform_data/mipi-csis.h            |   11 +-
- include/linux/usb/musb.h                           |    3 +
- include/video/exynos_dp.h                          |  131 -----
- include/video/exynos_mipi_dsim.h                   |    6 +-
- 43 files changed, 1746 insertions(+), 389 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/phy/phy-bindings.txt
- create mode 100644 Documentation/devicetree/bindings/phy/samsung-phy.txt
- create mode 100644 Documentation/phy.txt
- delete mode 100644 arch/arm/plat-samsung/setup-mipiphy.c
- create mode 100644 drivers/phy/Kconfig
- create mode 100644 drivers/phy/Makefile
- create mode 100644 drivers/phy/phy-core.c
+ include/video/exynos_dp.h                          |  131 ---------------------------------
+ 11 files changed, 291 insertions(+), 243 deletions(-) 
  create mode 100644 drivers/phy/phy-exynos-dp-video.c
- create mode 100644 drivers/phy/phy-exynos-mipi-video.c
- create mode 100644 include/linux/phy/phy.h
  delete mode 100644 include/video/exynos_dp.h
 
--- 
+--
 1.7.10.4
 

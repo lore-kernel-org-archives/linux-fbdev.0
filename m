@@ -1,49 +1,54 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 30 Jul 2013 18:26:13 +0000
-Subject: [PATCH v2 06/24] video: da8xx-fb: store clk rate even if !CPUFREQ
-Message-Id: <1375208791-15781-7-git-send-email-detheridge@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 09 Jul 2013 08:04:10 +0000
+Subject: [PATCH V6 1/4] ARM: dts: Add DP PHY node to exynos5250.dtsi
+Message-Id: <003e01ce7c7a$e519a300$af4ce900$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-From: Afzal Mohammed <afzal@ti.com>
+Add PHY provider node for the DP PHY.
 
-store lcd clk rate always, i.e. irrespective of whether CPUFREQ is
-enabled or not. This can be used to get clk rate directly instead of
-enquiring with clock framework with clk handle every time.
-
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Reviewed-by: Tomasz Figa <t.figa@samsung.com>
+Acked-by: Felipe Balbi <balbi@ti.com>
 ---
- drivers/video/da8xx-fb.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+ arch/arm/boot/dts/exynos5250.dtsi |   13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index d060f14..f1d88ac 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -174,8 +174,8 @@ struct da8xx_fb_par {
- 	unsigned int		which_dma_channel_done;
- #ifdef CONFIG_CPU_FREQ
- 	struct notifier_block	freq_transition;
--	unsigned int		lcd_fck_rate;
- #endif
-+	unsigned int		lcd_fck_rate;
- 	void (*panel_power_ctrl)(int);
- 	u32 pseudo_palette[16];
- 	struct fb_videomode	mode;
-@@ -1302,9 +1302,7 @@ static int fb_probe(struct platform_device *device)
+diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
+index fc9fb3d..c326c06 100644
+--- a/arch/arm/boot/dts/exynos5250.dtsi
++++ b/arch/arm/boot/dts/exynos5250.dtsi
+@@ -616,6 +616,12 @@
+ 		interrupts = <0 94 0>;
+ 	};
  
- 	par = da8xx_fb_info->par;
- 	par->lcdc_clk = fb_clk;
--#ifdef CONFIG_CPU_FREQ
- 	par->lcd_fck_rate = clk_get_rate(fb_clk);
--#endif
- 	par->pxl_clk = lcdc_info->pixclock;
- 	if (fb_pdata->panel_power_ctrl) {
- 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
++	dp_phy: video-phy@10040720 {
++		compatible = "samsung,exynos5250-dp-video-phy";
++		reg = <0x10040720 4>;
++		#phy-cells = <0>;
++	};
++
+ 	dp-controller {
+ 		compatible = "samsung,exynos5-dp";
+ 		reg = <0x145b0000 0x1000>;
+@@ -623,11 +629,8 @@
+ 		interrupt-parent = <&combiner>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-
+-		dptx-phy {
+-			reg = <0x10040720>;
+-			samsung,enable-mask = <1>;
+-		};
++		phys = <&dp_phy>;
++		phy-names = "dp";
+ 	};
+ 
+ 	fimd {
 -- 
-1.7.0.4
+1.7.10.4
+
 

@@ -1,122 +1,89 @@
-From: Felipe Balbi <balbi@ti.com>
-Date: Wed, 31 Jul 2013 06:15:38 +0000
-Subject: Re: [PATCH 01/15] drivers: phy: add generic PHY framework
-Message-Id: <20130731061538.GC13289@radagast>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="5QAgd0e35j3NYeGe"
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 09 Jul 2013 08:03:35 +0000
+Subject: [PATCH V6 0/4] Generic PHY driver for the Exynos SoC DP PHY
+Message-Id: <003d01ce7c7a$d04043d0$70c0cb70$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130720220006.GA7977@kroah.com> <3839600.WiC1OLF35o@flatron>
- <51EBC0F5.70601@ti.com> <9748041.Qq1fWJBg6D@flatron>
- <20130721154653.GG16598@kroah.com>
- <20130730071106.GC16441@radagast> <51F8A440.8010803@ti.com>
-In-Reply-To: <51F8A440.8010803@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---5QAgd0e35j3NYeGe
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch series adds a simple driver for the Samsung Exynos SoC
+series DP transmitter PHY, using the generic PHY framework [1].
+Previously the DP PHY used an internal DT node to control the PHY
+power enable bit.
 
-Hi,
+These patches was tested on Exynos5250.
 
-On Wed, Jul 31, 2013 at 11:14:32AM +0530, Kishon Vijay Abraham I wrote:
-> >>>>> IMHO we need a lookup method for PHYs, just like for clocks,
-> >>>>> regulators, PWMs or even i2c busses because there are complex cases
-> >>>>> when passing just a name using platform data will not work. I would
-> >>>>> second what Stephen said [1] and define a structure doing things in=
- a
-> >>>>> DT-like way.
-> >>>>>
-> >>>>> Example;
-> >>>>>
-> >>>>> [platform code]
-> >>>>>
-> >>>>> static const struct phy_lookup my_phy_lookup[] =3D {
-> >>>>>
-> >>>>> 	PHY_LOOKUP("s3c-hsotg.0", "otg", "samsung-usbphy.1", "phy.2"),
-> >>>>
-> >>>> The only problem here is that if *PLATFORM_DEVID_AUTO* is used while
-> >>>> creating the device, the ids in the device name would change and
-> >>>> PHY_LOOKUP wont be useful.
-> >>>
-> >>> I don't think this is a problem. All the existing lookup methods alre=
-ady=20
-> >>> use ID to identify devices (see regulators, clkdev, PWMs, i2c, ...). =
-You=20
-> >>> can simply add a requirement that the ID must be assigned manually,=
-=20
-> >>> without using PLATFORM_DEVID_AUTO to use PHY lookup.
-> >>
-> >> And I'm saying that this idea, of using a specific name and id, is
-> >> frought with fragility and will break in the future in various ways wh=
-en
-> >> devices get added to systems, making these strings constantly have to =
-be
-> >> kept up to date with different board configurations.
-> >>
-> >> People, NEVER, hardcode something like an id.  The fact that this
-> >> happens today with the clock code, doesn't make it right, it makes the
-> >> clock code wrong.  Others have already said that this is wrong there as
-> >> well, as systems change and dynamic ids get used more and more.
-> >>
-> >> Let's not repeat the same mistakes of the past just because we refuse =
-to
-> >> learn from them...
-> >>
-> >> So again, the "find a phy by a string" functions should be removed, the
-> >> device id should be automatically created by the phy core just to make
-> >> things unique in sysfs, and no driver code should _ever_ be reliant on
-> >> the number that is being created, and the pointer to the phy structure
-> >> should be used everywhere instead.
-> >>
-> >> With those types of changes, I will consider merging this subsystem, b=
-ut
-> >> without them, sorry, I will not.
-> >=20
-> > I'll agree with Greg here, the very fact that we see people trying to
-> > add a requirement of *NOT* using PLATFORM_DEVID_AUTO already points to a
-> > big problem in the framework.
-> >=20
-> > The fact is that if we don't allow PLATFORM_DEVID_AUTO we will end up
-> > adding similar infrastructure to the driver themselves to make sure we
-> > don't end up with duplicate names in sysfs in case we have multiple
-> > instances of the same IP in the SoC (or several of the same PCIe card).
-> > I really don't want to go back to that.
->=20
-> If we are using PLATFORM_DEVID_AUTO, then I dont see any way we can give =
-the
-> correct binding information to the PHY framework. I think we can drop hav=
-ing
-> this non-dt support in PHY framework? I see only one platform (OMAP3) goi=
-ng to
-> be needing this non-dt support and we can use the USB PHY library for it.
+This PATCH v6 follows:
+ * PATCH v5, sent on July, 8th 2013
+ * PATCH v4, sent on July, 2nd 2013
+ * PATCH v3, sent on July, 1st 2013
+ * PATCH v2, sent on June, 28th 2013
+ * PATCH v1, sent on June, 28th 2013
 
-you shouldn't drop support for non-DT platform, in any case we lived
-without DT (and still do) for years. Gotta find a better way ;-)
+Changes between v5 and v6:
+  * Re-based on git://gitorious.org/linuxphy/linuxphy.git
 
---=20
-balbi
+Changes between v4 and v5:
+  * Marked original bindings as deprecated in 'exynos_dp.txt'
+  * Fixed typo of commit message.
+  * Added Tomasz Figa's Reviewed-by.
 
---5QAgd0e35j3NYeGe
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Changes between v3 and v4:
+  * Added OF dependancy.
+  * Removed redundant local variable 'void __iomem *addr'.
+  * Removed unnecessary dev_set_drvdata().
+  * Added a patch that remove non-DT support for Exynos
+    Display Port driver.
+  * Removed unnecessary 'struct exynos_dp_platdata'.
+  * Kept supporting the original bindings for DT compatibility.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Changes between v2 and v3:
+  * Removed redundant spinlock
+  * Removed 'struct phy' from 'struct exynos_dp_video_phy'
+  * Updated 'samsung-phy.txt', instead of creating
+    'samsung,exynos5250-dp-video-phy.txt'.
+  * Removed unnecessary additional specifier from 'phys'
+    DT property.
+  * Added 'phys', 'phy-names' properties to 'exynos_dp.txt' file.
+  * Added Felipe Balbi's Acked-by.
 
-iQIcBAEBAgAGBQJR+KuKAAoJEIaOsuA1yqREE/MQAKN7wAutlqEQhh/2yyHsehtl
-jdfoMN8pAOKD1Fs5TUwItJKRs00jIggDrlU9rl1xet+ZaBykobKzILmF5HTsHaQc
-z4ku41vMrAbgCn4LXMtLQwVWSGPTXcic9a8HLyOwdzxNwkGG7bIo62TO/kPVCMKa
-wEmbdeSbq2DTtNX+cPwE0AmJlpTyNejD+f03xfG27qpNclbaxBZlQGAvq8xDlfuU
-rueYU+4xnEgdC8ZrhNF6RWkke/haJgoy3qQjOchYflSkjeyX9gKypaPKGaA87Bu+
-z1NTYMZv6fLiCtAmpUYb05C13G2eoi2EXDVYYZg1OA9GaHDtg9J9+DiUzPpSD2Od
-fbF9ZH4EB8cwFN4SilLJjhn1ESJaMqCHuOugqXTgJD6md+k0nBX3yAkrnyCbbhIr
-4/E7TnWFar+xXGDKu2DufWYZByn5/WtYG8K0T9QJyFZyMV+X67Qz02iIrBBORST3
-3NnejtvQ84NMiy5N1Cp5M0ucHaBvoS4ic3uvhB33T8GIgZuSqr78dnWmbvsNpEI3
-gv/9z1OvuvXNcvoFiLYmGhs0b5+4xbU2qmoxfDjdUEw/JNmksf+8QGS8JYSbgu9X
-PO+W2yI5+6rWvhWy14+x/aS7Ew613pYWYiA8j9W0X9Idby88cKbN346U8zWGNovP
-tj3EzocBdvt4pr9XngYP
-=5yv8
------END PGP SIGNATURE-----
+Changes between v1 and v2:
+  * Replaced exynos_dp_video_phy_xlate() with of_phy_simple_xlate(),
+    as Kishon Vijay Abraham I guided.
+  * Set the value of phy-cells as 0, because the phy_provider implements
+    only one PHY.
+  * Removed unnecessary header include.
+  * Added '#ifdef CONFIG_OF' and of_match_ptr macro.
 
---5QAgd0e35j3NYeGe--
+This series depends on the generic PHY framework [1]. These patches
+refer to Sylwester Nawrocki's patches about Exynos MIPI [2].
+
+[1] https://lkml.org/lkml/2013/6/26/259
+[2] http://www.spinics.net/lists/linux-samsung-soc/msg20098.html
+
+Jingoo Han (4):
+  ARM: dts: Add DP PHY node to exynos5250.dtsi
+  phy: Add driver for Exynos DP PHY
+  video: exynos_dp: remove non-DT support for Exynos Display Port
+  video: exynos_dp: Use the generic PHY driver
+
+ .../devicetree/bindings/phy/samsung-phy.txt        |    8 ++
+ .../devicetree/bindings/video/exynos_dp.txt        |   18 +++++++++---------
+ arch/arm/boot/dts/exynos5250.dtsi                  |   13 ++++++++-----
+ drivers/phy/Kconfig                                |    6 ++
+ drivers/phy/Makefile                               |    1 +
+ drivers/phy/phy-exynos-dp-video.c                  |  111 ++++++++++++++++++++
+ drivers/video/exynos/Kconfig                       |    2 +-
+ drivers/video/exynos/exynos_dp_core.c              |  132 +++++++----------------------
+ drivers/video/exynos/exynos_dp_core.h              |  110 +++++++++++++++++++++++++++
+ drivers/video/exynos/exynos_dp_reg.c               |    2 -
+ include/video/exynos_dp.h                          |  131 ---------------------------------
+ 11 files changed, 291 insertions(+), 243 deletions(-) 
+ create mode 100644 drivers/phy/phy-exynos-dp-video.c
+ delete mode 100644 include/video/exynos_dp.h
+
+--
+1.7.10.4
+

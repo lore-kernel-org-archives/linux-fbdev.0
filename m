@@ -1,76 +1,83 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 26 Jul 2013 07:57:12 +0000
-Subject: Re: [PATCH] video: nuc900fb: fix to pass correct device identity to request_irq()
-Message-Id: <51F22BD8.8090604@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="1R53lFxn3r7vvK4IGcdVtAmwxWTrnwjgu"
+From: Inki Dae <inki.dae@samsung.com>
+Date: Wed, 10 Jul 2013 11:58:47 +0000
+Subject: [RFC PATCH v1 2/2] dma-buf: add lock callback for fcntl system call.
+Message-Id: <1373457527-28263-3-git-send-email-inki.dae@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAPgLHd9CZ=VponJTbTGKTXVTdvMQM6_T+-RWuPMrk0WYZPbW1Q@mail.gmail.com>
-In-Reply-To: <CAPgLHd9CZ=VponJTbTGKTXVTdvMQM6_T+-RWuPMrk0WYZPbW1Q@mail.gmail.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <1373457527-28263-1-git-send-email-inki.dae@samsung.com>
+In-Reply-To: <1373457527-28263-1-git-send-email-inki.dae@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
+Cc: maarten.lankhorst@canonical.com, daniel@ffwll.ch, robdclark@gmail.com, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, yj44.cho@samsung.com, Inki Dae <inki.dae@samsung.com>
 
---1R53lFxn3r7vvK4IGcdVtAmwxWTrnwjgu
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This patch adds lock callback to dma buf file operations,
+and this callback will be called by fcntl system call.
 
-On 16/07/13 03:07, Wei Yongjun wrote:
-> The IRQ handler nuc900fb_irqhandler() use dev_id as a type of
-> struct nuc900fb_info *, so we should pass fbi as the device
-> identity to request_irq().
->=20
-> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
-> ---
-> Was 'video: nuc900fb: fix to pass correct device identity to free_irq()=
-'
-> ---
->  drivers/video/nuc900fb.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->=20
-> diff --git a/drivers/video/nuc900fb.c b/drivers/video/nuc900fb.c
-> index 8c527e5..796e511 100644
-> --- a/drivers/video/nuc900fb.c
-> +++ b/drivers/video/nuc900fb.c
-> @@ -587,8 +587,7 @@ static int nuc900fb_probe(struct platform_device *p=
-dev)
->  	fbinfo->flags			=3D FBINFO_FLAG_DEFAULT;
->  	fbinfo->pseudo_palette		=3D &fbi->pseudo_pal;
-> =20
-> -	ret =3D request_irq(irq, nuc900fb_irqhandler, 0,
-> -			  pdev->name, fbinfo);
-> +	ret =3D request_irq(irq, nuc900fb_irqhandler, 0, pdev->name, fbi);
->  	if (ret) {
->  		dev_err(&pdev->dev, "cannot register irq handler %d -err %d\n",
->  			irq, ret);
->=20
+With this patch, fcntl system call can be used for buffer
+synchronization between CPU and CPU, and CPU and DMA in user mode.
 
-Thanks, I've applied this into my 3.11-fixes/fbdev branch.
+Signed-off-by: Inki Dae <inki.dae@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ drivers/base/dma-buf.c |   34 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 34 insertions(+), 0 deletions(-)
 
- Tomi
+diff --git a/drivers/base/dma-buf.c b/drivers/base/dma-buf.c
+index fe39120..cd71447 100644
+--- a/drivers/base/dma-buf.c
++++ b/drivers/base/dma-buf.c
+@@ -31,6 +31,7 @@
+ #include <linux/debugfs.h>
+ #include <linux/seq_file.h>
+ #include <linux/reservation.h>
++#include <linux/dmabuf-sync.h>
+ 
+ static inline int is_dma_buf_file(struct file *);
+ 
+@@ -82,9 +83,42 @@ static int dma_buf_mmap_internal(struct file *file, struct vm_area_struct *vma)
+ 	return dmabuf->ops->mmap(dmabuf, vma);
+ }
+ 
++static int dma_buf_lock(struct file *file, int cmd, struct file_lock *fl)
++{
++	struct dma_buf *dmabuf;
++	unsigned int type;
++	bool wait = false;
++
++	if (!is_dma_buf_file(file))
++		return -EINVAL;
++
++	dmabuf = file->private_data;
++
++	if ((fl->fl_type & F_UNLCK) = F_UNLCK) {
++		dmabuf_sync_single_unlock(dmabuf);
++		return 0;
++	}
++
++	/* convert flock type to dmabuf sync type. */
++	if ((fl->fl_type & F_WRLCK) = F_WRLCK)
++		type = DMA_BUF_ACCESS_W;
++	else if ((fl->fl_type & F_RDLCK) = F_RDLCK)
++		type = DMA_BUF_ACCESS_R;
++	else
++		return -EINVAL;
++
++	if (fl->fl_flags & FL_SLEEP)
++		wait = true;
++
++	/* TODO. the locking to certain region should also be considered. */
++
++	return dmabuf_sync_single_lock(dmabuf, type, wait);
++}
++
+ static const struct file_operations dma_buf_fops = {
+ 	.release	= dma_buf_release,
+ 	.mmap		= dma_buf_mmap_internal,
++	.lock		= dma_buf_lock,
+ };
+ 
+ /*
+-- 
+1.7.5.4
 
-
-
---1R53lFxn3r7vvK4IGcdVtAmwxWTrnwjgu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJR8ivYAAoJEPo9qoy8lh71V5cP/2zl9qXcDwyRJRkzYMsH2fau
-KgJqIUOaYhwAnN13w9OhkzdXApNAQ4XJi2wNZLb4gCbjN7dUPK/r0tqWpDKg1Iyj
-IYKNKxW7rd2pAsgQbKT30XkpRIF4PNrLDi7qGpqyeQYQFPnEdgzEXqw6Tvd/ShDI
-Ax6nohMdC/t2xNJDJUfOuR/9/x0hiQw3UaeHUfHDmL3wIiRv+vhJ4SBYjz4epEnF
-+BDwiCVQG8/veipKRLxlxGr049obZRtCz3o5vdG51Jmi4rPKW7NGZKnHFUS4Z8TS
-RtzxaujxJOUVZz2QXsh/FdaxDMk3m+JE/QPLOKpOyBXNYMXPNY5phTQYNmDbURUg
-gn+wSI7ay6LI93WowSc5Gm9t2y/yo7RqCao087D55dkK3a6DRavn3tSonEWpzRbE
-NQc3O8BWMm7ZISoJffIRbdA5w4L0KMWsuT2EhRYnu8c7PT7aoK2PkssfdWqEO6wT
-cU9Ws5cXod8K2lPUZKg1uFGrqWuiV4urpofZTifOFA3vgqev2Y5Oz0EsKeQw880t
-RPQdnwZ1yCfNKNEhLwpkpLJUS2/ZCngZHB/8e2Y8dA29DKxTiZgO5Dk8OCegVAH3
-9L8Mg+TeBc/cGYzdgQgLuDmSwtrDdXPAamKkG2rOnNpjaqBhRd1Yz25FiH2/Oy6K
-wY+H9ENSEKqyOnl0TA/t
-=7McZ
------END PGP SIGNATURE-----
-
---1R53lFxn3r7vvK4IGcdVtAmwxWTrnwjgu--

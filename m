@@ -1,56 +1,58 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Date: Fri, 26 Jul 2013 12:54:58 +0000
-Subject: [PATCH v10 4/8] arm: omap3: twl: add phy consumer data in twl4030_usb_data
-Message-Id: <1374842582-13242-5-git-send-email-kishon@ti.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Date: Wed, 10 Jul 2013 15:57:47 +0000
+Subject: [PATCH 12/12] drivers/video: don't use devm_pinctrl_get_select_default() in probe
+Message-Id: <1373471889-18107-12-git-send-email-wsa@the-dreams.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1374842582-13242-1-git-send-email-kishon@ti.com>
-In-Reply-To: <1374842582-13242-1-git-send-email-kishon@ti.com>
+References: <1373471889-18107-1-git-send-email-wsa@the-dreams.de>
+In-Reply-To: <1373471889-18107-1-git-send-email-wsa@the-dreams.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: Wolfram Sang <wsa@the-dreams.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-The PHY framework uses the phy consumer data populated in platform data in the
-case of non-dt boot to return the reference to the PHY when the controller
-(PHY consumer) requests for it. So populated the phy consumer data in the platform
-data of twl usb.
+Since commit ab78029 (drivers/pinctrl: grab default handles from device core),
+we can rely on device core for setting the default pins. Compile tested only.
 
-Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+Acked-by: Linus Walleij <linus.walleij@linaro.org> (personally at LCE13)
+Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
 ---
- arch/arm/mach-omap2/twl-common.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/video/mxsfb.c |    8 --------
+ 1 file changed, 8 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/twl-common.c b/arch/arm/mach-omap2/twl-common.c
-index c05898f..b0d54da 100644
---- a/arch/arm/mach-omap2/twl-common.c
-+++ b/arch/arm/mach-omap2/twl-common.c
-@@ -24,6 +24,7 @@
- #include <linux/i2c/twl.h>
- #include <linux/gpio.h>
- #include <linux/string.h>
-+#include <linux/phy/phy.h>
- #include <linux/regulator/machine.h>
- #include <linux/regulator/fixed.h>
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 3ba3771..5861ba2 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -46,7 +46,6 @@
+ #include <linux/clk.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/io.h>
+-#include <linux/pinctrl/consumer.h>
+ #include <linux/fb.h>
+ #include <linux/regulator/consumer.h>
+ #include <video/of_display_timing.h>
+@@ -877,7 +876,6 @@ static int mxsfb_probe(struct platform_device *pdev)
+ 	struct mxsfb_info *host;
+ 	struct fb_info *fb_info;
+ 	struct fb_modelist *modelist;
+-	struct pinctrl *pinctrl;
+ 	int ret;
  
-@@ -90,8 +91,18 @@ void __init omap_pmic_late_init(void)
- }
+ 	if (of_id)
+@@ -908,12 +906,6 @@ static int mxsfb_probe(struct platform_device *pdev)
  
- #if defined(CONFIG_ARCH_OMAP3)
-+struct phy_consumer consumers[] = {
-+	PHY_CONSUMER("musb-hdrc.0", "usb"),
-+};
-+
-+struct phy_init_data init_data = {
-+	.consumers = consumers,
-+	.num_consumers = ARRAY_SIZE(consumers),
-+};
-+
- static struct twl4030_usb_data omap3_usb_pdata = {
- 	.usb_mode	= T2_USB_MODE_ULPI,
-+	.init_data	= &init_data,
- };
+ 	host->devdata = &mxsfb_devdata[pdev->id_entry->driver_data];
  
- static int omap3_batt_table[] = {
+-	pinctrl = devm_pinctrl_get_select_default(&pdev->dev);
+-	if (IS_ERR(pinctrl)) {
+-		ret = PTR_ERR(pinctrl);
+-		goto fb_release;
+-	}
+-
+ 	host->clk = devm_clk_get(&host->pdev->dev, NULL);
+ 	if (IS_ERR(host->clk)) {
+ 		ret = PTR_ERR(host->clk);
 -- 
 1.7.10.4
 

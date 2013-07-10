@@ -1,41 +1,34 @@
-From: Chen Gang <gang.chen@asianux.com>
-Date: Mon, 22 Jul 2013 08:45:33 +0000
-Subject: [PATCH] drivers: video: i740fb: add 'default' processing contents for 'switch'.
-Message-Id: <51ECF12D.8060903@asianux.com>
+From: Luis Henriques <luis.henriques@canonical.com>
+Date: Wed, 10 Jul 2013 22:57:00 +0000
+Subject: [PATCH] vga16fb: Remove unused variable
+Message-Id: <20130710225659.GA14107@hercules>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: linux-fbdev@vger.kernel.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-kernel@vger.kernel.org
 
-Need add related 'default' processing contents for 'switch', or may
-report 'wm' uninitialized warning.
+Fix build warning of unused variable:
 
-The related warning:
+drivers/video/vga16fb.c:1268:26: warning: unused variable ‘dev’ [-Wunused-variable]
 
-  drivers/video/i740fb.c:662:26: warning: =91wm=92 may be used uninitialize=
-d in this function [-Wmaybe-uninitialized]
-
-
-Signed-off-by: Chen Gang <gang.chen@asianux.com>
+Signed-off-by: Luis Henriques<luis.henriques@canonical.com>
 ---
- drivers/video/i740fb.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ drivers/video/vga16fb.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/i740fb.c b/drivers/video/i740fb.c
-index 6c48388..e82e767 100644
---- a/drivers/video/i740fb.c
-+++ b/drivers/video/i740fb.c
-@@ -336,6 +336,9 @@ static u32 i740_calc_fifo(struct i740fb_par *par, u32 f=
-req, int bpp)
- 				wm =3D 0x16110000;
- 		}
- 		break;
-+	default:
-+		wm =3D 0;
-+		BUG();
- 	}
-=20
- 	return wm;
---=20
-1.7.7.6
+diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
+index 830ded4..2827333 100644
+--- a/drivers/video/vga16fb.c
++++ b/drivers/video/vga16fb.c
+@@ -1265,7 +1265,6 @@ static void vga16fb_imageblit(struct fb_info *info, const struct fb_image *image
+ 
+ static void vga16fb_destroy(struct fb_info *info)
+ {
+-	struct platform_device *dev = container_of(info->device, struct platform_device, dev);
+ 	iounmap(info->screen_base);
+ 	fb_dealloc_cmap(&info->cmap);
+ 	/* XXX unshare VGA regions */
+-- 
+1.8.1.2

@@ -1,15 +1,29 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Tue, 09 Jul 2013 13:40:33 +0000
-Subject: Re: [PATCH 1/1] OMAPDSS: Add sil9022 driver
-Message-Id: <20130709134033.GD18477@ns203013.ovh.net>
+From: "Pulukuru, Srinivas" <srinivas.pulukuru@ti.com>
+Date: Thu, 11 Jul 2013 16:41:44 +0000
+Subject: RE: [PATCH 1/1] OMAPDSS: Add sil9022 driver
+Message-Id: <6B0534680D2FD94CBFB7D4D393BBE0145D1A366A@DLEE11.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1373360825-25170-1-git-send-email-sathyap@ti.com>
-In-Reply-To: <1373360825-25170-1-git-send-email-sathyap@ti.com>
+ <20130709134033.GD18477@ns203013.ovh.net>
+In-Reply-To: <20130709134033.GD18477@ns203013.ovh.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sathya Prakash M R <sathyap@ti.com>
-Cc: tomi.valkeinen@ti.com, archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Srinivas Pulukuru <srinivas.pulukuru@ti.com>
+To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, "Prakash, Sathya" <sathyap@ti.com>
+Cc: "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, "Taneja, Archit" <archit@ti.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+
+THis was a demo patch done to enable basic HDMI display on OMAP3 which somehow got pushed into the regular builds on OMAP3 deliverables and has since been floating around. This is not a production code that can be upstreamed. Please abandon this patch and do not up-stream in the present form. Except basic display via HDMI, there is no other functionality in this patch.
+
+Regards,
+Srinivas Pulukuru
+
+
+-----Original Message-----
+From: Jean-Christophe PLAGNIOL-VILLARD [mailto:plagnioj@jcrosoft.com] 
+Sent: Tuesday, July 09, 2013 8:41 AM
+To: Prakash, Sathya
+Cc: Valkeinen, Tomi; Taneja, Archit; linux-omap@vger.kernel.org; linux-fbdev@vger.kernel.org; Pulukuru, Srinivas
+Subject: Re: [PATCH 1/1] OMAPDSS: Add sil9022 driver
 
 HI,
 

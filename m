@@ -1,65 +1,83 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 30 Jul 2013 05:45:52 +0000
-Subject: Re: [PATCH v2 6/9] ARM: msm: Move mach/board.h contents to common.h
-Message-Id: <51F75310.80403@ti.com>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Fri, 12 Jul 2013 09:11:23 +0000
+Subject: Re: [PATCH 1/2] fb: backlight: HX8357: Make IM pins optionnal
+Message-Id: <20130712091123.GD24370@lukather>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="oSWxht7BdBMDRN90cjdRcajElqLPj08jB"
+Content-Type: multipart/mixed; boundary="yudcn1FV7Hsu/q59"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1374699274-18388-1-git-send-email-sboyd@codeaurora.org>
- <1374699274-18388-7-git-send-email-sboyd@codeaurora.org>
- <20130729202031.GA20694@codeaurora.org>
-In-Reply-To: <20130729202031.GA20694@codeaurora.org>
-To: linux-arm-kernel@lists.infradead.org
+References: <1371839259-543-1-git-send-email-alexandre.belloni@free-electrons.com>
+ <20130624142645.GG305@game.jcrosoft.org>
+ <20130625135015.GM26008@lukather>
+In-Reply-To: <20130625135015.GM26008@lukather>
+To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-fbdev@vger.kernel.org, jimwall@q.com, brian@crystalfontz.com, linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
---oSWxht7BdBMDRN90cjdRcajElqLPj08jB
-Content-Type: text/plain; charset=ISO-8859-1
+
+--yudcn1FV7Hsu/q59
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On 29/07/13 23:20, David Brown wrote:
-> On Wed, Jul 24, 2013 at 01:54:31PM -0700, Stephen Boyd wrote:
->> The contents of mach/board.h are only used by files within
->> mach-msm so there is no need to export this file outside of the
->> mach-msm directory. Move the contents of the file to common.h to
->> allow us to compile MSM in the multi-platform kernel.
->>
->> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
->> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
->> ---
->> drivers/video/msm/msm_fb.c             |  1 -
+On Tue, Jun 25, 2013 at 03:50:15PM +0200, Maxime Ripard wrote:
+> > >  };
+> > > =20
+> > >  static u8 hx8357_seq_power[] =3D {
+> > > @@ -250,9 +251,11 @@ static int hx8357_lcd_init(struct lcd_device *lc=
+dev)
+> > >  	 * Set the interface selection pins to SPI mode, with three
+> > >  	 * wires
+> > >  	 */
+> > > -	gpio_set_value_cansleep(lcd->im_pins[0], 1);
+> > > -	gpio_set_value_cansleep(lcd->im_pins[1], 0);
+> > > -	gpio_set_value_cansleep(lcd->im_pins[2], 1);
+> > > +	if (lcd->use_im_pins) {
+> > > +		gpio_set_value_cansleep(lcd->im_pins[0], 1);
+> > > +		gpio_set_value_cansleep(lcd->im_pins[1], 0);
+> > > +		gpio_set_value_cansleep(lcd->im_pins[2], 1);
+> > > +	}
+> >=20
+> > base on the dt probe you may have gpios betwee 0 to HX8357_NUM_IM_PINS
+> >=20
+> > so this look wrong
 >=20
-> It'd be nice to get a framebuffer Ack from this part.
+> How so?
 >=20
-> original patch:
->  https://patchwork.kernel.org/patch/2833029/
+> HX8357_NUM_IM_PINS is defined to 3, the probe checks to see if we
+> actually have HX8357_NUM_IM_PINS, otherwise returns an error, what is
+> wrong in setting these pins here?
 
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Ping?
 
- Tom
+I'd really like to get this merged, could you clarify what you want?
 
+Thanks,
+Maxime
 
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
 
---oSWxht7BdBMDRN90cjdRcajElqLPj08jB
+--yudcn1FV7Hsu/q59
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJR91MTAAoJEPo9qoy8lh71W3YP/j9eg2vIUmATSMZYE4qsALEq
-/0Cdd9WlKmomcoSDkhXFHs9WNoqyAMUluKDdAlqMsKlf80KgmqH4+XZYmGYTNkL1
-VE1XZOPNLFclItjVbrVdxJu1vjnAp38GoETpZGAuU8Sg0jXqOONsndKOjXiLGlVG
-HrZBFnFvIEVg0BU2SHqHvVSbPRON1t6OcvfR83H0KE4OoF39WvFLgqKEAjYmuAdc
-8cCmJOqgS3jHZMy1TB9LfWWuXSxOfbZZMvyPvHcKxX5i/VGwpNQRrAxU9npE/wxz
-LPLeqfa+V+IV3tmBKyHHjCvYX0suLda8No/Xcwhgiwj5pD0771VenCE0s+N81Mkj
-YhpMLTAPh1pH7VW8B+PVqBetqi2EvakCzTrlQRKckt1ddo33csyj1DjiDWXJX9FB
-Ie4TzRW2MAfA0t7roUvidtHAvID/zkc3EojfuxBKJnHVXBJSb4kBM0D1UgR3BYD8
-3kbWq3ZObTEi0XY+dVDBCWFXSz3C0Qa0GnRRNkfY8NtoArdI+otaggDiwAxHlBvp
-ScjHHae9zOsoR29xOezRQQpI45Zv6ZcEaSilmgnv5Ye6dI17atALZp9hPpTdXDaS
-ZoLxCsfFv53jfbxSJQ882/ieZHLXxB4MKEunvcLvzTShYJ4mmxS6RVr80SAIV3Ts
-vT7ov9h8C1xs5J5PvbX4
-=Fk6k
+iQIcBAEBAgAGBQJR38g7AAoJEBx+YmzsjxAgrnMP/RsfQfsHqKBBJw7JTI6aMYKA
+Cqht8j7s80/zr4EnKzWbmsBpxLhdkZ+8jthYOsk+USEWhLYyO1IK0LmVrygpL+jg
+KVU3R0GYkNYaTLIJhhah/RV53mZNuCuklLppJzMotWOIOJYQGU2HIEL/LcdZhtdI
+qhpLe10V/2TiqM4LVv7cV1mEDiQ9oGJLXBJJ0cieJwGPrxyFJg0IIoISHsvTGty2
+w2POECARnXoHqfytXshrWq5pubU2BJ5X4A90taHNQ6/SrvJB/ra7qAI2l+TwTcMu
+xIKbAm8XSz5wfur1DNgsH0O6VSiMYhuqHza4Pex1d5zu33/53YUdqGa9t7W5Jvl1
+nWflGIogu9wOntPsW6Y6HxHYzr3f2u5OxZVAoisGAFCg4qS+sC/kdlISIULeraCT
+HmKbZl+B0gYbVQRAdCx+nUmxZ6ZUuY51NUUJ7axLWLMrbCF2aLYfH0rz4hu6jWtj
+LG+FYI0Al4qWdisObCK46Mmfq+sG7S1Hf1ppFtqUDG4sTlYzX4bZ1LO+Wl+yqjBp
+witiSADGZQCfWCrZ/JQdtP0rQp2FJr+HV1xjdQuJ5pNaIjCzFgc6v7MmDfIHldqi
+sLJf3uhAtMRmvMAOGektt5wk4HD5PNW9H11YcxQ9UW2qgnTtXTEjI2xhpcGjuzKj
+mfnA1lqjaqvpjiY5Uf34
+=DiKc
 -----END PGP SIGNATURE-----
 
---oSWxht7BdBMDRN90cjdRcajElqLPj08jB--
+--yudcn1FV7Hsu/q59--

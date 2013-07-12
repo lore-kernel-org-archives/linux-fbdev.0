@@ -1,7 +1,7 @@
 From: Randy Dunlap <rdunlap@infradead.org>
-Date: Tue, 02 Jul 2013 15:50:03 +0000
+Date: Fri, 12 Jul 2013 20:11:11 +0000
 Subject: Re: [patch -next] fb: fix recent breakage in correct_chipset()
-Message-Id: <51D2F6AB.2090109@infradead.org>
+Message-Id: <51E062DF.5080801@infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20130702062821.GC24410@elgon.mountain>
 In-Reply-To: <20130702062821.GC24410@elgon.mountain>
@@ -14,11 +14,16 @@ On 07/01/13 23:28, Dan Carpenter wrote:
 > The 6e36308a6f "fb: fix atyfb build warning" isn't right.  It makes all
 > the indexes off by one.  This patch reverts it and casts the
 > ARRAY_SIZE() to int to silence the build warning.
-
-Argh.  Thanks.
-
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 > 
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+
+Tomi,
+
+My incorrect patch has been merged into mainline.
+Please merge Dan's fix for it instead.
+
+Thanks.
+
 > diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
 > index a89c15d..9b0f12c 100644
 > --- a/drivers/video/aty/atyfb_base.c

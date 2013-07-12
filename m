@@ -1,15 +1,15 @@
 From: Inki Dae <inki.dae@samsung.com>
-Date: Wed, 10 Jul 2013 11:58:47 +0000
-Subject: [RFC PATCH v1 2/2] dma-buf: add lock callback for fcntl system call.
-Message-Id: <1373457527-28263-3-git-send-email-inki.dae@samsung.com>
+Date: Fri, 12 Jul 2013 06:12:46 +0000
+Subject: [RFC PATCH v1 2/2] dma-buf: add lock callback for fcntl system call
+Message-Id: <1373609566-10784-3-git-send-email-inki.dae@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1373457527-28263-1-git-send-email-inki.dae@samsung.com>
-In-Reply-To: <1373457527-28263-1-git-send-email-inki.dae@samsung.com>
+References: <1373609566-10784-1-git-send-email-inki.dae@samsung.com>
+In-Reply-To: <1373609566-10784-1-git-send-email-inki.dae@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
-Cc: maarten.lankhorst@canonical.com, daniel@ffwll.ch, robdclark@gmail.com, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, yj44.cho@samsung.com, Inki Dae <inki.dae@samsung.com>
+Cc: maarten.lankhorst@canonical.com, daniel@ffwll.ch, robdclark@gmail.com, sumit.semwal@linaro.org, linux@arm.linux.org.uk, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, yj44.cho@samsung.com, Inki Dae <inki.dae@samsung.com>
 
 This patch adds lock callback to dma buf file operations,
 and this callback will be called by fcntl system call.
@@ -20,22 +20,14 @@ synchronization between CPU and CPU, and CPU and DMA in user mode.
 Signed-off-by: Inki Dae <inki.dae@samsung.com>
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/base/dma-buf.c |   34 ++++++++++++++++++++++++++++++++++
- 1 files changed, 34 insertions(+), 0 deletions(-)
+ drivers/base/dma-buf.c |   33 +++++++++++++++++++++++++++++++++
+ 1 files changed, 33 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/base/dma-buf.c b/drivers/base/dma-buf.c
-index fe39120..cd71447 100644
+index 9a26981..e1b8583 100644
 --- a/drivers/base/dma-buf.c
 +++ b/drivers/base/dma-buf.c
-@@ -31,6 +31,7 @@
- #include <linux/debugfs.h>
- #include <linux/seq_file.h>
- #include <linux/reservation.h>
-+#include <linux/dmabuf-sync.h>
- 
- static inline int is_dma_buf_file(struct file *);
- 
-@@ -82,9 +83,42 @@ static int dma_buf_mmap_internal(struct file *file, struct vm_area_struct *vma)
+@@ -80,9 +80,42 @@ static int dma_buf_mmap_internal(struct file *file, struct vm_area_struct *vma)
  	return dmabuf->ops->mmap(dmabuf, vma);
  }
  

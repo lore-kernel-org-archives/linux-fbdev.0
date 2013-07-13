@@ -1,60 +1,50 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 11 Jul 2013 08:50:49 +0000
+From: Pavel Machek <pavel@ucw.cz>
+Date: Sat, 13 Jul 2013 18:27:34 +0000
 Subject: Re: [PATCH] omapfb: In omapfb_probe return -EPROBE_DEFER when display driver is not loaded yet
-Message-Id: <51DE6F19.6050606@ti.com>
+Message-Id: <20130713182733.GA25019@amd.pavel.ucw.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1373461739-10168-1-git-send-email-pali.rohar@gmail.com>
 In-Reply-To: <1373461739-10168-1-git-send-email-pali.rohar@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: =?UTF-8?B?UGFsaSBSb2jDoXI=?= <pali.rohar@gmail.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Aaro Koskinen <aaro.koskinen@iki.fi>, Tony Lindgren <tony@atomide.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Aaro Koskinen <aaro.koskinen@iki.fi>, Tony Lindgren <tony@atomide.com>
 
-Hi,
-
-On Wednesday 10 July 2013 06:38 PM, Pali Rohár wrote:
-> * On RX-51 probing for acx565akm driver is later then for omapfb which cause that omapfb probe fail and framebuffer is not working
-> * EPROBE_DEFER causing that kernel try to probe for omapfb later again which fixing this problem
->
+On Wed 2013-07-10 15:08:59, Pali Roh=E1r wrote:
+> * On RX-51 probing for acx565akm driver is later then for omapfb which ca=
+use that omapfb probe fail and framebuffer is not working
+> * EPROBE_DEFER causing that kernel try to probe for omapfb later again wh=
+ich fixing this problem
+>=20
 > * Without this patch display on Nokia RX-51 (N900) phone not working
->
-> Signed-off-by: Pali Rohár <pali.rohar@gmail.com>
-> ---
->   drivers/video/omap2/omapfb/omapfb-main.c |    9 +++++++++
->   1 file changed, 9 insertions(+)
->
-> diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-> index 856917b..93e7c84 100644
-> --- a/drivers/video/omap2/omapfb/omapfb-main.c
-> +++ b/drivers/video/omap2/omapfb/omapfb-main.c
-> @@ -2419,6 +2419,15 @@ static int omapfb_probe(struct platform_device *pdev)
->   	if (omapdss_is_initialized() = false)
->   		return -EPROBE_DEFER;
->
-> +	dssdev = NULL;
-> +	for_each_dss_dev(dssdev) {
-> +		if (!dssdev->driver) {
-> +			dev_warn(&pdev->dev, "no driver for display: %s\n",
-> +				dssdev->name);
-> +			return -EPROBE_DEFER;
+>=20
+> Signed-off-by: Pali Roh=E1r <pali.rohar@gmail.com>
 
-This will make omapfb probe defer till the time every panel has a 
-driver. It's possible that all the panel driver modules are never 
-interested by userspace. This will lead to the panels having drivers 
-also not work.
+Tested-by: Pavel Machek <pavel@ucw.cz>
 
-I think Tomi was working on this, it was something like making omapfb 
-defer only if the default display doesn't have a driver. We can wait for 
-his comment.
+(Actually, do we know which commit broke the ordering? We may want to
+simply revert that one...)
 
-Archit
+BTW I'm currently trying to set-up automated scripts for n900/qemu
+testing. I guess I'll try to run them on mainline kernel to catch such
+stuff earlier.
 
-> +		}
-> +	}
-> +
->   	if (pdev->num_resources != 0) {
->   		dev_err(&pdev->dev, "probed for an unknown device\n");
->   		r = -ENODEV;
->
+One thing I'd like to know: how do you configure kernel to get output
+on qemu? I was doing CONFIG_DEBUG_LL with specific uart, but that
+needed patching the kernel, you apparently have something more clever.
 
+I tried doing:
+
+# CONFIG_DEBUG_LL is not set
+CONFIG_DEBUG_LL_INCLUDE=3D"mach/debug-macro.S"
+CONFIG_UNCOMPRESS_INCLUDE=3D"debug/uncompress.h"
+
+but no output on console...
+
+Thanks,
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html

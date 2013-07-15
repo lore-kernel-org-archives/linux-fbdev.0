@@ -1,72 +1,62 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 26 Jul 2013 08:34:43 +0000
-Subject: Re: [patch -next] fb: fix recent breakage in correct_chipset()
-Message-Id: <51F234A3.3030504@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="vWVOQCinPFBJO33lDE1q8n37mMMXt7xUI"
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Mon, 15 Jul 2013 15:26:59 +0000
+Subject: [PATCH 0/3] Few ignored framebuffer fixes/additions
+Message-Id: <1373902022-20439-1-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130702062821.GC24410@elgon.mountain>
-In-Reply-To: <20130702062821.GC24410@elgon.mountain>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---vWVOQCinPFBJO33lDE1q8n37mMMXt7xUI
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Andrew, 
 
-On 02/07/13 09:28, Dan Carpenter wrote:
-> The 6e36308a6f "fb: fix atyfb build warning" isn't right.  It makes all=
+Sorry to bother you again with the framebuffer stuff but the new
+maintainer doesn't appear to be responsive either.k
 
-> the indexes off by one.  This patch reverts it and casts the
-> ARRAY_SIZE() to int to silence the build warning.
->=20
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
->=20
-> diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_b=
-ase.c
-> index a89c15d..9b0f12c 100644
-> --- a/drivers/video/aty/atyfb_base.c
-> +++ b/drivers/video/aty/atyfb_base.c
-> @@ -435,8 +435,8 @@ static int correct_chipset(struct atyfb_par *par)
->  	const char *name;
->  	int i;
-> =20
-> -	for (i =3D ARRAY_SIZE(aty_chips); i > 0; i--)
-> -		if (par->pci_id =3D=3D aty_chips[i - 1].pci_id)
-> +	for (i =3D (int)ARRAY_SIZE(aty_chips) - 1; i >=3D 0; i--)
-> +		if (par->pci_id =3D=3D aty_chips[i].pci_id)
->  			break;
-> =20
->  	if (i < 0)
->=20
+This is a collection of patches that have been silently ignored,
+despite being pinged numerous times:
+  - Patch 1 has been sent for the first time on June 7 [1], resent on
+    June 18 [2], plus two pings on July, 3rd [3] and July, 12th [4]. With
+    no comments whatsoever.
+  - Patch 2 has been sent on June, 21st [5]. Jean Christophe commented
+    on it on June, 24th [6], but every attempts at getting clear
+    explanations on what was expected have been ignored ever since
+    (June 25th [7], July 12th [8])
+  - Patch 3 was sent on June 21st along with Patch 2 [9]. There was
+    comments on it and a second version was sent on June 24th
+    [10]. Without any comments so far.
 
-Thanks, I've applied this into my 3.11-fixes/fbdev branch.
+Could you take a look at those patches? We already missed 3.11, and
+I'd really like not to miss another merge window because of the fbdev
+curse.
 
- Tomi
+Thanks,
+Maxime
 
+[1]: https://lkml.org/lkml/2013/6/7/116
+[2]: https://lkml.org/lkml/2013/6/18/130
+[3]: https://lkml.org/lkml/2013/7/3/105
+[4]: https://lkml.org/lkml/2013/7/12/177
+[5]: https://lkml.org/lkml/2013/6/21/405
+[6]: https://lkml.org/lkml/2013/6/24/313
+[7]: https://lkml.org/lkml/2013/6/25/274
+[8]: https://lkml.org/lkml/2013/7/12/103
+[9]: https://lkml.org/lkml/2013/6/21/407
+[10]: https://lkml.org/lkml/2013/6/24/302
 
+Alexandre Belloni (1):
+  fb: backlight: HX8357: Add HX8369 support
 
---vWVOQCinPFBJO33lDE1q8n37mMMXt7xUI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Hector Palacios (1):
+  video: mxsfb: fix color settings for 18bit data bus and 32bpp
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+Maxime Ripard (1):
+  video: hx8357: Make IM pins optional
 
-iQIcBAEBAgAGBQJR8jSjAAoJEPo9qoy8lh713iUP/jS8DBgllzX4Fgr4VpoNnKis
-svAGn6tfj2Kd6x1INE3iPxnaWDH4Vp+hZRrR6jsOt+1Rxt5KhWNGlzPd0nZAR5fU
-wwfuk7IFKqx/SGyQaUsDV7ikLd3h4kIUacVQioQbG5++OIgcVDjPaMwA7QNydZjL
-oAJA+txWRBQT1BrmueJu9IickRz0j7SVEqy5Y1ohiEYMT9HqpB1p7B8491NfSH/F
-z/s7mmnD42t6SSSLXp0j5DmplOt5eS1hkF4CE7aD7spuSrpJld1O+Ll46O9xv/hK
-ilNDkeLoa7yxAcfvcqu5s6uwvRLf6PU90ocTh5FDIMiF0XHlr+84+MT6T6epwgcn
-c9qyR8tOqdrqUkdqidHbhAoJVrUth176Y3H0flS1xIBKDvdG2HDZtV2E6IMlxq1w
-VBCoIcOEMULMJIfhDUoF0ld8880RHx4zZ/aaOnNCqoC6JgUbY9dKDk+reWPnQf7b
-uAJMVhP2aRGILJIYpsnbWo23HqrD0kn/pie8eVqYamfq53wmkWcgY46tl2hB7WoY
-xyBKDsJe8sY3Bmb8HX9ILr3WTg90nwVz60TyaLTGNxhjKseieAuAnmaluY4flo8V
-Ly8499dS1EH3LKxGZ1VoKyBg0J9aIwdUD5xaVzw2taROUf9AgwLxi4YFqNByKQMQ
-YjIwCFGitZ1u2RP98GgJ
-=7DUs
------END PGP SIGNATURE-----
+ drivers/video/backlight/hx8357.c | 255 +++++++++++++++++++++++++++++++++------
+ drivers/video/mxsfb.c            |  26 ----
+ 2 files changed, 218 insertions(+), 63 deletions(-)
 
---vWVOQCinPFBJO33lDE1q8n37mMMXt7xUI--
+-- 
+1.8.3.2
+

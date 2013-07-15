@@ -1,146 +1,91 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Date: Thu, 18 Jul 2013 06:58:17 +0000
-Subject: [PATCH 08/15] usb: phy: twl4030-usb: remove *set_suspend* and *phy_init* ops
-Message-Id: <1374129984-765-9-git-send-email-kishon@ti.com>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Mon, 15 Jul 2013 15:27:00 +0000
+Subject: [PATCH 1/3] video: mxsfb: fix color settings for 18bit data bus and 32bpp
+Message-Id: <1373902022-20439-2-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1374129984-765-1-git-send-email-kishon@ti.com>
-In-Reply-To: <1374129984-765-1-git-send-email-kishon@ti.com>
+References: <1373902022-20439-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1373902022-20439-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Now that twl4030-usb is adapted to the new generic PHY framework,
-*set_suspend* and *phy_init* ops can be removed from twl4030-usb driver.
+From: Hector Palacios <hector.palacios@digi.com>
 
-Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
-Acked-by: Felipe Balbi <balbi@ti.com>
-Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+For a combination of 18bit LCD data bus width and a color
+mode of 32bpp, the driver was setting the color mapping to
+rgb666, which is wrong, as the color in memory realy has an
+rgb888 layout.
+
+This patch also removes the setting of flag CTRL_DF24 that
+makes the driver dimiss the upper 2 bits when handling 32/24bpp
+colors in a diplay with 18bit data bus width. This flag made
+true color images display wrong in such configurations.
+
+Finally, the color mapping rgb666 has also been removed as nobody
+is using it and high level applications like Qt5 cannot work
+with it either.
+
+Reference: https://lkml.org/lkml/2013/5/23/220
+Signed-off-by: Hector Palacios <hector.palacios@digi.com>
+Acked-by: Juergen Beisert <jbe@pengutronix.de>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 ---
- drivers/usb/phy/phy-twl4030-usb.c |   57 +++++++++----------------------------
- 1 file changed, 13 insertions(+), 44 deletions(-)
+ drivers/video/mxsfb.c | 26 --------------------------
+ 1 file changed, 26 deletions(-)
 
-diff --git a/drivers/usb/phy/phy-twl4030-usb.c b/drivers/usb/phy/phy-twl4030-usb.c
-index 9051756..44f8b1b 100644
---- a/drivers/usb/phy/phy-twl4030-usb.c
-+++ b/drivers/usb/phy/phy-twl4030-usb.c
-@@ -422,25 +422,20 @@ static void twl4030_phy_power(struct twl4030_usb *twl, int on)
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 3ba3771..dc09ebe 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -239,24 +239,6 @@ static const struct fb_bitfield def_rgb565[] = {
  	}
- }
+ };
  
--static void twl4030_phy_suspend(struct twl4030_usb *twl, int controller_off)
-+static int twl4030_phy_power_off(struct phy *phy)
- {
-+	struct twl4030_usb *twl = phy_get_drvdata(phy);
-+
- 	if (twl->asleep)
--		return;
-+		return 0;
- 
- 	twl4030_phy_power(twl, 0);
- 	twl->asleep = 1;
- 	dev_dbg(twl->dev, "%s\n", __func__);
--}
+-static const struct fb_bitfield def_rgb666[] = {
+-	[RED] = {
+-		.offset = 16,
+-		.length = 6,
+-	},
+-	[GREEN] = {
+-		.offset = 8,
+-		.length = 6,
+-	},
+-	[BLUE] = {
+-		.offset = 0,
+-		.length = 6,
+-	},
+-	[TRANSP] = {	/* no support for transparency */
+-		.length = 0,
+-	}
+-};
 -
--static int twl4030_phy_power_off(struct phy *phy)
--{
--	struct twl4030_usb *twl = phy_get_drvdata(phy);
--
--	twl4030_phy_suspend(twl, 0);
- 	return 0;
- }
- 
--static void __twl4030_phy_resume(struct twl4030_usb *twl)
-+static void __twl4030_phy_power_on(struct twl4030_usb *twl)
- {
- 	twl4030_phy_power(twl, 1);
- 	twl4030_i2c_access(twl, 1);
-@@ -449,11 +444,13 @@ static void __twl4030_phy_resume(struct twl4030_usb *twl)
- 		twl4030_i2c_access(twl, 0);
- }
- 
--static void twl4030_phy_resume(struct twl4030_usb *twl)
-+static int twl4030_phy_power_on(struct phy *phy)
- {
-+	struct twl4030_usb *twl = phy_get_drvdata(phy);
-+
- 	if (!twl->asleep)
--		return;
--	__twl4030_phy_resume(twl);
-+		return 0;
-+	__twl4030_phy_power_on(twl);
- 	twl->asleep = 0;
- 	dev_dbg(twl->dev, "%s\n", __func__);
- 
-@@ -466,13 +463,6 @@ static void twl4030_phy_resume(struct twl4030_usb *twl)
- 		cancel_delayed_work(&twl->id_workaround_work);
- 		schedule_delayed_work(&twl->id_workaround_work, HZ);
- 	}
--}
--
--static int twl4030_phy_power_on(struct phy *phy)
--{
--	struct twl4030_usb *twl = phy_get_drvdata(phy);
--
--	twl4030_phy_resume(twl);
- 	return 0;
- }
- 
-@@ -604,9 +594,9 @@ static void twl4030_id_workaround_work(struct work_struct *work)
- 	}
- }
- 
--static int twl4030_usb_phy_init(struct usb_phy *phy)
-+static int twl4030_phy_init(struct phy *phy)
- {
--	struct twl4030_usb *twl = phy_to_twl(phy);
-+	struct twl4030_usb *twl = phy_get_drvdata(phy);
- 	enum omap_musb_vbus_id_status status;
- 
- 	/*
-@@ -621,32 +611,13 @@ static int twl4030_usb_phy_init(struct usb_phy *phy)
- 
- 	if (status = OMAP_MUSB_ID_GROUND || status = OMAP_MUSB_VBUS_VALID) {
- 		omap_musb_mailbox(twl->linkstat);
--		twl4030_phy_resume(twl);
-+		twl4030_phy_power_on(phy);
- 	}
- 
- 	sysfs_notify(&twl->dev->kobj, NULL, "vbus");
- 	return 0;
- }
- 
--static int twl4030_phy_init(struct phy *phy)
--{
--	struct twl4030_usb *twl = phy_get_drvdata(phy);
--
--	return twl4030_usb_phy_init(&twl->phy);
--}
--
--static int twl4030_set_suspend(struct usb_phy *x, int suspend)
--{
--	struct twl4030_usb *twl = phy_to_twl(x);
--
--	if (suspend)
--		twl4030_phy_suspend(twl, 1);
--	else
--		twl4030_phy_resume(twl);
--
--	return 0;
--}
--
- static int twl4030_set_peripheral(struct usb_otg *otg,
- 					struct usb_gadget *gadget)
- {
-@@ -717,8 +688,6 @@ static int twl4030_usb_probe(struct platform_device *pdev)
- 	twl->phy.label		= "twl4030";
- 	twl->phy.otg		= otg;
- 	twl->phy.type		= USB_PHY_TYPE_USB2;
--	twl->phy.set_suspend	= twl4030_set_suspend;
--	twl->phy.init		= twl4030_usb_phy_init;
- 
- 	otg->phy		= &twl->phy;
- 	otg->set_host		= twl4030_set_host;
+ static const struct fb_bitfield def_rgb888[] = {
+ 	[RED] = {
+ 		.offset = 16,
+@@ -309,9 +291,6 @@ static int mxsfb_check_var(struct fb_var_screeninfo *var,
+ 			break;
+ 		case STMLCDIF_16BIT:
+ 		case STMLCDIF_18BIT:
+-			/* 24 bit to 18 bit mapping */
+-			rgb = def_rgb666;
+-			break;
+ 		case STMLCDIF_24BIT:
+ 			/* real 24 bit */
+ 			rgb = def_rgb888;
+@@ -453,11 +432,6 @@ static int mxsfb_set_par(struct fb_info *fb_info)
+ 			return -EINVAL;
+ 		case STMLCDIF_16BIT:
+ 		case STMLCDIF_18BIT:
+-			/* 24 bit to 18 bit mapping */
+-			ctrl |= CTRL_DF24; /* ignore the upper 2 bits in
+-					    *  each colour component
+-					    */
+-			break;
+ 		case STMLCDIF_24BIT:
+ 			/* real 24 bit */
+ 			break;
 -- 
-1.7.10.4
+1.8.3.2
 

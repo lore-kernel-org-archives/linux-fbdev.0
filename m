@@ -1,69 +1,106 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 16 Jul 2013 07:43:56 +0000
-Subject: Re: [PATCH] logo: Remove trailing whitespace from logo_linux_clut224.ppm
-Message-Id: <CAMuHMdV9vgh89oRsMsH25Jx-nEJh1e6NV02i5EXKhM9bQsCkrA@mail.gmail.com>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Mon, 15 Jul 2013 15:27:01 +0000
+Subject: [PATCH 2/3] video: hx8357: Make IM pins optional
+Message-Id: <1373902022-20439-3-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1373876954-30437-1-git-send-email-geert@linux-m68k.org>
-	<CA+55aFxGymOvvaYfOg22AdHpxEOuOctfC8vRW+_u=vtua8Dksg@mail.gmail.com>
-In-Reply-To: <CA+55aFxGymOvvaYfOg22AdHpxEOuOctfC8vRW+_u=vtua8Dksg@mail.gmail.com>
+References: <1373902022-20439-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1373902022-20439-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rob Landley <rob@landley.net>
+To: linux-arm-kernel@lists.infradead.org
 
-Hi Linus,
+The IM pins of the HX8357 controller are used to define the interface
+used to feed pixel stream to the LCD panel.
 
-On Tue, Jul 16, 2013 at 3:02 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
-> On Mon, Jul 15, 2013 at 1:29 AM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
->> Commit ad81f0545ef01ea651886dddac4bef6cec930092 ("Linux 3.11-rc1")
->> replaced the Standard 224-color Linux logo, and introduced lots of
->> trailing whitespace. Remove it again.
->
-> The logo is temporary, and I'd rather keep it the way it is so that a
-> simple revert will fix things up again..
+Most of the time, these pins are directly routed to either the ground or
+the VCC to set their values.
 
-OK, that's a good reason. But unlike last time with Tuz, you can't revert
-the whole commit, as that also reverts the version ;-)
+Remove the need to assign GPIOs to these pins when we are in such a case.
 
-> That said, even if it wasn't temporary, I think we might be better off
-> with the raw format that the netpbm tools generate these days. It was
-> actually slightly annoying to get that big diff from a small edit, and
-> it was the result of either the original logo ASCII representation
-> having been cleaned up excessively before, or possibly just the netpbm
-> tools having changed their output radically.
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+ drivers/video/backlight/hx8357.c | 52 +++++++++++++++++++++++-----------------
+ 1 file changed, 30 insertions(+), 22 deletions(-)
 
-It seems there are different versions. My (Ubuntu 12.04 LTS) version of
-pnmnoraw doesn't add trailing whitespace, but groups the values per
-pixel. The old version used to generate the pre-v3.11-rc1 logo didn't
-group the values, but used he same width for all fields.
+diff --git a/drivers/video/backlight/hx8357.c b/drivers/video/backlight/hx8357.c
+index a0482b5..ed94796 100644
+--- a/drivers/video/backlight/hx8357.c
++++ b/drivers/video/backlight/hx8357.c
+@@ -76,6 +76,7 @@ struct hx8357_data {
+ 	unsigned		reset;
+ 	struct spi_device	*spi;
+ 	int			state;
++	bool			use_im_pins;
+ };
+ 
+ static u8 hx8357_seq_power[] = {
+@@ -250,9 +251,11 @@ static int hx8357_lcd_init(struct lcd_device *lcdev)
+ 	 * Set the interface selection pins to SPI mode, with three
+ 	 * wires
+ 	 */
+-	gpio_set_value_cansleep(lcd->im_pins[0], 1);
+-	gpio_set_value_cansleep(lcd->im_pins[1], 0);
+-	gpio_set_value_cansleep(lcd->im_pins[2], 1);
++	if (lcd->use_im_pins) {
++		gpio_set_value_cansleep(lcd->im_pins[0], 1);
++		gpio_set_value_cansleep(lcd->im_pins[1], 0);
++		gpio_set_value_cansleep(lcd->im_pins[2], 1);
++	}
+ 
+ 	/* Reset the screen */
+ 	gpio_set_value(lcd->reset, 1);
+@@ -424,26 +427,31 @@ static int hx8357_probe(struct spi_device *spi)
+ 		return -EINVAL;
+ 	}
+ 
+-	for (i = 0; i < HX8357_NUM_IM_PINS; i++) {
+-		lcd->im_pins[i] = of_get_named_gpio(spi->dev.of_node,
+-						"im-gpios", i);
+-		if (lcd->im_pins[i] = -EPROBE_DEFER) {
+-			dev_info(&spi->dev, "GPIO requested is not here yet, deferring the probe\n");
+-			return -EPROBE_DEFER;
+-		}
+-		if (!gpio_is_valid(lcd->im_pins[i])) {
+-			dev_err(&spi->dev, "Missing dt property: im-gpios\n");
+-			return -EINVAL;
++	if (of_find_property(spi->dev.of_node, "im-gpios", NULL)) {
++		lcd->use_im_pins = 1;
++
++		for (i = 0; i < HX8357_NUM_IM_PINS; i++) {
++			lcd->im_pins[i] = of_get_named_gpio(spi->dev.of_node,
++							    "im-gpios", i);
++			if (lcd->im_pins[i] = -EPROBE_DEFER) {
++				dev_info(&spi->dev, "GPIO requested is not here yet, deferring the probe\n");
++				return -EPROBE_DEFER;
++			}
++			if (!gpio_is_valid(lcd->im_pins[i])) {
++				dev_err(&spi->dev, "Missing dt property: im-gpios\n");
++				return -EINVAL;
++			}
++
++			ret = devm_gpio_request_one(&spi->dev, lcd->im_pins[i],
++						    GPIOF_OUT_INIT_LOW, "im_pins");
++			if (ret) {
++				dev_err(&spi->dev, "failed to request gpio %d: %d\n",
++					lcd->im_pins[i], ret);
++				return -EINVAL;
++			}
+ 		}
+-
+-		ret = devm_gpio_request_one(&spi->dev, lcd->im_pins[i],
+-					GPIOF_OUT_INIT_LOW, "im_pins");
+-		if (ret) {
+-			dev_err(&spi->dev, "failed to request gpio %d: %d\n",
+-				lcd->im_pins[i], ret);
+-			return -EINVAL;
+-		}
+-	}
++	} else
++		lcd->use_im_pins = 0;
+ 
+ 	lcdev = lcd_device_register("mxsfb", &spi->dev, lcd, &hx8357_ops);
+ 	if (IS_ERR(lcdev)) {
+-- 
+1.8.3.2
 
-> Of course, it would be even better if we actually used some saner
-> format. I'm not exactly artistic, so making that whole silly logo
-> change took more time than it really should have. But what was
-> *really* painful was to fight the horrible ppm format conversion
-> issues, and how we only accept that legacy ascii version etc.
-
-When the logo conversion code was written (before we just had C header
-files with arrays, which were a hell to update), my requirements were:
-  1. The format must be easy to generate with commonly used tools,
-  2. The format must be ASCII, to allow emailing of patches,
-  3. The format must be easily parsable, without relying on external tools and
-     libraries.
-
-Thanks to "GIT binary patch", 2 is no longer required.
-If we switch to e.g. PNG, we may have to rely on one more external library,
-upsetting Rob.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

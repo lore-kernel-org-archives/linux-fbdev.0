@@ -1,49 +1,47 @@
-From: Haojian Zhuang <haojian.zhuang@gmail.com>
-Date: Tue, 09 Jul 2013 10:41:46 +0000
-Subject: Re: [V3 2/7] ARM: mmp: remove the legacy rbswap setting for ttc_dkb platform
-Message-Id: <CAN1soZyfnPd4VBjhYUt8Lm=S+CKey2YVU8ZQRgO7KYsj=_J90A@mail.gmail.com>
+From: Boris BREZILLON <b.brezillon@overkiz.com>
+Date: Tue, 16 Jul 2013 15:08:14 +0000
+Subject: [PATCH v3 3/7] at91/avr32/atmel_lcdfb: prepare clk before calling enable
+Message-Id: <1373987294-24227-1-git-send-email-b.brezillon@overkiz.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1372332524-6772-1-git-send-email-jtzhou@marvell.com>
-In-Reply-To: <1372332524-6772-1-git-send-email-jtzhou@marvell.com>
+References: <1373986995-23899-1-git-send-email-b.brezillon@overkiz.com>
+In-Reply-To: <1373986995-23899-1-git-send-email-b.brezillon@overkiz.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Thu, Jun 27, 2013 at 7:28 PM, Jett.Zhou <jtzhou@marvell.com> wrote:
-> According to new rbswap scheme of mmp_display, it support appropriate
-> rbswap setting based specific pix_fmt, then we can remove the legacy
-> rbswap setting for ttc_dkb platform.
->
-> Signed-off-by: Jett.Zhou <jtzhou@marvell.com>
-> ---
->  arch/arm/mach-mmp/ttc_dkb.c |    4 +---
->  1 files changed, 1 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/arm/mach-mmp/ttc_dkb.c b/arch/arm/mach-mmp/ttc_dkb.c
-> index 8483906..cb08485 100644
-> --- a/arch/arm/mach-mmp/ttc_dkb.c
-> +++ b/arch/arm/mach-mmp/ttc_dkb.c
-> @@ -191,7 +191,6 @@ static struct pxa3xx_nand_platform_data dkb_nand_info = {
->  #define SCLK_SOURCE_SELECT(x)  (x << 30) /* 0x0 ~ 0x3 */
->  /* link config */
->  #define CFG_DUMBMODE(mode)     (mode << 28) /* 0x0 ~ 0x6*/
-> -#define CFG_GRA_SWAPRB(x)      (x << 0) /* 1: rbswap enabled */
->  static struct mmp_mach_path_config dkb_disp_config[] = {
->         [0] = {
->                 .name = "mmp-parallel",
-> @@ -199,8 +198,7 @@ static struct mmp_mach_path_config dkb_disp_config[] = {
->                 .output_type = PATH_OUT_PARALLEL,
->                 .path_config = CFG_IOPADMODE(0x1)
->                         | SCLK_SOURCE_SELECT(0x1),
-> -               .link_config = CFG_DUMBMODE(0x2)
-> -                       | CFG_GRA_SWAPRB(0x1),
-> +               .link_config = CFG_DUMBMODE(0x2),
->         },
->  };
->
-> --
-> 1.7.0.4
->
+Replace clk_enable/disable with clk_prepare_enable/disable_unprepare to
+avoid common clk framework warnings.
 
-Acked-by: Haojian Zhuang <haojian.zhuang@gmail.com>
+Signed-off-by: Boris BREZILLON <b.brezillon@overkiz.com>
+Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
+ drivers/video/atmel_lcdfb.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index ece49d5..bf9c5d0 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -954,14 +954,14 @@ static int __init atmel_lcdfb_init_fbinfo(struct atmel_lcdfb_info *sinfo)
+ 
+ static void atmel_lcdfb_start_clock(struct atmel_lcdfb_info *sinfo)
+ {
+-	clk_enable(sinfo->bus_clk);
+-	clk_enable(sinfo->lcdc_clk);
++	clk_prepare_enable(sinfo->bus_clk);
++	clk_prepare_enable(sinfo->lcdc_clk);
+ }
+ 
+ static void atmel_lcdfb_stop_clock(struct atmel_lcdfb_info *sinfo)
+ {
+-	clk_disable(sinfo->bus_clk);
+-	clk_disable(sinfo->lcdc_clk);
++	clk_disable_unprepare(sinfo->bus_clk);
++	clk_disable_unprepare(sinfo->lcdc_clk);
+ }
+ 
+ #ifdef CONFIG_OF
+-- 
+1.7.9.5
+

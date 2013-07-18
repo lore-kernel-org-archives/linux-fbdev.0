@@ -1,59 +1,165 @@
-From: Kefeng Wang <wangkefeng.wang@huawei.com>
-Date: Mon, 29 Jul 2013 01:27:32 +0000
-Subject: Re: [PATCH] video: remove unused variable dev
-Message-Id: <51F5C504.6040504@huawei.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Thu, 18 Jul 2013 06:58:14 +0000
+Subject: [PATCH 05/15] ARM: dts: omap: update usb_otg_hs data
+Message-Id: <1374129984-765-6-git-send-email-kishon@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1374919513-15356-1-git-send-email-wangkefeng.wang@huawei.com> <009601ce8bf5$e88bfda0$b9a3f8e0$@samsung.com>
-In-Reply-To: <009601ce8bf5$e88bfda0$b9a3f8e0$@samsung.com>
+References: <1374129984-765-1-git-send-email-kishon@ti.com>
+In-Reply-To: <1374129984-765-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>
-Cc: 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, guohanjun@huawei.com, 'Luis Henriques' <luis.henriques@canonical.com>
+To: linux-arm-kernel@lists.infradead.org
 
-On 07/29 8:52, Jingoo Han wrote:
-> On Saturday, July 27, 2013 7:05 PM, Kefeng Wang wrote:
->>
->> Due to commit: e21d2170f [video: remove unnecessary platform_set_drvdata()],
->> variable dev is unused, so remove it.
->>
->> Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
->> ---
->>  drivers/video/vga16fb.c | 1 -
->>  1 file changed, 1 deletion(-)
-> 
-> CC'ed Luis Henriques.
-> 
-> 
-> Hi Kefeng Wang,
-> 
-> The same patch was submitted by Luis Henriques 2 weeks ago.
-> Also, the patch was already applied by Tomi Valkeinen.
-> 
-> Best regards,
-> Jingoo Han
-> 
+Updated the usb_otg_hs dt data to include the *phy* and *phy-names*
+binding in order for the driver to use the new generic PHY framework.
+Also updated the Documentation to include the binding information.
+The PHY binding information can be found at
+Documentation/devicetree/bindings/phy/phy-bindings.txt
 
-Thanks for your reply, I got it, so ignore it.
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+Acked-by: Felipe Balbi <balbi@ti.com>
+Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+---
+ Documentation/devicetree/bindings/usb/omap-usb.txt |    5 +++++
+ Documentation/devicetree/bindings/usb/usb-phy.txt  |    6 ++++++
+ arch/arm/boot/dts/omap3-beagle-xm.dts              |    2 ++
+ arch/arm/boot/dts/omap3-evm.dts                    |    2 ++
+ arch/arm/boot/dts/omap3-overo.dtsi                 |    2 ++
+ arch/arm/boot/dts/omap4.dtsi                       |    3 +++
+ arch/arm/boot/dts/twl4030.dtsi                     |    1 +
+ 7 files changed, 21 insertions(+)
 
->>
->> diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
->> index 830ded4..2827333 100644
->> --- a/drivers/video/vga16fb.c
->> +++ b/drivers/video/vga16fb.c
->> @@ -1265,7 +1265,6 @@ static void vga16fb_imageblit(struct fb_info *info, const struct fb_image *image
->>
->>  static void vga16fb_destroy(struct fb_info *info)
->>  {
->> -	struct platform_device *dev = container_of(info->device, struct platform_device, dev);
->>  	iounmap(info->screen_base);
->>  	fb_dealloc_cmap(&info->cmap);
->>  	/* XXX unshare VGA regions */
->> --
->> 1.8.2.2
-> 
-> 
-> 
-> 
-
+diff --git a/Documentation/devicetree/bindings/usb/omap-usb.txt b/Documentation/devicetree/bindings/usb/omap-usb.txt
+index 57e71f6..825790d 100644
+--- a/Documentation/devicetree/bindings/usb/omap-usb.txt
++++ b/Documentation/devicetree/bindings/usb/omap-usb.txt
+@@ -19,6 +19,9 @@ OMAP MUSB GLUE
+  - power : Should be "50". This signifies the controller can supply up to
+    100mA when operating in host mode.
+  - usb-phy : the phandle for the PHY device
++ - phys : the phandle for the PHY device (used by generic PHY framework)
++ - phy-names : the names of the PHY corresponding to the PHYs present in the
++   *phy* phandle.
+ 
+ Optional properties:
+  - ctrl-module : phandle of the control module this glue uses to write to
+@@ -33,6 +36,8 @@ usb_otg_hs: usb_otg_hs@4a0ab000 {
+ 	num-eps = <16>;
+ 	ram-bits = <12>;
+ 	ctrl-module = <&omap_control_usb>;
++	phys = <&usb2_phy>;
++	phy-names = "usb2-phy";
+ };
+ 
+ Board specific device node entry
+diff --git a/Documentation/devicetree/bindings/usb/usb-phy.txt b/Documentation/devicetree/bindings/usb/usb-phy.txt
+index 61496f5..c0245c8 100644
+--- a/Documentation/devicetree/bindings/usb/usb-phy.txt
++++ b/Documentation/devicetree/bindings/usb/usb-phy.txt
+@@ -5,6 +5,8 @@ OMAP USB2 PHY
+ Required properties:
+  - compatible: Should be "ti,omap-usb2"
+  - reg : Address and length of the register set for the device.
++ - #phy-cells: determine the number of cells that should be given in the
++   phandle while referencing this phy.
+ 
+ Optional properties:
+  - ctrl-module : phandle of the control module used by PHY driver to power on
+@@ -16,6 +18,7 @@ usb2phy@4a0ad080 {
+ 	compatible = "ti,omap-usb2";
+ 	reg = <0x4a0ad080 0x58>;
+ 	ctrl-module = <&omap_control_usb>;
++	#phy-cells = <0>;
+ };
+ 
+ OMAP USB3 PHY
+@@ -25,6 +28,8 @@ Required properties:
+  - reg : Address and length of the register set for the device.
+  - reg-names: The names of the register addresses corresponding to the registers
+    filled in "reg".
++ - #phy-cells: determine the number of cells that should be given in the
++   phandle while referencing this phy.
+ 
+ Optional properties:
+  - ctrl-module : phandle of the control module used by PHY driver to power on
+@@ -39,4 +44,5 @@ usb3phy@4a084400 {
+ 	      <0x4a084c00 0x40>;
+ 	reg-names = "phy_rx", "phy_tx", "pll_ctrl";
+ 	ctrl-module = <&omap_control_usb>;
++	#phy-cells = <0>;
+ };
+diff --git a/arch/arm/boot/dts/omap3-beagle-xm.dts b/arch/arm/boot/dts/omap3-beagle-xm.dts
+index afdb164..533b2da 100644
+--- a/arch/arm/boot/dts/omap3-beagle-xm.dts
++++ b/arch/arm/boot/dts/omap3-beagle-xm.dts
+@@ -144,6 +144,8 @@
+ &usb_otg_hs {
+ 	interface-type = <0>;
+ 	usb-phy = <&usb2_phy>;
++	phys = <&usb2_phy>;
++	phy-names = "usb2-phy";
+ 	mode = <3>;
+ 	power = <50>;
+ };
+diff --git a/arch/arm/boot/dts/omap3-evm.dts b/arch/arm/boot/dts/omap3-evm.dts
+index 7d4329d..4134dd0 100644
+--- a/arch/arm/boot/dts/omap3-evm.dts
++++ b/arch/arm/boot/dts/omap3-evm.dts
+@@ -70,6 +70,8 @@
+ &usb_otg_hs {
+ 	interface-type = <0>;
+ 	usb-phy = <&usb2_phy>;
++	phys = <&usb2_phy>;
++	phy-names = "usb2-phy";
+ 	mode = <3>;
+ 	power = <50>;
+ };
+diff --git a/arch/arm/boot/dts/omap3-overo.dtsi b/arch/arm/boot/dts/omap3-overo.dtsi
+index 8f1abec..a461d2f 100644
+--- a/arch/arm/boot/dts/omap3-overo.dtsi
++++ b/arch/arm/boot/dts/omap3-overo.dtsi
+@@ -76,6 +76,8 @@
+ &usb_otg_hs {
+ 	interface-type = <0>;
+ 	usb-phy = <&usb2_phy>;
++	phys = <&usb2_phy>;
++	phy-names = "usb2-phy";
+ 	mode = <3>;
+ 	power = <50>;
+ };
+diff --git a/arch/arm/boot/dts/omap4.dtsi b/arch/arm/boot/dts/omap4.dtsi
+index 22d9f2b..1e8e2fe 100644
+--- a/arch/arm/boot/dts/omap4.dtsi
++++ b/arch/arm/boot/dts/omap4.dtsi
+@@ -520,6 +520,7 @@
+ 				compatible = "ti,omap-usb2";
+ 				reg = <0x4a0ad080 0x58>;
+ 				ctrl-module = <&omap_control_usb>;
++				#phy-cells = <0>;
+ 			};
+ 		};
+ 
+@@ -658,6 +659,8 @@
+ 			interrupt-names = "mc", "dma";
+ 			ti,hwmods = "usb_otg_hs";
+ 			usb-phy = <&usb2_phy>;
++			phys = <&usb2_phy>;
++			phy-names = "usb2-phy";
+ 			multipoint = <1>;
+ 			num-eps = <16>;
+ 			ram-bits = <12>;
+diff --git a/arch/arm/boot/dts/twl4030.dtsi b/arch/arm/boot/dts/twl4030.dtsi
+index b3034da..ce4cd6f 100644
+--- a/arch/arm/boot/dts/twl4030.dtsi
++++ b/arch/arm/boot/dts/twl4030.dtsi
+@@ -80,6 +80,7 @@
+ 		usb1v8-supply = <&vusb1v8>;
+ 		usb3v1-supply = <&vusb3v1>;
+ 		usb_mode = <1>;
++		#phy-cells = <0>;
+ 	};
+ 
+ 	twl_pwm: pwm {
+-- 
+1.7.10.4
 

@@ -1,53 +1,117 @@
-From: Alison Wang <b18965@freescale.com>
-Date: Fri, 12 Jul 2013 06:07:53 +0000
-Subject: [PATCH 2/5] ARM: dts: vf610-twr: Enable DCU and TCON devices
-Message-Id: <1373609276-14566-3-git-send-email-b18965@freescale.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Thu, 18 Jul 2013 06:58:09 +0000
+Subject: [PATCH 00/15] PHY framework
+Message-Id: <1374129984-765-1-git-send-email-kishon@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1373609276-14566-1-git-send-email-b18965@freescale.com>
-In-Reply-To: <1373609276-14566-1-git-send-email-b18965@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-This patch enables DCU and TCON devices for Vybrid VF610 TOWER board.
+Added a generic PHY framework that provides a set of APIs for the PHY drivers
+to create/destroy a PHY and APIs for the PHY users to obtain a reference to
+the PHY with or without using phandle.
 
-Signed-off-by: Alison Wang <b18965@freescale.com>
----
-Changes in v2: None
+This framework will be of use only to devices that uses external PHY (PHY
+functionality is not embedded within the controller).
 
- arch/arm/boot/dts/vf610-twr.dts | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+The intention of creating this framework is to bring the phy drivers spread
+all over the Linux kernel to drivers/phy to increase code re-use and to
+increase code maintainability.
 
-diff --git a/arch/arm/boot/dts/vf610-twr.dts b/arch/arm/boot/dts/vf610-twr.dts
-index b3905f5..605fb04 100644
---- a/arch/arm/boot/dts/vf610-twr.dts
-+++ b/arch/arm/boot/dts/vf610-twr.dts
-@@ -36,6 +36,12 @@
- 
- };
- 
-+&dcu0 {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_dcu0_1>;
-+	status = "okay";
-+};
-+
- &fec0 {
- 	phy-mode = "rmii";
- 	pinctrl-names = "default";
-@@ -50,6 +56,10 @@
- 	status = "okay";
- };
- 
-+&tcon0 {
-+	status = "okay";
-+};
-+
- &uart1 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_uart1_1>;
+Comments to make PHY as bus wasn't done because PHY devices can be part of
+other bus and making a same device attached to multiple bus leads to bad
+design.
+
+If the PHY driver has to send notification on connect/disconnect, the PHY
+driver should make use of the extcon framework. Using this susbsystem
+to use extcon framwork will have to be analysed.
+
+Exynos MIPI CSIS/DSIM PHY and Displayport PHY have started using this
+framework. Have included those patches also in this series.
+
+twl4030-usb and omap-usb2 have also been adapted to this framework.
+
+These patches are also available @
+git://gitorious.org/linuxphy/linuxphy.git tags/phy-for-v3.12
+
+Jingoo Han (3):
+  phy: Add driver for Exynos DP PHY
+  video: exynos_dp: remove non-DT support for Exynos Display Port
+  video: exynos_dp: Use the generic PHY driver
+
+Kishon Vijay Abraham I (8):
+  drivers: phy: add generic PHY framework
+  usb: phy: omap-usb2: use the new generic PHY framework
+  usb: phy: twl4030: use the new generic PHY framework
+  ARM: OMAP: USB: Add phy binding information
+  ARM: dts: omap: update usb_otg_hs data
+  usb: musb: omap2430: use the new generic PHY framework
+  usb: phy: omap-usb2: remove *set_suspend* callback from omap-usb2
+  usb: phy: twl4030-usb: remove *set_suspend* and *phy_init* ops
+
+Sylwester Nawrocki (4):
+  phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
+  video: exynos_mipi_dsim: Use the generic PHY driver
+  exynos4-is: Use the generic MIPI CSIS PHY driver
+  ARM: Samsung: Remove the MIPI PHY setup code
+
+ .../devicetree/bindings/phy/phy-bindings.txt       |   66 +++
+ .../devicetree/bindings/phy/samsung-phy.txt        |   22 +
+ Documentation/devicetree/bindings/usb/omap-usb.txt |    5 +
+ Documentation/devicetree/bindings/usb/usb-phy.txt  |    6 +
+ .../devicetree/bindings/video/exynos_dp.txt        |   18 +-
+ Documentation/phy.txt                              |  129 +++++
+ MAINTAINERS                                        |    7 +
+ arch/arm/boot/dts/omap3-beagle-xm.dts              |    2 +
+ arch/arm/boot/dts/omap3-evm.dts                    |    2 +
+ arch/arm/boot/dts/omap3-overo.dtsi                 |    2 +
+ arch/arm/boot/dts/omap4.dtsi                       |    3 +
+ arch/arm/boot/dts/twl4030.dtsi                     |    1 +
+ arch/arm/mach-exynos/include/mach/regs-pmu.h       |    5 -
+ arch/arm/mach-omap2/usb-musb.c                     |    3 +
+ arch/arm/mach-s5pv210/include/mach/regs-clock.h    |    4 -
+ arch/arm/plat-samsung/Kconfig                      |    5 -
+ arch/arm/plat-samsung/Makefile                     |    1 -
+ arch/arm/plat-samsung/setup-mipiphy.c              |   60 ---
+ drivers/Kconfig                                    |    2 +
+ drivers/Makefile                                   |    2 +
+ drivers/media/platform/exynos4-is/mipi-csis.c      |   16 +-
+ drivers/phy/Kconfig                                |   28 +
+ drivers/phy/Makefile                               |    7 +
+ drivers/phy/phy-core.c                             |  544 ++++++++++++++++++++
+ drivers/phy/phy-exynos-dp-video.c                  |  111 ++++
+ drivers/phy/phy-exynos-mipi-video.c                |  169 ++++++
+ drivers/usb/musb/Kconfig                           |    1 +
+ drivers/usb/musb/musb_core.c                       |    1 +
+ drivers/usb/musb/musb_core.h                       |    3 +
+ drivers/usb/musb/omap2430.c                        |   26 +-
+ drivers/usb/phy/Kconfig                            |    1 +
+ drivers/usb/phy/phy-omap-usb2.c                    |   60 ++-
+ drivers/usb/phy/phy-twl4030-usb.c                  |   63 ++-
+ drivers/video/exynos/Kconfig                       |    2 +-
+ drivers/video/exynos/exynos_dp_core.c              |  132 ++---
+ drivers/video/exynos/exynos_dp_core.h              |  110 ++++
+ drivers/video/exynos/exynos_dp_reg.c               |    2 -
+ drivers/video/exynos/exynos_mipi_dsi.c             |   19 +-
+ include/linux/phy/phy.h                            |  344 +++++++++++++
+ include/linux/platform_data/mipi-csis.h            |   11 +-
+ include/linux/usb/musb.h                           |    3 +
+ include/video/exynos_dp.h                          |  131 -----
+ include/video/exynos_mipi_dsim.h                   |    6 +-
+ 43 files changed, 1746 insertions(+), 389 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/phy/phy-bindings.txt
+ create mode 100644 Documentation/devicetree/bindings/phy/samsung-phy.txt
+ create mode 100644 Documentation/phy.txt
+ delete mode 100644 arch/arm/plat-samsung/setup-mipiphy.c
+ create mode 100644 drivers/phy/Kconfig
+ create mode 100644 drivers/phy/Makefile
+ create mode 100644 drivers/phy/phy-core.c
+ create mode 100644 drivers/phy/phy-exynos-dp-video.c
+ create mode 100644 drivers/phy/phy-exynos-mipi-video.c
+ create mode 100644 include/linux/phy/phy.h
+ delete mode 100644 include/video/exynos_dp.h
+
 -- 
-1.8.0
-
+1.7.10.4
 

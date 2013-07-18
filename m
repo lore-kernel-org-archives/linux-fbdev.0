@@ -1,68 +1,134 @@
-From: Alison Wang <b18965@freescale.com>
-Date: Fri, 05 Jul 2013 07:51:39 +0000
-Subject: [PATCH 1/4] ARM: dts: vf610: Add DCU and TCON nodes
-Message-Id: <1373010702-9244-2-git-send-email-b18965@freescale.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Thu, 18 Jul 2013 06:58:19 +0000
+Subject: [PATCH 10/15] video: exynos_mipi_dsim: Use the generic PHY driver
+Message-Id: <1374129984-765-11-git-send-email-kishon@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1373010702-9244-1-git-send-email-b18965@freescale.com>
-In-Reply-To: <1373010702-9244-1-git-send-email-b18965@freescale.com>
+References: <1374129984-765-1-git-send-email-kishon@ti.com>
+In-Reply-To: <1374129984-765-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-This patch adds DCU and TCON nodes in SoC level DTS for Freescale
-Vybrid VF610. It also removes useless pin for DCU0 pinctrl.
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
 
-Signed-off-by: Alison Wang <b18965@freescale.com>
+Use the generic PHY API instead of the platform callback to control
+the MIPI DSIM DPHY. The 'phy_label' field is added to the platform
+data structure to allow PHY lookup on non-dt platforms.
+
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Acked-by: Felipe Balbi <balbi@ti.com>
+Acked-by: Donghwa Lee <dh09.lee@samsung.com>
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
 ---
- arch/arm/boot/dts/vf610.dtsi | 19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
+ drivers/video/exynos/exynos_mipi_dsi.c |   19 ++++++++++---------
+ include/video/exynos_mipi_dsim.h       |    6 ++++--
+ 2 files changed, 14 insertions(+), 11 deletions(-)
 
-diff --git a/arch/arm/boot/dts/vf610.dtsi b/arch/arm/boot/dts/vf610.dtsi
-index e1eb7da..037e8f1 100644
---- a/arch/arm/boot/dts/vf610.dtsi
-+++ b/arch/arm/boot/dts/vf610.dtsi
-@@ -140,6 +140,14 @@
- 				clock-names = "pit";
- 			};
+diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
+index 32e5406..248e444 100644
+--- a/drivers/video/exynos/exynos_mipi_dsi.c
++++ b/drivers/video/exynos/exynos_mipi_dsi.c
+@@ -30,6 +30,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/kthread.h>
+ #include <linux/notifier.h>
++#include <linux/phy/phy.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/err.h>
+@@ -156,8 +157,7 @@ static int exynos_mipi_dsi_blank_mode(struct mipi_dsim_device *dsim, int power)
+ 		exynos_mipi_regulator_enable(dsim);
  
-+			tcon0: tcon@4003d000 {
-+				compatible = "fsl,vf610-tcon";
-+				reg = <0x4003d000 0x1000>;
-+				clocks = <&clks VF610_CLK_TCON0>;
-+				clock-names = "tcon";
-+				status = "disabled";
-+			};
-+
- 			wdog@4003e000 {
- 				compatible = "fsl,vf610-wdt", "fsl,imx21-wdt";
- 				reg = <0x4003e000 0x1000>;
-@@ -169,7 +177,6 @@
- 				dcu0 {
- 					pinctrl_dcu0_1: dcu0grp_1 {
- 						fsl,pins = <
--						VF610_PAD_PTB8__GPIO_30		0x42
- 						VF610_PAD_PTE0__DCU0_HSYNC	0x42
- 						VF610_PAD_PTE1__DCU0_VSYNC	0x42
- 						VF610_PAD_PTE2__DCU0_PCLK	0x42
-@@ -395,6 +402,16 @@
- 				reg = <0x40050000 0x1000>;
- 			};
+ 		/* enable MIPI-DSI PHY. */
+-		if (dsim->pd->phy_enable)
+-			dsim->pd->phy_enable(pdev, true);
++		phy_power_on(dsim->phy);
  
-+			dcu0: dcu@40058000 {
-+				compatible = "fsl,vf610-dcu";
-+				reg = <0x40058000 0x1200>;
-+				interrupts = <0 30 0x04>;
-+				clocks = <&clks VF610_CLK_DCU0>;
-+				clock-names = "dcu";
-+				tcon-controller = <&tcon0>;
-+				status = "disabled";
-+			};
+ 		clk_enable(dsim->clock);
+ 
+@@ -373,6 +373,10 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
++	dsim->phy = devm_phy_get(&pdev->dev, dsim_pd->phy_label);
++	if (IS_ERR(dsim->phy))
++		return PTR_ERR(dsim->phy);
 +
- 			i2c0: i2c@40066000 {
- 				#address-cells = <1>;
- 				#size-cells = <0>;
+ 	dsim->clock = devm_clk_get(&pdev->dev, "dsim0");
+ 	if (IS_ERR(dsim->clock)) {
+ 		dev_err(&pdev->dev, "failed to get dsim clock source\n");
+@@ -439,8 +443,7 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 	exynos_mipi_regulator_enable(dsim);
+ 
+ 	/* enable MIPI-DSI PHY. */
+-	if (dsim->pd->phy_enable)
+-		dsim->pd->phy_enable(pdev, true);
++	phy_power_on(dsim->phy);
+ 
+ 	exynos_mipi_update_cfg(dsim);
+ 
+@@ -504,9 +507,8 @@ static int exynos_mipi_dsi_suspend(struct device *dev)
+ 	if (client_drv && client_drv->suspend)
+ 		client_drv->suspend(client_dev);
+ 
+-	/* enable MIPI-DSI PHY. */
+-	if (dsim->pd->phy_enable)
+-		dsim->pd->phy_enable(pdev, false);
++	/* disable MIPI-DSI PHY. */
++	phy_power_off(dsim->phy);
+ 
+ 	clk_disable(dsim->clock);
+ 
+@@ -536,8 +538,7 @@ static int exynos_mipi_dsi_resume(struct device *dev)
+ 	exynos_mipi_regulator_enable(dsim);
+ 
+ 	/* enable MIPI-DSI PHY. */
+-	if (dsim->pd->phy_enable)
+-		dsim->pd->phy_enable(pdev, true);
++	phy_power_on(dsim->phy);
+ 
+ 	clk_enable(dsim->clock);
+ 
+diff --git a/include/video/exynos_mipi_dsim.h b/include/video/exynos_mipi_dsim.h
+index 89dc88a..0e7e43b 100644
+--- a/include/video/exynos_mipi_dsim.h
++++ b/include/video/exynos_mipi_dsim.h
+@@ -216,6 +216,7 @@ struct mipi_dsim_config {
+  *	automatically.
+  * @e_clk_src: select byte clock source.
+  * @pd: pointer to MIPI-DSI driver platform data.
++ * @phy: pointer to the generic PHY
+  */
+ struct mipi_dsim_device {
+ 	struct device			*dev;
+@@ -236,6 +237,7 @@ struct mipi_dsim_device {
+ 	bool				suspended;
+ 
+ 	struct mipi_dsim_platform_data	*pd;
++	struct phy			*phy;
+ };
+ 
+ /*
+@@ -248,7 +250,7 @@ struct mipi_dsim_device {
+  * @enabled: indicate whether mipi controller got enabled or not.
+  * @lcd_panel_info: pointer for lcd panel specific structure.
+  *	this structure specifies width, height, timing and polarity and so on.
+- * @phy_enable: pointer to a callback controlling D-PHY enable/reset
++ * @phy_label: the generic PHY label
+  */
+ struct mipi_dsim_platform_data {
+ 	char				lcd_panel_name[PANEL_NAME_SIZE];
+@@ -257,7 +259,7 @@ struct mipi_dsim_platform_data {
+ 	unsigned int			enabled;
+ 	void				*lcd_panel_info;
+ 
+-	int (*phy_enable)(struct platform_device *pdev, bool on);
++	const char			*phy_label;
+ };
+ 
+ /*
 -- 
-1.8.0
-
+1.7.10.4
 

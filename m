@@ -1,58 +1,55 @@
-From: Peter Jones <pjones@redhat.com>
-Date: Thu, 25 Jul 2013 15:48:11 +0000
-Subject: [PATCH] Release efifb's colormap in efifb_destroy()
-Message-Id: <1374767291-2874-1-git-send-email-pjones@redhat.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Thu, 18 Jul 2013 06:58:13 +0000
+Subject: [PATCH 04/15] ARM: OMAP: USB: Add phy binding information
+Message-Id: <1374129984-765-5-git-send-email-kishon@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAHkRjk4Ansh+Xr+cPQNacwx=aOb65_hW_MNRx5QVtatJCz5tqg@mail.gmail.com>
-In-Reply-To: <CAHkRjk4Ansh+Xr+cPQNacwx=aOb65_hW_MNRx5QVtatJCz5tqg@mail.gmail.com>
+References: <1374129984-765-1-git-send-email-kishon@ti.com>
+In-Reply-To: <1374129984-765-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: "Alexandra N. Kossovsky" <Alexandra.Kossovsky@oktetlabs.ru>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Jones <pjones@redhat.com>
+To: linux-arm-kernel@lists.infradead.org
 
-This was found by Alexandra Kossovsky, who noted this traceback from
-kmemleak:
+In order for controllers to get PHY in case of non dt boot, the phy
+binding information (phy device name) should be added in the platform
+data of the controller.
 
-> unreferenced object 0xffff880216fcfe00 (size 512):
->   comm "swapper/0", pid 1, jiffies 4294895429 (age 1415.320s)
->   hex dump (first 32 bytes):
->     00 00 00 00 00 00 00 00 aa aa aa aa aa aa aa aa  ................
->     55 55 55 55 55 55 55 55 ff ff ff ff ff ff ff ff  UUUUUUUU........
->   backtrace:
->     [<ffffffff813e415c>] kmemleak_alloc+0x21/0x3e
->     [<ffffffff8111c17f>]
->     kmemleak_alloc_recursive.constprop.57+0x16/0x18
->     [<ffffffff8111e63b>] __kmalloc+0xf9/0x144
->     [<ffffffff8123d9cf>] fb_alloc_cmap_gfp+0x47/0xe1
->     [<ffffffff8123da77>] fb_alloc_cmap+0xe/0x10
->     [<ffffffff81aff40a>] efifb_probe+0x3e9/0x48f
->     [<ffffffff812c566f>] platform_drv_probe+0x34/0x5e
->     [<ffffffff812c3e6d>] driver_probe_device+0x98/0x1b4
->     [<ffffffff812c3fd7>] __driver_attach+0x4e/0x6f
->     [<ffffffff812c25bf>] bus_for_each_dev+0x57/0x8a
->     [<ffffffff812c3984>] driver_attach+0x19/0x1b
->     [<ffffffff812c362b>] bus_add_driver+0xde/0x201
->     [<ffffffff812c453f>] driver_register+0x8c/0x110
->     [<ffffffff812c510d>] platform_driver_register+0x41/0x43
->     [<ffffffff812c5127>] platform_driver_probe+0x18/0x8a
->     [<ffffffff81aff002>] efifb_init+0x276/0x295
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Acked-by: Felipe Balbi <balbi@ti.com>
 ---
- drivers/video/efifb.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/arm/mach-omap2/usb-musb.c |    3 +++
+ include/linux/usb/musb.h       |    3 +++
+ 2 files changed, 6 insertions(+)
 
-diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
-index 390b61b..1f3eab3 100644
---- a/drivers/video/efifb.c
-+++ b/drivers/video/efifb.c
-@@ -289,6 +289,7 @@ static void efifb_destroy(struct fb_info *info)
- 	if (request_mem_succeeded)
- 		release_mem_region(info->apertures->ranges[0].base,
- 				   info->apertures->ranges[0].size);
-+	fb_dealloc_cmap(&info->cmap);
- 	framebuffer_release(info);
- }
+diff --git a/arch/arm/mach-omap2/usb-musb.c b/arch/arm/mach-omap2/usb-musb.c
+index 8c4de27..6aa7cbf 100644
+--- a/arch/arm/mach-omap2/usb-musb.c
++++ b/arch/arm/mach-omap2/usb-musb.c
+@@ -85,6 +85,9 @@ void __init usb_musb_init(struct omap_musb_board_data *musb_board_data)
+ 	musb_plat.mode = board_data->mode;
+ 	musb_plat.extvbus = board_data->extvbus;
+ 
++	if (cpu_is_omap34xx())
++		musb_plat.phy_label = "twl4030";
++
+ 	if (soc_is_am35xx()) {
+ 		oh_name = "am35x_otg_hs";
+ 		name = "musb-am35x";
+diff --git a/include/linux/usb/musb.h b/include/linux/usb/musb.h
+index 053c268..596f8c8 100644
+--- a/include/linux/usb/musb.h
++++ b/include/linux/usb/musb.h
+@@ -104,6 +104,9 @@ struct musb_hdrc_platform_data {
+ 	/* for clk_get() */
+ 	const char	*clock;
+ 
++	/* phy label */
++	const char	*phy_label;
++
+ 	/* (HOST or OTG) switch VBUS on/off */
+ 	int		(*set_vbus)(struct device *dev, int is_on);
  
 -- 
-1.8.3.1
+1.7.10.4
 

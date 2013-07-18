@@ -1,7 +1,7 @@
 From: Kishon Vijay Abraham I <kishon@ti.com>
-Date: Thu, 18 Jul 2013 06:58:15 +0000
-Subject: [PATCH 06/15] usb: musb: omap2430: use the new generic PHY framework
-Message-Id: <1374129984-765-7-git-send-email-kishon@ti.com>
+Date: Thu, 18 Jul 2013 06:58:18 +0000
+Subject: [PATCH 09/15] phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
+Message-Id: <1374129984-765-10-git-send-email-kishon@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1374129984-765-1-git-send-email-kishon@ti.com>
 In-Reply-To: <1374129984-765-1-git-send-email-kishon@ti.com>
@@ -10,151 +10,247 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Use the generic PHY framework API to get the PHY. The usb_phy_set_resume
-and usb_phy_set_suspend is replaced with power_on and
-power_off to align with the new PHY framework.
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
 
-musb->xceiv can't be removed as of now because musb core uses xceiv.state and
-xceiv.otg. Once there is a separate state machine to handle otg, these can be
-moved out of xceiv and then we can start using the generic PHY framework.
+Add a PHY provider driver for the Samsung S5P/Exynos SoC MIPI CSI-2
+receiver and MIPI DSI transmitter DPHYs.
 
-Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
-Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 Acked-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
 ---
- drivers/usb/musb/Kconfig     |    1 +
- drivers/usb/musb/musb_core.c |    1 +
- drivers/usb/musb/musb_core.h |    3 +++
- drivers/usb/musb/omap2430.c  |   26 ++++++++++++++++++++------
- 4 files changed, 25 insertions(+), 6 deletions(-)
+ .../devicetree/bindings/phy/samsung-phy.txt        |   14 ++
+ drivers/phy/Kconfig                                |    9 ++
+ drivers/phy/Makefile                               |    3 +-
+ drivers/phy/phy-exynos-mipi-video.c                |  169 ++++++++++++++++++++
+ 4 files changed, 194 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/phy/samsung-phy.txt
+ create mode 100644 drivers/phy/phy-exynos-mipi-video.c
 
-diff --git a/drivers/usb/musb/Kconfig b/drivers/usb/musb/Kconfig
-index 797e3fd..01381ac 100644
---- a/drivers/usb/musb/Kconfig
-+++ b/drivers/usb/musb/Kconfig
-@@ -76,6 +76,7 @@ config USB_MUSB_TUSB6010
- config USB_MUSB_OMAP2PLUS
- 	tristate "OMAP2430 and onwards"
- 	depends on ARCH_OMAP2PLUS
-+	depends on GENERIC_PHY
- 
- config USB_MUSB_AM35X
- 	tristate "AM35x"
-diff --git a/drivers/usb/musb/musb_core.c b/drivers/usb/musb/musb_core.c
-index 29a24ce..cca12c0 100644
---- a/drivers/usb/musb/musb_core.c
-+++ b/drivers/usb/musb/musb_core.c
-@@ -1814,6 +1814,7 @@ musb_init_controller(struct device *dev, int nIrq, void __iomem *ctrl)
- 	musb->min_power = plat->min_power;
- 	musb->ops = plat->platform_ops;
- 	musb->port_mode = plat->mode;
-+	musb->phy_label = plat->phy_label;
- 
- 	/* The musb_platform_init() call:
- 	 *   - adjusts musb->mregs
-diff --git a/drivers/usb/musb/musb_core.h b/drivers/usb/musb/musb_core.h
-index 7d341c3..8f017ab 100644
---- a/drivers/usb/musb/musb_core.h
-+++ b/drivers/usb/musb/musb_core.h
-@@ -46,6 +46,7 @@
- #include <linux/usb.h>
- #include <linux/usb/otg.h>
- #include <linux/usb/musb.h>
-+#include <linux/phy/phy.h>
- 
- struct musb;
- struct musb_hw_ep;
-@@ -346,6 +347,7 @@ struct musb {
- 	u16			int_tx;
- 
- 	struct usb_phy		*xceiv;
-+	struct phy		*phy;
- 
- 	int nIrq;
- 	unsigned		irq_wake:1;
-@@ -424,6 +426,7 @@ struct musb {
- 	unsigned                double_buffer_not_ok:1;
- 
- 	struct musb_hdrc_config	*config;
-+	const char		*phy_label;
- 
- #ifdef MUSB_CONFIG_PROC_FS
- 	struct proc_dir_entry *proc_entry;
-diff --git a/drivers/usb/musb/omap2430.c b/drivers/usb/musb/omap2430.c
-index 6708a3b..87dac0f 100644
---- a/drivers/usb/musb/omap2430.c
-+++ b/drivers/usb/musb/omap2430.c
-@@ -348,11 +348,21 @@ static int omap2430_musb_init(struct musb *musb)
- 	 * up through ULPI.  TWL4030-family PMICs include one,
- 	 * which needs a driver, drivers aren't always needed.
- 	 */
--	if (dev->parent->of_node)
-+	if (dev->parent->of_node) {
-+		musb->phy = devm_phy_get(dev->parent, "usb2-phy");
+diff --git a/Documentation/devicetree/bindings/phy/samsung-phy.txt b/Documentation/devicetree/bindings/phy/samsung-phy.txt
+new file mode 100644
+index 0000000..5ff208c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/phy/samsung-phy.txt
+@@ -0,0 +1,14 @@
++Samsung S5P/EXYNOS SoC series MIPI CSIS/DSIM DPHY
++-------------------------------------------------
 +
-+		/* We can't totally remove musb->xceiv as of now because
-+		 * musb core uses xceiv.state and xceiv.otg. Once we have
-+		 * a separate state machine to handle otg, these can be moved
-+		 * out of xceiv and then we can start using the generic PHY
-+		 * framework
-+		 */
- 		musb->xceiv = devm_usb_get_phy_by_phandle(dev->parent,
- 		    "usb-phy", 0);
--	else
-+	} else {
- 		musb->xceiv = devm_usb_get_phy_dev(dev, 0);
-+		musb->phy = devm_phy_get(dev, musb->phy_label);
++Required properties:
++- compatible : should be "samsung,s5pv210-mipi-video-phy";
++- reg : offset and length of the MIPI DPHY register set;
++- #phy-cells : from the generic phy bindings, must be 1;
++
++For "samsung,s5pv210-mipi-video-phy" compatible PHYs the second cell in
++the PHY specifier identifies the PHY and its meaning is as follows:
++  0 - MIPI CSIS 0,
++  1 - MIPI DSIM 0,
++  2 - MIPI CSIS 1,
++  3 - MIPI DSIM 1.
+diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
+index 5f85909..6f446d0 100644
+--- a/drivers/phy/Kconfig
++++ b/drivers/phy/Kconfig
+@@ -11,3 +11,12 @@ menuconfig GENERIC_PHY
+ 	  devices present in the kernel. This layer will have the generic
+ 	  API by which phy drivers can create PHY using the phy framework and
+ 	  phy users can obtain reference to the PHY.
++
++if GENERIC_PHY
++
++config PHY_EXYNOS_MIPI_VIDEO
++	tristate "S5P/EXYNOS SoC series MIPI CSI-2/DSI PHY driver"
++	help
++	  Support for MIPI CSI-2 and MIPI DSI DPHY found on Samsung
++	  S5P and EXYNOS SoCs.
++endif
+diff --git a/drivers/phy/Makefile b/drivers/phy/Makefile
+index 9e9560f..71d8841 100644
+--- a/drivers/phy/Makefile
++++ b/drivers/phy/Makefile
+@@ -2,4 +2,5 @@
+ # Makefile for the phy drivers.
+ #
+ 
+-obj-$(CONFIG_GENERIC_PHY)	+= phy-core.o
++obj-$(CONFIG_GENERIC_PHY)		+= phy-core.o
++obj-$(CONFIG_PHY_EXYNOS_MIPI_VIDEO)	+= phy-exynos-mipi-video.o
+diff --git a/drivers/phy/phy-exynos-mipi-video.c b/drivers/phy/phy-exynos-mipi-video.c
+new file mode 100644
+index 0000000..7e7fcd7
+--- /dev/null
++++ b/drivers/phy/phy-exynos-mipi-video.c
+@@ -0,0 +1,169 @@
++/*
++ * Samsung S5P/EXYNOS SoC series MIPI CSIS/DSIM DPHY driver
++ *
++ * Copyright (C) 2013 Samsung Electronics Co., Ltd.
++ * Author: Sylwester Nawrocki <s.nawrocki@samsung.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++#include <linux/phy/phy.h>
++#include <linux/platform_device.h>
++#include <linux/spinlock.h>
++
++/* MIPI_PHYn_CONTROL register offset: n = 0..1 */
++#define EXYNOS_MIPI_PHY_CONTROL(n)	((n) * 4)
++#define EXYNOS_MIPI_PHY_ENABLE		(1 << 0)
++#define EXYNOS_MIPI_PHY_SRESETN		(1 << 1)
++#define EXYNOS_MIPI_PHY_MRESETN		(1 << 2)
++#define EXYNOS_MIPI_PHY_RESET_MASK	(3 << 1)
++
++enum exynos_mipi_phy_id {
++	EXYNOS_MIPI_PHY_ID_CSIS0,
++	EXYNOS_MIPI_PHY_ID_DSIM0,
++	EXYNOS_MIPI_PHY_ID_CSIS1,
++	EXYNOS_MIPI_PHY_ID_DSIM1,
++	EXYNOS_MIPI_PHYS_NUM
++};
++
++#define IS_EXYNOS_MIPI_DSIM_PHY_ID(id) \
++	((id) = EXYNOS_MIPI_PHY_ID_DSIM0 || (id) = EXYNOS_MIPI_PHY_ID_DSIM0)
++
++struct exynos_mipi_video_phy {
++	spinlock_t slock;
++	struct phy *phys[EXYNOS_MIPI_PHYS_NUM];
++	void __iomem *regs;
++};
++
++static int __set_phy_state(struct exynos_mipi_video_phy *state,
++			enum exynos_mipi_phy_id id, unsigned int on)
++{
++	void __iomem *addr;
++	u32 reg, reset;
++
++	addr = state->regs + EXYNOS_MIPI_PHY_CONTROL(id / 2);
++
++	if (IS_EXYNOS_MIPI_DSIM_PHY_ID(id))
++		reset = EXYNOS_MIPI_PHY_MRESETN;
++	else
++		reset = EXYNOS_MIPI_PHY_SRESETN;
++
++	spin_lock(&state->slock);
++	reg = readl(addr);
++	if (on)
++		reg |= reset;
++	else
++		reg &= ~reset;
++	writel(reg, addr);
++
++	/* Clear ENABLE bit only if MRESETN, SRESETN bits are not set. */
++	if (on)
++		reg |= EXYNOS_MIPI_PHY_ENABLE;
++	else if (!(reg & EXYNOS_MIPI_PHY_RESET_MASK))
++		reg &= ~EXYNOS_MIPI_PHY_ENABLE;
++
++	writel(reg, addr);
++	spin_unlock(&state->slock);
++	return 0;
++}
++
++static int exynos_mipi_video_phy_power_on(struct phy *phy)
++{
++	struct exynos_mipi_video_phy *state = phy_get_drvdata(phy);
++	return __set_phy_state(state, phy->id, 1);
++}
++
++static int exynos_mipi_video_phy_power_off(struct phy *phy)
++{
++	struct exynos_mipi_video_phy *state = phy_get_drvdata(phy);
++	return __set_phy_state(state, phy->id, 0);
++}
++
++static struct phy *exynos_mipi_video_phy_xlate(struct device *dev,
++					struct of_phandle_args *args)
++{
++	struct exynos_mipi_video_phy *state = dev_get_drvdata(dev);
++
++	if (WARN_ON(args->args[0] > EXYNOS_MIPI_PHYS_NUM))
++		return ERR_PTR(-ENODEV);
++
++	return state->phys[args->args[0]];
++}
++
++static struct phy_ops exynos_mipi_video_phy_ops = {
++	.power_on	= exynos_mipi_video_phy_power_on,
++	.power_off	= exynos_mipi_video_phy_power_off,
++	.owner		= THIS_MODULE,
++};
++
++static int exynos_mipi_video_phy_probe(struct platform_device *pdev)
++{
++	struct exynos_mipi_video_phy *state;
++	struct device *dev = &pdev->dev;
++	struct resource *res;
++	struct phy_provider *phy_provider;
++	int i;
++
++	state = devm_kzalloc(dev, sizeof(*state), GFP_KERNEL);
++	if (!state)
++		return -ENOMEM;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++
++	state->regs = devm_ioremap_resource(dev, res);
++	if (IS_ERR(state->regs))
++		return PTR_ERR(state->regs);
++
++	dev_set_drvdata(dev, state);
++	spin_lock_init(&state->slock);
++
++	phy_provider = devm_of_phy_provider_register(dev,
++					exynos_mipi_video_phy_xlate);
++	if (IS_ERR(phy_provider))
++		return PTR_ERR(phy_provider);
++
++	for (i = 0; i < EXYNOS_MIPI_PHYS_NUM; i++) {
++		char label[8];
++
++		snprintf(label, sizeof(label), "%s.%d",
++				IS_EXYNOS_MIPI_DSIM_PHY_ID(i) ?
++				"dsim" : "csis", i / 2);
++
++		state->phys[i] = devm_phy_create(dev, i,
++				&exynos_mipi_video_phy_ops, label);
++		if (IS_ERR(state->phys[i])) {
++			dev_err(dev, "failed to create PHY %s\n", label);
++			return PTR_ERR(state->phys[i]);
++		}
++		phy_set_drvdata(state->phys[i], state);
 +	}
- 
- 	if (IS_ERR(musb->xceiv)) {
- 		status = PTR_ERR(musb->xceiv);
-@@ -364,6 +374,10 @@ static int omap2430_musb_init(struct musb *musb)
- 		return -EPROBE_DEFER;
- 	}
- 
-+	if (IS_ERR(musb->phy)) {
-+		pr_err("HS USB OTG: no PHY configured\n");
-+		return PTR_ERR(musb->phy);
++
++	return 0;
++}
++
++static const struct of_device_id exynos_mipi_video_phy_of_match[] = {
++	{ .compatible = "samsung,s5pv210-mipi-video-phy" },
++	{ },
++};
++MODULE_DEVICE_TABLE(of, exynos_mipi_video_phy_of_match);
++
++static struct platform_driver exynos_mipi_video_phy_driver = {
++	.probe	= exynos_mipi_video_phy_probe,
++	.driver = {
++		.of_match_table	= exynos_mipi_video_phy_of_match,
++		.name  = "exynos-mipi-video-phy",
++		.owner = THIS_MODULE,
 +	}
- 	musb->isr = omap2430_musb_interrupt;
- 
- 	status = pm_runtime_get_sync(dev);
-@@ -397,7 +411,7 @@ static int omap2430_musb_init(struct musb *musb)
- 	if (glue->status != OMAP_MUSB_UNKNOWN)
- 		omap_musb_set_mailbox(glue);
- 
--	usb_phy_init(musb->xceiv);
-+	phy_init(musb->phy);
- 
- 	pm_runtime_put_noidle(musb->controller);
- 	return 0;
-@@ -460,6 +474,7 @@ static int omap2430_musb_exit(struct musb *musb)
- 	del_timer_sync(&musb_idle_timer);
- 
- 	omap2430_low_level_exit(musb);
-+	phy_exit(musb->phy);
- 
- 	return 0;
- }
-@@ -633,7 +648,7 @@ static int omap2430_runtime_suspend(struct device *dev)
- 				OTG_INTERFSEL);
- 
- 		omap2430_low_level_exit(musb);
--		usb_phy_set_suspend(musb->xceiv, 1);
-+		phy_power_off(musb->phy);
- 	}
- 
- 	return 0;
-@@ -648,8 +663,7 @@ static int omap2430_runtime_resume(struct device *dev)
- 		omap2430_low_level_init(musb);
- 		musb_writel(musb->mregs, OTG_INTERFSEL,
- 				musb->context.otg_interfsel);
--
--		usb_phy_set_suspend(musb->xceiv, 0);
-+		phy_power_on(musb->phy);
- 	}
- 
- 	return 0;
++};
++module_platform_driver(exynos_mipi_video_phy_driver);
++
++MODULE_DESCRIPTION("Samsung S5P/EXYNOS SoC MIPI CSI-2/DSI PHY driver");
++MODULE_LICENSE("GPL v2");
++MODULE_AUTHOR("Sylwester Nawrocki <s.nawrocki@samsung.com>");
 -- 
 1.7.10.4
 

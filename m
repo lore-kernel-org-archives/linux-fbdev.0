@@ -1,47 +1,163 @@
-From: Alison Wang <b18965@freescale.com>
-Date: Fri, 05 Jul 2013 07:51:38 +0000
-Subject: [PATCH 0/4] ARM: vf610: Add DCU framebuffer driver for Vybrid VF610 platform
-Message-Id: <1373010702-9244-1-git-send-email-b18965@freescale.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Thu, 18 Jul 2013 06:58:21 +0000
+Subject: [PATCH 12/15] ARM: Samsung: Remove the MIPI PHY setup code
+Message-Id: <1374129984-765-13-git-send-email-kishon@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1374129984-765-1-git-send-email-kishon@ti.com>
+In-Reply-To: <1374129984-765-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-This series contain DCU framebuffer driver for Freescale Vybrid VF610 platform.
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
 
-The Display Controller Unit (DCU) module is a system master that
-fetches graphics stored in internal or external memory and displays
-them on a TFT LCD panel. A wide range of panel sizes is supported
-and the timing of the interface signals is highly configurable.
-Graphics are read directly from memory and then blended in real-time,
-which allows for dynamic content creation with minimal CPU intervention.
+Generic PHY drivers are used to handle the MIPI CSIS and MIPI DSIM
+DPHYs so we can remove now unused code at arch/arm/plat-samsung.
+In case there is any board file for S5PV210 platforms using MIPI
+CSIS/DSIM (not any upstream currently) it should use the generic
+PHY API to bind the PHYs to respective PHY consumer drivers and
+a platform device for the PHY provider should be defined.
 
-The features:
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Acked-by: Felipe Balbi <balbi@ti.com>
+Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+---
+ arch/arm/mach-exynos/include/mach/regs-pmu.h    |    5 --
+ arch/arm/mach-s5pv210/include/mach/regs-clock.h |    4 --
+ arch/arm/plat-samsung/Kconfig                   |    5 --
+ arch/arm/plat-samsung/Makefile                  |    1 -
+ arch/arm/plat-samsung/setup-mipiphy.c           |   60 -----------------------
+ 5 files changed, 75 deletions(-)
+ delete mode 100644 arch/arm/plat-samsung/setup-mipiphy.c
 
-(1) Full RGB888 output to TFT LCD panel.
-(2) For the current LCD panel, WQVGA "480x272" is supported.
-(3) Blending of each pixel using up to 4 source layers dependent on size of panel.
-(4) Each graphic layer can be placed with one pixel resolution in either axis.
-(5) Each graphic layer support RGB565 and RGB888 direct colors without alpha channel
-and BGRA8888 direct colors with an alpha channel.
-(6) Each graphic layer support alpha blending with 8-bit resolution.
-
-----------------------------------------------------------------
-Alison Wang (4):
-      ARM: dts: vf610: Add DCU and TCON nodes
-      ARM: dts: vf610-twr: Enable DCU and TCON devices
-      ARM: clk: vf610: Add DCU and TCON clock support
-      fb: Add DCU framebuffer driver for Vybrid VF610 platform
-
- arch/arm/boot/dts/vf610-twr.dts         |   10 +
- arch/arm/boot/dts/vf610.dtsi            |   18 ++
- arch/arm/mach-imx/clk-vf610.c           |    5 +
- drivers/video/Kconfig                   |    9 +
- drivers/video/Makefile                  |    1 +
- drivers/video/fsl-dcu-fb.c              | 1091 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- include/dt-bindings/clock/vf610-clock.h |    3 +-
- 7 files changed, 1136 insertions(+), 1 deletion(-)
- create mode 100644 drivers/video/fsl-dcu-fb.c
-
+diff --git a/arch/arm/mach-exynos/include/mach/regs-pmu.h b/arch/arm/mach-exynos/include/mach/regs-pmu.h
+index 57344b7..2cdb63e 100644
+--- a/arch/arm/mach-exynos/include/mach/regs-pmu.h
++++ b/arch/arm/mach-exynos/include/mach/regs-pmu.h
+@@ -44,11 +44,6 @@
+ #define S5P_DAC_PHY_CONTROL			S5P_PMUREG(0x070C)
+ #define S5P_DAC_PHY_ENABLE			(1 << 0)
+ 
+-#define S5P_MIPI_DPHY_CONTROL(n)		S5P_PMUREG(0x0710 + (n) * 4)
+-#define S5P_MIPI_DPHY_ENABLE			(1 << 0)
+-#define S5P_MIPI_DPHY_SRESETN			(1 << 1)
+-#define S5P_MIPI_DPHY_MRESETN			(1 << 2)
+-
+ #define S5P_INFORM0				S5P_PMUREG(0x0800)
+ #define S5P_INFORM1				S5P_PMUREG(0x0804)
+ #define S5P_INFORM2				S5P_PMUREG(0x0808)
+diff --git a/arch/arm/mach-s5pv210/include/mach/regs-clock.h b/arch/arm/mach-s5pv210/include/mach/regs-clock.h
+index 032de66..e345584 100644
+--- a/arch/arm/mach-s5pv210/include/mach/regs-clock.h
++++ b/arch/arm/mach-s5pv210/include/mach/regs-clock.h
+@@ -147,10 +147,6 @@
+ #define S5P_HDMI_PHY_CONTROL	S5P_CLKREG(0xE804)
+ #define S5P_USB_PHY_CONTROL	S5P_CLKREG(0xE80C)
+ #define S5P_DAC_PHY_CONTROL	S5P_CLKREG(0xE810)
+-#define S5P_MIPI_DPHY_CONTROL(x) S5P_CLKREG(0xE814)
+-#define S5P_MIPI_DPHY_ENABLE	(1 << 0)
+-#define S5P_MIPI_DPHY_SRESETN	(1 << 1)
+-#define S5P_MIPI_DPHY_MRESETN	(1 << 2)
+ 
+ #define S5P_INFORM0		S5P_CLKREG(0xF000)
+ #define S5P_INFORM1		S5P_CLKREG(0xF004)
+diff --git a/arch/arm/plat-samsung/Kconfig b/arch/arm/plat-samsung/Kconfig
+index 3dc5cbe..db2d814 100644
+--- a/arch/arm/plat-samsung/Kconfig
++++ b/arch/arm/plat-samsung/Kconfig
+@@ -402,11 +402,6 @@ config S3C24XX_PWM
+ 	  Support for exporting the PWM timer blocks via the pwm device
+ 	  system
+ 
+-config S5P_SETUP_MIPIPHY
+-	bool
+-	help
+-	  Compile in common setup code for MIPI-CSIS and MIPI-DSIM devices
+-
+ config S3C_SETUP_CAMIF
+ 	bool
+ 	help
+diff --git a/arch/arm/plat-samsung/Makefile b/arch/arm/plat-samsung/Makefile
+index 98d07d8..98f1e31 100644
+--- a/arch/arm/plat-samsung/Makefile
++++ b/arch/arm/plat-samsung/Makefile
+@@ -41,7 +41,6 @@ obj-$(CONFIG_S5P_DEV_UART)	+= s5p-dev-uart.o
+ obj-$(CONFIG_SAMSUNG_DEV_BACKLIGHT)	+= dev-backlight.o
+ 
+ obj-$(CONFIG_S3C_SETUP_CAMIF)	+= setup-camif.o
+-obj-$(CONFIG_S5P_SETUP_MIPIPHY)	+= setup-mipiphy.o
+ 
+ # DMA support
+ 
+diff --git a/arch/arm/plat-samsung/setup-mipiphy.c b/arch/arm/plat-samsung/setup-mipiphy.c
+deleted file mode 100644
+index 66df315..0000000
+--- a/arch/arm/plat-samsung/setup-mipiphy.c
++++ /dev/null
+@@ -1,60 +0,0 @@
+-/*
+- * Copyright (C) 2011 Samsung Electronics Co., Ltd.
+- *
+- * S5P - Helper functions for MIPI-CSIS and MIPI-DSIM D-PHY control
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- */
+-
+-#include <linux/export.h>
+-#include <linux/kernel.h>
+-#include <linux/platform_device.h>
+-#include <linux/io.h>
+-#include <linux/spinlock.h>
+-#include <mach/regs-clock.h>
+-
+-static int __s5p_mipi_phy_control(int id, bool on, u32 reset)
+-{
+-	static DEFINE_SPINLOCK(lock);
+-	void __iomem *addr;
+-	unsigned long flags;
+-	u32 cfg;
+-
+-	id = max(0, id);
+-	if (id > 1)
+-		return -EINVAL;
+-
+-	addr = S5P_MIPI_DPHY_CONTROL(id);
+-
+-	spin_lock_irqsave(&lock, flags);
+-
+-	cfg = __raw_readl(addr);
+-	cfg = on ? (cfg | reset) : (cfg & ~reset);
+-	__raw_writel(cfg, addr);
+-
+-	if (on) {
+-		cfg |= S5P_MIPI_DPHY_ENABLE;
+-	} else if (!(cfg & (S5P_MIPI_DPHY_SRESETN |
+-			    S5P_MIPI_DPHY_MRESETN) & ~reset)) {
+-		cfg &= ~S5P_MIPI_DPHY_ENABLE;
+-	}
+-
+-	__raw_writel(cfg, addr);
+-	spin_unlock_irqrestore(&lock, flags);
+-
+-	return 0;
+-}
+-
+-int s5p_csis_phy_enable(int id, bool on)
+-{
+-	return __s5p_mipi_phy_control(id, on, S5P_MIPI_DPHY_SRESETN);
+-}
+-EXPORT_SYMBOL(s5p_csis_phy_enable);
+-
+-int s5p_dsim_phy_enable(struct platform_device *pdev, bool on)
+-{
+-	return __s5p_mipi_phy_control(pdev->id, on, S5P_MIPI_DPHY_MRESETN);
+-}
+-EXPORT_SYMBOL(s5p_dsim_phy_enable);
+-- 
+1.7.10.4
 

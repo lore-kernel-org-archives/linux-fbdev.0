@@ -1,37 +1,47 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 30 Jul 2013 18:26:27 +0000
-Subject: [PATCH v2 20/24] video: da8xx-fb: ensure pdata only for non-dt
-Message-Id: <1375208791-15781-21-git-send-email-detheridge@ti.com>
+From: Boris BREZILLON <b.brezillon@overkiz.com>
+Date: Thu, 18 Jul 2013 07:40:25 +0000
+Subject: [PATCH v4 3/5] at91/avr32/atmel_lcdfb: prepare clk before calling enable
+Message-Id: <1374133225-19141-1-git-send-email-b.brezillon@overkiz.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1374132753-15206-1-git-send-email-b.brezillon@overkiz.com>
+In-Reply-To: <1374132753-15206-1-git-send-email-b.brezillon@overkiz.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-From: Afzal Mohammed <afzal@ti.com>
+Replace clk_enable/disable with clk_prepare_enable/disable_unprepare to
+avoid common clk framework warnings.
 
-This driver is DT probe-able, hence ensure presence of platform data
-only for non-DT boot.
-
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
+Signed-off-by: Boris BREZILLON <b.brezillon@overkiz.com>
+Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 ---
- drivers/video/da8xx-fb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/atmel_lcdfb.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index ca8f6fc..697b07c 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -1304,7 +1304,7 @@ static int fb_probe(struct platform_device *device)
- 	int ret;
- 	unsigned long ulcm;
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index ece49d5..bf9c5d0 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -954,14 +954,14 @@ static int __init atmel_lcdfb_init_fbinfo(struct atmel_lcdfb_info *sinfo)
  
--	if (fb_pdata = NULL) {
-+	if (fb_pdata = NULL && !device->dev.of_node) {
- 		dev_err(&device->dev, "Can not get platform data\n");
- 		return -ENOENT;
- 	}
+ static void atmel_lcdfb_start_clock(struct atmel_lcdfb_info *sinfo)
+ {
+-	clk_enable(sinfo->bus_clk);
+-	clk_enable(sinfo->lcdc_clk);
++	clk_prepare_enable(sinfo->bus_clk);
++	clk_prepare_enable(sinfo->lcdc_clk);
+ }
+ 
+ static void atmel_lcdfb_stop_clock(struct atmel_lcdfb_info *sinfo)
+ {
+-	clk_disable(sinfo->bus_clk);
+-	clk_disable(sinfo->lcdc_clk);
++	clk_disable_unprepare(sinfo->bus_clk);
++	clk_disable_unprepare(sinfo->lcdc_clk);
+ }
+ 
+ #ifdef CONFIG_OF
 -- 
-1.7.0.4
+1.7.9.5
 

@@ -1,12 +1,16 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 08 Jul 2013 02:56:36 +0000
-Subject: [PATCH V5 2/4] phy: Add driver for Exynos DP PHY
-Message-Id: <001d01ce7b86$c32b9310$4982b930$@samsung.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Thu, 18 Jul 2013 06:58:22 +0000
+Subject: [PATCH 13/15] phy: Add driver for Exynos DP PHY
+Message-Id: <1374129984-765-14-git-send-email-kishon@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1374129984-765-1-git-send-email-kishon@ti.com>
+In-Reply-To: <1374129984-765-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
+
+From: Jingoo Han <jg1.han@samsung.com>
 
 Add a PHY provider driver for the Samsung Exynos SoC Display Port PHY.
 
@@ -14,6 +18,7 @@ Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 Reviewed-by: Tomasz Figa <t.figa@samsung.com>
 Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
 Acked-by: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
 ---
  .../devicetree/bindings/phy/samsung-phy.txt        |    8 ++
  drivers/phy/Kconfig                                |    6 ++
@@ -181,5 +186,4 @@ index 0000000..3c8e247
 +MODULE_LICENSE("GPL v2");
 -- 
 1.7.10.4
-
 

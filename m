@@ -1,88 +1,115 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Date: Sun, 21 Jul 2013 19:22:21 +0000
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Mon, 22 Jul 2013 07:37:18 +0000
 Subject: Re: [PATCH 01/15] drivers: phy: add generic PHY framework
-Message-Id: <Pine.LNX.4.44L0.1307211453450.19133-100000@netrider.rowland.org>
+Message-Id: <51ECDE5E.3050104@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-In-Reply-To: <51EC170E.3080201@gmail.com>
-References: <1374129984-765-2-git-send-email-kishon@ti.com>
-In-Reply-To: <1374129984-765-2-git-send-email-kishon@ti.com>
+References: <Pine.LNX.4.44L0.1307211453450.19133-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1307211453450.19133-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Sun, 21 Jul 2013, Sylwester Nawrocki wrote:
+Hi,
 
-> > What's wrong with the platform_data structure, why can't that be used
-> > for this?
+On Monday 22 July 2013 12:52 AM, Alan Stern wrote:
+> On Sun, 21 Jul 2013, Sylwester Nawrocki wrote:
 > 
-> At the point the platform data of some driver is initialized, e.g. in
-> board setup code the PHY pointer is not known, since the PHY supplier
-> driver has not initialized yet.  Even though we wanted to pass pointer
-> to a PHY through some notifier call, it would have been not clear
-> which PHY user driver should match on such notifier.  A single PHY
-> supplier driver can create M PHY objects and this needs to be mapped
-> to N PHY user drivers.  This mapping needs to be defined somewhere by
-> the system integrator.  It works well with device tree, but except that
-> there seems to be no other reliable infrastructure in the kernel to
-> define links/dependencies between devices, since device identifiers are
-> not known in advance in all cases.
+>>> What's wrong with the platform_data structure, why can't that be used
+>>> for this?
+>>
+>> At the point the platform data of some driver is initialized, e.g. in
+>> board setup code the PHY pointer is not known, since the PHY supplier
+>> driver has not initialized yet.  Even though we wanted to pass pointer
+>> to a PHY through some notifier call, it would have been not clear
+>> which PHY user driver should match on such notifier.  A single PHY
+>> supplier driver can create M PHY objects and this needs to be mapped
+>> to N PHY user drivers.  This mapping needs to be defined somewhere by
+>> the system integrator.  It works well with device tree, but except that
+>> there seems to be no other reliable infrastructure in the kernel to
+>> define links/dependencies between devices, since device identifiers are
+>> not known in advance in all cases.
+>>
+>> What Tomasz proposed seems currently most reasonable to me for non-dt.
+>>
+>>> Or, if not, we can always add pointers to the platform device structure,
+>>> or even the main 'struct device' as well, that's what it is there for.
+>>
+>> Still we would need to solve a problem which platform device structure
+>> gets which PHY pointer.
 > 
-> What Tomasz proposed seems currently most reasonable to me for non-dt.
+> Can you explain the issues in more detail?  I don't fully understand 
+> the situation.
 > 
-> > Or, if not, we can always add pointers to the platform device structure,
-> > or even the main 'struct device' as well, that's what it is there for.
+> Here's what I think I know:
 > 
-> Still we would need to solve a problem which platform device structure
-> gets which PHY pointer.
+> 	The PHY and the controller it is attached to are both physical
+> 	devices.
+> 
+> 	The connection between them is hardwired by the system
+> 	manufacturer and cannot be changed by software.
+> 
+> 	PHYs are generally described by fixed system-specific board
+> 	files or by Device Tree information.  Are they ever discovered
+> 	dynamically?
 
-Can you explain the issues in more detail?  I don't fully understand 
-the situation.
+No. They are created just like any other platform devices are created.
+> 
+> 	Is the same true for the controllers attached to the PHYs?
+> 	If not -- if both a PHY and a controller are discovered 
+> 	dynamically -- how does the kernel know whether they are 
+> 	connected to each other?
 
-Here's what I think I know:
+No differences here. Both PHY and controller will have dt information or hwmod
+data using which platform devices will be created.
+> 
+> 	The kernel needs to know which controller is attached to which
+> 	PHY.  Currently this information is represented by name or ID
+> 	strings embedded in platform data.
 
-	The PHY and the controller it is attached to are both physical
-	devices.
+right. It's embedded in the platform data of the controller.
+> 
+> 	The PHY's driver (the supplier) uses the platform data to 
+> 	construct a platform_device structure that represents the PHY.  
 
-	The connection between them is hardwired by the system
-	manufacturer and cannot be changed by software.
+Currently the driver assigns static labels (corresponding to the label used in
+the platform data of the controller).
+> 	Until this is done, the controller's driver (the client) cannot 
+> 	use the PHY.
 
-	PHYs are generally described by fixed system-specific board
-	files or by Device Tree information.  Are they ever discovered
-	dynamically?
+right.
+> 
+> 	Since there is no parent-child relation between the PHY and the 
+> 	controller, there is no guarantee that the PHY's driver will be
+> 	ready when the controller's driver wants to use it.  A deferred
+> 	probe may be needed.
 
-	Is the same true for the controllers attached to the PHYs?
-	If not -- if both a PHY and a controller are discovered 
-	dynamically -- how does the kernel know whether they are 
-	connected to each other?
+right.
+> 
+> 	The issue (or one of the issues) in this discussion is that 
+> 	Greg does not like the idea of using names or IDs to associate
+> 	PHYs with controllers, because they are too prone to
+> 	duplications or other errors.  Pointers are more reliable.
+> 
+> 	But pointers to what?  Since the only data known to be 
+> 	available to both the PHY driver and controller driver is the
+> 	platform data, the obvious answer is a pointer to platform data
+> 	(either for the PHY or for the controller, or maybe both).
 
-	The kernel needs to know which controller is attached to which
-	PHY.  Currently this information is represented by name or ID
-	strings embedded in platform data.
+hmm.. it's not going to be simple though as the platform device for the PHY and
+controller can be created in entirely different places. e.g., in some cases the
+PHY device is a child of some mfd core device (the device will be created in
+drivers/mfd) and the controller driver (usually) is created in board file. I
+guess then we have to come up with something to share a pointer in two
+different files.
+> 
+> Probably some of the details above are wrong; please indicate where I
+> have gone astray.  Also, I'm not clear about the role played by various 
+> APIs.  For example, where does phy_create() fit into this picture?
 
-	The PHY's driver (the supplier) uses the platform data to 
-	construct a platform_device structure that represents the PHY.  
-	Until this is done, the controller's driver (the client) cannot 
-	use the PHY.
+phy_create is the API by which the PHY's driver (the supplier) hook into the
+PHY framework. It's like the controller driver will always interact with the
+PHY driver through the PHY framework.
 
-	Since there is no parent-child relation between the PHY and the 
-	controller, there is no guarantee that the PHY's driver will be
-	ready when the controller's driver wants to use it.  A deferred
-	probe may be needed.
-
-	The issue (or one of the issues) in this discussion is that 
-	Greg does not like the idea of using names or IDs to associate
-	PHYs with controllers, because they are too prone to
-	duplications or other errors.  Pointers are more reliable.
-
-	But pointers to what?  Since the only data known to be 
-	available to both the PHY driver and controller driver is the
-	platform data, the obvious answer is a pointer to platform data
-	(either for the PHY or for the controller, or maybe both).
-
-Probably some of the details above are wrong; please indicate where I
-have gone astray.  Also, I'm not clear about the role played by various 
-APIs.  For example, where does phy_create() fit into this picture?
-
-Alan Stern
-
+Thanks
+Kishon

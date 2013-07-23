@@ -1,114 +1,59 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Tue, 23 Jul 2013 17:37:11 +0000
+From: Mark Brown <broonie@kernel.org>
+Date: Tue, 23 Jul 2013 17:44:56 +0000
 Subject: Re: [PATCH 01/15] drivers: phy: add generic PHY framework
-Message-Id: <20130723173710.GB28284@kroah.com>
+Message-Id: <20130723174456.GM9858@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="HQbpMUFNRY4iYVZ3"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <Pine.LNX.4.44L0.1307231017290.1304-100000@iolanthe.rowland.org>
  <51EE9EC0.6060905@ti.com> <20130723161846.GD2486@kroah.com>
- <1446965.6APW5ZgLBW@amdc1227>
-In-Reply-To: <1446965.6APW5ZgLBW@amdc1227>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <1446965.6APW5ZgLBW@amdc1227> <20130723173710.GB28284@kroah.com>
+In-Reply-To: <20130723173710.GB28284@kroah.com>
 To: linux-arm-kernel@lists.infradead.org
 
-On Tue, Jul 23, 2013 at 06:50:29PM +0200, Tomasz Figa wrote:
-> > Ick, no.  Why can't you just pass the pointer to the phy itself?  If you
-> > had a "priv" pointer to search from, then you could have just passed the
-> > original phy pointer in the first place, right?
-> 
-> IMHO it would be better if you provided some code example, but let's try to 
-> check if I understood you correctly.
 
-It's not my code that I want to have added, so I don't have to write
-examples, I just get to complain about the existing stuff :)
+--HQbpMUFNRY4iYVZ3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 8><------------------------------------------------------------------------
-> 
-> [Board file]
-> 
-> static struct phy my_phy;
-> 
-> static struct platform_device phy_pdev = {
-> 	/* ... */
-> 	.platform_data = &my_phy;
-> 	/* ... */
-> };
-> 
-> static struct platform_device phy_pdev = {
-> 	/* ... */
-> 	.platform_data = &my_phy;
-> 	/* ... */
-> };
-> 
-> [Provider driver]
-> 
-> struct phy *phy = pdev->dev.platform_data;
-> 
-> ret = phy_create(phy);
-> 
-> [Consumer driver]
-> 
-> struct phy *phy = pdev->dev.platform_data;
-> 
-> ret = phy_get(&pdev->dev, phy);
-> 
-> ------------------------------------------------------------------------><8
-> 
-> Is this what you mean?
+On Tue, Jul 23, 2013 at 10:37:11AM -0700, Greg KH wrote:
+> On Tue, Jul 23, 2013 at 06:50:29PM +0200, Tomasz Figa wrote:
 
-No.  Well, kind of.  What's wrong with using the platform data structure
-unique to the board to have the pointer?
+> > I fully agree that a simple, single string will not scale even in some,=
+ not=20
+> > so uncommon cases, but there is already a lot of existing lookup soluti=
+ons=20
+> > over the kernel and so there is no point in introducing another one.
 
-For example (just randomly picking one), the ata-pxa driver would change
-include/linux/platform_data/ata-pxa.h to have a phy pointer in it:
+> I'm trying to get _rid_ of lookup "solutions" and just use a real
+> pointer, as you should.  I'll go tackle those other ones after this one
+> is taken care of, to show how the others should be handled as well.
 
-struct phy;
+What are the problems you are seeing with doing things with lookups?
+Having to write platform data for everything gets old fast and the code
+duplication is pretty tedious...
 
-struct  pata_pxa_pdata {
-	/* PXA DMA DREQ<0:2> pin */
-	uint32_t	dma_dreq;
-	/* Register shift */
-	uint32_t	reg_shift;
-	/* IRQ flags */
-	uint32_t	irq_flags;
-	/* PHY */
-	struct phy	*phy;
-};
+--HQbpMUFNRY4iYVZ3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Then, when you create the platform, set the phy* pointer with a call to
-phy_create().  Then you can use that pointer wherever that plaform data
-is available (i.e. whereever platform_data is at).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
 
-> > The issue is that a string "name" is not going to scale at all, as it
-> > requires hard-coded information that will change over time (as the
-> > existing clock interface is already showing.)
-> 
-> I fully agree that a simple, single string will not scale even in some, not 
-> so uncommon cases, but there is already a lot of existing lookup solutions 
-> over the kernel and so there is no point in introducing another one.
+iQIcBAEBAgAGBQJR7sEVAAoJELSic+t+oim9SUcP/ieysuGxUWbhqKHNUQJMzk22
+s5EUHq9mXmZnv8GmwmuFlQZ3ntlWPuahPB8SUVgbwmCG8726u7z5qLSI+6RLPuTm
+n1cTd1UqtKMpg3LlFky+4HaLE844ZE6fGxdQetxxDUj6D3YhENnPyqVOM+4qI9eO
+9FpL2tZArEw1Ob0aFB8LJHL5t9zK2FFLyLqqa+LxctmgN71t/U8uiEXBwsqIxYVS
+0aVhjm5L9FnnUT3uSsu8dznALPGUG5rkdWDe9FzMzyUpV8d+mn7iHHc8h8+0HNQE
+EwtT9OrmBDORDVhq7QaRMejgKyCxTZKorqOB8Z1QmK5BBQZdsQE9Tp7nyFgHcqmC
++Dny2OE2rITlcpj5R/Q93Nv9r+0y/Uf4dOGymxzIMB/cbyAndxvN0EGOzKFvTU9+
+fudz+arQaUOB29jxTN7vlnW+OSExX6zJ9uERObfOG+im8vagKcNvRok88hJOpC+7
+4lEzcZzR5T4C2uvd7Se4YZylZeEW6TnWB9yMln9TW57u1DN5AeZuAimY2GEEc+AF
+1/tvRfkNARDQmR5bianOpNPgDCoO1g+MuPyDOZYWhT/5bfuhei7Y5iy8+522HF65
+CJLlQt9GMlSKcwjre8PS97jTcscmd6CXRxHqhYNowZlbhO+IT0zTXREHuDgCRvZi
+Q63fF0aCpz1Y9Qh3iDYL
+=K4vT
+-----END PGP SIGNATURE-----
 
-I'm trying to get _rid_ of lookup "solutions" and just use a real
-pointer, as you should.  I'll go tackle those other ones after this one
-is taken care of, to show how the others should be handled as well.
-
-> > Please just pass the real "phy" pointer around, that's what it is there
-> > for.  Your "board binding" logic/code should be able to handle this, as
-> > it somehow was going to do the same thing with a "name".
-> 
-> It's technically correct, but quality of this solution isn't really nice, 
-> because it's a layering violation (at least if I understood what you mean). 
-> This is because you need to have full definition of struct phy in board file 
-> and a structure that is used as private data in PHY core comes from 
-> platform code.
-
-No, just a pointer, you don't need the "full" structure until you get to
-some .c code that actually manipulates the phy itself, for all other
-places, you are just dealing with a pointer and a structure you never
-reference.
-
-Does that make more sense?
-
-thanks,
-
-greg k-h
+--HQbpMUFNRY4iYVZ3--

@@ -1,77 +1,86 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Tue, 23 Jul 2013 19:31:05 +0000
+From: Alan Stern <stern@rowland.harvard.edu>
+Date: Tue, 23 Jul 2013 19:36:00 +0000
 Subject: Re: [PATCH 01/15] drivers: phy: add generic PHY framework
-Message-Id: <20130723193105.GP9858@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="8lT/blNmSiRvUClR"
+Message-Id: <Pine.LNX.4.44L0.1307231518310.1304-100000@iolanthe.rowland.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.44L0.1307231017290.1304-100000@iolanthe.rowland.org>
- <51EE9EC0.6060905@ti.com> <20130723161846.GD2486@kroah.com>
- <1446965.6APW5ZgLBW@amdc1227> <20130723173710.GB28284@kroah.com>
- <20130723174456.GM9858@sirena.org.uk>
- <20130723180110.GA8688@kroah.com>
-In-Reply-To: <20130723180110.GA8688@kroah.com>
+In-Reply-To: <1446965.6APW5ZgLBW@amdc1227>
+References: <1374129984-765-2-git-send-email-kishon@ti.com>
+In-Reply-To: <1374129984-765-2-git-send-email-kishon@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
+On Tue, 23 Jul 2013, Tomasz Figa wrote:
 
---8lT/blNmSiRvUClR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> IMHO it would be better if you provided some code example, but let's try to 
+> check if I understood you correctly.
+> 
+> 8><------------------------------------------------------------------------
+> 
+> [Board file]
+> 
+> static struct phy my_phy;
+> 
+> static struct platform_device phy_pdev = {
+> 	/* ... */
+> 	.platform_data = &my_phy;
+> 	/* ... */
+> };
+> 
+> static struct platform_device phy_pdev = {
 
-On Tue, Jul 23, 2013 at 11:01:10AM -0700, Greg KH wrote:
-> On Tue, Jul 23, 2013 at 06:44:56PM +0100, Mark Brown wrote:
+This should be controller_pdev, not phy_pdev, yes?
 
-> > What are the problems you are seeing with doing things with lookups?
+> 	/* ... */
+> 	.platform_data = &my_phy;
+> 	/* ... */
+> };
+> 
+> [Provider driver]
+> 
+> struct phy *phy = pdev->dev.platform_data;
+> 
+> ret = phy_create(phy);
+> 
+> [Consumer driver]
+> 
+> struct phy *phy = pdev->dev.platform_data;
+> 
+> ret = phy_get(&pdev->dev, phy);
 
-> You don't "know" the id of the device you are looking up, due to
-> multiple devices being in the system (dynamic ids, look back earlier in
-> this thread for details about that.)
+Or even just phy_get(&pdev->dev), because phy_get() could be smart 
+enough to to set phy = dev->platform_data.
 
-I got copied in very late so don't have most of the thread I'm afraid,=20
-I did try looking at web archives but didn't see a clear problem
-statement.  In any case this is why the APIs doing lookups do the
-lookups in the context of the requesting device - devices ask for
-whatever name they use locally.
+> ------------------------------------------------------------------------><8
+> 
+> Is this what you mean?
 
-> > Having to write platform data for everything gets old fast and the code
-> > duplication is pretty tedious...
+That's what I was going to suggest too.  The struct phy is defined in
+the board file, which already knows about all the PHYs that exist in
+the system.  (Or perhaps it is allocated dynamically, so that when many
+board files are present in the same kernel, only the entries listed in
+the board file for the current system get created.)  Then the
+structure's address is stored in the platform data and made available
+to both the provider and the consumer.
 
-> Adding a single pointer is "tedious"?  Where is the "name" that you are
-> going to lookup going to come from?  That code doesn't write itself...
+Even though the struct phy is defined (or allocated) in the board file,
+its contents don't get filled in until the PHY driver provides the
+details.
 
-It's adding platform data in the first place that gets tedious - and of
-course there's also DT and ACPI to worry about, it's not just a case of
-platform data and then you're done.  Pushing the lookup into library
-code means that drivers don't have to worry about any of this stuff.
+> It's technically correct, but quality of this solution isn't really nice, 
+> because it's a layering violation (at least if I understood what you mean). 
+> This is because you need to have full definition of struct phy in board file 
+> and a structure that is used as private data in PHY core comes from 
+> platform code.
 
-For most of the APIs doing this there is a clear and unambiguous name in
-the hardware that can be used (and for hardware process reasons is
-unlikely to get changed).  The major exception to this is the clock API
-since it is relatively rare to have clear, segregated IP level
-information for IPs baked into larger chips.  The other APIs tend to be
-establishing chip to chip links.
+You don't have to have a full definition in the board file.  Just a 
+partial definition -- most of the contents can be filled in later, when 
+the PHY driver is ready to store the private data.
 
---8lT/blNmSiRvUClR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+It's not a layering violation for one region of the kernel to store 
+private data in a structure defined by another part of the kernel.  
+This happens all the time (e.g., dev_set_drvdata).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
+Alan Stern
 
-iQIcBAEBAgAGBQJR7tn2AAoJELSic+t+oim9Lt8P/0Dr/y8rOX+c7njkBOSuJ7B1
-6yi2fPPSUkKrUhOfZa5A0uxUEt8uwmS1UC2Pr8uQTkB2fUPYQlX5RKk0pIhA67cE
-KskF4dEVJNR7Nbgxon+pgL4foEUG8wXM4AF+aeo4ySUyBmOxfqpZoK1qjTP1/6CF
-wR9cdaQAFLVNbNcHFEhSJFST1WjoSe+irYwHVtgYWkIBz+qxkEm/LHPgBibexzOu
-EhCb5gFEu0mDL4kb4UI2fVv/+3yEaa8uztspHRrsfTmQUbdW4o0D4ABTowt6XqAT
-Sk9fsjG0Cch71XKNi5SlJB3JAAvgyQo7lT5pWZGRh/VCDzjnHtsl/eG2Gw7SvlPm
-BttItQrUDBtYi9zkv1helwmpkEYDo+VB8zNJi1YylVTawUGUrWNcT7K9PopPi9U6
-9ARkE+CdqZ+KQp2y9l7sEEuT9U6dHFP8PtQhpCyOmzW8CNSPsGuUGsIdVuXzBlnU
-70AQsNLDeiER4avfEWBseWI76w70LHZr0HnwJm4CgVtlcNcLJ0bXI5bVr+TPZS2u
-YaXVg8pAcaClc7USC+pJVDkQEubM7u/PwZw/AOiyx9WIWVhtmnheNM+SBs3KjVOR
-YXN6/jf8T+tOa3TvP7MYenPxf6APJxtiuAenpTWffBJ7HBPhTbQb0ubHuE6fjJ4x
-NxsYGz7vNFP7+uV99BsF
-=Tgf5
------END PGP SIGNATURE-----
-
---8lT/blNmSiRvUClR--

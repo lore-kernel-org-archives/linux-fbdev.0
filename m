@@ -1,162 +1,121 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Date: Tue, 23 Jul 2013 07:55:08 +0000
+From: Alan Stern <stern@rowland.harvard.edu>
+Date: Tue, 23 Jul 2013 14:37:05 +0000
 Subject: Re: [PATCH 01/15] drivers: phy: add generic PHY framework
-Message-Id: <3419798.aorxYv8pdo@flatron>
+Message-Id: <Pine.LNX.4.44L0.1307231017290.1304-100000@iolanthe.rowland.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.44L0.1307221028440.1495-100000@iolanthe.rowland.org>
- <1714400.neMPBWOlzi@flatron>
-In-Reply-To: <1714400.neMPBWOlzi@flatron>
+In-Reply-To: <3419798.aorxYv8pdo@flatron>
+References: <1374129984-765-2-git-send-email-kishon@ti.com>
+In-Reply-To: <1374129984-765-2-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-[Fixed address of devicetree mailing list and added more people on CC.]
+On Tue, 23 Jul 2013, Tomasz Figa wrote:
 
-For reference, full thread can be found under following link:
-http://thread.gmane.org/gmane.linux.ports.arm.kernel/252813
+> On Tuesday 23 of July 2013 09:29:32 Tomasz Figa wrote:
+> > Hi Alan,
 
-Best regards,
-Tomasz
+Thanks for helping to clarify the issues here.
 
-On Tuesday 23 of July 2013 09:29:32 Tomasz Figa wrote:
-> Hi Alan,
-> 
-> On Monday 22 of July 2013 10:44:39 Alan Stern wrote:
-> > On Mon, 22 Jul 2013, Kishon Vijay Abraham I wrote:
-> > > > 	The PHY and the controller it is attached to are both 
-physical
-> > > > 	devices.
-> > > > 	
-> > > > 	The connection between them is hardwired by the system
-> > > > 	manufacturer and cannot be changed by software.
-> > > > 	
-> > > > 	PHYs are generally described by fixed system-specific 
-board
-> > > > 	files or by Device Tree information.  Are they ever 
-discovered
-> > > > 	dynamically?
-> > > 
-> > > No. They are created just like any other platform devices are
-> > > created.
+> > > Okay.  Are PHYs _always_ platform devices?
 > > 
-> > Okay.  Are PHYs _always_ platform devices?
-> 
-> They can be i2c, spi or any other device types as well.
-> 
-> > > > 	Is the same true for the controllers attached to the PHYs?
-> > > > 	If not -- if both a PHY and a controller are discovered
-> > > > 	dynamically -- how does the kernel know whether they are
-> > > > 	connected to each other?
+> > They can be i2c, spi or any other device types as well.
+
+In those other cases, presumably there is no platform data associated
+with the PHY since it isn't a platform device.  Then how does the
+kernel know which controller is attached to the PHY?  Is this spelled
+out in platform data associated with the PHY's i2c/spi/whatever parent?
+
+> > > > > 	PHY.  Currently this information is represented by name or 
+> ID
+> > > > > 	strings embedded in platform data.
+> > > > 
+> > > > right. It's embedded in the platform data of the controller.
 > > > 
-> > > No differences here. Both PHY and controller will have dt
-> > > information
-> > > or hwmod data using which platform devices will be created.
-> > > 
-> > > > 	The kernel needs to know which controller is attached to 
-which
-> > > > 	PHY.  Currently this information is represented by name or 
-ID
-> > > > 	strings embedded in platform data.
-> > > 
-> > > right. It's embedded in the platform data of the controller.
+> > > It must also be embedded in the PHY's platform data somehow.
+> > > Otherwise, how would the kernel know which PHY to use?
 > > 
-> > It must also be embedded in the PHY's platform data somehow.
-> > Otherwise, how would the kernel know which PHY to use?
-> 
-> By using a PHY lookup as Stephen and I suggested in our previous
-> replies. Without any extra data in platform data. (I have even posted a
-> code example.)
-> 
-> > > > 	The PHY's driver (the supplier) uses the platform data to
-> > > > 	construct a platform_device structure that represents the 
-PHY.
+> > By using a PHY lookup as Stephen and I suggested in our previous
+> > replies. Without any extra data in platform data. (I have even posted a
+> > code example.)
+
+I don't understand, because I don't know what "a PHY lookup" does.
+
+> > > In this case, it doesn't matter where the platform_device structures
+> > > are created or where the driver source code is.  Let's take a simple
+> > > example.  Suppose the system design includes a PHY named "foo".  Then
+> > > the board file could contain:
 > > > 
-> > > Currently the driver assigns static labels (corresponding to the
-> > > label
-> > > used in the platform data of the controller).
+> > > struct phy_info { ... } phy_foo;
+> > > EXPORT_SYMBOL_GPL(phy_foo);
 > > > 
-> > > > 	Until this is done, the controller's driver (the client) 
-cannot
-> > > > 	use the PHY.
+> > > and a header file would contain:
 > > > 
-> > > right.
+> > > extern struct phy_info phy_foo;
 > > > 
-> > > > 	Since there is no parent-child relation between the PHY 
-and the
-> > > > 	controller, there is no guarantee that the PHY's driver 
-will be
-> > > > 	ready when the controller's driver wants to use it.  A 
-deferred
-> > > > 	probe may be needed.
+> > > The PHY supplier could then call phy_create(&phy_foo), and the PHY
+> > > client could call phy_find(&phy_foo).  Or something like that; make up
+> > > your own structure tags and function names.
 > > > 
-> > > right.
-> > > 
-> > > > 	The issue (or one of the issues) in this discussion is 
-that
-> > > > 	Greg does not like the idea of using names or IDs to 
-associate
-> > > > 	PHYs with controllers, because they are too prone to
-> > > > 	duplications or other errors.  Pointers are more reliable.
-> > > > 	
-> > > > 	But pointers to what?  Since the only data known to be
-> > > > 	available to both the PHY driver and controller driver is 
-the
-> > > > 	platform data, the obvious answer is a pointer to platform 
-data
-> > > > 	(either for the PHY or for the controller, or maybe both).
-> > > 
-> > > hmm.. it's not going to be simple though as the platform device for
-> > > the PHY and controller can be created in entirely different places.
-> > > e.g., in some cases the PHY device is a child of some mfd core
-> > > device
-> > > (the device will be created in drivers/mfd) and the controller
-> > > driver
-> > > (usually) is created in board file. I guess then we have to come up
-> > > with something to share a pointer in two different files.
+> > > It's still possible to have conflicts, but now two PHYs with the same
+> > > name (or a misspelled name somewhere) will cause an error at link
+> > > time.
 > > 
-> > The ability for two different source files to share a pointer to a
-> > data
-> > item defined in a third source file has been around since long before
-> > the C language was invented.  :-)
+> > This is incorrect, sorry. First of all it's a layering violation - you
+> > export random driver-specific symbols from one driver to another. Then
+
+No, that's not what I said.  Neither the PHY driver nor the controller
+driver exports anything to the other.  Instead, both drivers use data
+exported by the board file.
+
+> > imagine 4 SoCs - A, B, C, D. There are two PHY types PHY1 and PHY2 and
+> > there are two types of consumer drivers (e.g. USB host controllers). Now
+> > consider following mapping:
 > > 
-> > In this case, it doesn't matter where the platform_device structures
-> > are created or where the driver source code is.  Let's take a simple
-> > example.  Suppose the system design includes a PHY named "foo".  Then
-> > the board file could contain:
+> > SoC	PHY	consumer
+> > A	PHY1	HOST1
+> > B	PHY1	HOST2
+> > C	PHY2	HOST1
+> > D	PHY2	HOST2
 > > 
-> > struct phy_info { ... } phy_foo;
-> > EXPORT_SYMBOL_GPL(phy_foo);
-> > 
-> > and a header file would contain:
-> > 
-> > extern struct phy_info phy_foo;
-> > 
-> > The PHY supplier could then call phy_create(&phy_foo), and the PHY
-> > client could call phy_find(&phy_foo).  Or something like that; make up
-> > your own structure tags and function names.
-> > 
-> > It's still possible to have conflicts, but now two PHYs with the same
-> > name (or a misspelled name somewhere) will cause an error at link
-> > time.
-> 
-> This is incorrect, sorry. First of all it's a layering violation - you
-> export random driver-specific symbols from one driver to another. Then
-> imagine 4 SoCs - A, B, C, D. There are two PHY types PHY1 and PHY2 and
-> there are two types of consumer drivers (e.g. USB host controllers). Now
-> consider following mapping:
-> 
-> SoC	PHY	consumer
-> A	PHY1	HOST1
-> B	PHY1	HOST2
-> C	PHY2	HOST1
-> D	PHY2	HOST2
-> 
-> So we have to be able to use any of the PHYs with any of the host
-> drivers. This means you would have to export symbol with the same name
-> from both PHY drivers, which obviously would not work in this case,
-> because having both drivers enabled (in a multiplatform aware
-> configuration) would lead to linking conflict.
-> 
-> Best regards,
-> Tomasz
+> > So we have to be able to use any of the PHYs with any of the host
+> > drivers. This means you would have to export symbol with the same name
+> > from both PHY drivers, which obviously would not work in this case,
+> > because having both drivers enabled (in a multiplatform aware
+> > configuration) would lead to linking conflict.
+
+You're right; the scheme was too simple.  Instead, the board file must
+export two types of data structures, one for PHYs and one for
+controllers.  Like this:
+
+struct phy_info {
+	/* Info for the controller attached to this PHY */
+	struct controller_info	*hinfo;
+};
+
+struct controller_info {
+	/* Info for the PHY which this controller is attached to */
+	struct phy_info		*pinfo;
+};
+
+The board file for SoC A would contain:
+
+struct phy_info phy1 = {&host1);
+EXPORT_SYMBOL(phy1);
+struct controller_info host1 = {&phy1};
+EXPORT_SYMBOL(host1);
+
+The board file for SoC B would contain:
+
+struct phy_info phy1 = {&host2);
+EXPORT_SYMBOL(phy1);
+struct controller_info host2 = {&phy1};
+EXPORT_SYMBOL(host2);
+
+And so on.  This explicitly gives the connection between PHYs and
+controllers.  The PHY providers would use &phy1 or &phy2, and the PHY
+consumers would use &host1 or &host2.
+
+Alan Stern
+

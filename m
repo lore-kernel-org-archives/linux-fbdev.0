@@ -1,156 +1,77 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Tue, 23 Jul 2013 18:04:14 +0000
+From: Mark Brown <broonie@kernel.org>
+Date: Tue, 23 Jul 2013 19:31:05 +0000
 Subject: Re: [PATCH 01/15] drivers: phy: add generic PHY framework
-Message-Id: <20130723180414.GA9630@kroah.com>
+Message-Id: <20130723193105.GP9858@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="8lT/blNmSiRvUClR"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <Pine.LNX.4.44L0.1307231017290.1304-100000@iolanthe.rowland.org>
+ <51EE9EC0.6060905@ti.com> <20130723161846.GD2486@kroah.com>
  <1446965.6APW5ZgLBW@amdc1227> <20130723173710.GB28284@kroah.com>
- <19656720.FrnhefyPXl@amdc1227>
-In-Reply-To: <19656720.FrnhefyPXl@amdc1227>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <20130723174456.GM9858@sirena.org.uk>
+ <20130723180110.GA8688@kroah.com>
+In-Reply-To: <20130723180110.GA8688@kroah.com>
 To: linux-arm-kernel@lists.infradead.org
 
-On Tue, Jul 23, 2013 at 07:48:11PM +0200, Tomasz Figa wrote:
-> On Tuesday 23 of July 2013 10:37:11 Greg KH wrote:
-> > On Tue, Jul 23, 2013 at 06:50:29PM +0200, Tomasz Figa wrote:
-> > > > Ick, no.  Why can't you just pass the pointer to the phy itself?  If
-> > > > you
-> > > > had a "priv" pointer to search from, then you could have just passed
-> > > > the
-> > > > original phy pointer in the first place, right?
-> > > 
-> > > IMHO it would be better if you provided some code example, but let's
-> > > try to check if I understood you correctly.
-> > 
-> > It's not my code that I want to have added, so I don't have to write
-> > examples, I just get to complain about the existing stuff :)
-> 
-> Still, I think that some small code snippets illustrating the idea are 
-> really helpful.
-> 
-> > > 8><--------------------------------------------------------------------
-> > > ----
-> > > 
-> > > [Board file]
-> > > 
-> > > static struct phy my_phy;
-> > > 
-> > > static struct platform_device phy_pdev = {
-> > > 
-> > > 	/* ... */
-> > > 	.platform_data = &my_phy;
-> > > 	/* ... */
-> > > 
-> > > };
-> > > 
-> > > static struct platform_device phy_pdev = {
-> > > 
-> > > 	/* ... */
-> > > 	.platform_data = &my_phy;
-> > > 	/* ... */
-> > > 
-> > > };
-> > > 
-> > > [Provider driver]
-> > > 
-> > > struct phy *phy = pdev->dev.platform_data;
-> > > 
-> > > ret = phy_create(phy);
-> > > 
-> > > [Consumer driver]
-> > > 
-> > > struct phy *phy = pdev->dev.platform_data;
-> > > 
-> > > ret = phy_get(&pdev->dev, phy);
-> > > 
-> > > -----------------------------------------------------------------------
-> > > -><8
-> > > 
-> > > Is this what you mean?
-> > 
-> > No.  Well, kind of.  What's wrong with using the platform data structure
-> > unique to the board to have the pointer?
-> > 
-> > For example (just randomly picking one), the ata-pxa driver would change
-> > include/linux/platform_data/ata-pxa.h to have a phy pointer in it:
-> > 
-> > struct phy;
-> > 
-> > struct  pata_pxa_pdata {
-> > 	/* PXA DMA DREQ<0:2> pin */
-> > 	uint32_t	dma_dreq;
-> > 	/* Register shift */
-> > 	uint32_t	reg_shift;
-> > 	/* IRQ flags */
-> > 	uint32_t	irq_flags;
-> > 	/* PHY */
-> > 	struct phy	*phy;
-> > };
-> > 
-> > Then, when you create the platform, set the phy* pointer with a call to
-> > phy_create().  Then you can use that pointer wherever that plaform data
-> > is available (i.e. whereever platform_data is at).
-> 
-> Hmm? So, do you suggest to call phy_create() from board file? What phy_ops 
-> struct and other hardware parameters would it take?
-> 
-> > > > The issue is that a string "name" is not going to scale at all, as it
-> > > > requires hard-coded information that will change over time (as the
-> > > > existing clock interface is already showing.)
-> > > 
-> > > I fully agree that a simple, single string will not scale even in some,
-> > > not so uncommon cases, but there is already a lot of existing lookup
-> > > solutions over the kernel and so there is no point in introducing
-> > > another one.
-> > I'm trying to get _rid_ of lookup "solutions" and just use a real
-> > pointer, as you should.  I'll go tackle those other ones after this one
-> > is taken care of, to show how the others should be handled as well.
-> 
-> There was a reason for introducing lookup solutions. The reason was that in 
-> board file there is no way to get a pointer to something that is going to be 
-> created much later in time. We don't do time travel ;-).
-> 
-> > > > Please just pass the real "phy" pointer around, that's what it is
-> > > > there
-> > > > for.  Your "board binding" logic/code should be able to handle this,
-> > > > as
-> > > > it somehow was going to do the same thing with a "name".
-> > > 
-> > > It's technically correct, but quality of this solution isn't really
-> > > nice, because it's a layering violation (at least if I understood what
-> > > you mean). This is because you need to have full definition of struct
-> > > phy in board file and a structure that is used as private data in PHY
-> > > core comes from platform code.
-> > 
-> > No, just a pointer, you don't need the "full" structure until you get to
-> > some .c code that actually manipulates the phy itself, for all other
-> > places, you are just dealing with a pointer and a structure you never
-> > reference.
-> > 
-> > Does that make more sense?
-> 
-> Well, to the point that I think I now understood your suggestion. 
-> Unfortunately the suggestion alone isn't really something that can be done, 
-> considering how driver core and generic frameworks work.
 
-Ok, given that I seem to be totally confused as to exactly how the
-board-specific frameworks work, I'll take your word for it.
+--8lT/blNmSiRvUClR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-But again, I will not accept "lookup by name" type solutions, when the
-"name" is dynamic and will change.  Because you are using a "name", you
-can deal with a pointer, putting it _somewhere_ in your board-specific
-data structures, as you are going to need to store it anyway (hint, you
-had to get that "name" from somewhere, right?)
+On Tue, Jul 23, 2013 at 11:01:10AM -0700, Greg KH wrote:
+> On Tue, Jul 23, 2013 at 06:44:56PM +0100, Mark Brown wrote:
 
-And maybe the way that these "generic frameworks" are created is wrong,
-given that you don't feel that a generic pointer can be passed to the
-needed devices.  That seems like a huge problem, one that has already
-been pointed out is causing issues with other subsystems.
+> > What are the problems you are seeing with doing things with lookups?
 
-So maybe they need to be fixed?
+> You don't "know" the id of the device you are looking up, due to
+> multiple devices being in the system (dynamic ids, look back earlier in
+> this thread for details about that.)
 
-thanks,
+I got copied in very late so don't have most of the thread I'm afraid,=20
+I did try looking at web archives but didn't see a clear problem
+statement.  In any case this is why the APIs doing lookups do the
+lookups in the context of the requesting device - devices ask for
+whatever name they use locally.
 
-greg k-h
+> > Having to write platform data for everything gets old fast and the code
+> > duplication is pretty tedious...
+
+> Adding a single pointer is "tedious"?  Where is the "name" that you are
+> going to lookup going to come from?  That code doesn't write itself...
+
+It's adding platform data in the first place that gets tedious - and of
+course there's also DT and ACPI to worry about, it's not just a case of
+platform data and then you're done.  Pushing the lookup into library
+code means that drivers don't have to worry about any of this stuff.
+
+For most of the APIs doing this there is a clear and unambiguous name in
+the hardware that can be used (and for hardware process reasons is
+unlikely to get changed).  The major exception to this is the clock API
+since it is relatively rare to have clear, segregated IP level
+information for IPs baked into larger chips.  The other APIs tend to be
+establishing chip to chip links.
+
+--8lT/blNmSiRvUClR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBAgAGBQJR7tn2AAoJELSic+t+oim9Lt8P/0Dr/y8rOX+c7njkBOSuJ7B1
+6yi2fPPSUkKrUhOfZa5A0uxUEt8uwmS1UC2Pr8uQTkB2fUPYQlX5RKk0pIhA67cE
+KskF4dEVJNR7Nbgxon+pgL4foEUG8wXM4AF+aeo4ySUyBmOxfqpZoK1qjTP1/6CF
+wR9cdaQAFLVNbNcHFEhSJFST1WjoSe+irYwHVtgYWkIBz+qxkEm/LHPgBibexzOu
+EhCb5gFEu0mDL4kb4UI2fVv/+3yEaa8uztspHRrsfTmQUbdW4o0D4ABTowt6XqAT
+Sk9fsjG0Cch71XKNi5SlJB3JAAvgyQo7lT5pWZGRh/VCDzjnHtsl/eG2Gw7SvlPm
+BttItQrUDBtYi9zkv1helwmpkEYDo+VB8zNJi1YylVTawUGUrWNcT7K9PopPi9U6
+9ARkE+CdqZ+KQp2y9l7sEEuT9U6dHFP8PtQhpCyOmzW8CNSPsGuUGsIdVuXzBlnU
+70AQsNLDeiER4avfEWBseWI76w70LHZr0HnwJm4CgVtlcNcLJ0bXI5bVr+TPZS2u
+YaXVg8pAcaClc7USC+pJVDkQEubM7u/PwZw/AOiyx9WIWVhtmnheNM+SBs3KjVOR
+YXN6/jf8T+tOa3TvP7MYenPxf6APJxtiuAenpTWffBJ7HBPhTbQb0ubHuE6fjJ4x
+NxsYGz7vNFP7+uV99BsF
+=Tgf5
+-----END PGP SIGNATURE-----
+
+--8lT/blNmSiRvUClR--

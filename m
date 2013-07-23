@@ -1,63 +1,37 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Date: Tue, 23 Jul 2013 21:14:20 +0000
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Tue, 23 Jul 2013 21:23:34 +0000
 Subject: Re: [PATCH 01/15] drivers: phy: add generic PHY framework
-Message-Id: <Pine.LNX.4.44L0.1307231708020.1304-100000@iolanthe.rowland.org>
+Message-Id: <20130723212334.GA21945@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-In-Reply-To: <1388978.Qc6sFy33oS@flatron>
-References: <1374129984-765-2-git-send-email-kishon@ti.com>
-In-Reply-To: <1374129984-765-2-git-send-email-kishon@ti.com>
+References: <Pine.LNX.4.44L0.1307231017290.1304-100000@iolanthe.rowland.org>
+ <1731726.KENstTPhkb@flatron> <20130723205007.GA27166@kroah.com>
+ <1769609.rbAYfG9ir3@flatron>
+In-Reply-To: <1769609.rbAYfG9ir3@flatron>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Tue, 23 Jul 2013, Tomasz Figa wrote:
-
-> > If you want to keep the phy struct completely separate from the board
-> > file, there's an easy way to do it.  Let's say the board file knows
-> > about N different PHYs in the system.  Then you define an array of N
-> > pointers to phys:
-> > 
-> > struct phy *(phy_address[N]);
-> > 
-> > In the platform data for both PHY j and its controller, store
-> > &phy_address[j].  The PHY provider passes this cookie to phy_create:
-> > 
-> > 	cookie = pdev->dev.platform_data;
-> > 	ret = phy_create(phy, cookie);
-> > 
-> > and phy_create simply stores: *cookie = phy.  The PHY consumer does
-> > much the same the same thing:
-> > 
-> > 	cookie = pdev->dev.platform_data;
-> > 	phy = phy_get(cookie);
-> > 
-> > phy_get returns *cookie if it isn't NULL, or an ERR_PTR otherwise.
+On Tue, Jul 23, 2013 at 11:05:48PM +0200, Tomasz Figa wrote:
+> > That's not so bad, as long as you let the phy core use whatever name it
+> > wants for the device when it registers it with sysfs.
 > 
-> OK, this can work. Again, just technically, because it's rather ugly.
+> Yes, in regulator core consumer names are completely separated from this. 
+> Regulator core simply assigns a sequential integer ID to each regulator 
+> and registers /sys/class/regulator/regulator.ID for each regulator.
 
-There's no reason the phy_address things have to be arrays.  A separate
-individual pointer for each PHY would work just as well.
+Yes, that's fine.
 
-> Where would you want to have those phy_address arrays stored? There are no 
-> board files when booting with DT. Not even saying that you don't need to 
-> use any hacky schemes like this when you have DT that nicely specifies 
-> relations between devices.
+> > Use the name you
+> > are requesting as a "tag" or some such "hint" as to what the phy can be
+> > looked up by.
+> > 
+> > Good luck handling duplicate "tags" :)
+> 
+> The tag alone is not a key. Lookup key consists of two components, 
+> consumer device name and consumer tag. What kind of duplicate tags can be 
+> a problem here?
 
-If everybody agrees DT has a nice scheme for specifying relations
-between devices, why not use that same scheme in the PHY core?
+Ok, I didn't realize it looked at both parts, that makes sense, thanks.
 
-> Anyway, board file should not be considered as a method to exchange data 
-> between drivers. It should be used only to pass data from it to drivers, 
-> not the other way. Ideally all data in a board file should be marked as 
-> const and __init and dropped after system initialization.
-
-The phy_address things don't have to be defined or allocated in the 
-board file; they could be set up along with the platform data.
-
-In any case, this was simply meant to be a suggestion to show that it 
-is relatively easy to do what you need without using name or ID 
-strings.
-
-Alan Stern
-
+greg k-h

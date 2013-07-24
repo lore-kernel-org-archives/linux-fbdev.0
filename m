@@ -1,34 +1,63 @@
 From: Michal Simek <monstr@monstr.eu>
-Date: Wed, 24 Jul 2013 07:17:33 +0000
+Date: Wed, 24 Jul 2013 07:18:21 +0000
 Subject: Re: [PATCH] video: xilinxfb: Fix compilation warning
-Message-Id: <51EF7F8D.3070701@monstr.eu>
+Message-Id: <51EF7FBD.8070103@monstr.eu>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----enig2OFWEDIIUNNEIWSAGQTSE"
+Content-Type: multipart/mixed; boundary="----enig2TTNSLCOGTBHOSPNSWMEQ"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <ed64cda456be840147ae1f04bec6a99733f41c24.1374643896.git.michal.simek@xilinx.com> <CAAY4GiVG-c63oJO1Kqv0Jf2Wa2Ba+hgLtHQYFqyuRW-f6hJ14Q@mail.gmail.com>
-In-Reply-To: <CAAY4GiVG-c63oJO1Kqv0Jf2Wa2Ba+hgLtHQYFqyuRW-f6hJ14Q@mail.gmail.com>
-To: Vivek Subbarao <vskerneldevel@gmail.com>
-Cc: Michal Simek <michal.simek@xilinx.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <ed64cda456be840147ae1f04bec6a99733f41c24.1374643896.git.michal.simek@xilinx.com> <007401ce8833$22ce0600$686a1200$@samsung.com>
+In-Reply-To: <007401ce8833$22ce0600$686a1200$@samsung.com>
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: 'Michal Simek' <michal.simek@xilinx.com>, 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 'Stepan Moskovchenko' <stepanm@codeaurora.org>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
-------enig2OFWEDIIUNNEIWSAGQTSE
+------enig2TTNSLCOGTBHOSPNSWMEQ
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 07/24/2013 08:05 AM, Vivek Subbarao wrote:
-> Why is there a necessity to type cast to unsigned long long ? Whats the=
-
-> warning ?
+On 07/24/2013 08:00 AM, Jingoo Han wrote:
+> On Wednesday, July 24, 2013 2:32 PM, Michal Simek wrote:
+>>
+>> regs_phys is phys_addr_t (u32 or u64).
+>> Lets retype it to u64.
+>>
+>> Fixes compilation warning introduced by:
+>> video: xilinxfb: Use drvdata->regs_phys instead of physaddr
+>> (sha1: c88fafef0135e1e1c3e23c3e32ccbeeabc587f81)
+>=20
+> CC'ed Stepan Moskovchenko
+>=20
+>=20
+> phys_addr_t is defined as below:
+>=20
+> #ifdef CONFIG_PHYS_ADDR_T_64BIT
+> typedef u64 phys_addr_t;
+> #else
+> typedef u32 phys_addr_t;
+> #endif
+>=20
+> According to 'Documentation/printk-formats.txt',
+> Physical addresses:
+>        %pa     0x01234567 or 0x0123456789abcdef
+>        For printing a phys_addr_t type (and its derivatives, such as
+>        resource_size_t) which can vary based on build options, regardle=
+ss of
+>        the width of the CPU data path. Passed by reference.
+>=20
+> Thus, '%pa' option looks proper, instead of casting (unsigned long long=
+).
+>=20
+> 		dev_dbg(dev, "regs: phys=3D%pa, virt=3D%p\n", drvdata->regs_phys,
+> 					drvdata->regs);
 >=20
 
-Geerts: Build regressions/improvements in v3.11-rc2
-
-  + drivers/video/xilinxfb.c: warning: format '%x' expects argument of ty=
-pe 'unsigned int', but argument 4 has type 'phys_addr_t' [-Wformat]:  =3D=
-> 344:3
+Ah. Wasn't aware about that.
+Will retest.
 
 Thanks,
 Michal
+
+
 
 --=20
 Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
@@ -39,7 +68,7 @@ Microblaze U-BOOT custodian and responsible for u-boot arm zynq platform
 
 
 
-------enig2OFWEDIIUNNEIWSAGQTSE
+------enig2TTNSLCOGTBHOSPNSWMEQ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -48,9 +77,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.10 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iEYEARECAAYFAlHvf40ACgkQykllyylKDCH75wCfXSH33j+eymnpyy8wMzkjOiyO
-dDIAn3osgQ+au5pI/OPTweCo/lBpPZQf
-=RiC7
+iEYEARECAAYFAlHvf70ACgkQykllyylKDCGj2ACfYt5Oa5HzlUdQs0/pneQyeXGw
+MqMAn2E+741ugPaBvMFsp+Cbhy1Orv57
+=Shcl
 -----END PGP SIGNATURE-----
 
-------enig2OFWEDIIUNNEIWSAGQTSE--
+------enig2TTNSLCOGTBHOSPNSWMEQ--

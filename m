@@ -1,69 +1,38 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Date: Thu, 25 Jul 2013 11:21:54 +0000
-Subject: [PATCH v2] video: xilinxfb: Fix compilation warning
-Message-Id: <204d93f8a9dffef6ff00d961f91be0b465f21841.1374751310.git.michal.simek@xilinx.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-10653-1374751314-0001"
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 25 Jul 2013 13:36:55 +0000
+Subject: Re: [PATCH v2] video: xilinxfb: Fix compilation warning
+Message-Id: <CAMuHMdX2mKANduZO9HaBHRZ13V0PztOc-uYxTymUsH8-NE5FEQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Michal Simek <monstr@monstr.eu>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-
-This is a MIME GnuPG-signed message.  If you see this text, it means that
-your E-mail or Usenet software does not support MIME signed messages.
-The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
-To open this message correctly you will need to install E-mail or Usenet
-software that supports modern Internet standards.
-
---=_mimegpg-monstr-desktop-10653-1374751314-0001
-
-regs_phys is phys_addr_t (u32 or u64).
-Lets retype it to u64.
-
-Fixes compilation warning introduced by:
-video: xilinxfb: Use drvdata->regs_phys instead of physaddr
-(sha1: c88fafef0135e1e1c3e23c3e32ccbeeabc587f81)
-
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
----
-Changes in v2:
-- Use %pa instead of casting
-
-ppc44x_defconfig
-Fixes regressions in v3.11-rc2
-
----
- drivers/video/xilinxfb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index f3d4a69..6629b29 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -341,8 +341,8 @@ static int xilinxfb_assign(struct platform_device *pdev,
-
- 	if (drvdata->flags & BUS_ACCESS_FLAG) {
- 		/* Put a banner in the log (for DEBUG) */
--		dev_dbg(dev, "regs: phys=%x, virt=%p\n", drvdata->regs_phys,
--					drvdata->regs);
-+		dev_dbg(dev, "regs: phys=%pa, virt=%p\n",
-+			&drvdata->regs_phys, drvdata->regs);
- 	}
- 	/* Put a banner in the log (for DEBUG) */
- 	dev_dbg(dev, "fb: phys=%llx, virt=%p, size=%x\n",
---
-1.8.2.3
-
-
---=_mimegpg-monstr-desktop-10653-1374751314-0001
-Content-Type: application/pgp-signature
+References: <204d93f8a9dffef6ff00d961f91be0b465f21841.1374751310.git.michal.simek@xilinx.com>
+In-Reply-To: <204d93f8a9dffef6ff00d961f91be0b465f21841.1374751310.git.michal.simek@xilinx.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Michal Simek <michal.simek@xilinx.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Michal Simek <monstr@monstr.eu>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+On Thu, Jul 25, 2013 at 1:21 PM, Michal Simek <michal.simek@xilinx.com> wrote:
+> regs_phys is phys_addr_t (u32 or u64).
+> Lets retype it to u64.
 
-iEYEABECAAYFAlHxClIACgkQykllyylKDCGvRQCeLyz0P8oGAxPmDZ08Dz4gnx00
-QfYAnj+0pOvklgckpxiDl0fxDoM6nsiB
-=DWWc
------END PGP SIGNATURE-----
+This no longer matches the actual patch?
 
---=_mimegpg-monstr-desktop-10653-1374751314-0001--
+> Fixes compilation warning introduced by:
+> video: xilinxfb: Use drvdata->regs_phys instead of physaddr
+> (sha1: c88fafef0135e1e1c3e23c3e32ccbeeabc587f81)
+>
+> Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+> ---
+> Changes in v2:
+> - Use %pa instead of casting
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

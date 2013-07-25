@@ -1,63 +1,50 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 25 Jul 2013 11:10:10 +0000
+From: Mark Brown <broonie@kernel.org>
+Date: Thu, 25 Jul 2013 12:09:04 +0000
 Subject: Re: [PATCH 01/15] drivers: phy: add generic PHY framework
-Message-Id: <59774273.TEcrXvCTgs@avalon>
+Message-Id: <20130725120904.GB9858@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="wg2zgDM1gLxA7pbN"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <Pine.LNX.4.44L0.1307231708020.1304-100000@iolanthe.rowland.org>
- <2174304.5JlzJ583hP@avalon> <201307251300.49282.arnd@arndb.de>
+ <201307242032.03597.arnd@arndb.de> <2174304.5JlzJ583hP@avalon>
+ <201307251300.49282.arnd@arndb.de>
 In-Reply-To: <201307251300.49282.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Arnd,
-On Thursday 25 July 2013 13:00:49 Arnd Bergmann wrote:
-> On Thursday 25 July 2013, Laurent Pinchart wrote:
-> > On Wednesday 24 July 2013 20:32:03 Arnd Bergmann wrote:
-> > > On Tuesday 23 July 2013, Tomasz Figa wrote:
-> > > > On Tuesday 23 of July 2013 17:14:20 Alan Stern wrote:
-> > > > > On Tue, 23 Jul 2013, Tomasz Figa wrote:
-> > > > > > Where would you want to have those phy_address arrays stored?
-> > > > > > There are no board files when booting with DT. Not even saying
-> > > > > > that you don't need to use any hacky schemes like this when you
-> > > > > > have DT that nicely specifies relations between devices.
-> > > > > 
-> > > > > If everybody agrees DT has a nice scheme for specifying relations
-> > > > > between devices, why not use that same scheme in the PHY core?
-> > > > 
-> > > > It is already used, for cases when consumer device has a DT node
-> > > > attached. In non-DT case this kind lookup translates loosely to
-> > > > something that is being done in regulator framework - you can't bind
-> > > > devices by pointers, because you don't have those pointers, so you
-> > > > need to use device names.
-> > > 
-> > > Sorry for jumping in to the middle of the discussion, but why does a new
-> > > framework even bother defining an interface for board files?
-> > > 
-> > > Can't we just drop any interfaces for platform data passing in the phy
-> > > framework and put the burden of adding those to anyone who actually
-> > > needs them? All the platforms we are concerned with here (exynos and
-> > > omap, plus new platforms) can be booted using DT anyway.
-> > 
-> > What about non-DT architectures such as MIPS (still widely used in
-> > consumer networking equipments from what I've heard) ?
-> 
-> * Vendors of such equipment have started moving on to ARM (e.g. Broadcom
-> bcm47xx)
-> * Some of the modern MIPS platforms are now using DT
-> * Legacy platforms probably won't migrate to either DT or the generic PHY
-> framework
-> 
-> I'm not saying that we can't support legacy board files with the common PHY
-> framework, but I'd expect things to be much easier if we focus on those
+
+--wg2zgDM1gLxA7pbN
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Thu, Jul 25, 2013 at 01:00:49PM +0200, Arnd Bergmann wrote:
+
+> I'm not saying that we can't support legacy board files with the common
+> PHY framework, but I'd expect things to be much easier if we focus on those
 > platforms that are actively being worked on for now, to bring an end to the
 > pointless API discussion.
 
-Fair enough :-)
+Well, it seemed like Greg's concerns had already been addressed anyway.
 
--- 
-Regards,
+--wg2zgDM1gLxA7pbN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Laurent Pinchart
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
 
+iQIcBAEBAgAGBQJR8RVcAAoJELSic+t+oim9YuEP/1JH37qhhixNi8JrjQfegt/8
+CHa1paebHzFPGbKxxpSBJPna5OSGkSgiS+E2U+s4aP9kqkYzD3cX04ptz6v3DTTN
+5lvt1LsAVFmneFJfB4jdCjazUPEnm2kRgk6xKoBVpdswJctx9xc5pVR2OmI8BwdW
+l+7AQhCq347aGKSP4Ep/7YOUg6tD0/6zvzCmet360ai6lPAT/yhZj0dYD7Qii7Gk
+uKM3cQb1PwrJk/xBcR70vEB6XMLzkzhm0yRtVk1DBziNcXdnS+N4ZyCA8Vre82ev
+t/02/Bi1CCGwifKCDa/1RWb6zjYPyyixX5gBx+zxDChtiCcxwg5vJFfT+7uwiLFk
+jstL8OGkt7lk2jGAOcCrszLisnPqJ2siXnGJaI/4AvVXYcd7Q+9nOggg4C8Re5E/
+efnkS850CgWTgyrpun2ZyCuhoQhkbqNNB8CHw6volpjAS0i5Q0wat0FmPdBQZg9r
+Fo5iLQ0i0OxKdmVO/Z5EwOeUoWjMh9lzT9q6q1zWoS233igUr5Xf9qS1svmmz1jX
+TcRTGERIM12JlHUr8efalQZMOHhKT/NGWPskqV7g35n4/mVPu0DrsyzQl1DrJ470
+DUMlwn+AgaU3X6ttEeTbcBJLNvrkLNI/5OvwUljDN39X2wzp888H3HD8/JpqugKI
+ldM0KNy4SyQ+fIArDPob
+=fqdw
+-----END PGP SIGNATURE-----
+
+--wg2zgDM1gLxA7pbN--

@@ -1,42 +1,69 @@
-From: Jiada Wang <jiada_wang@mentor.com>
-Subject: DRM/KMS/FB: HDMI hotplug displays 1024x768 resolution instead of
- native mode
-Date: Wed, 19 Jun 2013 16:37:56 +0900
-Message-ID: <51C15FD4.4060201@mentor.com>
-Mime-Version: 1.0
+From: Michal Simek <michal.simek@xilinx.com>
+Date: Thu, 25 Jul 2013 11:21:54 +0000
+Subject: [PATCH v2] video: xilinxfb: Fix compilation warning
+Message-Id: <204d93f8a9dffef6ff00d961f91be0b465f21841.1374751310.git.michal.simek@xilinx.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-10653-1374751314-0001"
+List-Id: <linux-fbdev.vger.kernel.org>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jg1.han@samsung.com>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Michal Simek <monstr@monstr.eu>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
+
+--=_mimegpg-monstr-desktop-10653-1374751314-0001
+
+regs_phys is phys_addr_t (u32 or u64).
+Lets retype it to u64.
+
+Fixes compilation warning introduced by:
+video: xilinxfb: Use drvdata->regs_phys instead of physaddr
+(sha1: c88fafef0135e1e1c3e23c3e32ccbeeabc587f81)
+
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+---
+Changes in v2:
+- Use %pa instead of casting
+
+ppc44x_defconfig
+Fixes regressions in v3.11-rc2
+
+---
+ drivers/video/xilinxfb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index f3d4a69..6629b29 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -341,8 +341,8 @@ static int xilinxfb_assign(struct platform_device *pdev,
+
+ 	if (drvdata->flags & BUS_ACCESS_FLAG) {
+ 		/* Put a banner in the log (for DEBUG) */
+-		dev_dbg(dev, "regs: phys=%x, virt=%p\n", drvdata->regs_phys,
+-					drvdata->regs);
++		dev_dbg(dev, "regs: phys=%pa, virt=%p\n",
++			&drvdata->regs_phys, drvdata->regs);
+ 	}
+ 	/* Put a banner in the log (for DEBUG) */
+ 	dev_dbg(dev, "fb: phys=%llx, virt=%p, size=%x\n",
+--
+1.8.2.3
+
+
+--=_mimegpg-monstr-desktop-10653-1374751314-0001
+Content-Type: application/pgp-signature
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-arm-kernel@lists.infradead.org, airlied@redhat.com, linux-fbdev-devel@lists.sourceforge.net
-Cc: Jiada Wang <jiada_wang@mentor.com>
 
-Hi,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-I am implementing HDMI hotplug feature for i.MX6 platform,
-the basic function has already been done and works
+iEYEABECAAYFAlHxClIACgkQykllyylKDCGvRQCeLyz0P8oGAxPmDZ08Dz4gnx00
+QfYAnj+0pOvklgckpxiDl0fxDoM6nsiB
+=DWWc
+-----END PGP SIGNATURE-----
 
-But there is is an "issue",
-When bootup system without HDMI cable attached, fbcon is initialised 
-with fbsize: 1024x768, after plug-in HDMI cable, I can see in debug log,
-display's valid video_mode has been read via DDC, but in 
-drm_fb_helper_hotplug_event(), only size lower than 
-fb_helper->fb->width/fb_helper->fb->height, will be accepted,
-
-So instead of the display's native mode, 1024x768 is displayed.
-
-Is it correct DRM/fbdev behaviour?
-
-
-
-Thanks,
-Jiada
+--=_mimegpg-monstr-desktop-10653-1374751314-0001--

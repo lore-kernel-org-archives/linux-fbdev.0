@@ -1,47 +1,107 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 15 Jul 2013 07:13:56 +0000
-Subject: Re: [PATCH] video: remove unused variable "dev" in vga16fb_destroy()
-Message-Id: <000101ce812a$dec735d0$9c55a170$@samsung.com>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Thu, 25 Jul 2013 13:05:12 +0000
+Subject: [PATCHv2 2/3] video: hx8357: Make IM pins optional
+Message-Id: <1374757513-2253-3-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1373869765-52572-1-git-send-email-wangyijing@huawei.com>
-In-Reply-To: <1373869765-52572-1-git-send-email-wangyijing@huawei.com>
+References: <1374757513-2253-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1374757513-2253-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Yijing Wang' <wangyijing@huawei.com>, 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 'Hanjun Guo' <guohanjun@huawei.com>, jiang.liu@huawei.com, Jingoo Han <jg1.han@samsung.com>
+To: linux-arm-kernel@lists.infradead.org
 
-On Monday, July 15, 2013 3:29 PM, Yijing Wang wrote:
-> 
-> Delete unused variable "dev" to fix build warning in
-> drivers/video/vga16fb.c
-> 
-> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-> Cc: Jingoo Han <jg1.han@samsung.com>
+The IM pins of the HX8357 controller are used to define the interface
+used to feed pixel stream to the LCD panel.
 
-It looks good.
-Reviewed-by: Jingoo Han <jg1.han@samsung.com>
+Most of the time, these pins are directly routed to either the ground or
+the VCC to set their values.
 
-Best regards,
-Jingoo Han
+Remove the need to assign GPIOs to these pins when we are in such a case.
 
-> ---
->  drivers/video/vga16fb.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
-> index 830ded4..2827333 100644
-> --- a/drivers/video/vga16fb.c
-> +++ b/drivers/video/vga16fb.c
-> @@ -1265,7 +1265,6 @@ static void vga16fb_imageblit(struct fb_info *info, const struct fb_image *image
-> 
->  static void vga16fb_destroy(struct fb_info *info)
->  {
-> -	struct platform_device *dev = container_of(info->device, struct platform_device, dev);
->  	iounmap(info->screen_base);
->  	fb_dealloc_cmap(&info->cmap);
->  	/* XXX unshare VGA regions */
-> --
-> 1.7.1
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+ drivers/video/backlight/hx8357.c | 53 +++++++++++++++++++++++-----------------
+ 1 file changed, 31 insertions(+), 22 deletions(-)
 
+diff --git a/drivers/video/backlight/hx8357.c b/drivers/video/backlight/hx8357.c
+index a0482b5..00614ce 100644
+--- a/drivers/video/backlight/hx8357.c
++++ b/drivers/video/backlight/hx8357.c
+@@ -76,6 +76,7 @@ struct hx8357_data {
+ 	unsigned		reset;
+ 	struct spi_device	*spi;
+ 	int			state;
++	bool			use_im_pins;
+ };
+ 
+ static u8 hx8357_seq_power[] = {
+@@ -250,9 +251,11 @@ static int hx8357_lcd_init(struct lcd_device *lcdev)
+ 	 * Set the interface selection pins to SPI mode, with three
+ 	 * wires
+ 	 */
+-	gpio_set_value_cansleep(lcd->im_pins[0], 1);
+-	gpio_set_value_cansleep(lcd->im_pins[1], 0);
+-	gpio_set_value_cansleep(lcd->im_pins[2], 1);
++	if (lcd->use_im_pins) {
++		gpio_set_value_cansleep(lcd->im_pins[0], 1);
++		gpio_set_value_cansleep(lcd->im_pins[1], 0);
++		gpio_set_value_cansleep(lcd->im_pins[2], 1);
++	}
+ 
+ 	/* Reset the screen */
+ 	gpio_set_value(lcd->reset, 1);
+@@ -424,26 +427,32 @@ static int hx8357_probe(struct spi_device *spi)
+ 		return -EINVAL;
+ 	}
+ 
+-	for (i = 0; i < HX8357_NUM_IM_PINS; i++) {
+-		lcd->im_pins[i] = of_get_named_gpio(spi->dev.of_node,
+-						"im-gpios", i);
+-		if (lcd->im_pins[i] = -EPROBE_DEFER) {
+-			dev_info(&spi->dev, "GPIO requested is not here yet, deferring the probe\n");
+-			return -EPROBE_DEFER;
+-		}
+-		if (!gpio_is_valid(lcd->im_pins[i])) {
+-			dev_err(&spi->dev, "Missing dt property: im-gpios\n");
+-			return -EINVAL;
++	if (of_find_property(spi->dev.of_node, "im-gpios", NULL)) {
++		lcd->use_im_pins = 1;
++
++		for (i = 0; i < HX8357_NUM_IM_PINS; i++) {
++			lcd->im_pins[i] = of_get_named_gpio(spi->dev.of_node,
++							    "im-gpios", i);
++			if (lcd->im_pins[i] = -EPROBE_DEFER) {
++				dev_info(&spi->dev, "GPIO requested is not here yet, deferring the probe\n");
++				return -EPROBE_DEFER;
++			}
++			if (!gpio_is_valid(lcd->im_pins[i])) {
++				dev_err(&spi->dev, "Missing dt property: im-gpios\n");
++				return -EINVAL;
++			}
++
++			ret = devm_gpio_request_one(&spi->dev, lcd->im_pins[i],
++						    GPIOF_OUT_INIT_LOW,
++						    "im_pins");
++			if (ret) {
++				dev_err(&spi->dev, "failed to request gpio %d: %d\n",
++					lcd->im_pins[i], ret);
++				return -EINVAL;
++			}
+ 		}
+-
+-		ret = devm_gpio_request_one(&spi->dev, lcd->im_pins[i],
+-					GPIOF_OUT_INIT_LOW, "im_pins");
+-		if (ret) {
+-			dev_err(&spi->dev, "failed to request gpio %d: %d\n",
+-				lcd->im_pins[i], ret);
+-			return -EINVAL;
+-		}
+-	}
++	} else
++		lcd->use_im_pins = 0;
+ 
+ 	lcdev = lcd_device_register("mxsfb", &spi->dev, lcd, &hx8357_ops);
+ 	if (IS_ERR(lcdev)) {
+-- 
+1.8.3.2
 

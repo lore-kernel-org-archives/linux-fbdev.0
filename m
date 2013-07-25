@@ -1,165 +1,91 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Date: Fri, 26 Jul 2013 12:52:22 +0000
-Subject: [RESEND PATCH v10 5/8] ARM: dts: omap: update usb_otg_hs data
-Message-Id: <1374842963-13545-6-git-send-email-kishon@ti.com>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Thu, 25 Jul 2013 13:05:11 +0000
+Subject: [PATCHv2 1/3] video: mxsfb: fix color settings for 18bit data bus and 32bpp
+Message-Id: <1374757513-2253-2-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1374842963-13545-1-git-send-email-kishon@ti.com>
-In-Reply-To: <1374842963-13545-1-git-send-email-kishon@ti.com>
+References: <1374757513-2253-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1374757513-2253-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Updated the usb_otg_hs dt data to include the *phy* and *phy-names*
-binding in order for the driver to use the new generic PHY framework.
-Also updated the Documentation to include the binding information.
-The PHY binding information can be found at
-Documentation/devicetree/bindings/phy/phy-bindings.txt
+From: Hector Palacios <hector.palacios@digi.com>
 
-Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
-Acked-by: Felipe Balbi <balbi@ti.com>
-Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+For a combination of 18bit LCD data bus width and a color
+mode of 32bpp, the driver was setting the color mapping to
+rgb666, which is wrong, as the color in memory realy has an
+rgb888 layout.
+
+This patch also removes the setting of flag CTRL_DF24 that
+makes the driver dimiss the upper 2 bits when handling 32/24bpp
+colors in a diplay with 18bit data bus width. This flag made
+true color images display wrong in such configurations.
+
+Finally, the color mapping rgb666 has also been removed as nobody
+is using it and high level applications like Qt5 cannot work
+with it either.
+
+Reference: https://lkml.org/lkml/2013/5/23/220
+Signed-off-by: Hector Palacios <hector.palacios@digi.com>
+Acked-by: Juergen Beisert <jbe@pengutronix.de>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 ---
- Documentation/devicetree/bindings/usb/omap-usb.txt |    5 +++++
- Documentation/devicetree/bindings/usb/usb-phy.txt  |    6 ++++++
- arch/arm/boot/dts/omap3-beagle-xm.dts              |    2 ++
- arch/arm/boot/dts/omap3-evm.dts                    |    2 ++
- arch/arm/boot/dts/omap3-overo.dtsi                 |    2 ++
- arch/arm/boot/dts/omap4.dtsi                       |    3 +++
- arch/arm/boot/dts/twl4030.dtsi                     |    1 +
- 7 files changed, 21 insertions(+)
+ drivers/video/mxsfb.c | 26 --------------------------
+ 1 file changed, 26 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/usb/omap-usb.txt b/Documentation/devicetree/bindings/usb/omap-usb.txt
-index 57e71f6..825790d 100644
---- a/Documentation/devicetree/bindings/usb/omap-usb.txt
-+++ b/Documentation/devicetree/bindings/usb/omap-usb.txt
-@@ -19,6 +19,9 @@ OMAP MUSB GLUE
-  - power : Should be "50". This signifies the controller can supply up to
-    100mA when operating in host mode.
-  - usb-phy : the phandle for the PHY device
-+ - phys : the phandle for the PHY device (used by generic PHY framework)
-+ - phy-names : the names of the PHY corresponding to the PHYs present in the
-+   *phy* phandle.
- 
- Optional properties:
-  - ctrl-module : phandle of the control module this glue uses to write to
-@@ -33,6 +36,8 @@ usb_otg_hs: usb_otg_hs@4a0ab000 {
- 	num-eps = <16>;
- 	ram-bits = <12>;
- 	ctrl-module = <&omap_control_usb>;
-+	phys = <&usb2_phy>;
-+	phy-names = "usb2-phy";
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 3ba3771..dc09ebe 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -239,24 +239,6 @@ static const struct fb_bitfield def_rgb565[] = {
+ 	}
  };
  
- Board specific device node entry
-diff --git a/Documentation/devicetree/bindings/usb/usb-phy.txt b/Documentation/devicetree/bindings/usb/usb-phy.txt
-index 61496f5..c0245c8 100644
---- a/Documentation/devicetree/bindings/usb/usb-phy.txt
-+++ b/Documentation/devicetree/bindings/usb/usb-phy.txt
-@@ -5,6 +5,8 @@ OMAP USB2 PHY
- Required properties:
-  - compatible: Should be "ti,omap-usb2"
-  - reg : Address and length of the register set for the device.
-+ - #phy-cells: determine the number of cells that should be given in the
-+   phandle while referencing this phy.
- 
- Optional properties:
-  - ctrl-module : phandle of the control module used by PHY driver to power on
-@@ -16,6 +18,7 @@ usb2phy@4a0ad080 {
- 	compatible = "ti,omap-usb2";
- 	reg = <0x4a0ad080 0x58>;
- 	ctrl-module = <&omap_control_usb>;
-+	#phy-cells = <0>;
- };
- 
- OMAP USB3 PHY
-@@ -25,6 +28,8 @@ Required properties:
-  - reg : Address and length of the register set for the device.
-  - reg-names: The names of the register addresses corresponding to the registers
-    filled in "reg".
-+ - #phy-cells: determine the number of cells that should be given in the
-+   phandle while referencing this phy.
- 
- Optional properties:
-  - ctrl-module : phandle of the control module used by PHY driver to power on
-@@ -39,4 +44,5 @@ usb3phy@4a084400 {
- 	      <0x4a084c00 0x40>;
- 	reg-names = "phy_rx", "phy_tx", "pll_ctrl";
- 	ctrl-module = <&omap_control_usb>;
-+	#phy-cells = <0>;
- };
-diff --git a/arch/arm/boot/dts/omap3-beagle-xm.dts b/arch/arm/boot/dts/omap3-beagle-xm.dts
-index afdb164..533b2da 100644
---- a/arch/arm/boot/dts/omap3-beagle-xm.dts
-+++ b/arch/arm/boot/dts/omap3-beagle-xm.dts
-@@ -144,6 +144,8 @@
- &usb_otg_hs {
- 	interface-type = <0>;
- 	usb-phy = <&usb2_phy>;
-+	phys = <&usb2_phy>;
-+	phy-names = "usb2-phy";
- 	mode = <3>;
- 	power = <50>;
- };
-diff --git a/arch/arm/boot/dts/omap3-evm.dts b/arch/arm/boot/dts/omap3-evm.dts
-index 7d4329d..4134dd0 100644
---- a/arch/arm/boot/dts/omap3-evm.dts
-+++ b/arch/arm/boot/dts/omap3-evm.dts
-@@ -70,6 +70,8 @@
- &usb_otg_hs {
- 	interface-type = <0>;
- 	usb-phy = <&usb2_phy>;
-+	phys = <&usb2_phy>;
-+	phy-names = "usb2-phy";
- 	mode = <3>;
- 	power = <50>;
- };
-diff --git a/arch/arm/boot/dts/omap3-overo.dtsi b/arch/arm/boot/dts/omap3-overo.dtsi
-index 8f1abec..a461d2f 100644
---- a/arch/arm/boot/dts/omap3-overo.dtsi
-+++ b/arch/arm/boot/dts/omap3-overo.dtsi
-@@ -76,6 +76,8 @@
- &usb_otg_hs {
- 	interface-type = <0>;
- 	usb-phy = <&usb2_phy>;
-+	phys = <&usb2_phy>;
-+	phy-names = "usb2-phy";
- 	mode = <3>;
- 	power = <50>;
- };
-diff --git a/arch/arm/boot/dts/omap4.dtsi b/arch/arm/boot/dts/omap4.dtsi
-index 22d9f2b..1e8e2fe 100644
---- a/arch/arm/boot/dts/omap4.dtsi
-+++ b/arch/arm/boot/dts/omap4.dtsi
-@@ -520,6 +520,7 @@
- 				compatible = "ti,omap-usb2";
- 				reg = <0x4a0ad080 0x58>;
- 				ctrl-module = <&omap_control_usb>;
-+				#phy-cells = <0>;
- 			};
- 		};
- 
-@@ -658,6 +659,8 @@
- 			interrupt-names = "mc", "dma";
- 			ti,hwmods = "usb_otg_hs";
- 			usb-phy = <&usb2_phy>;
-+			phys = <&usb2_phy>;
-+			phy-names = "usb2-phy";
- 			multipoint = <1>;
- 			num-eps = <16>;
- 			ram-bits = <12>;
-diff --git a/arch/arm/boot/dts/twl4030.dtsi b/arch/arm/boot/dts/twl4030.dtsi
-index b3034da..ce4cd6f 100644
---- a/arch/arm/boot/dts/twl4030.dtsi
-+++ b/arch/arm/boot/dts/twl4030.dtsi
-@@ -80,6 +80,7 @@
- 		usb1v8-supply = <&vusb1v8>;
- 		usb3v1-supply = <&vusb3v1>;
- 		usb_mode = <1>;
-+		#phy-cells = <0>;
- 	};
- 
- 	twl_pwm: pwm {
+-static const struct fb_bitfield def_rgb666[] = {
+-	[RED] = {
+-		.offset = 16,
+-		.length = 6,
+-	},
+-	[GREEN] = {
+-		.offset = 8,
+-		.length = 6,
+-	},
+-	[BLUE] = {
+-		.offset = 0,
+-		.length = 6,
+-	},
+-	[TRANSP] = {	/* no support for transparency */
+-		.length = 0,
+-	}
+-};
+-
+ static const struct fb_bitfield def_rgb888[] = {
+ 	[RED] = {
+ 		.offset = 16,
+@@ -309,9 +291,6 @@ static int mxsfb_check_var(struct fb_var_screeninfo *var,
+ 			break;
+ 		case STMLCDIF_16BIT:
+ 		case STMLCDIF_18BIT:
+-			/* 24 bit to 18 bit mapping */
+-			rgb = def_rgb666;
+-			break;
+ 		case STMLCDIF_24BIT:
+ 			/* real 24 bit */
+ 			rgb = def_rgb888;
+@@ -453,11 +432,6 @@ static int mxsfb_set_par(struct fb_info *fb_info)
+ 			return -EINVAL;
+ 		case STMLCDIF_16BIT:
+ 		case STMLCDIF_18BIT:
+-			/* 24 bit to 18 bit mapping */
+-			ctrl |= CTRL_DF24; /* ignore the upper 2 bits in
+-					    *  each colour component
+-					    */
+-			break;
+ 		case STMLCDIF_24BIT:
+ 			/* real 24 bit */
+ 			break;
 -- 
-1.7.10.4
+1.8.3.2
 

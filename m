@@ -1,36 +1,58 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Date: Mon, 15 Jul 2013 10:35:13 +0000
-Subject: Re: [BUG] radeon: suspend resume
-Message-Id: <1373884513.17776.71.camel@thor.local>
+From: Peter Jones <pjones@redhat.com>
+Date: Thu, 25 Jul 2013 15:48:11 +0000
+Subject: [PATCH] Release efifb's colormap in efifb_destroy()
+Message-Id: <1374767291-2874-1-git-send-email-pjones@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAG27Bk2NzdZELTeByjH5Sj_NbB+TOhYDK66aX1-9e=W_LT39Hg@mail.gmail.com>
-In-Reply-To: <CAG27Bk2NzdZELTeByjH5Sj_NbB+TOhYDK66aX1-9e=W_LT39Hg@mail.gmail.com>
+References: <CAHkRjk4Ansh+Xr+cPQNacwx=aOb65_hW_MNRx5QVtatJCz5tqg@mail.gmail.com>
+In-Reply-To: <CAHkRjk4Ansh+Xr+cPQNacwx=aOb65_hW_MNRx5QVtatJCz5tqg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: kerolasa@gmail.com
-Cc: dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: "Alexandra N. Kossovsky" <Alexandra.Kossovsky@oktetlabs.ru>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Jones <pjones@redhat.com>
 
+This was found by Alexandra Kossovsky, who noted this traceback from
+kmemleak:
 
-[ The radeon driver is discussed on the dri-devel mailing list, moving
-there ]
+> unreferenced object 0xffff880216fcfe00 (size 512):
+>   comm "swapper/0", pid 1, jiffies 4294895429 (age 1415.320s)
+>   hex dump (first 32 bytes):
+>     00 00 00 00 00 00 00 00 aa aa aa aa aa aa aa aa  ................
+>     55 55 55 55 55 55 55 55 ff ff ff ff ff ff ff ff  UUUUUUUU........
+>   backtrace:
+>     [<ffffffff813e415c>] kmemleak_alloc+0x21/0x3e
+>     [<ffffffff8111c17f>]
+>     kmemleak_alloc_recursive.constprop.57+0x16/0x18
+>     [<ffffffff8111e63b>] __kmalloc+0xf9/0x144
+>     [<ffffffff8123d9cf>] fb_alloc_cmap_gfp+0x47/0xe1
+>     [<ffffffff8123da77>] fb_alloc_cmap+0xe/0x10
+>     [<ffffffff81aff40a>] efifb_probe+0x3e9/0x48f
+>     [<ffffffff812c566f>] platform_drv_probe+0x34/0x5e
+>     [<ffffffff812c3e6d>] driver_probe_device+0x98/0x1b4
+>     [<ffffffff812c3fd7>] __driver_attach+0x4e/0x6f
+>     [<ffffffff812c25bf>] bus_for_each_dev+0x57/0x8a
+>     [<ffffffff812c3984>] driver_attach+0x19/0x1b
+>     [<ffffffff812c362b>] bus_add_driver+0xde/0x201
+>     [<ffffffff812c453f>] driver_register+0x8c/0x110
+>     [<ffffffff812c510d>] platform_driver_register+0x41/0x43
+>     [<ffffffff812c5127>] platform_driver_probe+0x18/0x8a
+>     [<ffffffff81aff002>] efifb_init+0x276/0x295
+---
+ drivers/video/efifb.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-On Son, 2013-07-14 at 13:26 +0100, Sami Kerola wrote:
->=20
-> Jul 14 12:51:31 kerolasa-home kernel: radeon 0000:00:01.0: GPU lockup
-> CP stall for more than 10000msec
-> Jul 14 12:51:31 kerolasa-home kernel: radeon 0000:00:01.0: GPU lockup
-> (waiting for 0x0000000000000004 last fence id 0x0000000000000002)
-> Jul 14 12:51:31 kerolasa-home kernel: [drm:r600_uvd_ib_test] *ERROR*
-> radeon: fence wait failed (-35).
-> Jul 14 12:51:31 kerolasa-home kernel: [drm:radeon_ib_ring_tests]
-> *ERROR* radeon: failed testing IB on ring 5 (-35).
+diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
+index 390b61b..1f3eab3 100644
+--- a/drivers/video/efifb.c
++++ b/drivers/video/efifb.c
+@@ -289,6 +289,7 @@ static void efifb_destroy(struct fb_info *info)
+ 	if (request_mem_succeeded)
+ 		release_mem_region(info->apertures->ranges[0].base,
+ 				   info->apertures->ranges[0].size);
++	fb_dealloc_cmap(&info->cmap);
+ 	framebuffer_release(info);
+ }
+ 
+-- 
+1.8.3.1
 
-Looks like the patch from
-https://bugs.freedesktop.org/show_bug.cgi?idf425 might help.
-
-
---=20
-Earthling Michel D=C3=A4nzer           |                   http://www.amd.c=
-om
-Libre software enthusiast         |          Debian, X and DRI developer

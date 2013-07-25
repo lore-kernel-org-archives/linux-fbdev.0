@@ -1,34 +1,34 @@
-From: "Etheridge, Darren" <detheridge@ti.com>
-Date: Tue, 02 Jul 2013 22:31:04 +0000
-Subject: RE: [PATCH 2/2] video:da8xx-fb: Convert to devm_* api
-Message-Id: <1A80A2FD7F34484786E5DF71F3968B6940F0D587@DLEE10.ent.ti.com>
+From: Gu Zheng <guz.fnst@cn.fujitsu.com>
+Date: Thu, 25 Jul 2013 03:37:02 +0000
+Subject: [PATCH] driver/vga16fb.c: remove the unused variable "dev" of function vga16fb_destroy()
+Message-Id: <51F09D5E.70304@cn.fujitsu.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1368688257-18705-1-git-send-email-prabhakar.csengg@gmail.com>
- <1368688257-18705-3-git-send-email-prabhakar.csengg@gmail.com>
- <51CAD305.30407@ti.com>
- <CA+V-a8uhK5-QJKifkiSUN6Nz0aBc2moraWQUJPCmZg9zaFX0eg@mail.gmail.com>
- <51CAD7E4.2000403@ti.com>
- <CA+V-a8u6vjSc5EV3z4FCQ8LEHxL79bUXtHzX8svhQwqVtj6w=g@mail.gmail.com>
- <51CADA58.2030602@ti.com>
- <CA+V-a8vij-4s1FsePmSZrdUTBZJPWZV6Wq9s=uurOHh2k47JNA@mail.gmail.com>
-In-Reply-To: <CA+V-a8vij-4s1FsePmSZrdUTBZJPWZV6Wq9s=uurOHh2k47JNA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Prabhakar Lad <prabhakar.csengg@gmail.com>
-Cc: "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, DLOS <davinci-linux-open-source@linux.davincidsp.com>, LFBDEV <linux-fbdev@vger.kernel.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, LKML <linux-kernel@vger.kernel.org>
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
 
-> >> How do you suggest to handle it ?
-> >
-> > I think it's easiest if Darren handles the da8xx-fb series for 3.11.
-> > So if there's something missing from Darren's series, please discuss
-> with him.
-> >
-> Either you merge this patch with yours or rebase your patch on top of
-> my patch.
-> Let me know how you would like to handle it ?
-Prabhakar,
+Commit 	e21d2170f36602ae2708 removed the unnecessary platform_set_drvdata(),
+but left the variable "dev" unused, delete it.
 
-I will include your change with the next version of this patch series that will address Tomi's review comments.  
+Signed-off-by: Gu Zheng <guz.fnst@cn.fujitsu.com>
+---
+ drivers/video/vga16fb.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-Darren
+diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
+index 830ded4..2827333 100644
+--- a/drivers/video/vga16fb.c
++++ b/drivers/video/vga16fb.c
+@@ -1265,7 +1265,6 @@ static void vga16fb_imageblit(struct fb_info *info, const struct fb_image *image
+ 
+ static void vga16fb_destroy(struct fb_info *info)
+ {
+-	struct platform_device *dev = container_of(info->device, struct platform_device, dev);
+ 	iounmap(info->screen_base);
+ 	fb_dealloc_cmap(&info->cmap);
+ 	/* XXX unshare VGA regions */
+-- 
+1.7.7
+

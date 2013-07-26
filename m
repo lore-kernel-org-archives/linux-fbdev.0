@@ -1,75 +1,91 @@
-From: Inki Dae <inki.dae@samsung.com>
-Date: Fri, 12 Jul 2013 06:12:46 +0000
-Subject: [RFC PATCH v1 2/2] dma-buf: add lock callback for fcntl system call
-Message-Id: <1373609566-10784-3-git-send-email-inki.dae@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 26 Jul 2013 08:51:30 +0000
+Subject: Re: [PATCH v3] simplefb: add support for a8b8g8r8 pixel format
+Message-Id: <51F23892.7080001@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="UkJW0d7osoSHmXtoEgTTUO8u1NO40pLUO"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1373609566-10784-1-git-send-email-inki.dae@samsung.com>
-In-Reply-To: <1373609566-10784-1-git-send-email-inki.dae@samsung.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
-Cc: maarten.lankhorst@canonical.com, daniel@ffwll.ch, robdclark@gmail.com, sumit.semwal@linaro.org, linux@arm.linux.org.uk, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, yj44.cho@samsung.com, Inki Dae <inki.dae@samsung.com>
+References: <1370590290-13467-1-git-send-email-acourbot@nvidia.com>
+In-Reply-To: <1370590290-13467-1-git-send-email-acourbot@nvidia.com>
+To: Alexandre Courbot <acourbot@nvidia.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Stephen Warren <swarren@wwwdotorg.org>, Olof Johansson <olof@lixom.net>, gnurou@gmail.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-This patch adds lock callback to dma buf file operations,
-and this callback will be called by fcntl system call.
+--UkJW0d7osoSHmXtoEgTTUO8u1NO40pLUO
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-With this patch, fcntl system call can be used for buffer
-synchronization between CPU and CPU, and CPU and DMA in user mode.
+On 07/06/13 10:31, Alexandre Courbot wrote:
+> A framebuffer of this format is set up by SHIELD's bootloader.
+>=20
+> Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+> Acked-by: Olof Johansson <olof@lixom.net>
+> ---
+> Changes from v2:
+> - Fixed typo in format (Thanks Alexander van Heukelum!)
+>=20
+> Changes from v1:
+> - Added description to motivate the change
+> - Added ack
+>=20
+>  Documentation/devicetree/bindings/video/simple-framebuffer.txt | 1 +
+>  drivers/video/simplefb.c                                       | 1 +
+>  2 files changed, 2 insertions(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/video/simple-framebuffer=
+=2Etxt b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+> index 3ea4605..70c26f3 100644
+> --- a/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+> +++ b/Documentation/devicetree/bindings/video/simple-framebuffer.txt
+> @@ -12,6 +12,7 @@ Required properties:
+>  - stride: The number of bytes in each line of the framebuffer.
+>  - format: The format of the framebuffer surface. Valid values are:
+>    - r5g6b5 (16-bit pixels, d[15:11]=3Dr, d[10:5]=3Dg, d[4:0]=3Db).
+> +  - a8b8g8r8 (32-bit pixels, d[31:24]=3Da, d[23:16]=3Db, d[15:8]=3Dg, =
+d[7:0]=3Dr).
+> =20
+>  Example:
+> =20
+> diff --git a/drivers/video/simplefb.c b/drivers/video/simplefb.c
+> index e2e9e3e..f015482 100644
+> --- a/drivers/video/simplefb.c
+> +++ b/drivers/video/simplefb.c
+> @@ -84,6 +84,7 @@ struct simplefb_format {
+> =20
+>  static struct simplefb_format simplefb_formats[] =3D {
+>  	{ "r5g6b5", 16, {11, 5}, {5, 6}, {0, 5}, {0, 0} },
+> +	{ "a8b8g8r8", 32, {0, 8}, {8, 8}, {16, 8}, {24, 8} },
+>  };
+> =20
+>  struct simplefb_params {
 
-Signed-off-by: Inki Dae <inki.dae@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- drivers/base/dma-buf.c |   33 +++++++++++++++++++++++++++++++++
- 1 files changed, 33 insertions(+), 0 deletions(-)
+Thanks, I've applied this into my 3.12/fbdev branch.
 
-diff --git a/drivers/base/dma-buf.c b/drivers/base/dma-buf.c
-index 9a26981..e1b8583 100644
---- a/drivers/base/dma-buf.c
-+++ b/drivers/base/dma-buf.c
-@@ -80,9 +80,42 @@ static int dma_buf_mmap_internal(struct file *file, struct vm_area_struct *vma)
- 	return dmabuf->ops->mmap(dmabuf, vma);
- }
- 
-+static int dma_buf_lock(struct file *file, int cmd, struct file_lock *fl)
-+{
-+	struct dma_buf *dmabuf;
-+	unsigned int type;
-+	bool wait = false;
-+
-+	if (!is_dma_buf_file(file))
-+		return -EINVAL;
-+
-+	dmabuf = file->private_data;
-+
-+	if ((fl->fl_type & F_UNLCK) = F_UNLCK) {
-+		dmabuf_sync_single_unlock(dmabuf);
-+		return 0;
-+	}
-+
-+	/* convert flock type to dmabuf sync type. */
-+	if ((fl->fl_type & F_WRLCK) = F_WRLCK)
-+		type = DMA_BUF_ACCESS_W;
-+	else if ((fl->fl_type & F_RDLCK) = F_RDLCK)
-+		type = DMA_BUF_ACCESS_R;
-+	else
-+		return -EINVAL;
-+
-+	if (fl->fl_flags & FL_SLEEP)
-+		wait = true;
-+
-+	/* TODO. the locking to certain region should also be considered. */
-+
-+	return dmabuf_sync_single_lock(dmabuf, type, wait);
-+}
-+
- static const struct file_operations dma_buf_fops = {
- 	.release	= dma_buf_release,
- 	.mmap		= dma_buf_mmap_internal,
-+	.lock		= dma_buf_lock,
- };
- 
- /*
--- 
-1.7.5.4
+ Tomi
 
+
+
+--UkJW0d7osoSHmXtoEgTTUO8u1NO40pLUO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJR8jiSAAoJEPo9qoy8lh71fvwP/jBwbPD4RBtp5v4VoXy2+j5n
+6nWWCMjSrgr1TVBhXb9gGxDhqnfY1rME+PGun8kmT16hr/NRtQftzXaAkuZPDCzw
+LZBEnIC63OK5yjtBREISYIQzGu9nmsTMO0UpEjm4g7yvGfR8kM8Krg5KrFBfAQrI
+arU8UhFfhIB4BtQxeT/+Qteso/CLo4m+rzh8mL8LOEPOZtAi9QHFlgF2InCxacd/
+vCEIwZQ2PMiqmS8qYFOb+Djn7s6O4eFGYFfexEj62NFLFpU9Mmhu7gvSATRA5UCA
+ItoUrGiczpiRzLsY0SIgyWQkD3eMRkq3RVi0AjKkrduy4pSRybJAYrJmaXGg6OaE
+hIObMmnG4nrsJxkpUDx5aDSZkn23KpQo0e6HcaV2CZ0k8tgnFFCgcogUQNJDtIDD
+nVWo/7RdylrUqb+h8NAfCHNI9/grDM98IpCXjCxCwS5lfEkJLi8UQzkm8jmOfOWE
+LiR/kOD1gRtMEde6zEw0Ma8VWW5CJnEEknd/y16GCmGmrGivKiQ+dgZV8kZv52b8
+3bca4y/UAIvaabxVIB1FHbdP2FkopyY4cjUwWg0jbbFoPynoKpTKDNavszZ3SZAN
+TuX0z8mny9p0+1AZFSYAWISGVc9+EZ6GfuqAtuQFtXNaedXaTN/8tCvAUh8Wk2zD
+9MxxXwN3ivXJ/oCkqSte
+=95N3
+-----END PGP SIGNATURE-----
+
+--UkJW0d7osoSHmXtoEgTTUO8u1NO40pLUO--

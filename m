@@ -1,53 +1,139 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 30 Jul 2013 18:26:16 +0000
-Subject: [PATCH v2 09/24] video: da8xx-fb: report correct pixclock
-Message-Id: <1375208791-15781-10-git-send-email-detheridge@ti.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Fri, 26 Jul 2013 12:52:06 +0000
+Subject: [RESEND PATCH v10 6/8] usb: musb: omap2430: use the new generic PHY framework
+Message-Id: <1374842963-13545-7-git-send-email-kishon@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1374842963-13545-1-git-send-email-kishon@ti.com>
+In-Reply-To: <1374842963-13545-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-From: Afzal Mohammed <afzal@ti.com>
+Use the generic PHY framework API to get the PHY. The usb_phy_set_resume
+and usb_phy_set_suspend is replaced with power_on and
+power_off to align with the new PHY framework.
 
-Update "var" pixclock with the value that is configurable in hardware.
-This lets user know the actual pixclock.
+musb->xceiv can't be removed as of now because musb core uses xceiv.state and
+xceiv.otg. Once there is a separate state machine to handle otg, these can be
+moved out of xceiv and then we can start using the generic PHY framework.
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Acked-by: Felipe Balbi <balbi@ti.com>
 ---
- drivers/video/da8xx-fb.c |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
+ drivers/usb/musb/Kconfig     |    1 +
+ drivers/usb/musb/musb_core.h |    2 ++
+ drivers/usb/musb/omap2430.c  |   26 ++++++++++++++++++++------
+ 3 files changed, 23 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 7db1097..8d73730 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -686,6 +686,15 @@ static inline unsigned da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
- 	return par->lcd_fck_rate / (PICOS2KHZ(pixclock) * 1000);
+diff --git a/drivers/usb/musb/Kconfig b/drivers/usb/musb/Kconfig
+index 797e3fd..25e2e57 100644
+--- a/drivers/usb/musb/Kconfig
++++ b/drivers/usb/musb/Kconfig
+@@ -76,6 +76,7 @@ config USB_MUSB_TUSB6010
+ config USB_MUSB_OMAP2PLUS
+ 	tristate "OMAP2430 and onwards"
+ 	depends on ARCH_OMAP2PLUS
++	select GENERIC_PHY
+ 
+ config USB_MUSB_AM35X
+ 	tristate "AM35x"
+diff --git a/drivers/usb/musb/musb_core.h b/drivers/usb/musb/musb_core.h
+index 7d341c3..6e567bd 100644
+--- a/drivers/usb/musb/musb_core.h
++++ b/drivers/usb/musb/musb_core.h
+@@ -46,6 +46,7 @@
+ #include <linux/usb.h>
+ #include <linux/usb/otg.h>
+ #include <linux/usb/musb.h>
++#include <linux/phy/phy.h>
+ 
+ struct musb;
+ struct musb_hw_ep;
+@@ -346,6 +347,7 @@ struct musb {
+ 	u16			int_tx;
+ 
+ 	struct usb_phy		*xceiv;
++	struct phy		*phy;
+ 
+ 	int nIrq;
+ 	unsigned		irq_wake:1;
+diff --git a/drivers/usb/musb/omap2430.c b/drivers/usb/musb/omap2430.c
+index 6708a3b..f7b33f4 100644
+--- a/drivers/usb/musb/omap2430.c
++++ b/drivers/usb/musb/omap2430.c
+@@ -348,11 +348,21 @@ static int omap2430_musb_init(struct musb *musb)
+ 	 * up through ULPI.  TWL4030-family PMICs include one,
+ 	 * which needs a driver, drivers aren't always needed.
+ 	 */
+-	if (dev->parent->of_node)
++	if (dev->parent->of_node) {
++		musb->phy = devm_phy_get(dev->parent, "usb2-phy");
++
++		/* We can't totally remove musb->xceiv as of now because
++		 * musb core uses xceiv.state and xceiv.otg. Once we have
++		 * a separate state machine to handle otg, these can be moved
++		 * out of xceiv and then we can start using the generic PHY
++		 * framework
++		 */
+ 		musb->xceiv = devm_usb_get_phy_by_phandle(dev->parent,
+ 		    "usb-phy", 0);
+-	else
++	} else {
+ 		musb->xceiv = devm_usb_get_phy_dev(dev, 0);
++		musb->phy = devm_phy_get(dev, "usb");
++	}
+ 
+ 	if (IS_ERR(musb->xceiv)) {
+ 		status = PTR_ERR(musb->xceiv);
+@@ -364,6 +374,10 @@ static int omap2430_musb_init(struct musb *musb)
+ 		return -EPROBE_DEFER;
+ 	}
+ 
++	if (IS_ERR(musb->phy)) {
++		pr_err("HS USB OTG: no PHY configured\n");
++		return PTR_ERR(musb->phy);
++	}
+ 	musb->isr = omap2430_musb_interrupt;
+ 
+ 	status = pm_runtime_get_sync(dev);
+@@ -397,7 +411,7 @@ static int omap2430_musb_init(struct musb *musb)
+ 	if (glue->status != OMAP_MUSB_UNKNOWN)
+ 		omap_musb_set_mailbox(glue);
+ 
+-	usb_phy_init(musb->xceiv);
++	phy_init(musb->phy);
+ 
+ 	pm_runtime_put_noidle(musb->controller);
+ 	return 0;
+@@ -460,6 +474,7 @@ static int omap2430_musb_exit(struct musb *musb)
+ 	del_timer_sync(&musb_idle_timer);
+ 
+ 	omap2430_low_level_exit(musb);
++	phy_exit(musb->phy);
+ 
+ 	return 0;
  }
+@@ -633,7 +648,7 @@ static int omap2430_runtime_suspend(struct device *dev)
+ 				OTG_INTERFSEL);
  
-+static inline unsigned da8xx_fb_round_clk(struct da8xx_fb_par *par,
-+					  unsigned pixclock)
-+{
-+	unsigned div;
-+
-+	div = da8xx_fb_calc_clk_divider(par, pixclock);
-+	return KHZ2PICOS(par->lcd_fck_rate / (1000 * div));
-+}
-+
- static inline void da8xx_fb_config_clk_divider(unsigned div)
- {
- 	/* Configure the LCD clock divisor. */
-@@ -962,6 +971,8 @@ static int fb_check_var(struct fb_var_screeninfo *var,
- 	if (var->yres + var->yoffset > var->yres_virtual)
- 		var->yoffset = var->yres_virtual - var->yres;
+ 		omap2430_low_level_exit(musb);
+-		usb_phy_set_suspend(musb->xceiv, 1);
++		phy_power_off(musb->phy);
+ 	}
  
-+	var->pixclock = da8xx_fb_round_clk(par, var->pixclock);
-+
- 	return err;
- }
+ 	return 0;
+@@ -648,8 +663,7 @@ static int omap2430_runtime_resume(struct device *dev)
+ 		omap2430_low_level_init(musb);
+ 		musb_writel(musb->mregs, OTG_INTERFSEL,
+ 				musb->context.otg_interfsel);
+-
+-		usb_phy_set_suspend(musb->xceiv, 0);
++		phy_power_on(musb->phy);
+ 	}
  
+ 	return 0;
 -- 
-1.7.0.4
+1.7.10.4
 

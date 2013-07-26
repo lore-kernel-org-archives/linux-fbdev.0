@@ -1,52 +1,146 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 30 Jul 2013 18:26:12 +0000
-Subject: [PATCH v2 05/24] video: da8xx-fb: store current display information
-Message-Id: <1375208791-15781-6-git-send-email-detheridge@ti.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Fri, 26 Jul 2013 12:55:02 +0000
+Subject: [PATCH v10 8/8] usb: phy: twl4030-usb: remove *set_suspend* and *phy_init* ops
+Message-Id: <1374842582-13242-9-git-send-email-kishon@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1374842582-13242-1-git-send-email-kishon@ti.com>
+In-Reply-To: <1374842582-13242-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-From: Afzal Mohammed <afzal@ti.com>
+Now that twl4030-usb is adapted to the new generic PHY framework,
+*set_suspend* and *phy_init* ops can be removed from twl4030-usb driver.
 
-store current videomode and controller data so that reconfiguring can
-be done easily. Reconfiguring would be required in fb_set_par, which
-is going to be added soon.
-
-If these details are not stored, the work probe does to retrieve these
-information would have to repeated at the place of reconfiguring and
-modifying platform data would be necessary to handle controller data
-changes like bpp.
-
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+Acked-by: Felipe Balbi <balbi@ti.com>
+Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
 ---
- drivers/video/da8xx-fb.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ drivers/phy/phy-twl4030-usb.c |   57 ++++++++++-------------------------------
+ 1 file changed, 13 insertions(+), 44 deletions(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 18834fa..d060f14 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -178,6 +178,8 @@ struct da8xx_fb_par {
- #endif
- 	void (*panel_power_ctrl)(int);
- 	u32 pseudo_palette[16];
-+	struct fb_videomode	mode;
-+	struct lcd_ctrl_config	cfg;
- };
+diff --git a/drivers/phy/phy-twl4030-usb.c b/drivers/phy/phy-twl4030-usb.c
+index 494f107..c437211 100644
+--- a/drivers/phy/phy-twl4030-usb.c
++++ b/drivers/phy/phy-twl4030-usb.c
+@@ -422,25 +422,20 @@ static void twl4030_phy_power(struct twl4030_usb *twl, int on)
+ 	}
+ }
  
- static struct fb_var_screeninfo da8xx_fb_var;
-@@ -1310,6 +1312,8 @@ static int fb_probe(struct platform_device *device)
+-static void twl4030_phy_suspend(struct twl4030_usb *twl, int controller_off)
++static int twl4030_phy_power_off(struct phy *phy)
+ {
++	struct twl4030_usb *twl = phy_get_drvdata(phy);
++
+ 	if (twl->asleep)
+-		return;
++		return 0;
+ 
+ 	twl4030_phy_power(twl, 0);
+ 	twl->asleep = 1;
+ 	dev_dbg(twl->dev, "%s\n", __func__);
+-}
+-
+-static int twl4030_phy_power_off(struct phy *phy)
+-{
+-	struct twl4030_usb *twl = phy_get_drvdata(phy);
+-
+-	twl4030_phy_suspend(twl, 0);
+ 	return 0;
+ }
+ 
+-static void __twl4030_phy_resume(struct twl4030_usb *twl)
++static void __twl4030_phy_power_on(struct twl4030_usb *twl)
+ {
+ 	twl4030_phy_power(twl, 1);
+ 	twl4030_i2c_access(twl, 1);
+@@ -449,11 +444,13 @@ static void __twl4030_phy_resume(struct twl4030_usb *twl)
+ 		twl4030_i2c_access(twl, 0);
+ }
+ 
+-static void twl4030_phy_resume(struct twl4030_usb *twl)
++static int twl4030_phy_power_on(struct phy *phy)
+ {
++	struct twl4030_usb *twl = phy_get_drvdata(phy);
++
+ 	if (!twl->asleep)
+-		return;
+-	__twl4030_phy_resume(twl);
++		return 0;
++	__twl4030_phy_power_on(twl);
+ 	twl->asleep = 0;
+ 	dev_dbg(twl->dev, "%s\n", __func__);
+ 
+@@ -466,13 +463,6 @@ static void twl4030_phy_resume(struct twl4030_usb *twl)
+ 		cancel_delayed_work(&twl->id_workaround_work);
+ 		schedule_delayed_work(&twl->id_workaround_work, HZ);
+ 	}
+-}
+-
+-static int twl4030_phy_power_on(struct phy *phy)
+-{
+-	struct twl4030_usb *twl = phy_get_drvdata(phy);
+-
+-	twl4030_phy_resume(twl);
+ 	return 0;
+ }
+ 
+@@ -604,9 +594,9 @@ static void twl4030_id_workaround_work(struct work_struct *work)
+ 	}
+ }
+ 
+-static int twl4030_usb_phy_init(struct usb_phy *phy)
++static int twl4030_phy_init(struct phy *phy)
+ {
+-	struct twl4030_usb *twl = phy_to_twl(phy);
++	struct twl4030_usb *twl = phy_get_drvdata(phy);
+ 	enum omap_musb_vbus_id_status status;
+ 
+ 	/*
+@@ -621,32 +611,13 @@ static int twl4030_usb_phy_init(struct usb_phy *phy)
+ 
+ 	if (status = OMAP_MUSB_ID_GROUND || status = OMAP_MUSB_VBUS_VALID) {
+ 		omap_musb_mailbox(twl->linkstat);
+-		twl4030_phy_resume(twl);
++		twl4030_phy_power_on(phy);
  	}
  
- 	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
-+	fb_var_to_videomode(&par->mode, &da8xx_fb_var);
-+	par->cfg = *lcd_cfg;
+ 	sysfs_notify(&twl->dev->kobj, NULL, "vbus");
+ 	return 0;
+ }
  
- 	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
- 		dev_err(&device->dev, "lcd_init failed\n");
+-static int twl4030_phy_init(struct phy *phy)
+-{
+-	struct twl4030_usb *twl = phy_get_drvdata(phy);
+-
+-	return twl4030_usb_phy_init(&twl->phy);
+-}
+-
+-static int twl4030_set_suspend(struct usb_phy *x, int suspend)
+-{
+-	struct twl4030_usb *twl = phy_to_twl(x);
+-
+-	if (suspend)
+-		twl4030_phy_suspend(twl, 1);
+-	else
+-		twl4030_phy_resume(twl);
+-
+-	return 0;
+-}
+-
+ static int twl4030_set_peripheral(struct usb_otg *otg,
+ 					struct usb_gadget *gadget)
+ {
+@@ -719,8 +690,6 @@ static int twl4030_usb_probe(struct platform_device *pdev)
+ 	twl->phy.label		= "twl4030";
+ 	twl->phy.otg		= otg;
+ 	twl->phy.type		= USB_PHY_TYPE_USB2;
+-	twl->phy.set_suspend	= twl4030_set_suspend;
+-	twl->phy.init		= twl4030_usb_phy_init;
+ 
+ 	otg->phy		= &twl->phy;
+ 	otg->set_host		= twl4030_set_host;
 -- 
-1.7.0.4
+1.7.10.4
 

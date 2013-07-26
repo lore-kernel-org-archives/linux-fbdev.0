@@ -1,105 +1,75 @@
-From: Inki Dae <inki.dae@samsung.com>
-Date: Wed, 10 Jul 2013 11:58:45 +0000
-Subject: [RFC PATCH v4 0/2] Introduce buffer synchronization framework
-Message-Id: <1373457527-28263-1-git-send-email-inki.dae@samsung.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Fri, 26 Jul 2013 12:55:01 +0000
+Subject: [PATCH v10 7/8] usb: phy: omap-usb2: remove *set_suspend* callback from omap-usb2
+Message-Id: <1374842582-13242-8-git-send-email-kishon@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1374842582-13242-1-git-send-email-kishon@ti.com>
+In-Reply-To: <1374842582-13242-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
-Cc: maarten.lankhorst@canonical.com, daniel@ffwll.ch, robdclark@gmail.com, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, yj44.cho@samsung.com, Inki Dae <inki.dae@samsung.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Hi all,
+Now that omap-usb2 is adapted to the new generic PHY framework,
+*set_suspend* ops can be removed from omap-usb2 driver.
 
-This patch set introduces a buffer synchronization framework based
-on DMA BUF[1] and reservation[2] to use dma-buf resource, and based
-on ww-mutexes[3] for lock mechanism.
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+Acked-by: Felipe Balbi <balbi@ti.com>
+Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+---
+ drivers/phy/phy-omap-usb2.c |   25 -------------------------
+ 1 file changed, 25 deletions(-)
 
-The purpose of this framework is to provide not only buffer access
-control to CPU and CPU, and CPU and DMA, and DMA and DMA but also
-easy-to-use interfaces for device drivers and user application.
-In addtion, this patch set suggests a way for enhancing performance.
-
-to implement generic user mode interface, we have used fcntl system
-call[4]. As you know, user application sees a buffer object as
-a dma-buf file descriptor. So fcntl() call with the file descriptor
-means to lock some buffer region being managed by the dma-buf object.
-For more detail, you can refer to the dma-buf-sync.txt in Documentation/
-
-Moreover, we had tried to find how we could utilize limited hardware
-resources more using buffer synchronization mechanism. And finally,
-we have realized that it could enhance performance using multi threads
-with this buffer synchronization mechanism: DMA and CPU works individually
-so CPU could perform other works while DMA is performing some works,
-and vise versa.
-
-However, in the conventional way, that is not easy to do so because DMA
-operation is depend on CPU operation, and vice versa.
-
-Conventional way:
-	User                                     Kernel
-	---------------------------------------------------------------------
-	CPU writes something to src
-	send the src to driver------------------------->
-	                                         update DMA register
-	request DMA start(1)--------------------------->
-						 DMA start
-		<---------completion signal(2)----------
-	CPU accesses dst
-
-	(1) Request DMA start after the CPU access to src buffer is completed.
-	(2) Access dst buffer after DMA access to the dst buffer is completed.
-
-On the other hand, if there is something to control buffer access between CPU
-and DMA? The below shows that:
-
-	User(thread a)          User(thread b)            Kernel
-	---------------------------------------------------------------------
-	send a src to driver---------------------------------->
-		                                          update DMA register
-        lock the src
-	                        request DMA start(1)---------->
-	CPU acccess to src
-	unlock the src		                          lock src and dst
-							  DMA start
-		<-------------completion signal(2)-------------
-	lock dst	                                  DMA completion
-	CPU access to dst				  unlock src and dst
-	unlock DST
-
-	(1) Try to start DMA operation while CPU is accessing the src buffer.
-	(2) Try CPU access to dst buffer while DMA is accessing the dst buffer.
-
-	This means that CPU or DMA could do more works.
-
-	In the same way, we could reduce hand shaking overhead between
-	two processes when those processes need to share a shared buffer.
-	There may be other cases that we could reduce overhead as well.
-
-
-References:
-[1] http://lwn.net/Articles/470339/
-[2] http://lwn.net/Articles/532616/
-[3] https://patchwork.kernel.org/patch/2625361/
-[4] http://linux.die.net/man/2/fcntl
-
-Inki Dae (2):
-  dmabuf-sync: Introduce buffer synchronization framework
-  dma-buf: add lock callback for fcntl system call.
-
- Documentation/dma-buf-sync.txt |  283 +++++++++++++++++
- drivers/base/Kconfig           |    7 +
- drivers/base/Makefile          |    1 +
- drivers/base/dma-buf.c         |   34 ++
- drivers/base/dmabuf-sync.c     |  661 ++++++++++++++++++++++++++++++++++++++++
- include/linux/dma-buf.h        |   14 +
- include/linux/dmabuf-sync.h    |  132 ++++++++
- include/linux/reservation.h    |    9 +
- 8 files changed, 1141 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/dma-buf-sync.txt
- create mode 100644 drivers/base/dmabuf-sync.c
- create mode 100644 include/linux/dmabuf-sync.h
-
+diff --git a/drivers/phy/phy-omap-usb2.c b/drivers/phy/phy-omap-usb2.c
+index 25e0f3c..dec3fab 100644
+--- a/drivers/phy/phy-omap-usb2.c
++++ b/drivers/phy/phy-omap-usb2.c
+@@ -97,29 +97,6 @@ static int omap_usb_set_peripheral(struct usb_otg *otg,
+ 	return 0;
+ }
+ 
+-static int omap_usb2_suspend(struct usb_phy *x, int suspend)
+-{
+-	u32 ret;
+-	struct omap_usb *phy = phy_to_omapusb(x);
+-
+-	if (suspend && !phy->is_suspended) {
+-		omap_control_usb_phy_power(phy->control_dev, 0);
+-		pm_runtime_put_sync(phy->dev);
+-		phy->is_suspended = 1;
+-	} else if (!suspend && phy->is_suspended) {
+-		ret = pm_runtime_get_sync(phy->dev);
+-		if (ret < 0) {
+-			dev_err(phy->dev, "get_sync failed with err %d\n",
+-									ret);
+-			return ret;
+-		}
+-		omap_control_usb_phy_power(phy->control_dev, 1);
+-		phy->is_suspended = 0;
+-	}
+-
+-	return 0;
+-}
+-
+ static int omap_usb_power_off(struct phy *x)
+ {
+ 	struct omap_usb *phy = phy_get_drvdata(x);
+@@ -167,7 +144,6 @@ static int omap_usb2_probe(struct platform_device *pdev)
+ 
+ 	phy->phy.dev		= phy->dev;
+ 	phy->phy.label		= "omap-usb2";
+-	phy->phy.set_suspend	= omap_usb2_suspend;
+ 	phy->phy.otg		= otg;
+ 	phy->phy.type		= USB_PHY_TYPE_USB2;
+ 
+@@ -182,7 +158,6 @@ static int omap_usb2_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
+-	phy->is_suspended	= 1;
+ 	omap_control_usb_phy_power(phy->control_dev, 0);
+ 
+ 	otg->set_host		= omap_usb_set_host;
 -- 
-1.7.5.4
+1.7.10.4
 

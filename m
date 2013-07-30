@@ -1,104 +1,99 @@
 From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 30 Jul 2013 18:26:30 +0000
-Subject: [PATCH v2 23/24] video: da8xx-fb: make clock naming consistent
-Message-Id: <1375208791-15781-24-git-send-email-detheridge@ti.com>
+Date: Tue, 30 Jul 2013 18:26:26 +0000
+Subject: [PATCH v2 19/24] video: da8xx-fb: obtain fb_videomode info from dt
+Message-Id: <1375208791-15781-20-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Clean up the code, so that the names of the various clock variables
-are consistent to it is clear what variable is associated with what
-clock.
+From: Afzal Mohammed <afzal@ti.com>
 
+Obtain fb_videomode details for the connected lcd panel using the
+display timing details present in DT.
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
 Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- drivers/video/da8xx-fb.c |   22 +++++++++++-----------
- 1 files changed, 11 insertions(+), 11 deletions(-)
+ .../devicetree/bindings/video/fb-da8xx.txt         |   21 ++++++++++++++++++++
+ drivers/video/da8xx-fb.c                           |   17 ++++++++++++++++
+ 2 files changed, 38 insertions(+), 0 deletions(-)
 
+diff --git a/Documentation/devicetree/bindings/video/fb-da8xx.txt b/Documentation/devicetree/bindings/video/fb-da8xx.txt
+index 581e014..0741f78 100644
+--- a/Documentation/devicetree/bindings/video/fb-da8xx.txt
++++ b/Documentation/devicetree/bindings/video/fb-da8xx.txt
+@@ -6,6 +6,12 @@ Required properties:
+ 	AM335x SoC's - "ti,am3352-lcdc", "ti,da830-lcdc"
+ - reg: Address range of lcdc register set
+ - interrupts: lcdc interrupt
++- display-timings: typical videomode of lcd panel, represented as child.
++  Refer Documentation/devicetree/bindings/video/display-timing.txt for
++  display timing binding details. If multiple videomodes are mentioned
++  in display timings node, typical videomode has to be mentioned as the
++  native mode or it has to be first child (driver cares only for native
++  videomode).
+ 
+ Example:
+ 
+@@ -13,4 +19,19 @@ lcdc@4830e000 {
+ 	compatible = "ti,am3352-lcdc", "ti,da830-lcdc";
+ 	reg =  <0x4830e000 0x1000>;
+ 	interrupts = <36>;
++	display-timings {
++		800x480p62 {
++			clock-frequency = <30000000>;
++			hactive = <800>;
++			vactive = <480>;
++			hfront-porch = <39>;
++			hback-porch = <39>;
++			hsync-len = <47>;
++			vback-porch = <29>;
++			vfront-porch = <13>;
++			vsync-len = <2>;
++			hsync-active = <1>;
++			vsync-active = <1>;
++		};
++	};
+ };
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 471931e..131cf4c 100644
+index 97d6b2d..ca8f6fc 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -179,7 +179,7 @@ struct da8xx_fb_par {
- #ifdef CONFIG_CPU_FREQ
- 	struct notifier_block	freq_transition;
- #endif
--	unsigned int		lcd_fck_rate;
-+	unsigned int		lcdc_clk_rate;
- 	void (*panel_power_ctrl)(int);
- 	u32 pseudo_palette[16];
- 	struct fb_videomode	mode;
-@@ -692,14 +692,14 @@ static int da8xx_fb_config_clk_divider(struct da8xx_fb_par *par,
+@@ -36,6 +36,7 @@
+ #include <linux/slab.h>
+ #include <linux/delay.h>
+ #include <linux/lcm.h>
++#include <video/of_display_timing.h>
+ #include <video/da8xx-fb.h>
+ #include <asm/div64.h>
+ 
+@@ -1258,8 +1259,24 @@ static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
  {
- 	int ret;
- 
--	if (par->lcd_fck_rate != lcdc_clk_rate) {
-+	if (par->lcdc_clk_rate != lcdc_clk_rate) {
- 		ret = clk_set_rate(par->lcdc_clk, lcdc_clk_rate);
- 		if (IS_ERR_VALUE(ret)) {
- 			dev_err(par->dev,
- 				"unable to set clock rate at %u\n", lcdc_clk_rate);
- 			return ret;
- 		}
--		par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
-+		par->lcdc_clk_rate = clk_get_rate(par->lcdc_clk);
- 	}
- 
- 	/* Configure the LCD clock divisor. */
-@@ -721,7 +721,7 @@ static unsigned int da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
- 
- 	pixclock = PICOS2KHZ(pixclock) * 1000;
- 
--	*lcdc_clk_rate = par->lcd_fck_rate;
-+	*lcdc_clk_rate = par->lcdc_clk_rate;
- 
- 	if (pixclock < (*lcdc_clk_rate / CLK_MAX_DIV)) {
- 		*lcdc_clk_rate = clk_round_rate(par->lcdc_clk, pixclock * CLK_MAX_DIV);
-@@ -1026,8 +1026,8 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
- 
- 	par = container_of(nb, struct da8xx_fb_par, freq_transition);
- 	if (val = CPUFREQ_POSTCHANGE) {
--		if (par->lcd_fck_rate != clk_get_rate(par->lcdc_clk)) {
--			par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
-+		if (par->lcdc_clk_rate != clk_get_rate(par->lcdc_clk)) {
-+			par->lcdc_clk_rate = clk_get_rate(par->lcdc_clk);
- 			lcd_disable_raster(DA8XX_FRAME_WAIT);
- 			da8xx_fb_calc_config_clk_divider(par, &par->mode);
- 			if (par->blank = FB_BLANK_UNBLANK)
-@@ -1368,8 +1368,8 @@ static int fb_probe(struct platform_device *device)
- 	struct lcd_ctrl_config *lcd_cfg;
+ 	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
  	struct fb_videomode *lcdc_info;
- 	struct fb_info *da8xx_fb_info;
--	struct clk *fb_clk = NULL;
- 	struct da8xx_fb_par *par;
-+	struct clk *tmp_lcdc_clk;
- 	int ret;
- 	unsigned long ulcm;
++	struct device_node *np = dev->dev.of_node;
+ 	int i;
  
-@@ -1389,8 +1389,8 @@ static int fb_probe(struct platform_device *device)
- 		return -EADDRNOTAVAIL;
- 	}
- 
--	fb_clk = devm_clk_get(&device->dev, "fck");
--	if (IS_ERR(fb_clk)) {
-+	tmp_lcdc_clk = devm_clk_get(&device->dev, "fck");
-+	if (IS_ERR(tmp_lcdc_clk)) {
- 		dev_err(&device->dev, "Can not get device clock\n");
- 		return -ENODEV;
- 	}
-@@ -1435,8 +1435,8 @@ static int fb_probe(struct platform_device *device)
- 
- 	par = da8xx_fb_info->par;
- 	par->dev = &device->dev;
--	par->lcdc_clk = fb_clk;
--	par->lcd_fck_rate = clk_get_rate(fb_clk);
-+	par->lcdc_clk = tmp_lcdc_clk;
-+	par->lcdc_clk_rate = clk_get_rate(par->lcdc_clk);
- 	if (fb_pdata && fb_pdata->panel_power_ctrl) {
- 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
- 		par->panel_power_ctrl(1);
++	if (np) {
++		lcdc_info = devm_kzalloc(&dev->dev,
++					 sizeof(struct fb_videomode),
++					 GFP_KERNEL);
++		if (!lcdc_info) {
++			dev_err(&dev->dev, "memory allocation failed\n");
++			return NULL;
++		}
++		if (of_get_fb_videomode(np, lcdc_info, OF_USE_NATIVE_MODE)) {
++			dev_err(&dev->dev, "timings not available in DT\n");
++			return NULL;
++		}
++		return lcdc_info;
++	}
++
+ 	for (i = 0, lcdc_info = known_lcd_panels;
+ 		i < ARRAY_SIZE(known_lcd_panels); i++, lcdc_info++) {
+ 		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
 -- 
 1.7.0.4
 

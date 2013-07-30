@@ -1,64 +1,135 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Thu, 18 Jul 2013 07:02:20 +0000
-Subject: Re: [PATCH 04/15] ARM: OMAP: USB: Add phy binding information
-Message-Id: <20130718070219.GM7656@atomide.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 30 Jul 2013 18:26:17 +0000
+Subject: [PATCH v2 10/24] video: da8xx-fb: fb_set_par support
+Message-Id: <1375208791-15781-11-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1374129984-765-1-git-send-email-kishon@ti.com>
- <1374129984-765-5-git-send-email-kishon@ti.com>
-In-Reply-To: <1374129984-765-5-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-* Kishon Vijay Abraham I <kishon@ti.com> [130717 23:53]:
-> In order for controllers to get PHY in case of non dt boot, the phy
-> binding information (phy device name) should be added in the platform
-> data of the controller.
-> 
-> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
-> Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-> Acked-by: Felipe Balbi <balbi@ti.com>
-> ---
->  arch/arm/mach-omap2/usb-musb.c |    3 +++
->  include/linux/usb/musb.h       |    3 +++
->  2 files changed, 6 insertions(+)
-> 
-> diff --git a/arch/arm/mach-omap2/usb-musb.c b/arch/arm/mach-omap2/usb-musb.c
-> index 8c4de27..6aa7cbf 100644
-> --- a/arch/arm/mach-omap2/usb-musb.c
-> +++ b/arch/arm/mach-omap2/usb-musb.c
-> @@ -85,6 +85,9 @@ void __init usb_musb_init(struct omap_musb_board_data *musb_board_data)
->  	musb_plat.mode = board_data->mode;
->  	musb_plat.extvbus = board_data->extvbus;
->  
-> +	if (cpu_is_omap34xx())
-> +		musb_plat.phy_label = "twl4030";
-> +
->  	if (soc_is_am35xx()) {
->  		oh_name = "am35x_otg_hs";
->  		name = "musb-am35x";
+From: Afzal Mohammed <afzal@ti.com>
 
-I don't think there's a USB PHY on non-twl4030 chips, so this should
-be OK:
+fb_set_par helps in runtime configuration of lcd controller like
+changing resolution, pixel clock etc. (eg. using fbset utility)
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+Reconfigure lcd controller based on information passed by framework.
+Enable raster back if it was already enabled.
 
+As fb_set_par would get invoked indirectly from probe via fb_set_var,
+remove existing lcdc initialization in probe and do lcdc reset in
+probe so that reset happens only at the begining.
 
-> diff --git a/include/linux/usb/musb.h b/include/linux/usb/musb.h
-> index 053c268..596f8c8 100644
-> --- a/include/linux/usb/musb.h
-> +++ b/include/linux/usb/musb.h
-> @@ -104,6 +104,9 @@ struct musb_hdrc_platform_data {
->  	/* for clk_get() */
->  	const char	*clock;
->  
-> +	/* phy label */
-> +	const char	*phy_label;
-> +
->  	/* (HOST or OTG) switch VBUS on/off */
->  	int		(*set_vbus)(struct device *dev, int is_on);
->  
-> -- 
-> 1.7.10.4
-> 
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
+---
+ drivers/video/da8xx-fb.c |   60 +++++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 49 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 8d73730..b25b810 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -243,6 +243,11 @@ static struct fb_videomode known_lcd_panels[] = {
+ 	},
+ };
+ 
++static inline bool da8xx_fb_is_raster_enabled(void)
++{
++	return !!(lcdc_read(LCD_RASTER_CTRL_REG) & LCD_RASTER_ENABLE);
++}
++
+ /* Enable the Raster Engine of the LCD Controller */
+ static inline void lcd_enable_raster(void)
+ {
+@@ -665,9 +670,6 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 
+ static void da8xx_fb_lcd_reset(void)
+ {
+-	/* Disable the Raster if previously Enabled */
+-	lcd_disable_raster(false);
+-
+ 	/* DMA has to be disabled */
+ 	lcdc_write(0, LCD_DMA_CTRL_REG);
+ 	lcdc_write(0, LCD_RASTER_CTRL_REG);
+@@ -720,8 +722,6 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+ 	u32 bpp;
+ 	int ret = 0;
+ 
+-	da8xx_fb_lcd_reset();
+-
+ 	da8xx_fb_calc_config_clk_divider(par, panel);
+ 
+ 	if (panel->sync & FB_SYNC_CLK_INVERT)
+@@ -1201,9 +1201,52 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
+ 	return ret;
+ }
+ 
++static int da8xxfb_set_par(struct fb_info *info)
++{
++	struct da8xx_fb_par *par = info->par;
++	int ret;
++	bool raster = da8xx_fb_is_raster_enabled();
++
++	if (raster)
++		lcd_disable_raster(true);
++	else
++		lcd_disable_raster(false);
++
++	fb_var_to_videomode(&par->mode, &info->var);
++
++	par->cfg.bpp = info->var.bits_per_pixel;
++
++	info->fix.visual = (par->cfg.bpp <= 8) ?
++				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
++	info->fix.line_length = (par->mode.xres * par->cfg.bpp) / 8;
++
++	ret = lcd_init(par, &par->cfg, &par->mode);
++	if (ret < 0) {
++		dev_err(par->dev, "lcd init failed\n");
++		return ret;
++	}
++
++	par->dma_start = info->fix.smem_start +
++			 info->var.yoffset * info->fix.line_length +
++			 info->var.xoffset * info->var.bits_per_pixel / 8;
++	par->dma_end   = par->dma_start +
++			 info->var.yres * info->fix.line_length - 1;
++
++	lcdc_write(par->dma_start, LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
++	lcdc_write(par->dma_end, LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
++	lcdc_write(par->dma_start, LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
++	lcdc_write(par->dma_end, LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
++
++	if (raster)
++		lcd_enable_raster();
++
++	return 0;
++}
++
+ static struct fb_ops da8xx_fb_ops = {
+ 	.owner = THIS_MODULE,
+ 	.fb_check_var = fb_check_var,
++	.fb_set_par = da8xxfb_set_par,
+ 	.fb_setcolreg = fb_setcolreg,
+ 	.fb_pan_display = da8xx_pan_display,
+ 	.fb_ioctl = fb_ioctl,
+@@ -1312,14 +1355,9 @@ static int fb_probe(struct platform_device *device)
+ 	}
+ 
+ 	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
+-	fb_var_to_videomode(&par->mode, &da8xx_fb_var);
+ 	par->cfg = *lcd_cfg;
+ 
+-	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
+-		dev_err(&device->dev, "lcd_init failed\n");
+-		ret = -EFAULT;
+-		goto err_release_fb;
+-	}
++	da8xx_fb_lcd_reset();
+ 
+ 	/* allocate frame buffer */
+ 	par->vram_size = lcdc_info->xres * lcdc_info->yres * lcd_cfg->bpp;
+-- 
+1.7.0.4
+

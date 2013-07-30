@@ -1,78 +1,72 @@
-From: "maxime.ripard@free-electrons.com" <maxime.ripard@free-electrons.com>
-Date: Fri, 12 Jul 2013 12:30:28 +0000
-Subject: Re: [PATCH RESEND] video: mxsfb: fix color settings for 18bit data bus and 32bpp
-Message-Id: <20130712123028.GJ24370@lukather>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="rmUrFcWP4LYae1gV"
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 30 Jul 2013 18:26:25 +0000
+Subject: [PATCH v2 18/24] video: da8xx-fb: minimal dt support
+Message-Id: <1375208791-15781-19-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <51C01DE1.8030300@digi.com>
- <20130703085505.GG2969@lukather>
-In-Reply-To: <20130703085505.GG2969@lukather>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
+From: Afzal Mohammed <afzal@ti.com>
 
---rmUrFcWP4LYae1gV
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Driver is provided a means to have the probe triggered by DT.
 
-On Wed, Jul 03, 2013 at 10:55:05AM +0200, maxime.ripard@free-electrons.com =
-wrote:
-> Hi Jean-Christophe,
->=20
-> On Tue, Jun 18, 2013 at 10:44:17AM +0200, Hector Palacios wrote:
-> > For a combination of 18bit LCD data bus width and a color
-> > mode of 32bpp, the driver was setting the color mapping to
-> > rgb666, which is wrong, as the color in memory realy has an
-> > rgb888 layout.
-> >=20
-> > This patch also removes the setting of flag CTRL_DF24 that
-> > makes the driver dimiss the upper 2 bits when handling 32/24bpp
-> > colors in a diplay with 18bit data bus width. This flag made
-> > true color images display wrong in such configurations.
-> >=20
-> > Finally, the color mapping rgb666 has also been removed as nobody
-> > is using it and high level applications like Qt5 cannot work
-> > with it either.
-> >=20
-> > Reference: https://lkml.org/lkml/2013/5/23/220
-> > Signed-off-by: Hector Palacios <hector.palacios@digi.com>
-> > Acked-by: Juergen Beisert <jbe@pengutronix.de>
-> > Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
->=20
-> I don't see this patch in your for-next branch.
->=20
-> It would be really great to have it for 3.11 if possible.
->=20
-> Could you take a look at this patch please?
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
+---
+ .../devicetree/bindings/video/fb-da8xx.txt         |   16 ++++++++++++++++
+ drivers/video/da8xx-fb.c                           |    7 +++++++
+ 2 files changed, 23 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/fb-da8xx.txt
 
-Ping?
+diff --git a/Documentation/devicetree/bindings/video/fb-da8xx.txt b/Documentation/devicetree/bindings/video/fb-da8xx.txt
+new file mode 100644
+index 0000000..581e014
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/fb-da8xx.txt
+@@ -0,0 +1,16 @@
++TI LCD Controller on DA830/DA850/AM335x SoC's
++
++Required properties:
++- compatible:
++	DA830 - "ti,da830-lcdc"
++	AM335x SoC's - "ti,am3352-lcdc", "ti,da830-lcdc"
++- reg: Address range of lcdc register set
++- interrupts: lcdc interrupt
++
++Example:
++
++lcdc@4830e000 {
++	compatible = "ti,am3352-lcdc", "ti,da830-lcdc";
++	reg =  <0x4830e000 0x1000>;
++	interrupts = <36>;
++};
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 983176a..97d6b2d 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1596,6 +1596,12 @@ static int fb_resume(struct platform_device *dev)
+ #define fb_resume NULL
+ #endif
+ 
++static const struct of_device_id da8xx_fb_of_match[] = {
++	{.compatible = "ti,da830-lcdc", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, da8xx_fb_of_match);
++
+ static struct platform_driver da8xx_fb_driver = {
+ 	.probe = fb_probe,
+ 	.remove = fb_remove,
+@@ -1604,6 +1610,7 @@ static struct platform_driver da8xx_fb_driver = {
+ 	.driver = {
+ 		   .name = DRIVER_NAME,
+ 		   .owner = THIS_MODULE,
++		   .of_match_table = of_match_ptr(da8xx_fb_of_match),
+ 		   },
+ };
+ 
+-- 
+1.7.0.4
 
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
-
---rmUrFcWP4LYae1gV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJR3/bkAAoJEBx+YmzsjxAg8FYQAKx3vgtHNyCIYq4cC4LY5Q3b
-Dm2H5n27pa0GVq0hTCiAAroFYpvynOOZsGwP1E7sAnsXTWsZiIk8jROoSIYS7Vh7
-ZrQC6luH+aG3mchbRHlNA4CB/+AVZ5UNUk0k5DJOd/d9WDYR2gcthb4emS4yL5Un
-l9ReecsH5QVUUz8OaTGptwzRcCrBtVa3wZPOStRiMRc4kHsDFdAsS3kjGnuWl25J
-iKztRHO8i8lnlL5WtdwDrmOGRt/4A+WZ9Ji+x7Jv4Kwgceq+cD8Tbeg6cPoHPOzK
-AOWK/cISf7lwPEnt0Vvfo5136WBmaJ+sm74N95c3HU9pict0AMCEyEXwFpmBDoA8
-xp9/zyRWqzBXynPMmo0aaiQOxsgdfBKBfLo+YzNrbTeGjBUMEHI+/q/t4vU/NSZz
-hvHjWGRlgsYVHoqxBVVhj4INGGMDGacp+or9PnxQPOpekLX6cB14UViGitUX4ep7
-GYqbFamx7yHb5TfUYM02YKllJ+IFUt2e5QkEzIlkXOepPRiAaSHZUpJvW/qSGXNu
-8dT8anAao7O9Nn0WTk/pqSDCSGwXNJpNEILKPNIdEVSKLB0Rv48GJjAB6OIMApYR
-0j0yqVzAOZgXkf4JcNVd9y5A7IBjMHfLSdOg3STO8dcO7uzrPW/6OKcYwsR/VqKi
-QGkK3qQnMuTnm65ImSJ5
-=w+8O
------END PGP SIGNATURE-----
-
---rmUrFcWP4LYae1gV--

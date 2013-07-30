@@ -1,145 +1,167 @@
 From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 30 Jul 2013 18:26:18 +0000
-Subject: [PATCH v2 11/24] video: da8xx-fb: improve readability of code
-Message-Id: <1375208791-15781-12-git-send-email-detheridge@ti.com>
+Date: Tue, 30 Jul 2013 18:26:29 +0000
+Subject: [PATCH v2 22/24] video: da8xx-fb: set upstream clock rate (if reqd)
+Message-Id: <1375208791-15781-23-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Change the lcd_disable_raster funtion from using a bool to an enum
-as the function is very confusing with the current api.  This helps
-make it clearer what the parameter is really doing.
+From: Afzal Mohammed <afzal@ti.com>
 
+LCDC IP has a clock divider to adjust pixel clock, this limits pixel
+clock range to fck/255 - fck/2(fck - rate of input clock to LCDC IP).
+In the case of AM335x, where this IP is present, default fck is not
+sufficient to provide normal pixel clock rates, hence rendering this
+driver unusable on AM335x.
+
+If input clock too is configurable, allowable range of pixel clock
+would increase. Here initially it is checked whether with present fck,
+divider in IP could be configured to obtain required rate, if not,
+fck is adjusted. This makes it usable on AM335x.
+
+Note:
+Another solution would be to model an inherited basic clock divider of
+CCF, an advantage would be a better possible resolution for pixel clk.
+And trying to instantiate a CCF clock would mean that to be consistent,
+3 bits being turned on to enable clocks of LCDC IP would have to be
+modeled as gate clocks. Now that would bring in a total of 4 clocks,
+including necessity to create a new inherited divider clock, and that
+mean a branch of clock tree would be present in LCDC driver. This
+would add complexity to LCDC driver bringing in considerable amount
+of clock handling code, and this would not bring in much advantage
+for existing use cases other than providing a higher resolution of
+pixel clock. And existing use cases work without relying on clock
+modeling. Another fact is that out of the two platform's using this
+driver DaVinci is not yet converted to CCF. In future if higher
+resolution of pixel clock is required, and probably after DaVinci is
+CCF'ed, modeling clock nodes inside driver may be considered.
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
 Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- drivers/video/da8xx-fb.c |   24 ++++++++++++------------
- include/video/da8xx-fb.h |    5 +++++
- 2 files changed, 17 insertions(+), 12 deletions(-)
+ drivers/video/da8xx-fb.c |   80 ++++++++++++++++++++++++++++++++++-----------
+ 1 files changed, 60 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index b25b810..3c12861 100644
+index fe3d79e..471931e 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -271,7 +271,7 @@ static inline void lcd_enable_raster(void)
+@@ -133,6 +133,9 @@
+ #define WSI_TIMEOUT	50
+ #define PALETTE_SIZE	256
+ 
++#define	CLK_MIN_DIV	2
++#define	CLK_MAX_DIV	255
++
+ static void __iomem *da8xx_fb_reg_base;
+ static struct resource *lcdc_regs;
+ static unsigned int lcd_revision;
+@@ -684,38 +687,71 @@ static void da8xx_fb_lcd_reset(void)
+ 	}
  }
  
- /* Disable the Raster Engine of the LCD Controller */
--static inline void lcd_disable_raster(bool wait_for_frame_done)
-+static inline void lcd_disable_raster(enum da8xx_frame_complete wait_for_frame_done)
+-static inline unsigned da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
+-						 unsigned pixclock)
+-{
+-	return par->lcd_fck_rate / (PICOS2KHZ(pixclock) * 1000);
+-}
+-
+-static inline unsigned da8xx_fb_round_clk(struct da8xx_fb_par *par,
+-					  unsigned pixclock)
++static int da8xx_fb_config_clk_divider(struct da8xx_fb_par *par,
++					      unsigned lcdc_clk_div, unsigned lcdc_clk_rate)
  {
- 	u32 reg;
- 	int ret;
-@@ -283,7 +283,7 @@ static inline void lcd_disable_raster(bool wait_for_frame_done)
- 		/* return if already disabled */
- 		return;
+-	unsigned div;
++	int ret;
  
--	if ((wait_for_frame_done = true) && (lcd_revision = LCD_VERSION_2)) {
-+	if ((wait_for_frame_done = DA8XX_FRAME_WAIT) && (lcd_revision = LCD_VERSION_2)) {
- 		frame_done_flag = 0;
- 		ret = wait_event_interruptible_timeout(frame_done_wq,
- 				frame_done_flag != 0,
-@@ -771,7 +771,7 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
- 	u32 stat = lcdc_read(LCD_MASKED_STAT_REG);
+-	div = da8xx_fb_calc_clk_divider(par, pixclock);
+-	return KHZ2PICOS(par->lcd_fck_rate / (1000 * div));
+-}
++	if (par->lcd_fck_rate != lcdc_clk_rate) {
++		ret = clk_set_rate(par->lcdc_clk, lcdc_clk_rate);
++		if (IS_ERR_VALUE(ret)) {
++			dev_err(par->dev,
++				"unable to set clock rate at %u\n", lcdc_clk_rate);
++			return ret;
++		}
++		par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
++	}
  
- 	if ((stat & LCD_SYNC_LOST) && (stat & LCD_FIFO_UNDERFLOW)) {
--		lcd_disable_raster(false);
-+		lcd_disable_raster(DA8XX_FRAME_NOWAIT);
- 		lcdc_write(stat, LCD_MASKED_STAT_REG);
- 		lcd_enable_raster();
- 	} else if (stat & LCD_PL_LOAD_DONE) {
-@@ -781,7 +781,7 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
- 		 * interrupt via the following write to the status register. If
- 		 * this is done after then one gets multiple PL done interrupts.
- 		 */
--		lcd_disable_raster(false);
-+		lcd_disable_raster(DA8XX_FRAME_NOWAIT);
+-static inline void da8xx_fb_config_clk_divider(unsigned div)
+-{
+ 	/* Configure the LCD clock divisor. */
+-	lcdc_write(LCD_CLK_DIVISOR(div) |
++	lcdc_write(LCD_CLK_DIVISOR(lcdc_clk_div) |
+ 			(LCD_RASTER_MODE & 0x1), LCD_CTRL_REG);
  
- 		lcdc_write(stat, LCD_MASKED_STAT_REG);
- 
-@@ -834,7 +834,7 @@ static irqreturn_t lcdc_irq_handler_rev01(int irq, void *arg)
- 	u32 reg_ras;
- 
- 	if ((stat & LCD_SYNC_LOST) && (stat & LCD_FIFO_UNDERFLOW)) {
--		lcd_disable_raster(false);
-+		lcd_disable_raster(DA8XX_FRAME_NOWAIT);
- 		lcdc_write(stat, LCD_STAT_REG);
- 		lcd_enable_raster();
- 	} else if (stat & LCD_PL_LOAD_DONE) {
-@@ -844,7 +844,7 @@ static irqreturn_t lcdc_irq_handler_rev01(int irq, void *arg)
- 		 * interrupt via the following write to the status register. If
- 		 * this is done after then one gets multiple PL done interrupts.
- 		 */
--		lcd_disable_raster(false);
-+		lcd_disable_raster(DA8XX_FRAME_NOWAIT);
- 
- 		lcdc_write(stat, LCD_STAT_REG);
- 
-@@ -986,7 +986,7 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
- 	if (val = CPUFREQ_POSTCHANGE) {
- 		if (par->lcd_fck_rate != clk_get_rate(par->lcdc_clk)) {
- 			par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
--			lcd_disable_raster(true);
-+			lcd_disable_raster(DA8XX_FRAME_WAIT);
- 			da8xx_fb_calc_config_clk_divider(par, &par->mode);
- 			if (par->blank = FB_BLANK_UNBLANK)
- 				lcd_enable_raster();
-@@ -1024,7 +1024,7 @@ static int fb_remove(struct platform_device *dev)
- 		if (par->panel_power_ctrl)
- 			par->panel_power_ctrl(0);
- 
--		lcd_disable_raster(true);
-+		lcd_disable_raster(DA8XX_FRAME_WAIT);
- 		lcdc_write(0, LCD_RASTER_CTRL_REG);
- 
- 		/* disable DMA  */
-@@ -1140,7 +1140,7 @@ static int cfb_blank(int blank, struct fb_info *info)
- 		if (par->panel_power_ctrl)
- 			par->panel_power_ctrl(0);
- 
--		lcd_disable_raster(true);
-+		lcd_disable_raster(DA8XX_FRAME_WAIT);
- 		break;
- 	default:
- 		ret = -EINVAL;
-@@ -1208,9 +1208,9 @@ static int da8xxfb_set_par(struct fb_info *info)
- 	bool raster = da8xx_fb_is_raster_enabled();
- 
- 	if (raster)
--		lcd_disable_raster(true);
-+		lcd_disable_raster(DA8XX_FRAME_WAIT);
- 	else
--		lcd_disable_raster(false);
-+		lcd_disable_raster(DA8XX_FRAME_NOWAIT);
- 
- 	fb_var_to_videomode(&par->mode, &info->var);
- 
-@@ -1571,7 +1571,7 @@ static int fb_suspend(struct platform_device *dev, pm_message_t state)
- 		par->panel_power_ctrl(0);
- 
- 	fb_set_suspend(info, 1);
--	lcd_disable_raster(true);
-+	lcd_disable_raster(DA8XX_FRAME_WAIT);
- 	lcd_context_save();
- 	pm_runtime_put_sync(&dev->dev);
- 	console_unlock();
-diff --git a/include/video/da8xx-fb.h b/include/video/da8xx-fb.h
-index f888259..efed3c3 100644
---- a/include/video/da8xx-fb.h
-+++ b/include/video/da8xx-fb.h
-@@ -23,6 +23,11 @@ enum raster_load_mode {
- 	LOAD_PALETTE,
- };
- 
-+enum da8xx_frame_complete {
-+	DA8XX_FRAME_WAIT,
-+	DA8XX_FRAME_NOWAIT,
-+};
+ 	if (lcd_revision = LCD_VERSION_2)
+ 		lcdc_write(LCD_V2_DMA_CLK_EN | LCD_V2_LIDD_CLK_EN |
+ 				LCD_V2_CORE_CLK_EN, LCD_CLK_ENABLE_REG);
 +
- struct da8xx_lcdc_platform_data {
- 	const char manu_name[10];
- 	void *controller_data;
++	return 0;
++}
++
++static unsigned int da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
++					      unsigned pixclock,
++					      unsigned *lcdc_clk_rate)
++{
++	unsigned lcdc_clk_div;
++
++	pixclock = PICOS2KHZ(pixclock) * 1000;
++
++	*lcdc_clk_rate = par->lcd_fck_rate;
++
++	if (pixclock < (*lcdc_clk_rate / CLK_MAX_DIV)) {
++		*lcdc_clk_rate = clk_round_rate(par->lcdc_clk, pixclock * CLK_MAX_DIV);
++		lcdc_clk_div = CLK_MAX_DIV;
++	} else if (pixclock > (*lcdc_clk_rate / CLK_MIN_DIV)) {
++		*lcdc_clk_rate = clk_round_rate(par->lcdc_clk, pixclock * CLK_MIN_DIV);
++		lcdc_clk_div = CLK_MIN_DIV;
++	} else {
++		lcdc_clk_div = *lcdc_clk_rate / pixclock;
++	}
++
++	return lcdc_clk_div;
+ }
+ 
+-static inline void da8xx_fb_calc_config_clk_divider(struct da8xx_fb_par *par,
+-						    struct fb_videomode *mode)
++static int da8xx_fb_calc_config_clk_divider(struct da8xx_fb_par *par,
++					    struct fb_videomode *mode)
+ {
+-	unsigned div = da8xx_fb_calc_clk_divider(par, mode->pixclock);
++	unsigned lcdc_clk_rate;
++	unsigned lcdc_clk_div = da8xx_fb_calc_clk_divider(par, mode->pixclock, &lcdc_clk_rate);
+ 
+-	da8xx_fb_config_clk_divider(div);
++	return da8xx_fb_config_clk_divider(par, lcdc_clk_div, lcdc_clk_rate);
++}
++
++static inline unsigned da8xx_fb_round_clk(struct da8xx_fb_par *par,
++					  unsigned pixclock)
++{
++	unsigned lcdc_clk_div, lcdc_clk_rate;
++
++	lcdc_clk_div = da8xx_fb_calc_clk_divider(par, pixclock, &lcdc_clk_rate);
++	return KHZ2PICOS(lcdc_clk_rate / (1000 * lcdc_clk_div));
+ }
+ 
+ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+@@ -724,7 +760,11 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+ 	u32 bpp;
+ 	int ret = 0;
+ 
+-	da8xx_fb_calc_config_clk_divider(par, panel);
++	ret = da8xx_fb_calc_config_clk_divider(par, panel);
++	if (IS_ERR_VALUE(ret)) {
++		dev_err(par->dev, "unable to configure clock\n");
++		return ret;
++	}
+ 
+ 	if (panel->sync & FB_SYNC_CLK_INVERT)
+ 		lcdc_write((lcdc_read(LCD_RASTER_TIMING_2_REG) |
 -- 
 1.7.0.4
 

@@ -1,43 +1,44 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Thu, 25 Jul 2013 13:05:10 +0000
-Subject: [PATCHv2 0/3] Few ignored framebuffer fixes/additions
-Message-Id: <1374757513-2253-1-git-send-email-maxime.ripard@free-electrons.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 30 Jul 2013 18:26:15 +0000
+Subject: [PATCH v2 08/24] video: da8xx-fb: store struct device *
+Message-Id: <1375208791-15781-9-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Hi,
+From: Afzal Mohammed <afzal@ti.com>
 
-This is the v2 of a set of patches that got forgotten.
+store struct device pointer so that dev_dbg/err can be used outside
+of probe.
 
-These have been around for a while without any functionnal comments recently,
-so I guess we should be pretty close to merge them.
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
+---
+ drivers/video/da8xx-fb.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-It would be great if we could have comments from the maintainer on these
-patches though.
-
-Thanks,
-Maxime
-
-Changes from v1:
-  - Fix line wrapping in patch 2
-  - Added some comments on the msleep in patch 3
-
-Alexandre Belloni (1):
-  fb: backlight: HX8357: Add HX8369 support
-
-Hector Palacios (1):
-  video: mxsfb: fix color settings for 18bit data bus and 32bpp
-
-Maxime Ripard (1):
-  video: hx8357: Make IM pins optional
-
- drivers/video/backlight/hx8357.c | 272 +++++++++++++++++++++++++++++++++------
- drivers/video/mxsfb.c            |  26 ----
- 2 files changed, 236 insertions(+), 62 deletions(-)
-
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 0fac1a0..7db1097 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -150,6 +150,7 @@ static inline void lcdc_write(unsigned int val, unsigned int addr)
+ }
+ 
+ struct da8xx_fb_par {
++	struct device		*dev;
+ 	resource_size_t p_palette_base;
+ 	unsigned char *v_palette_base;
+ 	dma_addr_t		vram_phys;
+@@ -1291,6 +1292,7 @@ static int fb_probe(struct platform_device *device)
+ 	}
+ 
+ 	par = da8xx_fb_info->par;
++	par->dev = &device->dev;
+ 	par->lcdc_clk = fb_clk;
+ 	par->lcd_fck_rate = clk_get_rate(fb_clk);
+ 	if (fb_pdata->panel_power_ctrl) {
 -- 
-1.8.3.2
+1.7.0.4
 

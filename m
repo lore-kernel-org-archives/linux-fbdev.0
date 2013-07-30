@@ -1,58 +1,97 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Date: Wed, 10 Jul 2013 15:57:47 +0000
-Subject: [PATCH 12/12] drivers/video: don't use devm_pinctrl_get_select_default() in probe
-Message-Id: <1373471889-18107-12-git-send-email-wsa@the-dreams.de>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 30 Jul 2013 18:26:23 +0000
+Subject: [PATCH v2 16/24] video: da8xx-fb: reorganize panel detection
+Message-Id: <1375208791-15781-17-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1373471889-18107-1-git-send-email-wsa@the-dreams.de>
-In-Reply-To: <1373471889-18107-1-git-send-email-wsa@the-dreams.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Wolfram Sang <wsa@the-dreams.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-Since commit ab78029 (drivers/pinctrl: grab default handles from device core),
-we can rely on device core for setting the default pins. Compile tested only.
+From: Afzal Mohammed <afzal@ti.com>
 
-Acked-by: Linus Walleij <linus.walleij@linaro.org> (personally at LCE13)
-Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+Move panel detection to a separate function, this helps in readability
+as well as makes DT support cleaner.
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- drivers/video/mxsfb.c |    8 --------
- 1 file changed, 8 deletions(-)
+ drivers/video/da8xx-fb.c |   42 ++++++++++++++++++++++++++----------------
+ 1 files changed, 26 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
-index 3ba3771..5861ba2 100644
---- a/drivers/video/mxsfb.c
-+++ b/drivers/video/mxsfb.c
-@@ -46,7 +46,6 @@
- #include <linux/clk.h>
- #include <linux/dma-mapping.h>
- #include <linux/io.h>
--#include <linux/pinctrl/consumer.h>
- #include <linux/fb.h>
- #include <linux/regulator/consumer.h>
- #include <video/of_display_timing.h>
-@@ -877,7 +876,6 @@ static int mxsfb_probe(struct platform_device *pdev)
- 	struct mxsfb_info *host;
- 	struct fb_info *fb_info;
- 	struct fb_modelist *modelist;
--	struct pinctrl *pinctrl;
- 	int ret;
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 10af07b..1787ccc 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1254,6 +1254,27 @@ static struct fb_ops da8xx_fb_ops = {
+ 	.fb_blank = cfb_blank,
+ };
  
- 	if (of_id)
-@@ -908,12 +906,6 @@ static int mxsfb_probe(struct platform_device *pdev)
++static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
++{
++	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
++	struct fb_videomode *lcdc_info;
++	int i;
++
++	for (i = 0, lcdc_info = known_lcd_panels;
++		i < ARRAY_SIZE(known_lcd_panels); i++, lcdc_info++) {
++		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
++			break;
++	}
++
++	if (i = ARRAY_SIZE(known_lcd_panels)) {
++		dev_err(&dev->dev, "no panel found\n");
++		return NULL;
++	}
++	dev_info(&dev->dev, "found %s panel\n", lcdc_info->name);
++
++	return lcdc_info;
++}
++
+ static int fb_probe(struct platform_device *device)
+ {
+ 	struct da8xx_lcdc_platform_data *fb_pdata @@ -1263,7 +1284,7 @@ static int fb_probe(struct platform_device *device)
+ 	struct fb_info *da8xx_fb_info;
+ 	struct clk *fb_clk = NULL;
+ 	struct da8xx_fb_par *par;
+-	int ret, i;
++	int ret;
+ 	unsigned long ulcm;
  
- 	host->devdata = &mxsfb_devdata[pdev->id_entry->driver_data];
+ 	if (fb_pdata = NULL) {
+@@ -1271,6 +1292,10 @@ static int fb_probe(struct platform_device *device)
+ 		return -ENOENT;
+ 	}
  
--	pinctrl = devm_pinctrl_get_select_default(&pdev->dev);
--	if (IS_ERR(pinctrl)) {
--		ret = PTR_ERR(pinctrl);
--		goto fb_release;
++	lcdc_info = da8xx_fb_get_videomode(device);
++	if (lcdc_info = NULL)
++		return -ENODEV;
++
+ 	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
+ 	da8xx_fb_reg_base = devm_request_and_ioremap(&device->dev, lcdc_regs);
+ 	if (!da8xx_fb_reg_base) {
+@@ -1304,21 +1329,6 @@ static int fb_probe(struct platform_device *device)
+ 		break;
+ 	}
+ 
+-	for (i = 0, lcdc_info = known_lcd_panels;
+-		i < ARRAY_SIZE(known_lcd_panels);
+-		i++, lcdc_info++) {
+-		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
+-			break;
 -	}
 -
- 	host->clk = devm_clk_get(&host->pdev->dev, NULL);
- 	if (IS_ERR(host->clk)) {
- 		ret = PTR_ERR(host->clk);
+-	if (i = ARRAY_SIZE(known_lcd_panels)) {
+-		dev_err(&device->dev, "GLCD: No valid panel found\n");
+-		ret = -ENODEV;
+-		goto err_pm_runtime_disable;
+-	} else
+-		dev_info(&device->dev, "GLCD: Found %s panel\n",
+-					fb_pdata->type);
+-
+ 	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
+ 
+ 	if (!lcd_cfg) {
 -- 
-1.7.10.4
+1.7.0.4
 

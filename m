@@ -1,74 +1,65 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 26 Jul 2013 07:30:40 +0000
-Subject: Re: [PATCH] vga16fb: Remove unused variable
-Message-Id: <51F225A0.90801@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="RsG8ogCcBoo8VFhuj7elAuAaQDJPcJI6C"
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 30 Jul 2013 18:26:07 +0000
+Subject: [PATCH v2 00/24] video/da8xx-fb fbdev driver enhance to support TI am335x SoC
+Message-Id: <1375208791-15781-1-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130710225659.GA14107@hercules>
-In-Reply-To: <20130710225659.GA14107@hercules>
-To: Luis Henriques <luis.henriques@canonical.com>
-Cc: linux-fbdev@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---RsG8ogCcBoo8VFhuj7elAuAaQDJPcJI6C
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-On 11/07/13 01:57, Luis Henriques wrote:
-> Fix build warning of unused variable:
->=20
-> drivers/video/vga16fb.c:1268:26: warning: unused variable =E2=80=98dev=E2=
-=80=99 [-Wunused-variable]
->=20
-> Signed-off-by: Luis Henriques<luis.henriques@canonical.com>
-> ---
->  drivers/video/vga16fb.c | 1 -
->  1 file changed, 1 deletion(-)
->=20
-> diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
-> index 830ded4..2827333 100644
-> --- a/drivers/video/vga16fb.c
-> +++ b/drivers/video/vga16fb.c
-> @@ -1265,7 +1265,6 @@ static void vga16fb_imageblit(struct fb_info *inf=
-o, const struct fb_image *image
-> =20
->  static void vga16fb_destroy(struct fb_info *info)
->  {
-> -	struct platform_device *dev =3D container_of(info->device, struct pla=
-tform_device, dev);
->  	iounmap(info->screen_base);
->  	fb_dealloc_cmap(&info->cmap);
->  	/* XXX unshare VGA regions */
->=20
-
-Thanks, I've applied this into my 3.12/fbdev branch.
-
- Tomi
+Changes in v2:
+Addressing review comments from Tomi Valkeinen:
+	Dropped readl/writel patch
+	Many cosmetic changes to make code easier to understand
 
 
+This is primarily a resend of a series of patches that were original
+submitted to linux-fbdev back in January of 2013 for 3.8 by Afzal
+Mohammed. I have rebased them on 3.10 and also made sure they
+apply cleanly to the 'for-next' branch of linux-fbdev git.
+The patches enable use of the current mainline da8xx-fb driver on the
+TI AM335x SOC along with some bug fixes and cleanup.
 
---RsG8ogCcBoo8VFhuj7elAuAaQDJPcJI6C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+The original patch series can be found here:
+https://patchwork.kernel.org/project/linux-fbdev/list/?submitter9101
+if you want to see the history.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJR8iWkAAoJEPo9qoy8lh71N/4P/1E5knfrJW5+cdjT5G8656fa
-zJ6ZSqjVnB8SBp5jU7jC0gmssDC/02USD+qTNn1SH+VSEP4D8X1Lqof8yQgCP11g
-i7zzWcrDuKBFfZ6H92QavYtHPLws+tYU1w4jI2/cBF1rG+gKx7zruGc6ZiJm96pa
-CQNC0JYriwqs9yV1W+8DT0CXGPV3/eactw6msqEyNqAiczNgUsSjPKwZTDAvXx5C
-G/Rfrtqx6svoexJf7WOZw1sg3uLw9hjj/JReYgNWmDcfZ4TfFzVBezrJyfIYPPab
-UMjcU+oafFyvMPJOzvWboIFN5qAUqciaitkkT+96YmH8KkivCvwt2IOXLmBlBcOD
-puro89iXQe2sIe2hhz9c59WOd1/iYE/0a1+Oux51LaIqOpUIRyLMX3nOZZmllg0a
-pPMPwJaNhy2PilRHuN8mVsHdOpQU3lmTp8f8BcFGQWCM1M3NltXScteZuTVt3EOW
-IkyTFoZAQa8IfaoWvVMIUCcXs+KysrUuAu/N9iUDhVqoBEVn3oWNC7dmdffzrkB6
-jecpvzaMlpvMQgynHVWsIhxn9qv1pZLph49D51wib7OOzNQRUSKoGh/21sM3bNMc
-trvCQC+i3PsJUnTKgStkEyL2q2KZ73X2ZnxKVKyiin+RmT/10gAsphhsvxKobZiE
-0VlJZyOq9TrBmFOLW460
-=zqCr
------END PGP SIGNATURE-----
+Afzal Mohammed (20):
+  video: da8xx-fb: fb_check_var enhancement
+  video: da8xx-fb: simplify lcd_reset
+  video: da8xx-fb: use modedb helper to update var
+  video: da8xx-fb: remove unneeded "var" initialization
+  video: da8xx-fb: store current display information
+  video: da8xx-fb: store clk rate even if !CPUFREQ
+  video: da8xx-fb: pix clk and clk div handling cleanup
+  video: da8xx-fb: store struct device *
+  video: da8xx-fb: report correct pixclock
+  video: da8xx-fb: fb_set_par support
+  video: da8xx-fb: enable sync lost intr for v2 ip
+  video: da8xx-fb: use devres
+  video: da8xx-fb: ensure non-null cfg in pdata
+  video: da8xx-fb: reorganize panel detection
+  video: da8xx-fb: invoke platform callback safely
+  video: da8xx-fb: minimal dt support
+  video: da8xx-fb: obtain fb_videomode info from dt
+  video: da8xx-fb: ensure pdata only for non-dt
+  video: da8xx-fb: setup struct lcd_ctrl_config for dt
+  video: da8xx-fb: set upstream clock rate (if reqd)
 
---RsG8ogCcBoo8VFhuj7elAuAaQDJPcJI6C--
+Darren Etheridge (3):
+  video: da8xx-fb: improve readability of code
+  video: da8xx-fb: make clock naming consistent
+  video/da8xx-fb adding am33xx as dependency
+
+Manjunathappa, Prakash (1):
+  video: da8xx-fb: fix 24bpp raster configuration
+
+ .../devicetree/bindings/video/fb-da8xx.txt         |   37 ++
+ drivers/video/Kconfig                              |    7 +-
+ drivers/video/da8xx-fb.c                           |  392 +++++++++++++-------
+ include/video/da8xx-fb.h                           |    5 +
+ 4 files changed, 299 insertions(+), 142 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/fb-da8xx.txt
+

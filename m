@@ -1,35 +1,65 @@
-From: David Brown <davidb@codeaurora.org>
-Date: Mon, 29 Jul 2013 20:20:31 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 30 Jul 2013 05:45:52 +0000
 Subject: Re: [PATCH v2 6/9] ARM: msm: Move mach/board.h contents to common.h
-Message-Id: <20130729202031.GA20694@codeaurora.org>
+Message-Id: <51F75310.80403@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="oSWxht7BdBMDRN90cjdRcajElqLPj08jB"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1374699274-18388-1-git-send-email-sboyd@codeaurora.org>
  <1374699274-18388-7-git-send-email-sboyd@codeaurora.org>
-In-Reply-To: <1374699274-18388-7-git-send-email-sboyd@codeaurora.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <20130729202031.GA20694@codeaurora.org>
+In-Reply-To: <20130729202031.GA20694@codeaurora.org>
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Jul 24, 2013 at 01:54:31PM -0700, Stephen Boyd wrote:
->The contents of mach/board.h are only used by files within
->mach-msm so there is no need to export this file outside of the
->mach-msm directory. Move the contents of the file to common.h to
->allow us to compile MSM in the multi-platform kernel.
->
->Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
->Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
->---
-> drivers/video/msm/msm_fb.c             |  1 -
+--oSWxht7BdBMDRN90cjdRcajElqLPj08jB
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-It'd be nice to get a framebuffer Ack from this part.
+On 29/07/13 23:20, David Brown wrote:
+> On Wed, Jul 24, 2013 at 01:54:31PM -0700, Stephen Boyd wrote:
+>> The contents of mach/board.h are only used by files within
+>> mach-msm so there is no need to export this file outside of the
+>> mach-msm directory. Move the contents of the file to common.h to
+>> allow us to compile MSM in the multi-platform kernel.
+>>
+>> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+>> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+>> ---
+>> drivers/video/msm/msm_fb.c             |  1 -
+>=20
+> It'd be nice to get a framebuffer Ack from this part.
+>=20
+> original patch:
+>  https://patchwork.kernel.org/patch/2833029/
 
-original patch:
-  https://patchwork.kernel.org/patch/2833029/
+Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-David
+ Tom
 
--- 
-sent by an employee of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+
+
+--oSWxht7BdBMDRN90cjdRcajElqLPj08jB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJR91MTAAoJEPo9qoy8lh71W3YP/j9eg2vIUmATSMZYE4qsALEq
+/0Cdd9WlKmomcoSDkhXFHs9WNoqyAMUluKDdAlqMsKlf80KgmqH4+XZYmGYTNkL1
+VE1XZOPNLFclItjVbrVdxJu1vjnAp38GoETpZGAuU8Sg0jXqOONsndKOjXiLGlVG
+HrZBFnFvIEVg0BU2SHqHvVSbPRON1t6OcvfR83H0KE4OoF39WvFLgqKEAjYmuAdc
+8cCmJOqgS3jHZMy1TB9LfWWuXSxOfbZZMvyPvHcKxX5i/VGwpNQRrAxU9npE/wxz
+LPLeqfa+V+IV3tmBKyHHjCvYX0suLda8No/Xcwhgiwj5pD0771VenCE0s+N81Mkj
+YhpMLTAPh1pH7VW8B+PVqBetqi2EvakCzTrlQRKckt1ddo33csyj1DjiDWXJX9FB
+Ie4TzRW2MAfA0t7roUvidtHAvID/zkc3EojfuxBKJnHVXBJSb4kBM0D1UgR3BYD8
+3kbWq3ZObTEi0XY+dVDBCWFXSz3C0Qa0GnRRNkfY8NtoArdI+otaggDiwAxHlBvp
+ScjHHae9zOsoR29xOezRQQpI45Zv6ZcEaSilmgnv5Ye6dI17atALZp9hPpTdXDaS
+ZoLxCsfFv53jfbxSJQ882/ieZHLXxB4MKEunvcLvzTShYJ4mmxS6RVr80SAIV3Ts
+vT7ov9h8C1xs5J5PvbX4
+=Fk6k
+-----END PGP SIGNATURE-----
+
+--oSWxht7BdBMDRN90cjdRcajElqLPj08jB--

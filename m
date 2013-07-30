@@ -1,47 +1,64 @@
-From: Boris BREZILLON <b.brezillon@overkiz.com>
-Date: Thu, 18 Jul 2013 07:40:25 +0000
-Subject: [PATCH v4 3/5] at91/avr32/atmel_lcdfb: prepare clk before calling enable
-Message-Id: <1374133225-19141-1-git-send-email-b.brezillon@overkiz.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 30 Jul 2013 18:26:11 +0000
+Subject: [PATCH v2 04/24] video: da8xx-fb: remove unneeded "var" initialization
+Message-Id: <1375208791-15781-5-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1374132753-15206-1-git-send-email-b.brezillon@overkiz.com>
-In-Reply-To: <1374132753-15206-1-git-send-email-b.brezillon@overkiz.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Replace clk_enable/disable with clk_prepare_enable/disable_unprepare to
-avoid common clk framework warnings.
+From: Afzal Mohammed <afzal@ti.com>
 
-Signed-off-by: Boris BREZILLON <b.brezillon@overkiz.com>
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+modedb helper now updates "var" information based on the detected
+panel, remove the unnecessary initialization.
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- drivers/video/atmel_lcdfb.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/video/da8xx-fb.c |   22 +---------------------
+ 1 files changed, 1 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index ece49d5..bf9c5d0 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -954,14 +954,14 @@ static int __init atmel_lcdfb_init_fbinfo(struct atmel_lcdfb_info *sinfo)
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index a1f6544..18834fa 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -131,10 +131,6 @@
  
- static void atmel_lcdfb_start_clock(struct atmel_lcdfb_info *sinfo)
- {
--	clk_enable(sinfo->bus_clk);
--	clk_enable(sinfo->lcdc_clk);
-+	clk_prepare_enable(sinfo->bus_clk);
-+	clk_prepare_enable(sinfo->lcdc_clk);
- }
+ #define WSI_TIMEOUT	50
+ #define PALETTE_SIZE	256
+-#define LEFT_MARGIN	64
+-#define RIGHT_MARGIN	64
+-#define UPPER_MARGIN	32
+-#define LOWER_MARGIN	32
  
- static void atmel_lcdfb_stop_clock(struct atmel_lcdfb_info *sinfo)
- {
--	clk_disable(sinfo->bus_clk);
--	clk_disable(sinfo->lcdc_clk);
-+	clk_disable_unprepare(sinfo->bus_clk);
-+	clk_disable_unprepare(sinfo->lcdc_clk);
- }
+ static void __iomem *da8xx_fb_reg_base;
+ static struct resource *lcdc_regs;
+@@ -184,23 +180,7 @@ struct da8xx_fb_par {
+ 	u32 pseudo_palette[16];
+ };
  
- #ifdef CONFIG_OF
+-/* Variable Screen Information */
+-static struct fb_var_screeninfo da8xx_fb_var = {
+-	.xoffset = 0,
+-	.yoffset = 0,
+-	.transp = {0, 0, 0},
+-	.nonstd = 0,
+-	.activate = 0,
+-	.height = -1,
+-	.width = -1,
+-	.accel_flags = 0,
+-	.left_margin = LEFT_MARGIN,
+-	.right_margin = RIGHT_MARGIN,
+-	.upper_margin = UPPER_MARGIN,
+-	.lower_margin = LOWER_MARGIN,
+-	.sync = 0,
+-	.vmode = FB_VMODE_NONINTERLACED
+-};
++static struct fb_var_screeninfo da8xx_fb_var;
+ 
+ static struct fb_fix_screeninfo da8xx_fb_fix = {
+ 	.id = "DA8xx FB Drv",
 -- 
-1.7.9.5
+1.7.0.4
 

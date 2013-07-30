@@ -1,132 +1,45 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Date: Thu, 18 Jul 2013 06:58:24 +0000
-Subject: [PATCH 15/15] video: exynos_dp: Use the generic PHY driver
-Message-Id: <1374129984-765-16-git-send-email-kishon@ti.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 30 Jul 2013 18:26:31 +0000
+Subject: [PATCH v2 24/24] video/da8xx-fb adding am33xx as dependency
+Message-Id: <1375208791-15781-25-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1374129984-765-1-git-send-email-kishon@ti.com>
-In-Reply-To: <1374129984-765-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-From: Jingoo Han <jg1.han@samsung.com>
+Updating Kconfig to allow am33xx to include lcdc fbdev driver
+including some extra dependencies needed by device tree mods.
 
-Use the generic PHY API to control the DP PHY.
-
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-Reviewed-by: Tomasz Figa <t.figa@samsung.com>
-Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- .../devicetree/bindings/video/exynos_dp.txt          |   18 +++++++++---------
- drivers/video/exynos/exynos_dp_core.c                |   16 ++++++++++++----
- drivers/video/exynos/exynos_dp_core.h                |    1 +
- 3 files changed, 22 insertions(+), 13 deletions(-)
+ drivers/video/Kconfig |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/exynos_dp.txt b/Documentation/devicetree/bindings/video/exynos_dp.txt
-index 84f10c1..2f56376 100644
---- a/Documentation/devicetree/bindings/video/exynos_dp.txt
-+++ b/Documentation/devicetree/bindings/video/exynos_dp.txt
-@@ -6,10 +6,10 @@ We use two nodes:
- 	-dptx-phy node(defined inside dp-controller node)
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 2e937bd..8ae6d2a 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2226,15 +2226,16 @@ config FB_SH7760
+ 	  panels <= 320 pixel horizontal resolution.
  
- For the DP-PHY initialization, we use the dptx-phy node.
--Required properties for dptx-phy:
--	-reg:
-+Required properties for dptx-phy: deprecated, use phys and phy-names
-+	-reg: deprecated
- 		Base address of DP PHY register.
--	-samsung,enable-mask:
-+	-samsung,enable-mask: deprecated
- 		The bit-mask used to enable/disable DP PHY.
+ config FB_DA8XX
+-	tristate "DA8xx/OMAP-L1xx Framebuffer support"
+-	depends on FB && ARCH_DAVINCI_DA8XX
++	tristate "DA8xx/OMAP-L1xx/AM335x Framebuffer support"
++	depends on FB && (ARCH_DAVINCI_DA8XX || SOC_AM33XX)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+ 	select FB_CFB_REV_PIXELS_IN_BYTE
++	select VIDEOMODE_HELPERS
+ 	---help---
+ 	  This is the frame buffer device driver for the TI LCD controller
+-	  found on DA8xx/OMAP-L1xx SoCs.
++	  found on DA8xx/OMAP-L1xx/AM335x SoCs.
+ 	  If unsure, say N.
  
- For the Panel initialization, we read data from dp-controller node.
-@@ -25,6 +25,10 @@ Required properties for dp-controller:
- 		from common clock binding: handle to dp clock.
- 	-clock-names:
- 		from common clock binding: Shall be "dp".
-+	-phys:
-+		from general PHY binding: the phandle for the PHY device.
-+	-phy-names:
-+		from general PHY binding: Should be "dp".
- 	-interrupt-parent:
- 		phandle to Interrupt combiner node.
- 	-samsung,color-space:
-@@ -67,12 +71,8 @@ SOC specific portion:
- 		interrupt-parent = <&combiner>;
- 		clocks = <&clock 342>;
- 		clock-names = "dp";
--
--		dptx-phy {
--			reg = <0x10040720>;
--			samsung,enable-mask = <1>;
--		};
--
-+		phys = <&dp_phy>;
-+		phy-names = "dp";
- 	};
- 
- Board Specific portion:
-diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-index 05fed7d..5e1a715 100644
---- a/drivers/video/exynos/exynos_dp_core.c
-+++ b/drivers/video/exynos/exynos_dp_core.c
-@@ -19,6 +19,7 @@
- #include <linux/interrupt.h>
- #include <linux/delay.h>
- #include <linux/of.h>
-+#include <linux/phy/phy.h>
- 
- #include "exynos_dp_core.h"
- 
-@@ -960,8 +961,11 @@ static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
- 
- 	dp_phy_node = of_find_node_by_name(dp_phy_node, "dptx-phy");
- 	if (!dp_phy_node) {
--		dev_err(dp->dev, "could not find dptx-phy node\n");
--		return -ENODEV;
-+		dp->phy = devm_phy_get(dp->dev, "dp");
-+		if (IS_ERR(dp->phy))
-+			return PTR_ERR(dp->phy);
-+		else
-+			return 0;
- 	}
- 
- 	if (of_property_read_u32(dp_phy_node, "reg", &phy_base)) {
-@@ -992,7 +996,9 @@ err:
- 
- static void exynos_dp_phy_init(struct exynos_dp_device *dp)
- {
--	if (dp->phy_addr) {
-+	if (dp->phy) {
-+		phy_power_on(dp->phy);
-+	} else if (dp->phy_addr) {
- 		u32 reg;
- 
- 		reg = __raw_readl(dp->phy_addr);
-@@ -1003,7 +1009,9 @@ static void exynos_dp_phy_init(struct exynos_dp_device *dp)
- 
- static void exynos_dp_phy_exit(struct exynos_dp_device *dp)
- {
--	if (dp->phy_addr) {
-+	if (dp->phy) {
-+		phy_power_off(dp->phy);
-+	} else if (dp->phy_addr) {
- 		u32 reg;
- 
- 		reg = __raw_readl(dp->phy_addr);
-diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
-index 56cfec8..607e36d 100644
---- a/drivers/video/exynos/exynos_dp_core.h
-+++ b/drivers/video/exynos/exynos_dp_core.h
-@@ -151,6 +151,7 @@ struct exynos_dp_device {
- 	struct video_info	*video_info;
- 	struct link_train	link_train;
- 	struct work_struct	hotplug_work;
-+	struct phy		*phy;
- };
- 
- /* exynos_dp_reg.c */
+ config FB_VIRTUAL
 -- 
-1.7.10.4
+1.7.0.4
 

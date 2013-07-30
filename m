@@ -1,7 +1,7 @@
 From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 30 Jul 2013 18:26:11 +0000
-Subject: [PATCH v2 04/24] video: da8xx-fb: remove unneeded "var" initialization
-Message-Id: <1375208791-15781-5-git-send-email-detheridge@ti.com>
+Date: Tue, 30 Jul 2013 18:26:16 +0000
+Subject: [PATCH v2 09/24] video: da8xx-fb: report correct pixclock
+Message-Id: <1375208791-15781-10-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,55 +10,44 @@ To: linux-fbdev@vger.kernel.org
 
 From: Afzal Mohammed <afzal@ti.com>
 
-modedb helper now updates "var" information based on the detected
-panel, remove the unnecessary initialization.
+Update "var" pixclock with the value that is configurable in hardware.
+This lets user know the actual pixclock.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- drivers/video/da8xx-fb.c |   22 +---------------------
- 1 files changed, 1 insertions(+), 21 deletions(-)
+ drivers/video/da8xx-fb.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index a1f6544..18834fa 100644
+index 7db1097..8d73730 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -131,10 +131,6 @@
+@@ -686,6 +686,15 @@ static inline unsigned da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
+ 	return par->lcd_fck_rate / (PICOS2KHZ(pixclock) * 1000);
+ }
  
- #define WSI_TIMEOUT	50
- #define PALETTE_SIZE	256
--#define LEFT_MARGIN	64
--#define RIGHT_MARGIN	64
--#define UPPER_MARGIN	32
--#define LOWER_MARGIN	32
++static inline unsigned da8xx_fb_round_clk(struct da8xx_fb_par *par,
++					  unsigned pixclock)
++{
++	unsigned div;
++
++	div = da8xx_fb_calc_clk_divider(par, pixclock);
++	return KHZ2PICOS(par->lcd_fck_rate / (1000 * div));
++}
++
+ static inline void da8xx_fb_config_clk_divider(unsigned div)
+ {
+ 	/* Configure the LCD clock divisor. */
+@@ -962,6 +971,8 @@ static int fb_check_var(struct fb_var_screeninfo *var,
+ 	if (var->yres + var->yoffset > var->yres_virtual)
+ 		var->yoffset = var->yres_virtual - var->yres;
  
- static void __iomem *da8xx_fb_reg_base;
- static struct resource *lcdc_regs;
-@@ -184,23 +180,7 @@ struct da8xx_fb_par {
- 	u32 pseudo_palette[16];
- };
++	var->pixclock = da8xx_fb_round_clk(par, var->pixclock);
++
+ 	return err;
+ }
  
--/* Variable Screen Information */
--static struct fb_var_screeninfo da8xx_fb_var = {
--	.xoffset = 0,
--	.yoffset = 0,
--	.transp = {0, 0, 0},
--	.nonstd = 0,
--	.activate = 0,
--	.height = -1,
--	.width = -1,
--	.accel_flags = 0,
--	.left_margin = LEFT_MARGIN,
--	.right_margin = RIGHT_MARGIN,
--	.upper_margin = UPPER_MARGIN,
--	.lower_margin = LOWER_MARGIN,
--	.sync = 0,
--	.vmode = FB_VMODE_NONINTERLACED
--};
-+static struct fb_var_screeninfo da8xx_fb_var;
- 
- static struct fb_fix_screeninfo da8xx_fb_fix = {
- 	.id = "DA8xx FB Drv",
 -- 
 1.7.0.4
 

@@ -1,7 +1,7 @@
 From: Darren Etheridge <detheridge@ti.com>
-Date: Tue, 30 Jul 2013 18:26:23 +0000
-Subject: [PATCH v2 16/24] video: da8xx-fb: reorganize panel detection
-Message-Id: <1375208791-15781-17-git-send-email-detheridge@ti.com>
+Date: Tue, 30 Jul 2013 18:26:13 +0000
+Subject: [PATCH v2 06/24] video: da8xx-fb: store clk rate even if !CPUFREQ
+Message-Id: <1375208791-15781-7-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,88 +10,40 @@ To: linux-fbdev@vger.kernel.org
 
 From: Afzal Mohammed <afzal@ti.com>
 
-Move panel detection to a separate function, this helps in readability
-as well as makes DT support cleaner.
+store lcd clk rate always, i.e. irrespective of whether CPUFREQ is
+enabled or not. This can be used to get clk rate directly instead of
+enquiring with clock framework with clk handle every time.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- drivers/video/da8xx-fb.c |   42 ++++++++++++++++++++++++++----------------
- 1 files changed, 26 insertions(+), 16 deletions(-)
+ drivers/video/da8xx-fb.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 10af07b..1787ccc 100644
+index d060f14..f1d88ac 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -1254,6 +1254,27 @@ static struct fb_ops da8xx_fb_ops = {
- 	.fb_blank = cfb_blank,
- };
+@@ -174,8 +174,8 @@ struct da8xx_fb_par {
+ 	unsigned int		which_dma_channel_done;
+ #ifdef CONFIG_CPU_FREQ
+ 	struct notifier_block	freq_transition;
+-	unsigned int		lcd_fck_rate;
+ #endif
++	unsigned int		lcd_fck_rate;
+ 	void (*panel_power_ctrl)(int);
+ 	u32 pseudo_palette[16];
+ 	struct fb_videomode	mode;
+@@ -1302,9 +1302,7 @@ static int fb_probe(struct platform_device *device)
  
-+static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
-+{
-+	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
-+	struct fb_videomode *lcdc_info;
-+	int i;
-+
-+	for (i = 0, lcdc_info = known_lcd_panels;
-+		i < ARRAY_SIZE(known_lcd_panels); i++, lcdc_info++) {
-+		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
-+			break;
-+	}
-+
-+	if (i = ARRAY_SIZE(known_lcd_panels)) {
-+		dev_err(&dev->dev, "no panel found\n");
-+		return NULL;
-+	}
-+	dev_info(&dev->dev, "found %s panel\n", lcdc_info->name);
-+
-+	return lcdc_info;
-+}
-+
- static int fb_probe(struct platform_device *device)
- {
- 	struct da8xx_lcdc_platform_data *fb_pdata @@ -1263,7 +1284,7 @@ static int fb_probe(struct platform_device *device)
- 	struct fb_info *da8xx_fb_info;
- 	struct clk *fb_clk = NULL;
- 	struct da8xx_fb_par *par;
--	int ret, i;
-+	int ret;
- 	unsigned long ulcm;
- 
- 	if (fb_pdata = NULL) {
-@@ -1271,6 +1292,10 @@ static int fb_probe(struct platform_device *device)
- 		return -ENOENT;
- 	}
- 
-+	lcdc_info = da8xx_fb_get_videomode(device);
-+	if (lcdc_info = NULL)
-+		return -ENODEV;
-+
- 	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
- 	da8xx_fb_reg_base = devm_request_and_ioremap(&device->dev, lcdc_regs);
- 	if (!da8xx_fb_reg_base) {
-@@ -1304,21 +1329,6 @@ static int fb_probe(struct platform_device *device)
- 		break;
- 	}
- 
--	for (i = 0, lcdc_info = known_lcd_panels;
--		i < ARRAY_SIZE(known_lcd_panels);
--		i++, lcdc_info++) {
--		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
--			break;
--	}
--
--	if (i = ARRAY_SIZE(known_lcd_panels)) {
--		dev_err(&device->dev, "GLCD: No valid panel found\n");
--		ret = -ENODEV;
--		goto err_pm_runtime_disable;
--	} else
--		dev_info(&device->dev, "GLCD: Found %s panel\n",
--					fb_pdata->type);
--
- 	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
- 
- 	if (!lcd_cfg) {
+ 	par = da8xx_fb_info->par;
+ 	par->lcdc_clk = fb_clk;
+-#ifdef CONFIG_CPU_FREQ
+ 	par->lcd_fck_rate = clk_get_rate(fb_clk);
+-#endif
+ 	par->pxl_clk = lcdc_info->pixclock;
+ 	if (fb_pdata->panel_power_ctrl) {
+ 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
 -- 
 1.7.0.4
 

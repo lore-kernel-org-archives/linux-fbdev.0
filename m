@@ -1,54 +1,39 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 08 Jul 2013 02:55:45 +0000
-Subject: [PATCH V5 1/4] ARM: dts: Add DP PHY node to exynos5250.dtsi
-Message-Id: <001c01ce7b86$a4872f00$ed958d00$@samsung.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 30 Jul 2013 18:26:24 +0000
+Subject: [PATCH v2 17/24] video: da8xx-fb: invoke platform callback safely
+Message-Id: <1375208791-15781-18-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Add PHY provider node for the DP PHY.
+From: Afzal Mohammed <afzal@ti.com>
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-Reviewed-by: Tomasz Figa <t.figa@samsung.com>
-Acked-by: Felipe Balbi <balbi@ti.com>
+Ensure that platform data is present before checking whether platform
+callback is present (the one used to control backlight). So far this
+was not an issue as driver was purely non-DT triggered, but now DT
+support has been added.
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- arch/arm/boot/dts/exynos5250.dtsi |   13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ drivers/video/da8xx-fb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
-index ef57277..2c1e73c 100644
---- a/arch/arm/boot/dts/exynos5250.dtsi
-+++ b/arch/arm/boot/dts/exynos5250.dtsi
-@@ -614,6 +614,12 @@
- 		interrupts = <0 94 0>;
- 	};
- 
-+	dp_phy: video-phy@10040720 {
-+		compatible = "samsung,exynos5250-dp-video-phy";
-+		reg = <0x10040720 4>;
-+		#phy-cells = <0>;
-+	};
-+
- 	dp-controller {
- 		compatible = "samsung,exynos5-dp";
- 		reg = <0x145b0000 0x1000>;
-@@ -623,11 +629,8 @@
- 		clock-names = "dp";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
--
--		dptx-phy {
--			reg = <0x10040720>;
--			samsung,enable-mask = <1>;
--		};
-+		phys = <&dp_phy>;
-+		phy-names = "dp";
- 	};
- 
- 	fimd {
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 1787ccc..983176a 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1348,7 +1348,7 @@ static int fb_probe(struct platform_device *device)
+ 	par->dev = &device->dev;
+ 	par->lcdc_clk = fb_clk;
+ 	par->lcd_fck_rate = clk_get_rate(fb_clk);
+-	if (fb_pdata->panel_power_ctrl) {
++	if (fb_pdata && fb_pdata->panel_power_ctrl) {
+ 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
+ 		par->panel_power_ctrl(1);
+ 	}
 -- 
-1.7.10.4
-
+1.7.0.4
 

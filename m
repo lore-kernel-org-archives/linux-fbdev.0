@@ -1,42 +1,78 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Date: Fri, 05 Jul 2013 23:11:02 +0000
-Subject: Re: [PATCH V4 3/4] video: exynos_dp: remove non-DT support for Exynos Display Port
-Message-Id: <2149220.dCp7esoXHa@flatron>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Tue, 30 Jul 2013 18:26:28 +0000
+Subject: [PATCH v2 21/24] video: da8xx-fb: setup struct lcd_ctrl_config for dt
+Message-Id: <1375208791-15781-22-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <000c01ce76ff$fffa39d0$ffeead70$@samsung.com>
-In-Reply-To: <000c01ce76ff$fffa39d0$ffeead70$@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Hi Jingoo,
+From: Afzal Mohammed <afzal@ti.com>
 
-On Tuesday 02 of July 2013 17:41:52 Jingoo Han wrote:
-> Exynos Display Port can be used only for Exynos SoCs. In addition,
-> non-DT for EXYNOS SoCs is be supported from v3.11; thus, there is
-> no need to support non-DT for Exynos Display Port.
-> 
-> The 'include/video/exynos_dp.h' file has been used for non-DT
-> support and the content of file include/video/exynos_dp.h is moved
-> to drivers/video/exynos/exynos_dp_core.h. Thus, the 'exynos_dp.h'
-> file is removed. Also, 'struct exynos_dp_platdata' is removed,
-> because it is not used any more.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> ---
->  drivers/video/exynos/Kconfig          |    2 +-
->  drivers/video/exynos/exynos_dp_core.c |  116
-> +++++++---------------------- drivers/video/exynos/exynos_dp_core.h | 
-> 109 +++++++++++++++++++++++++++ drivers/video/exynos/exynos_dp_reg.c  |
->    2 -
->  include/video/exynos_dp.h             |  131
-> --------------------------------- 5 files changed, 135 insertions(+),
-> 225 deletions(-)
->  delete mode 100644 include/video/exynos_dp.h
+strcut lcd_ctrl_config information required for driver is currently
+obtained via platform data. To handle DT probing, create
+lcd_ctrl_config and populate it with default values, these values are
+sufficient for the panels so far used with this controller to work.
 
-Reviewed-by: Tomasz Figa <t.figa@samsung.com>
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
+---
+ drivers/video/da8xx-fb.c |   34 +++++++++++++++++++++++++++++++++-
+ 1 files changed, 33 insertions(+), 1 deletions(-)
 
-Best regards,
-Tomasz
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 697b07c..fe3d79e 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1255,6 +1255,35 @@ static struct fb_ops da8xx_fb_ops = {
+ 	.fb_blank = cfb_blank,
+ };
+ 
++static struct lcd_ctrl_config *da8xx_fb_create_cfg(struct platform_device *dev)
++{
++	struct lcd_ctrl_config *cfg;
++
++	cfg = devm_kzalloc(&dev->dev, sizeof(struct fb_videomode), GFP_KERNEL);
++	if (!cfg) {
++		dev_err(&dev->dev, "memory allocation failed\n");
++		return NULL;
++	}
++
++	/* default values */
++
++	if (lcd_revision = LCD_VERSION_1)
++		cfg->bpp = 16;
++	else
++		cfg->bpp = 32;
++
++	/*
++	 * For panels so far used with this LCDC, below statement is sufficient.
++	 * For new panels, if required, struct lcd_ctrl_cfg fields to be updated
++	 * with additional/modified values. Those values would have to be then
++	 * obtained from dt(requiring new dt bindings).
++	 */
++
++	cfg->panel_shade = COLOR_ACTIVE;
++
++	return cfg;
++}
++
+ static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
+ {
+ 	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
+@@ -1346,7 +1375,10 @@ static int fb_probe(struct platform_device *device)
+ 		break;
+ 	}
+ 
+-	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
++	if (device->dev.of_node)
++		lcd_cfg = da8xx_fb_create_cfg(device);
++	else
++		lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
+ 
+ 	if (!lcd_cfg) {
+ 		ret = -EINVAL;
+-- 
+1.7.0.4
 

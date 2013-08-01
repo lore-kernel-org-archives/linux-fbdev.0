@@ -1,146 +1,36 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Date: Fri, 26 Jul 2013 12:51:49 +0000
-Subject: [RESEND PATCH v10 8/8] usb: phy: twl4030-usb: remove *set_suspend* and *phy_init* ops
-Message-Id: <1374842963-13545-9-git-send-email-kishon@ti.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Thu, 01 Aug 2013 01:40:24 +0000
+Subject: Re: [RESEND PATCH v10 1/8] drivers: phy: add generic PHY framework
+Message-Id: <20130801014024.GA6941@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1374842963-13545-1-git-send-email-kishon@ti.com>
-In-Reply-To: <1374842963-13545-1-git-send-email-kishon@ti.com>
+ <1374842963-13545-2-git-send-email-kishon@ti.com>
+In-Reply-To: <1374842963-13545-2-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Now that twl4030-usb is adapted to the new generic PHY framework,
-*set_suspend* and *phy_init* ops can be removed from twl4030-usb driver.
+On Fri, Jul 26, 2013 at 06:19:16PM +0530, Kishon Vijay Abraham I wrote:
+> +static int phy_get_id(void)
+> +{
+> +	int ret;
+> +	int id;
+> +
+> +	ret = ida_pre_get(&phy_ida, GFP_KERNEL);
+> +	if (!ret)
+> +		return -ENOMEM;
+> +
+> +	ret = ida_get_new(&phy_ida, &id);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	return id;
+> +}
 
-Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
-Acked-by: Felipe Balbi <balbi@ti.com>
-Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
----
- drivers/phy/phy-twl4030-usb.c |   57 ++++++++++-------------------------------
- 1 file changed, 13 insertions(+), 44 deletions(-)
+ida_simple_get() instead?  And if you do that, you can get rid of this
+function entirely.
 
-diff --git a/drivers/phy/phy-twl4030-usb.c b/drivers/phy/phy-twl4030-usb.c
-index 494f107..c437211 100644
---- a/drivers/phy/phy-twl4030-usb.c
-+++ b/drivers/phy/phy-twl4030-usb.c
-@@ -422,25 +422,20 @@ static void twl4030_phy_power(struct twl4030_usb *twl, int on)
- 	}
- }
- 
--static void twl4030_phy_suspend(struct twl4030_usb *twl, int controller_off)
-+static int twl4030_phy_power_off(struct phy *phy)
- {
-+	struct twl4030_usb *twl = phy_get_drvdata(phy);
-+
- 	if (twl->asleep)
--		return;
-+		return 0;
- 
- 	twl4030_phy_power(twl, 0);
- 	twl->asleep = 1;
- 	dev_dbg(twl->dev, "%s\n", __func__);
--}
--
--static int twl4030_phy_power_off(struct phy *phy)
--{
--	struct twl4030_usb *twl = phy_get_drvdata(phy);
--
--	twl4030_phy_suspend(twl, 0);
- 	return 0;
- }
- 
--static void __twl4030_phy_resume(struct twl4030_usb *twl)
-+static void __twl4030_phy_power_on(struct twl4030_usb *twl)
- {
- 	twl4030_phy_power(twl, 1);
- 	twl4030_i2c_access(twl, 1);
-@@ -449,11 +444,13 @@ static void __twl4030_phy_resume(struct twl4030_usb *twl)
- 		twl4030_i2c_access(twl, 0);
- }
- 
--static void twl4030_phy_resume(struct twl4030_usb *twl)
-+static int twl4030_phy_power_on(struct phy *phy)
- {
-+	struct twl4030_usb *twl = phy_get_drvdata(phy);
-+
- 	if (!twl->asleep)
--		return;
--	__twl4030_phy_resume(twl);
-+		return 0;
-+	__twl4030_phy_power_on(twl);
- 	twl->asleep = 0;
- 	dev_dbg(twl->dev, "%s\n", __func__);
- 
-@@ -466,13 +463,6 @@ static void twl4030_phy_resume(struct twl4030_usb *twl)
- 		cancel_delayed_work(&twl->id_workaround_work);
- 		schedule_delayed_work(&twl->id_workaround_work, HZ);
- 	}
--}
--
--static int twl4030_phy_power_on(struct phy *phy)
--{
--	struct twl4030_usb *twl = phy_get_drvdata(phy);
--
--	twl4030_phy_resume(twl);
- 	return 0;
- }
- 
-@@ -604,9 +594,9 @@ static void twl4030_id_workaround_work(struct work_struct *work)
- 	}
- }
- 
--static int twl4030_usb_phy_init(struct usb_phy *phy)
-+static int twl4030_phy_init(struct phy *phy)
- {
--	struct twl4030_usb *twl = phy_to_twl(phy);
-+	struct twl4030_usb *twl = phy_get_drvdata(phy);
- 	enum omap_musb_vbus_id_status status;
- 
- 	/*
-@@ -621,32 +611,13 @@ static int twl4030_usb_phy_init(struct usb_phy *phy)
- 
- 	if (status = OMAP_MUSB_ID_GROUND || status = OMAP_MUSB_VBUS_VALID) {
- 		omap_musb_mailbox(twl->linkstat);
--		twl4030_phy_resume(twl);
-+		twl4030_phy_power_on(phy);
- 	}
- 
- 	sysfs_notify(&twl->dev->kobj, NULL, "vbus");
- 	return 0;
- }
- 
--static int twl4030_phy_init(struct phy *phy)
--{
--	struct twl4030_usb *twl = phy_get_drvdata(phy);
--
--	return twl4030_usb_phy_init(&twl->phy);
--}
--
--static int twl4030_set_suspend(struct usb_phy *x, int suspend)
--{
--	struct twl4030_usb *twl = phy_to_twl(x);
--
--	if (suspend)
--		twl4030_phy_suspend(twl, 1);
--	else
--		twl4030_phy_resume(twl);
--
--	return 0;
--}
--
- static int twl4030_set_peripheral(struct usb_otg *otg,
- 					struct usb_gadget *gadget)
- {
-@@ -719,8 +690,6 @@ static int twl4030_usb_probe(struct platform_device *pdev)
- 	twl->phy.label		= "twl4030";
- 	twl->phy.otg		= otg;
- 	twl->phy.type		= USB_PHY_TYPE_USB2;
--	twl->phy.set_suspend	= twl4030_set_suspend;
--	twl->phy.init		= twl4030_usb_phy_init;
- 
- 	otg->phy		= &twl->phy;
- 	otg->set_host		= twl4030_set_host;
--- 
-1.7.10.4
+thanks,
 
+greg k-h

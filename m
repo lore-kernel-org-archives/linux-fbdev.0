@@ -1,220 +1,91 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 30 Aug 2013 00:47:24 +0000
-Subject: Re: [PATCH/RFC v3 06/19] video: display: OF support
-Message-Id: <1861639.PbzQ1XKFZO@avalon>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Thu, 01 Aug 2013 08:40:35 +0000
+Subject: [PATCHv3 1/3] video: mxsfb: fix color settings for 18bit data bus and 32bpp
+Message-Id: <1375346437-18991-2-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com> <1376089398-13322-7-git-send-email-laurent.pinchart+renesas@ideasonboard.com> <1377595851.4338.18.camel@pizza.hi.pengutronix.de>
-In-Reply-To: <1377595851.4338.18.camel@pizza.hi.pengutronix.de>
+References: <1375346437-18991-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1375346437-18991-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Philipp Zabel <p.zabel@pengutronix.de>
-Cc: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Hi Philipp,
+From: Hector Palacios <hector.palacios@digi.com>
 
-On Tuesday 27 August 2013 11:30:51 Philipp Zabel wrote:
-> Hi Laurent,
-> 
-> I have another small issue with the graph helpers below:
-> 
-> Am Samstag, den 10.08.2013, 01:03 +0200 schrieb Laurent Pinchart:
-> [...]
-> 
-> > +/*
-> > -------------------------------------------------------------------------
-> > ----> 
-> >   * Graph Helpers
-> >   */
-> > 
-> > @@ -420,6 +599,161 @@ int display_entity_link_graph(struct device *dev,
-> > struct list_head *entities)> 
-> >  }
-> >  EXPORT_SYMBOL_GPL(display_entity_link_graph);
-> > 
-> > +#ifdef CONFIG_OF
-> > +
-> > +static int display_of_entity_link_entity(struct device *dev,
-> > +					 struct display_entity *entity,
-> > +					 struct list_head *entities,
-> > +					 struct display_entity *root)
-> > +{
-> > +	u32 link_flags = MEDIA_LNK_FL_IMMUTABLE | MEDIA_LNK_FL_ENABLED;
-> > +	const struct device_node *node = entity->dev->of_node;
-> > +	struct media_entity *local = &entity->entity;
-> > +	struct device_node *ep = NULL;
-> > +	int ret = 0;
-> > +
-> > +	dev_dbg(dev, "creating links for entity %s\n", local->name);
-> > +
-> > +	while (1) {
-> > +		struct media_entity *remote = NULL;
-> > +		struct media_pad *remote_pad;
-> > +		struct media_pad *local_pad;
-> > +		struct display_of_link link;
-> > +		struct display_entity *ent;
-> > +		struct device_node *next;
-> > +
-> > +		/* Get the next endpoint and parse its link. */
-> > +		next = display_of_get_next_endpoint(node, ep);
-> > +		if (next = NULL)
-> > +			break;
-> > +
-> > +		of_node_put(ep);
-> > +		ep = next;
-> > +
-> > +		dev_dbg(dev, "processing endpoint %s\n", ep->full_name);
-> > +
-> > +		ret = display_of_parse_link(ep, &link);
-> > +		if (ret < 0) {
-> > +			dev_err(dev, "failed to parse link for %s\n",
-> > +				ep->full_name);
-> > +			continue;
-> > +		}
-> > +
-> > +		/* Skip source pads, they will be processed from the other end of
-> > +		 * the link.
-> > +		 */
-> > +		if (link.local_port >= local->num_pads) {
-> > +			dev_err(dev, "invalid port number %u on %s\n",
-> > +				link.local_port, link.local_node->full_name);
-> > +			display_of_put_link(&link);
-> > +			ret = -EINVAL;
-> > +			break;
-> > +		}
-> > +
-> > +		local_pad = &local->pads[link.local_port];
-> > +
-> > +		if (local_pad->flags & MEDIA_PAD_FL_SOURCE) {
-> > +			dev_dbg(dev, "skipping source port %s:%u\n",
-> > +				link.local_node->full_name, link.local_port);
-> > +			display_of_put_link(&link);
-> > +			continue;
-> > +		}
-> > +
-> > +		/* Find the remote entity. If not found, just skip the link as
-> > +		 * it goes out of scope of the entities handled by the notifier.
-> > +		 */
-> > +		list_for_each_entry(ent, entities, list) {
-> > +			if (ent->dev->of_node = link.remote_node) {
-> > +				remote = &ent->entity;
-> > +				break;
-> > +			}
-> > +		}
-> > +
-> > +		if (root->dev->of_node = link.remote_node)
-> > +			remote = &root->entity;
-> > +
-> > +		if (remote = NULL) {
-> > +			dev_dbg(dev, "no entity found for %s\n",
-> > +				link.remote_node->full_name);
-> > +			display_of_put_link(&link);
-> > +			continue;
-> > +		}
-> > +
-> > +		if (link.remote_port >= remote->num_pads) {
-> > +			dev_err(dev, "invalid port number %u on %s\n",
-> > +				link.remote_port, link.remote_node->full_name);
-> > +			display_of_put_link(&link);
-> > +			ret = -EINVAL;
-> > +			break;
-> > +		}
-> > +
-> > +		remote_pad = &remote->pads[link.remote_port];
-> > +
-> > +		display_of_put_link(&link);
-> > +
-> > +		/* Create the media link. */
-> > +		dev_dbg(dev, "creating %s:%u -> %s:%u link\n",
-> > +			remote->name, remote_pad->index,
-> > +			local->name, local_pad->index);
-> > +
-> > +		ret = media_entity_create_link(remote, remote_pad->index,
-> > +					       local, local_pad->index,
-> > +					       link_flags);
-> > +		if (ret < 0) {
-> > +			dev_err(dev,
-> > +				"failed to create %s:%u -> %s:%u link\n",
-> > +				remote->name, remote_pad->index,
-> > +				local->name, local_pad->index);
-> > +			break;
-> > +		}
-> > +	}
-> > +
-> > +	of_node_put(ep);
-> > +	return ret;
-> > +}
-> > +
-> > +/**
-> > + * display_of_entity_link_graph - Link all entities in a graph
-> > + * @dev: device used to print debugging and error messages
-> > + * @root: optional root display entity
-> > + * @entities: list of display entities in the graph
-> > + *
-> > + * This function creates media controller links for all entities in a
-> > graph + * based on the device tree graph representation. It relies on all
-> > entities + * having been instantiated from the device tree.
-> > + *
-> > + * The list of entities is typically taken directly from a display
-> > notifier + * done list. It will thus not include any display entity not
-> > handled by the + * notifier, such as entities directly accessible by the
-> > caller without going + * through the notification process. The optional
-> > root entity parameter can be + * used to pass such a display entity and
-> > include it in the graph. For all + * practical purpose the root entity is
-> > handled is if it was part of the + * entities list.
-> > + *
-> > + * Return 0 on success or a negative error code otherwise.
-> > + */
-> > +int display_of_entity_link_graph(struct device *dev, struct list_head
-> > *entities, +				 struct display_entity *root)
-> > +{
-> > +	struct display_entity *entity;
-> > +	int ret;
-> > +
-> > +	list_for_each_entry(entity, entities, list) {
-> > +		if (WARN_ON(entity->match->type != DISPLAY_ENTITY_BUS_DT))
-> > +			return -EINVAL;
-> > +
-> > +		ret = display_of_entity_link_entity(dev, entity, entities,
-> > +						    root);
-> > +		if (ret < 0)
-> > +			return ret;
-> > +	}
-> > +
-> > +	return display_of_entity_link_entity(dev, root, entities, root);
-> > +}
-> > +EXPORT_SYMBOL_GPL(display_of_entity_link_graph);
-> 
-> The root display entity given to display_of_entity_link_graph is documented
-> to be optional. Therefore, do not try to dereference root if it is NULL:
+For a combination of 18bit LCD data bus width and a color
+mode of 32bpp, the driver was setting the color mapping to
+rgb666, which is wrong, as the color in memory realy has an
+rgb888 layout.
 
-Good catch ! I'll fix it in v4, thank you.
+This patch also removes the setting of flag CTRL_DF24 that
+makes the driver dimiss the upper 2 bits when handling 32/24bpp
+colors in a diplay with 18bit data bus width. This flag made
+true color images display wrong in such configurations.
 
-> diff --git a/drivers/video/display/display-core.c
-> b/drivers/video/display/display-core.c index 328ead7..6c8094f 100644
-> --- a/drivers/video/display/display-core.c
-> +++ b/drivers/video/display/display-core.c
-> @@ -669,7 +669,7 @@ static int display_of_entity_link_entity(struct device
-> *dev, }
->  		}
-> 
-> -		if (root->dev->of_node = link.remote_node)
-> +		if (root && root->dev->of_node = link.remote_node)
->  			remote = &root->entity;
-> 
->  		if (remote = NULL) {
-> @@ -748,6 +748,9 @@ int display_of_entity_link_graph(struct device *dev,
-> struct list_head *entities, return ret;
->  	}
-> 
-> +	if (!root)
-> +		return 0;
-> +
->  	return display_of_entity_link_entity(dev, root, entities, root);
->  }
->  EXPORT_SYMBOL_GPL(display_of_entity_link_graph);
+Finally, the color mapping rgb666 has also been removed as nobody
+is using it and high level applications like Qt5 cannot work
+with it either.
+
+Reference: https://lkml.org/lkml/2013/5/23/220
+Signed-off-by: Hector Palacios <hector.palacios@digi.com>
+Acked-by: Juergen Beisert <jbe@pengutronix.de>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+ drivers/video/mxsfb.c | 26 --------------------------
+ 1 file changed, 26 deletions(-)
+
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 3ba3771..dc09ebe 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -239,24 +239,6 @@ static const struct fb_bitfield def_rgb565[] = {
+ 	}
+ };
+ 
+-static const struct fb_bitfield def_rgb666[] = {
+-	[RED] = {
+-		.offset = 16,
+-		.length = 6,
+-	},
+-	[GREEN] = {
+-		.offset = 8,
+-		.length = 6,
+-	},
+-	[BLUE] = {
+-		.offset = 0,
+-		.length = 6,
+-	},
+-	[TRANSP] = {	/* no support for transparency */
+-		.length = 0,
+-	}
+-};
+-
+ static const struct fb_bitfield def_rgb888[] = {
+ 	[RED] = {
+ 		.offset = 16,
+@@ -309,9 +291,6 @@ static int mxsfb_check_var(struct fb_var_screeninfo *var,
+ 			break;
+ 		case STMLCDIF_16BIT:
+ 		case STMLCDIF_18BIT:
+-			/* 24 bit to 18 bit mapping */
+-			rgb = def_rgb666;
+-			break;
+ 		case STMLCDIF_24BIT:
+ 			/* real 24 bit */
+ 			rgb = def_rgb888;
+@@ -453,11 +432,6 @@ static int mxsfb_set_par(struct fb_info *fb_info)
+ 			return -EINVAL;
+ 		case STMLCDIF_16BIT:
+ 		case STMLCDIF_18BIT:
+-			/* 24 bit to 18 bit mapping */
+-			ctrl |= CTRL_DF24; /* ignore the upper 2 bits in
+-					    *  each colour component
+-					    */
+-			break;
+ 		case STMLCDIF_24BIT:
+ 			/* real 24 bit */
+ 			break;
 -- 
-Regards,
-
-Laurent Pinchart
+1.8.3.4
 

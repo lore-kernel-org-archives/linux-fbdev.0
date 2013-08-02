@@ -1,75 +1,34 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Fri, 02 Aug 2013 12:05:19 +0000
-Subject: [PATCH RESEND 0/8] x86 platform framebuffers
-Message-Id: <1375445127-15480-1-git-send-email-dh.herrmann@gmail.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Date: Fri, 02 Aug 2013 20:46:09 +0000
+Subject: Re: [PATCH RESEND 0/8] x86 platform framebuffers
+Message-Id: <51FC1A91.3080401@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1375445127-15480-1-git-send-email-dh.herrmann@gmail.com>
+In-Reply-To: <1375445127-15480-1-git-send-email-dh.herrmann@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: David Airlie <airlied@linux.ie>, Geert Uytterhoeven <geert@linux-m68k.org>, Stephen Warren <swarren@wwwdotorg.org>, Peter Jones <pjones@redhat.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org, linux-fbdev@vger.kernel.org, akpm@linux-foundation.org, David Herrmann <dh.herrmann@gmail.com>
+To: David Herrmann <dh.herrmann@gmail.com>
+Cc: linux-kernel@vger.kernel.org, David Airlie <airlied@linux.ie>, Geert Uytterhoeven <geert@linux-m68k.org>, Peter Jones <pjones@redhat.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org, linux-fbdev@vger.kernel.org, akpm@linux-foundation.org
 
-Hi
+On 08/02/2013 06:05 AM, David Herrmann wrote:
+> Hi
+> 
+> I cut down my previous series to no longer include the SimpleDRM driver. If
+> anyone is interested, you can find it here:
+>   http://lwn.net/Articles/558104/
+> I will resend it once these preparation patches are in.
+> 
+> Changes since v2:
+>  - added common x86 formats (reported by hpa) (patch #5)
 
-I cut down my previous series to no longer include the SimpleDRM driver. If
-anyone is interested, you can find it here:
-  http://lwn.net/Articles/558104/
-I will resend it once these preparation patches are in.
+So I assume this is V3; patch subject doesn't say so:-)
 
-Changes since v2:
- - added common x86 formats (reported by hpa) (patch #5)
+...
+> @Stephen: I wasn't sure whether you tested the efi/vesa framebuffer changes,
+> too, so I didn't add your tested-by there. And I changed patch #5 so I dropped
+> it there, too. Thanks for testing!
 
-This whole series (including simpledrm) is tested by Stephen and me. I would be
-glad if maintainers could ack/nack this so I can continue my work.
-
-This series is pretty small and just converts x86 to use platform-devices
-instead of global objects to pass framebuffer data to drivers. The commit
-messages explain everything in detail.
-The idea is to create a "platform-framebuffer" device which drivers can bind to.
-If x86 boot code detectes efi or vesa framebuffers, it creates efi-framebuffer
-or vesa-framebuffer devices instead.
-
-Additionally, if the modes are compatible, "simple-framebuffer" devices are
-created so simplefb can be used on x86. This feature is only enabled if
-CONFIG_X86_SYSFB is selected (off by default) so users without simplefb still
-get boot logs.
-
- @Stephen: I wasn't sure whether you tested the efi/vesa framebuffer changes,
-too, so I didn't add your tested-by there. And I changed patch #5 so I dropped
-it there, too. Thanks for testing!
-
-Thanks
-David
-
-David Herrmann (8):
-  fbdev: simplefb: add init through platform_data
-  fbdev: simplefb: mark as fw and allocate apertures
-  x86: provide platform-devices for boot-framebuffers
-  x86: sysfb: move EFI quirks from efifb to sysfb
-  fbdev: simplefb: add common x86 RGB formats
-  fbdev: vesafb: bind to platform-framebuffer device
-  fbdev: efifb: bind to efi-framebuffer
-  fbdev: fbcon: select VT_HW_CONSOLE_BINDING
-
- arch/x86/Kconfig                       |  26 +++
- arch/x86/include/asm/sysfb.h           |  98 +++++++++++
- arch/x86/kernel/Makefile               |   3 +
- arch/x86/kernel/sysfb.c                |  74 ++++++++
- arch/x86/kernel/sysfb_efi.c            | 214 +++++++++++++++++++++++
- arch/x86/kernel/sysfb_simplefb.c       |  95 +++++++++++
- drivers/video/Kconfig                  |   5 +-
- drivers/video/console/Kconfig          |   3 +-
- drivers/video/efifb.c                  | 302 ++++-----------------------------
- drivers/video/simplefb.c               |  58 +++++--
- drivers/video/vesafb.c                 |  55 ++----
- include/linux/platform_data/simplefb.h |  63 +++++++
- 12 files changed, 666 insertions(+), 330 deletions(-)
- create mode 100644 arch/x86/include/asm/sysfb.h
- create mode 100644 arch/x86/kernel/sysfb.c
- create mode 100644 arch/x86/kernel/sysfb_efi.c
- create mode 100644 arch/x86/kernel/sysfb_simplefb.c
- create mode 100644 include/linux/platform_data/simplefb.h
-
--- 
-1.8.3.4
-
+Yes, I'm only testing on ARM platforms using simplefb, not any x86
+platforms. This latest version seems to work fine, so feel free to
+re-apply by tested-by where appropriate.

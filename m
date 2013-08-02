@@ -1,34 +1,75 @@
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Date: Wed, 21 Aug 2013 14:27:24 +0000
-Subject: Re: [PATCH 1/2] [RFC PATCH v6] dmabuf-sync: Add a buffer synchronization framework
-Message-Id: <20130821142724.GF2593@phenom.dumpdata.com>
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Fri, 02 Aug 2013 12:05:19 +0000
+Subject: [PATCH RESEND 0/8] x86 platform framebuffers
+Message-Id: <1375445127-15480-1-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376385576-9039-1-git-send-email-inki.dae@samsung.com>
- <1376385576-9039-2-git-send-email-inki.dae@samsung.com>
- <20130820192228.GE12037@phenom.dumpdata.com>
- <008201ce9e4a$08d1d1a0$1a7574e0$%dae@samsung.com>
-In-Reply-To: <008201ce9e4a$08d1d1a0$1a7574e0$%dae@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Inki Dae <inki.dae@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linaro-kernel@lists.linaro.org, dri-devel@lists.freedesktop.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: David Airlie <airlied@linux.ie>, Geert Uytterhoeven <geert@linux-m68k.org>, Stephen Warren <swarren@wwwdotorg.org>, Peter Jones <pjones@redhat.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org, linux-fbdev@vger.kernel.org, akpm@linux-foundation.org, David Herrmann <dh.herrmann@gmail.com>
 
-> > > +EXPORT_SYMBOL(is_dmabuf_sync_supported);
-> > 
-> > _GPL ?
-> > 
-> > I would also prefix it with 'dmabuf_is_sync_supported' just to make
-> > all of the libraries call start with 'dmabuf'
-> > 
-> 
-> Seems better. Will change it to dmabuf_is_sync_supported, and use
-> EXPORT_SYMBOL_GPL.
+Hi
 
-One thing thought - while I suggest that you use GPL variant
-I think you should check who the consumers are. As in, if nvidia
-wants to use it it might make their lawyers unhappy - and in turn
-means that their engineers won't be able to use these symbols.
+I cut down my previous series to no longer include the SimpleDRM driver. If
+anyone is interested, you can find it here:
+  http://lwn.net/Articles/558104/
+I will resend it once these preparation patches are in.
 
-So - if there is a strong argument to not have it GPL - then please
-say so. 
+Changes since v2:
+ - added common x86 formats (reported by hpa) (patch #5)
+
+This whole series (including simpledrm) is tested by Stephen and me. I would be
+glad if maintainers could ack/nack this so I can continue my work.
+
+This series is pretty small and just converts x86 to use platform-devices
+instead of global objects to pass framebuffer data to drivers. The commit
+messages explain everything in detail.
+The idea is to create a "platform-framebuffer" device which drivers can bind to.
+If x86 boot code detectes efi or vesa framebuffers, it creates efi-framebuffer
+or vesa-framebuffer devices instead.
+
+Additionally, if the modes are compatible, "simple-framebuffer" devices are
+created so simplefb can be used on x86. This feature is only enabled if
+CONFIG_X86_SYSFB is selected (off by default) so users without simplefb still
+get boot logs.
+
+ @Stephen: I wasn't sure whether you tested the efi/vesa framebuffer changes,
+too, so I didn't add your tested-by there. And I changed patch #5 so I dropped
+it there, too. Thanks for testing!
+
+Thanks
+David
+
+David Herrmann (8):
+  fbdev: simplefb: add init through platform_data
+  fbdev: simplefb: mark as fw and allocate apertures
+  x86: provide platform-devices for boot-framebuffers
+  x86: sysfb: move EFI quirks from efifb to sysfb
+  fbdev: simplefb: add common x86 RGB formats
+  fbdev: vesafb: bind to platform-framebuffer device
+  fbdev: efifb: bind to efi-framebuffer
+  fbdev: fbcon: select VT_HW_CONSOLE_BINDING
+
+ arch/x86/Kconfig                       |  26 +++
+ arch/x86/include/asm/sysfb.h           |  98 +++++++++++
+ arch/x86/kernel/Makefile               |   3 +
+ arch/x86/kernel/sysfb.c                |  74 ++++++++
+ arch/x86/kernel/sysfb_efi.c            | 214 +++++++++++++++++++++++
+ arch/x86/kernel/sysfb_simplefb.c       |  95 +++++++++++
+ drivers/video/Kconfig                  |   5 +-
+ drivers/video/console/Kconfig          |   3 +-
+ drivers/video/efifb.c                  | 302 ++++-----------------------------
+ drivers/video/simplefb.c               |  58 +++++--
+ drivers/video/vesafb.c                 |  55 ++----
+ include/linux/platform_data/simplefb.h |  63 +++++++
+ 12 files changed, 666 insertions(+), 330 deletions(-)
+ create mode 100644 arch/x86/include/asm/sysfb.h
+ create mode 100644 arch/x86/kernel/sysfb.c
+ create mode 100644 arch/x86/kernel/sysfb_efi.c
+ create mode 100644 arch/x86/kernel/sysfb_simplefb.c
+ create mode 100644 include/linux/platform_data/simplefb.h
+
+-- 
+1.8.3.4
+

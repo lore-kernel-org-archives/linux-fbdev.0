@@ -1,91 +1,74 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Thu, 01 Aug 2013 08:40:35 +0000
-Subject: [PATCHv3 1/3] video: mxsfb: fix color settings for 18bit data bus and 32bpp
-Message-Id: <1375346437-18991-2-git-send-email-maxime.ripard@free-electrons.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 02 Aug 2013 08:35:29 +0000
+Subject: Re: [PATCHv3 1/3] video: mxsfb: fix color settings for 18bit data bus and 32bpp
+Message-Id: <51FB6F51.7090500@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="0CsePrQKCBTcAcDwKv4Wh7w9tWtDTAJ1E"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1375346437-18991-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1375346437-18991-1-git-send-email-maxime.ripard@free-electrons.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <1375346437-18991-2-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1375346437-18991-2-git-send-email-maxime.ripard@free-electrons.com>
 To: linux-arm-kernel@lists.infradead.org
 
-From: Hector Palacios <hector.palacios@digi.com>
+--0CsePrQKCBTcAcDwKv4Wh7w9tWtDTAJ1E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-For a combination of 18bit LCD data bus width and a color
-mode of 32bpp, the driver was setting the color mapping to
-rgb666, which is wrong, as the color in memory realy has an
-rgb888 layout.
+On 01/08/13 11:40, Maxime Ripard wrote:
+> From: Hector Palacios <hector.palacios@digi.com>
+>=20
+> For a combination of 18bit LCD data bus width and a color
+> mode of 32bpp, the driver was setting the color mapping to
+> rgb666, which is wrong, as the color in memory realy has an
+> rgb888 layout.
+>=20
+> This patch also removes the setting of flag CTRL_DF24 that
+> makes the driver dimiss the upper 2 bits when handling 32/24bpp
+> colors in a diplay with 18bit data bus width. This flag made
+> true color images display wrong in such configurations.
+>=20
+> Finally, the color mapping rgb666 has also been removed as nobody
+> is using it and high level applications like Qt5 cannot work
+> with it either.
+>=20
+> Reference: https://lkml.org/lkml/2013/5/23/220
+> Signed-off-by: Hector Palacios <hector.palacios@digi.com>
+> Acked-by: Juergen Beisert <jbe@pengutronix.de>
+> Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+> Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+> ---
+>  drivers/video/mxsfb.c | 26 --------------------------
+>  1 file changed, 26 deletions(-)
 
-This patch also removes the setting of flag CTRL_DF24 that
-makes the driver dimiss the upper 2 bits when handling 32/24bpp
-colors in a diplay with 18bit data bus width. This flag made
-true color images display wrong in such configurations.
+This one is labeled as "fix". Should it got to v3.11?
 
-Finally, the color mapping rgb666 has also been removed as nobody
-is using it and high level applications like Qt5 cannot work
-with it either.
+ Tomi
 
-Reference: https://lkml.org/lkml/2013/5/23/220
-Signed-off-by: Hector Palacios <hector.palacios@digi.com>
-Acked-by: Juergen Beisert <jbe@pengutronix.de>
-Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
----
- drivers/video/mxsfb.c | 26 --------------------------
- 1 file changed, 26 deletions(-)
 
-diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
-index 3ba3771..dc09ebe 100644
---- a/drivers/video/mxsfb.c
-+++ b/drivers/video/mxsfb.c
-@@ -239,24 +239,6 @@ static const struct fb_bitfield def_rgb565[] = {
- 	}
- };
- 
--static const struct fb_bitfield def_rgb666[] = {
--	[RED] = {
--		.offset = 16,
--		.length = 6,
--	},
--	[GREEN] = {
--		.offset = 8,
--		.length = 6,
--	},
--	[BLUE] = {
--		.offset = 0,
--		.length = 6,
--	},
--	[TRANSP] = {	/* no support for transparency */
--		.length = 0,
--	}
--};
--
- static const struct fb_bitfield def_rgb888[] = {
- 	[RED] = {
- 		.offset = 16,
-@@ -309,9 +291,6 @@ static int mxsfb_check_var(struct fb_var_screeninfo *var,
- 			break;
- 		case STMLCDIF_16BIT:
- 		case STMLCDIF_18BIT:
--			/* 24 bit to 18 bit mapping */
--			rgb = def_rgb666;
--			break;
- 		case STMLCDIF_24BIT:
- 			/* real 24 bit */
- 			rgb = def_rgb888;
-@@ -453,11 +432,6 @@ static int mxsfb_set_par(struct fb_info *fb_info)
- 			return -EINVAL;
- 		case STMLCDIF_16BIT:
- 		case STMLCDIF_18BIT:
--			/* 24 bit to 18 bit mapping */
--			ctrl |= CTRL_DF24; /* ignore the upper 2 bits in
--					    *  each colour component
--					    */
--			break;
- 		case STMLCDIF_24BIT:
- 			/* real 24 bit */
- 			break;
--- 
-1.8.3.4
 
+
+--0CsePrQKCBTcAcDwKv4Wh7w9tWtDTAJ1E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJR+29RAAoJEPo9qoy8lh71DWwP/jSQh8Ttyn5R+BcvrmJtGHXS
+i4XRQ3doz2G7vCZrtdo7P+JK+uU2y7NBuhHP5p41PbBISFbRwLXacwgkSQXgdQZ/
+j02X8g1JH7+0p9NzmRoIigwjjXmV55ROi+Km/7uHNLshenu4Yofdjtd0CcWZE2VX
+IwaXucV0GTImpJ8n6ZCqVZ1nNCL+iJVMf8s4lOrhj1xsV4u831u537+RgaBMPtq8
+TYORaJ8T0EkbKh17kg1jJnq7QBD+gHFD7n5+u7vLRLmDb5Z90sfxtCYjEmqjKTx4
+1WtVcws+9NCCVSr5KaYpbH/RZW37jhjsSjBEcQn7gXJeNawBFTWyNz6l0yBt8tGd
+RGF3NAguaQk3po+B8pfzhUwalfD52ZJwI1uRNL2zlVyON+H/F6emg/88PW5MBlT8
+CP/huMXs4MC+dkpLRJo6pzPK7WPsw/Yh8ejJ/bbHrhEdIQpviub1+tR2huQnZfP6
+NcMbOTE7XIrLwY5iLQ7Jj/lU5QI5tzrmf+QAM4xgCARGhlI0/SzDKzW8H6JMXQaV
+FcJ/DjclL7aX70fKEijR7Pnd29VaYVNY1VqIW6aCOqrp4bAIEfWA5EQoqNboTC8i
+MjGyhEaE/h/4h6rqq4Mycb8KOi3+GUSlqFDd6MBAE1Kv9dLXzCIG2yYXnhWalIc1
+CXg4UNcHC/BrSxSN0A1R
+=Q3AV
+-----END PGP SIGNATURE-----
+
+--0CsePrQKCBTcAcDwKv4Wh7w9tWtDTAJ1E--

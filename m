@@ -1,97 +1,135 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Mon, 05 Aug 2013 22:02:35 +0000
-Subject: [PATCH v3 16/20] video: da8xx-fb: reorganize panel detection
-Message-Id: <1375740159-1045-17-git-send-email-detheridge@ti.com>
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Fri, 02 Aug 2013 12:05:25 +0000
+Subject: [PATCH RESEND 6/8] fbdev: vesafb: bind to platform-framebuffer device
+Message-Id: <1375445127-15480-7-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1375445127-15480-1-git-send-email-dh.herrmann@gmail.com>
+In-Reply-To: <1375445127-15480-1-git-send-email-dh.herrmann@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: David Airlie <airlied@linux.ie>, Geert Uytterhoeven <geert@linux-m68k.org>, Stephen Warren <swarren@wwwdotorg.org>, Peter Jones <pjones@redhat.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org, linux-fbdev@vger.kernel.org, akpm@linux-foundation.org, David Herrmann <dh.herrmann@gmail.com>
 
-From: Afzal Mohammed <afzal@ti.com>
+x86 creates platform-framebuffer platform devices for every system
+framebuffer. Use these instead of creating a dummy device.
 
-Move panel detection to a separate function, this helps in readability
-as well as makes DT support cleaner.
+This requires us to remove the __init annotations as hotplugging may occur
+during runtime.
 
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
+Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
 ---
- drivers/video/da8xx-fb.c |   42 ++++++++++++++++++++++++++----------------
- 1 files changed, 26 insertions(+), 16 deletions(-)
+ drivers/video/vesafb.c | 55 +++++++++++++++-----------------------------------
+ 1 file changed, 16 insertions(+), 39 deletions(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index dec2777..d8b295a 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -1253,6 +1253,27 @@ static struct fb_ops da8xx_fb_ops = {
- 	.fb_blank = cfb_blank,
+diff --git a/drivers/video/vesafb.c b/drivers/video/vesafb.c
+index 501b340..bd83233 100644
+--- a/drivers/video/vesafb.c
++++ b/drivers/video/vesafb.c
+@@ -29,7 +29,7 @@
+ 
+ /* --------------------------------------------------------------------- */
+ 
+-static struct fb_var_screeninfo vesafb_defined __initdata = {
++static struct fb_var_screeninfo vesafb_defined = {
+ 	.activate	= FB_ACTIVATE_NOW,
+ 	.height		= -1,
+ 	.width		= -1,
+@@ -40,7 +40,7 @@ static struct fb_var_screeninfo vesafb_defined __initdata = {
+ 	.vmode		= FB_VMODE_NONINTERLACED,
  };
  
-+static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
-+{
-+	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
-+	struct fb_videomode *lcdc_info;
-+	int i;
-+
-+	for (i = 0, lcdc_info = known_lcd_panels;
-+		i < ARRAY_SIZE(known_lcd_panels); i++, lcdc_info++) {
-+		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
-+			break;
-+	}
-+
-+	if (i = ARRAY_SIZE(known_lcd_panels)) {
-+		dev_err(&dev->dev, "no panel found\n");
-+		return NULL;
-+	}
-+	dev_info(&dev->dev, "found %s panel\n", lcdc_info->name);
-+
-+	return lcdc_info;
-+}
-+
- static int fb_probe(struct platform_device *device)
+-static struct fb_fix_screeninfo vesafb_fix __initdata = {
++static struct fb_fix_screeninfo vesafb_fix = {
+ 	.id	= "VESA VGA",
+ 	.type	= FB_TYPE_PACKED_PIXELS,
+ 	.accel	= FB_ACCEL_NONE,
+@@ -48,8 +48,8 @@ static struct fb_fix_screeninfo vesafb_fix __initdata = {
+ 
+ static int   inverse    __read_mostly;
+ static int   mtrr       __read_mostly;		/* disable mtrr */
+-static int   vram_remap __initdata;		/* Set amount of memory to be used */
+-static int   vram_total __initdata;		/* Set total amount of memory */
++static int   vram_remap;			/* Set amount of memory to be used */
++static int   vram_total;			/* Set total amount of memory */
+ static int   pmi_setpal __read_mostly = 1;	/* pmi for palette changes ??? */
+ static int   ypan       __read_mostly;		/* 0..nothing, 1..ypan, 2..ywrap */
+ static void  (*pmi_start)(void) __read_mostly;
+@@ -192,7 +192,7 @@ static struct fb_ops vesafb_ops = {
+ 	.fb_imageblit	= cfb_imageblit,
+ };
+ 
+-static int __init vesafb_setup(char *options)
++static int vesafb_setup(char *options)
  {
- 	struct da8xx_lcdc_platform_data *fb_pdata @@ -1263,7 +1284,7 @@ static int fb_probe(struct platform_device *device)
- 	struct fb_info *da8xx_fb_info;
- 	struct clk *fb_clk = NULL;
- 	struct da8xx_fb_par *par;
--	int ret, i;
-+	int ret;
- 	unsigned long ulcm;
+ 	char *this_opt;
+ 	
+@@ -226,13 +226,18 @@ static int __init vesafb_setup(char *options)
+ 	return 0;
+ }
  
- 	if (fb_pdata = NULL) {
-@@ -1271,6 +1292,10 @@ static int fb_probe(struct platform_device *device)
- 		return -ENOENT;
- 	}
- 
-+	lcdc_info = da8xx_fb_get_videomode(device);
-+	if (lcdc_info = NULL)
-+		return -ENODEV;
+-static int __init vesafb_probe(struct platform_device *dev)
++static int vesafb_probe(struct platform_device *dev)
+ {
+ 	struct fb_info *info;
+ 	int i, err;
+ 	unsigned int size_vmode;
+ 	unsigned int size_remap;
+ 	unsigned int size_total;
++	char *option = NULL;
 +
- 	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
- 	da8xx_fb_reg_base = devm_ioremap_resource(&device->dev, lcdc_regs);
- 	if (IS_ERR(da8xx_fb_reg_base))
-@@ -1302,21 +1327,6 @@ static int fb_probe(struct platform_device *device)
- 		break;
- 	}
++	/* ignore error return of fb_get_options */
++	fb_get_options("vesafb", &option);
++	vesafb_setup(option);
  
--	for (i = 0, lcdc_info = known_lcd_panels;
--		i < ARRAY_SIZE(known_lcd_panels);
--		i++, lcdc_info++) {
--		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
--			break;
+ 	if (screen_info.orig_video_isVGA != VIDEO_TYPE_VLFB)
+ 		return -ENODEV;
+@@ -496,40 +501,12 @@ err:
+ }
+ 
+ static struct platform_driver vesafb_driver = {
+-	.driver	= {
+-		.name	= "vesafb",
++	.driver = {
++		.name = "vesa-framebuffer",
++		.owner = THIS_MODULE,
+ 	},
++	.probe = vesafb_probe,
+ };
+ 
+-static struct platform_device *vesafb_device;
+-
+-static int __init vesafb_init(void)
+-{
+-	int ret;
+-	char *option = NULL;
+-
+-	/* ignore error return of fb_get_options */
+-	fb_get_options("vesafb", &option);
+-	vesafb_setup(option);
+-
+-	vesafb_device = platform_device_alloc("vesafb", 0);
+-	if (!vesafb_device)
+-		return -ENOMEM;
+-
+-	ret = platform_device_add(vesafb_device);
+-	if (!ret) {
+-		ret = platform_driver_probe(&vesafb_driver, vesafb_probe);
+-		if (ret)
+-			platform_device_del(vesafb_device);
 -	}
 -
--	if (i = ARRAY_SIZE(known_lcd_panels)) {
--		dev_err(&device->dev, "GLCD: No valid panel found\n");
--		ret = -ENODEV;
--		goto err_pm_runtime_disable;
--	} else
--		dev_info(&device->dev, "GLCD: Found %s panel\n",
--					fb_pdata->type);
+-	if (ret) {
+-		platform_device_put(vesafb_device);
+-		vesafb_device = NULL;
+-	}
 -
- 	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
- 
- 	if (!lcd_cfg) {
+-	return ret;
+-}
+-module_init(vesafb_init);
+-
++module_platform_driver(vesafb_driver);
+ MODULE_LICENSE("GPL");
 -- 
-1.7.0.4
+1.8.3.4
 

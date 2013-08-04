@@ -1,119 +1,110 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Date: Sun, 04 Aug 2013 08:36:11 +0000
-Subject: Re: [PATCH] omapfb: In omapfb_probe return -EPROBE_DEFER when display driver is not loaded yet
-Message-Id: <201308041036.12471@pali>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="nextPart39307278.AbkrUebWic"
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Sun, 04 Aug 2013 17:25:41 +0000
+Subject: [PATCH] fbdev: suppress warning when assigning vga-save/restore base
+Message-Id: <1375637141-2878-1-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1373461739-10168-1-git-send-email-pali.rohar@gmail.com> <20130713182733.GA25019@amd.pavel.ucw.cz> <51EE5483.7000201@ti.com>
-In-Reply-To: <51EE5483.7000201@ti.com>
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Aaro Koskinen <aaro.koskinen@iki.fi>, Tony Lindgren <tony@atomide.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ondrej Zajicek <santiago@crfreenet.org>, David Miller <davem@davemloft.net>, David Herrmann <dh.herrmann@gmail.com>
 
---nextPart39307278.AbkrUebWic
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+If drivers use "struct resource" objects to retrieve the vga-base, they
+must correctly cast the integer to pointer. With x86+PAE we have 32bit
+pointers but 64bit resource_size_t. Hence, cast it to "unsigned long"
+before casting to "void*" to suppress warnings due to size differences.
 
-Hello,
+As IO addresses are always low addresses, we can safely drop the higher
+part of the address. This is what these drivers did before, anyway.
 
-On Tuesday 23 July 2013 12:01:39 Tomi Valkeinen wrote:
-> On 13/07/13 21:27, Pavel Machek wrote:
-> > On Wed 2013-07-10 15:08:59, Pali Roh=C3=A1r wrote:
-> >> * On RX-51 probing for acx565akm driver is later then for
-> >> omapfb which cause that omapfb probe fail and framebuffer
-> >> is not working * EPROBE_DEFER causing that kernel try to
-> >> probe for omapfb later again which fixing this problem
-> >>=20
-> >> * Without this patch display on Nokia RX-51 (N900) phone
-> >> not working
-> >>=20
-> >> Signed-off-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
-> >=20
-> > Tested-by: Pavel Machek <pavel@ucw.cz>
->=20
-> Which kernel version is this? Does it have
-> dfbc32316c6991010328c21e6046b05bac57eb84 (OMAPFB: defer probe
-> if no displays)?
->=20
+Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
+Reported-by: H. Peter Anvin <hpa@zytor.com>
+---
+Hi
 
-Kernel 3.10, so it have above commit.
+hpa reported build-warnings on i386+PAE:
+/home/hpa/kernel/distwork/drivers/video/arkfb.c:1019:23: warning: cast to
+    pointer from integer of different size [-Wint-to-pointer-cast]
+    par->state.vgabase = (void __iomem *) vga_res.start;
+                         ^
+/home/hpa/kernel/distwork/drivers/video/s3fb.c: In function ‘s3_pci_probe’:
+/home/hpa/kernel/distwork/drivers/video/s3fb.c:1186:23: warning: cast to pointer
+    from integer of different size [-Wint-to-pointer-cast]
+    par->state.vgabase = (void __iomem *) vga_res.start;
+                         ^
 
-> Then again, rx51 has tv-output, which probably gets probed
-> early. So omapfb does see one functional display, and starts,
-> even if the LCD is not available yet.
->=20
-> > (Actually, do we know which commit broke the ordering? We
-> > may want to simply revert that one...)
->=20
-> Well, my understand that this is how it's supposed to work.
-> There's no defined order with the driver probes, and the
-> drivers just have to deal with their dependencies not being
-> there yet.
->=20
-> I don't have a perfect solution for this problem for omapfb.
-> omapfb doesn't support dynamically adding displays, so all
-> the displays it uses have to be probed before omapfb. And
-> omapfb doesn't know which displays will be probed.
->=20
-> The patch below was added for 3.11. Does it fix the issue for
-> you? Perhaps it should be added for 3.10 also.
->=20
->  Tomi
->=20
+This is due to resource_size_t being 64bit but "void*" 32bit. This patch tries
+to suppress these warnings but I am not really comfortable fixing this. I have
+no idea whether my assumption (IO address are 32bit) is right. Please verify.
 
-I tested patch below and it fixing our problem too. So it could be=20
-added to 3.10.
+ @David: The following 3 commits of yours presumably introduced the warnings. I
+would be glad if you could review this:
 
-> commit e9f322b4913e5d3e5c5d21dc462ca6f8a86e1df1
-> Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Date:   Thu May 23 16:41:25 2013 +0300
->=20
->     OMAPFB: use EPROBE_DEFER if default display is not present
->=20
->     Currently omapfb returns EPROBE_DEFER if no displays have
-> been probed at the time omapfb is probed. However, sometimes
-> some of the displays have been probed at that time, but not
-> all. We can't return EPROBE_DEFER in that case, because then
-> one missing driver would cause omapfb to defer always,
-> preventing any display from working.
->=20
->     However, if the user has defined a default display, we can
-> presume that the driver for that display is eventually
-> loaded. Thus, this patch changes omapfb to return
-> EPROBE_DEFER in case default display is not found.
->=20
->     Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->=20
-> diff --git a/drivers/video/omap2/omapfb/omapfb-main.c
-> b/drivers/video/omap2/omapfb/omapfb-main.c index
-> 528e453..27d6905 100644
-> --- a/drivers/video/omap2/omapfb/omapfb-main.c
-> +++ b/drivers/video/omap2/omapfb/omapfb-main.c
-> @@ -2503,7 +2503,7 @@ static int omapfb_probe(struct
-> platform_device *pdev)
->=20
->         if (def_display =3D=3D NULL) {
->                 dev_err(fbdev->dev, "failed to find default
-> display\n"); -               r =3D -EINVAL;
-> +               r =3D -EPROBE_DEFER;
->                 goto cleanup;
->         }
+commit 94c322c30bd14ae6cdd369cb4a1f94c5c3809ac9
+Author: David Miller <davem@davemloft.net>
+Date:   Tue Jan 11 23:54:21 2011 +0000
 
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+    s3fb: Compute VGA base iomem pointer explicitly.
 
---nextPart39307278.AbkrUebWic
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+commit 892c24ca40ffebf6d0ca4cc1454e58db131a4f5a
+Author: David Miller <davem@davemloft.net>
+Date:   Tue Jan 11 23:54:35 2011 +0000
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+    arkfb: Compute VGA base iomem pointer explicitly.
 
-iEYEABECAAYFAlH+EnwACgkQi/DJPQPkQ1KKVQCdEP5e/YUZhlXs3iDd03EKjRAz
-U6UAn1WHoj1Lbz2ZFLPRYCY7ohw1OfPU
-=1bAz
------END PGP SIGNATURE-----
+commit 6a2f6d5e970afbc1b8b08bafae9d9138a3206960
+Author: David Miller <davem@davemloft.net>
+Date:   Tue Jan 11 23:55:17 2011 +0000
 
---nextPart39307278.AbkrUebWic--
+    vt8623fb: Compute VGA base iomem pointer explicitly.
+
+Cheers
+David
+
+ drivers/video/arkfb.c    | 2 +-
+ drivers/video/s3fb.c     | 2 +-
+ drivers/video/vt8623fb.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
+index 94a51f1..a4e487c 100644
+--- a/drivers/video/arkfb.c
++++ b/drivers/video/arkfb.c
+@@ -1016,7 +1016,7 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 
+ 	pcibios_bus_to_resource(dev, &vga_res, &bus_reg);
+ 
+-	par->state.vgabase = (void __iomem *) vga_res.start;
++	par->state.vgabase = (void __iomem *)(unsigned long) vga_res.start;
+ 
+ 	/* FIXME get memsize */
+ 	regval = vga_rseq(par->state.vgabase, 0x10);
+diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
+index 47ca86c..fc2208b 100644
+--- a/drivers/video/s3fb.c
++++ b/drivers/video/s3fb.c
+@@ -1183,7 +1183,7 @@ static int s3_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 
+ 	pcibios_bus_to_resource(dev, &vga_res, &bus_reg);
+ 
+-	par->state.vgabase = (void __iomem *) vga_res.start;
++	par->state.vgabase = (void __iomem *)(unsigned long) vga_res.start;
+ 
+ 	/* Unlock regs */
+ 	cr38 = vga_rcrt(par->state.vgabase, 0x38);
+diff --git a/drivers/video/vt8623fb.c b/drivers/video/vt8623fb.c
+index e9557fa..3039d82 100644
+--- a/drivers/video/vt8623fb.c
++++ b/drivers/video/vt8623fb.c
+@@ -729,7 +729,7 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 
+ 	pcibios_bus_to_resource(dev, &vga_res, &bus_reg);
+ 
+-	par->state.vgabase = (void __iomem *) vga_res.start;
++	par->state.vgabase = (void __iomem *)(unsigned long) vga_res.start;
+ 
+ 	/* Find how many physical memory there is on card */
+ 	memsize1 = (vga_rseq(par->state.vgabase, 0x34) + 1) >> 1;
+-- 
+1.8.3.4
+

@@ -1,143 +1,119 @@
-From: Inki Dae <inki.dae@samsung.com>
-Date: Thu, 29 Aug 2013 07:53:21 +0000
-Subject: [PATCH v2 2/2] dma-buf: Add user interfaces for dmabuf sync support
-Message-Id: <1377762801-14057-3-git-send-email-inki.dae@samsung.com>
+From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
+Date: Sun, 04 Aug 2013 08:36:11 +0000
+Subject: Re: [PATCH] omapfb: In omapfb_probe return -EPROBE_DEFER when display driver is not loaded yet
+Message-Id: <201308041036.12471@pali>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="nextPart39307278.AbkrUebWic"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1377762801-14057-1-git-send-email-inki.dae@samsung.com>
-In-Reply-To: <1377762801-14057-1-git-send-email-inki.dae@samsung.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org, linaro-kernel@lists.linaro.org
-Cc: maarten.lankhorst@canonical.com, sumit.semwal@linaro.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, Inki Dae <inki.dae@samsung.com>
+References: <1373461739-10168-1-git-send-email-pali.rohar@gmail.com> <20130713182733.GA25019@amd.pavel.ucw.cz> <51EE5483.7000201@ti.com>
+In-Reply-To: <51EE5483.7000201@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Aaro Koskinen <aaro.koskinen@iki.fi>, Tony Lindgren <tony@atomide.com>
 
-This patch adds lock and poll callbacks to dma buf file operations,
-and these callbacks will be called by fcntl and select system calls.
+--nextPart39307278.AbkrUebWic
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-fcntl and select system calls can be used to wait for the completion
-of DMA or CPU access to a shared dmabuf. The difference of them is
-fcntl system call takes a lock after the completion but select system
-call doesn't. So in case of fcntl system call, it's useful when a task
-wants to access a shared dmabuf without any broken. On the other hand,
-it's useful when a task wants to just wait for the completion.
+Hello,
 
-Changelog v2:
-- Add select system call support.
-  . The purpose of this feature is to wait for the completion of DMA or
-    CPU access to a dmabuf without that caller locks the dmabuf again
-    after the completion.
-    That is useful when caller wants to be aware of the completion of
-    DMA access to the dmabuf, and the caller doesn't use intefaces for
-    the DMA device driver.
+On Tuesday 23 July 2013 12:01:39 Tomi Valkeinen wrote:
+> On 13/07/13 21:27, Pavel Machek wrote:
+> > On Wed 2013-07-10 15:08:59, Pali Roh=C3=A1r wrote:
+> >> * On RX-51 probing for acx565akm driver is later then for
+> >> omapfb which cause that omapfb probe fail and framebuffer
+> >> is not working * EPROBE_DEFER causing that kernel try to
+> >> probe for omapfb later again which fixing this problem
+> >>=20
+> >> * Without this patch display on Nokia RX-51 (N900) phone
+> >> not working
+> >>=20
+> >> Signed-off-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
+> >=20
+> > Tested-by: Pavel Machek <pavel@ucw.cz>
+>=20
+> Which kernel version is this? Does it have
+> dfbc32316c6991010328c21e6046b05bac57eb84 (OMAPFB: defer probe
+> if no displays)?
+>=20
 
-Signed-off-by: Inki Dae <inki.dae@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- drivers/base/dma-buf.c |   81 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 81 insertions(+), 0 deletions(-)
+Kernel 3.10, so it have above commit.
 
-diff --git a/drivers/base/dma-buf.c b/drivers/base/dma-buf.c
-index cc42a38..f961907 100644
---- a/drivers/base/dma-buf.c
-+++ b/drivers/base/dma-buf.c
-@@ -30,6 +30,7 @@
- #include <linux/export.h>
- #include <linux/debugfs.h>
- #include <linux/seq_file.h>
-+#include <linux/poll.h>
- #include <linux/dmabuf-sync.h>
- 
- static inline int is_dma_buf_file(struct file *);
-@@ -81,9 +82,89 @@ static int dma_buf_mmap_internal(struct file *file, struct vm_area_struct *vma)
- 	return dmabuf->ops->mmap(dmabuf, vma);
- }
- 
-+static unsigned int dma_buf_poll(struct file *filp,
-+					struct poll_table_struct *poll)
-+{
-+	struct dma_buf *dmabuf;
-+	struct dmabuf_sync_reservation *robj;
-+	int ret = 0;
-+
-+	if (!is_dma_buf_file(filp))
-+		return POLLERR;
-+
-+	dmabuf = filp->private_data;
-+	if (!dmabuf || !dmabuf->sync)
-+		return POLLERR;
-+
-+	robj = dmabuf->sync;
-+
-+	mutex_lock(&robj->lock);
-+
-+	robj->polled = true;
-+
-+	/*
-+	 * CPU or DMA access to this buffer has been completed, and
-+	 * the blocked task has been waked up. Return poll event
-+	 * so that the task can get out of select().
-+	 */
-+	if (robj->poll_event) {
-+		robj->poll_event = false;
-+		mutex_unlock(&robj->lock);
-+		return POLLIN | POLLOUT;
-+	}
-+
-+	/*
-+	 * There is no anyone accessing this buffer so just return.
-+	 */
-+	if (!robj->locked) {
-+		mutex_unlock(&robj->lock);
-+		return POLLIN | POLLOUT;
-+	}
-+
-+	poll_wait(filp, &robj->poll_wait, poll);
-+
-+	mutex_unlock(&robj->lock);
-+
-+	return ret;
-+}
-+
-+static int dma_buf_lock(struct file *file, int cmd, struct file_lock *fl)
-+{
-+	struct dma_buf *dmabuf;
-+	unsigned int type;
-+	bool wait = false;
-+
-+	if (!is_dma_buf_file(file))
-+		return -EINVAL;
-+
-+	dmabuf = file->private_data;
-+
-+	if ((fl->fl_type & F_UNLCK) = F_UNLCK) {
-+		dmabuf_sync_single_unlock(dmabuf);
-+		return 0;
-+	}
-+
-+	/* convert flock type to dmabuf sync type. */
-+	if ((fl->fl_type & F_WRLCK) = F_WRLCK)
-+		type = DMA_BUF_ACCESS_W;
-+	else if ((fl->fl_type & F_RDLCK) = F_RDLCK)
-+		type = DMA_BUF_ACCESS_R;
-+	else
-+		return -EINVAL;
-+
-+	if (fl->fl_flags & FL_SLEEP)
-+		wait = true;
-+
-+	/* TODO. the locking to certain region should also be considered. */
-+
-+	return dmabuf_sync_single_lock(dmabuf, type, wait);
-+}
-+
- static const struct file_operations dma_buf_fops = {
- 	.release	= dma_buf_release,
- 	.mmap		= dma_buf_mmap_internal,
-+	.poll		= dma_buf_poll,
-+	.lock		= dma_buf_lock,
- };
- 
- /*
--- 
-1.7.5.4
+> Then again, rx51 has tv-output, which probably gets probed
+> early. So omapfb does see one functional display, and starts,
+> even if the LCD is not available yet.
+>=20
+> > (Actually, do we know which commit broke the ordering? We
+> > may want to simply revert that one...)
+>=20
+> Well, my understand that this is how it's supposed to work.
+> There's no defined order with the driver probes, and the
+> drivers just have to deal with their dependencies not being
+> there yet.
+>=20
+> I don't have a perfect solution for this problem for omapfb.
+> omapfb doesn't support dynamically adding displays, so all
+> the displays it uses have to be probed before omapfb. And
+> omapfb doesn't know which displays will be probed.
+>=20
+> The patch below was added for 3.11. Does it fix the issue for
+> you? Perhaps it should be added for 3.10 also.
+>=20
+>  Tomi
+>=20
 
+I tested patch below and it fixing our problem too. So it could be=20
+added to 3.10.
+
+> commit e9f322b4913e5d3e5c5d21dc462ca6f8a86e1df1
+> Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Date:   Thu May 23 16:41:25 2013 +0300
+>=20
+>     OMAPFB: use EPROBE_DEFER if default display is not present
+>=20
+>     Currently omapfb returns EPROBE_DEFER if no displays have
+> been probed at the time omapfb is probed. However, sometimes
+> some of the displays have been probed at that time, but not
+> all. We can't return EPROBE_DEFER in that case, because then
+> one missing driver would cause omapfb to defer always,
+> preventing any display from working.
+>=20
+>     However, if the user has defined a default display, we can
+> presume that the driver for that display is eventually
+> loaded. Thus, this patch changes omapfb to return
+> EPROBE_DEFER in case default display is not found.
+>=20
+>     Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+>=20
+> diff --git a/drivers/video/omap2/omapfb/omapfb-main.c
+> b/drivers/video/omap2/omapfb/omapfb-main.c index
+> 528e453..27d6905 100644
+> --- a/drivers/video/omap2/omapfb/omapfb-main.c
+> +++ b/drivers/video/omap2/omapfb/omapfb-main.c
+> @@ -2503,7 +2503,7 @@ static int omapfb_probe(struct
+> platform_device *pdev)
+>=20
+>         if (def_display =3D=3D NULL) {
+>                 dev_err(fbdev->dev, "failed to find default
+> display\n"); -               r =3D -EINVAL;
+> +               r =3D -EPROBE_DEFER;
+>                 goto cleanup;
+>         }
+
+=2D-=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
+
+--nextPart39307278.AbkrUebWic
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iEYEABECAAYFAlH+EnwACgkQi/DJPQPkQ1KKVQCdEP5e/YUZhlXs3iDd03EKjRAz
+U6UAn1WHoj1Lbz2ZFLPRYCY7ohw1OfPU
+=1bAz
+-----END PGP SIGNATURE-----
+
+--nextPart39307278.AbkrUebWic--

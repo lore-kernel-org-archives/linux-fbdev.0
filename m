@@ -1,136 +1,135 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 09 Aug 2013 08:38:54 +0000
-Subject: [RFC 09/22] OMAPDSS: Add DT support to DSI
-Message-Id: <1376037547-10859-10-git-send-email-tomi.valkeinen@ti.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Mon, 05 Aug 2013 22:02:29 +0000
+Subject: [PATCH v3 10/20] video: da8xx-fb: fb_set_par support
+Message-Id: <1375740159-1045-11-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Add the code to make the DSI driver work with device tree on OMAP3 and
-OMAP4.
+v1: original from Afzal Mohammed <afzal@ti.com>
+fb_set_par helps in runtime configuration of lcd controller like
+changing resolution, pixel clock etc. (eg. using fbset utility)
 
-A minor hack is needed at the moment in the DSI driver: the DSS driver
-needs to know the ID number of a DSI device, as clocks are routed in
-different ways to the DSI devices. At the moment we don't have any
-proper way to manage this, so this patchs adds a simple lookup table
-that is used to deduce the ID from the DSI device's base address.
+Reconfigure lcd controller based on information passed by framework.
+Enable raster back if it was already enabled.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+As fb_set_par would get invoked indirectly from probe via fb_set_var,
+remove existing lcdc initialization in probe and do lcdc reset in
+probe so that reset happens only at the begining.
+
+v2:  changes from Darren Etheridge <detheridge@ti.com>
+	remove unnecessary conditional branch where we attempt to disable
+	something that we already checked to see if it was disabled.
+
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- drivers/video/omap2/dss/dsi.c | 53 ++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 52 insertions(+), 1 deletion(-)
+ drivers/video/da8xx-fb.c |   58 +++++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 47 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 0c8bd1f..bccf5fc 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -38,6 +38,7 @@
- #include <linux/slab.h>
- #include <linux/debugfs.h>
- #include <linux/pm_runtime.h>
-+#include <linux/of.h>
- 
- #include <video/omapdss.h>
- #include <video/mipi_display.h>
-@@ -371,6 +372,13 @@ struct dsi_packet_sent_handler_data {
- 	struct completion *completion;
- };
- 
-+struct dsi_module_id_data {
-+	u32 address;
-+	int id;
-+};
-+
-+static const struct of_device_id dsi_of_match[];
-+
- #ifdef DEBUG
- static bool dsi_perf;
- module_param(dsi_perf, bool, 0644);
-@@ -5537,7 +5545,6 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
- 	if (!dsi)
- 		return -ENOMEM;
- 
--	dsi->module_id = dsidev->id;
- 	dsi->pdev = dsidev;
- 	dev_set_drvdata(&dsidev->dev, dsi);
- 
-@@ -5587,6 +5594,31 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
- 		return r;
- 	}
- 
-+	if (dsidev->dev.of_node) {
-+		const struct of_device_id *match;
-+		const struct dsi_module_id_data *d;
-+
-+		match = of_match_node(dsi_of_match, dsidev->dev.of_node);
-+		if (!match) {
-+			DSSERR("unsupported DSI module\n");
-+			return -ENODEV;
-+		}
-+
-+		d = match->data;
-+
-+		while (d->address != 0 && d->address != dsi_mem->start)
-+			d++;
-+
-+		if (d->address = 0) {
-+			DSSERR("unsupported DSI module\n");
-+			return -ENODEV;
-+		}
-+
-+		dsi->module_id = d->id;
-+	} else {
-+		dsi->module_id = dsidev->id;
-+	}
-+
- 	/* DSI VCs initialization */
- 	for (i = 0; i < ARRAY_SIZE(dsi->vc); i++) {
- 		dsi->vc[i].source = DSI_VC_SOURCE_L4;
-@@ -5641,6 +5673,7 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
- 	else if (dsi->module_id = 1)
- 		dss_debugfs_create_file("dsi2_irqs", dsi2_dump_irqs);
- #endif
-+
- 	return 0;
- 
- err_probe:
-@@ -5694,6 +5727,23 @@ static const struct dev_pm_ops dsi_pm_ops = {
- 	.runtime_resume = dsi_runtime_resume,
- };
- 
-+static const struct dsi_module_id_data dsi_of_data_omap3[] = {
-+	{ .address = 0x4804fc00, .id = 0, },
-+	{ },
-+};
-+
-+static const struct dsi_module_id_data dsi_of_data_omap4[] = {
-+	{ .address = 0x58004000, .id = 0, },
-+	{ .address = 0x58005000, .id = 1, },
-+	{ },
-+};
-+
-+static const struct of_device_id dsi_of_match[] = {
-+	{ .compatible = "ti,omap3-dsi", .data = dsi_of_data_omap3, },
-+	{ .compatible = "ti,omap4-dsi", .data = dsi_of_data_omap4, },
-+	{},
-+};
-+
- static struct platform_driver omap_dsihw_driver = {
- 	.probe		= omap_dsihw_probe,
- 	.remove         = __exit_p(omap_dsihw_remove),
-@@ -5701,6 +5751,7 @@ static struct platform_driver omap_dsihw_driver = {
- 		.name   = "omapdss_dsi",
- 		.owner  = THIS_MODULE,
- 		.pm	= &dsi_pm_ops,
-+		.of_match_table = dsi_of_match,
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 8d73730..6beb88d 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -243,6 +243,11 @@ static struct fb_videomode known_lcd_panels[] = {
  	},
  };
  
++static inline bool da8xx_fb_is_raster_enabled(void)
++{
++	return !!(lcdc_read(LCD_RASTER_CTRL_REG) & LCD_RASTER_ENABLE);
++}
++
+ /* Enable the Raster Engine of the LCD Controller */
+ static inline void lcd_enable_raster(void)
+ {
+@@ -665,9 +670,6 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 
+ static void da8xx_fb_lcd_reset(void)
+ {
+-	/* Disable the Raster if previously Enabled */
+-	lcd_disable_raster(false);
+-
+ 	/* DMA has to be disabled */
+ 	lcdc_write(0, LCD_DMA_CTRL_REG);
+ 	lcdc_write(0, LCD_RASTER_CTRL_REG);
+@@ -720,8 +722,6 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+ 	u32 bpp;
+ 	int ret = 0;
+ 
+-	da8xx_fb_lcd_reset();
+-
+ 	da8xx_fb_calc_config_clk_divider(par, panel);
+ 
+ 	if (panel->sync & FB_SYNC_CLK_INVERT)
+@@ -1201,9 +1201,50 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
+ 	return ret;
+ }
+ 
++static int da8xxfb_set_par(struct fb_info *info)
++{
++	struct da8xx_fb_par *par = info->par;
++	int ret;
++	bool raster = da8xx_fb_is_raster_enabled();
++
++	if (raster)
++		lcd_disable_raster(true);
++
++	fb_var_to_videomode(&par->mode, &info->var);
++
++	par->cfg.bpp = info->var.bits_per_pixel;
++
++	info->fix.visual = (par->cfg.bpp <= 8) ?
++				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
++	info->fix.line_length = (par->mode.xres * par->cfg.bpp) / 8;
++
++	ret = lcd_init(par, &par->cfg, &par->mode);
++	if (ret < 0) {
++		dev_err(par->dev, "lcd init failed\n");
++		return ret;
++	}
++
++	par->dma_start = info->fix.smem_start +
++			 info->var.yoffset * info->fix.line_length +
++			 info->var.xoffset * info->var.bits_per_pixel / 8;
++	par->dma_end   = par->dma_start +
++			 info->var.yres * info->fix.line_length - 1;
++
++	lcdc_write(par->dma_start, LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
++	lcdc_write(par->dma_end, LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
++	lcdc_write(par->dma_start, LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
++	lcdc_write(par->dma_end, LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
++
++	if (raster)
++		lcd_enable_raster();
++
++	return 0;
++}
++
+ static struct fb_ops da8xx_fb_ops = {
+ 	.owner = THIS_MODULE,
+ 	.fb_check_var = fb_check_var,
++	.fb_set_par = da8xxfb_set_par,
+ 	.fb_setcolreg = fb_setcolreg,
+ 	.fb_pan_display = da8xx_pan_display,
+ 	.fb_ioctl = fb_ioctl,
+@@ -1312,14 +1353,9 @@ static int fb_probe(struct platform_device *device)
+ 	}
+ 
+ 	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
+-	fb_var_to_videomode(&par->mode, &da8xx_fb_var);
+ 	par->cfg = *lcd_cfg;
+ 
+-	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
+-		dev_err(&device->dev, "lcd_init failed\n");
+-		ret = -EFAULT;
+-		goto err_release_fb;
+-	}
++	da8xx_fb_lcd_reset();
+ 
+ 	/* allocate frame buffer */
+ 	par->vram_size = lcdc_info->xres * lcdc_info->yres * lcd_cfg->bpp;
 -- 
-1.8.1.2
+1.7.0.4
 

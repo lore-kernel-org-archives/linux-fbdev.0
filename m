@@ -1,170 +1,117 @@
-From: Wang Huan-B18965 <B18965@freescale.com>
-Date: Mon, 05 Aug 2013 09:51:40 +0000
-Subject: RE: [PATCH 4/5] fb: Add DCU framebuffer driver for Vybrid VF610 platform
-Message-Id: <81BA6E5E0BC2344391CABCEE22D1B6D83CA6F0@039-SN1MPN1-002.039d.mgd.msft.net>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Date: Mon, 05 Aug 2013 10:06:30 +0000
+Subject: Re: [PATCH 4/5] fb: Add DCU framebuffer driver for Vybrid VF610 platform
+Message-Id: <20130805100630.GQ26614@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1373609276-14566-1-git-send-email-b18965@freescale.com>
  <1373609276-14566-5-git-send-email-b18965@freescale.com>
  <20130729111457.GB3029@pengutronix.de>
-In-Reply-To: <20130729111457.GB3029@pengutronix.de>
+ <81BA6E5E0BC2344391CABCEE22D1B6D83CA6F0@039-SN1MPN1-002.039d.mgd.msft.net>
+In-Reply-To: <81BA6E5E0BC2344391CABCEE22D1B6D83CA6F0@039-SN1MPN1-002.039d.mgd.msft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-SGksIFNhc2NoYSwNCg0KPiBPbiBGcmksIEp1bCAxMiwgMjAxMyBhdCAwMjowNzo1NVBNICswODAw
-LCBBbGlzb24gV2FuZyB3cm90ZToNCj4gPiBUaGUgRGlzcGxheSBDb250cm9sbGVyIFVuaXQgKERD
-VSkgbW9kdWxlIGlzIGEgc3lzdGVtIG1hc3RlciB0aGF0DQo+ID4gZmV0Y2hlcyBncmFwaGljcyBz
-dG9yZWQgaW4gaW50ZXJuYWwgb3IgZXh0ZXJuYWwgbWVtb3J5IGFuZCBkaXNwbGF5cw0KPiA+IHRo
-ZW0gb24gYSBURlQgTENEIHBhbmVsLiBBIHdpZGUgcmFuZ2Ugb2YgcGFuZWwgc2l6ZXMgaXMgc3Vw
-cG9ydGVkIGFuZA0KPiA+IHRoZSB0aW1pbmcgb2YgdGhlIGludGVyZmFjZSBzaWduYWxzIGlzIGhp
-Z2hseSBjb25maWd1cmFibGUuDQo+ID4gR3JhcGhpY3MgYXJlIHJlYWQgZGlyZWN0bHkgZnJvbSBt
-ZW1vcnkgYW5kIHRoZW4gYmxlbmRlZCBpbiByZWFsLXRpbWUsDQo+ID4gd2hpY2ggYWxsb3dzIGZv
-ciBkeW5hbWljIGNvbnRlbnQgY3JlYXRpb24gd2l0aCBtaW5pbWFsIENQVQ0KPiBpbnRlcnZlbnRp
-b24uDQo+IA0KPiBPbmx5IGEgcmV2aWV3IG9mIHRoZSBjb2RlIGlubGluZS4NCj4gDQo+IE1heWJl
-IHRoZSByZWFsIHF1ZXN0aW9uIGlzIHdoZXRoZXIgd2Ugd2FudCB0byBpbnRyb2R1Y2UgYW5vdGhl
-cg0KPiBmcmFtZWJ1ZmZlciBkcml2ZXIgYXQgYWxsIGluc3RlYWQgb2YgbWFraW5nIGl0IGEgRFJN
-IGRyaXZlci4NCltBbGlzb24gV2FuZ10gSSB0aGluayBEQ1UgbW9kdWxlIGlzIG1vcmUgc3VpdGFi
-bGUgdG8gYmUgZGVzaWduZWQgYXMgYSBmcmFtZWJ1ZmZlciBkcml2ZXIgdGhhbiBhIERSTSBkcml2
-ZXIuIEp1c3QgbGlrZSBESVUgZnJhbWVidWZmZXIgZHJpdmVyIGZvciBQb3dlclBDLg0KPiANCj4g
-PiArDQo+ID4gKyNkZWZpbmUgRFJJVkVSX05BTUUJCQkiZnNsLWRjdS1mYiINCj4gPiArDQo+ID4g
-KyNkZWZpbmUgRENVX0RDVV9NT0RFCQkJMHgwMDEwDQo+ID4gKyNkZWZpbmUgRENVX01PREVfQkxF
-TkRfSVRFUih4KQkJKHggPDwgMjApDQo+IA0KPiBXaGF0J3MgdGhlIHJlc3VsdCBvZiBEQ1VfTU9E
-RV9CTEVORF9JVEVSKDEgKyAxKT8NCltBbGlzb24gV2FuZ10gSXMgaXQgcmVhbGx5IG5lY2Vzc2Fy
-eT8gSSBkb24ndCB1c2UgdGhpcyBtYWNybyBsaWtlIERDVV9NT0RFX0JMRU5EX0lURVIoMSArIDEp
-LCBqdXN0IHVzZSBEQ1VfTU9ERV9CTEVORF9JVEVSKDIpLg0KPiANCj4gPiArc3RhdGljIHN0cnVj
-dCBmYl92aWRlb21vZGUgZGN1X21vZGVfZGJbXSA9IHsNCj4gPiArCXsNCj4gPiArCQkubmFtZQkJ
-PSAiNDgweDI3MiIsDQo+ID4gKwkJLnJlZnJlc2gJPSA3NSwNCj4gPiArCQkueHJlcwkJPSA0ODAs
-DQo+ID4gKwkJLnlyZXMJCT0gMjcyLA0KPiA+ICsJCS5waXhjbG9jawk9IDkxOTk2LA0KPiA+ICsJ
-CS5sZWZ0X21hcmdpbgk9IDIsDQo+ID4gKwkJLnJpZ2h0X21hcmdpbgk9IDIsDQo+ID4gKwkJLnVw
-cGVyX21hcmdpbgk9IDEsDQo+ID4gKwkJLmxvd2VyX21hcmdpbgk9IDEsDQo+ID4gKwkJLmhzeW5j
-X2xlbgk9IDQxLA0KPiA+ICsJCS52c3luY19sZW4JPSAyLA0KPiA+ICsJCS5zeW5jCQk9IEZCX1NZ
-TkNfQ09NUF9ISUdIX0FDVCB8IEZCX1NZTkNfVkVSVF9ISUdIX0FDVCwNCj4gPiArCQkudm1vZGUJ
-CT0gRkJfVk1PREVfTk9OSU5URVJMQUNFRCwNCj4gPiArCX0sDQo+ID4gK307DQo+IA0KPiBXZSBo
-YXZlIHdheXMgdG8gZGVzY3JpYmUgYSBwYW5lbCBpbiBkdC4gVXNlIHRoZW0uDQpbQWxpc29uIFdh
-bmddIE9rLiBJIGRvbid0IGtub3cgaXQgaXMgY29tbW9uIHRvIGRlc2NyaWJlIHRoZSBwYW5lbCBp
-biBkdHMgZm9yIHRoZSBsYXRlc3Qga2VybmVsLiBUaGFua3MuDQo+IA0KPiA+ICsNCj4gPiArc3Rh
-dGljIHN0cnVjdCBtZmJfaW5mbyBtZmJfdGVtcGxhdGVbXSA9IHsNCj4gPiArCXsNCj4gPiArCS5p
-bmRleCA9IExBWUVSMCwNCj4gPiArCS5pZCA9ICJMYXllcjAiLA0KPiA+ICsJLmFscGhhID0gMHhm
-ZiwNCj4gPiArCS5ibGVuZCA9IDAsDQo+ID4gKwkuY291bnQgPSAwLA0KPiA+ICsJLnhfbGF5ZXJf
-ZCA9IDAsDQo+ID4gKwkueV9sYXllcl9kID0gMCwNCj4gPiArCX0sDQo+IA0KPiBXcm9uZyBpbmRl
-bnRhdGlvbi4NCltBbGlzb24gV2FuZ10gSSB3aWxsIGZpeCBpdCBpbiBuZXh0IHZlcnNpb24uDQo+
-IA0KPiA+ICsJZGVmYXVsdDoNCj4gPiArCQlwcmludGsoS0VSTl9FUlIgInVuc3VwcG9ydGVkIGNv
-bG9yIGRlcHRoOiAldVxuIiwNCj4gPiArCQkJdmFyLT5iaXRzX3Blcl9waXhlbCk7DQo+IA0KPiBV
-c2UgZGV2XyogZm9yIHByaW50aW5nIG1lc3NhZ2VzIGluIGRyaXZlcnMuDQpbQWxpc29uIFdhbmdd
-IE9rLg0KPiANCj4gPiArc3RhdGljIGludCBmc2xfZGN1X2NoZWNrX3ZhcihzdHJ1Y3QgZmJfdmFy
-X3NjcmVlbmluZm8gKnZhciwNCj4gPiArCQlzdHJ1Y3QgZmJfaW5mbyAqaW5mbykNCj4gPiArew0K
-PiA+ICsJaWYgKHZhci0+eHJlc192aXJ0dWFsIDwgdmFyLT54cmVzKQ0KPiA+ICsJCXZhci0+eHJl
-c192aXJ0dWFsID0gdmFyLT54cmVzOw0KPiA+ICsJaWYgKHZhci0+eXJlc192aXJ0dWFsIDwgdmFy
-LT55cmVzKQ0KPiA+ICsJCXZhci0+eXJlc192aXJ0dWFsID0gdmFyLT55cmVzOw0KPiA+ICsNCj4g
-PiArCWlmICh2YXItPnhvZmZzZXQgPCAwKQ0KPiA+ICsJCXZhci0+eG9mZnNldCA9IDA7DQo+ID4g
-Kw0KPiA+ICsJaWYgKHZhci0+eW9mZnNldCA8IDApDQo+ID4gKwkJdmFyLT55b2Zmc2V0ID0gMDsN
-Cj4gDQo+IEV2ZXIgc2VlbiBhbiB1bnNpZ25lZCB2YWx1ZSBnb2luZyBiZWxvdyB6ZXJvPw0KW0Fs
-aXNvbiBXYW5nXSBZb3UgYXJlIHJpZ2h0LCBJIHdpbGwgcmVtb3ZlIHRoZW0gaW4gbmV4dCB2ZXJz
-aW9uLg0KPiANCj4gPiArCWRlZmF1bHQ6DQo+ID4gKwkJcHJpbnRrKEtFUk5fRVJSICJ1bnN1cHBv
-cnRlZCBjb2xvciBkZXB0aDogJXVcbiIsDQo+ID4gKwkJCXZhci0+Yml0c19wZXJfcGl4ZWwpOw0K
-PiANCj4gQlVHKCkuIFRoaXMgY2FuJ3QgaGFwcGVuIHNpbmNlIHlvdSBtYWtlIHRoYXQgc3VyZSBh
-Ym92ZS4NCltBbGlzb24gV2FuZ10gWW91IGFyZSByaWdodCwgSSB3aWxsIHJlbW92ZSBpdCBpbiBu
-ZXh0IHZlcnNpb24uDQo+IA0KPiA+ICsJCXJldHVybiAtRUlOVkFMOw0KPiA+ICsJfQ0KPiA+ICsN
-Cj4gPiArCXJldHVybiAwOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IGNhbGNfZGl2
-X3JhdGlvKHN0cnVjdCBmYl9pbmZvICppbmZvKSB7DQo+IA0KPiBVc2UgYSBjb25zaXN0ZW50IG5h
-bWVzcGFjZSBmb3IgZnVuY3Rpb24gbmFtZXMgKGZzbF9kY3VfKQ0KW0FsaXNvbiBXYW5nXSBJcyBp
-dCBuZWNlc3NhcnkgdG8gdXNlIGEgY29uc2lzdGVudCBuYW1lc3BhY2UgZm9yIHRoaXMgZ2VuZXJp
-YyBmdW5jdGlvbj8gSSB0aGluayBpdCBpcyBuZWNlc3NhcnkgdG8gdXNlIGEgY29uc2lzdGVudCBu
-YW1lc3BhY2UgKGZzbF9kY3VfKSBmb3IgdGhlIGZ1bmN0aW9uIG5hbWVzIGluIHN0cnVjdHVyZSBm
-c2xfZGN1X29wcy4NCj4gDQo+ID4gKwl3cml0ZWwoRENVX1RIUkVTSE9MRF9MU19CRl9WUygweDMp
-IHwNCj4gRENVX1RIUkVTSE9MRF9PVVRfQlVGX0hJR0goMHg3OCkgfA0KPiA+ICsJCURDVV9USFJF
-U0hPTERfT1VUX0JVRl9MT1coMCksIGRjdWZiLT5yZWdfYmFzZSArDQo+IERDVV9USFJFU0hPTEQp
-Ow0KPiA+ICsNCj4gPiArCWVuYWJsZV9jb250cm9sbGVyKGluZm8pOw0KPiA+ICt9DQo+IA0KPiBN
-YWtlIHlvdXIgZnVuY3Rpb25zIHN5bW1ldHJpYy4gSWYgdGhlcmUncyB1cGRhdGVfY29udHJvbGxl
-cigpLCB0aGUNCj4gZnVuY3Rpb24gc2hvdWxkIGRvIGV4YWN0bHkgdGhhdCwgaXQgc2hvdWxkICpu
-b3QqIGVuYWJsZSB0aGUgY29udHJvbGxlci4NCj4gQ2FsbCB0aGlzIGZyb20gdGhlIHVzZXJzIG9m
-IHRoaXMgZnVuY3Rpb24gaWYgbmVjZXNzYXJ5Lg0KW0FsaXNvbiBXYW5nXSBPaywgSSB3aWxsIG1v
-dmUgdGhpcyBmdW5jdGlvbiBvdXQsIGFuZCBhZGQgaXQgaGVyZS4NCmlmIChtZmJpLT5pbmRleCA9
-PSBMQVlFUjApIHsNCgl1cGRhdGVfY29udHJvbGxlcihpbmZvKTsNCisJZW5hYmxlX2NvbnRyb2xs
-ZXIoaW5mbyk7DQp9DQo+IA0KPiA+ICsJCWlmIChjb3B5X3RvX3VzZXIoYnVmLCAmYWxwaGEsIHNp
-emVvZihhbHBoYSkpKQ0KPiA+ICsJCQlyZXR1cm4gLUVGQVVMVDsNCj4gPiArCQlicmVhazsNCj4g
-PiArCWNhc2UgTUZCX1NFVF9BTFBIQToNCj4gPiArCQlpZiAoY29weV9mcm9tX3VzZXIoJmFscGhh
-LCBidWYsIHNpemVvZihhbHBoYSkpKQ0KPiA+ICsJCQlyZXR1cm4gLUVGQVVMVDsNCj4gPiArCQlt
-ZmJpLT5ibGVuZCA9IDE7DQo+ID4gKwkJbWZiaS0+YWxwaGEgPSBhbHBoYTsNCj4gPiArCQlmc2xf
-ZGN1X3NldF9wYXIoaW5mbyk7DQo+ID4gKwkJYnJlYWs7DQo+IA0KPiBJcyBpdCBzdGlsbCBzdGF0
-ZSBvZiB0aGUgYXJ0IHRvIGludHJvZHVjZSBpb2N0bHMgaW4gdGhlIGZiIGZyYW1ld29yaw0KPiB3
-aXRob3V0IGFueSBraW5kIG9mIGRvY3VtZW50YXRpb24/DQpbQWxpc29uIFdhbmddIERvIHlvdSBt
-ZWFuIEkgbmVlZCB0byBhZGQgYSBkb2N1bWVudGF0aW9uIGluIERvY3VtZW50YXRpb24vZmIvPw0K
-PiANCj4gPiArCWRlZmF1bHQ6DQo+ID4gKwkJcHJpbnRrKEtFUk5fRVJSICJ1bmtub3duIGlvY3Rs
-IGNvbW1hbmQgKDB4JTA4WClcbiIsIGNtZCk7DQo+IA0KPiBXaGF0IHNoYWxsIGEgcmVhZGVyIG9m
-IHRoZSBrZXJuZWwgbG9nIGRvIHdpdGggYSBtZXNzYWdlIGxpa2UgdGhpcz8gSXQncw0KPiB1dHRl
-cmx5IHVzZWxlc3Mgd2hlbiBoZSBkb2Vzbid0IGV2ZW4gbm93IHdoaWNoIGRldmljZSBmYWlsZWQg
-aGVyZS4gSnVzdA0KPiBkcm9wIHRoaXMuDQpbQWxpc29uIFdhbmddIE9rLg0KPiANCj4gPiArc3Rh
-dGljIHZvaWQgZW5hYmxlX2ludGVycnVwdHMoc3RydWN0IGRjdV9mYl9kYXRhICpkY3VmYikgew0K
-PiA+ICsJdTMyIGludF9tYXNrID0gcmVhZGwoZGN1ZmItPnJlZ19iYXNlICsgRENVX0lOVF9NQVNL
-KTsNCj4gPiArDQo+ID4gKwl3cml0ZWwoaW50X21hc2sgJiB+RENVX0lOVF9NQVNLX1VORFJVTiwg
-ZGN1ZmItPnJlZ19iYXNlICsNCj4gPiArRENVX0lOVF9NQVNLKTsgfQ0KPiANCj4gSW5saW5lIHRo
-aXMgY29kZSB3aGVyZSB5b3UgbmVlZCBpdC4gSW50cm9kdWNpbmcgYSBmdW5jdGlvbiBmb3IgYSBz
-aW5nbGUNCj4gcmVnaXN0ZXIgd3JpdGUgc2VlbXMgcXVpdGUgdXNlbGVzcy4NCltBbGlzb24gV2Fu
-Z10gT2ssIEkgd2lsbCBpbmxpbmUgaXQuDQo+IA0KPiA+ICtzdGF0aWMgaW50IGluc3RhbGxfZnJh
-bWVidWZmZXIoc3RydWN0IGZiX2luZm8gKmluZm8pIHsNCj4gPiArCXN0cnVjdCBtZmJfaW5mbyAq
-bWZiaSA9IGluZm8tPnBhcjsNCj4gPiArCXN0cnVjdCBmYl92aWRlb21vZGUgKmRiID0gZGN1X21v
-ZGVfZGI7DQo+ID4gKwl1bnNpZ25lZCBpbnQgZGJzaXplID0gQVJSQVlfU0laRShkY3VfbW9kZV9k
-Yik7DQo+ID4gKwlpbnQgcmV0Ow0KPiA+ICsNCj4gPiArCWluZm8tPnZhci5hY3RpdmF0ZSA9IEZC
-X0FDVElWQVRFX05PVzsNCj4gPiArCWluZm8tPmZib3BzID0gJmZzbF9kY3Vfb3BzOw0KPiA+ICsJ
-aW5mby0+ZmxhZ3MgPSBGQklORk9fRkxBR19ERUZBVUxUOw0KPiA+ICsJaW5mby0+cHNldWRvX3Bh
-bGV0dGUgPSAmbWZiaS0+cHNldWRvX3BhbGV0dGU7DQo+ID4gKw0KPiA+ICsJZmJfYWxsb2NfY21h
-cCgmaW5mby0+Y21hcCwgMTYsIDApOw0KPiA+ICsNCj4gPiArCXJldCA9IGZiX2ZpbmRfbW9kZSgm
-aW5mby0+dmFyLCBpbmZvLCBmYl9tb2RlLCBkYiwgZGJzaXplLA0KPiA+ICsJCQlOVUxMLCBkZWZh
-dWx0X2JwcCk7DQo+ID4gKw0KPiA+ICsJaWYgKGZzbF9kY3VfY2hlY2tfdmFyKCZpbmZvLT52YXIs
-IGluZm8pKSB7DQo+ID4gKwkJcmV0ID0gLUVJTlZBTDsNCj4gDQo+IFByb3BhZ2F0ZSB0aGUgZXJy
-b3IuDQpbQWxpc29uIFdhbmddIEkgd2lsbCBmaXggaW4gbmV4dCB2ZXJzaW9uLg0KPiANCj4gPiAr
-CQlnb3RvIGZhaWxlZF9jaGVja3ZhcjsNCj4gPiArCX0NCj4gPiArDQo+ID4gKwlpZiAocmVnaXN0
-ZXJfZnJhbWVidWZmZXIoaW5mbykgPCAwKSB7DQo+ID4gKwkJcmV0ID0gLUVJTlZBTDsNCj4gDQo+
-IGRpdHRvDQpbQWxpc29uIFdhbmddIEkgd2lsbCBmaXggaW4gbmV4dCB2ZXJzaW9uLg0KPiANCj4g
-PiArc3RhdGljIGlycXJldHVybl90IGZzbF9kY3VfaXJxKGludCBpcnEsIHZvaWQgKmRldl9pZCkg
-ew0KPiA+ICsJc3RydWN0IGRjdV9mYl9kYXRhICpkY3VmYiA9IGRldl9pZDsNCj4gPiArCXVuc2ln
-bmVkIGludCBzdGF0dXMgPSByZWFkbChkY3VmYi0+cmVnX2Jhc2UgKyBEQ1VfSU5UX1NUQVRVUyk7
-DQo+ID4gKwl1MzIgZGN1X21vZGU7DQo+ID4gKw0KPiA+ICsJaWYgKHN0YXR1cykgew0KPiANCj4g
-U2F2ZSBpbmRlbmRhdGlvbiBsZXZlbCBieSBiYWlsaW5nIG91dCBlYXJseS4NCltBbGlzb24gV2Fu
-Z10gV2hhdCBkbyB5b3UgbWVhbj8NCj4gDQo+ID4gKwkJaWYgKHN0YXR1cyAmIERDVV9JTlRfU1RB
-VFVTX1VORFJVTikgew0KPiA+ICsJCQlkY3VfbW9kZSA9IHJlYWRsKGRjdWZiLT5yZWdfYmFzZSAr
-IERDVV9EQ1VfTU9ERSk7DQo+ID4gKwkJCWRjdV9tb2RlICY9IH5EQ1VfTU9ERV9EQ1VfTU9ERV9N
-QVNLOw0KPiA+ICsJCQl3cml0ZWwoZGN1X21vZGUgfCBEQ1VfTU9ERV9EQ1VfTU9ERShEQ1VfTU9E
-RV9PRkYpLA0KPiA+ICsJCQkJZGN1ZmItPnJlZ19iYXNlICsgRENVX0RDVV9NT0RFKTsNCj4gPiAr
-CQkJdWRlbGF5KDEpOw0KPiA+ICsJCQl3cml0ZWwoZGN1X21vZGUgfCBEQ1VfTU9ERV9EQ1VfTU9E
-RShEQ1VfTU9ERV9OT1JNQUwpLA0KPiA+ICsJCQkJZGN1ZmItPnJlZ19iYXNlICsgRENVX0RDVV9N
-T0RFKTsNCj4gPiArCQl9DQo+ID4gKwkJd3JpdGVsKHN0YXR1cywgZGN1ZmItPnJlZ19iYXNlICsg
-RENVX0lOVF9TVEFUVVMpOw0KPiA+ICsJCXJldHVybiBJUlFfSEFORExFRDsNCj4gPiArCX0NCj4g
-PiArCXJldHVybiBJUlFfTk9ORTsNCj4gPiArfQ0KPiA+ICsNCj4gPiArCWlmIChJU19FUlIodGNv
-bl9jbGspKSB7DQo+ID4gKwkJcmV0ID0gUFRSX0VSUih0Y29uX2Nsayk7DQo+ID4gKwkJZ290byBm
-YWlsZWRfZ2V0Y2xvY2s7DQo+ID4gKwl9DQo+ID4gKwljbGtfcHJlcGFyZV9lbmFibGUodGNvbl9j
-bGspOw0KPiA+ICsNCj4gPiArCXRjb25fcmVnID0gb2ZfaW9tYXAodGNvbl9ucCwgMCk7DQo+IA0K
-PiBVc2UgZGV2bV8qDQpbQWxpc29uIFdhbmddIE9rLg0KPiANCj4gPiArCWRjdWZiLT5pcnEgPSBw
-bGF0Zm9ybV9nZXRfaXJxKHBkZXYsIDApOw0KPiA+ICsJaWYgKCFkY3VmYi0+aXJxKSB7DQo+ID4g
-KwkJcmV0ID0gLUVJTlZBTDsNCj4gPiArCQlnb3RvIGZhaWxlZF9nZXRpcnE7DQo+ID4gKwl9DQo+
-ID4gKw0KPiA+ICsJcmV0ID0gcmVxdWVzdF9pcnEoZGN1ZmItPmlycSwgZnNsX2RjdV9pcnEsIDAs
-IERSSVZFUl9OQU1FLCBkY3VmYik7DQo+IA0KPiBVc2UgZGV2bV9yZXF1ZXN0X2lycQ0KW0FsaXNv
-biBXYW5nXSBPay4NCj4gDQo+ID4gKwlpZiAocmV0KSB7DQo+ID4gKwkJZGV2X2VycigmcGRldi0+
-ZGV2LCAiY291bGQgbm90IHJlcXVlc3QgaXJxXG4iKTsNCj4gPiArCQlnb3RvIGZhaWxlZF9yZXF1
-ZXN0aXJxOw0KPiA+ICsJfQ0KPiA+ICsNCj4gPiArCS8qIFB1dCBUQ09OIGluIGJ5cGFzcyBtb2Rl
-LCBzbyB0aGUgaW5wdXQgc2lnbmFscyBmcm9tIERDVSBhcmUNCj4gcGFzc2VkDQo+ID4gKwkgKiB0
-aHJvdWdoIFRDT04gdW5jaGFuZ2VkICovDQo+ID4gKwlyZXQgPSBieXBhc3NfdGNvbihwZGV2LT5k
-ZXYub2Zfbm9kZSk7DQo+ID4gKwlpZiAocmV0KSB7DQo+ID4gKwkJZGV2X2VycigmcGRldi0+ZGV2
-LCAiY291bGQgbm90IGJ5cGFzcyBUQ09OXG4iKTsNCj4gPiArCQlnb3RvIGZhaWxlZF9ieXBhc3N0
-Y29uOw0KPiA+ICsJfQ0KPiA+ICsNCj4gPiArCWRjdWZiLT5jbGsgPSBkZXZtX2Nsa19nZXQoJnBk
-ZXYtPmRldiwgImRjdSIpOw0KPiA+ICsJaWYgKElTX0VSUihkY3VmYi0+Y2xrKSkgew0KPiA+ICsJ
-CWRldl9lcnIoJnBkZXYtPmRldiwgImNvdWxkIG5vdCBnZXQgY2xvY2tcbiIpOw0KPiA+ICsJCWdv
-dG8gZmFpbGVkX2dldGNsb2NrOw0KPiANCj4gWW91IHdpbGwgcmV0dXJuIDAgaGVyZS4NCltBbGlz
-b24gV2FuZ10gWW91IGFyZSByaWdodCwgSSB3aWxsIGZpeCBpdCBpbiBuZXh0IHZlcnNpb24uDQo+
-IA0KPiA+ICsJfQ0KPiA+ICsJY2xrX3ByZXBhcmVfZW5hYmxlKGRjdWZiLT5jbGspOw0KPiA+ICsN
-Cj4gPiArCWZvciAoaSA9IDA7IGkgPCBBUlJBWV9TSVpFKGRjdWZiLT5mc2xfZGN1X2luZm8pOyBp
-KyspIHsNCj4gPiArCQlkY3VmYi0+ZnNsX2RjdV9pbmZvW2ldID0NCj4gPiArCQkJZnJhbWVidWZm
-ZXJfYWxsb2Moc2l6ZW9mKHN0cnVjdCBtZmJfaW5mbyksICZwZGV2LQ0KPiA+ZGV2KTsNCj4gPiAr
-CQlpZiAoIWRjdWZiLT5mc2xfZGN1X2luZm9baV0pIHsNCj4gPiArCQkJcmV0ID0gRU5PTUVNOw0K
-PiANCj4gLUVOT01FTQ0KPiANCj4gPiArZmFpbGVkX2FsbG9jX2ZyYW1lYnVmZmVyOg0KPiA+ICtm
-YWlsZWRfZ2V0Y2xvY2s6DQo+ID4gK2ZhaWxlZF9ieXBhc3N0Y29uOg0KPiA+ICsJZnJlZV9pcnEo
-ZGN1ZmItPmlycSwgZGN1ZmIpOw0KPiA+ICtmYWlsZWRfcmVxdWVzdGlycToNCj4gPiArZmFpbGVk
-X2dldGlycToNCj4gPiArCWlvdW5tYXAoZGN1ZmItPnJlZ19iYXNlKTsNCj4gDQo+IFlvdSB1c2Vk
-IGRldm1faW9yZW1hcCwgc28gZHJvcCB0aGlzLg0KW0FsaXNvbiBXYW5nXSBPay4NCj4gDQo+ID4g
-K2ZhaWxlZF9pb3JlbWFwOg0KPiA+ICsJa2ZyZWUoZGN1ZmIpOw0KPiANCj4gVGhpcyBpcyBhbGxv
-Y2F0ZWQgd2l0aCBkZXZtXyouIERyb3AgdGhpcy4NCltBbGlzb24gV2FuZ10gT2suDQoNClRoYW5r
-cyBmb3IgeW91ciBjb21tZW50cy4NCg0KDQpCZXN0IFJlZ2FyZHMsDQpBbGlzb24gV2FuZw0KDQoN
-Cg=
+On Mon, Aug 05, 2013 at 09:51:40AM +0000, Wang Huan-B18965 wrote:
+> Hi, Sascha,
+> 
+> > On Fri, Jul 12, 2013 at 02:07:55PM +0800, Alison Wang wrote:
+> > > The Display Controller Unit (DCU) module is a system master that
+> > > fetches graphics stored in internal or external memory and displays
+> > > them on a TFT LCD panel. A wide range of panel sizes is supported and
+> > > the timing of the interface signals is highly configurable.
+> > > Graphics are read directly from memory and then blended in real-time,
+> > > which allows for dynamic content creation with minimal CPU
+> > intervention.
+> > 
+> > Only a review of the code inline.
+> > 
+> > Maybe the real question is whether we want to introduce another
+> > framebuffer driver at all instead of making it a DRM driver.
+> [Alison Wang] I think DCU module is more suitable to be designed as a framebuffer driver than a DRM driver. Just like DIU framebuffer driver for PowerPC.
+> > 
+> > > +
+> > > +#define DRIVER_NAME			"fsl-dcu-fb"
+> > > +
+> > > +#define DCU_DCU_MODE			0x0010
+> > > +#define DCU_MODE_BLEND_ITER(x)		(x << 20)
+> > 
+> > What's the result of DCU_MODE_BLEND_ITER(1 + 1)?
+> [Alison Wang] Is it really necessary? I don't use this macro like DCU_MODE_BLEND_ITER(1 + 1), just use DCU_MODE_BLEND_ITER(2).
 
+<irony>
+No it's not necessary. We can just add incorrect macros everywhere and
+fix them as necessary after a long bug squashing session
+</irony>
+
+YES! This is necessary.
+
+> > > +	return 0;
+> > > +}
+> > > +
+> > > +static int calc_div_ratio(struct fb_info *info) {
+> > 
+> > Use a consistent namespace for function names (fsl_dcu_)
+> [Alison Wang] Is it necessary to use a consistent namespace for this generic function? I think it is necessary to use a consistent namespace (fsl_dcu_) for the function names in structure fsl_dcu_ops.
+
+This function calculates some divider out of a struct fb_info. This is
+by no means generic.
+
+> > > +		if (copy_to_user(buf, &alpha, sizeof(alpha)))
+> > > +			return -EFAULT;
+> > > +		break;
+> > > +	case MFB_SET_ALPHA:
+> > > +		if (copy_from_user(&alpha, buf, sizeof(alpha)))
+> > > +			return -EFAULT;
+> > > +		mfbi->blend = 1;
+> > > +		mfbi->alpha = alpha;
+> > > +		fsl_dcu_set_par(info);
+> > > +		break;
+> > 
+> > Is it still state of the art to introduce ioctls in the fb framework
+> > without any kind of documentation?
+> [Alison Wang] Do you mean I need to add a documentation in Documentation/fb/?
+
+This was more a question to the fb maintainers.
+
+> > > +static irqreturn_t fsl_dcu_irq(int irq, void *dev_id) {
+> > > +	struct dcu_fb_data *dcufb = dev_id;
+> > > +	unsigned int status = readl(dcufb->reg_base + DCU_INT_STATUS);
+> > > +	u32 dcu_mode;
+> > > +
+> > > +	if (status) {
+> > 
+> > Save indendation level by bailing out early.
+> [Alison Wang] What do you mean?
+
+
+Instead of doing:
+
+	if (bla) {
+		dothis();
+		dothat();
+		return;
+	}
+
+	return;
+
+it's easier to read:
+
+	if (!bla)
+		return;
+
+	dothis();
+	dothat();
+	return;
+
+Note that dothis() and dothat() are one indentation level to the left
+and thus have more space per line.
+
+Sascha
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

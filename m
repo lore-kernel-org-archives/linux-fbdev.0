@@ -1,71 +1,108 @@
-From: Alison Wang <b18965@freescale.com>
-Date: Thu, 15 Aug 2013 08:01:50 +0000
-Subject: [PATCH v3 1/5] ARM: dts: vf610: Add DCU and TCON nodes
-Message-Id: <1376553714-25922-2-git-send-email-b18965@freescale.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Mon, 05 Aug 2013 22:02:37 +0000
+Subject: [PATCH v3 18/20] video: da8xx-fb: make clock naming consistent
+Message-Id: <1375740159-1045-19-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376553714-25922-1-git-send-email-b18965@freescale.com>
-In-Reply-To: <1376553714-25922-1-git-send-email-b18965@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-This patch adds DCU and TCON nodes in SoC level DTS for Freescale Vybrid VF610.
-It also removes useless pin for DCU0 pinctrl.
+Clean up the code, so that the names of the various clock variables
+are consistent to it is clear what variable is associated with what
+clock.
 
-Signed-off-by: Alison Wang <b18965@freescale.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
-Changes in v3: None
-Changes in v2: None
+ drivers/video/da8xx-fb.c |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
 
- arch/arm/boot/dts/vf610.dtsi | 19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/boot/dts/vf610.dtsi b/arch/arm/boot/dts/vf610.dtsi
-index 67d929c..145e1f4 100644
---- a/arch/arm/boot/dts/vf610.dtsi
-+++ b/arch/arm/boot/dts/vf610.dtsi
-@@ -140,6 +140,14 @@
- 				clock-names = "pit";
- 			};
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index dfe7572..8c0ca11 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -177,7 +177,7 @@ struct da8xx_fb_par {
+ #ifdef CONFIG_CPU_FREQ
+ 	struct notifier_block	freq_transition;
+ #endif
+-	unsigned int		lcd_fck_rate;
++	unsigned int		lcdc_clk_rate;
+ 	void (*panel_power_ctrl)(int);
+ 	u32 pseudo_palette[16];
+ 	struct fb_videomode	mode;
+@@ -693,7 +693,7 @@ static int da8xx_fb_config_clk_divider(struct da8xx_fb_par *par,
+ {
+ 	int ret;
  
-+			tcon0: tcon@4003d000 {
-+				compatible = "fsl,vf610-tcon";
-+				reg = <0x4003d000 0x1000>;
-+				clocks = <&clks VF610_CLK_TCON0>;
-+				clock-names = "tcon";
-+				status = "disabled";
-+			};
-+
- 			wdog@4003e000 {
- 				compatible = "fsl,vf610-wdt", "fsl,imx21-wdt";
- 				reg = <0x4003e000 0x1000>;
-@@ -169,7 +177,6 @@
- 				dcu0 {
- 					pinctrl_dcu0_1: dcu0grp_1 {
- 						fsl,pins = <
--						VF610_PAD_PTB8__GPIO_30		0x42
- 						VF610_PAD_PTE0__DCU0_HSYNC	0x42
- 						VF610_PAD_PTE1__DCU0_VSYNC	0x42
- 						VF610_PAD_PTE2__DCU0_PCLK	0x42
-@@ -395,6 +402,16 @@
- 				reg = <0x40050000 0x1000>;
- 			};
+-	if (par->lcd_fck_rate != lcdc_clk_rate) {
++	if (par->lcdc_clk_rate != lcdc_clk_rate) {
+ 		ret = clk_set_rate(par->lcdc_clk, lcdc_clk_rate);
+ 		if (IS_ERR_VALUE(ret)) {
+ 			dev_err(par->dev,
+@@ -701,7 +701,7 @@ static int da8xx_fb_config_clk_divider(struct da8xx_fb_par *par,
+ 				lcdc_clk_rate);
+ 			return ret;
+ 		}
+-		par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
++		par->lcdc_clk_rate = clk_get_rate(par->lcdc_clk);
+ 	}
  
-+			dcu0: dcu@40058000 {
-+				compatible = "fsl,vf610-dcu";
-+				reg = <0x40058000 0x1200>;
-+				interrupts = <0 30 0x04>;
-+				clocks = <&clks VF610_CLK_DCU0>;
-+				clock-names = "dcu";
-+				tcon-controller = <&tcon0>;
-+				status = "disabled";
-+			};
-+
- 			i2c0: i2c@40066000 {
- 				#address-cells = <1>;
- 				#size-cells = <0>;
+ 	/* Configure the LCD clock divisor. */
+@@ -723,7 +723,7 @@ static unsigned int da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
+ 
+ 	pixclock = PICOS2KHZ(pixclock) * 1000;
+ 
+-	*lcdc_clk_rate = par->lcd_fck_rate;
++	*lcdc_clk_rate = par->lcdc_clk_rate;
+ 
+ 	if (pixclock < (*lcdc_clk_rate / CLK_MAX_DIV)) {
+ 		*lcdc_clk_rate = clk_round_rate(par->lcdc_clk,
+@@ -1031,8 +1031,8 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
+ 
+ 	par = container_of(nb, struct da8xx_fb_par, freq_transition);
+ 	if (val = CPUFREQ_POSTCHANGE) {
+-		if (par->lcd_fck_rate != clk_get_rate(par->lcdc_clk)) {
+-			par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
++		if (par->lcdc_clk_rate != clk_get_rate(par->lcdc_clk)) {
++			par->lcdc_clk_rate = clk_get_rate(par->lcdc_clk);
+ 			lcd_disable_raster(DA8XX_FRAME_WAIT);
+ 			da8xx_fb_calc_config_clk_divider(par, &par->mode);
+ 			if (par->blank = FB_BLANK_UNBLANK)
+@@ -1327,8 +1327,8 @@ static int fb_probe(struct platform_device *device)
+ 	struct lcd_ctrl_config *lcd_cfg;
+ 	struct fb_videomode *lcdc_info;
+ 	struct fb_info *da8xx_fb_info;
+-	struct clk *fb_clk = NULL;
+ 	struct da8xx_fb_par *par;
++	struct clk *tmp_lcdc_clk;
+ 	int ret;
+ 	unsigned long ulcm;
+ 
+@@ -1346,10 +1346,10 @@ static int fb_probe(struct platform_device *device)
+ 	if (IS_ERR(da8xx_fb_reg_base))
+ 		return PTR_ERR(da8xx_fb_reg_base);
+ 
+-	fb_clk = devm_clk_get(&device->dev, "fck");
+-	if (IS_ERR(fb_clk)) {
++	tmp_lcdc_clk = devm_clk_get(&device->dev, "fck");
++	if (IS_ERR(tmp_lcdc_clk)) {
+ 		dev_err(&device->dev, "Can not get device clock\n");
+-		return PTR_ERR(fb_clk);
++		return PTR_ERR(tmp_lcdc_clk);
+ 	}
+ 
+ 	pm_runtime_enable(&device->dev);
+@@ -1389,8 +1389,8 @@ static int fb_probe(struct platform_device *device)
+ 
+ 	par = da8xx_fb_info->par;
+ 	par->dev = &device->dev;
+-	par->lcdc_clk = fb_clk;
+-	par->lcd_fck_rate = clk_get_rate(fb_clk);
++	par->lcdc_clk = tmp_lcdc_clk;
++	par->lcdc_clk_rate = clk_get_rate(par->lcdc_clk);
+ 	if (fb_pdata->panel_power_ctrl) {
+ 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
+ 		par->panel_power_ctrl(1);
 -- 
-1.8.0
-
+1.7.0.4
 

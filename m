@@ -1,93 +1,97 @@
 From: Darren Etheridge <detheridge@ti.com>
-Date: Mon, 05 Aug 2013 22:02:38 +0000
-Subject: [PATCH v3 19/20] video: da8xx-fb: let compiler decide what to inline
-Message-Id: <1375740159-1045-20-git-send-email-detheridge@ti.com>
+Date: Mon, 05 Aug 2013 22:02:35 +0000
+Subject: [PATCH v3 16/20] video: da8xx-fb: reorganize panel detection
+Message-Id: <1375740159-1045-17-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Remove use of explicit inline compiler directive and let the compiler
-make the decision as per Documentation/CodingStyle.
+From: Afzal Mohammed <afzal@ti.com>
 
+Move panel detection to a separate function, this helps in readability
+as well as makes DT support cleaner.
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
 Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- drivers/video/da8xx-fb.c |   17 ++++++++---------
- 1 files changed, 8 insertions(+), 9 deletions(-)
+ drivers/video/da8xx-fb.c |   42 ++++++++++++++++++++++++++----------------
+ 1 files changed, 26 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 8c0ca11..ea9771f 100644
+index dec2777..d8b295a 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -141,12 +141,12 @@ static irq_handler_t lcdc_irq_handler;
- static wait_queue_head_t frame_done_wq;
- static int frame_done_flag;
- 
--static inline unsigned int lcdc_read(unsigned int addr)
-+static unsigned int lcdc_read(unsigned int addr)
- {
- 	return (unsigned int)__raw_readl(da8xx_fb_reg_base + (addr));
- }
- 
--static inline void lcdc_write(unsigned int val, unsigned int addr)
-+static void lcdc_write(unsigned int val, unsigned int addr)
- {
- 	__raw_writel(val, da8xx_fb_reg_base + (addr));
- }
-@@ -245,13 +245,13 @@ static struct fb_videomode known_lcd_panels[] = {
- 	},
+@@ -1253,6 +1253,27 @@ static struct fb_ops da8xx_fb_ops = {
+ 	.fb_blank = cfb_blank,
  };
  
--static inline bool da8xx_fb_is_raster_enabled(void)
-+static bool da8xx_fb_is_raster_enabled(void)
++static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
++{
++	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
++	struct fb_videomode *lcdc_info;
++	int i;
++
++	for (i = 0, lcdc_info = known_lcd_panels;
++		i < ARRAY_SIZE(known_lcd_panels); i++, lcdc_info++) {
++		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
++			break;
++	}
++
++	if (i = ARRAY_SIZE(known_lcd_panels)) {
++		dev_err(&dev->dev, "no panel found\n");
++		return NULL;
++	}
++	dev_info(&dev->dev, "found %s panel\n", lcdc_info->name);
++
++	return lcdc_info;
++}
++
+ static int fb_probe(struct platform_device *device)
  {
- 	return !!(lcdc_read(LCD_RASTER_CTRL_REG) & LCD_RASTER_ENABLE);
- }
+ 	struct da8xx_lcdc_platform_data *fb_pdata @@ -1263,7 +1284,7 @@ static int fb_probe(struct platform_device *device)
+ 	struct fb_info *da8xx_fb_info;
+ 	struct clk *fb_clk = NULL;
+ 	struct da8xx_fb_par *par;
+-	int ret, i;
++	int ret;
+ 	unsigned long ulcm;
  
- /* Enable the Raster Engine of the LCD Controller */
--static inline void lcd_enable_raster(void)
-+static void lcd_enable_raster(void)
- {
- 	u32 reg;
+ 	if (fb_pdata = NULL) {
+@@ -1271,6 +1292,10 @@ static int fb_probe(struct platform_device *device)
+ 		return -ENOENT;
+ 	}
  
-@@ -273,8 +273,7 @@ static inline void lcd_enable_raster(void)
- }
++	lcdc_info = da8xx_fb_get_videomode(device);
++	if (lcdc_info = NULL)
++		return -ENODEV;
++
+ 	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
+ 	da8xx_fb_reg_base = devm_ioremap_resource(&device->dev, lcdc_regs);
+ 	if (IS_ERR(da8xx_fb_reg_base))
+@@ -1302,21 +1327,6 @@ static int fb_probe(struct platform_device *device)
+ 		break;
+ 	}
  
- /* Disable the Raster Engine of the LCD Controller */
--static inline void lcd_disable_raster(enum da8xx_frame_complete
--					wait_for_frame_done)
-+static void lcd_disable_raster(enum da8xx_frame_complete wait_for_frame_done)
- {
- 	u32 reg;
- 	int ret;
-@@ -750,7 +749,7 @@ static int da8xx_fb_calc_config_clk_divider(struct da8xx_fb_par *par,
- 	return da8xx_fb_config_clk_divider(par, lcdc_clk_div, lcdc_clk_rate);
- }
+-	for (i = 0, lcdc_info = known_lcd_panels;
+-		i < ARRAY_SIZE(known_lcd_panels);
+-		i++, lcdc_info++) {
+-		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
+-			break;
+-	}
+-
+-	if (i = ARRAY_SIZE(known_lcd_panels)) {
+-		dev_err(&device->dev, "GLCD: No valid panel found\n");
+-		ret = -ENODEV;
+-		goto err_pm_runtime_disable;
+-	} else
+-		dev_info(&device->dev, "GLCD: Found %s panel\n",
+-					fb_pdata->type);
+-
+ 	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
  
--static inline unsigned da8xx_fb_round_clk(struct da8xx_fb_par *par,
-+static unsigned da8xx_fb_round_clk(struct da8xx_fb_par *par,
- 					  unsigned pixclock)
- {
- 	unsigned lcdc_clk_div, lcdc_clk_rate;
-@@ -1043,7 +1042,7 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
- 	return 0;
- }
- 
--static inline int lcd_da8xx_cpufreq_register(struct da8xx_fb_par *par)
-+static int lcd_da8xx_cpufreq_register(struct da8xx_fb_par *par)
- {
- 	par->freq_transition.notifier_call = lcd_da8xx_cpufreq_transition;
- 
-@@ -1051,7 +1050,7 @@ static inline int lcd_da8xx_cpufreq_register(struct da8xx_fb_par *par)
- 					 CPUFREQ_TRANSITION_NOTIFIER);
- }
- 
--static inline void lcd_da8xx_cpufreq_deregister(struct da8xx_fb_par *par)
-+static void lcd_da8xx_cpufreq_deregister(struct da8xx_fb_par *par)
- {
- 	cpufreq_unregister_notifier(&par->freq_transition,
- 				    CPUFREQ_TRANSITION_NOTIFIER);
+ 	if (!lcd_cfg) {
 -- 
 1.7.0.4
 

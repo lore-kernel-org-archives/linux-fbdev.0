@@ -1,193 +1,162 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 26 Aug 2013 08:56:32 +0000
-Subject: [PATCH 1/3] phy: Add driver for Exynos DP PHY
-Message-Id: <004001cea23a$29580400$7c080c00$%han@samsung.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Mon, 05 Aug 2013 22:02:26 +0000
+Subject: [PATCH v3 07/20] video: da8xx-fb: pix clk and clk div handling cleanup
+Message-Id: <1375740159-1045-8-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <003e01cea23a$03aac850$0b0058f0$%han@samsung.com>
-In-Reply-To: <003e01cea23a$03aac850$0b0058f0$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Kishon Vijay Abraham I' <kishon@ti.com>
-Cc: 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org, 'devicetree' <devicetree@vger.kernel.org>, 'Kukjin Kim' <kgene.kim@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Felipe Balbi' <balbi@ti.com>, 'Tomasz Figa' <t.figa@samsung.com>, 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, 'Jingoo Han' <jg1.han@samsung.com>
+To: linux-fbdev@vger.kernel.org
 
-Add a PHY provider driver for the Samsung Exynos SoC Display Port PHY.
+Based on original patch by: Afzal Mohammed <afzal@ti.com>
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-Reviewed-by: Tomasz Figa <t.figa@samsung.com>
-Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Acked-by: Felipe Balbi <balbi@ti.com>
+Use the new modedb field to store pix clk. Reorganize existing clock
+divider functions with names now corresponding to what they do, add
+common function prefix.
+
+Fix existing panel modedb pixclock to be in ps instead of Hz. This
+needed a change in the way clock divider is calculated. As modedb
+pixclock information is now in ps, override on "var" pixclock over
+modedb to var conversion is removed.
+
+v2:
+Changed pixel clock configuration to use KHZ2PICOS macro
+
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- .../devicetree/bindings/phy/samsung-phy.txt        |    7 ++
- drivers/phy/Kconfig                                |    7 ++
- drivers/phy/Makefile                               |    7 +-
- drivers/phy/phy-exynos-dp-video.c                  |  111 ++++++++++++++++++++
- 4 files changed, 129 insertions(+), 3 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/phy/samsung-phy.txt
- create mode 100644 drivers/phy/phy-exynos-dp-video.c
+ drivers/video/da8xx-fb.c |   48 +++++++++++++++++----------------------------
+ 1 files changed, 18 insertions(+), 30 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/phy/samsung-phy.txt b/Documentation/devicetree/bindings/phy/samsung-phy.txt
-new file mode 100644
-index 0000000..ee262238
---- /dev/null
-+++ b/Documentation/devicetree/bindings/phy/samsung-phy.txt
-@@ -0,0 +1,7 @@
-+Samsung EXYNOS SoC series Display Port PHY
-+-------------------------------------------------
-+
-+Required properties:
-+- compatible : should be "samsung,exynos5250-dp-video-phy";
-+- reg : offset and length of the Display Port PHY register set;
-+- #phy-cells : from the generic PHY bindings, must be 0;
-diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
-index ac239ac..fed26a0 100644
---- a/drivers/phy/Kconfig
-+++ b/drivers/phy/Kconfig
-@@ -38,4 +38,11 @@ config TWL4030_USB
- 	  This transceiver supports high and full speed devices plus,
- 	  in host mode, low speed.
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index f1d88ac..0fac1a0 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -160,7 +160,6 @@ struct da8xx_fb_par {
+ 	struct clk *lcdc_clk;
+ 	int irq;
+ 	unsigned int palette_sz;
+-	unsigned int pxl_clk;
+ 	int blank;
+ 	wait_queue_head_t	vsync_wait;
+ 	int			vsync_flag;
+@@ -201,7 +200,7 @@ static struct fb_videomode known_lcd_panels[] = {
+ 		.name           = "Sharp_LCD035Q3DG01",
+ 		.xres           = 320,
+ 		.yres           = 240,
+-		.pixclock       = 4608000,
++		.pixclock       = KHZ2PICOS(4607),
+ 		.left_margin    = 6,
+ 		.right_margin   = 8,
+ 		.upper_margin   = 2,
+@@ -216,7 +215,7 @@ static struct fb_videomode known_lcd_panels[] = {
+ 		.name           = "Sharp_LK043T1DG01",
+ 		.xres           = 480,
+ 		.yres           = 272,
+-		.pixclock       = 7833600,
++		.pixclock       = KHZ2PICOS(7833),
+ 		.left_margin    = 2,
+ 		.right_margin   = 2,
+ 		.upper_margin   = 2,
+@@ -231,7 +230,7 @@ static struct fb_videomode known_lcd_panels[] = {
+ 		.name           = "SP10Q010",
+ 		.xres           = 320,
+ 		.yres           = 240,
+-		.pixclock       = 7833600,
++		.pixclock       = KHZ2PICOS(7833),
+ 		.left_margin    = 10,
+ 		.right_margin   = 10,
+ 		.upper_margin   = 10,
+@@ -680,13 +679,14 @@ static void da8xx_fb_lcd_reset(void)
+ 	}
+ }
  
-+config PHY_EXYNOS_DP_VIDEO
-+	tristate "EXYNOS SoC series Display Port PHY driver"
-+	depends on OF
-+	select GENERIC_PHY
-+	help
-+	  Support for Display Port PHY found on Samsung EXYNOS SoCs.
-+
- endmenu
-diff --git a/drivers/phy/Makefile b/drivers/phy/Makefile
-index 0dd8a98..433e685 100644
---- a/drivers/phy/Makefile
-+++ b/drivers/phy/Makefile
-@@ -2,6 +2,7 @@
- # Makefile for the phy drivers.
- #
+-static void lcd_calc_clk_divider(struct da8xx_fb_par *par)
++static inline unsigned da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
++						 unsigned pixclock)
+ {
+-	unsigned int lcd_clk, div;
+-
+-	lcd_clk = clk_get_rate(par->lcdc_clk);
+-	div = lcd_clk / par->pxl_clk;
++	return par->lcd_fck_rate / (PICOS2KHZ(pixclock) * 1000);
++}
  
--obj-$(CONFIG_GENERIC_PHY)	+= phy-core.o
--obj-$(CONFIG_OMAP_USB2)		+= phy-omap-usb2.o
--obj-$(CONFIG_TWL4030_USB)	+= phy-twl4030-usb.o
-+obj-$(CONFIG_GENERIC_PHY)		+= phy-core.o
-+obj-$(CONFIG_OMAP_USB2)			+= phy-omap-usb2.o
-+obj-$(CONFIG_TWL4030_USB)		+= phy-twl4030-usb.o
-+obj-$(CONFIG_PHY_EXYNOS_DP_VIDEO)	+= phy-exynos-dp-video.o
-diff --git a/drivers/phy/phy-exynos-dp-video.c b/drivers/phy/phy-exynos-dp-video.c
-new file mode 100644
-index 0000000..1dbe6ce
---- /dev/null
-+++ b/drivers/phy/phy-exynos-dp-video.c
-@@ -0,0 +1,111 @@
-+/*
-+ * Samsung EXYNOS SoC series Display Port PHY driver
-+ *
-+ * Copyright (C) 2013 Samsung Electronics Co., Ltd.
-+ * Author: Jingoo Han <jg1.han@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/phy/phy.h>
-+#include <linux/platform_device.h>
-+
-+/* DPTX_PHY_CONTROL register */
-+#define EXYNOS_DPTX_PHY_ENABLE		(1 << 0)
-+
-+struct exynos_dp_video_phy {
-+	void __iomem *regs;
-+};
-+
-+static int __set_phy_state(struct exynos_dp_video_phy *state, unsigned int on)
++static inline void da8xx_fb_config_clk_divider(unsigned div)
 +{
-+	u32 reg;
-+
-+	reg = readl(state->regs);
-+	if (on)
-+		reg |= EXYNOS_DPTX_PHY_ENABLE;
-+	else
-+		reg &= ~EXYNOS_DPTX_PHY_ENABLE;
-+	writel(reg, state->regs);
-+
-+	return 0;
+ 	/* Configure the LCD clock divisor. */
+ 	lcdc_write(LCD_CLK_DIVISOR(div) |
+ 			(LCD_RASTER_MODE & 0x1), LCD_CTRL_REG);
+@@ -694,7 +694,14 @@ static void lcd_calc_clk_divider(struct da8xx_fb_par *par)
+ 	if (lcd_revision = LCD_VERSION_2)
+ 		lcdc_write(LCD_V2_DMA_CLK_EN | LCD_V2_LIDD_CLK_EN |
+ 				LCD_V2_CORE_CLK_EN, LCD_CLK_ENABLE_REG);
 +}
 +
-+static int exynos_dp_video_phy_power_on(struct phy *phy)
++static inline void da8xx_fb_calc_config_clk_divider(struct da8xx_fb_par *par,
++						    struct fb_videomode *mode)
 +{
-+	struct exynos_dp_video_phy *state = phy_get_drvdata(phy);
-+
-+	return __set_phy_state(state, 1);
-+}
-+
-+static int exynos_dp_video_phy_power_off(struct phy *phy)
-+{
-+	struct exynos_dp_video_phy *state = phy_get_drvdata(phy);
-+
-+	return __set_phy_state(state, 0);
-+}
-+
-+static struct phy_ops exynos_dp_video_phy_ops = {
-+	.power_on	= exynos_dp_video_phy_power_on,
-+	.power_off	= exynos_dp_video_phy_power_off,
-+	.owner		= THIS_MODULE,
-+};
-+
-+static int exynos_dp_video_phy_probe(struct platform_device *pdev)
-+{
-+	struct exynos_dp_video_phy *state;
-+	struct device *dev = &pdev->dev;
-+	struct resource *res;
-+	struct phy_provider *phy_provider;
-+	struct phy *phy;
-+
-+	state = devm_kzalloc(dev, sizeof(*state), GFP_KERNEL);
-+	if (!state)
-+		return -ENOMEM;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+
-+	state->regs = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(state->regs))
-+		return PTR_ERR(state->regs);
-+
-+	phy_provider = devm_of_phy_provider_register(dev, of_phy_simple_xlate);
-+	if (IS_ERR(phy_provider))
-+		return PTR_ERR(phy_provider);
-+
-+	phy = devm_phy_create(dev, &exynos_dp_video_phy_ops, NULL);
-+	if (IS_ERR(phy)) {
-+		dev_err(dev, "failed to create Display Port PHY\n");
-+		return PTR_ERR(phy);
-+	}
-+	phy_set_drvdata(phy, state);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id exynos_dp_video_phy_of_match[] = {
-+	{ .compatible = "samsung,exynos5250-dp-video-phy" },
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(of, exynos_dp_video_phy_of_match);
-+
-+static struct platform_driver exynos_dp_video_phy_driver = {
-+	.probe	= exynos_dp_video_phy_probe,
-+	.driver = {
-+		.name	= "exynos-dp-video-phy",
-+		.owner	= THIS_MODULE,
-+		.of_match_table	= exynos_dp_video_phy_of_match,
-+	}
-+};
-+module_platform_driver(exynos_dp_video_phy_driver);
-+
-+MODULE_AUTHOR("Jingoo Han <jg1.han@samsung.com>");
-+MODULE_DESCRIPTION("Samsung EXYNOS SoC DP PHY driver");
-+MODULE_LICENSE("GPL v2");
++	unsigned div = da8xx_fb_calc_clk_divider(par, mode->pixclock);
+ 
++	da8xx_fb_config_clk_divider(div);
+ }
+ 
+ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+@@ -705,8 +712,7 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+ 
+ 	da8xx_fb_lcd_reset();
+ 
+-	/* Calculate the divider */
+-	lcd_calc_clk_divider(par);
++	da8xx_fb_calc_config_clk_divider(par, panel);
+ 
+ 	if (panel->sync & FB_SYNC_CLK_INVERT)
+ 		lcdc_write((lcdc_read(LCD_RASTER_TIMING_2_REG) |
+@@ -969,7 +975,7 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
+ 		if (par->lcd_fck_rate != clk_get_rate(par->lcdc_clk)) {
+ 			par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
+ 			lcd_disable_raster(true);
+-			lcd_calc_clk_divider(par);
++			da8xx_fb_calc_config_clk_divider(par, &par->mode);
+ 			if (par->blank = FB_BLANK_UNBLANK)
+ 				lcd_enable_raster();
+ 		}
+@@ -1195,22 +1201,6 @@ static struct fb_ops da8xx_fb_ops = {
+ 	.fb_blank = cfb_blank,
+ };
+ 
+-/* Calculate and return pixel clock period in pico seconds */
+-static unsigned int da8xxfb_pixel_clk_period(struct da8xx_fb_par *par)
+-{
+-	unsigned int lcd_clk, div;
+-	unsigned int configured_pix_clk;
+-	unsigned long long pix_clk_period_picosec = 1000000000000ULL;
+-
+-	lcd_clk = clk_get_rate(par->lcdc_clk);
+-	div = lcd_clk / par->pxl_clk;
+-	configured_pix_clk = (lcd_clk / div);
+-
+-	do_div(pix_clk_period_picosec, configured_pix_clk);
+-
+-	return pix_clk_period_picosec;
+-}
+-
+ static int fb_probe(struct platform_device *device)
+ {
+ 	struct da8xx_lcdc_platform_data *fb_pdata @@ -1303,7 +1293,6 @@ static int fb_probe(struct platform_device *device)
+ 	par = da8xx_fb_info->par;
+ 	par->lcdc_clk = fb_clk;
+ 	par->lcd_fck_rate = clk_get_rate(fb_clk);
+-	par->pxl_clk = lcdc_info->pixclock;
+ 	if (fb_pdata->panel_power_ctrl) {
+ 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
+ 		par->panel_power_ctrl(1);
+@@ -1368,7 +1357,6 @@ static int fb_probe(struct platform_device *device)
+ 	da8xx_fb_var.grayscale  	    lcd_cfg->panel_shade = MONOCHROME ? 1 : 0;
+ 	da8xx_fb_var.bits_per_pixel = lcd_cfg->bpp;
+-	da8xx_fb_var.pixclock = da8xxfb_pixel_clk_period(par);
+ 
+ 	/* Initialize fbinfo */
+ 	da8xx_fb_info->flags = FBINFO_FLAG_DEFAULT;
 -- 
-1.7.10.4
-
+1.7.0.4
 

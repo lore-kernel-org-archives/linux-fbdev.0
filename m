@@ -1,68 +1,169 @@
-From: Felipe Balbi <balbi@ti.com>
-Date: Tue, 20 Aug 2013 12:26:32 +0000
-Subject: Re: [PATCH 01/15] drivers: phy: add generic PHY framework
-Message-Id: <20130820122632.GS26587@radagast>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="MET8MpPxp2u2c48q"
+From: Rob Clark <robdclark@gmail.com>
+Date: Mon, 05 Aug 2013 18:07:12 +0000
+Subject: Re: [RFC 0/1] drm/pl111: Initial drm/kms driver for pl111
+Message-Id: <CAF6AEGsyKk_G-R-OX_YcgYFDgTEmCy9Vf2LV1pAOV0452QKSww@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130720220006.GA7977@kroah.com> <520A2100.6000709@ti.com>
- <520AB0F0.8010106@gmail.com> <2128883.KpgODjXPJQ@flatron>
- <520B9C9E.8010002@ti.com> <5211ACE9.3040302@ti.com>
-In-Reply-To: <5211ACE9.3040302@ti.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <1374772648-19151-1-git-send-email-tom.cooksey@arm.com>
+	<CAF6AEGtspnhSGNM4_QQubVfOkZ1Gh1-Z3iyHOLBPVWuqRy81ew@mail.gmail.com>
+	<51f29ccd.f014b40a.34cc.ffffca2aSMTPIN_ADDED_BROKEN@mx.google.com>
+	<CAF6AEGvFPGueM_LHVij9KFzM6NJySHCzmaLstuzZkK5GwP+6gQ@mail.gmail.com>
+	<51ffdc7e.06b8b40a.2cc8.0fe0SMTPIN_ADDED_BROKEN@mx.google.com>
+In-Reply-To: <51ffdc7e.06b8b40a.2cc8.0fe0SMTPIN_ADDED_BROKEN@mx.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tom Cooksey <tom.cooksey@arm.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Pawel Moll <Pawel.Moll@arm.com>, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org, linaro-mm-sig@lists.linaro.org
 
---MET8MpPxp2u2c48q
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Aug 5, 2013 at 1:10 PM, Tom Cooksey <tom.cooksey@arm.com> wrote:
+> Hi Rob,
+>
+> +linux-media, +linaro-mm-sig for discussion of video/camera
+> buffer constraints...
+>
+>
+>> On Fri, Jul 26, 2013 at 11:58 AM, Tom Cooksey <tom.cooksey@arm.com>
+>> wrote:
+>> >> >  * It abuses flags parameter of DRM_IOCTL_MODE_CREATE_DUMB to also
+>> >> >    allocate buffers for the GPU. Still not sure how to resolve
+>> >> >    this as we don't use DRM for our GPU driver.
+>> >>
+>> >> any thoughts/plans about a DRM GPU driver?  Ideally long term (esp.
+>> >> once the dma-fence stuff is in place), we'd have gpu-specific drm
+>> >> (gpu-only, no kms) driver, and SoC/display specific drm/kms driver,
+>> >> using prime/dmabuf to share between the two.
+>> >
+>> > The "extra" buffers we were allocating from armsoc DDX were really
+>> > being allocated through DRM/GEM so we could get an flink name
+>> > for them and pass a reference to them back to our GPU driver on
+>> > the client side. If it weren't for our need to access those
+>> > extra off-screen buffers with the GPU we wouldn't need to
+>> > allocate them with DRM at all. So, given they are really "GPU"
+>> > buffers, it does absolutely make sense to allocate them in a
+>> > different driver to the display driver.
+>> >
+>> > However, to avoid unnecessary memcpys & related cache
+>> > maintenance ops, we'd also like the GPU to render into buffers
+>> > which are scanned out by the display controller. So let's say
+>> > we continue using DRM_IOCTL_MODE_CREATE_DUMB to allocate scan
+>> > out buffers with the display's DRM driver but a custom ioctl
+>> > on the GPU's DRM driver to allocate non scanout, off-screen
+>> > buffers. Sounds great, but I don't think that really works
+>> > with DRI2. If we used two drivers to allocate buffers, which
+>> > of those drivers do we return in DRI2ConnectReply? Even if we
+>> > solve that somehow, GEM flink names are name-spaced to a
+>> > single device node (AFAIK). So when we do a DRI2GetBuffers,
+>> > how does the EGL in the client know which DRM device owns GEM
+>> > flink name "1234"? We'd need some pretty dirty hacks.
+>>
+>> You would return the name of the display driver allocating the
+>> buffers.  On the client side you can use generic ioctls to go from
+>> flink -> handle -> dmabuf.  So the client side would end up opening
+>> both the display drm device and the gpu, but without needing to know
+>> too much about the display.
+>
+> I think the bit I was missing was that a GEM bo for a buffer imported
+> using dma_buf/PRIME can still be flink'd. So the display controller's
+> DRM driver allocates scan-out buffers via the DUMB buffer allocate
+> ioctl. Those scan-out buffers than then be exported from the
+> dispaly's DRM driver and imported into the GPU's DRM driver using
+> PRIME. Once imported into the GPU's driver, we can use flink to get a
+> name for that buffer within the GPU DRM driver's name-space to return
+> to the DRI2 client. That same namespace is also what DRI2 back-buffers
+> are allocated from, so I think that could work... Except...
+>
 
-Hi,
+(and.. the general direction is that things will move more to just use
+dmabuf directly, ie. wayland or dri3)
 
-On Mon, Aug 19, 2013 at 10:58:09AM +0530, Kishon Vijay Abraham I wrote:
-> >> So maybe let's stop solving an already solved problem and just state t=
-hat=20
-> >> you need to explicitly assign device ID to use this framework?
-> >=20
-> > Felipe,
-> > Can we have it the way I had in my v10 patch series till we find a bett=
-er way?
-> > I think this *non-dt* stuff shouldn't be blocking as most of the users =
-are dt only?
+>
+>> > Anyway, that latter case also gets quite difficult. The "GPU"
+>> > DRM driver would need to know the constraints of the display
+>> > controller when allocating buffers intended to be scanned out.
+>> > For example, pl111 typically isn't behind an IOMMU and so
+>> > requires physically contiguous memory. We'd have to teach the
+>> > GPU's DRM driver about the constraints of the display HW. Not
+>> > exactly a clean driver model. :-(
+>> >
+>> > I'm still a little stuck on how to proceed, so any ideas
+>> > would greatly appreciated! My current train of thought is
+>> > having a kind of SoC-specific DRM driver which allocates
+>> > buffers for both display and GPU within a single GEM
+>> > namespace. That SoC-specific DRM driver could then know the
+>> > constraints of both the GPU and the display HW. We could then
+>> > use PRIME to export buffers allocated with the SoC DRM driver
+>> > and import them into the GPU and/or display DRM driver.
+>>
+>> Usually if the display drm driver is allocating the buffers that might
+>> be scanned out, it just needs to have minimal knowledge of the GPU
+>> (pitch alignment constraints).  I don't think we need a 3rd device
+>> just to allocate buffers.
+>
+> While Mali can render to pretty much any buffer, there is a mild
+> performance improvement to be had if the buffer stride is aligned to
+> the AXI bus's max burst length when drawing to the buffer.
 
-I don't have a lot of things against it, but preventing driver authors
-to use PLATFORM_DEVID_AUTO just to use the framework is likely going to
-piss some people off.
+I suspect the display controllers might frequently benefit if the
+pitch is aligned to AXI burst length too..
 
-Perhaps we can start with this approach and fix things later ? At least
-it ungates all the PHY drivers which are depending on this framework
-(quite a few already). If everybody agrees with this approach, I'd be ok
-with it too.
+> So in some respects, there is a constraint on how buffers which will
+> be drawn to using the GPU are allocated. I don't really like the idea
+> of teaching the display controller DRM driver about the GPU buffer
+> constraints, even if they are fairly trivial like this. If the same
+> display HW IP is being used on several SoCs, it seems wrong somehow
+> to enforce those GPU constraints if some of those SoCs don't have a
+> GPU.
 
-cheers
+Well, I suppose you could get min_pitch_alignment from devicetree, or
+something like this..
 
---=20
-balbi
+In the end, the easy solution is just to make the display allocate to
+the worst-case pitch alignment.  In the early days of dma-buf
+discussions, we kicked around the idea of negotiating or
+programatically describing the constraints, but that didn't really
+seem like a bounded problem.
 
---MET8MpPxp2u2c48q
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+> We may also then have additional constraints when sharing buffers
+> between the display HW and video decode or even camera ISP HW.
+> Programmatically describing buffer allocation constraints is very
+> difficult and I'm not sure you can actually do it - there's some
+> pretty complex constraints out there! E.g. I believe there's a
+> platform where Y and UV planes of the reference frame need to be in
+> separate DRAM banks for real-time 1080p decode, or something like
+> that?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+yes, this was discussed.  This is different from pitch/format/size
+constraints.. it is really just a placement constraint (ie. where do
+the physical pages go).  IIRC the conclusion was to use a dummy
+devices with it's own CMA pool for attaching the Y vs UV buffers.
 
-iQIcBAEBAgAGBQJSE2B4AAoJEIaOsuA1yqREd3gP+wRMRCFi5PMZScsqh3zwf+14
-Cq/VFvWySbx+P+bh4TS9scGnTq+AaFlrrWjiYaPSWKy7teJcvSj+Y8+o+W3VVkeX
-9yzuhSbHnJzBjxqpyEzb1hqtfkiCTQc8HcH/YkIj/yoszIrr3HHz+NgTmXjpcum3
-szWpw9gPRo9AT9caOhaDU91bSc8PdZc9mBzPgw7WUfJrf008SfUmhKiOpzvNfht2
-nN/mp250zfFDZHHu5fRMWhfUH6+uVYEYM+P8IZMwA0Dvne0RYEuE7Pps8a0M9/dx
-E/RS7I7TDphIC/CtuNkaUFyHXZGg4CVSXJF42iAI0vFy9jIvoXtzgrVcxXPgGV7P
-FX0KHzGK/0k91zH/zRmVUgqXX5l7OrjzrFeh5UAYlkbhM98PoruwBmwAnDQ1z9Xy
-VWKS6N1qUOA/D3zL1HqQpQ6scXYSXmcNju4oVU6aLgxvnMK/8uLX9FwhrOeZhzdN
-HHJ7Va7l2VqYug3eq8uAvBaD/VeDnCdQem/tjQfew9P2J29pcrmVzqPRYxAylduZ
-hKs/bL5X5/Pzlj4Ox6dGYk/UKfN5ZgphUDd9TW9dagMGX/WGELPi86xsAgwXHu7R
-FPf4PeQbfkld1qj1KU+PWCFhspFVMqn/p2kb8NV/HPR/f42I82NUuGNjAFoYxbnf
-yQuryiSSHIxte8/C3LK/
-=iA/Q
------END PGP SIGNATURE-----
+> Anyway, I guess my point is that even if we solve how to allocate
+> buffers which will be shared between the GPU and display HW such that
+> both sets of constraints are satisfied, that may not be the end of
+> the story.
+>
 
---MET8MpPxp2u2c48q--
+that was part of the reason to punt this problem to userspace ;-)
+
+In practice, the kernel drivers doesn't usually know too much about
+the dimensions/format/etc.. that is really userspace level knowledge.
+There are a few exceptions when the kernel needs to know how to setup
+GTT/etc for tiled buffers, but normally this sort of information is up
+at the next level up (userspace, and drm_framebuffer in case of
+scanout).  Userspace media frameworks like GStreamer already have a
+concept of format/caps negotiation.  For non-display<->gpu sharing, I
+think this is probably where this sort of constraint negotiation
+should be handled.
+
+BR,
+-R
+
+>
+> Cheers,
+>
+> Tom
+>
+>
+>
+>
+>

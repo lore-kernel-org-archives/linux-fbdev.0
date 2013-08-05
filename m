@@ -1,97 +1,49 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 29 Aug 2013 13:31:49 +0000
-Subject: [PATCH 04/15] OMAPDSS: SDI: change regulator handling
-Message-Id: <1377783120-14001-5-git-send-email-tomi.valkeinen@ti.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Mon, 05 Aug 2013 22:02:25 +0000
+Subject: [PATCH v3 06/20] video: da8xx-fb: store clk rate even if !CPUFREQ
+Message-Id: <1375740159-1045-7-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Regulator handling for DPI and SDI is currently handled in the core.c,
-using the 'virtual' omapdss platform device. Nowadays we have proper
-devices for both DPI and SDI, and so we can handle the regulators inside
-the respective drivers.
+From: Afzal Mohammed <afzal@ti.com>
 
-This patch moves the regulator handling for SDI into sdi.c.
+store lcd clk rate always, i.e. irrespective of whether CPUFREQ is
+enabled or not. This can be used to get clk rate directly instead of
+enquiring with clock framework with clk handle every time.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- drivers/video/omap2/dss/core.c | 15 ---------------
- drivers/video/omap2/dss/dss.h  |  1 -
- drivers/video/omap2/dss/sdi.c  | 10 +++-------
- 3 files changed, 3 insertions(+), 23 deletions(-)
+ drivers/video/da8xx-fb.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index 1aeb274..a07d626 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -44,7 +44,6 @@ static struct {
- 	struct platform_device *pdev;
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index d060f14..f1d88ac 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -174,8 +174,8 @@ struct da8xx_fb_par {
+ 	unsigned int		which_dma_channel_done;
+ #ifdef CONFIG_CPU_FREQ
+ 	struct notifier_block	freq_transition;
+-	unsigned int		lcd_fck_rate;
+ #endif
++	unsigned int		lcd_fck_rate;
+ 	void (*panel_power_ctrl)(int);
+ 	u32 pseudo_palette[16];
+ 	struct fb_videomode	mode;
+@@ -1302,9 +1302,7 @@ static int fb_probe(struct platform_device *device)
  
- 	struct regulator *vdds_dsi_reg;
--	struct regulator *vdds_sdi_reg;
- 
- 	const char *default_display_name;
- } core;
-@@ -95,20 +94,6 @@ struct regulator *dss_get_vdds_dsi(void)
- 	return reg;
- }
- 
--struct regulator *dss_get_vdds_sdi(void)
--{
--	struct regulator *reg;
--
--	if (core.vdds_sdi_reg != NULL)
--		return core.vdds_sdi_reg;
--
--	reg = devm_regulator_get(&core.pdev->dev, "vdds_sdi");
--	if (!IS_ERR(reg))
--		core.vdds_sdi_reg = reg;
--
--	return reg;
--}
--
- int dss_dsi_enable_pads(int dsi_id, unsigned lane_mask)
- {
- 	struct omap_dss_board_info *board_data = core.pdev->dev.platform_data;
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 50a2362..7d97de4 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -165,7 +165,6 @@ struct platform_device;
- struct platform_device *dss_get_core_pdev(void);
- struct bus_type *dss_get_bus(void);
- struct regulator *dss_get_vdds_dsi(void);
--struct regulator *dss_get_vdds_sdi(void);
- int dss_dsi_enable_pads(int dsi_id, unsigned lane_mask);
- void dss_dsi_disable_pads(int dsi_id, unsigned lane_mask);
- int dss_set_min_bus_tput(struct device *dev, unsigned long tput);
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index 856af2e..82b64e3 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -267,14 +267,10 @@ static int sdi_init_regulator(void)
- 	if (sdi.vdds_sdi_reg)
- 		return 0;
- 
--	vdds_sdi = dss_get_vdds_sdi();
--
-+	vdds_sdi = devm_regulator_get(&sdi.pdev->dev, "vdds_sdi");
- 	if (IS_ERR(vdds_sdi)) {
--		vdds_sdi = devm_regulator_get(&sdi.pdev->dev, "vdds_sdi");
--		if (IS_ERR(vdds_sdi)) {
--			DSSERR("can't get VDDS_SDI regulator\n");
--			return PTR_ERR(vdds_sdi);
--		}
-+		DSSERR("can't get VDDS_SDI regulator\n");
-+		return PTR_ERR(vdds_sdi);
- 	}
- 
- 	sdi.vdds_sdi_reg = vdds_sdi;
+ 	par = da8xx_fb_info->par;
+ 	par->lcdc_clk = fb_clk;
+-#ifdef CONFIG_CPU_FREQ
+ 	par->lcd_fck_rate = clk_get_rate(fb_clk);
+-#endif
+ 	par->pxl_clk = lcdc_info->pixclock;
+ 	if (fb_pdata->panel_power_ctrl) {
+ 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
 -- 
-1.8.1.2
+1.7.0.4
 

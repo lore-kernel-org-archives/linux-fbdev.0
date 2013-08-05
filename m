@@ -1,70 +1,69 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 30 Aug 2013 05:52:12 +0000
-Subject: Re: [PATCH 13/15] OMAPDSS: DSS: remove legacy dss bus support
-Message-Id: <5220330C.9010704@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="71s05K2FIuRonFsIX8nX8uA1oCHGnw5PW"
+From: Darren Etheridge <detheridge@ti.com>
+Date: Mon, 05 Aug 2013 22:02:19 +0000
+Subject: [PATCH v3 00/20] video: da8xx-fb: driver enhance to support TI am335x SoC
+Message-Id: <1375740159-1045-1-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com> <1377783120-14001-14-git-send-email-tomi.valkeinen@ti.com> <521F5B80.6080802@ti.com>
-In-Reply-To: <521F5B80.6080802@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---71s05K2FIuRonFsIX8nX8uA1oCHGnw5PW
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On 29/08/13 17:32, Archit Taneja wrote:
-> On Thursday 29 August 2013 07:01 PM, Tomi Valkeinen wrote:
->> With all the old panels removed and all the old panel model APIs remov=
-ed
->> from the DSS encoders, we can now remove the custom omapdss-bus which
->> was used in the old panel model.
->>
-
->>   static void __exit omap_dss_exit(void)
->>   {
->>       omap_dss_unregister_drivers();
->> -
->> -    omap_dss_bus_unregister();
->>   }
->>
->>   module_init(omap_dss_init);
->>   module_exit(omap_dss_exit);
->=20
-> minor comment here, we could use
-> omap_dss_register_driver/unregister_driver for the module_init/exit
-> directly, the funcs omap_dss_init/ext don't seem to be doing much here.=
+Changes in v3:
+	Address the patch authorship requirements
+	Pull out the DT changes into a separate series
+	Fix an issue where FB_MODE_HELPERS was not included in build
+		but is a dependency.
+	Include the devm_ changes and error reporting that Prabhakar Lad 
+		had pushed a patch for,
+	A few more cosmetic changes
+	Add a patch to remove the use on inline from a number of functions
 
 
-Yes, that's true. I'll clean it up.
+Changes in v2:
+	Addressing review comments from Tomi Valkeinen:
+	Dropped readl/writel patch as it is not necessary for non-cached, 
+		non-buffered memory.
+	Many cosmetic changes to make code easier to understand
 
- Tomi
+
+This is primarily a resend of a series of patches that were original
+submitted to linux-fbdev back in January of 2013 for 3.8 by Afzal
+Mohammed. I have rebased them on 3.10 and also made sure they
+apply cleanly to the 'for-next' branch of linux-fbdev git.
+The patches enable use of the current mainline da8xx-fb driver on the
+TI AM335x SOC along with some bug fixes and cleanup.
+
+The original patch series can be found here:
+https://patchwork.kernel.org/project/linux-fbdev/list/?submitter9101
+if you want to see the history.
 
 
+Afzal Mohammed (11):
+  video: da8xx-fb: fb_check_var enhancement
+  video: da8xx-fb: simplify lcd_reset
+  video: da8xx-fb: use modedb helper to update var
+  video: da8xx-fb: remove unneeded "var" initialization
+  video: da8xx-fb: store current display information
+  video: da8xx-fb: store clk rate even if !CPUFREQ
+  video: da8xx-fb: store struct device *
+  video: da8xx-fb: report correct pixclock
+  video: da8xx-fb: enable sync lost intr for v2 ip
+  video: da8xx-fb: ensure non-null cfg in pdata
+  video: da8xx-fb: reorganize panel detection
 
---71s05K2FIuRonFsIX8nX8uA1oCHGnw5PW
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Darren Etheridge (9):
+  video: da8xx-fb: pix clk and clk div handling cleanup
+  video: da8xx-fb: fb_set_par support
+  video: da8xx-fb: improve readability of code
+  video: da8xx-fb: fix 24bpp raster configuration
+  video: da8xx-fb: use devres
+  video: da8xx-fb: set upstream clock rate (if reqd)
+  video: da8xx-fb: make clock naming consistent
+  video: da8xx-fb: let compiler decide what to inline
+  video: da8xx-fb: adding am33xx as dependency
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+ drivers/video/Kconfig    |    8 +-
+ drivers/video/da8xx-fb.c |  352 +++++++++++++++++++++++++++-------------------
+ include/video/da8xx-fb.h |    5 +
+ 3 files changed, 216 insertions(+), 149 deletions(-)
 
-iQIcBAEBAgAGBQJSIDMOAAoJEPo9qoy8lh71S0gQAJh2wZDCyhYdDggDYeWEM0yP
-ZTTCsMjX61fnirq24snaN5vV+G5jxMmbuuk9GMP95zqtELPfg3LO/b9thJ9HQkM9
-hymFyWkuZXVE2XdDgp0avLrVfdiNjtK1M3HcastnxmCgha8aLBJZNumJMj1XAvtM
-ZAX49ked5TZkcS97Fpa1UcVAZEV6ZeIfmnAVWX2iP3uompRNZtInUwOCD44DlIj3
-YM5kO0Cm4k5gcIdN2IVjKpKY+2RXvBueLOwstE9g6H7wSWsEMs2GUGKK2S6jbbhv
-kJJygZSzGTRfnFV1IwYkubLgmRlsuQqvjYYfw1FyMkY82Cjn4+wPPuddxMMX1P2r
-0vCkgajR0BnMOpiFZtB2jRqshK/XTIPp8yFHNB8S736ROBEfPOFsZinjCG4r83RS
-zARdXpDB3esay2rOmFZ9uKMI3HtCrtDQ3LxH/mIPneu8sYqLUybhmdjLPToPcTDN
-7jtpr/WrhgNM9kb5USLzutd/uL5TotnHCV5lsS2+HllFcYHiaFkF1d0LAPry3ZVu
-lBjigGZdj8/bjT37w5qz9JKHkrOUXsXoGfhna/GCR7ugQ5AXU+eKDep0yD+CEwk3
-0MT8Jysvw9rDWzppj3/8De4Mgl28cut1OEyVQP6N6eDWzGU3/kY5tmhWq8nmjW0D
-zfbT8RJIPAhGLAyzo99k
-=KMqH
------END PGP SIGNATURE-----
-
---71s05K2FIuRonFsIX8nX8uA1oCHGnw5PW--

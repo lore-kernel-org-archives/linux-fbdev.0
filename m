@@ -1,43 +1,64 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Fri, 02 Aug 2013 12:05:27 +0000
-Subject: [PATCH RESEND 8/8] fbdev: fbcon: select VT_HW_CONSOLE_BINDING
-Message-Id: <1375445127-15480-9-git-send-email-dh.herrmann@gmail.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Mon, 05 Aug 2013 22:02:20 +0000
+Subject: [PATCH v3 01/20] video: da8xx-fb: fb_check_var enhancement
+Message-Id: <1375740159-1045-2-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1375445127-15480-1-git-send-email-dh.herrmann@gmail.com>
-In-Reply-To: <1375445127-15480-1-git-send-email-dh.herrmann@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: David Airlie <airlied@linux.ie>, Geert Uytterhoeven <geert@linux-m68k.org>, Stephen Warren <swarren@wwwdotorg.org>, Peter Jones <pjones@redhat.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org, linux-fbdev@vger.kernel.org, akpm@linux-foundation.org, David Herrmann <dh.herrmann@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-fbdev provides framebuffer hotplugging, hence, we need to allow fbcon to
-unbind from framebuffers. Unfortunately, fbcon_fb_unbind() cannot unbind
-from the last framebuffer, unless console-unbinding is supported.
+From: Afzal Mohammed <afzal@ti.com>
 
-Fixing fbcon_unbind() to return 0 caused some horrible NULL-derefs in the
-VT layer and I couldn't figure out why. Hence, lets just require
-console-unbinding so fbdev hotplugging works with fbcon.
+Check whether "struct fb_var_screeninfo" fields are sane, if not
+update it to be within allowed limits.
 
-Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
+If user sends down buggy "var" values, this will bring those within
+allowable limits. And fb_set_par is not supposed to change "var"
+values, fb_check_var has to ensure that values are proper.
+
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- drivers/video/console/Kconfig | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/video/da8xx-fb.c |   18 ++++++++++++++++++
+ 1 files changed, 18 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index 8c30603..846caab 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -92,7 +92,8 @@ config DUMMY_CONSOLE_ROWS
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 0810939..d00dd17 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -888,6 +888,9 @@ static int fb_check_var(struct fb_var_screeninfo *var,
+ 			struct fb_info *info)
+ {
+ 	int err = 0;
++	struct da8xx_fb_par *par = info->par;
++	int bpp = var->bits_per_pixel >> 3;
++	unsigned long line_size = var->xres_virtual * bpp;
  
- config FRAMEBUFFER_CONSOLE
- 	tristate "Framebuffer Console support"
--	depends on FB
-+	depends on FB && !UML
-+	select VT_HW_CONSOLE_BINDING
- 	select CRC32
- 	select FONT_SUPPORT
- 	help
+ 	if (var->bits_per_pixel > 16 && lcd_revision = LCD_VERSION_1)
+ 		return -EINVAL;
+@@ -955,6 +958,21 @@ static int fb_check_var(struct fb_var_screeninfo *var,
+ 	var->green.msb_right = 0;
+ 	var->blue.msb_right = 0;
+ 	var->transp.msb_right = 0;
++
++	if (line_size * var->yres_virtual > par->vram_size)
++		var->yres_virtual = par->vram_size / line_size;
++
++	if (var->yres > var->yres_virtual)
++		var->yres = var->yres_virtual;
++
++	if (var->xres > var->xres_virtual)
++		var->xres = var->xres_virtual;
++
++	if (var->xres + var->xoffset > var->xres_virtual)
++		var->xoffset = var->xres_virtual - var->xres;
++	if (var->yres + var->yoffset > var->yres_virtual)
++		var->yoffset = var->yres_virtual - var->yres;
++
+ 	return err;
+ }
+ 
 -- 
-1.8.3.4
+1.7.0.4
 

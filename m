@@ -1,226 +1,170 @@
-From: Alex Deucher <alexdeucher@gmail.com>
-Date: Wed, 07 Aug 2013 17:56:46 +0000
-Subject: Re: [Linaro-mm-sig] [RFC 0/1] drm/pl111: Initial drm/kms driver for pl111
-Message-Id: <CADnq5_Ms2cPsJ84T2YeOZEtas21cT-M=6c79KEtE4J6qq8+Pbg@mail.gmail.com>
+From: Wang Huan-B18965 <B18965@freescale.com>
+Date: Mon, 05 Aug 2013 09:51:40 +0000
+Subject: RE: [PATCH 4/5] fb: Add DCU framebuffer driver for Vybrid VF610 platform
+Message-Id: <81BA6E5E0BC2344391CABCEE22D1B6D83CA6F0@039-SN1MPN1-002.039d.mgd.msft.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1374772648-19151-1-git-send-email-tom.cooksey@arm.com>
-	<CAF6AEGtspnhSGNM4_QQubVfOkZ1Gh1-Z3iyHOLBPVWuqRy81ew@mail.gmail.com>
-	<51f29ccd.f014b40a.34cc.ffffca2aSMTPIN_ADDED_BROKEN@mx.google.com>
-	<CAF6AEGvFPGueM_LHVij9KFzM6NJySHCzmaLstuzZkK5GwP+6gQ@mail.gmail.com>
-	<51ffdc7e.06b8b40a.2cc8.0fe0SMTPIN_ADDED_BROKEN@mx.google.com>
-	<CAF6AEGsyKk_G-R-OX_YcgYFDgTEmCy9Vf2LV1pAOV0452QKSww@mail.gmail.com>
-	<5200deb3.0b24b40a.3b26.ffffbadeSMTPIN_ADDED_BROKEN@mx.google.com>
-	<CAF6AEGvXcpTKrTjhvrycLqab6F9QP5fAk0ZEWxJ-WvE==PiPsA@mail.gmail.com>
-	<52010257.245fc20a.6ff8.1cfdSMTPIN_ADDED_BROKEN@mx.google.com>
-	<CAF6AEGsDA8qdShWdYQRqQ0Czn4mLAe-FoADjZdRFcbeWGGe8Hg@mail.gmail.com>
-	<52013482.e107c20a.27f9.ffffa718SMTPIN_ADDED_BROKEN@mx.google.com>
-	<CAF6AEGtaYJfJ4WBddbtyE9P8odXOYvJXLsreMwXMLCBOsfXy7w@mail.gmail.com>
-	<520284fe.a16ec20a.2d3c.6e19SMTPIN_ADDED_BROKEN@mx.google.com>
-In-Reply-To: <520284fe.a16ec20a.2d3c.6e19SMTPIN_ADDED_BROKEN@mx.google.com>
+References: <1373609276-14566-1-git-send-email-b18965@freescale.com>
+ <1373609276-14566-5-git-send-email-b18965@freescale.com>
+ <20130729111457.GB3029@pengutronix.de>
+In-Reply-To: <20130729111457.GB3029@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tom Cooksey <tom.cooksey@arm.com>
-Cc: Rob Clark <robdclark@gmail.com>, linux-fbdev@vger.kernel.org, Pawel Moll <Pawel.Moll@arm.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Aug 7, 2013 at 1:33 PM, Tom Cooksey <tom.cooksey@arm.com> wrote:
->
->> >> > Didn't you say that programmatically describing device placement
->> >> > constraints was an unbounded problem? I guess we would have to
->> >> > accept that it's not possible to describe all possible constraints
->> >> > and instead find a way to describe the common ones?
->> >>
->> >> well, the point I'm trying to make, is by dividing your constraints
->> >> into two groups, one that impacts and is handled by userspace, and
->> >> one that is in the kernel (ie. where the pages go), you cut down
->> >> the number of permutations that the kernel has to care about
->> >>  considerably. And kernel already cares about, for example, what
->> >> range of addresses that a device can dma to/from.  I think really
->> >> the only thing missing is the max # of sglist entries (contiguous
->> >> or not)
->> >
->> > I think it's more than physically contiguous or not.
->> >
->> > For example, it can be more efficient to use large page sizes on
->> > devices with IOMMUs to reduce TLB traffic. I think the size and even
->> > the availability of large pages varies between different IOMMUs.
->>
->> sure.. but I suppose if we can spiff out dma_params to express "I need
->> contiguous", perhaps we can add some way to express "I prefer
->> as-contiguous-as-possible".. either way, this is about where the pages
->> are placed, and not about the layout of pixels within the page, so
->> should be in kernel.  It's something that is missing, but I believe
->> that it belongs in dma_params and hidden behind dma_alloc_*() for
->> simple drivers.
->
-> Thinking about it, isn't this more a property of the IOMMU? I mean,
-> are there any cases where an IOMMU had a large page mode but you
-> wouldn't want to use it? So when allocating the memory, you'd have to
-> take into account not just the constraints of the devices themselves,
-> but also of any IOMMUs any of the device sit behind?
->
->
->> > There's also the issue of buffer stride alignment. As I say, if the
->> > buffer is to be written by a tile-based GPU like Mali, it's more
->> > efficient if the buffer's stride is aligned to the max AXI bus burst
->> > length. Though I guess a buffer stride only makes sense as a concept
->> > when interpreting the data as a linear-layout 2D image, so perhaps
->> > belongs in user-space along with format negotiation?
->> >
->>
->> Yeah.. this isn't about where the pages go, but about the arrangement
->> within a page.
->>
->> And, well, except for hw that supports the same tiling (or
->> compressed-fb) in display+gpu, you probably aren't sharing tiled
->> buffers.
->
-> You'd only want to share a buffer between devices if those devices can
-> understand the same pixel format. That pixel format can't be device-
-> specific or opaque, it has to be explicit. I think drm_fourcc.h is
-> what defines all the possible pixel formats. This is the enum I used
-> in EGL_EXT_image_dma_buf_import at least. So if we get to the point
-> where multiple devices can understand a tiled or compressed format, I
-> assume we could just add that format to drm_fourcc.h and possibly
-> v4l2's v4l2_mbus_pixelcode enum in v4l2-mediabus.h.
->
-> For user-space to negotiate a common pixel format and now stride
-> alignment, I guess it will obviously need a way to query what pixel
-> formats a device supports and what its stride alignment requirements
-> are.
->
-> I don't know v4l2 very well, but it certainly seems the pixel format
-> can be queried using V4L2_SUBDEV_FORMAT_TRY when attempting to set
-> a particular format. I couldn't however find a way to retrieve a list
-> of supported formats - it seems the mechanism is to try out each
-> format in turn to determine if it is supported. Is that right?
->
-> There doesn't however seem a way to query what stride constraints a
-> V4l2 device might have. Does HW abstracted by v4l2 typically have
-> such constraints? If so, how can we query them such that a buffer
-> allocated by a DRM driver can be imported into v4l2 and used with
-> that HW?
->
-> Turning to DRM/KMS, it seems the supported formats of a plane can be
-> queried using drm_mode_get_plane. However, there doesn't seem to be a
-> way to query the supported formats of a crtc? If display HW only
-> supports scanning out from a single buffer (like pl111 does), I think
-> it won't have any planes and a fb can only be set on the crtc. In
-> which case, how should user-space query which pixel formats that crtc
-> supports?
->
-> Assuming user-space can query the supported formats and find a common
-> one, it will need to allocate a buffer. Looks like
-> drm_mode_create_dumb can do that, but it only takes a bpp parameter,
-> there's no format parameter. I assume then that user-space defines
-> the format and tells the DRM driver which format the buffer is in
-> when creating the fb with drm_mode_fb_cmd2, which does take a format
-> parameter? Is that right?
->
-> As with v4l2, DRM doesn't appear to have a way to query the stride
-> constraints? Assuming there is a way to query the stride constraints,
-> there also isn't a way to specify them when creating a buffer with
-> DRM, though perhaps the existing pitch parameter of
-> drm_mode_create_dumb could be used to allow user-space to pass in a
-> minimum stride as well as receive the allocated stride?
->
->
->> >> > One problem with this is it duplicates a lot of logic in each
->> >> > driver which can export a dma_buf buffer. Each exporter will
->> >> > need to do pretty much the same thing: iterate over all the
->> >> > attachments, determine of all the constraints (assuming that
->> >> > can be done) and allocate pages such that the lowest-common-
->> >> > denominator is satisfied. Perhaps rather than duplicating that
->> >> > logic in every driver, we could instead move allocation of the
->> >> > backing pages into dma_buf itself?
->> >>
->> >> I tend to think it is better to add helpers as we see common
->>
->> >> patterns emerge, which drivers can opt-in to using.  I don't
->> >> think that we should move allocation into dma_buf itself, but
->> >> it would perhaps be useful to have dma_alloc_*() variants that
->> >> could allocate for multiple devices.
->> >
->> > A helper could work I guess, though I quite like the idea of
->> > having dma_alloc_*() variants which take a list of devices to
->> > allocate memory for.
->> >
->> >
->> >> That would help for simple stuff, although I'd suspect
->> >> eventually a GPU driver will move away from that.  (Since you
->> >> probably want to play tricks w/ pools of pages that are
->> >> pre-zero'd and in the correct cache state, use spare cycles on
->> >> the gpu or dma engine to pre-zero uncached pages, and games
->> >> like that.)
->> >
->> > So presumably you're talking about a GPU driver being the exporter
->> > here? If so, how could the GPU driver do these kind of tricks on
->> > memory shared with another device?
->>
->> Yes, that is gpu-as-exporter.  If someone else is allocating buffers,
->> it is up to them to do these tricks or not.  Probably there is a
->> pretty good chance that if you aren't a GPU you don't need those sort
->> of tricks for fast allocation of transient upload buffers, staging
->> textures, temporary pixmaps, etc.  Ie. I don't really think a v4l
->> camera or video decoder would benefit from that sort of optimization.
->
-> Right - but none of those are really buffers you'd want to export with
-> dma_buf to share with another device are they? In which case, why not
-> just have dma_buf figure out the constraints and allocate the memory?
->
-> If a driver needs to allocate memory in a special way for a particular
-> device, I can't really imagine how it would be able to share that
-> buffer with another device using dma_buf? I guess a driver is likely
-> to need some magic voodoo to configure access to the buffer for its
-> device, but surely that would be done by the dma_mapping framework
-> when dma_buf_map happens?
->
->
->
->> >> You probably want to get out of the SoC mindset, otherwise you are
->> >> going to make bad assumptions that come back to bite you later on.
->> >
->> > Sure - there are always going to be PC-like devices where the
->> > hardware configuration isn't fixed like it is on a traditional SoC.
->> > But I'd rather have a simple solution which works on traditional SoCs
->> > than no solution at all. Today our solution is to over-load the dumb
->> > buffer alloc functions of the display's DRM driver - For now I'm just
->> > looking for the next step up from that! ;-)
->>
->> True.. the original intention, which is perhaps a bit desktop-centric,
->> really was for there to be a userspace component talking to the drm
->> driver for allocation, ie. xf86-video-foo and/or
->> src/gallium/drivers/foo (for example) ;-)
->>
->> Which means for x11 having a SoC vendor specific xf86-video-foo for
->> x11..  or vendor specific gbm implementation for wayland.  (Although
->> at least in the latter case it is a pretty small piece of code.)  But
->> that is probably what you are trying to avoid.
->
-> I've been trying to get my head around how PRIME relates to DDX
-> drivers. As I understand it (which is likely wrong), you have a laptop
-> with both an Intel & an nVidia GPU. You have both the i915 & nouveau
-> kernel drivers loaded. What I'm not sure about is which GPU's display
-> controller is actually hooked up to the physical connector? Perhaps
-> there is a MUX like there is on Versatile Express?
->
-> What I also don't understand is what DDX driver is loaded? Is it
-> xf86-video-intel, xf86-video-nouveau or both? I get the impression
-> that there's a "master" DDX which implements 2D operations but can
-> import buffers using PRIME from the other driver and draw to them.
-> Or is it more that it's able to export rendered buffers to the
-> "slave" DRM for scanout? Either way, it's pretty similar to an ARM
-> SoC setup which has the GPU and the display as two totally
-> independent devices.
->
+SGksIFNhc2NoYSwNCg0KPiBPbiBGcmksIEp1bCAxMiwgMjAxMyBhdCAwMjowNzo1NVBNICswODAw
+LCBBbGlzb24gV2FuZyB3cm90ZToNCj4gPiBUaGUgRGlzcGxheSBDb250cm9sbGVyIFVuaXQgKERD
+VSkgbW9kdWxlIGlzIGEgc3lzdGVtIG1hc3RlciB0aGF0DQo+ID4gZmV0Y2hlcyBncmFwaGljcyBz
+dG9yZWQgaW4gaW50ZXJuYWwgb3IgZXh0ZXJuYWwgbWVtb3J5IGFuZCBkaXNwbGF5cw0KPiA+IHRo
+ZW0gb24gYSBURlQgTENEIHBhbmVsLiBBIHdpZGUgcmFuZ2Ugb2YgcGFuZWwgc2l6ZXMgaXMgc3Vw
+cG9ydGVkIGFuZA0KPiA+IHRoZSB0aW1pbmcgb2YgdGhlIGludGVyZmFjZSBzaWduYWxzIGlzIGhp
+Z2hseSBjb25maWd1cmFibGUuDQo+ID4gR3JhcGhpY3MgYXJlIHJlYWQgZGlyZWN0bHkgZnJvbSBt
+ZW1vcnkgYW5kIHRoZW4gYmxlbmRlZCBpbiByZWFsLXRpbWUsDQo+ID4gd2hpY2ggYWxsb3dzIGZv
+ciBkeW5hbWljIGNvbnRlbnQgY3JlYXRpb24gd2l0aCBtaW5pbWFsIENQVQ0KPiBpbnRlcnZlbnRp
+b24uDQo+IA0KPiBPbmx5IGEgcmV2aWV3IG9mIHRoZSBjb2RlIGlubGluZS4NCj4gDQo+IE1heWJl
+IHRoZSByZWFsIHF1ZXN0aW9uIGlzIHdoZXRoZXIgd2Ugd2FudCB0byBpbnRyb2R1Y2UgYW5vdGhl
+cg0KPiBmcmFtZWJ1ZmZlciBkcml2ZXIgYXQgYWxsIGluc3RlYWQgb2YgbWFraW5nIGl0IGEgRFJN
+IGRyaXZlci4NCltBbGlzb24gV2FuZ10gSSB0aGluayBEQ1UgbW9kdWxlIGlzIG1vcmUgc3VpdGFi
+bGUgdG8gYmUgZGVzaWduZWQgYXMgYSBmcmFtZWJ1ZmZlciBkcml2ZXIgdGhhbiBhIERSTSBkcml2
+ZXIuIEp1c3QgbGlrZSBESVUgZnJhbWVidWZmZXIgZHJpdmVyIGZvciBQb3dlclBDLg0KPiANCj4g
+PiArDQo+ID4gKyNkZWZpbmUgRFJJVkVSX05BTUUJCQkiZnNsLWRjdS1mYiINCj4gPiArDQo+ID4g
+KyNkZWZpbmUgRENVX0RDVV9NT0RFCQkJMHgwMDEwDQo+ID4gKyNkZWZpbmUgRENVX01PREVfQkxF
+TkRfSVRFUih4KQkJKHggPDwgMjApDQo+IA0KPiBXaGF0J3MgdGhlIHJlc3VsdCBvZiBEQ1VfTU9E
+RV9CTEVORF9JVEVSKDEgKyAxKT8NCltBbGlzb24gV2FuZ10gSXMgaXQgcmVhbGx5IG5lY2Vzc2Fy
+eT8gSSBkb24ndCB1c2UgdGhpcyBtYWNybyBsaWtlIERDVV9NT0RFX0JMRU5EX0lURVIoMSArIDEp
+LCBqdXN0IHVzZSBEQ1VfTU9ERV9CTEVORF9JVEVSKDIpLg0KPiANCj4gPiArc3RhdGljIHN0cnVj
+dCBmYl92aWRlb21vZGUgZGN1X21vZGVfZGJbXSA9IHsNCj4gPiArCXsNCj4gPiArCQkubmFtZQkJ
+PSAiNDgweDI3MiIsDQo+ID4gKwkJLnJlZnJlc2gJPSA3NSwNCj4gPiArCQkueHJlcwkJPSA0ODAs
+DQo+ID4gKwkJLnlyZXMJCT0gMjcyLA0KPiA+ICsJCS5waXhjbG9jawk9IDkxOTk2LA0KPiA+ICsJ
+CS5sZWZ0X21hcmdpbgk9IDIsDQo+ID4gKwkJLnJpZ2h0X21hcmdpbgk9IDIsDQo+ID4gKwkJLnVw
+cGVyX21hcmdpbgk9IDEsDQo+ID4gKwkJLmxvd2VyX21hcmdpbgk9IDEsDQo+ID4gKwkJLmhzeW5j
+X2xlbgk9IDQxLA0KPiA+ICsJCS52c3luY19sZW4JPSAyLA0KPiA+ICsJCS5zeW5jCQk9IEZCX1NZ
+TkNfQ09NUF9ISUdIX0FDVCB8IEZCX1NZTkNfVkVSVF9ISUdIX0FDVCwNCj4gPiArCQkudm1vZGUJ
+CT0gRkJfVk1PREVfTk9OSU5URVJMQUNFRCwNCj4gPiArCX0sDQo+ID4gK307DQo+IA0KPiBXZSBo
+YXZlIHdheXMgdG8gZGVzY3JpYmUgYSBwYW5lbCBpbiBkdC4gVXNlIHRoZW0uDQpbQWxpc29uIFdh
+bmddIE9rLiBJIGRvbid0IGtub3cgaXQgaXMgY29tbW9uIHRvIGRlc2NyaWJlIHRoZSBwYW5lbCBp
+biBkdHMgZm9yIHRoZSBsYXRlc3Qga2VybmVsLiBUaGFua3MuDQo+IA0KPiA+ICsNCj4gPiArc3Rh
+dGljIHN0cnVjdCBtZmJfaW5mbyBtZmJfdGVtcGxhdGVbXSA9IHsNCj4gPiArCXsNCj4gPiArCS5p
+bmRleCA9IExBWUVSMCwNCj4gPiArCS5pZCA9ICJMYXllcjAiLA0KPiA+ICsJLmFscGhhID0gMHhm
+ZiwNCj4gPiArCS5ibGVuZCA9IDAsDQo+ID4gKwkuY291bnQgPSAwLA0KPiA+ICsJLnhfbGF5ZXJf
+ZCA9IDAsDQo+ID4gKwkueV9sYXllcl9kID0gMCwNCj4gPiArCX0sDQo+IA0KPiBXcm9uZyBpbmRl
+bnRhdGlvbi4NCltBbGlzb24gV2FuZ10gSSB3aWxsIGZpeCBpdCBpbiBuZXh0IHZlcnNpb24uDQo+
+IA0KPiA+ICsJZGVmYXVsdDoNCj4gPiArCQlwcmludGsoS0VSTl9FUlIgInVuc3VwcG9ydGVkIGNv
+bG9yIGRlcHRoOiAldVxuIiwNCj4gPiArCQkJdmFyLT5iaXRzX3Blcl9waXhlbCk7DQo+IA0KPiBV
+c2UgZGV2XyogZm9yIHByaW50aW5nIG1lc3NhZ2VzIGluIGRyaXZlcnMuDQpbQWxpc29uIFdhbmdd
+IE9rLg0KPiANCj4gPiArc3RhdGljIGludCBmc2xfZGN1X2NoZWNrX3ZhcihzdHJ1Y3QgZmJfdmFy
+X3NjcmVlbmluZm8gKnZhciwNCj4gPiArCQlzdHJ1Y3QgZmJfaW5mbyAqaW5mbykNCj4gPiArew0K
+PiA+ICsJaWYgKHZhci0+eHJlc192aXJ0dWFsIDwgdmFyLT54cmVzKQ0KPiA+ICsJCXZhci0+eHJl
+c192aXJ0dWFsID0gdmFyLT54cmVzOw0KPiA+ICsJaWYgKHZhci0+eXJlc192aXJ0dWFsIDwgdmFy
+LT55cmVzKQ0KPiA+ICsJCXZhci0+eXJlc192aXJ0dWFsID0gdmFyLT55cmVzOw0KPiA+ICsNCj4g
+PiArCWlmICh2YXItPnhvZmZzZXQgPCAwKQ0KPiA+ICsJCXZhci0+eG9mZnNldCA9IDA7DQo+ID4g
+Kw0KPiA+ICsJaWYgKHZhci0+eW9mZnNldCA8IDApDQo+ID4gKwkJdmFyLT55b2Zmc2V0ID0gMDsN
+Cj4gDQo+IEV2ZXIgc2VlbiBhbiB1bnNpZ25lZCB2YWx1ZSBnb2luZyBiZWxvdyB6ZXJvPw0KW0Fs
+aXNvbiBXYW5nXSBZb3UgYXJlIHJpZ2h0LCBJIHdpbGwgcmVtb3ZlIHRoZW0gaW4gbmV4dCB2ZXJz
+aW9uLg0KPiANCj4gPiArCWRlZmF1bHQ6DQo+ID4gKwkJcHJpbnRrKEtFUk5fRVJSICJ1bnN1cHBv
+cnRlZCBjb2xvciBkZXB0aDogJXVcbiIsDQo+ID4gKwkJCXZhci0+Yml0c19wZXJfcGl4ZWwpOw0K
+PiANCj4gQlVHKCkuIFRoaXMgY2FuJ3QgaGFwcGVuIHNpbmNlIHlvdSBtYWtlIHRoYXQgc3VyZSBh
+Ym92ZS4NCltBbGlzb24gV2FuZ10gWW91IGFyZSByaWdodCwgSSB3aWxsIHJlbW92ZSBpdCBpbiBu
+ZXh0IHZlcnNpb24uDQo+IA0KPiA+ICsJCXJldHVybiAtRUlOVkFMOw0KPiA+ICsJfQ0KPiA+ICsN
+Cj4gPiArCXJldHVybiAwOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IGNhbGNfZGl2
+X3JhdGlvKHN0cnVjdCBmYl9pbmZvICppbmZvKSB7DQo+IA0KPiBVc2UgYSBjb25zaXN0ZW50IG5h
+bWVzcGFjZSBmb3IgZnVuY3Rpb24gbmFtZXMgKGZzbF9kY3VfKQ0KW0FsaXNvbiBXYW5nXSBJcyBp
+dCBuZWNlc3NhcnkgdG8gdXNlIGEgY29uc2lzdGVudCBuYW1lc3BhY2UgZm9yIHRoaXMgZ2VuZXJp
+YyBmdW5jdGlvbj8gSSB0aGluayBpdCBpcyBuZWNlc3NhcnkgdG8gdXNlIGEgY29uc2lzdGVudCBu
+YW1lc3BhY2UgKGZzbF9kY3VfKSBmb3IgdGhlIGZ1bmN0aW9uIG5hbWVzIGluIHN0cnVjdHVyZSBm
+c2xfZGN1X29wcy4NCj4gDQo+ID4gKwl3cml0ZWwoRENVX1RIUkVTSE9MRF9MU19CRl9WUygweDMp
+IHwNCj4gRENVX1RIUkVTSE9MRF9PVVRfQlVGX0hJR0goMHg3OCkgfA0KPiA+ICsJCURDVV9USFJF
+U0hPTERfT1VUX0JVRl9MT1coMCksIGRjdWZiLT5yZWdfYmFzZSArDQo+IERDVV9USFJFU0hPTEQp
+Ow0KPiA+ICsNCj4gPiArCWVuYWJsZV9jb250cm9sbGVyKGluZm8pOw0KPiA+ICt9DQo+IA0KPiBN
+YWtlIHlvdXIgZnVuY3Rpb25zIHN5bW1ldHJpYy4gSWYgdGhlcmUncyB1cGRhdGVfY29udHJvbGxl
+cigpLCB0aGUNCj4gZnVuY3Rpb24gc2hvdWxkIGRvIGV4YWN0bHkgdGhhdCwgaXQgc2hvdWxkICpu
+b3QqIGVuYWJsZSB0aGUgY29udHJvbGxlci4NCj4gQ2FsbCB0aGlzIGZyb20gdGhlIHVzZXJzIG9m
+IHRoaXMgZnVuY3Rpb24gaWYgbmVjZXNzYXJ5Lg0KW0FsaXNvbiBXYW5nXSBPaywgSSB3aWxsIG1v
+dmUgdGhpcyBmdW5jdGlvbiBvdXQsIGFuZCBhZGQgaXQgaGVyZS4NCmlmIChtZmJpLT5pbmRleCA9
+PSBMQVlFUjApIHsNCgl1cGRhdGVfY29udHJvbGxlcihpbmZvKTsNCisJZW5hYmxlX2NvbnRyb2xs
+ZXIoaW5mbyk7DQp9DQo+IA0KPiA+ICsJCWlmIChjb3B5X3RvX3VzZXIoYnVmLCAmYWxwaGEsIHNp
+emVvZihhbHBoYSkpKQ0KPiA+ICsJCQlyZXR1cm4gLUVGQVVMVDsNCj4gPiArCQlicmVhazsNCj4g
+PiArCWNhc2UgTUZCX1NFVF9BTFBIQToNCj4gPiArCQlpZiAoY29weV9mcm9tX3VzZXIoJmFscGhh
+LCBidWYsIHNpemVvZihhbHBoYSkpKQ0KPiA+ICsJCQlyZXR1cm4gLUVGQVVMVDsNCj4gPiArCQlt
+ZmJpLT5ibGVuZCA9IDE7DQo+ID4gKwkJbWZiaS0+YWxwaGEgPSBhbHBoYTsNCj4gPiArCQlmc2xf
+ZGN1X3NldF9wYXIoaW5mbyk7DQo+ID4gKwkJYnJlYWs7DQo+IA0KPiBJcyBpdCBzdGlsbCBzdGF0
+ZSBvZiB0aGUgYXJ0IHRvIGludHJvZHVjZSBpb2N0bHMgaW4gdGhlIGZiIGZyYW1ld29yaw0KPiB3
+aXRob3V0IGFueSBraW5kIG9mIGRvY3VtZW50YXRpb24/DQpbQWxpc29uIFdhbmddIERvIHlvdSBt
+ZWFuIEkgbmVlZCB0byBhZGQgYSBkb2N1bWVudGF0aW9uIGluIERvY3VtZW50YXRpb24vZmIvPw0K
+PiANCj4gPiArCWRlZmF1bHQ6DQo+ID4gKwkJcHJpbnRrKEtFUk5fRVJSICJ1bmtub3duIGlvY3Rs
+IGNvbW1hbmQgKDB4JTA4WClcbiIsIGNtZCk7DQo+IA0KPiBXaGF0IHNoYWxsIGEgcmVhZGVyIG9m
+IHRoZSBrZXJuZWwgbG9nIGRvIHdpdGggYSBtZXNzYWdlIGxpa2UgdGhpcz8gSXQncw0KPiB1dHRl
+cmx5IHVzZWxlc3Mgd2hlbiBoZSBkb2Vzbid0IGV2ZW4gbm93IHdoaWNoIGRldmljZSBmYWlsZWQg
+aGVyZS4gSnVzdA0KPiBkcm9wIHRoaXMuDQpbQWxpc29uIFdhbmddIE9rLg0KPiANCj4gPiArc3Rh
+dGljIHZvaWQgZW5hYmxlX2ludGVycnVwdHMoc3RydWN0IGRjdV9mYl9kYXRhICpkY3VmYikgew0K
+PiA+ICsJdTMyIGludF9tYXNrID0gcmVhZGwoZGN1ZmItPnJlZ19iYXNlICsgRENVX0lOVF9NQVNL
+KTsNCj4gPiArDQo+ID4gKwl3cml0ZWwoaW50X21hc2sgJiB+RENVX0lOVF9NQVNLX1VORFJVTiwg
+ZGN1ZmItPnJlZ19iYXNlICsNCj4gPiArRENVX0lOVF9NQVNLKTsgfQ0KPiANCj4gSW5saW5lIHRo
+aXMgY29kZSB3aGVyZSB5b3UgbmVlZCBpdC4gSW50cm9kdWNpbmcgYSBmdW5jdGlvbiBmb3IgYSBz
+aW5nbGUNCj4gcmVnaXN0ZXIgd3JpdGUgc2VlbXMgcXVpdGUgdXNlbGVzcy4NCltBbGlzb24gV2Fu
+Z10gT2ssIEkgd2lsbCBpbmxpbmUgaXQuDQo+IA0KPiA+ICtzdGF0aWMgaW50IGluc3RhbGxfZnJh
+bWVidWZmZXIoc3RydWN0IGZiX2luZm8gKmluZm8pIHsNCj4gPiArCXN0cnVjdCBtZmJfaW5mbyAq
+bWZiaSA9IGluZm8tPnBhcjsNCj4gPiArCXN0cnVjdCBmYl92aWRlb21vZGUgKmRiID0gZGN1X21v
+ZGVfZGI7DQo+ID4gKwl1bnNpZ25lZCBpbnQgZGJzaXplID0gQVJSQVlfU0laRShkY3VfbW9kZV9k
+Yik7DQo+ID4gKwlpbnQgcmV0Ow0KPiA+ICsNCj4gPiArCWluZm8tPnZhci5hY3RpdmF0ZSA9IEZC
+X0FDVElWQVRFX05PVzsNCj4gPiArCWluZm8tPmZib3BzID0gJmZzbF9kY3Vfb3BzOw0KPiA+ICsJ
+aW5mby0+ZmxhZ3MgPSBGQklORk9fRkxBR19ERUZBVUxUOw0KPiA+ICsJaW5mby0+cHNldWRvX3Bh
+bGV0dGUgPSAmbWZiaS0+cHNldWRvX3BhbGV0dGU7DQo+ID4gKw0KPiA+ICsJZmJfYWxsb2NfY21h
+cCgmaW5mby0+Y21hcCwgMTYsIDApOw0KPiA+ICsNCj4gPiArCXJldCA9IGZiX2ZpbmRfbW9kZSgm
+aW5mby0+dmFyLCBpbmZvLCBmYl9tb2RlLCBkYiwgZGJzaXplLA0KPiA+ICsJCQlOVUxMLCBkZWZh
+dWx0X2JwcCk7DQo+ID4gKw0KPiA+ICsJaWYgKGZzbF9kY3VfY2hlY2tfdmFyKCZpbmZvLT52YXIs
+IGluZm8pKSB7DQo+ID4gKwkJcmV0ID0gLUVJTlZBTDsNCj4gDQo+IFByb3BhZ2F0ZSB0aGUgZXJy
+b3IuDQpbQWxpc29uIFdhbmddIEkgd2lsbCBmaXggaW4gbmV4dCB2ZXJzaW9uLg0KPiANCj4gPiAr
+CQlnb3RvIGZhaWxlZF9jaGVja3ZhcjsNCj4gPiArCX0NCj4gPiArDQo+ID4gKwlpZiAocmVnaXN0
+ZXJfZnJhbWVidWZmZXIoaW5mbykgPCAwKSB7DQo+ID4gKwkJcmV0ID0gLUVJTlZBTDsNCj4gDQo+
+IGRpdHRvDQpbQWxpc29uIFdhbmddIEkgd2lsbCBmaXggaW4gbmV4dCB2ZXJzaW9uLg0KPiANCj4g
+PiArc3RhdGljIGlycXJldHVybl90IGZzbF9kY3VfaXJxKGludCBpcnEsIHZvaWQgKmRldl9pZCkg
+ew0KPiA+ICsJc3RydWN0IGRjdV9mYl9kYXRhICpkY3VmYiA9IGRldl9pZDsNCj4gPiArCXVuc2ln
+bmVkIGludCBzdGF0dXMgPSByZWFkbChkY3VmYi0+cmVnX2Jhc2UgKyBEQ1VfSU5UX1NUQVRVUyk7
+DQo+ID4gKwl1MzIgZGN1X21vZGU7DQo+ID4gKw0KPiA+ICsJaWYgKHN0YXR1cykgew0KPiANCj4g
+U2F2ZSBpbmRlbmRhdGlvbiBsZXZlbCBieSBiYWlsaW5nIG91dCBlYXJseS4NCltBbGlzb24gV2Fu
+Z10gV2hhdCBkbyB5b3UgbWVhbj8NCj4gDQo+ID4gKwkJaWYgKHN0YXR1cyAmIERDVV9JTlRfU1RB
+VFVTX1VORFJVTikgew0KPiA+ICsJCQlkY3VfbW9kZSA9IHJlYWRsKGRjdWZiLT5yZWdfYmFzZSAr
+IERDVV9EQ1VfTU9ERSk7DQo+ID4gKwkJCWRjdV9tb2RlICY9IH5EQ1VfTU9ERV9EQ1VfTU9ERV9N
+QVNLOw0KPiA+ICsJCQl3cml0ZWwoZGN1X21vZGUgfCBEQ1VfTU9ERV9EQ1VfTU9ERShEQ1VfTU9E
+RV9PRkYpLA0KPiA+ICsJCQkJZGN1ZmItPnJlZ19iYXNlICsgRENVX0RDVV9NT0RFKTsNCj4gPiAr
+CQkJdWRlbGF5KDEpOw0KPiA+ICsJCQl3cml0ZWwoZGN1X21vZGUgfCBEQ1VfTU9ERV9EQ1VfTU9E
+RShEQ1VfTU9ERV9OT1JNQUwpLA0KPiA+ICsJCQkJZGN1ZmItPnJlZ19iYXNlICsgRENVX0RDVV9N
+T0RFKTsNCj4gPiArCQl9DQo+ID4gKwkJd3JpdGVsKHN0YXR1cywgZGN1ZmItPnJlZ19iYXNlICsg
+RENVX0lOVF9TVEFUVVMpOw0KPiA+ICsJCXJldHVybiBJUlFfSEFORExFRDsNCj4gPiArCX0NCj4g
+PiArCXJldHVybiBJUlFfTk9ORTsNCj4gPiArfQ0KPiA+ICsNCj4gPiArCWlmIChJU19FUlIodGNv
+bl9jbGspKSB7DQo+ID4gKwkJcmV0ID0gUFRSX0VSUih0Y29uX2Nsayk7DQo+ID4gKwkJZ290byBm
+YWlsZWRfZ2V0Y2xvY2s7DQo+ID4gKwl9DQo+ID4gKwljbGtfcHJlcGFyZV9lbmFibGUodGNvbl9j
+bGspOw0KPiA+ICsNCj4gPiArCXRjb25fcmVnID0gb2ZfaW9tYXAodGNvbl9ucCwgMCk7DQo+IA0K
+PiBVc2UgZGV2bV8qDQpbQWxpc29uIFdhbmddIE9rLg0KPiANCj4gPiArCWRjdWZiLT5pcnEgPSBw
+bGF0Zm9ybV9nZXRfaXJxKHBkZXYsIDApOw0KPiA+ICsJaWYgKCFkY3VmYi0+aXJxKSB7DQo+ID4g
+KwkJcmV0ID0gLUVJTlZBTDsNCj4gPiArCQlnb3RvIGZhaWxlZF9nZXRpcnE7DQo+ID4gKwl9DQo+
+ID4gKw0KPiA+ICsJcmV0ID0gcmVxdWVzdF9pcnEoZGN1ZmItPmlycSwgZnNsX2RjdV9pcnEsIDAs
+IERSSVZFUl9OQU1FLCBkY3VmYik7DQo+IA0KPiBVc2UgZGV2bV9yZXF1ZXN0X2lycQ0KW0FsaXNv
+biBXYW5nXSBPay4NCj4gDQo+ID4gKwlpZiAocmV0KSB7DQo+ID4gKwkJZGV2X2VycigmcGRldi0+
+ZGV2LCAiY291bGQgbm90IHJlcXVlc3QgaXJxXG4iKTsNCj4gPiArCQlnb3RvIGZhaWxlZF9yZXF1
+ZXN0aXJxOw0KPiA+ICsJfQ0KPiA+ICsNCj4gPiArCS8qIFB1dCBUQ09OIGluIGJ5cGFzcyBtb2Rl
+LCBzbyB0aGUgaW5wdXQgc2lnbmFscyBmcm9tIERDVSBhcmUNCj4gcGFzc2VkDQo+ID4gKwkgKiB0
+aHJvdWdoIFRDT04gdW5jaGFuZ2VkICovDQo+ID4gKwlyZXQgPSBieXBhc3NfdGNvbihwZGV2LT5k
+ZXYub2Zfbm9kZSk7DQo+ID4gKwlpZiAocmV0KSB7DQo+ID4gKwkJZGV2X2VycigmcGRldi0+ZGV2
+LCAiY291bGQgbm90IGJ5cGFzcyBUQ09OXG4iKTsNCj4gPiArCQlnb3RvIGZhaWxlZF9ieXBhc3N0
+Y29uOw0KPiA+ICsJfQ0KPiA+ICsNCj4gPiArCWRjdWZiLT5jbGsgPSBkZXZtX2Nsa19nZXQoJnBk
+ZXYtPmRldiwgImRjdSIpOw0KPiA+ICsJaWYgKElTX0VSUihkY3VmYi0+Y2xrKSkgew0KPiA+ICsJ
+CWRldl9lcnIoJnBkZXYtPmRldiwgImNvdWxkIG5vdCBnZXQgY2xvY2tcbiIpOw0KPiA+ICsJCWdv
+dG8gZmFpbGVkX2dldGNsb2NrOw0KPiANCj4gWW91IHdpbGwgcmV0dXJuIDAgaGVyZS4NCltBbGlz
+b24gV2FuZ10gWW91IGFyZSByaWdodCwgSSB3aWxsIGZpeCBpdCBpbiBuZXh0IHZlcnNpb24uDQo+
+IA0KPiA+ICsJfQ0KPiA+ICsJY2xrX3ByZXBhcmVfZW5hYmxlKGRjdWZiLT5jbGspOw0KPiA+ICsN
+Cj4gPiArCWZvciAoaSA9IDA7IGkgPCBBUlJBWV9TSVpFKGRjdWZiLT5mc2xfZGN1X2luZm8pOyBp
+KyspIHsNCj4gPiArCQlkY3VmYi0+ZnNsX2RjdV9pbmZvW2ldID0NCj4gPiArCQkJZnJhbWVidWZm
+ZXJfYWxsb2Moc2l6ZW9mKHN0cnVjdCBtZmJfaW5mbyksICZwZGV2LQ0KPiA+ZGV2KTsNCj4gPiAr
+CQlpZiAoIWRjdWZiLT5mc2xfZGN1X2luZm9baV0pIHsNCj4gPiArCQkJcmV0ID0gRU5PTUVNOw0K
+PiANCj4gLUVOT01FTQ0KPiANCj4gPiArZmFpbGVkX2FsbG9jX2ZyYW1lYnVmZmVyOg0KPiA+ICtm
+YWlsZWRfZ2V0Y2xvY2s6DQo+ID4gK2ZhaWxlZF9ieXBhc3N0Y29uOg0KPiA+ICsJZnJlZV9pcnEo
+ZGN1ZmItPmlycSwgZGN1ZmIpOw0KPiA+ICtmYWlsZWRfcmVxdWVzdGlycToNCj4gPiArZmFpbGVk
+X2dldGlycToNCj4gPiArCWlvdW5tYXAoZGN1ZmItPnJlZ19iYXNlKTsNCj4gDQo+IFlvdSB1c2Vk
+IGRldm1faW9yZW1hcCwgc28gZHJvcCB0aGlzLg0KW0FsaXNvbiBXYW5nXSBPay4NCj4gDQo+ID4g
+K2ZhaWxlZF9pb3JlbWFwOg0KPiA+ICsJa2ZyZWUoZGN1ZmIpOw0KPiANCj4gVGhpcyBpcyBhbGxv
+Y2F0ZWQgd2l0aCBkZXZtXyouIERyb3AgdGhpcy4NCltBbGlzb24gV2FuZ10gT2suDQoNClRoYW5r
+cyBmb3IgeW91ciBjb21tZW50cy4NCg0KDQpCZXN0IFJlZ2FyZHMsDQpBbGlzb24gV2FuZw0KDQoN
+Cg=
 
-In the early days, there was a MUX to switch the displays between the
-two GPUs, but most modern systems are MUX-less and the dGPU is either
-connected to no displays or in some cases the local panel is attached
-to the integrated GPU and the external displays are connected to the
-dGPU.
-
-In the MUX-less case, the dGPU can be used to render, and then the
-result is copied to the integrated GPU for display.
-
-Alex

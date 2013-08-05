@@ -1,214 +1,122 @@
-From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Date: Fri, 09 Aug 2013 23:03:11 +0000
-Subject: [PATCH/RFC v3 12/19] video: display: Add VGA Digital to Analog Converter support
-Message-Id: <1376089398-13322-13-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Mon, 05 Aug 2013 22:02:33 +0000
+Subject: [PATCH v3 14/20] video: da8xx-fb: use devres
+Message-Id: <1375740159-1045-15-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-In-Reply-To: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-This driver implements support for VGA Digital to Analog Converters
-(DACs) that receive pixel data through a DPI interface and have no
-control interface (GPIOs- and/or regulators-based control can be
-implemented later when needed). It exposes the devices a display
-entities.
+Replace existing resource handling in the driver with managed device
+resource.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+v2: implement some changes as recommended by
+	Prabhakar Lad <prabhakar.csengg@gmail.com>
+
+Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- drivers/video/display/Kconfig   |   9 +++
- drivers/video/display/Makefile  |   1 +
- drivers/video/display/vga-dac.c | 152 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 162 insertions(+)
- create mode 100644 drivers/video/display/vga-dac.c
+ drivers/video/da8xx-fb.c |   41 ++++++++---------------------------------
+ 1 files changed, 8 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/video/display/Kconfig b/drivers/video/display/Kconfig
-index 9b44b5f..32ce08d 100644
---- a/drivers/video/display/Kconfig
-+++ b/drivers/video/display/Kconfig
-@@ -39,4 +39,13 @@ config DISPLAY_PANEL_R61517
- 	  If you are in doubt, say N. To compile this driver as a module, choose
- 	  M here; the module will be called panel-r61517.
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 8384455..c620a32 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -133,7 +133,6 @@
+ #define PALETTE_SIZE	256
  
-+config DISPLAY_VGA_DAC
-+	tristate "VGA Digital to Analog Converters"
-+	---help---
-+	  Support for simple VGA digital to analog converters. Those converters
-+	  receive pixel data through a parallel bus and have no control bus.
-+
-+	  If you are in doubt, say N. To compile this driver as a module, choose
-+	  M here: the module will be called vga-dac.
-+
- endif # DISPLAY_CORE
-diff --git a/drivers/video/display/Makefile b/drivers/video/display/Makefile
-index 1cdc8d4..43cd78d 100644
---- a/drivers/video/display/Makefile
-+++ b/drivers/video/display/Makefile
-@@ -5,3 +5,4 @@ obj-$(CONFIG_DISPLAY_MIPI_DBI)			+= mipi-dbi-bus.o
- obj-$(CONFIG_DISPLAY_PANEL_DPI)			+= panel-dpi.o
- obj-$(CONFIG_DISPLAY_PANEL_R61505)		+= panel-r61505.o
- obj-$(CONFIG_DISPLAY_PANEL_R61517)		+= panel-r61517.o
-+obj-$(CONFIG_DISPLAY_VGA_DAC)			+= vga-dac.o
-diff --git a/drivers/video/display/vga-dac.c b/drivers/video/display/vga-dac.c
-new file mode 100644
-index 0000000..d0256e6
---- /dev/null
-+++ b/drivers/video/display/vga-dac.c
-@@ -0,0 +1,152 @@
-+/*
-+ * VGA Digital to Analog Converter
-+ *
-+ * Copyright (C) 2013 Renesas Solutions Corp.
-+ *
-+ * Contacts: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+
-+#include <video/display.h>
-+
-+#define VGA_DAC_PORT_SINK		0
-+#define VGA_DAC_PORT_SOURCE		1
-+
-+struct vga_dac {
-+	struct display_entity entity;
-+};
-+
-+static inline struct vga_dac *to_vga_dac(struct display_entity *e)
-+{
-+	return container_of(e, struct vga_dac, entity);
-+}
-+
-+static int vga_dac_set_state(struct display_entity *entity,
-+			     enum display_entity_state state)
-+{
-+	struct media_pad *source;
-+
-+	source = media_entity_remote_pad(&entity->entity.pads[0]);
-+	if (source = NULL)
-+		return -EPIPE;
-+
-+	switch (state) {
-+	case DISPLAY_ENTITY_STATE_OFF:
-+	case DISPLAY_ENTITY_STATE_STANDBY:
-+		display_entity_set_stream(to_display_entity(source->entity),
-+					  source->index,
-+					  DISPLAY_ENTITY_STREAM_STOPPED);
-+		break;
-+
-+	case DISPLAY_ENTITY_STATE_ON:
-+		display_entity_set_stream(to_display_entity(source->entity),
-+					  source->index,
-+					  DISPLAY_ENTITY_STREAM_CONTINUOUS);
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static int vga_dac_get_params(struct display_entity *entity, unsigned int port,
-+			      struct display_entity_interface_params *params)
-+{
-+	memset(params, 0, sizeof(*params));
-+
-+	if (port = VGA_DAC_PORT_SINK)
-+		params->type = DISPLAY_ENTITY_INTERFACE_DPI;
-+	else
-+		params->type = DISPLAY_ENTITY_INTERFACE_VGA;
-+
-+	return 0;
-+}
-+
-+static const struct display_entity_control_ops vga_dac_control_ops = {
-+	.set_state = vga_dac_set_state,
-+	.get_params = vga_dac_get_params,
-+};
-+
-+static const struct display_entity_ops vga_dac_ops = {
-+	.ctrl = &vga_dac_control_ops,
-+};
-+
-+static int vga_dac_remove(struct platform_device *pdev)
-+{
-+	struct vga_dac *dac = platform_get_drvdata(pdev);
-+
-+	display_entity_remove(&dac->entity);
-+	display_entity_cleanup(&dac->entity);
-+
-+	return 0;
-+}
-+
-+static int vga_dac_probe(struct platform_device *pdev)
-+{
-+	struct vga_dac *dac;
-+	int ret;
-+
-+	dac = devm_kzalloc(&pdev->dev, sizeof(*dac), GFP_KERNEL);
-+	if (dac = NULL)
-+		return -ENOMEM;
-+
-+	dac->entity.dev = &pdev->dev;
-+	dac->entity.ops = &vga_dac_ops;
-+	strlcpy(dac->entity.name, dev_name(&pdev->dev),
-+		sizeof(dac->entity.name));
-+
-+	ret = display_entity_init(&dac->entity, 1, 1);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = display_entity_add(&dac->entity);
-+	if (ret < 0)
-+		return ret;
-+
-+	platform_set_drvdata(pdev, dac);
-+
-+	return 0;
-+}
-+
-+static const struct dev_pm_ops vga_dac_dev_pm_ops = {
-+};
-+
-+static struct platform_device_id vga_dac_id_table[] = {
-+	{ "adv7123", 0 },
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(platform, vga_dac_id_table);
-+
-+#ifdef CONFIG_OF
-+static struct of_device_id vga_dac_of_id_table[] = {
-+	{ .compatible = "adi,adv7123", },
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(of, vga_dac_of_id_table);
-+#endif
-+
-+static struct platform_driver vga_dac_driver = {
-+	.probe = vga_dac_probe,
-+	.remove = vga_dac_remove,
-+	.id_table = vga_dac_id_table,
-+	.driver = {
-+		.name = "vga-dac",
-+		.owner = THIS_MODULE,
-+		.pm = &vga_dac_dev_pm_ops,
-+		.of_match_table = of_match_ptr(vga_dac_of_id_table),
-+	},
-+};
-+
-+module_platform_driver(vga_dac_driver);
-+
-+MODULE_AUTHOR("Laurent Pinchart <laurent.pinchart@ideasonboard.com>");
-+MODULE_DESCRIPTION("VGA Digital-to-Analog Converter");
-+MODULE_LICENSE("GPL");
+ static void __iomem *da8xx_fb_reg_base;
+-static struct resource *lcdc_regs;
+ static unsigned int lcd_revision;
+ static irq_handler_t lcdc_irq_handler;
+ static wait_queue_head_t frame_done_wq;
+@@ -1039,12 +1038,9 @@ static int fb_remove(struct platform_device *dev)
+ 				  par->p_palette_base);
+ 		dma_free_coherent(NULL, par->vram_size, par->vram_virt,
+ 				  par->vram_phys);
+-		free_irq(par->irq, par);
+ 		pm_runtime_put_sync(&dev->dev);
+ 		pm_runtime_disable(&dev->dev);
+ 		framebuffer_release(info);
+-		iounmap(da8xx_fb_reg_base);
+-		release_mem_region(lcdc_regs->start, resource_size(lcdc_regs));
+ 
+ 	}
+ 	return 0;
+@@ -1261,12 +1257,12 @@ static int fb_probe(struct platform_device *device)
+ {
+ 	struct da8xx_lcdc_platform_data *fb_pdata  						device->dev.platform_data;
++	static struct resource *lcdc_regs;
+ 	struct lcd_ctrl_config *lcd_cfg;
+ 	struct fb_videomode *lcdc_info;
+ 	struct fb_info *da8xx_fb_info;
+ 	struct clk *fb_clk = NULL;
+ 	struct da8xx_fb_par *par;
+-	resource_size_t len;
+ 	int ret, i;
+ 	unsigned long ulcm;
+ 
+@@ -1276,29 +1272,14 @@ static int fb_probe(struct platform_device *device)
+ 	}
+ 
+ 	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
+-	if (!lcdc_regs) {
+-		dev_err(&device->dev,
+-			"Can not get memory resource for LCD controller\n");
+-		return -ENOENT;
+-	}
+-
+-	len = resource_size(lcdc_regs);
+-
+-	lcdc_regs = request_mem_region(lcdc_regs->start, len, lcdc_regs->name);
+-	if (!lcdc_regs)
+-		return -EBUSY;
++	da8xx_fb_reg_base = devm_ioremap_resource(&device->dev, lcdc_regs);
++	if (IS_ERR(da8xx_fb_reg_base))
++		return PTR_ERR(da8xx_fb_reg_base);
+ 
+-	da8xx_fb_reg_base = ioremap(lcdc_regs->start, len);
+-	if (!da8xx_fb_reg_base) {
+-		ret = -EBUSY;
+-		goto err_request_mem;
+-	}
+-
+-	fb_clk = clk_get(&device->dev, "fck");
++	fb_clk = devm_clk_get(&device->dev, "fck");
+ 	if (IS_ERR(fb_clk)) {
+ 		dev_err(&device->dev, "Can not get device clock\n");
+-		ret = -ENODEV;
+-		goto err_ioremap;
++		return PTR_ERR(fb_clk);
+ 	}
+ 
+ 	pm_runtime_enable(&device->dev);
+@@ -1459,8 +1440,8 @@ static int fb_probe(struct platform_device *device)
+ 		lcdc_irq_handler = lcdc_irq_handler_rev02;
+ 	}
+ 
+-	ret = request_irq(par->irq, lcdc_irq_handler, 0,
+-			DRIVER_NAME, par);
++	ret = devm_request_irq(&device->dev, par->irq, lcdc_irq_handler, 0,
++			       DRIVER_NAME, par);
+ 	if (ret)
+ 		goto irq_freq;
+ 	return 0;
+@@ -1489,12 +1470,6 @@ err_pm_runtime_disable:
+ 	pm_runtime_put_sync(&device->dev);
+ 	pm_runtime_disable(&device->dev);
+ 
+-err_ioremap:
+-	iounmap(da8xx_fb_reg_base);
+-
+-err_request_mem:
+-	release_mem_region(lcdc_regs->start, len);
+-
+ 	return ret;
+ }
+ 
 -- 
-1.8.1.5
+1.7.0.4
 

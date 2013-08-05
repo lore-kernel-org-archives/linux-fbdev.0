@@ -1,7 +1,7 @@
 From: Darren Etheridge <detheridge@ti.com>
-Date: Mon, 05 Aug 2013 22:02:24 +0000
-Subject: [PATCH v3 05/20] video: da8xx-fb: store current display information
-Message-Id: <1375740159-1045-6-git-send-email-detheridge@ti.com>
+Date: Mon, 05 Aug 2013 22:02:23 +0000
+Subject: [PATCH v3 04/20] video: da8xx-fb: remove unneeded "var" initialization
+Message-Id: <1375740159-1045-5-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,43 +10,55 @@ To: linux-fbdev@vger.kernel.org
 
 From: Afzal Mohammed <afzal@ti.com>
 
-store current videomode and controller data so that reconfiguring can
-be done easily. Reconfiguring would be required in fb_set_par, which
-is going to be added soon.
-
-If these details are not stored, the work probe does to retrieve these
-information would have to repeated at the place of reconfiguring and
-modifying platform data would be necessary to handle controller data
-changes like bpp.
+modedb helper now updates "var" information based on the detected
+panel, remove the unnecessary initialization.
 
 Signed-off-by: Afzal Mohammed <afzal@ti.com>
 Signed-off-by: Darren Etheridge <detheridge@ti.com>
 ---
- drivers/video/da8xx-fb.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ drivers/video/da8xx-fb.c |   22 +---------------------
+ 1 files changed, 1 insertions(+), 21 deletions(-)
 
 diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 18834fa..d060f14 100644
+index a1f6544..18834fa 100644
 --- a/drivers/video/da8xx-fb.c
 +++ b/drivers/video/da8xx-fb.c
-@@ -178,6 +178,8 @@ struct da8xx_fb_par {
- #endif
- 	void (*panel_power_ctrl)(int);
+@@ -131,10 +131,6 @@
+ 
+ #define WSI_TIMEOUT	50
+ #define PALETTE_SIZE	256
+-#define LEFT_MARGIN	64
+-#define RIGHT_MARGIN	64
+-#define UPPER_MARGIN	32
+-#define LOWER_MARGIN	32
+ 
+ static void __iomem *da8xx_fb_reg_base;
+ static struct resource *lcdc_regs;
+@@ -184,23 +180,7 @@ struct da8xx_fb_par {
  	u32 pseudo_palette[16];
-+	struct fb_videomode	mode;
-+	struct lcd_ctrl_config	cfg;
  };
  
- static struct fb_var_screeninfo da8xx_fb_var;
-@@ -1310,6 +1312,8 @@ static int fb_probe(struct platform_device *device)
- 	}
+-/* Variable Screen Information */
+-static struct fb_var_screeninfo da8xx_fb_var = {
+-	.xoffset = 0,
+-	.yoffset = 0,
+-	.transp = {0, 0, 0},
+-	.nonstd = 0,
+-	.activate = 0,
+-	.height = -1,
+-	.width = -1,
+-	.accel_flags = 0,
+-	.left_margin = LEFT_MARGIN,
+-	.right_margin = RIGHT_MARGIN,
+-	.upper_margin = UPPER_MARGIN,
+-	.lower_margin = LOWER_MARGIN,
+-	.sync = 0,
+-	.vmode = FB_VMODE_NONINTERLACED
+-};
++static struct fb_var_screeninfo da8xx_fb_var;
  
- 	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
-+	fb_var_to_videomode(&par->mode, &da8xx_fb_var);
-+	par->cfg = *lcd_cfg;
- 
- 	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
- 		dev_err(&device->dev, "lcd_init failed\n");
+ static struct fb_fix_screeninfo da8xx_fb_fix = {
+ 	.id = "DA8xx FB Drv",
 -- 
 1.7.0.4
 

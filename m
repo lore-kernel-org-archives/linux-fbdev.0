@@ -1,112 +1,162 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Date: Thu, 22 Aug 2013 07:24:41 +0000
-Subject: Re: [PATCH v2] video: imxfb: Fix retrieve values from DT
-Message-Id: <20130822072441.GY31036@pengutronix.de>
+From: James Bates <james.h.bates@gmail.com>
+Date: Tue, 06 Aug 2013 23:15:29 +0000
+Subject: [PATCH] efifb: prevent null dereferences by removing unused array  indices from dmi_list
+Message-Id: <C9C6655E-4974-4C04-8CEE-CA16563F4CC5@gmail.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Apple-Mail=_5C5E50CA-5674-4358-9E4F-3C21F49A260E"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376120037-23777-1-git-send-email-shc_work@mail.ru>
-In-Reply-To: <1376120037-23777-1-git-send-email-shc_work@mail.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Peter Jones <pjones@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sat, Aug 10, 2013 at 11:33:57AM +0400, Alexander Shiyan wrote:
-> Display settings should be retrieved from "display" node, not from
-> root fb node. This patch fix this bug.
 
-As Documentation/devicetree/bindings/video/fsl,imx-fb.txt states
-fsl,dmacr and fsl,lscr1 should be read from the imxfb node, not from the
-display node. This is what the current code does.
+--Apple-Mail=_5C5E50CA-5674-4358-9E4F-3C21F49A260E
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+	charset=us-ascii
 
-BTW it seems cmap-greyscale, cmap-inverse and cmap-static are
-undocumented. I'm not really sure whether they should exist at all.
+Hi all,
 
-Sascha
+The dmi_list array is initialized using gnu designated initializers, and =
+therefore
+contains fewer explicitly defined entries as there are elements in it. =
+This
+is because the enum above with M_blabla constants contains more items =
+than the designated
+initializer. Those elements not explicitly initialized are implicitly =
+set to 0.
 
-> 
-> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
-> ---
->  drivers/video/imxfb.c | 26 ++++++++++++++------------
->  1 file changed, 14 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-> index 38733ac..8e104c4 100644
-> --- a/drivers/video/imxfb.c
-> +++ b/drivers/video/imxfb.c
-> @@ -753,12 +753,12 @@ static int imxfb_resume(struct platform_device *dev)
->  #define imxfb_resume	NULL
->  #endif
->  
-> -static int imxfb_init_fbinfo(struct platform_device *pdev)
-> +static int imxfb_init_fbinfo(struct platform_device *pdev,
-> +			     struct device_node *np)
->  {
->  	struct imx_fb_platform_data *pdata = pdev->dev.platform_data;
->  	struct fb_info *info = dev_get_drvdata(&pdev->dev);
->  	struct imxfb_info *fbi = info->par;
-> -	struct device_node *np;
->  
->  	pr_debug("%s\n",__func__);
->  
-> @@ -799,7 +799,6 @@ static int imxfb_init_fbinfo(struct platform_device *pdev)
->  		fbi->lcd_power			= pdata->lcd_power;
->  		fbi->backlight_power		= pdata->backlight_power;
->  	} else {
-> -		np = pdev->dev.of_node;
->  		info->var.grayscale = of_property_read_bool(np,
->  						"cmap-greyscale");
->  		fbi->cmap_inverse = of_property_read_bool(np, "cmap-inverse");
-> @@ -858,6 +857,7 @@ static int imxfb_of_read_mode(struct device *dev, struct device_node *np,
->  
->  static int imxfb_probe(struct platform_device *pdev)
->  {
-> +	struct device_node *display_np = NULL;
->  	struct imxfb_info *fbi;
->  	struct fb_info *info;
->  	struct imx_fb_platform_data *pdata;
-> @@ -887,7 +887,17 @@ static int imxfb_probe(struct platform_device *pdev)
->  
->  	platform_set_drvdata(pdev, info);
->  
-> -	ret = imxfb_init_fbinfo(pdev);
-> +	if (pdev->dev.of_node) {
-> +		display_np = of_parse_phandle(pdev->dev.of_node, "display", 0);
-> +		if (!display_np) {
-> +			dev_err(&pdev->dev,
-> +				"No display defined in devicetree\n");
-> +			ret = -EINVAL;
-> +			goto failed_init;
-> +		}
-> +	}
-> +
-> +	ret = imxfb_init_fbinfo(pdev, display_np);
->  	if (ret < 0)
->  		goto failed_init;
->  
-> @@ -898,16 +908,8 @@ static int imxfb_probe(struct platform_device *pdev)
->  		fbi->mode = pdata->mode;
->  		fbi->num_modes = pdata->num_modes;
->  	} else {
-> -		struct device_node *display_np;
->  		fb_mode = NULL;
->  
-> -		display_np = of_parse_phandle(pdev->dev.of_node, "display", 0);
-> -		if (!display_np) {
-> -			dev_err(&pdev->dev, "No display defined in devicetree\n");
-> -			ret = -EINVAL;
-> -			goto failed_of_parse;
-> -		}
-> -
->  		/*
->  		 * imxfb does not support more modes, we choose only the native
->  		 * mode.
-> -- 
-> 1.8.1.5
-> 
-> 
+Now efifb_setup(), L.322 & L.323, loops through all these array =
+elements, and performs
+a strcmp o a field (optname) in each item. For non explicitly =
+initialized elements this
+will be a null pointer:
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+                        for (i =3D 0; i < M_UNKNOWN; i++) {
+                                if (!strcmp(this_opt, =
+dmi_list[i].optname) &&
+
+On my macbook6,1 the predefined values are for some reason incorrect, =
+and most parameters
+are preset correctly by my efi bootloader (elilo). but =
+stride/line_length is not detected
+correctly and so I wish to set it explicitly using a =
+"video=3Defifb:stride:2048" command-line
+argument. Because of the above null dereference, an exception =
+(presumably) occurs before
+the parsing code (L.333) is ever reached. I say presumably since the mac =
+hangs on boot
+without a console, and I can therefore not see any output.
+
+By removing the unused values from the enum, and thus preventing =
+implicitly initialized items
+in the dmi_list array, the null dereference does not occur, my customer =
+command-line arg is
+parsed correctly, and my console displays correctly.
+
+Signed-off-by: James Bates <james.h.bates@gmail.com>
+---
+ drivers/video/efifb.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
+index 50fe668..52d1d88 100644
+--- a/drivers/video/efifb.c
++++ b/drivers/video/efifb.c
+@@ -50,12 +50,9 @@ enum {
+        M_MINI_3_1,     /* Mac Mini, 3,1th gen */
+        M_MINI_4_1,     /* Mac Mini, 4,1th gen */
+        M_MB,           /* MacBook */
+-       M_MB_2,         /* MacBook, 2nd rev. */
+-       M_MB_3,         /* MacBook, 3rd rev. */
+        M_MB_5_1,       /* MacBook, 5th rev. */
+        M_MB_6_1,       /* MacBook, 6th rev. */
+        M_MB_7_1,       /* MacBook, 7th rev. */
+-       M_MB_SR,        /* MacBook, 2nd gen, (Santa Rosa) */
+        M_MBA,          /* MacBook Air */
+        M_MBA_3,        /* Macbook Air, 3rd rev */
+        M_MBP,          /* MacBook Pro */
+--
+1.7.12.4 (Apple Git-37)
+
+
+--Apple-Mail=_5C5E50CA-5674-4358-9E4F-3C21F49A260E
+Content-Disposition: attachment;
+	filename=smime.p7s
+Content-Type: application/pkcs7-signature;
+	name=smime.p7s
+Content-Transfer-Encoding: base64
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIMijCCBjQw
+ggQcoAMCAQICAR4wDQYJKoZIhvcNAQEFBQAwfTELMAkGA1UEBhMCSUwxFjAUBgNVBAoTDVN0YXJ0
+Q29tIEx0ZC4xKzApBgNVBAsTIlNlY3VyZSBEaWdpdGFsIENlcnRpZmljYXRlIFNpZ25pbmcxKTAn
+BgNVBAMTIFN0YXJ0Q29tIENlcnRpZmljYXRpb24gQXV0aG9yaXR5MB4XDTA3MTAyNDIxMDE1NVoX
+DTE3MTAyNDIxMDE1NVowgYwxCzAJBgNVBAYTAklMMRYwFAYDVQQKEw1TdGFydENvbSBMdGQuMSsw
+KQYDVQQLEyJTZWN1cmUgRGlnaXRhbCBDZXJ0aWZpY2F0ZSBTaWduaW5nMTgwNgYDVQQDEy9TdGFy
+dENvbSBDbGFzcyAxIFByaW1hcnkgSW50ZXJtZWRpYXRlIENsaWVudCBDQTCCASIwDQYJKoZIhvcN
+AQEBBQADggEPADCCAQoCggEBAMcJg8zOLdgasSmkLhOrlr6KMoOMpohBllVHrdRvEg/q6r8jR+EK
+75xCGhR8ToREoqe7zM9/UnC6TS2y9UKTpT1v7RSMzR0t6ndl0TWBuUr/UXBhPk+Kmy7bI4yW4urC
++y7P3/1/X7U8ocb8VpH/Clt+4iq7nirMcNh6qJR+xjOhV+VHzQMALuGYn5KZmc1NbJQYclsGkDxD
+z2UbFqE2+6vIZoL+jb9x4Pa5gNf1TwSDkOkikZB1xtB4ZqtXThaABSONdfmv/Z1pua3FYxnCFmdr
+/+N2JLKutIxMYqQOJebr/f/h5t95m4JgrM3Y/w7YX9d7YAL9jvN4SydHsU6n65cCAwEAAaOCAa0w
+ggGpMA8GA1UdEwEB/wQFMAMBAf8wDgYDVR0PAQH/BAQDAgEGMB0GA1UdDgQWBBRTcu2SnODaywFc
+fH6WNU7y1LhRgjAfBgNVHSMEGDAWgBROC+8apEBbpRdphzDKNGhD0EGu8jBmBggrBgEFBQcBAQRa
+MFgwJwYIKwYBBQUHMAGGG2h0dHA6Ly9vY3NwLnN0YXJ0c3NsLmNvbS9jYTAtBggrBgEFBQcwAoYh
+aHR0cDovL3d3dy5zdGFydHNzbC5jb20vc2ZzY2EuY3J0MFsGA1UdHwRUMFIwJ6AloCOGIWh0dHA6
+Ly93d3cuc3RhcnRzc2wuY29tL3Nmc2NhLmNybDAnoCWgI4YhaHR0cDovL2NybC5zdGFydHNzbC5j
+b20vc2ZzY2EuY3JsMIGABgNVHSAEeTB3MHUGCysGAQQBgbU3AQIBMGYwLgYIKwYBBQUHAgEWImh0
+dHA6Ly93d3cuc3RhcnRzc2wuY29tL3BvbGljeS5wZGYwNAYIKwYBBQUHAgEWKGh0dHA6Ly93d3cu
+c3RhcnRzc2wuY29tL2ludGVybWVkaWF0ZS5wZGYwDQYJKoZIhvcNAQEFBQADggIBAAqDCH14qywG
+XLhjjF6uHLkjd02hcdh9hrw+VUsv+q1eeQWB21jWj3kJ96AUlPCoEGZ/ynJNScWy6QMVQjbbMXlt
+UfO4n4bGGdKo3awPWp61tjAFgraLJgDk+DsSvUD6EowjMTNx25GQgyYJ5RPIzKKR9tQW8gGK+2+R
+HxkUCTbYFnL6kl8Ch507rUdPPipJ9CgJFws3kDS3gOS5WFMxcjO5DwKfKSETEPrHh7p5shuuNktv
+sv6hxHTLhiMKX893gxdT3XLS9OKmCv87vkINQcNEcIIoFWbP9HORz9v3vQwR4e3ksLc2JZOAFK+s
+sS5XMEoznzpihEP0PLc4dCBYjbvSD7kxgDwZ+Aj8Q9PkbvE9sIPP7ON0fz095HdThKjiVJe6vofq
++n6b1NBc8XdrQvBmunwxD5nvtTW4vtN6VY7mUCmxsCieuoBJ9OlqmsVWQvifIYf40dJPZkk9YgGT
+zWLpXDSfLSplbY2LL9C9U0ptvjcDjefLTvqSFc7tw1sEhF0n/qpA2r0GpvkLRDmcSwVyPvmjFBGq
+Up/pNy8ZuPGQmHwFi2/14+xeSUDG2bwnsYJQG2EdJCB6luQ57GEnTA/yKZSTKI8dDQa8Sd3zfXb1
+9mOgSF0bBdXbuKhEpuP9wirslFe6fQ1t5j5R0xi72MZ8ikMu1RQZKCyDbMwazlHiMIIGTjCCBTag
+AwIBAgIDBes+MA0GCSqGSIb3DQEBBQUAMIGMMQswCQYDVQQGEwJJTDEWMBQGA1UEChMNU3RhcnRD
+b20gTHRkLjErMCkGA1UECxMiU2VjdXJlIERpZ2l0YWwgQ2VydGlmaWNhdGUgU2lnbmluZzE4MDYG
+A1UEAxMvU3RhcnRDb20gQ2xhc3MgMSBQcmltYXJ5IEludGVybWVkaWF0ZSBDbGllbnQgQ0EwHhcN
+MTMwMjExMTAyMjA3WhcNMTQwMjExMjAwMTUzWjBlMRkwFwYDVQQNExA5aDNPOHBoSjg4U0Z3ZHkx
+MSAwHgYDVQQDDBdqYW1lcy5oLmJhdGVzQGdtYWlsLmNvbTEmMCQGCSqGSIb3DQEJARYXamFtZXMu
+aC5iYXRlc0BnbWFpbC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCoZT6ntgtK
+I0mry4E+i3v+zK3I/y4g72Am+f+yX3Co1ksd6fhVRVO9wNfuxgHmLOfc+yDSIRls+OwPts/ESSS1
+2MDlSLcptEGZ9bP5CcS8VQalyo+p78dM++k3krZ8VoT+osUaBk9/RT8wTb+Au9oSIYH/JswQySIY
+RS37z7vdT+yM2B6t9AkKz8j/u/KxFGqdZ0GczvDIboqRrnJB0d9owK2bSSddbv6iBbxsnsiRc6sE
+Peyib4MSJY4Vaecu9c9wJI9gbrc9l2QJ7nvLWHON97KsLI9UfXlskPqpw3cWSd6YA2OUUoMfacOs
+wZmzamkWQm/Ngqo7QseFYxlwWa8fAgMBAAGjggLdMIIC2TAJBgNVHRMEAjAAMAsGA1UdDwQEAwIE
+sDAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwQwHQYDVR0OBBYEFEt6dZNacpHlQ1r+DMJR
+3vqnbz2JMB8GA1UdIwQYMBaAFFNy7ZKc4NrLAVx8fpY1TvLUuFGCMCIGA1UdEQQbMBmBF2phbWVz
+LmguYmF0ZXNAZ21haWwuY29tMIIBTAYDVR0gBIIBQzCCAT8wggE7BgsrBgEEAYG1NwECAzCCASow
+LgYIKwYBBQUHAgEWImh0dHA6Ly93d3cuc3RhcnRzc2wuY29tL3BvbGljeS5wZGYwgfcGCCsGAQUF
+BwICMIHqMCcWIFN0YXJ0Q29tIENlcnRpZmljYXRpb24gQXV0aG9yaXR5MAMCAQEagb5UaGlzIGNl
+cnRpZmljYXRlIHdhcyBpc3N1ZWQgYWNjb3JkaW5nIHRvIHRoZSBDbGFzcyAxIFZhbGlkYXRpb24g
+cmVxdWlyZW1lbnRzIG9mIHRoZSBTdGFydENvbSBDQSBwb2xpY3ksIHJlbGlhbmNlIG9ubHkgZm9y
+IHRoZSBpbnRlbmRlZCBwdXJwb3NlIGluIGNvbXBsaWFuY2Ugb2YgdGhlIHJlbHlpbmcgcGFydHkg
+b2JsaWdhdGlvbnMuMDYGA1UdHwQvMC0wK6ApoCeGJWh0dHA6Ly9jcmwuc3RhcnRzc2wuY29tL2Ny
+dHUxLWNybC5jcmwwgY4GCCsGAQUFBwEBBIGBMH8wOQYIKwYBBQUHMAGGLWh0dHA6Ly9vY3NwLnN0
+YXJ0c3NsLmNvbS9zdWIvY2xhc3MxL2NsaWVudC9jYTBCBggrBgEFBQcwAoY2aHR0cDovL2FpYS5z
+dGFydHNzbC5jb20vY2VydHMvc3ViLmNsYXNzMS5jbGllbnQuY2EuY3J0MCMGA1UdEgQcMBqGGGh0
+dHA6Ly93d3cuc3RhcnRzc2wuY29tLzANBgkqhkiG9w0BAQUFAAOCAQEACLG4XLN5hVe4cbS+sHWW
+3euuKT9gGEBRLoZihCRu6WbvSlMsTlaF7ihPtTg9WCe4Rv8at+YQng09XaMAThzKU9YR7mH50zAS
+k1UN+9msgTyrQwF9vj/wautTQ7UXCQf5lfWMF8TF/REH3pkmEb4wu+HzEoaIJm40lfSHyB50RNBy
+Z+4xPbgOaH8IVkpg2YLLHKkaPl1KwhO6TEs2G/YclPXjB0/VUMo46eFwcLSV9178ID4NQBXU2Yrx
+blzbRD+915afD6FPW1SYe9nErcJYtrwi10BReuHzn+moSdgerlRJXRx5DwsVdR+31wcpZ0y/XLQJ
+yMROlTeCva7VqZDMbTGCA28wggNrAgEBMIGUMIGMMQswCQYDVQQGEwJJTDEWMBQGA1UEChMNU3Rh
+cnRDb20gTHRkLjErMCkGA1UECxMiU2VjdXJlIERpZ2l0YWwgQ2VydGlmaWNhdGUgU2lnbmluZzE4
+MDYGA1UEAxMvU3RhcnRDb20gQ2xhc3MgMSBQcmltYXJ5IEludGVybWVkaWF0ZSBDbGllbnQgQ0EC
+AwXrPjAJBgUrDgMCGgUAoIIBrzAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJ
+BTEPFw0xMzA4MDYyMzE1MjlaMCMGCSqGSIb3DQEJBDEWBBSGnQpJGnJmOjy01ObCPNjgvEflAjCB
+pQYJKwYBBAGCNxAEMYGXMIGUMIGMMQswCQYDVQQGEwJJTDEWMBQGA1UEChMNU3RhcnRDb20gTHRk
+LjErMCkGA1UECxMiU2VjdXJlIERpZ2l0YWwgQ2VydGlmaWNhdGUgU2lnbmluZzE4MDYGA1UEAxMv
+U3RhcnRDb20gQ2xhc3MgMSBQcmltYXJ5IEludGVybWVkaWF0ZSBDbGllbnQgQ0ECAwXrPjCBpwYL
+KoZIhvcNAQkQAgsxgZeggZQwgYwxCzAJBgNVBAYTAklMMRYwFAYDVQQKEw1TdGFydENvbSBMdGQu
+MSswKQYDVQQLEyJTZWN1cmUgRGlnaXRhbCBDZXJ0aWZpY2F0ZSBTaWduaW5nMTgwNgYDVQQDEy9T
+dGFydENvbSBDbGFzcyAxIFByaW1hcnkgSW50ZXJtZWRpYXRlIENsaWVudCBDQQIDBes+MA0GCSqG
+SIb3DQEBAQUABIIBAB2zZOUpRWorhbJu5ZjnlzsXDzrDV9ec50cbwjEL3y3CJ7Z8SNH8cZdEvNLt
+lV2ykzTgLxpA9tTXBjjXZ2c0eNE3o9z/3LdBq6yQrbg2kpqTU+ULRwK/cLBP7LlzxvjldWK2Zcfx
+LT4MT+wf5dd+lg556Zyv3nF3R7wo3ZCdDAsJXz05o+sfzkWfbzPIZpJbTLaQtH8SJ+1vdC9BbLlw
+YtRcENTYiPfXTm3MCFU8fP4iHZYf7yrOgX8GjxIpZwCLj8iwNT3z3IStjk7FefgCbfEDo8F7AF5W
+1Wzg/pD/0Z+4u8R9qY5e39NAvWd6fbm3k1EYSYBQsUVQMtmvEd3Vh5IAAAAAAAA=
+
+--Apple-Mail=_5C5E50CA-5674-4358-9E4F-3C21F49A260E--

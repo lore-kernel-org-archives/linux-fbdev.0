@@ -1,55 +1,79 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Date: Mon, 05 Aug 2013 14:18:42 +0000
-Subject: Re: [PATCH 4/5] fb: Add DCU framebuffer driver for Vybrid VF610 platform
-Message-Id: <1375712322.4276.12.camel@weser.hi.pengutronix.de>
+From: Wang Huan-B18965 <B18965@freescale.com>
+Date: Tue, 06 Aug 2013 03:42:28 +0000
+Subject: RE: [PATCH 4/5] fb: Add DCU framebuffer driver for Vybrid VF610 platform
+Message-Id: <81BA6E5E0BC2344391CABCEE22D1B6D83CE90A@039-SN1MPN1-002.039d.mgd.msft.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1373609276-14566-1-git-send-email-b18965@freescale.com>
  <1373609276-14566-5-git-send-email-b18965@freescale.com>
  <20130729111457.GB3029@pengutronix.de>
  <81BA6E5E0BC2344391CABCEE22D1B6D83CA6F0@039-SN1MPN1-002.039d.mgd.msft.net>
- <20130805130911.GF30920@pengutronix.de>
-In-Reply-To: <20130805130911.GF30920@pengutronix.de>
+ <20130805100630.GQ26614@pengutronix.de>
+In-Reply-To: <20130805100630.GQ26614@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Am Montag, den 05.08.2013, 15:09 +0200 schrieb Robert Schwebel:
-> On Mon, Aug 05, 2013 at 09:51:40AM +0000, Wang Huan-B18965 wrote:
-> > > On Fri, Jul 12, 2013 at 02:07:55PM +0800, Alison Wang wrote:
-> > > > The Display Controller Unit (DCU) module is a system master that
-> > > > fetches graphics stored in internal or external memory and displays
-> > > > them on a TFT LCD panel. A wide range of panel sizes is supported and
-> > > > the timing of the interface signals is highly configurable.
-> > > > Graphics are read directly from memory and then blended in real-time,
-> > > > which allows for dynamic content creation with minimal CPU
-> > > intervention.
-> > > 
-> > > Only a review of the code inline.
-> > > 
-> > > Maybe the real question is whether we want to introduce another
-> > > framebuffer driver at all instead of making it a DRM driver.
-> > [Alison Wang] I think DCU module is more suitable to be designed as a framebuffer driver than a DRM driver. Just like DIU framebuffer driver for PowerPC.
-> 
-> We looked at the Vybrid datasheet and it's DCU section last week, and
-> with its 64 planes, the controller really wants to get a DRM driver.
-> 
-Exactly, with it's extensive hardware composition capabilities the
-controller begs for being driven by a proper DRM driver. There is no way
-in fbdev to properly support all those hardware planes without
-introducing a lot of non standard ioctls, which in turn will force you
-into writing a lot of custom userspace code instead of running proven
-technology that sits on top of KMS.
-
-Doing things in DRM might be slightly more work for the initial bring
-up, but will pay off in the long run when you are going to really use
-the hardware caps of the controller.
-
-Regards,
-Lucas
--- 
-Pengutronix e.K.                           | Lucas Stach                 |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-5076 |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
-
+PiBPbiBNb24sIEF1ZyAwNSwgMjAxMyBhdCAwOTo1MTo0MEFNICswMDAwLCBXYW5nIEh1YW4tQjE4
+OTY1IHdyb3RlOg0KPiA+IEhpLCBTYXNjaGEsDQo+ID4NCj4gPiA+IE9uIEZyaSwgSnVsIDEyLCAy
+MDEzIGF0IDAyOjA3OjU1UE0gKzA4MDAsIEFsaXNvbiBXYW5nIHdyb3RlOg0KPiA+ID4gPiBUaGUg
+RGlzcGxheSBDb250cm9sbGVyIFVuaXQgKERDVSkgbW9kdWxlIGlzIGEgc3lzdGVtIG1hc3RlciB0
+aGF0DQo+ID4gPiA+IGZldGNoZXMgZ3JhcGhpY3Mgc3RvcmVkIGluIGludGVybmFsIG9yIGV4dGVy
+bmFsIG1lbW9yeSBhbmQNCj4gPiA+ID4gZGlzcGxheXMgdGhlbSBvbiBhIFRGVCBMQ0QgcGFuZWwu
+IEEgd2lkZSByYW5nZSBvZiBwYW5lbCBzaXplcyBpcw0KPiA+ID4gPiBzdXBwb3J0ZWQgYW5kIHRo
+ZSB0aW1pbmcgb2YgdGhlIGludGVyZmFjZSBzaWduYWxzIGlzIGhpZ2hseQ0KPiBjb25maWd1cmFi
+bGUuDQo+ID4gPiA+IEdyYXBoaWNzIGFyZSByZWFkIGRpcmVjdGx5IGZyb20gbWVtb3J5IGFuZCB0
+aGVuIGJsZW5kZWQgaW4NCj4gPiA+ID4gcmVhbC10aW1lLCB3aGljaCBhbGxvd3MgZm9yIGR5bmFt
+aWMgY29udGVudCBjcmVhdGlvbiB3aXRoIG1pbmltYWwNCj4gPiA+ID4gQ1BVDQo+ID4gPiBpbnRl
+cnZlbnRpb24uDQo+ID4gPg0KPiA+ID4gT25seSBhIHJldmlldyBvZiB0aGUgY29kZSBpbmxpbmUu
+DQo+ID4gPg0KPiA+ID4gTWF5YmUgdGhlIHJlYWwgcXVlc3Rpb24gaXMgd2hldGhlciB3ZSB3YW50
+IHRvIGludHJvZHVjZSBhbm90aGVyDQo+ID4gPiBmcmFtZWJ1ZmZlciBkcml2ZXIgYXQgYWxsIGlu
+c3RlYWQgb2YgbWFraW5nIGl0IGEgRFJNIGRyaXZlci4NCj4gPiBbQWxpc29uIFdhbmddIEkgdGhp
+bmsgRENVIG1vZHVsZSBpcyBtb3JlIHN1aXRhYmxlIHRvIGJlIGRlc2lnbmVkIGFzIGENCj4gZnJh
+bWVidWZmZXIgZHJpdmVyIHRoYW4gYSBEUk0gZHJpdmVyLiBKdXN0IGxpa2UgRElVIGZyYW1lYnVm
+ZmVyIGRyaXZlcg0KPiBmb3IgUG93ZXJQQy4NCj4gPiA+DQo+ID4gPiA+ICsNCj4gPiA+ID4gKyNk
+ZWZpbmUgRFJJVkVSX05BTUUJCQkiZnNsLWRjdS1mYiINCj4gPiA+ID4gKw0KPiA+ID4gPiArI2Rl
+ZmluZSBEQ1VfRENVX01PREUJCQkweDAwMTANCj4gPiA+ID4gKyNkZWZpbmUgRENVX01PREVfQkxF
+TkRfSVRFUih4KQkJKHggPDwgMjApDQo+ID4gPg0KPiA+ID4gV2hhdCdzIHRoZSByZXN1bHQgb2Yg
+RENVX01PREVfQkxFTkRfSVRFUigxICsgMSk/DQo+ID4gW0FsaXNvbiBXYW5nXSBJcyBpdCByZWFs
+bHkgbmVjZXNzYXJ5PyBJIGRvbid0IHVzZSB0aGlzIG1hY3JvIGxpa2UNCj4gRENVX01PREVfQkxF
+TkRfSVRFUigxICsgMSksIGp1c3QgdXNlIERDVV9NT0RFX0JMRU5EX0lURVIoMikuDQo+IA0KPiA8
+aXJvbnk+DQo+IE5vIGl0J3Mgbm90IG5lY2Vzc2FyeS4gV2UgY2FuIGp1c3QgYWRkIGluY29ycmVj
+dCBtYWNyb3MgZXZlcnl3aGVyZSBhbmQNCj4gZml4IHRoZW0gYXMgbmVjZXNzYXJ5IGFmdGVyIGEg
+bG9uZyBidWcgc3F1YXNoaW5nIHNlc3Npb24gPC9pcm9ueT4NCj4gDQo+IFlFUyEgVGhpcyBpcyBu
+ZWNlc3NhcnkuDQpbQWxpc29uIFdhbmddIE9rLCBJIHdpbGwgY2hhbmdlIGl0IGFzIGZvbGxvd3Mu
+DQojZGVmaW5lIERDVV9NT0RFX0JMRU5EX0lURVIoeCkJKCh4KSA8PCAyMCkNCj4gDQo+ID4gPiA+
+ICsJcmV0dXJuIDA7DQo+ID4gPiA+ICt9DQo+ID4gPiA+ICsNCj4gPiA+ID4gK3N0YXRpYyBpbnQg
+Y2FsY19kaXZfcmF0aW8oc3RydWN0IGZiX2luZm8gKmluZm8pIHsNCj4gPiA+DQo+ID4gPiBVc2Ug
+YSBjb25zaXN0ZW50IG5hbWVzcGFjZSBmb3IgZnVuY3Rpb24gbmFtZXMgKGZzbF9kY3VfKQ0KPiA+
+IFtBbGlzb24gV2FuZ10gSXMgaXQgbmVjZXNzYXJ5IHRvIHVzZSBhIGNvbnNpc3RlbnQgbmFtZXNw
+YWNlIGZvciB0aGlzDQo+IGdlbmVyaWMgZnVuY3Rpb24/IEkgdGhpbmsgaXQgaXMgbmVjZXNzYXJ5
+IHRvIHVzZSBhIGNvbnNpc3RlbnQgbmFtZXNwYWNlDQo+IChmc2xfZGN1XykgZm9yIHRoZSBmdW5j
+dGlvbiBuYW1lcyBpbiBzdHJ1Y3R1cmUgZnNsX2RjdV9vcHMuDQo+IA0KPiBUaGlzIGZ1bmN0aW9u
+IGNhbGN1bGF0ZXMgc29tZSBkaXZpZGVyIG91dCBvZiBhIHN0cnVjdCBmYl9pbmZvLiBUaGlzIGlz
+DQo+IGJ5IG5vIG1lYW5zIGdlbmVyaWMuDQpbQWxpc29uIFdhbmddIE9rLCBJIHdpbGwgdXNlIGEg
+Y29uc2lzdGVudCBuYW1lc3BhY2UgZm9yIHRoaXMgZnVuY3Rpb24uDQo+IA0KPiA+ID4gPiArCQlp
+ZiAoY29weV90b191c2VyKGJ1ZiwgJmFscGhhLCBzaXplb2YoYWxwaGEpKSkNCj4gPiA+ID4gKwkJ
+CXJldHVybiAtRUZBVUxUOw0KPiA+ID4gPiArCQlicmVhazsNCj4gPiA+ID4gKwljYXNlIE1GQl9T
+RVRfQUxQSEE6DQo+ID4gPiA+ICsJCWlmIChjb3B5X2Zyb21fdXNlcigmYWxwaGEsIGJ1Ziwgc2l6
+ZW9mKGFscGhhKSkpDQo+ID4gPiA+ICsJCQlyZXR1cm4gLUVGQVVMVDsNCj4gPiA+ID4gKwkJbWZi
+aS0+YmxlbmQgPSAxOw0KPiA+ID4gPiArCQltZmJpLT5hbHBoYSA9IGFscGhhOw0KPiA+ID4gPiAr
+CQlmc2xfZGN1X3NldF9wYXIoaW5mbyk7DQo+ID4gPiA+ICsJCWJyZWFrOw0KPiA+ID4NCj4gPiA+
+IElzIGl0IHN0aWxsIHN0YXRlIG9mIHRoZSBhcnQgdG8gaW50cm9kdWNlIGlvY3RscyBpbiB0aGUg
+ZmINCj4gZnJhbWV3b3JrDQo+ID4gPiB3aXRob3V0IGFueSBraW5kIG9mIGRvY3VtZW50YXRpb24/
+DQo+ID4gW0FsaXNvbiBXYW5nXSBEbyB5b3UgbWVhbiBJIG5lZWQgdG8gYWRkIGEgZG9jdW1lbnRh
+dGlvbiBpbg0KPiBEb2N1bWVudGF0aW9uL2ZiLz8NCj4gDQo+IFRoaXMgd2FzIG1vcmUgYSBxdWVz
+dGlvbiB0byB0aGUgZmIgbWFpbnRhaW5lcnMuDQo+IA0KPiA+ID4gPiArc3RhdGljIGlycXJldHVy
+bl90IGZzbF9kY3VfaXJxKGludCBpcnEsIHZvaWQgKmRldl9pZCkgew0KPiA+ID4gPiArCXN0cnVj
+dCBkY3VfZmJfZGF0YSAqZGN1ZmIgPSBkZXZfaWQ7DQo+ID4gPiA+ICsJdW5zaWduZWQgaW50IHN0
+YXR1cyA9IHJlYWRsKGRjdWZiLT5yZWdfYmFzZSArDQo+IERDVV9JTlRfU1RBVFVTKTsNCj4gPiA+
+ID4gKwl1MzIgZGN1X21vZGU7DQo+ID4gPiA+ICsNCj4gPiA+ID4gKwlpZiAoc3RhdHVzKSB7DQo+
+ID4gPg0KPiA+ID4gU2F2ZSBpbmRlbmRhdGlvbiBsZXZlbCBieSBiYWlsaW5nIG91dCBlYXJseS4N
+Cj4gPiBbQWxpc29uIFdhbmddIFdoYXQgZG8geW91IG1lYW4/DQo+IA0KPiANCj4gSW5zdGVhZCBv
+ZiBkb2luZzoNCj4gDQo+IAlpZiAoYmxhKSB7DQo+IAkJZG90aGlzKCk7DQo+IAkJZG90aGF0KCk7
+DQo+IAkJcmV0dXJuOw0KPiAJfQ0KPiANCj4gCXJldHVybjsNCj4gDQo+IGl0J3MgZWFzaWVyIHRv
+IHJlYWQ6DQo+IA0KPiAJaWYgKCFibGEpDQo+IAkJcmV0dXJuOw0KPiANCj4gCWRvdGhpcygpOw0K
+PiAJZG90aGF0KCk7DQo+IAlyZXR1cm47DQo+IA0KPiBOb3RlIHRoYXQgZG90aGlzKCkgYW5kIGRv
+dGhhdCgpIGFyZSBvbmUgaW5kZW50YXRpb24gbGV2ZWwgdG8gdGhlIGxlZnQNCj4gYW5kIHRodXMg
+aGF2ZSBtb3JlIHNwYWNlIHBlciBsaW5lLg0KW0FsaXNvbiBXYW5nXSBJIHNlZS4gVGhhbmtzLg0K
+DQoNCkJlc3QgUmVnYXJkcywNCkFsaXNvbiBXYW5nDQo

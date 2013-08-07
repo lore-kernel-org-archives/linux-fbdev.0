@@ -1,233 +1,197 @@
-From: Rob Clark <robdclark@gmail.com>
-Date: Tue, 06 Aug 2013 19:06:05 +0000
+From: John Stultz <john.stultz@linaro.org>
+Date: Wed, 07 Aug 2013 03:57:41 +0000
 Subject: Re: [RFC 0/1] drm/pl111: Initial drm/kms driver for pl111
-Message-Id: <CAF6AEGtaYJfJ4WBddbtyE9P8odXOYvJXLsreMwXMLCBOsfXy7w@mail.gmail.com>
+Message-Id: <CALAqxLW-31UrG_dG0Eo+BuM9D=-dR8PtSqnXZkpUxLTQfW56nA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1374772648-19151-1-git-send-email-tom.cooksey@arm.com>
-	<CAF6AEGtspnhSGNM4_QQubVfOkZ1Gh1-Z3iyHOLBPVWuqRy81ew@mail.gmail.com>
-	<51f29ccd.f014b40a.34cc.ffffca2aSMTPIN_ADDED_BROKEN@mx.google.com>
-	<CAF6AEGvFPGueM_LHVij9KFzM6NJySHCzmaLstuzZkK5GwP+6gQ@mail.gmail.com>
-	<51ffdc7e.06b8b40a.2cc8.0fe0SMTPIN_ADDED_BROKEN@mx.google.com>
-	<CAF6AEGsyKk_G-R-OX_YcgYFDgTEmCy9Vf2LV1pAOV0452QKSww@mail.gmail.com>
-	<5200deb3.0b24b40a.3b26.ffffbadeSMTPIN_ADDED_BROKEN@mx.google.com>
-	<CAF6AEGvXcpTKrTjhvrycLqab6F9QP5fAk0ZEWxJ-WvE==PiPsA@mail.gmail.com>
-	<52010257.245fc20a.6ff8.1cfdSMTPIN_ADDED_BROKEN@mx.google.com>
-	<CAF6AEGsDA8qdShWdYQRqQ0Czn4mLAe-FoADjZdRFcbeWGGe8Hg@mail.gmail.com>
-	<52013482.e107c20a.27f9.ffffa718SMTPIN_ADDED_BROKEN@mx.google.com>
-In-Reply-To: <52013482.e107c20a.27f9.ffffa718SMTPIN_ADDED_BROKEN@mx.google.com>
+ <CAF6AEGtspnhSGNM4_QQubVfOkZ1Gh1-Z3iyHOLBPVWuqRy81ew@mail.gmail.com>
+ <51f29ccd.f014b40a.34cc.ffffca2aSMTPIN_ADDED_BROKEN@mx.google.com>
+ <CAF6AEGvFPGueM_LHVij9KFzM6NJySHCzmaLstuzZkK5GwP+6gQ@mail.gmail.com>
+In-Reply-To: <CAF6AEGvFPGueM_LHVij9KFzM6NJySHCzmaLstuzZkK5GwP+6gQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tom Cooksey <tom.cooksey@arm.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Pawel Moll <Pawel.Moll@arm.com>, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org, linaro-mm-sig@lists.linaro.org, linux-kernel@vger.kernel.org
+To: Rob Clark <robdclark@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Erik Gilling <konkers@android.com>, Pawel Moll <Pawel.Moll@arm.com>, dri-devel@lists.freedesktop.org, Ross Oldfield <ross.oldfield@linaro.org>, Tom Cooksey <tom.cooksey@arm.com>, Rebecca Schultz Zavin <rebecca@android.com>, linux-arm-kernel@lists.infradead.org
 
-On Tue, Aug 6, 2013 at 1:38 PM, Tom Cooksey <tom.cooksey@arm.com> wrote:
->
->> >> ... This is the purpose of the attach step,
->> >> so you know all the devices involved in sharing up front before
->> >> allocating the backing pages. (Or in the worst case, if you have a
->> >> "late attacher" you at least know when no device is doing dma access
->> >> to a buffer and can reallocate and move the buffer.)  A long time
->> >> back, I had a patch that added a field or two to 'struct
->> >> device_dma_parameters' so that it could be known if a device
->> >> required contiguous buffers.. looks like that never got merged, so
->> >> I'd need to dig that back up and resend it.  But the idea was to
->> >> have the 'struct device' encapsulate all the information that would
->> >> be needed to do-the-right-thing when it comes to placement.
->> >
->> > As I understand it, it's up to the exporting device to allocate the
->> > memory backing the dma_buf buffer. I guess the latest possible point
->> > you can allocate the backing pages is when map_dma_buf is first
->> > called? At that point the exporter can iterate over the current set
->> > of attachments, programmatically determine the all the constraints of
->> > all the attached drivers and attempt to allocate the backing pages
->> > in such a way as to satisfy all those constraints?
+On Mon, Jul 29, 2013 at 7:58 AM, Rob Clark <robdclark@gmail.com> wrote:
+> On Fri, Jul 26, 2013 at 11:58 AM, Tom Cooksey <tom.cooksey@arm.com> wrote:
+>> Hi Rob,
 >>
->> yes, this is the idea..  possibly some room for some helpers to help
->> out with this, but that is all under the hood from userspace
->> perspective
+>>> >  * It abuses flags parameter of DRM_IOCTL_MODE_CREATE_DUMB to also
+>>> >    allocate buffers for the GPU. Still not sure how to resolve this
+>>> >    as we don't use DRM for our GPU driver.
+>>>
+>>> any thoughts/plans about a DRM GPU driver?  Ideally long term (esp.
+>>> once the dma-fence stuff is in place), we'd have gpu-specific drm
+>>> (gpu-only, no kms) driver, and SoC/display specific drm/kms driver,
+>>> using prime/dmabuf to share between the two.
 >>
->> > Didn't you say that programmatically describing device placement
->> > constraints was an unbounded problem? I guess we would have to
->> > accept that it's not possible to describe all possible constraints
->> > and instead find a way to describe the common ones?
+>> The "extra" buffers we were allocating from armsoc DDX were really
+>> being allocated through DRM/GEM so we could get an flink name
+>> for them and pass a reference to them back to our GPU driver on
+>> the client side. If it weren't for our need to access those
+>> extra off-screen buffers with the GPU we wouldn't need to
+>> allocate them with DRM at all. So, given they are really "GPU"
+>> buffers, it does absolutely make sense to allocate them in a
+>> different driver to the display driver.
 >>
->> well, the point I'm trying to make, is by dividing your constraints
->> into two groups, one that impacts and is handled by userspace, and one
->> that is in the kernel (ie. where the pages go), you cut down the
->> number of permutations that the kernel has to care about considerably.
->>  And kernel already cares about, for example, what range of addresses
->> that a device can dma to/from.  I think really the only thing missing
->> is the max # of sglist entries (contiguous or not)
+>> However, to avoid unnecessary memcpys & related cache
+>> maintenance ops, we'd also like the GPU to render into buffers
+>> which are scanned out by the display controller. So let's say
+>> we continue using DRM_IOCTL_MODE_CREATE_DUMB to allocate scan
+>> out buffers with the display's DRM driver but a custom ioctl
+>> on the GPU's DRM driver to allocate non scanout, off-screen
+>> buffers. Sounds great, but I don't think that really works
+>> with DRI2. If we used two drivers to allocate buffers, which
+>> of those drivers do we return in DRI2ConnectReply? Even if we
+>> solve that somehow, GEM flink names are name-spaced to a
+>> single device node (AFAIK). So when we do a DRI2GetBuffers,
+>> how does the EGL in the client know which DRM device owns GEM
+>> flink name "1234"? We'd need some pretty dirty hacks.
 >
-> I think it's more than physically contiguous or not.
+> You would return the name of the display driver allocating the
+> buffers.  On the client side you can use generic ioctls to go from
+> flink -> handle -> dmabuf.  So the client side would end up opening
+> both the display drm device and the gpu, but without needing to know
+> too much about the display.
 >
-> For example, it can be more efficient to use large page sizes on
-> devices with IOMMUs to reduce TLB traffic. I think the size and even
-> the availability of large pages varies between different IOMMUs.
-
-sure.. but I suppose if we can spiff out dma_params to express "I need
-contiguous", perhaps we can add some way to express "I prefer
-as-contiguous-as-possible".. either way, this is about where the pages
-are placed, and not about the layout of pixels within the page, so
-should be in kernel.  It's something that is missing, but I believe
-that it belongs in dma_params and hidden behind dma_alloc_*() for
-simple drivers.
-
-> There's also the issue of buffer stride alignment. As I say, if the
-> buffer is to be written by a tile-based GPU like Mali, it's more
-> efficient if the buffer's stride is aligned to the max AXI bus burst
-> length. Though I guess a buffer stride only makes sense as a concept
-> when interpreting the data as a linear-layout 2D image, so perhaps
-> belongs in user-space along with format negotiation?
+> (Probably in (for example) mesa there needs to be a bit of work to
+> handle this better, but I think that would be needed as well for
+> sharing between, say, nouveau and udl displaylink driver.. which is
+> really the same scenario.)
 >
-
-Yeah.. this isn't about where the pages go, but about the arrangement
-within a page.
-
-And, well, except for hw that supports the same tiling (or
-compressed-fb) in display+gpu, you probably aren't sharing tiled
-buffers.
-
+>> So then we looked at allocating _all_ buffers with the GPU's
+>> DRM driver. That solves the DRI2 single-device-name and single
+>> name-space issue. It also means the GPU would _never_ render
+>> into buffers allocated through DRM_IOCTL_MODE_CREATE_DUMB.
 >
->> > One problem with this is it duplicates a lot of logic in each
->> > driver which can export a dma_buf buffer. Each exporter will need to
->> > do pretty much the same thing: iterate over all the attachments,
->> > determine of all the constraints (assuming that can be done) and
->> > allocate pages such that the lowest-common-denominator is satisfied.
->> >
->> > Perhaps rather than duplicating that logic in every driver, we could
->> > Instead move allocation of the backing pages into dma_buf itself?
->> >
+> Well, I think we can differentiate between shared buffers and internal
+> buffers (textures, vertex upload, etc, etc).
+>
+> For example, in mesa/gallium driver there are two paths to getting a
+> buffer...  ->resource_create() and ->resource_from_handle(), the
+> latter is the path you go for dri2 buffers shared w/ x11.  The former
+> is buffers that are just internal to gpu (if !(bind &
+> PIPE_BIND_SHARED)).  I guess you must have something similar in mali
+> driver.
+>
+>> One thing I wasn't sure about is if there was an objection
+>> to using PRIME to export scanout buffers allocated with
+>> DRM_IOCTL_MODE_CREATE_DUMB and then importing them into a GPU
+>> driver to be rendered into? Is that a concern?
+>
+> well.. it wasn't quite the original intention of the 'dumb' ioctls.
+> But I guess in the end if you hand the gpu a buffer with a
+> layout/format that it can't grok, then gpu does a staging texture plus
+> copy.  If you had, for example, some setup w/ gpu that could only
+> render to tiled format, plus a display that could scanout that format,
+> then your DDX driver would need to allocate the dri2 buffers with
+> something other than dumb ioctl.  (But at that point, you probably
+> need to implement your own EXA so you could hook in your own custom
+> upload-to/download-from screen fxns for sw fallbacks, so you're not
+> talking about using generic DDX anyways.)
+>
+>> Anyway, that latter case also gets quite difficult. The "GPU"
+>> DRM driver would need to know the constraints of the display
+>> controller when allocating buffers intended to be scanned out.
+>> For example, pl111 typically isn't behind an IOMMU and so
+>> requires physically contiguous memory. We'd have to teach the
+>> GPU's DRM driver about the constraints of the display HW. Not
+>> exactly a clean driver model. :-(
 >>
->> I tend to think it is better to add helpers as we see common patterns
->> emerge, which drivers can opt-in to using.  I don't think that we
->> should move allocation into dma_buf itself, but it would perhaps be
->> useful to have dma_alloc_*() variants that could allocate for multiple
->> devices.
+>> I'm still a little stuck on how to proceed, so any ideas
+>> would greatly appreciated! My current train of thought is
+>> having a kind of SoC-specific DRM driver which allocates
+>> buffers for both display and GPU within a single GEM
+>> namespace. That SoC-specific DRM driver could then know the
+>> constraints of both the GPU and the display HW. We could then
+>> use PRIME to export buffers allocated with the SoC DRM driver
+>> and import them into the GPU and/or display DRM driver.
 >
-> A helper could work I guess, though I quite like the idea of having
-> dma_alloc_*() variants which take a list of devices to allocate memory
-> for.
+> Usually if the display drm driver is allocating the buffers that might
+> be scanned out, it just needs to have minimal knowledge of the GPU
+> (pitch alignment constraints).  I don't think we need a 3rd device
+> just to allocate buffers.
 >
->
->> That would help for simple stuff, although I'd suspect
->> eventually a GPU driver will move away from that.  (Since you probably
->> want to play tricks w/ pools of pages that are pre-zero'd and in the
->> correct cache state, use spare cycles on the gpu or dma engine to
->> pre-zero uncached pages, and games like that.)
->
-> So presumably you're talking about a GPU driver being the exporter
-> here? If so, how could the GPU driver do these kind of tricks on
-> memory shared with another device?
->
+> Really I don't think the separate display drm and gpu drm device is
+> much different from desktop udl/displaylink case.  Or desktop
+> integrated-gpu + external gpu.
 
-Yes, that is gpu-as-exporter.  If someone else is allocating buffers,
-it is up to them to do these tricks or not.  Probably there is a
-pretty good chance that if you aren't a GPU you don't need those sort
-of tricks for fast allocation of transient upload buffers, staging
-textures, temporary pixmaps, etc.  Ie. I don't really think a v4l
-camera or video decoder would benefit from that sort of optimization.
+Although on many SoCs, aren't the pipelines a bit more complicated?
+(ie: camera data -> doing face detection, -> applying filters w/ the
+gpu -> and displaying it).
 
->
->> >> > Anyway, assuming user-space can figure out how a buffer should be
->> >> > stored in memory, how does it indicate this to a kernel driver and
->> >> > actually allocate it? Which ioctl on which device does user-space
->> >> > call, with what parameters? Are you suggesting using something
->> >> > like ION which exposes the low-level details of how buffers are
->> > >> laid out in physical memory to userspace? If not, what?
->> >> >
->> >>
->> >> no, userspace should not need to know this.  And having a central
->> >> driver that knows this for all the other drivers in the system
->> >> doesn't really solve anything and isn't really scalable.  At best
->> >> you might want, in some cases, a flag you can pass when allocating.
->> >> For example, some of the drivers have a 'SCANOUT' flag that can be
->> >> passed when allocating a GEM buffer, as a hint to the kernel that
->> >> 'if this hw requires contig memory for scanout, allocate this
->> >> buffer contig'. But really, when it comes to sharing buffers
->> >> between devices, we want this sort of information in dev->dma_params
->> >> of the importing device(s).
->> >
->> > If you had a single driver which knew the constraints of all devices
->> > on that particular SoC and the interface allowed user-space to
->> > specify which devices a buffer is intended to be used with, I guess
->> > it could pretty trivially allocate pages which satisfy those
-> constraints?
+While ION does have interface issues (in that it requires userland to
+hard-code particular constraints for that specific SoC) just the idea
+of having the centralized allocator that manages the constraints does
+seem to make sense for these larger pipelines (and also the fact that
+there's different allocation APIs for various devices).
+
+One idea that was discussed in some of the hallway discussions at
+connect was if there was some way for the hardware to expose a
+"constraint cookie" via sysfs (basically a bit field where the meaning
+of each bit is opaque to userland - so each bit can mean a different
+constraint on different devices), userland could determine which
+combination of devices it wanted to pipe a buffer through, then AND
+the device constraint cookies together,  and pass that to a
+centralized allocator. This allows the constraint solving to be pushed
+out to userland, but also avoids what I see as the biggest negatives
+in ION (ie: the heap mask is defined to userland, making it
+inflexible, as well as the lack of a method for userland to discover
+device constraints, so they're instead hard-coded in userland for each
+device).
+
+>> Note: While it doesn't use the DRM framework, the Mali T6xx
+>> kernel driver has supported importing buffers through dma_buf
+>> for some time. I've even written an EGL extension :-):
 >>
->> keep in mind, even a number of SoC's come with pcie these days.  You
->> already have things like
+>> <http://www.khronos.org/registry/egl/extensions/EXT/EGL_EXT_image_dma_buf_im
+>> port.txt>
 >>
->>   https://developer.nvidia.com/content/kayla-platform
 >>
->> You probably want to get out of the SoC mindset, otherwise you are
->> going to make bad assumptions that come back to bite you later on.
->
-> Sure - there are always going to be PC-like devices where the
-> hardware configuration isn't fixed like it is on a traditional SoC.
-> But I'd rather have a simple solution which works on traditional SoCs
-> than no solution at all. Today our solution is to over-load the dumb
-> buffer alloc functions of the display's DRM driver - For now I'm just
-> looking for the next step up from that! ;-)
->
-
-True.. the original intention, which is perhaps a bit desktop-centric,
-really was for there to be a userspace component talking to the drm
-driver for allocation, ie. xf86-video-foo and/or
-src/gallium/drivers/foo (for example) ;-)
-
-Which means for x11 having a SoC vendor specific xf86-video-foo for
-x11..  or vendor specific gbm implementation for wayland.  (Although
-at least in the latter case it is a pretty small piece of code.)  But
-that is probably what you are trying to avoid.
-
-At any rate, for both xorg and wayland/gbm, you know when a buffer is
-going to be a scanout buffer.  What I'd recommend is define a small
-userspace API that your customers (the SoC vendors) implement to
-allocate a scanout buffer and hand you back a dmabuf fd.  That could
-be used both for x11 and for gbm.  Inputs should be requested
-width/height and format.  And outputs pitch plus dmabuf fd.
-
-(Actually you might even just want to use gbm as your starting point.
-You could probably just use gbm from xf86-video-armsoc for allocation,
-to have one thing that works for both wayland and x11.  Scanout and
-cursor buffers should go to vendor/SoC specific fxn, rest can be
-allocated from mali kernel driver.)
-
->
->> > wouldn't need a way to programmatically describe the constraints
->> > either: As you say, if userspace sets the "SCANOUT" flag, it would
->> > just "know" that on this SoC, that buffer needs to be physically
->> > contiguous for example.
+>>> I'm not entirely sure that the directions that the current CDF
+>>> proposals are headed is necessarily the right way forward.  I'd prefer
+>>> to see small/incremental evolution of KMS (ie. add drm_bridge and
+>>> drm_panel, and refactor the existing encoder-slave).  Keeping it
+>>> inside drm means that we can evolve it more easily, and avoid layers
+>>> of glue code for no good reason.
 >>
->> not really.. it just knows it wants to scanout the buffer, and tells
->> this as a hint to the kernel.
+>> I think CDF could allow vendors to re-use code they've written
+>> for their Android driver stack in DRM drivers more easily. Though
+>> I guess ideally KMS would evolve to a point where it could be used
+>> by an Android driver stack. I.e. Support explicit fences.
 >>
->> For example, on omapdrm, the SCANOUT flag does nothing on omap4+
->> (where phys contig is not required for scanout), but causes CMA
->> (dma_alloc_*()) to be used on omap3.  Userspace doesn't care.  It just
->> knows that it wants to be able to scanout that particular buffer.
 >
-> I think that's the idea? The omap3's allocator driver would use
-> contiguous memory when it detects the SCANOUT flag whereas the omap4
-> allocator driver wouldn't have to. No complex negotiation of
-> constraints - it just "knows".
->
+> yeah, the best would be evolving DRM/KMS to the point that it meets
+> android requirements.  Because I really don't think android has any
+> special requirements compared to, say, a wayland compositor.  (Other
+> than the way they do synchronization.  But that doesn't really *need*
+> to be different, as far as I can tell.)  It would certainly be easier
+> if android dev's actually participated in upstream linux graphics, and
+> talked about what they needed, and maybe even contributed a patch or
+> two.  But that is a whole different topic.
 
-well, it is same allocating driver in both cases (although maybe that
-is unimportant).  The "it" that just knows it wants to scanout is
-userspace.  The "it" that just knows that scanout translates to
-contiguous (or not) is the kernel.  Perhaps we are saying the same
-thing ;-)
+It also couldn't hurt to cc them on these discussions (Rebecca and Erik cc'ed :)
 
-BR,
--R
+I think Ross covered much of the KMS issues at Linaro Connect (Video
+here if you want to spend the time: http://youtu.be/AuoFABKS_Dk), and
+indeed, the explicit syncing requirement is probably the biggest
+barrier. My understanding is the additional parallelism/performance
+that the explicit method provides is the key requirement (though maybe
+Erik or Ross can chime in with further details? - I've been told Erik
+has a long list as to why explicit is preferred over implicit and it
+would be good to get that documented somewhere :)
 
->
-> Cheers,
->
-> Tom
->
->
->
->
+I understand the implicit model is easier to program for, and Daniel
+mentioned dynamic buffer eviction as having a requirement on the
+implicit model, so I'm currently in the camp of assuming the
+synchronization needs are different enough that one method alone (of
+the two currently presented) likely won't work. My current hope is
+there's some hybrid approach that can be used (implicitly maybe for
+the majority of cases, but with the option of doing explicit syncing
+when necessary).
+
+thanks
+-john (who's unfortunately heading off on vacation soon, so might not
+be fast to reply)

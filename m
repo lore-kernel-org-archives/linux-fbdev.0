@@ -1,280 +1,138 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 29 Aug 2013 13:31:56 +0000
-Subject: [PATCH 11/15] OMAPDSS: VENC: remove code related to old panel model
-Message-Id: <1377783120-14001-12-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Date: Fri, 09 Aug 2013 23:03:00 +0000
+Subject: [PATCH/RFC v3 01/19] OMAPDSS: panels: Rename Kconfig options to OMAP2_DISPLAY_*
+Message-Id: <1376089398-13322-2-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+In-Reply-To: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
 
-Now that the old panel drivers have been removed, we can remove the
-old-model API and related code from the DSS encoder drivers.
+The DISPLAY_ prefix will clash with the Common Display Framework, rename
+it.
 
-This patch removes the code from the VENC driver.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 ---
- drivers/video/omap2/dss/Makefile |   2 +-
- drivers/video/omap2/dss/dss.h    |  14 -----
- drivers/video/omap2/dss/venc.c   | 118 ++++++---------------------------------
- 3 files changed, 17 insertions(+), 117 deletions(-)
+ drivers/video/omap2/displays-new/Kconfig  | 24 ++++++++++++------------
+ drivers/video/omap2/displays-new/Makefile | 24 ++++++++++++------------
+ 2 files changed, 24 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
-index e022ed1..94832eb 100644
---- a/drivers/video/omap2/dss/Makefile
-+++ b/drivers/video/omap2/dss/Makefile
-@@ -7,7 +7,7 @@ omapdss-y += manager.o manager-sysfs.o overlay.o overlay-sysfs.o apply.o \
- 	dispc-compat.o display-sysfs.o
- omapdss-$(CONFIG_OMAP2_DSS_DPI) += dpi.o
- omapdss-$(CONFIG_OMAP2_DSS_RFBI) += rfbi.o
--omapdss-$(CONFIG_OMAP2_DSS_VENC) += venc.o venc_panel.o
-+omapdss-$(CONFIG_OMAP2_DSS_VENC) += venc.o
- omapdss-$(CONFIG_OMAP2_DSS_SDI) += sdi.o
- omapdss-$(CONFIG_OMAP2_DSS_DSI) += dsi.o
- omapdss-$(CONFIG_OMAP4_DSS_HDMI) += hdmi.o ti_hdmi_4xxx_ip.o
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 6142885..68dd27f 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -434,20 +434,6 @@ int dispc_wb_setup(const struct omap_dss_writeback_info *wi,
- /* VENC */
- int venc_init_platform_driver(void) __init;
- void venc_uninit_platform_driver(void) __exit;
--int omapdss_venc_display_enable(struct omap_dss_device *dssdev);
--void omapdss_venc_display_disable(struct omap_dss_device *dssdev);
--void omapdss_venc_set_timings(struct omap_dss_device *dssdev,
--		struct omap_video_timings *timings);
--int omapdss_venc_check_timings(struct omap_dss_device *dssdev,
--		struct omap_video_timings *timings);
--u32 omapdss_venc_get_wss(struct omap_dss_device *dssdev);
--int omapdss_venc_set_wss(struct omap_dss_device *dssdev, u32 wss);
--void omapdss_venc_set_type(struct omap_dss_device *dssdev,
--		enum omap_dss_venc_type type);
--void omapdss_venc_invert_vid_out_polarity(struct omap_dss_device *dssdev,
--		bool invert_polarity);
--int venc_panel_init(void);
--void venc_panel_exit(void);
+diff --git a/drivers/video/omap2/displays-new/Kconfig b/drivers/video/omap2/displays-new/Kconfig
+index 6c90885..2a44b41 100644
+--- a/drivers/video/omap2/displays-new/Kconfig
++++ b/drivers/video/omap2/displays-new/Kconfig
+@@ -1,68 +1,68 @@
+ menu "OMAP Display Device Drivers (new device model)"
+         depends on OMAP2_DSS
  
- /* HDMI */
- int hdmi_init_platform_driver(void) __init;
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 496a106..0d8ccde 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -492,7 +492,7 @@ static void venc_power_off(struct omap_dss_device *dssdev)
- 	venc_runtime_put();
- }
+-config DISPLAY_ENCODER_TFP410
++config OMAP2_DISPLAY_ENCODER_TFP410
+         tristate "TFP410 DPI to DVI Encoder"
+ 	help
+ 	  Driver for TFP410 DPI to DVI encoder.
  
--int omapdss_venc_display_enable(struct omap_dss_device *dssdev)
-+static int venc_display_enable(struct omap_dss_device *dssdev)
- {
- 	struct omap_dss_device *out = &venc.output;
- 	int r;
-@@ -521,7 +521,7 @@ err0:
- 	return r;
- }
+-config DISPLAY_ENCODER_TPD12S015
++config OMAP2_DISPLAY_ENCODER_TPD12S015
+         tristate "TPD12S015 HDMI ESD protection and level shifter"
+ 	help
+ 	  Driver for TPD12S015, which offers HDMI ESD protection and level
+ 	  shifting.
  
--void omapdss_venc_display_disable(struct omap_dss_device *dssdev)
-+static void venc_display_disable(struct omap_dss_device *dssdev)
- {
- 	DSSDBG("venc_display_disable\n");
+-config DISPLAY_CONNECTOR_DVI
++config OMAP2_DISPLAY_CONNECTOR_DVI
+         tristate "DVI Connector"
+ 	depends on I2C
+ 	help
+ 	  Driver for a generic DVI connector.
  
-@@ -532,7 +532,7 @@ void omapdss_venc_display_disable(struct omap_dss_device *dssdev)
- 	mutex_unlock(&venc.venc_lock);
- }
+-config DISPLAY_CONNECTOR_HDMI
++config OMAP2_DISPLAY_CONNECTOR_HDMI
+         tristate "HDMI Connector"
+ 	help
+ 	  Driver for a generic HDMI connector.
  
--void omapdss_venc_set_timings(struct omap_dss_device *dssdev,
-+static void venc_set_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
- {
- 	DSSDBG("venc_set_timings\n");
-@@ -550,7 +550,7 @@ void omapdss_venc_set_timings(struct omap_dss_device *dssdev,
- 	mutex_unlock(&venc.venc_lock);
- }
+-config DISPLAY_CONNECTOR_ANALOG_TV
++config OMAP2_DISPLAY_CONNECTOR_ANALOG_TV
+         tristate "Analog TV Connector"
+ 	help
+ 	  Driver for a generic analog TV connector.
  
--int omapdss_venc_check_timings(struct omap_dss_device *dssdev,
-+static int venc_check_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
- {
- 	DSSDBG("venc_check_timings\n");
-@@ -574,13 +574,13 @@ static void venc_get_timings(struct omap_dss_device *dssdev,
- 	mutex_unlock(&venc.venc_lock);
- }
+-config DISPLAY_PANEL_DPI
++config OMAP2_DISPLAY_PANEL_DPI
+ 	tristate "Generic DPI panel"
+ 	help
+ 	  Driver for generic DPI panels.
  
--u32 omapdss_venc_get_wss(struct omap_dss_device *dssdev)
-+static u32 venc_get_wss(struct omap_dss_device *dssdev)
- {
- 	/* Invert due to VENC_L21_WC_CTL:INV=1 */
- 	return (venc.wss_data >> 8) ^ 0xfffff;
- }
+-config DISPLAY_PANEL_DSI_CM
++config OMAP2_DISPLAY_PANEL_DSI_CM
+ 	tristate "Generic DSI Command Mode Panel"
+ 	help
+ 	  Driver for generic DSI command mode panels.
  
--int omapdss_venc_set_wss(struct omap_dss_device *dssdev, u32 wss)
-+static int venc_set_wss(struct omap_dss_device *dssdev, u32 wss)
- {
- 	const struct venc_config *config;
- 	int r;
-@@ -609,7 +609,7 @@ err:
- 	return r;
- }
+-config DISPLAY_PANEL_SONY_ACX565AKM
++config OMAP2_DISPLAY_PANEL_SONY_ACX565AKM
+ 	tristate "ACX565AKM Panel"
+ 	depends on SPI && BACKLIGHT_CLASS_DEVICE
+ 	help
+ 	  This is the LCD panel used on Nokia N900
  
--void omapdss_venc_set_type(struct omap_dss_device *dssdev,
-+static void venc_set_type(struct omap_dss_device *dssdev,
- 		enum omap_dss_venc_type type)
- {
- 	mutex_lock(&venc.venc_lock);
-@@ -619,7 +619,7 @@ void omapdss_venc_set_type(struct omap_dss_device *dssdev,
- 	mutex_unlock(&venc.venc_lock);
- }
+-config DISPLAY_PANEL_LGPHILIPS_LB035Q02
++config OMAP2_DISPLAY_PANEL_LGPHILIPS_LB035Q02
+ 	tristate "LG.Philips LB035Q02 LCD Panel"
+ 	depends on SPI
+ 	help
+ 	  LCD Panel used on the Gumstix Overo Palo35
  
--void omapdss_venc_invert_vid_out_polarity(struct omap_dss_device *dssdev,
-+static void venc_invert_vid_out_polarity(struct omap_dss_device *dssdev,
- 		bool invert_polarity)
- {
- 	mutex_lock(&venc.venc_lock);
-@@ -721,74 +721,6 @@ static int venc_get_clocks(struct platform_device *pdev)
- 	return 0;
- }
+-config DISPLAY_PANEL_SHARP_LS037V7DW01
++config OMAP2_DISPLAY_PANEL_SHARP_LS037V7DW01
+         tristate "Sharp LS037V7DW01 LCD Panel"
+         depends on BACKLIGHT_CLASS_DEVICE
+         help
+           LCD Panel used in TI's SDP3430 and EVM boards
  
--static struct omap_dss_device *venc_find_dssdev(struct platform_device *pdev)
--{
--	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
--	const char *def_disp_name = omapdss_get_default_display_name();
--	struct omap_dss_device *def_dssdev;
--	int i;
--
--	def_dssdev = NULL;
--
--	for (i = 0; i < pdata->num_devices; ++i) {
--		struct omap_dss_device *dssdev = pdata->devices[i];
--
--		if (dssdev->type != OMAP_DISPLAY_TYPE_VENC)
--			continue;
--
--		if (def_dssdev = NULL)
--			def_dssdev = dssdev;
--
--		if (def_disp_name != NULL &&
--				strcmp(dssdev->name, def_disp_name) = 0) {
--			def_dssdev = dssdev;
--			break;
--		}
--	}
--
--	return def_dssdev;
--}
--
--static int venc_probe_pdata(struct platform_device *vencdev)
--{
--	struct omap_dss_device *plat_dssdev;
--	struct omap_dss_device *dssdev;
--	int r;
--
--	plat_dssdev = venc_find_dssdev(vencdev);
--
--	if (!plat_dssdev)
--		return 0;
--
--	r = venc_init_regulator();
--	if (r)
--		return r;
--
--	dssdev = dss_alloc_and_init_device(&vencdev->dev);
--	if (!dssdev)
--		return -ENOMEM;
--
--	dss_copy_device_pdata(dssdev, plat_dssdev);
--
--	r = omapdss_output_set_device(&venc.output, dssdev);
--	if (r) {
--		DSSERR("failed to connect output to new device: %s\n",
--				dssdev->name);
--		dss_put_device(dssdev);
--		return r;
--	}
--
--	r = dss_add_device(dssdev);
--	if (r) {
--		DSSERR("device %s register failed: %d\n", dssdev->name, r);
--		omapdss_output_unset_device(&venc.output);
--		dss_put_device(dssdev);
--		return r;
--	}
--
--	return 0;
--}
--
- static int venc_connect(struct omap_dss_device *dssdev,
- 		struct omap_dss_device *dst)
- {
-@@ -836,18 +768,18 @@ static const struct omapdss_atv_ops venc_ops = {
- 	.connect = venc_connect,
- 	.disconnect = venc_disconnect,
+-config DISPLAY_PANEL_TPO_TD043MTEA1
++config OMAP2_DISPLAY_PANEL_TPO_TD043MTEA1
+         tristate "TPO TD043MTEA1 LCD Panel"
+         depends on SPI
+         help
+           LCD Panel used in OMAP3 Pandora
  
--	.enable = omapdss_venc_display_enable,
--	.disable = omapdss_venc_display_disable,
-+	.enable = venc_display_enable,
-+	.disable = venc_display_disable,
- 
--	.check_timings = omapdss_venc_check_timings,
--	.set_timings = omapdss_venc_set_timings,
-+	.check_timings = venc_check_timings,
-+	.set_timings = venc_set_timings,
- 	.get_timings = venc_get_timings,
- 
--	.set_type = omapdss_venc_set_type,
--	.invert_vid_out_polarity = omapdss_venc_invert_vid_out_polarity,
-+	.set_type = venc_set_type,
-+	.invert_vid_out_polarity = venc_invert_vid_out_polarity,
- 
--	.set_wss = omapdss_venc_set_wss,
--	.get_wss = omapdss_venc_get_wss,
-+	.set_wss = venc_set_wss,
-+	.get_wss = venc_get_wss,
- };
- 
- static void venc_init_output(struct platform_device *pdev)
-@@ -913,26 +845,12 @@ static int omap_venchw_probe(struct platform_device *pdev)
- 
- 	venc_runtime_put();
- 
--	r = venc_panel_init();
--	if (r)
--		goto err_panel_init;
--
- 	dss_debugfs_create_file("venc", venc_dump_regs);
- 
- 	venc_init_output(pdev);
- 
--	if (pdev->dev.platform_data) {
--		r = venc_probe_pdata(pdev);
--		if (r)
--			goto err_probe;
--	}
--
- 	return 0;
- 
--err_probe:
--	venc_panel_exit();
--	venc_uninit_output(pdev);
--err_panel_init:
- err_runtime_get:
- 	pm_runtime_disable(&pdev->dev);
- 	return r;
-@@ -940,10 +858,6 @@ err_runtime_get:
- 
- static int __exit omap_venchw_remove(struct platform_device *pdev)
- {
--	dss_unregister_child_devices(&pdev->dev);
--
--	venc_panel_exit();
--
- 	venc_uninit_output(pdev);
- 
- 	pm_runtime_disable(&pdev->dev);
+-config DISPLAY_PANEL_NEC_NL8048HL11
++config OMAP2_DISPLAY_PANEL_NEC_NL8048HL11
+ 	tristate "NEC NL8048HL11 Panel"
+ 	depends on SPI
+ 	depends on BACKLIGHT_CLASS_DEVICE
+diff --git a/drivers/video/omap2/displays-new/Makefile b/drivers/video/omap2/displays-new/Makefile
+index 5aeb11b..768ad94 100644
+--- a/drivers/video/omap2/displays-new/Makefile
++++ b/drivers/video/omap2/displays-new/Makefile
+@@ -1,12 +1,12 @@
+-obj-$(CONFIG_DISPLAY_ENCODER_TFP410) += encoder-tfp410.o
+-obj-$(CONFIG_DISPLAY_ENCODER_TPD12S015) += encoder-tpd12s015.o
+-obj-$(CONFIG_DISPLAY_CONNECTOR_DVI) += connector-dvi.o
+-obj-$(CONFIG_DISPLAY_CONNECTOR_HDMI) += connector-hdmi.o
+-obj-$(CONFIG_DISPLAY_CONNECTOR_ANALOG_TV) += connector-analog-tv.o
+-obj-$(CONFIG_DISPLAY_PANEL_DPI) += panel-dpi.o
+-obj-$(CONFIG_DISPLAY_PANEL_DSI_CM) += panel-dsi-cm.o
+-obj-$(CONFIG_DISPLAY_PANEL_SONY_ACX565AKM) += panel-sony-acx565akm.o
+-obj-$(CONFIG_DISPLAY_PANEL_LGPHILIPS_LB035Q02) += panel-lgphilips-lb035q02.o
+-obj-$(CONFIG_DISPLAY_PANEL_SHARP_LS037V7DW01) += panel-sharp-ls037v7dw01.o
+-obj-$(CONFIG_DISPLAY_PANEL_TPO_TD043MTEA1) += panel-tpo-td043mtea1.o
+-obj-$(CONFIG_DISPLAY_PANEL_NEC_NL8048HL11) += panel-nec-nl8048hl11.o
++obj-$(CONFIG_OMAP2_DISPLAY_ENCODER_TFP410) += encoder-tfp410.o
++obj-$(CONFIG_OMAP2_DISPLAY_ENCODER_TPD12S015) += encoder-tpd12s015.o
++obj-$(CONFIG_OMAP2_DISPLAY_CONNECTOR_DVI) += connector-dvi.o
++obj-$(CONFIG_OMAP2_DISPLAY_CONNECTOR_HDMI) += connector-hdmi.o
++obj-$(CONFIG_OMAP2_DISPLAY_CONNECTOR_ANALOG_TV) += connector-analog-tv.o
++obj-$(CONFIG_OMAP2_DISPLAY_PANEL_DPI) += panel-dpi.o
++obj-$(CONFIG_OMAP2_DISPLAY_PANEL_DSI_CM) += panel-dsi-cm.o
++obj-$(CONFIG_OMAP2_DISPLAY_PANEL_SONY_ACX565AKM) += panel-sony-acx565akm.o
++obj-$(CONFIG_OMAP2_DISPLAY_PANEL_LGPHILIPS_LB035Q02) += panel-lgphilips-lb035q02.o
++obj-$(CONFIG_OMAP2_DISPLAY_PANEL_SHARP_LS037V7DW01) += panel-sharp-ls037v7dw01.o
++obj-$(CONFIG_OMAP2_DISPLAY_PANEL_TPO_TD043MTEA1) += panel-tpo-td043mtea1.o
++obj-$(CONFIG_OMAP2_DISPLAY_PANEL_NEC_NL8048HL11) += panel-nec-nl8048hl11.o
 -- 
-1.8.1.2
+1.8.1.5
 

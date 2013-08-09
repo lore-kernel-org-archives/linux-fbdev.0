@@ -1,306 +1,168 @@
-From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Date: Fri, 09 Aug 2013 23:03:08 +0000
-Subject: [PATCH/RFC v3 09/19] video: panel: Add DPI panel support
-Message-Id: <1376089398-13322-10-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 09 Aug 2013 08:38:53 +0000
+Subject: [RFC 08/22] OMAPDSS: Add DT support to DSS, DISPC, DPI, HDMI, VENC
+Message-Id: <1376037547-10859-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-In-Reply-To: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The Display Pixel Interface is a configurable-width video-only
-unidirectional parallel bus standard that defines video formats and
-signaling for panel devices.
+Add the code to make DSS, DISPC, DPI, HDMI and VENC drivers work with
+device tree on OMAP3 and OMAP4. The only change is adding the
+of_match_tables.
 
-This driver implements support for simple DPI panels with no runtime
-configuration capabilities (GPIOs- and/or regulators-based control can
-be implemented later when needed) and exposes it as a display entity.
-The panel native video mode is passed to the driver through platform
-data or device tree properties.
-
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/display/Kconfig     |  10 ++
- drivers/video/display/Makefile    |   1 +
- drivers/video/display/panel-dpi.c | 207 ++++++++++++++++++++++++++++++++++++++
- include/video/panel-dpi.h         |  24 +++++
- 4 files changed, 242 insertions(+)
- create mode 100644 drivers/video/display/panel-dpi.c
- create mode 100644 include/video/panel-dpi.h
+ drivers/video/omap2/dss/dispc.c |  7 +++++++
+ drivers/video/omap2/dss/dpi.c   |  8 ++++++++
+ drivers/video/omap2/dss/dss.c   | 10 ++++++++++
+ drivers/video/omap2/dss/hdmi.c  |  6 ++++++
+ drivers/video/omap2/dss/venc.c  |  7 +++++++
+ 5 files changed, 38 insertions(+)
 
-diff --git a/drivers/video/display/Kconfig b/drivers/video/display/Kconfig
-index f7532c1..bce09d6 100644
---- a/drivers/video/display/Kconfig
-+++ b/drivers/video/display/Kconfig
-@@ -9,4 +9,14 @@ config DISPLAY_MIPI_DBI
- 	tristate
- 	default n
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 02a7340..b4dccb8 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -3743,12 +3743,19 @@ static const struct dev_pm_ops dispc_pm_ops = {
+ 	.runtime_resume = dispc_runtime_resume,
+ };
  
-+config DISPLAY_PANEL_DPI
-+	tristate "DPI (Parallel) Display Panels"
-+	---help---
-+	  Support for simple digital (parallel) pixel interface panels. Those
-+	  panels receive pixel data through a parallel bus and have no control
-+	  bus.
++static const struct of_device_id dispc_of_match[] = {
++	{ .compatible = "ti,omap3-dispc", },
++	{ .compatible = "ti,omap4-dispc", },
++	{},
++};
 +
-+	  If you are in doubt, say N. To compile this driver as a module, choose
-+	  M here; the module will be called panel-dpi.
-+
- endif # DISPLAY_CORE
-diff --git a/drivers/video/display/Makefile b/drivers/video/display/Makefile
-index 59022d2..31c017b 100644
---- a/drivers/video/display/Makefile
-+++ b/drivers/video/display/Makefile
-@@ -2,3 +2,4 @@ display-y					:= display-core.o \
- 						   display-notifier.o
- obj-$(CONFIG_DISPLAY_CORE)			+= display.o
- obj-$(CONFIG_DISPLAY_MIPI_DBI)			+= mipi-dbi-bus.o
-+obj-$(CONFIG_DISPLAY_PANEL_DPI)			+= panel-dpi.o
-diff --git a/drivers/video/display/panel-dpi.c b/drivers/video/display/panel-dpi.c
-new file mode 100644
-index 0000000..b1ecf6d
---- /dev/null
-+++ b/drivers/video/display/panel-dpi.c
-@@ -0,0 +1,207 @@
-+/*
-+ * DPI Display Panel
-+ *
-+ * Copyright (C) 2012 Renesas Solutions Corp.
-+ *
-+ * Contacts: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
+ static struct platform_driver omap_dispchw_driver = {
+ 	.remove         = __exit_p(omap_dispchw_remove),
+ 	.driver         = {
+ 		.name   = "omapdss_dispc",
+ 		.owner  = THIS_MODULE,
+ 		.pm	= &dispc_pm_ops,
++		.of_match_table = dispc_of_match,
+ 	},
+ };
+ 
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index a6b331e..6b832c8 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -30,6 +30,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/string.h>
 +#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+
-+#include <video/display.h>
-+#include <video/of_display_timing.h>
-+#include <video/of_videomode.h>
-+#include <video/panel-dpi.h>
-+#include <video/videomode.h>
-+
-+struct panel_dpi {
-+	struct display_entity entity;
-+
-+	unsigned int width;
-+	unsigned int height;
-+	struct videomode mode;
+ 
+ #include <video/omapdss.h>
+ 
+@@ -801,12 +802,19 @@ static int __exit omap_dpi_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id dpi_of_match[] = {
++	{ .compatible = "ti,omap3-dpi", },
++	{ .compatible = "ti,omap4-dpi", },
++	{},
 +};
 +
-+static inline struct panel_dpi *to_panel_dpi(struct display_entity *e)
-+{
-+	return container_of(e, struct panel_dpi, entity);
-+}
-+
-+static const struct display_entity_interface_params panel_dpi_params = {
-+	.type = DISPLAY_ENTITY_INTERFACE_DPI,
+ static struct platform_driver omap_dpi_driver = {
+ 	.probe		= omap_dpi_probe,
+ 	.remove         = __exit_p(omap_dpi_remove),
+ 	.driver         = {
+ 		.name   = "omapdss_dpi",
+ 		.owner  = THIS_MODULE,
++		.of_match_table = dpi_of_match,
+ 	},
+ };
+ 
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index bd01608..d0d61b1 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -23,6 +23,7 @@
+ #define DSS_SUBSYS_NAME "DSS"
+ 
+ #include <linux/kernel.h>
++#include <linux/module.h>
+ #include <linux/io.h>
+ #include <linux/export.h>
+ #include <linux/err.h>
+@@ -955,12 +956,21 @@ static const struct dev_pm_ops dss_pm_ops = {
+ 	.runtime_resume = dss_runtime_resume,
+ };
+ 
++static const struct of_device_id dss_of_match[] = {
++	{ .compatible = "ti,omap3-dss", },
++	{ .compatible = "ti,omap4-dss", },
++	{},
 +};
 +
-+static int panel_dpi_set_state(struct display_entity *entity,
-+			       enum display_entity_state state)
-+{
-+	struct media_pad *source;
++MODULE_DEVICE_TABLE(of, dss_of_match);
 +
-+	source = media_entity_remote_pad(&entity->entity.pads[0]);
-+	if (source = NULL)
-+		return -EPIPE;
-+
-+	switch (state) {
-+	case DISPLAY_ENTITY_STATE_OFF:
-+	case DISPLAY_ENTITY_STATE_STANDBY:
-+		display_entity_set_stream(to_display_entity(source->entity),
-+					  source->index,
-+					  DISPLAY_ENTITY_STREAM_STOPPED);
-+		break;
-+
-+	case DISPLAY_ENTITY_STATE_ON:
-+		display_entity_set_stream(to_display_entity(source->entity),
-+					  source->index,
-+					  DISPLAY_ENTITY_STREAM_CONTINUOUS);
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static int panel_dpi_get_modes(struct display_entity *entity, unsigned int port,
-+			       const struct videomode **modes)
-+{
-+	struct panel_dpi *panel = to_panel_dpi(entity);
-+
-+	*modes = &panel->mode;
-+	return 1;
-+}
-+
-+static int panel_dpi_get_size(struct display_entity *entity,
-+			      unsigned int *width, unsigned int *height)
-+{
-+	struct panel_dpi *panel = to_panel_dpi(entity);
-+
-+	*width = panel->width;
-+	*height = panel->height;
-+	return 0;
-+}
-+
-+static int panel_dpi_get_params(struct display_entity *entity,
-+				unsigned int port,
-+				struct display_entity_interface_params *params)
-+{
-+	*params = panel_dpi_params;
-+	return 0;
-+}
-+
-+static const struct display_entity_control_ops panel_dpi_control_ops = {
-+	.set_state = panel_dpi_set_state,
-+	.get_modes = panel_dpi_get_modes,
-+	.get_size = panel_dpi_get_size,
-+	.get_params = panel_dpi_get_params,
+ static struct platform_driver omap_dsshw_driver = {
+ 	.remove         = __exit_p(omap_dsshw_remove),
+ 	.driver         = {
+ 		.name   = "omapdss_dss",
+ 		.owner  = THIS_MODULE,
+ 		.pm	= &dss_pm_ops,
++		.of_match_table = dss_of_match,
+ 	},
+ };
+ 
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 1b38f1f..1cea0ab 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -1374,6 +1374,11 @@ static const struct dev_pm_ops hdmi_pm_ops = {
+ 	.runtime_resume = hdmi_runtime_resume,
+ };
+ 
++static const struct of_device_id hdmi_of_match[] = {
++	{ .compatible = "ti,omap4-hdmi", },
++	{},
 +};
 +
-+static const struct display_entity_ops panel_dpi_ops = {
-+	.ctrl = &panel_dpi_control_ops,
+ static struct platform_driver omapdss_hdmihw_driver = {
+ 	.probe		= omapdss_hdmihw_probe,
+ 	.remove         = __exit_p(omapdss_hdmihw_remove),
+@@ -1381,6 +1386,7 @@ static struct platform_driver omapdss_hdmihw_driver = {
+ 		.name   = "omapdss_hdmi",
+ 		.owner  = THIS_MODULE,
+ 		.pm	= &hdmi_pm_ops,
++		.of_match_table = hdmi_of_match,
+ 	},
+ };
+ 
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 496a106..93e13dd 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -980,6 +980,12 @@ static const struct dev_pm_ops venc_pm_ops = {
+ 	.runtime_resume = venc_runtime_resume,
+ };
+ 
++
++static const struct of_device_id venc_of_match[] = {
++	{ .compatible = "ti,omap3-venc", },
++	{},
 +};
 +
-+static int panel_dpi_remove(struct platform_device *pdev)
-+{
-+	struct panel_dpi *panel = platform_get_drvdata(pdev);
-+
-+	display_entity_remove(&panel->entity);
-+	display_entity_cleanup(&panel->entity);
-+
-+	return 0;
-+}
-+
-+static int panel_dpi_parse_pdata(struct panel_dpi *panel,
-+				 struct platform_device *pdev)
-+{
-+	const struct panel_dpi_platform_data *pdata = pdev->dev.platform_data;
-+	struct device_node *np = pdev->dev.of_node;
-+	int ret;
-+
-+	if (pdata) {
-+		panel->width = pdata->width;
-+		panel->height = pdata->height;
-+		panel->mode = *pdata->mode;
-+	} else if (IS_ENABLED(CONFIG_OF) && np) {
-+		/* Width and height are optional. */
-+		of_property_read_u32(np, "width-mm", &panel->width);
-+		of_property_read_u32(np, "height-mm", &panel->height);
-+
-+		ret = of_get_videomode(np, &panel->mode, OF_USE_NATIVE_MODE);
-+		if (ret < 0)
-+			return ret;
-+	} else {
-+		dev_err(&pdev->dev, "no platform data\n");
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int panel_dpi_probe(struct platform_device *pdev)
-+{
-+	struct panel_dpi *panel;
-+	int ret;
-+
-+	panel = devm_kzalloc(&pdev->dev, sizeof(*panel), GFP_KERNEL);
-+	if (panel = NULL)
-+		return -ENOMEM;
-+
-+	ret = panel_dpi_parse_pdata(panel, pdev);
-+	if (ret < 0)
-+		return ret;
-+
-+	panel->entity.dev = &pdev->dev;
-+	panel->entity.ops = &panel_dpi_ops;
-+	strlcpy(panel->entity.name, "panel-dpi", sizeof(panel->entity.name));
-+
-+	ret = display_entity_init(&panel->entity, 1, 0);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = display_entity_add(&panel->entity);
-+	if (ret < 0)
-+		return ret;
-+
-+	platform_set_drvdata(pdev, panel);
-+
-+	return 0;
-+}
-+
-+static const struct dev_pm_ops panel_dpi_dev_pm_ops = {
-+};
-+
-+static struct platform_device_id panel_dpi_id_table[] = {
-+	{ "panel-dpi", 0 },
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(platform, panel_dpi_id_table);
-+
-+#ifdef CONFIG_OF
-+static struct of_device_id panel_dpi_of_id_table[] = {
-+	{ .compatible = "panel-dpi", },
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(of, panel_dpi_of_id_table);
-+#endif
-+
-+static struct platform_driver panel_dpi_driver = {
-+	.probe = panel_dpi_probe,
-+	.remove = panel_dpi_remove,
-+	.id_table = panel_dpi_id_table,
-+	.driver = {
-+		.name = "panel-dpi",
-+		.owner = THIS_MODULE,
-+		.pm = &panel_dpi_dev_pm_ops,
-+		.of_match_table = of_match_ptr(panel_dpi_of_id_table),
-+	},
-+};
-+
-+module_platform_driver(panel_dpi_driver);
-+
-+MODULE_AUTHOR("Laurent Pinchart <laurent.pinchart@ideasonboard.com>");
-+MODULE_DESCRIPTION("DPI Display Panel");
-+MODULE_LICENSE("GPL");
-diff --git a/include/video/panel-dpi.h b/include/video/panel-dpi.h
-new file mode 100644
-index 0000000..af85d5b
---- /dev/null
-+++ b/include/video/panel-dpi.h
-@@ -0,0 +1,24 @@
-+/*
-+ * DPI Display Panel
-+ *
-+ * Copyright (C) 2012 Renesas Solutions Corp.
-+ *
-+ * Contacts: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#ifndef __PANEL_DPI_H__
-+#define __PANEL_DPI_H__
-+
-+struct videomode;
-+
-+struct panel_dpi_platform_data {
-+	unsigned long width;		/* Panel width in mm */
-+	unsigned long height;		/* Panel height in mm */
-+	const struct videomode *mode;
-+};
-+
-+#endif /* __PANEL_DPI_H__ */
+ static struct platform_driver omap_venchw_driver = {
+ 	.probe		= omap_venchw_probe,
+ 	.remove         = __exit_p(omap_venchw_remove),
+@@ -987,6 +993,7 @@ static struct platform_driver omap_venchw_driver = {
+ 		.name   = "omapdss_venc",
+ 		.owner  = THIS_MODULE,
+ 		.pm	= &venc_pm_ops,
++		.of_match_table = venc_of_match,
+ 	},
+ };
+ 
 -- 
-1.8.1.5
+1.8.1.2
 

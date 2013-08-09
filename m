@@ -1,63 +1,306 @@
-From: Alison Wang <b18965@freescale.com>
-Date: Thu, 15 Aug 2013 08:01:52 +0000
-Subject: [PATCH v3 3/5] ARM: clk: vf610: Add DCU and TCON clock support
-Message-Id: <1376553714-25922-4-git-send-email-b18965@freescale.com>
+From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Date: Fri, 09 Aug 2013 23:03:08 +0000
+Subject: [PATCH/RFC v3 09/19] video: panel: Add DPI panel support
+Message-Id: <1376089398-13322-10-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376553714-25922-1-git-send-email-b18965@freescale.com>
-In-Reply-To: <1376553714-25922-1-git-send-email-b18965@freescale.com>
+References: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+In-Reply-To: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
 
-This patch adds DCU and TCON clock support for Vybrid VF610 platform.
+The Display Pixel Interface is a configurable-width video-only
+unidirectional parallel bus standard that defines video formats and
+signaling for panel devices.
 
-Signed-off-by: Alison Wang <b18965@freescale.com>
+This driver implements support for simple DPI panels with no runtime
+configuration capabilities (GPIOs- and/or regulators-based control can
+be implemented later when needed) and exposes it as a display entity.
+The panel native video mode is passed to the driver through platform
+data or device tree properties.
+
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
-Changes in v3: None
-Changes in v2: None
+ drivers/video/display/Kconfig     |  10 ++
+ drivers/video/display/Makefile    |   1 +
+ drivers/video/display/panel-dpi.c | 207 ++++++++++++++++++++++++++++++++++++++
+ include/video/panel-dpi.h         |  24 +++++
+ 4 files changed, 242 insertions(+)
+ create mode 100644 drivers/video/display/panel-dpi.c
+ create mode 100644 include/video/panel-dpi.h
 
- arch/arm/mach-imx/clk-vf610.c           | 5 +++++
- include/dt-bindings/clock/vf610-clock.h | 3 ++-
- 2 files changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/mach-imx/clk-vf610.c b/arch/arm/mach-imx/clk-vf610.c
-index b169a39..689d3da 100644
---- a/arch/arm/mach-imx/clk-vf610.c
-+++ b/arch/arm/mach-imx/clk-vf610.c
-@@ -247,6 +247,8 @@ static void __init vf610_clocks_init(struct device_node *ccm_node)
- 	clk[VF610_CLK_DCU1_DIV] = imx_clk_divider("dcu1_div", "dcu1_en", CCM_CSCDR3, 20, 3);
- 	clk[VF610_CLK_DCU1] = imx_clk_gate2("dcu1", "dcu1_div", CCM_CCGR9, CCM_CCGRx_CGn(8));
+diff --git a/drivers/video/display/Kconfig b/drivers/video/display/Kconfig
+index f7532c1..bce09d6 100644
+--- a/drivers/video/display/Kconfig
++++ b/drivers/video/display/Kconfig
+@@ -9,4 +9,14 @@ config DISPLAY_MIPI_DBI
+ 	tristate
+ 	default n
  
-+	clk[VF610_CLK_TCON0] = imx_clk_gate2("tcon0", "platform_bus", CCM_CCGR1, CCM_CCGRx_CGn(13));
++config DISPLAY_PANEL_DPI
++	tristate "DPI (Parallel) Display Panels"
++	---help---
++	  Support for simple digital (parallel) pixel interface panels. Those
++	  panels receive pixel data through a parallel bus and have no control
++	  bus.
 +
- 	clk[VF610_CLK_ESAI_SEL] = imx_clk_mux("esai_sel", CCM_CSCMR1, 20, 2, esai_sels, 4);
- 	clk[VF610_CLK_ESAI_EN] = imx_clk_gate("esai_en", "esai_sel", CCM_CSCDR2, 30);
- 	clk[VF610_CLK_ESAI_DIV] = imx_clk_divider("esai_div", "esai_en", CCM_CSCDR2, 24, 4);
-@@ -313,6 +315,9 @@ static void __init vf610_clocks_init(struct device_node *ccm_node)
- 	clk_set_parent(clk[VF610_CLK_SAI2_SEL], clk[VF610_CLK_AUDIO_EXT]);
- 	clk_set_parent(clk[VF610_CLK_SAI3_SEL], clk[VF610_CLK_AUDIO_EXT]);
- 
-+	clk_set_parent(clk[VF610_CLK_DCU0_SEL], clk[VF610_CLK_PLL1_PFD2]);
-+	clk_set_rate(clk[VF610_CLK_DCU0_DIV], 113200000);
++	  If you are in doubt, say N. To compile this driver as a module, choose
++	  M here; the module will be called panel-dpi.
 +
- 	/* Add the clocks to provider list */
- 	clk_data.clks = clk;
- 	clk_data.clk_num = ARRAY_SIZE(clk);
-diff --git a/include/dt-bindings/clock/vf610-clock.h b/include/dt-bindings/clock/vf610-clock.h
-index 4aa2b48..4ccf563 100644
---- a/include/dt-bindings/clock/vf610-clock.h
-+++ b/include/dt-bindings/clock/vf610-clock.h
-@@ -160,6 +160,7 @@
- #define VF610_CLK_GPU2D			147
- #define VF610_CLK_ENET0			148
- #define VF610_CLK_ENET1			149
--#define VF610_CLK_END			150
-+#define VF610_CLK_TCON0			150
-+#define VF610_CLK_END			151
- 
- #endif /* __DT_BINDINGS_CLOCK_VF610_H */
+ endif # DISPLAY_CORE
+diff --git a/drivers/video/display/Makefile b/drivers/video/display/Makefile
+index 59022d2..31c017b 100644
+--- a/drivers/video/display/Makefile
++++ b/drivers/video/display/Makefile
+@@ -2,3 +2,4 @@ display-y					:= display-core.o \
+ 						   display-notifier.o
+ obj-$(CONFIG_DISPLAY_CORE)			+= display.o
+ obj-$(CONFIG_DISPLAY_MIPI_DBI)			+= mipi-dbi-bus.o
++obj-$(CONFIG_DISPLAY_PANEL_DPI)			+= panel-dpi.o
+diff --git a/drivers/video/display/panel-dpi.c b/drivers/video/display/panel-dpi.c
+new file mode 100644
+index 0000000..b1ecf6d
+--- /dev/null
++++ b/drivers/video/display/panel-dpi.c
+@@ -0,0 +1,207 @@
++/*
++ * DPI Display Panel
++ *
++ * Copyright (C) 2012 Renesas Solutions Corp.
++ *
++ * Contacts: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++
++#include <video/display.h>
++#include <video/of_display_timing.h>
++#include <video/of_videomode.h>
++#include <video/panel-dpi.h>
++#include <video/videomode.h>
++
++struct panel_dpi {
++	struct display_entity entity;
++
++	unsigned int width;
++	unsigned int height;
++	struct videomode mode;
++};
++
++static inline struct panel_dpi *to_panel_dpi(struct display_entity *e)
++{
++	return container_of(e, struct panel_dpi, entity);
++}
++
++static const struct display_entity_interface_params panel_dpi_params = {
++	.type = DISPLAY_ENTITY_INTERFACE_DPI,
++};
++
++static int panel_dpi_set_state(struct display_entity *entity,
++			       enum display_entity_state state)
++{
++	struct media_pad *source;
++
++	source = media_entity_remote_pad(&entity->entity.pads[0]);
++	if (source = NULL)
++		return -EPIPE;
++
++	switch (state) {
++	case DISPLAY_ENTITY_STATE_OFF:
++	case DISPLAY_ENTITY_STATE_STANDBY:
++		display_entity_set_stream(to_display_entity(source->entity),
++					  source->index,
++					  DISPLAY_ENTITY_STREAM_STOPPED);
++		break;
++
++	case DISPLAY_ENTITY_STATE_ON:
++		display_entity_set_stream(to_display_entity(source->entity),
++					  source->index,
++					  DISPLAY_ENTITY_STREAM_CONTINUOUS);
++		break;
++	}
++
++	return 0;
++}
++
++static int panel_dpi_get_modes(struct display_entity *entity, unsigned int port,
++			       const struct videomode **modes)
++{
++	struct panel_dpi *panel = to_panel_dpi(entity);
++
++	*modes = &panel->mode;
++	return 1;
++}
++
++static int panel_dpi_get_size(struct display_entity *entity,
++			      unsigned int *width, unsigned int *height)
++{
++	struct panel_dpi *panel = to_panel_dpi(entity);
++
++	*width = panel->width;
++	*height = panel->height;
++	return 0;
++}
++
++static int panel_dpi_get_params(struct display_entity *entity,
++				unsigned int port,
++				struct display_entity_interface_params *params)
++{
++	*params = panel_dpi_params;
++	return 0;
++}
++
++static const struct display_entity_control_ops panel_dpi_control_ops = {
++	.set_state = panel_dpi_set_state,
++	.get_modes = panel_dpi_get_modes,
++	.get_size = panel_dpi_get_size,
++	.get_params = panel_dpi_get_params,
++};
++
++static const struct display_entity_ops panel_dpi_ops = {
++	.ctrl = &panel_dpi_control_ops,
++};
++
++static int panel_dpi_remove(struct platform_device *pdev)
++{
++	struct panel_dpi *panel = platform_get_drvdata(pdev);
++
++	display_entity_remove(&panel->entity);
++	display_entity_cleanup(&panel->entity);
++
++	return 0;
++}
++
++static int panel_dpi_parse_pdata(struct panel_dpi *panel,
++				 struct platform_device *pdev)
++{
++	const struct panel_dpi_platform_data *pdata = pdev->dev.platform_data;
++	struct device_node *np = pdev->dev.of_node;
++	int ret;
++
++	if (pdata) {
++		panel->width = pdata->width;
++		panel->height = pdata->height;
++		panel->mode = *pdata->mode;
++	} else if (IS_ENABLED(CONFIG_OF) && np) {
++		/* Width and height are optional. */
++		of_property_read_u32(np, "width-mm", &panel->width);
++		of_property_read_u32(np, "height-mm", &panel->height);
++
++		ret = of_get_videomode(np, &panel->mode, OF_USE_NATIVE_MODE);
++		if (ret < 0)
++			return ret;
++	} else {
++		dev_err(&pdev->dev, "no platform data\n");
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int panel_dpi_probe(struct platform_device *pdev)
++{
++	struct panel_dpi *panel;
++	int ret;
++
++	panel = devm_kzalloc(&pdev->dev, sizeof(*panel), GFP_KERNEL);
++	if (panel = NULL)
++		return -ENOMEM;
++
++	ret = panel_dpi_parse_pdata(panel, pdev);
++	if (ret < 0)
++		return ret;
++
++	panel->entity.dev = &pdev->dev;
++	panel->entity.ops = &panel_dpi_ops;
++	strlcpy(panel->entity.name, "panel-dpi", sizeof(panel->entity.name));
++
++	ret = display_entity_init(&panel->entity, 1, 0);
++	if (ret < 0)
++		return ret;
++
++	ret = display_entity_add(&panel->entity);
++	if (ret < 0)
++		return ret;
++
++	platform_set_drvdata(pdev, panel);
++
++	return 0;
++}
++
++static const struct dev_pm_ops panel_dpi_dev_pm_ops = {
++};
++
++static struct platform_device_id panel_dpi_id_table[] = {
++	{ "panel-dpi", 0 },
++	{ },
++};
++MODULE_DEVICE_TABLE(platform, panel_dpi_id_table);
++
++#ifdef CONFIG_OF
++static struct of_device_id panel_dpi_of_id_table[] = {
++	{ .compatible = "panel-dpi", },
++	{ },
++};
++MODULE_DEVICE_TABLE(of, panel_dpi_of_id_table);
++#endif
++
++static struct platform_driver panel_dpi_driver = {
++	.probe = panel_dpi_probe,
++	.remove = panel_dpi_remove,
++	.id_table = panel_dpi_id_table,
++	.driver = {
++		.name = "panel-dpi",
++		.owner = THIS_MODULE,
++		.pm = &panel_dpi_dev_pm_ops,
++		.of_match_table = of_match_ptr(panel_dpi_of_id_table),
++	},
++};
++
++module_platform_driver(panel_dpi_driver);
++
++MODULE_AUTHOR("Laurent Pinchart <laurent.pinchart@ideasonboard.com>");
++MODULE_DESCRIPTION("DPI Display Panel");
++MODULE_LICENSE("GPL");
+diff --git a/include/video/panel-dpi.h b/include/video/panel-dpi.h
+new file mode 100644
+index 0000000..af85d5b
+--- /dev/null
++++ b/include/video/panel-dpi.h
+@@ -0,0 +1,24 @@
++/*
++ * DPI Display Panel
++ *
++ * Copyright (C) 2012 Renesas Solutions Corp.
++ *
++ * Contacts: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef __PANEL_DPI_H__
++#define __PANEL_DPI_H__
++
++struct videomode;
++
++struct panel_dpi_platform_data {
++	unsigned long width;		/* Panel width in mm */
++	unsigned long height;		/* Panel height in mm */
++	const struct videomode *mode;
++};
++
++#endif /* __PANEL_DPI_H__ */
 -- 
-1.8.0
-
+1.8.1.5
 

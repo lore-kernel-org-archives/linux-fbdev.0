@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 09 Aug 2013 08:39:01 +0000
-Subject: [RFC 16/22] OMAPDSS: panel-dsi-cm: Add DT support
-Message-Id: <1376037547-10859-17-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 09 Aug 2013 08:38:50 +0000
+Subject: [RFC 05/22] OMAPDSS: get dssdev->alias from DT alias
+Message-Id: <1376037547-10859-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,138 +11,63 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
 Cc: Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-XXX ULPS and backlight missing.
+We currently create a "displayX" style alias name for all displays,
+using a number that is incremented for each registered display. With the
+new DSS device model there is no clear order in which the displays are
+registered, and thus the numbering is somewhat random.
+
+This patch improves the behavior for DT case so that if the displays
+have been assigned DT aliases, those aliases will be used as DSS
+aliases.
+
+This means that "display0" is always the one specified in the DT alias,
+and thus display0 can be used as default display in case the user didn't
+specify a default display.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/displays-new/panel-dsi-cm.c | 87 +++++++++++++++++++++++++
- 1 file changed, 87 insertions(+)
+ drivers/video/omap2/dss/display.c | 20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/displays-new/panel-dsi-cm.c b/drivers/video/omap2/displays-new/panel-dsi-cm.c
-index aaaea64..f65ea4d 100644
---- a/drivers/video/omap2/displays-new/panel-dsi-cm.c
-+++ b/drivers/video/omap2/displays-new/panel-dsi-cm.c
-@@ -22,6 +22,8 @@
- #include <linux/sched.h>
- #include <linux/slab.h>
- #include <linux/workqueue.h>
-+#include <linux/of_device.h>
-+#include <linux/of_gpio.h>
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index 64fb6e5..a8833ca 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -26,6 +26,7 @@
+ #include <linux/module.h>
+ #include <linux/jiffies.h>
+ #include <linux/platform_device.h>
++#include <linux/of.h>
  
  #include <video/omapdss.h>
- #include <video/omap-panel-data.h>
-@@ -1156,6 +1158,79 @@ static int dsicm_probe_pdata(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int dsicm_probe_of(struct platform_device *pdev)
-+{
-+	struct device_node *node = pdev->dev.of_node;
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct omap_dss_device *in;
-+	struct property *prop;
-+	struct device_node *src_node;
-+	u32 lane_arr[10];
-+	int gpio, len, num_pins;
-+	int r, i;
-+
-+	src_node = of_parse_phandle(node, "video-source", 0);
-+	if (!src_node) {
-+		dev_err(&pdev->dev, "failed to parse video source\n");
-+		return -ENODEV;
-+	}
-+
-+	in = omap_dss_find_output_by_node(src_node);
-+	if (in = NULL) {
-+		dev_err(&pdev->dev, "failed to find video source\n");
-+		return -EPROBE_DEFER;
-+	}
-+	ddata->in = in;
-+
-+	gpio = of_get_gpio(node, 0);
-+	if (!gpio_is_valid(gpio)) {
-+		dev_err(&pdev->dev, "failed to parse reset gpio\n");
-+		return gpio;
-+	}
-+	ddata->reset_gpio = gpio;
-+
-+	if (of_gpio_count(node) > 1) {
-+		gpio = of_get_gpio(node, 1);
-+
-+		if (gpio_is_valid(gpio) || gpio = -ENOENT) {
-+			ddata->ext_te_gpio = gpio;
-+		} else {
-+			dev_err(&pdev->dev, "failed to parse TE gpio\n");
-+			return gpio;
-+		}
-+	} else {
-+		ddata->ext_te_gpio = -1;
-+	}
-+
-+	prop = of_find_property(node, "lanes", &len);
-+	if (prop = NULL) {
-+		dev_err(&pdev->dev, "failed to find lane data\n");
-+		return -EINVAL;
-+	}
-+
-+	num_pins = len / sizeof(u32);
-+
-+	if (num_pins < 4 || num_pins % 2 != 0
-+			|| num_pins > ARRAY_SIZE(lane_arr)) {
-+		dev_err(&pdev->dev, "bad number of lanes\n");
-+		return -EINVAL;
-+	}
-+
-+	r = of_property_read_u32_array(node, "lanes", lane_arr, num_pins);
-+	if (r) {
-+		dev_err(&pdev->dev, "failed to read lane data\n");
-+		return r;
-+	}
-+
-+	ddata->pin_config.num_pins = num_pins;
-+	for (i = 0; i < num_pins; ++i)
-+		ddata->pin_config.pins[i] = (int)lane_arr[i];
-+
-+	/* TODO: ulps, backlight */
-+
-+	return 0;
-+}
-+
- static int dsicm_probe(struct platform_device *pdev)
+ #include "dss.h"
+@@ -133,9 +134,24 @@ static int disp_num_counter;
+ int omapdss_register_display(struct omap_dss_device *dssdev)
  {
- 	struct backlight_properties props;
-@@ -1178,6 +1253,10 @@ static int dsicm_probe(struct platform_device *pdev)
- 		r = dsicm_probe_pdata(pdev);
- 		if (r)
- 			return r;
-+	} else if (pdev->dev.of_node) {
-+		r = dsicm_probe_of(pdev);
-+		if (r)
-+			return r;
- 	} else {
- 		return -ENODEV;
- 	}
-@@ -1320,12 +1399,20 @@ static int __exit dsicm_remove(struct platform_device *pdev)
- 	return 0;
- }
+ 	struct omap_dss_driver *drv = dssdev->driver;
++	int id;
  
-+static const struct of_device_id dsicm_of_match[] = {
-+	{ .compatible = "panel-dsi-cm", },
-+	{},
-+};
+-	snprintf(dssdev->alias, sizeof(dssdev->alias),
+-			"display%d", disp_num_counter++);
++	/*
++	 * Note: this presumes all the displays are either using DT or non-DT,
++	 * which normally should be the case. This also presumes that all
++	 * displays either have an DT alias, or none has.
++	 */
 +
-+MODULE_DEVICE_TABLE(of, dsicm_of_match);
++	if (dssdev->dev->of_node) {
++		id = of_alias_get_id(dssdev->dev->of_node, "display");
 +
- static struct platform_driver dsicm_driver = {
- 	.probe = dsicm_probe,
- 	.remove = __exit_p(dsicm_remove),
- 	.driver = {
- 		.name = "panel-dsi-cm",
- 		.owner = THIS_MODULE,
-+		.of_match_table = dsicm_of_match,
- 	},
- };
++		if (id < 0)
++			id = disp_num_counter++;
++	} else {
++		id = disp_num_counter++;
++	}
++
++	snprintf(dssdev->alias, sizeof(dssdev->alias), "display%d", id);
  
+ 	if (dssdev->name = NULL)
+ 		dssdev->name = dssdev->alias;
 -- 
 1.8.1.2
 

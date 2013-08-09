@@ -1,174 +1,40 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Mon, 05 Aug 2013 22:02:36 +0000
-Subject: [PATCH v3 17/20] video: da8xx-fb: set upstream clock rate (if reqd)
-Message-Id: <1375740159-1045-18-git-send-email-detheridge@ti.com>
+From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Date: Fri, 09 Aug 2013 23:03:13 +0000
+Subject: [PATCH/RFC v3 14/19] ARM: shmobile: r8a7790: Add DU clocks for DT
+Message-Id: <1376089398-13322-15-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+In-Reply-To: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
 
-Based on original patch by: Afzal Mohammed <afzal@ti.com>
-
-LCDC IP has a clock divider to adjust pixel clock, this limits pixel
-clock range to fck/255 - fck/2(fck - rate of input clock to LCDC IP).
-In the case of AM335x, where this IP is present, default fck is not
-sufficient to provide normal pixel clock rates, hence rendering this
-driver unusable on AM335x.
-
-If input clock too is configurable, allowable range of pixel clock
-would increase. Here initially it is checked whether with present fck,
-divider in IP could be configured to obtain required rate, if not,
-fck is adjusted. This makes it usable on AM335x.
-
-Note:
-Another solution would be to model an inherited basic clock divider of
-CCF, an advantage would be a better possible resolution for pixel clk.
-And trying to instantiate a CCF clock would mean that to be consistent,
-3 bits being turned on to enable clocks of LCDC IP would have to be
-modeled as gate clocks. Now that would bring in a total of 4 clocks,
-including necessity to create a new inherited divider clock, and that
-mean a branch of clock tree would be present in LCDC driver. This
-would add complexity to LCDC driver bringing in considerable amount
-of clock handling code, and this would not bring in much advantage
-for existing use cases other than providing a higher resolution of
-pixel clock. And existing use cases work without relying on clock
-modeling. Another fact is that out of the two platform's using this
-driver DaVinci is not yet converted to CCF. In future if higher
-resolution of pixel clock is required, and probably after DaVinci is
-CCF'ed, modeling clock nodes inside driver may be considered.
-
-v2: purely cosmetic changes to try and clarify what variables are
-	being used for in the clock rate / divider calculations
-
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 ---
- drivers/video/da8xx-fb.c |   85 +++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 65 insertions(+), 20 deletions(-)
+ arch/arm/mach-shmobile/clock-r8a7790.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index d8b295a..dfe7572 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -132,6 +132,9 @@
- #define WSI_TIMEOUT	50
- #define PALETTE_SIZE	256
+diff --git a/arch/arm/mach-shmobile/clock-r8a7790.c b/arch/arm/mach-shmobile/clock-r8a7790.c
+index d99b87b..7229f96 100644
+--- a/arch/arm/mach-shmobile/clock-r8a7790.c
++++ b/arch/arm/mach-shmobile/clock-r8a7790.c
+@@ -257,10 +257,15 @@ static struct clk_lookup lookups[] = {
  
-+#define	CLK_MIN_DIV	2
-+#define	CLK_MAX_DIV	255
-+
- static void __iomem *da8xx_fb_reg_base;
- static unsigned int lcd_revision;
- static irq_handler_t lcdc_irq_handler;
-@@ -684,38 +687,76 @@ static void da8xx_fb_lcd_reset(void)
- 	}
- }
- 
--static inline unsigned da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
--						 unsigned pixclock)
--{
--	return par->lcd_fck_rate / (PICOS2KHZ(pixclock) * 1000);
--}
--
--static inline unsigned da8xx_fb_round_clk(struct da8xx_fb_par *par,
--					  unsigned pixclock)
-+static int da8xx_fb_config_clk_divider(struct da8xx_fb_par *par,
-+					      unsigned lcdc_clk_div,
-+					      unsigned lcdc_clk_rate)
- {
--	unsigned div;
-+	int ret;
- 
--	div = da8xx_fb_calc_clk_divider(par, pixclock);
--	return KHZ2PICOS(par->lcd_fck_rate / (1000 * div));
--}
-+	if (par->lcd_fck_rate != lcdc_clk_rate) {
-+		ret = clk_set_rate(par->lcdc_clk, lcdc_clk_rate);
-+		if (IS_ERR_VALUE(ret)) {
-+			dev_err(par->dev,
-+				"unable to set clock rate at %u\n",
-+				lcdc_clk_rate);
-+			return ret;
-+		}
-+		par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
-+	}
- 
--static inline void da8xx_fb_config_clk_divider(unsigned div)
--{
- 	/* Configure the LCD clock divisor. */
--	lcdc_write(LCD_CLK_DIVISOR(div) |
-+	lcdc_write(LCD_CLK_DIVISOR(lcdc_clk_div) |
- 			(LCD_RASTER_MODE & 0x1), LCD_CTRL_REG);
- 
- 	if (lcd_revision = LCD_VERSION_2)
- 		lcdc_write(LCD_V2_DMA_CLK_EN | LCD_V2_LIDD_CLK_EN |
- 				LCD_V2_CORE_CLK_EN, LCD_CLK_ENABLE_REG);
-+
-+	return 0;
-+}
-+
-+static unsigned int da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
-+					      unsigned pixclock,
-+					      unsigned *lcdc_clk_rate)
-+{
-+	unsigned lcdc_clk_div;
-+
-+	pixclock = PICOS2KHZ(pixclock) * 1000;
-+
-+	*lcdc_clk_rate = par->lcd_fck_rate;
-+
-+	if (pixclock < (*lcdc_clk_rate / CLK_MAX_DIV)) {
-+		*lcdc_clk_rate = clk_round_rate(par->lcdc_clk,
-+						pixclock * CLK_MAX_DIV);
-+		lcdc_clk_div = CLK_MAX_DIV;
-+	} else if (pixclock > (*lcdc_clk_rate / CLK_MIN_DIV)) {
-+		*lcdc_clk_rate = clk_round_rate(par->lcdc_clk,
-+						pixclock * CLK_MIN_DIV);
-+		lcdc_clk_div = CLK_MIN_DIV;
-+	} else {
-+		lcdc_clk_div = *lcdc_clk_rate / pixclock;
-+	}
-+
-+	return lcdc_clk_div;
- }
- 
--static inline void da8xx_fb_calc_config_clk_divider(struct da8xx_fb_par *par,
--						    struct fb_videomode *mode)
-+static int da8xx_fb_calc_config_clk_divider(struct da8xx_fb_par *par,
-+					    struct fb_videomode *mode)
- {
--	unsigned div = da8xx_fb_calc_clk_divider(par, mode->pixclock);
-+	unsigned lcdc_clk_rate;
-+	unsigned lcdc_clk_div = da8xx_fb_calc_clk_divider(par, mode->pixclock,
-+							  &lcdc_clk_rate);
- 
--	da8xx_fb_config_clk_divider(div);
-+	return da8xx_fb_config_clk_divider(par, lcdc_clk_div, lcdc_clk_rate);
-+}
-+
-+static inline unsigned da8xx_fb_round_clk(struct da8xx_fb_par *par,
-+					  unsigned pixclock)
-+{
-+	unsigned lcdc_clk_div, lcdc_clk_rate;
-+
-+	lcdc_clk_div = da8xx_fb_calc_clk_divider(par, pixclock, &lcdc_clk_rate);
-+	return KHZ2PICOS(lcdc_clk_rate / (1000 * lcdc_clk_div));
- }
- 
- static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
-@@ -724,7 +765,11 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
- 	u32 bpp;
- 	int ret = 0;
- 
--	da8xx_fb_calc_config_clk_divider(par, panel);
-+	ret = da8xx_fb_calc_config_clk_divider(par, panel);
-+	if (IS_ERR_VALUE(ret)) {
-+		dev_err(par->dev, "unable to configure clock\n");
-+		return ret;
-+	}
- 
- 	if (panel->sync & FB_SYNC_CLK_INVERT)
- 		lcdc_write((lcdc_read(LCD_RASTER_TIMING_2_REG) |
+ 	/* MSTP */
+ 	CLKDEV_ICK_ID("lvds.0", "rcar-du-r8a7790", &mstp_clks[MSTP726]),
++	CLKDEV_ICK_ID("lvds.0", "feb00000.display", &mstp_clks[MSTP726]),
+ 	CLKDEV_ICK_ID("lvds.1", "rcar-du-r8a7790", &mstp_clks[MSTP725]),
++	CLKDEV_ICK_ID("lvds.1", "feb00000.display", &mstp_clks[MSTP725]),
+ 	CLKDEV_ICK_ID("du.0", "rcar-du-r8a7790", &mstp_clks[MSTP724]),
++	CLKDEV_ICK_ID("du.0", "feb00000.display", &mstp_clks[MSTP724]),
+ 	CLKDEV_ICK_ID("du.1", "rcar-du-r8a7790", &mstp_clks[MSTP723]),
++	CLKDEV_ICK_ID("du.1", "feb00000.display", &mstp_clks[MSTP723]),
+ 	CLKDEV_ICK_ID("du.2", "rcar-du-r8a7790", &mstp_clks[MSTP722]),
++	CLKDEV_ICK_ID("du.2", "feb00000.display", &mstp_clks[MSTP722]),
+ 	CLKDEV_DEV_ID("sh-sci.0", &mstp_clks[MSTP204]),
+ 	CLKDEV_DEV_ID("sh-sci.1", &mstp_clks[MSTP203]),
+ 	CLKDEV_DEV_ID("sh-sci.2", &mstp_clks[MSTP206]),
 -- 
-1.7.0.4
+1.8.1.5
 

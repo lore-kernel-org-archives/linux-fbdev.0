@@ -1,45 +1,72 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Mon, 05 Aug 2013 22:02:21 +0000
-Subject: [PATCH v3 02/20] video: da8xx-fb: simplify lcd_reset
-Message-Id: <1375740159-1045-3-git-send-email-detheridge@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 09 Aug 2013 08:38:52 +0000
+Subject: [RFC 07/22] OMAPFB: search for default display with DT alias
+Message-Id: <1376037547-10859-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Afzal Mohammed <afzal@ti.com>
+Improve the search for the default display in two ways:
+* compare the given display name to the display's alias
+* if no display name is given, look for "display0" DT alias
 
-lcd_reset function doesn't require any arguement, remove it.
-
-Signed-off-by: Afzal Mohammed <afzal@ti.com>
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/da8xx-fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/omap2/omapfb/omapfb-main.c | 23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index d00dd17..52977b1 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -681,7 +681,7 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 8bfe973..961c5c2 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -2413,7 +2413,10 @@ omapfb_find_default_display(struct omapfb2_device *fbdev)
+ 	const char *def_name;
+ 	int i;
+ 
+-	/* search with the display name from the user or the board file */
++	/*
++	 * Search with the display name from the user or the board file,
++	 * comparing to display names and aliases
++	 */
+ 
+ 	def_name = omapdss_get_default_display_name();
+ 
+@@ -2425,12 +2428,30 @@ omapfb_find_default_display(struct omapfb2_device *fbdev)
+ 
+ 			if (dssdev->name && strcmp(def_name, dssdev->name) = 0)
+ 				return dssdev;
++
++			if (strcmp(def_name, dssdev->alias) = 0)
++				return dssdev;
+ 		}
+ 
+ 		/* def_name given but not found */
+ 		return NULL;
+ 	}
+ 
++	/* then look for DT alias display0 */
++	for (i = 0; i < fbdev->num_displays; ++i) {
++		struct omap_dss_device *dssdev;
++		int id;
++
++		dssdev = fbdev->displays[i].dssdev;
++
++		if (dssdev->dev->of_node = NULL)
++			continue;
++
++		id = of_alias_get_id(dssdev->dev->of_node, "display");
++		if (id = 0)
++			return dssdev;
++	}
++
+ 	/* return the first display we have in the list */
+ 	return fbdev->displays[0].dssdev;
  }
- #undef CNVT_TOHW
- 
--static void lcd_reset(struct da8xx_fb_par *par)
-+static void da8xx_fb_lcd_reset(void)
- {
- 	/* Disable the Raster if previously Enabled */
- 	lcd_disable_raster(false);
-@@ -721,7 +721,7 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
- 	u32 bpp;
- 	int ret = 0;
- 
--	lcd_reset(par);
-+	da8xx_fb_lcd_reset();
- 
- 	/* Calculate the divider */
- 	lcd_calc_clk_divider(par);
 -- 
-1.7.0.4
+1.8.1.2
 

@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 09 Aug 2013 08:39:00 +0000
-Subject: [RFC 15/22] ARM: omap3-beagle.dts: add display information
-Message-Id: <1376037547-10859-16-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 09 Aug 2013 08:38:55 +0000
+Subject: [RFC 10/22] ARM: omap3.dtsi: add omapdss information
+Message-Id: <1376037547-10859-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
@@ -13,46 +13,62 @@ Cc: Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboa
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/boot/dts/omap3-beagle.dts | 29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+ arch/arm/boot/dts/omap3.dtsi | 43 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
-diff --git a/arch/arm/boot/dts/omap3-beagle.dts b/arch/arm/boot/dts/omap3-beagle.dts
-index dfd8310..17cb9b0 100644
---- a/arch/arm/boot/dts/omap3-beagle.dts
-+++ b/arch/arm/boot/dts/omap3-beagle.dts
-@@ -180,3 +180,32 @@
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&gpio1_pins>;
+diff --git a/arch/arm/boot/dts/omap3.dtsi b/arch/arm/boot/dts/omap3.dtsi
+index 7d95cda..3308b3f 100644
+--- a/arch/arm/boot/dts/omap3.dtsi
++++ b/arch/arm/boot/dts/omap3.dtsi
+@@ -532,5 +532,48 @@
+ 			num-eps = <16>;
+ 			ram-bits = <12>;
+ 		};
++
++		dss@48050000 {
++			compatible = "ti,omap3-dss", "simple-bus";
++			reg = <0x48050000 0x200>;
++			ti,hwmods = "dss_core";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges;
++
++			dispc@48050400 {
++				compatible = "ti,omap3-dispc";
++				reg = <0x48050400 0x400>;
++				interrupts = <25>;
++				ti,hwmods = "dss_dispc";
++			};
++
++			dpi: encoder@0 {
++				compatible = "ti,omap3-dpi";
++			};
++
++			sdi: encoder@1 {
++				compatible = "ti,omap3-sdi";
++			};
++
++			dsi: encoder@4804fc00 {
++				compatible = "ti,omap3-dsi";
++				reg = <0x4804fc00 0x400>;
++				interrupts = <25>;
++				ti,hwmods = "dss_dsi1";
++			};
++
++			rfbi: encoder@48050800 {
++				compatible = "ti,omap3-rfbi";
++				reg = <0x48050800 0x100>;
++				ti,hwmods = "dss_rfbi";
++			};
++
++			venc: encoder@48050c00 {
++				compatible = "ti,omap3-venc";
++				reg = <0x48050c00 0x100>;
++				ti,hwmods = "dss_venc";
++			};
++		};
+ 	};
  };
-+
-+&dpi {
-+	vdds_dsi-supply = <&vpll2>;
-+};
-+
-+/ {
-+	aliases {
-+		display0 = &dvi0;
-+		display1 = &tv0;
-+	};
-+
-+	tfp410: encoder@0 {
-+		compatible = "ti,tfp410";
-+		video-source = <&dpi>;
-+		data-lines = <24>;
-+		gpios = <&gpio5 10 0>;	/* 170, power-down */
-+	};
-+
-+	dvi0: connector@0 {
-+		compatible = "ti,dvi_connector";
-+		video-source = <&tfp410>;
-+		i2c-bus = <&i2c3>;
-+	};
-+
-+	tv0: connector@1 {
-+		compatible = "ti,svideo_connector";
-+		video-source = <&venc>;
-+	};
-+};
 -- 
 1.8.1.2
 

@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 09 Aug 2013 08:39:06 +0000
-Subject: [RFC 21/22] OMAPDSS: panel-dpi: Add DT support
-Message-Id: <1376037547-10859-22-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 09 Aug 2013 08:39:02 +0000
+Subject: [RFC 17/22] OMAPDSS: encoder-tfp410: Add DT support
+Message-Id: <1376037547-10859-18-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
@@ -13,40 +13,32 @@ Cc: Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboa
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/displays-new/panel-dpi.c | 75 ++++++++++++++++++++++++++++
- 1 file changed, 75 insertions(+)
+ drivers/video/omap2/displays-new/encoder-tfp410.c | 54 +++++++++++++++++++++++
+ 1 file changed, 54 insertions(+)
 
-diff --git a/drivers/video/omap2/displays-new/panel-dpi.c b/drivers/video/omap2/displays-new/panel-dpi.c
-index 5f8f7e7..31bd184 100644
---- a/drivers/video/omap2/displays-new/panel-dpi.c
-+++ b/drivers/video/omap2/displays-new/panel-dpi.c
-@@ -13,9 +13,12 @@
+diff --git a/drivers/video/omap2/displays-new/encoder-tfp410.c b/drivers/video/omap2/displays-new/encoder-tfp410.c
+index a04f658..120da51 100644
+--- a/drivers/video/omap2/displays-new/encoder-tfp410.c
++++ b/drivers/video/omap2/displays-new/encoder-tfp410.c
+@@ -13,6 +13,7 @@
  #include <linux/module.h>
  #include <linux/platform_device.h>
  #include <linux/slab.h>
-+#include <linux/of.h>
 +#include <linux/of_gpio.h>
  
  #include <video/omapdss.h>
  #include <video/omap-panel-data.h>
-+#include <video/of_display_timing.h>
- 
- struct panel_drv_data {
- 	struct omap_dss_device dssdev;
-@@ -182,6 +185,66 @@ static int panel_dpi_probe_pdata(struct platform_device *pdev)
+@@ -179,6 +180,47 @@ static int tfp410_probe_pdata(struct platform_device *pdev)
  	return 0;
  }
  
-+static int panel_dpi_probe_of(struct platform_device *pdev)
++static int tfp410_probe_of(struct platform_device *pdev)
 +{
 +	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
 +	struct device_node *node = pdev->dev.of_node;
 +	struct omap_dss_device *in;
 +	struct device_node *src_node;
-+	int r, datalines;
-+	struct display_timing timing;
-+	struct videomode vm;
-+	int gpio;
++	int r, gpio, datalines;
 +
 +	src_node = of_parse_phandle(node, "video-source", 0);
 +	if (!src_node) {
@@ -61,6 +53,15 @@ index 5f8f7e7..31bd184 100644
 +	}
 +	ddata->in = in;
 +
++	gpio = of_get_gpio(node, 0);
++
++	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
++		ddata->pd_gpio = gpio;
++	} else {
++		dev_err(&pdev->dev, "failed to parse PD gpio\n");
++		return gpio;
++	}
++
 +	r = of_property_read_u32(node, "data-lines", &datalines);
 +	if (r) {
 +		dev_err(&pdev->dev, "failed to parse datalines\n");
@@ -69,66 +70,41 @@ index 5f8f7e7..31bd184 100644
 +
 +	ddata->data_lines = datalines;
 +
-+	gpio = of_get_gpio(node, 0);
-+	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
-+		ddata->enable_gpio = gpio;
-+	} else {
-+		dev_err(&pdev->dev, "failed to parse enable gpio\n");
-+		return gpio;
-+	}
-+
-+	gpio = of_get_gpio(node, 1);
-+	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
-+		ddata->backlight_gpio = gpio;
-+	} else {
-+		dev_err(&pdev->dev, "failed to parse backlight gpio\n");
-+		return gpio;
-+	}
-+
-+	r = of_get_display_timing(node, "panel-timing", &timing);
-+	if (r) {
-+		dev_err(&pdev->dev, "failed to get video timing\n");
-+		return r;
-+	}
-+
-+	videomode_from_timing(&timing, &vm);
-+	videomode_to_omap_video_timings(&vm, &ddata->videomode);
-+
 +	return 0;
 +}
 +
- static int panel_dpi_probe(struct platform_device *pdev)
+ static int tfp410_probe(struct platform_device *pdev)
  {
  	struct panel_drv_data *ddata;
-@@ -198,6 +261,10 @@ static int panel_dpi_probe(struct platform_device *pdev)
- 		r = panel_dpi_probe_pdata(pdev);
+@@ -195,6 +237,10 @@ static int tfp410_probe(struct platform_device *pdev)
+ 		r = tfp410_probe_pdata(pdev);
  		if (r)
  			return r;
 +	} else if (pdev->dev.of_node) {
-+		r = panel_dpi_probe_of(pdev);
++		r = tfp410_probe_of(pdev);
 +		if (r)
 +			return r;
  	} else {
  		return -ENODEV;
  	}
-@@ -254,12 +321,20 @@ static int __exit panel_dpi_remove(struct platform_device *pdev)
+@@ -251,12 +297,20 @@ static int __exit tfp410_remove(struct platform_device *pdev)
  	return 0;
  }
  
-+static const struct of_device_id panel_dpi_of_match[] = {
-+	{ .compatible = "panel-dpi", },
++static const struct of_device_id tfp410_of_match[] = {
++	{ .compatible = "ti,tfp410", },
 +	{},
 +};
 +
-+MODULE_DEVICE_TABLE(of, panel_dpi_of_match);
++MODULE_DEVICE_TABLE(of, tfp410_of_match);
 +
- static struct platform_driver panel_dpi_driver = {
- 	.probe = panel_dpi_probe,
- 	.remove = __exit_p(panel_dpi_remove),
- 	.driver = {
- 		.name = "panel-dpi",
- 		.owner = THIS_MODULE,
-+		.of_match_table = panel_dpi_of_match,
+ static struct platform_driver tfp410_driver = {
+ 	.probe	= tfp410_probe,
+ 	.remove	= __exit_p(tfp410_remove),
+ 	.driver	= {
+ 		.name	= "tfp410",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = tfp410_of_match,
  	},
  };
  

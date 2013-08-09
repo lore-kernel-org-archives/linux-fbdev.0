@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 09 Aug 2013 08:38:56 +0000
-Subject: [RFC 11/22] ARM: omap4.dtsi: add omapdss information
-Message-Id: <1376037547-10859-12-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 09 Aug 2013 08:38:46 +0000
+Subject: [RFC 01/22] ARM: OMAP: remove DSS DT hack
+Message-Id: <1376037547-10859-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,80 +11,94 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
 Cc: Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
+As a temporary solution to enable DSS for selected boards when booting
+with DT, a hack was added to board-generic.c in
+63d5fc0c2f748e20f38a0a0ec1c8494bddf5c288 (OMAP: board-generic: enable
+DSS for panda & sdp boards).
+
+We're now adding proper DT support, so the hack can be removed.
+
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/boot/dts/omap4.dtsi | 59 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 59 insertions(+)
+ arch/arm/mach-omap2/board-generic.c | 11 +----------
+ arch/arm/mach-omap2/dss-common.c    | 23 -----------------------
+ arch/arm/mach-omap2/dss-common.h    |  2 --
+ 3 files changed, 1 insertion(+), 35 deletions(-)
 
-diff --git a/arch/arm/boot/dts/omap4.dtsi b/arch/arm/boot/dts/omap4.dtsi
-index 22d9f2b..ab19f16 100644
---- a/arch/arm/boot/dts/omap4.dtsi
-+++ b/arch/arm/boot/dts/omap4.dtsi
-@@ -663,5 +663,64 @@
- 			ram-bits = <12>;
- 			ti,has-mailbox;
- 		};
-+
-+		dss@58000000 {
-+			compatible = "ti,omap4-dss", "simple-bus";
-+			reg = <0x58000000 0x80>;
-+			ti,hwmods = "dss_core";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges;
-+
-+			dispc@58001000 {
-+				compatible = "ti,omap4-dispc";
-+				reg = <0x58001000 0x1000>;
-+				interrupts = <0 25 0x4>;
-+				ti,hwmods = "dss_dispc";
-+			};
-+
-+			dpi: encoder@0 {
-+				compatible = "ti,omap4-dpi";
-+			};
-+
-+			rfbi: encoder@58002000  {
-+				compatible = "ti,omap4-rfbi";
-+				reg = <0x58002000 0x1000>;
-+				ti,hwmods = "dss_rfbi";
-+			};
-+
-+			/*
-+			 * Accessing venc registers cause a crash on omap4, so
-+			 * this is disabled for now.
-+			 */
-+			/*
-+			venc: encoder@58003000 {
-+				compatible = "ti,omap4-venc";
-+				reg = <0x58003000 0x1000>;
-+				ti,hwmods = "dss_venc";
-+			};
-+			*/
-+
-+			dsi1: encoder@58004000 {
-+				compatible = "ti,omap4-dsi";
-+				reg = <0x58004000 0x200>;
-+				interrupts = <0 53 0x4>;
-+				ti,hwmods = "dss_dsi1";
-+			};
-+
-+			dsi2: encoder@58005000 {
-+				compatible = "ti,omap4-dsi";
-+				reg = <0x58005000 0x200>;
-+				interrupts = <0 84 0x4>;
-+				ti,hwmods = "dss_dsi2";
-+			};
-+
-+			hdmi: encoder@58006000 {
-+				compatible = "ti,omap4-hdmi";
-+				reg = <0x58006000 0x1000>;
-+				interrupts = <0 101 0x4>;
-+				ti,hwmods = "dss_hdmi";
-+			};
-+		};
- 	};
- };
+diff --git a/arch/arm/mach-omap2/board-generic.c b/arch/arm/mach-omap2/board-generic.c
+index be5d005..d388d33 100644
+--- a/arch/arm/mach-omap2/board-generic.c
++++ b/arch/arm/mach-omap2/board-generic.c
+@@ -57,17 +57,8 @@ static void __init omap_generic_init(void)
+ 
+ 	of_platform_populate(NULL, omap_dt_match_table, NULL, NULL);
+ 
+-	/*
+-	 * HACK: call display setup code for selected boards to enable omapdss.
+-	 * This will be removed when omapdss supports DT.
+-	 */
+-	if (of_machine_is_compatible("ti,omap4-panda")) {
+-		omap4_panda_display_init_of();
++	if (of_machine_is_compatible("ti,omap4-panda"))
+ 		legacy_init_ehci_clk("auxclk3_ck");
+-
+-	}
+-	else if (of_machine_is_compatible("ti,omap4-sdp"))
+-		omap_4430sdp_display_init_of();
+ 	else if (of_machine_is_compatible("ti,omap5-uevm"))
+ 		legacy_init_ehci_clk("auxclk1_ck");
+ }
+diff --git a/arch/arm/mach-omap2/dss-common.c b/arch/arm/mach-omap2/dss-common.c
+index 043e570..f3282ac 100644
+--- a/arch/arm/mach-omap2/dss-common.c
++++ b/arch/arm/mach-omap2/dss-common.c
+@@ -98,12 +98,6 @@ void __init omap4_panda_display_init(void)
+ 	omap_mux_init_gpio(HDMI_GPIO_HPD, OMAP_PIN_INPUT_PULLDOWN);
+ }
+ 
+-void __init omap4_panda_display_init_of(void)
+-{
+-	omap_display_init(&omap4_panda_dss_data);
+-}
+-
+-
+ /* OMAP4 Blaze display data */
+ 
+ #define DISPLAY_SEL_GPIO	59	/* LCD2/PicoDLP switch */
+@@ -232,20 +226,3 @@ void __init omap_4430sdp_display_init(void)
+ 	omap_mux_init_gpio(HDMI_GPIO_CT_CP_HPD, OMAP_PIN_OUTPUT);
+ 	omap_mux_init_gpio(HDMI_GPIO_HPD, OMAP_PIN_INPUT_PULLDOWN);
+ }
+-
+-void __init omap_4430sdp_display_init_of(void)
+-{
+-	int r;
+-
+-	r = gpio_request_one(DISPLAY_SEL_GPIO, GPIOF_OUT_INIT_HIGH,
+-			"display_sel");
+-	if (r)
+-		pr_err("%s: Could not get display_sel GPIO\n", __func__);
+-
+-	r = gpio_request_one(DLP_POWER_ON_GPIO, GPIOF_OUT_INIT_LOW,
+-		"DLP POWER ON");
+-	if (r)
+-		pr_err("%s: Could not get DLP POWER ON GPIO\n", __func__);
+-
+-	omap_display_init(&sdp4430_dss_data);
+-}
+diff --git a/arch/arm/mach-omap2/dss-common.h b/arch/arm/mach-omap2/dss-common.h
+index 915f6ff..611b341 100644
+--- a/arch/arm/mach-omap2/dss-common.h
++++ b/arch/arm/mach-omap2/dss-common.h
+@@ -7,8 +7,6 @@
+  */
+ 
+ void __init omap4_panda_display_init(void);
+-void __init omap4_panda_display_init_of(void);
+ void __init omap_4430sdp_display_init(void);
+-void __init omap_4430sdp_display_init_of(void);
+ 
+ #endif
 -- 
 1.8.1.2
 

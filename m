@@ -1,7 +1,7 @@
 From: Rob Clark <robdclark@gmail.com>
-Date: Wed, 07 Aug 2013 18:12:44 +0000
+Date: Fri, 09 Aug 2013 17:12:28 +0000
 Subject: Re: [RFC 0/1] drm/pl111: Initial drm/kms driver for pl111
-Message-Id: <CAF6AEGtq-azZAxD+2OKz=Tg48bYAphBqGn033iWVZ-DjHA216A@mail.gmail.com>
+Message-Id: <CAF6AEGsmvtwBKMhp3b3Z3M0B2Xi9HXApQ+0c2_prDST1QrL8Xw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1374772648-19151-1-git-send-email-tom.cooksey@arm.com>
 	<CAF6AEGtspnhSGNM4_QQubVfOkZ1Gh1-Z3iyHOLBPVWuqRy81ew@mail.gmail.com>
@@ -16,301 +16,336 @@ References: <1374772648-19151-1-git-send-email-tom.cooksey@arm.com>
 	<52013482.e107c20a.27f9.ffffa718SMTPIN_ADDED_BROKEN@mx.google.com>
 	<CAF6AEGtaYJfJ4WBddbtyE9P8odXOYvJXLsreMwXMLCBOsfXy7w@mail.gmail.com>
 	<520284d6.07300f0a.72a4.1623SMTPIN_ADDED_BROKEN@mx.google.com>
-In-Reply-To: <520284d6.07300f0a.72a4.1623SMTPIN_ADDED_BROKEN@mx.google.com>
+	<CAF6AEGtq-azZAxD+2OKz=Tg48bYAphBqGn033iWVZ-DjHA216A@mail.gmail.com>
+	<520515b9.87370f0a.16e6.2380SMTPIN_ADDED_BROKEN@mx.google.com>
+In-Reply-To: <520515b9.87370f0a.16e6.2380SMTPIN_ADDED_BROKEN@mx.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Tom Cooksey <tom.cooksey@arm.com>
 Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Pawel Moll <Pawel.Moll@arm.com>, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org, linaro-mm-sig@lists.linaro.org, linux-kernel@vger.kernel.org
 
-On Wed, Aug 7, 2013 at 1:33 PM, Tom Cooksey <tom.cooksey@arm.com> wrote:
+On Fri, Aug 9, 2013 at 12:15 PM, Tom Cooksey <tom.cooksey@arm.com> wrote:
 >
->> >> > Didn't you say that programmatically describing device placement
->> >> > constraints was an unbounded problem? I guess we would have to
->> >> > accept that it's not possible to describe all possible constraints
->> >> > and instead find a way to describe the common ones?
+>> > Turning to DRM/KMS, it seems the supported formats of a plane can be
+>> > queried using drm_mode_get_plane. However, there doesn't seem to be a
+>> > way to query the supported formats of a crtc? If display HW only
+>> > supports scanning out from a single buffer (like pl111 does), I think
+>> > it won't have any planes and a fb can only be set on the crtc. In
+>> > which case, how should user-space query which pixel formats that crtc
+>> > supports?
+>>
+>> it is exposed for drm plane's.  What is missing is to expose the
+>> primary-plane associated with the crtc.
+>
+> Cool - so a patch which adds a way to query the what formats a crtc
+> supports would be welcome?
+
+well, I kinda think we want something that exposes the "primary plane"
+of the crtc.. I'm thinking something roughly like:
+
+---------
+diff --git a/include/uapi/drm/drm_mode.h b/include/uapi/drm/drm_mode.h
+index 53db7ce..c7ffca8 100644
+--- a/include/uapi/drm/drm_mode.h
++++ b/include/uapi/drm/drm_mode.h
+@@ -157,6 +157,12 @@ struct drm_mode_get_plane {
+ struct drm_mode_get_plane_res {
+ 	__u64 plane_id_ptr;
+ 	__u32 count_planes;
++	/* The primary planes are in matching order to crtc_id_ptr in
++	 * drm_mode_card_res (and same length).  For crtc_id[n], it's
++	 * primary plane is given by primary_plane_id[n].
++	 */
++	__u32 count_primary_planes;
++	__u64 primary_plane_id_ptr;
+ };
+
+ #define DRM_MODE_ENCODER_NONE	0
+---------
+
+then use the existing GETPLANE ioctl to query the capabilities
+
+> What about a way to query the stride alignment constraints?
+>
+> Presumably using the drm_mode_get_property mechanism would be the
+> right way to implement that?
+>
+
+I suppose you could try that.. typically that is in userspace,
+however.  It seems like get_property would get messy quickly (ie. is
+it a pitch alignment constraint, or stride alignment?  What if this is
+different for different formats (in particular tiled)? etc)
+
+>
+>> > As with v4l2, DRM doesn't appear to have a way to query the stride
+>> > constraints? Assuming there is a way to query the stride constraints,
+>> > there also isn't a way to specify them when creating a buffer with
+>> > DRM, though perhaps the existing pitch parameter of
+>> > drm_mode_create_dumb could be used to allow user-space to pass in a
+>> > minimum stride as well as receive the allocated stride?
+>> >
+>>
+>> well, you really shouldn't be using create_dumb..  you should have a
+>> userspace piece that is specific to the drm driver, and knows how to
+>> use that driver's gem allocate ioctl.
+>
+> Sorry, why does this need a driver-specific allocation function? It's
+> just a display controller driver and I just want to allocate a scan-
+> out buffer - all I'm asking is for the display controller driver to
+> use a minimum stride alignment so I can export the buffer and use
+> another device to fill it with data.
+
+Sure.. but userspace has more information readily available to make a
+better choice.  For example, for omapdrm I'd do things differently
+depending on whether I wanted to scan out that buffer (or a portion of
+it) rotated.  This is something I know in the DDX driver, but not in
+the kernel.  And it is quite likely something that is driver specific.
+ Sure, we could add that to a generic "allocate me a buffer" ioctl.
+But that doesn't really seem better, and it becomes a problem as soon
+as we come across some hw that needs to know something different.  In
+userspace, you have a lot more flexibility, since you don't really
+need to commit to an API for life.
+
+And to bring back the GStreamer argument (since that seems a fitting
+example when you start talking about sharing buffers between many
+devices, for example camera+codec+display), it would already be
+negotiating format between v4l2src + fooencoder + displaysink.. the
+pitch/stride is part of that format information.  If the display isn't
+the one with the strictest requirements, we don't want the display
+driver deciding what pitch to use.
+
+> The whole point is to be able to allocate the buffer in such a way
+> that another device can access it. So the driver _can't_ use a
+> special, device specific format, nor can it allocate it from a
+> private memory pool because doing so would preclude it from being
+> shared with another device.
+>
+> That other device doesn't need to be a GPU wither, it could just as
+> easily be a camera/ISP or video decoder.
+>
+>
+>
+>> >> > So presumably you're talking about a GPU driver being the exporter
+>> >> > here? If so, how could the GPU driver do these kind of tricks on
+>> >> > memory shared with another device?
 >> >>
->> >> well, the point I'm trying to make, is by dividing your constraints
->> >> into two groups, one that impacts and is handled by userspace, and
->> >> one that is in the kernel (ie. where the pages go), you cut down
->> >> the number of permutations that the kernel has to care about
->> >>  considerably. And kernel already cares about, for example, what
->> >> range of addresses that a device can dma to/from.  I think really
->> >> the only thing missing is the max # of sglist entries (contiguous
->> >> or not)
+>> >> Yes, that is gpu-as-exporter.  If someone else is allocating
+>> >> buffers, it is up to them to do these tricks or not.  Probably
+>> >> there is a pretty good chance that if you aren't a GPU you don't
+>> >> need those sort of tricks for fast allocation of transient upload
+>> >> buffers, staging textures, temporary pixmaps, etc.  Ie. I don't
+>> >> really think a v4l camera or video decoder would benefit from that
+>> >> sort of optimization.
 >> >
->> > I think it's more than physically contiguous or not.
+>> > Right - but none of those are really buffers you'd want to export
+>>
+>> > with dma_buf to share with another device are they? In which case,
+>> > why not just have dma_buf figure out the constraints and allocate
+>> > the memory?
+>>
+>> maybe not.. but (a) you don't necessarily know at creation time if it
+>> is going to be exported (maybe you know if it is definitely not going
+>> to be exported, but the converse is not true),
+>
+> I can't actually think of an example where you would not know if a
+> buffer was going to be exported or not at allocation time? Do you have
+> a case in mind?
+
+yeah, dri2.. when the front buffer is allocated it is just a regular
+pixmap.  If you swap/flip it becomes the back buffer and now shared
+;-)
+And pixmaps are allocated w/ enough frequency that it is the sort of
+thing you might want to optimize.
+
+And even when you know it will be shared, you don't know with who.
+
+> Regardless, you'd certainly have to know if a buffer will be exported
+> pretty quickly, before it's used so that you can import it into
+> whatever devices are going to access it. Otherwise if it gets
+> allocated before you export it, the allocation won't satisfy the
+> constraints of the other devices which will need to access it and
+> importing will fail. Assuming of course deferred allocation of the
+> backing pages as discussed earlier in the thread.
+>
+>
+>
+>> and (b) there isn't
+>> really any reason to special case the allocation in the driver because
+>> it is going to be exported.
+>
+> Not sure I follow you here? Surely you absolutely have to special-case
+> the allocation if the buffer is to be exported because you have to
+> take the other devices' constraints into account when you allocate? Or
+> do you mean you don't need to special-case the GEM buffer object
+> creation, only the allocation of the backing pages? Though I'm not
+> sure how that distinction is useful - at the end of the day, you need
+> to special-case allocation of the backing pages.
+>
+
+well, you need to consider separately what is (a) in the pages, and
+(b) where the pages come from.
+
+By moving the allocation into dmabuf you restrict (b).  For sharing
+buffers, (a) may be restricted, but there is at least some examples of
+hardware where (b) would not otherwise be restricted by sharing.
+
+>
+>> helpers that can be used by simple drivers, yes.  Forcing the way the
+>> buffer is allocated, for sure not.  Currently, for example, there is
+>> no issue to export a buffer allocated from stolen-mem.
+>
+> Where stolen-mem is the PC-world's version of a carveout? I.e. A chunk
+> of memory reserved at boot for the GPU which the OS can't touch? I
+> guess I view such memory as accessible to all media devices on the
+> system and as such, needs to be managed by a central allocator which
+> dma_buf can use to allocate from.
+
+think carve-out created by bios.  In all the cases I am aware of, the
+drm driver handles allocation of buffer(s) from the carveout.
+
+> I guess if that stolen-mem is managed by a single device then in
+> essence that device becomes the central allocator you have to use to
+> be able to allocate from that stolen mem?
+>
+>
+>> > If a driver needs to allocate memory in a special way for a
+>> > particular device, I can't really imagine how it would be able
+>> > to share that buffer with another device using dma_buf? I guess
+>> > a driver is likely to need some magic voodoo to configure access
+>> > to the buffer for its device, but surely that would be done by
+>> > the dma_mapping framework when dma_buf_map happens?
 >> >
->> > For example, it can be more efficient to use large page sizes on
->> > devices with IOMMUs to reduce TLB traffic. I think the size and even
->> > the availability of large pages varies between different IOMMUs.
 >>
->> sure.. but I suppose if we can spiff out dma_params to express "I need
->> contiguous", perhaps we can add some way to express "I prefer
->> as-contiguous-as-possible".. either way, this is about where the pages
->> are placed, and not about the layout of pixels within the page, so
->> should be in kernel.  It's something that is missing, but I believe
->> that it belongs in dma_params and hidden behind dma_alloc_*() for
->> simple drivers.
+>> if, what it has to configure actually manages to fit in the
+>> dma-mapping framework
 >
-> Thinking about it, isn't this more a property of the IOMMU? I mean,
-> are there any cases where an IOMMU had a large page mode but you
-> wouldn't want to use it? So when allocating the memory, you'd have to
-> take into account not just the constraints of the devices themselves,
-> but also of any IOMMUs any of the device sit behind?
+> But if it doesn't, surely that's an issue which needs to be addressed
+> in the dma_mapping framework or else you won't be able to import
+> buffers for use by that device anyway?
 >
 
-perhaps yes.  But the device is associated w/ the iommu it is attached
-to, so this shouldn't be a problem
+I'm not sure if we have to fit everything in dma-mapping framework, at
+least in cases where you have something that is specific to one
+platform.
+
+Currently dma-buf provides enough flexibility for other drivers to be
+able to import these buffers.
 
 >
->> > There's also the issue of buffer stride alignment. As I say, if the
->> > buffer is to be written by a tile-based GPU like Mali, it's more
->> > efficient if the buffer's stride is aligned to the max AXI bus burst
->> > length. Though I guess a buffer stride only makes sense as a concept
->> > when interpreting the data as a linear-layout 2D image, so perhaps
->> > belongs in user-space along with format negotiation?
->> >
->>
->> Yeah.. this isn't about where the pages go, but about the arrangement
->> within a page.
->>
->> And, well, except for hw that supports the same tiling (or
->> compressed-fb) in display+gpu, you probably aren't sharing tiled
->> buffers.
+>> anyways, where the pages come from has nothing to do with whether a
+>> buffer can be shared or not
 >
-> You'd only want to share a buffer between devices if those devices can
-> understand the same pixel format. That pixel format can't be device-
-> specific or opaque, it has to be explicit. I think drm_fourcc.h is
-> what defines all the possible pixel formats. This is the enum I used
-> in EGL_EXT_image_dma_buf_import at least. So if we get to the point
-> where multiple devices can understand a tiled or compressed format, I
-> assume we could just add that format to drm_fourcc.h and possibly
-> v4l2's v4l2_mbus_pixelcode enum in v4l2-mediabus.h.
->
-> For user-space to negotiate a common pixel format and now stride
-> alignment, I guess it will obviously need a way to query what pixel
-> formats a device supports and what its stride alignment requirements
-> are.
->
-> I don't know v4l2 very well, but it certainly seems the pixel format
-> can be queried using V4L2_SUBDEV_FORMAT_TRY when attempting to set
-> a particular format. I couldn't however find a way to retrieve a list
-> of supported formats - it seems the mechanism is to try out each
-> format in turn to determine if it is supported. Is that right?
-
-it is exposed for drm plane's.  What is missing is to expose the
-primary-plane associated with the crtc.
-
-> There doesn't however seem a way to query what stride constraints a
-> V4l2 device might have. Does HW abstracted by v4l2 typically have
-> such constraints? If so, how can we query them such that a buffer
-> allocated by a DRM driver can be imported into v4l2 and used with
-> that HW?
->
-> Turning to DRM/KMS, it seems the supported formats of a plane can be
-> queried using drm_mode_get_plane. However, there doesn't seem to be a
-> way to query the supported formats of a crtc? If display HW only
-> supports scanning out from a single buffer (like pl111 does), I think
-> it won't have any planes and a fb can only be set on the crtc. In
-> which case, how should user-space query which pixel formats that crtc
-> supports?
->
-> Assuming user-space can query the supported formats and find a common
-> one, it will need to allocate a buffer. Looks like
-> drm_mode_create_dumb can do that, but it only takes a bpp parameter,
-> there's no format parameter. I assume then that user-space defines
-> the format and tells the DRM driver which format the buffer is in
-> when creating the fb with drm_mode_fb_cmd2, which does take a format
-> parameter? Is that right?
-
-Right, the gem object has no inherent format, it is just some bytes.
-The format/width/height/pitch are all attributes of the fb.
-
-> As with v4l2, DRM doesn't appear to have a way to query the stride
-> constraints? Assuming there is a way to query the stride constraints,
-> there also isn't a way to specify them when creating a buffer with
-> DRM, though perhaps the existing pitch parameter of
-> drm_mode_create_dumb could be used to allow user-space to pass in a
-> minimum stride as well as receive the allocated stride?
+> Sure, but where they are located in physical memory really does
+> matter.
 >
 
-well, you really shouldn't be using create_dumb..  you should have a
-userspace piece that is specific to the drm driver, and knows how to
-use that driver's gem allocate ioctl.
+s/does/can/
+
+it doesn't always matter.  And in cases where it does matter, as long
+as we can express the restrictions in dma_parms (which we can already
+for the case of range-of-memory restrictions) we are covered
 
 >
->> >> > One problem with this is it duplicates a lot of logic in each
->> >> > driver which can export a dma_buf buffer. Each exporter will
->> >> > need to do pretty much the same thing: iterate over all the
->> >> > attachments, determine of all the constraints (assuming that
->> >> > can be done) and allocate pages such that the lowest-common-
->> >> > denominator is satisfied. Perhaps rather than duplicating that
->> >> > logic in every driver, we could instead move allocation of the
->> >> > backing pages into dma_buf itself?
+>> >> At any rate, for both xorg and wayland/gbm, you know when a buffer
+>> >> is going to be a scanout buffer.  What I'd recommend is define a
+>> >> small userspace API that your customers (the SoC vendors) implement
+>> >> to allocate a scanout buffer and hand you back a dmabuf fd.  That
+>> >> could be used both for x11 and for gbm.  Inputs should be requested
+>> >> width/height and format.  And outputs pitch plus dmabuf fd.
 >> >>
->> >> I tend to think it is better to add helpers as we see common
->>
->> >> patterns emerge, which drivers can opt-in to using.  I don't
->> >> think that we should move allocation into dma_buf itself, but
->> >> it would perhaps be useful to have dma_alloc_*() variants that
->> >> could allocate for multiple devices.
+>> >> (Actually you might even just want to use gbm as your starting
+>> >> point. You could probably just use gbm from xf86-video-armsoc for
+>> >> allocation, to have one thing that works for both wayland and x11.
+>> >> Scanout and cursor buffers should go to vendor/SoC specific fxn,
+>> >> rest can be allocated from mali kernel driver.)
 >> >
->> > A helper could work I guess, though I quite like the idea of
->> > having dma_alloc_*() variants which take a list of devices to
->> > allocate memory for.
->> >
->> >
->> >> That would help for simple stuff, although I'd suspect
->> >> eventually a GPU driver will move away from that.  (Since you
->> >> probably want to play tricks w/ pools of pages that are
->> >> pre-zero'd and in the correct cache state, use spare cycles on
->> >> the gpu or dma engine to pre-zero uncached pages, and games
->> >> like that.)
->> >
->> > So presumably you're talking about a GPU driver being the exporter
->> > here? If so, how could the GPU driver do these kind of tricks on
->> > memory shared with another device?
+>> > What does that buy us over just using drm_mode_create_dumb on the
+>> > display's DRM driver?
 >>
->> Yes, that is gpu-as-exporter.  If someone else is allocating buffers,
->> it is up to them to do these tricks or not.  Probably there is a
->> pretty good chance that if you aren't a GPU you don't need those sort
->> of tricks for fast allocation of transient upload buffers, staging
->> textures, temporary pixmaps, etc.  Ie. I don't really think a v4l
->> camera or video decoder would benefit from that sort of optimization.
+>> well, for example, if there was actually some hw w/ omap's dss + mali,
+>> you could actually have mali render transparently to tiled buffers
+>> which could be scanned out rotated.  Which would not be possible w/
+>> dumb buffers.
 >
-> Right - but none of those are really buffers you'd want to export with
-> dma_buf to share with another device are they? In which case, why not
-> just have dma_buf figure out the constraints and allocate the memory?
+> Why not? As you said earlier, the format is defined when you setup the
+> fb with drm_mode_fb_cmd2. If you wanted to share the buffer between
+> devices, you have to be explicit about what format that buffer is in,
+> so you'd have to add an entry to drm_fourcc.h for the tiled format.
 
-maybe not.. but (a) you don't necessarily know at creation time if it
-is going to be exported (maybe you know if it is definitely not going
-to be exported, but the converse is not true), and (b) there isn't
-really any reason to special case the allocation in the driver because
-it is going to be exported.
+no, that doesn't really work
 
-helpers that can be used by simple drivers, yes.  Forcing the way the
-buffer is allocated, for sure not.  Currently, for example, there is
-no issue to export a buffer allocated from stolen-mem.  If we put the
-page allocation in dma-buf, this would not be possible.  That is just
-one quick example off the top of my head, I'm sure there are plenty
-more.  But we definitely do not want the allocate in dma_buf itself.
+in this case, the format to any device (or userspace) accessing the
+buffer is not tiled.  (Ie. it would look like normal NV12 or
+whatever).  But there are some different requirements on stride.  And
+there are cases where you would prefer not to use tiled buffers, but
+the kernel doesn't know enough in the dumb-buffer alloc ioctl to make
+the correct decision.
 
-> If a driver needs to allocate memory in a special way for a particular
-> device, I can't really imagine how it would be able to share that
-> buffer with another device using dma_buf? I guess a driver is likely
-> to need some magic voodoo to configure access to the buffer for its
-> device, but surely that would be done by the dma_mapping framework
-> when dma_buf_map happens?
->
-
-if, what it has to configure actually manages to fit in the
-dma-mapping framework
-
-anyways, where the pages come from has nothing to do with whether a
-buffer can be shared or not
-
->
->
->> >> You probably want to get out of the SoC mindset, otherwise you are
->> >> going to make bad assumptions that come back to bite you later on.
->> >
->> > Sure - there are always going to be PC-like devices where the
->> > hardware configuration isn't fixed like it is on a traditional SoC.
->> > But I'd rather have a simple solution which works on traditional SoCs
->> > than no solution at all. Today our solution is to over-load the dumb
->> > buffer alloc functions of the display's DRM driver - For now I'm just
->> > looking for the next step up from that! ;-)
->>
->> True.. the original intention, which is perhaps a bit desktop-centric,
->> really was for there to be a userspace component talking to the drm
->> driver for allocation, ie. xf86-video-foo and/or
->> src/gallium/drivers/foo (for example) ;-)
->>
->> Which means for x11 having a SoC vendor specific xf86-video-foo for
->> x11..  or vendor specific gbm implementation for wayland.  (Although
->> at least in the latter case it is a pretty small piece of code.)  But
->> that is probably what you are trying to avoid.
->
-> I've been trying to get my head around how PRIME relates to DDX
-> drivers. As I understand it (which is likely wrong), you have a laptop
-> with both an Intel & an nVidia GPU. You have both the i915 & nouveau
-> kernel drivers loaded. What I'm not sure about is which GPU's display
-> controller is actually hooked up to the physical connector? Perhaps
-> there is a MUX like there is on Versatile Express?
-
-afaiu it can be a, b, or c (ie. either gpu can have the display or
-there can be a mux)..
-
-> What I also don't understand is what DDX driver is loaded? Is it
-> xf86-video-intel, xf86-video-nouveau or both? I get the impression
-> that there's a "master" DDX which implements 2D operations but can
-> import buffers using PRIME from the other driver and draw to them.
-> Or is it more that it's able to export rendered buffers to the
-> "slave" DRM for scanout? Either way, it's pretty similar to an ARM
-> SoC setup which has the GPU and the display as two totally
-> independent devices.
+> So userspace queries what formats the GPU DRM supports and what
+> formats the OMAP DSS DRM supports, selects the tiled format and then
+> uses drm_mode_create_dumb to allocate a buffer of the correct size and
+> sets the appropriate drm_fourcc.h enum value when creating an fb for
+> that buffer. Or have I missed something?
 >
 >
 >
->> At any rate, for both xorg and wayland/gbm, you know when a buffer is
->> going to be a scanout buffer.  What I'd recommend is define a small
->> userspace API that your customers (the SoC vendors) implement to
->> allocate a scanout buffer and hand you back a dmabuf fd.  That could
->> be used both for x11 and for gbm.  Inputs should be requested
->> width/height and format.  And outputs pitch plus dmabuf fd.
->>
->> (Actually you might even just want to use gbm as your starting point.
->> You could probably just use gbm from xf86-video-armsoc for allocation,
->> to have one thing that works for both wayland and x11.  Scanout and
->> cursor buffers should go to vendor/SoC specific fxn, rest can be
->> allocated from mali kernel driver.)
->
-> What does that buy us over just using drm_mode_create_dumb on the
-> display's DRM driver?
->
-
-well, for example, if there was actually some hw w/ omap's dss + mali,
-you could actually have mali render transparently to tiled buffers
-which could be scanned out rotated.  Which would not be possible w/
-dumb buffers.
-
->
->
->> >> > wouldn't need a way to programmatically describe the constraints
->> >> > either: As you say, if userspace sets the "SCANOUT" flag, it would
->> >> > just "know" that on this SoC, that buffer needs to be physically
->> >> > contiguous for example.
+>> >> >> For example, on omapdrm, the SCANOUT flag does nothing on omap4+
+>> >> >> (where phys contig is not required for scanout), but causes CMA
+>> >> >> (dma_alloc_*()) to be used on omap3.  Userspace doesn't care.
+>> >> >> It just knows that it wants to be able to scanout that particular
+>> >> >> buffer.
+>> >> >
+>> >> > I think that's the idea? The omap3's allocator driver would use
+>> >> > contiguous memory when it detects the SCANOUT flag whereas the
+>> >> > omap4 allocator driver wouldn't have to. No complex negotiation
+>> >> > of constraints - it just "knows".
+>> >> >
 >> >>
->> >> not really.. it just knows it wants to scanout the buffer, and tells
->> >> this as a hint to the kernel.
->> >>
->> >> For example, on omapdrm, the SCANOUT flag does nothing on omap4+
->> >> (where phys contig is not required for scanout), but causes CMA
->> >> (dma_alloc_*()) to be used on omap3.  Userspace doesn't care.
->> >> It just knows that it wants to be able to scanout that particular
->> >> buffer.
+>> >> well, it is same allocating driver in both cases (although maybe
+>> >> that is unimportant).  The "it" that just knows it wants to scanout
+>> >> is userspace.  The "it" that just knows that scanout translates to
+>> >> contiguous (or not) is the kernel.  Perhaps we are saying the same
+>> >> thing ;-)
 >> >
->> > I think that's the idea? The omap3's allocator driver would use
->> > contiguous memory when it detects the SCANOUT flag whereas the omap4
->> > allocator driver wouldn't have to. No complex negotiation of
->> > constraints - it just "knows".
+>> > Yeah - I think we are... so what's the issue with having a per-SoC
+>> > allocation driver again?
 >> >
 >>
->> well, it is same allocating driver in both cases (although maybe that
->> is unimportant).  The "it" that just knows it wants to scanout is
->> userspace.  The "it" that just knows that scanout translates to
->> contiguous (or not) is the kernel.  Perhaps we are saying the same
->> thing ;-)
+>> In a way the display driver is a per-SoC allocator.  But not
+>> necessarily the *central* allocator for everything.  Ie. no need for
+>> display driver to allocate vertex buffers for a separate gpu driver,
+>> and that sort of thing.
 >
-> Yeah - I think we are... so what's the issue with having a per-SoC
-> allocation driver again?
+> Again, I'm only talking about allocating buffers which will be shared
+> between different devices. At no point have I mentioned the allocation
+> of buffers which aren't to be shared between devices. Sorry if that's
+> not been clear.
+
+ok, I guess we were talking about slightly different things ;-)
+
+> So for buffers which are to be shared between devices, your suggesting
+> that the display driver is the per-SoC allocator? But as I say, and
+> how this thread got started, the same display driver can be used on
+> different SoCs, so having _it_ be the central allocator isn't ideal.
+> Though this is our current solution and why we're "abusing" the dumb
+> buffer allocation functions. :-)
 >
 
-In a way the display driver is a per-SoC allocator.  But not
-necessarily the *central* allocator for everything.  Ie. no need for
-display driver to allocate vertex buffers for a separate gpu driver,
-and that sort of thing.
+which is why you want to let userspace figure out the pitch and then
+tell the display driver what size it wants, rather than using dumb
+buffer ioctl ;-)
+
+Ok, you could have a generic TELL_ME_WHAT_STRIDE_TO_USE ioctl or
+property or what have you.. but I think that would be hard to get
+right for all cases, and most people don't really care about that
+because they already need a gpu/display specific xorg driver and/or
+gl/egl talking to their kernel driver.  You are in a slightly special
+case, since you are providing GL driver independently of the display
+driver.  But I think that is easier to handle by just telling your
+customers "here, fill out this function(s) to allocate buffer for
+scanout" (and, well, I guess you'd need one to query for
+pitch/stride), rather than trying to cram everything into the kernel.
 
 BR,
 -R

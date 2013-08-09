@@ -1,101 +1,148 @@
-From: Alison Wang <b18965@freescale.com>
-Date: Thu, 15 Aug 2013 08:01:54 +0000
-Subject: [PATCH v3 5/5] Documentation: DT: Add DCU framebuffer driver
-Message-Id: <1376553714-25922-6-git-send-email-b18965@freescale.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 09 Aug 2013 08:39:01 +0000
+Subject: [RFC 16/22] OMAPDSS: panel-dsi-cm: Add DT support
+Message-Id: <1376037547-10859-17-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376553714-25922-1-git-send-email-b18965@freescale.com>
-In-Reply-To: <1376553714-25922-1-git-send-email-b18965@freescale.com>
+References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This patch adds the document for DCU framebuffer driver under
-Documentation/devicetree/bindings/fb/.
+XXX ULPS and backlight missing.
 
-Signed-off-by: Alison Wang <b18965@freescale.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
-Changes in v3: Add display node description
-Changes in v2: New
+ drivers/video/omap2/displays-new/panel-dsi-cm.c | 87 +++++++++++++++++++++++++
+ 1 file changed, 87 insertions(+)
 
- .../devicetree/bindings/fb/fsl-dcu-fb.txt          | 67 ++++++++++++++++++++++
- 1 file changed, 67 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fb/fsl-dcu-fb.txt
-
-diff --git a/Documentation/devicetree/bindings/fb/fsl-dcu-fb.txt b/Documentation/devicetree/bindings/fb/fsl-dcu-fb.txt
-new file mode 100644
-index 0000000..d0d50dd
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fb/fsl-dcu-fb.txt
-@@ -0,0 +1,67 @@
-+* Freescale Display Control Unit (DCU)
+diff --git a/drivers/video/omap2/displays-new/panel-dsi-cm.c b/drivers/video/omap2/displays-new/panel-dsi-cm.c
+index aaaea64..f65ea4d 100644
+--- a/drivers/video/omap2/displays-new/panel-dsi-cm.c
++++ b/drivers/video/omap2/displays-new/panel-dsi-cm.c
+@@ -22,6 +22,8 @@
+ #include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/workqueue.h>
++#include <linux/of_device.h>
++#include <linux/of_gpio.h>
+ 
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+@@ -1156,6 +1158,79 @@ static int dsicm_probe_pdata(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int dsicm_probe_of(struct platform_device *pdev)
++{
++	struct device_node *node = pdev->dev.of_node;
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct omap_dss_device *in;
++	struct property *prop;
++	struct device_node *src_node;
++	u32 lane_arr[10];
++	int gpio, len, num_pins;
++	int r, i;
 +
-+Required properties:
-+- compatible: Should be "fsl,vf610-dcu". Supported chips include
-+  Vybrid VF610.
-+- reg: Address and length of the register set for DCU.
-+- interrupts: Should contain DCU interrupts.
-+- clocks: From common clock binding: handle to DCU clock.
-+- clock-names: From common clock binding: Shall be "dcu".
-+- tcon-controller: The phandle of TCON controller.
-+- display: The phandle to display node.
++	src_node = of_parse_phandle(node, "video-source", 0);
++	if (!src_node) {
++		dev_err(&pdev->dev, "failed to parse video source\n");
++		return -ENODEV;
++	}
 +
-+For the DCU initialization, we read data from TCON node.
-+Required properties for TCON:
-+- compatible: Should be "fsl,vf610-tcon". Supported chips include
-+  Vybrid VF610.
-+- reg: Address and length of the register set for TCON.
-+- clocks: From common clock binding: handle to TCON clock.
-+- clock-names: From common clock binding: Shall be "tcon".
++	in = omap_dss_find_output_by_node(src_node);
++	if (in = NULL) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return -EPROBE_DEFER;
++	}
++	ddata->in = in;
 +
-+* display node
++	gpio = of_get_gpio(node, 0);
++	if (!gpio_is_valid(gpio)) {
++		dev_err(&pdev->dev, "failed to parse reset gpio\n");
++		return gpio;
++	}
++	ddata->reset_gpio = gpio;
 +
-+Required properties:
-+- bits-per-pixel: <24> for RGB888.
++	if (of_gpio_count(node) > 1) {
++		gpio = of_get_gpio(node, 1);
 +
-+Required sub-node:
-+- display-timings: Refer to binding doc display-timing.txt for details.
++		if (gpio_is_valid(gpio) || gpio = -ENOENT) {
++			ddata->ext_te_gpio = gpio;
++		} else {
++			dev_err(&pdev->dev, "failed to parse TE gpio\n");
++			return gpio;
++		}
++	} else {
++		ddata->ext_te_gpio = -1;
++	}
 +
-+Examples:
++	prop = of_find_property(node, "lanes", &len);
++	if (prop = NULL) {
++		dev_err(&pdev->dev, "failed to find lane data\n");
++		return -EINVAL;
++	}
 +
-+dcu0: dcu@40058000 {
-+	compatible = "fsl,vf610-dcu";
-+	reg = <0x40058000 0x1200>;
-+	interrupts = <0 30 0x04>;
-+	clocks = <&clks VF610_CLK_DCU0>;
-+	clock-names = "dcu";
-+	tcon-controller = <&tcon0>;
-+	display = <&display>;
++	num_pins = len / sizeof(u32);
 +
-+	display: display@0 {
-+		bits-per-pixel = <24>;
++	if (num_pins < 4 || num_pins % 2 != 0
++			|| num_pins > ARRAY_SIZE(lane_arr)) {
++		dev_err(&pdev->dev, "bad number of lanes\n");
++		return -EINVAL;
++	}
 +
-+		display-timings {
-+			native-mode = <&timing0>;
-+			timing0: nl4827hc19 {
-+				clock-frequency = <10870000>;
-+				hactive = <480>;
-+				vactive = <272>;
-+				hback-porch = <2>;
-+				hfront-porch = <2>;
-+				vback-porch = <1>;
-+				vfront-porch = <1>;
-+				hsync-len = <41>;
-+				vsync-len = <2>;
-+				hsync-active = <1>;
-+				vsync-active = <1>;
-+			};
-+		};
-+	};
++	r = of_property_read_u32_array(node, "lanes", lane_arr, num_pins);
++	if (r) {
++		dev_err(&pdev->dev, "failed to read lane data\n");
++		return r;
++	}
++
++	ddata->pin_config.num_pins = num_pins;
++	for (i = 0; i < num_pins; ++i)
++		ddata->pin_config.pins[i] = (int)lane_arr[i];
++
++	/* TODO: ulps, backlight */
++
++	return 0;
++}
++
+ static int dsicm_probe(struct platform_device *pdev)
+ {
+ 	struct backlight_properties props;
+@@ -1178,6 +1253,10 @@ static int dsicm_probe(struct platform_device *pdev)
+ 		r = dsicm_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		r = dsicm_probe_of(pdev);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -1320,12 +1399,20 @@ static int __exit dsicm_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id dsicm_of_match[] = {
++	{ .compatible = "panel-dsi-cm", },
++	{},
 +};
 +
-+tcon0: tcon@4003d000 {
-+	compatible = "fsl,vf610-tcon";
-+	reg = <0x4003d000 0x1000>;
-+	clocks = <&clks VF610_CLK_TCON0>;
-+	clock-names = "tcon";
-+};
++MODULE_DEVICE_TABLE(of, dsicm_of_match);
++
+ static struct platform_driver dsicm_driver = {
+ 	.probe = dsicm_probe,
+ 	.remove = __exit_p(dsicm_remove),
+ 	.driver = {
+ 		.name = "panel-dsi-cm",
+ 		.owner = THIS_MODULE,
++		.of_match_table = dsicm_of_match,
+ 	},
+ };
+ 
 -- 
-1.8.0
-
+1.8.1.2
 

@@ -1,149 +1,88 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 29 Aug 2013 13:31:59 +0000
-Subject: [PATCH 14/15] OMAPDSS: rename omap_dss_device's 'output' to 'src'
-Message-Id: <1377783120-14001-15-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 09 Aug 2013 08:38:51 +0000
+Subject: [RFC 06/22] OMAPFB: clean up default display search
+Message-Id: <1376037547-10859-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-In the old panel device model we had "outputs", which were the encoders
-inside OMAP DSS block, and panel devices (omap_dss_device). The panel
-devices had a reference to the source of the video data, i.e. reference
-to an "output", in a field named "output".
-
-That was somewhat confusing even in the old panel device model, but even
-more so with the panel device model where we can have longer chains of
-display entities.
-
-This patch renames the "output" field to "src", which much better tells
-what the field points to.
+Separate the code for finding the default display into a function for
+clarity and to make it easier to extend it in the future.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/gpu/drm/omapdrm/omap_encoder.c               | 2 +-
- drivers/video/omap2/displays-new/encoder-tfp410.c    | 4 ++--
- drivers/video/omap2/displays-new/encoder-tpd12s015.c | 4 ++--
- drivers/video/omap2/dss/output.c                     | 8 ++++----
- include/video/omapdss.h                              | 4 ++--
- 5 files changed, 11 insertions(+), 11 deletions(-)
+ drivers/video/omap2/omapfb/omapfb-main.c | 46 ++++++++++++++++++++------------
+ 1 file changed, 29 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/gpu/drm/omapdrm/omap_encoder.c b/drivers/gpu/drm/omapdrm/omap_encoder.c
-index c29451b..6a12e89 100644
---- a/drivers/gpu/drm/omapdrm/omap_encoder.c
-+++ b/drivers/gpu/drm/omapdrm/omap_encoder.c
-@@ -133,7 +133,7 @@ int omap_encoder_update(struct drm_encoder *encoder,
- 	struct omap_dss_driver *dssdrv = dssdev->driver;
- 	int ret;
- 
--	dssdev->output->manager = mgr;
-+	dssdev->src->manager = mgr;
- 
- 	if (dssdrv->check_timings) {
- 		ret = dssdrv->check_timings(dssdev, timings);
-diff --git a/drivers/video/omap2/displays-new/encoder-tfp410.c b/drivers/video/omap2/displays-new/encoder-tfp410.c
-index a04f658..454f771 100644
---- a/drivers/video/omap2/displays-new/encoder-tfp410.c
-+++ b/drivers/video/omap2/displays-new/encoder-tfp410.c
-@@ -43,7 +43,7 @@ static int tfp410_connect(struct omap_dss_device *dssdev,
- 	if (r)
- 		return r;
- 
--	dst->output = dssdev;
-+	dst->src = dssdev;
- 	dssdev->device = dst;
- 
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 27d6905..8bfe973 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -2407,6 +2407,34 @@ static int omapfb_init_connections(struct omapfb2_device *fbdev,
  	return 0;
-@@ -63,7 +63,7 @@ static void tfp410_disconnect(struct omap_dss_device *dssdev,
- 	if (dst != dssdev->device)
- 		return;
- 
--	dst->output = NULL;
-+	dst->src = NULL;
- 	dssdev->device = NULL;
- 
- 	in->ops.dpi->disconnect(in, &ddata->dssdev);
-diff --git a/drivers/video/omap2/displays-new/encoder-tpd12s015.c b/drivers/video/omap2/displays-new/encoder-tpd12s015.c
-index ce0e010..a3d2991 100644
---- a/drivers/video/omap2/displays-new/encoder-tpd12s015.c
-+++ b/drivers/video/omap2/displays-new/encoder-tpd12s015.c
-@@ -66,7 +66,7 @@ static int tpd_connect(struct omap_dss_device *dssdev,
- 	if (r)
- 		return r;
- 
--	dst->output = dssdev;
-+	dst->src = dssdev;
- 	dssdev->device = dst;
- 
- 	INIT_COMPLETION(ddata->hpd_completion);
-@@ -102,7 +102,7 @@ static void tpd_disconnect(struct omap_dss_device *dssdev,
- 
- 	gpio_set_value_cansleep(ddata->ct_cp_hpd_gpio, 0);
- 
--	dst->output = NULL;
-+	dst->src = NULL;
- 	dssdev->device = NULL;
- 
- 	in->ops.hdmi->disconnect(in, &ddata->dssdev);
-diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
-index 3f5c0a7..15f47af 100644
---- a/drivers/video/omap2/dss/output.c
-+++ b/drivers/video/omap2/dss/output.c
-@@ -48,7 +48,7 @@ int omapdss_output_set_device(struct omap_dss_device *out,
- 	}
- 
- 	out->device = dssdev;
--	dssdev->output = out;
-+	dssdev->src = out;
- 
- 	mutex_unlock(&output_lock);
- 
-@@ -79,7 +79,7 @@ int omapdss_output_unset_device(struct omap_dss_device *out)
- 		goto err;
- 	}
- 
--	out->device->output = NULL;
-+	out->device->src = NULL;
- 	out->device = NULL;
- 
- 	mutex_unlock(&output_lock);
-@@ -146,8 +146,8 @@ EXPORT_SYMBOL(omap_dss_find_output_by_node);
- 
- struct omap_dss_device *omapdss_find_output_from_display(struct omap_dss_device *dssdev)
- {
--	while (dssdev->output)
--		dssdev = dssdev->output;
-+	while (dssdev->src)
-+		dssdev = dssdev->src;
- 
- 	if (dssdev->id != 0)
- 		return omap_dss_get_device(dssdev);
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 763b11b..5fa81dd 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -774,7 +774,7 @@ struct omap_dss_device {
- 
- 	enum omap_display_caps caps;
- 
--	struct omap_dss_device *output;
-+	struct omap_dss_device *src;
- 
- 	enum omap_dss_display_state state;
- 
-@@ -1011,7 +1011,7 @@ void dss_mgr_unregister_framedone_handler(struct omap_overlay_manager *mgr,
- 
- static inline bool omapdss_device_is_connected(struct omap_dss_device *dssdev)
- {
--	return dssdev->output;
-+	return dssdev->src;
  }
  
- static inline bool omapdss_device_is_enabled(struct omap_dss_device *dssdev)
++static struct omap_dss_device *
++omapfb_find_default_display(struct omapfb2_device *fbdev)
++{
++	const char *def_name;
++	int i;
++
++	/* search with the display name from the user or the board file */
++
++	def_name = omapdss_get_default_display_name();
++
++	if (def_name) {
++		for (i = 0; i < fbdev->num_displays; ++i) {
++			struct omap_dss_device *dssdev;
++
++			dssdev = fbdev->displays[i].dssdev;
++
++			if (dssdev->name && strcmp(def_name, dssdev->name) = 0)
++				return dssdev;
++		}
++
++		/* def_name given but not found */
++		return NULL;
++	}
++
++	/* return the first display we have in the list */
++	return fbdev->displays[0].dssdev;
++}
++
+ static int omapfb_probe(struct platform_device *pdev)
+ {
+ 	struct omapfb2_device *fbdev = NULL;
+@@ -2484,23 +2512,7 @@ static int omapfb_probe(struct platform_device *pdev)
+ 	for (i = 0; i < fbdev->num_managers; i++)
+ 		fbdev->managers[i] = omap_dss_get_overlay_manager(i);
+ 
+-	def_display = NULL;
+-
+-	for (i = 0; i < fbdev->num_displays; ++i) {
+-		struct omap_dss_device *dssdev;
+-		const char *def_name;
+-
+-		def_name = omapdss_get_default_display_name();
+-
+-		dssdev = fbdev->displays[i].dssdev;
+-
+-		if (def_name = NULL ||
+-			(dssdev->name && strcmp(def_name, dssdev->name) = 0)) {
+-			def_display = dssdev;
+-			break;
+-		}
+-	}
+-
++	def_display = omapfb_find_default_display(fbdev);
+ 	if (def_display = NULL) {
+ 		dev_err(fbdev->dev, "failed to find default display\n");
+ 		r = -EPROBE_DEFER;
 -- 
 1.8.1.2
 

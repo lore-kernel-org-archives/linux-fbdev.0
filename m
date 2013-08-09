@@ -1,39 +1,26 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Thu, 01 Aug 2013 20:30:17 +0000
-Subject: Re: [PATCH v2 10/24] video: da8xx-fb: fb_set_par support
-Message-Id: <20130801203017.GC17271@ti.com>
+From: David Brown <davidb@codeaurora.org>
+Date: Fri, 09 Aug 2013 21:28:05 +0000
+Subject: Re: [PATCH v2] backlight: Convert from Legacy pm ops to dev_pm_ops
+Message-Id: <20130809212805.GA4987@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1375208791-15781-11-git-send-email-detheridge@ti.com>
-In-Reply-To: <1375208791-15781-11-git-send-email-detheridge@ti.com>
+References: <2236505237-3336-1-git-send-email-shuah.kh@samsung.com>
+In-Reply-To: <2236505237-3336-1-git-send-email-shuah.kh@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Shuah Khan <shuah.kh@samsung.com>
+Cc: rpurdie@rpsys.net, FlorianSchandinat@gmx.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, rafael.j.wysocki@intel.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-Tomi Valkeinen <tomi.valkeinen@ti.com> wrote on Thu [2013-Aug-01 08:44:00 +0300]:
-> On 31/07/13 21:56, Etheridge, Darren wrote:
-> >>>
-> >>> +static int da8xxfb_set_par(struct fb_info *info) {
-> >>> +	struct da8xx_fb_par *par = info->par;
-> >>> +	int ret;
-> >>> +	bool raster = da8xx_fb_is_raster_enabled();
-> >>> +
-> >>> +	if (raster)
-> >>> +		lcd_disable_raster(true);
-> >>> +	else
-> >>> +		lcd_disable_raster(false);
-> >>
-> >> This looks odd. If raster is enabled, you disable it. And if raster is disabled,
-> >> you disable it.
-> > 
-> > I corrected this one in patch 0011 - I agree this code is very confusing.
-> 
-> In patch 11 you add the enum. I wasn't referring to that. My point was
-> that even if raster is already disabled,
-> lcd_disable_raster(dont-wait-for-framedone) is called.
-Agreed and removed, the lcd_disable_raster function does the same
-check as da8xx_fb_is_raster_enabled() and the immediately exits if not
-enabled so this path of the conditional appears completely redundant.
+On Wed, Nov 14, 2040 at 04:27:17AM -0700, Shuah Khan wrote:
+> ...
 
-Darren
+The clock on your computer might be running just a wee bit ahead.
 
+Either that, or we're getting patches from the future.
+
+David
+
+-- 
+sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation

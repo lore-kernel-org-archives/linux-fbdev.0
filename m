@@ -1,49 +1,135 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Mon, 05 Aug 2013 22:02:39 +0000
-Subject: [PATCH v3 20/20] video: da8xx-fb: adding am33xx as dependency
-Message-Id: <1375740159-1045-21-git-send-email-detheridge@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 09 Aug 2013 08:39:07 +0000
+Subject: [RFC 22/22] OMAPDSS: connector-analog-tv: Add DT support
+Message-Id: <1376037547-10859-23-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Updating Kconfig to allow am33xx to include lcdc fbdev driver
-including some extra dependencies needed by device tree mods.
-
-v2: must add FB_MODE_HELPERS as VIDEOMODE_HELPERS alone doesn't
-	get the correct functions from fbmon.c built in.
-
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/Kconfig |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ .../video/omap2/displays-new/connector-analog-tv.c | 70 ++++++++++++++++++++++
+ 1 file changed, 70 insertions(+)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 2e937bd..f36c2f7 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2226,15 +2226,17 @@ config FB_SH7760
- 	  panels <= 320 pixel horizontal resolution.
+diff --git a/drivers/video/omap2/displays-new/connector-analog-tv.c b/drivers/video/omap2/displays-new/connector-analog-tv.c
+index 5338f36..b4fb74b 100644
+--- a/drivers/video/omap2/displays-new/connector-analog-tv.c
++++ b/drivers/video/omap2/displays-new/connector-analog-tv.c
+@@ -12,6 +12,7 @@
+ #include <linux/slab.h>
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
++#include <linux/of.h>
  
- config FB_DA8XX
--	tristate "DA8xx/OMAP-L1xx Framebuffer support"
--	depends on FB && ARCH_DAVINCI_DA8XX
-+	tristate "DA8xx/OMAP-L1xx/AM335x Framebuffer support"
-+	depends on FB && (ARCH_DAVINCI_DA8XX || SOC_AM33XX)
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
- 	select FB_CFB_REV_PIXELS_IN_BYTE
-+	select FB_MODE_HELPERS
-+	select VIDEOMODE_HELPERS
- 	---help---
- 	  This is the frame buffer device driver for the TI LCD controller
--	  found on DA8xx/OMAP-L1xx SoCs.
-+	  found on DA8xx/OMAP-L1xx/AM335x SoCs.
- 	  If unsure, say N.
+ #include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+@@ -28,6 +29,12 @@ struct panel_drv_data {
+ 	bool invert_polarity;
+ };
  
- config FB_VIRTUAL
++static const struct of_device_id tvc_of_match[];
++
++struct tvc_of_data {
++	enum omap_dss_venc_type connector_type;
++};
++
+ #define to_panel_data(x) container_of(x, struct panel_drv_data, dssdev)
+ 
+ static int tvc_connect(struct omap_dss_device *dssdev)
+@@ -191,6 +198,36 @@ static int tvc_probe_pdata(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int tvc_probe_of(struct platform_device *pdev,
++		const struct tvc_of_data *data)
++{
++	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct device_node *node = pdev->dev.of_node;
++	struct omap_dss_device *in;
++	struct device_node *src_node;
++
++	src_node = of_parse_phandle(node, "video-source", 0);
++	if (!src_node) {
++		dev_err(&pdev->dev, "failed to parse video source\n");
++		return -ENODEV;
++	}
++
++	in = omap_dss_find_output_by_node(src_node);
++	if (in = NULL) {
++		dev_err(&pdev->dev, "failed to find video source\n");
++		return -EPROBE_DEFER;
++	}
++	ddata->in = in;
++
++	ddata->connector_type = data->connector_type;
++
++	ddata->invert_polarity +		of_property_read_bool(node, "invert-polarity");
++
++	return 0;
++}
++
++
+ static int tvc_probe(struct platform_device *pdev)
+ {
+ 	struct panel_drv_data *ddata;
+@@ -208,6 +245,18 @@ static int tvc_probe(struct platform_device *pdev)
+ 		r = tvc_probe_pdata(pdev);
+ 		if (r)
+ 			return r;
++	} else if (pdev->dev.of_node) {
++		const struct of_device_id *match;
++
++		match = of_match_node(tvc_of_match, pdev->dev.of_node);
++		if (!match) {
++			dev_err(&pdev->dev, "unsupported device\n");
++			return -ENODEV;
++		}
++
++		r = tvc_probe_of(pdev, match->data);
++		if (r)
++			return r;
+ 	} else {
+ 		return -ENODEV;
+ 	}
+@@ -249,12 +298,33 @@ static int __exit tvc_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct tvc_of_data tv_svideo_data = {
++	.connector_type = OMAP_DSS_VENC_TYPE_SVIDEO,
++};
++
++static const struct tvc_of_data tv_composite_video_data = {
++	.connector_type = OMAP_DSS_VENC_TYPE_COMPOSITE,
++};
++
++static const struct of_device_id tvc_of_match[] = {
++	{
++		.compatible = "ti,svideo-connector",
++		.data = &tv_svideo_data,
++	},
++	{
++		.compatible = "ti,composite-video-connector",
++		.data = &tv_composite_video_data,
++	},
++	{},
++};
++
+ static struct platform_driver tvc_connector_driver = {
+ 	.probe	= tvc_probe,
+ 	.remove	= __exit_p(tvc_remove),
+ 	.driver	= {
+ 		.name	= "connector-analog-tv",
+ 		.owner	= THIS_MODULE,
++		.of_match_table = tvc_of_match,
+ 	},
+ };
+ 
 -- 
-1.7.0.4
+1.8.1.2
 

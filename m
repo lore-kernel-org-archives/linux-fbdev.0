@@ -1,55 +1,395 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 30 Aug 2013 08:44:55 +0000
-Subject: Re: [PATCH] fbmem: move EXPORT_SYMBOL annotation next to symbol declarations
-Message-Id: <52205B87.8050408@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Agttoo0f13E6hNPCuT2uDvPShfGEDCnuF"
+Date: Fri, 09 Aug 2013 08:38:45 +0000
+Subject: [RFC 00/22] OMAPDSS: DT support
+Message-Id: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376575975-13215-1-git-send-email-zonque@gmail.com>
-In-Reply-To: <1376575975-13215-1-git-send-email-zonque@gmail.com>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
---Agttoo0f13E6hNPCuT2uDvPShfGEDCnuF
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On 15/08/13 17:12, Daniel Mack wrote:
-> Just a cosmetic thing to bring that file in line with others in the
-> tree.
->=20
-> Signed-off-by: Daniel Mack <zonque@gmail.com>
-> ---
->  drivers/video/fbmem.c | 29 +++++++++++++----------------
->  1 file changed, 13 insertions(+), 16 deletions(-)
+This is an RFC for OMAP Display DT support. The patches work fine, at least
+for me, but they are not perfect. I mostly don't have any clear questions
+about specific issues, but I would like to get feedback on the selected
+approaches in general, and also ideas how to proceed with the series.
 
-Thanks, queued for 3.12.
+This series contains the following:
+
+DT support for the following OMAP's display subsystem devices:
+- DSS
+- DISPC
+- DPI
+- HDMI
+- VENC
+- DSI
+- (DBI/RFBI DT is not yet implemented)
+
+DT support for the following external display devices:
+- panel-dsi-cm (Generic DSI command mode panel)
+- encoder-tfp410 (DPI-to-DVI encoder)
+- connector-dvi
+- encoder-tpd12s015 (HDMI level-shifter & ESD protection)
+- hdmi-connector
+- panel-dpi (Generic DPI panel)
+- connector-analog-tv (S-Video & Composite)
+ 
+DT support for the following boards:
+- OMAP4 PandaBoard
+- OMAP4 SDP
+- OMAP3 BeagleBoard
+- OMAP3 Overo with Palo43 LCD expansion-board
+
+The patches are not final, and many contain quite brief descriptions.
+Binding descriptions are also still missing. The code and bindings in the
+patches should be pretty straightforward, though.
+
+The series is based on v3.11-rc2 + a couple of non-DSS fixes. The series
+can also be found from:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git work/dss-dev-model-dt
+
+Vocabulary
+=====
+
+Display Entity - a hardware entity that takes one or more video streams as
+input and outputs one or more video streams.
+
+Upstream Entity - A display entity in the "upstream" side of the video
+stream, i.e. closer to the original video source.
+
+Downstream Entity - A display entity in the "downstream" side of the video
+stream, i.e. closer to the panel or monitor.
+
+Video pipeline - A chain of multiple display entities, starting from the
+SoC, going to the display device the user sees.
+
+Display or Panel - A display entity showing the pixels to the user
+
+Encoder - A display entity that takes video as an input and (usually)
+outputs it in some other format.
+
+Connector - HDMI/DVI/etc Connector on the board, to which an external
+monitor is connected.
+
+About Stable DT Bindings
+============
+
+Generally speaking, the DT bindings should be stable. This brings the
+following problems:
+
+We already have DT bindings for some OMAP4 and OMAP3 boards, and OMAP4
+boards do not even have board files anymore. There are no display bindings
+for those OMAP4 boards, but the display support is currently enabled as a
+hack, by calling board-file-like code to add the display devices for the
+selected boards. So, when we add the display bindings, we should still
+support the current DT files which do not have the display bindings. Which
+would mean that we'd need to keep the hacky code forever. Considering the
+fact that the hacky code does not work quite correct in all cases, I don't
+see keeping it as a very good option.
+
+CDF (Common Display Framework) is in the works, and will most likely have
+different or more detailed bindings. Moving to CDF would mean we'd somehow
+need to still support the old OMAP bindings. In theory the display DT
+bindings should stay the same, as they represent the HW, not any SW
+constructs, but in practice I find it hard to believe the OMAP display
+bindings would be so perfect that there would be no need for changes.
+
+We most likely should somehow represent DSS clock tree in DT. That is not a
+simple task, and when we manage to do it, it again means supporting the DT
+files without clock tree data.
+
+All in all, I'm a bit scared to push the display bindings, as it's already
+clear there are changes coming. Then again, supporting the current hack for
+OMAP4 based boards is not nice at all, and has issues, so it would be really
+nice to get OMAP4 boards use proper display bindings.
+
+General description of the DT bindings
+===================
+
+All the display entities are represented as DT nodes of their own, and have
+a matching Linux driver. The display entities are organized by their control
+bus; that is, if a display entity is not controlled via any bus, it's a
+platform device, and if, say, it's controlled via i2c device, it's an i2c
+device.
+
+The exception to the above are DSI and DBI. DSI and DBI are combined control
+and video busses, but the use of the busses for control purposes is not
+independent of the video stream. Also, the the busses are, in practice,
+one-to-one links. And last, DSI and DBI display entities are often also
+controllable via, say, i2c. For these reasons there is no real Linux bus for
+DSI and DBI and thus the DSI and DBI devices are either platform devices or
+i2c devices.
+
+The display entities are connected via "video-source" property. The
+video-source points to the upstream display entity where the video data
+comes from, and a chain of display entities thus form a full video pipeline.
+All video pipelines end with either a panel or a connector. 
+
+All the data related to a display entity, and how it is connected on the
+given board, is defined in the DT node of the display entity. This means
+that the DT node of the upstream entity does not have to be modified when
+adding support for new boards.
+
+As an example, consider OMAP3's DPI and two boards using it for panels.
+omap3.dtsi contains a node for the DPI, and the board dts files contain
+nodes for their panels. The board dts files do not change anything in the
+included DPI node. So:
+
+omap3.dtsi:
+
+dpi: encoder@0 {
+	compatible = "ti,omap3-dpi";
+};
+
+omap3-board1.dts:
+
+	lcd0: display@0 {
+		compatible = "samsung,lte430wq-f0c", "panel-dpi";
+		video-source = <&dpi>;
+		data-lines = <24>;
+	};
+
+omap3-board2.dts:
+
+	lcd0: display@0 {
+		compatible = "samsung,lte430wq-f0c", "panel-dpi";
+		video-source = <&dpi>;
+		data-lines = <16>;
+	};
+
+The logic here is that the boards may have multiple panels that are
+connected to the same source, even if the panels can only be used one at a
+time. Each panel may thus have different properties for the bus, like the
+number of data-lines.
+
+Video bus properties
+==========
+
+One question I've been pondering for a long time is related to the bus
+between two display entities. As an example, DPI (parallel RGB) requires
+configuring the number of datalines used. As described above, the properties
+of the video bus are represented in the downstream entity.
+
+This approach has one drawback: how to represent features specific to the
+upstream entity? Say, if OMAP's DSI has a bus-related foo-feature, which can
+be used in some scenarios, the only place where this foo-feature can be
+specified is the OMAP DSI's properties. Not in the DSI Panel's properties,
+which in the current model contains properties related to the bus.
+
+So Laurent has proposed to use V4L2-like ports, as described in
+Documentation/devicetree/bindings/media/video-interfaces.txt. I have not
+implemented such feature for OMAP DSS for the following reasons:
+
+- The current supported displays we use work fine with the current method
+- If I were to implement such system, it'd most certainly be different than
+  what CDF will have.
+
+That said, the port based approach does sound good, and it would also remove
+the design issue with OMAP DPI and SDI modules as described later. So maybe
+I should just go forward with it and hope that CDF will do it in similar
+manner.
+
+DSI Module ID
+======
+On OMAP4 we have two DSI modules. To configure the clock routing and pin
+muxing, we need to know the hardware module ID for the DSI device, i.e. is
+this Linux platform device DSI1 or DSI2. The same issue exists with other
+SoCs with multiple outputs of the same kind.
+
+With non-DT case, we used the platform device's ID directly. With DT, that
+doesn't work. I don't currently have a good solution for this, so as a
+temporary solution the DSI driver contains a table, from which it can find
+the HW module ID by using the device's base address.
+
+I believe, but I am not totally sure, that we can remove the concept of DSI
+module ID if we have a good representation of the DSS clock tree and DSI pin
+muxing in DT. The clock tree is probably a huge undertaking, but the pin
+muxing should be much easier. However, pinmuxing also is some complications,
+like the pins requiring a regulator to be enabled.
+
+Display names and aliases
+============
+With the board-file based model each display was given a name in the board
+file. Additionally, each display was given an alias in the style "displayX",
+where X is in incrementing number.
+
+The name could be used by the user to see which display device is what, i.e.
+on Pandaboard there are displays names "dvi" and "hdmi".
+
+The DT bindings do not have such a name. It would be simple to add a
+"nickname" property to each display node, but it just looked rather ugly so
+I have left it out.
+
+Additionally, as there's no clear order in which the displays are created,
+and thus the number in "displayX" alias could change semi-randomly, I added
+the displays to "aliases" node. This keeps the display number the same over
+boots, and also gives us some way to define a default display, i.e. which
+display to use initially if the user has not specified it.
+
+omapdss virtual device
+===========
+
+In addition to the DSS devices matching to DSS hardware modules, we have a
+"virtual" omapdss device which does not match to any actual HW module. The
+device is there mostly for legacy reasons, but it has also allowed us to
+easily pass platform callbacks. The same device is also present in DT
+solution. It is created in code, and not present in DT bindings.
+
+Obviously, this omapdss virtual device is on the hack side, and nobody would
+mind if it would disappear.
+
+The following data is passed via omapdss device's platform data:
+
+- OMAP DSS version. In theory, the DSS revision registers should tell us
+  which features the HW supports. In practice, the HW people have not
+  bothered to change the revision number each time they've made changes. So
+  we pass a DSS version from the platform code, based on OMAP revision
+  number.
+
+- omap_dss_set_min_bus_tput() and omap_pm_get_dev_context_loss_count() to
+  manage PM
+
+- DSI pin muxing functions.
+
+I have some ideas how to deduce the DSS version by poking to certain DSS
+registers, but it is not yet tested so I don't know if it will work.
+
+We could do altogether without omap_pm_get_dev_context_loss_count(), so that
+should be removable with some work. I am not sure if
+omap_dss_set_min_bus_tput() is supported via standard PM calls or not.
+
+However, the use of set_min_bus_tput() is actually a hack, as we're not
+really setting min bus tput. What we want to do is prevent OPP50. DSS clocks
+have different maximums on OPP100 and OPP50. So if DSS uses a clock over
+OPP50 limit, OPP50 cannot be entered. We prevent OPP50 by setting an
+arbitrarily high min bus tput.
+
+The DSI pin muxing should also be solvable with DT based solution, but is
+not the most trivial task and needs some work.
+
+So, I presume that at some point we can remove the omapdss device, but in
+the current solution it exists for the above reasons.
+
+DSS submodules in DT bindings
+==============
+The OMAP DSS modules are accessed via L4 or L3, and in that sense they
+should be on the same level in the DT bindings. However, we do not have them
+in the same level, but there is a main "dss" node, under which all the other
+DSS modules reside. The main reason for this is that the main DSS device
+needs to be enabled for the other modules to work properly, and having this
+structure makes runtime PM handle enabling DSS automatically.
+
+If I recall right, somebody (Paul?) mentioned that in the hardware there is
+actually some DSS internal bus, and thus the DT structure is good in that
+sense also.
+
+We also have nodes (and matching Linux devices) for DPI and SDI. Neither of
+them are actuall a separate IP block in the hardware, but are really more
+parts of DSS and maybe DISPC. They are still represented in the same way as
+the other DSS modules, to have similar architecture for all DSS outputs. But
+as they do not have an address-space of their own, the DT nodes use 0 and 1
+as "addresses", i.e. "dpi: encoder@0".
+
+That is rather ugly, and maybe could use some cleaning up. A V4L2 port style
+approach would probably allow us to add DPI and SDI ports as part of DSS.
+
+Some of the DSS modules are actually a combination of multiple smaller
+modules.  For example, the DSI module contains DSI protocol, DSI PHY and DSI
+PLL modules, each in their own address space. These could perhaps be
+presented as separate DT nodes and Linux devices, but I am not sure if that
+is a good approach or not.
+
+DT Node Names
+======
+I have used the following naming conventions with DT nodes:
+
+- Panels are named "display"
+- Connectors are named "connector"
+- Encoders are named "encoder"
+- DSS and DISPC are "dss" and "dispc", as they don't really match any of the
+  above
+
+When appropriate, the address part of the node is the base address, as in
+"dsi1: encoder@58004000". For platform devices, I have used an increasing
+number for the address, as in "tpd12s015: encoder@1".
+
+Final words
+=====
+So as is evident, I have things in my mind that should be improved. Maybe
+the most important question for short term future is:
+
+Can we add DSS DT bindings for OMAP4 as unstable bindings? It would give us
+some proper testing of the related code, and would also allow us to remove
+the related hacks (which don't even work quite right). However, I have no
+idea yet when the unstable DSS bindings would turn stable.
+
+If we shouldn't add the bindings as unstable, when should the bindings be
+added? Wait until CDF is in the mainline, and use that?
+
+I have not explained every piece of DSS in detail, as that would result in a
+book instead of this email, so feel free to ask for more details about any
+part.
+
+And last but not least (for me, at least =), I'm on vacation for the next
+two weeks, so answers may be delayed.
 
  Tomi
 
+Tomi Valkeinen (22):
+  ARM: OMAP: remove DSS DT hack
+  OMAPDSS: remove DT hacks for regulators
+  ARM: OMAP2+: add omapdss_init_of()
+  OMAPDSS: if dssdev->name=NULL, use alias
+  OMAPDSS: get dssdev->alias from DT alias
+  OMAPFB: clean up default display search
+  OMAPFB: search for default display with DT alias
+  OMAPDSS: Add DT support to DSS, DISPC, DPI, HDMI, VENC
+  OMAPDSS: Add DT support to DSI
+  ARM: omap3.dtsi: add omapdss information
+  ARM: omap4.dtsi: add omapdss information
+  ARM: omap4-panda.dts: add display information
+  ARM: omap4-sdp.dts: add display information
+  ARM: omap3-tobi.dts: add lcd (TEST)
+  ARM: omap3-beagle.dts: add display information
+  OMAPDSS: panel-dsi-cm: Add DT support
+  OMAPDSS: encoder-tfp410: Add DT support
+  OMAPDSS: connector-dvi: Add DT support
+  OMAPDSS: encoder-tpd12s015: Add DT support
+  OMAPDSS: hdmi-connector: Add DT support
+  OMAPDSS: panel-dpi: Add DT support
+  OMAPDSS: connector-analog-tv: Add DT support
 
+ arch/arm/boot/dts/omap3-beagle.dts                 | 29 ++++++++
+ arch/arm/boot/dts/omap3-tobi.dts                   | 33 ++++++++
+ arch/arm/boot/dts/omap3.dtsi                       | 43 +++++++++++
+ arch/arm/boot/dts/omap4-panda-common.dtsi          | 48 ++++++++++++
+ arch/arm/boot/dts/omap4-sdp.dts                    | 70 +++++++++++++++++
+ arch/arm/boot/dts/omap4.dtsi                       | 59 +++++++++++++++
+ arch/arm/mach-omap2/board-generic.c                | 13 +---
+ arch/arm/mach-omap2/common.h                       |  2 +
+ arch/arm/mach-omap2/display.c                      | 34 +++++++++
+ arch/arm/mach-omap2/dss-common.c                   | 23 ------
+ arch/arm/mach-omap2/dss-common.h                   |  2 -
+ .../video/omap2/displays-new/connector-analog-tv.c | 70 +++++++++++++++++
+ drivers/video/omap2/displays-new/connector-dvi.c   | 49 ++++++++++++
+ drivers/video/omap2/displays-new/connector-hdmi.c  | 36 +++++++++
+ drivers/video/omap2/displays-new/encoder-tfp410.c  | 54 ++++++++++++++
+ .../video/omap2/displays-new/encoder-tpd12s015.c   | 62 +++++++++++++++
+ drivers/video/omap2/displays-new/panel-dpi.c       | 75 +++++++++++++++++++
+ drivers/video/omap2/displays-new/panel-dsi-cm.c    | 87 ++++++++++++++++++++++
+ drivers/video/omap2/dss/dispc.c                    |  7 ++
+ drivers/video/omap2/dss/display.c                  | 23 +++++-
+ drivers/video/omap2/dss/dpi.c                      |  8 ++
+ drivers/video/omap2/dss/dsi.c                      | 58 +++++++++++++--
+ drivers/video/omap2/dss/dss.c                      | 10 +++
+ drivers/video/omap2/dss/hdmi.c                     | 11 +--
+ drivers/video/omap2/dss/venc.c                     |  7 ++
+ drivers/video/omap2/omapfb/omapfb-main.c           | 67 ++++++++++++-----
+ 26 files changed, 915 insertions(+), 65 deletions(-)
 
---Agttoo0f13E6hNPCuT2uDvPShfGEDCnuF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+-- 
+1.8.1.2
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSIFuHAAoJEPo9qoy8lh71/uAP/RI7C20XMWHUIV34SyLJw92n
-asUhBjyiJazWmh3ehbp3CSUPigdmkMaaSiGozRKP7eRWmV70M+I8efNoJzHVuZys
-4ewnprmHCU71x8CI3dFP1BtdZpwSVTKb6I5SVSxnvmDuRMFJlkVTkptxDxHtakNd
-rv35nyn9TgEi73F4wdE5EFvpX3SWhYdUVn608/eFDciTVyNZT323B/phKTwME7E7
-FvZIVOE8uUT6hYgZwlGhtI++gqvm1rbhrLPFU6Mb07V8w1oxLt07g3G3kIlIUvML
-vb8vPhlutV9QNX5QVgS+ey1jVarc5u9nuOIJaHg1PnT4dJX8Wl5V8Zd1Sd6n4MAE
-CkC7vxoVqhtdYWCuDwX6OT/1ijA0HGcyrEfjny8UWHeZQsSo+/SmTaQ437pdQ+0I
-kd6Tp8gN2azuspSk5FjWKUdQqd2PH7kBZf6yzaB9cniQPxhdDnEDQgLN3QlZenBp
-zdvO/nJR6g8R0wA2B5wAaHnozj0lNJbHDMXa9zxqHheBBjK8woSfl0q3y84ULD08
-iOjYp3J4gDAAUW97kqriMY8daBfyzFD8VbQUmyxFrIUgx+HkBpOF8aiW2RVWhMFa
-ckyZ4chCRdLF7rFR1uZ9Kyu+q1XT3/syWYza+xSstsJRQeP6FWQ3a1y6N/MipnVu
-dewMjzRuG2bChP7iB3jx
-=vacb
------END PGP SIGNATURE-----
-
---Agttoo0f13E6hNPCuT2uDvPShfGEDCnuF--

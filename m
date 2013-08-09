@@ -1,84 +1,136 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 30 Aug 2013 07:18:12 +0000
-Subject: Re: [PATCH v4 3/5] at91/avr32/atmel_lcdfb: prepare clk before calling enable
-Message-Id: <52204734.3010603@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="WuI5vojmVFllWfuWGQHGawOUioAwiW00F"
+Date: Fri, 09 Aug 2013 08:38:54 +0000
+Subject: [RFC 09/22] OMAPDSS: Add DT support to DSI
+Message-Id: <1376037547-10859-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1374132753-15206-1-git-send-email-b.brezillon@overkiz.com>
- <1374133225-19141-1-git-send-email-b.brezillon@overkiz.com>
-In-Reply-To: <1374133225-19141-1-git-send-email-b.brezillon@overkiz.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
---WuI5vojmVFllWfuWGQHGawOUioAwiW00F
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Add the code to make the DSI driver work with device tree on OMAP3 and
+OMAP4.
 
-On 18/07/13 10:40, Boris BREZILLON wrote:
-> Replace clk_enable/disable with clk_prepare_enable/disable_unprepare to=
+A minor hack is needed at the moment in the DSI driver: the DSS driver
+needs to know the ID number of a DSI device, as clocks are routed in
+different ways to the DSI devices. At the moment we don't have any
+proper way to manage this, so this patchs adds a simple lookup table
+that is used to deduce the ID from the DSI device's base address.
 
-> avoid common clk framework warnings.
->=20
-> Signed-off-by: Boris BREZILLON <b.brezillon@overkiz.com>
-> Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> ---
->  drivers/video/atmel_lcdfb.c |    8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-> index ece49d5..bf9c5d0 100644
-> --- a/drivers/video/atmel_lcdfb.c
-> +++ b/drivers/video/atmel_lcdfb.c
-> @@ -954,14 +954,14 @@ static int __init atmel_lcdfb_init_fbinfo(struct =
-atmel_lcdfb_info *sinfo)
-> =20
->  static void atmel_lcdfb_start_clock(struct atmel_lcdfb_info *sinfo)
->  {
-> -	clk_enable(sinfo->bus_clk);
-> -	clk_enable(sinfo->lcdc_clk);
-> +	clk_prepare_enable(sinfo->bus_clk);
-> +	clk_prepare_enable(sinfo->lcdc_clk);
->  }
-> =20
->  static void atmel_lcdfb_stop_clock(struct atmel_lcdfb_info *sinfo)
->  {
-> -	clk_disable(sinfo->bus_clk);
-> -	clk_disable(sinfo->lcdc_clk);
-> +	clk_disable_unprepare(sinfo->bus_clk);
-> +	clk_disable_unprepare(sinfo->lcdc_clk);
->  }
-> =20
->  #ifdef CONFIG_OF
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dsi.c | 53 ++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 52 insertions(+), 1 deletion(-)
 
-Thanks, queued this for 3.12.
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 0c8bd1f..bccf5fc 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -38,6 +38,7 @@
+ #include <linux/slab.h>
+ #include <linux/debugfs.h>
+ #include <linux/pm_runtime.h>
++#include <linux/of.h>
+ 
+ #include <video/omapdss.h>
+ #include <video/mipi_display.h>
+@@ -371,6 +372,13 @@ struct dsi_packet_sent_handler_data {
+ 	struct completion *completion;
+ };
+ 
++struct dsi_module_id_data {
++	u32 address;
++	int id;
++};
++
++static const struct of_device_id dsi_of_match[];
++
+ #ifdef DEBUG
+ static bool dsi_perf;
+ module_param(dsi_perf, bool, 0644);
+@@ -5537,7 +5545,6 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
+ 	if (!dsi)
+ 		return -ENOMEM;
+ 
+-	dsi->module_id = dsidev->id;
+ 	dsi->pdev = dsidev;
+ 	dev_set_drvdata(&dsidev->dev, dsi);
+ 
+@@ -5587,6 +5594,31 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
+ 		return r;
+ 	}
+ 
++	if (dsidev->dev.of_node) {
++		const struct of_device_id *match;
++		const struct dsi_module_id_data *d;
++
++		match = of_match_node(dsi_of_match, dsidev->dev.of_node);
++		if (!match) {
++			DSSERR("unsupported DSI module\n");
++			return -ENODEV;
++		}
++
++		d = match->data;
++
++		while (d->address != 0 && d->address != dsi_mem->start)
++			d++;
++
++		if (d->address = 0) {
++			DSSERR("unsupported DSI module\n");
++			return -ENODEV;
++		}
++
++		dsi->module_id = d->id;
++	} else {
++		dsi->module_id = dsidev->id;
++	}
++
+ 	/* DSI VCs initialization */
+ 	for (i = 0; i < ARRAY_SIZE(dsi->vc); i++) {
+ 		dsi->vc[i].source = DSI_VC_SOURCE_L4;
+@@ -5641,6 +5673,7 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
+ 	else if (dsi->module_id = 1)
+ 		dss_debugfs_create_file("dsi2_irqs", dsi2_dump_irqs);
+ #endif
++
+ 	return 0;
+ 
+ err_probe:
+@@ -5694,6 +5727,23 @@ static const struct dev_pm_ops dsi_pm_ops = {
+ 	.runtime_resume = dsi_runtime_resume,
+ };
+ 
++static const struct dsi_module_id_data dsi_of_data_omap3[] = {
++	{ .address = 0x4804fc00, .id = 0, },
++	{ },
++};
++
++static const struct dsi_module_id_data dsi_of_data_omap4[] = {
++	{ .address = 0x58004000, .id = 0, },
++	{ .address = 0x58005000, .id = 1, },
++	{ },
++};
++
++static const struct of_device_id dsi_of_match[] = {
++	{ .compatible = "ti,omap3-dsi", .data = dsi_of_data_omap3, },
++	{ .compatible = "ti,omap4-dsi", .data = dsi_of_data_omap4, },
++	{},
++};
++
+ static struct platform_driver omap_dsihw_driver = {
+ 	.probe		= omap_dsihw_probe,
+ 	.remove         = __exit_p(omap_dsihw_remove),
+@@ -5701,6 +5751,7 @@ static struct platform_driver omap_dsihw_driver = {
+ 		.name   = "omapdss_dsi",
+ 		.owner  = THIS_MODULE,
+ 		.pm	= &dsi_pm_ops,
++		.of_match_table = dsi_of_match,
+ 	},
+ };
+ 
+-- 
+1.8.1.2
 
- Tomi
-
-
-
-
---WuI5vojmVFllWfuWGQHGawOUioAwiW00F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSIEc0AAoJEPo9qoy8lh71PXUP/3Ge1kHOLDgMqeJDR1f/Nuxz
-kGFfyHEEpol2A+wvWq0B7TmllmOFqAjobcjibEWDcvOz3unP/tT8tkCTdkWknqRc
-QDEg7dFNuDWIRXEc9rYZPd98UOQ3GC/Q9hY3HJwF2dHCZRG4LReb4OB97vL7Pkvs
-2fo3yheAfUKc/WvQdIyiYQpw7bNWEJNk/dB4LN+y8CcdgpU+H24P6IFY0IkR5Cve
-BQAyDv/Pnv9+15NhDX6Y5crvfxpA3PXVWMhl6o1upKh4qGfm6BlGTcII1Qa/QRKQ
-baFgpFj7xBvl3PguX1AbyEjdIYeNtsU6vRjUwt+jYxhT14sXuBXITRrrheHpLslj
-lnhSQwVMimoavLRI9Z69VhJJ19Ln784V3Czzt55AD4ehAT8GD+PlYSqu3FKK7blB
-bw4jizgaTTtQVBEwxirGF4Sp2Jl2rHDQr/hd3axNSPjWfoUWqTcTwvorLasg1P4y
-Ot5LsjK3/p+rMiwF8WtH+di1UL/ygwtec7iXBwoSLgPDjg6QtnKy9HVyko96DWPK
-BU4gIN7wwNuqBtPJKiOYXJLmxHF1Fj/xu0qrSb5KocY3yT/w2ojxNS1R2wR1X6Rb
-ffMpSgPNL5pQfVGitpViblr63iwLjW0Zj7IWPgYKWEyxWVjJMLk4fQcwYt7ovWlE
-Kd4cx6kXlhoFmBHvO2qo
-=59U/
------END PGP SIGNATURE-----
-
---WuI5vojmVFllWfuWGQHGawOUioAwiW00F--

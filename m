@@ -1,147 +1,226 @@
-From: Inki Dae <inki.dae@samsung.com>
-Date: Tue, 13 Aug 2013 12:56:27 +0000
-Subject: [Resend][RFC PATCH v6 0/2] Introduce buffer synchronization framework
-Message-Id: <1376398587-9739-1-git-send-email-inki.dae@samsung.com>
+From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Date: Fri, 09 Aug 2013 23:03:02 +0000
+Subject: [PATCH/RFC v3 03/19] video: display: Add video and stream control operations
+Message-Id: <1376089398-13322-4-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376385576-9039-1-git-send-email-inki.dae@samsung.com>
-In-Reply-To: <1376385576-9039-1-git-send-email-inki.dae@samsung.com>
+References: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+In-Reply-To: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org, linaro-kernel@lists.linaro.org
-Cc: maarten.lankhorst@canonical.com, sumit.semwal@linaro.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
 
-Just adding more detailed descriptions.
+The video and stream control operations handle video stream management,
+both from the control point of view (called in response to userspace
+requests) and the video stream point of view (called by entities to
+control the video stream they receive on their input(s)).
 
-Hi all,
+Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+---
+ drivers/video/display/display-core.c | 82 ++++++++++++++++++++++++++++++++++++
+ include/video/display.h              | 49 +++++++++++++++++++++
+ 2 files changed, 131 insertions(+)
 
-   This patch set introduces a buffer synchronization framework based
-   on DMA BUF[1] and based on ww-mutexes[2] for lock mechanism, and
-   may be final RFC.
-
-   The purpose of this framework is to provide not only buffer access
-   control to CPU and CPU, and CPU and DMA, and DMA and DMA but also
-   easy-to-use interfaces for device drivers and user application.
-   In addtion, this patch set suggests a way for enhancing performance.
-
-   For generic user mode interface, we have used fcntl and select system
-   call[3]. As you know, user application sees a buffer object as a dma-buf
-   file descriptor. So fcntl() call with the file descriptor means to lock
-   some buffer region being managed by the dma-buf object. And select() call
-   means to wait for the completion of CPU or DMA access to the dma-buf
-   without locking. For more detail, you can refer to the dma-buf-sync.txt
-   in Documentation/
-
-
-   There are some cases we should use this buffer synchronization framework.
-   One of which is to primarily enhance GPU rendering performance on Tizen
-   platform in case of 3d app with compositing mode that 3d app draws
-   something in off-screen buffer, and Web app.
-
-   In case of 3d app with compositing mode which is not a full screen mode,
-   the app calls glFlush to submit 3d commands to GPU driver instead of
-   glFinish for more performance. The reason we call glFlush is that glFinish
-   blocks caller's task until the execution of the 2d commands is completed.
-   Thus, that makes GPU and CPU more idle. As result, 3d rendering performance
-   with glFinish is quite lower than glFlush. However, the use of glFlush has
-   one issue that the a buffer shared with GPU could be broken when CPU
-   accesses the buffer at once after glFlush because CPU cannot be aware of
-   the completion of GPU access to the buffer. Of course, the app can be aware
-   of that time using eglWaitGL but this function is valid only in case of the
-   same process.
-
-   The below summarizes how app's window is displayed on Tizen platform:
-   1. X client requests a window buffer to Xorg.
-   2. X client draws something in the window buffer using CPU.
-   3. X client requests SWAP to Xorg.
-   4. Xorg notifies a damage event to Composite Manager.
-   5. Composite Manager gets the window buffer (front buffer) through
-      DRI2GetBuffers.
-   6. Composite Manager composes the window buffer and its own back buffer
-      using GPU. At this time, eglSwapBuffers is called: internally, 3d
-      commands are flushed to gpu driver.
-   7. Composite Manager requests SWAP to Xorg.
-   8. Xorg performs drm page flip. At this time, the window buffer is
-      displayed on screen.
-
-   Web app based on HTML5 also has similar procedure. Web browser and its web
-   app are different processs. Web app draws something in its own buffer,
-   and then the web browser gets a window buffer from Xorg, and then composes
-   those two buffers using GPU.
-
-   Thus, in such cases, a shared buffer could be broken when one process draws
-   something in a shared buffer using CPU while Composite manager is composing
-   two buffers - X client's front buffer and Composite manger's back buffer, or
-   web app's front buffer and web browser's back buffer - using GPU without
-   any locking mechanism. That is why we need user land locking interface,
-   fcntl system call.
-
-   And last one is a deferred page flip issue. This issue is that a window
-   buffer rendered can be displayed on screen in about 32ms in worst case:
-   assume that the gpu rendering is completed within 16ms.
-   That can be incurred when compositing a pixmap buffer with a window buffer
-   using GPU and when vsync is just started. At this time, Xorg waits for
-   a vblank event to get a window buffer so 3d rendering will be delayed
-   up to about 16ms. As a result, the window buffer would be displayed in
-   about two vsyncs (about 32ms) and in turn, that would show slow
-   responsiveness.
-
-   For this, we could enhance the responsiveness with locking
-   mechanism: skipping one vblank wait. I guess in the similar reason,
-   Android, Chrome OS, and other platforms are using their own locking
-   mechanisms; Android sync driver, KDS, and DMA fence.
-
-   The below shows the deferred page flip issue in worst case,
-
-               |------------ <- vsync signal
-               |<------ DRI2GetBuffers
-               |
-               |
-               |
-               |------------ <- vsync signal
-               |<------ Request gpu rendering
-          time |
-               |
-               |<------ Request page flip (deferred)
-               |------------ <- vsync signal
-               |<------ Displayed on screen
-               |
-               |
-               |
-               |------------ <- vsync signal
-
-
-Thanks,
-Inki Dae
-
-
-References:
-[1] http://lwn.net/Articles/470339/
-[2] https://patchwork.kernel.org/patch/2625361/
-[3] http://linux.die.net/man/2/fcntl
-
-
-Inki Dae (2):
-  [RFC PATCH v6] dmabuf-sync: Add a buffer synchronization framework
-  [RFC PATCH v2] dma-buf: Add user interfaces for dmabuf sync support.
-
- Documentation/dma-buf-sync.txt |  285 +++++++++++++++++
- drivers/base/Kconfig           |    7 +
- drivers/base/Makefile          |    1 +
- drivers/base/dma-buf.c         |   85 +++++
- drivers/base/dmabuf-sync.c     |  678 ++++++++++++++++++++++++++++++++++++++++
- include/linux/dma-buf.h        |   16 +
- include/linux/dmabuf-sync.h    |  191 +++++++++++
- 7 files changed, 1263 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/dma-buf-sync.txt
- create mode 100644 drivers/base/dmabuf-sync.c
- create mode 100644 include/linux/dmabuf-sync.h
-
+diff --git a/drivers/video/display/display-core.c b/drivers/video/display/display-core.c
+index 82fc58b..bb18723 100644
+--- a/drivers/video/display/display-core.c
++++ b/drivers/video/display/display-core.c
+@@ -25,6 +25,57 @@
+  */
+ 
+ /**
++ * display_entity_set_state - Set the display entity operation state
++ * @entity: The display entity
++ * @state: Display entity operation state
++ *
++ * See &enum display_entity_state for information regarding the entity states.
++ *
++ * Return 0 on success or a negative error code otherwise.
++ */
++int display_entity_set_state(struct display_entity *entity,
++			     enum display_entity_state state)
++{
++	int ret;
++
++	if (entity->state = state)
++		return 0;
++
++	if (!entity->ops->ctrl || !entity->ops->ctrl->set_state)
++		return 0;
++
++	ret = entity->ops->ctrl->set_state(entity, state);
++	if (ret < 0)
++		return ret;
++
++	entity->state = state;
++	return 0;
++}
++EXPORT_SYMBOL_GPL(display_entity_set_state);
++
++/**
++ * display_entity_update - Update the display
++ * @entity: The display entity
++ *
++ * Make the display entity ready to receive pixel data and start frame transfer.
++ * This operation can only be called if the display entity is in STANDBY or ON
++ * state.
++ *
++ * The display entity will call the upstream entity in the video chain to start
++ * the video stream.
++ *
++ * Return 0 on success or a negative error code otherwise.
++ */
++int display_entity_update(struct display_entity *entity)
++{
++	if (!entity->ops->ctrl || !entity->ops->ctrl->update)
++		return 0;
++
++	return entity->ops->ctrl->update(entity);
++}
++EXPORT_SYMBOL_GPL(display_entity_update);
++
++/**
+  * display_entity_get_modes - Get video modes supported by the display entity
+  * @entity: The display entity
+  * @port: The display entity port
+@@ -95,6 +146,36 @@ int display_entity_get_params(struct display_entity *entity, unsigned int port,
+ EXPORT_SYMBOL_GPL(display_entity_get_params);
+ 
+ /* -----------------------------------------------------------------------------
++ * Video operations
++ */
++
++/**
++ * display_entity_set_stream - Control the video stream state
++ * @entity: The display entity
++ * @port: The display entity port
++ * @state: Display video stream state
++ *
++ * Control the video stream state at the entity video output.
++ *
++ * See &enum display_entity_stream_state for information regarding the stream
++ * states.
++ *
++ * Return 0 on success or a negative error code otherwise.
++ */
++int display_entity_set_stream(struct display_entity *entity, unsigned int port,
++			      enum display_entity_stream_state state)
++{
++	if (port >= entity->entity.num_pads)
++		return -EINVAL;
++
++	if (!entity->ops->video || !entity->ops->video->set_stream)
++		return 0;
++
++	return entity->ops->video->set_stream(entity, port, state);
++}
++EXPORT_SYMBOL_GPL(display_entity_set_stream);
++
++/* -----------------------------------------------------------------------------
+  * Connections
+  */
+ 
+@@ -177,6 +258,7 @@ int display_entity_init(struct display_entity *entity, unsigned int num_sinks,
+ 	int ret;
+ 
+ 	kref_init(&entity->ref);
++	entity->state = DISPLAY_ENTITY_STATE_OFF;
+ 
+ 	num_pads = num_sinks + num_sources;
+ 	pads = kzalloc(sizeof(*pads) * num_pads, GFP_KERNEL);
+diff --git a/include/video/display.h b/include/video/display.h
+index 74b227d..fef05a68 100644
+--- a/include/video/display.h
++++ b/include/video/display.h
+@@ -25,6 +25,38 @@
+ struct display_entity;
+ struct videomode;
+ 
++/**
++ * enum display_entity_state - State of a display entity
++ * @DISPLAY_ENTITY_STATE_OFF: The entity is turned off completely, possibly
++ *	including its power supplies. Communication with a display entity in
++ *	that state is not possible.
++ * @DISPLAY_ENTITY_STATE_STANDBY: The entity is in a low-power state. Full
++ *	communication with the display entity is supported, including pixel data
++ *	transfer, but the output is kept blanked.
++ * @DISPLAY_ENTITY_STATE_ON: The entity is fully operational.
++ */
++enum display_entity_state {
++	DISPLAY_ENTITY_STATE_OFF,
++	DISPLAY_ENTITY_STATE_STANDBY,
++	DISPLAY_ENTITY_STATE_ON,
++};
++
++/**
++ * enum display_entity_stream_state - State of a video stream
++ * @DISPLAY_ENTITY_STREAM_STOPPED: The video stream is stopped, no frames are
++ *	transferred.
++ * @DISPLAY_ENTITY_STREAM_SINGLE_SHOT: The video stream has been started for
++ *      single shot operation. The source entity will transfer a single frame
++ *      and then stop.
++ * @DISPLAY_ENTITY_STREAM_CONTINUOUS: The video stream is running, frames are
++ *	transferred continuously by the source entity.
++ */
++enum display_entity_stream_state {
++	DISPLAY_ENTITY_STREAM_STOPPED,
++	DISPLAY_ENTITY_STREAM_SINGLE_SHOT,
++	DISPLAY_ENTITY_STREAM_CONTINUOUS,
++};
++
+ enum display_entity_interface_type {
+ 	DISPLAY_ENTITY_INTERFACE_DPI,
+ 	DISPLAY_ENTITY_INTERFACE_DBI,
+@@ -39,6 +71,9 @@ struct display_entity_interface_params {
+ struct display_entity_control_ops {
+ 	int (*get_size)(struct display_entity *ent,
+ 			unsigned int *width, unsigned int *height);
++	int (*set_state)(struct display_entity *ent,
++			 enum display_entity_state state);
++	int (*update)(struct display_entity *ent);
+ 
+ 	/* Port operations */
+ 	int (*get_modes)(struct display_entity *entity, unsigned int port,
+@@ -47,8 +82,14 @@ struct display_entity_control_ops {
+ 			  struct display_entity_interface_params *params);
+ };
+ 
++struct display_entity_video_ops {
++	int (*set_stream)(struct display_entity *ent, unsigned int port,
++			  enum display_entity_stream_state state);
++};
++
+ struct display_entity_ops {
+ 	const struct display_entity_control_ops *ctrl;
++	const struct display_entity_video_ops *video;
+ };
+ 
+ struct display_entity {
+@@ -63,6 +104,8 @@ struct display_entity {
+ 	const struct display_entity_ops *ops;
+ 
+ 	void(*release)(struct display_entity *ent);
++
++	enum display_entity_state state;
+ };
+ 
+ static inline struct display_entity *
+@@ -86,9 +129,15 @@ void display_entity_put(struct display_entity *entity);
+ 
+ int display_entity_get_size(struct display_entity *entity,
+ 			    unsigned int *width, unsigned int *height);
++int display_entity_set_state(struct display_entity *entity,
++			     enum display_entity_state state);
++int display_entity_update(struct display_entity *entity);
+ int display_entity_get_modes(struct display_entity *entity, unsigned int port,
+ 			     const struct videomode **modes);
+ int display_entity_get_params(struct display_entity *entity, unsigned int port,
+ 			      struct display_entity_interface_params *params);
+ 
++int display_entity_set_stream(struct display_entity *entity, unsigned int port,
++			      enum display_entity_stream_state state);
++
+ #endif /* __DISPLAY_H__ */
 -- 
-1.7.5.4
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+1.8.1.5
 

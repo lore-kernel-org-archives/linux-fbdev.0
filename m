@@ -1,74 +1,82 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 09 Aug 2013 08:38:55 +0000
-Subject: [RFC 10/22] ARM: omap3.dtsi: add omapdss information
-Message-Id: <1376037547-10859-11-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 09 Aug 2013 10:44:07 +0000
+Subject: [GIT PULL] fbdev fixes for 3.11
+Message-Id: <5204C7F7.8050503@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="PQsmIe6CABxkHtWGvEervURDW0PDALFX1"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- arch/arm/boot/dts/omap3.dtsi | 43 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
+--PQsmIe6CABxkHtWGvEervURDW0PDALFX1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/arm/boot/dts/omap3.dtsi b/arch/arm/boot/dts/omap3.dtsi
-index 7d95cda..3308b3f 100644
---- a/arch/arm/boot/dts/omap3.dtsi
-+++ b/arch/arm/boot/dts/omap3.dtsi
-@@ -532,5 +532,48 @@
- 			num-eps = <16>;
- 			ram-bits = <12>;
- 		};
-+
-+		dss@48050000 {
-+			compatible = "ti,omap3-dss", "simple-bus";
-+			reg = <0x48050000 0x200>;
-+			ti,hwmods = "dss_core";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges;
-+
-+			dispc@48050400 {
-+				compatible = "ti,omap3-dispc";
-+				reg = <0x48050400 0x400>;
-+				interrupts = <25>;
-+				ti,hwmods = "dss_dispc";
-+			};
-+
-+			dpi: encoder@0 {
-+				compatible = "ti,omap3-dpi";
-+			};
-+
-+			sdi: encoder@1 {
-+				compatible = "ti,omap3-sdi";
-+			};
-+
-+			dsi: encoder@4804fc00 {
-+				compatible = "ti,omap3-dsi";
-+				reg = <0x4804fc00 0x400>;
-+				interrupts = <25>;
-+				ti,hwmods = "dss_dsi1";
-+			};
-+
-+			rfbi: encoder@48050800 {
-+				compatible = "ti,omap3-rfbi";
-+				reg = <0x48050800 0x100>;
-+				ti,hwmods = "dss_rfbi";
-+			};
-+
-+			venc: encoder@48050c00 {
-+				compatible = "ti,omap3-venc";
-+				reg = <0x48050c00 0x100>;
-+				ti,hwmods = "dss_venc";
-+			};
-+		};
- 	};
- };
--- 
-1.8.1.2
+Hi Linus,
 
+Here are hopefully the last fbdev fixes for 3.11.
+
+ Tomi
+
+The following changes since commit 7808e3291e1e101e9ad6e8263119c4a2abae05=
+ef:
+
+  video: sh7760fb: fix to pass correct device identity to free_irq() (201=
+3-07-29 11:25:03 +0300)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
+v-fixes-3.11-rc5
+
+for you to fetch changes up to 70a0f6032985f156bd7e957cfec99c3dd3d592a2:
+
+  ARM: OMAP: dss-common: fix Panda's DVI DDC channel (2013-08-02 15:52:38=
+ +0300)
+
+----------------------------------------------------------------
+fbdev fixes:
+
+- omapdss: compilation fix and DVI fix for PandaBoard
+- mxsfb: fix colors when using 18bit LCD bus
+
+----------------------------------------------------------------
+Hector Palacios (1):
+      video: mxsfb: fix color settings for 18bit data bus and 32bpp
+
+Tomi Valkeinen (2):
+      OMAPDSS: analog-tv-connector: compile fix
+      ARM: OMAP: dss-common: fix Panda's DVI DDC channel
+
+ arch/arm/mach-omap2/dss-common.c                   |  2 +-
+ drivers/video/mxsfb.c                              | 26 ----------------=
+------
+ .../video/omap2/displays-new/connector-analog-tv.c | 18 +++++++++++++--
+ 3 files changed, 17 insertions(+), 29 deletions(-)
+
+
+--PQsmIe6CABxkHtWGvEervURDW0PDALFX1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSBMf4AAoJEPo9qoy8lh71BgcQAK0zYyJjPEOFYsVjO8dqjbsy
+DxLWoQC6+IoeDDZ1NmP4JFj2tzF5YTW/z1DaihOc8nLyHeiWSqsi2lyiVPAMVto2
+mRC0zyjvFxle9J5xqHtVPLUj3mQiTTngEBegn5rALSYcJsDJ/J1dpF0ISuKwPXqm
+z0BFBnuk5T5gnn/R4ilexsT77PvhuI2W2MedEN8KHcg/KQf5D3KdhWDDrUkdAFdF
+nDzncbx7t9bToBiE5ZiN1i9TuMK4fUkzxEONoLJDYwyEYbj+mYgDS7VKumL2GPrG
+W5OXMRFKejcLPp6J5ajSkTWXqac2kCabtLJv7+34A18R0AqwFg+f2BDDZ504/ah1
+3+LzctvQf9kJ28j/tDkl33hec2l1gtrvoaM0Hd0hxU5iq4xpcQttXQHyXQVWUz6C
+ltPugXhEkz2wSg+dTDrrufD8KQgtobdD6Dt+ncrqmkvEfH0qAaZhLZE1GecSyFfg
+JoJGvoiIJJzznUKW02Sw68GLOeC1syBsmFXolQ3yRyGgu3pgf03WenilmJCvT6FN
+32Uhp4hNz4m45UIrf5LE4n6HmVcpSSlSOwGt/h2Uz95wCzqRnn19XEJUVlrQvFEL
+bVho704J2IVZcREDSZhnNdS0GlWv0+Zww4b/GpUhxfpCWrkABnt/3nb6DsFYFehm
+U1vtuCHsspznWvNSIPy/
+=wxWe
+-----END PGP SIGNATURE-----
+
+--PQsmIe6CABxkHtWGvEervURDW0PDALFX1--

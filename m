@@ -1,146 +1,136 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Date: Wed, 21 Aug 2013 05:58:13 +0000
-Subject: [PATCH v11 8/8] usb: phy: twl4030-usb: remove *set_suspend* and *phy_init* ops
-Message-Id: <1377063973-22044-9-git-send-email-kishon@ti.com>
+From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Date: Fri, 09 Aug 2013 23:03:15 +0000
+Subject: [PATCH/RFC v3 16/19] ARM: shmobile: marzen: Port DU platform data to CDF
+Message-Id: <1376089398-13322-17-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1377063973-22044-1-git-send-email-kishon@ti.com>
-In-Reply-To: <1377063973-22044-1-git-send-email-kishon@ti.com>
+References: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+In-Reply-To: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
 
-Now that twl4030-usb is adapted to the new generic PHY framework,
-*set_suspend* and *phy_init* ops can be removed from twl4030-usb driver.
-
-Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
-Acked-by: Felipe Balbi <balbi@ti.com>
-Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 ---
- drivers/phy/phy-twl4030-usb.c |   57 ++++++++++-------------------------------
- 1 file changed, 13 insertions(+), 44 deletions(-)
+ arch/arm/mach-shmobile/board-marzen.c | 77 ++++++++++++++++++++++++-----------
+ 1 file changed, 53 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/phy/phy-twl4030-usb.c b/drivers/phy/phy-twl4030-usb.c
-index 494f107..c437211 100644
---- a/drivers/phy/phy-twl4030-usb.c
-+++ b/drivers/phy/phy-twl4030-usb.c
-@@ -422,25 +422,20 @@ static void twl4030_phy_power(struct twl4030_usb *twl, int on)
- 	}
- }
- 
--static void twl4030_phy_suspend(struct twl4030_usb *twl, int controller_off)
-+static int twl4030_phy_power_off(struct phy *phy)
- {
-+	struct twl4030_usb *twl = phy_get_drvdata(phy);
+diff --git a/arch/arm/mach-shmobile/board-marzen.c b/arch/arm/mach-shmobile/board-marzen.c
+index 6499f1a..be1b7cb 100644
+--- a/arch/arm/mach-shmobile/board-marzen.c
++++ b/arch/arm/mach-shmobile/board-marzen.c
+@@ -39,6 +39,8 @@
+ #include <linux/mmc/host.h>
+ #include <linux/mmc/sh_mobile_sdhi.h>
+ #include <linux/mfd/tmio.h>
++#include <video/panel-dpi.h>
++#include <video/videomode.h>
+ #include <mach/r8a7779.h>
+ #include <mach/common.h>
+ #include <mach/irqs.h>
+@@ -174,35 +176,56 @@ static struct platform_device hspi_device = {
+  * The panel only specifies the [hv]display and [hv]total values. The position
+  * and width of the sync pulses don't matter, they're copied from VESA timings.
+  */
+-static struct rcar_du_encoder_data du_encoders[] = {
++static const struct videomode marzen_panel_mode = {
++	.pixelclock = 65000000,
++	.hactive = 1024,
++	.hfront_porch = 24,
++	.hback_porch = 160,
++	.hsync_len = 136,
++	.vactive = 768,
++	.vfront_porch = 3,
++	.vback_porch = 29,
++	.vsync_len = 6,
++	.flags = DISPLAY_FLAGS_HSYNC_LOW | DISPLAY_FLAGS_VSYNC_LOW,
++};
 +
- 	if (twl->asleep)
--		return;
-+		return 0;
- 
- 	twl4030_phy_power(twl, 0);
- 	twl->asleep = 1;
- 	dev_dbg(twl->dev, "%s\n", __func__);
--}
--
--static int twl4030_phy_power_off(struct phy *phy)
--{
--	struct twl4030_usb *twl = phy_get_drvdata(phy);
--
--	twl4030_phy_suspend(twl, 0);
- 	return 0;
- }
- 
--static void __twl4030_phy_resume(struct twl4030_usb *twl)
-+static void __twl4030_phy_power_on(struct twl4030_usb *twl)
- {
- 	twl4030_phy_power(twl, 1);
- 	twl4030_i2c_access(twl, 1);
-@@ -449,11 +444,13 @@ static void __twl4030_phy_resume(struct twl4030_usb *twl)
- 		twl4030_i2c_access(twl, 0);
- }
- 
--static void twl4030_phy_resume(struct twl4030_usb *twl)
-+static int twl4030_phy_power_on(struct phy *phy)
- {
-+	struct twl4030_usb *twl = phy_get_drvdata(phy);
++static const struct panel_dpi_platform_data marzen_panel_data = {
++	.width = 210,
++	.height = 158,
++	.mode = &marzen_panel_mode,
++};
 +
- 	if (!twl->asleep)
--		return;
--	__twl4030_phy_resume(twl);
-+		return 0;
-+	__twl4030_phy_power_on(twl);
- 	twl->asleep = 0;
- 	dev_dbg(twl->dev, "%s\n", __func__);
++static const struct display_entity_graph_data marzen_du_entities[] = {
+ 	{
+-		.type = RCAR_DU_ENCODER_VGA,
+-		.output = RCAR_DU_OUTPUT_DPAD0,
++		.name = "adv7123",
++		.sources = (const struct display_entity_source_data[]) {
++			{
++				.name = "rcar-du",
++				.port = 0,
++			},
++		},
+ 	}, {
+-		.type = RCAR_DU_ENCODER_LVDS,
+-		.output = RCAR_DU_OUTPUT_DPAD1,
+-		.connector.lvds.panel = {
+-			.width_mm = 210,
+-			.height_mm = 158,
+-			.mode = {
+-				.clock = 65000,
+-				.hdisplay = 1024,
+-				.hsync_start = 1048,
+-				.hsync_end = 1184,
+-				.htotal = 1344,
+-				.vdisplay = 768,
+-				.vsync_start = 771,
+-				.vsync_end = 777,
+-				.vtotal = 806,
+-				.flags = 0,
++		.name = "con-vga",
++		.sources = (const struct display_entity_source_data[]) {
++			{
++				.name = "adv7123",
++				.port = 1,
+ 			},
+ 		},
++	}, {
++		.name = "panel-dpi",
++		.sources = (const struct display_entity_source_data[]) {
++			{
++				.name = "rcar-du",
++				.port = 1,
++			},
++		},
++	}, {
+ 	},
+ };
  
-@@ -466,13 +463,6 @@ static void twl4030_phy_resume(struct twl4030_usb *twl)
- 		cancel_delayed_work(&twl->id_workaround_work);
- 		schedule_delayed_work(&twl->id_workaround_work, HZ);
- 	}
--}
--
--static int twl4030_phy_power_on(struct phy *phy)
--{
--	struct twl4030_usb *twl = phy_get_drvdata(phy);
--
--	twl4030_phy_resume(twl);
- 	return 0;
+-static const struct rcar_du_platform_data du_pdata __initconst = {
+-	.encoders = du_encoders,
+-	.num_encoders = ARRAY_SIZE(du_encoders),
++static const struct rcar_du_platform_data marzen_du_pdata __initconst = {
++	.graph = marzen_du_entities,
+ };
+ 
+ static const struct resource du_resources[] __initconst = {
+@@ -217,8 +240,8 @@ static void __init marzen_add_du_device(void)
+ 		.id = -1,
+ 		.res = du_resources,
+ 		.num_res = ARRAY_SIZE(du_resources),
+-		.data = &du_pdata,
+-		.size_data = sizeof(du_pdata),
++		.data = &marzen_du_pdata,
++		.size_data = sizeof(marzen_du_pdata),
+ 		.dma_mask = DMA_BIT_MASK(32),
+ 	};
+ 
+@@ -327,6 +350,12 @@ static void __init marzen_init(void)
+ 	r8a7779_add_standard_devices();
+ 	platform_add_devices(marzen_devices, ARRAY_SIZE(marzen_devices));
+ 	marzen_add_du_device();
++
++	platform_device_register_simple("adv7123", -1, NULL, 0);
++	platform_device_register_simple("con-vga", -1, NULL, 0);
++	platform_device_register_data(&platform_bus, "panel-dpi", -1,
++				      &marzen_panel_data,
++				      sizeof(marzen_panel_data));
  }
  
-@@ -604,9 +594,9 @@ static void twl4030_id_workaround_work(struct work_struct *work)
- 	}
- }
- 
--static int twl4030_usb_phy_init(struct usb_phy *phy)
-+static int twl4030_phy_init(struct phy *phy)
- {
--	struct twl4030_usb *twl = phy_to_twl(phy);
-+	struct twl4030_usb *twl = phy_get_drvdata(phy);
- 	enum omap_musb_vbus_id_status status;
- 
- 	/*
-@@ -621,32 +611,13 @@ static int twl4030_usb_phy_init(struct usb_phy *phy)
- 
- 	if (status = OMAP_MUSB_ID_GROUND || status = OMAP_MUSB_VBUS_VALID) {
- 		omap_musb_mailbox(twl->linkstat);
--		twl4030_phy_resume(twl);
-+		twl4030_phy_power_on(phy);
- 	}
- 
- 	sysfs_notify(&twl->dev->kobj, NULL, "vbus");
- 	return 0;
- }
- 
--static int twl4030_phy_init(struct phy *phy)
--{
--	struct twl4030_usb *twl = phy_get_drvdata(phy);
--
--	return twl4030_usb_phy_init(&twl->phy);
--}
--
--static int twl4030_set_suspend(struct usb_phy *x, int suspend)
--{
--	struct twl4030_usb *twl = phy_to_twl(x);
--
--	if (suspend)
--		twl4030_phy_suspend(twl, 1);
--	else
--		twl4030_phy_resume(twl);
--
--	return 0;
--}
--
- static int twl4030_set_peripheral(struct usb_otg *otg,
- 					struct usb_gadget *gadget)
- {
-@@ -719,8 +690,6 @@ static int twl4030_usb_probe(struct platform_device *pdev)
- 	twl->phy.label		= "twl4030";
- 	twl->phy.otg		= otg;
- 	twl->phy.type		= USB_PHY_TYPE_USB2;
--	twl->phy.set_suspend	= twl4030_set_suspend;
--	twl->phy.init		= twl4030_usb_phy_init;
- 
- 	otg->phy		= &twl->phy;
- 	otg->set_host		= twl4030_set_host;
+ static const char *marzen_boards_compat_dt[] __initdata = {
 -- 
-1.7.10.4
+1.8.1.5
 

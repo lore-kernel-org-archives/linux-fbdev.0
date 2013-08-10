@@ -1,112 +1,92 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 30 Aug 2013 07:51:48 +0000
-Subject: Re: [PATCH 2/29] video: mxsfb: simplify use of devm_ioremap_resource
-Message-Id: <52204F14.50405@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="p9fVeKms08mSlrBPv5VntDegc3Ju9McSA"
+From: Alexander Shiyan <shc_work@mail.ru>
+Date: Sat, 10 Aug 2013 07:33:57 +0000
+Subject: [PATCH v2] video: imxfb: Fix retrieve values from DT
+Message-Id: <1376120037-23777-1-git-send-email-shc_work@mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376471493-22215-1-git-send-email-Julia.Lawall@lip6.fr> <1376471493-22215-3-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1376471493-22215-3-git-send-email-Julia.Lawall@lip6.fr>
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---p9fVeKms08mSlrBPv5VntDegc3Ju9McSA
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Display settings should be retrieved from "display" node, not from
+root fb node. This patch fix this bug.
 
-On 14/08/13 12:11, Julia Lawall wrote:
-> From: Julia Lawall <Julia.Lawall@lip6.fr>
->=20
-> Remove unneeded error handling on the result of a call to
-> platform_get_resource when the value is passed to devm_ioremap_resource=
-=2E
->=20
-> Move the call to platform_get_resource adjacent to the call to
-> devm_ioremap_resource to make the connection between them more clear.
->=20
-> A simplified version of the semantic patch that makes this change is as=
+Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+---
+ drivers/video/imxfb.c | 26 ++++++++++++++------------
+ 1 file changed, 14 insertions(+), 12 deletions(-)
 
-> follows: (http://coccinelle.lip6.fr/)
->=20
-> // <smpl>
-> @@
-> expression pdev,res,n,e,e1;
-> expression ret !=3D 0;
-> identifier l;
-> @@
->=20
-> - res =3D platform_get_resource(pdev, IORESOURCE_MEM, n);
->   ... when !=3D res
-> - if (res =3D=3D NULL) { ... \(goto l;\|return ret;\) }
->   ... when !=3D res
-> + res =3D platform_get_resource(pdev, IORESOURCE_MEM, n);
->   e =3D devm_ioremap_resource(e1, res);
-> // </smpl>
->=20
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
->=20
-> ---
->  drivers/video/mxsfb.c |    7 +------
->  1 file changed, 1 insertion(+), 6 deletions(-)
->=20
-> diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
-> index c2d3514..d250ed0 100644
-> --- a/drivers/video/mxsfb.c
-> +++ b/drivers/video/mxsfb.c
-> @@ -855,12 +855,6 @@ static int mxsfb_probe(struct platform_device *pde=
-v)
->  	if (of_id)
->  		pdev->id_entry =3D of_id->data;
-> =20
-> -	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	if (!res) {
-> -		dev_err(&pdev->dev, "Cannot get memory IO resource\n");
-> -		return -ENODEV;
-> -	}
-> -
->  	fb_info =3D framebuffer_alloc(sizeof(struct mxsfb_info), &pdev->dev);=
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index 38733ac..8e104c4 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -753,12 +753,12 @@ static int imxfb_resume(struct platform_device *dev)
+ #define imxfb_resume	NULL
+ #endif
+ 
+-static int imxfb_init_fbinfo(struct platform_device *pdev)
++static int imxfb_init_fbinfo(struct platform_device *pdev,
++			     struct device_node *np)
+ {
+ 	struct imx_fb_platform_data *pdata = pdev->dev.platform_data;
+ 	struct fb_info *info = dev_get_drvdata(&pdev->dev);
+ 	struct imxfb_info *fbi = info->par;
+-	struct device_node *np;
+ 
+ 	pr_debug("%s\n",__func__);
+ 
+@@ -799,7 +799,6 @@ static int imxfb_init_fbinfo(struct platform_device *pdev)
+ 		fbi->lcd_power			= pdata->lcd_power;
+ 		fbi->backlight_power		= pdata->backlight_power;
+ 	} else {
+-		np = pdev->dev.of_node;
+ 		info->var.grayscale = of_property_read_bool(np,
+ 						"cmap-greyscale");
+ 		fbi->cmap_inverse = of_property_read_bool(np, "cmap-inverse");
+@@ -858,6 +857,7 @@ static int imxfb_of_read_mode(struct device *dev, struct device_node *np,
+ 
+ static int imxfb_probe(struct platform_device *pdev)
+ {
++	struct device_node *display_np = NULL;
+ 	struct imxfb_info *fbi;
+ 	struct fb_info *info;
+ 	struct imx_fb_platform_data *pdata;
+@@ -887,7 +887,17 @@ static int imxfb_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, info);
+ 
+-	ret = imxfb_init_fbinfo(pdev);
++	if (pdev->dev.of_node) {
++		display_np = of_parse_phandle(pdev->dev.of_node, "display", 0);
++		if (!display_np) {
++			dev_err(&pdev->dev,
++				"No display defined in devicetree\n");
++			ret = -EINVAL;
++			goto failed_init;
++		}
++	}
++
++	ret = imxfb_init_fbinfo(pdev, display_np);
+ 	if (ret < 0)
+ 		goto failed_init;
+ 
+@@ -898,16 +908,8 @@ static int imxfb_probe(struct platform_device *pdev)
+ 		fbi->mode = pdata->mode;
+ 		fbi->num_modes = pdata->num_modes;
+ 	} else {
+-		struct device_node *display_np;
+ 		fb_mode = NULL;
+ 
+-		display_np = of_parse_phandle(pdev->dev.of_node, "display", 0);
+-		if (!display_np) {
+-			dev_err(&pdev->dev, "No display defined in devicetree\n");
+-			ret = -EINVAL;
+-			goto failed_of_parse;
+-		}
+-
+ 		/*
+ 		 * imxfb does not support more modes, we choose only the native
+ 		 * mode.
+-- 
+1.8.1.5
 
->  	if (!fb_info) {
->  		dev_err(&pdev->dev, "Failed to allocate fbdev\n");
-> @@ -869,6 +863,7 @@ static int mxsfb_probe(struct platform_device *pdev=
-)
-> =20
->  	host =3D to_imxfb_host(fb_info);
-> =20
-> +	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
->  	host->base =3D devm_ioremap_resource(&pdev->dev, res);
->  	if (IS_ERR(host->base)) {
->  		ret =3D PTR_ERR(host->base);
->=20
-
-Thanks, queued for 3.12.
-
- Tomi
-
-
-
---p9fVeKms08mSlrBPv5VntDegc3Ju9McSA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSIE8UAAoJEPo9qoy8lh71L/UP+wREmIIngWcp/pGQkpQr2k2W
-iLgNwW3nhVCH3CJBvWmcSCTNir+Nkz7eH8DkAtCXUuzAEJ2hFHuOz2dOqkStSM99
-X9RsodwVcfFRSoCb65xVIZgKBr7booQ9IBOpyvatfEOpgsAy25bVxNzTv79dVPmL
-6oAO1YKq8NN05Ys15VfjC2x/mfJ7BCnNk5ucKV+d7qd+bBWzMc7793defhloizbG
-OgkvsOGMOIYNLzyoLYqmHEH24Q1AoqY9qba6LXMqB/WuBfp9AWeQw4BfbQ77gkqN
-KEojPJhiAIrLS7CFXP7+pE79qIEpRJF34qsVz/eNxt26VhI90JfbXlZORaRyML34
-y6RiFwNaIEbbf/6uEl/v+D8XIqkisq+LvF/GFthSdVARDVkqZWou8yvYOXLRiqVc
-LptRYeFs8fe6MxAGN6NqSNUiH0j35rLJy0ryOMSp3Z7c6FVcPKymiDYW/2cNV6vd
-DhxyL3VHpgOaodUltaSFxrEQc9AheBEbnOB7Ttx2cUhKaSsqLES51rvvRxp3qer/
-MJnIPF/w7VGv5Hge6FiHHiIx1n2jqraAQRCQCx3/QjXnUAPOksfdzBEN3H071Sfs
-iVSW9gn4hcW6E1NZg9jvYQN5is+t4m3ZVLxa3+F7JHIzoVwebXHzKe1Ox3KlLBPn
-4w42sPvG8o/VkcKCKuh1
-=wM5D
------END PGP SIGNATURE-----
-
---p9fVeKms08mSlrBPv5VntDegc3Ju9McSA--

@@ -1,47 +1,30 @@
-From: Tony Prisk <linux@prisktech.co.nz>
-Date: Sun, 11 Aug 2013 04:41:46 +0000
-Subject: EDID modes unavailable when no connector/crtc available at boot
-Message-Id: <5207160A.6070803@prisktech.co.nz>
+From: Dave Airlie <airlied@gmail.com>
+Date: Sun, 11 Aug 2013 08:42:12 +0000
+Subject: Re: EDID modes unavailable when no connector/crtc available at boot
+Message-Id: <CAPM=9tzShWxZ-f=641r+-uc21JkY3kTeM2K=tsiB+OotNCnrQA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <5207160A.6070803@prisktech.co.nz>
+In-Reply-To: <5207160A.6070803@prisktech.co.nz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, David Airlie <airlied@linux.ie>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: Tony Prisk <linux@prisktech.co.nz>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, dri-devel@lists.freedesktop.org
 
-I am working on the HDMI driver for the i.MX6 as part of the larger DRM 
-driver written by Sascha Hauer and need a little advice. I seem to be 
-missing one important part of the subsystem that I haven't been able to 
-resolve.
+On Sun, Aug 11, 2013 at 2:41 PM, Tony Prisk <linux@prisktech.co.nz> wrote:
+> I am working on the HDMI driver for the i.MX6 as part of the larger DRM
+> driver written by Sascha Hauer and need a little advice. I seem to be
+> missing one important part of the subsystem that I haven't been able to
+> resolve.
+>
 
-In my testing, powering on the system with only a HDMI cable connected 
-works perfectly. Resolution is set to 1920x1080 as requested (with the 
-framebuffer console at the same resolution).
+fbcon is limited by boot sizes as at least with dynamic memory
+management and how fbdev works resizing the allocation is nearly
+impossible to do race free, since fbdev will hand out mmaps to
+userspace and that stops you from ever moving anything once the device
+is open.
 
-If I boot up the system without an HDMI cable connected (or any other 
-cable), I get the expected:
-[    1.470273] imx_hdmi_connector_detect
-[    1.470276] returned cable DISCONNECTED
-[    1.470289] imx-drm imx-drm: No connectors reported connected with modes
-[    1.470297] [drm] Cannot find any crtc or sizes - going 1024x768
+But this is only for the fbdev emulation, a real kms application
+should be able to use a larger size no problems.
 
-When I connect the cable at a later time, all EDID detected modes are 
-'truncated' to '<= 1024x768', but because I have a video=xxx in 
-bootargs, the driver still seems to initialize to 1920x1080, but with a 
-framebuffer of 1024x768.
-
-I assume this is a mistake on my part, but I don't know what I'm missing 
-that would cause it.
-
-I see in drm_crtc_helper.c:drm_helper_mode_fill_fb_struct that the 
-width/height are set to the initialized mode.
-Later in drm_fb_helper.c:drm_fb_helper_hotplug_event, max_width if set 
-to fb->width.
-
-This is what causes the modes to be truncated when the HDMI connector is 
-finally connected (max_width is now limited to 1024).
-
-
-Suggestions appreciated.
-
-Regards
-Tony Prisk
+Dave.

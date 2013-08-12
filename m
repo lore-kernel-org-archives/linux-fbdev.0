@@ -1,281 +1,69 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 29 Aug 2013 13:32:00 +0000
-Subject: [PATCH 15/15] OMAPDSS: rename omap_dss_device's 'device' field to 'dst'
-Message-Id: <1377783120-14001-16-git-send-email-tomi.valkeinen@ti.com>
+From: Inki Dae <inki.dae@samsung.com>
+Date: Mon, 12 Aug 2013 09:55:25 +0000
+Subject: About buffer sychronization mechanism and cache operation
+Message-Id: <000001ce9742$11b5dcd0$35219670$%dae@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-In the old panel device model we had omap_dss_output entities,
-representing the encoders in the DSS block. This entity had "device"
-field, which pointed to the panel that was using the omap_dss_output.
+Hello all,
 
-With the new panel device model, the omap_dss_output is integrated into
-omap_dss_device, which now represents a "display entity". Thus the "device"
-field, now in omap_dss_device, points to the next entity in the display
-entity-chain.
 
-This patch renames the "device" field to "dst", which much better tells
-what the field points to.
+The purpose of this email is to get other opinions and advices to buffer synchronization mechanism, and coupling cache operation feature with the buffer synchronization mechanism. First of all, I am not a native English speaker so I'm not sure that I can convey my intention to you. And I'm not a specialist in Linux than other people so also there might be my missing points. 
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/displays-new/encoder-tfp410.c    | 10 +++++-----
- drivers/video/omap2/displays-new/encoder-tpd12s015.c | 10 +++++-----
- drivers/video/omap2/dss/apply.c                      |  4 ++--
- drivers/video/omap2/dss/dpi.c                        |  4 ++--
- drivers/video/omap2/dss/dsi.c                        |  4 ++--
- drivers/video/omap2/dss/hdmi.c                       |  4 ++--
- drivers/video/omap2/dss/output.c                     | 16 ++++++++--------
- drivers/video/omap2/dss/sdi.c                        |  4 ++--
- drivers/video/omap2/dss/venc.c                       |  4 ++--
- include/video/omapdss.h                              |  2 +-
- 10 files changed, 31 insertions(+), 31 deletions(-)
+I had posted the buffer synchronization mechanism called dmabuf sync framework like below,
+http://lists.infradead.org/pipermail/linux-arm-kernel/2013-June/177045.html
 
-diff --git a/drivers/video/omap2/displays-new/encoder-tfp410.c b/drivers/video/omap2/displays-new/encoder-tfp410.c
-index 454f771..4a291e7 100644
---- a/drivers/video/omap2/displays-new/encoder-tfp410.c
-+++ b/drivers/video/omap2/displays-new/encoder-tfp410.c
-@@ -44,7 +44,7 @@ static int tfp410_connect(struct omap_dss_device *dssdev,
- 		return r;
- 
- 	dst->src = dssdev;
--	dssdev->device = dst;
-+	dssdev->dst = dst;
- 
- 	return 0;
- }
-@@ -59,12 +59,12 @@ static void tfp410_disconnect(struct omap_dss_device *dssdev,
- 	if (!omapdss_device_is_connected(dssdev))
- 		return;
- 
--	WARN_ON(dst != dssdev->device);
--	if (dst != dssdev->device)
-+	WARN_ON(dst != dssdev->dst);
-+	if (dst != dssdev->dst)
- 		return;
- 
- 	dst->src = NULL;
--	dssdev->device = NULL;
-+	dssdev->dst = NULL;
- 
- 	in->ops.dpi->disconnect(in, &ddata->dssdev);
- }
-@@ -244,7 +244,7 @@ static int __exit tfp410_remove(struct platform_device *pdev)
- 
- 	WARN_ON(omapdss_device_is_connected(dssdev));
- 	if (omapdss_device_is_connected(dssdev))
--		tfp410_disconnect(dssdev, dssdev->device);
-+		tfp410_disconnect(dssdev, dssdev->dst);
- 
- 	omap_dss_put_device(in);
- 
-diff --git a/drivers/video/omap2/displays-new/encoder-tpd12s015.c b/drivers/video/omap2/displays-new/encoder-tpd12s015.c
-index a3d2991..798ef20 100644
---- a/drivers/video/omap2/displays-new/encoder-tpd12s015.c
-+++ b/drivers/video/omap2/displays-new/encoder-tpd12s015.c
-@@ -67,7 +67,7 @@ static int tpd_connect(struct omap_dss_device *dssdev,
- 		return r;
- 
- 	dst->src = dssdev;
--	dssdev->device = dst;
-+	dssdev->dst = dst;
- 
- 	INIT_COMPLETION(ddata->hpd_completion);
- 
-@@ -95,15 +95,15 @@ static void tpd_disconnect(struct omap_dss_device *dssdev,
- 	struct panel_drv_data *ddata = to_panel_data(dssdev);
- 	struct omap_dss_device *in = ddata->in;
- 
--	WARN_ON(dst != dssdev->device);
-+	WARN_ON(dst != dssdev->dst);
- 
--	if (dst != dssdev->device)
-+	if (dst != dssdev->dst)
- 		return;
- 
- 	gpio_set_value_cansleep(ddata->ct_cp_hpd_gpio, 0);
- 
- 	dst->src = NULL;
--	dssdev->device = NULL;
-+	dssdev->dst = NULL;
- 
- 	in->ops.hdmi->disconnect(in, &ddata->dssdev);
- }
-@@ -372,7 +372,7 @@ static int __exit tpd_remove(struct platform_device *pdev)
- 
- 	WARN_ON(omapdss_device_is_connected(dssdev));
- 	if (omapdss_device_is_connected(dssdev))
--		tpd_disconnect(dssdev, dssdev->device);
-+		tpd_disconnect(dssdev, dssdev->dst);
- 
- 	omap_dss_put_device(in);
- 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index d6212d63..60758db 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -428,8 +428,8 @@ static struct omap_dss_device *dss_mgr_get_device(struct omap_overlay_manager *m
- 	if (dssdev = NULL)
- 		return NULL;
- 
--	while (dssdev->device)
--		dssdev = dssdev->device;
-+	while (dssdev->dst)
-+		dssdev = dssdev->dst;
- 
- 	if (dssdev->driver)
- 		return dssdev;
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index b268d04..bd48cde 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -643,9 +643,9 @@ static int dpi_connect(struct omap_dss_device *dssdev,
- static void dpi_disconnect(struct omap_dss_device *dssdev,
- 		struct omap_dss_device *dst)
- {
--	WARN_ON(dst != dssdev->device);
-+	WARN_ON(dst != dssdev->dst);
- 
--	if (dst != dssdev->device)
-+	if (dst != dssdev->dst)
- 		return;
- 
- 	omapdss_output_unset_device(dssdev);
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 3daaf7e..a598b58 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -5264,9 +5264,9 @@ static int dsi_connect(struct omap_dss_device *dssdev,
- static void dsi_disconnect(struct omap_dss_device *dssdev,
- 		struct omap_dss_device *dst)
- {
--	WARN_ON(dst != dssdev->device);
-+	WARN_ON(dst != dssdev->dst);
- 
--	if (dst != dssdev->device)
-+	if (dst != dssdev->dst)
- 		return;
- 
- 	omapdss_output_unset_device(dssdev);
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 0b8e4de..75f3c74 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -900,9 +900,9 @@ static int hdmi_connect(struct omap_dss_device *dssdev,
- static void hdmi_disconnect(struct omap_dss_device *dssdev,
- 		struct omap_dss_device *dst)
- {
--	WARN_ON(dst != dssdev->device);
-+	WARN_ON(dst != dssdev->dst);
- 
--	if (dst != dssdev->device)
-+	if (dst != dssdev->dst)
- 		return;
- 
- 	omapdss_output_unset_device(dssdev);
-diff --git a/drivers/video/omap2/dss/output.c b/drivers/video/omap2/dss/output.c
-index 15f47af..2ab3afa 100644
---- a/drivers/video/omap2/dss/output.c
-+++ b/drivers/video/omap2/dss/output.c
-@@ -34,9 +34,9 @@ int omapdss_output_set_device(struct omap_dss_device *out,
- 
- 	mutex_lock(&output_lock);
- 
--	if (out->device) {
-+	if (out->dst) {
- 		DSSERR("output already has device %s connected to it\n",
--			out->device->name);
-+			out->dst->name);
- 		r = -EINVAL;
- 		goto err;
- 	}
-@@ -47,7 +47,7 @@ int omapdss_output_set_device(struct omap_dss_device *out,
- 		goto err;
- 	}
- 
--	out->device = dssdev;
-+	out->dst = dssdev;
- 	dssdev->src = out;
- 
- 	mutex_unlock(&output_lock);
-@@ -66,21 +66,21 @@ int omapdss_output_unset_device(struct omap_dss_device *out)
- 
- 	mutex_lock(&output_lock);
- 
--	if (!out->device) {
-+	if (!out->dst) {
- 		DSSERR("output doesn't have a device connected to it\n");
- 		r = -EINVAL;
- 		goto err;
- 	}
- 
--	if (out->device->state != OMAP_DSS_DISPLAY_DISABLED) {
-+	if (out->dst->state != OMAP_DSS_DISPLAY_DISABLED) {
- 		DSSERR("device %s is not disabled, cannot unset device\n",
--				out->device->name);
-+				out->dst->name);
- 		r = -EINVAL;
- 		goto err;
- 	}
- 
--	out->device->src = NULL;
--	out->device = NULL;
-+	out->dst->src = NULL;
-+	out->dst = NULL;
- 
- 	mutex_unlock(&output_lock);
- 
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index b327688..ccc569a 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -306,9 +306,9 @@ static int sdi_connect(struct omap_dss_device *dssdev,
- static void sdi_disconnect(struct omap_dss_device *dssdev,
- 		struct omap_dss_device *dst)
- {
--	WARN_ON(dst != dssdev->device);
-+	WARN_ON(dst != dssdev->dst);
- 
--	if (dst != dssdev->device)
-+	if (dst != dssdev->dst)
- 		return;
- 
- 	omapdss_output_unset_device(dssdev);
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 0d8ccde..5f88ac4 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -753,9 +753,9 @@ static int venc_connect(struct omap_dss_device *dssdev,
- static void venc_disconnect(struct omap_dss_device *dssdev,
- 		struct omap_dss_device *dst)
- {
--	WARN_ON(dst != dssdev->device);
-+	WARN_ON(dst != dssdev->dst);
- 
--	if (dst != dssdev->device)
-+	if (dst != dssdev->dst)
- 		return;
- 
- 	omapdss_output_unset_device(dssdev);
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 5fa81dd..3d7c51a 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -793,7 +793,7 @@ struct omap_dss_device {
- 	/* dynamic fields */
- 	struct omap_overlay_manager *manager;
- 
--	struct omap_dss_device *device;
-+	struct omap_dss_device *dst;
- };
- 
- struct omap_dss_hdmi_data
--- 
-1.8.1.2
+And I'm sending this email before posting next version with more stable patch set and features. The purpose of this framework is to provide not only buffer access control to CPU and DMA but also easy-to-use interfaces for device drivers and user application. This framework can be used for all DMA devices using system memory as DMA buffer, especially for most ARM based SoCs.
+    
+There are two cases we are using this buffer synchronization framework. One is to primarily enhance GPU rendering performance on Tizen platform in case of 3d app with compositing mode that the 3d app draws something in off-screen buffer.
+    
+And other is to couple buffer access control and cache operation between CPU and DMA; the cache operation is done by the dmabuf sync framework in kernel side.
+
+    
+Why do we need buffer access control between CPU and DMA?
+---------------------------------------------------------
+    
+The below shows simple 3D software layers,
+    
+                    3D Application
+      -----------------------------------------
+        Standard OpenGL ES and EGL Interfaces  ------- [A]
+      -----------------------------------------
+      MALI OpenGL ES and EGL Native modules --------- [B]
+      -----------------------------------------
+         Exynos DRM Driver    |    GPU Driver ---------- [C]
+    
+3d application requests 3d rendering through A. And then B fills a 3d command buffer with the requests from A. And then 3D application calls glFlush so that the 3d command buffer can be submitted to C, and rendered by GPU hardware. Internally, glFlush(also glFinish) will call a function of native module[B] glFinish blocks caller's task until all GL execution is complete. On the other hand, glFlush forces execution of GL commands but doesn't block the caller's task until the completion.
+    
+In composting mode, in case of using glFinish, the 3d rendering performance is quite lower than using glFlush because glFinish makes CPU blocked until the execution of the 3d commands is completed. However, the use of glFlush has one issue that the shared buffer with GPU could be broken when CPU accesses the shared buffer at once after glFlush because CPU cannot be aware of the completion of GPU access to the shared buffer: actually, Tizen platform internally calls only eglSwapBuffer instead of glFlush and glFinish, and whether flushing or finishing is decided according to compositing mode or not. So in such case, we would need buffer access control between CPU and DMA for more performance.
+
+    
+About cache operation
+---------------------
+    
+The dmabuf sync framework can include cache operation feature, and the below shows how the cache operation based on dmabuf sync framework is performed,
+   device driver in kernel or fctrl in user land
+          dmabuf_sync_lock or dmabuf_sync_single_lock
+               check before and after buffer access
+                  dma_buf_begin_cpu_access or dma_buf_end_cpu_access
+                         begin_cpu_access or end_cpu_access of exporter
+                                dma_sync_sg_for_device or dma_sync_sg_for_cpu
+    
+In case that using dmabuf sync framework, kernel can be aware of when CPU and DMA access to a shared buffer is completed so we can do cache operation in kernel so that way, we can couple buffer access control and cache operation. So with this, we can avoid that user land overuses cache operation.
+    
+I guess most Linux based platforms are using cachable mapped buffer for more performance: in case that CPU frequently accesses the shared buffer which is shared with DMA, the use of cachable mapped buffer is more fast than the use of non-cachable. However, this way could make cache operation overused by user land because only user land can be aware of the completion of CPU or DMA access to the shared buffer so user land could request cache operations every time it wants even the cache operation is unnecessary. That is how user land could overuse cache operations.
+    
+To Android, Chrome OS, and other forks,
+
+Are there other cases that buffer access control between CPU and DMA is needed? I know Android sync driver and KDS are already being used for Android, Chrome OS, and so on.
+How does your platform do cache operation? And How do you think about coupling buffer access control and cache operation between CPU and DMA?.
+
+Lastly, I think we may need Linux generic buffer synchronization mechanism that uses only Linux standard interfaces (dmabuf) including user land interfaces (fcntl and select system calls), and the dmabuf sync framework could meet it.
+
+
+Thanks,
+Inki Dae
 

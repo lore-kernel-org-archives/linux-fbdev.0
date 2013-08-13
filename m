@@ -1,168 +1,147 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 09 Aug 2013 08:38:53 +0000
-Subject: [RFC 08/22] OMAPDSS: Add DT support to DSS, DISPC, DPI, HDMI, VENC
-Message-Id: <1376037547-10859-9-git-send-email-tomi.valkeinen@ti.com>
+From: Inki Dae <inki.dae@samsung.com>
+Date: Tue, 13 Aug 2013 12:56:27 +0000
+Subject: [Resend][RFC PATCH v6 0/2] Introduce buffer synchronization framework
+Message-Id: <1376398587-9739-1-git-send-email-inki.dae@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1376385576-9039-1-git-send-email-inki.dae@samsung.com>
+In-Reply-To: <1376385576-9039-1-git-send-email-inki.dae@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org, linaro-kernel@lists.linaro.org
+Cc: maarten.lankhorst@canonical.com, sumit.semwal@linaro.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
 
-Add the code to make DSS, DISPC, DPI, HDMI and VENC drivers work with
-device tree on OMAP3 and OMAP4. The only change is adding the
-of_match_tables.
+Just adding more detailed descriptions.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/dispc.c |  7 +++++++
- drivers/video/omap2/dss/dpi.c   |  8 ++++++++
- drivers/video/omap2/dss/dss.c   | 10 ++++++++++
- drivers/video/omap2/dss/hdmi.c  |  6 ++++++
- drivers/video/omap2/dss/venc.c  |  7 +++++++
- 5 files changed, 38 insertions(+)
+Hi all,
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 02a7340..b4dccb8 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -3743,12 +3743,19 @@ static const struct dev_pm_ops dispc_pm_ops = {
- 	.runtime_resume = dispc_runtime_resume,
- };
- 
-+static const struct of_device_id dispc_of_match[] = {
-+	{ .compatible = "ti,omap3-dispc", },
-+	{ .compatible = "ti,omap4-dispc", },
-+	{},
-+};
-+
- static struct platform_driver omap_dispchw_driver = {
- 	.remove         = __exit_p(omap_dispchw_remove),
- 	.driver         = {
- 		.name   = "omapdss_dispc",
- 		.owner  = THIS_MODULE,
- 		.pm	= &dispc_pm_ops,
-+		.of_match_table = dispc_of_match,
- 	},
- };
- 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index a6b331e..6b832c8 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -30,6 +30,7 @@
- #include <linux/platform_device.h>
- #include <linux/regulator/consumer.h>
- #include <linux/string.h>
-+#include <linux/of.h>
- 
- #include <video/omapdss.h>
- 
-@@ -801,12 +802,19 @@ static int __exit omap_dpi_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct of_device_id dpi_of_match[] = {
-+	{ .compatible = "ti,omap3-dpi", },
-+	{ .compatible = "ti,omap4-dpi", },
-+	{},
-+};
-+
- static struct platform_driver omap_dpi_driver = {
- 	.probe		= omap_dpi_probe,
- 	.remove         = __exit_p(omap_dpi_remove),
- 	.driver         = {
- 		.name   = "omapdss_dpi",
- 		.owner  = THIS_MODULE,
-+		.of_match_table = dpi_of_match,
- 	},
- };
- 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index bd01608..d0d61b1 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -23,6 +23,7 @@
- #define DSS_SUBSYS_NAME "DSS"
- 
- #include <linux/kernel.h>
-+#include <linux/module.h>
- #include <linux/io.h>
- #include <linux/export.h>
- #include <linux/err.h>
-@@ -955,12 +956,21 @@ static const struct dev_pm_ops dss_pm_ops = {
- 	.runtime_resume = dss_runtime_resume,
- };
- 
-+static const struct of_device_id dss_of_match[] = {
-+	{ .compatible = "ti,omap3-dss", },
-+	{ .compatible = "ti,omap4-dss", },
-+	{},
-+};
-+
-+MODULE_DEVICE_TABLE(of, dss_of_match);
-+
- static struct platform_driver omap_dsshw_driver = {
- 	.remove         = __exit_p(omap_dsshw_remove),
- 	.driver         = {
- 		.name   = "omapdss_dss",
- 		.owner  = THIS_MODULE,
- 		.pm	= &dss_pm_ops,
-+		.of_match_table = dss_of_match,
- 	},
- };
- 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 1b38f1f..1cea0ab 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -1374,6 +1374,11 @@ static const struct dev_pm_ops hdmi_pm_ops = {
- 	.runtime_resume = hdmi_runtime_resume,
- };
- 
-+static const struct of_device_id hdmi_of_match[] = {
-+	{ .compatible = "ti,omap4-hdmi", },
-+	{},
-+};
-+
- static struct platform_driver omapdss_hdmihw_driver = {
- 	.probe		= omapdss_hdmihw_probe,
- 	.remove         = __exit_p(omapdss_hdmihw_remove),
-@@ -1381,6 +1386,7 @@ static struct platform_driver omapdss_hdmihw_driver = {
- 		.name   = "omapdss_hdmi",
- 		.owner  = THIS_MODULE,
- 		.pm	= &hdmi_pm_ops,
-+		.of_match_table = hdmi_of_match,
- 	},
- };
- 
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 496a106..93e13dd 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -980,6 +980,12 @@ static const struct dev_pm_ops venc_pm_ops = {
- 	.runtime_resume = venc_runtime_resume,
- };
- 
-+
-+static const struct of_device_id venc_of_match[] = {
-+	{ .compatible = "ti,omap3-venc", },
-+	{},
-+};
-+
- static struct platform_driver omap_venchw_driver = {
- 	.probe		= omap_venchw_probe,
- 	.remove         = __exit_p(omap_venchw_remove),
-@@ -987,6 +993,7 @@ static struct platform_driver omap_venchw_driver = {
- 		.name   = "omapdss_venc",
- 		.owner  = THIS_MODULE,
- 		.pm	= &venc_pm_ops,
-+		.of_match_table = venc_of_match,
- 	},
- };
- 
+   This patch set introduces a buffer synchronization framework based
+   on DMA BUF[1] and based on ww-mutexes[2] for lock mechanism, and
+   may be final RFC.
+
+   The purpose of this framework is to provide not only buffer access
+   control to CPU and CPU, and CPU and DMA, and DMA and DMA but also
+   easy-to-use interfaces for device drivers and user application.
+   In addtion, this patch set suggests a way for enhancing performance.
+
+   For generic user mode interface, we have used fcntl and select system
+   call[3]. As you know, user application sees a buffer object as a dma-buf
+   file descriptor. So fcntl() call with the file descriptor means to lock
+   some buffer region being managed by the dma-buf object. And select() call
+   means to wait for the completion of CPU or DMA access to the dma-buf
+   without locking. For more detail, you can refer to the dma-buf-sync.txt
+   in Documentation/
+
+
+   There are some cases we should use this buffer synchronization framework.
+   One of which is to primarily enhance GPU rendering performance on Tizen
+   platform in case of 3d app with compositing mode that 3d app draws
+   something in off-screen buffer, and Web app.
+
+   In case of 3d app with compositing mode which is not a full screen mode,
+   the app calls glFlush to submit 3d commands to GPU driver instead of
+   glFinish for more performance. The reason we call glFlush is that glFinish
+   blocks caller's task until the execution of the 2d commands is completed.
+   Thus, that makes GPU and CPU more idle. As result, 3d rendering performance
+   with glFinish is quite lower than glFlush. However, the use of glFlush has
+   one issue that the a buffer shared with GPU could be broken when CPU
+   accesses the buffer at once after glFlush because CPU cannot be aware of
+   the completion of GPU access to the buffer. Of course, the app can be aware
+   of that time using eglWaitGL but this function is valid only in case of the
+   same process.
+
+   The below summarizes how app's window is displayed on Tizen platform:
+   1. X client requests a window buffer to Xorg.
+   2. X client draws something in the window buffer using CPU.
+   3. X client requests SWAP to Xorg.
+   4. Xorg notifies a damage event to Composite Manager.
+   5. Composite Manager gets the window buffer (front buffer) through
+      DRI2GetBuffers.
+   6. Composite Manager composes the window buffer and its own back buffer
+      using GPU. At this time, eglSwapBuffers is called: internally, 3d
+      commands are flushed to gpu driver.
+   7. Composite Manager requests SWAP to Xorg.
+   8. Xorg performs drm page flip. At this time, the window buffer is
+      displayed on screen.
+
+   Web app based on HTML5 also has similar procedure. Web browser and its web
+   app are different processs. Web app draws something in its own buffer,
+   and then the web browser gets a window buffer from Xorg, and then composes
+   those two buffers using GPU.
+
+   Thus, in such cases, a shared buffer could be broken when one process draws
+   something in a shared buffer using CPU while Composite manager is composing
+   two buffers - X client's front buffer and Composite manger's back buffer, or
+   web app's front buffer and web browser's back buffer - using GPU without
+   any locking mechanism. That is why we need user land locking interface,
+   fcntl system call.
+
+   And last one is a deferred page flip issue. This issue is that a window
+   buffer rendered can be displayed on screen in about 32ms in worst case:
+   assume that the gpu rendering is completed within 16ms.
+   That can be incurred when compositing a pixmap buffer with a window buffer
+   using GPU and when vsync is just started. At this time, Xorg waits for
+   a vblank event to get a window buffer so 3d rendering will be delayed
+   up to about 16ms. As a result, the window buffer would be displayed in
+   about two vsyncs (about 32ms) and in turn, that would show slow
+   responsiveness.
+
+   For this, we could enhance the responsiveness with locking
+   mechanism: skipping one vblank wait. I guess in the similar reason,
+   Android, Chrome OS, and other platforms are using their own locking
+   mechanisms; Android sync driver, KDS, and DMA fence.
+
+   The below shows the deferred page flip issue in worst case,
+
+               |------------ <- vsync signal
+               |<------ DRI2GetBuffers
+               |
+               |
+               |
+               |------------ <- vsync signal
+               |<------ Request gpu rendering
+          time |
+               |
+               |<------ Request page flip (deferred)
+               |------------ <- vsync signal
+               |<------ Displayed on screen
+               |
+               |
+               |
+               |------------ <- vsync signal
+
+
+Thanks,
+Inki Dae
+
+
+References:
+[1] http://lwn.net/Articles/470339/
+[2] https://patchwork.kernel.org/patch/2625361/
+[3] http://linux.die.net/man/2/fcntl
+
+
+Inki Dae (2):
+  [RFC PATCH v6] dmabuf-sync: Add a buffer synchronization framework
+  [RFC PATCH v2] dma-buf: Add user interfaces for dmabuf sync support.
+
+ Documentation/dma-buf-sync.txt |  285 +++++++++++++++++
+ drivers/base/Kconfig           |    7 +
+ drivers/base/Makefile          |    1 +
+ drivers/base/dma-buf.c         |   85 +++++
+ drivers/base/dmabuf-sync.c     |  678 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/dma-buf.h        |   16 +
+ include/linux/dmabuf-sync.h    |  191 +++++++++++
+ 7 files changed, 1263 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/dma-buf-sync.txt
+ create mode 100644 drivers/base/dmabuf-sync.c
+ create mode 100644 include/linux/dmabuf-sync.h
+
 -- 
-1.8.1.2
+1.7.5.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
 

@@ -1,113 +1,156 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 09 Aug 2013 08:39:02 +0000
-Subject: [RFC 17/22] OMAPDSS: encoder-tfp410: Add DT support
-Message-Id: <1376037547-10859-18-git-send-email-tomi.valkeinen@ti.com>
+From: Inki Dae <inki.dae@samsung.com>
+Date: Tue, 13 Aug 2013 09:19:36 +0000
+Subject: [PATCH 2/2] [RFC PATCH v2] dma-buf: Add user interfaces for dmabuf sync support.
+Message-Id: <1376385576-9039-3-git-send-email-inki.dae@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1376385576-9039-1-git-send-email-inki.dae@samsung.com>
+In-Reply-To: <1376385576-9039-1-git-send-email-inki.dae@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org, linaro-kernel@lists.linaro.org
+Cc: maarten.lankhorst@canonical.com, sumit.semwal@linaro.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, Inki Dae <inki.dae@samsung.com>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+This patch adds lock and poll callbacks to dma buf file operations,
+and these callbacks will be called by fcntl and select system calls.
+
+fcntl and select system calls can be used to wait for the completion
+of DMA or CPU access to a shared dmabuf. The difference of them is
+fcntl system call takes a lock after the completion but select system
+call doesn't. So in case of fcntl system call, it's useful when a task
+wants to access a shared dmabuf without any broken. On the other hand,
+it's useful when a task wants to just wait for the completion.
+
+Changelog v2:
+- Add select system call support.
+  . The purpose of this feature is to wait for the completion of DMA or
+    CPU access to a dmabuf without that caller locks the dmabuf again
+    after the completion.
+    That is useful when caller wants to be aware of the completion of
+    DMA access to the dmabuf, and the caller doesn't use intefaces for
+    the DMA device driver.
+
+Signed-off-by: Inki Dae <inki.dae@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/video/omap2/displays-new/encoder-tfp410.c | 54 +++++++++++++++++++++++
- 1 file changed, 54 insertions(+)
+ drivers/base/dma-buf.c      |   81 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/dmabuf-sync.h |    1 +
+ 2 files changed, 82 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/displays-new/encoder-tfp410.c b/drivers/video/omap2/displays-new/encoder-tfp410.c
-index a04f658..120da51 100644
---- a/drivers/video/omap2/displays-new/encoder-tfp410.c
-+++ b/drivers/video/omap2/displays-new/encoder-tfp410.c
-@@ -13,6 +13,7 @@
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/slab.h>
-+#include <linux/of_gpio.h>
+diff --git a/drivers/base/dma-buf.c b/drivers/base/dma-buf.c
+index 4aca57a..f16a396 100644
+--- a/drivers/base/dma-buf.c
++++ b/drivers/base/dma-buf.c
+@@ -29,6 +29,7 @@
+ #include <linux/export.h>
+ #include <linux/debugfs.h>
+ #include <linux/seq_file.h>
++#include <linux/poll.h>
+ #include <linux/dmabuf-sync.h>
  
- #include <video/omapdss.h>
- #include <video/omap-panel-data.h>
-@@ -179,6 +180,47 @@ static int tfp410_probe_pdata(struct platform_device *pdev)
- 	return 0;
+ static inline int is_dma_buf_file(struct file *);
+@@ -80,9 +81,89 @@ static int dma_buf_mmap_internal(struct file *file, struct vm_area_struct *vma)
+ 	return dmabuf->ops->mmap(dmabuf, vma);
  }
  
-+static int tfp410_probe_of(struct platform_device *pdev)
++static unsigned int dma_buf_poll(struct file *filp,
++					struct poll_table_struct *poll)
 +{
-+	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-+	struct device_node *node = pdev->dev.of_node;
-+	struct omap_dss_device *in;
-+	struct device_node *src_node;
-+	int r, gpio, datalines;
++	struct dma_buf *dmabuf;
++	struct dmabuf_sync_reservation *robj;
++	int ret = 0;
 +
-+	src_node = of_parse_phandle(node, "video-source", 0);
-+	if (!src_node) {
-+		dev_err(&pdev->dev, "failed to parse video source\n");
-+		return -ENODEV;
++	if (!is_dma_buf_file(filp))
++		return POLLERR;
++
++	dmabuf = filp->private_data;
++	if (!dmabuf || !dmabuf->sync)
++		return POLLERR;
++
++	robj = dmabuf->sync;
++
++	mutex_lock(&robj->lock);
++
++	robj->polled = true;
++
++	/*
++	 * CPU or DMA access to this buffer has been completed, and
++	 * the blocked task has been waked up. Return poll event
++	 * so that the task can get out of select().
++	 */
++	if (robj->poll_event) {
++		robj->poll_event = false;
++		mutex_unlock(&robj->lock);
++		return POLLIN | POLLOUT;
 +	}
 +
-+	in = omap_dss_find_output_by_node(src_node);
-+	if (in = NULL) {
-+		dev_err(&pdev->dev, "failed to find video source\n");
-+		return -EPROBE_DEFER;
-+	}
-+	ddata->in = in;
-+
-+	gpio = of_get_gpio(node, 0);
-+
-+	if (gpio_is_valid(gpio) || gpio = -ENOENT) {
-+		ddata->pd_gpio = gpio;
-+	} else {
-+		dev_err(&pdev->dev, "failed to parse PD gpio\n");
-+		return gpio;
++	/*
++	 * There is no anyone accessing this buffer so just return.
++	 */
++	if (!robj->locked) {
++		mutex_unlock(&robj->lock);
++		return POLLIN | POLLOUT;
 +	}
 +
-+	r = of_property_read_u32(node, "data-lines", &datalines);
-+	if (r) {
-+		dev_err(&pdev->dev, "failed to parse datalines\n");
-+		return r;
-+	}
++	poll_wait(filp, &robj->poll_wait, poll);
 +
-+	ddata->data_lines = datalines;
++	mutex_unlock(&robj->lock);
 +
-+	return 0;
++	return ret;
 +}
 +
- static int tfp410_probe(struct platform_device *pdev)
- {
- 	struct panel_drv_data *ddata;
-@@ -195,6 +237,10 @@ static int tfp410_probe(struct platform_device *pdev)
- 		r = tfp410_probe_pdata(pdev);
- 		if (r)
- 			return r;
-+	} else if (pdev->dev.of_node) {
-+		r = tfp410_probe_of(pdev);
-+		if (r)
-+			return r;
- 	} else {
- 		return -ENODEV;
- 	}
-@@ -251,12 +297,20 @@ static int __exit tfp410_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct of_device_id tfp410_of_match[] = {
-+	{ .compatible = "ti,tfp410", },
-+	{},
-+};
++static int dma_buf_lock(struct file *file, int cmd, struct file_lock *fl)
++{
++	struct dma_buf *dmabuf;
++	unsigned int type;
++	bool wait = false;
 +
-+MODULE_DEVICE_TABLE(of, tfp410_of_match);
++	if (!is_dma_buf_file(file))
++		return -EINVAL;
 +
- static struct platform_driver tfp410_driver = {
- 	.probe	= tfp410_probe,
- 	.remove	= __exit_p(tfp410_remove),
- 	.driver	= {
- 		.name	= "tfp410",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = tfp410_of_match,
- 	},
++	dmabuf = file->private_data;
++
++	if ((fl->fl_type & F_UNLCK) = F_UNLCK) {
++		dmabuf_sync_single_unlock(dmabuf);
++		return 0;
++	}
++
++	/* convert flock type to dmabuf sync type. */
++	if ((fl->fl_type & F_WRLCK) = F_WRLCK)
++		type = DMA_BUF_ACCESS_W;
++	else if ((fl->fl_type & F_RDLCK) = F_RDLCK)
++		type = DMA_BUF_ACCESS_R;
++	else
++		return -EINVAL;
++
++	if (fl->fl_flags & FL_SLEEP)
++		wait = true;
++
++	/* TODO. the locking to certain region should also be considered. */
++
++	return dmabuf_sync_single_lock(dmabuf, type, wait);
++}
++
+ static const struct file_operations dma_buf_fops = {
+ 	.release	= dma_buf_release,
+ 	.mmap		= dma_buf_mmap_internal,
++	.poll		= dma_buf_poll,
++	.lock		= dma_buf_lock,
  };
  
+ /*
+diff --git a/include/linux/dmabuf-sync.h b/include/linux/dmabuf-sync.h
+index 9a3afc4..0316f68 100644
+--- a/include/linux/dmabuf-sync.h
++++ b/include/linux/dmabuf-sync.h
+@@ -11,6 +11,7 @@
+  */
+ 
+ #include <linux/mutex.h>
++#include <linux/ww_mutex.h>
+ #include <linux/sched.h>
+ #include <linux/dma-buf.h>
+ 
 -- 
-1.8.1.2
+1.7.5.4
 

@@ -1,79 +1,71 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 30 Aug 2013 09:47:52 +0000
-Subject: Re: [RFC 00/22] OMAPDSS: DT support
-Message-Id: <52206A48.8040401@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="P6AOCXNVlxgIXSoL3PwQiUHh6Fg1XA0oU"
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Wed, 14 Aug 2013 09:11:06 +0000
+Subject: [PATCH 2/29] video: mxsfb: simplify use of devm_ioremap_resource
+Message-Id: <1376471493-22215-3-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com> <20130813075449.GS7656@atomide.com>
-In-Reply-To: <20130813075449.GS7656@atomide.com>
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>
+References: <1376471493-22215-1-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <1376471493-22215-1-git-send-email-Julia.Lawall@lip6.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: kernel-janitors@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
---P6AOCXNVlxgIXSoL3PwQiUHh6Fg1XA0oU
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-On 13/08/13 10:54, Tony Lindgren wrote:
-> * Tomi Valkeinen <tomi.valkeinen@ti.com> [130809 01:46]:
->>
->> So as is evident, I have things in my mind that should be improved. Ma=
-ybe
->> the most important question for short term future is:
->>
->> Can we add DSS DT bindings for OMAP4 as unstable bindings? It would gi=
-ve us
->> some proper testing of the related code, and would also allow us to re=
-move
->> the related hacks (which don't even work quite right). However, I have=
- no
->> idea yet when the unstable DSS bindings would turn stable.
->>
->> If we shouldn't add the bindings as unstable, when should the bindings=
- be
->> added? Wait until CDF is in the mainline, and use that?
->=20
-> I don't think we should add any temporary bindings as it's going to be
-> a pain to support those in the long run. I suggest you initially just
-> stick to established bindings for the basic hardware IO address and
-> interrupts etc, then those should still be valid with the generic panel=
+Remove unneeded error handling on the result of a call to
+platform_get_resource when the value is passed to devm_ioremap_resource.
 
-> bindings later on.
+Move the call to platform_get_resource adjacent to the call to
+devm_ioremap_resource to make the connection between them more clear.
 
-I don't understand what does it matter if the bindings are temporary, or
-basic established bindings. In both cases the DT data needs to be
-changed when the CDF is taken into use.
+A simplified version of the semantic patch that makes this change is as
+follows: (http://coccinelle.lip6.fr/)
 
-Well, one difference is that the temporary bindings would give us
-working display, but having only basic bindings would not. So I don't
-see any reason to add only the basic bindings. Or how would it work?
+// <smpl>
+@@
+expression pdev,res,n,e,e1;
+expression ret != 0;
+identifier l;
+@@
 
- Tomi
+- res = platform_get_resource(pdev, IORESOURCE_MEM, n);
+  ... when != res
+- if (res = NULL) { ... \(goto l;\|return ret;\) }
+  ... when != res
++ res = platform_get_resource(pdev, IORESOURCE_MEM, n);
+  e = devm_ioremap_resource(e1, res);
+// </smpl>
 
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
+---
+ drivers/video/mxsfb.c |    7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
---P6AOCXNVlxgIXSoL3PwQiUHh6Fg1XA0oU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index c2d3514..d250ed0 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -855,12 +855,6 @@ static int mxsfb_probe(struct platform_device *pdev)
+ 	if (of_id)
+ 		pdev->id_entry = of_id->data;
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (!res) {
+-		dev_err(&pdev->dev, "Cannot get memory IO resource\n");
+-		return -ENODEV;
+-	}
+-
+ 	fb_info = framebuffer_alloc(sizeof(struct mxsfb_info), &pdev->dev);
+ 	if (!fb_info) {
+ 		dev_err(&pdev->dev, "Failed to allocate fbdev\n");
+@@ -869,6 +863,7 @@ static int mxsfb_probe(struct platform_device *pdev)
+ 
+ 	host = to_imxfb_host(fb_info);
+ 
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	host->base = devm_ioremap_resource(&pdev->dev, res);
+ 	if (IS_ERR(host->base)) {
+ 		ret = PTR_ERR(host->base);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSIGpIAAoJEPo9qoy8lh716HoP/jOaxTPZzct/XmOpFiHK+Jub
-0Z3c82vlpTB3Cu/wBTGml15Cpry7i0qiU2wnbJMC16Fj4+ft3Ojiu7n8eA/fPuz5
-43T9BqN4oka0+981hbrcSO7vQndgK6tPsfxqZ6cBwWeHNdCvjnJip5EAFtZlwL5Z
-+cjJ9C6NXoHRaN+bNiOzN7t9nNmw/oIraKuGZNCH2xdbbO7jgVtCGHmgeJfc7Pbp
-aH109D/98xO3Fs9DVWtVFHQm6dSeCVdxTf63kUyWJuMLhfjuaS5B2CnxbD1ClIcL
-QVMwTJrb9J5mZwfAI4UnrLGZ1Mx81HBImzwErg+wLtLgH/HsnVZmaU5JHc3cTwIL
-vV6dIqPFLAg/Inqy4LZ2vSgcnZijWSLRcuWPMNGIOkvwtgiNiqZYBhWUC0MszwJF
-d5DUexYebq2BjKmUW5TA8wc1CZypaqQK89ml7k8jXfI632dqygzQuqkwXjQ+wMqm
-fkKWUd2rbomLgDA/cow1YOdbZc93mknzajvOHRNZ30r8NiaTt6A6on+wB7Td1vj3
-k3WIWDRW6nPnzOyCQ3NZrttvRCIQmuvgPNI9rvN1u5aWVg5PL3rlpVqolfvbfpyH
-VdnkoLiV0cinQW1ykhbKpKoJaoYvSLebhHR9wxc1jmX7RqY1SSOQGZ5dp9Wx6Vhx
-C7ZIYQGTzqhMMRO12o38
-=V+UN
------END PGP SIGNATURE-----
-
---P6AOCXNVlxgIXSoL3PwQiUHh6Fg1XA0oU--

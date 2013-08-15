@@ -1,154 +1,76 @@
-From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Date: Fri, 09 Aug 2013 23:03:06 +0000
-Subject: [PATCH/RFC v3 07/19] video: display: Add pixel coding definitions
-Message-Id: <1376089398-13322-8-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+From: Alison Wang <b18965@freescale.com>
+Date: Thu, 15 Aug 2013 08:01:51 +0000
+Subject: [PATCH v3 2/5] ARM: dts: vf610-twr: Enable DCU and TCON devices
+Message-Id: <1376553714-25922-3-git-send-email-b18965@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-In-Reply-To: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+References: <1376553714-25922-1-git-send-email-b18965@freescale.com>
+In-Reply-To: <1376553714-25922-1-git-send-email-b18965@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Pixel codings describe how pixels are transmitted on a physical bus. The
-information can be communicated between drivers to configure devices.
+This patch enables DCU and TCON devices for Vybrid VF610 TOWER board.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Alison Wang <b18965@freescale.com>
 ---
- include/video/display.h | 120 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 120 insertions(+)
+Changes in v3: Add panel description in devicetree.
+Changes in v2: None
 
-diff --git a/include/video/display.h b/include/video/display.h
-index 36ff637..ba319d6 100644
---- a/include/video/display.h
-+++ b/include/video/display.h
-@@ -18,6 +18,126 @@
- #include <linux/module.h>
- #include <media/media-entity.h>
+ arch/arm/boot/dts/vf610-twr.dts | 32 ++++++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
+
+diff --git a/arch/arm/boot/dts/vf610-twr.dts b/arch/arm/boot/dts/vf610-twr.dts
+index b3905f5..82c03fe 100644
+--- a/arch/arm/boot/dts/vf610-twr.dts
++++ b/arch/arm/boot/dts/vf610-twr.dts
+@@ -36,6 +36,34 @@
  
-+#define DISPLAY_PIXEL_CODING(option, type, from, to, variant) \
-+	(((option) << 17) | ((type) << 13) | ((variant) << 10) | \
-+	 ((to) << 5) | (from))
+ };
+ 
++&dcu0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_dcu0_1>;
++	display = <&display>;
++	status = "okay";
 +
-+#define DISPLAY_PIXEL_CODING_FROM(coding)	((coding) & 0x1f)
-+#define DISPLAY_PIXEL_CODING_TO(coding)		(((coding) >> 5) & 0x1f)
-+#define DISPLAY_PIXEL_CODING_VARIANT(coding)	(((coding) >> 10) & 7)
-+#define DISPLAY_PIXEL_CODING_TYPE(coding)	(((coding) >> 13) & 0xf)
++	display: display@0 {
++		bits-per-pixel = <24>;
 +
-+#define DISPLAY_PIXEL_CODING_TYPE_DBI	0
-+#define DISPLAY_PIXEL_CODING_TYPE_DPI	1
++		display-timings {
++			native-mode = <&timing0>;
++			timing0: nl4827hc19 {
++				clock-frequency = <10870000>;
++				hactive = <480>;
++				vactive = <272>;
++				hback-porch = <2>;
++				hfront-porch = <2>;
++				vback-porch = <1>;
++				vfront-porch = <1>;
++				hsync-len = <41>;
++				vsync-len = <2>;
++				hsync-active = <1>;
++				vsync-active = <1>;
++			};
++		};
++	};
++};
 +
-+/* DBI pixel codings. */
-+#define DISPLAY_PIXEL_CODING_DBI(from, to, variant) \
-+	DISPLAY_PIXEL_CODING_TYPE(DISPLAY_PIXEL_CODING_TYPE_DBI, \
-+				  from, to, variant, 0)
+ &fec0 {
+ 	phy-mode = "rmii";
+ 	pinctrl-names = "default";
+@@ -50,6 +78,10 @@
+ 	status = "okay";
+ };
+ 
++&tcon0 {
++	status = "okay";
++};
 +
-+/* Standard DBI codings, defined in the DBI specification. */
-+/*   17   16   15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0 */
-+/*    -    -    -    -    -    -    -    -    -    - R0,2 R0,1 R0,0 G0,2 G0,1 G0,0 B0,1 B0,0 */
-+#define DISPLAY_PIXEL_CODING_DBI_8TO8		DISPLAY_PIXEL_CODING_DBI(8, 8, 0)
-+/*    -    -    -    -    -    -    -    -    -    - R0,3 R0,2 R0,1 R0,0 G0,3 G0,2 G0,1 G0,0 */
-+/*    -    -    -    -    -    -    -    -    -    - B0,3 B0,2 B0,1 B0,0 R1,3 R1,2 R1,1 R1,0 */
-+/*    -    -    -    -    -    -    -    -    -    - G1,3 G1,2 G1,1 G1,0 B1,3 B1,2 B1,1 b1,0 */
-+#define DISPLAY_PIXEL_CODING_DBI_12TO8		DISPLAY_PIXEL_CODING_DBI(12, 8, 0)
-+/*    -    -    -    -    -    -    -    -    -    - R0,4 R0,3 R0,2 R0,1 R0,0 G0,5 G0,4 G0,3 */
-+/*    -    -    -    -    -    -    -    -    -    - G0,2 G0,1 G0,0 B0,4 B0,3 B0,2 B0,1 B0,0 */
-+#define DISPLAY_PIXEL_CODING_DBI_16TO8		DISPLAY_PIXEL_CODING_DBI(16, 8, 0)
-+/*    -    -    -    -    -    -    -    -    -    - R0,5 R0,4 R0,3 R0,2 R0,1 R0,0    -    - */
-+/*    -    -    -    -    -    -    -    -    -    - G0,5 G0,4 G0,3 G0,2 G0,1 G0,0    -    - */
-+/*    -    -    -    -    -    -    -    -    -    - B0,5 B0,4 B0,3 B0,2 B0,1 B0,0    -    - */
-+#define DISPLAY_PIXEL_CODING_DBI_18TO8		DISPLAY_PIXEL_CODING_DBI(18, 8, 0)
-+/*    -    -    -    -    -    -    -    -    -    - R0,7 R0,6 R0,5 R0,4 R0,3 R0,2 R0,1 R0,0 */
-+/*    -    -    -    -    -    -    -    -    -    - G0,7 G0,6 G0,5 G0,4 G0,3 G0,2 G0,1 G0,0 */
-+/*    -    -    -    -    -    -    -    -    -    - B0,7 B0,6 B0,5 B0,4 B0,3 B0,2 B0,1 B0,0 */
-+#define DISPLAY_PIXEL_CODING_DBI_24TO8		DISPLAY_PIXEL_CODING_DBI(24, 8, 0)
-+/*    -    -    -    -    -    -    -    -    - R0,5 R0,4 R0,3 R0,2 R0,1 R0,0 G0,5 G0,4 G0,4 */
-+/*    -    -    -    -    -    -    -    -    - G0,2 G0,1 G0,0 B0,5 B0,4 B0,3 B0,2 B0,1 B0,0 */
-+#define DISPLAY_PIXEL_CODING_DBI_18TO9		DISPLAY_PIXEL_CODING_DBI(18, 9, 0)
-+/*    -    - R1,2 R1,1 R1,0 G1,2 G1,1 G1,0 B1,1 B1,0 R0,2 R0,1 R0,0 G0,2 G0,1 G0,0 B0,1 B0,0 */
-+#define DISPLAY_PIXEL_CODING_DBI_8TO16		DISPLAY_PIXEL_CODING_DBI(8, 16, 0)
-+/*    -    -    -    -    -    - R0,3 R0,2 R0,1 R0,0 G0,3 G0,2 G0,1 G0,0 B0,3 B0,2 B0,1 B0,0 */
-+#define DISPLAY_PIXEL_CODING_DBI_12TO16		DISPLAY_PIXEL_CODING_DBI(12, 16, 0)
-+/*    -    - R0,4 R0,3 R0,2 R0,1 R0,0 G0,5 G0,4 G0,3 G0,2 G0,1 G0,0 B0,4 B0,3 B0,2 B0,1 B0,0 */
-+#define DISPLAY_PIXEL_CODING_DBI_16TO16		DISPLAY_PIXEL_CODING_DBI(16, 16, 0)
-+/*    -    - R0,5 R0,4 R0,3 R0,2 R0,1 R0,0    -    - G0,5 G0,4 G0,3 G0,2 G0,1 G0,0    -    - */
-+/*    -    - B0,5 B0,4 B0,3 B0,2 B0,1 B0,0    -    - R1,5 R1,4 R1,3 R1,2 R1,1 R1,0    -    - */
-+/*    -    - G1,5 G1,4 G1,3 G1,2 G1,1 G1,0    -    - B1,5 B1,4 B1,3 B1,2 B1,1 B1,0    -    - */
-+#define DISPLAY_PIXEL_CODING_DBI_18TO16_A	DISPLAY_PIXEL_CODING_DBI(18, 16, 0)
-+/*    -    -    -    -    -    -    -    -    -    - R0,5 R0,4 R0,3 R0,2 R0,1 R0,0    -    - */
-+/*    -    - G0,5 G0,4 G0,3 G0,2 G0,1 G0,0    -    - B0,5 B0,4 B0,3 B0,2 B0,1 B0,0    -    - */
-+#define DISPLAY_PIXEL_CODING_DBI_18TO16_B	DISPLAY_PIXEL_CODING_DBI(18, 16, 1)
-+/*    -    - R0,7 R0,6 R0,5 R0,4 R0,3 R0,2 R0,1 R0,0 G0,7 G0,6 G0,5 G0,4 G0,3 G0,2 G0,1 G0,0 */
-+/*    -    - B0,7 B0,6 B0,5 B0,4 B0,3 B0,2 B0,1 B0,0 R1,7 R1,6 R1,5 R1,4 R1,3 R1,2 R1,1 R1,0 */
-+/*    -    - G1,7 G1,6 G1,5 G1,4 G1,3 G1,2 G1,1 G1,0 B1,7 B1,6 B1,5 B1,4 B1,3 B1,2 B1,1 B1,0 */
-+#define DISPLAY_PIXEL_CODING_DBI_24TO16_A	DISPLAY_PIXEL_CODING_DBI(24, 16, 0)
-+/*    -    -    -    -    -    -    -    -    -    - R0,7 R0,6 R0,5 R0,4 R0,3 R0,2 R0,1 R0,0 */
-+/*    -    - G0,7 G0,6 G0,5 G0,4 G0,3 G0,2 G0,1 G0,0 B0,7 B0,6 B0,5 B0,4 B0,3 B0,2 B0,1 B0,0 */
-+#define DISPLAY_PIXEL_CODING_DBI_24TO16_B	DISPLAY_PIXEL_CODING_DBI(24, 16, 1)
-+
-+/* Non-standard DBI pixel codings. */
-+/*   17   16   15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0 */
-+/*    -    -    -    -    -    -    -    -    -    - R0,5 R0,4 R0,3 R0,2 R0,1 R0,0 G0,5 G0,4 */
-+/*    -    -    -    -    -    -    -    -    -    - G0,3 G0,2 G0,1 G0,0 B0,5 B0,4 B0,3 B0,2 */
-+/*    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    - B0,1 B0,0 */
-+#define DISPLAY_PIXEL_CODING_DBI_18TO8_B	DISPLAY_PIXEL_CODING_DBI(18, 8, 1)
-+/*    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    - R0,5 R0,4 */
-+/*    -    -    -    -    -    -    -    -    -    - R0,3 R0,2 R0,1 R0,0 G0,5 G0,4 G0,3 G0,2 */
-+/*    -    -    -    -    -    -    -    -    -    - G0,1 G0,0 B0,5 B0,4 B0,3 B0,2 B0,1 B0,0 */
-+#define DISPLAY_PIXEL_CODING_DBI_18TO8_C	DISPLAY_PIXEL_CODING_DBI(18, 8, 2)
-+/*    -    - R0,5 R0,4 R0,3 R0,2 R0,1 R0,0 G0,5 G0,4 G0,3 G0,2 G0,1 G0,0 B0,5 B0,4 B0,3 B0,2 */
-+/*    -    - B0,1 B0,0    -    -    -    -    -    -    -    -    -    -    -    -    -    - */
-+#define DISPLAY_PIXEL_CODING_DBI_18TO16_C	DISPLAY_PIXEL_CODING_DBI(18, 16, 2)
-+/*    -    - R0,5 R0,4    -    -    -    -    -    -    -    -    -    -    -    -    -    - */
-+/*    -    - R0,3 R0,2 R0,1 R0,0 G0,5 G0,4 G0,3 G0,2 G0,1 G0,0 B0,5 B0,4 B0,3 B0,2 B0,1 B0,0 */
-+#define DISPLAY_PIXEL_CODING_DBI_18TO16_D	DISPLAY_PIXEL_CODING_DBI(18, 16, 3)
-+/*    -    -    -    -    -    - R0,7 R0,6 R0,5 R0,4 R0,3 R0,2 R0,1 R0,0 G0,7 G0,6 G0,5 G0,4 */
-+/*    -    -    -    -    -    - G0,3 G0,2 G0,1 G0,0 B0,7 B0,6 B0,5 B0,4 B0,3 B0,2 B0,1 B0,0 */
-+#define DISPLAY_PIXEL_CODING_DBI_24TO12		DISPLAY_PIXEL_CODING_DBI(24, 12, 0)
-+/* R0,5 R0,4 R0,3 R0,2 R0,1 R0,0 G0,5 G0,4 G0,3 G0,2 G0,1 G0,0 B0,5 B0,4 B0,3 B0,2 B0,1 B0,0 */
-+#define DISPLAY_PIXEL_CODING_DBI_18TO18		DISPLAY_PIXEL_CODING_DBI(18, 18, 0)
-+
-+/* DPI pixel codings. */
-+#define DISPLAY_PIXEL_CODING_DPI_RGB(from, to, variant) \
-+	DISPLAY_PIXEL_CODING_TYPE(DISPLAY_PIXEL_CODING_TYPE_DPI, \
-+				  from, to, variant, 0)
-+#define DISPLAY_PIXEL_CODING_DPI_YUV(from, to, variant) \
-+	DISPLAY_PIXEL_CODING_TYPE(DISPLAY_PIXEL_CODING_TYPE_DPI, \
-+				  from, to, variant, 1)
-+
-+/* Standard DPI codings, defined in the DPI specification. */
-+/* 23 22 21 20 19 28 17 16 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0 */
-+/*  -  -  -  -  -  -  -  - R4 R3 R2 R1 R0 G5 G4 G3 G2 G1 G0 B4 B3 B2 B1 B0 */
-+#define DISPLAY_PIXEL_CODING_DPI_RGB_16TO16	DISPLAY_PIXEL_CODING_DPI_RGB(16, 16, 0)
-+/*  -  -  -  -  -  - R5 R4 R3 R2 R1 R0 G5 G4 G3 G2 G1 G0 B5 B4 B3 B2 B1 B0 */
-+#define DISPLAY_PIXEL_CODING_DPI_RGB_18TO18	DISPLAY_PIXEL_CODING_DPI_RGB(18, 18, 0)
-+/*  -  -  - R4 R3 R2 R1 R0  -  - G5 G4 G3 G2 G1 G0  -  -  - B4 B3 B2 B1 B0 */
-+#define DISPLAY_PIXEL_CODING_DPI_RGB_16TO20	DISPLAY_PIXEL_CODING_DPI_RGB(16, 20, 0)
-+/*  -  - R4 R3 R2 R1 R0  -  -  - G5 G4 G3 G2 G1 G0  -  - B4 B3 B2 B1 B0  - */
-+#define DISPLAY_PIXEL_CODING_DPI_RGB_16TO22	DISPLAY_PIXEL_CODING_DPI_RGB(16, 22, 0)
-+/*  -  - R5 R4 R3 R2 R1 R0  -  - G5 G4 G3 G2 G1 G0  -  - B5 B4 B3 B2 B1 B0 */
-+#define DISPLAY_PIXEL_CODING_DPI_RGB_18TO22	DISPLAY_PIXEL_CODING_DPI_RGB(18, 22, 0)
-+/* R7 R6 R5 R4 R3 R2 R1 R0 G7 G6 G5 G4 G3 G2 G1 G0 B7 B6 B5 B4 B3 B2 B1 B0 */
-+#define DISPLAY_PIXEL_CODING_DPI_RGB_24TO24	DISPLAY_PIXEL_CODING_DPI_RGB(24, 24, 0)
-+
-+/* Non-standard DPI pixel codings. */
-+/* 23 22 21 20 19 28 17 16 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0 */
-+/*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - R7 R6 R5 R4 R3 R2 R1 R0 */
-+/*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - G7 G6 G5 G4 G3 G2 G1 G0 */
-+/*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - B7 B6 B5 B4 B3 B2 B1 B0 */
-+#define DISPLAY_PIXEL_CODING_DPI_RGB_24TO8	DISPLAY_PIXEL_CODING_DPI_RGB(24, 8, 0)
-+/*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - R5 R4 R3 R2 R1 R0 G5 G4 G3 */
-+/*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - G2 G1 G0 B5 B4 B3 B2 B1 B0 */
-+#define DISPLAY_PIXEL_CODING_DPI_RGB_18TO9	DISPLAY_PIXEL_CODING_DPI_RGB(18, 9, 0)
-+/*  -  -  -  -  -  -  -  -  -  -  -  - R3 R2 R1 R0 G3 G2 G1 G0 B3 B2 B1 B0 */
-+#define DISPLAY_PIXEL_CODING_DPI_RGB_12TO12	DISPLAY_PIXEL_CODING_DPI_RGB(12, 12, 0)
-+/*  -  -  -  -  -  -  -  -  -  -  -  - R7 R6 R5 R4 R3 R2 R1 R0 G7 G6 G5 G4 */
-+/*  -  -  -  -  -  -  -  -  -  -  -  - G3 G2 G1 G0 B7 B6 B5 B4 B3 B2 B1 B0 */
-+#define DISPLAY_PIXEL_CODING_DPI_RGB_24TO12	DISPLAY_PIXEL_CODING_DPI_RGB(24, 12, 0)
-+
- /* -----------------------------------------------------------------------------
-  * Display Entity
-  */
+ &uart1 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_uart1_1>;
 -- 
-1.8.1.5
+1.8.0
+
 

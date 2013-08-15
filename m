@@ -1,56 +1,64 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Tue, 13 Aug 2013 07:34:16 +0000
-Subject: Re: [PATCH] pwm-backlight: add "max-brightness" property
-Message-Id: <20130813073415.GA9316@ulmo>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="zhXaljGHf11kAtnf"
+From: Alison Wang <b18965@freescale.com>
+Date: Thu, 15 Aug 2013 08:01:49 +0000
+Subject: [PATCH v3 0/5] ARM: vf610: Add DCU framebuffer driver for Vybrid VF610 platform
+Message-Id: <1376553714-25922-1-git-send-email-b18965@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376345057-29895-1-git-send-email-abrestic@chromium.org>
-In-Reply-To: <1376345057-29895-1-git-send-email-abrestic@chromium.org>
-To: Andrew Bresticker <abrestic@chromium.org>
-Cc: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>, Olof Johansson <olof@lixom.net>, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ian.campbell@citrix.com>, Rob Landley <rob@landley.net>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
+
+This series contain DCU framebuffer driver for Freescale Vybrid VF610 platform.
+
+The Display Controller Unit (DCU) module is a system master that
+fetches graphics stored in internal or external memory and displays
+them on a TFT LCD panel. A wide range of panel sizes is supported
+and the timing of the interface signals is highly configurable.
+Graphics are read directly from memory and then blended in real-time,
+which allows for dynamic content creation with minimal CPU intervention.
+
+The features:
+(1) Full RGB888 output to TFT LCD panel.
+(2) For the current LCD panel, WQVGA "480x272" is tested.
+(3) Blending of each pixel using up to 4 source layers dependent on size of panel.
+(4) Each graphic layer can be placed with one pixel resolution in either axis.
+(5) Each graphic layer support RGB565 and RGB888 direct colors without alpha channel
+and BGRA8888 direct colors with an alpha channel.
+(6) Each graphic layer support alpha blending with 8-bit resolution.
+
+Changes in v3:
+- Correct DCU_MODE_BLEND_ITER macro definition.
+- Remove hardcode panel description in the driver. Use the videomode helpers to get the relevant data from devicetree.
+- Correct the wrong indentation.
+- Use dev_* for printing messages in drivers.
+- Change calc_div_ratio() to fsl_dcu_calc_div(), and rewrite this function.
+- Use devm_request_irq() instead of request_irq().
+- Drop useless code.
+- Increase the layers number to the maximum 6.
+- Use dma_alloc_writecombine() instead of dma_alloc_coherent().
+- Use runtime PM.
+
+Changes in v2:
+- Add a document for DCU framebuffer driver under Documentation/devicetree/bindings/fb/.
+
+----------------------------------------------------------------
+Alison Wang (5):
+      ARM: dts: vf610: Add DCU and TCON nodes
+      ARM: dts: vf610-twr: Enable DCU and TCON devices
+      ARM: clk: vf610: Add DCU and TCON clock support
+      fb: Add DCU framebuffer driver for Vybrid VF610 platform
+      Documentation: DT: Add DCU framebuffer driver
+
+ Documentation/devicetree/bindings/fb/fsl-dcu-fb.txt |   67 +++++
+ arch/arm/boot/dts/vf610-twr.dts                     |   32 +++
+ arch/arm/boot/dts/vf610.dtsi                        |   19 +-
+ arch/arm/mach-imx/clk-vf610.c                       |    5 +
+ drivers/video/Kconfig                               |   10 +
+ drivers/video/Makefile                              |    1 +
+ drivers/video/fsl-dcu-fb.c                          | 1095 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/dt-bindings/clock/vf610-clock.h             |    3 +-
+ 8 files changed, 1230 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/fb/fsl-dcu-fb.txt
+ create mode 100644 drivers/video/fsl-dcu-fb.c
 
 
---zhXaljGHf11kAtnf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Mon, Aug 12, 2013 at 03:04:17PM -0700, Andrew Bresticker wrote:
-> Specifying each individual brightness value via the "brightness-levels"
-> property can be a pain if we want to use a large continuous range of
-> brightness values.  Add the property "max-brightness", which can be
-> given in place of "brightness-levels", that specifies that all values
-> between 0 and the given value can be used.
-
-This was actually part of my first attempt at a DT binding for this
-driver as well. Some discussion ensued and we ended up changing the
-binding to what it is now. And I think there was even an attempt already
-at adding the same thing you propose (albeit under a different name). So
-instead of repeating myself I'll just point you at the earlier thread:
-
-	https://groups.google.com/forum/#!topic/linux.kernel/UkXktWt6zI0
-
-Thierry
-
---zhXaljGHf11kAtnf
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSCeF3AAoJEN0jrNd/PrOhms0P/RUg93nY7tRIkL9NrmlRXX/H
-ZOCCwhwWQykCCzE8WPoFsoem43vL0uvZVHet/20U4bZLy9IM5uqOJiXcut4hJe+S
-X8jg+xkNzAJa+A5fiZiEWqLSRdnROYsLpjka8EQ+31/NJ38r6oJz6E/0IxRYOJ2W
-mY9DF9DauTIPSKuJ+7ODC+3/STa4VOwU1tjEDmSeG49I16Ol1iUhw0GQpPVl/uNn
-uAKzPiTN15T/lsb4WoDsrDBTaDXNZMyMxXf5MT8PMEdgtUiQBm1l7SrB8DqnLLjc
-vTZT/cIJISGwzimae1FiwqccVuD2j0CdCoF0YQm4q6BZmimPdvTlQ1bVPLLt3kTQ
-yy2XyWE7G7iQnrp6OFeuDI8wL8b6IHIE6KUr7I8x6Ic7BMKNA54uu87JFQpT21ym
-h3PykGuXnaZXwflGU541VMDJ9KXJ34KnX7aOjj+rWiZic3GZD9jnCF8BSj5bVtED
-fB/jPLwpIMOv15QhNfePB7rW3oyAh6Tj+dURTERG5+f5255wjA1b2Dauadu5fFB7
-a9gzp+9guvWh8vbTVRo9zSbOILaQIURPTeOvOlnWJn4Ae5CUruqd6Vw2GA3/yWCD
-lY8tFlMJ7YabcHZXCP2yfqp06Vn+5so7XZqbuNzTI1smd+idVP5uKsDfSleKQoCu
-jvzvVRetD/USCRigqzxu
-=ywAf
------END PGP SIGNATURE-----
-
---zhXaljGHf11kAtnf--

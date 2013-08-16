@@ -1,78 +1,73 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 30 Aug 2013 06:00:19 +0000
-Subject: Re: [PATCH 00/15] OMAPDSS: remove old panel model code
-Message-Id: <522034F3.4030501@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="RSRbDW1NGO5twg78HBpNPmfJtjfNmEXqA"
+From: Haiyang Zhang <haiyangz@microsoft.com>
+Date: Fri, 16 Aug 2013 18:45:53 +0000
+Subject: RE: conflict of hyperv_fb and the generic video driver?
+Message-Id: <511c70f647a8481d90e8660773512efc@DFM-DB3MBX15-06.exchange.corp.microsoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com> <521F5C35.4040106@ti.com>
-In-Reply-To: <521F5C35.4040106@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
---RSRbDW1NGO5twg78HBpNPmfJtjfNmEXqA
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On 29/08/13 17:35, Archit Taneja wrote:
-> On Thursday 29 August 2013 07:01 PM, Tomi Valkeinen wrote:
->> Here's a series removing all the old panel model code from the omapdss=
-
->> driver.
->> This series depends on the series that changes the board files to use
->> the new
->> panel drivers.
->>
->> There's nothing much special in this series, as it's mostly removing
->> code that
->> is not used. There are also related cleanups, like making functions
->> static if
->> they are no longer called from outside the file, and such.
->>
->> Tested on OMAP4 SDP, OMAP4 Panda, OMAP3 Beagle, OMAP3 Beagle xM.
->>
->> This series can also be found from:
->>
->> git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git
->> 3.12/dss-legacy-removal
->>
->=20
-> For the series:
->=20
-> Reviewed-by: Archit Taneja <archit@ti.com>
-> Acked-by: Archit Taneja <archit@ti.com>
-
-Thanks for review. I've updated the branch in my git tree.
-
-You may want to rebase your HDMI work on top of this branch at some point=
-=2E
-
- Tomi
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: David Herrmann <dh.herrmann@gmail.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "driverdev-devel@linuxdriverproject.org" <driverdev-devel@linuxdriverproject.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
 
 
---RSRbDW1NGO5twg78HBpNPmfJtjfNmEXqA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> -----Original Message-----
+> From: David Herrmann [mailto:dh.herrmann@gmail.com]
+> Sent: Friday, August 16, 2013 9:46 AM
+> To: Haiyang Zhang
+> Cc: linux-fbdev@vger.kernel.org; driverdev-devel@linuxdriverproject.org;
+> Tomi Valkeinen; Jean-Christophe Plagniol-Villard; akpm@linux-
+> foundation.org; KY Srinivasan
+> Subject: Re: source code file for the generic vga driver?
+> 
+> Hi
+> 
+> On Mon, Aug 5, 2013 at 9:12 PM, Haiyang Zhang <haiyangz@microsoft.com>
+> wrote:
+> > Hi folks,
+> >
+> > I'm working on an issue of HyperV synthetic frame buffer driver, which
+> > seems to have a conflict with the generic vga driver (not the vesa
+> > driver). I hope to read and trace into the source code for the generic vga
+> driver...
+> >
+> > Can anyone point me to the source code file for the generic vga driver in
+> the kernel tree?
+> 
+> Everything lives in ./drivers/video/. The drivers you're probably interested in
+> are "vesafb.c" or "vga16fb.c". There is also the "vgacon" driver
+> in ./drivers/video/console/vgacon.c. I am not sure which one you are talking
+> about.
+> 
+> You might also want to have a look at the x86 sysfb infrastructure which isn't
+> merged, yet:
+> http://git.kernel.org/cgit/linux/kernel/git/tip/tip.git/log/?h=x86/fb
+> It provides proper platform-devices so drivers no longer conflict on the
+> vga/vesa/efi.. framebuffer resources. It's x86 only as all the relevant drivers
+> only work on x86.
+> 
+> If you give some more information on what you are trying to do, I can point
+> you to the relevant resources. My guess is that you want to have a look at
+> remove_conflicting_framebuffers() in ./drivers/video/fbmem.c.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+Thank you for the detailed reply!
 
-iQIcBAEBAgAGBQJSIDTzAAoJEPo9qoy8lh71yy8QAIBtk8xRmFJOqpKnBJmL6oUI
-0filRovHYxxxA3sTTiPWPm1UwtN9icTssGKGggxfmLJSGTh2X2LPdPV7iGo7C0G3
-mkGuhfQgGlhU8kRY4tVuwpYy6ioJZRI7dkItTH8tJd/okjzy1jlfqY7ysfCG4r86
-naew2sUhSngcZXy451g5bOqA+G0zzEAopwohrsfwVftrOF2Bwa8AtjuAUCF06gkV
-Kx2YjvniesP0VvvivuAzpjGuimtN7iEuJQGFuHaMPoV9A/pzf7qRtxWHkWdt3I7B
-AgA3c/koKbsBxF4LfiwV9VPIQ7VciaNmw8ooUd6CmMVaI12jImlmo2GaD+cewWvs
-VNCfZemK+fQBJL3WKz4LX6rbKHvvGrv7ibkHAXvfYwB0GRmG42dRvSrfJCDh9lvw
-+svPfESNHcvSpHgUU4TpdRKmevKWeCsfcG2xLr7VqpNu9gJJZGv1uayt7IoPblF0
-S84EZ/ZCpkJFxrD7YM2crai/mLczAkU54iyMXlL6TOyZuGKRm9MuEZi1akU8TA5Z
-DQ+VfUXXhBAHiCGVjfCqcB0T1HFbnQSBxpbbDAVVq3b38qftCd+4V/PHMJ0gXdko
-dP5hxO68fdeOz5HqTRLwiu7TmKpAh2yS0St3KNSuoYOUCq9AZkJdgCTDJlZonhdP
-xgDg4PwGcVZjYN5FFGHu
-=/JQU
------END PGP SIGNATURE-----
+I'm looking at a problem of Hyper-V synthetic fb driver (hyperv_fb) which seems
+to have conflict with some kind of generic video driver. I'm not sure which driver
+is this.
 
---RSRbDW1NGO5twg78HBpNPmfJtjfNmEXqA--
+On Suse, the vesafb is removed automatically by remove_conflicting_framebuffers()
+when hyperv_fb is loaded. We don't have any problem here.
+
+On some other Distros, like RHEL, CentOS, Ubuntu, the generic driver seems not
+to be vesafb -- I can't see any /dev/fb* there. And, the generic video driver seems not be
+removed when hyperv_fb is loaded. This generic video driver is not vesafb or vga16fb or
+vgacon, because it supports x-window GUI, and it's still here after I un-configured vesafb
+and vga16fb.
+
+Could point out what is the generic video driver used by RHEL, Ubuntu by default? And,
+how to let it exit automatically when our FB driver (hyperv_fb) is loaded?
+
+Thanks,
+ - Haiyang
+

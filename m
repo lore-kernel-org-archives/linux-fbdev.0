@@ -1,79 +1,51 @@
-From: Wang Huan-B18965 <B18965@freescale.com>
-Date: Mon, 26 Aug 2013 09:51:45 +0000
-Subject: RE: [PATCH v3 0/5] ARM: vf610: Add DCU framebuffer driver for Vybrid VF610 platform
-Message-Id: <81BA6E5E0BC2344391CABCEE22D1B6D83F448E@039-SN1MPN1-002.039d.mgd.msft.net>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Mon, 19 Aug 2013 11:20:40 +0000
+Subject: [PATCH 6/7] video: xilinxfb: replace devm_request_and_ioremap by devm_ioremap_resource
+Message-Id: <1376911241-27720-7-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376553714-25922-1-git-send-email-b18965@freescale.com>
-In-Reply-To: <1376553714-25922-1-git-send-email-b18965@freescale.com>
+References: <1376911241-27720-1-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <1376911241-27720-1-git-send-email-Julia.Lawall@lip6.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: kernel-janitors@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-SGksIEplYW4tQ2hyaXN0b3BoZSwgVG9taSwNCg0KICAgICAgIERvIHlvdSBoYXZlIGFueSBjb21t
-ZW50cyBmb3IgdGhlc2UgcGF0Y2hlcz8NCg0KICAgICAgIFRoYW5rcyENCg0KDQpCZXN0IFJlZ2Fy
-ZHMsDQpBbGlzb24gV2FuZw0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206
-IGxpbnV4LWFybS1rZXJuZWwgW21haWx0bzpsaW51eC1hcm0ta2VybmVsLQ0KPiBib3VuY2VzQGxp
-c3RzLmluZnJhZGVhZC5vcmddIE9uIEJlaGFsZiBPZiBBbGlzb24gV2FuZw0KPiBTZW50OiBUaHVy
-c2RheSwgQXVndXN0IDE1LCAyMDEzIDQ6MDIgUE0NCj4gVG86IHBsYWduaW9qQGpjcm9zb2Z0LmNv
-bTsgdG9taS52YWxrZWluZW5AdGkuY29tOyBzaGF3bi5ndW9AbGluYXJvLm9yZzsNCj4gRXN0ZXZh
-bSBGYWJpby1SNDk0OTY7IGxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZzsgbGludXgtYXJtLQ0K
-PiBrZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZw0KPiBDYzogSmluIFpoZW5neGlvbmctUjY0MTg4
-DQo+IFN1YmplY3Q6IFtQQVRDSCB2MyAwLzVdIEFSTTogdmY2MTA6IEFkZCBEQ1UgZnJhbWVidWZm
-ZXIgZHJpdmVyIGZvcg0KPiBWeWJyaWQgVkY2MTAgcGxhdGZvcm0NCj4gDQo+IFRoaXMgc2VyaWVz
-IGNvbnRhaW4gRENVIGZyYW1lYnVmZmVyIGRyaXZlciBmb3IgRnJlZXNjYWxlIFZ5YnJpZCBWRjYx
-MA0KPiBwbGF0Zm9ybS4NCj4gDQo+IFRoZSBEaXNwbGF5IENvbnRyb2xsZXIgVW5pdCAoRENVKSBt
-b2R1bGUgaXMgYSBzeXN0ZW0gbWFzdGVyIHRoYXQNCj4gZmV0Y2hlcyBncmFwaGljcyBzdG9yZWQg
-aW4gaW50ZXJuYWwgb3IgZXh0ZXJuYWwgbWVtb3J5IGFuZCBkaXNwbGF5cw0KPiB0aGVtIG9uIGEg
-VEZUIExDRCBwYW5lbC4gQSB3aWRlIHJhbmdlIG9mIHBhbmVsIHNpemVzIGlzIHN1cHBvcnRlZCBh
-bmQNCj4gdGhlIHRpbWluZyBvZiB0aGUgaW50ZXJmYWNlIHNpZ25hbHMgaXMgaGlnaGx5IGNvbmZp
-Z3VyYWJsZS4NCj4gR3JhcGhpY3MgYXJlIHJlYWQgZGlyZWN0bHkgZnJvbSBtZW1vcnkgYW5kIHRo
-ZW4gYmxlbmRlZCBpbiByZWFsLXRpbWUsDQo+IHdoaWNoIGFsbG93cyBmb3IgZHluYW1pYyBjb250
-ZW50IGNyZWF0aW9uIHdpdGggbWluaW1hbCBDUFUgaW50ZXJ2ZW50aW9uLg0KPiANCj4gVGhlIGZl
-YXR1cmVzOg0KPiAoMSkgRnVsbCBSR0I4ODggb3V0cHV0IHRvIFRGVCBMQ0QgcGFuZWwuDQo+ICgy
-KSBGb3IgdGhlIGN1cnJlbnQgTENEIHBhbmVsLCBXUVZHQSAiNDgweDI3MiIgaXMgdGVzdGVkLg0K
-PiAoMykgQmxlbmRpbmcgb2YgZWFjaCBwaXhlbCB1c2luZyB1cCB0byA0IHNvdXJjZSBsYXllcnMg
-ZGVwZW5kZW50IG9uDQo+IHNpemUgb2YgcGFuZWwuDQo+ICg0KSBFYWNoIGdyYXBoaWMgbGF5ZXIg
-Y2FuIGJlIHBsYWNlZCB3aXRoIG9uZSBwaXhlbCByZXNvbHV0aW9uIGluDQo+IGVpdGhlciBheGlz
-Lg0KPiAoNSkgRWFjaCBncmFwaGljIGxheWVyIHN1cHBvcnQgUkdCNTY1IGFuZCBSR0I4ODggZGly
-ZWN0IGNvbG9ycyB3aXRob3V0DQo+IGFscGhhIGNoYW5uZWwgYW5kIEJHUkE4ODg4IGRpcmVjdCBj
-b2xvcnMgd2l0aCBhbiBhbHBoYSBjaGFubmVsLg0KPiAoNikgRWFjaCBncmFwaGljIGxheWVyIHN1
-cHBvcnQgYWxwaGEgYmxlbmRpbmcgd2l0aCA4LWJpdCByZXNvbHV0aW9uLg0KPiANCj4gQ2hhbmdl
-cyBpbiB2MzoNCj4gLSBDb3JyZWN0IERDVV9NT0RFX0JMRU5EX0lURVIgbWFjcm8gZGVmaW5pdGlv
-bi4NCj4gLSBSZW1vdmUgaGFyZGNvZGUgcGFuZWwgZGVzY3JpcHRpb24gaW4gdGhlIGRyaXZlci4g
-VXNlIHRoZSB2aWRlb21vZGUNCj4gaGVscGVycyB0byBnZXQgdGhlIHJlbGV2YW50IGRhdGEgZnJv
-bSBkZXZpY2V0cmVlLg0KPiAtIENvcnJlY3QgdGhlIHdyb25nIGluZGVudGF0aW9uLg0KPiAtIFVz
-ZSBkZXZfKiBmb3IgcHJpbnRpbmcgbWVzc2FnZXMgaW4gZHJpdmVycy4NCj4gLSBDaGFuZ2UgY2Fs
-Y19kaXZfcmF0aW8oKSB0byBmc2xfZGN1X2NhbGNfZGl2KCksIGFuZCByZXdyaXRlIHRoaXMNCj4g
-ZnVuY3Rpb24uDQo+IC0gVXNlIGRldm1fcmVxdWVzdF9pcnEoKSBpbnN0ZWFkIG9mIHJlcXVlc3Rf
-aXJxKCkuDQo+IC0gRHJvcCB1c2VsZXNzIGNvZGUuDQo+IC0gSW5jcmVhc2UgdGhlIGxheWVycyBu
-dW1iZXIgdG8gdGhlIG1heGltdW0gNi4NCj4gLSBVc2UgZG1hX2FsbG9jX3dyaXRlY29tYmluZSgp
-IGluc3RlYWQgb2YgZG1hX2FsbG9jX2NvaGVyZW50KCkuDQo+IC0gVXNlIHJ1bnRpbWUgUE0uDQo+
-IA0KPiBDaGFuZ2VzIGluIHYyOg0KPiAtIEFkZCBhIGRvY3VtZW50IGZvciBEQ1UgZnJhbWVidWZm
-ZXIgZHJpdmVyIHVuZGVyDQo+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9mYi8u
-DQo+IA0KPiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tDQo+IEFsaXNvbiBXYW5nICg1KToNCj4gICAgICAgQVJNOiBkdHM6IHZm
-NjEwOiBBZGQgRENVIGFuZCBUQ09OIG5vZGVzDQo+ICAgICAgIEFSTTogZHRzOiB2ZjYxMC10d3I6
-IEVuYWJsZSBEQ1UgYW5kIFRDT04gZGV2aWNlcw0KPiAgICAgICBBUk06IGNsazogdmY2MTA6IEFk
-ZCBEQ1UgYW5kIFRDT04gY2xvY2sgc3VwcG9ydA0KPiAgICAgICBmYjogQWRkIERDVSBmcmFtZWJ1
-ZmZlciBkcml2ZXIgZm9yIFZ5YnJpZCBWRjYxMCBwbGF0Zm9ybQ0KPiAgICAgICBEb2N1bWVudGF0
-aW9uOiBEVDogQWRkIERDVSBmcmFtZWJ1ZmZlciBkcml2ZXINCj4gDQo+ICBEb2N1bWVudGF0aW9u
-L2RldmljZXRyZWUvYmluZGluZ3MvZmIvZnNsLWRjdS1mYi50eHQgfCAgIDY3ICsrKysrDQo+ICBh
-cmNoL2FybS9ib290L2R0cy92ZjYxMC10d3IuZHRzICAgICAgICAgICAgICAgICAgICAgfCAgIDMy
-ICsrKw0KPiAgYXJjaC9hcm0vYm9vdC9kdHMvdmY2MTAuZHRzaSAgICAgICAgICAgICAgICAgICAg
-ICAgIHwgICAxOSArLQ0KPiAgYXJjaC9hcm0vbWFjaC1pbXgvY2xrLXZmNjEwLmMgICAgICAgICAg
-ICAgICAgICAgICAgIHwgICAgNSArDQo+ICBkcml2ZXJzL3ZpZGVvL0tjb25maWcgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgfCAgIDEwICsNCj4gIGRyaXZlcnMvdmlkZW8vTWFrZWZpbGUg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAgIDEgKw0KPiAgZHJpdmVycy92aWRlby9m
-c2wtZGN1LWZiLmMgICAgICAgICAgICAgICAgICAgICAgICAgIHwgMTA5NQ0KPiArKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKw0KPiArKysrKysrKysNCj4gIGluY2x1ZGUvZHQtYmluZGluZ3MvY2xvY2svdmY2MTAtY2xv
-Y2suaCAgICAgICAgICAgICB8ICAgIDMgKy0NCj4gIDggZmlsZXMgY2hhbmdlZCwgMTIzMCBpbnNl
-cnRpb25zKCspLCAyIGRlbGV0aW9ucygtKSAgY3JlYXRlIG1vZGUNCj4gMTAwNjQ0IERvY3VtZW50
-YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9mYi9mc2wtZGN1LWZiLnR4dA0KPiAgY3JlYXRlIG1v
-ZGUgMTAwNjQ0IGRyaXZlcnMvdmlkZW8vZnNsLWRjdS1mYi5jDQo+IA0KPiANCj4gDQo+IF9fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQo+IGxpbnV4LWFybS1r
-ZXJuZWwgbWFpbGluZyBsaXN0DQo+IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9y
-Zw0KPiBodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFy
-bS1rZXJuZWwNCg0K
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+
+Use devm_ioremap_resource instead of devm_request_and_ioremap.
+
+This was done using the semantic patch
+scripts/coccinelle/api/devm_ioremap_resource.cocci
+
+The initialization of drvdata->regs_phys was manually moved lower, to take
+advantage of the NULL test on res performed by devm_ioremap_resource.
+
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+
+---
+ drivers/video/xilinxfb.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index 6629b29..84c664e 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -259,12 +259,12 @@ static int xilinxfb_assign(struct platform_device *pdev,
+ 		struct resource *res;
+ 
+ 		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-		drvdata->regs_phys = res->start;
+-		drvdata->regs = devm_request_and_ioremap(&pdev->dev, res);
+-		if (!drvdata->regs) {
+-			rc = -EADDRNOTAVAIL;
++		drvdata->regs = devm_ioremap_resource(&pdev->dev, res);
++		if (IS_ERR(drvdata->regs)) {
++			rc = PTR_ERR(drvdata->regs);
+ 			goto err_region;
+ 		}
++		drvdata->regs_phys = res->start;
+ 	}
+ 
+ 	/* Allocate the framebuffer memory */
 

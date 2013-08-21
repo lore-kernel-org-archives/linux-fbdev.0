@@ -1,58 +1,75 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 09 Aug 2013 08:38:47 +0000
-Subject: [RFC 02/22] OMAPDSS: remove DT hacks for regulators
-Message-Id: <1376037547-10859-3-git-send-email-tomi.valkeinen@ti.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Wed, 21 Aug 2013 05:58:12 +0000
+Subject: [PATCH v11 7/8] usb: phy: omap-usb2: remove *set_suspend* callback from omap-usb2
+Message-Id: <1377063973-22044-8-git-send-email-kishon@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1377063973-22044-1-git-send-email-kishon@ti.com>
+In-Reply-To: <1377063973-22044-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-For booting Panda and 4430SDP with DT, while DSS did not support DT, we
-had to had small hacks in the omapdss driver to get the regulators. With
-DT now supported in DSS, we can remove those hacks.
+Now that omap-usb2 is adapted to the new generic PHY framework,
+*set_suspend* ops can be removed from omap-usb2 driver.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+Acked-by: Felipe Balbi <balbi@ti.com>
+Reviewed-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
 ---
- drivers/video/omap2/dss/dsi.c  | 5 -----
- drivers/video/omap2/dss/hdmi.c | 5 -----
- 2 files changed, 10 deletions(-)
+ drivers/phy/phy-omap-usb2.c |   25 -------------------------
+ 1 file changed, 25 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 99a043b..0c8bd1f 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -1132,11 +1132,6 @@ static int dsi_regulator_init(struct platform_device *dsidev)
- 		return 0;
+diff --git a/drivers/phy/phy-omap-usb2.c b/drivers/phy/phy-omap-usb2.c
+index 25e0f3c..dec3fab 100644
+--- a/drivers/phy/phy-omap-usb2.c
++++ b/drivers/phy/phy-omap-usb2.c
+@@ -97,29 +97,6 @@ static int omap_usb_set_peripheral(struct usb_otg *otg,
+ 	return 0;
+ }
  
- 	vdds_dsi = devm_regulator_get(&dsi->pdev->dev, "vdds_dsi");
+-static int omap_usb2_suspend(struct usb_phy *x, int suspend)
+-{
+-	u32 ret;
+-	struct omap_usb *phy = phy_to_omapusb(x);
 -
--	/* DT HACK: try VCXIO to make omapdss work for o4 sdp/panda */
--	if (IS_ERR(vdds_dsi))
--		vdds_dsi = devm_regulator_get(&dsi->pdev->dev, "VCXIO");
+-	if (suspend && !phy->is_suspended) {
+-		omap_control_usb_phy_power(phy->control_dev, 0);
+-		pm_runtime_put_sync(phy->dev);
+-		phy->is_suspended = 1;
+-	} else if (!suspend && phy->is_suspended) {
+-		ret = pm_runtime_get_sync(phy->dev);
+-		if (ret < 0) {
+-			dev_err(phy->dev, "get_sync failed with err %d\n",
+-									ret);
+-			return ret;
+-		}
+-		omap_control_usb_phy_power(phy->control_dev, 1);
+-		phy->is_suspended = 0;
+-	}
 -
- 	if (IS_ERR(vdds_dsi)) {
- 		DSSERR("can't get VDDS_DSI regulator\n");
- 		return PTR_ERR(vdds_dsi);
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 44a885b..1b38f1f 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -338,11 +338,6 @@ static int hdmi_init_regulator(void)
- 		return 0;
+-	return 0;
+-}
+-
+ static int omap_usb_power_off(struct phy *x)
+ {
+ 	struct omap_usb *phy = phy_get_drvdata(x);
+@@ -167,7 +144,6 @@ static int omap_usb2_probe(struct platform_device *pdev)
  
- 	reg = devm_regulator_get(&hdmi.pdev->dev, "vdda_hdmi_dac");
--
--	/* DT HACK: try VDAC to make omapdss work for o4 sdp/panda */
--	if (IS_ERR(reg))
--		reg = devm_regulator_get(&hdmi.pdev->dev, "VDAC");
--
- 	if (IS_ERR(reg)) {
- 		DSSERR("can't get VDDA_HDMI_DAC regulator\n");
- 		return PTR_ERR(reg);
+ 	phy->phy.dev		= phy->dev;
+ 	phy->phy.label		= "omap-usb2";
+-	phy->phy.set_suspend	= omap_usb2_suspend;
+ 	phy->phy.otg		= otg;
+ 	phy->phy.type		= USB_PHY_TYPE_USB2;
+ 
+@@ -182,7 +158,6 @@ static int omap_usb2_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
+-	phy->is_suspended	= 1;
+ 	omap_control_usb_phy_power(phy->control_dev, 0);
+ 
+ 	otg->set_host		= omap_usb_set_host;
 -- 
-1.8.1.2
+1.7.10.4
 

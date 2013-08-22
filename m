@@ -1,51 +1,36 @@
 From: Darren Etheridge <detheridge@ti.com>
-Date: Fri, 23 Aug 2013 21:52:51 +0000
-Subject: [PATCH 2/4] video: da8xx-fb: fixing timing off by one errors
-Message-Id: <1377294773-25678-3-git-send-email-detheridge@ti.com>
+Date: Thu, 22 Aug 2013 21:21:40 +0000
+Subject: [RFC v2 0/1] Adding DT support to video/da8xx-fb.c
+Message-Id: <1377206501-30519-1-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: devicetree@vger.kernel.org, tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, linux-fbdev@vger.kernel.org, detheridge@ti.com
+Cc: afzal@ti.com
 
-The LCD controller represents some of the timing fields with a 0
-in the register representing 1.  This was not taken into account
-when these registers were being set.  Interestingly enough not
-all of the LCDC controller timing registers implement this representation
-so carefully went through the technical reference manual to only "fix"
-the correct timings.
+This is part of a larger series of patches to upgrade the da8xx-fb.c driver
+to support the Texas Instruments AM335x device.  As part of this upgrade
+we also want to add devicetree support for both the original da8xx and the
+am335x.  Tomi Valkeinen has reviewed the fbdev changes but he suggested
+that it was prudent to extract the dt pieces and run it through the
+devicetree mailing list for review.
 
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
----
- drivers/video/da8xx-fb.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+v2: incorporates -
+	* review comment changes from Prabhakar Lad
+	* changes the .compatible naming to match that of the exiting drm 
+		driver for am335x devices.
+	* Renames the devicetree bindings documentation file to match the
+		actual driver filename
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 0333a0b..b131a6c 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -408,9 +408,9 @@ static void lcd_cfg_horizontal_sync(int back_porch, int pulse_width,
- 	u32 reg;
- 
- 	reg = lcdc_read(LCD_RASTER_TIMING_0_REG) & 0xf;
--	reg |= ((back_porch & 0xff) << 24)
--	    | ((front_porch & 0xff) << 16)
--	    | ((pulse_width & 0x3f) << 10);
-+	reg |= (((back_porch-1) & 0xff) << 24)
-+	    | (((front_porch-1) & 0xff) << 16)
-+	    | (((pulse_width-1) & 0x3f) << 10);
- 	lcdc_write(reg, LCD_RASTER_TIMING_0_REG);
- }
- 
-@@ -422,7 +422,7 @@ static void lcd_cfg_vertical_sync(int back_porch, int pulse_width,
- 	reg = lcdc_read(LCD_RASTER_TIMING_1_REG) & 0x3ff;
- 	reg |= ((back_porch & 0xff) << 24)
- 	    | ((front_porch & 0xff) << 16)
--	    | ((pulse_width & 0x3f) << 10);
-+	    | (((pulse_width-1) & 0x3f) << 10);
- 	lcdc_write(reg, LCD_RASTER_TIMING_1_REG);
- }
- 
--- 
-1.7.0.4
+Thanks,
+Darren
+
+Darren Etheridge (1):
+  video: da8xx-fb: adding dt support
+
+ .../devicetree/bindings/video/da8xx-fb.txt         |   42 ++++++++++++
+ drivers/video/da8xx-fb.c                           |   66 +++++++++++++++++++-
+ 2 files changed, 105 insertions(+), 3 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/da8xx-fb.txt
 

@@ -1,128 +1,219 @@
-From: Inki Dae <inki.dae@samsung.com>
-Date: Tue, 13 Aug 2013 09:19:34 +0000
-Subject: [RFC PATCH v6 0/2] Introduce buffer synchronization framework
-Message-Id: <1376385576-9039-1-git-send-email-inki.dae@samsung.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Fri, 23 Aug 2013 18:17:02 +0000
+Subject: [PATCH v3 1/1] video: da8xx-fb: adding dt support
+Message-Id: <1377281822-29659-2-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1377281822-29659-1-git-send-email-detheridge@ti.com>
+In-Reply-To: <1377281822-29659-1-git-send-email-detheridge@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org, linaro-kernel@lists.linaro.org
-Cc: maarten.lankhorst@canonical.com, sumit.semwal@linaro.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, Inki Dae <inki.dae@samsung.com>
+To: prabhakar.csengg@gmail.com, devicetree@vger.kernel.org, tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, linux-fbdev@vger.kernel.org, detheridge@ti.com
+Cc: afzal@ti.com
 
-Hi all,
+Enhancing driver to enable probe triggered by a corresponding dt entry.
 
-   This patch set introduces a buffer synchronization framework based
-   on DMA BUF[1] and based on ww-mutexes[2] for lock mechanism, and
-   may be final RFC.
+Add da8xx-fb.txt documentation to devicetree section.
 
-   The purpose of this framework is to provide not only buffer access
-   control to CPU and CPU, and CPU and DMA, and DMA and DMA but also
-   easy-to-use interfaces for device drivers and user application.
-   In addtion, this patch set suggests a way for enhancing performance.
+Obtain fb_videomode details for the connected lcd panel using the
+display timing details present in DT.
 
-   For generic user mode interface, we have used fcntl and select system
-   call[3]. As you know, user application sees a buffer object as a dma-buf
-   file descriptor. So fcntl() call with the file descriptor means to lock
-   some buffer region being managed by the dma-buf object. And select() call
-   means to wait for the completion of CPU or DMA access to the dma-buf
-   without locking. For more detail, you can refer to the dma-buf-sync.txt
-   in Documentation/
+Ensure that platform data is present before checking whether platform
+callback is present (the one used to control backlight). So far this
+was not an issue as driver was purely non-DT triggered, but now DT
+support has been added this check must be performed.
 
+v2: squashing multiple commits from Afzal Mohammed (afzal@ti.com)
+v3: remove superfluous cast
+v4: expose both ti,am3352-lcdc and ti,da830-lcdc for .compatible
+	as driver can use enhanced features of all version of the
+	silicon block.
+v5: addressed review comments from Prabhakar Lad
+v6: Changed the .compatible naming to match the existing drm bindings
+	for am33xx devices
+v7: clarify which compatible to use in the documentation for DA850
 
-   There are some cases we should use this buffer synchronization framework.
-   One of which is to primarily enhance GPU rendering performance on Tizen
-   platform in case of 3d app with compositing mode that 3d app draws
-   something in off-screen buffer, and Web app.
+Acked-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
+---
+ .../devicetree/bindings/video/da8xx-fb.txt         |   42 ++++++++++++
+ drivers/video/da8xx-fb.c                           |   66 +++++++++++++++++++-
+ 2 files changed, 105 insertions(+), 3 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/video/da8xx-fb.txt
 
-   In case of 3d app with compositing mode which is not a full screen mode,
-   the app calls glFlush to submit 3d commands to GPU driver instead of
-   glFinish for more performance. The reason we call glFlush is that glFinish
-   blocks caller's task until the execution of the 2d commands is completed.
-   Thus, that makes GPU and CPU more idle. As result, 3d rendering performance
-   with glFinish is quite lower than glFlush. However, the use of glFlush has
-   one issue that the a buffer shared with GPU could be broken when CPU
-   accesses the buffer at once after glFlush because CPU cannot be aware of
-   the completion of GPU access to the buffer. Of course, the app can be aware
-   of that time using eglWaitGL but this function is valid only in case of the
-   same process.
-
-   In case of Tizen, there are some applications that one process draws
-   something in its own off-screen buffer (pixmap buffer) using CPU, and other
-   process gets a off-screen buffer (window buffer) from Xorg using
-   DRI2GetBuffers, and then composites the pixmap buffer with the window buffer
-   using GPU, and finally page flip.
-
-   Web app based on HTML5 also has the same issue. Web browser and its web app
-   are different process. The web app draws something in its own pixmap buffer,
-   and then the web browser gets a window buffer from Xorg, and then composites
-   the pixmap buffer with the window buffer. And finally, page flip.
-
-   Thus, in such cases, a shared buffer could be broken as one process draws
-   something in pixmap buffer using CPU, when other process composites the
-   pixmap buffer with window buffer using GPU without any locking mechanism.
-   That is why we need user land locking interface, fcntl system call.
-
-   And last one is a deferred page flip issue. This issue is that a window
-   buffer rendered can be displayed on screen in about 32ms in worst case:
-   assume that the gpu rendering is completed within 16ms.
-   That can be incurred when compositing a pixmap buffer with a window buffer
-   using GPU and when vsync is just started. At this time, Xorg waits for
-   a vblank event to get a window buffer so 3d rendering will be delayed
-   up to about 16ms. As a result, the window buffer would be displayed in
-   about two vsyncs (about 32ms) and in turn, that would show slow
-   responsiveness.
-
-   For this, we could enhance the responsiveness with locking
-   mechanism: skipping one vblank wait. I guess in the similar reason,
-   Android, Chrome OS, and other platforms are using their own locking
-   mechanisms; Android sync driver, KDS, and DMA fence.
-
-   The below shows the deferred page flip issue in worst case,
-
-               |------------ <- vsync signal
-               |<------ DRI2GetBuffers
-               |
-               |
-               |
-               |------------ <- vsync signal
-               |<------ Request gpu rendering
-          time |
-               |
-               |<------ Request page flip (deferred)
-               |------------ <- vsync signal
-               |<------ Displayed on screen
-               |
-               |
-               |
-               |------------ <- vsync signal
-
-
-Thanks,
-Inki Dae
-
-
-References:
-[1] http://lwn.net/Articles/470339/
-[2] https://patchwork.kernel.org/patch/2625361/
-[3] http://linux.die.net/man/2/fcntl
-
-
-Inki Dae (2):
-  [RFC PATCH v6] dmabuf-sync: Add a buffer synchronization framework
-  [RFC PATCH v2] dma-buf: Add user interfaces for dmabuf sync support.
-
- Documentation/dma-buf-sync.txt |  285 +++++++++++++++++
- drivers/base/Kconfig           |    7 +
- drivers/base/Makefile          |    1 +
- drivers/base/dma-buf.c         |   85 +++++
- drivers/base/dmabuf-sync.c     |  678 ++++++++++++++++++++++++++++++++++++++++
- include/linux/dma-buf.h        |   16 +
- include/linux/dmabuf-sync.h    |  191 +++++++++++
- 7 files changed, 1263 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/dma-buf-sync.txt
- create mode 100644 drivers/base/dmabuf-sync.c
- create mode 100644 include/linux/dmabuf-sync.h
-
+diff --git a/Documentation/devicetree/bindings/video/da8xx-fb.txt b/Documentation/devicetree/bindings/video/da8xx-fb.txt
+new file mode 100644
+index 0000000..d86afe7
+--- /dev/null
++++ b/Documentation/devicetree/bindings/video/da8xx-fb.txt
+@@ -0,0 +1,42 @@
++TI LCD Controller on DA830/DA850/AM335x SoC's
++
++Required properties:
++- compatible:
++	DA830, DA850 - "ti,da8xx-tilcdc"
++	AM335x SoC's - "ti,am33xx-tilcdc"
++- reg: Address range of lcdc register set
++- interrupts: lcdc interrupt
++- display-timings: typical videomode of lcd panel, represented as child.
++  Refer Documentation/devicetree/bindings/video/display-timing.txt for
++  display timing binding details. If multiple videomodes are mentioned
++  in display timings node, typical videomode has to be mentioned as the
++  native mode or it has to be first child (driver cares only for native
++  videomode).
++
++Recommended properties:
++- ti,hwmods: Name of the hwmod associated to the LCDC
++
++Example for am335x SoC's:
++
++lcdc@4830e000 {
++	compatible = "ti,am33xx-tilcdc";
++	reg =  <0x4830e000 0x1000>;
++	interrupts = <36>;
++	ti,hwmods = "lcdc";
++	status = "okay";
++	display-timings {
++		800x480p62 {
++			clock-frequency = <30000000>;
++			hactive = <800>;
++			vactive = <480>;
++			hfront-porch = <39>;
++			hback-porch = <39>;
++			hsync-len = <47>;
++			vback-porch = <29>;
++			vfront-porch = <13>;
++			vsync-len = <2>;
++			hsync-active = <1>;
++			vsync-active = <1>;
++		};
++	};
++};
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index ea9771f..1d9aff1 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -36,6 +36,7 @@
+ #include <linux/slab.h>
+ #include <linux/delay.h>
+ #include <linux/lcm.h>
++#include <video/of_display_timing.h>
+ #include <video/da8xx-fb.h>
+ #include <asm/div64.h>
+ 
+@@ -1297,12 +1298,54 @@ static struct fb_ops da8xx_fb_ops = {
+ 	.fb_blank = cfb_blank,
+ };
+ 
++static struct lcd_ctrl_config *da8xx_fb_create_cfg(struct platform_device *dev)
++{
++	struct lcd_ctrl_config *cfg;
++
++	cfg = devm_kzalloc(&dev->dev, sizeof(struct fb_videomode), GFP_KERNEL);
++	if (!cfg)
++		return NULL;
++
++	/* default values */
++
++	if (lcd_revision = LCD_VERSION_1)
++		cfg->bpp = 16;
++	else
++		cfg->bpp = 32;
++
++	/*
++	 * For panels so far used with this LCDC, below statement is sufficient.
++	 * For new panels, if required, struct lcd_ctrl_cfg fields to be updated
++	 * with additional/modified values. Those values would have to be then
++	 * obtained from dt(requiring new dt bindings).
++	 */
++
++	cfg->panel_shade = COLOR_ACTIVE;
++
++	return cfg;
++}
++
+ static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
+ {
+ 	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
+ 	struct fb_videomode *lcdc_info;
++	struct device_node *np = dev->dev.of_node;
+ 	int i;
+ 
++	if (np) {
++		lcdc_info = devm_kzalloc(&dev->dev,
++					 sizeof(struct fb_videomode),
++					 GFP_KERNEL);
++		if (!lcdc_info)
++			return NULL;
++
++		if (of_get_fb_videomode(np, lcdc_info, OF_USE_NATIVE_MODE)) {
++			dev_err(&dev->dev, "timings not available in DT\n");
++			return NULL;
++		}
++		return lcdc_info;
++	}
++
+ 	for (i = 0, lcdc_info = known_lcd_panels;
+ 		i < ARRAY_SIZE(known_lcd_panels); i++, lcdc_info++) {
+ 		if (strcmp(fb_pdata->type, lcdc_info->name) = 0)
+@@ -1331,7 +1374,7 @@ static int fb_probe(struct platform_device *device)
+ 	int ret;
+ 	unsigned long ulcm;
+ 
+-	if (fb_pdata = NULL) {
++	if (fb_pdata = NULL && !device->dev.of_node) {
+ 		dev_err(&device->dev, "Can not get platform data\n");
+ 		return -ENOENT;
+ 	}
+@@ -1371,7 +1414,10 @@ static int fb_probe(struct platform_device *device)
+ 		break;
+ 	}
+ 
+-	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
++	if (device->dev.of_node)
++		lcd_cfg = da8xx_fb_create_cfg(device);
++	else
++		lcd_cfg = fb_pdata->controller_data;
+ 
+ 	if (!lcd_cfg) {
+ 		ret = -EINVAL;
+@@ -1390,7 +1436,7 @@ static int fb_probe(struct platform_device *device)
+ 	par->dev = &device->dev;
+ 	par->lcdc_clk = tmp_lcdc_clk;
+ 	par->lcdc_clk_rate = clk_get_rate(par->lcdc_clk);
+-	if (fb_pdata->panel_power_ctrl) {
++	if (fb_pdata && fb_pdata->panel_power_ctrl) {
+ 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
+ 		par->panel_power_ctrl(1);
+ 	}
+@@ -1638,6 +1684,19 @@ static int fb_resume(struct platform_device *dev)
+ #define fb_resume NULL
+ #endif
+ 
++#if IS_ENABLED(CONFIG_OF)
++static const struct of_device_id da8xx_fb_of_match[] = {
++	/*
++	 * this driver supports version 1 and version 2 of the
++	 * Texas Instruments lcd controller (lcdc) hardware block
++	 */
++	{.compatible = "ti,da8xx-tilcdc", },
++	{.compatible = "ti,am33xx-tilcdc", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, da8xx_fb_of_match);
++#endif
++
+ static struct platform_driver da8xx_fb_driver = {
+ 	.probe = fb_probe,
+ 	.remove = fb_remove,
+@@ -1646,6 +1705,7 @@ static struct platform_driver da8xx_fb_driver = {
+ 	.driver = {
+ 		   .name = DRIVER_NAME,
+ 		   .owner = THIS_MODULE,
++		   .of_match_table = of_match_ptr(da8xx_fb_of_match),
+ 		   },
+ };
+ 
 -- 
-1.7.5.4
+1.7.0.4
 

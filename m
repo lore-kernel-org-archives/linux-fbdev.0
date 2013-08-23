@@ -1,45 +1,51 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Date: Wed, 14 Aug 2013 09:11:04 +0000
-Subject: [PATCH 0/29] simplify use of devm_ioremap_resource
-Message-Id: <1376471493-22215-1-git-send-email-Julia.Lawall@lip6.fr>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Fri, 23 Aug 2013 21:52:51 +0000
+Subject: [PATCH 2/4] video: da8xx-fb: fixing timing off by one errors
+Message-Id: <1377294773-25678-3-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org
-Cc: alsa-devel@alsa-project.org, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-serial@vger.kernel.org, linux-input@vger.kernel.org, linux-media@vger.kernel.org, linux-pwm@vger.kernel.org, linux-watchdog@vger.kernel.org, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-devm_ioremap_resource often uses the result of a call to
-platform_get_resource as its last argument.  devm_ioremap_resource does
-appropriate error handling on this argument, so error handling can be
-removed from the call site.  To make the connection between the call to
-platform_get_resource and the call to devm_ioremap_resource more clear, the
-former is also moved down to be adjacent to the latter.
+The LCD controller represents some of the timing fields with a 0
+in the register representing 1.  This was not taken into account
+when these registers were being set.  Interestingly enough not
+all of the LCDC controller timing registers implement this representation
+so carefully went through the technical reference manual to only "fix"
+the correct timings.
 
-In many cases, this patch changes the specific error value that is
-returned on failure of platform_get_resource.
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
+---
+ drivers/video/da8xx-fb.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@@
-expression pdev,res,n,e,e1;
-expression ret != 0;
-identifier l;
-@@
-
-(
-  res = platform_get_resource(pdev, IORESOURCE_MEM, n);
-- if (res = NULL) { ... \(goto l;\|return ret;\) }
-  e = devm_ioremap_resource(e1, res);
-|
-- res = platform_get_resource(pdev, IORESOURCE_MEM, n);
-  ... when != res
-- if (res = NULL) { ... \(goto l;\|return ret;\) }
-  ... when != res
-+ res = platform_get_resource(pdev, IORESOURCE_MEM, n);
-  e = devm_ioremap_resource(e1, res);
-)
-// </smpl>
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 0333a0b..b131a6c 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -408,9 +408,9 @@ static void lcd_cfg_horizontal_sync(int back_porch, int pulse_width,
+ 	u32 reg;
+ 
+ 	reg = lcdc_read(LCD_RASTER_TIMING_0_REG) & 0xf;
+-	reg |= ((back_porch & 0xff) << 24)
+-	    | ((front_porch & 0xff) << 16)
+-	    | ((pulse_width & 0x3f) << 10);
++	reg |= (((back_porch-1) & 0xff) << 24)
++	    | (((front_porch-1) & 0xff) << 16)
++	    | (((pulse_width-1) & 0x3f) << 10);
+ 	lcdc_write(reg, LCD_RASTER_TIMING_0_REG);
+ }
+ 
+@@ -422,7 +422,7 @@ static void lcd_cfg_vertical_sync(int back_porch, int pulse_width,
+ 	reg = lcdc_read(LCD_RASTER_TIMING_1_REG) & 0x3ff;
+ 	reg |= ((back_porch & 0xff) << 24)
+ 	    | ((front_porch & 0xff) << 16)
+-	    | ((pulse_width & 0x3f) << 10);
++	    | (((pulse_width-1) & 0x3f) << 10);
+ 	lcdc_write(reg, LCD_RASTER_TIMING_1_REG);
+ }
+ 
+-- 
+1.7.0.4
 

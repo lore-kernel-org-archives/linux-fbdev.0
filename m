@@ -1,31 +1,48 @@
-From: Cliff Brake <cliff.brake@gmail.com>
-Date: Tue, 06 Aug 2013 16:15:12 +0000
-Subject: kernel mode splash screen
-Message-Id: <CAOd_LFwxndi-rWgH2SncyO1K3QoS_wRuXf=cJGPVWx66kMy_SQ@mail.gmail.com>
+From: Darren Etheridge <detheridge@ti.com>
+Date: Fri, 23 Aug 2013 21:52:50 +0000
+Subject: [PATCH 1/4] video: da8xx-fb fixing incorrect porch mappings
+Message-Id: <1377294773-25678-2-git-send-email-detheridge@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hello,
+The driver was mapping the wrong fbdev margins to the
+front porch / back porch for both vertical and horizontal
+timings.
 
-We are working on an embedded system where we need immediate feedback
-on the screen in response to power button events, etc.  We also need
-to be able to display the splash screen whenever kernel is running.
-User space splash screens get killed too early on shutdown, etc.
+This patch corrects it so that:
 
-Does anyone know of a kernel mode splash screen that will:
+hfp = right margin
+hbp = left margin
+vbp = upper margin
+vfp = lower margin
 
-1) display an image
-2) display status messages
-3) display progress bar (nice to have, but not required)
-4) can be accessed from kernel and user space
-5) when enabled, will disable writes from user space
-6) FB based
+Signed-off-by: Darren Etheridge <detheridge@ti.com>
+---
+ drivers/video/da8xx-fb.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-Thanks,
-Cliff
-
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 1d9aff1..0333a0b 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -784,10 +784,10 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+ 		return ret;
+ 
+ 	/* Configure the vertical and horizontal sync properties. */
+-	lcd_cfg_vertical_sync(panel->lower_margin, panel->vsync_len,
+-			panel->upper_margin);
+-	lcd_cfg_horizontal_sync(panel->right_margin, panel->hsync_len,
+-			panel->left_margin);
++	lcd_cfg_vertical_sync(panel->upper_margin, panel->vsync_len,
++			panel->lower_margin);
++	lcd_cfg_horizontal_sync(panel->left_margin, panel->hsync_len,
++			panel->right_margin);
+ 
+ 	/* Configure for disply */
+ 	ret = lcd_cfg_display(cfg, panel);
 -- 
-========http://bec-systems.com
+1.7.0.4
+

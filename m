@@ -1,92 +1,92 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 30 Aug 2013 07:47:52 +0000
-Subject: Re: [PATCH] Release efifb's colormap in efifb_destroy()
-Message-Id: <52204E28.3000604@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="jEbQdJPnd2iBBlkqJWKEcPOSxORi3UAT7"
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 26 Aug 2013 08:55:29 +0000
+Subject: [PATCH V7 0/3] Generic PHY driver for the Exynos SoC DP PHY
+Message-Id: <003e01cea23a$03aac850$0b0058f0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAHkRjk4Ansh+Xr+cPQNacwx=aOb65_hW_MNRx5QVtatJCz5tqg@mail.gmail.com> <1374767291-2874-1-git-send-email-pjones@redhat.com>
-In-Reply-To: <1374767291-2874-1-git-send-email-pjones@redhat.com>
-To: Peter Jones <pjones@redhat.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, "Alexandra N. Kossovsky" <Alexandra.Kossovsky@oktetlabs.ru>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: 'Kishon Vijay Abraham I' <kishon@ti.com>
+Cc: 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org, 'devicetree' <devicetree@vger.kernel.org>, 'Kukjin Kim' <kgene.kim@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Felipe Balbi' <balbi@ti.com>, 'Tomasz Figa' <t.figa@samsung.com>, 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, 'Jingoo Han' <jg1.han@samsung.com>
 
---jEbQdJPnd2iBBlkqJWKEcPOSxORi3UAT7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This patch series adds a simple driver for the Samsung Exynos SoC
+series DP transmitter PHY, using the generic PHY framework [1].
+Previously the DP PHY used an internal DT node to control the PHY
+power enable bit.
 
-On 25/07/13 18:48, Peter Jones wrote:
-> This was found by Alexandra Kossovsky, who noted this traceback from
-> kmemleak:
->=20
->> unreferenced object 0xffff880216fcfe00 (size 512):
->>   comm "swapper/0", pid 1, jiffies 4294895429 (age 1415.320s)
->>   hex dump (first 32 bytes):
->>     00 00 00 00 00 00 00 00 aa aa aa aa aa aa aa aa  ................
->>     55 55 55 55 55 55 55 55 ff ff ff ff ff ff ff ff  UUUUUUUU........
->>   backtrace:
->>     [<ffffffff813e415c>] kmemleak_alloc+0x21/0x3e
->>     [<ffffffff8111c17f>]
->>     kmemleak_alloc_recursive.constprop.57+0x16/0x18
->>     [<ffffffff8111e63b>] __kmalloc+0xf9/0x144
->>     [<ffffffff8123d9cf>] fb_alloc_cmap_gfp+0x47/0xe1
->>     [<ffffffff8123da77>] fb_alloc_cmap+0xe/0x10
->>     [<ffffffff81aff40a>] efifb_probe+0x3e9/0x48f
->>     [<ffffffff812c566f>] platform_drv_probe+0x34/0x5e
->>     [<ffffffff812c3e6d>] driver_probe_device+0x98/0x1b4
->>     [<ffffffff812c3fd7>] __driver_attach+0x4e/0x6f
->>     [<ffffffff812c25bf>] bus_for_each_dev+0x57/0x8a
->>     [<ffffffff812c3984>] driver_attach+0x19/0x1b
->>     [<ffffffff812c362b>] bus_add_driver+0xde/0x201
->>     [<ffffffff812c453f>] driver_register+0x8c/0x110
->>     [<ffffffff812c510d>] platform_driver_register+0x41/0x43
->>     [<ffffffff812c5127>] platform_driver_probe+0x18/0x8a
->>     [<ffffffff81aff002>] efifb_init+0x276/0x295
-> ---
->  drivers/video/efifb.c | 1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
-> index 390b61b..1f3eab3 100644
-> --- a/drivers/video/efifb.c
-> +++ b/drivers/video/efifb.c
-> @@ -289,6 +289,7 @@ static void efifb_destroy(struct fb_info *info)
->  	if (request_mem_succeeded)
->  		release_mem_region(info->apertures->ranges[0].base,
->  				   info->apertures->ranges[0].size);
-> +	fb_dealloc_cmap(&info->cmap);
->  	framebuffer_release(info);
->  }
-> =20
+These patches was tested on Exynos5250.
 
-Thanks, queued for 3.12.
+This PATCH v7 follows:
+ * PATCH v6, sent on July, 9th 2013
+ * PATCH v5, sent on July, 8th 2013
+ * PATCH v4, sent on July, 2nd 2013
+ * PATCH v3, sent on July, 1st 2013
+ * PATCH v2, sent on June, 28th 2013
+ * PATCH v1, sent on June, 28th 2013
 
- Tomi
+Changes from v6:
+  * Re-based on git://git.kernel.org/pub/scm/linux/kernel/git/kishon/linux-phy.git
 
+Changes from v5:
+  * Re-based on git://gitorious.org/linuxphy/linuxphy.git
 
+Changes from v4:
+  * Marked original bindings as deprecated in 'exynos_dp.txt'
+  * Fixed typo of commit message.
+  * Added Tomasz Figa's Reviewed-by.
 
+Changes from v3:
+  * Added OF dependancy.
+  * Removed redundant local variable 'void __iomem *addr'.
+  * Removed unnecessary dev_set_drvdata().
+  * Added a patch that remove non-DT support for Exynos
+    Display Port driver.
+  * Removed unnecessary 'struct exynos_dp_platdata'.
+  * Kept supporting the original bindings for DT compatibility.
 
---jEbQdJPnd2iBBlkqJWKEcPOSxORi3UAT7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Changes from v2:
+  * Removed redundant spinlock
+  * Removed 'struct phy' from 'struct exynos_dp_video_phy'
+  * Updated 'samsung-phy.txt', instead of creating
+    'samsung,exynos5250-dp-video-phy.txt'.
+  * Removed unnecessary additional specifier from 'phys'
+    DT property.
+  * Added 'phys', 'phy-names' properties to 'exynos_dp.txt' file.
+  * Added Felipe Balbi's Acked-by.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+Changes from v1:
+  * Replaced exynos_dp_video_phy_xlate() with of_phy_simple_xlate(),
+    as Kishon Vijay Abraham I guided.
+  * Set the value of phy-cells as 0, because the phy_provider implements
+    only one PHY.
+  * Removed unnecessary header include.
+  * Added '#ifdef CONFIG_OF' and of_match_ptr macro.
 
-iQIcBAEBAgAGBQJSIE4oAAoJEPo9qoy8lh71quAP/R/10Id1ARySk2m4B3gV3ico
-xHDJZ2dmayMnjNVQgBhuVfReTwGq/xlc2mI3Cxf9Seqxltan5BGOML0Ixf+BRxtZ
-BA2CIr/bTmGD2sKc7g5Uyyx+G68n3slv0RQ7kq7739awepQiijYMa4cP+C0iqQqV
-ft6qFEjFIWiziAW3Me/kBsYtp7J48C1jLpni8iRQhb7/1qWrWOH6qq4sEkoqaAGK
-U2OILzPC/SDJXaTUCgvN4ejsU/T1phdhxT29jtBcCUT1oAeWX7hvCOKSSoePWYJD
-jv4dabsg+hueyI/mhb8rFFjc5hvD3N3ekuHXQPG/I+1zfDiAEGVby8sbcappUH77
-KO7zMUrRcKSwYblDj9kZcKkg0KAtIHpE8N73F0xreO5YMxeGzYY2VUnY/j+kyhuG
-oBUa5x8N7cxbM5LjhGRHbHV6+ONeDQbgyXoXzjT+PpK9irufY3riLUQxusHRiOki
-npEvbl38+oTDznhpIyoj21sUjXgAIRrA380hZK3i4SiEOQlLD+KflqIZM40swhqL
-0mPrblkUyoIEqWa4PlJsgbaZz944LhEdT9k9kMqCePZ4siRgoj8Ywyem7P9pbicz
-qezjxHK3O6s1CouBPctQaJzHQSruRcCtrJdq3pOgeFCNR8ZYE/PmcnlOS1A1Vppz
-6fu51sJh++05QSB788KT
-=roR3
------END PGP SIGNATURE-----
+This series depends on the generic PHY framework [1]. These patches
+refer to Sylwester Nawrocki's patches about Exynos MIPI [2].
 
---jEbQdJPnd2iBBlkqJWKEcPOSxORi3UAT7--
+[1] http://lwn.net/Articles/564188/
+[2] http://www.spinics.net/lists/linux-samsung-soc/msg20098.html
+
+Jingoo Han (3):
+  phy: Add driver for Exynos DP PHY
+  video: exynos_dp: remove non-DT support for Exynos Display Port
+  video: exynos_dp: Use the generic PHY driver
+
+ .../devicetree/bindings/phy/samsung-phy.txt        |    7 ++
+ .../devicetree/bindings/video/exynos_dp.txt        |   17 +--
+ drivers/phy/Kconfig                                |    7 ++
+ drivers/phy/Makefile                               |    7 +-
+ drivers/phy/phy-exynos-dp-video.c                  |  111 ++++++++++++++++
+ drivers/video/exynos/Kconfig                       |    2 +-
+ drivers/video/exynos/exynos_dp_core.c              |  132 ++++++--------------
+ drivers/video/exynos/exynos_dp_core.h              |  110 ++++++++++++++++
+ drivers/video/exynos/exynos_dp_reg.c               |    2 -
+ include/video/exynos_dp.h                          |  131 -------------------
+ 10 files changed, 286 insertions(+), 240 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/phy/samsung-phy.txt
+ create mode 100644 drivers/phy/phy-exynos-dp-video.c
+ delete mode 100644 include/video/exynos_dp.h
+--
+1.7.10.4
+

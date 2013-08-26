@@ -1,94 +1,130 @@
-From: "Etheridge, Darren" <detheridge@ti.com>
-Date: Fri, 16 Aug 2013 20:11:27 +0000
-Subject: RE: [RFC 1/1] video: da8xx-fb: adding dt support
-Message-Id: <1A80A2FD7F34484786E5DF71F3968B6940F788CC@DLEE10.ent.ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 26 Aug 2013 08:57:34 +0000
+Subject: [PATCH 3/3] video: exynos_dp: Use the generic PHY driver
+Message-Id: <004201cea23a$4e2c44d0$ea84ce70$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1375992936-16755-1-git-send-email-detheridge@ti.com>
- <1375992936-16755-2-git-send-email-detheridge@ti.com>
- <CA+V-a8uSd7cypG=zTPyfkdq_xSdxHeGpoRu497U8C-3ZUsfu5w@mail.gmail.com>
-In-Reply-To: <CA+V-a8uSd7cypG=zTPyfkdq_xSdxHeGpoRu497U8C-3ZUsfu5w@mail.gmail.com>
+References: <003e01cea23a$03aac850$0b0058f0$%han@samsung.com>
+In-Reply-To: <003e01cea23a$03aac850$0b0058f0$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Prabhakar Lad <prabhakar.csengg@gmail.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, "plagnioj@jcrosoft.com" <plagnioj@jcrosoft.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Mohammed, Afzal" <afzal@ti.com>
+To: 'Kishon Vijay Abraham I' <kishon@ti.com>
+Cc: 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org, 'devicetree' <devicetree@vger.kernel.org>, 'Kukjin Kim' <kgene.kim@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Felipe Balbi' <balbi@ti.com>, 'Tomasz Figa' <t.figa@samsung.com>, 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, 'Jingoo Han' <jg1.han@samsung.com>
 
-From: Prabhakar Lad [mailto:prabhakar.csengg@gmail.com]
-> Sent: Thursday, August 08, 2013 11:07 PM
-> Subject: Re: [RFC 1/1] video: da8xx-fb: adding dt support
-> 
-> Hi Darren,
-> 
-> Thanks for the patch, below are few nits!
-> 
-Prabhakar,
+Use the generic PHY API to control the DP PHY.
 
-Thanks for reviewing, somehow I missed your reply so sorry about late response.
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Reviewed-by: Tomasz Figa <t.figa@samsung.com>
+---
+ Documentation/devicetree/bindings/video/exynos_dp.txt |   17 +++++++++--------
+ drivers/video/exynos/exynos_dp_core.c                 |   16 ++++++++++++----
+ drivers/video/exynos/exynos_dp_core.h                 |    1 +
+ 3 files changed, 22 insertions(+), 12 deletions(-)
 
-> On Fri, Aug 9, 2013 at 1:45 AM, Darren Etheridge <detheridge@ti.com>
-> wrote:
-> > Enhancing driver to enable probe triggered by a corresponding dt entry.
-> >
-<snip>
-> > +
-> > +       cfg = devm_kzalloc(&dev->dev, sizeof(struct fb_videomode),
-> GFP_KERNEL);
-> > +       if (!cfg) {
-> > +               dev_err(&dev->dev, "memory allocation failed\n");
-> 
-> devm_* api will print the message if allocation has failed, please remove the
-> above err statement and also similarly below.
+diff --git a/Documentation/devicetree/bindings/video/exynos_dp.txt b/Documentation/devicetree/bindings/video/exynos_dp.txt
+index 84f10c1..3289d76 100644
+--- a/Documentation/devicetree/bindings/video/exynos_dp.txt
++++ b/Documentation/devicetree/bindings/video/exynos_dp.txt
+@@ -6,10 +6,10 @@ We use two nodes:
+ 	-dptx-phy node(defined inside dp-controller node)
+ 
+ For the DP-PHY initialization, we use the dptx-phy node.
+-Required properties for dptx-phy:
+-	-reg:
++Required properties for dptx-phy: deprecated, use phys and phy-names
++	-reg: deprecated
+ 		Base address of DP PHY register.
+-	-samsung,enable-mask:
++	-samsung,enable-mask: deprecated
+ 		The bit-mask used to enable/disable DP PHY.
+ 
+ For the Panel initialization, we read data from dp-controller node.
+@@ -27,6 +27,10 @@ Required properties for dp-controller:
+ 		from common clock binding: Shall be "dp".
+ 	-interrupt-parent:
+ 		phandle to Interrupt combiner node.
++	-phys:
++		from general PHY binding: the phandle for the PHY device.
++	-phy-names:
++		from general PHY binding: Should be "dp".
+ 	-samsung,color-space:
+ 		input video data format.
+ 			COLOR_RGB = 0, COLOR_YCBCR422 = 1, COLOR_YCBCR444 = 2
+@@ -68,11 +72,8 @@ SOC specific portion:
+ 		clocks = <&clock 342>;
+ 		clock-names = "dp";
+ 
+-		dptx-phy {
+-			reg = <0x10040720>;
+-			samsung,enable-mask = <1>;
+-		};
+-
++		phys = <&dp_phy>;
++		phy-names = "dp";
+ 	};
+ 
+ Board Specific portion:
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index 05fed7d..5e1a715 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -19,6 +19,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
+ #include <linux/of.h>
++#include <linux/phy/phy.h>
+ 
+ #include "exynos_dp_core.h"
+ 
+@@ -960,8 +961,11 @@ static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
+ 
+ 	dp_phy_node = of_find_node_by_name(dp_phy_node, "dptx-phy");
+ 	if (!dp_phy_node) {
+-		dev_err(dp->dev, "could not find dptx-phy node\n");
+-		return -ENODEV;
++		dp->phy = devm_phy_get(dp->dev, "dp");
++		if (IS_ERR(dp->phy))
++			return PTR_ERR(dp->phy);
++		else
++			return 0;
+ 	}
+ 
+ 	if (of_property_read_u32(dp_phy_node, "reg", &phy_base)) {
+@@ -992,7 +996,9 @@ err:
+ 
+ static void exynos_dp_phy_init(struct exynos_dp_device *dp)
+ {
+-	if (dp->phy_addr) {
++	if (dp->phy) {
++		phy_power_on(dp->phy);
++	} else if (dp->phy_addr) {
+ 		u32 reg;
+ 
+ 		reg = __raw_readl(dp->phy_addr);
+@@ -1003,7 +1009,9 @@ static void exynos_dp_phy_init(struct exynos_dp_device *dp)
+ 
+ static void exynos_dp_phy_exit(struct exynos_dp_device *dp)
+ {
+-	if (dp->phy_addr) {
++	if (dp->phy) {
++		phy_power_off(dp->phy);
++	} else if (dp->phy_addr) {
+ 		u32 reg;
+ 
+ 		reg = __raw_readl(dp->phy_addr);
+diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
+index 56cfec8..607e36d 100644
+--- a/drivers/video/exynos/exynos_dp_core.h
++++ b/drivers/video/exynos/exynos_dp_core.h
+@@ -151,6 +151,7 @@ struct exynos_dp_device {
+ 	struct video_info	*video_info;
+ 	struct link_train	link_train;
+ 	struct work_struct	hotplug_work;
++	struct phy		*phy;
+ };
+ 
+ /* exynos_dp_reg.c */
+-- 
+1.7.10.4
 
-Will fix.
 
-<snip>
-
-> > +               lcdc_info = devm_kzalloc(&dev->dev,
-> > +                                        sizeof(struct fb_videomode),
-> > +                                        GFP_KERNEL);
-> > +               if (!lcdc_info) {
-> > +                       dev_err(&dev->dev, "memory allocation
-> > + failed\n");
-> ditto
-
-Will fix
-
-<snip>
-
-> > @@ -1390,7 +1439,7 @@ static int fb_probe(struct platform_device
-> *device)
-> >         par->dev = &device->dev;
-> >         par->lcdc_clk = tmp_lcdc_clk;
-> >         par->lcdc_clk_rate = clk_get_rate(par->lcdc_clk);
-> > -       if (fb_pdata->panel_power_ctrl) {
-> > +       if (fb_pdata && fb_pdata->panel_power_ctrl) {
-> >                 par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
-> >                 par->panel_power_ctrl(1);
-> 
-> What happens to this data in DT case ?
->
-
-Good find,  right now we don't do any power control in the DT case - this is something that needs to be addressed.
-
->
- > >         }
-> > @@ -1638,6 +1687,17 @@ static int fb_resume(struct platform_device
-> > *dev)  #define fb_resume NULL  #endif
-> >
-> > +static const struct of_device_id da8xx_fb_of_match[] = {
-> > +       /*
-> > +        * this driver supports version 1 and version 2 of the
-> > +        * Texas Instruments lcd controller (lcdc) hardware block
-> > +        */
-> > +       {.compatible = "ti,da830-lcdc", },
-> > +       {.compatible = "ti,am3352-lcdc", },
-> > +       {},
-> > +};
-> > +MODULE_DEVICE_TABLE(of, da8xx_fb_of_match);
-> > +
-> you can bound this structure and the macro in IS_ENABLED(CONFIG_OF)
-
-Ok will look at that.
-
-Thanks,
-Darren

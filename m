@@ -1,67 +1,41 @@
-From: Prabhakar Lad <prabhakar.csengg@gmail.com>
-Date: Fri, 23 Aug 2013 07:44:06 +0000
-Subject: Re: [PATCH] video: da8xx-fb: adding dt support
-Message-Id: <CA+V-a8vyD57-WM7JusQ28RwyLP0Y7DZg+GrS4kro=Ck7Qv28Eg@mail.gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 26 Aug 2013 14:56:10 +0000
+Subject: [patch] tgafb: potential NULL dereference in init
+Message-Id: <20130826145610.GA12428@elgon.mountain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1377206501-30519-1-git-send-email-detheridge@ti.com> <1377206501-30519-2-git-send-email-detheridge@ti.com>
-In-Reply-To: <1377206501-30519-2-git-send-email-detheridge@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Darren Etheridge <detheridge@ti.com>
-Cc: devicetree@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, plagnioj@jcrosoft.com, LFBDEV <linux-fbdev@vger.kernel.org>, afzal@ti.com
+To: linux-fbdev@vger.kernel.org
 
-Hi Darren,
+Static checkers complain that there are paths where "tga_type_name" can
+be NULL.  I've re-arranged the code slightly so that's impossible.
 
-Thanks for the patch.
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-On Fri, Aug 23, 2013 at 2:51 AM, Darren Etheridge <detheridge@ti.com> wrote:
-> Enhancing driver to enable probe triggered by a corresponding dt entry.
->
-> Add da8xx-fb.txt documentation to devicetree section.
->
-> Obtain fb_videomode details for the connected lcd panel using the
-> display timing details present in DT.
->
-> Ensure that platform data is present before checking whether platform
-> callback is present (the one used to control backlight). So far this
-> was not an issue as driver was purely non-DT triggered, but now DT
-> support has been added this check must be performed.
->
-> v2: squashing multiple commits from Afzal Mohammed (afzal@ti.com)
-> v3: remove superfluous cast
-> v4: expose both ti,am3352-lcdc and ti,da830-lcdc for .compatible
->         as driver can use enhanced features of all version of the
->         silicon block.
-> v5: addressed review comments from Prabhakar Lad
-> v6: Changed the .compatible naming to match the existing drm bindings
->         for am33xx devices
->
-> Signed-off-by: Darren Etheridge <detheridge@ti.com>
-> ---
->  .../devicetree/bindings/video/da8xx-fb.txt         |   42 ++++++++++++
->  drivers/video/da8xx-fb.c                           |   66 +++++++++++++++++++-
->  2 files changed, 105 insertions(+), 3 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/video/da8xx-fb.txt
->
-> diff --git a/Documentation/devicetree/bindings/video/da8xx-fb.txt b/Documentation/devicetree/bindings/video/da8xx-fb.txt
-> new file mode 100644
-> index 0000000..575bb4b
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/video/da8xx-fb.txt
-> @@ -0,0 +1,42 @@
-> +TI LCD Controller on DA830/DA850/AM335x SoC's
-> +
-> +Required properties:
-> +- compatible:
-> +       DA830 - "ti,da8xx-tilcdc"
-> +       AM335x SoC's - "ti,am33xx-tilcdc"
-
-what about DA850 ?
-
-Rest of the patch looks good, with that change you can add my,
-
-Acked-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
-
-Regards,
---Prabhakar Lad
+diff --git a/drivers/video/tgafb.c b/drivers/video/tgafb.c
+index c9c8e5a..2dcaf2e 100644
+--- a/drivers/video/tgafb.c
++++ b/drivers/video/tgafb.c
+@@ -1475,7 +1475,7 @@ tgafb_init_fix(struct fb_info *info)
+ 	int tga_bus_pci = TGA_BUS_PCI(par->dev);
+ 	int tga_bus_tc = TGA_BUS_TC(par->dev);
+ 	u8 tga_type = par->tga_type;
+-	const char *tga_type_name = NULL;
++	const char *tga_type_name;
+ 
+ 	switch (tga_type) {
+ 	case TGA_TYPE_8PLANE:
+@@ -1496,10 +1496,9 @@ tgafb_init_fix(struct fb_info *info)
+ 		if (tga_bus_tc)
+ 			tga_type_name = "Digital ZLX-E3";
+ 		break;
+-	default:
+-		tga_type_name = "Unknown";
+-		break;
+ 	}
++	if (!tga_type_name)
++		tga_type_name = "Unknown";
+ 
+ 	strlcpy(info->fix.id, tga_type_name, sizeof(info->fix.id));
+ 

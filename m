@@ -1,107 +1,69 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Fri, 02 Aug 2013 08:28:56 +0000
-Subject: Re: [PATCHv3 3/3] fb: backlight: HX8357: Add HX8369 support
-Message-Id: <20130802082856.GQ2911@lukather>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 29 Aug 2013 14:06:20 +0000
+Subject: Re: [PATCH 06/15] OMAPDSS: remove all old panel drivers
+Message-Id: <521F555C.8090802@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="IpljlC28XhFjURzf"
+Content-Type: multipart/mixed; boundary="aNh9HvMEXNVd8ICvWCNAkPo2XkbiQBri3"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1375346437-18991-1-git-send-email-maxime.ripard@free-electrons.com>
- <1375346437-18991-4-git-send-email-maxime.ripard@free-electrons.com>
- <51FA56FF.8090308@ti.com>
-In-Reply-To: <51FA56FF.8090308@ti.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com> <1377783120-14001-7-git-send-email-tomi.valkeinen@ti.com> <521F53F0.4030203@ti.com>
+In-Reply-To: <521F53F0.4030203@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-
---IpljlC28XhFjURzf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--aNh9HvMEXNVd8ICvWCNAkPo2XkbiQBri3
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-Hi Tomi,
+Hi,
 
-On Thu, Aug 01, 2013 at 03:39:27PM +0300, Tomi Valkeinen wrote:
-> Hi,
+On 29/08/13 17:00, Archit Taneja wrote:
+> On Thursday 29 August 2013 07:01 PM, Tomi Valkeinen wrote:
+>> The board files now use the new panel drivers, making the old panel
+>> drivers obsolete.
+>>
+>> Remove the old panel drivers, Kconfig and Makefile entries, and the
+>> panels' platform data structs.
 >=20
-> On 01/08/13 11:40, Maxime Ripard wrote:
-> > From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-> >=20
-> > Add support for the Himax HX8369 controller as it is quite similar to t=
-he
-> > hx8357.
-> >=20
-> > Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-> > Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-> > Acked-by: Jingoo Han <jg1.han@samsung.com>
-> > ---
-> >  drivers/video/backlight/hx8357.c | 219 +++++++++++++++++++++++++++++++=
-+++++---
-> >  1 file changed, 204 insertions(+), 15 deletions(-)
->=20
-> I don't have comments about this patch as such, but hx8357.c in general:
->=20
-> - The commands used look like MIPI DCS commands. We have defined those
-> in include/video/mipi_display.h.
+> Can we convert the picodlp driver to the new panel driver model, and
+> report it as broken for now?
 
-Aaah, yes indeed. Thanks for pointing that out.
+(please cut your quotes a bit, you just included some thousands of lines
+of code there =3D).
 
-> - The command arrays could be const
+We could, but I'm not sure what would be the point. The new picodlp
+would be (more or less) totally new driver, so we would still end up
+removing the old driver. We can as well add it later if we manage to get
+it working.
 
-True.
+The RFBI case is a bit different, as there we just changed the current
+driver a bit and we didn't create a totally new one.
 
-> - I don't like command arrays. Rather than having array for
-> "HX8357_SET_COLUMN_ADDRESS, 0x00, 0x00, 0x01, 0x3f,", I'd much more like
-> a function hx8357_set_column_address(int x1, int x2) or such.
+ Tomi
 
-Hmm, Ok.
 
-> - Looking at the driver makes me think it resembles very much the panel
-> driver(s) we have for OMAP. If only CDF was ready... ;)
->=20
-> Those said, I don't see a problem with applying this. We could clean up
-> later those things mentioned above, but maybe it's better to do that
-> when moving to CDF.
 
-Yes, CDF would be really great for this :)
-
-Alexandre and I will try to find some time to do the cleanups you
-requested.
-
-> For this and the two other patches:
->=20
-> Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->=20
-> I can apply these to my 3.12-fbdev branch some day soon, if
-> Jean-Christophe hasn't come back yet (I'd normally rather deal only with
-> trivial patches, and leave the rest to Jean-Christophe).
-
-Great, thanks!
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
-
---IpljlC28XhFjURzf
+--aNh9HvMEXNVd8ICvWCNAkPo2XkbiQBri3
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJR+23IAAoJEBx+YmzsjxAg0y4QAI5oJqQwRKnlmtXTcYpfsOXt
-opHNC4gGQxEaaFea+HcECtBGwzWa0Q1L9DxmXT7p5v4biiof6G59tmx5WXJy6anm
-zeCcCwbB6q9aMt6Vz+fHyuQX4MV7bCE6IXCyQnlXn+awZmnEVd3ANDOz8qEC6mEj
-WbIgl/ScGXF2rqdkVtJfTG03rJdWY1e6y36JLyCeXzJOjFfVPb04321w9beLpYp1
-8cwQy0P8ubMwtq75jqJ/Nv/+O9qbY8xiEUlGWMTz1EWE4XzRACe+P+tpiXpq6rdZ
-yy9G2SgRewiOIcXac6Mi6DZpZ0eHlIVPYX7IHRf3XQoyQ3U/nqUcn7YChrVWXaVs
-nlfg9BP4j+gpUIIdNqOnppscAWCcpJXgqUP7lsdB9S7ltxpzPgIirgaObT23TeTD
-Pco4pxhHVyvOyIDqswAg/2Zo3u5sia13PFoVcFZPF5CsQuYupeRSiuTorFkRdyhK
-Gsgo5jBa0cHDfF5LNRlchG5qmSjVeEURIe2z+6p7zIkhwGWJEl31Nn67S+07Xqd7
-kH9eLl618RVTOH8XdqUVvhvaIXsrk5t3Z9iSi6GvB9umtjmKXU7EAP3phgmH37EC
-E6Nm0WD9e/by3sv3ogERihRppuKiAG3j5M84KihSJYyyjFl4vlNwtoY+H/+T8bOK
-YCnIF50pmpVvqSHDwNTK
-=kCFA
+iQIcBAEBAgAGBQJSH1VcAAoJEPo9qoy8lh71FkUQAKWc1UwI7H3O6CLLuBOS1oX6
+RnV2kgq23IKiMqgFhoky+MXkiM9QIf8Yj+UWMjqUUGuMjDpYkdPi1qIEL3lOA/3U
+5aXtkXaejAqVlbCmbgkvRMgbYjZcQHiGTCgna1Kt2G//1F2VpX1SEqUukbESUKpw
+XqtRwLmt+4y69dWRuHm3Vh1AwM5auWLxp74w0AmKg2Lq3kTM3jRBmrEHqXgwSyGS
+0L+ebDIfqjzZMGajUTj3rc4r7QRukRNFap1/VD6Wyc9rff+YDOMnf0uOb8ZU+SyI
+S3DikrFRZf/F9L86bUWyc6ZzIs/88xzmg/EYS7IzEJx9HMFniWpgXyJOo+v40rqA
+1aqxcyWORRzBfItVp5iwKrboYLtaq7+q3DUeE68Mn84qhR4eGx8f10WQJEELcYk2
+xJpfV2MkAGyOL29P5ugCvk62MUBYQch8l9pRrhgdBumNTkA9kXyqtyvXsqriAkPW
+yGvEc3Oca+83FkZtZaeMBt7OxXTujJ50gAaouochR/uojwjW08BXApBywyQOX6O5
+Y9D7Gu6b0/dCWL4OkUqtKGwf6+6WQPUhw6lek00V3sXZN/VBEq6D3tDVAGPRSopT
+prcYuM+kxGVzfFQXpWjgXyNViR8SBf8jwVfY8EJFZxr9mTWDTZ5PKEJwfHS9Se1o
+GLvGY/hGHDovp4AK+2m7
+=faee
 -----END PGP SIGNATURE-----
 
---IpljlC28XhFjURzf--
+--aNh9HvMEXNVd8ICvWCNAkPo2XkbiQBri3--

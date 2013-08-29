@@ -1,92 +1,97 @@
-From: Wang Huan-B18965 <B18965@freescale.com>
-Date: Wed, 07 Aug 2013 08:07:34 +0000
-Subject: RE: [PATCH 4/5] fb: Add DCU framebuffer driver for Vybrid VF610 platform
-Message-Id: <81BA6E5E0BC2344391CABCEE22D1B6D83D1805@039-SN1MPN1-002.039d.mgd.msft.net>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 29 Aug 2013 13:31:45 +0000
+Subject: [PATCH 00/15] OMAPDSS: remove old panel model code
+Message-Id: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1373609276-14566-1-git-send-email-b18965@freescale.com>
- <1373609276-14566-5-git-send-email-b18965@freescale.com>
- <1375778859.4276.25.camel@weser.hi.pengutronix.de>
-In-Reply-To: <1375778859.4276.25.camel@weser.hi.pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-DQo+IEFtIEZyZWl0YWcsIGRlbiAxMi4wNy4yMDEzLCAxNDowNyArMDgwMCBzY2hyaWViIEFsaXNv
-biBXYW5nOg0KPiA+IFRoZSBEaXNwbGF5IENvbnRyb2xsZXIgVW5pdCAoRENVKSBtb2R1bGUgaXMg
-YSBzeXN0ZW0gbWFzdGVyIHRoYXQNCj4gPiBmZXRjaGVzIGdyYXBoaWNzIHN0b3JlZCBpbiBpbnRl
-cm5hbCBvciBleHRlcm5hbCBtZW1vcnkgYW5kIGRpc3BsYXlzDQo+ID4gdGhlbSBvbiBhIFRGVCBM
-Q0QgcGFuZWwuIEEgd2lkZSByYW5nZSBvZiBwYW5lbCBzaXplcyBpcyBzdXBwb3J0ZWQgYW5kDQo+
-ID4gdGhlIHRpbWluZyBvZiB0aGUgaW50ZXJmYWNlIHNpZ25hbHMgaXMgaGlnaGx5IGNvbmZpZ3Vy
-YWJsZS4NCj4gPiBHcmFwaGljcyBhcmUgcmVhZCBkaXJlY3RseSBmcm9tIG1lbW9yeSBhbmQgdGhl
-biBibGVuZGVkIGluIHJlYWwtdGltZSwNCj4gPiB3aGljaCBhbGxvd3MgZm9yIGR5bmFtaWMgY29u
-dGVudCBjcmVhdGlvbiB3aXRoIG1pbmltYWwgQ1BVDQo+IGludGVydmVudGlvbi4NCj4gPg0KPiA+
-IFRoZSBmZWF0dXJlczoNCj4gPg0KPiA+ICgxKSBGdWxsIFJHQjg4OCBvdXRwdXQgdG8gVEZUIExD
-RCBwYW5lbC4NCj4gPiAoMikgRm9yIHRoZSBjdXJyZW50IExDRCBwYW5lbCwgV1FWR0EgIjQ4MHgy
-NzIiIGlzIHRlc3RlZC4NCj4gPiAoMykgQmxlbmRpbmcgb2YgZWFjaCBwaXhlbCB1c2luZyB1cCB0
-byA0IHNvdXJjZSBsYXllcnMgZGVwZW5kZW50IG9uDQo+IHNpemUgb2YgcGFuZWwuDQo+ID4gKDQp
-IEVhY2ggZ3JhcGhpYyBsYXllciBjYW4gYmUgcGxhY2VkIHdpdGggb25lIHBpeGVsIHJlc29sdXRp
-b24gaW4NCj4gZWl0aGVyIGF4aXMuDQo+ID4gKDUpIEVhY2ggZ3JhcGhpYyBsYXllciBzdXBwb3J0
-IFJHQjU2NSBhbmQgUkdCODg4IGRpcmVjdCBjb2xvcnMNCj4gd2l0aG91dA0KPiA+IGFscGhhIGNo
-YW5uZWwgYW5kIEJHUkE4ODg4IGRpcmVjdCBjb2xvcnMgd2l0aCBhbiBhbHBoYSBjaGFubmVsLg0K
-PiA+ICg2KSBFYWNoIGdyYXBoaWMgbGF5ZXIgc3VwcG9ydCBhbHBoYSBibGVuZGluZyB3aXRoIDgt
-Yml0IHJlc29sdXRpb24uDQo+ID4NCj4gPiBUaGlzIGRyaXZlciBoYXMgYmVlbiB0ZXN0ZWQgb24g
-VnlicmlkIFZGNjEwIFRPV0VSIGJvYXJkLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogQWxpc29u
-IFdhbmcgPGIxODk2NUBmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0KPiA+IENoYW5nZXMgaW4gdjI6
-IE5vbmUNCj4gPg0KPiA+ICBkcml2ZXJzL3ZpZGVvL0tjb25maWcgICAgICB8ICAgIDkgKw0KPiA+
-ICBkcml2ZXJzL3ZpZGVvL01ha2VmaWxlICAgICB8ICAgIDEgKw0KPiA+ICBkcml2ZXJzL3ZpZGVv
-L2ZzbC1kY3UtZmIuYyB8IDEwOTENCj4gPiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKw0KPiA+ICAzIGZpbGVzIGNoYW5nZWQsIDExMDEgaW5zZXJ0aW9ucygrKQ0K
-PiA+ICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy92aWRlby9mc2wtZGN1LWZiLmMNCj4gPg0K
-PiBbLi4uXQ0KPiA+ICtlbnVtIG1mYl9pbmRleCB7DQo+ID4gKwlMQVlFUjAgPSAwLA0KPiA+ICsJ
-TEFZRVIxLA0KPiA+ICsJTEFZRVIyLA0KPiA+ICsJTEFZRVIzLA0KPiA+ICt9Ow0KPiBXaHkgYXJl
-IHRoZXJlIG9ubHkgNCBsYXllcnMgaGVyZT8gSSB0aG91Z2h0IHRoZSBjb250cm9sbGVyIHN1cHBv
-cnRzIGF0DQo+IGxlYXN0IDYgc2ltdWx0YW5lb3VzIGxheWVycz8NCltBbGlzb24gV2FuZ10gSSB1
-c2VkIDQgbGF5ZXJzIGZvciB0aGUgY3VzdG9tZXIncyByZXF1aXJlbWVudCBiZWZvcmUuIEFueXdh
-eSwgSSB3aWxsIGNoYW5nZSBpdCB0byA2IGluIG5leHQgdmVyc2lvbi4NCkJUVywgYWNjb3JkaW5n
-IHRvIHRoZSBSTSwgaXQgc2FpZCAiQmxlbmRpbmcgb2YgZWFjaCBwaXhlbCB1c2luZyB1cCB0byA2
-IHNvdXJjZSBsYXllcnMgZGVwZW5kZW50IG9uIHNpemUgb2YgcGFuZWwiLiBTbyBJIHRoaW5rIHRo
-ZSBtb3N0IHNpbXVsdGFuZW91cyBsYXllcnMgaXMgNi4NCj4gDQo+ID4gKw0KPiA+ICtzdGF0aWMg
-c3RydWN0IG1mYl9pbmZvIG1mYl90ZW1wbGF0ZVtdID0gew0KPiA+ICsJew0KPiA+ICsJLmluZGV4
-ID0gTEFZRVIwLA0KPiA+ICsJLmlkID0gIkxheWVyMCIsDQo+ID4gKwkuYWxwaGEgPSAweGZmLA0K
-PiA+ICsJLmJsZW5kID0gMCwNCj4gPiArCS5jb3VudCA9IDAsDQo+ID4gKwkueF9sYXllcl9kID0g
-MCwNCj4gPiArCS55X2xheWVyX2QgPSAwLA0KPiA+ICsJfSwNCj4gPiArCXsNCj4gPiArCS5pbmRl
-eCA9IExBWUVSMSwNCj4gPiArCS5pZCA9ICJMYXllcjEiLA0KPiA+ICsJLmFscGhhID0gMHhmZiwN
-Cj4gPiArCS5ibGVuZCA9IDAsDQo+ID4gKwkuY291bnQgPSAwLA0KPiA+ICsJLnhfbGF5ZXJfZCA9
-IDUwLA0KPiA+ICsJLnlfbGF5ZXJfZCA9IDUwLA0KPiA+ICsJfSwNCj4gPiArCXsNCj4gPiArCS5p
-bmRleCA9IExBWUVSMiwNCj4gPiArCS5pZCA9ICJMYXllcjIiLA0KPiA+ICsJLmFscGhhID0gMHhm
-ZiwNCj4gPiArCS5ibGVuZCA9IDAsDQo+ID4gKwkuY291bnQgPSAwLA0KPiA+ICsJLnhfbGF5ZXJf
-ZCA9IDEwMCwNCj4gPiArCS55X2xheWVyX2QgPSAxMDAsDQo+ID4gKwl9LA0KPiA+ICsJew0KPiA+
-ICsJLmluZGV4ID0gTEFZRVIzLA0KPiA+ICsJLmlkID0gIkxheWVyMyIsDQo+ID4gKwkuYWxwaGEg
-PSAweGZmLA0KPiA+ICsJLmJsZW5kID0gMCwNCj4gPiArCS5jb3VudCA9IDAsDQo+ID4gKwkueF9s
-YXllcl9kID0gMTUwLA0KPiA+ICsJLnlfbGF5ZXJfZCA9IDE1MCwNCj4gPiArCX0sDQo+ID4gK307
-DQo+IFsuLi5dDQo+ID4gK3N0YXRpYyBpbnQgZnNsX2RjdV9yZWxlYXNlKHN0cnVjdCBmYl9pbmZv
-ICppbmZvLCBpbnQgdXNlcikgew0KPiA+ICsJc3RydWN0IG1mYl9pbmZvICptZmJpID0gaW5mby0+
-cGFyOw0KPiA+ICsJaW50IHJldCA9IDA7DQo+ID4gKw0KPiA+ICsJbWZiaS0+Y291bnQtLTsNCj4g
-PiArCWlmIChtZmJpLT5jb3VudCA9PSAwKSB7DQo+ID4gKwkJcmV0ID0gZGlzYWJsZV9wYW5lbChp
-bmZvKTsNCj4gPiArCQlpZiAocmV0IDwgMCkNCj4gPiArCQkJbWZiaS0+Y291bnQrKzsNCj4gPiAr
-CX0NCj4gPiArDQo+ID4gKwlyZXR1cm4gcmV0Ow0KPiA+ICt9DQo+IENvdWxkIHRoaXMgYmUgcmVw
-bGFjZWQgYnkgcnVudGltZSBwbT8NCltBbGlzb24gV2FuZ10gWWVzLCBJIHdpbGwgdXNlIHJ1bnRp
-bWUgcG0uDQo+IFsuLi5dDQo+ID4gK3N0YXRpYyBpbnQgYnlwYXNzX3Rjb24oc3RydWN0IGRldmlj
-ZV9ub2RlICpucCkgew0KPiA+ICsJc3RydWN0IGRldmljZV9ub2RlICp0Y29uX25wOw0KPiA+ICsJ
-c3RydWN0IHBsYXRmb3JtX2RldmljZSAqdGNvbl9wZGV2Ow0KPiA+ICsJc3RydWN0IGNsayAqdGNv
-bl9jbGs7DQo+ID4gKwl2b2lkIF9faW9tZW0gKnRjb25fcmVnOw0KPiA+ICsJaW50IHJldCA9IDA7
-DQo+ID4gKw0KPiA+ICsJdGNvbl9ucCA9IG9mX3BhcnNlX3BoYW5kbGUobnAsICJ0Y29uLWNvbnRy
-b2xsZXIiLCAwKTsNCj4gPiArCWlmICghdGNvbl9ucCkNCj4gPiArCQlyZXR1cm4gLUVJTlZBTDsN
-Cj4gPiArDQo+ID4gKwl0Y29uX3BkZXYgPSBvZl9maW5kX2RldmljZV9ieV9ub2RlKHRjb25fbnAp
-Ow0KPiA+ICsJaWYgKCF0Y29uX3BkZXYpDQo+ID4gKwkJcmV0dXJuIC1FSU5WQUw7DQo+ID4gKw0K
-PiA+ICsJdGNvbl9jbGsgPSBkZXZtX2Nsa19nZXQoJnRjb25fcGRldi0+ZGV2LCAidGNvbiIpOw0K
-PiA+ICsJaWYgKElTX0VSUih0Y29uX2NsaykpIHsNCj4gPiArCQlyZXQgPSBQVFJfRVJSKHRjb25f
-Y2xrKTsNCj4gPiArCQlnb3RvIGZhaWxlZF9nZXRjbG9jazsNCj4gPiArCX0NCj4gPiArCWNsa19w
-cmVwYXJlX2VuYWJsZSh0Y29uX2Nsayk7DQo+ID4gKw0KPiA+ICsJdGNvbl9yZWcgPSBvZl9pb21h
-cCh0Y29uX25wLCAwKTsNCj4gPiArCWlmICghdGNvbl9yZWcpIHsNCj4gPiArCQlyZXQgPSAtRU5P
-TUVNOw0KPiA+ICsJCWdvdG8gZmFpbGVkX2lvcmVtYXA7DQo+ID4gKwl9DQo+ID4gKwl3cml0ZWwo
-VENPTl9CWVBBU1NfRU5BQkxFLCB0Y29uX3JlZyArIFRDT05fQ1RSTDEpOw0KPiA+ICsNCj4gPiAr
-CXJldHVybiAwOw0KPiA+ICsNCj4gPiArZmFpbGVkX2lvcmVtYXA6DQo+ID4gKwljbGtfZGlzYWJs
-ZV91bnByZXBhcmUodGNvbl9jbGspOw0KPiA+ICtmYWlsZWRfZ2V0Y2xvY2s6DQo+ID4gKwlvZl9u
-b2RlX3B1dCh0Y29uX25wKTsNCj4gPiArCXJldHVybiByZXQ7DQo+ID4gK30NCj4gPiArDQo+IElz
-IHRoZSBmcmFtZWJ1ZmZlciBkcml2ZXIgdGhlIG9ubHkgdXNlciBvZiB0Y29uPyBJZiBub3QgeW91
-IHNob3VsZCBub3QNCj4gbWFwIHRoZSBtZW1vcnkgaGVyZSwgYnV0IHJhdGhlciB1c2Ugc29tZXRo
-aW5nIGxpa2UgcmVnbWFwIHN5c2Nvbi4NCltBbGlzb24gV2FuZ10gWWVzLCB0aGUgZmIgZHJpdmVy
-IGlzIHRoZSBvbmx5IHVzZXIgb2YgdGNvbi4NCg0KVGhhbmtzIGZvciB5b3VyIGNvbW1lbnRzIQ0K
-DQoNCkJlc3QgUmVnYXJkcywNCkFsaXNvbiBXYW5nDQoNCg0KDQo
+Here's a series removing all the old panel model code from the omapdss driver.
+This series depends on the series that changes the board files to use the new
+panel drivers.
+
+There's nothing much special in this series, as it's mostly removing code that
+is not used. There are also related cleanups, like making functions static if
+they are no longer called from outside the file, and such.
+
+Tested on OMAP4 SDP, OMAP4 Panda, OMAP3 Beagle, OMAP3 Beagle xM.
+
+This series can also be found from:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git 3.12/dss-legacy-removal
+
+ Tomi
+
+Tomi Valkeinen (15):
+  OMAPDSS: RFBI: Mark RFBI as broken
+  OMAPDSS: remove omap_dss_device->channel field
+  OMAPDSS: fix DPI and SDI device ids
+  OMAPDSS: SDI: change regulator handling
+  OMAPDSS: DPI: change regulator handling
+  OMAPDSS: remove all old panel drivers
+  OMAPDSS: DPI: remove code related to old panel model
+  OMAPDSS: HDMI: remove code related to old panel model
+  OMAPDSS: DSI: remove code related to old panel model
+  OMAPDSS: SDI: remove code related to old panel model
+  OMAPDSS: VENC: remove code related to old panel model
+  OMAPDSS: RFBI: remove code related to old panel model
+  OMAPDSS: DSS: remove legacy dss bus support
+  OMAPDSS: rename omap_dss_device's 'output' to 'src'
+  OMAPDSS: rename omap_dss_device's 'device' field to 'dst'
+
+ arch/arm/mach-omap2/display.c                      |    4 +-
+ drivers/gpu/drm/omapdrm/omap_encoder.c             |    2 +-
+ drivers/video/omap2/Kconfig                        |    1 -
+ drivers/video/omap2/Makefile                       |    1 -
+ drivers/video/omap2/displays-new/encoder-tfp410.c  |   14 +-
+ .../video/omap2/displays-new/encoder-tpd12s015.c   |   14 +-
+ drivers/video/omap2/displays/Kconfig               |   75 -
+ drivers/video/omap2/displays/Makefile              |   11 -
+ drivers/video/omap2/displays/panel-acx565akm.c     |  798 ----------
+ drivers/video/omap2/displays/panel-generic-dpi.c   |  744 ----------
+ .../omap2/displays/panel-lgphilips-lb035q02.c      |  262 ----
+ drivers/video/omap2/displays/panel-n8x0.c          |  616 --------
+ .../omap2/displays/panel-nec-nl8048hl11-01b.c      |  290 ----
+ drivers/video/omap2/displays/panel-picodlp.c       |  559 -------
+ drivers/video/omap2/displays/panel-picodlp.h       |  288 ----
+ .../video/omap2/displays/panel-sharp-ls037v7dw01.c |  198 ---
+ drivers/video/omap2/displays/panel-taal.c          | 1551 --------------------
+ drivers/video/omap2/displays/panel-tfp410.c        |  353 -----
+ .../video/omap2/displays/panel-tpo-td043mtea1.c    |  596 --------
+ drivers/video/omap2/dss/Kconfig                    |    1 +
+ drivers/video/omap2/dss/Makefile                   |    5 +-
+ drivers/video/omap2/dss/apply.c                    |    4 +-
+ drivers/video/omap2/dss/core.c                     |  312 +---
+ drivers/video/omap2/dss/dpi.c                      |  121 +-
+ drivers/video/omap2/dss/dsi.c                      |  275 +---
+ drivers/video/omap2/dss/dss.h                      |   45 -
+ drivers/video/omap2/dss/hdmi.c                     |  307 +---
+ drivers/video/omap2/dss/hdmi_panel.c               |  414 ------
+ drivers/video/omap2/dss/output.c                   |   22 +-
+ drivers/video/omap2/dss/rfbi.c                     |  135 +-
+ drivers/video/omap2/dss/sdi.c                      |  119 +-
+ drivers/video/omap2/dss/venc.c                     |  122 +-
+ include/video/omap-panel-data.h                    |  118 --
+ include/video/omapdss.h                            |  106 +-
+ 34 files changed, 185 insertions(+), 8298 deletions(-)
+ delete mode 100644 drivers/video/omap2/displays/Kconfig
+ delete mode 100644 drivers/video/omap2/displays/Makefile
+ delete mode 100644 drivers/video/omap2/displays/panel-acx565akm.c
+ delete mode 100644 drivers/video/omap2/displays/panel-generic-dpi.c
+ delete mode 100644 drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
+ delete mode 100644 drivers/video/omap2/displays/panel-n8x0.c
+ delete mode 100644 drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+ delete mode 100644 drivers/video/omap2/displays/panel-picodlp.c
+ delete mode 100644 drivers/video/omap2/displays/panel-picodlp.h
+ delete mode 100644 drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
+ delete mode 100644 drivers/video/omap2/displays/panel-taal.c
+ delete mode 100644 drivers/video/omap2/displays/panel-tfp410.c
+ delete mode 100644 drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+ delete mode 100644 drivers/video/omap2/dss/hdmi_panel.c
+
+-- 
+1.8.1.2
+

@@ -1,69 +1,42 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 29 Aug 2013 14:06:20 +0000
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 29 Aug 2013 14:20:10 +0000
 Subject: Re: [PATCH 06/15] OMAPDSS: remove all old panel drivers
-Message-Id: <521F555C.8090802@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="aNh9HvMEXNVd8ICvWCNAkPo2XkbiQBri3"
+Message-Id: <521F55CA.8050003@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com> <1377783120-14001-7-git-send-email-tomi.valkeinen@ti.com> <521F53F0.4030203@ti.com>
-In-Reply-To: <521F53F0.4030203@ti.com>
-To: Archit Taneja <archit@ti.com>
+References: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com> <1377783120-14001-7-git-send-email-tomi.valkeinen@ti.com> <521F53F0.4030203@ti.com> <521F555C.8090802@ti.com>
+In-Reply-To: <521F555C.8090802@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
---aNh9HvMEXNVd8ICvWCNAkPo2XkbiQBri3
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On 29/08/13 17:00, Archit Taneja wrote:
-> On Thursday 29 August 2013 07:01 PM, Tomi Valkeinen wrote:
->> The board files now use the new panel drivers, making the old panel
->> drivers obsolete.
+On Thursday 29 August 2013 07:36 PM, Tomi Valkeinen wrote:
+> Hi,
+>
+> On 29/08/13 17:00, Archit Taneja wrote:
+>> On Thursday 29 August 2013 07:01 PM, Tomi Valkeinen wrote:
+>>> The board files now use the new panel drivers, making the old panel
+>>> drivers obsolete.
+>>>
+>>> Remove the old panel drivers, Kconfig and Makefile entries, and the
+>>> panels' platform data structs.
 >>
->> Remove the old panel drivers, Kconfig and Makefile entries, and the
->> panels' platform data structs.
->=20
-> Can we convert the picodlp driver to the new panel driver model, and
-> report it as broken for now?
+>> Can we convert the picodlp driver to the new panel driver model, and
+>> report it as broken for now?
+>
+> (please cut your quotes a bit, you just included some thousands of lines
+> of code there =).
 
-(please cut your quotes a bit, you just included some thousands of lines
-of code there =3D).
+Oops, sure, will try to remember.
 
-We could, but I'm not sure what would be the point. The new picodlp
-would be (more or less) totally new driver, so we would still end up
-removing the old driver. We can as well add it later if we manage to get
-it working.
+>
+> We could, but I'm not sure what would be the point. The new picodlp
+> would be (more or less) totally new driver, so we would still end up
+> removing the old driver. We can as well add it later if we manage to get
+> it working.
 
-The RFBI case is a bit different, as there we just changed the current
-driver a bit and we didn't create a totally new one.
+Okay. Let's do that then.
 
- Tomi
+Archit
 
-
-
---aNh9HvMEXNVd8ICvWCNAkPo2XkbiQBri3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSH1VcAAoJEPo9qoy8lh71FkUQAKWc1UwI7H3O6CLLuBOS1oX6
-RnV2kgq23IKiMqgFhoky+MXkiM9QIf8Yj+UWMjqUUGuMjDpYkdPi1qIEL3lOA/3U
-5aXtkXaejAqVlbCmbgkvRMgbYjZcQHiGTCgna1Kt2G//1F2VpX1SEqUukbESUKpw
-XqtRwLmt+4y69dWRuHm3Vh1AwM5auWLxp74w0AmKg2Lq3kTM3jRBmrEHqXgwSyGS
-0L+ebDIfqjzZMGajUTj3rc4r7QRukRNFap1/VD6Wyc9rff+YDOMnf0uOb8ZU+SyI
-S3DikrFRZf/F9L86bUWyc6ZzIs/88xzmg/EYS7IzEJx9HMFniWpgXyJOo+v40rqA
-1aqxcyWORRzBfItVp5iwKrboYLtaq7+q3DUeE68Mn84qhR4eGx8f10WQJEELcYk2
-xJpfV2MkAGyOL29P5ugCvk62MUBYQch8l9pRrhgdBumNTkA9kXyqtyvXsqriAkPW
-yGvEc3Oca+83FkZtZaeMBt7OxXTujJ50gAaouochR/uojwjW08BXApBywyQOX6O5
-Y9D7Gu6b0/dCWL4OkUqtKGwf6+6WQPUhw6lek00V3sXZN/VBEq6D3tDVAGPRSopT
-prcYuM+kxGVzfFQXpWjgXyNViR8SBf8jwVfY8EJFZxr9mTWDTZ5PKEJwfHS9Se1o
-GLvGY/hGHDovp4AK+2m7
-=faee
------END PGP SIGNATURE-----
-
---aNh9HvMEXNVd8ICvWCNAkPo2XkbiQBri3--

@@ -1,124 +1,97 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Fri, 02 Aug 2013 12:05:26 +0000
-Subject: [PATCH RESEND 7/8] fbdev: efifb: bind to efi-framebuffer
-Message-Id: <1375445127-15480-8-git-send-email-dh.herrmann@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 29 Aug 2013 13:31:49 +0000
+Subject: [PATCH 04/15] OMAPDSS: SDI: change regulator handling
+Message-Id: <1377783120-14001-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1375445127-15480-1-git-send-email-dh.herrmann@gmail.com>
-In-Reply-To: <1375445127-15480-1-git-send-email-dh.herrmann@gmail.com>
+References: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: David Airlie <airlied@linux.ie>, Geert Uytterhoeven <geert@linux-m68k.org>, Stephen Warren <swarren@wwwdotorg.org>, Peter Jones <pjones@redhat.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org, linux-fbdev@vger.kernel.org, akpm@linux-foundation.org, David Herrmann <dh.herrmann@gmail.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Instead of creating a dummy device, we now bind to the efi-fb device
-which is provided by x86 initialization code.
+Regulator handling for DPI and SDI is currently handled in the core.c,
+using the 'virtual' omapdss platform device. Nowadays we have proper
+devices for both DPI and SDI, and so we can handle the regulators inside
+the respective drivers.
 
-Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
+This patch moves the regulator handling for SDI into sdi.c.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/efifb.c | 68 +++++++++++++++++----------------------------------
- 1 file changed, 22 insertions(+), 46 deletions(-)
+ drivers/video/omap2/dss/core.c | 15 ---------------
+ drivers/video/omap2/dss/dss.h  |  1 -
+ drivers/video/omap2/dss/sdi.c  | 10 +++-------
+ 3 files changed, 3 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
-index e493bcb..2a8286e 100644
---- a/drivers/video/efifb.c
-+++ b/drivers/video/efifb.c
-@@ -96,7 +96,7 @@ void vga_set_default_device(struct pci_dev *pdev)
- 	default_vga = pdev;
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 1aeb274..a07d626 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -44,7 +44,6 @@ static struct {
+ 	struct platform_device *pdev;
+ 
+ 	struct regulator *vdds_dsi_reg;
+-	struct regulator *vdds_sdi_reg;
+ 
+ 	const char *default_display_name;
+ } core;
+@@ -95,20 +94,6 @@ struct regulator *dss_get_vdds_dsi(void)
+ 	return reg;
  }
  
--static int __init efifb_setup(char *options)
-+static int efifb_setup(char *options)
- {
- 	char *this_opt;
- 	int i;
-@@ -153,13 +153,28 @@ static int __init efifb_setup(char *options)
- 	return 0;
- }
- 
--static int __init efifb_probe(struct platform_device *dev)
-+static int efifb_probe(struct platform_device *dev)
- {
- 	struct fb_info *info;
- 	int err;
- 	unsigned int size_vmode;
- 	unsigned int size_remap;
- 	unsigned int size_total;
-+	char *option = NULL;
-+
-+	if (screen_info.orig_video_isVGA != VIDEO_TYPE_EFI)
-+		return -ENODEV;
-+
-+	if (fb_get_options("efifb", &option))
-+		return -ENODEV;
-+	efifb_setup(option);
-+
-+	/* We don't get linelength from UGA Draw Protocol, only from
-+	 * EFI Graphics Protocol.  So if it's not in DMI, and it's not
-+	 * passed in from the user, we really can't use the framebuffer.
-+	 */
-+	if (!screen_info.lfb_linelength)
-+		return -ENODEV;
- 
- 	if (!screen_info.lfb_depth)
- 		screen_info.lfb_depth = 32;
-@@ -323,51 +338,12 @@ err_release_mem:
- }
- 
- static struct platform_driver efifb_driver = {
--	.driver	= {
--		.name	= "efifb",
-+	.driver = {
-+		.name = "efi-framebuffer",
-+		.owner = THIS_MODULE,
- 	},
-+	.probe = efifb_probe,
- };
- 
--static struct platform_device efifb_device = {
--	.name	= "efifb",
--};
--
--static int __init efifb_init(void)
+-struct regulator *dss_get_vdds_sdi(void)
 -{
--	int ret;
--	char *option = NULL;
+-	struct regulator *reg;
 -
--	if (screen_info.orig_video_isVGA != VIDEO_TYPE_EFI)
--		return -ENODEV;
+-	if (core.vdds_sdi_reg != NULL)
+-		return core.vdds_sdi_reg;
 -
--	if (fb_get_options("efifb", &option))
--		return -ENODEV;
--	efifb_setup(option);
+-	reg = devm_regulator_get(&core.pdev->dev, "vdds_sdi");
+-	if (!IS_ERR(reg))
+-		core.vdds_sdi_reg = reg;
 -
--	/* We don't get linelength from UGA Draw Protocol, only from
--	 * EFI Graphics Protocol.  So if it's not in DMI, and it's not
--	 * passed in from the user, we really can't use the framebuffer.
--	 */
--	if (!screen_info.lfb_linelength)
--		return -ENODEV;
--
--	ret = platform_device_register(&efifb_device);
--	if (ret)
--		return ret;
--
--	/*
--	 * This is not just an optimization.  We will interfere
--	 * with a real driver if we get reprobed, so don't allow
--	 * it.
--	 */
--	ret = platform_driver_probe(&efifb_driver, efifb_probe);
--	if (ret) {
--		platform_device_unregister(&efifb_device);
--		return ret;
--	}
--
--	return ret;
+-	return reg;
 -}
--module_init(efifb_init);
 -
-+module_platform_driver(efifb_driver);
- MODULE_LICENSE("GPL");
+ int dss_dsi_enable_pads(int dsi_id, unsigned lane_mask)
+ {
+ 	struct omap_dss_board_info *board_data = core.pdev->dev.platform_data;
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 50a2362..7d97de4 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -165,7 +165,6 @@ struct platform_device;
+ struct platform_device *dss_get_core_pdev(void);
+ struct bus_type *dss_get_bus(void);
+ struct regulator *dss_get_vdds_dsi(void);
+-struct regulator *dss_get_vdds_sdi(void);
+ int dss_dsi_enable_pads(int dsi_id, unsigned lane_mask);
+ void dss_dsi_disable_pads(int dsi_id, unsigned lane_mask);
+ int dss_set_min_bus_tput(struct device *dev, unsigned long tput);
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 856af2e..82b64e3 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -267,14 +267,10 @@ static int sdi_init_regulator(void)
+ 	if (sdi.vdds_sdi_reg)
+ 		return 0;
+ 
+-	vdds_sdi = dss_get_vdds_sdi();
+-
++	vdds_sdi = devm_regulator_get(&sdi.pdev->dev, "vdds_sdi");
+ 	if (IS_ERR(vdds_sdi)) {
+-		vdds_sdi = devm_regulator_get(&sdi.pdev->dev, "vdds_sdi");
+-		if (IS_ERR(vdds_sdi)) {
+-			DSSERR("can't get VDDS_SDI regulator\n");
+-			return PTR_ERR(vdds_sdi);
+-		}
++		DSSERR("can't get VDDS_SDI regulator\n");
++		return PTR_ERR(vdds_sdi);
+ 	}
+ 
+ 	sdi.vdds_sdi_reg = vdds_sdi;
 -- 
-1.8.3.4
+1.8.1.2
 

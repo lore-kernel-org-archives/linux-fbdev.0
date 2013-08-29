@@ -1,162 +1,280 @@
-From: Darren Etheridge <detheridge@ti.com>
-Date: Mon, 05 Aug 2013 22:02:26 +0000
-Subject: [PATCH v3 07/20] video: da8xx-fb: pix clk and clk div handling cleanup
-Message-Id: <1375740159-1045-8-git-send-email-detheridge@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 29 Aug 2013 13:31:56 +0000
+Subject: [PATCH 11/15] OMAPDSS: VENC: remove code related to old panel model
+Message-Id: <1377783120-14001-12-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Based on original patch by: Afzal Mohammed <afzal@ti.com>
+Now that the old panel drivers have been removed, we can remove the
+old-model API and related code from the DSS encoder drivers.
 
-Use the new modedb field to store pix clk. Reorganize existing clock
-divider functions with names now corresponding to what they do, add
-common function prefix.
+This patch removes the code from the VENC driver.
 
-Fix existing panel modedb pixclock to be in ps instead of Hz. This
-needed a change in the way clock divider is calculated. As modedb
-pixclock information is now in ps, override on "var" pixclock over
-modedb to var conversion is removed.
-
-v2:
-Changed pixel clock configuration to use KHZ2PICOS macro
-
-Signed-off-by: Darren Etheridge <detheridge@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/da8xx-fb.c |   48 +++++++++++++++++----------------------------
- 1 files changed, 18 insertions(+), 30 deletions(-)
+ drivers/video/omap2/dss/Makefile |   2 +-
+ drivers/video/omap2/dss/dss.h    |  14 -----
+ drivers/video/omap2/dss/venc.c   | 118 ++++++---------------------------------
+ 3 files changed, 17 insertions(+), 117 deletions(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index f1d88ac..0fac1a0 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -160,7 +160,6 @@ struct da8xx_fb_par {
- 	struct clk *lcdc_clk;
- 	int irq;
- 	unsigned int palette_sz;
--	unsigned int pxl_clk;
- 	int blank;
- 	wait_queue_head_t	vsync_wait;
- 	int			vsync_flag;
-@@ -201,7 +200,7 @@ static struct fb_videomode known_lcd_panels[] = {
- 		.name           = "Sharp_LCD035Q3DG01",
- 		.xres           = 320,
- 		.yres           = 240,
--		.pixclock       = 4608000,
-+		.pixclock       = KHZ2PICOS(4607),
- 		.left_margin    = 6,
- 		.right_margin   = 8,
- 		.upper_margin   = 2,
-@@ -216,7 +215,7 @@ static struct fb_videomode known_lcd_panels[] = {
- 		.name           = "Sharp_LK043T1DG01",
- 		.xres           = 480,
- 		.yres           = 272,
--		.pixclock       = 7833600,
-+		.pixclock       = KHZ2PICOS(7833),
- 		.left_margin    = 2,
- 		.right_margin   = 2,
- 		.upper_margin   = 2,
-@@ -231,7 +230,7 @@ static struct fb_videomode known_lcd_panels[] = {
- 		.name           = "SP10Q010",
- 		.xres           = 320,
- 		.yres           = 240,
--		.pixclock       = 7833600,
-+		.pixclock       = KHZ2PICOS(7833),
- 		.left_margin    = 10,
- 		.right_margin   = 10,
- 		.upper_margin   = 10,
-@@ -680,13 +679,14 @@ static void da8xx_fb_lcd_reset(void)
- 	}
+diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
+index e022ed1..94832eb 100644
+--- a/drivers/video/omap2/dss/Makefile
++++ b/drivers/video/omap2/dss/Makefile
+@@ -7,7 +7,7 @@ omapdss-y += manager.o manager-sysfs.o overlay.o overlay-sysfs.o apply.o \
+ 	dispc-compat.o display-sysfs.o
+ omapdss-$(CONFIG_OMAP2_DSS_DPI) += dpi.o
+ omapdss-$(CONFIG_OMAP2_DSS_RFBI) += rfbi.o
+-omapdss-$(CONFIG_OMAP2_DSS_VENC) += venc.o venc_panel.o
++omapdss-$(CONFIG_OMAP2_DSS_VENC) += venc.o
+ omapdss-$(CONFIG_OMAP2_DSS_SDI) += sdi.o
+ omapdss-$(CONFIG_OMAP2_DSS_DSI) += dsi.o
+ omapdss-$(CONFIG_OMAP4_DSS_HDMI) += hdmi.o ti_hdmi_4xxx_ip.o
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 6142885..68dd27f 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -434,20 +434,6 @@ int dispc_wb_setup(const struct omap_dss_writeback_info *wi,
+ /* VENC */
+ int venc_init_platform_driver(void) __init;
+ void venc_uninit_platform_driver(void) __exit;
+-int omapdss_venc_display_enable(struct omap_dss_device *dssdev);
+-void omapdss_venc_display_disable(struct omap_dss_device *dssdev);
+-void omapdss_venc_set_timings(struct omap_dss_device *dssdev,
+-		struct omap_video_timings *timings);
+-int omapdss_venc_check_timings(struct omap_dss_device *dssdev,
+-		struct omap_video_timings *timings);
+-u32 omapdss_venc_get_wss(struct omap_dss_device *dssdev);
+-int omapdss_venc_set_wss(struct omap_dss_device *dssdev, u32 wss);
+-void omapdss_venc_set_type(struct omap_dss_device *dssdev,
+-		enum omap_dss_venc_type type);
+-void omapdss_venc_invert_vid_out_polarity(struct omap_dss_device *dssdev,
+-		bool invert_polarity);
+-int venc_panel_init(void);
+-void venc_panel_exit(void);
+ 
+ /* HDMI */
+ int hdmi_init_platform_driver(void) __init;
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 496a106..0d8ccde 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -492,7 +492,7 @@ static void venc_power_off(struct omap_dss_device *dssdev)
+ 	venc_runtime_put();
  }
  
--static void lcd_calc_clk_divider(struct da8xx_fb_par *par)
-+static inline unsigned da8xx_fb_calc_clk_divider(struct da8xx_fb_par *par,
-+						 unsigned pixclock)
+-int omapdss_venc_display_enable(struct omap_dss_device *dssdev)
++static int venc_display_enable(struct omap_dss_device *dssdev)
  {
--	unsigned int lcd_clk, div;
--
--	lcd_clk = clk_get_rate(par->lcdc_clk);
--	div = lcd_clk / par->pxl_clk;
-+	return par->lcd_fck_rate / (PICOS2KHZ(pixclock) * 1000);
-+}
- 
-+static inline void da8xx_fb_config_clk_divider(unsigned div)
-+{
- 	/* Configure the LCD clock divisor. */
- 	lcdc_write(LCD_CLK_DIVISOR(div) |
- 			(LCD_RASTER_MODE & 0x1), LCD_CTRL_REG);
-@@ -694,7 +694,14 @@ static void lcd_calc_clk_divider(struct da8xx_fb_par *par)
- 	if (lcd_revision = LCD_VERSION_2)
- 		lcdc_write(LCD_V2_DMA_CLK_EN | LCD_V2_LIDD_CLK_EN |
- 				LCD_V2_CORE_CLK_EN, LCD_CLK_ENABLE_REG);
-+}
-+
-+static inline void da8xx_fb_calc_config_clk_divider(struct da8xx_fb_par *par,
-+						    struct fb_videomode *mode)
-+{
-+	unsigned div = da8xx_fb_calc_clk_divider(par, mode->pixclock);
- 
-+	da8xx_fb_config_clk_divider(div);
+ 	struct omap_dss_device *out = &venc.output;
+ 	int r;
+@@ -521,7 +521,7 @@ err0:
+ 	return r;
  }
  
- static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
-@@ -705,8 +712,7 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+-void omapdss_venc_display_disable(struct omap_dss_device *dssdev)
++static void venc_display_disable(struct omap_dss_device *dssdev)
+ {
+ 	DSSDBG("venc_display_disable\n");
  
- 	da8xx_fb_lcd_reset();
+@@ -532,7 +532,7 @@ void omapdss_venc_display_disable(struct omap_dss_device *dssdev)
+ 	mutex_unlock(&venc.venc_lock);
+ }
  
--	/* Calculate the divider */
--	lcd_calc_clk_divider(par);
-+	da8xx_fb_calc_config_clk_divider(par, panel);
+-void omapdss_venc_set_timings(struct omap_dss_device *dssdev,
++static void venc_set_timings(struct omap_dss_device *dssdev,
+ 		struct omap_video_timings *timings)
+ {
+ 	DSSDBG("venc_set_timings\n");
+@@ -550,7 +550,7 @@ void omapdss_venc_set_timings(struct omap_dss_device *dssdev,
+ 	mutex_unlock(&venc.venc_lock);
+ }
  
- 	if (panel->sync & FB_SYNC_CLK_INVERT)
- 		lcdc_write((lcdc_read(LCD_RASTER_TIMING_2_REG) |
-@@ -969,7 +975,7 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
- 		if (par->lcd_fck_rate != clk_get_rate(par->lcdc_clk)) {
- 			par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
- 			lcd_disable_raster(true);
--			lcd_calc_clk_divider(par);
-+			da8xx_fb_calc_config_clk_divider(par, &par->mode);
- 			if (par->blank = FB_BLANK_UNBLANK)
- 				lcd_enable_raster();
- 		}
-@@ -1195,22 +1201,6 @@ static struct fb_ops da8xx_fb_ops = {
- 	.fb_blank = cfb_blank,
- };
+-int omapdss_venc_check_timings(struct omap_dss_device *dssdev,
++static int venc_check_timings(struct omap_dss_device *dssdev,
+ 		struct omap_video_timings *timings)
+ {
+ 	DSSDBG("venc_check_timings\n");
+@@ -574,13 +574,13 @@ static void venc_get_timings(struct omap_dss_device *dssdev,
+ 	mutex_unlock(&venc.venc_lock);
+ }
  
--/* Calculate and return pixel clock period in pico seconds */
--static unsigned int da8xxfb_pixel_clk_period(struct da8xx_fb_par *par)
+-u32 omapdss_venc_get_wss(struct omap_dss_device *dssdev)
++static u32 venc_get_wss(struct omap_dss_device *dssdev)
+ {
+ 	/* Invert due to VENC_L21_WC_CTL:INV=1 */
+ 	return (venc.wss_data >> 8) ^ 0xfffff;
+ }
+ 
+-int omapdss_venc_set_wss(struct omap_dss_device *dssdev, u32 wss)
++static int venc_set_wss(struct omap_dss_device *dssdev, u32 wss)
+ {
+ 	const struct venc_config *config;
+ 	int r;
+@@ -609,7 +609,7 @@ err:
+ 	return r;
+ }
+ 
+-void omapdss_venc_set_type(struct omap_dss_device *dssdev,
++static void venc_set_type(struct omap_dss_device *dssdev,
+ 		enum omap_dss_venc_type type)
+ {
+ 	mutex_lock(&venc.venc_lock);
+@@ -619,7 +619,7 @@ void omapdss_venc_set_type(struct omap_dss_device *dssdev,
+ 	mutex_unlock(&venc.venc_lock);
+ }
+ 
+-void omapdss_venc_invert_vid_out_polarity(struct omap_dss_device *dssdev,
++static void venc_invert_vid_out_polarity(struct omap_dss_device *dssdev,
+ 		bool invert_polarity)
+ {
+ 	mutex_lock(&venc.venc_lock);
+@@ -721,74 +721,6 @@ static int venc_get_clocks(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static struct omap_dss_device *venc_find_dssdev(struct platform_device *pdev)
 -{
--	unsigned int lcd_clk, div;
--	unsigned int configured_pix_clk;
--	unsigned long long pix_clk_period_picosec = 1000000000000ULL;
+-	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
+-	const char *def_disp_name = omapdss_get_default_display_name();
+-	struct omap_dss_device *def_dssdev;
+-	int i;
 -
--	lcd_clk = clk_get_rate(par->lcdc_clk);
--	div = lcd_clk / par->pxl_clk;
--	configured_pix_clk = (lcd_clk / div);
+-	def_dssdev = NULL;
 -
--	do_div(pix_clk_period_picosec, configured_pix_clk);
+-	for (i = 0; i < pdata->num_devices; ++i) {
+-		struct omap_dss_device *dssdev = pdata->devices[i];
 -
--	return pix_clk_period_picosec;
+-		if (dssdev->type != OMAP_DISPLAY_TYPE_VENC)
+-			continue;
+-
+-		if (def_dssdev = NULL)
+-			def_dssdev = dssdev;
+-
+-		if (def_disp_name != NULL &&
+-				strcmp(dssdev->name, def_disp_name) = 0) {
+-			def_dssdev = dssdev;
+-			break;
+-		}
+-	}
+-
+-	return def_dssdev;
 -}
 -
- static int fb_probe(struct platform_device *device)
+-static int venc_probe_pdata(struct platform_device *vencdev)
+-{
+-	struct omap_dss_device *plat_dssdev;
+-	struct omap_dss_device *dssdev;
+-	int r;
+-
+-	plat_dssdev = venc_find_dssdev(vencdev);
+-
+-	if (!plat_dssdev)
+-		return 0;
+-
+-	r = venc_init_regulator();
+-	if (r)
+-		return r;
+-
+-	dssdev = dss_alloc_and_init_device(&vencdev->dev);
+-	if (!dssdev)
+-		return -ENOMEM;
+-
+-	dss_copy_device_pdata(dssdev, plat_dssdev);
+-
+-	r = omapdss_output_set_device(&venc.output, dssdev);
+-	if (r) {
+-		DSSERR("failed to connect output to new device: %s\n",
+-				dssdev->name);
+-		dss_put_device(dssdev);
+-		return r;
+-	}
+-
+-	r = dss_add_device(dssdev);
+-	if (r) {
+-		DSSERR("device %s register failed: %d\n", dssdev->name, r);
+-		omapdss_output_unset_device(&venc.output);
+-		dss_put_device(dssdev);
+-		return r;
+-	}
+-
+-	return 0;
+-}
+-
+ static int venc_connect(struct omap_dss_device *dssdev,
+ 		struct omap_dss_device *dst)
  {
- 	struct da8xx_lcdc_platform_data *fb_pdata @@ -1303,7 +1293,6 @@ static int fb_probe(struct platform_device *device)
- 	par = da8xx_fb_info->par;
- 	par->lcdc_clk = fb_clk;
- 	par->lcd_fck_rate = clk_get_rate(fb_clk);
--	par->pxl_clk = lcdc_info->pixclock;
- 	if (fb_pdata->panel_power_ctrl) {
- 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
- 		par->panel_power_ctrl(1);
-@@ -1368,7 +1357,6 @@ static int fb_probe(struct platform_device *device)
- 	da8xx_fb_var.grayscale  	    lcd_cfg->panel_shade = MONOCHROME ? 1 : 0;
- 	da8xx_fb_var.bits_per_pixel = lcd_cfg->bpp;
--	da8xx_fb_var.pixclock = da8xxfb_pixel_clk_period(par);
+@@ -836,18 +768,18 @@ static const struct omapdss_atv_ops venc_ops = {
+ 	.connect = venc_connect,
+ 	.disconnect = venc_disconnect,
  
- 	/* Initialize fbinfo */
- 	da8xx_fb_info->flags = FBINFO_FLAG_DEFAULT;
+-	.enable = omapdss_venc_display_enable,
+-	.disable = omapdss_venc_display_disable,
++	.enable = venc_display_enable,
++	.disable = venc_display_disable,
+ 
+-	.check_timings = omapdss_venc_check_timings,
+-	.set_timings = omapdss_venc_set_timings,
++	.check_timings = venc_check_timings,
++	.set_timings = venc_set_timings,
+ 	.get_timings = venc_get_timings,
+ 
+-	.set_type = omapdss_venc_set_type,
+-	.invert_vid_out_polarity = omapdss_venc_invert_vid_out_polarity,
++	.set_type = venc_set_type,
++	.invert_vid_out_polarity = venc_invert_vid_out_polarity,
+ 
+-	.set_wss = omapdss_venc_set_wss,
+-	.get_wss = omapdss_venc_get_wss,
++	.set_wss = venc_set_wss,
++	.get_wss = venc_get_wss,
+ };
+ 
+ static void venc_init_output(struct platform_device *pdev)
+@@ -913,26 +845,12 @@ static int omap_venchw_probe(struct platform_device *pdev)
+ 
+ 	venc_runtime_put();
+ 
+-	r = venc_panel_init();
+-	if (r)
+-		goto err_panel_init;
+-
+ 	dss_debugfs_create_file("venc", venc_dump_regs);
+ 
+ 	venc_init_output(pdev);
+ 
+-	if (pdev->dev.platform_data) {
+-		r = venc_probe_pdata(pdev);
+-		if (r)
+-			goto err_probe;
+-	}
+-
+ 	return 0;
+ 
+-err_probe:
+-	venc_panel_exit();
+-	venc_uninit_output(pdev);
+-err_panel_init:
+ err_runtime_get:
+ 	pm_runtime_disable(&pdev->dev);
+ 	return r;
+@@ -940,10 +858,6 @@ err_runtime_get:
+ 
+ static int __exit omap_venchw_remove(struct platform_device *pdev)
+ {
+-	dss_unregister_child_devices(&pdev->dev);
+-
+-	venc_panel_exit();
+-
+ 	venc_uninit_output(pdev);
+ 
+ 	pm_runtime_disable(&pdev->dev);
 -- 
-1.7.0.4
+1.8.1.2
 

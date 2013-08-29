@@ -1,43 +1,38 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Fri, 02 Aug 2013 12:05:24 +0000
-Subject: [PATCH RESEND 5/8] fbdev: simplefb: add common x86 RGB formats
-Message-Id: <1375445127-15480-6-git-send-email-dh.herrmann@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 29 Aug 2013 13:31:47 +0000
+Subject: [PATCH 02/15] OMAPDSS: remove omap_dss_device->channel field
+Message-Id: <1377783120-14001-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1375445127-15480-1-git-send-email-dh.herrmann@gmail.com>
-In-Reply-To: <1375445127-15480-1-git-send-email-dh.herrmann@gmail.com>
+References: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: David Airlie <airlied@linux.ie>, Geert Uytterhoeven <geert@linux-m68k.org>, Stephen Warren <swarren@wwwdotorg.org>, Peter Jones <pjones@redhat.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org, linux-fbdev@vger.kernel.org, akpm@linux-foundation.org, David Herrmann <dh.herrmann@gmail.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-32bit XRGB and ARGB are used by modern x86 systems for EFI and VESA
-framebuffers. The other formats were reported by hpa to be most common.
-Add these so simplefb works on most common x86 systems.
+The 'channel' field in struct omap_dss_device is no longer used, and can
+be removed.
 
-Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- include/linux/platform_data/simplefb.h | 7 +++++++
- 1 file changed, 7 insertions(+)
+ include/video/omapdss.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/include/linux/platform_data/simplefb.h b/include/linux/platform_data/simplefb.h
-index 5fa2c5e..53774b0 100644
---- a/include/linux/platform_data/simplefb.h
-+++ b/include/linux/platform_data/simplefb.h
-@@ -20,6 +20,13 @@
- #define SIMPLEFB_FORMATS \
- { \
- 	{ "r5g6b5", 16, {11, 5}, {5, 6}, {0, 5}, {0, 0}, DRM_FORMAT_RGB565 }, \
-+	{ "x1r5g5b5", 16, {10, 5}, {5, 5}, {0, 5}, {0, 0}, DRM_FORMAT_XRGB1555 }, \
-+	{ "a1r5g5b5", 16, {10, 5}, {5, 5}, {0, 5}, {15, 1}, DRM_FORMAT_ARGB1555 }, \
-+	{ "r8g8b8", 24, {16, 8}, {8, 8}, {0, 8}, {0, 0}, DRM_FORMAT_RGB888 }, \
-+	{ "x8r8g8b8", 32, {16, 8}, {8, 8}, {0, 8}, {0, 0}, DRM_FORMAT_XRGB8888 }, \
-+	{ "a8r8g8b8", 32, {16, 8}, {8, 8}, {0, 8}, {24, 8}, DRM_FORMAT_ARGB8888 }, \
-+	{ "x2r10g10b10", 32, {20, 10}, {10, 10}, {0, 10}, {0, 0}, DRM_FORMAT_XRGB2101010 }, \
-+	{ "a2r10g10b10", 32, {20, 10}, {10, 10}, {0, 10}, {30, 2}, DRM_FORMAT_ARGB2101010 }, \
- }
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index b394635..3b68dc2 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -765,9 +765,6 @@ struct omap_dss_device {
+ 	enum omap_display_type type;
+ 	enum omap_display_type output_type;
  
- /*
+-	/* obsolete, to be removed */
+-	enum omap_channel channel;
+-
+ 	union {
+ 		struct {
+ 			u8 data_lines;
 -- 
-1.8.3.4
+1.8.1.2
 

@@ -1,156 +1,365 @@
-From: Inki Dae <inki.dae@samsung.com>
-Date: Tue, 13 Aug 2013 09:19:36 +0000
-Subject: [PATCH 2/2] [RFC PATCH v2] dma-buf: Add user interfaces for dmabuf sync support.
-Message-Id: <1376385576-9039-3-git-send-email-inki.dae@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 29 Aug 2013 13:31:57 +0000
+Subject: [PATCH 12/15] OMAPDSS: RFBI: remove code related to old panel model
+Message-Id: <1377783120-14001-13-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376385576-9039-1-git-send-email-inki.dae@samsung.com>
-In-Reply-To: <1376385576-9039-1-git-send-email-inki.dae@samsung.com>
+References: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org, linaro-kernel@lists.linaro.org
-Cc: maarten.lankhorst@canonical.com, sumit.semwal@linaro.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, Inki Dae <inki.dae@samsung.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Archit Taneja <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This patch adds lock and poll callbacks to dma buf file operations,
-and these callbacks will be called by fcntl and select system calls.
+Now that the old panel drivers have been removed, we can remove the
+old-model API and related code from the DSS encoder drivers.
 
-fcntl and select system calls can be used to wait for the completion
-of DMA or CPU access to a shared dmabuf. The difference of them is
-fcntl system call takes a lock after the completion but select system
-call doesn't. So in case of fcntl system call, it's useful when a task
-wants to access a shared dmabuf without any broken. On the other hand,
-it's useful when a task wants to just wait for the completion.
+This patch removes the code from the RFBI driver.
 
-Changelog v2:
-- Add select system call support.
-  . The purpose of this feature is to wait for the completion of DMA or
-    CPU access to a dmabuf without that caller locks the dmabuf again
-    after the completion.
-    That is useful when caller wants to be aware of the completion of
-    DMA access to the dmabuf, and the caller doesn't use intefaces for
-    the DMA device driver.
-
-Signed-off-by: Inki Dae <inki.dae@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/base/dma-buf.c      |   81 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/dmabuf-sync.h |    1 +
- 2 files changed, 82 insertions(+), 0 deletions(-)
+ drivers/video/omap2/dss/rfbi.c | 135 ++++++-----------------------------------
+ include/video/omapdss.h        |  26 --------
+ 2 files changed, 19 insertions(+), 142 deletions(-)
 
-diff --git a/drivers/base/dma-buf.c b/drivers/base/dma-buf.c
-index 4aca57a..f16a396 100644
---- a/drivers/base/dma-buf.c
-+++ b/drivers/base/dma-buf.c
-@@ -29,6 +29,7 @@
- #include <linux/export.h>
- #include <linux/debugfs.h>
- #include <linux/seq_file.h>
-+#include <linux/poll.h>
- #include <linux/dmabuf-sync.h>
- 
- static inline int is_dma_buf_file(struct file *);
-@@ -80,9 +81,89 @@ static int dma_buf_mmap_internal(struct file *file, struct vm_area_struct *vma)
- 	return dmabuf->ops->mmap(dmabuf, vma);
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index fdfe6e6..c8a81a2 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -151,19 +151,17 @@ static void rfbi_runtime_put(void)
+ 	WARN_ON(r < 0 && r != -ENOSYS);
  }
  
-+static unsigned int dma_buf_poll(struct file *filp,
-+					struct poll_table_struct *poll)
-+{
-+	struct dma_buf *dmabuf;
-+	struct dmabuf_sync_reservation *robj;
-+	int ret = 0;
-+
-+	if (!is_dma_buf_file(filp))
-+		return POLLERR;
-+
-+	dmabuf = filp->private_data;
-+	if (!dmabuf || !dmabuf->sync)
-+		return POLLERR;
-+
-+	robj = dmabuf->sync;
-+
-+	mutex_lock(&robj->lock);
-+
-+	robj->polled = true;
-+
-+	/*
-+	 * CPU or DMA access to this buffer has been completed, and
-+	 * the blocked task has been waked up. Return poll event
-+	 * so that the task can get out of select().
-+	 */
-+	if (robj->poll_event) {
-+		robj->poll_event = false;
-+		mutex_unlock(&robj->lock);
-+		return POLLIN | POLLOUT;
-+	}
-+
-+	/*
-+	 * There is no anyone accessing this buffer so just return.
-+	 */
-+	if (!robj->locked) {
-+		mutex_unlock(&robj->lock);
-+		return POLLIN | POLLOUT;
-+	}
-+
-+	poll_wait(filp, &robj->poll_wait, poll);
-+
-+	mutex_unlock(&robj->lock);
-+
-+	return ret;
-+}
-+
-+static int dma_buf_lock(struct file *file, int cmd, struct file_lock *fl)
-+{
-+	struct dma_buf *dmabuf;
-+	unsigned int type;
-+	bool wait = false;
-+
-+	if (!is_dma_buf_file(file))
-+		return -EINVAL;
-+
-+	dmabuf = file->private_data;
-+
-+	if ((fl->fl_type & F_UNLCK) = F_UNLCK) {
-+		dmabuf_sync_single_unlock(dmabuf);
-+		return 0;
-+	}
-+
-+	/* convert flock type to dmabuf sync type. */
-+	if ((fl->fl_type & F_WRLCK) = F_WRLCK)
-+		type = DMA_BUF_ACCESS_W;
-+	else if ((fl->fl_type & F_RDLCK) = F_RDLCK)
-+		type = DMA_BUF_ACCESS_R;
-+	else
-+		return -EINVAL;
-+
-+	if (fl->fl_flags & FL_SLEEP)
-+		wait = true;
-+
-+	/* TODO. the locking to certain region should also be considered. */
-+
-+	return dmabuf_sync_single_lock(dmabuf, type, wait);
-+}
-+
- static const struct file_operations dma_buf_fops = {
- 	.release	= dma_buf_release,
- 	.mmap		= dma_buf_mmap_internal,
-+	.poll		= dma_buf_poll,
-+	.lock		= dma_buf_lock,
+-void rfbi_bus_lock(void)
++static void rfbi_bus_lock(void)
+ {
+ 	down(&rfbi.bus_lock);
+ }
+-EXPORT_SYMBOL(rfbi_bus_lock);
+ 
+-void rfbi_bus_unlock(void)
++static void rfbi_bus_unlock(void)
+ {
+ 	up(&rfbi.bus_lock);
+ }
+-EXPORT_SYMBOL(rfbi_bus_unlock);
+ 
+-void omap_rfbi_write_command(const void *buf, u32 len)
++static void rfbi_write_command(const void *buf, u32 len)
+ {
+ 	switch (rfbi.parallelmode) {
+ 	case OMAP_DSS_RFBI_PARALLELMODE_8:
+@@ -189,9 +187,8 @@ void omap_rfbi_write_command(const void *buf, u32 len)
+ 		BUG();
+ 	}
+ }
+-EXPORT_SYMBOL(omap_rfbi_write_command);
+ 
+-void omap_rfbi_read_data(void *buf, u32 len)
++static void rfbi_read_data(void *buf, u32 len)
+ {
+ 	switch (rfbi.parallelmode) {
+ 	case OMAP_DSS_RFBI_PARALLELMODE_8:
+@@ -221,9 +218,8 @@ void omap_rfbi_read_data(void *buf, u32 len)
+ 		BUG();
+ 	}
+ }
+-EXPORT_SYMBOL(omap_rfbi_read_data);
+ 
+-void omap_rfbi_write_data(const void *buf, u32 len)
++static void rfbi_write_data(const void *buf, u32 len)
+ {
+ 	switch (rfbi.parallelmode) {
+ 	case OMAP_DSS_RFBI_PARALLELMODE_8:
+@@ -250,9 +246,8 @@ void omap_rfbi_write_data(const void *buf, u32 len)
+ 
+ 	}
+ }
+-EXPORT_SYMBOL(omap_rfbi_write_data);
+ 
+-void omap_rfbi_write_pixels(const void __iomem *buf, int scr_width,
++static void rfbi_write_pixels(const void __iomem *buf, int scr_width,
+ 		u16 x, u16 y,
+ 		u16 w, u16 h)
+ {
+@@ -305,7 +300,6 @@ void omap_rfbi_write_pixels(const void __iomem *buf, int scr_width,
+ 		BUG();
+ 	}
+ }
+-EXPORT_SYMBOL(omap_rfbi_write_pixels);
+ 
+ static int rfbi_transfer_area(struct omap_dss_device *dssdev,
+ 		void (*callback)(void *data), void *data)
+@@ -574,7 +568,7 @@ static int rfbi_convert_timings(struct rfbi_timings *t)
+ }
+ 
+ /* xxx FIX module selection missing */
+-int omap_rfbi_setup_te(enum omap_rfbi_te_mode mode,
++static int rfbi_setup_te(enum omap_rfbi_te_mode mode,
+ 			     unsigned hs_pulse_time, unsigned vs_pulse_time,
+ 			     int hs_pol_inv, int vs_pol_inv, int extif_div)
+ {
+@@ -613,10 +607,9 @@ int omap_rfbi_setup_te(enum omap_rfbi_te_mode mode,
+ 
+ 	return 0;
+ }
+-EXPORT_SYMBOL(omap_rfbi_setup_te);
+ 
+ /* xxx FIX module selection missing */
+-int omap_rfbi_enable_te(bool enable, unsigned line)
++static int rfbi_enable_te(bool enable, unsigned line)
+ {
+ 	u32 l;
+ 
+@@ -636,9 +629,8 @@ int omap_rfbi_enable_te(bool enable, unsigned line)
+ 
+ 	return 0;
+ }
+-EXPORT_SYMBOL(omap_rfbi_enable_te);
+ 
+-static int rfbi_configure(int rfbi_module, int bpp, int lines)
++static int rfbi_configure_bus(int rfbi_module, int bpp, int lines)
+ {
+ 	u32 l;
+ 	int cycle1 = 0, cycle2 = 0, cycle3 = 0;
+@@ -770,45 +762,39 @@ static int rfbi_configure(int rfbi_module, int bpp, int lines)
+ 	return 0;
+ }
+ 
+-int omap_rfbi_configure(struct omap_dss_device *dssdev)
++static int rfbi_configure(struct omap_dss_device *dssdev)
+ {
+-	return rfbi_configure(dssdev->phy.rfbi.channel, rfbi.pixel_size,
++	return rfbi_configure_bus(dssdev->phy.rfbi.channel, rfbi.pixel_size,
+ 			rfbi.data_lines);
+ }
+-EXPORT_SYMBOL(omap_rfbi_configure);
+ 
+-int omap_rfbi_update(struct omap_dss_device *dssdev, void (*callback)(void *),
++static int rfbi_update(struct omap_dss_device *dssdev, void (*callback)(void *),
+ 		void *data)
+ {
+ 	return rfbi_transfer_area(dssdev, callback, data);
+ }
+-EXPORT_SYMBOL(omap_rfbi_update);
+ 
+-void omapdss_rfbi_set_size(struct omap_dss_device *dssdev, u16 w, u16 h)
++static void rfbi_set_size(struct omap_dss_device *dssdev, u16 w, u16 h)
+ {
+ 	rfbi.timings.x_res = w;
+ 	rfbi.timings.y_res = h;
+ }
+-EXPORT_SYMBOL(omapdss_rfbi_set_size);
+ 
+-void omapdss_rfbi_set_pixel_size(struct omap_dss_device *dssdev, int pixel_size)
++static void rfbi_set_pixel_size(struct omap_dss_device *dssdev, int pixel_size)
+ {
+ 	rfbi.pixel_size = pixel_size;
+ }
+-EXPORT_SYMBOL(omapdss_rfbi_set_pixel_size);
+ 
+-void omapdss_rfbi_set_data_lines(struct omap_dss_device *dssdev, int data_lines)
++static void rfbi_set_data_lines(struct omap_dss_device *dssdev, int data_lines)
+ {
+ 	rfbi.data_lines = data_lines;
+ }
+-EXPORT_SYMBOL(omapdss_rfbi_set_data_lines);
+ 
+-void omapdss_rfbi_set_interface_timings(struct omap_dss_device *dssdev,
++static void rfbi_set_interface_timings(struct omap_dss_device *dssdev,
+ 		struct rfbi_timings *timings)
+ {
+ 	rfbi.intf_timings = *timings;
+ }
+-EXPORT_SYMBOL(omapdss_rfbi_set_interface_timings);
+ 
+ static void rfbi_dump_regs(struct seq_file *s)
+ {
+@@ -888,7 +874,7 @@ static void rfbi_config_lcd_manager(struct omap_dss_device *dssdev)
+ 	dss_mgr_set_timings(mgr, &rfbi.timings);
+ }
+ 
+-int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
++static int rfbi_display_enable(struct omap_dss_device *dssdev)
+ {
+ 	struct omap_dss_device *out = &rfbi.output;
+ 	int r;
+@@ -911,7 +897,7 @@ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
+ 
+ 	rfbi_config_lcd_manager(dssdev);
+ 
+-	rfbi_configure(dssdev->phy.rfbi.channel, rfbi.pixel_size,
++	rfbi_configure_bus(dssdev->phy.rfbi.channel, rfbi.pixel_size,
+ 			rfbi.data_lines);
+ 
+ 	rfbi_set_timings(dssdev->phy.rfbi.channel, &rfbi.intf_timings);
+@@ -921,9 +907,8 @@ err1:
+ 	rfbi_runtime_put();
+ 	return r;
+ }
+-EXPORT_SYMBOL(omapdss_rfbi_display_enable);
+ 
+-void omapdss_rfbi_display_disable(struct omap_dss_device *dssdev)
++static void rfbi_display_disable(struct omap_dss_device *dssdev)
+ {
+ 	struct omap_dss_device *out = &rfbi.output;
+ 
+@@ -932,7 +917,6 @@ void omapdss_rfbi_display_disable(struct omap_dss_device *dssdev)
+ 
+ 	rfbi_runtime_put();
+ }
+-EXPORT_SYMBOL(omapdss_rfbi_display_disable);
+ 
+ static int rfbi_init_display(struct omap_dss_device *dssdev)
+ {
+@@ -940,77 +924,6 @@ static int rfbi_init_display(struct omap_dss_device *dssdev)
+ 	return 0;
+ }
+ 
+-static struct omap_dss_device *rfbi_find_dssdev(struct platform_device *pdev)
+-{
+-	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
+-	const char *def_disp_name = omapdss_get_default_display_name();
+-	struct omap_dss_device *def_dssdev;
+-	int i;
+-
+-	def_dssdev = NULL;
+-
+-	for (i = 0; i < pdata->num_devices; ++i) {
+-		struct omap_dss_device *dssdev = pdata->devices[i];
+-
+-		if (dssdev->type != OMAP_DISPLAY_TYPE_DBI)
+-			continue;
+-
+-		if (def_dssdev = NULL)
+-			def_dssdev = dssdev;
+-
+-		if (def_disp_name != NULL &&
+-				strcmp(dssdev->name, def_disp_name) = 0) {
+-			def_dssdev = dssdev;
+-			break;
+-		}
+-	}
+-
+-	return def_dssdev;
+-}
+-
+-static int rfbi_probe_pdata(struct platform_device *rfbidev)
+-{
+-	struct omap_dss_device *plat_dssdev;
+-	struct omap_dss_device *dssdev;
+-	int r;
+-
+-	plat_dssdev = rfbi_find_dssdev(rfbidev);
+-
+-	if (!plat_dssdev)
+-		return 0;
+-
+-	dssdev = dss_alloc_and_init_device(&rfbidev->dev);
+-	if (!dssdev)
+-		return -ENOMEM;
+-
+-	dss_copy_device_pdata(dssdev, plat_dssdev);
+-
+-	r = rfbi_init_display(dssdev);
+-	if (r) {
+-		DSSERR("device %s init failed: %d\n", dssdev->name, r);
+-		dss_put_device(dssdev);
+-		return r;
+-	}
+-
+-	r = omapdss_output_set_device(&rfbi.output, dssdev);
+-	if (r) {
+-		DSSERR("failed to connect output to new device: %s\n",
+-				dssdev->name);
+-		dss_put_device(dssdev);
+-		return r;
+-	}
+-
+-	r = dss_add_device(dssdev);
+-	if (r) {
+-		DSSERR("device %s register failed: %d\n", dssdev->name, r);
+-		omapdss_output_unset_device(&rfbi.output);
+-		dss_put_device(dssdev);
+-		return r;
+-	}
+-
+-	return 0;
+-}
+-
+ static void rfbi_init_output(struct platform_device *pdev)
+ {
+ 	struct omap_dss_device *out = &rfbi.output;
+@@ -1085,16 +998,8 @@ static int omap_rfbihw_probe(struct platform_device *pdev)
+ 
+ 	rfbi_init_output(pdev);
+ 
+-	if (pdev->dev.platform_data) {
+-		r = rfbi_probe_pdata(pdev);
+-		if (r)
+-			goto err_probe;
+-	}
+-
+ 	return 0;
+ 
+-err_probe:
+-	rfbi_uninit_output(pdev);
+ err_runtime_get:
+ 	pm_runtime_disable(&pdev->dev);
+ 	return r;
+@@ -1102,8 +1007,6 @@ err_runtime_get:
+ 
+ static int __exit omap_rfbihw_remove(struct platform_device *pdev)
+ {
+-	dss_unregister_child_devices(&pdev->dev);
+-
+ 	rfbi_uninit_output(pdev);
+ 
+ 	pm_runtime_disable(&pdev->dev);
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 3395804..ca04b56 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -250,19 +250,6 @@ struct rfbi_timings {
+ 	int converted;
  };
  
- /*
-diff --git a/include/linux/dmabuf-sync.h b/include/linux/dmabuf-sync.h
-index 9a3afc4..0316f68 100644
---- a/include/linux/dmabuf-sync.h
-+++ b/include/linux/dmabuf-sync.h
-@@ -11,6 +11,7 @@
-  */
+-void omap_rfbi_write_command(const void *buf, u32 len);
+-void omap_rfbi_read_data(void *buf, u32 len);
+-void omap_rfbi_write_data(const void *buf, u32 len);
+-void omap_rfbi_write_pixels(const void __iomem *buf, int scr_width,
+-		u16 x, u16 y,
+-		u16 w, u16 h);
+-int omap_rfbi_enable_te(bool enable, unsigned line);
+-int omap_rfbi_setup_te(enum omap_rfbi_te_mode mode,
+-			     unsigned hs_pulse_time, unsigned vs_pulse_time,
+-			     int hs_pol_inv, int vs_pol_inv, int extif_div);
+-void rfbi_bus_lock(void);
+-void rfbi_bus_unlock(void);
+-
+ /* DSI */
  
- #include <linux/mutex.h>
-+#include <linux/ww_mutex.h>
- #include <linux/sched.h>
- #include <linux/dma-buf.h>
+ enum omap_dss_dsi_trans_mode {
+@@ -987,19 +974,6 @@ int dispc_ovl_setup(enum omap_plane plane, const struct omap_overlay_info *oi,
+ #define to_dss_driver(x) container_of((x), struct omap_dss_driver, driver)
+ #define to_dss_device(x) container_of((x), struct omap_dss_device, old_dev)
+ 
+-int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev);
+-void omapdss_rfbi_display_disable(struct omap_dss_device *dssdev);
+-int omap_rfbi_update(struct omap_dss_device *dssdev, void (*callback)(void *),
+-		void *data);
+-int omap_rfbi_configure(struct omap_dss_device *dssdev);
+-void omapdss_rfbi_set_size(struct omap_dss_device *dssdev, u16 w, u16 h);
+-void omapdss_rfbi_set_pixel_size(struct omap_dss_device *dssdev,
+-		int pixel_size);
+-void omapdss_rfbi_set_data_lines(struct omap_dss_device *dssdev,
+-		int data_lines);
+-void omapdss_rfbi_set_interface_timings(struct omap_dss_device *dssdev,
+-		struct rfbi_timings *timings);
+-
+ int omapdss_compat_init(void);
+ void omapdss_compat_uninit(void);
  
 -- 
-1.7.5.4
+1.8.1.2
 

@@ -1,95 +1,105 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 30 Aug 2013 10:19:19 +0000
+From: Chen Gang <gang.chen@asianux.com>
+Date: Fri, 30 Aug 2013 10:41:16 +0000
 Subject: Re: [PATCH] drivers: video: i740fb: add 'default' processing contents for 'switch'.
-Message-Id: <522071A7.4080405@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="61A7tqIfpFXE8eHIArDXAs1TfhsRTi6nW"
+Message-Id: <522076CC.2030305@asianux.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <51ECF12D.8060903@asianux.com>
 In-Reply-To: <51ECF12D.8060903@asianux.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
---61A7tqIfpFXE8eHIArDXAs1TfhsRTi6nW
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-On 30/08/13 12:45, Chen Gang wrote:
-> On 08/30/2013 05:16 PM, Tomi Valkeinen wrote:
-
->> So, in my opinion:
+On 08/30/2013 06:19 PM, Tomi Valkeinen wrote:
+> On 30/08/13 12:45, Chen Gang wrote:
+>> On 08/30/2013 05:16 PM, Tomi Valkeinen wrote:
+> 
+>>> So, in my opinion:
+>>>
+>>> - Normally we should presume the the stack is not corrupted, or
+>>> otherwise we'll end up with lots of checks all over.
+>>>
 >>
->> - Normally we should presume the the stack is not corrupted, or
->> otherwise we'll end up with lots of checks all over.
+>> It seems the above reply "Hmm... it really has quite a few same cases
+>> ..." is suitable for discussing with your opinion.
+> 
+> Well, if other drivers do silly things, it's no reason to do it here also.
+> 
+
+Hmm... I can understand.  What I have done is only just "satisfy the
+compiler".
+
 >>
->=20
-> It seems the above reply "Hmm... it really has quite a few same cases
-> ..." is suitable for discussing with your opinion.
-
-Well, if other drivers do silly things, it's no reason to do it here also=
-=2E
-
->=20
->> - Even if i740_calc_fifo() is a static function, and we can analyze th=
-e
->> _current_ situation, we don't know how the driver will evolve in the f=
-uture.
+>>> - Even if i740_calc_fifo() is a static function, and we can analyze the
+>>> _current_ situation, we don't know how the driver will evolve in the future.
+>>>
 >>
->=20
-> For normal static function (not callback function) it can be in control=
+>> For normal static function (not callback function) it can be in control
+>> within inside (ourselves), don't like extern function, it is out of
+>> control with inside.
+>>
+>> So we can assume something in the future.
+> 
+> We can assume that only if we presume that the future changes are
+> bug-free. But more often than not there are bugs in the kernel drivers.
+> 
 
-> within inside (ourselves), don't like extern function, it is out of
-> control with inside.
->=20
-> So we can assume something in the future.
+Yeah.
 
-We can assume that only if we presume that the future changes are
-bug-free. But more often than not there are bugs in the kernel drivers.
+> Now, say, if such a bug is introduced, and somebody is running the
+> kernel in a remote server, the driver will call BUG(). This will cause
+> the server to halt. The user won't see what happened, the connections
+> are just lost and the error is not written to a hard disk.
+> 
 
-Now, say, if such a bug is introduced, and somebody is running the
-kernel in a remote server, the driver will call BUG(). This will cause
-the server to halt. The user won't see what happened, the connections
-are just lost and the error is not written to a hard disk.
+For our case, it we don't call BUG(), the kernel will continue blindly,
+and in most cases, at last it will die too (or zombie, or some other
+critical issues).
 
-If, instead, the driver would do WARN, and continue or fail in a
-controlled manner, the user can find out about the issue easily. Even if
-there is a stack corruption, it's most likely the driver in question
-that has it, and thus not really fatal.
-
-Sure, there's the possibility that there's a bigger memory corruption,
-which would go unnoticed by, say, the filesystem layer, resulting in a
-corrupted filesystem. And we would catch this corruption by checking the
-bpp variable. But, really, I find that very unlikely scenario.
-
-Here's some old discussion about BUG:
-
-http://yarchive.net/comp/linux/BUG.html
-
- Tomi
+So BUG() is only for trying to protect the kernel continue blindly.
 
 
+> If, instead, the driver would do WARN, and continue or fail in a
+> controlled manner, the user can find out about the issue easily. Even if
+> there is a stack corruption, it's most likely the driver in question
+> that has it, and thus not really fatal.
+> 
 
---61A7tqIfpFXE8eHIArDXAs1TfhsRTi6nW
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Hmm, in my opinion, four our case, it is fatal, need try to stop kernel
+as soon as possible (don't let it continue blindly).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+> Sure, there's the possibility that there's a bigger memory corruption,
+> which would go unnoticed by, say, the filesystem layer, resulting in a
+> corrupted filesystem. And we would catch this corruption by checking the
+> bpp variable. But, really, I find that very unlikely scenario.
+> 
 
-iQIcBAEBAgAGBQJSIHGnAAoJEPo9qoy8lh71PREP/2+ZHLi97D9yujtAd3LmQw9U
-uVZGFEcQOmjZrsgZW6arclRXtzwyWskBpFqhWud9VQ2lg9kW4l3Kcles4wG3Xo2P
-jNeE0vAZ1UjKVz8S2NsOMIx07JhakWNKZmH+ghwVvzhqxZJ5g62EinZ6ps8rBVyw
-HLJ9DlpuHmuL2dkt0YDMvUtO9jSeUVQebUlf7r6sBubISYZ9114R0Kl0J0QBcqSA
-Z1IwqFH3WNoJy+QRa9sgClYTzGdijvI82WuqsaEgQYEMDkVK36TybTuUVLOEy1e4
-mAIpRDVVpxBPq0jj4Xc5OQmhDoojaVmqnWjM6H9qrAmuWm0E9F9RB46UpbyDBG4Q
-/BUzRVNar/kiw7vfmUUBk93DcWfrC2aPxOkkZmHYtIn6Y7PHQYq62Vj7ubVV8YmU
-WMIDE9EkCAWO1yfRK540Q6kFa/H/AQC4QfMFgSr4g0jacPYo3UcA9C7aAm9wxNKM
-3CEfOfwcX8NJ7Pd9h04PvCE/UQDNXSzAILbbcRlXby0P4XFsqyX6hSWfd/fuf3yN
-1l6MTRAWqqiCCkFTfgQRRTjDcfaloz7gCvOHHS+uHfbDRwJsVBOH1jRv2qDBttPU
-uxKSmI2tNBqz039ZK5kiYgeZEvFqOUIjZseJO+ww+cnYcIAJiQLQa3yWP/6fXhVg
-oTBHLIVV0t77H0IeyIga
-=Ttka
------END PGP SIGNATURE-----
+Yeah. In fact the reason why I focus on 'bpp' is because of "satisfying
+the compiler" (not let it report warning).
 
---61A7tqIfpFXE8eHIArDXAs1TfhsRTi6nW--
+> Here's some old discussion about BUG:
+> 
+> http://yarchive.net/comp/linux/BUG.html
+> 
+
+Yeah, if it is not a real bug (can handle it), we should not use BUG(),
+but when we are sure it is a kernel bug, and the kernel will continue
+blindly, we need use BUG() to stop it.
+
+Just like the Linus Torvalds said in the link which you provide:
+
+"Rule of thumb: BUG() is only good for something that never happens and
+that we really have no other option for (ie state is so corrupt that
+continuing is deadly)".
+
+In fact, for our case, when "default" happens: it is just match the
+contents above.
+
+>  Tomi
+> 
+> 
+
+
+Thanks.
+-- 
+Chen Gang

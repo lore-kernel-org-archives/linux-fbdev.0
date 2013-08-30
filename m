@@ -1,91 +1,67 @@
-From: Marek Belisko <marek@goldelico.com>
-Date: Thu, 29 Aug 2013 12:35:24 +0000
-Subject: [PATCH] omap2: panel-generic: Added panel parameters for ortus-com37h3m05dtc/99dtc and sharp-lq070y3
-Message-Id: <1377779724-30648-1-git-send-email-marek@goldelico.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 30 Aug 2013 07:57:10 +0000
+Subject: Re: [PATCH] omap2: panel-generic: Added panel parameters for ortus-com37h3m05dtc/99dtc and sharp-lq0
+Message-Id: <52205056.8080908@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="xCkXAwdt47atsvQTJkFeT0tB0d6MDTOHI"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Marek Belisko <marek@goldelico.com>, "H. Nikolaus Schaller" <hns@goldelico.com>
+References: <1377779724-30648-1-git-send-email-marek@goldelico.com>
+In-Reply-To: <1377779724-30648-1-git-send-email-marek@goldelico.com>
+To: Marek Belisko <marek@goldelico.com>
+Cc: plagnioj@jcrosoft.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "H. Nikolaus Schaller" <hns@goldelico.com>
 
-Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
-Signed-off-by: Marek Belisko <marek@goldelico.com>
----
- drivers/video/omap2/displays/panel-generic-dpi.c | 53 ++++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
+--xCkXAwdt47atsvQTJkFeT0tB0d6MDTOHI
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
-index bebebd4..d573291 100644
---- a/drivers/video/omap2/displays/panel-generic-dpi.c
-+++ b/drivers/video/omap2/displays/panel-generic-dpi.c
-@@ -107,6 +107,33 @@ static struct panel_config generic_dpi_panels[] = {
- 		.name			= "sharp_ls",
- 	},
- 
-+	/* Sharp LQ070Y3DG3B */
-+	{
-+		{
-+			.x_res		= 800,
-+			.y_res		= 480,
-+
-+			.pixel_clock	= 33260,
-+
-+			.hsw		= 128,
-+			.hfp		= 64,
-+			.hbp		= 64,
-+
-+			.vsw		= 2,
-+			.vfp		= 8,
-+			.vbp		= 35,
-+
-+			.vsync_level	= OMAPDSS_SIG_ACTIVE_LOW,
-+			.hsync_level	= OMAPDSS_SIG_ACTIVE_LOW,
-+			.data_pclk_edge	= OMAPDSS_DRIVE_SIG_RISING_EDGE,
-+			.de_level	= OMAPDSS_SIG_ACTIVE_HIGH,
-+			.sync_pclk_edge	= OMAPDSS_DRIVE_SIG_RISING_EDGE,
-+		},
-+		.power_on_delay		= 50,
-+		.power_off_delay	= 100,
-+		.name			= "sharp_lq070y3dg3b",
-+	},
-+
- 	/* Toppoly TDO35S */
- 	{
- 		{
-@@ -369,6 +396,32 @@ static struct panel_config generic_dpi_panels[] = {
- 		.name			= "ortustech_com43h4m10xtc",
- 	},
- 
-+	/* OrtusTech COM37H3M05DTC and COM37H3M99DTC */
-+	{
-+		{
-+			.x_res		= 480,
-+			.y_res		= 640,
-+			
-+			/* pixel clock could be lowered to reduce noise */
-+			.pixel_clock	= 22153,
-+			
-+			.hsw		= 10,
-+			.hfp		= 8,
-+			.hbp		= 10,
-+
-+			.vsw		= 3,
-+			.vfp		= 4,
-+			.vbp		= 4,
-+
-+			.vsync_level	= OMAPDSS_SIG_ACTIVE_LOW,
-+			.hsync_level	= OMAPDSS_SIG_ACTIVE_LOW,
-+			.data_pclk_edge	= OMAPDSS_DRIVE_SIG_RISING_EDGE,
-+			.de_level	= OMAPDSS_SIG_ACTIVE_HIGH,
-+			.sync_pclk_edge	= OMAPDSS_DRIVE_SIG_RISING_EDGE,
-+		},
-+		.name			= "ortustech_com37h3m05dtc",
-+	},
-+
- 	/* Innolux AT080TN52 */
- 	{
- 		{
--- 
-1.8.1.2
+On 29/08/13 15:35, Marek Belisko wrote:
+> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+> Signed-off-by: Marek Belisko <marek@goldelico.com>
+> ---
+>  drivers/video/omap2/displays/panel-generic-dpi.c | 53 ++++++++++++++++=
+++++++++
+>  1 file changed, 53 insertions(+)
+>=20
+> diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers=
+/video/omap2/displays/panel-generic-dpi.c
+> index bebebd4..d573291 100644
+> --- a/drivers/video/omap2/displays/panel-generic-dpi.c
+> +++ b/drivers/video/omap2/displays/panel-generic-dpi.c
+> @@ -107,6 +107,33 @@ static struct panel_config generic_dpi_panels[] =3D=
+ {
+>  		.name			=3D "sharp_ls",
+>  	},
 
+The drivers in drivers/video/omap2/displays/ are on their way out, and
+will probably be removed for 3.12. Please look at the new one at
+drivers/video/omap2/displays-new/panel-dpi.c.
+
+ Tomi
+
+
+
+--xCkXAwdt47atsvQTJkFeT0tB0d6MDTOHI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSIFBWAAoJEPo9qoy8lh71/ZMP/27bd5Yhlc4KB+SNdC4s6L3c
+wtxIuRdh1H0FhKrelfhER8sZO88syO3nAkYH5CRRi2vMerJj0HRDdeJH+jxFo1wk
+Z6MeiVznRfDX56Lk5bCsrTPtKyvZvOmuutiOF8EOsPfbCSNfeVQ7JscQa8m2NOG2
+A9AA1Y2wjOAjF5kNilqYH31r1ClI9IwfuNB3vdJsWdj0t0ZUueRc+2TsYQGYFegP
+5STD+HzAYlUlt141dvKVOIZyvjHa1SDbStQkHiloTfrO8OOMUU4RugpMjTrmL9Ue
+rTdhU7gki2j4zMFrW14wJqWQ+P2mc5shFzSicg6viRaoUKJIRIZ5XhLe36XnEBj9
+846DV8XjDurH2bXLWeYh/BjBvQ80EuqHRG9xWXF8GQDgvuSYR9EkfPKGmc9SM2A3
+tvtvEIuV/8B8EPrb4Abeo9MjR5y6Ef6Q7pW1rtfas+TUvd7bfwOs4ZyApz9eTWUc
+eND/Uq2GJQc5ctTbg+E0obzdqKZF0D6+ePaXMarsjusstQBvMXOvJJ7EG6PXkbI/
++y34IB0+d185bMWML+TNKP/tUxbEruGdBqXuAjSXsJIa46rD24sCzMO0qdj7OTRZ
+9tn9/1aKc3qadEG0ckP28CkXaeZejCEfLP3CAAjI5d6D7ONgiep6fLTqlYvb3JHP
+dBdCLpnOXmgn5o+G1/Mx
+=sm/j
+-----END PGP SIGNATURE-----
+
+--xCkXAwdt47atsvQTJkFeT0tB0d6MDTOHI--

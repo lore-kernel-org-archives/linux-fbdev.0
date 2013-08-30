@@ -1,135 +1,84 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Fri, 02 Aug 2013 12:05:25 +0000
-Subject: [PATCH RESEND 6/8] fbdev: vesafb: bind to platform-framebuffer device
-Message-Id: <1375445127-15480-7-git-send-email-dh.herrmann@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 30 Aug 2013 07:18:12 +0000
+Subject: Re: [PATCH v4 3/5] at91/avr32/atmel_lcdfb: prepare clk before calling enable
+Message-Id: <52204734.3010603@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="WuI5vojmVFllWfuWGQHGawOUioAwiW00F"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1375445127-15480-1-git-send-email-dh.herrmann@gmail.com>
-In-Reply-To: <1375445127-15480-1-git-send-email-dh.herrmann@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: David Airlie <airlied@linux.ie>, Geert Uytterhoeven <geert@linux-m68k.org>, Stephen Warren <swarren@wwwdotorg.org>, Peter Jones <pjones@redhat.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org, linux-fbdev@vger.kernel.org, akpm@linux-foundation.org, David Herrmann <dh.herrmann@gmail.com>
+References: <1374132753-15206-1-git-send-email-b.brezillon@overkiz.com>
+ <1374133225-19141-1-git-send-email-b.brezillon@overkiz.com>
+In-Reply-To: <1374133225-19141-1-git-send-email-b.brezillon@overkiz.com>
+To: linux-arm-kernel@lists.infradead.org
 
-x86 creates platform-framebuffer platform devices for every system
-framebuffer. Use these instead of creating a dummy device.
+--WuI5vojmVFllWfuWGQHGawOUioAwiW00F
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-This requires us to remove the __init annotations as hotplugging may occur
-during runtime.
+On 18/07/13 10:40, Boris BREZILLON wrote:
+> Replace clk_enable/disable with clk_prepare_enable/disable_unprepare to=
 
-Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
----
- drivers/video/vesafb.c | 55 +++++++++++++++-----------------------------------
- 1 file changed, 16 insertions(+), 39 deletions(-)
+> avoid common clk framework warnings.
+>=20
+> Signed-off-by: Boris BREZILLON <b.brezillon@overkiz.com>
+> Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+> ---
+>  drivers/video/atmel_lcdfb.c |    8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+> index ece49d5..bf9c5d0 100644
+> --- a/drivers/video/atmel_lcdfb.c
+> +++ b/drivers/video/atmel_lcdfb.c
+> @@ -954,14 +954,14 @@ static int __init atmel_lcdfb_init_fbinfo(struct =
+atmel_lcdfb_info *sinfo)
+> =20
+>  static void atmel_lcdfb_start_clock(struct atmel_lcdfb_info *sinfo)
+>  {
+> -	clk_enable(sinfo->bus_clk);
+> -	clk_enable(sinfo->lcdc_clk);
+> +	clk_prepare_enable(sinfo->bus_clk);
+> +	clk_prepare_enable(sinfo->lcdc_clk);
+>  }
+> =20
+>  static void atmel_lcdfb_stop_clock(struct atmel_lcdfb_info *sinfo)
+>  {
+> -	clk_disable(sinfo->bus_clk);
+> -	clk_disable(sinfo->lcdc_clk);
+> +	clk_disable_unprepare(sinfo->bus_clk);
+> +	clk_disable_unprepare(sinfo->lcdc_clk);
+>  }
+> =20
+>  #ifdef CONFIG_OF
 
-diff --git a/drivers/video/vesafb.c b/drivers/video/vesafb.c
-index 501b340..bd83233 100644
---- a/drivers/video/vesafb.c
-+++ b/drivers/video/vesafb.c
-@@ -29,7 +29,7 @@
- 
- /* --------------------------------------------------------------------- */
- 
--static struct fb_var_screeninfo vesafb_defined __initdata = {
-+static struct fb_var_screeninfo vesafb_defined = {
- 	.activate	= FB_ACTIVATE_NOW,
- 	.height		= -1,
- 	.width		= -1,
-@@ -40,7 +40,7 @@ static struct fb_var_screeninfo vesafb_defined __initdata = {
- 	.vmode		= FB_VMODE_NONINTERLACED,
- };
- 
--static struct fb_fix_screeninfo vesafb_fix __initdata = {
-+static struct fb_fix_screeninfo vesafb_fix = {
- 	.id	= "VESA VGA",
- 	.type	= FB_TYPE_PACKED_PIXELS,
- 	.accel	= FB_ACCEL_NONE,
-@@ -48,8 +48,8 @@ static struct fb_fix_screeninfo vesafb_fix __initdata = {
- 
- static int   inverse    __read_mostly;
- static int   mtrr       __read_mostly;		/* disable mtrr */
--static int   vram_remap __initdata;		/* Set amount of memory to be used */
--static int   vram_total __initdata;		/* Set total amount of memory */
-+static int   vram_remap;			/* Set amount of memory to be used */
-+static int   vram_total;			/* Set total amount of memory */
- static int   pmi_setpal __read_mostly = 1;	/* pmi for palette changes ??? */
- static int   ypan       __read_mostly;		/* 0..nothing, 1..ypan, 2..ywrap */
- static void  (*pmi_start)(void) __read_mostly;
-@@ -192,7 +192,7 @@ static struct fb_ops vesafb_ops = {
- 	.fb_imageblit	= cfb_imageblit,
- };
- 
--static int __init vesafb_setup(char *options)
-+static int vesafb_setup(char *options)
- {
- 	char *this_opt;
- 	
-@@ -226,13 +226,18 @@ static int __init vesafb_setup(char *options)
- 	return 0;
- }
- 
--static int __init vesafb_probe(struct platform_device *dev)
-+static int vesafb_probe(struct platform_device *dev)
- {
- 	struct fb_info *info;
- 	int i, err;
- 	unsigned int size_vmode;
- 	unsigned int size_remap;
- 	unsigned int size_total;
-+	char *option = NULL;
-+
-+	/* ignore error return of fb_get_options */
-+	fb_get_options("vesafb", &option);
-+	vesafb_setup(option);
- 
- 	if (screen_info.orig_video_isVGA != VIDEO_TYPE_VLFB)
- 		return -ENODEV;
-@@ -496,40 +501,12 @@ err:
- }
- 
- static struct platform_driver vesafb_driver = {
--	.driver	= {
--		.name	= "vesafb",
-+	.driver = {
-+		.name = "vesa-framebuffer",
-+		.owner = THIS_MODULE,
- 	},
-+	.probe = vesafb_probe,
- };
- 
--static struct platform_device *vesafb_device;
--
--static int __init vesafb_init(void)
--{
--	int ret;
--	char *option = NULL;
--
--	/* ignore error return of fb_get_options */
--	fb_get_options("vesafb", &option);
--	vesafb_setup(option);
--
--	vesafb_device = platform_device_alloc("vesafb", 0);
--	if (!vesafb_device)
--		return -ENOMEM;
--
--	ret = platform_device_add(vesafb_device);
--	if (!ret) {
--		ret = platform_driver_probe(&vesafb_driver, vesafb_probe);
--		if (ret)
--			platform_device_del(vesafb_device);
--	}
--
--	if (ret) {
--		platform_device_put(vesafb_device);
--		vesafb_device = NULL;
--	}
--
--	return ret;
--}
--module_init(vesafb_init);
--
-+module_platform_driver(vesafb_driver);
- MODULE_LICENSE("GPL");
--- 
-1.8.3.4
+Thanks, queued this for 3.12.
 
+ Tomi
+
+
+
+
+--WuI5vojmVFllWfuWGQHGawOUioAwiW00F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSIEc0AAoJEPo9qoy8lh71PXUP/3Ge1kHOLDgMqeJDR1f/Nuxz
+kGFfyHEEpol2A+wvWq0B7TmllmOFqAjobcjibEWDcvOz3unP/tT8tkCTdkWknqRc
+QDEg7dFNuDWIRXEc9rYZPd98UOQ3GC/Q9hY3HJwF2dHCZRG4LReb4OB97vL7Pkvs
+2fo3yheAfUKc/WvQdIyiYQpw7bNWEJNk/dB4LN+y8CcdgpU+H24P6IFY0IkR5Cve
+BQAyDv/Pnv9+15NhDX6Y5crvfxpA3PXVWMhl6o1upKh4qGfm6BlGTcII1Qa/QRKQ
+baFgpFj7xBvl3PguX1AbyEjdIYeNtsU6vRjUwt+jYxhT14sXuBXITRrrheHpLslj
+lnhSQwVMimoavLRI9Z69VhJJ19Ln784V3Czzt55AD4ehAT8GD+PlYSqu3FKK7blB
+bw4jizgaTTtQVBEwxirGF4Sp2Jl2rHDQr/hd3axNSPjWfoUWqTcTwvorLasg1P4y
+Ot5LsjK3/p+rMiwF8WtH+di1UL/ygwtec7iXBwoSLgPDjg6QtnKy9HVyko96DWPK
+BU4gIN7wwNuqBtPJKiOYXJLmxHF1Fj/xu0qrSb5KocY3yT/w2ojxNS1R2wR1X6Rb
+ffMpSgPNL5pQfVGitpViblr63iwLjW0Zj7IWPgYKWEyxWVjJMLk4fQcwYt7ovWlE
+Kd4cx6kXlhoFmBHvO2qo
+=59U/
+-----END PGP SIGNATURE-----
+
+--WuI5vojmVFllWfuWGQHGawOUioAwiW00F--

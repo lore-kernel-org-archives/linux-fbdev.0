@@ -1,143 +1,55 @@
-From: Daniel Mack <zonque@gmail.com>
-Date: Wed, 21 Aug 2013 09:20:07 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 30 Aug 2013 08:44:55 +0000
 Subject: Re: [PATCH] fbmem: move EXPORT_SYMBOL annotation next to symbol declarations
-Message-Id: <52148647.1000406@gmail.com>
+Message-Id: <52205B87.8050408@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Agttoo0f13E6hNPCuT2uDvPShfGEDCnuF"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1376575975-13215-1-git-send-email-zonque@gmail.com>
 In-Reply-To: <1376575975-13215-1-git-send-email-zonque@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On 15.08.2013 16:12, Daniel Mack wrote:
+--Agttoo0f13E6hNPCuT2uDvPShfGEDCnuF
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 15/08/13 17:12, Daniel Mack wrote:
 > Just a cosmetic thing to bring that file in line with others in the
 > tree.
-
-Jean-Christophe, in case you're fine with that patch, could you queue it
-up for the next merge window?
-
-
-Thanks,
-Daniel
-
-
-
-
+>=20
 > Signed-off-by: Daniel Mack <zonque@gmail.com>
 > ---
 >  drivers/video/fbmem.c | 29 +++++++++++++----------------
 >  1 file changed, 13 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-> index 36e1fe2..dacaf74 100644
-> --- a/drivers/video/fbmem.c
-> +++ b/drivers/video/fbmem.c
-> @@ -43,8 +43,12 @@
->  #define FBPIXMAPSIZE	(1024 * 8)
->  
->  static DEFINE_MUTEX(registration_lock);
-> +
->  struct fb_info *registered_fb[FB_MAX] __read_mostly;
-> +EXPORT_SYMBOL(registered_fb);
-> +
->  int num_registered_fb __read_mostly;
-> +EXPORT_SYMBOL(num_registered_fb);
->  
->  static struct fb_info *get_fb_info(unsigned int idx)
->  {
-> @@ -182,6 +186,7 @@ char* fb_get_buffer_offset(struct fb_info *info, struct fb_pixmap *buf, u32 size
->  
->  	return addr;
->  }
-> +EXPORT_SYMBOL(fb_get_buffer_offset);
->  
->  #ifdef CONFIG_LOGO
->  
-> @@ -669,6 +674,7 @@ int fb_show_logo(struct fb_info *info, int rotate)
->  int fb_prepare_logo(struct fb_info *info, int rotate) { return 0; }
->  int fb_show_logo(struct fb_info *info, int rotate) { return 0; }
->  #endif /* CONFIG_LOGO */
-> +EXPORT_SYMBOL(fb_show_logo);
->  
->  static void *fb_seq_start(struct seq_file *m, loff_t *pos)
->  {
-> @@ -909,6 +915,7 @@ fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var)
->  		info->var.vmode &= ~FB_VMODE_YWRAP;
->  	return 0;
->  }
-> +EXPORT_SYMBOL(fb_pan_display);
->  
->  static int fb_check_caps(struct fb_info *info, struct fb_var_screeninfo *var,
->  			 u32 activate)
-> @@ -1042,6 +1049,7 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
->   done:
->  	return ret;
->  }
-> +EXPORT_SYMBOL(fb_set_var);
->  
->  int
->  fb_blank(struct fb_info *info, int blank)
-> @@ -1073,6 +1081,7 @@ fb_blank(struct fb_info *info, int blank)
->  
->   	return ret;
->  }
-> +EXPORT_SYMBOL(fb_blank);
->  
->  static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
->  			unsigned long arg)
-> @@ -1745,6 +1754,7 @@ register_framebuffer(struct fb_info *fb_info)
->  
->  	return ret;
->  }
-> +EXPORT_SYMBOL(register_framebuffer);
->  
->  /**
->   *	unregister_framebuffer - releases a frame buffer device
-> @@ -1773,6 +1783,7 @@ unregister_framebuffer(struct fb_info *fb_info)
->  
->  	return ret;
->  }
-> +EXPORT_SYMBOL(unregister_framebuffer);
->  
->  /**
->   *	fb_set_suspend - low level driver signals suspend
-> @@ -1796,6 +1807,7 @@ void fb_set_suspend(struct fb_info *info, int state)
->  		fb_notifier_call_chain(FB_EVENT_RESUME, &event);
->  	}
->  }
-> +EXPORT_SYMBOL(fb_set_suspend);
->  
->  /**
->   *	fbmem_init - init frame buffer subsystem
-> @@ -1912,6 +1924,7 @@ int fb_get_options(const char *name, char **option)
->  
->  	return retval;
->  }
-> +EXPORT_SYMBOL(fb_get_options);
->  
->  #ifndef MODULE
->  /**
-> @@ -1959,20 +1972,4 @@ static int __init video_setup(char *options)
->  __setup("video=", video_setup);
->  #endif
->  
-> -    /*
-> -     *  Visible symbols for modules
-> -     */
-> -
-> -EXPORT_SYMBOL(register_framebuffer);
-> -EXPORT_SYMBOL(unregister_framebuffer);
-> -EXPORT_SYMBOL(num_registered_fb);
-> -EXPORT_SYMBOL(registered_fb);
-> -EXPORT_SYMBOL(fb_show_logo);
-> -EXPORT_SYMBOL(fb_set_var);
-> -EXPORT_SYMBOL(fb_blank);
-> -EXPORT_SYMBOL(fb_pan_display);
-> -EXPORT_SYMBOL(fb_get_buffer_offset);
-> -EXPORT_SYMBOL(fb_set_suspend);
-> -EXPORT_SYMBOL(fb_get_options);
-> -
->  MODULE_LICENSE("GPL");
-> 
 
+Thanks, queued for 3.12.
+
+ Tomi
+
+
+
+--Agttoo0f13E6hNPCuT2uDvPShfGEDCnuF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSIFuHAAoJEPo9qoy8lh71/uAP/RI7C20XMWHUIV34SyLJw92n
+asUhBjyiJazWmh3ehbp3CSUPigdmkMaaSiGozRKP7eRWmV70M+I8efNoJzHVuZys
+4ewnprmHCU71x8CI3dFP1BtdZpwSVTKb6I5SVSxnvmDuRMFJlkVTkptxDxHtakNd
+rv35nyn9TgEi73F4wdE5EFvpX3SWhYdUVn608/eFDciTVyNZT323B/phKTwME7E7
+FvZIVOE8uUT6hYgZwlGhtI++gqvm1rbhrLPFU6Mb07V8w1oxLt07g3G3kIlIUvML
+vb8vPhlutV9QNX5QVgS+ey1jVarc5u9nuOIJaHg1PnT4dJX8Wl5V8Zd1Sd6n4MAE
+CkC7vxoVqhtdYWCuDwX6OT/1ijA0HGcyrEfjny8UWHeZQsSo+/SmTaQ437pdQ+0I
+kd6Tp8gN2azuspSk5FjWKUdQqd2PH7kBZf6yzaB9cniQPxhdDnEDQgLN3QlZenBp
+zdvO/nJR6g8R0wA2B5wAaHnozj0lNJbHDMXa9zxqHheBBjK8woSfl0q3y84ULD08
+iOjYp3J4gDAAUW97kqriMY8daBfyzFD8VbQUmyxFrIUgx+HkBpOF8aiW2RVWhMFa
+ckyZ4chCRdLF7rFR1uZ9Kyu+q1XT3/syWYza+xSstsJRQeP6FWQ3a1y6N/MipnVu
+dewMjzRuG2bChP7iB3jx
+=vacb
+-----END PGP SIGNATURE-----
+
+--Agttoo0f13E6hNPCuT2uDvPShfGEDCnuF--

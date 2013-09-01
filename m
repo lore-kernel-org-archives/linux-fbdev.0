@@ -1,69 +1,60 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Sat, 07 Sep 2013 11:16:23 +0000
-Subject: Re: [PATCH] simplefb: print some info about the registered fb
-Message-Id: <CANq1E4Rxo3Az0hwCzzQyKz6z_uyVq-9bgAzNzm9StkWoAbkN_A@mail.gmail.com>
+From: Belisko Marek <marek.belisko@gmail.com>
+Date: Sun, 01 Sep 2013 12:32:05 +0000
+Subject: Re: [PATCH] omap2: panel-generic: Added panel parameters for ortus-com37h3m05dtc/99dtc and sharp-lq0
+Message-Id: <CAAfyv35ViR6PxTAs-Q2OUHWn93RsX8eep-ew8m-AN1SjS-V80g@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1378467880-1040-1-git-send-email-teg@jklm.no>
-	<1378468153-1375-1-git-send-email-teg@jklm.no>
-In-Reply-To: <1378468153-1375-1-git-send-email-teg@jklm.no>
+References: <1377779724-30648-1-git-send-email-marek@goldelico.com>
+	<52205056.8080908@ti.com>
+In-Reply-To: <52205056.8080908@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tom Gundersen <teg@jklm.no>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Stephen Warren <swarren@wwwdotorg.org>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "H. Nikolaus Schaller" <hns@goldelico.com>
 
-Hi Tom
+Hi Tomi,
 
-On Fri, Sep 6, 2013 at 1:49 PM, Tom Gundersen <teg@jklm.no> wrote:
-> This is similar to the output printed by efifb.
+On Fri, Aug 30, 2013 at 9:57 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+> On 29/08/13 15:35, Marek Belisko wrote:
+>> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+>> Signed-off-by: Marek Belisko <marek@goldelico.com>
+>> ---
+>>  drivers/video/omap2/displays/panel-generic-dpi.c | 53 ++++++++++++++++++++++++
+>>  1 file changed, 53 insertions(+)
+>>
+>> diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
+>> index bebebd4..d573291 100644
+>> --- a/drivers/video/omap2/displays/panel-generic-dpi.c
+>> +++ b/drivers/video/omap2/displays/panel-generic-dpi.c
+>> @@ -107,6 +107,33 @@ static struct panel_config generic_dpi_panels[] = {
+>>               .name                   = "sharp_ls",
+>>       },
 >
-> Signed-off-by: Tom Gundersen <teg@jklm.no>
-> Cc: Stephen Warren <swarren@wwwdotorg.org>
-> Cc: David Herrmann <dh.herrmann@gmail.com>
-> ---
+> The drivers in drivers/video/omap2/displays/ are on their way out, and
+> will probably be removed for 3.12. Please look at the new one at
+> drivers/video/omap2/displays-new/panel-dpi.c.
+I've probably miss series (OMAPDSS: remove old panel model code)
+and in time when sent patch it wasn't in linux-next yes. AFAIU generic
+panel settings
+was moved to board files which is not case for our patch as gta04
+(other) board with panel isn't yes mainlined.
 >
-> Hi,
+>  Tomi
 >
-> Sorry for the resend, got the ml address wrong.
 >
-> -t
->
->  drivers/video/simplefb.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
->
-> diff --git a/drivers/video/simplefb.c b/drivers/video/simplefb.c
-> index 8d78106..4196686 100644
-> --- a/drivers/video/simplefb.c
-> +++ b/drivers/video/simplefb.c
-> @@ -220,6 +220,14 @@ static int simplefb_probe(struct platform_device *pdev)
->         }
->         info->pseudo_palette = (void *)(info + 1);
->
-> +       dev_info(&pdev->dev, "framebuffer at 0x%lx, mapped to 0x%p\n",
-> +                            info->fix.smem_start, info->screen_base);
 
-Could we get smem_len, too? Something like:
-      dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%lx bytes, mapped
-to 0x%p\n",
-                           info->fix.smem_start, (unsigned
-long)info->fix.smem_len, info->screen_base);
+Regards,
 
-(smem_len is __u32, so cast it to avoid truncation if it's defined as
-long somewhere. Not sure whether we actually have 16bit int somewhere,
-though)
+marek
 
-Cheers
-David
+-- 
+as simple and primitive as possible
+-------------------------------------------------
+Marek Belisko - OPEN-NANDRA
+Freelance Developer
 
-> +       dev_info(&pdev->dev, "format=%s, mode=%dx%dx%d, linelength=%d\n",
-> +                            params.format->name,
-> +                            info->var.xres, info->var.yres,
-> +                            info->var.bits_per_pixel,
-> +                            info->fix.line_length);
-> +
->         ret = register_framebuffer(info);
->         if (ret < 0) {
->                 dev_err(&pdev->dev, "Unable to register simplefb: %d\n", ret);
-> --
-> 1.8.4
->
+Ruska Nova Ves 219 | Presov, 08005 Slovak Republic
+Tel: +421 915 052 184
+skype: marekwhite
+twitter: #opennandra
+web: http://open-nandra.com

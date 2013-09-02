@@ -1,79 +1,64 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 05 Sep 2013 08:02:44 +0000
-Subject: Re: [GIT PULL] fbdev changes for 3.12
-Message-Id: <52283AA4.9050609@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="bFxOJFpLL21wXf0fh7EDUROE1vNTMeTX8"
+From: Chen Gang <gang.chen@asianux.com>
+Date: Mon, 02 Sep 2013 01:41:31 +0000
+Subject: Re: [PATCH] drivers: video: i740fb: add 'default' processing contents for 'switch'.
+Message-Id: <5223ECCB.9080701@asianux.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5228294E.8050401@ti.com> <CANq1E4Rd2eEaNnX8b3WAQcQX-T4+fR-4OMAtoSaAp9XwdGLpSg@mail.gmail.com>
-In-Reply-To: <CANq1E4Rd2eEaNnX8b3WAQcQX-T4+fR-4OMAtoSaAp9XwdGLpSg@mail.gmail.com>
-To: David Herrmann <dh.herrmann@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Stephen Rothwell <sfr@canb.auug.org.au>
+References: <51ECF12D.8060903@asianux.com>
+In-Reply-To: <51ECF12D.8060903@asianux.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---bFxOJFpLL21wXf0fh7EDUROE1vNTMeTX8
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 08/30/2013 06:52 PM, Tomi Valkeinen wrote:
+> On 30/08/13 13:41, Chen Gang wrote:
+>> On 08/30/2013 06:19 PM, Tomi Valkeinen wrote:
+> 
+>>> Here's some old discussion about BUG:
+>>>
+>>> http://yarchive.net/comp/linux/BUG.html
+>>>
+>>
+>> Yeah, if it is not a real bug (can handle it), we should not use BUG(),
+>> but when we are sure it is a kernel bug, and the kernel will continue
+>> blindly, we need use BUG() to stop it.
+>>
+>> Just like the Linus Torvalds said in the link which you provide:
+>>
+>> "Rule of thumb: BUG() is only good for something that never happens and
+>> that we really have no other option for (ie state is so corrupt that
+>> continuing is deadly)".
+> 
+> I guess this is where we disagree. I don't see having a corrupt bpp
+> value in a fb driver's internal function as "so corrupt that continuing
+> is deadly".
+> 
 
-On 05/09/13 10:48, David Herrmann wrote:
+Hmm... at least we are agree with each other
 
->> There's a conflict in drivers/video/simplefb.c, which you can resolve =
-by using
->> the version in your tree.
->=20
-> No, both need to be merged. The current version lacks support for
-> ABGR8888. The fbdev tree lacks the DRM format, which should be:
->   { "a8b8g8r8", 32, {0, 8}, {8, 8}, {16, 8}, {24, 8}, DRM_FORMAT_ABGR88=
-88 }
-
-Ah, right you are. a8b8g8r8 looks too much like a8r8g8b8, so my morning
-groggy eyes didn't see that.
-
->> I guess the simplefb changes were taken through Ingo's tree because th=
-e series
->> includes x86 arch changes, but it would have been nice to see the patc=
-hes in
->> the linux-next...
->=20
-> simplefb was in linux-next. I also acked the fixup from Stephen. See
-> this commit from a pre-3.12 -next tree:
->   http://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git/commi=
-t/include/linux/platform_data/simplefb.h?id=3D44ed8fb588e517a2ef917c6757e=
-e11ee47348978
-
-Right. And I have the mail about the conflict from Stephen in my
-mailbox, which I had read, but successfully forgot about it during my
-vacation.
-
-So, what I said about conflict resolution and the series missing from
-linux-next was wrong, and the conflict resolution in linux-next is what
-should be used.
-
- Tomi
+  "at least now, it should be never happen", is it correct ?
 
 
+And we are disagree with each other:
 
---bFxOJFpLL21wXf0fh7EDUROE1vNTMeTX8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+  "if it really happens, I think it is a critical bug, but you have different opinion", is it correct ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJSKDqkAAoJEPo9qoy8lh71/lYP/RwSQQhZ1Kvq0sHWRF9tOmbY
-eHT9vigbT0OCiCj0u7JLFwNnhN+reD0Fr3EgzlCY1kMyQtoiUl6z/rDpQbVzP3O1
-Xin4z6es+KMNTVCk2kN9QiFaJuNH1I/C0u961YjED3Yxqwti7K+V3v0NqMZj7R9q
-DUO+yHBhNnmKrh/1Pgzb0kOzMF/S++Q6qftdWO5A8OLb/CIhCrimNR//Yi9M6sYy
-svyj5OUpEsda+JsCAvhxwaKZsn9hWjC9EOxQzSdFoRvcPW2BNQeOZKC92w+/rmG/
-xpz8Kkbr6rcpIahn9avJnLvsfmw4pWViFmqH5GGTBynU3yMgIiiOOmMZTCnRVhW1
-NU03dCdeCw4RaY0zACNkdPGLLDsQDxYevcNSRySKfT1h7mMS0/56RKA8lfimetwO
-QPVk947gfLAA1RFyZkxEzsloZiA2qH/V1OUwEftMr1gfBfbORbtKlSTdcKLJzOIT
-z8NQadYV1S6KkBxMlTe2Pw7z77gX8k2ok6jaWdD4Rdu0+y/USZZXhkOl/4ZM9iTm
-N3Xh05zZj3VfuQs60ztfVemInn9kXYNwx5zvIujqT4+SkolIoHgNqualu4faE+/E
-3Ba5YPrfzFGqtMmOMEfQf5YgMm3eSzl0ED2hfAb/32Vzb46yFHmlF4gBmXJh89MQ
-usTRbZGPI10u5qJs9a2S
-=ZE7L
------END PGP SIGNATURE-----
+> Anyway, if you insist on the BUG(), I'll leave this patch to
+> Jean-Christophe. I'm only taking small-ish patches that have no open
+> issues or disagreements.
+> 
 
---bFxOJFpLL21wXf0fh7EDUROE1vNTMeTX8--
+OK, thank you for spending your time resources to provide your
+suggestion and opinion.
+
+And welcome another members' suggestion and completions.
+
+>  Tomi
+> 
+> 
+
+
+Thanks.
+-- 
+Chen Gang

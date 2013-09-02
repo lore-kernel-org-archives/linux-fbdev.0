@@ -1,45 +1,39 @@
-From: Joe Perches <joe@perches.com>
-Date: Fri, 20 Sep 2013 01:35:54 +0000
-Subject: [PATCH 1/2] framebuffer: Add fb_<level> convenience logging macros
-Message-Id: <0926c7a34ac51c4cbb67debd0d883f41891e75d9.1379640011.git.joe@perches.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 02 Sep 2013 01:33:22 +0000
+Subject: [PATCH] video: xilinxfb: use devm_ioremap_resource() instead of devm_request_and_ioremap()
+Message-Id: <005401cea77c$6925eec0$3b71cc40$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-Add fb_<level> convenience macros for emitting the
-"fb%d: ", struct fb_info->node value.
+Use devm_ioremap_resource() because devm_request_and_ioremap() is
+obsoleted by devm_ioremap_resource().
 
-Neatens and shortens the code a bit.
-
-Signed-off-by: Joe Perches <joe@perches.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- include/linux/fb.h | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ drivers/video/xilinxfb.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index ffac70a..70c4836 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -792,4 +792,16 @@ extern int fb_find_mode(struct fb_var_screeninfo *var,
- 			const struct fb_videomode *default_mode,
- 			unsigned int default_bpp);
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index 6629b29..ed90051 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -260,9 +260,9 @@ static int xilinxfb_assign(struct platform_device *pdev,
  
-+/* Convenience logging macros */
-+#define fb_err(fb_info, fmt, ...)					\
-+	pr_err("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
-+#define fb_notice(info, fmt, ...)					\
-+	pr_notice("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
-+#define fb_warn(fb_info, fmt, ...)					\
-+	pr_warn("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
-+#define fb_info(fb_info, fmt, ...)					\
-+	pr_info("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
-+#define fb_dbg(fb_info, fmt, ...)					\
-+	pr_debug("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
-+
- #endif /* _LINUX_FB_H */
+ 		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 		drvdata->regs_phys = res->start;
+-		drvdata->regs = devm_request_and_ioremap(&pdev->dev, res);
+-		if (!drvdata->regs) {
+-			rc = -EADDRNOTAVAIL;
++		drvdata->regs = devm_ioremap_resource(&pdev->dev, res);
++		if (IS_ERR(drvdata->regs)) {
++			rc = PTR_ERR(drvdata->regs);
+ 			goto err_region;
+ 		}
+ 	}
 -- 
-1.8.1.2.459.gbcd45b4.dirty
+1.7.10.4
+
 

@@ -1,102 +1,187 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 02 Sep 2013 06:42:42 +0000
+Date: Mon, 02 Sep 2013 08:00:15 +0000
 Subject: Re: [RFC 00/22] OMAPDSS: DT support
-Message-Id: <52243362.3090905@ti.com>
+Message-Id: <5224458F.9070401@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="HKf5hWQ9rHjV8W2ujcCBUsh5bKL86b2cK"
+Content-Type: multipart/mixed; boundary="9SxPsphtUbaGcS1LFSUcaNxajsGSitjeK"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com> <20130813075449.GS7656@atomide.com> <52206A48.8040401@ti.com> <20130902061541.GU7656@atomide.com>
-In-Reply-To: <20130902061541.GU7656@atomide.com>
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>
+References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com> <2305295.bk1TpuGLMv@avalon>
+In-Reply-To: <2305295.bk1TpuGLMv@avalon>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tony Lindgren <tony@atomide.com>
 
---HKf5hWQ9rHjV8W2ujcCBUsh5bKL86b2cK
+--9SxPsphtUbaGcS1LFSUcaNxajsGSitjeK
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 02/09/13 09:15, Tony Lindgren wrote:
-> * Tomi Valkeinen <tomi.valkeinen@ti.com> [130830 02:55]:
->> On 13/08/13 10:54, Tony Lindgren wrote:
->>> * Tomi Valkeinen <tomi.valkeinen@ti.com> [130809 01:46]:
->>>>
->>>> So as is evident, I have things in my mind that should be improved. =
-Maybe
->>>> the most important question for short term future is:
->>>>
->>>> Can we add DSS DT bindings for OMAP4 as unstable bindings? It would =
-give us
->>>> some proper testing of the related code, and would also allow us to =
-remove
->>>> the related hacks (which don't even work quite right). However, I ha=
-ve no
->>>> idea yet when the unstable DSS bindings would turn stable.
->>>>
->>>> If we shouldn't add the bindings as unstable, when should the bindin=
-gs be
->>>> added? Wait until CDF is in the mainline, and use that?
->>>
->>> I don't think we should add any temporary bindings as it's going to b=
-e
->>> a pain to support those in the long run. I suggest you initially just=
+On 22/08/13 00:07, Laurent Pinchart wrote:
 
->>> stick to established bindings for the basic hardware IO address and
->>> interrupts etc, then those should still be valid with the generic pan=
-el
->>> bindings later on.
+Thanks for the comments!
+
+>> The exception to the above are DSI and DBI. DSI and DBI are combined c=
+ontrol
+>> and video busses, but the use of the busses for control purposes is no=
+t
+>> independent of the video stream. Also, the the busses are, in practice=
+,
+>> one-to-one links. And last, DSI and DBI display entities are often als=
+o
+>> controllable via, say, i2c. For these reasons there is no real Linux b=
+us
+>> for DSI and DBI and thus the DSI and DBI devices are either platform
+>> devices or i2c devices.
+>=20
+> That's something I'm less convinced about, but I don't have a too stron=
+g=20
+> feeling. The best implementation should get to mainline, I won't nack t=
+his=20
+> architecture just for theoretical reasons.
+
+Ok. I posted a response to your DBI bus patch about the issues I see.
+
+>> DSI Module ID
+>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 >>
->> I don't understand what does it matter if the bindings are temporary, =
-or
->> basic established bindings. In both cases the DT data needs to be
->> changed when the CDF is taken into use.
+>> On OMAP4 we have two DSI modules. To configure the clock routing and p=
+in
+>> muxing, we need to know the hardware module ID for the DSI device, i.e=
+=2E is
+>> this Linux platform device DSI1 or DSI2. The same issue exists with ot=
+her
+>> SoCs with multiple outputs of the same kind.
+>>
+>> With non-DT case, we used the platform device's ID directly. With DT, =
+that
+>> doesn't work. I don't currently have a good solution for this, so as a=
+
+>> temporary solution the DSI driver contains a table, from which it can =
+find
+>> the HW module ID by using the device's base address.
 >=20
-> Yes but the old bindings still need to be supported because people
-> are doing devices using those. So any kind of temporary binding will be=
+> You could add two output ports to the DSS, one for each DSI, and link t=
+he DSI=20
+> modules to the DSS output ports in DT. That would represent the hardwar=
+e=20
+> topology, and would allow the DSI driver to know its ID based on the DS=
+S=20
+> output port it's connected to. It's still a bit hackish in the sense th=
+at the=20
+> DSI driver will use information provided by the DSS (the output port nu=
+mber),=20
+> but not more than the current method.
 
-> a pain to support.
+Hmm, yep. That's kind of the same as having an explicit 'module-id'
+property in the DSI node. I had implemented that solution at some point,
+but considered it too ugly. But I agree that deducing the module-id from
+the DSS output port is a bit cleaner, as it doesn't need any special
+properties. And it's maybe also better than the address table I have
+now, as the address table requires special code for each SoC.
 
-If old bindings need to be supported, then we also need to support the
-current state for Panda and SDP, i.e. there are no DSS related DT
-bindings, but displays still work. Which means we'll have to keep the
-current hacky DSS device construction mechanism for Panda and SDP.
+I have to try the V4L2 ports to understand fully how to use them.
 
-Although maybe it's cleaner to somehow inject the DSS DT nodes for Panda
-and SDP in case they are missing from the real DT data.
+In the end, I hope to get rid of the module-id totally. It's really not
+a DSI-thing at all. The DSI hardware does not use the module-id for
+anything, it's more about how the DSI module is glued in the DSS/SoC.
 
-Doesn't supporting old bindings also mean that we can never get rid of
-the hwmods? Or will there be code that injects the missing interrupt
-etc. entries?
-
->> Well, one difference is that the temporary bindings would give us
->> working display, but having only basic bindings would not. So I don't
->> see any reason to add only the basic bindings. Or how would it work?
+>> I have some ideas how to deduce the DSS version by poking to certain D=
+SS
+>> registers, but it is not yet tested so I don't know if it will work.
 >=20
-> You might be able to use just a minimal binding for now using the
-> basic reg, interrupt and entries for the various components. Those will=
+> That might be a stupid question, but can't you just encode the version =
+in the=20
+> compatible string of the DSS DT node (the one currently compatible with=
+=20
+> "ti,omap[34]-dss") ?
 
-> be still valid when the CDF bindings are available.
+That would require having separate DT files for each revision. For
+example, we have Beagle boards with different OMAP reversions.
 
-Well, the entries will be valid, but the displays won't work with just
-the basic bindings. I could perhaps add a new hack that creates the
-required panel devices and video pipeline connections dynamically in
-code for Panda and SDP, a bit like what the code does now, except the
-basic DSS entries would be in the DT. But that would just add another
-set of DT data that I would need to support in the future, and there
-would be three different cases to support for Panda and SDP:
+It's fine to have the version encoded in the compatible string for major
+versions, but having all minor revisions encoded there could result in a
+mess.
 
-- DT data with no DSS related nodes
-- DT data with basic DSS related nodes
-- DT data with full DSS
+> Version information might also need to be split/duplicated in several o=
+f the=20
+> DSS DT nodes. A quick grep through the driver source code shows that th=
+e=20
+> version is used by the submodules to infer SoC glue information. For in=
+stance=20
+> dsi_get_channel() uses the version to find the DSI module channel ID. T=
+hat=20
+> information could possibly be retrieved from the links between the DSS =
+DT=20
+> nodes.
 
-So... If old bindings have to be supported, I'd rather try to minimize
-the pain, and not add anything but the final bindings. In retrospect, it
-was a bit of a mistake to add the hacky DT display support for Panda and
-SDP, as it won't be very nice to keep supporting those.
+Hmm, yes. Well. The DISPC has multiple output channels: LCD, LCD2, LCD3,
+TV (depending on the SoC). These outputs go to encoders, and the routing
+can be configured. If we consider only DSI encoders on OMAP4, the LCD2
+output can be configured to go to DSI1 or DSI2 modules. LCD1 output can
+be configured to go to DSI1 (but not to DSI2).
 
-  Tomi
+Because the routing has restrictions like mentioned above, it's somewhat
+difficult to allocate the DISPC output channels during runtime in a
+totally dynamic manner. Say, if we happened to allocate LCD2 for DSI1,
+and later we'd want to use DSI2, there would be no DISPC output to use.
+
+That's why we currently have them hardcoded in the driver, and it works
+ok in all the use cases we have now. However, some board could need to
+setup the channels in some other way for some particular use case.
+
+So, I'm not totally comfortable with hardcoding the DISPC output - DSS
+encoder connections in the DT data. While it'd work for most cases, it
+doesn't work for all.
+
+Then again, if the connections in the DT data would be considered more
+like a default set of connections, and they could be changed later from
+the kernel/userspace, then it'd be fine.
+
+>> Some of the DSS modules are actually a combination of multiple smaller=
+
+>> modules. For example, the DSI module contains DSI protocol, DSI PHY an=
+d DSI
+>> PLL modules, each in their own address space. These could perhaps be
+>> presented as separate DT nodes and Linux devices, but I am not sure if=
+ that
+>> is a good approach or not.
+>=20
+> What are the chances that one of those block will be upgraded and/or re=
+placed=20
+> independently of the others in the future (I know it's a tricky questio=
+n) ? It=20
+> might not be worth it going to a too fine-grained approach at the momen=
+t, but=20
+> we need to make sure that the DT bindings will allow an easy path forwa=
+rd if=20
+> needed.
+
+For DSI, I believe the chances are quite small. But for HDMI, we already
+have this case for OMAP4 and OMAP5, and we're currently working on
+splitting the HDMI core, PHY and PLL properly. I think it makes sense to
+do the same for DSI also at the same time, especially as the PLL for DSI
+and HDMI is the same (afaik).
+
+>> If we shouldn't add the bindings as unstable, when should the bindings=
+ be
+>> added? Wait until CDF is in the mainline, and use that?
+>=20
+> What about using the CDF bindings, without waiting for CDF to be in mai=
+nline ?=20
+> I believe the bindings should be upstreamed as unstable to start with a=
+nyway.
+
+Yes, I think that makes sense. And that's what I've been aiming at. I'm
+just missing the ports-stuff.
+
+Then again, I see opinions that the old bindings should be supported
+(e.g. the mails with Tony in this same thread). If so, using CDF
+bindings without CDF being in the mainline is a bit risky, as the
+bindings could well change.
+
+ Tomi
 
 
 
---HKf5hWQ9rHjV8W2ujcCBUsh5bKL86b2cK
+--9SxPsphtUbaGcS1LFSUcaNxajsGSitjeK
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -105,19 +190,19 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJSJDNiAAoJEPo9qoy8lh71l5wQAJS53uSEWuvnVIZHPmUG0lTu
-dadY0fJF6ardnEyEb49TmkkKgp2tYrqTk9qW1cyQZ/I9XmmIed//9wwNDsAqG+C6
-l9mfiIBTEfaKV0piGOT5wyEIvYROqEhOUawGrjQhTF0/Sm5nCgqEKAXwctXInJV5
-S6NSRR6aBue8+fdswvUJ+M8x/4qqY/dGKmas1GdNsI4l75xhB+7whoVjL+YxUZpA
-OhXFbAb/7xfwMu2j971eaKfCpYIfNoQm6w3CtkAisJd9OAVNTtYDqqK+Fz7WJsjc
-nGNaxMNa7Flx8v1c0dy9VwhxJ06iJ+N9qHA2t1wIu/zti9Q8RSibL1Yq6HFvq9ST
-SdyPpHbF5Mk92XRr+dsp0Ce3HCx0HmBG9iXvQl+lAX5KY1Bh6ds+W9xZJxlQ0L7x
-+kzsrRU0kjNWx/4uqobpMx1XUueTJKfg7teIUw6ZOsrqt0eZO2sOTrveXy3e1OnX
-NxK/iswAaX4iiClBAz6hN1XZQdGjUisGQgO/Z83j9b7RiIwuciz6tHnP/2Y6VKWd
-5XR2LzY1ckpjxhdPuIGvGxQc8CaX/ma67Cmq+NNDy6/hGK0C5W5gyA7kPkA0R1vy
-VjErMTTSiIDLgvnMLoIdK1YDDmOwR9tb78c0sWnvYN4umKoHF2JZsOgsq9QgY3Du
-xtkrZYAcTJ1/QU60j6GS
-=SiMp
+iQIcBAEBAgAGBQJSJEWPAAoJEPo9qoy8lh71s14P/jKmIgwtW631FveWcMztPVQw
+DSIRQDS13YsdZPhmUr3VRk4GkkHMucetHyqaCZeW61jKxQaBpqLfHDyW2/m03N4q
+Ll/9dQm6ZO2IrxSyJW+m26IEsDjYTBnUkj0tgv561V/lMynhrYya/Z6zotrL6/0Q
+MLmZevItNp9S/b+M80QR4oxppZ3QiYGNg3cEUFBvVmb39fcTJfB10KG/n5GYEdq3
+5ds/7AvW0tSUQjhOuyEwHxriT3Flly9f+oBroxLh0zDqdJj8ESg12mh3/XXrfb0b
+SNnYMC78HGMvOVpGhqoPk/ydGdU53OuGQ8SWN1GXnaloQafTGWjw/XhzzcJSPYe5
+kCMqrIYQS5qk7FLXUaZDyhIwLJHGXSb5MwYU7xIjF/+CSSNCr2wB2ghtQWZdSE3O
+WG9SVpgH17paIql0mEdGafB2qM56zwXhXRaKfCCJxe+vvihLmVgOgaYWEggg28hH
+pgj6/8dWX/rgPY/Yof0NzZj1+8FHBKvodqtjyzl9Mg5KfttBI8MZki89UD5eM7fa
+QVV289zWQV0h8MP+dfHbeevp+u3Hpbm9lBOAEQbS8c56rG06HPDGMixeDmhLiaK5
+mmZn1c3g93h5bxsS8Q0pnhtFTr54ArrwCiwr09ddNMxzfIWKH0p0MllSZX2iTpTs
+AGVGIhz1Dj6Kho1uIHK/
+=n5jY
 -----END PGP SIGNATURE-----
 
---HKf5hWQ9rHjV8W2ujcCBUsh5bKL86b2cK--
+--9SxPsphtUbaGcS1LFSUcaNxajsGSitjeK--

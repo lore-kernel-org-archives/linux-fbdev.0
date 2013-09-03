@@ -1,44 +1,54 @@
-From: Wang Huan-B18965 <B18965@freescale.com>
-Date: Fri, 27 Sep 2013 05:29:04 +0000
-Subject: RE: [PATCH v3 0/5] ARM: vf610: Add DCU framebuffer driver for Vybrid VF610 platform
-Message-Id: <81BA6E5E0BC2344391CABCEE22D1B6D84426AA@039-SN1MPN1-003.039d.mgd.msft.net>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Tue, 03 Sep 2013 15:37:23 +0000
+Subject: Re: [PATCH v11 0/8] PHY framework
+Message-Id: <5225FF63.6080608@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376553714-25922-1-git-send-email-b18965@freescale.com>
- <81BA6E5E0BC2344391CABCEE22D1B6D83F448E@039-SN1MPN1-002.039d.mgd.msft.net>
- <81BA6E5E0BC2344391CABCEE22D1B6D8403CB3@039-SN1MPN1-002.039d.mgd.msft.net>
- <52270C71.7080805@ti.com>
- <81BA6E5E0BC2344391CABCEE22D1B6D842FD6A@039-SN1MPN1-003.039d.mgd.msft.net>
- <523C1DAB.60808@ti.com>
-In-Reply-To: <523C1DAB.60808@ti.com>
+References: <1377063973-22044-1-git-send-email-kishon@ti.com>
+ <521B0E79.6060506@ti.com> <20130827192059.GZ3005@radagast>
+In-Reply-To: <20130827192059.GZ3005@radagast>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-PiA+PiBPbiAwMy8wOS8xMyAxMToyMSwgV2FuZyBIdWFuLUIxODk2NSB3cm90ZToNCj4gPj4+IEhp
-LCBKZWFuLUNocmlzdG9waGUsIFRvbWksDQo+ID4+Pg0KPiA+Pj4gQ291bGQgeW91IHBsZWFzZSBo
-ZWxwIHRvIHJldmlldyB0aGVzZSBwYXRjaGVzPyBUaGFua3MhDQo+ID4+DQo+ID4+IFRoZXJlIHNl
-ZW1lZCB0byBiZSBzb21lIHN0cm9uZyBvcGluaW9ucyB0aGF0IHRoZXJlIHNob3VsZCBiZSBhIGRy
-bQ0KPiA+PiBkcml2ZXIgZm9yIHRoaXMgaGFyZHdhcmUsIGluc3RlYWQgb2YgYW4gZmIgZHJpdmVy
-LiBTbyBhcyB0aGVyZSBzZWVtcw0KPiA+PiB0byBiZSBkaXNhZ3JlZW1lbnRzIGFib3V0IHRoaXMs
-IEknbGwgbGVhdmUgdGhpcyBzZXJpZXMgdG8NCj4gPj4gSmVhbi1DaHJpc3RvcGhlLCB3aG8ncyB0
-aGUgcHJpbWFyeSBtYWludGFpbmVyLg0KPiA+IFtBbGlzb24gV2FuZ10NCj4gPg0KPiA+IFRoYW5r
-cyBmb3IgVG9taSdzIGNvbW1lbnRzLg0KPiA+DQo+ID4gSSBhZ3JlZSB0aGF0IHdlIGNhbiBpbXBs
-ZW1lbnQgdGhlIERSTSBkcml2ZXIgZm9yIHRoZSBEQ1UuIEFzIHRoZQ0KPiA+IGJhbmR3aWR0aCBs
-aW1pdGF0aW9uLCBJIHN1Z2dlc3Qgd2UgdXNlIHRoZSBmYiBkcml2ZXIgZmlyc3RseS4gT24gdGhl
-DQo+ID4gb3RoZXIgaGFuZCwgdGhlIGZiIGRyaXZlciBjYW4gbWVldCB0aGUgYXBwbGljYXRpb24g
-cmVxdWlyZW1lbnQgYmFzZWQNCj4gPiBvbiB0aGlzIFNvQy4gV2UnbGwgdHJ5IHRvIHByb3ZpZGUg
-dGhlIERSTSBkcml2ZXIgd2hlbiB0aGlzIElQDQo+ID4gaW50ZWdyYXRlZCBpbnRvIG90aGVyIFNv
-Qy4NCj4gDQo+IElmIHlvdSBwbGFuIHRvIG1vdmUgdG8gRFJNIGRyaXZlciBhbnl3YXksIEkgd291
-bGQgc3Ryb25nbHkgc3VnZ2VzdA0KPiBtZXJnaW5nIG9ubHkgdGhlIERSTSBkcml2ZXIuIElmIHdl
-IG1lcmdlIHRoZSBmYiBkcml2ZXIsIGFuZCBhIGJpdCBsYXRlcg0KPiB0aGUgRFJNIGRyaXZlciBm
-b3IgdGhlIHNhbWUgaGFyZHdhcmUsIHdlJ2xsIGhhdmUgdHdvIGRyaXZlcnMgb2Ygd2hpY2gNCj4g
-dGhlIG90aGVyIGlzIGFscmVhZHkgZGVwcmVjYXRlZC4NCj4gDQpbQWxpc29uIFdhbmddIFdlIHdp
-bGwgbm90IGhhdmUgYmFuZHdpZHRoIGFuZCBkZXZlbG9wIHRoZSBEUk0gZHJpdmVyIGluIHRoZSBu
-ZWFyIGZ1dHVyZS4gT24gdGhlIG90aGVyIGhhbmQsIHRoaXMgSVAgaXMgbm90IGludGVncmF0ZWQg
-aW50byBvdGhlciBoaWdoLWVuZCBTT0MuIFNvIHRoaXMgZmIgZHJpdmVyIHdpbGwgYmUgdXNlZCBm
-b3Igc29tZSBraW5kIG9mIGxvbmcgdGltZSBmb3IgY3VycmVudCBTb0MuIFdlIGNhbiB0cnkgdG8g
-cmVtb3ZlIHRoZSBmYiBkcml2ZXIgd2hlbiB3ZSBkZXZlbG9wZWQgdGhlIERSTSBkcml2ZXIgZm9y
-IG90aGVyIFNvQy4NCg0KSmVhbi1DaHJpc3RvcGhlLCBEbyB5b3UgaGF2ZSBhbnkgY29tbWVudHM/
-IFRoYW5rcy4NCg0KDQpCZXN0IFJlZ2FyZHMsDQpBbGlzb24gV2FuZw0K
+Hi Greg,
 
+On Wednesday 28 August 2013 12:50 AM, Felipe Balbi wrote:
+> Hi,
+> 
+> On Mon, Aug 26, 2013 at 01:44:49PM +0530, Kishon Vijay Abraham I wrote:
+>> On Wednesday 21 August 2013 11:16 AM, Kishon Vijay Abraham I wrote:
+>>> Added a generic PHY framework that provides a set of APIs for the PHY drivers
+>>> to create/destroy a PHY and APIs for the PHY users to obtain a reference to
+>>> the PHY with or without using phandle.
+>>>
+>>> This framework will be of use only to devices that uses external PHY (PHY
+>>> functionality is not embedded within the controller).
+>>>
+>>> The intention of creating this framework is to bring the phy drivers spread
+>>> all over the Linux kernel to drivers/phy to increase code re-use and to
+>>> increase code maintainability.
+>>>
+>>> Comments to make PHY as bus wasn't done because PHY devices can be part of
+>>> other bus and making a same device attached to multiple bus leads to bad
+>>> design.
+>>>
+>>> If the PHY driver has to send notification on connect/disconnect, the PHY
+>>> driver should make use of the extcon framework. Using this susbsystem
+>>> to use extcon framwork will have to be analysed.
+>>>
+>>> You can find this patch series @
+>>> git://git.kernel.org/pub/scm/linux/kernel/git/kishon/linux-phy.git testing
+>>
+>> Looks like there are not further comments on this series. Can you take this in
+>> your misc tree?
+> 
+> Do you want me to queue these for you ? There are quite a few users for
+> this framework already and I know of at least 2 others which will show
+> up for v3.13.
+
+Can you queue this patch series? There are quite a few users already for this
+framework.
+
+Thanks
+Kishon

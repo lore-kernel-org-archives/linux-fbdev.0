@@ -1,65 +1,267 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Thu, 12 Sep 2013 15:56:09 +0000
-Subject: Re: [PATCH v2 1/2] video: ARM CLCD: Add DT support
-Message-Id: <20130912155609.GO12758@n2100.arm.linux.org.uk>
+From: Mike Dunn <mikedunn@newsguy.com>
+Date: Tue, 03 Sep 2013 19:26:12 +0000
+Subject: [PATCH] pwm-backlight: add support for device tree gpio control
+Message-Id: <1378236372-15711-1-git-send-email-mikedunn@newsguy.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1378808726-32535-1-git-send-email-pawel.moll@arm.com>
- <522F57B9.5000001@wwwdotorg.org> <1378899931.4082.75.camel@hornet>
- <5230AAEB.2030607@wwwdotorg.org> <1378991033.13571.33.camel@hornet>
- <5231D5FA.4060508@wwwdotorg.org>
-In-Reply-To: <5231D5FA.4060508@wwwdotorg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: thierry.reding@gmail.com
+Cc: Mike Dunn <mikedunn@newsguy.com>, Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>, Marek Vasut <marex@denx.de>
 
-On Thu, Sep 12, 2013 at 08:55:54AM -0600, Stephen Warren wrote:
-> On 09/12/2013 07:03 AM, Pawel Moll wrote:
-> > Ok, so I'll make it a arm,pl11x,specific property. Actually two
-> > properties - one bit I missed was the dual STN panel case, where they
-> > have separate frame buffers. Something along the lines of:
-> > 
-> > Optional:
-> > 
-> > - arm,pl11x,framebuffer-base: a pair of two values, address and size,
-> > 				defining the framebuffer for the upper
-> > 				(or the only one) panel
-> > - arm,pl11x,lower-framebuffer-base: as above, for the lower STN panel,
-> > 					when present
-> > 
-> > Being very hardware-specific, it covers all possible quirky scenarios,
-> > at the same time does not exclude the option of using the CMA region
-> > phandles, if a particular system needed it.
-> 
-> What do "upper" and "lower" mean in this context? I assume this somehow
-> refers to placement of the displays on the board.
+This patch adds support for controlling an arbitrary number of gpios to the
+pwm-backlight driver.  This was left as a TODO when initial device tree support
+was added by Thierry a while back.  This functionality replaces the callbacks
+that are passed in the platform data for non-DT cases.  Users can avail
+themselves of this feature by adding a 'gpios' property to the 'backlight' node.
+When the update_status() callback in backlight_ops runs, the gpios listed in the
+property are asserted/deasserted if the specified brightness is non-zero/zero.
 
-CLCD is only one controller - it can only produce one image from one
-framebuffer.
+Tested on a pxa270-based Palm Treo 680.
 
-What this refers to is a requirement for dual STN displays - rather
-than starting at one corner and working logically to the opposite
-corner, these start at one corner and half way through the display at
-the same time.  So you scan out the upper half of the image at the
-same time that you scan out the lower half of the image.
+Signed-off-by: Mike Dunn <mikedunn@newsguy.com>
+---
 
-In order to give an image on the display where the conventional formula
-works:
+Thanks for looking!
 
-	address = start + y * bytes_per_line + x * bits_per_pixel / 8
+ .../bindings/video/backlight/pwm-backlight.txt     |   4 +
+ drivers/video/backlight/pwm_bl.c                   | 128 ++++++++++++++++++---
+ 2 files changed, 113 insertions(+), 19 deletions(-)
 
-this means that the "upper" and "lower" start addresses are related to
-the parameters of the display - you want the lower half to start at
-the address where y = panel_y_res / 2 and x = 0.
+diff --git a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
+index 1e4fc72..4583e68 100644
+--- a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
++++ b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
+@@ -14,6 +14,9 @@ Required properties:
+ Optional properties:
+   - pwm-names: a list of names for the PWM devices specified in the
+                "pwms" property (see PWM binding[0])
++  - gpios:     An arbitrary number of gpios that must be asserted when the
++               backlight is on, and de-asserted when off.  They will be asserted
++               in the order they appear, and de-asserted in reverse order.
+ 
+ [0]: Documentation/devicetree/bindings/pwm/pwm.txt
+ 
+@@ -25,4 +28,5 @@ Example:
+ 
+ 		brightness-levels = <0 4 8 16 32 64 128 255>;
+ 		default-brightness-level = <6>;
++		gpios = <&gpio 77 0>, <&gpio 25 1>;  /* gpio 25 is active low */
+ 	};
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 1fea627..1e2ab52 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -20,6 +20,12 @@
+ #include <linux/pwm.h>
+ #include <linux/pwm_backlight.h>
+ #include <linux/slab.h>
++#include <linux/of_gpio.h>
++
++struct pwm_bl_gpio {
++	unsigned int gpio;
++	enum of_gpio_flags flags;
++};
+ 
+ struct pwm_bl_data {
+ 	struct pwm_device	*pwm;
+@@ -27,6 +33,8 @@ struct pwm_bl_data {
+ 	unsigned int		period;
+ 	unsigned int		lth_brightness;
+ 	unsigned int		*levels;
++	unsigned int		num_gpios;
++	struct pwm_bl_gpio	*gpios;
+ 	int			(*notify)(struct device *,
+ 					  int brightness);
+ 	void			(*notify_after)(struct device *,
+@@ -94,14 +102,77 @@ static const struct backlight_ops pwm_backlight_ops = {
+ };
+ 
+ #ifdef CONFIG_OF
++static int pwm_backlight_dt_notify(struct device *dev, int brightness)
++{
++	struct backlight_device *bl = dev_get_drvdata(dev);
++	struct pwm_bl_data *pb = bl_get_data(bl);
++	int i;
++
++	if (brightness) {
++		for (i = 0; i < pb->num_gpios; i++) {
++			if (pb->gpios[i].flags = OF_GPIO_ACTIVE_LOW)
++				gpio_set_value(pb->gpios[i].gpio, 0);
++			else
++				gpio_set_value(pb->gpios[i].gpio, 1);
++		}
++		return 0;
++	}
++
++	/* de-assert gpios in reverse order, in case this is important */
++	for (i = pb->num_gpios - 1; i >= 0; i--) {
++		if (pb->gpios[i].flags = OF_GPIO_ACTIVE_LOW)
++			gpio_set_value(pb->gpios[i].gpio, 1);
++		else
++			gpio_set_value(pb->gpios[i].gpio, 0);
++	}
++	return 0;
++}
++
++static void pwm_backlight_dt_exit(struct pwm_bl_data *pb)
++{
++	int i;
++
++	for (i = 0; i < pb->num_gpios; i++)
++		gpio_free(pb->gpios[i].gpio);
++}
++
++static int pwm_backlight_dt_init(struct device *dev, struct pwm_bl_data *pb)
++{
++	int i, j, ret;
++
++	/* request gpios and drive in the inactive state */
++	for (i = 0; i < pb->num_gpios; i++) {
++		char gpio_name[32];
++		unsigned long flags;
++		if (pb->gpios[i].flags = OF_GPIO_ACTIVE_LOW)
++			flags = GPIOF_OUT_INIT_LOW;
++		else
++			flags = GPIOF_OUT_INIT_HIGH;
++		snprintf(gpio_name, 32, "%s.%d", dev_name(dev), i);
++		ret = gpio_request_one(pb->gpios[i].gpio, flags, gpio_name);
++		if (ret) {
++			dev_err(dev, "gpio #%d request failed\n", i);
++			goto gpio_err;
++		}
++	}
++	return 0;
++
++ gpio_err:
++	for (j = 0; j < i; j++)
++		gpio_free(pb->gpios[j].gpio);
++	return ret;
++}
++
+ static int pwm_backlight_parse_dt(struct device *dev,
+-				  struct platform_pwm_backlight_data *data)
++				  struct platform_pwm_backlight_data *data,
++				  struct pwm_bl_data *pb)
+ {
+ 	struct device_node *node = dev->of_node;
+ 	struct property *prop;
+ 	int length;
+ 	u32 value;
+-	int ret;
++	int ret, i, num_gpios;
++	size_t gpiosize;
+ 
+ 	if (!node)
+ 		return -ENODEV;
+@@ -138,13 +209,29 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 		data->max_brightness--;
+ 	}
+ 
+-	/*
+-	 * TODO: Most users of this driver use a number of GPIOs to control
+-	 *       backlight power. Support for specifying these needs to be
+-	 *       added.
+-	 */
++	/* read gpios from DT property */
++	num_gpios = of_gpio_count(node);
++	if (num_gpios = -ENOENT)
++		return 0;	/* no 'gpios' property present */
++	if (num_gpios < 0) {
++		dev_err(dev, "invalid DT node: gpios\n");
++		return -EINVAL;
++	}
++	gpiosize = sizeof(struct pwm_bl_gpio) * num_gpios;
++	pb->gpios = devm_kzalloc(dev, gpiosize, GFP_KERNEL);
++	if (!pb->gpios)
++		return -ENOMEM;
++	for (i = 0; i < num_gpios; i++) {
++		int gpio;
++		enum of_gpio_flags flags;
++		gpio = of_get_gpio_flags(node, i, &flags);
++		pb->gpios[i].gpio = (unsigned int)gpio;
++		pb->gpios[i].flags = flags;
++	}
++	pb->num_gpios = (unsigned int)num_gpios;
++	pb->notify = pwm_backlight_dt_notify;
+ 
+-	return 0;
++	return pwm_backlight_dt_init(dev, pb);
+ }
+ 
+ static struct of_device_id pwm_backlight_of_match[] = {
+@@ -155,10 +242,12 @@ static struct of_device_id pwm_backlight_of_match[] = {
+ MODULE_DEVICE_TABLE(of, pwm_backlight_of_match);
+ #else
+ static int pwm_backlight_parse_dt(struct device *dev,
+-				  struct platform_pwm_backlight_data *data)
++				  struct platform_pwm_backlight_data *data,
++				  struct pwm_bl_data *pb)
+ {
+ 	return -ENODEV;
+ }
++static void pwm_backlight_dt_exit(struct pwm_bl_data *pb) {}
+ #endif
+ 
+ static int pwm_backlight_probe(struct platform_device *pdev)
+@@ -171,8 +260,14 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	unsigned int max;
+ 	int ret;
+ 
++	pb = devm_kzalloc(&pdev->dev, sizeof(*pb), GFP_KERNEL);
++	if (!pb) {
++		dev_err(&pdev->dev, "no memory for state\n");
++		return -ENOMEM;
++	}
++
+ 	if (!data) {
+-		ret = pwm_backlight_parse_dt(&pdev->dev, &defdata);
++		ret = pwm_backlight_parse_dt(&pdev->dev, &defdata, pb);
+ 		if (ret < 0) {
+ 			dev_err(&pdev->dev, "failed to find platform data\n");
+ 			return ret;
+@@ -187,20 +282,14 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 			return ret;
+ 	}
+ 
+-	pb = devm_kzalloc(&pdev->dev, sizeof(*pb), GFP_KERNEL);
+-	if (!pb) {
+-		dev_err(&pdev->dev, "no memory for state\n");
+-		ret = -ENOMEM;
+-		goto err_alloc;
+-	}
+-
+ 	if (data->levels) {
+ 		max = data->levels[data->max_brightness];
+ 		pb->levels = data->levels;
+ 	} else
+ 		max = data->max_brightness;
+ 
+-	pb->notify = data->notify;
++	if (pb->notify = NULL)	/* not using DT and its built-in notify() */
++		pb->notify = data->notify;
+ 	pb->notify_after = data->notify_after;
+ 	pb->check_fb = data->check_fb;
+ 	pb->exit = data->exit;
+@@ -250,9 +339,9 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	bl->props.brightness = data->dft_brightness;
++	platform_set_drvdata(pdev, bl);
+ 	backlight_update_status(bl);
+ 
+-	platform_set_drvdata(pdev, bl);
+ 	return 0;
+ 
+ err_alloc:
+@@ -271,6 +360,7 @@ static int pwm_backlight_remove(struct platform_device *pdev)
+ 	pwm_disable(pb->pwm);
+ 	if (pb->exit)
+ 		pb->exit(&pdev->dev);
++	pwm_backlight_dt_exit(pb);
+ 	return 0;
+ }
+ 
+-- 
+1.8.1.5
 
-You may also wish to change the start address (if you have enough RAM)
-to support page flipping - where you switch between two framebuffers -
-one which is currently being displayed while the other is being updated
-by the CPU.  You would use this to provide smooth video playback for
-example.
-
-So, DT has no business directly encoding this information - it should
-be calculated from the information provided by the panel and the
-timings required, and all that the CLCD driver should know is that
-"we have this RAM which starts here, and extends for N bytes" - or
-to use system memory instead.

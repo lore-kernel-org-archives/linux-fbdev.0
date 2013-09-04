@@ -1,109 +1,92 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 Sep 2013 07:41:23 +0000
+From: Tony Lindgren <tony@atomide.com>
+Date: Wed, 04 Sep 2013 17:20:18 +0000
 Subject: Re: [RFC 00/22] OMAPDSS: DT support
-Message-Id: <5226E423.5090705@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="f6HC3sPHcXOqMc3aITo6aLiAMvwgVXXlu"
+Message-Id: <20130904172017.GA31541@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com> <2305295.bk1TpuGLMv@avalon> <5224458F.9070401@ti.com> <5226E13E.1030807@gmail.com>
-In-Reply-To: <5226E13E.1030807@gmail.com>
-To: Stefan Roese <stefan.roese@gmail.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tony Lindgren <tony@atomide.com>
+References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
+ <20130813075449.GS7656@atomide.com>
+ <52206A48.8040401@ti.com>
+ <20130902061541.GU7656@atomide.com>
+ <52243362.3090905@ti.com>
+In-Reply-To: <52243362.3090905@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>
 
---f6HC3sPHcXOqMc3aITo6aLiAMvwgVXXlu
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+* Tomi Valkeinen <tomi.valkeinen@ti.com> [130901 23:50]:
+> On 02/09/13 09:15, Tony Lindgren wrote:
+> > 
+> > Yes but the old bindings still need to be supported because people
+> > are doing devices using those. So any kind of temporary binding will be
+> > a pain to support.
+> 
+> If old bindings need to be supported, then we also need to support the
+> current state for Panda and SDP, i.e. there are no DSS related DT
+> bindings, but displays still work. Which means we'll have to keep the
+> current hacky DSS device construction mechanism for Panda and SDP.
 
-On 04/09/13 10:29, Stefan Roese wrote:
-> On 28.08.2013 13:40, Tero Kristo wrote:
->> On 08/28/2013 01:14 PM, Tomi Valkeinen wrote:
->>> On 28/08/13 12:48, Tero Kristo wrote:
->>>> On 08/28/2013 12:22 PM, Tomi Valkeinen wrote:
->>>>> Hi,
->>>>>
->>>>> I'm seeing odd clock behavior with Beagle, booting with DT. I'm usi=
-ng
->>>>> v3.11-rc7 + DSS DT patches.
->>>>
->>>> I guess you are not using the clock DT patches? Just making sure I
->>>> didn't break anything.
->>>
->>> No, plain rc7 with my DSS DT patches.
->>>
->>>>> So, for some reason, the first clk_set_rate goes wrong. Any ideas?
->>>>
->>>> Hmm, strange. I am not seeing similar behavior, but I am calling
->>>> clk_set_rate in different location.... also I am using clock DT patc=
-hes
->>>> (don't try the current version though, as I am reworking them.)
->>>>
->>>> [    0.000000] dpll4_ck: 432000000
->>>> [    0.000000] dpll4_m4_ck: 72000000
->>>> [    0.000000] dpll4_m4x2_ck: 144000000
->>>> [    0.000000] dss1_alwon_fck_3430es2: 144000000
->>>> [    0.000000] dpll4_ck: 432000000
->>>> [    0.000000] dpll4_m4_ck: 86400000
->>>> [    0.000000] dpll4_m4x2_ck: 172800000
->>>> [    0.000000] dss1_alwon_fck_3430es2: 172800000
->>>>
->>>> Do you see the error only when setting to some specific rate (864000=
-00)
->>>> or it doesn't matter?
->>>
->>> I also tried setting to 72000000, with the same result.
->>>
->>> Do you know if I can somehow easily get debug prints from the clock
->>> framework, that could lighten up the issue?
->>
->> There isn't any good config option for that, I would suggest add print=
-s
->> to the clk_set_rate and then for the clocks you are interested in, pri=
-nt
->> results for the recalc_rate / set_rate ops also.
->=20
-> Tomi, did you make any progress on this issue? If not I'll try to dig
-> into it later this week.
+Yes we want to keep things working for the users where possible and
+not cause regressions. At least some kind of output about what the
+user needs to do to update to latest kernel and some documentation
+is would be needed..
 
-No, I haven't had time to debug this. And as this seems to show only
-with DT, it's not a very high priority for me. DSS DT for OMAP4 is the
-main priority, as the board files have already been removed for OMAP4
-boards.
+> Although maybe it's cleaner to somehow inject the DSS DT nodes for Panda
+> and SDP in case they are missing from the real DT data.
 
-> BTW: Whats the current plan for your OMAPDSS DT patchset? Is it queued
-> for v3.12 (this merge windows)? And do you have a git tree to pull the
-> latest version from?
+.. but naturally that would certainly make users life easier :)
+ 
+> Doesn't supporting old bindings also mean that we can never get rid of
+> the hwmods? Or will there be code that injects the missing interrupt
+> etc. entries?
 
-The git tree was mentioned in the intro mail.
+I certainly hope we won't be stuck with that and can define most of
+the hwmod related data in the .dts files. We should be able to
+provide at least some debug output so users know what needs to
+be done to upgrade.
 
-No, DSS DT won't be in for 3.12. My current feeling is that it will
-still take multiple kernel versions until it can be merged.
+But yeah, if there were popular devices with the .dtb in ROM using
+the legacy hwmod binding, then we'd be stuck with building or generating
+the data in the kernel. Or load the data later on via /lib/firmware and
+let deferred probe deal with it.
+ 
+> >> Well, one difference is that the temporary bindings would give us
+> >> working display, but having only basic bindings would not. So I don't
+> >> see any reason to add only the basic bindings. Or how would it work?
+> > 
+> > You might be able to use just a minimal binding for now using the
+> > basic reg, interrupt and entries for the various components. Those will
+> > be still valid when the CDF bindings are available.
+> 
+> Well, the entries will be valid, but the displays won't work with just
+> the basic bindings. I could perhaps add a new hack that creates the
+> required panel devices and video pipeline connections dynamically in
+> code for Panda and SDP, a bit like what the code does now, except the
+> basic DSS entries would be in the DT. But that would just add another
+> set of DT data that I would need to support in the future, and there
+> would be three different cases to support for Panda and SDP:
+> 
+> - DT data with no DSS related nodes
+> - DT data with basic DSS related nodes
+> - DT data with full DSS
+> 
+> So... If old bindings have to be supported, I'd rather try to minimize
+> the pain, and not add anything but the final bindings. In retrospect, it
+> was a bit of a mistake to add the hacky DT display support for Panda and
+> SDP, as it won't be very nice to keep supporting those.
 
- Tomi
+Yes if that just makes things more complex, it's probably best to work
+on getting the generic binding done instead.
 
+Or just rely on getting the configuration from kernel cmdline and always
+use just the basic bindings? That might help keep things working for
+the "DT data with no DSS related nodes" case?
 
+Regards,
 
---f6HC3sPHcXOqMc3aITo6aLiAMvwgVXXlu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Tony
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+Regards,
 
-iQIcBAEBAgAGBQJSJuQjAAoJEPo9qoy8lh71EPMQAJBqJHda5HAqACC8OiWZ1DjY
-T0LwFCGFf5T/ye1dvr88eczV8+tB7v6O3+h9hD5OW6ZtSnwnlnBpEZ52M1MXpAn0
-FJ7ng07wbMlxXXlKfLGAb2GNAKeH82SmlTI5afuVYeZZqhKCtOuywoXFrCjzHJyd
-wo2zCHvhhEMi9Op1KxjmVCsamoWPQHdw7dcbhHRb/i1cuWhvNhKoJogb/7ZsQqDs
-qC50xdvFEfaXwBTW2EzA589FizNGzoFWhubFsttJHm1DiQU6q9DHBnZUcg1LwQ4C
-SPpOt2SjEE68aZ5KsaRJOT7SahViCq6Z2DaagbIMR4MmP8dusaN2N/uLoTFfE7A9
-HTdvJ+lBEagGxd21CyqnvfHMDVPZtVjmjZyYH4pAEy8edVmrz8AAb363ySaTH4sk
-7LJtJzyl8MvvfIYV4m7i+tTwPVYkLrS00DnAygEtpyE193XgDwj+qLQXqE6cZdbq
-MI/frLo7qZr0radJC+NGp3j443I16cOFkGZ8SwwAyrvuhte6ihvt21heSzStZO2r
-EqbT8WUxJyUKFHnhB71K+TEl1KXMehzpJQWV13wiG4P/WMzpFEjinB0NlC1QwbDk
-dOAnCnuId/5BYpTJxWOuIkYVp1Xwe9vP3T9VC/5/TG488382E4+BqO2Hpof6FYCT
-9Tfd8aV6k8x0NmifRlPw
-=62EJ
------END PGP SIGNATURE-----
-
---f6HC3sPHcXOqMc3aITo6aLiAMvwgVXXlu--
+Tony

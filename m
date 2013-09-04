@@ -1,65 +1,88 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 17 Sep 2013 07:18:33 +0000
-Subject: [PATCH 07/11] omapdss: HDMI: add HDMI wrapper IRQ flags
-Message-Id: <1379401597-27222-8-git-send-email-archit@ti.com>
+From: Xishi Qiu <qiuxishi@huawei.com>
+Date: Wed, 04 Sep 2013 10:41:35 +0000
+Subject: [PATCH 1/2] mm/arch: use __free_reserved_page() to simplify the code
+Message-Id: <52270E5F.4000600@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1379401597-27222-1-git-send-email-archit@ti.com>
-In-Reply-To: <1379401597-27222-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, james.hogan@imgtec.com, monstr@monstr.eu, benh@kernel.crashing.org, paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: Xishi Qiu <qiuxishi@huawei.com>, microblaze-uclinux@itee.uq.edu.au, linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
 
-Add flags for the interrupts present in HDMI wrapper block, these will be used
-to configure HDMI_IRQENABLE_SET/CLEAR and HDMI_IRQSTATUS registers.
+Use __free_reserved_page() to simplify the code in arch.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+It used split_page() in consistent_alloc()/__dma_alloc_coherent()/dma_alloc_coherent(),
+so page->_count = 1, and we can free it safely.
+
+__free_reserved_page()
+	ClearPageReserved()
+	init_page_count()  // it won't change the value
+	__free_page()
+
+Signed-off-by: Xishi Qiu <qiuxishi@huawei.com>
 ---
- drivers/video/omap2/dss/hdmi_phy.c |  3 ---
- drivers/video/omap2/dss/ti_hdmi.h  | 15 +++++++++++++++
- 2 files changed, 15 insertions(+), 3 deletions(-)
+ arch/metag/kernel/dma.c           |    4 +---
+ arch/microblaze/mm/consistent.c   |    7 ++-----
+ arch/powerpc/mm/dma-noncoherent.c |    4 +---
+ 3 files changed, 4 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi_phy.c b/drivers/video/omap2/dss/hdmi_phy.c
-index b79c56b..b7d171c 100644
---- a/drivers/video/omap2/dss/hdmi_phy.c
-+++ b/drivers/video/omap2/dss/hdmi_phy.c
-@@ -17,9 +17,6 @@
- #include "dss.h"
- #include "ti_hdmi.h"
+diff --git a/arch/metag/kernel/dma.c b/arch/metag/kernel/dma.c
+index 8c00ded..db589ad 100644
+--- a/arch/metag/kernel/dma.c
++++ b/arch/metag/kernel/dma.c
+@@ -305,9 +305,7 @@ void dma_free_coherent(struct device *dev, size_t size,
  
--#define HDMI_IRQ_LINK_CONNECT		(1 << 25)
--#define HDMI_IRQ_LINK_DISCONNECT	(1 << 26)
+ 			if (pfn_valid(pfn)) {
+ 				struct page *page = pfn_to_page(pfn);
+-				ClearPageReserved(page);
 -
- void hdmi_phy_dump(struct hdmi_phy_data *phy, struct seq_file *s)
- {
- #define DUMPPHY(r) seq_printf(s, "%-35s %08x\n", #r,\
-diff --git a/drivers/video/omap2/dss/ti_hdmi.h b/drivers/video/omap2/dss/ti_hdmi.h
-index cf096fd..5034080 100644
---- a/drivers/video/omap2/dss/ti_hdmi.h
-+++ b/drivers/video/omap2/dss/ti_hdmi.h
-@@ -49,6 +49,21 @@
- #define HDMI_WP_AUDIO_CTRL			0x88
- #define HDMI_WP_AUDIO_DATA			0x8C
+-				__free_page(page);
++				__free_reserved_page(page);
+ 				continue;
+ 			}
+ 		}
+diff --git a/arch/microblaze/mm/consistent.c b/arch/microblaze/mm/consistent.c
+index 5226b09..dbbf224 100644
+--- a/arch/microblaze/mm/consistent.c
++++ b/arch/microblaze/mm/consistent.c
+@@ -176,8 +176,7 @@ void consistent_free(size_t size, void *vaddr)
+ 	page = virt_to_page(vaddr);
  
-+/* HDMI WP IRQ flags */
-+
-+#define HDMI_IRQ_OCP_TIMEOUT			(1 << 4)
-+#define HDMI_IRQ_AUDIO_FIFO_UNDERFLOW		(1 << 8)
-+#define HDMI_IRQ_AUDIO_FIFO_OVERFLOW		(1 << 9)
-+#define HDMI_IRQ_AUDIO_FIFO_SAMPLE_REQ		(1 << 10)
-+#define HDMI_IRQ_VIDEO_VSYNC			(1 << 16)
-+#define HDMI_IRQ_VIDEO_FRAME_DONE		(1 << 17)
-+#define HDMI_IRQ_PHY_LINE5V_ASSERT		(1 << 24)
-+#define HDMI_IRQ_LINK_CONNECT			(1 << 25)
-+#define HDMI_IRQ_LINK_DISCONNECT		(1 << 26)
-+#define HDMI_IRQ_PLL_LOCK			(1 << 29)
-+#define HDMI_IRQ_PLL_UNLOCK			(1 << 30)
-+#define HDMI_IRQ_PLL_RECAL			(1 << 31)
-+
- /* HDMI PLL */
- 
- #define PLLCTRL_PLL_CONTROL			0x0
+ 	do {
+-		ClearPageReserved(page);
+-		__free_page(page);
++		__free_reserved_page(page);
+ 		page++;
+ 	} while (size -= PAGE_SIZE);
+ #else
+@@ -194,9 +193,7 @@ void consistent_free(size_t size, void *vaddr)
+ 			pte_clear(&init_mm, (unsigned int)vaddr, ptep);
+ 			if (pfn_valid(pfn)) {
+ 				page = pfn_to_page(pfn);
+-
+-				ClearPageReserved(page);
+-				__free_page(page);
++				__free_reserved_page(page);
+ 			}
+ 		}
+ 		vaddr += PAGE_SIZE;
+diff --git a/arch/powerpc/mm/dma-noncoherent.c b/arch/powerpc/mm/dma-noncoherent.c
+index 6747eec..7b6c107 100644
+--- a/arch/powerpc/mm/dma-noncoherent.c
++++ b/arch/powerpc/mm/dma-noncoherent.c
+@@ -287,9 +287,7 @@ void __dma_free_coherent(size_t size, void *vaddr)
+ 			pte_clear(&init_mm, addr, ptep);
+ 			if (pfn_valid(pfn)) {
+ 				struct page *page = pfn_to_page(pfn);
+-
+-				ClearPageReserved(page);
+-				__free_page(page);
++				__free_reserved_page(page);
+ 			}
+ 		}
+ 		addr += PAGE_SIZE;
 -- 
-1.8.1.2
+1.7.1
+
+
 

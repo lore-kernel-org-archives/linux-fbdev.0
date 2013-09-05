@@ -1,272 +1,184 @@
-From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
-Date: Sat, 28 Sep 2013 19:35:47 +0000
-Subject: Re: [PATCH V5 2/5] phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
-Message-Id: <52472F93.7000205@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 05 Sep 2013 06:48:46 +0000
+Subject: [GIT PULL] fbdev changes for 3.12
+Message-Id: <5228294E.8050401@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="V1XF8LSOtBp6ng7KD1MaW3q2JRFShfLcD"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1380396467-29278-1-git-send-email-s.nawrocki@samsung.com>
- <1380396467-29278-3-git-send-email-s.nawrocki@samsung.com>
-In-Reply-To: <1380396467-29278-3-git-send-email-s.nawrocki@samsung.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
 
-(adding missing devicetree mailing list at Cc)
+--V1XF8LSOtBp6ng7KD1MaW3q2JRFShfLcD
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On 09/28/2013 09:27 PM, Sylwester Nawrocki wrote:
-> Add a PHY provider driver for the Samsung S5P/Exynos SoC MIPI CSI-2
-> receiver and MIPI DSI transmitter DPHYs.
->
-> Signed-off-by: Sylwester Nawrocki<s.nawrocki@samsung.com>
-> Signed-off-by: Kyungmin Park<kyungmin.park@samsung.com>
-> ---
-> Changes since v4:
->   - updated to latest version of the PHY framework - removed PHY
->     labels.
->
-> The individual driver symbols in drivers/phy/Kconfig should
-> presumably be prefixed with, e.g. PHY_. This is something that
-> perhaps could be done as a follow up patch.
-> ---
->   .../devicetree/bindings/phy/samsung-phy.txt        |   14 ++
->   drivers/phy/Kconfig                                |    6 +
->   drivers/phy/Makefile                               |    7 +-
->   drivers/phy/phy-exynos-mipi-video.c                |  176 ++++++++++++++++++++
->   4 files changed, 200 insertions(+), 3 deletions(-)
->   create mode 100644 Documentation/devicetree/bindings/phy/samsung-phy.txt
->   create mode 100644 drivers/phy/phy-exynos-mipi-video.c
->
-> diff --git a/Documentation/devicetree/bindings/phy/samsung-phy.txt b/Documentation/devicetree/bindings/phy/samsung-phy.txt
-> new file mode 100644
-> index 0000000..5ff208c
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/phy/samsung-phy.txt
-> @@ -0,0 +1,14 @@
-> +Samsung S5P/EXYNOS SoC series MIPI CSIS/DSIM DPHY
-> +-------------------------------------------------
-> +
-> +Required properties:
-> +- compatible : should be "samsung,s5pv210-mipi-video-phy";
-> +- reg : offset and length of the MIPI DPHY register set;
-> +- #phy-cells : from the generic phy bindings, must be 1;
-> +
-> +For "samsung,s5pv210-mipi-video-phy" compatible PHYs the second cell in
-> +the PHY specifier identifies the PHY and its meaning is as follows:
-> +  0 - MIPI CSIS 0,
-> +  1 - MIPI DSIM 0,
-> +  2 - MIPI CSIS 1,
-> +  3 - MIPI DSIM 1.
-> diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
-> index ac239ac..0062d7e 100644
-> --- a/drivers/phy/Kconfig
-> +++ b/drivers/phy/Kconfig
-> @@ -15,6 +15,12 @@ config GENERIC_PHY
->   	  phy users can obtain reference to the PHY. All the users of this
->   	  framework should select this config.
->
-> +config PHY_EXYNOS_MIPI_VIDEO
-> +	tristate "S5P/EXYNOS SoC series MIPI CSI-2/DSI PHY driver"
-> +	help
-> +	  Support for MIPI CSI-2 and MIPI DSI DPHY found on Samsung S5P
-> +	  and EXYNOS SoCs.
-> +
->   config OMAP_USB2
->   	tristate "OMAP USB2 PHY Driver"
->   	depends on ARCH_OMAP2PLUS
-> diff --git a/drivers/phy/Makefile b/drivers/phy/Makefile
-> index 0dd8a98..6344053 100644
-> --- a/drivers/phy/Makefile
-> +++ b/drivers/phy/Makefile
-> @@ -2,6 +2,7 @@
->   # Makefile for the phy drivers.
->   #
->
-> -obj-$(CONFIG_GENERIC_PHY)	+= phy-core.o
-> -obj-$(CONFIG_OMAP_USB2)		+= phy-omap-usb2.o
-> -obj-$(CONFIG_TWL4030_USB)	+= phy-twl4030-usb.o
-> +obj-$(CONFIG_GENERIC_PHY)		+= phy-core.o
-> +obj-$(CONFIG_PHY_EXYNOS_MIPI_VIDEO)	+= phy-exynos-mipi-video.o
-> +obj-$(CONFIG_OMAP_USB2)			+= phy-omap-usb2.o
-> +obj-$(CONFIG_TWL4030_USB)		+= phy-twl4030-usb.o
-> diff --git a/drivers/phy/phy-exynos-mipi-video.c b/drivers/phy/phy-exynos-mipi-video.c
-> new file mode 100644
-> index 0000000..b73b86a
-> --- /dev/null
-> +++ b/drivers/phy/phy-exynos-mipi-video.c
-> @@ -0,0 +1,176 @@
-> +/*
-> + * Samsung S5P/EXYNOS SoC series MIPI CSIS/DSIM DPHY driver
-> + *
-> + * Copyright (C) 2013 Samsung Electronics Co., Ltd.
-> + * Author: Sylwester Nawrocki<s.nawrocki@samsung.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#include<linux/io.h>
-> +#include<linux/kernel.h>
-> +#include<linux/module.h>
-> +#include<linux/of.h>
-> +#include<linux/of_address.h>
-> +#include<linux/phy/phy.h>
-> +#include<linux/platform_device.h>
-> +#include<linux/spinlock.h>
-> +
-> +/* MIPI_PHYn_CONTROL register offset: n = 0..1 */
-> +#define EXYNOS_MIPI_PHY_CONTROL(n)	((n) * 4)
-> +#define EXYNOS_MIPI_PHY_ENABLE		(1<<  0)
-> +#define EXYNOS_MIPI_PHY_SRESETN		(1<<  1)
-> +#define EXYNOS_MIPI_PHY_MRESETN		(1<<  2)
-> +#define EXYNOS_MIPI_PHY_RESET_MASK	(3<<  1)
-> +
-> +enum exynos_mipi_phy_id {
-> +	EXYNOS_MIPI_PHY_ID_CSIS0,
-> +	EXYNOS_MIPI_PHY_ID_DSIM0,
-> +	EXYNOS_MIPI_PHY_ID_CSIS1,
-> +	EXYNOS_MIPI_PHY_ID_DSIM1,
-> +	EXYNOS_MIPI_PHYS_NUM
-> +};
-> +
-> +#define is_mipi_dsim_phy_id(id) \
-> +	((id) = EXYNOS_MIPI_PHY_ID_DSIM0 || (id) = EXYNOS_MIPI_PHY_ID_DSIM1)
-> +
-> +struct exynos_mipi_video_phy {
-> +	spinlock_t slock;
-> +	struct video_phy_desc {
-> +		struct phy *phy;
-> +		unsigned int index;
-> +	} phys[EXYNOS_MIPI_PHYS_NUM];
-> +	void __iomem *regs;
-> +};
-> +
-> +static int __set_phy_state(struct exynos_mipi_video_phy *state,
-> +			enum exynos_mipi_phy_id id, unsigned int on)
-> +{
-> +	void __iomem *addr;
-> +	u32 reg, reset;
-> +
-> +	addr = state->regs + EXYNOS_MIPI_PHY_CONTROL(id / 2);
-> +
-> +	if (is_mipi_dsim_phy_id(id))
-> +		reset = EXYNOS_MIPI_PHY_MRESETN;
-> +	else
-> +		reset = EXYNOS_MIPI_PHY_SRESETN;
-> +
-> +	spin_lock(&state->slock);
-> +	reg = readl(addr);
-> +	if (on)
-> +		reg |= reset;
-> +	else
-> +		reg&= ~reset;
-> +	writel(reg, addr);
-> +
-> +	/* Clear ENABLE bit only if MRESETN, SRESETN bits are not set. */
-> +	if (on)
-> +		reg |= EXYNOS_MIPI_PHY_ENABLE;
-> +	else if (!(reg&  EXYNOS_MIPI_PHY_RESET_MASK))
-> +		reg&= ~EXYNOS_MIPI_PHY_ENABLE;
-> +
-> +	writel(reg, addr);
-> +	spin_unlock(&state->slock);
-> +	return 0;
-> +}
-> +
-> +#define to_mipi_video_phy(desc) \
-> +	container_of((desc), struct exynos_mipi_video_phy, phys[(desc)->index]);
-> +
-> +static int exynos_mipi_video_phy_power_on(struct phy *phy)
-> +{
-> +	struct video_phy_desc *phy_desc = phy_get_drvdata(phy);
-> +	struct exynos_mipi_video_phy *state = to_mipi_video_phy(phy_desc);
-> +
-> +	return __set_phy_state(state, phy_desc->index, 1);
-> +}
-> +
-> +static int exynos_mipi_video_phy_power_off(struct phy *phy)
-> +{
-> +	struct video_phy_desc *phy_desc = phy_get_drvdata(phy);
-> +	struct exynos_mipi_video_phy *state = to_mipi_video_phy(phy_desc);
-> +
-> +	return __set_phy_state(state, phy_desc->index, 1);
-> +}
-> +
-> +static struct phy *exynos_mipi_video_phy_xlate(struct device *dev,
-> +					struct of_phandle_args *args)
-> +{
-> +	struct exynos_mipi_video_phy *state = dev_get_drvdata(dev);
-> +
-> +	if (WARN_ON(args->args[0]>  EXYNOS_MIPI_PHYS_NUM))
-> +		return ERR_PTR(-ENODEV);
-> +
-> +	return state->phys[args->args[0]].phy;
-> +}
-> +
-> +static struct phy_ops exynos_mipi_video_phy_ops = {
-> +	.power_on	= exynos_mipi_video_phy_power_on,
-> +	.power_off	= exynos_mipi_video_phy_power_off,
-> +	.owner		= THIS_MODULE,
-> +};
-> +
-> +static int exynos_mipi_video_phy_probe(struct platform_device *pdev)
-> +{
-> +	struct exynos_mipi_video_phy *state;
-> +	struct device *dev =&pdev->dev;
-> +	struct resource *res;
-> +	struct phy_provider *phy_provider;
-> +	unsigned int i;
-> +
-> +	state = devm_kzalloc(dev, sizeof(*state), GFP_KERNEL);
-> +	if (!state)
-> +		return -ENOMEM;
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +
-> +	state->regs = devm_ioremap_resource(dev, res);
-> +	if (IS_ERR(state->regs))
-> +		return PTR_ERR(state->regs);
-> +
-> +	dev_set_drvdata(dev, state);
-> +	spin_lock_init(&state->slock);
-> +
-> +	phy_provider = devm_of_phy_provider_register(dev,
-> +					exynos_mipi_video_phy_xlate);
-> +	if (IS_ERR(phy_provider))
-> +		return PTR_ERR(phy_provider);
-> +
-> +	for (i = 0; i<  EXYNOS_MIPI_PHYS_NUM; i++) {
-> +		struct phy *phy = devm_phy_create(dev,
-> +					&exynos_mipi_video_phy_ops, NULL);
-> +		if (IS_ERR(phy)) {
-> +			dev_err(dev, "failed to create PHY %d\n", i);
-> +			return PTR_ERR(phy);
-> +		}
-> +
-> +		state->phys[i].phy = phy;
-> +		state->phys[i].index = i;
-> +		phy_set_drvdata(phy,&state->phys[i]);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id exynos_mipi_video_phy_of_match[] = {
-> +	{ .compatible = "samsung,s5pv210-mipi-video-phy" },
-> +	{ },
-> +};
-> +MODULE_DEVICE_TABLE(of, exynos_mipi_video_phy_of_match);
-> +
-> +static struct platform_driver exynos_mipi_video_phy_driver = {
-> +	.probe	= exynos_mipi_video_phy_probe,
-> +	.driver = {
-> +		.of_match_table	= exynos_mipi_video_phy_of_match,
-> +		.name  = "exynos-mipi-video-phy",
-> +		.owner = THIS_MODULE,
-> +	}
-> +};
-> +module_platform_driver(exynos_mipi_video_phy_driver);
-> +
-> +MODULE_DESCRIPTION("Samsung S5P/EXYNOS SoC MIPI CSI-2/DSI PHY driver");
-> +MODULE_AUTHOR("Sylwester Nawrocki<s.nawrocki@samsung.com>");
-> +MODULE_LICENSE("GPL v2");
+Hi Linus,
+
+Here are the fbdev changes for 3.12.
+
+There's a conflict in drivers/video/simplefb.c, which you can resolve by =
+using
+the version in your tree.
+
+I guess the simplefb changes were taken through Ingo's tree because the s=
+eries
+includes x86 arch changes, but it would have been nice to see the patches=
+ in
+the linux-next...
+
+ Tomi
+
+The following changes since commit 3b2f64d00c46e1e4e9bd0bb9bb12619adac27a=
+4b:
+
+  Linux 3.11-rc2 (2013-07-21 12:05:29 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git tags/fbde=
+v-3.12
+
+for you to fetch changes up to 028cd86b794f4a7f09525587c8e9ab6b03a6fa0f:
+
+  video: da8xx-fb: fix the polarities of the hsync/vsync pulse (2013-08-3=
+0 14:51:30 +0300)
+
+----------------------------------------------------------------
+fbdev changes for 3.12:
+
+* Improvements to da8xx-fb to make it support v2 of the LCDC IP, used e.g=
+=2E in
+  BeagleBone
+* Himax HX8369 controller support
+* Various small fixes and cleanups
+
+----------------------------------------------------------------
+Afzal Mohammed (11):
+      video: da8xx-fb: fb_check_var enhancement
+      video: da8xx-fb: simplify lcd_reset
+      video: da8xx-fb: use modedb helper to update var
+      video: da8xx-fb: remove unneeded "var" initialization
+      video: da8xx-fb: store current display information
+      video: da8xx-fb: store clk rate even if !CPUFREQ
+      video: da8xx-fb: store struct device *
+      video: da8xx-fb: report correct pixclock
+      video: da8xx-fb: enable sync lost intr for v2 ip
+      video: da8xx-fb: ensure non-null cfg in pdata
+      video: da8xx-fb: reorganize panel detection
+
+Alexandre Belloni (1):
+      fb: backlight: HX8357: Add HX8369 support
+
+Alexandre Courbot (1):
+      simplefb: add support for a8b8g8r8 pixel format
+
+Alexandru Juncu (1):
+      matroxfb: replace kmalloc and memset with kzalloc.
+
+Boris BREZILLON (1):
+      at91/avr32/atmel_lcdfb: prepare clk before calling enable
+
+Chen Gang (1):
+      drivers: video: fbcmap: remove the redundency and incorrect checkin=
+gs
+
+Daniel Mack (1):
+      fbmem: move EXPORT_SYMBOL annotation next to symbol declarations
+
+Darren Etheridge (13):
+      video: da8xx-fb: pix clk and clk div handling cleanup
+      video: da8xx-fb: fb_set_par support
+      video: da8xx-fb: improve readability of code
+      video: da8xx-fb: fix 24bpp raster configuration
+      video: da8xx-fb: use devres
+      video: da8xx-fb: set upstream clock rate (if reqd)
+      video: da8xx-fb: make clock naming consistent
+      video: da8xx-fb: let compiler decide what to inline
+      video: da8xx-fb: adding am33xx as dependency
+      video: da8xx-fb fixing incorrect porch mappings
+      video: da8xx-fb: fixing timing off by one errors
+      video: da8xx-fb: support lcdc v2 timing register expansion
+      video: da8xx-fb: fix the polarities of the hsync/vsync pulse
+
+Fabio Estevam (1):
+      video: mxsfb: Let device core handle pinctrl
+
+Greg Kroah-Hartman (1):
+      video: output: convert class code to use dev_groups
+
+Julia Lawall (2):
+      video: mxsfb: simplify use of devm_ioremap_resource
+      video: xilinxfb: replace devm_request_and_ioremap by devm_ioremap_r=
+esource
+
+Mark Brown (1):
+      video: exynos: Ensure definitions match prototypes
+
+Maxime Ripard (1):
+      video: hx8357: Make IM pins optional
+
+Michael Opdenacker (1):
+      drivers/video: remove unused parameter in Kconfig
+
+Mythri P K (1):
+      OMAPDSS: HDMI: Fix AVI infoframe bug
+
+Peter Jones (1):
+      Release efifb's colormap in efifb_destroy()
+
+Shingo Nakao (1):
+      backlight: lp855x: set zero brightness at FBBLANK
+
+Tomi Valkeinen (3):
+      Merge branch '3.12/da8xx' into 3.12/fbdev
+      OMAPDSS: HDMI: Fix possible NULL reference
+      OMAPDSS: fix WARN_ON in 'alpha_blending_enabled' sysfs file
+
+ .../bindings/video/simple-framebuffer.txt          |   1 +
+ drivers/video/Kconfig                              |  15 +-
+ drivers/video/atmel_lcdfb.c                        |   8 +-
+ drivers/video/backlight/hx8357.c                   | 269 ++++++++++++--
+ drivers/video/backlight/lp855x_bl.c                |   2 +-
+ drivers/video/da8xx-fb.c                           | 387 ++++++++++++---=
+------
+ drivers/video/efifb.c                              |   1 +
+ drivers/video/exynos/exynos_mipi_dsi_lowlevel.c    |   1 +
+ drivers/video/fbcmap.c                             |   7 +-
+ drivers/video/fbmem.c                              |  29 +-
+ drivers/video/matrox/matroxfb_base.c               |   3 +-
+ drivers/video/mxsfb.c                              |  15 +-
+ drivers/video/omap2/dss/hdmi.c                     |   5 +-
+ drivers/video/omap2/dss/manager-sysfs.c            |   8 +-
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c          |  42 ++-
+ drivers/video/output.c                             |  20 +-
+ drivers/video/simplefb.c                           |   1 +
+ drivers/video/xilinxfb.c                           |   8 +-
+ include/video/da8xx-fb.h                           |   5 +
+ 19 files changed, 542 insertions(+), 285 deletions(-)
+
+
+--V1XF8LSOtBp6ng7KD1MaW3q2JRFShfLcD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSKClOAAoJEPo9qoy8lh71vt0QAJg9uzLK4ppG11Td/FJA08p8
+9hND0gGBDdyWOJe5nNObAUveOGZYIidXnKmGUcGIW7kNmWfKVeVdUGWnD3B8Jv3z
+NkHH+ox3+XCBCtH1TWaUY8umHaCnXjHPOW/H6vH3QUBi7Ov8D/cQMQSbu1Vf7xfx
+NQtjWOI5Kp8oxE+1CXF6jQRPxBL7dCqmOmHxjETSjk4JazGrXA/5Nc/g8PR0ubnT
+tw/GggX0Qe4zKheg1zB3z40kDFlgyMI/3P2VZU8YWG8WD6IhXM5wggx1RrpHfhZi
+sDWShThwwr4HmaoUj4ca9APZm5z+5rG6tXp9+O1q/KC2CEndk0iXR7myUfvHIpQp
+YWjQrMt6dCebVcMoH367ZOBqks09Bu8Rm0BKX0fkwXtB5/kDdYxnL6uX1WPF0g4H
+2FkshPpCM7eGd8HpaCj2VvlZz22J63Gs2U9c1xG073GadVjVw9o1AHDhkA6vjkIg
+fJ/rUj9kcAA5RPGLlfvL1n2lRjSvjkuQF7QrLmF5ZCyg18DrU7vn81JCwRXQeJL/
+KyYn7m1k8qXUlT3FM7EzfabPvqI9kExgPLVKQFPvjtqhHfSMVb34K2s+cTfcBIZf
+bfRum6sDqgu6Dik+H9w88YCF/6SJR/jwm88Y+Bv4jkXo8HuiRjnA5nL0tlIJm6ad
+X5E3/pniQc0JqEi47AJk
+=A5U0
+-----END PGP SIGNATURE-----
+
+--V1XF8LSOtBp6ng7KD1MaW3q2JRFShfLcD--

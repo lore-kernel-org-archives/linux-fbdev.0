@@ -1,199 +1,170 @@
-From: Pawel Moll <pawel.moll@arm.com>
-Date: Mon, 09 Sep 2013 11:19:19 +0000
+From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
+Date: Tue, 10 Sep 2013 21:41:12 +0000
 Subject: Re: [PATCH 1/2] video: ARM CLCD: Add DT support
-Message-Id: <1378725559.4082.28.camel@hornet>
+Message-Id: <522F91F8.6010207@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1378488201-21146-1-git-send-email-pawel.moll@arm.com>
- <522BAED9.4020301@gmail.com>
-In-Reply-To: <522BAED9.4020301@gmail.com>
+ <522BAED9.4020301@gmail.com> <1378725559.4082.28.camel@hornet>
+In-Reply-To: <1378725559.4082.28.camel@hornet>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Sat, 2013-09-07 at 23:55 +0100, Sylwester Nawrocki wrote:
-> H --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/video/arm,pl11x.txt
-> > @@ -0,0 +1,87 @@
-> > +* ARM PrimeCell Color LCD Controller (CLCD) PL110/PL111
-> 
-> nit: Shouldn't the abbreviation be CLCDC ?
+On 09/09/2013 01:19 PM, Pawel Moll wrote:
+> On Sat, 2013-09-07 at 23:55 +0100, Sylwester Nawrocki wrote:
+>> H --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/video/arm,pl11x.txt
+>>> @@ -0,0 +1,87 @@
+>>> +* ARM PrimeCell Color LCD Controller (CLCD) PL110/PL111
+>>
+>> nit: Shouldn't the abbreviation be CLCDC ?
+>
+> The commonly used acronym for this cell is CLCD. For what its worth, I
+> can make the line read:
+>
+> ARM PrimeCell Color LCD (CLCD) Controller PL110/PL111
 
-The commonly used acronym for this cell is CLCD. For what its worth, I
-can make the line read:
+OK, that's probably better. A meaningless detail, I've just seen mostly
+CLCDC used in the PL100/PL111 TRM and LCDC would presumably be more 
+intuitive
+for this type of IP block.
 
-ARM PrimeCell Color LCD (CLCD) Controller PL110/PL111
+>>> +- video-ram: phandle to a node describing specialized video memory
+>>> +		(that is *not* described in the top level "memory" node)
+>>> +                that must be used as a framebuffer, eg. due to restrictions
+>>> +		of the system interconnect; the node must contain a
+>>> +		standard reg property describing the address and the size
+>>> +		of the memory area
+>>
+>> It seems the "specialized video memory" is described by some vendor specific
+>> DT binding ? Is it documented ? It sounds like you are unnecessarily
+>> repeating the memory node details here.
+>
+> I appreciate this property being the hardest to swallow, but the problem
+> it is trying to solve is quite simple, really. System can be designed in
+> such a way that CLCD is *not* able to read data from the main memory. In
+> such case there will be a separate block of (usually static) memory
+> "next" to CLCD, which *must* be used for the framebuffer. And I've got
+> two choices here: to simply define an address and size, or to define a
+> phandle to a node with standard reg property. I'll be really grateful
+> for ideas how to describe the situation better.
 
-> > +- video-ram: phandle to a node describing specialized video memory
-> > +		(that is *not* described in the top level "memory" node)
-> > +                that must be used as a framebuffer, eg. due to restrictions
-> > +		of the system interconnect; the node must contain a
-> > +		standard reg property describing the address and the size
-> > +		of the memory area
-> 
-> It seems the "specialized video memory" is described by some vendor specific
-> DT binding ? Is it documented ? It sounds like you are unnecessarily 
-> repeating the memory node details here.
+I though about reusing the binding only, the part defining reserved
+(carve out) memory regions.
 
-I appreciate this property being the hardest to swallow, but the problem
-it is trying to solve is quite simple, really. System can be designed in
-such a way that CLCD is *not* able to read data from the main memory. In
-such case there will be a separate block of (usually static) memory
-"next" to CLCD, which *must* be used for the framebuffer. And I've got
-two choices here: to simply define an address and size, or to define a
-phandle to a node with standard reg property. I'll be really grateful
-for ideas how to describe the situation better.
+>> Perhaps this binding/driver should use the common reserved memory bindings,
+>> see thread http://www.spinics.net/lists/devicetree/msg02880.html
+>
+> No, not really - as I said, this is *not* the main RAM of the system.
+> CMA doesn't even know about its existence.
 
-> Perhaps this binding/driver should use the common reserved memory bindings,
-> see thread http://www.spinics.net/lists/devicetree/msg02880.html
+I'm really not an expert in this area, I'll assume we don't list such
+separate memory chips in the 'memory' node.
 
-No, not really - as I said, this is *not* the main RAM of the system.
-CMA doesn't even know about its existence.
+But if such memory could be used not only by this single IP block it would
+probably make sense to have it listed in memory/reserved-memory, so it 
+could
+be used by other devices of which drivers possibly wouldn't have to contain
+all the detailed dt parsing/memory handling code.
 
-> > +- max-framebuffer-size: maximum size in bytes of the framebuffer the
-> > +			system can handle, eg. in terms of available
-> > +			memory bandwidth
-> > +
-> > +In the simplest case of a display panel being connected directly to the
-> > +CLCD, it can be described in the node:
-> > +
-> > +- panel-dimensions: (optional) array of two numbers (width and height)
-> > +			describing physical dimension in mm of the panel
-> > +- panel-type: (required) must be "tft" or "stn", defines panel type
-> > +- panel-tft-interface: (for "tft" panel type) array of 3 numbers defining
-> > +			widths in bits of the R, G and B components
-> > +- panel-tft-rb-swapped: (for "tft" panel type) if present means that
-> > +			the R&  B components are swapped on the board
-> > +- panel-stn-color: (for "stn" panel type) if present means that
-> > +			the panel is a colour STN display, if missing
-> > +			is a monochrome display
-> > +- panel-stn-dual: (for "stn" panel type) if present means that there
-> > +			are two STN displays connected
-> > +- panel-stn-4bit: (for monochrome "stn" panel) if present means
-> > +			that the monochrome display is connected
-> > +			via 4 bit-wide interface
-> 
-> Are this vendor specific or common properties ? Shouldn't those be prefixed
-> with the vendor name ?
+>>> +- max-framebuffer-size: maximum size in bytes of the framebuffer the
+>>> +			system can handle, eg. in terms of available
+>>> +			memory bandwidth
+>>> +
+>>> +In the simplest case of a display panel being connected directly to the
+>>> +CLCD, it can be described in the node:
+>>> +
+>>> +- panel-dimensions: (optional) array of two numbers (width and height)
+>>> +			describing physical dimension in mm of the panel
+>>> +- panel-type: (required) must be "tft" or "stn", defines panel type
+>>> +- panel-tft-interface: (for "tft" panel type) array of 3 numbers defining
+>>> +			widths in bits of the R, G and B components
+>>> +- panel-tft-rb-swapped: (for "tft" panel type) if present means that
+>>> +			the R&   B components are swapped on the board
+>>> +- panel-stn-color: (for "stn" panel type) if present means that
+>>> +			the panel is a colour STN display, if missing
+>>> +			is a monochrome display
+>>> +- panel-stn-dual: (for "stn" panel type) if present means that there
+>>> +			are two STN displays connected
+>>> +- panel-stn-4bit: (for monochrome "stn" panel) if present means
+>>> +			that the monochrome display is connected
+>>> +			via 4 bit-wide interface
+>>
+>> Are this vendor specific or common properties ? Shouldn't those be prefixed
+>> with the vendor name ?
+>
+> I have no answer to this question. My guts are telling me - nope. TFT is
+> TFT, STN is STN, nothing to do with "arm,". But I welcome other
+> opinions.
 
-I have no answer to this question. My guts are telling me - nope. TFT is
-TFT, STN is STN, nothing to do with "arm,". But I welcome other
-opinions.
+I thought about documenting such a common properties in a common place. 
+  It's
+not immediately clear from names of these properties that they apply to 
+PL110/
+PL111 devices only.  If we let such generic names being redefined across DT
+bindings of different devices it is going to be pretty messy IMHO.  Same
+property in two different dts files would potentially have different 
+meaning.
 
-> Anyway I think we need an RFC to possibly standardize properties that are
-> common across multiple panels and have them listed in a common DT binding.
-> 
-> It sounds a bit disappointing that for same class devices there are being
-> introduced custom DT properties for each available device. For instance,
-> the first 3 properties above look like they could apply to various display
-> panels and controllers.
+So perhaps instead of panel-dimensions we could define common 
+properties, e.g.
 
-No argument from here. The Common Display Framework was supposed to
-address this issue. And the first version of this patch used it:
+  - display-phys-width: physical horizontal dimension of a display in 
+millimetres
+                        (micrometres ?);
+  - display-phys-height: physical vertical dimension of a display in 
+millimetres
+                        (micrometres ?);
 
-http://thread.gmane.org/gmane.linux.drivers.video-input-infrastructure/63417
+Instead of 'panel-stn-color' a boolean property 'monochrome-display', 
+the default
+when this property was missing would be "colour display".
 
-But you'll notice that it's been almost 10 months since the last version
-of CDF saw the daylight, and Laurent seems to be too busy with other
-duties to carry on with this. Additionally the KMS/DRM guys don't look
-too kindly on it. The bottom line is: there are 3 different platform
-suffering from lack of DT bindings for CLCD and I've got fed up with
-waiting. Anyway, I've intentionally kept the panel properties in a
-separate section and wrote "can be described", to keep an open way for
-future "display bindings", if and when they appear.
+I'd like to leave defining such common properties to someone having more 
+experience
+in the display area.  I don't think it would take much time come up with 
+generic
+names for that couple properties you need.  Then CDF implementation 
+would simply
+use whatever gets agreed.
 
-> > +#ifdef CONFIG_OF
-> > +static int clcdfb_of_get_tft_panel(struct device_node *node,
-> > +		struct clcd_panel *panel)
-> > +{
-> > +	int err;
-> > +	u32 rgb[3];
-> > +	int r, g, b;
-> 
-> Couldn't these be 'unsigned int' ?
+>> Anyway I think we need an RFC to possibly standardize properties that are
+>> common across multiple panels and have them listed in a common DT binding.
+>>
+>> It sounds a bit disappointing that for same class devices there are being
+>> introduced custom DT properties for each available device. For instance,
+>> the first 3 properties above look like they could apply to various display
+>> panels and controllers.
+>
+> No argument from here. The Common Display Framework was supposed to
+> address this issue. And the first version of this patch used it:
+>
+> http://thread.gmane.org/gmane.linux.drivers.video-input-infrastructure/63417
+>
+> But you'll notice that it's been almost 10 months since the last version
+> of CDF saw the daylight, and Laurent seems to be too busy with other
+> duties to carry on with this. Additionally the KMS/DRM guys don't look
+> too kindly on it. The bottom line is: there are 3 different platform
+> suffering from lack of DT bindings for CLCD and I've got fed up with
+> waiting. Anyway, I've intentionally kept the panel properties in a
+> separate section and wrote "can be described", to keep an open way for
+> future "display bindings", if and when they appear.
 
-They could indeed.
+I might risk people start yelling at me, but perhaps you could explicitly
+mark this binding as "preliminary", so it is clear that the intention was
+to switch to whatever common design in future.
 
-> > +	err = of_property_read_u32_array(node, "panel-tft-interface", rgb, 3);
-> > +	if (err)
-> > +		return err;
-> > +
-> > +	r = rgb[0];
-> > +	g = rgb[1];
-> > +	b = rgb[2];
-> > +
-> > +	/* Bypass pixel clock divider, data output on the falling edge */
-> > +	panel->tim2 = TIM2_BCD | TIM2_IPC;
-> > +
-> > +	/* TFT display, vert. comp. interrupt at the start of the back porch */
-> > +	panel->cntl |= CNTL_LCDTFT | CNTL_LCDVCOMP(1);
-> > +
-> > +	if (r>= 4&&  g>= 4&&  b>= 4)
-> > +		panel->caps |= CLCD_CAP_444;
-> > +	if (r>= 5&&  g>= 5&&  b>= 5)
-> > +		panel->caps |= CLCD_CAP_5551;
-> > +	if (r>= 5&&  g>= 6&&  b>= 5)
-> > +		panel->caps |= CLCD_CAP_565;
-> > +	if (r>= 8&&  g>= 8&&  b>= 8)
-> > +		panel->caps |= CLCD_CAP_888;
-> > +
-> > +	if (of_get_property(node, "panel-tft-rb-swapped", NULL))
-> > +		panel->caps&= ~CLCD_CAP_RGB;
-> > +	else
-> > +		panel->caps&= ~CLCD_CAP_BGR;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int clcdfb_of_init_display(struct clcd_fb *fb)
-> > +{
-> > +	struct device_node *node = fb->dev->dev.of_node;
-> > +	u32 max_size;
-> > +	u32 dimensions[2];
-> > +	char *mode_name;
-> > +	int len, err;
-> > +	const char *panel_type;
-> > +
-> > +	fb->panel = devm_kzalloc(&fb->dev->dev, sizeof(*fb->panel), GFP_KERNEL);
-> > +	if (!fb->panel)
-> > +		return -ENOMEM;
-> > +
-> > +	err = of_get_fb_videomode(fb->dev->dev.of_node,&fb->panel->mode,
-> 
-> 'node' could be reused here.
+The recently posted v3 of the CDF uses DT bindings specified at:
+  Documentation/devicetree/bindings/media/video-interfaces.txt,
+  Documentation/devicetree/bindings/video/display-timing.txt.
 
-Of course, well spotted.
+Theoretically, the bindings are independent of any OS implementation, thus
+I guess if you used the above bindings, perhaps extended with couple more
+properties, it might have been possible to switch to any common OS API in
+future, without changing the bindings. That all might be highly theoretical
+though. :)
 
-> > +			OF_USE_NATIVE_MODE);
-> > +	if (err)
-> > +		return err;
-> > +
-> > +	len = snprintf(NULL, 0, "%ux%u@%u", fb->panel->mode.xres,
-> > +			fb->panel->mode.yres, fb->panel->mode.refresh);
-> > +	mode_name = devm_kzalloc(&fb->dev->dev, len + 1, GFP_KERNEL);
-> > +	snprintf(mode_name, len + 1, "%ux%u@%u", fb->panel->mode.xres,
-> > +			fb->panel->mode.yres, fb->panel->mode.refresh);
-> 
-> Don't you want to just use kasprintf() here instead and free mode_name
-> manually in the remove() callback ?
-
-> > +static int clcdfb_of_vram_setup(struct clcd_fb *fb)
-> > +{
-> > +	const __be32 *prop = of_get_property(fb->dev->dev.of_node, "video-ram",
-> > +			NULL);
-> > +	struct device_node *node = of_find_node_by_phandle(be32_to_cpup(prop));
-> 
-> This looks like open coding function of_parse_phandle(), why not just:
-> 
-> 	struct device_node *node = of_parse_phandle(fb->dev->dev.of_node,
-> 					"video-ram", 0);
-> ?
-
-I'm not sure why did I write it like this (and it's been a while since
-this happened), but you're right - it should be of_parse_phandle().
-
-Thanks!
-
-Pawel
-
-
+--
+Thanks,
+Sylwester

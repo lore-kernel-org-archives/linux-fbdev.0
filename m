@@ -1,7 +1,7 @@
 From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Mon, 09 Sep 2013 15:47:34 +0000
+Date: Tue, 10 Sep 2013 02:34:23 +0000
 Subject: Re: [BUG] simplefb not showing any output
-Message-Id: <522DED96.8040203@wwwdotorg.org>
+Message-Id: <522E852F.7050201@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CAG-2HqXhLcRX-oi4JchD=m7tZpDYyePKhWvkFU1ZZPEuqJ2JqQ@mail.gmail.com>
 In-Reply-To: <CAG-2HqXhLcRX-oi4JchD=m7tZpDYyePKhWvkFU1ZZPEuqJ2JqQ@mail.gmail.com>
@@ -39,6 +39,6 @@ On 09/07/2013 06:25 AM, David Herrmann wrote:
 > ioremap_nocache() in asm-generic/{io,iomem}.h so we can safely expect all
 > architectures to either provide it or use the same alias.
 
-I'm fine with this so long as wc mappings are always possible, or
-automatically fall back to uc if not. This certainly works on Tegra, and
-I'll try to remember to test it on Raspberry Pi tonight.
+OK, that works fine on the Raspberry Pi too, so,
+Tested-by: Stephen Warren <swarren@wwwdotorg.org>
+

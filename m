@@ -1,27 +1,52 @@
-From: Joe Perches <joe@perches.com>
-Date: Thu, 26 Sep 2013 10:10:40 +0000
-Subject: Re: [PATCH 1/2] framebuffer: arkfb: Fix framebugger typo
-Message-Id: <1380190240.17366.60.camel@joe-AO722>
+From: Geoff Levand <geoff@infradead.org>
+Date: Tue, 10 Sep 2013 21:59:43 +0000
+Subject: [PATCH] video/ps3fb: Fix section mismatch warning
+Message-Id: <1378850383.19147.27.camel@smoke>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <c94f3e342947923f20d4c12932f382aa5200511b.1379641901.git.joe@perches.com>
-	 <524402A6.1040709@ti.com>
-In-Reply-To: <524402A6.1040709@ti.com>
+References: <1369141302.3652.14.camel@clam>
+In-Reply-To: <1369141302.3652.14.camel@clam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Thu, 2013-09-26 at 12:47 +0300, Tomi Valkeinen wrote:
-> On 20/09/13 04:53, Joe Perches wrote:
-> > s/framebugger/framebuffer/
-[]
-> Thanks, queued for 3.13. Although I have to say I kinda like the sound
-> of framebugger.
+Remove the __initdata attribute from the ps3fb_fix variable.  This is in
+follow up to the removal of the __devinit attribute on the ps3fb_probe()
+routine in commit 48c68c4f1b542444f175a9e136febcecf3e704d8 (Drivers:
+video: remove __dev* attributes).
 
-I wondered if I should even change it
-because it _is_ kind of funny.
+Fixes build warnings like these:
 
-Maybe you should just leave it in.
+  WARNING: vmlinux.o Section mismatch in reference from the function .ps3fb_probe() to the variable .init.data:ps3fb_fix
+  The function .ps3fb_probe() references the variable __initdata ps3fb_fix.
+  This is often because .ps3fb_probe lacks a __initdata annotation or the annotation of ps3fb_fix is wrong.
+
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+---
+
+This is a re-send.  Could we please get this applied.
+
+-Geoff
+
+ drivers/video/ps3fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
+index a397271d..4819cdf 100644
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -952,7 +952,7 @@ static struct fb_ops ps3fb_ops = {
+        .fb_compat_ioctl = ps3fb_ioctl
+ };
+ 
+-static struct fb_fix_screeninfo ps3fb_fix __initdata = {
++static struct fb_fix_screeninfo ps3fb_fix = {
+        .id =           DEVICE_NAME,
+        .type =         FB_TYPE_PACKED_PIXELS,
+        .visual =       FB_VISUAL_TRUECOLOR,
+-- 
+1.8.1.2
+
+
 
 

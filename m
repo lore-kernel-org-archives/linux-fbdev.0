@@ -1,63 +1,54 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Sep 2013 10:37:34 +0000
-Subject: Re: [PATCH v2] video/matrox/matroxfb_maven: Use module_i2c_driver to register driver
-Message-Id: <5236DF6E.4060707@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Dm9uQscrqLNPF0tom01a0RxjmFbqonNpC"
+From: Jon Mason <jdmason@kudzu.us>
+Date: Wed, 11 Sep 2013 21:35:05 +0000
+Subject: [PATCH 1/2] aty128fb: Use pci_dev pm_cap
+Message-Id: <1378935306-16814-1-git-send-email-jdmason@kudzu.us>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130913215150.16089f46@endymion.delvare>
-In-Reply-To: <20130913215150.16089f46@endymion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
---Dm9uQscrqLNPF0tom01a0RxjmFbqonNpC
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Use the already existing pm_cap variable in struct pci_dev for
+determining the power management offset.  This saves the driver from
+having to keep track of an extra variable.
 
-On 13/09/13 22:51, Jean Delvare wrote:
-> From: Peter Huewe <peterhuewe@gmx.de>
->=20
-> Removing some boilerplate by using module_i2c_driver instead of calling=
+Signed-off-by: Jon Mason <jdmason@kudzu.us>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/aty/aty128fb.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-> register and unregister in the otherwise empty init/exit functions.
-> Also removed a useless comment as suggested by Jean Delvare.
->=20
-> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
-> Looks like this patch got lost so I am resending it.
->=20
+diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
+index a4dfe8c..b5edb6f 100644
+--- a/drivers/video/aty/aty128fb.c
++++ b/drivers/video/aty/aty128fb.c
+@@ -413,7 +413,6 @@ struct aty128fb_par {
+ 	int blitter_may_be_busy;
+ 	int fifo_slots;                 /* free slots in FIFO (64 max) */
+ 
+-	int	pm_reg;
+ 	int crt_on, lcd_on;
+ 	struct pci_dev *pdev;
+ 	struct fb_info *next;
+@@ -2016,7 +2015,6 @@ static int aty128_init(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	aty128_init_engine(par);
+ 
+-	par->pm_reg = pdev->pm_cap;
+ 	par->pdev = pdev;
+ 	par->asleep = 0;
+ 	par->lock_blank = 0;
+@@ -2397,7 +2395,7 @@ static void aty128_set_suspend(struct aty128fb_par *par, int suspend)
+ 	u32	pmgt;
+ 	struct pci_dev *pdev = par->pdev;
+ 
+-	if (!par->pm_reg)
++	if (!par->pdev->pm_cap)
+ 		return;
+ 		
+ 	/* Set the chip into the appropriate suspend mode (we use D2,
+-- 
+1.7.10.4
 
-Thanks, applying for 3.13.
-
- Tomi
-
-
-
-
---Dm9uQscrqLNPF0tom01a0RxjmFbqonNpC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSNt9uAAoJEPo9qoy8lh71ul8QAJt16lvy8ITC6meL1b1yHWLX
-EdvfT90V5qFjNeo6XL+earhZN0Vy6MlPIwZrLz66uA8XSDU2qXpvfiVYDVKXV/kp
-GCjJwYHDqdLej59NtWtLqzvjZhgd0q8dut1q9NRyAu2LmraF75yfCF8fA8Q2ImIn
-2zl6sWh2fPyuhQTR99FGcAmmRH4OvEK9FPEjF/VGRQCqc5ov6I0VCk3hBr7pkX4k
-zd0u3fddkR5iAl4R/cnXMIncezMrUaVH7O8ptC7cxwQhjwfwLh6HCgfNqyCUbLA2
-nUBvtQRRTCAjiOcGABmDMZOhShm1x+gnlKwXCzZ7gGzBCPkq0FeK1x2mbGm84Buu
-U1hlK1HzpeREWkN/miie2q9j/Uyz1VTPzN3iq8rEt8XLhfJEdr5M85okeib3bMHH
-WRZ4TQMQxUGnR/AKlHajgoo7lkXixqqwcxJbWEIZxJGOm3SCJsTOGzMYLFIRkbDN
-xn+oIQXC+A9QSv+2mAAoqo6PjARfx+hHUdlqNDdBThS7kJy8psXo5wr/CXy/CPIy
-5XyNbO4cxOJZVQ4PpR+KKyMnhTBB6Yw0GqqVotK8E8l2xfsY73jIMXrBwvGO6b9B
-wnC6PmwSLcT1M91CsY/yXg8gLHLPpW+p+bDpXWCf7uAztZXZ0wFLoTwRL4tS5dTY
-SPjnaqXajpM+Ad2E15g8
-=Wlp7
------END PGP SIGNATURE-----
-
---Dm9uQscrqLNPF0tom01a0RxjmFbqonNpC--

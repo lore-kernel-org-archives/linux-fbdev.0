@@ -1,17 +1,14 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 12 Sep 2013 06:53:49 +0000
+Date: Thu, 12 Sep 2013 07:27:54 +0000
 Subject: [PATCH 06/21] video: gx1fb: remove unnecessary pci_set_drvdata()
-Message-Id: <002001ceaf84$d5e9b450$81bd1cf0$%han@samsung.com>
+Message-Id: <000301ceaf89$98799bd0$c96cd370$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <002001ceaf84$d5e9b450$81bd1cf0$%han@samsung.com>
+In-Reply-To: <002001ceaf84$d5e9b450$81bd1cf0$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-
-From fbb1885952efb15a46d03aac050c38fc9179594e Mon Sep 17 00:00:00 2001
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 12 Sep 2013 14:42:45 +0900
-Subject: [PATCH 06/21] video: gx1fb: remove unnecessary pci_set_drvdata()
 
 The driver core clears the driver data to NULL after device_release
 or on probe failure. Thus, it is not needed to manually clear the

@@ -1,40 +1,65 @@
 From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Thu, 12 Sep 2013 15:41:20 +0000
+Date: Thu, 12 Sep 2013 15:56:09 +0000
 Subject: Re: [PATCH v2 1/2] video: ARM CLCD: Add DT support
-Message-Id: <20130912154120.GN12758@n2100.arm.linux.org.uk>
+Message-Id: <20130912155609.GO12758@n2100.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1378808726-32535-1-git-send-email-pawel.moll@arm.com>
  <522F57B9.5000001@wwwdotorg.org> <1378899931.4082.75.camel@hornet>
- <5230AAEB.2030607@wwwdotorg.org>
-In-Reply-To: <5230AAEB.2030607@wwwdotorg.org>
+ <5230AAEB.2030607@wwwdotorg.org> <1378991033.13571.33.camel@hornet>
+ <5231D5FA.4060508@wwwdotorg.org>
+In-Reply-To: <5231D5FA.4060508@wwwdotorg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Sep 11, 2013 at 11:39:55AM -0600, Stephen Warren wrote:
-> I don't know how constrained of a system CLCD is, but I do know that
-> mode validation is a very complex process in some real-life graphics
-> drivers.
+On Thu, Sep 12, 2013 at 08:55:54AM -0600, Stephen Warren wrote:
+> On 09/12/2013 07:03 AM, Pawel Moll wrote:
+> > Ok, so I'll make it a arm,pl11x,specific property. Actually two
+> > properties - one bit I missed was the dual STN panel case, where they
+> > have separate frame buffers. Something along the lines of:
+> > 
+> > Optional:
+> > 
+> > - arm,pl11x,framebuffer-base: a pair of two values, address and size,
+> > 				defining the framebuffer for the upper
+> > 				(or the only one) panel
+> > - arm,pl11x,lower-framebuffer-base: as above, for the lower STN panel,
+> > 					when present
+> > 
+> > Being very hardware-specific, it covers all possible quirky scenarios,
+> > at the same time does not exclude the option of using the CMA region
+> > phandles, if a particular system needed it.
+> 
+> What do "upper" and "lower" mean in this context? I assume this somehow
+> refers to placement of the displays on the board.
 
-Apart from maximum memory bus bandwidth, probably maximum output
-bandwidth, maximum resolution (determined by what will fit in the
-registers and RAM) there aren't that much constraints.  The hardware
-block is quite simple in that regard.
+CLCD is only one controller - it can only produce one image from one
+framebuffer.
 
-More the problem is to deal with two situations:
-1. you have a particular panel connected to it which requires a certain
-   fixed timing regime.
-2. you have the CLCD connected to a VGA or HDMI connector where the
-   timing is dependent on the connected display.
+What this refers to is a requirement for dual STN displays - rather
+than starting at one corner and working logically to the opposite
+corner, these start at one corner and half way through the display at
+the same time.  So you scan out the upper half of the image at the
+same time that you scan out the lower half of the image.
 
-The former would be the subject of some kind of *common* DT
-representation of the timing requirements of the connected panel.
-For the latter, DT needs to specify how the EDID data is retrieved,
-or if there is no mechanism for that, being able to provide a set
-of allowable timing parameters (such as min/max vsync, min/max
-hsync, max dotclock - in other words, the data which used to be
-provided to X11 in the past.)
+In order to give an image on the display where the conventional formula
+works:
 
-None of that is specific to CLCD though: it's the same problem as
-the SA11x0 LCD controller or any other scanned video controller.
+	address = start + y * bytes_per_line + x * bits_per_pixel / 8
+
+this means that the "upper" and "lower" start addresses are related to
+the parameters of the display - you want the lower half to start at
+the address where y = panel_y_res / 2 and x = 0.
+
+You may also wish to change the start address (if you have enough RAM)
+to support page flipping - where you switch between two framebuffers -
+one which is currently being displayed while the other is being updated
+by the CPU.  You would use this to provide smooth video playback for
+example.
+
+So, DT has no business directly encoding this information - it should
+be calculated from the information provided by the panel and the
+timings required, and all that the CLCD driver should know is that
+"we have this RAM which starts here, and extends for N bytes" - or
+to use system memory instead.

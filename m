@@ -1,7 +1,7 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 12 Sep 2013 06:54:53 +0000
-Subject: [PATCH 08/21] video: i740fb: remove unnecessary pci_set_drvdata()
-Message-Id: <002201ceaf84$fc14ab80$f43e0280$%han@samsung.com>
+Date: Thu, 12 Sep 2013 06:53:11 +0000
+Subject: [PATCH 05/21] video: lxfb: remove unnecessary pci_set_drvdata()
+Message-Id: <001f01ceaf84$bed8dbb0$3c8a9310$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -14,21 +14,21 @@ device driver data to NULL.
 
 Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/i740fb.c |    1 -
+ drivers/video/geode/lxfb_core.c |    1 -
  1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/i740fb.c b/drivers/video/i740fb.c
-index 6c48388..6501ac1 100644
---- a/drivers/video/i740fb.c
-+++ b/drivers/video/i740fb.c
-@@ -1194,7 +1194,6 @@ static void i740fb_remove(struct pci_dev *dev)
- 		pci_iounmap(dev, info->screen_base);
- 		pci_release_regions(dev);
- /*		pci_disable_device(dev); */
--		pci_set_drvdata(dev, NULL);
- 		framebuffer_release(info);
- 	}
+diff --git a/drivers/video/geode/lxfb_core.c b/drivers/video/geode/lxfb_core.c
+index 4dd7b55..10de31b 100644
+--- a/drivers/video/geode/lxfb_core.c
++++ b/drivers/video/geode/lxfb_core.c
+@@ -606,7 +606,6 @@ static void lxfb_remove(struct pci_dev *pdev)
+ 	pci_release_region(pdev, 3);
+ 
+ 	fb_dealloc_cmap(&info->cmap);
+-	pci_set_drvdata(pdev, NULL);
+ 	framebuffer_release(info);
  }
+ 
 -- 
 1.7.10.4
 

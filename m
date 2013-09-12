@@ -1,79 +1,52 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 17 Sep 2013 07:18:26 +0000
-Subject: [PATCH 00/11] omapdss: HDMI: Refactor driver for easier addition of OMAP5/DRA7 hdmi IP
-Message-Id: <1379401597-27222-1-git-send-email-archit@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 12 Sep 2013 07:00:31 +0000
+Subject: [PATCH 18/21] video: sisfb: remove unnecessary pci_set_drvdata()
+Message-Id: <002c01ceaf85$c51cc030$4f564090$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-The HDMI IP in OMAP4 DSS is present in a few other TI SoCs which don't have a
-Display Subsystem similar to what's in OMAP. The original driver was designed
-to provide ops such that it could be plugged into a different display subsytem
-in some other SoC. These other SoCs, however, never got their baseport code
-upstreamed, and the HDMI IP remains exclusive to OMAP DSS.
+The driver core clears the driver data to NULL after device_release
+or on probe failure. Thus, it is not needed to manually clear the
+device driver data to NULL.
 
-Refactor the code such that HDMI sub blocks(wrapper, PLL, PHY) are made into
-libraries. The HDMI core IP(the encoder) is the only block which varies between
-OMAP4 and OMAP5/DRA7 IPs. The rest can be shared by the 2 HDMI drivers.
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/sis/sis_main.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
-This will allow more code reuse between the 2 HDMI drivers, and allow easier
-addition of the OMAP5/DRA7 HDMI driver. The driver is also simplified now as it
-doesn't need to provide ops to different display subsystems.
-
-The new driver needs an address space split according to the HDMI sub blocks.
-This requires us to change the OMAP4 hwmod data, or ensure that we add a split
-address space when we add support for DSS in DT.
-
-The last patch in the series splits the address space in omap4 hwmod data. If
-hwmod changes are disregarded. The driver can temporarily be hacked to contain
-the base addresses.
-
-Archit Taneja (11):
-  omapdss: HDMI: create a hdmi wrapper library
-  omapdss: HDMI: create a HDMI PLL library
-  omapdss: HDMI: create a PHY library
-  omapdss: HDMI: Use OMAP4 HDMI core functions directly and remove
-    hdmi_ip_ops
-  omapdss: HDMI: remove hdmi_ip_data struct
-  omapdss: HDMI: Clean up the header files
-  omapdss: HDMI: add HDMI wrapper IRQ flags
-  omapdss: HDMI: Rename hdmi driver files to nicer names
-  omapdss: OMAP4: HDMI: remove unnecessary edid macros
-  omapdss: HDMI: move common functions to a separate file
-  [experimental] arm: omap: omap4 hwmod data: Split hdmi address space
-
- arch/arm/mach-omap2/omap_hwmod_44xx_data.c |   19 +
- drivers/video/omap2/dss/Makefile           |    3 +-
- drivers/video/omap2/dss/core.c             |    4 +-
- drivers/video/omap2/dss/dss.h              |    4 +-
- drivers/video/omap2/dss/dss_features.c     |   44 -
- drivers/video/omap2/dss/dss_features.h     |    8 -
- drivers/video/omap2/dss/hdmi.c             | 1184 ----------------------
- drivers/video/omap2/dss/hdmi4.c            |  696 +++++++++++++
- drivers/video/omap2/dss/hdmi4_core.c       | 1016 +++++++++++++++++++
- drivers/video/omap2/dss/hdmi4_core.h       |  278 ++++++
- drivers/video/omap2/dss/hdmi_common.c      |  423 ++++++++
- drivers/video/omap2/dss/hdmi_phy.c         |  142 +++
- drivers/video/omap2/dss/hdmi_pll.c         |  212 ++++
- drivers/video/omap2/dss/hdmi_wp.c          |  254 +++++
- drivers/video/omap2/dss/ti_hdmi.h          |  403 ++++++--
- drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c  | 1477 ----------------------------
- drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h  |  488 ---------
- 17 files changed, 3377 insertions(+), 3278 deletions(-)
- delete mode 100644 drivers/video/omap2/dss/hdmi.c
- create mode 100644 drivers/video/omap2/dss/hdmi4.c
- create mode 100644 drivers/video/omap2/dss/hdmi4_core.c
- create mode 100644 drivers/video/omap2/dss/hdmi4_core.h
- create mode 100644 drivers/video/omap2/dss/hdmi_common.c
- create mode 100644 drivers/video/omap2/dss/hdmi_phy.c
- create mode 100644 drivers/video/omap2/dss/hdmi_pll.c
- create mode 100644 drivers/video/omap2/dss/hdmi_wp.c
- delete mode 100644 drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
- delete mode 100644 drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
-
+diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+index 977e279..793b402 100644
+--- a/drivers/video/sis/sis_main.c
++++ b/drivers/video/sis/sis_main.c
+@@ -5994,7 +5994,6 @@ static int sisfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if(!ivideo->sisvga_enabled) {
+ 		if(pci_enable_device(pdev)) {
+ 			if(ivideo->nbridge) pci_dev_put(ivideo->nbridge);
+-			pci_set_drvdata(pdev, NULL);
+ 			framebuffer_release(sis_fb_info);
+ 			return -EIO;
+ 		}
+@@ -6211,7 +6210,6 @@ error_3:	vfree(ivideo->bios_abase);
+ 			pci_dev_put(ivideo->lpcdev);
+ 		if(ivideo->nbridge)
+ 			pci_dev_put(ivideo->nbridge);
+-		pci_set_drvdata(pdev, NULL);
+ 		if(!ivideo->sisvga_enabled)
+ 			pci_disable_device(pdev);
+ 		framebuffer_release(sis_fb_info);
+@@ -6523,8 +6521,6 @@ static void sisfb_remove(struct pci_dev *pdev)
+ 		mtrr_del(ivideo->mtrr, ivideo->video_base, ivideo->video_size);
+ #endif
+ 
+-	pci_set_drvdata(pdev, NULL);
+-
+ 	/* If device was disabled when starting, disable
+ 	 * it when quitting.
+ 	 */
 -- 
-1.8.1.2
+1.7.10.4
+
 

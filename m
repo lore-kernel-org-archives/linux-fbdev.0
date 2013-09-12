@@ -1,37 +1,40 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 12 Sep 2013 07:28:27 +0000
-Subject: [PATCH 14/21] video: pm2fb: remove unnecessary pci_set_drvdata()
-Message-Id: <000401ceaf89$ac6f2ab0$054d8010$%han@samsung.com>
+Date: Thu, 12 Sep 2013 06:49:16 +0000
+Subject: [PATCH 00/21] video: remove unnecessary pci_set_drvdata()
+Message-Id: <001a01ceaf84$32c52d90$984f88b0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <002801ceaf85$71f3d740$55db85c0$%han@samsung.com>
-In-Reply-To: <002801ceaf85$71f3d740$55db85c0$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The driver core clears the driver data to NULL after device_release
+Since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
+(device-core: Ensure drvdata = NULL when no driver is bound),
+the driver core clears the driver data to NULL after device_release
 or on probe failure. Thus, it is not needed to manually clear the
 device driver data to NULL.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/pm2fb.c |    1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/video/pm2fb.c b/drivers/video/pm2fb.c
-index 81354ee..45d9a3f 100644
---- a/drivers/video/pm2fb.c
-+++ b/drivers/video/pm2fb.c
-@@ -1744,7 +1744,6 @@ static void pm2fb_remove(struct pci_dev *pdev)
- 	iounmap(par->v_regs);
- 	release_mem_region(fix->mmio_start, fix->mmio_len);
- 
--	pci_set_drvdata(pdev, NULL);
- 	fb_dealloc_cmap(&info->cmap);
- 	kfree(info->pixmap.addr);
- 	framebuffer_release(info);
--- 
-1.7.10.4
-
+ drivers/video/arkfb.c                  |    1 -
+ drivers/video/carminefb.c              |    1 -
+ drivers/video/cirrusfb.c               |    1 -
+ drivers/video/cyber2000fb.c            |    5 -----
+ drivers/video/geode/gx1fb_core.c       |    1 -
+ drivers/video/geode/gxfb_core.c        |    1 -
+ drivers/video/geode/lxfb_core.c        |    1 -
+ drivers/video/i740fb.c                 |    1 -
+ drivers/video/i810/i810_main.c         |    1 -
+ drivers/video/intelfb/intelfbdrv.c     |    2 --
+ drivers/video/kyro/fbdev.c             |    1 -
+ drivers/video/mb862xx/mb862xxfbdrv.c   |    1 -
+ drivers/video/neofb.c                  |    6 ------
+ drivers/video/pm2fb.c                  |    1 -
+ drivers/video/pm3fb.c                  |    1 -
+ drivers/video/s3fb.c                   |    1 -
+ drivers/video/savage/savagefb_driver.c |    6 ------
+ drivers/video/sis/sis_main.c           |    4 ----
+ drivers/video/tdfxfb.c                 |    1 -
+ drivers/video/tridentfb.c              |    1 -
+ drivers/video/vt8623fb.c               |    1 -
+ 21 files changed, 39 deletions(-)
 

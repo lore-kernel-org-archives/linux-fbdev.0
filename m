@@ -1,72 +1,40 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 26 Sep 2013 09:37:19 +0000
-Subject: Re: [PATCH 2/2] video: of: display_timing: remove broken of_display_timings_exist
-Message-Id: <5244004F.6050105@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="M52s4qoQ1jeLBQmD76vsjHgcgVfV1MUPd"
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 12 Sep 2013 06:53:49 +0000
+Subject: [PATCH 06/21] video: gx1fb: remove unnecessary pci_set_drvdata()
+Message-Id: <002001ceaf84$d5e9b450$81bd1cf0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1380109892-13040-1-git-send-email-a.hajda@samsung.com>
-	<1380109892-13040-3-git-send-email-a.hajda@samsung.com>
-In-Reply-To: <1380109892-13040-3-git-send-email-a.hajda@samsung.com>
-To: Andrzej Hajda <a.hajda@samsung.com>
-Cc: FRAMEBUFFER LAYER <linux-fbdev@vger.kernel.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Kyungmin Park <kyungmin.park@samsung.com>, dri-devel@lists.freedesktop.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---M52s4qoQ1jeLBQmD76vsjHgcgVfV1MUPd
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From fbb1885952efb15a46d03aac050c38fc9179594e Mon Sep 17 00:00:00 2001
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 12 Sep 2013 14:42:45 +0900
+Subject: [PATCH 06/21] video: gx1fb: remove unnecessary pci_set_drvdata()
 
-On 25/09/13 14:51, Andrzej Hajda wrote:
-> of_display_timings_exist is implemented incorrectly.
-> It tries to find property instead of node.
-> The function is not used anyway so the patch removes it.
->=20
-> Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> ---
->  drivers/video/of_display_timing.c | 20 --------------------
->  include/video/of_display_timing.h |  1 -
->  2 files changed, 21 deletions(-)
+The driver core clears the driver data to NULL after device_release
+or on probe failure. Thus, it is not needed to manually clear the
+device driver data to NULL.
 
-Fix by removal? =3D).
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/geode/gx1fb_core.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-Wouldn't it be better to fix the function? It's not used currently, but
-the whole display-timings stuff is still quite new. One could use
-of_get_display_timings() to check for the existence of timings, but that
-function will print an error if no timings are found.
-
-Then again, what would be the case where you want to check if the
-timings exist... I'd presume that there either has to be timings or
-there are no timings.
-
-So, I don't know. Any else has opinions whether to remove or fix the
-function?
-
- Tomi
+diff --git a/drivers/video/geode/gx1fb_core.c b/drivers/video/geode/gx1fb_core.c
+index ebbaada..7551a04 100644
+--- a/drivers/video/geode/gx1fb_core.c
++++ b/drivers/video/geode/gx1fb_core.c
+@@ -399,7 +399,6 @@ static void gx1fb_remove(struct pci_dev *pdev)
+ 	release_mem_region(gx1_gx_base() + 0x8300, 0x100);
+ 
+ 	fb_dealloc_cmap(&info->cmap);
+-	pci_set_drvdata(pdev, NULL);
+ 
+ 	framebuffer_release(info);
+ }
+-- 
+1.7.10.4
 
 
-
---M52s4qoQ1jeLBQmD76vsjHgcgVfV1MUPd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSRABPAAoJEPo9qoy8lh71XrsP/jrUKzcLvl7QMgBaudTx/MKD
-NMHBTmW5SVQjClvYg2UXGhXx5BY0qLi4gV/GgBD+eniiGhWqhAEL1JK0Dkw1LCGe
-PDqG42LBcYW9VFLyx1QLiKS5b+prt+p6D6goTcMV1RTybGVP4cRCLCwA+bNT25Q2
-ybJLDrxOnwOSuaakDylL0ERDCaN27zOvAucLw+E0z9KjDTqzjoet/cBTanj6vZS+
-FgDDJk7VXMiUbNOTqi3Rda+ilwRrBaFc1YNDMKxBQF+1nIXxckH75G/KFsoVqe34
-TohPd1py8d3PtnDQvdeor0OKC+L13AahNt+BOT3TNIM1oI8KpuqEW2OnYK57v1IJ
-6T7kK9HPUbONG/4OKc+36TVHB72GG1grpOV4KmKgllcCxl7oNeAD6lpEG93WXVR1
-kNvC1Bk+0cE83FZ6GfGkPf7HFtlRoP7xkkfNcCA73hFncbQYpi1ADs3R+hbIr77J
-QrlERqQ+K/APmo3zrlIC/Ny8cB6+cVege7Y4K2XDiUhcYYamXpEfl3BUv7nYx5XP
-zziCXTqKTQlwgr3O1Vh+whqoxez8Dq9lJ4G2UvL3Fqm4IRiKv/09mFIPwsMOfln1
-EbLpaQusbgS8zPBsPBGN30dbdwfLKwWvTtcJqaNTSZ6HsVvvCte+IX9GZqcleVJR
-xOr0GOG4JuKWMIjF/KSR
-=RJBX
------END PGP SIGNATURE-----
-
---M52s4qoQ1jeLBQmD76vsjHgcgVfV1MUPd--

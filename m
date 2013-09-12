@@ -1,36 +1,110 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Fri, 20 Sep 2013 14:12:44 +0000
-Subject: Re: [PATCH 01/51] DMA-API: provide a helper to set both DMA and coherent DMA masks
-Message-Id: <20130920141244.GQ25647@n2100.arm.linux.org.uk>
+From: Michal Simek <michal.simek@xilinx.com>
+Date: Thu, 12 Sep 2013 05:54:34 +0000
+Subject: [PATCH 3/3] video: xilinxfb: Simplify error path
+Message-Id: <940bbdfc5c67282ab461b9c82b55f18fc34c959d.1378965270.git.michal.simek@xilinx.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-19592-1378965278-0001"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
- <E1VMlja-0007fA-HU@rmk-PC.arm.linux.org.uk>
- <1379640097.2500.4.camel@bwh-desktop.uk.level5networks.com>
-In-Reply-To: <1379640097.2500.4.camel-/LGg1Z1CJKQ+9kgCwbf1HqK4ta4zdZpAajtMo4Cw6ucAvxtiuMwx3w@public.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+References: <7016a90750626ba866dddc6f85cfdd71943f6891.1378965270.git.michal.simek@xilinx.com>
+In-Reply-To: <7016a90750626ba866dddc6f85cfdd71943f6891.1378965270.git.michal.simek@xilinx.com>
+To: linux-kernel@vger.kernel.org, monstr@monstr.eu
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
+
+--=_mimegpg-monstr-desktop-19592-1378965278-0001
+
+devm_iounmap is called automatically that's why remove it from the code
+dev_set_drvdata(dev, NULL) is called by generic code
+after device_release or on probe failure.
+
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+---
+ drivers/video/xilinxfb.c | 28 ++++++----------------------
+ 1 file changed, 6 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index fd9c430..7e3036c 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -260,10 +260,9 @@ static int xilinxfb_assign(struct platform_device *pdev,
+
+ 		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 		drvdata->regs = devm_ioremap_resource(&pdev->dev, res);
+-		if (IS_ERR(drvdata->regs)) {
+-			rc = PTR_ERR(drvdata->regs);
+-			goto err_region;
+-		}
++		if (IS_ERR(drvdata->regs))
++			return PTR_ERR(drvdata->regs);
++
+ 		drvdata->regs_phys = res->start;
+ 	}
+
+@@ -279,11 +278,7 @@ static int xilinxfb_assign(struct platform_device *pdev,
+
+ 	if (!drvdata->fb_virt) {
+ 		dev_err(dev, "Could not allocate frame buffer memory\n");
+-		rc = -ENOMEM;
+-		if (drvdata->flags & BUS_ACCESS_FLAG)
+-			goto err_fbmem;
+-		else
+-			goto err_region;
++		return -ENOMEM;
+ 	}
+
+ 	/* Clear (turn to black) the framebuffer */
+@@ -363,13 +358,6 @@ err_cmap:
+ 	/* Turn off the display */
+ 	xilinx_fb_out32(drvdata, REG_CTRL, 0);
+
+-err_fbmem:
+-	if (drvdata->flags & BUS_ACCESS_FLAG)
+-		devm_iounmap(dev, drvdata->regs);
+-
+-err_region:
+-	dev_set_drvdata(dev, NULL);
+-
+ 	return rc;
+ }
+
+@@ -394,16 +382,12 @@ static int xilinxfb_release(struct device *dev)
+ 	/* Turn off the display */
+ 	xilinx_fb_out32(drvdata, REG_CTRL, 0);
+
+-	/* Release the resources, as allocated based on interface */
+-	if (drvdata->flags & BUS_ACCESS_FLAG)
+-		devm_iounmap(dev, drvdata->regs);
+ #ifdef CONFIG_PPC_DCR
+-	else
++	/* Release the resources, as allocated based on interface */
++	if (!(drvdata->flags & BUS_ACCESS_FLAG))
+ 		dcr_unmap(drvdata->dcr_host, drvdata->dcr_len);
+ #endif
+
+-	dev_set_drvdata(dev, NULL);
+-
+ 	return 0;
+ }
+
+--
+1.8.2.3
+
+
+--=_mimegpg-monstr-desktop-19592-1378965278-0001
+Content-Type: application/pgp-signature
 Content-Transfer-Encoding: 7bit
-To: Ben Hutchings <bhutchings-s/n/eUQHGBpZroRs9YW3xA@public.gmane.org>
-Cc: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, e1000-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, b43-dev-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Solarflare linux maintainers <linux-net-drivers-s/n/eUQHGBpZroRs9YW3xA@public.gmane.org>, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vinod Koul <vinod.koul-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Landley <rob-VoJi6FS/r0vR7s880joybQ@public.gmane.org>, uclinux-dist-devel-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
 
-On Fri, Sep 20, 2013 at 02:21:37AM +0100, Ben Hutchings wrote:
-> On Thu, 2013-09-19 at 22:25 +0100, Russell King wrote:
-> [...]
-> > -dma_set_coherent_mask() will always be able to set the same or a
-> > -smaller mask as dma_set_mask(). However for the rare case that a
-> > +The coherent coherent mask will always be able to set the same or a
-> > +smaller mask as the streaming mask. However for the rare case that a
-> [...]
-> 
-> The new wording doesn't make sense; a mask doesn't set itself.  I would
-> suggest:
-> 
-> "The coherent mask can always be set to the same or a smaller mask than
-> the streaming mask."
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Yes, the original sentence is not particularly good, but I think even
-your modified version can be interpreted as "a mask setting itself"
-for all the same reasons that the original can be (which mask does "same"
-refer to?)
+iEYEABECAAYFAlIxVx4ACgkQykllyylKDCGnywCggwIUiMnjGlWZtuXkAdpQcHIk
+RbAAn1xZADPmxYp/Y2yRzV0+NR7Y+Nsz
+=NevQ
+-----END PGP SIGNATURE-----
 
-Even so, I prefer your version.  Thanks. :)
+--=_mimegpg-monstr-desktop-19592-1378965278-0001--

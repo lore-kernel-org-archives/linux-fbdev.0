@@ -1,44 +1,35 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 21:58:03 +0000
-Subject: [PATCH 33/51] DMA-API: net: nxp/lpc_eth: use dma_coerce_mask_and_coherent()
-Message-Id: <E1VMmEd-0007jF-19@rmk-PC.arm.linux.org.uk>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 12 Sep 2013 06:59:13 +0000
+Subject: [PATCH 16/21] video: s3fb: remove unnecessary pci_set_drvdata()
+Message-Id: <002a01ceaf85$96f23550$c4d69ff0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
+To: linux-fbdev@vger.kernel.org
 
-The code sequence:
-	pldat->pdev->dev.coherent_dma_mask = 0xFFFFFFFF;
-	pldat->pdev->dev.dma_mask = &pldat->pdev->dev.coherent_dma_mask;
-bypasses the architectures check on the DMA mask.  It can be replaced
-with dma_coerce_mask_and_coherent(), avoiding the direct initialization
-of this mask.
+The driver core clears the driver data to NULL after device_release
+or on probe failure. Thus, it is not needed to manually clear the
+device driver data to NULL.
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/net/ethernet/nxp/lpc_eth.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/video/s3fb.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/nxp/lpc_eth.c b/drivers/net/ethernet/nxp/lpc_eth.c
-index a061b93..ba3ca18 100644
---- a/drivers/net/ethernet/nxp/lpc_eth.c
-+++ b/drivers/net/ethernet/nxp/lpc_eth.c
-@@ -1399,8 +1399,10 @@ static int lpc_eth_drv_probe(struct platform_device *pdev)
+diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
+index 47ca86c..d158d2c 100644
+--- a/drivers/video/s3fb.c
++++ b/drivers/video/s3fb.c
+@@ -1431,7 +1431,6 @@ static void s3_pci_remove(struct pci_dev *dev)
+ 		pci_release_regions(dev);
+ /*		pci_disable_device(dev); */
+ 
+-		pci_set_drvdata(dev, NULL);
+ 		framebuffer_release(info);
  	}
- 
- 	if (pldat->dma_buff_base_v = 0) {
--		pldat->pdev->dev.coherent_dma_mask = 0xFFFFFFFF;
--		pldat->pdev->dev.dma_mask = &pldat->pdev->dev.coherent_dma_mask;
-+		ret = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
-+		if (ret)
-+			goto err_out_free_irq;
-+
- 		pldat->dma_buff_size = PAGE_ALIGN(pldat->dma_buff_size);
- 
- 		/* Allocate a chunk of memory for the DMA ethernet buffers
+ }
 -- 
-1.7.4.4
+1.7.10.4
+
 

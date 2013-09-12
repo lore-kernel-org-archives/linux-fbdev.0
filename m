@@ -1,60 +1,65 @@
-From: Rob Clark <robdclark@gmail.com>
-Date: Thu, 19 Sep 2013 15:14:58 +0000
-Subject: Re: [PATCH] OMAPDSS: DISPC: set irq_safe for runtime PM
-Message-Id: <CAF6AEGupG6X4GqwaSm35u4tsW-ZQeCe8hqgbtDwxUcp6xwQ-nA@mail.gmail.com>
+From: Mike Dunn <mikedunn@newsguy.com>
+Date: Thu, 12 Sep 2013 18:35:52 +0000
+Subject: [PATCH] pwm-backlight: allow for non-increasing brightness levels
+Message-Id: <1379010952-8928-1-git-send-email-mikedunn@newsguy.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1379585958-24537-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1379585958-24537-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: thierry.reding@gmail.com
+Cc: Mike Dunn <mikedunn@newsguy.com>, Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>, Marek Vasut <marex@denx.de>
 
-On Thu, Sep 19, 2013 at 6:19 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> We have a bug with omapdrm, where omapdrm calls dispc's pm_runtime
-> function in atomic context, and dispc's pm_runtime is not marked as
-> irq_safe:
->
-> BUG: sleeping function called from invalid context at drivers/base/power/runtime.c:952
->
-> Dispc's runtime PM callbacks are irq safe, so we can just set the
-> irq_safe flag to fix the issue.
->
-> However, in the long term, I'd rather have omapdrm manage the runtime PM
-> calls in a better way. Calling get/put for every small operation that
-> touches the dispc registers is very inefficient. It'd be better and
-> cleaner to have clear "in-use" and "not-in-use" states for dispc, so
-> that we don't need to do register context restore for small operations,
-> only to turn dispc off right afterwards.
+Currently the driver assumes that the values specified in the brightness-levels
+device tree property increase as they are parsed from left to right.  But boards
+that invert the signal between the PWM output and the backlight will need to
+specify decreasing brightness-levels.  This patch removes the assumption that
+the last element of the array is the max value, and instead searches the array
+for the max value and uses that as the normalizing value when determining the
+duty cycle.
 
-hmm, quick mid-conference thought:  in msm, in crtc->prepare and
-crtc->dpms(ON) I do clk_prepare_enable(), and inverse in
-commit()/dpms(OFF).  (The extra ref held between prepare() and
-commit() avoids turning things off mid-modeset.)  The net effect is
-that we hold things on when the display is on.  Probably we should do
-something similar in omapdrm?
+Signed-off-by: Mike Dunn <mikedunn@newsguy.com>
+---
+ drivers/video/backlight/pwm_bl.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-BR,
--R
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 1fea627..d66aaa0 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -27,6 +27,7 @@ struct pwm_bl_data {
+ 	unsigned int		period;
+ 	unsigned int		lth_brightness;
+ 	unsigned int		*levels;
++	unsigned int		max_level;
+ 	int			(*notify)(struct device *,
+ 					  int brightness);
+ 	void			(*notify_after)(struct device *,
+@@ -57,7 +58,7 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+ 
+ 		if (pb->levels) {
+ 			duty_cycle = pb->levels[brightness];
+-			max = pb->levels[max];
++			max = pb->levels[pb->max_level];
+ 		} else {
+ 			duty_cycle = brightness;
+ 		}
+@@ -195,7 +196,15 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	if (data->levels) {
+-		max = data->levels[data->max_brightness];
++		int i, max_value = 0, max_idx = 0;
++		for (i = 0; i <= data->max_brightness; i++) {
++			if (data->levels[i] > max_value) {
++				max_value = data->levels[i];
++				max_idx = i;
++			}
++		}
++		pb->max_level = max_idx;
++		max = data->levels[max_idx];
+ 		pb->levels = data->levels;
+ 	} else
+ 		max = data->max_brightness;
+-- 
+1.8.1.5
 
-
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->  drivers/video/omap2/dss/dispc.c | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-> index 02a7340..4779750 100644
-> --- a/drivers/video/omap2/dss/dispc.c
-> +++ b/drivers/video/omap2/dss/dispc.c
-> @@ -3691,6 +3691,7 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
->         }
->
->         pm_runtime_enable(&pdev->dev);
-> +       pm_runtime_irq_safe(&pdev->dev);
->
->         r = dispc_runtime_get();
->         if (r)
-> --
-> 1.8.1.2
->

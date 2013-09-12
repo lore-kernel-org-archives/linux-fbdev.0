@@ -1,92 +1,81 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Wed, 04 Sep 2013 17:20:18 +0000
-Subject: Re: [RFC 00/22] OMAPDSS: DT support
-Message-Id: <20130904172017.GA31541@atomide.com>
+From: Michal Simek <michal.simek@xilinx.com>
+Date: Thu, 12 Sep 2013 05:54:33 +0000
+Subject: [PATCH 2/3] video: xilinxfb: Use devm_kzalloc instead of kzalloc
+Message-Id: <f9868e54718ba467691085ff78061a447eef3635.1378965270.git.michal.simek@xilinx.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-19577-1378965276-0001"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376037547-10859-1-git-send-email-tomi.valkeinen@ti.com>
- <20130813075449.GS7656@atomide.com>
- <52206A48.8040401@ti.com>
- <20130902061541.GU7656@atomide.com>
- <52243362.3090905@ti.com>
-In-Reply-To: <52243362.3090905@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+References: <7016a90750626ba866dddc6f85cfdd71943f6891.1378965270.git.michal.simek@xilinx.com>
+In-Reply-To: <7016a90750626ba866dddc6f85cfdd71943f6891.1378965270.git.michal.simek@xilinx.com>
+To: linux-kernel@vger.kernel.org, monstr@monstr.eu
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
+
+--=_mimegpg-monstr-desktop-19577-1378965276-0001
+
+Simplify driver probe and release function.
+
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+---
+ drivers/video/xilinxfb.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index 123cd70..fd9c430 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -368,7 +368,6 @@ err_fbmem:
+ 		devm_iounmap(dev, drvdata->regs);
+
+ err_region:
+-	kfree(drvdata);
+ 	dev_set_drvdata(dev, NULL);
+
+ 	return rc;
+@@ -403,7 +402,6 @@ static int xilinxfb_release(struct device *dev)
+ 		dcr_unmap(drvdata->dcr_host, drvdata->dcr_len);
+ #endif
+
+-	kfree(drvdata);
+ 	dev_set_drvdata(dev, NULL);
+
+ 	return 0;
+@@ -425,7 +423,7 @@ static int xilinxfb_of_probe(struct platform_device *pdev)
+ 	pdata = xilinx_fb_default_pdata;
+
+ 	/* Allocate the driver data region */
+-	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
++	drvdata = devm_kzalloc(&pdev->dev, sizeof(*drvdata), GFP_KERNEL);
+ 	if (!drvdata) {
+ 		dev_err(&pdev->dev, "Couldn't allocate device private record\n");
+ 		return -ENOMEM;
+@@ -453,7 +451,6 @@ static int xilinxfb_of_probe(struct platform_device *pdev)
+ 		drvdata->dcr_host = dcr_map(op->dev.of_node, start, drvdata->dcr_len);
+ 		if (!DCR_MAP_OK(drvdata->dcr_host)) {
+ 			dev_err(&op->dev, "invalid DCR address\n");
+-			kfree(drvdata);
+ 			return -ENODEV;
+ 		}
+ 	}
+--
+1.8.2.3
+
+
+--=_mimegpg-monstr-desktop-19577-1378965276-0001
+Content-Type: application/pgp-signature
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, Archit Taneja <archit@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Nishanth Menon <nm@ti.com>, Felipe Balbi <balbi@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [130901 23:50]:
-> On 02/09/13 09:15, Tony Lindgren wrote:
-> > 
-> > Yes but the old bindings still need to be supported because people
-> > are doing devices using those. So any kind of temporary binding will be
-> > a pain to support.
-> 
-> If old bindings need to be supported, then we also need to support the
-> current state for Panda and SDP, i.e. there are no DSS related DT
-> bindings, but displays still work. Which means we'll have to keep the
-> current hacky DSS device construction mechanism for Panda and SDP.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Yes we want to keep things working for the users where possible and
-not cause regressions. At least some kind of output about what the
-user needs to do to update to latest kernel and some documentation
-is would be needed..
+iEYEABECAAYFAlIxVxwACgkQykllyylKDCGejwCbBwGimy2fR3lcEH2xClnGr0Km
+HIUAn1WnnF2GHy3q/lXLq97ylN6jR8wQ
+=DuLt
+-----END PGP SIGNATURE-----
 
-> Although maybe it's cleaner to somehow inject the DSS DT nodes for Panda
-> and SDP in case they are missing from the real DT data.
-
-.. but naturally that would certainly make users life easier :)
- 
-> Doesn't supporting old bindings also mean that we can never get rid of
-> the hwmods? Or will there be code that injects the missing interrupt
-> etc. entries?
-
-I certainly hope we won't be stuck with that and can define most of
-the hwmod related data in the .dts files. We should be able to
-provide at least some debug output so users know what needs to
-be done to upgrade.
-
-But yeah, if there were popular devices with the .dtb in ROM using
-the legacy hwmod binding, then we'd be stuck with building or generating
-the data in the kernel. Or load the data later on via /lib/firmware and
-let deferred probe deal with it.
- 
-> >> Well, one difference is that the temporary bindings would give us
-> >> working display, but having only basic bindings would not. So I don't
-> >> see any reason to add only the basic bindings. Or how would it work?
-> > 
-> > You might be able to use just a minimal binding for now using the
-> > basic reg, interrupt and entries for the various components. Those will
-> > be still valid when the CDF bindings are available.
-> 
-> Well, the entries will be valid, but the displays won't work with just
-> the basic bindings. I could perhaps add a new hack that creates the
-> required panel devices and video pipeline connections dynamically in
-> code for Panda and SDP, a bit like what the code does now, except the
-> basic DSS entries would be in the DT. But that would just add another
-> set of DT data that I would need to support in the future, and there
-> would be three different cases to support for Panda and SDP:
-> 
-> - DT data with no DSS related nodes
-> - DT data with basic DSS related nodes
-> - DT data with full DSS
-> 
-> So... If old bindings have to be supported, I'd rather try to minimize
-> the pain, and not add anything but the final bindings. In retrospect, it
-> was a bit of a mistake to add the hacky DT display support for Panda and
-> SDP, as it won't be very nice to keep supporting those.
-
-Yes if that just makes things more complex, it's probably best to work
-on getting the generic binding done instead.
-
-Or just rely on getting the configuration from kernel cmdline and always
-use just the basic bindings? That might help keep things working for
-the "DT data with no DSS related nodes" case?
-
-Regards,
-
-Tony
-
-Regards,
-
-Tony
+--=_mimegpg-monstr-desktop-19577-1378965276-0001--

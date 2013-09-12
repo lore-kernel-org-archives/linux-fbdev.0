@@ -1,41 +1,35 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Fri, 20 Sep 2013 06:44:11 +0000
-Subject: [PATCH 02/15] video: grvga: Remove redundant dev_set_drvdata
-Message-Id: <1379658744-17113-3-git-send-email-sachin.kamat@linaro.org>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 12 Sep 2013 06:51:25 +0000
+Subject: [PATCH 02/21] video: carminefb: remove unnecessary pci_set_drvdata()
+Message-Id: <001c01ceaf84$7f9c0bc0$7ed42340$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Driver core sets driver data to NULL upon failure or remove.
+The driver core clears the driver data to NULL after device_release
+or on probe failure. Thus, it is not needed to manually clear the
+device driver data to NULL.
 
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: Kristoffer Glembo <kristoffer@gaisler.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/grvga.c |    2 --
- 1 file changed, 2 deletions(-)
+ drivers/video/carminefb.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/grvga.c b/drivers/video/grvga.c
-index b95eee7..c078701 100644
---- a/drivers/video/grvga.c
-+++ b/drivers/video/grvga.c
-@@ -496,7 +496,6 @@ static int grvga_probe(struct platform_device *dev)
- 	return 0;
+diff --git a/drivers/video/carminefb.c b/drivers/video/carminefb.c
+index 153dd65..b98f709 100644
+--- a/drivers/video/carminefb.c
++++ b/drivers/video/carminefb.c
+@@ -746,7 +746,6 @@ static void carminefb_remove(struct pci_dev *dev)
+ 	iounmap(hw->v_regs);
+ 	release_mem_region(fix.mmio_start, fix.mmio_len);
  
- free_mem:
--	dev_set_drvdata(&dev->dev, NULL);
- 	if (grvga_fix_addr)
- 		iounmap((void *)virtual_start);
- 	else
-@@ -530,7 +529,6 @@ static int grvga_remove(struct platform_device *device)
- 			kfree((void *)info->screen_base);
- 
- 		framebuffer_release(info);
--		dev_set_drvdata(&device->dev, NULL);
- 	}
- 
- 	return 0;
+-	pci_set_drvdata(dev, NULL);
+ 	pci_disable_device(dev);
+ 	kfree(hw);
+ }
 -- 
-1.7.9.5
+1.7.10.4
+
 

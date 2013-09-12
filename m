@@ -1,81 +1,27 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Date: Thu, 12 Sep 2013 05:54:33 +0000
-Subject: [PATCH 2/3] video: xilinxfb: Use devm_kzalloc instead of kzalloc
-Message-Id: <f9868e54718ba467691085ff78061a447eef3635.1378965270.git.michal.simek@xilinx.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-19577-1378965276-0001"
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 12 Sep 2013 10:42:00 +0000
+Subject: Re: [PATCH 2/3] video: xilinxfb: Use devm_kzalloc instead of kzalloc
+Message-Id: <000c01ceafa4$b6294b60$227be220$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <7016a90750626ba866dddc6f85cfdd71943f6891.1378965270.git.michal.simek@xilinx.com>
-In-Reply-To: <7016a90750626ba866dddc6f85cfdd71943f6891.1378965270.git.michal.simek@xilinx.com>
-To: linux-kernel@vger.kernel.org, monstr@monstr.eu
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-
-This is a MIME GnuPG-signed message.  If you see this text, it means that
-your E-mail or Usenet software does not support MIME signed messages.
-The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
-To open this message correctly you will need to install E-mail or Usenet
-software that supports modern Internet standards.
-
---=_mimegpg-monstr-desktop-19577-1378965276-0001
-
-Simplify driver probe and release function.
-
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
----
- drivers/video/xilinxfb.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
-
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index 123cd70..fd9c430 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -368,7 +368,6 @@ err_fbmem:
- 		devm_iounmap(dev, drvdata->regs);
-
- err_region:
--	kfree(drvdata);
- 	dev_set_drvdata(dev, NULL);
-
- 	return rc;
-@@ -403,7 +402,6 @@ static int xilinxfb_release(struct device *dev)
- 		dcr_unmap(drvdata->dcr_host, drvdata->dcr_len);
- #endif
-
--	kfree(drvdata);
- 	dev_set_drvdata(dev, NULL);
-
- 	return 0;
-@@ -425,7 +423,7 @@ static int xilinxfb_of_probe(struct platform_device *pdev)
- 	pdata = xilinx_fb_default_pdata;
-
- 	/* Allocate the driver data region */
--	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
-+	drvdata = devm_kzalloc(&pdev->dev, sizeof(*drvdata), GFP_KERNEL);
- 	if (!drvdata) {
- 		dev_err(&pdev->dev, "Couldn't allocate device private record\n");
- 		return -ENOMEM;
-@@ -453,7 +451,6 @@ static int xilinxfb_of_probe(struct platform_device *pdev)
- 		drvdata->dcr_host = dcr_map(op->dev.of_node, start, drvdata->dcr_len);
- 		if (!DCR_MAP_OK(drvdata->dcr_host)) {
- 			dev_err(&op->dev, "invalid DCR address\n");
--			kfree(drvdata);
- 			return -ENODEV;
- 		}
- 	}
---
-1.8.2.3
-
-
---=_mimegpg-monstr-desktop-19577-1378965276-0001
-Content-Type: application/pgp-signature
+ <f9868e54718ba467691085ff78061a447eef3635.1378965270.git.michal.simek@xilinx.com>
+In-Reply-To: <f9868e54718ba467691085ff78061a447eef3635.1378965270.git.michal.simek@xilinx.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: 'Michal Simek' <michal.simek@xilinx.com>, linux-kernel@vger.kernel.org, monstr@monstr.eu
+Cc: 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+On Thursday, September 12, 2013 2:55 PM, Michal Simek wrote:
+> 
+> Simplify driver probe and release function.
+> 
+> Signed-off-by: Michal Simek <michal.simek@xilinx.com>
 
-iEYEABECAAYFAlIxVxwACgkQykllyylKDCGejwCbBwGimy2fR3lcEH2xClnGr0Km
-HIUAn1WnnF2GHy3q/lXLq97ylN6jR8wQ
-=DuLt
------END PGP SIGNATURE-----
+Reviewed-by: Jingoo Han <jg1.han@samsung.com>
 
---=_mimegpg-monstr-desktop-19577-1378965276-0001--
+> ---
+>  drivers/video/xilinxfb.c | 5 +----
+>  1 file changed, 1 insertion(+), 4 deletions(-)
+
+

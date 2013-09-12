@@ -1,17 +1,14 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 12 Sep 2013 06:58:11 +0000
+Date: Thu, 12 Sep 2013 07:28:27 +0000
 Subject: [PATCH 14/21] video: pm2fb: remove unnecessary pci_set_drvdata()
-Message-Id: <002801ceaf85$71f3d740$55db85c0$%han@samsung.com>
+Message-Id: <000401ceaf89$ac6f2ab0$054d8010$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <002801ceaf85$71f3d740$55db85c0$%han@samsung.com>
+In-Reply-To: <002801ceaf85$71f3d740$55db85c0$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-
-From 9e2c37ee1d5c2145fac113c483c9e6dd408f10fe Mon Sep 17 00:00:00 2001
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 12 Sep 2013 15:11:07 +0900
-Subject: [PATCH 14/21] video: pm2fb: remove unnecessary pci_set_drvdata()
 
 The driver core clears the driver data to NULL after device_release
 or on probe failure. Thus, it is not needed to manually clear the

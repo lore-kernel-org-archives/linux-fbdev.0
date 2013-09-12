@@ -1,39 +1,39 @@
-From: Archit Taneja <archit@ti.com>
-Date: Fri, 13 Sep 2013 10:41:35 +0000
-Subject: [PATCH 4/7] OMAPDSS: HDMI: OMAP4: Complete dumping of DPLL registers
-Message-Id: <1379068178-17312-5-git-send-email-archit@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 12 Sep 2013 06:52:30 +0000
+Subject: [PATCH 04/21] video: cyber2000fb: remove unnecessary pci_set_drvdata()
+Message-Id: <001e01ceaf84$a6b29b70$f417d250$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1379068178-17312-1-git-send-email-archit@ti.com>
-In-Reply-To: <1379068178-17312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Ricardo Neri <ricardo.neri@ti.com>, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-From: Ricardo Neri <ricardo.neri@ti.com>
+The driver core clears the driver data to NULL after device_release
+or on probe failure. Thus, it is not needed to manually clear the
+device driver data to NULL.
 
-Add the spread spectrum clock configuration registers to the DPLL dump.
-
-Signed-off-by: Ricardo Neri <ricardo.neri@ti.com>
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/cyber2000fb.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-index ecadd7a..46af726 100644
---- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-+++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-@@ -886,6 +886,8 @@ void ti_hdmi_4xxx_pll_dump(struct hdmi_ip_data *ip_data, struct seq_file *s)
- 	DUMPPLL(PLLCTRL_CFG1);
- 	DUMPPLL(PLLCTRL_CFG2);
- 	DUMPPLL(PLLCTRL_CFG3);
-+	DUMPPLL(PLLCTRL_SSC_CFG1);
-+	DUMPPLL(PLLCTRL_SSC_CFG2);
- 	DUMPPLL(PLLCTRL_CFG4);
- }
+diff --git a/drivers/video/cyber2000fb.c b/drivers/video/cyber2000fb.c
+index e78d9f2..42da9c8 100644
+--- a/drivers/video/cyber2000fb.c
++++ b/drivers/video/cyber2000fb.c
+@@ -1874,11 +1874,6 @@ static void cyberpro_pci_remove(struct pci_dev *dev)
+ 		iounmap(cfb->region);
+ 		cyberpro_free_fb_info(cfb);
+ 
+-		/*
+-		 * Ensure that the driver data is no longer
+-		 * valid.
+-		 */
+-		pci_set_drvdata(dev, NULL);
+ 		if (cfb = int_cfb_info)
+ 			int_cfb_info = NULL;
  
 -- 
-1.8.1.2
+1.7.10.4
+
 

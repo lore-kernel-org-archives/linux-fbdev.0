@@ -1,48 +1,110 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 21:40:00 +0000
-Subject: [PATCH 15/51] DMA-API: net: b43legacy: replace dma_set_mask()+dma_set_coherent_mask() with new
-Message-Id: <E1VMlxA-0007gs-Ll@rmk-PC.arm.linux.org.uk>
+From: Michal Simek <michal.simek@xilinx.com>
+Date: Thu, 12 Sep 2013 05:54:32 +0000
+Subject: [PATCH 1/3] video: xilinxfb: Use standard variable name convention
+Message-Id: <7016a90750626ba866dddc6f85cfdd71943f6891.1378965270.git.michal.simek@xilinx.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-19560-1378965274-0001"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
-Cc: "John W. Linville" <linville@tuxdriver.com>, Stefano Brivio <stefano.brivio@polimi.it>, Larry Finger <Larry.Finger@lwfinger.net>
+To: linux-kernel@vger.kernel.org, monstr@monstr.eu
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
 
-Replace the following sequence:
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
 
-	dma_set_mask(dev, mask);
-	dma_set_coherent_mask(dev, mask);
+--=_mimegpg-monstr-desktop-19560-1378965274-0001
 
-with a call to the new helper dma_set_mask_and_coherent().
+s/op/pdev/ in xilinxfb_of_probe().
+No functional chagnes.
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
 ---
- drivers/net/wireless/b43legacy/dma.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
+ drivers/video/xilinxfb.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/wireless/b43legacy/dma.c b/drivers/net/wireless/b43legacy/dma.c
-index 42eb26c..b2ed179 100644
---- a/drivers/net/wireless/b43legacy/dma.c
-+++ b/drivers/net/wireless/b43legacy/dma.c
-@@ -806,12 +806,9 @@ static int b43legacy_dma_set_mask(struct b43legacy_wldev *dev, u64 mask)
- 	/* Try to set the DMA mask. If it fails, try falling back to a
- 	 * lower mask, as we can always also support a lower one. */
- 	while (1) {
--		err = dma_set_mask(dev->dev->dma_dev, mask);
--		if (!err) {
--			err = dma_set_coherent_mask(dev->dev->dma_dev, mask);
--			if (!err)
--				break;
--		}
-+		err = dma_set_mask_and_coherent(dev->dev->dma_dev, mask);
-+		if (!err)
-+			break;
- 		if (mask = DMA_BIT_MASK(64)) {
- 			mask = DMA_BIT_MASK(32);
- 			fallback = true;
--- 
-1.7.4.4
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index 84c664e..123cd70 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -413,7 +413,7 @@ static int xilinxfb_release(struct device *dev)
+  * OF bus binding
+  */
 
+-static int xilinxfb_of_probe(struct platform_device *op)
++static int xilinxfb_of_probe(struct platform_device *pdev)
+ {
+ 	const u32 *prop;
+ 	u32 tft_access = 0;
+@@ -427,7 +427,7 @@ static int xilinxfb_of_probe(struct platform_device *op)
+ 	/* Allocate the driver data region */
+ 	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
+ 	if (!drvdata) {
+-		dev_err(&op->dev, "Couldn't allocate device private record\n");
++		dev_err(&pdev->dev, "Couldn't allocate device private record\n");
+ 		return -ENOMEM;
+ 	}
+
+@@ -435,7 +435,7 @@ static int xilinxfb_of_probe(struct platform_device *op)
+ 	 * To check whether the core is connected directly to DCR or BUS
+ 	 * interface and initialize the tft_access accordingly.
+ 	 */
+-	of_property_read_u32(op->dev.of_node, "xlnx,dcr-splb-slave-if",
++	of_property_read_u32(pdev->dev.of_node, "xlnx,dcr-splb-slave-if",
+ 			     &tft_access);
+
+ 	/*
+@@ -459,29 +459,29 @@ static int xilinxfb_of_probe(struct platform_device *op)
+ 	}
+ #endif
+
+-	prop = of_get_property(op->dev.of_node, "phys-size", &size);
++	prop = of_get_property(pdev->dev.of_node, "phys-size", &size);
+ 	if ((prop) && (size >= sizeof(u32)*2)) {
+ 		pdata.screen_width_mm = prop[0];
+ 		pdata.screen_height_mm = prop[1];
+ 	}
+
+-	prop = of_get_property(op->dev.of_node, "resolution", &size);
++	prop = of_get_property(pdev->dev.of_node, "resolution", &size);
+ 	if ((prop) && (size >= sizeof(u32)*2)) {
+ 		pdata.xres = prop[0];
+ 		pdata.yres = prop[1];
+ 	}
+
+-	prop = of_get_property(op->dev.of_node, "virtual-resolution", &size);
++	prop = of_get_property(pdev->dev.of_node, "virtual-resolution", &size);
+ 	if ((prop) && (size >= sizeof(u32)*2)) {
+ 		pdata.xvirt = prop[0];
+ 		pdata.yvirt = prop[1];
+ 	}
+
+-	if (of_find_property(op->dev.of_node, "rotate-display", NULL))
++	if (of_find_property(pdev->dev.of_node, "rotate-display", NULL))
+ 		pdata.rotate_screen = 1;
+
+-	dev_set_drvdata(&op->dev, drvdata);
+-	return xilinxfb_assign(op, drvdata, &pdata);
++	dev_set_drvdata(&pdev->dev, drvdata);
++	return xilinxfb_assign(pdev, drvdata, &pdata);
+ }
+
+ static int xilinxfb_of_remove(struct platform_device *op)
+--
+1.8.2.3
+
+
+--=_mimegpg-monstr-desktop-19560-1378965274-0001
+Content-Type: application/pgp-signature
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAlIxVxoACgkQykllyylKDCGdzwCfdxp9/Zoup/55nFaGT6bhYXNe
+adMAmwYy++wCUNYil+qCiFUgufrRocHN
+=I9A8
+-----END PGP SIGNATURE-----
+
+--=_mimegpg-monstr-desktop-19560-1378965274-0001--

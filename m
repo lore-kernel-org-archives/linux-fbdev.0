@@ -1,160 +1,88 @@
-From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
-Date: Sat, 28 Sep 2013 19:27:47 +0000
-Subject: [PATCH V5 5/5] ARM: Samsung: Remove the MIPI PHY setup code
-Message-Id: <1380396467-29278-6-git-send-email-s.nawrocki@samsung.com>
+From: Zhou Zhu <zzhu3@marvell.com>
+Date: Fri, 13 Sep 2013 06:59:48 +0000
+Subject: [PATCH V5 4/5] video: mmp: calculate pitch value when fb set win
+Message-Id: <1379055589-26132-5-git-send-email-zzhu3@marvell.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1380396467-29278-1-git-send-email-s.nawrocki@samsung.com>
-In-Reply-To: <1380396467-29278-1-git-send-email-s.nawrocki@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Generic PHY drivers are used to handle the MIPI CSIS and MIPI DSIM
-DPHYs so we can remove now unused code at arch/arm/plat-samsung.
-In case there is any board file for S5PV210 platforms using MIPI
-CSIS/DSIM (not any upstream currently) it should use the generic
-PHY API to bind the PHYs to respective PHY consumer drivers and
-a platform device for the PHY provider should be defined.
+From: Jing Xiang <jxiang@marvell.com>
 
-Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-Acked-by: Felipe Balbi <balbi@ti.com>
-Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+Add new func mmpfb_set_win to make code clean, it will do resolution
+and fmt setting of win in mmpfb_set_win.
+
+Signed-off-by: Jing Xiang <jxiang@marvell.com>
+Signed-off-by: Jett.Zhou <jtzhou@marvell.com>
+Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
+Reviewed-by: Daniel Drake <dsd@laptop.org>
 ---
- arch/arm/mach-exynos/include/mach/regs-pmu.h    |    5 --
- arch/arm/mach-s5pv210/include/mach/regs-clock.h |    4 --
- arch/arm/plat-samsung/Kconfig                   |    5 --
- arch/arm/plat-samsung/Makefile                  |    1 -
- arch/arm/plat-samsung/setup-mipiphy.c           |   60 -----------------------
- 5 files changed, 0 insertions(+), 75 deletions(-)
- delete mode 100644 arch/arm/plat-samsung/setup-mipiphy.c
+ drivers/video/mmp/fb/mmpfb.c |   28 ++++++++++++++++------------
+ 1 file changed, 16 insertions(+), 12 deletions(-)
 
-diff --git a/arch/arm/mach-exynos/include/mach/regs-pmu.h b/arch/arm/mach-exynos/include/mach/regs-pmu.h
-index 57344b7..2cdb63e 100644
---- a/arch/arm/mach-exynos/include/mach/regs-pmu.h
-+++ b/arch/arm/mach-exynos/include/mach/regs-pmu.h
-@@ -44,11 +44,6 @@
- #define S5P_DAC_PHY_CONTROL			S5P_PMUREG(0x070C)
- #define S5P_DAC_PHY_ENABLE			(1 << 0)
+diff --git a/drivers/video/mmp/fb/mmpfb.c b/drivers/video/mmp/fb/mmpfb.c
+index 4ab95b8..19fd913 100644
+--- a/drivers/video/mmp/fb/mmpfb.c
++++ b/drivers/video/mmp/fb/mmpfb.c
+@@ -392,12 +392,23 @@ static int var_update(struct fb_info *info)
+ 	return 0;
+ }
  
--#define S5P_MIPI_DPHY_CONTROL(n)		S5P_PMUREG(0x0710 + (n) * 4)
--#define S5P_MIPI_DPHY_ENABLE			(1 << 0)
--#define S5P_MIPI_DPHY_SRESETN			(1 << 1)
--#define S5P_MIPI_DPHY_MRESETN			(1 << 2)
--
- #define S5P_INFORM0				S5P_PMUREG(0x0800)
- #define S5P_INFORM1				S5P_PMUREG(0x0804)
- #define S5P_INFORM2				S5P_PMUREG(0x0808)
-diff --git a/arch/arm/mach-s5pv210/include/mach/regs-clock.h b/arch/arm/mach-s5pv210/include/mach/regs-clock.h
-index 032de66..e345584 100644
---- a/arch/arm/mach-s5pv210/include/mach/regs-clock.h
-+++ b/arch/arm/mach-s5pv210/include/mach/regs-clock.h
-@@ -147,10 +147,6 @@
- #define S5P_HDMI_PHY_CONTROL	S5P_CLKREG(0xE804)
- #define S5P_USB_PHY_CONTROL	S5P_CLKREG(0xE80C)
- #define S5P_DAC_PHY_CONTROL	S5P_CLKREG(0xE810)
--#define S5P_MIPI_DPHY_CONTROL(x) S5P_CLKREG(0xE814)
--#define S5P_MIPI_DPHY_ENABLE	(1 << 0)
--#define S5P_MIPI_DPHY_SRESETN	(1 << 1)
--#define S5P_MIPI_DPHY_MRESETN	(1 << 2)
++static void mmpfb_set_win(struct fb_info *info)
++{
++	struct mmpfb_info *fbi = info->par;
++	struct mmp_win win;
++
++	memset(&win, 0, sizeof(win));
++	win.xsrc = win.xdst = fbi->mode.xres;
++	win.ysrc = win.ydst = fbi->mode.yres;
++	win.pix_fmt = fbi->pix_fmt;
++	mmp_overlay_set_win(fbi->overlay, &win);
++}
++
+ static int mmpfb_set_par(struct fb_info *info)
+ {
+ 	struct mmpfb_info *fbi = info->par;
+ 	struct fb_var_screeninfo *var = &info->var;
+ 	struct mmp_addr addr;
+-	struct mmp_win win;
+ 	struct mmp_mode mode;
+ 	int ret;
  
- #define S5P_INFORM0		S5P_CLKREG(0xF000)
- #define S5P_INFORM1		S5P_CLKREG(0xF004)
-diff --git a/arch/arm/plat-samsung/Kconfig b/arch/arm/plat-samsung/Kconfig
-index 7dfba93..ec882ad 100644
---- a/arch/arm/plat-samsung/Kconfig
-+++ b/arch/arm/plat-samsung/Kconfig
-@@ -395,11 +395,6 @@ config S3C24XX_PWM
- 	  Support for exporting the PWM timer blocks via the pwm device
- 	  system
+@@ -409,11 +420,8 @@ static int mmpfb_set_par(struct fb_info *info)
+ 	fbmode_to_mmpmode(&mode, &fbi->mode, fbi->output_fmt);
+ 	mmp_path_set_mode(fbi->path, &mode);
  
--config S5P_SETUP_MIPIPHY
--	bool
--	help
--	  Compile in common setup code for MIPI-CSIS and MIPI-DSIM devices
--
- config S3C_SETUP_CAMIF
- 	bool
- 	help
-diff --git a/arch/arm/plat-samsung/Makefile b/arch/arm/plat-samsung/Makefile
-index 498c7c2..9267d29 100644
---- a/arch/arm/plat-samsung/Makefile
-+++ b/arch/arm/plat-samsung/Makefile
-@@ -38,7 +38,6 @@ obj-$(CONFIG_S5P_DEV_UART)	+= s5p-dev-uart.o
- obj-$(CONFIG_SAMSUNG_DEV_BACKLIGHT)	+= dev-backlight.o
+-	memset(&win, 0, sizeof(win));
+-	win.xsrc = win.xdst = fbi->mode.xres;
+-	win.ysrc = win.ydst = fbi->mode.yres;
+-	win.pix_fmt = fbi->pix_fmt;
+-	mmp_overlay_set_win(fbi->overlay, &win);
++	/* set window related info */
++	mmpfb_set_win(info);
  
- obj-$(CONFIG_S3C_SETUP_CAMIF)	+= setup-camif.o
--obj-$(CONFIG_S5P_SETUP_MIPIPHY)	+= setup-mipiphy.o
+ 	/* set address always */
+ 	memset(&addr, 0, sizeof(addr));
+@@ -427,16 +435,12 @@ static int mmpfb_set_par(struct fb_info *info)
+ static void mmpfb_power(struct mmpfb_info *fbi, int power)
+ {
+ 	struct mmp_addr addr;
+-	struct mmp_win win;
+ 	struct fb_var_screeninfo *var = &fbi->fb_info->var;
  
- # DMA support
+ 	/* for power on, always set address/window again */
+ 	if (power) {
+-		memset(&win, 0, sizeof(win));
+-		win.xsrc = win.xdst = fbi->mode.xres;
+-		win.ysrc = win.ydst = fbi->mode.yres;
+-		win.pix_fmt = fbi->pix_fmt;
+-		mmp_overlay_set_win(fbi->overlay, &win);
++		/* set window related info */
++		mmpfb_set_win(fbi->fb_info);
  
-diff --git a/arch/arm/plat-samsung/setup-mipiphy.c b/arch/arm/plat-samsung/setup-mipiphy.c
-deleted file mode 100644
-index 66df315..0000000
---- a/arch/arm/plat-samsung/setup-mipiphy.c
-+++ /dev/null
-@@ -1,60 +0,0 @@
--/*
-- * Copyright (C) 2011 Samsung Electronics Co., Ltd.
-- *
-- * S5P - Helper functions for MIPI-CSIS and MIPI-DSIM D-PHY control
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- */
--
--#include <linux/export.h>
--#include <linux/kernel.h>
--#include <linux/platform_device.h>
--#include <linux/io.h>
--#include <linux/spinlock.h>
--#include <mach/regs-clock.h>
--
--static int __s5p_mipi_phy_control(int id, bool on, u32 reset)
--{
--	static DEFINE_SPINLOCK(lock);
--	void __iomem *addr;
--	unsigned long flags;
--	u32 cfg;
--
--	id = max(0, id);
--	if (id > 1)
--		return -EINVAL;
--
--	addr = S5P_MIPI_DPHY_CONTROL(id);
--
--	spin_lock_irqsave(&lock, flags);
--
--	cfg = __raw_readl(addr);
--	cfg = on ? (cfg | reset) : (cfg & ~reset);
--	__raw_writel(cfg, addr);
--
--	if (on) {
--		cfg |= S5P_MIPI_DPHY_ENABLE;
--	} else if (!(cfg & (S5P_MIPI_DPHY_SRESETN |
--			    S5P_MIPI_DPHY_MRESETN) & ~reset)) {
--		cfg &= ~S5P_MIPI_DPHY_ENABLE;
--	}
--
--	__raw_writel(cfg, addr);
--	spin_unlock_irqrestore(&lock, flags);
--
--	return 0;
--}
--
--int s5p_csis_phy_enable(int id, bool on)
--{
--	return __s5p_mipi_phy_control(id, on, S5P_MIPI_DPHY_SRESETN);
--}
--EXPORT_SYMBOL(s5p_csis_phy_enable);
--
--int s5p_dsim_phy_enable(struct platform_device *pdev, bool on)
--{
--	return __s5p_mipi_phy_control(pdev->id, on, S5P_MIPI_DPHY_MRESETN);
--}
--EXPORT_SYMBOL(s5p_dsim_phy_enable);
+ 		/* set address always */
+ 		memset(&addr, 0, sizeof(addr));
 -- 
-1.7.4.1
+1.7.9.5
 

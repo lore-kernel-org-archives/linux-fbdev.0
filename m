@@ -1,62 +1,53 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 26 Sep 2013 08:43:04 +0000
-Subject: Re: [PATCH] video: mmp: drop needless devm cleanup
-Message-Id: <5243F398.1070705@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ChuROpVOOLl1CtLJi9OPHIX5M6AqRahxE"
+From: Jean Delvare <khali@linux-fr.org>
+Date: Fri, 13 Sep 2013 19:51:50 +0000
+Subject: [PATCH v2] video/matrox/matroxfb_maven: Use module_i2c_driver to register driver
+Message-Id: <20130913215150.16089f46@endymion.delvare>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1379951159-8294-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <1379952790-13202-1-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1379952790-13202-1-git-send-email-u.kleine-koenig@pengutronix.de>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---ChuROpVOOLl1CtLJi9OPHIX5M6AqRahxE
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+From: Peter Huewe <peterhuewe@gmx.de>
 
-On 23/09/13 19:13, Uwe Kleine-K=C3=B6nig wrote:
-> The nice thing about devm_* is that the driver doesn't need to free the=
+Removing some boilerplate by using module_i2c_driver instead of calling
+register and unregister in the otherwise empty init/exit functions.
+Also removed a useless comment as suggested by Jean Delvare.
 
-> resources but the driver core takes care about that. This also
-> simplifies the error path quite a bit and removes the wrong check for a=
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+Looks like this patch got lost so I am resending it.
 
-> clock pointer being NULL.
->=20
-> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
-> ---
->  drivers/video/mmp/hw/mmp_ctrl.c | 17 ++---------------
->  1 file changed, 2 insertions(+), 15 deletions(-)
->=20
+ drivers/video/matrox/matroxfb_maven.c |   14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
 
-Thanks, queuing for 3.12 fixes.
+--- linux-3.12-rc0.orig/drivers/video/matrox/matroxfb_maven.c	2013-09-13 21:48:12.585102831 +0200
++++ linux-3.12-rc0/drivers/video/matrox/matroxfb_maven.c	2013-09-13 21:48:28.843103072 +0200
+@@ -1295,19 +1295,7 @@ static struct i2c_driver maven_driver={
+ 	.id_table	= maven_id,
+ };
+ 
+-static int __init matroxfb_maven_init(void)
+-{
+-	return i2c_add_driver(&maven_driver);
+-}
+-
+-static void __exit matroxfb_maven_exit(void)
+-{
+-	i2c_del_driver(&maven_driver);
+-}
+-
++module_i2c_driver(maven_driver);
+ MODULE_AUTHOR("(c) 1999-2002 Petr Vandrovec <vandrove@vc.cvut.cz>");
+ MODULE_DESCRIPTION("Matrox G200/G400 Matrox MGA-TVO driver");
+ MODULE_LICENSE("GPL");
+-module_init(matroxfb_maven_init);
+-module_exit(matroxfb_maven_exit);
+-/* we do not have __setup() yet */
 
- Tomi
 
-
-
-
---ChuROpVOOLl1CtLJi9OPHIX5M6AqRahxE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSQ/OZAAoJEPo9qoy8lh71KXsQAJuLZSXvX2yHmT6WKCrQnkmu
-aXCnEg22/OL5005wWSM0DEOtwuY39vfNNOnUp/euXzrSJVGa/KKQRSYRhrYh/kFU
-r1zMgo3w8h0Ga7u/ohjvjooRvrXP8/QNTfRE/Mn2PUI6veha3wxAsRX64exrS3nD
-yA29u89xHAlTyuanTj2+slrooX6zXdEYF1PNYCkgej3MaC6qIi948Lihnw7RVrVE
-oKFaSS3hCR11McUf6bpFa8/AFjdr3AzAfxmDdtYjZYS7lMXHbQ3/HO3vVnyMsaGL
-MSgeJIFtQzDcUR6Oxb+II9LPRkkizQtYI+KJFkdXI1XyG1xtqsNxtByL1wXU6Kf8
-EvJH5VBQWcbf5DyRmOTWy3umIDzaUTWxGmhnaKQ0xXgd9lfUOb9zgSYbo9RX0z8o
-SBdJI5ROb9qoJTkil9RrQe/umvV0+I1eyeg5NTiu5dm8Qw251ka6TeTDt21zx3tt
-J5yvEAlQgSBCn4TEKJcLippeCMcoy9Z+aMRhAo2em1v9KtdAGRdH9HEMlwbdaTQo
-sjCeYQX+hIi7BZOU/BEWaBtNAab85KGd2vC6uQHSH5MBbOraNNvvE7tDKBuYUsju
-49wtwVvAQ1kyVtfuupadbCb6VmGLLtGHK/i4KoeT9Czoq9xIuEWV7FzLAXEltt8T
-pOXBSBhrjMEBeQJdrYa0
-=oNA3
------END PGP SIGNATURE-----
-
---ChuROpVOOLl1CtLJi9OPHIX5M6AqRahxE--
+-- 
+Jean Delvare

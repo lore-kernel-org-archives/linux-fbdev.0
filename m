@@ -1,54 +1,44 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 21:36:00 +0000
-Subject: [PATCH 11/51] DMA-API: net: emulex/benet: replace dma_set_mask()+dma_set_coherent_mask() with new
-Message-Id: <E1VMltI-0007gK-2r@rmk-PC.arm.linux.org.uk>
+From: Archit Taneja <archit@ti.com>
+Date: Fri, 13 Sep 2013 10:41:33 +0000
+Subject: [PATCH 2/7] OMAPDSS: HDMI: OMAP4: Complete dumping of wrapper registers
+Message-Id: <1379068178-17312-3-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-In-Reply-To: <20130919212235.GD12758-l+eeeJia6m9vn6HldHNs0ANdhmdF6hFW@public.gmane.org>
+References: <1379068178-17312-1-git-send-email-archit@ti.com>
+In-Reply-To: <1379068178-17312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, b43-dev-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, e1000-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Solarflare linux maintainers <linux-net-drivers-s/n/eUQHGBpZroRs9YW3xA@public.gmane.org>, uclinux-dist-devel-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org
-Cc: Sathya Perla <sathya.perla-laKkSmNT4hbQT0dZR+AlfA@public.gmane.org>, Subbu Seetharaman <subbu.seetharaman-laKkSmNT4hbQT0dZR+AlfA@public.gmane.org>, Ajit Khaparde <ajit.khaparde-laKkSmNT4hbQT0dZR+AlfA@public.gmane.org>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Ricardo Neri <ricardo.neri@ti.com>, Archit Taneja <archit@ti.com>
 
-Replace the following sequence:
+From: Ricardo Neri <ricardo.neri@ti.com>
 
-	dma_set_mask(dev, mask);
-	dma_set_coherent_mask(dev, mask);
+Add missing registers when dumping the HDMI wrapper. Also, order the dump by
+offset to improve readability.
 
-with a call to the new helper dma_set_mask_and_coherent().
-
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Ricardo Neri <ricardo.neri@ti.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/net/ethernet/emulex/benet/be_main.c |   12 ++----------
- 1 files changed, 2 insertions(+), 10 deletions(-)
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/emulex/benet/be_main.c b/drivers/net/ethernet/emulex/benet/be_main.c
-index 3224d28..2084151 100644
---- a/drivers/net/ethernet/emulex/benet/be_main.c
-+++ b/drivers/net/ethernet/emulex/benet/be_main.c
-@@ -4335,19 +4335,11 @@ static int be_probe(struct pci_dev *pdev, const struct pci_device_id *pdev_id)
- 	adapter->netdev = netdev;
- 	SET_NETDEV_DEV(netdev, &pdev->dev);
- 
--	status = dma_set_mask(&pdev->dev, DMA_BIT_MASK(64));
-+	status = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
- 	if (!status) {
--		status = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64));
--		if (status < 0) {
--			dev_err(&pdev->dev, "dma_set_coherent_mask failed\n");
--			goto free_netdev;
--		}
- 		netdev->features |= NETIF_F_HIGHDMA;
- 	} else {
--		status = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
--		if (!status)
--			status = dma_set_coherent_mask(&pdev->dev,
--						       DMA_BIT_MASK(32));
-+		status = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 		if (status) {
- 			dev_err(&pdev->dev, "Could not set PCI DMA Mask\n");
- 			goto free_netdev;
+diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+index 3dfe009..ecadd7a 100644
+--- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
++++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+@@ -859,8 +859,11 @@ void ti_hdmi_4xxx_wp_dump(struct hdmi_ip_data *ip_data, struct seq_file *s)
+ 	DUMPREG(HDMI_WP_SYSCONFIG);
+ 	DUMPREG(HDMI_WP_IRQSTATUS_RAW);
+ 	DUMPREG(HDMI_WP_IRQSTATUS);
+-	DUMPREG(HDMI_WP_PWR_CTRL);
+ 	DUMPREG(HDMI_WP_IRQENABLE_SET);
++	DUMPREG(HDMI_WP_IRQENABLE_CLR);
++	DUMPREG(HDMI_WP_IRQWAKEEN);
++	DUMPREG(HDMI_WP_PWR_CTRL);
++	DUMPREG(HDMI_WP_DEBOUNCE);
+ 	DUMPREG(HDMI_WP_VIDEO_CFG);
+ 	DUMPREG(HDMI_WP_VIDEO_SIZE);
+ 	DUMPREG(HDMI_WP_VIDEO_TIMING_H);
 -- 
-1.7.4.4
+1.8.1.2
 

@@ -1,80 +1,39 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Mon, 23 Sep 2013 14:27:27 +0000
-Subject: [PATCH 2/7] mmc: mvsdio: fix deferred probe from __init
-Message-Id: <1379946452-25649-3-git-send-email-jhovold@gmail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Fri, 13 Sep 2013 10:41:34 +0000
+Subject: [PATCH 3/7] OMAPDSS: HDMI: OMAP4: Complete register definitions for DPLL
+Message-Id: <1379068178-17312-4-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130923134028.GF21013@sirena.org.uk>
- <1379946452-25649-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1379946452-25649-1-git-send-email-jhovold@gmail.com>
+References: <1379068178-17312-1-git-send-email-archit@ti.com>
+In-Reply-To: <1379068178-17312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@linaro.org>, linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pcmcia@lists.infradead.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, Johan Hovold <jhovold@gmail.com>, Nicolas Pitre <nico@fluxnic.net>, Chris Ball <cjb@laptop.org>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Ricardo Neri <ricardo.neri@ti.com>, Archit Taneja <archit@ti.com>
 
-Move probe out of __init section and don't use platform_driver_probe
-which cannot be used with deferred probing.
+From: Ricardo Neri <ricardo.neri@ti.com>
 
-Since commit e9354576 ("gpiolib: Defer failed gpio requests by default")
-this driver might return -EPROBE_DEFER if the mmc_gpio_request_cd fails.
+Add missing register definitions for spread spectrum clocking.
 
-Cc: Nicolas Pitre <nico@fluxnic.net>
-Cc: Chris Ball <cjb@laptop.org>
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
+Signed-off-by: Ricardo Neri <ricardo.neri@ti.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/mmc/host/mvsdio.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/mmc/host/mvsdio.c b/drivers/mmc/host/mvsdio.c
-index 06c5b0b..deecee0 100644
---- a/drivers/mmc/host/mvsdio.c
-+++ b/drivers/mmc/host/mvsdio.c
-@@ -655,7 +655,7 @@ static const struct mmc_host_ops mvsd_ops = {
- 	.enable_sdio_irq	= mvsd_enable_sdio_irq,
- };
+diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
+index 469d436..d1a2315 100644
+--- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
++++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
+@@ -168,6 +168,8 @@
+ #define PLLCTRL_CFG1				0xC
+ #define PLLCTRL_CFG2				0x10
+ #define PLLCTRL_CFG3				0x14
++#define PLLCTRL_SSC_CFG1			0x18
++#define PLLCTRL_SSC_CFG2			0x1C
+ #define PLLCTRL_CFG4				0x20
  
--static void __init
-+static void
- mv_conf_mbus_windows(struct mvsd_host *host,
- 		     const struct mbus_dram_target_info *dram)
- {
-@@ -677,7 +677,7 @@ mv_conf_mbus_windows(struct mvsd_host *host,
- 	}
- }
- 
--static int __init mvsd_probe(struct platform_device *pdev)
-+static int mvsd_probe(struct platform_device *pdev)
- {
- 	struct device_node *np = pdev->dev.of_node;
- 	struct mmc_host *mmc = NULL;
-@@ -819,7 +819,7 @@ out:
- 	return ret;
- }
- 
--static int __exit mvsd_remove(struct platform_device *pdev)
-+static int mvsd_remove(struct platform_device *pdev)
- {
- 	struct mmc_host *mmc = platform_get_drvdata(pdev);
- 
-@@ -872,7 +872,8 @@ static const struct of_device_id mvsdio_dt_ids[] = {
- MODULE_DEVICE_TABLE(of, mvsdio_dt_ids);
- 
- static struct platform_driver mvsd_driver = {
--	.remove		= __exit_p(mvsd_remove),
-+	.probe		= mvsd_probe,
-+	.remove		= mvsd_remove,
- 	.suspend	= mvsd_suspend,
- 	.resume		= mvsd_resume,
- 	.driver		= {
-@@ -881,7 +882,7 @@ static struct platform_driver mvsd_driver = {
- 	},
- };
- 
--module_platform_driver_probe(mvsd_driver, mvsd_probe);
-+module_platform_driver(mvsd_driver);
- 
- /* maximum card clock frequency (default 50MHz) */
- module_param(maxfreq, int, 0);
+ /* HDMI PHY */
 -- 
-1.8.3.2
+1.8.1.2
 

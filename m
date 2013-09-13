@@ -1,59 +1,40 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 Sep 2013 10:33:21 +0000
-Subject: Re: [PATCH v3 0/5] ARM: vf610: Add DCU framebuffer driver for Vybrid VF610 platform
-Message-Id: <52270C71.7080805@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="A99GrF6iecw16WCqXRsL7q8nDpSAqAThK"
+From: Wang Huan-B18965 <B18965@freescale.com>
+Date: Fri, 13 Sep 2013 07:07:44 +0000
+Subject: RE: [PATCH v3 0/5] ARM: vf610: Add DCU framebuffer driver for Vybrid VF610 platform
+Message-Id: <81BA6E5E0BC2344391CABCEE22D1B6D842FD6A@039-SN1MPN1-003.039d.mgd.msft.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1376553714-25922-1-git-send-email-b18965@freescale.com>
  <81BA6E5E0BC2344391CABCEE22D1B6D83F448E@039-SN1MPN1-002.039d.mgd.msft.net>
  <81BA6E5E0BC2344391CABCEE22D1B6D8403CB3@039-SN1MPN1-002.039d.mgd.msft.net>
-In-Reply-To: <81BA6E5E0BC2344391CABCEE22D1B6D8403CB3@039-SN1MPN1-002.039d.mgd.msft.net>
+ <52270C71.7080805@ti.com>
+In-Reply-To: <52270C71.7080805@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---A99GrF6iecw16WCqXRsL7q8nDpSAqAThK
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+TXkgY29tbWVudHMgaW5saW5lLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZy
+b206IFRvbWkgVmFsa2VpbmVuIFttYWlsdG86dG9taS52YWxrZWluZW5AdGkuY29tXQ0KPiBTZW50
+OiBXZWRuZXNkYXksIFNlcHRlbWJlciAwNCwgMjAxMyA2OjMzIFBNDQo+IFRvOiBXYW5nIEh1YW4t
+QjE4OTY1DQo+IENjOiBwbGFnbmlvakBqY3Jvc29mdC5jb207IGxpbnV4LWZiZGV2QHZnZXIua2Vy
+bmVsLm9yZzsgbGludXgtYXJtLQ0KPiBrZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgSmluIFpo
+ZW5neGlvbmctUjY0MTg4OyBFc3RldmFtIEZhYmlvLVI0OTQ5NjsNCj4gc2hhd24uZ3VvQGxpbmFy
+by5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2MyAwLzVdIEFSTTogdmY2MTA6IEFkZCBEQ1Ug
+ZnJhbWVidWZmZXIgZHJpdmVyIGZvcg0KPiBWeWJyaWQgVkY2MTAgcGxhdGZvcm0NCj4gDQo+IEhp
+LA0KPiANCj4gT24gMDMvMDkvMTMgMTE6MjEsIFdhbmcgSHVhbi1CMTg5NjUgd3JvdGU6DQo+ID4g
+SGksIEplYW4tQ2hyaXN0b3BoZSwgVG9taSwNCj4gPg0KPiA+ICAgICAgIENvdWxkIHlvdSBwbGVh
+c2UgaGVscCB0byByZXZpZXcgdGhlc2UgcGF0Y2hlcz8NCj4gPiAgICAgICBUaGFua3MhDQo+IA0K
+PiBUaGVyZSBzZWVtZWQgdG8gYmUgc29tZSBzdHJvbmcgb3BpbmlvbnMgdGhhdCB0aGVyZSBzaG91
+bGQgYmUgYSBkcm0NCj4gZHJpdmVyIGZvciB0aGlzIGhhcmR3YXJlLCBpbnN0ZWFkIG9mIGFuIGZi
+IGRyaXZlci4gU28gYXMgdGhlcmUgc2VlbXMgdG8NCj4gYmUgZGlzYWdyZWVtZW50cyBhYm91dCB0
+aGlzLCBJJ2xsIGxlYXZlIHRoaXMgc2VyaWVzIHRvIEplYW4tQ2hyaXN0b3BoZSwNCj4gd2hvJ3Mg
+dGhlIHByaW1hcnkgbWFpbnRhaW5lci4NCltBbGlzb24gV2FuZ10gDQoNClRoYW5rcyBmb3IgVG9t
+aSdzIGNvbW1lbnRzLiANCg0KSSBhZ3JlZSB0aGF0IHdlIGNhbiBpbXBsZW1lbnQgdGhlIERSTSBk
+cml2ZXIgZm9yIHRoZSBEQ1UuIEFzIHRoZSBiYW5kd2lkdGggbGltaXRhdGlvbiwgSSBzdWdnZXN0
+IHdlIHVzZSB0aGUgZmIgZHJpdmVyIGZpcnN0bHkuIE9uIHRoZSBvdGhlciBoYW5kLCB0aGUgZmIg
+ZHJpdmVyIGNhbiBtZWV0IHRoZSBhcHBsaWNhdGlvbiByZXF1aXJlbWVudCBiYXNlZCBvbiB0aGlz
+IFNvQy4gV2UnbGwgdHJ5IHRvIHByb3ZpZGUgdGhlIERSTSBkcml2ZXIgd2hlbiB0aGlzIElQIGlu
+dGVncmF0ZWQgaW50byBvdGhlciBTb0MuIA0KDQpKZWFuLUNocmlzdG9waGUsIERvIHlvdSBoYXZl
+IGFueSBjb21tZW50cy4gVGhhbmtzLiAgDQoNCg0KQmVzdCBSZWdhcmRzLA0KQWxpc29uIFdhbmcN
+Cg=
 
-Hi,
-
-On 03/09/13 11:21, Wang Huan-B18965 wrote:
-> Hi, Jean-Christophe, Tomi,
->=20
->       Could you please help to review these patches?
->       Thanks!
-
-There seemed to be some strong opinions that there should be a drm
-driver for this hardware, instead of an fb driver. So as there seems to
-be disagreements about this, I'll leave this series to Jean-Christophe,
-who's the primary maintainer.
-
- Tomi
-
-
-
---A99GrF6iecw16WCqXRsL7q8nDpSAqAThK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSJwxxAAoJEPo9qoy8lh71MUIP/jlSWKo7YhvJXPapdQKmcsE3
-ExSHBqC/P5szoOfszB8aeHjnGcIEqQ+njWMZahdEVrBQ9lquqKURMSPHMGlMsTZ5
-D974bktz2EcF/VUmU860U30MFH8Ffgmm7CoqauoVBQMqvx0bAkQILO67R2vYY934
-QwpoNtkA1hoZ20TIXZjqVzyhs2rOo1wgi+GrJaqYpf7mIYcRMjqDOyLBuPG8Q3To
-DbWfQ1seHBfsDv3Do0ongJvktiq0CythbjGbeuxrskktdzu4j/zv2Qwy4yeY2d3u
-F689NDKSsM4nEXycJ41xn7gDs3LfCqeTbCd6Lz2hvbcTCBPE4qUEoMAsFWNkq3vu
-ymMGL15vNzloGCn2kfBnXGOpzfgG7B9y36f1l2Tnt89p7NZB4N78akuFk84bMuyU
-QWb1P5N2mBKUBI4qsbGdeexYQYbPz/PzY5OPuB+LX9ajXp5/DXRriMTt/dTZxEHO
-9SKSK6X4vdGM6G1A9K891bkOF/dpgRlbMMLwfLxj8gwLJ3WgLWnUIzbZ/Ny4J2IN
-2rWq4vCJe82+oCNSIFNiQ6ZvU/dlEiT9O2TOEwvmDmIs4kPow2H7odBQLYBM1iYu
-HRJF14R2lKwPrILG0lNMScULx4OdlAkxBZSMxqtqUQTIiSNrIlS1ZIxruGIlM2Pg
-r/xX3BOZy3pMd3ndcpSG
-=dMrO
------END PGP SIGNATURE-----
-
---A99GrF6iecw16WCqXRsL7q8nDpSAqAThK--

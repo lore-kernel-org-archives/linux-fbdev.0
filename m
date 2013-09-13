@@ -1,35 +1,98 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 12 Sep 2013 07:01:53 +0000
-Subject: [PATCH 21/21] video: vt8623fb: remove unnecessary pci_set_drvdata()
-Message-Id: <002f01ceaf85$f658a9c0$e309fd40$%han@samsung.com>
+From: Archit Taneja <archit@ti.com>
+Date: Fri, 13 Sep 2013 10:41:38 +0000
+Subject: [PATCH 7/7] OMAPDSS: HDMI: OMAP4: Complete dumping of core registers
+Message-Id: <1379068178-17312-8-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1379068178-17312-1-git-send-email-archit@ti.com>
+In-Reply-To: <1379068178-17312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Ricardo Neri <ricardo.neri@ti.com>, Archit Taneja <archit@ti.com>
 
-The driver core clears the driver data to NULL after device_release
-or on probe failure. Thus, it is not needed to manually clear the
-device driver data to NULL.
+From: Ricardo Neri <ricardo.neri@ti.com>
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Add missing register entries when dumping the core.
+
+Signed-off-by: Ricardo Neri <ricardo.neri@ti.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/vt8623fb.c |    1 -
- 1 file changed, 1 deletion(-)
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c | 47 ++++++++++++++++++++++++++++++-
+ 1 file changed, 46 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/vt8623fb.c b/drivers/video/vt8623fb.c
-index e9557fa..6b424dd 100644
---- a/drivers/video/vt8623fb.c
-+++ b/drivers/video/vt8623fb.c
-@@ -829,7 +829,6 @@ static void vt8623_pci_remove(struct pci_dev *dev)
- 		pci_release_regions(dev);
- /*		pci_disable_device(dev); */
+diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+index ad5b820..fd4172b 100644
+--- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
++++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+@@ -911,6 +911,7 @@ void ti_hdmi_4xxx_core_dump(struct hdmi_ip_data *ip_data, struct seq_file *s)
+ 	DUMPCORE(HDMI_CORE_SYS_SRST);
+ 	DUMPCORE(HDMI_CORE_SYS_SYS_CTRL1);
+ 	DUMPCORE(HDMI_CORE_SYS_SYS_STAT);
++	DUMPCORE(HDMI_CORE_SYS_SYS_CTRL3);
+ 	DUMPCORE(HDMI_CORE_SYS_DE_DLY);
+ 	DUMPCORE(HDMI_CORE_SYS_DE_CTRL);
+ 	DUMPCORE(HDMI_CORE_SYS_DE_TOP);
+@@ -918,14 +919,58 @@ void ti_hdmi_4xxx_core_dump(struct hdmi_ip_data *ip_data, struct seq_file *s)
+ 	DUMPCORE(HDMI_CORE_SYS_DE_CNTH);
+ 	DUMPCORE(HDMI_CORE_SYS_DE_LINL);
+ 	DUMPCORE(HDMI_CORE_SYS_DE_LINH_1);
++	DUMPCORE(HDMI_CORE_SYS_HRES_L);
++	DUMPCORE(HDMI_CORE_SYS_HRES_H);
++	DUMPCORE(HDMI_CORE_SYS_VRES_L);
++	DUMPCORE(HDMI_CORE_SYS_VRES_H);
++	DUMPCORE(HDMI_CORE_SYS_IADJUST);
++	DUMPCORE(HDMI_CORE_SYS_POLDETECT);
++	DUMPCORE(HDMI_CORE_SYS_HWIDTH1);
++	DUMPCORE(HDMI_CORE_SYS_HWIDTH2);
++	DUMPCORE(HDMI_CORE_SYS_VWIDTH);
++	DUMPCORE(HDMI_CORE_SYS_VID_CTRL);
+ 	DUMPCORE(HDMI_CORE_SYS_VID_ACEN);
+ 	DUMPCORE(HDMI_CORE_SYS_VID_MODE);
++	DUMPCORE(HDMI_CORE_SYS_VID_BLANK1);
++	DUMPCORE(HDMI_CORE_SYS_VID_BLANK3);
++	DUMPCORE(HDMI_CORE_SYS_VID_BLANK1);
++	DUMPCORE(HDMI_CORE_SYS_DC_HEADER);
++	DUMPCORE(HDMI_CORE_SYS_VID_DITHER);
++	DUMPCORE(HDMI_CORE_SYS_RGB2XVYCC_CT);
++	DUMPCORE(HDMI_CORE_SYS_R2Y_COEFF_LOW);
++	DUMPCORE(HDMI_CORE_SYS_R2Y_COEFF_UP);
++	DUMPCORE(HDMI_CORE_SYS_G2Y_COEFF_LOW);
++	DUMPCORE(HDMI_CORE_SYS_G2Y_COEFF_UP);
++	DUMPCORE(HDMI_CORE_SYS_B2Y_COEFF_LOW);
++	DUMPCORE(HDMI_CORE_SYS_B2Y_COEFF_UP);
++	DUMPCORE(HDMI_CORE_SYS_R2CB_COEFF_LOW);
++	DUMPCORE(HDMI_CORE_SYS_R2CB_COEFF_UP);
++	DUMPCORE(HDMI_CORE_SYS_G2CB_COEFF_LOW);
++	DUMPCORE(HDMI_CORE_SYS_G2CB_COEFF_UP);
++	DUMPCORE(HDMI_CORE_SYS_B2CB_COEFF_LOW);
++	DUMPCORE(HDMI_CORE_SYS_B2CB_COEFF_UP);
++	DUMPCORE(HDMI_CORE_SYS_R2CR_COEFF_LOW);
++	DUMPCORE(HDMI_CORE_SYS_R2CR_COEFF_UP);
++	DUMPCORE(HDMI_CORE_SYS_G2CR_COEFF_LOW);
++	DUMPCORE(HDMI_CORE_SYS_G2CR_COEFF_UP);
++	DUMPCORE(HDMI_CORE_SYS_B2CR_COEFF_LOW);
++	DUMPCORE(HDMI_CORE_SYS_B2CR_COEFF_UP);
++	DUMPCORE(HDMI_CORE_SYS_RGB_OFFSET_LOW);
++	DUMPCORE(HDMI_CORE_SYS_RGB_OFFSET_UP);
++	DUMPCORE(HDMI_CORE_SYS_Y_OFFSET_LOW);
++	DUMPCORE(HDMI_CORE_SYS_Y_OFFSET_UP);
++	DUMPCORE(HDMI_CORE_SYS_CBCR_OFFSET_LOW);
++	DUMPCORE(HDMI_CORE_SYS_CBCR_OFFSET_UP);
+ 	DUMPCORE(HDMI_CORE_SYS_INTR_STATE);
+ 	DUMPCORE(HDMI_CORE_SYS_INTR1);
+ 	DUMPCORE(HDMI_CORE_SYS_INTR2);
+ 	DUMPCORE(HDMI_CORE_SYS_INTR3);
+ 	DUMPCORE(HDMI_CORE_SYS_INTR4);
+-	DUMPCORE(HDMI_CORE_SYS_UMASK1);
++	DUMPCORE(HDMI_CORE_SYS_INTR_UNMASK1);
++	DUMPCORE(HDMI_CORE_SYS_INTR_UNMASK2);
++	DUMPCORE(HDMI_CORE_SYS_INTR_UNMASK3);
++	DUMPCORE(HDMI_CORE_SYS_INTR_UNMASK4);
++	DUMPCORE(HDMI_CORE_SYS_INTR_CTRL);
+ 	DUMPCORE(HDMI_CORE_SYS_TMDS_CTRL);
  
--		pci_set_drvdata(dev, NULL);
- 		framebuffer_release(info);
- 	}
- }
+ 	DUMPCORE(HDMI_CORE_DDC_ADDR);
 -- 
-1.7.10.4
-
+1.8.1.2
 

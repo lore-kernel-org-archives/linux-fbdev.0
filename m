@@ -1,65 +1,100 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Tue, 17 Sep 2013 16:20:22 +0000
-Subject: Re: [PATCH 03/15] OMAPDSS: fix DPI and SDI device ids
-Message-Id: <20130917162022.GC9994@atomide.com>
+From: Archit Taneja <archit@ti.com>
+Date: Fri, 13 Sep 2013 10:41:37 +0000
+Subject: [PATCH 6/7] OMAPDSS: HDMI: OMAP4: Complete register definitions for core
+Message-Id: <1379068178-17312-7-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1377783120-14001-1-git-send-email-tomi.valkeinen@ti.com>
- <1377783120-14001-4-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1377783120-14001-4-git-send-email-tomi.valkeinen@ti.com>
+References: <1379068178-17312-1-git-send-email-archit@ti.com>
+In-Reply-To: <1379068178-17312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Ricardo Neri <ricardo.neri@ti.com>, Archit Taneja <archit@ti.com>
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [130829 06:40]:
-> The DPI and SDI platform devices are currently created with the ID of
-> -1. The ID doesn't currently affect anything.
-> 
-> However, we have added regulator supply entries for "omapdss_dpi.0" and
-> "omapdss_sdi.0" to the board files, although these supply entries are
-> not yet used. As the ID used for the devices is -1, these regulator
-> supply entries will not work.
-> 
-> To fix the issue, assign ID of 0 to the devices. In the future there may
-> be more than one DPI or SDI output, so it makes sense to have a proper
-> ID for them.
+From: Ricardo Neri <ricardo.neri@ti.com>
 
-This should be safe to queue by you along with other DSS patches:
+Add missing register definitions; mainly for colorspace conversion, video
+timing and interrupt handling.
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Ricardo Neri <ricardo.neri@ti.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h | 48 ++++++++++++++++++++++++++++++-
+ 1 file changed, 47 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
+index 149abd8..b25269c 100644
+--- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
++++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
+@@ -55,6 +55,8 @@
+ #define HDMI_CORE_SYS_SRST			0x14
+ #define HDMI_CORE_SYS_SYS_CTRL1			0x20
+ #define HDMI_CORE_SYS_SYS_STAT			0x24
++#define HDMI_CORE_SYS_SYS_CTRL3			0x28
++#define HDMI_CORE_SYS_DCTL			0x34
+ #define HDMI_CORE_SYS_DE_DLY			0xC8
+ #define HDMI_CORE_SYS_DE_CTRL			0xCC
+ #define HDMI_CORE_SYS_DE_TOP			0xD0
+@@ -62,14 +64,58 @@
+ #define HDMI_CORE_SYS_DE_CNTH			0xDC
+ #define HDMI_CORE_SYS_DE_LINL			0xE0
+ #define HDMI_CORE_SYS_DE_LINH_1			0xE4
++#define HDMI_CORE_SYS_HRES_L			0xE8
++#define HDMI_CORE_SYS_HRES_H			0xEC
++#define HDMI_CORE_SYS_VRES_L			0xF0
++#define HDMI_CORE_SYS_VRES_H			0xF4
++#define HDMI_CORE_SYS_IADJUST			0xF8
++#define HDMI_CORE_SYS_POLDETECT			0xFC
++#define HDMI_CORE_SYS_HWIDTH1			0x110
++#define HDMI_CORE_SYS_HWIDTH2			0x114
++#define HDMI_CORE_SYS_VWIDTH			0x11C
++#define HDMI_CORE_SYS_VID_CTRL			0x120
+ #define HDMI_CORE_SYS_VID_ACEN			0x124
+ #define HDMI_CORE_SYS_VID_MODE			0x128
++#define HDMI_CORE_SYS_VID_BLANK1		0x12C
++#define HDMI_CORE_SYS_VID_BLANK2		0x130
++#define HDMI_CORE_SYS_VID_BLANK3		0x134
++#define HDMI_CORE_SYS_DC_HEADER			0x138
++#define HDMI_CORE_SYS_VID_DITHER		0x13C
++#define HDMI_CORE_SYS_RGB2XVYCC_CT		0x140
++#define HDMI_CORE_SYS_R2Y_COEFF_LOW		0x144
++#define HDMI_CORE_SYS_R2Y_COEFF_UP		0x148
++#define HDMI_CORE_SYS_G2Y_COEFF_LOW		0x14C
++#define HDMI_CORE_SYS_G2Y_COEFF_UP		0x150
++#define HDMI_CORE_SYS_B2Y_COEFF_LOW		0x154
++#define HDMI_CORE_SYS_B2Y_COEFF_UP		0x158
++#define HDMI_CORE_SYS_R2CB_COEFF_LOW		0x15C
++#define HDMI_CORE_SYS_R2CB_COEFF_UP		0x160
++#define HDMI_CORE_SYS_G2CB_COEFF_LOW		0x164
++#define HDMI_CORE_SYS_G2CB_COEFF_UP		0x168
++#define HDMI_CORE_SYS_B2CB_COEFF_LOW		0x16C
++#define HDMI_CORE_SYS_B2CB_COEFF_UP		0x170
++#define HDMI_CORE_SYS_R2CR_COEFF_LOW		0x174
++#define HDMI_CORE_SYS_R2CR_COEFF_UP		0x178
++#define HDMI_CORE_SYS_G2CR_COEFF_LOW		0x17C
++#define HDMI_CORE_SYS_G2CR_COEFF_UP		0x180
++#define HDMI_CORE_SYS_B2CR_COEFF_LOW		0x184
++#define HDMI_CORE_SYS_B2CR_COEFF_UP		0x188
++#define HDMI_CORE_SYS_RGB_OFFSET_LOW		0x18C
++#define HDMI_CORE_SYS_RGB_OFFSET_UP		0x190
++#define HDMI_CORE_SYS_Y_OFFSET_LOW		0x194
++#define HDMI_CORE_SYS_Y_OFFSET_UP		0x198
++#define HDMI_CORE_SYS_CBCR_OFFSET_LOW		0x19C
++#define HDMI_CORE_SYS_CBCR_OFFSET_UP		0x1A0
+ #define HDMI_CORE_SYS_INTR_STATE		0x1C0
+ #define HDMI_CORE_SYS_INTR1			0x1C4
+ #define HDMI_CORE_SYS_INTR2			0x1C8
+ #define HDMI_CORE_SYS_INTR3			0x1CC
+ #define HDMI_CORE_SYS_INTR4			0x1D0
+-#define HDMI_CORE_SYS_UMASK1			0x1D4
++#define HDMI_CORE_SYS_INTR_UNMASK1		0x1D4
++#define HDMI_CORE_SYS_INTR_UNMASK2		0x1D8
++#define HDMI_CORE_SYS_INTR_UNMASK3		0x1DC
++#define HDMI_CORE_SYS_INTR_UNMASK4		0x1E0
++#define HDMI_CORE_SYS_INTR_CTRL			0x1E4
+ #define HDMI_CORE_SYS_TMDS_CTRL			0x208
  
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->  arch/arm/mach-omap2/display.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
-> index ff37be1..03a0516 100644
-> --- a/arch/arm/mach-omap2/display.c
-> +++ b/arch/arm/mach-omap2/display.c
-> @@ -400,7 +400,7 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
->  
->  	/* Create devices for DPI and SDI */
->  
-> -	pdev = create_simple_dss_pdev("omapdss_dpi", -1,
-> +	pdev = create_simple_dss_pdev("omapdss_dpi", 0,
->  			board_data, sizeof(*board_data), dss_pdev);
->  	if (IS_ERR(pdev)) {
->  		pr_err("Could not build platform_device for omapdss_dpi\n");
-> @@ -408,7 +408,7 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
->  	}
->  
->  	if (cpu_is_omap34xx()) {
-> -		pdev = create_simple_dss_pdev("omapdss_sdi", -1,
-> +		pdev = create_simple_dss_pdev("omapdss_sdi", 0,
->  				board_data, sizeof(*board_data), dss_pdev);
->  		if (IS_ERR(pdev)) {
->  			pr_err("Could not build platform_device for omapdss_sdi\n");
-> -- 
-> 1.8.1.2
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ /* value definitions for HDMI_CORE_SYS_SYS_CTRL1 fields */
+-- 
+1.8.1.2
+

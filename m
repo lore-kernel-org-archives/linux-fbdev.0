@@ -1,332 +1,95 @@
-From: Hans Verkuil <hverkuil@xs4all.nl>
-Date: Wed, 11 Sep 2013 13:48:19 +0000
-Subject: Re: [PATCH/RFC v3 06/19] video: display: OF support
-Message-Id: <523074A3.407@xs4all.nl>
+From: Daniel Stone <daniels@collabora.com>
+Date: Sat, 14 Sep 2013 21:33:51 +0000
+Subject: Re: [Linaro-mm-sig] [RFC 0/1] drm/pl111: Initial drm/kms driver for pl111
+Message-Id: <1379194431.2978.22.camel@nightslugs>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376089398-13322-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com> <1376089398-13322-7-git-send-email-laurent.pinchart+renesas@ideasonboard.com> <1378304498.5721.42.camel@pizza.hi.pengutronix.de> <2263372.8nCBHctlWT@avalon>
-In-Reply-To: <2263372.8nCBHctlWT@avalon>
+References: <1374772648-19151-1-git-send-email-tom.cooksey@arm.com>
+		<CAF6AEGtspnhSGNM4_QQubVfOkZ1Gh1-Z3iyHOLBPVWuqRy81ew@mail.gmail.com>
+		<51f29ccd.f014b40a.34cc.ffffca2aSMTPIN_ADDED_BROKEN@mx.google.com>
+		<CAF6AEGvFPGueM_LHVij9KFzM6NJySHCzmaLstuzZkK5GwP+6gQ@mail.gmail.com>
+		<51ffdc7e.06b8b40a.2cc8.0fe0SMTPIN_ADDED_BROKEN@mx.google.com>
+	 <CAF6AEGsyKk_G-R-OX_YcgYFDgTEmCy9Vf2LV1pAOV0452QKSww@mail.gmail.com>
+	 <000101ce9298$8ce44ee0$a6aceca0$@cooksey@arm.com>
+In-Reply-To: <000101ce9298$8ce44ee0$a6aceca0$@cooksey@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Philipp Zabel <p.zabel@pengutronix.de>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, sylvester.nawrocki@gmail.com, sakari.ailus@iki.fi
+To: Tom Cooksey <tom.cooksey@arm.com>
+Cc: 'Rob Clark' <robdclark@gmail.com>, linux-fbdev@vger.kernel.org, Pawel Moll <Pawel.Moll@arm.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
 
+Hi,
 
+On Tue, 2013-08-06 at 12:31 +0100, Tom Cooksey wrote:
+> > >> On Fri, Jul 26, 2013 at 11:58 AM, Tom Cooksey <tom.cooksey@arm.com>
+> > >> wrote:
+> > that was part of the reason to punt this problem to userspace ;-)
+> >
+> > In practice, the kernel drivers doesn't usually know too much about
+> > the dimensions/format/etc.. that is really userspace level knowledge.
+> > There are a few exceptions when the kernel needs to know how to setup
+> > GTT/etc for tiled buffers, but normally this sort of information is up
+> > at the next level up (userspace, and drm_framebuffer in case of
+> > scanout).  Userspace media frameworks like GStreamer already have a
+> > concept of format/caps negotiation.  For non-display<->gpu sharing, I
+> > think this is probably where this sort of constraint negotiation
+> > should be handled.
 
-On 09/11/2013 01:33 PM, Laurent Pinchart wrote:
-> Hi Philipp,
+Egads.  GStreamer's caps negotiation is already close to unbounded time;
+seems like most of the optimisation work that goes into it these days is
+all about _reducing_ the complexity of caps negotiation!
+
+> I agree that user-space will know which devices will access the buffer
+> and thus can figure out at least a common pixel format.
+
+Hm, are you sure about that? The answer is yes for 'userspace' as a
+broad handwave, but not necessarily for individual processes.  Take, for
+instance, media decode through GStreamer, being displayed by Wayland
+using a KMS plane/overlay/sprite/cursor/etc.  The media player knows
+that the buffers are coming from the decode engine, and Wayland knows
+that the buffers are going to a KMS plane, but neither of them knows the
+full combination of the two.
+
+Though this kinda feeds into an idea I've been kicking around for a
+while, which is an 'optimal hint' mechanism in the Wayland protocol.  So
+for our hypothetical dmabuf-using protocol, we'd start off with buffers
+which satisfied all the constraints of our media decode engine, but
+perhaps just the GPU rather than display controller.  At this point,
+we'd note that we could place the video in a plane if only the buffers
+were better-allocated, and send an event to the client letting it know
+how to tweak its buffer allocation for more optimal display.
+
+But ...
+
+> Though I'm not
+> so sure userspace can figure out more low-level details like alignment
+> and placement in physical memory, etc.
 > 
-> On Wednesday 04 September 2013 16:21:38 Philipp Zabel wrote:
->> Am Samstag, den 10.08.2013, 01:03 +0200 schrieb Laurent Pinchart:
->>> Extend the notifier with DT node matching support, and add helper
->>> functions to build the notifier and link entities based on a graph
->>> representation in DT.
->>>
->>> Signed-off-by: Laurent Pinchart
->>> <laurent.pinchart+renesas@ideasonboard.com>
->>> ---
->>>
->>>  drivers/video/display/display-core.c     | 334 ++++++++++++++++++++++++++
->>>  drivers/video/display/display-notifier.c | 187 +++++++++++++++++
->>>  include/video/display.h                  |  45 +++++
->>>  3 files changed, 566 insertions(+)
->>>
->>> diff --git a/drivers/video/display/display-core.c
->>> b/drivers/video/display/display-core.c index c3b47d3..328ead7 100644
->>> --- a/drivers/video/display/display-core.c
->>> +++ b/drivers/video/display/display-core.c
->>
->> [...]
->>
->>> @@ -420,6 +599,161 @@ int display_entity_link_graph(struct device *dev,
->>> struct list_head *entities)> 
->>>  }
->>>  EXPORT_SYMBOL_GPL(display_entity_link_graph);
->>>
->>> +#ifdef CONFIG_OF
->>> +
->>> +static int display_of_entity_link_entity(struct device *dev,
->>> +					 struct display_entity *entity,
->>> +					 struct list_head *entities,
->>> +					 struct display_entity *root)
->>> +{
->>> +	u32 link_flags = MEDIA_LNK_FL_IMMUTABLE | MEDIA_LNK_FL_ENABLED;
->>> +	const struct device_node *node = entity->dev->of_node;
->>
->> the current device tree matching implementation only allows one display
->> entity per linux device. How about adding an of_node pointer to struct
->> display_entity directly and allow multiple display entity nodes below in a
->> single device node in the device tree?
-> 
-> That's a very good point. We had a similar issues in V4L2, with sensors that 
-> would create several entities. However, in those cases, the sensors would be 
-> connected to the rest of the pipeline through a single entity :
-> 
-> Sensor Entity 1 -> ... -> Sensor Entity N -> V4L2 pipeline ...
-> 
-> The core code thus had to care about a single sensor entity when building the 
-> pipeline. We could solve the problem in a similar way for panels, but encoders 
-> need a more elaborate solution.
+> Anyway, assuming user-space can figure out how a buffer should be 
+> stored in memory, how does it indicate this to a kernel driver and 
+> actually allocate it? Which ioctl on which device does user-space
+> call, with what parameters? Are you suggesting using something like
+> ION which exposes the low-level details of how buffers are laid out in
+> physical memory to userspace? If not, what?
 
-Why? Sorry, I don't see why an encoder is different in this respect than a panel.
-I'm sure I'm missing something here.
+... this is still rather unresolved. ;)
 
-> 
-> I see (at least) two possibilities here, either explicitly describing all 
-> entities that make the device in DT (as you have proposed below), or creating 
-> a hierarchy of entities, with parent entities that can contain several child 
-> entities. I've CC'ed Guennadi, Hans, Sylwester and Sakari to get their opinion 
-> on the matter.
+Cheers,
+Daniel
 
-I think the way this is done today in complex devices is that the driver just
-exposes itself as a single sub-device, but internally it has its own pipeline of
-sub-devices. The only one that I know of (platform/s5p-tv/hdmi_drv) doesn't expose
-them to a media controller, they are completely hidden inside the hdmi driver.
-
-The ability to support hierarchies of entities would be very nice. However, I
-don't know how much work that would be to implement and if it is worth the
-effort.
-
-Regards,
-
-	Hans
 
 > 
->> lvds-encoder {
->> 	channel@0 {
+> Cheers,
 > 
-> If I understand this correctly, your LVDS encoder has two independent 
-> channels. In the general case a device made of multiple entities might have 
-> those entities chained, so "channel" might not be the best term. "entity" 
-> might be a better choice.
+> Tom
 > 
->> 		port@0 {
->> 			lvds0_input: endpoint {
->> 			};
->> 		};
->> 		port@1 {
->> 			lvds0_output: endpoint {
->> 			};
->> 		};
->> 	};
->> 	channel@1 {
->> 		port@0 {
->> 			lvds1_input: endpoint {
->> 			};
->> 		};
->> 		lvds1: port@1 {
->> 			lvds1_output: endpoint {
->> 			};
->> 		};
->> 	};
->> };
->>
->>> +	struct media_entity *local = &entity->entity;
->>> +	struct device_node *ep = NULL;
->>> +	int ret = 0;
->>> +
->>> +	dev_dbg(dev, "creating links for entity %s\n", local->name);
->>> +
->>> +	while (1) {
->>> +		struct media_entity *remote = NULL;
->>> +		struct media_pad *remote_pad;
->>> +		struct media_pad *local_pad;
->>> +		struct display_of_link link;
->>> +		struct display_entity *ent;
->>> +		struct device_node *next;
->>> +
->>> +		/* Get the next endpoint and parse its link. */
->>> +		next = display_of_get_next_endpoint(node, ep);
->>> +		if (next = NULL)
->>> +			break;
->>> +
->>> +		of_node_put(ep);
->>> +		ep = next;
->>> +
->>> +		dev_dbg(dev, "processing endpoint %s\n", ep->full_name);
->>> +
->>> +		ret = display_of_parse_link(ep, &link);
->>> +		if (ret < 0) {
->>> +			dev_err(dev, "failed to parse link for %s\n",
->>> +				ep->full_name);
->>> +			continue;
->>> +		}
->>> +
->>> +		/* Skip source pads, they will be processed from the other end of
->>> +		 * the link.
->>> +		 */
->>> +		if (link.local_port >= local->num_pads) {
->>> +			dev_err(dev, "invalid port number %u on %s\n",
->>> +				link.local_port, link.local_node->full_name);
->>> +			display_of_put_link(&link);
->>> +			ret = -EINVAL;
->>> +			break;
->>> +		}
->>> +
->>> +		local_pad = &local->pads[link.local_port];
->>> +
->>> +		if (local_pad->flags & MEDIA_PAD_FL_SOURCE) {
->>> +			dev_dbg(dev, "skipping source port %s:%u\n",
->>> +				link.local_node->full_name, link.local_port);
->>> +			display_of_put_link(&link);
->>> +			continue;
->>> +		}
->>> +
->>> +		/* Find the remote entity. If not found, just skip the link as
->>> +		 * it goes out of scope of the entities handled by the notifier.
->>> +		 */
->>> +		list_for_each_entry(ent, entities, list) {
->>> +			if (ent->dev->of_node = link.remote_node) {
->>> +				remote = &ent->entity;
->>> +				break;
->>> +			}
->>> +		}
->>> +
->>> +		if (root->dev->of_node = link.remote_node)
->>> +			remote = &root->entity;
->>> +
->>> +		if (remote = NULL) {
->>> +			dev_dbg(dev, "no entity found for %s\n",
->>> +				link.remote_node->full_name);
->>> +			display_of_put_link(&link);
->>> +			continue;
->>> +		}
->>> +
->>> +		if (link.remote_port >= remote->num_pads) {
->>> +			dev_err(dev, "invalid port number %u on %s\n",
->>> +				link.remote_port, link.remote_node->full_name);
->>> +			display_of_put_link(&link);
->>> +			ret = -EINVAL;
->>> +			break;
->>> +		}
->>> +
->>> +		remote_pad = &remote->pads[link.remote_port];
->>> +
->>> +		display_of_put_link(&link);
->>> +
->>> +		/* Create the media link. */
->>> +		dev_dbg(dev, "creating %s:%u -> %s:%u link\n",
->>> +			remote->name, remote_pad->index,
->>> +			local->name, local_pad->index);
->>> +
->>> +		ret = media_entity_create_link(remote, remote_pad->index,
->>> +					       local, local_pad->index,
->>> +					       link_flags);
->>> +		if (ret < 0) {
->>> +			dev_err(dev,
->>> +				"failed to create %s:%u -> %s:%u link\n",
->>> +				remote->name, remote_pad->index,
->>> +				local->name, local_pad->index);
->>> +			break;
->>> +		}
->>> +	}
->>> +
->>> +	of_node_put(ep);
->>> +	return ret;
->>> +}
->>
->> [...]
->>
->> For example like this:
->>
->> diff --git a/drivers/video/display/display-core.c
->> b/drivers/video/display/display-core.c index 7910c23..a04feed 100644
->> --- a/drivers/video/display/display-core.c
->> +++ b/drivers/video/display/display-core.c
->> @@ -302,6 +302,9 @@ int display_entity_init(struct display_entity *entity,
->> unsigned int num_sinks, kref_init(&entity->ref);
->>  	entity->state = DISPLAY_ENTITY_STATE_OFF;
->>
->> +	if (!entity->of_node && entity->dev)
->> +		entity->of_node = entity->dev->of_node;
->> +
->>  	num_pads = num_sinks + num_sources;
->>  	pads = kzalloc(sizeof(*pads) * num_pads, GFP_KERNEL);
->>  	if (pads = NULL)
->> @@ -665,7 +668,7 @@ static int display_of_entity_link_entity(struct device
->> *dev, struct display_entity *root)
->>  {
->>  	u32 link_flags = MEDIA_LNK_FL_IMMUTABLE | MEDIA_LNK_FL_ENABLED;
->> -	const struct device_node *node = entity->dev->of_node;
->> +	const struct device_node *node = entity->of_node;
->>  	struct media_entity *local = &entity->entity;
->>  	struct device_node *ep = NULL;
->>  	int num_sink, ret = 0;
->> @@ -727,13 +730,13 @@ static int display_of_entity_link_entity(struct device
->> *dev, * it goes out of scope of the entities handled by the notifier. */
->>  		list_for_each_entry(ent, entities, list) {
->> -			if (ent->dev->of_node = link.remote_node) {
->> +			if (ent->of_node = link.remote_node) {
->>  				remote = &ent->entity;
->>  				break;
->>  			}
->>  		}
->>
->> -		if (root && root->dev->of_node = link.remote_node)
->> +		if (root && root->of_node = link.remote_node)
->>  			remote = &root->entity;
->>
->>  		if (remote = NULL) {
->> diff --git a/drivers/video/display/display-notifier.c
->> b/drivers/video/display/display-notifier.c index a3998c7..d0da6e5 100644
->> --- a/drivers/video/display/display-notifier.c
->> +++ b/drivers/video/display/display-notifier.c
->> @@ -28,28 +28,30 @@ static DEFINE_MUTEX(display_entity_mutex);
->>   * Notifiers
->>   */
->>
->> -static bool match_platform(struct device *dev,
->> +static bool match_platform(struct display_entity *entity,
->>  			   struct display_entity_match *match)
->>  {
->>  	pr_debug("%s: matching device '%s' with name '%s'\n", __func__,
->> -		 dev_name(dev), match->match.platform.name);
->> +		 dev_name(entity->dev), match->match.platform.name);
->>
->> -	return !strcmp(match->match.platform.name, dev_name(dev));
->> +	return !strcmp(match->match.platform.name, dev_name(entity->dev));
->>  }
->>
->> -static bool match_dt(struct device *dev, struct display_entity_match
->> *match) +static bool match_dt(struct display_entity *entity,
->> +		     struct display_entity_match *match)
->>  {
->>  	pr_debug("%s: matching device node '%s' with node '%s'\n", __func__,
->> -		 dev->of_node->full_name, match->match.dt.node->full_name);
->> +		 entity->of_node->full_name, match->match.dt.node->full_name);
->>
->> -	return match->match.dt.node = dev->of_node;
->> +	return match->match.dt.node = entity->of_node;
->>  }
->>
->>  static struct display_entity_match *
->>  display_entity_notifier_match(struct display_entity_notifier *notifier,
->>  			      struct display_entity *entity)
->>  {
->> -	bool (*match_func)(struct device *, struct display_entity_match *);
->> +	bool (*match_func)(struct display_entity *,
->> +			   struct display_entity_match *);
->>  	struct display_entity_match *match;
->>
->>  	pr_debug("%s: matching entity '%s' (ptr 0x%p dev '%s')\n", __func__,
->> @@ -66,7 +68,7 @@ display_entity_notifier_match(struct
->> display_entity_notifier *notifier, break;
->>  		}
->>
->> -		if (match_func(entity->dev, match))
->> +		if (match_func(entity, match))
->>  			return match;
->>  	}
->>
->> diff --git a/include/video/display.h b/include/video/display.h
->> index 4c402bee..d1f8833 100644
->> --- a/include/video/display.h
->> +++ b/include/video/display.h
->> @@ -228,6 +228,7 @@ struct display_entity {
->>  	struct list_head list;
->>  	struct device *dev;
->>  	struct module *owner;
->> +	struct device_node *of_node;
->>  	struct kref ref;
->>
->>  	char name[32];
+> 
+> 
+> 
+> 
+> 
+> _______________________________________________
+> Linaro-mm-sig mailing list
+> Linaro-mm-sig@lists.linaro.org
+> http://lists.linaro.org/mailman/listinfo/linaro-mm-sig
+
+

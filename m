@@ -1,53 +1,63 @@
-From: Jean Delvare <khali@linux-fr.org>
-Date: Fri, 13 Sep 2013 19:51:50 +0000
-Subject: [PATCH v2] video/matrox/matroxfb_maven: Use module_i2c_driver to register driver
-Message-Id: <20130913215150.16089f46@endymion.delvare>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 16 Sep 2013 10:37:34 +0000
+Subject: Re: [PATCH v2] video/matrox/matroxfb_maven: Use module_i2c_driver to register driver
+Message-Id: <5236DF6E.4060707@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Dm9uQscrqLNPF0tom01a0RxjmFbqonNpC"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <20130913215150.16089f46@endymion.delvare>
+In-Reply-To: <20130913215150.16089f46@endymion.delvare>
 To: linux-fbdev@vger.kernel.org
 
-From: Peter Huewe <peterhuewe@gmx.de>
+--Dm9uQscrqLNPF0tom01a0RxjmFbqonNpC
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Removing some boilerplate by using module_i2c_driver instead of calling
-register and unregister in the otherwise empty init/exit functions.
-Also removed a useless comment as suggested by Jean Delvare.
+On 13/09/13 22:51, Jean Delvare wrote:
+> From: Peter Huewe <peterhuewe@gmx.de>
+>=20
+> Removing some boilerplate by using module_i2c_driver instead of calling=
 
-Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
-Looks like this patch got lost so I am resending it.
+> register and unregister in the otherwise empty init/exit functions.
+> Also removed a useless comment as suggested by Jean Delvare.
+>=20
+> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> ---
+> Looks like this patch got lost so I am resending it.
+>=20
 
- drivers/video/matrox/matroxfb_maven.c |   14 +-------------
- 1 file changed, 1 insertion(+), 13 deletions(-)
+Thanks, applying for 3.13.
 
---- linux-3.12-rc0.orig/drivers/video/matrox/matroxfb_maven.c	2013-09-13 21:48:12.585102831 +0200
-+++ linux-3.12-rc0/drivers/video/matrox/matroxfb_maven.c	2013-09-13 21:48:28.843103072 +0200
-@@ -1295,19 +1295,7 @@ static struct i2c_driver maven_driver={
- 	.id_table	= maven_id,
- };
- 
--static int __init matroxfb_maven_init(void)
--{
--	return i2c_add_driver(&maven_driver);
--}
--
--static void __exit matroxfb_maven_exit(void)
--{
--	i2c_del_driver(&maven_driver);
--}
--
-+module_i2c_driver(maven_driver);
- MODULE_AUTHOR("(c) 1999-2002 Petr Vandrovec <vandrove@vc.cvut.cz>");
- MODULE_DESCRIPTION("Matrox G200/G400 Matrox MGA-TVO driver");
- MODULE_LICENSE("GPL");
--module_init(matroxfb_maven_init);
--module_exit(matroxfb_maven_exit);
--/* we do not have __setup() yet */
+ Tomi
 
 
--- 
-Jean Delvare
+
+
+--Dm9uQscrqLNPF0tom01a0RxjmFbqonNpC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSNt9uAAoJEPo9qoy8lh71ul8QAJt16lvy8ITC6meL1b1yHWLX
+EdvfT90V5qFjNeo6XL+earhZN0Vy6MlPIwZrLz66uA8XSDU2qXpvfiVYDVKXV/kp
+GCjJwYHDqdLej59NtWtLqzvjZhgd0q8dut1q9NRyAu2LmraF75yfCF8fA8Q2ImIn
+2zl6sWh2fPyuhQTR99FGcAmmRH4OvEK9FPEjF/VGRQCqc5ov6I0VCk3hBr7pkX4k
+zd0u3fddkR5iAl4R/cnXMIncezMrUaVH7O8ptC7cxwQhjwfwLh6HCgfNqyCUbLA2
+nUBvtQRRTCAjiOcGABmDMZOhShm1x+gnlKwXCzZ7gGzBCPkq0FeK1x2mbGm84Buu
+U1hlK1HzpeREWkN/miie2q9j/Uyz1VTPzN3iq8rEt8XLhfJEdr5M85okeib3bMHH
+WRZ4TQMQxUGnR/AKlHajgoo7lkXixqqwcxJbWEIZxJGOm3SCJsTOGzMYLFIRkbDN
+xn+oIQXC+A9QSv+2mAAoqo6PjARfx+hHUdlqNDdBThS7kJy8psXo5wr/CXy/CPIy
+5XyNbO4cxOJZVQ4PpR+KKyMnhTBB6Yw0GqqVotK8E8l2xfsY73jIMXrBwvGO6b9B
+wnC6PmwSLcT1M91CsY/yXg8gLHLPpW+p+bDpXWCf7uAztZXZ0wFLoTwRL4tS5dTY
+SPjnaqXajpM+Ad2E15g8
+=Wlp7
+-----END PGP SIGNATURE-----
+
+--Dm9uQscrqLNPF0tom01a0RxjmFbqonNpC--

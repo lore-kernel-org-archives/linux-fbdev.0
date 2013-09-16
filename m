@@ -1,54 +1,59 @@
-From: Jon Mason <jdmason@kudzu.us>
-Date: Wed, 11 Sep 2013 21:35:05 +0000
-Subject: [PATCH 1/2] aty128fb: Use pci_dev pm_cap
-Message-Id: <1378935306-16814-1-git-send-email-jdmason@kudzu.us>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 16 Sep 2013 09:26:45 +0000
+Subject: Re: [PATCH 1/2] aty128fb: Use pci_dev pm_cap
+Message-Id: <5236CED5.6030203@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="546fIHMCau8WNTwVinARJqjl7OR66Kj1R"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1378935306-16814-1-git-send-email-jdmason@kudzu.us>
+In-Reply-To: <1378935306-16814-1-git-send-email-jdmason@kudzu.us>
 To: linux-fbdev@vger.kernel.org
 
-Use the already existing pm_cap variable in struct pci_dev for
-determining the power management offset.  This saves the driver from
-having to keep track of an extra variable.
+--546fIHMCau8WNTwVinARJqjl7OR66Kj1R
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jon Mason <jdmason@kudzu.us>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/aty/aty128fb.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+On 12/09/13 00:35, Jon Mason wrote:
+> Use the already existing pm_cap variable in struct pci_dev for
+> determining the power management offset.  This saves the driver from
+> having to keep track of an extra variable.
+>=20
+> Signed-off-by: Jon Mason <jdmason@kudzu.us>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> ---
+>  drivers/video/aty/aty128fb.c |    4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
-index a4dfe8c..b5edb6f 100644
---- a/drivers/video/aty/aty128fb.c
-+++ b/drivers/video/aty/aty128fb.c
-@@ -413,7 +413,6 @@ struct aty128fb_par {
- 	int blitter_may_be_busy;
- 	int fifo_slots;                 /* free slots in FIFO (64 max) */
- 
--	int	pm_reg;
- 	int crt_on, lcd_on;
- 	struct pci_dev *pdev;
- 	struct fb_info *next;
-@@ -2016,7 +2015,6 @@ static int aty128_init(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	aty128_init_engine(par);
- 
--	par->pm_reg = pdev->pm_cap;
- 	par->pdev = pdev;
- 	par->asleep = 0;
- 	par->lock_blank = 0;
-@@ -2397,7 +2395,7 @@ static void aty128_set_suspend(struct aty128fb_par *par, int suspend)
- 	u32	pmgt;
- 	struct pci_dev *pdev = par->pdev;
- 
--	if (!par->pm_reg)
-+	if (!par->pdev->pm_cap)
- 		return;
- 		
- 	/* Set the chip into the appropriate suspend mode (we use D2,
--- 
-1.7.10.4
+Thanks. Applied this, and the second patch, for 3.13.
 
+ Tomi
+
+
+
+--546fIHMCau8WNTwVinARJqjl7OR66Kj1R
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSNs7VAAoJEPo9qoy8lh71GO8P/jHxvV1wilHXNck3uJqlN4Zl
+3pWXZTeD26Gwso6oOv2Bk4wn1NvQVckrN/brzv5L/l4VbVVBl8+J96iKgRyodOXs
+3Tj9KNXpr9Dis2QxDLoQMxr6s2VWMMvcwoakGJ9vupjGGw3R2n+nBFptvRmUhUky
+wH0XCheloGmwfmDJ81sXfg9lHxqvFm/D4kkwo2fgJvrEOQq+8pADD5T8X1yFw7OX
+fPc4pXsRiSYbW/lEHr9Rde63O4RYm28c/86PmrKm8TpivXysJQHOkwbnFenkTozh
+xmpCxLfN4yfjevpaKBynO9ihY7QpkuztpjGgEHPBf7k0SzKcw6brzTX6MpJmb5oR
+7bWarxpbLtCPMiKlccWymaSqDfTaFVXNLPILe6xPa1L4Dlfav9DNuB51vrZMk/db
+f4Bm/hcnq4ELtxQmgE2DNIXc10PEXMVTxN8NGuo0dDNuXxj32yGe/k1LpZgS4UNk
+Xzs5L/UaHyge9ANE0R7FJL0dHZD3o7UUrrRFWZrsSQUS5FT7DtYa+a4Xr3oxi4oS
+vOttXb2v25WQK23Ctu4Ou/rzSFpM0e/DrD+I2Qd+qG/lgmHDeRKNTmDJqy+m0RVQ
+2v9Equ/rMxJ11TMJunYJVkMn5SqWf8diNoUDpG0EanBgzMbR/27abcZcQbJZQaPf
+TXjSSYxL4JE55fzkKd+l
+=DW11
+-----END PGP SIGNATURE-----
+
+--546fIHMCau8WNTwVinARJqjl7OR66Kj1R--

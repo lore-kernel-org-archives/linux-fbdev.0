@@ -1,52 +1,136 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 21:52:02 +0000
-Subject: [PATCH 27/51] DMA-API: provide a helper to setup DMA masks
-Message-Id: <E1VMm8o-0007iV-Ac@rmk-PC.arm.linux.org.uk>
+From: Pawel Moll <pawel.moll@arm.com>
+Date: Mon, 16 Sep 2013 17:18:54 +0000
+Subject: [PATCH v3 2/2] ARM: vexpress: Add CLCD Device Tree properties
+Message-Id: <1379351934-25415-2-git-send-email-pawel.moll@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-In-Reply-To: <20130919212235.GD12758-l+eeeJia6m9vn6HldHNs0ANdhmdF6hFW@public.gmane.org>
+References: <1379351934-25415-1-git-send-email-pawel.moll@arm.com>
+In-Reply-To: <1379351934-25415-1-git-send-email-pawel.moll@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, b43-dev-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, e1000-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Solarflare linux maintainers <linux-net-drivers-s/n/eUQHGBpZroRs9YW3xA@public.gmane.org>, uclinux-dist-devel-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org
-Cc: Vinod Koul <vinod.koul-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Many drivers contain code such as:
+... for V2M-P1 motherboard CLCD (limited to 640x480 16bpp and using
+dedicated video RAM bank) and for V2P-CA9 (up to 1024x768 16bpp).
 
-	dev->dma_mask = &dev->coherent_dma_mask;
-	dev->coherent_dma_mask = MASK;
-
-Let's move this pattern out of drivers and have the DMA API provide a
-helper for it.  This helper uses dma_set_mask_and_coherent() to allow
-platform issues to be properly dealt with via dma_set_mask()/
-dma_is_supported().
-
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Pawel Moll <pawel.moll@arm.com>
 ---
- include/linux/dma-mapping.h |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+ arch/arm/boot/dts/vexpress-v2m-rs1.dtsi | 22 +++++++++++++++++++++-
+ arch/arm/boot/dts/vexpress-v2m.dtsi     | 22 +++++++++++++++++++++-
+ arch/arm/boot/dts/vexpress-v2p-ca9.dts  | 19 +++++++++++++++++++
+ 3 files changed, 61 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index ec951f9..27d1421 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -111,6 +111,16 @@ static inline int dma_set_mask_and_coherent(struct device *dev, u64 mask)
- 	return rc;
- }
- 
-+/*
-+ * Similar to the above, except it deals with the case where the device
-+ * does not have dev->dma_mask appropriately setup.
-+ */
-+static inline int dma_coerce_mask_and_coherent(struct device *dev, u64 mask)
-+{
-+	dev->dma_mask = &dev->coherent_dma_mask;
-+	return dma_set_mask_and_coherent(dev, mask);
-+}
+diff --git a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
+index ac870fb..8226149 100644
+--- a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
++++ b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
+@@ -233,6 +233,26 @@
+ 				interrupts = <14>;
+ 				clocks = <&v2m_oscclk1>, <&smbclk>;
+ 				clock-names = "clcdclk", "apb_pclk";
 +
- extern u64 dma_get_required_mask(struct device *dev);
++				arm,pl11x,panel-data-pads = <0x300 0x301 0x302 0x303 0x304 0x305 0x306 0x307>,
++							    <0x310 0x311 0x312 0x313 0x314 0x315 0x316 0x317>,
++							    <0x320 0x321 0x322 0x323 0x324 0x325 0x326 0x327>;
++				arm,pl11x,framebuffer-base = <0x18000000 0x00800000>;
++				max-memory-bandwidth = <36864000>; /* Bps, 640x480@60 16bpp */
++				display-timings {
++					native-mode = <&v2m_clcd_timing0>;
++					v2m_clcd_timing0: vga {
++						clock-frequency = <25175000>;
++						hactive = <640>;
++						hback-porch = <40>;
++						hfront-porch = <24>;
++						hsync-len = <96>;
++						vactive = <480>;
++						vback-porch = <32>;
++						vfront-porch = <11>;
++						vsync-len = <2>;
++					};
++				};
+ 			};
+ 		};
  
- static inline unsigned int dma_get_max_seg_size(struct device *dev)
+@@ -282,7 +302,7 @@
+ 				/* CLCD clock */
+ 				compatible = "arm,vexpress-osc";
+ 				arm,vexpress-sysreg,func = <1 1>;
+-				freq-range = <23750000 63500000>;
++				freq-range = <23750000 65000000>;
+ 				#clock-cells = <0>;
+ 				clock-output-names = "v2m:oscclk1";
+ 			};
+diff --git a/arch/arm/boot/dts/vexpress-v2m.dtsi b/arch/arm/boot/dts/vexpress-v2m.dtsi
+index f142036..4befe1c 100644
+--- a/arch/arm/boot/dts/vexpress-v2m.dtsi
++++ b/arch/arm/boot/dts/vexpress-v2m.dtsi
+@@ -232,6 +232,26 @@
+ 				interrupts = <14>;
+ 				clocks = <&v2m_oscclk1>, <&smbclk>;
+ 				clock-names = "clcdclk", "apb_pclk";
++
++				arm,pl11x,panel-data-pads = <0x300 0x301 0x302 0x303 0x304 0x305 0x306 0x307>,
++							    <0x310 0x311 0x312 0x313 0x314 0x315 0x316 0x317>,
++							    <0x320 0x321 0x322 0x323 0x324 0x325 0x326 0x327>;
++				arm,pl11x,framebuffer-base = <0x4c000000 0x00800000>;
++				max-memory-bandwidth = <36864000>; /* Bps, 640x480@60 16bpp */
++				display-timings {
++					native-mode = <&v2m_clcd_timing0>;
++					v2m_clcd_timing0: vga {
++						clock-frequency = <25175000>;
++						hactive = <640>;
++						hback-porch = <40>;
++						hfront-porch = <24>;
++						hsync-len = <96>;
++						vactive = <480>;
++						vback-porch = <32>;
++						vfront-porch = <11>;
++						vsync-len = <2>;
++					};
++				};
+ 			};
+ 		};
+ 
+@@ -281,7 +301,7 @@
+ 				/* CLCD clock */
+ 				compatible = "arm,vexpress-osc";
+ 				arm,vexpress-sysreg,func = <1 1>;
+-				freq-range = <23750000 63500000>;
++				freq-range = <23750000 65000000>;
+ 				#clock-cells = <0>;
+ 				clock-output-names = "v2m:oscclk1";
+ 			};
+diff --git a/arch/arm/boot/dts/vexpress-v2p-ca9.dts b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
+index 62d9b22..5eb68b8 100644
+--- a/arch/arm/boot/dts/vexpress-v2p-ca9.dts
++++ b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
+@@ -73,6 +73,25 @@
+ 		interrupts = <0 44 4>;
+ 		clocks = <&oscclk1>, <&oscclk2>;
+ 		clock-names = "clcdclk", "apb_pclk";
++
++		arm,pl11x,panel-data-pads = <0x300 0x301 0x302 0x303 0x304 0x305 0x306 0x307>,
++					    <0x310 0x311 0x312 0x313 0x314 0x315 0x316 0x317>,
++					    <0x320 0x321 0x322 0x323 0x324 0x325 0x326 0x327>;
++		max-memory-bandwidth = <94371840>; /* Bps, 1024x768@60 16bpp */
++		display-timings {
++			native-mode = <&clcd_timing0>;
++			clcd_timing0: xga {
++				clock-frequency = <63500127>;
++				hactive = <1024>;
++				hback-porch = <152>;
++				hfront-porch = <48>;
++				hsync-len = <104>;
++				vactive = <768>;
++				vback-porch = <23>;
++				vfront-porch = <3>;
++				vsync-len = <4>;
++			};
++		};
+ 	};
+ 
+ 	memory-controller@100e0000 {
 -- 
-1.7.4.4
+1.8.1.2
+
 

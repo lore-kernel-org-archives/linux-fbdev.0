@@ -1,81 +1,60 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 26 Sep 2013 08:45:56 +0000
-Subject: Re: [PATCH] s3fb: fix error return code in s3_pci_probe()
-Message-Id: <5243F444.2090608@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="I5oRBgWOv8NKpNBBIQuat8LTFEVi3BNBc"
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 17 Sep 2013 05:10:19 +0000
+Subject: [PATCH 15/19] video: s1d13xxxfb: use dev_get_platdata()
+Message-Id: <001501ceb364$340fdf40$9c2f9dc0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAPgLHd_wsqGQ2eSnKY6SzGan0fZLZJWyN03A+_aFmaQ51q73AQ@mail.gmail.com>
-In-Reply-To: <CAPgLHd_wsqGQ2eSnKY6SzGan0fZLZJWyN03A+_aFmaQ51q73AQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
---I5oRBgWOv8NKpNBBIQuat8LTFEVi3BNBc
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Use the wrapper function for retrieving the platform data instead of
+accessing dev->platform_data directly. This is a cosmetic change
+to make the code simpler and enhance the readability.
 
-On 23/09/13 18:00, Wei Yongjun wrote:
-> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
->=20
-> Fix to return -EINVAL when virtual vertical size smaller than real
-> instead of 0, as done elsewhere in this function. Also remove dup code.=
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/s1d13xxxfb.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
->=20
-> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
-> ---
->  drivers/video/s3fb.c | 9 +--------
->  1 file changed, 1 insertion(+), 8 deletions(-)
->=20
-> diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
-> index 47ca86c..d838ba8 100644
-> --- a/drivers/video/s3fb.c
-> +++ b/drivers/video/s3fb.c
-> @@ -1336,14 +1336,7 @@ static int s3_pci_probe(struct pci_dev *dev, con=
-st struct pci_device_id *id)
->  			(info->var.bits_per_pixel * info->var.xres_virtual);
->  	if (info->var.yres_virtual < info->var.yres) {
->  		dev_err(info->device, "virtual vertical size smaller than real\n");
-> -		goto err_find_mode;
-> -	}
-> -
-> -	/* maximize virtual vertical size for fast scrolling */
-> -	info->var.yres_virtual =3D info->fix.smem_len * 8 /
-> -			(info->var.bits_per_pixel * info->var.xres_virtual);
-> -	if (info->var.yres_virtual < info->var.yres) {
-> -		dev_err(info->device, "virtual vertical size smaller than real\n");
-> +		rc =3D -EINVAL;
->  		goto err_find_mode;
->  	}
-> =20
->=20
+diff --git a/drivers/video/s1d13xxxfb.c b/drivers/video/s1d13xxxfb.c
+index 05c2dc3..1399a46 100644
+--- a/drivers/video/s1d13xxxfb.c
++++ b/drivers/video/s1d13xxxfb.c
+@@ -777,8 +777,8 @@ static int s1d13xxxfb_probe(struct platform_device *pdev)
+ 	printk(KERN_INFO "Epson S1D13XXX FB Driver\n");
+ 
+ 	/* enable platform-dependent hardware glue, if any */
+-	if (pdev->dev.platform_data)
+-		pdata = pdev->dev.platform_data;
++	if (dev_get_platdata(&pdev->dev))
++		pdata = dev_get_platdata(&pdev->dev);
+ 
+ 	if (pdata && pdata->platform_init_video)
+ 		pdata->platform_init_video();
+@@ -923,8 +923,8 @@ static int s1d13xxxfb_suspend(struct platform_device *dev, pm_message_t state)
+ 	lcd_enable(s1dfb, 0);
+ 	crt_enable(s1dfb, 0);
+ 
+-	if (dev->dev.platform_data)
+-		pdata = dev->dev.platform_data;
++	if (dev_get_platdata(&dev->dev))
++		pdata = dev_get_platdata(&dev->dev);
+ 
+ #if 0
+ 	if (!s1dfb->disp_save)
+@@ -973,8 +973,8 @@ static int s1d13xxxfb_resume(struct platform_device *dev)
+ 	while ((s1d13xxxfb_readreg(s1dfb, S1DREG_PS_STATUS) & 0x01))
+ 		udelay(10);
+ 
+-	if (dev->dev.platform_data)
+-		pdata = dev->dev.platform_data;
++	if (dev_get_platdata(&dev->dev))
++		pdata = dev_get_platdata(&dev->dev);
+ 
+ 	if (s1dfb->regs_save) {
+ 		/* will write RO regs, *should* get away with it :) */
+-- 
+1.7.10.4
 
-Thanks, queuing for 3.12 fixes.
 
- Tomi
-
-
-
---I5oRBgWOv8NKpNBBIQuat8LTFEVi3BNBc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSQ/REAAoJEPo9qoy8lh71T5UQAKXK4DIkQjJZEB84Jv9kCTWE
-9yFVVGr6Oe0jfhEO+O31Kh7sBqVU04BQhVpK+D2JBE83K4NJx8TW9i8ahEy5GRft
-uIph8BL6BTa50U5CNbUYapf2gryV8yjMs8MVbL2K/03yIj+g9ImI0xeTFCEPRFzO
-DSskOo8HYu93yW312TL89B6bLt4ilS/oV3QqLxmjB1i76TT4/Be1f/Fv+Y8JvTju
-uk0x0qAF4UAkPu2XQBlIVS1WUJJupmaQW6PZ8RyDo3TH7rZXIO/kS+Lsy14CvKVI
-eRtvYNtenF8pftv3+VbNlYhZsmY17fTtv2G0dcQOyVmQKYZDwDWAQEn91r23U3WU
-C4MNKIANn6EL9VVYgJCUeojkzR5eZ31oSscVT7x/FRWDme+4tM9/hFmR0Xu/pYL4
-YbAJiPgJaxKhZCez6rBrjwXFJQH8Tk7VUEv4DUUXmUfjwVFR3gkA9hBhLL9O2W7u
-emT0ZXbW0EihliVQbgdsBO3Y/NctsS7H4h4CTcjYEQ/vb867dE2BPoBp2a8B36Pb
-40K3ePDlQdt/tIkwRV3pMuiWabY7jzVhv20Vtcd5avp0zYMRrzUPe1bPUDIOZ7Rf
-9hSKrYwKJvkiIur1MUugSHNtQchOfOjfvHB1SuJvLMY6CB9UvdBu1+sh+GWqd1It
-g3PhNglse6H7bfDC7F3/
-=g5j/
------END PGP SIGNATURE-----
-
---I5oRBgWOv8NKpNBBIQuat8LTFEVi3BNBc--

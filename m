@@ -1,93 +1,36 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 30 Sep 2013 07:58:15 +0000
-Subject: [PATCH V8 0/3] Generic PHY driver for the Exynos SoC DP PHY
-Message-Id: <000f01cebdb2$d1a20e10$74e62a30$%han@samsung.com>
+Date: Tue, 17 Sep 2013 05:11:55 +0000
+Subject: [PATCH 19/19] video: w100fb: use dev_get_platdata()
+Message-Id: <001901ceb364$6da31970$48e94c50$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Kishon Vijay Abraham I' <kishon@ti.com>
-Cc: 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, 'Kukjin Kim' <kgene.kim@samsung.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Jingoo Han' <jg1.han@samsung.com>
+To: linux-fbdev@vger.kernel.org
 
-This patch series adds a simple driver for the Samsung Exynos SoC
-series DP transmitter PHY, using the generic PHY framework [1].
-Previously the DP PHY used an internal DT node to control the PHY
-power enable bit.
+Use the wrapper function for retrieving the platform data instead of
+accessing dev->platform_data directly. This is a cosmetic change
+to make the code simpler and enhance the readability.
 
-This PATCH v8 follows:
- * PATCH v7, sent on August, 26th 2013
- * PATCH v6, sent on July, 9th 2013
- * PATCH v5, sent on July, 8th 2013
- * PATCH v4, sent on July, 2nd 2013
- * PATCH v3, sent on July, 1st 2013
- * PATCH v2, sent on June, 28th 2013
- * PATCH v1, sent on June, 28th 2013
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/w100fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Changes from v7:
-  * Re-based on git://git.kernel.org/pub/scm/linux/kernel/git/kishon/linux-phy.git next
+diff --git a/drivers/video/w100fb.c b/drivers/video/w100fb.c
+index 7a299e95..2a0437a 100644
+--- a/drivers/video/w100fb.c
++++ b/drivers/video/w100fb.c
+@@ -680,7 +680,7 @@ int w100fb_probe(struct platform_device *pdev)
+ 	par = info->par;
+ 	platform_set_drvdata(pdev, info);
  
-Changes from v6:
-  * Re-based on git://git.kernel.org/pub/scm/linux/kernel/git/kishon/linux-phy.git
-
-Changes from v5:
-  * Re-based on git://gitorious.org/linuxphy/linuxphy.git
-
-Changes from v4:
-  * Marked original bindings as deprecated in 'exynos_dp.txt'
-  * Fixed typo of commit message.
-  * Added Tomasz Figa's Reviewed-by.
-
-Changes from v3:
-  * Added OF dependancy.
-  * Removed redundant local variable 'void __iomem *addr'.
-  * Removed unnecessary dev_set_drvdata().
-  * Added a patch that remove non-DT support for Exynos
-    Display Port driver.
-  * Removed unnecessary 'struct exynos_dp_platdata'.
-  * Kept supporting the original bindings for DT compatibility.
-
-Changes from v2:
-  * Removed redundant spinlock
-  * Removed 'struct phy' from 'struct exynos_dp_video_phy'
-  * Updated 'samsung-phy.txt', instead of creating
-    'samsung,exynos5250-dp-video-phy.txt'.
-  * Removed unnecessary additional specifier from 'phys'
-    DT property.
-  * Added 'phys', 'phy-names' properties to 'exynos_dp.txt' file.
-  * Added Felipe Balbi's Acked-by.
-
-Changes from v1:
-  * Replaced exynos_dp_video_phy_xlate() with of_phy_simple_xlate(),
-    as Kishon Vijay Abraham I guided.
-  * Set the value of phy-cells as 0, because the phy_provider implements
-    only one PHY.
-  * Removed unnecessary header include.
-  * Added '#ifdef CONFIG_OF' and of_match_ptr macro.
-
-This series depends on the generic PHY framework [1]. These patches
-refer to Sylwester Nawrocki's patches about Exynos MIPI [2].
-
-[1] http://www.spinics.net/lists/kernel/msg1609491.html
-[2] http://www.spinics.net/lists/linux-samsung-soc/msg23073.html
-
-Jingoo Han (3):
-  phy: Add driver for Exynos DP PHY
-  video: exynos_dp: remove non-DT support for Exynos Display Port
-  video: exynos_dp: Use the generic PHY driver
-
- .../devicetree/bindings/phy/samsung-phy.txt        |    8 ++
- .../devicetree/bindings/video/exynos_dp.txt        |   17 +--
- drivers/phy/Kconfig                                |    7 ++
- drivers/phy/Makefile                               |    1 +
- drivers/phy/phy-exynos-dp-video.c                  |  111 ++++++++++++++++
- drivers/video/exynos/Kconfig                       |    2 +-
- drivers/video/exynos/exynos_dp_core.c              |  132 ++++++--------------
- drivers/video/exynos/exynos_dp_core.h              |  110 ++++++++++++++++
- drivers/video/exynos/exynos_dp_reg.c               |    2 -
- include/video/exynos_dp.h                          |  131 -------------------
- 10 files changed, 284 insertions(+), 237 deletions(-)
- create mode 100644 drivers/phy/phy-exynos-dp-video.c
- delete mode 100644 include/video/exynos_dp.h
---
+-	inf = pdev->dev.platform_data;
++	inf = dev_get_platdata(&pdev->dev);
+ 	par->chip_id = chip_id;
+ 	par->mach = inf;
+ 	par->fastpll_mode = 0;
+-- 
 1.7.10.4
+
 

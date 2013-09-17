@@ -1,41 +1,65 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 21:51:02 +0000
-Subject: [PATCH 26/51] DMA-API: usb: ohci-sa1111: add a note about DMA masks
-Message-Id: <E1VMm7q-0007iO-68@rmk-PC.arm.linux.org.uk>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 17 Sep 2013 07:18:33 +0000
+Subject: [PATCH 07/11] omapdss: HDMI: add HDMI wrapper IRQ flags
+Message-Id: <1379401597-27222-8-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+References: <1379401597-27222-1-git-send-email-archit@ti.com>
+In-Reply-To: <1379401597-27222-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Add a comment to explain why this driver doesn't call any of the DMA
-API dma_set_mask() functions.
+Add flags for the interrupts present in HDMI wrapper block, these will be used
+to configure HDMI_IRQENABLE_SET/CLEAR and HDMI_IRQSTATUS registers.
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/usb/host/ohci-sa1111.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ drivers/video/omap2/dss/hdmi_phy.c |  3 ---
+ drivers/video/omap2/dss/ti_hdmi.h  | 15 +++++++++++++++
+ 2 files changed, 15 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/usb/host/ohci-sa1111.c b/drivers/usb/host/ohci-sa1111.c
-index 17b2a7d..aa9e127 100644
---- a/drivers/usb/host/ohci-sa1111.c
-+++ b/drivers/usb/host/ohci-sa1111.c
-@@ -185,6 +185,12 @@ static int ohci_hcd_sa1111_probe(struct sa1111_dev *dev)
- 	if (usb_disabled())
- 		return -ENODEV;
+diff --git a/drivers/video/omap2/dss/hdmi_phy.c b/drivers/video/omap2/dss/hdmi_phy.c
+index b79c56b..b7d171c 100644
+--- a/drivers/video/omap2/dss/hdmi_phy.c
++++ b/drivers/video/omap2/dss/hdmi_phy.c
+@@ -17,9 +17,6 @@
+ #include "dss.h"
+ #include "ti_hdmi.h"
  
-+	/*
-+	 * We don't call dma_set_mask_and_coherent() here because the
-+	 * DMA mask has already been appropraitely setup by the core
-+	 * SA-1111 bus code (which includes bug workarounds.)
-+	 */
+-#define HDMI_IRQ_LINK_CONNECT		(1 << 25)
+-#define HDMI_IRQ_LINK_DISCONNECT	(1 << 26)
+-
+ void hdmi_phy_dump(struct hdmi_phy_data *phy, struct seq_file *s)
+ {
+ #define DUMPPHY(r) seq_printf(s, "%-35s %08x\n", #r,\
+diff --git a/drivers/video/omap2/dss/ti_hdmi.h b/drivers/video/omap2/dss/ti_hdmi.h
+index cf096fd..5034080 100644
+--- a/drivers/video/omap2/dss/ti_hdmi.h
++++ b/drivers/video/omap2/dss/ti_hdmi.h
+@@ -49,6 +49,21 @@
+ #define HDMI_WP_AUDIO_CTRL			0x88
+ #define HDMI_WP_AUDIO_DATA			0x8C
+ 
++/* HDMI WP IRQ flags */
 +
- 	hcd = usb_create_hcd(&ohci_sa1111_hc_driver, &dev->dev, "sa1111");
- 	if (!hcd)
- 		return -ENOMEM;
++#define HDMI_IRQ_OCP_TIMEOUT			(1 << 4)
++#define HDMI_IRQ_AUDIO_FIFO_UNDERFLOW		(1 << 8)
++#define HDMI_IRQ_AUDIO_FIFO_OVERFLOW		(1 << 9)
++#define HDMI_IRQ_AUDIO_FIFO_SAMPLE_REQ		(1 << 10)
++#define HDMI_IRQ_VIDEO_VSYNC			(1 << 16)
++#define HDMI_IRQ_VIDEO_FRAME_DONE		(1 << 17)
++#define HDMI_IRQ_PHY_LINE5V_ASSERT		(1 << 24)
++#define HDMI_IRQ_LINK_CONNECT			(1 << 25)
++#define HDMI_IRQ_LINK_DISCONNECT		(1 << 26)
++#define HDMI_IRQ_PLL_LOCK			(1 << 29)
++#define HDMI_IRQ_PLL_UNLOCK			(1 << 30)
++#define HDMI_IRQ_PLL_RECAL			(1 << 31)
++
+ /* HDMI PLL */
+ 
+ #define PLLCTRL_PLL_CONTROL			0x0
 -- 
-1.7.4.4
+1.8.1.2
 

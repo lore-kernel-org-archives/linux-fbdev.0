@@ -1,44 +1,41 @@
-From: Archit Taneja <archit@ti.com>
-Date: Fri, 13 Sep 2013 10:41:32 +0000
-Subject: [PATCH 1/7] OMAPDSS: HDMI: OMAP4: Complete register definitions for wrapper
-Message-Id: <1379068178-17312-2-git-send-email-archit@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 17 Sep 2013 05:06:39 +0000
+Subject: [PATCH 01/19] video: atmel_lcdfb: use dev_get_platdata()
+Message-Id: <001101ceb363$b0f5b530$12e11f90$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1379068178-17312-1-git-send-email-archit@ti.com>
-In-Reply-To: <1379068178-17312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Ricardo Neri <ricardo.neri@ti.com>, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-From: Ricardo Neri <ricardo.neri@ti.com>
+Use the wrapper function for retrieving the platform data instead of
+accessing dev->platform_data directly. This is a cosmetic change
+to make the code simpler and enhance the readability.
 
-Add definitions for missing registers in the HDMI wrapper. Also, order
-the registers by offset to improve readability.
+Also, unnecessary casting from return value that is a void pointer
+is removed.
 
-Signed-off-by: Ricardo Neri <ricardo.neri@ti.com>
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/video/atmel_lcdfb.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
-index 6ef2f92..469d436 100644
---- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
-+++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
-@@ -31,9 +31,11 @@
- #define HDMI_WP_SYSCONFIG			0x10
- #define HDMI_WP_IRQSTATUS_RAW			0x24
- #define HDMI_WP_IRQSTATUS			0x28
--#define HDMI_WP_PWR_CTRL			0x40
- #define HDMI_WP_IRQENABLE_SET			0x2C
- #define HDMI_WP_IRQENABLE_CLR			0x30
-+#define HDMI_WP_IRQWAKEEN			0x34
-+#define HDMI_WP_PWR_CTRL			0x40
-+#define HDMI_WP_DEBOUNCE			0x44
- #define HDMI_WP_VIDEO_CFG			0x50
- #define HDMI_WP_VIDEO_SIZE			0x60
- #define HDMI_WP_VIDEO_TIMING_H			0x68
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 088511a..df05550 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -935,8 +935,8 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
+ 
+ 	sinfo = info->par;
+ 
+-	if (dev->platform_data) {
+-		pdata_sinfo = (struct atmel_lcdfb_info *)dev->platform_data;
++	if (dev_get_platdata(dev)) {
++		pdata_sinfo = dev_get_platdata(dev);
+ 		sinfo->default_bpp = pdata_sinfo->default_bpp;
+ 		sinfo->default_dmacon = pdata_sinfo->default_dmacon;
+ 		sinfo->default_lcdcon2 = pdata_sinfo->default_lcdcon2;
 -- 
-1.8.1.2
+1.7.10.4
+
 

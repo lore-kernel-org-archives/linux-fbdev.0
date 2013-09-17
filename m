@@ -1,35 +1,42 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 12 Sep 2013 06:56:32 +0000
-Subject: [PATCH 11/21] video: kyrofb: remove unnecessary pci_set_drvdata()
-Message-Id: <002501ceaf85$3693cc50$a3bb64f0$%han@samsung.com>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 17 Sep 2013 07:18:35 +0000
+Subject: [PATCH 09/11] omapdss: OMAP4: HDMI: remove unnecessary edid macros
+Message-Id: <1379401597-27222-10-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1379401597-27222-1-git-send-email-archit@ti.com>
+In-Reply-To: <1379401597-27222-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The driver core clears the driver data to NULL after device_release
-or on probe failure. Thus, it is not needed to manually clear the
-device driver data to NULL.
+The hdmi4 driver has edid macros that aren't used at all. Remove them.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/kyro/fbdev.c |    1 -
- 1 file changed, 1 deletion(-)
+ drivers/video/omap2/dss/hdmi4.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-diff --git a/drivers/video/kyro/fbdev.c b/drivers/video/kyro/fbdev.c
-index 6157f74..c82f040 100644
---- a/drivers/video/kyro/fbdev.c
-+++ b/drivers/video/kyro/fbdev.c
-@@ -779,7 +779,6 @@ static void kyrofb_remove(struct pci_dev *pdev)
- #endif
+diff --git a/drivers/video/omap2/dss/hdmi4.c b/drivers/video/omap2/dss/hdmi4.c
+index 324ecd0..ab43069 100644
+--- a/drivers/video/omap2/dss/hdmi4.c
++++ b/drivers/video/omap2/dss/hdmi4.c
+@@ -38,14 +38,6 @@
+ #include "dss.h"
+ #include "dss_features.h"
  
- 	unregister_framebuffer(info);
--	pci_set_drvdata(pdev, NULL);
- 	framebuffer_release(info);
- }
- 
+-/* HDMI EDID Length move this */
+-#define HDMI_EDID_MAX_LENGTH			256
+-#define EDID_TIMING_DESCRIPTOR_SIZE		0x12
+-#define EDID_DESCRIPTOR_BLOCK0_ADDRESS		0x36
+-#define EDID_DESCRIPTOR_BLOCK1_ADDRESS		0x80
+-#define EDID_SIZE_BLOCK0_TIMING_DESCRIPTOR	4
+-#define EDID_SIZE_BLOCK1_TIMING_DESCRIPTOR	4
+-
+ static struct {
+ 	struct mutex lock;
+ 	struct platform_device *pdev;
 -- 
-1.7.10.4
-
+1.8.1.2
 

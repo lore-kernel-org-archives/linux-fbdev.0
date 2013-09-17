@@ -1,100 +1,54 @@
-From: Archit Taneja <archit@ti.com>
-Date: Fri, 13 Sep 2013 10:41:37 +0000
-Subject: [PATCH 6/7] OMAPDSS: HDMI: OMAP4: Complete register definitions for core
-Message-Id: <1379068178-17312-7-git-send-email-archit@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 17 Sep 2013 05:01:38 +0000
+Subject: [PATCH 07/19] video: s3c2410: use dev_get_platdata()
+Message-Id: <000c01ceb362$fdca3ee0$f95ebca0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1379068178-17312-1-git-send-email-archit@ti.com>
-In-Reply-To: <1379068178-17312-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Ricardo Neri <ricardo.neri@ti.com>, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-From: Ricardo Neri <ricardo.neri@ti.com>
+Use the wrapper function for retrieving the platform data instead of
+accessing dev->platform_data directly. This is a cosmetic change
+to make the code simpler and enhance the readability.
 
-Add missing register definitions; mainly for colorspace conversion, video
-timing and interrupt handling.
-
-Signed-off-by: Ricardo Neri <ricardo.neri@ti.com>
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h | 48 ++++++++++++++++++++++++++++++-
- 1 file changed, 47 insertions(+), 1 deletion(-)
+ drivers/video/s3c2410fb.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
-index 149abd8..b25269c 100644
---- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
-+++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
-@@ -55,6 +55,8 @@
- #define HDMI_CORE_SYS_SRST			0x14
- #define HDMI_CORE_SYS_SYS_CTRL1			0x20
- #define HDMI_CORE_SYS_SYS_STAT			0x24
-+#define HDMI_CORE_SYS_SYS_CTRL3			0x28
-+#define HDMI_CORE_SYS_DCTL			0x34
- #define HDMI_CORE_SYS_DE_DLY			0xC8
- #define HDMI_CORE_SYS_DE_CTRL			0xCC
- #define HDMI_CORE_SYS_DE_TOP			0xD0
-@@ -62,14 +64,58 @@
- #define HDMI_CORE_SYS_DE_CNTH			0xDC
- #define HDMI_CORE_SYS_DE_LINL			0xE0
- #define HDMI_CORE_SYS_DE_LINH_1			0xE4
-+#define HDMI_CORE_SYS_HRES_L			0xE8
-+#define HDMI_CORE_SYS_HRES_H			0xEC
-+#define HDMI_CORE_SYS_VRES_L			0xF0
-+#define HDMI_CORE_SYS_VRES_H			0xF4
-+#define HDMI_CORE_SYS_IADJUST			0xF8
-+#define HDMI_CORE_SYS_POLDETECT			0xFC
-+#define HDMI_CORE_SYS_HWIDTH1			0x110
-+#define HDMI_CORE_SYS_HWIDTH2			0x114
-+#define HDMI_CORE_SYS_VWIDTH			0x11C
-+#define HDMI_CORE_SYS_VID_CTRL			0x120
- #define HDMI_CORE_SYS_VID_ACEN			0x124
- #define HDMI_CORE_SYS_VID_MODE			0x128
-+#define HDMI_CORE_SYS_VID_BLANK1		0x12C
-+#define HDMI_CORE_SYS_VID_BLANK2		0x130
-+#define HDMI_CORE_SYS_VID_BLANK3		0x134
-+#define HDMI_CORE_SYS_DC_HEADER			0x138
-+#define HDMI_CORE_SYS_VID_DITHER		0x13C
-+#define HDMI_CORE_SYS_RGB2XVYCC_CT		0x140
-+#define HDMI_CORE_SYS_R2Y_COEFF_LOW		0x144
-+#define HDMI_CORE_SYS_R2Y_COEFF_UP		0x148
-+#define HDMI_CORE_SYS_G2Y_COEFF_LOW		0x14C
-+#define HDMI_CORE_SYS_G2Y_COEFF_UP		0x150
-+#define HDMI_CORE_SYS_B2Y_COEFF_LOW		0x154
-+#define HDMI_CORE_SYS_B2Y_COEFF_UP		0x158
-+#define HDMI_CORE_SYS_R2CB_COEFF_LOW		0x15C
-+#define HDMI_CORE_SYS_R2CB_COEFF_UP		0x160
-+#define HDMI_CORE_SYS_G2CB_COEFF_LOW		0x164
-+#define HDMI_CORE_SYS_G2CB_COEFF_UP		0x168
-+#define HDMI_CORE_SYS_B2CB_COEFF_LOW		0x16C
-+#define HDMI_CORE_SYS_B2CB_COEFF_UP		0x170
-+#define HDMI_CORE_SYS_R2CR_COEFF_LOW		0x174
-+#define HDMI_CORE_SYS_R2CR_COEFF_UP		0x178
-+#define HDMI_CORE_SYS_G2CR_COEFF_LOW		0x17C
-+#define HDMI_CORE_SYS_G2CR_COEFF_UP		0x180
-+#define HDMI_CORE_SYS_B2CR_COEFF_LOW		0x184
-+#define HDMI_CORE_SYS_B2CR_COEFF_UP		0x188
-+#define HDMI_CORE_SYS_RGB_OFFSET_LOW		0x18C
-+#define HDMI_CORE_SYS_RGB_OFFSET_UP		0x190
-+#define HDMI_CORE_SYS_Y_OFFSET_LOW		0x194
-+#define HDMI_CORE_SYS_Y_OFFSET_UP		0x198
-+#define HDMI_CORE_SYS_CBCR_OFFSET_LOW		0x19C
-+#define HDMI_CORE_SYS_CBCR_OFFSET_UP		0x1A0
- #define HDMI_CORE_SYS_INTR_STATE		0x1C0
- #define HDMI_CORE_SYS_INTR1			0x1C4
- #define HDMI_CORE_SYS_INTR2			0x1C8
- #define HDMI_CORE_SYS_INTR3			0x1CC
- #define HDMI_CORE_SYS_INTR4			0x1D0
--#define HDMI_CORE_SYS_UMASK1			0x1D4
-+#define HDMI_CORE_SYS_INTR_UNMASK1		0x1D4
-+#define HDMI_CORE_SYS_INTR_UNMASK2		0x1D8
-+#define HDMI_CORE_SYS_INTR_UNMASK3		0x1DC
-+#define HDMI_CORE_SYS_INTR_UNMASK4		0x1E0
-+#define HDMI_CORE_SYS_INTR_CTRL			0x1E4
- #define HDMI_CORE_SYS_TMDS_CTRL			0x208
+diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
+index 21a32ad..81af5a6 100644
+--- a/drivers/video/s3c2410fb.c
++++ b/drivers/video/s3c2410fb.c
+@@ -123,7 +123,7 @@ static int s3c2410fb_check_var(struct fb_var_screeninfo *var,
+ 			       struct fb_info *info)
+ {
+ 	struct s3c2410fb_info *fbi = info->par;
+-	struct s3c2410fb_mach_info *mach_info = fbi->dev->platform_data;
++	struct s3c2410fb_mach_info *mach_info = dev_get_platdata(fbi->dev);
+ 	struct s3c2410fb_display *display = NULL;
+ 	struct s3c2410fb_display *default_display = mach_info->displays +
+ 						    mach_info->default_display;
+@@ -686,7 +686,7 @@ static inline void modify_gpio(void __iomem *reg,
+ static int s3c2410fb_init_registers(struct fb_info *info)
+ {
+ 	struct s3c2410fb_info *fbi = info->par;
+-	struct s3c2410fb_mach_info *mach_info = fbi->dev->platform_data;
++	struct s3c2410fb_mach_info *mach_info = dev_get_platdata(fbi->dev);
+ 	unsigned long flags;
+ 	void __iomem *regs = fbi->io;
+ 	void __iomem *tpal;
+@@ -833,7 +833,7 @@ static int s3c24xxfb_probe(struct platform_device *pdev,
+ 	int size;
+ 	u32 lcdcon1;
  
- /* value definitions for HDMI_CORE_SYS_SYS_CTRL1 fields */
+-	mach_info = pdev->dev.platform_data;
++	mach_info = dev_get_platdata(&pdev->dev);
+ 	if (mach_info = NULL) {
+ 		dev_err(&pdev->dev,
+ 			"no platform data for lcd, cannot attach\n");
 -- 
-1.8.1.2
+1.7.10.4
+
 

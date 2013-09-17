@@ -1,145 +1,54 @@
-From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
-Date: Sat, 28 Sep 2013 19:27:46 +0000
-Subject: [PATCH V5 4/5] video: exynos_mipi_dsim: Use the generic PHY driver
-Message-Id: <1380396467-29278-5-git-send-email-s.nawrocki@samsung.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 17 Sep 2013 05:03:19 +0000
+Subject: [PATCH 09/19] video: sh_mobile_hdmi: use dev_get_platdata()
+Message-Id: <000e01ceb363$39e44b00$adace100$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1380396467-29278-1-git-send-email-s.nawrocki@samsung.com>
-In-Reply-To: <1380396467-29278-1-git-send-email-s.nawrocki@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Use the generic PHY API instead of the platform callback
-for the MIPI DSIM DPHY enable/reset control.
+Use the wrapper function for retrieving the platform data instead of
+accessing dev->platform_data directly. This is a cosmetic change
+to make the code simpler and enhance the readability.
 
-Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-Acked-by: Felipe Balbi <balbi@ti.com>
-Acked-by: Donghwa Lee <dh09.lee@samsung.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
-Changes since v4:
- - PHY label removed from the platform data structure.
----
- drivers/video/exynos/Kconfig           |    1 +
- drivers/video/exynos/exynos_mipi_dsi.c |   19 ++++++++++---------
- include/video/exynos_mipi_dsim.h       |    5 ++---
- 3 files changed, 13 insertions(+), 12 deletions(-)
+ drivers/video/sh_mobile_hdmi.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/exynos/Kconfig b/drivers/video/exynos/Kconfig
-index 1b035b2..976594d 100644
---- a/drivers/video/exynos/Kconfig
-+++ b/drivers/video/exynos/Kconfig
-@@ -16,6 +16,7 @@ if EXYNOS_VIDEO
- config EXYNOS_MIPI_DSI
- 	bool "EXYNOS MIPI DSI driver support."
- 	depends on ARCH_S5PV210 || ARCH_EXYNOS
-+	select GENERIC_PHY
- 	help
- 	  This enables support for MIPI-DSI device.
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index bfe4728..45417fa 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -498,7 +498,7 @@ static void sh_hdmi_video_config(struct sh_hdmi *hdmi)
+ static void sh_hdmi_audio_config(struct sh_hdmi *hdmi)
+ {
+ 	u8 data;
+-	struct sh_mobile_hdmi_info *pdata = hdmi->dev->platform_data;
++	struct sh_mobile_hdmi_info *pdata = dev_get_platdata(hdmi->dev);
+ 
+ 	/*
+ 	 * [7:4] L/R data swap control
+@@ -815,7 +815,7 @@ static unsigned long sh_hdmi_rate_error(struct sh_hdmi *hdmi,
+ 		unsigned long *hdmi_rate, unsigned long *parent_rate)
+ {
+ 	unsigned long target = PICOS2KHZ(mode->pixclock) * 1000, rate_error;
+-	struct sh_mobile_hdmi_info *pdata = hdmi->dev->platform_data;
++	struct sh_mobile_hdmi_info *pdata = dev_get_platdata(hdmi->dev);
+ 
+ 	*hdmi_rate = clk_round_rate(hdmi->hdmi_clk, target);
+ 	if ((long)*hdmi_rate < 0)
+@@ -1271,7 +1271,7 @@ static void sh_hdmi_htop1_init(struct sh_hdmi *hdmi)
+ 
+ static int __init sh_hdmi_probe(struct platform_device *pdev)
+ {
+-	struct sh_mobile_hdmi_info *pdata = pdev->dev.platform_data;
++	struct sh_mobile_hdmi_info *pdata = dev_get_platdata(&pdev->dev);
+ 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	struct resource *htop1_res;
+ 	int irq = platform_get_irq(pdev, 0), ret;
+-- 
+1.7.10.4
 
-diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
-index 32e5406..00b3a52 100644
---- a/drivers/video/exynos/exynos_mipi_dsi.c
-+++ b/drivers/video/exynos/exynos_mipi_dsi.c
-@@ -30,6 +30,7 @@
- #include <linux/interrupt.h>
- #include <linux/kthread.h>
- #include <linux/notifier.h>
-+#include <linux/phy/phy.h>
- #include <linux/regulator/consumer.h>
- #include <linux/pm_runtime.h>
- #include <linux/err.h>
-@@ -156,8 +157,7 @@ static int exynos_mipi_dsi_blank_mode(struct mipi_dsim_device *dsim, int power)
- 		exynos_mipi_regulator_enable(dsim);
-
- 		/* enable MIPI-DSI PHY. */
--		if (dsim->pd->phy_enable)
--			dsim->pd->phy_enable(pdev, true);
-+		phy_power_on(dsim->phy);
-
- 		clk_enable(dsim->clock);
-
-@@ -373,6 +373,10 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
- 		return ret;
- 	}
-
-+	dsim->phy = devm_phy_get(&pdev->dev, "dsim");
-+	if (IS_ERR(dsim->phy))
-+		return PTR_ERR(dsim->phy);
-+
- 	dsim->clock = devm_clk_get(&pdev->dev, "dsim0");
- 	if (IS_ERR(dsim->clock)) {
- 		dev_err(&pdev->dev, "failed to get dsim clock source\n");
-@@ -439,8 +443,7 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
- 	exynos_mipi_regulator_enable(dsim);
-
- 	/* enable MIPI-DSI PHY. */
--	if (dsim->pd->phy_enable)
--		dsim->pd->phy_enable(pdev, true);
-+	phy_power_on(dsim->phy);
-
- 	exynos_mipi_update_cfg(dsim);
-
-@@ -504,9 +507,8 @@ static int exynos_mipi_dsi_suspend(struct device *dev)
- 	if (client_drv && client_drv->suspend)
- 		client_drv->suspend(client_dev);
-
--	/* enable MIPI-DSI PHY. */
--	if (dsim->pd->phy_enable)
--		dsim->pd->phy_enable(pdev, false);
-+	/* disable MIPI-DSI PHY. */
-+	phy_power_off(dsim->phy);
-
- 	clk_disable(dsim->clock);
-
-@@ -536,8 +538,7 @@ static int exynos_mipi_dsi_resume(struct device *dev)
- 	exynos_mipi_regulator_enable(dsim);
-
- 	/* enable MIPI-DSI PHY. */
--	if (dsim->pd->phy_enable)
--		dsim->pd->phy_enable(pdev, true);
-+	phy_power_on(dsim->phy);
-
- 	clk_enable(dsim->clock);
-
-diff --git a/include/video/exynos_mipi_dsim.h b/include/video/exynos_mipi_dsim.h
-index 89dc88a..6a578f8 100644
---- a/include/video/exynos_mipi_dsim.h
-+++ b/include/video/exynos_mipi_dsim.h
-@@ -216,6 +216,7 @@ struct mipi_dsim_config {
-  *	automatically.
-  * @e_clk_src: select byte clock source.
-  * @pd: pointer to MIPI-DSI driver platform data.
-+ * @phy: pointer to the MIPI-DSI PHY
-  */
- struct mipi_dsim_device {
- 	struct device			*dev;
-@@ -236,6 +237,7 @@ struct mipi_dsim_device {
- 	bool				suspended;
-
- 	struct mipi_dsim_platform_data	*pd;
-+	struct phy			*phy;
- };
-
- /*
-@@ -248,7 +250,6 @@ struct mipi_dsim_device {
-  * @enabled: indicate whether mipi controller got enabled or not.
-  * @lcd_panel_info: pointer for lcd panel specific structure.
-  *	this structure specifies width, height, timing and polarity and so on.
-- * @phy_enable: pointer to a callback controlling D-PHY enable/reset
-  */
- struct mipi_dsim_platform_data {
- 	char				lcd_panel_name[PANEL_NAME_SIZE];
-@@ -256,8 +257,6 @@ struct mipi_dsim_platform_data {
- 	struct mipi_dsim_config		*dsim_config;
- 	unsigned int			enabled;
- 	void				*lcd_panel_info;
--
--	int (*phy_enable)(struct platform_device *pdev, bool on);
- };
-
- /*
---
-1.7.4.1
 

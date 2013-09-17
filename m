@@ -1,59 +1,79 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 23:40:06 +0000
-Subject: [PATCH 47/51] ARM: 7794/1: block: Rename parameter dma_mask to max_addr for blk_queue_bounce_limit()
-Message-Id: <E1VMnpO-0001Kt-E7@rmk-PC.arm.linux.org.uk>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 17 Sep 2013 07:18:26 +0000
+Subject: [PATCH 00/11] omapdss: HDMI: Refactor driver for easier addition of OMAP5/DRA7 hdmi IP
+Message-Id: <1379401597-27222-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
-Cc: Jens Axboe <axboe@kernel.dk>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+The HDMI IP in OMAP4 DSS is present in a few other TI SoCs which don't have a
+Display Subsystem similar to what's in OMAP. The original driver was designed
+to provide ops such that it could be plugged into a different display subsytem
+in some other SoC. These other SoCs, however, never got their baseport code
+upstreamed, and the HDMI IP remains exclusive to OMAP DSS.
 
-The blk_queue_bounce_limit() API parameter 'dma_mask' is actually the
-maximum address the device can handle rather than a dma_mask. Rename
-it accordingly to avoid it being interpreted as dma_mask.
+Refactor the code such that HDMI sub blocks(wrapper, PLL, PHY) are made into
+libraries. The HDMI core IP(the encoder) is the only block which varies between
+OMAP4 and OMAP5/DRA7 IPs. The rest can be shared by the 2 HDMI drivers.
 
-No functional change.
+This will allow more code reuse between the 2 HDMI drivers, and allow easier
+addition of the OMAP5/DRA7 HDMI driver. The driver is also simplified now as it
+doesn't need to provide ops to different display subsystems.
 
-The idea is to fix the bad assumptions about dma_mask wherever it could
-be miss-interpreted.
+The new driver needs an address space split according to the HDMI sub blocks.
+This requires us to change the OMAP4 hwmod data, or ensure that we add a split
+address space when we add support for DSS in DT.
 
-Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
----
- block/blk-settings.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+The last patch in the series splits the address space in omap4 hwmod data. If
+hwmod changes are disregarded. The driver can temporarily be hacked to contain
+the base addresses.
 
-diff --git a/block/blk-settings.c b/block/blk-settings.c
-index c50ecf0..026c151 100644
---- a/block/blk-settings.c
-+++ b/block/blk-settings.c
-@@ -195,17 +195,17 @@ EXPORT_SYMBOL(blk_queue_make_request);
- /**
-  * blk_queue_bounce_limit - set bounce buffer limit for queue
-  * @q: the request queue for the device
-- * @dma_mask: the maximum address the device can handle
-+ * @max_addr: the maximum address the device can handle
-  *
-  * Description:
-  *    Different hardware can have different requirements as to what pages
-  *    it can do I/O directly to. A low level driver can call
-  *    blk_queue_bounce_limit to have lower memory pages allocated as bounce
-- *    buffers for doing I/O to pages residing above @dma_mask.
-+ *    buffers for doing I/O to pages residing above @max_addr.
-  **/
--void blk_queue_bounce_limit(struct request_queue *q, u64 dma_mask)
-+void blk_queue_bounce_limit(struct request_queue *q, u64 max_addr)
- {
--	unsigned long b_pfn = dma_mask >> PAGE_SHIFT;
-+	unsigned long b_pfn = max_addr >> PAGE_SHIFT;
- 	int dma = 0;
- 
- 	q->bounce_gfp = GFP_NOIO;
+Archit Taneja (11):
+  omapdss: HDMI: create a hdmi wrapper library
+  omapdss: HDMI: create a HDMI PLL library
+  omapdss: HDMI: create a PHY library
+  omapdss: HDMI: Use OMAP4 HDMI core functions directly and remove
+    hdmi_ip_ops
+  omapdss: HDMI: remove hdmi_ip_data struct
+  omapdss: HDMI: Clean up the header files
+  omapdss: HDMI: add HDMI wrapper IRQ flags
+  omapdss: HDMI: Rename hdmi driver files to nicer names
+  omapdss: OMAP4: HDMI: remove unnecessary edid macros
+  omapdss: HDMI: move common functions to a separate file
+  [experimental] arm: omap: omap4 hwmod data: Split hdmi address space
+
+ arch/arm/mach-omap2/omap_hwmod_44xx_data.c |   19 +
+ drivers/video/omap2/dss/Makefile           |    3 +-
+ drivers/video/omap2/dss/core.c             |    4 +-
+ drivers/video/omap2/dss/dss.h              |    4 +-
+ drivers/video/omap2/dss/dss_features.c     |   44 -
+ drivers/video/omap2/dss/dss_features.h     |    8 -
+ drivers/video/omap2/dss/hdmi.c             | 1184 ----------------------
+ drivers/video/omap2/dss/hdmi4.c            |  696 +++++++++++++
+ drivers/video/omap2/dss/hdmi4_core.c       | 1016 +++++++++++++++++++
+ drivers/video/omap2/dss/hdmi4_core.h       |  278 ++++++
+ drivers/video/omap2/dss/hdmi_common.c      |  423 ++++++++
+ drivers/video/omap2/dss/hdmi_phy.c         |  142 +++
+ drivers/video/omap2/dss/hdmi_pll.c         |  212 ++++
+ drivers/video/omap2/dss/hdmi_wp.c          |  254 +++++
+ drivers/video/omap2/dss/ti_hdmi.h          |  403 ++++++--
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c  | 1477 ----------------------------
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h  |  488 ---------
+ 17 files changed, 3377 insertions(+), 3278 deletions(-)
+ delete mode 100644 drivers/video/omap2/dss/hdmi.c
+ create mode 100644 drivers/video/omap2/dss/hdmi4.c
+ create mode 100644 drivers/video/omap2/dss/hdmi4_core.c
+ create mode 100644 drivers/video/omap2/dss/hdmi4_core.h
+ create mode 100644 drivers/video/omap2/dss/hdmi_common.c
+ create mode 100644 drivers/video/omap2/dss/hdmi_phy.c
+ create mode 100644 drivers/video/omap2/dss/hdmi_pll.c
+ create mode 100644 drivers/video/omap2/dss/hdmi_wp.c
+ delete mode 100644 drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+ delete mode 100644 drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
+
 -- 
-1.7.4.4
+1.8.1.2
 

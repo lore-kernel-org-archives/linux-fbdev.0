@@ -1,66 +1,54 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 21:26:58 +0000
-Subject: [PATCH 02/51] DMA-API: net: brocade/bna/bnad.c: fix 32-bit DMA mask handling
-Message-Id: <E1VMlkY-0007fG-LM@rmk-PC.arm.linux.org.uk>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 17 Sep 2013 05:08:58 +0000
+Subject: [PATCH 13/19] video: imxfb: use dev_get_platdata()
+Message-Id: <001301ceb364$040f82f0$0c2e88d0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
-Cc: Rasesh Mody <rmody@brocade.com>
+To: linux-fbdev@vger.kernel.org
 
-The fallback to 32-bit DMA mask is rather odd:
-	if (!dma_set_mask(&pdev->dev, DMA_BIT_MASK(64)) &&
-	    !dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64))) {
-		*using_dac = true;
-	} else {
-		err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
-		if (err) {
-			err = dma_set_coherent_mask(&pdev->dev,
-						    DMA_BIT_MASK(32));
-			if (err)
-				goto release_regions;
-		}
+Use the wrapper function for retrieving the platform data instead of
+accessing dev->platform_data directly. This is a cosmetic change
+to make the code simpler and enhance the readability.
 
-This means we only try and set the coherent DMA mask if we failed to
-set a 32-bit DMA mask, and only if both fail do we fail the driver.
-Adjust this so that if either setting fails, we fail the driver - and
-thereby end up properly setting both the DMA mask and the coherent
-DMA mask in the fallback case.
-
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/net/ethernet/brocade/bna/bnad.c |   13 ++++---------
- 1 files changed, 4 insertions(+), 9 deletions(-)
+ drivers/video/imxfb.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/brocade/bna/bnad.c b/drivers/net/ethernet/brocade/bna/bnad.c
-index b78e69e..45ce6e2 100644
---- a/drivers/net/ethernet/brocade/bna/bnad.c
-+++ b/drivers/net/ethernet/brocade/bna/bnad.c
-@@ -3300,17 +3300,12 @@ bnad_pci_init(struct bnad *bnad,
- 	err = pci_request_regions(pdev, BNAD_NAME);
- 	if (err)
- 		goto disable_device;
--	if (!dma_set_mask(&pdev->dev, DMA_BIT_MASK(64)) &&
--	    !dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64))) {
-+	if (!dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64))) {
- 		*using_dac = true;
- 	} else {
--		err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
--		if (err) {
--			err = dma_set_coherent_mask(&pdev->dev,
--						    DMA_BIT_MASK(32));
--			if (err)
--				goto release_regions;
--		}
-+		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
-+		if (err)
-+			goto release_regions;
- 		*using_dac = false;
- 	}
- 	pci_set_master(pdev);
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index 38733ac..44ee678 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -755,7 +755,7 @@ static int imxfb_resume(struct platform_device *dev)
+ 
+ static int imxfb_init_fbinfo(struct platform_device *pdev)
+ {
+-	struct imx_fb_platform_data *pdata = pdev->dev.platform_data;
++	struct imx_fb_platform_data *pdata = dev_get_platdata(&pdev->dev);
+ 	struct fb_info *info = dev_get_drvdata(&pdev->dev);
+ 	struct imxfb_info *fbi = info->par;
+ 	struct device_node *np;
+@@ -877,7 +877,7 @@ static int imxfb_probe(struct platform_device *pdev)
+ 	if (!res)
+ 		return -ENODEV;
+ 
+-	pdata = pdev->dev.platform_data;
++	pdata = dev_get_platdata(&pdev->dev);
+ 
+ 	info = framebuffer_alloc(sizeof(struct imxfb_info), &pdev->dev);
+ 	if (!info)
+@@ -1066,7 +1066,7 @@ static int imxfb_remove(struct platform_device *pdev)
+ #endif
+ 	unregister_framebuffer(info);
+ 
+-	pdata = pdev->dev.platform_data;
++	pdata = dev_get_platdata(&pdev->dev);
+ 	if (pdata && pdata->exit)
+ 		pdata->exit(fbi->pdev);
+ 
 -- 
-1.7.4.4
+1.7.10.4
+
 

@@ -1,48 +1,54 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 21:34:59 +0000
-Subject: [PATCH 10/51] DMA-API: net: broadcom/bnx2x: replace dma_set_mask()+dma_set_coherent_mask() with new
-Message-Id: <E1VMlsJ-0007g8-UO@rmk-PC.arm.linux.org.uk>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 17 Sep 2013 04:58:33 +0000
+Subject: [PATCH 03/19] video: nuc900fb: use dev_get_platdata()
+Message-Id: <000801ceb362$8fa427f0$aeec77d0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
-Cc: Eilon Greenstein <eilong@broadcom.com>
+To: linux-fbdev@vger.kernel.org
 
-Replace the following sequence:
+Use the wrapper function for retrieving the platform data instead of
+accessing dev->platform_data directly. This is a cosmetic change
+to make the code simpler and enhance the readability.
 
-	dma_set_mask(dev, mask);
-	dma_set_coherent_mask(dev, mask);
-
-with a call to the new helper dma_set_mask_and_coherent().
-
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c |    8 ++------
- 1 files changed, 2 insertions(+), 6 deletions(-)
+ drivers/video/nuc900fb.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
-index 2f8dbbb..e6c3e66 100644
---- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
-+++ b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
-@@ -12072,13 +12072,9 @@ static int bnx2x_set_coherency_mask(struct bnx2x *bp)
+diff --git a/drivers/video/nuc900fb.c b/drivers/video/nuc900fb.c
+index 796e511..ec32f67 100644
+--- a/drivers/video/nuc900fb.c
++++ b/drivers/video/nuc900fb.c
+@@ -91,7 +91,7 @@ static int nuc900fb_check_var(struct fb_var_screeninfo *var,
+ 			       struct fb_info *info)
  {
- 	struct device *dev = &bp->pdev->dev;
+ 	struct nuc900fb_info *fbi = info->par;
+-	struct nuc900fb_mach_info *mach_info = fbi->dev->platform_data;
++	struct nuc900fb_mach_info *mach_info = dev_get_platdata(fbi->dev);
+ 	struct nuc900fb_display *display = NULL;
+ 	struct nuc900fb_display *default_display = mach_info->displays +
+ 						   mach_info->default_display;
+@@ -358,7 +358,7 @@ static inline void modify_gpio(void __iomem *reg,
+ static int nuc900fb_init_registers(struct fb_info *info)
+ {
+ 	struct nuc900fb_info *fbi = info->par;
+-	struct nuc900fb_mach_info *mach_info = fbi->dev->platform_data;
++	struct nuc900fb_mach_info *mach_info = dev_get_platdata(fbi->dev);
+ 	void __iomem *regs = fbi->io;
  
--	if (dma_set_mask(dev, DMA_BIT_MASK(64)) = 0) {
-+	if (dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64)) = 0) {
- 		bp->flags |= USING_DAC_FLAG;
--		if (dma_set_coherent_mask(dev, DMA_BIT_MASK(64)) != 0) {
--			dev_err(dev, "dma_set_coherent_mask failed, aborting\n");
--			return -EIO;
--		}
--	} else if (dma_set_mask(dev, DMA_BIT_MASK(32)) != 0) {
-+	} else if (dma_set_mask_and_coherent(dev, DMA_BIT_MASK(32)) != 0) {
- 		dev_err(dev, "System does not support DMA, aborting\n");
- 		return -EIO;
- 	}
+ 	/*reset the display engine*/
+@@ -512,7 +512,7 @@ static int nuc900fb_probe(struct platform_device *pdev)
+ 	int size;
+ 
+ 	dev_dbg(&pdev->dev, "devinit\n");
+-	mach_info = pdev->dev.platform_data;
++	mach_info = dev_get_platdata(&pdev->dev);
+ 	if (mach_info = NULL) {
+ 		dev_err(&pdev->dev,
+ 			"no platform data for lcd, cannot attach\n");
 -- 
-1.7.4.4
+1.7.10.4
+
 

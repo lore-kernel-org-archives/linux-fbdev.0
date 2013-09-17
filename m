@@ -1,89 +1,530 @@
-From: Jon Mason <jdmason@kudzu.us>
-Date: Wed, 11 Sep 2013 21:35:06 +0000
-Subject: [PATCH 2/2] radeonfb: Use pci_dev pm_cap
-Message-Id: <1378935306-16814-2-git-send-email-jdmason@kudzu.us>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 17 Sep 2013 07:18:29 +0000
+Subject: [PATCH 03/11] omapdss: HDMI: create a PHY library
+Message-Id: <1379401597-27222-4-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1379401597-27222-1-git-send-email-archit@ti.com>
+In-Reply-To: <1379401597-27222-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Use the already existing pm_cap variable in struct pci_dev for
-determining the power management offset.  This saves the driver from
-having to keep track of an extra variable.  Also, use the pci_power_t
-value instead of always using the raw value for PCI_D2.
+HDMI PHY is a block common to DSS in OMAP4, OMAP5 and DRA7x. Move the
+existing functions from ti_hdmi_4xxx_ip.c to a separate file. These funcs are
+called directly from the hdmi driver rather than hdmi_ip_ops function pointer
+calls.
 
-Signed-off-by: Jon Mason <jdmason@kudzu.us>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Add the PHY library function declarations to ti_hdmi.h. These will be shared
+amongst the omap4/5 hdmi platform drivers. Remove the PHY function pointer ops
+from the ti_hdmi_ip_ops struct.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/aty/radeon_pm.c |   15 ++++++---------
- drivers/video/aty/radeonfb.h  |    1 -
- 2 files changed, 6 insertions(+), 10 deletions(-)
+ drivers/video/omap2/dss/Makefile          |   3 +-
+ drivers/video/omap2/dss/dss_features.c    |   3 -
+ drivers/video/omap2/dss/hdmi.c            |  19 ++--
+ drivers/video/omap2/dss/hdmi_phy.c        | 176 ++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/ti_hdmi.h         |  26 +++--
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c | 109 ------------------
+ 6 files changed, 201 insertions(+), 135 deletions(-)
+ create mode 100644 drivers/video/omap2/dss/hdmi_phy.c
 
-diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
-index f7091ec..f266224 100644
---- a/drivers/video/aty/radeon_pm.c
-+++ b/drivers/video/aty/radeon_pm.c
-@@ -2515,13 +2515,13 @@ static void radeonfb_whack_power_state(struct radeonfb_info *rinfo, pci_power_t
+diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
+index 5ea65d3..d88e938 100644
+--- a/drivers/video/omap2/dss/Makefile
++++ b/drivers/video/omap2/dss/Makefile
+@@ -10,5 +10,6 @@ omapdss-$(CONFIG_OMAP2_DSS_RFBI) += rfbi.o
+ omapdss-$(CONFIG_OMAP2_DSS_VENC) += venc.o
+ omapdss-$(CONFIG_OMAP2_DSS_SDI) += sdi.o
+ omapdss-$(CONFIG_OMAP2_DSS_DSI) += dsi.o
+-omapdss-$(CONFIG_OMAP4_DSS_HDMI) += hdmi.o hdmi_wp.o hdmi_pll.o ti_hdmi_4xxx_ip.o
++omapdss-$(CONFIG_OMAP4_DSS_HDMI) += hdmi.o hdmi_wp.o hdmi_pll.o hdmi_phy.o \
++	ti_hdmi_4xxx_ip.o
+ ccflags-$(CONFIG_OMAP2_DSS_DEBUG) += -DDEBUG
+diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
+index 9ee92e9..2777eb6 100644
+--- a/drivers/video/omap2/dss/dss_features.c
++++ b/drivers/video/omap2/dss/dss_features.c
+@@ -794,11 +794,8 @@ static const struct omap_dss_features omap5_dss_features = {
+ static const struct ti_hdmi_ip_ops omap4_hdmi_functions = {
  
- 	for (;;) {
- 		pci_read_config_word(rinfo->pdev,
--				     rinfo->pm_reg+PCI_PM_CTRL,
-+				     rinfo->pdev->pm_cap + PCI_PM_CTRL,
- 				     &pwr_cmd);
--		if (pwr_cmd & 2)
-+		if (pwr_cmd & state)
- 			break;
--		pwr_cmd = (pwr_cmd & ~PCI_PM_CTRL_STATE_MASK) | 2;
-+		pwr_cmd = (pwr_cmd & ~PCI_PM_CTRL_STATE_MASK) | state;
- 		pci_write_config_word(rinfo->pdev,
--				      rinfo->pm_reg+PCI_PM_CTRL,
-+				      rinfo->pdev->pm_cap + PCI_PM_CTRL,
- 				      pwr_cmd);
- 		msleep(500);
+ 	.video_configure	=	ti_hdmi_4xxx_basic_configure,
+-	.phy_enable		=	ti_hdmi_4xxx_phy_enable,
+-	.phy_disable		=	ti_hdmi_4xxx_phy_disable,
+ 	.read_edid		=	ti_hdmi_4xxx_read_edid,
+ 	.dump_core		=	ti_hdmi_4xxx_core_dump,
+-	.dump_phy		=	ti_hdmi_4xxx_phy_dump,
+ #if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+ 	.audio_start		=       ti_hdmi_4xxx_audio_start,
+ 	.audio_stop		=       ti_hdmi_4xxx_audio_stop,
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index f6a2eba..f7e2ac6 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -42,7 +42,6 @@
+ 
+ #define HDMI_CORE_SYS		0x400
+ #define HDMI_CORE_AV		0x900
+-#define HDMI_PHY		0x300
+ 
+ /* HDMI EDID Length move this */
+ #define HDMI_EDID_MAX_LENGTH			256
+@@ -487,7 +486,8 @@ static int hdmi_power_on_full(struct omap_dss_device *dssdev)
+ 		goto err_pll_enable;
  	}
-@@ -2532,7 +2532,7 @@ static void radeon_set_suspend(struct radeonfb_info *rinfo, int suspend)
- {
- 	u32 tmp;
  
--	if (!rinfo->pm_reg)
-+	if (!rinfo->pdev->pm_cap)
- 		return;
+-	r = hdmi.ip_data.ops->phy_enable(&hdmi.ip_data);
++	r = hdmi_phy_enable(&hdmi.ip_data.phy, &hdmi.ip_data.wp,
++		&hdmi.ip_data.cfg);
+ 	if (r) {
+ 		DSSDBG("Failed to start PHY\n");
+ 		goto err_phy_enable;
+@@ -514,7 +514,7 @@ static int hdmi_power_on_full(struct omap_dss_device *dssdev)
+ err_mgr_enable:
+ 	hdmi_wp_video_stop(&hdmi.ip_data.wp);
+ err_vid_enable:
+-	hdmi.ip_data.ops->phy_disable(&hdmi.ip_data);
++	hdmi_phy_disable(&hdmi.ip_data.phy, &hdmi.ip_data.wp);
+ err_phy_enable:
+ 	hdmi_pll_disable(&hdmi.ip_data.pll, &hdmi.ip_data.wp);
+ err_pll_enable:
+@@ -529,7 +529,7 @@ static void hdmi_power_off_full(struct omap_dss_device *dssdev)
+ 	dss_mgr_disable(mgr);
  
- 	/* Set the chip into appropriate suspend mode (we use D2,
-@@ -2804,9 +2804,6 @@ static void radeonfb_early_resume(void *data)
+ 	hdmi_wp_video_stop(&hdmi.ip_data.wp);
+-	hdmi.ip_data.ops->phy_disable(&hdmi.ip_data);
++	hdmi_phy_disable(&hdmi.ip_data.phy, &hdmi.ip_data.wp);
+ 	hdmi_pll_disable(&hdmi.ip_data.pll, &hdmi.ip_data.wp);
  
- void radeonfb_pm_init(struct radeonfb_info *rinfo, int dynclk, int ignore_devlist, int force_sleep)
- {
--	/* Find PM registers in config space if any*/
--	rinfo->pm_reg = rinfo->pdev->pm_cap;
+ 	hdmi_power_off_core(dssdev);
+@@ -593,7 +593,7 @@ static void hdmi_dump_regs(struct seq_file *s)
+ 
+ 	hdmi_wp_dump(&hdmi.ip_data.wp, s);
+ 	hdmi_pll_dump(&hdmi.ip_data.pll, s);
+-	hdmi.ip_data.ops->dump_phy(&hdmi.ip_data, s);
++	hdmi_phy_dump(&hdmi.ip_data.phy, s);
+ 	hdmi.ip_data.ops->dump_core(&hdmi.ip_data, s);
+ 
+ 	hdmi_runtime_put();
+@@ -1049,11 +1049,9 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ 	if (r)
+ 		return r;
+ 
+-	hdmi.ip_data.irq = platform_get_irq(pdev, 0);
+-	if (hdmi.ip_data.irq < 0) {
+-		DSSERR("platform_get_irq failed\n");
+-		return -ENODEV;
+-	}
++	r = hdmi_phy_init(pdev, &hdmi.ip_data.phy);
++	if (r)
++		return r;
+ 
+ 	r = hdmi_get_clocks(pdev);
+ 	if (r) {
+@@ -1065,7 +1063,6 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ 
+ 	hdmi.ip_data.core_sys_offset = HDMI_CORE_SYS;
+ 	hdmi.ip_data.core_av_offset = HDMI_CORE_AV;
+-	hdmi.ip_data.phy_offset = HDMI_PHY;
+ 
+ 	hdmi_init_output(pdev);
+ 
+diff --git a/drivers/video/omap2/dss/hdmi_phy.c b/drivers/video/omap2/dss/hdmi_phy.c
+new file mode 100644
+index 0000000..cacd3c4
+--- /dev/null
++++ b/drivers/video/omap2/dss/hdmi_phy.c
+@@ -0,0 +1,176 @@
++/*
++ * HDMI PHY
++ *
++ * Copyright (C) 2013 Texas Instruments Incorporated
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/io.h>
++#include <linux/platform_device.h>
++#include <video/omapdss.h>
++
++#include "dss.h"
++#include "ti_hdmi.h"
++#include "ti_hdmi_4xxx_ip.h"
++
++#define HDMI_IRQ_LINK_CONNECT		(1 << 25)
++#define HDMI_IRQ_LINK_DISCONNECT	(1 << 26)
++
++static inline void hdmi_write_reg(void __iomem *base_addr, const u16 idx,
++		u32 val)
++{
++	__raw_writel(val, base_addr + idx);
++}
++
++static inline u32 hdmi_read_reg(void __iomem *base_addr, const u16 idx)
++{
++	return __raw_readl(base_addr + idx);
++}
++
++#define REG_FLD_MOD(base, idx, val, start, end) \
++	hdmi_write_reg(base, idx, FLD_MOD(hdmi_read_reg(base, idx),\
++							val, start, end))
++#define REG_GET(base, idx, start, end) \
++	FLD_GET(hdmi_read_reg(base, idx), start, end)
++
++static inline int hdmi_wait_for_bit_change(void __iomem *base_addr,
++		const u16 idx, int b2, int b1, u32 val)
++{
++	u32 t = 0;
++	while (val != REG_GET(base_addr, idx, b2, b1)) {
++		udelay(1);
++		if (t++ > 10000)
++			return !val;
++	}
++	return val;
++}
++
++void hdmi_phy_dump(struct hdmi_phy_data *phy, struct seq_file *s)
++{
++#define DUMPPHY(r) seq_printf(s, "%-35s %08x\n", #r,\
++		hdmi_read_reg(phy->base, r))
++
++	DUMPPHY(HDMI_TXPHY_TX_CTRL);
++	DUMPPHY(HDMI_TXPHY_DIGITAL_CTRL);
++	DUMPPHY(HDMI_TXPHY_POWER_CTRL);
++	DUMPPHY(HDMI_TXPHY_PAD_CFG_CTRL);
++}
++
++static irqreturn_t hdmi_irq_handler(int irq, void *data)
++{
++	struct hdmi_wp_data *wp = data;
++	u32 irqstatus;
++
++	irqstatus = hdmi_wp_get_irqstatus(wp);
++	hdmi_wp_set_irqstatus(wp, irqstatus);
++
++	if ((irqstatus & HDMI_IRQ_LINK_CONNECT) &&
++			irqstatus & HDMI_IRQ_LINK_DISCONNECT) {
++		/*
++		 * If we get both connect and disconnect interrupts at the same
++		 * time, turn off the PHY, clear interrupts, and restart, which
++		 * raises connect interrupt if a cable is connected, or nothing
++		 * if cable is not connected.
++		 */
++		hdmi_wp_set_phy_pwr(wp, HDMI_PHYPWRCMD_OFF);
++
++		hdmi_wp_set_irqstatus(wp, HDMI_IRQ_LINK_CONNECT |
++				HDMI_IRQ_LINK_DISCONNECT);
++
++		hdmi_wp_set_phy_pwr(wp, HDMI_PHYPWRCMD_LDOON);
++	} else if (irqstatus & HDMI_IRQ_LINK_CONNECT) {
++		hdmi_wp_set_phy_pwr(wp, HDMI_PHYPWRCMD_TXON);
++	} else if (irqstatus & HDMI_IRQ_LINK_DISCONNECT) {
++		hdmi_wp_set_phy_pwr(wp, HDMI_PHYPWRCMD_LDOON);
++	}
++
++	return IRQ_HANDLED;
++}
++
++int hdmi_phy_enable(struct hdmi_phy_data *phy, struct hdmi_wp_data *wp,
++			struct hdmi_config *cfg)
++{
++	u16 r = 0;
++	u32 irqstatus;
++
++	hdmi_wp_clear_irqenable(wp, 0xffffffff);
++
++	irqstatus = hdmi_wp_get_irqstatus(wp);
++	hdmi_wp_set_irqstatus(wp, irqstatus);
++
++	r = hdmi_wp_set_phy_pwr(wp, HDMI_PHYPWRCMD_LDOON);
++	if (r)
++		return r;
++
++	/*
++	 * Read address 0 in order to get the SCP reset done completed
++	 * Dummy access performed to make sure reset is done
++	 */
++	hdmi_read_reg(phy->base, HDMI_TXPHY_TX_CTRL);
++
++	/*
++	 * Write to phy address 0 to configure the clock
++	 * use HFBITCLK write HDMI_TXPHY_TX_CONTROL_FREQOUT field
++	 */
++	REG_FLD_MOD(phy->base, HDMI_TXPHY_TX_CTRL, 0x1, 31, 30);
++
++	/* Write to phy address 1 to start HDMI line (TXVALID and TMDSCLKEN) */
++	hdmi_write_reg(phy->base, HDMI_TXPHY_DIGITAL_CTRL, 0xF0000000);
++
++	/* Setup max LDO voltage */
++	REG_FLD_MOD(phy->base, HDMI_TXPHY_POWER_CTRL, 0xB, 3, 0);
++
++	/* Write to phy address 3 to change the polarity control */
++	REG_FLD_MOD(phy->base, HDMI_TXPHY_PAD_CFG_CTRL, 0x1, 27, 27);
++
++	r = request_threaded_irq(phy->irq, NULL, hdmi_irq_handler,
++				IRQF_ONESHOT, "OMAP HDMI", wp);
++	if (r) {
++		DSSERR("HDMI IRQ request failed\n");
++		hdmi_wp_set_phy_pwr(wp, HDMI_PHYPWRCMD_OFF);
++		return r;
++	}
++
++	hdmi_wp_set_irqenable(wp,
++		HDMI_IRQ_LINK_CONNECT | HDMI_IRQ_LINK_DISCONNECT);
++
++	return 0;
++}
++
++void hdmi_phy_disable(struct hdmi_phy_data *phy, struct hdmi_wp_data *wp)
++{
++	free_irq(phy->irq, wp);
++
++	hdmi_wp_set_phy_pwr(wp, HDMI_PHYPWRCMD_OFF);
++}
++
++int hdmi_phy_init(struct platform_device *pdev, struct hdmi_phy_data *phy)
++{
++	struct resource *res;
++
++	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "hdmi_txphy");
++	if (!res) {
++		DSSERR("can't get PLL CTRL IORESOURCE_MEM HDMI\n");
++		return -EINVAL;
++	}
++
++	phy->base = devm_request_and_ioremap(&pdev->dev, res);
++	if (!phy->base) {
++		DSSERR("can't ioremap PLL ctrl\n");
++		return -ENOMEM;
++	}
++
++	phy->irq = platform_get_irq(pdev, 0);
++	if (phy->irq < 0) {
++		DSSERR("platform_get_irq failed\n");
++		return -ENODEV;
++	}
++
++	return 0;
++}
+diff --git a/drivers/video/omap2/dss/ti_hdmi.h b/drivers/video/omap2/dss/ti_hdmi.h
+index 62a83c7..716bac4 100644
+--- a/drivers/video/omap2/dss/ti_hdmi.h
++++ b/drivers/video/omap2/dss/ti_hdmi.h
+@@ -149,16 +149,10 @@ struct ti_hdmi_ip_ops {
+ 
+ 	void (*video_configure)(struct hdmi_ip_data *ip_data);
+ 
+-	int (*phy_enable)(struct hdmi_ip_data *ip_data);
 -
- 	/* Enable/Disable dynamic clocks: TODO add sysfs access */
- 	if (rinfo->family = CHIP_FAMILY_RS480)
- 		rinfo->dynclk = -1;
-@@ -2830,7 +2827,7 @@ void radeonfb_pm_init(struct radeonfb_info *rinfo, int dynclk, int ignore_devlis
- 	 * reason. --BenH
- 	 */
- 	if (machine_is(powermac) && rinfo->of_node) {
--		if (rinfo->is_mobility && rinfo->pm_reg &&
-+		if (rinfo->is_mobility && rinfo->pdev->pm_cap &&
- 		    rinfo->family <= CHIP_FAMILY_RV250)
- 			rinfo->pm_mode |= radeon_pm_d2;
+-	void (*phy_disable)(struct hdmi_ip_data *ip_data);
+-
+ 	int (*read_edid)(struct hdmi_ip_data *ip_data, u8 *edid, int len);
  
-diff --git a/drivers/video/aty/radeonfb.h b/drivers/video/aty/radeonfb.h
-index 7351e66..cb84604 100644
---- a/drivers/video/aty/radeonfb.h
-+++ b/drivers/video/aty/radeonfb.h
-@@ -342,7 +342,6 @@ struct radeonfb_info {
+ 	void (*dump_core)(struct hdmi_ip_data *ip_data, struct seq_file *s);
  
- 	int			mtrr_hdl;
+-	void (*dump_phy)(struct hdmi_ip_data *ip_data, struct seq_file *s);
+-
+ #if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+ 	int (*audio_start)(struct hdmi_ip_data *ip_data);
  
--	int			pm_reg;
- 	u32			save_regs[100];
- 	int			asleep;
- 	int			lock_blank;
+@@ -223,14 +217,20 @@ struct hdmi_pll_data {
+ 	struct hdmi_pll_info info;
+ };
+ 
++struct hdmi_phy_data {
++	void __iomem *base;
++
++	int irq;
++};
++
+ struct hdmi_ip_data {
+ 	struct hdmi_wp_data	wp;
+ 	struct hdmi_pll_data	pll;
++	struct hdmi_phy_data	phy;
+ 
+ 	unsigned long	core_sys_offset;
+ 	unsigned long	core_av_offset;
+-	unsigned long	phy_offset;
+-	int		irq;
++
+ 	const struct ti_hdmi_ip_ops *ops;
+ 	struct hdmi_config cfg;
+ 	struct hdmi_core_infoframe_avi avi_cfg;
+@@ -266,12 +266,16 @@ void hdmi_pll_dump(struct hdmi_pll_data *pll, struct seq_file *s);
+ void hdmi_pll_compute(struct hdmi_pll_data *pll, unsigned long clkin, int phy);
+ int hdmi_pll_init(struct platform_device *pdev, struct hdmi_pll_data *pll);
+ 
+-int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data);
+-void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data);
++/* HDMI PHY funcs */
++int hdmi_phy_enable(struct hdmi_phy_data *phy, struct hdmi_wp_data *wp,
++		struct hdmi_config *cfg);
++void hdmi_phy_disable(struct hdmi_phy_data *phy, struct hdmi_wp_data *wp);
++void hdmi_phy_dump(struct hdmi_phy_data *phy, struct seq_file *s);
++int hdmi_phy_init(struct platform_device *pdev, struct hdmi_phy_data *phy);
++
+ int ti_hdmi_4xxx_read_edid(struct hdmi_ip_data *ip_data, u8 *edid, int len);
+ void ti_hdmi_4xxx_basic_configure(struct hdmi_ip_data *ip_data);
+ void ti_hdmi_4xxx_core_dump(struct hdmi_ip_data *ip_data, struct seq_file *s);
+-void ti_hdmi_4xxx_phy_dump(struct hdmi_ip_data *ip_data, struct seq_file *s);
+ #if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+ int hdmi_compute_acr(u32 sample_freq, u32 *n, u32 *cts);
+ int hdmi_wp_audio_enable(struct hdmi_wp_data *wp, bool enable);
+diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+index 8cfb54b..c705aa1 100644
+--- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
++++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+@@ -37,9 +37,6 @@
+ #include "dss.h"
+ #include "dss_features.h"
+ 
+-#define HDMI_IRQ_LINK_CONNECT		(1 << 25)
+-#define HDMI_IRQ_LINK_DISCONNECT	(1 << 26)
+-
+ static inline void hdmi_write_reg(void __iomem *base_addr,
+ 				const u16 idx, u32 val)
+ {
+@@ -70,11 +67,6 @@ static inline int hdmi_wait_for_bit_change(void __iomem *base_addr,
+ 	return val;
+ }
+ 
+-static inline void __iomem *hdmi_phy_base(struct hdmi_ip_data *ip_data)
+-{
+-	return ip_data->wp.base + ip_data->phy_offset;
+-}
+-
+ static inline void __iomem *hdmi_av_base(struct hdmi_ip_data *ip_data)
+ {
+ 	return ip_data->wp.base + ip_data->core_av_offset;
+@@ -85,94 +77,6 @@ static inline void __iomem *hdmi_core_sys_base(struct hdmi_ip_data *ip_data)
+ 	return ip_data->wp.base + ip_data->core_sys_offset;
+ }
+ 
+-static irqreturn_t hdmi_irq_handler(int irq, void *data)
+-{
+-	struct hdmi_ip_data *ip_data = data;
+-	u32 irqstatus;
+-
+-	irqstatus = hdmi_wp_get_irqstatus(&ip_data->wp);
+-	hdmi_wp_set_irqstatus(&ip_data->wp, irqstatus);
+-
+-	if ((irqstatus & HDMI_IRQ_LINK_CONNECT) &&
+-			irqstatus & HDMI_IRQ_LINK_DISCONNECT) {
+-		/*
+-		 * If we get both connect and disconnect interrupts at the same
+-		 * time, turn off the PHY, clear interrupts, and restart, which
+-		 * raises connect interrupt if a cable is connected, or nothing
+-		 * if cable is not connected.
+-		 */
+-		hdmi_wp_set_phy_pwr(&ip_data->wp, HDMI_PHYPWRCMD_OFF);
+-
+-		hdmi_wp_set_irqstatus(&ip_data->wp, HDMI_IRQ_LINK_CONNECT |
+-				HDMI_IRQ_LINK_DISCONNECT);
+-
+-		hdmi_wp_set_phy_pwr(&ip_data->wp, HDMI_PHYPWRCMD_LDOON);
+-	} else if (irqstatus & HDMI_IRQ_LINK_CONNECT) {
+-		hdmi_wp_set_phy_pwr(&ip_data->wp, HDMI_PHYPWRCMD_TXON);
+-	} else if (irqstatus & HDMI_IRQ_LINK_DISCONNECT) {
+-		hdmi_wp_set_phy_pwr(&ip_data->wp, HDMI_PHYPWRCMD_LDOON);
+-	}
+-
+-	return IRQ_HANDLED;
+-}
+-
+-int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data)
+-{
+-	u16 r = 0;
+-	u32 irqstatus;
+-	void __iomem *phy_base = hdmi_phy_base(ip_data);
+-
+-	hdmi_wp_clear_irqenable(&ip_data->wp, 0xffffffff);
+-
+-	irqstatus = hdmi_wp_get_irqstatus(&ip_data->wp);
+-	hdmi_wp_set_irqstatus(&ip_data->wp, irqstatus);
+-
+-	r = hdmi_wp_set_phy_pwr(&ip_data->wp, HDMI_PHYPWRCMD_LDOON);
+-	if (r)
+-		return r;
+-
+-	/*
+-	 * Read address 0 in order to get the SCP reset done completed
+-	 * Dummy access performed to make sure reset is done
+-	 */
+-	hdmi_read_reg(phy_base, HDMI_TXPHY_TX_CTRL);
+-
+-	/*
+-	 * Write to phy address 0 to configure the clock
+-	 * use HFBITCLK write HDMI_TXPHY_TX_CONTROL_FREQOUT field
+-	 */
+-	REG_FLD_MOD(phy_base, HDMI_TXPHY_TX_CTRL, 0x1, 31, 30);
+-
+-	/* Write to phy address 1 to start HDMI line (TXVALID and TMDSCLKEN) */
+-	hdmi_write_reg(phy_base, HDMI_TXPHY_DIGITAL_CTRL, 0xF0000000);
+-
+-	/* Setup max LDO voltage */
+-	REG_FLD_MOD(phy_base, HDMI_TXPHY_POWER_CTRL, 0xB, 3, 0);
+-
+-	/* Write to phy address 3 to change the polarity control */
+-	REG_FLD_MOD(phy_base, HDMI_TXPHY_PAD_CFG_CTRL, 0x1, 27, 27);
+-
+-	r = request_threaded_irq(ip_data->irq, NULL, hdmi_irq_handler,
+-				 IRQF_ONESHOT, "OMAP HDMI", ip_data);
+-	if (r) {
+-		DSSERR("HDMI IRQ request failed\n");
+-		hdmi_wp_set_phy_pwr(&ip_data->wp, HDMI_PHYPWRCMD_OFF);
+-		return r;
+-	}
+-
+-	hdmi_wp_set_irqenable(&ip_data->wp,
+-		HDMI_IRQ_LINK_CONNECT | HDMI_IRQ_LINK_DISCONNECT);
+-
+-	return 0;
+-}
+-
+-void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data)
+-{
+-	free_irq(ip_data->irq, ip_data);
+-
+-	hdmi_wp_set_phy_pwr(&ip_data->wp, HDMI_PHYPWRCMD_OFF);
+-}
+-
+ static int hdmi_core_ddc_init(struct hdmi_ip_data *ip_data)
+ {
+ 	void __iomem *base = hdmi_core_sys_base(ip_data);
+@@ -524,8 +428,6 @@ static void hdmi_core_av_packet_config(struct hdmi_ip_data *ip_data,
+ 		(repeat_cfg.generic_pkt_repeat));
+ }
+ 
+-
+-
+ void ti_hdmi_4xxx_basic_configure(struct hdmi_ip_data *ip_data)
+ {
+ 	/* HDMI */
+@@ -769,17 +671,6 @@ void ti_hdmi_4xxx_core_dump(struct hdmi_ip_data *ip_data, struct seq_file *s)
+ 	DUMPCOREAV(HDMI_CORE_AV_CEC_ADDR_ID);
+ }
+ 
+-void ti_hdmi_4xxx_phy_dump(struct hdmi_ip_data *ip_data, struct seq_file *s)
+-{
+-#define DUMPPHY(r) seq_printf(s, "%-35s %08x\n", #r,\
+-		hdmi_read_reg(hdmi_phy_base(ip_data), r))
+-
+-	DUMPPHY(HDMI_TXPHY_TX_CTRL);
+-	DUMPPHY(HDMI_TXPHY_DIGITAL_CTRL);
+-	DUMPPHY(HDMI_TXPHY_POWER_CTRL);
+-	DUMPPHY(HDMI_TXPHY_PAD_CFG_CTRL);
+-}
+-
+ #if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
+ static void ti_hdmi_4xxx_core_audio_config(struct hdmi_ip_data *ip_data,
+ 					struct hdmi_core_audio_config *cfg)
 -- 
-1.7.10.4
+1.8.1.2
 

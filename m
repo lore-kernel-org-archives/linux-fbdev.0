@@ -1,56 +1,98 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 17 Sep 2013 07:18:37 +0000
-Subject: [PATCH 11/11] [experimental] arm: omap: omap4 hwmod data: Split hdmi address space
-Message-Id: <1379401597-27222-12-git-send-email-archit@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 17 Sep 2013 05:01:01 +0000
+Subject: [PATCH 06/19] video: pxafb: use dev_get_platdata()
+Message-Id: <000b01ceb362$e78c46a0$b6a4d3e0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1379401597-27222-1-git-send-email-archit@ti.com>
-In-Reply-To: <1379401597-27222-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Split hdmi address space in order to get base addresses of hdmi submodules by
-name. This is just a demonstration patch for the hdmi refactoring to work. The
-address data should belong to the hdmi DT node.
+Use the wrapper function for retrieving the platform data instead of
+accessing dev->platform_data directly. This is a cosmetic change
+to make the code simpler and enhance the readability.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- arch/arm/mach-omap2/omap_hwmod_44xx_data.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ drivers/video/pxafb.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/omap_hwmod_44xx_data.c b/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
-index 9c3b504..3b12339 100644
---- a/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
-+++ b/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
-@@ -3843,7 +3843,26 @@ static struct omap_hwmod_ocp_if omap44xx_l3_main_2__dss_hdmi = {
+diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
+index eca2de4..1ecd9ce 100644
+--- a/drivers/video/pxafb.c
++++ b/drivers/video/pxafb.c
+@@ -457,7 +457,7 @@ static int pxafb_adjust_timing(struct pxafb_info *fbi,
+ static int pxafb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+ 	struct pxafb_info *fbi = (struct pxafb_info *)info;
+-	struct pxafb_mach_info *inf = fbi->dev->platform_data;
++	struct pxafb_mach_info *inf = dev_get_platdata(fbi->dev);
+ 	int err;
  
- static struct omap_hwmod_addr_space omap44xx_dss_hdmi_addrs[] = {
- 	{
-+		.name		= "hdmi_wp",
- 		.pa_start	= 0x48046000,
-+		.pa_end		= 0x480461ff,
-+		.flags		= ADDR_TYPE_RT
-+	},
-+	{
-+		.name		= "hdmi_pllctrl",
-+		.pa_start	= 0x48046200,
-+		.pa_end		= 0x480462ff,
-+		.flags		= ADDR_TYPE_RT
-+	},
-+	{
-+		.name		= "hdmi_txphy",
-+		.pa_start	= 0x48046300,
-+		.pa_end		= 0x480463ff,
-+		.flags		= ADDR_TYPE_RT
-+	},
-+	{
-+		.name		= "hdmi_core",
-+		.pa_start	= 0x48046400,
- 		.pa_end		= 0x48046fff,
- 		.flags		= ADDR_TYPE_RT
- 	},
+ 	if (inf->fixed_modes) {
+@@ -1230,7 +1230,7 @@ static unsigned int __smart_timing(unsigned time_ns, unsigned long lcd_clk)
+ static void setup_smart_timing(struct pxafb_info *fbi,
+ 				struct fb_var_screeninfo *var)
+ {
+-	struct pxafb_mach_info *inf = fbi->dev->platform_data;
++	struct pxafb_mach_info *inf = dev_get_platdata(fbi->dev);
+ 	struct pxafb_mode_info *mode = &inf->modes[0];
+ 	unsigned long lclk = clk_get_rate(fbi->clk);
+ 	unsigned t1, t2, t3, t4;
+@@ -1258,14 +1258,14 @@ static void setup_smart_timing(struct pxafb_info *fbi,
+ static int pxafb_smart_thread(void *arg)
+ {
+ 	struct pxafb_info *fbi = arg;
+-	struct pxafb_mach_info *inf = fbi->dev->platform_data;
++	struct pxafb_mach_info *inf = dev_get_platdata(fbi->dev);
+ 
+ 	if (!inf->smart_update) {
+ 		pr_err("%s: not properly initialized, thread terminated\n",
+ 				__func__);
+ 		return -EINVAL;
+ 	}
+-	inf = fbi->dev->platform_data;
++	inf = dev_get_platdata(fbi->dev);
+ 
+ 	pr_debug("%s(): task starting\n", __func__);
+ 
+@@ -1793,7 +1793,7 @@ static struct pxafb_info *pxafb_init_fbinfo(struct device *dev)
+ {
+ 	struct pxafb_info *fbi;
+ 	void *addr;
+-	struct pxafb_mach_info *inf = dev->platform_data;
++	struct pxafb_mach_info *inf = dev_get_platdata(dev);
+ 
+ 	/* Alloc the pxafb_info and pseudo_palette in one step */
+ 	fbi = kmalloc(sizeof(struct pxafb_info) + sizeof(u32) * 16, GFP_KERNEL);
+@@ -1855,7 +1855,7 @@ static struct pxafb_info *pxafb_init_fbinfo(struct device *dev)
+ #ifdef CONFIG_FB_PXA_PARAMETERS
+ static int parse_opt_mode(struct device *dev, const char *this_opt)
+ {
+-	struct pxafb_mach_info *inf = dev->platform_data;
++	struct pxafb_mach_info *inf = dev_get_platdata(dev);
+ 
+ 	const char *name = this_opt+5;
+ 	unsigned int namelen = strlen(name);
+@@ -1914,7 +1914,7 @@ done:
+ 
+ static int parse_opt(struct device *dev, char *this_opt)
+ {
+-	struct pxafb_mach_info *inf = dev->platform_data;
++	struct pxafb_mach_info *inf = dev_get_platdata(dev);
+ 	struct pxafb_mode_info *mode = &inf->modes[0];
+ 	char s[64];
+ 
+@@ -2102,7 +2102,7 @@ static int pxafb_probe(struct platform_device *dev)
+ 
+ 	dev_dbg(&dev->dev, "pxafb_probe\n");
+ 
+-	inf = dev->dev.platform_data;
++	inf = dev_get_platdata(&dev->dev);
+ 	ret = -ENOMEM;
+ 	fbi = NULL;
+ 	if (!inf)
 -- 
-1.8.1.2
+1.7.10.4
+
 

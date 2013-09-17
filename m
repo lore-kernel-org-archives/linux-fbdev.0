@@ -1,71 +1,49 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 26 Sep 2013 08:50:31 +0000
-Subject: Re: [PATCH 1/6] video: udlfb: Use NULL instead of 0
-Message-Id: <5243F557.8060500@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="tMlD1K0qs3NPoeBNJj3gF5Fjt1wpJr93N"
+From: John Tapsell <johnflux@gmail.com>
+Date: Tue, 17 Sep 2013 22:29:11 +0000
+Subject: [PATCH] fbcon: fix deadlock in fbcon_generic_blank()
+Message-Id: <CAHQ6N+q13YeM60S_QfRF8Bh+Vc_7yHhCMSABQ=GOtOe5V0EXow@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1380108594-19090-1-git-send-email-sachin.kamat@linaro.org>
-In-Reply-To: <1380108594-19090-1-git-send-email-sachin.kamat@linaro.org>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Peter Hurley <peter@hurleysoftware.com>, Dave Airlie <airlied@redhat.com>, linux-fbdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
 
---tMlD1K0qs3NPoeBNJj3gF5Fjt1wpJr93N
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Do not lock fb_info when calling sending the FB_EVENT_CONBLANK
+event.
 
-On 25/09/13 14:29, Sachin Kamat wrote:
-> new_back is a pointer. Use NULL instead of 0.
->=20
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> Cc: Bernie Thompson <bernie@plugable.com>
-> ---
->  drivers/video/udlfb.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
-> index d2e5bc3..025f14e 100644
-> --- a/drivers/video/udlfb.c
-> +++ b/drivers/video/udlfb.c
-> @@ -1166,7 +1166,7 @@ static int dlfb_realloc_framebuffer(struct dlfb_d=
-ata *dev, struct fb_info *info)
->  	int new_len;
->  	unsigned char *old_fb =3D info->screen_base;
->  	unsigned char *new_fb;
-> -	unsigned char *new_back =3D 0;
-> +	unsigned char *new_back =3D NULL;
-> =20
->  	pr_warn("Reallocating framebuffer. Addresses will change!\n");
-> =20
->=20
+In fbmem.c, the semantics are that we acquire the lock_fb_info first,
+and then console_lock.  However when fbcon.c fbcon_generic_blank() is
+called, the console lock could already be held.  Locking fb_info can
+thus cause a deadlock.
 
-Thanks, queuing this series for 3.13.
+fbmem.c sends the FB_EVENT_BLANK without locking lock_fb_info first, so
+this change introduces similar behaviour.
 
- Tomi
+Signed-off-by: John Tapsell <johnflux@gmail.com>
 
+---
+ drivers/video/console/fbcon.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 6b4fb5c..8546441 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -2333,13 +2333,9 @@ static void fbcon_generic_blank(struct vc_data
+*vc, struct fb_info *info,
+         vc->vc_video_erase_char = oldc;
+     }
 
---tMlD1K0qs3NPoeBNJj3gF5Fjt1wpJr93N
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+-
+-    if (!lock_fb_info(info))
+-        return;
+     event.info = info;
+     event.data = &blank;
+     fb_notifier_call_chain(FB_EVENT_CONBLANK, &event);
+-    unlock_fb_info(info);
+ }
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSQ/VXAAoJEPo9qoy8lh71TH8P/13bCN7fi959d2ypuQaMVLmM
-F5MJR+l+/pnEt+1GI+2dlKpksKsQNI8SLBIahjl2L1CYapWPnnYN2a1MeOvwujTJ
-VcgSI38dhoDMiSQNKsDvS9GTUI6T1tsbsW+DYBLHvovz9BsWVC3EVLIXR1UV+MyN
-rwic76NebfM3/HiMaRYISzeYW/Zwl2O6CbxT0CWF4KOUKMDsQTKOIE99SB5YjeIz
-xZAUcXMrqNjUBwsJvLNALPjtumONZCzKOCT0bt1Bgn2U++lmsQ7pInesy1X54Ez3
-U38LPJAEu9+5CTk1aQt1Rwyu/EYkw0LVP4ikLg3ob/ViYlT+hkUK4UWDH+NqzWPE
-7R5CeI9a87b06oohsPV/QcVJgRs+Dvrt0k7BIyIkfPAbYbdUWBMmawmfwlA1JyU+
-6j5q52WRFidqmyIkxF2rPFJnnFPeJ6CiX/o3H/auNhZaa0iXHZkGSJM8POrgeH7L
-zCrMfekrIjDyNc7L16i4JwRH7JTB+v7oMdn7wTdWiKGgxeY+CiiZdgORsYEF3w3r
-iEHa2bKOm20hnpEk/bIJYCvciwSD5a5yNeYEVZK2YO2ekUSbML0HX1EY1IgFJ4AR
-/3zbOnzounCXrOGhHxeJAdcfXpns2tBY5KAfGxYUkXCDl0yebi3tOnd7SJgS5h7l
-rbzO7L7cv4VodHa7Y0IR
-=XqqS
------END PGP SIGNATURE-----
-
---tMlD1K0qs3NPoeBNJj3gF5Fjt1wpJr93N--
+ static int fbcon_blank(struct vc_data *vc, int blank, int mode_switch)
+-- 
+1.8.1.2

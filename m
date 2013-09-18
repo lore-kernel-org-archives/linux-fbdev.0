@@ -1,77 +1,57 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Date: Mon, 23 Sep 2013 16:53:28 +0000
-Subject: Re: [PATCH 4/7] pcmcia: at91_cf: fix deferred probe from __init
-Message-Id: <52407208.1060300@atmel.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Wed, 18 Sep 2013 12:48:32 +0000
+Subject: [PATCH] radeon: Conditionally compile PM code
+Message-Id: <1379508512-30155-1-git-send-email-treding@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130923134028.GF21013@sirena.org.uk> <1379946452-25649-1-git-send-email-jhovold@gmail.com> <1379946452-25649-5-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1379946452-25649-5-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Johan Hovold <jhovold@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@linaro.org>, linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pcmcia@lists.infradead.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 23/09/2013 16:27, Johan Hovold :
-> Move probe out of __init section and don't use platform_driver_probe
-> which cannot be used with deferred probing.
->
-> Since commit e9354576 ("gpiolib: Defer failed gpio requests by default")
-> this driver might return -EPROBE_DEFER if a gpio_request fails.
->
-> Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-> Cc: Nicolas Ferre <nicolas.ferre@atmel.com>
+The power management code is only used on X86 and PowerMac. To prevent
+the compiler from warning about unused code, only build when PM and one
+of X86 or PowerMac is selected.
 
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ drivers/video/aty/radeon_pm.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-Thanks Johan.
-
-> Signed-off-by: Johan Hovold <jhovold@gmail.com>
-> ---
->   drivers/pcmcia/at91_cf.c | 11 +++++------
->   1 file changed, 5 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/pcmcia/at91_cf.c b/drivers/pcmcia/at91_cf.c
-> index b8f5acf..de24232 100644
-> --- a/drivers/pcmcia/at91_cf.c
-> +++ b/drivers/pcmcia/at91_cf.c
-> @@ -245,7 +245,7 @@ static int at91_cf_dt_init(struct platform_device *pdev)
->   }
->   #endif
->
-> -static int __init at91_cf_probe(struct platform_device *pdev)
-> +static int at91_cf_probe(struct platform_device *pdev)
->   {
->   	struct at91_cf_socket	*cf;
->   	struct at91_cf_data	*board = pdev->dev.platform_data;
-> @@ -354,7 +354,7 @@ fail0a:
->   	return status;
->   }
->
-> -static int __exit at91_cf_remove(struct platform_device *pdev)
-> +static int at91_cf_remove(struct platform_device *pdev)
->   {
->   	struct at91_cf_socket	*cf = platform_get_drvdata(pdev);
->
-> @@ -404,14 +404,13 @@ static struct platform_driver at91_cf_driver = {
->   		.owner		= THIS_MODULE,
->   		.of_match_table = of_match_ptr(at91_cf_dt_ids),
->   	},
-> -	.remove		= __exit_p(at91_cf_remove),
-> +	.probe		= at91_cf_probe,
-> +	.remove		= at91_cf_remove,
->   	.suspend	= at91_cf_suspend,
->   	.resume		= at91_cf_resume,
->   };
->
-> -/*--------------------------------------------------------------------------*/
-> -
-> -module_platform_driver_probe(at91_cf_driver, at91_cf_probe);
-> +module_platform_driver(at91_cf_driver);
->
->   MODULE_DESCRIPTION("AT91 Compact Flash Driver");
->   MODULE_AUTHOR("David Brownell");
->
-
-
+diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
+index f7091ec..f4317f1 100644
+--- a/drivers/video/aty/radeon_pm.c
++++ b/drivers/video/aty/radeon_pm.c
+@@ -1427,6 +1427,8 @@ static void radeon_pm_full_reset_sdram(struct radeonfb_info *rinfo)
+ 	mdelay( 15);
+ }
+ 
++#if defined(CONFIG_PM)
++#if defined(CONFIG_X86) || defined(CONFIG_PPC_PMAC)
+ static void radeon_pm_reset_pad_ctlr_strength(struct radeonfb_info *rinfo)
+ {
+ 	u32 tmp, tmp2;
+@@ -1939,9 +1941,10 @@ static void radeon_reinitialize_M10(struct radeonfb_info *rinfo)
+ 	 */
+ 	radeon_pm_m10_enable_lvds_spread_spectrum(rinfo);
+ }
++#endif
+ 
+ #ifdef CONFIG_PPC_OF
+-
++#ifdef CONFIG_PPC_PMAC
+ static void radeon_pm_m9p_reconfigure_mc(struct radeonfb_info *rinfo)
+ {
+ 	OUTREG(MC_CNTL, rinfo->save_regs[46]);
+@@ -2202,6 +2205,8 @@ static void radeon_reinitialize_M9P(struct radeonfb_info *rinfo)
+ 	radeon_pm_restore_pixel_pll(rinfo);
+ 	radeon_pm_m10_enable_lvds_spread_spectrum(rinfo);
+ }
++#endif
++#endif
+ 
+ #if 0 /* Not ready yet */
+ static void radeon_reinitialize_QW(struct radeonfb_info *rinfo)
 -- 
-Nicolas Ferre
+1.8.4
+

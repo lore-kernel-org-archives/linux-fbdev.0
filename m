@@ -1,54 +1,91 @@
-From: Zhou Zhu <zzhu3@marvell.com>
-Date: Fri, 13 Sep 2013 07:41:07 +0000
-Subject: Re: [PATCH V5 0/5] video: mmp: misc updates for mmp display driver
-Message-Id: <5232C193.1030604@marvell.com>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 21:47:01 +0000
+Subject: [PATCH 22/51] DMA-API: amba: get rid of separate dma_mask
+Message-Id: <E1VMm3x-0007hp-Lv@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1379055589-26132-1-git-send-email-zzhu3@marvell.com>
-In-Reply-To: <1379055589-26132-1-git-send-email-zzhu3@marvell.com>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
+Cc: Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>
 
-Hi, Jean-Christophe, Tomi,
+AMBA Primecell devices always treat streaming and coherent DMA exactly
+the same, so there's no point in having the masks separated.
 
-Would you please help to review/apply this patch set?
-It has been there for more than 2 months from v3 in which version we 
-made last update...
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ drivers/amba/bus.c       |    6 +-----
+ drivers/of/platform.c    |    3 ---
+ include/linux/amba/bus.h |    2 --
+ 3 files changed, 1 insertions(+), 10 deletions(-)
 
-On 09/13/2013 02:59 PM, Zhou Zhu wrote:
-> Resend this patch set, the V1 to V4 of which is sent by Jett Zhou.
-> This patch set contains some misc updates for mmp display controller:
-> 1. Rbswap enhancement
-> 2. Code refine.
-> 3. Pitch calculation and video layer settings.
->
-> Changes:
-> V5/V4:
-> Just rebase.
->
-> V3/V2:
-> some updates according to comments.
->
-> Guoqing Li (2):
->    video: mmp: rb swap setting update for mmp display
->    video: mmp: optimize some register setting code
->
-> Jett.Zhou (1):
->    ARM: mmp: remove the legacy rbswap setting for ttc_dkb platform
->
-> Jing Xiang (2):
->    video: mmp: calculate pitch value when fb set win
->    video: mmp: add pitch info in mmp_win structure
->
->   arch/arm/mach-mmp/ttc_dkb.c     |    4 +--
->   drivers/video/mmp/fb/mmpfb.c    |   34 ++++++++++++-------
->   drivers/video/mmp/hw/mmp_ctrl.c |   71 ++++++++++++++++++++++-----------------
->   drivers/video/mmp/hw/mmp_ctrl.h |    5 +++
->   include/video/mmp_disp.h        |    6 ++++
->   5 files changed, 75 insertions(+), 45 deletions(-)
->
-
-
+diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
+index c670727..c4876ac 100644
+--- a/drivers/amba/bus.c
++++ b/drivers/amba/bus.c
+@@ -552,7 +552,6 @@ amba_aphb_device_add(struct device *parent, const char *name,
+ 	if (!dev)
+ 		return ERR_PTR(-ENOMEM);
+ 
+-	dev->dma_mask = dma_mask;
+ 	dev->dev.coherent_dma_mask = dma_mask;
+ 	dev->irq[0] = irq1;
+ 	dev->irq[1] = irq2;
+@@ -619,7 +618,7 @@ static void amba_device_initialize(struct amba_device *dev, const char *name)
+ 		dev_set_name(&dev->dev, "%s", name);
+ 	dev->dev.release = amba_device_release;
+ 	dev->dev.bus = &amba_bustype;
+-	dev->dev.dma_mask = &dev->dma_mask;
++	dev->dev.dma_mask = &dev->dev.coherent_dma_mask;
+ 	dev->res.name = dev_name(&dev->dev);
+ }
+ 
+@@ -663,9 +662,6 @@ int amba_device_register(struct amba_device *dev, struct resource *parent)
+ 	amba_device_initialize(dev, dev->dev.init_name);
+ 	dev->dev.init_name = NULL;
+ 
+-	if (!dev->dev.coherent_dma_mask && dev->dma_mask)
+-		dev_warn(&dev->dev, "coherent dma mask is unset\n");
+-
+ 	return amba_device_add(dev, parent);
+ }
+ 
+diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+index 9b439ac..54382ba 100644
+--- a/drivers/of/platform.c
++++ b/drivers/of/platform.c
+@@ -284,9 +284,6 @@ static struct amba_device *of_amba_device_create(struct device_node *node,
+ 	else
+ 		of_device_make_bus_id(&dev->dev);
+ 
+-	/* setup amba-specific device info */
+-	dev->dma_mask = ~0;
+-
+ 	/* Allow the HW Peripheral ID to be overridden */
+ 	prop = of_get_property(node, "arm,primecell-periphid", NULL);
+ 	if (prop)
+diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
+index 43ec7e2..682df0e 100644
+--- a/include/linux/amba/bus.h
++++ b/include/linux/amba/bus.h
+@@ -30,7 +30,6 @@ struct amba_device {
+ 	struct device		dev;
+ 	struct resource		res;
+ 	struct clk		*pclk;
+-	u64			dma_mask;
+ 	unsigned int		periphid;
+ 	unsigned int		irq[AMBA_NR_IRQS];
+ };
+@@ -131,7 +130,6 @@ struct amba_device name##_device = {				\
+ struct amba_device name##_device = {				\
+ 	.dev = __AMBA_DEV(busid, data, ~0ULL),			\
+ 	.res = DEFINE_RES_MEM(base, SZ_4K),			\
+-	.dma_mask = ~0ULL,					\
+ 	.irq = irqs,						\
+ 	.periphid = id,						\
+ }
 -- 
-Thanks, -Zhou
+1.7.4.4
+

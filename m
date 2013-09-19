@@ -1,97 +1,62 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Mon, 23 Sep 2013 14:27:26 +0000
-Subject: [PATCH 1/7] driver core: prevent deferred probe with platform_driver_probe
-Message-Id: <1379946452-25649-2-git-send-email-jhovold@gmail.com>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 23:17:39 +0000
+Subject: [PATCH 45/51] DMA-API: firmware/google/gsmi.c: avoid direct access to DMA masks
+Message-Id: <E1VMnTf-0007ss-9q@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130923134028.GF21013@sirena.org.uk>
- <1379946452-25649-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1379946452-25649-1-git-send-email-jhovold@gmail.com>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, linux-usb@vger.kernel.org, Mark Brown <broonie@linaro.org>, Johan Hovold <jhovold@gmail.com>, linux-pcmcia@lists.infradead.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org, Grant Likely <grant.likely@linaro.org>
+To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
 
-Prevent drivers relying on platform_driver_probe from requesting
-deferred probing in order to avoid further futile probe attempts (either
-the driver has been unregistered or its probe function has been set to
-platform_drv_probe_fail when probing is retried).
+This driver doesn't need to directly access DMA masks if it uses the
+platform_device_register_full() API rather than
+platform_device_register_simple() - the former function can initialize
+the DMA mask appropriately.
 
-Note that several platform drivers currently return subsystem errors
-from probe and that these can include -EPROBE_DEFER (e.g. if a gpio
-request fails).
-
-Add a warning to platform_drv_probe that can be used to catch drivers
-that inadvertently request probe deferral while using
-platform_driver_probe.
-
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/base/platform.c         | 17 +++++++++++++----
- include/linux/platform_device.h |  1 +
- 2 files changed, 14 insertions(+), 4 deletions(-)
+ drivers/firmware/google/gsmi.c |   13 ++++++++-----
+ 1 files changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index 4f8bef3..47051cd 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -488,6 +488,11 @@ static int platform_drv_probe(struct device *_dev)
- 	if (ret && ACPI_HANDLE(_dev))
- 		acpi_dev_pm_detach(_dev, true);
+diff --git a/drivers/firmware/google/gsmi.c b/drivers/firmware/google/gsmi.c
+index 6eb535f..e5a67b2 100644
+--- a/drivers/firmware/google/gsmi.c
++++ b/drivers/firmware/google/gsmi.c
+@@ -764,6 +764,13 @@ static __init int gsmi_system_valid(void)
+ static struct kobject *gsmi_kobj;
+ static struct efivars efivars;
  
-+	if (drv->prevent_deferred_probe && ret = -EPROBE_DEFER) {
-+		dev_warn(_dev, "probe deferral not supported\n");
-+		ret = -ENXIO;
-+	}
++static const struct platform_device_info gsmi_dev_info = {
++	.name		= "gsmi",
++	.id		= -1,
++	/* SMI callbacks require 32bit addresses */
++	.dma_mask	= DMA_BIT_MASK(32),
++};
 +
- 	return ret;
- }
- 
-@@ -553,8 +558,7 @@ EXPORT_SYMBOL_GPL(platform_driver_unregister);
- /**
-  * platform_driver_probe - register driver for non-hotpluggable device
-  * @drv: platform driver structure
-- * @probe: the driver probe routine, probably from an __init section,
-- *         must not return -EPROBE_DEFER.
-+ * @probe: the driver probe routine, probably from an __init section
-  *
-  * Use this instead of platform_driver_register() when you know the device
-  * is not hotpluggable and has already been registered, and you want to
-@@ -565,8 +569,7 @@ EXPORT_SYMBOL_GPL(platform_driver_unregister);
-  * into system-on-chip processors, where the controller devices have been
-  * configured as part of board setup.
-  *
-- * This is incompatible with deferred probing so probe() must not
-- * return -EPROBE_DEFER.
-+ * Note that this is incompatible with deferred probing.
-  *
-  * Returns zero if the driver registered and bound to a device, else returns
-  * a negative error code and with the driver not registered.
-@@ -576,6 +579,12 @@ int __init_or_module platform_driver_probe(struct platform_driver *drv,
+ static __init int gsmi_init(void)
  {
- 	int retval, code;
+ 	unsigned long flags;
+@@ -776,7 +783,7 @@ static __init int gsmi_init(void)
+ 	gsmi_dev.smi_cmd = acpi_gbl_FADT.smi_command;
  
-+	/*
-+	 * Prevent driver from requesting probe deferral to avoid further
-+	 * futile probe attempts.
-+	 */
-+	drv->prevent_deferred_probe = true;
-+
- 	/* make sure driver won't have bind/unbind attributes */
- 	drv->driver.suppress_bind_attrs = true;
+ 	/* register device */
+-	gsmi_dev.pdev = platform_device_register_simple("gsmi", -1, NULL, 0);
++	gsmi_dev.pdev = platform_device_register_full(&gsmi_dev_info);
+ 	if (IS_ERR(gsmi_dev.pdev)) {
+ 		printk(KERN_ERR "gsmi: unable to register platform device\n");
+ 		return PTR_ERR(gsmi_dev.pdev);
+@@ -785,10 +792,6 @@ static __init int gsmi_init(void)
+ 	/* SMI access needs to be serialized */
+ 	spin_lock_init(&gsmi_dev.lock);
  
-diff --git a/include/linux/platform_device.h b/include/linux/platform_device.h
-index ce8e4ff..16f6654 100644
---- a/include/linux/platform_device.h
-+++ b/include/linux/platform_device.h
-@@ -178,6 +178,7 @@ struct platform_driver {
- 	int (*resume)(struct platform_device *);
- 	struct device_driver driver;
- 	const struct platform_device_id *id_table;
-+	bool prevent_deferred_probe;
- };
- 
- #define to_platform_driver(drv)	(container_of((drv), struct platform_driver, \
+-	/* SMI callbacks require 32bit addresses */
+-	gsmi_dev.pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
+-	gsmi_dev.pdev->dev.dma_mask -		&gsmi_dev.pdev->dev.coherent_dma_mask;
+ 	ret = -ENOMEM;
+ 	gsmi_dev.dma_pool = dma_pool_create("gsmi", &gsmi_dev.pdev->dev,
+ 					     GSMI_BUF_SIZE, GSMI_BUF_ALIGN, 0);
 -- 
-1.8.3.2
+1.7.4.4
 

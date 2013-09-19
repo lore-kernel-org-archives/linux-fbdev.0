@@ -1,40 +1,43 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Fri, 20 Sep 2013 06:44:14 +0000
-Subject: [PATCH 05/15] video: amifb: Remove redundant dev_set_drvdata
-Message-Id: <1379658744-17113-6-git-send-email-sachin.kamat@linaro.org>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 21:59:03 +0000
+Subject: [PATCH 34/51] DMA-API: net: octeon: use dma_coerce_mask_and_coherent()
+Message-Id: <E1VMmFb-0007jO-50@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
 
-Driver core sets driver data to NULL upon failure or remove.
+The code sequence:
+	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(64);
+	pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
+bypasses the architectures check on the DMA mask.  It can be replaced
+with dma_coerce_mask_and_coherent(), avoiding the direct initialization
+of this mask.
 
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/video/amifb.c |    2 --
- 1 file changed, 2 deletions(-)
+ drivers/net/ethernet/octeon/octeon_mgmt.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
-index a6780ee..8ab304d 100644
---- a/drivers/video/amifb.c
-+++ b/drivers/video/amifb.c
-@@ -3748,7 +3748,6 @@ default_chipset:
- 	return 0;
+diff --git a/drivers/net/ethernet/octeon/octeon_mgmt.c b/drivers/net/ethernet/octeon/octeon_mgmt.c
+index 622aa75..2006a07 100644
+--- a/drivers/net/ethernet/octeon/octeon_mgmt.c
++++ b/drivers/net/ethernet/octeon/octeon_mgmt.c
+@@ -1552,8 +1552,9 @@ static int octeon_mgmt_probe(struct platform_device *pdev)
  
- unset_drvdata:
--	dev_set_drvdata(&pdev->dev, NULL);
- 	fb_dealloc_cmap(&info->cmap);
- free_irq:
- 	free_irq(IRQ_AMIGA_COPPER, info->par);
-@@ -3768,7 +3767,6 @@ static int __exit amifb_remove(struct platform_device *pdev)
- 	struct fb_info *info = dev_get_drvdata(&pdev->dev);
+ 	p->phy_np = of_parse_phandle(pdev->dev.of_node, "phy-handle", 0);
  
- 	unregister_framebuffer(info);
--	dev_set_drvdata(&pdev->dev, NULL);
- 	fb_dealloc_cmap(&info->cmap);
- 	free_irq(IRQ_AMIGA_COPPER, info->par);
- 	custom.dmacon = DMAF_ALL | DMAF_MASTER;
+-	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(64);
+-	pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
++	result = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
++	if (result)
++		goto err;
+ 
+ 	netif_carrier_off(netdev);
+ 	result = register_netdev(netdev);
 -- 
-1.7.9.5
+1.7.4.4
 

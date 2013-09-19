@@ -1,37 +1,62 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 12 Sep 2013 07:27:54 +0000
-Subject: [PATCH 06/21] video: gx1fb: remove unnecessary pci_set_drvdata()
-Message-Id: <000301ceaf89$98799bd0$c96cd370$%han@samsung.com>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 23:15:39 +0000
+Subject: [PATCH 43/51] DMA-API: dma: edma.c: no need to explicitly initialize DMA masks
+Message-Id: <E1VMnRj-0007sg-1Z@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <002001ceaf84$d5e9b450$81bd1cf0$%han@samsung.com>
-In-Reply-To: <002001ceaf84$d5e9b450$81bd1cf0$%han@samsung.com>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+In-Reply-To: <20130919212235.GD12758-l+eeeJia6m9vn6HldHNs0ANdhmdF6hFW@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, b43-dev-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, e1000-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Solarflare linux maintainers <linux-net-drivers-s/n/eUQHGBpZroRs9YW3xA@public.gmane.org>, uclinux-dist-devel-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org
+Cc: Vinod Koul <vinod.koul-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 
-The driver core clears the driver data to NULL after device_release
-or on probe failure. Thus, it is not needed to manually clear the
-device driver data to NULL.
+register_platform_device_full() can setup the DMA mask provided the
+appropriate member is set in struct platform_device_info.  So lets
+make that be the case.  This avoids a direct reference to the DMA
+masks by this driver.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/video/geode/gx1fb_core.c |    1 -
- 1 file changed, 1 deletion(-)
+ drivers/dma/edma.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/geode/gx1fb_core.c b/drivers/video/geode/gx1fb_core.c
-index ebbaada..7551a04 100644
---- a/drivers/video/geode/gx1fb_core.c
-+++ b/drivers/video/geode/gx1fb_core.c
-@@ -399,7 +399,6 @@ static void gx1fb_remove(struct pci_dev *pdev)
- 	release_mem_region(gx1_gx_base() + 0x8300, 0x100);
+diff --git a/drivers/dma/edma.c b/drivers/dma/edma.c
+index ff50ff4..7f9fe30 100644
+--- a/drivers/dma/edma.c
++++ b/drivers/dma/edma.c
+@@ -702,11 +702,13 @@ static struct platform_device *pdev0, *pdev1;
+ static const struct platform_device_info edma_dev_info0 = {
+ 	.name = "edma-dma-engine",
+ 	.id = 0,
++	.dma_mask = DMA_BIT_MASK(32),
+ };
  
- 	fb_dealloc_cmap(&info->cmap);
--	pci_set_drvdata(pdev, NULL);
+ static const struct platform_device_info edma_dev_info1 = {
+ 	.name = "edma-dma-engine",
+ 	.id = 1,
++	.dma_mask = DMA_BIT_MASK(32),
+ };
  
- 	framebuffer_release(info);
- }
+ static int edma_init(void)
+@@ -720,8 +722,6 @@ static int edma_init(void)
+ 			ret = PTR_ERR(pdev0);
+ 			goto out;
+ 		}
+-		pdev0->dev.dma_mask = &pdev0->dev.coherent_dma_mask;
+-		pdev0->dev.coherent_dma_mask = DMA_BIT_MASK(32);
+ 	}
+ 
+ 	if (EDMA_CTLRS = 2) {
+@@ -731,8 +731,6 @@ static int edma_init(void)
+ 			platform_device_unregister(pdev0);
+ 			ret = PTR_ERR(pdev1);
+ 		}
+-		pdev1->dev.dma_mask = &pdev1->dev.coherent_dma_mask;
+-		pdev1->dev.coherent_dma_mask = DMA_BIT_MASK(32);
+ 	}
+ 
+ out:
 -- 
-1.7.10.4
-
+1.7.4.4
 

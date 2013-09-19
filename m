@@ -1,98 +1,76 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 17 Sep 2013 05:01:01 +0000
-Subject: [PATCH 06/19] video: pxafb: use dev_get_platdata()
-Message-Id: <000b01ceb362$e78c46a0$b6a4d3e0$%han@samsung.com>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 21:29:59 +0000
+Subject: [PATCH 05/51] DMA-API: net: intel/igbvf: fix 32-bit DMA mask handling
+Message-Id: <E1VMlnT-0007fa-Al@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+In-Reply-To: <20130919212235.GD12758-l+eeeJia6m9vn6HldHNs0ANdhmdF6hFW@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, b43-dev-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, e1000-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Solarflare linux maintainers <linux-net-drivers-s/n/eUQHGBpZroRs9YW3xA@public.gmane.org>, uclinux-dist-devel-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org
+Cc: Jeff Kirsher <jeffrey.t.kirsher-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Jesse Brandeburg <jesse.brandeburg-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Bruce Allan <bruce.w.allan-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Carolyn Wyborny <carolyn.wyborny-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Don Skidmore <donald.c.skidmore-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Greg Rose <gregory.v.rose-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Peter P Waskiewicz Jr <peter.p.waskiewicz.jr-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Alex Duyck <alexander.h.duyck-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, John Ronciak <john.ronciak-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Tushar Dave <tushar.n.dave-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 
-Use the wrapper function for retrieving the platform data instead of
-accessing dev->platform_data directly. This is a cosmetic change
-to make the code simpler and enhance the readability.
+The fallback to 32-bit DMA mask is rather odd:
+	err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(64));
+	if (!err) {
+		err = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64));
+		if (!err)
+			pci_using_dac = 1;
+	} else {
+		err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
+		if (err) {
+			err = dma_set_coherent_mask(&pdev->dev,
+						    DMA_BIT_MASK(32));
+			if (err) {
+				dev_err(&pdev->dev, "No usable DMA "
+					"configuration, aborting\n");
+				goto err_dma;
+			}
+		}
+	}
+This means we only set the coherent DMA mask in the fallback path if
+the DMA mask set failed, which is silly.  This fixes it to set the
+coherent DMA mask only if dma_set_mask() succeeded, and to error out
+if either fails.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/video/pxafb.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/igbvf/netdev.c |   18 ++++++------------
+ 1 files changed, 6 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-index eca2de4..1ecd9ce 100644
---- a/drivers/video/pxafb.c
-+++ b/drivers/video/pxafb.c
-@@ -457,7 +457,7 @@ static int pxafb_adjust_timing(struct pxafb_info *fbi,
- static int pxafb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
- 	struct pxafb_info *fbi = (struct pxafb_info *)info;
--	struct pxafb_mach_info *inf = fbi->dev->platform_data;
-+	struct pxafb_mach_info *inf = dev_get_platdata(fbi->dev);
- 	int err;
+diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
+index 93eb7ee..4e6b02f 100644
+--- a/drivers/net/ethernet/intel/igbvf/netdev.c
++++ b/drivers/net/ethernet/intel/igbvf/netdev.c
+@@ -2638,21 +2638,15 @@ static int igbvf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		return err;
  
- 	if (inf->fixed_modes) {
-@@ -1230,7 +1230,7 @@ static unsigned int __smart_timing(unsigned time_ns, unsigned long lcd_clk)
- static void setup_smart_timing(struct pxafb_info *fbi,
- 				struct fb_var_screeninfo *var)
- {
--	struct pxafb_mach_info *inf = fbi->dev->platform_data;
-+	struct pxafb_mach_info *inf = dev_get_platdata(fbi->dev);
- 	struct pxafb_mode_info *mode = &inf->modes[0];
- 	unsigned long lclk = clk_get_rate(fbi->clk);
- 	unsigned t1, t2, t3, t4;
-@@ -1258,14 +1258,14 @@ static void setup_smart_timing(struct pxafb_info *fbi,
- static int pxafb_smart_thread(void *arg)
- {
- 	struct pxafb_info *fbi = arg;
--	struct pxafb_mach_info *inf = fbi->dev->platform_data;
-+	struct pxafb_mach_info *inf = dev_get_platdata(fbi->dev);
- 
- 	if (!inf->smart_update) {
- 		pr_err("%s: not properly initialized, thread terminated\n",
- 				__func__);
- 		return -EINVAL;
+ 	pci_using_dac = 0;
+-	err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(64));
++	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
+ 	if (!err) {
+-		err = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64));
+-		if (!err)
+-			pci_using_dac = 1;
++		pci_using_dac = 1;
+ 	} else {
+-		err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
++		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
+ 		if (err) {
+-			err = dma_set_coherent_mask(&pdev->dev,
+-						    DMA_BIT_MASK(32));
+-			if (err) {
+-				dev_err(&pdev->dev, "No usable DMA "
+-				        "configuration, aborting\n");
+-				goto err_dma;
+-			}
++			dev_err(&pdev->dev, "No usable DMA "
++			        "configuration, aborting\n");
++			goto err_dma;
+ 		}
  	}
--	inf = fbi->dev->platform_data;
-+	inf = dev_get_platdata(fbi->dev);
  
- 	pr_debug("%s(): task starting\n", __func__);
- 
-@@ -1793,7 +1793,7 @@ static struct pxafb_info *pxafb_init_fbinfo(struct device *dev)
- {
- 	struct pxafb_info *fbi;
- 	void *addr;
--	struct pxafb_mach_info *inf = dev->platform_data;
-+	struct pxafb_mach_info *inf = dev_get_platdata(dev);
- 
- 	/* Alloc the pxafb_info and pseudo_palette in one step */
- 	fbi = kmalloc(sizeof(struct pxafb_info) + sizeof(u32) * 16, GFP_KERNEL);
-@@ -1855,7 +1855,7 @@ static struct pxafb_info *pxafb_init_fbinfo(struct device *dev)
- #ifdef CONFIG_FB_PXA_PARAMETERS
- static int parse_opt_mode(struct device *dev, const char *this_opt)
- {
--	struct pxafb_mach_info *inf = dev->platform_data;
-+	struct pxafb_mach_info *inf = dev_get_platdata(dev);
- 
- 	const char *name = this_opt+5;
- 	unsigned int namelen = strlen(name);
-@@ -1914,7 +1914,7 @@ done:
- 
- static int parse_opt(struct device *dev, char *this_opt)
- {
--	struct pxafb_mach_info *inf = dev->platform_data;
-+	struct pxafb_mach_info *inf = dev_get_platdata(dev);
- 	struct pxafb_mode_info *mode = &inf->modes[0];
- 	char s[64];
- 
-@@ -2102,7 +2102,7 @@ static int pxafb_probe(struct platform_device *dev)
- 
- 	dev_dbg(&dev->dev, "pxafb_probe\n");
- 
--	inf = dev->dev.platform_data;
-+	inf = dev_get_platdata(&dev->dev);
- 	ret = -ENOMEM;
- 	fbi = NULL;
- 	if (!inf)
 -- 
-1.7.10.4
-
+1.7.4.4
 

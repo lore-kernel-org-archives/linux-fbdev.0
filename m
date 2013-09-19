@@ -1,110 +1,76 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Date: Thu, 12 Sep 2013 05:54:32 +0000
-Subject: [PATCH 1/3] video: xilinxfb: Use standard variable name convention
-Message-Id: <7016a90750626ba866dddc6f85cfdd71943f6891.1378965270.git.michal.simek@xilinx.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-19560-1378965274-0001"
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 21:28:59 +0000
+Subject: [PATCH 04/51] DMA-API: net: intel/igb: fix 32-bit DMA mask handling
+Message-Id: <E1VMlmV-0007fU-75@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: linux-kernel@vger.kernel.org, monstr@monstr.eu
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org
-
-This is a MIME GnuPG-signed message.  If you see this text, it means that
-your E-mail or Usenet software does not support MIME signed messages.
-The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
-To open this message correctly you will need to install E-mail or Usenet
-software that supports modern Internet standards.
-
---=_mimegpg-monstr-desktop-19560-1378965274-0001
-
-s/op/pdev/ in xilinxfb_of_probe().
-No functional chagnes.
-
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
----
- drivers/video/xilinxfb.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index 84c664e..123cd70 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -413,7 +413,7 @@ static int xilinxfb_release(struct device *dev)
-  * OF bus binding
-  */
-
--static int xilinxfb_of_probe(struct platform_device *op)
-+static int xilinxfb_of_probe(struct platform_device *pdev)
- {
- 	const u32 *prop;
- 	u32 tft_access = 0;
-@@ -427,7 +427,7 @@ static int xilinxfb_of_probe(struct platform_device *op)
- 	/* Allocate the driver data region */
- 	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
- 	if (!drvdata) {
--		dev_err(&op->dev, "Couldn't allocate device private record\n");
-+		dev_err(&pdev->dev, "Couldn't allocate device private record\n");
- 		return -ENOMEM;
- 	}
-
-@@ -435,7 +435,7 @@ static int xilinxfb_of_probe(struct platform_device *op)
- 	 * To check whether the core is connected directly to DCR or BUS
- 	 * interface and initialize the tft_access accordingly.
- 	 */
--	of_property_read_u32(op->dev.of_node, "xlnx,dcr-splb-slave-if",
-+	of_property_read_u32(pdev->dev.of_node, "xlnx,dcr-splb-slave-if",
- 			     &tft_access);
-
- 	/*
-@@ -459,29 +459,29 @@ static int xilinxfb_of_probe(struct platform_device *op)
- 	}
- #endif
-
--	prop = of_get_property(op->dev.of_node, "phys-size", &size);
-+	prop = of_get_property(pdev->dev.of_node, "phys-size", &size);
- 	if ((prop) && (size >= sizeof(u32)*2)) {
- 		pdata.screen_width_mm = prop[0];
- 		pdata.screen_height_mm = prop[1];
- 	}
-
--	prop = of_get_property(op->dev.of_node, "resolution", &size);
-+	prop = of_get_property(pdev->dev.of_node, "resolution", &size);
- 	if ((prop) && (size >= sizeof(u32)*2)) {
- 		pdata.xres = prop[0];
- 		pdata.yres = prop[1];
- 	}
-
--	prop = of_get_property(op->dev.of_node, "virtual-resolution", &size);
-+	prop = of_get_property(pdev->dev.of_node, "virtual-resolution", &size);
- 	if ((prop) && (size >= sizeof(u32)*2)) {
- 		pdata.xvirt = prop[0];
- 		pdata.yvirt = prop[1];
- 	}
-
--	if (of_find_property(op->dev.of_node, "rotate-display", NULL))
-+	if (of_find_property(pdev->dev.of_node, "rotate-display", NULL))
- 		pdata.rotate_screen = 1;
-
--	dev_set_drvdata(&op->dev, drvdata);
--	return xilinxfb_assign(op, drvdata, &pdata);
-+	dev_set_drvdata(&pdev->dev, drvdata);
-+	return xilinxfb_assign(pdev, drvdata, &pdata);
- }
-
- static int xilinxfb_of_remove(struct platform_device *op)
---
-1.8.2.3
-
-
---=_mimegpg-monstr-desktop-19560-1378965274-0001
-Content-Type: application/pgp-signature
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+In-Reply-To: <20130919212235.GD12758-l+eeeJia6m9vn6HldHNs0ANdhmdF6hFW@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, b43-dev-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, e1000-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Solarflare linux maintainers <linux-net-drivers-s/n/eUQHGBpZroRs9YW3xA@public.gmane.org>, uclinux-dist-devel-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org
+Cc: Jeff Kirsher <jeffrey.t.kirsher-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Jesse Brandeburg <jesse.brandeburg-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Bruce Allan <bruce.w.allan-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Carolyn Wyborny <carolyn.wyborny-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Don Skidmore <donald.c.skidmore-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Greg Rose <gregory.v.rose-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Peter P Waskiewicz Jr <peter.p.waskiewicz.jr-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Alex Duyck <alexander.h.duyck-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, John Ronciak <john.ronciak-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Tushar Dave <tushar.n.dave-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+The fallback to 32-bit DMA mask is rather odd:
+	err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(64));
+	if (!err) {
+		err = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64));
+		if (!err)
+			pci_using_dac = 1;
+	} else {
+		err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
+		if (err) {
+			err = dma_set_coherent_mask(&pdev->dev,
+						    DMA_BIT_MASK(32));
+			if (err) {
+				dev_err(&pdev->dev,
+					"No usable DMA configuration, aborting\n");
+				goto err_dma;
+			}
+		}
+	}
+This means we only set the coherent DMA mask in the fallback path if
+the DMA mask set failed, which is silly.  This fixes it to set the
+coherent DMA mask only if dma_set_mask() succeeded, and to error out
+if either fails.
 
-iEYEABECAAYFAlIxVxoACgkQykllyylKDCGdzwCfdxp9/Zoup/55nFaGT6bhYXNe
-adMAmwYy++wCUNYil+qCiFUgufrRocHN
-=I9A8
------END PGP SIGNATURE-----
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c |   18 ++++++------------
+ 1 files changed, 6 insertions(+), 12 deletions(-)
 
---=_mimegpg-monstr-desktop-19560-1378965274-0001--
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 8cf44f2..7579383 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -2034,21 +2034,15 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		return err;
+ 
+ 	pci_using_dac = 0;
+-	err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(64));
++	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
+ 	if (!err) {
+-		err = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64));
+-		if (!err)
+-			pci_using_dac = 1;
++		pci_using_dac = 1;
+ 	} else {
+-		err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
++		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
+ 		if (err) {
+-			err = dma_set_coherent_mask(&pdev->dev,
+-						    DMA_BIT_MASK(32));
+-			if (err) {
+-				dev_err(&pdev->dev,
+-					"No usable DMA configuration, aborting\n");
+-				goto err_dma;
+-			}
++			dev_err(&pdev->dev,
++				"No usable DMA configuration, aborting\n");
++			goto err_dma;
+ 		}
+ 	}
+ 
+-- 
+1.7.4.4
+

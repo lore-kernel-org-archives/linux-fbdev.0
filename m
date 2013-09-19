@@ -1,7 +1,7 @@
 From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 22:03:03 +0000
-Subject: [PATCH 38/51] DMA-API: staging: use dma_set_coherent_mask()
-Message-Id: <E1VMmJT-0007kZ-Kw@rmk-PC.arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 21:38:00 +0000
+Subject: [PATCH 13/51] DMA-API: net: sfc/efx.c: replace dma_set_mask()+dma_set_coherent_mask() with new
+Message-Id: <E1VMlvE-0007gc-B5@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
@@ -9,79 +9,50 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Paul Zimmerman <paulz@synopsys.com>
+Cc: Ben Hutchings <bhutchings@solarflare.com>
 
-The correct way for a driver to specify the coherent DMA mask is
-not to directly access the field in the struct device, but to use
-dma_set_coherent_mask().  Only arch and bus code should access this
-member directly.
+Replace the following sequence:
 
-Convert all direct write accesses to using the correct API.
+	dma_set_mask(dev, mask);
+	dma_set_coherent_mask(dev, mask);
+
+with a call to the new helper dma_set_mask_and_coherent().
 
 Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/staging/dwc2/platform.c        |    5 +++--
- drivers/staging/imx-drm/imx-drm-core.c |    8 ++++++--
- drivers/staging/imx-drm/ipuv3-crtc.c   |    4 +++-
- 3 files changed, 12 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/sfc/efx.c |   12 +-----------
+ 1 files changed, 1 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/staging/dwc2/platform.c b/drivers/staging/dwc2/platform.c
-index 44cce2f..1d68c49 100644
---- a/drivers/staging/dwc2/platform.c
-+++ b/drivers/staging/dwc2/platform.c
-@@ -100,8 +100,9 @@ static int dwc2_driver_probe(struct platform_device *dev)
+diff --git a/drivers/net/ethernet/sfc/efx.c b/drivers/net/ethernet/sfc/efx.c
+index 07c9bc4..2e27837 100644
+--- a/drivers/net/ethernet/sfc/efx.c
++++ b/drivers/net/ethernet/sfc/efx.c
+@@ -1121,7 +1121,7 @@ static int efx_init_io(struct efx_nic *efx)
  	 */
- 	if (!dev->dev.dma_mask)
- 		dev->dev.dma_mask = &dev->dev.coherent_dma_mask;
--	if (!dev->dev.coherent_dma_mask)
--		dev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
-+	retval = dma_set_coherent_mask(&dev->dev, DMA_BIT_MASK(32));
-+	if (retval)
-+		return retval;
- 
- 	irq = platform_get_irq(dev, 0);
- 	if (irq < 0) {
-diff --git a/drivers/staging/imx-drm/imx-drm-core.c b/drivers/staging/imx-drm/imx-drm-core.c
-index 47c5888..847f430 100644
---- a/drivers/staging/imx-drm/imx-drm-core.c
-+++ b/drivers/staging/imx-drm/imx-drm-core.c
-@@ -805,6 +805,12 @@ static struct drm_driver imx_drm_driver = {
- 
- static int imx_drm_platform_probe(struct platform_device *pdev)
- {
-+	int ret;
-+
-+	ret = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-+	if (ret)
-+		return ret;
-+
- 	imx_drm_device->dev = &pdev->dev;
- 
- 	return drm_platform_init(&imx_drm_driver, pdev);
-@@ -847,8 +853,6 @@ static int __init imx_drm_init(void)
- 		goto err_pdev;
+ 	while (dma_mask > 0x7fffffffUL) {
+ 		if (dma_supported(&pci_dev->dev, dma_mask)) {
+-			rc = dma_set_mask(&pci_dev->dev, dma_mask);
++			rc = dma_set_mask_and_coherent(&pci_dev->dev, dma_mask);
+ 			if (rc = 0)
+ 				break;
+ 		}
+@@ -1134,16 +1134,6 @@ static int efx_init_io(struct efx_nic *efx)
  	}
+ 	netif_dbg(efx, probe, efx->net_dev,
+ 		  "using DMA mask %llx\n", (unsigned long long) dma_mask);
+-	rc = dma_set_coherent_mask(&pci_dev->dev, dma_mask);
+-	if (rc) {
+-		/* dma_set_coherent_mask() is not *allowed* to
+-		 * fail with a mask that dma_set_mask() accepted,
+-		 * but just in case...
+-		 */
+-		netif_err(efx, probe, efx->net_dev,
+-			  "failed to set consistent DMA mask\n");
+-		goto fail2;
+-	}
  
--	imx_drm_pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32),
--
- 	ret = platform_driver_register(&imx_drm_pdrv);
- 	if (ret)
- 		goto err_pdrv;
-diff --git a/drivers/staging/imx-drm/ipuv3-crtc.c b/drivers/staging/imx-drm/ipuv3-crtc.c
-index 6fd37a7..9e73e8d 100644
---- a/drivers/staging/imx-drm/ipuv3-crtc.c
-+++ b/drivers/staging/imx-drm/ipuv3-crtc.c
-@@ -523,7 +523,9 @@ static int ipu_drm_probe(struct platform_device *pdev)
- 	if (!pdata)
- 		return -EINVAL;
- 
--	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
-+	ret = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-+	if (ret)
-+		return ret;
- 
- 	ipu_crtc = devm_kzalloc(&pdev->dev, sizeof(*ipu_crtc), GFP_KERNEL);
- 	if (!ipu_crtc)
+ 	efx->membase_phys = pci_resource_start(efx->pci_dev, EFX_MEM_BAR);
+ 	rc = pci_request_region(pci_dev, EFX_MEM_BAR, "sfc");
 -- 
 1.7.4.4
 

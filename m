@@ -1,82 +1,58 @@
-From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
-Date: Sat, 28 Sep 2013 19:27:42 +0000
-Subject: [PATCH V5 0/5] Generic PHY driver for the Exynos SoC MIPI CSI-2/DSI DPHYs
-Message-Id: <1380396467-29278-1-git-send-email-s.nawrocki@samsung.com>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 23:41:06 +0000
+Subject: [PATCH 48/51] ARM: 7795/1: mm: dma-mapping: Add dma_max_pfn(dev) helper function
+Message-Id: <E1VMnqM-00026g-PP@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
+Cc: Vinod Koul <vinod.koul@intel.com>, Jens Axboe <axboe@kernel.dk>, Dan Williams <dan.j.williams@intel.com>
 
-This patch series adds a simple driver for the Samsung S5P/Exynos SoC
-series MIPI CSI-2 receiver (MIPI CSIS) and MIPI DSI transmitter (MIPI
-DSIM) DPHYs, using the generic PHY framework. Previously the MIPI
-CSIS and MIPI DSIM used a platform callback to control the PHY power
-enable and reset bits. This non-generic platform code supporting only
-limited set of SoCs is now removed.
-This completes migration to the device tree of the Exynos/S5P MIPI CSI
-slave device driver.
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
 
-Changes since v4:
- - updated to the latest version of the generic PHY framework - removed
-   PHY labels from the platform data structure. There is already no need
-   for non-dt support in this PHY driver so the platform data where any
-   struct phy_init_data would be passed is not added.
+Most of the kernel assumes that PFN0 is the start of the physical
+memory (RAM). This assumptions is not true on most of the ARM SOCs
+and hence and if one try to update the ARM port to follow the assumptions,
+we end of breaking the dma bounce limit for few block layer drivers.
+One such example is trying to unify the meaning of max*_pfn on ARM
+as the bootmem layer expects, breaks few block layer driver dma
+bounce limit.
 
-Changes since v3 (only patch 1/5):
- - replaced spin_(un)lock_irq_{save,restore} with spin_{lock,unlock}.
- - DT binding file renamed to samsung-phy.txt, so it can be used for
-   other PHYs as well,
- - removed <linux/delay.h> inclusion,
- - added missing spin_lock_init().
+To fix this problem, we introduce dma_max_pfn(dev) generic helper with
+a possibility of override from the architecture code. The helper converts
+a DMA bitmask of bits to a block PFN number. In all the generic cases,
+it is just  "dev->dma_mask >> PAGE_SHIFT" and hence default behavior
+is maintained as is.
 
-Changes since v2:
- - adapted to the generic PHY API v9: use phy_set/get_drvdata(),
- - fixed of_xlate callback to return ERR_PTR() instead of NULL,
- - namespace cleanup, put "GPL v2" as MODULE_LICENSE, removed pr_debug,
- - removed phy id check in __set_phy_state().
+Subsequent patches will make use of the helper. No functional change.
 
-Changes since v1:
- - enabled build as module and with CONFIG_OF disabled,
- - added phy_id enum,
- - of_address_to_resource() replaced with platform_get_resource(),
- - adapted to changes in the PHY API v7, v8 - added phy labels,
- - added MODULE_DEVICE_TABLE() entry,
- - the driver file renamed to phy-exynos-mipi-video.c,
- - changed DT compatible string to "samsung,s5pv210-mipi-video-phy",
- - corrected the compatible property's description.
- - patch 3/5 "video: exynos_dsi: Use generic PHY driver" replaced
-   with a patch modifying the MIPI DSIM driver which is currently
-   in mainline.
+Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ include/linux/dma-mapping.h |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-Sylwester Nawrocki (5):
-  ARM: dts: Add MIPI PHY node to exynos4.dtsi
-  phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
-  [media] exynos4-is: Use the generic MIPI CSIS PHY driver
-  video: exynos_mipi_dsim: Use the generic PHY driver
-  ARM: Samsung: Remove the MIPI PHY setup code
-
- .../devicetree/bindings/phy/samsung-phy.txt        |   14 ++
- arch/arm/boot/dts/exynos4.dtsi                     |   10 +
- arch/arm/mach-exynos/include/mach/regs-pmu.h       |    5 -
- arch/arm/mach-s5pv210/include/mach/regs-clock.h    |    4 -
- arch/arm/plat-samsung/Kconfig                      |    5 -
- arch/arm/plat-samsung/Makefile                     |    1 -
- arch/arm/plat-samsung/setup-mipiphy.c              |   60 -------
- drivers/media/platform/exynos4-is/Kconfig          |    2 +-
- drivers/media/platform/exynos4-is/mipi-csis.c      |   13 +-
- drivers/phy/Kconfig                                |    6 +
- drivers/phy/Makefile                               |    7 +-
- drivers/phy/phy-exynos-mipi-video.c                |  176 ++++++++++++++++++++
- drivers/video/exynos/Kconfig                       |    1 +
- drivers/video/exynos/exynos_mipi_dsi.c             |   19 +-
- include/linux/platform_data/mipi-csis.h            |    9 -
- include/video/exynos_mipi_dsim.h                   |    5 +-
- 16 files changed, 234 insertions(+), 103 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/phy/samsung-phy.txt
- delete mode 100644 arch/arm/plat-samsung/setup-mipiphy.c
- create mode 100644 drivers/phy/phy-exynos-mipi-video.c
-
---
-1.7.4.1
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index 27d1421..fd4aee2 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -153,6 +153,13 @@ static inline int dma_set_seg_boundary(struct device *dev, unsigned long mask)
+ 		return -EIO;
+ }
+ 
++#ifndef dma_max_pfn
++static inline unsigned long dma_max_pfn(struct device *dev)
++{
++	return *dev->dma_mask >> PAGE_SHIFT;
++}
++#endif
++
+ static inline void *dma_zalloc_coherent(struct device *dev, size_t size,
+ 					dma_addr_t *dma_handle, gfp_t flag)
+ {
+-- 
+1.7.4.4
 

@@ -1,33 +1,44 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Fri, 20 Sep 2013 06:44:16 +0000
-Subject: [PATCH 07/15] video: cg14: Remove redundant dev_set_drvdata
-Message-Id: <1379658744-17113-8-git-send-email-sachin.kamat@linaro.org>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 21:58:03 +0000
+Subject: [PATCH 33/51] DMA-API: net: nxp/lpc_eth: use dma_coerce_mask_and_coherent()
+Message-Id: <E1VMmEd-0007jF-19@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
 
-Driver core sets driver data to NULL upon failure or remove.
+The code sequence:
+	pldat->pdev->dev.coherent_dma_mask = 0xFFFFFFFF;
+	pldat->pdev->dev.dma_mask = &pldat->pdev->dev.coherent_dma_mask;
+bypasses the architectures check on the DMA mask.  It can be replaced
+with dma_coerce_mask_and_coherent(), avoiding the direct initialization
+of this mask.
 
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/video/cg14.c |    2 --
- 1 file changed, 2 deletions(-)
+ drivers/net/ethernet/nxp/lpc_eth.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/cg14.c b/drivers/video/cg14.c
-index ed3b889..9626488 100644
---- a/drivers/video/cg14.c
-+++ b/drivers/video/cg14.c
-@@ -583,8 +583,6 @@ static int cg14_remove(struct platform_device *op)
+diff --git a/drivers/net/ethernet/nxp/lpc_eth.c b/drivers/net/ethernet/nxp/lpc_eth.c
+index a061b93..ba3ca18 100644
+--- a/drivers/net/ethernet/nxp/lpc_eth.c
++++ b/drivers/net/ethernet/nxp/lpc_eth.c
+@@ -1399,8 +1399,10 @@ static int lpc_eth_drv_probe(struct platform_device *pdev)
+ 	}
  
- 	framebuffer_release(info);
+ 	if (pldat->dma_buff_base_v = 0) {
+-		pldat->pdev->dev.coherent_dma_mask = 0xFFFFFFFF;
+-		pldat->pdev->dev.dma_mask = &pldat->pdev->dev.coherent_dma_mask;
++		ret = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
++		if (ret)
++			goto err_out_free_irq;
++
+ 		pldat->dma_buff_size = PAGE_ALIGN(pldat->dma_buff_size);
  
--	dev_set_drvdata(&op->dev, NULL);
--
- 	return 0;
- }
- 
+ 		/* Allocate a chunk of memory for the DMA ethernet buffers
 -- 
-1.7.9.5
+1.7.4.4
 

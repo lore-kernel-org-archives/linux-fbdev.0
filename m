@@ -1,62 +1,52 @@
 From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 23:17:39 +0000
-Subject: [PATCH 45/51] DMA-API: firmware/google/gsmi.c: avoid direct access to DMA masks
-Message-Id: <E1VMnTf-0007ss-9q@rmk-PC.arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 21:52:02 +0000
+Subject: [PATCH 27/51] DMA-API: provide a helper to setup DMA masks
+Message-Id: <E1VMm8o-0007iV-Ac@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+In-Reply-To: <20130919212235.GD12758-l+eeeJia6m9vn6HldHNs0ANdhmdF6hFW@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
+To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, b43-dev-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, e1000-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Solarflare linux maintainers <linux-net-drivers-s/n/eUQHGBpZroRs9YW3xA@public.gmane.org>, uclinux-dist-devel-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org
+Cc: Vinod Koul <vinod.koul-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 
-This driver doesn't need to directly access DMA masks if it uses the
-platform_device_register_full() API rather than
-platform_device_register_simple() - the former function can initialize
-the DMA mask appropriately.
+Many drivers contain code such as:
+
+	dev->dma_mask = &dev->coherent_dma_mask;
+	dev->coherent_dma_mask = MASK;
+
+Let's move this pattern out of drivers and have the DMA API provide a
+helper for it.  This helper uses dma_set_mask_and_coherent() to allow
+platform issues to be properly dealt with via dma_set_mask()/
+dma_is_supported().
 
 Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/firmware/google/gsmi.c |   13 ++++++++-----
- 1 files changed, 8 insertions(+), 5 deletions(-)
+ include/linux/dma-mapping.h |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/firmware/google/gsmi.c b/drivers/firmware/google/gsmi.c
-index 6eb535f..e5a67b2 100644
---- a/drivers/firmware/google/gsmi.c
-+++ b/drivers/firmware/google/gsmi.c
-@@ -764,6 +764,13 @@ static __init int gsmi_system_valid(void)
- static struct kobject *gsmi_kobj;
- static struct efivars efivars;
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index ec951f9..27d1421 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -111,6 +111,16 @@ static inline int dma_set_mask_and_coherent(struct device *dev, u64 mask)
+ 	return rc;
+ }
  
-+static const struct platform_device_info gsmi_dev_info = {
-+	.name		= "gsmi",
-+	.id		= -1,
-+	/* SMI callbacks require 32bit addresses */
-+	.dma_mask	= DMA_BIT_MASK(32),
-+};
++/*
++ * Similar to the above, except it deals with the case where the device
++ * does not have dev->dma_mask appropriately setup.
++ */
++static inline int dma_coerce_mask_and_coherent(struct device *dev, u64 mask)
++{
++	dev->dma_mask = &dev->coherent_dma_mask;
++	return dma_set_mask_and_coherent(dev, mask);
++}
 +
- static __init int gsmi_init(void)
- {
- 	unsigned long flags;
-@@ -776,7 +783,7 @@ static __init int gsmi_init(void)
- 	gsmi_dev.smi_cmd = acpi_gbl_FADT.smi_command;
+ extern u64 dma_get_required_mask(struct device *dev);
  
- 	/* register device */
--	gsmi_dev.pdev = platform_device_register_simple("gsmi", -1, NULL, 0);
-+	gsmi_dev.pdev = platform_device_register_full(&gsmi_dev_info);
- 	if (IS_ERR(gsmi_dev.pdev)) {
- 		printk(KERN_ERR "gsmi: unable to register platform device\n");
- 		return PTR_ERR(gsmi_dev.pdev);
-@@ -785,10 +792,6 @@ static __init int gsmi_init(void)
- 	/* SMI access needs to be serialized */
- 	spin_lock_init(&gsmi_dev.lock);
- 
--	/* SMI callbacks require 32bit addresses */
--	gsmi_dev.pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
--	gsmi_dev.pdev->dev.dma_mask -		&gsmi_dev.pdev->dev.coherent_dma_mask;
- 	ret = -ENOMEM;
- 	gsmi_dev.dma_pool = dma_pool_create("gsmi", &gsmi_dev.pdev->dev,
- 					     GSMI_BUF_SIZE, GSMI_BUF_ALIGN, 0);
+ static inline unsigned int dma_get_max_seg_size(struct device *dev)
 -- 
 1.7.4.4
 

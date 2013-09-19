@@ -1,33 +1,53 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Fri, 20 Sep 2013 06:44:17 +0000
-Subject: [PATCH 08/15] video: cg3: Remove redundant dev_set_drvdata
-Message-Id: <1379658744-17113-9-git-send-email-sachin.kamat@linaro.org>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 22:00:03 +0000
+Subject: [PATCH 35/51] DMA-API: parport: parport_pc.c: use dma_coerce_mask_and_coherent()
+Message-Id: <E1VMmGZ-0007jU-99@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
 
-Driver core sets driver data to NULL upon failure or remove.
+The code sequence:
+	dev->coherent_dma_mask = DMA_BIT_MASK(24);
+	dev->dma_mask = &dev->coherent_dma_mask;
+bypasses the architectures check on the DMA mask.  It can be replaced
+with dma_coerce_mask_and_coherent(), avoiding the direct initialization
+of this mask.
 
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/video/cg3.c |    2 --
- 1 file changed, 2 deletions(-)
+ drivers/parport/parport_pc.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/cg3.c b/drivers/video/cg3.c
-index 9f63507..64a89d5 100644
---- a/drivers/video/cg3.c
-+++ b/drivers/video/cg3.c
-@@ -446,8 +446,6 @@ static int cg3_remove(struct platform_device *op)
+diff --git a/drivers/parport/parport_pc.c b/drivers/parport/parport_pc.c
+index 903e128..9637615 100644
+--- a/drivers/parport/parport_pc.c
++++ b/drivers/parport/parport_pc.c
+@@ -2004,6 +2004,7 @@ struct parport *parport_pc_probe_port(unsigned long int base,
+ 	struct resource	*ECR_res = NULL;
+ 	struct resource	*EPP_res = NULL;
+ 	struct platform_device *pdev = NULL;
++	int ret;
  
- 	framebuffer_release(info);
+ 	if (!dev) {
+ 		/* We need a physical device to attach to, but none was
+@@ -2014,8 +2015,11 @@ struct parport *parport_pc_probe_port(unsigned long int base,
+ 			return NULL;
+ 		dev = &pdev->dev;
  
--	dev_set_drvdata(&op->dev, NULL);
--
- 	return 0;
- }
+-		dev->coherent_dma_mask = DMA_BIT_MASK(24);
+-		dev->dma_mask = &dev->coherent_dma_mask;
++		ret = dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(24));
++		if (ret) {
++			dev_err(dev, "Unable to set coherent dma mask: disabling DMA\n");
++			dma = PARPORT_DMA_NONE;
++		}
+ 	}
  
+ 	ops = kmalloc(sizeof(struct parport_operations), GFP_KERNEL);
 -- 
-1.7.9.5
+1.7.4.4
 

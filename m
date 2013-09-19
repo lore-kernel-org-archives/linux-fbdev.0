@@ -1,136 +1,54 @@
-From: Pawel Moll <pawel.moll@arm.com>
-Date: Mon, 16 Sep 2013 17:18:54 +0000
-Subject: [PATCH v3 2/2] ARM: vexpress: Add CLCD Device Tree properties
-Message-Id: <1379351934-25415-2-git-send-email-pawel.moll@arm.com>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 21:37:00 +0000
+Subject: [PATCH 12/51] DMA-API: net: intel/e1000: replace dma_set_mask()+dma_set_coherent_mask() with new
+Message-Id: <E1VMluG-0007gV-6y@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1379351934-25415-1-git-send-email-pawel.moll@arm.com>
-In-Reply-To: <1379351934-25415-1-git-send-email-pawel.moll@arm.com>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
+Cc: Alex Duyck <alexander.h.duyck@intel.com>, Don Skidmore <donald.c.skidmore@intel.com>, Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>, Bruce Allan <bruce.w.allan@intel.com>, Jesse Brandeburg <jesse.brandeburg@intel.com>, Greg Rose <gregory.v.rose@intel.com>, John Ronciak <john.ronciak@intel.com>, Jeff Kirsher <jeffrey.t.kirsher@intel.com>, Carolyn Wyborny <carolyn.wyborny@intel.com>, Tushar Dave <tushar.n.dave@intel.com>
 
-... for V2M-P1 motherboard CLCD (limited to 640x480 16bpp and using
-dedicated video RAM bank) and for V2P-CA9 (up to 1024x768 16bpp).
+Replace the following sequence:
 
-Signed-off-by: Pawel Moll <pawel.moll@arm.com>
+	dma_set_mask(dev, mask);
+	dma_set_coherent_mask(dev, mask);
+
+with a call to the new helper dma_set_mask_and_coherent().
+
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- arch/arm/boot/dts/vexpress-v2m-rs1.dtsi | 22 +++++++++++++++++++++-
- arch/arm/boot/dts/vexpress-v2m.dtsi     | 22 +++++++++++++++++++++-
- arch/arm/boot/dts/vexpress-v2p-ca9.dts  | 19 +++++++++++++++++++
- 3 files changed, 61 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/e1000/e1000_main.c |    9 ++-------
+ 1 files changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
-index ac870fb..8226149 100644
---- a/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
-+++ b/arch/arm/boot/dts/vexpress-v2m-rs1.dtsi
-@@ -233,6 +233,26 @@
- 				interrupts = <14>;
- 				clocks = <&v2m_oscclk1>, <&smbclk>;
- 				clock-names = "clcdclk", "apb_pclk";
-+
-+				arm,pl11x,panel-data-pads = <0x300 0x301 0x302 0x303 0x304 0x305 0x306 0x307>,
-+							    <0x310 0x311 0x312 0x313 0x314 0x315 0x316 0x317>,
-+							    <0x320 0x321 0x322 0x323 0x324 0x325 0x326 0x327>;
-+				arm,pl11x,framebuffer-base = <0x18000000 0x00800000>;
-+				max-memory-bandwidth = <36864000>; /* Bps, 640x480@60 16bpp */
-+				display-timings {
-+					native-mode = <&v2m_clcd_timing0>;
-+					v2m_clcd_timing0: vga {
-+						clock-frequency = <25175000>;
-+						hactive = <640>;
-+						hback-porch = <40>;
-+						hfront-porch = <24>;
-+						hsync-len = <96>;
-+						vactive = <480>;
-+						vback-porch = <32>;
-+						vfront-porch = <11>;
-+						vsync-len = <2>;
-+					};
-+				};
- 			};
- 		};
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index 59ad007..34672f8 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -1018,19 +1018,14 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	 */
+ 	pci_using_dac = 0;
+ 	if ((hw->bus_type = e1000_bus_type_pcix) &&
+-	    !dma_set_mask(&pdev->dev, DMA_BIT_MASK(64))) {
+-		/* according to DMA-API-HOWTO, coherent calls will always
+-		 * succeed if the set call did
+-		 */
+-		dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64));
++	    !dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64))) {
+ 		pci_using_dac = 1;
+ 	} else {
+-		err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
++		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
+ 		if (err) {
+ 			pr_err("No usable DMA config, aborting\n");
+ 			goto err_dma;
+ 		}
+-		dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
+ 	}
  
-@@ -282,7 +302,7 @@
- 				/* CLCD clock */
- 				compatible = "arm,vexpress-osc";
- 				arm,vexpress-sysreg,func = <1 1>;
--				freq-range = <23750000 63500000>;
-+				freq-range = <23750000 65000000>;
- 				#clock-cells = <0>;
- 				clock-output-names = "v2m:oscclk1";
- 			};
-diff --git a/arch/arm/boot/dts/vexpress-v2m.dtsi b/arch/arm/boot/dts/vexpress-v2m.dtsi
-index f142036..4befe1c 100644
---- a/arch/arm/boot/dts/vexpress-v2m.dtsi
-+++ b/arch/arm/boot/dts/vexpress-v2m.dtsi
-@@ -232,6 +232,26 @@
- 				interrupts = <14>;
- 				clocks = <&v2m_oscclk1>, <&smbclk>;
- 				clock-names = "clcdclk", "apb_pclk";
-+
-+				arm,pl11x,panel-data-pads = <0x300 0x301 0x302 0x303 0x304 0x305 0x306 0x307>,
-+							    <0x310 0x311 0x312 0x313 0x314 0x315 0x316 0x317>,
-+							    <0x320 0x321 0x322 0x323 0x324 0x325 0x326 0x327>;
-+				arm,pl11x,framebuffer-base = <0x4c000000 0x00800000>;
-+				max-memory-bandwidth = <36864000>; /* Bps, 640x480@60 16bpp */
-+				display-timings {
-+					native-mode = <&v2m_clcd_timing0>;
-+					v2m_clcd_timing0: vga {
-+						clock-frequency = <25175000>;
-+						hactive = <640>;
-+						hback-porch = <40>;
-+						hfront-porch = <24>;
-+						hsync-len = <96>;
-+						vactive = <480>;
-+						vback-porch = <32>;
-+						vfront-porch = <11>;
-+						vsync-len = <2>;
-+					};
-+				};
- 			};
- 		};
- 
-@@ -281,7 +301,7 @@
- 				/* CLCD clock */
- 				compatible = "arm,vexpress-osc";
- 				arm,vexpress-sysreg,func = <1 1>;
--				freq-range = <23750000 63500000>;
-+				freq-range = <23750000 65000000>;
- 				#clock-cells = <0>;
- 				clock-output-names = "v2m:oscclk1";
- 			};
-diff --git a/arch/arm/boot/dts/vexpress-v2p-ca9.dts b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
-index 62d9b22..5eb68b8 100644
---- a/arch/arm/boot/dts/vexpress-v2p-ca9.dts
-+++ b/arch/arm/boot/dts/vexpress-v2p-ca9.dts
-@@ -73,6 +73,25 @@
- 		interrupts = <0 44 4>;
- 		clocks = <&oscclk1>, <&oscclk2>;
- 		clock-names = "clcdclk", "apb_pclk";
-+
-+		arm,pl11x,panel-data-pads = <0x300 0x301 0x302 0x303 0x304 0x305 0x306 0x307>,
-+					    <0x310 0x311 0x312 0x313 0x314 0x315 0x316 0x317>,
-+					    <0x320 0x321 0x322 0x323 0x324 0x325 0x326 0x327>;
-+		max-memory-bandwidth = <94371840>; /* Bps, 1024x768@60 16bpp */
-+		display-timings {
-+			native-mode = <&clcd_timing0>;
-+			clcd_timing0: xga {
-+				clock-frequency = <63500127>;
-+				hactive = <1024>;
-+				hback-porch = <152>;
-+				hfront-porch = <48>;
-+				hsync-len = <104>;
-+				vactive = <768>;
-+				vback-porch = <23>;
-+				vfront-porch = <3>;
-+				vsync-len = <4>;
-+			};
-+		};
- 	};
- 
- 	memory-controller@100e0000 {
+ 	netdev->netdev_ops = &e1000_netdev_ops;
 -- 
-1.8.1.2
-
+1.7.4.4
 

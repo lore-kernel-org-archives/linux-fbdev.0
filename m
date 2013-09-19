@@ -1,73 +1,44 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 26 Sep 2013 09:10:43 +0000
-Subject: Re: [PATCH 1/4] video: vfb: Remove incorrect check
-Message-Id: <5243FA13.9050801@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="jJhn0NQco5WJrbxN8vWsFcOXrjHD6ajRa"
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 21:44:01 +0000
+Subject: [PATCH 19/51] DMA-API: media: dt3155v4l: replace dma_set_mask()+dma_set_coherent_mask() with new
+Message-Id: <E1VMm13-0007hO-9l@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1380110579-3665-1-git-send-email-sachin.kamat@linaro.org>
-In-Reply-To: <1380110579-3665-1-git-send-email-sachin.kamat@linaro.org>
-To: linux-fbdev@vger.kernel.org
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mauro Carvalho Chehab <m.chehab@samsung.com>
 
---jJhn0NQco5WJrbxN8vWsFcOXrjHD6ajRa
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Replace the following sequence:
 
-On 25/09/13 15:02, Sachin Kamat wrote:
-> 'yoffset' is unsigned and hence cannot be less than 0.
->=20
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> ---
->  drivers/video/vfb.c |    5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
-> index ee5985e..ea2b523 100644
-> --- a/drivers/video/vfb.c
-> +++ b/drivers/video/vfb.c
-> @@ -390,9 +390,8 @@ static int vfb_pan_display(struct fb_var_screeninfo=
- *var,
->  			   struct fb_info *info)
->  {
->  	if (var->vmode & FB_VMODE_YWRAP) {
-> -		if (var->yoffset < 0
-> -		    || var->yoffset >=3D info->var.yres_virtual
-> -		    || var->xoffset)
-> +		if (var->yoffset >=3D info->var.yres_virtual ||
-> +		    var->xoffset)
->  			return -EINVAL;
->  	} else {
->  		if (var->xoffset + info->var.xres > info->var.xres_virtual ||
->=20
+	dma_set_mask(dev, mask);
+	dma_set_coherent_mask(dev, mask);
 
-Thanks, queueng the series for 3.13.
+with a call to the new helper dma_set_mask_and_coherent().
 
- Tomi
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ drivers/staging/media/dt3155v4l/dt3155v4l.c |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/staging/media/dt3155v4l/dt3155v4l.c b/drivers/staging/media/dt3155v4l/dt3155v4l.c
+index 90d6ac4..081407b 100644
+--- a/drivers/staging/media/dt3155v4l/dt3155v4l.c
++++ b/drivers/staging/media/dt3155v4l/dt3155v4l.c
+@@ -901,10 +901,7 @@ dt3155_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	int err;
+ 	struct dt3155_priv *pd;
+ 
+-	err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
+-	if (err)
+-		return -ENODEV;
+-	err = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
++	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
+ 	if (err)
+ 		return -ENODEV;
+ 	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
+-- 
+1.7.4.4
 
-
---jJhn0NQco5WJrbxN8vWsFcOXrjHD6ajRa
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSQ/oTAAoJEPo9qoy8lh716tAQAILxL/vWn3vyGVdoM8FNIsHa
-Da9BxLjc3ArckWSW02SVwc4tfFeGLnrLsy7I4vvhpKO9CAG0DZFQjMk6ets0Em5e
-MyUwIKoFlWGDsLD2U9g5AKFeCie8Xl7v8+Wgf8huHtIMr42nQX2eL+l6mZJOYBVR
-Nd4sK75ep01nHG6Qsf4zaB6E0UAzos4IcI8mhI4qcCxm+ZRH5ozi6u9taLTOfKfE
-ELRKlwaY3KtRXcmS9Z9izQ7dXLD+mjAnONCig9ibIUH/I1daepWTHE/ZopK++pkl
-AN3DzltXcBF0JPg8rUXSPcGFvm8kkzVtMSBexNoaP1DG2fHGnuVi7eecJQ5y0vgq
-TPNvRIb5VJ4Onw361VOHYh0e+yyUKASH8weq+AOGfJCTl1FXtFaqs/NW80u6hfqT
-URp3hephtNhEZ6uzt85GGURGHlDb7ImJjC706b1YG1qS1SvkBz4DkF0+n3OiFz0o
-SaENS666vsH10vI/Il+QN07Lwp4SOW4biomejz0zoIetBuMIdm1J4TJanVajeZgk
-xueUb13aG5+A0CjUYpsIxTDMZiRkObY96IFGQYUVdohqc8EXCgk/VjIdLRlHfYIR
-7GUqDVybdzlGg8fO6uP2tX30qkKTlHZM0wxUYlxkHDcEMwr+nFaNUxI6hAfT1+/V
-XXTxumNKDsE/Kg3gl7a9
-=GdqP
------END PGP SIGNATURE-----
-
---jJhn0NQco5WJrbxN8vWsFcOXrjHD6ajRa--

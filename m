@@ -1,75 +1,42 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Mon, 23 Sep 2013 14:27:31 +0000
-Subject: [PATCH 6/7] usb: phy: gpio-vbus: fix deferred probe from __init
-Message-Id: <1379946452-25649-7-git-send-email-jhovold@gmail.com>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 21:46:01 +0000
+Subject: [PATCH 21/51] DMA-API: usb: ssb-hcd: replace dma_set_mask()+dma_set_coherent_mask() with new
+Message-Id: <E1VMm2z-0007hl-Hz@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130923134028.GF21013@sirena.org.uk>
- <1379946452-25649-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1379946452-25649-1-git-send-email-jhovold@gmail.com>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, linux-usb@vger.kernel.org, Mark Brown <broonie@linaro.org>, Johan Hovold <jhovold@gmail.com>, linux-pcmcia@lists.infradead.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, Felipe Balbi <balbi@ti.com>, linux-mtd@lists.infradead.org, Grant Likely <grant.likely@linaro.org>
+To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-Move probe out of __init section and don't use platform_driver_probe
-which cannot be used with deferred probing.
+Replace the following sequence:
 
-Since commit e9354576 ("gpiolib: Defer failed gpio requests by default")
-and 04bf3011 ("regulator: Support driver probe deferral") this driver
-might return -EPROBE_DEFER if a gpio_request or regulator_get fails.
+	dma_set_mask(dev, mask);
+	dma_set_coherent_mask(dev, mask);
 
-Cc: Felipe Balbi <balbi@ti.com>
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
+with a call to the new helper dma_set_mask_and_coherent().
+
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/usb/phy/phy-gpio-vbus-usb.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ drivers/usb/host/ssb-hcd.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/usb/phy/phy-gpio-vbus-usb.c b/drivers/usb/phy/phy-gpio-vbus-usb.c
-index b2f29c9..02799a5 100644
---- a/drivers/usb/phy/phy-gpio-vbus-usb.c
-+++ b/drivers/usb/phy/phy-gpio-vbus-usb.c
-@@ -241,7 +241,7 @@ static int gpio_vbus_set_suspend(struct usb_phy *phy, int suspend)
+diff --git a/drivers/usb/host/ssb-hcd.c b/drivers/usb/host/ssb-hcd.c
+index 74af2c6..0196f76 100644
+--- a/drivers/usb/host/ssb-hcd.c
++++ b/drivers/usb/host/ssb-hcd.c
+@@ -163,8 +163,7 @@ static int ssb_hcd_probe(struct ssb_device *dev,
  
- /* platform driver interface */
+ 	/* TODO: Probably need checks here; is the core connected? */
  
--static int __init gpio_vbus_probe(struct platform_device *pdev)
-+static int gpio_vbus_probe(struct platform_device *pdev)
- {
- 	struct gpio_vbus_mach_info *pdata = dev_get_platdata(&pdev->dev);
- 	struct gpio_vbus_data *gpio_vbus;
-@@ -349,7 +349,7 @@ err_gpio:
- 	return err;
- }
+-	if (dma_set_mask(dev->dma_dev, DMA_BIT_MASK(32)) ||
+-	    dma_set_coherent_mask(dev->dma_dev, DMA_BIT_MASK(32)))
++	if (dma_set_mask_and_coherent(dev->dma_dev, DMA_BIT_MASK(32)))
+ 		return -EOPNOTSUPP;
  
--static int __exit gpio_vbus_remove(struct platform_device *pdev)
-+static int gpio_vbus_remove(struct platform_device *pdev)
- {
- 	struct gpio_vbus_data *gpio_vbus = platform_get_drvdata(pdev);
- 	struct gpio_vbus_mach_info *pdata = dev_get_platdata(&pdev->dev);
-@@ -398,8 +398,6 @@ static const struct dev_pm_ops gpio_vbus_dev_pm_ops = {
- };
- #endif
- 
--/* NOTE:  the gpio-vbus device may *NOT* be hotplugged */
--
- MODULE_ALIAS("platform:gpio-vbus");
- 
- static struct platform_driver gpio_vbus_driver = {
-@@ -410,10 +408,11 @@ static struct platform_driver gpio_vbus_driver = {
- 		.pm = &gpio_vbus_dev_pm_ops,
- #endif
- 	},
--	.remove  = __exit_p(gpio_vbus_remove),
-+	.probe		= gpio_vbus_probe,
-+	.remove		= gpio_vbus_remove,
- };
- 
--module_platform_driver_probe(gpio_vbus_driver, gpio_vbus_probe);
-+module_platform_driver(gpio_vbus_driver);
- 
- MODULE_DESCRIPTION("simple GPIO controlled OTG transceiver driver");
- MODULE_AUTHOR("Philipp Zabel");
+ 	usb_dev = kzalloc(sizeof(struct ssb_hcd_device), GFP_KERNEL);
 -- 
-1.8.3.2
+1.7.4.4
 

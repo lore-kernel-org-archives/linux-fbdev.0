@@ -1,50 +1,48 @@
-From: Joe Perches <joe@perches.com>
-Date: Fri, 20 Sep 2013 03:10:11 +0000
-Subject: [PATCH 2/2] framebuffer: Fix int cast to pointer warnings
-Message-Id: <1379646611.2021.7.camel@joe-AO722>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 21:34:59 +0000
+Subject: [PATCH 10/51] DMA-API: net: broadcom/bnx2x: replace dma_set_mask()+dma_set_coherent_mask() with new
+Message-Id: <E1VMlsJ-0007g8-UO@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <c94f3e342947923f20d4c12932f382aa5200511b.1379641901.git.joe@perches.com>
-In-Reply-To: <c94f3e342947923f20d4c12932f382aa5200511b.1379641901.git.joe@perches.com>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
+Cc: Eilon Greenstein <eilong@broadcom.com>
 
-Casts of int to pointer need additional casts to (unsigned long)
-when compiled for x86-64 to silence the compiler.
+Replace the following sequence:
 
-Signed-off-by: Joe Perches <joe@perches.com>
+	dma_set_mask(dev, mask);
+	dma_set_coherent_mask(dev, mask);
+
+with a call to the new helper dma_set_mask_and_coherent().
+
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/video/arkfb.c    | 2 +-
- drivers/video/vt8623fb.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c |    8 ++------
+ 1 files changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
-index b13f3f2..26fd4e4 100644
---- a/drivers/video/arkfb.c
-+++ b/drivers/video/arkfb.c
-@@ -1016,7 +1016,7 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
+index 2f8dbbb..e6c3e66 100644
+--- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
++++ b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
+@@ -12072,13 +12072,9 @@ static int bnx2x_set_coherency_mask(struct bnx2x *bp)
+ {
+ 	struct device *dev = &bp->pdev->dev;
  
- 	pcibios_bus_to_resource(dev, &vga_res, &bus_reg);
- 
--	par->state.vgabase = (void __iomem *) vga_res.start;
-+	par->state.vgabase = (void __iomem *)(unsigned long)vga_res.start;
- 
- 	/* FIXME get memsize */
- 	regval = vga_rseq(par->state.vgabase, 0x10);
-diff --git a/drivers/video/vt8623fb.c b/drivers/video/vt8623fb.c
-index 7e97c53..281d41b 100644
---- a/drivers/video/vt8623fb.c
-+++ b/drivers/video/vt8623fb.c
-@@ -731,7 +731,7 @@ static int vt8623_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 
- 	pcibios_bus_to_resource(dev, &vga_res, &bus_reg);
- 
--	par->state.vgabase = (void __iomem *) vga_res.start;
-+	par->state.vgabase = (void __iomem *)(unsigned long)vga_res.start;
- 
- 	/* Find how many physical memory there is on card */
- 	memsize1 = (vga_rseq(par->state.vgabase, 0x34) + 1) >> 1;
-
+-	if (dma_set_mask(dev, DMA_BIT_MASK(64)) = 0) {
++	if (dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64)) = 0) {
+ 		bp->flags |= USING_DAC_FLAG;
+-		if (dma_set_coherent_mask(dev, DMA_BIT_MASK(64)) != 0) {
+-			dev_err(dev, "dma_set_coherent_mask failed, aborting\n");
+-			return -EIO;
+-		}
+-	} else if (dma_set_mask(dev, DMA_BIT_MASK(32)) != 0) {
++	} else if (dma_set_mask_and_coherent(dev, DMA_BIT_MASK(32)) != 0) {
+ 		dev_err(dev, "System does not support DMA, aborting\n");
+ 		return -EIO;
+ 	}
+-- 
+1.7.4.4
 

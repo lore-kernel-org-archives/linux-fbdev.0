@@ -1,36 +1,43 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Wed, 25 Sep 2013 12:14:59 +0000
-Subject: [PATCH 4/4] video: riva: Remove incorrect checks
-Message-Id: <1380110579-3665-4-git-send-email-sachin.kamat@linaro.org>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 21:54:02 +0000
+Subject: [PATCH 29/51] DMA-API: ata: pata_octeon_cf: convert to use dma_coerce_mask_and_coherent()
+Message-Id: <E1VMmAk-0007iq-IU@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
+Cc: Tejun Heo <tj@kernel.org>
 
-'xoffset' and 'yoffset' are unsigned and hence cannot be less than 0.
+Convert this code sequence:
+	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(64);
+	pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
+to use dma_coerce_mask_and_coherent() to avoid bypassing the architecture
+check on the DMA mask.
 
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/video/riva/fbdev.c |    5 -----
- 1 file changed, 5 deletions(-)
+ drivers/ata/pata_octeon_cf.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
-index 9536715..a5514ac 100644
---- a/drivers/video/riva/fbdev.c
-+++ b/drivers/video/riva/fbdev.c
-@@ -1185,11 +1185,6 @@ static int rivafb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 	if (rivafb_do_maximize(info, var, nom, den) < 0)
- 		return -EINVAL;
+diff --git a/drivers/ata/pata_octeon_cf.c b/drivers/ata/pata_octeon_cf.c
+index c51bbb9..6231d43 100644
+--- a/drivers/ata/pata_octeon_cf.c
++++ b/drivers/ata/pata_octeon_cf.c
+@@ -1014,8 +1014,9 @@ static int octeon_cf_probe(struct platform_device *pdev)
+ 	}
+ 	cf_port->c0 = ap->ioaddr.ctl_addr;
  
--	if (var->xoffset < 0)
--		var->xoffset = 0;
--	if (var->yoffset < 0)
--		var->yoffset = 0;
--
- 	/* truncate xoffset and yoffset to maximum if too high */
- 	if (var->xoffset > var->xres_virtual - var->xres)
- 		var->xoffset = var->xres_virtual - var->xres - 1;
+-	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(64);
+-	pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
++	rv = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
++	if (rv)
++		return ret;
+ 
+ 	ata_port_desc(ap, "cmd %p ctl %p", base, ap->ioaddr.ctl_addr);
+ 
 -- 
-1.7.9.5
+1.7.4.4
 

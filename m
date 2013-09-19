@@ -1,7 +1,7 @@
 From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 21:38:00 +0000
-Subject: [PATCH 13/51] DMA-API: net: sfc/efx.c: replace dma_set_mask()+dma_set_coherent_mask() with new
-Message-Id: <E1VMlvE-0007gc-B5@rmk-PC.arm.linux.org.uk>
+Date: Thu, 19 Sep 2013 21:55:02 +0000
+Subject: [PATCH 30/51] DMA-API: dma: dw_dmac.c: convert to use dma_coerce_mask_and_coherent()
+Message-Id: <E1VMmBi-0007iw-MP@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
@@ -9,50 +9,41 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
-Cc: Ben Hutchings <bhutchings@solarflare.com>
+Cc: Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Viresh Kumar <viresh.linux@gmail.com>
 
-Replace the following sequence:
-
-	dma_set_mask(dev, mask);
-	dma_set_coherent_mask(dev, mask);
-
-with a call to the new helper dma_set_mask_and_coherent().
+This code sequence:
+	if (!pdev->dev.dma_mask) {
+		pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
+		pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
+	}
+bypasses the architectures check on the DMA mask.  It can be replaced
+with dma_coerce_mask_and_coherent(), avoiding the direct initialization
+of this mask.
 
 Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/net/ethernet/sfc/efx.c |   12 +-----------
- 1 files changed, 1 insertions(+), 11 deletions(-)
+ drivers/dma/dw/platform.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/sfc/efx.c b/drivers/net/ethernet/sfc/efx.c
-index 07c9bc4..2e27837 100644
---- a/drivers/net/ethernet/sfc/efx.c
-+++ b/drivers/net/ethernet/sfc/efx.c
-@@ -1121,7 +1121,7 @@ static int efx_init_io(struct efx_nic *efx)
- 	 */
- 	while (dma_mask > 0x7fffffffUL) {
- 		if (dma_supported(&pci_dev->dev, dma_mask)) {
--			rc = dma_set_mask(&pci_dev->dev, dma_mask);
-+			rc = dma_set_mask_and_coherent(&pci_dev->dev, dma_mask);
- 			if (rc = 0)
- 				break;
- 		}
-@@ -1134,16 +1134,6 @@ static int efx_init_io(struct efx_nic *efx)
- 	}
- 	netif_dbg(efx, probe, efx->net_dev,
- 		  "using DMA mask %llx\n", (unsigned long long) dma_mask);
--	rc = dma_set_coherent_mask(&pci_dev->dev, dma_mask);
--	if (rc) {
--		/* dma_set_coherent_mask() is not *allowed* to
--		 * fail with a mask that dma_set_mask() accepted,
--		 * but just in case...
--		 */
--		netif_err(efx, probe, efx->net_dev,
--			  "failed to set consistent DMA mask\n");
--		goto fail2;
--	}
+diff --git a/drivers/dma/dw/platform.c b/drivers/dma/dw/platform.c
+index e35d975..453822c 100644
+--- a/drivers/dma/dw/platform.c
++++ b/drivers/dma/dw/platform.c
+@@ -191,11 +191,9 @@ static int dw_probe(struct platform_device *pdev)
+ 	if (IS_ERR(chip->regs))
+ 		return PTR_ERR(chip->regs);
  
- 	efx->membase_phys = pci_resource_start(efx->pci_dev, EFX_MEM_BAR);
- 	rc = pci_request_region(pci_dev, EFX_MEM_BAR, "sfc");
+-	/* Apply default dma_mask if needed */
+-	if (!dev->dma_mask) {
+-		dev->dma_mask = &dev->coherent_dma_mask;
+-		dev->coherent_dma_mask = DMA_BIT_MASK(32);
+-	}
++	err = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
++	if (err)
++		return err;
+ 
+ 	pdata = dev_get_platdata(dev);
+ 	if (!pdata)
 -- 
 1.7.4.4
 

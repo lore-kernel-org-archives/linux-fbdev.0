@@ -1,43 +1,33 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 21:59:03 +0000
-Subject: [PATCH 34/51] DMA-API: net: octeon: use dma_coerce_mask_and_coherent()
-Message-Id: <E1VMmFb-0007jO-50@rmk-PC.arm.linux.org.uk>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Fri, 20 Sep 2013 06:44:15 +0000
+Subject: [PATCH 06/15] video: bw2: Remove redundant dev_set_drvdata
+Message-Id: <1379658744-17113-7-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
+To: linux-fbdev@vger.kernel.org
 
-The code sequence:
-	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(64);
-	pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
-bypasses the architectures check on the DMA mask.  It can be replaced
-with dma_coerce_mask_and_coherent(), avoiding the direct initialization
-of this mask.
+Driver core sets driver data to NULL upon failure or remove.
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 ---
- drivers/net/ethernet/octeon/octeon_mgmt.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/video/bw2.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/octeon/octeon_mgmt.c b/drivers/net/ethernet/octeon/octeon_mgmt.c
-index 622aa75..2006a07 100644
---- a/drivers/net/ethernet/octeon/octeon_mgmt.c
-+++ b/drivers/net/ethernet/octeon/octeon_mgmt.c
-@@ -1552,8 +1552,9 @@ static int octeon_mgmt_probe(struct platform_device *pdev)
+diff --git a/drivers/video/bw2.c b/drivers/video/bw2.c
+index 60017fc..bc123d6 100644
+--- a/drivers/video/bw2.c
++++ b/drivers/video/bw2.c
+@@ -363,8 +363,6 @@ static int bw2_remove(struct platform_device *op)
  
- 	p->phy_np = of_parse_phandle(pdev->dev.of_node, "phy-handle", 0);
+ 	framebuffer_release(info);
  
--	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(64);
--	pdev->dev.dma_mask = &pdev->dev.coherent_dma_mask;
-+	result = dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
-+	if (result)
-+		goto err;
+-	dev_set_drvdata(&op->dev, NULL);
+-
+ 	return 0;
+ }
  
- 	netif_carrier_off(netdev);
- 	result = register_netdev(netdev);
 -- 
-1.7.4.4
+1.7.9.5
 

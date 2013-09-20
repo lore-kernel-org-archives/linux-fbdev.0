@@ -1,32 +1,33 @@
 From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Wed, 25 Sep 2013 11:41:52 +0000
-Subject: [PATCH 4/6] video: aty: Remove redundant break
-Message-Id: <1380108594-19090-4-git-send-email-sachin.kamat@linaro.org>
+Date: Fri, 20 Sep 2013 06:44:16 +0000
+Subject: [PATCH 07/15] video: cg14: Remove redundant dev_set_drvdata
+Message-Id: <1379658744-17113-8-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-'break' after return statement is redundant. Remove it.
+Driver core sets driver data to NULL upon failure or remove.
 
 Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 ---
- drivers/video/aty/atyfb_base.c |    1 -
- 1 file changed, 1 deletion(-)
+ drivers/video/cg14.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
-index 9b0f12c..28fafbf 100644
---- a/drivers/video/aty/atyfb_base.c
-+++ b/drivers/video/aty/atyfb_base.c
-@@ -1848,7 +1848,6 @@ static int atyfb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+diff --git a/drivers/video/cg14.c b/drivers/video/cg14.c
+index ed3b889..9626488 100644
+--- a/drivers/video/cg14.c
++++ b/drivers/video/cg14.c
+@@ -583,8 +583,6 @@ static int cg14_remove(struct platform_device *op)
  
- 			return aty_waitforvblank(par, crtc);
- 		}
--		break;
+ 	framebuffer_release(info);
  
- #if defined(DEBUG) && defined(CONFIG_FB_ATY_CT)
- 	case ATYIO_CLKR:
+-	dev_set_drvdata(&op->dev, NULL);
+-
+ 	return 0;
+ }
+ 
 -- 
 1.7.9.5
 

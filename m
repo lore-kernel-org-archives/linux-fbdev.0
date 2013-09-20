@@ -1,40 +1,84 @@
-From: Wang Huan-B18965 <B18965@freescale.com>
-Date: Fri, 13 Sep 2013 07:07:44 +0000
-Subject: RE: [PATCH v3 0/5] ARM: vf610: Add DCU framebuffer driver for Vybrid VF610 platform
-Message-Id: <81BA6E5E0BC2344391CABCEE22D1B6D842FD6A@039-SN1MPN1-003.039d.mgd.msft.net>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 20 Sep 2013 10:04:27 +0000
+Subject: Re: [PATCH v3 0/5] ARM: vf610: Add DCU framebuffer driver for Vybrid VF610 platform
+Message-Id: <523C1DAB.60808@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="P4t2bltVdNa67qkjfnVpUkXr27fAIe1UE"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1376553714-25922-1-git-send-email-b18965@freescale.com>
  <81BA6E5E0BC2344391CABCEE22D1B6D83F448E@039-SN1MPN1-002.039d.mgd.msft.net>
  <81BA6E5E0BC2344391CABCEE22D1B6D8403CB3@039-SN1MPN1-002.039d.mgd.msft.net>
  <52270C71.7080805@ti.com>
-In-Reply-To: <52270C71.7080805@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <81BA6E5E0BC2344391CABCEE22D1B6D842FD6A@039-SN1MPN1-003.039d.mgd.msft.net>
+In-Reply-To: <81BA6E5E0BC2344391CABCEE22D1B6D842FD6A@039-SN1MPN1-003.039d.mgd.msft.net>
 To: linux-arm-kernel@lists.infradead.org
 
-TXkgY29tbWVudHMgaW5saW5lLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZy
-b206IFRvbWkgVmFsa2VpbmVuIFttYWlsdG86dG9taS52YWxrZWluZW5AdGkuY29tXQ0KPiBTZW50
-OiBXZWRuZXNkYXksIFNlcHRlbWJlciAwNCwgMjAxMyA2OjMzIFBNDQo+IFRvOiBXYW5nIEh1YW4t
-QjE4OTY1DQo+IENjOiBwbGFnbmlvakBqY3Jvc29mdC5jb207IGxpbnV4LWZiZGV2QHZnZXIua2Vy
-bmVsLm9yZzsgbGludXgtYXJtLQ0KPiBrZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgSmluIFpo
-ZW5neGlvbmctUjY0MTg4OyBFc3RldmFtIEZhYmlvLVI0OTQ5NjsNCj4gc2hhd24uZ3VvQGxpbmFy
-by5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2MyAwLzVdIEFSTTogdmY2MTA6IEFkZCBEQ1Ug
-ZnJhbWVidWZmZXIgZHJpdmVyIGZvcg0KPiBWeWJyaWQgVkY2MTAgcGxhdGZvcm0NCj4gDQo+IEhp
-LA0KPiANCj4gT24gMDMvMDkvMTMgMTE6MjEsIFdhbmcgSHVhbi1CMTg5NjUgd3JvdGU6DQo+ID4g
-SGksIEplYW4tQ2hyaXN0b3BoZSwgVG9taSwNCj4gPg0KPiA+ICAgICAgIENvdWxkIHlvdSBwbGVh
-c2UgaGVscCB0byByZXZpZXcgdGhlc2UgcGF0Y2hlcz8NCj4gPiAgICAgICBUaGFua3MhDQo+IA0K
-PiBUaGVyZSBzZWVtZWQgdG8gYmUgc29tZSBzdHJvbmcgb3BpbmlvbnMgdGhhdCB0aGVyZSBzaG91
-bGQgYmUgYSBkcm0NCj4gZHJpdmVyIGZvciB0aGlzIGhhcmR3YXJlLCBpbnN0ZWFkIG9mIGFuIGZi
-IGRyaXZlci4gU28gYXMgdGhlcmUgc2VlbXMgdG8NCj4gYmUgZGlzYWdyZWVtZW50cyBhYm91dCB0
-aGlzLCBJJ2xsIGxlYXZlIHRoaXMgc2VyaWVzIHRvIEplYW4tQ2hyaXN0b3BoZSwNCj4gd2hvJ3Mg
-dGhlIHByaW1hcnkgbWFpbnRhaW5lci4NCltBbGlzb24gV2FuZ10gDQoNClRoYW5rcyBmb3IgVG9t
-aSdzIGNvbW1lbnRzLiANCg0KSSBhZ3JlZSB0aGF0IHdlIGNhbiBpbXBsZW1lbnQgdGhlIERSTSBk
-cml2ZXIgZm9yIHRoZSBEQ1UuIEFzIHRoZSBiYW5kd2lkdGggbGltaXRhdGlvbiwgSSBzdWdnZXN0
-IHdlIHVzZSB0aGUgZmIgZHJpdmVyIGZpcnN0bHkuIE9uIHRoZSBvdGhlciBoYW5kLCB0aGUgZmIg
-ZHJpdmVyIGNhbiBtZWV0IHRoZSBhcHBsaWNhdGlvbiByZXF1aXJlbWVudCBiYXNlZCBvbiB0aGlz
-IFNvQy4gV2UnbGwgdHJ5IHRvIHByb3ZpZGUgdGhlIERSTSBkcml2ZXIgd2hlbiB0aGlzIElQIGlu
-dGVncmF0ZWQgaW50byBvdGhlciBTb0MuIA0KDQpKZWFuLUNocmlzdG9waGUsIERvIHlvdSBoYXZl
-IGFueSBjb21tZW50cy4gVGhhbmtzLiAgDQoNCg0KQmVzdCBSZWdhcmRzLA0KQWxpc29uIFdhbmcN
-Cg=
+--P4t2bltVdNa67qkjfnVpUkXr27fAIe1UE
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
+On 13/09/13 10:07, Wang Huan-B18965 wrote:
+> My comments inline.
+>=20
+>> -----Original Message----- From: Tomi Valkeinen
+>> [mailto:tomi.valkeinen@ti.com] Sent: Wednesday, September 04, 2013
+>> 6:33 PM To: Wang Huan-B18965 Cc: plagnioj@jcrosoft.com;
+>> linux-fbdev@vger.kernel.org; linux-arm- kernel@lists.infradead.org;
+>> Jin Zhengxiong-R64188; Estevam Fabio-R49496; shawn.guo@linaro.org=20
+>> Subject: Re: [PATCH v3 0/5] ARM: vf610: Add DCU framebuffer driver
+>> for Vybrid VF610 platform
+>>=20
+>> Hi,
+>>=20
+>> On 03/09/13 11:21, Wang Huan-B18965 wrote:
+>>> Hi, Jean-Christophe, Tomi,
+>>>=20
+>>> Could you please help to review these patches? Thanks!
+>>=20
+>> There seemed to be some strong opinions that there should be a drm=20
+>> driver for this hardware, instead of an fb driver. So as there
+>> seems to be disagreements about this, I'll leave this series to
+>> Jean-Christophe, who's the primary maintainer.
+> [Alison Wang]
+>=20
+> Thanks for Tomi's comments.
+>=20
+> I agree that we can implement the DRM driver for the DCU. As the
+> bandwidth limitation, I suggest we use the fb driver firstly. On the
+> other hand, the fb driver can meet the application requirement based
+> on this SoC. We'll try to provide the DRM driver when this IP
+> integrated into other SoC.
+
+If you plan to move to DRM driver anyway, I would strongly suggest
+merging only the DRM driver. If we merge the fb driver, and a bit later
+the DRM driver for the same hardware, we'll have two drivers of which
+the other is already deprecated.
+
+ Tomi
+
+
+--P4t2bltVdNa67qkjfnVpUkXr27fAIe1UE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSPB2rAAoJEPo9qoy8lh71gLEP/2W4F4MDai++tZnA9Hykv+0W
+/J5udxsF155YEheA98JcO+WM+KgmdYn5fwd+fL5yMbAXI+UGF2vrHWA7KaWOPsRe
+cS/TMRbLaj8OsFCpdiqMqEmKkNifKJQFy9g/+qd9Kq1Pm53PzKTh+SAap/hzGWNq
+A3XxhVAx21wyfZ68TTm+jrwnRYgjzosycErXxjl1O2q5YglVDdvoS0DU6Rwa875P
+MUpEsmMtK9JDT/3G8yuvaLTu5rjFuXIGUq9L7dr/McCj95Sy/gC37RK2QjZ1G+EZ
+nvZkQQ+DzxV4xrUXcg7Qwo1KVKpR61jMgBmxPYNjdFcTPKQb4X6KBz3q1Fo95DA8
+aB+UBDcDLSVuACeAdWdlqEXS1IbeHgLA8b4ykHrjC8qtQlNF/hoH/nHRlfJ/84bD
++l4bGc8dlsY/0RIdPbIaydYyRKOiQIEVSSFSBeG2KxjzEHHZdP6WgMJY2F5mdGzK
+UXUOOneeFnCrAeXJprdwNoL4XNzoeu/idw+xzudA0Uak+jqUVgogpajYIoDY5cnc
+xEkhTo6yPnwocEbmahCz8swZAkrNAbM+Vw1cKfDJLbKoNam/KCpLr+JBCmhEC336
+syqg8R8lJZ9zLc9WbBci9JevkhvE4klFVNdC+Ko1iLfieYCf4U3kpXlAaYGDJg+d
+66t/Z55mOBLmMcAX+5zX
+=Epsa
+-----END PGP SIGNATURE-----
+
+--P4t2bltVdNa67qkjfnVpUkXr27fAIe1UE--

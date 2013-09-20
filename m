@@ -1,44 +1,33 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 23:42:06 +0000
-Subject: [PATCH 49/51] ARM: 7796/1: scsi: Use dma_max_pfn(dev) helper for bounce_limit calculations
-Message-Id: <E1VMnrK-0002Dw-Vk@rmk-PC.arm.linux.org.uk>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Fri, 20 Sep 2013 06:44:20 +0000
+Subject: [PATCH 11/15] video: p9100: Remove redundant dev_set_drvdata
+Message-Id: <1379658744-17113-12-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
-Cc: "James E.J. Bottomley" <JBottomley@parallels.com>
+To: linux-fbdev@vger.kernel.org
 
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Driver core sets driver data to NULL upon failure or remove.
 
-DMA bounce limit is the maximum direct DMA'able memory beyond which
-bounce buffers has to be used to perform dma operations. SCSI driver
-relies on dma_mask but its calculation is based on max_*pfn which
-don't have uniform meaning across architectures. So make use of
-dma_max_pfn() which is expected to return the DMAable maximum pfn
-value across architectures.
-
-Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 ---
- drivers/scsi/scsi_lib.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/p9100.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index d1549b7..7bd7f0d 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -1684,7 +1684,7 @@ u64 scsi_calculate_bounce_limit(struct Scsi_Host *shost)
+diff --git a/drivers/video/p9100.c b/drivers/video/p9100.c
+index 4b23af6..367cea8 100644
+--- a/drivers/video/p9100.c
++++ b/drivers/video/p9100.c
+@@ -339,8 +339,6 @@ static int p9100_remove(struct platform_device *op)
  
- 	host_dev = scsi_get_device(shost);
- 	if (host_dev && host_dev->dma_mask)
--		bounce_limit = *host_dev->dma_mask;
-+		bounce_limit = dma_max_pfn(host_dev) << PAGE_SHIFT;
+ 	framebuffer_release(info);
  
- 	return bounce_limit;
+-	dev_set_drvdata(&op->dev, NULL);
+-
+ 	return 0;
  }
+ 
 -- 
-1.7.4.4
+1.7.9.5
 

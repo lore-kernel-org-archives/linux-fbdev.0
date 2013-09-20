@@ -1,57 +1,55 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Wed, 18 Sep 2013 12:48:32 +0000
-Subject: [PATCH] radeon: Conditionally compile PM code
-Message-Id: <1379508512-30155-1-git-send-email-treding@nvidia.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 20 Sep 2013 09:17:59 +0000
+Subject: Re: [PATCH] radeon: Conditionally compile PM code
+Message-Id: <523C12C7.60002@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="fgoo0FikkwDbb3jv7GmBU8vfcO2RmALqG"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1379508512-30155-1-git-send-email-treding@nvidia.com>
+In-Reply-To: <1379508512-30155-1-git-send-email-treding@nvidia.com>
+To: Thierry Reding <thierry.reding@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The power management code is only used on X86 and PowerMac. To prevent
-the compiler from warning about unused code, only build when PM and one
-of X86 or PowerMac is selected.
+--fgoo0FikkwDbb3jv7GmBU8vfcO2RmALqG
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Thierry Reding <treding@nvidia.com>
----
- drivers/video/aty/radeon_pm.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+On 18/09/13 15:48, Thierry Reding wrote:
+> The power management code is only used on X86 and PowerMac. To prevent
+> the compiler from warning about unused code, only build when PM and one=
 
-diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
-index f7091ec..f4317f1 100644
---- a/drivers/video/aty/radeon_pm.c
-+++ b/drivers/video/aty/radeon_pm.c
-@@ -1427,6 +1427,8 @@ static void radeon_pm_full_reset_sdram(struct radeonfb_info *rinfo)
- 	mdelay( 15);
- }
- 
-+#if defined(CONFIG_PM)
-+#if defined(CONFIG_X86) || defined(CONFIG_PPC_PMAC)
- static void radeon_pm_reset_pad_ctlr_strength(struct radeonfb_info *rinfo)
- {
- 	u32 tmp, tmp2;
-@@ -1939,9 +1941,10 @@ static void radeon_reinitialize_M10(struct radeonfb_info *rinfo)
- 	 */
- 	radeon_pm_m10_enable_lvds_spread_spectrum(rinfo);
- }
-+#endif
- 
- #ifdef CONFIG_PPC_OF
--
-+#ifdef CONFIG_PPC_PMAC
- static void radeon_pm_m9p_reconfigure_mc(struct radeonfb_info *rinfo)
- {
- 	OUTREG(MC_CNTL, rinfo->save_regs[46]);
-@@ -2202,6 +2205,8 @@ static void radeon_reinitialize_M9P(struct radeonfb_info *rinfo)
- 	radeon_pm_restore_pixel_pll(rinfo);
- 	radeon_pm_m10_enable_lvds_spread_spectrum(rinfo);
- }
-+#endif
-+#endif
- 
- #if 0 /* Not ready yet */
- static void radeon_reinitialize_QW(struct radeonfb_info *rinfo)
--- 
-1.8.4
+> of X86 or PowerMac is selected.
+>=20
+> Signed-off-by: Thierry Reding <treding@nvidia.com>
 
+Thanks, applied for 3.13.
+
+ Tomi
+
+
+
+--fgoo0FikkwDbb3jv7GmBU8vfcO2RmALqG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSPBLHAAoJEPo9qoy8lh71/2EQAIV7f1phQ62jF9m7k4xF8rzq
+BFvKSY8mySr/W6Af6HfMYx6+ETccNo2RsyxPKoztJdtGoIJ4rPjXTK+t3eGAUHKh
+CoRZFMnrdnDRyqsLQfxEVWWxUAk7r8FdVr3dlmtNEw2D2Jc2+MSbRdm7diBgxBdJ
+Wdw7G5Nvq7PTePxbrmkHX0ZBKM57+EoFne94ddvSPXEPeAUzN7EJiQ3LO143k/t5
+heyLmH2o7Il/7m4JMQ0bjiPWNr9HvlscrMtN5IV/l1pGTBWdVC/l/XqNUZW18lfl
+NukNX1juHAX3KsAGaqkWjbcoPAwlSLMt9OdBpmXMLMvfXBlEqupjd8Qpel6Fasxo
+SGD4WpooXiEwovgLoQr+g8QTd+Fjya1UqX3BeTPfMTCVK61TlANMJ+i4QjLf0Ld+
+A0aHAvCkKoJT81rjb/e5xBC7xcVnvB2u4CukObBbKfP4RKGgFEjMqRBLJLJhaA4h
+wmD1gnEZXxPNM8kO3KYdxbvjO98dI6QeRaCfzBDEzTW3Tr3ePlFtCW75EVhYU0mm
+f3RyyZzkueMLQr1ztQ1J9sRiXHyheeyRHKW6l3ggM1LVXf8Blz3p2jsaKMdoNJ9s
+TVYZMeK0zFjqOTmbCTW5aJ0ETgJbBMBLpSOEtk95WmXMukqgNkxe9t0zvLfaxWvD
+yDdPRRP3p3SPvw7fmErb
+=Lb/F
+-----END PGP SIGNATURE-----
+
+--fgoo0FikkwDbb3jv7GmBU8vfcO2RmALqG--

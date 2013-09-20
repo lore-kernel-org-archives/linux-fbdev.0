@@ -1,90 +1,32 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 26 Sep 2013 10:57:30 +0000
-Subject: Re: [PATCH 39/51] DMA-API: others: use dma_set_coherent_mask()
-Message-Id: <524411B8.4070000@ti.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Fri, 20 Sep 2013 06:50:52 +0000
+Subject: [PATCH 1/2] backlight: l4f00242t03: Remove redundant spi_set_drvdata
+Message-Id: <1379659133-18799-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
- <E1VMnNq-0007s4-HN@rmk-PC.arm.linux.org.uk>
-In-Reply-To: <E1VMnNq-0007s4-HN@rmk-PC.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <rmk+kernel@arm.linux.org.uk>, alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Joonyoung Shim <jy0922.shim@samsung.com>, David Airlie <airlied@linux.ie>, Seung-Woo Kim <sw0312.kim@samsung.com>, Rob Clark <robdclark@gmail.com>, Inki Dae <inki.dae@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "Valkeinen, Tomi" <tomi.valkeinen@ti.com>, Tejun Heo <tj@kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-Hi,
+Driver core sets driver data to NULL upon failure or remove.
 
-On Friday 20 September 2013 04:41 AM, Russell King wrote:
-> The correct way for a driver to specify the coherent DMA mask is
-> not to directly access the field in the struct device, but to use
-> dma_set_coherent_mask().  Only arch and bus code should access this
-> member directly.
->
-> Convert all direct write accesses to using the correct API.
->
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> ---
->   drivers/ata/pata_ixp4xx_cf.c             |    5 ++++-
->   drivers/gpu/drm/exynos/exynos_drm_drv.c  |    6 +++++-
->   drivers/gpu/drm/omapdrm/omap_dmm_tiler.c |    5 +++--
->   3 files changed, 12 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/ata/pata_ixp4xx_cf.c b/drivers/ata/pata_ixp4xx_cf.c
-> index 1ec53f8..ddf470c 100644
-> --- a/drivers/ata/pata_ixp4xx_cf.c
-> +++ b/drivers/ata/pata_ixp4xx_cf.c
-> @@ -144,6 +144,7 @@ static int ixp4xx_pata_probe(struct platform_device *pdev)
->   	struct ata_host *host;
->   	struct ata_port *ap;
->   	struct ixp4xx_pata_data *data = dev_get_platdata(&pdev->dev);
-> +	int ret;
->
->   	cs0 = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->   	cs1 = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-> @@ -157,7 +158,9 @@ static int ixp4xx_pata_probe(struct platform_device *pdev)
->   		return -ENOMEM;
->
->   	/* acquire resources and fill host */
-> -	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
-> +	ret = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-> +	if (ret)
-> +		return ret;
->
->   	data->cs0 = devm_ioremap(&pdev->dev, cs0->start, 0x1000);
->   	data->cs1 = devm_ioremap(&pdev->dev, cs1->start, 0x1000);
-> diff --git a/drivers/gpu/drm/exynos/exynos_drm_drv.c b/drivers/gpu/drm/exynos/exynos_drm_drv.c
-> index bb82ef7..81192d0 100644
-> --- a/drivers/gpu/drm/exynos/exynos_drm_drv.c
-> +++ b/drivers/gpu/drm/exynos/exynos_drm_drv.c
-> @@ -286,7 +286,11 @@ static struct drm_driver exynos_drm_driver = {
->
->   static int exynos_drm_platform_probe(struct platform_device *pdev)
->   {
-> -	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
-> +	int ret;
-> +
-> +	ret = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
-> +	if (ret)
-> +		return ret;
->
->   	return drm_platform_init(&exynos_drm_driver, pdev);
->   }
-> diff --git a/drivers/gpu/drm/omapdrm/omap_dmm_tiler.c b/drivers/gpu/drm/omapdrm/omap_dmm_tiler.c
-> index acf6678..701c4c1 100644
-> --- a/drivers/gpu/drm/omapdrm/omap_dmm_tiler.c
-> +++ b/drivers/gpu/drm/omapdrm/omap_dmm_tiler.c
-> @@ -664,8 +664,9 @@ static int omap_dmm_probe(struct platform_device *dev)
->   	}
->
->   	/* set dma mask for device */
-> -	/* NOTE: this is a workaround for the hwmod not initializing properly */
-> -	dev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
-> +	ret = dma_set_coherent_mask(&dev->dev, DMA_BIT_MASK(32));
-> +	if (ret)
-> +		goto fail;
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+---
+ drivers/video/backlight/l4f00242t03.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-Tested with omapdrm on omap4 panda es board.
-
-Thanks,
-Archit
+diff --git a/drivers/video/backlight/l4f00242t03.c b/drivers/video/backlight/l4f00242t03.c
+index a35a38c..59eebe0 100644
+--- a/drivers/video/backlight/l4f00242t03.c
++++ b/drivers/video/backlight/l4f00242t03.c
+@@ -244,7 +244,6 @@ static int l4f00242t03_remove(struct spi_device *spi)
+ 
+ 	l4f00242t03_lcd_power_set(priv->ld, FB_BLANK_POWERDOWN);
+ 	lcd_device_unregister(priv->ld);
+-	spi_set_drvdata(spi, NULL);
+ 
+ 	return 0;
+ }
+-- 
+1.7.9.5
 

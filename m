@@ -1,56 +1,40 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 21:42:00 +0000
-Subject: [PATCH 17/51] DMA-API: block: nvme-core: replace dma_set_mask()+dma_set_coherent_mask() with new
-Message-Id: <E1VMlz6-0007h9-WF@rmk-PC.arm.linux.org.uk>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Fri, 20 Sep 2013 06:44:24 +0000
+Subject: [PATCH 15/15] video: xilinxfb: Remove redundant dev_set_drvdata
+Message-Id: <1379658744-17113-16-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
-Cc: Matthew Wilcox <willy@linux.intel.com>
+To: linux-fbdev@vger.kernel.org
 
-Replace the following sequence:
+Driver core sets driver data to NULL upon failure or remove.
 
-	dma_set_mask(dev, mask);
-	dma_set_coherent_mask(dev, mask);
-
-with a call to the new helper dma_set_mask_and_coherent().
-
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 ---
- drivers/block/nvme-core.c |   10 ++++------
- 1 files changed, 4 insertions(+), 6 deletions(-)
+ drivers/video/xilinxfb.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/block/nvme-core.c b/drivers/block/nvme-core.c
-index da52092..26d03fa 100644
---- a/drivers/block/nvme-core.c
-+++ b/drivers/block/nvme-core.c
-@@ -1949,12 +1949,9 @@ static int nvme_dev_map(struct nvme_dev *dev)
- 	if (pci_request_selected_regions(pdev, bars, "nvme"))
- 		goto disable_pci;
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index 84c664e..0e1dd33 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -369,7 +369,6 @@ err_fbmem:
  
--	if (!dma_set_mask(&pdev->dev, DMA_BIT_MASK(64)))
--		dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64));
--	else if (!dma_set_mask(&pdev->dev, DMA_BIT_MASK(32)))
--		dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
--	else
--		goto disable_pci;
-+	if (dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64)) &&
-+	    dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32)))
-+		goto disable;
+ err_region:
+ 	kfree(drvdata);
+-	dev_set_drvdata(dev, NULL);
  
- 	pci_set_drvdata(pdev, dev);
- 	dev->bar = ioremap(pci_resource_start(pdev, 0), 8192);
-@@ -2168,6 +2165,7 @@ static int nvme_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	return rc;
+ }
+@@ -404,7 +403,6 @@ static int xilinxfb_release(struct device *dev)
+ #endif
  
- 	INIT_LIST_HEAD(&dev->namespaces);
- 	dev->pci_dev = pdev;
-+
- 	result = nvme_set_instance(dev);
- 	if (result)
- 		goto free;
+ 	kfree(drvdata);
+-	dev_set_drvdata(dev, NULL);
+ 
+ 	return 0;
+ }
 -- 
-1.7.4.4
+1.7.9.5
 

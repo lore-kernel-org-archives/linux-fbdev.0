@@ -1,72 +1,72 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 16 Sep 2013 09:17:02 +0000
-Subject: Re: [PATCH] video: au1100fb: Remove casting the return value which is a void pointer
-Message-Id: <5236CC8E.1000709@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="m2dhEeu2HTSRTlsggDpIBxwc4m3PBKafF"
+From: Mike Dunn <mikedunn@newsguy.com>
+Date: Sun, 22 Sep 2013 16:59:56 +0000
+Subject: [PATCH v2] pwm-backlight: allow for non-increasing brightness levels
+Message-Id: <1379869196-19377-1-git-send-email-mikedunn@newsguy.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <005c01cead20$50fe87e0$f2fb97a0$%han@samsung.com>
-In-Reply-To: <005c01cead20$50fe87e0$f2fb97a0$%han@samsung.com>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: Mike Dunn <mikedunn-kFrNdAxtuftBDgjK7y7TUQ@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Marek Vasut <marex-ynQEQJNshbs@public.gmane.org>
 
---m2dhEeu2HTSRTlsggDpIBxwc4m3PBKafF
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Currently the driver assumes that the values specified in the
+brightness-levels device tree property increase as they are parsed from
+left to right.  But boards that invert the signal between the PWM output
+and the backlight will need to specify decreasing brightness-levels.
+This patch removes the assumption that the last element of the array is
+the maximum value, and instead searches the array for the maximum value
+and uses that in the duty cycle calculation.
 
-On 09/09/13 08:49, Jingoo Han wrote:
-> Casting the return value which is a void pointer is redundant.
-> The conversion from void pointer to any other pointer type is
-> guaranteed by the C programming language.
->=20
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> ---
->  drivers/video/au1100fb.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
-> index a54ccdc..248abd5 100644
-> --- a/drivers/video/au1100fb.c
-> +++ b/drivers/video/au1100fb.c
-> @@ -588,7 +588,7 @@ int au1100fb_drv_remove(struct platform_device *dev=
-)
->  	if (!dev)
->  		return -ENODEV;
-> =20
-> -	fbdev =3D (struct au1100fb_device *) platform_get_drvdata(dev);
-> +	fbdev =3D platform_get_drvdata(dev);
-> =20
->  #if !defined(CONFIG_FRAMEBUFFER_CONSOLE) && defined(CONFIG_LOGO)
->  	au1100fb_fb_blank(VESA_POWERDOWN, &fbdev->info);
->=20
+Signed-off-by: Mike Dunn <mikedunn@newsguy.com>
+---
+Changelog:
+v2: 
+- commit message reworded; correct line wrap used
+- 'max_level' variable renamed to 'scale'
+- loop counter variable type changed to unsigned int
+- value held in scale changed from array index to actual maximum level
+- blank lines added around loop for readability
 
-Thanks, applied for 3.13.
+ drivers/video/backlight/pwm_bl.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
- Tomi
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 1fea627..5e99b88 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -27,6 +27,7 @@ struct pwm_bl_data {
+ 	unsigned int		period;
+ 	unsigned int		lth_brightness;
+ 	unsigned int		*levels;
++	unsigned int		scale;
+ 	int			(*notify)(struct device *,
+ 					  int brightness);
+ 	void			(*notify_after)(struct device *,
+@@ -57,7 +58,7 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+ 
+ 		if (pb->levels) {
+ 			duty_cycle = pb->levels[brightness];
+-			max = pb->levels[max];
++			max = pb->scale;
+ 		} else {
+ 			duty_cycle = brightness;
+ 		}
+@@ -195,7 +196,14 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	if (data->levels) {
+-		max = data->levels[data->max_brightness];
++		unsigned int i;
++
++		for (i = 0; i <= data->max_brightness; i++) {
++			if (data->levels[i] > pb->scale)
++				pb->scale = data->levels[i];
++		}
++
++		max = pb->scale;
+ 		pb->levels = data->levels;
+ 	} else
+ 		max = data->max_brightness;
+-- 
+1.8.1.5
 
-
-
---m2dhEeu2HTSRTlsggDpIBxwc4m3PBKafF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSNsyOAAoJEPo9qoy8lh71fyYP/1eRsm9n9pT5KxzNUVsbwG+U
-oxyOBmRx/5fEIcuBGxElhSXP/8HTyOoSzC1uqn5zLRqNv7o4r8g9yfbliHF5woW2
-Tka5eptC/IMx6TBwHunKMG34jj2kn93Jq2v2trVG03hq9ars+z7Nr3vmLP0EwKoz
-Di6iFb6kubhLfpU+I+SCCpAuKysSm7II/CW1WhXE48qkdGvvUkWy1NcxSaFF+AVk
-XHq8Sx9+NoD1bMCNzvNKvXDakct/eouUHsMUTSQiHHsbw7J01D1Q6bn0C4aDbEvQ
-nw/NivmYUiDrPTIFQS+7zmHKHGSxS2Nh7eFFeEmdDfVTxg5to2NTxY/GGB0P5tQ4
-BgPtc59mZX4OGLGKQCRnisKlEyiarhXUTK6nrBoGLETTG6HEipeqTxx8MOVyyx/8
-HYp/XPT7+mIzxeD8GjbEf2vHxYuQScjJnykeWdB/7iUvGhvUJa81wLvYNoxZcsXV
-Z0SIjXJyVN8+1XtN+44p2sOVqSYMKI+VsMA/eKg5UbtmXzpKcK1RSglQ8FWZt7hU
-tTCfIGvQRZVEI41qZyJ0OSH0QEkW2iOOIbOwrafJqs5AUXLxAwUtK8YSVGX2G9t3
-uamMKZ4l0xtjgk3wzZnzqIIdfpiijWtR3+hGusbQKDRZlL/CE6LqXVj7WOFFh5Br
-KATWGDNkGDpxaUO9E9/F
-=B2Mr
------END PGP SIGNATURE-----
-
---m2dhEeu2HTSRTlsggDpIBxwc4m3PBKafF--

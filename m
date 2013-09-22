@@ -1,61 +1,76 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Wed, 25 Sep 2013 09:36:12 +0000
-Subject: [patch 2/2] backlight: lm3630: potential NULL deref in probe()
-Message-Id: <20130925093612.GR6192@mwanda>
+From: Peter Senna Tschudin <peter.senna@gmail.com>
+Date: Sun, 22 Sep 2013 18:44:11 +0000
+Subject: [PATCH 3/5] OMAPDSS: DISPC: Fix assignment of 0/1 to bool variables
+Message-Id: <1379875453-20083-3-git-send-email-peter.senna@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130925085549.GB6661@elgon.mountain>
-In-Reply-To: <20130925085549.GB6661@elgon.mountain>
+References: <1379875453-20083-1-git-send-email-peter.senna@gmail.com>
+In-Reply-To: <1379875453-20083-1-git-send-email-peter.senna@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: plagnioj@jcrosoft.com, archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Peter Senna Tschudin <peter.senna@gmail.com>
 
-We dereference "pdata" later in the function so we can't leave it as
-NULL.
+Convert 0 to false and 1 to true when assigning values to bool
+variables. Inspired by commit 3db1cd5c05f35fb43eb134df6f321de4e63141f2.
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-Acked-by: Jingoo Han <jg1.han@samsung.com>
+The simplified semantic patch that find this problem is as
+follows (http://coccinelle.lip6.fr/):
 
-diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-index 65392f9..6146481 100644
---- a/drivers/video/backlight/lm3630a_bl.c
-+++ b/drivers/video/backlight/lm3630a_bl.c
-@@ -389,22 +389,21 @@ static int lm3630a_probe(struct i2c_client *client,
+@@
+bool b;
+@@
+(
+-b = 0
++b = false
+|
+-b = 1
++b = true
+)
+
+Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
+
+---
+ drivers/video/omap2/dss/dispc.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff -u -p a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2352,7 +2352,7 @@ int dispc_ovl_check(enum omap_plane plan
+ {
+ 	enum omap_overlay_caps caps = dss_feat_get_overlay_caps(plane);
+ 	bool five_taps = true;
+-	bool fieldmode = 0;
++	bool fieldmode = false;
+ 	u16 in_height = oi->height;
+ 	u16 in_width = oi->width;
+ 	bool ilace = timings->interlace;
+@@ -2365,7 +2365,7 @@ int dispc_ovl_check(enum omap_plane plan
+ 	out_height = oi->out_height = 0 ? oi->height : oi->out_height;
  
- 	i2c_set_clientdata(client, pchip);
- 	if (pdata = NULL) {
--		pchip->pdata = devm_kzalloc(pchip->dev,
--					    sizeof(struct
--						   lm3630a_platform_data),
--					    GFP_KERNEL);
--		if (pchip->pdata = NULL)
-+		pdata = devm_kzalloc(pchip->dev,
-+				     sizeof(struct lm3630a_platform_data),
-+				     GFP_KERNEL);
-+		if (pdata = NULL)
- 			return -ENOMEM;
- 		/* default values */
--		pchip->pdata->leda_ctrl = LM3630A_LEDA_ENABLE;
--		pchip->pdata->ledb_ctrl = LM3630A_LEDB_ENABLE;
--		pchip->pdata->leda_max_brt = LM3630A_MAX_BRIGHTNESS;
--		pchip->pdata->ledb_max_brt = LM3630A_MAX_BRIGHTNESS;
--		pchip->pdata->leda_init_brt = LM3630A_MAX_BRIGHTNESS;
--		pchip->pdata->ledb_init_brt = LM3630A_MAX_BRIGHTNESS;
--	} else {
--		pchip->pdata = pdata;
-+		pdata->leda_ctrl = LM3630A_LEDA_ENABLE;
-+		pdata->ledb_ctrl = LM3630A_LEDB_ENABLE;
-+		pdata->leda_max_brt = LM3630A_MAX_BRIGHTNESS;
-+		pdata->ledb_max_brt = LM3630A_MAX_BRIGHTNESS;
-+		pdata->leda_init_brt = LM3630A_MAX_BRIGHTNESS;
-+		pdata->ledb_init_brt = LM3630A_MAX_BRIGHTNESS;
- 	}
-+	pchip->pdata = pdata;
-+
- 	/* chip initialize */
- 	rval = lm3630a_chip_init(pchip);
- 	if (rval < 0) {
---
-To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ 	if (ilace && oi->height = out_height)
+-		fieldmode = 1;
++		fieldmode = true;
+ 
+ 	if (ilace) {
+ 		if (fieldmode)
+@@ -2396,7 +2396,7 @@ static int dispc_ovl_setup_common(enum o
+ 		bool mem_to_mem)
+ {
+ 	bool five_taps = true;
+-	bool fieldmode = 0;
++	bool fieldmode = false;
+ 	int r, cconv = 0;
+ 	unsigned offset0, offset1;
+ 	s32 row_inc;
+@@ -2417,7 +2417,7 @@ static int dispc_ovl_setup_common(enum o
+ 	out_height = out_height = 0 ? height : out_height;
+ 
+ 	if (ilace && height = out_height)
+-		fieldmode = 1;
++		fieldmode = true;
+ 
+ 	if (ilace) {
+ 		if (fieldmode)
+

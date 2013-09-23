@@ -1,76 +1,106 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 21:28:59 +0000
-Subject: [PATCH 04/51] DMA-API: net: intel/igb: fix 32-bit DMA mask handling
-Message-Id: <E1VMlmV-0007fU-75@rmk-PC.arm.linux.org.uk>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 23 Sep 2013 02:28:56 +0000
+Subject: linux-next: manual merge of the omap_dss2 tree with the fbdev tree
+Message-Id: <20130923122856.0a3dbf72a44dfef1238d7a1c@canb.auug.org.au>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Signature=_Mon__23_Sep_2013_12_28_56_+1000_aoHLZ.OH/kjfJaJ="
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-In-Reply-To: <20130919212235.GD12758-l+eeeJia6m9vn6HldHNs0ANdhmdF6hFW@public.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, b43-dev-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, e1000-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Solarflare linux maintainers <linux-net-drivers-s/n/eUQHGBpZroRs9YW3xA@public.gmane.org>, uclinux-dist-devel-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org
-Cc: Jeff Kirsher <jeffrey.t.kirsher-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Jesse Brandeburg <jesse.brandeburg-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Bruce Allan <bruce.w.allan-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Carolyn Wyborny <carolyn.wyborny-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Don Skidmore <donald.c.skidmore-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Greg Rose <gregory.v.rose-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Peter P Waskiewicz Jr <peter.p.waskiewicz.jr-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Alex Duyck <alexander.h.duyck-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, John Ronciak <john.ronciak-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Tushar Dave <tushar.n.dave-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
 
-The fallback to 32-bit DMA mask is rather odd:
-	err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(64));
-	if (!err) {
-		err = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64));
-		if (!err)
-			pci_using_dac = 1;
-	} else {
-		err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
-		if (err) {
-			err = dma_set_coherent_mask(&pdev->dev,
-						    DMA_BIT_MASK(32));
-			if (err) {
-				dev_err(&pdev->dev,
-					"No usable DMA configuration, aborting\n");
-				goto err_dma;
-			}
-		}
-	}
-This means we only set the coherent DMA mask in the fallback path if
-the DMA mask set failed, which is silly.  This fixes it to set the
-coherent DMA mask only if dma_set_mask() succeeded, and to error out
-if either fails.
+--Signature=_Mon__23_Sep_2013_12_28_56_+1000_aoHLZ.OH/kjfJaJ=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
----
- drivers/net/ethernet/intel/igb/igb_main.c |   18 ++++++------------
- 1 files changed, 6 insertions(+), 12 deletions(-)
+Hi Tomi,
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 8cf44f2..7579383 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2034,21 +2034,15 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		return err;
- 
- 	pci_using_dac = 0;
--	err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(64));
-+	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
- 	if (!err) {
--		err = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64));
--		if (!err)
--			pci_using_dac = 1;
-+		pci_using_dac = 1;
- 	} else {
--		err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
-+		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
- 		if (err) {
--			err = dma_set_coherent_mask(&pdev->dev,
--						    DMA_BIT_MASK(32));
--			if (err) {
--				dev_err(&pdev->dev,
--					"No usable DMA configuration, aborting\n");
--				goto err_dma;
--			}
-+			dev_err(&pdev->dev,
-+				"No usable DMA configuration, aborting\n");
-+			goto err_dma;
- 		}
- 	}
- 
--- 
-1.7.4.4
+Today's linux-next merge of the omap_dss2 tree got a conflict in
+drivers/video/atmel_lcdfb.c between commits a17c2e7b704f ("video:
+atmel_lcdfb: fix platform data struct") and 5e8be022fb5b ("video:
+atmel_lcdfb: add device tree suport") from the fbdev tree and commit
+a5d58be0796a ("video: atmel_lcdfb: use dev_get_platdata()") from the
+omap_dss2 tree.
 
+I fixed it up (see below) and can carry the fix as necessary (no action
+is required).
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc drivers/video/atmel_lcdfb.c
+index bf9c5d0,df05550..0000000
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@@ -1157,30 -934,19 +1157,30 @@@ static int __init atmel_lcdfb_probe(str
+  	}
+ =20
+  	sinfo =3D info->par;
+ +	sinfo->pdev =3D pdev;
+ +	sinfo->info =3D info;
+ =20
+ -	if (dev_get_platdata(dev)) {
+ -		pdata_sinfo =3D dev_get_platdata(dev);
+ -		sinfo->default_bpp =3D pdata_sinfo->default_bpp;
+ -		sinfo->default_dmacon =3D pdata_sinfo->default_dmacon;
+ -		sinfo->default_lcdcon2 =3D pdata_sinfo->default_lcdcon2;
+ -		sinfo->default_monspecs =3D pdata_sinfo->default_monspecs;
+ -		sinfo->atmel_lcdfb_power_control =3D pdata_sinfo->atmel_lcdfb_power_con=
+trol;
+ -		sinfo->guard_time =3D pdata_sinfo->guard_time;
+ -		sinfo->smem_len =3D pdata_sinfo->smem_len;
+ -		sinfo->lcdcon_is_backlight =3D pdata_sinfo->lcdcon_is_backlight;
+ -		sinfo->lcdcon_pol_negative =3D pdata_sinfo->lcdcon_pol_negative;
+ -		sinfo->lcd_wiring_mode =3D pdata_sinfo->lcd_wiring_mode;
+ +	INIT_LIST_HEAD(&info->modelist);
+ +
+ +	if (pdev->dev.of_node) {
+ +		ret =3D atmel_lcdfb_of_init(sinfo);
+ +		if (ret)
+ +			goto free_info;
+- 	} else if (dev->platform_data) {
+++	} else if (dev_get_platdata(dev)) {
+ +		struct fb_monspecs *monspecs;
+ +		int i;
+ +
+- 		pdata =3D dev->platform_data;
+++		pdata =3D dev_get_platdata(dev);
+ +		monspecs =3D pdata->default_monspecs;
+ +		sinfo->pdata =3D *pdata;
+ +
+ +		for (i =3D 0; i < monspecs->modedb_len; i++)
+ +			fb_add_videomode(&monspecs->modedb[i], &info->modelist);
+ +
+ +		sinfo->config =3D atmel_lcdfb_get_config(pdev);
+ +
+ +		info->var.bits_per_pixel =3D pdata->default_bpp ? pdata->default_bpp : =
+16;
+ +		memcpy(&info->monspecs, pdata->default_monspecs, sizeof(info->monspecs)=
+);
+  	} else {
+  		dev_err(dev, "cannot get default configuration\n");
+  		goto free_info;
+
+--Signature=_Mon__23_Sep_2013_12_28_56_+1000_aoHLZ.OH/kjfJaJ=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.21 (GNU/Linux)
+
+iQIcBAEBCAAGBQJSP6dtAAoJEECxmPOUX5FEAzUP/2UURG6Q8bxflQQKj6Dx+1Qd
+UyuEcnnxoYoGtthuWVYlnhM/eysu+0qIAdkjKhv48LEZaAh5NoaceihJvq+62+Th
+03i4x8hvtmCafM8CflctR5j4Az2D3BpOCW2rlTm0JXxdPXil6Y9I4WvivPgBJGdL
+kE4vsdIXBKO3MX6cjbf5nM3tS9BXxPQj9RXebIAb8WCSjAZruKDd/JpskWdRslVB
+3QWPoncBjiRU+yUEbVlJdJaIfmaCECOjfthJc3EWoe3eJ6cOtyXKIaYB02jho5gF
+6Ch3D7rZp9TNLEcC6O2MkXVgZGbT5XjnzYtWbL2PRz75WwUSxYHDhAHd9OthF0lw
+fEHqv8aPp8EgyfYIUOdgQ5UXvChTsNw92yrE/AUoVQF7XpiwLpgQMThc1gLAzCAA
+Xu5ueyxkv93rY+cwuBhDTyqz68lQOjDJiuWs3N3iBjEOptoolS3vL3uVNIBT//Fl
+FdKE5yBUxuOcIEe34Kr2CVhktkhEEiA/Z2Wlrbe619dnl3V5X2+qTFoBw4YfJuxy
+P7PlbfkPijmuQWOrr0yseFbordDBbItWjHEJeL1Y4bgvUQXN1WOgol4/EiVlPkeZ
+IGHawyIHQWefI1t2i/olBgI00Ryh1WUsKCDlkf38nuYYRtThqN1edn8JhOswYvnq
+W3j68c2y2lsVKryrrUAq
+=Wxz2
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__23_Sep_2013_12_28_56_+1000_aoHLZ.OH/kjfJaJ=--

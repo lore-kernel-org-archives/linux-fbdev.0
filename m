@@ -1,42 +1,73 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 21:41:00 +0000
-Subject: [PATCH 16/51] DMA-API: ppc: vio.c: replace dma_set_mask()+dma_set_coherent_mask() with new
-Message-Id: <E1VMly8-0007gy-Ru@rmk-PC.arm.linux.org.uk>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Mon, 23 Sep 2013 14:27:30 +0000
+Subject: [PATCH 5/7] usb: gadget: pxa25x_udc: fix deferred probe from __init
+Message-Id: <1379946452-25649-6-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+References: <20130923134028.GF21013@sirena.org.uk>
+ <1379946452-25649-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1379946452-25649-1-git-send-email-jhovold-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+To: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Cc: Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pcmcia-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Johan Hovold <jhovold-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Miao <eric.y.miao-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>
 
-Replace the following sequence:
+Move probe out of __init section and don't use platform_driver_probe
+which cannot be used with deferred probing.
 
-	dma_set_mask(dev, mask);
-	dma_set_coherent_mask(dev, mask);
+Since commit e9354576 ("gpiolib: Defer failed gpio requests by default")
+this driver might return -EPROBE_DEFER if a gpio_request fails.
 
-with a call to the new helper dma_set_mask_and_coherent().
-
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Eric Miao <eric.y.miao@gmail.com>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Haojian Zhuang <haojian.zhuang@gmail.com>
+Cc: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
 ---
- arch/powerpc/kernel/vio.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ drivers/usb/gadget/pxa25x_udc.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index 78a3506..96b6c97 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -1413,8 +1413,7 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
+diff --git a/drivers/usb/gadget/pxa25x_udc.c b/drivers/usb/gadget/pxa25x_udc.c
+index cc92074..0ac6064 100644
+--- a/drivers/usb/gadget/pxa25x_udc.c
++++ b/drivers/usb/gadget/pxa25x_udc.c
+@@ -2054,7 +2054,7 @@ static struct pxa25x_udc memory = {
+ /*
+  *	probe - binds to the platform device
+  */
+-static int __init pxa25x_udc_probe(struct platform_device *pdev)
++static int pxa25x_udc_probe(struct platform_device *pdev)
+ {
+ 	struct pxa25x_udc *dev = &memory;
+ 	int retval, irq;
+@@ -2203,7 +2203,7 @@ static void pxa25x_udc_shutdown(struct platform_device *_dev)
+ 	pullup_off();
+ }
  
- 		/* needed to ensure proper operation of coherent allocations
- 		 * later, in case driver doesn't set it explicitly */
--		dma_set_mask(&viodev->dev, DMA_BIT_MASK(64));
--		dma_set_coherent_mask(&viodev->dev, DMA_BIT_MASK(64));
-+		dma_set_mask_and_coherent(&viodev->dev, DMA_BIT_MASK(64));
- 	}
+-static int __exit pxa25x_udc_remove(struct platform_device *pdev)
++static int pxa25x_udc_remove(struct platform_device *pdev)
+ {
+ 	struct pxa25x_udc *dev = platform_get_drvdata(pdev);
  
- 	/* register with generic device framework */
+@@ -2294,7 +2294,8 @@ static int pxa25x_udc_resume(struct platform_device *dev)
+ 
+ static struct platform_driver udc_driver = {
+ 	.shutdown	= pxa25x_udc_shutdown,
+-	.remove		= __exit_p(pxa25x_udc_remove),
++	.probe		= pxa25x_udc_probe,
++	.remove		= pxa25x_udc_remove,
+ 	.suspend	= pxa25x_udc_suspend,
+ 	.resume		= pxa25x_udc_resume,
+ 	.driver		= {
+@@ -2303,7 +2304,7 @@ static struct platform_driver udc_driver = {
+ 	},
+ };
+ 
+-module_platform_driver_probe(udc_driver, pxa25x_udc_probe);
++module_platform_driver(udc_driver);
+ 
+ MODULE_DESCRIPTION(DRIVER_DESC);
+ MODULE_AUTHOR("Frank Becker, Robert Schwebel, David Brownell");
 -- 
-1.7.4.4
+1.8.3.2
 

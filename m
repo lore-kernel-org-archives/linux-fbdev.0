@@ -1,49 +1,75 @@
-From: Zhou Zhu <zzhu3@marvell.com>
-Date: Fri, 13 Sep 2013 06:59:46 +0000
-Subject: [PATCH V5 2/5] ARM: mmp: remove the legacy rbswap setting for ttc_dkb platform
-Message-Id: <1379055589-26132-3-git-send-email-zzhu3@marvell.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Mon, 23 Sep 2013 14:27:31 +0000
+Subject: [PATCH 6/7] usb: phy: gpio-vbus: fix deferred probe from __init
+Message-Id: <1379946452-25649-7-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20130923134028.GF21013@sirena.org.uk>
+ <1379946452-25649-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1379946452-25649-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org, linux-usb@vger.kernel.org, Mark Brown <broonie@linaro.org>, Johan Hovold <jhovold@gmail.com>, linux-pcmcia@lists.infradead.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, Felipe Balbi <balbi@ti.com>, linux-mtd@lists.infradead.org, Grant Likely <grant.likely@linaro.org>
 
-From: "Jett.Zhou" <jtzhou@marvell.com>
+Move probe out of __init section and don't use platform_driver_probe
+which cannot be used with deferred probing.
 
-According to new rbswap scheme of mmp_display, it support appropriate
-rbswap setting based on specific pix_fmt, then we can remove the legacy
-rbswap setting for ttc_dkb platform.
+Since commit e9354576 ("gpiolib: Defer failed gpio requests by default")
+and 04bf3011 ("regulator: Support driver probe deferral") this driver
+might return -EPROBE_DEFER if a gpio_request or regulator_get fails.
 
-Signed-off-by: Jett.Zhou <jtzhou@marvell.com>
-Signed-off-by: Zhou Zhu <zzhu3@marvell.com>
-Reviewed-by: Daniel Drake <dsd@laptop.org>
-Acked-by: Haojian Zhuang <haojian.zhuang@gmail.com>
+Cc: Felipe Balbi <balbi@ti.com>
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
 ---
- arch/arm/mach-mmp/ttc_dkb.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/usb/phy/phy-gpio-vbus-usb.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm/mach-mmp/ttc_dkb.c b/arch/arm/mach-mmp/ttc_dkb.c
-index 7022329..cfadd97 100644
---- a/arch/arm/mach-mmp/ttc_dkb.c
-+++ b/arch/arm/mach-mmp/ttc_dkb.c
-@@ -191,7 +191,6 @@ static struct pxa3xx_nand_platform_data dkb_nand_info = {
- #define SCLK_SOURCE_SELECT(x)  (x << 30) /* 0x0 ~ 0x3 */
- /* link config */
- #define CFG_DUMBMODE(mode)     (mode << 28) /* 0x0 ~ 0x6*/
--#define CFG_GRA_SWAPRB(x)      (x << 0) /* 1: rbswap enabled */
- static struct mmp_mach_path_config dkb_disp_config[] = {
- 	[0] = {
- 		.name = "mmp-parallel",
-@@ -199,8 +198,7 @@ static struct mmp_mach_path_config dkb_disp_config[] = {
- 		.output_type = PATH_OUT_PARALLEL,
- 		.path_config = CFG_IOPADMODE(0x1)
- 			| SCLK_SOURCE_SELECT(0x1),
--		.link_config = CFG_DUMBMODE(0x2)
--			| CFG_GRA_SWAPRB(0x1),
-+		.link_config = CFG_DUMBMODE(0x2),
+diff --git a/drivers/usb/phy/phy-gpio-vbus-usb.c b/drivers/usb/phy/phy-gpio-vbus-usb.c
+index b2f29c9..02799a5 100644
+--- a/drivers/usb/phy/phy-gpio-vbus-usb.c
++++ b/drivers/usb/phy/phy-gpio-vbus-usb.c
+@@ -241,7 +241,7 @@ static int gpio_vbus_set_suspend(struct usb_phy *phy, int suspend)
+ 
+ /* platform driver interface */
+ 
+-static int __init gpio_vbus_probe(struct platform_device *pdev)
++static int gpio_vbus_probe(struct platform_device *pdev)
+ {
+ 	struct gpio_vbus_mach_info *pdata = dev_get_platdata(&pdev->dev);
+ 	struct gpio_vbus_data *gpio_vbus;
+@@ -349,7 +349,7 @@ err_gpio:
+ 	return err;
+ }
+ 
+-static int __exit gpio_vbus_remove(struct platform_device *pdev)
++static int gpio_vbus_remove(struct platform_device *pdev)
+ {
+ 	struct gpio_vbus_data *gpio_vbus = platform_get_drvdata(pdev);
+ 	struct gpio_vbus_mach_info *pdata = dev_get_platdata(&pdev->dev);
+@@ -398,8 +398,6 @@ static const struct dev_pm_ops gpio_vbus_dev_pm_ops = {
+ };
+ #endif
+ 
+-/* NOTE:  the gpio-vbus device may *NOT* be hotplugged */
+-
+ MODULE_ALIAS("platform:gpio-vbus");
+ 
+ static struct platform_driver gpio_vbus_driver = {
+@@ -410,10 +408,11 @@ static struct platform_driver gpio_vbus_driver = {
+ 		.pm = &gpio_vbus_dev_pm_ops,
+ #endif
  	},
+-	.remove  = __exit_p(gpio_vbus_remove),
++	.probe		= gpio_vbus_probe,
++	.remove		= gpio_vbus_remove,
  };
  
+-module_platform_driver_probe(gpio_vbus_driver, gpio_vbus_probe);
++module_platform_driver(gpio_vbus_driver);
+ 
+ MODULE_DESCRIPTION("simple GPIO controlled OTG transceiver driver");
+ MODULE_AUTHOR("Philipp Zabel");
 -- 
-1.7.9.5
+1.8.3.2
 

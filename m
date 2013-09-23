@@ -1,59 +1,89 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 17 Sep 2013 04:58:58 +0000
-Subject: [PATCH 04/19] video: omapfb: use dev_get_platdata()
-Message-Id: <000901ceb362$9e6d1940$db474bc0$%han@samsung.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Mon, 23 Sep 2013 14:27:28 +0000
+Subject: [PATCH 3/7] mtd: atmel_nand: fix deferred probe from __init
+Message-Id: <1379946452-25649-4-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20130923134028.GF21013@sirena.org.uk>
+ <1379946452-25649-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1379946452-25649-1-git-send-email-jhovold-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Cc: Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pcmcia-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Johan Hovold <jhovold-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Josh Wu <josh.wu-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
 
-Use the wrapper function for retrieving the platform data instead of
-accessing dev->platform_data directly. This is a cosmetic change
-to make the code simpler and enhance the readability.
+Move probe out of __init section and don't use platform_driver_probe
+which cannot be used with deferred probing.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Since commit e9354576 ("gpiolib: Defer failed gpio requests by default")
+this driver might return -EPROBE_DEFER if a gpio_request fails.
+
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Josh Wu <josh.wu@atmel.com>
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
 ---
- drivers/video/omap/hwa742.c      |    2 +-
- drivers/video/omap/omapfb_main.c |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/mtd/nand/atmel_nand.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/omap/hwa742.c b/drivers/video/omap/hwa742.c
-index f349ee6..a4ee65b 100644
---- a/drivers/video/omap/hwa742.c
-+++ b/drivers/video/omap/hwa742.c
-@@ -947,7 +947,7 @@ static int hwa742_init(struct omapfb_device *fbdev, int ext_mode,
- 	hwa742.extif = fbdev->ext_if;
- 	hwa742.int_ctrl = fbdev->int_ctrl;
+diff --git a/drivers/mtd/nand/atmel_nand.c b/drivers/mtd/nand/atmel_nand.c
+index 060feea..bd1ce7d 100644
+--- a/drivers/mtd/nand/atmel_nand.c
++++ b/drivers/mtd/nand/atmel_nand.c
+@@ -1139,7 +1139,7 @@ static int pmecc_choose_ecc(struct atmel_nand_host *host,
+ 	return 0;
+ }
  
--	omapfb_conf = fbdev->dev->platform_data;
-+	omapfb_conf = dev_get_platdata(fbdev->dev);
+-static int __init atmel_pmecc_nand_init_params(struct platform_device *pdev,
++static int atmel_pmecc_nand_init_params(struct platform_device *pdev,
+ 					 struct atmel_nand_host *host)
+ {
+ 	struct mtd_info *mtd = &host->mtd;
+@@ -1548,7 +1548,7 @@ static int atmel_of_init_port(struct atmel_nand_host *host,
+ }
+ #endif
  
- 	hwa742.sys_ck = clk_get(NULL, "hwa_sys_ck");
+-static int __init atmel_hw_nand_init_params(struct platform_device *pdev,
++static int atmel_hw_nand_init_params(struct platform_device *pdev,
+ 					 struct atmel_nand_host *host)
+ {
+ 	struct mtd_info *mtd = &host->mtd;
+@@ -1987,7 +1987,7 @@ static struct platform_driver atmel_nand_nfc_driver;
+ /*
+  * Probe for the NAND device.
+  */
+-static int __init atmel_nand_probe(struct platform_device *pdev)
++static int atmel_nand_probe(struct platform_device *pdev)
+ {
+ 	struct atmel_nand_host *host;
+ 	struct mtd_info *mtd;
+@@ -2184,7 +2184,7 @@ err_nand_ioremap:
+ /*
+  * Remove a NAND device.
+  */
+-static int __exit atmel_nand_remove(struct platform_device *pdev)
++static int atmel_nand_remove(struct platform_device *pdev)
+ {
+ 	struct atmel_nand_host *host = platform_get_drvdata(pdev);
+ 	struct mtd_info *mtd = &host->mtd;
+@@ -2270,7 +2270,8 @@ static struct platform_driver atmel_nand_nfc_driver = {
+ };
  
-diff --git a/drivers/video/omap/omapfb_main.c b/drivers/video/omap/omapfb_main.c
-index d40612c..e4fc6d9 100644
---- a/drivers/video/omap/omapfb_main.c
-+++ b/drivers/video/omap/omapfb_main.c
-@@ -1602,7 +1602,7 @@ static int omapfb_find_ctrl(struct omapfb_device *fbdev)
- 	char name[17];
- 	int i;
+ static struct platform_driver atmel_nand_driver = {
+-	.remove		= __exit_p(atmel_nand_remove),
++	.probe		= atmel_nand_probe,
++	.remove		= atmel_nand_remove,
+ 	.driver		= {
+ 		.name	= "atmel_nand",
+ 		.owner	= THIS_MODULE,
+@@ -2278,7 +2279,7 @@ static struct platform_driver atmel_nand_driver = {
+ 	},
+ };
  
--	conf = fbdev->dev->platform_data;
-+	conf = dev_get_platdata(fbdev->dev);
+-module_platform_driver_probe(atmel_nand_driver, atmel_nand_probe);
++module_platform_driver(atmel_nand_driver);
  
- 	fbdev->ctrl = NULL;
- 
-@@ -1674,7 +1674,7 @@ static int omapfb_do_probe(struct platform_device *pdev,
- 		goto cleanup;
- 	}
- 
--	if (pdev->dev.platform_data = NULL) {
-+	if (dev_get_platdata(&pdev->dev) = NULL) {
- 		dev_err(&pdev->dev, "missing platform data\n");
- 		r = -ENOENT;
- 		goto cleanup;
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Rick Bronson");
 -- 
-1.7.10.4
-
+1.8.3.2
 

@@ -1,76 +1,60 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 02 Sep 2013 08:52:43 +0000
-Subject: Re: [PATCH] video: xilinxfb: use devm_ioremap_resource() instead of devm_request_and_ioremap()
-Message-Id: <522451DB.1020100@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="sdBpJNV8m5DC8qXhx76GQ93NKRNH6Ln77"
+From: Johan Hovold <jhovold@gmail.com>
+Date: Mon, 23 Sep 2013 14:27:25 +0000
+Subject: [PATCH 0/7] driver core: prevent deferred probe with platform_driver_probe
+Message-Id: <1379946452-25649-1-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <005401cea77c$6925eec0$3b71cc40$%han@samsung.com>
-In-Reply-To: <005401cea77c$6925eec0$3b71cc40$%han@samsung.com>
-To: linux-fbdev@vger.kernel.org
+References: <20130923134028.GF21013@sirena.org.uk>
+In-Reply-To: <20130923134028.GF21013@sirena.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org, linux-usb@vger.kernel.org, Mark Brown <broonie@linaro.org>, Johan Hovold <jhovold@gmail.com>, linux-pcmcia@lists.infradead.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org, Grant Likely <grant.likely@linaro.org>
 
---sdBpJNV8m5DC8qXhx76GQ93NKRNH6Ln77
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Deferred probing cannot be used with platform_driver_probe as by the
+time probing is retried either the driver has been unregistered or its
+probe function has been set to platform_drv_probe_fail.
 
-Hi,
+With commit e9354576 ("gpiolib: Defer failed gpio requests by default")
+the gpio subsystem started returning -EPROBE_DEFER, which in turn
+several platform drivers using platform_driver_probe return to driver
+core. Other subsystems (e.g. regulator) has since started doing the
+same.
 
-On 02/09/13 04:33, Jingoo Han wrote:
-> Use devm_ioremap_resource() because devm_request_and_ioremap() is
-> obsoleted by devm_ioremap_resource().
->=20
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> ---
->  drivers/video/xilinxfb.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-> index 6629b29..ed90051 100644
-> --- a/drivers/video/xilinxfb.c
-> +++ b/drivers/video/xilinxfb.c
-> @@ -260,9 +260,9 @@ static int xilinxfb_assign(struct platform_device *=
-pdev,
-> =20
->  		res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
->  		drvdata->regs_phys =3D res->start;
-> -		drvdata->regs =3D devm_request_and_ioremap(&pdev->dev, res);
-> -		if (!drvdata->regs) {
-> -			rc =3D -EADDRNOTAVAIL;
-> +		drvdata->regs =3D devm_ioremap_resource(&pdev->dev, res);
-> +		if (IS_ERR(drvdata->regs)) {
-> +			rc =3D PTR_ERR(drvdata->regs);
->  			goto err_region;
->  		}
->  	}
+The first patch in this series prevents platform drivers using
+platform_driver_probe from requesting probe deferral while warning that
+it is not supported.
 
-I have already applied a similar patch from Julia Lawall.
+The remaining patches move six platform-driver probe functions that rely
+on gpio_request out of __init. There are likely other probe functions
+that might return -EPROBE_DEFER and should be moved out of __init as
+well.
 
- Tomi
+Note that the mvsdio, at91_cf and pxa25x_udc patches are completely
+untested.
+
+Johan
 
 
+Johan Hovold (7):
+  driver core: prevent deferred probe with platform_driver_probe
+  mmc: mvsdio: fix deferred probe from __init
+  mtd: atmel_nand: fix deferred probe from __init
+  pcmcia: at91_cf: fix deferred probe from __init
+  usb: gadget: pxa25x_udc: fix deferred probe from __init
+  usb: phy: gpio-vbus: fix deferred probe from __init
+  backlight: atmel-pwm-bl: fix deferred probe from __init
 
---sdBpJNV8m5DC8qXhx76GQ93NKRNH6Ln77
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+ drivers/base/platform.c                | 17 +++++++++++++----
+ drivers/mmc/host/mvsdio.c              | 11 ++++++-----
+ drivers/mtd/nand/atmel_nand.c          | 13 +++++++------
+ drivers/pcmcia/at91_cf.c               | 11 +++++------
+ drivers/usb/gadget/pxa25x_udc.c        |  9 +++++----
+ drivers/usb/phy/phy-gpio-vbus-usb.c    | 11 +++++------
+ drivers/video/backlight/atmel-pwm-bl.c |  9 +++++----
+ include/linux/platform_device.h        |  1 +
+ 8 files changed, 47 insertions(+), 35 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+-- 
+1.8.3.2
 
-iQIcBAEBAgAGBQJSJFHbAAoJEPo9qoy8lh71/90P/1PvOu2JQKy3vtjSYL8JSGFz
-KSFOe8lwLbc98B8vCa99eUwcK7ZjzMWWNr3vBx6dK4zxFnVve8LOae1aK0fSrT/b
-up/d0OVbZgWADBa7kVhYAv2bzesbCvcSmzEgFYNQlwrKc1ywBBylK0VmXpufQC13
-eeCb3PVial/YSUcfg1Cal0J8ITRAZA32iynX9rZTFqzyvvUUFVfX+rw7ea/OD5L2
-UxcwS7sgktQConO9VDv5/zN7g3+EUEhXXw6N5aQFWRn4kdTzXgYjpLeo1gXao9gS
-HVuyal9eYE8IBpCveZevLvj4iS5ZlNJK4xUv6HkpuV7qsfABxvVTw4LfecgID2O1
-cc5OI5tenggfy1xnQr3urpe62SIJtFkv/F7Nn5T7giehGKAIj+jdYcNywyeQDjOd
-TjOG08V1cAMEqaa6Sal+W7EyoHQM81OoP32N4hrrKncj8uoZJbtXzBLv7mUbpnHB
-mJD2Ulad46Y1/yNnnTFPpx2WcOHp8jyLSw1NIWvfakbhxljxIIKq90lGVRpOSRH2
-8brjE55DoLcXIJS+SVAWw+Qz6sRGfyoDo2gJARZOuz1DmNuwaerNDIBAkjkA6KGI
-SieROGrqgriLHR97B27l9Nau2TK25zD5puZBUWuapWs3J3SQM+f5cxaI14dEKdUh
-IomMcr6anahztNpfJfNW
-=8S/J
------END PGP SIGNATURE-----
-
---sdBpJNV8m5DC8qXhx76GQ93NKRNH6Ln77--

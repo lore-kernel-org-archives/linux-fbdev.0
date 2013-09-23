@@ -1,76 +1,58 @@
-From: Peter Senna Tschudin <peter.senna@gmail.com>
-Date: Sun, 22 Sep 2013 18:44:11 +0000
-Subject: [PATCH 3/5] OMAPDSS: DISPC: Fix assignment of 0/1 to bool variables
-Message-Id: <1379875453-20083-3-git-send-email-peter.senna@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 23 Sep 2013 07:37:50 +0000
+Subject: Re: [PATCH 3/5] OMAPDSS: DISPC: Fix assignment of 0/1 to bool variables
+Message-Id: <523FEFCE.5070902@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="R6lCRfeNoXPtmMsBTBFi7eaiKNIJNAFaP"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1379875453-20083-1-git-send-email-peter.senna@gmail.com>
-In-Reply-To: <1379875453-20083-1-git-send-email-peter.senna@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: plagnioj@jcrosoft.com, archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Peter Senna Tschudin <peter.senna@gmail.com>
+References: <1379875453-20083-1-git-send-email-peter.senna@gmail.com> <1379875453-20083-3-git-send-email-peter.senna@gmail.com>
+In-Reply-To: <1379875453-20083-3-git-send-email-peter.senna@gmail.com>
+To: Peter Senna Tschudin <peter.senna@gmail.com>
+Cc: plagnioj@jcrosoft.com, archit@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-Convert 0 to false and 1 to true when assigning values to bool
-variables. Inspired by commit 3db1cd5c05f35fb43eb134df6f321de4e63141f2.
+--R6lCRfeNoXPtmMsBTBFi7eaiKNIJNAFaP
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-The simplified semantic patch that find this problem is as
-follows (http://coccinelle.lip6.fr/):
+Hi,
 
-@@
-bool b;
-@@
-(
--b = 0
-+b = false
-|
--b = 1
-+b = true
-)
+On 22/09/13 21:44, Peter Senna Tschudin wrote:
+> Convert 0 to false and 1 to true when assigning values to bool
+> variables. Inspired by commit 3db1cd5c05f35fb43eb134df6f321de4e63141f2.=
 
-Signed-off-by: Peter Senna Tschudin <peter.senna@gmail.com>
+>=20
+> The simplified semantic patch that find this problem is as
+> follows (http://coccinelle.lip6.fr/):
 
----
- drivers/video/omap2/dss/dispc.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Thanks, applied for 3.13. Although "fix" and "problem" are perhaps a bit
+too strong words, as this is just a cosmetic change =3D).
 
-diff -u -p a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -2352,7 +2352,7 @@ int dispc_ovl_check(enum omap_plane plan
- {
- 	enum omap_overlay_caps caps = dss_feat_get_overlay_caps(plane);
- 	bool five_taps = true;
--	bool fieldmode = 0;
-+	bool fieldmode = false;
- 	u16 in_height = oi->height;
- 	u16 in_width = oi->width;
- 	bool ilace = timings->interlace;
-@@ -2365,7 +2365,7 @@ int dispc_ovl_check(enum omap_plane plan
- 	out_height = oi->out_height = 0 ? oi->height : oi->out_height;
- 
- 	if (ilace && oi->height = out_height)
--		fieldmode = 1;
-+		fieldmode = true;
- 
- 	if (ilace) {
- 		if (fieldmode)
-@@ -2396,7 +2396,7 @@ static int dispc_ovl_setup_common(enum o
- 		bool mem_to_mem)
- {
- 	bool five_taps = true;
--	bool fieldmode = 0;
-+	bool fieldmode = false;
- 	int r, cconv = 0;
- 	unsigned offset0, offset1;
- 	s32 row_inc;
-@@ -2417,7 +2417,7 @@ static int dispc_ovl_setup_common(enum o
- 	out_height = out_height = 0 ? height : out_height;
- 
- 	if (ilace && height = out_height)
--		fieldmode = 1;
-+		fieldmode = true;
- 
- 	if (ilace) {
- 		if (fieldmode)
+ Tomi
 
+
+
+--R6lCRfeNoXPtmMsBTBFi7eaiKNIJNAFaP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSP+/OAAoJEPo9qoy8lh71d2AQAJmLzUFRm+OPGDrjVwyN1S6d
+vspi1WPsoqvKUySBWLH/q2UHo+e0DST1qozvd8A5vtlq1djvrj4g2HGb0ZoEKC4d
+yKT91ll+XSPsWeCIK5yM64Xpgu107Jw0zBYYkEs8w5yXkKwrX0JODQCjLvQFBZ/C
+BNnjjWMNaG4FjGI2u2S7na8w4jyXrdGrCG5ARFVqO7KQpjQ3khdQ1enMjKduAg+3
+xKPlXN9C4S4fXT6C96IidQxQc9CM2hyLWKWfc1rCPFlbGqD5BVN7dQBbpsO59YX8
+GSMzPYldCzVQGF9MtFoToUbnOj2iaf6JU9BAv+grkEMTZgI8cG/01H05exUA726S
+jE5mxYJDXtBLaLQb9qJR3sR6JIBX2byqsB55tUwwZIqioMv2zRM5pYp6t3hKIQxB
+Ca5NxEqWEZtkV/RY0TUzg08jPzajx+DuQs2uduGldAVcgnekcNGaBPq6/H3FJGgG
+AAM/NC5Re+2EglwUYlOicbxcYA7Qd7LJkMRhJ9kVe6MpbBemkfZocQx8oveOBYL/
+WGJ3wEJ6DYJlmfwmYedVxonbCepNkOypE7Fh2gjnHDL2XfycscHzriWoiWhm8clO
+rITDNLo5o8qG7TbVc6XP4sSiPOVtOeiUprv+471jVedgWqQc3jSx5Ku8CGHkjMgw
+oZyBA5uMrdJMJPYelF/3
+=uidd
+-----END PGP SIGNATURE-----
+
+--R6lCRfeNoXPtmMsBTBFi7eaiKNIJNAFaP--

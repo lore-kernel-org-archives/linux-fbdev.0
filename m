@@ -1,41 +1,52 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 21:48:01 +0000
-Subject: [PATCH 23/51] DMA-API: dma: pl08x: add dma_set_mask_and_coherent() call
-Message-Id: <E1VMm4v-0007hz-RC@rmk-PC.arm.linux.org.uk>
+From: Vinod Koul <vinod.koul@intel.com>
+Date: Mon, 23 Sep 2013 10:24:22 +0000
+Subject: Re: [alsa-devel] [PATCH 23/51] DMA-API: dma: pl08x: add dma_set_mask_and_coherent() call
+Message-Id: <20130923101222.GH17188@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+ <E1VMm4v-0007hz-RC@rmk-PC.arm.linux.org.uk>
+In-Reply-To: <E1VMm4v-0007hz-RC-eh5Bv4kxaXIANfyc6IWni62ZND6+EDdj@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
-Cc: Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>
+To: Russell King <rmk+kernel-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
+Cc: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, b43-dev-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, e1000-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Solarflare linux maintainers <linux-net-drivers-s/n/eUQHGBpZroRs9YW3xA@public.gmane.org>, uclinux-dist-devel-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org, Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 
-The DMA API requires drivers to call the appropriate dma_set_mask()
-functions before doing any DMA mapping.  Add this required call to
-the AMBA PL08x driver.
+On Thu, Sep 19, 2013 at 10:48:01PM +0100, Russell King wrote:
+> The DMA API requires drivers to call the appropriate dma_set_mask()
+> functions before doing any DMA mapping.  Add this required call to
+> the AMBA PL08x driver.
+> 
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Acked-by: Vinod Koul <vinod.koul@intel.com>
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
----
- drivers/dma/amba-pl08x.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+~Vinod
+> ---
+>  drivers/dma/amba-pl08x.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/dma/amba-pl08x.c b/drivers/dma/amba-pl08x.c
+> index fce46c5..e51a983 100644
+> --- a/drivers/dma/amba-pl08x.c
+> +++ b/drivers/dma/amba-pl08x.c
+> @@ -2055,6 +2055,11 @@ static int pl08x_probe(struct amba_device *adev, const struct amba_id *id)
+>  	if (ret)
+>  		return ret;
+>  
+> +	/* Ensure that we can do DMA */
+> +	ret = dma_set_mask_and_coherent(&adev->dev, DMA_BIT_MASK(32));
+> +	if (ret)
+> +		goto out_no_pl08x;
+> +
+>  	/* Create the driver state holder */
+>  	pl08x = kzalloc(sizeof(*pl08x), GFP_KERNEL);
+>  	if (!pl08x) {
+> -- 
+> 1.7.4.4
+> 
+> _______________________________________________
+> Alsa-devel mailing list
+> Alsa-devel@alsa-project.org
+> http://mailman.alsa-project.org/mailman/listinfo/alsa-devel
 
-diff --git a/drivers/dma/amba-pl08x.c b/drivers/dma/amba-pl08x.c
-index fce46c5..e51a983 100644
---- a/drivers/dma/amba-pl08x.c
-+++ b/drivers/dma/amba-pl08x.c
-@@ -2055,6 +2055,11 @@ static int pl08x_probe(struct amba_device *adev, const struct amba_id *id)
- 	if (ret)
- 		return ret;
- 
-+	/* Ensure that we can do DMA */
-+	ret = dma_set_mask_and_coherent(&adev->dev, DMA_BIT_MASK(32));
-+	if (ret)
-+		goto out_no_pl08x;
-+
- 	/* Create the driver state holder */
- 	pl08x = kzalloc(sizeof(*pl08x), GFP_KERNEL);
- 	if (!pl08x) {
 -- 
-1.7.4.4
-

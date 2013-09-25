@@ -1,7 +1,7 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Wed, 25 Sep 2013 09:28:53 +0000
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Wed, 25 Sep 2013 09:34:50 +0000
 Subject: Re: [patch 2/2] backlight: lm3630: potential NULL deref in probe()
-Message-Id: <002201ceb9d1$a6b646b0$f422d410$%han@samsung.com>
+Message-Id: <20130925093450.GP6192@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20130925085549.GB6661@elgon.mountain>
 In-Reply-To: <20130925085549.GB6661@elgon.mountain>
@@ -10,55 +10,19 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Wednesday, September 25, 2013 5:56 PM, Dan Carpenter wrote:
+On Wed, Sep 25, 2013 at 06:13:28PM +0900, Jingoo Han wrote:
+> On Wednesday, September 25, 2013 5:55 PM, Dan Carpenter wrote:
+> > 
+> > "rval" needs to be signed for the error handling to work.
+> > 
+> > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 > 
-> We dereference "pdata" later in the function so we can't leave it as
-> NULL.
+> CC'ed Andrew Morton, Daniel Jeong,
 > 
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-CC'ed Andrew Morton, Daniel Jeong,
+Ah.  I didn't realize this driver was going through Andrew.  I will
+resend the patches.
 
-Acked-by: Jingoo Han <jg1.han@samsung.com>
-
-> 
-> diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-> index 65392f9..6146481 100644
-> --- a/drivers/video/backlight/lm3630a_bl.c
-> +++ b/drivers/video/backlight/lm3630a_bl.c
-> @@ -389,22 +389,21 @@ static int lm3630a_probe(struct i2c_client *client,
-> 
->  	i2c_set_clientdata(client, pchip);
->  	if (pdata = NULL) {
-> -		pchip->pdata = devm_kzalloc(pchip->dev,
-> -					    sizeof(struct
-> -						   lm3630a_platform_data),
-> -					    GFP_KERNEL);
-> -		if (pchip->pdata = NULL)
-> +		pdata = devm_kzalloc(pchip->dev,
-> +				     sizeof(struct lm3630a_platform_data),
-> +				     GFP_KERNEL);
-> +		if (pdata = NULL)
->  			return -ENOMEM;
->  		/* default values */
-> -		pchip->pdata->leda_ctrl = LM3630A_LEDA_ENABLE;
-> -		pchip->pdata->ledb_ctrl = LM3630A_LEDB_ENABLE;
-> -		pchip->pdata->leda_max_brt = LM3630A_MAX_BRIGHTNESS;
-> -		pchip->pdata->ledb_max_brt = LM3630A_MAX_BRIGHTNESS;
-> -		pchip->pdata->leda_init_brt = LM3630A_MAX_BRIGHTNESS;
-> -		pchip->pdata->ledb_init_brt = LM3630A_MAX_BRIGHTNESS;
-> -	} else {
-> -		pchip->pdata = pdata;
-> +		pdata->leda_ctrl = LM3630A_LEDA_ENABLE;
-> +		pdata->ledb_ctrl = LM3630A_LEDB_ENABLE;
-> +		pdata->leda_max_brt = LM3630A_MAX_BRIGHTNESS;
-> +		pdata->ledb_max_brt = LM3630A_MAX_BRIGHTNESS;
-> +		pdata->leda_init_brt = LM3630A_MAX_BRIGHTNESS;
-> +		pdata->ledb_init_brt = LM3630A_MAX_BRIGHTNESS;
->  	}
-> +	pchip->pdata = pdata;
-> +
->  	/* chip initialize */
->  	rval = lm3630a_chip_init(pchip);
->  	if (rval < 0) {
+regards,
+dan carpenter
 

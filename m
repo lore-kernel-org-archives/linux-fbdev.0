@@ -1,44 +1,66 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Tue, 10 Sep 2013 02:34:23 +0000
-Subject: Re: [BUG] simplefb not showing any output
-Message-Id: <522E852F.7050201@wwwdotorg.org>
+From: Andrzej Hajda <a.hajda@samsung.com>
+Date: Wed, 25 Sep 2013 11:51:32 +0000
+Subject: [PATCH 2/2] video: of: display_timing: remove broken of_display_timings_exist
+Message-Id: <1380109892-13040-3-git-send-email-a.hajda@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAG-2HqXhLcRX-oi4JchD=m7tZpDYyePKhWvkFU1ZZPEuqJ2JqQ@mail.gmail.com>
-In-Reply-To: <CAG-2HqXhLcRX-oi4JchD=m7tZpDYyePKhWvkFU1ZZPEuqJ2JqQ@mail.gmail.com>
+References: <1380109892-13040-1-git-send-email-a.hajda@samsung.com>
+In-Reply-To: <1380109892-13040-1-git-send-email-a.hajda@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
+Cc: Andrzej Hajda <a.hajda@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, dri-devel@lists.freedesktop.org
 
-On 09/07/2013 06:25 AM, David Herrmann wrote:
-> On Sat, Sep 7, 2013 at 1:47 PM, Tom Gundersen <teg@jklm.no> wrote:
-...
->> A related question: is it expected that simplefb should be
->> significantly slower than efifb, or is that something worth looking
->> into? My boot with simplefb is roughly five seconds slower than with
->> efifb. Coincidentally, I notice the same (or similar slowdown) with
->> inteldrmfb when I see the oops (but not otherwise).
-> 
-> That is probably related to the missing write-combine tag in ioremap.
-> Stephen, any objections to this attached patch?
-> Tom, if this solves the speed-issues, I will send it out once I get home.
-> 
-> Thanks
-> David
-> 
-> (Patch also attached in case of new-lines issues)
-> 
-> From dbfb8e12166d494cd60823cbe84134d5d1a73ec8 Mon Sep 17 00:00:00 2001
-> From: David Herrmann <dh.herrmann@gmail.com>
-> Date: Sat, 7 Sep 2013 14:22:01 +0200
-> Subject: [PATCH] devm/simplefb: introduce and use devm_ioremap_wc()
-> 
-> We want to use devm_ioremap_nocache() or even devm_ioremap_wc() to speed
-> up fbdev writes _a lot_. As devm_ioremap_wc() doesn't exist, yet,
-> introduce it along the way. Note that ioremap_wc() is aliases to
-> ioremap_nocache() in asm-generic/{io,iomem}.h so we can safely expect all
-> architectures to either provide it or use the same alias.
+of_display_timings_exist is implemented incorrectly.
+It tries to find property instead of node.
+The function is not used anyway so the patch removes it.
 
-OK, that works fine on the Raspberry Pi too, so,
-Tested-by: Stephen Warren <swarren@wwwdotorg.org>
+Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ drivers/video/of_display_timing.c | 20 --------------------
+ include/video/of_display_timing.h |  1 -
+ 2 files changed, 21 deletions(-)
+
+diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
+index ba5b40f..b423bb9 100644
+--- a/drivers/video/of_display_timing.c
++++ b/drivers/video/of_display_timing.c
+@@ -247,23 +247,3 @@ dispfail:
+ 	return NULL;
+ }
+ EXPORT_SYMBOL_GPL(of_get_display_timings);
+-
+-/**
+- * of_display_timings_exist - check if a display-timings node is provided
+- * @np: device_node with the timing
+- **/
+-int of_display_timings_exist(struct device_node *np)
+-{
+-	struct device_node *timings_np;
+-
+-	if (!np)
+-		return -EINVAL;
+-
+-	timings_np = of_parse_phandle(np, "display-timings", 0);
+-	if (!timings_np)
+-		return -EINVAL;
+-
+-	of_node_put(timings_np);
+-	return 1;
+-}
+-EXPORT_SYMBOL_GPL(of_display_timings_exist);
+diff --git a/include/video/of_display_timing.h b/include/video/of_display_timing.h
+index 79e6697..16cde75 100644
+--- a/include/video/of_display_timing.h
++++ b/include/video/of_display_timing.h
+@@ -18,6 +18,5 @@ struct display_timings;
+ int of_get_display_timing(struct device_node *np, const char *name,
+ 		struct display_timing *dt);
+ struct display_timings *of_get_display_timings(struct device_node *np);
+-int of_display_timings_exist(struct device_node *np);
+ 
+ #endif
+-- 
+1.8.1.2
 

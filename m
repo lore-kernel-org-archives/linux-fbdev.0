@@ -1,35 +1,37 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 12 Sep 2013 06:55:29 +0000
-Subject: [PATCH 09/21] video: i810fb: remove unnecessary pci_set_drvdata()
-Message-Id: <002301ceaf85$115c5ce0$341516a0$%han@samsung.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Wed, 25 Sep 2013 12:14:57 +0000
+Subject: [PATCH 2/4] video: cirrusfb: Remove incorrect checks
+Message-Id: <1380110579-3665-2-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The driver core clears the driver data to NULL after device_release
-or on probe failure. Thus, it is not needed to manually clear the
-device driver data to NULL.
+'xoffset' and 'yoffset' are unsigned and hence cannot be less than 0.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Jeff Garzik <jgarzik@redhat.com>
 ---
- drivers/video/i810/i810_main.c |    1 -
- 1 file changed, 1 deletion(-)
+ drivers/video/cirrusfb.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
-index 4ce3438..038192a 100644
---- a/drivers/video/i810/i810_main.c
-+++ b/drivers/video/i810/i810_main.c
-@@ -2129,7 +2129,6 @@ static void __exit i810fb_remove_pci(struct pci_dev *dev)
+diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
+index b016746..5aab9b9 100644
+--- a/drivers/video/cirrusfb.c
++++ b/drivers/video/cirrusfb.c
+@@ -595,11 +595,6 @@ static int cirrusfb_check_var(struct fb_var_screeninfo *var,
+ 		return -EINVAL;
+ 	}
  
- 	unregister_framebuffer(info);  
- 	i810fb_release_resource(info, par);
--	pci_set_drvdata(dev, NULL);
- 	printk("cleanup_module:  unloaded i810 framebuffer device\n");
- }                                                	
- 
+-	if (var->xoffset < 0)
+-		var->xoffset = 0;
+-	if (var->yoffset < 0)
+-		var->yoffset = 0;
+-
+ 	/* truncate xoffset and yoffset to maximum if too high */
+ 	if (var->xoffset > var->xres_virtual - var->xres)
+ 		var->xoffset = var->xres_virtual - var->xres - 1;
 -- 
-1.7.10.4
-
+1.7.9.5
 

@@ -1,35 +1,32 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 12 Sep 2013 06:53:11 +0000
-Subject: [PATCH 05/21] video: lxfb: remove unnecessary pci_set_drvdata()
-Message-Id: <001f01ceaf84$bed8dbb0$3c8a9310$%han@samsung.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Wed, 25 Sep 2013 11:41:52 +0000
+Subject: [PATCH 4/6] video: aty: Remove redundant break
+Message-Id: <1380108594-19090-4-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The driver core clears the driver data to NULL after device_release
-or on probe failure. Thus, it is not needed to manually clear the
-device driver data to NULL.
+'break' after return statement is redundant. Remove it.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 ---
- drivers/video/geode/lxfb_core.c |    1 -
+ drivers/video/aty/atyfb_base.c |    1 -
  1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/geode/lxfb_core.c b/drivers/video/geode/lxfb_core.c
-index 4dd7b55..10de31b 100644
---- a/drivers/video/geode/lxfb_core.c
-+++ b/drivers/video/geode/lxfb_core.c
-@@ -606,7 +606,6 @@ static void lxfb_remove(struct pci_dev *pdev)
- 	pci_release_region(pdev, 3);
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+index 9b0f12c..28fafbf 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -1848,7 +1848,6 @@ static int atyfb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
  
- 	fb_dealloc_cmap(&info->cmap);
--	pci_set_drvdata(pdev, NULL);
- 	framebuffer_release(info);
- }
+ 			return aty_waitforvblank(par, crtc);
+ 		}
+-		break;
  
+ #if defined(DEBUG) && defined(CONFIG_FB_ATY_CT)
+ 	case ATYIO_CLKR:
 -- 
-1.7.10.4
-
+1.7.9.5
 

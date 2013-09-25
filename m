@@ -1,7 +1,7 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Wed, 25 Sep 2013 09:13:28 +0000
+Date: Wed, 25 Sep 2013 09:28:53 +0000
 Subject: Re: [patch 2/2] backlight: lm3630: potential NULL deref in probe()
-Message-Id: <002101ceb9cf$7f773250$7e6596f0$%han@samsung.com>
+Message-Id: <002201ceb9d1$a6b646b0$f422d410$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20130925085549.GB6661@elgon.mountain>
 In-Reply-To: <20130925085549.GB6661@elgon.mountain>
@@ -10,36 +10,55 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Wednesday, September 25, 2013 5:55 PM, Dan Carpenter wrote:
+On Wednesday, September 25, 2013 5:56 PM, Dan Carpenter wrote:
 > 
-> "rval" needs to be signed for the error handling to work.
+> We dereference "pdata" later in the function so we can't leave it as
+> NULL.
 > 
 > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
 CC'ed Andrew Morton, Daniel Jeong,
 
-Oh, you're right.
-"rval" is used as below.
-rval = lm3630a_read(pchip, REG_INT_STATUS);
-Also, lm3630a_read() returns signed value; thus,
-"rval" should be signed.
-Thank you for sending the patch. :-)
-
 Acked-by: Jingoo Han <jg1.han@samsung.com>
 
 > 
 > diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-> index c63f918..65392f9 100644
+> index 65392f9..6146481 100644
 > --- a/drivers/video/backlight/lm3630a_bl.c
 > +++ b/drivers/video/backlight/lm3630a_bl.c
-> @@ -105,7 +105,7 @@ static int lm3630a_chip_init(struct lm3630a_chip *pchip)
->  /* interrupt handling */
->  static void lm3630a_delayed_func(struct work_struct *work)
->  {
-> -	unsigned int rval;
-> +	int rval;
->  	struct lm3630a_chip *pchip;
+> @@ -389,22 +389,21 @@ static int lm3630a_probe(struct i2c_client *client,
 > 
->  	pchip = container_of(work, struct lm3630a_chip, work.work);
-
+>  	i2c_set_clientdata(client, pchip);
+>  	if (pdata = NULL) {
+> -		pchip->pdata = devm_kzalloc(pchip->dev,
+> -					    sizeof(struct
+> -						   lm3630a_platform_data),
+> -					    GFP_KERNEL);
+> -		if (pchip->pdata = NULL)
+> +		pdata = devm_kzalloc(pchip->dev,
+> +				     sizeof(struct lm3630a_platform_data),
+> +				     GFP_KERNEL);
+> +		if (pdata = NULL)
+>  			return -ENOMEM;
+>  		/* default values */
+> -		pchip->pdata->leda_ctrl = LM3630A_LEDA_ENABLE;
+> -		pchip->pdata->ledb_ctrl = LM3630A_LEDB_ENABLE;
+> -		pchip->pdata->leda_max_brt = LM3630A_MAX_BRIGHTNESS;
+> -		pchip->pdata->ledb_max_brt = LM3630A_MAX_BRIGHTNESS;
+> -		pchip->pdata->leda_init_brt = LM3630A_MAX_BRIGHTNESS;
+> -		pchip->pdata->ledb_init_brt = LM3630A_MAX_BRIGHTNESS;
+> -	} else {
+> -		pchip->pdata = pdata;
+> +		pdata->leda_ctrl = LM3630A_LEDA_ENABLE;
+> +		pdata->ledb_ctrl = LM3630A_LEDB_ENABLE;
+> +		pdata->leda_max_brt = LM3630A_MAX_BRIGHTNESS;
+> +		pdata->ledb_max_brt = LM3630A_MAX_BRIGHTNESS;
+> +		pdata->leda_init_brt = LM3630A_MAX_BRIGHTNESS;
+> +		pdata->ledb_init_brt = LM3630A_MAX_BRIGHTNESS;
+>  	}
+> +	pchip->pdata = pdata;
+> +
+>  	/* chip initialize */
+>  	rval = lm3630a_chip_init(pchip);
+>  	if (rval < 0) {
 

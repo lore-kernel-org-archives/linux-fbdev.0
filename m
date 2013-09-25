@@ -1,37 +1,72 @@
-From: Xishi Qiu <qiuxishi@huawei.com>
-Date: Wed, 04 Sep 2013 10:41:40 +0000
-Subject: [PATCH 2/2] mm/driver: use __free_reserved_page() to simplify the code
-Message-Id: <52270E64.20401@huawei.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Wed, 25 Sep 2013 11:41:54 +0000
+Subject: [PATCH 6/6] video: uvesafb: Remove redundant NULL check
+Message-Id: <1380108594-19090-6-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, james.hogan@imgtec.com, monstr@monstr.eu, benh@kernel.crashing.org, paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>
-Cc: Xishi Qiu <qiuxishi@huawei.com>, microblaze-uclinux@itee.uq.edu.au, linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+To: linux-fbdev@vger.kernel.org
 
-Use __free_reserved_page() to simplify the code in the others.
+kfree on a NULL pointer is a no-op.
 
-Signed-off-by: Xishi Qiu <qiuxishi@huawei.com>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Michal Januszewski <spock@gentoo.org>
 ---
- drivers/video/acornfb.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+ drivers/video/uvesafb.c |   19 +++++++------------
+ 1 file changed, 7 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/acornfb.c b/drivers/video/acornfb.c
-index 6488a73..4ef302a 100644
---- a/drivers/video/acornfb.c
-+++ b/drivers/video/acornfb.c
-@@ -1205,9 +1205,7 @@ free_unused_pages(unsigned int virtual_start, unsigned int virtual_end)
- 		 * the page.
- 		 */
- 		page = virt_to_page(virtual_start);
--		ClearPageReserved(page);
--		init_page_count(page);
--		free_page(virtual_start);
-+		__free_reserved_page(page);
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index 7aec6f3..676a4b9 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -233,8 +233,7 @@ out:
+ static void uvesafb_free(struct uvesafb_ktask *task)
+ {
+ 	if (task) {
+-		if (task->done)
+-			kfree(task->done);
++		kfree(task->done);
+ 		kfree(task);
+ 	}
+ }
+@@ -1332,8 +1331,8 @@ setmode:
+ 				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
+ 	info->fix.line_length = mode->bytes_per_scan_line;
  
- 		virtual_start += PAGE_SIZE;
- 		mb_freed += PAGE_SIZE / 1024;
+-out:	if (crtc != NULL)
+-		kfree(crtc);
++out:
++	kfree(crtc);
+ 	uvesafb_free(task);
+ 
+ 	return err;
+@@ -1793,8 +1792,7 @@ out_mode:
+ 	fb_destroy_modedb(info->monspecs.modedb);
+ 	fb_dealloc_cmap(&info->cmap);
+ out:
+-	if (par->vbe_modes)
+-		kfree(par->vbe_modes);
++	kfree(par->vbe_modes);
+ 
+ 	framebuffer_release(info);
+ 	return err;
+@@ -1817,12 +1815,9 @@ static int uvesafb_remove(struct platform_device *dev)
+ 		fb_dealloc_cmap(&info->cmap);
+ 
+ 		if (par) {
+-			if (par->vbe_modes)
+-				kfree(par->vbe_modes);
+-			if (par->vbe_state_orig)
+-				kfree(par->vbe_state_orig);
+-			if (par->vbe_state_saved)
+-				kfree(par->vbe_state_saved);
++			kfree(par->vbe_modes);
++			kfree(par->vbe_state_orig);
++			kfree(par->vbe_state_saved);
+ 		}
+ 
+ 		framebuffer_release(info);
 -- 
-1.7.1
-
+1.7.9.5
 

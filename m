@@ -1,47 +1,36 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 27 Sep 2013 00:08:17 +0000
-Subject: Re: [PATCH 1/2] backlight: l4f00242t03: Remove redundant spi_set_drvdata
-Message-Id: <00f201cebb15$aaecdc40$00c694c0$%han@samsung.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Wed, 25 Sep 2013 12:14:56 +0000
+Subject: [PATCH 1/4] video: vfb: Remove incorrect check
+Message-Id: <1380110579-3665-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1379659133-18799-1-git-send-email-sachin.kamat@linaro.org>
-In-Reply-To: <1379659133-18799-1-git-send-email-sachin.kamat@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Thursday, September 26, 2013 5:48 PM, Tomi Valkeinen wrote:
-> On 20/09/13 09:38, Sachin Kamat wrote:
-> > Driver core sets driver data to NULL upon failure or remove.
-> >
-> > Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> > ---
-> >  drivers/video/backlight/l4f00242t03.c |    1 -
-> >  1 file changed, 1 deletion(-)
-> >
-> > diff --git a/drivers/video/backlight/l4f00242t03.c b/drivers/video/backlight/l4f00242t03.c
-> > index a35a38c..59eebe0 100644
-> > --- a/drivers/video/backlight/l4f00242t03.c
-> > +++ b/drivers/video/backlight/l4f00242t03.c
-> > @@ -244,7 +244,6 @@ static int l4f00242t03_remove(struct spi_device *spi)
-> >
-> >  	l4f00242t03_lcd_power_set(priv->ld, FB_BLANK_POWERDOWN);
-> >  	lcd_device_unregister(priv->ld);
-> > -	spi_set_drvdata(spi, NULL);
-> >
-> >  	return 0;
-> >  }
-> >
-> 
-> Thanks, queuing this and the second patch for 3.13.
-> 
+'yoffset' is unsigned and hence cannot be less than 0.
 
-Hi Tomi Valkeinen,
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+---
+ drivers/video/vfb.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-Andrew Morton already merged these patches to mm-tree with my Acked-by.
-So, you don't need to queue these patches.
-Thank you for caring. :-)
-
-Best regards,
-Jingoo Han
+diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
+index ee5985e..ea2b523 100644
+--- a/drivers/video/vfb.c
++++ b/drivers/video/vfb.c
+@@ -390,9 +390,8 @@ static int vfb_pan_display(struct fb_var_screeninfo *var,
+ 			   struct fb_info *info)
+ {
+ 	if (var->vmode & FB_VMODE_YWRAP) {
+-		if (var->yoffset < 0
+-		    || var->yoffset >= info->var.yres_virtual
+-		    || var->xoffset)
++		if (var->yoffset >= info->var.yres_virtual ||
++		    var->xoffset)
+ 			return -EINVAL;
+ 	} else {
+ 		if (var->xoffset + info->var.xres > info->var.xres_virtual ||
+-- 
+1.7.9.5
 

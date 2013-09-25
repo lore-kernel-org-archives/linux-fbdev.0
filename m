@@ -1,42 +1,36 @@
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Thu, 19 Sep 2013 21:45:01 +0000
-Subject: [PATCH 20/51] DMA-API: usb: bcma: replace dma_set_mask()+dma_set_coherent_mask() with new
-Message-Id: <E1VMm21-0007hW-Dd@rmk-PC.arm.linux.org.uk>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Wed, 25 Sep 2013 12:14:59 +0000
+Subject: [PATCH 4/4] video: riva: Remove incorrect checks
+Message-Id: <1380110579-3665-4-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
-In-Reply-To: <20130919212235.GD12758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alsa-devel@alsa-project.org, b43-dev@lists.infradead.org, devel@driverdev.osuosl.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, e1000-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvme@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Solarflare linux maintainers <linux-net-drivers@solarflare.com>, uclinux-dist-devel@blackfin.uclinux.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-fbdev@vger.kernel.org
 
-Replace the following sequence:
+'xoffset' and 'yoffset' are unsigned and hence cannot be less than 0.
 
-	dma_set_mask(dev, mask);
-	dma_set_coherent_mask(dev, mask);
-
-with a call to the new helper dma_set_mask_and_coherent().
-
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 ---
- drivers/usb/host/bcma-hcd.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ drivers/video/riva/fbdev.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/usb/host/bcma-hcd.c b/drivers/usb/host/bcma-hcd.c
-index df13d42..205f4a3 100644
---- a/drivers/usb/host/bcma-hcd.c
-+++ b/drivers/usb/host/bcma-hcd.c
-@@ -227,8 +227,7 @@ static int bcma_hcd_probe(struct bcma_device *dev)
+diff --git a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
+index 9536715..a5514ac 100644
+--- a/drivers/video/riva/fbdev.c
++++ b/drivers/video/riva/fbdev.c
+@@ -1185,11 +1185,6 @@ static int rivafb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 	if (rivafb_do_maximize(info, var, nom, den) < 0)
+ 		return -EINVAL;
  
- 	/* TODO: Probably need checks here; is the core connected? */
- 
--	if (dma_set_mask(dev->dma_dev, DMA_BIT_MASK(32)) ||
--	    dma_set_coherent_mask(dev->dma_dev, DMA_BIT_MASK(32)))
-+	if (dma_set_mask_and_coherent(dev->dma_dev, DMA_BIT_MASK(32)))
- 		return -EOPNOTSUPP;
- 
- 	usb_dev = kzalloc(sizeof(struct bcma_hcd_device), GFP_KERNEL);
+-	if (var->xoffset < 0)
+-		var->xoffset = 0;
+-	if (var->yoffset < 0)
+-		var->yoffset = 0;
+-
+ 	/* truncate xoffset and yoffset to maximum if too high */
+ 	if (var->xoffset > var->xres_virtual - var->xres)
+ 		var->xoffset = var->xres_virtual - var->xres - 1;
 -- 
-1.7.4.4
+1.7.9.5
 

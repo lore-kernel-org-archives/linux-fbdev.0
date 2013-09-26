@@ -1,37 +1,35 @@
-From: agrobak@kios.sk
-Date: Fri, 27 Sep 2013 09:21:21 +0000
-Subject: =?UTF-8?Q?V=C3=A1=C5=BEen=C3=AD=20E-mail=20u=C5=BE=C3=ADvate?= =?UTF-8?Q?=C4=BEa?=
-Message-Id: <1b77323e7ef029a1c54d2ce43930e7bf@kios.sk>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Thu, 26 Sep 2013 11:59:44 +0000
+Subject: [PATCH 1/1] backlight: lm3630a_bl: Fix incorrect variable type
+Message-Id: <1380196776-27909-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <49ba66a6c259798998e698b3ed2288d9@nuczv.sk>
-In-Reply-To: <49ba66a6c259798998e698b3ed2288d9@nuczv.sk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
+'lm3630a_read' returns a negative error code upon failure. This
+will never get detected by unsigned 'rval'. Make it signed.
 
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Daniel Jeong <gshark.jeong@gmail.com>
+---
+ drivers/video/backlight/lm3630a_bl.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index c63f918..65392f9 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -105,7 +105,7 @@ static int lm3630a_chip_init(struct lm3630a_chip *pchip)
+ /* interrupt handling */
+ static void lm3630a_delayed_func(struct work_struct *work)
+ {
+-	unsigned int rval;
++	int rval;
+ 	struct lm3630a_chip *pchip;
+ 
+ 	pchip = container_of(work, struct lm3630a_chip, work.work);
 -- 
-Vážení E-mail užívateľa;
-
-Prekročili ste 23432 boxy nastaviť svoje
-Webová služba / Administrátor, a budete mať problémy pri odosielaní a
-prijímať e-maily, kým znova overiť. Musíte aktualizovať
-kliknutím na
-odkaz nižšie a vyplňte údaje pre overenie vášho účtu
-Prosím,  kliknite na odkaz nižšie alebo skopírovať vložiť do
-e-prehliadač pre overenie Schránky.
-
-http://webmailonlineupdate1.jimdo.com/
-Pozor!
-Ak tak neurobíte, budú mať obmedzený prístup k e-mailu schránky. Ak
-sa
-nepodarí aktualizovať svoj ​​účet do troch dní
-od aktualizácie
-oznámenia,
-bude váš účet natrvalo uzavretá.
-S pozdravom,
-System Administrator ®
-
+1.7.9.5
 

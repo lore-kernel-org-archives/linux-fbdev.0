@@ -1,52 +1,33 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 12 Sep 2013 07:00:31 +0000
-Subject: [PATCH 18/21] video: sisfb: remove unnecessary pci_set_drvdata()
-Message-Id: <002c01ceaf85$c51cc030$4f564090$%han@samsung.com>
+From: Wei Yongjun <weiyj.lk@gmail.com>
+Date: Fri, 27 Sep 2013 09:50:47 +0000
+Subject: [PATCH -next] backlight: lm3630: add missing destroy_workqueue() on error in lm3630a_intr_config()
+Message-Id: <CAPgLHd_Sqru87pYM3aB1_57hD0eWX4Rb3huPqjQxX93HRrCQzw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The driver core clears the driver data to NULL after device_release
-or on probe failure. Thus, it is not needed to manually clear the
-device driver data to NULL.
+From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Add the missing destroy_workqueue() before return from
+lm3630a_intr_config() in the error handling case.
+
+Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 ---
- drivers/video/sis/sis_main.c |    4 ----
- 1 file changed, 4 deletions(-)
+ drivers/video/backlight/lm3630a_bl.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
-index 977e279..793b402 100644
---- a/drivers/video/sis/sis_main.c
-+++ b/drivers/video/sis/sis_main.c
-@@ -5994,7 +5994,6 @@ static int sisfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if(!ivideo->sisvga_enabled) {
- 		if(pci_enable_device(pdev)) {
- 			if(ivideo->nbridge) pci_dev_put(ivideo->nbridge);
--			pci_set_drvdata(pdev, NULL);
- 			framebuffer_release(sis_fb_info);
- 			return -EIO;
- 		}
-@@ -6211,7 +6210,6 @@ error_3:	vfree(ivideo->bios_abase);
- 			pci_dev_put(ivideo->lpcdev);
- 		if(ivideo->nbridge)
- 			pci_dev_put(ivideo->nbridge);
--		pci_set_drvdata(pdev, NULL);
- 		if(!ivideo->sisvga_enabled)
- 			pci_disable_device(pdev);
- 		framebuffer_release(sis_fb_info);
-@@ -6523,8 +6521,6 @@ static void sisfb_remove(struct pci_dev *pdev)
- 		mtrr_del(ivideo->mtrr, ivideo->video_base, ivideo->video_size);
- #endif
- 
--	pci_set_drvdata(pdev, NULL);
--
- 	/* If device was disabled when starting, disable
- 	 * it when quitting.
- 	 */
--- 
-1.7.10.4
-
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index c63f918..0e5d8d3 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -154,6 +154,7 @@ static int lm3630a_intr_config(struct lm3630a_chip *pchip)
+ 	    (pchip->irq, NULL, lm3630a_isr_func,
+ 	     IRQF_TRIGGER_FALLING | IRQF_ONESHOT, "lm3630a_irq", pchip)) {
+ 		dev_err(pchip->dev, "request threaded irq fail\n");
++		destroy_workqueue(pchip->irqthread);
+ 		return -ENOMEM;
+ 	}
+ 	return rval;
 

@@ -1,35 +1,145 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 12 Sep 2013 06:57:09 +0000
-Subject: [PATCH 12/21] video: mb862xxfb: remove unnecessary pci_set_drvdata()
-Message-Id: <002601ceaf85$4ce880e0$e6b982a0$%han@samsung.com>
+From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
+Date: Sat, 28 Sep 2013 19:27:46 +0000
+Subject: [PATCH V5 4/5] video: exynos_mipi_dsim: Use the generic PHY driver
+Message-Id: <1380396467-29278-5-git-send-email-s.nawrocki@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1380396467-29278-1-git-send-email-s.nawrocki@samsung.com>
+In-Reply-To: <1380396467-29278-1-git-send-email-s.nawrocki@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-The driver core clears the driver data to NULL after device_release
-or on probe failure. Thus, it is not needed to manually clear the
-device driver data to NULL.
+Use the generic PHY API instead of the platform callback
+for the MIPI DSIM DPHY enable/reset control.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Acked-by: Felipe Balbi <balbi@ti.com>
+Acked-by: Donghwa Lee <dh09.lee@samsung.com>
 ---
- drivers/video/mb862xx/mb862xxfbdrv.c |    1 -
- 1 file changed, 1 deletion(-)
+Changes since v4:
+ - PHY label removed from the platform data structure.
+---
+ drivers/video/exynos/Kconfig           |    1 +
+ drivers/video/exynos/exynos_mipi_dsi.c |   19 ++++++++++---------
+ include/video/exynos_mipi_dsim.h       |    5 ++---
+ 3 files changed, 13 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/mb862xx/mb862xxfbdrv.c b/drivers/video/mb862xx/mb862xxfbdrv.c
-index 91c59c9..98d2f8c 100644
---- a/drivers/video/mb862xx/mb862xxfbdrv.c
-+++ b/drivers/video/mb862xx/mb862xxfbdrv.c
-@@ -1157,7 +1157,6 @@ static void mb862xx_pci_remove(struct pci_dev *pdev)
- 
- 	device_remove_file(&pdev->dev, &dev_attr_dispregs);
- 
--	pci_set_drvdata(pdev, NULL);
- 	unregister_framebuffer(fbi);
- 	fb_dealloc_cmap(&fbi->cmap);
- 
--- 
-1.7.10.4
+diff --git a/drivers/video/exynos/Kconfig b/drivers/video/exynos/Kconfig
+index 1b035b2..976594d 100644
+--- a/drivers/video/exynos/Kconfig
++++ b/drivers/video/exynos/Kconfig
+@@ -16,6 +16,7 @@ if EXYNOS_VIDEO
+ config EXYNOS_MIPI_DSI
+ 	bool "EXYNOS MIPI DSI driver support."
+ 	depends on ARCH_S5PV210 || ARCH_EXYNOS
++	select GENERIC_PHY
+ 	help
+ 	  This enables support for MIPI-DSI device.
 
+diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
+index 32e5406..00b3a52 100644
+--- a/drivers/video/exynos/exynos_mipi_dsi.c
++++ b/drivers/video/exynos/exynos_mipi_dsi.c
+@@ -30,6 +30,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/kthread.h>
+ #include <linux/notifier.h>
++#include <linux/phy/phy.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/err.h>
+@@ -156,8 +157,7 @@ static int exynos_mipi_dsi_blank_mode(struct mipi_dsim_device *dsim, int power)
+ 		exynos_mipi_regulator_enable(dsim);
+
+ 		/* enable MIPI-DSI PHY. */
+-		if (dsim->pd->phy_enable)
+-			dsim->pd->phy_enable(pdev, true);
++		phy_power_on(dsim->phy);
+
+ 		clk_enable(dsim->clock);
+
+@@ -373,6 +373,10 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+
++	dsim->phy = devm_phy_get(&pdev->dev, "dsim");
++	if (IS_ERR(dsim->phy))
++		return PTR_ERR(dsim->phy);
++
+ 	dsim->clock = devm_clk_get(&pdev->dev, "dsim0");
+ 	if (IS_ERR(dsim->clock)) {
+ 		dev_err(&pdev->dev, "failed to get dsim clock source\n");
+@@ -439,8 +443,7 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 	exynos_mipi_regulator_enable(dsim);
+
+ 	/* enable MIPI-DSI PHY. */
+-	if (dsim->pd->phy_enable)
+-		dsim->pd->phy_enable(pdev, true);
++	phy_power_on(dsim->phy);
+
+ 	exynos_mipi_update_cfg(dsim);
+
+@@ -504,9 +507,8 @@ static int exynos_mipi_dsi_suspend(struct device *dev)
+ 	if (client_drv && client_drv->suspend)
+ 		client_drv->suspend(client_dev);
+
+-	/* enable MIPI-DSI PHY. */
+-	if (dsim->pd->phy_enable)
+-		dsim->pd->phy_enable(pdev, false);
++	/* disable MIPI-DSI PHY. */
++	phy_power_off(dsim->phy);
+
+ 	clk_disable(dsim->clock);
+
+@@ -536,8 +538,7 @@ static int exynos_mipi_dsi_resume(struct device *dev)
+ 	exynos_mipi_regulator_enable(dsim);
+
+ 	/* enable MIPI-DSI PHY. */
+-	if (dsim->pd->phy_enable)
+-		dsim->pd->phy_enable(pdev, true);
++	phy_power_on(dsim->phy);
+
+ 	clk_enable(dsim->clock);
+
+diff --git a/include/video/exynos_mipi_dsim.h b/include/video/exynos_mipi_dsim.h
+index 89dc88a..6a578f8 100644
+--- a/include/video/exynos_mipi_dsim.h
++++ b/include/video/exynos_mipi_dsim.h
+@@ -216,6 +216,7 @@ struct mipi_dsim_config {
+  *	automatically.
+  * @e_clk_src: select byte clock source.
+  * @pd: pointer to MIPI-DSI driver platform data.
++ * @phy: pointer to the MIPI-DSI PHY
+  */
+ struct mipi_dsim_device {
+ 	struct device			*dev;
+@@ -236,6 +237,7 @@ struct mipi_dsim_device {
+ 	bool				suspended;
+
+ 	struct mipi_dsim_platform_data	*pd;
++	struct phy			*phy;
+ };
+
+ /*
+@@ -248,7 +250,6 @@ struct mipi_dsim_device {
+  * @enabled: indicate whether mipi controller got enabled or not.
+  * @lcd_panel_info: pointer for lcd panel specific structure.
+  *	this structure specifies width, height, timing and polarity and so on.
+- * @phy_enable: pointer to a callback controlling D-PHY enable/reset
+  */
+ struct mipi_dsim_platform_data {
+ 	char				lcd_panel_name[PANEL_NAME_SIZE];
+@@ -256,8 +257,6 @@ struct mipi_dsim_platform_data {
+ 	struct mipi_dsim_config		*dsim_config;
+ 	unsigned int			enabled;
+ 	void				*lcd_panel_info;
+-
+-	int (*phy_enable)(struct platform_device *pdev, bool on);
+ };
+
+ /*
+--
+1.7.4.1
 

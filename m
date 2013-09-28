@@ -1,69 +1,271 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 26 Sep 2013 10:21:31 +0000
-Subject: Re: [PATCH] OMAPDSS: Add missing dependency on backlight for DSI-CM panel drier
-Message-Id: <52440AAB.70101@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ULJm6eakE1Ai2LoskuhRSFJ97MXkT4B0D"
+From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
+Date: Sat, 28 Sep 2013 19:27:44 +0000
+Subject: [PATCH V5 2/5] phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
+Message-Id: <1380396467-29278-3-git-send-email-s.nawrocki@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1380108661-22702-1-git-send-email-broonie@kernel.org> <5243F20A.9000707@ti.com> <20130926101247.GB19304@sirena.org.uk>
-In-Reply-To: <20130926101247.GB19304@sirena.org.uk>
-To: Mark Brown <broonie@kernel.org>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linaro-kernel@lists.linaro.org
+References: <1380396467-29278-1-git-send-email-s.nawrocki@samsung.com>
+In-Reply-To: <1380396467-29278-1-git-send-email-s.nawrocki@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---ULJm6eakE1Ai2LoskuhRSFJ97MXkT4B0D
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Add a PHY provider driver for the Samsung S5P/Exynos SoC MIPI CSI-2
+receiver and MIPI DSI transmitter DPHYs.
 
-On 26/09/13 13:12, Mark Brown wrote:
-> On Thu, Sep 26, 2013 at 11:36:26AM +0300, Tomi Valkeinen wrote:
->=20
->> I wish we could "select" instead of "depends on"...
->=20
-> We probably could.
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+Changes since v4:
+ - updated to latest version of the PHY framework - removed PHY
+   labels.
 
-I'm not so sure.
+The individual driver symbols in drivers/phy/Kconfig should
+presumably be prefixed with, e.g. PHY_. This is something that
+perhaps could be done as a follow up patch.
+---
+ .../devicetree/bindings/phy/samsung-phy.txt        |   14 ++
+ drivers/phy/Kconfig                                |    6 +
+ drivers/phy/Makefile                               |    7 +-
+ drivers/phy/phy-exynos-mipi-video.c                |  176 ++++++++++++++++++++
+ 4 files changed, 200 insertions(+), 3 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/phy/samsung-phy.txt
+ create mode 100644 drivers/phy/phy-exynos-mipi-video.c
 
-If we select BACKLIGHT_CLASS_DEVICE, we could end up compiling
-backlight.c without fbdev, and backlight.c uses fb's funcs.
+diff --git a/Documentation/devicetree/bindings/phy/samsung-phy.txt b/Documentation/devicetree/bindings/phy/samsung-phy.txt
+new file mode 100644
+index 0000000..5ff208c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/phy/samsung-phy.txt
+@@ -0,0 +1,14 @@
++Samsung S5P/EXYNOS SoC series MIPI CSIS/DSIM DPHY
++-------------------------------------------------
++
++Required properties:
++- compatible : should be "samsung,s5pv210-mipi-video-phy";
++- reg : offset and length of the MIPI DPHY register set;
++- #phy-cells : from the generic phy bindings, must be 1;
++
++For "samsung,s5pv210-mipi-video-phy" compatible PHYs the second cell in
++the PHY specifier identifies the PHY and its meaning is as follows:
++  0 - MIPI CSIS 0,
++  1 - MIPI DSIM 0,
++  2 - MIPI CSIS 1,
++  3 - MIPI DSIM 1.
+diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
+index ac239ac..0062d7e 100644
+--- a/drivers/phy/Kconfig
++++ b/drivers/phy/Kconfig
+@@ -15,6 +15,12 @@ config GENERIC_PHY
+ 	  phy users can obtain reference to the PHY. All the users of this
+ 	  framework should select this config.
+ 
++config PHY_EXYNOS_MIPI_VIDEO
++	tristate "S5P/EXYNOS SoC series MIPI CSI-2/DSI PHY driver"
++	help
++	  Support for MIPI CSI-2 and MIPI DSI DPHY found on Samsung S5P
++	  and EXYNOS SoCs.
++
+ config OMAP_USB2
+ 	tristate "OMAP USB2 PHY Driver"
+ 	depends on ARCH_OMAP2PLUS
+diff --git a/drivers/phy/Makefile b/drivers/phy/Makefile
+index 0dd8a98..6344053 100644
+--- a/drivers/phy/Makefile
++++ b/drivers/phy/Makefile
+@@ -2,6 +2,7 @@
+ # Makefile for the phy drivers.
+ #
+ 
+-obj-$(CONFIG_GENERIC_PHY)	+= phy-core.o
+-obj-$(CONFIG_OMAP_USB2)		+= phy-omap-usb2.o
+-obj-$(CONFIG_TWL4030_USB)	+= phy-twl4030-usb.o
++obj-$(CONFIG_GENERIC_PHY)		+= phy-core.o
++obj-$(CONFIG_PHY_EXYNOS_MIPI_VIDEO)	+= phy-exynos-mipi-video.o
++obj-$(CONFIG_OMAP_USB2)			+= phy-omap-usb2.o
++obj-$(CONFIG_TWL4030_USB)		+= phy-twl4030-usb.o
+diff --git a/drivers/phy/phy-exynos-mipi-video.c b/drivers/phy/phy-exynos-mipi-video.c
+new file mode 100644
+index 0000000..b73b86a
+--- /dev/null
++++ b/drivers/phy/phy-exynos-mipi-video.c
+@@ -0,0 +1,176 @@
++/*
++ * Samsung S5P/EXYNOS SoC series MIPI CSIS/DSIM DPHY driver
++ *
++ * Copyright (C) 2013 Samsung Electronics Co., Ltd.
++ * Author: Sylwester Nawrocki <s.nawrocki@samsung.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++#include <linux/phy/phy.h>
++#include <linux/platform_device.h>
++#include <linux/spinlock.h>
++
++/* MIPI_PHYn_CONTROL register offset: n = 0..1 */
++#define EXYNOS_MIPI_PHY_CONTROL(n)	((n) * 4)
++#define EXYNOS_MIPI_PHY_ENABLE		(1 << 0)
++#define EXYNOS_MIPI_PHY_SRESETN		(1 << 1)
++#define EXYNOS_MIPI_PHY_MRESETN		(1 << 2)
++#define EXYNOS_MIPI_PHY_RESET_MASK	(3 << 1)
++
++enum exynos_mipi_phy_id {
++	EXYNOS_MIPI_PHY_ID_CSIS0,
++	EXYNOS_MIPI_PHY_ID_DSIM0,
++	EXYNOS_MIPI_PHY_ID_CSIS1,
++	EXYNOS_MIPI_PHY_ID_DSIM1,
++	EXYNOS_MIPI_PHYS_NUM
++};
++
++#define is_mipi_dsim_phy_id(id) \
++	((id) = EXYNOS_MIPI_PHY_ID_DSIM0 || (id) = EXYNOS_MIPI_PHY_ID_DSIM1)
++
++struct exynos_mipi_video_phy {
++	spinlock_t slock;
++	struct video_phy_desc {
++		struct phy *phy;
++		unsigned int index;
++	} phys[EXYNOS_MIPI_PHYS_NUM];
++	void __iomem *regs;
++};
++
++static int __set_phy_state(struct exynos_mipi_video_phy *state,
++			enum exynos_mipi_phy_id id, unsigned int on)
++{
++	void __iomem *addr;
++	u32 reg, reset;
++
++	addr = state->regs + EXYNOS_MIPI_PHY_CONTROL(id / 2);
++
++	if (is_mipi_dsim_phy_id(id))
++		reset = EXYNOS_MIPI_PHY_MRESETN;
++	else
++		reset = EXYNOS_MIPI_PHY_SRESETN;
++
++	spin_lock(&state->slock);
++	reg = readl(addr);
++	if (on)
++		reg |= reset;
++	else
++		reg &= ~reset;
++	writel(reg, addr);
++
++	/* Clear ENABLE bit only if MRESETN, SRESETN bits are not set. */
++	if (on)
++		reg |= EXYNOS_MIPI_PHY_ENABLE;
++	else if (!(reg & EXYNOS_MIPI_PHY_RESET_MASK))
++		reg &= ~EXYNOS_MIPI_PHY_ENABLE;
++
++	writel(reg, addr);
++	spin_unlock(&state->slock);
++	return 0;
++}
++
++#define to_mipi_video_phy(desc) \
++	container_of((desc), struct exynos_mipi_video_phy, phys[(desc)->index]);
++
++static int exynos_mipi_video_phy_power_on(struct phy *phy)
++{
++	struct video_phy_desc *phy_desc = phy_get_drvdata(phy);
++	struct exynos_mipi_video_phy *state = to_mipi_video_phy(phy_desc);
++
++	return __set_phy_state(state, phy_desc->index, 1);
++}
++
++static int exynos_mipi_video_phy_power_off(struct phy *phy)
++{
++	struct video_phy_desc *phy_desc = phy_get_drvdata(phy);
++	struct exynos_mipi_video_phy *state = to_mipi_video_phy(phy_desc);
++
++	return __set_phy_state(state, phy_desc->index, 1);
++}
++
++static struct phy *exynos_mipi_video_phy_xlate(struct device *dev,
++					struct of_phandle_args *args)
++{
++	struct exynos_mipi_video_phy *state = dev_get_drvdata(dev);
++
++	if (WARN_ON(args->args[0] > EXYNOS_MIPI_PHYS_NUM))
++		return ERR_PTR(-ENODEV);
++
++	return state->phys[args->args[0]].phy;
++}
++
++static struct phy_ops exynos_mipi_video_phy_ops = {
++	.power_on	= exynos_mipi_video_phy_power_on,
++	.power_off	= exynos_mipi_video_phy_power_off,
++	.owner		= THIS_MODULE,
++};
++
++static int exynos_mipi_video_phy_probe(struct platform_device *pdev)
++{
++	struct exynos_mipi_video_phy *state;
++	struct device *dev = &pdev->dev;
++	struct resource *res;
++	struct phy_provider *phy_provider;
++	unsigned int i;
++
++	state = devm_kzalloc(dev, sizeof(*state), GFP_KERNEL);
++	if (!state)
++		return -ENOMEM;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++
++	state->regs = devm_ioremap_resource(dev, res);
++	if (IS_ERR(state->regs))
++		return PTR_ERR(state->regs);
++
++	dev_set_drvdata(dev, state);
++	spin_lock_init(&state->slock);
++
++	phy_provider = devm_of_phy_provider_register(dev,
++					exynos_mipi_video_phy_xlate);
++	if (IS_ERR(phy_provider))
++		return PTR_ERR(phy_provider);
++
++	for (i = 0; i < EXYNOS_MIPI_PHYS_NUM; i++) {
++		struct phy *phy = devm_phy_create(dev,
++					&exynos_mipi_video_phy_ops, NULL);
++		if (IS_ERR(phy)) {
++			dev_err(dev, "failed to create PHY %d\n", i);
++			return PTR_ERR(phy);
++		}
++
++		state->phys[i].phy = phy;
++		state->phys[i].index = i;
++		phy_set_drvdata(phy, &state->phys[i]);
++	}
++
++	return 0;
++}
++
++static const struct of_device_id exynos_mipi_video_phy_of_match[] = {
++	{ .compatible = "samsung,s5pv210-mipi-video-phy" },
++	{ },
++};
++MODULE_DEVICE_TABLE(of, exynos_mipi_video_phy_of_match);
++
++static struct platform_driver exynos_mipi_video_phy_driver = {
++	.probe	= exynos_mipi_video_phy_probe,
++	.driver = {
++		.of_match_table	= exynos_mipi_video_phy_of_match,
++		.name  = "exynos-mipi-video-phy",
++		.owner = THIS_MODULE,
++	}
++};
++module_platform_driver(exynos_mipi_video_phy_driver);
++
++MODULE_DESCRIPTION("Samsung S5P/EXYNOS SoC MIPI CSI-2/DSI PHY driver");
++MODULE_AUTHOR("Sylwester Nawrocki <s.nawrocki@samsung.com>");
++MODULE_LICENSE("GPL v2");
+-- 
+1.7.4.1
 
-The funny thing is, there is FB_BACKLIGHT, which seems to be designed to
-be selectable (and is selected). That one depends on FB, but if I'm not
-mistaken, that dependency does not do anything if FB_BACKLIGHT is selecte=
-d.
-
-FB_BACKLIGHT in turn selects both BACKLIGHT_LCD_SUPPORT and
-BACKLIGHT_CLASS_DEVICE, neither of which seem to be designed to be
-selectable.
-
-I think that's a bit broken. Anyway, I guess it's better to "depend on"
-here, to be on the safe side.
-
- Tomi
-
-
-
---ULJm6eakE1Ai2LoskuhRSFJ97MXkT4B0D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSRAqrAAoJEPo9qoy8lh717dkP/2OKI315CSH5bFBHMqJjwRpa
-+yao8VMVEQnJbe9IH+crHIbcWnwwDzjrB53NDPg+ah98rGVcgAMeI9IaWJmIdzlt
-hM9sTou/3Q8Cq8v0LzXNZvlm2ZkO8sqLVUD+P/kuB7DDbdi9CUyxqvOGxTFdK/UV
-W7pD5Y26sOW1EgFLsWkjfeud/jzMaLi+Wq5FhDkF0pCU5X5b8mO26l0KnSmeSySp
-NOzkV+WodznpZTC24dxy6I1SWyz6pGDS6Y8Uh5faSSUs9Lw74XkZRPSHNQyhmM55
-mhApJK2SfOFJnGJ69LupgEp7pD2kNQd9fIf0vTouYbyJX4ykxdcQ2CSkz4Cp+ybW
-i2UTjiR4s8SmS0brcqYp2kbN98psp1kV/e/PF2xferMq6+x9eGE/EoayqwjUhLnL
-TB9VHD9hI9qWg4BT606n2/RtD4gJJhCM70wNEYhfViTCpeoNejWJJvMSjPWDkhN7
-1EaCyQOHDCEXXXBgUdM4P/Qdq7p15VScDUuqfNFUCiysZHZkydEo+zN5uSy1Vzdl
-rk5IQAflLuYwhCet01sWIrdROUYhHx5Tc2j3dhNX/3wmoF9fLx57uXgtDq+ZIWde
-cQ7poZT5ZH+QtFKuIav1zBbzNBoAlxr5FR0035hN578dtzqpiwqp3zrGtiy1HJ4/
-miXSk1lwFTNS1WsUnTFs
-=I/0s
------END PGP SIGNATURE-----
-
---ULJm6eakE1Ai2LoskuhRSFJ97MXkT4B0D--

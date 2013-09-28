@@ -1,44 +1,82 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 17 Sep 2013 05:04:50 +0000
-Subject: [PATCH 11/19] video: da8xx-fb: use dev_get_platdata()
-Message-Id: <001001ceb363$703f1680$50bd4380$%han@samsung.com>
+From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
+Date: Sat, 28 Sep 2013 19:27:42 +0000
+Subject: [PATCH V5 0/5] Generic PHY driver for the Exynos SoC MIPI CSI-2/DSI DPHYs
+Message-Id: <1380396467-29278-1-git-send-email-s.nawrocki@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Use the wrapper function for retrieving the platform data instead of
-accessing dev->platform_data directly. This is a cosmetic change
-to make the code simpler and enhance the readability.
+This patch series adds a simple driver for the Samsung S5P/Exynos SoC
+series MIPI CSI-2 receiver (MIPI CSIS) and MIPI DSI transmitter (MIPI
+DSIM) DPHYs, using the generic PHY framework. Previously the MIPI
+CSIS and MIPI DSIM used a platform callback to control the PHY power
+enable and reset bits. This non-generic platform code supporting only
+limited set of SoCs is now removed.
+This completes migration to the device tree of the Exynos/S5P MIPI CSI
+slave device driver.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
----
- drivers/video/da8xx-fb.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Changes since v4:
+ - updated to the latest version of the generic PHY framework - removed
+   PHY labels from the platform data structure. There is already no need
+   for non-dt support in this PHY driver so the platform data where any
+   struct phy_init_data would be passed is not added.
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index e030e17..70fc8e8 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -1314,7 +1314,7 @@ static struct fb_ops da8xx_fb_ops = {
- 
- static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
- {
--	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
-+	struct da8xx_lcdc_platform_data *fb_pdata = dev_get_platdata(&dev->dev);
- 	struct fb_videomode *lcdc_info;
- 	int i;
- 
-@@ -1336,7 +1336,7 @@ static struct fb_videomode *da8xx_fb_get_videomode(struct platform_device *dev)
- static int fb_probe(struct platform_device *device)
- {
- 	struct da8xx_lcdc_platform_data *fb_pdata -						device->dev.platform_data;
-+						dev_get_platdata(&device->dev);
- 	static struct resource *lcdc_regs;
- 	struct lcd_ctrl_config *lcd_cfg;
- 	struct fb_videomode *lcdc_info;
--- 
-1.7.10.4
+Changes since v3 (only patch 1/5):
+ - replaced spin_(un)lock_irq_{save,restore} with spin_{lock,unlock}.
+ - DT binding file renamed to samsung-phy.txt, so it can be used for
+   other PHYs as well,
+ - removed <linux/delay.h> inclusion,
+ - added missing spin_lock_init().
 
+Changes since v2:
+ - adapted to the generic PHY API v9: use phy_set/get_drvdata(),
+ - fixed of_xlate callback to return ERR_PTR() instead of NULL,
+ - namespace cleanup, put "GPL v2" as MODULE_LICENSE, removed pr_debug,
+ - removed phy id check in __set_phy_state().
+
+Changes since v1:
+ - enabled build as module and with CONFIG_OF disabled,
+ - added phy_id enum,
+ - of_address_to_resource() replaced with platform_get_resource(),
+ - adapted to changes in the PHY API v7, v8 - added phy labels,
+ - added MODULE_DEVICE_TABLE() entry,
+ - the driver file renamed to phy-exynos-mipi-video.c,
+ - changed DT compatible string to "samsung,s5pv210-mipi-video-phy",
+ - corrected the compatible property's description.
+ - patch 3/5 "video: exynos_dsi: Use generic PHY driver" replaced
+   with a patch modifying the MIPI DSIM driver which is currently
+   in mainline.
+
+Sylwester Nawrocki (5):
+  ARM: dts: Add MIPI PHY node to exynos4.dtsi
+  phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
+  [media] exynos4-is: Use the generic MIPI CSIS PHY driver
+  video: exynos_mipi_dsim: Use the generic PHY driver
+  ARM: Samsung: Remove the MIPI PHY setup code
+
+ .../devicetree/bindings/phy/samsung-phy.txt        |   14 ++
+ arch/arm/boot/dts/exynos4.dtsi                     |   10 +
+ arch/arm/mach-exynos/include/mach/regs-pmu.h       |    5 -
+ arch/arm/mach-s5pv210/include/mach/regs-clock.h    |    4 -
+ arch/arm/plat-samsung/Kconfig                      |    5 -
+ arch/arm/plat-samsung/Makefile                     |    1 -
+ arch/arm/plat-samsung/setup-mipiphy.c              |   60 -------
+ drivers/media/platform/exynos4-is/Kconfig          |    2 +-
+ drivers/media/platform/exynos4-is/mipi-csis.c      |   13 +-
+ drivers/phy/Kconfig                                |    6 +
+ drivers/phy/Makefile                               |    7 +-
+ drivers/phy/phy-exynos-mipi-video.c                |  176 ++++++++++++++++++++
+ drivers/video/exynos/Kconfig                       |    1 +
+ drivers/video/exynos/exynos_mipi_dsi.c             |   19 +-
+ include/linux/platform_data/mipi-csis.h            |    9 -
+ include/video/exynos_mipi_dsim.h                   |    5 +-
+ 16 files changed, 234 insertions(+), 103 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/phy/samsung-phy.txt
+ delete mode 100644 arch/arm/plat-samsung/setup-mipiphy.c
+ create mode 100644 drivers/phy/phy-exynos-mipi-video.c
+
+--
+1.7.4.1
 

@@ -1,40 +1,35 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 12 Sep 2013 06:59:43 +0000
-Subject: [PATCH 17/21] video: savagefb: remove unnecessary pci_set_drvdata()
-Message-Id: <002b01ceaf85$a8a57550$f9f05ff0$%han@samsung.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Mon, 30 Sep 2013 08:57:33 +0000
+Subject: [PATCH 3/3] video: wmt_ge_rops: Remove redundant of_match_ptr
+Message-Id: <1380530733-9070-3-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The driver core clears the driver data to NULL after device_release
-or on probe failure. Thus, it is not needed to manually clear the
-device driver data to NULL.
+The data structure of_match_ptr() protects is always compiled in.
+Hence of_match_ptr() is not needed.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Alexey Charkov <alchark@gmail.com>
 ---
- drivers/video/savage/savagefb_driver.c |    6 ------
- 1 file changed, 6 deletions(-)
+ drivers/video/wmt_ge_rops.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
-index 741b239..4dbf45f 100644
---- a/drivers/video/savage/savagefb_driver.c
-+++ b/drivers/video/savage/savagefb_driver.c
-@@ -2362,12 +2362,6 @@ static void savagefb_remove(struct pci_dev *dev)
- 		kfree(info->pixmap.addr);
- 		pci_release_regions(dev);
- 		framebuffer_release(info);
--
--		/*
--		 * Ensure that the driver data is no longer
--		 * valid.
--		 */
--		pci_set_drvdata(dev, NULL);
- 	}
- }
+diff --git a/drivers/video/wmt_ge_rops.c b/drivers/video/wmt_ge_rops.c
+index 4aaeb18..d4ef841 100644
+--- a/drivers/video/wmt_ge_rops.c
++++ b/drivers/video/wmt_ge_rops.c
+@@ -169,7 +169,7 @@ static struct platform_driver wmt_ge_rops_driver = {
+ 	.driver		= {
+ 		.owner	= THIS_MODULE,
+ 		.name	= "wmt_ge_rops",
+-		.of_match_table = of_match_ptr(wmt_dt_ids),
++		.of_match_table = wmt_dt_ids,
+ 	},
+ };
  
 -- 
-1.7.10.4
-
+1.7.9.5
 

@@ -1,126 +1,35 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 27 Sep 2013 05:49:36 +0000
-Subject: linux-next: manual merge of the omap_dss2 tree with the fbdev tree
-Message-Id: <20130927154936.a4f2998544091a3424f0de83@canb.auug.org.au>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Signature=_Fri__27_Sep_2013_15_49_36_+1000_SdOO7a1KP7uPAmy9"
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Date: Mon, 30 Sep 2013 08:57:31 +0000
+Subject: [PATCH 1/3] video: ssd1307fb: Remove redundant of_match_ptr
+Message-Id: <1380530733-9070-1-git-send-email-sachin.kamat@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <523FEE23.3010503@ti.com>
-In-Reply-To: <523FEE23.3010503@ti.com>
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Sachin Kamat <sachin.kamat@linaro.org>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---Signature=_Fri__27_Sep_2013_15_49_36_+1000_SdOO7a1KP7uPAmy9
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The data structure of_match_ptr() protects is always compiled in.
+Hence of_match_ptr() is not needed.
 
-Hi Tomi,
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+ drivers/video/ssd1307fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Today's linux-next merge of the omap_dss2 tree got a conflict in
-drivers/video/atmel_lcdfb.c between commit 5e8be022fb5b ("video:
-atmel_lcdfb: add device tree suport") from the fbdev tree and commit
-a36bf1925539 ("video: atmel_lcdfb: Remove redundant dev_set_drvdata")
-from the omap_dss2 tree.
+diff --git a/drivers/video/ssd1307fb.c b/drivers/video/ssd1307fb.c
+index 44967c8..f4daa59 100644
+--- a/drivers/video/ssd1307fb.c
++++ b/drivers/video/ssd1307fb.c
+@@ -569,7 +569,7 @@ static struct i2c_driver ssd1307fb_driver = {
+ 	.id_table = ssd1307fb_i2c_id,
+ 	.driver = {
+ 		.name = "ssd1307fb",
+-		.of_match_table = of_match_ptr(ssd1307fb_of_match),
++		.of_match_table = ssd1307fb_of_match,
+ 		.owner = THIS_MODULE,
+ 	},
+ };
+-- 
+1.7.9.5
 
-I fixed it up (see below) and can carry the fix as necessary (no action
-is required).
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc drivers/video/atmel_lcdfb.c
-index bf9c5d0,3f7d6dc..0000000
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@@ -1157,30 -934,19 +1157,30 @@@ static int __init atmel_lcdfb_probe(str
-  	}
- =20
-  	sinfo =3D info->par;
- +	sinfo->pdev =3D pdev;
- +	sinfo->info =3D info;
- +
- +	INIT_LIST_HEAD(&info->modelist);
- =20
- -	if (dev_get_platdata(dev)) {
- -		pdata_sinfo =3D dev_get_platdata(dev);
- -		sinfo->default_bpp =3D pdata_sinfo->default_bpp;
- -		sinfo->default_dmacon =3D pdata_sinfo->default_dmacon;
- -		sinfo->default_lcdcon2 =3D pdata_sinfo->default_lcdcon2;
- -		sinfo->default_monspecs =3D pdata_sinfo->default_monspecs;
- -		sinfo->atmel_lcdfb_power_control =3D pdata_sinfo->atmel_lcdfb_power_con=
-trol;
- -		sinfo->guard_time =3D pdata_sinfo->guard_time;
- -		sinfo->smem_len =3D pdata_sinfo->smem_len;
- -		sinfo->lcdcon_is_backlight =3D pdata_sinfo->lcdcon_is_backlight;
- -		sinfo->lcdcon_pol_negative =3D pdata_sinfo->lcdcon_pol_negative;
- -		sinfo->lcd_wiring_mode =3D pdata_sinfo->lcd_wiring_mode;
- +	if (pdev->dev.of_node) {
- +		ret =3D atmel_lcdfb_of_init(sinfo);
- +		if (ret)
- +			goto free_info;
-- 	} else if (dev->platform_data) {
-++	} else if (dev_get_platdata(dev)) {
- +		struct fb_monspecs *monspecs;
- +		int i;
- +
-- 		pdata =3D dev->platform_data;
-++		pdata =3D dev_get_platdata(dev);
- +		monspecs =3D pdata->default_monspecs;
- +		sinfo->pdata =3D *pdata;
- +
- +		for (i =3D 0; i < monspecs->modedb_len; i++)
- +			fb_add_videomode(&monspecs->modedb[i], &info->modelist);
- +
- +		sinfo->config =3D atmel_lcdfb_get_config(pdev);
- +
- +		info->var.bits_per_pixel =3D pdata->default_bpp ? pdata->default_bpp : =
-16;
- +		memcpy(&info->monspecs, pdata->default_monspecs, sizeof(info->monspecs)=
-);
-  	} else {
-  		dev_err(dev, "cannot get default configuration\n");
-  		goto free_info;
-@@@ -1305,11 -1089,16 +1305,11 @@@
-  	ret =3D register_framebuffer(info);
-  	if (ret < 0) {
-  		dev_err(dev, "failed to register framebuffer device: %d\n", ret);
-- 		goto reset_drvdata;
-+ 		goto free_cmap;
-  	}
- =20
- -	/* add selected videomode to modelist */
- -	fb_var_to_videomode(&fbmode, &info->var);
- -	fb_add_videomode(&fbmode, &info->modelist);
- -
-  	/* Power up the LCDC screen */
- -	if (sinfo->atmel_lcdfb_power_control)
- -		sinfo->atmel_lcdfb_power_control(1);
- +	atmel_lcdfb_power_control(sinfo, 1);
- =20
-  	dev_info(dev, "fb%d: Atmel LCDC at 0x%08lx (mapped at %p), irq %d\n",
-  		       info->node, info->fix.mmio_start, sinfo->mmio, sinfo->irq_base);
-
---Signature=_Fri__27_Sep_2013_15_49_36_+1000_SdOO7a1KP7uPAmy9
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.21 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSRRx0AAoJEMDTa8Ir7ZwVoU8P+wczOG8vEyoeRlAc14Im1enw
-zjYy31EsT6L1LwEVbm/UoWFMEU9OiLx5McJryYKrnAuIMawwlOQ9AIRnGPIDb2fH
-MN70mB8T65R1Jwv57GRRKmtCteO+COGp+17VcxUa36dJupjLT+Ny8EK5/0S/pscS
-OMmn8xddKYgP+IrgTPdnqHdhwORB84hkhJIxqUzyiC6EFEeBF1ghkak+29Gfb/3S
-3NMEQevs1blxPgakXARyvpyrF8/AESRVUm20ly2zG+MDVsX1CUY85ZYrC1Yb86Pe
-g+TgWjCmmOIDQGnrmv5NCCFdhP3NzFP3uMNlrjW8nMGYKrVKR4tKAU4pwaFhChZA
-yQZ+QM4gO/vHEn2Lj5tJAb1QTo/Hm1nNJ9oxMqN1G898jSvz71+JAvD1NYzNv7yv
-MjDHL1HmBkKJeHyzCaCGWtOgbVLAJ0xhGEO2u5Hrc2xELZOnjyzlXxV2EH4ttJ8d
-fGOojM3jM+LDN5DJa3C/o71P5NDRezgQK2/3tlE1IaZcv7FHhOS25NnL6VqVtw4S
-CNgnLSvi/4XnkY/4ACdm8iP9bb7V96Jl3en5lh8aJIW4Wr6wa+OXPOAsuU47i990
-mI7ksffNU+lnEsjNP7YOt9ERsonMvjKoZSxfWax4LR350vBD8aianseWgbLidVPy
-5HFeJ9eH3JnXapnXqD0t
-=zK9v
------END PGP SIGNATURE-----
-
---Signature=_Fri__27_Sep_2013_15_49_36_+1000_SdOO7a1KP7uPAmy9--

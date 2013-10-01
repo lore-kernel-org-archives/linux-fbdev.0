@@ -1,37 +1,46 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Tue, 29 Oct 2013 16:27:41 +0000
-Subject: [PATCH v2 6/9] backlight: atmel-pwm-bl: remove unused include
-Message-Id: <1383064064-4983-7-git-send-email-jhovold@gmail.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 01 Oct 2013 01:08:31 +0000
+Subject: Re: [PATCH -next] backlight: lm3630: add missing destroy_workqueue() on error in lm3630a_intr_config
+Message-Id: <000201cebe42$be5bcf90$3b136eb0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382522143-32072-1-git-send-email-jhovold@gmail.com>
- <1383064064-4983-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1383064064-4983-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-Remove unused include of clk.h.
+On Friday, September 27, 2013 6:51 PM, Wei Yongjun wrote:
+> 
+> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+> 
+> Add the missing destroy_workqueue() before return from
+> lm3630a_intr_config() in the error handling case.
+> 
+> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+
++cc Andrew Morton, Daniel Jeong
 
 Acked-by: Jingoo Han <jg1.han@samsung.com>
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
----
- drivers/video/backlight/atmel-pwm-bl.c | 1 -
- 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
-index abfaada..bfd6a96 100644
---- a/drivers/video/backlight/atmel-pwm-bl.c
-+++ b/drivers/video/backlight/atmel-pwm-bl.c
-@@ -12,7 +12,6 @@
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/fb.h>
--#include <linux/clk.h>
- #include <linux/gpio.h>
- #include <linux/backlight.h>
- #include <linux/atmel_pwm.h>
--- 
-1.8.4.2
+
+Best regards,
+Jingoo Han
+
+> ---
+>  drivers/video/backlight/lm3630a_bl.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+> index c63f918..0e5d8d3 100644
+> --- a/drivers/video/backlight/lm3630a_bl.c
+> +++ b/drivers/video/backlight/lm3630a_bl.c
+> @@ -154,6 +154,7 @@ static int lm3630a_intr_config(struct lm3630a_chip *pchip)
+>  	    (pchip->irq, NULL, lm3630a_isr_func,
+>  	     IRQF_TRIGGER_FALLING | IRQF_ONESHOT, "lm3630a_irq", pchip)) {
+>  		dev_err(pchip->dev, "request threaded irq fail\n");
+> +		destroy_workqueue(pchip->irqthread);
+>  		return -ENOMEM;
+>  	}
+>  	return rval;
+> 
+> --
 

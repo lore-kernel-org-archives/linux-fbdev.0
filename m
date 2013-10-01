@@ -1,39 +1,31 @@
-From: Marek Belisko <marek@goldelico.com>
-Date: Mon, 14 Oct 2013 21:02:32 +0000
-Subject: [PATCH 0/3] omapdss: venc: Add support for bypass and acbias.
-Message-Id: <1381784555-18344-1-git-send-email-marek@goldelico.com>
+From: Tom Gundersen <teg@jklm.no>
+Date: Tue, 01 Oct 2013 16:45:14 +0000
+Subject: Re: [PATCH v3] simplefb: print some info about the registered fb
+Message-Id: <CAG-2HqVvm6b5pnS_o4b7=PR_xt6YjVabEfqoxjuj6zUJbn3dNQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CAMuHMdXDAA3PgbgNrccStUZGByDXuSsMG_yJMwwUWXwMvyOfsA@mail.gmail.com>
+ <1378562915-893-1-git-send-email-teg@jklm.no>
+In-Reply-To: <1378562915-893-1-git-send-email-teg@jklm.no>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, Tom Gundersen <teg@jklm.no>, David Herrmann <dh.herrmann@gmail.com>
 
-This patches is adding bypass and acbias functionality to omapdss venc driver.
-In first patch we export updatin bypass and acbias in devconf1 register. Next patch
-add handling for updating in venc driver and last patch add driver for opa362 which
-is used on gta04 board and set bypass + acbias.
+On Sat, Sep 7, 2013 at 4:08 PM, Tom Gundersen <teg@jklm.no> wrote:
+> This is similar to the output printed by efifb.
+>
+> Signed-off-by: Tom Gundersen <teg@jklm.no>
+> Acked-by: Stephen Warren <swarren@wwwdotorg.org>
+> Cc: David Herrmann <dh.herrmann@gmail.com>
+> ---
+> v2: also print smem_len, as requested by David
+> v3: don't cast, as requested by Geert
 
-Marek Belisko (3):
-  arm: omap2: Export devconf1 bypass and acbias.
-  video: venc: Add new callback and handling for bypass and acbias
-    setup.
-  omapdss: Add OPA362 analog video amplifier driver.
+Jean-Christophe and Tomi,
 
- arch/arm/mach-omap2/Makefile                       |   2 +
- arch/arm/mach-omap2/control.h                      |   2 +
- arch/arm/mach-omap2/omap3-tvout.c                  |  36 +++
- drivers/video/omap2/displays-new/Kconfig           |   6 +
- drivers/video/omap2/displays-new/Makefile          |   1 +
- .../video/omap2/displays-new/amplifier-opa362.c    | 294 +++++++++++++++++++++
- drivers/video/omap2/dss/venc.c                     |  21 ++
- include/linux/omap-tvout.h                         |  14 +
- include/video/omap-panel-data.h                    |  17 ++
- include/video/omapdss.h                            |   2 +
- 10 files changed, 395 insertions(+)
- create mode 100644 arch/arm/mach-omap2/omap3-tvout.c
- create mode 100644 drivers/video/omap2/displays-new/amplifier-opa362.c
- create mode 100644 include/linux/omap-tvout.h
+What's the status of this, did either of you pick it up for 3.12 or 3.13?
 
--- 
-1.8.1.2
+Cheers,
 
+Tom

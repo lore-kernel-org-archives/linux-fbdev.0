@@ -1,43 +1,27 @@
-From: Gerd Hoffmann <kraxel@redhat.com>
-Date: Wed, 02 Oct 2013 11:55:11 +0000
-Subject: [PATCH 2/2] hyperv-fb: add blanking support
-Message-Id: <1380714911-6254-2-git-send-email-kraxel@redhat.com>
+From: Haiyang Zhang <haiyangz@microsoft.com>
+Date: Wed, 02 Oct 2013 20:43:26 +0000
+Subject: RE: [PATCH 2/2] hyperv-fb: add blanking support
+Message-Id: <4909db2eb4774c1a8b263d911d266d33@DFM-DB3MBX15-06.exchange.corp.microsoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1380714911-6254-1-git-send-email-kraxel@redhat.com>
-In-Reply-To: <1380714911-6254-1-git-send-email-kraxel@redhat.com>
+ <1380714911-6254-2-git-send-email-kraxel@redhat.com>
+In-Reply-To: <1380714911-6254-2-git-send-email-kraxel@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Cc: Gerd Hoffmann <kraxel@redhat.com>, "K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Gerd Hoffmann <kraxel@redhat.com>
+Cc: KY Srinivasan <kys@microsoft.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
----
- drivers/video/hyperv_fb.c | 5 +++++
- 1 file changed, 5 insertions(+)
+> -----Original Message-----
+> From: linux-fbdev-owner@vger.kernel.org [mailto:linux-fbdev-
+> owner@vger.kernel.org] On Behalf Of Gerd Hoffmann
+> Sent: Wednesday, October 2, 2013 7:55 AM
+> Cc: Gerd Hoffmann; KY Srinivasan; Haiyang Zhang; Jean-Christophe Plagniol-
+> Villard; Tomi Valkeinen; open list:Hyper-V CORE AND...; open
+> list:FRAMEBUFFER LAYER; open list
+> Subject: [PATCH 2/2] hyperv-fb: add blanking support
+> 
+> Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
 
-diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c
-index 8d456dc..130708f 100644
---- a/drivers/video/hyperv_fb.c
-+++ b/drivers/video/hyperv_fb.c
-@@ -575,6 +575,10 @@ static int hvfb_setcolreg(unsigned regno, unsigned red, unsigned green,
- 	return 0;
- }
- 
-+static int hvfb_blank(int blank, struct fb_info *info)
-+{
-+	return 1;	/* get fb_blank to set the colormap to all black */
-+}
- 
- static struct fb_ops hvfb_ops = {
- 	.owner = THIS_MODULE,
-@@ -584,6 +588,7 @@ static struct fb_ops hvfb_ops = {
- 	.fb_fillrect = cfb_fillrect,
- 	.fb_copyarea = cfb_copyarea,
- 	.fb_imageblit = cfb_imageblit,
-+	.fb_blank = hvfb_blank,
- };
- 
- 
--- 
-1.8.3.1
+Acked-by: Haiyang Zhang <haiyangz@microsoft.com>
 

@@ -1,163 +1,106 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Sat, 19 Oct 2013 11:08:33 +0000
-Subject: Re: [Patch v2][ 07/37] video: mx3fb: Introduce regulator support.
-Message-Id: <20131019110833.GN18477@ns203013.ovh.net>
+From: Gerd Hoffmann <kraxel@redhat.com>
+Date: Wed, 02 Oct 2013 11:55:10 +0000
+Subject: [PATCH 1/2] hyperv-fb: add pci stub
+Message-Id: <1380714911-6254-1-git-send-email-kraxel@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382022155-21954-1-git-send-email-denis@eukrea.com>
- <1382022155-21954-8-git-send-email-denis@eukrea.com>
-In-Reply-To: <1382022155-21954-8-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Cc: Gerd Hoffmann <kraxel@redhat.com>, "K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On 17:02 Thu 17 Oct     , Denis Carikli wrote:
-> This commit is based on the following commit by Fabio Estevam:
->   4344429 video: mxsfb: Introduce regulator support
->=20
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: Sascha Hauer <kernel@pengutronix.de>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: Eric B=E9nard <eric@eukrea.com>
-> Signed-off-by: Denis Carikli <denis@eukrea.com>
-> ---
->  drivers/video/mx3fb.c |   47 +++++++++++++++++++++++++++++++++++++++++++=
-+++-
->  1 file changed, 46 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-> index 804f874..37704da 100644
-> --- a/drivers/video/mx3fb.c
-> +++ b/drivers/video/mx3fb.c
-> @@ -27,6 +27,7 @@
->  #include <linux/clk.h>
->  #include <linux/mutex.h>
->  #include <linux/dma/ipu-dma.h>
-> +#include <linux/regulator/consumer.h>
-> =20
->  #include <linux/platform_data/dma-imx.h>
->  #include <linux/platform_data/video-mx3fb.h>
-> @@ -267,6 +268,7 @@ struct mx3fb_info {
->  	struct dma_async_tx_descriptor	*txd;
->  	dma_cookie_t			cookie;
->  	struct scatterlist		sg[2];
-> +	struct regulator		*reg_lcd;
-> =20
->  	struct fb_var_screeninfo	cur_var; /* current var info */
->  };
-> @@ -1001,6 +1003,7 @@ static void __blank(int blank, struct fb_info *fbi)
->  	struct mx3fb_info *mx3_fbi =3D fbi->par;
->  	struct mx3fb_data *mx3fb =3D mx3_fbi->mx3fb;
->  	int was_blank =3D mx3_fbi->blank;
-> +	int ret;
-> =20
->  	mx3_fbi->blank =3D blank;
-> =20
-> @@ -1019,6 +1022,15 @@ static void __blank(int blank, struct fb_info *fbi)
->  	case FB_BLANK_HSYNC_SUSPEND:
->  	case FB_BLANK_NORMAL:
->  		sdc_set_brightness(mx3fb, 0);
-> +		if (mx3_fbi->reg_lcd) {
-> +			if (regulator_is_enabled(mx3_fbi->reg_lcd)) {
-do we realy need ot check if enabled?
+This patch adds a pci stub driver to hyper-fb.  The hyperv framebuffer
+driver will bind to the pci device then, so linux kernel and userspace
+know there is a proper kernel driver for the device active.  lspci shows
+this for example:
 
-this should be handled by the regulator API
+[root@dhcp231 ~]# lspci -vs8
+00:08.0 VGA compatible controller: Microsoft Corporation Hyper-V virtual
+VGA (prog-if 00 [VGA controller])
+        Flags: bus master, fast devsel, latency 0, IRQ 11
+        Memory at f8000000 (32-bit, non-prefetchable) [sizedM]
+        Expansion ROM at <unassigned> [disabled]
+        Kernel driver in use: hyperv_fb
 
-same as clock I can disable not enabled clock
+Another effect is that the xorg vesa driver will not attach to the
+device and thus the Xorg server will automatically use the fbdev
+driver instead.
 
-Best Regards,
-J.
-> +				ret =3D regulator_disable(mx3_fbi->reg_lcd);
-> +				if (ret)
-> +					dev_warn(fbi->device,
-> +						 "lcd regulator disable failed "
-> +						 "with error: %d\n", ret);
-> +			}
-> +		}
->  		memset((char *)fbi->screen_base, 0, fbi->fix.smem_len);
->  		/* Give LCD time to update - enough for 50 and 60 Hz */
->  		msleep(25);
-> @@ -1026,7 +1038,17 @@ static void __blank(int blank, struct fb_info *fbi)
->  		break;
->  	case FB_BLANK_UNBLANK:
->  		sdc_enable_channel(mx3_fbi);
-> +		if (mx3_fbi->reg_lcd) {
-> +			if (!regulator_is_enabled(mx3_fbi->reg_lcd)) {
-> +				ret =3D regulator_enable(mx3_fbi->reg_lcd);
-> +				if (ret)
-> +					dev_warn(fbi->device,
-> +						 "lcd regulator enable failed "
-> +						 "with error: %d\n", ret);
-> +			}
-> +		}
->  		sdc_set_brightness(mx3fb, mx3fb->backlight_level);
-> +
->  		break;
->  	}
->  }
-> @@ -1202,6 +1224,7 @@ static int mx3fb_suspend(struct platform_device *pd=
-ev, pm_message_t state)
->  {
->  	struct mx3fb_data *mx3fb =3D platform_get_drvdata(pdev);
->  	struct mx3fb_info *mx3_fbi =3D mx3fb->fbi->par;
-> +	int ret;
-> =20
->  	console_lock();
->  	fb_set_suspend(mx3fb->fbi, 1);
-> @@ -1210,7 +1233,15 @@ static int mx3fb_suspend(struct platform_device *p=
-dev, pm_message_t state)
->  	if (mx3_fbi->blank =3D FB_BLANK_UNBLANK) {
->  		sdc_disable_channel(mx3_fbi);
->  		sdc_set_brightness(mx3fb, 0);
-> -
-> +		if (mx3_fbi->reg_lcd) {
-> +			if (regulator_is_enabled(mx3_fbi->reg_lcd)) {
-> +				ret =3D regulator_disable(mx3_fbi->reg_lcd);
-> +				if (ret)
-> +					dev_warn(&pdev->dev,
-> +						 "lcd regulator disable failed "
-> +						 "with error: %d\n", ret);
-> +			}
-> +		}
->  	}
->  	return 0;
->  }
-> @@ -1222,10 +1253,20 @@ static int mx3fb_resume(struct platform_device *p=
-dev)
->  {
->  	struct mx3fb_data *mx3fb =3D platform_get_drvdata(pdev);
->  	struct mx3fb_info *mx3_fbi =3D mx3fb->fbi->par;
-> +	int ret;
-> =20
->  	if (mx3_fbi->blank =3D FB_BLANK_UNBLANK) {
->  		sdc_enable_channel(mx3_fbi);
->  		sdc_set_brightness(mx3fb, mx3fb->backlight_level);
-> +		if (mx3_fbi->reg_lcd) {
-> +			if (!regulator_is_enabled(mx3_fbi->reg_lcd)) {
-> +				ret =3D regulator_enable(mx3_fbi->reg_lcd);
-> +				if (ret)
-> +					dev_warn(&pdev->dev,
-> +						 "lcd regulator enable failed "
-> +						 "with error: %d\n", ret);
-> +			}
-> +		}
->  	}
-> =20
->  	console_lock();
-> @@ -1438,6 +1479,10 @@ static int init_fb_chan(struct mx3fb_data *mx3fb, =
-struct idmac_channel *ichan)
->  	if (ret < 0)
->  		goto erfb;
-> =20
-> +	mx3fbi->reg_lcd =3D devm_regulator_get(dev, "lcd");
-> +	if (IS_ERR(mx3fbi->reg_lcd))
-> +		mx3fbi->reg_lcd =3D NULL;
-> +
->  	return 0;
-> =20
->  erfb:
-> --=20
-> 1.7.9.5
->=20
+Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+---
+ drivers/video/hyperv_fb.c | 40 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 39 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/hyperv_fb.c b/drivers/video/hyperv_fb.c
+index 8ac99b8..8d456dc 100644
+--- a/drivers/video/hyperv_fb.c
++++ b/drivers/video/hyperv_fb.c
+@@ -795,12 +795,21 @@ static int hvfb_remove(struct hv_device *hdev)
+ }
+ 
+ 
++static DEFINE_PCI_DEVICE_TABLE(pci_stub_id_table) = {
++	{
++		.vendor      = PCI_VENDOR_ID_MICROSOFT,
++		.device      = PCI_DEVICE_ID_HYPERV_VIDEO,
++	},
++	{ /* end of list */ }
++};
++
+ static const struct hv_vmbus_device_id id_table[] = {
+ 	/* Synthetic Video Device GUID */
+ 	{HV_SYNTHVID_GUID},
+ 	{}
+ };
+ 
++MODULE_DEVICE_TABLE(pci, pci_stub_id_table);
+ MODULE_DEVICE_TABLE(vmbus, id_table);
+ 
+ static struct hv_driver hvfb_drv = {
+@@ -810,14 +819,43 @@ static struct hv_driver hvfb_drv = {
+ 	.remove = hvfb_remove,
+ };
+ 
++static int hvfb_pci_stub_probe(struct pci_dev *pdev,
++			       const struct pci_device_id *ent)
++{
++	return 0;
++}
++
++static void hvfb_pci_stub_remove(struct pci_dev *pdev)
++{
++}
++
++static struct pci_driver hvfb_pci_stub_driver = {
++	.name =		KBUILD_MODNAME,
++	.id_table =	pci_stub_id_table,
++	.probe =	hvfb_pci_stub_probe,
++	.remove =	hvfb_pci_stub_remove,
++};
+ 
+ static int __init hvfb_drv_init(void)
+ {
+-	return vmbus_driver_register(&hvfb_drv);
++	int ret;
++
++	ret = vmbus_driver_register(&hvfb_drv);
++	if (ret != 0)
++		return ret;
++
++	ret = pci_register_driver(&hvfb_pci_stub_driver);
++	if (ret != 0) {
++		vmbus_driver_unregister(&hvfb_drv);
++		return ret;
++	}
++
++	return 0;
+ }
+ 
+ static void __exit hvfb_drv_exit(void)
+ {
++	pci_unregister_driver(&hvfb_pci_stub_driver);
+ 	vmbus_driver_unregister(&hvfb_drv);
+ }
+ 
+-- 
+1.8.3.1
+

@@ -1,64 +1,58 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Date: Wed, 23 Oct 2013 07:57:50 +0000
-Subject: Re: [PATCH 0/9] backlight: atmel-pwm-bl: fixes and clean ups
-Message-Id: <5267817E.40906@atmel.com>
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Wed, 02 Oct 2013 16:40:56 +0000
+Subject: [PATCH v2] efifb: prevent null-deref when iterating dmi_list
+Message-Id: <1380732056-5387-1-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382462819-28576-1-git-send-email-jhovold@gmail.com> <001801cecf8d$f3834d90$da89e8b0$%han@samsung.com>
-In-Reply-To: <001801cecf8d$f3834d90$da89e8b0$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>, 'Johan Hovold' <jhovold@gmail.com>
-Cc: 'Andrew Morton' <akpm@linux-foundation.org>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>, 'Richard Purdie' <rpurdie@rpsys.net>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: James Bates <james.h.bates@gmail.com>, linux-kernel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, David Herrmann <dh.herrmann@gmail.com>, James Bates <james.h.bates@yahoo.com>
 
-On 23/10/2013 02:19, Jingoo Han :
-> On Wednesday, October 23, 2013 2:27 AM, Johan Hovold wrote:
->>
->> These patches fix a few issues and clean up the atmel-pwm-bl driver
->> somewhat.
->>
->> Johan
->>
->> Johan Hovold (9):
->>    backlight: atmel-pwm-bl: fix reported brightness
->>    backlight: atmel-pwm-bl: fix gpio polarity in remove
->>    backlight: atmel-pwm-bl: fix module autoload
->>    backlight: atmel-pwm-bl: clean up probe error handling
->>    backlight: atmel-pwm-bl: clean up get_intensity
->>    backlight: atmel-pwm-bl: remove unused include
->>    backlight: atmel-pwm-bl: use gpio_is_valid
->>    backlight: atmel-pwm-bl: refactor gpio_on handling
->>    backlight: atmel-pwm-bl: use gpio_request_one
->
-> ++cc Andrew Morton, Tomi Valkeinen, Jean-Christophe Plagniol-Villard
->
-> Hi Johan Hovold,
->
-> Currently, because there is no git tree for backlight,
-> backlight patches have been merged to mm-tree by Andrew Morton.
-> Please, add Andrew Morton to CC list.
->
-> Also, there is another way.
-> If Nicolas Ferre wants to merge these patches, the patches can be
-> merged through ATMEL-SoC tree with my Acked-by.
+The dmi_list array is initialized using gnu designated initializers, and
+therefore may contain fewer explicitly defined entries as there are
+elements in it. This is because the enum above with M_xyz constants
+contains more items than the designated initializer. Those elements not
+explicitly initialized are implicitly set to 0.
 
-Hi,
+Now efifb_setup() loops through all these array elements, and performs
+a strcmp on each item. For non explicitly initialized elements this will
+be a null pointer:
 
-As it's a driver without interaction with AT91 code, maybe routing this 
-patch series through mm-tree is the way to go.
+This patch swaps the check order in the if statement, thus checks first
+whether dmi_list[i].base is null.
 
-If you find any issue in the process, please tell me. I would be happy 
-to ease the process.
+Signed-off-by: James Bates <james.h.bates@yahoo.com>
+Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
+---
+Hi
 
-Bye,
+As James didn't respond to the last emails, I just rebased the patch and resent
+it. The efi M_xyz constants were moved to x86-sysfb so if anyone wants to remove
+unused bits, please send a separate patch to LKML and x86-ML. This patch just
+fixes the NULL-deref.
 
+Thanks
+David
 
->>
->>   drivers/video/backlight/atmel-pwm-bl.c | 86 ++++++++++++++++------------------
->>   1 file changed, 40 insertions(+), 46 deletions(-)
->
->
+ drivers/video/efifb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-
+diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
+index 7f9ff75..fcb9500 100644
+--- a/drivers/video/efifb.c
++++ b/drivers/video/efifb.c
+@@ -108,8 +108,8 @@ static int efifb_setup(char *options)
+ 			if (!*this_opt) continue;
+ 
+ 			for (i = 0; i < M_UNKNOWN; i++) {
+-				if (!strcmp(this_opt, efifb_dmi_list[i].optname) &&
+-				    efifb_dmi_list[i].base != 0) {
++				if (efifb_dmi_list[i].base != 0 &&
++				    !strcmp(this_opt, efifb_dmi_list[i].optname)) {
+ 					screen_info.lfb_base = efifb_dmi_list[i].base;
+ 					screen_info.lfb_linelength = efifb_dmi_list[i].stride;
+ 					screen_info.lfb_width = efifb_dmi_list[i].width;
 -- 
-Nicolas Ferre
+1.8.4
+

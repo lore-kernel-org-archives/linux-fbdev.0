@@ -1,71 +1,45 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 30 Oct 2013 11:53:36 +0000
-Subject: Re: [PATCH 1/1] video: exynos_mipi_dsi: Unlock the mutex before returning
-Message-Id: <5270F340.4050702@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="7mOW2iuX3jU5XIBcUAMGtKPL7JBqxgBNE"
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Wed, 02 Oct 2013 14:58:39 +0000
+Subject: [PATCH 2/2] simplefb: use write-combined remapping
+Message-Id: <1380725919-1961-2-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382677964-15298-1-git-send-email-sachin.kamat@linaro.org>
-In-Reply-To: <1382677964-15298-1-git-send-email-sachin.kamat@linaro.org>
+References: <1380725919-1961-1-git-send-email-dh.herrmann@gmail.com>
+In-Reply-To: <1380725919-1961-1-git-send-email-dh.herrmann@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Tom Gundersen <teg@jklm.no>, Alexandre Courbot <acourbot@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, dri-devel@lists.freedesktop.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, David Herrmann <dh.herrmann@gmail.com>
 
---7mOW2iuX3jU5XIBcUAMGtKPL7JBqxgBNE
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Framebuffers shouldn't be cached and it is usually very uncommon to read
+them. Therefore, use ioremap_wc() to get significant speed improvements on
+systems which provide it. On all other systems it's aliased to
+ioremap_nocache() which is also fine.
 
-On 2013-10-25 08:12, Sachin Kamat wrote:
-> Mutex should be unlocked before returning. Fixes mutex lock-unlock
-> imbalance issue.
->=20
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> ---
->  drivers/video/exynos/exynos_mipi_dsi_common.c |    1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/drivers/video/exynos/exynos_mipi_dsi_common.c b/drivers/vi=
-deo/exynos/exynos_mipi_dsi_common.c
-> index 520fc9b..649d9e6 100644
-> --- a/drivers/video/exynos/exynos_mipi_dsi_common.c
-> +++ b/drivers/video/exynos/exynos_mipi_dsi_common.c
-> @@ -376,6 +376,7 @@ int exynos_mipi_dsi_rd_data(struct mipi_dsim_device=
- *dsim, unsigned int data_id,
->  			"data id %x is not supported current DSI spec.\n",
->  			data_id);
-> =20
-> +		mutex_unlock(&dsim->lock);
->  		return -EINVAL;
->  	}
-> =20
->=20
+Reported-by: Tom Gundersen <teg@jklm.no>
+Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
+Tested-by: Tom Gundersen <teg@jklm.no>
+Tested-by: Alexandre Courbot <acourbot@nvidia.com>
+Tested-by: Stephen Warren <swarren@wwwdotorg.org>
+---
+ drivers/video/simplefb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Thanks, queued for 3.13.
+diff --git a/drivers/video/simplefb.c b/drivers/video/simplefb.c
+index 74b016c..64db54a 100644
+--- a/drivers/video/simplefb.c
++++ b/drivers/video/simplefb.c
+@@ -219,8 +219,8 @@ static int simplefb_probe(struct platform_device *pdev)
+ 
+ 	info->fbops = &simplefb_ops;
+ 	info->flags = FBINFO_DEFAULT | FBINFO_MISC_FIRMWARE;
+-	info->screen_base = ioremap(info->fix.smem_start,
+-				    info->fix.smem_len);
++	info->screen_base = ioremap_wc(info->fix.smem_start,
++				       info->fix.smem_len);
+ 	if (!info->screen_base) {
+ 		framebuffer_release(info);
+ 		return -ENODEV;
+-- 
+1.8.4
 
- Tomi
-
-
-
---7mOW2iuX3jU5XIBcUAMGtKPL7JBqxgBNE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJScPNAAAoJEPo9qoy8lh71XqcQAJnWTD6+Ya+cfmzwDB0JS6v+
-vgsPYrIQbteMuoIsSAY0lf6cz05qbEFERMf2rFtAX+685kT4hzWVSvYHbNzvT/yF
-WZNyFXRkT568DqaSn0aWHS02TogtHHyDJHwJFYB0LKLIFAif7rsmi891DUulTy+2
-1qqce6n88UAipQEFTpAJrfWzpfG7McwwnE+c7yOBmuigO6CplL9h15j9kMxk6N6q
-GMsqSR2lxbHw0VSdbjlCextNYmy7XQ3I44F8DVXquJweFeJoXcnJOg7XtI7iCVtS
-k+nsAwIGF7nHveA0mU0OULepbLC0ovXIlzYb792OmurCr50FDRyWdT7uo1pP9Izg
-n6gra8ISuhcqelUOpcsyLVBhbjUP6IONtl0KRHKFTSnJH35mPA4e4XXViDoFIqQs
-cLQOnpfdaiSeU10GxZjsanDZ0gKwe7mZx6Ulnxp9HmqMl5w6zIGmOqIXW3rTWf9h
-AEbtYfgfkYkIQZzORQyxumEWl4akcAN2ZJ2xywY52335IKB1Bd299/LXySIeaF4k
-UuBASlfpjd0Ifdn0iSsxMN51Be4sgJ0s9cRXkdth3fVHkZpSdoX/lYRZ4qu59TEw
-+G1YsILV4BZDF+9VNFOb/s1ILAUJLf0C0YoEVyAVFyg0eKuYemfnzo+N8G6NWrI9
-cROZS3kpa5Yw8AG3iBg2
-=NVY5
------END PGP SIGNATURE-----
-
---7mOW2iuX3jU5XIBcUAMGtKPL7JBqxgBNE--

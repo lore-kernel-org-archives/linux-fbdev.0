@@ -1,205 +1,147 @@
-From: Andrzej Hajda <a.hajda@samsung.com>
-Date: Wed, 02 Oct 2013 12:23:52 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 02 Oct 2013 13:24:08 +0000
 Subject: Re: [PATCH/RFC v3 00/19] Common Display Framework
-Message-Id: <524C1058.2050500@samsung.com>
+Message-Id: <524C1E78.6030508@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="HcKWl3BC7JP9ldlbPvb3JOx09gkQG3PMf"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376068510-30363-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
- <52498146.4050600@ti.com>
-In-Reply-To: <52498146.4050600@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Jesse Barnes <jesse.barnes@intel.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Tom Gall <tom.gall@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, linux-media@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mark Zhang <markz@nvidia.com>, Alexandre Courbot <acourbot@nvidia.com>, Ragesh Radhakrishnan <Ragesh.R@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Sunil Joshi <joshi@samsung.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Marcus Lorentzon <marcus.lorentzon@huawei.com>
+References: <1376068510-30363-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com> <52498146.4050600@ti.com> <524C1058.2050500@samsung.com>
+In-Reply-To: <524C1058.2050500@samsung.com>
+To: Andrzej Hajda <a.hajda@samsung.com>
+Cc: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Jesse Barnes <jesse.barnes@intel.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Tom Gall <tom.gall@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, linux-media@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mark Zhang <markz@nvidia.com>, Alexandre Courbot <acourbot@nvidia.com>, Ragesh Radhakrishnan <Ragesh.R@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Sunil Joshi <joshi@samsung.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Marcus Lorentzon <marcus.lorentzon@huawei.com>
 
-Hi Tomi,
+--HcKWl3BC7JP9ldlbPvb3JOx09gkQG3PMf
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On 09/30/2013 03:48 PM, Tomi Valkeinen wrote:
-> On 09/08/13 20:14, Laurent Pinchart wrote:
->> Hi everybody,
+Hi Andrzej,
+
+On 02/10/13 15:23, Andrzej Hajda wrote:
+
+>> Using Linux buses for DBI/DSI
+>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
 >>
->> Here's the third RFC of the Common Display Framework.
-> 
-> 
-> Hi,
-> 
-> I've been trying to adapt the latest CDF RFC for OMAP. I'm trying to gather
-> some notes here about what I've discovered or how I see things. Some of these I
-> have mentioned earlier, but I'm trying to collect them here nevertheless.
-> 
-> I do have my branch with working DPI panel, TFP410 encoder, DVI-connector and
-> DSI command mode panel drivers, and modifications to make omapdss work with
-> CDF.  However, it's such a big hack, that I'm not going to post it. I hope I
-> will have time to work on it to get something publishable to have something
-> more concrete to present. But for the time being I have to move to other tasks
-> for a while, so I thought I'd better post some comments when I still remember
-> something about this.
-> 
-> Using Linux buses for DBI/DSI
-> ==============> 
-> I still don't see how it would work. I've covered this multiple times in
-> previous posts so I'm not going into more details now.
-> 
-> I implemented DSI (just command mode for now) as a video bus but with bunch of
-> extra ops for sending the control messages.
+>> I still don't see how it would work. I've covered this multiple times =
+in
+>> previous posts so I'm not going into more details now.
+>>
+>> I implemented DSI (just command mode for now) as a video bus but with =
+bunch of
+>> extra ops for sending the control messages.
+>=20
+> Could you post the list of ops you have to create.
 
-Could you post the list of ops you have to create.
+I'd rather not post the ops I have in my prototype, as it's still a
+total hack. However, they are very much based on the current OMAP DSS's
+ops, so I'll describe them below. I hope I find time to polish my CDF
+hacks more, so that I can publish them.
 
-I have posted some time ago my implementation of DSI bus:
-http://thread.gmane.org/gmane.linux.drivers.video-input-infrastructure/69358/focusi362
+> I have posted some time ago my implementation of DSI bus:
+> http://thread.gmane.org/gmane.linux.drivers.video-input-infrastructure/=
+69358/focus=3D69362
 
-I needed three quite generic ops to make it working:
-- set_power(on/off),
-- set_stream(on/off),
-- transfer(dsi_transaction_type, tx_buf, tx_len, rx_buf, rx_len)
-I have recently replaced set_power by PM_RUNTIME callbacks,
-but I had to add .initialize ops.
+A note about the DT data on your series, as I've been stuggling to
+figure out the DT data for OMAP: some of the DT properties look like
+configuration, not hardware description. For example,
+"samsung,bta-timeout" doesn't describe hardware.
 
-Regarding the discussion how and where to implement control bus I have
-though about different alternatives:
-1. Implement DSI-master as a parent dev which will create DSI-slave
-platform dev in a similar way as for MFD devices (ssbi.c seems to me a
-good example).
-2. Create universal mipi-display-bus which will cover DSI, DBI and
-possibly other buses - they have have few common things - for example
-MIPI-DCS commands.
+> I needed three quite generic ops to make it working:
+> - set_power(on/off),
+> - set_stream(on/off),
+> - transfer(dsi_transaction_type, tx_buf, tx_len, rx_buf, rx_len)
+> I have recently replaced set_power by PM_RUNTIME callbacks,
+> but I had to add .initialize ops.
 
-I am not really convinced to either solution all have some advantages
-and disadvantages.
+We have a bit more on omap:
+
+http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/inclu=
+de/video/omapdss.h#n648
+
+Some of those should be removed and some should be omap DSI's internal
+matters, not part of the API. But it gives an idea of the ops we use.
+Shortly about the ops:
+
+- (dis)connect, which might be similar to your initialize. connect is
+meant to "connect" the pipeline, reserving the video ports used, etc.
+
+- enable/disable, enable the DSI bus. If the DSI peripheral requires a
+continous DSI clock, it's also started at this point.
+
+- set_config configures the DSI bus (like, command/video mode, etc.).
+
+- configure_pins can be ignored, I think that function is not needed.
+
+- enable_hs and enable_te, used to enable/disable HS mode and
+tearing-elimination
+
+- update, which does a single frame transfer
+
+- bus_lock/unlock can be ignored
+
+- enable_video_output starts the video stream, when using DSI video mode
+
+- the request_vc, set_vc_id, release_vc can be ignored
+
+- Bunch of transfer funcs. Perhaps a single func could be used, as you
+do. We have sync write funcs, which do a BTA at the end of the write and
+wait for reply, and nosync version, which just pushes the packet to the
+TX buffers.
+
+- bta_sync, which sends a BTA and waits for the peripheral to reply
+
+- set_max_rx_packet_size, used to configure the max rx packet size.
+
+> Regarding the discussion how and where to implement control bus I have
+> though about different alternatives:
+> 1. Implement DSI-master as a parent dev which will create DSI-slave
+> platform dev in a similar way as for MFD devices (ssbi.c seems to me a
+> good example).
+> 2. Create universal mipi-display-bus which will cover DSI, DBI and
+> possibly other buses - they have have few common things - for example
+> MIPI-DCS commands.
+>=20
+> I am not really convinced to either solution all have some advantages
+> and disadvantages.
+
+I think a dedicated DSI bus and your alternatives all have the same
+issues with splitting the DSI control into two. I've shared some of my
+thoughts here:
+
+http://article.gmane.org/gmane.comp.video.dri.devel/90651
+http://article.gmane.org/gmane.comp.video.dri.devel/91269
+http://article.gmane.org/gmane.comp.video.dri.devel/91272
+
+I still think that it's best to consider DSI and DBI as a video bus (not
+as a separate video bus and a control bus), and provide the packet
+transfer methods as part of the video ops.
+
+ Tomi
 
 
-> 
-> Call model
-> =====
-> 
-> It may be that I just don't get how things are supposed to work with the RFC's
-> ops, but I couldn't figure out how to use it in practice. I tried it for a few
-> days, but got nowhere, and I then went with the proven model that's used in
-> omapdss, where display entities handle calling the ops of the upstream
-> entities.
-> 
-> That's not to say the RFC's model doesn't work. I just didn't figure it out.
-> And I guess it was more difficult to understand how to use it as the controller
-> stuff is not implemented yet.
-> 
-> It would be good to have a bit more complex cases in the RFC, like changing and
-> verifying videomodes, fetching them via EDID, etc.
-> 
-> Multiple inputs/outputs
-> ===========> 
-> I think changing the model from single-input & single output to multiple inputs
-> and outputs increases the difficulty of the implementation considerably. That's
-> not a complaint as such, just an observation. I do think multiple inputs &
-> outputs is a good feature. Then again, all the use cases I have only have
-> single input/output, so I've been wondering if there's some middle road, in
-> which we somehow allow multiple inputs & outputs, but only implement the
-> support for single input & output.
-> 
-> I've cut the corners in my tests by just looking at a single enabled input or
-> output from an entity, and ignoring the rest (which I don't have in my use
-> cases).
-> 
-> Internal connections
-> ==========
-> 
-> The model currently only represents connections between entities. With multiple
-> inputs & outputs I think it's important to maintain also connections inside the
-> entity. Say, we have an entity with two inputs and two outputs. If one output
-> is enabled, which one of the inputs needs to be enabled and configured also?
-> The current model doesn't give any solution to that.
-> 
-> I haven't implemented this, as in my use cases I have just single inputs and
-> outputs, so I can follow the pipeline trivially.
-> 
-> Central entity
-> =======
-> 
-> If I understand the RFC correctly, there's a "central" entity that manages all
-> other entities connected to it. This central entity would normally be the
-> display controller. I don't like this model, as it makes it difficult or
-> impossible to manage situations where an entity is connected to two display
-> controllers (even if only one of the display controllers would be connected at
-> a time). It also makes this one display entity fundamentally different from the
-> others, which I don't like.
-> 
-> I think all the display entities should be similar. They would all register
-> themselves to the CDF framework, which in turn would be used by somebody. This
-> somebody could be the display controller driver, which is more or less how I've
-> implemented it.
-> 
-> Media entity/pads
-> ========> 
-> Using media_entity and media_pad fits quite well for CDF, but... It is quite
-> cumbersome to use. The constant switching between media_entity and
-> display_entity needs quite a lot of code in total, as it has to be done almost
-> everywhere.
-> 
-> And somehow I'd really like to combine the entity and port into one struct so
-> that it would be possible to just do:
-> 
-> src->ops->foo(src, ...);
-> 
-> instead of
-> 
-> src->ops->foo(src, srcport, ...);
-> 
-> One reason is that the latter is more verbose (not only the call, you also need
-> to get srcport from somewhere), but also that as far as the caller is
-> concerned, there's no reason to manage the entity and the port as separate
-> things. You just want a particular video source/sink to do something, and
-> whether that source/sink is port 5 of entity foo is irrelevant.
-> 
-> The callee, of course, needs to check which port is being operated. However,
-> if, say, 90% of the display entities have just one input and one output port,
-> the port parameter can be ignored for those entities, simplifying the code.
-> 
-> And while media_entity can be embedded into display_entity, media_pad and
-> media_link cannot be embedded into anything. This is somewhat vague as I don't
-> quite remember what my reason for needing the feature was, but I had some need
-> for display_link or display_pad, to add some CDF related entries, which can't
-> be done except by modifying the media_link or media_pad themselves.
-> 
-> DT data & platform data
-> ===========> 
-> I think the V4L2 style port/endpoint description in DT data should work well. I
-> don't see a need for specifying the remote-endpoint in the upstream entity, but
-> then again, it doesn't hurt either.
-> 
-> The description does get pretty verbose, though, but I guess that can't be
-> avoided.
-> 
-> Describing similar things in the platform data works fine too. The RFC,
-> however, contained somewhat lacking platform data examples which had to be
-> extended to work with, for example, multiple instances of the same display
-> entity. Also, the RFC relied on the central entity to parse the platform data,
-> and in my model each display entity has its own platform data.
-> 
-> Final thoughts
-> =======
-> 
-> So many of the comments above are somewhat gut-feelings. I don't have concrete
-> evidence that my ideas are better, as I haven't been able to finalize the code
-> (well, and the RFC is missing important things like the controller).
-> 
-> I think there are areas where my model and the RFC are similar. I think one
-> step would be to identify those parts, and perhaps have those parts as separate
-> pieces of code. Say, the DT and platform data parts might be such that we could
-> have display-of.c and display-pdata.c, having support code which works for the
-> RFC and my model.
-> 
-> This would make it easier to maintain and improve both versions, to see how
-> they evolve and what are the pros and cons with both models. But this is just a
-> thought, I'm not sure how much such code there would actually be.
-> 
->  Tomi
-> 
-> 
-> 
-> 
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> http://lists.freedesktop.org/mailman/listinfo/dri-devel
-> 
 
+--HcKWl3BC7JP9ldlbPvb3JOx09gkQG3PMf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSTB54AAoJEPo9qoy8lh71r/EP/3eJ+9ZB888hqyiG5bvceFAG
+C0vMm0LNqTKUPSxWjt87jUYaN0nh+SwqjKsVV3YYwjOG8Eh4kdNOrnuB6D0LrwJd
+iOXYWq4aeGD7kDTkQNd0RRJkobDbqERGVJ7/27vCBbZPJENacK1dTy4SXoxpbVvV
+yFtIXAhpmjxbeiddOrHWd1uBjbNKDwZc1+qXKsfbVyawfdX/ELA0zBYXyolyIB6n
++Ejnt9LB3Uod1yt0NXo7dygHTc2iF9cIaK41h9M9y7QAcJL2zYbzayZy/FyJbN+Z
+VmSJTOgTEOMYrF+mbGecMcO5+y6UUkGjjJC0dG1g6cCtgwCCN8phyTk1QOS2Bqqc
+If/mWD+HJQ6XOSVVxRzOoKOrSF2U/SmUWTyB5tBxC4h24NpGKnd2CTHGho5WFqe7
+BgdhzTS5XQ8cT4D/GszauTqhxoopw7HweqKtBH+H1oR7OySTpXnd8lcVlPTjT7Lc
+febVi8jRw/lnsXidD7BUR39z0MzXRou6P3awLkcw7ODBIoSP6agXb59XDG4XruAY
+Oc+OE4b2JCd3cdJiVn4otX5Fd8FpyTccnL1X0btobOkb4ARSHBCUVzIqoCcqkCT2
+rivn/J/3wCLJJESwwQFIfdBHvPhNT53JDe7LDABys5PFlsXK73doePfq0e/NX+Ez
+eSW109c3VYEtAFNX6zzO
+=+zvp
+-----END PGP SIGNATURE-----
+
+--HcKWl3BC7JP9ldlbPvb3JOx09gkQG3PMf--

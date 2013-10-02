@@ -1,33 +1,54 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Wed, 23 Oct 2013 09:55:37 +0000
-Subject: [PATCH 3/9] backlight: atmel-pwm-bl: fix module autoload
-Message-Id: <1382522143-32072-4-git-send-email-jhovold@gmail.com>
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Wed, 02 Oct 2013 16:43:39 +0000
+Subject: [PATCH v3] efifb: prevent null-deref when iterating dmi_list
+Message-Id: <1380732219-5458-1-git-send-email-dh.herrmann@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382522143-32072-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1382522143-32072-1-git-send-email-jhovold@gmail.com>
+References: <1380732056-5387-1-git-send-email-dh.herrmann@gmail.com>
+In-Reply-To: <1380732056-5387-1-git-send-email-dh.herrmann@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+To: linux-fbdev@vger.kernel.org
+Cc: James Bates <james.h.bates@gmail.com>, linux-kernel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, David Herrmann <dh.herrmann@gmail.com>
 
-Add missing module alias which is needed for module autoloading.
+From: James Bates <james.h.bates@gmail.com>
 
-Acked-by: Jingoo Han <jg1.han@samsung.com>
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
+The dmi_list array is initialized using gnu designated initializers, and
+therefore may contain fewer explicitly defined entries as there are
+elements in it. This is because the enum above with M_xyz constants
+contains more items than the designated initializer. Those elements not
+explicitly initialized are implicitly set to 0.
+
+Now efifb_setup() loops through all these array elements, and performs
+a strcmp on each item. For non explicitly initialized elements this will
+be a null pointer:
+
+This patch swaps the check order in the if statement, thus checks first
+whether dmi_list[i].base is null.
+
+Signed-off-by: James Bates <james.h.bates@gmail.com>
+Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
 ---
- drivers/video/backlight/atmel-pwm-bl.c | 1 +
- 1 file changed, 1 insertion(+)
+v3: fixes the "Author" field and James' email address
 
-diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
-index 3cb0094..cc5a5ed 100644
---- a/drivers/video/backlight/atmel-pwm-bl.c
-+++ b/drivers/video/backlight/atmel-pwm-bl.c
-@@ -229,3 +229,4 @@ module_platform_driver(atmel_pwm_bl_driver);
- MODULE_AUTHOR("Hans-Christian egtvedt <hans-christian.egtvedt@atmel.com>");
- MODULE_DESCRIPTION("Atmel PWM backlight driver");
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:atmel-pwm-bl");
+ drivers/video/efifb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
+index 7f9ff75..fcb9500 100644
+--- a/drivers/video/efifb.c
++++ b/drivers/video/efifb.c
+@@ -108,8 +108,8 @@ static int efifb_setup(char *options)
+ 			if (!*this_opt) continue;
+ 
+ 			for (i = 0; i < M_UNKNOWN; i++) {
+-				if (!strcmp(this_opt, efifb_dmi_list[i].optname) &&
+-				    efifb_dmi_list[i].base != 0) {
++				if (efifb_dmi_list[i].base != 0 &&
++				    !strcmp(this_opt, efifb_dmi_list[i].optname)) {
+ 					screen_info.lfb_base = efifb_dmi_list[i].base;
+ 					screen_info.lfb_linelength = efifb_dmi_list[i].stride;
+ 					screen_info.lfb_width = efifb_dmi_list[i].width;
 -- 
 1.8.4
 

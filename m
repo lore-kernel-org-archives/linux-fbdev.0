@@ -1,52 +1,62 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Wed, 02 Oct 2013 15:01:44 +0000
-Subject: Re: [BUG] simplefb not showing any output
-Message-Id: <CANq1E4R887T79Cd_YmzkpZWqvvUD4uiB_ga3Z2BUNYbtqEnLUw@mail.gmail.com>
+From: Michal Simek <michal.simek@xilinx.com>
+Date: Thu, 03 Oct 2013 09:46:31 +0000
+Subject: [PATCH 9/9] video: amba-clcd: Remove unnecessary amba_set_drvdata()
+Message-Id: <2f12a1d7caba382efe8d361b373da60c08e70622.1380793579.git.michal.simek@xilinx.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-4165-1380793626-0001"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAG-2HqXhLcRX-oi4JchD=m7tZpDYyePKhWvkFU1ZZPEuqJ2JqQ@mail.gmail.com>
-In-Reply-To: <CAG-2HqXhLcRX-oi4JchD=m7tZpDYyePKhWvkFU1ZZPEuqJ2JqQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+References: <27e289763bbcb7d10f84081543cfc3a4dc770398.1380793579.git.michal.simek@xilinx.com>
+In-Reply-To: <27e289763bbcb7d10f84081543cfc3a4dc770398.1380793579.git.michal.simek@xilinx.com>
+To: linux-kernel@vger.kernel.org, monstr@monstr.eu
+Cc: Russell King <linux@arm.linux.org.uk>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
+
+--=_mimegpg-monstr-desktop-4165-1380793626-0001
+
+Driver core clears the driver data to NULL after device_release
+or on probe failure, so just remove it from here.
+
+Driver core change:
+"device-core: Ensure drvdata = NULL when no driver is bound"
+(sha1: 0998d0631001288a5974afc0b2a5f568bcdecb4d)
+
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+---
+ drivers/video/amba-clcd.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drivers/video/amba-clcd.c b/drivers/video/amba-clcd.c
+index 0a2cce7..0bab6ab 100644
+--- a/drivers/video/amba-clcd.c
++++ b/drivers/video/amba-clcd.c
+@@ -594,8 +594,6 @@ static int clcdfb_remove(struct amba_device *dev)
+ {
+ 	struct clcd_fb *fb = amba_get_drvdata(dev);
+
+-	amba_set_drvdata(dev, NULL);
+-
+ 	clcdfb_disable(fb);
+ 	unregister_framebuffer(&fb->fb);
+ 	if (fb->fb.cmap.len)
+--
+1.8.2.3
+
+
+--=_mimegpg-monstr-desktop-4165-1380793626-0001
+Content-Type: application/pgp-signature
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
 
-Hi
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-On Tue, Sep 10, 2013 at 4:34 AM, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> On 09/07/2013 06:25 AM, David Herrmann wrote:
->> On Sat, Sep 7, 2013 at 1:47 PM, Tom Gundersen <teg@jklm.no> wrote:
-> ...
->>> A related question: is it expected that simplefb should be
->>> significantly slower than efifb, or is that something worth looking
->>> into? My boot with simplefb is roughly five seconds slower than with
->>> efifb. Coincidentally, I notice the same (or similar slowdown) with
->>> inteldrmfb when I see the oops (but not otherwise).
->>
->> That is probably related to the missing write-combine tag in ioremap.
->> Stephen, any objections to this attached patch?
->> Tom, if this solves the speed-issues, I will send it out once I get home.
->>
->> Thanks
->> David
->>
->> (Patch also attached in case of new-lines issues)
->>
->> From dbfb8e12166d494cd60823cbe84134d5d1a73ec8 Mon Sep 17 00:00:00 2001
->> From: David Herrmann <dh.herrmann@gmail.com>
->> Date: Sat, 7 Sep 2013 14:22:01 +0200
->> Subject: [PATCH] devm/simplefb: introduce and use devm_ioremap_wc()
->>
->> We want to use devm_ioremap_nocache() or even devm_ioremap_wc() to speed
->> up fbdev writes _a lot_. As devm_ioremap_wc() doesn't exist, yet,
->> introduce it along the way. Note that ioremap_wc() is aliases to
->> ioremap_nocache() in asm-generic/{io,iomem}.h so we can safely expect all
->> architectures to either provide it or use the same alias.
->
-> OK, that works fine on the Raspberry Pi too, so,
-> Tested-by: Stephen Warren <swarren@wwwdotorg.org>
+iEYEABECAAYFAlJNPRoACgkQykllyylKDCHcwwCdHLkeyMWDxFyiuUFRn6V6Njg+
+Im4AnRxhoiYE30MftYnQafGuXa4PQ332
+=XSu4
+-----END PGP SIGNATURE-----
 
-Back from the US and all patches sent out. Sorry for the delay. If I
-missed something, please let me know.
-
-Thanks for your feedback!
-David
+--=_mimegpg-monstr-desktop-4165-1380793626-0001--

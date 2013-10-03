@@ -1,68 +1,20 @@
-From: Denis Carikli <denis@eukrea.com>
-Date: Thu, 31 Oct 2013 09:15:24 +0000
-Subject: [PATCHv9][ 2/6] video: imxfb: Also add pwmr for the device tree.
-Message-Id: <1383210928-18906-2-git-send-email-denis@eukrea.com>
+From: Aijaz Lending <yin01@aijaz527.onmicrosoft.com>
+Date: Thu, 03 Oct 2013 20:16:45 +0000
+Subject: looking for loan
+Message-Id: <02aedd3b-819c-40b2-8d96-9497624979e8@HKXPR02MB213.apcprd02.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1383210928-18906-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1383210928-18906-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-pwmr has to be set to get the imxfb backlight work,
-though pwmr was only configurable trough the platform data.
+Do you have a firm or company that need loan to start up a business or need,personal loan, Debt consolidation? For more information,Contact us now for a guarantee loan with low interest rate. We will provide you with loan to meet your needs. For more information contact us with the following information's.
+Full name:
+country:
+Address:
+Phone Number:
+Amount needed:
+Duration of loan:
 
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: devicetree@vger.kernel.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: Eric B=C3=A9nard <eric@eukrea.com>
-Signed-off-by: Denis Carikli <denis@eukrea.com>
-Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Acked-by: Grant Likely <grant.likely@linaro.org>
----
- .../devicetree/bindings/video/fsl,imx-fb.txt       |    3 +++
- drivers/video/imxfb.c                              |    2 ++
- 2 files changed, 5 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt b/Docum=
-entation/devicetree/bindings/video/fsl,imx-fb.txt
-index 46da08d..ac457ae 100644
---- a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-+++ b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-@@ -17,6 +17,9 @@ Required nodes:
- Optional properties:
- - fsl,dmacr: DMA Control Register value. This is optional. By default, the
- 	register is not modified as recommended by the datasheet.
-+- fsl,pwmr:  LCDC PWM Contrast Control Register value. That property is
-+	optional, but defining it is necessary to get the backlight working. If t=
-hat
-+	property is ommited, the register is zeroed.
- - fsl,lscr1: LCDC Sharp Configuration Register value.
-=20
- Example:
-diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 322b358..08e3c36 100644
---- a/drivers/video/imxfb.c
-+++ b/drivers/video/imxfb.c
-@@ -833,6 +833,8 @@ static int imxfb_init_fbinfo(struct platform_device *pd=
-ev)
-=20
- 		of_property_read_u32(np, "fsl,dmacr", &fbi->dmacr);
-=20
-+		of_property_read_u32(np, "fsl,pwmr", &fbi->pwmr);
-+
- 		/* These two function pointers could be used by some specific
- 		 * platforms. */
- 		fbi->lcd_power =3D NULL;
---=20
-1.7.9.5
-
+sg.loan.sg@outlook.com
+Kind regards

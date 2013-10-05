@@ -1,34 +1,30 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Tue, 29 Oct 2013 16:27:38 +0000
-Subject: [PATCH v2 3/9] backlight: atmel-pwm-bl: fix module autoload
-Message-Id: <1383064064-4983-4-git-send-email-jhovold@gmail.com>
+From: "Microsoft Iberica SL" <miciberisl@outlook.es>
+Date: Sat, 05 Oct 2013 17:40:20 +0000
+Subject: You've won a Prize
+Message-Id: <53496.84.120.64.153.1380994820.squirrel@mail1.centrum-group.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382522143-32072-1-git-send-email-jhovold@gmail.com>
- <1383064064-4983-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1383064064-4983-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-Add missing module alias which is needed for module autoloading.
+You've won a Prize
+MICROSOFT IBERICA SL"
+YOU 'VE WON.
+ATTN:MICROSOFT IBERICA SL
+Your email has won (EUR244,000,00)
+(TWO HUNDRED AND FOURTY FOUR THOUSAND EURO)
+Batch number:XL73276498AM
+Ref number:QR352899526KC
+This is a millennium scientific computer game in which
+email addresses were used.It is a promotional program aimed at
+encouraging internet users,therefore you do not need to buy ticket to enter
+for it.
+For further development,clarification and procedure please
+Contact:Dr Eduardo Sanchez,
+Email contact:payingroll446@yahoo.com.hk
 
-Acked-by: Jingoo Han <jg1.han@samsung.com>
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
----
- drivers/video/backlight/atmel-pwm-bl.c | 1 +
- 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
-index e21beb6..4886028 100644
---- a/drivers/video/backlight/atmel-pwm-bl.c
-+++ b/drivers/video/backlight/atmel-pwm-bl.c
-@@ -229,3 +229,4 @@ module_platform_driver(atmel_pwm_bl_driver);
- MODULE_AUTHOR("Hans-Christian egtvedt <hans-christian.egtvedt@atmel.com>");
- MODULE_DESCRIPTION("Atmel PWM backlight driver");
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:atmel-pwm-bl");
--- 
-1.8.4.2
+
+
 

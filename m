@@ -1,34 +1,36 @@
-From: Gerd Hoffmann <kraxel@redhat.com>
-Date: Mon, 07 Oct 2013 06:50:33 +0000
-Subject: Re: [PATCH 1/2] hyperv-fb: add pci stub
-Message-Id: <1381128633.13574.3.camel@nilsson.home.kraxel.org>
+From: KY Srinivasan <kys@microsoft.com>
+Date: Mon, 07 Oct 2013 17:12:53 +0000
+Subject: RE: [PATCH 1/2] hyperv-fb: add pci stub
+Message-Id: <f5746838b7654aac98a5753d669196b4@SN2PR03MB061.namprd03.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1380714911-6254-1-git-send-email-kraxel@redhat.com>
 	 <465ef0cb45e04bcc94c4788c0d930c4d@SN2PR03MB061.namprd03.prod.outlook.com>
-In-Reply-To: <465ef0cb45e04bcc94c4788c0d930c4d@SN2PR03MB061.namprd03.prod.outlook.com>
+ <1381128633.13574.3.camel@nilsson.home.kraxel.org>
+In-Reply-To: <1381128633.13574.3.camel@nilsson.home.kraxel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: KY Srinivasan <kys@microsoft.com>
+To: Gerd Hoffmann <kraxel@redhat.com>
 Cc: Haiyang Zhang <haiyangz@microsoft.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On Mi, 2013-10-02 at 14:29 +0000, KY Srinivasan wrote:
-> 
-> > This patch adds a pci stub driver to hyper-fb.  The hyperv framebuffer
-> > driver will bind to the pci device then, so linux kernel and userspace
-> > know there is a proper kernel driver for the device active.  lspci shows
-> > this for example:
-
-> Gerd,
-> 
-> Thanks for doing this. This certainly will address some of the issues that are reported. I do have a question though - how would this work if we don't have PCI bus in the guest.
-
-The hyperv framebuffer driver wouldn't work in the first place then as
-it looks up the framebuffer address in pci config space (see hvfb_getmem
-function).
-
-cheers,
-  Gerd
-
-
-
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogR2VyZCBIb2ZmbWFubiBb
+bWFpbHRvOmtyYXhlbEByZWRoYXQuY29tXQ0KPiBTZW50OiBTdW5kYXksIE9jdG9iZXIgMDYsIDIw
+MTMgMTE6NTEgUE0NCj4gVG86IEtZIFNyaW5pdmFzYW4NCj4gQ2M6IEhhaXlhbmcgWmhhbmc7IEpl
+YW4tQ2hyaXN0b3BoZSBQbGFnbmlvbC1WaWxsYXJkOyBUb21pIFZhbGtlaW5lbjsgb3Blbg0KPiBs
+aXN0Okh5cGVyLVYgQ09SRSBBTkQuLi47IG9wZW4gbGlzdDpGUkFNRUJVRkZFUiBMQVlFUjsgb3Bl
+biBsaXN0DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS8yXSBoeXBlcnYtZmI6IGFkZCBwY2kgc3R1
+Yg0KPiANCj4gT24gTWksIDIwMTMtMTAtMDIgYXQgMTQ6MjkgKzAwMDAsIEtZIFNyaW5pdmFzYW4g
+d3JvdGU6DQo+ID4NCj4gPiA+IFRoaXMgcGF0Y2ggYWRkcyBhIHBjaSBzdHViIGRyaXZlciB0byBo
+eXBlci1mYi4gIFRoZSBoeXBlcnYgZnJhbWVidWZmZXINCj4gPiA+IGRyaXZlciB3aWxsIGJpbmQg
+dG8gdGhlIHBjaSBkZXZpY2UgdGhlbiwgc28gbGludXgga2VybmVsIGFuZCB1c2Vyc3BhY2UNCj4g
+PiA+IGtub3cgdGhlcmUgaXMgYSBwcm9wZXIga2VybmVsIGRyaXZlciBmb3IgdGhlIGRldmljZSBh
+Y3RpdmUuICBsc3BjaSBzaG93cw0KPiA+ID4gdGhpcyBmb3IgZXhhbXBsZToNCj4gDQo+ID4gR2Vy
+ZCwNCj4gPg0KPiA+IFRoYW5rcyBmb3IgZG9pbmcgdGhpcy4gVGhpcyBjZXJ0YWlubHkgd2lsbCBh
+ZGRyZXNzIHNvbWUgb2YgdGhlIGlzc3VlcyB0aGF0IGFyZQ0KPiByZXBvcnRlZC4gSSBkbyBoYXZl
+IGEgcXVlc3Rpb24gdGhvdWdoIC0gaG93IHdvdWxkIHRoaXMgd29yayBpZiB3ZSBkb24ndCBoYXZl
+IFBDSQ0KPiBidXMgaW4gdGhlIGd1ZXN0Lg0KPiANCj4gVGhlIGh5cGVydiBmcmFtZWJ1ZmZlciBk
+cml2ZXIgd291bGRuJ3Qgd29yayBpbiB0aGUgZmlyc3QgcGxhY2UgdGhlbiBhcw0KPiBpdCBsb29r
+cyB1cCB0aGUgZnJhbWVidWZmZXIgYWRkcmVzcyBpbiBwY2kgY29uZmlnIHNwYWNlIChzZWUgaHZm
+Yl9nZXRtZW0NCj4gZnVuY3Rpb24pLg0KDQpXZSBhcmUgZ29pbmcgdG8gZml4IHRoaXMgYXMgd2Ug
+bW92ZSB0aGlzIGNvZGUgdG8gcnVuIG9uIG91ciBVRUZJIGZpcm13YXJlLiANCg0KUmVnYXJkcywN
+Cg0KSy4gWQ0KDQo

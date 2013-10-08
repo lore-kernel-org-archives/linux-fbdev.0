@@ -1,64 +1,63 @@
-From: Gerd Hoffmann <kraxel@redhat.com>
-Date: Tue, 08 Oct 2013 08:41:12 +0000
-Subject: Re: [PATCH 1/2] hyperv-fb: add pci stub
-Message-Id: <1381221672.5823.30.camel@nilsson.home.kraxel.org>
+From: KY Srinivasan <kys@microsoft.com>
+Date: Tue, 08 Oct 2013 14:48:19 +0000
+Subject: RE: [PATCH 1/2] hyperv-fb: add pci stub
+Message-Id: <869742b7d84a4ee5a1f8733c2058baff@SN2PR03MB061.namprd03.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1380714911-6254-1-git-send-email-kraxel@redhat.com>
 	 <465ef0cb45e04bcc94c4788c0d930c4d@SN2PR03MB061.namprd03.prod.outlook.com>
 	 <1381128633.13574.3.camel@nilsson.home.kraxel.org>
 	 <f5746838b7654aac98a5753d669196b4@SN2PR03MB061.namprd03.prod.outlook.com>
-In-Reply-To: <f5746838b7654aac98a5753d669196b4@SN2PR03MB061.namprd03.prod.outlook.com>
+ <1381221672.5823.30.camel@nilsson.home.kraxel.org>
+In-Reply-To: <1381221672.5823.30.camel@nilsson.home.kraxel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: KY Srinivasan <kys@microsoft.com>
+To: Gerd Hoffmann <kraxel@redhat.com>
 Cc: Haiyang Zhang <haiyangz@microsoft.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On Mo, 2013-10-07 at 17:12 +0000, KY Srinivasan wrote:
-> 
-> > -----Original Message-----
-> > From: Gerd Hoffmann [mailto:kraxel@redhat.com]
-> > Sent: Sunday, October 06, 2013 11:51 PM
-> > To: KY Srinivasan
-> > Cc: Haiyang Zhang; Jean-Christophe Plagniol-Villard; Tomi Valkeinen; open
-> > list:Hyper-V CORE AND...; open list:FRAMEBUFFER LAYER; open list
-> > Subject: Re: [PATCH 1/2] hyperv-fb: add pci stub
-> > 
-> > On Mi, 2013-10-02 at 14:29 +0000, KY Srinivasan wrote:
-> > >
-> > > > This patch adds a pci stub driver to hyper-fb.  The hyperv framebuffer
-> > > > driver will bind to the pci device then, so linux kernel and userspace
-> > > > know there is a proper kernel driver for the device active.  lspci shows
-> > > > this for example:
-> > 
-> > > Gerd,
-> > >
-> > > Thanks for doing this. This certainly will address some of the issues that are
-> > reported. I do have a question though - how would this work if we don't have PCI
-> > bus in the guest.
-> > 
-> > The hyperv framebuffer driver wouldn't work in the first place then as
-> > it looks up the framebuffer address in pci config space (see hvfb_getmem
-> > function).
-> 
-> We are going to fix this as we move this code to run on our UEFI firmware. 
-
-Hmm, windows server 2012 seems to have no option to enable uefi.  So I
-guess this is still in development?  How this is going to look like?
-
-Probably you are going for pure uefi firmware, without csm, to be able
-to leave all the legacy bios stuff behind in uefi mode.  Therefore no
-vesa bios support.  efi drivers for vmbus network/storage/display/input
-in the firmware.  No legacy ide/vga pci devices.  Correct?
-
-The linux kernel will come up with efifb then, switching over to
-hyperv-fb once the driver is loaded.  The hyperv-fb pci stub driver will
-not bind to the hyperv vga pci device if it isn't present in the guest.
-hyperv-fb will load just fine nevertheless (once hvfb_getmem is fixed to
-not depend on the pci device config space).  The pci stub added by the
-patch and the vmbus driver in hyperv-fb are completely independent.
-
-cheers,
-  Gerd
-
-
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogR2VyZCBIb2ZmbWFubiBb
+bWFpbHRvOmtyYXhlbEByZWRoYXQuY29tXQ0KPiBTZW50OiBUdWVzZGF5LCBPY3RvYmVyIDA4LCAy
+MDEzIDE6NDEgQU0NCj4gVG86IEtZIFNyaW5pdmFzYW4NCj4gQ2M6IEhhaXlhbmcgWmhhbmc7IEpl
+YW4tQ2hyaXN0b3BoZSBQbGFnbmlvbC1WaWxsYXJkOyBUb21pIFZhbGtlaW5lbjsgb3Blbg0KPiBs
+aXN0Okh5cGVyLVYgQ09SRSBBTkQuLi47IG9wZW4gbGlzdDpGUkFNRUJVRkZFUiBMQVlFUjsgb3Bl
+biBsaXN0DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS8yXSBoeXBlcnYtZmI6IGFkZCBwY2kgc3R1
+Yg0KPiANCj4gT24gTW8sIDIwMTMtMTAtMDcgYXQgMTc6MTIgKzAwMDAsIEtZIFNyaW5pdmFzYW4g
+d3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9t
+OiBHZXJkIEhvZmZtYW5uIFttYWlsdG86a3JheGVsQHJlZGhhdC5jb21dDQo+ID4gPiBTZW50OiBT
+dW5kYXksIE9jdG9iZXIgMDYsIDIwMTMgMTE6NTEgUE0NCj4gPiA+IFRvOiBLWSBTcmluaXZhc2Fu
+DQo+ID4gPiBDYzogSGFpeWFuZyBaaGFuZzsgSmVhbi1DaHJpc3RvcGhlIFBsYWduaW9sLVZpbGxh
+cmQ7IFRvbWkgVmFsa2VpbmVuOyBvcGVuDQo+ID4gPiBsaXN0Okh5cGVyLVYgQ09SRSBBTkQuLi47
+IG9wZW4gbGlzdDpGUkFNRUJVRkZFUiBMQVlFUjsgb3BlbiBsaXN0DQo+ID4gPiBTdWJqZWN0OiBS
+ZTogW1BBVENIIDEvMl0gaHlwZXJ2LWZiOiBhZGQgcGNpIHN0dWINCj4gPiA+DQo+ID4gPiBPbiBN
+aSwgMjAxMy0xMC0wMiBhdCAxNDoyOSArMDAwMCwgS1kgU3Jpbml2YXNhbiB3cm90ZToNCj4gPiA+
+ID4NCj4gPiA+ID4gPiBUaGlzIHBhdGNoIGFkZHMgYSBwY2kgc3R1YiBkcml2ZXIgdG8gaHlwZXIt
+ZmIuICBUaGUgaHlwZXJ2IGZyYW1lYnVmZmVyDQo+ID4gPiA+ID4gZHJpdmVyIHdpbGwgYmluZCB0
+byB0aGUgcGNpIGRldmljZSB0aGVuLCBzbyBsaW51eCBrZXJuZWwgYW5kIHVzZXJzcGFjZQ0KPiA+
+ID4gPiA+IGtub3cgdGhlcmUgaXMgYSBwcm9wZXIga2VybmVsIGRyaXZlciBmb3IgdGhlIGRldmlj
+ZSBhY3RpdmUuICBsc3BjaSBzaG93cw0KPiA+ID4gPiA+IHRoaXMgZm9yIGV4YW1wbGU6DQo+ID4g
+Pg0KPiA+ID4gPiBHZXJkLA0KPiA+ID4gPg0KPiA+ID4gPiBUaGFua3MgZm9yIGRvaW5nIHRoaXMu
+IFRoaXMgY2VydGFpbmx5IHdpbGwgYWRkcmVzcyBzb21lIG9mIHRoZSBpc3N1ZXMgdGhhdCBhcmUN
+Cj4gPiA+IHJlcG9ydGVkLiBJIGRvIGhhdmUgYSBxdWVzdGlvbiB0aG91Z2ggLSBob3cgd291bGQg
+dGhpcyB3b3JrIGlmIHdlIGRvbid0IGhhdmUNCj4gUENJDQo+ID4gPiBidXMgaW4gdGhlIGd1ZXN0
+Lg0KPiA+ID4NCj4gPiA+IFRoZSBoeXBlcnYgZnJhbWVidWZmZXIgZHJpdmVyIHdvdWxkbid0IHdv
+cmsgaW4gdGhlIGZpcnN0IHBsYWNlIHRoZW4gYXMNCj4gPiA+IGl0IGxvb2tzIHVwIHRoZSBmcmFt
+ZWJ1ZmZlciBhZGRyZXNzIGluIHBjaSBjb25maWcgc3BhY2UgKHNlZSBodmZiX2dldG1lbQ0KPiA+
+ID4gZnVuY3Rpb24pLg0KPiA+DQo+ID4gV2UgYXJlIGdvaW5nIHRvIGZpeCB0aGlzIGFzIHdlIG1v
+dmUgdGhpcyBjb2RlIHRvIHJ1biBvbiBvdXIgVUVGSSBmaXJtd2FyZS4NCj4gDQo+IEhtbSwgd2lu
+ZG93cyBzZXJ2ZXIgMjAxMiBzZWVtcyB0byBoYXZlIG5vIG9wdGlvbiB0byBlbmFibGUgdWVmaS4g
+IFNvIEkNCj4gZ3Vlc3MgdGhpcyBpcyBzdGlsbCBpbiBkZXZlbG9wbWVudD8gIEhvdyB0aGlzIGlz
+IGdvaW5nIHRvIGxvb2sgbGlrZT8NCg0KVGhpcyBmZWF0dXJlIGlzIHRoZXJlIGluIFdTMjAxMiBS
+Mg0KPiANCj4gUHJvYmFibHkgeW91IGFyZSBnb2luZyBmb3IgcHVyZSB1ZWZpIGZpcm13YXJlLCB3
+aXRob3V0IGNzbSwgdG8gYmUgYWJsZQ0KPiB0byBsZWF2ZSBhbGwgdGhlIGxlZ2FjeSBiaW9zIHN0
+dWZmIGJlaGluZCBpbiB1ZWZpIG1vZGUuICBUaGVyZWZvcmUgbm8NCj4gdmVzYSBiaW9zIHN1cHBv
+cnQuICBlZmkgZHJpdmVycyBmb3Igdm1idXMgbmV0d29yay9zdG9yYWdlL2Rpc3BsYXkvaW5wdXQN
+Cj4gaW4gdGhlIGZpcm13YXJlLiAgTm8gbGVnYWN5IGlkZS92Z2EgcGNpIGRldmljZXMuICBDb3Jy
+ZWN0Pw0KPiANClNvbWV0aGluZyBvbiB0aGVzZSBsaW5lcy4NCg0KPiBUaGUgbGludXgga2VybmVs
+IHdpbGwgY29tZSB1cCB3aXRoIGVmaWZiIHRoZW4sIHN3aXRjaGluZyBvdmVyIHRvDQo+IGh5cGVy
+di1mYiBvbmNlIHRoZSBkcml2ZXIgaXMgbG9hZGVkLiAgVGhlIGh5cGVydi1mYiBwY2kgc3R1YiBk
+cml2ZXIgd2lsbA0KPiBub3QgYmluZCB0byB0aGUgaHlwZXJ2IHZnYSBwY2kgZGV2aWNlIGlmIGl0
+IGlzbid0IHByZXNlbnQgaW4gdGhlIGd1ZXN0Lg0KPiBoeXBlcnYtZmIgd2lsbCBsb2FkIGp1c3Qg
+ZmluZSBuZXZlcnRoZWxlc3MgKG9uY2UgaHZmYl9nZXRtZW0gaXMgZml4ZWQgdG8NCj4gbm90IGRl
+cGVuZCBvbiB0aGUgcGNpIGRldmljZSBjb25maWcgc3BhY2UpLiAgVGhlIHBjaSBzdHViIGFkZGVk
+IGJ5IHRoZQ0KPiBwYXRjaCBhbmQgdGhlIHZtYnVzIGRyaXZlciBpbiBoeXBlcnYtZmIgYXJlIGNv
+bXBsZXRlbHkgaW5kZXBlbmRlbnQuDQoNCk9rOyB0aGFua3MuDQoNCksuIFkNCiANCg0K

@@ -1,36 +1,64 @@
-From: KY Srinivasan <kys@microsoft.com>
-Date: Mon, 07 Oct 2013 17:12:53 +0000
-Subject: RE: [PATCH 1/2] hyperv-fb: add pci stub
-Message-Id: <f5746838b7654aac98a5753d669196b4@SN2PR03MB061.namprd03.prod.outlook.com>
+From: Gerd Hoffmann <kraxel@redhat.com>
+Date: Tue, 08 Oct 2013 08:41:12 +0000
+Subject: Re: [PATCH 1/2] hyperv-fb: add pci stub
+Message-Id: <1381221672.5823.30.camel@nilsson.home.kraxel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1380714911-6254-1-git-send-email-kraxel@redhat.com>
 	 <465ef0cb45e04bcc94c4788c0d930c4d@SN2PR03MB061.namprd03.prod.outlook.com>
- <1381128633.13574.3.camel@nilsson.home.kraxel.org>
-In-Reply-To: <1381128633.13574.3.camel@nilsson.home.kraxel.org>
+	 <1381128633.13574.3.camel@nilsson.home.kraxel.org>
+	 <f5746838b7654aac98a5753d669196b4@SN2PR03MB061.namprd03.prod.outlook.com>
+In-Reply-To: <f5746838b7654aac98a5753d669196b4@SN2PR03MB061.namprd03.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Gerd Hoffmann <kraxel@redhat.com>
+To: KY Srinivasan <kys@microsoft.com>
 Cc: Haiyang Zhang <haiyangz@microsoft.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogR2VyZCBIb2ZmbWFubiBb
-bWFpbHRvOmtyYXhlbEByZWRoYXQuY29tXQ0KPiBTZW50OiBTdW5kYXksIE9jdG9iZXIgMDYsIDIw
-MTMgMTE6NTEgUE0NCj4gVG86IEtZIFNyaW5pdmFzYW4NCj4gQ2M6IEhhaXlhbmcgWmhhbmc7IEpl
-YW4tQ2hyaXN0b3BoZSBQbGFnbmlvbC1WaWxsYXJkOyBUb21pIFZhbGtlaW5lbjsgb3Blbg0KPiBs
-aXN0Okh5cGVyLVYgQ09SRSBBTkQuLi47IG9wZW4gbGlzdDpGUkFNRUJVRkZFUiBMQVlFUjsgb3Bl
-biBsaXN0DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS8yXSBoeXBlcnYtZmI6IGFkZCBwY2kgc3R1
-Yg0KPiANCj4gT24gTWksIDIwMTMtMTAtMDIgYXQgMTQ6MjkgKzAwMDAsIEtZIFNyaW5pdmFzYW4g
-d3JvdGU6DQo+ID4NCj4gPiA+IFRoaXMgcGF0Y2ggYWRkcyBhIHBjaSBzdHViIGRyaXZlciB0byBo
-eXBlci1mYi4gIFRoZSBoeXBlcnYgZnJhbWVidWZmZXINCj4gPiA+IGRyaXZlciB3aWxsIGJpbmQg
-dG8gdGhlIHBjaSBkZXZpY2UgdGhlbiwgc28gbGludXgga2VybmVsIGFuZCB1c2Vyc3BhY2UNCj4g
-PiA+IGtub3cgdGhlcmUgaXMgYSBwcm9wZXIga2VybmVsIGRyaXZlciBmb3IgdGhlIGRldmljZSBh
-Y3RpdmUuICBsc3BjaSBzaG93cw0KPiA+ID4gdGhpcyBmb3IgZXhhbXBsZToNCj4gDQo+ID4gR2Vy
-ZCwNCj4gPg0KPiA+IFRoYW5rcyBmb3IgZG9pbmcgdGhpcy4gVGhpcyBjZXJ0YWlubHkgd2lsbCBh
-ZGRyZXNzIHNvbWUgb2YgdGhlIGlzc3VlcyB0aGF0IGFyZQ0KPiByZXBvcnRlZC4gSSBkbyBoYXZl
-IGEgcXVlc3Rpb24gdGhvdWdoIC0gaG93IHdvdWxkIHRoaXMgd29yayBpZiB3ZSBkb24ndCBoYXZl
-IFBDSQ0KPiBidXMgaW4gdGhlIGd1ZXN0Lg0KPiANCj4gVGhlIGh5cGVydiBmcmFtZWJ1ZmZlciBk
-cml2ZXIgd291bGRuJ3Qgd29yayBpbiB0aGUgZmlyc3QgcGxhY2UgdGhlbiBhcw0KPiBpdCBsb29r
-cyB1cCB0aGUgZnJhbWVidWZmZXIgYWRkcmVzcyBpbiBwY2kgY29uZmlnIHNwYWNlIChzZWUgaHZm
-Yl9nZXRtZW0NCj4gZnVuY3Rpb24pLg0KDQpXZSBhcmUgZ29pbmcgdG8gZml4IHRoaXMgYXMgd2Ug
-bW92ZSB0aGlzIGNvZGUgdG8gcnVuIG9uIG91ciBVRUZJIGZpcm13YXJlLiANCg0KUmVnYXJkcywN
-Cg0KSy4gWQ0KDQo
+On Mo, 2013-10-07 at 17:12 +0000, KY Srinivasan wrote:
+> 
+> > -----Original Message-----
+> > From: Gerd Hoffmann [mailto:kraxel@redhat.com]
+> > Sent: Sunday, October 06, 2013 11:51 PM
+> > To: KY Srinivasan
+> > Cc: Haiyang Zhang; Jean-Christophe Plagniol-Villard; Tomi Valkeinen; open
+> > list:Hyper-V CORE AND...; open list:FRAMEBUFFER LAYER; open list
+> > Subject: Re: [PATCH 1/2] hyperv-fb: add pci stub
+> > 
+> > On Mi, 2013-10-02 at 14:29 +0000, KY Srinivasan wrote:
+> > >
+> > > > This patch adds a pci stub driver to hyper-fb.  The hyperv framebuffer
+> > > > driver will bind to the pci device then, so linux kernel and userspace
+> > > > know there is a proper kernel driver for the device active.  lspci shows
+> > > > this for example:
+> > 
+> > > Gerd,
+> > >
+> > > Thanks for doing this. This certainly will address some of the issues that are
+> > reported. I do have a question though - how would this work if we don't have PCI
+> > bus in the guest.
+> > 
+> > The hyperv framebuffer driver wouldn't work in the first place then as
+> > it looks up the framebuffer address in pci config space (see hvfb_getmem
+> > function).
+> 
+> We are going to fix this as we move this code to run on our UEFI firmware. 
+
+Hmm, windows server 2012 seems to have no option to enable uefi.  So I
+guess this is still in development?  How this is going to look like?
+
+Probably you are going for pure uefi firmware, without csm, to be able
+to leave all the legacy bios stuff behind in uefi mode.  Therefore no
+vesa bios support.  efi drivers for vmbus network/storage/display/input
+in the firmware.  No legacy ide/vga pci devices.  Correct?
+
+The linux kernel will come up with efifb then, switching over to
+hyperv-fb once the driver is loaded.  The hyperv-fb pci stub driver will
+not bind to the hyperv vga pci device if it isn't present in the guest.
+hyperv-fb will load just fine nevertheless (once hvfb_getmem is fixed to
+not depend on the pci device config space).  The pci stub added by the
+patch and the vmbus driver in hyperv-fb are completely independent.
+
+cheers,
+  Gerd
+
+

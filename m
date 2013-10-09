@@ -1,147 +1,131 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 02 Oct 2013 13:24:08 +0000
+From: Andrzej Hajda <a.hajda@samsung.com>
+Date: Wed, 09 Oct 2013 14:08:48 +0000
 Subject: Re: [PATCH/RFC v3 00/19] Common Display Framework
-Message-Id: <524C1E78.6030508@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="HcKWl3BC7JP9ldlbPvb3JOx09gkQG3PMf"
+Message-Id: <52556370.1050102@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376068510-30363-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com> <52498146.4050600@ti.com> <524C1058.2050500@samsung.com>
-In-Reply-To: <524C1058.2050500@samsung.com>
-To: Andrzej Hajda <a.hajda@samsung.com>
+References: <1376068510-30363-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+ <52498146.4050600@ti.com> <524C1058.2050500@samsung.com>
+ <524C1E78.6030508@ti.com>
+In-Reply-To: <524C1E78.6030508@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Jesse Barnes <jesse.barnes@intel.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Tom Gall <tom.gall@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, linux-media@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mark Zhang <markz@nvidia.com>, Alexandre Courbot <acourbot@nvidia.com>, Ragesh Radhakrishnan <Ragesh.R@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Sunil Joshi <joshi@samsung.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Marcus Lorentzon <marcus.lorentzon@huawei.com>
 
---HcKWl3BC7JP9ldlbPvb3JOx09gkQG3PMf
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 10/02/2013 03:24 PM, Tomi Valkeinen wrote:
+> Hi Andrzej,
+>
+> On 02/10/13 15:23, Andrzej Hajda wrote:
+>
+>>> Using Linux buses for DBI/DSI
+>>> ==============>>>
+>>> I still don't see how it would work. I've covered this multiple times in
+>>> previous posts so I'm not going into more details now.
+>>>
+>>> I implemented DSI (just command mode for now) as a video bus but with bunch of
+>>> extra ops for sending the control messages.
+>> Could you post the list of ops you have to create.
+> I'd rather not post the ops I have in my prototype, as it's still a
+> total hack. However, they are very much based on the current OMAP DSS's
+> ops, so I'll describe them below. I hope I find time to polish my CDF
+> hacks more, so that I can publish them.
+>
+>> I have posted some time ago my implementation of DSI bus:
+>> http://thread.gmane.org/gmane.linux.drivers.video-input-infrastructure/69358/focusi362
+> A note about the DT data on your series, as I've been stuggling to
+> figure out the DT data for OMAP: some of the DT properties look like
+> configuration, not hardware description. For example,
+> "samsung,bta-timeout" doesn't describe hardware.
+As I have adopted existing internal driver for MIPI-DSI bus, I did not
+take too much
+care for DT. You are right, 'bta-timeout' is a configuration parameter
+(however its
+minimal value is determined by characteristic of the DSI-slave). On the
+other
+side currently there is no good place for such configuration parameters
+AFAIK.
+>> I needed three quite generic ops to make it working:
+>> - set_power(on/off),
+>> - set_stream(on/off),
+>> - transfer(dsi_transaction_type, tx_buf, tx_len, rx_buf, rx_len)
+>> I have recently replaced set_power by PM_RUNTIME callbacks,
+>> but I had to add .initialize ops.
+> We have a bit more on omap:
+>
+> http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/include/video/omapdss.h#n648
+>
+> Some of those should be removed and some should be omap DSI's internal
+> matters, not part of the API. But it gives an idea of the ops we use.
+> Shortly about the ops:
+>
+> - (dis)connect, which might be similar to your initialize. connect is
+> meant to "connect" the pipeline, reserving the video ports used, etc.
+>
+> - enable/disable, enable the DSI bus. If the DSI peripheral requires a
+> continous DSI clock, it's also started at this point.
+>
+> - set_config configures the DSI bus (like, command/video mode, etc.).
+>
+> - configure_pins can be ignored, I think that function is not needed.
+>
+> - enable_hs and enable_te, used to enable/disable HS mode and
+> tearing-elimination
 
-Hi Andrzej,
+It seems there should be a way to synchronize TE signal with panel,
+in case signal is provided only to dsi-master. Some callback I suppose?
+Or transfer synchronization should be done by dsi-master.
+>
+> - update, which does a single frame transfer
+>
+> - bus_lock/unlock can be ignored
+>
+> - enable_video_output starts the video stream, when using DSI video mode
+>
+> - the request_vc, set_vc_id, release_vc can be ignored
+>
+> - Bunch of transfer funcs. Perhaps a single func could be used, as you
+> do. We have sync write funcs, which do a BTA at the end of the write and
+> wait for reply, and nosync version, which just pushes the packet to the
+> TX buffers.
+>
+> - bta_sync, which sends a BTA and waits for the peripheral to reply
+>
+> - set_max_rx_packet_size, used to configure the max rx packet size.
+Similar callbacks should be added to mipi-dsi-bus ops as well, to
+make it complete/generic.
 
-On 02/10/13 15:23, Andrzej Hajda wrote:
-
->> Using Linux buses for DBI/DSI
->> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
+>
+>> Regarding the discussion how and where to implement control bus I have
+>> though about different alternatives:
+>> 1. Implement DSI-master as a parent dev which will create DSI-slave
+>> platform dev in a similar way as for MFD devices (ssbi.c seems to me a
+>> good example).
+>> 2. Create universal mipi-display-bus which will cover DSI, DBI and
+>> possibly other buses - they have have few common things - for example
+>> MIPI-DCS commands.
 >>
->> I still don't see how it would work. I've covered this multiple times =
-in
->> previous posts so I'm not going into more details now.
->>
->> I implemented DSI (just command mode for now) as a video bus but with =
-bunch of
->> extra ops for sending the control messages.
->=20
-> Could you post the list of ops you have to create.
+>> I am not really convinced to either solution all have some advantages
+>> and disadvantages.
+> I think a dedicated DSI bus and your alternatives all have the same
+> issues with splitting the DSI control into two. I've shared some of my
+> thoughts here:
+>
+> http://article.gmane.org/gmane.comp.video.dri.devel/90651
+> http://article.gmane.org/gmane.comp.video.dri.devel/91269
+> http://article.gmane.org/gmane.comp.video.dri.devel/91272
+>
+> I still think that it's best to consider DSI and DBI as a video bus (not
+> as a separate video bus and a control bus), and provide the packet
+> transfer methods as part of the video ops.
+I have read all posts regarding this issue and currently I tend
+to solution where CDF is used to model only video streams,
+with control bus implemented in different framework.
+The only concerns I have if we should use Linux bus for that.
 
-I'd rather not post the ops I have in my prototype, as it's still a
-total hack. However, they are very much based on the current OMAP DSS's
-ops, so I'll describe them below. I hope I find time to polish my CDF
-hacks more, so that I can publish them.
+Andrzej
 
-> I have posted some time ago my implementation of DSI bus:
-> http://thread.gmane.org/gmane.linux.drivers.video-input-infrastructure/=
-69358/focus=3D69362
+>  Tomi
+>
+>
 
-A note about the DT data on your series, as I've been stuggling to
-figure out the DT data for OMAP: some of the DT properties look like
-configuration, not hardware description. For example,
-"samsung,bta-timeout" doesn't describe hardware.
-
-> I needed three quite generic ops to make it working:
-> - set_power(on/off),
-> - set_stream(on/off),
-> - transfer(dsi_transaction_type, tx_buf, tx_len, rx_buf, rx_len)
-> I have recently replaced set_power by PM_RUNTIME callbacks,
-> but I had to add .initialize ops.
-
-We have a bit more on omap:
-
-http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/inclu=
-de/video/omapdss.h#n648
-
-Some of those should be removed and some should be omap DSI's internal
-matters, not part of the API. But it gives an idea of the ops we use.
-Shortly about the ops:
-
-- (dis)connect, which might be similar to your initialize. connect is
-meant to "connect" the pipeline, reserving the video ports used, etc.
-
-- enable/disable, enable the DSI bus. If the DSI peripheral requires a
-continous DSI clock, it's also started at this point.
-
-- set_config configures the DSI bus (like, command/video mode, etc.).
-
-- configure_pins can be ignored, I think that function is not needed.
-
-- enable_hs and enable_te, used to enable/disable HS mode and
-tearing-elimination
-
-- update, which does a single frame transfer
-
-- bus_lock/unlock can be ignored
-
-- enable_video_output starts the video stream, when using DSI video mode
-
-- the request_vc, set_vc_id, release_vc can be ignored
-
-- Bunch of transfer funcs. Perhaps a single func could be used, as you
-do. We have sync write funcs, which do a BTA at the end of the write and
-wait for reply, and nosync version, which just pushes the packet to the
-TX buffers.
-
-- bta_sync, which sends a BTA and waits for the peripheral to reply
-
-- set_max_rx_packet_size, used to configure the max rx packet size.
-
-> Regarding the discussion how and where to implement control bus I have
-> though about different alternatives:
-> 1. Implement DSI-master as a parent dev which will create DSI-slave
-> platform dev in a similar way as for MFD devices (ssbi.c seems to me a
-> good example).
-> 2. Create universal mipi-display-bus which will cover DSI, DBI and
-> possibly other buses - they have have few common things - for example
-> MIPI-DCS commands.
->=20
-> I am not really convinced to either solution all have some advantages
-> and disadvantages.
-
-I think a dedicated DSI bus and your alternatives all have the same
-issues with splitting the DSI control into two. I've shared some of my
-thoughts here:
-
-http://article.gmane.org/gmane.comp.video.dri.devel/90651
-http://article.gmane.org/gmane.comp.video.dri.devel/91269
-http://article.gmane.org/gmane.comp.video.dri.devel/91272
-
-I still think that it's best to consider DSI and DBI as a video bus (not
-as a separate video bus and a control bus), and provide the packet
-transfer methods as part of the video ops.
-
- Tomi
-
-
-
---HcKWl3BC7JP9ldlbPvb3JOx09gkQG3PMf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSTB54AAoJEPo9qoy8lh71r/EP/3eJ+9ZB888hqyiG5bvceFAG
-C0vMm0LNqTKUPSxWjt87jUYaN0nh+SwqjKsVV3YYwjOG8Eh4kdNOrnuB6D0LrwJd
-iOXYWq4aeGD7kDTkQNd0RRJkobDbqERGVJ7/27vCBbZPJENacK1dTy4SXoxpbVvV
-yFtIXAhpmjxbeiddOrHWd1uBjbNKDwZc1+qXKsfbVyawfdX/ELA0zBYXyolyIB6n
-+Ejnt9LB3Uod1yt0NXo7dygHTc2iF9cIaK41h9M9y7QAcJL2zYbzayZy/FyJbN+Z
-VmSJTOgTEOMYrF+mbGecMcO5+y6UUkGjjJC0dG1g6cCtgwCCN8phyTk1QOS2Bqqc
-If/mWD+HJQ6XOSVVxRzOoKOrSF2U/SmUWTyB5tBxC4h24NpGKnd2CTHGho5WFqe7
-BgdhzTS5XQ8cT4D/GszauTqhxoopw7HweqKtBH+H1oR7OySTpXnd8lcVlPTjT7Lc
-febVi8jRw/lnsXidD7BUR39z0MzXRou6P3awLkcw7ODBIoSP6agXb59XDG4XruAY
-Oc+OE4b2JCd3cdJiVn4otX5Fd8FpyTccnL1X0btobOkb4ARSHBCUVzIqoCcqkCT2
-rivn/J/3wCLJJESwwQFIfdBHvPhNT53JDe7LDABys5PFlsXK73doePfq0e/NX+Ez
-eSW109c3VYEtAFNX6zzO
-=+zvp
------END PGP SIGNATURE-----
-
---HcKWl3BC7JP9ldlbPvb3JOx09gkQG3PMf--

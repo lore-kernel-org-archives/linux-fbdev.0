@@ -1,66 +1,64 @@
-From: Denis Carikli <denis@eukrea.com>
-Date: Fri, 18 Oct 2013 15:16:54 +0000
-Subject: [PATCHv3][ 03/11] video: imxfb: Also add pwmr for the device tree.
-Message-Id: <1382109422-24454-3-git-send-email-denis@eukrea.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 09 Oct 2013 08:32:51 +0000
+Subject: Re: [PATCH V5 4/5] video: exynos_mipi_dsim: Use the generic PHY driver
+Message-Id: <525514B3.5020101@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="a8T2haWrXK6ruBtq3o4xKIJi7hRpSSLdC"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382109422-24454-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1382109422-24454-1-git-send-email-denis@eukrea.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+References: <1380396467-29278-1-git-send-email-s.nawrocki@samsung.com>
+ <1380396467-29278-5-git-send-email-s.nawrocki@samsung.com>
+In-Reply-To: <1380396467-29278-5-git-send-email-s.nawrocki@samsung.com>
 To: linux-arm-kernel@lists.infradead.org
 
-pwmr has to be set to get the imxfb backlight work,
-though pwmr was only configurable trough the platform data.
+--a8T2haWrXK6ruBtq3o4xKIJi7hRpSSLdC
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: devicetree@vger.kernel.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: Eric B=C3=A9nard <eric@eukrea.com>
-Signed-off-by: Denis Carikli <denis@eukrea.com>
----
- .../devicetree/bindings/video/fsl,imx-fb.txt       |    3 +++
- drivers/video/imxfb.c                              |    2 ++
- 2 files changed, 5 insertions(+)
+On 28/09/13 22:27, Sylwester Nawrocki wrote:
+> Use the generic PHY API instead of the platform callback
+> for the MIPI DSIM DPHY enable/reset control.
+>=20
+> Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> Acked-by: Felipe Balbi <balbi@ti.com>
+> Acked-by: Donghwa Lee <dh09.lee@samsung.com>
+> ---
+> Changes since v4:
+>  - PHY label removed from the platform data structure.
+> ---
+>  drivers/video/exynos/Kconfig           |    1 +
+>  drivers/video/exynos/exynos_mipi_dsi.c |   19 ++++++++++---------
+>  include/video/exynos_mipi_dsim.h       |    5 ++---
+>  3 files changed, 13 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt b/Docum=
-entation/devicetree/bindings/video/fsl,imx-fb.txt
-index 46da08d..ac457ae 100644
---- a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-+++ b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
-@@ -17,6 +17,9 @@ Required nodes:
- Optional properties:
- - fsl,dmacr: DMA Control Register value. This is optional. By default, the
- 	register is not modified as recommended by the datasheet.
-+- fsl,pwmr:  LCDC PWM Contrast Control Register value. That property is
-+	optional, but defining it is necessary to get the backlight working. If t=
-hat
-+	property is ommited, the register is zeroed.
- - fsl,lscr1: LCDC Sharp Configuration Register value.
-=20
- Example:
-diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 4dd7678..9da29b3 100644
---- a/drivers/video/imxfb.c
-+++ b/drivers/video/imxfb.c
-@@ -833,6 +833,8 @@ static int imxfb_init_fbinfo(struct platform_device *pd=
-ev)
-=20
- 		of_property_read_u32(np, "fsl,dmacr", &fbi->dmacr);
-=20
-+		of_property_read_u32(np, "fsl,pwmr", &fbi->pwmr);
-+
- 		/* These two function pointers could be used by some specific
- 		 * platforms. */
- 		fbi->lcd_power =3D NULL;
---=20
-1.7.9.5
+Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
+ Tomi
+
+
+
+--a8T2haWrXK6ruBtq3o4xKIJi7hRpSSLdC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSVRSzAAoJEPo9qoy8lh71aIUP/ip7AKSl0M3FzPosW3jPK1P/
++B9hdF8oHurGip1xB/yoqed/HCcFf7oZpv7JQ86h3mfVBEqjFym0SyMGGhBsAaDz
+PmCiw4HfvNZLH4qqvAQKBcrFYgDwBU1LH56OIqpAjP4xMZztkFOOpdLLOPsRvuO0
+zrKlvpe+gk6D66b2aebfFFdofobNeacaqmFTgvadNFkJpIR8YiXb3Bl+B7ST7tvR
+0X/UJw+5Cv2uX8vf03LKxoSrgOTFO82WhXF9qKfNleve5wQnL7awbIf/M9u9oq3K
+qbTsQNFUUX1Ny14hjhjPJSaKTG/USyCOZpZsCCyY9ssdumqF1hmZZ52O9od+fVYV
+v1+vOPNxSD2MGgt/Dr1fiqszq33q2l/Eeos18y/vRvXmidI3toURPygy6A2ARoPv
+x8ytxT9C2T3X4u7undt6lcFhDorveRlahaxZIMXpATnbwMkz+C+t+qG8iI8aeEvo
+50M+EfTZEtEs8wJZ8PYcTXq7qJ0qrB8GpoxPP5LNOjPRmPx8fjcC8QaTCZSrK9TC
+U0YcnlqT+BvN9uc9ZGeyk+ed+noWRmgKfAeLPZWlWQZtp8ihImlWzHQ88zSSz+rM
+BAVcuiDy7GosFpKsSzgUn9DGwfbp+8jn/R84MMgnyzlpDTeoZFUc45aUNyuYCTVK
+5dsAg6qGrZGfqZqO/Vx3
+=NCZf
+-----END PGP SIGNATURE-----
+
+--a8T2haWrXK6ruBtq3o4xKIJi7hRpSSLdC--

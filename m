@@ -1,66 +1,108 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Thu, 31 Oct 2013 17:57:42 +0000
-Subject: [PATCH v3 7/9] backlight: atmel-pwm-bl: use gpio_is_valid
-Message-Id: <1383242264-7652-8-git-send-email-jhovold@gmail.com>
+From: Michal Simek <michal.simek@xilinx.com>
+Date: Wed, 09 Oct 2013 10:52:14 +0000
+Subject: [PATCH v2 3/3] video: xilinxfb: Simplify error path
+Message-Id: <9676ce5f1676ad1ebe6a402d4d3d6cdd589bb3fc.1381315928.git.michal.simek@xilinx.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-29056-1381315946-0001"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1383064064-4983-1-git-send-email-jhovold@gmail.com>
- <1383242264-7652-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1383242264-7652-1-git-send-email-jhovold@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+References: <631df9a44b366af4129d00f1d4e1d3baad7d4903.1381315928.git.michal.simek@xilinx.com>
+In-Reply-To: <631df9a44b366af4129d00f1d4e1d3baad7d4903.1381315928.git.michal.simek@xilinx.com>
+To: linux-kernel@vger.kernel.org, monstr@monstr.eu
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-Use gpio_is_valid rather than open coding the more restrictive != -1
-test.
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
 
-Acked-by: Jingoo Han <jg1.han@samsung.com>
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
+--=_mimegpg-monstr-desktop-29056-1381315946-0001
+
+devm_iounmap is called automatically that's why remove it from the code
+dev_set_drvdata(dev, NULL) is called by generic code
+after device_release or on probe failure.
+
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+
+Reviewed-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/backlight/atmel-pwm-bl.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Changes in v2:
+Rebased on git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git for-next
 
-diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
-index bfd6a96..c254209 100644
---- a/drivers/video/backlight/atmel-pwm-bl.c
-+++ b/drivers/video/backlight/atmel-pwm-bl.c
-@@ -48,7 +48,7 @@ static int atmel_pwm_bl_set_intensity(struct backlight_device *bd)
- 		pwm_duty = pwmbl->pdata->pwm_duty_min;
- 
- 	if (!intensity) {
--		if (pwmbl->gpio_on != -1) {
-+		if (gpio_is_valid(pwmbl->gpio_on)) {
- 			gpio_set_value(pwmbl->gpio_on,
- 					0 ^ pwmbl->pdata->on_active_low);
- 		}
-@@ -57,7 +57,7 @@ static int atmel_pwm_bl_set_intensity(struct backlight_device *bd)
- 	} else {
- 		pwm_channel_enable(&pwmbl->pwmc);
- 		pwm_channel_writel(&pwmbl->pwmc, PWM_CUPD, pwm_duty);
--		if (pwmbl->gpio_on != -1) {
-+		if (gpio_is_valid(pwmbl->gpio_on)) {
- 			gpio_set_value(pwmbl->gpio_on,
- 					1 ^ pwmbl->pdata->on_active_low);
- 		}
-@@ -146,7 +146,7 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
- 	if (retval)
- 		return retval;
- 
--	if (pwmbl->gpio_on != -1) {
-+	if (gpio_is_valid(pwmbl->gpio_on)) {
- 		retval = devm_gpio_request(&pdev->dev, pwmbl->gpio_on,
- 					"gpio_atmel_pwm_bl");
- 		if (retval)
-@@ -196,7 +196,7 @@ static int atmel_pwm_bl_remove(struct platform_device *pdev)
- {
- 	struct atmel_pwm_bl *pwmbl = platform_get_drvdata(pdev);
- 
--	if (pwmbl->gpio_on != -1) {
-+	if (gpio_is_valid(pwmbl->gpio_on)) {
- 		gpio_set_value(pwmbl->gpio_on,
- 					0 ^ pwmbl->pdata->on_active_low);
+ drivers/video/xilinxfb.c | 24 ++++++------------------
+ 1 file changed, 6 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index 98c7a6f..7e3036c 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -260,10 +260,9 @@ static int xilinxfb_assign(struct platform_device *pdev,
+
+ 		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 		drvdata->regs = devm_ioremap_resource(&pdev->dev, res);
+-		if (IS_ERR(drvdata->regs)) {
+-			rc = PTR_ERR(drvdata->regs);
+-			goto err_region;
+-		}
++		if (IS_ERR(drvdata->regs))
++			return PTR_ERR(drvdata->regs);
++
+ 		drvdata->regs_phys = res->start;
  	}
--- 
-1.8.4.2
 
+@@ -279,11 +278,7 @@ static int xilinxfb_assign(struct platform_device *pdev,
+
+ 	if (!drvdata->fb_virt) {
+ 		dev_err(dev, "Could not allocate frame buffer memory\n");
+-		rc = -ENOMEM;
+-		if (drvdata->flags & BUS_ACCESS_FLAG)
+-			goto err_fbmem;
+-		else
+-			goto err_region;
++		return -ENOMEM;
+ 	}
+
+ 	/* Clear (turn to black) the framebuffer */
+@@ -363,11 +358,6 @@ err_cmap:
+ 	/* Turn off the display */
+ 	xilinx_fb_out32(drvdata, REG_CTRL, 0);
+
+-err_fbmem:
+-	if (drvdata->flags & BUS_ACCESS_FLAG)
+-		devm_iounmap(dev, drvdata->regs);
+-
+-err_region:
+ 	return rc;
+ }
+
+@@ -392,11 +382,9 @@ static int xilinxfb_release(struct device *dev)
+ 	/* Turn off the display */
+ 	xilinx_fb_out32(drvdata, REG_CTRL, 0);
+
+-	/* Release the resources, as allocated based on interface */
+-	if (drvdata->flags & BUS_ACCESS_FLAG)
+-		devm_iounmap(dev, drvdata->regs);
+ #ifdef CONFIG_PPC_DCR
+-	else
++	/* Release the resources, as allocated based on interface */
++	if (!(drvdata->flags & BUS_ACCESS_FLAG))
+ 		dcr_unmap(drvdata->dcr_host, drvdata->dcr_len);
+ #endif
+
+--
+1.8.2.3
+
+
+--=_mimegpg-monstr-desktop-29056-1381315946-0001
+Content-Type: application/pgp-signature
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEUEABECAAYFAlJVNWoACgkQykllyylKDCGlRACY9BxJydkhrasnjo6azxOF+Wxj
+YACdFPMjGX9m+R62PjPYOzbwp2llqW0=
+=2F4a
+-----END PGP SIGNATURE-----
+
+--=_mimegpg-monstr-desktop-29056-1381315946-0001--

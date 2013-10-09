@@ -1,87 +1,32 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Date: Wed, 09 Oct 2013 10:52:13 +0000
-Subject: [PATCH v2 2/3] video: xilinxfb: Use devm_kzalloc instead of kzalloc
-Message-Id: <748c16093663172918a90a53dc472cb8beb584ca.1381315928.git.michal.simek@xilinx.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-29043-1381315944-0001"
+From: Joe Perches <joe@perches.com>
+Date: Wed, 09 Oct 2013 15:13:03 +0000
+Subject: Re: [PATCH v2 2/3] video: xilinxfb: Use devm_kzalloc instead of kzalloc
+Message-Id: <1381331583.2050.11.camel@joe-AO722>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <631df9a44b366af4129d00f1d4e1d3baad7d4903.1381315928.git.michal.simek@xilinx.com>
-In-Reply-To: <631df9a44b366af4129d00f1d4e1d3baad7d4903.1381315928.git.michal.simek@xilinx.com>
-To: linux-kernel@vger.kernel.org, monstr@monstr.eu
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-
-This is a MIME GnuPG-signed message.  If you see this text, it means that
-your E-mail or Usenet software does not support MIME signed messages.
-The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
-To open this message correctly you will need to install E-mail or Usenet
-software that supports modern Internet standards.
-
---=_mimegpg-monstr-desktop-29043-1381315944-0001
-
-Simplify driver probe and release function.
-
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
-Reviewed-by: Jingoo Han <jg1.han@samsung.com>
----
-Changes in v2:
-Rebased on git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git for-next
-
- drivers/video/xilinxfb.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
-
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index d12345f..98c7a6f 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -368,8 +368,6 @@ err_fbmem:
- 		devm_iounmap(dev, drvdata->regs);
-
- err_region:
--	kfree(drvdata);
--
- 	return rc;
- }
-
-@@ -402,8 +400,6 @@ static int xilinxfb_release(struct device *dev)
- 		dcr_unmap(drvdata->dcr_host, drvdata->dcr_len);
- #endif
-
--	kfree(drvdata);
--
- 	return 0;
- }
-
-@@ -423,7 +419,7 @@ static int xilinxfb_of_probe(struct platform_device *pdev)
- 	pdata = xilinx_fb_default_pdata;
-
- 	/* Allocate the driver data region */
--	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
-+	drvdata = devm_kzalloc(&pdev->dev, sizeof(*drvdata), GFP_KERNEL);
- 	if (!drvdata) {
- 		dev_err(&pdev->dev, "Couldn't allocate device private record\n");
- 		return -ENOMEM;
-@@ -451,7 +447,6 @@ static int xilinxfb_of_probe(struct platform_device *pdev)
- 		drvdata->dcr_host = dcr_map(op->dev.of_node, start, drvdata->dcr_len);
- 		if (!DCR_MAP_OK(drvdata->dcr_host)) {
- 			dev_err(&op->dev, "invalid DCR address\n");
--			kfree(drvdata);
- 			return -ENODEV;
- 		}
- 	}
---
-1.8.2.3
-
-
---=_mimegpg-monstr-desktop-29043-1381315944-0001
-Content-Type: application/pgp-signature
+	 <748c16093663172918a90a53dc472cb8beb584ca.1381315928.git.michal.simek@xilinx.com>
+In-Reply-To: <748c16093663172918a90a53dc472cb8beb584ca.1381315928.git.michal.simek@xilinx.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Michal Simek <michal.simek@xilinx.com>
+Cc: linux-kernel@vger.kernel.org, monstr@monstr.eu, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+On Wed, 2013-10-09 at 12:52 +0200, Michal Simek wrote:
+> Simplify driver probe and release function.
+[]
+> diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+[]
+> @@ -423,7 +419,7 @@ static int xilinxfb_of_probe(struct platform_device *pdev)
+>  	pdata = xilinx_fb_default_pdata;
+> 
+>  	/* Allocate the driver data region */
+> -	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
+> +	drvdata = devm_kzalloc(&pdev->dev, sizeof(*drvdata), GFP_KERNEL);
+>  	if (!drvdata) {
+>  		dev_err(&pdev->dev, "Couldn't allocate device private record\n");
 
-iEYEABECAAYFAlJVNWgACgkQykllyylKDCEtOACfd1ZwEvvwl1vLmibaorqhFZE9
-NGQAnjXIaJb6aVH9ciKqK8Oc57wqqCT0
-=OagT
------END PGP SIGNATURE-----
+Be nice to remove the unnecessary OOM message.
+There's already a generic dump_stack on OOM.
 
---=_mimegpg-monstr-desktop-29043-1381315944-0001--
+

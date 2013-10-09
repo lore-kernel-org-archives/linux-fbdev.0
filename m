@@ -1,63 +1,74 @@
-From: KY Srinivasan <kys@microsoft.com>
-Date: Tue, 08 Oct 2013 14:48:19 +0000
-Subject: RE: [PATCH 1/2] hyperv-fb: add pci stub
-Message-Id: <869742b7d84a4ee5a1f8733c2058baff@SN2PR03MB061.namprd03.prod.outlook.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 09 Oct 2013 09:53:21 +0000
+Subject: Re: [PATCH 1/2] hyperv-fb: add pci stub
+Message-Id: <52552791.1020505@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="S8Qm5cFRQnvQJaSohu2h1RjNfou5hp8Ll"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1380714911-6254-1-git-send-email-kraxel@redhat.com>
-	 <465ef0cb45e04bcc94c4788c0d930c4d@SN2PR03MB061.namprd03.prod.outlook.com>
-	 <1381128633.13574.3.camel@nilsson.home.kraxel.org>
-	 <f5746838b7654aac98a5753d669196b4@SN2PR03MB061.namprd03.prod.outlook.com>
- <1381221672.5823.30.camel@nilsson.home.kraxel.org>
-In-Reply-To: <1381221672.5823.30.camel@nilsson.home.kraxel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1380714911-6254-1-git-send-email-kraxel@redhat.com>
 To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: Haiyang Zhang <haiyangz@microsoft.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+Cc: "K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>, FRAMEBUFFER LAYER <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogR2VyZCBIb2ZmbWFubiBb
-bWFpbHRvOmtyYXhlbEByZWRoYXQuY29tXQ0KPiBTZW50OiBUdWVzZGF5LCBPY3RvYmVyIDA4LCAy
-MDEzIDE6NDEgQU0NCj4gVG86IEtZIFNyaW5pdmFzYW4NCj4gQ2M6IEhhaXlhbmcgWmhhbmc7IEpl
-YW4tQ2hyaXN0b3BoZSBQbGFnbmlvbC1WaWxsYXJkOyBUb21pIFZhbGtlaW5lbjsgb3Blbg0KPiBs
-aXN0Okh5cGVyLVYgQ09SRSBBTkQuLi47IG9wZW4gbGlzdDpGUkFNRUJVRkZFUiBMQVlFUjsgb3Bl
-biBsaXN0DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS8yXSBoeXBlcnYtZmI6IGFkZCBwY2kgc3R1
-Yg0KPiANCj4gT24gTW8sIDIwMTMtMTAtMDcgYXQgMTc6MTIgKzAwMDAsIEtZIFNyaW5pdmFzYW4g
-d3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9t
-OiBHZXJkIEhvZmZtYW5uIFttYWlsdG86a3JheGVsQHJlZGhhdC5jb21dDQo+ID4gPiBTZW50OiBT
-dW5kYXksIE9jdG9iZXIgMDYsIDIwMTMgMTE6NTEgUE0NCj4gPiA+IFRvOiBLWSBTcmluaXZhc2Fu
-DQo+ID4gPiBDYzogSGFpeWFuZyBaaGFuZzsgSmVhbi1DaHJpc3RvcGhlIFBsYWduaW9sLVZpbGxh
-cmQ7IFRvbWkgVmFsa2VpbmVuOyBvcGVuDQo+ID4gPiBsaXN0Okh5cGVyLVYgQ09SRSBBTkQuLi47
-IG9wZW4gbGlzdDpGUkFNRUJVRkZFUiBMQVlFUjsgb3BlbiBsaXN0DQo+ID4gPiBTdWJqZWN0OiBS
-ZTogW1BBVENIIDEvMl0gaHlwZXJ2LWZiOiBhZGQgcGNpIHN0dWINCj4gPiA+DQo+ID4gPiBPbiBN
-aSwgMjAxMy0xMC0wMiBhdCAxNDoyOSArMDAwMCwgS1kgU3Jpbml2YXNhbiB3cm90ZToNCj4gPiA+
-ID4NCj4gPiA+ID4gPiBUaGlzIHBhdGNoIGFkZHMgYSBwY2kgc3R1YiBkcml2ZXIgdG8gaHlwZXIt
-ZmIuICBUaGUgaHlwZXJ2IGZyYW1lYnVmZmVyDQo+ID4gPiA+ID4gZHJpdmVyIHdpbGwgYmluZCB0
-byB0aGUgcGNpIGRldmljZSB0aGVuLCBzbyBsaW51eCBrZXJuZWwgYW5kIHVzZXJzcGFjZQ0KPiA+
-ID4gPiA+IGtub3cgdGhlcmUgaXMgYSBwcm9wZXIga2VybmVsIGRyaXZlciBmb3IgdGhlIGRldmlj
-ZSBhY3RpdmUuICBsc3BjaSBzaG93cw0KPiA+ID4gPiA+IHRoaXMgZm9yIGV4YW1wbGU6DQo+ID4g
-Pg0KPiA+ID4gPiBHZXJkLA0KPiA+ID4gPg0KPiA+ID4gPiBUaGFua3MgZm9yIGRvaW5nIHRoaXMu
-IFRoaXMgY2VydGFpbmx5IHdpbGwgYWRkcmVzcyBzb21lIG9mIHRoZSBpc3N1ZXMgdGhhdCBhcmUN
-Cj4gPiA+IHJlcG9ydGVkLiBJIGRvIGhhdmUgYSBxdWVzdGlvbiB0aG91Z2ggLSBob3cgd291bGQg
-dGhpcyB3b3JrIGlmIHdlIGRvbid0IGhhdmUNCj4gUENJDQo+ID4gPiBidXMgaW4gdGhlIGd1ZXN0
-Lg0KPiA+ID4NCj4gPiA+IFRoZSBoeXBlcnYgZnJhbWVidWZmZXIgZHJpdmVyIHdvdWxkbid0IHdv
-cmsgaW4gdGhlIGZpcnN0IHBsYWNlIHRoZW4gYXMNCj4gPiA+IGl0IGxvb2tzIHVwIHRoZSBmcmFt
-ZWJ1ZmZlciBhZGRyZXNzIGluIHBjaSBjb25maWcgc3BhY2UgKHNlZSBodmZiX2dldG1lbQ0KPiA+
-ID4gZnVuY3Rpb24pLg0KPiA+DQo+ID4gV2UgYXJlIGdvaW5nIHRvIGZpeCB0aGlzIGFzIHdlIG1v
-dmUgdGhpcyBjb2RlIHRvIHJ1biBvbiBvdXIgVUVGSSBmaXJtd2FyZS4NCj4gDQo+IEhtbSwgd2lu
-ZG93cyBzZXJ2ZXIgMjAxMiBzZWVtcyB0byBoYXZlIG5vIG9wdGlvbiB0byBlbmFibGUgdWVmaS4g
-IFNvIEkNCj4gZ3Vlc3MgdGhpcyBpcyBzdGlsbCBpbiBkZXZlbG9wbWVudD8gIEhvdyB0aGlzIGlz
-IGdvaW5nIHRvIGxvb2sgbGlrZT8NCg0KVGhpcyBmZWF0dXJlIGlzIHRoZXJlIGluIFdTMjAxMiBS
-Mg0KPiANCj4gUHJvYmFibHkgeW91IGFyZSBnb2luZyBmb3IgcHVyZSB1ZWZpIGZpcm13YXJlLCB3
-aXRob3V0IGNzbSwgdG8gYmUgYWJsZQ0KPiB0byBsZWF2ZSBhbGwgdGhlIGxlZ2FjeSBiaW9zIHN0
-dWZmIGJlaGluZCBpbiB1ZWZpIG1vZGUuICBUaGVyZWZvcmUgbm8NCj4gdmVzYSBiaW9zIHN1cHBv
-cnQuICBlZmkgZHJpdmVycyBmb3Igdm1idXMgbmV0d29yay9zdG9yYWdlL2Rpc3BsYXkvaW5wdXQN
-Cj4gaW4gdGhlIGZpcm13YXJlLiAgTm8gbGVnYWN5IGlkZS92Z2EgcGNpIGRldmljZXMuICBDb3Jy
-ZWN0Pw0KPiANClNvbWV0aGluZyBvbiB0aGVzZSBsaW5lcy4NCg0KPiBUaGUgbGludXgga2VybmVs
-IHdpbGwgY29tZSB1cCB3aXRoIGVmaWZiIHRoZW4sIHN3aXRjaGluZyBvdmVyIHRvDQo+IGh5cGVy
-di1mYiBvbmNlIHRoZSBkcml2ZXIgaXMgbG9hZGVkLiAgVGhlIGh5cGVydi1mYiBwY2kgc3R1YiBk
-cml2ZXIgd2lsbA0KPiBub3QgYmluZCB0byB0aGUgaHlwZXJ2IHZnYSBwY2kgZGV2aWNlIGlmIGl0
-IGlzbid0IHByZXNlbnQgaW4gdGhlIGd1ZXN0Lg0KPiBoeXBlcnYtZmIgd2lsbCBsb2FkIGp1c3Qg
-ZmluZSBuZXZlcnRoZWxlc3MgKG9uY2UgaHZmYl9nZXRtZW0gaXMgZml4ZWQgdG8NCj4gbm90IGRl
-cGVuZCBvbiB0aGUgcGNpIGRldmljZSBjb25maWcgc3BhY2UpLiAgVGhlIHBjaSBzdHViIGFkZGVk
-IGJ5IHRoZQ0KPiBwYXRjaCBhbmQgdGhlIHZtYnVzIGRyaXZlciBpbiBoeXBlcnYtZmIgYXJlIGNv
-bXBsZXRlbHkgaW5kZXBlbmRlbnQuDQoNCk9rOyB0aGFua3MuDQoNCksuIFkNCiANCg0K
+--S8Qm5cFRQnvQJaSohu2h1RjNfou5hp8Ll
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 02/10/13 14:55, Gerd Hoffmann wrote:
+> This patch adds a pci stub driver to hyper-fb.  The hyperv framebuffer
+> driver will bind to the pci device then, so linux kernel and userspace
+> know there is a proper kernel driver for the device active.  lspci show=
+s
+> this for example:
+>=20
+> [root@dhcp231 ~]# lspci -vs8
+> 00:08.0 VGA compatible controller: Microsoft Corporation Hyper-V virtua=
+l
+> VGA (prog-if 00 [VGA controller])
+>         Flags: bus master, fast devsel, latency 0, IRQ 11
+>         Memory at f8000000 (32-bit, non-prefetchable) [size=3D64M]
+>         Expansion ROM at <unassigned> [disabled]
+>         Kernel driver in use: hyperv_fb
+>=20
+> Another effect is that the xorg vesa driver will not attach to the
+> device and thus the Xorg server will automatically use the fbdev
+> driver instead.
+>=20
+> Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+> ---
+>  drivers/video/hyperv_fb.c | 40 +++++++++++++++++++++++++++++++++++++++=
+-
+>  1 file changed, 39 insertions(+), 1 deletion(-)
+>=20
+
+Thanks, queuing the series for 3.13.
+
+ Tomi
+
+
+
+--S8Qm5cFRQnvQJaSohu2h1RjNfou5hp8Ll
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSVSeRAAoJEPo9qoy8lh71rGgP/2dEfMQlpprRxqLEARZ6km8Z
+eesjGlizkqyzqjsgz2Qa9c1EegZg7uOf0dKzam9bFiN2StUFUxWZTfYYdwhRyCdb
+6mKajyG9oFsxXa9lDtz4ZtYCIbKM8HYz9nBTz7IuMU6ufjoQvDtWOfnQHTVCIXZy
+pTd6fPR4JC0yQ8WTo7ux6HaTMp1T/WGauPDxPYWQVRsqNsHehvD+O4SxA+f2xJym
+NbHnwwYnEkjavj743mZcnepWiVdKxEmOy4fE5gB0H/2aXsXK2U+Dn/8dxLJgSV9k
+IKKNf1MFj527G1UnOqK/GglOnPNUHmD0IXqpocRa9atVR/2P/5osukmwIfobSjJb
+WxVAutjMMyFtcFTvJPfFvJ/YBJxMdrCNmMBPCp0Dc/tEUl6UJx8JbCzE2FFM8Z5W
+1yEe4GaXea4zVDEuIvQFd92GYTwZEC4IgDtu/Nyj/VaSGP5v1c3QjZKkFO1ZaQRy
+PhOqcmOU1jHo5tXiGy5pxoz+yFermf85QY3Mu3PjFBEdc3OhGMU03SGSf43szVcA
+PSMLenoEAChD0r6uJMeckbkgLNveg2J7++Lbbj4h1K0iG3+FQ7t7fLGgpKxhVeui
+KMz6UXkNHl2/Y7CxbPYPVJDBhEBhUrcwujTTRpHDaqkHqvoHwIOMmad2+pl5ffHD
+61C2E97nS+uYwxe9Bodz
+=PQT7
+-----END PGP SIGNATURE-----
+
+--S8Qm5cFRQnvQJaSohu2h1RjNfou5hp8Ll--

@@ -1,92 +1,57 @@
-From: Michal Simek <monstr@monstr.eu>
-Date: Wed, 09 Oct 2013 10:25:50 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 09 Oct 2013 10:28:02 +0000
 Subject: Re: [PATCH 3/3] video: xilinxfb: Simplify error path
-Message-Id: <52552F2E.7080007@monstr.eu>
+Message-Id: <52552FB2.80903@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="W0u64NRjCG7Tx0BFFb7bUPXGaf2J9EwaB"
+Content-Type: multipart/mixed; boundary="LdPAXweNwjqsNWetTeTOQIq9nTQOPr573"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <7016a90750626ba866dddc6f85cfdd71943f6891.1378965270.git.michal.simek@xilinx.com> <940bbdfc5c67282ab461b9c82b55f18fc34c959d.1378965270.git.michal.simek@xilinx.com> <5236D4BD.9050707@ti.com> <5236DE60.3020901@monstr.eu> <5236DEBF.7070003@ti.com> <52496921.9080603@monstr.eu> <52551BAB.40805@ti.com>
-In-Reply-To: <52551BAB.40805@ti.com>
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: monstr@monstr.eu, Michal Simek <michal.simek@xilinx.com>, linux-kernel@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org
+References: <7016a90750626ba866dddc6f85cfdd71943f6891.1378965270.git.michal.simek@xilinx.com> <940bbdfc5c67282ab461b9c82b55f18fc34c959d.1378965270.git.michal.simek@xilinx.com> <5236D4BD.9050707@ti.com> <5236DE60.3020901@monstr.eu> <5236DEBF.7070003@ti.com> <52496921.9080603@monstr.eu> <52551BAB.40805@ti.com> <52552F2E.7080007@monstr.eu>
+In-Reply-To: <52552F2E.7080007@monstr.eu>
+To: monstr@monstr.eu
+Cc: Michal Simek <michal.simek@xilinx.com>, linux-kernel@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---W0u64NRjCG7Tx0BFFb7bUPXGaf2J9EwaB
+--LdPAXweNwjqsNWetTeTOQIq9nTQOPr573
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 10/09/2013 11:02 AM, Tomi Valkeinen wrote:
-> On 30/09/13 15:05, Michal Simek wrote:
->> Hi Tomi,
->>
->> On 09/16/2013 12:34 PM, Tomi Valkeinen wrote:
->>> On 16/09/13 13:33, Michal Simek wrote:
->>>> On 09/16/2013 11:51 AM, Tomi Valkeinen wrote:
->>>>> On 12/09/13 08:54, Michal Simek wrote:
->>>>>
->>>>>> @@ -394,16 +382,12 @@ static int xilinxfb_release(struct device *d=
-ev)
->>>>>>  	/* Turn off the display */
->>>>>>  	xilinx_fb_out32(drvdata, REG_CTRL, 0);
->>>>>>
->>>>>> -	/* Release the resources, as allocated based on interface */
->>>>>> -	if (drvdata->flags & BUS_ACCESS_FLAG)
->>>>>> -		devm_iounmap(dev, drvdata->regs);
->>>>>>  #ifdef CONFIG_PPC_DCR
->>>>>> -	else
->>>>>> +	/* Release the resources, as allocated based on interface */
->>>>>> +	if (!(drvdata->flags & BUS_ACCESS_FLAG))
->>>>>>  		dcr_unmap(drvdata->dcr_host, drvdata->dcr_len);
->>>>>>  #endif
->>>>>
->>>>> I might be mistaken, and it's not strictly part of this series, but=
+On 09/10/13 13:25, Michal Simek wrote:
 
->>>>> shouldn't dcr_unmap be called somewhere else also, if the probe fai=
-ls?
->>>>
->>>> yes. It should.
->>>
->>> Do you want me to apply these patches as they are, or do you want to
->>> improve the series to include the dcr_unmap fix?
->>
->> Sorry I have missed this email.
->>
->> Yes please apply it as is. I don't have ppc hw here to be able to test=
- this
->> change.
+>> This series does not apply. Can you rebase on top of linux-next, and r=
+esend?
 >=20
-> This series does not apply. Can you rebase on top of linux-next, and re=
-send?
+> Do you mean Stephen Rothwell linux-next or any your linux-next branch?
+> No problem to do so if you send me link to the repo.
 
-Do you mean Stephen Rothwell linux-next or any your linux-next branch?
-No problem to do so if you send me link to the repo.
+Either one, my for-next is in Stephen's tree:
 
-Thanks,
-Michal
+git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git for-next
 
-
-
---=20
-Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel - Microblaze cpu - http://www.monstr.eu/fdt/
-Maintainer of Linux kernel - Xilinx Zynq ARM architecture
-Microblaze U-BOOT custodian and responsible for u-boot arm zynq platform
+ Tomi
 
 
 
---W0u64NRjCG7Tx0BFFb7bUPXGaf2J9EwaB
+--LdPAXweNwjqsNWetTeTOQIq9nTQOPr573
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iEYEARECAAYFAlJVLy4ACgkQykllyylKDCEI8wCcDywJY4UYFEwdjCSYuVyTAn3m
-ejAAn24z3Vla3ldZENVcAgHY8i3ZeXjN
-=rUv+
+iQIcBAEBAgAGBQJSVS+yAAoJEPo9qoy8lh71R8YP/A17Lh4jepb+/dW52RkJEDWx
+FxN9fxzFar+a25nFTwwd97kqnWSyFGfWF0FI+IFUiu7eQQU9rflX4XM8sibE89RG
+OG7kGUCO3bNObh2W8xJQYwmvOzjGV7q8R2MmRqQhILLO5UD1AQYEXYaHuxn4yxCH
+mq30EGAxS01kIiGpxpxsTiFI87E7qI8KAUJs5qI+hBwodESM7PAXoJ7T99uSJU3F
+z45qNsaDx+Mx4DKNoziwLyO9MoQ//BphzAZuDSLK6azP6Zkb4U+bcr0ZW/RWhDDB
+5Pq3T/i6mpUlVPYe9WRi1bwDyFb7Rw80BkCbnLr0/YhdiFAja4FHlUs0QoMl+NkM
+vsI8pakVLC5zeFZvnh9DXzUQWEbUHDeVoRgYhsbthBPalQIAmBVU8AOOdrljfEXv
+KBoD/8S8T+KU22vB5eaUdK9fIhTeie9fyhv8F5nXp46w6QX3E9Dcf8idSIjT2Ul1
+QtOd5EqcnNqwGpClPH4aXliTUcDWzXs2DTZ/T3Kj2EKVO8vcF3/oqbpFJ6EY5TE+
+Is0sFfq0CH3WHRZ51/yhj0nOXj/dGnN0jiVe39+8gmmP4EO1CDwg3qZhEuARjWiK
+X3bWk6hwg61rQLtx18FOqluGSrlTx/3HT/zh8QBgjiPZTooS2eCONtNSBc9s6j9g
+8jWr/aUhXXsSCc0uXNWl
+=Q1jq
 -----END PGP SIGNATURE-----
 
---W0u64NRjCG7Tx0BFFb7bUPXGaf2J9EwaB--
+--LdPAXweNwjqsNWetTeTOQIq9nTQOPr573--

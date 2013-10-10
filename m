@@ -1,135 +1,220 @@
-From: "Bert Kenward" <bert.kenward@broadcom.com>
-Date: Mon, 07 Oct 2013 10:47:38 +0000
-Subject: RE: [RFC PATCH 1/4] mipi-dsi-bus: add MIPI DSI bus support
-Message-Id: <F5FE6E5E9429DA44B1C6B8A1A883D135041E001F@SJEXCHMB13.corp.ad.broadcom.com>
+From: Andrzej Hajda <a.hajda@samsung.com>
+Date: Thu, 10 Oct 2013 09:57:48 +0000
+Subject: Re: [RFC PATCH 1/4] mipi-dsi-bus: add MIPI DSI bus support
+Message-Id: <52567A1C.8060609@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1380032596-18612-1-git-send-email-a.hajda@samsung.com>
  <1380032596-18612-2-git-send-email-a.hajda@samsung.com>
-In-Reply-To: <1380032596-18612-2-git-send-email-a.hajda@samsung.com>
+ <F5FE6E5E9429DA44B1C6B8A1A883D135041E001F@SJEXCHMB13.corp.ad.broadcom.com>
+In-Reply-To: <F5FE6E5E9429DA44B1C6B8A1A883D135041E001F@SJEXCHMB13.corp.ad.broadcom.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrzej Hajda <a.hajda@samsung.com>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+To: Bert Kenward <bert.kenward@broadcom.com>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
 
-T24gVHVlc2RheSBTZXB0ZW1iZXIgMjQgMjAxMyBhdCAxNToyMywgQW5kcnplaiBIYWpkYSB3cm90
-ZToNCj4gTUlQSSBEU0kgaXMgYSBoaWdoLXNwZWVkIHNlcmlhbCBpbnRlcmZhY2UgdG8gdHJhbnNt
-aXQNCj4gZGF0YSBmcm9tL3RvIGhvc3QgdG8gZGlzcGxheSBtb2R1bGUuDQo+IA0KPiBTaWduZWQt
-b2ZmLWJ5OiBBbmRyemVqIEhhamRhIDxhLmhhamRhQHNhbXN1bmcuY29tPg0KPiBTaWduZWQtb2Zm
-LWJ5OiBLeXVuZ21pbiBQYXJrIDxreXVuZ21pbi5wYXJrQHNhbXN1bmcuY29tPg0KPiAtLS0NCj4g
-IGRyaXZlcnMvdmlkZW8vZGlzcGxheS9LY29uZmlnICAgICAgICB8ICAgNCArDQo+ICBkcml2ZXJz
-L3ZpZGVvL2Rpc3BsYXkvTWFrZWZpbGUgICAgICAgfCAgIDEgKw0KPiAgZHJpdmVycy92aWRlby9k
-aXNwbGF5L21pcGktZHNpLWJ1cy5jIHwgMzMyDQo+ICsrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrDQo+ICBpbmNsdWRlL3ZpZGVvL2Rpc3BsYXkuaCAgICAgICAgICAgICAgfCAgIDMg
-Kw0KPiAgaW5jbHVkZS92aWRlby9taXBpLWRzaS1idXMuaCAgICAgICAgIHwgMTQ0ICsrKysrKysr
-KysrKysrKw0KPiAgNSBmaWxlcyBjaGFuZ2VkLCA0ODQgaW5zZXJ0aW9ucygrKQ0KDQo8c25pcHBl
-ZCBhcyBmYXIgYXMgbWlwaS1kc2ktYnVzLmgNCg0KPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS92aWRl
-by9taXBpLWRzaS1idXMuaCBiL2luY2x1ZGUvdmlkZW8vbWlwaS1kc2ktYnVzLmgNCj4gbmV3IGZp
-bGUgbW9kZSAxMDA2NDQNCj4gaW5kZXggMDAwMDAwMC4uYTc4NzkyZA0KPiAtLS0gL2Rldi9udWxs
-DQo+ICsrKyBiL2luY2x1ZGUvdmlkZW8vbWlwaS1kc2ktYnVzLmgNCj4gQEAgLTAsMCArMSwxNDQg
-QEANCj4gKy8qDQo+ICsgKiBNSVBJIERTSSBCdXMNCj4gKyAqDQo+ICsgKiBDb3B5cmlnaHQgKEMp
-IDIwMTMsIFNhbXN1bmcgRWxlY3Ryb25pY3MsIENvLiwgTHRkLg0KPiArICogQW5kcnplaiBIYWpk
-YSA8YS5oYWpkYUBzYW1zdW5nLmNvbT4NCj4gKyAqDQo+ICsgKiBUaGlzIHByb2dyYW0gaXMgZnJl
-ZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3RyaWJ1dGUgaXQgYW5kL29yIG1vZGlmeQ0KPiArICog
-aXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSB2ZXJz
-aW9uIDIgYXMNCj4gKyAqIHB1Ymxpc2hlZCBieSB0aGUgRnJlZSBTb2Z0d2FyZSBGb3VuZGF0aW9u
-Lg0KPiArICovDQo+ICsNCj4gKyNpZm5kZWYgX19NSVBJX0RTSV9CVVNfSF9fDQo+ICsjZGVmaW5l
-IF9fTUlQSV9EU0lfQlVTX0hfXw0KPiArDQo+ICsjaW5jbHVkZSA8bGludXgvZGV2aWNlLmg+DQo+
-ICsjaW5jbHVkZSA8dmlkZW8vdmlkZW9tb2RlLmg+DQo+ICsNCj4gK3N0cnVjdCBtaXBpX2RzaV9i
-dXM7DQo+ICtzdHJ1Y3QgbWlwaV9kc2lfZGV2aWNlOw0KPiArDQo+ICtzdHJ1Y3QgbWlwaV9kc2lf
-YnVzX29wcyB7DQo+ICsJaW50ICgqc2V0X3Bvd2VyKShzdHJ1Y3QgbWlwaV9kc2lfYnVzICpidXMs
-IHN0cnVjdCBtaXBpX2RzaV9kZXZpY2UNCj4gKmRldiwNCj4gKwkJCSBib29sIG9uKTsNCj4gKwlp
-bnQgKCpzZXRfc3RyZWFtKShzdHJ1Y3QgbWlwaV9kc2lfYnVzICpidXMsIHN0cnVjdCBtaXBpX2Rz
-aV9kZXZpY2UNCj4gKmRldiwNCj4gKwkJCSAgYm9vbCBvbik7DQo+ICsJaW50ICgqdHJhbnNmZXIp
-KHN0cnVjdCBtaXBpX2RzaV9idXMgKmJ1cywgc3RydWN0IG1pcGlfZHNpX2RldmljZQ0KPiAqZGV2
-LA0KPiArCQkJdTggdHlwZSwgY29uc3QgdTggKnR4X2J1Ziwgc2l6ZV90IHR4X2xlbiwgdTggKnJ4
-X2J1ZiwNCj4gKwkJCXNpemVfdCByeF9sZW4pOw0KPiArfTsNCj4gKw0KPiArI2RlZmluZSBEU0lf
-TU9ERV9WSURFTwkJCSgxIDw8IDApDQo+ICsjZGVmaW5lIERTSV9NT0RFX1ZJREVPX0JVUlNUCQko
-MSA8PCAxKQ0KPiArI2RlZmluZSBEU0lfTU9ERV9WSURFT19TWU5DX1BVTFNFCSgxIDw8IDIpDQo+
-ICsjZGVmaW5lIERTSV9NT0RFX1ZJREVPX0FVVE9fVkVSVAkoMSA8PCAzKQ0KPiArI2RlZmluZSBE
-U0lfTU9ERV9WSURFT19IU0UJCSgxIDw8IDQpDQo+ICsjZGVmaW5lIERTSV9NT0RFX1ZJREVPX0hG
-UAkJKDEgPDwgNSkNCj4gKyNkZWZpbmUgRFNJX01PREVfVklERU9fSEJQCQkoMSA8PCA2KQ0KPiAr
-I2RlZmluZSBEU0lfTU9ERV9WSURFT19IU0EJCSgxIDw8IDcpDQo+ICsjZGVmaW5lIERTSV9NT0RF
-X1ZTWU5DX0ZMVVNICQkoMSA8PCA4KQ0KPiArI2RlZmluZSBEU0lfTU9ERV9FT1RfUEFDS0VUCQko
-MSA8PCA5KQ0KPiArDQo+ICtlbnVtIG1pcGlfZHNpX3BpeGVsX2Zvcm1hdCB7DQo+ICsJRFNJX0ZN
-VF9SR0I4ODgsDQo+ICsJRFNJX0ZNVF9SR0I2NjYsDQo+ICsJRFNJX0ZNVF9SR0I2NjZfUEFDS0VE
-LA0KPiArCURTSV9GTVRfUkdCNTY1LA0KPiArfTsNCj4gKw0KPiArc3RydWN0IG1pcGlfZHNpX2lu
-dGVyZmFjZV9wYXJhbXMgew0KPiArCWVudW0gbWlwaV9kc2lfcGl4ZWxfZm9ybWF0IGZvcm1hdDsN
-Cj4gKwl1bnNpZ25lZCBsb25nIG1vZGU7DQo+ICsJdW5zaWduZWQgbG9uZyBoc19jbGtfZnJlcTsN
-Cj4gKwl1bnNpZ25lZCBsb25nIGVzY19jbGtfZnJlcTsNCj4gKwl1bnNpZ25lZCBjaGFyIGRhdGFf
-bGFuZXM7DQo+ICsJdW5zaWduZWQgY2hhciBjbWRfYWxsb3c7DQo+ICt9Ow0KPiArDQo+ICtzdHJ1
-Y3QgbWlwaV9kc2lfYnVzIHsNCj4gKwlzdHJ1Y3QgZGV2aWNlICpkZXY7DQo+ICsJY29uc3Qgc3Ry
-dWN0IG1pcGlfZHNpX2J1c19vcHMgKm9wczsNCj4gK307DQo+ICsNCj4gKyNkZWZpbmUgTUlQSV9E
-U0lfTU9EVUxFX1BSRUZJWAkJIm1pcGktZHNpOiINCj4gKyNkZWZpbmUgTUlQSV9EU0lfTkFNRV9T
-SVpFCQkzMg0KPiArDQo+ICtzdHJ1Y3QgbWlwaV9kc2lfZGV2aWNlX2lkIHsNCj4gKwljaGFyIG5h
-bWVbTUlQSV9EU0lfTkFNRV9TSVpFXTsNCj4gKwlfX2tlcm5lbF91bG9uZ190IGRyaXZlcl9kYXRh
-CS8qIERhdGEgcHJpdmF0ZSB0byB0aGUgZHJpdmVyICovDQo+ICsJCQlfX2FsaWduZWQoc2l6ZW9m
-KF9fa2VybmVsX3Vsb25nX3QpKTsNCj4gK307DQo+ICsNCj4gK3N0cnVjdCBtaXBpX2RzaV9kZXZp
-Y2Ugew0KPiArCWNoYXIgbmFtZVtNSVBJX0RTSV9OQU1FX1NJWkVdOw0KPiArCWludCBpZDsNCj4g
-KwlzdHJ1Y3QgZGV2aWNlIGRldjsNCj4gKw0KPiArCWNvbnN0IHN0cnVjdCBtaXBpX2RzaV9kZXZp
-Y2VfaWQgKmlkX2VudHJ5Ow0KPiArCXN0cnVjdCBtaXBpX2RzaV9idXMgKmJ1czsNCj4gKwlzdHJ1
-Y3QgdmlkZW9tb2RlIHZtOw0KPiArCXN0cnVjdCBtaXBpX2RzaV9pbnRlcmZhY2VfcGFyYW1zIHBh
-cmFtczsNCj4gK307DQo+ICsNCj4gKyNkZWZpbmUgdG9fbWlwaV9kc2lfZGV2aWNlKGQpCWNvbnRh
-aW5lcl9vZihkLCBzdHJ1Y3QNCj4gbWlwaV9kc2lfZGV2aWNlLCBkZXYpDQo+ICsNCj4gK2ludCBt
-aXBpX2RzaV9kZXZpY2VfcmVnaXN0ZXIoc3RydWN0IG1pcGlfZHNpX2RldmljZSAqZGV2LA0KPiAr
-CQkJICAgICBzdHJ1Y3QgbWlwaV9kc2lfYnVzICpidXMpOw0KPiArdm9pZCBtaXBpX2RzaV9kZXZp
-Y2VfdW5yZWdpc3RlcihzdHJ1Y3QgbWlwaV9kc2lfZGV2aWNlICpkZXYpOw0KPiArDQo+ICtzdHJ1
-Y3QgbWlwaV9kc2lfZHJpdmVyIHsNCj4gKwlpbnQoKnByb2JlKShzdHJ1Y3QgbWlwaV9kc2lfZGV2
-aWNlICopOw0KPiArCWludCgqcmVtb3ZlKShzdHJ1Y3QgbWlwaV9kc2lfZGV2aWNlICopOw0KPiAr
-CXN0cnVjdCBkZXZpY2VfZHJpdmVyIGRyaXZlcjsNCj4gKwljb25zdCBzdHJ1Y3QgbWlwaV9kc2lf
-ZGV2aWNlX2lkICppZF90YWJsZTsNCj4gK307DQo+ICsNCj4gKyNkZWZpbmUgdG9fbWlwaV9kc2lf
-ZHJpdmVyKGQpCWNvbnRhaW5lcl9vZihkLCBzdHJ1Y3QNCj4gbWlwaV9kc2lfZHJpdmVyLCBkcml2
-ZXIpDQo+ICsNCj4gK2ludCBtaXBpX2RzaV9kcml2ZXJfcmVnaXN0ZXIoc3RydWN0IG1pcGlfZHNp
-X2RyaXZlciAqZHJ2KTsNCj4gK3ZvaWQgbWlwaV9kc2lfZHJpdmVyX3VucmVnaXN0ZXIoc3RydWN0
-IG1pcGlfZHNpX2RyaXZlciAqZHJ2KTsNCj4gKw0KPiArc3RhdGljIGlubGluZSB2b2lkICptaXBp
-X2RzaV9nZXRfZHJ2ZGF0YShjb25zdCBzdHJ1Y3QgbWlwaV9kc2lfZGV2aWNlDQo+ICpkZXYpDQo+
-ICt7DQo+ICsJcmV0dXJuIGRldl9nZXRfZHJ2ZGF0YSgmZGV2LT5kZXYpOw0KPiArfQ0KPiArDQo+
-ICtzdGF0aWMgaW5saW5lIHZvaWQgbWlwaV9kc2lfc2V0X2RydmRhdGEoc3RydWN0IG1pcGlfZHNp
-X2RldmljZSAqZGV2LA0KPiArCQkJCQl2b2lkICpkYXRhKQ0KPiArew0KPiArCWRldl9zZXRfZHJ2
-ZGF0YSgmZGV2LT5kZXYsIGRhdGEpOw0KPiArfQ0KPiArDQo+ICtpbnQgb2ZfbWlwaV9kc2lfcmVn
-aXN0ZXJfZGV2aWNlcyhzdHJ1Y3QgbWlwaV9kc2lfYnVzICpidXMpOw0KPiArdm9pZCBtaXBpX2Rz
-aV91bnJlZ2lzdGVyX2RldmljZXMoc3RydWN0IG1pcGlfZHNpX2J1cyAqYnVzKTsNCj4gKw0KPiAr
-LyogbW9kdWxlX21pcGlfZHNpX2RyaXZlcigpIC0gSGVscGVyIG1hY3JvIGZvciBkcml2ZXJzIHRo
-YXQgZG9uJ3QgZG8NCj4gKyAqIGFueXRoaW5nIHNwZWNpYWwgaW4gbW9kdWxlIGluaXQvZXhpdC4g
-IFRoaXMgZWxpbWluYXRlcyBhIGxvdCBvZg0KPiArICogYm9pbGVycGxhdGUuICBFYWNoIG1vZHVs
-ZSBtYXkgb25seSB1c2UgdGhpcyBtYWNybyBvbmNlLCBhbmQNCj4gKyAqIGNhbGxpbmcgaXQgcmVw
-bGFjZXMgbW9kdWxlX2luaXQoKSBhbmQgbW9kdWxlX2V4aXQoKQ0KPiArICovDQo+ICsjZGVmaW5l
-IG1vZHVsZV9taXBpX2RzaV9kcml2ZXIoX19taXBpX2RzaV9kcml2ZXIpIFwNCj4gKwltb2R1bGVf
-ZHJpdmVyKF9fbWlwaV9kc2lfZHJpdmVyLCBtaXBpX2RzaV9kcml2ZXJfcmVnaXN0ZXIsIFwNCj4g
-KwkJCW1pcGlfZHNpX2RyaXZlcl91bnJlZ2lzdGVyKQ0KPiArDQo+ICtpbnQgbWlwaV9kc2lfc2V0
-X3Bvd2VyKHN0cnVjdCBtaXBpX2RzaV9kZXZpY2UgKmRldiwgYm9vbCBvbik7DQo+ICtpbnQgbWlw
-aV9kc2lfc2V0X3N0cmVhbShzdHJ1Y3QgbWlwaV9kc2lfZGV2aWNlICpkZXYsIGJvb2wgb24pOw0K
-PiAraW50IG1pcGlfZHNpX2Rjc193cml0ZShzdHJ1Y3QgbWlwaV9kc2lfZGV2aWNlICpkZXYsIGlu
-dCBjaGFubmVsLCBjb25zdCB1OA0KPiAqZGF0YSwNCj4gKwkJICAgICAgIHNpemVfdCBsZW4pOw0K
-PiAraW50IG1pcGlfZHNpX2Rjc19yZWFkKHN0cnVjdCBtaXBpX2RzaV9kZXZpY2UgKmRldiwgaW50
-IGNoYW5uZWwsIHU4IGNtZCwNCj4gKwkJICAgICAgdTggKmRhdGEsIHNpemVfdCBsZW4pOw0KPiAr
-DQo+ICsjZGVmaW5lIG1pcGlfZHNpX2Rjc193cml0ZV9zZXEoZGV2LCBjaGFubmVsLCBzZXEuLi4p
-IFwNCj4gKyh7XA0KPiArCWNvbnN0IHU4IGRbXSA9IHsgc2VxIH07XA0KPiArCUJVSUxEX0JVR19P
-Tl9NU0coQVJSQVlfU0laRShkKSA+IDY0LCAiRENTIHNlcXVlbmNlIHRvbyBsb25nIGZvcg0KPiBz
-dGFjayIpO1wNCj4gKwltaXBpX2RzaV9kY3Nfd3JpdGUoZGV2LCBjaGFubmVsLCBkLCBBUlJBWV9T
-SVpFKGQpKTtcDQo+ICt9KQ0KPiArDQo+ICsjZGVmaW5lIG1pcGlfZHNpX2Rjc193cml0ZV9zdGF0
-aWNfc2VxKGRldiwgY2hhbm5lbCwgc2VxLi4uKSBcDQo+ICsoe1wNCj4gKwlzdGF0aWMgY29uc3Qg
-dTggZFtdID0geyBzZXEgfTtcDQo+ICsJbWlwaV9kc2lfZGNzX3dyaXRlKGRldiwgY2hhbm5lbCwg
-ZCwgQVJSQVlfU0laRShkKSk7XA0KPiArfSkNCj4gKw0KPiArI2VuZGlmIC8qIF9fTUlQSV9EU0lf
-QlVTX18gKi8NCg0KSSBtYXkgd2VsbCBoYXZlIG1pc3NlZCBzb21ldGhpbmcsIGJ1dCBJIGNhbid0
-IHNlZSBleGFjdGx5IGhvdyBhIGNvbW1hbmQgbW9kZQ0KdXBkYXRlIHdvdWxkIGJlIGRvbmUgd2l0
-aCB0aGlzIGludGVyZmFjZS4gV291bGQgdGhpcyByZXF1aXJlIHJlcGVhdGVkIGNhbGxzIHRvDQou
-dHJhbnNmZXI/IFN1Y2ggdHJhbnNmZXJzIHdvdWxkIG5lZWQgdG8gYmUgZmxhZ2dlZCBhcyByZXF1
-aXJpbmcNCnN5bmNocm9uaXNhdGlvbiB3aXRoIGEgdGVhcmluZyBlZmZlY3QgY29udHJvbCBzaWdu
-YWwgLSBlaXRoZXIgdGhlIGluYmFuZA0KbWV0aG9kIG9yIGEgZGVkaWNhdGVkIGxpbmUuIEkgc3Vz
-cGVjdCBtYW55IGhhcmR3YXJlIGltcGxlbWVudGF0aW9ucyB3aWxsIGhhdmUNCmEgc3BlY2lmaWMg
-bWV0aG9kIGZvciB0cmFuc2ZlcnJpbmcgcGl4ZWwgZGF0YSBpbiBhIERTSSBjb21tYW5kIG1vZGUg
-dHJhbnNmZXIuDQoNClRoZSBjb21tYW5kIHNlbmRpbmcgcGVyaW9kIGR1cmluZyB2aWRlbyBtb2Rl
-IHNob3VsZCBwcm9iYWJseSBiZSBjb25maWd1cmFibGUNCm9uIGEgcGVyLXRyYW5zZmVyIGJhc2lz
-LiBTb21lIGNvbW1hbmRzIGhhdmUgdG8gYmUgc3luY2hyb25pc2VkIHdpdGggdmVydGljYWwNCmJs
-YW5raW5nLCBvdGhlcnMgZG8gbm90LiBUaGlzIGNvdWxkIHBlcmhhcHMgYmUgY29tYmluZWQgd2l0
-aCBhIHdpZGVyDQpjb25maWd1cmF0aW9uIG9wdGlvbiBmb3IgYSBnaXZlbiBwYW5lbCBvciBpbnRl
-cmZhY2UuIFNpbWlsYXJseSwgc2VsZWN0aW9uIG9mDQpsb3cgcG93ZXIgKExQKSBhbmQgaGlnaCBz
-cGVlZCAoSFMpIG1vZGUgb24gYSBwZXItdHJhbnNmZXIgYmFzaXMgY2FuIGJlIG5lZWRlZA0KZm9y
-IHNvbWUgcGFuZWxzLg0KDQpJcyB0aGVyZSBhIG1lY2hhbmlzbSBmb3IgY29udHJvbGxpbmcgdWx0
-cmEtbG93IHBvd2VyIHN0YXRlIChVTFBTKSBlbnRyeT8gQWxzbywNCmlzIHRoZXJlIGEgbWV0aG9k
-IGZvciBzZW5kaW5nIGFyYml0cmFyeSB0cmlnZ2VyIG1lc3NhZ2VzIChlZyB0aGUgcmVzZXQNCnRy
-aWdnZXIpPw0KDQpUaGFua3MsDQoNCkJlcnQuDQotLSANCkJlcnQgS2Vud2FyZA0KU29mdHdhcmUg
-RW5naW5lZXINCkJyb2FkY29tIE1vYmlsZSBQbGF0Zm9ybSBTb2x1dGlvbnMNCkNhbWJyaWRnZSwg
-VUsNCg=
+On 10/07/2013 12:47 PM, Bert Kenward wrote:
+> On Tuesday September 24 2013 at 15:23, Andrzej Hajda wrote:
+>> MIPI DSI is a high-speed serial interface to transmit
+>> data from/to host to display module.
+>>
+>> Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
+>> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+>> ---
+>>  drivers/video/display/Kconfig        |   4 +
+>>  drivers/video/display/Makefile       |   1 +
+>>  drivers/video/display/mipi-dsi-bus.c | 332
+>> +++++++++++++++++++++++++++++++++++
+>>  include/video/display.h              |   3 +
+>>  include/video/mipi-dsi-bus.h         | 144 +++++++++++++++
+>>  5 files changed, 484 insertions(+)
+> <snipped as far as mipi-dsi-bus.h
+>
+>> diff --git a/include/video/mipi-dsi-bus.h b/include/video/mipi-dsi-bus.h
+>> new file mode 100644
+>> index 0000000..a78792d
+>> --- /dev/null
+>> +++ b/include/video/mipi-dsi-bus.h
+>> @@ -0,0 +1,144 @@
+>> +/*
+>> + * MIPI DSI Bus
+>> + *
+>> + * Copyright (C) 2013, Samsung Electronics, Co., Ltd.
+>> + * Andrzej Hajda <a.hajda@samsung.com>
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License version 2 as
+>> + * published by the Free Software Foundation.
+>> + */
+>> +
+>> +#ifndef __MIPI_DSI_BUS_H__
+>> +#define __MIPI_DSI_BUS_H__
+>> +
+>> +#include <linux/device.h>
+>> +#include <video/videomode.h>
+>> +
+>> +struct mipi_dsi_bus;
+>> +struct mipi_dsi_device;
+>> +
+>> +struct mipi_dsi_bus_ops {
+>> +	int (*set_power)(struct mipi_dsi_bus *bus, struct mipi_dsi_device
+>> *dev,
+>> +			 bool on);
+>> +	int (*set_stream)(struct mipi_dsi_bus *bus, struct mipi_dsi_device
+>> *dev,
+>> +			  bool on);
+>> +	int (*transfer)(struct mipi_dsi_bus *bus, struct mipi_dsi_device
+>> *dev,
+>> +			u8 type, const u8 *tx_buf, size_t tx_len, u8 *rx_buf,
+>> +			size_t rx_len);
+>> +};
+>> +
+>> +#define DSI_MODE_VIDEO			(1 << 0)
+>> +#define DSI_MODE_VIDEO_BURST		(1 << 1)
+>> +#define DSI_MODE_VIDEO_SYNC_PULSE	(1 << 2)
+>> +#define DSI_MODE_VIDEO_AUTO_VERT	(1 << 3)
+>> +#define DSI_MODE_VIDEO_HSE		(1 << 4)
+>> +#define DSI_MODE_VIDEO_HFP		(1 << 5)
+>> +#define DSI_MODE_VIDEO_HBP		(1 << 6)
+>> +#define DSI_MODE_VIDEO_HSA		(1 << 7)
+>> +#define DSI_MODE_VSYNC_FLUSH		(1 << 8)
+>> +#define DSI_MODE_EOT_PACKET		(1 << 9)
+>> +
+>> +enum mipi_dsi_pixel_format {
+>> +	DSI_FMT_RGB888,
+>> +	DSI_FMT_RGB666,
+>> +	DSI_FMT_RGB666_PACKED,
+>> +	DSI_FMT_RGB565,
+>> +};
+>> +
+>> +struct mipi_dsi_interface_params {
+>> +	enum mipi_dsi_pixel_format format;
+>> +	unsigned long mode;
+>> +	unsigned long hs_clk_freq;
+>> +	unsigned long esc_clk_freq;
+>> +	unsigned char data_lanes;
+>> +	unsigned char cmd_allow;
+>> +};
+>> +
+>> +struct mipi_dsi_bus {
+>> +	struct device *dev;
+>> +	const struct mipi_dsi_bus_ops *ops;
+>> +};
+>> +
+>> +#define MIPI_DSI_MODULE_PREFIX		"mipi-dsi:"
+>> +#define MIPI_DSI_NAME_SIZE		32
+>> +
+>> +struct mipi_dsi_device_id {
+>> +	char name[MIPI_DSI_NAME_SIZE];
+>> +	__kernel_ulong_t driver_data	/* Data private to the driver */
+>> +			__aligned(sizeof(__kernel_ulong_t));
+>> +};
+>> +
+>> +struct mipi_dsi_device {
+>> +	char name[MIPI_DSI_NAME_SIZE];
+>> +	int id;
+>> +	struct device dev;
+>> +
+>> +	const struct mipi_dsi_device_id *id_entry;
+>> +	struct mipi_dsi_bus *bus;
+>> +	struct videomode vm;
+>> +	struct mipi_dsi_interface_params params;
+>> +};
+>> +
+>> +#define to_mipi_dsi_device(d)	container_of(d, struct
+>> mipi_dsi_device, dev)
+>> +
+>> +int mipi_dsi_device_register(struct mipi_dsi_device *dev,
+>> +			     struct mipi_dsi_bus *bus);
+>> +void mipi_dsi_device_unregister(struct mipi_dsi_device *dev);
+>> +
+>> +struct mipi_dsi_driver {
+>> +	int(*probe)(struct mipi_dsi_device *);
+>> +	int(*remove)(struct mipi_dsi_device *);
+>> +	struct device_driver driver;
+>> +	const struct mipi_dsi_device_id *id_table;
+>> +};
+>> +
+>> +#define to_mipi_dsi_driver(d)	container_of(d, struct
+>> mipi_dsi_driver, driver)
+>> +
+>> +int mipi_dsi_driver_register(struct mipi_dsi_driver *drv);
+>> +void mipi_dsi_driver_unregister(struct mipi_dsi_driver *drv);
+>> +
+>> +static inline void *mipi_dsi_get_drvdata(const struct mipi_dsi_device
+>> *dev)
+>> +{
+>> +	return dev_get_drvdata(&dev->dev);
+>> +}
+>> +
+>> +static inline void mipi_dsi_set_drvdata(struct mipi_dsi_device *dev,
+>> +					void *data)
+>> +{
+>> +	dev_set_drvdata(&dev->dev, data);
+>> +}
+>> +
+>> +int of_mipi_dsi_register_devices(struct mipi_dsi_bus *bus);
+>> +void mipi_dsi_unregister_devices(struct mipi_dsi_bus *bus);
+>> +
+>> +/* module_mipi_dsi_driver() - Helper macro for drivers that don't do
+>> + * anything special in module init/exit.  This eliminates a lot of
+>> + * boilerplate.  Each module may only use this macro once, and
+>> + * calling it replaces module_init() and module_exit()
+>> + */
+>> +#define module_mipi_dsi_driver(__mipi_dsi_driver) \
+>> +	module_driver(__mipi_dsi_driver, mipi_dsi_driver_register, \
+>> +			mipi_dsi_driver_unregister)
+>> +
+>> +int mipi_dsi_set_power(struct mipi_dsi_device *dev, bool on);
+>> +int mipi_dsi_set_stream(struct mipi_dsi_device *dev, bool on);
+>> +int mipi_dsi_dcs_write(struct mipi_dsi_device *dev, int channel, const u8
+>> *data,
+>> +		       size_t len);
+>> +int mipi_dsi_dcs_read(struct mipi_dsi_device *dev, int channel, u8 cmd,
+>> +		      u8 *data, size_t len);
+>> +
+>> +#define mipi_dsi_dcs_write_seq(dev, channel, seq...) \
+>> +({\
+>> +	const u8 d[] = { seq };\
+>> +	BUILD_BUG_ON_MSG(ARRAY_SIZE(d) > 64, "DCS sequence too long for
+>> stack");\
+>> +	mipi_dsi_dcs_write(dev, channel, d, ARRAY_SIZE(d));\
+>> +})
+>> +
+>> +#define mipi_dsi_dcs_write_static_seq(dev, channel, seq...) \
+>> +({\
+>> +	static const u8 d[] = { seq };\
+>> +	mipi_dsi_dcs_write(dev, channel, d, ARRAY_SIZE(d));\
+>> +})
+>> +
+>> +#endif /* __MIPI_DSI_BUS__ */
+> I may well have missed something,
+>  but I can't see exactly how a command mode
+> update would be done with this interface. Would this require repeated calls to
+> .transfer? Such transfers would need to be flagged as requiring
+> synchronisation with a tearing effect control signal - either the inband
+> method or a dedicated line. I suspect many hardware implementations will have
+> a specific method for transferring pixel data in a DSI command mode transfer.
+>
+> The command sending period during video mode should probably be configurable
+> on a per-transfer basis. Some commands have to be synchronised with vertical
+> blanking, others do not. This could perhaps be combined with a wider
+> configuration option for a given panel or interface. Similarly, selection of
+> low power (LP) and high speed (HS) mode on a per-transfer basis can be needed
+> for some panels.
+>
+> Is there a mechanism for controlling ultra-low power state (ULPS) entry? Also,
+> is there a method for sending arbitrary trigger messages (eg the reset
+> trigger)?
+Thanks for the feedback.
+The current dsi bus implementation was just made to work with the
+hw I have. It should be extended to be more generic, but I hope
+now it is just matter of adding good opses and parameters.
+Feel free to propose new opses.
+
+Andrzej
+>
+> Thanks,
+>
+> Bert.
 

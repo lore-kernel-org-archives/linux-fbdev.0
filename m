@@ -1,87 +1,113 @@
-From: Mark Zhang <nvmarkzhang@gmail.com>
-Date: Wed, 23 Oct 2013 11:34:26 +0000
-Subject: Re: How to set fops in "struct platform_pwm_backlight_data"?
-Message-Id: <5267B442.5090203@gmail.com>
+From: Michal Simek <michal.simek@xilinx.com>
+Date: Thu, 10 Oct 2013 06:30:20 +0000
+Subject: [PATCH v3 1/3] video: xilinxfb: Use standard variable name convention
+Message-Id: <631df9a44b366af4129d00f1d4e1d3baad7d4903.1381386616.git.michal.simek@xilinx.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-26965-1381386623-0001"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5260BD8C.7000200@gmail.com> <20131022072443.GB8681@ulmo.nvidia.com> <52663D6D.5000806@gmail.com> <20131022124905.GA24255@ulmo.nvidia.com> <52673178.8070805@gmail.com> <20131023080002.GB7404@ulmo.nvidia.com> <52678D99.8090003@gmail.com> <20131023090925.GC11954@ulmo.nvidia.com> <5267A691.8050503@gmail.com> <5267A8F9.9050907@gmail.com> <20131023105821.GC15082@ulmo.nvidia.com>
-In-Reply-To: <20131023105821.GC15082@ulmo.nvidia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, monstr-pSz03upnqPeHXe+LvDLADg@public.gmane.org
+Cc: joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
+
+--=_mimegpg-monstr-desktop-26965-1381386623-0001
+
+s/op/pdev/ in xilinxfb_of_probe().
+No functional chagnes.
+
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+---
+Changes in v3: None
+Changes in v2: None
+
+ drivers/video/xilinxfb.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index 0e1dd33..d12345f 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -411,7 +411,7 @@ static int xilinxfb_release(struct device *dev)
+  * OF bus binding
+  */
+
+-static int xilinxfb_of_probe(struct platform_device *op)
++static int xilinxfb_of_probe(struct platform_device *pdev)
+ {
+ 	const u32 *prop;
+ 	u32 tft_access = 0;
+@@ -425,7 +425,7 @@ static int xilinxfb_of_probe(struct platform_device *op)
+ 	/* Allocate the driver data region */
+ 	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
+ 	if (!drvdata) {
+-		dev_err(&op->dev, "Couldn't allocate device private record\n");
++		dev_err(&pdev->dev, "Couldn't allocate device private record\n");
+ 		return -ENOMEM;
+ 	}
+
+@@ -433,7 +433,7 @@ static int xilinxfb_of_probe(struct platform_device *op)
+ 	 * To check whether the core is connected directly to DCR or BUS
+ 	 * interface and initialize the tft_access accordingly.
+ 	 */
+-	of_property_read_u32(op->dev.of_node, "xlnx,dcr-splb-slave-if",
++	of_property_read_u32(pdev->dev.of_node, "xlnx,dcr-splb-slave-if",
+ 			     &tft_access);
+
+ 	/*
+@@ -457,29 +457,29 @@ static int xilinxfb_of_probe(struct platform_device *op)
+ 	}
+ #endif
+
+-	prop = of_get_property(op->dev.of_node, "phys-size", &size);
++	prop = of_get_property(pdev->dev.of_node, "phys-size", &size);
+ 	if ((prop) && (size >= sizeof(u32)*2)) {
+ 		pdata.screen_width_mm = prop[0];
+ 		pdata.screen_height_mm = prop[1];
+ 	}
+
+-	prop = of_get_property(op->dev.of_node, "resolution", &size);
++	prop = of_get_property(pdev->dev.of_node, "resolution", &size);
+ 	if ((prop) && (size >= sizeof(u32)*2)) {
+ 		pdata.xres = prop[0];
+ 		pdata.yres = prop[1];
+ 	}
+
+-	prop = of_get_property(op->dev.of_node, "virtual-resolution", &size);
++	prop = of_get_property(pdev->dev.of_node, "virtual-resolution", &size);
+ 	if ((prop) && (size >= sizeof(u32)*2)) {
+ 		pdata.xvirt = prop[0];
+ 		pdata.yvirt = prop[1];
+ 	}
+
+-	if (of_find_property(op->dev.of_node, "rotate-display", NULL))
++	if (of_find_property(pdev->dev.of_node, "rotate-display", NULL))
+ 		pdata.rotate_screen = 1;
+
+-	dev_set_drvdata(&op->dev, drvdata);
+-	return xilinxfb_assign(op, drvdata, &pdata);
++	dev_set_drvdata(&pdev->dev, drvdata);
++	return xilinxfb_assign(pdev, drvdata, &pdata);
+ }
+
+ static int xilinxfb_of_remove(struct platform_device *op)
+--
+1.8.2.3
+
+
+--=_mimegpg-monstr-desktop-26965-1381386623-0001
+Content-Type: application/pgp-signature
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: rpurdie@rpsys.net, jg1.han@samsung.com, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 10/23/2013 06:58 PM, Thierry Reding wrote:
-> On Wed, Oct 23, 2013 at 06:46:17PM +0800, Mark Zhang wrote:
->> On 10/23/2013 06:36 PM, Mark Zhang wrote:
->>> On 10/23/2013 05:09 PM, Thierry Reding wrote:
->>>> On Wed, Oct 23, 2013 at 04:49:29PM +0800, Mark Zhang wrote:
->>>>> On 10/23/2013 04:00 PM, Thierry Reding wrote:
->>>>>> On Wed, Oct 23, 2013 at 10:16:24AM +0800, Mark Zhang wrote:
->>>>>>> On 10/22/2013 08:49 PM, Thierry Reding wrote:
->>>>>>>> On Tue, Oct 22, 2013 at 04:55:09PM +0800, Mark Zhang wrote:
->>>>>>>>> On 10/22/2013 03:24 PM, Thierry Reding wrote:
->>>>>>>>>> On Fri, Oct 18, 2013 at 12:48:12PM +0800, Mark Zhang wrote:
->>>>>>>>> [...]
->>>>>>>>>>>>
->>>>>>>>>>>
->>>>>>>>>>> Okay, I just want to set the "notify" function pointer in "struct
->>>>>>>>>>> platform_pwm_backlight_data", because I want to tune the brightness
->>>>>>>>>>> value before the pwm-bl sets the brightness to hardware. I don't know
->>>>>>>>>>> how to do that, unless we define the platform data explicitly.
->>>>>>>>>>
->>>>>>>>>> Okay, my question should have been what you need the functions for and
->>>>>>>>>> why you think you need them.
->>>>>>>>>>
->>>>>>>>>
->>>>>>>>> If I understanding you correctly, I suppose I've said that: "because I
->>>>>>>>> want to tune the brightness value before the pwm-bl sets the brightness
->>>>>>>>> to hardware".
->>>>>>>>
->>>>>>>> Why do you want to tune the brightness value? What are you trying to
->>>>>>>> achieve?
->>>>>>>>
->>>>>>>
->>>>>>> Oh, Tegra has a feature named PRISM(aka SmartDimmer). It changes the
->>>>>>> color value to make the display looks bright so that we can reduce the
->>>>>>> backlight brightness to save power. So everytime PRISM is triggered, we
->>>>>>> call "backlight_update_status", then in the "notify" callback, we change
->>>>>>> the brightness value which pwm-bl provides by considering the PRISM
->>>>>>> compensations.
->>>>>>
->>>>>> If you automatically call backlight_update_status() everytime PRISM
->>>>>> gives you new data, can't you just pass the correct value in in the
->>>>>> first place so that you don't have to tweak it in the .notify()
->>>>>> callback?
->>>>>
->>>>> OK, how to do that? -- "pass the correct value in in the first place"?
->>>>
->>>> Well, if you call backlight_update_status(), then you can pass in a
->>>> brightness value, right? You usually do that by setting the backlight's
->>>> props.brightness field.
->>>>
->>>> So when PRISM gives you new data, you could just read out the current
->>>> brightness, compute the new one based on the current one and the PRISM
->>>> data, set the props.brightness field to that value and then call
->>>> backlight_update_status().
->>>>
->>>
->>> Okay, anyway, I got the idea. Actually it's simpler. :)
->>> I'm just curious that if we can do that in this way, why we need
->>> "notify" anymore?
->>
->> Oh, by the way, how about "check_fb" fops? Is there some kind of
->> substitution as well? I mean, if I wanna set "check_fb" and also want to
->> define the backlight device via DT, is there a way to do that?
-> 
-> No, there's no substitution for that. .check_fb() is used to verify that
-> a backlight device is associated with a framebuffer device. There are
-> better ways to check for that with DT, although nothing has been merged
-> into mainline yet.
-> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Okay, thanks for the explanation.
+iEYEABECAAYFAlJWSX8ACgkQykllyylKDCGAQACeP+F2rvGoLlm79dZn4RNTDImB
+acYAn3DmSN5PDZaTivlAZQ6rMuwOj1yr
+=p0Ab
+-----END PGP SIGNATURE-----
 
-Mark
-> Thierry
-> 
+--=_mimegpg-monstr-desktop-26965-1381386623-0001--

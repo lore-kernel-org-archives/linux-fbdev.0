@@ -1,106 +1,75 @@
-From: Lars-Peter Clausen <lars@metafoo.de>
-Date: Thu, 10 Oct 2013 18:58:39 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 11 Oct 2013 04:41:03 +0000
 Subject: Re: [PATCH] omapdss: Add new panel driver for Topolly td028ttec1 LCD.
-Message-Id: <5256F8DF.2020801@metafoo.de>
+Message-Id: <5257815F.5070803@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="9x9VSX3e6dLJt6dBCVpNX6WPeBqmL5WEh"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381352915-17219-1-git-send-email-marek@goldelico.com> <525662F5.3090600@ti.com> <7FAC77D4-5E1E-4B11-B067-3A8233C69240@goldelico.com> <52568B40.4040802@ti.com> <04AC7291-38E4-421B-979C-BF03D52E94BD@goldelico.com> <525699EF.6090803@ti.com> <52569CE8.5070201@metafoo.de> <A7739B52-2632-4DD8-924D-B657A6BFE3ED@goldelico.com>
-In-Reply-To: <A7739B52-2632-4DD8-924D-B657A6BFE3ED@goldelico.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Marek Belisko <marek@goldelico.com>, plagnioj@jcrosoft.com, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <1381352915-17219-1-git-send-email-marek@goldelico.com> <525662F5.3090600@ti.com> <7FAC77D4-5E1E-4B11-B067-3A8233C69240@goldelico.com> <52568B40.4040802@ti.com> <04AC7291-38E4-421B-979C-BF03D52E94BD@goldelico.com> <525699EF.6090803@ti.com> <52569CE8.5070201@metafoo.de> <A7739B52-2632-4DD8-924D-B657A6BFE3ED@goldelico.com> <5256F8DF.2020801@metafoo.de>
+In-Reply-To: <5256F8DF.2020801@metafoo.de>
+To: Lars-Peter Clausen <lars@metafoo.de>, "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Marek Belisko <marek@goldelico.com>, plagnioj@jcrosoft.com, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On 10/10/2013 03:42 PM, Dr. H. Nikolaus Schaller wrote:
->
-> Am 10.10.2013 um 14:26 schrieb Lars-Peter Clausen:
->
->> On 10/10/2013 02:13 PM, Tomi Valkeinen wrote:
->>> On 10/10/13 14:52, Dr. H. Nikolaus Schaller wrote:
->>>
->>>> Yes, I agree and I am willing to help if someone comes up with such a SoC.
->>>> At the moment we have connected it to the OMAP3 only.
->>>
->>> True, but even without that kind of SoC, SPI bitbanging should be
->>> handled by an SPI driver, not by the drivers that use the bus.
->>>
->>>> I.e. I want not to do a lot of work for others who we just guess about that they
->>>> might exist...
->>>
->>> Yep. It's fine for me, it's not that much extra code in the panel driver.
->>>
->>>>> The panel hardware has three wires, so the panel driver (if it does
->>>>> handle the bus by bitbanging) can only refer to three gpios.
->>>>
->>>> Hm. The panle hardware has 3 but the SoC (OMAP3) the driver
->>>> is running on has 4.
->>>
->>> Right, but this panel driver is a driver for the panel hardware. Not for
->>> the SoC, or the SoC+panel combination. So the panel driver must only use
->>> resources as seen by the panel hardware.
->>>
->>>>> So either
->>>>> the bus details should be hidden by using the normal spi framework, or
->>>>> if the driver does the bitbanging, use the gpios as specified in the
->>>>> panel spec. The panel driver cannot contain any board specific stuff.
->>>>
->>>> The bitbang driver shown below can handle either 3 or 4 gpios (except
->>>> for initialization).
->>>
->>> It's not a bitbang driver, it's a panel driver. And anyway, if I
->>> understood right, your use of 4 gpios was just a hack to try to make it
->>> look like a normal 4-wire SPI bus. What you really have is 3 wires, 3
->>> gpios. I don't see any reason to use 4 gpios, as two of them are the same.
->
-> There is a protection resistor in the one defined as "output" so that
-> protocol errors don't have two outputs work against each other.
->
->>>
->>> Hmm, how does it work anyway. Did I understand it right, the panel's
->>> 'DIN' pin is connected to two gpios on the SoC, and one of those gpios
->>> is set as output, and the other as input?
->
-> Yes.
->
->>> So the SoC is always pulling
->>> that line up or down, and the panel is also pulling it up or down when
->>> it's sending data. I'm no HW guy but that sounds quite bad =).
->
-> Yes, that is the strange thing with this protocol. It does a direction reversal
-> after some time. I.e. the panel switches its input to output and the SoC has
-> to be fast enough to do the same. Therefore, we have one output GPIO
-> (protected by a resistor) and a separate input GPIO.
->
-> Sometimes interfacing hardware is indeed strange.
->
->>>
->>> I've never written or studied a bitbanging driver, but shouldn't there
->>> be just one gpio used on the SoC for DIN, and it would be set to either
->>> output or input mode, depending on if we are reading or writing?
->>
->> Back in the OpenMoko days we used the panel in normal 4-wire SPI mode with
->> the GPIO bitbang SPI master. The bitbang code in this driver also looks like
->> normal 4 wire.
->
->
-> Thanks for this hint!
->
-> Maybe using a standard 4-wire SPI simply works if we only write data and
-> make sure the panel is not sending anything...
+--9x9VSX3e6dLJt6dBCVpNX6WPeBqmL5WEh
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-According to the datasheet the the panel as a dedicated dout pin. Maybe you did 
-not connect it in your design, which means you won't be able to read any data 
-from the panel at all.
+On 10/10/13 21:58, Lars-Peter Clausen wrote:
 
-Also your custom bitbang code looks a bit strange:
+> According to the datasheet the the panel as a dedicated dout pin. Maybe=
 
-	gpio_set_value(data->dout_gpio, 1);
-	if (gpio_get_value(data->din_gpio) = 0)
-		return 1;
+> you did not connect it in your design, which means you won't be able to=
 
-You set the state on the dout pin and then read the din pin, if both do not 
-match you abort with an error. This suggest that, for whatever reason, you feed 
-the dout pin back into the din pin in your design. Btw. this is also the only 
-place where din is used in your driver.
+> read any data from the panel at all.
 
-- Lars
+I don't see a dedicated dout in the datasheet...
+http://dl.wolfgang-draxinger.net/openmoko/doc/TD028TTEC1.pdf
+
+> Also your custom bitbang code looks a bit strange:
+>=20
+>     gpio_set_value(data->dout_gpio, 1);
+>     if (gpio_get_value(data->din_gpio) =3D=3D 0)
+>         return 1;
+>=20
+> You set the state on the dout pin and then read the din pin, if both do=
+
+> not match you abort with an error. This suggest that, for whatever
+> reason, you feed the dout pin back into the din pin in your design. Btw=
+=2E
+> this is also the only place where din is used in your driver.
+
+Yes, he said the single "Serial interface data input/output" pin is
+connected to both din and dout on the SoC. I guess the purpose of that
+gpio_get_value() is to ensure that the panel is not pulling the line
+when the SoC is writing to it. Not that I really understand how that can
+work, but I'm not a HW guy =3D).
+
+ Tomi
+
+
+
+--9x9VSX3e6dLJt6dBCVpNX6WPeBqmL5WEh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSV4FfAAoJEPo9qoy8lh71FqUP/RWOBdaCtbA8frs7yA4340St
+i8H7RNlW4F8BEUZEylYYoT0h6KYy8lDcSGcfNJSQM0D7z/1kcyBVXZ8oUXIaJh6w
+fXCYSmrD8v7d3DAxNe4pr+GmpMo+i/exxJterDaFBsLJJ69ubwAf+s358C9NSdvo
+Iv2m3rNXr0OXWDooqpvyTNSxO9EKBBunr7hG8LE28OBZkKJ3wKw1T9ivUvu55cXp
+ZKxxq4sQIHJq0I4cw3AzSMd52u0JQ3nqaQQ6pyCl8LWZg9lq11Bp+SA1jhBd/pak
+2SpsDGEHE2Z/SG5bfXpyVXedQpMgAHkDhCe3TNCpkR8IR0dt2fOAW3jnmULeX2gR
+49MYFwifQvwECE5Eu7AULMoM+Hg665piZJ2s+g9tA2MLElW+cFTwTTvMqYDJrCXR
+7GK+GKzpqMB105PNB/VAkooiwBWpNmPzQEPgtdwV+HvIVGTWOc9JVpE2n+JgDLxu
+pmi67rVGRFT5OO06smfSntd/qnM+CL7IRR8lgVxQk7x75sTcXjVRYAOB5fq6dgzk
+bdN0wa03WA2M9KsdEWzEig/LvZOEuiZsSDDuizGH1/EC0w1n/1orKAkmvBK6gu9C
+4h0KtalVI4BnunsFu1ITOwl6S9n+QZnib1He/pabgkCLMys+5dIFS4Hslb/aV61g
+wI6Vz8UEGXzYs+gYu10x
+=Wmnq
+-----END PGP SIGNATURE-----
+
+--9x9VSX3e6dLJt6dBCVpNX6WPeBqmL5WEh--

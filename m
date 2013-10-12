@@ -1,157 +1,99 @@
-From: Rob Clark <robdclark@gmail.com>
-Date: Thu, 24 Oct 2013 11:36:57 +0000
-Subject: Re: [PATCH] drm/omap: fix (un)registering irqs inside an irq handler
-Message-Id: <CAF6AEGuWB53zs3Jhq3dM1qKoVh-M6BAXiEZOGu9hEdJu+FmOQw@mail.gmail.com>
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+Date: Sat, 12 Oct 2013 13:08:52 +0000
+Subject: Re: [PATCH 2/2] framebuffer: Remove pmag-aa-fb
+Message-Id: <alpine.LFD.2.03.1310121308310.10951@linux-mips.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382597450-23066-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1382597450-23066-1-git-send-email-tomi.valkeinen@ti.com>
+References: <c94f3e342947923f20d4c12932f382aa5200511b.1379641901.git.joe@perches.com>         <6f500d88eb23fd9a4cfc5583f5ca17bc5f58fe24.1379641901.git.joe@perches.com>         <CAMuHMdW6R5qTJ0uvsUUaYBZAqFcNshPsXeMbz5hwqq5UOkJr-g@mail.gmail.com>        
+ <alpine.LFD.2.03.1309201907380.8379@linux-mips.org> <1379702587.2301.12.camel@joe-AO722> <alpine.LFD.2.03.1309201946430.8379@linux-mips.org>
+In-Reply-To: <alpine.LFD.2.03.1309201946430.8379@linux-mips.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Joe Perches <joe@perches.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux MIPS Mailing List <linux-mips@linux-mips.org>
 
-On Thu, Oct 24, 2013 at 2:50 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> omapdrm (un)registers irqs inside an irq handler. The problem is that
-> the (un)register function uses dispc_runtime_get/put() to enable the
-> clocks, and those functions are not irq safe by default.
->
-> This was kind of fixed in 48664b21aeeffb40c5fa06843f18052e2c4ec9ef
-> (OMAPDSS: DISPC: set irq_safe for runtime PM), which makes dispc's
-> runtime calls irq-safe.
->
-> However, using pm_runtime_irq_safe in dispc makes the parent of dispc,
-> dss, always enabled, effectively preventing PM for the whole DSS module.
->
-> This patch makes omapdrm behave better by adding new irq (un)register
-> functions that do not use dispc_runtime_get/put, and using those
-> functions in interrupt context. Thus we can make dispc again
-> non-irq-safe, allowing proper PM.
+Joe,
 
-Looks good
+ Just a quick update.
 
-Reviewed-by: Rob Clark <robdclark@gmail.com>
+On Sun, 22 Sep 2013, Maciej W. Rozycki wrote:
 
->
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: Rob Clark <robdclark@gmail.com>
-> ---
->  drivers/gpu/drm/omapdrm/omap_crtc.c |  6 +++---
->  drivers/gpu/drm/omapdrm/omap_drv.h  |  2 ++
->  drivers/gpu/drm/omapdrm/omap_irq.c  | 22 ++++++++++++++++++----
->  drivers/video/omap2/dss/dispc.c     |  1 -
->  4 files changed, 23 insertions(+), 8 deletions(-)
->
-> diff --git a/drivers/gpu/drm/omapdrm/omap_crtc.c b/drivers/gpu/drm/omapdrm/omap_crtc.c
-> index 0fd2eb1..e6241c2 100644
-> --- a/drivers/gpu/drm/omapdrm/omap_crtc.c
-> +++ b/drivers/gpu/drm/omapdrm/omap_crtc.c
-> @@ -411,7 +411,7 @@ static void omap_crtc_error_irq(struct omap_drm_irq *irq, uint32_t irqstatus)
->         struct drm_crtc *crtc = &omap_crtc->base;
->         DRM_ERROR("%s: errors: %08x\n", omap_crtc->name, irqstatus);
->         /* avoid getting in a flood, unregister the irq until next vblank */
-> -       omap_irq_unregister(crtc->dev, &omap_crtc->error_irq);
-> +       __omap_irq_unregister(crtc->dev, &omap_crtc->error_irq);
->  }
->
->  static void omap_crtc_apply_irq(struct omap_drm_irq *irq, uint32_t irqstatus)
-> @@ -421,13 +421,13 @@ static void omap_crtc_apply_irq(struct omap_drm_irq *irq, uint32_t irqstatus)
->         struct drm_crtc *crtc = &omap_crtc->base;
->
->         if (!omap_crtc->error_irq.registered)
-> -               omap_irq_register(crtc->dev, &omap_crtc->error_irq);
-> +               __omap_irq_register(crtc->dev, &omap_crtc->error_irq);
->
->         if (!dispc_mgr_go_busy(omap_crtc->channel)) {
->                 struct omap_drm_private *priv >                                 crtc->dev->dev_private;
->                 DBG("%s: apply done", omap_crtc->name);
-> -               omap_irq_unregister(crtc->dev, &omap_crtc->apply_irq);
-> +               __omap_irq_unregister(crtc->dev, &omap_crtc->apply_irq);
->                 queue_work(priv->wq, &omap_crtc->apply_work);
->         }
->  }
-> diff --git a/drivers/gpu/drm/omapdrm/omap_drv.h b/drivers/gpu/drm/omapdrm/omap_drv.h
-> index 30b95b7..cfb6c2e 100644
-> --- a/drivers/gpu/drm/omapdrm/omap_drv.h
-> +++ b/drivers/gpu/drm/omapdrm/omap_drv.h
-> @@ -145,6 +145,8 @@ irqreturn_t omap_irq_handler(DRM_IRQ_ARGS);
->  void omap_irq_preinstall(struct drm_device *dev);
->  int omap_irq_postinstall(struct drm_device *dev);
->  void omap_irq_uninstall(struct drm_device *dev);
-> +void __omap_irq_register(struct drm_device *dev, struct omap_drm_irq *irq);
-> +void __omap_irq_unregister(struct drm_device *dev, struct omap_drm_irq *irq);
->  void omap_irq_register(struct drm_device *dev, struct omap_drm_irq *irq);
->  void omap_irq_unregister(struct drm_device *dev, struct omap_drm_irq *irq);
->  int omap_drm_irq_uninstall(struct drm_device *dev);
-> diff --git a/drivers/gpu/drm/omapdrm/omap_irq.c b/drivers/gpu/drm/omapdrm/omap_irq.c
-> index 9263db1..b08b902 100644
-> --- a/drivers/gpu/drm/omapdrm/omap_irq.c
-> +++ b/drivers/gpu/drm/omapdrm/omap_irq.c
-> @@ -45,12 +45,11 @@ static void omap_irq_update(struct drm_device *dev)
->         dispc_read_irqenable();        /* flush posted write */
->  }
->
-> -void omap_irq_register(struct drm_device *dev, struct omap_drm_irq *irq)
-> +void __omap_irq_register(struct drm_device *dev, struct omap_drm_irq *irq)
->  {
->         struct omap_drm_private *priv = dev->dev_private;
->         unsigned long flags;
->
-> -       dispc_runtime_get();
->         spin_lock_irqsave(&list_lock, flags);
->
->         if (!WARN_ON(irq->registered)) {
-> @@ -60,14 +59,21 @@ void omap_irq_register(struct drm_device *dev, struct omap_drm_irq *irq)
->         }
->
->         spin_unlock_irqrestore(&list_lock, flags);
-> +}
-> +
-> +void omap_irq_register(struct drm_device *dev, struct omap_drm_irq *irq)
-> +{
-> +       dispc_runtime_get();
-> +
-> +       __omap_irq_register(dev, irq);
-> +
->         dispc_runtime_put();
->  }
->
-> -void omap_irq_unregister(struct drm_device *dev, struct omap_drm_irq *irq)
-> +void __omap_irq_unregister(struct drm_device *dev, struct omap_drm_irq *irq)
->  {
->         unsigned long flags;
->
-> -       dispc_runtime_get();
->         spin_lock_irqsave(&list_lock, flags);
->
->         if (!WARN_ON(!irq->registered)) {
-> @@ -77,6 +83,14 @@ void omap_irq_unregister(struct drm_device *dev, struct omap_drm_irq *irq)
->         }
->
->         spin_unlock_irqrestore(&list_lock, flags);
-> +}
-> +
-> +void omap_irq_unregister(struct drm_device *dev, struct omap_drm_irq *irq)
-> +{
-> +       dispc_runtime_get();
-> +
-> +       __omap_irq_unregister(dev, irq);
-> +
->         dispc_runtime_put();
->  }
->
-> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-> index 4779750..02a7340 100644
-> --- a/drivers/video/omap2/dss/dispc.c
-> +++ b/drivers/video/omap2/dss/dispc.c
-> @@ -3691,7 +3691,6 @@ static int __init omap_dispchw_probe(struct platform_device *pdev)
->         }
->
->         pm_runtime_enable(&pdev->dev);
-> -       pm_runtime_irq_safe(&pdev->dev);
->
->         r = dispc_runtime_get();
->         if (r)
-> --
-> 1.8.1.2
->
+>  As to the PMAG-AA board itself -- well, this is indeed a very rare item,=
+=20
+> but I happen to have a specimen.  To support it properly I'll first have =
+
+> to wire it to a monitor somehow though; signalling is standard, 1.0 Vpp=20
+> composite monochrome, but what looks to me like a type F connector is use=
+d=20
+> for video output, quite unusually for a graphics card (and for DEC itself=
+=20
+> too as 3W3 was their usual video socket).  It looks to me like converting=
+=20
+> it to BNC and then a standard DE-15 VGA connector (via the green line)=20
+> will be the easiest way to get image produced by the adapter on a=20
+> contemporary monitor (sync-on-green required of course, but with LCD=20
+> devices being the norm now that seems less of a problem these days).
+
+ So more weirdly even that's actually a TNC connector rather than a type F =
+
+one.  I've got a suitable TNC->BNC adapter now (although regrettably such=20
+adapters seem to be available as 50=D9 parts only; hopefully any distortion=
+=20
+won't be too significant or maybe my digital monitor will even be able to=20
+compensate it, but at =A31.76 (~$2.64) per item it's certainly worth trying=
+=20
+before resorting to the original DEC TNC->BNC cable still apparently=20
+available from second-hand part suppliers at ~=A380/$120 per a mere 1ft=20
+part) and a BNC->DE-15 cable is on the way.
+
+> > --- a/drivers/video/pmag-aa-fb.c
+> > +++ b/drivers/video/pmag-aa-fb.c
+> > @@ -459,7 +459,7 @@ static int __init init_one(int slot)
+> >  		return -EINVAL;
+> > =20
+> >  	printk(KERN_INFO "fb%d: %s frame buffer in TC slot %d\n",
+> > -	       GET_FB_IDX(ip->info.node), ip->info.modename, slot);
+> > +	       ip->info.node, ip->info.modename, slot);
+> > =20
+> >  	return 0;
+> >  }
+>=20
+>  Thanks, but the changes required are actually much more than that -- the=
+=20
+> driver has never been converted to the modern TURBOchannel API.  I have=20
+> now dug out an old patch I was working on back in 2006 to convert this=20
+> driver as well as drivers/video/maxinefb.c.  I'll try to complete the two=
+=20
+> drivers as soon as possible (unfortunately I can't test the latter at all=
+;=20
+> it's for an onboard graphics adapter of another DECstation model),=20
+> although I now remember the main reason I didn't complete them back then =
+
+> was they used an old internal API that was removed and no suitable=20
+> replacement provided.  I need to investigate again what that actually was=
+=20
+> though (hw cursor probably).
+
+ So I think I've got all the basic stuff covered now, including a change=20
+similar to your proposal as well as a conversion to the driver model/new=20
+TURBOchannel support infrastructure.  But what I remembered is actually=20
+right, the issue is wiring hardware cursor support into fbcon.  The driver =
+
+uses its own display_switch structure with its own aafbcon_cursor handler=20
+to use the twin onboard Bt431 chips for cursor generation (there's also=20
+aafbcon_set_font that pokes at the Bt431s for cursor dimension changes). =20
+I need to figure out what the best way will be to make the fbcon subsystem =
+
+support such an arrangement and that'll take me a little bit yet, so=20
+please be patient.
+
+ Note that the board is weird enough to have a 1-bit (true monochrome)=20
+graphics plane, however the Bt455 used by the MX graphics adapter for=20
+screen image generation is a 4-bit grey-scale video RAMDAC (only the LSB=20
+inputs of its pixel port are wired to the graphics plane) and the twin=20
+Bt431s use the overlay plane to produce a 2-bit grey-scale cursor.  So we=20
+do want to use the hardware cursor to be able to make it prominent among=20
+the characters displayed throughout the screen and a software-generated=20
+cursor cannot really substitute what hardware provides.
+
+  Maciej

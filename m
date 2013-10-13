@@ -1,45 +1,21 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 17 Oct 2013 11:38:37 +0000
-Subject: [PATCH 1/6] omapdss: hdmi: support larger register offsets for OMAP5 HDMI core
-Message-Id: <1382009202-18984-2-git-send-email-archit@ti.com>
+From: Joe Perches <joe@perches.com>
+Date: Sun, 13 Oct 2013 17:39:52 +0000
+Subject: Re: [PATCH 2/2] framebuffer: Use fb_<level>
+Message-Id: <1381685992.8864.32.camel@joe-AO722>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382009202-18984-1-git-send-email-archit@ti.com>
-In-Reply-To: <1382009202-18984-1-git-send-email-archit@ti.com>
+References: <0926c7a34ac51c4cbb67debd0d883f41891e75d9.1379640011.git.joe@perches.com>
+	 <8e7d2ced3f358961988c2602b8d1dff673f569c0.1379640011.git.joe@perches.com>
+In-Reply-To: <8e7d2ced3f358961988c2602b8d1dff673f569c0.1379640011.git.joe@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The HDMI core IP on OMAP5 has a wider register address range. The offsets for
-these registers can't fit into the u16 type currently used for hdmi register
-read and write functions. Use u32 for offsets instead.
+On Thu, 2013-09-19 at 18:35 -0700, Joe Perches wrote:
+> Neaten and shorten the code using the new fb_<level> macros.
+[]
+>  59 files changed, 186 insertions(+), 224 deletions(-)
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/hdmi.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/omap2/dss/hdmi.h b/drivers/video/omap2/dss/hdmi.h
-index b049376..b410b14 100644
---- a/drivers/video/omap2/dss/hdmi.h
-+++ b/drivers/video/omap2/dss/hdmi.h
-@@ -360,13 +360,13 @@ struct hdmi_core_data {
- 	struct hdmi_core_infoframe_avi avi_cfg;
- };
- 
--static inline void hdmi_write_reg(void __iomem *base_addr, const u16 idx,
-+static inline void hdmi_write_reg(void __iomem *base_addr, const u32 idx,
- 		u32 val)
- {
- 	__raw_writel(val, base_addr + idx);
- }
- 
--static inline u32 hdmi_read_reg(void __iomem *base_addr, const u16 idx)
-+static inline u32 hdmi_read_reg(void __iomem *base_addr, const u32 idx)
- {
- 	return __raw_readl(base_addr + idx);
- }
--- 
-1.8.1.2
+ping?
 

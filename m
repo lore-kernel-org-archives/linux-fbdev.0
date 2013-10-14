@@ -1,35 +1,114 @@
-From: Alexei Starovoitov <ast@plumgrid.com>
-Date: Mon, 14 Oct 2013 21:35:38 +0000
-Subject: Re: [PATCH] do_register_framebuffer() fix potential deadlock
-Message-Id: <CAMEtUux9apsaC-ZWhEUgyxPPZ+SGbwp-SEW_LpiceTsGdgahRA@mail.gmail.com>
+From: Marek Belisko <marek@goldelico.com>
+Date: Mon, 14 Oct 2013 21:02:33 +0000
+Subject: [PATCH 1/3] arm: omap2: Export devconf1 bypass and acbias.
+Message-Id: <1381784555-18344-2-git-send-email-marek@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381528835-3351-1-git-send-email-ast@plumgrid.com>
-In-Reply-To: <1381528835-3351-1-git-send-email-ast@plumgrid.com>
+References: <1381784555-18344-1-git-send-email-marek@goldelico.com>
+In-Reply-To: <1381784555-18344-1-git-send-email-marek@goldelico.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Sun, Oct 13, 2013 at 11:22 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> Hi,
->
-> On 12/10/13 01:00, Alexei Starovoitov wrote:
->> commit 50e244cc79
->> "fb: rework locking to fix lock ordering on takeover"
->>
->> fixed the locking, but in one place the console_lock() and lock_fb_info()
->> seem to be in the wrong order vs the rest
->
-> The order seems to be lock_fb_info(), console_lock() everywhere. Your
-> change makes it the other way in one function, so I don't understand how
-> that could be a correct fix...
->
-> I wonder if you're seeing the same issue as John Tapsell in "fbcon: fix
-> deadlock in fbcon_generic_blank()"?
+devconf1 reg access is localized only in mach-omap2 and we need to export
+updating of devconf1 from omapdss venc driver (bypass and acbias bits).
+Add simple api call which update only necessary bits.
 
-yes. It is the same issue.
-console_callback() grabs the console_lock and eventually calls fbcon_blank().
-So yes both mine and John's approach needs more work.
-I guess it's too painful to change lock_fb_info/console_lock order
-through out fb code...
-Have to live with workaround for now...
+Signed-off-by: Marek Belisko <marek@goldelico.com>
+---
+ arch/arm/mach-omap2/Makefile      |  2 ++
+ arch/arm/mach-omap2/control.h     |  2 ++
+ arch/arm/mach-omap2/omap3-tvout.c | 36 ++++++++++++++++++++++++++++++++++++
+ include/linux/omap-tvout.h        | 14 ++++++++++++++
+ 4 files changed, 54 insertions(+)
+ create mode 100644 arch/arm/mach-omap2/omap3-tvout.c
+ create mode 100644 include/linux/omap-tvout.h
+
+diff --git a/arch/arm/mach-omap2/Makefile b/arch/arm/mach-omap2/Makefile
+index afb457c..15e0f28 100644
+--- a/arch/arm/mach-omap2/Makefile
++++ b/arch/arm/mach-omap2/Makefile
+@@ -306,3 +306,5 @@ emac-$(CONFIG_TI_DAVINCI_EMAC)		:= am35xx-emac.o
+ obj-y					+= $(emac-m) $(emac-y)
+ 
+ obj-y					+= common-board-devices.o twl-common.o dss-common.o
++
++obj-$(CONFIG_ARCH_OMAP3)		+= omap3-tvout.o
+diff --git a/arch/arm/mach-omap2/control.h b/arch/arm/mach-omap2/control.h
+index f7d7c2e..65277f1 100644
+--- a/arch/arm/mach-omap2/control.h
++++ b/arch/arm/mach-omap2/control.h
+@@ -279,6 +279,8 @@
+ 
+ /* CONTROL_DEVCONF1 bits */
+ #define OMAP243X_MMC1_ACTIVE_OVERWRITE	(1 << 31)
++#define OMAP2_TVOUTBYPASS		(1 << 18)
++#define OMAP2_TVACEN			(1 << 11)
+ #define OMAP2_MMCSDIO2ADPCLKISEL	(1 << 6) /* MMC2 loop back clock */
+ #define OMAP2_MCBSP5_CLKS_MASK		(1 << 4) /* > 242x */
+ #define OMAP2_MCBSP4_CLKS_MASK		(1 << 2) /* > 242x */
+diff --git a/arch/arm/mach-omap2/omap3-tvout.c b/arch/arm/mach-omap2/omap3-tvout.c
+new file mode 100644
+index 0000000..eaed225
+--- /dev/null
++++ b/arch/arm/mach-omap2/omap3-tvout.c
+@@ -0,0 +1,36 @@
++/*
++ * linux/arch/arm/mach-omap2/omap3-tvout.c
++ *
++ * Copyright (C) 2013 Golden Delicious Computers
++ * Author: Marek Belisko <marek@goldelico.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/omap-tvout.h>
++
++#include "soc.h"
++#include "control.h"
++
++void update_bypass_acbias(bool bypass, bool acbias)
++{
++#ifdef CONFIG_ARCH_OMAP3
++	int val = omap_ctrl_readl(OMAP343X_CONTROL_DEVCONF1);
++
++	if (bypass)
++		val |= OMAP2_TVOUTBYPASS;
++	else
++		val &= ~OMAP2_TVOUTBYPASS;
++
++	if (acbias)
++		val |= OMAP2_TVACEN;
++	else
++		val &= ~OMAP2_TVACEN;
++
++	omap_ctrl_writel(val, OMAP343X_CONTROL_DEVCONF1);
++#endif
++}
++
+diff --git a/include/linux/omap-tvout.h b/include/linux/omap-tvout.h
+new file mode 100644
+index 0000000..25f676d
+--- /dev/null
++++ b/include/linux/omap-tvout.h
+@@ -0,0 +1,14 @@
++/*
++ * OMAP TV-out support
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#ifndef __LINUX_OMAP_TVOUT_H
++#define __LINUX_OMAP_TVOUT_H
++
++extern void update_bypass_acbias(bool bypass, bool acbias);
++
++#endif
++
+-- 
+1.8.1.2
+

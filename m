@@ -1,117 +1,131 @@
-From: Denis Carikli <denis@eukrea.com>
-Date: Mon, 21 Oct 2013 09:51:29 +0000
-Subject: [PATCHv4][ 02/11] video: imxfb: Introduce regulator support.
-Message-Id: <1382349098-11502-2-git-send-email-denis@eukrea.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Wed, 16 Oct 2013 16:40:16 +0000
+Subject: [PATCH 7/7] video: exynos_dp: Use the generic PHY driver
+Message-Id: <1381940896-9355-8-git-send-email-kishon@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382349098-11502-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1382349098-11502-1-git-send-email-denis@eukrea.com>
+References: <1381940896-9355-1-git-send-email-kishon@ti.com>
+In-Reply-To: <1381940896-9355-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-This commit is based on the following commit by Fabio Estevam:
-  4344429 video: mxsfb: Introduce regulator support
+From: Jingoo Han <jg1.han@samsung.com>
 
-Cc: Fabio Estevam <fabio.estevam@freescale.com>
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Eric B=C3=A9nard <eric@eukrea.com>
-Signed-off-by: Denis Carikli <denis@eukrea.com>
----
-ChangeLog v3->v4:
-- Added a dev_info when there is no lcd regulator.
----
- drivers/video/imxfb.c |   29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+Use the generic PHY API to control the DP PHY.
 
-diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 44ee678..4bf3837 100644
---- a/drivers/video/imxfb.c
-+++ b/drivers/video/imxfb.c
-@@ -28,6 +28,7 @@
- #include <linux/cpufreq.h>
- #include <linux/clk.h>
- #include <linux/platform_device.h>
-+#include <linux/regulator/consumer.h>
- #include <linux/dma-mapping.h>
- #include <linux/io.h>
- #include <linux/math64.h>
-@@ -145,6 +146,7 @@ struct imxfb_info {
- 	struct clk		*clk_ipg;
- 	struct clk		*clk_ahb;
- 	struct clk		*clk_per;
-+	struct regulator	*reg_lcd;
- 	enum imxfb_type		devtype;
- 	bool			enabled;
-=20
-@@ -563,12 +565,23 @@ static void imxfb_exit_backlight(struct imxfb_info *f=
-bi)
-=20
- static void imxfb_enable_controller(struct imxfb_info *fbi)
- {
-+	int ret;
-=20
- 	if (fbi->enabled)
- 		return;
-=20
- 	pr_debug("Enabling LCD controller\n");
-=20
-+	if (fbi->reg_lcd) {
-+		ret =3D regulator_enable(fbi->reg_lcd);
-+		if (ret) {
-+			dev_err(&fbi->pdev->dev,
-+				"lcd regulator enable failed with error: %d\n",
-+				ret);
-+			return;
-+		}
-+	}
-+
- 	writel(fbi->screen_dma, fbi->regs + LCDC_SSA);
-=20
- 	/* panning offset 0 (0 pixel offset)        */
-@@ -597,6 +610,8 @@ static void imxfb_enable_controller(struct imxfb_info *=
-fbi)
-=20
- static void imxfb_disable_controller(struct imxfb_info *fbi)
- {
-+	int ret;
-+
- 	if (!fbi->enabled)
- 		return;
-=20
-@@ -613,6 +628,14 @@ static void imxfb_disable_controller(struct imxfb_info=
- *fbi)
- 	fbi->enabled =3D false;
-=20
- 	writel(0, fbi->regs + LCDC_RMCR);
-+
-+	if (fbi->reg_lcd) {
-+		ret =3D regulator_disable(fbi->reg_lcd);
-+		if (ret)
-+			dev_err(&fbi->pdev->dev,
-+				"lcd regulator disable failed with error: %d\n",
-+				ret);
-+	}
- }
-=20
- static int imxfb_blank(int blank, struct fb_info *info)
-@@ -1020,6 +1043,12 @@ static int imxfb_probe(struct platform_device *pdev)
- 		goto failed_register;
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Reviewed-by: Tomasz Figa <t.figa@samsung.com>
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+---
+ Documentation/devicetree/bindings/video/exynos_dp.txt |   17 +++++++++--------
+ drivers/video/exynos/exynos_dp_core.c                 |   16 ++++++++++++----
+ drivers/video/exynos/exynos_dp_core.h                 |    1 +
+ 3 files changed, 22 insertions(+), 12 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/video/exynos_dp.txt b/Documentation/devicetree/bindings/video/exynos_dp.txt
+index 84f10c1..3289d76 100644
+--- a/Documentation/devicetree/bindings/video/exynos_dp.txt
++++ b/Documentation/devicetree/bindings/video/exynos_dp.txt
+@@ -6,10 +6,10 @@ We use two nodes:
+ 	-dptx-phy node(defined inside dp-controller node)
+ 
+ For the DP-PHY initialization, we use the dptx-phy node.
+-Required properties for dptx-phy:
+-	-reg:
++Required properties for dptx-phy: deprecated, use phys and phy-names
++	-reg: deprecated
+ 		Base address of DP PHY register.
+-	-samsung,enable-mask:
++	-samsung,enable-mask: deprecated
+ 		The bit-mask used to enable/disable DP PHY.
+ 
+ For the Panel initialization, we read data from dp-controller node.
+@@ -27,6 +27,10 @@ Required properties for dp-controller:
+ 		from common clock binding: Shall be "dp".
+ 	-interrupt-parent:
+ 		phandle to Interrupt combiner node.
++	-phys:
++		from general PHY binding: the phandle for the PHY device.
++	-phy-names:
++		from general PHY binding: Should be "dp".
+ 	-samsung,color-space:
+ 		input video data format.
+ 			COLOR_RGB = 0, COLOR_YCBCR422 = 1, COLOR_YCBCR444 = 2
+@@ -68,11 +72,8 @@ SOC specific portion:
+ 		clocks = <&clock 342>;
+ 		clock-names = "dp";
+ 
+-		dptx-phy {
+-			reg = <0x10040720>;
+-			samsung,enable-mask = <1>;
+-		};
+-
++		phys = <&dp_phy>;
++		phy-names = "dp";
+ 	};
+ 
+ Board Specific portion:
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index 05fed7d..5e1a715 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -19,6 +19,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
+ #include <linux/of.h>
++#include <linux/phy/phy.h>
+ 
+ #include "exynos_dp_core.h"
+ 
+@@ -960,8 +961,11 @@ static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
+ 
+ 	dp_phy_node = of_find_node_by_name(dp_phy_node, "dptx-phy");
+ 	if (!dp_phy_node) {
+-		dev_err(dp->dev, "could not find dptx-phy node\n");
+-		return -ENODEV;
++		dp->phy = devm_phy_get(dp->dev, "dp");
++		if (IS_ERR(dp->phy))
++			return PTR_ERR(dp->phy);
++		else
++			return 0;
  	}
-=20
-+	fbi->reg_lcd =3D devm_regulator_get(&pdev->dev, "lcd");
-+	if (IS_ERR(fbi->reg_lcd)) {
-+		dev_info(&pdev->dev, "No lcd regulator used.\n");
-+		fbi->reg_lcd =3D NULL;
-+	}
-+
- 	imxfb_enable_controller(fbi);
- 	fbi->pdev =3D pdev;
- #ifdef PWMR_BACKLIGHT_AVAILABLE
---=20
-1.7.9.5
+ 
+ 	if (of_property_read_u32(dp_phy_node, "reg", &phy_base)) {
+@@ -992,7 +996,9 @@ err:
+ 
+ static void exynos_dp_phy_init(struct exynos_dp_device *dp)
+ {
+-	if (dp->phy_addr) {
++	if (dp->phy) {
++		phy_power_on(dp->phy);
++	} else if (dp->phy_addr) {
+ 		u32 reg;
+ 
+ 		reg = __raw_readl(dp->phy_addr);
+@@ -1003,7 +1009,9 @@ static void exynos_dp_phy_init(struct exynos_dp_device *dp)
+ 
+ static void exynos_dp_phy_exit(struct exynos_dp_device *dp)
+ {
+-	if (dp->phy_addr) {
++	if (dp->phy) {
++		phy_power_off(dp->phy);
++	} else if (dp->phy_addr) {
+ 		u32 reg;
+ 
+ 		reg = __raw_readl(dp->phy_addr);
+diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
+index 56cfec8..607e36d 100644
+--- a/drivers/video/exynos/exynos_dp_core.h
++++ b/drivers/video/exynos/exynos_dp_core.h
+@@ -151,6 +151,7 @@ struct exynos_dp_device {
+ 	struct video_info	*video_info;
+ 	struct link_train	link_train;
+ 	struct work_struct	hotplug_work;
++	struct phy		*phy;
+ };
+ 
+ /* exynos_dp_reg.c */
+-- 
+1.7.10.4
 

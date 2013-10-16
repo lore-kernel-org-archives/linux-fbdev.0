@@ -1,82 +1,73 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 29 Oct 2013 10:56:21 +0000
-Subject: Re: [PATCH 1/2] framebuffer: Add fb_<level> convenience logging macros
-Message-Id: <526F9455.7070103@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="jaaaffjqUprTnRBq6W75XFthipxtdBRII"
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Wed, 16 Oct 2013 16:40:09 +0000
+Subject: [PATCH 0/7] video phy's adaptation to *generic phy framework*
+Message-Id: <1381940896-9355-1-git-send-email-kishon@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <0926c7a34ac51c4cbb67debd0d883f41891e75d9.1379640011.git.joe@perches.com>
-In-Reply-To: <0926c7a34ac51c4cbb67debd0d883f41891e75d9.1379640011.git.joe@perches.com>
-To: Joe Perches <joe@perches.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---jaaaffjqUprTnRBq6W75XFthipxtdBRII
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Greg,
 
-On 20/09/13 04:35, Joe Perches wrote:
-> Add fb_<level> convenience macros for emitting the
-> "fb%d: ", struct fb_info->node value.
->=20
-> Neatens and shortens the code a bit.
->=20
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  include/linux/fb.h | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
->=20
-> diff --git a/include/linux/fb.h b/include/linux/fb.h
-> index ffac70a..70c4836 100644
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -792,4 +792,16 @@ extern int fb_find_mode(struct fb_var_screeninfo *=
-var,
->  			const struct fb_videomode *default_mode,
->  			unsigned int default_bpp);
-> =20
-> +/* Convenience logging macros */
-> +#define fb_err(fb_info, fmt, ...)					\
-> +	pr_err("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
-> +#define fb_notice(info, fmt, ...)					\
-> +	pr_notice("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
-> +#define fb_warn(fb_info, fmt, ...)					\
-> +	pr_warn("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
-> +#define fb_info(fb_info, fmt, ...)					\
-> +	pr_info("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
-> +#define fb_dbg(fb_info, fmt, ...)					\
-> +	pr_debug("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
-> +
->  #endif /* _LINUX_FB_H */
->=20
+This series includes video PHY adaptation to Generic PHY Framework.
+With the adaptation they were able to get rid of plat data callbacks.
 
-Thanks, queued this and the next one for 3.13.
+Since you've taken the Generic PHY Framework, I think this series should
+also go into your tree.
 
- Tomi
+We should thank Sylwester for actively testing and giving comments from
+the initial versions of Generic Phy Framework. Both Sylwester and Jingoo
+had been floating many revisions of their adaptation to Generic PHY
+Framework.
 
+This has been in my repo for quite some time and has got acks from
+samsung maintainer and video maintainer.
 
+If you want me to change anything, please let me know.
 
---jaaaffjqUprTnRBq6W75XFthipxtdBRII
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+This patch series can be found @
+git://git.kernel.org/pub/scm/linux/kernel/git/kishon/linux-phy.git testing
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+Jingoo Han (3):
+  phy: Add driver for Exynos DP PHY
+  video: exynos_dp: remove non-DT support for Exynos Display Port
+  video: exynos_dp: Use the generic PHY driver
 
-iQIcBAEBAgAGBQJSb5RVAAoJEPo9qoy8lh71I1kP+wVWswxZmLhG5b1Lm6RjH5Zp
-b3CKmlV9McimKHC6zNZ2PpL0/ZyiD12dsfKZrxdVrDxXBdfCjOCRGST6VGLZ39Q5
-IRvM3+FzRpbuKW5tiYCERvYYhbv9sgW7AXHXfbb+zoaOgtijBtHZ8/JYEOaaqctV
-Wg8jqDhOhlDcJzrghOLwfmvxdE5AZujFeyVlNoPK/dkUF0LBZPdTHoZ5+39GYZqZ
-viwORZwmUibApdnYoCE7L3SDiM0q4c6DsPkFcuedUM9+woN2C6vElk4QzxtRNM5u
-P2CA4sy6ZghjaihYZBIir5s8vqFmiup5ZNiNI59S9JJQmjoYjBbU7C5UMGhVeOX5
-xMAkcbaULzrQJFOt6cI1kp3U8eiraZiktKFIRp0JEsZrop/qbQ3jhFFYcsDL5xHO
-JOMuHR4tAUHwU+5sIigl0tT7jfCgrqRGys/EmE/AdmDjUjqEH3anOZUvgiQwjFUD
-Xx/zrUezrWlXnTUXDu3EJnbvgcg8Q5Z+RN/LfbXLE9BFoyO8p3sCnsxyDFK9MDdo
-wQU6niqzZExLaXGOjKnHeab9t+yJF2PQS+aIuep00wqhaLAoAD3LN1x+XjR90D5w
-0JHxPlhJ4ptTYfgYb1KwMBaM94IH0hfqXenuTNbb+bJNFSwkzH2NrtSMmM3eHODS
-IxV4eICyBEjHGSndYGDx
-=aKhs
------END PGP SIGNATURE-----
+Sylwester Nawrocki (4):
+  phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
+  exynos4-is: Use the generic MIPI CSIS PHY driver
+  video: exynos_mipi_dsim: Use the generic PHY driver
+  ARM: Samsung: Remove the MIPI PHY setup code
 
---jaaaffjqUprTnRBq6W75XFthipxtdBRII--
+ .../devicetree/bindings/phy/samsung-phy.txt        |   22 +++
+ .../devicetree/bindings/video/exynos_dp.txt        |   17 +-
+ arch/arm/mach-exynos/include/mach/regs-pmu.h       |    5 -
+ arch/arm/mach-s5pv210/include/mach/regs-clock.h    |    4 -
+ arch/arm/plat-samsung/Kconfig                      |    5 -
+ arch/arm/plat-samsung/Makefile                     |    1 -
+ arch/arm/plat-samsung/setup-mipiphy.c              |   60 -------
+ drivers/media/platform/exynos4-is/Kconfig          |    2 +-
+ drivers/media/platform/exynos4-is/mipi-csis.c      |   13 +-
+ drivers/phy/Kconfig                                |   13 ++
+ drivers/phy/Makefile                               |    8 +-
+ drivers/phy/phy-exynos-dp-video.c                  |  111 ++++++++++++
+ drivers/phy/phy-exynos-mipi-video.c                |  176 ++++++++++++++++++++
+ drivers/video/exynos/Kconfig                       |    3 +-
+ drivers/video/exynos/exynos_dp_core.c              |  132 ++++-----------
+ drivers/video/exynos/exynos_dp_core.h              |  110 ++++++++++++
+ drivers/video/exynos/exynos_dp_reg.c               |    2 -
+ drivers/video/exynos/exynos_mipi_dsi.c             |   19 ++-
+ include/linux/platform_data/mipi-csis.h            |    9 -
+ include/video/exynos_dp.h                          |  131 ---------------
+ include/video/exynos_mipi_dsim.h                   |    5 +-
+ 21 files changed, 508 insertions(+), 340 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/phy/samsung-phy.txt
+ delete mode 100644 arch/arm/plat-samsung/setup-mipiphy.c
+ create mode 100644 drivers/phy/phy-exynos-dp-video.c
+ create mode 100644 drivers/phy/phy-exynos-mipi-video.c
+ delete mode 100644 include/video/exynos_dp.h
+
+-- 
+1.7.10.4
+

@@ -1,210 +1,163 @@
-From: Denis Carikli <denis@eukrea.com>
-Date: Wed, 23 Oct 2013 12:43:48 +0000
-Subject: [PATCHv3][ 4/5] video: mx3fb: Introduce regulator support.
-Message-Id: <1382532229-32755-4-git-send-email-denis@eukrea.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Wed, 16 Oct 2013 16:40:13 +0000
+Subject: [PATCH 4/7] ARM: Samsung: Remove the MIPI PHY setup code
+Message-Id: <1381940896-9355-5-git-send-email-kishon@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382532229-32755-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1382532229-32755-1-git-send-email-denis@eukrea.com>
+References: <1381940896-9355-1-git-send-email-kishon@ti.com>
+In-Reply-To: <1381940896-9355-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-This commit is based on the following commit by Fabio Estevam:
-  4344429 video: mxsfb: Introduce regulator support
+From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
 
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: Eric B=C3=A9nard <eric@eukrea.com>
-Signed-off-by: Denis Carikli <denis@eukrea.com>
----
-ChangeLog v2->v3:
-- The prints are now replaced with non line wrapped prints.
-- The regulator retrival has been adapted to the new DT bindings which looks
-  more like the IPUv3 ones.
-- The regulator_is_enabled checks were kept, because regulator_disable do n=
-ot
-  do such check.
----
- drivers/video/mx3fb.c |   67 +++++++++++++++++++++++++++++++++++++++++++++=
-+++-
- 1 file changed, 66 insertions(+), 1 deletion(-)
+Generic PHY drivers are used to handle the MIPI CSIS and MIPI DSIM
+DPHYs so we can remove now unused code at arch/arm/plat-samsung.
+In case there is any board file for S5PV210 platforms using MIPI
+CSIS/DSIM (not any upstream currently) it should use the generic
+PHY API to bind the PHYs to respective PHY consumer drivers and
+a platform device for the PHY provider should be defined.
 
-diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-index de5a6c8..1f2ce6d 100644
---- a/drivers/video/mx3fb.c
-+++ b/drivers/video/mx3fb.c
-@@ -27,6 +27,7 @@
- #include <linux/clk.h>
- #include <linux/mutex.h>
- #include <linux/dma/ipu-dma.h>
-+#include <linux/regulator/consumer.h>
-=20
- #include <linux/platform_data/dma-imx.h>
- #include <linux/platform_data/video-mx3fb.h>
-@@ -269,6 +270,7 @@ struct mx3fb_info {
- 	struct dma_async_tx_descriptor	*txd;
- 	dma_cookie_t			cookie;
- 	struct scatterlist		sg[2];
-+	struct regulator		*reg_lcd;
-=20
- 	struct fb_var_screeninfo	cur_var; /* current var info */
- };
-@@ -1005,6 +1007,7 @@ static void __blank(int blank, struct fb_info *fbi)
- 	struct mx3fb_info *mx3_fbi =3D fbi->par;
- 	struct mx3fb_data *mx3fb =3D mx3_fbi->mx3fb;
- 	int was_blank =3D mx3_fbi->blank;
-+	int ret;
-=20
- 	mx3_fbi->blank =3D blank;
-=20
-@@ -1023,6 +1026,15 @@ static void __blank(int blank, struct fb_info *fbi)
- 	case FB_BLANK_HSYNC_SUSPEND:
- 	case FB_BLANK_NORMAL:
- 		sdc_set_brightness(mx3fb, 0);
-+		if (mx3_fbi->reg_lcd) {
-+			if (regulator_is_enabled(mx3_fbi->reg_lcd)) {
-+				ret =3D regulator_disable(mx3_fbi->reg_lcd);
-+				if (ret)
-+					dev_warn(fbi->device,
-+						 "lcd regulator disable failed with error: %d\n",
-+						 ret);
-+			}
-+		}
- 		memset((char *)fbi->screen_base, 0, fbi->fix.smem_len);
- 		/* Give LCD time to update - enough for 50 and 60 Hz */
- 		msleep(25);
-@@ -1030,6 +1042,15 @@ static void __blank(int blank, struct fb_info *fbi)
- 		break;
- 	case FB_BLANK_UNBLANK:
- 		sdc_enable_channel(mx3_fbi);
-+		if (mx3_fbi->reg_lcd) {
-+			if (!regulator_is_enabled(mx3_fbi->reg_lcd)) {
-+				ret =3D regulator_enable(mx3_fbi->reg_lcd);
-+				if (ret)
-+					dev_warn(fbi->device,
-+						 "lcd regulator enable failed with error: %d\n",
-+						 ret);
-+			}
-+		}
- 		sdc_set_brightness(mx3fb, mx3fb->backlight_level);
- 		break;
- 	}
-@@ -1206,6 +1227,7 @@ static int mx3fb_suspend(struct platform_device *pdev=
-, pm_message_t state)
- {
- 	struct mx3fb_data *mx3fb =3D platform_get_drvdata(pdev);
- 	struct mx3fb_info *mx3_fbi =3D mx3fb->fbi->par;
-+	int ret;
-=20
- 	console_lock();
- 	fb_set_suspend(mx3fb->fbi, 1);
-@@ -1214,7 +1236,15 @@ static int mx3fb_suspend(struct platform_device *pde=
-v, pm_message_t state)
- 	if (mx3_fbi->blank =3D FB_BLANK_UNBLANK) {
- 		sdc_disable_channel(mx3_fbi);
- 		sdc_set_brightness(mx3fb, 0);
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Acked-by: Felipe Balbi <balbi@ti.com>
+Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+---
+ arch/arm/mach-exynos/include/mach/regs-pmu.h    |    5 --
+ arch/arm/mach-s5pv210/include/mach/regs-clock.h |    4 --
+ arch/arm/plat-samsung/Kconfig                   |    5 --
+ arch/arm/plat-samsung/Makefile                  |    1 -
+ arch/arm/plat-samsung/setup-mipiphy.c           |   60 -----------------------
+ 5 files changed, 75 deletions(-)
+ delete mode 100644 arch/arm/plat-samsung/setup-mipiphy.c
+
+diff --git a/arch/arm/mach-exynos/include/mach/regs-pmu.h b/arch/arm/mach-exynos/include/mach/regs-pmu.h
+index 57344b7..2cdb63e 100644
+--- a/arch/arm/mach-exynos/include/mach/regs-pmu.h
++++ b/arch/arm/mach-exynos/include/mach/regs-pmu.h
+@@ -44,11 +44,6 @@
+ #define S5P_DAC_PHY_CONTROL			S5P_PMUREG(0x070C)
+ #define S5P_DAC_PHY_ENABLE			(1 << 0)
+ 
+-#define S5P_MIPI_DPHY_CONTROL(n)		S5P_PMUREG(0x0710 + (n) * 4)
+-#define S5P_MIPI_DPHY_ENABLE			(1 << 0)
+-#define S5P_MIPI_DPHY_SRESETN			(1 << 1)
+-#define S5P_MIPI_DPHY_MRESETN			(1 << 2)
 -
-+		if (mx3_fbi->reg_lcd) {
-+			if (regulator_is_enabled(mx3_fbi->reg_lcd)) {
-+				ret =3D regulator_disable(mx3_fbi->reg_lcd);
-+				if (ret)
-+					dev_warn(&pdev->dev,
-+						 "lcd regulator disable failed with error: %d\n",
-+						 ret);
-+			}
-+		}
- 	}
- 	return 0;
- }
-@@ -1226,10 +1256,20 @@ static int mx3fb_resume(struct platform_device *pde=
-v)
- {
- 	struct mx3fb_data *mx3fb =3D platform_get_drvdata(pdev);
- 	struct mx3fb_info *mx3_fbi =3D mx3fb->fbi->par;
-+	int ret;
-=20
- 	if (mx3_fbi->blank =3D FB_BLANK_UNBLANK) {
- 		sdc_enable_channel(mx3_fbi);
- 		sdc_set_brightness(mx3fb, mx3fb->backlight_level);
-+		if (mx3_fbi->reg_lcd) {
-+			if (!regulator_is_enabled(mx3_fbi->reg_lcd)) {
-+				ret =3D regulator_enable(mx3_fbi->reg_lcd);
-+				if (ret)
-+					dev_warn(&pdev->dev,
-+						 "lcd regulator enable failed with error: %d\n",
-+						 ret);
-+			}
-+		}
- 	}
-=20
- 	console_lock();
-@@ -1373,6 +1413,7 @@ static int init_fb_chan(struct mx3fb_data *mx3fb, str=
-uct idmac_channel *ichan)
- 	struct mx3fb_platform_data *mx3fb_pdata =3D dev_get_platdata(dev);
- 	struct device_node *np =3D dev->of_node;
- 	const char *name;
-+	const char *regulator_name;
- 	const char *ipu_disp_format;
- 	unsigned int irq;
- 	struct fb_info *fbi;
-@@ -1395,6 +1436,9 @@ static int init_fb_chan(struct mx3fb_data *mx3fb, str=
-uct idmac_channel *ichan)
- 			return -EINVAL;
- 		}
-=20
-+		of_property_read_string(display_np, "regulator-name",
-+					&regulator_name);
-+
- 		of_property_read_string(display_np, "interface-pix-fmt",
- 					&ipu_disp_format);
- 		if (!ipu_disp_format) {
-@@ -1509,6 +1553,24 @@ static int init_fb_chan(struct mx3fb_data *mx3fb, st=
-ruct idmac_channel *ichan)
- 	if (ret < 0)
- 		goto erfb;
-=20
-+	/* In dt mode,
-+	 * using devm_regulator_get would require that the proprety referencing
-+	 * the regulator phandle has to be inside the mx3fb node.
-+	 */
-+	if (np) {
-+		if (regulator_name)
-+			mx3fbi->reg_lcd =3D regulator_get(NULL, regulator_name);
-+	} else {
-+		mx3fbi->reg_lcd =3D devm_regulator_get(dev, "lcd");
-+	}
-+
-+	if (IS_ERR(mx3fbi->reg_lcd)) {
-+		dev_warn(mx3fb->dev, "Operating without regulator \"lcd\"\n");
-+		mx3fbi->reg_lcd =3D NULL;
-+	} else {
-+		dev_info(mx3fb->dev, "Using \"lcd\" Regulator\n");
-+	}
-+
- 	return 0;
-=20
- erfb:
-@@ -1575,6 +1637,7 @@ static int mx3fb_probe(struct platform_device *pdev)
- 	dma_cap_mask_t mask;
- 	struct dma_chan *chan;
- 	struct dma_chan_request rq;
-+	struct mx3fb_info *mx3_fbi;
-=20
- 	/*
- 	 * Display Interface (DI) and Synchronous Display Controller (SDC)
-@@ -1630,6 +1693,8 @@ ersdc0:
- 	dmaengine_put();
- 	iounmap(mx3fb->reg_base);
- eremap:
-+	mx3_fbi =3D mx3fb->fbi->par;
-+	regulator_put(mx3_fbi->reg_lcd);
- 	kfree(mx3fb);
- 	dev_err(dev, "mx3fb: failed to register fb\n");
- 	return ret;
---=20
-1.7.9.5
+ #define S5P_INFORM0				S5P_PMUREG(0x0800)
+ #define S5P_INFORM1				S5P_PMUREG(0x0804)
+ #define S5P_INFORM2				S5P_PMUREG(0x0808)
+diff --git a/arch/arm/mach-s5pv210/include/mach/regs-clock.h b/arch/arm/mach-s5pv210/include/mach/regs-clock.h
+index 032de66..e345584 100644
+--- a/arch/arm/mach-s5pv210/include/mach/regs-clock.h
++++ b/arch/arm/mach-s5pv210/include/mach/regs-clock.h
+@@ -147,10 +147,6 @@
+ #define S5P_HDMI_PHY_CONTROL	S5P_CLKREG(0xE804)
+ #define S5P_USB_PHY_CONTROL	S5P_CLKREG(0xE80C)
+ #define S5P_DAC_PHY_CONTROL	S5P_CLKREG(0xE810)
+-#define S5P_MIPI_DPHY_CONTROL(x) S5P_CLKREG(0xE814)
+-#define S5P_MIPI_DPHY_ENABLE	(1 << 0)
+-#define S5P_MIPI_DPHY_SRESETN	(1 << 1)
+-#define S5P_MIPI_DPHY_MRESETN	(1 << 2)
+ 
+ #define S5P_INFORM0		S5P_CLKREG(0xF000)
+ #define S5P_INFORM1		S5P_CLKREG(0xF004)
+diff --git a/arch/arm/plat-samsung/Kconfig b/arch/arm/plat-samsung/Kconfig
+index 7dfba93..ec882ad 100644
+--- a/arch/arm/plat-samsung/Kconfig
++++ b/arch/arm/plat-samsung/Kconfig
+@@ -395,11 +395,6 @@ config S3C24XX_PWM
+ 	  Support for exporting the PWM timer blocks via the pwm device
+ 	  system
+ 
+-config S5P_SETUP_MIPIPHY
+-	bool
+-	help
+-	  Compile in common setup code for MIPI-CSIS and MIPI-DSIM devices
+-
+ config S3C_SETUP_CAMIF
+ 	bool
+ 	help
+diff --git a/arch/arm/plat-samsung/Makefile b/arch/arm/plat-samsung/Makefile
+index 498c7c2..9267d29 100644
+--- a/arch/arm/plat-samsung/Makefile
++++ b/arch/arm/plat-samsung/Makefile
+@@ -38,7 +38,6 @@ obj-$(CONFIG_S5P_DEV_UART)	+= s5p-dev-uart.o
+ obj-$(CONFIG_SAMSUNG_DEV_BACKLIGHT)	+= dev-backlight.o
+ 
+ obj-$(CONFIG_S3C_SETUP_CAMIF)	+= setup-camif.o
+-obj-$(CONFIG_S5P_SETUP_MIPIPHY)	+= setup-mipiphy.o
+ 
+ # DMA support
+ 
+diff --git a/arch/arm/plat-samsung/setup-mipiphy.c b/arch/arm/plat-samsung/setup-mipiphy.c
+deleted file mode 100644
+index 66df315..0000000
+--- a/arch/arm/plat-samsung/setup-mipiphy.c
++++ /dev/null
+@@ -1,60 +0,0 @@
+-/*
+- * Copyright (C) 2011 Samsung Electronics Co., Ltd.
+- *
+- * S5P - Helper functions for MIPI-CSIS and MIPI-DSIM D-PHY control
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- */
+-
+-#include <linux/export.h>
+-#include <linux/kernel.h>
+-#include <linux/platform_device.h>
+-#include <linux/io.h>
+-#include <linux/spinlock.h>
+-#include <mach/regs-clock.h>
+-
+-static int __s5p_mipi_phy_control(int id, bool on, u32 reset)
+-{
+-	static DEFINE_SPINLOCK(lock);
+-	void __iomem *addr;
+-	unsigned long flags;
+-	u32 cfg;
+-
+-	id = max(0, id);
+-	if (id > 1)
+-		return -EINVAL;
+-
+-	addr = S5P_MIPI_DPHY_CONTROL(id);
+-
+-	spin_lock_irqsave(&lock, flags);
+-
+-	cfg = __raw_readl(addr);
+-	cfg = on ? (cfg | reset) : (cfg & ~reset);
+-	__raw_writel(cfg, addr);
+-
+-	if (on) {
+-		cfg |= S5P_MIPI_DPHY_ENABLE;
+-	} else if (!(cfg & (S5P_MIPI_DPHY_SRESETN |
+-			    S5P_MIPI_DPHY_MRESETN) & ~reset)) {
+-		cfg &= ~S5P_MIPI_DPHY_ENABLE;
+-	}
+-
+-	__raw_writel(cfg, addr);
+-	spin_unlock_irqrestore(&lock, flags);
+-
+-	return 0;
+-}
+-
+-int s5p_csis_phy_enable(int id, bool on)
+-{
+-	return __s5p_mipi_phy_control(id, on, S5P_MIPI_DPHY_SRESETN);
+-}
+-EXPORT_SYMBOL(s5p_csis_phy_enable);
+-
+-int s5p_dsim_phy_enable(struct platform_device *pdev, bool on)
+-{
+-	return __s5p_mipi_phy_control(pdev->id, on, S5P_MIPI_DPHY_MRESETN);
+-}
+-EXPORT_SYMBOL(s5p_dsim_phy_enable);
+-- 
+1.7.10.4
 

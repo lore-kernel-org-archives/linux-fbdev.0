@@ -1,171 +1,266 @@
-From: Denis Carikli <denis@eukrea.com>
-Date: Thu, 31 Oct 2013 09:15:23 +0000
-Subject: [PATCHv9][ 1/6] video: imxfb: Introduce regulator support.
-Message-Id: <1383210928-18906-1-git-send-email-denis@eukrea.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Wed, 16 Oct 2013 16:40:10 +0000
+Subject: [PATCH 1/7] phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
+Message-Id: <1381940896-9355-2-git-send-email-kishon@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1381940896-9355-1-git-send-email-kishon@ti.com>
+In-Reply-To: <1381940896-9355-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-This commit is based on the following commit by Fabio Estevam:
-  4344429 video: mxsfb: Introduce regulator support
+From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
 
-Cc: Fabio Estevam <fabio.estevam@freescale.com>
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Eric B=C3=A9nard <eric@eukrea.com>
-Signed-off-by: Denis Carikli <denis@eukrea.com>
----
-ChangeLog v8->v9:
-- return an error if regulator_{enable,disable} fails in
-  imxfb_{enable,disable}_controller, and use it.
----
- drivers/video/imxfb.c |   53 ++++++++++++++++++++++++++++++++++++++-------=
-----
- 1 file changed, 41 insertions(+), 12 deletions(-)
+Add a PHY provider driver for the Samsung S5P/Exynos SoC MIPI CSI-2
+receiver and MIPI DSI transmitter DPHYs.
 
-diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 44ee678..322b358 100644
---- a/drivers/video/imxfb.c
-+++ b/drivers/video/imxfb.c
-@@ -28,6 +28,7 @@
- #include <linux/cpufreq.h>
- #include <linux/clk.h>
- #include <linux/platform_device.h>
-+#include <linux/regulator/consumer.h>
- #include <linux/dma-mapping.h>
- #include <linux/io.h>
- #include <linux/math64.h>
-@@ -145,6 +146,7 @@ struct imxfb_info {
- 	struct clk		*clk_ipg;
- 	struct clk		*clk_ahb;
- 	struct clk		*clk_per;
-+	struct regulator	*reg_lcd;
- 	enum imxfb_type		devtype;
- 	bool			enabled;
-=20
-@@ -561,14 +563,25 @@ static void imxfb_exit_backlight(struct imxfb_info *f=
-bi)
- }
- #endif
-=20
--static void imxfb_enable_controller(struct imxfb_info *fbi)
-+static int imxfb_enable_controller(struct imxfb_info *fbi)
- {
-+	int ret;
-=20
- 	if (fbi->enabled)
--		return;
-+		return 0;
-=20
- 	pr_debug("Enabling LCD controller\n");
-=20
-+	if (fbi->reg_lcd) {
-+		ret =3D regulator_enable(fbi->reg_lcd);
-+		if (ret) {
-+			dev_err(&fbi->pdev->dev,
-+				"lcd regulator enable failed with error: %d\n",
-+				ret);
-+			return ret;
-+		}
-+	}
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+---
+ .../devicetree/bindings/phy/samsung-phy.txt        |   14 ++
+ drivers/phy/Kconfig                                |    6 +
+ drivers/phy/Makefile                               |    7 +-
+ drivers/phy/phy-exynos-mipi-video.c                |  176 ++++++++++++++++++++
+ 4 files changed, 200 insertions(+), 3 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/phy/samsung-phy.txt
+ create mode 100644 drivers/phy/phy-exynos-mipi-video.c
+
+diff --git a/Documentation/devicetree/bindings/phy/samsung-phy.txt b/Documentation/devicetree/bindings/phy/samsung-phy.txt
+new file mode 100644
+index 0000000..5ff208c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/phy/samsung-phy.txt
+@@ -0,0 +1,14 @@
++Samsung S5P/EXYNOS SoC series MIPI CSIS/DSIM DPHY
++-------------------------------------------------
 +
- 	writel(fbi->screen_dma, fbi->regs + LCDC_SSA);
-=20
- 	/* panning offset 0 (0 pixel offset)        */
-@@ -593,12 +606,16 @@ static void imxfb_enable_controller(struct imxfb_info=
- *fbi)
- 		fbi->backlight_power(1);
- 	if (fbi->lcd_power)
- 		fbi->lcd_power(1);
++Required properties:
++- compatible : should be "samsung,s5pv210-mipi-video-phy";
++- reg : offset and length of the MIPI DPHY register set;
++- #phy-cells : from the generic phy bindings, must be 1;
++
++For "samsung,s5pv210-mipi-video-phy" compatible PHYs the second cell in
++the PHY specifier identifies the PHY and its meaning is as follows:
++  0 - MIPI CSIS 0,
++  1 - MIPI DSIM 0,
++  2 - MIPI CSIS 1,
++  3 - MIPI DSIM 1.
+diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
+index ac239ac..0062d7e 100644
+--- a/drivers/phy/Kconfig
++++ b/drivers/phy/Kconfig
+@@ -15,6 +15,12 @@ config GENERIC_PHY
+ 	  phy users can obtain reference to the PHY. All the users of this
+ 	  framework should select this config.
+ 
++config PHY_EXYNOS_MIPI_VIDEO
++	tristate "S5P/EXYNOS SoC series MIPI CSI-2/DSI PHY driver"
++	help
++	  Support for MIPI CSI-2 and MIPI DSI DPHY found on Samsung S5P
++	  and EXYNOS SoCs.
++
+ config OMAP_USB2
+ 	tristate "OMAP USB2 PHY Driver"
+ 	depends on ARCH_OMAP2PLUS
+diff --git a/drivers/phy/Makefile b/drivers/phy/Makefile
+index 0dd8a98..6344053 100644
+--- a/drivers/phy/Makefile
++++ b/drivers/phy/Makefile
+@@ -2,6 +2,7 @@
+ # Makefile for the phy drivers.
+ #
+ 
+-obj-$(CONFIG_GENERIC_PHY)	+= phy-core.o
+-obj-$(CONFIG_OMAP_USB2)		+= phy-omap-usb2.o
+-obj-$(CONFIG_TWL4030_USB)	+= phy-twl4030-usb.o
++obj-$(CONFIG_GENERIC_PHY)		+= phy-core.o
++obj-$(CONFIG_PHY_EXYNOS_MIPI_VIDEO)	+= phy-exynos-mipi-video.o
++obj-$(CONFIG_OMAP_USB2)			+= phy-omap-usb2.o
++obj-$(CONFIG_TWL4030_USB)		+= phy-twl4030-usb.o
+diff --git a/drivers/phy/phy-exynos-mipi-video.c b/drivers/phy/phy-exynos-mipi-video.c
+new file mode 100644
+index 0000000..b73b86a
+--- /dev/null
++++ b/drivers/phy/phy-exynos-mipi-video.c
+@@ -0,0 +1,176 @@
++/*
++ * Samsung S5P/EXYNOS SoC series MIPI CSIS/DSIM DPHY driver
++ *
++ * Copyright (C) 2013 Samsung Electronics Co., Ltd.
++ * Author: Sylwester Nawrocki <s.nawrocki@samsung.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++#include <linux/phy/phy.h>
++#include <linux/platform_device.h>
++#include <linux/spinlock.h>
++
++/* MIPI_PHYn_CONTROL register offset: n = 0..1 */
++#define EXYNOS_MIPI_PHY_CONTROL(n)	((n) * 4)
++#define EXYNOS_MIPI_PHY_ENABLE		(1 << 0)
++#define EXYNOS_MIPI_PHY_SRESETN		(1 << 1)
++#define EXYNOS_MIPI_PHY_MRESETN		(1 << 2)
++#define EXYNOS_MIPI_PHY_RESET_MASK	(3 << 1)
++
++enum exynos_mipi_phy_id {
++	EXYNOS_MIPI_PHY_ID_CSIS0,
++	EXYNOS_MIPI_PHY_ID_DSIM0,
++	EXYNOS_MIPI_PHY_ID_CSIS1,
++	EXYNOS_MIPI_PHY_ID_DSIM1,
++	EXYNOS_MIPI_PHYS_NUM
++};
++
++#define is_mipi_dsim_phy_id(id) \
++	((id) = EXYNOS_MIPI_PHY_ID_DSIM0 || (id) = EXYNOS_MIPI_PHY_ID_DSIM1)
++
++struct exynos_mipi_video_phy {
++	spinlock_t slock;
++	struct video_phy_desc {
++		struct phy *phy;
++		unsigned int index;
++	} phys[EXYNOS_MIPI_PHYS_NUM];
++	void __iomem *regs;
++};
++
++static int __set_phy_state(struct exynos_mipi_video_phy *state,
++			enum exynos_mipi_phy_id id, unsigned int on)
++{
++	void __iomem *addr;
++	u32 reg, reset;
++
++	addr = state->regs + EXYNOS_MIPI_PHY_CONTROL(id / 2);
++
++	if (is_mipi_dsim_phy_id(id))
++		reset = EXYNOS_MIPI_PHY_MRESETN;
++	else
++		reset = EXYNOS_MIPI_PHY_SRESETN;
++
++	spin_lock(&state->slock);
++	reg = readl(addr);
++	if (on)
++		reg |= reset;
++	else
++		reg &= ~reset;
++	writel(reg, addr);
++
++	/* Clear ENABLE bit only if MRESETN, SRESETN bits are not set. */
++	if (on)
++		reg |= EXYNOS_MIPI_PHY_ENABLE;
++	else if (!(reg & EXYNOS_MIPI_PHY_RESET_MASK))
++		reg &= ~EXYNOS_MIPI_PHY_ENABLE;
++
++	writel(reg, addr);
++	spin_unlock(&state->slock);
++	return 0;
++}
++
++#define to_mipi_video_phy(desc) \
++	container_of((desc), struct exynos_mipi_video_phy, phys[(desc)->index]);
++
++static int exynos_mipi_video_phy_power_on(struct phy *phy)
++{
++	struct video_phy_desc *phy_desc = phy_get_drvdata(phy);
++	struct exynos_mipi_video_phy *state = to_mipi_video_phy(phy_desc);
++
++	return __set_phy_state(state, phy_desc->index, 1);
++}
++
++static int exynos_mipi_video_phy_power_off(struct phy *phy)
++{
++	struct video_phy_desc *phy_desc = phy_get_drvdata(phy);
++	struct exynos_mipi_video_phy *state = to_mipi_video_phy(phy_desc);
++
++	return __set_phy_state(state, phy_desc->index, 1);
++}
++
++static struct phy *exynos_mipi_video_phy_xlate(struct device *dev,
++					struct of_phandle_args *args)
++{
++	struct exynos_mipi_video_phy *state = dev_get_drvdata(dev);
++
++	if (WARN_ON(args->args[0] > EXYNOS_MIPI_PHYS_NUM))
++		return ERR_PTR(-ENODEV);
++
++	return state->phys[args->args[0]].phy;
++}
++
++static struct phy_ops exynos_mipi_video_phy_ops = {
++	.power_on	= exynos_mipi_video_phy_power_on,
++	.power_off	= exynos_mipi_video_phy_power_off,
++	.owner		= THIS_MODULE,
++};
++
++static int exynos_mipi_video_phy_probe(struct platform_device *pdev)
++{
++	struct exynos_mipi_video_phy *state;
++	struct device *dev = &pdev->dev;
++	struct resource *res;
++	struct phy_provider *phy_provider;
++	unsigned int i;
++
++	state = devm_kzalloc(dev, sizeof(*state), GFP_KERNEL);
++	if (!state)
++		return -ENOMEM;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++
++	state->regs = devm_ioremap_resource(dev, res);
++	if (IS_ERR(state->regs))
++		return PTR_ERR(state->regs);
++
++	dev_set_drvdata(dev, state);
++	spin_lock_init(&state->slock);
++
++	phy_provider = devm_of_phy_provider_register(dev,
++					exynos_mipi_video_phy_xlate);
++	if (IS_ERR(phy_provider))
++		return PTR_ERR(phy_provider);
++
++	for (i = 0; i < EXYNOS_MIPI_PHYS_NUM; i++) {
++		struct phy *phy = devm_phy_create(dev,
++					&exynos_mipi_video_phy_ops, NULL);
++		if (IS_ERR(phy)) {
++			dev_err(dev, "failed to create PHY %d\n", i);
++			return PTR_ERR(phy);
++		}
++
++		state->phys[i].phy = phy;
++		state->phys[i].index = i;
++		phy_set_drvdata(phy, &state->phys[i]);
++	}
 +
 +	return 0;
- }
-=20
--static void imxfb_disable_controller(struct imxfb_info *fbi)
-+static int imxfb_disable_controller(struct imxfb_info *fbi)
- {
-+	int ret;
++}
 +
- 	if (!fbi->enabled)
--		return;
-+		return 0;
-=20
- 	pr_debug("Disabling LCD controller\n");
-=20
-@@ -613,6 +630,15 @@ static void imxfb_disable_controller(struct imxfb_info=
- *fbi)
- 	fbi->enabled =3D false;
-=20
- 	writel(0, fbi->regs + LCDC_RMCR);
++static const struct of_device_id exynos_mipi_video_phy_of_match[] = {
++	{ .compatible = "samsung,s5pv210-mipi-video-phy" },
++	{ },
++};
++MODULE_DEVICE_TABLE(of, exynos_mipi_video_phy_of_match);
 +
-+	if (fbi->reg_lcd) {
-+		ret =3D regulator_disable(fbi->reg_lcd);
-+		if (ret)
-+			dev_err(&fbi->pdev->dev,
-+				"lcd regulator disable failed with error: %d\n",
-+				ret);
-+			return ret;
++static struct platform_driver exynos_mipi_video_phy_driver = {
++	.probe	= exynos_mipi_video_phy_probe,
++	.driver = {
++		.of_match_table	= exynos_mipi_video_phy_of_match,
++		.name  = "exynos-mipi-video-phy",
++		.owner = THIS_MODULE,
 +	}
- }
-=20
- static int imxfb_blank(int blank, struct fb_info *info)
-@@ -626,13 +652,12 @@ static int imxfb_blank(int blank, struct fb_info *inf=
-o)
- 	case FB_BLANK_VSYNC_SUSPEND:
- 	case FB_BLANK_HSYNC_SUSPEND:
- 	case FB_BLANK_NORMAL:
--		imxfb_disable_controller(fbi);
--		break;
-+		return imxfb_disable_controller(fbi);
-=20
- 	case FB_BLANK_UNBLANK:
--		imxfb_enable_controller(fbi);
--		break;
-+		return imxfb_enable_controller(fbi);
- 	}
++};
++module_platform_driver(exynos_mipi_video_phy_driver);
 +
- 	return 0;
- }
-=20
-@@ -734,8 +759,7 @@ static int imxfb_suspend(struct platform_device *dev, p=
-m_message_t state)
-=20
- 	pr_debug("%s\n", __func__);
-=20
--	imxfb_disable_controller(fbi);
--	return 0;
-+	return imxfb_disable_controller(fbi);
- }
-=20
- static int imxfb_resume(struct platform_device *dev)
-@@ -745,8 +769,7 @@ static int imxfb_resume(struct platform_device *dev)
-=20
- 	pr_debug("%s\n", __func__);
-=20
--	imxfb_enable_controller(fbi);
--	return 0;
-+	return imxfb_enable_controller(fbi);
- }
- #else
- #define imxfb_suspend	NULL
-@@ -1020,6 +1043,12 @@ static int imxfb_probe(struct platform_device *pdev)
- 		goto failed_register;
- 	}
-=20
-+	fbi->reg_lcd =3D devm_regulator_get(&pdev->dev, "lcd");
-+	if (IS_ERR(fbi->reg_lcd)) {
-+		dev_info(&pdev->dev, "No lcd regulator used.\n");
-+		fbi->reg_lcd =3D NULL;
-+	}
-+
- 	imxfb_enable_controller(fbi);
- 	fbi->pdev =3D pdev;
- #ifdef PWMR_BACKLIGHT_AVAILABLE
---=20
-1.7.9.5
++MODULE_DESCRIPTION("Samsung S5P/EXYNOS SoC MIPI CSI-2/DSI PHY driver");
++MODULE_AUTHOR("Sylwester Nawrocki <s.nawrocki@samsung.com>");
++MODULE_LICENSE("GPL v2");
+-- 
+1.7.10.4
 

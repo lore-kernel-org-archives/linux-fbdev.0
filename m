@@ -1,222 +1,553 @@
-From: Denis Carikli <denis@eukrea.com>
-Date: Wed, 23 Oct 2013 12:43:49 +0000
-Subject: [PATCHv3][ 5/5] ARM: dts: mbimxsd35 Add video and displays support.
-Message-Id: <1382532229-32755-5-git-send-email-denis@eukrea.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Date: Wed, 16 Oct 2013 16:40:15 +0000
+Subject: [PATCH 6/7] video: exynos_dp: remove non-DT support for Exynos Display Port
+Message-Id: <1381940896-9355-7-git-send-email-kishon@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382532229-32755-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1382532229-32755-1-git-send-email-denis@eukrea.com>
+References: <1381940896-9355-1-git-send-email-kishon@ti.com>
+In-Reply-To: <1381940896-9355-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: devicetree@vger.kernel.org
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Eric Bénard <eric@eukrea.com>
+From: Jingoo Han <jg1.han@samsung.com>
 
-Signed-off-by: Denis Carikli <denis@eukrea.com>
----
-ChangeLog v2->v3:
-- The dts were adapted to the new DT bindings which looks more like the IPUv3
-  ones.
----
- .../imx35-eukrea-mbimxsd35-baseboard-cmo-qvga.dts  |   61 ++++++++++++++++++++
- .../imx35-eukrea-mbimxsd35-baseboard-dvi-svga.dts  |   51 ++++++++++++++++
- .../imx35-eukrea-mbimxsd35-baseboard-dvi-vga.dts   |   51 ++++++++++++++++
- 3 files changed, 163 insertions(+)
- create mode 100644 arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-cmo-qvga.dts
- create mode 100644 arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-svga.dts
- create mode 100644 arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-vga.dts
+Exynos Display Port can be used only for Exynos SoCs. In addition,
+non-DT for EXYNOS SoCs is not supported from v3.11; thus, there is
+no need to support non-DT for Exynos Display Port.
 
-diff --git a/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-cmo-qvga.dts b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-cmo-qvga.dts
-new file mode 100644
-index 0000000..6d186ca
---- /dev/null
-+++ b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-cmo-qvga.dts
-@@ -0,0 +1,61 @@
-+/*
-+ * Copyright 2013 Eukréa Electromatique <denis@eukrea.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2
-+ * of the License, or (at your option) any later version.
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-+ * MA 02110-1301, USA.
-+ */
+The 'include/video/exynos_dp.h' file has been used for non-DT
+support and the content of file include/video/exynos_dp.h is moved
+to drivers/video/exynos/exynos_dp_core.h. Thus, the 'exynos_dp.h'
+file is removed. Also, 'struct exynos_dp_platdata' is removed,
+because it is not used any more.
+
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Reviewed-by: Tomasz Figa <t.figa@samsung.com>
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+---
+ drivers/video/exynos/Kconfig          |    2 +-
+ drivers/video/exynos/exynos_dp_core.c |  116 +++++++----------------------
+ drivers/video/exynos/exynos_dp_core.h |  109 +++++++++++++++++++++++++++
+ drivers/video/exynos/exynos_dp_reg.c  |    2 -
+ include/video/exynos_dp.h             |  131 ---------------------------------
+ 5 files changed, 135 insertions(+), 225 deletions(-)
+ delete mode 100644 include/video/exynos_dp.h
+
+diff --git a/drivers/video/exynos/Kconfig b/drivers/video/exynos/Kconfig
+index 976594d..1129d0e 100644
+--- a/drivers/video/exynos/Kconfig
++++ b/drivers/video/exynos/Kconfig
+@@ -30,7 +30,7 @@ config EXYNOS_LCD_S6E8AX0
+ 
+ config EXYNOS_DP
+ 	bool "EXYNOS DP driver support"
+-	depends on ARCH_EXYNOS
++	depends on OF && ARCH_EXYNOS
+ 	default n
+ 	help
+ 	  This enables support for DP device.
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index 12bbede..05fed7d 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -20,8 +20,6 @@
+ #include <linux/delay.h>
+ #include <linux/of.h>
+ 
+-#include <video/exynos_dp.h>
+-
+ #include "exynos_dp_core.h"
+ 
+ static int exynos_dp_init_dp(struct exynos_dp_device *dp)
+@@ -894,26 +892,17 @@ static void exynos_dp_hotplug(struct work_struct *work)
+ 		dev_err(dp->dev, "unable to config video\n");
+ }
+ 
+-#ifdef CONFIG_OF
+-static struct exynos_dp_platdata *exynos_dp_dt_parse_pdata(struct device *dev)
++static struct video_info *exynos_dp_dt_parse_pdata(struct device *dev)
+ {
+ 	struct device_node *dp_node = dev->of_node;
+-	struct exynos_dp_platdata *pd;
+ 	struct video_info *dp_video_config;
+ 
+-	pd = devm_kzalloc(dev, sizeof(*pd), GFP_KERNEL);
+-	if (!pd) {
+-		dev_err(dev, "memory allocation for pdata failed\n");
+-		return ERR_PTR(-ENOMEM);
+-	}
+ 	dp_video_config = devm_kzalloc(dev,
+ 				sizeof(*dp_video_config), GFP_KERNEL);
+-
+ 	if (!dp_video_config) {
+ 		dev_err(dev, "memory allocation for video config failed\n");
+ 		return ERR_PTR(-ENOMEM);
+ 	}
+-	pd->video_info = dp_video_config;
+ 
+ 	dp_video_config->h_sync_polarity  		of_property_read_bool(dp_node, "hsync-active-high");
+@@ -960,7 +949,7 @@ static struct exynos_dp_platdata *exynos_dp_dt_parse_pdata(struct device *dev)
+ 		return ERR_PTR(-EINVAL);
+ 	}
+ 
+-	return pd;
++	return dp_video_config;
+ }
+ 
+ static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
+@@ -1003,48 +992,30 @@ err:
+ 
+ static void exynos_dp_phy_init(struct exynos_dp_device *dp)
+ {
+-	u32 reg;
++	if (dp->phy_addr) {
++		u32 reg;
+ 
+-	reg = __raw_readl(dp->phy_addr);
+-	reg |= dp->enable_mask;
+-	__raw_writel(reg, dp->phy_addr);
++		reg = __raw_readl(dp->phy_addr);
++		reg |= dp->enable_mask;
++		__raw_writel(reg, dp->phy_addr);
++	}
+ }
+ 
+ static void exynos_dp_phy_exit(struct exynos_dp_device *dp)
+ {
+-	u32 reg;
+-
+-	reg = __raw_readl(dp->phy_addr);
+-	reg &= ~(dp->enable_mask);
+-	__raw_writel(reg, dp->phy_addr);
+-}
+-#else
+-static struct exynos_dp_platdata *exynos_dp_dt_parse_pdata(struct device *dev)
+-{
+-	return NULL;
+-}
+-
+-static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
+-{
+-	return -EINVAL;
+-}
+-
+-static void exynos_dp_phy_init(struct exynos_dp_device *dp)
+-{
+-	return;
+-}
++	if (dp->phy_addr) {
++		u32 reg;
+ 
+-static void exynos_dp_phy_exit(struct exynos_dp_device *dp)
+-{
+-	return;
++		reg = __raw_readl(dp->phy_addr);
++		reg &= ~(dp->enable_mask);
++		__raw_writel(reg, dp->phy_addr);
++	}
+ }
+-#endif /* CONFIG_OF */
+ 
+ static int exynos_dp_probe(struct platform_device *pdev)
+ {
+ 	struct resource *res;
+ 	struct exynos_dp_device *dp;
+-	struct exynos_dp_platdata *pdata;
+ 
+ 	int ret = 0;
+ 
+@@ -1057,21 +1028,13 @@ static int exynos_dp_probe(struct platform_device *pdev)
+ 
+ 	dp->dev = &pdev->dev;
+ 
+-	if (pdev->dev.of_node) {
+-		pdata = exynos_dp_dt_parse_pdata(&pdev->dev);
+-		if (IS_ERR(pdata))
+-			return PTR_ERR(pdata);
++	dp->video_info = exynos_dp_dt_parse_pdata(&pdev->dev);
++	if (IS_ERR(dp->video_info))
++		return PTR_ERR(dp->video_info);
+ 
+-		ret = exynos_dp_dt_parse_phydata(dp);
+-		if (ret)
+-			return ret;
+-	} else {
+-		pdata = pdev->dev.platform_data;
+-		if (!pdata) {
+-			dev_err(&pdev->dev, "no platform data\n");
+-			return -EINVAL;
+-		}
+-	}
++	ret = exynos_dp_dt_parse_phydata(dp);
++	if (ret)
++		return ret;
+ 
+ 	dp->clock = devm_clk_get(&pdev->dev, "dp");
+ 	if (IS_ERR(dp->clock)) {
+@@ -1095,15 +1058,7 @@ static int exynos_dp_probe(struct platform_device *pdev)
+ 
+ 	INIT_WORK(&dp->hotplug_work, exynos_dp_hotplug);
+ 
+-	dp->video_info = pdata->video_info;
+-
+-	if (pdev->dev.of_node) {
+-		if (dp->phy_addr)
+-			exynos_dp_phy_init(dp);
+-	} else {
+-		if (pdata->phy_init)
+-			pdata->phy_init();
+-	}
++	exynos_dp_phy_init(dp);
+ 
+ 	exynos_dp_init_dp(dp);
+ 
+@@ -1121,18 +1076,11 @@ static int exynos_dp_probe(struct platform_device *pdev)
+ 
+ static int exynos_dp_remove(struct platform_device *pdev)
+ {
+-	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
+ 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
+ 
+ 	flush_work(&dp->hotplug_work);
+ 
+-	if (pdev->dev.of_node) {
+-		if (dp->phy_addr)
+-			exynos_dp_phy_exit(dp);
+-	} else {
+-		if (pdata->phy_exit)
+-			pdata->phy_exit();
+-	}
++	exynos_dp_phy_exit(dp);
+ 
+ 	clk_disable_unprepare(dp->clock);
+ 
+@@ -1143,20 +1091,13 @@ static int exynos_dp_remove(struct platform_device *pdev)
+ #ifdef CONFIG_PM_SLEEP
+ static int exynos_dp_suspend(struct device *dev)
+ {
+-	struct exynos_dp_platdata *pdata = dev->platform_data;
+ 	struct exynos_dp_device *dp = dev_get_drvdata(dev);
+ 
+ 	disable_irq(dp->irq);
+ 
+ 	flush_work(&dp->hotplug_work);
+ 
+-	if (dev->of_node) {
+-		if (dp->phy_addr)
+-			exynos_dp_phy_exit(dp);
+-	} else {
+-		if (pdata->phy_exit)
+-			pdata->phy_exit();
+-	}
++	exynos_dp_phy_exit(dp);
+ 
+ 	clk_disable_unprepare(dp->clock);
+ 
+@@ -1165,16 +1106,9 @@ static int exynos_dp_suspend(struct device *dev)
+ 
+ static int exynos_dp_resume(struct device *dev)
+ {
+-	struct exynos_dp_platdata *pdata = dev->platform_data;
+ 	struct exynos_dp_device *dp = dev_get_drvdata(dev);
+ 
+-	if (dev->of_node) {
+-		if (dp->phy_addr)
+-			exynos_dp_phy_init(dp);
+-	} else {
+-		if (pdata->phy_init)
+-			pdata->phy_init();
+-	}
++	exynos_dp_phy_init(dp);
+ 
+ 	clk_prepare_enable(dp->clock);
+ 
+@@ -1203,7 +1137,7 @@ static struct platform_driver exynos_dp_driver = {
+ 		.name	= "exynos-dp",
+ 		.owner	= THIS_MODULE,
+ 		.pm	= &exynos_dp_pm_ops,
+-		.of_match_table = of_match_ptr(exynos_dp_match),
++		.of_match_table = exynos_dp_match,
+ 	},
+ };
+ 
+diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
+index 6c567bbf..56cfec8 100644
+--- a/drivers/video/exynos/exynos_dp_core.h
++++ b/drivers/video/exynos/exynos_dp_core.h
+@@ -13,6 +13,99 @@
+ #ifndef _EXYNOS_DP_CORE_H
+ #define _EXYNOS_DP_CORE_H
+ 
++#define DP_TIMEOUT_LOOP_COUNT 100
++#define MAX_CR_LOOP 5
++#define MAX_EQ_LOOP 5
 +
-+#include "imx35-eukrea-mbimxsd35-baseboard.dts"
-+
-+/ {
-+	model = "Eukrea MBIMXSD35 with the CMO-QVGA Display";
-+	compatible = "eukrea,mbimxsd35-baseboard-cmo-qvga", "eukrea,mbimxsd35-baseboard", "eukrea,cpuimx35", "fsl,imx35";
-+
-+	display@di0 {
-+		regulator-name = "lcd";
-+		interface-pix-fmt = "rgb666";
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_lcdc_1>;
-+		model = "CMO-QVGA";
-+		display-timings {
-+			qvga_timings: 320x240 {
-+				clock-frequency = <6500000>;
-+				hactive = <320>;
-+				vactive = <240>;
-+				hback-porch = <68>;
-+				hfront-porch = <20>;
-+				vback-porch = <15>;
-+				vfront-porch = <4>;
-+				hsync-len = <30>;
-+				vsync-len = <3>;
-+			};
-+		};
-+	};
-+
-+	reg_lcd_3v3: lcd-en {
-+		compatible = "regulator-fixed";
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_reg_lcd_3v3>;
-+		regulator-name = "lcd";
-+		regulator-min-microvolt = <3300000>;
-+		regulator-max-microvolt = <3300000>;
-+		gpio = <&gpio1 4 0>;
-+		enable-active-high;
-+	};
++enum link_rate_type {
++	LINK_RATE_1_62GBPS = 0x06,
++	LINK_RATE_2_70GBPS = 0x0a
 +};
 +
-+&lcdc {
-+	lcd-supply = <&reg_lcd_3v3>;
-+	status = "okay";
-+};
-diff --git a/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-svga.dts b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-svga.dts
-new file mode 100644
-index 0000000..ccf5f48
---- /dev/null
-+++ b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-svga.dts
-@@ -0,0 +1,51 @@
-+/*
-+ * Copyright 2013 Eukréa Electromatique <denis@eukrea.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2
-+ * of the License, or (at your option) any later version.
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-+ * MA 02110-1301, USA.
-+ */
-+
-+#include "imx35-eukrea-mbimxsd35-baseboard.dts"
-+
-+/ {
-+	model = "Eukrea MBIMXSD35 with the DVI-SVGA Display";
-+	compatible = "eukrea,mbimxsd35-baseboard-dvi-svga", "eukrea,mbimxsd35-baseboard", "eukrea,cpuimx35", "fsl,imx35";
-+	display@di0 {
-+		interface-pix-fmt = "rgb666";
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_lcdc_1>;
-+		model = "DVI-SVGA";
-+		display-timings {
-+			svga_timings: 800x600 {
-+				clock-frequency = <40000000>;
-+				hactive = <800>;
-+				vactive = <600>;
-+				hback-porch = <75>;
-+				hfront-porch = <75>;
-+				vback-porch = <7>;
-+				vfront-porch = <75>;
-+				hsync-len = <7>;
-+				vsync-len = <7>;
-+				hsync-active = <1>;
-+				vsync-active = <1>;
-+				de-active = <1>;
-+				pixelclk-active = <0>;
-+			};
-+		};
-+	};
++enum link_lane_count_type {
++	LANE_COUNT1 = 1,
++	LANE_COUNT2 = 2,
++	LANE_COUNT4 = 4
 +};
 +
-+&lcdc {
-+	status = "okay";
-+};
-diff --git a/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-vga.dts b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-vga.dts
-new file mode 100644
-index 0000000..6e31684
---- /dev/null
-+++ b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-vga.dts
-@@ -0,0 +1,51 @@
-+/*
-+ * Copyright 2013 Eukréa Electromatique <denis@eukrea.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2
-+ * of the License, or (at your option) any later version.
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-+ * MA 02110-1301, USA.
-+ */
-+
-+#include "imx35-eukrea-mbimxsd35-baseboard.dts"
-+
-+/ {
-+	model = "Eukrea MBIMXSD35 with the DVI-VGA Display";
-+	compatible = "eukrea,mbimxsd35-baseboard-dvi-vga", "eukrea,mbimxsd35-baseboard", "eukrea,cpuimx35", "fsl,imx35";
-+	display@di0 {
-+		interface-pix-fmt = "rgb666";
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_lcdc_1>;
-+		model = "DVI-VGA";
-+		display-timings {
-+			vga_timings: 640x480 {
-+				clock-frequency = <31250000>;
-+				hactive = <640>;
-+				vactive = <480>;
-+				hback-porch = <100>;
-+				hfront-porch = <100>;
-+				vback-porch = <7>;
-+				vfront-porch = <100>;
-+				hsync-len = <7>;
-+				vsync-len = <7>;
-+				hsync-active = <1>;
-+				vsync-active = <1>;
-+				de-active = <1>;
-+				pixelclk-active = <0>;
-+			};
-+		};
-+	};
++enum link_training_state {
++	START,
++	CLOCK_RECOVERY,
++	EQUALIZER_TRAINING,
++	FINISHED,
++	FAILED
 +};
 +
-+&lcdc {
-+	status = "okay";
++enum voltage_swing_level {
++	VOLTAGE_LEVEL_0,
++	VOLTAGE_LEVEL_1,
++	VOLTAGE_LEVEL_2,
++	VOLTAGE_LEVEL_3,
 +};
++
++enum pre_emphasis_level {
++	PRE_EMPHASIS_LEVEL_0,
++	PRE_EMPHASIS_LEVEL_1,
++	PRE_EMPHASIS_LEVEL_2,
++	PRE_EMPHASIS_LEVEL_3,
++};
++
++enum pattern_set {
++	PRBS7,
++	D10_2,
++	TRAINING_PTN1,
++	TRAINING_PTN2,
++	DP_NONE
++};
++
++enum color_space {
++	COLOR_RGB,
++	COLOR_YCBCR422,
++	COLOR_YCBCR444
++};
++
++enum color_depth {
++	COLOR_6,
++	COLOR_8,
++	COLOR_10,
++	COLOR_12
++};
++
++enum color_coefficient {
++	COLOR_YCBCR601,
++	COLOR_YCBCR709
++};
++
++enum dynamic_range {
++	VESA,
++	CEA
++};
++
++enum pll_status {
++	PLL_UNLOCKED,
++	PLL_LOCKED
++};
++
++enum clock_recovery_m_value_type {
++	CALCULATED_M,
++	REGISTER_M
++};
++
++enum video_timing_recognition_type {
++	VIDEO_TIMING_FROM_CAPTURE,
++	VIDEO_TIMING_FROM_REGISTER
++};
++
++enum analog_power_block {
++	AUX_BLOCK,
++	CH0_BLOCK,
++	CH1_BLOCK,
++	CH2_BLOCK,
++	CH3_BLOCK,
++	ANALOG_TOTAL,
++	POWER_ALL
++};
++
+ enum dp_irq_type {
+ 	DP_IRQ_TYPE_HP_CABLE_IN,
+ 	DP_IRQ_TYPE_HP_CABLE_OUT,
+@@ -20,6 +113,22 @@ enum dp_irq_type {
+ 	DP_IRQ_TYPE_UNKNOWN,
+ };
+ 
++struct video_info {
++	char *name;
++
++	bool h_sync_polarity;
++	bool v_sync_polarity;
++	bool interlaced;
++
++	enum color_space color_space;
++	enum dynamic_range dynamic_range;
++	enum color_coefficient ycbcr_coeff;
++	enum color_depth color_depth;
++
++	enum link_rate_type link_rate;
++	enum link_lane_count_type lane_count;
++};
++
+ struct link_train {
+ 	int eq_loop;
+ 	int cr_loop[4];
+diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
+index 29d9d03..b70da50 100644
+--- a/drivers/video/exynos/exynos_dp_reg.c
++++ b/drivers/video/exynos/exynos_dp_reg.c
+@@ -14,8 +14,6 @@
+ #include <linux/io.h>
+ #include <linux/delay.h>
+ 
+-#include <video/exynos_dp.h>
+-
+ #include "exynos_dp_core.h"
+ #include "exynos_dp_reg.h"
+ 
+diff --git a/include/video/exynos_dp.h b/include/video/exynos_dp.h
+deleted file mode 100644
+index bd8cabd..0000000
+--- a/include/video/exynos_dp.h
++++ /dev/null
+@@ -1,131 +0,0 @@
+-/*
+- * Samsung SoC DP device support
+- *
+- * Copyright (C) 2012 Samsung Electronics Co., Ltd.
+- * Author: Jingoo Han <jg1.han@samsung.com>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- */
+-
+-#ifndef _EXYNOS_DP_H
+-#define _EXYNOS_DP_H
+-
+-#define DP_TIMEOUT_LOOP_COUNT 100
+-#define MAX_CR_LOOP 5
+-#define MAX_EQ_LOOP 5
+-
+-enum link_rate_type {
+-	LINK_RATE_1_62GBPS = 0x06,
+-	LINK_RATE_2_70GBPS = 0x0a
+-};
+-
+-enum link_lane_count_type {
+-	LANE_COUNT1 = 1,
+-	LANE_COUNT2 = 2,
+-	LANE_COUNT4 = 4
+-};
+-
+-enum link_training_state {
+-	START,
+-	CLOCK_RECOVERY,
+-	EQUALIZER_TRAINING,
+-	FINISHED,
+-	FAILED
+-};
+-
+-enum voltage_swing_level {
+-	VOLTAGE_LEVEL_0,
+-	VOLTAGE_LEVEL_1,
+-	VOLTAGE_LEVEL_2,
+-	VOLTAGE_LEVEL_3,
+-};
+-
+-enum pre_emphasis_level {
+-	PRE_EMPHASIS_LEVEL_0,
+-	PRE_EMPHASIS_LEVEL_1,
+-	PRE_EMPHASIS_LEVEL_2,
+-	PRE_EMPHASIS_LEVEL_3,
+-};
+-
+-enum pattern_set {
+-	PRBS7,
+-	D10_2,
+-	TRAINING_PTN1,
+-	TRAINING_PTN2,
+-	DP_NONE
+-};
+-
+-enum color_space {
+-	COLOR_RGB,
+-	COLOR_YCBCR422,
+-	COLOR_YCBCR444
+-};
+-
+-enum color_depth {
+-	COLOR_6,
+-	COLOR_8,
+-	COLOR_10,
+-	COLOR_12
+-};
+-
+-enum color_coefficient {
+-	COLOR_YCBCR601,
+-	COLOR_YCBCR709
+-};
+-
+-enum dynamic_range {
+-	VESA,
+-	CEA
+-};
+-
+-enum pll_status {
+-	PLL_UNLOCKED,
+-	PLL_LOCKED
+-};
+-
+-enum clock_recovery_m_value_type {
+-	CALCULATED_M,
+-	REGISTER_M
+-};
+-
+-enum video_timing_recognition_type {
+-	VIDEO_TIMING_FROM_CAPTURE,
+-	VIDEO_TIMING_FROM_REGISTER
+-};
+-
+-enum analog_power_block {
+-	AUX_BLOCK,
+-	CH0_BLOCK,
+-	CH1_BLOCK,
+-	CH2_BLOCK,
+-	CH3_BLOCK,
+-	ANALOG_TOTAL,
+-	POWER_ALL
+-};
+-
+-struct video_info {
+-	char *name;
+-
+-	bool h_sync_polarity;
+-	bool v_sync_polarity;
+-	bool interlaced;
+-
+-	enum color_space color_space;
+-	enum dynamic_range dynamic_range;
+-	enum color_coefficient ycbcr_coeff;
+-	enum color_depth color_depth;
+-
+-	enum link_rate_type link_rate;
+-	enum link_lane_count_type lane_count;
+-};
+-
+-struct exynos_dp_platdata {
+-	struct video_info *video_info;
+-
+-	void (*phy_init)(void);
+-	void (*phy_exit)(void);
+-};
+-
+-#endif /* _EXYNOS_DP_H */
 -- 
-1.7.9.5
+1.7.10.4
 

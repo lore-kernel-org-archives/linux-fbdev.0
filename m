@@ -1,305 +1,161 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 17 Oct 2013 11:02:38 +0000
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Thu, 17 Oct 2013 11:05:18 +0000
 Subject: Re: [RFR 2/2] drm/panel: Add simple panel support
-Message-Id: <12566222.aRYc4MDoOm@avalon>
+Message-Id: <20131017110517.GC10993@ulmo.nvidia.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="nextPart40649803.OsYv5HB4Pu"
+Content-Type: multipart/mixed; boundary="Fig2xvG2VGoz8o/s"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381947912-11741-1-git-send-email-treding@nvidia.com> <1695169.rzbDl9PeRX@avalon> <20131017085342.GB2502@ulmo.nvidia.com>
-In-Reply-To: <20131017085342.GB2502-AwZRO8vwLAwmlAP/+Wk3EA@public.gmane.org>
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+References: <1381947912-11741-1-git-send-email-treding@nvidia.com>
+ <1381947912-11741-3-git-send-email-treding@nvidia.com>
+ <1695169.rzbDl9PeRX@avalon>
+ <20131017085342.GB2502@ulmo.nvidia.com>
+ <525FBA5D.9000001@ti.com>
+In-Reply-To: <525FBA5D.9000001-l0cyMroinI0@public.gmane.org>
+To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
 
---nextPart40649803.OsYv5HB4Pu
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--Fig2xvG2VGoz8o/s
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Thierry,
+On Thu, Oct 17, 2013 at 01:22:21PM +0300, Tomi Valkeinen wrote:
+> On 17/10/13 11:53, Thierry Reding wrote:
+>=20
+> > I keep wondering why we absolutely must have compatibility between CDF
+> > and this simple panel binding. DT content is supposed to concern itself
+> > with the description of hardware only. What about the following isn't an
+> > accurate description of the panel hardware?
+> >=20
+> > 	panel: panel {
+> > 		compatible =3D "cptt,claa101wb01";
+> >=20
+> > 		power-supply =3D <&vdd_pnl_reg>;
+> > 		enable-gpios =3D <&gpio 90 0>;
+> >=20
+> > 		backlight =3D <&backlight>;
+> > 	};
+> >=20
+> > 	dsi-controller {
+> > 		panel =3D <&panel>;
+> > 	};
+>=20
+> That's quite similar to how my current out-of-mainline OMAP DSS DT
+> bindings work. The difference is that I have a reference from the panel
+> node to the video source (dsi-controller), instead of the other way
+> around. I just find it more natural. It works the same way as, say,
+> regulators, gpios, etc.
 
-On Thursday 17 October 2013 10:53:43 Thierry Reding wrote:
-> Adding the dri-devel mailing list on Cc, since this discussion is
-> outgrowing its original intent.
-> 
-> On Thu, Oct 17, 2013 at 02:47:52AM +0200, Laurent Pinchart wrote:
-> > Hi Thierry,
-> > 
-> > Thank you for the patch.
-> > 
-> > On Wednesday 16 October 2013 20:25:12 Thierry Reding wrote:
-> > > Add a driver for simple panels. Such panels can have a regulator that
-> > > provides the supply voltage and a separate GPIO to enable the panel.
-> > > Optionally the panels can have a backlight associated with them so it
-> > > can be enabled or disabled according to the panel's power management
-> > > mode.
-> > > 
-> > > Support is added for three panels: An AU Optronics 10.1" WSVGA, a
-> > > Chunghwa Picture Tubes 10.1" WXGA and a Panasonic 10.1 WUXGA TFT LCD
-> > > panel.
-> > > 
-> > > Signed-off-by: Thierry Reding <treding@nvidia.com>
-> > > ---
-> > > 
-> > >  .../devicetree/bindings/panel/auo,b101aw03.txt     |   7 +
-> > >  .../bindings/panel/chunghwa,claa101wb03.txt        |   7 +
-> > >  .../bindings/panel/panasonic,vvx10f004b00.txt      |   7 +
-> > >  .../devicetree/bindings/panel/simple-panel.txt     |  21 ++
-> > >  drivers/gpu/drm/Makefile                           |   1 +
-> > >  drivers/gpu/drm/panel/Kconfig                      |  13 +
-> > >  drivers/gpu/drm/panel/Makefile                     |   1 +
-> > >  drivers/gpu/drm/panel/panel-simple.c               | 335 ++++++++++++++
-> > >  8 files changed, 392 insertions(+)
-> > >  create mode 100644
-> > >  Documentation/devicetree/bindings/panel/auo,b101aw03.txt
-> > >  create mode 100644
-> > >  Documentation/devicetree/bindings/panel/chunghwa,claa101wb03.txt
-> > >  create mode 100644
-> > >  Documentation/devicetree/bindings/panel/panasonic,vvx10f004b00.txt
-> > >  create mode 100644
-> > >  Documentation/devicetree/bindings/panel/simple-panel.txt
-> > >  create mode 100644 drivers/gpu/drm/panel/Makefile
-> > >  create mode 100644 drivers/gpu/drm/panel/panel-simple.c
+I suppose that depends on the way you look at it. In the above proposal
+I consider the output (DSI controller) to use the panel as a resource
+that provides a certain set of services (query mode timings, provide a
+way to enable or disable the panel). Similarly the panel uses the
+backlight as a resource that provides a certain set of services (such as
+changing the brightness).
 
-[snip]
+The above also follows the natural order of control. The panel has no
+way to control the DSI output. However, it is the output that controls
+when a panel is required and turn it on as appropriate.
 
-> > > diff --git a/Documentation/devicetree/bindings/panel/simple-panel.txt
-> > > b/Documentation/devicetree/bindings/panel/simple-panel.txt new file mode
-> > > 100644
-> > > index 0000000..1341bbf
-> > > --- /dev/null
-> > > +++ b/Documentation/devicetree/bindings/panel/simple-panel.txt
-> > > @@ -0,0 +1,21 @@
-> > > +Simple display panel
-> > > +
-> > > +Required properties:
-> > > +- power-supply: regulator to provide the supply voltage
-> > > +
-> > > +Optional properties:
-> > > +- ddc-i2c-bus: phandle of an I2C controller used for DDC EDID probing
-> > > +- enable-gpios: GPIO pin to enable or disable the panel
-> > > +- backlight: phandle of the backlight device attached to the panel
-> > > +
-> > > +Example:
-> > > +
-> > > +	panel: panel {
-> > > +		compatible = "cptt,claa101wb01";
-> > > +		ddc-i2c-bus = <&panelddc>;
-> > > +
-> > > +		power-supply = <&vdd_pnl_reg>;
-> > > +		enable-gpios = <&gpio 90 0>;
-> > > +
-> > > +		backlight = <&backlight>;
-> > > +	};
-> > 
-> > My biggest concern here is that this will not be compatible with the CDF
-> > DT bindings. They're not complete yet, but they will require connections
-> > between entities to be described in DT, in a way very similar (or
-> > actually identical) to the V4L2 DT bindings, documented in
-> > Documentation/devicetree/bindings/media/video-interfaces.txt. Could you
-> > have a look at that ? Please ignore all optional properties beside
-> > remote-endpoint, as they're V4L2 specific.
-> 
-> Okay, so if I understand correctly, translating those bindings to panel
-> nodes would look somewhat like this:
-> 
-> 	dc: display-controller {
-> 		ports {
-> 			port@0 {
-> 				remote-endpoint = <&panel>;
-> 			};
-> 		};
-> 	};
-> 
-> 	panel: panel {
-> 		ports {
-> 			port@0 {
-> 				remote-endpoint = <&dc>;
-> 			};
-> 		};
-> 	};
-> 
-> The above leaves out any of the other, non-relevant properties. Does
-> that sound about right?
+> However, one thing unclear is where the panel node should be. You seem
+> to have a DSI panel here. If the panel is truly not controlled in any
+> way, maybe having the panel as a normal platform device is ok. But if
+> the DSI panel is controlled with DSI messages, should it be a child of
+> the dsi-controller node, the same way i2c peripherals are children of
+> i2c master?
 
-Yes it does.
+That's one possibility. In this particular case it's not even necessary
+to use any of DSIs control methods to talk to the panel. The panel only
+receives the data stream and "just works".
 
-> That seems like an overly complex amount of data to describe just a simple
-> panel where the only connection between it and the display hardware is the
-> data bus and I was sort of expecting the CDF to provide some sort of
-> shortcut for setups where the connection is 1:1 with no means to perform any
-> configuration of the bus.
+Even if the panel were to be controlled via DSI, I think keeping it as
+a separate device node is equally valid. It's really boils down to what
+I already said above. The output uses the panel as a resource, similar
+to how other devices might use a GPIO controller to use a GPIO pin, or
+an interrupt controller to request an IRQ.
 
-CDF needs to model video pipelines that can be more complex than just a 
-display controller with a single output connected to a panel with a single 
-input. For that reason the DT bindings need to describe connections in a 
-generic enough way. The above DT fragment might be slightly more complex than 
-one would expect when thinking about the really simple case only, but it's 
-nowhere near overly complex in my opinion.
+> >>> +static const struct drm_display_mode auo_b101aw03_mode =3D {
+> >>> +	.clock =3D 51450,
+> >>> +	.hdisplay =3D 1024,
+> >>> +	.hsync_start =3D 1024 + 156,
+> >>> +	.hsync_end =3D 1024 + 156 + 8,
+> >>> +	.htotal =3D 1024 + 156 + 8 + 156,
+> >>> +	.vdisplay =3D 600,
+> >>> +	.vsync_start =3D 600 + 16,
+> >>> +	.vsync_end =3D 600 + 16 + 6,
+> >>> +	.vtotal =3D 600 + 16 + 6 + 16,
+> >>> +	.vrefresh =3D 60,
+> >>> +};
+> >>
+> >> Instead of hardcoding the modes in the driver, which would then requir=
+e to be=20
+> >> updated for every new simple panel model (and we know there are lots o=
+f them),=20
+> >> why don't you specify the modes in the panel DT node ? The simple pane=
+l driver=20
+> >> would then become much more generic. It would also allow board designe=
+rs to=20
+> >> tweak h/v sync timings depending on the system requirements.
+> >=20
+> > Sigh... we keep second-guessing ourselves. Back at the time when power
+> > sequences were designed (and NAKed at the last minute), we all decided
+> > that the right thing to do would be to use specific compatible values
+> > for individual panels, because that would allow us to encode the power
+> > sequencing within the driver. And when we already have the panel model
+> > encoded in the compatible value, we might just as well encode the mode
+> > within the driver for that panel. Otherwise we'll have to keep adding
+> > the same mode timings for every board that uses the same panel.
+>=20
+> Oh, I didn't feel "we all decided that the right thing..." =3D).
+>=20
+> > I do agree though that it might be useful to tweak the mode in case the
+> > default one doesn't work. How about we provide a means to override the
+> > mode encoded in the driver using one specified in the DT? That's
+> > obviously a backwards-compatible change, so it could be added if or when
+> > it becomes necessary.
+>=20
+> This sounds good to me.
+>=20
+> Although maybe it'd be good to have the driver compatible with something
+> like "generic-panel", so that you could have:
+>=20
+> compatible =3D "foo,specific-panel", "generic-panel";
+>=20
+> and if there's no need for any power/gpio setup for your board, you may
+> skip adding "foo,specific-panel" support to the panel driver. Later,
+> somebody else may need to implement fine grained power/gpio support for
+> "foo,specific-panel", and it would just work.
+>=20
+> Maybe that would help us with the problem of adding support in the
+> driver for a hundred different simple panels each used only once on a
+> specific board.
 
-Please note that, when a device has as single port, the ports node can be 
-omitted, and the port doesn't need to be numbered. You would then end up with
+Sure, that all sounds like reasonable additions. All of the suggestions
+are even backwards-compatible and hence can be added when needed without
+breaking compatibility with existing users of the binding.
 
- 	dc: display-controller {
-		port {
-			remote-endpoint = <&panel>;
- 		};
- 	};
- 
- 	panel: panel {
- 		port {
- 			remote-endpoint = <&dc>;
- 		};
- 	};
+Thierry
 
-I don't think there's a way to simplify it further.
-
-> > I also plan to specify video bus parameters in DT for CDF, but this hasn't
-> > been finalized yet.
-> 
-> That effectively blocks any of the code that I've been working on until
-> CDF has been merged. It's been discussed for over a year now, and there
-> has even been significant pushback on using CDF in DRM, so even if CDF
-> is eventually merged, that will still leave DRM with no way to turn on
-> a simple panel.
-
-I'm probably even more concerned about the long time all this took and will 
-still take than you are, sincerely. I'm obviously to blame for not being able 
-to explain the problems and solutions correctly, as I see no way why people 
-would push back if they realized that the other solutions that have been 
-proposed, far from being future-proof, won't even be present-proof. We would 
-be shooting ourselves in the foot, but what can I do when too many people want 
-to do so ? I'll still keep trying of course, but not for years.I have yet to 
-see someone proposing a viable solution to share drivers between DRM and V4L2, 
-which is a real pressing requirement, partly due to DT.
-
-Regarding the use of CDF in DRM, please note that it will be optional for 
-drivers to switch to the new framework. Nothing should hopefully require 
-existing drivers to be converted, drivers that want to make use of CDF to 
-support panels will be welcome to do so, but they big DRM drivers for desktop 
-GPUs won't be affected.
-
-> I keep wondering why we absolutely must have compatibility between CDF
-> and this simple panel binding. DT content is supposed to concern itself
-> with the description of hardware only. What about the following isn't an
-> accurate description of the panel hardware?
-> 
-> 	panel: panel {
-> 		compatible = "cptt,claa101wb01";
-> 
-> 		power-supply = <&vdd_pnl_reg>;
-> 		enable-gpios = <&gpio 90 0>;
-> 
-> 		backlight = <&backlight>;
-> 	};
-> 
-> 	dsi-controller {
-> 		panel = <&panel>;
-> 	};
-> 
-> Note how the above is also not incompatible with anything that the CDF
-> (to be) mandates, so it could easily be extended with any nodes or
-> properties that CDF needs to work properly without breaking backwards-
-> compatibility.
-
-As mentioned above, CDF needs to describe more complex pipelines. To make the 
-driver life as simple as possible the core code will handle the pipeline 
-description in the DT bindings, and it does require it to be generic enough. 
-You can of course describe connections in various ways depending on the 
-hardware, which would make the DT-related code needlessly overcomplex. One of 
-the issue with the above description is that there's no way to go from the 
-panel to the display controller, which might be a show stopper in the future 
-when code requires that. A workaround would be to look through the whole DT 
-for the reverse link, which would be pretty inefficient.
-
-> > > diff --git a/drivers/gpu/drm/panel/panel-simple.c
-
-[...]
-
-> > > +static void panel_simple_enable(struct drm_panel *panel)
-> > > +{
-> > > +	struct panel_simple *p = to_panel_simple(panel);
-> > > +	int err;
-> > > +
-> > > +	if (p->enabled)
-> > > +		return;
-> > > +
-> > > +	err = regulator_enable(p->supply);
-> > > +	if (err < 0)
-> > > +		dev_err(panel->dev, "failed to enable supply: %d\n", err);
-> > 
-> > Is that really a non-fatal error ? Shouldn't the enable operation return
-> > an int ?
-> 
-> There's no way to propagate this in DRM, so why go through the trouble
-> of returning the error? Furthermore, there's nothing that the caller
-> could do to remedy the situation anyway.
-
-That's a DRM issue, which could be fixed. While the caller can't remedy the 
-situation, it should at least report the error to the application instead of 
-silently ignoring it.
-
-> > > +static const struct drm_display_mode auo_b101aw03_mode = {
-> > > +	.clock = 51450,
-> > > +	.hdisplay = 1024,
-> > > +	.hsync_start = 1024 + 156,
-> > > +	.hsync_end = 1024 + 156 + 8,
-> > > +	.htotal = 1024 + 156 + 8 + 156,
-> > > +	.vdisplay = 600,
-> > > +	.vsync_start = 600 + 16,
-> > > +	.vsync_end = 600 + 16 + 6,
-> > > +	.vtotal = 600 + 16 + 6 + 16,
-> > > +	.vrefresh = 60,
-> > > +};
-> > 
-> > Instead of hardcoding the modes in the driver, which would then require to
-> > be updated for every new simple panel model (and we know there are lots
-> > of them), why don't you specify the modes in the panel DT node ? The
-> > simple panel driver would then become much more generic. It would also
-> > allow board designers to tweak h/v sync timings depending on the system
-> > requirements.
-> 
-> Sigh... we keep second-guessing ourselves. Back at the time when power
-> sequences were designed (and NAKed at the last minute), we all decided
-> that the right thing to do would be to use specific compatible values
-> for individual panels, because that would allow us to encode the power
-> sequencing within the driver. And when we already have the panel model
-> encoded in the compatible value, we might just as well encode the mode
-> within the driver for that panel. Otherwise we'll have to keep adding
-> the same mode timings for every board that uses the same panel.
-> 
-> I do agree though that it might be useful to tweak the mode in case the
-> default one doesn't work. How about we provide a means to override the
-> mode encoded in the driver using one specified in the DT? That's
-> obviously a backwards-compatible change, so it could be added if or when
-> it becomes necessary.
-
-I share Tomi's point of view here. Your three panels use the same power 
-sequence, so I believe we should have a generic panel compatible string that 
-would use modes described in DT for the common case. Only if a panel required 
-something more complex which can't (or which could, but won't for any reason) 
-accurately be described in DT would you need to extend the driver.
-
--- 
-Regards,
-
-Laurent Pinchart
-
---nextPart40649803.OsYv5HB4Pu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+--Fig2xvG2VGoz8o/s
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSX8PXAAoJEIkPb2GL7hl1WAAH/0TT3DhaxK0mxkONpTA1KUhq
-26H4+pmwuSpYk+TlrzUPr+fyw7gnQ2Au8XD+h1HbowWjX4XAKamN7f/2OL2BHB/b
-v1LUqk4G+Vlzz0aSbOHSFpJ4/Y+8TEV5NlCmIVWU2Cx/14IUVkxJz5qN6lzNATP1
-GECTuxUT1IUcRO/cV48CmZXXKFJYVEQffWaYfBhAln3yREwWL7lmSoerXCidEWPq
-VM/LV4+SVv+EHX0pHgdv+XKCMZLqd3loQwg0V0CjdOfi4UcHpzCafagSK+gxUFVT
-V+GAJ6hUCmVwlbTKk0kXZ+b7KyY2ymS1G0inFrYHLnE4iaiqI8D48U8KnSn9OlE=
-=wKd5
+iQIcBAEBAgAGBQJSX8RtAAoJEN0jrNd/PrOhITkP/R5gMgYvT1wCIRoM/8ZBWQav
+8Usf4f6BeSLdedbQQKKYL6/6i1b4ZUSXsX5MWvq9m/2PODvuMCfYQQBnruXt68+v
+YL4SVm1Kkhw+kdS/9JKTBuPn+/I0+j2XmNJ6HHKL2Ks6JnM/lMJAnR+JGSTj5Gsy
+5wCaNyQED5wj2lu9sy8EICaOyae/kOrEPBlBfW0WViVjj3t9d4V8rfCIF4T3P4VD
+TXiOxAcg/u2DnI/ckDTbU3HKf9UB6M7PKugY20yElqEMiwkWBra3TD6/+YsPOLE6
+SLVHp1GSrAm8lh4v+AYfCgenKOS3KJ1DpqQruG+LnVDu7DNCYa35MD3hSa/ZL+Cx
+GNcccBefVSuKu/4rCi62ep8EytfTgrhJ+1L17kZGMl4YbX2Xn2uctPaDQSkXGXUW
+iYKH/BCieuBwibzPjWbUFgbM5j4GRYY48SweX+HdM/Yw7jiNObj9JRI57WZvwzbH
+xQ96zFBeUhW2lslPBcRD7LE3Z5XNgJYedS4CgTi0X7+LKNGfrGDv0z0+Fhxc1DOv
+WJjZZVIMnq7ZJaXghf2nRF31coXWVOiQslJFnQQZPo2HHeM7SNf9yVES2CECUQvb
+vlErBhANzKWWH2e1aA2qnPGpsbEY8qd5/beyY9acq+rl5uCtSUQR1op7vdGXNV+L
+e2zPSYvhlKeY3WWMpJB4
+=h4Oq
 -----END PGP SIGNATURE-----
 
---nextPart40649803.OsYv5HB4Pu--
-
+--Fig2xvG2VGoz8o/s--

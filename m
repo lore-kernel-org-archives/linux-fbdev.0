@@ -1,34 +1,44 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Sat, 19 Oct 2013 10:57:46 +0000
-Subject: Re: [Patch v2][ 10/37] video: imxfb: Also add pwmr for the device tree.
-Message-Id: <20131019105746.GL18477@ns203013.ovh.net>
+From: Mark Zhang <nvmarkzhang@gmail.com>
+Date: Thu, 17 Oct 2013 06:49:57 +0000
+Subject: How to set fops in "struct platform_pwm_backlight_data"?
+Message-Id: <525F8895.5010806@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382022155-21954-1-git-send-email-denis@eukrea.com>
- <1382022155-21954-11-git-send-email-denis@eukrea.com>
-In-Reply-To: <1382022155-21954-11-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: thierry.reding@gmail.com, rpurdie@rpsys.net, jg1.han@samsung.com, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, tomi.valkeinen@ti.com
+Cc: linux-pwm@vger.kernel.org, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 17:02 Thu 17 Oct     , Denis Carikli wrote:
-> pwmr has to be set to get the imxfb backlight work,
-> though pwmr was only configurable trough the platform data.
->=20
-> Cc: Rob Herring <rob.herring@calxeda.com>
-> Cc: Pawel Moll <pawel.moll@arm.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Stephen Warren <swarren@wwwdotorg.org>
-> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-> Cc: devicetree@vger.kernel.org
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: Sascha Hauer <kernel@pengutronix.de>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: Eric B=E9nard <eric@eukrea.com>
-> Signed-off-by: Denis Carikli <denis@eukrea.com>
-Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Hi,
 
-Best Regards,
-J.
+This is the first time I send mail to linux-pwm, I didn't read through
+the mails in this list, so if somebody already asked this question, I'm
+sorry about that.
+
+I wanna set some fops in "struct platform_pwm_backlight_data". But the
+currrent probe function in pwm_bl.c says:
+
+-------
+if (!data) {
+	ret = pwm_backlight_parse_dt(&pdev->dev, &defdata);
+	if (ret < 0) {
+		dev_err(&pdev->dev, "failed to find platform data\n");
+		return ret;
+	}
+
+	data = &defdata;
+}
+-------
+
+This looks like if we set the platform data for pwm backlight device,
+"pwm_backlight_parse_dt" will never have a chance to be called, which
+means the stuffs I defined in backlight DT node will be ignored.
+
+If I don't set the platform data for pwm backlight device, according to
+the pwm_backlight_probe, I will never have a chance to set some fops
+which I need(like "notify", "check_fb"...).
+
+So, what I suppose to do now? Maybe there is a way to set function
+pointers in DT?
+
+Mark

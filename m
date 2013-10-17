@@ -1,78 +1,66 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 09 Oct 2013 08:44:31 +0000
-Subject: Re: [PATCH 9/9] video: amba-clcd: Remove unnecessary amba_set_drvdata()
-Message-Id: <5255176F.1020700@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="iDeamAVQR4lQIGMiBOJNQx408lXfKMPGa"
+From: Denis Carikli <denis@eukrea.com>
+Date: Thu, 17 Oct 2013 15:02:03 +0000
+Subject: [Patch v2][ 05/37] fbdev: Add the lacking FB_SYNC_* for matching the DISPLAY_FLAGS_*
+Message-Id: <1382022155-21954-6-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <27e289763bbcb7d10f84081543cfc3a4dc770398.1380793579.git.michal.simek@xilinx.com> <2f12a1d7caba382efe8d361b373da60c08e70622.1380793579.git.michal.simek@xilinx.com>
-In-Reply-To: <2f12a1d7caba382efe8d361b373da60c08e70622.1380793579.git.michal.simek@xilinx.com>
-To: Michal Simek <michal.simek@xilinx.com>
-Cc: linux-kernel@vger.kernel.org, monstr@monstr.eu, Russell King <linux@arm.linux.org.uk>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org
-
---iDeamAVQR4lQIGMiBOJNQx408lXfKMPGa
-Content-Type: text/plain; charset=ISO-8859-1
+References: <1382022155-21954-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1382022155-21954-1-git-send-email-denis@eukrea.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-On 03/10/13 12:46, Michal Simek wrote:
-> Driver core clears the driver data to NULL after device_release
-> or on probe failure, so just remove it from here.
->=20
-> Driver core change:
-> "device-core: Ensure drvdata =3D NULL when no driver is bound"
-> (sha1: 0998d0631001288a5974afc0b2a5f568bcdecb4d)
->=20
-> Signed-off-by: Michal Simek <michal.simek@xilinx.com>
-> ---
->  drivers/video/amba-clcd.c | 2 --
->  1 file changed, 2 deletions(-)
->=20
-> diff --git a/drivers/video/amba-clcd.c b/drivers/video/amba-clcd.c
-> index 0a2cce7..0bab6ab 100644
-> --- a/drivers/video/amba-clcd.c
-> +++ b/drivers/video/amba-clcd.c
-> @@ -594,8 +594,6 @@ static int clcdfb_remove(struct amba_device *dev)
->  {
->  	struct clcd_fb *fb =3D amba_get_drvdata(dev);
->=20
-> -	amba_set_drvdata(dev, NULL);
-> -
->  	clcdfb_disable(fb);
->  	unregister_framebuffer(&fb->fb);
->  	if (fb->fb.cmap.len)
-> --
-> 1.8.2.3
->=20
+Without that fix, drivers using the fb_videomode_from_videomode
+  function will not be able to get certain information because
+  some DISPLAY_FLAGS_* have no corresponding FB_SYNC_*.
 
-Thanks, queued for 3.13.
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: devicetree@vger.kernel.org
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Eric B=C3=A9nard <eric@eukrea.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
+---
+ drivers/video/fbmon.c   |    4 ++++
+ include/uapi/linux/fb.h |    2 ++
+ 2 files changed, 6 insertions(+)
 
- Tomi
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 6103fa6..29a9ed0 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -1402,6 +1402,10 @@ int fb_videomode_from_videomode(const struct videomo=
+de *vm,
+ 		fbmode->sync |=3D FB_SYNC_HOR_HIGH_ACT;
+ 	if (vm->flags & DISPLAY_FLAGS_VSYNC_HIGH)
+ 		fbmode->sync |=3D FB_SYNC_VERT_HIGH_ACT;
++	if (vm->flags & DISPLAY_FLAGS_DE_HIGH)
++		fbmode->sync |=3D FB_SYNC_DE_HIGH_ACT;
++	if (vm->flags & DISPLAY_FLAGS_PIXDATA_POSEDGE)
++		fbmode->sync |=3D FB_SYNC_PIXDAT_HIGH_ACT;
+ 	if (vm->flags & DISPLAY_FLAGS_INTERLACED)
+ 		fbmode->vmode |=3D FB_VMODE_INTERLACED;
+ 	if (vm->flags & DISPLAY_FLAGS_DOUBLESCAN)
+diff --git a/include/uapi/linux/fb.h b/include/uapi/linux/fb.h
+index fb795c3..30487df 100644
+--- a/include/uapi/linux/fb.h
++++ b/include/uapi/linux/fb.h
+@@ -215,6 +215,8 @@ struct fb_bitfield {
+ 					/* vtotal =3D 144d/288n/576i =3D> PAL  */
+ 					/* vtotal =3D 121d/242n/484i =3D> NTSC */
+ #define FB_SYNC_ON_GREEN	32	/* sync on green */
++#define FB_SYNC_DE_HIGH_ACT	64	/* data enable high active */
++#define FB_SYNC_PIXDAT_HIGH_ACT	64	/* data enable high active */
+=20
+ #define FB_VMODE_NONINTERLACED  0	/* non interlaced */
+ #define FB_VMODE_INTERLACED	1	/* interlaced	*/
+--=20
+1.7.9.5
 
-
-
-
---iDeamAVQR4lQIGMiBOJNQx408lXfKMPGa
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSVRdvAAoJEPo9qoy8lh71ouQQAKs3aKw7aRNephhZwPqKD7j5
-8D+WeBLYlnG4E7xcW/0uNIyevAHjS11L/4CrWGg74x4ZA4DnMjy77jzBj5uI3aRh
-l8RFddfPi3sDmfDZs6upMIks3S6TEF0BfdZcBA2JyviSORiI6iD8gyU3/LYMCwUZ
-lAkRH/xq47cW3pSCGMeFlQqUohQR7BQakdr8PlDkF1HAeNOfJbRwCLBqYyvHagYG
-cK9cWX5FB6GEoYXy/wbqY5/CDGYQT2g7uhyzt5FmBVyDrabZ7Aa+v0nCeExy15rn
-90moisSIB0gG2odpqXQ+Jd1J4yoliYwIcX3NPbWkSyntydnpYXfWnERF3+TTWQVk
-qngn4K3vgHvvvx7aoVBMl6HcjsJvz2llHESKuOSJ3fbLbUVQC85A2rPJLPZUPu5j
-dF5sFOrQlsM1ioHHnuiQkUI81gQq5NeEDBbLhZjmCIZCViuMxTaz9aOve8Pok9PW
-b/K5iZC5da7cPMVvAwymeOr+Ak4wjG4VBRrvHA7sHMT6eIsilmsfu+IzsmgkYy8N
-jKdHUY8y4/WACmX+Ef9TjjNOffTwcCG4rsMGrAOQIT6VIB7NtRKkT1m/UNbEvhxF
-+1ok1A4JRkKWGk09eZsm5jteX+lS4gKZgMb9KakorBQp7USz1rVgTRe8sA3xMA53
-zAK4tZ6EokONJphyg2Aq
-=2QKq
------END PGP SIGNATURE-----
-
---iDeamAVQR4lQIGMiBOJNQx408lXfKMPGa--

@@ -1,177 +1,164 @@
-From: Andrzej Hajda <a.hajda@samsung.com>
-Date: Thu, 17 Oct 2013 07:48:48 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 17 Oct 2013 08:18:21 +0000
 Subject: Re: [PATCH/RFC v3 00/19] Common Display Framework
-Message-Id: <525F9660.3010408@samsung.com>
+Message-Id: <525F9D4D.4000702@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="jn6Bd8XGEEQ5Ob3sdNWusFGeXx82AE6xD"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1376068510-30363-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
- <52498146.4050600@ti.com> <524C1058.2050500@samsung.com>
- <524C1E78.6030508@ti.com> <52556370.1050102@samsung.com>
- <52579CB2.8050601@ti.com> <5257DEB5.6000708@samsung.com>
- <5257EF6A.4020005@ti.com> <5258084A.9000509@samsung.com>
- <52580EFF.2020401@ti.com>
-In-Reply-To: <52580EFF.2020401@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+References: <1376068510-30363-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com> <52498146.4050600@ti.com> <524C1058.2050500@samsung.com> <524C1E78.6030508@ti.com> <52556370.1050102@samsung.com> <52579CB2.8050601@ti.com> <5257DEB5.6000708@samsung.com> <5257EF6A.4020005@ti.com> <5258084A.9000509@samsung.com> <52580EFF.2020401@ti.com> <525F9660.3010408@samsung.com>
+In-Reply-To: <525F9660.3010408@samsung.com>
+To: Andrzej Hajda <a.hajda@samsung.com>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Jesse Barnes <jesse.barnes@intel.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Tom Gall <tom.gall@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, linux-media@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mark Zhang <markz@nvidia.com>, Alexandre Courbot <acourbot@nvidia.com>, Ragesh Radhakrishnan <Ragesh.R@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Sunil Joshi <joshi@samsung.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Vikas Sajjan <vikas.sajjan@linaro.org>, Marcus Lorentzon <marcus.lorentzon@huawei.com>
 
-Hi Tomi,
+--jn6Bd8XGEEQ5Ob3sdNWusFGeXx82AE6xD
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Sorry for delayed response.
+On 17/10/13 10:48, Andrzej Hajda wrote:
 
+> The main function of DSI is to transport pixels from one IP to another =
+IP
+> and this function IMO should not be modeled by display entity.
+> "Power, clocks, etc" will be performed via control bus according to
+> panel demands.
+> If 'DSI chip' has additional functions for video processing they can
+> be modeled by CDF entity if it makes sense.
 
-On 10/11/2013 04:45 PM, Tomi Valkeinen wrote:
-> On 11/10/13 17:16, Andrzej Hajda wrote:
->
->> Picture size, content and format is the same on input and on output of DSI.
->> The same bits which enters DSI appears on the output. Internally bits
->> order can
->> be different but practically you are configuring DSI master and slave
->> with the same format.
+Now I don't follow. What do you mean with "display entity" and with "CDF
+entity"? Are they the same?
+
+Let me try to clarify my point:
+
+On OMAP SoC we have a DSI encoder, which takes input from the display
+controller in parallel RGB format, and outputs DSI.
+
+Then there are external encoders that take MIPI DPI as input, and output
+DSI.
+
+The only difference with the above two components is that the first one
+is embedded into the SoC. I see no reason to represent them in different
+ways (i.e. as you suggested, not representing the SoC's DSI at all).
+
+Also, if you use DSI burst mode, you will have to have different video
+timings in the DSI encoder's input and output. And depending on the
+buffering of the DSI encoder, you could have different timings in any cas=
+e.
+
+Furthermore, both components could have extra processing. I know the
+external encoders sometimes do have features like scaling.
+
+>> We still have two different endpoint configurations for the same
+>> DSI-master port. If that configuration is in the DSI-master's port nod=
+e,
+>> not inside an endpoint data, then that can't be supported.
+> I am not sure if I understand it correctly. But it seems quite simple:
+> when panel starts/resumes it request DSI (via control bus) to fulfill
+> its configuration settings.
+> Of course there are some settings which are not panel dependent and tho=
+se
+> should reside in DSI node.
+
+Exactly. And when the two panels require different non-panel-dependent
+settings, how do you represent them in the DT data?
+
+>>> We say then: callee handles locking :)
+>> Sure, but my point was that the caller handling the locking is much
+>> simpler than the callee handling locking. And the latter causes
+>> atomicity issues, as the other API could be invoked in between two cal=
+ls
+>> for the first API.
 >>
->> If you create DSI entity you will have to always set the same format and
->> size on DSI input, DSI output and encoder input.
->> If you skip creating DSI entity you loose nothing, and you do not need
->> to take care of it.
-> Well, this is really a different question from the bus problem. But
-> nothing says the DSI master cannot change the format or even size. For
-> sure it can change the video timings. The DSI master could even take two
-> parallel inputs, and combine them into one DSI output. You don't can't
-> what all the possible pieces of hardware do =)
-> If you have a bigger IP block that internally contains the DISPC and the
-> DSI, then, yes, you can combine them into one display entity. I don't
-> think that's correct, though. And if the DISPC and DSI are independent
-> blocks, then especially I think there must be an entity for the DSI
-> block, which will enable the powers, clocks, etc, when needed.
-The main function of DSI is to transport pixels from one IP to another IP
-and this function IMO should not be modeled by display entity.
-"Power, clocks, etc" will be performed via control bus according to
-panel demands.
-If 'DSI chip' has additional functions for video processing they can
-be modeled by CDF entity if it makes sense.
->>> Well, one point of the endpoints is also to allow "switching" of video
->>> devices.
->>>
->>> For example, I could have a board with a SoC's DSI output, connected to
->>> two DSI panels. There would be some kind of mux between, so that I can
->>> select which of the panels is actually connected to the SoC.
->>>
->>> Here the first panel could use 2 datalanes, the second one 4. Thus, the
->>> DSI master would have two endpoints, the other one using 2 and the other
->>> 4 datalanes.
->>>
->>> If we decide that kind of support is not needed, well, is there even
->>> need for the V4L2 endpoints in the DT data at all?
->> Hmm, both panels connected to one endpoint of dispc ?
->> The problem I see is which driver should handle panel switching,
->> but this is question about hardware design as well. If this is realized
->> by dispc I have told already the solution. If this is realized by other
->> device I do not see a problem to create corresponding CDF entity,
->> or maybe it can be handled by "Pipeline Controller" ???
-> Well the switching could be automatic, when the panel power is enabled,
-> the DSI mux is switched for that panel. It's not relevant.
->
-> We still have two different endpoint configurations for the same
-> DSI-master port. If that configuration is in the DSI-master's port node,
-> not inside an endpoint data, then that can't be supported.
-I am not sure if I understand it correctly. But it seems quite simple:
-when panel starts/resumes it request DSI (via control bus) to fulfill
-its configuration settings.
-Of course there are some settings which are not panel dependent and those
-should reside in DSI node.
->>>>> I agree that having DSI/DBI control and video separated would be
->>>>> elegant. But I'd like to hear what is the technical benefit of that? At
->>>>> least to me it's clearly more complex to separate them than to keep them
->>>>> together (to the extent that I don't yet see how it is even possible),
->>>>> so there must be a good reason for the separation. I don't understand
->>>>> that reason. What is it?
->>>> Roughly speaking it is a question where is the more convenient place to
->>>> put bunch
->>>> of opses, technically both solutions can be somehow implemented.
->>> Well, it's also about dividing a single physical bus into two separate
->>> interfaces to it. It sounds to me that it would be much more complex
->>> with locking. With a single API, we can just say "the caller handles
->>> locking". With two separate interfaces, there must be locking at the
->>> lower level.
->> We say then: callee handles locking :)
-> Sure, but my point was that the caller handling the locking is much
-> simpler than the callee handling locking. And the latter causes
-> atomicity issues, as the other API could be invoked in between two calls
-> for the first API.
->
->     
-Could you describe such scenario?
-> But note that I'm not saying we should not implement bus model just
-> because it's more complex. We should go for bus model if it's better. I
-> just want to bring up these complexities, which I feel are quite more
-> difficult than with the simpler model.
->
->>>> Pros of mipi bus:
->>>> - no fake entity in CDF, with fake opses, I have to use similar entities
->>>> in MIPI-CSI
->>>> camera pipelines and it complicates life without any benefit(at least
->>>> from user side),
->>> You mean the DSI-master? I don't see how it's "fake", it's a video
->>> processing unit that has to be configured. Even if we forget the control
->>> side, and just think about plain video stream with DSI video mode,
->>> there's are things to configure with it.
->>>
->>> What kind of issues you have in the CSI side, then?
->> Not real issues, just needless calls to configure CSI entity pads,
->> with the same format and picture sizes as in camera.
-> Well, the output of a component A is surely the same as the input of
-> component B, if B receives the data from A. So that does sound useless.
-> I don't do that kind of calls in my model.
->
->>>> - CDF models only video buses, control bus is a domain of Linux buses,
->>> Yes, but in this case the buses are the same. It makes me a bit nervous
->>> to have two separate ways (video and control) to use the same bus, in a
->>> case like video where timing is critical.
->>>
->>> So yes, we can consider video and control buses as "virtual" buses, and
->>> the actual transport is the DSI bus. Maybe it can be done. It just makes
->>> me a bit nervous =).
->>>
->>>> - less platform_bus abusing,
->>> Well, platform.txt says
->>>
->>> "This pseudo-bus
->>> is used to connect devices on busses with minimal infrastructure,
->>> like those used to integrate peripherals on many system-on-chip
->>> processors, or some "legacy" PC interconnects; as opposed to large
->>> formally specified ones like PCI or USB."
->>>
->>> I don't think DSI and DBI as platform bus is that far from the
->>> description. They are "simple", no probing point-to-point (in practice)
->>> buses. There's not much "bus" to speak of, just a point-to-point link.
->> Next section:
->>
->> Platform devices
->> ~~~~~~~~~~~~~~~~
->> Platform devices are devices that typically appear as autonomous
->> entities in the system. This includes legacy port-based devices and
->> host bridges to peripheral buses, and most controllers integrated
->> into system-on-chip platforms.  What they usually have in common
->> is direct addressing from a CPU bus.  Rarely, a platform_device will
->> be connected through a segment of some other kind of bus; but its
->> registers will still be directly addressable.
-> Yep, "typically" and "rarely" =). I agree, it's not clear. I think there
-> are things with DBI/DSI that clearly point to a platform device, but
-> also the other way.
-Just to be sure, we are talking here about DSI-slaves, ie. for example
-about panels,
-where direct accessing from CPU bus usually is not possible.
+>>    =20
+> Could you describe such scenario?
 
-Andrzej
->>>> - better device tree topology (at least for common cases),
->>> Even if we use platform devices for DSI peripherals, we can have them
->>> described under the DSI master node.
->> Sorry, I meant rather Linux device tree topology, not DT.
-> We can have the DSI peripheral platform devices as children of the
-> DSI-master device.
->
->  Tomi
->
->
+If we have two independent APIs, ctrl and video, that affect the same
+underlying hardware, the DSI bus, we could have a scenario like this:
 
+thread 1:
+
+ctrl->op_foo();
+ctrl->op_bar();
+
+thread 2:
+
+video->op_baz();
+
+Even if all those ops do locking properly internally, the fact that
+op_baz() can be called in between op_foo() and op_bar() may cause problem=
+s.
+
+To avoid that issue with two APIs we'd need something like:
+
+thread 1:
+
+ctrl->lock();
+ctrl->op_foo();
+ctrl->op_bar();
+ctrl->unlock();
+
+thread 2:
+
+video->lock();
+video->op_baz();
+video->unlock();
+
+>>> Platform devices
+>>> ~~~~~~~~~~~~~~~~
+>>> Platform devices are devices that typically appear as autonomous
+>>> entities in the system. This includes legacy port-based devices and
+>>> host bridges to peripheral buses, and most controllers integrated
+>>> into system-on-chip platforms.  What they usually have in common
+>>> is direct addressing from a CPU bus.  Rarely, a platform_device will
+>>> be connected through a segment of some other kind of bus; but its
+>>> registers will still be directly addressable.
+>> Yep, "typically" and "rarely" =3D). I agree, it's not clear. I think t=
+here
+>> are things with DBI/DSI that clearly point to a platform device, but
+>> also the other way.
+> Just to be sure, we are talking here about DSI-slaves, ie. for example
+> about panels,
+> where direct accessing from CPU bus usually is not possible.
+
+Yes. My point is that with DBI/DSI there's not much bus there (if a
+normal bus would be PCI/USB/i2c etc), it's just a point to point link
+without probing or a clearly specified setup sequence.
+
+If DSI/DBI was used only for control, a linux bus would probably make
+sense. But DSI/DBI is mainly a video transport channel, with the
+control-part being "secondary".
+
+And when considering that the video and control data are sent over the
+same channel (i.e. there's no separate, independent ctrl channel), and
+the strict timing restrictions with video, my gut feeling is just that
+all the extra complexity brought with separating the control to a
+separate bus is not worth it.
+
+ Tomi
+
+
+
+--jn6Bd8XGEEQ5Ob3sdNWusFGeXx82AE6xD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSX51NAAoJEPo9qoy8lh71Y6oQAIe10EjnDvVhHyJhewZX8vW3
+Q06vQ53O9llqu34XGuQLsxz7OLlIbFhKHcHuI3FBEXsJ04bvR4YVeDmwKbqNO089
+sQKczSh18zWW01jYMSlGeZxox9i6l/YcAX1/ZbxAJ6Y88a3J+VfyPmkMbkr0CM0n
+fAlmggrlLSmEXWeEPtX9aURTpqbxPtED9t4GMTaQTmA2/eKQjIZNdHcHynR6UH/a
+vAjdJsnFb+BBG1uiU+VmgtD5ZHh//5PEDWS0if8SgfyejXx66o+7vYN04V7u3XU4
+YyvSzfhGQl05HtK/kb+g8iIqn0lK/uG/01qkmaiVmTSS91RecixXfQXeeSZvvZ7F
+G3CyuVmChIpVJirO7TPNmk6QjY/b9qZChsRrNXvlMP+7VL2WZ+7vvai090r7WJ2W
+ety6GDj62zi8wTOa1Z4vXWhasB759pnm4M3Nvaunhp9Ik5wwcu4jlV7tN5oy7mqa
+OFB6Aj+ULmNq/Dy4SNVb9YiTBXL7YUrOnxa6SiH9bWAcKNQtVEDefC+sX+lqNUbZ
+0qnPbiRlqSK+PduUkoemm7zhBRD1m3nk774Ix4N9V3LhdPueTbMjD5RMLcKOyw+2
+gYgz7r1dHMWr65BcnkHt2PriFc/R1tq93VIJKqFdM50A6Er0fdkFucXfeRQMEuCw
+NAos1QZbccO3HgX4KvKF
+=0Q6x
+-----END PGP SIGNATURE-----
+
+--jn6Bd8XGEEQ5Ob3sdNWusFGeXx82AE6xD--

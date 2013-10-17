@@ -1,173 +1,146 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 17 Oct 2013 11:15:22 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 17 Oct 2013 11:21:58 +0000
 Subject: Re: [RFR 2/2] drm/panel: Add simple panel support
-Message-Id: <3610893.n6xJ6DUJ0E@avalon>
+Message-Id: <525FC856.8060804@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="nextPart5257301.klqVcaqZYS"
+Content-Type: multipart/mixed; boundary="5K2c5jK7Kx3tar0AmPS0u0To1GirMBexA"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381947912-11741-1-git-send-email-treding@nvidia.com> <525FBA5D.9000001@ti.com> <20131017110517.GC10993@ulmo.nvidia.com>
-In-Reply-To: <20131017110517.GC10993-AwZRO8vwLAwmlAP/+Wk3EA@public.gmane.org>
+References: <1381947912-11741-1-git-send-email-treding@nvidia.com> <1381947912-11741-3-git-send-email-treding@nvidia.com> <1695169.rzbDl9PeRX@avalon> <CAPM=9tzU36cwcM0pH0J_Vgc6UOj5MHdVNDvn3wpGNuihbMqdQQ@mail.gmail.com> <525FA4B0.8060504@ti.com> <20131017091614.GC2502@ulmo.nvidia.com> <525FB368.6020003@ti.com> <20131017104856.GA10993@ulmo.nvidia.com>
+In-Reply-To: <20131017104856.GA10993-AwZRO8vwLAwmlAP/+Wk3EA@public.gmane.org>
 To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Dave Airlie <airlied-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+
+--5K2c5jK7Kx3tar0AmPS0u0To1GirMBexA
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 17/10/13 13:48, Thierry Reding wrote:
+
+> As far as the simple panel device tree binding is concerned, it covers
+> all the cases I know of. I can't seriously be expected to do any better=
+
+> than that. These panels are dumb. They only come with a power supply
+> that needs to be switched on and an additional GPIO to enable it once
+> powered up. All three panels just work with that set of properties. So
+> anything that doesn't can arguably be covered by some other, not-so-
+> simple binding.
+
+Agreed. I thought the DT bindings were missing information about the
+video path, but I didn't realize you have a reference from the video
+output to the panel.
+
+However, I think there's usually a bit more information needed than what
+you describe above. All the dump panels I know have requirements on the
+sequences related to the video signal, powers and gpios, and delays
+between those.
+
+I guess the most common enable scenario is something like:
+
+- enable video signal
+- enable power
+- wait n msecs
+- set GPIO
+
+For some panels, the enable GPIO might actually be a reset GPIO, not
+enable. Some could want the video signal only be enabled after the
+enable/reset is done.
+
+Anyway, I think what you describe fits most of the panels, so no need to
+worry about the possible ones I described. I just wanted to point out
+that there may be very dump panels that are still different.
+
+> I'm still missing the point here. For one, I don't see any reason that
+> this driver would ever need to gain CDF support. At the same time, CDF
+> could easily be supported by just adding a few required properties and
+> it should be easy to support any non-CDF cases just as well to remain
+> backwards-compatible.
+
+Well, I guess the point here is that if you have a SoC display
+controller driver and panel drivers, and you want to support complex
+panels using CDF, you need to implement CDF support into your SoC
+display controller driver in addition to adding CDF support to the panel
+driver.
+
+And, you still want to be able to use the simple panels. So either you
+support both CDF panels and non-CDF panels with your SoC dispc, which
+could be a bit messy, or you add CDF support to all panel drivers you use=
+=2E
+
+>> I guess one option there would be to implement a new driver for the sa=
+me
+>> panel devices, one that supports CDF, and leave the old one as is. Not=
+
+>> so nice option, though.
+>=20
+> As I said, anything that really needs a CDF binding to work likely isn'=
+t
+> "simple" anymore, therefore a separate driver can easily be justified.
+
+I think it's rarely the case that a panel specifically needs CDF. It's
+more that CDF offers a common framework for display components, making
+it easy to make them independent of the platform used. And if you make
+your SoC support CDF, you are able to use all the CDF drivers already
+implemented.
+
+That said, I don't see anything technically preventing from having
+support for both CDF and non-CDF panels. It's just more complex, and
+they cannot be mixed freely. For example, if I have CDF support in my
+SoC driver and a panel driver, I can easily add a CDF encoder driver in
+between. But if the panel driver is a custom one, then I need a custom
+encoder driver there also.
+
+> Indeed. The fundamental point here seems to be that we don't represent
+> things in DT which we don't need. In the same way that we don't add
+
+Surely we should represent the things about the HW we don't need now, if
+we know they might be needed in the future? (But that's not the case
+here, see below)
+
+> device nodes for enumerable devices, why would we need to explicitly ad=
+d
+> information about connections between devices that cannot be controlled=
+
+> anyway. If the board connects an RGB/LVDS output to a panel directly, i=
+t
+> is only required that the output knows what it is connected to because
+> there is no other way besides DT to obtain any information about the
+> panel. Therefore a unidirectional connection is more than enough. Using=
+
+> that the output can access the panel and query it for information such
+> as the mode timings as well as switch it on or off as required.
+
+Right, in that case, you do have all the necessary information in the
+DT. I don't think it really matters if the link in DT is from the SoC to
+the panel, vice versa, or both ways. It still describes the same thing.
+Even with unidirectional link you can always find the reverse link, you
+just need to do more work going throught the DT data.
+
+ Tomi
 
 
---nextPart5257301.klqVcaqZYS
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
 
-Hi Thierry,
-
-On Thursday 17 October 2013 13:05:18 Thierry Reding wrote:
-> On Thu, Oct 17, 2013 at 01:22:21PM +0300, Tomi Valkeinen wrote:
-> > On 17/10/13 11:53, Thierry Reding wrote:
-> > > I keep wondering why we absolutely must have compatibility between CDF
-> > > and this simple panel binding. DT content is supposed to concern itself
-> > > with the description of hardware only. What about the following isn't an
-> > > accurate description of the panel hardware?
-> > > 
-> > > 	panel: panel {
-> > > 		compatible = "cptt,claa101wb01";
-> > > 		
-> > > 		power-supply = <&vdd_pnl_reg>;
-> > > 		enable-gpios = <&gpio 90 0>;
-> > > 		
-> > > 		backlight = <&backlight>;
-> > > 	};
-> > > 	
-> > > 	dsi-controller {
-> > > 		panel = <&panel>;
-> > > 	};
-> > 
-> > That's quite similar to how my current out-of-mainline OMAP DSS DT
-> > bindings work. The difference is that I have a reference from the panel
-> > node to the video source (dsi-controller), instead of the other way
-> > around. I just find it more natural. It works the same way as, say,
-> > regulators, gpios, etc.
-> 
-> I suppose that depends on the way you look at it. In the above proposal
-> I consider the output (DSI controller) to use the panel as a resource
-> that provides a certain set of services (query mode timings, provide a
-> way to enable or disable the panel). Similarly the panel uses the
-> backlight as a resource that provides a certain set of services (such as
-> changing the brightness).
-> 
-> The above also follows the natural order of control. The panel has no
-> way to control the DSI output. However, it is the output that controls
-> when a panel is required and turn it on as appropriate.
-
-I'm no DSI expert, but I know enough about it to be sure that Tomi will 
-disagree. DSI panels can have complex power sequences that require the input 
-stream to be finely controlled (for instance it might require a clock without 
-video frames for some time, switch a GPIO or regulator, send a command to the 
-panel, and then only get video frames). For that reason all developers I've 
-talked to who have an in-depth knowledge of DSI and DSI panels told me that 
-the panel needs to control the video bus, and request the video source to 
-start/stop the video stream.
-
-> > However, one thing unclear is where the panel node should be. You seem
-> > to have a DSI panel here. If the panel is truly not controlled in any
-> > way, maybe having the panel as a normal platform device is ok. But if
-> > the DSI panel is controlled with DSI messages, should it be a child of
-> > the dsi-controller node, the same way i2c peripherals are children of
-> > i2c master?
-> 
-> That's one possibility. In this particular case it's not even necessary
-> to use any of DSIs control methods to talk to the panel. The panel only
-> receives the data stream and "just works".
-> 
-> Even if the panel were to be controlled via DSI, I think keeping it as
-> a separate device node is equally valid. It's really boils down to what
-> I already said above. The output uses the panel as a resource, similar
-> to how other devices might use a GPIO controller to use a GPIO pin, or
-> an interrupt controller to request an IRQ.
-
-Except that the display controller can also provides resources to the panel. 
-For DSI panels that support DSI commands, the control bus is provided by the 
-display controller. Much like an I2C device must be a child of its I2C 
-controller node, the DSI panel device should then be a child of the display 
-controller node.
-
-> > >>> +static const struct drm_display_mode auo_b101aw03_mode = {
-> > >>> +	.clock = 51450,
-> > >>> +	.hdisplay = 1024,
-> > >>> +	.hsync_start = 1024 + 156,
-> > >>> +	.hsync_end = 1024 + 156 + 8,
-> > >>> +	.htotal = 1024 + 156 + 8 + 156,
-> > >>> +	.vdisplay = 600,
-> > >>> +	.vsync_start = 600 + 16,
-> > >>> +	.vsync_end = 600 + 16 + 6,
-> > >>> +	.vtotal = 600 + 16 + 6 + 16,
-> > >>> +	.vrefresh = 60,
-> > >>> +};
-> > >> 
-> > >> Instead of hardcoding the modes in the driver, which would then require
-> > >> to be updated for every new simple panel model (and we know there are
-> > >> lots of them), why don't you specify the modes in the panel DT node ?
-> > >> The simple panel driver would then become much more generic. It would
-> > >> also allow board designers to tweak h/v sync timings depending on the
-> > >> system requirements.
-> > > 
-> > > Sigh... we keep second-guessing ourselves. Back at the time when power
-> > > sequences were designed (and NAKed at the last minute), we all decided
-> > > that the right thing to do would be to use specific compatible values
-> > > for individual panels, because that would allow us to encode the power
-> > > sequencing within the driver. And when we already have the panel model
-> > > encoded in the compatible value, we might just as well encode the mode
-> > > within the driver for that panel. Otherwise we'll have to keep adding
-> > > the same mode timings for every board that uses the same panel.
-> > 
-> > Oh, I didn't feel "we all decided that the right thing..." =).
-> > 
-> > > I do agree though that it might be useful to tweak the mode in case the
-> > > default one doesn't work. How about we provide a means to override the
-> > > mode encoded in the driver using one specified in the DT? That's
-> > > obviously a backwards-compatible change, so it could be added if or when
-> > > it becomes necessary.
-> > 
-> > This sounds good to me.
-> > 
-> > Although maybe it'd be good to have the driver compatible with something
-> > like "generic-panel", so that you could have:
-> > 
-> > compatible = "foo,specific-panel", "generic-panel";
-> > 
-> > and if there's no need for any power/gpio setup for your board, you may
-> > skip adding "foo,specific-panel" support to the panel driver. Later,
-> > somebody else may need to implement fine grained power/gpio support for
-> > "foo,specific-panel", and it would just work.
-> > 
-> > Maybe that would help us with the problem of adding support in the
-> > driver for a hundred different simple panels each used only once on a
-> > specific board.
-> 
-> Sure, that all sounds like reasonable additions. All of the suggestions
-> are even backwards-compatible and hence can be added when needed without
-> breaking compatibility with existing users of the binding.
-
-What's wrong with moving the three hardcoded modes we already have in the 
-driver to DT before pushing this to mainline ?
-
--- 
-Regards,
-
-Laurent Pinchart
-
---nextPart5257301.klqVcaqZYS
+--5K2c5jK7Kx3tar0AmPS0u0To1GirMBexA
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQEcBAABAgAGBQJSX8bKAAoJEIkPb2GL7hl1s+AH/2cY0Vvx+flndPCunCIqRrK3
-iuyJDpT8BFn82XL0HLUYUONG3oNI5bE254dRNDYSZMGHjmseWFSvBZ6Z/iD80DMU
-hQXvFF6P/oPAnhcDhxeO/ntL2PNEAaQYCJewxKhTua7a7Wxbx0lwXx2WkpSF3Lq6
-OggXAFyzGLHvwRQK3d9j7tU/obSFA8A6bAIh+jqbAMfZwG9AH2TVAs5K36fWJonc
-gRC5yxUkTPCXBz4A7L8T7ry4xUKsEPdLEbbrhZ3AlAs8apRQG3KzeAn5FKj1tWGw
-p5u++wNSSxMbq+RMUy+QkvC4dgATapRakp4sT+RXwQRem5rfPEEPP9rYkTHDg4o=
-=T9/q
+iQIcBAEBAgAGBQJSX8hWAAoJEPo9qoy8lh711zUQAJywsDynJSo59aywR11QVQnn
+UZSTLQ2kM4EP08dlxP/tufgJokAF9Bg9eA/gXZYE6/Z/NoTY68UsPMWoG8aJOKEk
+5AyHF7yKpB7r8V1p0LZowrYzaf9pq0DQT/+mGoNdXDb4km6KvwFxYuhiQC/PEZ+e
+OpP68X9DKC4jV1adJQxHZ8OgzwuRnNdlBCWMWMbi/x1EcdYPZfrsFuEYoAUzyPKj
+wRDhBxpxIf14nQLHDWbJ+fxNOPYvuHF7akm6VQPXvwey72FUV8q7P7M5RifpzZq7
++gyCTV3rP/FZZSIlF3D2prU+wp0dB4lAaxEYRkfVA5F/SK6br+e5iud+hl5PYyuR
+DskxpmDjlCWL4OD6k8vEhW+zjOaEQuPEqCXBuw95Z0YXSaJPJVziNkKm+TJTX4a+
+35atBiki9BfNUVSMes5LYJlCS0na6h699cx0w2J5pofHfgiYpAR4/k9r55+SN4uy
+K+slhGrGFbR9ZbSGrV/MgQICuODUpvSyIBkK97bgUd00FU2w1964mWeUN2UZ6wh3
+uGqPWZpXmwxXMpV7zV8Gxbd0RUJ7Ugh1avLEzGMm6KfS8Y9Qm7fJIln7609Vl6Wi
+slK6JQXUnEgnPfEB/9uCa6z8QJpRbVWsxCbqmF2yRMZ++S4N5aK6uPJmJdDl79xd
+wS1BB5khdnptsA1190+K
+=6KvH
 -----END PGP SIGNATURE-----
 
---nextPart5257301.klqVcaqZYS--
-
+--5K2c5jK7Kx3tar0AmPS0u0To1GirMBexA--

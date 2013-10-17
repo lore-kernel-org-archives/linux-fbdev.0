@@ -1,54 +1,153 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Fri, 25 Oct 2013 11:12:18 +0000
-Subject: Re: [PATCH 5/9] backlight: atmel-pwm-bl: clean up get_intensity
-Message-Id: <20131025111218.GT18477@ns203013.ovh.net>
+From: Denis Carikli <denis@eukrea.com>
+Date: Thu, 17 Oct 2013 15:02:05 +0000
+Subject: [Patch v2][ 07/37] video: mx3fb: Introduce regulator support.
+Message-Id: <1382022155-21954-8-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382522143-32072-1-git-send-email-jhovold@gmail.com>
- <1382522143-32072-6-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1382522143-32072-6-git-send-email-jhovold@gmail.com>
+References: <1382022155-21954-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1382022155-21954-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Johan Hovold <jhovold@gmail.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-On 11:55 Wed 23 Oct     , Johan Hovold wrote:
-> Clean up get_intensity to increase readability.
-> 
-> Acked-by: Jingoo Han <jg1.han@samsung.com>
-> Signed-off-by: Johan Hovold <jhovold@gmail.com>
+This commit is based on the following commit by Fabio Estevam:
+  4344429 video: mxsfb: Introduce regulator support
 
-this ok
-> ---
->  drivers/video/backlight/atmel-pwm-bl.c | 13 ++++++-------
->  1 file changed, 6 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
-> index 52a8134..504061c 100644
-> --- a/drivers/video/backlight/atmel-pwm-bl.c
-> +++ b/drivers/video/backlight/atmel-pwm-bl.c
-> @@ -70,15 +70,14 @@ static int atmel_pwm_bl_set_intensity(struct backlight_device *bd)
->  static int atmel_pwm_bl_get_intensity(struct backlight_device *bd)
->  {
->  	struct atmel_pwm_bl *pwmbl = bl_get_data(bd);
-> +	u32 cdty;
->  	u32 intensity;
->  
-> -	if (pwmbl->pdata->pwm_active_low) {
-> -		intensity = pwm_channel_readl(&pwmbl->pwmc, PWM_CDTY) -
-> -			pwmbl->pdata->pwm_duty_min;
-> -	} else {
-> -		intensity = pwmbl->pdata->pwm_duty_max -
-> -			pwm_channel_readl(&pwmbl->pwmc, PWM_CDTY);
-> -	}
-> +	cdty = pwm_channel_readl(&pwmbl->pwmc, PWM_CDTY);
-> +	if (pwmbl->pdata->pwm_active_low)
-> +		intensity = cdty - pwmbl->pdata->pwm_duty_min;
-> +	else
-> +		intensity = pwmbl->pdata->pwm_duty_max - cdty;
->  
->  	return (u16)intensity;
->  }
-> -- 
-> 1.8.4
-> 
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Eric B=C3=A9nard <eric@eukrea.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
+---
+ drivers/video/mx3fb.c |   47 +++++++++++++++++++++++++++++++++++++++++++++=
++-
+ 1 file changed, 46 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+index 804f874..37704da 100644
+--- a/drivers/video/mx3fb.c
++++ b/drivers/video/mx3fb.c
+@@ -27,6 +27,7 @@
+ #include <linux/clk.h>
+ #include <linux/mutex.h>
+ #include <linux/dma/ipu-dma.h>
++#include <linux/regulator/consumer.h>
+=20
+ #include <linux/platform_data/dma-imx.h>
+ #include <linux/platform_data/video-mx3fb.h>
+@@ -267,6 +268,7 @@ struct mx3fb_info {
+ 	struct dma_async_tx_descriptor	*txd;
+ 	dma_cookie_t			cookie;
+ 	struct scatterlist		sg[2];
++	struct regulator		*reg_lcd;
+=20
+ 	struct fb_var_screeninfo	cur_var; /* current var info */
+ };
+@@ -1001,6 +1003,7 @@ static void __blank(int blank, struct fb_info *fbi)
+ 	struct mx3fb_info *mx3_fbi =3D fbi->par;
+ 	struct mx3fb_data *mx3fb =3D mx3_fbi->mx3fb;
+ 	int was_blank =3D mx3_fbi->blank;
++	int ret;
+=20
+ 	mx3_fbi->blank =3D blank;
+=20
+@@ -1019,6 +1022,15 @@ static void __blank(int blank, struct fb_info *fbi)
+ 	case FB_BLANK_HSYNC_SUSPEND:
+ 	case FB_BLANK_NORMAL:
+ 		sdc_set_brightness(mx3fb, 0);
++		if (mx3_fbi->reg_lcd) {
++			if (regulator_is_enabled(mx3_fbi->reg_lcd)) {
++				ret =3D regulator_disable(mx3_fbi->reg_lcd);
++				if (ret)
++					dev_warn(fbi->device,
++						 "lcd regulator disable failed "
++						 "with error: %d\n", ret);
++			}
++		}
+ 		memset((char *)fbi->screen_base, 0, fbi->fix.smem_len);
+ 		/* Give LCD time to update - enough for 50 and 60 Hz */
+ 		msleep(25);
+@@ -1026,7 +1038,17 @@ static void __blank(int blank, struct fb_info *fbi)
+ 		break;
+ 	case FB_BLANK_UNBLANK:
+ 		sdc_enable_channel(mx3_fbi);
++		if (mx3_fbi->reg_lcd) {
++			if (!regulator_is_enabled(mx3_fbi->reg_lcd)) {
++				ret =3D regulator_enable(mx3_fbi->reg_lcd);
++				if (ret)
++					dev_warn(fbi->device,
++						 "lcd regulator enable failed "
++						 "with error: %d\n", ret);
++			}
++		}
+ 		sdc_set_brightness(mx3fb, mx3fb->backlight_level);
++
+ 		break;
+ 	}
+ }
+@@ -1202,6 +1224,7 @@ static int mx3fb_suspend(struct platform_device *pdev=
+, pm_message_t state)
+ {
+ 	struct mx3fb_data *mx3fb =3D platform_get_drvdata(pdev);
+ 	struct mx3fb_info *mx3_fbi =3D mx3fb->fbi->par;
++	int ret;
+=20
+ 	console_lock();
+ 	fb_set_suspend(mx3fb->fbi, 1);
+@@ -1210,7 +1233,15 @@ static int mx3fb_suspend(struct platform_device *pde=
+v, pm_message_t state)
+ 	if (mx3_fbi->blank =3D FB_BLANK_UNBLANK) {
+ 		sdc_disable_channel(mx3_fbi);
+ 		sdc_set_brightness(mx3fb, 0);
+-
++		if (mx3_fbi->reg_lcd) {
++			if (regulator_is_enabled(mx3_fbi->reg_lcd)) {
++				ret =3D regulator_disable(mx3_fbi->reg_lcd);
++				if (ret)
++					dev_warn(&pdev->dev,
++						 "lcd regulator disable failed "
++						 "with error: %d\n", ret);
++			}
++		}
+ 	}
+ 	return 0;
+ }
+@@ -1222,10 +1253,20 @@ static int mx3fb_resume(struct platform_device *pde=
+v)
+ {
+ 	struct mx3fb_data *mx3fb =3D platform_get_drvdata(pdev);
+ 	struct mx3fb_info *mx3_fbi =3D mx3fb->fbi->par;
++	int ret;
+=20
+ 	if (mx3_fbi->blank =3D FB_BLANK_UNBLANK) {
+ 		sdc_enable_channel(mx3_fbi);
+ 		sdc_set_brightness(mx3fb, mx3fb->backlight_level);
++		if (mx3_fbi->reg_lcd) {
++			if (!regulator_is_enabled(mx3_fbi->reg_lcd)) {
++				ret =3D regulator_enable(mx3_fbi->reg_lcd);
++				if (ret)
++					dev_warn(&pdev->dev,
++						 "lcd regulator enable failed "
++						 "with error: %d\n", ret);
++			}
++		}
+ 	}
+=20
+ 	console_lock();
+@@ -1438,6 +1479,10 @@ static int init_fb_chan(struct mx3fb_data *mx3fb, st=
+ruct idmac_channel *ichan)
+ 	if (ret < 0)
+ 		goto erfb;
+=20
++	mx3fbi->reg_lcd =3D devm_regulator_get(dev, "lcd");
++	if (IS_ERR(mx3fbi->reg_lcd))
++		mx3fbi->reg_lcd =3D NULL;
++
+ 	return 0;
+=20
+ erfb:
+--=20
+1.7.9.5
+

@@ -1,161 +1,156 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Thu, 17 Oct 2013 11:05:18 +0000
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 17 Oct 2013 11:07:50 +0000
 Subject: Re: [RFR 2/2] drm/panel: Add simple panel support
-Message-Id: <20131017110517.GC10993@ulmo.nvidia.com>
+Message-Id: <3592147.9IprvsogX6@avalon>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Fig2xvG2VGoz8o/s"
+Content-Type: multipart/mixed; boundary="nextPart43190268.VaavcGE6mS"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381947912-11741-1-git-send-email-treding@nvidia.com>
- <1381947912-11741-3-git-send-email-treding@nvidia.com>
- <1695169.rzbDl9PeRX@avalon>
- <20131017085342.GB2502@ulmo.nvidia.com>
- <525FBA5D.9000001@ti.com>
-In-Reply-To: <525FBA5D.9000001-l0cyMroinI0@public.gmane.org>
-To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
-Cc: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+References: <1381947912-11741-1-git-send-email-treding@nvidia.com> <525FB368.6020003@ti.com> <20131017104856.GA10993@ulmo.nvidia.com>
+In-Reply-To: <20131017104856.GA10993-AwZRO8vwLAwmlAP/+Wk3EA@public.gmane.org>
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Dave Airlie <airlied-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 
 
---Fig2xvG2VGoz8o/s
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--nextPart43190268.VaavcGE6mS
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Thu, Oct 17, 2013 at 01:22:21PM +0300, Tomi Valkeinen wrote:
-> On 17/10/13 11:53, Thierry Reding wrote:
->=20
-> > I keep wondering why we absolutely must have compatibility between CDF
-> > and this simple panel binding. DT content is supposed to concern itself
-> > with the description of hardware only. What about the following isn't an
-> > accurate description of the panel hardware?
-> >=20
-> > 	panel: panel {
-> > 		compatible =3D "cptt,claa101wb01";
-> >=20
-> > 		power-supply =3D <&vdd_pnl_reg>;
-> > 		enable-gpios =3D <&gpio 90 0>;
-> >=20
-> > 		backlight =3D <&backlight>;
-> > 	};
-> >=20
-> > 	dsi-controller {
-> > 		panel =3D <&panel>;
-> > 	};
->=20
-> That's quite similar to how my current out-of-mainline OMAP DSS DT
-> bindings work. The difference is that I have a reference from the panel
-> node to the video source (dsi-controller), instead of the other way
-> around. I just find it more natural. It works the same way as, say,
-> regulators, gpios, etc.
+Hi Thierry,
 
-I suppose that depends on the way you look at it. In the above proposal
-I consider the output (DSI controller) to use the panel as a resource
-that provides a certain set of services (query mode timings, provide a
-way to enable or disable the panel). Similarly the panel uses the
-backlight as a resource that provides a certain set of services (such as
-changing the brightness).
+On Thursday 17 October 2013 12:48:57 Thierry Reding wrote:
+> On Thu, Oct 17, 2013 at 12:52:40PM +0300, Tomi Valkeinen wrote:
+> > On 17/10/13 12:16, Thierry Reding wrote:
+> > > On Thu, Oct 17, 2013 at 11:49:52AM +0300, Tomi Valkeinen wrote:
+> > >> Just my opinion, but yes, DT is that inflexible. DT bindings are like a
+> > >> syscall. Once they are there, you need to support them forever. That
+> > >> support can, of course, include some kind of DT data converters or
+> > >> such, that try to convert old bindings to new bindings at kernel boot.
+> > > 
+> > > That's not entirely true. DT bindings are allowed to change, the only
+> > > restriction being that they don't break backwards compatibility. So if
+> > 
+> > True, but afaik the same goes for syscalls. But yes, it's probably
+> > easier to add, say, new properties to DT bindings than adding new flags
+> > to a syscall.
+> > 
+> > > Am I the only one refusing to accept that we can't provide even the most
+> > > basic functionality simply because we haven't been able to come up with
+> > > the ultimately "perfect" DT binding yet? By definition it's not very
+> > > likely that any binding will ever be perfect.
+> > 
+> > With "perfect" I meant without any obvious features missing. I agree
+> > that DT bindings will never be perfect, but I at least would like them
+> > to be good enough to cover all the cases we know of.
+> 
+> As far as the simple panel device tree binding is concerned, it covers
+> all the cases I know of. I can't seriously be expected to do any better
+> than that. These panels are dumb. They only come with a power supply
+> that needs to be switched on and an additional GPIO to enable it once
+> powered up. All three panels just work with that set of properties. So
+> anything that doesn't can arguably be covered by some other, not-so-
+> simple binding.
+> 
+> > > I don't think we're doing ourselves any good by letting DT actively
+> > > hinder us in merging any of these features. I would personally prefer
+> > > having to support several bindings rather than not be able to provide
+> > > the functionality at all.
+> > 
+> > I'd say the driver writer is of course free to create basic bindings for
+> > the device in question as long as the bindings are sane, and he agrees
+> > to later create any needed converters. I don't see any problem with
+> > having a driver supporting several versions of the bindings.
+> > 
+> > But I don't think it's fair to push a driver with basic bindings,
+> > knowing that the bindings won't be enough in the future, and leave all
+> > the converter-mess to other people (not saying that's the case here).
+> > 
+> > As a fbdev maintainer, I'm ok with adding DT bindings to device specific
+> > fb drivers, as those can be just left as they are. Even when CDF is
+> > merged, the specific fb drivers just work with the old bindings. If the
+> > driver maintainer wants to use CDF, it's up to him to create any needed
+> > binding-converters.
+> > 
+> > But a generic driver for panels is more problematic, as that one should
+> > be maintained and refreshed to new features like CDF. If such was
+> > proposed to be merged to fbdev, I'd be very reluctant to merge it if
+> > there were any concerns about it.
+> 
+> I'm still missing the point here. For one, I don't see any reason that
+> this driver would ever need to gain CDF support. At the same time, CDF
+> could easily be supported by just adding a few required properties and
+> it should be easy to support any non-CDF cases just as well to remain
+> backwards-compatible.
+> 
+> > I guess one option there would be to implement a new driver for the same
+> > panel devices, one that supports CDF, and leave the old one as is. Not
+> > so nice option, though.
+> 
+> As I said, anything that really needs a CDF binding to work likely isn't
+> "simple" anymore, therefore a separate driver can easily be justified.
 
-The above also follows the natural order of control. The panel has no
-way to control the DSI output. However, it is the output that controls
-when a panel is required and turn it on as appropriate.
+The system as a whole would be more complex, but the panel could be the same. 
+We can't have two drivers for the same piece of hardware in the DT world, as 
+there will be a single compatible string and no way to choose between the 
+drivers (unlike the board code world that could set device names to "foo-
+encoder-v4l2" or "foo-encoder-drm" and live happily with that ever after).
 
-> However, one thing unclear is where the panel node should be. You seem
-> to have a DSI panel here. If the panel is truly not controlled in any
-> way, maybe having the panel as a normal platform device is ok. But if
-> the DSI panel is controlled with DSI messages, should it be a child of
-> the dsi-controller node, the same way i2c peripherals are children of
-> i2c master?
+> > > For crying out loud, we can use the 3D engine to render to a framebuffer
+> > > but we can't look at the result because we can't make the bloody panel
+> > > light up! Seriously!?
+> > 
+> > Ah, but do you have DT bindings for the 3D engine yet, which represent
+> > how different internal blocks in the 3D engine are connected? If not,
+> > better start designing it! Then the problem is solved, you won't even
+> > have working 3D engine. ;)
+> > 
+> > But seriously speaking, I'm with you. I don't get this DT stuff.
+> > 
+> > And the funny thing is, DT should just represent the hardware, it
+> > doesn't matter what kind of SW drivers there are, so in a sense talking
+> > about DT problems with a SW framework like CDF is a bit silly. How hard
+> > can it be to describe the hardware properly?
+> > 
+> > Very, obviously =).
+> 
+> Indeed. The fundamental point here seems to be that we don't represent
+> things in DT which we don't need. In the same way that we don't add device
+> nodes for enumerable devices, why would we need to explicitly add
+> information about connections between devices that cannot be controlled
+> anyway. If the board connects an RGB/LVDS output to a panel directly, it is
+> only required that the output knows what it is connected to because there is
+> no other way besides DT to obtain any information about the panel. Therefore
+> a unidirectional connection is more than enough. Using that the output can
+> access the panel and query it for information such as the mode timings as
+> well as switch it on or off as required.
 
-That's one possibility. In this particular case it's not even necessary
-to use any of DSIs control methods to talk to the panel. The panel only
-receives the data stream and "just works".
+Please note that the idea of putting the modes in DT in no way implies that 
+the device controller should parse the modes from the panel node. It must 
+instead query the panel at runtime through whatever API is provided. Going 
+directly to the DT data would be a layering violation. The reason why I 
+propose to add modes to the panel DT node is to make the geenric panel driver 
+more generic and simpler.
 
-Even if the panel were to be controlled via DSI, I think keeping it as
-a separate device node is equally valid. It's really boils down to what
-I already said above. The output uses the panel as a resource, similar
-to how other devices might use a GPIO controller to use a GPIO pin, or
-an interrupt controller to request an IRQ.
+-- 
+Regards,
 
-> >>> +static const struct drm_display_mode auo_b101aw03_mode =3D {
-> >>> +	.clock =3D 51450,
-> >>> +	.hdisplay =3D 1024,
-> >>> +	.hsync_start =3D 1024 + 156,
-> >>> +	.hsync_end =3D 1024 + 156 + 8,
-> >>> +	.htotal =3D 1024 + 156 + 8 + 156,
-> >>> +	.vdisplay =3D 600,
-> >>> +	.vsync_start =3D 600 + 16,
-> >>> +	.vsync_end =3D 600 + 16 + 6,
-> >>> +	.vtotal =3D 600 + 16 + 6 + 16,
-> >>> +	.vrefresh =3D 60,
-> >>> +};
-> >>
-> >> Instead of hardcoding the modes in the driver, which would then requir=
-e to be=20
-> >> updated for every new simple panel model (and we know there are lots o=
-f them),=20
-> >> why don't you specify the modes in the panel DT node ? The simple pane=
-l driver=20
-> >> would then become much more generic. It would also allow board designe=
-rs to=20
-> >> tweak h/v sync timings depending on the system requirements.
-> >=20
-> > Sigh... we keep second-guessing ourselves. Back at the time when power
-> > sequences were designed (and NAKed at the last minute), we all decided
-> > that the right thing to do would be to use specific compatible values
-> > for individual panels, because that would allow us to encode the power
-> > sequencing within the driver. And when we already have the panel model
-> > encoded in the compatible value, we might just as well encode the mode
-> > within the driver for that panel. Otherwise we'll have to keep adding
-> > the same mode timings for every board that uses the same panel.
->=20
-> Oh, I didn't feel "we all decided that the right thing..." =3D).
->=20
-> > I do agree though that it might be useful to tweak the mode in case the
-> > default one doesn't work. How about we provide a means to override the
-> > mode encoded in the driver using one specified in the DT? That's
-> > obviously a backwards-compatible change, so it could be added if or when
-> > it becomes necessary.
->=20
-> This sounds good to me.
->=20
-> Although maybe it'd be good to have the driver compatible with something
-> like "generic-panel", so that you could have:
->=20
-> compatible =3D "foo,specific-panel", "generic-panel";
->=20
-> and if there's no need for any power/gpio setup for your board, you may
-> skip adding "foo,specific-panel" support to the panel driver. Later,
-> somebody else may need to implement fine grained power/gpio support for
-> "foo,specific-panel", and it would just work.
->=20
-> Maybe that would help us with the problem of adding support in the
-> driver for a hundred different simple panels each used only once on a
-> specific board.
+Laurent Pinchart
 
-Sure, that all sounds like reasonable additions. All of the suggestions
-are even backwards-compatible and hence can be added when needed without
-breaking compatibility with existing users of the binding.
-
-Thierry
-
---Fig2xvG2VGoz8o/s
-Content-Type: application/pgp-signature
+--nextPart43190268.VaavcGE6mS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJSX8RtAAoJEN0jrNd/PrOhITkP/R5gMgYvT1wCIRoM/8ZBWQav
-8Usf4f6BeSLdedbQQKKYL6/6i1b4ZUSXsX5MWvq9m/2PODvuMCfYQQBnruXt68+v
-YL4SVm1Kkhw+kdS/9JKTBuPn+/I0+j2XmNJ6HHKL2Ks6JnM/lMJAnR+JGSTj5Gsy
-5wCaNyQED5wj2lu9sy8EICaOyae/kOrEPBlBfW0WViVjj3t9d4V8rfCIF4T3P4VD
-TXiOxAcg/u2DnI/ckDTbU3HKf9UB6M7PKugY20yElqEMiwkWBra3TD6/+YsPOLE6
-SLVHp1GSrAm8lh4v+AYfCgenKOS3KJ1DpqQruG+LnVDu7DNCYa35MD3hSa/ZL+Cx
-GNcccBefVSuKu/4rCi62ep8EytfTgrhJ+1L17kZGMl4YbX2Xn2uctPaDQSkXGXUW
-iYKH/BCieuBwibzPjWbUFgbM5j4GRYY48SweX+HdM/Yw7jiNObj9JRI57WZvwzbH
-xQ96zFBeUhW2lslPBcRD7LE3Z5XNgJYedS4CgTi0X7+LKNGfrGDv0z0+Fhxc1DOv
-WJjZZVIMnq7ZJaXghf2nRF31coXWVOiQslJFnQQZPo2HHeM7SNf9yVES2CECUQvb
-vlErBhANzKWWH2e1aA2qnPGpsbEY8qd5/beyY9acq+rl5uCtSUQR1op7vdGXNV+L
-e2zPSYvhlKeY3WWMpJB4
-=h4Oq
+iQEcBAABAgAGBQJSX8UGAAoJEIkPb2GL7hl1t2cH/iABGRv2vsyHfq0ZFP6qtc+x
+S4p+g6n7KDZjNj/Z5HjB309cOzRcbP7n+GwkzyAkquRuo2YlxWvwvt0EOpO0S2zy
+uLBVBXPZnBHlPQsQinbCidVb/qTI8jy4EQcXF9VPiUPCZ/lNzsNqwvkFqd+zkX4V
+wA1tk4jJ4nn+vlthRfE+DOJbbV16jh1RBklYdtcbu6NOxmaby0Uj1b4ey9b07QPx
+nodRXZU490g0d5w/AMNGfxy34fDYhNJtTm0rvkwic8XU/jbl+Wnm7aSnABV3NEoF
+O2CWHUaWzN/jBpj1y4YMr2kJh/IIlXOL6ddXAuZ2VvdTglfethw74ld87DvYeeA=
+=PO+l
 -----END PGP SIGNATURE-----
 
---Fig2xvG2VGoz8o/s--
+--nextPart43190268.VaavcGE6mS--
+

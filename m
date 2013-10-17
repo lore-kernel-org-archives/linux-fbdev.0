@@ -1,138 +1,149 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 17 Oct 2013 10:22:21 +0000
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Thu, 17 Oct 2013 10:48:57 +0000
 Subject: Re: [RFR 2/2] drm/panel: Add simple panel support
-Message-Id: <525FBA5D.9000001@ti.com>
+Message-Id: <20131017104856.GA10993@ulmo.nvidia.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="km0e5VblGtXHD4uXuAvcI1tdNmpOr0L85"
+Content-Type: multipart/mixed; boundary="4Ckj6UjgE2iN1+kY"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381947912-11741-1-git-send-email-treding@nvidia.com> <1381947912-11741-3-git-send-email-treding@nvidia.com> <1695169.rzbDl9PeRX@avalon> <20131017085342.GB2502@ulmo.nvidia.com>
-In-Reply-To: <20131017085342.GB2502-AwZRO8vwLAwmlAP/+Wk3EA@public.gmane.org>
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
-Cc: Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+References: <1381947912-11741-1-git-send-email-treding@nvidia.com>
+ <1381947912-11741-3-git-send-email-treding@nvidia.com>
+ <1695169.rzbDl9PeRX@avalon>
+ <CAPM=9tzU36cwcM0pH0J_Vgc6UOj5MHdVNDvn3wpGNuihbMqdQQ@mail.gmail.com>
+ <525FA4B0.8060504@ti.com>
+ <20131017091614.GC2502@ulmo.nvidia.com>
+ <525FB368.6020003@ti.com>
+In-Reply-To: <525FB368.6020003-l0cyMroinI0@public.gmane.org>
+To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: Dave Airlie <airlied-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 
---km0e5VblGtXHD4uXuAvcI1tdNmpOr0L85
-Content-Type: text/plain; charset=ISO-8859-1
+
+--4Ckj6UjgE2iN1+kY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On 17/10/13 11:53, Thierry Reding wrote:
-
-> I keep wondering why we absolutely must have compatibility between CDF
-> and this simple panel binding. DT content is supposed to concern itself=
-
-> with the description of hardware only. What about the following isn't a=
-n
-> accurate description of the panel hardware?
+On Thu, Oct 17, 2013 at 12:52:40PM +0300, Tomi Valkeinen wrote:
+> On 17/10/13 12:16, Thierry Reding wrote:
+> > On Thu, Oct 17, 2013 at 11:49:52AM +0300, Tomi Valkeinen wrote:
 >=20
-> 	panel: panel {
-> 		compatible =3D "cptt,claa101wb01";
+> >> Just my opinion, but yes, DT is that inflexible. DT bindings are like a
+> >> syscall. Once they are there, you need to support them forever. That
+> >> support can, of course, include some kind of DT data converters or suc=
+h,
+> >> that try to convert old bindings to new bindings at kernel boot.
+> >=20
+> > That's not entirely true. DT bindings are allowed to change, the only
+> > restriction being that they don't break backwards compatibility. So if
 >=20
-> 		power-supply =3D <&vdd_pnl_reg>;
-> 		enable-gpios =3D <&gpio 90 0>;
+> True, but afaik the same goes for syscalls. But yes, it's probably
+> easier to add, say, new properties to DT bindings than adding new flags
+> to a syscall.
 >=20
-> 		backlight =3D <&backlight>;
-> 	};
+> > Am I the only one refusing to accept that we can't provide even the most
+> > basic functionality simply because we haven't been able to come up with
+> > the ultimately "perfect" DT binding yet? By definition it's not very
+> > likely that any binding will ever be perfect.
 >=20
-> 	dsi-controller {
-> 		panel =3D <&panel>;
-> 	};
+> With "perfect" I meant without any obvious features missing. I agree
+> that DT bindings will never be perfect, but I at least would like them
+> to be good enough to cover all the cases we know of.
 
-That's quite similar to how my current out-of-mainline OMAP DSS DT
-bindings work. The difference is that I have a reference from the panel
-node to the video source (dsi-controller), instead of the other way
-around. I just find it more natural. It works the same way as, say,
-regulators, gpios, etc.
+As far as the simple panel device tree binding is concerned, it covers
+all the cases I know of. I can't seriously be expected to do any better
+than that. These panels are dumb. They only come with a power supply
+that needs to be switched on and an additional GPIO to enable it once
+powered up. All three panels just work with that set of properties. So
+anything that doesn't can arguably be covered by some other, not-so-
+simple binding.
 
-However, one thing unclear is where the panel node should be. You seem
-to have a DSI panel here. If the panel is truly not controlled in any
-way, maybe having the panel as a normal platform device is ok. But if
-the DSI panel is controlled with DSI messages, should it be a child of
-the dsi-controller node, the same way i2c peripherals are children of
-i2c master?
-
->>> +static const struct drm_display_mode auo_b101aw03_mode =3D {
->>> +	.clock =3D 51450,
->>> +	.hdisplay =3D 1024,
->>> +	.hsync_start =3D 1024 + 156,
->>> +	.hsync_end =3D 1024 + 156 + 8,
->>> +	.htotal =3D 1024 + 156 + 8 + 156,
->>> +	.vdisplay =3D 600,
->>> +	.vsync_start =3D 600 + 16,
->>> +	.vsync_end =3D 600 + 16 + 6,
->>> +	.vtotal =3D 600 + 16 + 6 + 16,
->>> +	.vrefresh =3D 60,
->>> +};
->>
->> Instead of hardcoding the modes in the driver, which would then requir=
-e to be=20
->> updated for every new simple panel model (and we know there are lots o=
-f them),=20
->> why don't you specify the modes in the panel DT node ? The simple pane=
-l driver=20
->> would then become much more generic. It would also allow board designe=
-rs to=20
->> tweak h/v sync timings depending on the system requirements.
+> > I don't think we're doing ourselves any good by letting DT actively
+> > hinder us in merging any of these features. I would personally prefer
+> > having to support several bindings rather than not be able to provide
+> > the functionality at all.
 >=20
-> Sigh... we keep second-guessing ourselves. Back at the time when power
-> sequences were designed (and NAKed at the last minute), we all decided
-> that the right thing to do would be to use specific compatible values
-> for individual panels, because that would allow us to encode the power
-> sequencing within the driver. And when we already have the panel model
-> encoded in the compatible value, we might just as well encode the mode
-> within the driver for that panel. Otherwise we'll have to keep adding
-> the same mode timings for every board that uses the same panel.
+> I'd say the driver writer is of course free to create basic bindings for
+> the device in question as long as the bindings are sane, and he agrees
+> to later create any needed converters. I don't see any problem with
+> having a driver supporting several versions of the bindings.
+>=20
+> But I don't think it's fair to push a driver with basic bindings,
+> knowing that the bindings won't be enough in the future, and leave all
+> the converter-mess to other people (not saying that's the case here).
+>=20
+> As a fbdev maintainer, I'm ok with adding DT bindings to device specific
+> fb drivers, as those can be just left as they are. Even when CDF is
+> merged, the specific fb drivers just work with the old bindings. If the
+> driver maintainer wants to use CDF, it's up to him to create any needed
+> binding-converters.
+>=20
+> But a generic driver for panels is more problematic, as that one should
+> be maintained and refreshed to new features like CDF. If such was
+> proposed to be merged to fbdev, I'd be very reluctant to merge it if
+> there were any concerns about it.
 
-Oh, I didn't feel "we all decided that the right thing..." =3D).
+I'm still missing the point here. For one, I don't see any reason that
+this driver would ever need to gain CDF support. At the same time, CDF
+could easily be supported by just adding a few required properties and
+it should be easy to support any non-CDF cases just as well to remain
+backwards-compatible.
 
-> I do agree though that it might be useful to tweak the mode in case the=
+> I guess one option there would be to implement a new driver for the same
+> panel devices, one that supports CDF, and leave the old one as is. Not
+> so nice option, though.
 
-> default one doesn't work. How about we provide a means to override the
-> mode encoded in the driver using one specified in the DT? That's
-> obviously a backwards-compatible change, so it could be added if or whe=
-n
-> it becomes necessary.
+As I said, anything that really needs a CDF binding to work likely isn't
+"simple" anymore, therefore a separate driver can easily be justified.
 
-This sounds good to me.
+> > For crying out loud, we can use the 3D engine to render to a framebuffer
+> > but we can't look at the result because we can't make the bloody panel
+> > light up! Seriously!?
+>=20
+> Ah, but do you have DT bindings for the 3D engine yet, which represent
+> how different internal blocks in the 3D engine are connected? If not,
+> better start designing it! Then the problem is solved, you won't even
+> have working 3D engine. ;)
+>=20
+> But seriously speaking, I'm with you. I don't get this DT stuff.
+>=20
+> And the funny thing is, DT should just represent the hardware, it
+> doesn't matter what kind of SW drivers there are, so in a sense talking
+> about DT problems with a SW framework like CDF is a bit silly. How hard
+> can it be to describe the hardware properly?
+>=20
+> Very, obviously =3D).
 
-Although maybe it'd be good to have the driver compatible with something
-like "generic-panel", so that you could have:
+Indeed. The fundamental point here seems to be that we don't represent
+things in DT which we don't need. In the same way that we don't add
+device nodes for enumerable devices, why would we need to explicitly add
+information about connections between devices that cannot be controlled
+anyway. If the board connects an RGB/LVDS output to a panel directly, it
+is only required that the output knows what it is connected to because
+there is no other way besides DT to obtain any information about the
+panel. Therefore a unidirectional connection is more than enough. Using
+that the output can access the panel and query it for information such
+as the mode timings as well as switch it on or off as required.
 
-compatible =3D "foo,specific-panel", "generic-panel";
+Thierry
 
-and if there's no need for any power/gpio setup for your board, you may
-skip adding "foo,specific-panel" support to the panel driver. Later,
-somebody else may need to implement fine grained power/gpio support for
-"foo,specific-panel", and it would just work.
-
-Maybe that would help us with the problem of adding support in the
-driver for a hundred different simple panels each used only once on a
-specific board.
-
- Tomi
-
-
-
---km0e5VblGtXHD4uXuAvcI1tdNmpOr0L85
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+--4Ckj6UjgE2iN1+kY
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJSX7pdAAoJEPo9qoy8lh71zQwP/jilE0u25Mh9fRY6Xcz+PZ+d
-cZyx6gKx8We6VzS9vXEeg4L5lQJmNRKF361SyRuQ+gCQBYtheYgt/0mEv9WBXzMf
-x3K/DJn7pLXo0D+hHGegpET2X/RwgnCDs3iA8IGCnvBwwqrpNCyasv2VfJJjDLBd
-527pLtUAiq/yjn4OFU72acpJvlHHGrMbyJdNoOpifjiGoor5+iTj3OM3Vzn87/Un
-2b5mPR6l/jp7ou9tMurFOFMFbm5t64kV3AIL8yDY0i4ctzYU8/E+XxiPbg9+fTUm
-klLrHJtQ4LW9oyBUt6ANOBRzqxDWttb/K9SLXAfF/Nj555iaauJ7cXDRnY4IEnZ7
-8QI4wFFJZx+vyH4/KalhuKKch+g5YvsD5Iwh+pczw9diwauQyC8ITjrhx2POa+0x
-B0bC3f93UEDff9TZ5hBW5YM8nLYPx9le5w39YsIdWqGoOqI/hzu4PYooQ0RwE+RH
-K1aX+HhD4kuH8FU5Nlotg5vk8lIkoF0HFDEbk2FXL/vj/zwMsBqeK3Ze10iGTZ3w
-Yg4s4LaGFs5ZjoL8aIb+XORnxGYUNv2pwl8gtFg7CLGHhdMHJ7Bi3ohUKiNXteQe
-SZeTjpdVseY2qcSrQDm/q0wNO9h8e1dV85kOmonfXZqehg4LMOU3FC7DJQu0asNO
-+tiOnoOCXZ8UrxeP2w1x
-=SxvT
+iQIcBAEBAgAGBQJSX8CYAAoJEN0jrNd/PrOhvEEP/3a8D2hEBTpPn5Ekgvf7oDCc
+fgHcKZbrRAYZ4Hrbnucw4/XTPhE6m4zvvRF479FLFIJn/iu/7BnT/DB/kZz5SbEu
+7AtUhBevZU67lj2mE+x9URHBuvbvXjDg1Ah0M6Y3SkGrVnADsrMppQzS75Nxb9nU
+U8f1tezAXUGnqNWNfTxuDclgXZqSuQ9b9Ivx7AwbZI3QRW7Mi/nlfnyHHd5pR+j5
+5gUtOWYUacNVVXCDzxcGU9JaiMA22fnbBS/fuswl9M9levVr6mXGQ/E+kpFGJX4q
+guXMc87dcAeinFEet8YiSdISFO0agPXRohgKZqEJx+u0PvxTO613TSCTvFRCqTu2
+NmDzL4mGI06jJf+NBGPwf+xPIoiFC4QgeB/eETx+CnN4iFhhwmYOZIvnWjA0/H/3
+kRpOTKJDmxkAjTa3oEY0HZuUvjh7C0QzqrzDeGXlRyPhaQ5C9rm1S2TgTm8miT0E
+g2JStlhWsbxDjBzTlKz8LK27+q71TopgnnUoLpbl7jjuZC1lOxXfYRgdd0jNzYbK
+jppmJ/S8fYxMxSh63fmXIFGiKqUUkswURnE6S0499zBFh8o7Jju3DN6L7Md1YHWT
+StvzcA5/HlWgej/7Rp1YgSemhI8mMUW9QH3HAK5c7Iww6W6IG43VGTy32Otr4/j1
+qtu5IvDvZYs9Skf2+rCV
+=yNef
 -----END PGP SIGNATURE-----
 
---km0e5VblGtXHD4uXuAvcI1tdNmpOr0L85--
+--4Ckj6UjgE2iN1+kY--

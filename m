@@ -1,266 +1,144 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Date: Wed, 16 Oct 2013 16:40:10 +0000
-Subject: [PATCH 1/7] phy: Add driver for Exynos MIPI CSIS/DSIM DPHYs
-Message-Id: <1381940896-9355-2-git-send-email-kishon@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 17 Oct 2013 11:38:40 +0000
+Subject: [PATCH 4/6] omapdss: hdmi pll: Incorporate changes for OMAP5/DRA7x
+Message-Id: <1382009202-18984-5-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381940896-9355-1-git-send-email-kishon@ti.com>
-In-Reply-To: <1381940896-9355-1-git-send-email-kishon@ti.com>
+References: <1382009202-18984-1-git-send-email-archit@ti.com>
+In-Reply-To: <1382009202-18984-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
+Add a features struct to differentiate between the HDMI PLLs on OMAP4 and
+OMAP5/DRA7x.
 
-Add a PHY provider driver for the Samsung S5P/Exynos SoC MIPI CSI-2
-receiver and MIPI DSI transmitter DPHYs.
+The OMAP5/DRA7x PLL are more sensitive compared to the PLL on OMAP4 when it
+comes to locking. We need to ensure that the DCO freq calculated isn't too low
+for lower pixel clocks. If not followed, the PLL doesn't lock for lower
+frequencies.
 
-Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+Modify the PLL computation slightly to ensure the HDMI PLL locks for lower
+frequencies. This will be replaced by a more complex computation which makes
+sure all the PLL constraints are met.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- .../devicetree/bindings/phy/samsung-phy.txt        |   14 ++
- drivers/phy/Kconfig                                |    6 +
- drivers/phy/Makefile                               |    7 +-
- drivers/phy/phy-exynos-mipi-video.c                |  176 ++++++++++++++++++++
- 4 files changed, 200 insertions(+), 3 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/phy/samsung-phy.txt
- create mode 100644 drivers/phy/phy-exynos-mipi-video.c
+ drivers/video/omap2/dss/hdmi_pll.c | 74 ++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 71 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/phy/samsung-phy.txt b/Documentation/devicetree/bindings/phy/samsung-phy.txt
-new file mode 100644
-index 0000000..5ff208c
---- /dev/null
-+++ b/Documentation/devicetree/bindings/phy/samsung-phy.txt
-@@ -0,0 +1,14 @@
-+Samsung S5P/EXYNOS SoC series MIPI CSIS/DSIM DPHY
-+-------------------------------------------------
-+
-+Required properties:
-+- compatible : should be "samsung,s5pv210-mipi-video-phy";
-+- reg : offset and length of the MIPI DPHY register set;
-+- #phy-cells : from the generic phy bindings, must be 1;
-+
-+For "samsung,s5pv210-mipi-video-phy" compatible PHYs the second cell in
-+the PHY specifier identifies the PHY and its meaning is as follows:
-+  0 - MIPI CSIS 0,
-+  1 - MIPI DSIM 0,
-+  2 - MIPI CSIS 1,
-+  3 - MIPI DSIM 1.
-diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
-index ac239ac..0062d7e 100644
---- a/drivers/phy/Kconfig
-+++ b/drivers/phy/Kconfig
-@@ -15,6 +15,12 @@ config GENERIC_PHY
- 	  phy users can obtain reference to the PHY. All the users of this
- 	  framework should select this config.
+diff --git a/drivers/video/omap2/dss/hdmi_pll.c b/drivers/video/omap2/dss/hdmi_pll.c
+index d3e6e78..e1c55c4 100644
+--- a/drivers/video/omap2/dss/hdmi_pll.c
++++ b/drivers/video/omap2/dss/hdmi_pll.c
+@@ -21,6 +21,13 @@
+ #define HDMI_DEFAULT_REGN 16
+ #define HDMI_DEFAULT_REGM2 1
  
-+config PHY_EXYNOS_MIPI_VIDEO
-+	tristate "S5P/EXYNOS SoC series MIPI CSI-2/DSI PHY driver"
-+	help
-+	  Support for MIPI CSI-2 and MIPI DSI DPHY found on Samsung S5P
-+	  and EXYNOS SoCs.
++struct hdmi_pll_features {
++	bool sys_reset;
++	bool bound_dcofreq;
++};
 +
- config OMAP_USB2
- 	tristate "OMAP USB2 PHY Driver"
- 	depends on ARCH_OMAP2PLUS
-diff --git a/drivers/phy/Makefile b/drivers/phy/Makefile
-index 0dd8a98..6344053 100644
---- a/drivers/phy/Makefile
-+++ b/drivers/phy/Makefile
-@@ -2,6 +2,7 @@
- # Makefile for the phy drivers.
- #
++static const struct hdmi_pll_features *pll_feat;
++
+ void hdmi_pll_dump(struct hdmi_pll_data *pll, struct seq_file *s)
+ {
+ #define DUMPPLL(r) seq_printf(s, "%-35s %08x\n", #r,\
+@@ -55,7 +62,17 @@ void hdmi_pll_compute(struct hdmi_pll_data *pll, unsigned long clkin, int phy)
  
--obj-$(CONFIG_GENERIC_PHY)	+= phy-core.o
--obj-$(CONFIG_OMAP_USB2)		+= phy-omap-usb2.o
--obj-$(CONFIG_TWL4030_USB)	+= phy-twl4030-usb.o
-+obj-$(CONFIG_GENERIC_PHY)		+= phy-core.o
-+obj-$(CONFIG_PHY_EXYNOS_MIPI_VIDEO)	+= phy-exynos-mipi-video.o
-+obj-$(CONFIG_OMAP_USB2)			+= phy-omap-usb2.o
-+obj-$(CONFIG_TWL4030_USB)		+= phy-twl4030-usb.o
-diff --git a/drivers/phy/phy-exynos-mipi-video.c b/drivers/phy/phy-exynos-mipi-video.c
-new file mode 100644
-index 0000000..b73b86a
---- /dev/null
-+++ b/drivers/phy/phy-exynos-mipi-video.c
-@@ -0,0 +1,176 @@
-+/*
-+ * Samsung S5P/EXYNOS SoC series MIPI CSIS/DSIM DPHY driver
-+ *
-+ * Copyright (C) 2013 Samsung Electronics Co., Ltd.
-+ * Author: Sylwester Nawrocki <s.nawrocki@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/phy/phy.h>
-+#include <linux/platform_device.h>
-+#include <linux/spinlock.h>
-+
-+/* MIPI_PHYn_CONTROL register offset: n = 0..1 */
-+#define EXYNOS_MIPI_PHY_CONTROL(n)	((n) * 4)
-+#define EXYNOS_MIPI_PHY_ENABLE		(1 << 0)
-+#define EXYNOS_MIPI_PHY_SRESETN		(1 << 1)
-+#define EXYNOS_MIPI_PHY_MRESETN		(1 << 2)
-+#define EXYNOS_MIPI_PHY_RESET_MASK	(3 << 1)
-+
-+enum exynos_mipi_phy_id {
-+	EXYNOS_MIPI_PHY_ID_CSIS0,
-+	EXYNOS_MIPI_PHY_ID_DSIM0,
-+	EXYNOS_MIPI_PHY_ID_CSIS1,
-+	EXYNOS_MIPI_PHY_ID_DSIM1,
-+	EXYNOS_MIPI_PHYS_NUM
-+};
-+
-+#define is_mipi_dsim_phy_id(id) \
-+	((id) = EXYNOS_MIPI_PHY_ID_DSIM0 || (id) = EXYNOS_MIPI_PHY_ID_DSIM1)
-+
-+struct exynos_mipi_video_phy {
-+	spinlock_t slock;
-+	struct video_phy_desc {
-+		struct phy *phy;
-+		unsigned int index;
-+	} phys[EXYNOS_MIPI_PHYS_NUM];
-+	void __iomem *regs;
-+};
-+
-+static int __set_phy_state(struct exynos_mipi_video_phy *state,
-+			enum exynos_mipi_phy_id id, unsigned int on)
-+{
-+	void __iomem *addr;
-+	u32 reg, reset;
-+
-+	addr = state->regs + EXYNOS_MIPI_PHY_CONTROL(id / 2);
-+
-+	if (is_mipi_dsim_phy_id(id))
-+		reset = EXYNOS_MIPI_PHY_MRESETN;
+ 	refclk = clkin / pi->regn;
+ 
+-	pi->regm2 = HDMI_DEFAULT_REGM2;
++	/*
++	 * HACK: the HDMI PLL on omap5/dra7x doesn't lock if the required
++	 * DCOFREQ is lesser than the minimum value of the DCO's lower frequency
++	 * range. For now, we just make sure that low pixel clock rates also
++	 * generate a high enough DCOFREQ by setting the M2 post divider to a
++	 * higher value
++	 */
++	if (pll_feat->bound_dcofreq && phy <= 65000)
++		pi->regm2 = 3;
 +	else
-+		reset = EXYNOS_MIPI_PHY_SRESETN;
-+
-+	spin_lock(&state->slock);
-+	reg = readl(addr);
-+	if (on)
-+		reg |= reset;
-+	else
-+		reg &= ~reset;
-+	writel(reg, addr);
-+
-+	/* Clear ENABLE bit only if MRESETN, SRESETN bits are not set. */
-+	if (on)
-+		reg |= EXYNOS_MIPI_PHY_ENABLE;
-+	else if (!(reg & EXYNOS_MIPI_PHY_RESET_MASK))
-+		reg &= ~EXYNOS_MIPI_PHY_ENABLE;
-+
-+	writel(reg, addr);
-+	spin_unlock(&state->slock);
-+	return 0;
-+}
-+
-+#define to_mipi_video_phy(desc) \
-+	container_of((desc), struct exynos_mipi_video_phy, phys[(desc)->index]);
-+
-+static int exynos_mipi_video_phy_power_on(struct phy *phy)
-+{
-+	struct video_phy_desc *phy_desc = phy_get_drvdata(phy);
-+	struct exynos_mipi_video_phy *state = to_mipi_video_phy(phy_desc);
-+
-+	return __set_phy_state(state, phy_desc->index, 1);
-+}
-+
-+static int exynos_mipi_video_phy_power_off(struct phy *phy)
-+{
-+	struct video_phy_desc *phy_desc = phy_get_drvdata(phy);
-+	struct exynos_mipi_video_phy *state = to_mipi_video_phy(phy_desc);
-+
-+	return __set_phy_state(state, phy_desc->index, 1);
-+}
-+
-+static struct phy *exynos_mipi_video_phy_xlate(struct device *dev,
-+					struct of_phandle_args *args)
-+{
-+	struct exynos_mipi_video_phy *state = dev_get_drvdata(dev);
-+
-+	if (WARN_ON(args->args[0] > EXYNOS_MIPI_PHYS_NUM))
-+		return ERR_PTR(-ENODEV);
-+
-+	return state->phys[args->args[0]].phy;
-+}
-+
-+static struct phy_ops exynos_mipi_video_phy_ops = {
-+	.power_on	= exynos_mipi_video_phy_power_on,
-+	.power_off	= exynos_mipi_video_phy_power_off,
-+	.owner		= THIS_MODULE,
++		pi->regm2 = HDMI_DEFAULT_REGM2;
+ 
+ 	/*
+ 	 * multiplier is pixel_clk/ref_clk
+@@ -151,8 +168,12 @@ static int hdmi_pll_config(struct hdmi_pll_data *pll)
+ 
+ static int hdmi_pll_reset(struct hdmi_pll_data *pll)
+ {
+-	/* SYSRESET  controlled by power FSM */
+-	REG_FLD_MOD(pll->base, PLLCTRL_PLL_CONTROL, 0x0, 3, 3);
++	/*
++	 * SYSRESET controlled by power FSM.
++	 * SYSRESETN needs to be set for omap5/dra7x, but cleared for omap4
++	 * HDMI PLL
++	 */
++	REG_FLD_MOD(pll->base, PLLCTRL_PLL_CONTROL, pll_feat->sys_reset, 3, 3);
+ 
+ 	/* READ 0x0 reset is in progress */
+ 	if (hdmi_wait_for_bit_change(pll->base, PLLCTRL_PLL_STATUS, 0, 0, 1)
+@@ -195,11 +216,58 @@ void hdmi_pll_disable(struct hdmi_pll_data *pll, struct hdmi_wp_data *wp)
+ #define PLL_OFFSET	0x200
+ #define PLL_SIZE	0x100
+ 
++static const struct hdmi_pll_features omap44xx_pll_feats = {
++	.sys_reset		=	false,
++	.bound_dcofreq		=	false,
 +};
 +
-+static int exynos_mipi_video_phy_probe(struct platform_device *pdev)
-+{
-+	struct exynos_mipi_video_phy *state;
-+	struct device *dev = &pdev->dev;
-+	struct resource *res;
-+	struct phy_provider *phy_provider;
-+	unsigned int i;
++static const struct hdmi_pll_features omap54xx_pll_feats = {
++	.sys_reset		=	true,
++	.bound_dcofreq		=	true,
++};
 +
-+	state = devm_kzalloc(dev, sizeof(*state), GFP_KERNEL);
-+	if (!state)
++static int __init hdmi_pll_init_features(struct platform_device *pdev)
++{
++	struct hdmi_pll_features *dst;
++	const struct hdmi_pll_features *src;
++
++	dst = devm_kzalloc(&pdev->dev, sizeof(*dst), GFP_KERNEL);
++	if (!dst) {
++		dev_err(&pdev->dev, "Failed to allocate HDMI PHY Features\n");
 +		return -ENOMEM;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+
-+	state->regs = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(state->regs))
-+		return PTR_ERR(state->regs);
-+
-+	dev_set_drvdata(dev, state);
-+	spin_lock_init(&state->slock);
-+
-+	phy_provider = devm_of_phy_provider_register(dev,
-+					exynos_mipi_video_phy_xlate);
-+	if (IS_ERR(phy_provider))
-+		return PTR_ERR(phy_provider);
-+
-+	for (i = 0; i < EXYNOS_MIPI_PHYS_NUM; i++) {
-+		struct phy *phy = devm_phy_create(dev,
-+					&exynos_mipi_video_phy_ops, NULL);
-+		if (IS_ERR(phy)) {
-+			dev_err(dev, "failed to create PHY %d\n", i);
-+			return PTR_ERR(phy);
-+		}
-+
-+		state->phys[i].phy = phy;
-+		state->phys[i].index = i;
-+		phy_set_drvdata(phy, &state->phys[i]);
 +	}
++
++	switch (omapdss_get_version()) {
++	case OMAPDSS_VER_OMAP4430_ES1:
++	case OMAPDSS_VER_OMAP4430_ES2:
++	case OMAPDSS_VER_OMAP4:
++		src = &omap44xx_pll_feats;
++		break;
++
++	case OMAPDSS_VER_OMAP5:
++		src = &omap54xx_pll_feats;
++		break;
++
++	default:
++		return -ENODEV;
++	}
++
++	memcpy(dst, src, sizeof(*dst));
++	pll_feat = dst;
 +
 +	return 0;
 +}
 +
-+static const struct of_device_id exynos_mipi_video_phy_of_match[] = {
-+	{ .compatible = "samsung,s5pv210-mipi-video-phy" },
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(of, exynos_mipi_video_phy_of_match);
+ int hdmi_pll_init(struct platform_device *pdev, struct hdmi_pll_data *pll)
+ {
++	int r;
+ 	struct resource *res;
+ 	struct resource temp_res;
+ 
++	r = hdmi_pll_init_features(pdev);
++	if (r)
++		return r;
 +
-+static struct platform_driver exynos_mipi_video_phy_driver = {
-+	.probe	= exynos_mipi_video_phy_probe,
-+	.driver = {
-+		.of_match_table	= exynos_mipi_video_phy_of_match,
-+		.name  = "exynos-mipi-video-phy",
-+		.owner = THIS_MODULE,
-+	}
-+};
-+module_platform_driver(exynos_mipi_video_phy_driver);
-+
-+MODULE_DESCRIPTION("Samsung S5P/EXYNOS SoC MIPI CSI-2/DSI PHY driver");
-+MODULE_AUTHOR("Sylwester Nawrocki <s.nawrocki@samsung.com>");
-+MODULE_LICENSE("GPL v2");
+ 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "hdmi_pllctrl");
+ 	if (!res) {
+ 		DSSDBG("can't get PLL mem resource by name\n");
 -- 
-1.7.10.4
+1.8.1.2
 

@@ -1,129 +1,197 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Date: Wed, 16 Oct 2013 16:40:11 +0000
-Subject: [PATCH 2/7] exynos4-is: Use the generic MIPI CSIS PHY driver
-Message-Id: <1381940896-9355-3-git-send-email-kishon@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 17 Oct 2013 11:38:39 +0000
+Subject: [PATCH 3/6] omapdss: hdmi phy: Incorporate changes for OMAP5/DRA7x
+Message-Id: <1382009202-18984-4-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381940896-9355-1-git-send-email-kishon@ti.com>
-In-Reply-To: <1381940896-9355-1-git-send-email-kishon@ti.com>
+References: <1382009202-18984-1-git-send-email-archit@ti.com>
+In-Reply-To: <1382009202-18984-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
+OMAP5/DRA7x HDMI PHY has some differences compared to OMAP4 HDMI PHY.
 
-Use the generic PHY API instead of the platform callback
-to control the MIPI CSIS DPHY.
+Create a features struct which help the diagram configure the PHY based
+on what SoC it is.
 
-Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-Acked-by: Felipe Balbi <balbi@ti.com>
-Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/media/platform/exynos4-is/Kconfig     |    2 +-
- drivers/media/platform/exynos4-is/mipi-csis.c |   13 ++++++++++---
- include/linux/platform_data/mipi-csis.h       |    9 ---------
- 3 files changed, 11 insertions(+), 13 deletions(-)
+ drivers/video/omap2/dss/hdmi.h     |  1 +
+ drivers/video/omap2/dss/hdmi_phy.c | 94 +++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 93 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/media/platform/exynos4-is/Kconfig b/drivers/media/platform/exynos4-is/Kconfig
-index 53ad0f0..d2d3b4b 100644
---- a/drivers/media/platform/exynos4-is/Kconfig
-+++ b/drivers/media/platform/exynos4-is/Kconfig
-@@ -29,7 +29,7 @@ config VIDEO_S5P_FIMC
- config VIDEO_S5P_MIPI_CSIS
- 	tristate "S5P/EXYNOS MIPI-CSI2 receiver (MIPI-CSIS) driver"
- 	depends on REGULATOR
--	select S5P_SETUP_MIPIPHY
-+	select GENERIC_PHY
- 	help
- 	  This is a V4L2 driver for Samsung S5P and EXYNOS4 SoC MIPI-CSI2
- 	  receiver (MIPI-CSIS) devices.
-diff --git a/drivers/media/platform/exynos4-is/mipi-csis.c b/drivers/media/platform/exynos4-is/mipi-csis.c
-index 0914230..9fc2af6 100644
---- a/drivers/media/platform/exynos4-is/mipi-csis.c
-+++ b/drivers/media/platform/exynos4-is/mipi-csis.c
-@@ -20,6 +20,7 @@
- #include <linux/memory.h>
- #include <linux/module.h>
- #include <linux/of.h>
-+#include <linux/phy/phy.h>
- #include <linux/platform_data/mipi-csis.h>
+diff --git a/drivers/video/omap2/dss/hdmi.h b/drivers/video/omap2/dss/hdmi.h
+index b410b14..8fa2121 100644
+--- a/drivers/video/omap2/dss/hdmi.h
++++ b/drivers/video/omap2/dss/hdmi.h
+@@ -80,6 +80,7 @@
+ #define HDMI_TXPHY_DIGITAL_CTRL			0x4
+ #define HDMI_TXPHY_POWER_CTRL			0x8
+ #define HDMI_TXPHY_PAD_CFG_CTRL			0xC
++#define HDMI_TXPHY_BIST_CONTROL			0x1C
+ 
+ enum hdmi_pll_pwr {
+ 	HDMI_PLLPWRCMD_ALLOFF = 0,
+diff --git a/drivers/video/omap2/dss/hdmi_phy.c b/drivers/video/omap2/dss/hdmi_phy.c
+index 45acb99..4d9debb 100644
+--- a/drivers/video/omap2/dss/hdmi_phy.c
++++ b/drivers/video/omap2/dss/hdmi_phy.c
+@@ -12,11 +12,22 @@
+ #include <linux/err.h>
+ #include <linux/io.h>
  #include <linux/platform_device.h>
- #include <linux/pm_runtime.h>
-@@ -180,6 +181,7 @@ struct csis_drvdata {
-  * @sd: v4l2_subdev associated with CSIS device instance
-  * @index: the hardware instance index
-  * @pdev: CSIS platform device
-+ * @phy: pointer to the CSIS generic PHY
-  * @regs: mmaped I/O registers memory
-  * @supplies: CSIS regulator supplies
-  * @clock: CSIS clocks
-@@ -203,6 +205,7 @@ struct csis_state {
- 	struct v4l2_subdev sd;
- 	u8 index;
- 	struct platform_device *pdev;
-+	struct phy *phy;
- 	void __iomem *regs;
- 	struct regulator_bulk_data supplies[CSIS_NUM_SUPPLIES];
- 	struct clk *clock[NUM_CSIS_CLOCKS];
-@@ -779,8 +782,8 @@ static int s5pcsis_parse_dt(struct platform_device *pdev,
- 					"samsung,csis-wclk");
++#include <linux/slab.h>
+ #include <video/omapdss.h>
  
- 	state->num_lanes = endpoint.bus.mipi_csi2.num_data_lanes;
--
- 	of_node_put(node);
+ #include "dss.h"
+ #include "hdmi.h"
+ 
++struct hdmi_phy_features {
++	bool bist_ctrl;
++	bool calc_freqout;
++	bool ldo_voltage;
++	unsigned long dcofreq_min;	/* in KHz */
++	unsigned long max_phy;		/* in KHz */
++};
 +
- 	return 0;
++static const struct hdmi_phy_features *phy_feat;
++
+ void hdmi_phy_dump(struct hdmi_phy_data *phy, struct seq_file *s)
+ {
+ #define DUMPPHY(r) seq_printf(s, "%-35s %08x\n", #r,\
+@@ -26,6 +37,8 @@ void hdmi_phy_dump(struct hdmi_phy_data *phy, struct seq_file *s)
+ 	DUMPPHY(HDMI_TXPHY_DIGITAL_CTRL);
+ 	DUMPPHY(HDMI_TXPHY_POWER_CTRL);
+ 	DUMPPHY(HDMI_TXPHY_PAD_CFG_CTRL);
++	if (phy_feat->bist_ctrl)
++		DUMPPHY(HDMI_TXPHY_BIST_CONTROL);
  }
- #else
-@@ -829,6 +832,10 @@ static int s5pcsis_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
  
-+	state->phy = devm_phy_get(dev, "csis");
-+	if (IS_ERR(state->phy))
-+		return PTR_ERR(state->phy);
+ static irqreturn_t hdmi_irq_handler(int irq, void *data)
+@@ -64,12 +77,20 @@ int hdmi_phy_enable(struct hdmi_phy_data *phy, struct hdmi_wp_data *wp,
+ {
+ 	u16 r = 0;
+ 	u32 irqstatus;
++	u8 freqout;
+ 
+ 	hdmi_wp_clear_irqenable(wp, 0xffffffff);
+ 
+ 	irqstatus = hdmi_wp_get_irqstatus(wp);
+ 	hdmi_wp_set_irqstatus(wp, irqstatus);
+ 
++	/*
++	 * In OMAP5+, the HFBITCLK must be divided by 2 before issuing the
++	 * HDMI_PHYPWRCMD_LDOON command.
++	*/
++	if (phy_feat->bist_ctrl)
++		REG_FLD_MOD(phy->base, HDMI_TXPHY_BIST_CONTROL, 1, 11, 11);
 +
- 	mem_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	state->regs = devm_ioremap_resource(dev, mem_res);
- 	if (IS_ERR(state->regs))
-@@ -922,7 +929,7 @@ static int s5pcsis_pm_suspend(struct device *dev, bool runtime)
- 	mutex_lock(&state->lock);
- 	if (state->flags & ST_POWERED) {
- 		s5pcsis_stop_stream(state);
--		ret = s5p_csis_phy_enable(state->index, false);
-+		ret = phy_power_off(state->phy);
- 		if (ret)
- 			goto unlock;
- 		ret = regulator_bulk_disable(CSIS_NUM_SUPPLIES,
-@@ -958,7 +965,7 @@ static int s5pcsis_pm_resume(struct device *dev, bool runtime)
- 					    state->supplies);
- 		if (ret)
- 			goto unlock;
--		ret = s5p_csis_phy_enable(state->index, true);
-+		ret = phy_power_on(state->phy);
- 		if (!ret) {
- 			state->flags |= ST_POWERED;
- 		} else {
-diff --git a/include/linux/platform_data/mipi-csis.h b/include/linux/platform_data/mipi-csis.h
-index bf34e17..c2fd902 100644
---- a/include/linux/platform_data/mipi-csis.h
-+++ b/include/linux/platform_data/mipi-csis.h
-@@ -25,13 +25,4 @@ struct s5p_platform_mipi_csis {
- 	u8 hs_settle;
- };
+ 	r = hdmi_wp_set_phy_pwr(wp, HDMI_PHYPWRCMD_LDOON);
+ 	if (r)
+ 		return r;
+@@ -80,17 +101,33 @@ int hdmi_phy_enable(struct hdmi_phy_data *phy, struct hdmi_wp_data *wp,
+ 	 */
+ 	hdmi_read_reg(phy->base, HDMI_TXPHY_TX_CTRL);
  
--/**
-- * s5p_csis_phy_enable - global MIPI-CSI receiver D-PHY control
-- * @id:     MIPI-CSIS harware instance index (0...1)
-- * @on:     true to enable D-PHY and deassert its reset
-- *          false to disable D-PHY
-- * @return: 0 on success, or negative error code on failure
-- */
--int s5p_csis_phy_enable(int id, bool on);
--
- #endif /* __PLAT_SAMSUNG_MIPI_CSIS_H_ */
++	if (phy_feat->calc_freqout) {
++		/* DCOCLK/10 is pixel clock, compare pclk with DCOCLK_MIN/10 */
++		u32 dco_min = phy_feat->dcofreq_min / 10;
++		u32 pclk = cfg->timings.pixel_clock;
++
++		if (pclk < dco_min)
++			freqout = 0;
++		else if ((pclk >= dco_min) && (pclk < phy_feat->max_phy))
++			freqout = 1;
++		else
++			freqout = 2;
++	} else {
++		freqout = 1;
++	}
++
+ 	/*
+ 	 * Write to phy address 0 to configure the clock
+ 	 * use HFBITCLK write HDMI_TXPHY_TX_CONTROL_FREQOUT field
+ 	 */
+-	REG_FLD_MOD(phy->base, HDMI_TXPHY_TX_CTRL, 0x1, 31, 30);
++	REG_FLD_MOD(phy->base, HDMI_TXPHY_TX_CTRL, freqout, 31, 30);
+ 
+ 	/* Write to phy address 1 to start HDMI line (TXVALID and TMDSCLKEN) */
+ 	hdmi_write_reg(phy->base, HDMI_TXPHY_DIGITAL_CTRL, 0xF0000000);
+ 
+ 	/* Setup max LDO voltage */
+-	REG_FLD_MOD(phy->base, HDMI_TXPHY_POWER_CTRL, 0xB, 3, 0);
++	if (phy_feat->ldo_voltage)
++		REG_FLD_MOD(phy->base, HDMI_TXPHY_POWER_CTRL, 0xB, 3, 0);
+ 
+ 	/* Write to phy address 3 to change the polarity control */
+ 	REG_FLD_MOD(phy->base, HDMI_TXPHY_PAD_CFG_CTRL, 0x1, 27, 27);
+@@ -119,11 +156,64 @@ void hdmi_phy_disable(struct hdmi_phy_data *phy, struct hdmi_wp_data *wp)
+ #define PHY_OFFSET	0x300
+ #define PHY_SIZE	0x100
+ 
++static const struct hdmi_phy_features omap44xx_phy_feats = {
++	.bist_ctrl	=	false,
++	.calc_freqout	=	false,
++	.ldo_voltage	=	true,
++	.dcofreq_min	=	500000,
++	.max_phy	=	185675,
++};
++
++static const struct hdmi_phy_features omap54xx_phy_feats = {
++	.bist_ctrl	=	true,
++	.calc_freqout	=	true,
++	.ldo_voltage	=	false,
++	.dcofreq_min	=	750000,
++	.max_phy	=	186000,
++};
++
++static int hdmi_phy_init_features(struct platform_device *pdev)
++{
++	struct hdmi_phy_features *dst;
++	const struct hdmi_phy_features *src;
++
++	dst = devm_kzalloc(&pdev->dev, sizeof(*dst), GFP_KERNEL);
++	if (!dst) {
++		dev_err(&pdev->dev, "Failed to allocate HDMI PHY Features\n");
++		return -ENOMEM;
++	}
++
++	switch (omapdss_get_version()) {
++	case OMAPDSS_VER_OMAP4430_ES1:
++	case OMAPDSS_VER_OMAP4430_ES2:
++	case OMAPDSS_VER_OMAP4:
++		src = &omap44xx_phy_feats;
++		break;
++
++	case OMAPDSS_VER_OMAP5:
++		src = &omap54xx_phy_feats;
++		break;
++
++	default:
++		return -ENODEV;
++	}
++
++	memcpy(dst, src, sizeof(*dst));
++	phy_feat = dst;
++
++	return 0;
++}
++
+ int hdmi_phy_init(struct platform_device *pdev, struct hdmi_phy_data *phy)
+ {
++	int r;
+ 	struct resource *res;
+ 	struct resource temp_res;
+ 
++	r = hdmi_phy_init_features(pdev);
++	if (r)
++		return r;
++
+ 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "hdmi_txphy");
+ 	if (!res) {
+ 		DSSDBG("can't get PHY mem resource by name\n");
 -- 
-1.7.10.4
+1.8.1.2
 

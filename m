@@ -1,60 +1,48 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Tue, 29 Oct 2013 16:27:44 +0000
-Subject: [PATCH v2 9/9] backlight: atmel-pwm-bl: use gpio_request_one
-Message-Id: <1383064064-4983-10-git-send-email-jhovold@gmail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 17 Oct 2013 11:38:36 +0000
+Subject: [PATCH 0/6] omapdss: hdmi: Add support for hdmi on OMAP5 and DRA7x SoCs
+Message-Id: <1382009202-18984-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382522143-32072-1-git-send-email-jhovold@gmail.com>
- <1383064064-4983-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1383064064-4983-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Use devm_gpio_request_one rather than requesting and setting direction
-in two calls.
+The HDMI IP on OMAP5/DRA7xx has very similar wrapper, PLL and PHY sub blocks
+found in OMAP4 DSS. However, the HDMI core IP(which implements the HDMI
+protocol) is completely new.
 
-Acked-by: Jingoo Han <jg1.han@samsung.com>
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
----
- drivers/video/backlight/atmel-pwm-bl.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+Create a library for configuring the new HDMI core IP, make minor modifications
+in PLL and PHY. And finally, add a hdmi5 driver. This driver can eventually be
+merged with the hdmi4 driver such that both of them use the same driver, we
+would need to create core IP ops for that, we've left that for later.
 
-diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
-index bd1ed34..03b5f3b 100644
---- a/drivers/video/backlight/atmel-pwm-bl.c
-+++ b/drivers/video/backlight/atmel-pwm-bl.c
-@@ -124,6 +124,7 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
- 	const struct atmel_pwm_bl_platform_data *pdata;
- 	struct backlight_device *bldev;
- 	struct atmel_pwm_bl *pwmbl;
-+	int flags;
- 	int retval;
- 
- 	pdata = dev_get_platdata(&pdev->dev);
-@@ -149,14 +150,14 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
- 		return retval;
- 
- 	if (gpio_is_valid(pwmbl->gpio_on)) {
--		retval = devm_gpio_request(&pdev->dev, pwmbl->gpio_on,
--					"gpio_atmel_pwm_bl");
--		if (retval)
--			goto err_free_pwm;
--
- 		/* Turn display off by default. */
--		retval = gpio_direction_output(pwmbl->gpio_on,
--				0 ^ pdata->on_active_low);
-+		if (pdata->on_active_low)
-+			flags = GPIOF_OUT_INIT_HIGH;
-+		else
-+			flags = GPIOF_OUT_INIT_LOW;
-+
-+		retval = devm_gpio_request_one(&pdev->dev, pwmbl->gpio_on,
-+						flags, "gpio_atmel_pwm_bl");
- 		if (retval)
- 			goto err_free_pwm;
- 	}
+Archit Taneja (6):
+  omapdss: hdmi: support larger register offsets for OMAP5 HDMI core
+  omapdss: hdmi: Add initial OMAP5/DRA7x HDMI core IP library
+  omapdss: hdmi phy: Incorporate changes for OMAP5/DRA7x
+  omapdss: hdmi pll: Incorporate changes for OMAP5/DRA7x
+  omapdss: hdmi: add OMAP5/DRA7x hdmi driver
+  omapdss: hdmi4/hdmi5: set regulator voltage to required level
+
+ drivers/video/omap2/dss/Kconfig      |  10 +
+ drivers/video/omap2/dss/Makefile     |   2 +
+ drivers/video/omap2/dss/core.c       |   6 +
+ drivers/video/omap2/dss/dss.h        |   3 +
+ drivers/video/omap2/dss/hdmi.h       |   7 +-
+ drivers/video/omap2/dss/hdmi4.c      |   5 +
+ drivers/video/omap2/dss/hdmi5.c      | 704 ++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/hdmi5_core.c | 812 +++++++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/hdmi5_core.h | 298 +++++++++++++
+ drivers/video/omap2/dss/hdmi_phy.c   |  94 +++-
+ drivers/video/omap2/dss/hdmi_pll.c   |  74 +++-
+ drivers/video/omap2/dss/hdmi_wp.c    |   2 +-
+ 12 files changed, 2008 insertions(+), 9 deletions(-)
+ create mode 100644 drivers/video/omap2/dss/hdmi5.c
+ create mode 100644 drivers/video/omap2/dss/hdmi5_core.c
+ create mode 100644 drivers/video/omap2/dss/hdmi5_core.h
+
 -- 
-1.8.4.2
+1.8.1.2
 

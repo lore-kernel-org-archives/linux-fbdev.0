@@ -1,32 +1,72 @@
-From: Roel Kluin <roel.kluin@gmail.com>
-Date: Sun, 13 Oct 2013 22:44:33 +0000
-Subject: [PATCH] set data enable logic level to low
-Message-Id: <1381704273-31540-1-git-send-email-roel.kluin@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 18 Oct 2013 08:01:35 +0000
+Subject: Re: [PATCH] set data enable logic level to low
+Message-Id: <5260EADF.3020804@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="GSmfgdwrHODDvlJ1e6GXXn8rs1hwK1Vuf"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Roel Kluin <roel.kluin@gmail.com>
+References: <1381704273-31540-1-git-send-email-roel.kluin@gmail.com>
+In-Reply-To: <1381704273-31540-1-git-send-email-roel.kluin@gmail.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- drivers/video/omap2/dss/display.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+--GSmfgdwrHODDvlJ1e6GXXn8rs1hwK1Vuf
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
-index fafe7c9..669a81f 100644
---- a/drivers/video/omap2/dss/display.c
-+++ b/drivers/video/omap2/dss/display.c
-@@ -266,7 +266,7 @@ void videomode_to_omap_video_timings(const struct videomode *vm,
- 		OMAPDSS_SIG_ACTIVE_LOW;
- 	ovt->de_level = vm->flags & DISPLAY_FLAGS_DE_HIGH ?
- 		OMAPDSS_SIG_ACTIVE_HIGH :
--		OMAPDSS_SIG_ACTIVE_HIGH;
-+		OMAPDSS_SIG_ACTIVE_LOW;
- 	ovt->data_pclk_edge = vm->flags & DISPLAY_FLAGS_PIXDATA_POSEDGE ?
- 		OMAPDSS_DRIVE_SIG_RISING_EDGE :
- 		OMAPDSS_DRIVE_SIG_FALLING_EDGE;
--- 
-1.8.1.2
+On 14/10/13 01:44, Roel Kluin wrote:
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+>  drivers/video/omap2/dss/display.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/ds=
+s/display.c
+> index fafe7c9..669a81f 100644
+> --- a/drivers/video/omap2/dss/display.c
+> +++ b/drivers/video/omap2/dss/display.c
+> @@ -266,7 +266,7 @@ void videomode_to_omap_video_timings(const struct v=
+ideomode *vm,
+>  		OMAPDSS_SIG_ACTIVE_LOW;
+>  	ovt->de_level =3D vm->flags & DISPLAY_FLAGS_DE_HIGH ?
+>  		OMAPDSS_SIG_ACTIVE_HIGH :
+> -		OMAPDSS_SIG_ACTIVE_HIGH;
+> +		OMAPDSS_SIG_ACTIVE_LOW;
+>  	ovt->data_pclk_edge =3D vm->flags & DISPLAY_FLAGS_PIXDATA_POSEDGE ?
+>  		OMAPDSS_DRIVE_SIG_RISING_EDGE :
+>  		OMAPDSS_DRIVE_SIG_FALLING_EDGE;
+>=20
 
+Thanks. Next time, please write a patch description and prefix patch
+subject with appropriate string. In this case "OMAPDSS: ..." would be fin=
+e.
+
+ Tomi
+
+
+
+--GSmfgdwrHODDvlJ1e6GXXn8rs1hwK1Vuf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSYOrfAAoJEPo9qoy8lh71+i4QALD0NIffphcNESvrrpK4LxA9
+dnk2oTNT/Wx75sjb1gJzBC4ML69M/BkjlGrViOJAX+Klm0nJJMsraap9mjSrkDCj
+humNB9kXHbFmqihiQ1PVFwXJ3QBh84XXCkXo0nT4pAPnFj2CmKP4Ej1Jps3E46vd
+93i1KzIhaKGE90V1Fo8w1b8OShymTHXU/ySFOGjhfuk6z9bneY3BwPAOnwmrz4qe
+W6Pf9uZMgJYmZ6y8dOedn5rp8A5bx3E/zG6Rq/mAigXKE0fVaIJDPtEFgkif5lXd
+0sx3CjMHYZP0pezkYcEu1tNvV0fvxVQ398X/EHwCbvt0qE1Oj1+N+quzGYfC75Bv
+gt7YewAS0NBW+RacMHMe/0FvvAau9rVAXycoI/7+eTzJHGrU5pxAbxdwE2jcUwE+
+v5pm/0sBY611HjgG9MBwJOLz62/liSBskZsMUHWzsV0M9+02ne7I8o+HrVgAlxv0
+CGv1/AGTYKuli6aFog0sCbMF/qbqOwJUsHONu4IZRNVgl3cV6rh8dvPBJGHOhgwE
+zPZYfDFk4Mo/uDrLgyIOnmkvUzqvHVUsK7ARaBvS/keOqRsSK5dfPbubC+9OyWwI
+O8kweGQxlQTnoMCe+tfw9VojJ2haK/y7trfZkCPE25da8cStEsiNFTAVc/ETQM1h
+aZGOOg+/L7EUgutiCd6Z
+=jZ7y
+-----END PGP SIGNATURE-----
+
+--GSmfgdwrHODDvlJ1e6GXXn8rs1hwK1Vuf--

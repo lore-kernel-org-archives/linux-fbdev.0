@@ -1,84 +1,112 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 09 Oct 2013 09:05:58 +0000
-Subject: Re: [PATCH v3] simplefb: print some info about the registered fb
-Message-Id: <52551C76.8050600@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="LwwfGFORCf97aihrbJ4GhvvQ64ieBOnV0"
+From: Denis Carikli <denis@eukrea.com>
+Date: Fri, 18 Oct 2013 15:04:23 +0000
+Subject: [PATCH 02/11] video: imxfb: Introduce regulator support.
+Message-Id: <1382108672-23269-2-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAMuHMdXDAA3PgbgNrccStUZGByDXuSsMG_yJMwwUWXwMvyOfsA@mail.gmail.com> <1378562915-893-1-git-send-email-teg@jklm.no>
-In-Reply-To: <1378562915-893-1-git-send-email-teg@jklm.no>
-To: Tom Gundersen <teg@jklm.no>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, plagnioj@jcrosoft.com, David Herrmann <dh.herrmann@gmail.com>
-
---LwwfGFORCf97aihrbJ4GhvvQ64ieBOnV0
-Content-Type: text/plain; charset=ISO-8859-1
+References: <1382108672-23269-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1382108672-23269-1-git-send-email-denis@eukrea.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-On 07/09/13 17:08, Tom Gundersen wrote:
-> This is similar to the output printed by efifb.
->=20
-> Signed-off-by: Tom Gundersen <teg@jklm.no>
-> Acked-by: Stephen Warren <swarren@wwwdotorg.org>
-> Cc: David Herrmann <dh.herrmann@gmail.com>
-> ---
-> v2: also print smem_len, as requested by David
-> v3: don't cast, as requested by Geert
->=20
->  drivers/video/simplefb.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
->=20
-> diff --git a/drivers/video/simplefb.c b/drivers/video/simplefb.c
-> index a29f1c4..50cbceb 100644
-> --- a/drivers/video/simplefb.c
-> +++ b/drivers/video/simplefb.c
-> @@ -220,6 +220,14 @@ static int simplefb_probe(struct platform_device *=
-pdev)
->  	}
->  	info->pseudo_palette =3D (void *)(info + 1);
-> =20
-> +	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%=
-p\n",
-> +			     info->fix.smem_start, info->fix.smem_len,
-> +			     info->screen_base);
-> +	dev_info(&pdev->dev, "format=3D%s, mode=3D%dx%dx%d, linelength=3D%d\n=
-",
-> +			     params.format->name,
-> +			     info->var.xres, info->var.yres,
-> +			     info->var.bits_per_pixel, info->fix.line_length);
-> +
->  	ret =3D register_framebuffer(info);
->  	if (ret < 0) {
->  		dev_err(&pdev->dev, "Unable to register simplefb: %d\n", ret);
->=20
+This commit is based on the following commit by Fabio Estevam:
+  4344429 video: mxsfb: Introduce regulator support
 
-Thanks, queued for 3.13.
+Cc: Fabio Estevam <fabio.estevam@freescale.com>
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Eric B=C3=A9nard <eric@eukrea.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
+---
+ drivers/video/imxfb.c |   27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
- Tomi
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index 44ee678..4dd7678 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -28,6 +28,7 @@
+ #include <linux/cpufreq.h>
+ #include <linux/clk.h>
+ #include <linux/platform_device.h>
++#include <linux/regulator/consumer.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/io.h>
+ #include <linux/math64.h>
+@@ -145,6 +146,7 @@ struct imxfb_info {
+ 	struct clk		*clk_ipg;
+ 	struct clk		*clk_ahb;
+ 	struct clk		*clk_per;
++	struct regulator	*reg_lcd;
+ 	enum imxfb_type		devtype;
+ 	bool			enabled;
+=20
+@@ -563,12 +565,23 @@ static void imxfb_exit_backlight(struct imxfb_info *f=
+bi)
+=20
+ static void imxfb_enable_controller(struct imxfb_info *fbi)
+ {
++	int ret;
+=20
+ 	if (fbi->enabled)
+ 		return;
+=20
+ 	pr_debug("Enabling LCD controller\n");
+=20
++	if (fbi->reg_lcd) {
++		ret =3D regulator_enable(fbi->reg_lcd);
++		if (ret) {
++			dev_err(&fbi->pdev->dev,
++				"lcd regulator enable failed with error: %d\n",
++				ret);
++			return;
++		}
++	}
++
+ 	writel(fbi->screen_dma, fbi->regs + LCDC_SSA);
+=20
+ 	/* panning offset 0 (0 pixel offset)        */
+@@ -597,6 +610,8 @@ static void imxfb_enable_controller(struct imxfb_info *=
+fbi)
+=20
+ static void imxfb_disable_controller(struct imxfb_info *fbi)
+ {
++	int ret;
++
+ 	if (!fbi->enabled)
+ 		return;
+=20
+@@ -613,6 +628,14 @@ static void imxfb_disable_controller(struct imxfb_info=
+ *fbi)
+ 	fbi->enabled =3D false;
+=20
+ 	writel(0, fbi->regs + LCDC_RMCR);
++
++	if (fbi->reg_lcd) {
++		ret =3D regulator_disable(fbi->reg_lcd);
++		if (ret)
++			dev_err(&fbi->pdev->dev,
++				"lcd regulator disable failed with error: %d\n",
++				ret);
++	}
+ }
+=20
+ static int imxfb_blank(int blank, struct fb_info *info)
+@@ -1020,6 +1043,10 @@ static int imxfb_probe(struct platform_device *pdev)
+ 		goto failed_register;
+ 	}
+=20
++	fbi->reg_lcd =3D devm_regulator_get(&pdev->dev, "lcd");
++	if (IS_ERR(fbi->reg_lcd))
++		fbi->reg_lcd =3D NULL;
++
+ 	imxfb_enable_controller(fbi);
+ 	fbi->pdev =3D pdev;
+ #ifdef PWMR_BACKLIGHT_AVAILABLE
+--=20
+1.7.9.5
 
-
-
---LwwfGFORCf97aihrbJ4GhvvQ64ieBOnV0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSVRx2AAoJEPo9qoy8lh71sHEQAJgdvb9qb6JVfM3sTZDtGA9a
-Jz7SlA3qlh2IGLtMQ7PJfOM+S280azNHh2iMWBt/R+1/s/vc7xutlULhwmwgiJgT
-622enutABR3dix+uCdbEeltTD2amtZTaFaX2nj7AWzp1dOyZxU5s+trprbx4NM0+
-LdREWDl+hG9IRFVNlQDJmmLCPzVxOKT7+Ui9BXf4MrcRSotRFYGW+wqrphn3+Wqw
-Z4eOqhcJZpMntVWhHmwvQuJ+bmXHYg0ZfrQ06My0z6RqM1Rf/Vr2VAwkCXxHlaqY
-GjkQjfIUK4DHpBLsEEuZBIQt3UH8RdHBbZR+P/+EDbMfn3bJCAgj5gFN/e7B5sfm
-dU0qWACxw5fT0YKOJr6Q1KpjXIzDEconuhLE+qwRc1LJJSasCB/me3RMg6Ap+zax
-pF6eArUUjIZgDRkddCDOLfCYQZkCZ6mFqxKNGlqePKkbQjyCI8QpDb1ajfMLjNZL
-2X9QY5GGBvUiJ14ygBJS+kxeokoZO8L5j4AhVtf32vOyPa+vrn8DN14OZr6Gk0sG
-R4qkB4bkw0y1Fi/hwpqV4BAjPQP1sv1oCy8aDLAhZPBiEHhS5Mb5eKRbu04kYa9b
-ZNbZ7U3xxh/7ZKckxwsdo+Fujl/Fzk3MBJLrP2YRfm3pAs7ryzWU/vLTyswU2UBD
-pIdtnMlIVXG+V4uTXOYz
-=a1Tu
------END PGP SIGNATURE-----
-
---LwwfGFORCf97aihrbJ4GhvvQ64ieBOnV0--

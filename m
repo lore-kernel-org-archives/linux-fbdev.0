@@ -1,121 +1,72 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Sat, 19 Oct 2013 10:45:55 +0000
-Subject: Re: [PATCH 02/11] video: imxfb: Introduce regulator support.
-Message-Id: <20131019104555.GI18477@ns203013.ovh.net>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Fri, 18 Oct 2013 07:46:24 +0000
+Subject: Re: [PATCH v2] pwm-backlight: allow for non-increasing brightness levels
+Message-Id: <20131018074623.GA22291@ulmo.nvidia.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="oyUTqETQ0mS9luUI"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382108672-23269-1-git-send-email-denis@eukrea.com>
- <1382108672-23269-2-git-send-email-denis@eukrea.com>
-In-Reply-To: <1382108672-23269-2-git-send-email-denis@eukrea.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+References: <1379869196-19377-1-git-send-email-mikedunn@newsguy.com>
+In-Reply-To: <1379869196-19377-1-git-send-email-mikedunn@newsguy.com>
+To: Mike Dunn <mikedunn@newsguy.com>
+Cc: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>, Marek Vasut <marex@denx.de>
+
+
+--oyUTqETQ0mS9luUI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
 
-On 17:04 Fri 18 Oct     , Denis Carikli wrote:
-> This commit is based on the following commit by Fabio Estevam:
->   4344429 video: mxsfb: Introduce regulator support
+On Sun, Sep 22, 2013 at 09:59:56AM -0700, Mike Dunn wrote:
+> Currently the driver assumes that the values specified in the
+> brightness-levels device tree property increase as they are parsed from
+> left to right.  But boards that invert the signal between the PWM output
+> and the backlight will need to specify decreasing brightness-levels.
+> This patch removes the assumption that the last element of the array is
+> the maximum value, and instead searches the array for the maximum value
+> and uses that in the duty cycle calculation.
 >=20
-> Cc: Fabio Estevam <fabio.estevam@freescale.com>
-> Cc: Sascha Hauer <kernel@pengutronix.de>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: Eric B=E9nard <eric@eukrea.com>
-> Signed-off-by: Denis Carikli <denis@eukrea.com>
+> Signed-off-by: Mike Dunn <mikedunn@newsguy.com>
 > ---
->  drivers/video/imxfb.c |   27 +++++++++++++++++++++++++++
->  1 file changed, 27 insertions(+)
+> Changelog:
+> v2:=20
+> - commit message reworded; correct line wrap used
+> - 'max_level' variable renamed to 'scale'
+> - loop counter variable type changed to unsigned int
+> - value held in scale changed from array index to actual maximum level
+> - blank lines added around loop for readability
 >=20
-> diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-> index 44ee678..4dd7678 100644
-> --- a/drivers/video/imxfb.c
-> +++ b/drivers/video/imxfb.c
-> @@ -28,6 +28,7 @@
->  #include <linux/cpufreq.h>
->  #include <linux/clk.h>
->  #include <linux/platform_device.h>
-> +#include <linux/regulator/consumer.h>
->  #include <linux/dma-mapping.h>
->  #include <linux/io.h>
->  #include <linux/math64.h>
-> @@ -145,6 +146,7 @@ struct imxfb_info {
->  	struct clk		*clk_ipg;
->  	struct clk		*clk_ahb;
->  	struct clk		*clk_per;
-> +	struct regulator	*reg_lcd;
->  	enum imxfb_type		devtype;
->  	bool			enabled;
-> =20
-> @@ -563,12 +565,23 @@ static void imxfb_exit_backlight(struct imxfb_info =
-*fbi)
-> =20
->  static void imxfb_enable_controller(struct imxfb_info *fbi)
->  {
-> +	int ret;
-> =20
->  	if (fbi->enabled)
->  		return;
-> =20
->  	pr_debug("Enabling LCD controller\n");
-> =20
-> +	if (fbi->reg_lcd) {
-> +		ret =3D regulator_enable(fbi->reg_lcd);
-> +		if (ret) {
-> +			dev_err(&fbi->pdev->dev,
-> +				"lcd regulator enable failed with error: %d\n",
-> +				ret);
-> +			return;
-> +		}
-> +	}
-> +
->  	writel(fbi->screen_dma, fbi->regs + LCDC_SSA);
-> =20
->  	/* panning offset 0 (0 pixel offset)        */
-> @@ -597,6 +610,8 @@ static void imxfb_enable_controller(struct imxfb_info=
- *fbi)
-> =20
->  static void imxfb_disable_controller(struct imxfb_info *fbi)
->  {
-> +	int ret;
-> +
->  	if (!fbi->enabled)
->  		return;
-> =20
-> @@ -613,6 +628,14 @@ static void imxfb_disable_controller(struct imxfb_in=
-fo *fbi)
->  	fbi->enabled =3D false;
-> =20
->  	writel(0, fbi->regs + LCDC_RMCR);
-> +
-> +	if (fbi->reg_lcd) {
-> +		ret =3D regulator_disable(fbi->reg_lcd);
-> +		if (ret)
-> +			dev_err(&fbi->pdev->dev,
-> +				"lcd regulator disable failed with error: %d\n",
-> +				ret);
-> +	}
->  }
-> =20
->  static int imxfb_blank(int blank, struct fb_info *info)
-> @@ -1020,6 +1043,10 @@ static int imxfb_probe(struct platform_device *pde=
-v)
->  		goto failed_register;
->  	}
-> =20
-> +	fbi->reg_lcd =3D devm_regulator_get(&pdev->dev, "lcd");
-put a warning at list
+>  drivers/video/backlight/pwm_bl.c | 12 ++++++++++--
+>  1 file changed, 10 insertions(+), 2 deletions(-)
 
-otherwise looks ok
+Hey Mike,
 
-Best Regards,
-J.
-> +	if (IS_ERR(fbi->reg_lcd))
-> +		fbi->reg_lcd =3D NULL;
-> +
->  	imxfb_enable_controller(fbi);
->  	fbi->pdev =3D pdev;
->  #ifdef PWMR_BACKLIGHT_AVAILABLE
-> --=20
-> 1.7.9.5
->=20
+I've pushed a slightly different version of this patch which gets rid of
+the intermediate max variable and uses the new scale field exclusively
+to pass the same information around. Could you look at the patch from my
+for-next branch in the PWM tree and see whether that still works for the
+specific hardware that you need this for?
+
+Thierry
+
+--oyUTqETQ0mS9luUI
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSYOdPAAoJEN0jrNd/PrOhtoAP+wVufJIkeGn3gbRZaICS/Rtw
+3sWWkU7djqHezdjQjpivLGkUVZsYW7YOR28OZmhVzSwLzMPZS6GMSgfvVGz7lP6A
+VFFp8ywdGjxqndZItHVh0xahujAvcbWz7xcqZnFcHGwobT6nL5gTBgZNf5yqBubM
+H/OKuLfMMepvWekFi1XFoeMGdxXmwwE+m6RQO4LrpmACx22wUsMfCMULMocSlnjg
+IqjUq3SRHDzwI+QULX4MCQ1knCoMK8bzJDdJx2YskLeBSp0soL6+5k8dHh5ZNIVR
+550xPqnlctwbyHszkW01zlMUJrmZl2CbxBgfXqej8XyQdribedXLAM50sbekoBg8
+PxhuDq4nskIEnYzbStR+XPqgt7aB+KOfuhPVAluKp2kpl7BtBxiUSR3KZv5fcBes
+dL1joPGS6TIKXx93sGJkn0nQ8KzfyGYLidWjRWNCwhB3PCBwFzeTJVQ4x7ZvHwjW
++RYNQpSdjRZJ39vM2ZhAHsWzcjmgM1OJn9kBP2WaL2mC44tDW/5m+i1yKQqWBFuV
+gN0mwloF+G8+98U+cJUXQQYyKdMKkFhLko+d4jkOVEKJZCF7rZl/Aq0zv3PW0DJt
+WUGKE66zUxgw8vc7ikIX1owb/sbz1/UbIKe7G077posIUtHOjkhC17s9iYSoSr4/
+Cz/lAVgx1FL8Uo/NtZBu
+=ql9M
+-----END PGP SIGNATURE-----
+
+--oyUTqETQ0mS9luUI--

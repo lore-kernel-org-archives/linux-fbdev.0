@@ -1,139 +1,121 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Thu, 17 Oct 2013 12:55:22 +0000
+From: Sylwester Nawrocki <sylvester.nawrocki@gmail.com>
+Date: Sun, 20 Oct 2013 19:29:10 +0000
 Subject: Re: [RFR 2/2] drm/panel: Add simple panel support
-Message-Id: <20131017125521.GH10993@ulmo.nvidia.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ZPDwMsyfds7q4mrK"
+Message-Id: <52642F06.8010102@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381947912-11741-1-git-send-email-treding@nvidia.com>
- <3610893.n6xJ6DUJ0E@avalon>
- <20131017120646.GE10993@ulmo.nvidia.com>
- <2414405.blLIekLlE8@avalon>
-In-Reply-To: <2414405.blLIekLlE8@avalon>
-To: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
-Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Vetter <daniel.vetter-/w4YWyX8dFk@public.gmane.org>
+References: <1381947912-11741-1-git-send-email-treding@nvidia.com> <4885946.7Zgjf9zNXx@avalon> <525FD12D.3000200@ti.com> <3768216.eiA2v5KI6a@avalon> <525FD8DD.3090509@ti.com>
+In-Reply-To: <525FD8DD.3090509-l0cyMroinI0@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <Pawel.Moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org" <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Dave Airlie <airlied-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
+On 10/17/2013 02:32 PM, Tomi Valkeinen wrote:
+> On 17/10/13 15:17, Laurent Pinchart wrote:
+>> On Thursday 17 October 2013 14:59:41 Tomi Valkeinen wrote:
+>>> On 17/10/13 14:51, Laurent Pinchart wrote:
+>>>>> I'm not sure if there's a specific need for the port or endpoint nodes
+>>>>> in cases like the above. Even if we have common properties describing
+>>>>> the endpoint, I guess they could just be in the parent node.
+>>>>>
+>>>>> panel {
+>>>>> 	remote =<&dc>;
+>>>>> 	common-video-property =<asd>;
+>>>>> };
+>>>>>
+>>>>> The above would imply one port and one endpoint. Would that work? If we
+>>>>> had a function like parse_endpoint(node), we could just point it to
+>>>>> either a real endpoint node, or to the device's node.
+>>>>
+>>>> You reference the display controller here, not a specific display
+>>>> controller output. Don't most display controllers have several outputs ?
+>>>
+>>> Sure. Then the display controller could have more verbose description.
+>>> But the panel could still have what I wrote above, except the 'remote'
+>>> property would point to a real endpoint node inside the dispc node, not
+>>> to the dispc node.
+>>>
+>>> This would, of course, need some extra code to handle the different
+>>> cases, but just from DT point of view, I think all the relevant
+>>> information is there.
+>>
+>> There's many ways to describe the same information in DT. While we could have
+>> DT bindings that use different descriptions for different devices and still
+>> support all of them in our code, why should we opt for that option that will
+>> make the implementation much more complex when we can describe connections in
+>> a simple and generic way ?
+>
+> My suggestion was simple and generic. I'm not proposing per-device
+> custom bindings.
+>
+> My point was, if we can describe the connections as I described above,
+> which to me sounds possible, we can simplify the panel DT data for 99.9%
+> of the cases.
+>
+> To me, the first of these looks much nicer:
+>
+> panel {
+> 	remote =<&remote-endpoint>;
+> 	common-video-property =<asd>;
+> };
+>
+> panel {
+> 	port {
+> 		endpoint {
+> 			remote =<&remote-endpoint>;
+> 			common-video-property =<asd>;
+> 		};
+> 	};
+> };
+>
+> If that can be supported in the SW by adding complexity to a few
+> functions, and it covers practically all the panels, isn't it worth it?
+>
+> Note that I have not tried this, so I don't know if there are issues.
+> It's just a thought. Even if there's need for a endpoint node, perhaps
+> the port node can be made optional.
 
---ZPDwMsyfds7q4mrK
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Each endpoint node was originally supposed to contain the port configuration
+properties specific to a single remote device. So there would be more than
+one endpoint sub-mode of a port node only if, e.g. a display controller 
+could
+output data through a single port to more than one panel (not necessarily
+simultaneously).
 
-On Thu, Oct 17, 2013 at 02:23:32PM +0200, Laurent Pinchart wrote:
-> Hi Thierry,
->=20
-> On Thursday 17 October 2013 14:06:47 Thierry Reding wrote:
-> > On Thu, Oct 17, 2013 at 01:15:22PM +0200, Laurent Pinchart wrote:
-> > > On Thursday 17 October 2013 13:05:18 Thierry Reding wrote:
-> > > > On Thu, Oct 17, 2013 at 01:22:21PM +0300, Tomi Valkeinen wrote:
-> > > > > On 17/10/13 11:53, Thierry Reding wrote:
-> > > > > > I keep wondering why we absolutely must have compatibility betw=
-een
-> > > > > > CDF and this simple panel binding. DT content is supposed to co=
-ncern
-> > > > > > itself with the description of hardware only. What about the
-> > > > > > following isn't an accurate description of the panel hardware?
-> > > > > >=20
-> > > > > > 	panel: panel {
-> > > > > > 		compatible =3D "cptt,claa101wb01";
-> > > > > > 	=09
-> > > > > > 		power-supply =3D <&vdd_pnl_reg>;
-> > > > > > 		enable-gpios =3D <&gpio 90 0>;
-> > > > > > 	=09
-> > > > > > 		backlight =3D <&backlight>;
-> > > > > > 	};
-> > > > > > =09
-> > > > > > 	dsi-controller {
-> > > > > > 		panel =3D <&panel>;
-> > > > > > 	};
-> > > > >=20
-> > > > > That's quite similar to how my current out-of-mainline OMAP DSS DT
-> > > > > bindings work. The difference is that I have a reference from the
-> > > > > panel node to the video source (dsi-controller), instead of the o=
-ther
-> > > > > way around. I just find it more natural. It works the same way as,
-> > > > > say, regulators, gpios, etc.
-> > > >=20
-> > > > I suppose that depends on the way you look at it. In the above prop=
-osal
-> > > > I consider the output (DSI controller) to use the panel as a resour=
-ce
-> > > > that provides a certain set of services (query mode timings, provid=
-e a
-> > > > way to enable or disable the panel). Similarly the panel uses the
-> > > > backlight as a resource that provides a certain set of services (su=
-ch as
-> > > > changing the brightness).
-> > > >=20
-> > > > The above also follows the natural order of control. The panel has =
-no
-> > > > way to control the DSI output. However, it is the output that contr=
-ols
-> > > > when a panel is required and turn it on as appropriate.
-> > >=20
-> > > I'm no DSI expert, but I know enough about it to be sure that Tomi wi=
-ll
-> > > disagree. DSI panels can have complex power sequences that require the
-> > > input stream to be finely controlled (for instance it might require a
-> > > clock without video frames for some time, switch a GPIO or regulator,
-> > > send a command to the panel, and then only get video frames). For that
-> > > reason all developers I've talked to who have an in-depth knowledge of
-> > > DSI and DSI panels told me that the panel needs to control the video =
-bus,
-> > > and request the video source to start/stop the video stream.
-> >=20
-> > Oh, I'm very well aware of the various flavours of funkiness that DSI
-> > panels come in. But it's wrong to say that the panel needs to control
-> > the video bus. There's simply no way that a panel can actually do that.
-> > It is true, however, that in order to make this work in a maintainable
-> > fashion, the DSI panel *driver* may need to control the DSI bus. That's
-> > an entirely different story.
->=20
-> Sure, but I don't think that's really related to the DT bindings. We don'=
-t=20
-> have to model every electrical signal in a detailed way that matches the=
-=20
-> direction of the electrons flow :-) What we need to model is a connection=
-=20
-> between a display controller and a panel (possibly with a direction). Wha=
-t I'd=20
-> like to do is to express that link in a way that can also express more co=
-mplex=20
-> pipeline topologies. I don't want to make it overly complex, I had hoped =
-that=20
-> my DT bindings proposal would be a good approach as it's both generic and=
-=20
-> still pretty simple.
+If it is known in the display subsystems there is no use case where single
+data output (port) is being switched between (connected to) multiple data
+sinks we could probably omit the endpoint nodes in order to simplify the
+bindings a bit.
 
-I get that, and for what it's worth I do think that your proposal looks
-simple enough and if it can solve any of the problem you're facing with
-CDF, then that's great.
+We could have something like:
 
-But I don't think we should force inclusion of these properties on every
-panel, even if it doesn't use any of the graph functionality. Is there
-any problem with making them optional?
+dispc {
+	disp_port: port {
+		remote-port = <&p_port>;
+		common-video-property = <>;
+	};
+};
 
-Thierry
+panel {
+	p_port: port {
+		remote-port = <&disp_port>;
+		common-video-property = <>;
+	};
+};
 
---ZPDwMsyfds7q4mrK
-Content-Type: application/pgp-signature
+Alternatively we could say, that for only one endpoint node needed such an
+endpoint node can be omitted and the common video properties can be 
+specified
+directly in the port node.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+This would require introducing 'remote-port' phandle property, as
+remote-endpoint is supposed to point to an endpoint, not a port node.
 
-iQIcBAEBAgAGBQJSX945AAoJEN0jrNd/PrOh4RQP+wfzpN10V+BDTIaPv+E1BHxU
-p4XEw0efQl8vY90KDiw/ZVDlgtn/kLzntWnIsVIAdMseNcI8sKgSmYZu6mq0dojQ
-0BAu69wTca15ItXLiqXTgHQKtSwDk0emc5q515zoqzEaFW92DDvA2/Sfw26RUHRp
-X82lwxsckA/0ZwrV20s2PiisKT3nEoWEWCFPqOlqads5m9CVeieRUhgJhUeWdTQQ
-uwdlcwNVXk9WM+uvZtbuj1Wl4U0yiT6MbpewpjGMi4fjq5+N83QbpyQ6IZW2Uyp3
-juqMdFJphPuIFyhItnG18x4PW6e1DO5GiPS0Ok8jlqP/aHOYCdNvWJMuvBv6b67d
-DW29Vl/fFpeCV2nNcG6AIAmJ2sYbpqTiFa3xLeq1VatikDxm9vd6Zohr5/I6QPsY
-U8CwzN+gJ0HMOXSrk6OaAM4fpmCDMbbIF4bqz/uDod+guv2NGrDX4dQob26fYCi5
-SLiMb/mv1KmTPzjLDRM2BU33uPyMot7cB6M8M9egGwzrdTvhdK1wkzHlsGPuz/f6
-sKhfnMW42ub/0XY6EVCdvR5cRqa9gEhIwKUdSAIqn+RqEKJ/LNwAi9zf+W0qdTil
-zPMMBUq+3Lk5gswqU2m1BLKLPATMnymjVh5RL6RulgZl0sQoW+yCUuRBP8ikCJ3F
-IX2zj1/vAKBPVciCuBpx
-=Pyl2
------END PGP SIGNATURE-----
+Regarding the reverse link phandle, I was wondering if it shouldn't be made
+optional. We would have to think twice about such a change though, since
+making an optional property back mandatory wouldn't be possible.
 
---ZPDwMsyfds7q4mrK--
+--
+Thanks,
+Sylwester

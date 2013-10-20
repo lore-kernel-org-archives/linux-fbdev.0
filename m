@@ -1,67 +1,38 @@
 From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Sun, 20 Oct 2013 22:01:20 +0000
+Date: Sun, 20 Oct 2013 22:07:36 +0000
 Subject: Re: [RFR 2/2] drm/panel: Add simple panel support
-Message-Id: <526452B0.6080206@wwwdotorg.org>
+Message-Id: <52645428.9080607@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381947912-11741-1-git-send-email-treding@nvidia.com>	<1381947912-11741-3-git-send-email-treding@nvidia.com>	<1695169.rzbDl9PeRX@avalon> <CAPM=9tzU36cwcM0pH0J_Vgc6UOj5MHdVNDvn3wpGNuihbMqdQQ@mail.gmail.com> <525FA4B0.8060504@ti.com>
-In-Reply-To: <525FA4B0.8060504-l0cyMroinI0@public.gmane.org>
+References: <1381947912-11741-1-git-send-email-treding@nvidia.com> <525FB368.6020003@ti.com> <20131017104856.GA10993@ulmo.nvidia.com> <3592147.9IprvsogX6@avalon>
+In-Reply-To: <3592147.9IprvsogX6@avalon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Dave Airlie <airlied-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
-Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Dave Airlie <airlied-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 
-On 10/17/2013 09:49 AM, Tomi Valkeinen wrote:
-> Hi,
+On 10/17/2013 12:07 PM, Laurent Pinchart wrote:
+...
+>> As I said, anything that really needs a CDF binding to work
+>> likely isn't "simple" anymore, therefore a separate driver can
+>> easily be justified.
 > 
-> On 17/10/13 11:28, Dave Airlie wrote:
->>> 
->>> My biggest concern here is that this will not be compatible
->>> with the CDF DT bindings. They're not complete yet, but they
->>> will require connections between entities to be described in
->>> DT, in a way very similar (or actually identical) to the V4L2
->>> DT bindings, documented in 
->>> Documentation/devicetree/bindings/media/video-interfaces.txt.
->>> Could you have a look at that ? Please ignore all optional
->>> properties beside remote-endpoint, as they're V4L2 specific.
->>> 
->>> I also plan to specify video bus parameters in DT for CDF, but
->>> this hasn't been finalized yet.
->>> 
->> 
->> While I understand this, I don't see why CDF can't enhance these 
->> bindings if it has requirements > than they have without
->> disturbing the panel ones,
->> 
->> is DT really that inflexible?
->> 
->> It seems that have a simple description for basic panels like
->> Thierry wants to support, that can be enhanced for the other
->> cases in the future should suffice, I really don't like blocking
->> stuff that makes things work on the chance of something that
->> isn't upstream yet, its sets a bad precedent, its also breaks the
->> perfect is the enemy of good rule
-> 
-> Just my opinion, but yes, DT is that inflexible.
+> The system as a whole would be more complex, but the panel could be
+> the same. We can't have two drivers for the same piece of hardware
+> in the DT world, as there will be a single compatible string and no
+> way to choose between the drivers (unlike the board code world that
+> could set device names to "foo- encoder-v4l2" or "foo-encoder-drm"
+> and live happily with that ever after).
 
-I don't really agree.
+That's not true. We can certainly define two different compatible
+values for a piece of HW if we have to. We can easily control whether
+they are handled by the same or different drivers in the OS.
 
-A specific DT binding is supposed to be an ABI; something that can
-only be changed in a backwards-compatible way (perhaps only in a
-forwards-compatible way too).
-
-However, I see no reason you can't have a simple DT binding now, and
-create a more complex DT binding later. Both can exist (be defined).
-Now, because DT is an ABI, we can't remove kernel support for the old
-binding.
-
-> DT bindings are like a syscall. Once they are there, you need to
-> support them forever. That support can, of course, include some
-> kind of DT data converters or such, that try to convert old
-> bindings to new bindings at kernel boot.
-
-I don't think we need a converter for that; just leave in both the old
-and new parser/driver and treat them as different things. There's no
-reason that a new kernel must provide new features when given an old
-DT written to the old binding, and hence a new kernel can just treat
-the old DT with the old code.
+Now, we should try to avoid this, because then that means that the
+original binding wasn't fully describing the HW. However, at least in
+the case of these simple LCD panels, it's hard to see that there is
+anything more than what's already in Thierry's binding. Remember, the
+binding is a description of the HW, not any Linux-internal details of
+how e.g. a CDF or DRM subsystem is supposed to use the HW; that had
+better be embodied into the driver or subsystem code, which aren't
+ABIs, and hence can be easily modified/enhanced.

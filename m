@@ -1,63 +1,42 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Wed, 30 Oct 2013 19:35:42 +0000
-Subject: Re: [PATCHv8][ 3/6] video: Kconfig: Allow more broad selection of the imxfb framebuffer driver.
-Message-Id: <20131030193542.GY18477@ns203013.ovh.net>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Tue, 22 Oct 2013 17:26:52 +0000
+Subject: [PATCH 2/9] backlight: atmel-pwm-bl: fix gpio polarity in remove
+Message-Id: <1382462819-28576-3-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1383061860-25035-1-git-send-email-denis@eukrea.com>
- <1383061860-25035-3-git-send-email-denis@eukrea.com>
-In-Reply-To: <1383061860-25035-3-git-send-email-denis@eukrea.com>
+References: <1382462819-28576-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1382462819-28576-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>, stable@vger.kernel.org
 
-On 16:50 Tue 29 Oct     , Denis Carikli wrote:
-> Without that patch, a user can't select the imxfb driver when the i.MX25 =
-and/or
->   the i.MX27 device tree board are selected and that no boards that selec=
-ts
->   IMX_HAVE_PLATFORM_IMX_FB are compiled in.
-Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Make sure to honour gpio polarity also at remove so that the backlight
+is actually disabled on boards with active-low enable pin.
 
->=20
-> Cc: Rob Herring <rob.herring@calxeda.com>
-> Cc: Pawel Moll <pawel.moll@arm.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Stephen Warren <swarren@wwwdotorg.org>
-> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-> Cc: devicetree@vger.kernel.org
-> Cc: Sascha Hauer <kernel@pengutronix.de>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: Eric B=E9nard <eric@eukrea.com>
->=20
-> Acked-by: Shawn Guo <shawn.guo@linaro.org>
-> Signed-off-by: Denis Carikli <denis@eukrea.com>
-> ---
-> ChangeLog v7->v8:
-> - Added ACKs.
-> - Add some CC(Framebuffer maintainers and mailing lists).
-> - Improved commit message summary.
-> ---
->  drivers/video/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 4f2e1b3..22adaee 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -363,7 +363,7 @@ config FB_SA1100
-> =20
->  config FB_IMX
->  	tristate "Freescale i.MX1/21/25/27 LCD support"
-> -	depends on FB && IMX_HAVE_PLATFORM_IMX_FB
-> +	depends on FB && ARCH_MXC
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> --=20
-> 1.7.9.5
->=20
+Cc: stable@vger.kernel.org
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
+---
+ drivers/video/backlight/atmel-pwm-bl.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
+index 8aac273..3cb0094 100644
+--- a/drivers/video/backlight/atmel-pwm-bl.c
++++ b/drivers/video/backlight/atmel-pwm-bl.c
+@@ -205,8 +205,10 @@ static int atmel_pwm_bl_remove(struct platform_device *pdev)
+ {
+ 	struct atmel_pwm_bl *pwmbl = platform_get_drvdata(pdev);
+ 
+-	if (pwmbl->gpio_on != -1)
+-		gpio_set_value(pwmbl->gpio_on, 0);
++	if (pwmbl->gpio_on != -1) {
++		gpio_set_value(pwmbl->gpio_on,
++					0 ^ pwmbl->pdata->on_active_low);
++	}
+ 	pwm_channel_disable(&pwmbl->pwmc);
+ 	pwm_channel_free(&pwmbl->pwmc);
+ 
+-- 
+1.8.4
+

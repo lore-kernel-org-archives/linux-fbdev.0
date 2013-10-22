@@ -1,27 +1,58 @@
-From: Haiyang Zhang <haiyangz@microsoft.com>
-Date: Wed, 02 Oct 2013 20:43:26 +0000
-Subject: RE: [PATCH 2/2] hyperv-fb: add blanking support
-Message-Id: <4909db2eb4774c1a8b263d911d266d33@DFM-DB3MBX15-06.exchange.corp.microsoft.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Tue, 22 Oct 2013 17:26:59 +0000
+Subject: [PATCH 9/9] backlight: atmel-pwm-bl: use gpio_request_one
+Message-Id: <1382462819-28576-10-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1380714911-6254-1-git-send-email-kraxel@redhat.com>
- <1380714911-6254-2-git-send-email-kraxel@redhat.com>
-In-Reply-To: <1380714911-6254-2-git-send-email-kraxel@redhat.com>
+References: <1382462819-28576-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1382462819-28576-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: KY Srinivasan <kys@microsoft.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
 
-> -----Original Message-----
-> From: linux-fbdev-owner@vger.kernel.org [mailto:linux-fbdev-
-> owner@vger.kernel.org] On Behalf Of Gerd Hoffmann
-> Sent: Wednesday, October 2, 2013 7:55 AM
-> Cc: Gerd Hoffmann; KY Srinivasan; Haiyang Zhang; Jean-Christophe Plagniol-
-> Villard; Tomi Valkeinen; open list:Hyper-V CORE AND...; open
-> list:FRAMEBUFFER LAYER; open list
-> Subject: [PATCH 2/2] hyperv-fb: add blanking support
-> 
-> Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+Use devm_gpio_request_one rather than requesting and setting direction
+in two calls.
 
-Acked-by: Haiyang Zhang <haiyangz@microsoft.com>
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
+---
+ drivers/video/backlight/atmel-pwm-bl.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
+index 1277e0c..5ea2517 100644
+--- a/drivers/video/backlight/atmel-pwm-bl.c
++++ b/drivers/video/backlight/atmel-pwm-bl.c
+@@ -124,6 +124,7 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
+ 	const struct atmel_pwm_bl_platform_data *pdata;
+ 	struct backlight_device *bldev;
+ 	struct atmel_pwm_bl *pwmbl;
++	int flags;
+ 	int retval;
+ 
+ 	pdata = dev_get_platdata(&pdev->dev);
+@@ -149,14 +150,14 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
+ 		return retval;
+ 
+ 	if (gpio_is_valid(pwmbl->gpio_on)) {
+-		retval = devm_gpio_request(&pdev->dev, pwmbl->gpio_on,
+-					"gpio_atmel_pwm_bl");
+-		if (retval)
+-			goto err_free_pwm;
+-
+ 		/* Turn display off by default. */
+-		retval = gpio_direction_output(pwmbl->gpio_on,
+-				0 ^ pdata->on_active_low);
++		if (pdata->on_active_low)
++			flags = GPIOF_OUT_INIT_HIGH;
++		else
++			flags = GPIOF_OUT_INIT_LOW;
++
++		retval = devm_gpio_request_one(&pdev->dev, pwmbl->gpio_on,
++						flags, "gpio_atmel_pwm_bl");
+ 		if (retval)
+ 			goto err_free_pwm;
+ 	}
+-- 
+1.8.4
 

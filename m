@@ -1,81 +1,47 @@
-From: Michal Nazarewicz <mpn@google.com>
-Date: Sat, 26 Oct 2013 14:58:48 +0000
-Subject: [PATCH] drivers: video: metronomefb: avoid out-of-bounds array access
-Message-Id: <3c610da0d5b555453d5295aae720042f1c065cab.1382791126.git.mina86@mina86.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Tue, 22 Oct 2013 17:26:51 +0000
+Subject: [PATCH 1/9] backlight: atmel-pwm-bl: fix reported brightness
+Message-Id: <1382462819-28576-2-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1382462819-28576-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1382462819-28576-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>, stable@vger.kernel.org
 
-From: Michal Nazarewicz <mina86@mina86.com>
+The driver supports 16-bit brightness values, but the value returned
+from get_brightness was truncated to eight bits.
 
-load_waveform function checks whether padding bytes in stuff2a
-and stuff2b are all zero, but does so by treating those arrays
-as a single longer array.  Since the structure is packed, and
-the size sum matches, it all works, but creates some confusion
-in the code.
-
-This commit changes the stuff2a and stuff2b arrays into pad1 and
-pad2 fields such that they cover the same bytes as the arrays
-covered, and changes the check in the load_waveform function so
-that the fields are read instead of iterating over an arary.
-
-It also renames the other “stuff” fields to “ignore*” fields to
-give them more semantic meaning.
-
-Signed-off-by: Michal Nazarewicz <mina86@mina86.com>
+Cc: stable@vger.kernel.org
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
 ---
- drivers/video/metronomefb.c | 17 ++++++++---------
- 1 file changed, 8 insertions(+), 9 deletions(-)
+ drivers/video/backlight/atmel-pwm-bl.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
-index f30150d..44ef8b0 100644
---- a/drivers/video/metronomefb.c
-+++ b/drivers/video/metronomefb.c
-@@ -126,7 +126,7 @@ static struct fb_var_screeninfo metronomefb_var = {
+diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
+index 66885fb..8aac273 100644
+--- a/drivers/video/backlight/atmel-pwm-bl.c
++++ b/drivers/video/backlight/atmel-pwm-bl.c
+@@ -70,7 +70,7 @@ static int atmel_pwm_bl_set_intensity(struct backlight_device *bd)
+ static int atmel_pwm_bl_get_intensity(struct backlight_device *bd)
+ {
+ 	struct atmel_pwm_bl *pwmbl = bl_get_data(bd);
+-	u8 intensity;
++	u32 intensity;
  
- /* the waveform structure that is coming from userspace firmware */
- struct waveform_hdr {
--	u8 stuff[32];
-+	u8 ignore1[32];
- 
- 	u8 wmta[3];
- 	u8 fvsn;
-@@ -134,13 +134,14 @@ struct waveform_hdr {
- 	u8 luts;
- 	u8 mc;
- 	u8 trc;
--	u8 stuff3;
-+	u8 ignore2;
- 
- 	u8 endb;
- 	u8 swtb;
--	u8 stuff2a[2];
-+	u32 pad1; /* u16 halfof(pad1) */
- 
--	u8 stuff2b[3];
-+	/* u16 halfof(pad1) */
-+	u8 pad2;
- 	u8 wfm_cs;
- } __attribute__ ((packed));
- 
-@@ -210,11 +211,9 @@ static int load_waveform(u8 *mem, size_t size, int m, int t,
- 	}
- 	wfm_hdr->mc += 1;
- 	wfm_hdr->trc += 1;
--	for (i = 0; i < 5; i++) {
--		if (*(wfm_hdr->stuff2a + i) != 0) {
--			dev_err(dev, "Error: unexpected value in padding\n");
--			return -EINVAL;
--		}
-+	if (wfm_hdr->pad1 || wfm_hdr->pad2) {
-+		dev_err(dev, "Error: unexpected value in padding\n");
-+		return -EINVAL;
+ 	if (pwmbl->pdata->pwm_active_low) {
+ 		intensity = pwm_channel_readl(&pwmbl->pwmc, PWM_CDTY) -
+@@ -80,7 +80,7 @@ static int atmel_pwm_bl_get_intensity(struct backlight_device *bd)
+ 			pwm_channel_readl(&pwmbl->pwmc, PWM_CDTY);
  	}
  
- 	/* calculating trn. trn is something used to index into
+-	return intensity;
++	return (u16)intensity;
+ }
+ 
+ static int atmel_pwm_bl_init_pwm(struct atmel_pwm_bl *pwmbl)
 -- 
 1.8.4
 

@@ -1,70 +1,90 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 30 Oct 2013 11:35:36 +0000
-Subject: Re: [Trivial PATCH] video: Remove unnecessary semicolons
-Message-Id: <5270EF08.8000003@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="G9SS5v1k8HMRA6LnkX2gfpfOeDS3vSsVn"
+From: Johan Hovold <jhovold@gmail.com>
+Date: Tue, 22 Oct 2013 17:26:54 +0000
+Subject: [PATCH 4/9] backlight: atmel-pwm-bl: clean up probe error handling
+Message-Id: <1382462819-28576-5-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381274604.23937.15.camel@joe-AO722>
-In-Reply-To: <1381274604.23937.15.camel@joe-AO722>
-To: Joe Perches <joe@perches.com>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+References: <1382462819-28576-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1382462819-28576-1-git-send-email-jhovold@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
 
---G9SS5v1k8HMRA6LnkX2gfpfOeDS3vSsVn
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Clean up probe error handling by checking parameters before any
+allocations and removing an obsolete error label. Also remove
+unnecessary reset of private gpio number.
 
-On 2013-10-09 02:23, Joe Perches wrote:
-> These aren't necessary after switch, for, and if blocks.
->=20
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  drivers/video/cfbimgblt.c                       | 2 +-
->  drivers/video/cg14.c                            | 4 ++--
->  drivers/video/cg6.c                             | 2 +-
->  drivers/video/exynos/exynos_mipi_dsi_common.c   | 2 +-
->  drivers/video/fsl-diu-fb.c                      | 2 +-
->  drivers/video/leo.c                             | 2 +-
->  drivers/video/matrox/matroxfb_DAC1064.c         | 4 ++--
->  drivers/video/matrox/matroxfb_Ti3026.c          | 2 +-
->  drivers/video/nvidia/nv_hw.c                    | 2 +-
->  drivers/video/omap2/displays-new/panel-dsi-cm.c | 2 +-
->  drivers/video/omap2/dss/dispc.c                 | 2 +-
->  drivers/video/omap2/dss/dsi.c                   | 2 +-
->  drivers/video/sbuslib.c                         | 2 +-
->  drivers/video/sysimgblt.c                       | 2 +-
->  drivers/video/tcx.c                             | 4 ++--
->  drivers/video/vt8500lcdfb.c                     | 2 +-
->  16 files changed, 19 insertions(+), 19 deletions(-)
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
+---
+ drivers/video/backlight/atmel-pwm-bl.c | 31 ++++++++++++-------------------
+ 1 file changed, 12 insertions(+), 19 deletions(-)
 
-Thanks, queued for 3.13.
+diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
+index cc5a5ed..52a8134 100644
+--- a/drivers/video/backlight/atmel-pwm-bl.c
++++ b/drivers/video/backlight/atmel-pwm-bl.c
+@@ -126,40 +126,33 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
+ 	struct atmel_pwm_bl *pwmbl;
+ 	int retval;
+ 
++	pdata = dev_get_platdata(&pdev->dev);
++	if (!pdata)
++		return -ENODEV;
++
++	if (pdata->pwm_compare_max < pdata->pwm_duty_max ||
++			pdata->pwm_duty_min > pdata->pwm_duty_max ||
++			pdata->pwm_frequency = 0)
++		return -EINVAL;
++
+ 	pwmbl = devm_kzalloc(&pdev->dev, sizeof(struct atmel_pwm_bl),
+ 				GFP_KERNEL);
+ 	if (!pwmbl)
+ 		return -ENOMEM;
+ 
+ 	pwmbl->pdev = pdev;
+-
+-	pdata = dev_get_platdata(&pdev->dev);
+-	if (!pdata) {
+-		retval = -ENODEV;
+-		goto err_free_mem;
+-	}
+-
+-	if (pdata->pwm_compare_max < pdata->pwm_duty_max ||
+-			pdata->pwm_duty_min > pdata->pwm_duty_max ||
+-			pdata->pwm_frequency = 0) {
+-		retval = -EINVAL;
+-		goto err_free_mem;
+-	}
+-
+ 	pwmbl->pdata = pdata;
+ 	pwmbl->gpio_on = pdata->gpio_on;
+ 
+ 	retval = pwm_channel_alloc(pdata->pwm_channel, &pwmbl->pwmc);
+ 	if (retval)
+-		goto err_free_mem;
++		return retval;
+ 
+ 	if (pwmbl->gpio_on != -1) {
+ 		retval = devm_gpio_request(&pdev->dev, pwmbl->gpio_on,
+ 					"gpio_atmel_pwm_bl");
+-		if (retval) {
+-			pwmbl->gpio_on = -1;
++		if (retval)
+ 			goto err_free_pwm;
+-		}
+ 
+ 		/* Turn display off by default. */
+ 		retval = gpio_direction_output(pwmbl->gpio_on,
+@@ -197,7 +190,7 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
+ 
+ err_free_pwm:
+ 	pwm_channel_free(&pwmbl->pwmc);
+-err_free_mem:
++
+ 	return retval;
+ }
+ 
+-- 
+1.8.4
 
- Tomi
-
-
-
---G9SS5v1k8HMRA6LnkX2gfpfOeDS3vSsVn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJScO8IAAoJEPo9qoy8lh71H5cQAJwxG4nCkLqj5XTNJjsbZUsI
-NVTNg0QnwYvKOLiBtaCcG4qMOPxBtwQmOqMQ0FpUnctRyNO6sjoWWwMg81MkNSBs
-eUdLUAzhZHkn+UavXNaazXFsjcXiZ4hndp0gTi4QH34Ic0aDXbwr5Kt8ZUumYQ96
-Gas86K0I90SNjOjuT2+PjcvfGh92Ps0LZrgUHGWgtOC0LQZSGcQY/fGv7KKG1yVT
-JabitWHhFMOiRFuHXW8RRDj/PHGkG5cWXXLjcNt6s6EhkkG1MBW5jEn1dGc7Lkxx
-4L5F/KCj5pZnktauBxIIQWhDXqRyZnDSGrSl3QSNU8vmmgLij2J2RY4g+x5VVbrP
-OgygXg6u5rwA/85WJfoIH6sCwPfvH//OQaxxauFf0ItC+dU6X9ATmWoYL8bZlnxg
-NlysTEcPGENLLHFUBT+OTiNvEXALwnY4LxJ4ATNS4XpuskNKfJg6nlc1blPYsWcu
-HMwVEhDeu1RyyyuC2JB7GfS3s+5iveLBBb/n6v2fuZKGYSV6/SNZLZBWAIwZyLHr
-htI1gEeY2B3o7s4jGnAyu/ZmFi8SmBlwTC+ARcMO7Dpgx4vMZBaIBH1/4Rksgqbt
-FpIqNZAFrLhs8pQoWs97iIQ+6m19bv72oXbDWNtyrXK9EltLDZ/m/Klq6jOn4au3
-+i0whh0v7/YzZtpitzPu
-=hTjm
------END PGP SIGNATURE-----
-
---G9SS5v1k8HMRA6LnkX2gfpfOeDS3vSsVn--

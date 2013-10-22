@@ -1,123 +1,76 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Fri, 25 Oct 2013 11:07:18 +0000
-Subject: Re: [PATCHv7][ 1/6] video: imxfb: Introduce regulator support.
-Message-Id: <20131025110718.GP18477@ns203013.ovh.net>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Tue, 22 Oct 2013 17:26:58 +0000
+Subject: [PATCH 8/9] backlight: atmel-pwm-bl: refactor gpio_on handling
+Message-Id: <1382462819-28576-9-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382605103-9595-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1382605103-9595-1-git-send-email-denis@eukrea.com>
+References: <1382462819-28576-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1382462819-28576-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
 
-On 10:58 Thu 24 Oct     , Denis Carikli wrote:
-> This commit is based on the following commit by Fabio Estevam:
->   4344429 video: mxsfb: Introduce regulator support
+Add helper function to control the gpio_on signal.
 
-I've too many patch version in my mailbox specially without any description
-about what is updated between version can explain this.
->=20
-> Cc: Fabio Estevam <fabio.estevam@freescale.com>
-> Cc: Sascha Hauer <kernel@pengutronix.de>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: Eric B=E9nard <eric@eukrea.com>
-> Signed-off-by: Denis Carikli <denis@eukrea.com>
-> ---
->  drivers/video/imxfb.c |   29 +++++++++++++++++++++++++++++
->  1 file changed, 29 insertions(+)
->=20
-> diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-> index 44ee678..4bf3837 100644
-> --- a/drivers/video/imxfb.c
-> +++ b/drivers/video/imxfb.c
-> @@ -28,6 +28,7 @@
->  #include <linux/cpufreq.h>
->  #include <linux/clk.h>
->  #include <linux/platform_device.h>
-> +#include <linux/regulator/consumer.h>
->  #include <linux/dma-mapping.h>
->  #include <linux/io.h>
->  #include <linux/math64.h>
-> @@ -145,6 +146,7 @@ struct imxfb_info {
->  	struct clk		*clk_ipg;
->  	struct clk		*clk_ahb;
->  	struct clk		*clk_per;
-> +	struct regulator	*reg_lcd;
->  	enum imxfb_type		devtype;
->  	bool			enabled;
-> =20
-> @@ -563,12 +565,23 @@ static void imxfb_exit_backlight(struct imxfb_info =
-*fbi)
-> =20
->  static void imxfb_enable_controller(struct imxfb_info *fbi)
->  {
-> +	int ret;
-> =20
->  	if (fbi->enabled)
->  		return;
-> =20
->  	pr_debug("Enabling LCD controller\n");
-> =20
-> +	if (fbi->reg_lcd) {
-> +		ret =3D regulator_enable(fbi->reg_lcd);
-> +		if (ret) {
-> +			dev_err(&fbi->pdev->dev,
-> +				"lcd regulator enable failed with error: %d\n",
-> +				ret);
-> +			return;
-> +		}
-> +	}
-> +
->  	writel(fbi->screen_dma, fbi->regs + LCDC_SSA);
-> =20
->  	/* panning offset 0 (0 pixel offset)        */
-> @@ -597,6 +610,8 @@ static void imxfb_enable_controller(struct imxfb_info=
- *fbi)
-> =20
->  static void imxfb_disable_controller(struct imxfb_info *fbi)
->  {
-> +	int ret;
-> +
->  	if (!fbi->enabled)
->  		return;
-> =20
-> @@ -613,6 +628,14 @@ static void imxfb_disable_controller(struct imxfb_in=
-fo *fbi)
->  	fbi->enabled =3D false;
-> =20
->  	writel(0, fbi->regs + LCDC_RMCR);
-> +
-> +	if (fbi->reg_lcd) {
-> +		ret =3D regulator_disable(fbi->reg_lcd);
-> +		if (ret)
-> +			dev_err(&fbi->pdev->dev,
-> +				"lcd regulator disable failed with error: %d\n",
-> +				ret);
-> +	}
->  }
-> =20
->  static int imxfb_blank(int blank, struct fb_info *info)
-> @@ -1020,6 +1043,12 @@ static int imxfb_probe(struct platform_device *pde=
-v)
->  		goto failed_register;
->  	}
-> =20
-> +	fbi->reg_lcd =3D devm_regulator_get(&pdev->dev, "lcd");
-> +	if (IS_ERR(fbi->reg_lcd)) {
-> +		dev_info(&pdev->dev, "No lcd regulator used.\n");
-> +		fbi->reg_lcd =3D NULL;
-> +	}
-> +
->  	imxfb_enable_controller(fbi);
->  	fbi->pdev =3D pdev;
->  #ifdef PWMR_BACKLIGHT_AVAILABLE
-> --=20
-> 1.7.9.5
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
+---
+ drivers/video/backlight/atmel-pwm-bl.c | 23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
+index ffc30d2..1277e0c 100644
+--- a/drivers/video/backlight/atmel-pwm-bl.c
++++ b/drivers/video/backlight/atmel-pwm-bl.c
+@@ -26,6 +26,14 @@ struct atmel_pwm_bl {
+ 	int					gpio_on;
+ };
+ 
++static void atmel_pwm_bl_set_gpio_on(struct atmel_pwm_bl *pwmbl, int on)
++{
++	if (!gpio_is_valid(pwmbl->gpio_on))
++		return;
++
++	gpio_set_value(pwmbl->gpio_on, on ^ pwmbl->pdata->on_active_low);
++}
++
+ static int atmel_pwm_bl_set_intensity(struct backlight_device *bd)
+ {
+ 	struct atmel_pwm_bl *pwmbl = bl_get_data(bd);
+@@ -48,19 +56,13 @@ static int atmel_pwm_bl_set_intensity(struct backlight_device *bd)
+ 		pwm_duty = pwmbl->pdata->pwm_duty_min;
+ 
+ 	if (!intensity) {
+-		if (gpio_is_valid(pwmbl->gpio_on)) {
+-			gpio_set_value(pwmbl->gpio_on,
+-					0 ^ pwmbl->pdata->on_active_low);
+-		}
++		atmel_pwm_bl_set_gpio_on(pwmbl, 0);
+ 		pwm_channel_writel(&pwmbl->pwmc, PWM_CUPD, pwm_duty);
+ 		pwm_channel_disable(&pwmbl->pwmc);
+ 	} else {
+ 		pwm_channel_enable(&pwmbl->pwmc);
+ 		pwm_channel_writel(&pwmbl->pwmc, PWM_CUPD, pwm_duty);
+-		if (gpio_is_valid(pwmbl->gpio_on)) {
+-			gpio_set_value(pwmbl->gpio_on,
+-					1 ^ pwmbl->pdata->on_active_low);
+-		}
++		atmel_pwm_bl_set_gpio_on(pwmbl, 1);
+ 	}
+ 
+ 	return 0;
+@@ -196,10 +198,7 @@ static int atmel_pwm_bl_remove(struct platform_device *pdev)
+ {
+ 	struct atmel_pwm_bl *pwmbl = platform_get_drvdata(pdev);
+ 
+-	if (gpio_is_valid(pwmbl->gpio_on)) {
+-		gpio_set_value(pwmbl->gpio_on,
+-					0 ^ pwmbl->pdata->on_active_low);
+-	}
++	atmel_pwm_bl_set_gpio_on(pwmbl, 0);
+ 	pwm_channel_disable(&pwmbl->pwmc);
+ 	pwm_channel_free(&pwmbl->pwmc);
+ 
+-- 
+1.8.4
+

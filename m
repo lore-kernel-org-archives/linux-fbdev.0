@@ -1,48 +1,32 @@
-From: Richard Purdie <rpurdie@rpsys.net>
-Date: Fri, 04 Oct 2013 09:55:53 +0000
-Subject: Re: [PATCH] MAINTAINERS: remove Richard Purdie as backlight maintainer
-Message-Id: <1380880553.18603.575.camel@ted>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Tue, 22 Oct 2013 17:26:53 +0000
+Subject: [PATCH 3/9] backlight: atmel-pwm-bl: fix module autoload
+Message-Id: <1382462819-28576-4-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <017f01cebb35$f6a82ac0$e3f88040$%han@samsung.com>
-	 <20131003162048.d4be6510f36da5c61dc61c43@linux-foundation.org>
-	 <003801cec093$6b3c1bf0$41b453d0$%han@samsung.com>
-	 <20131003174315.d9aa8af7.akpm@linux-foundation.org>
-In-Reply-To: <20131003174315.d9aa8af7.akpm@linux-foundation.org>
+References: <1382462819-28576-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1382462819-28576-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jingoo Han <jg1.han@samsung.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 'Thierry Reding' <thierry.reding@gmail.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, 'Laurent Pinchart' <laurent.pinchart+renesas@ideasonboard.com>, 'Michael Hennerich' <michael.hennerich@analog.com>, 'Milo Kim' <milo.kim@ti.com>, 'Daniel Jeong' <gshark.jeong@gmail.com>
+To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
 
-On Thu, 2013-10-03 at 17:43 -0700, Andrew Morton wrote:
-> On Fri, 04 Oct 2013 08:50:57 +0900 Jingoo Han <jg1.han@samsung.com> wrote:
-> 
-> > On Friday, October 04, 2013 8:21 AM, Andrew Morton wrote:
-> > > On Fri, 27 Sep 2013 12:59:28 +0900 Jingoo Han <jg1.han@samsung.com> wrote:
-> > > 
-> > > > Remove Richard Purdie as backlight subsystem maintainer, since he
-> > > > is not responding for a few years.
-> > > 
-> > > It's nice to give a person a ./CREDITS entry when we remove them from
-> > > ./MAINTAINERS.
-> > 
-> > However, Richard Purdie still remains as maintainers of other two entries
-> > as below:
-> > In this case, is it still necessary give him a ./CREDITS entry?
-> 
-> Necessary?  No.  Nice?  Yes ;) I like to think that it reduces any of
-> the sting from being removed from MAINTAINERS.  Plus it is more
-> accurate and costs nothing.
+Add missing module alias which is needed for module autoloading.
 
-It is sad to be removed from there but equally, I haven't had the time
-to spend on it for a while and it is justified. I am still around, I
-have been reading some of the patches, there are just other things which
-are more in need of my time (the Yocto Project primarily). I'd done what
-I'd set out to do with the backlight/leds subsystems and its time to let
-others take them forward. So a credits entry sounds nice and probably
-more appropriate now, thanks :)
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
+---
+ drivers/video/backlight/atmel-pwm-bl.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Cheers,
-
-Richard
+diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
+index 3cb0094..cc5a5ed 100644
+--- a/drivers/video/backlight/atmel-pwm-bl.c
++++ b/drivers/video/backlight/atmel-pwm-bl.c
+@@ -229,3 +229,4 @@ module_platform_driver(atmel_pwm_bl_driver);
+ MODULE_AUTHOR("Hans-Christian egtvedt <hans-christian.egtvedt@atmel.com>");
+ MODULE_DESCRIPTION("Atmel PWM backlight driver");
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:atmel-pwm-bl");
+-- 
+1.8.4
 

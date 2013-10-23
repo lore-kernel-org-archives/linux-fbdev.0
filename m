@@ -1,58 +1,30 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Tue, 22 Oct 2013 17:26:59 +0000
-Subject: [PATCH 9/9] backlight: atmel-pwm-bl: use gpio_request_one
-Message-Id: <1382462819-28576-10-git-send-email-jhovold@gmail.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Wed, 23 Oct 2013 01:54:01 +0000
+Subject: Re: [PATCH 9/9] backlight: atmel-pwm-bl: use gpio_request_one
+Message-Id: <002101cecf92$bef81fb0$3ce85f10$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1382462819-28576-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1382462819-28576-1-git-send-email-jhovold@gmail.com>
+ <1382462819-28576-10-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1382462819-28576-10-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+To: 'Johan Hovold' <jhovold@gmail.com>
+Cc: 'Richard Purdie' <rpurdie@rpsys.net>, 'Nicolas Ferre' <nicolas.ferre@atmel.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>
 
-Use devm_gpio_request_one rather than requesting and setting direction
-in two calls.
+On Wednesday, October 23, 2013 2:27 AM, Johan Hovold wrote:
+> 
+> Use devm_gpio_request_one rather than requesting and setting direction
+> in two calls.
+> 
+> Signed-off-by: Johan Hovold <jhovold@gmail.com>
 
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
----
- drivers/video/backlight/atmel-pwm-bl.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+Acked-by: Jingoo Han <jg1.han@samsung.com>
 
-diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
-index 1277e0c..5ea2517 100644
---- a/drivers/video/backlight/atmel-pwm-bl.c
-+++ b/drivers/video/backlight/atmel-pwm-bl.c
-@@ -124,6 +124,7 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
- 	const struct atmel_pwm_bl_platform_data *pdata;
- 	struct backlight_device *bldev;
- 	struct atmel_pwm_bl *pwmbl;
-+	int flags;
- 	int retval;
- 
- 	pdata = dev_get_platdata(&pdev->dev);
-@@ -149,14 +150,14 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
- 		return retval;
- 
- 	if (gpio_is_valid(pwmbl->gpio_on)) {
--		retval = devm_gpio_request(&pdev->dev, pwmbl->gpio_on,
--					"gpio_atmel_pwm_bl");
--		if (retval)
--			goto err_free_pwm;
--
- 		/* Turn display off by default. */
--		retval = gpio_direction_output(pwmbl->gpio_on,
--				0 ^ pdata->on_active_low);
-+		if (pdata->on_active_low)
-+			flags = GPIOF_OUT_INIT_HIGH;
-+		else
-+			flags = GPIOF_OUT_INIT_LOW;
-+
-+		retval = devm_gpio_request_one(&pdev->dev, pwmbl->gpio_on,
-+						flags, "gpio_atmel_pwm_bl");
- 		if (retval)
- 			goto err_free_pwm;
- 	}
--- 
-1.8.4
+Best regards,
+Jingoo Han
+
+> ---
+>  drivers/video/backlight/atmel-pwm-bl.c | 15 ++++++++-------
+>  1 file changed, 8 insertions(+), 7 deletions(-)
 

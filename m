@@ -1,42 +1,32 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Tue, 22 Oct 2013 17:26:52 +0000
-Subject: [PATCH 2/9] backlight: atmel-pwm-bl: fix gpio polarity in remove
-Message-Id: <1382462819-28576-3-git-send-email-jhovold@gmail.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Wed, 23 Oct 2013 01:47:58 +0000
+Subject: Re: [PATCH 2/9] backlight: atmel-pwm-bl: fix gpio polarity in remove
+Message-Id: <001a01cecf91$e67fb620$b37f2260$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1382462819-28576-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1382462819-28576-1-git-send-email-jhovold@gmail.com>
+ <1382462819-28576-3-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1382462819-28576-3-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>, stable@vger.kernel.org
+To: 'Johan Hovold' <jhovold@gmail.com>
+Cc: 'Richard Purdie' <rpurdie@rpsys.net>, 'Nicolas Ferre' <nicolas.ferre@atmel.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>
 
-Make sure to honour gpio polarity also at remove so that the backlight
-is actually disabled on boards with active-low enable pin.
+On Wednesday, October 23, 2013 2:27 AM, Johan Hovold wrote:
+> 
+> Make sure to honour gpio polarity also at remove so that the backlight
+> is actually disabled on boards with active-low enable pin.
+> 
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Johan Hovold <jhovold@gmail.com>
 
-Cc: stable@vger.kernel.org
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
----
- drivers/video/backlight/atmel-pwm-bl.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+Acked-by: Jingoo Han <jg1.han@samsung.com>
 
-diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
-index 8aac273..3cb0094 100644
---- a/drivers/video/backlight/atmel-pwm-bl.c
-+++ b/drivers/video/backlight/atmel-pwm-bl.c
-@@ -205,8 +205,10 @@ static int atmel_pwm_bl_remove(struct platform_device *pdev)
- {
- 	struct atmel_pwm_bl *pwmbl = platform_get_drvdata(pdev);
- 
--	if (pwmbl->gpio_on != -1)
--		gpio_set_value(pwmbl->gpio_on, 0);
-+	if (pwmbl->gpio_on != -1) {
-+		gpio_set_value(pwmbl->gpio_on,
-+					0 ^ pwmbl->pdata->on_active_low);
-+	}
- 	pwm_channel_disable(&pwmbl->pwmc);
- 	pwm_channel_free(&pwmbl->pwmc);
- 
--- 
-1.8.4
+Best regards,
+Jingoo Han
+
+> ---
+>  drivers/video/backlight/atmel-pwm-bl.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+
 

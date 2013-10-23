@@ -1,9 +1,9 @@
 From: Thierry Reding <thierry.reding@gmail.com>
-Date: Wed, 23 Oct 2013 10:51:41 +0000
+Date: Wed, 23 Oct 2013 10:54:57 +0000
 Subject: Re: How to set fops in "struct platform_pwm_backlight_data"?
-Message-Id: <20131023105140.GA15082@ulmo.nvidia.com>
+Message-Id: <20131023105456.GB15082@ulmo.nvidia.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="SLDf9lqlvOQaIe6s"
+Content-Type: multipart/mixed; boundary="IrhDeMKUP4DT/M7F"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20131017071445.GA2502@ulmo.nvidia.com>
  <5260BD8C.7000200@gmail.com>
@@ -14,18 +14,18 @@ References: <20131017071445.GA2502@ulmo.nvidia.com>
  <20131023080002.GB7404@ulmo.nvidia.com>
  <52678D99.8090003@gmail.com>
  <20131023090925.GC11954@ulmo.nvidia.com>
- <5267A691.8050503@gmail.com>
-In-Reply-To: <5267A691.8050503@gmail.com>
+ <5267A582.9070504@gmail.com>
+In-Reply-To: <5267A582.9070504@gmail.com>
 To: Mark Zhang <nvmarkzhang@gmail.com>
 Cc: rpurdie@rpsys.net, jg1.han@samsung.com, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
 
---SLDf9lqlvOQaIe6s
+--IrhDeMKUP4DT/M7F
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Oct 23, 2013 at 06:36:01PM +0800, Mark Zhang wrote:
+On Wed, Oct 23, 2013 at 06:31:30PM +0800, Mark Zhang wrote:
 > On 10/23/2013 05:09 PM, Thierry Reding wrote:
 > > On Wed, Oct 23, 2013 at 04:49:29PM +0800, Mark Zhang wrote:
 > >> On 10/23/2013 04:00 PM, Thierry Reding wrote:
@@ -86,37 +86,45 @@ ange
 > > backlight_update_status().
 > >=20
 >=20
-> Okay, anyway, I got the idea. Actually it's simpler. :)
-> I'm just curious that if we can do that in this way, why we need
-> "notify" anymore?
+> The param of "backlight_update_status" is "struct backlight_device *".
+> So you mean after I get a pointer of correct backlight device, just set
+> the brightness value I want to it's "props.brightness" directly?
 
-We don't need it any longer for DT, you've just proven that. =3D)
+Yes.
 
-However we still need to support board files, and the .notify() callback
-is the only way for board files to use board specific means to enable or
-disable the backlight depending on the brightness value.
+> I think the "struct backlight_device" should be opaque(although it's
+> definition is in include/linux/backlight.h, I know that), so it's better
+> not to touch it's member directly, that's why I wanna use that "notify"
+> callback.
+
+Well, backlight_update_status() is the only way to change the brightness
+of a backlight. If nobody ever calls backlight_update_status() then the
+=2Enotify() callback will never be called either.
+
+By the way, what method do you use to control the backlight brightness?
+Do you use the sysfs interface from userspace?
 
 Thierry
 
---SLDf9lqlvOQaIe6s
+--IrhDeMKUP4DT/M7F
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJSZ6o8AAoJEN0jrNd/PrOh/HIP+wYxrOrUfyozovAOC4oYsk/t
-nbm1mR4d6kUiGljPiIW/6TXjd06ruBe+h52MMgS9rqIP72BueSGKxR84PNqQ63gL
-SQXvl6MC/CNE+zOs9zhS4zrW8kNwL74iRO/+2YU9UuExWnCobs7MO3boNZUwXJPM
-MLAXKQPDepe0EUAc/xzyijtox35PNDSgX2vu1V5g2RbBZTt8kK5Iwis1zskIr4/h
-HX18z7VpIpRWGimb6xkZHM2tuthgWwbucJOtYrPTT550ql6l68dXCEvRO3g6juOZ
-9K7SvtyR/VZk6rkbF/nbMFURdAohiL66EFXZgcnihf22Eby3JtN4adMBnxR5C+51
-rMEzBo1dPnASKOrDGEmu0JI6NnuIdMswHkIO2gJHUqJuOJ5S3XYlKzGwhm4ZxgV+
-4Kq6rJ/Z62//YFwzL3FZ04JwTCcmoKSCKZKydJS5lvvzoWSL9I66VmI4Vc55hmZK
-8RiKVy/LWyzYhTLTpOgdEzYGDhH/uvnODd99trkXQKckIUdILST57ofWypCcw4Lj
-S5IzUVlUO0DJReEBCq0MSmZCePR7e18l08zK93uWKeGm+3rhbI9oB3XZfSUNSw35
-NpKrt8dji8yZ+JQniOQARTlknV1tQ7A0796+50i6ST7Bp0g9hw617XGdM+pIqXnm
-JhOBkxiUHZzWieBG63OO
-=orWi
+iQIcBAEBAgAGBQJSZ6sAAAoJEN0jrNd/PrOhjWcP+QGu2R+vURzzuNBU/ctEP+Eo
+nLOSYH00KzEcPiath1IqLJmRH1tPXTm/3qYti+58cqk9UQJtf4VDUemxVWfbAtMr
+buHOdbuZkpWtgIa1wNGqaiPaoQNl86P5F9LESOOgODL/5QHzxHhhZK6HRcwmFDrk
+WFMWat+uvJ5V4uRmaynJQDNB80F+5b8XUUIJEo9z5bz63atuyDGrBXCfLfuRQW7V
+rVtncdmHRHKEriIbzvXiegkMo7Aq7USRyHu7gJVcAMvYbFTTZyXjgEj9Tn+h0hNx
+JTLAc1TE0n7zXAmFWHtbopb/yAiuhaVGhIJKnynDElOBpRsuN5Oe/QUYazPKP+sF
+9JYKUWrLTyjjzgtJc1oYnErqfz0y39H3eB5T5X0Bs1gFMi5jxCfUsdeAOylzHQhJ
+kUFtJviWngxm29PXJKVBr6D0YetLrBe9lMH4z82vGPx7rO7MOtXpcIjUb0Xxq2+D
+W1s5TXnaxtTitcwD5ByVi6nlr6s/7SM/3ZakzwiYBk+J8sH8hAN4b1nx11z/WFo4
+4GFu8k3T4ZfQb8fo+pLPJqguT9G/JZTsBMgiF7I7+iydXHIGTcyDq/tPm4HQ3r7t
+CpazY/l2UrvAaNOXE2xpBTWPl+XbGyA4NDhb+J2YFf6XnLjvbGkFwZaDBCTpQPGu
++kCy2/NzutKJiojgZcnB
+=2OjZ
 -----END PGP SIGNATURE-----
 
---SLDf9lqlvOQaIe6s--
+--IrhDeMKUP4DT/M7F--

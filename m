@@ -1,131 +1,222 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Date: Wed, 16 Oct 2013 16:40:16 +0000
-Subject: [PATCH 7/7] video: exynos_dp: Use the generic PHY driver
-Message-Id: <1381940896-9355-8-git-send-email-kishon@ti.com>
+From: Denis Carikli <denis@eukrea.com>
+Date: Wed, 23 Oct 2013 12:43:49 +0000
+Subject: [PATCHv3][ 5/5] ARM: dts: mbimxsd35 Add video and displays support.
+Message-Id: <1382532229-32755-5-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381940896-9355-1-git-send-email-kishon@ti.com>
-In-Reply-To: <1381940896-9355-1-git-send-email-kishon@ti.com>
+References: <1382532229-32755-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1382532229-32755-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Jingoo Han <jg1.han@samsung.com>
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: devicetree@vger.kernel.org
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Eric Bénard <eric@eukrea.com>
 
-Use the generic PHY API to control the DP PHY.
-
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-Reviewed-by: Tomasz Figa <t.figa@samsung.com>
-Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
 ---
- Documentation/devicetree/bindings/video/exynos_dp.txt |   17 +++++++++--------
- drivers/video/exynos/exynos_dp_core.c                 |   16 ++++++++++++----
- drivers/video/exynos/exynos_dp_core.h                 |    1 +
- 3 files changed, 22 insertions(+), 12 deletions(-)
+ChangeLog v2->v3:
+- The dts were adapted to the new DT bindings which looks more like the IPUv3
+  ones.
+---
+ .../imx35-eukrea-mbimxsd35-baseboard-cmo-qvga.dts  |   61 ++++++++++++++++++++
+ .../imx35-eukrea-mbimxsd35-baseboard-dvi-svga.dts  |   51 ++++++++++++++++
+ .../imx35-eukrea-mbimxsd35-baseboard-dvi-vga.dts   |   51 ++++++++++++++++
+ 3 files changed, 163 insertions(+)
+ create mode 100644 arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-cmo-qvga.dts
+ create mode 100644 arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-svga.dts
+ create mode 100644 arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-vga.dts
 
-diff --git a/Documentation/devicetree/bindings/video/exynos_dp.txt b/Documentation/devicetree/bindings/video/exynos_dp.txt
-index 84f10c1..3289d76 100644
---- a/Documentation/devicetree/bindings/video/exynos_dp.txt
-+++ b/Documentation/devicetree/bindings/video/exynos_dp.txt
-@@ -6,10 +6,10 @@ We use two nodes:
- 	-dptx-phy node(defined inside dp-controller node)
- 
- For the DP-PHY initialization, we use the dptx-phy node.
--Required properties for dptx-phy:
--	-reg:
-+Required properties for dptx-phy: deprecated, use phys and phy-names
-+	-reg: deprecated
- 		Base address of DP PHY register.
--	-samsung,enable-mask:
-+	-samsung,enable-mask: deprecated
- 		The bit-mask used to enable/disable DP PHY.
- 
- For the Panel initialization, we read data from dp-controller node.
-@@ -27,6 +27,10 @@ Required properties for dp-controller:
- 		from common clock binding: Shall be "dp".
- 	-interrupt-parent:
- 		phandle to Interrupt combiner node.
-+	-phys:
-+		from general PHY binding: the phandle for the PHY device.
-+	-phy-names:
-+		from general PHY binding: Should be "dp".
- 	-samsung,color-space:
- 		input video data format.
- 			COLOR_RGB = 0, COLOR_YCBCR422 = 1, COLOR_YCBCR444 = 2
-@@ -68,11 +72,8 @@ SOC specific portion:
- 		clocks = <&clock 342>;
- 		clock-names = "dp";
- 
--		dptx-phy {
--			reg = <0x10040720>;
--			samsung,enable-mask = <1>;
--		};
--
-+		phys = <&dp_phy>;
-+		phy-names = "dp";
- 	};
- 
- Board Specific portion:
-diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-index 05fed7d..5e1a715 100644
---- a/drivers/video/exynos/exynos_dp_core.c
-+++ b/drivers/video/exynos/exynos_dp_core.c
-@@ -19,6 +19,7 @@
- #include <linux/interrupt.h>
- #include <linux/delay.h>
- #include <linux/of.h>
-+#include <linux/phy/phy.h>
- 
- #include "exynos_dp_core.h"
- 
-@@ -960,8 +961,11 @@ static int exynos_dp_dt_parse_phydata(struct exynos_dp_device *dp)
- 
- 	dp_phy_node = of_find_node_by_name(dp_phy_node, "dptx-phy");
- 	if (!dp_phy_node) {
--		dev_err(dp->dev, "could not find dptx-phy node\n");
--		return -ENODEV;
-+		dp->phy = devm_phy_get(dp->dev, "dp");
-+		if (IS_ERR(dp->phy))
-+			return PTR_ERR(dp->phy);
-+		else
-+			return 0;
- 	}
- 
- 	if (of_property_read_u32(dp_phy_node, "reg", &phy_base)) {
-@@ -992,7 +996,9 @@ err:
- 
- static void exynos_dp_phy_init(struct exynos_dp_device *dp)
- {
--	if (dp->phy_addr) {
-+	if (dp->phy) {
-+		phy_power_on(dp->phy);
-+	} else if (dp->phy_addr) {
- 		u32 reg;
- 
- 		reg = __raw_readl(dp->phy_addr);
-@@ -1003,7 +1009,9 @@ static void exynos_dp_phy_init(struct exynos_dp_device *dp)
- 
- static void exynos_dp_phy_exit(struct exynos_dp_device *dp)
- {
--	if (dp->phy_addr) {
-+	if (dp->phy) {
-+		phy_power_off(dp->phy);
-+	} else if (dp->phy_addr) {
- 		u32 reg;
- 
- 		reg = __raw_readl(dp->phy_addr);
-diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
-index 56cfec8..607e36d 100644
---- a/drivers/video/exynos/exynos_dp_core.h
-+++ b/drivers/video/exynos/exynos_dp_core.h
-@@ -151,6 +151,7 @@ struct exynos_dp_device {
- 	struct video_info	*video_info;
- 	struct link_train	link_train;
- 	struct work_struct	hotplug_work;
-+	struct phy		*phy;
- };
- 
- /* exynos_dp_reg.c */
+diff --git a/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-cmo-qvga.dts b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-cmo-qvga.dts
+new file mode 100644
+index 0000000..6d186ca
+--- /dev/null
++++ b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-cmo-qvga.dts
+@@ -0,0 +1,61 @@
++/*
++ * Copyright 2013 Eukréa Electromatique <denis@eukrea.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
++ * MA 02110-1301, USA.
++ */
++
++#include "imx35-eukrea-mbimxsd35-baseboard.dts"
++
++/ {
++	model = "Eukrea MBIMXSD35 with the CMO-QVGA Display";
++	compatible = "eukrea,mbimxsd35-baseboard-cmo-qvga", "eukrea,mbimxsd35-baseboard", "eukrea,cpuimx35", "fsl,imx35";
++
++	display@di0 {
++		regulator-name = "lcd";
++		interface-pix-fmt = "rgb666";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_lcdc_1>;
++		model = "CMO-QVGA";
++		display-timings {
++			qvga_timings: 320x240 {
++				clock-frequency = <6500000>;
++				hactive = <320>;
++				vactive = <240>;
++				hback-porch = <68>;
++				hfront-porch = <20>;
++				vback-porch = <15>;
++				vfront-porch = <4>;
++				hsync-len = <30>;
++				vsync-len = <3>;
++			};
++		};
++	};
++
++	reg_lcd_3v3: lcd-en {
++		compatible = "regulator-fixed";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_reg_lcd_3v3>;
++		regulator-name = "lcd";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&gpio1 4 0>;
++		enable-active-high;
++	};
++};
++
++&lcdc {
++	lcd-supply = <&reg_lcd_3v3>;
++	status = "okay";
++};
+diff --git a/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-svga.dts b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-svga.dts
+new file mode 100644
+index 0000000..ccf5f48
+--- /dev/null
++++ b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-svga.dts
+@@ -0,0 +1,51 @@
++/*
++ * Copyright 2013 Eukréa Electromatique <denis@eukrea.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
++ * MA 02110-1301, USA.
++ */
++
++#include "imx35-eukrea-mbimxsd35-baseboard.dts"
++
++/ {
++	model = "Eukrea MBIMXSD35 with the DVI-SVGA Display";
++	compatible = "eukrea,mbimxsd35-baseboard-dvi-svga", "eukrea,mbimxsd35-baseboard", "eukrea,cpuimx35", "fsl,imx35";
++	display@di0 {
++		interface-pix-fmt = "rgb666";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_lcdc_1>;
++		model = "DVI-SVGA";
++		display-timings {
++			svga_timings: 800x600 {
++				clock-frequency = <40000000>;
++				hactive = <800>;
++				vactive = <600>;
++				hback-porch = <75>;
++				hfront-porch = <75>;
++				vback-porch = <7>;
++				vfront-porch = <75>;
++				hsync-len = <7>;
++				vsync-len = <7>;
++				hsync-active = <1>;
++				vsync-active = <1>;
++				de-active = <1>;
++				pixelclk-active = <0>;
++			};
++		};
++	};
++};
++
++&lcdc {
++	status = "okay";
++};
+diff --git a/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-vga.dts b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-vga.dts
+new file mode 100644
+index 0000000..6e31684
+--- /dev/null
++++ b/arch/arm/boot/dts/imx35-eukrea-mbimxsd35-baseboard-dvi-vga.dts
+@@ -0,0 +1,51 @@
++/*
++ * Copyright 2013 Eukréa Electromatique <denis@eukrea.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
++ * MA 02110-1301, USA.
++ */
++
++#include "imx35-eukrea-mbimxsd35-baseboard.dts"
++
++/ {
++	model = "Eukrea MBIMXSD35 with the DVI-VGA Display";
++	compatible = "eukrea,mbimxsd35-baseboard-dvi-vga", "eukrea,mbimxsd35-baseboard", "eukrea,cpuimx35", "fsl,imx35";
++	display@di0 {
++		interface-pix-fmt = "rgb666";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_lcdc_1>;
++		model = "DVI-VGA";
++		display-timings {
++			vga_timings: 640x480 {
++				clock-frequency = <31250000>;
++				hactive = <640>;
++				vactive = <480>;
++				hback-porch = <100>;
++				hfront-porch = <100>;
++				vback-porch = <7>;
++				vfront-porch = <100>;
++				hsync-len = <7>;
++				vsync-len = <7>;
++				hsync-active = <1>;
++				vsync-active = <1>;
++				de-active = <1>;
++				pixelclk-active = <0>;
++			};
++		};
++	};
++};
++
++&lcdc {
++	status = "okay";
++};
 -- 
-1.7.10.4
+1.7.9.5
 

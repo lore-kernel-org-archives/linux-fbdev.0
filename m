@@ -1,7 +1,7 @@
 From: Mark Zhang <nvmarkzhang@gmail.com>
-Date: Wed, 23 Oct 2013 10:31:30 +0000
+Date: Wed, 23 Oct 2013 10:36:01 +0000
 Subject: Re: How to set fops in "struct platform_pwm_backlight_data"?
-Message-Id: <5267A582.9070504@gmail.com>
+Message-Id: <5267A691.8050503@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <525F8895.5010806@gmail.com> <20131017071445.GA2502@ulmo.nvidia.com> <5260BD8C.7000200@gmail.com> <20131022072443.GB8681@ulmo.nvidia.com> <52663D6D.5000806@gmail.com> <20131022124905.GA24255@ulmo.nvidia.com> <52673178.8070805@gmail.com> <20131023080002.GB7404@ulmo.nvidia.com> <52678D99.8090003@gmail.com> <20131023090925.GC11954@ulmo.nvidia.com>
 In-Reply-To: <20131023090925.GC11954@ulmo.nvidia.com>
@@ -63,14 +63,9 @@ On 10/23/2013 05:09 PM, Thierry Reding wrote:
 > backlight_update_status().
 > 
 
-The param of "backlight_update_status" is "struct backlight_device *".
-So you mean after I get a pointer of correct backlight device, just set
-the brightness value I want to it's "props.brightness" directly?
-
-I think the "struct backlight_device" should be opaque(although it's
-definition is in include/linux/backlight.h, I know that), so it's better
-not to touch it's member directly, that's why I wanna use that "notify"
-callback.
+Okay, anyway, I got the idea. Actually it's simpler. :)
+I'm just curious that if we can do that in this way, why we need
+"notify" anymore?
 
 Mark
 > Thierry

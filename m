@@ -1,92 +1,210 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Tue, 29 Oct 2013 16:27:39 +0000
-Subject: [PATCH v2 4/9] backlight: atmel-pwm-bl: clean up probe error handling
-Message-Id: <1383064064-4983-5-git-send-email-jhovold@gmail.com>
+From: Denis Carikli <denis@eukrea.com>
+Date: Wed, 23 Oct 2013 12:43:48 +0000
+Subject: [PATCHv3][ 4/5] video: mx3fb: Introduce regulator support.
+Message-Id: <1382532229-32755-4-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382522143-32072-1-git-send-email-jhovold@gmail.com>
- <1383064064-4983-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1383064064-4983-1-git-send-email-jhovold@gmail.com>
+References: <1382532229-32755-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1382532229-32755-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-Clean up probe error handling by checking parameters before any
-allocations and removing an obsolete error label. Also remove
-unnecessary reset of private gpio number.
+This commit is based on the following commit by Fabio Estevam:
+  4344429 video: mxsfb: Introduce regulator support
 
-Acked-by: Jingoo Han <jg1.han@samsung.com>
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Eric B=C3=A9nard <eric@eukrea.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
 ---
- drivers/video/backlight/atmel-pwm-bl.c | 31 ++++++++++++-------------------
- 1 file changed, 12 insertions(+), 19 deletions(-)
+ChangeLog v2->v3:
+- The prints are now replaced with non line wrapped prints.
+- The regulator retrival has been adapted to the new DT bindings which looks
+  more like the IPUv3 ones.
+- The regulator_is_enabled checks were kept, because regulator_disable do n=
+ot
+  do such check.
+---
+ drivers/video/mx3fb.c |   67 +++++++++++++++++++++++++++++++++++++++++++++=
++++-
+ 1 file changed, 66 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
-index 4886028..01af5c2 100644
---- a/drivers/video/backlight/atmel-pwm-bl.c
-+++ b/drivers/video/backlight/atmel-pwm-bl.c
-@@ -126,40 +126,33 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
- 	struct atmel_pwm_bl *pwmbl;
- 	int retval;
- 
-+	pdata = dev_get_platdata(&pdev->dev);
-+	if (!pdata)
-+		return -ENODEV;
-+
-+	if (pdata->pwm_compare_max < pdata->pwm_duty_max ||
-+			pdata->pwm_duty_min > pdata->pwm_duty_max ||
-+			pdata->pwm_frequency = 0)
-+		return -EINVAL;
-+
- 	pwmbl = devm_kzalloc(&pdev->dev, sizeof(struct atmel_pwm_bl),
- 				GFP_KERNEL);
- 	if (!pwmbl)
- 		return -ENOMEM;
- 
- 	pwmbl->pdev = pdev;
+diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+index de5a6c8..1f2ce6d 100644
+--- a/drivers/video/mx3fb.c
++++ b/drivers/video/mx3fb.c
+@@ -27,6 +27,7 @@
+ #include <linux/clk.h>
+ #include <linux/mutex.h>
+ #include <linux/dma/ipu-dma.h>
++#include <linux/regulator/consumer.h>
+=20
+ #include <linux/platform_data/dma-imx.h>
+ #include <linux/platform_data/video-mx3fb.h>
+@@ -269,6 +270,7 @@ struct mx3fb_info {
+ 	struct dma_async_tx_descriptor	*txd;
+ 	dma_cookie_t			cookie;
+ 	struct scatterlist		sg[2];
++	struct regulator		*reg_lcd;
+=20
+ 	struct fb_var_screeninfo	cur_var; /* current var info */
+ };
+@@ -1005,6 +1007,7 @@ static void __blank(int blank, struct fb_info *fbi)
+ 	struct mx3fb_info *mx3_fbi =3D fbi->par;
+ 	struct mx3fb_data *mx3fb =3D mx3_fbi->mx3fb;
+ 	int was_blank =3D mx3_fbi->blank;
++	int ret;
+=20
+ 	mx3_fbi->blank =3D blank;
+=20
+@@ -1023,6 +1026,15 @@ static void __blank(int blank, struct fb_info *fbi)
+ 	case FB_BLANK_HSYNC_SUSPEND:
+ 	case FB_BLANK_NORMAL:
+ 		sdc_set_brightness(mx3fb, 0);
++		if (mx3_fbi->reg_lcd) {
++			if (regulator_is_enabled(mx3_fbi->reg_lcd)) {
++				ret =3D regulator_disable(mx3_fbi->reg_lcd);
++				if (ret)
++					dev_warn(fbi->device,
++						 "lcd regulator disable failed with error: %d\n",
++						 ret);
++			}
++		}
+ 		memset((char *)fbi->screen_base, 0, fbi->fix.smem_len);
+ 		/* Give LCD time to update - enough for 50 and 60 Hz */
+ 		msleep(25);
+@@ -1030,6 +1042,15 @@ static void __blank(int blank, struct fb_info *fbi)
+ 		break;
+ 	case FB_BLANK_UNBLANK:
+ 		sdc_enable_channel(mx3_fbi);
++		if (mx3_fbi->reg_lcd) {
++			if (!regulator_is_enabled(mx3_fbi->reg_lcd)) {
++				ret =3D regulator_enable(mx3_fbi->reg_lcd);
++				if (ret)
++					dev_warn(fbi->device,
++						 "lcd regulator enable failed with error: %d\n",
++						 ret);
++			}
++		}
+ 		sdc_set_brightness(mx3fb, mx3fb->backlight_level);
+ 		break;
+ 	}
+@@ -1206,6 +1227,7 @@ static int mx3fb_suspend(struct platform_device *pdev=
+, pm_message_t state)
+ {
+ 	struct mx3fb_data *mx3fb =3D platform_get_drvdata(pdev);
+ 	struct mx3fb_info *mx3_fbi =3D mx3fb->fbi->par;
++	int ret;
+=20
+ 	console_lock();
+ 	fb_set_suspend(mx3fb->fbi, 1);
+@@ -1214,7 +1236,15 @@ static int mx3fb_suspend(struct platform_device *pde=
+v, pm_message_t state)
+ 	if (mx3_fbi->blank =3D FB_BLANK_UNBLANK) {
+ 		sdc_disable_channel(mx3_fbi);
+ 		sdc_set_brightness(mx3fb, 0);
 -
--	pdata = dev_get_platdata(&pdev->dev);
--	if (!pdata) {
--		retval = -ENODEV;
--		goto err_free_mem;
--	}
--
--	if (pdata->pwm_compare_max < pdata->pwm_duty_max ||
--			pdata->pwm_duty_min > pdata->pwm_duty_max ||
--			pdata->pwm_frequency = 0) {
--		retval = -EINVAL;
--		goto err_free_mem;
--	}
--
- 	pwmbl->pdata = pdata;
- 	pwmbl->gpio_on = pdata->gpio_on;
- 
- 	retval = pwm_channel_alloc(pdata->pwm_channel, &pwmbl->pwmc);
- 	if (retval)
--		goto err_free_mem;
-+		return retval;
- 
- 	if (pwmbl->gpio_on != -1) {
- 		retval = devm_gpio_request(&pdev->dev, pwmbl->gpio_on,
- 					"gpio_atmel_pwm_bl");
--		if (retval) {
--			pwmbl->gpio_on = -1;
-+		if (retval)
- 			goto err_free_pwm;
--		}
- 
- 		/* Turn display off by default. */
- 		retval = gpio_direction_output(pwmbl->gpio_on,
-@@ -197,7 +190,7 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
- 
- err_free_pwm:
- 	pwm_channel_free(&pwmbl->pwmc);
--err_free_mem:
-+
- 	return retval;
++		if (mx3_fbi->reg_lcd) {
++			if (regulator_is_enabled(mx3_fbi->reg_lcd)) {
++				ret =3D regulator_disable(mx3_fbi->reg_lcd);
++				if (ret)
++					dev_warn(&pdev->dev,
++						 "lcd regulator disable failed with error: %d\n",
++						 ret);
++			}
++		}
+ 	}
+ 	return 0;
  }
- 
--- 
-1.8.4.2
+@@ -1226,10 +1256,20 @@ static int mx3fb_resume(struct platform_device *pde=
+v)
+ {
+ 	struct mx3fb_data *mx3fb =3D platform_get_drvdata(pdev);
+ 	struct mx3fb_info *mx3_fbi =3D mx3fb->fbi->par;
++	int ret;
+=20
+ 	if (mx3_fbi->blank =3D FB_BLANK_UNBLANK) {
+ 		sdc_enable_channel(mx3_fbi);
+ 		sdc_set_brightness(mx3fb, mx3fb->backlight_level);
++		if (mx3_fbi->reg_lcd) {
++			if (!regulator_is_enabled(mx3_fbi->reg_lcd)) {
++				ret =3D regulator_enable(mx3_fbi->reg_lcd);
++				if (ret)
++					dev_warn(&pdev->dev,
++						 "lcd regulator enable failed with error: %d\n",
++						 ret);
++			}
++		}
+ 	}
+=20
+ 	console_lock();
+@@ -1373,6 +1413,7 @@ static int init_fb_chan(struct mx3fb_data *mx3fb, str=
+uct idmac_channel *ichan)
+ 	struct mx3fb_platform_data *mx3fb_pdata =3D dev_get_platdata(dev);
+ 	struct device_node *np =3D dev->of_node;
+ 	const char *name;
++	const char *regulator_name;
+ 	const char *ipu_disp_format;
+ 	unsigned int irq;
+ 	struct fb_info *fbi;
+@@ -1395,6 +1436,9 @@ static int init_fb_chan(struct mx3fb_data *mx3fb, str=
+uct idmac_channel *ichan)
+ 			return -EINVAL;
+ 		}
+=20
++		of_property_read_string(display_np, "regulator-name",
++					&regulator_name);
++
+ 		of_property_read_string(display_np, "interface-pix-fmt",
+ 					&ipu_disp_format);
+ 		if (!ipu_disp_format) {
+@@ -1509,6 +1553,24 @@ static int init_fb_chan(struct mx3fb_data *mx3fb, st=
+ruct idmac_channel *ichan)
+ 	if (ret < 0)
+ 		goto erfb;
+=20
++	/* In dt mode,
++	 * using devm_regulator_get would require that the proprety referencing
++	 * the regulator phandle has to be inside the mx3fb node.
++	 */
++	if (np) {
++		if (regulator_name)
++			mx3fbi->reg_lcd =3D regulator_get(NULL, regulator_name);
++	} else {
++		mx3fbi->reg_lcd =3D devm_regulator_get(dev, "lcd");
++	}
++
++	if (IS_ERR(mx3fbi->reg_lcd)) {
++		dev_warn(mx3fb->dev, "Operating without regulator \"lcd\"\n");
++		mx3fbi->reg_lcd =3D NULL;
++	} else {
++		dev_info(mx3fb->dev, "Using \"lcd\" Regulator\n");
++	}
++
+ 	return 0;
+=20
+ erfb:
+@@ -1575,6 +1637,7 @@ static int mx3fb_probe(struct platform_device *pdev)
+ 	dma_cap_mask_t mask;
+ 	struct dma_chan *chan;
+ 	struct dma_chan_request rq;
++	struct mx3fb_info *mx3_fbi;
+=20
+ 	/*
+ 	 * Display Interface (DI) and Synchronous Display Controller (SDC)
+@@ -1630,6 +1693,8 @@ ersdc0:
+ 	dmaengine_put();
+ 	iounmap(mx3fb->reg_base);
+ eremap:
++	mx3_fbi =3D mx3fb->fbi->par;
++	regulator_put(mx3_fbi->reg_lcd);
+ 	kfree(mx3fb);
+ 	dev_err(dev, "mx3fb: failed to register fb\n");
+ 	return ret;
+--=20
+1.7.9.5
 

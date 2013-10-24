@@ -1,79 +1,67 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 17 Oct 2013 11:38:42 +0000
-Subject: [PATCH 6/6] omapdss: hdmi4/hdmi5: set regulator voltage to required level
-Message-Id: <1382009202-18984-7-git-send-email-archit@ti.com>
+From: Denis Carikli <denis@eukrea.com>
+Date: Thu, 24 Oct 2013 08:01:00 +0000
+Subject: [PATCHv6][ 2/7] video: imxfb: Also add pwmr for the device tree.
+Message-Id: <1382601665-6830-2-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382009202-18984-1-git-send-email-archit@ti.com>
-In-Reply-To: <1382009202-18984-1-git-send-email-archit@ti.com>
+References: <1382601665-6830-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1382601665-6830-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>, Somnath Mukherjee <somnath@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-It's not sufficient to request the regulator. We need to set the IO voltage as
-well if the min and max voltage values of the regulator differ.
+pwmr has to be set to get the imxfb backlight work,
+though pwmr was only configurable trough the platform data.
 
-However, if the regulator on a platform doesn't permit the range we requested
-for, or is a fixed voltage regulator, we just give a warning that we didn't get
-voltage range we requested for. The recommended voltage range for vdda_hdmi as
-per the HDMI PHY spec is 1.8V to 1.98V for OMAP4 and 1.5V to 1.8V for OMAP5.
-
-Originally worked on by Somnath Mukherjee <somnath@ti.com>
-
-Cc: Somnath Mukherjee <somnath@ti.com>
-Signed-off-by: Archit Taneja <archit@ti.com>
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: devicetree@vger.kernel.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Eric B=C3=A9nard <eric@eukrea.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
+Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
 ---
- drivers/video/omap2/dss/hdmi4.c | 5 +++++
- drivers/video/omap2/dss/hdmi5.c | 5 +++++
- 2 files changed, 10 insertions(+)
+ .../devicetree/bindings/video/fsl,imx-fb.txt       |    3 +++
+ drivers/video/imxfb.c                              |    2 ++
+ 2 files changed, 5 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/hdmi4.c b/drivers/video/omap2/dss/hdmi4.c
-index e140096..95638b8 100644
---- a/drivers/video/omap2/dss/hdmi4.c
-+++ b/drivers/video/omap2/dss/hdmi4.c
-@@ -83,6 +83,7 @@ static void hdmi_runtime_put(void)
- 
- static int hdmi_init_regulator(void)
- {
-+	int r;
- 	struct regulator *reg;
- 
- 	if (hdmi.vdda_hdmi_dac_reg != NULL)
-@@ -99,6 +100,10 @@ static int hdmi_init_regulator(void)
- 		return PTR_ERR(reg);
- 	}
- 
-+	r = regulator_set_voltage(reg, 1800000, 1980000);
-+	if (r)
-+		DSSWARN("can't set regulator voltage");
+diff --git a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt b/Docum=
+entation/devicetree/bindings/video/fsl,imx-fb.txt
+index 46da08d..ac457ae 100644
+--- a/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
++++ b/Documentation/devicetree/bindings/video/fsl,imx-fb.txt
+@@ -17,6 +17,9 @@ Required nodes:
+ Optional properties:
+ - fsl,dmacr: DMA Control Register value. This is optional. By default, the
+ 	register is not modified as recommended by the datasheet.
++- fsl,pwmr:  LCDC PWM Contrast Control Register value. That property is
++	optional, but defining it is necessary to get the backlight working. If t=
+hat
++	property is ommited, the register is zeroed.
+ - fsl,lscr1: LCDC Sharp Configuration Register value.
+=20
+ Example:
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index 4bf3837..f09372d 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -833,6 +833,8 @@ static int imxfb_init_fbinfo(struct platform_device *pd=
+ev)
+=20
+ 		of_property_read_u32(np, "fsl,dmacr", &fbi->dmacr);
+=20
++		of_property_read_u32(np, "fsl,pwmr", &fbi->pwmr);
 +
- 	hdmi.vdda_hdmi_dac_reg = reg;
- 
- 	return 0;
-diff --git a/drivers/video/omap2/dss/hdmi5.c b/drivers/video/omap2/dss/hdmi5.c
-index 5a1cfd6..aa91f4e 100644
---- a/drivers/video/omap2/dss/hdmi5.c
-+++ b/drivers/video/omap2/dss/hdmi5.c
-@@ -85,6 +85,7 @@ static void hdmi_runtime_put(void)
- 
- static int hdmi_init_regulator(void)
- {
-+	int r;
- 	struct regulator *reg;
- 
- 	if (hdmi.vdda_hdmi_dac_reg != NULL)
-@@ -96,6 +97,10 @@ static int hdmi_init_regulator(void)
- 		return PTR_ERR(reg);
- 	}
- 
-+	r = regulator_set_voltage(reg, 1500000, 1800000);
-+	if (r)
-+		DSSWARN("can't set regulator voltage");
-+
- 	hdmi.vdda_hdmi_dac_reg = reg;
- 
- 	return 0;
--- 
-1.8.1.2
+ 		/* These two function pointers could be used by some specific
+ 		 * platforms. */
+ 		fbi->lcd_power =3D NULL;
+--=20
+1.7.9.5
 

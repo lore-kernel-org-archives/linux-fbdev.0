@@ -1,10 +1,10 @@
 From: Denis Carikli <denis@eukrea.com>
-Date: Thu, 24 Oct 2013 08:01:00 +0000
-Subject: [PATCHv6][ 2/7] video: imxfb: Also add pwmr for the device tree.
-Message-Id: <1382601665-6830-2-git-send-email-denis@eukrea.com>
+Date: Thu, 24 Oct 2013 08:58:19 +0000
+Subject: [PATCHv7][ 2/6] video: imxfb: Also add pwmr for the device tree.
+Message-Id: <1382605103-9595-2-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382601665-6830-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1382601665-6830-1-git-send-email-denis@eukrea.com>
+References: <1382605103-9595-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1382605103-9595-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable

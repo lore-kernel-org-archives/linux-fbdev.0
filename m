@@ -1,7 +1,7 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Date: Thu, 24 Oct 2013 15:57:53 +0000
+From: Olof Johansson <olof@lixom.net>
+Date: Thu, 24 Oct 2013 17:06:15 +0000
 Subject: Re: [PATCH 3/7] video: exynos_mipi_dsim: Use the generic PHY driver
-Message-Id: <52694354.6030603@ti.com>
+Message-Id: <CAOesGMgbGvZB--uaJ2EowPFDYqGZb3iG9SZs9d0UVcJQLAZW3g@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1381940896-9355-1-git-send-email-kishon@ti.com>
  <1381940896-9355-4-git-send-email-kishon@ti.com>
@@ -13,11 +13,9 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
-
-On Thursday 24 October 2013 09:12 PM, Sachin Kamat wrote:
+On Thu, Oct 24, 2013 at 8:42 AM, Sachin Kamat <sachin.kamat@linaro.org> wrote:
 > Hi Olof,
-> 
+>
 > On 24 October 2013 20:00, Olof Johansson <olof@lixom.net> wrote:
 >> Hi Kishon,
 >>
@@ -45,15 +43,14 @@ On Thursday 24 October 2013 09:12 PM, Sachin Kamat wrote:
 >> variable 'pdev' [-Wunused-variable]
 >>   struct platform_device *pdev = to_platform_device(dsim->dev);
 >>
-> 
+>
 > I have already submitted a patch to fix this [1]
-> 
+>
 > [1] http://marc.info/?l=linux-fbdev&m8233359617936&w=2
 
-Sorry, missed that :-(
+Ah, I'm not subscribed to the fbdev list. Next time it might be a good
+idea to cc the same lists as the original patch. But thanks for fixing
+it!
 
-Thanks
-Kishon
-> 
-> 
 
+-Olof

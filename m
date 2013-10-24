@@ -1,38 +1,124 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Sun, 20 Oct 2013 22:07:36 +0000
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 24 Oct 2013 10:40:58 +0000
 Subject: Re: [RFR 2/2] drm/panel: Add simple panel support
-Message-Id: <52645428.9080607@wwwdotorg.org>
+Message-Id: <1853455.BSevh91aGB@avalon>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="nextPart1991938.SzpaPU423k"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381947912-11741-1-git-send-email-treding@nvidia.com> <525FB368.6020003@ti.com> <20131017104856.GA10993@ulmo.nvidia.com> <3592147.9IprvsogX6@avalon>
-In-Reply-To: <3592147.9IprvsogX6@avalon>
-MIME-Version: 1.0
+References: <1381947912-11741-1-git-send-email-treding@nvidia.com> <3768216.eiA2v5KI6a@avalon> <525FD8DD.3090509@ti.com>
+In-Reply-To: <525FD8DD.3090509@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Dave Airlie <airlied@gmail.com>, linux-media@vger.kernel.org, sylvester.nawrocki@gmail.com, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+
+
+--nextPart1991938.SzpaPU423k
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Dave Airlie <airlied-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Laurent Pinchart <laurent.pinchart+renesas-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 
-On 10/17/2013 12:07 PM, Laurent Pinchart wrote:
-...
->> As I said, anything that really needs a CDF binding to work
->> likely isn't "simple" anymore, therefore a separate driver can
->> easily be justified.
+Hi Tomi,
+
+On Thursday 17 October 2013 15:32:29 Tomi Valkeinen wrote:
+> On 17/10/13 15:17, Laurent Pinchart wrote:
+> > On Thursday 17 October 2013 14:59:41 Tomi Valkeinen wrote:
+> >> On 17/10/13 14:51, Laurent Pinchart wrote:
+> >>>> I'm not sure if there's a specific need for the port or endpoint nodes
+> >>>> in cases like the above. Even if we have common properties describing
+> >>>> the endpoint, I guess they could just be in the parent node.
+> >>>> 
+> >>>> panel {
+> >>>> 	remote = <&dc>;
+> >>>> 	common-video-property = <asd>;
+> >>>> };
+> >>>> 
+> >>>> The above would imply one port and one endpoint. Would that work? If we
+> >>>> had a function like parse_endpoint(node), we could just point it to
+> >>>> either a real endpoint node, or to the device's node.
+> >>> 
+> >>> You reference the display controller here, not a specific display
+> >>> controller output. Don't most display controllers have several outputs ?
+> >> 
+> >> Sure. Then the display controller could have more verbose description.
+> >> But the panel could still have what I wrote above, except the 'remote'
+> >> property would point to a real endpoint node inside the dispc node, not
+> >> to the dispc node.
+> >> 
+> >> This would, of course, need some extra code to handle the different
+> >> cases, but just from DT point of view, I think all the relevant
+> >> information is there.
+> > 
+> > There's many ways to describe the same information in DT. While we could
+> > have DT bindings that use different descriptions for different devices
+> > and still support all of them in our code, why should we opt for that
+> > option that will make the implementation much more complex when we can
+> > describe connections in a simple and generic way ?
 > 
-> The system as a whole would be more complex, but the panel could be
-> the same. We can't have two drivers for the same piece of hardware
-> in the DT world, as there will be a single compatible string and no
-> way to choose between the drivers (unlike the board code world that
-> could set device names to "foo- encoder-v4l2" or "foo-encoder-drm"
-> and live happily with that ever after).
+> My suggestion was simple and generic. I'm not proposing per-device
+> custom bindings.
+> 
+> My point was, if we can describe the connections as I described above,
+> which to me sounds possible, we can simplify the panel DT data for 99.9%
+> of the cases.
+> 
+> To me, the first of these looks much nicer:
+> 
+> panel {
+> 	remote = <&remote-endpoint>;
+> 	common-video-property = <asd>;
+> };
+> 
+> panel {
+> 	port {
+> 		endpoint {
+> 			remote = <&remote-endpoint>;
+> 			common-video-property = <asd>;
+> 		};
+> 	};
+> };
 
-That's not true. We can certainly define two different compatible
-values for a piece of HW if we have to. We can easily control whether
-they are handled by the same or different drivers in the OS.
+Please note that the common video properties would be in the panel node, not 
+in the endpoint node (unless you have specific requirements to do so, which 
+isn't the common case).
 
-Now, we should try to avoid this, because then that means that the
-original binding wasn't fully describing the HW. However, at least in
-the case of these simple LCD panels, it's hard to see that there is
-anything more than what's already in Thierry's binding. Remember, the
-binding is a description of the HW, not any Linux-internal details of
-how e.g. a CDF or DRM subsystem is supposed to use the HW; that had
-better be embodied into the driver or subsystem code, which aren't
-ABIs, and hence can be easily modified/enhanced.
+> If that can be supported in the SW by adding complexity to a few functions,
+> and it covers practically all the panels, isn't it worth it?
+> 
+> Note that I have not tried this, so I don't know if there are issues.
+> It's just a thought. Even if there's need for a endpoint node, perhaps
+> the port node can be made optional.
+
+It can be worth it, as long as we make sure that simplified bindings cover the 
+needs of the generic code.
+
+We could assume that, if the port subnode isn't present, the device will have 
+a single port, with a single endpoint. However, isn't the number of endpoints 
+a system property rather than a device property ? If a port of a device is 
+connected to two remote ports it will require two endpoints. We could select 
+the simplified or full bindings based on the system topology though.
+
+I've CC'ed Sylwester Nawrocki and Guennadi Liakhovetski, the V4L2 DT bindings 
+authors, as well as the linux-media list, to get their opinion on this.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
+--nextPart1991938.SzpaPU423k
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJSaPk/AAoJEIkPb2GL7hl1Ud0IALTgkNiiNO09zYQFAeasdvCD
+s+AjL50H2kHu2HygCAldvl+uCSmCFHNi2gj88vxao5r7/rfec3sJZ1OEB7S/1JOX
+O6L7C1JA4uSbzx0TRomDwRTaPnAku52atXAREcOWcInIhUm21cJj3zERC++SvnnV
+s02yYOECOpdDO1V81Tcm/k0CqeohoQfTUcmbKLkKtdJd3eZAc+vVVIpMv36CQBip
+VkN/UQNtkaVVBnh2frFVQy0KDR+S7uM7/mlAzyn1Uw808kRtZDJ6RH67t3OQEsih
+hVl4ghl3joiOGeY0zhLYS5o7c7xPhqTkqMakl5ttaxDq5haZaBEh2yjajdzGjsg=
+=CODO
+-----END PGP SIGNATURE-----
+
+--nextPart1991938.SzpaPU423k--
+

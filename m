@@ -1,124 +1,116 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 24 Oct 2013 10:40:58 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 24 Oct 2013 10:52:19 +0000
 Subject: Re: [RFR 2/2] drm/panel: Add simple panel support
-Message-Id: <1853455.BSevh91aGB@avalon>
+Message-Id: <5268FBE3.80000@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="nextPart1991938.SzpaPU423k"
+Content-Type: multipart/mixed; boundary="2P4B5XH29PRSXwTvPdhRtp9DkMRCR1cxq"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381947912-11741-1-git-send-email-treding@nvidia.com> <3768216.eiA2v5KI6a@avalon> <525FD8DD.3090509@ti.com>
-In-Reply-To: <525FD8DD.3090509@ti.com>
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1381947912-11741-1-git-send-email-treding@nvidia.com> <3768216.eiA2v5KI6a@avalon> <525FD8DD.3090509@ti.com> <1853455.BSevh91aGB@avalon>
+In-Reply-To: <1853455.BSevh91aGB@avalon>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 Cc: Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Rob Herring <rob.herring@calxeda.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Dave Airlie <airlied@gmail.com>, linux-media@vger.kernel.org, sylvester.nawrocki@gmail.com, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
+--2P4B5XH29PRSXwTvPdhRtp9DkMRCR1cxq
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
---nextPart1991938.SzpaPU423k
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+On 24/10/13 13:40, Laurent Pinchart wrote:
 
-Hi Tomi,
+>> panel {
+>> 	remote =3D <&remote-endpoint>;
+>> 	common-video-property =3D <asd>;
+>> };
+>>
+>> panel {
+>> 	port {
+>> 		endpoint {
+>> 			remote =3D <&remote-endpoint>;
+>> 			common-video-property =3D <asd>;
+>> 		};
+>> 	};
+>> };
+>=20
+> Please note that the common video properties would be in the panel node=
+, not=20
+> in the endpoint node (unless you have specific requirements to do so, w=
+hich=20
+> isn't the common case).
 
-On Thursday 17 October 2013 15:32:29 Tomi Valkeinen wrote:
-> On 17/10/13 15:17, Laurent Pinchart wrote:
-> > On Thursday 17 October 2013 14:59:41 Tomi Valkeinen wrote:
-> >> On 17/10/13 14:51, Laurent Pinchart wrote:
-> >>>> I'm not sure if there's a specific need for the port or endpoint nodes
-> >>>> in cases like the above. Even if we have common properties describing
-> >>>> the endpoint, I guess they could just be in the parent node.
-> >>>> 
-> >>>> panel {
-> >>>> 	remote = <&dc>;
-> >>>> 	common-video-property = <asd>;
-> >>>> };
-> >>>> 
-> >>>> The above would imply one port and one endpoint. Would that work? If we
-> >>>> had a function like parse_endpoint(node), we could just point it to
-> >>>> either a real endpoint node, or to the device's node.
-> >>> 
-> >>> You reference the display controller here, not a specific display
-> >>> controller output. Don't most display controllers have several outputs ?
-> >> 
-> >> Sure. Then the display controller could have more verbose description.
-> >> But the panel could still have what I wrote above, except the 'remote'
-> >> property would point to a real endpoint node inside the dispc node, not
-> >> to the dispc node.
-> >> 
-> >> This would, of course, need some extra code to handle the different
-> >> cases, but just from DT point of view, I think all the relevant
-> >> information is there.
-> > 
-> > There's many ways to describe the same information in DT. While we could
-> > have DT bindings that use different descriptions for different devices
-> > and still support all of them in our code, why should we opt for that
-> > option that will make the implementation much more complex when we can
-> > describe connections in a simple and generic way ?
-> 
-> My suggestion was simple and generic. I'm not proposing per-device
-> custom bindings.
-> 
-> My point was, if we can describe the connections as I described above,
-> which to me sounds possible, we can simplify the panel DT data for 99.9%
-> of the cases.
-> 
-> To me, the first of these looks much nicer:
-> 
-> panel {
-> 	remote = <&remote-endpoint>;
-> 	common-video-property = <asd>;
-> };
-> 
-> panel {
-> 	port {
-> 		endpoint {
-> 			remote = <&remote-endpoint>;
-> 			common-video-property = <asd>;
-> 		};
-> 	};
-> };
+Hmm, well, the panel driver must look for its properties either in the
+panel node, or in the endpoint node (I guess it could look them from
+both, but that doesn't sound good).
 
-Please note that the common video properties would be in the panel node, not 
-in the endpoint node (unless you have specific requirements to do so, which 
-isn't the common case).
+If you write the panel driver, and in all your cases the properties work
+fine in the panel node, does that mean they'll work fine with everybody?
 
-> If that can be supported in the SW by adding complexity to a few functions,
-> and it covers practically all the panels, isn't it worth it?
-> 
-> Note that I have not tried this, so I don't know if there are issues.
-> It's just a thought. Even if there's need for a endpoint node, perhaps
-> the port node can be made optional.
+I guess there are different kinds of properties. Something like a
+regulator is obviously property of the panel. But anything related to
+the video itself, like DPI's bus width, or perhaps even something like
+"orientation" if the panel supports such, could need to be in the
+endpoint node.
 
-It can be worth it, as long as we make sure that simplified bindings cover the 
-needs of the generic code.
+But yes, I understand what you mean. With "common-video-property" I
+meant common properties like DPI bus width.
 
-We could assume that, if the port subnode isn't present, the device will have 
-a single port, with a single endpoint. However, isn't the number of endpoints 
-a system property rather than a device property ? If a port of a device is 
-connected to two remote ports it will require two endpoints. We could select 
-the simplified or full bindings based on the system topology though.
+>> If that can be supported in the SW by adding complexity to a few funct=
+ions,
+>> and it covers practically all the panels, isn't it worth it?
+>>
+>> Note that I have not tried this, so I don't know if there are issues.
+>> It's just a thought. Even if there's need for a endpoint node, perhaps=
 
-I've CC'ed Sylwester Nawrocki and Guennadi Liakhovetski, the V4L2 DT bindings 
-authors, as well as the linux-media list, to get their opinion on this.
+>> the port node can be made optional.
+>=20
+> It can be worth it, as long as we make sure that simplified bindings co=
+ver the=20
+> needs of the generic code.
+>=20
+> We could assume that, if the port subnode isn't present, the device wil=
+l have=20
+> a single port, with a single endpoint. However, isn't the number of end=
+points=20
 
--- 
-Regards,
+Right.
 
-Laurent Pinchart
+> a system property rather than a device property ? If a port of a device=
+ is=20
 
---nextPart1991938.SzpaPU423k
+Yes.
+
+> connected to two remote ports it will require two endpoints. We could s=
+elect=20
+> the simplified or full bindings based on the system topology though.
+
+The drivers should not know about simplified/normal bindings. They
+should use CDF DT helper functions to get the port and endpoint
+information. The helper functions would do the assuming.
+
+ Tomi
+
+
+
+--2P4B5XH29PRSXwTvPdhRtp9DkMRCR1cxq
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQEcBAABAgAGBQJSaPk/AAoJEIkPb2GL7hl1Ud0IALTgkNiiNO09zYQFAeasdvCD
-s+AjL50H2kHu2HygCAldvl+uCSmCFHNi2gj88vxao5r7/rfec3sJZ1OEB7S/1JOX
-O6L7C1JA4uSbzx0TRomDwRTaPnAku52atXAREcOWcInIhUm21cJj3zERC++SvnnV
-s02yYOECOpdDO1V81Tcm/k0CqeohoQfTUcmbKLkKtdJd3eZAc+vVVIpMv36CQBip
-VkN/UQNtkaVVBnh2frFVQy0KDR+S7uM7/mlAzyn1Uw808kRtZDJ6RH67t3OQEsih
-hVl4ghl3joiOGeY0zhLYS5o7c7xPhqTkqMakl5ttaxDq5haZaBEh2yjajdzGjsg=
-=CODO
+iQIcBAEBAgAGBQJSaPvjAAoJEPo9qoy8lh71N+QP/2YpqUNY0oNTGdphnPRXXRdW
+Drde4D+1hf+/QfhIBsOkw06iI5jB99rwhQw9BUSk0rSrPW3pIdOGG+R9/7CeeNRa
+rozcFb1Yk7LUHkVbDyRbdnd2cj9UGSNJ7iwpWZ/FKN3ZKLK3XF9PiXa7bwa9wUm0
+JzryacTvJ5ySl1LJFpjpq4PScPZmO+Pa47lOwALAKCiphy9C2HFJU4PQlWW7nmcU
+hz2UcswXTgQXoAiPuwevjke5boi5jN0hp8pAMpt9bWqfSBzniQoRep/cIoKm7XVZ
+ckHdvVM95YqTcYTgGpy1IDd6+0BqO7TCRAQFNQav7jk6WV5ojVA8PNrjkwCLyPQV
+PN8fALI++JMmjdJ4G12Wf0jQ4tuoe8Qx3x/oS/Lj7U+oVFbq06JKznNO2+guN2z4
+Pr95xhr9Gq0s8myRnQABi8t0a3kWWRe+V5/40UhbPyt4VChjjKVKpvpFprGtPHWK
+io4XJVwqS2+MJ1I21ZxzRbEcQZT/exKm+5dYqHWVX6zYuEs2nqM0icLZI+XQMEya
+aFdD5ZvntOx7F41Uu6IKqr64URKidpacUuho/Ecbtz10E+qtE9eiCyxCV1lBpURZ
+YEhiS7TDDsBdFyJQXDs8hwY2wNtntJNsaQDfpYwAQtRTVGV/LVLfaPYfOW71xP2Q
+TD01Gc94dWgS8xusCCBg
+=NDX3
 -----END PGP SIGNATURE-----
 
---nextPart1991938.SzpaPU423k--
-
+--2P4B5XH29PRSXwTvPdhRtp9DkMRCR1cxq--

@@ -1,102 +1,338 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Date: Sat, 26 Oct 2013 00:18:54 +0000
+From: Kumar Gala <galak@codeaurora.org>
+Date: Sat, 26 Oct 2013 06:40:20 +0000
 Subject: Re: [PATCHv3][ 3/5] video: mx3fb: Add device tree suport.
-Message-Id: <20131026001854.GE17135@pengutronix.de>
+Message-Id: <75314C73-0260-4F15-A9EB-4227C6A7B374@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1382532229-32755-1-git-send-email-denis@eukrea.com>
  <1382532229-32755-3-git-send-email-denis@eukrea.com>
- <20131025195040.0CCC3C404DA@trevor.secretlab.ca>
-In-Reply-To: <20131025195040.0CCC3C404DA@trevor.secretlab.ca>
+In-Reply-To: <1382532229-32755-3-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 To: linux-arm-kernel@lists.infradead.org
 
-On Fri, Oct 25, 2013 at 08:50:40PM +0100, Grant Likely wrote:
-> On Wed, 23 Oct 2013 14:43:47 +0200, Denis Carikli <denis@eukrea.com> wrot=
-e:
-> > Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> > Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> > Cc: linux-fbdev@vger.kernel.org
-> > Cc: Rob Herring <rob.herring@calxeda.com>
-> > Cc: Pawel Moll <pawel.moll@arm.com>
-> > Cc: Mark Rutland <mark.rutland@arm.com>
-> > Cc: Stephen Warren <swarren@wwwdotorg.org>
-> > Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-> > Cc: devicetree@vger.kernel.org
-> > Cc: Sascha Hauer <kernel@pengutronix.de>
-> > Cc: linux-arm-kernel@lists.infradead.org
-> > Cc: Eric B=E9nard <eric@eukrea.com>
-> > Signed-off-by: Denis Carikli <denis@eukrea.com>
-> > ---
-> > ChangeLog v2->v3:
-> > - The device tree bindings were reworked in order to make it look more =
-like the
-> >   IPUv3 bindings.
-> > - The interface_pix_fmt property now looks like the IPUv3 one.
-> > ---
-> >  .../devicetree/bindings/video/fsl,mx3-fb.txt       |   35 ++++++
-> >  drivers/video/Kconfig                              |    2 +
-> >  drivers/video/mx3fb.c                              |  125 ++++++++++++=
-+++++---
-> >  3 files changed, 147 insertions(+), 15 deletions(-)
-> >  create mode 100644 Documentation/devicetree/bindings/video/fsl,mx3-fb.=
-txt
-> >=20
-> > diff --git a/Documentation/devicetree/bindings/video/fsl,mx3-fb.txt b/D=
-ocumentation/devicetree/bindings/video/fsl,mx3-fb.txt
-> > new file mode 100644
-> > index 0000000..0b31374
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/video/fsl,mx3-fb.txt
-> > @@ -0,0 +1,35 @@
-> > +Freescale MX3 fb
-> > +=3D=3D=3D=3D=3D=3D=3D=3D
-> > +
-> > +Required properties:
-> > +- compatible: Should be "fsl,mx3fb". compatible chips include the imx3=
-1 and the
-> > +  imx35.
-> > +- reg: should be register base and length as documented in the datashe=
-et.
-> > +- clocks: Handle to the ipu_gate clock.
-> > +
-> > +Example:
-> > +
-> > +lcdc: mx3fb@53fc00b4 {
-> > +	compatible =3D "fsl,mx3-fb";
-> > +	reg =3D <0x53fc00b4 0x0b>;
-> > +	clocks =3D <&clks 55>;
-> > +};
->=20
-> This (and some of the other bindings) are trivial, and they are all
-> associated with a single SoC. I think it would be better to collect all
-> the mx3 bindings into a single file rather than distributing them all
-> over the bindings tree.
->=20
-> I started thinking about this after some of the DT conversations in
-> Edinburgh this week. Unless there is a high likelyhood of components
-> being used separately, I think it is far more useful to collect all the
-> bindings for an SoC into a single file. It will certainly reduce a lot
-> of the boilerplate that we've been collecting in bindings documentation
-> files.
->=20
-> A long time ago I took that approach for the mpc5200 documentation[1].
-> Take a look at that organization and let me know what you think.
 
-I don't think this is a good idea. When a new SoC comes out we don't
-know which components will be reused on the next SoC. This will cause a
-lot of bikeshedding when it actually is reused and then has to be moved.
+On Oct 23, 2013, at 7:43 AM, Denis Carikli wrote:
 
-Also I would find it quite inconsistent if I had to lookup some devices
-in a SoC file and most bindings in subsystem specific files. So when
-searching for a binding I would first have to know if the hardware is
-unique to the SoC or not.
+> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: Rob Herring <rob.herring@calxeda.com>
+> Cc: Pawel Moll <pawel.moll@arm.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Stephen Warren <swarren@wwwdotorg.org>
+> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+> Cc: devicetree@vger.kernel.org
+> Cc: Sascha Hauer <kernel@pengutronix.de>
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: Eric B=E9nard <eric@eukrea.com>
+> Signed-off-by: Denis Carikli <denis@eukrea.com>
+> ---
+> ChangeLog v2->v3:
+> - The device tree bindings were reworked in order to make it look more li=
+ke the
+>  IPUv3 bindings.
+> - The interface_pix_fmt property now looks like the IPUv3 one.
+> ---
+> .../devicetree/bindings/video/fsl,mx3-fb.txt       |   35 ++++++
+> drivers/video/Kconfig                              |    2 +
+> drivers/video/mx3fb.c                              |  125 +++++++++++++++=
+++---
+> 3 files changed, 147 insertions(+), 15 deletions(-)
+> create mode 100644 Documentation/devicetree/bindings/video/fsl,mx3-fb.txt
+>=20
+> diff --git a/Documentation/devicetree/bindings/video/fsl,mx3-fb.txt b/Doc=
+umentation/devicetree/bindings/video/fsl,mx3-fb.txt
+> new file mode 100644
+> index 0000000..0b31374
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/video/fsl,mx3-fb.txt
+> @@ -0,0 +1,35 @@
+> +Freescale MX3 fb
 
-Sascha
+Can you spell out framebuffer here instead of fb
+
+> +=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +Required properties:
+> +- compatible: Should be "fsl,mx3fb". compatible chips include the imx31 =
+and the
+> +  imx35.
+> +- reg: should be register base and length as documented in the datasheet.
+> +- clocks: Handle to the ipu_gate clock.
+> +
+> +Example:
+> +
+> +lcdc: mx3fb@53fc00b4 {
+> +	compatible =3D "fsl,mx3-fb";
+> +	reg =3D <0x53fc00b4 0x0b>;
+> +	clocks =3D <&clks 55>;
+> +};
+> +
+> +Display support
+> +=3D=3D=3D=3D=3D=3D=3D> +Required properties:
+> +- model : The user-visible name of the display.
+> +
+> +Optional properties:
+> +- interface_pix_fmt: How this display is connected to the
+> +  crtc. Currently supported types: "rgb24", "rgb565", "rgb666"
+
+
+Why is there no compatible for the display?
+
+> +
+> +It can also have an optional timing subnode as described in
+> +  Documentation/devicetree/bindings/video/display-timing.txt.
+> +
+> +Example:
+> +
+> +display@di0 {
+> +	    interface-pix-fmt =3D "rgb666";
+> +	    model =3D "CMO-QVGA";
+> +};
+
+how do you relate the display to the framebuffer?
+
+- k
+
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index 14317b7..2a638df 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -2359,6 +2359,8 @@ config FB_MX3
+> 	select FB_CFB_FILLRECT
+> 	select FB_CFB_COPYAREA
+> 	select FB_CFB_IMAGEBLIT
+> +	select VIDEOMODE_HELPERS
+> +	select FB_MODE_HELPERS
+> 	default y
+> 	help
+> 	  This is a framebuffer device for the i.MX31 LCD Controller. So
+> diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+> index 804f874..de5a6c8 100644
+> --- a/drivers/video/mx3fb.c
+> +++ b/drivers/video/mx3fb.c
+> @@ -31,6 +31,8 @@
+> #include <linux/platform_data/dma-imx.h>
+> #include <linux/platform_data/video-mx3fb.h>
+>=20
+> +#include <video/of_display_timing.h>
+> +
+> #include <asm/io.h>
+> #include <asm/uaccess.h>
+>=20
+> @@ -757,11 +759,13 @@ static int __set_par(struct fb_info *fbi, bool lock)
+> 			sig_cfg.Hsync_pol =3D true;
+> 		if (fbi->var.sync & FB_SYNC_VERT_HIGH_ACT)
+> 			sig_cfg.Vsync_pol =3D true;
+> -		if (fbi->var.sync & FB_SYNC_CLK_INVERT)
+> +		if ((fbi->var.sync & FB_SYNC_CLK_INVERT) ||
+> +		    (fbi->var.sync & FB_SYNC_PIXDAT_HIGH_ACT))
+> 			sig_cfg.clk_pol =3D true;
+> 		if (fbi->var.sync & FB_SYNC_DATA_INVERT)
+> 			sig_cfg.data_pol =3D true;
+> -		if (fbi->var.sync & FB_SYNC_OE_ACT_HIGH)
+> +		if ((fbi->var.sync & FB_SYNC_OE_ACT_HIGH) ||
+> +		    (fbi->var.sync & FB_SYNC_DE_HIGH_ACT))
+> 			sig_cfg.enable_pol =3D true;
+> 		if (fbi->var.sync & FB_SYNC_CLK_IDLE_EN)
+> 			sig_cfg.clkidle_en =3D true;
+> @@ -1351,21 +1355,75 @@ static struct fb_info *mx3fb_init_fbinfo(struct d=
+evice *dev, struct fb_ops *ops)
+> 	return fbi;
+> }
+>=20
+> +static int match_dt_disp_data(const char *property)
+> +{
+> +	if (!strcmp("rgb666", property))
+> +		return IPU_DISP_DATA_MAPPING_RGB666;
+> +	else if (!strcmp("rgb565", property))
+> +		return IPU_DISP_DATA_MAPPING_RGB565;
+> +	else if (!strcmp("rgb24", property))
+> +		return IPU_DISP_DATA_MAPPING_RGB888;
+> +	else
+> +		return -EINVAL;
+> +}
+> +
+> static int init_fb_chan(struct mx3fb_data *mx3fb, struct idmac_channel *i=
+chan)
+> {
+> 	struct device *dev =3D mx3fb->dev;
+> 	struct mx3fb_platform_data *mx3fb_pdata =3D dev_get_platdata(dev);
+> -	const char *name =3D mx3fb_pdata->name;
+> +	struct device_node *np =3D dev->of_node;
+> +	const char *name;
+> +	const char *ipu_disp_format;
+> 	unsigned int irq;
+> 	struct fb_info *fbi;
+> 	struct mx3fb_info *mx3fbi;
+> 	const struct fb_videomode *mode;
+> 	int ret, num_modes;
+> +	struct fb_videomode of_mode;
+> +	struct device_node *display_np, *root_np;
+> +
+> +	if (np) {
+> +		root_np =3D of_find_node_by_path("/");
+> +		if (!root_np) {
+> +			dev_err(dev, "Can't get the \"/\" node.\n");
+> +			return -EINVAL;
+> +		}
+> +
+> +		display_np =3D of_find_node_by_name(root_np, "display");
+> +		if (!display_np) {
+> +			dev_err(dev, "Can't get the display device node.\n");
+> +			return -EINVAL;
+> +		}
+> +
+> +		of_property_read_string(display_np, "interface-pix-fmt",
+> +					&ipu_disp_format);
+> +		if (!ipu_disp_format) {
+> +			mx3fb->disp_data_fmt =3D IPU_DISP_DATA_MAPPING_RGB666;
+> +			dev_warn(dev,
+> +				"ipu display data mapping was not defined, using the default rgb666.=
+\n");
+> +		} else {
+> +			mx3fb->disp_data_fmt > +				match_dt_disp_data(ipu_disp_format);
+> +		}
+> +
+> +		if (mx3fb->disp_data_fmt =3D -EINVAL) {
+> +			dev_err(dev, "Illegal display data format \"%s\"\n",
+> +				ipu_disp_format);
+> +			return -EINVAL;
+> +		}
+>=20
+> -	if (mx3fb_pdata->disp_data_fmt >=3D ARRAY_SIZE(di_mappings)) {
+> -		dev_err(dev, "Illegal display data format %d\n",
+> +		of_property_read_string(display_np, "model", &name);
+> +		if (ret) {
+> +			dev_err(dev, "Missing display model name\n");
+> +			return -EINVAL;
+> +		}
+> +	} else {
+> +		name =3D mx3fb_pdata->name;
+> +		if (mx3fb_pdata->disp_data_fmt >=3D ARRAY_SIZE(di_mappings)) {
+> +			dev_err(dev, "Illegal display data format %d\n",
+> 				mx3fb_pdata->disp_data_fmt);
+> -		return -EINVAL;
+> +			return -EINVAL;
+> +		}
+> 	}
+>=20
+> 	ichan->client =3D mx3fb;
+> @@ -1386,12 +1444,24 @@ static int init_fb_chan(struct mx3fb_data *mx3fb,=
+ struct idmac_channel *ichan)
+> 		goto emode;
+> 	}
+>=20
+> -	if (mx3fb_pdata->mode && mx3fb_pdata->num_modes) {
+> -		mode =3D mx3fb_pdata->mode;
+> -		num_modes =3D mx3fb_pdata->num_modes;
+> +	if (np) {
+> +		ret =3D of_get_fb_videomode(display_np, &of_mode,
+> +					  OF_USE_NATIVE_MODE);
+> +		if (!ret) {
+> +			mode =3D &of_mode;
+> +			num_modes =3D 1;
+> +		} else {
+> +			mode =3D mx3fb_modedb;
+> +			num_modes =3D ARRAY_SIZE(mx3fb_modedb);
+> +		}
+> 	} else {
+> -		mode =3D mx3fb_modedb;
+> -		num_modes =3D ARRAY_SIZE(mx3fb_modedb);
+> +		if (mx3fb_pdata->mode || !mx3fb_pdata->num_modes) {
+> +			mode =3D mx3fb_pdata->mode;
+> +			num_modes =3D mx3fb_pdata->num_modes;
+> +		} else {
+> +			mode =3D mx3fb_modedb;
+> +			num_modes =3D ARRAY_SIZE(mx3fb_modedb);
+> +		}
+> 	}
+>=20
+> 	if (!fb_find_mode(&fbi->var, fbi, fb_mode, mode,
+> @@ -1421,7 +1491,8 @@ static int init_fb_chan(struct mx3fb_data *mx3fb, s=
+truct idmac_channel *ichan)
+> 	mx3fbi->mx3fb		=3D mx3fb;
+> 	mx3fbi->blank		=3D FB_BLANK_NORMAL;
+>=20
+> -	mx3fb->disp_data_fmt	=3D mx3fb_pdata->disp_data_fmt;
+> +	if (!np)
+> +		mx3fb->disp_data_fmt =3D mx3fb_pdata->disp_data_fmt;
+>=20
+> 	init_completion(&mx3fbi->flip_cmpl);
+> 	disable_irq(ichan->eof_irq);
+> @@ -1449,13 +1520,26 @@ emode:
+> 	return ret;
+> }
+>=20
+> +static int imx_dma_is_dt_ipu(struct dma_chan *chan)
+> +{
+> +	/* Example: 53fc0000.ipu */
+> +	if (chan && chan->device && chan->device->dev) {
+> +		char *name =3D dev_name(chan->device->dev);
+> +		name =3D strchr(name, '.');
+> +		if (name)
+> +			return !strcmp(name, ".ipu");
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> static bool chan_filter(struct dma_chan *chan, void *arg)
+> {
+> 	struct dma_chan_request *rq =3D arg;
+> 	struct device *dev;
+> 	struct mx3fb_platform_data *mx3fb_pdata;
+>=20
+> -	if (!imx_dma_is_ipu(chan))
+> +	if (!imx_dma_is_ipu(chan) && !imx_dma_is_dt_ipu(chan))
+> 		return false;
+>=20
+> 	if (!rq)
+> @@ -1464,8 +1548,12 @@ static bool chan_filter(struct dma_chan *chan, voi=
+d *arg)
+> 	dev =3D rq->mx3fb->dev;
+> 	mx3fb_pdata =3D dev_get_platdata(dev);
+>=20
+> -	return rq->id =3D chan->chan_id &&
+> -		mx3fb_pdata->dma_dev =3D chan->device->dev;
+> +	/* When using the devicetree, mx3fb_pdata is NULL */
+> +	if (imx_dma_is_dt_ipu(chan))
+> +		return rq->id =3D chan->chan_id;
+> +	else
+> +		return rq->id =3D chan->chan_id &&
+> +			mx3fb_pdata->dma_dev =3D chan->device->dev;
+> }
+>=20
+> static void release_fbi(struct fb_info *fbi)
+> @@ -1565,9 +1653,16 @@ static int mx3fb_remove(struct platform_device *de=
+v)
+> 	return 0;
+> }
+>=20
+> +static struct of_device_id mx3fb_of_dev_id[] =3D {
+> +	{ .compatible =3D "fsl,mx3-fb", },
+> +	{ /* sentinel */ },
+> +};
+> +MODULE_DEVICE_TABLE(of, mx3fb_of_dev_id);
+> +
+> static struct platform_driver mx3fb_driver =3D {
+> 	.driver =3D {
+> 		.name =3D MX3FB_NAME,
+> +		.of_match_table =3D mx3fb_of_dev_id,
+> 		.owner =3D THIS_MODULE,
+> 	},
+> 	.probe =3D mx3fb_probe,
+> --=20
+> 1.7.9.5
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 --=20
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Employee of Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted b=
+y The Linux Foundation
+

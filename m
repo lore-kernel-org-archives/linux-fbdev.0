@@ -1,63 +1,92 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 11 Oct 2013 05:18:34 +0000
-Subject: Re: linux-next: manual merge of the omap_dss2 tree
-Message-Id: <52578A2A.10304@ti.com>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 28 Oct 2013 14:23:17 +0000
+Subject: linux-next: build failure after merge of the final tree (fbdev tree related)
+Message-Id: <20131029012317.b9ba8173dee5bac1a5bd2404@canb.auug.org.au>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="XNqRQXMNldPvDr7dARvo8RFQxgfO1pSIR"
+Content-Type: multipart/mixed; boundary="Signature=_Tue__29_Oct_2013_01_23_17_+1100_DShg+nNpREjrw96n"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20131010175020.GS21581@sirena.org.uk>
-In-Reply-To: <20131010175020.GS21581@sirena.org.uk>
-To: Mark Brown <broonie@kernel.org>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>
+References: <20110520163233.abcabd67.sfr@canb.auug.org.au>
+In-Reply-To: <20110520163233.abcabd67.sfr@canb.auug.org.au>
+To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Michal Simek <michal.simek@xilinx.com>
 
---XNqRQXMNldPvDr7dARvo8RFQxgfO1pSIR
-Content-Type: text/plain; charset=ISO-8859-1
+--Signature=_Tue__29_Oct_2013_01_23_17_+1100_DShg+nNpREjrw96n
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Mark, Jean-Christophe,
+Hi all,
 
-On 10/10/13 20:50, Mark Brown wrote:
-> Today's linux-next merge of the omap_dss2 tree got conflicts in
-> drivers/video/omap2/dss/hdmi4_core.[ch] caused by ef26958a (omapdss:
-> HDMI: Rename hdmi driver files to nicer names) interacting with a range=
+After merging the final tree, today's linux-next build (powerpc
+ppc44x_defconfig) failed like this:
 
-> of commits from Ricardo Neri in the fbdev tree and possibly some other
-> stuff.  git is unfortunately not giving me a useful diff right now :/
+drivers/video/xilinxfb.c: In function 'xilinxfb_of_probe':
+drivers/video/xilinxfb.c:431:30: error: 'op' undeclared (first use in this =
+function)
 
-Jean-Christophe has slightly different versions of my patches in his
-fbdev for-next branch, so they conflict with my updated versions.
+Caused by commit 353846fb8bb7 ("video: xilinxfb: Use standard variable
+name convention") from the fbdev tree.
 
-Jean-Christophe, I expected this to happen with the current way of you
-having a copy of my for-next branch in yours. Can I now take your
-atmel_lcdfb patches to my for-next, and you'll remove all patches from
-your for-next?
+I have applied the following fix patch for today:
 
- Tomi
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 29 Oct 2013 01:18:22 +1100
+Subject: [PATCH] video: xilinxfb: Fix for "Use standard variable name conve=
+ntion"
 
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/video/xilinxfb.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index 9eedf9673b7f..6ff1a91e9dfd 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -428,11 +428,11 @@ static int xilinxfb_of_probe(struct platform_device *=
+pdev)
+ #ifdef CONFIG_PPC_DCR
+ 	else {
+ 		int start;
+-		start =3D dcr_resource_start(op->dev.of_node, 0);
+-		drvdata->dcr_len =3D dcr_resource_len(op->dev.of_node, 0);
+-		drvdata->dcr_host =3D dcr_map(op->dev.of_node, start, drvdata->dcr_len);
++		start =3D dcr_resource_start(pdev->dev.of_node, 0);
++		drvdata->dcr_len =3D dcr_resource_len(pdev->dev.of_node, 0);
++		drvdata->dcr_host =3D dcr_map(pdev->dev.of_node, start, drvdata->dcr_len=
+);
+ 		if (!DCR_MAP_OK(drvdata->dcr_host)) {
+-			dev_err(&op->dev, "invalid DCR address\n");
++			dev_err(&pdev->dev, "invalid DCR address\n");
+ 			return -ENODEV;
+ 		}
+ 	}
+--=20
+1.8.4.rc3
 
---XNqRQXMNldPvDr7dARvo8RFQxgfO1pSIR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Tue__29_Oct_2013_01_23_17_+1100_DShg+nNpREjrw96n
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+Version: GnuPG v2.0.21 (GNU/Linux)
 
-iQIcBAEBAgAGBQJSV4oqAAoJEPo9qoy8lh71j9EP/3p2wrXE1HG9AxVh7vTQfL+z
-k/ER29SY3vxgDBXgKwoVTAy8Ui1/h9wrx1gfOLYbJck3vjKMSfW1bjJn8Sx2TNZg
-0yImVz8jcJg1Hx7hfwaygFysRnyqniKHw2H0uVRUW8j0b0W9/6EwwAdruHBAcWN1
-xvUKTVMsOKzZqhtf7jr600Gn0XBffMaXOgd2vgRaSicaTFfJRe1NzbKynn52qKu0
-8GRHFrwEyhsatNPy5UEmtG/aKhQDrqNuEYXavi9/Puv/qB0W/fY84LvI0Sv7uDEM
-3/GQbvvm4pYcHaKJpGrhoI+B9GUmamOQ+S9crZPXp4sOCgM7J+6co9//QWaoVHb2
-62gs2a1lsSagc5H6wykChKRzv3KovVo+w8uzgLfvLSXIWU1FD1ze1gPAfbOX9OOy
-6v0KD1ApGxGUTSKUBUSpgTZ0Pq5qNFmxKSz7TofVMZezq7k8++rsMT3ywKJlAyNC
-y4VGWFa8TZUwgf9cSNrfm7bST1E9I2cqWxbl8ioM/RGFqpzAxFzy1OaFrLeHmKVh
-DIOXZa5lNfBJUO6YDY+O011h1HbdBTEYTktoN12370VtTKY8w2WepUnC3yA2mvkI
-Fcqf1NyU7IN0TCeFKR/NQh9vkbWpzVvcrlFuKjjrU2t+o6wZqVbtYN3BgJ3Vyv2Q
-nqeKKrSdBLbrlL/CK844
-=J0Qn
+iQIcBAEBCAAGBQJSbnNbAAoJEMDTa8Ir7ZwVnooP/1LS+f9SxGMr6WGR2JJtFZ8E
+jojjonFKb6Fs8lLRUuEOeBDbPEW/SmRu0dkNhsPHU1vGIKUtKfI+dVL9Y9ZBF45k
+IQwmMATMOK9Z7R78s2cXW0rB7+8lrCtWRSNdWXJDSj0hrDnrrzwNCRTtwla/9tWZ
+N7vg94dG7lDLNaBgZqjiEuH0k1BTcLk++PNi4c0X2zdEx5242do3Uk1Bx97P19ej
+Gbud4ZsK/pQhyBJcdTJLNZOIPWR6Owg30wf/xECw73lbe6hmjxa2DTLlhRXriUgR
+1wgBt7yRnGVymZwM8l6GFYcOTyU3SUATbE0uIR5rGs/Pwf8dFavgMUQJlkv7IF6/
+5XSBpD7XPKGpNyqMNHt2epQn+WFB0jY8taV1Aa9Vlh2vVY0xtfHGQ9hsR9lvf/rt
+w4tXAjO79kfUbvIZrm4ue92vkWhAcQwtml+sPeYqR6C8CElfU6+EUFlSQ14X7WeW
+DIbNyC488mbwOcPIH0Sw1q2kC4mssScMuiqGqlsOjQ/w7EZSYCXvPwTUbSV7mQvL
+5T1sKr7257CPDse95eYD1QgfPANFI2k76N28/TaG+onwbqcMRZZb7XiI32Xy7+d0
+C4kz9SjfTJWoSKwTIjIadhE6b0k1g/cvlwtORdwdir10yQCkLXA9rdjw6UroiseR
+FVx0ce0MWTfXhYWsjPA9
+=h1yv
 -----END PGP SIGNATURE-----
 
---XNqRQXMNldPvDr7dARvo8RFQxgfO1pSIR--
+--Signature=_Tue__29_Oct_2013_01_23_17_+1100_DShg+nNpREjrw96n--

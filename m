@@ -1,102 +1,208 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Date: Wed, 30 Oct 2013 18:26:14 +0000
-Subject: Re: outcome of DRM/KMS DT bindings session
-Message-Id: <3796125.vSG7qeYk2f@flatron>
+From: Gu Zheng <guz.fnst@cn.fujitsu.com>
+Date: Mon, 28 Oct 2013 06:01:12 +0000
+Subject: [RFC PATCH RESEND] fb: reorder the lock sequence to fix a potential lockdep
+Message-Id: <526DFDA8.7010806@cn.fujitsu.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAPM=9twObPRhPavm9xD+7=JDPEVD+K_WFJxMGG=f5eXR12PvLw@mail.gmail.com>
-	<20131030120229.GF24559@pengutronix.de>
-In-Reply-To: <20131030120229.GF24559@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org
-Cc: ksummit-2013-discuss@lists.linuxfoundation.org, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 
-On Wednesday 30 of October 2013 13:02:29 Sascha Hauer wrote:
-> On Tue, Oct 29, 2013 at 01:52:57PM +1000, Dave Airlie wrote:
-> > So we had a sessions at kernel summit to discuss the driver model and
-> > DT interactions for a display pipeline,
-> > 
-> > we had good attendance from a few sides and I hope to summarise the
-> > recommendations below,
-> > 
-> > a) Device Tree bindings
-> > 
-> > We should create a top-level virtual device binding that a top level
-> > driver can bind to, like alsa asoc does.
-> > 
-> > We should separate the CDF device tree model from CDF as a starting
-> > point and refine it outside of CDF, and produce a set of bindings that
-> > cover the current drivers we have, exynos, imx, tegra, msm, armada
-> > etc. This set of bindings should not be tied on CDF being merged or
-> > anything else.
-> > 
-> > Display pipelines should be modelered in the device tree, but the
-> > level of detail required for links between objects may be left up to
-> > the SoC developer, esp wrt tightly coupled SoCs.
-> > 
-> > Externally linked devices like bridges and panels should be explicitly
-> > linked.
-> > 
-> > b) Driver Model
-> > 
-> > The big thing here is that the device tree description we use should
-> > not dictate the driver model we use. This is the biggest thing I
-> > learned, so what does it mean?
-> > 
-> > We aren't required to write a device driver per device tree object.
-> > 
-> > We shouldn't be writing device drivers per device tree object.
-> > 
-> > For tightly-coupled SoCs where the blocks come from one vendor and are
-> > reused a lot, a top level driver should use the DT as configuration
-> > information source for the list of blocks it needs to initialise on
-> > the card, not as a list of separate drivers. There may be some
-> > external drivers required and the code should deal with this, like how
-> > alsa asoc does.
-> > 
-> > To share code between layers we should refactor it into a helper
-> > library not a separate driver, the kms/v4l/fbdev can use the library.
-> > 
-> > This should allow us to move forward a bit clearer esp with new
-> > drivers and following these recommendations, and I think porting
-> > current drivers to a sane model, especially exynos and imx.
-> > 
-> > Now I saw we here but I'm only going to be donating my use of a big
-> > stick and review abilities to making this happen, but I'm quite
-> > willing to enforce some of these rules going forward as I think it
-> > will make life easier.
-> > 
-> > After looking at some of the ordering issues we've had with x86 GPUs
-> > (which are really just a tightly coupled SoC) I don't want separate
-> > drivers all having their own init, suspend/resume paths in them as I
-> > know we'll have to start making special vtable entry points etc to
-> > solve some random ordering issues that crop up.
-> 
-> The DRM device has to be initialized/suspended/resumed as a whole, no
-> doubt about that. If that's not the case you indeed open up the door for
-> all kinds of ordering issues.
-> 
-> Still the different components can be multiple devices, just initialize
-> the drm device once all components are probed. Remove it again once a
-> component is removed. Handle suspend in the DRM device, not in
-> the individual component drivers. The suspend in the component drivers
-> would only be called after the DRM device is completely quiesced.
-> Similarly the resume in the component drivers would not reenable the
-> components, this instead would be done in the DRM device when all
-> components are there again.
->
-> This way all components could be proper (driver model)devices with
-> proper drivers without DRM even noticing that multiple components are
-> involved.
-> 
-> Side note: We have no choice anyway. All SoCs can (sometimes must)
-> be extended with external I2C devices. On every SoC the I2C bus master
-> is a separate device, so we have a multicomponent device (in the sense
-> of driver model) already in many cases.
+Following commits:
+50e244cc79 fb: rework locking to fix lock ordering on takeover
+e93a9a8687 fb: Yet another band-aid for fixing lockdep mess
+054430e773 fbcon: fix locking harder
 
-+1
+reworked locking to fix related lock ordering on takeover, and introduced console_lock
+into fbmem, but it seems that the new lock sequence(fb_info->lock ---> console_lock)
+is against with the one in console_callback(console_lock ---> fb_info->lock), and leads to
+a potential deadlock as following:
+[  601.079000] ===========================
+[  601.079000] [ INFO: possible circular locking dependency detected ]
+[  601.079000] 3.11.0 #189 Not tainted
+[  601.079000] -------------------------------------------------------
+[  601.079000] kworker/0:3/619 is trying to acquire lock:
+[  601.079000]  (&fb_info->lock){+.+.+.}, at: [<ffffffff81397566>] lock_fb_info+0x26/0x60
+[  601.079000]
+but task is already holding lock:
+[  601.079000]  (console_lock){+.+.+.}, at: [<ffffffff8141aae3>] console_callback+0x13/0x160
+[  601.079000]
+which lock already depends on the new lock.
 
-Best regards,
-Tomasz
+[  601.079000]
+the existing dependency chain (in reverse order) is:
+[  601.079000]
+-> #1 (console_lock){+.+.+.}:
+[  601.079000]        [<ffffffff810dc971>] lock_acquire+0xa1/0x140
+[  601.079000]        [<ffffffff810c6267>] console_lock+0x77/0x80
+[  601.079000]        [<ffffffff81399448>] register_framebuffer+0x1d8/0x320
+[  601.079000]        [<ffffffff81cfb4c8>] efifb_probe+0x408/0x48f
+[  601.079000]        [<ffffffff8144a963>] platform_drv_probe+0x43/0x80
+[  601.079000]        [<ffffffff8144853b>] driver_probe_device+0x8b/0x390
+[  601.079000]        [<ffffffff814488eb>] __driver_attach+0xab/0xb0
+[  601.079000]        [<ffffffff814463bd>] bus_for_each_dev+0x5d/0xa0
+[  601.079000]        [<ffffffff81447e6e>] driver_attach+0x1e/0x20
+[  601.079000]        [<ffffffff81447a07>] bus_add_driver+0x117/0x290
+[  601.079000]        [<ffffffff81448fea>] driver_register+0x7a/0x170
+[  601.079000]        [<ffffffff8144a10a>] __platform_driver_register+0x4a/0x50
+[  601.079000]        [<ffffffff8144a12d>] platform_driver_probe+0x1d/0xb0
+[  601.079000]        [<ffffffff81cfb0a1>] efifb_init+0x273/0x292
+[  601.079000]        [<ffffffff81002132>] do_one_initcall+0x102/0x1c0
+[  601.079000]        [<ffffffff81cb80a6>] kernel_init_freeable+0x15d/0x1ef
+[  601.079000]        [<ffffffff8166d2de>] kernel_init+0xe/0xf0
+[  601.079000]        [<ffffffff816914ec>] ret_from_fork+0x7c/0xb0
+[  601.079000]
+-> #0 (&fb_info->lock){+.+.+.}:
+[  601.079000]        [<ffffffff810dc1d8>] __lock_acquire+0x1e18/0x1f10
+[  601.079000]        [<ffffffff810dc971>] lock_acquire+0xa1/0x140
+[  601.079000]        [<ffffffff816835ca>] mutex_lock_nested+0x7a/0x3b0
+[  601.079000]        [<ffffffff81397566>] lock_fb_info+0x26/0x60
+[  601.079000]        [<ffffffff813a4aeb>] fbcon_blank+0x29b/0x2e0
+[  601.079000]        [<ffffffff81418658>] do_blank_screen+0x1d8/0x280
+[  601.079000]        [<ffffffff8141ab34>] console_callback+0x64/0x160
+[  601.079000]        [<ffffffff8108d855>] process_one_work+0x1f5/0x540
+[  601.079000]        [<ffffffff8108e04c>] worker_thread+0x11c/0x370
+[  601.079000]        [<ffffffff81095fbd>] kthread+0xed/0x100
+[  601.079000]        [<ffffffff816914ec>] ret_from_fork+0x7c/0xb0
+[  601.079000]
+other info that might help us debug this:
+
+[  601.079000]  Possible unsafe locking scenario:
+
+[  601.079000]        CPU0                    CPU1
+[  601.079000]        ----                    ----
+[  601.079000]   lock(console_lock);
+[  601.079000]                                lock(&fb_info->lock);
+[  601.079000]                                lock(console_lock);
+[  601.079000]   lock(&fb_info->lock);
+[  601.079000]
+ *** DEADLOCK ***
+
+so we reorder the lock sequence the same as it in console_callback() to
+avoid this issue.
+Not very sure this change is suitable, any comments is welcome.
+
+Signed-off-by: Gu Zheng <guz.fnst@cn.fujitsu.com>
+---
+ drivers/video/fbmem.c |   50 +++++++++++++++++++++++++++++++-----------------
+ 1 files changed, 32 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index dacaf74..010d191 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1108,14 +1108,16 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 	case FBIOPUT_VSCREENINFO:
+ 		if (copy_from_user(&var, argp, sizeof(var)))
+ 			return -EFAULT;
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
+ 		console_lock();
++		if (!lock_fb_info(info)) {
++			console_unlock();
++			return -ENODEV;
++		}
+ 		info->flags |= FBINFO_MISC_USEREVENT;
+ 		ret = fb_set_var(info, &var);
+ 		info->flags &= ~FBINFO_MISC_USEREVENT;
+-		console_unlock();
+ 		unlock_fb_info(info);
++		console_unlock();
+ 		if (!ret && copy_to_user(argp, &var, sizeof(var)))
+ 			ret = -EFAULT;
+ 		break;
+@@ -1144,12 +1146,14 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 	case FBIOPAN_DISPLAY:
+ 		if (copy_from_user(&var, argp, sizeof(var)))
+ 			return -EFAULT;
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
+ 		console_lock();
++		if (!lock_fb_info(info)) {
++			console_unlock();
++			return -ENODEV;
++		}
+ 		ret = fb_pan_display(info, &var);
+-		console_unlock();
+ 		unlock_fb_info(info);
++		console_unlock();
+ 		if (ret = 0 && copy_to_user(argp, &var, sizeof(var)))
+ 			return -EFAULT;
+ 		break;
+@@ -1184,23 +1188,27 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 			break;
+ 		}
+ 		event.data = &con2fb;
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
+ 		console_lock();
++		if (!lock_fb_info(info)) {
++			console_unlock();
++			return -ENODEV;
++		}
+ 		event.info = info;
+ 		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP, &event);
+-		console_unlock();
+ 		unlock_fb_info(info);
++		console_unlock();
+ 		break;
+ 	case FBIOBLANK:
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
+ 		console_lock();
++		if (!lock_fb_info(info)) {
++			console_unlock();
++			return -ENODEV;
++		}
+ 		info->flags |= FBINFO_MISC_USEREVENT;
+ 		ret = fb_blank(info, arg);
+ 		info->flags &= ~FBINFO_MISC_USEREVENT;
+-		console_unlock();
+ 		unlock_fb_info(info);
++		console_unlock();
+ 		break;
+ 	default:
+ 		if (!lock_fb_info(info))
+@@ -1660,12 +1668,15 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+ 	registered_fb[i] = fb_info;
+ 
+ 	event.info = fb_info;
+-	if (!lock_fb_info(fb_info))
+-		return -ENODEV;
+ 	console_lock();
++	if (!lock_fb_info(fb_info)) {
++		console_unlock();
++		return -ENODEV;
++	}
++
+ 	fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
+-	console_unlock();
+ 	unlock_fb_info(fb_info);
++	console_unlock();
+ 	return 0;
+ }
+ 
+@@ -1678,13 +1689,16 @@ static int do_unregister_framebuffer(struct fb_info *fb_info)
+ 	if (i < 0 || i >= FB_MAX || registered_fb[i] != fb_info)
+ 		return -EINVAL;
+ 
+-	if (!lock_fb_info(fb_info))
+-		return -ENODEV;
+ 	console_lock();
++	if (!lock_fb_info(fb_info)) {
++		console_unlock();
++		return -ENODEV;
++	}
++
+ 	event.info = fb_info;
+ 	ret = fb_notifier_call_chain(FB_EVENT_FB_UNBIND, &event);
+-	console_unlock();
+ 	unlock_fb_info(fb_info);
++	console_unlock();
+ 
+ 	if (ret)
+ 		return -EINVAL;
+-- 
+1.7.7
 

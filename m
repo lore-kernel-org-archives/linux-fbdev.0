@@ -1,55 +1,58 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Date: Thu, 31 Oct 2013 10:47:40 +0000
-Subject: Re: [PATCH 12/12] fbdev: shmobile-lcdcfb: Convert to clk_prepare/unprepare
-Message-Id: <20131031104740.GA18477@ns203013.ovh.net>
+From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Date: Mon, 28 Oct 2013 22:49:28 +0000
+Subject: [PATCH 11/12] fbdev: shmobile-hdmi: Convert to clk_prepare/unprepare
+Message-Id: <1383000569-8916-12-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1383000569-8916-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
- <1383000569-8916-13-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-In-Reply-To: <1383000569-8916-13-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+In-Reply-To: <1383000569-8916-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On 23:49 Mon 28 Oct     , Laurent Pinchart wrote:
-> Turn clk_enable() and clk_disable() calls into clk_prepare_enable() and
-> clk_disable_unprepare() to get ready for the migration to the common
-> clock framework.
-> 
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Turn clk_enable() and clk_disable() calls into clk_prepare_enable() and
+clk_disable_unprepare() to get ready for the migration to the common
+clock framework.
 
-Best Regards,
-J.
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-> ---
->  drivers/video/sh_mobile_lcdcfb.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-> index 0264704..eaeae0f 100644
-> --- a/drivers/video/sh_mobile_lcdcfb.c
-> +++ b/drivers/video/sh_mobile_lcdcfb.c
-> @@ -344,7 +344,7 @@ static void sh_mobile_lcdc_clk_on(struct sh_mobile_lcdc_priv *priv)
->  {
->  	if (atomic_inc_and_test(&priv->hw_usecnt)) {
->  		if (priv->dot_clk)
-> -			clk_enable(priv->dot_clk);
-> +			clk_prepare_enable(priv->dot_clk);
->  		pm_runtime_get_sync(priv->dev);
->  		if (priv->meram_dev && priv->meram_dev->pdev)
->  			pm_runtime_get_sync(&priv->meram_dev->pdev->dev);
-> @@ -358,7 +358,7 @@ static void sh_mobile_lcdc_clk_off(struct sh_mobile_lcdc_priv *priv)
->  			pm_runtime_put_sync(&priv->meram_dev->pdev->dev);
->  		pm_runtime_put(priv->dev);
->  		if (priv->dot_clk)
-> -			clk_disable(priv->dot_clk);
-> +			clk_disable_unprepare(priv->dot_clk);
->  	}
->  }
->  
-> -- 
-> 1.8.1.5
-> 
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+---
+ drivers/video/sh_mobile_hdmi.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index bfe4728..190145e 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -1326,7 +1326,7 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
+ 		goto erate;
+ 	}
+ 
+-	ret = clk_enable(hdmi->hdmi_clk);
++	ret = clk_prepare_enable(hdmi->hdmi_clk);
+ 	if (ret < 0) {
+ 		dev_err(hdmi->dev, "Cannot enable clock: %d\n", ret);
+ 		goto erate;
+@@ -1404,7 +1404,7 @@ emap_htop1:
+ emap:
+ 	release_mem_region(res->start, resource_size(res));
+ ereqreg:
+-	clk_disable(hdmi->hdmi_clk);
++	clk_disable_unprepare(hdmi->hdmi_clk);
+ erate:
+ 	clk_put(hdmi->hdmi_clk);
+ egetclk:
+@@ -1427,7 +1427,7 @@ static int __exit sh_hdmi_remove(struct platform_device *pdev)
+ 	cancel_delayed_work_sync(&hdmi->edid_work);
+ 	pm_runtime_put(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
+-	clk_disable(hdmi->hdmi_clk);
++	clk_disable_unprepare(hdmi->hdmi_clk);
+ 	clk_put(hdmi->hdmi_clk);
+ 	if (hdmi->htop1)
+ 		iounmap(hdmi->htop1);
+-- 
+1.8.1.5
+

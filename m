@@ -1,72 +1,112 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 18 Oct 2013 08:01:35 +0000
-Subject: Re: [PATCH] set data enable logic level to low
-Message-Id: <5260EADF.3020804@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="GSmfgdwrHODDvlJ1e6GXXn8rs1hwK1Vuf"
+From: Denis Carikli <denis@eukrea.com>
+Date: Tue, 29 Oct 2013 15:50:54 +0000
+Subject: [PATCHv8][ 1/6] video: imxfb: Introduce regulator support.
+Message-Id: <1383061860-25035-1-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381704273-31540-1-git-send-email-roel.kluin@gmail.com>
-In-Reply-To: <1381704273-31540-1-git-send-email-roel.kluin@gmail.com>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-
---GSmfgdwrHODDvlJ1e6GXXn8rs1hwK1Vuf
-Content-Type: text/plain; charset=ISO-8859-1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-On 14/10/13 01:44, Roel Kluin wrote:
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
->  drivers/video/omap2/dss/display.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/ds=
-s/display.c
-> index fafe7c9..669a81f 100644
-> --- a/drivers/video/omap2/dss/display.c
-> +++ b/drivers/video/omap2/dss/display.c
-> @@ -266,7 +266,7 @@ void videomode_to_omap_video_timings(const struct v=
-ideomode *vm,
->  		OMAPDSS_SIG_ACTIVE_LOW;
->  	ovt->de_level =3D vm->flags & DISPLAY_FLAGS_DE_HIGH ?
->  		OMAPDSS_SIG_ACTIVE_HIGH :
-> -		OMAPDSS_SIG_ACTIVE_HIGH;
-> +		OMAPDSS_SIG_ACTIVE_LOW;
->  	ovt->data_pclk_edge =3D vm->flags & DISPLAY_FLAGS_PIXDATA_POSEDGE ?
->  		OMAPDSS_DRIVE_SIG_RISING_EDGE :
->  		OMAPDSS_DRIVE_SIG_FALLING_EDGE;
->=20
+This commit is based on the following commit by Fabio Estevam:
+  4344429 video: mxsfb: Introduce regulator support
 
-Thanks. Next time, please write a patch description and prefix patch
-subject with appropriate string. In this case "OMAPDSS: ..." would be fin=
-e.
+Cc: Fabio Estevam <fabio.estevam@freescale.com>
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Eric B=C3=A9nard <eric@eukrea.com>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
+---
+ drivers/video/imxfb.c |   29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
- Tomi
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index 44ee678..4bf3837 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -28,6 +28,7 @@
+ #include <linux/cpufreq.h>
+ #include <linux/clk.h>
+ #include <linux/platform_device.h>
++#include <linux/regulator/consumer.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/io.h>
+ #include <linux/math64.h>
+@@ -145,6 +146,7 @@ struct imxfb_info {
+ 	struct clk		*clk_ipg;
+ 	struct clk		*clk_ahb;
+ 	struct clk		*clk_per;
++	struct regulator	*reg_lcd;
+ 	enum imxfb_type		devtype;
+ 	bool			enabled;
+=20
+@@ -563,12 +565,23 @@ static void imxfb_exit_backlight(struct imxfb_info *f=
+bi)
+=20
+ static void imxfb_enable_controller(struct imxfb_info *fbi)
+ {
++	int ret;
+=20
+ 	if (fbi->enabled)
+ 		return;
+=20
+ 	pr_debug("Enabling LCD controller\n");
+=20
++	if (fbi->reg_lcd) {
++		ret =3D regulator_enable(fbi->reg_lcd);
++		if (ret) {
++			dev_err(&fbi->pdev->dev,
++				"lcd regulator enable failed with error: %d\n",
++				ret);
++			return;
++		}
++	}
++
+ 	writel(fbi->screen_dma, fbi->regs + LCDC_SSA);
+=20
+ 	/* panning offset 0 (0 pixel offset)        */
+@@ -597,6 +610,8 @@ static void imxfb_enable_controller(struct imxfb_info *=
+fbi)
+=20
+ static void imxfb_disable_controller(struct imxfb_info *fbi)
+ {
++	int ret;
++
+ 	if (!fbi->enabled)
+ 		return;
+=20
+@@ -613,6 +628,14 @@ static void imxfb_disable_controller(struct imxfb_info=
+ *fbi)
+ 	fbi->enabled =3D false;
+=20
+ 	writel(0, fbi->regs + LCDC_RMCR);
++
++	if (fbi->reg_lcd) {
++		ret =3D regulator_disable(fbi->reg_lcd);
++		if (ret)
++			dev_err(&fbi->pdev->dev,
++				"lcd regulator disable failed with error: %d\n",
++				ret);
++	}
+ }
+=20
+ static int imxfb_blank(int blank, struct fb_info *info)
+@@ -1020,6 +1043,12 @@ static int imxfb_probe(struct platform_device *pdev)
+ 		goto failed_register;
+ 	}
+=20
++	fbi->reg_lcd =3D devm_regulator_get(&pdev->dev, "lcd");
++	if (IS_ERR(fbi->reg_lcd)) {
++		dev_info(&pdev->dev, "No lcd regulator used.\n");
++		fbi->reg_lcd =3D NULL;
++	}
++
+ 	imxfb_enable_controller(fbi);
+ 	fbi->pdev =3D pdev;
+ #ifdef PWMR_BACKLIGHT_AVAILABLE
+--=20
+1.7.9.5
 
-
-
---GSmfgdwrHODDvlJ1e6GXXn8rs1hwK1Vuf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSYOrfAAoJEPo9qoy8lh71+i4QALD0NIffphcNESvrrpK4LxA9
-dnk2oTNT/Wx75sjb1gJzBC4ML69M/BkjlGrViOJAX+Klm0nJJMsraap9mjSrkDCj
-humNB9kXHbFmqihiQ1PVFwXJ3QBh84XXCkXo0nT4pAPnFj2CmKP4Ej1Jps3E46vd
-93i1KzIhaKGE90V1Fo8w1b8OShymTHXU/ySFOGjhfuk6z9bneY3BwPAOnwmrz4qe
-W6Pf9uZMgJYmZ6y8dOedn5rp8A5bx3E/zG6Rq/mAigXKE0fVaIJDPtEFgkif5lXd
-0sx3CjMHYZP0pezkYcEu1tNvV0fvxVQ398X/EHwCbvt0qE1Oj1+N+quzGYfC75Bv
-gt7YewAS0NBW+RacMHMe/0FvvAau9rVAXycoI/7+eTzJHGrU5pxAbxdwE2jcUwE+
-v5pm/0sBY611HjgG9MBwJOLz62/liSBskZsMUHWzsV0M9+02ne7I8o+HrVgAlxv0
-CGv1/AGTYKuli6aFog0sCbMF/qbqOwJUsHONu4IZRNVgl3cV6rh8dvPBJGHOhgwE
-zPZYfDFk4Mo/uDrLgyIOnmkvUzqvHVUsK7ARaBvS/keOqRsSK5dfPbubC+9OyWwI
-O8kweGQxlQTnoMCe+tfw9VojJ2haK/y7trfZkCPE25da8cStEsiNFTAVc/ETQM1h
-aZGOOg+/L7EUgutiCd6Z
-=jZ7y
------END PGP SIGNATURE-----
-
---GSmfgdwrHODDvlJ1e6GXXn8rs1hwK1Vuf--

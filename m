@@ -1,59 +1,60 @@
-From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Date: Mon, 28 Oct 2013 23:47:07 +0000
-Subject: [PATCH 19/19] fbdev: sh-mobile-lcdcfb: Enable the driver on all ARM platforms
-Message-Id: <1383004027-25036-20-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Tue, 29 Oct 2013 16:27:44 +0000
+Subject: [PATCH v2 9/9] backlight: atmel-pwm-bl: use gpio_request_one
+Message-Id: <1383064064-4983-10-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1383004027-25036-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-In-Reply-To: <1383004027-25036-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+References: <1382522143-32072-1-git-send-email-jhovold@gmail.com>
+ <1383064064-4983-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1383064064-4983-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
 
-Renesas ARM platforms are transitioning from single-platform to
-multi-platform kernels using the new ARCH_SHMOBILE_MULTI. Make the
-driver available on all ARM platforms to enable it on both ARCH_SHMOBILE
-and ARCH_SHMOBILE_MULTI and increase build testing coverage.
+Use devm_gpio_request_one rather than requesting and setting direction
+in two calls.
 
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Acked-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
 ---
- drivers/video/Kconfig | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/backlight/atmel-pwm-bl.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 84b685f..681858e 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -10,7 +10,7 @@ config HAVE_FB_ATMEL
+diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
+index bd1ed34..03b5f3b 100644
+--- a/drivers/video/backlight/atmel-pwm-bl.c
++++ b/drivers/video/backlight/atmel-pwm-bl.c
+@@ -124,6 +124,7 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
+ 	const struct atmel_pwm_bl_platform_data *pdata;
+ 	struct backlight_device *bldev;
+ 	struct atmel_pwm_bl *pwmbl;
++	int flags;
+ 	int retval;
  
- config SH_MIPI_DSI
- 	tristate
--	depends on (SUPERH || ARCH_SHMOBILE) && HAVE_CLK
-+	depends on (SUPERH || ARM) && HAVE_CLK
+ 	pdata = dev_get_platdata(&pdev->dev);
+@@ -149,14 +150,14 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
+ 		return retval;
  
- config SH_LCD_MIPI_DSI
- 	bool
-@@ -1995,7 +1995,7 @@ config FB_W100
- 
- config FB_SH_MOBILE_LCDC
- 	tristate "SuperH Mobile LCDC framebuffer support"
--	depends on FB && (SUPERH || ARCH_SHMOBILE) && HAVE_CLK
-+	depends on FB && (SUPERH || ARM) && HAVE_CLK
- 	select FB_SYS_FILLRECT
- 	select FB_SYS_COPYAREA
- 	select FB_SYS_IMAGEBLIT
-@@ -2482,7 +2482,7 @@ endif
- 
- config FB_SH_MOBILE_MERAM
- 	tristate "SuperH Mobile MERAM read ahead support"
--	depends on (SUPERH || ARCH_SHMOBILE)
-+	depends on (SUPERH || ARM)
- 	select GENERIC_ALLOCATOR
- 	---help---
- 	  Enable MERAM support for the SuperH controller.
+ 	if (gpio_is_valid(pwmbl->gpio_on)) {
+-		retval = devm_gpio_request(&pdev->dev, pwmbl->gpio_on,
+-					"gpio_atmel_pwm_bl");
+-		if (retval)
+-			goto err_free_pwm;
+-
+ 		/* Turn display off by default. */
+-		retval = gpio_direction_output(pwmbl->gpio_on,
+-				0 ^ pdata->on_active_low);
++		if (pdata->on_active_low)
++			flags = GPIOF_OUT_INIT_HIGH;
++		else
++			flags = GPIOF_OUT_INIT_LOW;
++
++		retval = devm_gpio_request_one(&pdev->dev, pwmbl->gpio_on,
++						flags, "gpio_atmel_pwm_bl");
+ 		if (retval)
+ 			goto err_free_pwm;
+ 	}
 -- 
-1.8.1.5
+1.8.4.2
 

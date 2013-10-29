@@ -1,91 +1,77 @@
 From: Johan Hovold <jhovold@gmail.com>
-Date: Thu, 31 Oct 2013 17:57:39 +0000
-Subject: [PATCH v3 4/9] backlight: atmel-pwm-bl: clean up probe error handling
-Message-Id: <1383242264-7652-5-git-send-email-jhovold@gmail.com>
+Date: Tue, 29 Oct 2013 16:27:43 +0000
+Subject: [PATCH v2 8/9] backlight: atmel-pwm-bl: refactor gpio_on handling
+Message-Id: <1383064064-4983-9-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1383064064-4983-1-git-send-email-jhovold@gmail.com>
- <1383242264-7652-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1383242264-7652-1-git-send-email-jhovold@gmail.com>
+References: <1382522143-32072-1-git-send-email-jhovold@gmail.com>
+ <1383064064-4983-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1383064064-4983-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
 Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
 
-Clean up probe error handling by checking parameters before any
-allocations and removing an obsolete error label. Also remove
-unnecessary reset of private gpio number.
+Add helper function to control the gpio_on signal.
 
 Acked-by: Jingoo Han <jg1.han@samsung.com>
 Signed-off-by: Johan Hovold <jhovold@gmail.com>
 ---
- drivers/video/backlight/atmel-pwm-bl.c | 31 ++++++++++++-------------------
- 1 file changed, 12 insertions(+), 19 deletions(-)
+ drivers/video/backlight/atmel-pwm-bl.c | 23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
-index 4886028..01af5c2 100644
+index c254209..bd1ed34 100644
 --- a/drivers/video/backlight/atmel-pwm-bl.c
 +++ b/drivers/video/backlight/atmel-pwm-bl.c
-@@ -126,40 +126,33 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
- 	struct atmel_pwm_bl *pwmbl;
- 	int retval;
+@@ -26,6 +26,14 @@ struct atmel_pwm_bl {
+ 	int					gpio_on;
+ };
  
-+	pdata = dev_get_platdata(&pdev->dev);
-+	if (!pdata)
-+		return -ENODEV;
++static void atmel_pwm_bl_set_gpio_on(struct atmel_pwm_bl *pwmbl, int on)
++{
++	if (!gpio_is_valid(pwmbl->gpio_on))
++		return;
 +
-+	if (pdata->pwm_compare_max < pdata->pwm_duty_max ||
-+			pdata->pwm_duty_min > pdata->pwm_duty_max ||
-+			pdata->pwm_frequency = 0)
-+		return -EINVAL;
++	gpio_set_value(pwmbl->gpio_on, on ^ pwmbl->pdata->on_active_low);
++}
 +
- 	pwmbl = devm_kzalloc(&pdev->dev, sizeof(struct atmel_pwm_bl),
- 				GFP_KERNEL);
- 	if (!pwmbl)
- 		return -ENOMEM;
+ static int atmel_pwm_bl_set_intensity(struct backlight_device *bd)
+ {
+ 	struct atmel_pwm_bl *pwmbl = bl_get_data(bd);
+@@ -48,19 +56,13 @@ static int atmel_pwm_bl_set_intensity(struct backlight_device *bd)
+ 		pwm_duty = pwmbl->pdata->pwm_duty_min;
  
- 	pwmbl->pdev = pdev;
--
--	pdata = dev_get_platdata(&pdev->dev);
--	if (!pdata) {
--		retval = -ENODEV;
--		goto err_free_mem;
--	}
--
--	if (pdata->pwm_compare_max < pdata->pwm_duty_max ||
--			pdata->pwm_duty_min > pdata->pwm_duty_max ||
--			pdata->pwm_frequency = 0) {
--		retval = -EINVAL;
--		goto err_free_mem;
--	}
--
- 	pwmbl->pdata = pdata;
- 	pwmbl->gpio_on = pdata->gpio_on;
- 
- 	retval = pwm_channel_alloc(pdata->pwm_channel, &pwmbl->pwmc);
- 	if (retval)
--		goto err_free_mem;
-+		return retval;
- 
- 	if (pwmbl->gpio_on != -1) {
- 		retval = devm_gpio_request(&pdev->dev, pwmbl->gpio_on,
- 					"gpio_atmel_pwm_bl");
--		if (retval) {
--			pwmbl->gpio_on = -1;
-+		if (retval)
- 			goto err_free_pwm;
+ 	if (!intensity) {
+-		if (gpio_is_valid(pwmbl->gpio_on)) {
+-			gpio_set_value(pwmbl->gpio_on,
+-					0 ^ pwmbl->pdata->on_active_low);
 -		}
++		atmel_pwm_bl_set_gpio_on(pwmbl, 0);
+ 		pwm_channel_writel(&pwmbl->pwmc, PWM_CUPD, pwm_duty);
+ 		pwm_channel_disable(&pwmbl->pwmc);
+ 	} else {
+ 		pwm_channel_enable(&pwmbl->pwmc);
+ 		pwm_channel_writel(&pwmbl->pwmc, PWM_CUPD, pwm_duty);
+-		if (gpio_is_valid(pwmbl->gpio_on)) {
+-			gpio_set_value(pwmbl->gpio_on,
+-					1 ^ pwmbl->pdata->on_active_low);
+-		}
++		atmel_pwm_bl_set_gpio_on(pwmbl, 1);
+ 	}
  
- 		/* Turn display off by default. */
- 		retval = gpio_direction_output(pwmbl->gpio_on,
-@@ -197,7 +190,7 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
+ 	return 0;
+@@ -196,10 +198,7 @@ static int atmel_pwm_bl_remove(struct platform_device *pdev)
+ {
+ 	struct atmel_pwm_bl *pwmbl = platform_get_drvdata(pdev);
  
- err_free_pwm:
+-	if (gpio_is_valid(pwmbl->gpio_on)) {
+-		gpio_set_value(pwmbl->gpio_on,
+-					0 ^ pwmbl->pdata->on_active_low);
+-	}
++	atmel_pwm_bl_set_gpio_on(pwmbl, 0);
+ 	pwm_channel_disable(&pwmbl->pwmc);
  	pwm_channel_free(&pwmbl->pwmc);
--err_free_mem:
-+
- 	return retval;
- }
  
 -- 
 1.8.4.2

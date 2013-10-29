@@ -1,21 +1,82 @@
-From: Joe Perches <joe@perches.com>
-Date: Sun, 13 Oct 2013 17:39:24 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 29 Oct 2013 10:56:21 +0000
 Subject: Re: [PATCH 1/2] framebuffer: Add fb_<level> convenience logging macros
-Message-Id: <1381685964.8864.31.camel@joe-AO722>
+Message-Id: <526F9455.7070103@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="jaaaffjqUprTnRBq6W75XFthipxtdBRII"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <0926c7a34ac51c4cbb67debd0d883f41891e75d9.1379640011.git.joe@perches.com>
 In-Reply-To: <0926c7a34ac51c4cbb67debd0d883f41891e75d9.1379640011.git.joe@perches.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Joe Perches <joe@perches.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, 2013-09-19 at 18:35 -0700, Joe Perches wrote:
+--jaaaffjqUprTnRBq6W75XFthipxtdBRII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 20/09/13 04:35, Joe Perches wrote:
 > Add fb_<level> convenience macros for emitting the
 > "fb%d: ", struct fb_info->node value.
-> 
+>=20
 > Neatens and shortens the code a bit.
+>=20
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  include/linux/fb.h | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
+>=20
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index ffac70a..70c4836 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -792,4 +792,16 @@ extern int fb_find_mode(struct fb_var_screeninfo *=
+var,
+>  			const struct fb_videomode *default_mode,
+>  			unsigned int default_bpp);
+> =20
+> +/* Convenience logging macros */
+> +#define fb_err(fb_info, fmt, ...)					\
+> +	pr_err("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
+> +#define fb_notice(info, fmt, ...)					\
+> +	pr_notice("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
+> +#define fb_warn(fb_info, fmt, ...)					\
+> +	pr_warn("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
+> +#define fb_info(fb_info, fmt, ...)					\
+> +	pr_info("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
+> +#define fb_dbg(fb_info, fmt, ...)					\
+> +	pr_debug("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
+> +
+>  #endif /* _LINUX_FB_H */
+>=20
 
-ping?
+Thanks, queued this and the next one for 3.13.
 
+ Tomi
+
+
+
+--jaaaffjqUprTnRBq6W75XFthipxtdBRII
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJSb5RVAAoJEPo9qoy8lh71I1kP+wVWswxZmLhG5b1Lm6RjH5Zp
+b3CKmlV9McimKHC6zNZ2PpL0/ZyiD12dsfKZrxdVrDxXBdfCjOCRGST6VGLZ39Q5
+IRvM3+FzRpbuKW5tiYCERvYYhbv9sgW7AXHXfbb+zoaOgtijBtHZ8/JYEOaaqctV
+Wg8jqDhOhlDcJzrghOLwfmvxdE5AZujFeyVlNoPK/dkUF0LBZPdTHoZ5+39GYZqZ
+viwORZwmUibApdnYoCE7L3SDiM0q4c6DsPkFcuedUM9+woN2C6vElk4QzxtRNM5u
+P2CA4sy6ZghjaihYZBIir5s8vqFmiup5ZNiNI59S9JJQmjoYjBbU7C5UMGhVeOX5
+xMAkcbaULzrQJFOt6cI1kp3U8eiraZiktKFIRp0JEsZrop/qbQ3jhFFYcsDL5xHO
+JOMuHR4tAUHwU+5sIigl0tT7jfCgrqRGys/EmE/AdmDjUjqEH3anOZUvgiQwjFUD
+Xx/zrUezrWlXnTUXDu3EJnbvgcg8Q5Z+RN/LfbXLE9BFoyO8p3sCnsxyDFK9MDdo
+wQU6niqzZExLaXGOjKnHeab9t+yJF2PQS+aIuep00wqhaLAoAD3LN1x+XjR90D5w
+0JHxPlhJ4ptTYfgYb1KwMBaM94IH0hfqXenuTNbb+bJNFSwkzH2NrtSMmM3eHODS
+IxV4eICyBEjHGSndYGDx
+=aKhs
+-----END PGP SIGNATURE-----
+
+--jaaaffjqUprTnRBq6W75XFthipxtdBRII--

@@ -1,112 +1,34 @@
-From: Denis Carikli <denis@eukrea.com>
-Date: Thu, 17 Oct 2013 15:02:07 +0000
-Subject: [Patch v2][ 09/37] video: imxfb: Introduce regulator support.
-Message-Id: <1382022155-21954-10-git-send-email-denis@eukrea.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Tue, 29 Oct 2013 16:27:38 +0000
+Subject: [PATCH v2 3/9] backlight: atmel-pwm-bl: fix module autoload
+Message-Id: <1383064064-4983-4-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382022155-21954-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1382022155-21954-1-git-send-email-denis@eukrea.com>
+References: <1382522143-32072-1-git-send-email-jhovold@gmail.com>
+ <1383064064-4983-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1383064064-4983-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
 
-This commit is based on the following commit by Fabio Estevam:
-  4344429 video: mxsfb: Introduce regulator support
+Add missing module alias which is needed for module autoloading.
 
-Cc: Fabio Estevam <fabio.estevam@freescale.com>
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Eric B=C3=A9nard <eric@eukrea.com>
-Signed-off-by: Denis Carikli <denis@eukrea.com>
+Acked-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
 ---
- drivers/video/imxfb.c |   27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+ drivers/video/backlight/atmel-pwm-bl.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 44ee678..4dd7678 100644
---- a/drivers/video/imxfb.c
-+++ b/drivers/video/imxfb.c
-@@ -28,6 +28,7 @@
- #include <linux/cpufreq.h>
- #include <linux/clk.h>
- #include <linux/platform_device.h>
-+#include <linux/regulator/consumer.h>
- #include <linux/dma-mapping.h>
- #include <linux/io.h>
- #include <linux/math64.h>
-@@ -145,6 +146,7 @@ struct imxfb_info {
- 	struct clk		*clk_ipg;
- 	struct clk		*clk_ahb;
- 	struct clk		*clk_per;
-+	struct regulator	*reg_lcd;
- 	enum imxfb_type		devtype;
- 	bool			enabled;
-=20
-@@ -563,12 +565,23 @@ static void imxfb_exit_backlight(struct imxfb_info *f=
-bi)
-=20
- static void imxfb_enable_controller(struct imxfb_info *fbi)
- {
-+	int ret;
-=20
- 	if (fbi->enabled)
- 		return;
-=20
- 	pr_debug("Enabling LCD controller\n");
-=20
-+	if (fbi->reg_lcd) {
-+		ret =3D regulator_enable(fbi->reg_lcd);
-+		if (ret) {
-+			dev_err(&fbi->pdev->dev,
-+				"lcd regulator enable failed with error: %d\n",
-+				ret);
-+			return;
-+		}
-+	}
-+
- 	writel(fbi->screen_dma, fbi->regs + LCDC_SSA);
-=20
- 	/* panning offset 0 (0 pixel offset)        */
-@@ -597,6 +610,8 @@ static void imxfb_enable_controller(struct imxfb_info *=
-fbi)
-=20
- static void imxfb_disable_controller(struct imxfb_info *fbi)
- {
-+	int ret;
-+
- 	if (!fbi->enabled)
- 		return;
-=20
-@@ -613,6 +628,14 @@ static void imxfb_disable_controller(struct imxfb_info=
- *fbi)
- 	fbi->enabled =3D false;
-=20
- 	writel(0, fbi->regs + LCDC_RMCR);
-+
-+	if (fbi->reg_lcd) {
-+		ret =3D regulator_disable(fbi->reg_lcd);
-+		if (ret)
-+			dev_err(&fbi->pdev->dev,
-+				"lcd regulator disable failed with error: %d\n",
-+				ret);
-+	}
- }
-=20
- static int imxfb_blank(int blank, struct fb_info *info)
-@@ -1020,6 +1043,10 @@ static int imxfb_probe(struct platform_device *pdev)
- 		goto failed_register;
- 	}
-=20
-+	fbi->reg_lcd =3D devm_regulator_get(&pdev->dev, "lcd");
-+	if (IS_ERR(fbi->reg_lcd))
-+		fbi->reg_lcd =3D NULL;
-+
- 	imxfb_enable_controller(fbi);
- 	fbi->pdev =3D pdev;
- #ifdef PWMR_BACKLIGHT_AVAILABLE
---=20
-1.7.9.5
+diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
+index e21beb6..4886028 100644
+--- a/drivers/video/backlight/atmel-pwm-bl.c
++++ b/drivers/video/backlight/atmel-pwm-bl.c
+@@ -229,3 +229,4 @@ module_platform_driver(atmel_pwm_bl_driver);
+ MODULE_AUTHOR("Hans-Christian egtvedt <hans-christian.egtvedt@atmel.com>");
+ MODULE_DESCRIPTION("Atmel PWM backlight driver");
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:atmel-pwm-bl");
+-- 
+1.8.4.2
 

@@ -1,21 +1,20 @@
-From: Michal Simek <monstr@monstr.eu>
-Date: Mon, 28 Oct 2013 14:39:47 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 29 Oct 2013 08:50:28 +0000
 Subject: Re: linux-next: build failure after merge of the final tree (fbdev tree related)
-Message-Id: <526E7733.6020509@monstr.eu>
+Message-Id: <526F76D4.5090404@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="phaUscxRjMls7GwoljvDcqWqcqC4NI2ep"
+Content-Type: multipart/mixed; boundary="QehwGFLxiRbx444Pr0ffx2WnvrcgQ7G9T"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20131029012317.b9ba8173dee5bac1a5bd2404@canb.auug.org.au>
 In-Reply-To: <20131029012317.b9ba8173dee5bac1a5bd2404@canb.auug.org.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Michal Simek <michal.simek@xilinx.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Michal Simek <michal.simek@xilinx.com>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---phaUscxRjMls7GwoljvDcqWqcqC4NI2ep
+--QehwGFLxiRbx444Pr0ffx2WnvrcgQ7G9T
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 10/28/2013 03:23 PM, Stephen Rothwell wrote:
+On 28/10/13 16:23, Stephen Rothwell wrote:
 > Hi all,
 >=20
 > After merging the final tree, today's linux-next build (powerpc
@@ -65,34 +64,34 @@ _len);
 >  	}
 >=20
 
-Your fix is correct.
+Thanks, I have applied this to the fbdev tree.
 
-Tested-by: Michal Simek <monstr@monstr.eu>
-
-Thanks,
-Michal
-
---=20
-Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel - Microblaze cpu - http://www.monstr.eu/fdt/
-Maintainer of Linux kernel - Xilinx Zynq ARM architecture
-Microblaze U-BOOT custodian and responsible for u-boot arm zynq platform
+ Tomi
 
 
 
---phaUscxRjMls7GwoljvDcqWqcqC4NI2ep
+--QehwGFLxiRbx444Pr0ffx2WnvrcgQ7G9T
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iEYEARECAAYFAlJudzMACgkQykllyylKDCGTPgCfdqzPmLHNXCgFeqNWC4YNz0z+
-EmAAn0mpKPX/pL6295OqX/mryMC45WgX
-=Nz5B
+iQIcBAEBAgAGBQJSb3bUAAoJEPo9qoy8lh71ef4P/1l2B9oEZJ2swaRrUsDof+x4
+opbHCrM4V9I5pYYeAJMqFcWMTDMXOevjTJd4ZsJxUNzniv59BZVeizNgZqtjoOH1
+LhQiMZe4tq0/KTC6nNAMkz+ly2dZCniZp8WMYcbJCeNoMfDk9Iq1n1UTrQO6Mav4
+LWjGYe8BfOKp1h6Wlio8XhxSSJC/8sNoEGAvUb5d7Qjemos7eFh9bP835wLMfWNl
+VvGDrQzn2whDi7WhqZ65MbuIMcEK16sk4H1AqtXjmMp0brJQMFAPAfTI6Gy3Nebe
+Zl9eTu917xI+rJUJEw2KQ5f3bIx7VmQSw/BdgmNUKEw8bbVrGDPwuALU3A6FogZG
+YpOOO2z65qe6HAcA5bfxsY4myWpWokMfZV+7csFKLmmjdE3nr+HjzhHaeTQ5JbEQ
+RMtE0LxDdRGgiOrcthwzUV09GMnp9FLaVF8Ux7bHZG0ccvDRiD+/UyIxund/rjmT
+fDUyF0mgekzJc5uwORzMVj8AthjEeSzC8Xe+12AJI/yX+m+E6Tk5FD6EO9r3kZpm
+VKHa2myiOurqWutVZ/EUP91ItEU2QkYLwQRLpMatnz+es093Pz563Q7xSr/dvfpK
+3tIOahLSzVHwlrqRDWms+72hm729hKl9yeV4AlpdoErTs6fcWbRWjRP9eTydUHPe
+k89yJF/Jcx20QRkkEUDx
+=rzv3
 -----END PGP SIGNATURE-----
 
---phaUscxRjMls7GwoljvDcqWqcqC4NI2ep--
+--QehwGFLxiRbx444Pr0ffx2WnvrcgQ7G9T--

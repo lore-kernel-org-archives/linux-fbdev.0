@@ -1,46 +1,58 @@
-From: David Herrmann <dh.herrmann@gmail.com>
-Date: Thu, 31 Oct 2013 16:17:54 +0000
-Subject: Re: [PATCH v2] efifb: prevent null-deref when iterating dmi_list
-Message-Id: <CANq1E4QAwOG8Vdw2nCb8+LirZ278w58j+wpieeKvnNepga+baw@mail.gmail.com>
+From: Denis Carikli <denis@eukrea.com>
+Date: Tue, 29 Oct 2013 15:50:56 +0000
+Subject: [PATCHv8][ 3/6] video: Kconfig: Allow more broad selection of the imxfb framebuffer driver.
+Message-Id: <1383061860-25035-3-git-send-email-denis@eukrea.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1380732056-5387-1-git-send-email-dh.herrmann@gmail.com>
-	<20131031104549.GZ18477@ns203013.ovh.net>
-In-Reply-To: <20131031104549.GZ18477@ns203013.ovh.net>
+References: <1383061860-25035-1-git-send-email-denis@eukrea.com>
+In-Reply-To: <1383061860-25035-1-git-send-email-denis@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, James Bates <james.h.bates@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, James Bates <james.h.bates@yahoo.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-Hi
+Without that patch, a user can't select the imxfb driver when the i.MX25 an=
+d/or
+  the i.MX27 device tree board are selected and that no boards that selects
+  IMX_HAVE_PLATFORM_IMX_FB are compiled in.
 
-On Thu, Oct 31, 2013 at 11:45 AM, Jean-Christophe PLAGNIOL-VILLARD
-<plagnioj@jcrosoft.com> wrote:
-> On 18:40 Wed 02 Oct     , David Herrmann wrote:
->> The dmi_list array is initialized using gnu designated initializers, and
->> therefore may contain fewer explicitly defined entries as there are
->> elements in it. This is because the enum above with M_xyz constants
->> contains more items than the designated initializer. Those elements not
->> explicitly initialized are implicitly set to 0.
->>
->> Now efifb_setup() loops through all these array elements, and performs
->> a strcmp on each item. For non explicitly initialized elements this will
->> be a null pointer:
->>
->> This patch swaps the check order in the if statement, thus checks first
->> whether dmi_list[i].base is null.
->>
->> Signed-off-by: James Bates <james.h.bates@yahoo.com>
->> Signed-off-by: David Herrmann <dh.herrmann@gmail.com>
->
-> with the simpleDRM arriving next merge I'm wondering if we need to keep it?
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: devicetree@vger.kernel.org
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Eric B=C3=A9nard <eric@eukrea.com>
 
-SimpleDRM is not coming next merge-window. It's basically finished,
-but I'm still working on the user-space side as its KMS api is highly
-reduced compared to fully-featured DRM/KMS drivers. Maybe 3.13 will
-work out.
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
+Signed-off-by: Denis Carikli <denis@eukrea.com>
+---
+ChangeLog v7->v8:
+- Added ACKs.
+- Add some CC(Framebuffer maintainers and mailing lists).
+- Improved commit message summary.
+---
+ drivers/video/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Anyhow, this patch is still needed as it fixes a serious bug for simplefb.
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 4f2e1b3..22adaee 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -363,7 +363,7 @@ config FB_SA1100
+=20
+ config FB_IMX
+ 	tristate "Freescale i.MX1/21/25/27 LCD support"
+-	depends on FB && IMX_HAVE_PLATFORM_IMX_FB
++	depends on FB && ARCH_MXC
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+--=20
+1.7.9.5
 
-Thanks
-David

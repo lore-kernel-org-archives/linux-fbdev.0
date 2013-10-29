@@ -1,48 +1,42 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 17 Oct 2013 11:38:36 +0000
-Subject: [PATCH 0/6] omapdss: hdmi: Add support for hdmi on OMAP5 and DRA7x SoCs
-Message-Id: <1382009202-18984-1-git-send-email-archit@ti.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Tue, 29 Oct 2013 16:27:35 +0000
+Subject: [PATCH v2 0/9] backlight: atmel-pwm-bl: fixes and clean ups
+Message-Id: <1383064064-4983-1-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1382522143-32072-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1382522143-32072-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
 
-The HDMI IP on OMAP5/DRA7xx has very similar wrapper, PLL and PHY sub blocks
-found in OMAP4 DSS. However, the HDMI core IP(which implements the HDMI
-protocol) is completely new.
+These patches fix a few issues and clean up the atmel-pwm-bl driver
+somewhat.
 
-Create a library for configuring the new HDMI core IP, make minor modifications
-in PLL and PHY. And finally, add a hdmi5 driver. This driver can eventually be
-merged with the hdmi4 driver such that both of them use the same driver, we
-would need to create core IP ops for that, we've left that for later.
+Acks from Jingoo Han retained on all patches but the slightly modified
+first patch.
 
-Archit Taneja (6):
-  omapdss: hdmi: support larger register offsets for OMAP5 HDMI core
-  omapdss: hdmi: Add initial OMAP5/DRA7x HDMI core IP library
-  omapdss: hdmi phy: Incorporate changes for OMAP5/DRA7x
-  omapdss: hdmi pll: Incorporate changes for OMAP5/DRA7x
-  omapdss: hdmi: add OMAP5/DRA7x hdmi driver
-  omapdss: hdmi4/hdmi5: set regulator voltage to required level
+Johan
 
- drivers/video/omap2/dss/Kconfig      |  10 +
- drivers/video/omap2/dss/Makefile     |   2 +
- drivers/video/omap2/dss/core.c       |   6 +
- drivers/video/omap2/dss/dss.h        |   3 +
- drivers/video/omap2/dss/hdmi.h       |   7 +-
- drivers/video/omap2/dss/hdmi4.c      |   5 +
- drivers/video/omap2/dss/hdmi5.c      | 704 ++++++++++++++++++++++++++++++
- drivers/video/omap2/dss/hdmi5_core.c | 812 +++++++++++++++++++++++++++++++++++
- drivers/video/omap2/dss/hdmi5_core.h | 298 +++++++++++++
- drivers/video/omap2/dss/hdmi_phy.c   |  94 +++-
- drivers/video/omap2/dss/hdmi_pll.c   |  74 +++-
- drivers/video/omap2/dss/hdmi_wp.c    |   2 +-
- 12 files changed, 2008 insertions(+), 9 deletions(-)
- create mode 100644 drivers/video/omap2/dss/hdmi5.c
- create mode 100644 drivers/video/omap2/dss/hdmi5_core.c
- create mode 100644 drivers/video/omap2/dss/hdmi5_core.h
+v2:
+ - mask returned brightness rather than cast it to u16 (patch 1/9)
+
+
+Johan Hovold (9):
+  backlight: atmel-pwm-bl: fix reported brightness
+  backlight: atmel-pwm-bl: fix gpio polarity in remove
+  backlight: atmel-pwm-bl: fix module autoload
+  backlight: atmel-pwm-bl: clean up probe error handling
+  backlight: atmel-pwm-bl: clean up get_intensity
+  backlight: atmel-pwm-bl: remove unused include
+  backlight: atmel-pwm-bl: use gpio_is_valid
+  backlight: atmel-pwm-bl: refactor gpio_on handling
+  backlight: atmel-pwm-bl: use gpio_request_one
+
+ drivers/video/backlight/atmel-pwm-bl.c | 86 ++++++++++++++++------------------
+ 1 file changed, 40 insertions(+), 46 deletions(-)
 
 -- 
-1.8.1.2
+1.8.4.2
 

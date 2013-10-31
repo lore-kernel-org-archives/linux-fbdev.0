@@ -1,104 +1,66 @@
-From: Marek Belisko <marek@goldelico.com>
-Date: Mon, 14 Oct 2013 21:02:34 +0000
-Subject: [PATCH 2/3] video: venc: Add new callback and handling for bypass and acbias setup.
-Message-Id: <1381784555-18344-3-git-send-email-marek@goldelico.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Thu, 31 Oct 2013 17:57:42 +0000
+Subject: [PATCH v3 7/9] backlight: atmel-pwm-bl: use gpio_is_valid
+Message-Id: <1383242264-7652-8-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1381784555-18344-1-git-send-email-marek@goldelico.com>
-In-Reply-To: <1381784555-18344-1-git-send-email-marek@goldelico.com>
+References: <1383064064-4983-1-git-send-email-jhovold@gmail.com>
+ <1383242264-7652-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1383242264-7652-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
 
-Add new callback to set bypass and acbias. During venc enble disable those
-bit are updated in devconf1 register.
+Use gpio_is_valid rather than open coding the more restrictive != -1
+test.
 
-Signed-off-by: Marek Belisko <marek@goldelico.com>
+Acked-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
 ---
- drivers/video/omap2/dss/venc.c | 21 +++++++++++++++++++++
- include/video/omapdss.h        |  2 ++
- 2 files changed, 23 insertions(+)
+ drivers/video/backlight/atmel-pwm-bl.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 5f88ac4..17bd45b 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -34,6 +34,7 @@
- #include <linux/platform_device.h>
- #include <linux/regulator/consumer.h>
- #include <linux/pm_runtime.h>
-+#include <linux/omap-tvout.h>
+diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
+index bfd6a96..c254209 100644
+--- a/drivers/video/backlight/atmel-pwm-bl.c
++++ b/drivers/video/backlight/atmel-pwm-bl.c
+@@ -48,7 +48,7 @@ static int atmel_pwm_bl_set_intensity(struct backlight_device *bd)
+ 		pwm_duty = pwmbl->pdata->pwm_duty_min;
  
- #include <video/omapdss.h>
+ 	if (!intensity) {
+-		if (pwmbl->gpio_on != -1) {
++		if (gpio_is_valid(pwmbl->gpio_on)) {
+ 			gpio_set_value(pwmbl->gpio_on,
+ 					0 ^ pwmbl->pdata->on_active_low);
+ 		}
+@@ -57,7 +57,7 @@ static int atmel_pwm_bl_set_intensity(struct backlight_device *bd)
+ 	} else {
+ 		pwm_channel_enable(&pwmbl->pwmc);
+ 		pwm_channel_writel(&pwmbl->pwmc, PWM_CUPD, pwm_duty);
+-		if (pwmbl->gpio_on != -1) {
++		if (gpio_is_valid(pwmbl->gpio_on)) {
+ 			gpio_set_value(pwmbl->gpio_on,
+ 					1 ^ pwmbl->pdata->on_active_low);
+ 		}
+@@ -146,7 +146,7 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
+ 	if (retval)
+ 		return retval;
  
-@@ -303,6 +304,8 @@ static struct {
- 	struct omap_video_timings timings;
- 	enum omap_dss_venc_type type;
- 	bool invert_polarity;
-+	bool bypass;
-+	bool acbias;
- 
- 	struct omap_dss_device output;
- } venc;
-@@ -455,6 +458,9 @@ static int venc_power_on(struct omap_dss_device *dssdev)
- 
- 	venc_write_reg(VENC_OUTPUT_CONTROL, l);
- 
-+	/* apply bypass and acbias */
-+	update_bypass_acbias(venc.bypass, venc.acbias);
-+
- 	dss_mgr_set_timings(mgr, &venc.timings);
- 
- 	r = regulator_enable(venc.vdda_dac_reg);
-@@ -485,6 +491,9 @@ static void venc_power_off(struct omap_dss_device *dssdev)
- 	venc_write_reg(VENC_OUTPUT_CONTROL, 0);
- 	dss_set_dac_pwrdn_bgz(0);
- 
-+	/* clear bypass and acbias */
-+	update_bypass_acbias(false, false);
-+
- 	dss_mgr_disable(mgr);
- 
- 	regulator_disable(venc.vdda_dac_reg);
-@@ -629,6 +638,17 @@ static void venc_invert_vid_out_polarity(struct omap_dss_device *dssdev,
- 	mutex_unlock(&venc.venc_lock);
- }
- 
-+static void venc_bypass_and_acbias(struct omap_dss_device *dssdev,
-+		bool bypass, bool acbias)
-+{
-+	mutex_lock(&venc.venc_lock);
-+
-+	venc.bypass = bypass;
-+	venc.acbias = acbias;
-+
-+	mutex_unlock(&venc.venc_lock);
-+}
-+
- static int venc_init_regulator(void)
+-	if (pwmbl->gpio_on != -1) {
++	if (gpio_is_valid(pwmbl->gpio_on)) {
+ 		retval = devm_gpio_request(&pdev->dev, pwmbl->gpio_on,
+ 					"gpio_atmel_pwm_bl");
+ 		if (retval)
+@@ -196,7 +196,7 @@ static int atmel_pwm_bl_remove(struct platform_device *pdev)
  {
- 	struct regulator *vdda_dac;
-@@ -777,6 +797,7 @@ static const struct omapdss_atv_ops venc_ops = {
+ 	struct atmel_pwm_bl *pwmbl = platform_get_drvdata(pdev);
  
- 	.set_type = venc_set_type,
- 	.invert_vid_out_polarity = venc_invert_vid_out_polarity,
-+	.bypass_and_acbias = venc_bypass_and_acbias,
- 
- 	.set_wss = venc_set_wss,
- 	.get_wss = venc_get_wss,
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 3d7c51a..54a185f 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -607,6 +607,8 @@ struct omapdss_atv_ops {
- 		enum omap_dss_venc_type type);
- 	void (*invert_vid_out_polarity)(struct omap_dss_device *dssdev,
- 		bool invert_polarity);
-+	void (*bypass_and_acbias)(struct omap_dss_device *dssdev,
-+		bool bypass, bool acbias);
- 
- 	int (*set_wss)(struct omap_dss_device *dssdev, u32 wss);
- 	u32 (*get_wss)(struct omap_dss_device *dssdev);
+-	if (pwmbl->gpio_on != -1) {
++	if (gpio_is_valid(pwmbl->gpio_on)) {
+ 		gpio_set_value(pwmbl->gpio_on,
+ 					0 ^ pwmbl->pdata->on_active_low);
+ 	}
 -- 
-1.8.1.2
+1.8.4.2
 

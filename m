@@ -1,57 +1,92 @@
-From: Denis Carikli <denis@eukrea.com>
-Date: Thu, 31 Oct 2013 09:15:25 +0000
-Subject: [PATCHv9][ 3/6] video: Kconfig: Allow more broad selection of the imxfb framebuffer driver.
-Message-Id: <1383210928-18906-3-git-send-email-denis@eukrea.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Thu, 31 Oct 2013 17:57:39 +0000
+Subject: [PATCH v3 4/9] backlight: atmel-pwm-bl: clean up probe error handling
+Message-Id: <1383242264-7652-5-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1383210928-18906-1-git-send-email-denis@eukrea.com>
-In-Reply-To: <1383210928-18906-1-git-send-email-denis@eukrea.com>
+References: <1383064064-4983-1-git-send-email-jhovold@gmail.com>
+ <1383242264-7652-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1383242264-7652-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
 
-Without that patch, a user can't select the imxfb driver when the i.MX25 an=
-d/or
-  the i.MX27 device tree board are selected and that no boards that selects
-  IMX_HAVE_PLATFORM_IMX_FB are compiled in.
+Clean up probe error handling by checking parameters before any
+allocations and removing an obsolete error label. Also remove
+unnecessary reset of private gpio number.
 
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: devicetree@vger.kernel.org
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Eric B=C3=A9nard <eric@eukrea.com>
-
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
-Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Signed-off-by: Denis Carikli <denis@eukrea.com>
+Acked-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
 ---
-ChangeLog v8->v9:
-- Added Jean-Christophe PLAGNIOL-VILLARD's ACK.
----
- drivers/video/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/backlight/atmel-pwm-bl.c | 31 ++++++++++++-------------------
+ 1 file changed, 12 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 4f2e1b3..22adaee 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -363,7 +363,7 @@ config FB_SA1100
-=20
- config FB_IMX
- 	tristate "Freescale i.MX1/21/25/27 LCD support"
--	depends on FB && IMX_HAVE_PLATFORM_IMX_FB
-+	depends on FB && ARCH_MXC
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
---=20
-1.7.9.5
+diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
+index 4886028..01af5c2 100644
+--- a/drivers/video/backlight/atmel-pwm-bl.c
++++ b/drivers/video/backlight/atmel-pwm-bl.c
+@@ -126,40 +126,33 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
+ 	struct atmel_pwm_bl *pwmbl;
+ 	int retval;
+ 
++	pdata = dev_get_platdata(&pdev->dev);
++	if (!pdata)
++		return -ENODEV;
++
++	if (pdata->pwm_compare_max < pdata->pwm_duty_max ||
++			pdata->pwm_duty_min > pdata->pwm_duty_max ||
++			pdata->pwm_frequency = 0)
++		return -EINVAL;
++
+ 	pwmbl = devm_kzalloc(&pdev->dev, sizeof(struct atmel_pwm_bl),
+ 				GFP_KERNEL);
+ 	if (!pwmbl)
+ 		return -ENOMEM;
+ 
+ 	pwmbl->pdev = pdev;
+-
+-	pdata = dev_get_platdata(&pdev->dev);
+-	if (!pdata) {
+-		retval = -ENODEV;
+-		goto err_free_mem;
+-	}
+-
+-	if (pdata->pwm_compare_max < pdata->pwm_duty_max ||
+-			pdata->pwm_duty_min > pdata->pwm_duty_max ||
+-			pdata->pwm_frequency = 0) {
+-		retval = -EINVAL;
+-		goto err_free_mem;
+-	}
+-
+ 	pwmbl->pdata = pdata;
+ 	pwmbl->gpio_on = pdata->gpio_on;
+ 
+ 	retval = pwm_channel_alloc(pdata->pwm_channel, &pwmbl->pwmc);
+ 	if (retval)
+-		goto err_free_mem;
++		return retval;
+ 
+ 	if (pwmbl->gpio_on != -1) {
+ 		retval = devm_gpio_request(&pdev->dev, pwmbl->gpio_on,
+ 					"gpio_atmel_pwm_bl");
+-		if (retval) {
+-			pwmbl->gpio_on = -1;
++		if (retval)
+ 			goto err_free_pwm;
+-		}
+ 
+ 		/* Turn display off by default. */
+ 		retval = gpio_direction_output(pwmbl->gpio_on,
+@@ -197,7 +190,7 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
+ 
+ err_free_pwm:
+ 	pwm_channel_free(&pwmbl->pwmc);
+-err_free_mem:
++
+ 	return retval;
+ }
+ 
+-- 
+1.8.4.2
 

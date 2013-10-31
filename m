@@ -1,109 +1,51 @@
-From: Michal Simek <michal.simek@xilinx.com>
-Date: Thu, 10 Oct 2013 06:30:22 +0000
-Subject: [PATCH v3 3/3] video: xilinxfb: Simplify error path
-Message-Id: <cd0b38241eccb712133c5a890a794508d78ae7e6.1381386616.git.michal.simek@xilinx.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=_mimegpg-monstr-desktop-26992-1381386633-0001"
+From: Johan Hovold <jhovold@gmail.com>
+Date: Thu, 31 Oct 2013 17:57:40 +0000
+Subject: [PATCH v3 5/9] backlight: atmel-pwm-bl: clean up get_intensity
+Message-Id: <1383242264-7652-6-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <631df9a44b366af4129d00f1d4e1d3baad7d4903.1381386616.git.michal.simek@xilinx.com>
-In-Reply-To: <631df9a44b366af4129d00f1d4e1d3baad7d4903.1381386616.git.michal.simek@xilinx.com>
-To: linux-kernel@vger.kernel.org, monstr@monstr.eu
-Cc: joe@perches.com, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-
-This is a MIME GnuPG-signed message.  If you see this text, it means that
-your E-mail or Usenet software does not support MIME signed messages.
-The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
-To open this message correctly you will need to install E-mail or Usenet
-software that supports modern Internet standards.
-
---=_mimegpg-monstr-desktop-26992-1381386633-0001
-
-devm_iounmap is called automatically that's why remove it from the code
-dev_set_drvdata(dev, NULL) is called by generic code
-after device_release or on probe failure.
-
-Signed-off-by: Michal Simek <michal.simek@xilinx.com>
-
-Reviewed-by: Jingoo Han <jg1.han@samsung.com>
----
-Changes in v3: None
-Changes in v2:
-- Rebased on git://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git for-next
-
- drivers/video/xilinxfb.c | 24 ++++++------------------
- 1 file changed, 6 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index c420328..9eedf96 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -260,10 +260,9 @@ static int xilinxfb_assign(struct platform_device *pdev,
-
- 		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 		drvdata->regs = devm_ioremap_resource(&pdev->dev, res);
--		if (IS_ERR(drvdata->regs)) {
--			rc = PTR_ERR(drvdata->regs);
--			goto err_region;
--		}
-+		if (IS_ERR(drvdata->regs))
-+			return PTR_ERR(drvdata->regs);
-+
- 		drvdata->regs_phys = res->start;
- 	}
-
-@@ -279,11 +278,7 @@ static int xilinxfb_assign(struct platform_device *pdev,
-
- 	if (!drvdata->fb_virt) {
- 		dev_err(dev, "Could not allocate frame buffer memory\n");
--		rc = -ENOMEM;
--		if (drvdata->flags & BUS_ACCESS_FLAG)
--			goto err_fbmem;
--		else
--			goto err_region;
-+		return -ENOMEM;
- 	}
-
- 	/* Clear (turn to black) the framebuffer */
-@@ -363,11 +358,6 @@ err_cmap:
- 	/* Turn off the display */
- 	xilinx_fb_out32(drvdata, REG_CTRL, 0);
-
--err_fbmem:
--	if (drvdata->flags & BUS_ACCESS_FLAG)
--		devm_iounmap(dev, drvdata->regs);
--
--err_region:
- 	return rc;
- }
-
-@@ -392,11 +382,9 @@ static int xilinxfb_release(struct device *dev)
- 	/* Turn off the display */
- 	xilinx_fb_out32(drvdata, REG_CTRL, 0);
-
--	/* Release the resources, as allocated based on interface */
--	if (drvdata->flags & BUS_ACCESS_FLAG)
--		devm_iounmap(dev, drvdata->regs);
- #ifdef CONFIG_PPC_DCR
--	else
-+	/* Release the resources, as allocated based on interface */
-+	if (!(drvdata->flags & BUS_ACCESS_FLAG))
- 		dcr_unmap(drvdata->dcr_host, drvdata->dcr_len);
- #endif
-
---
-1.8.2.3
-
-
---=_mimegpg-monstr-desktop-26992-1381386633-0001
-Content-Type: application/pgp-signature
+References: <1383064064-4983-1-git-send-email-jhovold@gmail.com>
+ <1383242264-7652-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1383242264-7652-1-git-send-email-jhovold@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Clean up get_intensity to increase readability.
 
-iEYEABECAAYFAlJWSYkACgkQykllyylKDCHAXACfTuNzVxr/hyrfw0RSy8gYwEJF
-EeAAn14HxJ8e3arscsD492nqKJJYMXTb
-=TJbP
------END PGP SIGNATURE-----
+Acked-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
+---
+ drivers/video/backlight/atmel-pwm-bl.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
---=_mimegpg-monstr-desktop-26992-1381386633-0001--
+diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
+index 01af5c2..abfaada 100644
+--- a/drivers/video/backlight/atmel-pwm-bl.c
++++ b/drivers/video/backlight/atmel-pwm-bl.c
+@@ -70,15 +70,14 @@ static int atmel_pwm_bl_set_intensity(struct backlight_device *bd)
+ static int atmel_pwm_bl_get_intensity(struct backlight_device *bd)
+ {
+ 	struct atmel_pwm_bl *pwmbl = bl_get_data(bd);
++	u32 cdty;
+ 	u32 intensity;
+ 
+-	if (pwmbl->pdata->pwm_active_low) {
+-		intensity = pwm_channel_readl(&pwmbl->pwmc, PWM_CDTY) -
+-			pwmbl->pdata->pwm_duty_min;
+-	} else {
+-		intensity = pwmbl->pdata->pwm_duty_max -
+-			pwm_channel_readl(&pwmbl->pwmc, PWM_CDTY);
+-	}
++	cdty = pwm_channel_readl(&pwmbl->pwmc, PWM_CDTY);
++	if (pwmbl->pdata->pwm_active_low)
++		intensity = cdty - pwmbl->pdata->pwm_duty_min;
++	else
++		intensity = pwmbl->pdata->pwm_duty_max - cdty;
+ 
+ 	return intensity & 0xffff;
+ }
+-- 
+1.8.4.2
+

@@ -1,66 +1,44 @@
 From: Johan Hovold <jhovold@gmail.com>
-Date: Tue, 29 Oct 2013 16:27:42 +0000
-Subject: [PATCH v2 7/9] backlight: atmel-pwm-bl: use gpio_is_valid
-Message-Id: <1383064064-4983-8-git-send-email-jhovold@gmail.com>
+Date: Thu, 31 Oct 2013 17:57:37 +0000
+Subject: [PATCH v3 2/9] backlight: atmel-pwm-bl: fix gpio polarity in remove
+Message-Id: <1383242264-7652-3-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1382522143-32072-1-git-send-email-jhovold@gmail.com>
- <1383064064-4983-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1383064064-4983-1-git-send-email-jhovold@gmail.com>
+References: <1383064064-4983-1-git-send-email-jhovold@gmail.com>
+ <1383242264-7652-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1383242264-7652-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>, stable@vger.kernel.org
 
-Use gpio_is_valid rather than open coding the more restrictive != -1
-test.
+Make sure to honour gpio polarity also at remove so that the backlight
+is actually disabled on boards with active-low enable pin.
 
+Cc: stable@vger.kernel.org
 Acked-by: Jingoo Han <jg1.han@samsung.com>
 Signed-off-by: Johan Hovold <jhovold@gmail.com>
 ---
- drivers/video/backlight/atmel-pwm-bl.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/video/backlight/atmel-pwm-bl.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
-index bfd6a96..c254209 100644
+index 0971a8e..e21beb6 100644
 --- a/drivers/video/backlight/atmel-pwm-bl.c
 +++ b/drivers/video/backlight/atmel-pwm-bl.c
-@@ -48,7 +48,7 @@ static int atmel_pwm_bl_set_intensity(struct backlight_device *bd)
- 		pwm_duty = pwmbl->pdata->pwm_duty_min;
- 
- 	if (!intensity) {
--		if (pwmbl->gpio_on != -1) {
-+		if (gpio_is_valid(pwmbl->gpio_on)) {
- 			gpio_set_value(pwmbl->gpio_on,
- 					0 ^ pwmbl->pdata->on_active_low);
- 		}
-@@ -57,7 +57,7 @@ static int atmel_pwm_bl_set_intensity(struct backlight_device *bd)
- 	} else {
- 		pwm_channel_enable(&pwmbl->pwmc);
- 		pwm_channel_writel(&pwmbl->pwmc, PWM_CUPD, pwm_duty);
--		if (pwmbl->gpio_on != -1) {
-+		if (gpio_is_valid(pwmbl->gpio_on)) {
- 			gpio_set_value(pwmbl->gpio_on,
- 					1 ^ pwmbl->pdata->on_active_low);
- 		}
-@@ -146,7 +146,7 @@ static int atmel_pwm_bl_probe(struct platform_device *pdev)
- 	if (retval)
- 		return retval;
- 
--	if (pwmbl->gpio_on != -1) {
-+	if (gpio_is_valid(pwmbl->gpio_on)) {
- 		retval = devm_gpio_request(&pdev->dev, pwmbl->gpio_on,
- 					"gpio_atmel_pwm_bl");
- 		if (retval)
-@@ -196,7 +196,7 @@ static int atmel_pwm_bl_remove(struct platform_device *pdev)
+@@ -205,8 +205,10 @@ static int atmel_pwm_bl_remove(struct platform_device *pdev)
  {
  	struct atmel_pwm_bl *pwmbl = platform_get_drvdata(pdev);
  
--	if (pwmbl->gpio_on != -1) {
-+	if (gpio_is_valid(pwmbl->gpio_on)) {
- 		gpio_set_value(pwmbl->gpio_on,
- 					0 ^ pwmbl->pdata->on_active_low);
- 	}
+-	if (pwmbl->gpio_on != -1)
+-		gpio_set_value(pwmbl->gpio_on, 0);
++	if (pwmbl->gpio_on != -1) {
++		gpio_set_value(pwmbl->gpio_on,
++					0 ^ pwmbl->pdata->on_active_low);
++	}
+ 	pwm_channel_disable(&pwmbl->pwmc);
+ 	pwm_channel_free(&pwmbl->pwmc);
+ 
 -- 
 1.8.4.2
 

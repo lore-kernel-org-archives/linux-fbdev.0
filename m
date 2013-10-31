@@ -1,74 +1,76 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 09 Oct 2013 09:53:21 +0000
-Subject: Re: [PATCH 1/2] hyperv-fb: add pci stub
-Message-Id: <52552791.1020505@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="S8Qm5cFRQnvQJaSohu2h1RjNfou5hp8Ll"
+From: Mauro Carvalho Chehab <m.chehab@samsung.com>
+Date: Thu, 31 Oct 2013 11:46:40 +0000
+Subject: Re: [PATCH 19/51] DMA-API: media: dt3155v4l: replace dma_set_mask()+dma_set_coherent_mask() with new
+Message-Id: <20131031094640.205840a2@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1380714911-6254-1-git-send-email-kraxel@redhat.com>
-In-Reply-To: <1380714911-6254-1-git-send-email-kraxel@redhat.com>
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: "K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, "open list:Hyper-V CORE AND..." <devel@linuxdriverproject.org>, FRAMEBUFFER LAYER <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+References: <20130919212235.GD12758@n2100.arm.linux.org.uk>
+ <E1VMm13-0007hO-9l@rmk-PC.arm.linux.org.uk> <5249673B.5020705@xs4all.nl>
+In-Reply-To: <5249673B.5020705-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Hans Verkuil <hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org>
+Cc: Russell King <rmk+kernel-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, b43-dev-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, e1000-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Solarflare linux maintainers <linux-net-drivers-s/n/eUQHGBpZroRs9YW3xA@public.gmane.org>, uclinux-dist-devel-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Russell King <rmk+kernel@ar>
 
---S8Qm5cFRQnvQJaSohu2h1RjNfou5hp8Ll
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Russell,
 
-On 02/10/13 14:55, Gerd Hoffmann wrote:
-> This patch adds a pci stub driver to hyper-fb.  The hyperv framebuffer
-> driver will bind to the pci device then, so linux kernel and userspace
-> know there is a proper kernel driver for the device active.  lspci show=
-s
-> this for example:
->=20
-> [root@dhcp231 ~]# lspci -vs8
-> 00:08.0 VGA compatible controller: Microsoft Corporation Hyper-V virtua=
-l
-> VGA (prog-if 00 [VGA controller])
->         Flags: bus master, fast devsel, latency 0, IRQ 11
->         Memory at f8000000 (32-bit, non-prefetchable) [size=3D64M]
->         Expansion ROM at <unassigned> [disabled]
->         Kernel driver in use: hyperv_fb
->=20
-> Another effect is that the xorg vesa driver will not attach to the
-> device and thus the Xorg server will automatically use the fbdev
-> driver instead.
->=20
-> Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
-> ---
->  drivers/video/hyperv_fb.c | 40 +++++++++++++++++++++++++++++++++++++++=
--
->  1 file changed, 39 insertions(+), 1 deletion(-)
->=20
+Em Mon, 30 Sep 2013 13:57:47 +0200
+Hans Verkuil <hverkuil@xs4all.nl> escreveu:
 
-Thanks, queuing the series for 3.13.
+> On 09/19/2013 11:44 PM, Russell King wrote:
+> > Replace the following sequence:
+> > 
+> > 	dma_set_mask(dev, mask);
+> > 	dma_set_coherent_mask(dev, mask);
+> > 
+> > with a call to the new helper dma_set_mask_and_coherent().
+> > 
+> > Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> 
+> Acked-by: Hans Verkuil <hans.verkuil@cisco.com>
 
- Tomi
+Somehow, I lost your original post (I got unsubscribed on a few days 
+from all vger mailing lists at the end of september).
+
+I suspect that you want to sent this via your tree, right?
+If so:
+
+Acked-by: Mauro Carvalho Chehab <m.chehab@samsung.com>
+
+> 
+> Regards,
+> 
+> 	Hans
+> 
+> > ---
+> >  drivers/staging/media/dt3155v4l/dt3155v4l.c |    5 +----
+> >  1 files changed, 1 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/drivers/staging/media/dt3155v4l/dt3155v4l.c b/drivers/staging/media/dt3155v4l/dt3155v4l.c
+> > index 90d6ac4..081407b 100644
+> > --- a/drivers/staging/media/dt3155v4l/dt3155v4l.c
+> > +++ b/drivers/staging/media/dt3155v4l/dt3155v4l.c
+> > @@ -901,10 +901,7 @@ dt3155_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+> >  	int err;
+> >  	struct dt3155_priv *pd;
+> >  
+> > -	err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
+> > -	if (err)
+> > -		return -ENODEV;
+> > -	err = dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
+> > +	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
+> >  	if (err)
+> >  		return -ENODEV;
+> >  	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
+> > 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 
+-- 
 
---S8Qm5cFRQnvQJaSohu2h1RjNfou5hp8Ll
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJSVSeRAAoJEPo9qoy8lh71rGgP/2dEfMQlpprRxqLEARZ6km8Z
-eesjGlizkqyzqjsgz2Qa9c1EegZg7uOf0dKzam9bFiN2StUFUxWZTfYYdwhRyCdb
-6mKajyG9oFsxXa9lDtz4ZtYCIbKM8HYz9nBTz7IuMU6ufjoQvDtWOfnQHTVCIXZy
-pTd6fPR4JC0yQ8WTo7ux6HaTMp1T/WGauPDxPYWQVRsqNsHehvD+O4SxA+f2xJym
-NbHnwwYnEkjavj743mZcnepWiVdKxEmOy4fE5gB0H/2aXsXK2U+Dn/8dxLJgSV9k
-IKKNf1MFj527G1UnOqK/GglOnPNUHmD0IXqpocRa9atVR/2P/5osukmwIfobSjJb
-WxVAutjMMyFtcFTvJPfFvJ/YBJxMdrCNmMBPCp0Dc/tEUl6UJx8JbCzE2FFM8Z5W
-1yEe4GaXea4zVDEuIvQFd92GYTwZEC4IgDtu/Nyj/VaSGP5v1c3QjZKkFO1ZaQRy
-PhOqcmOU1jHo5tXiGy5pxoz+yFermf85QY3Mu3PjFBEdc3OhGMU03SGSf43szVcA
-PSMLenoEAChD0r6uJMeckbkgLNveg2J7++Lbbj4h1K0iG3+FQ7t7fLGgpKxhVeui
-KMz6UXkNHl2/Y7CxbPYPVJDBhEBhUrcwujTTRpHDaqkHqvoHwIOMmad2+pl5ffHD
-61C2E97nS+uYwxe9Bodz
-=PQT7
------END PGP SIGNATURE-----
-
---S8Qm5cFRQnvQJaSohu2h1RjNfou5hp8Ll--
+Cheers,
+Mauro

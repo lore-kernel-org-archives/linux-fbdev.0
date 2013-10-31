@@ -1,14 +1,34 @@
-From: "Mr. X" <jul217@juy793.onmicrosoft.com>
-Date: Sat, 26 Oct 2013 08:51:25 +0000
-Subject: my subject
-Message-Id: <874343e5-8835-4135-806c-3a5ddea529d3@HKNPR06MB067.apcprd06.prod.outlook.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Thu, 31 Oct 2013 17:57:38 +0000
+Subject: [PATCH v3 3/9] backlight: atmel-pwm-bl: fix module autoload
+Message-Id: <1383242264-7652-4-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1383064064-4983-1-git-send-email-jhovold@gmail.com>
+ <1383242264-7652-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1383242264-7652-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Richard Purdie <rpurdie@rpsys.net>, Jingoo Han <jg1.han@samsung.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
 
+Add missing module alias which is needed for module autoloading.
 
-Need a Loan, Loans from $5000 - $10,000,000 00. Get your no obligation FREE quote now! Repayments up to 54 Months. No Collateral, Money paid into your account within 24 hours after approval. For more Info contact us today  guaranteeloancompany1@gmail.com
+Acked-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
+---
+ drivers/video/backlight/atmel-pwm-bl.c | 1 +
+ 1 file changed, 1 insertion(+)
 
+diff --git a/drivers/video/backlight/atmel-pwm-bl.c b/drivers/video/backlight/atmel-pwm-bl.c
+index e21beb6..4886028 100644
+--- a/drivers/video/backlight/atmel-pwm-bl.c
++++ b/drivers/video/backlight/atmel-pwm-bl.c
+@@ -229,3 +229,4 @@ module_platform_driver(atmel_pwm_bl_driver);
+ MODULE_AUTHOR("Hans-Christian egtvedt <hans-christian.egtvedt@atmel.com>");
+ MODULE_DESCRIPTION("Atmel PWM backlight driver");
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:atmel-pwm-bl");
+-- 
+1.8.4.2
 

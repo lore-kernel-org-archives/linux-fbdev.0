@@ -1,61 +1,70 @@
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-Date: Mon, 11 Nov 2013 18:37:30 +0000
-Subject: Re: [PATCH] ARM: OMAPFB: panel-sony-acx565akm: fix bad unlock balance
-Message-Id: <20131111183730.GA30010@blackmetal.musicnaut.iki.fi>
+From: Dave Airlie <airlied@gmail.com>
+Date: Fri, 01 Nov 2013 00:10:41 +0000
+Subject: Re: outcome of DRM/KMS DT bindings session
+Message-Id: <CAPM=9ty7+A=YjSbRLxmo9mXSQSkZsZngBvTsryZ8+tHppEMPyw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1383773070-15114-1-git-send-email-aaro.koskinen@iki.fi>
- <5280DDA1.304@ti.com>
-In-Reply-To: <5280DDA1.304@ti.com>
+References: <CAPM=9twObPRhPavm9xD+7=JDPEVD+K_WFJxMGG=f5eXR12PvLw@mail.gmail.com>
+	<20131030120229.GF24559@pengutronix.de>
+In-Reply-To: <20131030120229.GF24559@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, stable@vger.kernel.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: ksummit-2013-discuss@lists.linuxfoundation.org, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>
 
-Hi,
+>> After looking at some of the ordering issues we've had with x86 GPUs
+>> (which are really just a tightly coupled SoC) I don't want separate
+>> drivers all having their own init, suspend/resume paths in them as I
+>> know we'll have to start making special vtable entry points etc to
+>> solve some random ordering issues that crop up.
+>
+> The DRM device has to be initialized/suspended/resumed as a whole, no
+> doubt about that. If that's not the case you indeed open up the door for
+> all kinds of ordering issues.
+>
+> Still the different components can be multiple devices, just initialize
+> the drm device once all components are probed. Remove it again once a
+> component is removed. Handle suspend in the DRM device, not in
+> the individual component drivers. The suspend in the component drivers
+> would only be called after the DRM device is completely quiesced.
+> Similarly the resume in the component drivers would not reenable the
+> components, this instead would be done in the DRM device when all
+> components are there again.
 
-On Mon, Nov 11, 2013 at 03:37:37PM +0200, Tomi Valkeinen wrote:
-> On 2013-11-06 23:24, Aaro Koskinen wrote:
-> > When booting Nokia N900 smartphone with v3.12 + omap2plus_defconfig
-> > (LOCKDEP enabled) and CONFIG_DISPLAY_PANEL_SONY_ACX565AKM enabled,
-> > the following BUG is seen during the boot:
-> > 
-> > [    7.302154] ==================> > [    7.307128] [ BUG: bad unlock balance detected! ]
-> > [    7.312103] 3.12.0-los.git-2093492-00120-g5e01dc7 #3 Not tainted
-> > [    7.318450] -------------------------------------
-> > [    7.323425] kworker/u2:1/12 is trying to release lock (&ddata->mutex) at:
-> > [    7.330657] [<c031b760>] acx565akm_enable+0x12c/0x18c
-> > [    7.335998] but there are no more locks to release!
-> > 
-> > Fix by removing the extra mutex_unlock().
-> > 
-> > Reported-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> > Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-> > Cc: stable@vger.kernel.org
-> > ---
-> >  drivers/video/omap2/displays-new/panel-sony-acx565akm.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-> > index e6d56f7..72fe2a8 100644
-> > --- a/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-> > +++ b/drivers/video/omap2/displays-new/panel-sony-acx565akm.c
-> > @@ -616,7 +616,7 @@ static int acx565akm_enable(struct omap_dss_device *dssdev)
-> >  
-> >  	mutex_lock(&ddata->mutex);
-> >  	r = acx565akm_panel_power_on(dssdev);
-> > -	mutex_unlock(&ddata->mutex);
-> > +	/* NOTE: acx565akm_panel_power_on() will unlock the mutex. */
-> >  
-> >  	if (r)
-> >  		return r;
-> > 
-> 
-> Hm why would you fix it like this? Why not remove the mutex_unlock from
-> acx565akm_panel_power_on()? Looks to me like that one is the buggy one.
+But why? why should we have separate drivers for each component of a
+tightly coupled SoC?
 
-The unlock needs to be there because acx565akm_bl_update_status()
-also locks the mutex. I'll send a new version where the mutex_lock()
-is done inside acx565akm_panel_power_on().
+it makes no sense, having a driver node per every block in the chip
+isn't an advantage, it complicates
+things for no advantage at all. If we don't have hotplug hw removing
+one device shouldn't be possible
+this idea that removing a sub-driver should teardown the drm is crazy as well.
 
-A.
+>
+> This way all components could be proper (driver model)devices with
+> proper drivers without DRM even noticing that multiple components are
+> involved.
+>
+> Side note: We have no choice anyway. All SoCs can (sometimes must)
+> be extended with external I2C devices. On every SoC the I2C bus master
+> is a separate device, so we have a multicomponent device (in the sense
+> of driver model) already in many cases.
+>
+
+Having off-chip i2c devices being part of the driver model is fine,
+stuff works like that everywhere,
+having each SoC block part of the device model isn't fine unless you
+can really prove re-use and
+why having separate driver templating for each block is helpful.
+
+I'm not willing to have overly generic sub drivers that provide no
+advantage and only add lots
+of disadvantage like init and suspend/resume ordering. I know there is
+going to be SoC ordering
+issues at init time that will end up circular between two separate
+drivers each deferring because
+they want another driver up. Don't dig us into that hole, i2c has a
+well defined ordering of init,
+I don't think internal SoC devices are so well defined.
+
+Dave.

@@ -1,59 +1,100 @@
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Date: Sun, 24 Nov 2013 03:53:11 +0000
-Subject: Re: [ibm-acpi-devel] [PATCH] video: backlight: Remove backlight sysfs uevent
-Message-Id: <20131124035311.GC19499@khazad-dum.debian.net>
+From: Tomasz Figa <tomasz.figa@gmail.com>
+Date: Fri, 01 Nov 2013 00:01:25 +0000
+Subject: Re: [PATCH v3 21/32] drm/exynos: Move dp driver from video/ to drm/
+Message-Id: <1744421.OF2LGcKCh7@flatron>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20131111235700.GA29987@july>
- <002901cedf3c$a7e77a00$f7b66e00$%han@samsung.com>
- <20131112005628.GA2914@khazad-dum.debian.net>
- <1384990859.20536.4.camel@x230>
- <20131121114332.GA23710@khazad-dum.debian.net>
- <20131121143326.GA19773@srcf.ucam.org>
- <20131122113601.GB27196@khazad-dum.debian.net>
- <20131122171556.GA15680@srcf.ucam.org>
- <20131124004015.GA19499@khazad-dum.debian.net>
- <20131124010257.GA6376@srcf.ucam.org>
-In-Reply-To: <20131124010257.GA6376@srcf.ucam.org>
+References: <1383063198-10526-1-git-send-email-seanpaul@chromium.org>
+	<10329504.DMev7iL3eL@flatron>
+	<003801ced694$a3342310$e99c6930$%han@samsung.com>
+In-Reply-To: <003801ced694$a3342310$e99c6930$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-fbdev@vger.kernel.org, 'Kyungmin Park' <kmpark@infradead.org>, kay@vrfy.org, Jingoo Han <jg1.han@samsung.com>, 'Henrique de Moraes Holschuh' <ibm-acpi@hmh.eng.br>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, ibm-acpi-devel@lists.sourceforge.net, 'Richard Purdie' <rpurdie@rpsys.net>
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, dri-devel@lists.freedesktop.org, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, marcheu@chromium.org, 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>
 
-On Sun, 24 Nov 2013, Matthew Garrett wrote:
-> On Sat, Nov 23, 2013 at 10:40:15PM -0200, Henrique de Moraes Holschuh wrote:
-> > On Fri, 22 Nov 2013, Matthew Garrett wrote:
-> > > We have userspace that relies on uevents of type 
-> > > BACKLIGHT_UPDATE_HOTKEY. I don't know that we have userspace that relies 
-> > > on uevents of type BACKLIGHT_UPDATE_SYSFS.
+On Friday 01 of November 2013 08:55:12 Jingoo Han wrote:
+> On Friday, November 01, 2013 8:27 AM, Tomasz Figa wrote:
+> > On Friday 01 of November 2013 08:23:59 Jingoo Han wrote:
+> > > On Friday, November 01, 2013 8:12 AM, Tomasz Figa wrote:
+> > > > On Friday 01 of November 2013 08:06:00 Jingoo Han wrote:
+> > > > > On Thursday, October 31, 2013 7:47 PM, Inki Dae wrote:
+> > > > > > CCing Jingoo,
+> > > > > > 
+> > > > > > Is that ok to remove eDP driver from video/exynos? Isn't this
+> > > > > > driver
+> > > > > > really used by Linux framebuffer driver, s3c-fb.c?
+> > > > > 
+> > > > > +cc Tomi Valkeinen, Jean-Christophe PLAGNIOL-VILLARD,
+> > > > > 
+> > > > >      linux-fbdev list, linux-samsung-soc list
+> > > > > 
+> > > > > Yes, it is used by s3c-fb.c.
+> > > > > 
+> > > > > > Of course, now s3c-fb driver is dead code because this driver
+> > > > > > doesn't
+> > > > > > support device tree yet but we would need more reviews and
+> > > > > > discussions
+> > > > > > about moving this driver into drm side. Let's watch new rules
+> > > > > > for
+> > > > > > device tree bindings of DRM world. So I'd not like to merge
+> > > > > > this
+> > > > > > driver yet.
+> > > > > 
+> > > > > 's3c-fb' driver is still used for other mass products projects.
+> > > > > Just, device tree support patch is not yet submitted.
+> > > > 
+> > > > Current in-tree users of s3c-fb drivers are s3c2443, non-DT
+> > > > s3c64xx
+> > > > and
+> > > > all s5p* SoCs. It is not used on Exynos SoCs anymore.
+> > > 
+> > > Hi Tomasz Figa,
 > > 
-> > Any OSD application would have to rely on both uevent types, or it is broken
-> > (and to test that, just write a level to sysfs and watch the OSD app fail to
-> > tell you about the backlight level change...)
+> > Just Tomasz. ;)
 > 
-> Right, OSDs are supposed to respond to keypresses, not arbitrary changes 
-> of backlight. If the user's just echoed 8 into brightness, they know 
-> they set the brightness to 8 - they don't need an OSD to tell them that. 
+> Hi Tomasz, :-)
+> 
+> > > Some mass product projects using Exynos5250 and etc, use s3c-fb
+> > > driver
+> > > and dp driver. Also, these projects are still using Framebuffer, not
+> > > DRM.
+> > 
+> > Well, those are based on vendor trees anyway, so do not really affect
+> > mainline kernel.
+> 
+> OK, I see.
+> 
+> > > > As for Exynos DP driver, what SoCs does it support? If only Exynos
+> > > > (as
+> > > > the name suggests) then there is no point in keeping it at
+> > > > video/exynos and making it a part of Exynos DRM driver seems
+> > > > reasonable to me.
+> > > 
+> > > However, when considering only mainline kernel, I have no strong
+> > > objection. As you know, many Linux kernel based OS projects using
+> > > Exynos, are using DRM, not Framebuffer.
+> > 
+> > Generally, fbdev is strongly discouraged in any new systems and DRM is
+> > the way to go, so I don't think we should ever want to bring s3c-fb
+> > support back to Exynos platforms.
+> 
+> Yes, you're right.
+> Personally, I think that all Exynos platforms should go into DRM, not
+> FB.
+> 
+> One more thing, then how about moving Exynos MIPI to DRM side?
+> Is there any plan on Exynos MIPI?
 
-It is not just the user that sets the brightness.
+Well, it will eventually have to be moved somewhere else than it is, but I 
+believe this will have to wait for Common Display Framework.
 
-Still, if you're sure that all userspace users react only to the hotkey type
-of event, removing the sysfs one won't break anything any further.
+This is because the case of MIPI DSI is slightly different from 
+DisplayPort, since it is not an enumerable/auto-configurable interface and 
+requires dedicated panel drivers and static data provided by board 
+designers (in DT for example). Handling of such things in a generic way 
+will be done by CDF.
 
-But it will be *really* annoying the day we revisit this because someone
-started abusing the hotkey uevent and we have to deploy a proper fix (rate
-limiting or switching to a proper event report interface that doesn't use
-uevents).
+Best regards,
+Tomasz
 
-> BACKLIGHT_UPDATE_HOTKEY is when the firmware itself has changed the 
-> brightness in response to a keypress, and so reporting the keypress 
-> would result in additional backlight changes.
-
-Yeah, I know that bug quite well, thinkpads were the first victims of
-idiotic feedback event loops caused by braindead userspace.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
